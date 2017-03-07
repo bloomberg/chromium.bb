@@ -23,6 +23,7 @@ distwin32-dir :
 	@if which i586-mingw32msvc-gcc >/dev/null; then \
 	  ./configure --host i586-mingw32msvc --prefix=$(CURDIR)/liblouis-$(VERSION)-win32 && \
 	  make LDFLAGS="$$LDFLAGS -avoid-version -Xcompiler -static-libgcc" && \
+	  make check && \
 	  make install; \
 	elif which i686-w64-mingw32-gcc >/dev/null; then \
 	  ./configure --host i686-w64-mingw32 --prefix=$(CURDIR)/liblouis-$(VERSION)-win32 && \

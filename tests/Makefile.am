@@ -95,12 +95,16 @@ program_TESTS =					\
 
 check_PROGRAMS = $(program_TESTS)
 
-dist_check_SCRIPTS =				\
+dist_check_SCRIPTS =
+
+if !MINGW
+dist_check_SCRIPTS += 			\
 	check_all_tables.pl			\
 	check_endless_loop.pl			\
 	check_included_tables.sh		\
 	multiple_table_path.pl			\
 	ueb_test_data.pl
+endif
 
 # The present_progressive should not really fail but for the moment
 # the issue doesn't seem to be critical enough that anybody has enough
@@ -203,8 +207,8 @@ yaml/da-dk-g18-dictionary_harness.yaml	\
 	yaml/vi-g1_harness.yaml			\
 	yaml/zh-chn.yaml
 
-TEST_EXTENSIONS = .yaml
-YAML_LOG_COMPILER =  $(top_builddir)/tools/lou_checkyaml
+TEST_EXTENSIONS = .yaml .pl
+YAML_LOG_COMPILER =  $(top_builddir)/tools/lou_checkyaml$(EXEEXT)
 
 EXTRA_DIST = $(dist_yaml_TESTS)
 
@@ -221,3 +225,9 @@ AM_TESTS_ENVIRONMENT =								\
 	PYTHONPATH=$(top_builddir)/python:$$PYTHONPATH				\
 	LD_LIBRARY_PATH=$(top_builddir)/liblouis/.libs:$$LD_LIBRARY_PATH	\
 	PATH=$(top_builddir)/tools:$$PATH
+
+if MINGW
+# FIXME: is there a way to prepend to LOG_COMPILE instead of to overwrite it?
+LOG_COMPILE = wine32 $(LOG_COMPILER) $(AM_LOG_FLAGS) $(LOG_FLAGS)
+YAML_LOG_COMPILE = wine32 $(YAML_LOG_COMPILER) $(AM_YAML_LOG_FLAGS) $(YAML_LOG_FLAGS)
+endif
