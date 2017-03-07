@@ -251,13 +251,11 @@
                 videoCapabilities: [{contentType: 'video/webm;  codecs="vp8"'}],
             }, 'Extra spaces after ; in contentType');
 
-            // TODO(jrummell): contentType should allow white space at the
-            // end of the string. http://crbug.com/487392
-//          expect_config('org.w3.clearkey', [{
-//              videoCapabilities: [{contentType: 'video/webm; codecs="vp8" '}],
-//          }], {
-//              videoCapabilities: [{contentType: 'video/webm; codecs="vp8" '}],
-//          }, 'Trailing space in contentType');
+            expect_config('org.w3.clearkey', [{
+                videoCapabilities: [{contentType: 'video/webm; codecs="vp8" '}],
+            }], {
+                videoCapabilities: [{contentType: 'video/webm; codecs="vp8" '}],
+            }, 'Trailing space in contentType');
 
             expect_config('org.w3.clearkey', [{
                 videoCapabilities: [{contentType: 'video/webm; codecs=" vp8"'}],
@@ -309,14 +307,12 @@
             }], 'NotSupportedError', 'Codec is case-sensitive');
 
             // Unrecognized attributes are not allowed.
-            // TODO(jrummell): Unrecognized attributes are ignored currently.
-            // http://crbug.com/690131
-//          expect_error('org.w3.clearkey', [{
-//              videoCapabilities: [{contentType: 'video/webm; foo="bar"'}],
-//          }], 'NotSupportedError', 'Unrecognized foo');
-//          expect_error('org.w3.clearkey', [{
-//              videoCapabilities: [{contentType: 'video/webm; foo="bar"; codecs="vp8"'}],
-//          }], 'NotSupportedError', 'Unrecognized foo with codecs');
+            expect_error('org.w3.clearkey', [{
+                videoCapabilities: [{contentType: 'video/webm; foo="bar"'}],
+            }], 'NotSupportedError', 'Unrecognized foo');
+            expect_error('org.w3.clearkey', [{
+                videoCapabilities: [{contentType: 'video/webm; foo="bar"; codecs="vp8"'}],
+            }], 'NotSupportedError', 'Unrecognized foo with codecs');
 
             // Invalid contentTypes.
             expect_error('org.w3.clearkey', [{
