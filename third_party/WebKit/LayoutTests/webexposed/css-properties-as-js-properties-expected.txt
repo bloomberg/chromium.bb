@@ -170,6 +170,7 @@ length
 letterSpacing
 lightingColor
 lineHeight
+lineHeightStep
 listStyle
 listStyleImage
 listStylePosition
@@ -258,7 +259,6 @@ shapeMargin
 shapeOutside
 shapeRendering
 size
-snapHeight
 speak
 src
 stopColor

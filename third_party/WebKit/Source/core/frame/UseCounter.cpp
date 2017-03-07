@@ -1005,7 +1005,7 @@ int UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(
       return 517;
     case CSSPropertyD:
       return 518;
-    case CSSPropertySnapHeight:
+    case CSSPropertyLineHeightStep:
       return 519;
     case CSSPropertyBreakAfter:
       return 520;
