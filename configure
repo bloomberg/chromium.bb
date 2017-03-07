@@ -476,6 +476,7 @@ post_process_cmdline() {
     ! enabled ans && soft_enable daala_ec
     soft_enable ec_multisymbol
     soft_enable palette
+    soft_enable alt_intra
 
     # Fix up experiment dependencies
     enabled pvq && enable_feature ec_adapt
