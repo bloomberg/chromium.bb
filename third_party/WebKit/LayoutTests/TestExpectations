@@ -1721,6 +1721,8 @@ crbug.com/646644 [ Mac10.9 ] virtual/mojo-loading/http/tests/media/video-buffere
 crbug.com/637930 http/tests/media/video-buffered.html [ Pass Failure ]
 crbug.com/637930 virtual/mojo-loading/http/tests/media/video-buffered.html [ Pass Failure ]
 
+crbug.com/699096 media/controls-drag-timebar-rendering.html [ Failure ]
+
 crbug.com/613659 external/wpt/quirks-mode/percentage-height-calculation.html [ Failure ]
 crbug.com/613661 external/wpt/quirks-mode/table-cell-nowrap-minimum-width-calculation.html [ Failure ]
 crbug.com/613663 external/wpt/quirks-mode/table-cell-width-calculation.html [ Failure ]

@@ -192,6 +192,16 @@ class MediaControlsTest : public ::testing::Test {
 
   HistogramTester& histogramTester() { return m_histogramTester; }
 
+  void loadMediaWithDuration(double duration) {
+    mediaControls().mediaElement().setSrc("https://example.com/foo.mp4");
+    testing::runPendingTasks();
+    WebTimeRange timeRange(0.0, duration);
+    webMediaPlayer()->m_seekable.assign(&timeRange, 1);
+    mediaControls().mediaElement().durationChanged(duration,
+                                                   false /* requestSeek */);
+    simulateLoadedMetadata();
+  }
+
  private:
   std::unique_ptr<DummyPageHolder> m_pageHolder;
   Persistent<MediaControls> m_mediaControls;
@@ -481,20 +491,12 @@ TEST_F(MediaControlsTest, TimelineSeekToRoundedEnd) {
           mediaControls(), "-webkit-media-controls-timeline"));
   ASSERT_NE(nullptr, timeline);
 
-  mediaControls().mediaElement().setSrc("https://example.com/foo.mp4");
-  testing::runPendingTasks();
-
   // Tests the case where the real length of the video, |exactDuration|, gets
   // rounded up slightly to |roundedUpDuration| when setting the timeline's
   // |max| attribute (crbug.com/695065).
   double exactDuration = 596.586667;
   double roundedUpDuration = 596.587;
-
-  WebTimeRange timeRange(0.0, exactDuration);
-  webMediaPlayer()->m_seekable.assign(&timeRange, 1);
-  mediaControls().mediaElement().durationChanged(exactDuration,
-                                                 false /* requestSeek */);
-  simulateLoadedMetadata();
+  loadMediaWithDuration(exactDuration);
 
   // Simulate a click slightly past the end of the track of the timeline's
   // underlying <input type="range">. This would set the |value| to the |max|
@@ -504,6 +506,29 @@ TEST_F(MediaControlsTest, TimelineSeekToRoundedEnd) {
   EXPECT_EQ(0.0, mediaControls().mediaElement().currentTime());
   timeline->dispatchInputEvent();
   EXPECT_EQ(exactDuration, mediaControls().mediaElement().currentTime());
+}
+
+TEST_F(MediaControlsTest, TimelineImmediatelyUpdatesCurrentTime) {
+  ensureLayout();
+
+  MediaControlTimelineElement* timeline =
+      static_cast<MediaControlTimelineElement*>(getElementByShadowPseudoId(
+          mediaControls(), "-webkit-media-controls-timeline"));
+  ASSERT_NE(nullptr, timeline);
+  MediaControlCurrentTimeDisplayElement* currentTimeDisplay =
+      static_cast<MediaControlCurrentTimeDisplayElement*>(
+          getElementByShadowPseudoId(
+              mediaControls(), "-webkit-media-controls-current-time-display"));
+  ASSERT_NE(nullptr, currentTimeDisplay);
+
+  double duration = 600;
+  loadMediaWithDuration(duration);
+
+  // Simulate seeking the underlying range to 50%. Current time display should
+  // update synchronously (rather than waiting for media to finish seeking).
+  timeline->setValueAsNumber(duration / 2, ASSERT_NO_EXCEPTION);
+  timeline->dispatchInputEvent();
+  EXPECT_EQ(duration / 2, currentTimeDisplay->currentValue());
 }
 
 }  // namespace blink

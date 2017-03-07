@@ -813,9 +813,9 @@ void MediaControlTimelineElement::defaultEventHandler(Event* event) {
   if (mediaElement().seekable()->contain(time))
     mediaElement().setCurrentTime(time);
 
-  LayoutSliderItem slider = LayoutSliderItem(toLayoutSlider(layoutObject()));
-  if (!slider.isNull() && slider.inDragMode())
-    mediaControls().updateCurrentTimeDisplay();
+  // Provide immediate feedback (without waiting for media to seek) to make it
+  // easier for user to seek to a precise time.
+  mediaControls().updateCurrentTimeDisplay();
 }
 
 bool MediaControlTimelineElement::willRespondToMouseClickEvents() {
