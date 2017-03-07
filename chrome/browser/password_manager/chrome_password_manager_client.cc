@@ -64,6 +64,12 @@
 #include "net/url_request/url_request_context.h"
 #include "third_party/re2/src/re2/re2.h"
 
+#if defined(SAFE_BROWSING_DB_LOCAL) || defined(SAFE_BROWSING_DB_REMOTE)
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/safe_browsing/safe_browsing_service.h"
+#include "components/safe_browsing/password_protection/password_protection_service.h"
+#endif
+
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/password_manager/account_chooser_dialog_android.h"
@@ -176,6 +182,15 @@ ChromePasswordManagerClient::ChromePasswordManagerClient(
       password_manager::prefs::kCredentialsEnableService, GetPrefs());
   ReportMetrics(*saving_and_filling_passwords_enabled_, this, profile_);
   driver_factory_->RequestSendLoggingAvailability();
+
+#if defined(SAFE_BROWSING_DB_LOCAL) || defined(SAFE_BROWSING_DB_REMOTE)
+  if (CanSetPasswordProtectionService()) {
+    password_reuse_detection_manager_.SetPasswordProtectionService(
+        g_browser_process->safe_browsing_service()
+            ->password_protection_service()
+            ->GetWeakPtr());
+  }
+#endif
 }
 
 ChromePasswordManagerClient::~ChromePasswordManagerClient() {}
@@ -619,6 +634,14 @@ bool ChromePasswordManagerClient::ShouldAnnotateNavigationEntries(
 
   return true;
 }
+
+#if defined(SAFE_BROWSING_DB_LOCAL) || defined(SAFE_BROWSING_DB_REMOTE)
+bool ChromePasswordManagerClient::CanSetPasswordProtectionService() {
+  return g_browser_process && g_browser_process->safe_browsing_service() &&
+         g_browser_process->safe_browsing_service()
+             ->password_protection_service();
+}
+#endif
 
 void ChromePasswordManagerClient::AnnotateNavigationEntry(
     bool has_password_field) {
