@@ -119,6 +119,7 @@ struct drm_backend {
 	int32_t cursor_height;
 
 	uint32_t connector;
+	uint32_t pageflip_timeout;
 };
 
 struct drm_mode {
@@ -182,6 +183,8 @@ struct drm_output {
 
 	struct vaapi_recorder *recorder;
 	struct wl_listener recorder_frame_listener;
+
+	struct wl_event_source *pageflip_timer;
 };
 
 /*
@@ -223,6 +226,45 @@ static inline struct drm_backend *
 to_drm_backend(struct weston_compositor *base)
 {
 	return container_of(base->backend, struct drm_backend, base);
+}
+
+static int
+pageflip_timeout(void *data) {
+	/*
+	 * Our timer just went off, that means we're not receiving drm
+	 * page flip events anymore for that output. Let's gracefully exit
+	 * weston with a return value so devs can debug what's going on.
+	 */
+	struct drm_output *output = data;
+	struct weston_compositor *compositor = output->base.compositor;
+
+	weston_log("Pageflip timeout reached on output %s, your "
+	           "driver is probably buggy!  Exiting.\n",
+		   output->base.name);
+	weston_compositor_exit_with_code(compositor, EXIT_FAILURE);
+
+	return 0;
+}
+
+/* Creates the pageflip timer. Note that it isn't armed by default */
+static int
+drm_output_pageflip_timer_create(struct drm_output *output)
+{
+	struct wl_event_loop *loop = NULL;
+	struct weston_compositor *ec = output->base.compositor;
+
+	loop = wl_display_get_event_loop(ec->wl_display);
+	assert(loop);
+	output->pageflip_timer = wl_event_loop_add_timer(loop,
+	                                                 pageflip_timeout,
+	                                                 output);
+
+	if (output->pageflip_timer == NULL) {
+		weston_log("creating drm pageflip timer failed: %m\n");
+		return -1;
+	}
+
+	return 0;
 }
 
 static void
@@ -758,6 +800,10 @@ drm_output_repaint(struct weston_output *output_base,
 
 	output->page_flip_pending = 1;
 
+	if (output->pageflip_timer)
+		wl_event_source_timer_update(output->pageflip_timer,
+		                             backend->pageflip_timeout);
+
 	drm_output_set_cursor(output);
 
 	/*
@@ -878,6 +924,10 @@ drm_output_start_repaint_loop(struct weston_output *output_base)
 		goto finish_frame;
 	}
 
+	if (output->pageflip_timer)
+		wl_event_source_timer_update(output->pageflip_timer,
+		                             backend->pageflip_timeout);
+
 	return;
 
 finish_frame:
@@ -916,6 +966,10 @@ vblank_handler(int fd, unsigned int frame, unsigned int sec, unsigned int usec,
 	s->next = NULL;
 
 	if (!output->page_flip_pending) {
+		/* Stop the pageflip timer instead of rearming it here */
+		if (output->pageflip_timer)
+			wl_event_source_timer_update(output->pageflip_timer, 0);
+
 		ts.tv_sec = sec;
 		ts.tv_nsec = usec * 1000;
 		weston_output_finish_frame(&output->base, &ts, flags);
@@ -953,6 +1007,10 @@ page_flip_handler(int fd, unsigned int frame,
 	else if (output->disable_pending)
 		weston_output_disable(&output->base);
 	else if (!output->vblank_pending) {
+		/* Stop the pageflip timer instead of rearming it here */
+		if (output->pageflip_timer)
+			wl_event_source_timer_update(output->pageflip_timer, 0);
+
 		ts.tv_sec = sec;
 		ts.tv_nsec = usec * 1000;
 		weston_output_finish_frame(&output->base, &ts, flags);
@@ -2418,6 +2476,9 @@ drm_output_enable(struct weston_output *base)
 
 	output->dpms_prop = drm_get_prop(b->drm.fd, output->connector, "DPMS");
 
+	if (b->pageflip_timeout)
+		drm_output_pageflip_timer_create(output);
+
 	if (b->use_pixman) {
 		if (drm_output_init_pixman(output, b) < 0) {
 			weston_log("Failed to init output pixman state\n");
@@ -2531,6 +2592,9 @@ drm_output_destroy(struct weston_output *base)
 			       &output->connector_id, 1, &origcrtc->mode);
 		drmModeFreeCrtc(origcrtc);
 	}
+
+	if (output->pageflip_timer)
+		wl_event_source_remove(output->pageflip_timer);
 
 	weston_output_destroy(&output->base);
 
@@ -3309,6 +3373,7 @@ drm_backend_create(struct weston_compositor *compositor,
 	b->sprites_are_broken = 1;
 	b->compositor = compositor;
 	b->use_pixman = config->use_pixman;
+	b->pageflip_timeout = config->pageflip_timeout;
 
 	if (parse_gbm_format(config->gbm_format, GBM_FORMAT_XRGB8888, &b->gbm_format) < 0)
 		goto err_compositor;

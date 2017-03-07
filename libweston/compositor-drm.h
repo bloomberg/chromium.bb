@@ -138,6 +138,13 @@ struct weston_drm_backend_config {
 	 */
 	void (*configure_device)(struct weston_compositor *compositor,
 				 struct libinput_device *device);
+
+	/** Maximum duration for a pageflip event to arrive, after which the
+	 * compositor will consider the DRM driver crashed and will try to exit
+	 * cleanly.
+	 *
+	 * It is exprimed in milliseconds, 0 means disabled. */
+	uint32_t pageflip_timeout;
 };
 
 #ifdef  __cplusplus

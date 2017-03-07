@@ -1235,6 +1235,8 @@ load_drm_backend(struct weston_compositor *c,
 	weston_config_section_get_string(section,
 					 "gbm-format", &config.gbm_format,
 					 NULL);
+	weston_config_section_get_uint(section, "pageflip-timeout",
+	                               &config.pageflip_timeout, 0);
 
 	config.base.struct_version = WESTON_DRM_BACKEND_CONFIG_VERSION;
 	config.base.struct_size = sizeof(struct weston_drm_backend_config);
