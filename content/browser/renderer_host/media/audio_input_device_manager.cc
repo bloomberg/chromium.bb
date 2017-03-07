@@ -33,8 +33,7 @@ const int kFirstSessionId = AudioInputDeviceManager::kFakeOpenSessionId + 1;
 
 AudioInputDeviceManager::AudioInputDeviceManager(
     media::AudioManager* audio_manager)
-    : listener_(nullptr),
-      next_capture_session_id_(kFirstSessionId),
+    : next_capture_session_id_(kFirstSessionId),
 #if defined(OS_CHROMEOS)
       keyboard_mic_streams_count_(0),
 #endif
@@ -58,18 +57,19 @@ const StreamDeviceInfo* AudioInputDeviceManager::GetOpenedDeviceInfoById(
 void AudioInputDeviceManager::RegisterListener(
     MediaStreamProviderListener* listener) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(!listener_);
+  DCHECK(listener);
   DCHECK(device_task_runner_);
-  listener_ = listener;
+  listeners_.AddObserver(listener);
 }
 
-void AudioInputDeviceManager::UnregisterListener() {
+void AudioInputDeviceManager::UnregisterListener(
+    MediaStreamProviderListener* listener) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(listener_);
-  listener_ = nullptr;
+  DCHECK(listener);
+  listeners_.RemoveObserver(listener);
 }
 
-int AudioInputDeviceManager::Open(const StreamDeviceInfo& device) {
+int AudioInputDeviceManager::Open(const MediaStreamDevice& device) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   // Generate a new id for this device.
   int session_id = next_capture_session_id_++;
@@ -83,7 +83,6 @@ int AudioInputDeviceManager::Open(const StreamDeviceInfo& device) {
 
 void AudioInputDeviceManager::Close(int session_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(listener_);
   StreamDeviceList::iterator device = GetDevice(session_id);
   if (device == devices_.end())
     return;
@@ -137,13 +136,13 @@ void AudioInputDeviceManager::UnregisterKeyboardMicStream() {
 #endif
 
 void AudioInputDeviceManager::OpenOnDeviceThread(
-    int session_id, const StreamDeviceInfo& info) {
+    int session_id,
+    const MediaStreamDevice& device) {
   SCOPED_UMA_HISTOGRAM_TIMER(
       "Media.AudioInputDeviceManager.OpenOnDeviceThreadTime");
   DCHECK(IsOnDeviceThread());
 
-  StreamDeviceInfo out(info.device.type, info.device.name, info.device.id, 0, 0,
-                       0);
+  StreamDeviceInfo out(device.type, device.name, device.id, 0, 0, 0);
   out.session_id = session_id;
 
   MediaStreamDevice::AudioDeviceParameters& input_params = out.device.input;
@@ -151,7 +150,7 @@ void AudioInputDeviceManager::OpenOnDeviceThread(
   // Add preferred output device information if a matching output device
   // exists.
   out.device.matched_output_device_id =
-      audio_manager_->GetAssociatedOutputDeviceID(info.device.id);
+      audio_manager_->GetAssociatedOutputDeviceID(device.id);
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kUseFakeDeviceForMediaStream)) {
@@ -177,7 +176,7 @@ void AudioInputDeviceManager::OpenOnDeviceThread(
     // Get the preferred sample rate and channel configuration for the
     // audio device.
     media::AudioParameters params =
-        audio_manager_->GetInputStreamParameters(info.device.id);
+        audio_manager_->GetInputStreamParameters(device.id);
     input_params.sample_rate = params.sample_rate();
     input_params.channel_layout = params.channel_layout();
     input_params.frames_per_buffer = params.frames_per_buffer();
@@ -210,15 +209,15 @@ void AudioInputDeviceManager::OpenedOnIOThread(int session_id,
 
   devices_.push_back(info);
 
-  if (listener_)
-    listener_->Opened(info.device.type, session_id);
+  for (auto& listener : listeners_)
+    listener.Opened(info.device.type, session_id);
 }
 
 void AudioInputDeviceManager::ClosedOnIOThread(MediaStreamType stream_type,
                                                int session_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (listener_)
-    listener_->Closed(stream_type, session_id);
+  for (auto& listener : listeners_)
+    listener.Closed(stream_type, session_id);
 }
 
 bool AudioInputDeviceManager::IsOnDeviceThread() const {

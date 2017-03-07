@@ -284,7 +284,7 @@ class AudioInputRendererHostTest : public testing::Test {
   // session id returned.
   int Open(const std::string& device_id, const std::string& name) {
     int session_id = media_stream_manager_->audio_input_device_manager()->Open(
-        StreamDeviceInfo(MEDIA_DEVICE_AUDIO_CAPTURE, name, device_id));
+        MediaStreamDevice(MEDIA_DEVICE_AUDIO_CAPTURE, device_id, name));
     base::RunLoop().RunUntilIdle();
     return session_id;
   }

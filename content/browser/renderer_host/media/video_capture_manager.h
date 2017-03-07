@@ -68,8 +68,8 @@ class CONTENT_EXPORT VideoCaptureManager : public MediaStreamProvider {
 
   // Implements MediaStreamProvider.
   void RegisterListener(MediaStreamProviderListener* listener) override;
-  void UnregisterListener() override;
-  int Open(const StreamDeviceInfo& device) override;
+  void UnregisterListener(MediaStreamProviderListener* listener) override;
+  int Open(const MediaStreamDevice& device) override;
   void Close(int capture_session_id) override;
 
   // Called by VideoCaptureHost to locate a capture device for |capture_params|,
@@ -83,7 +83,8 @@ class CONTENT_EXPORT VideoCaptureManager : public MediaStreamProvider {
   //
   // On success, the controller is returned via calling |done_cb|, indicating
   // that the client was successfully added. A NULL controller is passed to
-  // the callback on failure.
+  // the callback on failure. |done_cb| is not allowed to synchronously call
+  // StopCaptureForClient().
   void StartCaptureForClient(media::VideoCaptureSessionId session_id,
                              const media::VideoCaptureParams& capture_params,
                              VideoCaptureControllerID client_id,
@@ -326,7 +327,7 @@ class CONTENT_EXPORT VideoCaptureManager : public MediaStreamProvider {
   scoped_refptr<base::SingleThreadTaskRunner> device_task_runner_;
 
   // Only accessed on Browser::IO thread.
-  MediaStreamProviderListener* listener_;
+  base::ObserverList<MediaStreamProviderListener> listeners_;
   media::VideoCaptureSessionId new_capture_session_id_;
 
   // An entry is kept in this map for every session that has been created via

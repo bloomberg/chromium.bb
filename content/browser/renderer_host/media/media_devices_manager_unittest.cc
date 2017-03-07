@@ -144,7 +144,6 @@ class MediaDevicesManagerTest : public ::testing::Test {
         std::unique_ptr<media::VideoCaptureDeviceFactory>(
             new MockVideoCaptureDeviceFactory()),
         base::ThreadTaskRunnerHandle::Get());
-    video_capture_manager_->RegisterListener(nullptr);
     video_capture_device_factory_ = static_cast<MockVideoCaptureDeviceFactory*>(
         video_capture_manager_->video_capture_device_factory());
     media_devices_manager_.reset(new MediaDevicesManager(

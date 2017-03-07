@@ -1517,7 +1517,7 @@ void MediaStreamManager::HandleAccessRequestResponse(
       }
     }
     device_info.session_id =
-        GetDeviceManager(device_info.device.type)->Open(device_info);
+        GetDeviceManager(device_info.device.type)->Open(device_info.device);
     TranslateDeviceIdToSourceId(request, &device_info.device);
     request->devices.push_back(device_info);
 
@@ -1566,9 +1566,9 @@ void MediaStreamManager::WillDestroyCurrentMessageLoop() {
   if (media_devices_manager_)
     media_devices_manager_->StopMonitoring();
   if (video_capture_manager_)
-    video_capture_manager_->UnregisterListener();
+    video_capture_manager_->UnregisterListener(this);
   if (audio_input_device_manager_)
-    audio_input_device_manager_->UnregisterListener();
+    audio_input_device_manager_->UnregisterListener(this);
 
   device_task_runner_ = nullptr;
   audio_input_device_manager_ = nullptr;

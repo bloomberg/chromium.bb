@@ -414,8 +414,8 @@ class AudioRendererHostTest : public testing::Test {
     // device gets selected when using session id:
     audio_manager_->CreateDeviceAssociation(input_id, output_id);
     int session_id = media_stream_manager_->audio_input_device_manager()->Open(
-        StreamDeviceInfo(MEDIA_DEVICE_AUDIO_CAPTURE, "Fake input device",
-                         input_id));
+        MediaStreamDevice(MEDIA_DEVICE_AUDIO_CAPTURE, input_id,
+                          "Fake input device"));
     base::RunLoop().RunUntilIdle();
 
     // Send a create stream message to the audio output stream and wait until

@@ -48,8 +48,8 @@ class CONTENT_EXPORT AudioInputDeviceManager : public MediaStreamProvider {
 
   // MediaStreamProvider implementation.
   void RegisterListener(MediaStreamProviderListener* listener) override;
-  void UnregisterListener() override;
-  int Open(const StreamDeviceInfo& device) override;
+  void UnregisterListener(MediaStreamProviderListener* listener) override;
+  int Open(const MediaStreamDevice& device) override;
   void Close(int session_id) override;
 
 #if defined(OS_CHROMEOS)
@@ -67,7 +67,7 @@ class CONTENT_EXPORT AudioInputDeviceManager : public MediaStreamProvider {
   ~AudioInputDeviceManager() override;
 
   // Opens the device on media stream device thread.
-  void OpenOnDeviceThread(int session_id, const StreamDeviceInfo& info);
+  void OpenOnDeviceThread(int session_id, const MediaStreamDevice& device);
 
   // Callback used by OpenOnDeviceThread(), called with the session_id
   // referencing the opened device on IO thread.
@@ -89,7 +89,7 @@ class CONTENT_EXPORT AudioInputDeviceManager : public MediaStreamProvider {
 #endif
 
   // Only accessed on Browser::IO thread.
-  MediaStreamProviderListener* listener_;
+  base::ObserverList<MediaStreamProviderListener> listeners_;
   int next_capture_session_id_;
   StreamDeviceList devices_;
 

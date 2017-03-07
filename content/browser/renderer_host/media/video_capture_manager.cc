@@ -301,7 +301,6 @@ VideoCaptureManager::VideoCaptureManager(
     std::unique_ptr<media::VideoCaptureDeviceFactory> factory,
     scoped_refptr<base::SingleThreadTaskRunner> device_task_runner)
     : device_task_runner_(std::move(device_task_runner)),
-      listener_(nullptr),
       new_capture_session_id_(1),
       video_capture_device_factory_(std::move(factory)) {}
 
@@ -325,9 +324,9 @@ void VideoCaptureManager::RemoveAllVideoCaptureObservers() {
 void VideoCaptureManager::RegisterListener(
     MediaStreamProviderListener* listener) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(!listener_);
+  DCHECK(listener);
   DCHECK(device_task_runner_);
-  listener_ = listener;
+  listeners_.AddObserver(listener);
 #if defined(OS_ANDROID)
   application_state_has_running_activities_ = true;
   app_status_listener_.reset(new base::android::ApplicationStatusListener(
@@ -336,10 +335,10 @@ void VideoCaptureManager::RegisterListener(
 #endif
 }
 
-void VideoCaptureManager::UnregisterListener() {
+void VideoCaptureManager::UnregisterListener(
+    MediaStreamProviderListener* listener) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(listener_);
-  listener_ = nullptr;
+  listeners_.RemoveObserver(listener);
 }
 
 void VideoCaptureManager::EnumerateDevices(
@@ -366,9 +365,8 @@ void VideoCaptureManager::EnumerateDevices(
                  devices_enumerated_callback));
 }
 
-int VideoCaptureManager::Open(const StreamDeviceInfo& device_info) {
+int VideoCaptureManager::Open(const MediaStreamDevice& device) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(listener_);
 
   // Generate a new id for the session being opened.
   const media::VideoCaptureSessionId capture_session_id =
@@ -378,20 +376,19 @@ int VideoCaptureManager::Open(const StreamDeviceInfo& device_info) {
   DVLOG(1) << "VideoCaptureManager::Open, id " << capture_session_id;
 
   // We just save the stream info for processing later.
-  sessions_[capture_session_id] = device_info.device;
+  sessions_[capture_session_id] = device;
 
   // Notify our listener asynchronously; this ensures that we return
   // |capture_session_id| to the caller of this function before using that same
   // id in a listener event.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&VideoCaptureManager::OnOpened, this,
-                            device_info.device.type, capture_session_id));
+      FROM_HERE, base::Bind(&VideoCaptureManager::OnOpened, this, device.type,
+                            capture_session_id));
   return capture_session_id;
 }
 
 void VideoCaptureManager::Close(int capture_session_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(listener_);
   DVLOG(1) << "VideoCaptureManager::Close, id " << capture_session_id;
 
   SessionMap::iterator session_it = sessions_.find(capture_session_id);
@@ -767,7 +764,8 @@ void VideoCaptureManager::StopCaptureForClient(
     LogVideoCaptureEvent(VIDEO_CAPTURE_STOP_CAPTURE_DUE_TO_ERROR);
     for (auto it : sessions_) {
       if (it.second.type == entry->stream_type && it.second.id == entry->id) {
-        listener_->Aborted(it.second.type, it.first);
+        for (auto& listener : listeners_)
+          listener.Aborted(it.second.type, it.first);
         // Aborted() call might synchronously destroy |entry|, recheck.
         entry = GetDeviceEntryByController(controller);
         if (!entry)
@@ -1041,22 +1039,16 @@ void VideoCaptureManager::OnOpened(
     MediaStreamType stream_type,
     media::VideoCaptureSessionId capture_session_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (!listener_) {
-    // Listener has been removed.
-    return;
-  }
-  listener_->Opened(stream_type, capture_session_id);
+  for (auto& listener : listeners_)
+    listener.Opened(stream_type, capture_session_id);
 }
 
 void VideoCaptureManager::OnClosed(
     MediaStreamType stream_type,
     media::VideoCaptureSessionId capture_session_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (!listener_) {
-    // Listener has been removed.
-    return;
-  }
-  listener_->Closed(stream_type, capture_session_id);
+  for (auto& listener : listeners_)
+    listener.Closed(stream_type, capture_session_id);
 }
 
 void VideoCaptureManager::OnDevicesInfoEnumerated(
