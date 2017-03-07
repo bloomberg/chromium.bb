@@ -742,6 +742,8 @@ TEST_P(MostVisitedSitesWithEmptyCacheTest,
                     MatchesTile("PopularSite2", "http://popularsite2/",
                                 NTPTileSource::POPULAR))));
   } else {
+    // The Android NTP doesn't finish initialization until it gets tiles, so a
+    // 0-tile notification is always needed.
     EXPECT_CALL(mock_observer_, OnMostVisitedURLsAvailable(IsEmpty()));
   }
   suggestions_service_callbacks_.Notify(SuggestionsProfile());
@@ -751,14 +753,13 @@ TEST_P(MostVisitedSitesWithEmptyCacheTest,
 }
 
 TEST_P(MostVisitedSitesWithEmptyCacheTest,
-       ShouldRepeatedlyNotifyObserverIfTopSitesNotifies) {
+       ShouldNotifyOnceIfTopSitesUnchanged) {
   EXPECT_CALL(
       mock_observer_,
       OnMostVisitedURLsAvailable(ElementsAre(
           MatchesTile("Site 1", "http://site1/", NTPTileSource::TOP_SITES),
           MatchesTile("Site 2", "http://site2/", NTPTileSource::TOP_SITES),
-          MatchesTile("Site 3", "http://site3/", NTPTileSource::TOP_SITES))))
-      .Times(5);
+          MatchesTile("Site 3", "http://site3/", NTPTileSource::TOP_SITES))));
 
   suggestions_service_callbacks_.Notify(SuggestionsProfile());
 
@@ -783,16 +784,15 @@ TEST_P(MostVisitedSitesWithEmptyCacheTest,
 }
 
 TEST_P(MostVisitedSitesWithEmptyCacheTest,
-       ShouldRepeatedlyNotifyObserverIfSuggestionsServiceNotifies) {
+       ShouldNotifyOnceIfSuggestionsUnchanged) {
   EXPECT_CALL(mock_observer_,
-              OnMostVisitedURLsAvailable(
-                  ElementsAre(MatchesTile("Site 1", "http://site1/",
-                                          NTPTileSource::SUGGESTIONS_SERVICE),
-                              MatchesTile("Site 2", "http://site2/",
-                                          NTPTileSource::SUGGESTIONS_SERVICE),
-                              MatchesTile("Site 3", "http://site3/",
-                                          NTPTileSource::SUGGESTIONS_SERVICE))))
-      .Times(5);
+              OnMostVisitedURLsAvailable(ElementsAre(
+                  MatchesTile("Site 1", "http://site1/",
+                              NTPTileSource::SUGGESTIONS_SERVICE),
+                  MatchesTile("Site 2", "http://site2/",
+                              NTPTileSource::SUGGESTIONS_SERVICE),
+                  MatchesTile("Site 3", "http://site3/",
+                              NTPTileSource::SUGGESTIONS_SERVICE))));
 
   for (int i = 0; i < 5; ++i) {
     suggestions_service_callbacks_.Notify(

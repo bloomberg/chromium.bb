@@ -12,4 +12,15 @@ NTPTile::NTPTile(const NTPTile&) = default;
 
 NTPTile::~NTPTile() {}
 
+bool operator==(const NTPTile& a, const NTPTile& b) {
+  return (a.title == b.title) && (a.url == b.url) && (a.source == b.source) &&
+         (a.whitelist_icon_path == b.whitelist_icon_path) &&
+         (a.thumbnail_url == b.thumbnail_url) &&
+         (a.favicon_url == b.favicon_url);
+}
+
+bool operator!=(const NTPTile& a, const NTPTile& b) {
+  return !(a == b);
+}
+
 }  // namespace ntp_tiles

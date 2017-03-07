@@ -37,6 +37,9 @@ struct NTPTile {
   ~NTPTile();
 };
 
+bool operator==(const NTPTile& a, const NTPTile& b);
+bool operator!=(const NTPTile& a, const NTPTile& b);
+
 using NTPTilesVector = std::vector<NTPTile>;
 
 }  // namespace ntp_tiles

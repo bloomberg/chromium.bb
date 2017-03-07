@@ -222,8 +222,7 @@ void MostVisitedSites::OnMostVisitedURLsAvailable(
   }
 
   mv_source_ = NTPTileSource::TOP_SITES;
-  SaveNewTiles(std::move(tiles));
-  NotifyMostVisitedURLsObserver();
+  SaveNewTilesAndNotify(std::move(tiles));
 }
 
 void MostVisitedSites::OnSuggestionsProfileChanged(
@@ -274,8 +273,7 @@ void MostVisitedSites::BuildCurrentTilesGivenSuggestionsProfile(
   }
 
   mv_source_ = NTPTileSource::SUGGESTIONS_SERVICE;
-  SaveNewTiles(std::move(tiles));
-  NotifyMostVisitedURLsObserver();
+  SaveNewTilesAndNotify(std::move(tiles));
 }
 
 NTPTilesVector MostVisitedSites::CreateWhitelistEntryPointTiles(
@@ -370,7 +368,7 @@ NTPTilesVector MostVisitedSites::CreatePopularSitesTiles(
   return popular_sites_tiles;
 }
 
-void MostVisitedSites::SaveNewTiles(NTPTilesVector personal_tiles) {
+void MostVisitedSites::SaveNewTilesAndNotify(NTPTilesVector personal_tiles) {
   NTPTilesVector whitelist_tiles =
       CreateWhitelistEntryPointTiles(personal_tiles);
   NTPTilesVector popular_sites_tiles =
@@ -380,17 +378,26 @@ void MostVisitedSites::SaveNewTiles(NTPTilesVector personal_tiles) {
                             popular_sites_tiles.size();
   DCHECK_LE(num_actual_tiles, static_cast<size_t>(num_sites_));
 
-  current_tiles_ =
+  NTPTilesVector new_tiles =
       MergeTiles(std::move(personal_tiles), std::move(whitelist_tiles),
                  std::move(popular_sites_tiles));
-  DCHECK_EQ(num_actual_tiles, current_tiles_.size());
+  if (current_tiles_.has_value() && (*current_tiles_ == new_tiles)) {
+    return;
+  }
+
+  current_tiles_.emplace(std::move(new_tiles));
+  DCHECK_EQ(num_actual_tiles, current_tiles_->size());
 
   int num_personal_tiles = 0;
-  for (const auto& tile : current_tiles_) {
+  for (const auto& tile : *current_tiles_) {
     if (tile.source != NTPTileSource::POPULAR)
       num_personal_tiles++;
   }
   prefs_->SetInteger(prefs::kNumPersonalTiles, num_personal_tiles);
+
+  if (!observer_)
+    return;
+  observer_->OnMostVisitedURLsAvailable(*current_tiles_);
 }
 
 // static
@@ -405,13 +412,6 @@ NTPTilesVector MostVisitedSites::MergeTiles(NTPTilesVector personal_tiles,
   std::move(popular_tiles.begin(), popular_tiles.end(),
             std::back_inserter(merged_tiles));
   return merged_tiles;
-}
-
-void MostVisitedSites::NotifyMostVisitedURLsObserver() {
-  if (!observer_)
-    return;
-
-  observer_->OnMostVisitedURLsAvailable(current_tiles_);
 }
 
 void MostVisitedSites::OnPopularSitesDownloaded(bool success) {
