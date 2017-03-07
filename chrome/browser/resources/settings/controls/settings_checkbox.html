@@ -38,7 +38,8 @@
         <div class="secondary">[[subLabel]]</div>
       </paper-checkbox>
       <template is="dom-if" if="[[pref.controlledBy]]">
-        <cr-policy-pref-indicator pref="[[pref]]"></cr-policy-pref-indicator>
+        <cr-policy-pref-indicator pref="[[pref]]" icon-aria-label="[[label]]">
+        </cr-policy-pref-indicator>
       </template>
     </div>
   </template>

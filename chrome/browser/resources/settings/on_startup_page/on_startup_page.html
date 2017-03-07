@@ -14,8 +14,9 @@
       <settings-radio-group id="onStartupRadioGroup"
           pref="{{prefs.session.restore_on_startup}}">
         <controlled-radio-button name="[[prefValues_.OPEN_NEW_TAB]]"
-            pref="[[prefs.session.restore_on_startup]]" no-extension-indicator>
-          $i18n{onStartupOpenNewTab}
+            pref="[[prefs.session.restore_on_startup]]"
+            label="$i18n{onStartupOpenNewTab}"
+            no-extension-indicator>
         </controlled-radio-button>
         <template is="dom-if" if="[[showIndicator_(
             ntpExtension_, prefs.session.restore_on_startup.value)]]">
@@ -27,12 +28,12 @@
           </extension-controlled-indicator>
         </template>
         <controlled-radio-button name="[[prefValues_.CONTINUE]]"
-            pref="[[prefs.session.restore_on_startup]]">
-          $i18n{onStartupContinue}
+            pref="[[prefs.session.restore_on_startup]]"
+            label="$i18n{onStartupContinue}">
         </controlled-radio-button>
         <controlled-radio-button name="[[prefValues_.OPEN_SPECIFIC]]"
-            pref="[[prefs.session.restore_on_startup]]">
-          $i18n{onStartupOpenSpecific}
+            pref="[[prefs.session.restore_on_startup]]"
+            label="$i18n{onStartupOpenSpecific}">
         </controlled-radio-button>
       </settings-radio-group>
     </div>

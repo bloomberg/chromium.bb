@@ -33,8 +33,8 @@
     </div>
     <div class="settings-box">
       <controlled-button class="primary-button" pref="[[prefs.proxy]]"
-          on-tap="onChangeProxySettingsTap_" no-extension-indicator>
-        $i18n{changeProxySettings}
+          on-tap="onChangeProxySettingsTap_" label="$i18n{changeProxySettings}"
+          no-extension-indicator>
       </controlled-button>
     </div>
     <template is="dom-if" if="[[prefs.proxy.extensionId]]">

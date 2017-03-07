@@ -12,12 +12,7 @@ Polymer({
   behaviors: [CrPolicyIndicatorBehavior],
 
   properties: {
-    /**
-     * Optional preference object associated with the indicator. Initialized to
-     * null so that computed functions will get called if this is never set.
-     * @type {!chrome.settingsPrivate.PrefObject|undefined}
-     */
-    pref: Object,
+    iconAriaLabel: String,
 
     /**
      * Which indicator type to show (or NONE).
@@ -35,6 +30,13 @@ Polymer({
       type: String,
       computed: 'getIndicatorTooltipForPref_(indicatorType, pref.*)',
     },
+
+    /**
+     * Optional preference object associated with the indicator. Initialized to
+     * null so that computed functions will get called if this is never set.
+     * @type {!chrome.settingsPrivate.PrefObject|undefined}
+     */
+    pref: Object,
   },
 
   /**

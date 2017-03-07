@@ -40,14 +40,13 @@
     <div id="outerRow" noSubLabel$="[[!subLabel]]">
       <div class="flex" on-tap="onLabelWrapperTap_"
           actionable$="[[!controlDisabled_(disabled, pref.*)]]">
-        <div id="label" class="label">
-          [[label]]
-        </div>
+        <div id="label" class="label">[[label]]</div>
         <div class="secondary label">[[subLabel]]</div>
       </div>
       <content select=".more-actions"></content>
       <template is="dom-if" if="[[pref.controlledBy]]" restamp>
-        <cr-policy-pref-indicator pref="[[pref]]"></cr-policy-pref-indicator>
+        <cr-policy-pref-indicator pref="[[pref]]" icon-aria-label="[[label]]">
+        </cr-policy-pref-indicator>
       </template>
       <paper-toggle-button id="control" checked="{{checked}}"
           on-change="notifyChangedByUserInteraction" aria-labelledby="label"

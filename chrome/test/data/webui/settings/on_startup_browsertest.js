@@ -54,7 +54,7 @@ TEST_F('OnStartupSettingsBrowserTest', 'uiTests', function() {
 
   var restoreOnStartup = function() {
     return self.getPageElement('#onStartupRadioGroup').querySelector(
-        '.iron-selected').textContent.trim();
+        '.iron-selected').label;
   };
 
   suite('OnStartupHandler', function() {

@@ -38,12 +38,11 @@
       }
     </style>
 
-    <paper-button disabled="[[controlled_]]">
-      <content></content>
-    </paper-button>
+    <paper-button disabled="[[controlled_]]">[[label]]</paper-button>
 
     <template is="dom-if" if="[[hasPrefPolicyIndicator(pref.*)]]" restamp>
-      <cr-policy-pref-indicator pref="[[pref]]" on-tap="onIndicatorTap_">
+      <cr-policy-pref-indicator pref="[[pref]]" on-tap="onIndicatorTap_"
+          icon-aria-label="[[label]]">
       </cr-policy-pref-indicator>
     </template>
 

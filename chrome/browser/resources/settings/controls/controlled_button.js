@@ -17,6 +17,8 @@ Polymer({
       reflectToAttribute: true,
     },
 
+    label: String,
+
     /** @private */
     controlled_: {
       type: Boolean,

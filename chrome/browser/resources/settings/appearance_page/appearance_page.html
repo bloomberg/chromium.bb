@@ -105,13 +105,11 @@
             <settings-radio-group pref="{{prefs.homepage_is_newtabpage}}">
               <controlled-radio-button class="list-item" name="true"
                   pref="[[prefs.homepage_is_newtabpage]]"
-                  no-extension-indicator>
-                $i18n{homePageNtp}
+                  label="$i18n{homePageNtp}" no-extension-indicator>
               </controlled-radio-button>
               <controlled-radio-button class="list-item" name="false"
-                  pref="[[prefs.homepage_is_newtabpage]]"
+                  pref="[[prefs.homepage_is_newtabpage]]" label="$i18n{other}"
                   no-extension-indicator>
-                $i18n{other}
                 <!-- TODO(dbeam): this can show double indicators when both
                      homepage and whether to use the NTP as the homepage are
                      managed. -->

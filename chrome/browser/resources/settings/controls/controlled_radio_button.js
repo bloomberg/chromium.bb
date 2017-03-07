@@ -8,6 +8,8 @@ Polymer({
   behaviors: [PrefControlBehavior],
 
   properties: {
+    label: String,
+
     name: {
       type: String,
       notify: true,

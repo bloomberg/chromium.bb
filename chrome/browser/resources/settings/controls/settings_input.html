@@ -24,7 +24,8 @@
           tabindex$="[[getTabindex_(canTab)]]">
       </paper-input>
       <template is="dom-if" if="[[pref.contolledBy]]">
-        <cr-policy-pref-indicator pref="[[pref]]"></cr-policy-pref-indicator>
+        <cr-policy-pref-indicator pref="[[pref]]" icon-aria-label="[[label]]">
+        </cr-policy-pref-indicator>
       </template>
     </div>
   </template>

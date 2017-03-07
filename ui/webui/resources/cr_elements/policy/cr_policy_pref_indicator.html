@@ -16,8 +16,9 @@
     }
   </style>
   <template>
-    <iron-icon id="indicator" tabindex="0" aria-describedby="tooltip"
-        hidden$="[[!indicatorVisible]]" icon="[[indicatorIcon]]"></iron-icon>
+    <iron-icon id="indicator" tabindex="0" aria-label$="[[iconAriaLabel]]"
+        aria-describedby="tooltip" hidden$="[[!indicatorVisible]]"
+        icon="[[indicatorIcon]]"></iron-icon>
     <paper-tooltip id="tooltip" for="indicator" position="top"
         fit-to-visible-bounds>
       [[indicatorTooltip]]

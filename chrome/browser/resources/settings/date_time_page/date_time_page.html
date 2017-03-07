@@ -32,7 +32,8 @@
         $i18n{timeZoneGeolocation}
       </div>
       <template is="dom-if" if="[[hasTimeZoneAutoDetectPolicy_]]" restamp>
-        <cr-policy-pref-indicator pref="[[fakeTimeZonePolicyPref_]]">
+        <cr-policy-pref-indicator pref="[[fakeTimeZonePolicyPref_]]"
+            icon-aria-label="$i18n{timeZoneGeolocation}">
         </cr-policy-pref-indicator>
       </template>
       <paper-toggle-button
