@@ -90,8 +90,7 @@ class SwReporterInstallerTest : public ::testing::Test {
         invocation.command_line.GetSwitchValueASCII(kSessionIdSwitch).size());
     EXPECT_TRUE(invocation.command_line.GetArgs().empty());
     EXPECT_TRUE(invocation.suffix.empty());
-    EXPECT_EQ(SwReporterInvocation::BEHAVIOUR_LOG_TO_RAPPOR |
-                  SwReporterInvocation::BEHAVIOUR_LOG_EXIT_CODE_TO_PREFS |
+    EXPECT_EQ(SwReporterInvocation::BEHAVIOUR_LOG_EXIT_CODE_TO_PREFS |
                   SwReporterInvocation::BEHAVIOUR_TRIGGER_PROMPT |
                   SwReporterInvocation::BEHAVIOUR_ALLOW_SEND_REPORTER_LOGS,
               invocation.supported_behaviours);

@@ -59,7 +59,6 @@ struct SwReporterInvocation {
   // supported.
   using Behaviours = uint32_t;
   enum : Behaviours {
-    BEHAVIOUR_LOG_TO_RAPPOR = 0x1,
     BEHAVIOUR_LOG_EXIT_CODE_TO_PREFS = 0x2,
     BEHAVIOUR_TRIGGER_PROMPT = 0x4,
     BEHAVIOUR_ALLOW_SEND_REPORTER_LOGS = 0x8,

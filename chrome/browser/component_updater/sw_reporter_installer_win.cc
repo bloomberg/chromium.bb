@@ -333,7 +333,6 @@ void SwReporterInstallerTraits::ComponentReady(
     command_line.AppendSwitchASCII(kSessionIdSwitch, GenerateSessionId());
     auto invocation = SwReporterInvocation::FromCommandLine(command_line);
     invocation.supported_behaviours =
-        SwReporterInvocation::BEHAVIOUR_LOG_TO_RAPPOR |
         SwReporterInvocation::BEHAVIOUR_LOG_EXIT_CODE_TO_PREFS |
         SwReporterInvocation::BEHAVIOUR_TRIGGER_PROMPT |
         SwReporterInvocation::BEHAVIOUR_ALLOW_SEND_REPORTER_LOGS;

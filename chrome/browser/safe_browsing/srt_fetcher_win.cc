@@ -47,7 +47,6 @@
 #include "components/component_updater/pref_names.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/prefs/pref_service.h"
-#include "components/rappor/rappor_service_impl.h"
 #include "components/variations/net/variations_http_headers.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_thread.h"
@@ -240,7 +239,7 @@ class UMAHistogramReporter {
   }
 
   // Reports UwS found by the software reporter tool via UMA and RAPPOR.
-  void ReportFoundUwS(bool use_rappor) const {
+  void ReportFoundUwS() const {
     base::win::RegKey reporter_key;
     std::vector<base::string16> found_uws_strings;
     if (reporter_key.Open(HKEY_CURRENT_USER, registry_key_.c_str(),
@@ -250,21 +249,12 @@ class UMAHistogramReporter {
       return;
     }
 
-    rappor::RapporServiceImpl* rappor_service = nullptr;
-    if (use_rappor)
-      rappor_service = g_browser_process->rappor_service();
-
     bool parse_error = false;
     for (const base::string16& uws_string : found_uws_strings) {
       // All UwS ids are expected to be integers.
       uint32_t uws_id = 0;
       if (base::StringToUint(uws_string, &uws_id)) {
         RecordSparseHistogram(kFoundUwsMetricName, uws_id);
-        if (rappor_service) {
-          rappor_service->RecordSampleString(kFoundUwsMetricName,
-                                             rappor::COARSE_RAPPOR_TYPE,
-                                             base::UTF16ToUTF8(uws_string));
-        }
       } else {
         parse_error = true;
       }
@@ -823,8 +813,7 @@ class ReporterRunner : public chrome::BrowserListObserver {
     uma.ReportVersion(version);
     uma.ReportExitCode(exit_code);
     uma.ReportEngineErrorCode();
-    uma.ReportFoundUwS(finished_invocation.BehaviourIsSupported(
-        SwReporterInvocation::BEHAVIOUR_LOG_TO_RAPPOR));
+    uma.ReportFoundUwS();
 
     PrefService* local_state = g_browser_process->local_state();
     if (local_state) {
