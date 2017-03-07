@@ -729,7 +729,7 @@ TransportSecurityState::TransportSecurityState()
       sent_reports_cache_(kMaxHPKPReportCacheEntries) {
 // Static pinning is only enabled for official builds to make sure that
 // others don't end up with pins that cannot be easily updated.
-#if !defined(OFFICIAL_BUILD) || defined(OS_ANDROID) || defined(OS_IOS)
+#if !defined(GOOGLE_CHROME_BUILD) || defined(OS_ANDROID) || defined(OS_IOS)
   enable_static_pins_ = false;
   enable_static_expect_ct_ = false;
 #endif
