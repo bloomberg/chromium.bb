@@ -200,6 +200,10 @@ class CORE_EXPORT Editor final : public GarbageCollectedFinalized<Editor> {
   bool canRedo();
   void redo();
 
+  // Exposed for IdleSpellCheckCallback only.
+  // Supposed to be used as |const UndoStack&|.
+  UndoStack& undoStack() const { return *m_undoStack; }
+
   void setBaseWritingDirection(WritingDirection);
 
   // smartInsertDeleteEnabled and selectTrailingWhitespaceEnabled are

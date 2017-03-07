@@ -7,19 +7,16 @@
 #include "core/dom/IdleRequestOptions.h"
 #include "core/dom/TaskRunnerHelper.h"
 #include "core/editing/EditingUtilities.h"
+#include "core/editing/Editor.h"
 #include "core/editing/FrameSelection.h"
 #include "core/editing/VisibleSelection.h"
 #include "core/editing/VisibleUnits.h"
-#include "core/editing/commands/CompositeEditCommand.h"
+#include "core/editing/commands/UndoStack.h"
 #include "core/editing/commands/UndoStep.h"
-#include "core/editing/iterators/BackwardsCharacterIterator.h"
-#include "core/editing/iterators/CharacterIterator.h"
+#include "core/editing/spellcheck/HotModeSpellCheckRequester.h"
 #include "core/editing/spellcheck/SpellCheckRequester.h"
 #include "core/editing/spellcheck/SpellChecker.h"
-#include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
-#include "core/html/TextControlElement.h"
-#include "core/layout/LayoutObject.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
 #include "wtf/CurrentTime.h"
@@ -54,6 +51,7 @@ IdleSpellCheckCallback::IdleSpellCheckCallback(LocalFrame& frame)
       m_idleCallbackHandle(kInvalidHandle),
       m_needsMoreColdModeInvocationForTesting(false),
       m_frame(frame),
+      m_lastProcessedUndoStepSequence(0),
       m_coldModeTimer(TaskRunnerHelper::get(TaskType::UnspecedTimer, &frame),
                       this,
                       &IdleSpellCheckCallback::coldModeTimerFired) {}
@@ -133,7 +131,25 @@ void IdleSpellCheckCallback::coldModeTimerFired(TimerBase*) {
 }
 
 void IdleSpellCheckCallback::hotModeInvocation(IdleDeadline* deadline) {
-  // TODO(xiaochengh): Implementation.
+  TRACE_EVENT0("blink", "IdleSpellCheckCallback::hotModeInvocation");
+
+  // TODO(xiaochengh): Figure out if this has any performance impact.
+  frame().document()->updateStyleAndLayout();
+
+  HotModeSpellCheckRequester requester(spellCheckRequester());
+
+  requester.checkSpellingAt(frame().selection().selectionInDOMTree().extent());
+
+  const uint64_t watermark = m_lastProcessedUndoStepSequence;
+  for (const UndoStep* step : frame().editor().undoStack().undoSteps()) {
+    if (step->sequenceNumber() <= watermark)
+      break;
+    m_lastProcessedUndoStepSequence =
+        std::max(step->sequenceNumber(), m_lastProcessedUndoStepSequence);
+    if (deadline->timeRemaining() == 0)
+      break;
+    requester.checkSpellingAt(step->endingSelection().extent());
+  }
 }
 
 void IdleSpellCheckCallback::coldModeInvocation(IdleDeadline* deadline) {

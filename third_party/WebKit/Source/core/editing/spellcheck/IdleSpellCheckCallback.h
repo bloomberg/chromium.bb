@@ -7,6 +7,8 @@
 
 #include "core/dom/IdleRequestCallback.h"
 #include "core/dom/SynchronousMutationObserver.h"
+#include "core/editing/EphemeralRange.h"
+#include "core/editing/Position.h"
 #include "platform/Timer.h"
 
 namespace blink {
@@ -93,7 +95,7 @@ class CORE_EXPORT IdleSpellCheckCallback final
   int m_idleCallbackHandle;
   mutable bool m_needsMoreColdModeInvocationForTesting;
   const Member<LocalFrame> m_frame;
-
+  uint64_t m_lastProcessedUndoStepSequence;
   TaskRunnerTimer<IdleSpellCheckCallback> m_coldModeTimer;
 };
 

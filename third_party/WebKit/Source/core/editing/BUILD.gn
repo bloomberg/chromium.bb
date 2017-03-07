@@ -187,6 +187,8 @@ blink_core_sources("editing") {
     "serializers/StyledMarkupSerializer.h",
     "serializers/TextOffset.cpp",
     "serializers/TextOffset.h",
+    "spellcheck/HotModeSpellCheckRequester.cpp",
+    "spellcheck/HotModeSpellCheckRequester.h",
     "spellcheck/IdleSpellCheckCallback.cpp",
     "spellcheck/IdleSpellCheckCallback.h",
     "spellcheck/SpellCheckRequester.cpp",
