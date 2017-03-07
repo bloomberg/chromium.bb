@@ -49,7 +49,6 @@ aggregate_vector_icons("chrome_vector_icons") {
     "laptop.icon",
     "lock.icon",
     "mixed_content.icon",
-    "mode_edit.icon",
     "my_location.icon",
     "navigate_home.1x.icon",
     "navigate_home.icon",

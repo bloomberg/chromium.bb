@@ -136,10 +136,6 @@ bool UsePasswordSeparatedSigninFlow() {
       switches::kUsePasswordSeparatedSigninFlow);
 }
 
-bool IsMaterialDesignUserMenu() {
-  return base::FeatureList::IsEnabled(switches::kMaterialDesignUserMenu);
-}
-
 void EnableNewProfileManagementForTesting(base::CommandLine* command_line) {
   command_line->AppendSwitch(switches::kEnableNewProfileManagement);
   DCHECK(!command_line->HasSwitch(switches::kDisableNewProfileManagement));

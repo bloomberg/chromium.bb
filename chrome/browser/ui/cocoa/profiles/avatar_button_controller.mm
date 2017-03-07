@@ -100,8 +100,7 @@ const CGFloat kFrameColorDarkUpperBound = 0.33;
   // The image used in the generic button case as well as the error icon both
   // need to be shifted down slightly to be centered correctly.
   // TODO(noms): When the assets are fixed, remove this latter offset.
-  if (!hasError_ || switches::IsMaterialDesignUserMenu())
-    frame = NSOffsetRect(frame, 0, 1);
+  frame = NSOffsetRect(frame, 0, 1);
   [super drawImage:image withFrame:frame inView:controlView];
 }
 
@@ -182,8 +181,7 @@ const CGFloat kFrameColorDarkUpperBound = 0.33;
 
     [avatarButton setBezelStyle:NSShadowlessSquareBezelStyle];
     [avatarButton setButtonType:NSMomentaryChangeButton];
-    if (switches::IsMaterialDesignUserMenu())
-      [[avatarButton cell] setHighlightsBy:NSNoCellMask];
+    [[avatarButton cell] setHighlightsBy:NSNoCellMask];
     [avatarButton setBordered:YES];
 
     if (cocoa_l10n_util::ShouldFlipWindowControlsInRTL())

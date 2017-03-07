@@ -81,7 +81,6 @@
 #include "ui/views/controls/link.h"
 #include "ui/views/controls/separator.h"
 #include "ui/views/controls/styled_label.h"
-#include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/controls/webview/webview.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
@@ -98,12 +97,18 @@ const int kPasswordCombinedFixedGaiaViewWidth = 360;
 const int kFixedGaiaViewWidth = 448;
 const int kFixedAccountRemovalViewWidth = 280;
 const int kFixedSwitchUserViewWidth = 320;
-const int kLargeImageSide = 88;
-const int kMdImageSide = 40;
+const int kImageSide = 40;
+const int kProfileBadgeSize = 24;
+const int kFixedMenuWidth = 240;
+const int kSupervisedIconBadgeSize = 22;
+
+// The space between the right/bottom edge of the profile badge and the
+// right/bottom edge of the profile icon.
+const int kBadgeSpacing = 4;
 
 // Spacing between the edge of the material design user menu and the
 // top/bottom or left/right of the menu items.
-const int kMaterialMenuEdgeMargin = 16;
+const int kMenuEdgeMargin = 16;
 
 const int kVerticalSpacing = 16;
 
@@ -112,14 +117,6 @@ const int kTitleViewNativeWidgetOffset = 8;
 bool IsProfileChooser(profiles::BubbleViewMode mode) {
   return mode == profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER ||
       mode == profiles::BUBBLE_VIEW_MODE_FAST_PROFILE_CHOOSER;
-}
-
-int GetFixedMenuWidth() {
-  return switches::IsMaterialDesignUserMenu() ? 240 : 250;
-}
-
-int GetProfileBadgeSize() {
-  return switches::IsMaterialDesignUserMenu() ? 24 : 30;
 }
 
 // DEPRECATED: New user menu components should use views::BoxLayout instead.
@@ -142,13 +139,6 @@ views::Link* CreateLink(const base::string16& link_text,
   link_button->SetUnderline(false);
   link_button->set_listener(listener);
   return link_button;
-}
-
-gfx::ImageSkia CreateSquarePlaceholderImage(int size) {
-  SkBitmap bitmap;
-  bitmap.allocPixels(SkImageInfo::MakeA8(size, size));
-  bitmap.eraseARGB(0, 0, 0, 0);
-  return gfx::ImageSkia::CreateFrom1xBitmap(bitmap);
 }
 
 bool HasAuthError(Profile* profile) {
@@ -197,18 +187,11 @@ class BackgroundColorHoverButton : public views::LabelButton {
         title_(nullptr),
         subtitle_(nullptr) {
     DCHECK(profile_chooser_view);
-    SetImageLabelSpacing(switches::IsMaterialDesignUserMenu()
-                             ? (kMaterialMenuEdgeMargin - 2)
-                             : views::kItemLabelSpacing);
-    const int button_margin = switches::IsMaterialDesignUserMenu()
-                                  ? kMaterialMenuEdgeMargin
-                                  : views::kButtonHEdgeMarginNew;
-    SetBorder(views::CreateEmptyBorder(0, button_margin, 0, button_margin));
+    SetImageLabelSpacing(kMenuEdgeMargin - 2);
+    SetBorder(views::CreateEmptyBorder(0, kMenuEdgeMargin, 0, kMenuEdgeMargin));
     SetFocusForPlatform();
 
-    if (switches::IsMaterialDesignUserMenu()) {
-      label()->SetHandlesTooltips(false);
-    }
+    label()->SetHandlesTooltips(false);
   }
 
   BackgroundColorHoverButton(ProfileChooserView* profile_chooser_view,
@@ -362,46 +345,7 @@ void HostView::ViewHierarchyChanged(
 
 }  // namespace
 
-// RightAlignedIconLabelButton -------------------------------------------------
-
-// A custom LabelButton that has a center-aligned text and right aligned icon.
-// Only used in non-material-design user menu.
-class RightAlignedIconLabelButton : public views::LabelButton {
- public:
-  RightAlignedIconLabelButton(views::ButtonListener* listener,
-                              const base::string16& text)
-      : views::LabelButton(listener, text) {
-    SetHorizontalAlignment(gfx::ALIGN_RIGHT);
-    label()->SetHorizontalAlignment(gfx::ALIGN_CENTER);
-  }
-
- protected:
-  void Layout() override {
-    views::LabelButton::Layout();
-
-    // Keep the text centered and the icon right-aligned by stretching the label
-    // to take up more of the content area and centering its contents.
-    gfx::Rect content_bounds = GetContentsBounds();
-    gfx::Rect label_bounds = label()->bounds();
-    label_bounds.Inset(content_bounds.x() - label_bounds.x(), 0, 0, 0);
-    label()->SetBoundsRect(label_bounds);
-  }
-
- private:
-  void OnFocus() override {
-    SetState(STATE_HOVERED);
-  }
-
-  void OnBlur() override {
-    SetState(STATE_NORMAL);
-  }
-
-  DISALLOW_COPY_AND_ASSIGN(RightAlignedIconLabelButton);
-};
-
 // EditableProfilePhoto -------------------------------------------------
-
-const size_t kProfileBadgeWhitePadding = 2;
 
 // A custom Image control that shows a "change" button when moused over.
 class EditableProfilePhoto : public views::LabelButton {
@@ -411,41 +355,18 @@ class EditableProfilePhoto : public views::LabelButton {
                        bool is_editing_allowed,
                        Profile* profile)
       : views::LabelButton(listener, base::string16()),
-        interactive_(!switches::IsMaterialDesignUserMenu()),
         photo_overlay_(nullptr),
         profile_(profile) {
-    gfx::Image image = profiles::GetSizedAvatarIcon(
-        icon, true, icon_image_side(), icon_image_side());
+    set_can_process_events_within_subtree(false);
+    gfx::Image image =
+        profiles::GetSizedAvatarIcon(icon, true, kImageSide, kImageSide);
     SetImage(views::LabelButton::STATE_NORMAL, *image.ToImageSkia());
     SetBorder(views::NullBorder());
-    if (switches::IsMaterialDesignUserMenu()) {
-      SetMinSize(gfx::Size(GetPreferredSize().width() + badge_spacing(),
-                           GetPreferredSize().height() + badge_spacing() +
-                               views::kRelatedControlSmallVerticalSpacing));
-    } else {
-      SetSize(GetPreferredSize());
-    }
+    SetMinSize(gfx::Size(GetPreferredSize().width() + kBadgeSpacing,
+                         GetPreferredSize().height() + kBadgeSpacing +
+                             views::kRelatedControlSmallVerticalSpacing));
 
-    if (switches::IsMaterialDesignUserMenu() || !is_editing_allowed) {
-      SetEnabled(false);
-      return;
-    }
-
-    set_notify_enter_exit_on_child(true);
-
-    // Photo overlay that appears when hovering over the button.
-    photo_overlay_ = new views::ImageView();
-
-    const SkColor kBackgroundColor = SkColorSetARGB(65, 255, 255, 255);
-    photo_overlay_->set_background(
-        views::Background::CreateSolidBackground(kBackgroundColor));
-    photo_overlay_->SetImage(gfx::CreateVectorIcon(
-        kPhotoCameraIcon, 48u, SkColorSetRGB(0x33, 0x33, 0x33)));
-
-    photo_overlay_->SetSize(gfx::Size(icon_image_side(), icon_image_side()));
-    photo_overlay_->SetY(badge_spacing());
-    photo_overlay_->SetVisible(false);
-    AddChildView(photo_overlay_);
+    SetEnabled(false);
   }
 
   void PaintChildren(const ui::PaintContext& context) override {
@@ -463,17 +384,14 @@ class EditableProfilePhoto : public views::LabelButton {
     }
 
     ui::PaintRecorder paint_recorder(
-        context, gfx::Size(GetProfileBadgeSize(), GetProfileBadgeSize()));
+        context, gfx::Size(kProfileBadgeSize, kProfileBadgeSize));
     gfx::Canvas* canvas = paint_recorder.canvas();
     if (profile_->IsSupervised()) {
-      gfx::Rect bounds(0, 0, GetProfileBadgeSize(), GetProfileBadgeSize());
-      int badge_offset =
-          icon_image_side() + badge_spacing() - GetProfileBadgeSize();
+      gfx::Rect bounds(0, 0, kProfileBadgeSize, kProfileBadgeSize);
+      int badge_offset = kImageSide + kBadgeSpacing - kProfileBadgeSize;
       gfx::Vector2d badge_offset_vector = gfx::Vector2d(
-          GetMirroredXWithWidthInView(badge_offset, GetProfileBadgeSize()),
-          badge_offset + (switches::IsMaterialDesignUserMenu()
-                              ? views::kRelatedControlSmallVerticalSpacing
-                              : 0));
+          GetMirroredXWithWidthInView(badge_offset, kProfileBadgeSize),
+          badge_offset + views::kRelatedControlSmallVerticalSpacing);
 
       gfx::Point center_point = bounds.CenterPoint() + badge_offset_vector;
 
@@ -482,48 +400,19 @@ class EditableProfilePhoto : public views::LabelButton {
       flags.setAntiAlias(true);
       flags.setColor(GetNativeTheme()->GetSystemColor(
           ui::NativeTheme::kColorId_BubbleBackground));
-      canvas->DrawCircle(center_point, GetProfileBadgeSize() / 2, flags);
+      canvas->DrawCircle(center_point, kProfileBadgeSize / 2, flags);
 
-      const gfx::VectorIcon* icon;
-      int icon_size;
-      SkColor icon_color;
-      if (switches::IsMaterialDesignUserMenu()) {
-        icon = profile_->IsChild() ? &kAccountChildCircleIcon
-                                   : &kSupervisorAccountCircleIcon;
-        icon_size = 22;
-        icon_color = gfx::kChromeIconGrey;
-      } else {
-        // Paint the light blue circle.
-        flags.setColor(SkColorSetRGB(0xaf, 0xd9, 0xfc));
-        canvas->DrawCircle(
-            center_point, GetProfileBadgeSize() / 2 - kProfileBadgeWhitePadding,
-            flags);
-
-        icon =
-            profile_->IsChild() ? &kAccountChildIcon : &kSupervisorAccountIcon;
-        icon_size = profile_->IsChild() ? 26 : 20;
-        icon_color = SkColorSetRGB(0, 0x66, 0xff);
-      }
+      const gfx::VectorIcon* icon = profile_->IsChild()
+                                        ? &kAccountChildCircleIcon
+                                        : &kSupervisorAccountCircleIcon;
 
       // Paint the badge icon.
-      int offset = (GetProfileBadgeSize() - icon_size) / 2;
+      int offset = (kProfileBadgeSize - kSupervisedIconBadgeSize) / 2;
       canvas->Translate(badge_offset_vector + gfx::Vector2d(offset, offset));
-      gfx::PaintVectorIcon(canvas, *icon, icon_size, icon_color);
+      gfx::PaintVectorIcon(canvas, *icon, kSupervisedIconBadgeSize,
+                           gfx::kChromeIconGrey);
     }
   }
-
-  static int icon_image_side() {
-    return switches::IsMaterialDesignUserMenu() ? kMdImageSide
-                                                : kLargeImageSide;
-  }
-
-  static int badge_spacing() {
-    // The space between the right/bottom edge of the profile badge and the
-    // right/bottom edge of the profile icon.
-    return switches::IsMaterialDesignUserMenu() ? 4 : 0;
-  }
-
-  bool CanProcessEventsWithinSubtree() const override { return interactive_; }
 
  private:
   // views::CustomButton:
@@ -547,8 +436,6 @@ class EditableProfilePhoto : public views::LabelButton {
       photo_overlay_->SetVisible(false);
   }
 
-  bool interactive_;
-
   // Image that is shown when hovering over the image button. Can be NULL if
   // the photo isn't allowed to be edited (e.g. for guest profiles).
   views::ImageView* photo_overlay_;
@@ -556,108 +443,6 @@ class EditableProfilePhoto : public views::LabelButton {
   Profile* profile_;
 
   DISALLOW_COPY_AND_ASSIGN(EditableProfilePhoto);
-};
-
-// EditableProfileName -------------------------------------------------
-
-// A custom text control that turns into a textfield for editing when clicked.
-// Only used in non-material-design user menu.
-class EditableProfileName : public views::View,
-                            public views::ButtonListener {
- public:
-  EditableProfileName(views::TextfieldController* controller,
-                      const base::string16& text,
-                      bool is_editing_allowed)
-      : button_(nullptr), profile_name_textfield_(nullptr) {
-    SetLayoutManager(
-        new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0));
-
-    ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
-    const gfx::FontList& medium_font_list =
-        rb->GetFontList(ui::ResourceBundle::MediumFont);
-    const gfx::Insets textfield_border_insets =
-        views::Textfield().border()->GetInsets();
-
-    if (!is_editing_allowed) {
-      views::Label* name_label = new views::Label(text);
-      name_label->SetBorder(views::CreateEmptyBorder(textfield_border_insets));
-      name_label->SetFontList(medium_font_list);
-      AddChildView(name_label);
-      return;
-    }
-
-    profile_name_textfield_ = new views::Textfield();
-    // Textfield that overlaps the button.
-    profile_name_textfield_->set_controller(controller);
-    profile_name_textfield_->SetFontList(medium_font_list);
-    profile_name_textfield_->SetHorizontalAlignment(gfx::ALIGN_CENTER);
-    profile_name_textfield_->SetVisible(false);
-    AddChildView(profile_name_textfield_);
-
-    button_ = new RightAlignedIconLabelButton(this, text);
-    button_->SetFontListDeprecated(medium_font_list);
-    // Show an "edit" pencil icon when hovering over. In the default state,
-    // we need to create an empty placeholder of the correct size, so that
-    // the text doesn't jump around when the hovered icon appears.
-    // TODO(estade): revisit colors and press effect.
-    const int kIconSize = 16;
-    button_->SetImage(views::LabelButton::STATE_NORMAL,
-                      CreateSquarePlaceholderImage(kIconSize));
-    button_->SetImage(views::LabelButton::STATE_HOVERED,
-                      gfx::CreateVectorIcon(kModeEditIcon, kIconSize,
-                                            SkColorSetRGB(0x33, 0x33, 0x33)));
-    button_->SetImage(views::LabelButton::STATE_PRESSED,
-                      gfx::CreateVectorIcon(kModeEditIcon, kIconSize,
-                                            SkColorSetRGB(0x20, 0x20, 0x20)));
-    // We need to add a left padding as well as a small top/bottom padding
-    // to the text to account for the textfield's border.
-    const int kIconTextLabelButtonSpacing = 5;
-    button_->SetBorder(views::CreateEmptyBorder(
-        textfield_border_insets +
-        gfx::Insets(0, kIconSize + kIconTextLabelButtonSpacing, 0, 0)));
-    AddChildView(button_);
-  }
-
-  views::Textfield* profile_name_textfield() {
-    return profile_name_textfield_;
-  }
-
-  // Hide the editable textfield to show the profile name button instead.
-  void ShowReadOnlyView() {
-    button_->SetVisible(true);
-    profile_name_textfield_->SetVisible(false);
-  }
-
- private:
-  // views::ButtonListener:
-  void ButtonPressed(views::Button* sender, const ui::Event& event) override {
-    button_->SetVisible(false);
-    profile_name_textfield_->SetVisible(true);
-    profile_name_textfield_->SetText(button_->GetText());
-    profile_name_textfield_->SelectAll(false);
-    profile_name_textfield_->RequestFocus();
-    // Re-layouts the view after swaping the controls.
-    Layout();
-  }
-
-  // views::LabelButton:
-  bool OnKeyReleased(const ui::KeyEvent& event) override {
-    // Override CustomButton's implementation, which presses the button when
-    // you press space and clicks it when you release space, as the space can be
-    // part of the new profile name typed in the textfield.
-    return false;
-  }
-
-  // The label button which shows the profile name, and can handle the event to
-  // make it editable. Can be NULL if the profile name isn't allowed to be
-  // edited.
-  RightAlignedIconLabelButton* button_;
-
-  // Textfield that is shown when editing the profile name. Can be NULL if
-  // the profile name isn't allowed to be edited (e.g. for guest profiles).
-  views::Textfield* profile_name_textfield_;
-
-  DISALLOW_COPY_AND_ASSIGN(EditableProfileName);
 };
 
 // A title card with one back button right aligned and one label center aligned.
@@ -753,11 +538,8 @@ void ProfileChooserView::ShowBubble(
   // container.
   // Same for material design user menu since fast profile switcher will be
   // migrated to the left-click menu.
-  if (view_mode == profiles::BUBBLE_VIEW_MODE_FAST_PROFILE_CHOOSER &&
-      (!profiles::HasProfileSwitchTargets(browser->profile()) ||
-       switches::IsMaterialDesignUserMenu())) {
+  if (view_mode == profiles::BUBBLE_VIEW_MODE_FAST_PROFILE_CHOOSER)
     return;
-  }
 
   if (IsShowing()) {
     if (tutorial_mode != profiles::TUTORIAL_MODE_NONE) {
@@ -834,8 +616,6 @@ void ProfileChooserView::ResetView() {
   manage_accounts_button_ = nullptr;
   signin_current_profile_button_ = nullptr;
   auth_error_email_button_ = nullptr;
-  current_profile_photo_ = nullptr;
-  current_profile_name_ = nullptr;
   current_profile_card_ = nullptr;
   first_profile_button_ = nullptr;
   guest_profile_button_ = nullptr;
@@ -980,7 +760,7 @@ void ProfileChooserView::ShowView(profiles::BubbleViewMode view_to_display,
     case profiles::BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT:
     case profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER:
     case profiles::BUBBLE_VIEW_MODE_FAST_PROFILE_CHOOSER:
-      layout = CreateSingleColumnLayout(this, GetFixedMenuWidth());
+      layout = CreateSingleColumnLayout(this, kFixedMenuWidth);
       sub_view = CreateProfileChooserView(avatar_menu);
       break;
   }
@@ -1124,9 +904,6 @@ void ProfileChooserView::ButtonPressed(views::Button* sender,
     ShowViewFromMode(account_management_available ?
         profiles::BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT :
         profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER);
-  } else if (sender == current_profile_photo_) {
-    avatar_menu_->EditProfile(avatar_menu_->GetActiveProfileIndex());
-    PostActionPerformed(ProfileMetrics::PROFILE_DESKTOP_MENU_EDIT_IMAGE);
   } else if (sender == current_profile_card_) {
     avatar_menu_->EditProfile(avatar_menu_->GetActiveProfileIndex());
     PostActionPerformed(ProfileMetrics::PROFILE_DESKTOP_MENU_EDIT_IMAGE);
@@ -1226,40 +1003,6 @@ void ProfileChooserView::StyledLabelLinkClicked(views::StyledLabel* label,
   chrome::ShowSettings(browser_);
 }
 
-bool ProfileChooserView::HandleKeyEvent(views::Textfield* sender,
-                                        const ui::KeyEvent& key_event) {
-  if (key_event.type() != ui::ET_KEY_PRESSED)
-    return false;
-
-  views::Textfield* name_textfield =
-      current_profile_name_->profile_name_textfield();
-  DCHECK(sender == name_textfield);
-
-  if (key_event.key_code() == ui::VKEY_RETURN ||
-      key_event.key_code() == ui::VKEY_TAB) {
-    // Pressing Tab/Enter commits the new profile name, unless it's empty.
-    base::string16 new_profile_name = name_textfield->text();
-    base::TrimWhitespace(new_profile_name, base::TRIM_ALL, &new_profile_name);
-    if (new_profile_name.empty())
-      return true;
-
-    const AvatarMenu::Item& active_item = avatar_menu_->GetItemAt(
-        avatar_menu_->GetActiveProfileIndex());
-    Profile* profile = g_browser_process->profile_manager()->GetProfile(
-        active_item.profile_path);
-    DCHECK(profile);
-
-    if (profile->IsLegacySupervised())
-      return true;
-
-    profiles::UpdateProfileName(profile, new_profile_name);
-    PostActionPerformed(ProfileMetrics::PROFILE_DESKTOP_MENU_EDIT_NAME);
-    current_profile_name_->ShowReadOnlyView();
-    return true;
-  }
-  return false;
-}
-
 void ProfileChooserView::PopulateCompleteProfileChooserView(
     views::GridLayout* layout,
     AvatarMenu* avatar_menu) {
@@ -1276,18 +1019,10 @@ void ProfileChooserView::PopulateCompleteProfileChooserView(
       option_buttons_view = CreateOptionsView(
           item.signed_in && profiles::IsLockAvailable(browser_->profile()),
           avatar_menu);
-      current_profile_view =
-          switches::IsMaterialDesignUserMenu()
-              ? CreateMaterialDesignCurrentProfileView(item, false)
-              : CreateCurrentProfileView(item, false);
-      if (IsProfileChooser(view_mode_)) {
-        if (!switches::IsMaterialDesignUserMenu())
-          tutorial_view = CreateTutorialViewIfNeeded(item);
-      } else {
+      current_profile_view = CreateCurrentProfileView(item, false);
+      if (!IsProfileChooser(view_mode_))
         current_profile_accounts = CreateCurrentProfileAccountsView(item);
-      }
-      if (switches::IsMaterialDesignUserMenu())
-        sync_error_view = CreateSyncErrorViewIfNeeded();
+      sync_error_view = CreateSyncErrorViewIfNeeded();
     } else {
       other_profiles.push_back(i);
     }
@@ -1326,10 +1061,6 @@ void ProfileChooserView::PopulateCompleteProfileChooserView(
   }
 
   if (browser_->profile()->IsSupervised()) {
-    if (!switches::IsMaterialDesignUserMenu()) {
-      layout->StartRow(0, 0);
-      layout->AddView(new views::Separator());
-    }
     layout->StartRow(1, 0);
     layout->AddView(CreateSupervisedUserDisclaimerView());
   }
@@ -1361,8 +1092,7 @@ void ProfileChooserView::PopulateMinimalProfileChooserView(
 views::View* ProfileChooserView::CreateProfileChooserView(
     AvatarMenu* avatar_menu) {
   views::View* view = new views::View();
-  views::GridLayout* layout =
-      CreateSingleColumnLayout(view, GetFixedMenuWidth());
+  views::GridLayout* layout = CreateSingleColumnLayout(view, kFixedMenuWidth);
 
   if (view_mode_ == profiles::BUBBLE_VIEW_MODE_FAST_PROFILE_CHOOSER) {
     PopulateMinimalProfileChooserView(layout, avatar_menu);
@@ -1438,7 +1168,7 @@ views::View* ProfileChooserView::CreateTutorialView(
   view->set_background(views::Background::CreateSolidBackground(
       profiles::kAvatarTutorialBackgroundColor));
   views::GridLayout* layout = CreateSingleColumnLayout(
-      view, GetFixedMenuWidth() - 2 * views::kButtonHEdgeMarginNew);
+      view, kFixedMenuWidth - 2 * views::kButtonHEdgeMarginNew);
   // Creates a second column set for buttons and links.
   views::ColumnSet* button_columns = layout->AddColumnSet(1);
   button_columns->AddColumn(views::GridLayout::LEADING,
@@ -1570,8 +1300,8 @@ views::View* ProfileChooserView::CreateSyncErrorViewIfNeeded() {
   // Sets an overall horizontal layout.
   views::View* view = new views::View();
   views::BoxLayout* layout = new views::BoxLayout(
-      views::BoxLayout::kHorizontal, kMaterialMenuEdgeMargin,
-      kMaterialMenuEdgeMargin, views::kUnrelatedControlHorizontalSpacing);
+      views::BoxLayout::kHorizontal, kMenuEdgeMargin, kMenuEdgeMargin,
+      views::kUnrelatedControlHorizontalSpacing);
   layout->set_cross_axis_alignment(
       views::BoxLayout::CROSS_AXIS_ALIGNMENT_START);
   view->SetLayoutManager(layout);
@@ -1630,111 +1360,6 @@ views::View* ProfileChooserView::CreateCurrentProfileView(
     const AvatarMenu::Item& avatar_item,
     bool is_guest) {
   views::View* view = new views::View();
-  int column_width = GetFixedMenuWidth() - 2 * views::kButtonHEdgeMarginNew;
-  views::GridLayout* layout = CreateSingleColumnLayout(view, column_width);
-  layout->SetInsets(views::kButtonVEdgeMarginNew,
-                    views::kButtonHEdgeMarginNew,
-                    views::kUnrelatedControlVerticalSpacing,
-                    views::kButtonHEdgeMarginNew);
-
-  // Profile icon, centered.
-  int x_offset = (column_width - kLargeImageSide) / 2;
-  current_profile_photo_ = new EditableProfilePhoto(
-      this, avatar_item.icon, !is_guest, browser_->profile());
-  current_profile_photo_->SetX(x_offset);
-  SizedContainer* profile_icon_container =
-      new SizedContainer(gfx::Size(column_width, kLargeImageSide));
-  profile_icon_container->AddChildView(current_profile_photo_);
-
-
-  layout->StartRow(1, 0);
-  layout->AddView(profile_icon_container);
-
-  // Profile name, centered.
-  bool editing_allowed = !is_guest &&
-                         !browser_->profile()->IsLegacySupervised();
-  current_profile_name_ = new EditableProfileName(
-      this,
-      profiles::GetAvatarNameForProfile(browser_->profile()->GetPath()),
-      editing_allowed);
-  layout->StartRowWithPadding(1, 0, 0,
-                              views::kRelatedControlSmallVerticalSpacing);
-  layout->StartRow(1, 0);
-  layout->AddView(current_profile_name_);
-
-  if (is_guest)
-    return view;
-
-  // The available links depend on the type of profile that is active.
-  if (avatar_item.signed_in) {
-    layout->StartRow(1, 0);
-    if (switches::IsEnableAccountConsistency()) {
-      base::string16 link_title = l10n_util::GetStringUTF16(
-          IsProfileChooser(view_mode_) ?
-              IDS_PROFILES_PROFILE_MANAGE_ACCOUNTS_BUTTON :
-              IDS_PROFILES_PROFILE_HIDE_MANAGE_ACCOUNTS_BUTTON);
-      manage_accounts_link_ = CreateLink(link_title, this);
-      manage_accounts_link_->SetHorizontalAlignment(gfx::ALIGN_CENTER);
-      layout->AddView(manage_accounts_link_);
-    } else {
-      // Badge the email address if there's an authentication error.
-      if (HasAuthError(browser_->profile())) {
-        auth_error_email_button_ =
-            new RightAlignedIconLabelButton(this, avatar_item.username);
-        auth_error_email_button_->SetElideBehavior(gfx::ELIDE_EMAIL);
-        auth_error_email_button_->SetImage(
-            views::LabelButton::STATE_NORMAL,
-            gfx::CreateVectorIcon(ui::kWarningIcon, 18, gfx::kChromeIconGrey));
-        auth_error_email_button_->SetFocusForPlatform();
-        gfx::Insets insets =
-            views::LabelButtonAssetBorder::GetDefaultInsetsForStyle(
-                views::Button::STYLE_TEXTBUTTON);
-        auth_error_email_button_->SetBorder(views::CreateEmptyBorder(
-            insets.top(), insets.left(), insets.bottom(), insets.right()));
-        layout->AddView(auth_error_email_button_);
-      } else {
-        // Add a small padding between the email button and the profile name.
-        layout->StartRowWithPadding(1, 0, 0, 2);
-        views::Label* email_label = new views::Label(avatar_item.username);
-        email_label->SetElideBehavior(gfx::ELIDE_EMAIL);
-        email_label->SetEnabled(false);
-        layout->AddView(email_label);
-      }
-    }
-  } else {
-    SigninManagerBase* signin_manager = SigninManagerFactory::GetForProfile(
-        browser_->profile()->GetOriginalProfile());
-    if (signin_manager->IsSigninAllowed()) {
-      views::Label* promo = new views::Label(
-          l10n_util::GetStringUTF16(IDS_PROFILES_SIGNIN_PROMO));
-      promo->SetMultiLine(true);
-      promo->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-      layout->StartRowWithPadding(1, 0, 0,
-                                  views::kRelatedControlSmallVerticalSpacing);
-      layout->StartRow(1, 0);
-      layout->AddView(promo);
-
-      signin_current_profile_button_ =
-          views::MdTextButton::CreateSecondaryUiBlueButton(
-              this, l10n_util::GetStringFUTF16(
-                        IDS_SYNC_START_SYNC_BUTTON_LABEL,
-                        l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME)));
-      layout->StartRowWithPadding(1, 0, 0,
-                                  views::kRelatedControlVerticalSpacing);
-      layout->StartRow(1, 0);
-      layout->AddView(signin_current_profile_button_);
-      content::RecordAction(
-          base::UserMetricsAction("Signin_Impression_FromAvatarBubbleSignin"));
-    }
-  }
-
-  return view;
-}
-
-views::View* ProfileChooserView::CreateMaterialDesignCurrentProfileView(
-    const AvatarMenu::Item& avatar_item,
-    bool is_guest) {
-  views::View* view = new views::View();
   view->SetLayoutManager(
       new views::BoxLayout(views::BoxLayout::kVertical, 0,
                            views::kRelatedControlVerticalSpacing, 0));
@@ -1745,22 +1370,20 @@ views::View* ProfileChooserView::CreateMaterialDesignCurrentProfileView(
   views::GridLayout* grid_layout = new views::GridLayout(current_profile_card);
   current_profile_card->SetLayoutManager(grid_layout);
   views::ColumnSet* columns = grid_layout->AddColumnSet(0);
-  columns->AddPaddingColumn(0, kMaterialMenuEdgeMargin);
+  columns->AddPaddingColumn(0, kMenuEdgeMargin);
   columns->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 0,
                      views::GridLayout::USE_PREF, 0, 0);
-  columns->AddPaddingColumn(
-      0, kMaterialMenuEdgeMargin - EditableProfilePhoto::badge_spacing());
+  columns->AddPaddingColumn(0, kMenuEdgeMargin - kBadgeSpacing);
   columns->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 1,
                      views::GridLayout::USE_PREF, 0, 0);
-  columns->AddPaddingColumn(0, kMaterialMenuEdgeMargin);
+  columns->AddPaddingColumn(0, kMenuEdgeMargin);
   grid_layout->AddPaddingRow(0, 0);
   const int num_labels =
       (avatar_item.signed_in && !switches::IsEnableAccountConsistency()) ? 2
                                                                          : 1;
-  int profile_card_height = EditableProfilePhoto::icon_image_side() +
-                            2 *
-                                (EditableProfilePhoto::badge_spacing() +
-                                 views::kRelatedControlSmallVerticalSpacing);
+  int profile_card_height =
+      kImageSide +
+      2 * (kBadgeSpacing + views::kRelatedControlSmallVerticalSpacing);
   const int line_height = profile_card_height / num_labels;
   grid_layout->StartRow(0, 0, line_height);
   current_profile_card_ = current_profile_card;
@@ -1788,8 +1411,8 @@ views::View* ProfileChooserView::CreateMaterialDesignCurrentProfileView(
                        (num_labels == 2) ? views::GridLayout::TRAILING
                                          : views::GridLayout::CENTER);
   current_profile_card_->SetMinSize(gfx::Size(
-      GetFixedMenuWidth(), current_profile_photo->GetPreferredSize().height() +
-                               2 * views::kRelatedControlSmallVerticalSpacing));
+      kFixedMenuWidth, current_profile_photo->GetPreferredSize().height() +
+                           2 * views::kRelatedControlSmallVerticalSpacing));
   view->AddChildView(current_profile_card_);
 
   if (is_guest) {
@@ -1811,7 +1434,7 @@ views::View* ProfileChooserView::CreateMaterialDesignCurrentProfileView(
           new BackgroundColorHoverButton(this, button_text);
       manage_accounts_button_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
       manage_accounts_button_->SetMinSize(
-          gfx::Size(GetFixedMenuWidth(), kButtonHeight));
+          gfx::Size(kFixedMenuWidth, kButtonHeight));
       view->AddChildView(manage_accounts_button_);
     } else {
       views::Label* email_label = new views::Label(avatar_item.username);
@@ -1840,8 +1463,8 @@ views::View* ProfileChooserView::CreateMaterialDesignCurrentProfileView(
   if (signin_manager->IsSigninAllowed()) {
     views::View* extra_links_view = new views::View();
     views::BoxLayout* extra_links_layout = new views::BoxLayout(
-        views::BoxLayout::kVertical, kMaterialMenuEdgeMargin,
-        views::kRelatedControlVerticalSpacing, kMaterialMenuEdgeMargin);
+        views::BoxLayout::kVertical, kMenuEdgeMargin,
+        views::kRelatedControlVerticalSpacing, kMenuEdgeMargin);
     extra_links_layout->set_cross_axis_alignment(
         views::BoxLayout::CROSS_AXIS_ALIGNMENT_START);
     extra_links_view->SetLayoutManager(extra_links_layout);
@@ -1880,16 +1503,13 @@ views::View* ProfileChooserView::CreateGuestProfileView() {
       IDS_PROFILES_GUEST_PROFILE_NAME);
   guest_avatar_item.signed_in = false;
 
-  return switches::IsMaterialDesignUserMenu()
-             ? CreateMaterialDesignCurrentProfileView(guest_avatar_item, true)
-             : CreateCurrentProfileView(guest_avatar_item, true);
+  return CreateCurrentProfileView(guest_avatar_item, true);
 }
 
 views::View* ProfileChooserView::CreateOtherProfilesView(
     const Indexes& avatars_to_show) {
   views::View* view = new views::View();
-  views::GridLayout* layout =
-      CreateSingleColumnLayout(view, GetFixedMenuWidth());
+  views::GridLayout* layout = CreateSingleColumnLayout(view, kFixedMenuWidth);
 
   for (size_t index : avatars_to_show) {
     const AvatarMenu::Item& item = avatar_menu_->GetItemAt(index);
@@ -1921,58 +1541,50 @@ views::View* ProfileChooserView::CreateOtherProfilesView(
 views::View* ProfileChooserView::CreateOptionsView(bool display_lock,
                                                    AvatarMenu* avatar_menu) {
   views::View* view = new views::View();
-  views::GridLayout* layout =
-      CreateSingleColumnLayout(view, GetFixedMenuWidth());
+  views::GridLayout* layout = CreateSingleColumnLayout(view, kFixedMenuWidth);
 
   const bool is_guest = browser_->profile()->IsGuestSession();
-  const int kIconSize = switches::IsMaterialDesignUserMenu() ? 20 : 16;
-  if (switches::IsMaterialDesignUserMenu()) {
-    // Add the user switching buttons
-    const int kProfileIconSize = 18;
-    layout->StartRowWithPadding(1, 0, 0, views::kRelatedControlVerticalSpacing);
-    for (size_t i = 0; i < avatar_menu->GetNumberOfItems(); ++i) {
-      const AvatarMenu::Item& item = avatar_menu->GetItemAt(i);
-      if (!item.active) {
-        gfx::Image image = profiles::GetSizedAvatarIcon(
-            item.icon, true, kProfileIconSize, kProfileIconSize,
-            profiles::SHAPE_CIRCLE);
-        views::LabelButton* button = new BackgroundColorHoverButton(
-            this, profiles::GetProfileSwitcherTextForItem(item),
-            *image.ToImageSkia());
-        button->SetImageLabelSpacing(kMaterialMenuEdgeMargin);
-        open_other_profile_indexes_map_[button] = i;
+  const int kIconSize = 20;
+  // Add the user switching buttons
+  const int kProfileIconSize = 18;
+  layout->StartRowWithPadding(1, 0, 0, views::kRelatedControlVerticalSpacing);
+  for (size_t i = 0; i < avatar_menu->GetNumberOfItems(); ++i) {
+    const AvatarMenu::Item& item = avatar_menu->GetItemAt(i);
+    if (!item.active) {
+      gfx::Image image = profiles::GetSizedAvatarIcon(
+          item.icon, true, kProfileIconSize, kProfileIconSize,
+          profiles::SHAPE_CIRCLE);
+      views::LabelButton* button = new BackgroundColorHoverButton(
+          this, profiles::GetProfileSwitcherTextForItem(item),
+          *image.ToImageSkia());
+      button->SetImageLabelSpacing(kMenuEdgeMargin);
+      open_other_profile_indexes_map_[button] = i;
 
-        if (!first_profile_button_)
-          first_profile_button_ = button;
-        layout->StartRow(1, 0);
-        layout->AddView(button);
-      }
+      if (!first_profile_button_)
+        first_profile_button_ = button;
+      layout->StartRow(1, 0);
+      layout->AddView(button);
     }
+  }
 
-    // Add the "Guest" button for browsing as guest
-    if (!is_guest) {
-      PrefService* service = g_browser_process->local_state();
-      DCHECK(service);
-      if (service->GetBoolean(prefs::kBrowserGuestModeEnabled)) {
-        guest_profile_button_ = new BackgroundColorHoverButton(
-            this, l10n_util::GetStringUTF16(IDS_GUEST_PROFILE_NAME),
-            gfx::CreateVectorIcon(kAccountCircleIcon, kIconSize,
-                                  gfx::kChromeIconGrey));
-        layout->StartRow(1, 0);
-        layout->AddView(guest_profile_button_);
-      }
+  // Add the "Guest" button for browsing as guest
+  if (!is_guest) {
+    PrefService* service = g_browser_process->local_state();
+    DCHECK(service);
+    if (service->GetBoolean(prefs::kBrowserGuestModeEnabled)) {
+      guest_profile_button_ = new BackgroundColorHoverButton(
+          this, l10n_util::GetStringUTF16(IDS_GUEST_PROFILE_NAME),
+          gfx::CreateVectorIcon(kAccountCircleIcon, kIconSize,
+                                gfx::kChromeIconGrey));
+      layout->StartRow(1, 0);
+      layout->AddView(guest_profile_button_);
     }
   }
 
   base::string16 text = l10n_util::GetStringUTF16(
-      is_guest ? IDS_PROFILES_EXIT_GUEST
-               : (switches::IsMaterialDesignUserMenu()
-                      ? IDS_PROFILES_MANAGE_USERS_BUTTON
-                      : IDS_PROFILES_SWITCH_USERS_BUTTON));
+      is_guest ? IDS_PROFILES_EXIT_GUEST : IDS_PROFILES_MANAGE_USERS_BUTTON);
   const gfx::VectorIcon& settings_icon =
-      switches::IsMaterialDesignUserMenu()
-          ? (is_guest ? kCloseAllIcon : kSettingsIcon)
-          : kAccountBoxIcon;
+      is_guest ? kCloseAllIcon : kSettingsIcon;
   users_button_ = new BackgroundColorHoverButton(
       this, text,
       gfx::CreateVectorIcon(settings_icon, kIconSize, gfx::kChromeIconGrey));
@@ -1980,31 +1592,13 @@ views::View* ProfileChooserView::CreateOptionsView(bool display_lock,
   layout->StartRow(1, 0);
   layout->AddView(users_button_);
 
-  if (!switches::IsMaterialDesignUserMenu() && ShouldShowGoIncognito()) {
-    layout->StartRow(1, 0);
-    layout->AddView(new views::Separator());
-
-    ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
-    go_incognito_button_ = new BackgroundColorHoverButton(
-        this,
-        l10n_util::GetStringUTF16(IDS_PROFILES_GO_INCOGNITO_BUTTON),
-        *rb->GetImageSkiaNamed(IDR_ICON_PROFILES_MENU_INCOGNITO));
-    layout->StartRow(1, 0);
-    layout->AddView(go_incognito_button_);
-  }
-
   if (display_lock) {
-    if (!switches::IsMaterialDesignUserMenu()) {
-      layout->StartRow(1, 0);
-      layout->AddView(new views::Separator());
-    }
-
     lock_button_ = new BackgroundColorHoverButton(
         this, l10n_util::GetStringUTF16(IDS_PROFILES_PROFILE_SIGNOUT_BUTTON),
         gfx::CreateVectorIcon(kLockIcon, kIconSize, gfx::kChromeIconGrey));
     layout->StartRow(1, 0);
     layout->AddView(lock_button_);
-  } else if (switches::IsMaterialDesignUserMenu() && !is_guest) {
+  } else if (!is_guest) {
     int num_browsers = 0;
     for (auto* browser : *BrowserList::GetInstance()) {
       if (browser->profile()->GetOriginalProfile() ==
@@ -2022,25 +1616,16 @@ views::View* ProfileChooserView::CreateOptionsView(bool display_lock,
     }
   }
 
-  if (switches::IsMaterialDesignUserMenu())
-    layout->StartRowWithPadding(1, 0, 0, views::kRelatedControlVerticalSpacing);
+  layout->StartRowWithPadding(1, 0, 0, views::kRelatedControlVerticalSpacing);
   return view;
 }
 
 views::View* ProfileChooserView::CreateSupervisedUserDisclaimerView() {
   views::View* view = new views::View();
-  int horizontal_margin = switches::IsMaterialDesignUserMenu() ?
-      kMaterialMenuEdgeMargin : views::kButtonHEdgeMarginNew;
-  views::GridLayout* layout = CreateSingleColumnLayout(
-      view, GetFixedMenuWidth() - 2 * horizontal_margin);
-  if (switches::IsMaterialDesignUserMenu()) {
-    layout->SetInsets(0, horizontal_margin,
-                      kMaterialMenuEdgeMargin, horizontal_margin);
-  } else {
-    layout->SetInsets(
-        views::kRelatedControlVerticalSpacing, horizontal_margin,
-        views::kRelatedControlVerticalSpacing, horizontal_margin);
-  }
+  int horizontal_margin = kMenuEdgeMargin;
+  views::GridLayout* layout =
+      CreateSingleColumnLayout(view, kFixedMenuWidth - 2 * horizontal_margin);
+  layout->SetInsets(0, horizontal_margin, kMenuEdgeMargin, horizontal_margin);
 
   views::Label* disclaimer = new views::Label(
       avatar_menu_->GetSupervisedUserInformation());
@@ -2061,8 +1646,7 @@ views::View* ProfileChooserView::CreateCurrentProfileAccountsView(
   views::View* view = new views::View();
   view->set_background(views::Background::CreateSolidBackground(
       profiles::kAvatarBubbleAccountsBackgroundColor));
-  views::GridLayout* layout =
-      CreateSingleColumnLayout(view, GetFixedMenuWidth());
+  views::GridLayout* layout = CreateSingleColumnLayout(view, kFixedMenuWidth);
 
   Profile* profile = browser_->profile();
   std::string primary_account =
@@ -2079,10 +1663,10 @@ views::View* ProfileChooserView::CreateCurrentProfileAccountsView(
   // from the others in the UI, so more work is likely required here:
   // crbug.com/311124.
   CreateAccountButton(layout, primary_account, true,
-                      error_account_id == primary_account, GetFixedMenuWidth());
+                      error_account_id == primary_account, kFixedMenuWidth);
   for (size_t i = 0; i < accounts.size(); ++i)
     CreateAccountButton(layout, accounts[i], false,
-                        error_account_id == accounts[i], GetFixedMenuWidth());
+                        error_account_id == accounts[i], kFixedMenuWidth);
 
   if (!profile->IsSupervised()) {
     layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);

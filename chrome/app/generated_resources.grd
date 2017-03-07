@@ -12721,12 +12721,6 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
       <message name="IDS_FLAGS_ENABLE_PASSWORD_SEPARATED_SIGNIN_FLOW_DESCRIPTION" desc="Description for the flag to enable the new gaia password-separated sign in flow.">
         When enabled, signing in to the browser will use a new gaia password-separated sign in flow.
       </message>
-      <message name="IDS_FLAGS_SHOW_MATERIAL_DESIGN_USER_MENU_NAME" desc="Title for the flag to switch to the material design desktop user menu.">
-        Use material design user menu
-      </message>
-      <message name="IDS_FLAGS_SHOW_MATERIAL_DESIGN_USER_MENU_DESCRIPTION" desc="Description for the flag to switch to the material design desktop user menu.">
-        When enabled, the desktop user menu will be switched to the material design version with a more intuitive flow.
-      </message>
 
       <message name="IDS_FLAGS_GOOGLE_PROFILE_INFO_NAME" desc="Title for the flag to enable the google profile information">
         Google profile name and icon

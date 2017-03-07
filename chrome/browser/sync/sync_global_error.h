@@ -13,7 +13,6 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/sync/driver/sync_error_controller.h"
 
-class GlobalErrorService;
 class LoginUIService;
 
 namespace browser_sync {
@@ -25,8 +24,7 @@ class SyncGlobalError : public GlobalErrorWithStandardBubble,
                         public syncer::SyncErrorController::Observer,
                         public KeyedService {
  public:
-  SyncGlobalError(GlobalErrorService* global_error_service,
-                  LoginUIService* login_ui_service,
+  SyncGlobalError(LoginUIService* login_ui_service,
                   syncer::SyncErrorController* error_controller,
                   browser_sync::ProfileSyncService* profile_sync_service);
   ~SyncGlobalError() override;
@@ -55,8 +53,6 @@ class SyncGlobalError : public GlobalErrorWithStandardBubble,
   base::string16 bubble_accept_label_;
   base::string16 bubble_message_;
   base::string16 menu_label_;
-
-  GlobalErrorService* global_error_service_;
 
   const LoginUIService* login_ui_service_;
 

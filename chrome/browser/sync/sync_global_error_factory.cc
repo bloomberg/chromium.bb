@@ -8,7 +8,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/sync_global_error.h"
-#include "chrome/browser/ui/global_error/global_error_service_factory.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
@@ -21,7 +20,6 @@ SyncGlobalErrorFactory::SyncGlobalErrorFactory()
     : BrowserContextKeyedServiceFactory(
         "SyncGlobalError",
         BrowserContextDependencyManager::GetInstance()) {
-  DependsOn(GlobalErrorServiceFactory::GetInstance());
   DependsOn(LoginUIServiceFactory::GetInstance());
   DependsOn(ProfileSyncServiceFactory::GetInstance());
 }
@@ -59,7 +57,6 @@ KeyedService* SyncGlobalErrorFactory::BuildServiceInstanceFor(
   if (!sync_error_controller)
     return nullptr;
 
-  return new SyncGlobalError(GlobalErrorServiceFactory::GetForProfile(profile),
-                             LoginUIServiceFactory::GetForProfile(profile),
+  return new SyncGlobalError(LoginUIServiceFactory::GetForProfile(profile),
                              sync_error_controller, profile_sync_service);
 }

@@ -73,7 +73,7 @@ void LoginUIService::DisplayLoginResult(Browser* browser,
 #endif
   last_login_result_ = error_message;
   last_login_error_email_ = email;
-  if (switches::IsMaterialDesignUserMenu() && !error_message.empty()) {
+  if (!error_message.empty()) {
     if (browser)
       browser->ShowModalSigninErrorWindow();
     else

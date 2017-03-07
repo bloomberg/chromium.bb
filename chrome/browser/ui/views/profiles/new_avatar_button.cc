@@ -201,14 +201,8 @@ void NewAvatarButton::Update() {
   if (use_generic_button) {
     SetImage(views::Button::STATE_NORMAL, generic_avatar_);
   } else if (error_controller_.HasAvatarError()) {
-    if (switches::IsMaterialDesignUserMenu()) {
-      SetImage(views::Button::STATE_NORMAL,
-               gfx::CreateVectorIcon(kSyncProblemIcon, 16, gfx::kGoogleRed700));
-    } else {
-      SetImage(
-          views::Button::STATE_NORMAL,
-          gfx::CreateVectorIcon(ui::kWarningIcon, 13, gfx::kGoogleYellow700));
-    }
+    SetImage(views::Button::STATE_NORMAL,
+             gfx::CreateVectorIcon(kSyncProblemIcon, 16, gfx::kGoogleRed700));
   } else {
     SetImage(views::Button::STATE_NORMAL, gfx::ImageSkia());
   }
