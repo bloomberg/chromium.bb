@@ -18,7 +18,7 @@ async function test()
     var dataGrid = coverageView._listView._dataGrid;
     for (var child of dataGrid.rootNode().children) {
         var data = child._coverageInfo;
-        var url = InspectorTest.formatters.formatAsURL(data.url);
+        var url = InspectorTest.formatters.formatAsURL(data.contentProvider.contentURL());
         if (url.endsWith("-test.js") || url.endsWith(".html"))
             continue;
         var type = Coverage.CoverageListView._typeToString(data.type);
