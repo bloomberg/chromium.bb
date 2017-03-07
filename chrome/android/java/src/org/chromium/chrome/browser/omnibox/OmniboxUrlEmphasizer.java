@@ -12,6 +12,7 @@ import android.text.style.StrikethroughSpan;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
 
@@ -57,6 +58,15 @@ public class OmniboxUrlEmphasizer {
          */
         public boolean hasHost() {
             return hostLength > 0;
+        }
+
+        /**
+         * @return The scheme extracted from |url|, canonicalized to lowercase.
+         */
+        public String extractScheme(String url) {
+            return url.subSequence(schemeStart, schemeStart + schemeLength)
+                    .toString()
+                    .toLowerCase(Locale.US);
         }
     }
 
@@ -110,7 +120,7 @@ public class OmniboxUrlEmphasizer {
     }
 
     /**
-     * Modifies the given URL to emphasize the TLD and second domain.
+     * Modifies the given URL to emphasize the host and scheme.
      * TODO(sashab): Make this take an EmphasizeComponentsResponse object to
      *               prevent calling parseForEmphasizeComponents() again.
      *
@@ -155,6 +165,12 @@ public class OmniboxUrlEmphasizer {
                     case ConnectionSecurityLevel.HTTP_SHOW_WARNING:
                     // Intentional fall-through:
                     case ConnectionSecurityLevel.SECURITY_WARNING:
+                        // Draw attention to the data: URI scheme for anti-spoofing reasons.
+                        if (UrlConstants.DATA_SCHEME.equals(
+                                    emphasizeResponse.extractScheme(urlString))) {
+                            colorId = useDarkColors ? R.color.url_emphasis_default_text
+                                                    : R.color.url_emphasis_light_default_text;
+                        }
                         break;
                     case ConnectionSecurityLevel.DANGEROUS:
                         if (emphasizeHttpsScheme) colorId = R.color.google_red_700;
@@ -206,11 +222,17 @@ public class OmniboxUrlEmphasizer {
                 url.setSpan(span, endHostIndex, urlString.length(),
                         Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
             }
+        } else if (UrlConstants.DATA_SCHEME.equals(emphasizeResponse.extractScheme(urlString))) {
+            // Dim the remainder of the URL for anti-spoofing purposes.
+            span = new UrlEmphasisColorSpan(
+                    ApiCompatibilityUtils.getColor(resources, nonEmphasizedColorId));
+            url.setSpan(span, emphasizeResponse.schemeStart + emphasizeResponse.schemeLength,
+                    urlString.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
         }
     }
 
     /**
-     * Reset the modifications done to emphasize the TLD and second domain of the URL.
+     * Reset the modifications done to emphasize components of the URL.
      *
      * @param url The URL spannable to remove emphasis from. This variable is
      *            modified.
@@ -277,10 +299,7 @@ public class OmniboxUrlEmphasizer {
                 parseForEmphasizeComponents(profile, url.toString());
         if (!emphasizeResponse.hasScheme()) return url.length();
 
-        int startSchemeIndex = emphasizeResponse.schemeStart;
-        int endSchemeIndex = emphasizeResponse.schemeStart + emphasizeResponse.schemeLength;
-        String scheme = url.subSequence(startSchemeIndex, endSchemeIndex).toString().toLowerCase(
-                Locale.US);
+        String scheme = emphasizeResponse.extractScheme(url);
 
         if (scheme.equals("http") || scheme.equals("https")) {
             return emphasizeResponse.hostStart + emphasizeResponse.hostLength;
