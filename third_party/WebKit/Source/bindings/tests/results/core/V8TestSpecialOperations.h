@@ -13,6 +13,7 @@
 #define V8TestSpecialOperations_h
 
 #include "bindings/core/v8/GeneratedCodeHelper.h"
+#include "bindings/core/v8/NativeValueTraits.h"
 #include "bindings/core/v8/NodeOrNodeList.h"
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "bindings/core/v8/ToV8.h"
@@ -54,6 +55,11 @@ class V8TestSpecialOperations {
   CORE_EXPORT static void namedPropertyEnumeratorCallback(const v8::PropertyCallbackInfo<v8::Array>&);
   CORE_EXPORT static void indexedPropertyGetterCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>&);
   CORE_EXPORT static void indexedPropertySetterCallback(uint32_t index, v8::Local<v8::Value>, const v8::PropertyCallbackInfo<v8::Value>&);
+};
+
+template <>
+struct NativeValueTraits<TestSpecialOperations> : public NativeValueTraitsBase<TestSpecialOperations> {
+  CORE_EXPORT static TestSpecialOperations* nativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
 };
 
 template <>

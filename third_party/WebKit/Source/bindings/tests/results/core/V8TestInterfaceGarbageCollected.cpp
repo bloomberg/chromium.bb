@@ -12,6 +12,8 @@
 #include "V8TestInterfaceGarbageCollected.h"
 
 #include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/IDLTypes.h"
+#include "bindings/core/v8/NativeValueTraitsImpl.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/V8DOMConfiguration.h"
@@ -406,6 +408,10 @@ v8::Local<v8::Object> V8TestInterfaceGarbageCollected::findInstanceInPrototypeCh
 
 TestInterfaceGarbageCollected* V8TestInterfaceGarbageCollected::toImplWithTypeCheck(v8::Isolate* isolate, v8::Local<v8::Value> value) {
   return hasInstance(value, isolate) ? toImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
+}
+
+TestInterfaceGarbageCollected* NativeValueTraits<TestInterfaceGarbageCollected>::nativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
+  return V8TestInterfaceGarbageCollected::toImplWithTypeCheck(isolate, value);
 }
 
 }  // namespace blink

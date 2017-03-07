@@ -13,6 +13,8 @@
 #include "LongCallbackFunction.h"
 
 #include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/IDLTypes.h"
+#include "bindings/core/v8/NativeValueTraitsImpl.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/ToV8.h"
 #include "bindings/core/v8/V8Binding.h"
@@ -69,13 +71,17 @@ bool LongCallbackFunction::call(ScriptWrappable* scriptWrappable, int32_t num1, 
   exceptionCatcher.SetVerbose(true);
 
   if (V8ScriptRunner::callFunction(m_callback.newLocal(m_scriptState->isolate()), m_scriptState->getExecutionContext(), thisValue, 2, argv, m_scriptState->isolate()).ToLocal(&v8ReturnValue)) {
-    int32_t cppValue = toInt32(m_scriptState->isolate(), v8ReturnValue, NormalConversion, exceptionState);
+    int32_t cppValue = NativeValueTraits<IDLLong>::nativeValue(m_scriptState->isolate(), v8ReturnValue, exceptionState, NormalConversion);
         if (exceptionState.hadException())
           return false;
     returnValue = cppValue;
     return true;
   }
   return false;
+}
+
+LongCallbackFunction* NativeValueTraits<LongCallbackFunction>::nativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
+  return LongCallbackFunction::create(ScriptState::current(isolate), value);
 }
 
 }  // namespace blink

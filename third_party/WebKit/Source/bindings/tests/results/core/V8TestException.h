@@ -13,6 +13,7 @@
 #define V8TestException_h
 
 #include "bindings/core/v8/GeneratedCodeHelper.h"
+#include "bindings/core/v8/NativeValueTraits.h"
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "bindings/core/v8/ToV8.h"
 #include "bindings/core/v8/V8Binding.h"
@@ -50,6 +51,11 @@ class V8TestException {
   CORE_EXPORT static void readonlyStringAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
 
   CORE_EXPORT static void toStringMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
+};
+
+template <>
+struct NativeValueTraits<TestException> : public NativeValueTraitsBase<TestException> {
+  CORE_EXPORT static TestException* nativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
 };
 
 template <>

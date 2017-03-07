@@ -12,6 +12,8 @@
 #include "V8TestSpecialOperations.h"
 
 #include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/IDLTypes.h"
+#include "bindings/core/v8/NativeValueTraitsImpl.h"
 #include "bindings/core/v8/NodeOrNodeList.h"
 #include "bindings/core/v8/V8DOMConfiguration.h"
 #include "bindings/core/v8/V8Node.h"
@@ -209,6 +211,10 @@ v8::Local<v8::Object> V8TestSpecialOperations::findInstanceInPrototypeChain(v8::
 
 TestSpecialOperations* V8TestSpecialOperations::toImplWithTypeCheck(v8::Isolate* isolate, v8::Local<v8::Value> value) {
   return hasInstance(value, isolate) ? toImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
+}
+
+TestSpecialOperations* NativeValueTraits<TestSpecialOperations>::nativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
+  return V8TestSpecialOperations::toImplWithTypeCheck(isolate, value);
 }
 
 }  // namespace blink

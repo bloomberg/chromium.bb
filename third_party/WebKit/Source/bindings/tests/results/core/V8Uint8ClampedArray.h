@@ -13,6 +13,7 @@
 #define V8Uint8ClampedArray_h
 
 #include "bindings/core/v8/GeneratedCodeHelper.h"
+#include "bindings/core/v8/NativeValueTraits.h"
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "bindings/core/v8/ToV8.h"
 #include "bindings/core/v8/V8ArrayBufferView.h"
@@ -41,6 +42,11 @@ class V8Uint8ClampedArray {
   static const int internalFieldCount = v8DefaultWrapperInternalFieldCount + 0;
 
   // Callback functions
+};
+
+template <>
+struct NativeValueTraits<TestUint8ClampedArray> : public NativeValueTraitsBase<TestUint8ClampedArray> {
+  CORE_EXPORT static TestUint8ClampedArray* nativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
 };
 
 template <>

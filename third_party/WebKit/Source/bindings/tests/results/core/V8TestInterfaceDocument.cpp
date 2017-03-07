@@ -129,4 +129,8 @@ TestInterfaceDocument* V8TestInterfaceDocument::toImplWithTypeCheck(v8::Isolate*
   return hasInstance(value, isolate) ? toImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
 }
 
+TestInterfaceDocument* NativeValueTraits<TestInterfaceDocument>::nativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
+  return V8TestInterfaceDocument::toImplWithTypeCheck(isolate, value);
+}
+
 }  // namespace blink

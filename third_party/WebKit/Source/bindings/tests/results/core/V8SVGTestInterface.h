@@ -13,6 +13,7 @@
 #define V8SVGTestInterface_h
 
 #include "bindings/core/v8/GeneratedCodeHelper.h"
+#include "bindings/core/v8/NativeValueTraits.h"
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "bindings/core/v8/ToV8.h"
 #include "bindings/core/v8/V8Binding.h"
@@ -47,6 +48,11 @@ class V8SVGTestInterface {
 
   CORE_EXPORT static void typeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
   CORE_EXPORT static void typeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
+};
+
+template <>
+struct NativeValueTraits<SVGTestInterface> : public NativeValueTraitsBase<SVGTestInterface> {
+  CORE_EXPORT static SVGTestInterface* nativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
 };
 
 template <>

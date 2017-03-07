@@ -13,6 +13,7 @@
 #define V8TestSpecialOperationsNotEnumerable_h
 
 #include "bindings/core/v8/GeneratedCodeHelper.h"
+#include "bindings/core/v8/NativeValueTraits.h"
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "bindings/core/v8/ToV8.h"
 #include "bindings/core/v8/V8Binding.h"
@@ -47,6 +48,11 @@ class V8TestSpecialOperationsNotEnumerable {
 
   CORE_EXPORT static void namedPropertyGetterCallback(v8::Local<v8::Name>, const v8::PropertyCallbackInfo<v8::Value>&);
   CORE_EXPORT static void indexedPropertyGetterCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>&);
+};
+
+template <>
+struct NativeValueTraits<TestSpecialOperationsNotEnumerable> : public NativeValueTraitsBase<TestSpecialOperationsNotEnumerable> {
+  CORE_EXPORT static TestSpecialOperationsNotEnumerable* nativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
 };
 
 template <>

@@ -11,6 +11,8 @@
 // clang-format off
 #include "V8TestCallbackInterface.h"
 
+#include "bindings/core/v8/IDLTypes.h"
+#include "bindings/core/v8/NativeValueTraitsImpl.h"
 #include "bindings/core/v8/ScriptController.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8TestInterfaceEmpty.h"

@@ -12,6 +12,8 @@
 #include "V8TestInterfaceNamedConstructor2.h"
 
 #include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/IDLTypes.h"
+#include "bindings/core/v8/NativeValueTraitsImpl.h"
 #include "bindings/core/v8/V8DOMConfiguration.h"
 #include "bindings/core/v8/V8ObjectConstructor.h"
 #include "core/dom/Document.h"
@@ -136,6 +138,10 @@ v8::Local<v8::Object> V8TestInterfaceNamedConstructor2::findInstanceInPrototypeC
 
 TestInterfaceNamedConstructor2* V8TestInterfaceNamedConstructor2::toImplWithTypeCheck(v8::Isolate* isolate, v8::Local<v8::Value> value) {
   return hasInstance(value, isolate) ? toImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
+}
+
+TestInterfaceNamedConstructor2* NativeValueTraits<TestInterfaceNamedConstructor2>::nativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
+  return V8TestInterfaceNamedConstructor2::toImplWithTypeCheck(isolate, value);
 }
 
 }  // namespace blink

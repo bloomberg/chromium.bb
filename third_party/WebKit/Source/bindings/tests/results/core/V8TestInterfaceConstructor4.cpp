@@ -12,6 +12,8 @@
 #include "V8TestInterfaceConstructor4.h"
 
 #include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/IDLTypes.h"
+#include "bindings/core/v8/NativeValueTraitsImpl.h"
 #include "bindings/core/v8/V8DOMConfiguration.h"
 #include "bindings/core/v8/V8ObjectConstructor.h"
 #include "bindings/core/v8/V8TestInterfaceConstructor4.h"
@@ -72,7 +74,7 @@ static void constructor2(const v8::FunctionCallbackInfo<v8::Value>& info) {
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ConstructionContext, "TestInterfaceConstructor4");
 
   V8StringResource<> usvStringArg;
-  usvStringArg = toUSVString(info.GetIsolate(), info[0], exceptionState);
+  usvStringArg = NativeValueTraits<IDLUSVString>::nativeValue(info.GetIsolate(), info[0], exceptionState);
   if (exceptionState.hadException())
     return;
 
@@ -148,6 +150,10 @@ v8::Local<v8::Object> V8TestInterfaceConstructor4::findInstanceInPrototypeChain(
 
 TestInterfaceConstructor4* V8TestInterfaceConstructor4::toImplWithTypeCheck(v8::Isolate* isolate, v8::Local<v8::Value> value) {
   return hasInstance(value, isolate) ? toImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
+}
+
+TestInterfaceConstructor4* NativeValueTraits<TestInterfaceConstructor4>::nativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
+  return V8TestInterfaceConstructor4::toImplWithTypeCheck(isolate, value);
 }
 
 }  // namespace blink

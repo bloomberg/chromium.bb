@@ -14,6 +14,7 @@
 
 #include "bindings/core/v8/Dictionary.h"
 #include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/NativeValueTraits.h"
 #include "bindings/core/v8/V8ArrayBufferView.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8Uint8Array.h"
@@ -78,8 +79,13 @@ inline void v8SetReturnValue(const CallbackInfo& callbackInfo, TestInterface2OrU
 }
 
 template <>
-struct NativeValueTraits<TestInterface2OrUint8Array> {
+struct NativeValueTraits<TestInterface2OrUint8Array> : public NativeValueTraitsBase<TestInterface2OrUint8Array> {
   CORE_EXPORT static TestInterface2OrUint8Array nativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
+};
+
+template <>
+struct V8TypeOf<TestInterface2OrUint8Array> {
+  typedef V8TestInterface2OrUint8Array Type;
 };
 
 }  // namespace blink

@@ -13,6 +13,7 @@
 #define V8TestInterfaceDocument_h
 
 #include "bindings/core/v8/GeneratedCodeHelper.h"
+#include "bindings/core/v8/NativeValueTraits.h"
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "bindings/core/v8/ToV8.h"
 #include "bindings/core/v8/V8Binding.h"
@@ -48,6 +49,11 @@ class V8TestInterfaceDocument {
 
   CORE_EXPORT static void locationAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
   CORE_EXPORT static void locationAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
+};
+
+template <>
+struct NativeValueTraits<TestInterfaceDocument> : public NativeValueTraitsBase<TestInterfaceDocument> {
+  CORE_EXPORT static TestInterfaceDocument* nativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
 };
 
 template <>

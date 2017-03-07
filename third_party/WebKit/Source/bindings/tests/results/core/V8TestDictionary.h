@@ -12,6 +12,7 @@
 #ifndef V8TestDictionary_h
 #define V8TestDictionary_h
 
+#include "bindings/core/v8/NativeValueTraits.h"
 #include "bindings/core/v8/ToV8.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/tests/idls/core/TestDictionary.h"
@@ -40,8 +41,8 @@ inline void v8SetReturnValue(const CallbackInfo& callbackInfo, TestDictionary& i
 }
 
 template <>
-struct NativeValueTraits<TestDictionary> {
-  static TestDictionary nativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
+struct NativeValueTraits<TestDictionary> : public NativeValueTraitsBase<TestDictionary> {
+  CORE_EXPORT static TestDictionary nativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
 };
 
 template <>

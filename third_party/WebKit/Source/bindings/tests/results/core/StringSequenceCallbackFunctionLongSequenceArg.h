@@ -13,6 +13,7 @@
 #ifndef StringSequenceCallbackFunctionLongSequenceArg_h
 #define StringSequenceCallbackFunctionLongSequenceArg_h
 
+#include "bindings/core/v8/NativeValueTraits.h"
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "bindings/core/v8/TraceWrapperV8Reference.h"
 #include "core/CoreExport.h"
@@ -43,6 +44,11 @@ class CORE_EXPORT StringSequenceCallbackFunctionLongSequenceArg final : public G
 
   RefPtr<ScriptState> m_scriptState;
   TraceWrapperV8Reference<v8::Function> m_callback;
+};
+
+template <>
+struct NativeValueTraits<StringSequenceCallbackFunctionLongSequenceArg> : public NativeValueTraitsBase<StringSequenceCallbackFunctionLongSequenceArg> {
+  CORE_EXPORT static StringSequenceCallbackFunctionLongSequenceArg* nativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
 };
 
 }  // namespace blink

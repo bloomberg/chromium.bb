@@ -12,6 +12,8 @@
 #include "LongOrTestDictionary.h"
 
 #include "bindings/core/v8/DoubleOrString.h"
+#include "bindings/core/v8/IDLTypes.h"
+#include "bindings/core/v8/NativeValueTraitsImpl.h"
 #include "bindings/core/v8/TestInterface2OrUint8Array.h"
 #include "bindings/core/v8/ToV8.h"
 
@@ -87,7 +89,7 @@ void V8LongOrTestDictionary::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v
   }
 
   if (v8Value->IsNumber()) {
-    int32_t cppValue = toInt32(isolate, v8Value, NormalConversion, exceptionState);
+    int32_t cppValue = NativeValueTraits<IDLLong>::nativeValue(isolate, v8Value, exceptionState, NormalConversion);
     if (exceptionState.hadException())
       return;
     impl.setLong(cppValue);
@@ -95,7 +97,7 @@ void V8LongOrTestDictionary::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v
   }
 
   {
-    int32_t cppValue = toInt32(isolate, v8Value, NormalConversion, exceptionState);
+    int32_t cppValue = NativeValueTraits<IDLLong>::nativeValue(isolate, v8Value, exceptionState, NormalConversion);
     if (exceptionState.hadException())
       return;
     impl.setLong(cppValue);

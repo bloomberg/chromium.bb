@@ -4,6 +4,7 @@
 
 #include "modules/serviceworkers/ForeignFetchRespondWithObserver.h"
 
+#include "bindings/modules/v8/V8ForeignFetchResponse.h"
 #include "modules/fetch/Response.h"
 #include "modules/serviceworkers/ForeignFetchResponse.h"
 #include "platform/loader/fetch/CrossOriginAccessControl.h"

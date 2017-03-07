@@ -12,6 +12,7 @@
 #ifndef V8TestPermissiveDictionary_h
 #define V8TestPermissiveDictionary_h
 
+#include "bindings/core/v8/NativeValueTraits.h"
 #include "bindings/core/v8/ToV8.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/tests/idls/core/TestPermissiveDictionary.h"
@@ -40,8 +41,8 @@ inline void v8SetReturnValue(const CallbackInfo& callbackInfo, TestPermissiveDic
 }
 
 template <>
-struct NativeValueTraits<TestPermissiveDictionary> {
-  static TestPermissiveDictionary nativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
+struct NativeValueTraits<TestPermissiveDictionary> : public NativeValueTraitsBase<TestPermissiveDictionary> {
+  CORE_EXPORT static TestPermissiveDictionary nativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
 };
 
 template <>

@@ -197,4 +197,8 @@ TestConstants* V8TestConstants::toImplWithTypeCheck(v8::Isolate* isolate, v8::Lo
   return hasInstance(value, isolate) ? toImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
 }
 
+TestConstants* NativeValueTraits<TestConstants>::nativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
+  return V8TestConstants::toImplWithTypeCheck(isolate, value);
+}
+
 }  // namespace blink

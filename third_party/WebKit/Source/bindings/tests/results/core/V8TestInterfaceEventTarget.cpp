@@ -129,4 +129,8 @@ TestInterfaceEventTarget* V8TestInterfaceEventTarget::toImplWithTypeCheck(v8::Is
   return hasInstance(value, isolate) ? toImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
 }
 
+TestInterfaceEventTarget* NativeValueTraits<TestInterfaceEventTarget>::nativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
+  return V8TestInterfaceEventTarget::toImplWithTypeCheck(isolate, value);
+}
+
 }  // namespace blink

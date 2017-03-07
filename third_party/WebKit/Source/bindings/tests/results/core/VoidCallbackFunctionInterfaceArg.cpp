@@ -74,4 +74,8 @@ bool VoidCallbackFunctionInterfaceArg::call(ScriptWrappable* scriptWrappable, HT
   return false;
 }
 
+VoidCallbackFunctionInterfaceArg* NativeValueTraits<VoidCallbackFunctionInterfaceArg>::nativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
+  return VoidCallbackFunctionInterfaceArg::create(ScriptState::current(isolate), value);
+}
+
 }  // namespace blink

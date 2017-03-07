@@ -101,7 +101,7 @@ void V8ArrayBufferOrArrayBufferViewOrDictionary::toImpl(v8::Isolate* isolate, v8
   }
 
   if (isUndefinedOrNull(v8Value) || v8Value->IsObject()) {
-    Dictionary cppValue = Dictionary(isolate, v8Value, exceptionState);
+    Dictionary cppValue = NativeValueTraits<Dictionary>::nativeValue(isolate, v8Value, exceptionState);
     if (exceptionState.hadException())
       return;
     impl.setDictionary(cppValue);

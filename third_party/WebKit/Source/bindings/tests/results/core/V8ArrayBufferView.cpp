@@ -12,6 +12,8 @@
 #include "V8ArrayBufferView.h"
 
 #include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/IDLTypes.h"
+#include "bindings/core/v8/NativeValueTraitsImpl.h"
 #include "bindings/core/v8/V8ArrayBuffer.h"
 #include "bindings/core/v8/V8DOMConfiguration.h"
 #include "bindings/core/v8/V8DataView.h"
@@ -95,6 +97,10 @@ TestArrayBufferView* V8ArrayBufferView::toImpl(v8::Local<v8::Object> object) {
 
 TestArrayBufferView* V8ArrayBufferView::toImplWithTypeCheck(v8::Isolate* isolate, v8::Local<v8::Value> value) {
   return value->IsArrayBufferView() ? toImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
+}
+
+TestArrayBufferView* NativeValueTraits<TestArrayBufferView>::nativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
+  return V8ArrayBufferView::toImplWithTypeCheck(isolate, value);
 }
 
 }  // namespace blink

@@ -13,6 +13,7 @@
 #define V8TestInterface_h
 
 #include "bindings/core/v8/GeneratedCodeHelper.h"
+#include "bindings/core/v8/NativeValueTraits.h"
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "bindings/core/v8/StringOrDouble.h"
 #include "bindings/core/v8/ToV8.h"
@@ -218,6 +219,11 @@ class V8TestInterface {
 
  private:
   static InstallTemplateFunction installV8TestInterfaceTemplateFunction;
+};
+
+template <>
+struct NativeValueTraits<TestInterfaceImplementation> : public NativeValueTraitsBase<TestInterfaceImplementation> {
+  CORE_EXPORT static TestInterfaceImplementation* nativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
 };
 
 template <>

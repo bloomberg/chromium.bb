@@ -17,6 +17,8 @@
 #include "bindings/core/v8/Dictionary.h"
 #include "bindings/core/v8/DoubleOrString.h"
 #include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/IDLTypes.h"
+#include "bindings/core/v8/NativeValueTraitsImpl.h"
 #include "bindings/core/v8/ScriptCallStack.h"
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptState.h"
@@ -187,7 +189,7 @@ static void dateAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8:
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestObject", "dateAttribute");
 
   // Prepare the value to be set.
-  double cppValue = toCoreDate(info.GetIsolate(), v8Value, exceptionState);
+  double cppValue = NativeValueTraits<IDLDate>::nativeValue(info.GetIsolate(), v8Value, exceptionState);
   if (exceptionState.hadException())
     return;
 
@@ -229,7 +231,7 @@ static void byteStringAttributeAttributeSetter(v8::Local<v8::Value> v8Value, con
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestObject", "byteStringAttribute");
 
   // Prepare the value to be set.
-  V8StringResource<> cppValue = toByteString(info.GetIsolate(), v8Value, exceptionState);
+  V8StringResource<> cppValue = NativeValueTraits<IDLByteString>::nativeValue(info.GetIsolate(), v8Value, exceptionState);
   if (exceptionState.hadException())
     return;
 
@@ -251,7 +253,7 @@ static void usvStringAttributeAttributeSetter(v8::Local<v8::Value> v8Value, cons
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestObject", "usvStringAttribute");
 
   // Prepare the value to be set.
-  V8StringResource<> cppValue = toUSVString(info.GetIsolate(), v8Value, exceptionState);
+  V8StringResource<> cppValue = NativeValueTraits<IDLUSVString>::nativeValue(info.GetIsolate(), v8Value, exceptionState);
   if (exceptionState.hadException())
     return;
 
@@ -273,7 +275,7 @@ static void domTimeStampAttributeAttributeSetter(v8::Local<v8::Value> v8Value, c
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestObject", "domTimeStampAttribute");
 
   // Prepare the value to be set.
-  uint64_t cppValue = toUInt64(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
+  uint64_t cppValue = NativeValueTraits<IDLUnsignedLongLong>::nativeValue(info.GetIsolate(), v8Value, exceptionState, NormalConversion);
   if (exceptionState.hadException())
     return;
 
@@ -295,7 +297,7 @@ static void booleanAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const 
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestObject", "booleanAttribute");
 
   // Prepare the value to be set.
-  bool cppValue = toBoolean(info.GetIsolate(), v8Value, exceptionState);
+  bool cppValue = NativeValueTraits<IDLBoolean>::nativeValue(info.GetIsolate(), v8Value, exceptionState);
   if (exceptionState.hadException())
     return;
 
@@ -317,7 +319,7 @@ static void byteAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8:
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestObject", "byteAttribute");
 
   // Prepare the value to be set.
-  int8_t cppValue = toInt8(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
+  int8_t cppValue = NativeValueTraits<IDLByte>::nativeValue(info.GetIsolate(), v8Value, exceptionState, NormalConversion);
   if (exceptionState.hadException())
     return;
 
@@ -339,7 +341,7 @@ static void doubleAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestObject", "doubleAttribute");
 
   // Prepare the value to be set.
-  double cppValue = toRestrictedDouble(info.GetIsolate(), v8Value, exceptionState);
+  double cppValue = NativeValueTraits<IDLDouble>::nativeValue(info.GetIsolate(), v8Value, exceptionState);
   if (exceptionState.hadException())
     return;
 
@@ -361,7 +363,7 @@ static void floatAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestObject", "floatAttribute");
 
   // Prepare the value to be set.
-  float cppValue = toRestrictedFloat(info.GetIsolate(), v8Value, exceptionState);
+  float cppValue = NativeValueTraits<IDLFloat>::nativeValue(info.GetIsolate(), v8Value, exceptionState);
   if (exceptionState.hadException())
     return;
 
@@ -383,7 +385,7 @@ static void longAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8:
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestObject", "longAttribute");
 
   // Prepare the value to be set.
-  int32_t cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
+  int32_t cppValue = NativeValueTraits<IDLLong>::nativeValue(info.GetIsolate(), v8Value, exceptionState, NormalConversion);
   if (exceptionState.hadException())
     return;
 
@@ -405,7 +407,7 @@ static void longLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestObject", "longLongAttribute");
 
   // Prepare the value to be set.
-  int64_t cppValue = toInt64(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
+  int64_t cppValue = NativeValueTraits<IDLLongLong>::nativeValue(info.GetIsolate(), v8Value, exceptionState, NormalConversion);
   if (exceptionState.hadException())
     return;
 
@@ -427,7 +429,7 @@ static void octetAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestObject", "octetAttribute");
 
   // Prepare the value to be set.
-  uint8_t cppValue = toUInt8(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
+  uint8_t cppValue = NativeValueTraits<IDLOctet>::nativeValue(info.GetIsolate(), v8Value, exceptionState, NormalConversion);
   if (exceptionState.hadException())
     return;
 
@@ -449,7 +451,7 @@ static void shortAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestObject", "shortAttribute");
 
   // Prepare the value to be set.
-  int16_t cppValue = toInt16(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
+  int16_t cppValue = NativeValueTraits<IDLShort>::nativeValue(info.GetIsolate(), v8Value, exceptionState, NormalConversion);
   if (exceptionState.hadException())
     return;
 
@@ -471,7 +473,7 @@ static void unrestrictedDoubleAttributeAttributeSetter(v8::Local<v8::Value> v8Va
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestObject", "unrestrictedDoubleAttribute");
 
   // Prepare the value to be set.
-  double cppValue = toDouble(info.GetIsolate(), v8Value, exceptionState);
+  double cppValue = NativeValueTraits<IDLUnrestrictedDouble>::nativeValue(info.GetIsolate(), v8Value, exceptionState);
   if (exceptionState.hadException())
     return;
 
@@ -493,7 +495,7 @@ static void unrestrictedFloatAttributeAttributeSetter(v8::Local<v8::Value> v8Val
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestObject", "unrestrictedFloatAttribute");
 
   // Prepare the value to be set.
-  float cppValue = toFloat(info.GetIsolate(), v8Value, exceptionState);
+  float cppValue = NativeValueTraits<IDLUnrestrictedFloat>::nativeValue(info.GetIsolate(), v8Value, exceptionState);
   if (exceptionState.hadException())
     return;
 
@@ -515,7 +517,7 @@ static void unsignedLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value, c
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestObject", "unsignedLongAttribute");
 
   // Prepare the value to be set.
-  uint32_t cppValue = toUInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
+  uint32_t cppValue = NativeValueTraits<IDLUnsignedLong>::nativeValue(info.GetIsolate(), v8Value, exceptionState, NormalConversion);
   if (exceptionState.hadException())
     return;
 
@@ -537,7 +539,7 @@ static void unsignedLongLongAttributeAttributeSetter(v8::Local<v8::Value> v8Valu
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestObject", "unsignedLongLongAttribute");
 
   // Prepare the value to be set.
-  uint64_t cppValue = toUInt64(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
+  uint64_t cppValue = NativeValueTraits<IDLUnsignedLongLong>::nativeValue(info.GetIsolate(), v8Value, exceptionState, NormalConversion);
   if (exceptionState.hadException())
     return;
 
@@ -559,7 +561,7 @@ static void unsignedShortAttributeAttributeSetter(v8::Local<v8::Value> v8Value, 
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestObject", "unsignedShortAttribute");
 
   // Prepare the value to be set.
-  uint16_t cppValue = toUInt16(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
+  uint16_t cppValue = NativeValueTraits<IDLUnsignedShort>::nativeValue(info.GetIsolate(), v8Value, exceptionState, NormalConversion);
   if (exceptionState.hadException())
     return;
 
@@ -633,7 +635,7 @@ static void cssAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestObject", "cssAttribute");
 
   // Prepare the value to be set.
-  int32_t cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
+  int32_t cppValue = NativeValueTraits<IDLLong>::nativeValue(info.GetIsolate(), v8Value, exceptionState, NormalConversion);
   if (exceptionState.hadException())
     return;
 
@@ -655,7 +657,7 @@ static void imeAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestObject", "imeAttribute");
 
   // Prepare the value to be set.
-  int32_t cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
+  int32_t cppValue = NativeValueTraits<IDLLong>::nativeValue(info.GetIsolate(), v8Value, exceptionState, NormalConversion);
   if (exceptionState.hadException())
     return;
 
@@ -677,7 +679,7 @@ static void svgAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestObject", "svgAttribute");
 
   // Prepare the value to be set.
-  int32_t cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
+  int32_t cppValue = NativeValueTraits<IDLLong>::nativeValue(info.GetIsolate(), v8Value, exceptionState, NormalConversion);
   if (exceptionState.hadException())
     return;
 
@@ -699,7 +701,7 @@ static void xmlAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestObject", "xmlAttribute");
 
   // Prepare the value to be set.
-  int32_t cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
+  int32_t cppValue = NativeValueTraits<IDLLong>::nativeValue(info.GetIsolate(), v8Value, exceptionState, NormalConversion);
   if (exceptionState.hadException())
     return;
 
@@ -739,7 +741,7 @@ static void serializedScriptValueAttributeAttributeSetter(v8::Local<v8::Value> v
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestObject", "serializedScriptValueAttribute");
 
   // Prepare the value to be set.
-  RefPtr<SerializedScriptValue> cppValue = SerializedScriptValue::serialize(info.GetIsolate(), v8Value, nullptr, nullptr, exceptionState);
+  RefPtr<SerializedScriptValue> cppValue = NativeValueTraits<SerializedScriptValue>::nativeValue(info.GetIsolate(), v8Value, exceptionState);
   if (exceptionState.hadException())
     return;
 
@@ -1244,7 +1246,7 @@ static void longOrNullAttributeAttributeSetter(v8::Local<v8::Value> v8Value, con
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestObject", "longOrNullAttribute");
 
   // Prepare the value to be set.
-  int32_t cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
+  int32_t cppValue = NativeValueTraits<IDLLong>::nativeValue(info.GetIsolate(), v8Value, exceptionState, NormalConversion);
   if (exceptionState.hadException())
     return;
 
@@ -1370,7 +1372,7 @@ static void staticLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value, con
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestObject", "staticLongAttribute");
 
   // Prepare the value to be set.
-  int32_t cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
+  int32_t cppValue = NativeValueTraits<IDLLong>::nativeValue(info.GetIsolate(), v8Value, exceptionState, NormalConversion);
   if (exceptionState.hadException())
     return;
 
@@ -1568,7 +1570,7 @@ static void activityLoggingAccessForAllWorldsLongAttributeAttributeSetter(v8::Lo
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestObject", "activityLoggingAccessForAllWorldsLongAttribute");
 
   // Prepare the value to be set.
-  int32_t cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
+  int32_t cppValue = NativeValueTraits<IDLLong>::nativeValue(info.GetIsolate(), v8Value, exceptionState, NormalConversion);
   if (exceptionState.hadException())
     return;
 
@@ -1590,7 +1592,7 @@ static void activityLoggingGetterForAllWorldsLongAttributeAttributeSetter(v8::Lo
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestObject", "activityLoggingGetterForAllWorldsLongAttribute");
 
   // Prepare the value to be set.
-  int32_t cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
+  int32_t cppValue = NativeValueTraits<IDLLong>::nativeValue(info.GetIsolate(), v8Value, exceptionState, NormalConversion);
   if (exceptionState.hadException())
     return;
 
@@ -1612,7 +1614,7 @@ static void activityLoggingSetterForAllWorldsLongAttributeAttributeSetter(v8::Lo
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestObject", "activityLoggingSetterForAllWorldsLongAttribute");
 
   // Prepare the value to be set.
-  int32_t cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
+  int32_t cppValue = NativeValueTraits<IDLLong>::nativeValue(info.GetIsolate(), v8Value, exceptionState, NormalConversion);
   if (exceptionState.hadException())
     return;
 
@@ -1830,7 +1832,7 @@ static void customGetterLongAttributeAttributeSetter(v8::Local<v8::Value> v8Valu
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestObject", "customGetterLongAttribute");
 
   // Prepare the value to be set.
-  int32_t cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
+  int32_t cppValue = NativeValueTraits<IDLLong>::nativeValue(info.GetIsolate(), v8Value, exceptionState, NormalConversion);
   if (exceptionState.hadException())
     return;
 
@@ -1860,7 +1862,7 @@ static void deprecatedLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value,
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestObject", "deprecatedLongAttribute");
 
   // Prepare the value to be set.
-  int32_t cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
+  int32_t cppValue = NativeValueTraits<IDLLong>::nativeValue(info.GetIsolate(), v8Value, exceptionState, NormalConversion);
   if (exceptionState.hadException())
     return;
 
@@ -1882,7 +1884,7 @@ static void enforceRangeLongAttributeAttributeSetter(v8::Local<v8::Value> v8Valu
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestObject", "enforceRangeLongAttribute");
 
   // Prepare the value to be set.
-  int32_t cppValue = toInt32(info.GetIsolate(), v8Value, EnforceRange, exceptionState);
+  int32_t cppValue = NativeValueTraits<IDLLong>::nativeValue(info.GetIsolate(), v8Value, exceptionState, EnforceRange);
   if (exceptionState.hadException())
     return;
 
@@ -1904,7 +1906,7 @@ static void implementedAsLongAttributeAttributeSetter(v8::Local<v8::Value> v8Val
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestObject", "implementedAsLongAttribute");
 
   // Prepare the value to be set.
-  int32_t cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
+  int32_t cppValue = NativeValueTraits<IDLLong>::nativeValue(info.GetIsolate(), v8Value, exceptionState, NormalConversion);
   if (exceptionState.hadException())
     return;
 
@@ -1918,7 +1920,7 @@ static void customGetterImplementedAsLongAttributeAttributeSetter(v8::Local<v8::
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestObject", "customGetterImplementedAsLongAttribute");
 
   // Prepare the value to be set.
-  int32_t cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
+  int32_t cppValue = NativeValueTraits<IDLLong>::nativeValue(info.GetIsolate(), v8Value, exceptionState, NormalConversion);
   if (exceptionState.hadException())
     return;
 
@@ -1948,7 +1950,7 @@ static void measureAsLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value, 
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestObject", "measureAsLongAttribute");
 
   // Prepare the value to be set.
-  int32_t cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
+  int32_t cppValue = NativeValueTraits<IDLLong>::nativeValue(info.GetIsolate(), v8Value, exceptionState, NormalConversion);
   if (exceptionState.hadException())
     return;
 
@@ -1970,7 +1972,7 @@ static void notEnumerableLongAttributeAttributeSetter(v8::Local<v8::Value> v8Val
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestObject", "notEnumerableLongAttribute");
 
   // Prepare the value to be set.
-  int32_t cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
+  int32_t cppValue = NativeValueTraits<IDLLong>::nativeValue(info.GetIsolate(), v8Value, exceptionState, NormalConversion);
   if (exceptionState.hadException())
     return;
 
@@ -1992,7 +1994,7 @@ static void originTrialEnabledLongAttributeAttributeSetter(v8::Local<v8::Value> 
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestObject", "originTrialEnabledLongAttribute");
 
   // Prepare the value to be set.
-  int32_t cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
+  int32_t cppValue = NativeValueTraits<IDLLong>::nativeValue(info.GetIsolate(), v8Value, exceptionState, NormalConversion);
   if (exceptionState.hadException())
     return;
 
@@ -2050,7 +2052,7 @@ static void activityLoggingAccessPerWorldBindingsLongAttributeAttributeSetter(v8
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestObject", "activityLoggingAccessPerWorldBindingsLongAttribute");
 
   // Prepare the value to be set.
-  int32_t cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
+  int32_t cppValue = NativeValueTraits<IDLLong>::nativeValue(info.GetIsolate(), v8Value, exceptionState, NormalConversion);
   if (exceptionState.hadException())
     return;
 
@@ -2072,7 +2074,7 @@ static void activityLoggingAccessPerWorldBindingsLongAttributeAttributeSetterFor
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestObject", "activityLoggingAccessPerWorldBindingsLongAttribute");
 
   // Prepare the value to be set.
-  int32_t cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
+  int32_t cppValue = NativeValueTraits<IDLLong>::nativeValue(info.GetIsolate(), v8Value, exceptionState, NormalConversion);
   if (exceptionState.hadException())
     return;
 
@@ -2094,7 +2096,7 @@ static void activityLoggingAccessForIsolatedWorldsPerWorldBindingsLongAttributeA
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestObject", "activityLoggingAccessForIsolatedWorldsPerWorldBindingsLongAttribute");
 
   // Prepare the value to be set.
-  int32_t cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
+  int32_t cppValue = NativeValueTraits<IDLLong>::nativeValue(info.GetIsolate(), v8Value, exceptionState, NormalConversion);
   if (exceptionState.hadException())
     return;
 
@@ -2116,7 +2118,7 @@ static void activityLoggingAccessForIsolatedWorldsPerWorldBindingsLongAttributeA
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestObject", "activityLoggingAccessForIsolatedWorldsPerWorldBindingsLongAttribute");
 
   // Prepare the value to be set.
-  int32_t cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
+  int32_t cppValue = NativeValueTraits<IDLLong>::nativeValue(info.GetIsolate(), v8Value, exceptionState, NormalConversion);
   if (exceptionState.hadException())
     return;
 
@@ -2138,7 +2140,7 @@ static void activityLoggingGetterPerWorldBindingsLongAttributeAttributeSetter(v8
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestObject", "activityLoggingGetterPerWorldBindingsLongAttribute");
 
   // Prepare the value to be set.
-  int32_t cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
+  int32_t cppValue = NativeValueTraits<IDLLong>::nativeValue(info.GetIsolate(), v8Value, exceptionState, NormalConversion);
   if (exceptionState.hadException())
     return;
 
@@ -2160,7 +2162,7 @@ static void activityLoggingGetterPerWorldBindingsLongAttributeAttributeSetterFor
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestObject", "activityLoggingGetterPerWorldBindingsLongAttribute");
 
   // Prepare the value to be set.
-  int32_t cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
+  int32_t cppValue = NativeValueTraits<IDLLong>::nativeValue(info.GetIsolate(), v8Value, exceptionState, NormalConversion);
   if (exceptionState.hadException())
     return;
 
@@ -2182,7 +2184,7 @@ static void activityLoggingGetterForIsolatedWorldsPerWorldBindingsLongAttributeA
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestObject", "activityLoggingGetterForIsolatedWorldsPerWorldBindingsLongAttribute");
 
   // Prepare the value to be set.
-  int32_t cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
+  int32_t cppValue = NativeValueTraits<IDLLong>::nativeValue(info.GetIsolate(), v8Value, exceptionState, NormalConversion);
   if (exceptionState.hadException())
     return;
 
@@ -2204,7 +2206,7 @@ static void activityLoggingGetterForIsolatedWorldsPerWorldBindingsLongAttributeA
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestObject", "activityLoggingGetterForIsolatedWorldsPerWorldBindingsLongAttribute");
 
   // Prepare the value to be set.
-  int32_t cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
+  int32_t cppValue = NativeValueTraits<IDLLong>::nativeValue(info.GetIsolate(), v8Value, exceptionState, NormalConversion);
   if (exceptionState.hadException())
     return;
 
@@ -2302,7 +2304,7 @@ static void locationByteStringAttributeSetter(v8::Local<v8::Value> v8Value, cons
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestObject", "locationByteString");
 
   // Prepare the value to be set.
-  V8StringResource<> cppValue = toByteString(info.GetIsolate(), v8Value, exceptionState);
+  V8StringResource<> cppValue = NativeValueTraits<IDLByteString>::nativeValue(info.GetIsolate(), v8Value, exceptionState);
   if (exceptionState.hadException())
     return;
 
@@ -2439,7 +2441,7 @@ static void raisesExceptionLongAttributeAttributeSetter(v8::Local<v8::Value> v8V
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestObject", "raisesExceptionLongAttribute");
 
   // Prepare the value to be set.
-  int32_t cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
+  int32_t cppValue = NativeValueTraits<IDLLong>::nativeValue(info.GetIsolate(), v8Value, exceptionState, NormalConversion);
   if (exceptionState.hadException())
     return;
 
@@ -2468,7 +2470,7 @@ static void raisesExceptionGetterLongAttributeAttributeSetter(v8::Local<v8::Valu
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestObject", "raisesExceptionGetterLongAttribute");
 
   // Prepare the value to be set.
-  int32_t cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
+  int32_t cppValue = NativeValueTraits<IDLLong>::nativeValue(info.GetIsolate(), v8Value, exceptionState, NormalConversion);
   if (exceptionState.hadException())
     return;
 
@@ -2490,7 +2492,7 @@ static void setterRaisesExceptionLongAttributeAttributeSetter(v8::Local<v8::Valu
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestObject", "setterRaisesExceptionLongAttribute");
 
   // Prepare the value to be set.
-  int32_t cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
+  int32_t cppValue = NativeValueTraits<IDLLong>::nativeValue(info.GetIsolate(), v8Value, exceptionState, NormalConversion);
   if (exceptionState.hadException())
     return;
 
@@ -2651,7 +2653,7 @@ static void reflectBooleanAttributeAttributeSetter(v8::Local<v8::Value> v8Value,
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestObject", "reflectBooleanAttribute");
 
   // Prepare the value to be set.
-  bool cppValue = toBoolean(info.GetIsolate(), v8Value, exceptionState);
+  bool cppValue = NativeValueTraits<IDLBoolean>::nativeValue(info.GetIsolate(), v8Value, exceptionState);
   if (exceptionState.hadException())
     return;
 
@@ -2676,7 +2678,7 @@ static void reflectLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value, co
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestObject", "reflectLongAttribute");
 
   // Prepare the value to be set.
-  int32_t cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
+  int32_t cppValue = NativeValueTraits<IDLLong>::nativeValue(info.GetIsolate(), v8Value, exceptionState, NormalConversion);
   if (exceptionState.hadException())
     return;
 
@@ -2701,7 +2703,7 @@ static void reflectUnsignedShortAttributeAttributeSetter(v8::Local<v8::Value> v8
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestObject", "reflectUnsignedShortAttribute");
 
   // Prepare the value to be set.
-  uint16_t cppValue = toUInt16(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
+  uint16_t cppValue = NativeValueTraits<IDLUnsignedShort>::nativeValue(info.GetIsolate(), v8Value, exceptionState, NormalConversion);
   if (exceptionState.hadException())
     return;
 
@@ -2726,7 +2728,7 @@ static void reflectUnsignedLongAttributeAttributeSetter(v8::Local<v8::Value> v8V
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestObject", "reflectUnsignedLongAttribute");
 
   // Prepare the value to be set.
-  uint32_t cppValue = toUInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
+  uint32_t cppValue = NativeValueTraits<IDLUnsignedLong>::nativeValue(info.GetIsolate(), v8Value, exceptionState, NormalConversion);
   if (exceptionState.hadException())
     return;
 
@@ -3149,7 +3151,7 @@ static void runtimeEnabledLongAttributeAttributeSetter(v8::Local<v8::Value> v8Va
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestObject", "runtimeEnabledLongAttribute");
 
   // Prepare the value to be set.
-  int32_t cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
+  int32_t cppValue = NativeValueTraits<IDLLong>::nativeValue(info.GetIsolate(), v8Value, exceptionState, NormalConversion);
   if (exceptionState.hadException())
     return;
 
@@ -3253,7 +3255,7 @@ static void legacyInterfaceTypeCheckingFloatAttributeAttributeSetter(v8::Local<v
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestObject", "legacyInterfaceTypeCheckingFloatAttribute");
 
   // Prepare the value to be set.
-  float cppValue = toRestrictedFloat(info.GetIsolate(), v8Value, exceptionState);
+  float cppValue = NativeValueTraits<IDLFloat>::nativeValue(info.GetIsolate(), v8Value, exceptionState);
   if (exceptionState.hadException())
     return;
 
@@ -3357,7 +3359,7 @@ static void unforgeableLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestObject", "unforgeableLongAttribute");
 
   // Prepare the value to be set.
-  int32_t cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
+  int32_t cppValue = NativeValueTraits<IDLLong>::nativeValue(info.GetIsolate(), v8Value, exceptionState, NormalConversion);
   if (exceptionState.hadException())
     return;
 
@@ -3379,7 +3381,7 @@ static void measuredLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value, c
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestObject", "measuredLongAttribute");
 
   // Prepare the value to be set.
-  int32_t cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
+  int32_t cppValue = NativeValueTraits<IDLLong>::nativeValue(info.GetIsolate(), v8Value, exceptionState, NormalConversion);
   if (exceptionState.hadException())
     return;
 
@@ -3455,7 +3457,7 @@ static void unscopableLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value,
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestObject", "unscopableLongAttribute");
 
   // Prepare the value to be set.
-  int32_t cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
+  int32_t cppValue = NativeValueTraits<IDLLong>::nativeValue(info.GetIsolate(), v8Value, exceptionState, NormalConversion);
   if (exceptionState.hadException())
     return;
 
@@ -3477,7 +3479,7 @@ static void unscopableOriginTrialEnabledLongAttributeAttributeSetter(v8::Local<v
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestObject", "unscopableOriginTrialEnabledLongAttribute");
 
   // Prepare the value to be set.
-  int32_t cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
+  int32_t cppValue = NativeValueTraits<IDLLong>::nativeValue(info.GetIsolate(), v8Value, exceptionState, NormalConversion);
   if (exceptionState.hadException())
     return;
 
@@ -3499,7 +3501,7 @@ static void unscopableRuntimeEnabledLongAttributeAttributeSetter(v8::Local<v8::V
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestObject", "unscopableRuntimeEnabledLongAttribute");
 
   // Prepare the value to be set.
-  int32_t cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
+  int32_t cppValue = NativeValueTraits<IDLLong>::nativeValue(info.GetIsolate(), v8Value, exceptionState, NormalConversion);
   if (exceptionState.hadException())
     return;
 
@@ -3713,7 +3715,7 @@ static void voidMethodDateArgMethod(const v8::FunctionCallbackInfo<v8::Value>& i
   }
 
   double dateArg;
-  dateArg = toCoreDate(info.GetIsolate(), info[0], exceptionState);
+  dateArg = NativeValueTraits<IDLDate>::nativeValue(info.GetIsolate(), info[0], exceptionState);
   if (exceptionState.hadException())
     return;
 
@@ -3747,7 +3749,7 @@ static void voidMethodByteStringArgMethod(const v8::FunctionCallbackInfo<v8::Val
   }
 
   V8StringResource<> stringArg;
-  stringArg = toByteString(info.GetIsolate(), info[0], exceptionState);
+  stringArg = NativeValueTraits<IDLByteString>::nativeValue(info.GetIsolate(), info[0], exceptionState);
   if (exceptionState.hadException())
     return;
 
@@ -3765,7 +3767,7 @@ static void voidMethodUSVStringArgMethod(const v8::FunctionCallbackInfo<v8::Valu
   }
 
   V8StringResource<> usvStringArg;
-  usvStringArg = toUSVString(info.GetIsolate(), info[0], exceptionState);
+  usvStringArg = NativeValueTraits<IDLUSVString>::nativeValue(info.GetIsolate(), info[0], exceptionState);
   if (exceptionState.hadException())
     return;
 
@@ -3783,7 +3785,7 @@ static void voidMethodDOMTimeStampArgMethod(const v8::FunctionCallbackInfo<v8::V
   }
 
   uint64_t domTimeStampArg;
-  domTimeStampArg = toUInt64(info.GetIsolate(), info[0], NormalConversion, exceptionState);
+  domTimeStampArg = NativeValueTraits<IDLUnsignedLongLong>::nativeValue(info.GetIsolate(), info[0], exceptionState, NormalConversion);
   if (exceptionState.hadException())
     return;
 
@@ -3801,7 +3803,7 @@ static void voidMethodBooleanArgMethod(const v8::FunctionCallbackInfo<v8::Value>
   }
 
   bool booleanArg;
-  booleanArg = toBoolean(info.GetIsolate(), info[0], exceptionState);
+  booleanArg = NativeValueTraits<IDLBoolean>::nativeValue(info.GetIsolate(), info[0], exceptionState);
   if (exceptionState.hadException())
     return;
 
@@ -3819,7 +3821,7 @@ static void voidMethodByteArgMethod(const v8::FunctionCallbackInfo<v8::Value>& i
   }
 
   int8_t byteArg;
-  byteArg = toInt8(info.GetIsolate(), info[0], NormalConversion, exceptionState);
+  byteArg = NativeValueTraits<IDLByte>::nativeValue(info.GetIsolate(), info[0], exceptionState, NormalConversion);
   if (exceptionState.hadException())
     return;
 
@@ -3837,7 +3839,7 @@ static void voidMethodDoubleArgMethod(const v8::FunctionCallbackInfo<v8::Value>&
   }
 
   double doubleArg;
-  doubleArg = toRestrictedDouble(info.GetIsolate(), info[0], exceptionState);
+  doubleArg = NativeValueTraits<IDLDouble>::nativeValue(info.GetIsolate(), info[0], exceptionState);
   if (exceptionState.hadException())
     return;
 
@@ -3855,7 +3857,7 @@ static void voidMethodFloatArgMethod(const v8::FunctionCallbackInfo<v8::Value>& 
   }
 
   float floatArg;
-  floatArg = toRestrictedFloat(info.GetIsolate(), info[0], exceptionState);
+  floatArg = NativeValueTraits<IDLFloat>::nativeValue(info.GetIsolate(), info[0], exceptionState);
   if (exceptionState.hadException())
     return;
 
@@ -3873,7 +3875,7 @@ static void voidMethodLongArgMethod(const v8::FunctionCallbackInfo<v8::Value>& i
   }
 
   int32_t longArg;
-  longArg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
+  longArg = NativeValueTraits<IDLLong>::nativeValue(info.GetIsolate(), info[0], exceptionState, NormalConversion);
   if (exceptionState.hadException())
     return;
 
@@ -3891,7 +3893,7 @@ static void voidMethodLongLongArgMethod(const v8::FunctionCallbackInfo<v8::Value
   }
 
   int64_t longLongArg;
-  longLongArg = toInt64(info.GetIsolate(), info[0], NormalConversion, exceptionState);
+  longLongArg = NativeValueTraits<IDLLongLong>::nativeValue(info.GetIsolate(), info[0], exceptionState, NormalConversion);
   if (exceptionState.hadException())
     return;
 
@@ -3909,7 +3911,7 @@ static void voidMethodOctetArgMethod(const v8::FunctionCallbackInfo<v8::Value>& 
   }
 
   uint8_t octetArg;
-  octetArg = toUInt8(info.GetIsolate(), info[0], NormalConversion, exceptionState);
+  octetArg = NativeValueTraits<IDLOctet>::nativeValue(info.GetIsolate(), info[0], exceptionState, NormalConversion);
   if (exceptionState.hadException())
     return;
 
@@ -3927,7 +3929,7 @@ static void voidMethodShortArgMethod(const v8::FunctionCallbackInfo<v8::Value>& 
   }
 
   int16_t shortArg;
-  shortArg = toInt16(info.GetIsolate(), info[0], NormalConversion, exceptionState);
+  shortArg = NativeValueTraits<IDLShort>::nativeValue(info.GetIsolate(), info[0], exceptionState, NormalConversion);
   if (exceptionState.hadException())
     return;
 
@@ -3945,7 +3947,7 @@ static void voidMethodUnsignedLongArgMethod(const v8::FunctionCallbackInfo<v8::V
   }
 
   uint32_t unsignedLongArg;
-  unsignedLongArg = toUInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
+  unsignedLongArg = NativeValueTraits<IDLUnsignedLong>::nativeValue(info.GetIsolate(), info[0], exceptionState, NormalConversion);
   if (exceptionState.hadException())
     return;
 
@@ -3963,7 +3965,7 @@ static void voidMethodUnsignedLongLongArgMethod(const v8::FunctionCallbackInfo<v
   }
 
   uint64_t unsignedLongLongArg;
-  unsignedLongLongArg = toUInt64(info.GetIsolate(), info[0], NormalConversion, exceptionState);
+  unsignedLongLongArg = NativeValueTraits<IDLUnsignedLongLong>::nativeValue(info.GetIsolate(), info[0], exceptionState, NormalConversion);
   if (exceptionState.hadException())
     return;
 
@@ -3981,7 +3983,7 @@ static void voidMethodUnsignedShortArgMethod(const v8::FunctionCallbackInfo<v8::
   }
 
   uint16_t unsignedShortArg;
-  unsignedShortArg = toUInt16(info.GetIsolate(), info[0], NormalConversion, exceptionState);
+  unsignedShortArg = NativeValueTraits<IDLUnsignedShort>::nativeValue(info.GetIsolate(), info[0], exceptionState, NormalConversion);
   if (exceptionState.hadException())
     return;
 
@@ -4025,7 +4027,7 @@ static void voidMethodLongArgTestInterfaceEmptyArgMethod(const v8::FunctionCallb
 
   int32_t longArg;
   TestInterfaceEmpty* testInterfaceEmptyArg;
-  longArg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
+  longArg = NativeValueTraits<IDLLong>::nativeValue(info.GetIsolate(), info[0], exceptionState, NormalConversion);
   if (exceptionState.hadException())
     return;
 
@@ -4993,7 +4995,7 @@ static void promiseMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
   Dictionary arg2;
   V8StringResource<> arg3;
   Vector<String> variadic;
-  arg1 = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
+  arg1 = NativeValueTraits<IDLLong>::nativeValue(info.GetIsolate(), info[0], exceptionState, NormalConversion);
   if (exceptionState.hadException())
     return;
 
@@ -5002,7 +5004,7 @@ static void promiseMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 
     return;
   }
-  arg2 = Dictionary(info.GetIsolate(), info[1], exceptionState);
+  arg2 = NativeValueTraits<Dictionary>::nativeValue(info.GetIsolate(), info[1], exceptionState);
   if (exceptionState.hadException())
     return;
 
@@ -5040,7 +5042,7 @@ static void promiseMethodWithoutExceptionStateMethod(const v8::FunctionCallbackI
 
     return;
   }
-  arg1 = Dictionary(info.GetIsolate(), info[0], exceptionState);
+  arg1 = NativeValueTraits<Dictionary>::nativeValue(info.GetIsolate(), info[0], exceptionState);
   if (exceptionState.hadException())
     return;
 
@@ -5075,7 +5077,7 @@ static void voidMethodDictionaryArgMethod(const v8::FunctionCallbackInfo<v8::Val
 
     return;
   }
-  dictionaryArg = Dictionary(info.GetIsolate(), info[0], exceptionState);
+  dictionaryArg = NativeValueTraits<Dictionary>::nativeValue(info.GetIsolate(), info[0], exceptionState);
   if (exceptionState.hadException())
     return;
 
@@ -5126,7 +5128,7 @@ static void voidMethodSerializedScriptValueArgMethod(const v8::FunctionCallbackI
   }
 
   RefPtr<SerializedScriptValue> serializedScriptValueArg;
-  serializedScriptValueArg = SerializedScriptValue::serialize(info.GetIsolate(), info[0], nullptr, nullptr, exceptionState);
+  serializedScriptValueArg = NativeValueTraits<SerializedScriptValue>::nativeValue(info.GetIsolate(), info[0], exceptionState);
   if (exceptionState.hadException())
     return;
 
@@ -5186,7 +5188,7 @@ static void voidMethodStringArgLongArgMethod(const v8::FunctionCallbackInfo<v8::
   if (!stringArg.prepare())
     return;
 
-  longArg = toInt32(info.GetIsolate(), info[1], NormalConversion, exceptionState);
+  longArg = NativeValueTraits<IDLLong>::nativeValue(info.GetIsolate(), info[1], exceptionState, NormalConversion);
   if (exceptionState.hadException())
     return;
 
@@ -5254,7 +5256,7 @@ static void voidMethodOptionalLongArgMethod(const v8::FunctionCallbackInfo<v8::V
     impl->voidMethodOptionalLongArg();
     return;
   }
-  optionalLongArg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
+  optionalLongArg = NativeValueTraits<IDLLong>::nativeValue(info.GetIsolate(), info[0], exceptionState, NormalConversion);
   if (exceptionState.hadException())
     return;
 
@@ -5277,7 +5279,7 @@ static void stringMethodOptionalLongArgMethod(const v8::FunctionCallbackInfo<v8:
     v8SetReturnValueString(info, impl->stringMethodOptionalLongArg(), info.GetIsolate());
     return;
   }
-  optionalLongArg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
+  optionalLongArg = NativeValueTraits<IDLLong>::nativeValue(info.GetIsolate(), info[0], exceptionState, NormalConversion);
   if (exceptionState.hadException())
     return;
 
@@ -5300,7 +5302,7 @@ static void testInterfaceEmptyMethodOptionalLongArgMethod(const v8::FunctionCall
     v8SetReturnValue(info, impl->testInterfaceEmptyMethodOptionalLongArg());
     return;
   }
-  optionalLongArg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
+  optionalLongArg = NativeValueTraits<IDLLong>::nativeValue(info.GetIsolate(), info[0], exceptionState, NormalConversion);
   if (exceptionState.hadException())
     return;
 
@@ -5323,7 +5325,7 @@ static void longMethodOptionalLongArgMethod(const v8::FunctionCallbackInfo<v8::V
     v8SetReturnValueInt(info, impl->longMethodOptionalLongArg());
     return;
   }
-  optionalLongArg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
+  optionalLongArg = NativeValueTraits<IDLLong>::nativeValue(info.GetIsolate(), info[0], exceptionState, NormalConversion);
   if (exceptionState.hadException())
     return;
 
@@ -5348,7 +5350,7 @@ static void voidMethodLongArgOptionalLongArgMethod(const v8::FunctionCallbackInf
       break;
     --numArgsPassed;
   }
-  longArg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
+  longArg = NativeValueTraits<IDLLong>::nativeValue(info.GetIsolate(), info[0], exceptionState, NormalConversion);
   if (exceptionState.hadException())
     return;
 
@@ -5356,7 +5358,7 @@ static void voidMethodLongArgOptionalLongArgMethod(const v8::FunctionCallbackInf
     impl->voidMethodLongArgOptionalLongArg(longArg);
     return;
   }
-  optionalLongArg = toInt32(info.GetIsolate(), info[1], NormalConversion, exceptionState);
+  optionalLongArg = NativeValueTraits<IDLLong>::nativeValue(info.GetIsolate(), info[1], exceptionState, NormalConversion);
   if (exceptionState.hadException())
     return;
 
@@ -5382,7 +5384,7 @@ static void voidMethodLongArgOptionalLongArgOptionalLongArgMethod(const v8::Func
       break;
     --numArgsPassed;
   }
-  longArg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
+  longArg = NativeValueTraits<IDLLong>::nativeValue(info.GetIsolate(), info[0], exceptionState, NormalConversion);
   if (exceptionState.hadException())
     return;
 
@@ -5390,7 +5392,7 @@ static void voidMethodLongArgOptionalLongArgOptionalLongArgMethod(const v8::Func
     impl->voidMethodLongArgOptionalLongArgOptionalLongArg(longArg);
     return;
   }
-  optionalLongArg1 = toInt32(info.GetIsolate(), info[1], NormalConversion, exceptionState);
+  optionalLongArg1 = NativeValueTraits<IDLLong>::nativeValue(info.GetIsolate(), info[1], exceptionState, NormalConversion);
   if (exceptionState.hadException())
     return;
 
@@ -5398,7 +5400,7 @@ static void voidMethodLongArgOptionalLongArgOptionalLongArgMethod(const v8::Func
     impl->voidMethodLongArgOptionalLongArgOptionalLongArg(longArg, optionalLongArg1);
     return;
   }
-  optionalLongArg2 = toInt32(info.GetIsolate(), info[2], NormalConversion, exceptionState);
+  optionalLongArg2 = NativeValueTraits<IDLLong>::nativeValue(info.GetIsolate(), info[2], exceptionState, NormalConversion);
   if (exceptionState.hadException())
     return;
 
@@ -5423,7 +5425,7 @@ static void voidMethodLongArgOptionalTestInterfaceEmptyArgMethod(const v8::Funct
       break;
     --numArgsPassed;
   }
-  longArg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
+  longArg = NativeValueTraits<IDLLong>::nativeValue(info.GetIsolate(), info[0], exceptionState, NormalConversion);
   if (exceptionState.hadException())
     return;
 
@@ -5470,7 +5472,7 @@ static void voidMethodTestInterfaceEmptyArgOptionalLongArgMethod(const v8::Funct
     impl->voidMethodTestInterfaceEmptyArgOptionalLongArg(optionalTestInterfaceEmpty);
     return;
   }
-  longArg = toInt32(info.GetIsolate(), info[1], NormalConversion, exceptionState);
+  longArg = NativeValueTraits<IDLLong>::nativeValue(info.GetIsolate(), info[1], exceptionState, NormalConversion);
   if (exceptionState.hadException())
     return;
 
@@ -5488,7 +5490,7 @@ static void voidMethodOptionalDictionaryArgMethod(const v8::FunctionCallbackInfo
 
     return;
   }
-  optionalDictionaryArg = Dictionary(info.GetIsolate(), info[0], exceptionState);
+  optionalDictionaryArg = NativeValueTraits<Dictionary>::nativeValue(info.GetIsolate(), info[0], exceptionState);
   if (exceptionState.hadException())
     return;
 
@@ -5502,7 +5504,7 @@ static void voidMethodDefaultByteStringArgMethod(const v8::FunctionCallbackInfo<
 
   V8StringResource<> defaultByteStringArg;
   if (!info[0]->IsUndefined()) {
-    defaultByteStringArg = toByteString(info.GetIsolate(), info[0], exceptionState);
+    defaultByteStringArg = NativeValueTraits<IDLByteString>::nativeValue(info.GetIsolate(), info[0], exceptionState);
     if (exceptionState.hadException())
       return;
   } else {
@@ -5536,21 +5538,21 @@ static void voidMethodDefaultIntegerArgsMethod(const v8::FunctionCallbackInfo<v8
   int64_t defaultLongLongArg;
   uint32_t defaultUnsignedArg;
   if (!info[0]->IsUndefined()) {
-    defaultLongArg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
+    defaultLongArg = NativeValueTraits<IDLLong>::nativeValue(info.GetIsolate(), info[0], exceptionState, NormalConversion);
     if (exceptionState.hadException())
       return;
   } else {
     defaultLongArg = 10;
   }
   if (!info[1]->IsUndefined()) {
-    defaultLongLongArg = toInt64(info.GetIsolate(), info[1], NormalConversion, exceptionState);
+    defaultLongLongArg = NativeValueTraits<IDLLongLong>::nativeValue(info.GetIsolate(), info[1], exceptionState, NormalConversion);
     if (exceptionState.hadException())
       return;
   } else {
     defaultLongLongArg = -10;
   }
   if (!info[2]->IsUndefined()) {
-    defaultUnsignedArg = toUInt32(info.GetIsolate(), info[2], NormalConversion, exceptionState);
+    defaultUnsignedArg = NativeValueTraits<IDLUnsignedLong>::nativeValue(info.GetIsolate(), info[2], exceptionState, NormalConversion);
     if (exceptionState.hadException())
       return;
   } else {
@@ -5567,7 +5569,7 @@ static void voidMethodDefaultDoubleArgMethod(const v8::FunctionCallbackInfo<v8::
 
   double defaultDoubleArg;
   if (!info[0]->IsUndefined()) {
-    defaultDoubleArg = toRestrictedDouble(info.GetIsolate(), info[0], exceptionState);
+    defaultDoubleArg = NativeValueTraits<IDLDouble>::nativeValue(info.GetIsolate(), info[0], exceptionState);
     if (exceptionState.hadException())
       return;
   } else {
@@ -5584,7 +5586,7 @@ static void voidMethodDefaultTrueBooleanArgMethod(const v8::FunctionCallbackInfo
 
   bool defaultBooleanArg;
   if (!info[0]->IsUndefined()) {
-    defaultBooleanArg = toBoolean(info.GetIsolate(), info[0], exceptionState);
+    defaultBooleanArg = NativeValueTraits<IDLBoolean>::nativeValue(info.GetIsolate(), info[0], exceptionState);
     if (exceptionState.hadException())
       return;
   } else {
@@ -5601,7 +5603,7 @@ static void voidMethodDefaultFalseBooleanArgMethod(const v8::FunctionCallbackInf
 
   bool defaultBooleanArg;
   if (!info[0]->IsUndefined()) {
-    defaultBooleanArg = toBoolean(info.GetIsolate(), info[0], exceptionState);
+    defaultBooleanArg = NativeValueTraits<IDLBoolean>::nativeValue(info.GetIsolate(), info[0], exceptionState);
     if (exceptionState.hadException())
       return;
   } else {
@@ -5618,7 +5620,7 @@ static void voidMethodDefaultNullableByteStringArgMethod(const v8::FunctionCallb
 
   V8StringResource<TreatNullAndUndefinedAsNullString> defaultStringArg;
   if (!info[0]->IsUndefined()) {
-    defaultStringArg = toByteString(info.GetIsolate(), info[0], exceptionState);
+    defaultStringArg = NativeValueTraits<IDLByteString>::nativeValue(info.GetIsolate(), info[0], exceptionState);
     if (exceptionState.hadException())
       return;
   } else {
@@ -5820,7 +5822,7 @@ static void overloadedMethodA1Method(const v8::FunctionCallbackInfo<v8::Value>& 
   TestObject* impl = V8TestObject::toImpl(info.Holder());
 
   int32_t longArg;
-  longArg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
+  longArg = NativeValueTraits<IDLLong>::nativeValue(info.GetIsolate(), info[0], exceptionState, NormalConversion);
   if (exceptionState.hadException())
     return;
 
@@ -5834,11 +5836,11 @@ static void overloadedMethodA2Method(const v8::FunctionCallbackInfo<v8::Value>& 
 
   int32_t longArg1;
   int32_t longArg2;
-  longArg1 = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
+  longArg1 = NativeValueTraits<IDLLong>::nativeValue(info.GetIsolate(), info[0], exceptionState, NormalConversion);
   if (exceptionState.hadException())
     return;
 
-  longArg2 = toInt32(info.GetIsolate(), info[1], NormalConversion, exceptionState);
+  longArg2 = NativeValueTraits<IDLLong>::nativeValue(info.GetIsolate(), info[1], exceptionState, NormalConversion);
   if (exceptionState.hadException())
     return;
 
@@ -5881,7 +5883,7 @@ static void overloadedMethodB1Method(const v8::FunctionCallbackInfo<v8::Value>& 
   TestObject* impl = V8TestObject::toImpl(info.Holder());
 
   int32_t longArg;
-  longArg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
+  longArg = NativeValueTraits<IDLLong>::nativeValue(info.GetIsolate(), info[0], exceptionState, NormalConversion);
   if (exceptionState.hadException())
     return;
 
@@ -5909,7 +5911,7 @@ static void overloadedMethodB2Method(const v8::FunctionCallbackInfo<v8::Value>& 
     impl->overloadedMethodB(stringArg);
     return;
   }
-  longArg = toInt32(info.GetIsolate(), info[1], NormalConversion, exceptionState);
+  longArg = NativeValueTraits<IDLLong>::nativeValue(info.GetIsolate(), info[1], exceptionState, NormalConversion);
   if (exceptionState.hadException())
     return;
 
@@ -5960,7 +5962,7 @@ static void overloadedMethodC1Method(const v8::FunctionCallbackInfo<v8::Value>& 
   TestObject* impl = V8TestObject::toImpl(info.Holder());
 
   int32_t longArg;
-  longArg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
+  longArg = NativeValueTraits<IDLLong>::nativeValue(info.GetIsolate(), info[0], exceptionState, NormalConversion);
   if (exceptionState.hadException())
     return;
 
@@ -6015,7 +6017,7 @@ static void overloadedMethodD1Method(const v8::FunctionCallbackInfo<v8::Value>& 
   TestObject* impl = V8TestObject::toImpl(info.Holder());
 
   int32_t longArg;
-  longArg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
+  longArg = NativeValueTraits<IDLLong>::nativeValue(info.GetIsolate(), info[0], exceptionState, NormalConversion);
   if (exceptionState.hadException())
     return;
 
@@ -6069,7 +6071,7 @@ static void overloadedMethodE1Method(const v8::FunctionCallbackInfo<v8::Value>& 
   TestObject* impl = V8TestObject::toImpl(info.Holder());
 
   int32_t longArg;
-  longArg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
+  longArg = NativeValueTraits<IDLLong>::nativeValue(info.GetIsolate(), info[0], exceptionState, NormalConversion);
   if (exceptionState.hadException())
     return;
 
@@ -6149,7 +6151,7 @@ static void overloadedMethodF2Method(const v8::FunctionCallbackInfo<v8::Value>& 
   TestObject* impl = V8TestObject::toImpl(info.Holder());
 
   double doubleArg;
-  doubleArg = toRestrictedDouble(info.GetIsolate(), info[0], exceptionState);
+  doubleArg = NativeValueTraits<IDLDouble>::nativeValue(info.GetIsolate(), info[0], exceptionState);
   if (exceptionState.hadException())
     return;
 
@@ -6200,7 +6202,7 @@ static void overloadedMethodG1Method(const v8::FunctionCallbackInfo<v8::Value>& 
   TestObject* impl = V8TestObject::toImpl(info.Holder());
 
   int32_t longArg;
-  longArg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
+  longArg = NativeValueTraits<IDLLong>::nativeValue(info.GetIsolate(), info[0], exceptionState, NormalConversion);
   if (exceptionState.hadException())
     return;
 
@@ -6336,7 +6338,7 @@ static void overloadedMethodI2Method(const v8::FunctionCallbackInfo<v8::Value>& 
   TestObject* impl = V8TestObject::toImpl(info.Holder());
 
   double doubleArg;
-  doubleArg = toRestrictedDouble(info.GetIsolate(), info[0], exceptionState);
+  doubleArg = NativeValueTraits<IDLDouble>::nativeValue(info.GetIsolate(), info[0], exceptionState);
   if (exceptionState.hadException())
     return;
 
@@ -6492,7 +6494,7 @@ static void overloadedMethodL1Method(const v8::FunctionCallbackInfo<v8::Value>& 
 
   int32_t longArg;
   Vector<ScriptValue> restArgs;
-  longArg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
+  longArg = NativeValueTraits<IDLLong>::nativeValue(info.GetIsolate(), info[0], exceptionState, NormalConversion);
   if (exceptionState.hadException())
     return;
 
@@ -6659,7 +6661,7 @@ static void promiseOverloadMethod2Method(const v8::FunctionCallbackInfo<v8::Valu
     return;
   }
 
-  arg2 = toRestrictedDouble(info.GetIsolate(), info[1], exceptionState);
+  arg2 = NativeValueTraits<IDLDouble>::nativeValue(info.GetIsolate(), info[1], exceptionState);
   if (exceptionState.hadException())
     return;
 
@@ -6687,7 +6689,7 @@ static void promiseOverloadMethod3Method(const v8::FunctionCallbackInfo<v8::Valu
     return;
   }
 
-  arg2 = toRestrictedDouble(info.GetIsolate(), info[1], exceptionState);
+  arg2 = NativeValueTraits<IDLDouble>::nativeValue(info.GetIsolate(), info[1], exceptionState);
   if (exceptionState.hadException())
     return;
 
@@ -6747,7 +6749,7 @@ static void overloadedPerWorldBindingsMethod2Method(const v8::FunctionCallbackIn
   TestObject* impl = V8TestObject::toImpl(info.Holder());
 
   int32_t longArg;
-  longArg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
+  longArg = NativeValueTraits<IDLLong>::nativeValue(info.GetIsolate(), info[0], exceptionState, NormalConversion);
   if (exceptionState.hadException())
     return;
 
@@ -6786,7 +6788,7 @@ static void overloadedPerWorldBindingsMethod2MethodForMainWorld(const v8::Functi
   TestObject* impl = V8TestObject::toImpl(info.Holder());
 
   int32_t longArg;
-  longArg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
+  longArg = NativeValueTraits<IDLLong>::nativeValue(info.GetIsolate(), info[0], exceptionState, NormalConversion);
   if (exceptionState.hadException())
     return;
 
@@ -6823,7 +6825,7 @@ static void overloadedStaticMethod1Method(const v8::FunctionCallbackInfo<v8::Val
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "overloadedStaticMethod");
 
   int32_t longArg;
-  longArg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
+  longArg = NativeValueTraits<IDLLong>::nativeValue(info.GetIsolate(), info[0], exceptionState, NormalConversion);
   if (exceptionState.hadException())
     return;
 
@@ -6835,11 +6837,11 @@ static void overloadedStaticMethod2Method(const v8::FunctionCallbackInfo<v8::Val
 
   int32_t longArg1;
   int32_t longArg2;
-  longArg1 = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
+  longArg1 = NativeValueTraits<IDLLong>::nativeValue(info.GetIsolate(), info[0], exceptionState, NormalConversion);
   if (exceptionState.hadException())
     return;
 
-  longArg2 = toInt32(info.GetIsolate(), info[1], NormalConversion, exceptionState);
+  longArg2 = NativeValueTraits<IDLLong>::nativeValue(info.GetIsolate(), info[1], exceptionState, NormalConversion);
   if (exceptionState.hadException())
     return;
 
@@ -6889,7 +6891,7 @@ static void itemMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   }
 
   uint32_t index;
-  index = toUInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
+  index = NativeValueTraits<IDLUnsignedLong>::nativeValue(info.GetIsolate(), info[0], exceptionState, NormalConversion);
   if (exceptionState.hadException())
     return;
 
@@ -6911,7 +6913,7 @@ static void setItemMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
 
   uint32_t index;
   V8StringResource<> value;
-  index = toUInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
+  index = NativeValueTraits<IDLUnsignedLong>::nativeValue(info.GetIsolate(), info[0], exceptionState, NormalConversion);
   if (exceptionState.hadException())
     return;
 
@@ -6934,7 +6936,7 @@ static void voidMethodClampUnsignedShortArgMethod(const v8::FunctionCallbackInfo
   }
 
   uint16_t clampUnsignedShortArg;
-  clampUnsignedShortArg = toUInt16(info.GetIsolate(), info[0], Clamp, exceptionState);
+  clampUnsignedShortArg = NativeValueTraits<IDLUnsignedShort>::nativeValue(info.GetIsolate(), info[0], exceptionState, Clamp);
   if (exceptionState.hadException())
     return;
 
@@ -6952,7 +6954,7 @@ static void voidMethodClampUnsignedLongArgMethod(const v8::FunctionCallbackInfo<
   }
 
   uint32_t clampUnsignedLongArg;
-  clampUnsignedLongArg = toUInt32(info.GetIsolate(), info[0], Clamp, exceptionState);
+  clampUnsignedLongArg = NativeValueTraits<IDLUnsignedLong>::nativeValue(info.GetIsolate(), info[0], exceptionState, Clamp);
   if (exceptionState.hadException())
     return;
 
@@ -6979,7 +6981,7 @@ static void voidMethodDefaultUndefinedLongArgMethod(const v8::FunctionCallbackIn
   TestObject* impl = V8TestObject::toImpl(info.Holder());
 
   int32_t defaultUndefinedLongArg;
-  defaultUndefinedLongArg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
+  defaultUndefinedLongArg = NativeValueTraits<IDLLong>::nativeValue(info.GetIsolate(), info[0], exceptionState, NormalConversion);
   if (exceptionState.hadException())
     return;
 
@@ -7008,7 +7010,7 @@ static void voidMethodEnforceRangeLongArgMethod(const v8::FunctionCallbackInfo<v
   }
 
   int32_t enforceRangeLongArg;
-  enforceRangeLongArg = toInt32(info.GetIsolate(), info[0], EnforceRange, exceptionState);
+  enforceRangeLongArg = NativeValueTraits<IDLLong>::nativeValue(info.GetIsolate(), info[0], exceptionState, EnforceRange);
   if (exceptionState.hadException())
     return;
 
@@ -7114,7 +7116,7 @@ static void callWithScriptStateScriptArgumentsVoidMethodOptionalBooleanArgMethod
     impl->callWithScriptStateScriptArgumentsVoidMethodOptionalBooleanArg(scriptState, scriptArguments);
     return;
   }
-  optionalBooleanArg = toBoolean(info.GetIsolate(), info[0], exceptionState);
+  optionalBooleanArg = NativeValueTraits<IDLBoolean>::nativeValue(info.GetIsolate(), info[0], exceptionState);
   if (exceptionState.hadException())
     return;
 
@@ -7204,7 +7206,7 @@ static void measureOverloadedMethod2Method(const v8::FunctionCallbackInfo<v8::Va
   TestObject* impl = V8TestObject::toImpl(info.Holder());
 
   int32_t arg;
-  arg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
+  arg = NativeValueTraits<IDLLong>::nativeValue(info.GetIsolate(), info[0], exceptionState, NormalConversion);
   if (exceptionState.hadException())
     return;
 
@@ -7251,7 +7253,7 @@ static void DeprecateAsOverloadedMethod2Method(const v8::FunctionCallbackInfo<v8
   TestObject* impl = V8TestObject::toImpl(info.Holder());
 
   int32_t arg;
-  arg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
+  arg = NativeValueTraits<IDLLong>::nativeValue(info.GetIsolate(), info[0], exceptionState, NormalConversion);
   if (exceptionState.hadException())
     return;
 
@@ -7298,7 +7300,7 @@ static void DeprecateAsSameValueOverloadedMethod2Method(const v8::FunctionCallba
   TestObject* impl = V8TestObject::toImpl(info.Holder());
 
   int32_t arg;
-  arg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
+  arg = NativeValueTraits<IDLLong>::nativeValue(info.GetIsolate(), info[0], exceptionState, NormalConversion);
   if (exceptionState.hadException())
     return;
 
@@ -7345,7 +7347,7 @@ static void measureAsOverloadedMethod2Method(const v8::FunctionCallbackInfo<v8::
   TestObject* impl = V8TestObject::toImpl(info.Holder());
 
   int32_t arg;
-  arg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
+  arg = NativeValueTraits<IDLLong>::nativeValue(info.GetIsolate(), info[0], exceptionState, NormalConversion);
   if (exceptionState.hadException())
     return;
 
@@ -7392,7 +7394,7 @@ static void measureAsSameValueOverloadedMethod2Method(const v8::FunctionCallback
   TestObject* impl = V8TestObject::toImpl(info.Holder());
 
   int32_t arg;
-  arg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
+  arg = NativeValueTraits<IDLLong>::nativeValue(info.GetIsolate(), info[0], exceptionState, NormalConversion);
   if (exceptionState.hadException())
     return;
 
@@ -7439,7 +7441,7 @@ static void deprecateAsMeasureAsSameValueOverloadedMethod2Method(const v8::Funct
   TestObject* impl = V8TestObject::toImpl(info.Holder());
 
   int32_t arg;
-  arg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
+  arg = NativeValueTraits<IDLLong>::nativeValue(info.GetIsolate(), info[0], exceptionState, NormalConversion);
   if (exceptionState.hadException())
     return;
 
@@ -7488,7 +7490,7 @@ static void deprecateAsSameValueMeasureAsOverloadedMethod2Method(const v8::Funct
   TestObject* impl = V8TestObject::toImpl(info.Holder());
 
   int32_t arg;
-  arg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
+  arg = NativeValueTraits<IDLLong>::nativeValue(info.GetIsolate(), info[0], exceptionState, NormalConversion);
   if (exceptionState.hadException())
     return;
 
@@ -7537,7 +7539,7 @@ static void deprecateAsSameValueMeasureAsSameValueOverloadedMethod2Method(const 
   TestObject* impl = V8TestObject::toImpl(info.Holder());
 
   int32_t arg;
-  arg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
+  arg = NativeValueTraits<IDLLong>::nativeValue(info.GetIsolate(), info[0], exceptionState, NormalConversion);
   if (exceptionState.hadException())
     return;
 
@@ -7767,7 +7769,7 @@ static void raisesExceptionVoidMethodOptionalLongArgMethod(const v8::FunctionCal
     }
     return;
   }
-  optionalLongArg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
+  optionalLongArg = NativeValueTraits<IDLLong>::nativeValue(info.GetIsolate(), info[0], exceptionState, NormalConversion);
   if (exceptionState.hadException())
     return;
 
@@ -7859,7 +7861,7 @@ static void callWithExecutionContextRaisesExceptionVoidMethodLongArgMethod(const
   }
 
   int32_t longArg;
-  longArg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
+  longArg = NativeValueTraits<IDLLong>::nativeValue(info.GetIsolate(), info[0], exceptionState, NormalConversion);
   if (exceptionState.hadException())
     return;
 
@@ -7905,7 +7907,7 @@ static void runtimeEnabledOverloadedVoidMethod2Method(const v8::FunctionCallback
   TestObject* impl = V8TestObject::toImpl(info.Holder());
 
   int32_t longArg;
-  longArg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
+  longArg = NativeValueTraits<IDLLong>::nativeValue(info.GetIsolate(), info[0], exceptionState, NormalConversion);
   if (exceptionState.hadException())
     return;
 
@@ -7976,7 +7978,7 @@ static void partiallyRuntimeEnabledOverloadedVoidMethod3Method(const v8::Functio
 
   int32_t longArg;
   V8StringResource<> stringArg;
-  longArg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
+  longArg = NativeValueTraits<IDLLong>::nativeValue(info.GetIsolate(), info[0], exceptionState, NormalConversion);
   if (exceptionState.hadException())
     return;
 
@@ -7995,7 +7997,7 @@ static void partiallyRuntimeEnabledOverloadedVoidMethod4Method(const v8::Functio
   int32_t longArg;
   V8StringResource<> stringArg;
   TestInterfaceImplementation* testInterfaceArg;
-  longArg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
+  longArg = NativeValueTraits<IDLLong>::nativeValue(info.GetIsolate(), info[0], exceptionState, NormalConversion);
   if (exceptionState.hadException())
     return;
 
@@ -8355,7 +8357,7 @@ static void hasMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   }
 
   int32_t key;
-  key = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
+  key = NativeValueTraits<IDLLong>::nativeValue(info.GetIsolate(), info[0], exceptionState, NormalConversion);
   if (exceptionState.hadException())
     return;
 
@@ -8379,7 +8381,7 @@ static void getMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   }
 
   int32_t key;
-  key = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
+  key = NativeValueTraits<IDLLong>::nativeValue(info.GetIsolate(), info[0], exceptionState, NormalConversion);
   if (exceptionState.hadException())
     return;
 
@@ -8403,7 +8405,7 @@ static void deleteMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   }
 
   int32_t key;
-  key = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
+  key = NativeValueTraits<IDLLong>::nativeValue(info.GetIsolate(), info[0], exceptionState, NormalConversion);
   if (exceptionState.hadException())
     return;
 
@@ -8428,7 +8430,7 @@ static void setMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
 
   int32_t key;
   StringOrDouble value;
-  key = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
+  key = NativeValueTraits<IDLLong>::nativeValue(info.GetIsolate(), info[0], exceptionState, NormalConversion);
   if (exceptionState.hadException())
     return;
 
@@ -11715,6 +11717,10 @@ v8::Local<v8::Object> V8TestObject::findInstanceInPrototypeChain(v8::Local<v8::V
 
 TestObject* V8TestObject::toImplWithTypeCheck(v8::Isolate* isolate, v8::Local<v8::Value> value) {
   return hasInstance(value, isolate) ? toImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
+}
+
+TestObject* NativeValueTraits<TestObject>::nativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
+  return V8TestObject::toImplWithTypeCheck(isolate, value);
 }
 
 void V8TestObject::preparePrototypeAndInterfaceObject(v8::Local<v8::Context> context, const DOMWrapperWorld& world, v8::Local<v8::Object> prototypeObject, v8::Local<v8::Function> interfaceObject, v8::Local<v8::FunctionTemplate> interfaceTemplate) {

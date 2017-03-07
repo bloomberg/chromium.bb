@@ -12,6 +12,8 @@
 #include "V8TestInterface2.h"
 
 #include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/IDLTypes.h"
+#include "bindings/core/v8/NativeValueTraitsImpl.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/V8DOMConfiguration.h"
@@ -68,7 +70,7 @@ static void legacyCallerMethod(const v8::FunctionCallbackInfo<v8::Value>& info) 
   }
 
   uint32_t index;
-  index = toUInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
+  index = NativeValueTraits<IDLUnsignedLong>::nativeValue(info.GetIsolate(), info[0], exceptionState, NormalConversion);
   if (exceptionState.hadException())
     return;
 
@@ -86,7 +88,7 @@ static void itemMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   }
 
   uint32_t index;
-  index = toUInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
+  index = NativeValueTraits<IDLUnsignedLong>::nativeValue(info.GetIsolate(), info[0], exceptionState, NormalConversion);
   if (exceptionState.hadException())
     return;
 
@@ -109,7 +111,7 @@ static void setItemMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
 
   uint32_t index;
   TestInterfaceEmpty* value;
-  index = toUInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
+  index = NativeValueTraits<IDLUnsignedLong>::nativeValue(info.GetIsolate(), info[0], exceptionState, NormalConversion);
   if (exceptionState.hadException())
     return;
 
@@ -138,7 +140,7 @@ static void deleteItemMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   }
 
   uint32_t index;
-  index = toUInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
+  index = NativeValueTraits<IDLUnsignedLong>::nativeValue(info.GetIsolate(), info[0], exceptionState, NormalConversion);
   if (exceptionState.hadException())
     return;
 
@@ -659,6 +661,10 @@ v8::Local<v8::Object> V8TestInterface2::findInstanceInPrototypeChain(v8::Local<v
 
 TestInterface2* V8TestInterface2::toImplWithTypeCheck(v8::Isolate* isolate, v8::Local<v8::Value> value) {
   return hasInstance(value, isolate) ? toImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
+}
+
+TestInterface2* NativeValueTraits<TestInterface2>::nativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
+  return V8TestInterface2::toImplWithTypeCheck(isolate, value);
 }
 
 InstallTemplateFunction V8TestInterface2::installV8TestInterface2TemplateFunction =

@@ -13,6 +13,7 @@
 #ifndef VoidCallbackFunctionInterfaceArg_h
 #define VoidCallbackFunctionInterfaceArg_h
 
+#include "bindings/core/v8/NativeValueTraits.h"
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "bindings/core/v8/TraceWrapperV8Reference.h"
 #include "core/CoreExport.h"
@@ -44,6 +45,11 @@ class CORE_EXPORT VoidCallbackFunctionInterfaceArg final : public GarbageCollect
 
   RefPtr<ScriptState> m_scriptState;
   TraceWrapperV8Reference<v8::Function> m_callback;
+};
+
+template <>
+struct NativeValueTraits<VoidCallbackFunctionInterfaceArg> : public NativeValueTraitsBase<VoidCallbackFunctionInterfaceArg> {
+  CORE_EXPORT static VoidCallbackFunctionInterfaceArg* nativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
 };
 
 }  // namespace blink

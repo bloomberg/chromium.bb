@@ -365,7 +365,8 @@ def includes_for_type(idl_type, extended_attributes=None):
             set(['bindings/%s/v8/V8%s.h' % (component_dir[base_idl_type], base_idl_type)])
         )
     if idl_type.is_basic_type:
-        return set()
+        return set(['bindings/core/v8/IDLTypes.h',
+                    'bindings/core/v8/NativeValueTraitsImpl.h'])
     if base_idl_type.endswith('ConstructorConstructor'):
         # FIXME: rename to NamedConstructor
         # FIXME: replace with a [NamedConstructorAttribute] extended attribute
@@ -474,31 +475,16 @@ def set_component_dirs(new_component_dirs):
 # V8 -> C++
 ################################################################################
 
+# TODO(rakuco): Get rid of this definition altogether and move to NativeValueTraits<T>::nativeValue().
+#               That requires not requiring ExceptionState where it is not used, and we must be careful not
+#               to introduce any performance regressions.
 V8_VALUE_TO_CPP_VALUE = {
     # Basic
-    'Date': 'toCoreDate({isolate}, {v8_value}, exceptionState)',
     'DOMString': '{v8_value}',
-    'ByteString': 'toByteString({isolate}, {arguments})',
-    'USVString': 'toUSVString({isolate}, {arguments})',
-    'boolean': 'toBoolean({isolate}, {arguments})',
-    'float': 'toRestrictedFloat({isolate}, {arguments})',
-    'unrestricted float': 'toFloat({isolate}, {arguments})',
-    'double': 'toRestrictedDouble({isolate}, {arguments})',
-    'unrestricted double': 'toDouble({isolate}, {arguments})',
-    'byte': 'toInt8({isolate}, {arguments})',
-    'octet': 'toUInt8({isolate}, {arguments})',
-    'short': 'toInt16({isolate}, {arguments})',
-    'unsigned short': 'toUInt16({isolate}, {arguments})',
-    'long': 'toInt32({isolate}, {arguments})',
-    'unsigned long': 'toUInt32({isolate}, {arguments})',
-    'long long': 'toInt64({isolate}, {arguments})',
-    'unsigned long long': 'toUInt64({isolate}, {arguments})',
     # Interface types
-    'Dictionary': 'Dictionary({isolate}, {v8_value}, exceptionState)',
     'FlexibleArrayBufferView': 'toFlexibleArrayBufferView({isolate}, {v8_value}, {variable_name}, allocateFlexibleArrayBufferViewStorage({v8_value}))',
     'NodeFilter': 'toNodeFilter({v8_value}, info.Holder(), ScriptState::current({isolate}))',
     'Promise': 'ScriptPromise::cast(ScriptState::current({isolate}), {v8_value})',
-    'SerializedScriptValue': 'SerializedScriptValue::serialize({isolate}, {v8_value}, nullptr, nullptr, exceptionState)',
     'ScriptValue': 'ScriptValue(ScriptState::current({isolate}), {v8_value})',
     'Window': 'toDOMWindow({isolate}, {v8_value})',
     'XPathNSResolver': 'toXPathNSResolver(ScriptState::current({isolate}), {v8_value})',
@@ -560,11 +546,12 @@ def v8_value_to_cpp_value(idl_type, extended_attributes, v8_value, variable_name
             configuration = 'EnforceRange'
         elif 'Clamp' in extended_attributes:
             configuration = 'Clamp'
-        arguments = ', '.join([v8_value, configuration, 'exceptionState'])
+        arguments = ', '.join([v8_value, 'exceptionState', configuration])
     elif idl_type.v8_conversion_needs_exception_state:
         arguments = ', '.join([v8_value, 'exceptionState'])
     else:
         arguments = v8_value
+
     if base_idl_type in V8_VALUE_TO_CPP_VALUE:
         cpp_expression_format = V8_VALUE_TO_CPP_VALUE[base_idl_type]
     elif idl_type.is_array_buffer_or_view:
@@ -579,6 +566,17 @@ def v8_value_to_cpp_value(idl_type, extended_attributes, v8_value, variable_name
     elif idl_type.is_callback_function:
         cpp_expression_format = (
             '{idl_type}::create(ScriptState::current({isolate}), {v8_value})')
+    elif idl_type.v8_conversion_needs_exception_state:
+        # Effectively, this if branch means everything with v8_conversion_needs_exception_state == True
+        # except for unions, sequences and dictionary interfaces.
+        if idl_type.is_nullable:
+            idl_type = idl_type.inner_type
+        if idl_type.is_primitive_type or idl_type.name in ('ByteString', 'Date', 'Promise', 'USVString'):
+            trait_type = 'IDL%s' % idl_type.name
+        else:
+            trait_type = idl_type.name
+        cpp_expression_format = (
+            'NativeValueTraits<%s>::nativeValue({isolate}, {arguments})' % trait_type)
     else:
         cpp_expression_format = (
             'V8{idl_type}::toImplWithTypeCheck({isolate}, {v8_value})')

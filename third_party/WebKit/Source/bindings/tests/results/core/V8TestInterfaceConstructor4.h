@@ -13,6 +13,7 @@
 #define V8TestInterfaceConstructor4_h
 
 #include "bindings/core/v8/GeneratedCodeHelper.h"
+#include "bindings/core/v8/NativeValueTraits.h"
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "bindings/core/v8/ToV8.h"
 #include "bindings/core/v8/V8Binding.h"
@@ -45,6 +46,11 @@ class V8TestInterfaceConstructor4 {
   static const int internalFieldCount = v8DefaultWrapperInternalFieldCount + 0;
 
   // Callback functions
+};
+
+template <>
+struct NativeValueTraits<TestInterfaceConstructor4> : public NativeValueTraitsBase<TestInterfaceConstructor4> {
+  CORE_EXPORT static TestInterfaceConstructor4* nativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
 };
 
 template <>

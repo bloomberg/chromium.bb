@@ -14,6 +14,7 @@
 
 #include "bindings/core/v8/Dictionary.h"
 #include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/NativeValueTraits.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "modules/ModulesExport.h"
 #include "platform/heap/Handle.h"
@@ -73,8 +74,13 @@ inline void v8SetReturnValue(const CallbackInfo& callbackInfo, BooleanOrString& 
 }
 
 template <>
-struct NativeValueTraits<BooleanOrString> {
+struct NativeValueTraits<BooleanOrString> : public NativeValueTraitsBase<BooleanOrString> {
   MODULES_EXPORT static BooleanOrString nativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
+};
+
+template <>
+struct V8TypeOf<BooleanOrString> {
+  typedef V8BooleanOrString Type;
 };
 
 }  // namespace blink

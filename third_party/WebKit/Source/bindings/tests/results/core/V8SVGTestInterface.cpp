@@ -12,6 +12,8 @@
 #include "V8SVGTestInterface.h"
 
 #include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/IDLTypes.h"
+#include "bindings/core/v8/NativeValueTraitsImpl.h"
 #include "bindings/core/v8/V8DOMConfiguration.h"
 #include "bindings/core/v8/V8ObjectConstructor.h"
 #include "core/SVGNames.h"
@@ -123,6 +125,10 @@ v8::Local<v8::Object> V8SVGTestInterface::findInstanceInPrototypeChain(v8::Local
 
 SVGTestInterface* V8SVGTestInterface::toImplWithTypeCheck(v8::Isolate* isolate, v8::Local<v8::Value> value) {
   return hasInstance(value, isolate) ? toImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
+}
+
+SVGTestInterface* NativeValueTraits<SVGTestInterface>::nativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
+  return V8SVGTestInterface::toImplWithTypeCheck(isolate, value);
 }
 
 }  // namespace blink

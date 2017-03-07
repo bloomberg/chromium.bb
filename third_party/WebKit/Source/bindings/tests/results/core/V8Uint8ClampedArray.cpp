@@ -72,4 +72,8 @@ TestUint8ClampedArray* V8Uint8ClampedArray::toImplWithTypeCheck(v8::Isolate* iso
   return value->IsUint8ClampedArray() ? toImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
 }
 
+TestUint8ClampedArray* NativeValueTraits<TestUint8ClampedArray>::nativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
+  return V8Uint8ClampedArray::toImplWithTypeCheck(isolate, value);
+}
+
 }  // namespace blink

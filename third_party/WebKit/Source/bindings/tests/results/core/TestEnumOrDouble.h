@@ -14,6 +14,7 @@
 
 #include "bindings/core/v8/Dictionary.h"
 #include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/NativeValueTraits.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
@@ -73,8 +74,13 @@ inline void v8SetReturnValue(const CallbackInfo& callbackInfo, TestEnumOrDouble&
 }
 
 template <>
-struct NativeValueTraits<TestEnumOrDouble> {
+struct NativeValueTraits<TestEnumOrDouble> : public NativeValueTraitsBase<TestEnumOrDouble> {
   CORE_EXPORT static TestEnumOrDouble nativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
+};
+
+template <>
+struct V8TypeOf<TestEnumOrDouble> {
+  typedef V8TestEnumOrDouble Type;
 };
 
 }  // namespace blink

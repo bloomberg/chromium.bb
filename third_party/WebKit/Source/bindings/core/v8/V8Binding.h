@@ -761,12 +761,12 @@ HeapVector<Member<T>> toMemberNativeArray(v8::Local<v8::Value> value,
 
 // Converts a JavaScript value to an array as per the Web IDL specification:
 // http://www.w3.org/TR/2012/CR-WebIDL-20120419/#es-array
-template <typename VectorType>
+template <typename VectorType,
+          typename ValueType = typename VectorType::ValueType>
 VectorType toImplArray(v8::Local<v8::Value> value,
                        int argumentIndex,
                        v8::Isolate* isolate,
                        ExceptionState& exceptionState) {
-  typedef typename VectorType::ValueType ValueType;
   typedef NativeValueTraits<ValueType> TraitsType;
 
   uint32_t length = 0;
@@ -903,6 +903,10 @@ inline bool toV8Sequence(v8::Local<v8::Value> value,
   return true;
 }
 
+// TODO(rakuco): remove the specializations below (and consequently the
+// non-IDLBase version of NativeValueTraitsBase) once we manage to convert all
+// uses of NativeValueTraits to types that derive from IDLBase or for generated
+// IDL interfaces/dictionaries/unions.
 template <>
 struct NativeValueTraits<String> {
   static inline String nativeValue(v8::Isolate* isolate,

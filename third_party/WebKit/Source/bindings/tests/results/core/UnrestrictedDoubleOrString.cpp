@@ -11,6 +11,8 @@
 // clang-format off
 #include "UnrestrictedDoubleOrString.h"
 
+#include "bindings/core/v8/IDLTypes.h"
+#include "bindings/core/v8/NativeValueTraitsImpl.h"
 #include "bindings/core/v8/ToV8.h"
 
 namespace blink {
@@ -66,7 +68,7 @@ void V8UnrestrictedDoubleOrString::toImpl(v8::Isolate* isolate, v8::Local<v8::Va
     return;
 
   if (v8Value->IsNumber()) {
-    double cppValue = toDouble(isolate, v8Value, exceptionState);
+    double cppValue = NativeValueTraits<IDLUnrestrictedDouble>::nativeValue(isolate, v8Value, exceptionState);
     if (exceptionState.hadException())
       return;
     impl.setUnrestrictedDouble(cppValue);

@@ -76,4 +76,8 @@ bool AnyCallbackFunctionOptionalAnyArg::call(ScriptWrappable* scriptWrappable, S
   return false;
 }
 
+AnyCallbackFunctionOptionalAnyArg* NativeValueTraits<AnyCallbackFunctionOptionalAnyArg>::nativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
+  return AnyCallbackFunctionOptionalAnyArg::create(ScriptState::current(isolate), value);
+}
+
 }  // namespace blink

@@ -14,6 +14,7 @@
 
 #include "bindings/core/v8/Dictionary.h"
 #include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/NativeValueTraits.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8TestDictionary.h"
 #include "core/CoreExport.h"
@@ -74,8 +75,13 @@ inline void v8SetReturnValue(const CallbackInfo& callbackInfo, LongOrTestDiction
 }
 
 template <>
-struct NativeValueTraits<LongOrTestDictionary> {
+struct NativeValueTraits<LongOrTestDictionary> : public NativeValueTraitsBase<LongOrTestDictionary> {
   CORE_EXPORT static LongOrTestDictionary nativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
+};
+
+template <>
+struct V8TypeOf<LongOrTestDictionary> {
+  typedef V8LongOrTestDictionary Type;
 };
 
 }  // namespace blink

@@ -12,6 +12,8 @@
 #include "V8TestPermissiveDictionary.h"
 
 #include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/IDLTypes.h"
+#include "bindings/core/v8/NativeValueTraitsImpl.h"
 
 namespace blink {
 
@@ -38,7 +40,7 @@ void V8TestPermissiveDictionary::toImpl(v8::Isolate* isolate, v8::Local<v8::Valu
   if (booleanMemberValue.IsEmpty() || booleanMemberValue->IsUndefined()) {
     // Do nothing.
   } else {
-    bool booleanMember = toBoolean(isolate, booleanMemberValue, exceptionState);
+    bool booleanMember = NativeValueTraits<IDLBoolean>::nativeValue(isolate, booleanMemberValue, exceptionState);
     if (exceptionState.hadException())
       return;
     impl.setBooleanMember(booleanMember);

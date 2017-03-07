@@ -33,6 +33,7 @@
 
 #include <memory>
 
+#include "bindings/core/v8/NativeValueTraits.h"
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/Transferables.h"
 #include "core/CoreExport.h"
@@ -180,6 +181,18 @@ class CORE_EXPORT SerializedScriptValue
   std::unique_ptr<ImageBitmapContentsArray> m_imageBitmapContentsArray;
   BlobDataHandleMap m_blobDataHandles;
   intptr_t m_externallyAllocatedMemory;
+};
+
+template <>
+struct NativeValueTraits<SerializedScriptValue>
+    : public NativeValueTraitsBase<SerializedScriptValue> {
+  CORE_EXPORT static inline PassRefPtr<SerializedScriptValue> nativeValue(
+      v8::Isolate* isolate,
+      v8::Local<v8::Value> value,
+      ExceptionState& exceptionState) {
+    return SerializedScriptValue::serialize(isolate, value, nullptr, nullptr,
+                                            exceptionState);
+  }
 };
 
 }  // namespace blink

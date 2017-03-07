@@ -12,6 +12,7 @@
 #ifndef V8TestInterfaceEventInit_h
 #define V8TestInterfaceEventInit_h
 
+#include "bindings/core/v8/NativeValueTraits.h"
 #include "bindings/core/v8/ToV8.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/tests/idls/core/TestInterfaceEventInit.h"
@@ -40,8 +41,8 @@ inline void v8SetReturnValue(const CallbackInfo& callbackInfo, TestInterfaceEven
 }
 
 template <>
-struct NativeValueTraits<TestInterfaceEventInit> {
-  static TestInterfaceEventInit nativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
+struct NativeValueTraits<TestInterfaceEventInit> : public NativeValueTraitsBase<TestInterfaceEventInit> {
+  CORE_EXPORT static TestInterfaceEventInit nativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
 };
 
 template <>

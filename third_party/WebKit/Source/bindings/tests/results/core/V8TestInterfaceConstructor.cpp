@@ -13,7 +13,9 @@
 
 #include "bindings/core/v8/Dictionary.h"
 #include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/IDLTypes.h"
 #include "bindings/core/v8/LongOrTestDictionary.h"
+#include "bindings/core/v8/NativeValueTraitsImpl.h"
 #include "bindings/core/v8/V8DOMConfiguration.h"
 #include "bindings/core/v8/V8ObjectConstructor.h"
 #include "bindings/core/v8/V8TestDictionary.h"
@@ -85,7 +87,7 @@ static void constructor2(const v8::FunctionCallbackInfo<v8::Value>& info) {
   HeapVector<LongOrTestDictionary> sequenceLongOrTestDictionaryArg;
   Dictionary optionalDictionaryArg;
   TestInterfaceEmpty* optionalTestInterfaceEmptyArg;
-  doubleArg = toRestrictedDouble(info.GetIsolate(), info[0], exceptionState);
+  doubleArg = NativeValueTraits<IDLDouble>::nativeValue(info.GetIsolate(), info[0], exceptionState);
   if (exceptionState.hadException())
     return;
 
@@ -105,7 +107,7 @@ static void constructor2(const v8::FunctionCallbackInfo<v8::Value>& info) {
 
     return;
   }
-  dictionaryArg = Dictionary(info.GetIsolate(), info[3], exceptionState);
+  dictionaryArg = NativeValueTraits<Dictionary>::nativeValue(info.GetIsolate(), info[3], exceptionState);
   if (exceptionState.hadException())
     return;
 
@@ -126,7 +128,7 @@ static void constructor2(const v8::FunctionCallbackInfo<v8::Value>& info) {
 
     return;
   }
-  optionalDictionaryArg = Dictionary(info.GetIsolate(), info[7], exceptionState);
+  optionalDictionaryArg = NativeValueTraits<Dictionary>::nativeValue(info.GetIsolate(), info[7], exceptionState);
   if (exceptionState.hadException())
     return;
 
@@ -409,6 +411,10 @@ v8::Local<v8::Object> V8TestInterfaceConstructor::findInstanceInPrototypeChain(v
 
 TestInterfaceConstructor* V8TestInterfaceConstructor::toImplWithTypeCheck(v8::Isolate* isolate, v8::Local<v8::Value> value) {
   return hasInstance(value, isolate) ? toImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
+}
+
+TestInterfaceConstructor* NativeValueTraits<TestInterfaceConstructor>::nativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
+  return V8TestInterfaceConstructor::toImplWithTypeCheck(isolate, value);
 }
 
 }  // namespace blink

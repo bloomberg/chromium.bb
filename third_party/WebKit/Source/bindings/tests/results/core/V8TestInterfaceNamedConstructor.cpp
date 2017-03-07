@@ -12,6 +12,8 @@
 #include "V8TestInterfaceNamedConstructor.h"
 
 #include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/IDLTypes.h"
+#include "bindings/core/v8/NativeValueTraitsImpl.h"
 #include "bindings/core/v8/V8DOMConfiguration.h"
 #include "bindings/core/v8/V8ObjectConstructor.h"
 #include "core/dom/Document.h"
@@ -112,11 +114,11 @@ static void V8TestInterfaceNamedConstructorConstructorCallback(const v8::Functio
   if (!stringArg.prepare())
     return;
 
-  defaultUndefinedOptionalBooleanArg = toBoolean(info.GetIsolate(), info[1], exceptionState);
+  defaultUndefinedOptionalBooleanArg = NativeValueTraits<IDLBoolean>::nativeValue(info.GetIsolate(), info[1], exceptionState);
   if (exceptionState.hadException())
     return;
 
-  defaultUndefinedOptionalLongArg = toInt32(info.GetIsolate(), info[2], NormalConversion, exceptionState);
+  defaultUndefinedOptionalLongArg = NativeValueTraits<IDLLong>::nativeValue(info.GetIsolate(), info[2], exceptionState, NormalConversion);
   if (exceptionState.hadException())
     return;
 
@@ -201,6 +203,10 @@ v8::Local<v8::Object> V8TestInterfaceNamedConstructor::findInstanceInPrototypeCh
 
 TestInterfaceNamedConstructor* V8TestInterfaceNamedConstructor::toImplWithTypeCheck(v8::Isolate* isolate, v8::Local<v8::Value> value) {
   return hasInstance(value, isolate) ? toImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
+}
+
+TestInterfaceNamedConstructor* NativeValueTraits<TestInterfaceNamedConstructor>::nativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
+  return V8TestInterfaceNamedConstructor::toImplWithTypeCheck(isolate, value);
 }
 
 }  // namespace blink

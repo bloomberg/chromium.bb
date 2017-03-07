@@ -14,6 +14,7 @@
 
 #include "bindings/core/v8/Dictionary.h"
 #include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/NativeValueTraits.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
@@ -76,8 +77,13 @@ inline void v8SetReturnValue(const CallbackInfo& callbackInfo, NodeOrNodeList& i
 }
 
 template <>
-struct NativeValueTraits<NodeOrNodeList> {
+struct NativeValueTraits<NodeOrNodeList> : public NativeValueTraitsBase<NodeOrNodeList> {
   CORE_EXPORT static NodeOrNodeList nativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
+};
+
+template <>
+struct V8TypeOf<NodeOrNodeList> {
+  typedef V8NodeOrNodeList Type;
 };
 
 }  // namespace blink

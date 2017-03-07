@@ -11,6 +11,8 @@
 // clang-format off
 #include "TestInterfaceOrLong.h"
 
+#include "bindings/core/v8/IDLTypes.h"
+#include "bindings/core/v8/NativeValueTraitsImpl.h"
 #include "bindings/core/v8/ToV8.h"
 #include "bindings/core/v8/V8TestInterface.h"
 #include "bindings/tests/idls/core/TestImplements2.h"
@@ -79,7 +81,7 @@ void V8TestInterfaceOrLong::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8
   }
 
   if (v8Value->IsNumber()) {
-    int32_t cppValue = toInt32(isolate, v8Value, NormalConversion, exceptionState);
+    int32_t cppValue = NativeValueTraits<IDLLong>::nativeValue(isolate, v8Value, exceptionState, NormalConversion);
     if (exceptionState.hadException())
       return;
     impl.setLong(cppValue);
@@ -87,7 +89,7 @@ void V8TestInterfaceOrLong::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8
   }
 
   {
-    int32_t cppValue = toInt32(isolate, v8Value, NormalConversion, exceptionState);
+    int32_t cppValue = NativeValueTraits<IDLLong>::nativeValue(isolate, v8Value, exceptionState, NormalConversion);
     if (exceptionState.hadException())
       return;
     impl.setLong(cppValue);

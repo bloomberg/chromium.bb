@@ -13,6 +13,8 @@
 
 #include "bindings/core/v8/Dictionary.h"
 #include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/IDLTypes.h"
+#include "bindings/core/v8/NativeValueTraitsImpl.h"
 #include "bindings/core/v8/V8DOMConfiguration.h"
 #include "bindings/core/v8/V8ObjectConstructor.h"
 #include "bindings/core/v8/V8TestInterfaceEmpty.h"
@@ -75,7 +77,7 @@ static void constructor2(const v8::FunctionCallbackInfo<v8::Value>& info) {
 
     return;
   }
-  dictionaryArg = Dictionary(info.GetIsolate(), info[0], exceptionState);
+  dictionaryArg = NativeValueTraits<Dictionary>::nativeValue(info.GetIsolate(), info[0], exceptionState);
   if (exceptionState.hadException())
     return;
 
@@ -121,7 +123,7 @@ static void constructor4(const v8::FunctionCallbackInfo<v8::Value>& info) {
     return;
   }
 
-  longArg = toInt32(info.GetIsolate(), info[1], NormalConversion, exceptionState);
+  longArg = NativeValueTraits<IDLLong>::nativeValue(info.GetIsolate(), info[1], exceptionState, NormalConversion);
   if (exceptionState.hadException())
     return;
 
@@ -141,7 +143,7 @@ static void constructor4(const v8::FunctionCallbackInfo<v8::Value>& info) {
 
     return;
   }
-  defaultUndefinedOptionalDictionaryArg = Dictionary(info.GetIsolate(), info[4], exceptionState);
+  defaultUndefinedOptionalDictionaryArg = NativeValueTraits<Dictionary>::nativeValue(info.GetIsolate(), info[4], exceptionState);
   if (exceptionState.hadException())
     return;
 
@@ -262,6 +264,10 @@ v8::Local<v8::Object> V8TestInterfaceConstructor2::findInstanceInPrototypeChain(
 
 TestInterfaceConstructor2* V8TestInterfaceConstructor2::toImplWithTypeCheck(v8::Isolate* isolate, v8::Local<v8::Value> value) {
   return hasInstance(value, isolate) ? toImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
+}
+
+TestInterfaceConstructor2* NativeValueTraits<TestInterfaceConstructor2>::nativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
+  return V8TestInterfaceConstructor2::toImplWithTypeCheck(isolate, value);
 }
 
 }  // namespace blink

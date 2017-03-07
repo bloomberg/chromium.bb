@@ -13,7 +13,9 @@
 
 #include "bindings/core/v8/AnyCallbackFunctionOptionalAnyArg.h"
 #include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/IDLTypes.h"
 #include "bindings/core/v8/LongCallbackFunction.h"
+#include "bindings/core/v8/NativeValueTraitsImpl.h"
 #include "bindings/core/v8/V8DOMConfiguration.h"
 #include "bindings/core/v8/V8ObjectConstructor.h"
 #include "bindings/core/v8/VoidCallbackFunction.h"
@@ -324,6 +326,10 @@ v8::Local<v8::Object> V8TestCallbackFunctions::findInstanceInPrototypeChain(v8::
 
 TestCallbackFunctions* V8TestCallbackFunctions::toImplWithTypeCheck(v8::Isolate* isolate, v8::Local<v8::Value> value) {
   return hasInstance(value, isolate) ? toImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
+}
+
+TestCallbackFunctions* NativeValueTraits<TestCallbackFunctions>::nativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
+  return V8TestCallbackFunctions::toImplWithTypeCheck(isolate, value);
 }
 
 }  // namespace blink

@@ -107,7 +107,8 @@ class CORE_EXPORT Dictionary final {
 };
 
 template <>
-struct NativeValueTraits<Dictionary> {
+struct NativeValueTraits<Dictionary>
+    : public NativeValueTraitsBase<Dictionary> {
   static Dictionary nativeValue(v8::Isolate* isolate,
                                 v8::Local<v8::Value> value,
                                 ExceptionState& exceptionState) {

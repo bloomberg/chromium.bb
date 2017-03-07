@@ -13,6 +13,8 @@
 #include "VoidCallbackFunctionTypedef.h"
 
 #include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/IDLTypes.h"
+#include "bindings/core/v8/NativeValueTraitsImpl.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/ToV8.h"
 #include "bindings/core/v8/V8Binding.h"
@@ -71,6 +73,10 @@ bool VoidCallbackFunctionTypedef::call(ScriptWrappable* scriptWrappable, const S
     return true;
   }
   return false;
+}
+
+VoidCallbackFunctionTypedef* NativeValueTraits<VoidCallbackFunctionTypedef>::nativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
+  return VoidCallbackFunctionTypedef::create(ScriptState::current(isolate), value);
 }
 
 }  // namespace blink

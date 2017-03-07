@@ -12,6 +12,8 @@
 #include "V8TestTypedefs.h"
 
 #include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/IDLTypes.h"
+#include "bindings/core/v8/NativeValueTraitsImpl.h"
 #include "bindings/core/v8/StringOrDouble.h"
 #include "bindings/core/v8/TestInterfaceOrTestInterfaceEmpty.h"
 #include "bindings/core/v8/V8DOMConfiguration.h"
@@ -72,7 +74,7 @@ static void uLongLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value, cons
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestTypedefs", "uLongLongAttribute");
 
   // Prepare the value to be set.
-  uint64_t cppValue = toUInt64(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
+  uint64_t cppValue = NativeValueTraits<IDLUnsignedLongLong>::nativeValue(info.GetIsolate(), v8Value, exceptionState, NormalConversion);
   if (exceptionState.hadException())
     return;
 
@@ -140,7 +142,7 @@ static void voidMethodFloatArgStringArgMethod(const v8::FunctionCallbackInfo<v8:
 
   float floatArg;
   V8StringResource<> stringArg;
-  floatArg = toRestrictedFloat(info.GetIsolate(), info[0], exceptionState);
+  floatArg = NativeValueTraits<IDLFloat>::nativeValue(info.GetIsolate(), info[0], exceptionState);
   if (exceptionState.hadException())
     return;
 
@@ -387,6 +389,10 @@ v8::Local<v8::Object> V8TestTypedefs::findInstanceInPrototypeChain(v8::Local<v8:
 
 TestTypedefs* V8TestTypedefs::toImplWithTypeCheck(v8::Isolate* isolate, v8::Local<v8::Value> value) {
   return hasInstance(value, isolate) ? toImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
+}
+
+TestTypedefs* NativeValueTraits<TestTypedefs>::nativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
+  return V8TestTypedefs::toImplWithTypeCheck(isolate, value);
 }
 
 }  // namespace blink

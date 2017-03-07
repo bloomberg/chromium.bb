@@ -11,6 +11,8 @@
 // clang-format off
 #include "TestInterfaceGarbageCollectedOrString.h"
 
+#include "bindings/core/v8/IDLTypes.h"
+#include "bindings/core/v8/NativeValueTraitsImpl.h"
 #include "bindings/core/v8/ToV8.h"
 #include "bindings/core/v8/V8TestInterfaceGarbageCollected.h"
 

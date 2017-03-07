@@ -64,6 +64,8 @@ bindings_core_v8_files =
                     "core/v8/GeneratedCodeHelper.h",
                     "core/v8/IDLDictionaryBase.cpp",
                     "core/v8/IDLDictionaryBase.h",
+                    "core/v8/IDLTypes.h",
+                    "core/v8/IDLTypesBase.h",
                     "core/v8/Iterable.h",
                     "core/v8/LocalWindowProxy.cpp",
                     "core/v8/LocalWindowProxy.h",
@@ -71,6 +73,7 @@ bindings_core_v8_files =
                     "core/v8/Microtask.cpp",
                     "core/v8/Microtask.h",
                     "core/v8/NativeValueTraits.h",
+                    "core/v8/NativeValueTraitsImpl.h",
                     "core/v8/Nullable.h",
                     "core/v8/RejectedPromises.cpp",
                     "core/v8/RejectedPromises.h",
@@ -229,6 +232,8 @@ bindings_core_v8_output_dir = "$bindings_output_dir/core/v8"
 bindings_unittest_files =
     get_path_info([
                     "core/v8/DocumentWriteEvaluatorTest.cpp",
+                    "core/v8/IDLTypesTest.cpp",
+                    "core/v8/NativeValueTraitsTest.cpp",
                     "core/v8/ScriptPromisePropertyTest.cpp",
                     "core/v8/ScriptPromiseResolverTest.cpp",
                     "core/v8/ScriptPromiseTest.cpp",

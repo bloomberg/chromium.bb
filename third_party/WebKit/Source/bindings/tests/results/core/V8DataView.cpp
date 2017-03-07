@@ -12,6 +12,8 @@
 #include "V8DataView.h"
 
 #include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/IDLTypes.h"
+#include "bindings/core/v8/NativeValueTraitsImpl.h"
 #include "bindings/core/v8/V8ArrayBuffer.h"
 #include "bindings/core/v8/V8DOMConfiguration.h"
 #include "bindings/core/v8/V8ObjectConstructor.h"
@@ -75,6 +77,10 @@ TestDataView* V8DataView::toImpl(v8::Local<v8::Object> object) {
 
 TestDataView* V8DataView::toImplWithTypeCheck(v8::Isolate* isolate, v8::Local<v8::Value> value) {
   return value->IsDataView() ? toImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
+}
+
+TestDataView* NativeValueTraits<TestDataView>::nativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
+  return V8DataView::toImplWithTypeCheck(isolate, value);
 }
 
 }  // namespace blink
