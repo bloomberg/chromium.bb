@@ -1773,10 +1773,6 @@ crbug.com/698077 inspector/sources/debugger/debug-inlined-scripts.html [ NeedsMa
 crbug.com/694525 external/wpt/content-security-policy [ Skip ]
 crbug.com/694525 external/wpt/content-security-policy/securitypolicyviolation [ Pass ]
 
-# 2017-02-17: These directories were just imported but expectations and baselines haven't been set yet.
-crbug.com/692105 external/wpt/service-workers/service-worker/fetch-event-within-sw-manual.https.html [ Skip ]
-crbug.com/692105 external/wpt/service-workers/service-worker/fetch-event-within-sw.https.html [ Skip ]
-
 # These policies are not implemented yet.
 crbug.com/627968 external/wpt/referrer-policy/origin-when-cross-origin/http-rp/same-origin/ [ Skip ]
 crbug.com/627968 external/wpt/referrer-policy/same-origin/ [ Skip ]
