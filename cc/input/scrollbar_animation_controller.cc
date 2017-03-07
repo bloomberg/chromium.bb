@@ -243,6 +243,8 @@ void ScrollbarAnimationController::DidMouseLeave() {
   vertical_controller_->DidMouseLeave();
   horizontal_controller_->DidMouseLeave();
 
+  delayed_scrollbar_show_.Cancel();
+
   if (ScrollbarsHidden() || Captured())
     return;
 
@@ -332,6 +334,7 @@ bool ScrollbarAnimationController::Captured() const {
 }
 
 void ScrollbarAnimationController::Show() {
+  delayed_scrollbar_show_.Cancel();
   ApplyOpacityToScrollbars(1.0f);
 }
 
