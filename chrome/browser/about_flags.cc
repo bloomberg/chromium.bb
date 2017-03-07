@@ -892,6 +892,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-v8-future", IDS_FLAGS_V8_FUTURE_NAME,
      IDS_FLAGS_V8_FUTURE_DESCRIPTION, kOsAll,
      FEATURE_VALUE_TYPE(features::kV8Future)},
+    {"disable-v8-ignition-turbo", IDS_FLAGS_V8_DISABLE_IGNITION_TURBO_NAME,
+     IDS_FLAGS_V8_DISABLE_IGNITION_TURBO_DESCRIPTION, kOsAll,
+     FEATURE_VALUE_TYPE(features::kV8NoTurbo)},
     {"disable-software-rasterizer", IDS_FLAGS_SOFTWARE_RASTERIZER_NAME,
      IDS_FLAGS_SOFTWARE_RASTERIZER_DESCRIPTION,
 #if BUILDFLAG(ENABLE_SWIFTSHADER)

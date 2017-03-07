@@ -5697,11 +5697,17 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_JAVASCRIPT_HARMONY_DESCRIPTION" desc="Description for the flag to enable JavaScript Harmony features.">
         Enable web pages to use experimental JavaScript features.
       </message>
-      <message name="IDS_FLAGS_V8_FUTURE_NAME" desc="Title for the flag to enable the future V8 compilation pipeline.">
-        Experimental JavaScript Compilation Pipeline
+      <message name="IDS_FLAGS_V8_FUTURE_NAME" desc="Title for the flag to enable future features in V8.">
+        Experimental Features in V8 JavaScript execution
       </message>
-      <message name="IDS_FLAGS_V8_FUTURE_DESCRIPTION" desc="Description for the flag to enable the future V8 compilation pipeline.">
-        Enable V8 to use the experimental Ignition interpreter and TurboFan compiler for JavaScript execution.
+      <message name="IDS_FLAGS_V8_FUTURE_DESCRIPTION" desc="Description for the flag to enable future features in V8.">
+        Enable experimental features in V8 for JavaScript execution.
+      </message>
+      <message name="IDS_FLAGS_V8_DISABLE_IGNITION_TURBO_NAME" desc="Title for disabling the Ignition and TurboFan compilation pipeline in V8.">
+        Disable the new JavaScript Compilation Pipeline
+      </message>
+      <message name="IDS_FLAGS_V8_DISABLE_IGNITION_TURBO_DESCRIPTION" desc="Description for disabling the Ignition and TurboFan compilation pipeline in V8.">
+        Disable V8's new Ignition interpreter and TurboFan compiler for JavaScript execution.
       </message>
       <message name="IDS_FLAGS_ENABLE_ASM_WASM_NAME" desc="Title for the flag to enable Asm.js to WebAssembly.">
         Experimental Validate Asm.js and convert to WebAssembly when valid.
@@ -14927,14 +14933,14 @@ read aloud to screenreader users to announce that a completion is available.">
         Enable Desktop to iOS promotions, and allow users to see them if they are eligible.
       </message>
     </if>
-    
+
     <if expr="is_android">
       <message name="IDS_FLAGS_ENABLE_CUSTOM_FEEDBACK_UI_NAME" desc="Name for the flag to enable custom feeback UI" translateable="false">
         Enable Custom Feedback UI
       </message>
       <message name="IDS_FLAGS_ENABLE_CUSTOM_FEEDBACK_UI_DESCRIPTION" desc="Name for the flag to enable custom feeback UI">
         Enables a custom feedback UI when submitting feedback through Google Feedback. Works with Google Play Services v10.2+
-      </message> 
+      </message>
     </if>
 
     <message name="IDS_FLAGS_ENABLE_ADJUSTABLE_LARGE_CURSOR_NAME" desc="Name of the flag that enables adjustable large cursor.">

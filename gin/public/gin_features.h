@@ -14,6 +14,7 @@
 namespace features {
 
 GIN_EXPORT extern const base::Feature kV8Future;
+GIN_EXPORT extern const base::Feature kV8NoTurbo;
 GIN_EXPORT extern const base::Feature kV8IgnitionLowEnd;
 
 }  // namespace features
