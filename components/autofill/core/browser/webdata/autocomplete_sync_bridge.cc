@@ -458,6 +458,9 @@ void AutocompleteSyncBridge::LoadMetadata() {
 std::string AutocompleteSyncBridge::GetClientTag(
     const EntityData& entity_data) {
   DCHECK(entity_data.specifics.has_autofill());
+  // Must have the format "autofill_entry|$name|$value" where $name and $value
+  // are URL escaped. This is to maintain compatibility with the previous sync
+  // integration (Directory and SyncableService).
   return std::string(kAutocompleteEntryNamespaceTag) +
          EscapeIdentifiers(entity_data.specifics.autofill());
 }
@@ -465,6 +468,9 @@ std::string AutocompleteSyncBridge::GetClientTag(
 std::string AutocompleteSyncBridge::GetStorageKey(
     const EntityData& entity_data) {
   DCHECK(entity_data.specifics.has_autofill());
+  // Marginally more space efficient than GetClientTag() by omitting the
+  // kAutocompleteEntryNamespaceTag prefix and using protobuf serialization
+  // instead of URL escaping for Unicode characters.
   const AutofillSpecifics specifics = entity_data.specifics.autofill();
   return BuildSerializedStorageKey(specifics.name(), specifics.value());
 }

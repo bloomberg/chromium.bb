@@ -54,14 +54,7 @@ class AutocompleteSyncBridge : public base::SupportsUserData::Data,
       syncer::EntityChangeList entity_changes) override;
   void GetData(StorageKeyList storage_keys, DataCallback callback) override;
   void GetAllData(DataCallback callback) override;
-  // Generate a tag that uniquely identifies |entity_data| across all data
-  // types. This is used to identify the entity on the server. The format, which
-  // must remain the same for server compatibility, is:
-  // "autofill_entry|$name|$value" where $name and $value are escaped.
   std::string GetClientTag(const syncer::EntityData& entity_data) override;
-  // Generate a string key uniquely identifying |entity_data| in the context of
-  // local storage. The format, which should stay the same, is $name|$value"
-  // where $name and $value are escaped.
   std::string GetStorageKey(const syncer::EntityData& entity_data) override;
 
   // AutofillWebDataServiceObserverOnDBThread implementation.

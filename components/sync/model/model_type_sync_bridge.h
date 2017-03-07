@@ -88,9 +88,9 @@ class ModelTypeSyncBridge : public base::SupportsWeakPtr<ModelTypeSyncBridge> {
   // that was/would have been generated in the SyncableService/Directory world
   // for backward compatibility with pre-USS clients. The only time this
   // theoretically needs to be called is on the creation of local data, however
-  // it is also used to verify the hash of remote data. If a data type was never
-  // launched pre-USS, then method does not need to be different from
-  // GetStorageKey().
+  // it is also used to verify the hash of remote data. If a model type was
+  // never launched pre-USS, then method does not need to be different from
+  // GetStorageKey(). Only the hash of this value is kept.
   virtual std::string GetClientTag(const EntityData& entity_data) = 0;
 
   // Get or generate a storage key for |entity_data|. This will only ever be
@@ -98,7 +98,8 @@ class ModelTypeSyncBridge : public base::SupportsWeakPtr<ModelTypeSyncBridge> {
   // provide their storage keys directly to Put instead of using this method.
   // Theoretically this function doesn't need to be stable across multiple calls
   // on the same or different clients, but to keep things simple, it probably
-  // should be.
+  // should be. Storage keys are kept in memory at steady state, so each model
+  // type should strive to keep these keys as small as possible.
   virtual std::string GetStorageKey(const EntityData& entity_data) = 0;
 
   // Resolve a conflict between the client and server versions of data. They are
