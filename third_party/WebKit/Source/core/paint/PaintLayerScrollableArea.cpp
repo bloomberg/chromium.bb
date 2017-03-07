@@ -1151,8 +1151,10 @@ static inline const LayoutObject& scrollbarStyleSource(
       return layoutObject;
 
     if (ShadowRoot* shadowRoot = node->containingShadowRoot()) {
-      if (shadowRoot->type() == ShadowRootType::UserAgent)
-        return *shadowRoot->host().layoutObject();
+      if (shadowRoot->type() == ShadowRootType::UserAgent) {
+        if (LayoutObject* hostLayoutObject = shadowRoot->host().layoutObject())
+          return *hostLayoutObject;
+      }
     }
   }
 
