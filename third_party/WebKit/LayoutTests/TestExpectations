@@ -2479,3 +2479,6 @@ crbug.com/698521 external/wpt/preload/preload-with-type.html [ Failure Pass ]
 
 # Temporary, rebaseline after v8 roll that has https://codereview.chromium.org/2723003007
 crbug.com/v8/5808 inspector/coverage/coverage-view.html [ Skip ]
+
+# Sheriff failures 2017-03-06
+crbug.com/698872 [ Linux Debug ] external/wpt/service-workers/service-worker/fetch-event-redirect.https.html [ Crash ]
