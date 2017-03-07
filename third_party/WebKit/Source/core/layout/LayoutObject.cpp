@@ -1733,8 +1733,6 @@ void LayoutObject::setStyle(PassRefPtr<ComputedStyle> style) {
   else if (diff.needsPaintInvalidationObject() ||
            updatedDiff.needsPaintInvalidationObject())
     setShouldDoFullPaintInvalidation();
-  else if (diff.needsPaintInvalidationSelection())
-    invalidatePaintForSelection();
 
   // Text nodes share style with their parents but the paint properties don't
   // apply to them, hence the !isText() check.
@@ -1940,10 +1938,9 @@ void LayoutObject::applyPseudoStyleChanges(const ComputedStyle& oldStyle) {
       styleRef().hasPseudoStyle(PseudoIdFirstLine))
     applyFirstLineChanges(oldStyle);
 
-  // TODO(rune@opera.com): Move the invalidation for ::selection here.
-  // Instead of having a PaintInvalidationSelectionOnly PaintInvalidationType
-  // used for the element diff, we should use PaintInvalidationObject diff on
-  // the pseudo element style here instead.
+  if (oldStyle.hasPseudoStyle(PseudoIdSelection) ||
+      styleRef().hasPseudoStyle(PseudoIdSelection))
+    invalidatePaintForSelection();
 }
 
 void LayoutObject::applyFirstLineChanges(const ComputedStyle& oldStyle) {
