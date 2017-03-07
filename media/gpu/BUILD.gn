@@ -187,6 +187,8 @@ component("gpu") {
       "avda_shared_state.cc",
       "avda_shared_state.h",
       "avda_state_provider.h",
+      "surface_texture_gl_owner.cc",
+      "surface_texture_gl_owner.h",
     ]
 
     if (enable_webrtc) {
@@ -434,6 +436,7 @@ source_set("android_video_decode_accelerator_unittests") {
     sources = [
       "android_video_decode_accelerator_unittest.cc",
       "avda_codec_allocator_unittest.cc",
+      "surface_texture_gl_owner_unittest.cc",
     ]
     if (enable_media_codec_video_decoder) {
       sources += [ "android/media_codec_video_decoder_unittest.cc" ]

@@ -46,11 +46,11 @@ class GL_EXPORT SurfaceTexture
 
   // Attach the SurfaceTexture to the texture currently bound to
   // GL_TEXTURE_EXTERNAL_OES.
-  void AttachToGLContext();
+  virtual void AttachToGLContext();
 
   // Detaches the SurfaceTexture from the context that owns its current GL
   // texture. Must be called with that context current on the calling thread.
-  void DetachFromGLContext();
+  virtual void DetachFromGLContext();
 
   // Creates a native render surface for this surface texture.
   // The caller must release the underlying reference when done with the handle
@@ -70,12 +70,19 @@ class GL_EXPORT SurfaceTexture
   }
 
  protected:
+  static base::android::ScopedJavaLocalRef<jobject> CreateJavaSurfaceTexture(
+      int texture_id);
+
   explicit SurfaceTexture(
       const base::android::ScopedJavaLocalRef<jobject>& j_surface_texture);
 
+  virtual ~SurfaceTexture();
+
+  // Destroy |j_surface_texture| if it hasn't been destroyed already.
+  void DestroyJavaObject();
+
  private:
   friend class base::RefCountedThreadSafe<SurfaceTexture>;
-  ~SurfaceTexture();
 
   // Java SurfaceTexture instance.
   base::android::ScopedJavaGlobalRef<jobject> j_surface_texture_;

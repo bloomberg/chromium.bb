@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "media/gpu/avda_state_provider.h"
 #include "media/gpu/media_gpu_export.h"
+#include "media/gpu/surface_texture_gl_owner.h"
 
 namespace gpu {
 namespace gles2 {
@@ -110,7 +111,7 @@ class MEDIA_GPU_EXPORT AVDAPictureBufferManager {
 
   // The SurfaceTexture to render to. Non-null after Initialize() if
   // we're not rendering to a SurfaceView.
-  scoped_refptr<gl::SurfaceTexture> surface_texture_;
+  scoped_refptr<SurfaceTextureGLOwner> surface_texture_;
 
   MediaCodecBridge* media_codec_;
 

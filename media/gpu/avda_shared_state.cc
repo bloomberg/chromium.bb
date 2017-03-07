@@ -62,8 +62,7 @@ class AVDASharedState::OnFrameAvailableHandler
 };
 
 AVDASharedState::AVDASharedState()
-    : surface_texture_service_id_(0),
-      frame_available_event_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+    : frame_available_event_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                              base::WaitableEvent::InitialState::NOT_SIGNALED),
 
       gl_matrix_{
@@ -74,15 +73,10 @@ AVDASharedState::AVDASharedState()
       } {}
 
 AVDASharedState::~AVDASharedState() {
-  if (!surface_texture_service_id_)
+  if (!surface_texture_)
     return;
 
   on_frame_available_handler_->ClearListener();
-  ui::ScopedMakeCurrent scoped_make_current(context_.get(), surface_.get());
-  if (scoped_make_current.Succeeded()) {
-    glDeleteTextures(1, &surface_texture_service_id_);
-    DCHECK_EQ(static_cast<GLenum>(GL_NO_ERROR), glGetError());
-  }
 }
 
 void AVDASharedState::SignalFrameAvailable() {
@@ -120,16 +114,9 @@ void AVDASharedState::WaitForFrameAvailable() {
 }
 
 void AVDASharedState::SetSurfaceTexture(
-    scoped_refptr<gl::SurfaceTexture> surface_texture,
-    GLuint attached_service_id) {
+    scoped_refptr<SurfaceTextureGLOwner> surface_texture) {
   DCHECK(surface_texture);
-  DCHECK(attached_service_id);
   surface_texture_ = surface_texture;
-  surface_texture_service_id_ = attached_service_id;
-  context_ = gl::GLContext::GetCurrent();
-  surface_ = gl::GLSurface::GetCurrent();
-  DCHECK(context_);
-  DCHECK(surface_);
   on_frame_available_handler_ =
       new OnFrameAvailableHandler(this, surface_texture_.get());
 }

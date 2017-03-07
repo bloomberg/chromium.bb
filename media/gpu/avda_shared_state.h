@@ -8,14 +8,11 @@
 #include "base/synchronization/waitable_event.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "media/base/android/media_codec_bridge.h"
+#include "media/gpu/surface_texture_gl_owner.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_image.h"
 #include "ui/gl/gl_surface.h"
-
-namespace gl {
-class SurfaceTexture;
-}
 
 namespace media {
 
@@ -26,7 +23,7 @@ class AVDASharedState : public base::RefCounted<AVDASharedState> {
   AVDASharedState();
 
   GLuint surface_texture_service_id() const {
-    return surface_texture_service_id_;
+    return surface_texture_ ? surface_texture_->texture_id() : 0;
   }
 
   // Signal the "frame available" event.  This may be called from any thread.
@@ -34,14 +31,17 @@ class AVDASharedState : public base::RefCounted<AVDASharedState> {
 
   void WaitForFrameAvailable();
 
-  void SetSurfaceTexture(scoped_refptr<gl::SurfaceTexture> surface_texture,
-                         GLuint attached_service_id);
+  void SetSurfaceTexture(scoped_refptr<SurfaceTextureGLOwner> surface_texture);
 
   // Context and surface that |surface_texture_| is bound to, if
   // |surface_texture_| is not null.
-  gl::GLContext* context() const { return context_.get(); }
+  gl::GLContext* context() const {
+    return surface_texture_ ? surface_texture_->context() : nullptr;
+  }
 
-  gl::GLSurface* surface() const { return surface_.get(); }
+  gl::GLSurface* surface() const {
+    return surface_texture_ ? surface_texture_->surface() : nullptr;
+  }
 
   // Helper method for coordinating the interactions between
   // MediaCodec::ReleaseOutputBuffer() and WaitForFrameAvailable() when
@@ -80,18 +80,10 @@ class AVDASharedState : public base::RefCounted<AVDASharedState> {
  private:
   friend class base::RefCounted<AVDASharedState>;
 
-  scoped_refptr<gl::SurfaceTexture> surface_texture_;
-
-  // Platform gl texture id for |surface_texture_|.
-  GLuint surface_texture_service_id_;
+  scoped_refptr<SurfaceTextureGLOwner> surface_texture_;
 
   // For signalling OnFrameAvailable().
   base::WaitableEvent frame_available_event_;
-
-  // Context and surface that |surface_texture_| is bound to, if
-  // |surface_texture_| is not null.
-  scoped_refptr<gl::GLContext> context_;
-  scoped_refptr<gl::GLSurface> surface_;
 
   // The time of the last call to RenderCodecBufferToSurfaceTexture(), null if
   // if there has been no last call or WaitForFrameAvailable() has been called

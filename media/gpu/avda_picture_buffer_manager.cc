@@ -42,16 +42,15 @@
 namespace media {
 namespace {
 
-// Creates a SurfaceTexture and attaches a new gl texture to it. |*service_id|
-// is set to the new texture id.
-scoped_refptr<gl::SurfaceTexture> CreateAttachedSurfaceTexture(
-    base::WeakPtr<gpu::gles2::GLES2Decoder> gl_decoder,
-    GLuint* service_id) {
-  GLuint texture_id;
-  glGenTextures(1, &texture_id);
+// Creates a SurfaceTexture and attaches a new gl texture to it.
+scoped_refptr<SurfaceTextureGLOwner> CreateAttachedSurfaceTexture(
+    base::WeakPtr<gpu::gles2::GLES2Decoder> gl_decoder) {
+  scoped_refptr<SurfaceTextureGLOwner> surface_texture =
+      SurfaceTextureGLOwner::Create();
+  DCHECK(surface_texture);
 
   glActiveTexture(GL_TEXTURE0);
-  glBindTexture(GL_TEXTURE_EXTERNAL_OES, texture_id);
+  glBindTexture(GL_TEXTURE_EXTERNAL_OES, surface_texture->texture_id());
   glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -61,14 +60,7 @@ scoped_refptr<gl::SurfaceTexture> CreateAttachedSurfaceTexture(
   gl_decoder->RestoreActiveTexture();
   DCHECK_EQ(static_cast<GLenum>(GL_NO_ERROR), glGetError());
 
-  *service_id = texture_id;
-  // Previously, to reduce context switching, we used to create an unattached
-  // SurfaceTexture and attach it lazily in the compositor's context. But that
-  // was flaky because SurfaceTexture#detachFromGLContext() is buggy on a lot of
-  // devices. Now we attach it to the current context, which means we might have
-  // to context switch later to call updateTexImage(). Fortunately, if virtual
-  // contexts are in use, we won't have to context switch.
-  return gl::SurfaceTexture::Create(texture_id);
+  return surface_texture;
 }
 
 }  // namespace
@@ -88,10 +80,9 @@ gl::ScopedJavaSurface AVDAPictureBufferManager::Initialize(int surface_id) {
     return gpu::GpuSurfaceLookup::GetInstance()->AcquireJavaSurface(surface_id);
 
   // Otherwise create a SurfaceTexture.
-  GLuint service_id;
-  surface_texture_ = CreateAttachedSurfaceTexture(
-      state_provider_->GetGlDecoder(), &service_id);
-  shared_state_->SetSurfaceTexture(surface_texture_, service_id);
+  surface_texture_ =
+      CreateAttachedSurfaceTexture(state_provider_->GetGlDecoder());
+  shared_state_->SetSurfaceTexture(surface_texture_);
   return gl::ScopedJavaSurface(surface_texture_.get());
 }
 
