@@ -150,6 +150,106 @@ message ClientMalwareRequest {
   optional ChromeUserPopulation population = 9;
 }
 
+// The message is used for client request to determine whether the provided URL
+// is safe for the purposes of entering user credentials for logging in.
+message LoginReputationClientRequest {
+  // The top level frame URL of the webpage that hosts the login form.
+  // The client will strip CGI parameters.
+  optional string page_url = 1;
+
+  // Type for the request.
+  // It could be low reputation request or password reuse request.
+  enum TriggerType {
+    TRIGGER_TYPE_UNSPECIFIED = 0;
+    UNFAMILIAR_LOGIN_PAGE = 1;
+    PASSWORD_REUSE_EVENT = 2;
+  }
+  optional TriggerType trigger_type = 2;
+
+  // The message contains features which can describe a frame. A frame can be
+  // a top level web page or an iframe.
+  message Frame {
+    // Id of a frame. The frame whose index = 0 is the top level web page.
+    optional int32 frame_index = 1;
+
+    // Id of the parent frame.
+    optional int32 parent_frame_index = 2;
+
+    // Url of the frame. If could be top level url (from web page) or url of
+    // the iframe.
+    optional string url = 3;
+
+    // Whether the frame contains password field.
+    optional bool has_password_field = 4;
+
+    // URLs transitions in reverse chronological order, i.e. the top level url
+    // or the url of the iframe comes first in the list.
+    repeated ReferrerChainEntry referrer_chain = 5;
+
+    // The message contains features of a form.
+    message Form {
+      // Action url of the form.
+      optional string action_url = 1;
+
+      // Whether the form contains password field.
+      optional bool has_password_field = 2;
+    }
+
+    repeated Form forms = 6;
+  }
+
+  repeated Frame frames = 3;
+
+  // The message contains fields needed for a password reuse event.
+  message PasswordReuseEvent {
+    // Origins that the reused password had been used on. The origins are
+    // maintained by Chrome password manager.
+    // The field is filled in only when TriggerType is PASSWORD_REUSE_EVENT.
+    repeated string password_reused_original_origins = 1;
+
+    // The frame that the password reuse is detected.
+    optional int32 frame_id = 2;
+  }
+
+  optional PasswordReuseEvent password_reuse_event = 4;
+
+  // The number of verdicts stored on the client.
+  optional int32 stored_verdict_cnt = 5;
+}
+
+// The message is used for client response for login reputation requests.
+message LoginReputationClientResponse {
+  // Type of verdicts issued by the server.
+  enum VerdictType {
+    VERDICT_TYPE_UNSPECIFIED = 0;
+    // No warning will be displayed.
+    SAFE = 1;
+    // The site has low reputation or low popularity.
+    LOW_REPUTATION = 2;
+    // The url matches with blacklist entries.
+    PHISHING = 3;
+  }
+  optional VerdictType verdict_type = 1;
+
+  // TTL of the verdict in seconds.
+  optional int64 cache_duration_sec = 2;
+
+  // A host-suffix/path-prefix expression which defines a collections of pages
+  // with common ownership from the same domain.
+  // Generally, the pattern is defined on the granularity of domains.
+  // For domains managed by multiple parties, especially in the case of large
+  // hosting sites (e.g., geocities.com), we further divide the domains.
+  //
+  // Examples:
+  //    www.google.com/foo/bar?param=val -> google.com
+  //    www.geocities.com/foo/bar.html -> geocities.com/foo
+  //    adwords.blogspot.com/index.html -> adwords.blogspot.com
+  //
+  // The pattern will always match the page_url of the request, and will be
+  // a substring of page_url.
+  optional string cache_expression = 3;
+}
+
 message ClientMalwareResponse {
   required bool blacklist = 1;
   // The confirmed blacklisted bad IP and its url, which will be shown in
