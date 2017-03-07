@@ -130,7 +130,7 @@ class NET_EXPORT TCPSocketWin : NON_EXPORTED_BASE(public base::NonThreadSafe),
   void LogConnectBegin(const AddressList& addresses);
   void LogConnectEnd(int net_error);
 
-  int DoRead(IOBuffer* buf, int buf_len, const CompletionCallback& callback);
+  void RetryRead(int rv);
   void DidCompleteConnect();
   void DidCompleteWrite();
   void DidSignalRead();
@@ -159,6 +159,11 @@ class NET_EXPORT TCPSocketWin : NON_EXPORTED_BASE(public base::NonThreadSafe),
 
   // External callback; called when connect or read is complete.
   CompletionCallback read_callback_;
+
+  // Non-null if a ReadIfReady() is to be completed asynchronously. This is an
+  // external callback if user used ReadIfReady() instead of Read(), but a
+  // wrapped callback on top of RetryRead() if Read() is used.
+  CompletionCallback read_if_ready_callback_;
 
   // External callback; called when write is complete.
   CompletionCallback write_callback_;

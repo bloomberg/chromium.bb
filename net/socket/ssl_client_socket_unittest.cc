@@ -3775,14 +3775,7 @@ TEST_P(SSLClientSocketReadTest, DumpMemoryStats) {
   StreamSocket::SocketMemoryStats stats2;
   sock_->DumpMemoryStats(&stats2);
 
-  bool buffer_released = false;
   if (read_if_ready_enabled()) {
-// TODO(xunjieli): https://crbug.com/690915. Implement for windows.
-#if defined(OS_POSIX)
-    buffer_released = true;
-#endif
-  }
-  if (buffer_released) {
     EXPECT_EQ(0u, stats2.buffer_size);
     EXPECT_EQ(stats.cert_size, stats2.total_size);
   } else {
