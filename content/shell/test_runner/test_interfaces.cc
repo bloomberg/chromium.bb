@@ -51,7 +51,10 @@ void TestInterfaces::SetMainView(blink::WebView* web_view) {
 }
 
 void TestInterfaces::SetDelegate(WebTestDelegate* delegate) {
-  gamepad_controller_ = GamepadController::Create(delegate);
+  if (delegate)
+    gamepad_controller_ = GamepadController::Create(delegate);
+  else
+    gamepad_controller_ = nullptr;
   test_runner_->SetDelegate(delegate);
   delegate_ = delegate;
 }
