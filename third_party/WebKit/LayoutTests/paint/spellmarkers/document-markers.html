@@ -2,16 +2,15 @@
 <html>
 <head>
 <script>
-if (window.testRunner) {
-    testRunner.setMockSpellCheckerEnabled(true);
-}
-
 function runTest() {
-    editable = document.getElementById("editable");
-    selection = document.getSelection();
-    selection.addRange(new Range);
-    range = selection.getRangeAt(0);
-    range.selectNodeContents(editable);
+  const editable = document.getElementById("editable");
+  getSelection().selectAllChildren(editable);
+  if (window.internals) {
+    const range = document.createRange();
+    range.setStart(editable.firstChild, 0);
+    range.setEnd(editable.firstChild, 8);
+    internals.setMarker(document, range, 'spelling');
+  }
 }
 </script>
 </head>
