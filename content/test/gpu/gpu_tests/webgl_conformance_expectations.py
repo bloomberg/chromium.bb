@@ -134,6 +134,8 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['passthrough'], bug=1639) # angle bug ID
     self.Fail('conformance/misc/object-deletion-behaviour.html',
         ['passthrough'], bug=1639) # angle bug ID
+    self.Fail('conformance/misc/uninitialized-test.html',
+        ['passthrough'], bug=1635) # angle bug ID
     self.Fail('conformance/reading/read-pixels-test.html',
         ['passthrough'], bug=1639) # angle bug ID
     self.Fail('conformance/textures/misc/texture-mips.html',
@@ -160,12 +162,42 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['passthrough', 'opengl'], bug=665521)
     self.Fail('conformance/textures/misc/copytexsubimage2d-large-partial-' +
         'copy-corruption.html', ['passthrough', 'opengl'], bug=665521)
+    self.Fail('conformance/textures/misc/gl-teximage.html',
+        ['passthrough', 'opengl'], bug=665521)
     self.Fail('conformance/textures/misc/texture-npot-video.html',
         ['passthrough', 'opengl'], bug=665521)
     self.Fail('conformance/textures/misc/texture-npot.html',
         ['passthrough', 'opengl'], bug=665521)
     self.Fail('conformance/textures/misc/texture-fakeblack.html',
         ['passthrough', 'opengl'], bug=665521)
+
+    # Passthrough command decoder / OpenGL / Intel
+    self.Fail('conformance/renderbuffers/framebuffer-object-attachment.html',
+        ['passthrough', 'opengl', 'intel'], bug=665521)
+    self.Fail('conformance/textures/misc/texture-attachment-formats.html',
+        ['passthrough', 'opengl', 'intel'], bug=665521)
+
+    # Passthrough command decoder / OpenGL / AMD
+    self.Fail('conformance/glsl/constructors/glsl-construct-mat2.html',
+        ['passthrough', 'opengl', 'amd'], bug=665521)
+    self.Fail('conformance/glsl/constructors/' +
+        'glsl-construct-vec-mat-corner-cases.html',
+        ['passthrough', 'opengl', 'amd'], bug=665521)
+    self.Fail('conformance/glsl/constructors/' +
+        'glsl-construct-vec-mat-index.html',
+        ['passthrough', 'opengl', 'amd', 'linux'], bug=665521)
+    self.Fail('conformance/glsl/misc/shader-struct-scope.html',
+        ['passthrough', 'opengl', 'amd', 'linux'], bug=665521)
+    self.Fail('conformance/glsl/misc/struct-nesting-of-variable-names.html',
+        ['passthrough', 'opengl', 'amd', 'linux'], bug=665521)
+    self.Fail('conformance/renderbuffers/framebuffer-state-restoration.html',
+        ['passthrough', 'opengl', 'amd'], bug=665521)
+    self.Fail('conformance/uniforms/out-of-bounds-uniform-array-access.html',
+        ['passthrough', 'opengl', 'amd'], bug=665521)
+    self.Fail('conformance/renderbuffers/framebuffer-object-attachment.html',
+        ['passthrough', 'opengl', 'amd'], bug=665521)
+    self.Fail('conformance/textures/misc/texture-attachment-formats.html',
+        ['passthrough', 'opengl', 'amd'], bug=665521)
 
     # Passthrough command decoder / D3D11
     self.Fail('conformance/extensions/oes-element-index-uint.html',
@@ -181,8 +213,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['passthrough', 'd3d11'], bug=1639) # angle bug ID
     self.Fail('conformance/glsl/variables/glsl-built-ins.html',
         ['passthrough', 'd3d11'], bug=1639) # angle bug ID
-    self.Fail('conformance/misc/uninitialized-test.html',
-        ['passthrough', 'd3d11'], bug=1635) # angle bug ID
     self.Fail('conformance/renderbuffers/framebuffer-object-attachment.html',
         ['passthrough', 'd3d11'], bug=602688)
     self.Fail('conformance/rendering/draw-elements-out-of-bounds.html',
@@ -428,9 +458,9 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Flaky('conformance/extensions/ext-texture-filter-anisotropic.html',
         ['linux', ('amd', 0x6779)], bug=436212)
     self.Flaky('conformance/glsl/misc/shader-struct-scope.html',
-        ['linux', ('amd', 0x6779)], bug=436212)
+        ['linux', ('amd', 0x6779), 'no_passthrough'], bug=436212)
     self.Flaky('conformance/glsl/misc/struct-nesting-of-variable-names.html',
-        ['linux', ('amd', 0x6779)], bug=436212)
+        ['linux', ('amd', 0x6779), 'no_passthrough'], bug=436212)
     self.Flaky('conformance/rendering/point-size.html',
         ['linux', ('amd', 0x6779)], bug=436212)
     self.Flaky('conformance/textures/misc/texture-sub-image-cube-maps.html',
