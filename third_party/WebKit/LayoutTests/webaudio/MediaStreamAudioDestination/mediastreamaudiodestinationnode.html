@@ -2,59 +2,57 @@
 
 <html>
 <head>
-<script src="../../resources/js-test.js"></script>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script> 
 <script src="../resources/audit-util.js"></script>
-<script src="../resources/audio-testing.js"></script>
+<script src="../resources/audit.js"></script>
 </head>
 
 <body>
-<div id="description"></div>
-<div id="console"></div>
-
 <script>
-description("Basic tests for MediaStreamAudioDestinationNode API.");
+let audit = Audit.createTaskRunner();
 
-var context;
-var mediaStreamDestination;
+audit.define(
+    {
+      label: 'test',
+      description: 'Basic tests for MediaStreamAudioDestinationNode API'
+    },
+    (task, should) => {
+      let context = new AudioContext();
 
-function runTest() {
-    if (window.testRunner) {
-        testRunner.dumpAsText();
-    }
+      let mediaStreamDestination = context.createMediaStreamDestination();
 
-    context = new AudioContext();
+      // MediaStreamAudioDestinationNode should inherit AudioNode.
+      should(
+          mediaStreamDestination instanceof AudioNode,
+          'mediaStreamDestination instance')
+          .beTrue();
 
-    mediaStreamDestination = context.createMediaStreamDestination();
+      // Check the channel count boundary of 8.
+      should(
+          () => mediaStreamDestination.channelCount = 9,
+          'Setting the channel count beyond 8')
+          .throw('NotSupportedError');
 
-    // MediaStreamAudioDestinationNode should inherit AudioNode.
-    shouldBe('mediaStreamDestination.__proto__.__proto__', 'AudioNode.prototype');
+      // Check number of inputs and outputs.
+      should(
+          mediaStreamDestination.numberOfInputs,
+          'mediaStreamDestination.numberOfInputs')
+          .beEqualTo(1);
 
-    // Check the channel count boundary of 8.
-    Should('Setting the channel count beyond 8', function () {
-        mediaStreamDestination.channelCount = 9;
-    }).throw('NotSupportedError');
+      // We should have no outputs, but since we're implemented using
+      // AudioBasicInspectorNode, we have one.
+      should(mediaStreamDestination.numberOfOutputs,
+        'Number of outputs')
+        .beEqualTo(1);
 
-    // Check number of inputs and outputs.
-    if (mediaStreamDestination.numberOfInputs == 1)
-        testPassed("Destination AudioNode has one input.");
-    else
-        testFailed("Destination AudioNode should have one input.");
+      // FIXME: add a test where we create a PeerConnection and call
+      // addStream(mediaStreamDestination.stream).
 
-    // FIXME: We should have no outputs, but since we're implemented using AudioBasicInspectorNode
-    // we have one.
-    // if (mediaStreamDestination.numberOfOutputs == 0)
-    //     testPassed("Destination AudioNode has no outputs.");
-    // else
-    //     testFailed("Destination AudioNode should not have outputs.");
+      task.done();
+    });
 
-    // FIXME: add a test where we create a PeerConnection and call addStream(mediaStreamDestination.stream).
-    
-    finishJSTest();
-}
-
-runTest();
-window.successfullyParsed = true;
-
+audit.run();
 </script>
 
 </body>
