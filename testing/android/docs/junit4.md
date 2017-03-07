@@ -19,10 +19,10 @@ instrumentation tests and how to write or convert them.
 | Class runner | N/A                                                 | @RunWith(XClassRunner.class)             |
 | Assertion    | Extends from junit.framework.Assert, inherited APIs | Use static methods from org.junit.Assert |
 
-\* Please note that during the migration, we support running JUnit3 and JUnit4
-tests in the same apk. This requires two tags, one each for JUnit3 and JUnit4.
-The tag for the JUnit4 runner must specify `chromium-junit4:"true"`
-([Example][2])
+> Please note that during the migration, we support running JUnit3 and JUnit4
+> tests in the same apk. This requires two tags, one each for JUnit3 and JUnit4.
+> The tag for the JUnit4 runner must specify `chromium-junit4:"true"`
+> ([Example][2])
 
 - **Other JUnit4 features**:
     - Tests can be annotated to expect an exception, e.g.
@@ -124,10 +124,13 @@ JUnit4:
 ## Caveats
 
 1. Instrumentation tests that rely on test thread to have message handler
-   will not work (Example error message: ```java.lang.RuntimeException: Can't 
-   create handler inside thread that has not called Looper.prepare() ```).
+   will not work. For example error message:
+```
+java.lang.RuntimeException: Can't create handler inside thread that has not called Looper.prepare()
+```
    Please utilize `@UiThreadTest` or `ActivityTestRule.runOnUiThread(Runnable r)`
    to refactor these tests. For more, check this [github issue][6]
+
 2. `assertEquals(float a, float b)` and `assertEquals(double a, double b)` are
     deprecated in JUnit4's Assert class. **Despite only generating a warning at
     build time, they fail at runtime.** Please use
@@ -147,7 +150,7 @@ JUnit4:
     JUnit3 tests. After the migration, we plan to refactor the TestRules to
     be more modular.
 
-If you have any other question, feel free to report in
+If you have any other questions, feel free to report in
 [this bug][7].
 
 ## Links and Crbugs
