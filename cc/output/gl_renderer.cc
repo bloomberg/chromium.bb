@@ -2977,10 +2977,18 @@ void GLRenderer::PrepareGeometry(BoundGeometry binding) {
 
 void GLRenderer::SetUseProgram(const ProgramKey& program_key,
                                const gfx::ColorSpace& src_color_space) {
-  gfx::ColorSpace dst_color_space;
-  if (settings_->enable_color_correct_rendering)
-    dst_color_space = current_frame()->current_render_pass->color_space;
-  SetUseProgram(program_key, src_color_space, dst_color_space);
+  // Ensure that we do not apply any color conversion unless the color correct
+  // rendering flag has been specified. This is because media mailboxes will
+  // provide YUV color spaces despite YUV to RGB conversion already having been
+  // performed.
+  // TODO(ccameron): Ensure that media mailboxes be accurate.
+  // https://crbug.com/699243
+  if (settings_->enable_color_correct_rendering) {
+    SetUseProgram(program_key, src_color_space,
+                  current_frame()->current_render_pass->color_space);
+  } else {
+    SetUseProgram(program_key, gfx::ColorSpace(), gfx::ColorSpace());
+  }
 }
 
 void GLRenderer::SetUseProgram(const ProgramKey& program_key_no_color,
