@@ -443,9 +443,9 @@ ThumbnailView.prototype.moveSelection_ = function(direction, selectRange) {
 ThumbnailView.prototype.scrollTo_ = function(index) {
   var thumbnailRect = this.getThumbnailRect(index);
 
-  if (thumbnailRect.top - ThumbnailView.MARGIN < ImageEditor.Toolbar.HEIGHT) {
+  if (thumbnailRect.top - ThumbnailView.MARGIN < ImageEditorToolbar.HEIGHT) {
     this.container_.scrollTop -=
-        ImageEditor.Toolbar.HEIGHT - thumbnailRect.top + ThumbnailView.MARGIN;
+        ImageEditorToolbar.HEIGHT - thumbnailRect.top + ThumbnailView.MARGIN;
   } else if (thumbnailRect.bottom + ThumbnailView.MARGIN >
       this.container_.clientHeight) {
     this.container_.scrollTop += thumbnailRect.bottom + ThumbnailView.MARGIN -

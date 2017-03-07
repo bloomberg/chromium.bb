@@ -69,6 +69,8 @@
 // <include src="image_editor/image_view.js">
 // <include src="image_editor/commands.js">
 // <include src="image_editor/image_editor_prompt.js">
+// <include src="image_editor/image_editor_mode.js">
+// <include src="image_editor/image_editor_toolbar.js">
 // <include src="image_editor/image_editor.js">
 // <include src="image_editor/image_transform.js">
 // <include src="image_editor/image_adjust.js">

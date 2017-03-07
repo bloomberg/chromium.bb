@@ -9,10 +9,10 @@
  * @param {string} title
  * @constructor
  * @struct
- * @extends {ImageEditor.Mode}
+ * @extends {ImageEditorMode}
  */
-ImageEditor.Mode.Adjust = function(name, title) {
-  ImageEditor.Mode.call(this, name, title);
+ImageEditorMode.Adjust = function(name, title) {
+  ImageEditorMode.call(this, name, title);
 
   /**
    * @type {boolean}
@@ -55,29 +55,32 @@ ImageEditor.Mode.Adjust = function(name, title) {
   this.originalImageData_ = null;
 };
 
-ImageEditor.Mode.Adjust.prototype = {__proto__: ImageEditor.Mode.prototype};
+ImageEditorMode.Adjust.prototype = {
+  __proto__: ImageEditorMode.prototype
+};
 
 /**
  * Gets command to do filter.
  *
  * @return {Command.Filter} Filter command.
  */
-ImageEditor.Mode.Adjust.prototype.getCommand = function() {
-  if (!this.filter_) return null;
+ImageEditorMode.Adjust.prototype.getCommand = function() {
+  if (!this.filter_)
+    return null;
 
   return new Command.Filter(this.name, this.filter_, this.doneMessage_);
 };
 
 /** @override */
-ImageEditor.Mode.Adjust.prototype.cleanUpUI = function() {
-  ImageEditor.Mode.prototype.cleanUpUI.apply(this, arguments);
+ImageEditorMode.Adjust.prototype.cleanUpUI = function() {
+  ImageEditorMode.prototype.cleanUpUI.apply(this, arguments);
   this.hidePreview();
 };
 
 /**
  * Hides preview.
  */
-ImageEditor.Mode.Adjust.prototype.hidePreview = function() {
+ImageEditorMode.Adjust.prototype.hidePreview = function() {
   if (this.canvas_) {
     this.canvas_.parentNode.removeChild(this.canvas_);
     this.canvas_ = null;
@@ -85,21 +88,21 @@ ImageEditor.Mode.Adjust.prototype.hidePreview = function() {
 };
 
 /** @override */
-ImageEditor.Mode.Adjust.prototype.cleanUpCaches = function() {
+ImageEditorMode.Adjust.prototype.cleanUpCaches = function() {
   this.filter_ = null;
   this.previewImageData_ = null;
 };
 
 /** @override */
-ImageEditor.Mode.Adjust.prototype.reset = function() {
-  ImageEditor.Mode.prototype.reset.call(this);
+ImageEditorMode.Adjust.prototype.reset = function() {
+  ImageEditorMode.prototype.reset.call(this);
   this.hidePreview();
   this.cleanUpCaches();
 };
 
 /** @override */
-ImageEditor.Mode.Adjust.prototype.update = function(options) {
-  ImageEditor.Mode.prototype.update.apply(this, arguments);
+ImageEditorMode.Adjust.prototype.update = function(options) {
+  ImageEditorMode.prototype.update.apply(this, arguments);
   this.updatePreviewImage_(options);
 };
 
@@ -110,7 +113,7 @@ ImageEditor.Mode.Adjust.prototype.update = function(options) {
  *     does not update current filter.
  * @private
  */
-ImageEditor.Mode.Adjust.prototype.updatePreviewImage_ = function(options) {
+ImageEditorMode.Adjust.prototype.updatePreviewImage_ = function(options) {
   assert(this.getViewport());
 
   var isPreviewImageInvalidated = false;
@@ -160,7 +163,7 @@ ImageEditor.Mode.Adjust.prototype.updatePreviewImage_ = function(options) {
 };
 
 /** @override */
-ImageEditor.Mode.Adjust.prototype.draw = function() {
+ImageEditorMode.Adjust.prototype.draw = function() {
   this.updatePreviewImage_(null);
 };
 
@@ -173,7 +176,7 @@ ImageEditor.Mode.Adjust.prototype.draw = function() {
  * @param {!Object} options A map of filter-specific options.
  * @return {function(!ImageData,!ImageData,number,number)} Created function.
  */
-ImageEditor.Mode.Adjust.prototype.createFilter = function(options) {
+ImageEditorMode.Adjust.prototype.createFilter = function(options) {
   return filter.create(this.name, options);
 };
 
@@ -182,40 +185,42 @@ ImageEditor.Mode.Adjust.prototype.createFilter = function(options) {
  * @constructor
  * @param {string} name The mode name.
  * @param {string} title The mode title.
- * @extends {ImageEditor.Mode.Adjust}
+ * @extends {ImageEditorMode.Adjust}
  * @struct
  */
-ImageEditor.Mode.ColorFilter = function(name, title) {
-  ImageEditor.Mode.Adjust.call(this, name, title);
+ImageEditorMode.ColorFilter = function(name, title) {
+  ImageEditorMode.Adjust.call(this, name, title);
 };
 
-ImageEditor.Mode.ColorFilter.prototype =
-    {__proto__: ImageEditor.Mode.Adjust.prototype};
+ImageEditorMode.ColorFilter.prototype = {
+  __proto__: ImageEditorMode.Adjust.prototype
+};
 
 /**
  * Gets a histogram from a thumbnail.
  * @return {{r: !Array<number>, g: !Array<number>, b: !Array<number>}}
  *    histogram.
  */
-ImageEditor.Mode.ColorFilter.prototype.getHistogram = function() {
+ImageEditorMode.ColorFilter.prototype.getHistogram = function() {
   return filter.getHistogram(this.getImageView().getThumbnail());
 };
 
 /**
  * Exposure/contrast filter.
  * @constructor
- * @extends {ImageEditor.Mode.ColorFilter}
+ * @extends {ImageEditorMode.ColorFilter}
  * @struct
  */
-ImageEditor.Mode.Exposure = function() {
-  ImageEditor.Mode.ColorFilter.call(this, 'exposure', 'GALLERY_EXPOSURE');
+ImageEditorMode.Exposure = function() {
+  ImageEditorMode.ColorFilter.call(this, 'exposure', 'GALLERY_EXPOSURE');
 };
 
-ImageEditor.Mode.Exposure.prototype =
-    {__proto__: ImageEditor.Mode.ColorFilter.prototype};
+ImageEditorMode.Exposure.prototype = {
+  __proto__: ImageEditorMode.ColorFilter.prototype
+};
 
 /** @override */
-ImageEditor.Mode.Exposure.prototype.createTools = function(toolbar) {
+ImageEditorMode.Exposure.prototype.createTools = function(toolbar) {
   toolbar.addRange('brightness', 'GALLERY_BRIGHTNESS', -1, 0, 1, 100);
   toolbar.addRange('contrast', 'GALLERY_CONTRAST', -1, 0, 1, 100);
 };
@@ -224,18 +229,19 @@ ImageEditor.Mode.Exposure.prototype.createTools = function(toolbar) {
  * Autofix.
  * @constructor
  * @struct
- * @extends {ImageEditor.Mode.ColorFilter}
+ * @extends {ImageEditorMode.ColorFilter}
  */
-ImageEditor.Mode.Autofix = function() {
-  ImageEditor.Mode.ColorFilter.call(this, 'autofix', 'GALLERY_AUTOFIX');
+ImageEditorMode.Autofix = function() {
+  ImageEditorMode.ColorFilter.call(this, 'autofix', 'GALLERY_AUTOFIX');
   this.doneMessage_ = 'GALLERY_FIXED';
 };
 
-ImageEditor.Mode.Autofix.prototype =
-    {__proto__: ImageEditor.Mode.ColorFilter.prototype};
+ImageEditorMode.Autofix.prototype = {
+  __proto__: ImageEditorMode.ColorFilter.prototype
+};
 
 /** @override */
-ImageEditor.Mode.Autofix.prototype.isApplicable = function() {
+ImageEditorMode.Autofix.prototype.isApplicable = function() {
   return this.getImageView().hasValidImage() &&
       filter.autofix.isApplicable(this.getHistogram());
 };
@@ -243,26 +249,27 @@ ImageEditor.Mode.Autofix.prototype.isApplicable = function() {
 /**
  * Applies autofix.
  */
-ImageEditor.Mode.Autofix.prototype.apply = function() {
+ImageEditorMode.Autofix.prototype.apply = function() {
   this.update({histogram: this.getHistogram()});
 };
 
 /**
  * Instant Autofix.
  * @constructor
- * @extends {ImageEditor.Mode.Autofix}
+ * @extends {ImageEditorMode.Autofix}
  * @struct
  */
-ImageEditor.Mode.InstantAutofix = function() {
-  ImageEditor.Mode.Autofix.call(this);
+ImageEditorMode.InstantAutofix = function() {
+  ImageEditorMode.Autofix.call(this);
   this.instant = true;
 };
 
-ImageEditor.Mode.InstantAutofix.prototype =
-    {__proto__: ImageEditor.Mode.Autofix.prototype};
+ImageEditorMode.InstantAutofix.prototype = {
+  __proto__: ImageEditorMode.Autofix.prototype
+};
 
 /** @override */
-ImageEditor.Mode.InstantAutofix.prototype.setUp = function() {
-  ImageEditor.Mode.Autofix.prototype.setUp.apply(this, arguments);
+ImageEditorMode.InstantAutofix.prototype.setUp = function() {
+  ImageEditorMode.Autofix.prototype.setUp.apply(this, arguments);
   this.apply();
 };

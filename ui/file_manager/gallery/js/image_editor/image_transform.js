@@ -5,15 +5,15 @@
 /**
  * Crop mode.
  *
- * @extends {ImageEditor.Mode}
+ * @extends {ImageEditorMode}
  * @constructor
  * @struct
  */
-ImageEditor.Mode.Crop = function() {
-  ImageEditor.Mode.call(this, 'crop', 'GALLERY_CROP');
+ImageEditorMode.Crop = function() {
+  ImageEditorMode.call(this, 'crop', 'GALLERY_CROP');
 
-  this.paddingTop = ImageEditor.Mode.Crop.MOUSE_GRAB_RADIUS;
-  this.paddingBottom = ImageEditor.Mode.Crop.MOUSE_GRAB_RADIUS;
+  this.paddingTop = ImageEditorMode.Crop.MOUSE_GRAB_RADIUS;
+  this.paddingBottom = ImageEditorMode.Crop.MOUSE_GRAB_RADIUS;
 
   /**
    * @type {HTMLElement}
@@ -70,14 +70,16 @@ ImageEditor.Mode.Crop = function() {
   this.cropRect_ = null;
 };
 
-ImageEditor.Mode.Crop.prototype = {__proto__: ImageEditor.Mode.prototype};
+ImageEditorMode.Crop.prototype = {
+  __proto__: ImageEditorMode.prototype
+};
 
 /**
  * Sets the mode up.
  * @override
  */
-ImageEditor.Mode.Crop.prototype.setUp = function() {
-  ImageEditor.Mode.prototype.setUp.apply(this, arguments);
+ImageEditorMode.Crop.prototype.setUp = function() {
+  ImageEditorMode.prototype.setUp.apply(this, arguments);
 
   var container = this.getImageView().container_;
   var doc = container.ownerDocument;
@@ -135,7 +137,7 @@ ImageEditor.Mode.Crop.prototype.setUp = function() {
 /**
  * @override
  */
-ImageEditor.Mode.Crop.prototype.createTools = function(toolbar) {
+ImageEditorMode.Crop.prototype.createTools = function(toolbar) {
   var aspects = {
     GALLERY_ASPECT_RATIO_1_1: 1 / 1,
     GALLERY_ASPECT_RATIO_6_4: 6 / 4,
@@ -146,8 +148,7 @@ ImageEditor.Mode.Crop.prototype.createTools = function(toolbar) {
   // TODO(fukino): The loop order is not guaranteed. Fix it!
   for (var name in aspects) {
     var button = toolbar.addButton(
-        name,
-        ImageEditor.Toolbar.ButtonType.LABEL,
+        name, ImageEditorToolbar.ButtonType.LABEL,
         this.onCropAspectRatioClicked_.bind(this, toolbar, aspects[name]),
         'crop-aspect-ratio');
 
@@ -162,12 +163,12 @@ ImageEditor.Mode.Crop.prototype.createTools = function(toolbar) {
 
 /**
  * Handles click events of crop aspect ratio buttons.
- * @param {!ImageEditor.Toolbar} toolbar Toolbar.
+ * @param {!ImageEditorToolbar} toolbar Toolbar.
  * @param {number} aspect Aspect ratio.
  * @param {Event} event An event.
  * @private
  */
-ImageEditor.Mode.Crop.prototype.onCropAspectRatioClicked_ = function(
+ImageEditorMode.Crop.prototype.onCropAspectRatioClicked_ = function(
     toolbar, aspect, event) {
   var button = event.target;
 
@@ -194,22 +195,22 @@ ImageEditor.Mode.Crop.prototype.onCropAspectRatioClicked_ = function(
  * Handles resizing of the viewport and updates the crop rectangle.
  * @private
  */
-ImageEditor.Mode.Crop.prototype.onViewportResized_ = function() {
+ImageEditorMode.Crop.prototype.onViewportResized_ = function() {
   this.positionDOM();
 };
 
 /**
  * Resets the mode.
  */
-ImageEditor.Mode.Crop.prototype.reset = function() {
-  ImageEditor.Mode.prototype.reset.call(this);
+ImageEditorMode.Crop.prototype.reset = function() {
+  ImageEditorMode.prototype.reset.call(this);
   this.createDefaultCrop();
 };
 
 /**
  * Updates the position of DOM elements.
  */
-ImageEditor.Mode.Crop.prototype.positionDOM = function() {
+ImageEditorMode.Crop.prototype.positionDOM = function() {
   var screenCrop = this.viewport_.imageToScreenRect(this.cropRect_.getRect());
 
   this.shadowLeft_.style.width = screenCrop.left + 'px';
@@ -222,8 +223,8 @@ ImageEditor.Mode.Crop.prototype.positionDOM = function() {
 /**
  * Removes the overlay elements from the document.
  */
-ImageEditor.Mode.Crop.prototype.cleanUpUI = function() {
-  ImageEditor.Mode.prototype.cleanUpUI.apply(this, arguments);
+ImageEditorMode.Crop.prototype.cleanUpUI = function() {
+  ImageEditorMode.prototype.cleanUpUI.apply(this, arguments);
   this.domOverlay_.parentNode.removeChild(this.domOverlay_);
   this.domOverlay_ = null;
   this.getViewport().removeEventListener(
@@ -235,20 +236,20 @@ ImageEditor.Mode.Crop.prototype.cleanUpUI = function() {
  * @const
  * @type {number}
  */
-ImageEditor.Mode.Crop.MOUSE_GRAB_RADIUS = 6;
+ImageEditorMode.Crop.MOUSE_GRAB_RADIUS = 6;
 
 /**
  * @const
  * @type {number}
  */
-ImageEditor.Mode.Crop.TOUCH_GRAB_RADIUS = 20;
+ImageEditorMode.Crop.TOUCH_GRAB_RADIUS = 20;
 
 /**
  * Gets command to do the crop depending on the current state.
  *
  * @return {!Command.Crop} Crop command.
  */
-ImageEditor.Mode.Crop.prototype.getCommand = function() {
+ImageEditorMode.Crop.prototype.getCommand = function() {
   var cropImageRect = this.cropRect_.getRect();
   return new Command.Crop(cropImageRect);
 };
@@ -256,7 +257,7 @@ ImageEditor.Mode.Crop.prototype.getCommand = function() {
 /**
  * Creates default (initial) crop.
  */
-ImageEditor.Mode.Crop.prototype.createDefaultCrop = function() {
+ImageEditorMode.Crop.prototype.createDefaultCrop = function() {
   var viewport = this.getViewport();
   assert(viewport);
 
@@ -278,7 +279,7 @@ ImageEditor.Mode.Crop.prototype.createDefaultCrop = function() {
  * @param {boolean} mouseDown If mouse button is down.
  * @return {string} A value for style.cursor CSS property.
  */
-ImageEditor.Mode.Crop.prototype.getCursorStyle = function(x, y, mouseDown) {
+ImageEditorMode.Crop.prototype.getCursorStyle = function(x, y, mouseDown) {
   return this.cropRect_.getCursorStyle(x, y, mouseDown);
 };
 
@@ -292,7 +293,7 @@ ImageEditor.Mode.Crop.prototype.getCursorStyle = function(x, y, mouseDown) {
  *     drag. It takes x coordinate value, y coordinate value, and shift key
  *     flag.
  */
-ImageEditor.Mode.Crop.prototype.getDragHandler = function(x, y, touch) {
+ImageEditorMode.Crop.prototype.getDragHandler = function(x, y, touch) {
   var cropDragHandler = this.cropRect_.getDragHandler(x, y, touch);
   if (!cropDragHandler)
     return null;
@@ -311,7 +312,7 @@ ImageEditor.Mode.Crop.prototype.getDragHandler = function(x, y, touch) {
  * @param {number} y Y coordinate of the event.
  * @return {!ImageBuffer.DoubleTapAction} Action to perform as result.
  */
-ImageEditor.Mode.Crop.prototype.getDoubleTapAction = function(x, y) {
+ImageEditorMode.Crop.prototype.getDoubleTapAction = function(x, y) {
   return this.cropRect_.getDoubleTapAction(x, y);
 };
 
@@ -455,8 +456,8 @@ DraggableRect.prototype.getDragMode = function(x, y, opt_touch) {
 
   var bounds = this.bounds_;
   var R = this.viewport_.screenToImageSize(
-      touch ? ImageEditor.Mode.Crop.TOUCH_GRAB_RADIUS :
-              ImageEditor.Mode.Crop.MOUSE_GRAB_RADIUS);
+      touch ? ImageEditorMode.Crop.TOUCH_GRAB_RADIUS :
+              ImageEditorMode.Crop.MOUSE_GRAB_RADIUS);
 
   var circle = new Circle(x, y, R);
 
@@ -541,8 +542,8 @@ DraggableRect.prototype.getDragHandler = function(
     initialScreenX, initialScreenY, touch) {
   // Check if the initial coordinate is in the image rect.
   var boundsOnScreen = this.viewport_.getImageBoundsOnScreenClipped();
-  var handlerRadius = touch ? ImageEditor.Mode.Crop.TOUCH_GRAB_RADIUS :
-      ImageEditor.Mode.Crop.MOUSE_GRAB_RADIUS;
+  var handlerRadius = touch ? ImageEditorMode.Crop.TOUCH_GRAB_RADIUS :
+                              ImageEditorMode.Crop.MOUSE_GRAB_RADIUS;
   var draggableAreas = [
       boundsOnScreen,
       new Circle(boundsOnScreen.left, boundsOnScreen.top, handlerRadius),

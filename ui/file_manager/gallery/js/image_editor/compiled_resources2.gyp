@@ -1,7 +1,6 @@
 # Copyright 2016 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-# TODO(oka): Compile all the targets.
 {
   'targets': [
     {
@@ -33,39 +32,59 @@
       ],
       'includes': ['../../../compile_js2.gypi'],
     },
-#    {
-#      'target_name': 'image_adjust',
-#      'dependencies': [
-#        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:assert',
-#        'commands',
-#        'image_editor',
-#      ],
-#      'includes': ['../../../compile_js2.gypi'],
-#    },
+    {
+      'target_name': 'image_adjust',
+      'dependencies': [
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:assert',
+        'commands',
+        'image_editor',
+      ],
+      'includes': ['../../../compile_js2.gypi'],
+    },
     {
       'target_name': 'image_buffer',
       'includes': ['../../../compile_js2.gypi'],
     },
-#    {
-#      'target_name': 'image_editor',
-#      'dependencies': [
-#        'viewport',
-#        'image_view',
-#        'commands',
-#        '../../../file_manager/common/js/compiled_resources2.gyp:util',
-#        'image_buffer',
-#        'image_util',
-#        '<(DEPTH)/ui/webui/resources/js/cr/compiled_resources2.gyp:event_target',
-#        '../../../file_manager/foreground/elements/compiled_resources2.gyp:files_tooltip',
-#        '../../../file_manager/common/js/compiled_resources2.gyp:util',
-#        '../compiled_resources2.gyp:gallery_util',
-#      ],
-#      'includes': ['../../../compile_js2.gypi'],
-#    },
+    {
+      'target_name': 'image_editor',
+      'dependencies': [
+        '<(DEPTH)/ui/webui/resources/js/cr/compiled_resources2.gyp:event_target',
+        'image_buffer',
+        'image_editor_mode',
+        'image_editor_toolbar',
+        'image_resize',
+        'image_util',
+        'image_view',
+        'viewport',
+      ],
+      'includes': ['../../../compile_js2.gypi'],
+    },
+    {
+      'target_name': 'image_editor_mode',
+      'dependencies': [
+        'commands',
+        'image_buffer',
+        'image_editor_toolbar',
+        'image_view',
+        'viewport',
+      ],
+      'includes': ['../../../compile_js2.gypi'],
+    },
     {
       'target_name': 'image_editor_prompt',
       'dependencies': [
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:assert',
+      ],
+      'includes': ['../../../compile_js2.gypi'],
+    },
+    {
+      'target_name': 'image_editor_toolbar',
+      'dependencies': [
+        '../../../externs/compiled_resources2.gyp:paper_elements',
+        '../../../file_manager/common/js/compiled_resources2.gyp:util',
+        '../../../file_manager/foreground/elements/compiled_resources2.gyp:files_tooltip',
+        '../compiled_resources2.gyp:gallery_util',
+        'image_util',
       ],
       'includes': ['../../../compile_js2.gypi'],
     },
@@ -91,16 +110,26 @@
       ],
       'includes': ['../../../compile_js2.gypi'],
     },
-#    {
-#      'target_name': 'image_transform',
-#      'dependencies': [
-#        'commands',
-#        'viewport',
-#        'image_buffer',
-#        'image_util',
-#      ],
-#      'includes': ['../../../compile_js2.gypi'],
-#    },
+    {
+      'target_name': 'image_resize',
+      'dependencies': [
+        '../../../file_manager/foreground/js/ui/compiled_resources2.gyp:files_alert_dialog',
+        'image_editor_mode',
+      ],
+      'includes': ['../../../compile_js2.gypi'],
+    },
+    {
+      'target_name': 'image_transform',
+      'dependencies': [
+        'commands',
+        'image_buffer',
+        'image_editor_mode',
+        'image_editor_toolbar',
+        'image_util',
+        'viewport',
+      ],
+      'includes': ['../../../compile_js2.gypi'],
+    },
     {
       'target_name': 'image_util',
       'dependencies': [

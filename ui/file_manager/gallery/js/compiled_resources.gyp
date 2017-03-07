@@ -129,6 +129,8 @@
           './image_editor/image_buffer.js',
           './image_editor/image_view.js',
           './image_editor/commands.js',
+          './image_editor/image_editor_mode.js',
+          './image_editor/image_editor_toolbar.js',
           './image_editor/image_editor.js',
           './image_editor/image_editor_prompt.js',
           './image_editor/image_transform.js',

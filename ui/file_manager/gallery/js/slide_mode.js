@@ -12,11 +12,12 @@
  * @param {!HTMLElement} bottomToolbar Toolbar element.
  * @param {!ImageEditorPrompt} prompt Prompt.
  * @param {!ErrorBanner} errorBanner Error banner.
- * @param {!cr.ui.ArrayDataModel} dataModel Data model.
+ * @param {!GalleryDataModel} dataModel Data model.
  * @param {!cr.ui.ListSelectionModel} selectionModel Selection model.
  * @param {!MetadataModel} metadataModel
  * @param {!ThumbnailModel} thumbnailModel
- * @param {!Object} context Context.
+ * @param {!{appWindow: chrome.app.window.AppWindow, readonlyDirName: string,
+ displayStringFunction: function(), loadTimeData: Object}} context Context.
  * @param {!VolumeManagerWrapper} volumeManager Volume manager.
  * @param {function(function())} toggleMode Function to toggle the Gallery mode.
  * @param {function(string):string} displayStringFunction String formatting
@@ -79,7 +80,7 @@ function SlideMode(container, content, topToolbar, bottomToolbar, prompt,
   this.errorBanner_ = errorBanner;
 
   /**
-   * @type {!cr.ui.ArrayDataModel}
+   * @type {!GalleryDataModel}
    * @private
    * @const
    */
@@ -93,7 +94,8 @@ function SlideMode(container, content, topToolbar, bottomToolbar, prompt,
   this.selectionModel_ = selectionModel;
 
   /**
-   * @type {!Object}
+   * @type {{appWindow: chrome.app.window.AppWindow, readonlyDirName: string,
+   * displayStringFunction: function(), loadTimeData: Object}}
    * @private
    * @const
    */
@@ -474,17 +476,15 @@ function SlideMode(container, content, topToolbar, bottomToolbar, prompt,
 
 /**
  * List of available editor modes.
- * @type {!Array<ImageEditor.Mode>}
+ * @type {!Array<ImageEditorMode>}
  * @const
  */
 SlideMode.EDITOR_MODES = [
-  new ImageEditor.Mode.InstantAutofix(),
-  new ImageEditor.Mode.Crop(),
-  new ImageEditor.Mode.Resize(),
-  new ImageEditor.Mode.Exposure(),
-  new ImageEditor.Mode.OneClick(
+  new ImageEditorMode.InstantAutofix(), new ImageEditorMode.Crop(),
+  new ImageEditorMode.Resize(), new ImageEditorMode.Exposure(),
+  new ImageEditorMode.OneClick(
       'rotate_left', 'GALLERY_ROTATE_LEFT', new Command.Rotate(-1)),
-  new ImageEditor.Mode.OneClick(
+  new ImageEditorMode.OneClick(
       'rotate_right', 'GALLERY_ROTATE_RIGHT', new Command.Rotate(1))
 ];
 
@@ -1624,8 +1624,8 @@ SlideMode.prototype.toggleEditor = function(opt_event) {
     this.viewport_.resetView();
 
     // Scale the screen so that it doesn't overlap the toolbars.
-    this.viewport_.setScreenTop(ImageEditor.Toolbar.HEIGHT);
-    this.viewport_.setScreenBottom(ImageEditor.Toolbar.HEIGHT);
+    this.viewport_.setScreenTop(ImageEditorToolbar.HEIGHT);
+    this.viewport_.setScreenBottom(ImageEditorToolbar.HEIGHT);
 
     this.imageView_.applyViewportChange();
 

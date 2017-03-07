@@ -71,10 +71,13 @@
 #      'target_name': 'file_table_list',
 #      'includes': ['../../../../compile_js2.gypi'],
 #    },
-#    {
-#      'target_name': 'files_alert_dialog',
-#      'includes': ['../../../../compile_js2.gypi'],
-#    },
+    {
+      'target_name': 'files_alert_dialog',
+      'dependencies': [
+        '<(DEPTH)/ui/webui/resources/js/cr/ui/compiled_resources2.gyp:dialogs',
+      ],
+      'includes': ['../../../../compile_js2.gypi'],
+    },
 #    {
 #      'target_name': 'files_confirm_dialog',
 #      'includes': ['../../../../compile_js2.gypi'],

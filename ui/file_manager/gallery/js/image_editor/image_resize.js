@@ -5,12 +5,12 @@
 /**
  * Resize Mode
  *
- * @extends {ImageEditor.Mode}
+ * @extends {ImageEditorMode}
  * @constructor
  * @struct
  */
-ImageEditor.Mode.Resize = function() {
-  ImageEditor.Mode.call(this, 'resize', 'GALLERY_RESIZE');
+ImageEditorMode.Resize = function() {
+  ImageEditorMode.call(this, 'resize', 'GALLERY_RESIZE');
 
   /** @private {number} */
   this.imageWidth_ = 0;
@@ -53,31 +53,31 @@ ImageEditor.Mode.Resize = function() {
 };
 
 /** @const {number} */
-ImageEditor.Mode.Resize.MINIMUM_VALID_VALUE = 1;
+ImageEditorMode.Resize.MINIMUM_VALID_VALUE = 1;
 
 /** @const {number} */
-ImageEditor.Mode.Resize.DEFAULT_MAX_VALID_VALUE = 10000;
+ImageEditorMode.Resize.DEFAULT_MAX_VALID_VALUE = 10000;
 
-ImageEditor.Mode.Resize.prototype = {
-  __proto__ : ImageEditor.Mode.prototype
+ImageEditorMode.Resize.prototype = {
+  __proto__: ImageEditorMode.prototype
 };
 
 /** @override */
-ImageEditor.Mode.Resize.prototype.setUp = function() {
-  ImageEditor.Mode.prototype.setUp.apply(this, arguments);
+ImageEditorMode.Resize.prototype.setUp = function() {
+  ImageEditorMode.prototype.setUp.apply(this, arguments);
 
   this.setDefault_();
 };
 
 /** @override */
-ImageEditor.Mode.Resize.prototype.createTools = function(toolbar) {
+ImageEditorMode.Resize.prototype.createTools = function(toolbar) {
   this.widthInputElement_ = toolbar.addInput('width', 'GALLERY_WIDTH',
       this.onInputChanged_.bind(this, 'width'),
       this.widthInputValue_, 'px');
 
-  this.lockIcon_ = toolbar.addButton('GALLERY_FIXRATIO',
-      ImageEditor.Toolbar.ButtonType.ICON_TOGGLEABLE,
-  this.onLockIconClicked_.bind(this), 'lockicon');
+  this.lockIcon_ = toolbar.addButton(
+      'GALLERY_FIXRATIO', ImageEditorToolbar.ButtonType.ICON_TOGGLEABLE,
+      this.onLockIconClicked_.bind(this), 'lockicon');
   if(this.fixedRatio_)
     this.lockIcon_.setAttribute('locked', '');
 
@@ -92,8 +92,7 @@ ImageEditor.Mode.Resize.prototype.createTools = function(toolbar) {
  * @param {Event} event
  * @private
  */
-ImageEditor.Mode.Resize.prototype.onInputChanged_ = function(
-    name, event) {
+ImageEditorMode.Resize.prototype.onInputChanged_ = function(name, event) {
 
   if(name !== 'height' && name !== 'width')
     return;
@@ -128,7 +127,7 @@ ImageEditor.Mode.Resize.prototype.onInputChanged_ = function(
  * @param {Event} event An event.
  * @private
  */
-ImageEditor.Mode.Resize.prototype.onLockIconClicked_ = function(event) {
+ImageEditorMode.Resize.prototype.onLockIconClicked_ = function(event) {
   var toggled = !this.fixedRatio_;
   if(toggled) {
     this.initializeInputValues_();
@@ -144,7 +143,7 @@ ImageEditor.Mode.Resize.prototype.onLockIconClicked_ = function(event) {
  * Set default values.
  * @private
  */
-ImageEditor.Mode.Resize.prototype.setDefault_ = function() {
+ImageEditorMode.Resize.prototype.setDefault_ = function() {
   var viewport = this.getViewport();
   assert(viewport);
 
@@ -157,16 +156,16 @@ ImageEditor.Mode.Resize.prototype.setDefault_ = function() {
   this.ratio_ = this.imageWidth_ / this.imageHeight_;
 
   this.maxValidWidth_ = Math.max(
-      this.imageWidth_, ImageEditor.Mode.Resize.DEFAULT_MAX_VALID_VALUE);
+      this.imageWidth_, ImageEditorMode.Resize.DEFAULT_MAX_VALID_VALUE);
   this.maxValidHeight_ = Math.max(
-      this.imageHeight_, ImageEditor.Mode.Resize.DEFAULT_MAX_VALID_VALUE);
+      this.imageHeight_, ImageEditorMode.Resize.DEFAULT_MAX_VALID_VALUE);
 };
 
 /**
  * Initialize width/height input values.
  * @private
  */
-ImageEditor.Mode.Resize.prototype.initializeInputValues_ = function() {
+ImageEditorMode.Resize.prototype.initializeInputValues_ = function() {
   this.widthInputValue_ = this.imageWidth_;
   this.setWidthInputValue_();
 
@@ -178,7 +177,7 @@ ImageEditor.Mode.Resize.prototype.initializeInputValues_ = function() {
  * Update input values to local variales.
  * @private
  */
-ImageEditor.Mode.Resize.prototype.updateInputValues_ = function() {
+ImageEditorMode.Resize.prototype.updateInputValues_ = function() {
   if(this.widthInputElement_)
     this.widthInputValue_ = parseInt(this.widthInputElement_.getValue(), 10);
   if(this.heightInputElement_)
@@ -189,7 +188,7 @@ ImageEditor.Mode.Resize.prototype.updateInputValues_ = function() {
  * Apply local variables' change to width input element.
  * @private
  */
-ImageEditor.Mode.Resize.prototype.setWidthInputValue_ = function() {
+ImageEditorMode.Resize.prototype.setWidthInputValue_ = function() {
   if(this.widthInputElement_)
     this.widthInputElement_.setValue(this.widthInputValue_);
 };
@@ -198,7 +197,7 @@ ImageEditor.Mode.Resize.prototype.setWidthInputValue_ = function() {
  * Apply local variables' change to height input element.
  * @private
  */
-ImageEditor.Mode.Resize.prototype.setHeightInputValue_ = function() {
+ImageEditorMode.Resize.prototype.setHeightInputValue_ = function() {
   if(this.heightInputElement_)
     this.heightInputElement_.setValue(this.heightInputValue_);
 };
@@ -212,7 +211,7 @@ ImageEditor.Mode.Resize.prototype.setHeightInputValue_ = function() {
  * @return {boolean} True if the input
  * @private
  */
-ImageEditor.Mode.Resize.prototype.isInputValidByName_ = function(
+ImageEditorMode.Resize.prototype.isInputValidByName_ = function(
     name, opt_value) {
   console.assert(name === 'height' || name === 'width');
 
@@ -220,14 +219,14 @@ ImageEditor.Mode.Resize.prototype.isInputValidByName_ = function(
   var value = opt_value ||
       (name === 'width' ? this.widthInputValue_ : this.heightInputValue_);
 
-  return ImageEditor.Mode.Resize.MINIMUM_VALID_VALUE <= value && value <= limit;
+  return ImageEditorMode.Resize.MINIMUM_VALID_VALUE <= value && value <= limit;
 };
 
 /**
  * Check if width/height input values are valid.
  * @return {boolean} true if both values are valid.
  */
-ImageEditor.Mode.Resize.prototype.isInputValid = function() {
+ImageEditorMode.Resize.prototype.isInputValid = function() {
   return this.isInputValidByName_('width') &&
       this.isInputValidByName_('height');
 };
@@ -235,7 +234,7 @@ ImageEditor.Mode.Resize.prototype.isInputValid = function() {
 /**
  * Show alert dialog only if input value is invalid.
  */
-ImageEditor.Mode.Resize.prototype.showAlertDialog = function() {
+ImageEditorMode.Resize.prototype.showAlertDialog = function() {
   if(this.isInputValid() || this.showingAlertDialog_)
     return;
 
@@ -253,13 +252,13 @@ ImageEditor.Mode.Resize.prototype.showAlertDialog = function() {
  * @return {boolean} True when showing an alert dialog.
  * @override
  */
-ImageEditor.Mode.Resize.prototype.isConsumingKeyEvents = function() {
+ImageEditorMode.Resize.prototype.isConsumingKeyEvents = function() {
   return this.showingAlertDialog_;
 };
 
 /** @override */
-ImageEditor.Mode.Resize.prototype.cleanUpUI = function() {
-  ImageEditor.Mode.prototype.cleanUpUI.apply(this, arguments);
+ImageEditorMode.Resize.prototype.cleanUpUI = function() {
+  ImageEditorMode.prototype.cleanUpUI.apply(this, arguments);
 
   if(this.showingAlertDialog_) {
     this.alertDialog_.hide();
@@ -268,13 +267,13 @@ ImageEditor.Mode.Resize.prototype.cleanUpUI = function() {
 };
 
 /** @override */
-ImageEditor.Mode.Resize.prototype.reset = function() {
-  ImageEditor.Mode.prototype.reset.call(this);
+ImageEditorMode.Resize.prototype.reset = function() {
+  ImageEditorMode.prototype.reset.call(this);
 
   this.setDefault_();
 };
 
 /** @override */
-ImageEditor.Mode.Resize.prototype.getCommand = function() {
+ImageEditorMode.Resize.prototype.getCommand = function() {
   return new Command.Resize(this.widthInputValue_, this.heightInputValue_);
 };
