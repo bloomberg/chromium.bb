@@ -787,8 +787,13 @@ static INLINE unsigned int get_token_alloc(int mb_rows, int mb_cols) {
 // Get the allocated token size for a tile. It does the same calculation as in
 // the frame token allocation.
 static INLINE unsigned int allocated_tokens(TileInfo tile) {
+#if CONFIG_CB4X4
+  int tile_mb_rows = (tile.mi_row_end - tile.mi_row_start + 2) >> 2;
+  int tile_mb_cols = (tile.mi_col_end - tile.mi_col_start + 2) >> 2;
+#else
   int tile_mb_rows = (tile.mi_row_end - tile.mi_row_start + 1) >> 1;
   int tile_mb_cols = (tile.mi_col_end - tile.mi_col_start + 1) >> 1;
+#endif
 
   return get_token_alloc(tile_mb_rows, tile_mb_cols);
 }
