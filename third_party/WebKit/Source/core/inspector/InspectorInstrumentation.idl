@@ -152,28 +152,28 @@ class XMLHttpRequest;
     [Network]
     void didChangeResourcePriority(LocalFrame*, unsigned long identifier, ResourceLoadPriority loadPriority);
 
-    [Network]
+    [Network, TraceEvents]
     void willSendRequest([Keep] LocalFrame*, unsigned long identifier, DocumentLoader*, ResourceRequest&, const ResourceResponse& redirectResponse, const FetchInitiatorInfo&);
 
     [Network]
     void markResourceAsCached(LocalFrame*, unsigned long identifier);
 
-    [Network]
+    [Network, TraceEvents]
     void didReceiveResourceResponse([Keep] LocalFrame*, unsigned long identifier, DocumentLoader*, const ResourceResponse&, Resource*);
 
-    [Network]
+    [Network, TraceEvents]
     void didReceiveData([Keep] LocalFrame*, unsigned long identifier, const char* data, int dataLength);
 
     [Network]
     void didReceiveEncodedDataLength([Keep] LocalFrame*, unsigned long identifier, int encodedDataLength);
 
-    [Network]
-    void didFinishLoading(LocalFrame* frame, unsigned long identifier, double finishTime, int64_t encodedDataLength);
+    [Network, TraceEvents]
+    void didFinishLoading(LocalFrame* frame, unsigned long identifier, double finishTime, int64_t encodedDataLength, int64_t decodedBodyLength);
 
     [Network]
     void didReceiveCORSRedirectResponse([Keep] LocalFrame*, unsigned long identifier, DocumentLoader*, const ResourceResponse&, Resource*);
 
-    [Network]
+    [Network, TraceEvents]
     void didFailLoading(LocalFrame* frame, unsigned long identifier, const ResourceError&);
 
     [Network]

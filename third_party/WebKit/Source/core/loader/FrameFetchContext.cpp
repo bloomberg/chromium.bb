@@ -430,8 +430,6 @@ void FrameFetchContext::dispatchWillSendRequest(
     ResourceRequest& request,
     const ResourceResponse& redirectResponse,
     const FetchInitiatorInfo& initiatorInfo) {
-  TRACE_EVENT1("devtools.timeline", "ResourceSendRequest", "data",
-               InspectorSendRequestEvent::data(identifier, frame(), request));
   // For initial requests, prepareRequest() is called in
   // willStartLoadingResource(), before revalidation policy is determined. That
   // call doesn't exist for redirects, so call preareRequest() here.
@@ -467,18 +465,12 @@ void FrameFetchContext::dispatchDidReceiveData(unsigned long identifier,
 
 void FrameFetchContext::dispatchDidReceiveEncodedData(unsigned long identifier,
                                                       int encodedDataLength) {
-  TRACE_EVENT1(
-      "devtools.timeline", "ResourceReceivedData", "data",
-      InspectorReceiveDataEvent::data(identifier, frame(), encodedDataLength));
   probe::didReceiveEncodedDataLength(frame(), identifier, encodedDataLength);
 }
 
 void FrameFetchContext::dispatchDidDownloadData(unsigned long identifier,
                                                 int dataLength,
                                                 int encodedDataLength) {
-  TRACE_EVENT1(
-      "devtools.timeline", "ResourceReceivedData", "data",
-      InspectorReceiveDataEvent::data(identifier, frame(), encodedDataLength));
   frame()->loader().progress().incrementProgress(identifier, dataLength);
   probe::didReceiveData(frame(), identifier, 0, dataLength);
   probe::didReceiveEncodedDataLength(frame(), identifier, encodedDataLength);
@@ -488,12 +480,9 @@ void FrameFetchContext::dispatchDidFinishLoading(unsigned long identifier,
                                                  double finishTime,
                                                  int64_t encodedDataLength,
                                                  int64_t decodedBodyLength) {
-  TRACE_EVENT1(
-      "devtools.timeline", "ResourceFinish", "data",
-      InspectorResourceFinishEvent::data(identifier, finishTime, false,
-                                         encodedDataLength, decodedBodyLength));
   frame()->loader().progress().completeProgress(identifier);
-  probe::didFinishLoading(frame(), identifier, finishTime, encodedDataLength);
+  probe::didFinishLoading(frame(), identifier, finishTime, encodedDataLength,
+                          decodedBodyLength);
   if (frame()->frameScheduler())
     frame()->frameScheduler()->didStopLoading(identifier);
 }
@@ -502,9 +491,6 @@ void FrameFetchContext::dispatchDidFail(unsigned long identifier,
                                         const ResourceError& error,
                                         int64_t encodedDataLength,
                                         bool isInternalRequest) {
-  TRACE_EVENT1("devtools.timeline", "ResourceFinish", "data",
-               InspectorResourceFinishEvent::data(identifier, 0, true,
-                                                  encodedDataLength, 0));
   frame()->loader().progress().completeProgress(identifier);
   probe::didFailLoading(frame(), identifier, error);
   // Notification to FrameConsole should come AFTER InspectorInstrumentation
@@ -1046,9 +1032,6 @@ void FrameFetchContext::dispatchDidReceiveResponseInternal(
     WebURLRequest::RequestContext requestContext,
     Resource* resource,
     LinkLoader::CanLoadResources resourceLoadingPolicy) {
-  TRACE_EVENT1(
-      "devtools.timeline", "ResourceReceiveResponse", "data",
-      InspectorReceiveResponseEvent::data(identifier, frame(), response));
   MixedContentChecker::checkMixedPrivatePublic(frame(),
                                                response.remoteIPAddress());
   if (m_documentLoader &&

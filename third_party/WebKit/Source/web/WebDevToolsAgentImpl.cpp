@@ -30,6 +30,9 @@
 
 #include "web/WebDevToolsAgentImpl.h"
 
+#include <v8-inspector.h>
+#include <memory>
+
 #include "bindings/core/v8/ScriptController.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "core/InstrumentingAgents.h"
@@ -89,8 +92,6 @@
 #include "wtf/Noncopyable.h"
 #include "wtf/PtrUtil.h"
 #include "wtf/text/WTFString.h"
-#include <memory>
-#include <v8-inspector.h>
 
 namespace blink {
 
@@ -269,10 +270,12 @@ WebDevToolsAgentImpl::WebDevToolsAgentImpl(WebLocalFrameImpl* webLocalFrameImpl,
       m_networkAgent(nullptr),
       m_layerTreeAgent(nullptr),
       m_tracingAgent(nullptr),
+      m_traceEventsAgent(new InspectorTraceEvents()),
       m_includeViewAgents(includeViewAgents),
       m_layerTreeId(0) {
   DCHECK(isMainThread());
   DCHECK(m_webLocalFrameImpl->frame());
+  m_instrumentingAgents->addInspectorTraceEvents(m_traceEventsAgent);
 }
 
 WebDevToolsAgentImpl::~WebDevToolsAgentImpl() {
@@ -291,12 +294,15 @@ DEFINE_TRACE(WebDevToolsAgentImpl) {
   visitor->trace(m_networkAgent);
   visitor->trace(m_layerTreeAgent);
   visitor->trace(m_tracingAgent);
+  visitor->trace(m_traceEventsAgent);
   visitor->trace(m_session);
 }
 
 void WebDevToolsAgentImpl::willBeDestroyed() {
   DCHECK(m_webLocalFrameImpl->frame());
   DCHECK(m_inspectedFrames->root()->view());
+  m_instrumentingAgents->removeInspectorTraceEvents(m_traceEventsAgent);
+  m_traceEventsAgent = nullptr;
   detach();
   m_resourceContentLoader->dispose();
   m_client = nullptr;
