@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+FAIL regions, viewportanchor Cannot read property 'viewportAnchorX' of null
+Harness: the test ran to completion.
+

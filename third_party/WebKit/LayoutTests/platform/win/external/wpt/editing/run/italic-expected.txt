@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 2197 tests; 1555 PASS, 642 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 2069 tests; 1459 PASS, 610 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS [["italic",""]] "foo[]bar": execCommand("italic", false, "") return value 
 PASS [["italic",""]] "foo[]bar" checks for modifications to non-editable content 
 PASS [["italic",""]] "foo[]bar" compare innerHTML 
@@ -470,38 +470,6 @@ FAIL [["stylewithcss","false"],["italic",""]] "{<table><tr><td>foo<td>bar<td>baz
 PASS [["stylewithcss","false"],["italic",""]] "{<table><tr><td>foo<td>bar<td>baz</table>}" queryCommandIndeterm("italic") after 
 FAIL [["stylewithcss","false"],["italic",""]] "{<table><tr><td>foo<td>bar<td>baz</table>}" queryCommandState("italic") after assert_equals: Wrong result returned expected true but got false
 FAIL [["stylewithcss","false"],["italic",""]] "{<table><tr><td>foo<td>bar<td>baz</table>}" queryCommandValue("italic") after assert_equals: Wrong result returned expected "" but got "false"
-PASS [["stylewithcss","true"],["italic",""]] "foo<span style=\"font-style: italic\">[bar]</span>baz": execCommand("stylewithcss", false, "true") return value 
-PASS [["stylewithcss","true"],["italic",""]] "foo<span style=\"font-style: italic\">[bar]</span>baz": execCommand("italic", false, "") return value 
-PASS [["stylewithcss","true"],["italic",""]] "foo<span style=\"font-style: italic\">[bar]</span>baz" checks for modifications to non-editable content 
-PASS [["stylewithcss","true"],["italic",""]] "foo<span style=\"font-style: italic\">[bar]</span>baz" compare innerHTML 
-PASS [["stylewithcss","true"],["italic",""]] "foo<span style=\"font-style: italic\">[bar]</span>baz" queryCommandIndeterm("stylewithcss") before 
-PASS [["stylewithcss","true"],["italic",""]] "foo<span style=\"font-style: italic\">[bar]</span>baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["italic",""]] "foo<span style=\"font-style: italic\">[bar]</span>baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
-PASS [["stylewithcss","true"],["italic",""]] "foo<span style=\"font-style: italic\">[bar]</span>baz" queryCommandIndeterm("stylewithcss") after 
-PASS [["stylewithcss","true"],["italic",""]] "foo<span style=\"font-style: italic\">[bar]</span>baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["italic",""]] "foo<span style=\"font-style: italic\">[bar]</span>baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
-PASS [["stylewithcss","true"],["italic",""]] "foo<span style=\"font-style: italic\">[bar]</span>baz" queryCommandIndeterm("italic") before 
-PASS [["stylewithcss","true"],["italic",""]] "foo<span style=\"font-style: italic\">[bar]</span>baz" queryCommandState("italic") before 
-FAIL [["stylewithcss","true"],["italic",""]] "foo<span style=\"font-style: italic\">[bar]</span>baz" queryCommandValue("italic") before assert_equals: Wrong result returned expected "" but got "true"
-PASS [["stylewithcss","true"],["italic",""]] "foo<span style=\"font-style: italic\">[bar]</span>baz" queryCommandIndeterm("italic") after 
-PASS [["stylewithcss","true"],["italic",""]] "foo<span style=\"font-style: italic\">[bar]</span>baz" queryCommandState("italic") after 
-FAIL [["stylewithcss","true"],["italic",""]] "foo<span style=\"font-style: italic\">[bar]</span>baz" queryCommandValue("italic") after assert_equals: Wrong result returned expected "" but got "false"
-PASS [["stylewithcss","false"],["italic",""]] "foo<span style=\"font-style: italic\">[bar]</span>baz": execCommand("stylewithcss", false, "false") return value 
-PASS [["stylewithcss","false"],["italic",""]] "foo<span style=\"font-style: italic\">[bar]</span>baz": execCommand("italic", false, "") return value 
-PASS [["stylewithcss","false"],["italic",""]] "foo<span style=\"font-style: italic\">[bar]</span>baz" checks for modifications to non-editable content 
-PASS [["stylewithcss","false"],["italic",""]] "foo<span style=\"font-style: italic\">[bar]</span>baz" compare innerHTML 
-PASS [["stylewithcss","false"],["italic",""]] "foo<span style=\"font-style: italic\">[bar]</span>baz" queryCommandIndeterm("stylewithcss") before 
-PASS [["stylewithcss","false"],["italic",""]] "foo<span style=\"font-style: italic\">[bar]</span>baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["italic",""]] "foo<span style=\"font-style: italic\">[bar]</span>baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
-PASS [["stylewithcss","false"],["italic",""]] "foo<span style=\"font-style: italic\">[bar]</span>baz" queryCommandIndeterm("stylewithcss") after 
-PASS [["stylewithcss","false"],["italic",""]] "foo<span style=\"font-style: italic\">[bar]</span>baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["italic",""]] "foo<span style=\"font-style: italic\">[bar]</span>baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
-PASS [["stylewithcss","false"],["italic",""]] "foo<span style=\"font-style: italic\">[bar]</span>baz" queryCommandIndeterm("italic") before 
-PASS [["stylewithcss","false"],["italic",""]] "foo<span style=\"font-style: italic\">[bar]</span>baz" queryCommandState("italic") before 
-FAIL [["stylewithcss","false"],["italic",""]] "foo<span style=\"font-style: italic\">[bar]</span>baz" queryCommandValue("italic") before assert_equals: Wrong result returned expected "" but got "true"
-PASS [["stylewithcss","false"],["italic",""]] "foo<span style=\"font-style: italic\">[bar]</span>baz" queryCommandIndeterm("italic") after 
-PASS [["stylewithcss","false"],["italic",""]] "foo<span style=\"font-style: italic\">[bar]</span>baz" queryCommandState("italic") after 
-FAIL [["stylewithcss","false"],["italic",""]] "foo<span style=\"font-style: italic\">[bar]</span>baz" queryCommandValue("italic") after assert_equals: Wrong result returned expected "" but got "false"
 PASS [["stylewithcss","true"],["italic",""]] "foo<address>[bar]</address>baz": execCommand("stylewithcss", false, "true") return value 
 PASS [["stylewithcss","true"],["italic",""]] "foo<address>[bar]</address>baz": execCommand("italic", false, "") return value 
 PASS [["stylewithcss","true"],["italic",""]] "foo<address>[bar]</address>baz" checks for modifications to non-editable content 
@@ -607,38 +575,6 @@ FAIL [["italic",""]] "foo<em>[bar]</em>baz" queryCommandValue("italic") before a
 PASS [["italic",""]] "foo<em>[bar]</em>baz" queryCommandIndeterm("italic") after 
 PASS [["italic",""]] "foo<em>[bar]</em>baz" queryCommandState("italic") after 
 FAIL [["italic",""]] "foo<em>[bar]</em>baz" queryCommandValue("italic") after assert_equals: Wrong result returned expected "" but got "false"
-PASS [["stylewithcss","true"],["italic",""]] "foo<i>[bar]</i>baz": execCommand("stylewithcss", false, "true") return value 
-PASS [["stylewithcss","true"],["italic",""]] "foo<i>[bar]</i>baz": execCommand("italic", false, "") return value 
-PASS [["stylewithcss","true"],["italic",""]] "foo<i>[bar]</i>baz" checks for modifications to non-editable content 
-PASS [["stylewithcss","true"],["italic",""]] "foo<i>[bar]</i>baz" compare innerHTML 
-PASS [["stylewithcss","true"],["italic",""]] "foo<i>[bar]</i>baz" queryCommandIndeterm("stylewithcss") before 
-PASS [["stylewithcss","true"],["italic",""]] "foo<i>[bar]</i>baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["italic",""]] "foo<i>[bar]</i>baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
-PASS [["stylewithcss","true"],["italic",""]] "foo<i>[bar]</i>baz" queryCommandIndeterm("stylewithcss") after 
-PASS [["stylewithcss","true"],["italic",""]] "foo<i>[bar]</i>baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["italic",""]] "foo<i>[bar]</i>baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
-PASS [["stylewithcss","true"],["italic",""]] "foo<i>[bar]</i>baz" queryCommandIndeterm("italic") before 
-PASS [["stylewithcss","true"],["italic",""]] "foo<i>[bar]</i>baz" queryCommandState("italic") before 
-FAIL [["stylewithcss","true"],["italic",""]] "foo<i>[bar]</i>baz" queryCommandValue("italic") before assert_equals: Wrong result returned expected "" but got "true"
-PASS [["stylewithcss","true"],["italic",""]] "foo<i>[bar]</i>baz" queryCommandIndeterm("italic") after 
-PASS [["stylewithcss","true"],["italic",""]] "foo<i>[bar]</i>baz" queryCommandState("italic") after 
-FAIL [["stylewithcss","true"],["italic",""]] "foo<i>[bar]</i>baz" queryCommandValue("italic") after assert_equals: Wrong result returned expected "" but got "false"
-PASS [["stylewithcss","false"],["italic",""]] "foo<i>[bar]</i>baz": execCommand("stylewithcss", false, "false") return value 
-PASS [["stylewithcss","false"],["italic",""]] "foo<i>[bar]</i>baz": execCommand("italic", false, "") return value 
-PASS [["stylewithcss","false"],["italic",""]] "foo<i>[bar]</i>baz" checks for modifications to non-editable content 
-PASS [["stylewithcss","false"],["italic",""]] "foo<i>[bar]</i>baz" compare innerHTML 
-PASS [["stylewithcss","false"],["italic",""]] "foo<i>[bar]</i>baz" queryCommandIndeterm("stylewithcss") before 
-PASS [["stylewithcss","false"],["italic",""]] "foo<i>[bar]</i>baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["italic",""]] "foo<i>[bar]</i>baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
-PASS [["stylewithcss","false"],["italic",""]] "foo<i>[bar]</i>baz" queryCommandIndeterm("stylewithcss") after 
-PASS [["stylewithcss","false"],["italic",""]] "foo<i>[bar]</i>baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["italic",""]] "foo<i>[bar]</i>baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
-PASS [["stylewithcss","false"],["italic",""]] "foo<i>[bar]</i>baz" queryCommandIndeterm("italic") before 
-PASS [["stylewithcss","false"],["italic",""]] "foo<i>[bar]</i>baz" queryCommandState("italic") before 
-FAIL [["stylewithcss","false"],["italic",""]] "foo<i>[bar]</i>baz" queryCommandValue("italic") before assert_equals: Wrong result returned expected "" but got "true"
-PASS [["stylewithcss","false"],["italic",""]] "foo<i>[bar]</i>baz" queryCommandIndeterm("italic") after 
-PASS [["stylewithcss","false"],["italic",""]] "foo<i>[bar]</i>baz" queryCommandState("italic") after 
-FAIL [["stylewithcss","false"],["italic",""]] "foo<i>[bar]</i>baz" queryCommandValue("italic") after assert_equals: Wrong result returned expected "" but got "false"
 PASS [["stylewithcss","true"],["italic",""]] "foo<var>[bar]</var>baz": execCommand("stylewithcss", false, "true") return value 
 PASS [["stylewithcss","true"],["italic",""]] "foo<var>[bar]</var>baz": execCommand("italic", false, "") return value 
 PASS [["stylewithcss","true"],["italic",""]] "foo<var>[bar]</var>baz" checks for modifications to non-editable content 
@@ -776,38 +712,6 @@ FAIL [["italic",""]] "foo{<em>bar</em>}baz" queryCommandValue("italic") before a
 PASS [["italic",""]] "foo{<em>bar</em>}baz" queryCommandIndeterm("italic") after 
 PASS [["italic",""]] "foo{<em>bar</em>}baz" queryCommandState("italic") after 
 FAIL [["italic",""]] "foo{<em>bar</em>}baz" queryCommandValue("italic") after assert_equals: Wrong result returned expected "" but got "false"
-PASS [["stylewithcss","true"],["italic",""]] "foo{<i>bar</i>}baz": execCommand("stylewithcss", false, "true") return value 
-PASS [["stylewithcss","true"],["italic",""]] "foo{<i>bar</i>}baz": execCommand("italic", false, "") return value 
-PASS [["stylewithcss","true"],["italic",""]] "foo{<i>bar</i>}baz" checks for modifications to non-editable content 
-PASS [["stylewithcss","true"],["italic",""]] "foo{<i>bar</i>}baz" compare innerHTML 
-PASS [["stylewithcss","true"],["italic",""]] "foo{<i>bar</i>}baz" queryCommandIndeterm("stylewithcss") before 
-PASS [["stylewithcss","true"],["italic",""]] "foo{<i>bar</i>}baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["italic",""]] "foo{<i>bar</i>}baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
-PASS [["stylewithcss","true"],["italic",""]] "foo{<i>bar</i>}baz" queryCommandIndeterm("stylewithcss") after 
-PASS [["stylewithcss","true"],["italic",""]] "foo{<i>bar</i>}baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["italic",""]] "foo{<i>bar</i>}baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
-PASS [["stylewithcss","true"],["italic",""]] "foo{<i>bar</i>}baz" queryCommandIndeterm("italic") before 
-PASS [["stylewithcss","true"],["italic",""]] "foo{<i>bar</i>}baz" queryCommandState("italic") before 
-FAIL [["stylewithcss","true"],["italic",""]] "foo{<i>bar</i>}baz" queryCommandValue("italic") before assert_equals: Wrong result returned expected "" but got "true"
-PASS [["stylewithcss","true"],["italic",""]] "foo{<i>bar</i>}baz" queryCommandIndeterm("italic") after 
-PASS [["stylewithcss","true"],["italic",""]] "foo{<i>bar</i>}baz" queryCommandState("italic") after 
-FAIL [["stylewithcss","true"],["italic",""]] "foo{<i>bar</i>}baz" queryCommandValue("italic") after assert_equals: Wrong result returned expected "" but got "false"
-PASS [["stylewithcss","false"],["italic",""]] "foo{<i>bar</i>}baz": execCommand("stylewithcss", false, "false") return value 
-PASS [["stylewithcss","false"],["italic",""]] "foo{<i>bar</i>}baz": execCommand("italic", false, "") return value 
-PASS [["stylewithcss","false"],["italic",""]] "foo{<i>bar</i>}baz" checks for modifications to non-editable content 
-PASS [["stylewithcss","false"],["italic",""]] "foo{<i>bar</i>}baz" compare innerHTML 
-PASS [["stylewithcss","false"],["italic",""]] "foo{<i>bar</i>}baz" queryCommandIndeterm("stylewithcss") before 
-PASS [["stylewithcss","false"],["italic",""]] "foo{<i>bar</i>}baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["italic",""]] "foo{<i>bar</i>}baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
-PASS [["stylewithcss","false"],["italic",""]] "foo{<i>bar</i>}baz" queryCommandIndeterm("stylewithcss") after 
-PASS [["stylewithcss","false"],["italic",""]] "foo{<i>bar</i>}baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["italic",""]] "foo{<i>bar</i>}baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
-PASS [["stylewithcss","false"],["italic",""]] "foo{<i>bar</i>}baz" queryCommandIndeterm("italic") before 
-PASS [["stylewithcss","false"],["italic",""]] "foo{<i>bar</i>}baz" queryCommandState("italic") before 
-FAIL [["stylewithcss","false"],["italic",""]] "foo{<i>bar</i>}baz" queryCommandValue("italic") before assert_equals: Wrong result returned expected "" but got "true"
-PASS [["stylewithcss","false"],["italic",""]] "foo{<i>bar</i>}baz" queryCommandIndeterm("italic") after 
-PASS [["stylewithcss","false"],["italic",""]] "foo{<i>bar</i>}baz" queryCommandState("italic") after 
-FAIL [["stylewithcss","false"],["italic",""]] "foo{<i>bar</i>}baz" queryCommandValue("italic") after assert_equals: Wrong result returned expected "" but got "false"
 PASS [["stylewithcss","true"],["italic",""]] "foo{<var>bar</var>}baz": execCommand("stylewithcss", false, "true") return value 
 PASS [["stylewithcss","true"],["italic",""]] "foo{<var>bar</var>}baz": execCommand("italic", false, "") return value 
 PASS [["stylewithcss","true"],["italic",""]] "foo{<var>bar</var>}baz" checks for modifications to non-editable content 
@@ -1160,38 +1064,6 @@ FAIL [["stylewithcss","false"],["italic",""]] "fo[o<em>bar</em>b]az" queryComman
 PASS [["stylewithcss","false"],["italic",""]] "fo[o<em>bar</em>b]az" queryCommandIndeterm("italic") after 
 PASS [["stylewithcss","false"],["italic",""]] "fo[o<em>bar</em>b]az" queryCommandState("italic") after 
 FAIL [["stylewithcss","false"],["italic",""]] "fo[o<em>bar</em>b]az" queryCommandValue("italic") after assert_equals: Wrong result returned expected "" but got "true"
-PASS [["stylewithcss","true"],["italic",""]] "fo[o<i>bar</i>b]az": execCommand("stylewithcss", false, "true") return value 
-PASS [["stylewithcss","true"],["italic",""]] "fo[o<i>bar</i>b]az": execCommand("italic", false, "") return value 
-PASS [["stylewithcss","true"],["italic",""]] "fo[o<i>bar</i>b]az" checks for modifications to non-editable content 
-PASS [["stylewithcss","true"],["italic",""]] "fo[o<i>bar</i>b]az" compare innerHTML 
-PASS [["stylewithcss","true"],["italic",""]] "fo[o<i>bar</i>b]az" queryCommandIndeterm("stylewithcss") before 
-PASS [["stylewithcss","true"],["italic",""]] "fo[o<i>bar</i>b]az" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["italic",""]] "fo[o<i>bar</i>b]az" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
-PASS [["stylewithcss","true"],["italic",""]] "fo[o<i>bar</i>b]az" queryCommandIndeterm("stylewithcss") after 
-PASS [["stylewithcss","true"],["italic",""]] "fo[o<i>bar</i>b]az" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["italic",""]] "fo[o<i>bar</i>b]az" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
-PASS [["stylewithcss","true"],["italic",""]] "fo[o<i>bar</i>b]az" queryCommandIndeterm("italic") before 
-PASS [["stylewithcss","true"],["italic",""]] "fo[o<i>bar</i>b]az" queryCommandState("italic") before 
-FAIL [["stylewithcss","true"],["italic",""]] "fo[o<i>bar</i>b]az" queryCommandValue("italic") before assert_equals: Wrong result returned expected "" but got "false"
-PASS [["stylewithcss","true"],["italic",""]] "fo[o<i>bar</i>b]az" queryCommandIndeterm("italic") after 
-PASS [["stylewithcss","true"],["italic",""]] "fo[o<i>bar</i>b]az" queryCommandState("italic") after 
-FAIL [["stylewithcss","true"],["italic",""]] "fo[o<i>bar</i>b]az" queryCommandValue("italic") after assert_equals: Wrong result returned expected "" but got "true"
-PASS [["stylewithcss","false"],["italic",""]] "fo[o<i>bar</i>b]az": execCommand("stylewithcss", false, "false") return value 
-PASS [["stylewithcss","false"],["italic",""]] "fo[o<i>bar</i>b]az": execCommand("italic", false, "") return value 
-PASS [["stylewithcss","false"],["italic",""]] "fo[o<i>bar</i>b]az" checks for modifications to non-editable content 
-PASS [["stylewithcss","false"],["italic",""]] "fo[o<i>bar</i>b]az" compare innerHTML 
-PASS [["stylewithcss","false"],["italic",""]] "fo[o<i>bar</i>b]az" queryCommandIndeterm("stylewithcss") before 
-PASS [["stylewithcss","false"],["italic",""]] "fo[o<i>bar</i>b]az" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["italic",""]] "fo[o<i>bar</i>b]az" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
-PASS [["stylewithcss","false"],["italic",""]] "fo[o<i>bar</i>b]az" queryCommandIndeterm("stylewithcss") after 
-PASS [["stylewithcss","false"],["italic",""]] "fo[o<i>bar</i>b]az" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["italic",""]] "fo[o<i>bar</i>b]az" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
-PASS [["stylewithcss","false"],["italic",""]] "fo[o<i>bar</i>b]az" queryCommandIndeterm("italic") before 
-PASS [["stylewithcss","false"],["italic",""]] "fo[o<i>bar</i>b]az" queryCommandState("italic") before 
-FAIL [["stylewithcss","false"],["italic",""]] "fo[o<i>bar</i>b]az" queryCommandValue("italic") before assert_equals: Wrong result returned expected "" but got "false"
-PASS [["stylewithcss","false"],["italic",""]] "fo[o<i>bar</i>b]az" queryCommandIndeterm("italic") after 
-PASS [["stylewithcss","false"],["italic",""]] "fo[o<i>bar</i>b]az" queryCommandState("italic") after 
-FAIL [["stylewithcss","false"],["italic",""]] "fo[o<i>bar</i>b]az" queryCommandValue("italic") after assert_equals: Wrong result returned expected "" but got "true"
 PASS [["stylewithcss","true"],["italic",""]] "fo[o<var>bar</var>b]az": execCommand("stylewithcss", false, "true") return value 
 PASS [["stylewithcss","true"],["italic",""]] "fo[o<var>bar</var>b]az": execCommand("italic", false, "") return value 
 PASS [["stylewithcss","true"],["italic",""]] "fo[o<var>bar</var>b]az" checks for modifications to non-editable content 

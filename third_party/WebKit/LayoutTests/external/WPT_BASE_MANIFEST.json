@@ -379,6 +379,12 @@
      {}
     ]
    ],
+   "pointerevents/pointerevent_disabled_form_control-manual.html": [
+    [
+     "/pointerevents/pointerevent_disabled_form_control-manual.html",
+     {}
+    ]
+   ],
    "pointerevents/pointerevent_element_haspointercapture-manual.html": [
     [
      "/pointerevents/pointerevent_element_haspointercapture-manual.html",
@@ -6537,6 +6543,11 @@
    ]
   },
   "support": {
+   "./.gitignore": [
+    [
+     {}
+    ]
+   ],
    "./CONTRIBUTING.md": [
     [
      {}
@@ -6573,11 +6584,6 @@
     ]
    ],
    "./diff-manifest.py": [
-    [
-     {}
-    ]
-   ],
-   "./testharness_runner.html": [
     [
      {}
     ]
@@ -9037,11 +9043,6 @@
      {}
     ]
    ],
-   "dom/ranges/Range-mutations-expected.txt": [
-    [
-     {}
-    ]
-   ],
    "dom/ranges/Range-mutations-splitText-expected.txt": [
     [
      {}
@@ -9158,6 +9159,11 @@
     ]
    ],
    "domparsing/insert_adjacent_html.js": [
+    [
+     {}
+    ]
+   ],
+   "domxpath/interfaces-expected.txt": [
     [
      {}
     ]
@@ -9337,6 +9343,11 @@
      {}
     ]
    ],
+   "editing/event-expected.txt": [
+    [
+     {}
+    ]
+   ],
    "editing/include/implementation.js": [
     [
      {}
@@ -9388,6 +9399,181 @@
     ]
    ],
    "editing/manual/inserttext2.manual.html": [
+    [
+     {}
+    ]
+   ],
+   "editing/other/delete-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "editing/other/restoration-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "editing/run/backcolor-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "editing/run/bold-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "editing/run/createlink-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "editing/run/delete-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "editing/run/fontname-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "editing/run/fontsize-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "editing/run/forecolor-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "editing/run/formatblock-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "editing/run/forwarddelete-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "editing/run/hilitecolor-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "editing/run/indent-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "editing/run/inserthorizontalrule-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "editing/run/inserthtml-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "editing/run/insertimage-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "editing/run/insertlinebreak-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "editing/run/insertorderedlist-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "editing/run/insertparagraph-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "editing/run/inserttext-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "editing/run/insertunorderedlist-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "editing/run/italic-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "editing/run/justifycenter-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "editing/run/justifyfull-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "editing/run/justifyleft-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "editing/run/justifyright-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "editing/run/misc-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "editing/run/multitest-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "editing/run/outdent-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "editing/run/removeformat-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "editing/run/strikethrough-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "editing/run/subscript-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "editing/run/superscript-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "editing/run/underline-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "editing/run/unlink-expected.txt": [
     [
      {}
     ]
@@ -11998,11 +12184,6 @@
     ]
    ],
    "html/dom/resources/untested-interfaces.idl": [
-    [
-     {}
-    ]
-   ],
-   "html/dom/self-origin.sub-expected.txt": [
     [
      {}
     ]
@@ -16072,6 +16253,41 @@
      {}
     ]
    ],
+   "html/infrastructure/urls/resolving-urls/query-encoding/resources/blank.py": [
+    [
+     {}
+    ]
+   ],
+   "html/infrastructure/urls/resolving-urls/query-encoding/resources/css-tmpl.py": [
+    [
+     {}
+    ]
+   ],
+   "html/infrastructure/urls/resolving-urls/query-encoding/resources/manifest.py": [
+    [
+     {}
+    ]
+   ],
+   "html/infrastructure/urls/resolving-urls/query-encoding/resources/page-using-manifest.py": [
+    [
+     {}
+    ]
+   ],
+   "html/infrastructure/urls/resolving-urls/query-encoding/resources/resolve-url.js": [
+    [
+     {}
+    ]
+   ],
+   "html/infrastructure/urls/resolving-urls/query-encoding/resources/resource.py": [
+    [
+     {}
+    ]
+   ],
+   "html/infrastructure/urls/resolving-urls/query-encoding/resources/stash.py": [
+    [
+     {}
+    ]
+   ],
    "html/infrastructure/urls/terminology-0/document-base-url-expected.txt": [
     [
      {}
@@ -16497,6 +16713,11 @@
      {}
     ]
    ],
+   "html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-invoke-insert-source-networkState-expected.txt": [
+    [
+     {}
+    ]
+   ],
    "html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-invoke-load-expected.txt": [
     [
      {}
@@ -16538,6 +16759,11 @@
     ]
    ],
    "html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-pointer-insert-text-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-pointer-remove-source-after-expected.txt": [
     [
      {}
     ]
@@ -16927,6 +17153,11 @@
      {}
     ]
    ],
+   "html/semantics/forms/textfieldselection/select-event-expected.txt": [
+    [
+     {}
+    ]
+   ],
    "html/semantics/forms/the-button-element/button-activate-frame.html": [
     [
      {}
@@ -17253,6 +17484,11 @@
     ]
    ],
    "html/semantics/scripting-1/the-script-element/external-script-utf8.js": [
+    [
+     {}
+    ]
+   ],
+   "html/semantics/scripting-1/the-script-element/external-script-windows1250.js": [
     [
      {}
     ]
@@ -18182,6 +18418,11 @@
      {}
     ]
    ],
+   "html/webappapis/scripting/events/compile-event-handler-settings-objects-expected.txt": [
+    [
+     {}
+    ]
+   ],
    "html/webappapis/scripting/events/contains.json": [
     [
      {}
@@ -18213,11 +18454,6 @@
     ]
    ],
    "html/webappapis/scripting/events/invalid-uncompiled-raw-handler-compiled-once-expected.txt": [
-    [
-     {}
-    ]
-   ],
-   "html/webappapis/scripting/events/messageevent-constructor-expected.txt": [
     [
      {}
     ]
@@ -18452,6 +18688,16 @@
      {}
     ]
    ],
+   "html/webappapis/the-windoworworkerglobalscope-mixin/support/WorkerSelfOriginSharedWorker.js": [
+    [
+     {}
+    ]
+   ],
+   "html/webappapis/the-windoworworkerglobalscope-mixin/support/WorkerSelfOriginWorker.js": [
+    [
+     {}
+    ]
+   ],
    "images/anim-gr.gif": [
     [
      {}
@@ -18678,6 +18924,11 @@
     ]
    ],
    "media/A4.ogv": [
+    [
+     {}
+    ]
+   ],
+   "media/CanvasTest.ttf": [
     [
      {}
     ]
@@ -22242,6 +22493,51 @@
      {}
     ]
    ],
+   "selection/addRange-00-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "selection/addRange-04-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "selection/addRange-12-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "selection/addRange-16-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "selection/addRange-20-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "selection/addRange-24-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "selection/addRange-28-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "selection/addRange-32-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "selection/addRange-36-expected.txt": [
+    [
+     {}
+    ]
+   ],
    "selection/addRange.js": [
     [
      {}
@@ -22378,11 +22674,6 @@
     ]
    ],
    "service-workers/cache-storage/serviceworker/cache-storage.https-expected.txt": [
-    [
-     {}
-    ]
-   ],
-   "service-workers/cache-storage/serviceworker/credentials-expected.txt": [
     [
      {}
     ]
@@ -23417,12 +23708,12 @@
      {}
     ]
    ],
-   "storage/interfaces.idl": [
+   "storage/interfaces-expected.txt": [
     [
      {}
     ]
    ],
-   "storage/opaque-origin.https-expected.txt": [
+   "storage/interfaces.idl": [
     [
      {}
     ]
@@ -23437,17 +23728,7 @@
      {}
     ]
    ],
-   "streams/byte-length-queuing-strategy.serviceworker-expected.txt": [
-    [
-     {}
-    ]
-   ],
    "streams/count-queuing-strategy.js": [
-    [
-     {}
-    ]
-   ],
-   "streams/count-queuing-strategy.serviceworker-expected.txt": [
     [
      {}
     ]
@@ -23462,17 +23743,7 @@
      {}
     ]
    ],
-   "streams/piping/close-propagation-backward.serviceworker-expected.txt": [
-    [
-     {}
-    ]
-   ],
    "streams/piping/close-propagation-forward.js": [
-    [
-     {}
-    ]
-   ],
-   "streams/piping/close-propagation-forward.serviceworker-expected.txt": [
     [
      {}
     ]
@@ -23482,17 +23753,7 @@
      {}
     ]
    ],
-   "streams/piping/error-propagation-backward.serviceworker-expected.txt": [
-    [
-     {}
-    ]
-   ],
    "streams/piping/error-propagation-forward.js": [
-    [
-     {}
-    ]
-   ],
-   "streams/piping/error-propagation-forward.serviceworker-expected.txt": [
     [
      {}
     ]
@@ -23502,17 +23763,7 @@
      {}
     ]
    ],
-   "streams/piping/flow-control.serviceworker-expected.txt": [
-    [
-     {}
-    ]
-   ],
    "streams/piping/general.js": [
-    [
-     {}
-    ]
-   ],
-   "streams/piping/general.serviceworker-expected.txt": [
     [
      {}
     ]
@@ -23528,11 +23779,6 @@
     ]
    ],
    "streams/piping/multiple-propagation.js": [
-    [
-     {}
-    ]
-   ],
-   "streams/piping/multiple-propagation.serviceworker-expected.txt": [
     [
      {}
     ]
@@ -23562,11 +23808,6 @@
      {}
     ]
    ],
-   "streams/piping/pipe-through.serviceworker-expected.txt": [
-    [
-     {}
-    ]
-   ],
    "streams/piping/pipe-through.serviceworker.https-expected.txt": [
     [
      {}
@@ -23588,11 +23829,6 @@
     ]
    ],
    "streams/piping/transform-streams.js": [
-    [
-     {}
-    ]
-   ],
-   "streams/piping/transform-streams.serviceworker-expected.txt": [
     [
      {}
     ]
@@ -23622,11 +23858,6 @@
      {}
     ]
    ],
-   "streams/readable-byte-streams/general.serviceworker-expected.txt": [
-    [
-     {}
-    ]
-   ],
    "streams/readable-byte-streams/general.serviceworker.https-expected.txt": [
     [
      {}
@@ -23642,17 +23873,7 @@
      {}
     ]
    ],
-   "streams/readable-streams/bad-strategies.serviceworker-expected.txt": [
-    [
-     {}
-    ]
-   ],
    "streams/readable-streams/bad-underlying-sources.js": [
-    [
-     {}
-    ]
-   ],
-   "streams/readable-streams/bad-underlying-sources.serviceworker-expected.txt": [
     [
      {}
     ]
@@ -23662,17 +23883,7 @@
      {}
     ]
    ],
-   "streams/readable-streams/brand-checks.serviceworker-expected.txt": [
-    [
-     {}
-    ]
-   ],
    "streams/readable-streams/cancel.js": [
-    [
-     {}
-    ]
-   ],
-   "streams/readable-streams/cancel.serviceworker-expected.txt": [
     [
      {}
     ]
@@ -23682,7 +23893,12 @@
      {}
     ]
    ],
-   "streams/readable-streams/count-queuing-strategy-integration.serviceworker-expected.txt": [
+   "streams/readable-streams/default-reader.js": [
+    [
+     {}
+    ]
+   ],
+   "streams/readable-streams/floating-point-total-queue-size-expected.txt": [
     [
      {}
     ]
@@ -23692,12 +23908,12 @@
      {}
     ]
    ],
-   "streams/readable-streams/garbage-collection.js": [
+   "streams/readable-streams/floating-point-total-queue-size.serviceworker.https-expected.txt": [
     [
      {}
     ]
    ],
-   "streams/readable-streams/garbage-collection.serviceworker-expected.txt": [
+   "streams/readable-streams/garbage-collection.js": [
     [
      {}
     ]
@@ -23708,11 +23924,6 @@
     ]
    ],
    "streams/readable-streams/general.js": [
-    [
-     {}
-    ]
-   ],
-   "streams/readable-streams/general.serviceworker-expected.txt": [
     [
      {}
     ]
@@ -23732,37 +23943,12 @@
      {}
     ]
    ],
-   "streams/readable-streams/pipe-through.serviceworker-expected.txt": [
-    [
-     {}
-    ]
-   ],
-   "streams/readable-streams/readable-stream-reader.js": [
-    [
-     {}
-    ]
-   ],
-   "streams/readable-streams/readable-stream-reader.serviceworker-expected.txt": [
-    [
-     {}
-    ]
-   ],
    "streams/readable-streams/tee.js": [
     [
      {}
     ]
    ],
-   "streams/readable-streams/tee.serviceworker-expected.txt": [
-    [
-     {}
-    ]
-   ],
    "streams/readable-streams/templated.js": [
-    [
-     {}
-    ]
-   ],
-   "streams/readable-streams/templated.serviceworker-expected.txt": [
     [
      {}
     ]
@@ -23802,11 +23988,6 @@
      {}
     ]
    ],
-   "streams/writable-streams/aborting.serviceworker-expected.txt": [
-    [
-     {}
-    ]
-   ],
    "streams/writable-streams/aborting.serviceworker.https-expected.txt": [
     [
      {}
@@ -23832,11 +24013,6 @@
      {}
     ]
    ],
-   "streams/writable-streams/bad-strategies.serviceworker-expected.txt": [
-    [
-     {}
-    ]
-   ],
    "streams/writable-streams/bad-strategies.serviceworker.https-expected.txt": [
     [
      {}
@@ -23852,17 +24028,7 @@
      {}
     ]
    ],
-   "streams/writable-streams/bad-underlying-sinks.serviceworker-expected.txt": [
-    [
-     {}
-    ]
-   ],
    "streams/writable-streams/brand-checks.js": [
-    [
-     {}
-    ]
-   ],
-   "streams/writable-streams/brand-checks.serviceworker-expected.txt": [
     [
      {}
     ]
@@ -23872,17 +24038,7 @@
      {}
     ]
    ],
-   "streams/writable-streams/byte-length-queuing-strategy.serviceworker-expected.txt": [
-    [
-     {}
-    ]
-   ],
    "streams/writable-streams/close.js": [
-    [
-     {}
-    ]
-   ],
-   "streams/writable-streams/close.serviceworker-expected.txt": [
     [
      {}
     ]
@@ -23892,17 +24048,12 @@
      {}
     ]
    ],
-   "streams/writable-streams/constructor.serviceworker-expected.txt": [
-    [
-     {}
-    ]
-   ],
    "streams/writable-streams/count-queuing-strategy.js": [
     [
      {}
     ]
    ],
-   "streams/writable-streams/count-queuing-strategy.serviceworker-expected.txt": [
+   "streams/writable-streams/floating-point-total-queue-size-expected.txt": [
     [
      {}
     ]
@@ -23912,12 +24063,12 @@
      {}
     ]
    ],
-   "streams/writable-streams/general.js": [
+   "streams/writable-streams/floating-point-total-queue-size.serviceworker.https-expected.txt": [
     [
      {}
     ]
    ],
-   "streams/writable-streams/general.serviceworker-expected.txt": [
+   "streams/writable-streams/general.js": [
     [
      {}
     ]
@@ -23928,11 +24079,6 @@
     ]
    ],
    "streams/writable-streams/start.js": [
-    [
-     {}
-    ]
-   ],
-   "streams/writable-streams/start.serviceworker-expected.txt": [
     [
      {}
     ]
@@ -23948,11 +24094,6 @@
     ]
    ],
    "streams/writable-streams/write.js": [
-    [
-     {}
-    ]
-   ],
-   "streams/writable-streams/write.serviceworker-expected.txt": [
     [
      {}
     ]
@@ -24923,6 +25064,471 @@
     ]
    ],
    "webvtt/interfaces-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "webvtt/parsing/README.md": [
+    [
+     {}
+    ]
+   ],
+   "webvtt/parsing/cue-text-parsing/buildtests.py": [
+    [
+     {}
+    ]
+   ],
+   "webvtt/parsing/cue-text-parsing/common.js": [
+    [
+     {}
+    ]
+   ],
+   "webvtt/parsing/cue-text-parsing/dat/entities.dat": [
+    [
+     {}
+    ]
+   ],
+   "webvtt/parsing/cue-text-parsing/dat/tags.dat": [
+    [
+     {}
+    ]
+   ],
+   "webvtt/parsing/cue-text-parsing/dat/timestamps.dat": [
+    [
+     {}
+    ]
+   ],
+   "webvtt/parsing/cue-text-parsing/dat/tree-building.dat": [
+    [
+     {}
+    ]
+   ],
+   "webvtt/parsing/file-parsing/README.md": [
+    [
+     {}
+    ]
+   ],
+   "webvtt/parsing/file-parsing/support/arrows.test": [
+    [
+     {}
+    ]
+   ],
+   "webvtt/parsing/file-parsing/support/empty.vtt": [
+    [
+     {}
+    ]
+   ],
+   "webvtt/parsing/file-parsing/support/header-garbage.test": [
+    [
+     {}
+    ]
+   ],
+   "webvtt/parsing/file-parsing/support/header-space.test": [
+    [
+     {}
+    ]
+   ],
+   "webvtt/parsing/file-parsing/support/header-tab.test": [
+    [
+     {}
+    ]
+   ],
+   "webvtt/parsing/file-parsing/support/header-timings.test": [
+    [
+     {}
+    ]
+   ],
+   "webvtt/parsing/file-parsing/support/ids.test": [
+    [
+     {}
+    ]
+   ],
+   "webvtt/parsing/file-parsing/support/newlines.test": [
+    [
+     {}
+    ]
+   ],
+   "webvtt/parsing/file-parsing/support/nulls.test": [
+    [
+     {}
+    ]
+   ],
+   "webvtt/parsing/file-parsing/support/regions-id.test": [
+    [
+     {}
+    ]
+   ],
+   "webvtt/parsing/file-parsing/support/regions-lines.test": [
+    [
+     {}
+    ]
+   ],
+   "webvtt/parsing/file-parsing/support/regions-old.test": [
+    [
+     {}
+    ]
+   ],
+   "webvtt/parsing/file-parsing/support/regions-regionanchor.test": [
+    [
+     {}
+    ]
+   ],
+   "webvtt/parsing/file-parsing/support/regions-scroll.test": [
+    [
+     {}
+    ]
+   ],
+   "webvtt/parsing/file-parsing/support/regions-viewportanchor.test": [
+    [
+     {}
+    ]
+   ],
+   "webvtt/parsing/file-parsing/support/settings-align.test": [
+    [
+     {}
+    ]
+   ],
+   "webvtt/parsing/file-parsing/support/settings-line.test": [
+    [
+     {}
+    ]
+   ],
+   "webvtt/parsing/file-parsing/support/settings-multiple.test": [
+    [
+     {}
+    ]
+   ],
+   "webvtt/parsing/file-parsing/support/settings-position.test": [
+    [
+     {}
+    ]
+   ],
+   "webvtt/parsing/file-parsing/support/settings-region.test": [
+    [
+     {}
+    ]
+   ],
+   "webvtt/parsing/file-parsing/support/settings-size.test": [
+    [
+     {}
+    ]
+   ],
+   "webvtt/parsing/file-parsing/support/settings-vertical.test": [
+    [
+     {}
+    ]
+   ],
+   "webvtt/parsing/file-parsing/support/signature-bom.test": [
+    [
+     {}
+    ]
+   ],
+   "webvtt/parsing/file-parsing/support/signature-formfeed.vtt": [
+    [
+     {}
+    ]
+   ],
+   "webvtt/parsing/file-parsing/support/signature-invalid-whitespace.vtt": [
+    [
+     {}
+    ]
+   ],
+   "webvtt/parsing/file-parsing/support/signature-invalid.vtt": [
+    [
+     {}
+    ]
+   ],
+   "webvtt/parsing/file-parsing/support/signature-lowercase.vtt": [
+    [
+     {}
+    ]
+   ],
+   "webvtt/parsing/file-parsing/support/signature-missing-whitespace.vtt": [
+    [
+     {}
+    ]
+   ],
+   "webvtt/parsing/file-parsing/support/signature-missing.vtt": [
+    [
+     {}
+    ]
+   ],
+   "webvtt/parsing/file-parsing/support/signature-no-newline.test": [
+    [
+     {}
+    ]
+   ],
+   "webvtt/parsing/file-parsing/support/signature-null.vtt": [
+    [
+     {}
+    ]
+   ],
+   "webvtt/parsing/file-parsing/support/signature-partial.vtt": [
+    [
+     {}
+    ]
+   ],
+   "webvtt/parsing/file-parsing/support/signature-space-no-newline.test": [
+    [
+     {}
+    ]
+   ],
+   "webvtt/parsing/file-parsing/support/signature-space.test": [
+    [
+     {}
+    ]
+   ],
+   "webvtt/parsing/file-parsing/support/signature-tab-no-newline.test": [
+    [
+     {}
+    ]
+   ],
+   "webvtt/parsing/file-parsing/support/signature-tab.test": [
+    [
+     {}
+    ]
+   ],
+   "webvtt/parsing/file-parsing/support/signature-timings.test": [
+    [
+     {}
+    ]
+   ],
+   "webvtt/parsing/file-parsing/support/signature-two-boms.vtt": [
+    [
+     {}
+    ]
+   ],
+   "webvtt/parsing/file-parsing/support/signature-websrt.vtt": [
+    [
+     {}
+    ]
+   ],
+   "webvtt/parsing/file-parsing/support/stylesheets.test": [
+    [
+     {}
+    ]
+   ],
+   "webvtt/parsing/file-parsing/support/timings-60.test": [
+    [
+     {}
+    ]
+   ],
+   "webvtt/parsing/file-parsing/support/timings-eof.test": [
+    [
+     {}
+    ]
+   ],
+   "webvtt/parsing/file-parsing/support/timings-garbage.test": [
+    [
+     {}
+    ]
+   ],
+   "webvtt/parsing/file-parsing/support/timings-negative.test": [
+    [
+     {}
+    ]
+   ],
+   "webvtt/parsing/file-parsing/support/timings-omitted-hours.test": [
+    [
+     {}
+    ]
+   ],
+   "webvtt/parsing/file-parsing/support/timings-too-long.test": [
+    [
+     {}
+    ]
+   ],
+   "webvtt/parsing/file-parsing/support/timings-too-short.test": [
+    [
+     {}
+    ]
+   ],
+   "webvtt/parsing/file-parsing/support/whitespace-chars.test": [
+    [
+     {}
+    ]
+   ],
+   "webvtt/parsing/file-parsing/tests/support/arrows.vtt": [
+    [
+     {}
+    ]
+   ],
+   "webvtt/parsing/file-parsing/tests/support/header-garbage.vtt": [
+    [
+     {}
+    ]
+   ],
+   "webvtt/parsing/file-parsing/tests/support/header-space.vtt": [
+    [
+     {}
+    ]
+   ],
+   "webvtt/parsing/file-parsing/tests/support/header-tab.vtt": [
+    [
+     {}
+    ]
+   ],
+   "webvtt/parsing/file-parsing/tests/support/header-timings.vtt": [
+    [
+     {}
+    ]
+   ],
+   "webvtt/parsing/file-parsing/tests/support/ids.vtt": [
+    [
+     {}
+    ]
+   ],
+   "webvtt/parsing/file-parsing/tests/support/newlines.vtt": [
+    [
+     {}
+    ]
+   ],
+   "webvtt/parsing/file-parsing/tests/support/nulls.vtt": [
+    [
+     {}
+    ]
+   ],
+   "webvtt/parsing/file-parsing/tests/support/regions-id.vtt": [
+    [
+     {}
+    ]
+   ],
+   "webvtt/parsing/file-parsing/tests/support/regions-lines.vtt": [
+    [
+     {}
+    ]
+   ],
+   "webvtt/parsing/file-parsing/tests/support/regions-old.vtt": [
+    [
+     {}
+    ]
+   ],
+   "webvtt/parsing/file-parsing/tests/support/regions-regionanchor.vtt": [
+    [
+     {}
+    ]
+   ],
+   "webvtt/parsing/file-parsing/tests/support/regions-scroll.vtt": [
+    [
+     {}
+    ]
+   ],
+   "webvtt/parsing/file-parsing/tests/support/regions-viewportanchor.vtt": [
+    [
+     {}
+    ]
+   ],
+   "webvtt/parsing/file-parsing/tests/support/settings-align.vtt": [
+    [
+     {}
+    ]
+   ],
+   "webvtt/parsing/file-parsing/tests/support/settings-line.vtt": [
+    [
+     {}
+    ]
+   ],
+   "webvtt/parsing/file-parsing/tests/support/settings-multiple.vtt": [
+    [
+     {}
+    ]
+   ],
+   "webvtt/parsing/file-parsing/tests/support/settings-position.vtt": [
+    [
+     {}
+    ]
+   ],
+   "webvtt/parsing/file-parsing/tests/support/settings-region.vtt": [
+    [
+     {}
+    ]
+   ],
+   "webvtt/parsing/file-parsing/tests/support/settings-size.vtt": [
+    [
+     {}
+    ]
+   ],
+   "webvtt/parsing/file-parsing/tests/support/settings-vertical.vtt": [
+    [
+     {}
+    ]
+   ],
+   "webvtt/parsing/file-parsing/tests/support/signature-bom.vtt": [
+    [
+     {}
+    ]
+   ],
+   "webvtt/parsing/file-parsing/tests/support/signature-no-newline.vtt": [
+    [
+     {}
+    ]
+   ],
+   "webvtt/parsing/file-parsing/tests/support/signature-space-no-newline.vtt": [
+    [
+     {}
+    ]
+   ],
+   "webvtt/parsing/file-parsing/tests/support/signature-space.vtt": [
+    [
+     {}
+    ]
+   ],
+   "webvtt/parsing/file-parsing/tests/support/signature-tab-no-newline.vtt": [
+    [
+     {}
+    ]
+   ],
+   "webvtt/parsing/file-parsing/tests/support/signature-tab.vtt": [
+    [
+     {}
+    ]
+   ],
+   "webvtt/parsing/file-parsing/tests/support/signature-timings.vtt": [
+    [
+     {}
+    ]
+   ],
+   "webvtt/parsing/file-parsing/tests/support/stylesheets.vtt": [
+    [
+     {}
+    ]
+   ],
+   "webvtt/parsing/file-parsing/tests/support/timings-60.vtt": [
+    [
+     {}
+    ]
+   ],
+   "webvtt/parsing/file-parsing/tests/support/timings-eof.vtt": [
+    [
+     {}
+    ]
+   ],
+   "webvtt/parsing/file-parsing/tests/support/timings-garbage.vtt": [
+    [
+     {}
+    ]
+   ],
+   "webvtt/parsing/file-parsing/tests/support/timings-negative.vtt": [
+    [
+     {}
+    ]
+   ],
+   "webvtt/parsing/file-parsing/tests/support/timings-omitted-hours.vtt": [
+    [
+     {}
+    ]
+   ],
+   "webvtt/parsing/file-parsing/tests/support/timings-too-long.vtt": [
+    [
+     {}
+    ]
+   ],
+   "webvtt/parsing/file-parsing/tests/support/timings-too-short.vtt": [
+    [
+     {}
+    ]
+   ],
+   "webvtt/parsing/file-parsing/tests/support/whitespace-chars.vtt": [
     [
      {}
     ]
@@ -26427,231 +27033,6 @@
      {}
     ]
    ],
-   "webvtt/webvtt-file-format-parsing/webvtt-cue-text-parsing-rules/buildtests.py": [
-    [
-     {}
-    ]
-   ],
-   "webvtt/webvtt-file-format-parsing/webvtt-cue-text-parsing-rules/common.js": [
-    [
-     {}
-    ]
-   ],
-   "webvtt/webvtt-file-format-parsing/webvtt-cue-text-parsing-rules/dat/entities.dat": [
-    [
-     {}
-    ]
-   ],
-   "webvtt/webvtt-file-format-parsing/webvtt-cue-text-parsing-rules/dat/tags.dat": [
-    [
-     {}
-    ]
-   ],
-   "webvtt/webvtt-file-format-parsing/webvtt-cue-text-parsing-rules/dat/timestamps.dat": [
-    [
-     {}
-    ]
-   ],
-   "webvtt/webvtt-file-format-parsing/webvtt-cue-text-parsing-rules/dat/tree-building.dat": [
-    [
-     {}
-    ]
-   ],
-   "webvtt/webvtt-file-format-parsing/webvtt-cue-text-parsing-rules/tests/entities-expected.txt": [
-    [
-     {}
-    ]
-   ],
-   "webvtt/webvtt-file-format-parsing/webvtt-cue-text-parsing-rules/tests/tags-expected.txt": [
-    [
-     {}
-    ]
-   ],
-   "webvtt/webvtt-file-format-parsing/webvtt-cue-text-parsing-rules/tests/timestamps-expected.txt": [
-    [
-     {}
-    ]
-   ],
-   "webvtt/webvtt-file-format-parsing/webvtt-cue-text-parsing-rules/tests/tree-building-expected.txt": [
-    [
-     {}
-    ]
-   ],
-   "webvtt/webvtt-file-format-parsing/webvtt-file-parsing/support/arrows.vtt": [
-    [
-     {}
-    ]
-   ],
-   "webvtt/webvtt-file-format-parsing/webvtt-file-parsing/support/cue-counts.json": [
-    [
-     {}
-    ]
-   ],
-   "webvtt/webvtt-file-format-parsing/webvtt-file-parsing/support/header-garbage.vtt": [
-    [
-     {}
-    ]
-   ],
-   "webvtt/webvtt-file-format-parsing/webvtt-file-parsing/support/header-space.vtt": [
-    [
-     {}
-    ]
-   ],
-   "webvtt/webvtt-file-format-parsing/webvtt-file-parsing/support/header-tab.vtt": [
-    [
-     {}
-    ]
-   ],
-   "webvtt/webvtt-file-format-parsing/webvtt-file-parsing/support/header-timings.vtt": [
-    [
-     {}
-    ]
-   ],
-   "webvtt/webvtt-file-format-parsing/webvtt-file-parsing/support/ids.vtt": [
-    [
-     {}
-    ]
-   ],
-   "webvtt/webvtt-file-format-parsing/webvtt-file-parsing/support/no-signature.vtt": [
-    [
-     {}
-    ]
-   ],
-   "webvtt/webvtt-file-format-parsing/webvtt-file-parsing/support/nulls.vtt": [
-    [
-     {}
-    ]
-   ],
-   "webvtt/webvtt-file-format-parsing/webvtt-file-parsing/support/omitted-hours.vtt": [
-    [
-     {}
-    ]
-   ],
-   "webvtt/webvtt-file-format-parsing/webvtt-file-parsing/support/settings-align.vtt": [
-    [
-     {}
-    ]
-   ],
-   "webvtt/webvtt-file-format-parsing/webvtt-file-parsing/support/settings-line.vtt": [
-    [
-     {}
-    ]
-   ],
-   "webvtt/webvtt-file-format-parsing/webvtt-file-parsing/support/settings-multiple.vtt": [
-    [
-     {}
-    ]
-   ],
-   "webvtt/webvtt-file-format-parsing/webvtt-file-parsing/support/settings-position.vtt": [
-    [
-     {}
-    ]
-   ],
-   "webvtt/webvtt-file-format-parsing/webvtt-file-parsing/support/settings-size.vtt": [
-    [
-     {}
-    ]
-   ],
-   "webvtt/webvtt-file-format-parsing/webvtt-file-parsing/support/settings-vertical.vtt": [
-    [
-     {}
-    ]
-   ],
-   "webvtt/webvtt-file-format-parsing/webvtt-file-parsing/support/signature-bom.vtt": [
-    [
-     {}
-    ]
-   ],
-   "webvtt/webvtt-file-format-parsing/webvtt-file-parsing/support/signature-formfeed.vtt": [
-    [
-     {}
-    ]
-   ],
-   "webvtt/webvtt-file-format-parsing/webvtt-file-parsing/support/signature-lowercase.vtt": [
-    [
-     {}
-    ]
-   ],
-   "webvtt/webvtt-file-format-parsing/webvtt-file-parsing/support/signature-no-newline.vtt": [
-    [
-     {}
-    ]
-   ],
-   "webvtt/webvtt-file-format-parsing/webvtt-file-parsing/support/signature-null.vtt": [
-    [
-     {}
-    ]
-   ],
-   "webvtt/webvtt-file-format-parsing/webvtt-file-parsing/support/signature-space-no-newline.vtt": [
-    [
-     {}
-    ]
-   ],
-   "webvtt/webvtt-file-format-parsing/webvtt-file-parsing/support/signature-space.vtt": [
-    [
-     {}
-    ]
-   ],
-   "webvtt/webvtt-file-format-parsing/webvtt-file-parsing/support/signature-tab-no-newline.vtt": [
-    [
-     {}
-    ]
-   ],
-   "webvtt/webvtt-file-format-parsing/webvtt-file-parsing/support/signature-tab.vtt": [
-    [
-     {}
-    ]
-   ],
-   "webvtt/webvtt-file-format-parsing/webvtt-file-parsing/support/signature-timings.vtt": [
-    [
-     {}
-    ]
-   ],
-   "webvtt/webvtt-file-format-parsing/webvtt-file-parsing/support/signature-too-short.vtt": [
-    [
-     {}
-    ]
-   ],
-   "webvtt/webvtt-file-format-parsing/webvtt-file-parsing/support/signature-two-boms.vtt": [
-    [
-     {}
-    ]
-   ],
-   "webvtt/webvtt-file-format-parsing/webvtt-file-parsing/support/signature-websrt.vtt": [
-    [
-     {}
-    ]
-   ],
-   "webvtt/webvtt-file-format-parsing/webvtt-file-parsing/support/space-chars.vtt": [
-    [
-     {}
-    ]
-   ],
-   "webvtt/webvtt-file-format-parsing/webvtt-file-parsing/support/timings-60.vtt": [
-    [
-     {}
-    ]
-   ],
-   "webvtt/webvtt-file-format-parsing/webvtt-file-parsing/support/timings-garbage.vtt": [
-    [
-     {}
-    ]
-   ],
-   "webvtt/webvtt-file-format-parsing/webvtt-file-parsing/support/timings-negative.vtt": [
-    [
-     {}
-    ]
-   ],
-   "webvtt/webvtt-file-format-parsing/webvtt-file-parsing/support/timings-too-long.vtt": [
-    [
-     {}
-    ]
-   ],
-   "webvtt/webvtt-file-format-parsing/webvtt-file-parsing/support/timings-too-short.vtt": [
-    [
-     {}
-    ]
-   ],
    "workers/README.md": [
     [
      {}
@@ -26863,6 +27244,21 @@
     ]
    ],
    "workers/non-automated/post-a-1.js": [
+    [
+     {}
+    ]
+   ],
+   "workers/semantics/encodings/001.html.headers": [
+    [
+     {}
+    ]
+   ],
+   "workers/semantics/encodings/002.html.headers": [
+    [
+     {}
+    ]
+   ],
+   "workers/semantics/encodings/003-1.py": [
     [
      {}
     ]
@@ -27232,6 +27628,24 @@
    "IndexedDB/error-attributes.html": [
     [
      "/IndexedDB/error-attributes.html",
+     {}
+    ]
+   ],
+   "IndexedDB/fire-error-event-exception.html": [
+    [
+     "/IndexedDB/fire-error-event-exception.html",
+     {}
+    ]
+   ],
+   "IndexedDB/fire-success-event-exception.html": [
+    [
+     "/IndexedDB/fire-success-event-exception.html",
+     {}
+    ]
+   ],
+   "IndexedDB/fire-upgradeneeded-event-exception.html": [
+    [
+     "/IndexedDB/fire-upgradeneeded-event-exception.html",
      {}
     ]
    ],
@@ -30587,6 +31001,24 @@
      {}
     ]
    ],
+   "css-typed-om/CSSMatrixComponent-DOMMatrix-mutable.html": [
+    [
+     "/css-typed-om/CSSMatrixComponent-DOMMatrix-mutable.html",
+     {}
+    ]
+   ],
+   "css-typed-om/declared-styleMap-accepts-inherit.html": [
+    [
+     "/css-typed-om/declared-styleMap-accepts-inherit.html",
+     {}
+    ]
+   ],
+   "css-typed-om/styleMap-update-function.html": [
+    [
+     "/css-typed-om/styleMap-update-function.html",
+     {}
+    ]
+   ],
    "css-values/unset-value-storage.html": [
     [
      "/css-values/unset-value-storage.html",
@@ -31756,6 +32188,12 @@
    "dom/nodes/Element-tagName.html": [
     [
      "/dom/nodes/Element-tagName.html",
+     {}
+    ]
+   ],
+   "dom/nodes/Element-webkitMatchesSelector.html": [
+    [
+     "/dom/nodes/Element-webkitMatchesSelector.html",
      {}
     ]
    ],
@@ -36429,6 +36867,46 @@
      {}
     ]
    ],
+   "html/infrastructure/urls/resolving-urls/query-encoding/utf-16be.html": [
+    [
+     "/html/infrastructure/urls/resolving-urls/query-encoding/utf-16be.html",
+     {
+      "timeout": "long"
+     }
+    ]
+   ],
+   "html/infrastructure/urls/resolving-urls/query-encoding/utf-16le.html": [
+    [
+     "/html/infrastructure/urls/resolving-urls/query-encoding/utf-16le.html",
+     {
+      "timeout": "long"
+     }
+    ]
+   ],
+   "html/infrastructure/urls/resolving-urls/query-encoding/utf-8.html": [
+    [
+     "/html/infrastructure/urls/resolving-urls/query-encoding/utf-8.html",
+     {
+      "timeout": "long"
+     }
+    ]
+   ],
+   "html/infrastructure/urls/resolving-urls/query-encoding/windows-1251.html": [
+    [
+     "/html/infrastructure/urls/resolving-urls/query-encoding/windows-1251.html",
+     {
+      "timeout": "long"
+     }
+    ]
+   ],
+   "html/infrastructure/urls/resolving-urls/query-encoding/windows-1252.html": [
+    [
+     "/html/infrastructure/urls/resolving-urls/query-encoding/windows-1252.html",
+     {
+      "timeout": "long"
+     }
+    ]
+   ],
    "html/infrastructure/urls/terminology-0/document-base-url.html": [
     [
      "/html/infrastructure/urls/terminology-0/document-base-url.html",
@@ -38544,6 +39022,24 @@
    "html/semantics/scripting-1/the-script-element/nomodule-set-on-synchronously-loaded-classic-scripts.html": [
     [
      "/html/semantics/scripting-1/the-script-element/nomodule-set-on-synchronously-loaded-classic-scripts.html",
+     {}
+    ]
+   ],
+   "html/semantics/scripting-1/the-script-element/script-charset-01.html": [
+    [
+     "/html/semantics/scripting-1/the-script-element/script-charset-01.html",
+     {}
+    ]
+   ],
+   "html/semantics/scripting-1/the-script-element/script-charset-02.html": [
+    [
+     "/html/semantics/scripting-1/the-script-element/script-charset-02.html",
+     {}
+    ]
+   ],
+   "html/semantics/scripting-1/the-script-element/script-charset-03.html": [
+    [
+     "/html/semantics/scripting-1/the-script-element/script-charset-03.html",
      {}
     ]
    ],
@@ -40958,6 +41454,12 @@
    "html/webappapis/system-state-and-capabilities/the-navigator-object/protocol/006.xhtml": [
     [
      "/html/webappapis/system-state-and-capabilities/the-navigator-object/protocol/006.xhtml",
+     {}
+    ]
+   ],
+   "html/webappapis/the-windoworworkerglobalscope-mixin/Worker_Self_Origin.html": [
+    [
+     "/html/webappapis/the-windoworworkerglobalscope-mixin/Worker_Self_Origin.html",
      {}
     ]
    ],
@@ -53215,6 +53717,30 @@
      {}
     ]
    ],
+   "streams/readable-streams/default-reader.dedicatedworker.html": [
+    [
+     "/streams/readable-streams/default-reader.dedicatedworker.html",
+     {}
+    ]
+   ],
+   "streams/readable-streams/default-reader.html": [
+    [
+     "/streams/readable-streams/default-reader.html",
+     {}
+    ]
+   ],
+   "streams/readable-streams/default-reader.serviceworker.https.html": [
+    [
+     "/streams/readable-streams/default-reader.serviceworker.https.html",
+     {}
+    ]
+   ],
+   "streams/readable-streams/default-reader.sharedworker.html": [
+    [
+     "/streams/readable-streams/default-reader.sharedworker.html",
+     {}
+    ]
+   ],
    "streams/readable-streams/floating-point-total-queue-size.dedicatedworker.html": [
     [
      "/streams/readable-streams/floating-point-total-queue-size.dedicatedworker.html",
@@ -53308,30 +53834,6 @@
    "streams/readable-streams/pipe-through.sharedworker.html": [
     [
      "/streams/readable-streams/pipe-through.sharedworker.html",
-     {}
-    ]
-   ],
-   "streams/readable-streams/readable-stream-reader.dedicatedworker.html": [
-    [
-     "/streams/readable-streams/readable-stream-reader.dedicatedworker.html",
-     {}
-    ]
-   ],
-   "streams/readable-streams/readable-stream-reader.html": [
-    [
-     "/streams/readable-streams/readable-stream-reader.html",
-     {}
-    ]
-   ],
-   "streams/readable-streams/readable-stream-reader.serviceworker.https.html": [
-    [
-     "/streams/readable-streams/readable-stream-reader.serviceworker.https.html",
-     {}
-    ]
-   ],
-   "streams/readable-streams/readable-stream-reader.sharedworker.html": [
-    [
-     "/streams/readable-streams/readable-stream-reader.sharedworker.html",
      {}
     ]
    ],
@@ -54895,6 +55397,12 @@
      {}
     ]
    ],
+   "webrtc/rtcpeerconnection/setRemoteDescription.html": [
+    [
+     "/webrtc/rtcpeerconnection/setRemoteDescription.html",
+     {}
+    ]
+   ],
    "webrtc/simplecall.html": [
     [
      "/webrtc/simplecall.html",
@@ -55303,27 +55811,255 @@
      {}
     ]
    ],
-   "webvtt/webvtt-file-format-parsing/webvtt-cue-text-parsing-rules/tests/entities.html": [
+   "webvtt/parsing/cue-text-parsing/tests/entities.html": [
     [
-     "/webvtt/webvtt-file-format-parsing/webvtt-cue-text-parsing-rules/tests/entities.html",
+     "/webvtt/parsing/cue-text-parsing/tests/entities.html",
      {}
     ]
    ],
-   "webvtt/webvtt-file-format-parsing/webvtt-cue-text-parsing-rules/tests/tags.html": [
+   "webvtt/parsing/cue-text-parsing/tests/tags.html": [
     [
-     "/webvtt/webvtt-file-format-parsing/webvtt-cue-text-parsing-rules/tests/tags.html",
+     "/webvtt/parsing/cue-text-parsing/tests/tags.html",
      {}
     ]
    ],
-   "webvtt/webvtt-file-format-parsing/webvtt-cue-text-parsing-rules/tests/timestamps.html": [
+   "webvtt/parsing/cue-text-parsing/tests/timestamps.html": [
     [
-     "/webvtt/webvtt-file-format-parsing/webvtt-cue-text-parsing-rules/tests/timestamps.html",
+     "/webvtt/parsing/cue-text-parsing/tests/timestamps.html",
      {}
     ]
    ],
-   "webvtt/webvtt-file-format-parsing/webvtt-cue-text-parsing-rules/tests/tree-building.html": [
+   "webvtt/parsing/cue-text-parsing/tests/tree-building.html": [
     [
-     "/webvtt/webvtt-file-format-parsing/webvtt-cue-text-parsing-rules/tests/tree-building.html",
+     "/webvtt/parsing/cue-text-parsing/tests/tree-building.html",
+     {}
+    ]
+   ],
+   "webvtt/parsing/file-parsing/signature-invalid.html": [
+    [
+     "/webvtt/parsing/file-parsing/signature-invalid.html",
+     {}
+    ]
+   ],
+   "webvtt/parsing/file-parsing/tests/arrows.html": [
+    [
+     "/webvtt/parsing/file-parsing/tests/arrows.html",
+     {}
+    ]
+   ],
+   "webvtt/parsing/file-parsing/tests/header-garbage.html": [
+    [
+     "/webvtt/parsing/file-parsing/tests/header-garbage.html",
+     {}
+    ]
+   ],
+   "webvtt/parsing/file-parsing/tests/header-space.html": [
+    [
+     "/webvtt/parsing/file-parsing/tests/header-space.html",
+     {}
+    ]
+   ],
+   "webvtt/parsing/file-parsing/tests/header-tab.html": [
+    [
+     "/webvtt/parsing/file-parsing/tests/header-tab.html",
+     {}
+    ]
+   ],
+   "webvtt/parsing/file-parsing/tests/header-timings.html": [
+    [
+     "/webvtt/parsing/file-parsing/tests/header-timings.html",
+     {}
+    ]
+   ],
+   "webvtt/parsing/file-parsing/tests/ids.html": [
+    [
+     "/webvtt/parsing/file-parsing/tests/ids.html",
+     {}
+    ]
+   ],
+   "webvtt/parsing/file-parsing/tests/newlines.html": [
+    [
+     "/webvtt/parsing/file-parsing/tests/newlines.html",
+     {}
+    ]
+   ],
+   "webvtt/parsing/file-parsing/tests/nulls.html": [
+    [
+     "/webvtt/parsing/file-parsing/tests/nulls.html",
+     {}
+    ]
+   ],
+   "webvtt/parsing/file-parsing/tests/regions-id.html": [
+    [
+     "/webvtt/parsing/file-parsing/tests/regions-id.html",
+     {}
+    ]
+   ],
+   "webvtt/parsing/file-parsing/tests/regions-lines.html": [
+    [
+     "/webvtt/parsing/file-parsing/tests/regions-lines.html",
+     {}
+    ]
+   ],
+   "webvtt/parsing/file-parsing/tests/regions-old.html": [
+    [
+     "/webvtt/parsing/file-parsing/tests/regions-old.html",
+     {}
+    ]
+   ],
+   "webvtt/parsing/file-parsing/tests/regions-regionanchor.html": [
+    [
+     "/webvtt/parsing/file-parsing/tests/regions-regionanchor.html",
+     {}
+    ]
+   ],
+   "webvtt/parsing/file-parsing/tests/regions-scroll.html": [
+    [
+     "/webvtt/parsing/file-parsing/tests/regions-scroll.html",
+     {}
+    ]
+   ],
+   "webvtt/parsing/file-parsing/tests/regions-viewportanchor.html": [
+    [
+     "/webvtt/parsing/file-parsing/tests/regions-viewportanchor.html",
+     {}
+    ]
+   ],
+   "webvtt/parsing/file-parsing/tests/settings-align.html": [
+    [
+     "/webvtt/parsing/file-parsing/tests/settings-align.html",
+     {}
+    ]
+   ],
+   "webvtt/parsing/file-parsing/tests/settings-line.html": [
+    [
+     "/webvtt/parsing/file-parsing/tests/settings-line.html",
+     {}
+    ]
+   ],
+   "webvtt/parsing/file-parsing/tests/settings-multiple.html": [
+    [
+     "/webvtt/parsing/file-parsing/tests/settings-multiple.html",
+     {}
+    ]
+   ],
+   "webvtt/parsing/file-parsing/tests/settings-position.html": [
+    [
+     "/webvtt/parsing/file-parsing/tests/settings-position.html",
+     {}
+    ]
+   ],
+   "webvtt/parsing/file-parsing/tests/settings-region.html": [
+    [
+     "/webvtt/parsing/file-parsing/tests/settings-region.html",
+     {}
+    ]
+   ],
+   "webvtt/parsing/file-parsing/tests/settings-size.html": [
+    [
+     "/webvtt/parsing/file-parsing/tests/settings-size.html",
+     {}
+    ]
+   ],
+   "webvtt/parsing/file-parsing/tests/settings-vertical.html": [
+    [
+     "/webvtt/parsing/file-parsing/tests/settings-vertical.html",
+     {}
+    ]
+   ],
+   "webvtt/parsing/file-parsing/tests/signature-bom.html": [
+    [
+     "/webvtt/parsing/file-parsing/tests/signature-bom.html",
+     {}
+    ]
+   ],
+   "webvtt/parsing/file-parsing/tests/signature-no-newline.html": [
+    [
+     "/webvtt/parsing/file-parsing/tests/signature-no-newline.html",
+     {}
+    ]
+   ],
+   "webvtt/parsing/file-parsing/tests/signature-space-no-newline.html": [
+    [
+     "/webvtt/parsing/file-parsing/tests/signature-space-no-newline.html",
+     {}
+    ]
+   ],
+   "webvtt/parsing/file-parsing/tests/signature-space.html": [
+    [
+     "/webvtt/parsing/file-parsing/tests/signature-space.html",
+     {}
+    ]
+   ],
+   "webvtt/parsing/file-parsing/tests/signature-tab-no-newline.html": [
+    [
+     "/webvtt/parsing/file-parsing/tests/signature-tab-no-newline.html",
+     {}
+    ]
+   ],
+   "webvtt/parsing/file-parsing/tests/signature-tab.html": [
+    [
+     "/webvtt/parsing/file-parsing/tests/signature-tab.html",
+     {}
+    ]
+   ],
+   "webvtt/parsing/file-parsing/tests/signature-timings.html": [
+    [
+     "/webvtt/parsing/file-parsing/tests/signature-timings.html",
+     {}
+    ]
+   ],
+   "webvtt/parsing/file-parsing/tests/stylesheets.html": [
+    [
+     "/webvtt/parsing/file-parsing/tests/stylesheets.html",
+     {}
+    ]
+   ],
+   "webvtt/parsing/file-parsing/tests/timings-60.html": [
+    [
+     "/webvtt/parsing/file-parsing/tests/timings-60.html",
+     {}
+    ]
+   ],
+   "webvtt/parsing/file-parsing/tests/timings-eof.html": [
+    [
+     "/webvtt/parsing/file-parsing/tests/timings-eof.html",
+     {}
+    ]
+   ],
+   "webvtt/parsing/file-parsing/tests/timings-garbage.html": [
+    [
+     "/webvtt/parsing/file-parsing/tests/timings-garbage.html",
+     {}
+    ]
+   ],
+   "webvtt/parsing/file-parsing/tests/timings-negative.html": [
+    [
+     "/webvtt/parsing/file-parsing/tests/timings-negative.html",
+     {}
+    ]
+   ],
+   "webvtt/parsing/file-parsing/tests/timings-omitted-hours.html": [
+    [
+     "/webvtt/parsing/file-parsing/tests/timings-omitted-hours.html",
+     {}
+    ]
+   ],
+   "webvtt/parsing/file-parsing/tests/timings-too-long.html": [
+    [
+     "/webvtt/parsing/file-parsing/tests/timings-too-long.html",
+     {}
+    ]
+   ],
+   "webvtt/parsing/file-parsing/tests/timings-too-short.html": [
+    [
+     "/webvtt/parsing/file-parsing/tests/timings-too-short.html",
+     {}
+    ]
+   ],
+   "webvtt/parsing/file-parsing/tests/whitespace-chars.html": [
+    [
+     "/webvtt/parsing/file-parsing/tests/whitespace-chars.html",
      {}
     ]
    ],
@@ -56179,6 +56915,36 @@
      {}
     ]
    ],
+   "workers/semantics/encodings/001.html": [
+    [
+     "/workers/semantics/encodings/001.html",
+     {}
+    ]
+   ],
+   "workers/semantics/encodings/002.html": [
+    [
+     "/workers/semantics/encodings/002.html",
+     {}
+    ]
+   ],
+   "workers/semantics/encodings/003.html": [
+    [
+     "/workers/semantics/encodings/003.html",
+     {}
+    ]
+   ],
+   "workers/semantics/encodings/004.html": [
+    [
+     "/workers/semantics/encodings/004.html",
+     {}
+    ]
+   ],
+   "workers/semantics/encodings/004.worker.js": [
+    [
+     "/workers/semantics/encodings/004.worker.html",
+     {}
+    ]
+   ],
    "workers/semantics/interface-objects/001.worker.js": [
     [
      "/workers/semantics/interface-objects/001.worker.html",
@@ -56356,6 +57122,10 @@
   }
  },
  "paths": {
+  "./.gitignore": [
+   "bfa8422ef9849af857cdbddbe8044c2179953f6d",
+   "support"
+  ],
   "./CONTRIBUTING.md": [
    "7e7cfde5c27d2a72c3d755e2eadc040c1dfbe6e1",
    "support"
@@ -56369,7 +57139,7 @@
    "support"
   ],
   "./check_stability.py": [
-   "5f8efc8738edef4c84109e3547658d4cab37357d",
+   "929a459294fca2be3f2728043390cd5076db669a",
    "support"
   ],
   "./ci_built_diff.sh": [
@@ -56386,10 +57156,6 @@
   ],
   "./diff-manifest.py": [
    "94689a9853ab8d0ddcd85b2a8db4b6f2c9045b4a",
-   "support"
-  ],
-  "./testharness_runner.html": [
-   "3acc55e132ad104495a2ccd0390a6369364f6900",
    "support"
   ],
   "./update-built-tests.sh": [
@@ -56622,6 +57388,18 @@
   ],
   "IndexedDB/error-attributes.html": [
    "3e69684b6dc5e23508ced8c7a033a389f6e135b6",
+   "testharness"
+  ],
+  "IndexedDB/fire-error-event-exception.html": [
+   "062ef43542e434d6eb7c6ea2c7aefbf8ff4ac198",
+   "testharness"
+  ],
+  "IndexedDB/fire-success-event-exception.html": [
+   "4b694f3df532e87edfcc12a46cd07224c363355b",
+   "testharness"
+  ],
+  "IndexedDB/fire-upgradeneeded-event-exception.html": [
+   "80333b08cae052d1fb58875404c87462206204b3",
    "testharness"
   ],
   "IndexedDB/historical.html": [
@@ -57109,7 +57887,7 @@
    "testharness"
   ],
   "IndexedDB/idbfactory_deleteDatabase4.htm": [
-   "10109da5b09ab80f71c69422662840c8b637c560",
+   "a42c82f245079b0be06f6249a6b37f076c754345",
    "testharness"
   ],
   "IndexedDB/idbfactory_open.htm": [
@@ -57225,7 +58003,7 @@
    "testharness"
   ],
   "IndexedDB/idbindex_get4.htm": [
-   "d8b39b7cc23e6b89b47b657ff53eeece44970f02",
+   "82be62b113f1ed362feb4f88c94cb65109b21735",
    "testharness"
   ],
   "IndexedDB/idbindex_get5.htm": [
@@ -57265,7 +58043,7 @@
    "testharness"
   ],
   "IndexedDB/idbindex_getKey4.htm": [
-   "d5d1449086078aa744d156e062a23ca3ffb264a8",
+   "d9b30635c943e401ba275d3611d17520cbf3334a",
    "testharness"
   ],
   "IndexedDB/idbindex_getKey5.htm": [
@@ -57569,7 +58347,7 @@
    "testharness"
   ],
   "IndexedDB/idbobjectstore_get4.htm": [
-   "828be6d2ebacc7c2ff80ed479124db16a5e3524a",
+   "7b8ffbe373654f98869af07960ae352df024bcab",
    "testharness"
   ],
   "IndexedDB/idbobjectstore_get5.htm": [
@@ -57813,7 +58591,7 @@
    "support"
   ],
   "IndexedDB/support.js": [
-   "a236eaf6599ad94f26166144a7afe21fafcc5770",
+   "508530c1b101f1c728f7bc4e221efc596c5ff063",
    "support"
   ],
   "IndexedDB/transaction-abort-generator-revert.html": [
@@ -57837,7 +58615,7 @@
    "testharness"
   ],
   "IndexedDB/transaction-lifetime-blocked.htm": [
-   "2b97fa14d13e5ea212dc51b728bcc469557248f2",
+   "e05a90c62a9f304bb5e7b0c7d8f4360ea860c907",
    "testharness"
   ],
   "IndexedDB/transaction-lifetime-empty.html": [
@@ -57845,7 +58623,7 @@
    "testharness"
   ],
   "IndexedDB/transaction-lifetime.htm": [
-   "226a7242cf0f8eb9f6f39c4d467a044c8da8d00f",
+   "19325bbfa1865ae5cbc3d38d7a7da2ed298da0dc",
    "testharness"
   ],
   "IndexedDB/transaction-requestqueue.htm": [
@@ -57877,7 +58655,7 @@
    "testharness"
   ],
   "IndexedDB/writer-starvation.htm": [
-   "d49f3f1bffc93174522c6d8c815e7f7ae0cd18a9",
+   "76b34c6324cb5191aee56de0fd94e6132e65f15a",
    "testharness"
   ],
   "WebIDL/current-realm-expected.txt": [
@@ -59257,7 +60035,7 @@
    "support"
   ],
   "content-security-policy/child-src/child-src-about-blank-allowed-by-default.sub.html": [
-   "5cac17e73bbf919ababbd3823d56762a96a231d5",
+   "3cfb06c55ac7dc026170b1ae886beba63cebac57",
    "testharness"
   ],
   "content-security-policy/child-src/child-src-about-blank-allowed-by-default.sub.html.sub.headers": [
@@ -60216,6 +60994,18 @@
    "ff4d7ca289ea20fa00bca535fdcf929876a2278b",
    "testharness"
   ],
+  "css-typed-om/CSSMatrixComponent-DOMMatrix-mutable.html": [
+   "f6056e2480829c7aa9885673d332496faf7777b5",
+   "testharness"
+  ],
+  "css-typed-om/declared-styleMap-accepts-inherit.html": [
+   "2d6e5a3bc89559c671ed9a2dbad8e5f456b947a9",
+   "testharness"
+  ],
+  "css-typed-om/styleMap-update-function.html": [
+   "ba9d58c998b7c7ab586fd54e80a0466133c91ebc",
+   "testharness"
+  ],
   "css-values/unset-value-storage.html": [
    "d2e5101f623e29cc993fe2460f6c85f6ec31b471",
    "testharness"
@@ -60505,7 +61295,7 @@
    "testharness"
   ],
   "dom/events/CustomEvent.html": [
-   "ffd8a316822ad17adeefc1bd0da4b3a429b458b7",
+   "1ceee10cbe86c94d2c3a68672a78b1c6224c8616",
    "testharness"
   ],
   "dom/events/Event-cancelBubble.html": [
@@ -60613,7 +61403,7 @@
    "testharness"
   ],
   "dom/events/Event-initEvent.html": [
-   "b15976446b454c1554360c2cc39e2ae52e10e825",
+   "a01aa825e0905a0efc3afe9bc3015d448e9618f1",
    "testharness"
   ],
   "dom/events/Event-propagation.html": [
@@ -60713,7 +61503,7 @@
    "support"
   ],
   "dom/interfaces.html": [
-   "3d3bd9a930603fc209fbb5879a36c9c7a62b0c19",
+   "0cbf5532f442fdb9ba773fd053f8831b7b522767",
    "testharness"
   ],
   "dom/lists/DOMTokenList-Iterable-expected.txt": [
@@ -60729,7 +61519,7 @@
    "support"
   ],
   "dom/lists/DOMTokenList-coverage-for-attributes.html": [
-   "6c23a5f1c45aaa6e0e0c821986094ae491fdae43",
+   "ef209cd9285ddaaaa1c09d3448607070332bedf7",
    "testharness"
   ],
   "dom/lists/DOMTokenList-iteration-expected.txt": [
@@ -61185,7 +61975,7 @@
    "testharness"
   ],
   "dom/nodes/Document-getElementsByTagName-expected.txt": [
-   "dc9806c46b97d93eb3f72fc8422c8147014a4f58",
+   "7a455888f847aebb2e0a525ef3c9fccaee24a7cf",
    "support"
   ],
   "dom/nodes/Document-getElementsByTagName-xhtml-expected.txt": [
@@ -61321,7 +62111,7 @@
    "testharness"
   ],
   "dom/nodes/Element-getElementsByTagName-expected.txt": [
-   "282f3fc010d2db0858a8b8bb141028a3c0d03361",
+   "ce17050c4337e3700155846313ae8d61adcc3ca0",
    "support"
   ],
   "dom/nodes/Element-getElementsByTagName.html": [
@@ -61365,11 +62155,11 @@
    "support"
   ],
   "dom/nodes/Element-matches.html": [
-   "cd92efe8ce474ce030e3e9ad5997c5ee247e481a",
+   "1c3babeb4f7c2a9f2a35d96aa6eb456f88966cbd",
    "testharness"
   ],
   "dom/nodes/Element-matches.js": [
-   "f3923e42c55eac3f4dc9d2f8fb128e4e9b1b3afb",
+   "9ce802ae7a010a1a8458f49f1fdc1db81dafb8c7",
    "support"
   ],
   "dom/nodes/Element-nextElementSibling-xhtml.xhtml": [
@@ -61406,6 +62196,10 @@
   ],
   "dom/nodes/Element-tagName.html": [
    "d6bb6d9f107f2d3ffd3c86793185eeb4336df834",
+   "testharness"
+  ],
+  "dom/nodes/Element-webkitMatchesSelector.html": [
+   "31934621453740439f9b318c0bb8b180ac3071c3",
    "testharness"
   ],
   "dom/nodes/MutationObserver-attributes-expected.txt": [
@@ -61661,7 +62455,7 @@
    "support"
   ],
   "dom/nodes/case-expected.txt": [
-   "a69d54b7c153ff65eb2ae91802681fca13517866",
+   "04da91ce54c42bbd57496a60483553e45fd43947",
    "support"
   ],
   "dom/nodes/case.html": [
@@ -61928,10 +62722,6 @@
    "7f4c7f5829bd8ce64becf75023a51c15d9862216",
    "testharness"
   ],
-  "dom/ranges/Range-mutations-expected.txt": [
-   "45a88d19ceff57f8b6b5ad09e3c7bdcb2a1996a6",
-   "support"
-  ],
   "dom/ranges/Range-mutations-insertBefore.html": [
    "efa7479a1249f6ef37c1ffffe6f01f9c9cacc69c",
    "testharness"
@@ -62196,6 +62986,10 @@
    "4842d40e22e25ee72536946d785a3cd03bc6a11d",
    "testharness"
   ],
+  "domxpath/interfaces-expected.txt": [
+   "2b5d022a5dab228aaac03cb32b042179f9673adb",
+   "support"
+  ],
   "domxpath/interfaces.html": [
    "6848bd27f62d93fa527684c5625a42f4dc6470c2",
    "testharness"
@@ -62257,7 +63051,7 @@
    "support"
   ],
   "editing/data/inserthorizontalrule.js": [
-   "1db27b1d9ace51dc47cb1b5f51e2827357a73dd5",
+   "a65609ebe407670a94a2ff59ed62ea4c2a3e1080",
    "support"
   ],
   "editing/data/inserthtml.js": [
@@ -62289,7 +63083,7 @@
    "support"
   ],
   "editing/data/italic.js": [
-   "6677c18d063d0444cba053e082edce38ad60822b",
+   "5459c6140ac7aadc49b716b82feba092eb8f67af",
    "support"
   ],
   "editing/data/justifycenter.js": [
@@ -62313,7 +63107,7 @@
    "support"
   ],
   "editing/data/multitest.js": [
-   "a7a7c79afbc60598311ec40ee630d119653684c8",
+   "aaecbcfb0c1077e4940181f74c6ddbd91d23fcbd",
    "support"
   ],
   "editing/data/outdent.js": [
@@ -62321,27 +63115,31 @@
    "support"
   ],
   "editing/data/removeformat.js": [
-   "a7dce438b92b252bccabaf86488428008df2d721",
+   "b7a24b8162be7c11b0cf2a6443fe0d3973e3bc75",
    "support"
   ],
   "editing/data/strikethrough.js": [
-   "e6d44fd95d818454b9c84ab76449be23ed7e1c94",
+   "6016f3210874b49ae49093d0c3ab63ac8cd5abf8",
    "support"
   ],
   "editing/data/subscript.js": [
-   "adfce261588df0b26fd2cdd881453a49caa7075d",
+   "0bf0515ad3643a09ab8af047fa01e14f62d13208",
    "support"
   ],
   "editing/data/superscript.js": [
-   "0640a4319d8a788e90adfcd8662ec7191080bcce",
+   "f8b0e882d6911894e0b3b9ba74faad382d3db478",
    "support"
   ],
   "editing/data/underline.js": [
-   "15c33ca88e2d4a797327cd72b6aba8c2d8aa838a",
+   "cb53bbac4065882c9bb1ef95975794cfd6b8616a",
    "support"
   ],
   "editing/data/unlink.js": [
    "b15636f4a5dc2a56712aa5133139244d0ba77624",
+   "support"
+  ],
+  "editing/event-expected.txt": [
+   "f99f6085ec29df4e94a71275915ef0eef4fa5875",
    "support"
   ],
   "editing/event.html": [
@@ -62365,7 +63163,7 @@
    "support"
   ],
   "editing/include/tests.js": [
-   "30ccc3c37af706c78276459eb5b539262eddb3a8",
+   "b14610e875467c62eedb10fd8b3feefe5a3a25b6",
    "support"
   ],
   "editing/manual/delete.manual.html": [
@@ -62392,141 +63190,281 @@
    "7a5589f41ab8405d6ed09a4b83bd0c60e2a59677",
    "support"
   ],
+  "editing/other/delete-expected.txt": [
+   "c095b49ca535a2e22d1ebdabb081d9828ed622f8",
+   "support"
+  ],
   "editing/other/delete.html": [
    "c812df13215631719f8ff17eee4e0a854684670d",
    "testharness"
+  ],
+  "editing/other/restoration-expected.txt": [
+   "44e469414a6a79011ef935a70af52aeee7b3689d",
+   "support"
   ],
   "editing/other/restoration.html": [
    "432d9d66ec7621faf22a31960816290193b60aed",
    "testharness"
   ],
+  "editing/run/backcolor-expected.txt": [
+   "6db848a0cbdd9c3a20841060b28826d044f689d0",
+   "support"
+  ],
   "editing/run/backcolor.html": [
    "72840bfcf7e62249773e925f79ba196218964373",
    "testharness"
+  ],
+  "editing/run/bold-expected.txt": [
+   "62e92d7096dcc4efe1dd09c348289be0d3d34452",
+   "support"
   ],
   "editing/run/bold.html": [
    "afd5a6f83bea4869dd3e26c3155f42fa97825f31",
    "testharness"
   ],
+  "editing/run/createlink-expected.txt": [
+   "363e100149b3786029418ca216c878e875a4032e",
+   "support"
+  ],
   "editing/run/createlink.html": [
    "ec46bf84c1e1a93884e84cd8508fb80954e5509e",
    "testharness"
+  ],
+  "editing/run/delete-expected.txt": [
+   "2564f5956e2ba87099a328381af2d456054fcc20",
+   "support"
   ],
   "editing/run/delete.html": [
    "453817d93bbee28d068b35b79ef2708046380d6e",
    "testharness"
   ],
+  "editing/run/fontname-expected.txt": [
+   "9d85af786d1b7e6837276a586852b022008ae70b",
+   "support"
+  ],
   "editing/run/fontname.html": [
    "17e45bc9d2a9fd68eed1ed0f667ad6c594245f69",
    "testharness"
+  ],
+  "editing/run/fontsize-expected.txt": [
+   "21549190395e8771956c6ac1d09a7097eb4794aa",
+   "support"
   ],
   "editing/run/fontsize.html": [
    "ddbe2003d7750c2cae2e314d725a3ec18fe58803",
    "testharness"
   ],
+  "editing/run/forecolor-expected.txt": [
+   "9a01307055af93761b90ef8203d7d06e8f4c988e",
+   "support"
+  ],
   "editing/run/forecolor.html": [
    "c30cfc807ebfaff9a0035ffdad4bb594a9fc3c36",
    "testharness"
+  ],
+  "editing/run/formatblock-expected.txt": [
+   "43b5b385837b21859b3ffb43dce5a12b75f3f34d",
+   "support"
   ],
   "editing/run/formatblock.html": [
    "22b79f3cc4c50b902679315d9c391785bfd4b407",
    "testharness"
   ],
+  "editing/run/forwarddelete-expected.txt": [
+   "25cd7e50a10ce2b54240b3806fbc85085862fdca",
+   "support"
+  ],
   "editing/run/forwarddelete.html": [
    "8f038ec65ff7ee900792053c87d5a43997f9513c",
    "testharness"
+  ],
+  "editing/run/hilitecolor-expected.txt": [
+   "6ed6fea5e8e7e95fdd5507dec9cf146d4d3869c3",
+   "support"
   ],
   "editing/run/hilitecolor.html": [
    "267c72c439d1b10fa29431cf4051a21e1188aada",
    "testharness"
   ],
+  "editing/run/indent-expected.txt": [
+   "f895cf8194134186abe4cafe14c093fb551976fe",
+   "support"
+  ],
   "editing/run/indent.html": [
    "1bed1283ad3b220b2949c0720cba60105c888ec2",
    "testharness"
+  ],
+  "editing/run/inserthorizontalrule-expected.txt": [
+   "54ede2e3f1ae625deefa1cba046fd594348b623d",
+   "support"
   ],
   "editing/run/inserthorizontalrule.html": [
    "49b66e6425c8d7d8c3c7b63070a745483bcfc46f",
    "testharness"
   ],
+  "editing/run/inserthtml-expected.txt": [
+   "abaa4e5c3b25ff5527264686ccf983b6496a80d5",
+   "support"
+  ],
   "editing/run/inserthtml.html": [
    "030d9b7c2a4beeb59771824026bbeca52412f11e",
    "testharness"
+  ],
+  "editing/run/insertimage-expected.txt": [
+   "7f9708745189ec549f4fc6cefb6cb3bb8765cf74",
+   "support"
   ],
   "editing/run/insertimage.html": [
    "3e0e8ba9ead38584dd2aff90dcaef951e5516ad0",
    "testharness"
   ],
+  "editing/run/insertlinebreak-expected.txt": [
+   "0499f6848246afb3698c6c9b0c4295662d8baa4f",
+   "support"
+  ],
   "editing/run/insertlinebreak.html": [
    "03dab78410d2b46b1207f98b0c7558476272eb6c",
    "testharness"
+  ],
+  "editing/run/insertorderedlist-expected.txt": [
+   "6a15e382f43703f5086c69aec2af70c22bb14632",
+   "support"
   ],
   "editing/run/insertorderedlist.html": [
    "4bbd92617b99dcc52e8ec30578293c9807485f4f",
    "testharness"
   ],
+  "editing/run/insertparagraph-expected.txt": [
+   "cdc50139687a32be4866575c810b1790478b1eaf",
+   "support"
+  ],
   "editing/run/insertparagraph.html": [
    "85fc96c65b9b7ebde21e6d01f1987ef1eca1de7c",
    "testharness"
+  ],
+  "editing/run/inserttext-expected.txt": [
+   "a8daa42d55dde6130d824c336cdfdeca6cbdda28",
+   "support"
   ],
   "editing/run/inserttext.html": [
    "9d67c24d5c6d3ff7b43b92c6c2a22543a04a5f05",
    "testharness"
   ],
+  "editing/run/insertunorderedlist-expected.txt": [
+   "238a3e32f880ab9a480b933ed2cef39c04ecde7a",
+   "support"
+  ],
   "editing/run/insertunorderedlist.html": [
    "3f714f7a4def53a2daa9d44712b76061e2ca7552",
    "testharness"
+  ],
+  "editing/run/italic-expected.txt": [
+   "ce87e74285f048c36a5649cbe3687f9a64837ba6",
+   "support"
   ],
   "editing/run/italic.html": [
    "6a4b267457182ea6de8835db633c1420b84c1c05",
    "testharness"
   ],
+  "editing/run/justifycenter-expected.txt": [
+   "55ab8bf1f428bcb16d6f7e635461fc58fc4e40cd",
+   "support"
+  ],
   "editing/run/justifycenter.html": [
    "8cd4e2356ad9f624c3dd60fe3c11879144667ade",
    "testharness"
+  ],
+  "editing/run/justifyfull-expected.txt": [
+   "71cfbe2894a934a7dbe755f96be22ae3cfd76ff5",
+   "support"
   ],
   "editing/run/justifyfull.html": [
    "86c11e290c9cd638d47772f5d768a85032959255",
    "testharness"
   ],
+  "editing/run/justifyleft-expected.txt": [
+   "f24ed43ba14adc0b230f97fbb1da1ad7484d9857",
+   "support"
+  ],
   "editing/run/justifyleft.html": [
    "ae457fa7fd35d9f8a23c491e0c34035ecaecf910",
    "testharness"
+  ],
+  "editing/run/justifyright-expected.txt": [
+   "77f076f3a55d44ec69fd16a8671500e729e78242",
+   "support"
   ],
   "editing/run/justifyright.html": [
    "a2b6ddbde460033add9355db7667fa01808cf163",
    "testharness"
   ],
+  "editing/run/misc-expected.txt": [
+   "d6ca3ff4f6d5ba3ec0c992141b277db0c2c4fe66",
+   "support"
+  ],
   "editing/run/misc.html": [
    "0120aa0c66d6e53d77cb12f60759138bdd06d19d",
    "testharness"
+  ],
+  "editing/run/multitest-expected.txt": [
+   "464596fc13fbc8bd30a0dd5599482bde709f7d08",
+   "support"
   ],
   "editing/run/multitest.html": [
    "76f32abdd5a42bc72e3af19c906a6a4ea85b1758",
    "testharness"
   ],
+  "editing/run/outdent-expected.txt": [
+   "6bc2b5bc64e244f405fef10491ff488fde49f4dc",
+   "support"
+  ],
   "editing/run/outdent.html": [
    "0888d3530c6a646218f7c5267916dd98960796e7",
    "testharness"
+  ],
+  "editing/run/removeformat-expected.txt": [
+   "1b9192a8c6ffe728bf7ed29bb5ecaf3031c019da",
+   "support"
   ],
   "editing/run/removeformat.html": [
    "2bc4c61e197ef3591509cd7cad0484f879d0bb26",
    "testharness"
   ],
+  "editing/run/strikethrough-expected.txt": [
+   "556fe981e6ff39f05c684cf09cad988d0f6826aa",
+   "support"
+  ],
   "editing/run/strikethrough.html": [
    "b702fc2dfff8245ec6d91f0ab79566ff92a131b3",
    "testharness"
+  ],
+  "editing/run/subscript-expected.txt": [
+   "3cd2f59a054793b380b26c97e14dd66a4eafdf17",
+   "support"
   ],
   "editing/run/subscript.html": [
    "3c0bb1665e110da97b1d4466dfb3f9baa8d2ade3",
    "testharness"
   ],
+  "editing/run/superscript-expected.txt": [
+   "99bdbce26037adcdb4ae4d590b89855872507f1d",
+   "support"
+  ],
   "editing/run/superscript.html": [
    "1dfa51b6575d008f018c48681c1510e0dc20acc0",
    "testharness"
   ],
+  "editing/run/underline-expected.txt": [
+   "394462e6cbceb3ba7252aab62f7faee51394b940",
+   "support"
+  ],
   "editing/run/underline.html": [
    "ac6b3430cf6f21e3d2a09567a6c14ff45ddef913",
    "testharness"
+  ],
+  "editing/run/unlink-expected.txt": [
+   "430f6b6c0fb8c5979c342ca8c2055bfc4c721d0c",
+   "support"
   ],
   "editing/run/unlink.html": [
    "43917206cc52c52334fdb3112dc6ffc1ce9c0d3c",
@@ -64833,7 +65771,7 @@
    "testharness"
   ],
   "html/browsers/history/the-location-interface/location-protocol-setter-with-colon.sub.html": [
-   "fe8356bed0dc28851cf8cfb606d72cb71c018190",
+   "15a3314e7ac584203559cd5df8c172d16ccb3f99",
    "testharness"
   ],
   "html/browsers/history/the-location-interface/location-protocol-setter.html": [
@@ -66413,7 +67351,7 @@
    "support"
   ],
   "html/dom/elements/elements-in-the-dom/historical.html": [
-   "ccef85d12bf11835f3dfe2012532b46b762278fb",
+   "c7866c9d75f6e11aaa16f6e6ee340ec3d7431441",
    "testharness"
   ],
   "html/dom/elements/elements-in-the-dom/unknown-element.html": [
@@ -67245,11 +68183,11 @@
    "testharness"
   ],
   "html/dom/reflection.js": [
-   "7675f0b4e2b364d84cc878edf0608cf563267e6c",
+   "d952a2936d184f18f3de4c00c5a871ce303b3963",
    "support"
   ],
   "html/dom/resources/interfaces.idl": [
-   "4319380dff6b1b48a5a8b75efdf6819fc34542fb",
+   "c712b0532395b08c2e6b3c68b8580f560b47a594",
    "support"
   ],
   "html/dom/resources/self-origin-subframe.html": [
@@ -67263,10 +68201,6 @@
   "html/dom/self-origin.any.js": [
    "187b3657775b815f9360c01d2ddb358a53e1f920",
    "testharness"
-  ],
-  "html/dom/self-origin.sub-expected.txt": [
-   "3290e26b35ce68236d0b3067e949a725601ee5a1",
-   "support"
   ],
   "html/dom/self-origin.sub.html": [
    "d821d4b41ac8517d345f86a9f8298f67284d1967",
@@ -70664,6 +71598,54 @@
    "ed3aa629bb438b285cc30761f526e76bad8c01b8",
    "testharness"
   ],
+  "html/infrastructure/urls/resolving-urls/query-encoding/resources/blank.py": [
+   "e55787bc9f46f01aece15afed2ce0686d143dc03",
+   "support"
+  ],
+  "html/infrastructure/urls/resolving-urls/query-encoding/resources/css-tmpl.py": [
+   "d3c8152013bb23c76a4ce9f96a30dc453309bc88",
+   "support"
+  ],
+  "html/infrastructure/urls/resolving-urls/query-encoding/resources/manifest.py": [
+   "ac4bab3d195d554570b3b035093a2750a4fdfa01",
+   "support"
+  ],
+  "html/infrastructure/urls/resolving-urls/query-encoding/resources/page-using-manifest.py": [
+   "349a5e8aec778ee6cabac210226a01f14be904e1",
+   "support"
+  ],
+  "html/infrastructure/urls/resolving-urls/query-encoding/resources/resolve-url.js": [
+   "2c408d03723d2b0fca4d15ec233f6b5143c93680",
+   "support"
+  ],
+  "html/infrastructure/urls/resolving-urls/query-encoding/resources/resource.py": [
+   "1fe80369b002489cec48913f0a59c8099cef6461",
+   "support"
+  ],
+  "html/infrastructure/urls/resolving-urls/query-encoding/resources/stash.py": [
+   "0d599936f6a0baf6d9cce8d3236c146a159f1add",
+   "support"
+  ],
+  "html/infrastructure/urls/resolving-urls/query-encoding/utf-16be.html": [
+   "a541d9b6f0ef22d39112a81056be12e49264d4a0",
+   "testharness"
+  ],
+  "html/infrastructure/urls/resolving-urls/query-encoding/utf-16le.html": [
+   "457b5c54592a4b887dbc9cd0d0aac6440646467f",
+   "testharness"
+  ],
+  "html/infrastructure/urls/resolving-urls/query-encoding/utf-8.html": [
+   "e2e8de4a8cb424217fe3c6c4e6c7a0088cf0e154",
+   "testharness"
+  ],
+  "html/infrastructure/urls/resolving-urls/query-encoding/windows-1251.html": [
+   "424312dc522d01f4ae0eedccc618451f13ca65fa",
+   "testharness"
+  ],
+  "html/infrastructure/urls/resolving-urls/query-encoding/windows-1252.html": [
+   "1b8570b2cf1f5a136c0f4b4d1506b01e6fb6cb31",
+   "testharness"
+  ],
   "html/infrastructure/urls/terminology-0/document-base-url-expected.txt": [
    "f6c6e95beebcbe393896d1b31941141e7c45b97e",
    "support"
@@ -71129,11 +72111,11 @@
    "reftest"
   ],
   "html/rendering/replaced-elements/resources/svg-sizing.js": [
-   "f5ce42553e067f5357d31d9cc5a1deb41410df4b",
+   "bbf4061fac8f777b444c23e6df31cd4fa8cc3955",
    "support"
   ],
   "html/rendering/replaced-elements/svg-embedded-sizing/svg-embedded-sizing.js": [
-   "91661663d6c6ea13e455e0296c9350ccc19d0089",
+   "8a81ef6d6d92a20cb4c86ef8e4f8a3e18f09a7a0",
    "support"
   ],
   "html/rendering/replaced-elements/svg-embedded-sizing/svg-in-img-auto.html": [
@@ -71656,6 +72638,10 @@
    "f3bbb0f87c26f01b76c6e032891bbbc45b964f77",
    "testharness"
   ],
+  "html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-invoke-insert-source-networkState-expected.txt": [
+   "955753cfadaa82b8ccf6521e879fdec9aefb1c6e",
+   "support"
+  ],
   "html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-invoke-insert-source-networkState.html": [
    "faf29cdae002b841d0e38ac7291c08ae56619b4d",
    "testharness"
@@ -71763,6 +72749,10 @@
   "html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-pointer-insert-text.html": [
    "964479f38332cebf9dea9312f28d47836203dad5",
    "testharness"
+  ],
+  "html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-pointer-remove-source-after-expected.txt": [
+   "b336ec3decb591e7565b52edde20d076dbd51595",
+   "support"
   ],
   "html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-pointer-remove-source-after.html": [
    "665427ef1cdad4fc4648f11ba7322156afcfbebf",
@@ -72057,7 +73047,7 @@
    "testharness"
   ],
   "html/semantics/embedded-content/the-iframe-element/iframe_sandbox_allow_top_navigation_by_user_activation-manual.html": [
-   "31fa1d1e2ad26e0e6746269a4f7673c2e12c187f",
+   "7f8cc0226de24738bc75517e95d2942396b222a8",
    "manual"
   ],
   "html/semantics/embedded-content/the-iframe-element/iframe_sandbox_allow_top_navigation_by_user_activation_without_user_gesture.html": [
@@ -72117,7 +73107,7 @@
    "support"
   ],
   "html/semantics/embedded-content/the-iframe-element/support/iframe-that-performs-top-navigation.html": [
-   "1fb30b9d76157dc9f5ac9d294cec54c2d9479a9d",
+   "a4a67179771917899f41114467b46be39d857eb5",
    "support"
   ],
   "html/semantics/embedded-content/the-iframe-element/support/navigation-changed-iframe.html": [
@@ -72518,6 +73508,10 @@
   ],
   "html/semantics/forms/textfieldselection/original-id.json": [
    "14a6f0077d512837c24931a2a9723e11d1d7a1c7",
+   "support"
+  ],
+  "html/semantics/forms/textfieldselection/select-event-expected.txt": [
+   "2cdb4a00c85c2f68497c065ca53e40c1e573dd51",
    "support"
   ],
   "html/semantics/forms/textfieldselection/select-event.html": [
@@ -73392,6 +74386,10 @@
    "2d1c2cf696010feb64b17f00a072f3bbe6b1d713",
    "support"
   ],
+  "html/semantics/scripting-1/the-script-element/external-script-windows1250.js": [
+   "43e3b65a18328fa95ba89cb4f075d1ab422580fa",
+   "support"
+  ],
   "html/semantics/scripting-1/the-script-element/fetch-src/alpha/base.html": [
    "13d313f817d5597dd0cecbc23f0162f95f9634cc",
    "testharness"
@@ -73679,6 +74677,18 @@
   "html/semantics/scripting-1/the-script-element/resources/set-script-executed.js": [
    "87f80eee703965c88f2bf7015bfa76233d459d06",
    "support"
+  ],
+  "html/semantics/scripting-1/the-script-element/script-charset-01.html": [
+   "4d8f27447b5c76174a2e353f160066fbe156a005",
+   "testharness"
+  ],
+  "html/semantics/scripting-1/the-script-element/script-charset-02.html": [
+   "fd855537451d81818fda97de8a6eff2f8ebd7a5e",
+   "testharness"
+  ],
+  "html/semantics/scripting-1/the-script-element/script-charset-03.html": [
+   "c1daf890ff2c71f63d1c668de9002d493dbcb417",
+   "testharness"
   ],
   "html/semantics/scripting-1/the-script-element/script-crossorigin-network.html": [
    "ca03ec45f3b8d117d0488b67f082868bac847af6",
@@ -75132,6 +76142,10 @@
    "c8e48064f18b1d1eb13e151b69ee60b8d68f4dab",
    "testharness"
   ],
+  "html/webappapis/scripting/events/compile-event-handler-settings-objects-expected.txt": [
+   "13a1074c8a857731e0c1a18814f2d27413f156b5",
+   "support"
+  ],
   "html/webappapis/scripting/events/compile-event-handler-settings-objects.html": [
    "43a17069cb0d3c819d1b55eaa4616af0b0a338b7",
    "testharness"
@@ -75204,16 +76218,12 @@
    "6f2c0cc97bdd385322e0a422e7ea5aa77c280536",
    "testharness"
   ],
-  "html/webappapis/scripting/events/messageevent-constructor-expected.txt": [
-   "f75793959ce86b4f6d9946429864e7b6be37ed95",
-   "support"
-  ],
   "html/webappapis/scripting/events/messageevent-constructor.https-expected.txt": [
    "3655362a0eb658bd9704f9893a02fab9168253e1",
    "support"
   ],
   "html/webappapis/scripting/events/messageevent-constructor.https.html": [
-   "88f17d8b54f93b187e72dd3424951a3a4f07e62f",
+   "78d9fe8ca88a24621890aee14d33694aa76c6a27",
    "testharness"
   ],
   "html/webappapis/scripting/events/onerroreventhandler-expected.txt": [
@@ -75652,6 +76662,18 @@
    "8efe37cac0d5dd0004bf0743c702eba27690058f",
    "testharness"
   ],
+  "html/webappapis/the-windoworworkerglobalscope-mixin/Worker_Self_Origin.html": [
+   "9b895ac9dba41e20e341114eac7ab383cd8b08fb",
+   "testharness"
+  ],
+  "html/webappapis/the-windoworworkerglobalscope-mixin/support/WorkerSelfOriginSharedWorker.js": [
+   "42077e6038d7dca23ea9dbd6f95f0f53a9e762fa",
+   "support"
+  ],
+  "html/webappapis/the-windoworworkerglobalscope-mixin/support/WorkerSelfOriginWorker.js": [
+   "00ef4a167d7b93567416ee0de031feb76eaec937",
+   "support"
+  ],
   "html/webappapis/timers/evil-spec-example.html": [
    "49fd55dbbf64c6973a0e76284c0e3d8b7bf0ef3c",
    "testharness"
@@ -75862,6 +76884,10 @@
   ],
   "media/A4.ogv": [
    "cb9a48e1d53911d5be214320adfbf7596632a316",
+   "support"
+  ],
+  "media/CanvasTest.ttf": [
+   "10a7017b4caead6817aa08b25f14950e6402dd95",
    "support"
   ],
   "media/foo.vtt": [
@@ -77980,6 +79006,10 @@
    "0b247d3b7dfd047c217a78c59652a3c32df0fcfa",
    "testharness"
   ],
+  "pointerevents/pointerevent_disabled_form_control-manual.html": [
+   "dff74a4548994fcef47d4f0361f6c48607d08b18",
+   "manual"
+  ],
   "pointerevents/pointerevent_element_haspointercapture-manual.html": [
    "fd7ceeb1f55491c3082a0171951a9bc1489500cc",
    "manual"
@@ -78225,7 +79255,7 @@
    "testharness"
   ],
   "preload/download-resources.html": [
-   "fea098d865e90bd3f8f2f5405f822aadcfad5b07",
+   "b59eac5b7ef9911f8f8f9c3583dc701fbd3966c7",
    "testharness"
   ],
   "preload/dynamic-adding-preload.html": [
@@ -78257,7 +79287,7 @@
    "testharness"
   ],
   "preload/onload-event.html": [
-   "e7e49848d7d8a77323801b1a8ef750585a11b3f6",
+   "10727401482c9947a29d5073e50407f592538e98",
    "testharness"
   ],
   "preload/preload-csp.sub.html": [
@@ -78269,7 +79299,7 @@
    "testharness"
   ],
   "preload/preload-with-type.html": [
-   "e1635e40dd3b920c3c4738771a06ddc8761970d2",
+   "e49e294f08b309b542fe97d40b246683f71714b5",
    "testharness"
   ],
   "preload/resources/dummy.css": [
@@ -78305,7 +79335,7 @@
    "testharness"
   ],
   "preload/single-download-preload.html": [
-   "7f968cf3a8538ca99e353a3e47e120fb7833c8e7",
+   "8d638e60e598d83aaf089a2e17e128cd6d0b3dee",
    "testharness"
   ],
   "quirks-mode/blocks-ignore-line-height.html": [
@@ -85748,9 +86778,17 @@
    "31a5ee7a3619c62dbd35eafb66725bf4192639a0",
    "testharness"
   ],
+  "selection/addRange-00-expected.txt": [
+   "eedac4c59c749216666bcd60a08711810db36e73",
+   "support"
+  ],
   "selection/addRange-00.html": [
    "e99b95a6bdcba9f4945fb9b03de34ff54469012a",
    "testharness"
+  ],
+  "selection/addRange-04-expected.txt": [
+   "cdd195d7aadd66603ca9c0f5bf2b52cf054b92f2",
+   "support"
   ],
   "selection/addRange-04.html": [
    "c241e1c3a82f09c14bbf217350b2ee0b58c17178",
@@ -85760,29 +86798,57 @@
    "6d51d9f4042e5590483fae60d19351602d6b0aa2",
    "testharness"
   ],
+  "selection/addRange-12-expected.txt": [
+   "c37408236a59467912d31966c48e105b372be787",
+   "support"
+  ],
   "selection/addRange-12.html": [
    "add2e904651f3564741742dc5e1dcb7e3debc50c",
    "testharness"
+  ],
+  "selection/addRange-16-expected.txt": [
+   "d8e9f67a786aea3ea8b94f942663ad69a419c52a",
+   "support"
   ],
   "selection/addRange-16.html": [
    "b8357b81e8cff46960b158f2eff40950aba04158",
    "testharness"
   ],
+  "selection/addRange-20-expected.txt": [
+   "2bc82fd38cd3bd635d3bda05fe3d92bc99f5e98a",
+   "support"
+  ],
   "selection/addRange-20.html": [
    "88fb182b058eae495b92c10a1ddc2bd7768e96cd",
    "testharness"
+  ],
+  "selection/addRange-24-expected.txt": [
+   "fd4aabd6d0ed1531e3adc99411095b501e2be0de",
+   "support"
   ],
   "selection/addRange-24.html": [
    "d6c0ce809239b2bafda14dab540bda45e3e89752",
    "testharness"
   ],
+  "selection/addRange-28-expected.txt": [
+   "a0eb6bab0cdc1093ccad3c96eef6e99895d1a537",
+   "support"
+  ],
   "selection/addRange-28.html": [
    "a2583e4f46561f8b09183186aed7ca137fab26dd",
    "testharness"
   ],
+  "selection/addRange-32-expected.txt": [
+   "c5bc03594b1095dedab19073232291b45f73a31a",
+   "support"
+  ],
   "selection/addRange-32.html": [
    "431ec670ebbcd0d0032fc416bd0910507fa76680",
    "testharness"
+  ],
+  "selection/addRange-36-expected.txt": [
+   "fbed318b78eb54ba405d9b055d92f66bf899cf0a",
+   "support"
   ],
   "selection/addRange-36.html": [
    "9572f7b20ee6891157025e576cf837e496a61669",
@@ -85809,7 +86875,7 @@
    "testharness"
   ],
   "selection/addRange.js": [
-   "67bd52a4653938061f121ed57ead8d768acdde2b",
+   "36982e3d91452822913d41c41c36d28339cab8a2",
    "support"
   ],
   "selection/collapse-00.html": [
@@ -85829,7 +86895,7 @@
    "testharness"
   ],
   "selection/common.js": [
-   "279c4bf2f03cb1caa26b83a5898adfbf8bef2a5f",
+   "faf1740b23010409c1a26f7e847b75268b947d16",
    "support"
   ],
   "selection/deleteFromDocument.html": [
@@ -86019,10 +87085,6 @@
   "service-workers/cache-storage/serviceworker/cache-storage.https.html": [
    "dbf2c5f7fdbd8a1e604d0e1d301d40a7146e93d8",
    "testharness"
-  ],
-  "service-workers/cache-storage/serviceworker/credentials-expected.txt": [
-   "9bf28a63941913debc771169860c69cec5988434",
-   "support"
   ],
   "service-workers/cache-storage/serviceworker/credentials.https.html": [
    "ef598649e75e3c8736729d7e233982748e31eb79",
@@ -86457,11 +87519,11 @@
    "testharness"
   ],
   "service-workers/service-worker/navigate-window.https-expected.txt": [
-   "de75d3fb7cce8c624f454e55f9a888a55fb1c3a8",
+   "577a4fb4ab8695806f19dd72c6683cd1b3f04c0b",
    "support"
   ],
   "service-workers/service-worker/navigate-window.https.html": [
-   "669507683c98d99aa5dcfbddd71c23f8464b7c21",
+   "0499d4489276c2a933b79e47f1de591f467f42aa",
    "testharness"
   ],
   "service-workers/service-worker/navigation-redirect.https-expected.txt": [
@@ -86553,7 +87615,7 @@
    "testharness"
   ],
   "service-workers/service-worker/registration-iframe.https.html": [
-   "f92f5aada1175b76624dc91b760e34fdd0bf3047",
+   "6d11b9ecf339e6e476fe594d5cb4e0873b0845d1",
    "testharness"
   ],
   "service-workers/service-worker/registration-service-worker-attributes.https.html": [
@@ -87916,6 +88978,10 @@
    "5ce835b9c17e0cd61830abdd4f4e7aa5d5a47d8d",
    "support"
   ],
+  "storage/interfaces-expected.txt": [
+   "2763c4aab3b040727421dbd408d05582fe5ad17f",
+   "support"
+  ],
   "storage/interfaces.html": [
    "76fa61c3a87485266a7f9d6f66e5d08bb7881ff7",
    "testharness"
@@ -87927,10 +88993,6 @@
   "storage/interfaces.worker.js": [
    "da11cf56486fe08214f91d181b3a19775f6aa59c",
    "testharness"
-  ],
-  "storage/opaque-origin.https-expected.txt": [
-   "d33853b6c37f68b0d903be4323d3abd506f49675",
-   "support"
   ],
   "storage/opaque-origin.https.html": [
    "6ce5a9b14d80030f0adfa1808857294e8c923cb2",
@@ -87952,10 +89014,6 @@
    "e4b248c7de8b85df9ed01d707cf2dfcfd9a5bcb0",
    "support"
   ],
-  "streams/byte-length-queuing-strategy.serviceworker-expected.txt": [
-   "04408971a1d82a7d3c990774456381313f1584bb",
-   "support"
-  ],
   "streams/byte-length-queuing-strategy.serviceworker.https.html": [
    "83c7631272f9c04011e179a1d5f2c6744ab09e2d",
    "testharness"
@@ -87974,10 +89032,6 @@
   ],
   "streams/count-queuing-strategy.js": [
    "33f8db7addcc8e01d798b9199b6d78ad35d8a243",
-   "support"
-  ],
-  "streams/count-queuing-strategy.serviceworker-expected.txt": [
-   "04408971a1d82a7d3c990774456381313f1584bb",
    "support"
   ],
   "streams/count-queuing-strategy.serviceworker.https.html": [
@@ -88004,10 +89058,6 @@
    "e51b3ceee3c58aa83bcbea276270fa40b98d16fa",
    "support"
   ],
-  "streams/piping/close-propagation-backward.serviceworker-expected.txt": [
-   "04408971a1d82a7d3c990774456381313f1584bb",
-   "support"
-  ],
   "streams/piping/close-propagation-backward.serviceworker.https.html": [
    "29ce859faa5a374d86c4f10e2c638061ce378a01",
    "testharness"
@@ -88026,10 +89076,6 @@
   ],
   "streams/piping/close-propagation-forward.js": [
    "0846ba92abb8ace6c5438d918b2db23badc090b2",
-   "support"
-  ],
-  "streams/piping/close-propagation-forward.serviceworker-expected.txt": [
-   "04408971a1d82a7d3c990774456381313f1584bb",
    "support"
   ],
   "streams/piping/close-propagation-forward.serviceworker.https.html": [
@@ -88052,10 +89098,6 @@
    "e7f1bdd524056017264ba1f0d2f569c5a5bbece5",
    "support"
   ],
-  "streams/piping/error-propagation-backward.serviceworker-expected.txt": [
-   "04408971a1d82a7d3c990774456381313f1584bb",
-   "support"
-  ],
   "streams/piping/error-propagation-backward.serviceworker.https.html": [
    "3502f6514992dab5662a5088c518d3a775863770",
    "testharness"
@@ -88074,10 +89116,6 @@
   ],
   "streams/piping/error-propagation-forward.js": [
    "a6c993b47a0aa820a3c763eb64ab902551bbcd91",
-   "support"
-  ],
-  "streams/piping/error-propagation-forward.serviceworker-expected.txt": [
-   "04408971a1d82a7d3c990774456381313f1584bb",
    "support"
   ],
   "streams/piping/error-propagation-forward.serviceworker.https.html": [
@@ -88100,10 +89138,6 @@
    "7d0c16676332ce06b1466f30f4cd89aeffb54610",
    "support"
   ],
-  "streams/piping/flow-control.serviceworker-expected.txt": [
-   "04408971a1d82a7d3c990774456381313f1584bb",
-   "support"
-  ],
   "streams/piping/flow-control.serviceworker.https.html": [
    "c6962c1f0358867289e1e9b36dac492059f4f9fe",
    "testharness"
@@ -88122,10 +89156,6 @@
   ],
   "streams/piping/general.js": [
    "cb4f7956b3973e318f6227122ab0df3c017414d5",
-   "support"
-  ],
-  "streams/piping/general.serviceworker-expected.txt": [
-   "04408971a1d82a7d3c990774456381313f1584bb",
    "support"
   ],
   "streams/piping/general.serviceworker.https.html": [
@@ -88154,10 +89184,6 @@
   ],
   "streams/piping/multiple-propagation.js": [
    "c2a5c855e9abbacfe500a9339ff586a16bb8ae7a",
-   "support"
-  ],
-  "streams/piping/multiple-propagation.serviceworker-expected.txt": [
-   "04408971a1d82a7d3c990774456381313f1584bb",
    "support"
   ],
   "streams/piping/multiple-propagation.serviceworker.https-expected.txt": [
@@ -88196,10 +89222,6 @@
    "7506ed68f5b64d7339af19cacd5d1d1201e1e5f7",
    "support"
   ],
-  "streams/piping/pipe-through.serviceworker-expected.txt": [
-   "04408971a1d82a7d3c990774456381313f1584bb",
-   "support"
-  ],
   "streams/piping/pipe-through.serviceworker.https-expected.txt": [
    "6c5faa30d98d1f34cb6badf7f8e59a2cf2fb9449",
    "support"
@@ -88234,10 +89256,6 @@
   ],
   "streams/piping/transform-streams.js": [
    "959fba02af575535546fe94c685902dcf39f36bf",
-   "support"
-  ],
-  "streams/piping/transform-streams.serviceworker-expected.txt": [
-   "04408971a1d82a7d3c990774456381313f1584bb",
    "support"
   ],
   "streams/piping/transform-streams.serviceworker.https-expected.txt": [
@@ -88276,10 +89294,6 @@
    "4a7d7a12437ad4c3ad39411c8fddffeca664dab7",
    "support"
   ],
-  "streams/readable-byte-streams/general.serviceworker-expected.txt": [
-   "04408971a1d82a7d3c990774456381313f1584bb",
-   "support"
-  ],
   "streams/readable-byte-streams/general.serviceworker.https-expected.txt": [
    "6881eeeace6ed791c142c14609d475d5880b7a2f",
    "support"
@@ -88308,10 +89322,6 @@
    "9db83c2d08b8439042472c9760691531df14281d",
    "support"
   ],
-  "streams/readable-streams/bad-strategies.serviceworker-expected.txt": [
-   "04408971a1d82a7d3c990774456381313f1584bb",
-   "support"
-  ],
   "streams/readable-streams/bad-strategies.serviceworker.https.html": [
    "1cc76d2d9135082afcaba8e45de4a4cbdf0c35e0",
    "testharness"
@@ -88332,10 +89342,6 @@
    "f980e8d1a99149a2292835eafb5484f8ee8da966",
    "support"
   ],
-  "streams/readable-streams/bad-underlying-sources.serviceworker-expected.txt": [
-   "04408971a1d82a7d3c990774456381313f1584bb",
-   "support"
-  ],
   "streams/readable-streams/bad-underlying-sources.serviceworker.https.html": [
    "2e8501ec4c83340149486ea1f19d35a3c90d85e9",
    "testharness"
@@ -88353,11 +89359,7 @@
    "testharness"
   ],
   "streams/readable-streams/brand-checks.js": [
-   "b3d64fa1a34d38a56451722efdc1d66b2227503d",
-   "support"
-  ],
-  "streams/readable-streams/brand-checks.serviceworker-expected.txt": [
-   "04408971a1d82a7d3c990774456381313f1584bb",
+   "c8ffdcf56bfddf5792af6eed627db55d7df3b444",
    "support"
   ],
   "streams/readable-streams/brand-checks.serviceworker.https.html": [
@@ -88380,10 +89382,6 @@
    "de3fc5a6a025a8ae42cb4870200af196d844e818",
    "support"
   ],
-  "streams/readable-streams/cancel.serviceworker-expected.txt": [
-   "04408971a1d82a7d3c990774456381313f1584bb",
-   "support"
-  ],
   "streams/readable-streams/cancel.serviceworker.https.html": [
    "815c9b14a88bb84526e3ea0b93ba8d74bb57838a",
    "testharness"
@@ -88404,10 +89402,6 @@
    "3d86d9fa09d8f8615d1e6af182e9649675bc6e12",
    "support"
   ],
-  "streams/readable-streams/count-queuing-strategy-integration.serviceworker-expected.txt": [
-   "04408971a1d82a7d3c990774456381313f1584bb",
-   "support"
-  ],
   "streams/readable-streams/count-queuing-strategy-integration.serviceworker.https.html": [
    "846fb89188f3df93de85bdbb6c5b39fddd82ed9c",
    "testharness"
@@ -88415,6 +89409,30 @@
   "streams/readable-streams/count-queuing-strategy-integration.sharedworker.html": [
    "42cf0e2dd45eae0311c210cced7d9c9c83620501",
    "testharness"
+  ],
+  "streams/readable-streams/default-reader.dedicatedworker.html": [
+   "42750f1d324f57507feb0260704a55c4cc0f8382",
+   "testharness"
+  ],
+  "streams/readable-streams/default-reader.html": [
+   "4dca4e9785abb22b398029417dde50621c5c92aa",
+   "testharness"
+  ],
+  "streams/readable-streams/default-reader.js": [
+   "bf6b1859b76b4891b558da229e7a2e4d40eb3a1d",
+   "support"
+  ],
+  "streams/readable-streams/default-reader.serviceworker.https.html": [
+   "7a3f17c90551967ccc24bbc835eef2b521bf08b9",
+   "testharness"
+  ],
+  "streams/readable-streams/default-reader.sharedworker.html": [
+   "399221af8cca8157bcaa05582dc66e94e56bc856",
+   "testharness"
+  ],
+  "streams/readable-streams/floating-point-total-queue-size-expected.txt": [
+   "5761d049d4a9ea1eb9ea9dd523ea653c6f97497c",
+   "support"
   ],
   "streams/readable-streams/floating-point-total-queue-size.dedicatedworker.html": [
    "e07b6c46f7975b76a309ac9b728e4215d5e7fe9d",
@@ -88426,6 +89444,10 @@
   ],
   "streams/readable-streams/floating-point-total-queue-size.js": [
    "9e6ba92e9b69437c23f04c80fff47c951e509db1",
+   "support"
+  ],
+  "streams/readable-streams/floating-point-total-queue-size.serviceworker.https-expected.txt": [
+   "3e7c27363a03fde280fc1bef9f174a541eff082e",
    "support"
   ],
   "streams/readable-streams/floating-point-total-queue-size.serviceworker.https.html": [
@@ -88445,11 +89467,7 @@
    "testharness"
   ],
   "streams/readable-streams/garbage-collection.js": [
-   "1f6fdea9689eb6a21d3fd6a0be362aaed642fda9",
-   "support"
-  ],
-  "streams/readable-streams/garbage-collection.serviceworker-expected.txt": [
-   "04408971a1d82a7d3c990774456381313f1584bb",
+   "aea6c64d62b25ee9bf9ccf29214ec9bef7eab993",
    "support"
   ],
   "streams/readable-streams/garbage-collection.serviceworker.https.html": [
@@ -88474,10 +89492,6 @@
   ],
   "streams/readable-streams/general.js": [
    "655cd8df67e0ef1c7f14e60bfb1584631e3291b5",
-   "support"
-  ],
-  "streams/readable-streams/general.serviceworker-expected.txt": [
-   "04408971a1d82a7d3c990774456381313f1584bb",
    "support"
   ],
   "streams/readable-streams/general.serviceworker.https-expected.txt": [
@@ -88508,40 +89522,12 @@
    "1fdceec0fdec41293e411e7263fec1bf8f397853",
    "support"
   ],
-  "streams/readable-streams/pipe-through.serviceworker-expected.txt": [
-   "04408971a1d82a7d3c990774456381313f1584bb",
-   "support"
-  ],
   "streams/readable-streams/pipe-through.serviceworker.https.html": [
    "e6604dc4e7f4404ee9dea5ab237fb4636bf9e85a",
    "testharness"
   ],
   "streams/readable-streams/pipe-through.sharedworker.html": [
    "8ecb019e754fd4239cb35c27787897efc2dacccb",
-   "testharness"
-  ],
-  "streams/readable-streams/readable-stream-reader.dedicatedworker.html": [
-   "1e6d8e7a09378353b62385ca3bb88961ac4b329c",
-   "testharness"
-  ],
-  "streams/readable-streams/readable-stream-reader.html": [
-   "952983c614a48e3e3cb80e9c498a1dbff4b666ad",
-   "testharness"
-  ],
-  "streams/readable-streams/readable-stream-reader.js": [
-   "76fbfc44284d6197edbcb3b54d1dba93fa142858",
-   "support"
-  ],
-  "streams/readable-streams/readable-stream-reader.serviceworker-expected.txt": [
-   "04408971a1d82a7d3c990774456381313f1584bb",
-   "support"
-  ],
-  "streams/readable-streams/readable-stream-reader.serviceworker.https.html": [
-   "e320ca7c96cfd77589d783f4e6a088935b277b82",
-   "testharness"
-  ],
-  "streams/readable-streams/readable-stream-reader.sharedworker.html": [
-   "dd2388b7f28a215f5032fc27231528e3b58abec2",
    "testharness"
   ],
   "streams/readable-streams/tee.dedicatedworker.html": [
@@ -88554,10 +89540,6 @@
   ],
   "streams/readable-streams/tee.js": [
    "2753f823f65c3c536c203fe60a8cd2319b54f427",
-   "support"
-  ],
-  "streams/readable-streams/tee.serviceworker-expected.txt": [
-   "04408971a1d82a7d3c990774456381313f1584bb",
    "support"
   ],
   "streams/readable-streams/tee.serviceworker.https.html": [
@@ -88578,10 +89560,6 @@
   ],
   "streams/readable-streams/templated.js": [
    "23a2d98735c9630f56ba0f12dbec6f145c655b6a",
-   "support"
-  ],
-  "streams/readable-streams/templated.serviceworker-expected.txt": [
-   "04408971a1d82a7d3c990774456381313f1584bb",
    "support"
   ],
   "streams/readable-streams/templated.serviceworker.https.html": [
@@ -88628,10 +89606,6 @@
    "744d55d9887783d92cdf81685358dab5a2016f84",
    "support"
   ],
-  "streams/writable-streams/aborting.serviceworker-expected.txt": [
-   "04408971a1d82a7d3c990774456381313f1584bb",
-   "support"
-  ],
   "streams/writable-streams/aborting.serviceworker.https-expected.txt": [
    "4e6d368665753be3203254eb6d468c56ef4e0349",
    "support"
@@ -88668,10 +89642,6 @@
    "a7a30fd91bba81c332a3447c99a5a0354dda04b4",
    "support"
   ],
-  "streams/writable-streams/bad-strategies.serviceworker-expected.txt": [
-   "04408971a1d82a7d3c990774456381313f1584bb",
-   "support"
-  ],
   "streams/writable-streams/bad-strategies.serviceworker.https-expected.txt": [
    "5be0e879d35214475aabb71a92a25fdd2d3aca33",
    "support"
@@ -88700,10 +89670,6 @@
    "d031fddb5a84f15c60e09416cd8d45609828691e",
    "support"
   ],
-  "streams/writable-streams/bad-underlying-sinks.serviceworker-expected.txt": [
-   "04408971a1d82a7d3c990774456381313f1584bb",
-   "support"
-  ],
   "streams/writable-streams/bad-underlying-sinks.serviceworker.https.html": [
    "fbddba953d4b50ed43b1e03cab6eb8931db71ffe",
    "testharness"
@@ -88722,10 +89688,6 @@
   ],
   "streams/writable-streams/brand-checks.js": [
    "a9889b29e8265b8d236e54182df9c9052d9ae38d",
-   "support"
-  ],
-  "streams/writable-streams/brand-checks.serviceworker-expected.txt": [
-   "04408971a1d82a7d3c990774456381313f1584bb",
    "support"
   ],
   "streams/writable-streams/brand-checks.serviceworker.https.html": [
@@ -88748,10 +89710,6 @@
    "403911220a6f8a0b7f1427f3f1603df55913824d",
    "support"
   ],
-  "streams/writable-streams/byte-length-queuing-strategy.serviceworker-expected.txt": [
-   "04408971a1d82a7d3c990774456381313f1584bb",
-   "support"
-  ],
   "streams/writable-streams/byte-length-queuing-strategy.serviceworker.https.html": [
    "83c7631272f9c04011e179a1d5f2c6744ab09e2d",
    "testharness"
@@ -88770,10 +89728,6 @@
   ],
   "streams/writable-streams/close.js": [
    "ac7f1df6753c0d171d61a274a8ae7c6f5107857c",
-   "support"
-  ],
-  "streams/writable-streams/close.serviceworker-expected.txt": [
-   "04408971a1d82a7d3c990774456381313f1584bb",
    "support"
   ],
   "streams/writable-streams/close.serviceworker.https.html": [
@@ -88796,10 +89750,6 @@
    "cc69b69308c1c51832488909cf962e580ff1dc3c",
    "support"
   ],
-  "streams/writable-streams/constructor.serviceworker-expected.txt": [
-   "04408971a1d82a7d3c990774456381313f1584bb",
-   "support"
-  ],
   "streams/writable-streams/constructor.serviceworker.https.html": [
    "025f934a714ce8c52df953ba570a527cbcb88399",
    "testharness"
@@ -88820,10 +89770,6 @@
    "8b7e7be4fa446e212d4f17180b5bdf3a05c8333c",
    "support"
   ],
-  "streams/writable-streams/count-queuing-strategy.serviceworker-expected.txt": [
-   "04408971a1d82a7d3c990774456381313f1584bb",
-   "support"
-  ],
   "streams/writable-streams/count-queuing-strategy.serviceworker.https.html": [
    "7f59d0e37562a6adfb2972b61928375047266ac7",
    "testharness"
@@ -88831,6 +89777,10 @@
   "streams/writable-streams/count-queuing-strategy.sharedworker.html": [
    "875e0dffe7710c21bfcb8f554c2216626c2eb013",
    "testharness"
+  ],
+  "streams/writable-streams/floating-point-total-queue-size-expected.txt": [
+   "5761d049d4a9ea1eb9ea9dd523ea653c6f97497c",
+   "support"
   ],
   "streams/writable-streams/floating-point-total-queue-size.dedicatedworker.html": [
    "e07b6c46f7975b76a309ac9b728e4215d5e7fe9d",
@@ -88842,6 +89792,10 @@
   ],
   "streams/writable-streams/floating-point-total-queue-size.js": [
    "14d4a8f5559831fb266061e75177339ba0073edb",
+   "support"
+  ],
+  "streams/writable-streams/floating-point-total-queue-size.serviceworker.https-expected.txt": [
+   "3e7c27363a03fde280fc1bef9f174a541eff082e",
    "support"
   ],
   "streams/writable-streams/floating-point-total-queue-size.serviceworker.https.html": [
@@ -88862,10 +89816,6 @@
   ],
   "streams/writable-streams/general.js": [
    "22131ed892a5b38321a49bd7ba1e8b2dca780e7e",
-   "support"
-  ],
-  "streams/writable-streams/general.serviceworker-expected.txt": [
-   "04408971a1d82a7d3c990774456381313f1584bb",
    "support"
   ],
   "streams/writable-streams/general.serviceworker.https.html": [
@@ -88908,10 +89858,6 @@
    "936967320da8644a4e6f6fbc903c775249af6710",
    "support"
   ],
-  "streams/writable-streams/start.serviceworker-expected.txt": [
-   "04408971a1d82a7d3c990774456381313f1584bb",
-   "support"
-  ],
   "streams/writable-streams/start.serviceworker.https.html": [
    "3d8b4b8eb8e1b7dcc6629e82fc0c5eb5e3be8633",
    "testharness"
@@ -88938,10 +89884,6 @@
   ],
   "streams/writable-streams/write.js": [
    "f956e42aa67abce9b3e11179c800a6f9c625d111",
-   "support"
-  ],
-  "streams/writable-streams/write.serviceworker-expected.txt": [
-   "04408971a1d82a7d3c990774456381313f1584bb",
    "support"
   ],
   "streams/writable-streams/write.serviceworker.https-expected.txt": [
@@ -89157,7 +90099,7 @@
    "support"
   ],
   "uievents/constructors/inputevent-constructor.html": [
-   "5af5377e8f5435b7c7bfafa2808e0a8dcf848ce4",
+   "757b9777e0cd956a27f036a1524c378bd922852b",
    "testharness"
   ],
   "uievents/hierarchy/README.md": [
@@ -89741,7 +90683,7 @@
    "testharness"
   ],
   "web-animations/interfaces/AnimationEffectTiming/duration.html": [
-   "4db95d7e5f518fc812886e7dcfddd40943077f90",
+   "54858f64784c74a3d112e559fb765a1dbb9ba279",
    "testharness"
   ],
   "web-animations/interfaces/AnimationEffectTiming/easing.html": [
@@ -89889,7 +90831,7 @@
    "support"
   ],
   "web-animations/resources/keyframe-utils.js": [
-   "7a0f21838f4bbda51fe7e0b5d8e55952c6cdcbd4",
+   "ff5700466b5af6ffaad824437d6566003a22e25b",
    "support"
   ],
   "web-animations/testcommon.js": [
@@ -90440,6 +91382,10 @@
    "e322b3ab7f8e0bc7ff802f00234a9a6e80b8285a",
    "testharness"
   ],
+  "webrtc/rtcpeerconnection/setRemoteDescription.html": [
+   "b11f7f3cc9a11b6aac9d70324a15e878c0345945",
+   "testharness"
+  ],
   "webrtc/simplecall-expected.txt": [
    "4588b7b96363cea683df9cb7ba59b92572da06f6",
    "support"
@@ -90717,7 +91663,7 @@
    "support"
   ],
   "webvtt/api/VTTCue/align.html": [
-   "be0efb52616f9447139c536269f8365cf78027d0",
+   "e150765ae1e87996eff7dc8b888284e9c279d7f8",
    "testharness"
   ],
   "webvtt/api/VTTCue/constructor-expected.txt": [
@@ -90741,7 +91687,7 @@
    "support"
   ],
   "webvtt/api/VTTCue/line.html": [
-   "2b57866c1bec1c074f18218a994194c9adfc4b7a",
+   "07115104642dbfea2347f6926ca2cffff5839f25",
    "testharness"
   ],
   "webvtt/api/VTTCue/lineAlign-expected.txt": [
@@ -90749,11 +91695,11 @@
    "support"
   ],
   "webvtt/api/VTTCue/lineAlign.html": [
-   "72c3bc90e36c046c170e5c5cfb035c3efc990068",
+   "886331a73977fe6025ad406a5124d150c01d174f",
    "testharness"
   ],
   "webvtt/api/VTTCue/position.html": [
-   "af2af913e9d0bd5bc52f7900fe35ed6ab5a405c6",
+   "a6fcf0cef9f76dff923d8da848e6609ffd2a5976",
    "testharness"
   ],
   "webvtt/api/VTTCue/positionAlign-expected.txt": [
@@ -90761,7 +91707,7 @@
    "support"
   ],
   "webvtt/api/VTTCue/positionAlign.html": [
-   "8629fc577988d8594f550d12b8ffc1a45bc3e376",
+   "16ae7ffaf8fd9a37b0b207d19351ca0a24b7134e",
    "testharness"
   ],
   "webvtt/api/VTTCue/region-expected.txt": [
@@ -90769,11 +91715,11 @@
    "support"
   ],
   "webvtt/api/VTTCue/region.html": [
-   "13857e6b5fdd7091ea05829c333f90575f3502f4",
+   "5ba23caf20dec7bcc4477c0e02892be3d2239c80",
    "testharness"
   ],
   "webvtt/api/VTTCue/size.html": [
-   "54aecea9f627426c7126fa15b4e0295417d68874",
+   "93251b45cab95fb885a8d4a3168fc492a3b37461",
    "testharness"
   ],
   "webvtt/api/VTTCue/snapToLines-expected.txt": [
@@ -90781,7 +91727,7 @@
    "support"
   ],
   "webvtt/api/VTTCue/snapToLines.html": [
-   "aaca4c55f900600f7334f196d7275d69ffe7f0f9",
+   "0e4ad4e1e42545ad720b134f69fcd63de22ade70",
    "testharness"
   ],
   "webvtt/api/VTTCue/text-expected.txt": [
@@ -90789,7 +91735,7 @@
    "support"
   ],
   "webvtt/api/VTTCue/text.html": [
-   "d7597ca893a7d2be17b908efa55cb70727d64f0b",
+   "df27153660ab3df840d922803809a5b803027155",
    "testharness"
   ],
   "webvtt/api/VTTCue/vertical-expected.txt": [
@@ -90797,7 +91743,7 @@
    "support"
   ],
   "webvtt/api/VTTCue/vertical.html": [
-   "9f415b3a239e0a380a03411827c38abd4532ef1a",
+   "ca0be2954bfe511dd0f7f60ebcab4731cfeaac28",
    "testharness"
   ],
   "webvtt/api/VTTRegion/constructor.html": [
@@ -90805,31 +91751,31 @@
    "testharness"
   ],
   "webvtt/api/VTTRegion/lines.html": [
-   "c0a1332a0d0c9b0d079d369c2dcf53687d478005",
+   "590cec0b814df0bca2760cde94b2f74b4c9defca",
    "testharness"
   ],
   "webvtt/api/VTTRegion/regionAnchorX.html": [
-   "1ec595b78b2a28b04395db6eb9d79055a0eca9fc",
+   "671153d52e901146f3243e974ad9d26d61031e47",
    "testharness"
   ],
   "webvtt/api/VTTRegion/regionAnchorY.html": [
-   "c100e095d0abf50e43d2bde458b8968c33aedead",
+   "50845b667e54edb1b994908e506f25a4db1908cf",
    "testharness"
   ],
   "webvtt/api/VTTRegion/scroll.html": [
-   "48c364fe76b641dddef42ac9ed7ecc14e01254b1",
+   "7f09aeebcb1d2db13e76c031e1b954a3507da2fc",
    "testharness"
   ],
   "webvtt/api/VTTRegion/viewportAnchorX.html": [
-   "51d892bf9b458b9eb3556d51a5aab5ad1e6f3d71",
+   "a166fdc6f6c9d1d1b2b0f1150830b8e98ba62463",
    "testharness"
   ],
   "webvtt/api/VTTRegion/viewportAnchorY.html": [
-   "d6628d8cd499e8d6fb0a1e9823e3adf947110759",
+   "d124cb5024bed842350139b42f1d2f0aa4fd87fc",
    "testharness"
   ],
   "webvtt/api/VTTRegion/width.html": [
-   "c091d65379708544f68000e8938d45257d9fc292",
+   "103a481c365bea3c1d6494f9fc3f3b6bf70ed580",
    "testharness"
   ],
   "webvtt/interfaces-expected.txt": [
@@ -90838,6 +91784,546 @@
   ],
   "webvtt/interfaces.html": [
    "612566f403696557e64a686a1ab68956431666ef",
+   "testharness"
+  ],
+  "webvtt/parsing/README.md": [
+   "0c79a65dd7cbc9f22cdf7de7b98f71a7fff788fa",
+   "support"
+  ],
+  "webvtt/parsing/cue-text-parsing/buildtests.py": [
+   "5fe90ed238ef80fd3f69f72ca5df90984451d044",
+   "support"
+  ],
+  "webvtt/parsing/cue-text-parsing/common.js": [
+   "d248c8ae97cc9205a5d6094b1800255e60551bf6",
+   "support"
+  ],
+  "webvtt/parsing/cue-text-parsing/dat/entities.dat": [
+   "183dd9377fccb89e151dc298ec8b819d1209fee3",
+   "support"
+  ],
+  "webvtt/parsing/cue-text-parsing/dat/tags.dat": [
+   "461d05cbc43780eacc6cbd667bb5ccc6215d9c5b",
+   "support"
+  ],
+  "webvtt/parsing/cue-text-parsing/dat/timestamps.dat": [
+   "7946c639cd942ecb62eadf81aec77e3ecd09a788",
+   "support"
+  ],
+  "webvtt/parsing/cue-text-parsing/dat/tree-building.dat": [
+   "4b8777b30361d5193137991be3b3268013a03fe9",
+   "support"
+  ],
+  "webvtt/parsing/cue-text-parsing/tests/entities.html": [
+   "43183d8d79641b451636efc22aa70431ec0ab1f7",
+   "testharness"
+  ],
+  "webvtt/parsing/cue-text-parsing/tests/tags.html": [
+   "5c1bb0dace4c7c18b0265c568f81a5594424ed6b",
+   "testharness"
+  ],
+  "webvtt/parsing/cue-text-parsing/tests/timestamps.html": [
+   "9096541716f4318972db549f8a1fce33ca810b2a",
+   "testharness"
+  ],
+  "webvtt/parsing/cue-text-parsing/tests/tree-building.html": [
+   "a812b24c8c9a8adbf05ea51a20e8b102a697cc88",
+   "testharness"
+  ],
+  "webvtt/parsing/file-parsing/README.md": [
+   "2e167846b26497b3f44b6f6fed4b29be14b0a300",
+   "support"
+  ],
+  "webvtt/parsing/file-parsing/signature-invalid.html": [
+   "a01ea6851e5ad1a1ef79d561fcfeafd09b6c1555",
+   "testharness"
+  ],
+  "webvtt/parsing/file-parsing/support/arrows.test": [
+   "8aac7af73707eff9d8a9203d305e4e66cb6bf4bd",
+   "support"
+  ],
+  "webvtt/parsing/file-parsing/support/empty.vtt": [
+   "da39a3ee5e6b4b0d3255bfef95601890afd80709",
+   "support"
+  ],
+  "webvtt/parsing/file-parsing/support/header-garbage.test": [
+   "6f6f91d166866158e8ece4fbdf17ea8fec802f57",
+   "support"
+  ],
+  "webvtt/parsing/file-parsing/support/header-space.test": [
+   "e83d197df896596e42db0fa6c567d4b44e77cda5",
+   "support"
+  ],
+  "webvtt/parsing/file-parsing/support/header-tab.test": [
+   "6c6684f8768d8036df4081b12b0a8518776882e5",
+   "support"
+  ],
+  "webvtt/parsing/file-parsing/support/header-timings.test": [
+   "77dd3f6c4564d0bf7d1cd2d063c23debeb33e44a",
+   "support"
+  ],
+  "webvtt/parsing/file-parsing/support/ids.test": [
+   "bc6095daa57d8dc52bb48cc35a2a12e4dc2a9345",
+   "support"
+  ],
+  "webvtt/parsing/file-parsing/support/newlines.test": [
+   "b9b302e9657582ba05319b270e75e6f0dbe75347",
+   "support"
+  ],
+  "webvtt/parsing/file-parsing/support/nulls.test": [
+   "9ee5ce9b2404da7c41466ea12d28bc0cb78fbe58",
+   "support"
+  ],
+  "webvtt/parsing/file-parsing/support/regions-id.test": [
+   "0b66b0dae12bbcc1764ac4d642b4fc6fda61b86b",
+   "support"
+  ],
+  "webvtt/parsing/file-parsing/support/regions-lines.test": [
+   "c4a07575919bc3b618b832bd6073d26de11b1301",
+   "support"
+  ],
+  "webvtt/parsing/file-parsing/support/regions-old.test": [
+   "c0a14bb1194268d84e4814722ecaf4cdcde48b19",
+   "support"
+  ],
+  "webvtt/parsing/file-parsing/support/regions-regionanchor.test": [
+   "afb65a259e93e1f84d5dc39d904c5fb6bdbcd49f",
+   "support"
+  ],
+  "webvtt/parsing/file-parsing/support/regions-scroll.test": [
+   "35efa2c27753087ff2b239f0ce588975a240a1df",
+   "support"
+  ],
+  "webvtt/parsing/file-parsing/support/regions-viewportanchor.test": [
+   "57ff9f86e0cec8ef7b6e2a53691dab6f683d5414",
+   "support"
+  ],
+  "webvtt/parsing/file-parsing/support/settings-align.test": [
+   "e4fb3b9bf4f5fa614093ce9c8fed92c6c8d04475",
+   "support"
+  ],
+  "webvtt/parsing/file-parsing/support/settings-line.test": [
+   "c199f5bf8d95a1b932d72991f59ec0501679c01e",
+   "support"
+  ],
+  "webvtt/parsing/file-parsing/support/settings-multiple.test": [
+   "e29a577e982ba849111dcaa23721d23fb9797983",
+   "support"
+  ],
+  "webvtt/parsing/file-parsing/support/settings-position.test": [
+   "55fe6a35c1a92033887099f7b0cd529606e4c4f7",
+   "support"
+  ],
+  "webvtt/parsing/file-parsing/support/settings-region.test": [
+   "e59eac735cdfa270ab9f5e57bb617e2125f3a66c",
+   "support"
+  ],
+  "webvtt/parsing/file-parsing/support/settings-size.test": [
+   "3f9625f386550a6948661b92fb2763e7b9f44712",
+   "support"
+  ],
+  "webvtt/parsing/file-parsing/support/settings-vertical.test": [
+   "e1f29bf7d2649a862f3306d0587bb0211de0a79e",
+   "support"
+  ],
+  "webvtt/parsing/file-parsing/support/signature-bom.test": [
+   "1551a7105f127a66b06e530d63567e220b08e548",
+   "support"
+  ],
+  "webvtt/parsing/file-parsing/support/signature-formfeed.vtt": [
+   "0759317ef9dd8906b7204c6054d0243a1da5960c",
+   "support"
+  ],
+  "webvtt/parsing/file-parsing/support/signature-invalid-whitespace.vtt": [
+   "79eb5a96f2d379be23b8d3fb08cc1e886c8ca9e5",
+   "support"
+  ],
+  "webvtt/parsing/file-parsing/support/signature-invalid.vtt": [
+   "7e513b5269bd5c7c33bfa7f15cd729856c90aa8b",
+   "support"
+  ],
+  "webvtt/parsing/file-parsing/support/signature-lowercase.vtt": [
+   "542aff552ac0196d1f954e99b6b5b2a314da60aa",
+   "support"
+  ],
+  "webvtt/parsing/file-parsing/support/signature-missing-whitespace.vtt": [
+   "6679174e655587ac715d9be0046d74515ac4316a",
+   "support"
+  ],
+  "webvtt/parsing/file-parsing/support/signature-missing.vtt": [
+   "9c09e8e3c52d1e001eb6c797bfce4928d3c861af",
+   "support"
+  ],
+  "webvtt/parsing/file-parsing/support/signature-no-newline.test": [
+   "23f2f6117609483ce3bb62bd179acb3984d7d88d",
+   "support"
+  ],
+  "webvtt/parsing/file-parsing/support/signature-null.vtt": [
+   "797545cea933c4a4f6611c818a85f9ccaf6d8d74",
+   "support"
+  ],
+  "webvtt/parsing/file-parsing/support/signature-partial.vtt": [
+   "439adea746f6730c811e2f02edade910bb14a3a9",
+   "support"
+  ],
+  "webvtt/parsing/file-parsing/support/signature-space-no-newline.test": [
+   "94f7559695fc9e414b5902c70b7a582ec4522b11",
+   "support"
+  ],
+  "webvtt/parsing/file-parsing/support/signature-space.test": [
+   "bfa7d793c3f623a4ae04d886b6956226e446d257",
+   "support"
+  ],
+  "webvtt/parsing/file-parsing/support/signature-tab-no-newline.test": [
+   "a74eb767e027eee1015f682e256be26d56cb9174",
+   "support"
+  ],
+  "webvtt/parsing/file-parsing/support/signature-tab.test": [
+   "091854cc34e75b7454464f93cb78d24da1bf969c",
+   "support"
+  ],
+  "webvtt/parsing/file-parsing/support/signature-timings.test": [
+   "53744e203eaea9bd4373d85659f6d559db88d877",
+   "support"
+  ],
+  "webvtt/parsing/file-parsing/support/signature-two-boms.vtt": [
+   "fe57945f965a5dd7e58a0aa1af01fe26be75b388",
+   "support"
+  ],
+  "webvtt/parsing/file-parsing/support/signature-websrt.vtt": [
+   "5d1456cf5066adcee6d6bdffb72a9f2d97d9ede8",
+   "support"
+  ],
+  "webvtt/parsing/file-parsing/support/stylesheets.test": [
+   "519cfe119b0073afb8173ca1c30a1d07ae502473",
+   "support"
+  ],
+  "webvtt/parsing/file-parsing/support/timings-60.test": [
+   "c2efb962e301e246162d068cb4c0a83c8d2d4f48",
+   "support"
+  ],
+  "webvtt/parsing/file-parsing/support/timings-eof.test": [
+   "4bc40274164821026d7d0bc32d677630b3ee7760",
+   "support"
+  ],
+  "webvtt/parsing/file-parsing/support/timings-garbage.test": [
+   "85e032a425097b958f2f95751bb7b18756556957",
+   "support"
+  ],
+  "webvtt/parsing/file-parsing/support/timings-negative.test": [
+   "ec1728c7ca2b1d5fa6c7ffdda689a30c00a6d37d",
+   "support"
+  ],
+  "webvtt/parsing/file-parsing/support/timings-omitted-hours.test": [
+   "2f992824a05376f9536e6622449b17ed05e685d9",
+   "support"
+  ],
+  "webvtt/parsing/file-parsing/support/timings-too-long.test": [
+   "0ac22aa01a930620560a99219d1d0073e21cba37",
+   "support"
+  ],
+  "webvtt/parsing/file-parsing/support/timings-too-short.test": [
+   "6e92741a7e6c97f74570fb23d8d2bb0b0aa83fe1",
+   "support"
+  ],
+  "webvtt/parsing/file-parsing/support/whitespace-chars.test": [
+   "802c159ffc652bc8d36e8d4d8502b0bc167cbe2b",
+   "support"
+  ],
+  "webvtt/parsing/file-parsing/tests/arrows.html": [
+   "55d90be35579cf64a966eb12c593ed3792b4b1c1",
+   "testharness"
+  ],
+  "webvtt/parsing/file-parsing/tests/header-garbage.html": [
+   "f0478b342977b4b1986b6ea02474f28fe654cc87",
+   "testharness"
+  ],
+  "webvtt/parsing/file-parsing/tests/header-space.html": [
+   "693f0bbebe9e6d92e73edb41d94d4f7c9023d33a",
+   "testharness"
+  ],
+  "webvtt/parsing/file-parsing/tests/header-tab.html": [
+   "5183feaeab6476b98a26ed7d897d46a095177d09",
+   "testharness"
+  ],
+  "webvtt/parsing/file-parsing/tests/header-timings.html": [
+   "b4aac06a6fef4ac548091db5d3ad6609a8fc935e",
+   "testharness"
+  ],
+  "webvtt/parsing/file-parsing/tests/ids.html": [
+   "c61a87e0623a77150e25b647690fc0b30555cbb3",
+   "testharness"
+  ],
+  "webvtt/parsing/file-parsing/tests/newlines.html": [
+   "0f58395ed99a61da5f6ec2490402e93bd3f892f2",
+   "testharness"
+  ],
+  "webvtt/parsing/file-parsing/tests/nulls.html": [
+   "9da3e5bf2d7cfa65109c196d88c44c37887296d0",
+   "testharness"
+  ],
+  "webvtt/parsing/file-parsing/tests/regions-id.html": [
+   "a460719d2dbcd8a83ecb0b66e242c7690085b5b2",
+   "testharness"
+  ],
+  "webvtt/parsing/file-parsing/tests/regions-lines.html": [
+   "f3dbc54ce3b9ff4a8483a26d8772b4e0c9147135",
+   "testharness"
+  ],
+  "webvtt/parsing/file-parsing/tests/regions-old.html": [
+   "4ab58e6adde68b318d1efea94bdbc68b5d0d7f80",
+   "testharness"
+  ],
+  "webvtt/parsing/file-parsing/tests/regions-regionanchor.html": [
+   "4b2a99d7e1ead80e60eb0b51176da10a2af9608e",
+   "testharness"
+  ],
+  "webvtt/parsing/file-parsing/tests/regions-scroll.html": [
+   "15dd9378d09fbebfba8a7dbcaa4b3ffb63d41ee6",
+   "testharness"
+  ],
+  "webvtt/parsing/file-parsing/tests/regions-viewportanchor.html": [
+   "3409a66aea03f9ba1a7f5d0b18b8ee6fe191763a",
+   "testharness"
+  ],
+  "webvtt/parsing/file-parsing/tests/settings-align.html": [
+   "df4874a3bbf689758ad2074b3d2e39c71866470f",
+   "testharness"
+  ],
+  "webvtt/parsing/file-parsing/tests/settings-line.html": [
+   "e4ec4556da5f46b5c683e73dd136114572bbbbe0",
+   "testharness"
+  ],
+  "webvtt/parsing/file-parsing/tests/settings-multiple.html": [
+   "84fd3e8d7e038d6a4eed22b09a27278814da309a",
+   "testharness"
+  ],
+  "webvtt/parsing/file-parsing/tests/settings-position.html": [
+   "6e2ecca129e46a6e32db1c325bfee986f02f7be1",
+   "testharness"
+  ],
+  "webvtt/parsing/file-parsing/tests/settings-region.html": [
+   "1584b357a5c3177bdaea1a2393af7d816161ea2a",
+   "testharness"
+  ],
+  "webvtt/parsing/file-parsing/tests/settings-size.html": [
+   "78fac093a4186eedfd90177a4e7335861fea917c",
+   "testharness"
+  ],
+  "webvtt/parsing/file-parsing/tests/settings-vertical.html": [
+   "17c413b330c8a65d772f6fd748e40d1040d4ef0a",
+   "testharness"
+  ],
+  "webvtt/parsing/file-parsing/tests/signature-bom.html": [
+   "d76f904ba7a64fff02cc733f66c62238d84758f5",
+   "testharness"
+  ],
+  "webvtt/parsing/file-parsing/tests/signature-no-newline.html": [
+   "5c5b716d1ea6acf700aadff6ee54fc33c14b02d5",
+   "testharness"
+  ],
+  "webvtt/parsing/file-parsing/tests/signature-space-no-newline.html": [
+   "985f4fb440b5dea3b0b153b16868e7276ba5017f",
+   "testharness"
+  ],
+  "webvtt/parsing/file-parsing/tests/signature-space.html": [
+   "8ea054d2c663e1b16a040585b6240d39fd5438c6",
+   "testharness"
+  ],
+  "webvtt/parsing/file-parsing/tests/signature-tab-no-newline.html": [
+   "c2b0a3c180eea3d833a7ac392ff74ad1eb6d8f2c",
+   "testharness"
+  ],
+  "webvtt/parsing/file-parsing/tests/signature-tab.html": [
+   "6835dfa0e62f3bf04244faaf7be5e92cc56d3e5c",
+   "testharness"
+  ],
+  "webvtt/parsing/file-parsing/tests/signature-timings.html": [
+   "3e1818c2597d16ad68dd1c46bf5bdeb7d7d9ce77",
+   "testharness"
+  ],
+  "webvtt/parsing/file-parsing/tests/stylesheets.html": [
+   "4065f4d9ce0844d9b83ebce09a0f990d769dae32",
+   "testharness"
+  ],
+  "webvtt/parsing/file-parsing/tests/support/arrows.vtt": [
+   "fc867cbc6d4b9bd8c0c357d4475927cd6072393c",
+   "support"
+  ],
+  "webvtt/parsing/file-parsing/tests/support/header-garbage.vtt": [
+   "d8266e6a426a7acb319a630ad98bcece2cbaf5aa",
+   "support"
+  ],
+  "webvtt/parsing/file-parsing/tests/support/header-space.vtt": [
+   "66e466ff574181ace6fc5823f630fe6ebe2a2368",
+   "support"
+  ],
+  "webvtt/parsing/file-parsing/tests/support/header-tab.vtt": [
+   "9a2e5d321d412c5d9a20dc4c2e69f7b260f26087",
+   "support"
+  ],
+  "webvtt/parsing/file-parsing/tests/support/header-timings.vtt": [
+   "6062c66287ad0b26e3490d62396d2943127a6038",
+   "support"
+  ],
+  "webvtt/parsing/file-parsing/tests/support/ids.vtt": [
+   "20fc184c2c454331ab4070bb4c0adaae4bc511de",
+   "support"
+  ],
+  "webvtt/parsing/file-parsing/tests/support/newlines.vtt": [
+   "678142d42d4368affe9f7fd261bea3bed85e46be",
+   "support"
+  ],
+  "webvtt/parsing/file-parsing/tests/support/nulls.vtt": [
+   "f25f0892d6da6d7268a7bbc271c6f1a74924d076",
+   "support"
+  ],
+  "webvtt/parsing/file-parsing/tests/support/regions-id.vtt": [
+   "8cf754c33225fe4cf905bf5b2198a9e30fa8ec67",
+   "support"
+  ],
+  "webvtt/parsing/file-parsing/tests/support/regions-lines.vtt": [
+   "e889e0b38d5009af179953f8436f0ff884027560",
+   "support"
+  ],
+  "webvtt/parsing/file-parsing/tests/support/regions-old.vtt": [
+   "3c913d0944cfc758c92fc2293eb930382b55fa37",
+   "support"
+  ],
+  "webvtt/parsing/file-parsing/tests/support/regions-regionanchor.vtt": [
+   "827eb224e5e9461ffcfa2a4d477f09bad79b0a51",
+   "support"
+  ],
+  "webvtt/parsing/file-parsing/tests/support/regions-scroll.vtt": [
+   "45c91245c78d0cf3cc032393fba58bc843f65a81",
+   "support"
+  ],
+  "webvtt/parsing/file-parsing/tests/support/regions-viewportanchor.vtt": [
+   "62b84c93f8e0340fca5d59102c22c84ea77bb903",
+   "support"
+  ],
+  "webvtt/parsing/file-parsing/tests/support/settings-align.vtt": [
+   "def41177d82a284334ee0eb3c552d520a395c704",
+   "support"
+  ],
+  "webvtt/parsing/file-parsing/tests/support/settings-line.vtt": [
+   "fd81aff88127d2ea398523197dc8255ac21eda95",
+   "support"
+  ],
+  "webvtt/parsing/file-parsing/tests/support/settings-multiple.vtt": [
+   "febc58c6875d3945ad1ee2795571a7f817a3079f",
+   "support"
+  ],
+  "webvtt/parsing/file-parsing/tests/support/settings-position.vtt": [
+   "688aeaff5361e68eb50dcc3d02f14f9e68227e49",
+   "support"
+  ],
+  "webvtt/parsing/file-parsing/tests/support/settings-region.vtt": [
+   "e50314b9f8a885503cd2d810f9ae17fa3f8eb381",
+   "support"
+  ],
+  "webvtt/parsing/file-parsing/tests/support/settings-size.vtt": [
+   "81d5bdb7e5da2abb1bf0879abd963af1ec3e566e",
+   "support"
+  ],
+  "webvtt/parsing/file-parsing/tests/support/settings-vertical.vtt": [
+   "0a6acd0126493ab8875778e6280b73dc2df0d45b",
+   "support"
+  ],
+  "webvtt/parsing/file-parsing/tests/support/signature-bom.vtt": [
+   "c4000ae4295ed01151f29357f17a29fe172e12ce",
+   "support"
+  ],
+  "webvtt/parsing/file-parsing/tests/support/signature-no-newline.vtt": [
+   "6d0c9332ce0c76646b069ec15e9be7f040039ec8",
+   "support"
+  ],
+  "webvtt/parsing/file-parsing/tests/support/signature-space-no-newline.vtt": [
+   "a3307c9454994c5910fbe3318cd2649c61cbf511",
+   "support"
+  ],
+  "webvtt/parsing/file-parsing/tests/support/signature-space.vtt": [
+   "f788033b8c61059c0afd348d96c7e57ef8a83434",
+   "support"
+  ],
+  "webvtt/parsing/file-parsing/tests/support/signature-tab-no-newline.vtt": [
+   "1bdfc1bab5ca24d95691e31f04d8dadd5658e9f1",
+   "support"
+  ],
+  "webvtt/parsing/file-parsing/tests/support/signature-tab.vtt": [
+   "37ebc275579ffbc879d443292c76b90a8918cef7",
+   "support"
+  ],
+  "webvtt/parsing/file-parsing/tests/support/signature-timings.vtt": [
+   "19b18b3406b63cab1fa089642be0aaee87fa0921",
+   "support"
+  ],
+  "webvtt/parsing/file-parsing/tests/support/stylesheets.vtt": [
+   "01c9d577d3343fe19b196ebb1e3bd3d06ae53e52",
+   "support"
+  ],
+  "webvtt/parsing/file-parsing/tests/support/timings-60.vtt": [
+   "5da11ff2187722b091740bbb4a70d44aa6872334",
+   "support"
+  ],
+  "webvtt/parsing/file-parsing/tests/support/timings-eof.vtt": [
+   "198724a1368a89308858470228f1ebf71f483de6",
+   "support"
+  ],
+  "webvtt/parsing/file-parsing/tests/support/timings-garbage.vtt": [
+   "c34a98fce5f86093925798fa400aee00d0ab65a6",
+   "support"
+  ],
+  "webvtt/parsing/file-parsing/tests/support/timings-negative.vtt": [
+   "a26b2025d5e234a55f088bf9c12bdd16396edd3f",
+   "support"
+  ],
+  "webvtt/parsing/file-parsing/tests/support/timings-omitted-hours.vtt": [
+   "b7a205534b5b861011ccac6c6ea923762a83d215",
+   "support"
+  ],
+  "webvtt/parsing/file-parsing/tests/support/timings-too-long.vtt": [
+   "b852ee39d867b6471291b85eda64ace6de900a8e",
+   "support"
+  ],
+  "webvtt/parsing/file-parsing/tests/support/timings-too-short.vtt": [
+   "fc8d39140e708fb6815777da3df617b674a5be3e",
+   "support"
+  ],
+  "webvtt/parsing/file-parsing/tests/support/whitespace-chars.vtt": [
+   "faadb512bad455fd20c0b3bb9d9b3be20de89931",
+   "support"
+  ],
+  "webvtt/parsing/file-parsing/tests/timings-60.html": [
+   "19356a2f5e1db8174ecf83d0174b3f9384c2e987",
+   "testharness"
+  ],
+  "webvtt/parsing/file-parsing/tests/timings-eof.html": [
+   "7990f06dd0f370dd5f96a106104a302da2c6e019",
+   "testharness"
+  ],
+  "webvtt/parsing/file-parsing/tests/timings-garbage.html": [
+   "7e07298edb4302b733e2574df252895ecae0e604",
+   "testharness"
+  ],
+  "webvtt/parsing/file-parsing/tests/timings-negative.html": [
+   "e5a061ba0a1778b25ad4e6d46d20004a106adb30",
+   "testharness"
+  ],
+  "webvtt/parsing/file-parsing/tests/timings-omitted-hours.html": [
+   "091b8695747d264d59a6b58a23e0154fdf87ee6e",
+   "testharness"
+  ],
+  "webvtt/parsing/file-parsing/tests/timings-too-long.html": [
+   "63368b894412e15c7f40846cfb900a933cfa2412",
+   "testharness"
+  ],
+  "webvtt/parsing/file-parsing/tests/timings-too-short.html": [
+   "3ee4574905ed255ea35318aa3b08dca1f47feb10",
+   "testharness"
+  ],
+  "webvtt/parsing/file-parsing/tests/whitespace-chars.html": [
+   "6c519d036e82076a2039eaf63b644e0cab5d19fe",
    "testharness"
   ],
   "webvtt/rendering/cues-with-video/processing-model/2_cues_overlapping_completely_move_up-ref.html": [
@@ -92924,202 +94410,6 @@
    "f2372a492268a1b17763a42a808351128128fd89",
    "reftest"
   ],
-  "webvtt/webvtt-file-format-parsing/webvtt-cue-text-parsing-rules/buildtests.py": [
-   "5fe90ed238ef80fd3f69f72ca5df90984451d044",
-   "support"
-  ],
-  "webvtt/webvtt-file-format-parsing/webvtt-cue-text-parsing-rules/common.js": [
-   "d248c8ae97cc9205a5d6094b1800255e60551bf6",
-   "support"
-  ],
-  "webvtt/webvtt-file-format-parsing/webvtt-cue-text-parsing-rules/dat/entities.dat": [
-   "183dd9377fccb89e151dc298ec8b819d1209fee3",
-   "support"
-  ],
-  "webvtt/webvtt-file-format-parsing/webvtt-cue-text-parsing-rules/dat/tags.dat": [
-   "461d05cbc43780eacc6cbd667bb5ccc6215d9c5b",
-   "support"
-  ],
-  "webvtt/webvtt-file-format-parsing/webvtt-cue-text-parsing-rules/dat/timestamps.dat": [
-   "7946c639cd942ecb62eadf81aec77e3ecd09a788",
-   "support"
-  ],
-  "webvtt/webvtt-file-format-parsing/webvtt-cue-text-parsing-rules/dat/tree-building.dat": [
-   "4b8777b30361d5193137991be3b3268013a03fe9",
-   "support"
-  ],
-  "webvtt/webvtt-file-format-parsing/webvtt-cue-text-parsing-rules/tests/entities-expected.txt": [
-   "29e42c09bd27c48a49d9b6aa0e0fd16ea5da0711",
-   "support"
-  ],
-  "webvtt/webvtt-file-format-parsing/webvtt-cue-text-parsing-rules/tests/entities.html": [
-   "43183d8d79641b451636efc22aa70431ec0ab1f7",
-   "testharness"
-  ],
-  "webvtt/webvtt-file-format-parsing/webvtt-cue-text-parsing-rules/tests/tags-expected.txt": [
-   "3768f200574695dce4b07621326a7e5adbd40fce",
-   "support"
-  ],
-  "webvtt/webvtt-file-format-parsing/webvtt-cue-text-parsing-rules/tests/tags.html": [
-   "5c1bb0dace4c7c18b0265c568f81a5594424ed6b",
-   "testharness"
-  ],
-  "webvtt/webvtt-file-format-parsing/webvtt-cue-text-parsing-rules/tests/timestamps-expected.txt": [
-   "695efa35f075cf587e3d98cb9c5dac21865ca924",
-   "support"
-  ],
-  "webvtt/webvtt-file-format-parsing/webvtt-cue-text-parsing-rules/tests/timestamps.html": [
-   "d6b49c5fb7f33113b4c2804eb2bcbfca2f925da5",
-   "testharness"
-  ],
-  "webvtt/webvtt-file-format-parsing/webvtt-cue-text-parsing-rules/tests/tree-building-expected.txt": [
-   "01db79fae355d94eda333db5a11c9dc28e5e317e",
-   "support"
-  ],
-  "webvtt/webvtt-file-format-parsing/webvtt-cue-text-parsing-rules/tests/tree-building.html": [
-   "a812b24c8c9a8adbf05ea51a20e8b102a697cc88",
-   "testharness"
-  ],
-  "webvtt/webvtt-file-format-parsing/webvtt-file-parsing/support/arrows.vtt": [
-   "a254267a702a4efc053f7491bbc6c0c156ac027d",
-   "support"
-  ],
-  "webvtt/webvtt-file-format-parsing/webvtt-file-parsing/support/cue-counts.json": [
-   "de7f8a40ef2564c3ac82b6c62577e58de09c7aaa",
-   "support"
-  ],
-  "webvtt/webvtt-file-format-parsing/webvtt-file-parsing/support/header-garbage.vtt": [
-   "d6ca0247d5ed76eb52e7df1012541b0ac3c3a5d4",
-   "support"
-  ],
-  "webvtt/webvtt-file-format-parsing/webvtt-file-parsing/support/header-space.vtt": [
-   "9dbf2fbc0a249397ce602ddf282b99b7f9603a25",
-   "support"
-  ],
-  "webvtt/webvtt-file-format-parsing/webvtt-file-parsing/support/header-tab.vtt": [
-   "48ee8ba8c0353519d3928cc1b317340cfc720c9d",
-   "support"
-  ],
-  "webvtt/webvtt-file-format-parsing/webvtt-file-parsing/support/header-timings.vtt": [
-   "cfaa1c59bdfefe7682fd73152e2d4a706a415aaa",
-   "support"
-  ],
-  "webvtt/webvtt-file-format-parsing/webvtt-file-parsing/support/ids.vtt": [
-   "e94efc2cea87f5ebaba3d7a46bdfe1f74cd556ef",
-   "support"
-  ],
-  "webvtt/webvtt-file-format-parsing/webvtt-file-parsing/support/no-signature.vtt": [
-   "71ffec71e6a8923027309dd41c591302ac880550",
-   "support"
-  ],
-  "webvtt/webvtt-file-format-parsing/webvtt-file-parsing/support/nulls.vtt": [
-   "140e16000f93f8565c28c2fd12a638afcc6bbf05",
-   "support"
-  ],
-  "webvtt/webvtt-file-format-parsing/webvtt-file-parsing/support/omitted-hours.vtt": [
-   "a8f06a3ba562175bf612c9373627cb95704f6d80",
-   "support"
-  ],
-  "webvtt/webvtt-file-format-parsing/webvtt-file-parsing/support/settings-align.vtt": [
-   "197819834074df12486935a8a688951438a58fdb",
-   "support"
-  ],
-  "webvtt/webvtt-file-format-parsing/webvtt-file-parsing/support/settings-line.vtt": [
-   "c2519c7b9382a013b477abe93abb137ea9e595d9",
-   "support"
-  ],
-  "webvtt/webvtt-file-format-parsing/webvtt-file-parsing/support/settings-multiple.vtt": [
-   "60f33f6be0be507080ef82cd594a38913b4dfc84",
-   "support"
-  ],
-  "webvtt/webvtt-file-format-parsing/webvtt-file-parsing/support/settings-position.vtt": [
-   "90b7d032cc85503fa335c1e1ec1218118f9adfdd",
-   "support"
-  ],
-  "webvtt/webvtt-file-format-parsing/webvtt-file-parsing/support/settings-size.vtt": [
-   "2bb3470abe30284bcb48b21252ec779de096756b",
-   "support"
-  ],
-  "webvtt/webvtt-file-format-parsing/webvtt-file-parsing/support/settings-vertical.vtt": [
-   "8415dff591596f613ddca4d1f79a4994cce404e8",
-   "support"
-  ],
-  "webvtt/webvtt-file-format-parsing/webvtt-file-parsing/support/signature-bom.vtt": [
-   "c4000ae4295ed01151f29357f17a29fe172e12ce",
-   "support"
-  ],
-  "webvtt/webvtt-file-format-parsing/webvtt-file-parsing/support/signature-formfeed.vtt": [
-   "0759317ef9dd8906b7204c6054d0243a1da5960c",
-   "support"
-  ],
-  "webvtt/webvtt-file-format-parsing/webvtt-file-parsing/support/signature-lowercase.vtt": [
-   "542aff552ac0196d1f954e99b6b5b2a314da60aa",
-   "support"
-  ],
-  "webvtt/webvtt-file-format-parsing/webvtt-file-parsing/support/signature-no-newline.vtt": [
-   "6d0c9332ce0c76646b069ec15e9be7f040039ec8",
-   "support"
-  ],
-  "webvtt/webvtt-file-format-parsing/webvtt-file-parsing/support/signature-null.vtt": [
-   "797545cea933c4a4f6611c818a85f9ccaf6d8d74",
-   "support"
-  ],
-  "webvtt/webvtt-file-format-parsing/webvtt-file-parsing/support/signature-space-no-newline.vtt": [
-   "a3307c9454994c5910fbe3318cd2649c61cbf511",
-   "support"
-  ],
-  "webvtt/webvtt-file-format-parsing/webvtt-file-parsing/support/signature-space.vtt": [
-   "f788033b8c61059c0afd348d96c7e57ef8a83434",
-   "support"
-  ],
-  "webvtt/webvtt-file-format-parsing/webvtt-file-parsing/support/signature-tab-no-newline.vtt": [
-   "1bdfc1bab5ca24d95691e31f04d8dadd5658e9f1",
-   "support"
-  ],
-  "webvtt/webvtt-file-format-parsing/webvtt-file-parsing/support/signature-tab.vtt": [
-   "37ebc275579ffbc879d443292c76b90a8918cef7",
-   "support"
-  ],
-  "webvtt/webvtt-file-format-parsing/webvtt-file-parsing/support/signature-timings.vtt": [
-   "f064b2ebf8a3d41beb11cecd865bd4ede95d70e6",
-   "support"
-  ],
-  "webvtt/webvtt-file-format-parsing/webvtt-file-parsing/support/signature-too-short.vtt": [
-   "439adea746f6730c811e2f02edade910bb14a3a9",
-   "support"
-  ],
-  "webvtt/webvtt-file-format-parsing/webvtt-file-parsing/support/signature-two-boms.vtt": [
-   "fe57945f965a5dd7e58a0aa1af01fe26be75b388",
-   "support"
-  ],
-  "webvtt/webvtt-file-format-parsing/webvtt-file-parsing/support/signature-websrt.vtt": [
-   "5d1456cf5066adcee6d6bdffb72a9f2d97d9ede8",
-   "support"
-  ],
-  "webvtt/webvtt-file-format-parsing/webvtt-file-parsing/support/space-chars.vtt": [
-   "8d0273d6380928e0eb76793fa9515908d3f4f3c8",
-   "support"
-  ],
-  "webvtt/webvtt-file-format-parsing/webvtt-file-parsing/support/timings-60.vtt": [
-   "13eb370139555ca32da227875795bb4e17770789",
-   "support"
-  ],
-  "webvtt/webvtt-file-format-parsing/webvtt-file-parsing/support/timings-garbage.vtt": [
-   "2430b4898945369e812fb084cd52ad369bcada9b",
-   "support"
-  ],
-  "webvtt/webvtt-file-format-parsing/webvtt-file-parsing/support/timings-negative.vtt": [
-   "0b70f922eb8668ff3891725cbbabe72e0a19a992",
-   "support"
-  ],
-  "webvtt/webvtt-file-format-parsing/webvtt-file-parsing/support/timings-too-long.vtt": [
-   "2cea4b0a6451457819a0c22f8d3f63a7694892aa",
-   "support"
-  ],
-  "webvtt/webvtt-file-format-parsing/webvtt-file-parsing/support/timings-too-short.vtt": [
-   "95b219d4850f9670ab1ec75f81551d49acfc4f35",
-   "support"
-  ],
   "workers/README.md": [
    "2660d9dbe4f7a2947ec78b14e6418554c8204d6b",
    "support"
@@ -93858,6 +95148,38 @@
   ],
   "workers/postMessage_target_source.htm": [
    "57c96d6fe9b09b015cc63be4aa8cb0d068f0d810",
+   "testharness"
+  ],
+  "workers/semantics/encodings/001.html": [
+   "9e4ebc403b7160f1bb29a291a111326f53ac27a4",
+   "testharness"
+  ],
+  "workers/semantics/encodings/001.html.headers": [
+   "3355b0c0188586c90715df2a82e5194c4e455da8",
+   "support"
+  ],
+  "workers/semantics/encodings/002.html": [
+   "51bb54279c2d46797e9684cd7831eb34d432b6b2",
+   "testharness"
+  ],
+  "workers/semantics/encodings/002.html.headers": [
+   "3355b0c0188586c90715df2a82e5194c4e455da8",
+   "support"
+  ],
+  "workers/semantics/encodings/003-1.py": [
+   "37f7812b142d48a3c84cb5f6b3f42400052e51a1",
+   "support"
+  ],
+  "workers/semantics/encodings/003.html": [
+   "237768c04968f414c0bc2323acf058bd1458ad7b",
+   "testharness"
+  ],
+  "workers/semantics/encodings/004.html": [
+   "050c5d8d2d4ef34f791488eb1cb27d31385b9373",
+   "testharness"
+  ],
+  "workers/semantics/encodings/004.worker.js": [
+   "29d11e52a82f8c3fda12966fc0c6d02c957a6ffd",
    "testharness"
   ],
   "workers/semantics/interface-objects/001.worker.js": [

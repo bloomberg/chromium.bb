@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 2187 tests; 1527 PASS, 660 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 2123 tests; 1481 PASS, 642 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS [["strikethrough",""]] "foo[]bar": execCommand("strikethrough", false, "") return value 
 PASS [["strikethrough",""]] "foo[]bar" checks for modifications to non-editable content 
 PASS [["strikethrough",""]] "foo[]bar" compare innerHTML 
@@ -749,38 +749,6 @@ FAIL [["stylewithcss","false"],["strikethrough",""]] "<p style=\"text-decoration
 PASS [["stylewithcss","false"],["strikethrough",""]] "<p style=\"text-decoration: underline\">foo[bar]baz</p>" queryCommandIndeterm("strikethrough") after 
 PASS [["stylewithcss","false"],["strikethrough",""]] "<p style=\"text-decoration: underline\">foo[bar]baz</p>" queryCommandState("strikethrough") after 
 FAIL [["stylewithcss","false"],["strikethrough",""]] "<p style=\"text-decoration: underline\">foo[bar]baz</p>" queryCommandValue("strikethrough") after assert_equals: Wrong result returned expected "" but got "true"
-PASS [["stylewithcss","true"],["strikethrough",""]] "foo<s>[bar]</s>baz": execCommand("stylewithcss", false, "true") return value 
-PASS [["stylewithcss","true"],["strikethrough",""]] "foo<s>[bar]</s>baz": execCommand("strikethrough", false, "") return value 
-PASS [["stylewithcss","true"],["strikethrough",""]] "foo<s>[bar]</s>baz" checks for modifications to non-editable content 
-PASS [["stylewithcss","true"],["strikethrough",""]] "foo<s>[bar]</s>baz" compare innerHTML 
-PASS [["stylewithcss","true"],["strikethrough",""]] "foo<s>[bar]</s>baz" queryCommandIndeterm("stylewithcss") before 
-PASS [["stylewithcss","true"],["strikethrough",""]] "foo<s>[bar]</s>baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["strikethrough",""]] "foo<s>[bar]</s>baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
-PASS [["stylewithcss","true"],["strikethrough",""]] "foo<s>[bar]</s>baz" queryCommandIndeterm("stylewithcss") after 
-PASS [["stylewithcss","true"],["strikethrough",""]] "foo<s>[bar]</s>baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["strikethrough",""]] "foo<s>[bar]</s>baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
-PASS [["stylewithcss","true"],["strikethrough",""]] "foo<s>[bar]</s>baz" queryCommandIndeterm("strikethrough") before 
-PASS [["stylewithcss","true"],["strikethrough",""]] "foo<s>[bar]</s>baz" queryCommandState("strikethrough") before 
-FAIL [["stylewithcss","true"],["strikethrough",""]] "foo<s>[bar]</s>baz" queryCommandValue("strikethrough") before assert_equals: Wrong result returned expected "" but got "true"
-PASS [["stylewithcss","true"],["strikethrough",""]] "foo<s>[bar]</s>baz" queryCommandIndeterm("strikethrough") after 
-PASS [["stylewithcss","true"],["strikethrough",""]] "foo<s>[bar]</s>baz" queryCommandState("strikethrough") after 
-FAIL [["stylewithcss","true"],["strikethrough",""]] "foo<s>[bar]</s>baz" queryCommandValue("strikethrough") after assert_equals: Wrong result returned expected "" but got "false"
-PASS [["stylewithcss","false"],["strikethrough",""]] "foo<s>[bar]</s>baz": execCommand("stylewithcss", false, "false") return value 
-PASS [["stylewithcss","false"],["strikethrough",""]] "foo<s>[bar]</s>baz": execCommand("strikethrough", false, "") return value 
-PASS [["stylewithcss","false"],["strikethrough",""]] "foo<s>[bar]</s>baz" checks for modifications to non-editable content 
-PASS [["stylewithcss","false"],["strikethrough",""]] "foo<s>[bar]</s>baz" compare innerHTML 
-PASS [["stylewithcss","false"],["strikethrough",""]] "foo<s>[bar]</s>baz" queryCommandIndeterm("stylewithcss") before 
-PASS [["stylewithcss","false"],["strikethrough",""]] "foo<s>[bar]</s>baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["strikethrough",""]] "foo<s>[bar]</s>baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
-PASS [["stylewithcss","false"],["strikethrough",""]] "foo<s>[bar]</s>baz" queryCommandIndeterm("stylewithcss") after 
-PASS [["stylewithcss","false"],["strikethrough",""]] "foo<s>[bar]</s>baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["strikethrough",""]] "foo<s>[bar]</s>baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
-PASS [["stylewithcss","false"],["strikethrough",""]] "foo<s>[bar]</s>baz" queryCommandIndeterm("strikethrough") before 
-PASS [["stylewithcss","false"],["strikethrough",""]] "foo<s>[bar]</s>baz" queryCommandState("strikethrough") before 
-FAIL [["stylewithcss","false"],["strikethrough",""]] "foo<s>[bar]</s>baz" queryCommandValue("strikethrough") before assert_equals: Wrong result returned expected "" but got "true"
-PASS [["stylewithcss","false"],["strikethrough",""]] "foo<s>[bar]</s>baz" queryCommandIndeterm("strikethrough") after 
-PASS [["stylewithcss","false"],["strikethrough",""]] "foo<s>[bar]</s>baz" queryCommandState("strikethrough") after 
-FAIL [["stylewithcss","false"],["strikethrough",""]] "foo<s>[bar]</s>baz" queryCommandValue("strikethrough") after assert_equals: Wrong result returned expected "" but got "false"
 PASS [["stylewithcss","true"],["strikethrough",""]] "foo<span style=\"text-decoration: line-through\">[bar]</span>baz": execCommand("stylewithcss", false, "true") return value 
 PASS [["stylewithcss","true"],["strikethrough",""]] "foo<span style=\"text-decoration: line-through\">[bar]</span>baz": execCommand("strikethrough", false, "") return value 
 PASS [["stylewithcss","true"],["strikethrough",""]] "foo<span style=\"text-decoration: line-through\">[bar]</span>baz" checks for modifications to non-editable content 
@@ -973,38 +941,6 @@ FAIL [["stylewithcss","false"],["strikethrough",""]] "<s>foo[b<i>ar]ba</i>z</s>"
 PASS [["stylewithcss","false"],["strikethrough",""]] "<s>foo[b<i>ar]ba</i>z</s>" queryCommandIndeterm("strikethrough") after 
 PASS [["stylewithcss","false"],["strikethrough",""]] "<s>foo[b<i>ar]ba</i>z</s>" queryCommandState("strikethrough") after 
 FAIL [["stylewithcss","false"],["strikethrough",""]] "<s>foo[b<i>ar]ba</i>z</s>" queryCommandValue("strikethrough") after assert_equals: Wrong result returned expected "" but got "false"
-PASS [["stylewithcss","true"],["strikethrough",""]] "<p style=\"text-decoration: line-through\">foo[bar]baz</p>": execCommand("stylewithcss", false, "true") return value 
-PASS [["stylewithcss","true"],["strikethrough",""]] "<p style=\"text-decoration: line-through\">foo[bar]baz</p>": execCommand("strikethrough", false, "") return value 
-PASS [["stylewithcss","true"],["strikethrough",""]] "<p style=\"text-decoration: line-through\">foo[bar]baz</p>" checks for modifications to non-editable content 
-FAIL [["stylewithcss","true"],["strikethrough",""]] "<p style=\"text-decoration: line-through\">foo[bar]baz</p>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p><span style=\"text-decoration:line-through\">foo</span>bar<span style=\"text-decoration:line-through\">baz</span></p>" but got "<p><span style=\"text-decoration-line:line-through\">foo</span>bar<span style=\"text-decoration-line:line-through\">baz</span></p>"
-PASS [["stylewithcss","true"],["strikethrough",""]] "<p style=\"text-decoration: line-through\">foo[bar]baz</p>" queryCommandIndeterm("stylewithcss") before 
-PASS [["stylewithcss","true"],["strikethrough",""]] "<p style=\"text-decoration: line-through\">foo[bar]baz</p>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["strikethrough",""]] "<p style=\"text-decoration: line-through\">foo[bar]baz</p>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
-PASS [["stylewithcss","true"],["strikethrough",""]] "<p style=\"text-decoration: line-through\">foo[bar]baz</p>" queryCommandIndeterm("stylewithcss") after 
-PASS [["stylewithcss","true"],["strikethrough",""]] "<p style=\"text-decoration: line-through\">foo[bar]baz</p>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["strikethrough",""]] "<p style=\"text-decoration: line-through\">foo[bar]baz</p>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
-PASS [["stylewithcss","true"],["strikethrough",""]] "<p style=\"text-decoration: line-through\">foo[bar]baz</p>" queryCommandIndeterm("strikethrough") before 
-PASS [["stylewithcss","true"],["strikethrough",""]] "<p style=\"text-decoration: line-through\">foo[bar]baz</p>" queryCommandState("strikethrough") before 
-FAIL [["stylewithcss","true"],["strikethrough",""]] "<p style=\"text-decoration: line-through\">foo[bar]baz</p>" queryCommandValue("strikethrough") before assert_equals: Wrong result returned expected "" but got "true"
-PASS [["stylewithcss","true"],["strikethrough",""]] "<p style=\"text-decoration: line-through\">foo[bar]baz</p>" queryCommandIndeterm("strikethrough") after 
-PASS [["stylewithcss","true"],["strikethrough",""]] "<p style=\"text-decoration: line-through\">foo[bar]baz</p>" queryCommandState("strikethrough") after 
-FAIL [["stylewithcss","true"],["strikethrough",""]] "<p style=\"text-decoration: line-through\">foo[bar]baz</p>" queryCommandValue("strikethrough") after assert_equals: Wrong result returned expected "" but got "false"
-PASS [["stylewithcss","false"],["strikethrough",""]] "<p style=\"text-decoration: line-through\">foo[bar]baz</p>": execCommand("stylewithcss", false, "false") return value 
-PASS [["stylewithcss","false"],["strikethrough",""]] "<p style=\"text-decoration: line-through\">foo[bar]baz</p>": execCommand("strikethrough", false, "") return value 
-PASS [["stylewithcss","false"],["strikethrough",""]] "<p style=\"text-decoration: line-through\">foo[bar]baz</p>" checks for modifications to non-editable content 
-FAIL [["stylewithcss","false"],["strikethrough",""]] "<p style=\"text-decoration: line-through\">foo[bar]baz</p>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p><s>foo</s>bar<s>baz</s></p>" but got "<p><span style=\"text-decoration-line:line-through\">foo</span>bar<strike>baz</strike></p>"
-PASS [["stylewithcss","false"],["strikethrough",""]] "<p style=\"text-decoration: line-through\">foo[bar]baz</p>" queryCommandIndeterm("stylewithcss") before 
-PASS [["stylewithcss","false"],["strikethrough",""]] "<p style=\"text-decoration: line-through\">foo[bar]baz</p>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["strikethrough",""]] "<p style=\"text-decoration: line-through\">foo[bar]baz</p>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
-PASS [["stylewithcss","false"],["strikethrough",""]] "<p style=\"text-decoration: line-through\">foo[bar]baz</p>" queryCommandIndeterm("stylewithcss") after 
-PASS [["stylewithcss","false"],["strikethrough",""]] "<p style=\"text-decoration: line-through\">foo[bar]baz</p>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["strikethrough",""]] "<p style=\"text-decoration: line-through\">foo[bar]baz</p>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
-PASS [["stylewithcss","false"],["strikethrough",""]] "<p style=\"text-decoration: line-through\">foo[bar]baz</p>" queryCommandIndeterm("strikethrough") before 
-PASS [["stylewithcss","false"],["strikethrough",""]] "<p style=\"text-decoration: line-through\">foo[bar]baz</p>" queryCommandState("strikethrough") before 
-FAIL [["stylewithcss","false"],["strikethrough",""]] "<p style=\"text-decoration: line-through\">foo[bar]baz</p>" queryCommandValue("strikethrough") before assert_equals: Wrong result returned expected "" but got "true"
-PASS [["stylewithcss","false"],["strikethrough",""]] "<p style=\"text-decoration: line-through\">foo[bar]baz</p>" queryCommandIndeterm("strikethrough") after 
-PASS [["stylewithcss","false"],["strikethrough",""]] "<p style=\"text-decoration: line-through\">foo[bar]baz</p>" queryCommandState("strikethrough") after 
-FAIL [["stylewithcss","false"],["strikethrough",""]] "<p style=\"text-decoration: line-through\">foo[bar]baz</p>" queryCommandValue("strikethrough") after assert_equals: Wrong result returned expected "" but got "false"
 PASS [["stylewithcss","true"],["strikethrough",""]] "foo<strike>[bar]</strike>baz": execCommand("stylewithcss", false, "true") return value 
 PASS [["stylewithcss","true"],["strikethrough",""]] "foo<strike>[bar]</strike>baz": execCommand("strikethrough", false, "") return value 
 PASS [["stylewithcss","true"],["strikethrough",""]] "foo<strike>[bar]</strike>baz" checks for modifications to non-editable content 

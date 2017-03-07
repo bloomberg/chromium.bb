@@ -1,0 +1,23 @@
+CONSOLE ERROR: Text track from origin 'null' has been blocked from loading: Not at same origin as the document, and parent of track element does not have a 'crossorigin' attribute. Origin 'http://web-platform.test:8001' is therefore not allowed access.
+CONSOLE ERROR: Text track from origin 'null' has been blocked from loading: Not at same origin as the document, and parent of track element does not have a 'crossorigin' attribute. Origin 'http://web-platform.test:8001' is therefore not allowed access.
+CONSOLE ERROR: Text track from origin 'null' has been blocked from loading: Not at same origin as the document, and parent of track element does not have a 'crossorigin' attribute. Origin 'http://web-platform.test:8001' is therefore not allowed access.
+CONSOLE ERROR: Text track from origin 'null' has been blocked from loading: Not at same origin as the document, and parent of track element does not have a 'crossorigin' attribute. Origin 'http://web-platform.test:8001' is therefore not allowed access.
+CONSOLE ERROR: Text track from origin 'null' has been blocked from loading: Not at same origin as the document, and parent of track element does not have a 'crossorigin' attribute. Origin 'http://web-platform.test:8001' is therefore not allowed access.
+CONSOLE ERROR: Text track from origin 'null' has been blocked from loading: Not at same origin as the document, and parent of track element does not have a 'crossorigin' attribute. Origin 'http://web-platform.test:8001' is therefore not allowed access.
+CONSOLE ERROR: Text track from origin 'null' has been blocked from loading: Not at same origin as the document, and parent of track element does not have a 'crossorigin' attribute. Origin 'http://web-platform.test:8001' is therefore not allowed access.
+CONSOLE ERROR: Text track from origin 'null' has been blocked from loading: Not at same origin as the document, and parent of track element does not have a 'crossorigin' attribute. Origin 'http://web-platform.test:8001' is therefore not allowed access.
+CONSOLE ERROR: Text track from origin 'null' has been blocked from loading: Not at same origin as the document, and parent of track element does not have a 'crossorigin' attribute. Origin 'http://web-platform.test:8001' is therefore not allowed access.
+CONSOLE ERROR: Text track from origin 'null' has been blocked from loading: Not at same origin as the document, and parent of track element does not have a 'crossorigin' attribute. Origin 'http://web-platform.test:8001' is therefore not allowed access.
+This is a testharness.js-based test.
+FAIL WebVTT cue data parser test tags - d49e42f7582c6f00b2569f2d14629611c0c6b0e6 assert_unreached: got error event Reached unreachable code
+FAIL WebVTT cue data parser test tags - 9dd187edd10c907e6b92148fd82940e401dbe79f assert_unreached: got error event Reached unreachable code
+FAIL WebVTT cue data parser test tags - 2d2c4333983e23a4962083e8120e5d42c839f77b assert_unreached: got error event Reached unreachable code
+FAIL WebVTT cue data parser test tags - 94f898df44b470e2d05d74c6816fd908e55c9fdf assert_unreached: got error event Reached unreachable code
+FAIL WebVTT cue data parser test tags - 2fdc1b84ba41ec98833851e80781df1fbe72182f assert_unreached: got error event Reached unreachable code
+FAIL WebVTT cue data parser test tags - 487690a6f5da4666f9caaf3a3ecc10992aca1414 assert_unreached: got error event Reached unreachable code
+FAIL WebVTT cue data parser test tags - 0d7df935b172f2a1b357b94596d68f2443f30f8b assert_unreached: got error event Reached unreachable code
+FAIL WebVTT cue data parser test tags - cd1d6dd274e03ae8fc56bc4ef163998d9ff24496 assert_unreached: got error event Reached unreachable code
+FAIL WebVTT cue data parser test tags - fca1a11d42b735453117f42456360e88082a3fd7 assert_unreached: got error event Reached unreachable code
+FAIL WebVTT cue data parser test tags - fe3b6277edf5c2f84e7a6779eddd0cac30552bca assert_unreached: got error event Reached unreachable code
+Harness: the test ran to completion.
+
