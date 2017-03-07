@@ -38,7 +38,7 @@ class OfflinePageEvaluationBridge : public OfflinePageModel::Observer,
                               RequestCoordinator* request_coordinator);
 
   ~OfflinePageEvaluationBridge() override;
-  void Destory(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
+  void Destroy(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
 
   // OfflinePageModel::Observer implementation.
   void OfflinePageModelLoaded(OfflinePageModel* model) override;

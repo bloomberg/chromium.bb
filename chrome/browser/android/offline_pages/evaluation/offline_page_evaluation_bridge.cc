@@ -249,7 +249,7 @@ OfflinePageEvaluationBridge::OfflinePageEvaluationBridge(
 
 OfflinePageEvaluationBridge::~OfflinePageEvaluationBridge() {}
 
-void OfflinePageEvaluationBridge::Destory(JNIEnv* env,
+void OfflinePageEvaluationBridge::Destroy(JNIEnv* env,
                                           const JavaParamRef<jobject>&) {
   offline_page_model_->RemoveObserver(this);
   request_coordinator_->RemoveObserver(this);

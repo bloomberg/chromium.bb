@@ -145,7 +145,7 @@ public class OfflinePageSavePageLaterEvaluationTest
         checkTrue(mClearingSemaphore.tryAcquire(REMOVE_REQUESTS_TIMEOUT_MS, TimeUnit.MILLISECONDS),
                 "Timed out when clearing remaining requests!");
         mBridge.closeLog();
-        mBridge.destory();
+        mBridge.destroy();
         super.tearDown();
     }
 
