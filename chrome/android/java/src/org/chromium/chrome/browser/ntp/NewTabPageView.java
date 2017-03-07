@@ -18,11 +18,9 @@ import android.support.v7.widget.RecyclerView.ViewHolder;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.AttributeSet;
-import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnLayoutChangeListener;
-import android.view.ViewGroup;
 import android.view.ViewStub;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
@@ -188,18 +186,12 @@ public class NewTabPageView
 
         assert manager.getSuggestionsSource() != null;
 
-        mRecyclerView = (NewTabPageRecyclerView) findViewById(R.id.new_tab_page_recycler_view);
-        // Don't attach now, the recyclerView itself will determine when to do it.
-        mNewTabPageLayout =
-                (NewTabPageLayout) LayoutInflater.from(getContext())
-                        .inflate(R.layout.new_tab_page_layout, mRecyclerView, false);
-        mRecyclerView.setAboveTheFoldView(mNewTabPageLayout);
+        mRecyclerView = new NewTabPageRecyclerView(getContext());
         mRecyclerView.setContainsLocationBar(manager.isLocationBarShownInNTP());
+        addView(mRecyclerView);
 
-        // Tailor the LayoutParams for the snippets UI, as the configuration in the XML is
-        // made for the ScrollView UI.
-        ViewGroup.LayoutParams params = mNewTabPageLayout.getLayoutParams();
-        params.height = ViewGroup.LayoutParams.WRAP_CONTENT;
+        // Don't attach now, the recyclerView itself will determine when to do it.
+        mNewTabPageLayout = mRecyclerView.getAboveTheFoldView();
 
         mRecyclerView.setItemAnimator(new DefaultItemAnimator() {
             @Override

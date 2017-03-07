@@ -38,9 +38,9 @@ import org.chromium.chrome.browser.ntp.ContextMenuManager.ContextMenuItemId;
 import org.chromium.chrome.browser.ntp.cards.CardViewHolder;
 import org.chromium.chrome.browser.ntp.cards.CardsVariationParameters;
 import org.chromium.chrome.browser.ntp.cards.ImpressionTracker;
-import org.chromium.chrome.browser.ntp.cards.NewTabPageRecyclerView;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageViewHolder;
 import org.chromium.chrome.browser.ntp.cards.SuggestionsCategoryInfo;
+import org.chromium.chrome.browser.suggestions.SuggestionsRecyclerView;
 import org.chromium.chrome.browser.suggestions.SuggestionsUiDelegate;
 import org.chromium.chrome.browser.widget.TintedImageView;
 import org.chromium.chrome.browser.widget.displaystyle.DisplayStyleObserver;
@@ -95,12 +95,12 @@ public class SnippetArticleViewHolder extends CardViewHolder implements Impressi
 
     /**
      * Constructs a {@link SnippetArticleViewHolder} item used to display snippets.
-     * @param parent The NewTabPageRecyclerView that is going to contain the newly created view.
+     * @param parent The SuggestionsRecyclerView that is going to contain the newly created view.
      * @param contextMenuManager The manager responsible for the context menu.
      * @param uiDelegate The delegate object used to open an article, fetch thumbnails, etc.
      * @param uiConfig The NTP UI configuration object used to adjust the article UI.
      */
-    public SnippetArticleViewHolder(NewTabPageRecyclerView parent,
+    public SnippetArticleViewHolder(SuggestionsRecyclerView parent,
             ContextMenuManager contextMenuManager, SuggestionsUiDelegate uiDelegate,
             UiConfig uiConfig) {
         super(R.layout.new_tab_page_snippets_card, parent, uiConfig, contextMenuManager);
@@ -210,8 +210,6 @@ public class SnippetArticleViewHolder extends CardViewHolder implements Impressi
 
         mOfflineBadge.setVisibility(View.GONE);
         refreshOfflineBadgeVisibility();
-
-        mRecyclerView.onSnippetBound(itemView);
     }
 
     /**

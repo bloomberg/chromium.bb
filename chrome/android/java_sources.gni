@@ -948,6 +948,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/suggestions/TileView.java",
   "java/src/org/chromium/chrome/browser/suggestions/SuggestionsNavigationDelegate.java",
   "java/src/org/chromium/chrome/browser/suggestions/SuggestionsNavigationDelegateImpl.java",
+  "java/src/org/chromium/chrome/browser/suggestions/SuggestionsRecyclerView.java",
   "java/src/org/chromium/chrome/browser/suggestions/SuggestionsUiDelegate.java",
   "java/src/org/chromium/chrome/browser/suggestions/SuggestionsUiDelegateImpl.java",
   "java/src/org/chromium/chrome/browser/suggestions/SuggestionsMetricsReporter.java",
