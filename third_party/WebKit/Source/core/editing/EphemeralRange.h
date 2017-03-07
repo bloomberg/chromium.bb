@@ -105,6 +105,8 @@ class CORE_TEMPLATE_CLASS_EXPORT EphemeralRangeTemplate final {
   PositionTemplate<Strategy> startPosition() const;
   PositionTemplate<Strategy> endPosition() const;
 
+  Node* commonAncestorContainer() const;
+
   // Returns true if |m_startPositoin| == |m_endPosition| or |isNull()|.
   bool isCollapsed() const;
   bool isNull() const {

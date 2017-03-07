@@ -408,12 +408,11 @@ DocumentFragment* createFragmentFromMarkupWithContext(
   root->appendChild(taggedFragment);
   taggedDocument->appendChild(root);
 
-  Range* range = Range::create(
-      *taggedDocument,
+  const EphemeralRange range(
       Position::afterNode(nodeBeforeContext).parentAnchoredEquivalent(),
       Position::beforeNode(nodeAfterContext).parentAnchoredEquivalent());
 
-  Node* commonAncestor = range->commonAncestorContainer();
+  Node* commonAncestor = range.commonAncestorContainer();
   HTMLElement* specialCommonAncestor =
       ancestorToRetainStructureAndAppearanceWithNoLayoutObject(commonAncestor);
 

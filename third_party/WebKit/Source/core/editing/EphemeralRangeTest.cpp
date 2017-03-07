@@ -148,4 +148,41 @@ TEST_F(EphemeralRangeTest, traversalEmptyRanges) {
             singlePositionRange.endPosition().nodeAsRangePastLastNode());
 }
 
+TEST_F(EphemeralRangeTest, commonAncesstorDOM) {
+  const char* bodyContent =
+      "<p id='host'>00"
+      "<b id='one'>11</b>"
+      "<b id='two'>22</b>"
+      "<b id='three'>33</b>"
+      "</p>";
+  setBodyContent(bodyContent);
+
+  const Position startPosition(document().getElementById("one"), 0);
+  const Position endPosition(document().getElementById("two"), 0);
+  const EphemeralRange range(startPosition, endPosition);
+  EXPECT_EQ(document().getElementById("host"), range.commonAncestorContainer());
+}
+
+TEST_F(EphemeralRangeTest, commonAncesstorFlatTree) {
+  const char* bodyContent =
+      "<b id='zero'>0</b>"
+      "<p id='host'>"
+      "<b id='one'>1</b>"
+      "<b id='two'>22</b>"
+      "</p>"
+      "<b id='three'>333</b>";
+  const char* shadowContent =
+      "<p id='four'>4444</p>"
+      "<content select=#two></content>"
+      "<content select=#one></content>"
+      "<p id='five'>55555</p>";
+  setBodyContent(bodyContent);
+  ShadowRoot* shadowRoot = setShadowContent(shadowContent, "host");
+
+  const PositionInFlatTree startPosition(document().getElementById("one"), 0);
+  const PositionInFlatTree endPosition(shadowRoot->getElementById("five"), 0);
+  const EphemeralRangeInFlatTree range(startPosition, endPosition);
+  EXPECT_EQ(document().getElementById("host"), range.commonAncestorContainer());
+}
+
 }  // namespace blink

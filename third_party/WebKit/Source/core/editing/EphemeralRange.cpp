@@ -11,6 +11,16 @@
 
 namespace blink {
 
+namespace {
+template <typename Strategy>
+Node* commonAncestorContainerNode(const Node* containerA,
+                                  const Node* containerB) {
+  if (!containerA || !containerB)
+    return nullptr;
+  return Strategy::commonAncestor(*containerA, *containerB);
+}
+}
+
 template <typename Strategy>
 EphemeralRangeTemplate<Strategy>::EphemeralRangeTemplate(
     const PositionTemplate<Strategy>& start,
@@ -106,6 +116,13 @@ PositionTemplate<Strategy> EphemeralRangeTemplate<Strategy>::endPosition()
     const {
   DCHECK(isValid());
   return m_endPosition;
+}
+
+template <typename Strategy>
+Node* EphemeralRangeTemplate<Strategy>::commonAncestorContainer() const {
+  return commonAncestorContainerNode<Strategy>(
+      m_startPosition.computeContainerNode(),
+      m_endPosition.computeContainerNode());
 }
 
 template <typename Strategy>
