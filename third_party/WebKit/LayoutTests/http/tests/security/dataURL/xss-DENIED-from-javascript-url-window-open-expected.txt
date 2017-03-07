@@ -1,3 +1,4 @@
+CONSOLE WARNING: Upcoming versions will block content-initiated top frame navigations to data: URLs. For more information, see https://goo.gl/BaZAea.
 Opener Frame
 
 PASS: Access from a window opened with a data: URL was denied.

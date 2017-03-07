@@ -10,7 +10,7 @@ function runTest() {
         sessionStorage.didNav = true;
         // Navigate a timeout to make sure we generate a history entry that we can go back to.
         setTimeout(function() {
-            location.href = 'data:text/html,<script>alert("Going back.");history.back();</' + 'script>';
+            location.href = 'resources/alert-then-back.html';
         }, 0);
     } else {
         delete sessionStorage.didNav;

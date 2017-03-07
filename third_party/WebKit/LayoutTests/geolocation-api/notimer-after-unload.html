@@ -15,7 +15,7 @@ if (!window.testRunner)
 geolocationServiceMock.then(mock => {
     mock.setGeolocationPermission(true);
 
-    location = "data:text/html,You should have seen one unload alert appear.<script>window.setTimeout('if (window.testRunner) testRunner.notifyDone();', 100);</" + "script>";
+    location = "../fast/events/resources/onunload-single-alert-success.html";
 });
 
 document.body.onunload = function() {

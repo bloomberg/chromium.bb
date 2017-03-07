@@ -9,12 +9,12 @@
 
 <input id=emptyOnFirstVisit>
 <div id=parent>
-<form action="data:text/html,<script>history.back()&lt;/script>" id=form1 autocomplete=off>
+<form action="../../resources/back.html" id=form1 autocomplete=off>
 <input name=user id=input1>
 <textarea name=comment id=textarea1></textarea>
 <select name=os id=select1><option>Mac<option>Windows<option>BSD</select>
 </form>
-<form action="data:text/html,<script>history.back()&lt;/script>" id=form2>
+<form action="../../resources/back.html" id=form2>
 <input name=user id=input2>
 <textarea name=comment id=textarea2></textarea>
 <select name=os id=select2><option>Mac<option>Windows<option>BSD</select>
@@ -32,14 +32,14 @@ function runTest()
         if (window.testRunner)
             testRunner.waitUntilDone();
         state.value = 'visited';
-    
+
         document.getElementById('input1').value = 'value1';
         document.getElementById('textarea1').value = 'nice';
         document.getElementById('select1').value = 'Windows';
         document.getElementById('input2').value = 'value2';
         document.getElementById('textarea2').value = 'good';
         document.getElementById('select2').value = 'BSD';
-        // Submit form in a timeout to make sure that we create a new back/forward list item.            
+        // Submit form in a timeout to make sure that we create a new back/forward list item.
         setTimeout(function() {document.getElementById('form2').submit();}, 0);
     } else {
         // Second visit.

@@ -7,8 +7,7 @@
         testRunner.waitUntilDone();
         testRunner.dumpAsText();
     }
-    var newDoc = "SUCCESS<script>if (window.testRunner) testRunner.notifyDone();</scr" + "ipt>";
-    setTimeout("window.location='data:text/html," + newDoc + "'", 500);
+    setTimeout("window.location='../../resources/notify-success.html'", 500);
 </script>
 <div>FAILURE: should redirect.</div>
 </body>

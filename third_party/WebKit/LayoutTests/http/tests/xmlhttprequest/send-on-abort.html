@@ -22,7 +22,7 @@ function onreadystatechangeHandler()
 xhr = new XMLHttpRequest;
 xhr.onabort = abortHandler;
 xhr.onreadystatechange = onreadystatechangeHandler;
-xhr.open("GET", "foo.txt", true); 
+xhr.open("GET", "foo.txt", true);
 xhr.send(null);
-location.href = "data:text/html,PASS: No assertion failure.<script>if (window.testRunner) testRunner.notifyDone()</scr" + "ipt>";
+location.href = "../misc/resources/notify-success.html";
 </script>

@@ -1,7 +1,10 @@
 <!DOCTYPE html>
 <html>
 <body>
-<script> /* This script will be executed in a subframe. */
+<script>
+/* This script will be executed in a subframe. Do not use double slash comments
+   or double quotes in this script tag, they break the test because of innerText
+   call below. */
 function runTest()
 {
     eventSender.beginDragWithFiles(['resources/UTF8.txt']);
@@ -15,8 +18,7 @@ function onInputFileChange()
     var reader = new FileReader();
     reader.readAsText(file);
     console.log('Started reading...');
-
-    top.location = 'data:text/html,<p>PASS if no crash.</p><script>testRunner.notifyDone()</scr' + 'ipt>';
+    top.postMessage('navigateToSuccess', '*');
 }
 </script>
 
@@ -25,7 +27,16 @@ if (window.eventSender) {
     testRunner.dumpAsText();
     testRunner.waitUntilDone();
 }
-document.write('<iframe src="data:text/html,<input type=file id=file onchange=\'onInputFileChange()\'><script>' + document.getElementsByTagName("script")[0].innerText + 'runTest()</scr' + 'ipt>" style="left:0px;top:0px"></iframe>');
+document.write(
+    '<script>' +
+    'window.onmessage = function(evt){' +
+    '  if (evt.data == "navigateToSuccess") {' +
+    '    window.location = "resources/notify-no-crash.html";' +
+    '  }' +
+    '}' +
+    '</scr' + 'ipt>' +
+    '<iframe src="data:text/html,<input type=file id=file onchange=\'onInputFileChange()\'><script>' +
+    document.getElementsByTagName("script")[0].innerText + 'runTest()</scr' + 'ipt>" style="left:0px;top:0px"></iframe>');
 </script>
 
 <p>Test that using FileReader from a document with unique origin doesn't cause a crash.</p>

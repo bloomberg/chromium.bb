@@ -9,7 +9,7 @@ if (window.testRunner) {
 }
 
 window.addEventListener('beforeunload', before, false);
-window.onunload = unload; 
+window.onunload = unload;
 
 function before()
 {
@@ -24,7 +24,7 @@ function unload()
 
 function load()
 {
-    location = "data:text/html,If you didn't hit an assert you PASS.<script>if (window.testRunner) testRunner.notifyDone(); </" + "script>";
+    location = "resources/onunload-clears-onbeforeunload-success.html";
 }
 
 </script>

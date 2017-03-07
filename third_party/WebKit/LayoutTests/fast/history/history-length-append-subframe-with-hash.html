@@ -32,7 +32,7 @@
             // Navigate forward and back to create forward navigation entry.
             // Must be done outside the load handler to generate history entry.
             window.setTimeout(function() {
-                location.href = 'data:text/html,<body onload="history.back()">Must not see this text!!!</body>';
+                location.href = 'resources/back-on-load.html';
             }, 0);
         } else {
             window.setTimeout(setFrameSrcAndfinishTest, 100);

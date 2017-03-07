@@ -20,7 +20,7 @@
             {
                 if (window.GCController)
                     return GCController.collect();
-            
+
                 // Force garbage collection
                 for (var ndx = 0; ndx < 99000; ndx++)
                     var str = new String("1234");
@@ -28,22 +28,22 @@
 
             function finish()
             {
-                log("EVENT(loadstart) from iframe"); 
-                
+                log("EVENT(loadstart) from iframe");
+
                 forceGC();
-                location.href="data:text/html,SUCCESS<script>if (window.testRunner) testRunner.notifyDone()<" + "/script>";
+                location.href = "../resources/notify-success.html";
             }
 
             function loadstart()
             {
-                log("EVENT(loadstart)"); 
+                log("EVENT(loadstart)");
 
                 var video = document.getElementsByTagName('video')[0];
                 var newVideo = video.cloneNode(true);
                 newVideo.addEventListener("loadstart", finish);
 
                 var iframeDocument = document.getElementById("iframe").contentDocument;
-                iframeDocument.body.appendChild(newVideo); 
+                iframeDocument.body.appendChild(newVideo);
             }
 
             function start()

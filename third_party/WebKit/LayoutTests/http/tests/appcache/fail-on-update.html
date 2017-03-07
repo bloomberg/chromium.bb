@@ -26,10 +26,7 @@ function test()
     function afterDelete()
     {
         applicationCache.update();
-        window.location = 'data:text/html,<p>SUCCESS: No crash.</p>' + 
-            '<script>' +
-                'if (window.testRunner) testRunner.notifyDone();' +
-            '</scri' + 'pt>';
+        window.location = 'resources/notify-no-crash.html';
     }
 }
 

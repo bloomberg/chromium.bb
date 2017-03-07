@@ -73,11 +73,11 @@ function test2() {
 }
 
 function test3() {
-    focusShouldNotChange2('data:text/html,<script>opener.focus();opener.postMessage("", "*");<\/script>', test4);
+    focusShouldNotChange2('resources/mozilla-focus-blur-popup-opener-focus.html', test4);
 }
 
 function test4() {
-    focusShouldNotChange2('data:text/html,<script>blur();opener.postMessage("", "*");<\/script>', test5);
+    focusShouldNotChange2('resources/mozilla-focus-blur-popup-blur.html', test5);
 }
 
 function test5()

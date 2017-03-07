@@ -24,8 +24,7 @@ function test() {
 
 // This function will be called when plugin receives a mousedown event.
 function popup_by_mousedown() {
-    // Open a new window.
-    window.open("data:text/html\, open new window by mouse down", "_blank");
+    window.open("about:blank", "_blank");
     // Check the new opened window and logging the result.
     console.log("window count: " + window.testRunner.windowCount());
     if (window.testRunner.windowCount() == (window.windowCount + 1)) {
@@ -47,7 +46,7 @@ function send_key_to_plugin() {
 // This function will be called when plugin receives a keydown event.
 function popup_by_keydown() {
     // Open a new window.
-    window.open("data:text/html\, open new window by key down", "_blank");
+    window.open("about:blank", "_blank");
     // Check the new opened window and logging the result.
     console.log("window count: " + window.testRunner.windowCount());
     if (window.testRunner.windowCount() == (window.windowCount + 1))

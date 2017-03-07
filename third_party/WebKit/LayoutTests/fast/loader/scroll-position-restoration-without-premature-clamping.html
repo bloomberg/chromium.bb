@@ -36,9 +36,9 @@ onload = function() {
         window.scrollTo(5000, 5001);
         shouldBe('document.scrollingElement.scrollLeft', '5000');
         shouldBe('document.scrollingElement.scrollTop', '5001');
-        setTimeout(function(){ 
+        setTimeout(function(){
             window.name = "verification";
-            window.location = "data:text/html,<script>history.back();</scr" + "ipt>";
+            window.location = "../../resources/back.html";
         }, 0);
     }
 }

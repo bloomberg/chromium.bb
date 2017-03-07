@@ -14,7 +14,7 @@
 <script>
 
 function makeForm(parent, buttonValue, hiddenValue, imageValue, resetValue, submitValue, textValue0, textValue1, textValue2, textAreaValue) {
-    document.write('<form action="data:text/html,<script>history.back()&lt;/script>" id=form1>'
+    document.write('<form action="../../resources/back.html" id=form1>'
         + '<input name=button id=button type=button value="' + buttonValue + '">'
         + '<input name=hidden id=hidden type=hidden value="' + hiddenValue + '">'
         + '<input name=image id=image type=image value="' + imageValue + '">'
@@ -37,14 +37,14 @@ function runTest()
             testRunner.waitUntilDone();
         state.value = 'visited';
         makeForm(parent, '1', '1', '1', '1', '1', '1', '1', '1', '1');
-    
+
         document.getElementById('text1').value = 'edit';
-        // Submit form in a timeout to make sure that we create a new back/forward list item.            
+        // Submit form in a timeout to make sure that we create a new back/forward list item.
         setTimeout(function() {document.getElementById('form1').submit();}, 100);
     } else {
         // Second visit.
         makeForm(parent, '2', '2', '2', '2', '2', '2', '2', '2', '2');
-    
+
         shouldBe('document.getElementById("button").value', '"2"');
         shouldBe('document.getElementById("hidden").value', '"2"');
         shouldBe('document.getElementById("image").value', '"2"');
@@ -54,7 +54,7 @@ function runTest()
         shouldBe('document.getElementById("text1").value', '"edit"');
         shouldBe('document.getElementById("text2").value', '"2"');
         shouldBe('document.getElementById("textarea").value', '"2"');
-    
+
         parent.innerHTML = '';
         if (window.testRunner)
             testRunner.notifyDone();

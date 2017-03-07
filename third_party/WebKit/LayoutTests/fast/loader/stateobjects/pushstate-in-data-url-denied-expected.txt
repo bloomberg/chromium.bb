@@ -1,1 +1,2 @@
-PASS: data URLs cannot be manipulated via pushState.
+ALERT: PASS: data URLs cannot be manipulated via pushState.
+

@@ -24,7 +24,7 @@ function runTest() {
     document.body.appendChild(object1);
     input = iframe.contentDocument.createElement('input');
     document.body.appendChild(input);
-    noderef1 = input.parentElement; 
+    noderef1 = input.parentElement;
     node2.appendChild(noderef1);
     embed = document.createElement('embed');
     object1.id = 4294967294;
@@ -43,7 +43,7 @@ function runTest() {
     template2content.appendChild(object2);
     gc();
     object2.cloneNode();
-    document.location='data:text/html,<body>PASS<script>if (window.testRunner) testRunner.notifyDone()</scr' + 'ipt></body>';
+    document.location = 'Window/resources/destination.html';
 }
 
 runTest();

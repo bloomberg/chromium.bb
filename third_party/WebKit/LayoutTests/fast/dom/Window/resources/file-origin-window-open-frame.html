@@ -8,5 +8,5 @@ window.addEventListener('message', function () {
   }
   top.postMessage(exc ? '' + exc : null, '*');
 });
-newWindow = window.open('data:text/html,<script>opener.postMessage("runTest","*");</scr' + 'ipt>');
+newWindow = window.open('file-origin-window-open-popup.html');
 </script>

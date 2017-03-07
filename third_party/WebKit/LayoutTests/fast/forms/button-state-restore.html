@@ -31,8 +31,8 @@
             input.value = "FAIL";
 
             var form = document.getElementById("form");
-            
-            // Submit form in a timeout to make sure that we create a new back/forward list item.            
+
+            // Submit form in a timeout to make sure that we create a new back/forward list item.
             setTimeout(function() {form.submit();}, 0);
         }
     </script>
@@ -49,6 +49,6 @@
     <button type="button" name="foo">Button</button>
     <input id="input" type="button" name="foo" value="PASS">
     <input id="beenHere">
-    <form action="data:text/html,<script>history.back()</script>" method="POST" id="form"></form>
+    <form action="../../resources/back.html" method="POST" id="form"></form>
 </body>
 </html>

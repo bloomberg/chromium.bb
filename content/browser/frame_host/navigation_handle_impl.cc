@@ -656,6 +656,14 @@ void NavigationHandleImpl::DidCommitNavigation(
   } else {
     state_ = DID_COMMIT;
   }
+
+  if (url_.SchemeIs(url::kDataScheme) && IsInMainFrame() &&
+      IsRendererInitiated()) {
+    GetRenderFrameHost()->AddMessageToConsole(
+        CONSOLE_MESSAGE_LEVEL_WARNING,
+        "Upcoming versions will block content-initiated top frame navigations "
+        "to data: URLs. For more information, see https://goo.gl/BaZAea.");
+  }
 }
 
 void NavigationHandleImpl::Transfer() {

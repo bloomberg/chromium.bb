@@ -19,7 +19,7 @@ if (window.testRunner) {
     testRunner.waitUntilDone();
 }
 </script>
-<meta http-equiv="refresh" content="0;url=data:text/html,%3Cbody%20onload='if(window.testRunner)testRunner.notifyDone();'%3EYou%20should%20have%20seen%20an%20alert.">
+<meta http-equiv="refresh" content="0;url=resources/notify-success-on-load.html">
 </head>
 EOF
 

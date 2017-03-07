@@ -4,8 +4,8 @@ This test is adopted from mozilla's tests.
 
 PASS: The focus should not have been changed!
 PASS: The focus should not have been changed!
-PASS: The focus should not have been changed with URL=data:text/html,<script>opener.focus();opener.postMessage("", "*");</script>
-PASS: The focus should not have been changed with URL=data:text/html,<script>blur();opener.postMessage("", "*");</script>
+PASS: The focus should not have been changed with URL=resources/mozilla-focus-blur-popup-opener-focus.html
+PASS: The focus should not have been changed with URL=resources/mozilla-focus-blur-popup-blur.html
 PASS: The last opened window should be able to get focus
 PASS: All tests finished
 

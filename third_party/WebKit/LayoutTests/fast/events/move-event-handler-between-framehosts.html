@@ -25,7 +25,7 @@ function startTest() {
         testRunner.waitUntilDone();
         testRunner.setCanOpenWindows();
     }
-    window2 = window.open('data:text/html,<div id="div" onscroll="function() {}"></div>');
+    window2 = window.open('resources/move-event-handler-between-framehosts-popup.html');
     window2.addEventListener("load", window2Loaded, false);
 }
 
