@@ -146,7 +146,7 @@ public class SuggestionsNavigationDelegateImpl implements SuggestionsNavigationD
     public void openUrl(int windowOpenDisposition, LoadUrlParams loadUrlParams) {
         switch (windowOpenDisposition) {
             case WindowOpenDisposition.CURRENT_TAB:
-                mHost.loadUrl(loadUrlParams, false);
+                mHost.loadUrl(loadUrlParams, mTabModelSelector.getCurrentTab().isIncognito());
                 break;
             case WindowOpenDisposition.NEW_BACKGROUND_TAB:
                 openUrlInNewTab(loadUrlParams);

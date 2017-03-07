@@ -2126,7 +2126,7 @@ public class LocationBarLayout extends FrameLayout
 
             // If the bottom sheet exists, route the navigation through it instead of the tab.
             if (mBottomSheet != null) {
-                mBottomSheet.loadUrl(loadUrlParams, /* incognito = */ false);
+                mBottomSheet.loadUrl(loadUrlParams, currentTab.isIncognito());
             } else {
                 currentTab.loadUrl(loadUrlParams);
             }

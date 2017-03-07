@@ -83,6 +83,7 @@ import org.chromium.chrome.browser.metrics.StartupMetrics;
 import org.chromium.chrome.browser.metrics.UmaUtils;
 import org.chromium.chrome.browser.multiwindow.MultiInstanceChromeTabbedActivity;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
+import org.chromium.chrome.browser.ntp.ChromeHomeNewTabPage;
 import org.chromium.chrome.browser.ntp.NativePageAssassin;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.ntp.NewTabPageUma;
@@ -1481,6 +1482,9 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
         if (getBottomSheet() != null
                 && getBottomSheet().getSheetState() != BottomSheet.SHEET_STATE_PEEK) {
             getBottomSheet().setSheetState(BottomSheet.SHEET_STATE_PEEK, true);
+            if (currentTab.getNativePage() instanceof ChromeHomeNewTabPage) {
+                getCurrentTabModel().closeTab(currentTab, true, false, false);
+            }
             return true;
         }
 
