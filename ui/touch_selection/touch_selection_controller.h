@@ -182,7 +182,6 @@ class UI_TOUCH_SELECTION_EXPORT TouchSelectionController
   TouchSelectionControllerClient* const client_;
   const Config config_;
 
-  // TODO(amaralp): This is not necessary. Remove it.
   InputEventType response_pending_input_event_;
 
   gfx::SelectionBound start_;

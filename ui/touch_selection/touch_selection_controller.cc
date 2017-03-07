@@ -463,10 +463,12 @@ bool TouchSelectionController::ActivateInsertionIfNecessary() {
         new TouchHandle(this, TouchHandleOrientation::CENTER, viewport_rect_));
   }
 
-  if (active_status_ == INACTIVE) {
+  if (active_status_ == INACTIVE || response_pending_input_event_ == TAP ||
+      response_pending_input_event_ == LONG_PRESS) {
     active_status_ = INSERTION_ACTIVE;
     insertion_handle_->SetEnabled(true);
     insertion_handle_->SetViewportRect(viewport_rect_);
+    response_pending_input_event_ = INPUT_EVENT_TYPE_NONE;
     return true;
   }
   return false;

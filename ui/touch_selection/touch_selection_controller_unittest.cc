@@ -255,6 +255,12 @@ TEST_F(TouchSelectionControllerTest, InsertionBasic) {
   EXPECT_THAT(GetAndResetEvents(), ElementsAre(INSERTION_HANDLE_MOVED));
   EXPECT_EQ(insertion_rect.bottom_left(), GetLastEventStart());
 
+  OnTapEvent();
+  insertion_rect.Offset(1, 0);
+  ChangeInsertion(insertion_rect, visible);
+  EXPECT_THAT(GetAndResetEvents(), ElementsAre(INSERTION_HANDLE_SHOWN));
+  EXPECT_EQ(insertion_rect.bottom_left(), GetLastEventStart());
+
   ClearInsertion();
   EXPECT_THAT(GetAndResetEvents(),
               ElementsAre(INSERTION_HANDLE_CLEARED));
@@ -467,50 +473,6 @@ TEST_F(TouchSelectionControllerTest, InsertionTapped) {
   EXPECT_TRUE(controller().WillHandleTouchEvent(event));
   EXPECT_THAT(GetAndResetEvents(), ElementsAre(INSERTION_HANDLE_DRAG_STARTED,
                                                INSERTION_HANDLE_DRAG_STOPPED));
-}
-
-TEST_F(TouchSelectionControllerTest, InsertionNotResetByRepeatedTapOrPress) {
-  base::TimeTicks event_time = base::TimeTicks::Now();
-  OnTapEvent();
-  SetDraggingEnabled(true);
-
-  gfx::RectF anchor_rect(10, 0, 0, 10);
-  bool visible = true;
-  ChangeInsertion(anchor_rect, visible);
-  EXPECT_THAT(GetAndResetEvents(),
-              ElementsAre(INSERTION_HANDLE_SHOWN));
-  EXPECT_EQ(anchor_rect.bottom_left(), GetLastEventStart());
-
-  // Tapping again shouldn't reset the active insertion point.
-  OnTapEvent();
-  MockMotionEvent event(MockMotionEvent::ACTION_DOWN, event_time, 0, 0);
-  EXPECT_TRUE(controller().WillHandleTouchEvent(event));
-  EXPECT_THAT(GetAndResetEvents(), ElementsAre(INSERTION_HANDLE_DRAG_STARTED));
-  EXPECT_EQ(anchor_rect.bottom_left(), GetLastEventStart());
-
-  event = MockMotionEvent(MockMotionEvent::ACTION_UP, event_time, 0, 0);
-  EXPECT_TRUE(controller().WillHandleTouchEvent(event));
-  EXPECT_THAT(GetAndResetEvents(), ElementsAre(INSERTION_HANDLE_TAPPED,
-                                               INSERTION_HANDLE_DRAG_STOPPED));
-  EXPECT_EQ(anchor_rect.bottom_left(), GetLastEventStart());
-
-  anchor_rect.Offset(5, 15);
-  ChangeInsertion(anchor_rect, visible);
-  EXPECT_THAT(GetAndResetEvents(), ElementsAre(INSERTION_HANDLE_MOVED));
-  EXPECT_EQ(anchor_rect.bottom_left(), GetLastEventStart());
-
-  // Pressing shouldn't reset the active insertion point.
-  OnLongPressEvent();
-  event = MockMotionEvent(MockMotionEvent::ACTION_DOWN, event_time, 0, 0);
-  EXPECT_TRUE(controller().WillHandleTouchEvent(event));
-  EXPECT_THAT(GetAndResetEvents(), ElementsAre(INSERTION_HANDLE_DRAG_STARTED));
-  EXPECT_EQ(anchor_rect.bottom_left(), GetLastEventStart());
-
-  event = MockMotionEvent(MockMotionEvent::ACTION_UP, event_time, 0, 0);
-  EXPECT_TRUE(controller().WillHandleTouchEvent(event));
-  EXPECT_THAT(GetAndResetEvents(), ElementsAre(INSERTION_HANDLE_TAPPED,
-                                               INSERTION_HANDLE_DRAG_STOPPED));
-  EXPECT_EQ(anchor_rect.bottom_left(), GetLastEventStart());
 }
 
 TEST_F(TouchSelectionControllerTest, SelectionBasic) {
