@@ -36,6 +36,7 @@
 #include "core/editing/VisiblePosition.h"
 #include "core/editing/VisibleUnits.h"
 #include "core/editing/commands/BreakBlockquoteCommand.h"
+#include "core/editing/commands/DeleteSelectionCommand.h"
 #include "core/editing/commands/InsertIncrementalTextCommand.h"
 #include "core/editing/commands/InsertLineBreakCommand.h"
 #include "core/editing/commands/InsertParagraphSeparatorCommand.h"
@@ -173,6 +174,20 @@ void TypingCommand::deleteSelection(Document& document, Options options) {
   }
 
   TypingCommand::create(document, DeleteSelection, "", options)->apply();
+}
+
+void TypingCommand::deleteSelectionIfRange(const VisibleSelection& selection,
+                                           EditingState* editingState,
+                                           bool smartDelete,
+                                           bool mergeBlocksAfterDelete,
+                                           bool expandForSpecialElements,
+                                           bool sanitizeMarkup) {
+  if (!selection.isRange())
+    return;
+  applyCommandToComposite(DeleteSelectionCommand::create(
+                              selection, smartDelete, mergeBlocksAfterDelete,
+                              expandForSpecialElements, sanitizeMarkup),
+                          editingState);
 }
 
 void TypingCommand::deleteKeyPressed(Document& document,
@@ -813,8 +828,7 @@ void TypingCommand::deleteKeyPressed(TextGranularity granularity,
   if (frame->editor().behavior().shouldUndoOfDeleteSelectText() &&
       m_openedByBackwardDelete)
     setStartingSelection(selectionAfterUndo);
-  CompositeEditCommand::deleteSelection(selectionToDelete, editingState,
-                                        m_smartDelete);
+  deleteSelectionIfRange(selectionToDelete, editingState, m_smartDelete);
   if (editingState->isAborted())
     return;
   setSmartDelete(false);
@@ -941,8 +955,7 @@ void TypingCommand::forwardDeleteKeyPressed(TextGranularity granularity,
   // Make undo select what was deleted on Mac alone
   if (frame->editor().behavior().shouldUndoOfDeleteSelectText())
     setStartingSelection(selectionAfterUndo);
-  CompositeEditCommand::deleteSelection(selectionToDelete, editingState,
-                                        m_smartDelete);
+  deleteSelectionIfRange(selectionToDelete, editingState, m_smartDelete);
   if (editingState->isAborted())
     return;
   setSmartDelete(false);

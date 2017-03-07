@@ -651,19 +651,6 @@ void CompositeEditCommand::deleteSelection(EditingState* editingState,
                             editingState);
 }
 
-void CompositeEditCommand::deleteSelection(const VisibleSelection& selection,
-                                           EditingState* editingState,
-                                           bool smartDelete,
-                                           bool mergeBlocksAfterDelete,
-                                           bool expandForSpecialElements,
-                                           bool sanitizeMarkup) {
-  if (selection.isRange())
-    applyCommandToComposite(DeleteSelectionCommand::create(
-                                selection, smartDelete, mergeBlocksAfterDelete,
-                                expandForSpecialElements, sanitizeMarkup),
-                            editingState);
-}
-
 void CompositeEditCommand::removeCSSProperty(Element* element,
                                              CSSPropertyID property) {
   // RemoveCSSPropertyCommand is never aborted.

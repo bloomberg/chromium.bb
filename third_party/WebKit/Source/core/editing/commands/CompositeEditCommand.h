@@ -105,12 +105,6 @@ class CORE_EXPORT CompositeEditCommand : public EditCommand {
                        bool mergeBlocksAfterDelete = true,
                        bool expandForSpecialElements = true,
                        bool sanitizeMarkup = true);
-  void deleteSelection(const VisibleSelection&,
-                       EditingState*,
-                       bool smartDelete = false,
-                       bool mergeBlocksAfterDelete = true,
-                       bool expandForSpecialElements = true,
-                       bool sanitizeMarkup = true);
   virtual void deleteTextFromNode(Text*, unsigned offset, unsigned count);
   bool isRemovableBlock(const Node*);
   void insertNodeAfter(Node*, Node* refChild, EditingState*);

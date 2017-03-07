@@ -161,6 +161,13 @@ class CORE_EXPORT TypingCommand final : public CompositeEditCommand {
 
   bool isIncrementalInsertion() const { return m_isIncrementalInsertion; }
 
+  void deleteSelectionIfRange(const VisibleSelection&,
+                              EditingState*,
+                              bool smartDelete = false,
+                              bool mergeBlocksAfterDelete = true,
+                              bool expandForSpecialElements = true,
+                              bool sanitizeMarkup = true);
+
   ETypingCommand m_commandType;
   String m_textToInsert;
   bool m_openForMoreTyping;
