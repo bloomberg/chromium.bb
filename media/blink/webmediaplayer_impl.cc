@@ -2153,16 +2153,6 @@ void WebMediaPlayerImpl::ActivateViewportIntersectionMonitoring(bool activate) {
   client_->activateViewportIntersectionMonitoring(activate);
 }
 
-// TODO(avayvod): Revert after merging into 58 so we keep getting data on the
-// background video pause behavior on desktop. See https://crbug.com/699106.
-#if !defined(OS_ANDROID)
-
-bool WebMediaPlayerImpl::ShouldPauseVideoWhenHidden() const {
-  return false;
-}
-
-#else  // !defined(OS_ANDROID)
-
 bool WebMediaPlayerImpl::ShouldPauseVideoWhenHidden() const {
   // If suspending background video, pause any video that's not remoted or
   // not unlocked to play in the background.
@@ -2185,8 +2175,6 @@ bool WebMediaPlayerImpl::ShouldPauseVideoWhenHidden() const {
   return IsBackgroundVideoTrackOptimizationEnabled() && !hasAudio() &&
          IsBackgroundOptimizationCandidate();
 }
-
-#endif  // !defined(OS_ANDROID)
 
 bool WebMediaPlayerImpl::ShouldDisableVideoWhenHidden() const {
   // This optimization is behind the flag on all platforms.
