@@ -11,36 +11,46 @@ import android.view.View;
 import android.view.View.OnClickListener;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.NativePage;
 import org.chromium.chrome.browser.UrlConstants;
+import org.chromium.chrome.browser.compositor.layouts.EmptyOverviewModeObserver;
+import org.chromium.chrome.browser.compositor.layouts.LayoutManagerChrome;
+import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior.OverviewModeObserver;
 import org.chromium.chrome.browser.ntp.LogoBridge.Logo;
 import org.chromium.chrome.browser.ntp.LogoBridge.LogoObserver;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService.TemplateUrlServiceObserver;
+import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
-import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
-import org.chromium.chrome.browser.tabmodel.TabModelObserver;
+import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.widget.BottomSheet;
+import org.chromium.chrome.browser.widget.TintedImageButton;
 
 /**
  * The new tab page to display when Chrome Home is enabled.
  */
 public class ChromeHomeNewTabPage implements NativePage, TemplateUrlServiceObserver {
     private final Tab mTab;
-    private final TabModelObserver mTabModelObserver;
+    private final TabObserver mTabObserver;
     private final TabModelSelector mTabModelSelector;
     private final LogoView.Delegate mLogoDelegate;
+    private final OverviewModeObserver mOverviewModeObserver;
+    private final LayoutManagerChrome mLayoutManager;
+    private final BottomSheet mBottomSheet;
 
     private final View mView;
     private final LogoView mLogoView;
+    private final TintedImageButton mCloseButton;
+    private final View mFadingBackgroundView;
 
     private final String mTitle;
     private final int mBackgroundColor;
     private final int mThemeColor;
+
+    private boolean mShowOverviewOnClose;
 
     /**
      * Constructs a ChromeHomeNewTabPage.
@@ -48,55 +58,48 @@ public class ChromeHomeNewTabPage implements NativePage, TemplateUrlServiceObser
      * @param tab The Tab that is showing this new tab page.
      * @param tabModelSelector The TabModelSelector used to open tabs.
      */
-    public ChromeHomeNewTabPage(
-            final Context context, final Tab tab, final TabModelSelector tabModelSelector) {
+    public ChromeHomeNewTabPage(final Context context, final Tab tab,
+            final TabModelSelector tabModelSelector, final LayoutManagerChrome layoutManager) {
         mTab = tab;
         mTabModelSelector = tabModelSelector;
+        mLayoutManager = layoutManager;
+        mFadingBackgroundView = mTab.getActivity().getFadingBackgroundView();
+        mBottomSheet = mTab.getActivity().getBottomSheet();
+
         mView = LayoutInflater.from(context).inflate(R.layout.chrome_home_new_tab_page, null);
+        mLogoView = (LogoView) mView.findViewById(R.id.search_provider_logo);
+        mCloseButton = (TintedImageButton) mView.findViewById(R.id.close_button);
 
         Resources res = context.getResources();
         mTitle = res.getString(R.string.button_new_tab);
         mBackgroundColor = ApiCompatibilityUtils.getColor(res, R.color.ntp_bg);
         mThemeColor = ApiCompatibilityUtils.getColor(res, R.color.default_primary_color);
 
-        TemplateUrlService.getInstance().addObserver(this);
-
-        mLogoView = (LogoView) mView.findViewById(R.id.search_provider_logo);
-        mLogoDelegate = new LogoDelegateImpl(tab, mLogoView);
-        mLogoDelegate.getSearchProviderLogo(new LogoObserver() {
+        mShowOverviewOnClose = mLayoutManager.overviewVisible();
+        mOverviewModeObserver = new EmptyOverviewModeObserver() {
             @Override
-            public void onLogoAvailable(Logo logo, boolean fromCache) {
-                if (logo == null && fromCache) return;
-                mLogoView.setDelegate(mLogoDelegate);
-                mLogoView.updateLogo(logo);
-            }
-        });
-        updateSearchProviderLogoVisibility();
-
-        final ChromeActivity activity = tab.getActivity();
-
-        // TODO(twellington): remove this after only one NTP may be open at a time and NTP is
-        //                    destroyed after user navigates to a different tab.
-        mTabModelObserver = new EmptyTabModelObserver() {
-            @Override
-            public void didSelectTab(Tab tab, TabSelectionType type, int lastId) {
-                boolean isNewTabPage = isTabChromeHomeNewTabPage(tab);
-                activity.getFadingBackgroundView().setEnabled(!isNewTabPage);
-                if (isNewTabPage) onNewTabPageShown();
+            public void onOverviewModeFinishedHiding() {
+                mShowOverviewOnClose = mTabModelSelector.getCurrentTab() == mTab;
             }
         };
-        mTabModelSelector.getModel(false).addObserver(mTabModelObserver);
+        mLayoutManager.addOverviewModeObserver(mOverviewModeObserver);
 
-        View closeButton = mView.findViewById(R.id.close_button);
-        closeButton.setOnClickListener(new OnClickListener() {
+        mTabObserver = new EmptyTabObserver() {
             @Override
-            public void onClick(View v) {
-                activity.getBottomSheet().setSheetState(BottomSheet.SHEET_STATE_PEEK, true);
-                mTabModelSelector.closeTab(tab);
-                // TODO(twellington): show overview mode.
+            public void onShown(Tab tab) {
+                onNewTabPageShown();
             }
-        });
 
+            @Override
+            public void onHidden(Tab tab) {
+                mFadingBackgroundView.setEnabled(true);
+                if (!mTab.isClosing()) mShowOverviewOnClose = false;
+            }
+        };
+        mTab.addObserver(mTabObserver);
+
+        mLogoDelegate = initializeLogoView();
+        initializeCloseButton();
         onNewTabPageShown();
 
         // TODO(twellington): disallow moving the NTP to the other window in Android N+
@@ -147,10 +150,11 @@ public class ChromeHomeNewTabPage implements NativePage, TemplateUrlServiceObser
 
         // The next tab will be selected before this one is destroyed. If the currently selected
         // tab is a Chrome Home new tab page, the FadingBackgroundView should not be enabled.
-        mTab.getActivity().getFadingBackgroundView().setEnabled(
+        mFadingBackgroundView.setEnabled(
                 !isTabChromeHomeNewTabPage(mTabModelSelector.getCurrentTab()));
 
-        mTabModelSelector.getModel(false).removeObserver(mTabModelObserver);
+        mLayoutManager.removeOverviewModeObserver(mOverviewModeObserver);
+        mTab.removeObserver(mTabObserver);
     }
 
     private void updateSearchProviderLogoVisibility() {
@@ -159,26 +163,64 @@ public class ChromeHomeNewTabPage implements NativePage, TemplateUrlServiceObser
     }
 
     private void onNewTabPageShown() {
-        mTab.getActivity().getFadingBackgroundView().setEnabled(false);
+        mFadingBackgroundView.setEnabled(false);
 
         // This method may be called when an NTP is selected due to the user switching tab models.
         // In this case, we do not want the bottom sheet to open. Unfortunately, without observing
         // OverviewModeBehavior, we have no good signal to show the BottomSheet when an NTP is
         // selected in the tab switcher. Eventually this won't matter because we will not allow
         // NTPs to remain open after the user leaves them.
-        if (mTab.getActivity().isInOverviewMode()) return;
+        if (mLayoutManager.overviewVisible()) return;
 
-        mTab.getActivity().getBottomSheet().setSheetState(BottomSheet.SHEET_STATE_HALF, true);
+        mBottomSheet.setSheetState(BottomSheet.SHEET_STATE_HALF, true);
     }
 
     private boolean isTabChromeHomeNewTabPage(Tab tab) {
         return tab != null && tab.getUrl().equals(getUrl()) && !tab.isIncognito();
     }
 
-    // TemplateUrlServiceObserver overrides
+    private LogoView.Delegate initializeLogoView() {
+        TemplateUrlService.getInstance().addObserver(this);
+
+        final LogoView.Delegate logoDelegate = new LogoDelegateImpl(mTab, mLogoView);
+        logoDelegate.getSearchProviderLogo(new LogoObserver() {
+            @Override
+            public void onLogoAvailable(Logo logo, boolean fromCache) {
+                if (logo == null && fromCache) return;
+                mLogoView.setDelegate(logoDelegate);
+                mLogoView.updateLogo(logo);
+            }
+        });
+        updateSearchProviderLogoVisibility();
+        return logoDelegate;
+    }
+
+    private void initializeCloseButton() {
+        mCloseButton.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mBottomSheet.setSheetState(BottomSheet.SHEET_STATE_PEEK, true);
+                if (mShowOverviewOnClose) mLayoutManager.showOverview(false);
+
+                // Close the tab after showing the overview mode so the bottom sheet doesn't open
+                // if another NTP is selected when this one is closed.
+                // TODO(twellington): remove this comment after only one NTP may be open at a time.
+                mTabModelSelector.closeTab(mTab);
+            }
+        });
+    }
+
+    // TemplateUrlServiceObserver overrides.
 
     @Override
     public void onTemplateURLServiceChanged() {
         updateSearchProviderLogoVisibility();
+    }
+
+    // Methods for testing.
+
+    @VisibleForTesting
+    public TintedImageButton getCloseButtonForTests() {
+        return mCloseButton;
     }
 }

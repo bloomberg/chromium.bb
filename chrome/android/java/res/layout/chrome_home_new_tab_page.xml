@@ -10,7 +10,7 @@
     android:layout_height="match_parent"
     android:focusable="true"
     android:focusableInTouchMode="true"
-    android:background="@color/ntp_bg" >
+    android:background="@android:color/white" >
 
     <org.chromium.chrome.browser.widget.TintedImageButton
         android:id="@+id/close_button"

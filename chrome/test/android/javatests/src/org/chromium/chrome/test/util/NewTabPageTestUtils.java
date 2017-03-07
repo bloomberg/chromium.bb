@@ -7,6 +7,7 @@ package org.chromium.chrome.test.util;
 import android.annotation.TargetApi;
 import android.os.Build;
 
+import org.chromium.chrome.browser.ntp.ChromeHomeNewTabPage;
 import org.chromium.chrome.browser.ntp.IncognitoNewTabPage;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.tab.Tab;
@@ -30,10 +31,13 @@ public class NewTabPageTestUtils {
             public boolean isSatisfied() {
                 if (!tab.isIncognito()) {
                     // TODO(tedchoc): Make MostVisitedPage also have a isLoaded() concept.
-                    if (!(tab.getNativePage() instanceof NewTabPage)) {
+                    if (tab.getNativePage() instanceof ChromeHomeNewTabPage) {
+                        return true;
+                    } else if (tab.getNativePage() instanceof NewTabPage) {
+                        return ((NewTabPage) tab.getNativePage()).isLoadedForTests();
+                    } else {
                         return false;
                     }
-                    return ((NewTabPage) tab.getNativePage()).isLoadedForTests();
                 } else {
                     if (!(tab.getNativePage() instanceof IncognitoNewTabPage)) {
                         return false;
