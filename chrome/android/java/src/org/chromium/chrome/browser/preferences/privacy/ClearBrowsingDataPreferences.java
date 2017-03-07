@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.preferences.privacy;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Intent;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
@@ -33,6 +34,7 @@ import org.chromium.chrome.browser.preferences.privacy.BrowsingDataCounterBridge
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.document.TabDelegate;
+import org.chromium.chrome.browser.widget.TintedDrawable;
 import org.chromium.components.signin.ChromeSigninController;
 
 import java.util.Arrays;
@@ -53,6 +55,7 @@ public class ClearBrowsingDataPreferences extends PreferenceFragment
      */
     private static class Item implements BrowsingDataCounterCallback,
                                          Preference.OnPreferenceClickListener {
+        private static final int MIN_DP_FOR_ICON = 360;
         private final ClearBrowsingDataPreferences mParent;
         private final DialogOption mOption;
         private final ClearBrowsingDataCheckBoxPreference mCheckbox;
@@ -75,7 +78,18 @@ public class ClearBrowsingDataPreferences extends PreferenceFragment
             mCheckbox.setEnabled(enabled);
             mCheckbox.setChecked(selected);
 
-            if (!ClearBrowsingDataTabsFragment.isFeatureEnabled()) {
+            if (ClearBrowsingDataTabsFragment.isFeatureEnabled()) {
+                int dp = mParent.getResources().getConfiguration().smallestScreenWidthDp;
+                if (dp >= MIN_DP_FOR_ICON) {
+                    if (option.iconNeedsTinting()) {
+                        Drawable icon = TintedDrawable.constructTintedDrawable(
+                                mParent.getResources(), option.getIcon(), R.color.google_grey_600);
+                        mCheckbox.setIcon(icon);
+                    } else {
+                        mCheckbox.setIcon(option.getIcon());
+                    }
+                }
+            } else {
                 // No summary when unchecked. The redesigned basic and advanced
                 // CBD views will always show the checkbox summary.
                 mCheckbox.setSummaryOff("");
@@ -165,29 +179,55 @@ public class ClearBrowsingDataPreferences extends PreferenceFragment
      * The various data types that can be cleared via this screen.
      */
     public enum DialogOption {
-        CLEAR_HISTORY(BrowsingDataType.HISTORY, PREF_HISTORY),
-        CLEAR_COOKIES_AND_SITE_DATA(BrowsingDataType.COOKIES, PREF_COOKIES),
-        CLEAR_CACHE(BrowsingDataType.CACHE, PREF_CACHE),
-        CLEAR_PASSWORDS(BrowsingDataType.PASSWORDS, PREF_PASSWORDS),
-        CLEAR_FORM_DATA(BrowsingDataType.FORM_DATA, PREF_FORM_DATA);
+        CLEAR_HISTORY(
+                BrowsingDataType.HISTORY, PREF_HISTORY, R.drawable.ic_history_grey600_24dp, false),
+        CLEAR_COOKIES_AND_SITE_DATA(
+                BrowsingDataType.COOKIES, PREF_COOKIES, R.drawable.permission_cookie, true),
+        CLEAR_CACHE(
+                BrowsingDataType.CACHE, PREF_CACHE, R.drawable.ic_collections_grey600_24dp, false),
+        CLEAR_PASSWORDS(BrowsingDataType.PASSWORDS, PREF_PASSWORDS,
+                R.drawable.ic_vpn_key_grey600_24dp, false),
+        CLEAR_FORM_DATA(
+                BrowsingDataType.FORM_DATA, PREF_FORM_DATA, R.drawable.bookmark_edit_normal, true);
 
         private final int mDataType;
         private final String mPreferenceKey;
+        private final int mIcon;
+        private final boolean mNeedsTinting;
 
-        private DialogOption(int dataType, String preferenceKey) {
+        private DialogOption(int dataType, String preferenceKey, int icon, boolean needsTinting) {
             mDataType = dataType;
             mPreferenceKey = preferenceKey;
+            mIcon = icon;
+            mNeedsTinting = needsTinting;
         }
 
+        /**
+         * @return The {@link BrowsingDataType} this option represents.
+         */
         public int getDataType() {
             return mDataType;
         }
 
         /**
-         * @return String The key of the corresponding preference.
+         * @return The key of the corresponding preference.
          */
         public String getPreferenceKey() {
             return mPreferenceKey;
+        }
+
+        /**
+         * @return The resource id for the icon that is used to display this option.
+         */
+        public int getIcon() {
+            return mIcon;
+        }
+
+        /**
+         * @return Whether the icon has a different color than google_grey_600.
+         */
+        public boolean iconNeedsTinting() {
+            return mNeedsTinting;
         }
     }
 
