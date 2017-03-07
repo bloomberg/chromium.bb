@@ -25,6 +25,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
@@ -451,7 +452,9 @@ public class ChromeDownloadDelegate {
     public boolean shouldInterceptContextMenuDownload(String url) {
         Uri uri = Uri.parse(url);
         String scheme = uri.normalizeScheme().getScheme();
-        if (!"http".equals(scheme) && !"https".equals(scheme)) return false;
+        if (!UrlConstants.HTTP_SCHEME.equals(scheme) && !UrlConstants.HTTPS_SCHEME.equals(scheme)) {
+            return false;
+        }
         String path = uri.getPath();
         // OMA downloads have extension "dm" or "dd". For the latter, it
         // can be handled when native download completes.

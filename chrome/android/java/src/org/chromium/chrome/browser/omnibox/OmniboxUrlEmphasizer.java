@@ -301,9 +301,9 @@ public class OmniboxUrlEmphasizer {
 
         String scheme = emphasizeResponse.extractScheme(url);
 
-        if (scheme.equals("http") || scheme.equals("https")) {
+        if (scheme.equals(UrlConstants.HTTP_SCHEME) || scheme.equals(UrlConstants.HTTPS_SCHEME)) {
             return emphasizeResponse.hostStart + emphasizeResponse.hostLength;
-        } else if (scheme.equals("data")) {
+        } else if (scheme.equals(UrlConstants.DATA_SCHEME)) {
             return 0;
         } else {
             return url.length();
