@@ -1462,6 +1462,7 @@ split_static_library("browser") {
     "//components/network_time",
     "//components/ntp_snippets",
     "//components/ntp_tiles",
+    "//components/offline_items_collection/core",
     "//components/offline_pages/content/background_loader",
     "//components/offline_pages/core",
     "//components/offline_pages/core/background:background_offliner",

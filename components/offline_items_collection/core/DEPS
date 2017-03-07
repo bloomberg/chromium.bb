@@ -1,0 +1,6 @@
+include_rules = [
+  "+base",
+  "+components/offline_pages",
+  "+testing",
+  "+url",
+]
