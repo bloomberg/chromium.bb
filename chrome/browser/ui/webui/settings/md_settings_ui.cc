@@ -35,9 +35,11 @@
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
 #include "chrome/browser/ui/webui/settings/settings_startup_pages_handler.h"
 #include "chrome/browser/ui/webui/settings/site_settings_handler.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/settings_resources.h"
 #include "chrome/grit/settings_resources_map.h"
+#include "components/pref_registry/pref_registry_syncable.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
@@ -77,6 +79,16 @@
 #endif  // defined(USE_NSS_CERTS)
 
 namespace settings {
+
+// static
+void MdSettingsUI::RegisterProfilePrefs(
+    user_prefs::PrefRegistrySyncable* registry) {
+  registry->RegisterBooleanPref(prefs::kImportDialogAutofillFormData, true);
+  registry->RegisterBooleanPref(prefs::kImportDialogBookmarks, true);
+  registry->RegisterBooleanPref(prefs::kImportDialogHistory, true);
+  registry->RegisterBooleanPref(prefs::kImportDialogSavedPasswords, true);
+  registry->RegisterBooleanPref(prefs::kImportDialogSearchEngine, true);
+}
 
 MdSettingsUI::MdSettingsUI(content::WebUI* web_ui, const GURL& url)
     : content::WebUIController(web_ui),

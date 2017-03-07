@@ -1643,7 +1643,7 @@
     "can_be_recommended": true,
     "test_policy": { "ImportBookmarks": false },
     "pref_mappings": [
-      { "pref": "import_bookmarks",
+      { "pref": "import_dialog_bookmarks",
         "indicator_tests": [
           { "policy": { "ImportBookmarks": false } }
         ]
@@ -1656,7 +1656,7 @@
     "can_be_recommended": true,
     "test_policy": { "ImportHistory": false },
     "pref_mappings": [
-      { "pref": "import_history",
+      { "pref": "import_dialog_history",
         "indicator_tests": [
           { "policy": { "ImportHistory": false } }
         ]
@@ -1677,7 +1677,7 @@
     "can_be_recommended": true,
     "test_policy": { "ImportSearchEngine": false },
     "pref_mappings": [
-      { "pref": "import_search_engine",
+      { "pref": "import_dialog_search_engine",
         "indicator_tests": [
           { "policy": { "ImportSearchEngine": false } }
         ]
@@ -1690,7 +1690,7 @@
     "can_be_recommended": true,
     "test_policy": { "ImportSavedPasswords": false },
     "pref_mappings": [
-      { "pref": "import_saved_passwords",
+      { "pref": "import_dialog_saved_passwords",
         "indicator_tests": [
           { "policy": { "ImportSavedPasswords": false } }
         ]
@@ -1703,7 +1703,7 @@
     "can_be_recommended": true,
     "test_policy": { "ImportAutofillFormData": false },
     "pref_mappings": [
-      { "pref": "import_autofill_form_data",
+      { "pref": "import_dialog_autofill_form_data",
         "indicator_tests": [
           { "policy": { "ImportAutofillFormData": false } }
         ]

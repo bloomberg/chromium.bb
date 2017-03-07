@@ -259,6 +259,7 @@
 
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
 #include "chrome/browser/ui/webui/md_history_ui.h"
+#include "chrome/browser/ui/webui/settings/md_settings_ui.h"
 #endif
 
 namespace {
@@ -634,6 +635,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
 
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
   MdHistoryUI::RegisterProfilePrefs(registry);
+  settings::MdSettingsUI::RegisterProfilePrefs(registry);
 #endif
 
   // Preferences registered only for migration (clearing or moving to a new key)

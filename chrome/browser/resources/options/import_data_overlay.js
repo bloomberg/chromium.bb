@@ -179,11 +179,11 @@ cr.define('options', function() {
      * @private
      */
     clearUserPrefs_: function() {
-      var importPrefs = ['import_history',
-                         'import_bookmarks',
-                         'import_saved_passwords',
-                         'import_search_engine',
-                         'import_autofill_form_data'];
+      var importPrefs = [
+        'import_dialog_history', 'import_dialog_bookmarks',
+        'import_dialog_saved_passwords', 'import_dialog_search_engine',
+        'import_dialog_autofill_form_data'
+      ];
       for (var i = 0; i < importPrefs.length; i++)
         Preferences.clearPref(importPrefs[i], true);
     },

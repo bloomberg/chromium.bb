@@ -75,12 +75,9 @@ suite('ImportDataDialog', function() {
   }
 
   var prefs = {};
-  [
-    'import_history',
-    'import_bookmarks',
-    'import_saved_passwords',
-    'import_search_engine',
-    'import_autofill_form_data',
+  ['import_dialog_history', 'import_dialog_bookmarks',
+   'import_dialog_saved_passwords', 'import_dialog_search_engine',
+   'import_dialog_autofill_form_data',
   ].forEach(function(name) {
     prefs[name] = createBooleanPref(name);
   });
@@ -128,11 +125,11 @@ suite('ImportDataDialog', function() {
     simulateBrowserProfileChange(1);
     assertTrue(dialog.$.import.disabled);
 
-    // Ensure everything except |import_bookmarks| is ignored.
-    dialog.set('prefs.import_history.value', true);
+    // Ensure everything except |import_dialog_bookmarks| is ignored.
+    dialog.set('prefs.import_dialog_history.value', true);
     assertTrue(dialog.$.import.disabled);
 
-    dialog.set('prefs.import_bookmarks.value', true);
+    dialog.set('prefs.import_dialog_bookmarks.value', true);
     assertFalse(dialog.$.import.disabled);
   });
 
@@ -175,7 +172,7 @@ suite('ImportDataDialog', function() {
   });
 
   test('ImportFromBrowserProfile', function() {
-    dialog.set('prefs.import_bookmarks.value', false);
+    dialog.set('prefs.import_dialog_bookmarks.value', false);
 
     var expectedIndex = 0;
     simulateBrowserProfileChange(expectedIndex);

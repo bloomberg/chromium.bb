@@ -118,15 +118,15 @@ void ImportDataHandler::ImportData(const base::ListValue* args) {
   PrefService* prefs = Profile::FromWebUI(web_ui())->GetPrefs();
 
   uint16_t selected_items = importer::NONE;
-  if (prefs->GetBoolean(prefs::kImportAutofillFormData))
+  if (prefs->GetBoolean(prefs::kImportDialogAutofillFormData))
     selected_items |= importer::AUTOFILL_FORM_DATA;
-  if (prefs->GetBoolean(prefs::kImportBookmarks))
+  if (prefs->GetBoolean(prefs::kImportDialogBookmarks))
     selected_items |= importer::FAVORITES;
-  if (prefs->GetBoolean(prefs::kImportHistory))
+  if (prefs->GetBoolean(prefs::kImportDialogHistory))
     selected_items |= importer::HISTORY;
-  if (prefs->GetBoolean(prefs::kImportSavedPasswords))
+  if (prefs->GetBoolean(prefs::kImportDialogSavedPasswords))
     selected_items |= importer::PASSWORDS;
-  if (prefs->GetBoolean(prefs::kImportSearchEngine))
+  if (prefs->GetBoolean(prefs::kImportDialogSearchEngine))
     selected_items |= importer::SEARCH_ENGINES;
 
   const importer::SourceProfile& source_profile =

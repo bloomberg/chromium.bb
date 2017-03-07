@@ -319,6 +319,8 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kAllowFileSelectionDialogs,
     prefs::kAllowFileSelectionDialogs,
     base::Value::Type::BOOLEAN },
+
+  // First run import.
   { key::kImportBookmarks,
     prefs::kImportBookmarks,
     base::Value::Type::BOOLEAN },
@@ -337,6 +339,25 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kImportAutofillFormData,
     prefs::kImportAutofillFormData,
     base::Value::Type::BOOLEAN },
+
+  // Import data dialog: controlled by same policies as first run import, but
+  // uses different prefs.
+  { key::kImportBookmarks,
+    prefs::kImportDialogBookmarks,
+    base::Value::Type::BOOLEAN },
+  { key::kImportHistory,
+    prefs::kImportDialogHistory,
+    base::Value::Type::BOOLEAN },
+  { key::kImportSearchEngine,
+    prefs::kImportDialogSearchEngine,
+    base::Value::Type::BOOLEAN },
+  { key::kImportSavedPasswords,
+    prefs::kImportDialogSavedPasswords,
+    base::Value::Type::BOOLEAN },
+  { key::kImportAutofillFormData,
+    prefs::kImportDialogAutofillFormData,
+    base::Value::Type::BOOLEAN },
+
   { key::kMaxConnectionsPerProxy,
     prefs::kMaxConnectionsPerProxy,
     base::Value::Type::INTEGER },

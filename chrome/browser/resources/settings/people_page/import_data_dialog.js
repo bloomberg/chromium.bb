@@ -77,14 +77,16 @@ Polymer({
   /** @private */
   prefsChanged_: function() {
     this.noImportDataTypeSelected_ =
-        !(this.getPref('import_history').value && this.selected_.history) &&
-        !(this.getPref('import_bookmarks').value && this.selected_.favorites) &&
-        !(this.getPref('import_saved_passwords').value &&
-            this.selected_.passwords) &&
-        !(this.getPref('import_search_engine').value &&
-            this.selected_.search) &&
-        !(this.getPref('import_autofill_form_data').value &&
-            this.selected_.autofillFormData);
+        !(this.getPref('import_dialog_history').value &&
+          this.selected_.history) &&
+        !(this.getPref('import_dialog_bookmarks').value &&
+          this.selected_.favorites) &&
+        !(this.getPref('import_dialog_saved_passwords').value &&
+          this.selected_.passwords) &&
+        !(this.getPref('import_dialog_search_engine').value &&
+          this.selected_.search) &&
+        !(this.getPref('import_dialog_autofill_form_data').value &&
+          this.selected_.autofillFormData);
   },
 
   /**

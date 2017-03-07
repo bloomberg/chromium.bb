@@ -341,15 +341,15 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
       settings_private::PrefType::PREF_TYPE_BOOLEAN;
 
   // Import data
-  (*s_whitelist)[::prefs::kImportAutofillFormData] =
+  (*s_whitelist)[::prefs::kImportDialogAutofillFormData] =
       settings_private::PrefType::PREF_TYPE_BOOLEAN;
-  (*s_whitelist)[::prefs::kImportBookmarks] =
+  (*s_whitelist)[::prefs::kImportDialogBookmarks] =
       settings_private::PrefType::PREF_TYPE_BOOLEAN;
-  (*s_whitelist)[::prefs::kImportHistory] =
+  (*s_whitelist)[::prefs::kImportDialogHistory] =
       settings_private::PrefType::PREF_TYPE_BOOLEAN;
-  (*s_whitelist)[::prefs::kImportSavedPasswords] =
+  (*s_whitelist)[::prefs::kImportDialogSavedPasswords] =
       settings_private::PrefType::PREF_TYPE_BOOLEAN;
-  (*s_whitelist)[::prefs::kImportSearchEngine] =
+  (*s_whitelist)[::prefs::kImportDialogSearchEngine] =
       settings_private::PrefType::PREF_TYPE_BOOLEAN;
 #endif
 

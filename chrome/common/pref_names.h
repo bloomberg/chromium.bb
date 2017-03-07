@@ -401,6 +401,12 @@ extern const char kImportHomepage[];
 extern const char kImportSavedPasswords[];
 extern const char kImportSearchEngine[];
 
+extern const char kImportDialogAutofillFormData[];
+extern const char kImportDialogBookmarks[];
+extern const char kImportDialogHistory[];
+extern const char kImportDialogSavedPasswords[];
+extern const char kImportDialogSearchEngine[];
+
 extern const char kProfileAvatarIndex[];
 extern const char kProfileUsingDefaultName[];
 extern const char kProfileName[];

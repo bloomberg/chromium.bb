@@ -14,6 +14,10 @@
 
 class GURL;
 
+namespace user_prefs {
+class PrefRegistrySyncable;
+}
+
 namespace settings {
 
 class SettingsPageUIHandler;
@@ -22,6 +26,8 @@ class SettingsPageUIHandler;
 class MdSettingsUI : public content::WebUIController,
                      public content::WebContentsObserver {
  public:
+  static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
+
   MdSettingsUI(content::WebUI* web_ui, const GURL& url);
   ~MdSettingsUI() override;
 

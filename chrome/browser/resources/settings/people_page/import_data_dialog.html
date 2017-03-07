@@ -41,7 +41,7 @@
             importStatusEnum_.SUCCEEDED, importStatus_)]]">
           <iron-icon id="successIcon" icon="settings:check-circle">
           </iron-icon>
-          <div hidden$="[[!prefs.import_bookmarks.value]]">
+          <div hidden$="[[!prefs.import_dialog_bookmarks.value]]">
             <div class="description">$i18n{importSuccess}</div>
             <settings-toggle-button class="start"
                 label="$i18n{showBookmarksBar}"
@@ -64,27 +64,27 @@
           <div class="description">$i18n{importDescription}</div>
           <settings-checkbox
               hidden="[[!selected_.history]]"
-              pref="{{prefs.import_history}}"
+              pref="{{prefs.import_dialog_history}}"
               label="$i18n{importHistory}">
           </settings-checkbox>
           <settings-checkbox
               hidden="[[!selected_.favorites]]"
-              pref="{{prefs.import_bookmarks}}"
+              pref="{{prefs.import_dialog_bookmarks}}"
               label="$i18n{importFavorites}">
           </settings-checkbox>
           <settings-checkbox
               hidden="[[!selected_.passwords]]"
-              pref="{{prefs.import_saved_passwords}}"
+              pref="{{prefs.import_dialog_saved_passwords}}"
               label="$i18n{importPasswords}">
           </settings-checkbox>
           <settings-checkbox
               hidden="[[!selected_.search]]"
-              pref="{{prefs.import_search_engine}}"
+              pref="{{prefs.import_dialog_search_engine}}"
               label="$i18n{importSearch}">
           </settings-checkbox>
           <settings-checkbox
               hidden="[[!selected_.autofillFormData]]"
-              pref="{{prefs.import_autofill_form_data}}"
+              pref="{{prefs.import_dialog_autofill_form_data}}"
               label="$i18n{importAutofillFormData}">
           </settings-checkbox>
         </div>

@@ -1179,6 +1179,14 @@ const char kImportSavedPasswords[] = "import_saved_passwords";
 // browser on first run.
 const char kImportSearchEngine[] = "import_search_engine";
 
+// Prefs used to remember selections in the "Import data" dialog on the settings
+// page (chrome://settings/importData).
+const char kImportDialogAutofillFormData[] = "import_dialog_autofill_form_data";
+const char kImportDialogBookmarks[] = "import_dialog_bookmarks";
+const char kImportDialogHistory[] = "import_dialog_history";
+const char kImportDialogSavedPasswords[] = "import_dialog_saved_passwords";
+const char kImportDialogSearchEngine[] = "import_dialog_search_engine";
+
 // Profile avatar and name
 const char kProfileAvatarIndex[] = "profile.avatar_index";
 const char kProfileName[] = "profile.name";
