@@ -1170,14 +1170,6 @@
       interpolable: true,
     },
     {
-      name: "line-height-step",
-      api_class: true,
-      api_methods: ["parseSingleValue"],
-      converter: "convertComputedLength<uint8_t>",
-      inherited: true,
-      runtime_flag: "CSSSnapSize",
-    },
-    {
       name: "list-style-image",
       api_class: "CSSPropertyAPIImage",
       api_methods: ["parseSingleValue"],
@@ -1623,6 +1615,14 @@
       api_class: true,
       api_methods: ["parseSingleValue"],
       custom_all: true,
+    },
+    {
+      name: "snap-height",
+      api_class: true,
+      api_methods: ["parseSingleValue"],
+      custom_all: true,
+      inherited: true,
+      runtime_flag: "CSSSnapSize",
     },
     {
       name: "speak",

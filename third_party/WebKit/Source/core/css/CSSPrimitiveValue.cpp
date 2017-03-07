@@ -300,13 +300,6 @@ unsigned short CSSPrimitiveValue::computeLength(
 }
 
 template <>
-uint8_t CSSPrimitiveValue::computeLength(
-    const CSSToLengthConversionData& conversionData) const {
-  return roundForImpreciseConversion<uint8_t>(
-      computeLengthDouble(conversionData));
-}
-
-template <>
 float CSSPrimitiveValue::computeLength(
     const CSSToLengthConversionData& conversionData) const {
   return clampTo<float>(computeLengthDouble(conversionData));

@@ -2541,8 +2541,6 @@ const CSSValue* ComputedStyleCSSValueMapping::get(
               : CSSPrimitiveValue::UnitType::Number);
     case CSSPropertyLineHeight:
       return valueForLineHeight(style);
-    case CSSPropertyLineHeightStep:
-      return zoomAdjustedPixelValue(style.lineHeightStep(), style);
     case CSSPropertyListStyleImage:
       if (style.listStyleImage())
         return style.listStyleImage()->computedCSSValue();
@@ -3654,6 +3652,18 @@ const CSSValue* ComputedStyleCSSValueMapping::get(
       if (style.containsSize())
         list->append(*CSSIdentifierValue::create(CSSValueSize));
       ASSERT(list->length());
+      return list;
+    }
+    case CSSPropertySnapHeight: {
+      if (!style.snapHeightUnit())
+        return CSSPrimitiveValue::create(0,
+                                         CSSPrimitiveValue::UnitType::Pixels);
+      CSSValueList* list = CSSValueList::createSpaceSeparated();
+      list->append(*CSSPrimitiveValue::create(
+          style.snapHeightUnit(), CSSPrimitiveValue::UnitType::Pixels));
+      if (style.snapHeightPosition())
+        list->append(*CSSPrimitiveValue::create(
+            style.snapHeightPosition(), CSSPrimitiveValue::UnitType::Integer));
       return list;
     }
     case CSSPropertyVariable:

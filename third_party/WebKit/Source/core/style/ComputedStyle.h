@@ -1942,13 +1942,18 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   QuotesData* quotes() const { return m_rareInheritedData->quotes.get(); }
   void setQuotes(PassRefPtr<QuotesData>);
 
-  // line-height-step
-  static uint8_t initialLineHeightStep() { return 0; }
-  uint8_t lineHeightStep() const {
-    return m_rareInheritedData->m_lineHeightStep;
+  // snap-height
+  uint8_t snapHeightPosition() const {
+    return m_rareInheritedData->m_snapHeightPosition;
   }
-  void setLineHeightStep(uint8_t unit) {
-    SET_VAR(m_rareInheritedData, m_lineHeightStep, unit);
+  uint8_t snapHeightUnit() const {
+    return m_rareInheritedData->m_snapHeightUnit;
+  }
+  void setSnapHeightPosition(uint8_t position) {
+    SET_VAR(m_rareInheritedData, m_snapHeightPosition, position);
+  }
+  void setSnapHeightUnit(uint8_t unit) {
+    SET_VAR(m_rareInheritedData, m_snapHeightUnit, unit);
   }
 
   // speak

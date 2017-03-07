@@ -221,18 +221,32 @@ void RootInlineBox::childRemoved(InlineBox* box) {
   }
 }
 
-static inline void applyLineHeightStep(uint8_t lineHeightStep,
-                                       int& maxAscent,
-                                       int& maxDescent) {
-  // Round up to the multiple of units, by adding spaces to over/under equally.
-  // https://drafts.csswg.org/css-rhythm/#line-height-step
-  int remainder = (maxAscent + maxDescent) % lineHeightStep;
-  if (!remainder)
+static inline void snapHeight(int& maxAscent,
+                              int& maxDescent,
+                              const ComputedStyle& style) {
+  // If position is 0, add spaces to over/under equally.
+  // https://drafts.csswg.org/css-snap-size/#snap-height
+  int unit = style.snapHeightUnit();
+  ASSERT(unit);
+  int position = style.snapHeightPosition();
+  if (!position) {
+    int space = unit - ((maxAscent + maxDescent) % unit);
+    maxDescent += space / 2;
+    maxAscent += space - space / 2;
     return;
-  DCHECK_GT(remainder, 0);
-  int space = lineHeightStep - remainder;
-  maxDescent += space / 2;
-  maxAscent += space - space / 2;
+  }
+
+  // Match the baseline to the specified position.
+  // https://drafts.csswg.org/css-snap-size/#snap-baseline
+  ASSERT(position > 0 && position <= 100);
+  position = position * unit / 100;
+  int spaceOver = position - maxAscent % unit;
+  if (spaceOver < 0) {
+    spaceOver += unit;
+    ASSERT(spaceOver >= 0);
+  }
+  maxAscent += spaceOver;
+  maxDescent += unit - (maxAscent + maxDescent) % unit;
 }
 
 LayoutUnit RootInlineBox::alignBoxesInBlockDirection(
@@ -264,8 +278,8 @@ LayoutUnit RootInlineBox::alignBoxesInBlockDirection(
     adjustMaxAscentAndDescent(maxAscent, maxDescent, maxPositionTop.toInt(),
                               maxPositionBottom.toInt());
 
-  if (uint8_t lineHeightStep = getLineLayoutItem().styleRef().lineHeightStep())
-    applyLineHeightStep(lineHeightStep, maxAscent, maxDescent);
+  if (getLineLayoutItem().styleRef().snapHeightUnit())
+    snapHeight(maxAscent, maxDescent, getLineLayoutItem().styleRef());
 
   LayoutUnit maxHeight = LayoutUnit(maxAscent + maxDescent);
   LayoutUnit lineTop = heightOfBlock;

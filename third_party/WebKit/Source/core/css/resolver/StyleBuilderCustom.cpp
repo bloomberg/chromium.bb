@@ -426,6 +426,42 @@ void StyleBuilderFunctions::applyValueCSSPropertySize(StyleResolverState& state,
   state.style()->setPageSize(size);
 }
 
+void StyleBuilderFunctions::applyInitialCSSPropertySnapHeight(
+    StyleResolverState& state) {
+  state.style()->setSnapHeightUnit(0);
+  state.style()->setSnapHeightPosition(0);
+}
+
+void StyleBuilderFunctions::applyInheritCSSPropertySnapHeight(
+    StyleResolverState& state) {
+  state.style()->setSnapHeightUnit(state.parentStyle()->snapHeightUnit());
+  state.style()->setSnapHeightPosition(
+      state.parentStyle()->snapHeightPosition());
+}
+
+void StyleBuilderFunctions::applyValueCSSPropertySnapHeight(
+    StyleResolverState& state,
+    const CSSValue& value) {
+  const CSSValueList& list = toCSSValueList(value);
+  const CSSPrimitiveValue& first = toCSSPrimitiveValue(list.item(0));
+  DCHECK(first.isLength());
+  int unit = first.computeLength<int>(state.cssToLengthConversionData());
+  DCHECK_GE(unit, 0);
+  state.style()->setSnapHeightUnit(clampTo<uint8_t>(unit));
+
+  if (list.length() == 1) {
+    state.style()->setSnapHeightPosition(0);
+    return;
+  }
+
+  DCHECK_EQ(list.length(), 2U);
+  const CSSPrimitiveValue& second = toCSSPrimitiveValue(list.item(1));
+  DCHECK(second.isNumber());
+  int position = second.getIntValue();
+  DCHECK(position > 0 && position <= 100);
+  state.style()->setSnapHeightPosition(position);
+}
+
 void StyleBuilderFunctions::applyValueCSSPropertyTextAlign(
     StyleResolverState& state,
     const CSSValue& value) {

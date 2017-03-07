@@ -1,0 +1,12 @@
+This is a testharness.js-based test.
+FAIL initial value should be '0px' assert_equals: expected (string) "0px" but got (undefined) undefined
+FAIL 'line-height-step: 20px' should compute to '20px' assert_equals: expected (string) "20px" but got (undefined) undefined
+FAIL line-height-step should inherit assert_equals: expected (string) "20px" but got (undefined) undefined
+FAIL 'line-height-step: initial' should compute to '0px' assert_equals: expected (string) "0px" but got (undefined) undefined
+FAIL 'line-height-step: 40px' should compute to '40px' assert_equals: expected (string) "40px" but got (undefined) undefined
+FAIL '0' should be a valid length assert_equals: expected (string) "0px" but got (undefined) undefined
+FAIL Interger should be invalid assert_equals: expected (string) "20px" but got (undefined) undefined
+FAIL Negative length should be invalid assert_equals: expected (string) "20px" but got (undefined) undefined
+FAIL Computed value should be the absolute length Cannot read property 'slice' of undefined
+Harness: the test ran to completion.
+
