@@ -298,6 +298,7 @@ component("net") {
     "socket/connection_attempts.h",
     "socket/next_proto.cc",
     "socket/next_proto.h",
+    "socket/socket.cc",
     "socket/socket.h",
     "socket/socket_bio_adapter.cc",
     "socket/socket_bio_adapter.h",

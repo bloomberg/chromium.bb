@@ -819,20 +819,25 @@ void SSLClientSocketImpl::DumpSSLClientSessionMemoryStats(
 int SSLClientSocketImpl::Read(IOBuffer* buf,
                               int buf_len,
                               const CompletionCallback& callback) {
-  user_read_buf_ = buf;
-  user_read_buf_len_ = buf_len;
+  int rv = ReadIfReady(buf, buf_len, callback);
+  if (rv == ERR_IO_PENDING) {
+    user_read_buf_ = buf;
+    user_read_buf_len_ = buf_len;
+  }
+  return rv;
+}
 
-  int rv = DoPayloadRead();
+int SSLClientSocketImpl::ReadIfReady(IOBuffer* buf,
+                                     int buf_len,
+                                     const CompletionCallback& callback) {
+  int rv = DoPayloadRead(buf, buf_len);
 
   if (rv == ERR_IO_PENDING) {
     user_read_callback_ = callback;
   } else {
     if (rv > 0)
       was_ever_used_ = true;
-    user_read_buf_ = NULL;
-    user_read_buf_len_ = 0;
   }
-
   return rv;
 }
 
@@ -1015,7 +1020,7 @@ void SSLClientSocketImpl::DoReadCallback(int rv) {
   // up front.
   if (rv > 0)
     was_ever_used_ = true;
-  user_read_buf_ = NULL;
+  user_read_buf_ = nullptr;
   user_read_buf_len_ = 0;
   base::ResetAndReturn(&user_read_callback_).Run(rv);
 }
@@ -1364,11 +1369,11 @@ int SSLClientSocketImpl::DoHandshakeLoop(int last_io_result) {
   return rv;
 }
 
-int SSLClientSocketImpl::DoPayloadRead() {
+int SSLClientSocketImpl::DoPayloadRead(IOBuffer* buf, int buf_len) {
   crypto::OpenSSLErrStackTracer err_tracer(FROM_HERE);
 
-  DCHECK_LT(0, user_read_buf_len_);
-  DCHECK(user_read_buf_.get());
+  DCHECK_LT(0, buf_len);
+  DCHECK(buf);
 
   int rv;
   if (pending_read_error_ != kNoPendingResult) {
@@ -1376,7 +1381,7 @@ int SSLClientSocketImpl::DoPayloadRead() {
     pending_read_error_ = kNoPendingResult;
     if (rv == 0) {
       net_log_.AddByteTransferEvent(NetLogEventType::SSL_SOCKET_BYTES_RECEIVED,
-                                    rv, user_read_buf_->data());
+                                    rv, buf->data());
     } else {
       net_log_.AddEvent(
           NetLogEventType::SSL_READ_ERROR,
@@ -1391,11 +1396,11 @@ int SSLClientSocketImpl::DoPayloadRead() {
   int total_bytes_read = 0;
   int ssl_ret;
   do {
-    ssl_ret = SSL_read(ssl_.get(), user_read_buf_->data() + total_bytes_read,
-                       user_read_buf_len_ - total_bytes_read);
+    ssl_ret = SSL_read(ssl_.get(), buf->data() + total_bytes_read,
+                       buf_len - total_bytes_read);
     if (ssl_ret > 0)
       total_bytes_read += ssl_ret;
-  } while (total_bytes_read < user_read_buf_len_ && ssl_ret > 0);
+  } while (total_bytes_read < buf_len && ssl_ret > 0);
 
   // Although only the final SSL_read call may have failed, the failure needs to
   // processed immediately, while the information still available in OpenSSL's
@@ -1452,7 +1457,7 @@ int SSLClientSocketImpl::DoPayloadRead() {
 
   if (rv >= 0) {
     net_log_.AddByteTransferEvent(NetLogEventType::SSL_SOCKET_BYTES_RECEIVED,
-                                  rv, user_read_buf_->data());
+                                  rv, buf->data());
   } else if (rv != ERR_IO_PENDING) {
     net_log_.AddEvent(
         NetLogEventType::SSL_READ_ERROR,
@@ -1501,8 +1506,14 @@ void SSLClientSocketImpl::RetryAllOperations() {
 
   int rv_read = ERR_IO_PENDING;
   int rv_write = ERR_IO_PENDING;
-  if (user_read_buf_)
-    rv_read = DoPayloadRead();
+  if (user_read_buf_) {
+    rv_read = DoPayloadRead(user_read_buf_.get(), user_read_buf_len_);
+  } else if (!user_read_callback_.is_null()) {
+    // ReadIfReady() is called by the user. Skip DoPayloadRead() and just let
+    // the user know that read can be retried.
+    rv_read = OK;
+  }
+
   if (user_write_buf_)
     rv_write = DoPayloadWrite();
 

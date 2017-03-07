@@ -497,6 +497,14 @@ int TCPSocketWin::Read(IOBuffer* buf,
   return DoRead(buf, buf_len, callback);
 }
 
+int TCPSocketWin::ReadIfReady(IOBuffer* buf,
+                              int buf_len,
+                              const CompletionCallback& callback) {
+  DCHECK(CalledOnValidThread());
+  // TODO(xunjieli): Implement this.
+  return ERR_READ_IF_READY_NOT_IMPLEMENTED;
+}
+
 int TCPSocketWin::Write(IOBuffer* buf,
                         int buf_len,
                         const CompletionCallback& callback) {

@@ -46,6 +46,7 @@
 #include "net/log/net_log_source_type.h"
 #include "net/log/net_log_with_source.h"
 #include "net/proxy/proxy_server.h"
+#include "net/socket/socket.h"
 #include "net/socket/ssl_client_socket.h"
 #include "net/spdy/platform/api/spdy_estimate_memory_usage.h"
 #include "net/spdy/spdy_buffer_producer.h"
@@ -1873,10 +1874,25 @@ int SpdySession::DoRead() {
   CHECK(connection_);
   CHECK(connection_->socket());
   read_state_ = READ_STATE_DO_READ_COMPLETE;
-  return connection_->socket()->Read(
-      read_buffer_.get(), kReadBufferSize,
-      base::Bind(&SpdySession::PumpReadLoop, weak_factory_.GetWeakPtr(),
-                 READ_STATE_DO_READ_COMPLETE));
+  int rv = ERR_READ_IF_READY_NOT_IMPLEMENTED;
+  if (base::FeatureList::IsEnabled(Socket::kReadIfReadyExperiment)) {
+    rv = connection_->socket()->ReadIfReady(
+        read_buffer_.get(), kReadBufferSize,
+        base::Bind(&SpdySession::PumpReadLoop, weak_factory_.GetWeakPtr(),
+                   READ_STATE_DO_READ));
+    // TODO(xunjieli): Follow-up CL to release |read_buffer_|.
+    // https://crbug.com/690915.
+  }
+  if (rv == ERR_READ_IF_READY_NOT_IMPLEMENTED) {
+    // Fallback to regular Read().
+    return connection_->socket()->Read(
+        read_buffer_.get(), kReadBufferSize,
+        base::Bind(&SpdySession::PumpReadLoop, weak_factory_.GetWeakPtr(),
+                   READ_STATE_DO_READ_COMPLETE));
+  }
+  if (rv == ERR_IO_PENDING)
+    read_state_ = READ_STATE_DO_READ;
+  return rv;
 }
 
 int SpdySession::DoReadComplete(int result) {

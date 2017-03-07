@@ -61,6 +61,9 @@ class NET_EXPORT TCPSocketWin : NON_EXPORTED_BASE(public base::NonThreadSafe),
   // Multiple outstanding requests are not supported.
   // Full duplex mode (reading and writing at the same time) is supported.
   int Read(IOBuffer* buf, int buf_len, const CompletionCallback& callback);
+  int ReadIfReady(IOBuffer* buf,
+                  int buf_len,
+                  const CompletionCallback& callback);
   int Write(IOBuffer* buf, int buf_len, const CompletionCallback& callback);
 
   int GetLocalAddress(IPEndPoint* address) const;

@@ -127,6 +127,9 @@ class SSLClientSocketImpl : public SSLClientSocket,
   int Read(IOBuffer* buf,
            int buf_len,
            const CompletionCallback& callback) override;
+  int ReadIfReady(IOBuffer* buf,
+                  int buf_len,
+                  const CompletionCallback& callback) override;
   int Write(IOBuffer* buf,
             int buf_len,
             const CompletionCallback& callback) override;
@@ -158,7 +161,7 @@ class SSLClientSocketImpl : public SSLClientSocket,
   void OnHandshakeIOComplete(int result);
 
   int DoHandshakeLoop(int last_io_result);
-  int DoPayloadRead();
+  int DoPayloadRead(IOBuffer* buf, int buf_len);
   int DoPayloadWrite();
 
   // Called when an asynchronous event completes which may have blocked the
