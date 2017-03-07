@@ -463,7 +463,7 @@ static bool setSelectionToDragCaret(LocalFrame* frame,
                                     VisibleSelection& dragCaret,
                                     Range*& range,
                                     const IntPoint& point) {
-  frame->selection().setSelection(dragCaret);
+  frame->selection().setSelection(dragCaret.asSelection());
   if (frame->selection()
           .computeVisibleSelectionInDOMTreeDeprecated()
           .isNone()) {

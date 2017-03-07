@@ -1374,8 +1374,8 @@ void Editor::transpose() {
   const EphemeralRange range = makeRange(previous, next);
   if (range.isNull())
     return;
-  VisibleSelection newSelection = createVisibleSelection(
-      SelectionInDOMTree::Builder().setBaseAndExtent(range).build());
+  const SelectionInDOMTree newSelection =
+      SelectionInDOMTree::Builder().setBaseAndExtent(range).build();
 
   // Transpose the two characters.
   String text = plainText(range);
@@ -1384,7 +1384,7 @@ void Editor::transpose() {
   String transposed = text.right(1) + text.left(1);
 
   // Select the two characters.
-  if (newSelection !=
+  if (createVisibleSelection(newSelection) !=
       frame().selection().computeVisibleSelectionInDOMTreeDeprecated())
     frame().selection().setSelection(newSelection);
 

@@ -123,14 +123,6 @@ class CORE_EXPORT FrameSelection final
                     SetSelectionOptions = CloseTyping | ClearTypingStyle,
                     CursorAlignOnScroll = CursorAlignOnScroll::IfNeeded,
                     TextGranularity = CharacterGranularity);
-
-  // TODO(yosin): We should use |SelectionInDOMTree| version instead of
-  // |VisibleSelection| version.
-  void setSelection(const VisibleSelection&,
-                    HandleVisibility = HandleVisibility::NotVisible,
-                    SetSelectionOptions = CloseTyping | ClearTypingStyle,
-                    CursorAlignOnScroll = CursorAlignOnScroll::IfNeeded,
-                    TextGranularity = CharacterGranularity);
   bool setSelectedRange(
       const EphemeralRange&,
       TextAffinity,

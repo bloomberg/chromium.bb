@@ -307,18 +307,6 @@ void FrameSelection::setSelection(const SelectionInFlatTree& newSelection,
   return setSelection(builder.build(), options, align, granularity);
 }
 
-void FrameSelection::setSelection(const VisibleSelection& newSelection,
-                                  HandleVisibility handleVisibility,
-                                  SetSelectionOptions options,
-                                  CursorAlignOnScroll align,
-                                  TextGranularity granularity) {
-  setSelection(
-      SelectionInDOMTree::Builder(newSelection.asSelection())
-          .setIsHandleVisible(handleVisibility == HandleVisibility::Visible)
-          .build(),
-      options, align, granularity);
-}
-
 void FrameSelection::nodeChildrenWillBeRemoved(ContainerNode& container) {
   if (!container.inActiveDocument())
     return;
@@ -416,7 +404,7 @@ bool FrameSelection::modify(EAlteration alter,
     return false;
   }
 
-  setSelection(selectionModifier.selection(), HandleVisibility::NotVisible,
+  setSelection(selectionModifier.selection().asSelection(),
                CloseTyping | ClearTypingStyle | UserTriggered,
                alter == AlterationMove ? CursorAlignOnScroll::Always
                                        : CursorAlignOnScroll::IfNeeded);
@@ -600,7 +588,7 @@ void FrameSelection::selectFrameElementInParentIfFullySelected() {
   // setFocusedFrame can dispatch synchronous focus/blur events.  The document
   // tree might be modified.
   if (newSelection.isNonOrphanedCaretOrRange())
-    toLocalFrame(parent)->selection().setSelection(newSelection);
+    toLocalFrame(parent)->selection().setSelection(newSelection.asSelection());
 }
 
 // Returns a shadow tree node for legacy shadow trees, a child of the
@@ -1113,7 +1101,9 @@ void FrameSelection::moveRangeSelectionExtent(const IntPoint& contentsPoint) {
 
   VisibleSelection newSelection =
       granularityStrategy()->updateExtent(contentsPoint, m_frame);
-  setSelection(newSelection, HandleVisibility::Visible,
+  setSelection(SelectionInDOMTree::Builder(newSelection.asSelection())
+                   .setIsHandleVisible(true)
+                   .build(),
                FrameSelection::CloseTyping | FrameSelection::ClearTypingStyle |
                    FrameSelection::DoNotClearStrategy | UserTriggered,
                CursorAlignOnScroll::IfNeeded, CharacterGranularity);

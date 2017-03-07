@@ -382,7 +382,7 @@ void TypingCommand::insertText(Document& document,
 
   if (changeSelection) {
     command->setEndingVisibleSelection(currentSelection);
-    frame->selection().setSelection(currentSelection);
+    frame->selection().setSelection(currentSelection.asSelection());
   }
 }
 

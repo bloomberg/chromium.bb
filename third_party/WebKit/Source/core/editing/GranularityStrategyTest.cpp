@@ -101,7 +101,8 @@ Document& GranularityStrategyTest::document() const {
 
 void GranularityStrategyTest::setSelection(
     const VisibleSelection& newSelection) {
-  m_dummyPageHolder->frame().selection().setSelection(newSelection);
+  m_dummyPageHolder->frame().selection().setSelection(
+      newSelection.asSelection());
 }
 
 FrameSelection& GranularityStrategyTest::selection() const {

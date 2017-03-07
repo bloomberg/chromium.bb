@@ -1730,7 +1730,7 @@ static bool executeSwapWithMark(LocalFrame& frame,
       frame.selection().computeVisibleSelectionInDOMTreeDeprecated();
   if (mark.isNone() || selection.isNone())
     return false;
-  frame.selection().setSelection(mark);
+  frame.selection().setSelection(mark.asSelection());
   frame.editor().setMark(selection);
   return true;
 }
