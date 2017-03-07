@@ -450,7 +450,10 @@ void ArcCustomNotificationView::Layout() {
   gfx::Rect control_buttons_bounds(contents_bounds);
   const int buttons_width = close_button_->GetPreferredSize().width() +
                             settings_button_->GetPreferredSize().width();
-  control_buttons_bounds.set_x(control_buttons_bounds.right() - buttons_width);
+  control_buttons_bounds.set_x(control_buttons_bounds.right() - buttons_width -
+                               message_center::kControlButtonPadding);
+  control_buttons_bounds.set_y(control_buttons_bounds.y() +
+                               message_center::kControlButtonPadding);
   control_buttons_bounds.set_height(close_button_->GetPreferredSize().height());
   control_buttons_bounds.set_width(buttons_width);
   floating_control_buttons_widget_->SetBounds(control_buttons_bounds);

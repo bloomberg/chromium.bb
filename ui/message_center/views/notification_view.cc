@@ -295,12 +295,12 @@ void NotificationView::Layout() {
 
   if (settings_button_view_) {
     const gfx::Size settings_size(settings_button_view_->GetPreferredSize());
-    const int marginFromRight =
-        settings_size.width() +
-        (close_button_ ? close_button_->GetPreferredSize().width() : 0);
+    int marginFromRight = settings_size.width() + kControlButtonPadding;
+    if (close_button_)
+      marginFromRight += close_button_->GetPreferredSize().width();
     gfx::Rect settings_rect(insets.left() + content_width - marginFromRight,
-                            GetContentsBounds().y(), settings_size.width(),
-                            settings_size.height());
+                            GetContentsBounds().y() + kControlButtonPadding,
+                            settings_size.width(), settings_size.height());
     settings_button_view_->SetBoundsRect(settings_rect);
   }
 
@@ -308,9 +308,10 @@ void NotificationView::Layout() {
   if (close_button_) {
     gfx::Rect content_bounds = GetContentsBounds();
     gfx::Size close_size(close_button_->GetPreferredSize());
-    gfx::Rect close_rect(content_bounds.right() - close_size.width(),
-                         content_bounds.y(), close_size.width(),
-                         close_size.height());
+    gfx::Rect close_rect(
+        content_bounds.right() - close_size.width() - kControlButtonPadding,
+        content_bounds.y() + kControlButtonPadding, close_size.width(),
+        close_size.height());
     close_button_->SetBoundsRect(close_rect);
   }
 

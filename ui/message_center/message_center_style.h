@@ -62,7 +62,6 @@ const int kCheckboxSizeWithPadding = 24;
 
 // DIP dimensions (H = horizontal, V = vertical).
 
-const int kControlButtonSize = 29;  // Square size of close & expand buttons.
 const int kIconToTextPadding = 16;  // H space between icon & title/message.
 const int kTextTopPadding = 12;     // V space between text elements.
 const int kIconBottomPadding = 16;  // Minimum non-zero V space between icon
@@ -72,8 +71,9 @@ const int kTextRightPadding = 23;
 const int kTextLeftPadding = kNotificationIconSize + kIconToTextPadding;
 const int kContextMessageViewWidth =
     kNotificationWidth - kTextLeftPadding - kTextRightPadding;
-// Padding from boarder to icon image in control buttons.
-const int kControlButtonPaddingFromBorder = 6;
+// space between buttons and frame.
+const int kControlButtonPadding = 2;
+const int kControlButtonBorderSize = 6;
 
 // Text sizes.
 const int kTitleFontSize = 14;             // For title only.

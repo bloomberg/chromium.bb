@@ -24,8 +24,7 @@ PaddedButton::PaddedButton(views::ButtonListener* listener)
       gfx::Insets(1, 2, 2, 2)));
   set_background(views::Background::CreateSolidBackground(
       SkColorSetA(SK_ColorWHITE, 0.9 * 0xff)));
-  SetBorder(
-      views::CreateEmptyBorder(gfx::Insets(kControlButtonPaddingFromBorder)));
+  SetBorder(views::CreateEmptyBorder(gfx::Insets(kControlButtonBorderSize)));
   set_animate_on_state_change(false);
 
   SetInkDropMode(InkDropMode::ON);
