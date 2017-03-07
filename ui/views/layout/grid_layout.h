@@ -300,6 +300,11 @@ class VIEWS_EXPORT ColumnSet {
   // LinkColumnSizes(0, 1, -1);
   void LinkColumnSizes(int first, ...);
 
+  // When sizing linked columns, columns wider than |size_limit| are ignored.
+  void set_linked_column_size_limit(int size_limit) {
+    linked_column_size_limit_ = size_limit;
+  }
+
   // ID of this ColumnSet.
   int id() const { return id_; }
 
@@ -325,7 +330,7 @@ class VIEWS_EXPORT ColumnSet {
   void AccumulateMasterColumns();
 
   // Sets the size of each linked column to be the same.
-  void UnifySameSizedColumnSizes();
+  void UnifyLinkedColumnSizes();
 
   // Updates the remaining width field of the ViewState from that of the
   // columns the view spans.
@@ -354,6 +359,10 @@ class VIEWS_EXPORT ColumnSet {
 
   // ID for this columnset.
   const int id_;
+
+  // Columns wider than this limit will be ignored when computing linked
+  // columns' sizes.
+  int linked_column_size_limit_;
 
   // The columns.
   std::vector<std::unique_ptr<Column>> columns_;

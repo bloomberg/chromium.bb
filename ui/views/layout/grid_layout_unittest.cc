@@ -26,8 +26,12 @@ class SettableSizeView : public View {
 
   gfx::Size GetPreferredSize() const override { return pref_; }
 
+  void set_pref(const gfx::Size& pref) { pref_ = pref; }
+
  private:
-   gfx::Size pref_;
+  gfx::Size pref_;
+
+  DISALLOW_COPY_AND_ASSIGN(SettableSizeView);
 };
 
 // A view with fixed circumference that trades height for width.
@@ -140,6 +144,75 @@ TEST_F(GridLayoutTest, TwoColumns) {
   layout.Layout(&host);
   ExpectViewBoundsEquals(0, 0, 10, 20, &v1);
   ExpectViewBoundsEquals(10, 0, 20, 20, &v2);
+
+  RemoveAll();
+}
+
+// Test linked column sizes, and the column size limit.
+TEST_F(GridLayoutTest, LinkedSizes) {
+  SettableSizeView v1(gfx::Size(10, 20));
+  SettableSizeView v2(gfx::Size(20, 20));
+  SettableSizeView v3(gfx::Size(0, 20));
+  ColumnSet* c1 = layout.AddColumnSet(0);
+
+  // Fill widths.
+  c1->AddColumn(GridLayout::FILL, GridLayout::LEADING, 0, GridLayout::USE_PREF,
+                0, 0);
+  c1->AddColumn(GridLayout::FILL, GridLayout::LEADING, 0, GridLayout::USE_PREF,
+                0, 0);
+  c1->AddColumn(GridLayout::FILL, GridLayout::LEADING, 0, GridLayout::USE_PREF,
+                0, 0);
+
+  layout.StartRow(0, 0);
+  layout.AddView(&v1);
+  layout.AddView(&v2);
+  layout.AddView(&v3);
+
+  // Link all the columns.
+  c1->LinkColumnSizes(0, 1, 2, -1);
+  GetPreferredSize();
+
+  // |v1| and |v3| should obtain the same width as |v2|, since |v2| is largest.
+  EXPECT_EQ(gfx::Size(20 + 20 + 20, 20), pref);
+  host.SetBounds(0, 0, pref.width(), pref.height());
+  layout.Layout(&host);
+  ExpectViewBoundsEquals(0, 0, 20, 20, &v1);
+  ExpectViewBoundsEquals(20, 0, 20, 20, &v2);
+  ExpectViewBoundsEquals(40, 0, 20, 20, &v3);
+
+  // If the limit is zero, behaves as though the columns are not linked.
+  c1->set_linked_column_size_limit(0);
+  GetPreferredSize();
+  EXPECT_EQ(gfx::Size(10 + 20 + 0, 20), pref);
+  host.SetBounds(0, 0, pref.width(), pref.height());
+  layout.Layout(&host);
+  ExpectViewBoundsEquals(0, 0, 10, 20, &v1);
+  ExpectViewBoundsEquals(10, 0, 20, 20, &v2);
+  ExpectViewBoundsEquals(30, 0, 0, 20, &v3);
+
+  // Set a size limit.
+  c1->set_linked_column_size_limit(40);
+  v1.set_pref(gfx::Size(35, 20));
+  GetPreferredSize();
+
+  // |v1| now dominates, but it is still below the limit.
+  EXPECT_EQ(gfx::Size(35 + 35 + 35, 20), pref);
+  host.SetBounds(0, 0, pref.width(), pref.height());
+  layout.Layout(&host);
+  ExpectViewBoundsEquals(0, 0, 35, 20, &v1);
+  ExpectViewBoundsEquals(35, 0, 35, 20, &v2);
+  ExpectViewBoundsEquals(70, 0, 35, 20, &v3);
+
+  // Go over the limit. |v1| shouldn't influence size at all, but the others
+  // should still be linked to the next largest width.
+  v1.set_pref(gfx::Size(45, 20));
+  GetPreferredSize();
+  EXPECT_EQ(gfx::Size(45 + 20 + 20, 20), pref);
+  host.SetBounds(0, 0, pref.width(), pref.height());
+  layout.Layout(&host);
+  ExpectViewBoundsEquals(0, 0, 45, 20, &v1);
+  ExpectViewBoundsEquals(45, 0, 20, 20, &v2);
+  ExpectViewBoundsEquals(65, 0, 20, 20, &v3);
 
   RemoveAll();
 }

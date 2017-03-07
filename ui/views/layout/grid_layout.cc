@@ -186,7 +186,7 @@ class Column : public LayoutElement {
 
   // Determines the max size of all linked columns, and sets each column
   // to that size. This should only be used for the master column.
-  void UnifySameSizedColumnSizes();
+  void UnifyLinkedColumnSizes(int size_limit);
 
   void AdjustSize(int size) override;
 
@@ -231,17 +231,19 @@ Column* Column::GetLastMasterColumn() {
   return master_column_->GetLastMasterColumn();
 }
 
-void Column::UnifySameSizedColumnSizes() {
+void Column::UnifyLinkedColumnSizes(int size_limit) {
   DCHECK(master_column_ == this);
 
   // Accumulate the size first.
   int size = 0;
-  for (auto* column : same_size_columns_)
-    size = std::max(size, column->Size());
+  for (auto* column : same_size_columns_) {
+    if (column->Size() <= size_limit)
+      size = std::max(size, column->Size());
+  }
 
   // Then apply it.
   for (auto* column : same_size_columns_)
-    column->SetSize(size);
+    column->SetSize(std::max(size, column->Size()));
 }
 
 void Column::AdjustSize(int size) {
@@ -365,8 +367,7 @@ static bool CompareByRowSpan(const std::unique_ptr<ViewState>& v1,
 
 // ColumnSet -------------------------------------------------------------
 
-ColumnSet::ColumnSet(int id) : id_(id) {
-}
+ColumnSet::ColumnSet(int id) : id_(id), linked_column_size_limit_(INT_MAX) {}
 
 ColumnSet::~ColumnSet() {
 }
@@ -495,9 +496,9 @@ void ColumnSet::AccumulateMasterColumns() {
   }
 }
 
-void ColumnSet::UnifySameSizedColumnSizes() {
+void ColumnSet::UnifyLinkedColumnSizes() {
   for (auto* column : master_columns_)
-    column->UnifySameSizedColumnSizes();
+    column->UnifyLinkedColumnSizes(linked_column_size_limit_);
 }
 
 void ColumnSet::UpdateRemainingWidth(ViewState* view_state) {
@@ -609,7 +610,7 @@ void ColumnSet::CalculateSize() {
   }
 
   // Make sure all linked columns have the same size.
-  UnifySameSizedColumnSizes();
+  UnifyLinkedColumnSizes();
 
   // Distribute the size of each view with a column span > 1.
   for (; view_state_iterator != view_states_.end(); ++view_state_iterator) {
@@ -623,7 +624,7 @@ void ColumnSet::CalculateSize() {
 
     // Update the size of linked columns.
     // This may need to be combined with previous step.
-    UnifySameSizedColumnSizes();
+    UnifyLinkedColumnSizes();
   }
 }
 

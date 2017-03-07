@@ -68,6 +68,27 @@ const int kTreeViewHeight = 125;
 const int kTabbedPaneTopPadding = 14;
 const int kCookieInfoBottomPadding = 4;
 
+// Adds a ColumnSet to |layout| to hold two buttons with padding between.
+// Starts a new row with the added ColumnSet.
+void StartNewButtonColumnSet(views::GridLayout* layout,
+                             const int column_layout_id) {
+  LayoutDelegate* layout_delegate = LayoutDelegate::Get();
+  const int button_padding = layout_delegate->GetMetric(
+      LayoutDelegate::Metric::RELATED_BUTTON_HORIZONTAL_SPACING);
+  const int button_size_limit = layout_delegate->GetMetric(
+      LayoutDelegate::Metric::BUTTON_MAX_LINKABLE_WIDTH);
+
+  views::ColumnSet* column_set = layout->AddColumnSet(column_layout_id);
+  column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER, 0,
+                        views::GridLayout::USE_PREF, 0, 0);
+  column_set->AddPaddingColumn(0, button_padding);
+  column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER, 0,
+                        views::GridLayout::USE_PREF, 0, 0);
+  column_set->LinkColumnSizes(0, 2, -1);
+  column_set->set_linked_column_size_limit(button_size_limit);
+  layout->StartRow(0, column_layout_id);
+}
+
 }  // namespace
 
 // A custom view that conditionally displays an infobar.
@@ -375,17 +396,6 @@ views::View* CollectedCookiesViews::CreateAllowedPane() {
   column_set->AddColumn(GridLayout::LEADING, GridLayout::FILL, 1,
                         GridLayout::USE_PREF, 0, 0);
 
-  const int three_columns_layout_id = 1;
-  column_set = layout->AddColumnSet(three_columns_layout_id);
-  column_set->AddColumn(GridLayout::LEADING, GridLayout::CENTER, 0,
-                        GridLayout::USE_PREF, 0, 0);
-  column_set->AddPaddingColumn(
-      0,
-      LayoutDelegate::Get()->GetMetric(
-          LayoutDelegate::Metric::RELATED_BUTTON_HORIZONTAL_SPACING));
-  column_set->AddColumn(GridLayout::LEADING, GridLayout::CENTER, 0,
-                        GridLayout::USE_PREF, 0, 0);
-
   layout->StartRow(0, single_column_layout_id);
   layout->AddView(allowed_label_);
   layout->AddPaddingRow(
@@ -401,7 +411,7 @@ views::View* CollectedCookiesViews::CreateAllowedPane() {
       0, LayoutDelegate::Get()->GetMetric(
              LayoutDelegate::Metric::UNRELATED_CONTROL_VERTICAL_SPACING));
 
-  layout->StartRow(0, three_columns_layout_id);
+  StartNewButtonColumnSet(layout, single_column_layout_id + 1);
   layout->AddView(block_allowed_button_);
   layout->AddView(delete_allowed_button_);
 
@@ -452,17 +462,6 @@ views::View* CollectedCookiesViews::CreateBlockedPane() {
   column_set->AddColumn(GridLayout::LEADING, GridLayout::FILL, 1,
                         GridLayout::USE_PREF, 0, 0);
 
-  const int three_columns_layout_id = 1;
-  column_set = layout->AddColumnSet(three_columns_layout_id);
-  column_set->AddColumn(GridLayout::LEADING, GridLayout::CENTER, 0,
-                        GridLayout::USE_PREF, 0, 0);
-  column_set->AddPaddingColumn(
-      0,
-      LayoutDelegate::Get()->GetMetric(
-          LayoutDelegate::Metric::RELATED_BUTTON_HORIZONTAL_SPACING));
-  column_set->AddColumn(GridLayout::LEADING, GridLayout::CENTER, 0,
-                        GridLayout::USE_PREF, 0, 0);
-
   layout->StartRow(0, single_column_layout_id);
   layout->AddView(blocked_label_, 1, 1, GridLayout::FILL, GridLayout::FILL);
   layout->AddPaddingRow(
@@ -478,7 +477,7 @@ views::View* CollectedCookiesViews::CreateBlockedPane() {
       0, LayoutDelegate::Get()->GetMetric(
              LayoutDelegate::Metric::UNRELATED_CONTROL_VERTICAL_SPACING));
 
-  layout->StartRow(0, three_columns_layout_id);
+  StartNewButtonColumnSet(layout, single_column_layout_id + 1);
   layout->AddView(allow_blocked_button_);
   layout->AddView(for_session_blocked_button_);
 

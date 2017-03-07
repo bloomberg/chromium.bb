@@ -21,6 +21,8 @@ int HarmonyLayoutDelegate::GetMetric(Metric metric) const {
       return kHarmonyLayoutUnit;
     case Metric::DIALOG_BUTTON_MARGIN:
       return kHarmonyLayoutUnit;
+    case Metric::BUTTON_MAX_LINKABLE_WIDTH:
+      return kHarmonyLayoutUnit * 8;
     case Metric::BUTTON_MINIMUM_WIDTH:
     case Metric::DIALOG_BUTTON_MINIMUM_WIDTH:
       // Minimum label size plus padding.

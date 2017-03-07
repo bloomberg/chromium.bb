@@ -12,6 +12,10 @@ class LayoutDelegate {
   enum class Metric {
     // Padding on the left and right side of a button's label.
     BUTTON_HORIZONTAL_PADDING,
+    // The maximum width a button can have and still influence the sizes of
+    // other linked buttons.  This allows short buttons to have linked widths
+    // without long buttons making things overly wide.
+    BUTTON_MAX_LINKABLE_WIDTH,
     // Default minimum width of a button.
     BUTTON_MINIMUM_WIDTH,
     // Margin between the edge of a dialog and the left, right, or bottom of a

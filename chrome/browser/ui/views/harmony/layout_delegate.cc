@@ -24,6 +24,8 @@ int LayoutDelegate::GetMetric(Metric metric) const {
   switch (metric) {
     case Metric::BUTTON_HORIZONTAL_PADDING:
       return views::kButtonHorizontalPadding;
+    case Metric::BUTTON_MAX_LINKABLE_WIDTH:
+      return 0;  // Buttons never expand during layout (add padding instead).
     case Metric::BUTTON_MINIMUM_WIDTH:
       return views::kMinimumButtonWidth;
     case Metric::DIALOG_BUTTON_MARGIN:
