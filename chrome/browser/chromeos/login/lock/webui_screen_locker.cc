@@ -21,6 +21,7 @@
 #include "chrome/browser/chromeos/login/ui/preloaded_web_view_factory.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_display.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "chrome/common/chrome_features.h"
@@ -81,6 +82,12 @@ void WebUIScreenLocker::RequestPreload() {
 
 // static
 bool WebUIScreenLocker::ShouldPreloadLockScreen() {
+  // Bail for mash because IdleDetector/UserActivityDetector does not work
+  // properly there.
+  // TODO(xiyuan): Revisit after http://crbug.com/626899.
+  if (ash_util::IsRunningInMash())
+    return false;
+
   Profile* profile = ProfileHelper::Get()->GetProfileByUser(
       user_manager::UserManager::Get()->GetActiveUser());
 
