@@ -18,6 +18,11 @@ namespace prefs {
 // These are attached to the user profile
 
 #if defined(OS_CHROMEOS) && BUILDFLAG(ENABLE_APP_LIST)
+// Stores the user id received from DM Server when enrolling a Play user on an
+// Active Directory managed device. Used to report to DM Server that the account
+// is still used.
+const char kArcActiveDirectoryPlayUserId[] =
+    "arc.active_directory_play_user_id";
 // A preference to keep list of Android apps and their state.
 const char kArcApps[] = "arc.apps";
 // A preference to store backup and restore state for Android apps.

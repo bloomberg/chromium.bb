@@ -18,6 +18,7 @@
 #include "chrome/browser/chromeos/login/signin/oauth2_login_manager.h"
 #include "components/user_manager/user_manager.h"
 
+class ArcActiveDirectoryEnrollmentTokenFetcherBrowserTest;
 class ArcAppTest;
 class SessionControllerClientTest;
 class Profile;
@@ -166,6 +167,7 @@ class ProfileHelper
   friend class ProfileListChromeOSTest;
   friend class SystemTrayDelegateChromeOSTest;
   friend class ash::test::MultiUserWindowManagerChromeOSTest;
+  friend class ::ArcActiveDirectoryEnrollmentTokenFetcherBrowserTest;
   friend class ::ArcAppTest;
   friend class ::SessionControllerClientTest;
   friend class ::test::BrowserFinderChromeOSTest;

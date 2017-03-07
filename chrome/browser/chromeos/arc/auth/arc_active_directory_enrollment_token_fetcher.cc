@@ -13,8 +13,14 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/dm_token_storage.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/install_attributes.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/common/pref_names.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
+#include "components/prefs/pref_service.h"
+#include "components/user_manager/user.h"
+#include "components/user_manager/user_manager.h"
 #include "net/url_request/url_request_context_getter.h"
 
 namespace {
@@ -80,6 +86,23 @@ void ArcActiveDirectoryEnrollmentTokenFetcher::OnDMTokenAvailable(
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
+Profile* GetProfile() {
+  const user_manager::User* const primary_user =
+      user_manager::UserManager::Get()->GetPrimaryUser();
+  if (!primary_user)
+    NOTREACHED() << "No primary user is present.";
+  return chromeos::ProfileHelper::Get()->GetProfileByUser(primary_user);
+}
+
+void SavePlayUserId(const std::string& user_id) {
+  Profile* const profile = GetProfile();
+  if (!profile) {
+    LOG(ERROR) << "Profile is not available.";
+    return;
+  }
+  profile->GetPrefs()->SetString(prefs::kArcActiveDirectoryPlayUserId, user_id);
+}
+
 void ArcActiveDirectoryEnrollmentTokenFetcher::OnFetchEnrollmentTokenCompleted(
     policy::DeviceManagementStatus status,
     int net_error,
@@ -97,6 +120,9 @@ void ArcActiveDirectoryEnrollmentTokenFetcher::OnFetchEnrollmentTokenCompleted(
     base::ResetAndReturn(&callback_).Run(std::string());
     return;
   }
+
+  SavePlayUserId(
+      response.active_directory_enroll_play_user_response().user_id());
 
   base::ResetAndReturn(&callback_)
       .Run(response.active_directory_enroll_play_user_response()

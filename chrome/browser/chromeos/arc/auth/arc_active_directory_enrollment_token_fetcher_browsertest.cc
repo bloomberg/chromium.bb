@@ -17,8 +17,10 @@
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/browser/chromeos/policy/dm_token_storage.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/policy/cloud/test_request_interceptor.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "chrome/test/base/testing_profile.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_cryptohome_client.h"
 #include "components/arc/arc_util.h"
@@ -111,7 +113,13 @@ class ArcActiveDirectoryEnrollmentTokenFetcherBrowserTest
             new chromeos::FakeChromeUserManager());
 
     const AccountId account_id(AccountId::AdFromObjGuid(kFakeGuid));
+    GetFakeUserManager()->AddUser(account_id);
     GetFakeUserManager()->LoginUser(account_id);
+    chromeos::ProfileHelper::SetAlwaysReturnPrimaryUserForTesting(true);
+
+    testing_profile_ = base::MakeUnique<TestingProfile>();
+    chromeos::ProfileHelper::Get()->SetUserToProfileMappingForTesting(
+        GetFakeUserManager()->GetPrimaryUser(), testing_profile_.get());
   }
 
   void StoreCorrectDmToken() {
@@ -143,6 +151,8 @@ class ArcActiveDirectoryEnrollmentTokenFetcherBrowserTest
   void TearDownOnMainThread() override {
     user_manager_enabler_.reset();
     interceptor_.reset();
+    testing_profile_.reset();
+    chromeos::ProfileHelper::SetAlwaysReturnPrimaryUserForTesting(false);
   }
 
   chromeos::FakeChromeUserManager* GetFakeUserManager() const {
@@ -174,6 +184,7 @@ class ArcActiveDirectoryEnrollmentTokenFetcherBrowserTest
   std::unique_ptr<chromeos::ScopedUserManagerEnabler> user_manager_enabler_;
   // DBusThreadManager owns this.
   chromeos::FakeCryptohomeClient* fake_cryptohome_client_;
+  std::unique_ptr<TestingProfile> testing_profile_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcActiveDirectoryEnrollmentTokenFetcherBrowserTest);
 };

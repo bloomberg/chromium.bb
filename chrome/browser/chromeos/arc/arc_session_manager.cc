@@ -108,6 +108,10 @@ void ArcSessionManager::RegisterProfilePrefs(
   // from a previous managed state to the unmanaged.
   registry->RegisterBooleanPref(prefs::kArcBackupRestoreEnabled, false);
   registry->RegisterBooleanPref(prefs::kArcLocationServiceEnabled, false);
+  // This is used to delete the Play user ID if ARC is disabled for an
+  // AD-managed device.
+  registry->RegisterStringPref(prefs::kArcActiveDirectoryPlayUserId,
+                               std::string());
 }
 
 // static
@@ -181,6 +185,11 @@ void ArcSessionManager::RemoveArcData() {
   }
 
   VLOG(1) << "Starting ARC data removal";
+
+  // Remove Play user ID for Active Directory managed devices.
+  profile_->GetPrefs()->SetString(prefs::kArcActiveDirectoryPlayUserId,
+                                  std::string());
+
   SetState(State::REMOVING_DATA_DIR);
   chromeos::DBusThreadManager::Get()->GetSessionManagerClient()->RemoveArcData(
       cryptohome::Identification(
