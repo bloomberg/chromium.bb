@@ -329,12 +329,6 @@ enum class RendererTerminationTabState {
   std::unique_ptr<TabInfoBarObserver> tabInfoBarObserver_;
 }
 
-// Returns the current NavigationItem for the sesionController associated with
-// this tab. Don't use this to get the underlying NavigationItem; instead
-// go through the NavigationManager.
-// This is nil if there's no NavigationManager.
-@property(nonatomic, readonly) web::NavigationItem* currentNavigationItem;
-
 // Returns the tab's reader mode controller. May contain nil if the feature is
 // disabled.
 @property(nonatomic, readonly) ReaderModeController* readerModeController;
@@ -765,7 +759,8 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
 
 - (const GURL&)url {
   // See note in header; this method should be removed.
-  web::NavigationItem* item = [self currentNavigationItem];
+  web::NavigationItem* item =
+      [[self navigationManagerImpl]->GetSessionController() currentItem];
   return item ? item->GetVirtualURL() : GURL::EmptyGURL();
 }
 
@@ -1047,7 +1042,7 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
 }
 
 - (void)addCurrentEntryToHistoryDB {
-  DCHECK(self.currentNavigationItem);
+  DCHECK([self navigationManager]->GetVisibleItem());
   // If incognito, don't update history.
   if (browserState_->IsOffTheRecord())
     return;
@@ -1170,8 +1165,17 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
   // Reset |isVoiceSearchResultsTab| since a new page is being navigated to.
   self.isVoiceSearchResultsTab = NO;
 
+  web::NavigationItem* navigationItem =
+      [self navigationManager]->GetPendingItem();
+
+  // TODO(crbug.com/676129): the pending item is not correctly set when the
+  // page is reloading, use the last committed item if pending item is null.
+  // Remove this once tracking bug is fixed.
+  if (!navigationItem)
+    navigationItem = [self navigationManager]->GetLastCommittedItem();
+
   [[OmniboxGeolocationController sharedInstance]
-      addLocationToNavigationItem:self.currentNavigationItem
+      addLocationToNavigationItem:navigationItem
                      browserState:browserState_];
 }
 
@@ -1275,12 +1279,6 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
 - (void)dismissModals {
   [openInController_ disable];
   [self.webController dismissModals];
-}
-
-- (web::NavigationItem*)currentNavigationItem {
-  if (![self navigationManager])
-    return nil;
-  return [[self navigationManagerImpl]->GetSessionController() currentItem];
 }
 
 - (void)setShouldObserveInfoBarManager:(BOOL)shouldObserveInfoBarManager {
@@ -1753,9 +1751,13 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
   }
 
   bool wasPost = false;
-  if (self.currentNavigationItem)
-    wasPost = self.currentNavigationItem->HasPostData();
-  GURL lastCommittedURL = self.webState->GetLastCommittedURL();
+  GURL lastCommittedURL;
+  web::NavigationItem* lastCommittedItem =
+      [self navigationManager]->GetLastCommittedItem();
+  if (lastCommittedItem) {
+    wasPost = lastCommittedItem->HasPostData();
+    lastCommittedURL = lastCommittedItem->GetVirtualURL();
+  }
   if (loadSuccess)
     [autoReloadBridge_ loadFinishedForURL:lastCommittedURL wasPost:wasPost];
   else

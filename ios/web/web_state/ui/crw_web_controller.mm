@@ -4795,9 +4795,9 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 
 - (void)SSLStatusUpdater:(CRWSSLStatusUpdater*)SSLStatusUpdater
     didChangeSSLStatusForNavigationItem:(web::NavigationItem*)navigationItem {
-  web::NavigationItem* currentNavigationItem =
+  web::NavigationItem* lastCommittedNavigationItem =
       self.webState->GetNavigationManager()->GetLastCommittedItem();
-  if (navigationItem == currentNavigationItem) {
+  if (navigationItem == lastCommittedNavigationItem) {
     [self didUpdateSSLStatusForCurrentNavigationItem];
   }
 }
