@@ -62,16 +62,10 @@ void od_ec_enc_init(od_ec_enc *enc, uint32_t size) OD_ARG_NONNULL(1);
 void od_ec_enc_reset(od_ec_enc *enc) OD_ARG_NONNULL(1);
 void od_ec_enc_clear(od_ec_enc *enc) OD_ARG_NONNULL(1);
 
-void od_ec_encode_bool(od_ec_enc *enc, int val, unsigned fz, unsigned _ft)
-    OD_ARG_NONNULL(1);
 void od_ec_encode_bool_q15(od_ec_enc *enc, int val, unsigned fz_q15)
     OD_ARG_NONNULL(1);
-void od_ec_encode_cdf(od_ec_enc *enc, int s, const uint16_t *cdf, int nsyms)
-    OD_ARG_NONNULL(1) OD_ARG_NONNULL(3);
 void od_ec_encode_cdf_q15(od_ec_enc *enc, int s, const uint16_t *cdf, int nsyms)
     OD_ARG_NONNULL(1) OD_ARG_NONNULL(3);
-void od_ec_encode_cdf_unscaled(od_ec_enc *enc, int s, const uint16_t *cdf,
-                               int nsyms) OD_ARG_NONNULL(1) OD_ARG_NONNULL(3);
 
 void od_ec_enc_bits(od_ec_enc *enc, uint32_t fl, unsigned ftb)
     OD_ARG_NONNULL(1);

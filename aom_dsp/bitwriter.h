@@ -184,17 +184,6 @@ static INLINE void aom_write_symbol(aom_writer *w, int symb, aom_cdf_prob *cdf,
 #endif
 }
 
-#if CONFIG_PVQ
-static INLINE void aom_write_cdf_unscaled(aom_writer *w, int symb,
-                                          const aom_cdf_prob *cdf, int nsymbs) {
-#if CONFIG_DAALA_EC
-  od_ec_encode_cdf_unscaled(&w->ec, symb, cdf, nsymbs);
-#else
-#error "CONFIG_PVQ currently requires CONFIG_DAALA_EC."
-#endif
-}
-#endif
-
 static INLINE void aom_write_tree_as_cdf(aom_writer *w,
                                          const aom_tree_index *tree,
                                          const aom_prob *probs, int bits,

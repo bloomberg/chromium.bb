@@ -64,12 +64,6 @@ void aom_cdf_adapt_q15(int val, uint16_t *cdf, int n, int *count, int rate);
 void aom_encode_cdf_adapt_q15(aom_writer *w, int val, uint16_t *cdf, int n,
  int *count, int rate);
 
-void aom_encode_cdf_adapt(aom_writer *w, int val, uint16_t *cdf, int n,
- int increment);
-
-int aom_decode_cdf_adapt_(aom_reader *r, uint16_t *cdf, int n,
- int increment ACCT_STR_PARAM);
-
 void generic_encode(aom_writer *w, generic_encoder *model, int x,
  int *ex_q16, int integration);
 double generic_encode_cost(generic_encoder *model, int x, int *ex_q16);

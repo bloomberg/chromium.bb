@@ -48,31 +48,6 @@ int aom_decode_cdf_adapt_q15_(aom_reader *r, uint16_t *cdf, int n,
   return val;
 }
 
-/** Decodes a value from 0 to N-1 (with N up to 16) based on a cdf and adapts
- * the cdf accordingly.
- *
- * @param [in,out] enc   range encoder
- * @param [in]     cdf   CDF of the variable (Q15)
- * @param [in]     n     number of values possible
- * @param [in]     increment adaptation speed (Q15)
- *
- * @retval decoded variable
- */
-int aom_decode_cdf_adapt_(aom_reader *r, uint16_t *cdf, int n,
- int increment ACCT_STR_PARAM) {
-  int i;
-  int val;
-  val = aom_read_cdf_unscaled(r, cdf, n, ACCT_STR_NAME);
-  if (cdf[n-1] + increment > 32767) {
-    for (i = 0; i < n; i++) {
-      /* Second term ensures that the pdf is non-null */
-      cdf[i] = (cdf[i] >> 1) + i + 1;
-    }
-  }
-  for (i = val; i < n; i++) cdf[i] += increment;
-  return val;
-}
-
 /** Encodes a random variable using a "generic" model, assuming that the
  * distribution is one-sided (zero and up), has a single mode, and decays
  * exponentially past the model.

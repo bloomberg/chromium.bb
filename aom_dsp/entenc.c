@@ -142,67 +142,7 @@ void od_ec_enc_clear(od_ec_enc *enc) {
   free(enc->buf);
 }
 
-/*Encodes a symbol given its scaled frequency information.
-  The frequency information must be discernable by the decoder, assuming it
-   has read only the previous symbols from the stream.
-  You can change the frequency information, or even the entire source alphabet,
-   so long as the decoder can tell from the context of the previously encoded
-   information that it is supposed to do so as well.
-  fl: The cumulative frequency of all symbols that come before the one to be
-       encoded.
-  fh: The cumulative frequency of all symbols up to and including the one to
-       be encoded.
-      Together with fl, this defines the range [fl, fh) in which the decoded
-       value will fall.
-  ft: The sum of the frequencies of all the symbols.
-      This must be at least 16384, and no more than 32768.*/
-static void od_ec_encode(od_ec_enc *enc, unsigned fl, unsigned fh,
-                         unsigned ft) {
-  od_ec_window l;
-  unsigned r;
-  int s;
-  unsigned d;
-  unsigned u;
-  unsigned v;
-  OD_ASSERT(fl < fh);
-  OD_ASSERT(fh <= ft);
-  OD_ASSERT(16384 <= ft);
-  OD_ASSERT(ft <= 32768U);
-  l = enc->low;
-  r = enc->rng;
-  OD_ASSERT(ft <= r);
-  s = r - ft >= ft;
-  ft <<= s;
-  fl <<= s;
-  fh <<= s;
-  d = r - ft;
-  OD_ASSERT(d < ft);
-#if OD_EC_REDUCED_OVERHEAD
-  {
-    unsigned e;
-    e = OD_SUBSATU(2 * d, ft);
-    u = fl + OD_MINI(fl, e) + OD_MINI(OD_SUBSATU(fl, e) >> 1, d);
-    v = fh + OD_MINI(fh, e) + OD_MINI(OD_SUBSATU(fh, e) >> 1, d);
-  }
-#else
-  u = fl + OD_MINI(fl, d);
-  v = fh + OD_MINI(fh, d);
-#endif
-  r = v - u;
-  l += u;
-  od_ec_enc_normalize(enc, l, r);
-#if OD_MEASURE_EC_OVERHEAD
-  enc->entropy -= OD_LOG2((double)(fh - fl) / ft);
-  enc->nb_symbols++;
-#endif
-}
-
 /*Encodes a symbol given its frequency in Q15.
-  This is like od_ec_encode() when ft == 32768, but is simpler and has lower
-   overhead.
-  Symbols encoded with this function cannot be properly decoded with
-   od_ec_decode(), and must be decoded with one of the equivalent _q15()
-   functions instead.
   fl: The cumulative frequency of all symbols that come before the one to be
        encoded.
   fh: The cumulative frequency of all symbols up to and including the one to
@@ -239,73 +179,7 @@ static void od_ec_encode_q15(od_ec_enc *enc, unsigned fl, unsigned fh) {
 #endif
 }
 
-/*Encodes a symbol given its frequency information with an arbitrary scale.
-  This operates just like od_ec_encode(), but does not require that ft be at
-   least 16384.
-  fl: The cumulative frequency of all symbols that come before the one to be
-       encoded.
-  fh: The cumulative frequency of all symbols up to and including the one to
-       be encoded.
-  ft: The sum of the frequencies of all the symbols.
-      This must be at least 2 and no more than 32768.*/
-static void od_ec_encode_unscaled(od_ec_enc *enc, unsigned fl, unsigned fh,
-                                  unsigned ft) {
-  int s;
-  OD_ASSERT(fl < fh);
-  OD_ASSERT(fh <= ft);
-  OD_ASSERT(2 <= ft);
-  OD_ASSERT(ft <= 32768U);
-  s = 15 - OD_ILOG_NZ(ft - 1);
-  od_ec_encode(enc, fl << s, fh << s, ft << s);
-}
-
-/*Encode a bit that has an fz/ft probability of being a zero.
-  val: The value to encode (0 or 1).
-  fz: The probability that val is zero, scaled by ft.
-  ft: The total probability.
-      This must be at least 16384 and no more than 32768.*/
-void od_ec_encode_bool(od_ec_enc *enc, int val, unsigned fz, unsigned ft) {
-  od_ec_window l;
-  unsigned r;
-  int s;
-  unsigned v;
-  OD_ASSERT(0 < fz);
-  OD_ASSERT(fz < ft);
-  OD_ASSERT(16384 <= ft);
-  OD_ASSERT(ft <= 32768U);
-  l = enc->low;
-  r = enc->rng;
-  OD_ASSERT(ft <= r);
-  s = r - ft >= ft;
-  ft <<= s;
-  fz <<= s;
-  OD_ASSERT(r - ft < ft);
-#if OD_EC_REDUCED_OVERHEAD
-  {
-    unsigned d;
-    unsigned e;
-    d = r - ft;
-    e = OD_SUBSATU(2 * d, ft);
-    v = fz + OD_MINI(fz, e) + OD_MINI(OD_SUBSATU(fz, e) >> 1, d);
-  }
-#else
-  v = fz + OD_MINI(fz, r - ft);
-#endif
-  if (val) l += v;
-  r = val ? r - v : v;
-  od_ec_enc_normalize(enc, l, r);
-#if OD_MEASURE_EC_OVERHEAD
-  enc->entropy -= OD_LOG2((double)(val ? ft - fz : fz) / ft);
-  enc->nb_symbols++;
-#endif
-}
-
 /*Encode a bit that has an fz probability of being a zero in Q15.
-  This is a simpler, lower overhead version of od_ec_encode_bool() for use when
-   ft == 32768.
-  Symbols encoded with this function cannot be properly decoded with
-   od_ec_decode(), and must be decoded with one of the equivalent _q15()
-   functions instead.
   val: The value to encode (0 or 1).
   fz: The probability that val is zero, scaled by 32768.*/
 void od_ec_encode_bool_q15(od_ec_enc *enc, int val, unsigned fz) {
@@ -331,26 +205,7 @@ void od_ec_encode_bool_q15(od_ec_enc *enc, int val, unsigned fz) {
 #endif
 }
 
-/*Encodes a symbol given a cumulative distribution function (CDF) table.
-  s: The index of the symbol to encode.
-  cdf: The CDF, such that symbol s falls in the range
-        [s > 0 ? cdf[s - 1] : 0, cdf[s]).
-       The values must be monotonically non-decreasing, and the last value
-        must be at least 16384, and no more than 32768.
-  nsyms: The number of symbols in the alphabet.
-         This should be at most 16.*/
-void od_ec_encode_cdf(od_ec_enc *enc, int s, const uint16_t *cdf, int nsyms) {
-  OD_ASSERT(s >= 0);
-  OD_ASSERT(s < nsyms);
-  od_ec_encode(enc, s > 0 ? cdf[s - 1] : 0, cdf[s], cdf[nsyms - 1]);
-}
-
 /*Encodes a symbol given a cumulative distribution function (CDF) table in Q15.
-  This is a simpler, lower overhead version of od_ec_encode_cdf() for use when
-   cdf[nsyms - 1] == 32768.
-  Symbols encoded with this function cannot be properly decoded with
-   od_ec_decode(), and must be decoded with one of the equivalent _q15()
-   functions instead.
   s: The index of the symbol to encode.
   cdf: The CDF, such that symbol s falls in the range
         [s > 0 ? cdf[s - 1] : 0, cdf[s]).
@@ -365,21 +220,6 @@ void od_ec_encode_cdf_q15(od_ec_enc *enc, int s, const uint16_t *cdf,
   OD_ASSERT(s < nsyms);
   OD_ASSERT(cdf[nsyms - 1] == 32768U);
   od_ec_encode_q15(enc, s > 0 ? cdf[s - 1] : 0, cdf[s]);
-}
-
-/*Encodes a symbol given a cumulative distribution function (CDF) table.
-  s: The index of the symbol to encode.
-  cdf: The CDF, such that symbol s falls in the range
-        [s > 0 ? cdf[s - 1] : 0, cdf[s]).
-       The values must be monotonically non-decreasing, and the last value
-        must be at least 2, and no more than 32768.
-  nsyms: The number of symbols in the alphabet.
-         This should be at most 16.*/
-void od_ec_encode_cdf_unscaled(od_ec_enc *enc, int s, const uint16_t *cdf,
-                               int nsyms) {
-  OD_ASSERT(s >= 0);
-  OD_ASSERT(s < nsyms);
-  od_ec_encode_unscaled(enc, s > 0 ? cdf[s - 1] : 0, cdf[s], cdf[nsyms - 1]);
 }
 
 #if CONFIG_RAWBITS
