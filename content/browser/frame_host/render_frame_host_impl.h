@@ -38,6 +38,7 @@
 #include "content/common/image_downloader/image_downloader.mojom.h"
 #include "content/common/navigation_params.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/renderer_unresponsive_type.h"
 #include "content/public/common/javascript_dialog_type.h"
 #include "content/public/common/previews_state.h"
 #include "media/mojo/interfaces/interface_factory.mojom.h"
@@ -879,6 +880,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   std::unique_ptr<NavigationHandleImpl> TakeNavigationHandleForCommit(
       const FrameHostMsg_DidCommitProvisionalLoad_Params& params);
 
+  // Called by |beforeunload_timeout_| when the beforeunload timeout fires.
+  void BeforeUnloadTimeout();
+
   // For now, RenderFrameHosts indirectly keep RenderViewHosts alive via a
   // refcount that calls Shutdown when it reaches zero.  This allows each
   // RenderFrameHostManager to just care about RenderFrameHosts, while ensuring
@@ -982,6 +986,14 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // require a beforeUnload/unload ACK.
   // PlzNavigate: all navigations require a beforeUnload ACK.
   bool unload_ack_is_for_navigation_;
+
+  // The timeout monitor that runs from when the beforeunload is started in
+  // DispatchBeforeUnload() until either the render process ACKs it with an IPC
+  // to OnBeforeUnloadACK(), or until the timeout triggers.
+  std::unique_ptr<TimeoutMonitor> beforeunload_timeout_;
+
+  // If beforeunload_timeout_ is active, the type of the timeout.
+  RendererUnresponsiveType beforeunload_timeout_type_;
 
   // Indicates whether this RenderFrameHost is in the process of loading a
   // document or not.
