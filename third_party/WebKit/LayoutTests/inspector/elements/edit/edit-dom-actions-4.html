@@ -30,12 +30,12 @@ function test()
 
                 function step2()
                 {
-                    var codeMirror = treeElement._editing.codeMirror;
-                    InspectorTest.addResult(codeMirror.getValue());
-                    codeMirror.setValue(codeMirror.getValue().replace(/&/g, '#'));
+                    var editor = treeElement._editing.editor;
+                    InspectorTest.addResult(editor.text());
+                    editor.setText(editor.text().replace(/&/g, '#'));
                     var event = InspectorTest.createKeyEvent("Enter");
                     event.isMetaOrCtrlForTest = true;
-                    treeElement._htmlEditElement.dispatchEvent(event);
+                    editor.widget().element.dispatchEvent(event);
                     InspectorTest.deprecatedRunAfterPendingDispatches(InspectorTest.expandElementsTree.bind(InspectorTest, done));
                 }
             }
@@ -64,12 +64,12 @@ function test()
 
                 function step2()
                 {
-                    var value = treeElement._editing.codeMirror.getValue();
+                    var value = treeElement._editing.editor._codeMirror.getValue();
                     InspectorTest.addResult(value);
-                    treeElement._editing.codeMirror.setValue(value.replace("100", "110"));
+                    treeElement._editing.editor.setText(value.replace("100", "110"));
                     var event = InspectorTest.createKeyEvent("Enter");
                     event.isMetaOrCtrlForTest = true;
-                    treeElement._htmlEditElement.dispatchEvent(event);
+                    treeElement._editing.editor.widget().element.dispatchEvent(event);
                     InspectorTest.deprecatedRunAfterPendingDispatches(InspectorTest.expandElementsTree.bind(InspectorTest, done));
                 }
             }
