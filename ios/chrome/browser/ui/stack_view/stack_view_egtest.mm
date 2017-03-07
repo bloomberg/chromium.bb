@@ -24,6 +24,7 @@
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #include "ios/testing/earl_grey/disabled_test_macros.h"
+#import "ios/testing/wait_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -50,7 +51,30 @@ id<GREYMatcher> StackView() {
   return ViewMatchingView([chrome_test_util::GetStackViewController() view]);
 }
 
-// Waits for the Stack View to be visible/hidden.
+// Waits for the Stack View to be active/inactive.
+void WaitForStackViewActive(bool active) {
+  NSString* activeStatusString = active ? @"active" : @"inactive";
+  NSString* activeTabSwitcherDescription =
+      [NSString stringWithFormat:@"Waiting for tab switcher to be %@.",
+                                 activeStatusString];
+  BOOL (^activeTabSwitcherBlock)
+  () = ^BOOL {
+    BOOL isActive = chrome_test_util::GetStackViewController() &&
+                    chrome_test_util::IsTabSwitcherActive();
+    return active ? isActive : !isActive;
+  };
+  GREYCondition* activeTabSwitcherCondition =
+      [GREYCondition conditionWithName:activeTabSwitcherDescription
+                                 block:activeTabSwitcherBlock];
+  NSString* assertDescription = [NSString
+      stringWithFormat:@"Tab switcher did not become %@.", activeStatusString];
+
+  GREYAssert([activeTabSwitcherCondition
+                 waitWithTimeout:testing::kWaitForUIElementTimeout],
+             assertDescription);
+}
+
+// Verify the visibility of the stack view.
 void CheckForStackViewVisibility(bool visible) {
   id<GREYMatcher> visibilityMatcher =
       grey_allOf(visible ? grey_sufficientlyVisible() : grey_notVisible(),
@@ -70,6 +94,7 @@ void OpenStackView() {
   [[EarlGrey selectElementWithMatcher:stackButtonMatcher]
       performAction:grey_tap()];
   // Verify that a StackViewController was presented.
+  WaitForStackViewActive(true);
   CheckForStackViewVisibility(true);
 }
 
@@ -105,6 +130,7 @@ void OpenNewTabUsingStackView() {
   ShowDeckWithType(DeckType::NORMAL);
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"New Tab")]
       performAction:grey_tap()];
+  WaitForStackViewActive(false);
   CheckForStackViewVisibility(false);
 }
 
@@ -121,6 +147,7 @@ void OpenNewIncognitoTabUsingStackView() {
   NSString* newIncognitoTabID = kToolsMenuNewIncognitoTabId;
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(newIncognitoTabID)]
       performAction:grey_tap()];
+  WaitForStackViewActive(false);
   CheckForStackViewVisibility(false);
 }
 
@@ -137,6 +164,7 @@ void SelectTabUsingStackView(Tab* tab) {
   [[EarlGrey selectElementWithMatcher:ViewMatchingView(card_title_label)]
       performAction:grey_tap()];
   // Wait for the StackViewController to be dismissed.
+  WaitForStackViewActive(false);
   CheckForStackViewVisibility(false);
   // Checks that the next Tab has been selected.
   GREYAssertEqual(tab, chrome_test_util::GetCurrentTab(),
@@ -187,13 +215,7 @@ void SelectTabUsingStackView(Tab* tab) {
 }
 
 // Tests closing all Tabs in the stack view.
-// TODO(crbug.com/693517): Re-enable this test on simulator.
-#if TARGET_IPHONE_SIMULATOR
-#define MAYBE_testCloseAllTabs FLAKY_testCloseAllTabs
-#else
-#define MAYBE_testCloseAllTabs testCloseAllTabs
-#endif
-- (void)MAYBE_testCloseAllTabs {
+- (void)testCloseAllTabs {
   // The StackViewController is only used on iPhones.
   if (IsIPadIdiom())
     EARL_GREY_TEST_SKIPPED(@"Stack view is not used on iPads.");
