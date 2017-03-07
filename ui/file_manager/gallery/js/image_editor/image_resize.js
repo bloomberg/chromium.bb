@@ -104,7 +104,7 @@ ImageEditor.Mode.Resize.prototype.onInputChanged_ = function(
     switch (name) {
       case 'width':
         var newHeight = Math.ceil(this.widthInputValue_ / this.ratio_);
-        if(this.isInputValidByName_('heigth', newHeight)) {
+        if (this.isInputValidByName_('height', newHeight)) {
           this.heightInputValue_ = newHeight;
           this.setHeightInputValue_();
         }
