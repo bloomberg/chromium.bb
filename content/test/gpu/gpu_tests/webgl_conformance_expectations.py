@@ -128,8 +128,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         'resize.html', ['passthrough'], bug=665521)
     self.Fail('conformance/glsl/misc/shader-with-dfdx.frag.html',
         ['passthrough'], bug=1639) # angle bug ID
-    self.Fail('conformance/glsl/misc/shaders-with-invariance.html',
-        ['passthrough'], bug=1639) # angle bug ID
     self.Fail('conformance/glsl/misc/shaders-with-name-conflicts.html',
         ['passthrough'], bug=1639) # angle bug ID
     self.Fail('conformance/misc/invalid-passed-params.html',
