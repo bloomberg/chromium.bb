@@ -1020,11 +1020,6 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
         checkerboarded_needs_raster_content_area);
   }
 
-  // Should only have one render pass in resourceless software mode.
-  DCHECK(draw_mode != DRAW_MODE_RESOURCELESS_SOFTWARE ||
-         frame->render_passes.size() == 1u)
-      << frame->render_passes.size();
-
   TRACE_EVENT_END2("cc", "LayerTreeHostImpl::CalculateRenderPasses",
                    "draw_result", draw_result, "missing tiles",
                    num_missing_tiles);
