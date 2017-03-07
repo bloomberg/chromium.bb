@@ -71,6 +71,10 @@
         margin: -8px 0;
       }
 
+      :host-context([dir=rtl]) #subpageDiv > button {
+        transform: scaleX(-1);  /* Flip on the X axis (aka mirror). */
+      }
+
       iron-icon {
         height: 24px;
         width: 24px;
@@ -78,7 +82,7 @@
 
       cr-network-icon,
       iron-icon {
-        -webkit-padding-end: 8px;
+        -webkit-margin-end: 8px;
       }
 
       cr-policy-network-indicator {
