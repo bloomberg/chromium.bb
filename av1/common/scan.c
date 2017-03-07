@@ -6600,8 +6600,8 @@ static uint32_t *get_non_zero_counts(FRAME_COUNTS *counts, TX_SIZE tx_size,
   }
 }
 
-void av1_update_scan_prob(AV1_COMMON *cm, TX_SIZE tx_size, TX_TYPE tx_type,
-                          int rate_16) {
+static void update_scan_prob(AV1_COMMON *cm, TX_SIZE tx_size, TX_TYPE tx_type,
+                             int rate_16) {
   FRAME_CONTEXT *pre_fc = &cm->frame_contexts[cm->frame_context_idx];
   uint32_t *prev_non_zero_prob = get_non_zero_prob(pre_fc, tx_size, tx_type);
   uint32_t *non_zero_prob = get_non_zero_prob(cm->fc, tx_size, tx_type);
@@ -6757,8 +6757,8 @@ void av1_update_scan_order(TX_SIZE tx_size, int16_t *sort_order, int16_t *scan,
   }
 }
 
-void av1_update_scan_order_facade(AV1_COMMON *cm, TX_SIZE tx_size,
-                                  TX_TYPE tx_type) {
+static void update_scan_order_facade(AV1_COMMON *cm, TX_SIZE tx_size,
+                                     TX_TYPE tx_type) {
   int16_t sort_order[COEFF_IDX_SIZE];
   uint32_t *non_zero_prob = get_non_zero_prob(cm->fc, tx_size, tx_type);
   int16_t *scan = get_adapt_scan(cm->fc, tx_size, tx_type);
@@ -6787,10 +6787,26 @@ void av1_init_scan_order(AV1_COMMON *cm) {
       for (i = 0; i < tx2d_size; ++i) {
         non_zero_prob[i] = (1 << 16) / 2;  // init non_zero_prob to 0.5
       }
-      av1_update_scan_order_facade(cm, tx_size, tx_type);
+      update_scan_order_facade(cm, tx_size, tx_type);
       sc->scan = get_adapt_scan(cm->fc, tx_size, tx_type);
       sc->iscan = get_adapt_iscan(cm->fc, tx_size, tx_type);
       sc->neighbors = get_adapt_nb(cm->fc, tx_size, tx_type);
+    }
+  }
+}
+
+void av1_adapt_scan_order(AV1_COMMON *cm) {
+  TX_SIZE tx_size;
+  for (tx_size = 0; tx_size < TX_SIZES_ALL; ++tx_size) {
+#if !(CONFIG_VAR_TX || CONFIG_RECT_TX)
+    if (tx_size >= TX_SIZES) continue;
+#else
+    if (tx_size > TX_32X16) continue;
+#endif  // !(CONFIG_VAR_TX || CONFIG_RECT_TX)
+    TX_TYPE tx_type;
+    for (tx_type = DCT_DCT; tx_type < TX_TYPES; ++tx_type) {
+      update_scan_prob(cm, tx_size, tx_type, ADAPT_SCAN_UPDATE_RATE_16);
+      update_scan_order_facade(cm, tx_size, tx_type);
     }
   }
 }

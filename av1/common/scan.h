@@ -30,8 +30,6 @@ extern const SCAN_ORDER av1_intra_scan_orders[TX_SIZES_ALL][TX_TYPES];
 extern const SCAN_ORDER av1_inter_scan_orders[TX_SIZES_ALL][TX_TYPES];
 
 #if CONFIG_ADAPT_SCAN
-void av1_update_scan_prob(AV1_COMMON *cm, TX_SIZE tx_size, TX_TYPE tx_type,
-                          int rate_16);
 void av1_update_scan_count_facade(AV1_COMMON *cm, FRAME_COUNTS *counts,
                                   TX_SIZE tx_size, TX_TYPE tx_type,
                                   const tran_low_t *dqcoeffs, int max_scan);
@@ -55,9 +53,8 @@ void av1_update_scan_order(TX_SIZE tx_size, int16_t *sort_order, int16_t *scan,
 // neighbors[] accordingly.
 void av1_update_neighbors(int tx_size, const int16_t *scan,
                           const int16_t *iscan, int16_t *neighbors);
-void av1_update_scan_order_facade(AV1_COMMON *cm, TX_SIZE tx_size,
-                                  TX_TYPE tx_type);
 void av1_init_scan_order(AV1_COMMON *cm);
+void av1_adapt_scan_order(AV1_COMMON *cm);
 #endif
 
 static INLINE int get_coef_context(const int16_t *neighbors,

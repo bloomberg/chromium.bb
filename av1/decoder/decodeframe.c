@@ -63,12 +63,12 @@
 #define ACCT_STR __func__
 
 #if CONFIG_PVQ
-#include "av1/decoder/pvq_decoder.h"
-#include "av1/common/pvq.h"
-#include "av1/encoder/encodemb.h"
-
 #include "av1/common/partition.h"
+#include "av1/common/pvq.h"
+#include "av1/common/scan.h"
 #include "av1/decoder/decint.h"
+#include "av1/decoder/pvq_decoder.h"
+#include "av1/encoder/encodemb.h"
 #include "av1/encoder/hybrid_fwd_txfm.h"
 #endif
 
@@ -5043,6 +5043,9 @@ void av1_decode_frame(AV1Decoder *pbi, const uint8_t *data,
 #endif  // CONFIG_SUBFRAME_PROB_UPDATE
       av1_adapt_coef_probs(cm);
       av1_adapt_intra_frame_probs(cm);
+#if CONFIG_ADAPT_SCAN
+      av1_adapt_scan_order(cm);
+#endif  // CONFIG_ADAPT_SCAN
 
       if (!frame_is_intra_only(cm)) {
         av1_adapt_inter_frame_probs(cm);

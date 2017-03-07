@@ -5584,10 +5584,6 @@ void av1_adapt_coef_probs(AV1_COMMON *cm) {
   TX_SIZE tx_size;
   unsigned int count_sat, update_factor;
 
-#if CONFIG_ADAPT_SCAN
-  TX_TYPE tx_type;
-#endif
-
   if (!frame_is_intra_only(cm) && cm->last_frame_type == KEY_FRAME) {
     update_factor = COEF_MAX_UPDATE_FACTOR_AFTER_KEY; /* adapt quickly */
     count_sat = COEF_COUNT_SAT_AFTER_KEY;
@@ -5601,25 +5597,6 @@ void av1_adapt_coef_probs(AV1_COMMON *cm) {
 
   for (tx_size = 0; tx_size < TX_SIZES; tx_size++)
     adapt_coef_probs(cm, tx_size, count_sat, update_factor);
-
-#if CONFIG_SUBFRAME_PROB_UPDATE
-  if (cm->partial_prob_update == 0)
-#endif  // CONFIG_SUBFRAME_PROB_UPDATE
-  {
-#if CONFIG_ADAPT_SCAN
-    for (tx_size = 0; tx_size < TX_SIZES_ALL; ++tx_size) {
-#if !(CONFIG_VAR_TX || CONFIG_RECT_TX)
-      if (tx_size >= TX_SIZES) continue;
-#else
-      if (tx_size > TX_32X16) continue;
-#endif  // !(CONFIG_VAR_TX || CONFIG_RECT_TX)
-      for (tx_type = DCT_DCT; tx_type < TX_TYPES; ++tx_type) {
-        av1_update_scan_prob(cm, tx_size, tx_type, ADAPT_SCAN_UPDATE_RATE_16);
-        av1_update_scan_order_facade(cm, tx_size, tx_type);
-      }
-    }
-#endif  // CONFIG_ADAPT_SCAN
-  }
 }
 
 #if CONFIG_SUBFRAME_PROB_UPDATE
