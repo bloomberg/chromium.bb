@@ -379,18 +379,8 @@ WebContentsImpl::WebContentsTreeNode::WebContentsTreeNode(
       focused_web_contents_(current_web_contents) {}
 
 WebContentsImpl::WebContentsTreeNode::~WebContentsTreeNode() {
-  if (outer_web_contents_)
-    outer_web_contents_->node_.DetachInnerWebContents(current_web_contents_);
-
-  // Remove parent pointers from our children.
-  // TODO(lazyboy): We should destroy the children WebContentses too. If the
-  // children do not manage their own lifetime, then we would leak their
-  // WebContentses.
-  for (WebContentsImpl* child_contents : inner_web_contents_) {
-    child_contents->node_.outer_web_contents_ = nullptr;
-    child_contents->node_.outer_contents_frame_tree_node_id_ =
-        FrameTreeNode::kFrameTreeNodeInvalidId;
-  }
+  if (OuterContentsFrameTreeNode())
+    OuterContentsFrameTreeNode()->RemoveObserver(this);
 }
 
 void WebContentsImpl::WebContentsTreeNode::ConnectToOuterWebContents(
@@ -401,22 +391,20 @@ void WebContentsImpl::WebContentsTreeNode::ConnectToOuterWebContents(
   outer_contents_frame_tree_node_id_ =
       outer_contents_frame->frame_tree_node()->frame_tree_node_id();
 
-  outer_web_contents_->node_.AttachInnerWebContents(current_web_contents_);
+  outer_contents_frame->frame_tree_node()->AddObserver(this);
 }
 
-void WebContentsImpl::WebContentsTreeNode::AttachInnerWebContents(
-    WebContentsImpl* inner_web_contents) {
-  inner_web_contents_.push_back(inner_web_contents);
+FrameTreeNode*
+WebContentsImpl::WebContentsTreeNode::OuterContentsFrameTreeNode() const {
+  return FrameTreeNode::GloballyFindByID(outer_contents_frame_tree_node_id_);
 }
 
-void WebContentsImpl::WebContentsTreeNode::DetachInnerWebContents(
-    WebContentsImpl* inner_web_contents) {
-  DCHECK(std::find(inner_web_contents_.begin(), inner_web_contents_.end(),
-                   inner_web_contents) != inner_web_contents_.end());
-  inner_web_contents_.erase(
-      std::remove(inner_web_contents_.begin(), inner_web_contents_.end(),
-                  inner_web_contents),
-      inner_web_contents_.end());
+void WebContentsImpl::WebContentsTreeNode::OnFrameTreeNodeDestroyed(
+    FrameTreeNode* node) {
+  DCHECK_EQ(outer_contents_frame_tree_node_id_, node->frame_tree_node_id())
+      << "WebContentsTreeNode should only receive notifications for the "
+         "FrameTreeNode in its outer WebContents that hosts it.";
+  delete current_web_contents_;  // deletes |this| too.
 }
 
 void WebContentsImpl::WebContentsTreeNode::SetFocusedWebContents(

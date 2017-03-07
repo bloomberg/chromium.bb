@@ -64,6 +64,7 @@
 #include "content/public/test/download_test_observer.h"
 #include "content/public/test/fake_speech_recognition_manager.h"
 #include "content/public/test/test_renderer_host.h"
+#include "content/public/test/test_utils.h"
 #include "extensions/browser/api/declarative/rules_registry.h"
 #include "extensions/browser/api/declarative/rules_registry_service.h"
 #include "extensions/browser/api/declarative/test_rules_registry.h"
@@ -3254,6 +3255,27 @@ IN_PROC_BROWSER_TEST_P(WebViewTest, Shim_TestBlobURL) {
 IN_PROC_BROWSER_TEST_P(WebViewTest, LoadWebviewAccessibleResource) {
   TestHelper("testLoadWebviewAccessibleResource",
              "web_view/load_webview_accessible_resource", NEEDS_TEST_SERVER);
+}
+
+// Tests that a webview inside an iframe can load and that it is destroyed when
+// the iframe is detached.
+IN_PROC_BROWSER_TEST_P(WebViewTest, LoadWebviewInsideIframe) {
+  TestHelper("testLoadWebviewInsideIframe",
+             "web_view/load_webview_inside_iframe", NEEDS_TEST_SERVER);
+
+  // WebContents is leaked when using BrowserPlugin.
+  if (!base::FeatureList::IsEnabled(::features::kGuestViewCrossProcessFrames))
+    return;
+
+  content::WebContentsDestroyedWatcher watcher(
+      GetGuestViewManager()->GetLastGuestCreated());
+
+  // Remove the iframe.
+  EXPECT_TRUE(content::ExecuteScript(
+      GetEmbedderWebContents(), "document.querySelector('iframe').remove()"));
+
+  // Wait for guest to be destroyed.
+  watcher.Wait();
 }
 
 IN_PROC_BROWSER_TEST_P(WebViewAccessibilityTest, LoadWebViewAccessibility) {

@@ -21,6 +21,7 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "content/browser/frame_host/frame_tree.h"
+#include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/navigation_controller_delegate.h"
 #include "content/browser/frame_host/navigation_controller_impl.h"
 #include "content/browser/frame_host/navigator_delegate.h"
@@ -857,10 +858,10 @@ class CONTENT_EXPORT WebContentsImpl
   // referred to as "inner WebContents".
   // For each inner WebContents, the outer WebContents will have a
   // corresponding FrameTreeNode.
-  struct WebContentsTreeNode {
+  class WebContentsTreeNode final : public FrameTreeNode::Observer {
    public:
     explicit WebContentsTreeNode(WebContentsImpl* current_web_contents);
-    ~WebContentsTreeNode();
+    ~WebContentsTreeNode() final;
 
     void ConnectToOuterWebContents(WebContentsImpl* outer_web_contents,
                                    RenderFrameHostImpl* outer_contents_frame);
@@ -869,13 +870,14 @@ class CONTENT_EXPORT WebContentsImpl
     int outer_contents_frame_tree_node_id() const {
       return outer_contents_frame_tree_node_id_;
     }
+    FrameTreeNode* OuterContentsFrameTreeNode() const;
 
     WebContentsImpl* focused_web_contents() { return focused_web_contents_; }
     void SetFocusedWebContents(WebContentsImpl* web_contents);
 
    private:
-    void AttachInnerWebContents(WebContentsImpl* inner_web_contents);
-    void DetachInnerWebContents(WebContentsImpl* inner_web_contents);
+    // FrameTreeNode::Observer implementation.
+    void OnFrameTreeNodeDestroyed(FrameTreeNode* node) final;
 
     // The WebContents that owns this WebContentsTreeNode.
     WebContentsImpl* const current_web_contents_;
@@ -887,9 +889,6 @@ class CONTENT_EXPORT WebContentsImpl
     // The ID of the FrameTreeNode in the |outer_web_contents_| that hosts
     // |current_web_contents_| as an inner WebContents.
     int outer_contents_frame_tree_node_id_;
-
-    // List of inner WebContents that we host.
-    std::vector<WebContentsImpl*> inner_web_contents_;
 
     // Only the root node should have this set. This indicates the WebContents
     // whose frame tree has the focused frame. The WebContents tree could be

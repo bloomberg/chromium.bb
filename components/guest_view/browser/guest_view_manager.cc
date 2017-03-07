@@ -129,7 +129,7 @@ void GuestViewManager::AttachGuest(int embedder_process_id,
 
     auto* old_guest_view =
         GuestViewBase::From(embedder_process_id, old_guest_instance_id);
-    old_guest_view->Destroy();
+    old_guest_view->Destroy(true);
   }
   instance_id_map_[key] = guest_instance_id;
   reverse_instance_id_map_[guest_instance_id] = key;

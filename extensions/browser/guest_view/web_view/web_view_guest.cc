@@ -1529,7 +1529,7 @@ void WebViewGuest::OnWebViewNewWindowResponse(
     return;
 
   if (!allow)
-    guest->Destroy();
+    guest->Destroy(true);
 }
 
 void WebViewGuest::OnFullscreenPermissionDecided(

@@ -285,7 +285,7 @@ void MimeHandlerViewGuest::OnRenderFrameHostDeleted(int process_id,
                                                     int routing_id) {
   if (process_id == embedder_frame_process_id_ &&
       routing_id == embedder_frame_routing_id_)
-    Destroy();
+    Destroy(true);
 }
 
 void MimeHandlerViewGuest::DocumentOnLoadCompletedInMainFrame() {

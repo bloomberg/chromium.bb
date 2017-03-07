@@ -192,7 +192,7 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
   int proxy_routing_id() const { return guest_proxy_routing_id_; }
 
   // Destroy this guest.
-  void Destroy();
+  void Destroy(bool also_delete);
 
   // Saves the attach state of the custom element hosting this GuestView.
   void SetAttachParams(const base::DictionaryValue& params);
@@ -451,7 +451,8 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
   std::unique_ptr<base::DictionaryValue> attach_params_;
 
   // This observer ensures that this guest self-destructs if the embedder goes
-  // away.
+  // away. It also tracks when the embedder's fullscreen is toggled or when its
+  // page scale factor changes so the guest can change itself accordingly.
   std::unique_ptr<OwnerContentsObserver> owner_contents_observer_;
 
   // This observer ensures that if the guest is unattached and its opener goes

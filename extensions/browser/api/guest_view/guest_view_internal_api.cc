@@ -99,7 +99,7 @@ bool GuestViewInternalDestroyGuestFunction::RunAsync() {
       render_frame_host()->GetProcess()->GetID(), params->instance_id);
   if (!guest)
     return false;
-  guest->Destroy();
+  guest->Destroy(true);
   SendResponse(true);
   return true;
 }
