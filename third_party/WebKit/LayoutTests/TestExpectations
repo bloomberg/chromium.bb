@@ -125,6 +125,12 @@ crbug.com/646016 virtual/disable-spinvalidation/paint/invalidation/selected-repl
 
 crbug.com/659192 virtual/gpu/fast/canvas/canvas-imageSmoothingQuality-pixel.html [ NeedsManualRebaseline ]
 
+# https://skia-review.googlesource.com/c/9341
+crbug.com/699098 fast/replaced/border-radius-clip-content-edge.html [ NeedsManualRebaseline ]
+crbug.com/699098 virtual/gpu-rasterization/images/color-profile-background-image-cross-fade-png.html [ NeedsManualRebaseline ]
+crbug.com/699098 virtual/gpu-rasterization/images/color-profile-background-image-cross-fade.html [ NeedsManualRebaseline ]
+crbug.com/699098 virtual/gpu-rasterization/images/color-profile-mask-image-svg.html [ NeedsManualRebaseline ]
+
 crbug.com/664850 virtual/display_list_2d_canvas/fast/canvas/canvas-createImageBitmap-webgl.html [ Pass Failure ]
 crbug.com/664850 virtual/display_list_2d_canvas/fast/canvas/OffscreenCanvas-2d-drawImage.html [ Pass Failure ]
 crbug.com/664850 virtual/display_list_2d_canvas/fast/canvas/OffscreenCanvas-commit-invalid-call.html [ Pass Failure ]
