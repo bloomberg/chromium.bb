@@ -52,7 +52,8 @@ void ArcManualAuthCodeFetcher::OnContextPrepared(
 
 void ArcManualAuthCodeFetcher::OnAuthSucceeded(const std::string& auth_code) {
   DCHECK(!pending_callback_.is_null());
-  base::ResetAndReturn(&pending_callback_).Run(auth_code);
+  base::ResetAndReturn(&pending_callback_)
+      .Run(ArcAuthInfoFetcher::Status::SUCCESS, auth_code);
 }
 
 void ArcManualAuthCodeFetcher::OnAuthFailed() {

@@ -123,16 +123,21 @@ class ArcRobotAuthCodeFetcherBrowserTest : public InProcessBrowserTest {
 
   policy::TestRequestInterceptor* interceptor() { return interceptor_.get(); }
 
-  static void FetchAuthCode(ArcRobotAuthCodeFetcher* fetcher,
-                            std::string* output_auth_code) {
+  static void FetchAuthCode(
+      ArcRobotAuthCodeFetcher* fetcher,
+      arc::ArcAuthInfoFetcher::Status* output_fetch_status,
+      std::string* output_auth_code) {
     base::RunLoop run_loop;
     fetcher->Fetch(base::Bind(
-        [](std::string* output_auth_code, base::RunLoop* run_loop,
+        [](arc::ArcAuthInfoFetcher::Status* output_fetch_status,
+           std::string* output_auth_code, base::RunLoop* run_loop,
+           arc::ArcAuthInfoFetcher::Status fetch_status,
            const std::string& auth_code) {
+          *output_fetch_status = fetch_status;
           *output_auth_code = auth_code;
           run_loop->Quit();
         },
-        output_auth_code, &run_loop));
+        output_fetch_status, output_auth_code, &run_loop));
     // Because the Fetch() operation needs to interact with other threads,
     // RunUntilIdle() won't work here. Instead, use Run() and Quit() explicitly
     // in the callback.
@@ -151,8 +156,13 @@ IN_PROC_BROWSER_TEST_F(ArcRobotAuthCodeFetcherBrowserTest,
   interceptor()->PushJobCallback(base::Bind(&ResponseJob));
 
   std::string auth_code;
+  arc::ArcAuthInfoFetcher::Status fetch_status =
+      arc::ArcAuthInfoFetcher::Status::FAILURE;
+
   auto robot_fetcher = base::MakeUnique<ArcRobotAuthCodeFetcher>();
-  FetchAuthCode(robot_fetcher.get(), &auth_code);
+  FetchAuthCode(robot_fetcher.get(), &fetch_status, &auth_code);
+
+  EXPECT_EQ(arc::ArcAuthInfoFetcher::Status::SUCCESS, fetch_status);
   EXPECT_EQ(kFakeAuthCode, auth_code);
 }
 
@@ -164,9 +174,13 @@ IN_PROC_BROWSER_TEST_F(ArcRobotAuthCodeFetcherBrowserTest,
   // We expect auth_code is empty in this case. So initialize with non-empty
   // value.
   std::string auth_code = "NOT-YET-FETCHED";
-  auto robot_fetcher = base::MakeUnique<ArcRobotAuthCodeFetcher>();
-  FetchAuthCode(robot_fetcher.get(), &auth_code);
+  arc::ArcAuthInfoFetcher::Status fetch_status =
+      arc::ArcAuthInfoFetcher::Status::SUCCESS;
 
+  auto robot_fetcher = base::MakeUnique<ArcRobotAuthCodeFetcher>();
+  FetchAuthCode(robot_fetcher.get(), &fetch_status, &auth_code);
+
+  EXPECT_EQ(arc::ArcAuthInfoFetcher::Status::FAILURE, fetch_status);
   // Use EXPECT_EQ for better logging in case of failure.
   EXPECT_EQ(std::string(), auth_code);
 }

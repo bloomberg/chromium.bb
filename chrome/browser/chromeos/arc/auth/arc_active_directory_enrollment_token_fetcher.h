@@ -38,7 +38,7 @@ class ArcActiveDirectoryEnrollmentTokenFetcher : public ArcAuthInfoFetcher {
  private:
   void OnDMTokenAvailable(const std::string& dm_token);
   void OnFetchEnrollmentTokenCompleted(
-      policy::DeviceManagementStatus status,
+      policy::DeviceManagementStatus dm_status,
       int net_error,
       const enterprise_management::DeviceManagementResponse& response);
 

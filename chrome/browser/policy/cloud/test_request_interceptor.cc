@@ -42,17 +42,22 @@ net::URLRequestJob* ErrorJobCallback(int error,
   return new net::URLRequestErrorJob(request, network_delegate, error);
 }
 
+// Helper callback for jobs that should fail with the specified HTTP error.
+net::URLRequestJob* HttpErrorJobCallback(
+    const std::string& error,
+    net::URLRequest* request,
+    net::NetworkDelegate* network_delegate) {
+  std::string headers =
+      "HTTP/1.1 " + error + "\nContent-type: application/protobuf\n\n";
+  return new net::URLRequestTestJob(
+      request, network_delegate, headers, std::string(), true);
+}
+
 // Helper callback for jobs that should fail with a 400 HTTP error.
 net::URLRequestJob* BadRequestJobCallback(
     net::URLRequest* request,
     net::NetworkDelegate* network_delegate) {
-  static const char kBadHeaders[] =
-      "HTTP/1.1 400 Bad request\n"
-      "Content-type: application/protobuf\n"
-      "\n";
-  std::string headers(kBadHeaders, arraysize(kBadHeaders));
-  return new net::URLRequestTestJob(
-      request, network_delegate, headers, std::string(), true);
+  return HttpErrorJobCallback("400 Bad request", request, network_delegate);
 }
 
 net::URLRequestJob* FileJobCallback(const base::FilePath& file_path,
@@ -314,6 +319,12 @@ TestRequestInterceptor::JobCallback TestRequestInterceptor::ErrorJob(
 // static
 TestRequestInterceptor::JobCallback TestRequestInterceptor::BadRequestJob() {
   return base::Bind(&BadRequestJobCallback);
+}
+
+// static
+TestRequestInterceptor::JobCallback TestRequestInterceptor::HttpErrorJob(
+    std::string error) {
+  return base::Bind(&HttpErrorJobCallback, error);
 }
 
 // static

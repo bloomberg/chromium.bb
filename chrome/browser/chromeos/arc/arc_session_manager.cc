@@ -353,6 +353,9 @@ void ArcSessionManager::OnProvisioningFinished(ProvisioningResult result) {
       // TODO(khmel): Use explicit error for M58+ builds.
       error = ArcSupportHost::Error::SIGN_IN_SERVICE_UNAVAILABLE_ERROR;
       break;
+    case ProvisioningResult::ARC_DISABLED:
+      error = ArcSupportHost::Error::ANDROID_MANAGEMENT_REQUIRED_ERROR;
+      break;
     default:
       error = ArcSupportHost::Error::SIGN_IN_UNKNOWN_ERROR;
       break;

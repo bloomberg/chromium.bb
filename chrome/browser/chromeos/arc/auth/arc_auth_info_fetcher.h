@@ -16,13 +16,21 @@ class ArcAuthInfoFetcher {
  public:
   virtual ~ArcAuthInfoFetcher() = default;
 
-  // Fetches the auth code or the enrollment token. On success, |callback| is
-  // called with the fetched |auth_info|. Otherwise, |callback| is called with
-  // empty string.
+  enum class Status {
+    SUCCESS,       // The fetch was successful.
+    FAILURE,       // The request failed.
+    ARC_DISABLED,  // ARC is not enabled.
+  };
+
+  // Fetches the auth code or the enrollment token.
+  // On success, |callback| is called with |status| = SUCCESS and with the
+  // fetched |auth_info|. Otherwise, |status| contains the reason of the
+  // failure.
   // Fetch() should be called once per instance, and it is expected that
   // the inflight operation is cancelled without calling the |callback|
   // when the instance is deleted.
-  using FetchCallback = base::Callback<void(const std::string& auth_info)>;
+  using FetchCallback =
+      base::Callback<void(Status status, const std::string& auth_info)>;
   virtual void Fetch(const FetchCallback& callback) = 0;
 };
 

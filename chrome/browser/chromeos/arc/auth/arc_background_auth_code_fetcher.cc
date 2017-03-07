@@ -182,7 +182,10 @@ void ArcBackgroundAuthCodeFetcher::ReportResult(
     const std::string& auth_code,
     OptInSilentAuthCode uma_status) {
   UpdateSilentAuthCodeUMA(uma_status);
-  base::ResetAndReturn(&callback_).Run(auth_code);
+  base::ResetAndReturn(&callback_)
+      .Run(auth_code.empty() ? ArcAuthInfoFetcher::Status::FAILURE
+                             : ArcAuthInfoFetcher::Status::SUCCESS,
+           auth_code);
 }
 
 }  // namespace arc

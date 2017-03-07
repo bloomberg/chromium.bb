@@ -12,7 +12,6 @@
 #include "chrome/browser/chromeos/arc/arc_optin_uma.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/arc/auth/arc_active_directory_enrollment_token_fetcher.h"
-#include "chrome/browser/chromeos/arc/auth/arc_auth_info_fetcher.h"
 #include "chrome/browser/chromeos/arc/auth/arc_background_auth_code_fetcher.h"
 #include "chrome/browser/chromeos/arc/auth/arc_manual_auth_code_fetcher.h"
 #include "chrome/browser/chromeos/arc/auth/arc_robot_auth_code_fetcher.h"
@@ -290,26 +289,35 @@ void ArcAuthService::RequestAccountInfoInternal(
 }
 
 void ArcAuthService::OnEnrollmentTokenFetched(
+    ArcAuthInfoFetcher::Status status,
     const std::string& enrollment_token) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   fetcher_.reset();
 
-  if (enrollment_token.empty()) {
-    ArcSessionManager::Get()->OnProvisioningFinished(
-        ProvisioningResult::CHROME_SERVER_COMMUNICATION_ERROR);
-    return;
+  switch (status) {
+    case ArcAuthInfoFetcher::Status::SUCCESS:
+      notifier_->Notify(true /*is_enforced*/, enrollment_token,
+                        mojom::ChromeAccountType::ACTIVE_DIRECTORY_ACCOUNT,
+                        true);
+      notifier_.reset();
+      return;
+    case ArcAuthInfoFetcher::Status::FAILURE:
+      ArcSessionManager::Get()->OnProvisioningFinished(
+          ProvisioningResult::CHROME_SERVER_COMMUNICATION_ERROR);
+      return;
+    case ArcAuthInfoFetcher::Status::ARC_DISABLED:
+      ArcSessionManager::Get()->OnProvisioningFinished(
+          ProvisioningResult::ARC_DISABLED);
+      return;
   }
-
-  notifier_->Notify(true /*is_enforced*/, enrollment_token,
-                    mojom::ChromeAccountType::ACTIVE_DIRECTORY_ACCOUNT, true);
-  notifier_.reset();
 }
 
-void ArcAuthService::OnAuthCodeFetched(const std::string& auth_code) {
+void ArcAuthService::OnAuthCodeFetched(ArcAuthInfoFetcher::Status status,
+                                       const std::string& auth_code) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   fetcher_.reset();
 
-  if (auth_code.empty()) {
+  if (status != ArcAuthInfoFetcher::Status::SUCCESS) {
     ArcSessionManager::Get()->OnProvisioningFinished(
         ProvisioningResult::CHROME_SERVER_COMMUNICATION_ERROR);
     return;

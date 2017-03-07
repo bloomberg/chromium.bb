@@ -10,14 +10,13 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/chromeos/arc/auth/arc_auth_info_fetcher.h"
 #include "components/arc/arc_service.h"
 #include "components/arc/common/auth.mojom.h"
 #include "components/arc/instance_holder.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
 namespace arc {
-
-class ArcAuthInfoFetcher;
 
 // Implementation of ARC authorization.
 // TODO(hidehiko): Move to c/b/c/arc/auth with adding tests.
@@ -63,8 +62,10 @@ class ArcAuthService : public ArcService,
       std::unique_ptr<AccountInfoNotifier> account_info_notifier);
 
   // Callbacks when auth info is fetched.
-  void OnEnrollmentTokenFetched(const std::string& enrollment_token);
-  void OnAuthCodeFetched(const std::string& auth_code);
+  void OnEnrollmentTokenFetched(ArcAuthInfoFetcher::Status status,
+                                const std::string& enrollment_token);
+  void OnAuthCodeFetched(ArcAuthInfoFetcher::Status status,
+                         const std::string& auth_code);
 
   // Called to let ARC container know the account info.
   void OnAccountInfoReady(mojom::AccountInfoPtr account_info);

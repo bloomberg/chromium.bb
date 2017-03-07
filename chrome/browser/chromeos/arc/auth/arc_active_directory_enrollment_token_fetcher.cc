@@ -65,7 +65,8 @@ void ArcActiveDirectoryEnrollmentTokenFetcher::OnDMTokenAvailable(
 
   if (dm_token.empty()) {
     LOG(ERROR) << "Retrieving the DMToken failed.";
-    base::ResetAndReturn(&callback_).Run(std::string());
+    base::ResetAndReturn(&callback_)
+        .Run(ArcAuthInfoFetcher::Status::FAILURE, std::string());
     return;
   }
 
@@ -104,29 +105,38 @@ void SavePlayUserId(const std::string& user_id) {
 }
 
 void ArcActiveDirectoryEnrollmentTokenFetcher::OnFetchEnrollmentTokenCompleted(
-    policy::DeviceManagementStatus status,
+    policy::DeviceManagementStatus dm_status,
     int net_error,
     const enterprise_management::DeviceManagementResponse& response) {
   fetch_request_job_.reset();
 
-  if (status == policy::DM_STATUS_SUCCESS &&
-      (!response.has_active_directory_enroll_play_user_response())) {
-    LOG(WARNING) << "Invalid Active Directory enroll Play user response.";
-    status = policy::DM_STATUS_RESPONSE_DECODING_ERROR;
+  ArcAuthInfoFetcher::Status fetch_status;
+  std::string enrollment_token;
+
+  switch (dm_status) {
+    case policy::DM_STATUS_SUCCESS:
+      if (!response.has_active_directory_enroll_play_user_response()) {
+        LOG(WARNING) << "Invalid Active Directory enroll Play user response.";
+        fetch_status = ArcAuthInfoFetcher::Status::FAILURE;
+        break;
+      }
+      fetch_status = ArcAuthInfoFetcher::Status::SUCCESS;
+      enrollment_token = response.active_directory_enroll_play_user_response()
+                             .enrollment_token();
+      SavePlayUserId(
+          response.active_directory_enroll_play_user_response().user_id());
+      break;
+    case policy::DM_STATUS_SERVICE_ARC_DISABLED:
+      fetch_status = ArcAuthInfoFetcher::Status::ARC_DISABLED;
+      break;
+    default:  // All other error cases
+      LOG(ERROR) << "Fetching an enrollment token failed. DM Status: "
+                 << dm_status;
+      fetch_status = ArcAuthInfoFetcher::Status::FAILURE;
+      break;
   }
 
-  if (status != policy::DM_STATUS_SUCCESS) {
-    LOG(ERROR) << "Fetching an enrollment token failed. DM Status: " << status;
-    base::ResetAndReturn(&callback_).Run(std::string());
-    return;
-  }
-
-  SavePlayUserId(
-      response.active_directory_enroll_play_user_response().user_id());
-
-  base::ResetAndReturn(&callback_)
-      .Run(response.active_directory_enroll_play_user_response()
-               .enrollment_token());
+  base::ResetAndReturn(&callback_).Run(fetch_status, enrollment_token);
 }
 
 }  // namespace arc

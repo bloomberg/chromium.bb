@@ -112,6 +112,9 @@ enum class ProvisioningResult : int {
   // Network connection is unavailable in ARC.
   NO_NETWORK_CONNECTION = 19,
 
+  // ARC is not enabled.
+  ARC_DISABLED = 20,
+
   // The size of this enum; keep last.
   SIZE,
 };
