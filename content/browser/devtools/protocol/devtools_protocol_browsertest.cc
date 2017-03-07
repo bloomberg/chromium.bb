@@ -139,9 +139,7 @@ class DevToolsProtocolTest : public ContentBrowserTest,
       : last_sent_id_(0),
         waiting_for_command_result_id_(0),
         in_dispatch_(false),
-        last_shown_certificate_(nullptr),
-        ok_cert_(nullptr),
-        expired_cert_(nullptr) {}
+        agent_host_can_close_(false) {}
 
   void SetUpOnMainThread() override {
     ok_cert_ =
@@ -343,6 +341,8 @@ class DevToolsProtocolTest : public ContentBrowserTest,
     return expired_cert_;
   }
 
+  void set_agent_host_can_close() { agent_host_can_close_ = true; }
+
   std::unique_ptr<base::DictionaryValue> result_;
   scoped_refptr<DevToolsAgentHost> agent_host_;
   int last_sent_id_;
@@ -389,7 +389,8 @@ class DevToolsProtocolTest : public ContentBrowserTest,
   }
 
   void AgentHostClosed(DevToolsAgentHost* agent_host, bool replaced) override {
-    DCHECK(false);
+    if (!agent_host_can_close_)
+      NOTREACHED();
   }
 
   std::string waiting_for_notification_;
@@ -399,6 +400,7 @@ class DevToolsProtocolTest : public ContentBrowserTest,
   scoped_refptr<net::X509Certificate> last_shown_certificate_;
   scoped_refptr<net::X509Certificate> ok_cert_;
   scoped_refptr<net::X509Certificate> expired_cert_;
+  bool agent_host_can_close_;
 };
 
 class TestInterstitialDelegate : public InterstitialPageDelegate {
@@ -1008,14 +1010,8 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, InspectDuringFrameSwap) {
   EXPECT_TRUE(success);
 }
 
-// CrashTab() works differently on Windows, leading to RFH removal before
-// RenderProcessGone is called. TODO(dgozman): figure out the problem.
-#if defined(OS_WIN)
-#define MAYBE_DoubleCrash DISABLED_DoubleCrash
-#else
-#define MAYBE_DoubleCrash DoubleCrash
-#endif
-IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, MAYBE_DoubleCrash) {
+IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, DoubleCrash) {
+  set_agent_host_can_close();
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL test_url = embedded_test_server()->GetURL("/devtools/navigation.html");
   NavigateToURLBlockUntilNavigationsComplete(shell(), GURL("about:blank"), 1);
