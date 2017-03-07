@@ -51,10 +51,6 @@ TEST_F(MruWindowTrackerTest, Basic) {
 
 // Test that minimized windows are not treated specially.
 TEST_F(MruWindowTrackerTest, MinimizedWindowsAreLru) {
-  // TODO(sky): fix me. Fails in mash because of http://crbug.com/654887.
-  if (WmShell::Get()->IsRunningInMash())
-    return;
-
   std::unique_ptr<WindowOwner> w1_owner(CreateTestWindow());
   WmWindow* w1 = w1_owner->window();
   std::unique_ptr<WindowOwner> w2_owner(CreateTestWindow());
