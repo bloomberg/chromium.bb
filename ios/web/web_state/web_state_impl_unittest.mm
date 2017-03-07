@@ -212,10 +212,11 @@ TEST_F(WebStateImplTest, ResponseHeaders) {
   web_state_->OnHttpResponseHeadersReceived(real_headers.get(), real_url);
   web_state_->OnHttpResponseHeadersReceived(frame_headers.get(), frame_url);
   // Include a hash to be sure it's handled correctly.
-  web_state_->OnNavigationCommitted(
+  web_state_->UpdateHttpResponseHeaders(
       GURL(real_url.spec() + std::string("#baz")));
 
   // Verify that the right header set was kept.
+  ASSERT_TRUE(web_state_->GetHttpResponseHeaders());
   EXPECT_TRUE(
       web_state_->GetHttpResponseHeaders()->HasHeader("X-Should-Be-Here"));
   EXPECT_FALSE(
@@ -239,14 +240,15 @@ TEST_F(WebStateImplTest, ResponseHeaderClearing) {
   EXPECT_EQ(NULL, web_state_->GetHttpResponseHeaders());
 
   // There should be headers and parsed values after loading.
-  web_state_->OnNavigationCommitted(url);
+  web_state_->UpdateHttpResponseHeaders(url);
+  ASSERT_TRUE(web_state_->GetHttpResponseHeaders());
   EXPECT_TRUE(web_state_->GetHttpResponseHeaders()->HasHeader("Content-Type"));
   EXPECT_NE("", web_state_->GetContentsMimeType());
   EXPECT_NE("", web_state_->GetContentLanguageHeader());
 
   // ... but not after loading another page, nor should there be specific
   // parsed values.
-  web_state_->OnNavigationCommitted(GURL("http://elsewhere.com/"));
+  web_state_->UpdateHttpResponseHeaders(GURL("http://elsewhere.com/"));
   EXPECT_EQ(NULL, web_state_->GetHttpResponseHeaders());
   EXPECT_EQ("", web_state_->GetContentsMimeType());
   EXPECT_EQ("", web_state_->GetContentLanguageHeader());

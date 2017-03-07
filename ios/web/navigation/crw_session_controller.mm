@@ -482,6 +482,7 @@
   pushedItem->SetSerializedStateObject(stateObject);
   pushedItem->SetIsCreatedFromPushState(true);
   pushedItem->GetSSL() = lastCommittedItem->GetSSL();
+  pushedItem->SetTimestamp(_timeSmoother.GetSmoothedTime(base::Time::Now()));
 
   [self clearForwardItems];
   // Add the new entry at the end.

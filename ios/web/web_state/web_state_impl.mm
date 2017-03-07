@@ -182,7 +182,6 @@ void WebStateImpl::SetFacadeDelegate(WebStateFacadeDelegate* facade_delegate) {
 }
 
 void WebStateImpl::OnNavigationCommitted(const GURL& url) {
-  UpdateHttpResponseHeaders(url);
   std::unique_ptr<NavigationContext> context =
       NavigationContextImpl::CreateNavigationContext(this, url);
   for (auto& observer : observers_)

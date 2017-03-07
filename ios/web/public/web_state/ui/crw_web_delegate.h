@@ -41,15 +41,8 @@ class GURL;
 // Phase will be LOAD_REQUESTED.
 - (void)webWillAddPendingURL:(const GURL&)url
                   transition:(ui::PageTransition)transition;
-// Called when webWillStartLoadingURL was called, but something went wrong, and
-// webDidStartLoadingURL will now never be called.
+// Called when webWillStartLoadingURL was called, but something went wrong.
 - (void)webCancelStartLoadingRequest;
-// Called when the page URL has changed. Phase will be PAGE_LOADING. Can be
-// followed by webDidFinishWithURL or webWillStartLoadingURL.
-// |updateHistory| is YES if the URL should be added to the history DB.
-// TODO(crbug.com/692331): Remove this method and use |DidFinishNavigation|.
-- (void)webDidStartLoadingURL:(const GURL&)url
-          shouldUpdateHistory:(BOOL)updateHistory;
 // Called when the page load was cancelled by page activity (before a success /
 // failure state is known). Phase will be PAGE_LOADED.
 - (void)webLoadCancelled:(const GURL&)url;

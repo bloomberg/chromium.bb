@@ -5,6 +5,8 @@
 #include <memory>
 
 #include "base/memory/ptr_util.h"
+#import "ios/web/public/navigation_item.h"
+#import "ios/web/public/navigation_manager.h"
 #import "ios/web/public/test/http_server.h"
 #include "ios/web/public/test/http_server_util.h"
 #include "ios/web/public/web_state/navigation_context.h"
@@ -29,6 +31,10 @@ ACTION_P2(VerifyNewPageContext, web_state, url) {
   EXPECT_EQ(url, context->GetUrl());
   EXPECT_FALSE(context->IsSamePage());
   EXPECT_FALSE(context->IsErrorPage());
+  NavigationManager* navigation_manager = web_state->GetNavigationManager();
+  NavigationItem* item = navigation_manager->GetLastCommittedItem();
+  EXPECT_GT(item->GetTimestamp().ToInternalValue(), 0);
+  EXPECT_EQ(url, item->GetURL());
 }
 
 // Verifies correctness of |NavigationContext| for same page navigation passed
@@ -40,6 +46,10 @@ ACTION_P2(VerifySamePageContext, web_state, url) {
   EXPECT_EQ(url, context->GetUrl());
   EXPECT_TRUE(context->IsSamePage());
   EXPECT_FALSE(context->IsErrorPage());
+  NavigationManager* navigation_manager = web_state->GetNavigationManager();
+  NavigationItem* item = navigation_manager->GetLastCommittedItem();
+  EXPECT_GT(item->GetTimestamp().ToInternalValue(), 0);
+  EXPECT_EQ(url, item->GetURL());
 }
 
 // Mocks DidFinishNavigation navigation callback.

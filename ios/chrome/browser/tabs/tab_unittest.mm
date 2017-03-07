@@ -239,8 +239,8 @@ class TabTest : public BlockCleanupTest {
 
     web_state_impl_->OnProvisionalNavigationStarted(redirectUrl);
     [[tab_ navigationManagerImpl]->GetSessionController() commitPendingItem];
+    [[tab_ webController] webStateImpl]->UpdateHttpResponseHeaders(redirectUrl);
     [[tab_ webController] webStateImpl]->OnNavigationCommitted(redirectUrl);
-    [tab_ webDidStartLoadingURL:redirectUrl shouldUpdateHistory:YES];
 
     base::string16 new_title = base::SysNSStringToUTF16(title);
     [tab_ navigationManager]->GetLastCommittedItem()->SetTitle(new_title);
@@ -261,7 +261,6 @@ class TabTest : public BlockCleanupTest {
     [[tab_ webController] loadWithParams:params];
     [[[(id)mock_web_controller_ expect]
         andReturnValue:OCMOCK_VALUE(kPageLoading)] loadPhase];
-    [tab_ webDidStartLoadingURL:url shouldUpdateHistory:YES];
     [[[(id)mock_web_controller_ expect]
         andReturnValue:OCMOCK_VALUE(kPageLoaded)] loadPhase];
     web_state_impl_->OnPageLoaded(url, true);

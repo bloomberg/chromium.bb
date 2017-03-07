@@ -487,8 +487,8 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
 // Called when a page (native or web) has actually started loading (i.e., for
 // a web page the document has actually changed), or after the load request has
 // been registered for a non-document-changing URL change. Updates internal
-// state not specific to web pages, and informs the delegate.
-- (void)didStartLoadingURL:(const GURL&)URL updateHistory:(BOOL)updateHistory;
+// state not specific to web pages.
+- (void)didStartLoadingURL:(const GURL&)URL;
 // Returns YES if the URL looks like it is one CRWWebController can show.
 + (BOOL)webControllerCanShow:(const GURL&)url;
 // Clears the currently-displayed transient content view.
@@ -1781,7 +1781,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 
 - (void)loadNativeViewWithSuccess:(BOOL)loadSuccess {
   const GURL currentURL([self currentURL]);
-  [self didStartLoadingURL:currentURL updateHistory:loadSuccess];
+  [self didStartLoadingURL:currentURL];
   _loadPhase = web::PAGE_LOADED;
   if (loadSuccess) {
     _webStateImpl->OnNavigationCommitted(currentURL);
@@ -3038,7 +3038,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   // push/replaceState.
   [self resetDocumentSpecificState];
 
-  [self didStartLoadingURL:currentURL updateHistory:YES];
+  [self didStartLoadingURL:currentURL];
 }
 
 - (void)resetDocumentSpecificState {
@@ -3046,16 +3046,15 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   _clickInProgress = NO;
 }
 
-- (void)didStartLoadingURL:(const GURL&)url updateHistory:(BOOL)updateHistory {
+- (void)didStartLoadingURL:(const GURL&)URL {
   _loadPhase = web::PAGE_LOADING;
-  _URLOnStartLoading = url;
+  _URLOnStartLoading = URL;
   _displayStateOnStartLoading = self.pageDisplayState;
 
   self.userInteractionRegistered = NO;
   _pageHasZoomed = NO;
 
   [[self sessionController] commitPendingItem];
-  [_delegate webDidStartLoadingURL:url shouldUpdateHistory:updateHistory];
 }
 
 - (void)wasShown {
@@ -4665,7 +4664,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
          (!_lastRegisteredRequestURL.is_valid() &&
           _documentURL.spec() == url::kAboutBlankURL));
 
-  self.webStateImpl->OnNavigationCommitted(_documentURL);
+  self.webStateImpl->UpdateHttpResponseHeaders(_documentURL);
   [self commitPendingNavigationInfo];
   if ([self currentBackForwardListItemHolder]->navigation_type() ==
       WKNavigationTypeBackForward) {
@@ -4690,6 +4689,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   }
 
   [self webPageChanged];
+  self.webStateImpl->OnNavigationCommitted(_documentURL);
 
   [self updateSSLStatusForCurrentNavigationItem];
 
@@ -4877,12 +4877,12 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
     BOOL isSameDocumentNavigation =
         [self isKVOChangePotentialSameDocumentNavigationToURL:webViewURL];
     [self setDocumentURL:webViewURL];
+    [self webPageChanged];
     if (isSameDocumentNavigation) {
       _webStateImpl->OnSamePageNavigation(webViewURL);
     } else {
       _webStateImpl->OnNavigationCommitted(webViewURL);
     }
-    [self webPageChanged];
   }
 
   [self updateSSLStatusForCurrentNavigationItem];
@@ -5034,7 +5034,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   [self setDocumentURL:newURL];
 
   if (!_changingHistoryState) {
-    [self didStartLoadingURL:_documentURL updateHistory:YES];
+    [self didStartLoadingURL:_documentURL];
     _webStateImpl->OnSamePageNavigation(newURL);
     [self updateSSLStatusForCurrentNavigationItem];
     [self didFinishNavigation];

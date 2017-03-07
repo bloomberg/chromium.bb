@@ -269,6 +269,12 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
   void OnNavigationItemChanged() override;
   void OnNavigationItemCommitted(
       const LoadCommittedDetails& load_details) override;
+
+  // Updates the HTTP response headers for the main page using the headers
+  // passed to the OnHttpResponseHeadersReceived() function below.
+  // GetHttpResponseHeaders() can be used to get the headers.
+  void UpdateHttpResponseHeaders(const GURL& url);
+
   WebState* GetWebState() override;
 
  protected:
@@ -285,11 +291,6 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
   // Creates a WebUIIOS object for |url| that is owned by the caller. Returns
   // nullptr if |url| does not correspond to a WebUI page.
   std::unique_ptr<web::WebUIIOS> CreateWebUIIOS(const GURL& url);
-
-  // Updates the HTTP response headers for the main page using the headers
-  // passed to the OnHttpResponseHeadersReceived() function below.
-  // GetHttpResponseHeaders() can be used to get the headers.
-  void UpdateHttpResponseHeaders(const GURL& url);
 
   // Returns true if |web_controller_| has been set.
   bool Configured() const;

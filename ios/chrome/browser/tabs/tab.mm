@@ -1401,6 +1401,12 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
       faviconDriver->FetchFavicon(navigation->GetUrl());
     }
   }
+
+  if (!navigation->IsErrorPage()) {
+    [self addCurrentEntryToHistoryDB];
+    [self countMainFrameLoad];
+  }
+
   [parentTabModel_ notifyTabChanged:self];
 }
 
@@ -1727,15 +1733,6 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
         postNotificationName:kTabUrlStartedLoadingNotificationForCrashReporting
                       object:self
                     userInfo:@{kTabUrlKey : URLSpec}];
-  }
-}
-
-// Called when the page URL has changed.
-- (void)webDidStartLoadingURL:(const GURL&)currentUrl
-          shouldUpdateHistory:(BOOL)updateHistory {
-  if (updateHistory) {
-    [self addCurrentEntryToHistoryDB];
-    [self countMainFrameLoad];
   }
 }
 
