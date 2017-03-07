@@ -38,6 +38,15 @@ extern const base::FilePath::CharType kLicenseFileName[];
 // ruleset is being indexed.
 extern const base::FilePath::CharType kSentinelFileName[];
 
+// Paths under kUnindexedRulesetBaseDirectoryName
+// ----------------------------------------------
+
+// The name of the license file associated with the unindex ruleset.
+extern const base::FilePath::CharType kUnindexedRulesetLicenseFileName[];
+
+// The name of the file that stores the unindexed filtering rules.
+extern const base::FilePath::CharType kUnindexedRulesetDataFileName[];
+
 }  // namespace subresource_filter
 
 #endif  // COMPONENTS_SUBRESOURCE_FILTER_CORE_BROWSER_SUBRESOURCE_FILTER_CONSTANTS_H_

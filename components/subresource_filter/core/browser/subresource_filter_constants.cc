@@ -24,4 +24,10 @@ const base::FilePath::CharType kLicenseFileName[] =
 const base::FilePath::CharType kSentinelFileName[] =
     FILE_PATH_LITERAL("Indexing in Progress");
 
+const base::FilePath::CharType kUnindexedRulesetLicenseFileName[] =
+    FILE_PATH_LITERAL("LICENSE");
+
+const base::FilePath::CharType kUnindexedRulesetDataFileName[] =
+    FILE_PATH_LITERAL("Filtering Rules");
+
 }  // namespace subresource_filter

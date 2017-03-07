@@ -30,16 +30,6 @@ const char kSubresourceFilterSetFetcherManifestName[] =
     "Subresource Filter Rules";
 
 // static
-const base::FilePath::CharType
-    SubresourceFilterComponentInstallerTraits::kRulesetDataFileName[] =
-        FILE_PATH_LITERAL("Filtering Rules");
-
-// static
-const base::FilePath::CharType
-    SubresourceFilterComponentInstallerTraits::kLicenseFileName[] =
-        FILE_PATH_LITERAL("LICENSE");
-
-// static
 const char
     SubresourceFilterComponentInstallerTraits::kManifestRulesetFormatKey[] =
         "ruleset_format";
@@ -85,8 +75,10 @@ void SubresourceFilterComponentInstallerTraits::ComponentReady(
   }
   subresource_filter::UnindexedRulesetInfo ruleset_info;
   ruleset_info.content_version = version.GetString();
-  ruleset_info.ruleset_path = install_dir.Append(kRulesetDataFileName);
-  ruleset_info.license_path = install_dir.Append(kLicenseFileName);
+  ruleset_info.ruleset_path =
+      install_dir.Append(subresource_filter::kUnindexedRulesetDataFileName);
+  ruleset_info.license_path =
+      install_dir.Append(subresource_filter::kUnindexedRulesetLicenseFileName);
   subresource_filter::RulesetService* ruleset_service =
       g_browser_process->subresource_filter_ruleset_service();
   if (ruleset_service)

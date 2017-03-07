@@ -24,6 +24,7 @@
 #include "components/prefs/testing_pref_service.h"
 #include "components/subresource_filter/content/browser/content_ruleset_service_delegate.h"
 #include "components/subresource_filter/core/browser/ruleset_service.h"
+#include "components/subresource_filter/core/browser/subresource_filter_constants.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features_test_support.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -129,12 +130,12 @@ class SubresourceFilterComponentInstallerTest : public PlatformTest {
   void CreateTestSubresourceFilterRuleset(const std::string& ruleset_contents,
                                           const std::string* license_contents) {
     base::FilePath ruleset_data_path = component_install_dir().Append(
-        SubresourceFilterComponentInstallerTraits::kRulesetDataFileName);
+        subresource_filter::kUnindexedRulesetDataFileName);
     ASSERT_NO_FATAL_FAILURE(
         WriteStringToFile(ruleset_contents, ruleset_data_path));
 
     base::FilePath license_path = component_install_dir().Append(
-        SubresourceFilterComponentInstallerTraits::kLicenseFileName);
+        subresource_filter::kUnindexedRulesetLicenseFileName);
     if (license_contents) {
       ASSERT_NO_FATAL_FAILURE(
           WriteStringToFile(*license_contents, license_path));
