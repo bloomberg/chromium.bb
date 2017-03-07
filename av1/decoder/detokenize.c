@@ -19,13 +19,13 @@
 #endif  // CONFIG_ANS
 #include "av1/common/blockd.h"
 
+#define ACCT_STR __func__
+
 #if !CONFIG_PVQ || CONFIG_VAR_TX
 #include "av1/common/common.h"
 #include "av1/common/entropy.h"
 #include "av1/common/idct.h"
 #include "av1/decoder/detokenize.h"
-
-#define ACCT_STR __func__
 
 #define EOB_CONTEXT_NODE 0
 #define ZERO_CONTEXT_NODE 1
