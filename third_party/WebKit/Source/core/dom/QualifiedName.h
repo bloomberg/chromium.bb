@@ -46,6 +46,8 @@ struct QualifiedNameData {
   bool m_isStatic;
 };
 
+CORE_EXPORT extern const class QualifiedName& nullName;
+
 class CORE_EXPORT QualifiedName {
   USING_FAST_MALLOC(QualifiedName);
 
@@ -160,7 +162,7 @@ class CORE_EXPORT QualifiedName {
   // Init routine for globals
   static void initAndReserveCapacityForSize(unsigned size);
 
-  static const QualifiedName& null();
+  static const QualifiedName& null() { return nullName; }
 
   // The below methods are only for creating static global QNames that need no
   // ref counting.
@@ -236,7 +238,7 @@ template <>
 struct HashTraits<blink::QualifiedName>
     : SimpleClassHashTraits<blink::QualifiedName> {
   static const bool emptyValueIsZero = false;
-  static blink::QualifiedName emptyValue() {
+  static const blink::QualifiedName& emptyValue() {
     return blink::QualifiedName::null();
   }
 };
