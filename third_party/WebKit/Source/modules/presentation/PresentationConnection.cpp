@@ -468,6 +468,10 @@ void PresentationConnection::didClose(
       EventTypeNames::close, connectionCloseReasonToString(reason), message));
 }
 
+void PresentationConnection::didClose() {
+  didClose(WebPresentationConnectionCloseReason::Closed, "");
+}
+
 void PresentationConnection::didFinishLoadingBlob(DOMArrayBuffer* buffer) {
   ASSERT(!m_messages.isEmpty() && m_messages.first()->type == MessageTypeBlob);
   ASSERT(buffer && buffer->buffer());

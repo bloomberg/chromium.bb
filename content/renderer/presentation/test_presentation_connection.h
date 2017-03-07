@@ -24,6 +24,7 @@ class TestPresentationConnection : public blink::WebPresentationConnection {
   MOCK_METHOD2(didReceiveBinaryMessage,
                void(const uint8_t* data, size_t length));
   MOCK_METHOD1(didChangeState, void(blink::WebPresentationConnectionState));
+  MOCK_METHOD0(didClose, void());
 
   blink::WebPresentationConnectionProxy* proxy();
 

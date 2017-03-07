@@ -30,6 +30,10 @@ class WebPresentationConnection {
 
   // Notifies the connection about its state change.
   virtual void didChangeState(WebPresentationConnectionState) = 0;
+
+  // Notifies the connection about its state change to 'closed' with "Closed"
+  // reason.
+  virtual void didClose() = 0;
 };
 
 }  // namespace blink

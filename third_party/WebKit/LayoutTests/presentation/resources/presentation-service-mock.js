@@ -25,6 +25,8 @@ let presentationServiceMock = loadMojoModules(
           this.pendingResponse_ = null;
           this.bindingSet_ = new bindings.BindingSet(
               presentationService.PresentationService);
+          this.controllerConnectionPtr_ = null;
+          this.receiverConnectionRequest_ = null;
 
           this.onSetClient = null;
         }
@@ -58,25 +60,43 @@ let presentationServiceMock = loadMojoModules(
 
         setPresentationConnection(
             seesionInfo, controllerConnectionPtr, receiverConnectionRequest) {
+          this.controllerConnectionPtr_ = controllerConnectionPtr;
+          this.receiverConnectionRequest_ = receiverConnectionRequest;
           this.client_.onConnectionStateChanged(
               seesionInfo,
               presentationService.PresentationConnectionState.CONNECTED);
         }
 
-        onReceiverConnectionAvailable(strUrl, id) {
+        onReceiverConnectionAvailable(
+            strUrl, id, opt_controllerConnectionPtr, opt_receiverConnectionRequest) {
           const mojoUrl = new url.Url();
           mojoUrl.url = strUrl;
-          const controllerConnectionPtr = new presentationService.PresentationConnectionPtr();
-          const connectionBinding = new bindings.Binding(
-              presentationService.PresentationConnection,
-              new MockPresentationConnection(),
-              bindings.makeRequest(controllerConnectionPtr));
-          const receiverConnectionPtr = new presentationService.PresentationConnectionPtr();
+          var controllerConnectionPtr = opt_controllerConnectionPtr;
+          if (!controllerConnectionPtr) {
+            controllerConnectionPtr = new presentationService.PresentationConnectionPtr();
+            const connectionBinding = new bindings.Binding(
+                presentationService.PresentationConnection,
+                new MockPresentationConnection(),
+                bindings.makeRequest(controllerConnectionPtr));
+          }
+
+          var receiverConnectionRequest = opt_receiverConnectionRequest;
+          if (!receiverConnectionRequest) {
+            receiverConnectionRequest = bindings.makeRequest(
+                new presentationService.PresentationConnectionPtr());
+          }
 
           this.client_.onReceiverConnectionAvailable(
               { url: mojoUrl, id: id },
-              controllerConnectionPtr,
-              bindings.makeRequest(receiverConnectionPtr));
+              controllerConnectionPtr, receiverConnectionRequest);
+        }
+
+        getControllerConnectionPtr() {
+          return this.controllerConnectionPtr_;
+        }
+
+        getReceiverConnectionRequest() {
+          return this.receiverConnectionRequest_;
         }
       }
 

@@ -104,20 +104,16 @@ TEST_F(PresentationConnectionProxyTest, TestSendArrayBuffer) {
 
 TEST_F(PresentationConnectionProxyTest, TestControllerConnectionCallsClose) {
   base::RunLoop run_loop;
-  EXPECT_CALL(*controller_connection_,
-              didChangeState(blink::WebPresentationConnectionState::Closed));
-  EXPECT_CALL(*receiver_connection_,
-              didChangeState(blink::WebPresentationConnectionState::Closed));
+  EXPECT_CALL(*controller_connection_, didClose());
+  EXPECT_CALL(*receiver_connection_, didClose());
   controller_connection_proxy_->close();
   run_loop.RunUntilIdle();
 }
 
 TEST_F(PresentationConnectionProxyTest, TestReceiverConnectionCallsClose) {
   base::RunLoop run_loop;
-  EXPECT_CALL(*controller_connection_,
-              didChangeState(blink::WebPresentationConnectionState::Closed));
-  EXPECT_CALL(*receiver_connection_,
-              didChangeState(blink::WebPresentationConnectionState::Closed));
+  EXPECT_CALL(*controller_connection_, didClose());
+  EXPECT_CALL(*receiver_connection_, didClose());
   receiver_connection_proxy_->close();
   run_loop.RunUntilIdle();
 }
