@@ -1133,8 +1133,8 @@ TEST_F(SSLClientSocketTest, ConnectMismatched) {
 
 #if defined(OS_WIN)
 // Tests that certificates parsable by SSLClientSocket's internal SSL
-// implementation, but not X509Certificate are treated as fatal non-certificate
-// errors. This is regression test for https://crbug.com/91341.
+// implementation, but not X509Certificate are treated as fatal connection
+// errors. This is a regression test for https://crbug.com/91341.
 TEST_F(SSLClientSocketTest, ConnectBadValidity) {
   SpawnedTestServer::SSLOptions ssl_options(
       SpawnedTestServer::SSLOptions::CERT_BAD_VALIDITY);
@@ -1145,10 +1145,6 @@ TEST_F(SSLClientSocketTest, ConnectBadValidity) {
 
   EXPECT_THAT(rv, IsError(ERR_SSL_SERVER_CERT_BAD_FORMAT));
   EXPECT_FALSE(IsCertificateError(rv));
-
-  SSLInfo ssl_info;
-  ASSERT_TRUE(sock_->GetSSLInfo(&ssl_info));
-  EXPECT_FALSE(ssl_info.cert);
 }
 #endif  // defined(OS_WIN)
 

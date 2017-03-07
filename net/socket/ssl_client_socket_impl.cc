@@ -237,6 +237,42 @@ bool AreLegacyECDSACiphersEnabled() {
 const base::Feature kShortRecordHeaderFeature{
     "SSLShortRecordHeader", base::FEATURE_DISABLED_BY_DEFAULT};
 
+scoped_refptr<X509Certificate> OSChainFromOpenSSL(STACK_OF(X509) *
+                                                  openssl_chain) {
+  if (sk_X509_num(openssl_chain) == 0) {
+    NOTREACHED();
+    return nullptr;
+  }
+
+#if defined(USE_OPENSSL_CERTS)
+  // When OSCertHandle is typedef'ed to X509, this implementation does a short
+  // cut to avoid converting back and forth between DER and the X509 struct.
+  X509Certificate::OSCertHandles intermediates;
+  for (size_t i = 1; i < sk_X509_num(openssl_chain); ++i) {
+    X509* cert = sk_X509_value(openssl_chain, i);
+    DCHECK(cert->buf);
+    intermediates.push_back(cert);
+  }
+
+  X509* leaf = sk_X509_value(openssl_chain, 0);
+  DCHECK(leaf->buf);
+  return X509Certificate::CreateFromHandle(leaf, intermediates);
+#else
+  // Convert the certificate chains to a platform certificate handle.
+  std::vector<base::StringPiece> der_chain;
+  der_chain.reserve(sk_X509_num(openssl_chain));
+  for (size_t i = 0; i < sk_X509_num(openssl_chain); ++i) {
+    X509* cert = sk_X509_value(openssl_chain, i);
+    DCHECK(cert->buf);
+    base::StringPiece der;
+    if (!x509_util::GetDER(cert, &der))
+      return nullptr;
+    der_chain.push_back(der);
+  }
+  return X509Certificate::CreateFromDERCertChain(der_chain);
+#endif
+}
+
 }  // namespace
 
 class SSLClientSocketImpl::SSLContext {
@@ -428,88 +464,6 @@ const SSL_PRIVATE_KEY_METHOD
         &SSLClientSocketImpl::SSLContext::PrivateKeyCompleteCallback,
 };
 
-// PeerCertificateChain is a helper object which extracts the certificate
-// chain, as given by the server, from an OpenSSL socket and performs the needed
-// resource management. The first element of the chain is the leaf certificate
-// and the other elements are in the order given by the server.
-class SSLClientSocketImpl::PeerCertificateChain {
- public:
-  explicit PeerCertificateChain(STACK_OF(X509) * chain) { Reset(chain); }
-  PeerCertificateChain(const PeerCertificateChain& other) { *this = other; }
-  ~PeerCertificateChain() {}
-  PeerCertificateChain& operator=(const PeerCertificateChain& other);
-
-  // Resets the PeerCertificateChain to the set of certificates in|chain|,
-  // which may be NULL, indicating to empty the store certificates.
-  // Note: If an error occurs, such as being unable to parse the certificates,
-  // this will behave as if Reset(NULL) was called.
-  void Reset(STACK_OF(X509) * chain);
-
-  // Note that when USE_OPENSSL_CERTS is defined, OSCertHandle is X509*
-  scoped_refptr<X509Certificate> AsOSChain() const;
-
-  size_t size() const {
-    if (!openssl_chain_.get())
-      return 0;
-    return sk_X509_num(openssl_chain_.get());
-  }
-
-  bool empty() const { return size() == 0; }
-
-  X509* Get(size_t index) const {
-    DCHECK_LT(index, size());
-    return sk_X509_value(openssl_chain_.get(), index);
-  }
-
- private:
-  bssl::UniquePtr<STACK_OF(X509)> openssl_chain_;
-};
-
-SSLClientSocketImpl::PeerCertificateChain&
-SSLClientSocketImpl::PeerCertificateChain::operator=(
-    const PeerCertificateChain& other) {
-  if (this == &other)
-    return *this;
-
-  openssl_chain_.reset(X509_chain_up_ref(other.openssl_chain_.get()));
-  return *this;
-}
-
-void SSLClientSocketImpl::PeerCertificateChain::Reset(STACK_OF(X509) * chain) {
-  openssl_chain_.reset(chain ? X509_chain_up_ref(chain) : NULL);
-}
-
-scoped_refptr<X509Certificate>
-SSLClientSocketImpl::PeerCertificateChain::AsOSChain() const {
-#if defined(USE_OPENSSL_CERTS)
-  // When OSCertHandle is typedef'ed to X509, this implementation does a short
-  // cut to avoid converting back and forth between DER and the X509 struct.
-  X509Certificate::OSCertHandles intermediates;
-  for (size_t i = 1; i < sk_X509_num(openssl_chain_.get()); ++i) {
-    X509* cert = sk_X509_value(openssl_chain_.get(), i);
-    DCHECK(cert->buf);
-    intermediates.push_back(cert);
-  }
-
-  X509* leaf = sk_X509_value(openssl_chain_.get(), 0);
-  DCHECK(leaf->buf);
-  return X509Certificate::CreateFromHandle(leaf, intermediates);
-#else
-  // Convert the certificate chains to a platform certificate handle.
-  std::vector<base::StringPiece> der_chain;
-  der_chain.reserve(sk_X509_num(openssl_chain_.get()));
-  for (size_t i = 0; i < sk_X509_num(openssl_chain_.get()); ++i) {
-    X509* cert = sk_X509_value(openssl_chain_.get(), i);
-    DCHECK(cert->buf);
-    base::StringPiece der;
-    if (!x509_util::GetDER(cert, &der))
-      return nullptr;
-    der_chain.push_back(der);
-  }
-  return X509Certificate::CreateFromDERCertChain(der_chain);
-#endif
-}
-
 // static
 void SSLClientSocket::ClearSessionCache() {
   SSLClientSocketImpl::SSLContext* context =
@@ -524,7 +478,6 @@ SSLClientSocketImpl::SSLClientSocketImpl(
     const SSLClientSocketContext& context)
     : pending_read_error_(kNoPendingResult),
       pending_read_ssl_error_(SSL_ERROR_NONE),
-      server_cert_chain_(new PeerCertificateChain(NULL)),
       completed_connect_(false),
       was_ever_used_(false),
       cert_verifier_(context.cert_verifier),
@@ -792,7 +745,7 @@ NextProto SSLClientSocketImpl::GetNegotiatedProtocol() const {
 
 bool SSLClientSocketImpl::GetSSLInfo(SSLInfo* ssl_info) {
   ssl_info->Reset();
-  if (server_cert_chain_->empty())
+  if (!server_cert_)
     return false;
 
   ssl_info->cert = server_cert_verify_result_.verified_cert;
@@ -842,16 +795,17 @@ int64_t SSLClientSocketImpl::GetTotalReceivedBytes() const {
 void SSLClientSocketImpl::DumpMemoryStats(SocketMemoryStats* stats) const {
   if (transport_adapter_)
     stats->buffer_size = transport_adapter_->GetAllocationSize();
-  if (server_cert_chain_) {
-    for (size_t i = 0; i < server_cert_chain_->size(); ++i) {
-      X509* cert = server_cert_chain_->Get(i);
+  STACK_OF(X509)* server_cert_chain = SSL_get_peer_cert_chain(ssl_.get());
+  if (server_cert_chain) {
+    for (size_t i = 0; i < sk_X509_num(server_cert_chain); ++i) {
+      X509* cert = sk_X509_value(server_cert_chain, i);
       // Estimate the size of the certificate before deduplication.
       // The multiplier (4) is added to account for the difference between the
       // serialized cert size and the actual cert allocation.
       // TODO(xunjieli): Update this after crbug.com/671420 is done.
       stats->cert_size += 4 * i2d_X509(cert, nullptr);
     }
-    stats->cert_count = server_cert_chain_->size();
+    stats->cert_count = sk_X509_num(server_cert_chain);
   }
   stats->total_size = stats->buffer_size + stats->cert_size;
 }
@@ -1201,7 +1155,6 @@ int SSLClientSocketImpl::DoHandshakeComplete(int result) {
   }
 
   // Verify the certificate.
-  UpdateServerCert();
   next_handshake_state_ = STATE_VERIFY_CERT;
   return OK;
 }
@@ -1241,16 +1194,21 @@ int SSLClientSocketImpl::DoChannelIDLookupComplete(int result) {
 }
 
 int SSLClientSocketImpl::DoVerifyCert(int result) {
-  DCHECK(!server_cert_chain_->empty());
   DCHECK(start_cert_verification_time_.is_null());
 
-  next_handshake_state_ = STATE_VERIFY_CERT_COMPLETE;
+  server_cert_ = OSChainFromOpenSSL(SSL_get_peer_cert_chain(ssl_.get()));
 
   // OpenSSL decoded the certificate, but the platform certificate
   // implementation could not. This is treated as a fatal SSL-level protocol
   // error rather than a certificate error. See https://crbug.com/91341.
   if (!server_cert_)
     return ERR_SSL_SERVER_CERT_BAD_FORMAT;
+
+  net_log_.AddEvent(NetLogEventType::SSL_CERTIFICATES_RECEIVED,
+                    base::Bind(&NetLogX509CertificateCallback,
+                               base::Unretained(server_cert_.get())));
+
+  next_handshake_state_ = STATE_VERIFY_CERT_COMPLETE;
 
   // If the certificate is bad and has been previously accepted, use
   // the previous status and bypass the error.
@@ -1353,16 +1311,6 @@ void SSLClientSocketImpl::DoConnectCallback(int rv) {
     CompletionCallback c = user_connect_callback_;
     user_connect_callback_.Reset();
     c.Run(rv > OK ? OK : rv);
-  }
-}
-
-void SSLClientSocketImpl::UpdateServerCert() {
-  server_cert_chain_->Reset(SSL_get_peer_cert_chain(ssl_.get()));
-  server_cert_ = server_cert_chain_->AsOSChain();
-  if (server_cert_.get()) {
-    net_log_.AddEvent(NetLogEventType::SSL_CERTIFICATES_RECEIVED,
-                      base::Bind(&NetLogX509CertificateCallback,
-                                 base::Unretained(server_cert_.get())));
   }
 }
 
@@ -1734,29 +1682,7 @@ int SSLClientSocketImpl::ClientCertRequestCallback(SSL* ssl) {
 }
 
 int SSLClientSocketImpl::CertVerifyCallback(X509_STORE_CTX* store_ctx) {
-  if (!completed_connect_) {
-    // If the first handshake hasn't completed then we accept any certificates
-    // because we verify after the handshake.
-    return 1;
-  }
-
-  // Disallow the server certificate to change in a renegotiation.
-  if (server_cert_chain_->empty()) {
-    LOG(ERROR) << "Received invalid certificate chain between handshakes";
-    return 0;
-  }
-  base::StringPiece old_der, new_der;
-  if (store_ctx->cert == NULL ||
-      !x509_util::GetDER(server_cert_chain_->Get(0), &old_der) ||
-      !x509_util::GetDER(store_ctx->cert, &new_der)) {
-    LOG(ERROR) << "Failed to encode certificates";
-    return 0;
-  }
-  if (old_der != new_der) {
-    LOG(ERROR) << "Server certificate changed between handshakes";
-    return 0;
-  }
-
+  // The server certificate is verified later in DoVerifyCert.
   return 1;
 }
 

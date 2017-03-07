@@ -154,7 +154,6 @@ class SSLClientSocketImpl : public SSLClientSocket,
   int DoVerifyCert(int result);
   int DoVerifyCertComplete(int result);
   void DoConnectCallback(int result);
-  void UpdateServerCert();
 
   void OnHandshakeIOComplete(int result);
 
@@ -272,7 +271,6 @@ class SSLClientSocketImpl : public SSLClientSocket,
   OpenSSLErrorInfo pending_read_error_info_;
 
   // Set when Connect finishes.
-  std::unique_ptr<PeerCertificateChain> server_cert_chain_;
   scoped_refptr<X509Certificate> server_cert_;
   CertVerifyResult server_cert_verify_result_;
   bool completed_connect_;
