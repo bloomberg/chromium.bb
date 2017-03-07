@@ -58,6 +58,7 @@ class InternetHandle {
 #include "base/run_loop.h"
 #include "base/time/time.h"
 #include "net/base/load_flags.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request_context.h"
@@ -318,8 +319,31 @@ bool FinancialPing::PingServer(const char* request, std::string* response) {
                                        kFinancialServer, kFinancialPort,
                                        request);
 
-  std::unique_ptr<net::URLFetcher> fetcher =
-      net::URLFetcher::Create(GURL(url), net::URLFetcher::GET, &delegate);
+  net::NetworkTrafficAnnotationTag traffic_annotation =
+      net::DefineNetworkTrafficAnnotation("rlz_ping", R"(
+        semantics {
+          sender: "RLZ Ping"
+          description:
+            "Used for measuring the effectiveness of a promotion. See the "
+            "Chrome Privacy Whitepaper for complete details."
+          trigger:
+            "1- At Chromium first run\.n"
+            "2- When Chromium is re-activated by a new promotion.\n"
+            "3- Once a week thereafter as long as Chromium is used.\n"
+          data:
+            "1- Non-unique cohort tag of when Chromium was installed.\n"
+            "2- Unique machine id on desktop platforms.\n"
+            "3- Whether Google is the default omnibox search.\n"
+            "4- Whether google.com is the default home page."
+          destination: GOOGLE_OWNED_SERVICE
+        }
+        policy {
+          cookies_allowed: false
+          setting: "This feature cannot be disabled in settings."
+          policy_exception_justification: "Not implemented."
+        })");
+  std::unique_ptr<net::URLFetcher> fetcher = net::URLFetcher::Create(
+      GURL(url), net::URLFetcher::GET, &delegate, traffic_annotation);
 
   fetcher->SetLoadFlags(net::LOAD_DISABLE_CACHE |
                         net::LOAD_DO_NOT_SEND_AUTH_DATA |
