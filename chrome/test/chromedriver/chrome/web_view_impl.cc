@@ -753,7 +753,7 @@ Status WebViewImpl::IsNotPendingNavigation(const std::string& frame_id,
   if (status.IsError())
     return status;
   // An alert may block the pending navigation.
-  if (is_pending && dialog_manager_->IsDialogOpen())
+  if (dialog_manager_->IsDialogOpen())
     return Status(kUnexpectedAlertOpen);
 
   *is_not_pending = !is_pending;
