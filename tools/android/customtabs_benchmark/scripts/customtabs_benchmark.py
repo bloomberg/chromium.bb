@@ -36,7 +36,7 @@ import device_setup
 # Local build of Chrome (not Chromium).
 _CHROME_PACKAGE = 'com.google.android.apps.chrome'
 _COMMAND_LINE_FILE = 'chrome-command-line'
-_TEST_APP_PACKAGE_NAME = 'org.chromium.customtabsclient.test'
+_TEST_APP_PACKAGE_NAME = 'org.chromium.customtabs.test'
 _INVALID_VALUE = -1
 
 
