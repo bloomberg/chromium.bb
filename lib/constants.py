@@ -294,13 +294,16 @@ SOM_IMPORTANT_BUILDS = [
 # Used by --resume and --bootstrap to decipher which options they
 # can pass to the target cbuildbot (since it may not have that
 # option).
-# Format is Major:Minor.  Minor is used for tracking new options added
+# Format is Major.Minor.  Minor is used for tracking new options added
 # that aren't critical to the older version if it's not ran.
 # Major is used for tracking heavy API breakage- for example, no longer
 # supporting the --resume option.
 REEXEC_API_MAJOR = 0
-REEXEC_API_MINOR = 4
+REEXEC_API_MINOR = 5
 REEXEC_API_VERSION = '%i.%i' % (REEXEC_API_MAJOR, REEXEC_API_MINOR)
+
+# Minor version 5 is the first to support --goma_dir and --goma_client_json
+REEXEC_API_GOMA = 5
 
 # Minor version 4 is the first to support --git-cache-dir
 REEXEC_API_GIT_CACHE_DIR = 4

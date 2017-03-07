@@ -430,6 +430,17 @@ def _CreateParser():
   parser.add_option('-c', '--config_repo',
                     help='Cloneable path to the git repository containing '
                          'the site configuration to use.')
+  # TODO(crbug.com/279618): Running GOMA is under development. Following
+  # flags are added for development purpose due to repository dependency,
+  # but not officially supported yet.
+  parser.add_option('--goma_dir', type='path',
+                    api=constants.REEXEC_API_GOMA,
+                    help='Specify a directory containing goma. When this is '
+                         'set, GOMA is used to build Chrome.')
+  parser.add_option('--goma_client_json', type='path',
+                    api=constants.REEXEC_API_GOMA,
+                    help='Specify a service-account-goma-client.json path. '
+                         'The file is needed on bots to run GOMA.')
 
   #
   # Patch selection options.
