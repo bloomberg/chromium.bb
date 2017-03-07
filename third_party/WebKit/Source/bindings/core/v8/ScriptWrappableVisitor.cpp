@@ -257,16 +257,6 @@ void ScriptWrappableVisitor::dispatchTraceWrappers(
   wrapperBase->traceWrappers(this);
 }
 
-#define DEFINE_DISPATCH_TRACE_WRAPPERS(className)     \
-  void ScriptWrappableVisitor::dispatchTraceWrappers( \
-      const className* traceable) const {             \
-    traceable->traceWrappers(this);                   \
-  }
-
-WRAPPER_VISITOR_SPECIAL_CLASSES(DEFINE_DISPATCH_TRACE_WRAPPERS);
-
-#undef DEFINE_DISPATCH_TRACE_WRAPPERS
-
 void ScriptWrappableVisitor::invalidateDeadObjectsInMarkingDeque() {
   for (auto it = m_markingDeque.begin(); it != m_markingDeque.end(); ++it) {
     auto& markingData = *it;

@@ -132,7 +132,7 @@ DEFINE_TRACE_WRAPPERS(SomeDOMObject) {
 
 
 Blink and V8 implement *incremental* wrapper tracing, which means that marking
-can be interleaved with JavaSCript or even DOM operations. This poses a
+can be interleaved with JavaScript or even DOM operations. This poses a
 challenge, because already marked objects will not be considered again if they
 are reached through some other path.
 
@@ -256,10 +256,8 @@ difference that these classes need to inherit from ``TraceWrapperBase``.
 ### Memory-footprint critical uses
 
 In the case we cannot afford inheriting from ``TraceWrapperBase``, which will
-add a vtable pointer for tracing wrappers, an entry in a macro
-``WRAPPER_VISITOR_SPECIAL_CASES``
-is required in
-``platform/heap/WrapperVisitor.h``.
+add a vtable pointer for tracing wrappers, use
+``DECLARE_TRACE_WRAPPERS_WITHOUT_BASE`` to declare a traceWrappers method.
 
 ## Explicit write barriers
 

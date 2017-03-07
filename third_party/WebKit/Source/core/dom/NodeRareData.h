@@ -74,7 +74,7 @@ class NodeMutationObserverData final
     visitor->trace(m_transientRegistry);
   }
 
-  DECLARE_TRACE_WRAPPERS() {
+  DECLARE_TRACE_WRAPPERS_WITHOUT_BASE() {
     for (auto registration : m_registry) {
       visitor->traceWrappers(registration);
     }
@@ -157,7 +157,7 @@ class NodeRareData : public GarbageCollectedFinalized<NodeRareData>,
   DECLARE_TRACE_AFTER_DISPATCH();
   void finalizeGarbageCollectedObject();
 
-  DECLARE_TRACE_WRAPPERS();
+  DECLARE_TRACE_WRAPPERS_WITHOUT_BASE();
   DECLARE_TRACE_WRAPPERS_AFTER_DISPATCH();
 
  protected:

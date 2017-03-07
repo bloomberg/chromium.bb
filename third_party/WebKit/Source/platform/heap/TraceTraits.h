@@ -241,8 +241,7 @@ void TraceTrait<T>::traceMarkedWrapper(const WrapperVisitor* visitor,
   // The term *mark* is misleading here as we effectively trace through the
   // API boundary, i.e., tell V8 that an object is alive. Actual marking
   // will be done in V8.
-  visitor->markWrappersInAllWorlds(traceable);
-  visitor->dispatchTraceWrappers(traceable);
+  traceable->markAndDispatchTraceWrappers(visitor);
 }
 
 template <typename T>

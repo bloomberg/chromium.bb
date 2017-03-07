@@ -167,10 +167,9 @@ class NodeListsNodeData final : public GarbageCollected<NodeListsNodeData> {
       list->didMoveToDocument(oldDocument, newDocument);
     }
   }
-
   DECLARE_TRACE();
 
-  DECLARE_TRACE_WRAPPERS();
+  DECLARE_TRACE_WRAPPERS_WITHOUT_BASE();
 
  private:
   NodeListsNodeData() : m_childNodeList(nullptr) {}

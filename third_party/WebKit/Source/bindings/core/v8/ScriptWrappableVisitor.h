@@ -140,12 +140,6 @@ class CORE_EXPORT ScriptWrappableVisitor : public v8::EmbedderHeapTracer,
   size_t NumberOfWrappersToTrace() override;
 
   void dispatchTraceWrappers(const TraceWrapperBase*) const override;
-#define DECLARE_DISPATCH_TRACE_WRAPPERS(className) \
-  void dispatchTraceWrappers(const className*) const override;
-
-  WRAPPER_VISITOR_SPECIAL_CLASSES(DECLARE_DISPATCH_TRACE_WRAPPERS);
-
-#undef DECLARE_DISPATCH_TRACE_WRAPPERS
 
   void traceWrappers(const TraceWrapperV8Reference<v8::Value>&) const override;
   void markWrapper(const v8::PersistentBase<v8::Value>*) const override;

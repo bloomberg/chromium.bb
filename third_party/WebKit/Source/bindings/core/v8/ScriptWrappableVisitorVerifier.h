@@ -6,15 +6,6 @@
 #define ScriptWrappableVisitorVerifier_h
 
 #include "bindings/core/v8/ScriptWrappableVisitor.h"
-#include "bindings/core/v8/V8AbstractEventListener.h"
-#include "core/dom/DocumentStyleSheetCollection.h"
-#include "core/dom/ElementRareData.h"
-#include "core/dom/NodeListsNodeData.h"
-#include "core/dom/NodeRareData.h"
-#include "core/dom/StyleEngine.h"
-#include "core/dom/shadow/ElementShadow.h"
-#include "core/dom/shadow/ElementShadowV0.h"
-#include "core/html/imports/HTMLImportsController.h"
 
 namespace blink {
 
@@ -23,14 +14,6 @@ class ScriptWrappableVisitorVerifier : public WrapperVisitor {
   void dispatchTraceWrappers(const TraceWrapperBase* t) const override {
     t->traceWrappers(this);
   }
-#define DECLARE_DISPATCH_TRACE_WRAPPERS(className)                \
-  void dispatchTraceWrappers(const className* t) const override { \
-    t->traceWrappers(this);                                       \
-  }
-
-  WRAPPER_VISITOR_SPECIAL_CLASSES(DECLARE_DISPATCH_TRACE_WRAPPERS);
-
-#undef DECLARE_DISPATCH_TRACE_WRAPPERS
 
   void traceWrappers(const TraceWrapperV8Reference<v8::Value>&) const override {
   }

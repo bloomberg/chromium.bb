@@ -27,32 +27,34 @@ class TraceWrapperBase;
 template <typename T>
 class TraceWrapperMember;
 
-// Only add a special class here if the class cannot derive from
-// TraceWrapperBase.
-#define WRAPPER_VISITOR_SPECIAL_CLASSES(V) \
-  V(ElementRareData)                       \
-  V(NodeListsNodeData)                     \
-  V(NodeMutationObserverData)              \
-  V(NodeRareData)
-
-#define FORWARD_DECLARE_SPECIAL_CLASSES(className) class className;
-
-WRAPPER_VISITOR_SPECIAL_CLASSES(FORWARD_DECLARE_SPECIAL_CLASSES);
-
-#undef FORWARD_DECLARE_SPECIAL_CLASSES
-
 /**
  * Declares non-virtual traceWrappers method. Should be used on
  * non-ScriptWrappable classes which should participate in wrapper tracing (e.g.
- * NodeRareData):
+ * StyleEngine):
  *
- *     class NodeRareData {
- *     public:
- *         DECLARE_TRACE_WRAPPERS();
- *     }
+ *     class StyleEngine: public TraceWrapperBase {
+ *      public:
+ *       DECLARE_TRACE_WRAPPERS();
+ *     };
  */
 #define DECLARE_TRACE_WRAPPERS() \
   void traceWrappers(const WrapperVisitor* visitor) const
+
+/**
+ * Declares markAndDispatchTraceWrappers and non-virtual traceWrappers methods.
+ * Use this on non-TraceWrapperBase classes that participate in wrapper tracing
+ * (e.g. NodeRareData):
+ *
+ *    class NodeRareData {
+ *     public:
+ *      DECLARE_TRACE_WRAPPERS_WITHOUT_BASE();
+ *    };
+ */
+#define DECLARE_TRACE_WRAPPERS_WITHOUT_BASE()                              \
+  void markAndDispatchTraceWrappers(const WrapperVisitor* visitor) const { \
+    traceWrappers(visitor);                                                \
+  }                                                                        \
+  DECLARE_TRACE_WRAPPERS()
 
 /**
  * Declares virtual traceWrappers method. It is used in ScriptWrappable, can be
@@ -150,21 +152,10 @@ class PLATFORM_EXPORT WrapperVisitor {
   virtual void markWrapper(const v8::PersistentBase<v8::Value>*) const = 0;
 
   virtual void dispatchTraceWrappers(const TraceWrapperBase*) const = 0;
-#define DECLARE_DISPATCH_TRACE_WRAPPERS(ClassName) \
-  virtual void dispatchTraceWrappers(const ClassName*) const = 0;
-
-  WRAPPER_VISITOR_SPECIAL_CLASSES(DECLARE_DISPATCH_TRACE_WRAPPERS);
-
-#undef DECLARE_DISPATCH_TRACE_WRAPPERS
 
   virtual bool markWrapperHeader(HeapObjectHeader*) const = 0;
 
   virtual void markWrappersInAllWorlds(const ScriptWrappable*) const = 0;
-
-  void markWrappersInAllWorlds(const void*) const {
-    // Empty handler used for WRAPPER_VISITOR_SPECIAL_CLASSES. These types
-    // don't require marking wrappers in all worlds, so just nop on those.
-  }
 
   template <typename T>
   ALWAYS_INLINE void markAndPushToMarkingDeque(const T* traceable) const {
@@ -183,17 +174,6 @@ class PLATFORM_EXPORT WrapperVisitor {
       void (*missedWriteBarrierCallback)(void),
       const void*) const = 0;
 };
-
-#define SPECIALIZE_WRAPPER_TRACING_MARK_TRAIT(ClassName) \
-  template <>                                            \
-  class CanTraceWrappers<ClassName, false> {             \
-   public:                                               \
-    static const bool value = true;                      \
-  };
-
-WRAPPER_VISITOR_SPECIAL_CLASSES(SPECIALIZE_WRAPPER_TRACING_MARK_TRAIT)
-
-#undef SPECIALIZE_WRAPPER_TRACING_MARK_TRAIT
 
 }  // namespace blink
 
