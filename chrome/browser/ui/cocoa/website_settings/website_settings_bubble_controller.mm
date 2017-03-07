@@ -70,6 +70,9 @@ const CGFloat kSectionHorizontalPadding = 16;
 // align with other text.
 const CGFloat kLinkButtonXAdjustment = 1;
 
+// Built-in margin for NSButton to take into account.
+const CGFloat kNSButtonBuiltinMargin = 4;
+
 // Security Section ------------------------------------------------------------
 
 // Spacing between security summary, security details, and cert decisions text.
@@ -441,13 +444,13 @@ bool IsInternalURL(const GURL& url) {
 - (CGFloat)layoutViewAtRTLStart:(NSView*)view withYPosition:(CGFloat)yPos {
   CGFloat xPos;
   if (base::i18n::IsRTL()) {
-    xPos =
-        kDefaultWindowWidth - kSectionHorizontalPadding - NSWidth([view frame]);
+    xPos = kDefaultWindowWidth - kSectionHorizontalPadding -
+           NSWidth([view frame]) + kNSButtonBuiltinMargin;
   } else {
-    xPos = kSectionHorizontalPadding;
+    xPos = kSectionHorizontalPadding - kNSButtonBuiltinMargin;
   }
-  [view setFrameOrigin:NSMakePoint(xPos, yPos)];
-  return yPos + NSHeight([view frame]);
+  [view setFrameOrigin:NSMakePoint(xPos, yPos - kNSButtonBuiltinMargin)];
+  return yPos + NSHeight([view frame]) - kNSButtonBuiltinMargin;
 }
 
 // Set the Y position of |view| to the given position, and return the position
