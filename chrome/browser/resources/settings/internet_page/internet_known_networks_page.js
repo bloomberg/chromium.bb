@@ -166,4 +166,18 @@ Polymer({
     this.networkingPrivate.forgetNetwork(this.selectedGuid_);
     /** @type {!CrActionMenuElement} */ (this.$.dotsMenu).close();
   },
+
+  /**
+   * Fires a 'show-details' event with an item containing a |networkStateList_|
+   * entry in the event model.
+   * @param {Event} event
+   * @private
+   */
+  fireShowDetails_: function(event) {
+    var state =
+        /** @type {!{model: !{item: !CrOnc.NetworkStateProperties}}} */ (event)
+            .model.item;
+    this.fire('show-detail', state);
+    event.stopPropagation();
+  },
 });

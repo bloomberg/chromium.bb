@@ -156,6 +156,13 @@ Polymer({
       var type = queryParams.get('type');
       if (type)
         this.subpageType_ = type;
+    } else if (route == settings.Route.KNOWN_NETWORKS) {
+      // Handle direct navigation to the known networks page,
+      // e.g. chrome://settings/internet/knownNetworks?type=WiFi
+      var queryParams = settings.getQueryParameters();
+      var type = queryParams.get('type');
+      if (type)
+        this.knownNetworksType_ = type;
     }
   },
 
@@ -209,8 +216,10 @@ Polymer({
    * @private
    */
   onShowKnownNetworks_: function(event) {
+    var params = new URLSearchParams;
+    params.append('type', event.detail.Type);
     this.knownNetworksType_ = event.detail.type;
-    settings.navigateTo(settings.Route.KNOWN_NETWORKS);
+    settings.navigateTo(settings.Route.KNOWN_NETWORKS, params);
   },
 
   /**

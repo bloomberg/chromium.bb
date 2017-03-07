@@ -2,45 +2,71 @@
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/classes/iron-flex-layout.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
 <link rel="import" href="../settings_shared_css.html">
 
 <dom-module id="settings-internet-known-networks-page">
   <template>
-    <style include="settings-shared"></style>
-    <div class="settings-box first single-column">
-      <div class="settings-box continuation">
-        <div>$i18n{knownNetworksMessage}</div>
+    <style include="settings-shared">
+      #subpageDiv {
+        -webkit-border-start: var(--cr-separator-line);
+        -webkit-padding-start: 4px;
+      }
+
+      #subpageDiv > button {
+        margin: -8px 0;
+      }
+    </style>
+
+    <div class="settings-box first">
+      <div>$i18n{knownNetworksMessage}</div>
+    </div>
+
+    <div class="settings-box">
+      <div class="secondary">$i18n{knownNetworksPreferred}</div>
+    </div>
+    <div class="list-frame">
+      <div class="list-item"
+          hidden$="[[havePreferred_(networkStateList_)]]">
+        $i18n{internetNoNetworks}
       </div>
-      <div class="settings-box first single-column self-stretch">
-        <div class="secondary">$i18n{knownNetworksPreferred}</div>
-        <div class="settings-box self-stretch start"
-            hidden$="[[havePreferred_(networkStateList_)]]">
-          $i18n{internetNoNetworks}
+      <template is="dom-repeat" items="[[networkStateList_]]"
+          filter="networkIsPreferred_">
+        <div class="list-item">
+          <div class="start">[[item.Name]]</div>
+          <paper-icon-button preferred icon="cr:more-vert"
+              tabindex$="[[tabindex]]" on-tap="onMenuButtonTap_"
+              title="$i18n{moreActions}">
+          </paper-icon-button>
+          <div id="subpageDiv" class="layout horizontal">
+            <button class="subpage-arrow" is="paper-icon-button-light"
+                actionable on-tap="fireShowDetails_" tabindex$="[[tabindex]]">
+            </button>
+          </div>
         </div>
-        <template is="dom-repeat" items="[[networkStateList_]]"
-            filter="networkIsPreferred_">
-          <div class="settings-box self-stretch">
-            <div class="start">[[item.Name]]</div>
-            <paper-icon-button preferred icon="cr:more-vert"
-                tabindex$="[[tabindex]]" on-tap="onMenuButtonTap_"
-                title="$i18n{moreActions}">
-            </paper-icon-button>
+      </template>
+    </div>
+
+    <div class="settings-box">
+      <div class="secondary">$i18n{knownNetworksAll}</div>
+    </div>
+    <div class="list-frame"
+        hidden$="[[!haveNotPreferred_(networkStateList_)]]">
+      <template is="dom-repeat" items="[[networkStateList_]]"
+          filter="networkIsNotPreferred_">
+        <div class="list-item">
+          <div class="start">[[item.Name]]</div>
+          <paper-icon-button icon="cr:more-vert"  tabindex$="[[tabindex]]"
+              on-tap="onMenuButtonTap_" title="$i18n{moreActions}">
+          </paper-icon-button>
+          <div id="subpageDiv" class="layout horizontal">
+            <button class="subpage-arrow" is="paper-icon-button-light"
+                actionable on-tap="fireShowDetails_" tabindex$="[[tabindex]]">
+            </button>
           </div>
-        </template>
-      </div>
-      <div class="settings-box first single-column self-stretch"
-          hidden$="[[!haveNotPreferred_(networkStateList_)]]">
-        <div class="secondary">$i18n{knownNetworksAll}</div>
-        <template is="dom-repeat" items="[[networkStateList_]]"
-            filter="networkIsNotPreferred_">
-          <div class="settings-box self-stretch">
-            <div class="start">[[item.Name]]</div>
-            <paper-icon-button icon="cr:more-vert"  tabindex$="[[tabindex]]"
-                on-tap="onMenuButtonTap_" title="$i18n{moreActions}">
-            </paper-icon-button>
-          </div>
-        </template>
-      </div>
+        </div>
+      </template>
     </div>
 
     <dialog id="dotsMenu" is="cr-action-menu">

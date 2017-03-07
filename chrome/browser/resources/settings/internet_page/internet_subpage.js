@@ -322,7 +322,7 @@ Polymer({
    * @private
    */
   onKnownNetworksTap_: function() {
-    this.fire('show-known-networks', {type: CrOnc.Type.WI_FI});
+    this.fire('show-known-networks', {Type: CrOnc.Type.WI_FI});
   },
 
   /**
