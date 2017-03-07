@@ -63,33 +63,6 @@ public class WebApkActivity extends WebappActivity {
     }
 
     @Override
-    protected void onStorageIsNull(final int backgroundColor) {
-        // Register the WebAPK. It is possible that a WebAPK's meta data was deleted when user
-        // cleared Chrome's data. When it is launched again, we know that the WebAPK is still
-        // installed, so re-register it.
-        WebappRegistry.getInstance().register(
-                mWebappInfo.id(), new WebappRegistry.FetchWebappDataStorageCallback() {
-                    @Override
-                    public void onWebappDataStorageRetrieved(WebappDataStorage storage) {
-                        updateStorage(storage);
-                        // Initialize the time of the last is-update-needed check with the
-                        // registration time. This prevents checking for updates on the first run.
-                        storage.updateTimeOfLastCheckForUpdatedWebManifest();
-
-                        // The downloading of the splash screen image happens before a WebAPK's
-                        // package name is available. If we want to use the image in the first
-                        // launch, we need to cache the image, register the WebAPK and store the
-                        // image in the SharedPreference when the WebAPK is installed
-                        // (before the first launch), and delete the cached image if it's not
-                        // installed. Therefore, lots of complexity will be introduced. To simplify
-                        // the logic, WebAPKs are registered during the first launch, and don't
-                        // retrieve splash screen image but use app icon for initialization.
-                        initializeSplashScreenWidgets(backgroundColor, null);
-                    }
-                });
-    }
-
-    @Override
     protected TabDelegateFactory createTabDelegateFactory() {
         return new WebappDelegateFactory(this) {
             @Override
@@ -166,11 +139,32 @@ public class WebApkActivity extends WebappActivity {
     }
 
     @Override
-    public void onDeferredStartup() {
-        super.onDeferredStartup();
+    protected void onDeferredStartupWithStorage(WebappDataStorage storage) {
+        super.onDeferredStartupWithStorage(storage);
 
-        mUpdateManager = new WebApkUpdateManager(this);
-        mUpdateManager.updateIfNeeded(getActivityTab(), (WebApkInfo) mWebappInfo);
+        // Initialize the time of the last is-update-needed check with the registration time. This
+        // prevents checking for updates on the first run.
+        storage.updateTimeOfLastCheckForUpdatedWebManifest();
+
+        mUpdateManager = new WebApkUpdateManager(WebApkActivity.this, storage);
+        mUpdateManager.updateIfNeeded(getActivityTab(),
+                (WebApkInfo) mWebappInfo);
+    }
+
+    @Override
+    protected void onDeferredStartupWithNullStorage() {
+        super.onDeferredStartupWithNullStorage();
+
+        // Register the WebAPK. The WebAPK is not registered when it is created so it has to be
+        // registered now. The WebAPK may also become unregistered after a user clears Chrome's
+        // data.
+        WebappRegistry.getInstance().register(
+                mWebappInfo.id(), new WebappRegistry.FetchWebappDataStorageCallback() {
+                    @Override
+                    public void onWebappDataStorageRetrieved(WebappDataStorage storage) {
+                        onDeferredStartupWithStorage(storage);
+                    }
+                });
     }
 
     @Override

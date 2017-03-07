@@ -108,8 +108,8 @@ public class WebApkUpdateManagerTest {
         private boolean mDestroyedFetcher;
         private boolean mIsWebApkForeground;
 
-        public TestWebApkUpdateManager(WebappDataStorage.Clock clock) {
-            super(null);
+        public TestWebApkUpdateManager(WebappDataStorage.Clock clock, WebappDataStorage storage) {
+            super(null, storage);
             mClock = clock;
         }
 
@@ -309,7 +309,7 @@ public class WebApkUpdateManagerTest {
      * is-update-needed check has been triggered.
      */
     private boolean updateIfNeededChecksForUpdatedWebManifest() {
-        TestWebApkUpdateManager updateManager = new TestWebApkUpdateManager(mClock);
+        TestWebApkUpdateManager updateManager = new TestWebApkUpdateManager(mClock, getStorage());
         updateIfNeeded(updateManager);
         return updateManager.updateCheckStarted();
     }
@@ -323,7 +323,7 @@ public class WebApkUpdateManagerTest {
         registerWebApk(androidManifestData, WebApkVersion.CURRENT_SHELL_APK_VERSION);
         mClock.advance(WebApkUpdateManager.FULL_CHECK_UPDATE_INTERVAL);
 
-        TestWebApkUpdateManager updateManager = new TestWebApkUpdateManager(mClock);
+        TestWebApkUpdateManager updateManager = new TestWebApkUpdateManager(mClock, getStorage());
         updateIfNeeded(updateManager);
         assertTrue(updateManager.updateCheckStarted());
         updateManager.onGotManifestData(
@@ -417,7 +417,8 @@ public class WebApkUpdateManagerTest {
     public void testCheckOnNextLaunchIfClosePriorToFirstPageLoad() {
         mClock.advance(WebApkUpdateManager.FULL_CHECK_UPDATE_INTERVAL);
         {
-            TestWebApkUpdateManager updateManager = new TestWebApkUpdateManager(mClock);
+            TestWebApkUpdateManager updateManager = new TestWebApkUpdateManager(mClock,
+                    getStorage());
             updateIfNeeded(updateManager);
             assertTrue(updateManager.updateCheckStarted());
         }
@@ -428,7 +429,8 @@ public class WebApkUpdateManagerTest {
 
         {
             // Relaunching the WebAPK should do an is-update-needed check.
-            TestWebApkUpdateManager updateManager = new TestWebApkUpdateManager(mClock);
+            TestWebApkUpdateManager updateManager = new TestWebApkUpdateManager(mClock,
+                    getStorage());
             updateIfNeeded(updateManager);
             assertTrue(updateManager.updateCheckStarted());
             onGotUnchangedWebManifestData(updateManager);
@@ -436,7 +438,8 @@ public class WebApkUpdateManagerTest {
 
         {
             // Relaunching the WebAPK should not do an is-update-needed-check.
-            TestWebApkUpdateManager updateManager = new TestWebApkUpdateManager(mClock);
+            TestWebApkUpdateManager updateManager = new TestWebApkUpdateManager(mClock,
+                    getStorage());
             updateIfNeeded(updateManager);
             assertFalse(updateManager.updateCheckStarted());
         }
@@ -453,7 +456,8 @@ public class WebApkUpdateManagerTest {
         long initialTime = mClock.currentTimeMillis();
         mClock.advance(WebApkUpdateManager.FULL_CHECK_UPDATE_INTERVAL);
 
-        TestWebApkUpdateManager updateManager = new TestWebApkUpdateManager(mClock);
+        TestWebApkUpdateManager updateManager = new TestWebApkUpdateManager(mClock,
+                getStorage());
         updateIfNeeded(updateManager);
         assertTrue(updateManager.updateCheckStarted());
         onGotUnchangedWebManifestData(updateManager);
@@ -476,7 +480,7 @@ public class WebApkUpdateManagerTest {
         storage.updateDidLastWebApkUpdateRequestSucceed(false);
         mClock.advance(WebApkUpdateManager.RETRY_UPDATE_DURATION);
 
-        TestWebApkUpdateManager updateManager = new TestWebApkUpdateManager(mClock);
+        TestWebApkUpdateManager updateManager = new TestWebApkUpdateManager(mClock, getStorage());
         updateIfNeeded(updateManager);
         assertTrue(updateManager.updateCheckStarted());
         onGotUnchangedWebManifestData(updateManager);
@@ -495,7 +499,7 @@ public class WebApkUpdateManagerTest {
     public void testMarkUpdateAsFailedIfClosePriorToUpdateCompleting() {
         mClock.advance(WebApkUpdateManager.FULL_CHECK_UPDATE_INTERVAL);
 
-        TestWebApkUpdateManager updateManager = new TestWebApkUpdateManager(mClock);
+        TestWebApkUpdateManager updateManager = new TestWebApkUpdateManager(mClock, getStorage());
         updateIfNeeded(updateManager);
         assertTrue(updateManager.updateCheckStarted());
         ManifestData manifestData = defaultManifestData();
@@ -526,7 +530,7 @@ public class WebApkUpdateManagerTest {
         registerWebApk(defaultManifestData(), WebApkVersion.CURRENT_SHELL_APK_VERSION - 1);
         mClock.advance(WebApkUpdateManager.FULL_CHECK_UPDATE_INTERVAL);
 
-        TestWebApkUpdateManager updateManager = new TestWebApkUpdateManager(mClock);
+        TestWebApkUpdateManager updateManager = new TestWebApkUpdateManager(mClock, getStorage());
         updateIfNeeded(updateManager);
         assertTrue(updateManager.updateCheckStarted());
 
@@ -549,7 +553,7 @@ public class WebApkUpdateManagerTest {
         registerWebApk(defaultManifestData(), WebApkVersion.CURRENT_SHELL_APK_VERSION - 1);
         mClock.advance(WebApkUpdateManager.FULL_CHECK_UPDATE_INTERVAL);
 
-        TestWebApkUpdateManager updateManager = new TestWebApkUpdateManager(mClock);
+        TestWebApkUpdateManager updateManager = new TestWebApkUpdateManager(mClock, getStorage());
         updateIfNeeded(updateManager);
         assertTrue(updateManager.updateCheckStarted());
 
@@ -574,7 +578,7 @@ public class WebApkUpdateManagerTest {
     public void testStartUrlRedirectsToPageWithUpdatedWebManifest() {
         mClock.advance(WebApkUpdateManager.FULL_CHECK_UPDATE_INTERVAL);
 
-        TestWebApkUpdateManager updateManager = new TestWebApkUpdateManager(mClock);
+        TestWebApkUpdateManager updateManager = new TestWebApkUpdateManager(mClock, getStorage());
         updateIfNeeded(updateManager);
         assertTrue(updateManager.updateCheckStarted());
 
@@ -608,7 +612,7 @@ public class WebApkUpdateManagerTest {
     public void testStartUrlRedirectsToPageWithUnchangedWebManifest() {
         mClock.advance(WebApkUpdateManager.FULL_CHECK_UPDATE_INTERVAL);
 
-        TestWebApkUpdateManager updateManager = new TestWebApkUpdateManager(mClock);
+        TestWebApkUpdateManager updateManager = new TestWebApkUpdateManager(mClock, getStorage());
         updateIfNeeded(updateManager);
         updateManager.onWebManifestForInitialUrlNotWebApkCompatible();
         onGotManifestData(updateManager, defaultManifestData());
@@ -738,7 +742,8 @@ public class WebApkUpdateManagerTest {
         WebappDataStorage storage = WebappRegistry.getInstance().getWebappDataStorage(WEBAPK_ID);
 
         for (int i = 0; i < 3; ++i) {
-            TestWebApkUpdateManager updateManager = new TestWebApkUpdateManager(mClock);
+            TestWebApkUpdateManager updateManager = new TestWebApkUpdateManager(mClock,
+                    getStorage());
             updateManager.setIsWebApkForeground(true);
             updateIfNeeded(updateManager);
 
@@ -748,7 +753,7 @@ public class WebApkUpdateManagerTest {
             assertEquals(i + 1, storage.getUpdateRequests());
         }
 
-        TestWebApkUpdateManager updateManager = new TestWebApkUpdateManager(mClock);
+        TestWebApkUpdateManager updateManager = new TestWebApkUpdateManager(mClock, getStorage());
         updateManager.setIsWebApkForeground(true);
         updateIfNeeded(updateManager);
 
@@ -765,7 +770,7 @@ public class WebApkUpdateManagerTest {
         WebappDataStorage storage = WebappRegistry.getInstance().getWebappDataStorage(WEBAPK_ID);
 
         mClock.advance(WebApkUpdateManager.FULL_CHECK_UPDATE_INTERVAL);
-        TestWebApkUpdateManager updateManager = new TestWebApkUpdateManager(mClock);
+        TestWebApkUpdateManager updateManager = new TestWebApkUpdateManager(mClock, getStorage());
         updateManager.setIsWebApkForeground(true);
         updateIfNeeded(updateManager);
         assertTrue(updateManager.updateCheckStarted());

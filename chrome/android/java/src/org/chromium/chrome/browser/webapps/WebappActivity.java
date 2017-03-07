@@ -294,6 +294,27 @@ public class WebappActivity extends FullScreenActivity {
     }
 
     @Override
+    public void onDeferredStartup() {
+        super.onDeferredStartup();
+
+        WebappDataStorage storage =
+                WebappRegistry.getInstance().getWebappDataStorage(mWebappInfo.id());
+        if (storage != null) {
+            onDeferredStartupWithStorage(storage);
+        } else {
+            onDeferredStartupWithNullStorage();
+        }
+    }
+
+    protected void onDeferredStartupWithStorage(WebappDataStorage storage) {
+        updateStorage(storage);
+    }
+
+    protected void onDeferredStartupWithNullStorage() {
+        return;
+    }
+
+    @Override
     protected int getControlContainerLayoutId() {
         return R.layout.webapp_control_container;
     }
@@ -348,11 +369,10 @@ public class WebappActivity extends FullScreenActivity {
         WebappDataStorage storage =
                 WebappRegistry.getInstance().getWebappDataStorage(mWebappInfo.id());
         if (storage == null) {
-            onStorageIsNull(backgroundColor);
+            initializeSplashScreenWidgets(backgroundColor, null);
             return;
         }
 
-        updateStorage(storage);
         storage.getSplashScreenImage(new WebappDataStorage.FetchCallback<Bitmap>() {
             @Override
             public void onDataRetrieved(Bitmap splashImage) {
@@ -360,8 +380,6 @@ public class WebappActivity extends FullScreenActivity {
             }
         });
     }
-
-    protected void onStorageIsNull(int backgroundColor) {}
 
     protected void updateStorage(WebappDataStorage storage) {
         // The information in the WebappDataStorage may have been purged by the

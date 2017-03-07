@@ -59,8 +59,8 @@ public class WebApkUpdateManagerTest extends ChromeTabbedActivityTestBase {
         private CallbackHelper mWaiter;
         private boolean mNeedsUpdate = false;
 
-        public TestWebApkUpdateManager(CallbackHelper waiter) {
-            super(null);
+        public TestWebApkUpdateManager(CallbackHelper waiter, WebappDataStorage storage) {
+            super(null, storage);
             mWaiter = waiter;
         }
 
@@ -147,7 +147,8 @@ public class WebApkUpdateManagerTest extends ChromeTabbedActivityTestBase {
      /** Checks whether a WebAPK update is needed. */
     private boolean checkUpdateNeeded(final CreationData creationData) throws Exception {
         CallbackHelper waiter = new CallbackHelper();
-        final TestWebApkUpdateManager updateManager = new TestWebApkUpdateManager(waiter);
+        WebappDataStorage storage = WebappRegistry.getInstance().getWebappDataStorage(WEBAPK_ID);
+        final TestWebApkUpdateManager updateManager = new TestWebApkUpdateManager(waiter, storage);
 
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
