@@ -10,6 +10,7 @@
 namespace browser_watcher {
 
 extern const base::Feature kStabilityDebuggingFeature;
+extern const base::Feature kStabilityDebuggingFlushFeature;
 
 }  // namespace browser_watcher
 

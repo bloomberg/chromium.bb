@@ -115,6 +115,8 @@ void SetupStabilityDebugging() {
     return;
   }
 
+  SCOPED_UMA_HISTOGRAM_TIMER("ActivityTracker.Record.SetupTime");
+
   // TODO(bcwhite): Adjust these numbers once there is real data to show
   // just how much of an arena is necessary.
   const size_t kMemorySize = 1 << 20;  // 1 MiB
@@ -175,6 +177,17 @@ void SetupStabilityDebugging() {
 
     // Record information about chrome's module. We want this to be done early.
     RecordChromeModuleInfo(global_tracker);
+
+    // Trigger a flush of the memory mapped file to maximize the chances of
+    // having a minimal amount of content in the stability file, even if
+    // the system crashes or loses power. Note: this does not flush the file
+    // metadata nor does it wait for the changes to be flushed to disk before
+    // returning. This is an expensive operation. Run as an experiment to
+    // measure the effect on performance and collection.
+    if (base::FeatureList::IsEnabled(
+            browser_watcher::kStabilityDebuggingFlushFeature)) {
+      ::FlushViewOfFile(global_tracker->allocator()->data(), 0U);
+    }
   }
 }
 #endif  // defined(OS_WIN)
