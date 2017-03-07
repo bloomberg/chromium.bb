@@ -3097,7 +3097,10 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
   if (!selection)
     return nil;
 
-  if (!compositionInfo->range.is_empty()) {
+  if (compositionInfo && !compositionInfo->range.is_empty()) {
+    // This method might get called after TextInputState.type is reset to none,
+    // in which case there will be no composition range information
+    // (https://crbug.com/698672).
     expected_text = &markedText_;
     expected_range = compositionInfo->range;
   } else {
