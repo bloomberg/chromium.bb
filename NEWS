@@ -5,6 +5,8 @@ liblouis NEWS -- history of user-visible changes.  	-*- org -*-
 ** Bug fixes
 ** Other changes
 ** Braille table improvements
+- Improvements to the Swedish 8-dots table (~se-se.ctb~) thanks to
+  Kevin Derome
 ** License changes
 ** Backwards incompatible changes
 
