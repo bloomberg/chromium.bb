@@ -19,7 +19,7 @@
 #import "ios/chrome/browser/ui/util/relaxed_bounds_constraints_hittest.h"
 
 class ReadingListModel;
-@class ToolsMenuContext;
+@class ToolsMenuConfiguration;
 
 // The time delay before non-initial button images are loaded.
 extern const int64_t kNonInitialImageAdditionDelayNanosec;
@@ -165,7 +165,8 @@ extern const CGRect kToolbarFrame[INTERFACE_IDIOM_COUNT];
 - (BOOL)imageShouldFlipForRightToLeftLayoutDirection:(int)imageEnum;
 
 // Shows the tools popup menu.
-- (void)showToolsMenuPopupWithContext:(ToolsMenuContext*)context;
+- (void)showToolsMenuPopupWithConfiguration:
+    (ToolsMenuConfiguration*)configuration;
 
 // If |toolsPopupController_| is non-nil, dismisses the tools popup menu with
 // animation.

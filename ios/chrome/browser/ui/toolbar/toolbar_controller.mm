@@ -27,7 +27,7 @@
 #include "ios/chrome/browser/ui/toolbar/toolbar_resource_macros.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_tools_menu_button.h"
 #import "ios/chrome/browser/ui/toolbar/tools_menu_button_observer_bridge.h"
-#import "ios/chrome/browser/ui/tools_menu/tools_menu_context.h"
+#import "ios/chrome/browser/ui/tools_menu/tools_menu_configuration.h"
 #import "ios/chrome/browser/ui/tools_menu/tools_popup_controller.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/chrome/common/material_timing.h"
@@ -588,7 +588,8 @@ const LayoutOffset kButtonFadeOutXOffset = 10;
   return shareButton_.get();
 }
 
-- (void)showToolsMenuPopupWithContext:(ToolsMenuContext*)context {
+- (void)showToolsMenuPopupWithConfiguration:
+    (ToolsMenuConfiguration*)configuration {
   // Because an animation hides and shows the tools popup menu it is possible to
   // tap the tools button multiple times before the tools menu is shown. Ignore
   // repeated taps between animations.
@@ -600,9 +601,9 @@ const LayoutOffset kButtonFadeOutXOffset = 10;
   // Keep the button pressed.
   [toolsMenuButton_ setToolsMenuIsVisible:YES];
 
-  [context setToolsMenuButton:toolsMenuButton_];
+  [configuration setToolsMenuButton:toolsMenuButton_];
   toolsPopupController_.reset(
-      [[ToolsPopupController alloc] initWithContext:context]);
+      [[ToolsPopupController alloc] initWithConfiguration:configuration]);
 
   [toolsPopupController_ setDelegate:self];
 

@@ -6,8 +6,8 @@ source_set("tools_menu") {
   sources = [
     "reading_list_menu_view_item.h",
     "reading_list_menu_view_item.mm",
-    "tools_menu_context.h",
-    "tools_menu_context.mm",
+    "tools_menu_configuration.h",
+    "tools_menu_configuration.mm",
     "tools_menu_model.h",
     "tools_menu_model.mm",
     "tools_menu_view_controller.h",
@@ -37,6 +37,7 @@ source_set("tools_menu") {
     "//ios/public/provider/chrome/browser/user_feedback",
     "//ios/third_party/material_components_ios",
     "//ios/third_party/material_roboto_font_loader_ios",
+    "//ios/web:user_agent",
     "//ui/base",
   ]
   libs = [
@@ -49,11 +50,14 @@ source_set("unit_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
+    "tools_menu_view_controller_unittest.mm",
     "tools_menu_view_item_unittest.mm",
   ]
   deps = [
     ":tools_menu",
     "//base",
+    "//ios/chrome/browser/ui/commands:commands",
+    "//ios/web:user_agent",
     "//testing/gtest",
   ]
 }

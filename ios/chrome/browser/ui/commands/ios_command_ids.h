@@ -52,6 +52,7 @@
 #define IDC_SHOW_CONTEXTUAL_SEARCH_SETTINGS            40919
 #define IDC_CLOSE_SETTINGS_AND_OPEN_URL                40920
 #define IDC_REQUEST_DESKTOP_SITE                       40921
+#define IDC_REQUEST_MOBILE_SITE                        40922
 #define IDC_CLEAR_BROWSING_DATA_IOS                    40924
 #define IDC_SHOW_MAIL_COMPOSER                         40926
 #define IDC_RESET_ALL_WEBVIEWS                         40928

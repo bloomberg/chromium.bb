@@ -1462,6 +1462,9 @@ Your data was encrypted with your sync passphrase on <ph name="TIME">$2<ex>Sept 
       <message name="IDS_IOS_TOOLS_MENU_REQUEST_DESKTOP_SITE" desc="The iOS menu item for requesting the desktop site [Length: 15em] [iOS only]">
         Request Desktop Site
       </message>
+      <message name="IDS_IOS_TOOLS_MENU_REQUEST_MOBILE_SITE" desc="The iOS menu item for requesting the mobile site [Length: 15em] [iOS only]">
+        Request Mobile Site
+      </message>
       <message name="IDS_IOS_TOOLS_MENU_SETTINGS" desc="The iOS menu item for opening the settings [Length: 15em] [iOS only]">
         Settings
       </message>

@@ -147,7 +147,7 @@
 #import "ios/chrome/browser/ui/toolbar/toolbar_controller.h"
 #include "ios/chrome/browser/ui/toolbar/toolbar_model_delegate_ios.h"
 #include "ios/chrome/browser/ui/toolbar/toolbar_model_ios.h"
-#import "ios/chrome/browser/ui/tools_menu/tools_menu_context.h"
+#import "ios/chrome/browser/ui/tools_menu/tools_menu_configuration.h"
 #import "ios/chrome/browser/ui/tools_menu/tools_menu_view_item.h"
 #import "ios/chrome/browser/ui/tools_menu/tools_popup_controller.h"
 #include "ios/chrome/browser/ui/ui_util.h"
@@ -179,6 +179,7 @@
 #include "ios/web/public/referrer_util.h"
 #include "ios/web/public/ssl_status.h"
 #include "ios/web/public/url_scheme_util.h"
+#include "ios/web/public/user_agent.h"
 #include "ios/web/public/web_client.h"
 #import "ios/web/public/web_state/context_menu_params.h"
 #import "ios/web/public/web_state/crw_web_view_proxy.h"
@@ -544,6 +545,10 @@ FindInPageController* GetFindInPageController(Tab* tab) {
 @property(nonatomic, retain)
     ActivityOverlayCoordinator* activityOverlayCoordinator;
 
+// The user agent type used to load the currently visible page. User agent type
+// is NONE if there is no visible page or visible page is a native page.
+@property(nonatomic, assign, readonly) web::UserAgentType userAgentType;
+
 // BVC initialization:
 // If the BVC is initialized with a valid browser state & tab model immediately,
 // the path is straightforward: functionality is enabled, and the UI is built
@@ -683,8 +688,13 @@ FindInPageController* GetFindInPageController(Tab* tab) {
 - (void)tabLoadComplete:(Tab*)tab withSuccess:(BOOL)success;
 // Evaluates Javascript asynchronously using the current page context.
 - (void)openJavascript:(NSString*)javascript;
-// Sets the desktop user agent flag and reload the current page.
+
+// Sets the desktop user agent flag and reloads the current page.
 - (void)enableDesktopUserAgent;
+
+// Sets the desktop user agent flag and reloads the current page.
+- (void)enableMobileUserAgent;
+
 // Helper methods used by ShareToDelegate methods.
 // Shows an alert with the given title and message id.
 - (void)showErrorAlert:(int)titleMessageId message:(int)messageId;
@@ -1093,6 +1103,18 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
     return NO;
 
   return YES;
+}
+
+- (web::UserAgentType)userAgentType {
+  web::WebState* webState = [_model currentTab].webState;
+  if (!webState)
+    return web::UserAgentType::NONE;
+  web::NavigationItem* visibleItem =
+      webState->GetNavigationManager()->GetVisibleItem();
+  if (!visibleItem)
+    return web::UserAgentType::NONE;
+
+  return visibleItem->GetUserAgentType();
 }
 
 - (void)setVisible:(BOOL)visible {
@@ -2054,10 +2076,8 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
   web::WebState* webState = tab.webState;
   if (!webState)
     return NO;
-  web::NavigationManager* navigationManager = webState->GetNavigationManager();
-  if (!navigationManager)
-    return NO;
-  web::NavigationItem* visibleItem = navigationManager->GetVisibleItem();
+  web::NavigationItem* visibleItem =
+      webState->GetNavigationManager()->GetVisibleItem();
   if (!visibleItem)
     return NO;
   return web::GetWebClient()->IsAppSpecificURL(visibleItem->GetURL());
@@ -3271,22 +3291,27 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
   // Dismiss Find in Page focus.
   [self updateFindBar:NO shouldFocus:NO];
 
-  base::scoped_nsobject<ToolsMenuContext> context(
-      [[ToolsMenuContext alloc] initWithDisplayView:[self view]]);
+  base::scoped_nsobject<ToolsMenuConfiguration> configuration(
+      [[ToolsMenuConfiguration alloc] initWithDisplayView:[self view]]);
   if ([_model count] == 0)
-    [context setNoOpenedTabs:YES];
+    [configuration setNoOpenedTabs:YES];
+
   if (_isOffTheRecord)
-    [context setInIncognito:YES];
+    [configuration setInIncognito:YES];
+
   if (reading_list::switches::IsReadingListEnabled()) {
     if (!_readingListMenuNotifier) {
       _readingListMenuNotifier.reset([[ReadingListMenuNotifier alloc]
           initWithReadingList:ReadingListModelFactory::GetForBrowserState(
                                   _browserState)]);
     }
-    [context setReadingListMenuNotifier:_readingListMenuNotifier];
+    [configuration setReadingListMenuNotifier:_readingListMenuNotifier];
   }
 
-  [_toolbarController showToolsMenuPopupWithContext:context];
+  [configuration setUserAgentType:self.userAgentType];
+
+  [_toolbarController showToolsMenuPopupWithConfiguration:configuration];
+
   ToolsPopupController* toolsPopupController =
       [_toolbarController toolsPopupController];
   if ([_model currentTab]) {
@@ -3294,8 +3319,6 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
     [toolsPopupController setIsCurrentPageBookmarked:isBookmarked];
     [toolsPopupController setCanShowFindBar:self.canShowFindBar];
     [toolsPopupController setCanUseReaderMode:self.canUseReaderMode];
-    [toolsPopupController
-        setCanUseDesktopUserAgent:self.canUseDesktopUserAgent];
     [toolsPopupController setCanShowShareMenu:self.canShowShareMenu];
 
     if (!IsIPadIdiom())
@@ -3927,6 +3950,9 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
     case IDC_REQUEST_DESKTOP_SITE:
       [self enableDesktopUserAgent];
       break;
+    case IDC_REQUEST_MOBILE_SITE:
+      [self enableMobileUserAgent];
+      break;
     case IDC_SHOW_TOOLS_MENU: {
       [self showToolsMenuPopup];
       break;
@@ -4136,6 +4162,12 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
 - (void)enableDesktopUserAgent {
   [[_model currentTab] enableDesktopUserAgent];
   [[_model currentTab] reloadForDesktopUserAgent];
+}
+
+// TODO(crbug.com/692303): Implement the actual functionality of
+// "Request Mobile Site", and also refactoring the user agent related function
+// names to improve readability.
+- (void)enableMobileUserAgent {
 }
 
 - (void)resetAllWebViews {

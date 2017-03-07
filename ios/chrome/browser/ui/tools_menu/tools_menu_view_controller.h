@@ -7,7 +7,7 @@
 
 #import <UIKit/UIKit.h>
 
-@class ToolsMenuContext;
+@class ToolsMenuConfiguration;
 
 // TODO(crbug.com/228521): Remove this once the new command/metric handling is
 // implemented. This is a temporary workaround to allow metrics recording to
@@ -54,10 +54,13 @@ extern NSString* const kToolsMenuReadingListId;
 // The tool button to be shown hovering above the popup.
 @property(nonatomic, readonly) UIButton* toolsButton;
 
+// Keeps track of the items in tools menu.
+@property(nonatomic, copy) NSArray* menuItems;
+
 @property(nonatomic, assign) id<ToolsPopupTableDelegate> delegate;
 
 // Initializes the Tools popup menu.
-- (void)initializeMenu:(ToolsMenuContext*)context;
+- (void)initializeMenuWithConfiguration:(ToolsMenuConfiguration*)configuration;
 
 // Returns the optimal height needed to display the menu items.
 // The height returned is usually less than the |suggestedHeight| unless
@@ -85,9 +88,6 @@ extern NSString* const kToolsMenuReadingListId;
 
 // Informs tools popup menu whether the switch to reader mode is possible.
 - (void)setCanUseReaderMode:(BOOL)enabled;
-
-// Informs tools popup menu whether "Request Desktop Site" can be enabled.
-- (void)setCanUseDesktopUserAgent:(BOOL)value;
 
 - (void)animateContentIn;
 

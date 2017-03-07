@@ -10,15 +10,27 @@
 
 @class ReadingListMenuNotifier;
 
-// Context defining options that can be set to change the tools menu's
-// appearance. All are set to false by default.
-@interface ToolsMenuContext : NSObject
-// Indicate that the menu is being shown while in the tab switcher.
+namespace web {
+enum class UserAgentType : short;
+}  // namespace web
+
+// Configuation defining options that can be set to change the tools menu's
+// appearance. All boolean properties are set to NO, and |userAgentType| is set
+// to NONE by default.
+@interface ToolsMenuConfiguration : NSObject
+// Indicates that the menu is being shown while in the tab switcher.
 @property(nonatomic, getter=isInTabSwitcher) BOOL inTabSwitcher;
-// Indicate that the menu is being shown while there are no open tabs.
+// Indicates that the menu is being shown while there are no open tabs.
 @property(nonatomic, getter=hasNoOpenedTabs) BOOL noOpenedTabs;
-// Indicate that the menu is being shown while in incognito mode.
+// Indicates that the menu is being shown while in incognito mode.
 @property(nonatomic, getter=isInIncognito) BOOL inIncognito;
+
+// Indicates that the menu is being shown while user agent is |userAgentType|.
+// If NONE, shows "Request Desktop Site" in disabled state.
+// If MOBILE, shows "Request Desktop Site" in enabled state.
+// If DESKTOP, shows "Request Mobile Site" in enabled state.
+@property(nonatomic, assign) web::UserAgentType userAgentType;
+
 // View that the menu will be displayed in.
 @property(nonatomic, readonly) UIView* displayView;
 // Button from which popup menu will be opened.

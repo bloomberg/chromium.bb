@@ -12,7 +12,7 @@
 #include "base/metrics/user_metrics_action.h"
 #include "ios/chrome/browser/ui/commands/ios_command_ids.h"
 #include "ios/chrome/browser/ui/rtl_geometry.h"
-#import "ios/chrome/browser/ui/tools_menu/tools_menu_context.h"
+#import "ios/chrome/browser/ui/tools_menu/tools_menu_configuration.h"
 #import "ios/chrome/browser/ui/tools_menu/tools_menu_view_controller.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 
@@ -42,24 +42,24 @@ NS_INLINE UIEdgeInsets TabHistoryPopupMenuInsets() {
 @implementation ToolsPopupController
 @synthesize isCurrentPageBookmarked = _isCurrentPageBookmarked;
 
-- (instancetype)initWithContext:(ToolsMenuContext*)context {
-  DCHECK(context.displayView);
-  self = [super initWithParentView:context.displayView];
+- (instancetype)initWithConfiguration:(ToolsMenuConfiguration*)configuration {
+  DCHECK(configuration.displayView);
+  self = [super initWithParentView:configuration.displayView];
   if (self) {
     _toolsMenuViewController.reset([[ToolsMenuViewController alloc] init]);
     _toolsTableViewContainer.reset([[_toolsMenuViewController view] retain]);
     [_toolsTableViewContainer layer].cornerRadius = 2;
     [_toolsTableViewContainer layer].masksToBounds = YES;
-    [_toolsMenuViewController initializeMenu:context];
+    [_toolsMenuViewController initializeMenuWithConfiguration:configuration];
 
     UIEdgeInsets popupInsets = TabHistoryPopupMenuInsets();
     CGFloat popupWidth = kToolsPopupMenuWidth;
 
-    CGPoint origin = CGPointMake(CGRectGetMidX(context.sourceRect),
-                                 CGRectGetMidY(context.sourceRect));
+    CGPoint origin = CGPointMake(CGRectGetMidX(configuration.sourceRect),
+                                 CGRectGetMidY(configuration.sourceRect));
 
-    CGRect containerBounds = [context.displayView bounds];
-    CGFloat minY = CGRectGetMinY(context.sourceRect) - popupInsets.top;
+    CGRect containerBounds = [configuration.displayView bounds];
+    CGFloat minY = CGRectGetMinY(configuration.sourceRect) - popupInsets.top;
 
     // The tools popup appears trailing- aligned, but because
     // kToolsPopupMenuTrailingOffset is smaller than the popupInsets's trailing
@@ -72,8 +72,9 @@ NS_INLINE UIEdgeInsets TabHistoryPopupMenuInsets() {
     CGPoint destination = CGPointMake(
         CGRectGetTrailingEdge(containerBounds) + trailingShift, minY);
 
-    CGFloat availableHeight = CGRectGetHeight([context.displayView bounds]) -
-                              minY - popupInsets.bottom;
+    CGFloat availableHeight =
+        CGRectGetHeight([configuration.displayView bounds]) - minY -
+        popupInsets.bottom;
     CGFloat optimalHeight =
         [_toolsMenuViewController optimalHeight:availableHeight];
     [self setOptimalSize:CGSizeMake(popupWidth, optimalHeight)
@@ -97,12 +98,13 @@ NS_INLINE UIEdgeInsets TabHistoryPopupMenuInsets() {
       // |origin| is the center of the tools menu icon in the toolbar; use
       // that to determine where the tools button should be placed.
       CGPoint buttonCenter =
-          [context.displayView convertPoint:origin toView:outsideAnimationView];
+          [configuration.displayView convertPoint:origin
+                                           toView:outsideAnimationView];
       CGRect frame = CGRectMake(buttonCenter.x - buttonWidth / 2.0,
                                 buttonCenter.y - buttonWidth / 2.0, buttonWidth,
                                 buttonWidth);
       [toolsButton setFrame:frame];
-      [toolsButton setImageEdgeInsets:context.toolsButtonInsets];
+      [toolsButton setImageEdgeInsets:configuration.toolsButtonInsets];
       [outsideAnimationView addSubview:toolsButton];
     }
   }
@@ -131,13 +133,8 @@ NS_INLINE UIEdgeInsets TabHistoryPopupMenuInsets() {
   [_toolsMenuViewController setIsCurrentPageBookmarked:value];
 }
 
-// Informs tools popup menu whether the switch to reader mode is possible.
 - (void)setCanUseReaderMode:(BOOL)enabled {
   [_toolsMenuViewController setCanUseReaderMode:enabled];
-}
-
-- (void)setCanUseDesktopUserAgent:(BOOL)enabled {
-  [_toolsMenuViewController setCanUseDesktopUserAgent:enabled];
 }
 
 - (void)setCanShowFindBar:(BOOL)enabled {
@@ -192,6 +189,9 @@ NS_INLINE UIEdgeInsets TabHistoryPopupMenuInsets() {
       break;
     case IDC_REQUEST_DESKTOP_SITE:
       base::RecordAction(UserMetricsAction("MobileMenuRequestDesktopSite"));
+      break;
+    case IDC_REQUEST_MOBILE_SITE:
+      base::RecordAction(UserMetricsAction("MobileMenuRequestMobileSite"));
       break;
     case IDC_READER_MODE:
       base::RecordAction(UserMetricsAction("MobileMenuRequestReaderMode"));

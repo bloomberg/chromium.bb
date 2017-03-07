@@ -21,7 +21,7 @@
 #import "ios/chrome/browser/ui/reading_list/reading_list_menu_notification_delegate.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_menu_notifier.h"
 #import "ios/chrome/browser/ui/tools_menu/reading_list_menu_view_item.h"
-#import "ios/chrome/browser/ui/tools_menu/tools_menu_context.h"
+#import "ios/chrome/browser/ui/tools_menu/tools_menu_configuration.h"
 #import "ios/chrome/browser/ui/tools_menu/tools_menu_view_item.h"
 #import "ios/chrome/browser/ui/tools_menu/tools_menu_view_tools_cell.h"
 #import "ios/chrome/browser/ui/tools_menu/tools_popup_controller.h"
@@ -32,8 +32,13 @@
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #import "ios/public/provider/chrome/browser/user_feedback/user_feedback_provider.h"
 #import "ios/third_party/material_components_ios/src/components/Ink/src/MaterialInk.h"
+#include "ios/web/public/user_agent.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
+
+// TODO(crbug.com/678047) Remove this switch when request mobile site
+// functionality is implemented.
+#define HIDE_REQUEST_MOBILE_SITE_CELL
 
 using ios::material::TimingFunction;
 
@@ -50,6 +55,7 @@ NSString* const kToolsMenuReportAnIssueId = @"kToolsMenuReportAnIssueId";
 NSString* const kToolsMenuFindInPageId = @"kToolsMenuFindInPageId";
 NSString* const kToolsMenuReaderMode = @"kToolsMenuReaderMode";
 NSString* const kToolsMenuRequestDesktopId = @"kToolsMenuRequestDesktopId";
+NSString* const kToolsMenuRequestMobileId = @"kToolsMenuRequestMobileId";
 NSString* const kToolsMenuSettingsId = @"kToolsMenuSettingsId";
 NSString* const kToolsMenuHelpId = @"kToolsMenuHelpId";
 NSString* const kToolsMenuSuggestionsId = @"kToolsMenuSuggestionsId";
@@ -98,7 +104,7 @@ typedef NS_OPTIONS(NSUInteger, kToolbarType) {
   // clang-format on
 };
 
-// Declare all the possible items.
+// Declares all the possible items.
 static MenuItemInfo itemInfoList[] = {
     // clang-format off
   { IDS_IOS_TOOLS_MENU_NEW_TAB,           kToolsMenuNewTabId,
@@ -138,6 +144,9 @@ static MenuItemInfo itemInfoList[] = {
   { IDS_IOS_TOOLS_MENU_REQUEST_DESKTOP_SITE, kToolsMenuRequestDesktopId,
     IDC_REQUEST_DESKTOP_SITE,             kToolbarTypeWebAll,
     0,                                    nil },
+  { IDS_IOS_TOOLS_MENU_REQUEST_MOBILE_SITE, kToolsMenuRequestMobileId,
+    IDC_REQUEST_MOBILE_SITE,             kToolbarTypeWebAll,
+    0,                                    nil },
   { IDS_IOS_TOOLS_MENU_READER_MODE,       kToolsMenuReaderMode,
     IDC_READER_MODE,                      kToolbarTypeWebAll,
     0,                                    nil },
@@ -151,15 +160,15 @@ static MenuItemInfo itemInfoList[] = {
 };
 
 NS_INLINE BOOL ItemShouldBeVisible(const MenuItemInfo& item,
-                                   BOOL incognito,
-                                   kToolbarType toolbarType) {
+                                   kToolbarType toolbarType,
+                                   ToolsMenuConfiguration* configuration) {
   if (!(item.toolbar_types & toolbarType))
     return NO;
 
-  if (incognito && (item.visibility & kVisibleNotIncognitoOnly))
+  if (configuration.inIncognito && (item.visibility & kVisibleNotIncognitoOnly))
     return NO;
 
-  if (!incognito && (item.visibility & kVisibleIncognitoOnly))
+  if (!configuration.inIncognito && (item.visibility & kVisibleIncognitoOnly))
     return NO;
 
   if (item.title_id == IDS_IOS_TOOLBAR_SHOW_TABS) {
@@ -192,6 +201,32 @@ NS_INLINE BOOL ItemShouldBeVisible(const MenuItemInfo& item,
              ->IsUserFeedbackEnabled()) {
       return NO;
     }
+  }
+
+  // TODO(crbug.com/696676): Talk to UI/UX people to decide the correct behavior
+  // of "Requestion Desktop/Mobile Site" (e.g. Whether user agent flag should
+  // stick when going backward and which cell should be visible when navigating
+  // to native pages).
+  if (item.title_id == IDS_IOS_TOOLS_MENU_REQUEST_DESKTOP_SITE) {
+// TODO(crbug.com/678047) Remove this switch when request mobile site
+// functionality is implemented.
+#ifdef HIDE_REQUEST_MOBILE_SITE_CELL
+    return YES;
+#else
+    if (configuration.userAgentType == web::UserAgentType::DESKTOP)
+      return NO;
+#endif
+  }
+
+  if (item.title_id == IDS_IOS_TOOLS_MENU_REQUEST_MOBILE_SITE) {
+// TODO(crbug.com/678047) Remove this switch when request mobile site
+// functionality is implemented.
+#ifdef HIDE_REQUEST_MOBILE_SITE_CELL
+    return NO;
+#else
+    if (configuration.userAgentType != web::UserAgentType::DESKTOP)
+      return NO;
+#endif
   }
 
   return YES;
@@ -261,10 +296,9 @@ NS_INLINE void AnimateInViews(NSArray* views,
 }
 @property(nonatomic, retain) ToolsMenuCollectionView* menuView;
 @property(nonatomic, retain) MDCInkView* touchFeedbackView;
-@property(nonatomic, retain) NSMutableArray* menuItems;
 @property(nonatomic, assign) kToolbarType toolbarType;
 
-// Get the reading list cell.
+// Returns the reading list cell.
 - (ReadingListMenuViewCell*)readingListCell;
 @end
 
@@ -328,10 +362,6 @@ NS_INLINE void AnimateInViews(NSArray* views,
   [self setItemEnabled:enabled withTag:IDC_READER_MODE];
 }
 
-- (void)setCanUseDesktopUserAgent:(BOOL)enabled {
-  [self setItemEnabled:enabled withTag:IDC_REQUEST_DESKTOP_SITE];
-}
-
 - (void)setCanShowFindBar:(BOOL)enabled {
   [self setItemEnabled:enabled withTag:IDC_FIND];
 }
@@ -361,23 +391,23 @@ NS_INLINE void AnimateInViews(NSArray* views,
   [[toolsCell reloadButton] setHidden:isTabLoading];
 }
 
-- (void)initializeMenu:(ToolsMenuContext*)context {
-  if (context.readingListMenuNotifier) {
-    _readingListMenuNotifier.reset(context.readingListMenuNotifier);
-    [context.readingListMenuNotifier setDelegate:self];
+- (void)initializeMenuWithConfiguration:(ToolsMenuConfiguration*)configuration {
+  if (configuration.readingListMenuNotifier) {
+    _readingListMenuNotifier.reset(configuration.readingListMenuNotifier);
+    [configuration.readingListMenuNotifier setDelegate:self];
   }
 
   if (IsIPadIdiom()) {
-    _toolbarType = context.hasNoOpenedTabs
+    _toolbarType = configuration.hasNoOpenedTabs
                        ? kToolbarTypeNoTabsiPad
                        : (!IsCompactTablet() ? kToolbarTypeWebiPad
                                              : kToolbarTypeWebiPhone);
   } else {
     // kOptionInTabSwitcher option must be enabled on iPhone with
     // no opened tabs.
-    DCHECK(!context.hasNoOpenedTabs || context.isInTabSwitcher);
-    _toolbarType = context.isInTabSwitcher ? kToolbarTypeSwitcheriPhone
-                                           : kToolbarTypeWebiPhone;
+    DCHECK(!configuration.hasNoOpenedTabs || configuration.isInTabSwitcher);
+    _toolbarType = configuration.isInTabSwitcher ? kToolbarTypeSwitcheriPhone
+                                                 : kToolbarTypeWebiPhone;
   }
 
   // Build the menu, adding all relevant items.
@@ -385,7 +415,7 @@ NS_INLINE void AnimateInViews(NSArray* views,
 
   for (size_t i = 0; i < arraysize(itemInfoList); ++i) {
     const MenuItemInfo& item = itemInfoList[i];
-    if (!ItemShouldBeVisible(item, context.isInIncognito, _toolbarType))
+    if (!ItemShouldBeVisible(item, _toolbarType, configuration))
       continue;
 
     NSString* title = l10n_util::GetNSStringWithFixup(item.title_id);
@@ -411,9 +441,30 @@ NS_INLINE void AnimateInViews(NSArray* views,
 
   [self setMenuItems:menu];
 
+  // Decide the enabled state of the currently visible item between
+  // "Request Desktop Site" and "Request Mobile Site".
+  switch (configuration.userAgentType) {
+    case web::UserAgentType::NONE:
+      [self setItemEnabled:NO withTag:IDC_REQUEST_DESKTOP_SITE];
+      break;
+    case web::UserAgentType::MOBILE:
+      [self setItemEnabled:YES withTag:IDC_REQUEST_DESKTOP_SITE];
+      break;
+    case web::UserAgentType::DESKTOP:
+      [self setItemEnabled:YES withTag:IDC_REQUEST_MOBILE_SITE];
+
+// TODO(crbug.com/678047) Remove this switch when request mobile site
+// functionality is implemented.
+#ifdef HIDE_REQUEST_MOBILE_SITE_CELL
+      [self setItemEnabled:NO withTag:IDC_REQUEST_DESKTOP_SITE];
+#endif
+      break;
+  }
+
   // Disable IDC_CLOSE_ALL_TABS menu item if on phone with no tabs.
   if (!IsIPadIdiom()) {
-    [self setItemEnabled:!context.hasNoOpenedTabs withTag:IDC_CLOSE_ALL_TABS];
+    [self setItemEnabled:!configuration.hasNoOpenedTabs
+                 withTag:IDC_CLOSE_ALL_TABS];
   }
 }
 

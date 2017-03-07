@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/tools_menu/tools_menu_context.h"
+#import "ios/chrome/browser/ui/tools_menu/tools_menu_configuration.h"
 
 #import "base/ios/weak_nsobject.h"
 #import "base/logging.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_menu_notifier.h"
+#include "ios/web/public/user_agent.h"
 
-@implementation ToolsMenuContext {
+@implementation ToolsMenuConfiguration {
   base::WeakNSObject<UIView> _displayView;
   base::WeakNSObject<UIButton> _toolsMenuButton;
   base::WeakNSObject<ReadingListMenuNotifier> _readingListMenuNotifier;
@@ -17,9 +18,11 @@
 @synthesize inTabSwitcher = _inTabSwitcher;
 @synthesize noOpenedTabs = _noOpenedTabs;
 @synthesize inIncognito = _inIncognito;
+@synthesize userAgentType = _userAgentType;
 
 - (instancetype)initWithDisplayView:(UIView*)displayView {
   if (self = [super init]) {
+    _userAgentType = web::UserAgentType::NONE;
     _displayView.reset(displayView);
     _readingListMenuNotifier.reset();
   }
