@@ -1209,7 +1209,7 @@ int av1_cost_coeffs(const AV1_COMMON *const cm, MACROBLOCK *x, int plane,
 
   return cost;
 }
-#endif  // !CONFIG_PVQ
+#endif  // !CONFIG_PVQ || CONFIG_VAR_TX
 
 static void dist_block(const AV1_COMP *cpi, MACROBLOCK *x, int plane, int block,
                        int blk_row, int blk_col, TX_SIZE tx_size,
