@@ -433,10 +433,18 @@ class TargetDomainDisposeContextFailsIfInUse
 HEADLESS_ASYNC_DEVTOOLED_TEST_F(TargetDomainDisposeContextFailsIfInUse);
 
 class TargetDomainCreateTwoContexts : public HeadlessAsyncDevTooledBrowserTest,
-                                      public target::ExperimentalObserver {
+                                      public target::ExperimentalObserver,
+                                      public page::Observer {
  public:
   void RunDevTooledTest() override {
     EXPECT_TRUE(embedded_test_server()->Start());
+
+    base::RunLoop run_loop;
+    devtools_client_->GetPage()->AddObserver(this);
+    devtools_client_->GetPage()->Enable(run_loop.QuitClosure());
+    base::MessageLoop::ScopedNestableTaskAllower nest_loop(
+        base::MessageLoop::current());
+    run_loop.Run();
 
     devtools_client_->GetTarget()->GetExperimental()->AddObserver(this);
     devtools_client_->GetTarget()->GetExperimental()->CreateBrowserContext(
