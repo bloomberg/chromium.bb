@@ -17,7 +17,6 @@ StubPasswordManagerClient::~StubPasswordManagerClient() {}
 
 bool StubPasswordManagerClient::PromptUserToSaveOrUpdatePassword(
     std::unique_ptr<PasswordFormManager> form_to_save,
-    password_manager::CredentialSourceType type,
     bool update_password) {
   return false;
 }

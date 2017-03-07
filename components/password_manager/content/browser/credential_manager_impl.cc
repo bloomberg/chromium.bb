@@ -122,9 +122,7 @@ void CredentialManagerImpl::OnProvisionalSaveComplete() {
   }
 
   // Otherwise, this is a new form, so as the user if they'd like to save.
-  client_->PromptUserToSaveOrUpdatePassword(
-      std::move(form_manager_), CredentialSourceType::CREDENTIAL_SOURCE_API,
-      false);
+  client_->PromptUserToSaveOrUpdatePassword(std::move(form_manager_), false);
 }
 
 void CredentialManagerImpl::RequireUserMediation(

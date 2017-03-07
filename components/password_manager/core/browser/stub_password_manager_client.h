@@ -23,7 +23,6 @@ class StubPasswordManagerClient : public PasswordManagerClient {
   // PasswordManagerClient:
   bool PromptUserToSaveOrUpdatePassword(
       std::unique_ptr<PasswordFormManager> form_to_save,
-      password_manager::CredentialSourceType type,
       bool update_password) override;
   bool PromptUserToChooseCredentials(
       std::vector<std::unique_ptr<autofill::PasswordForm>> local_forms,
