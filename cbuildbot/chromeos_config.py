@@ -672,7 +672,6 @@ _waterfall_config_map = {
         'chell-paladin',
         'gale-paladin',
         'kip-paladin',
-        'lakitu-paladin',
         'lakitu_next-paladin',
         'loonix-paladin',
         'peach_pi-paladin',
@@ -2123,6 +2122,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'glados',
       'guado_moblab',
       'kevin',
+      'lakitu',
       'leon',
       'link',
       'lumpy',
@@ -2345,6 +2345,13 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       customizations.update(prebuilts=constants.PUBLIC)
 
     if board in _lakitu_boards:
+      lakitu_test_customizations = (site_config.templates
+                                    .lakitu_test_customizations.deepcopy())
+      if board == 'lakitu':
+        # Temporarily disable GCE tests for lakitu-paladin, as we want it to be
+        # "important" while we are making GCE tests less flaky.
+        # TODO(b/35992898): reenable it.
+        lakitu_test_customizations['run_gce_tests'] = False
       # Note: Because |customizations| precedes |base_config|, it will be
       # overridden by |base_config|. So we have to append lakitu
       # customizations after |base_config| is applied.
@@ -2357,7 +2364,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
           site_config.templates.paladin,
           customizations,
           base_config,
-          site_config.templates.lakitu_test_customizations,
+          lakitu_test_customizations,
       )
     else:
       site_config.Add(

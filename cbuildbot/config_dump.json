@@ -13451,13 +13451,11 @@
         "factory_install_netboot": false,
         "factory_toolkit": false,
         "image_test": false,
-        "important": false,
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
         "overlays": "both",
         "prebuilts": "private",
-        "run_gce_tests": true,
         "sync_chrome": false,
         "useflags": [
             "chrome_internal"
