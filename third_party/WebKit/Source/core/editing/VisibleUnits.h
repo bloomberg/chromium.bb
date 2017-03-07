@@ -156,8 +156,16 @@ previousPositionOf(const VisiblePositionInFlatTree&,
                    EditingBoundaryCrossingRule = CanCrossEditingBoundary);
 
 // words
+// TODO(yoichio): Replace |startOfWord| to |startOfWordPosition| because
+// returned Position should be canonicalized with |previousBoundary()| by
+// TextItetator.
+CORE_EXPORT Position startOfWordPosition(const VisiblePosition&,
+                                         EWordSide = RightWordIfOnBoundary);
 CORE_EXPORT VisiblePosition startOfWord(const VisiblePosition&,
                                         EWordSide = RightWordIfOnBoundary);
+CORE_EXPORT PositionInFlatTree
+startOfWordPosition(const VisiblePositionInFlatTree&,
+                    EWordSide = RightWordIfOnBoundary);
 CORE_EXPORT VisiblePositionInFlatTree
 startOfWord(const VisiblePositionInFlatTree&,
             EWordSide = RightWordIfOnBoundary);

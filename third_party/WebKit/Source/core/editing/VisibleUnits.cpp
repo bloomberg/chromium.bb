@@ -1043,7 +1043,7 @@ static unsigned startWordBoundary(
 }
 
 template <typename Strategy>
-static VisiblePositionTemplate<Strategy> startOfWordAlgorithm(
+static PositionTemplate<Strategy> startOfWordAlgorithm(
     const VisiblePositionTemplate<Strategy>& c,
     EWordSide side) {
   DCHECK(c.isValid()) << c;
@@ -1053,22 +1053,32 @@ static VisiblePositionTemplate<Strategy> startOfWordAlgorithm(
   if (side == RightWordIfOnBoundary) {
     // at paragraph end, the startofWord is the current position
     if (isEndOfParagraph(c))
-      return c;
+      return c.deepEquivalent();
 
     p = nextPositionOf(c);
     if (p.isNull())
-      return c;
+      return c.deepEquivalent();
   }
-  return createVisiblePosition(previousBoundary(p, startWordBoundary));
+  return previousBoundary(p, startWordBoundary);
 }
 
-VisiblePosition startOfWord(const VisiblePosition& c, EWordSide side) {
-  return startOfWordAlgorithm<EditingStrategy>(c, side);
+Position startOfWordPosition(const VisiblePosition& position, EWordSide side) {
+  return startOfWordAlgorithm<EditingStrategy>(position, side);
 }
 
-VisiblePositionInFlatTree startOfWord(const VisiblePositionInFlatTree& c,
+VisiblePosition startOfWord(const VisiblePosition& position, EWordSide side) {
+  return createVisiblePosition(startOfWordPosition(position, side));
+}
+
+PositionInFlatTree startOfWordPosition(
+    const VisiblePositionInFlatTree& position,
+    EWordSide side) {
+  return startOfWordAlgorithm<EditingInFlatTreeStrategy>(position, side);
+}
+
+VisiblePositionInFlatTree startOfWord(const VisiblePositionInFlatTree& position,
                                       EWordSide side) {
-  return startOfWordAlgorithm<EditingInFlatTreeStrategy>(c, side);
+  return createVisiblePosition(startOfWordPosition(position, side));
 }
 
 static unsigned endWordBoundary(
