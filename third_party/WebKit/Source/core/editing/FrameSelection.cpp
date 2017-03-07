@@ -319,11 +319,6 @@ void FrameSelection::setSelection(const VisibleSelection& newSelection,
       options, align, granularity);
 }
 
-void FrameSelection::setSelection(const VisibleSelection& newSelection,
-                                  SetSelectionOptions options) {
-  setSelection(newSelection.asSelection(), options);
-}
-
 void FrameSelection::nodeChildrenWillBeRemoved(ContainerNode& container) {
   if (!container.inActiveDocument())
     return;
@@ -397,7 +392,7 @@ bool FrameSelection::modify(EAlteration alter,
 
   const SetSelectionOptions options =
       CloseTyping | ClearTypingStyle | userTriggered;
-  setSelection(selectionModifier.selection(), options);
+  setSelection(selectionModifier.selection().asSelection(), options);
 
   if (granularity == LineGranularity || granularity == ParagraphGranularity)
     m_xPosForVerticalArrowNavigation =
