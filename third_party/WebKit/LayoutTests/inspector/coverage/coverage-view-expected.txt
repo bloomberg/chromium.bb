@@ -1,5 +1,5 @@
 Tests the coverage list view after finishing recording in the Coverage view.
 
-.../inspector/coverage/resources/coverage.js JS used: 245 unused: 157 total: 402
+.../inspector/coverage/resources/coverage.js JS used: 241 unused: 157 total: 402
 .../inspector/coverage/resources/highlight-in-source.css CSS used: 65 unused: 128 total: 209
 
