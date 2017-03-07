@@ -66,6 +66,9 @@ bool PaintedOverlayScrollbarLayerImpl::WillDraw(
 void PaintedOverlayScrollbarLayerImpl::AppendQuads(
     RenderPass* render_pass,
     AppendQuadsData* append_quads_data) {
+  if (aperture_.IsEmpty())
+    return;
+
   // For overlay scrollbars, the border should match the inset of the aperture
   // and be symmetrical.
   gfx::Rect border(aperture_.x(), aperture_.y(), aperture_.x() * 2,
@@ -74,6 +77,12 @@ void PaintedOverlayScrollbarLayerImpl::AppendQuads(
   gfx::Rect layer_occlusion;
   bool fill_center = true;
   bool nearest_neighbor = false;
+
+  // Avoid drawing a scrollber in the degenerate case where the scroller is
+  // smaller than the border size.
+  if (thumb_quad_rect.height() < border.height() ||
+      thumb_quad_rect.width() < border.width())
+    return;
 
   quad_generator_.SetLayout(image_bounds_, thumb_quad_rect.size(), aperture_,
                             border, layer_occlusion, fill_center,
