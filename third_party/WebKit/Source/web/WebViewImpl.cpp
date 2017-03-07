@@ -2538,15 +2538,23 @@ void WebViewImpl::willCloseLayerTreeView() {
 }
 
 void WebViewImpl::didAcquirePointerLock() {
-  mainFrameImpl()->frameWidget()->didAcquirePointerLock();
+  if (mainFrameImpl())
+    mainFrameImpl()->frameWidget()->didAcquirePointerLock();
 }
 
 void WebViewImpl::didNotAcquirePointerLock() {
-  mainFrameImpl()->frameWidget()->didNotAcquirePointerLock();
+  if (mainFrameImpl())
+    mainFrameImpl()->frameWidget()->didNotAcquirePointerLock();
 }
 
 void WebViewImpl::didLosePointerLock() {
-  mainFrameImpl()->frameWidget()->didLosePointerLock();
+  // Make sure that the main frame wasn't swapped-out when the pointer lock is
+  // lost. There's a race that can happen when a pointer lock is requested, but
+  // the browser swaps out the main frame while the pointer lock request is in
+  // progress. This won't be needed once the main frame is refactored to not use
+  // the WebViewImpl as its WebWidget.
+  if (mainFrameImpl())
+    mainFrameImpl()->frameWidget()->didLosePointerLock();
 }
 
 // TODO(ekaramad):This method is almost duplicated in WebFrameWidgetImpl as
