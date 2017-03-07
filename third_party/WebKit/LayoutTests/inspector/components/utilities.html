@@ -462,6 +462,24 @@ function test()
                 InspectorTest.assertEquals(encodedString, string.toBase64());
             }
             next();
+        },
+
+        function trimMiddle(next)
+        {
+            var testArray = [
+                "",
+                "!",
+                "\uD83D\uDE48A\uD83D\uDE48L\uD83D\uDE48I\uD83D\uDE48N\uD83D\uDE48A\uD83D\uDE48\uD83D\uDE48",
+                "test"
+            ];
+            for (var string of testArray) {
+                for (var maxLength = string.length + 1; maxLength > 0; --maxLength) {
+                    var trimmed = string.trimMiddle(maxLength);
+                    InspectorTest.addResult(trimmed);
+                    InspectorTest.assertTrue(trimmed.length <= maxLength);
+                }
+            }
+            next();
         }
     ]);
 }

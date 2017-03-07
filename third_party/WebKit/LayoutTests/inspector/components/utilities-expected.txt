@@ -68,3 +68,33 @@ Running: stringTrimURLTest
 
 Running: stringToBase64Test
 
+Running: trimMiddle
+
+!
+!
+🙈A🙈L🙈I🙈N🙈A🙈🙈
+🙈A🙈L🙈I🙈N🙈A🙈🙈
+🙈A🙈L🙈I…N🙈A🙈🙈
+🙈A🙈L🙈…N🙈A🙈🙈
+🙈A🙈L🙈…🙈A🙈🙈
+🙈A🙈L…🙈A🙈🙈
+🙈A🙈L🙈…A🙈🙈
+🙈A🙈L…A🙈🙈
+🙈A🙈L…A🙈🙈
+🙈A🙈…A🙈🙈
+🙈A🙈…🙈🙈
+🙈A…🙈🙈
+🙈A🙈…🙈
+🙈A…🙈
+🙈A…🙈
+🙈…🙈
+🙈A…
+🙈…
+…
+…
+test
+test
+t…t
+t…
+…
+
