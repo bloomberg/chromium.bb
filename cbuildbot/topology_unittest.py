@@ -31,3 +31,39 @@ class ToplogyTest(cros_test_lib.TestCase):
   def testNotFetched(self):
     with self.assertRaises(topology.LockedDictAccessException):
       topology.topology.get('/foo')
+
+
+def FakeFetchTopologyFromCIDB(keyvals=None):
+  """Setup topology without the need for a DB
+
+  args:
+    keyvals: optional dictionary to populate topology
+  """
+  keyvals = keyvals if keyvals != None else {}
+
+  topology.FetchTopologyFromCIDB(None)
+  topology.topology.update(keyvals)
+  topology.topology.unlock()
+
+
+class FakeFetchTopologyFromCIDBTest(cros_test_lib.TestCase):
+  """Test FakeFetchToplogoyFromCIDB unittest helper function"""
+
+  def setUp(self):
+    _resetTopology()
+
+  def testFakeTopologyFromCIDB(self):
+    data = {1:'one', 2:'two', 3:'three'}
+    FakeFetchTopologyFromCIDB(data)
+    self.assertDictContainsSubset(data, topology.topology)
+
+  def testFakeTopologyFromCIDBEmpty(self):
+    FakeFetchTopologyFromCIDB()
+    # pylint: disable=protected-access
+    self.assertFalse(topology.topology._locked)
+
+
+def _resetTopology():
+  """Remove effects of unittests on topology"""
+  topology.topology = topology.LockedDefaultDict()
+  topology.topology.update(topology.TOPOLOGY_DEFAULTS)
