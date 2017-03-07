@@ -1,12 +1,21 @@
 <!DOCTYPE html>
+<script src="../../resources/run-after-layout-and-paint.js"></script>
 <script src="resources/text-based-repaint.js"></script>
 <script>
+if (window.testRunner)
+  testRunner.useUnfortunateSynchronousResizeMode();
+onload = function() {
+  runAfterLayoutAndPaint(function() {
+    // Use smaller size because window.resizeTo/By() will fail if the sizae is
+    // bigger than the screen size.
+    window.resizeTo(500, 200);
+    runRepaintAndPixelTest();
+  });
+};
 function repaintTest() {
-  if (window.testRunner)
-      testRunner.useUnfortunateSynchronousResizeMode();
   window.resizeBy(0, 200);
 }
-onload = runRepaintAndPixelTest;
 </script>
 Test passes if you see "Success" after window resizes.
-<iframe style="position: absolute; left: 0; top: 0; border: none; height: 100%; width: 100%;" src="resources/resize-iframe-text-src.html"></iframe>
+<iframe style="position: absolute; left: 0; top: 0; border: none; height: 100%; width: 100%;"
+    srcdoc="<!DOCTYPE html><div style='margin-top: 300px; max-width: 400px'><h3>Success</h3></div>"></iframe>

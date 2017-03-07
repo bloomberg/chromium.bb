@@ -169,6 +169,10 @@ LayoutRect PaintInvalidator::computeVisualRectInBacking(
 LayoutPoint PaintInvalidator::computeLocationInBacking(
     const LayoutObject& object,
     const PaintInvalidatorContext& context) {
+  // In SPv2, locationInBacking is in the space of their local transform node.
+  if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+    return object.paintOffset();
+
   LayoutPoint point;
   if (object != context.paintInvalidationContainer) {
     point.moveBy(object.paintOffset());
@@ -425,8 +429,24 @@ void PaintInvalidator::invalidatePaintIfNeeded(
       object
           .shouldCheckForPaintInvalidationRegardlessOfPaintInvalidationState();
   if (!context.forcedSubtreeInvalidationFlags &&
-      !objectShouldCheckForPaintInvalidation)
+      !objectShouldCheckForPaintInvalidation) {
+#if CHECK_VISUAL_RECT_UPDATE
+    updateVisualRect(object, context);
+    DCHECK(
+        (context.oldVisualRect.isEmpty() && context.newVisualRect.isEmpty()) ||
+        enclosingIntRect(context.oldVisualRect) ==
+            enclosingIntRect(context.newVisualRect))
+        << "Visual rect changed without needing paint invalidation:"
+        << " object=" << object.debugName()
+        << " old=" << context.oldVisualRect.toString()
+        << " new=" << context.newVisualRect.toString();
+    DCHECK(object.isText() || context.oldLocation == context.newLocation)
+        << "Location changed without needing paint invalidation:"
+        << " old=" << context.oldLocation.toString()
+        << " new=" << context.newLocation.toString();
+#endif
     return;
+  }
 
   updateVisualRect(object, context);
 

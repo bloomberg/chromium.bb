@@ -2,48 +2,33 @@
   "layers": [
     {
       "name": "LayoutView #document",
-      "bounds": [800, 800],
+      "bounds": [500, 400],
       "contentsOpaque": true,
       "drawsContent": true,
       "paintInvalidations": [
         {
           "object": "LayoutIFrame (positioned) IFRAME",
-          "rect": [0, 0, 800, 800],
-          "reason": "forced by layout"
-        },
-        {
-          "object": "LayoutBlockFlow HTML",
-          "rect": [0, 0, 800, 759],
+          "rect": [0, 0, 500, 400],
           "reason": "forced by layout"
         },
         {
           "object": "LayoutView #document",
-          "rect": [0, 600, 800, 200],
+          "rect": [0, 200, 500, 200],
           "reason": "incremental"
         },
         {
-          "object": "LayoutBlockFlow HTML",
-          "rect": [0, 0, 800, 36],
-          "reason": "forced by layout"
-        },
-        {
           "object": "LayoutBlockFlow BODY",
-          "rect": [8, 8, 784, 20],
+          "rect": [8, 8, 484, 20],
           "reason": "forced by layout"
         },
         {
-          "object": "LayoutBlockFlow H1",
-          "rect": [8, 700, 600, 37],
+          "object": "LayoutBlockFlow H3",
+          "rect": [8, 300, 400, 23],
           "reason": "became visible"
         },
         {
-          "object": "LayoutText #text",
-          "rect": [8, 8, 324, 19],
-          "reason": "forced by layout"
-        },
-        {
           "object": "LayoutView #document",
-          "rect": [785, 0, 15, 600],
+          "rect": [485, 0, 15, 200],
           "reason": "scroll"
         }
       ]
@@ -53,10 +38,6 @@
     {
       "object": "LayoutView #document",
       "reason": "incremental"
-    },
-    {
-      "object": "LayoutBlockFlow HTML",
-      "reason": "forced by layout"
     },
     {
       "object": "LayoutBlockFlow BODY",
@@ -91,11 +72,7 @@
       "reason": "scroll"
     },
     {
-      "object": "LayoutBlockFlow HTML",
-      "reason": "forced by layout"
-    },
-    {
-      "object": "LayoutBlockFlow H1",
+      "object": "LayoutBlockFlow H3",
       "reason": "became visible"
     },
     {

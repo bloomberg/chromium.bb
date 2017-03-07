@@ -10,6 +10,26 @@
           "object": "LayoutBlockFlow BODY",
           "rect": [0, 0, 800, 600],
           "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutSVGRect rect",
+          "rect": [211, 11, 180, 180],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutSVGRect rect",
+          "rect": [210, 10, 180, 180],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutSVGRect rect",
+          "rect": [11, 11, 180, 180],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutSVGRect rect",
+          "rect": [10, 10, 180, 180],
+          "reason": "bounds change"
         }
       ]
     }
@@ -26,6 +46,18 @@
     {
       "object": "LayoutEmbeddedObject OBJECT",
       "reason": "style change"
+    },
+    {
+      "object": "LayoutSVGRoot svg",
+      "reason": "location change"
+    },
+    {
+      "object": "LayoutSVGRect rect",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutSVGRect rect",
+      "reason": "bounds change"
     }
   ]
 }

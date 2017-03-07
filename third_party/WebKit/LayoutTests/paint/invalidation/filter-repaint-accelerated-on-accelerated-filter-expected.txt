@@ -21,7 +21,7 @@
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow DIV id='resize' class='drop-shadow accelerated'",
-          "rect": [-13, -13, 258, 258],
+          "rect": [0, 0, 200, 200],
           "reason": "border box change"
         }
       ]

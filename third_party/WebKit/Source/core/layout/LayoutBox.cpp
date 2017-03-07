@@ -2462,7 +2462,7 @@ bool LayoutBox::mapToVisualRectInAncestorSpaceInternal(
 
 void LayoutBox::inflateVisualRectForFilter(
     TransformState& transformState) const {
-  if (!layer() || !layer()->hasFilterInducingProperty())
+  if (!layer() || !layer()->paintsWithFilters())
     return;
 
   transformState.flatten();

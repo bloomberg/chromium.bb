@@ -556,6 +556,9 @@ void FrameView::setFrameRect(const IntRect& newRect) {
     setNeedsPaintPropertyUpdate();
   }
 
+  if (auto layoutViewItem = this->layoutViewItem())
+    layoutViewItem.setMayNeedPaintInvalidation();
+
   if (frameSizeChanged) {
     viewportSizeChanged(newRect.width() != oldRect.width(),
                         newRect.height() != oldRect.height());
