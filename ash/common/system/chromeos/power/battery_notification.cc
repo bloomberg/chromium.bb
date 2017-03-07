@@ -62,9 +62,11 @@ std::unique_ptr<Notification> CreateNotification(
   } else if (PowerStatus::ShouldDisplayBatteryTime(time) &&
              !status.IsBatteryDischargingOnLinePower()) {
     if (status.IsBatteryCharging()) {
+      base::string16 duration;
+      if (!TimeDurationFormat(time, base::DURATION_WIDTH_NARROW, &duration))
+        LOG(ERROR) << "Failed to format duration " << time.ToInternalValue();
       time_message = l10n_util::GetStringFUTF16(
-          IDS_ASH_STATUS_TRAY_BATTERY_TIME_UNTIL_FULL,
-          TimeDurationFormat(time, base::DURATION_WIDTH_NARROW));
+          IDS_ASH_STATUS_TRAY_BATTERY_TIME_UNTIL_FULL, duration);
     } else {
       // This is a low battery warning prompting the user in minutes.
       time_message = ui::TimeFormat::Simple(ui::TimeFormat::FORMAT_REMAINING,

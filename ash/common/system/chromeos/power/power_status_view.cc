@@ -124,11 +124,15 @@ void PowerStatusView::UpdateText() {
                                  : status.GetBatteryTimeToEmpty();
       if (PowerStatus::ShouldDisplayBatteryTime(time) &&
           !status.IsBatteryDischargingOnLinePower()) {
+        base::string16 duration;
+        if (!base::TimeDurationFormat(time, base::DURATION_WIDTH_NUMERIC,
+                                      &duration))
+          LOG(ERROR) << "Failed to format duration " << time.ToInternalValue();
         battery_time_status = l10n_util::GetStringFUTF16(
             status.IsBatteryCharging()
                 ? IDS_ASH_STATUS_TRAY_BATTERY_TIME_UNTIL_FULL_SHORT
                 : IDS_ASH_STATUS_TRAY_BATTERY_TIME_LEFT_SHORT,
-            TimeDurationFormat(time, base::DURATION_WIDTH_NUMERIC));
+            duration);
       }
     }
   }

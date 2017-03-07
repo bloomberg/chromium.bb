@@ -141,8 +141,11 @@ class TaskManagerValuesStringifier {
     if (cpu_time.is_zero())
       return n_a_string_;
 
-    return base::TimeDurationFormatWithSeconds(cpu_time,
-                                               base::DURATION_WIDTH_NARROW);
+    base::string16 duration;
+    return base::TimeDurationFormatWithSeconds(
+               cpu_time, base::DURATION_WIDTH_NARROW, &duration)
+               ? duration
+               : n_a_string_;
   }
 
   base::string16 GetMemoryUsageText(int64_t memory_usage, bool has_duplicates) {
