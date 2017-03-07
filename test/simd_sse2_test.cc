@@ -9,7 +9,10 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
+#if (defined(__OPTIMIZE__) && __OPTIMIZE__) || \
+    (!defined(__GNUC__) && !defined(_DEBUG))
 #define ARCH SSE2
 #define ARCH_POSTFIX(name) name##_sse2
 #define SIMD_NAMESPACE simd_test_sse2
 #include "./simd_impl.h"
+#endif

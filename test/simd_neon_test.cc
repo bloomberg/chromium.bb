@@ -9,7 +9,9 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
+#if defined(__OPTIMIZE__) && __OPTIMIZE__
 #define ARCH NEON
 #define ARCH_POSTFIX(name) name##_neon
 #define SIMD_NAMESPACE simd_test_neon
 #include "./simd_impl.h"
+#endif
