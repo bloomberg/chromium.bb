@@ -6,7 +6,7 @@
 
 #include "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
-#import "chrome/browser/ui/cocoa/applescript/bookmark_applescript_utils_unittest.h"
+#import "chrome/browser/ui/cocoa/applescript/bookmark_applescript_utils_test.h"
 #import "chrome/browser/ui/cocoa/applescript/bookmark_folder_applescript.h"
 #import "chrome/browser/ui/cocoa/applescript/bookmark_item_applescript.h"
 #import "chrome/browser/ui/cocoa/applescript/constants_applescript.h"
@@ -21,7 +21,7 @@ typedef BookmarkAppleScriptTest BookmarkFolderAppleScriptTest;
 namespace {
 
 // Test all the bookmark folders within.
-TEST_F(BookmarkFolderAppleScriptTest, BookmarkFolders) {
+IN_PROC_BROWSER_TEST_F(BookmarkFolderAppleScriptTest, BookmarkFolders) {
   NSArray* bookmarkFolders = [bookmarkBar_.get() bookmarkFolders];
 
   EXPECT_EQ(2U, [bookmarkFolders count]);
@@ -41,7 +41,7 @@ TEST_F(BookmarkFolderAppleScriptTest, BookmarkFolders) {
 }
 
 // Insert a new bookmark folder.
-TEST_F(BookmarkFolderAppleScriptTest, InsertBookmarkFolder) {
+IN_PROC_BROWSER_TEST_F(BookmarkFolderAppleScriptTest, InsertBookmarkFolder) {
   // Emulate what applescript would do when inserting a new bookmark folder.
   // Emulates a script like |set var to make new bookmark folder with
   // properties {title:"foo"}|.
@@ -62,7 +62,8 @@ TEST_F(BookmarkFolderAppleScriptTest, InsertBookmarkFolder) {
 }
 
 // Insert a new bookmark folder at a particular position.
-TEST_F(BookmarkFolderAppleScriptTest, InsertBookmarkFolderAtPosition) {
+IN_PROC_BROWSER_TEST_F(BookmarkFolderAppleScriptTest,
+                       InsertBookmarkFolderAtPosition) {
   // Emulate what applescript would do when inserting a new bookmark folder.
   // Emulates a script like |set var to make new bookmark folder with
   // properties {title:"foo"} at after bookmark folder 1|.
@@ -82,7 +83,7 @@ TEST_F(BookmarkFolderAppleScriptTest, InsertBookmarkFolderAtPosition) {
 }
 
 // Delete bookmark folders.
-TEST_F(BookmarkFolderAppleScriptTest, DeleteBookmarkFolders) {
+IN_PROC_BROWSER_TEST_F(BookmarkFolderAppleScriptTest, DeleteBookmarkFolders) {
   unsigned int folderCount = 2, itemCount = 3;
   for (unsigned int i = 0; i < folderCount; ++i) {
     EXPECT_EQ(folderCount - i, [[bookmarkBar_.get() bookmarkFolders] count]);
@@ -92,7 +93,7 @@ TEST_F(BookmarkFolderAppleScriptTest, DeleteBookmarkFolders) {
 }
 
 // Test all the bookmark items within.
-TEST_F(BookmarkFolderAppleScriptTest, BookmarkItems) {
+IN_PROC_BROWSER_TEST_F(BookmarkFolderAppleScriptTest, BookmarkItems) {
   NSArray* bookmarkItems = [bookmarkBar_.get() bookmarkItems];
 
   EXPECT_EQ(3U, [bookmarkItems count]);
@@ -115,7 +116,7 @@ TEST_F(BookmarkFolderAppleScriptTest, BookmarkItems) {
 }
 
 // Insert a new bookmark item.
-TEST_F(BookmarkFolderAppleScriptTest, InsertBookmarkItem) {
+IN_PROC_BROWSER_TEST_F(BookmarkFolderAppleScriptTest, InsertBookmarkItem) {
   // Emulate what applescript would do when inserting a new bookmark folder.
   // Emulates a script like |set var to make new bookmark item with
   // properties {title:"Google", URL:"http://google.com"}|.
@@ -146,7 +147,8 @@ TEST_F(BookmarkFolderAppleScriptTest, InsertBookmarkItem) {
 }
 
 // Insert a new bookmark item at a particular position.
-TEST_F(BookmarkFolderAppleScriptTest, InsertBookmarkItemAtPosition) {
+IN_PROC_BROWSER_TEST_F(BookmarkFolderAppleScriptTest,
+                       InsertBookmarkItemAtPosition) {
   // Emulate what applescript would do when inserting a new bookmark item.
   // Emulates a script like |set var to make new bookmark item with
   // properties {title:"XKCD", URL:"http://xkcd.org}
@@ -180,7 +182,7 @@ TEST_F(BookmarkFolderAppleScriptTest, InsertBookmarkItemAtPosition) {
 }
 
 // Delete bookmark items.
-TEST_F(BookmarkFolderAppleScriptTest, DeleteBookmarkItems) {
+IN_PROC_BROWSER_TEST_F(BookmarkFolderAppleScriptTest, DeleteBookmarkItems) {
   unsigned int folderCount = 2, itemCount = 3;
   for (unsigned int i = 0; i < itemCount; ++i) {
     EXPECT_EQ(folderCount, [[bookmarkBar_.get() bookmarkFolders] count]);
@@ -190,7 +192,7 @@ TEST_F(BookmarkFolderAppleScriptTest, DeleteBookmarkItems) {
 }
 
 // Set and get title.
-TEST_F(BookmarkFolderAppleScriptTest, GetAndSetTitle) {
+IN_PROC_BROWSER_TEST_F(BookmarkFolderAppleScriptTest, GetAndSetTitle) {
   NSArray* bookmarkFolders = [bookmarkBar_.get() bookmarkFolders];
   BookmarkFolderAppleScript* folder1 = [bookmarkFolders objectAtIndex:0];
   [folder1 setTitle:@"Foo"];

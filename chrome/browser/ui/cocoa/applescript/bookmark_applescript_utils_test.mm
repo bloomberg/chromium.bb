@@ -2,26 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "chrome/browser/ui/cocoa/applescript/bookmark_applescript_utils_unittest.h"
+#import "chrome/browser/ui/cocoa/applescript/bookmark_applescript_utils_test.h"
 
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/test/bookmark_test_helpers.h"
 
 using bookmarks::BookmarkModel;
 using bookmarks::BookmarkNode;
-
-@implementation FakeAppDelegate
-
-@synthesize test = test_;
-
-- (Profile*)lastProfile {
-  if (!test_)
-    return NULL;
-  return test_->profile();
-}
-@end
 
 // Represents the current fake command that is executing.
 static FakeScriptCommand* kFakeCurrentCommand;
@@ -56,21 +46,20 @@ BookmarkAppleScriptTest::BookmarkAppleScriptTest() {
 }
 
 BookmarkAppleScriptTest::~BookmarkAppleScriptTest() {
-  [NSApp setDelegate:nil];
 }
 
-void BookmarkAppleScriptTest::SetUp() {
-  CocoaProfileTest::SetUp();
+void BookmarkAppleScriptTest::SetUpOnMainThread() {
+  InProcessBrowserTest::SetUpOnMainThread();
   ASSERT_TRUE(profile());
 
-  appDelegate_.reset([[FakeAppDelegate alloc] init]);
-  [appDelegate_.get() setTest:this];
-  DCHECK([NSApp delegate] == nil);
-  [NSApp setDelegate:appDelegate_];
   BookmarkModel* model = BookmarkModelFactory::GetForBrowserContext(profile());
   const BookmarkNode* root = model->bookmark_bar_node();
   const std::string modelString("a f1:[ b d c ] d f2:[ e f g ] h ");
   bookmarks::test::AddNodesFromModelString(model, root, modelString);
   bookmarkBar_.reset([[BookmarkFolderAppleScript alloc]
       initWithBookmarkNode:model->bookmark_bar_node()]);
+}
+
+Profile* BookmarkAppleScriptTest::profile() const {
+  return browser()->profile();
 }
