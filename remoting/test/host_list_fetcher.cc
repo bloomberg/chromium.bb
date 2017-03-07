@@ -11,6 +11,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "net/http/http_status_code.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_fetcher.h"
 #include "remoting/base/url_request_context_getter.h"
 
@@ -38,8 +39,8 @@ void HostListFetcher::RetrieveHostlist(const std::string& access_token,
       /*network_runner=*/base::ThreadTaskRunnerHandle::Get(),
       /*file_runner=*/base::ThreadTaskRunnerHandle::Get());
 
-  request_ =
-      net::URLFetcher::Create(GURL(target_url), net::URLFetcher::GET, this);
+  request_ = net::URLFetcher::Create(GURL(target_url), net::URLFetcher::GET,
+                                     this, TRAFFIC_ANNOTATION_FOR_TESTS);
   request_->SetRequestContext(request_context_getter_.get());
   request_->AddExtraRequestHeader("Authorization: OAuth " + access_token);
   request_->Start();

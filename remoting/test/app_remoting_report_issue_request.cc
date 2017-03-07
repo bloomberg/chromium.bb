@@ -10,6 +10,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_fetcher.h"
 #include "remoting/base/url_request_context_getter.h"
 
@@ -54,8 +55,8 @@ bool AppRemotingReportIssueRequest::Start(
 
   std::string upload_data = abandon_host ? "{ 'abandonHost': 'true' }" : "{}";
 
-  request_ =
-      net::URLFetcher::Create(GURL(service_url), net::URLFetcher::POST, this);
+  request_ = net::URLFetcher::Create(GURL(service_url), net::URLFetcher::POST,
+                                     this, TRAFFIC_ANNOTATION_FOR_TESTS);
   request_->SetRequestContext(request_context_getter_.get());
   request_->AddExtraRequestHeader("Authorization: OAuth " + access_token);
   request_->AddExtraRequestHeader(kRequestTestOrigin);
