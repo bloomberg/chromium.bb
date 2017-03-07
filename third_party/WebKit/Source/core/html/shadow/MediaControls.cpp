@@ -961,6 +961,11 @@ void MediaControls::networkStateChanged() {
   invalidate(m_downloadButton);
   invalidate(m_timeline);
   invalidate(m_volumeSlider);
+
+  // Update the display state of the download button in case we now have a
+  // source or no longer have a source.
+  m_downloadButton->setIsWanted(
+      m_downloadButton->shouldDisplayDownloadButton());
 }
 
 bool MediaControls::overflowMenuVisible() {

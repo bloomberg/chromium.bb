@@ -400,7 +400,7 @@ TEST_F(MediaControlsTest, DownloadButtonDisplayedHiddenAndDisplayed) {
   // Hide button.
   mediaControls().mediaElement().setSrc("");
   testing::runPendingTasks();
-  EXPECT_TRUE(isElementVisible(*downloadButton));
+  EXPECT_FALSE(isElementVisible(*downloadButton));
   histogramTester().expectBucketCount("Media.Controls.Download",
                                       DownloadActionMetrics::Shown, 1);
 

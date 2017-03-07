@@ -679,6 +679,12 @@ bool MediaControlDownloadButtonElement::shouldDisplayDownloadButton() {
   if (url.isNull() || url.isEmpty())
     return false;
 
+  // If we have no source, we can't download.
+  if (mediaElement().getNetworkState() == HTMLMediaElement::kNetworkEmpty ||
+      mediaElement().getNetworkState() == HTMLMediaElement::kNetworkNoSource) {
+    return false;
+  }
+
   // Local files and blobs (including MSE) should not have a download button.
   if (url.isLocalFile() || url.protocolIs("blob"))
     return false;
