@@ -240,27 +240,36 @@ INTERNAL_LDFLAGS += $(addprefix -L,$(LIB_PATH))
 UTILS           = $(call enabled,UTILS)
 EXAMPLES        = $(addprefix examples/,$(call enabled,EXAMPLES))
 ALL_EXAMPLES    = $(UTILS) $(EXAMPLES)
-UTIL_SRCS       = $(foreach ex,$(UTILS),$($(ex:.c=).SRCS))
-ALL_SRCS        = $(foreach ex,$(ALL_EXAMPLES),$($(notdir $(ex:.c=)).SRCS))
+UTIL_SRCS       = $(foreach ex,$(UTILS),$($(ex:.c=).SRCS) $($(ex:.cc=).SRCS))
+ALL_SRCS        = $(foreach ex, $(ALL_EXAMPLES),  \
+                      $($(notdir $(ex:.c=)).SRCS) \
+                      $($(notdir $(ex:.cc=)).SRCS))
 CODEC_EXTRA_LIBS=$(sort $(call enabled,CODEC_EXTRA_LIBS))
 
 
 # Expand all example sources into a variable containing all sources
 # for that example (not just them main one specified in UTILS/EXAMPLES)
 # and add this file to the list (for MSVS workspace generation)
-$(foreach ex,$(ALL_EXAMPLES),$(eval $(notdir $(ex:.c=)).SRCS += $(ex) examples.mk))
-
+EXAMPLES_C = $(filter-out %.cc, $(ALL_EXAMPLES))
+$(foreach ex,$(EXAMPLES_C), \
+    $(eval $(notdir $(ex:.c=)).SRCS += $(ex) examples.mk))
+EXAMPLES_CXX = $(filter-out %.c, $(ALL_EXAMPLES))
+$(foreach ex,$(EXAMPLES_CXX), \
+    $(eval $(notdir $(ex:.cc=)).SRCS += $(ex) examples.mk))
 
 # Create build/install dependencies for all examples. The common case
 # is handled here. The MSVS case is handled below.
 NOT_MSVS = $(if $(CONFIG_MSVS),,yes)
-DIST-BINS-$(NOT_MSVS)      += $(addprefix bin/,$(ALL_EXAMPLES:.c=$(EXE_SFX)))
+DIST-BINS-$(NOT_MSVS)      += $(addprefix bin/,$(EXAMPLES_C:.c=$(EXE_SFX)))
+DIST-BINS-$(NOT_MSVS)      += $(addprefix bin/,$(EXAMPLES_CXX:.cc=$(EXE_SFX)))
 INSTALL-BINS-$(NOT_MSVS)   += $(addprefix bin/,$(UTILS:.c=$(EXE_SFX)))
 DIST-SRCS-yes              += $(ALL_SRCS)
 INSTALL-SRCS-yes           += $(UTIL_SRCS)
 OBJS-$(NOT_MSVS)           += $(call objs,$(ALL_SRCS))
-BINS-$(NOT_MSVS)           += $(addprefix $(BUILD_PFX),$(ALL_EXAMPLES:.c=$(EXE_SFX)))
-
+BINS-$(NOT_MSVS)           += $(addprefix $(BUILD_PFX), \
+                                  $(EXAMPLES_C:.c=$(EXE_SFX)))
+BINS-$(NOT_MSVS)           += $(addprefix $(BUILD_PFX), \
+                                  $(EXAMPLES_CXX:.cc=$(EXE_SFX)))
 
 # Instantiate linker template for all examples.
 CODEC_LIB=$(if $(CONFIG_DEBUG_LIBS),aom_g,aom)
