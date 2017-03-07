@@ -143,13 +143,21 @@ void* getStackStart() {
 
 namespace internal {
 
-uintptr_t mainThreadUnderestimatedStackSize() {
+uintptr_t s_mainThreadStackStart = 0;
+uintptr_t s_mainThreadUnderestimatedStackSize = 0;
+
+void initializeMainThreadStackEstimate() {
+  // getStackStart is exclusive, not inclusive (i.e. it points past the last
+  // page of the stack in linear order). So, to ensure an inclusive comparison,
+  // subtract here and below.
+  s_mainThreadStackStart =
+      reinterpret_cast<uintptr_t>(getStackStart()) - sizeof(void*);
+
   size_t underestimatedStackSize = getUnderestimatedStackSize();
-  // See comment in mayNotBeMainThread as to why we subtract here.
   if (underestimatedStackSize > sizeof(void*)) {
     underestimatedStackSize = underestimatedStackSize - sizeof(void*);
   }
-  return underestimatedStackSize;
+  s_mainThreadUnderestimatedStackSize = underestimatedStackSize;
 }
 
 #if OS(WIN) && COMPILER(MSVC)

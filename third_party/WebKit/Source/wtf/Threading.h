@@ -47,6 +47,10 @@ namespace internal {
 WTF_EXPORT ThreadIdentifier currentThreadSyscall();
 }  // namespace internal
 
+// Initializes global state required by |currentThread|.
+// Needs to be called once during program execution, before |currentThread|.
+WTF_EXPORT void initializeCurrentThread();
+
 WTF_EXPORT ThreadIdentifier currentThread();
 
 #if DCHECK_IS_ON()

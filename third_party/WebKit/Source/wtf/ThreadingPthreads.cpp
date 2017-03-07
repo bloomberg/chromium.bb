@@ -85,8 +85,38 @@ void initializeThreading() {
   double_conversion::DoubleToStringConverter::EcmaScriptConverter();
 }
 
+namespace {
+ThreadSpecificKey s_currentThreadKey;
+bool s_currentThreadKeyInitialized = false;
+}  // namespace
+
+void initializeCurrentThread() {
+  DCHECK(!s_currentThreadKeyInitialized);
+  threadSpecificKeyCreate(&s_currentThreadKey, [](void*) {});
+  s_currentThreadKeyInitialized = true;
+}
+
 ThreadIdentifier currentThread() {
-  return wtfThreadData().threadId();
+  // This doesn't use WTF::ThreadSpecific (e.g. WTFThreadData) because
+  // ThreadSpecific now depends on currentThread. It is necessary to avoid this
+  // or a similar loop:
+  //
+  // currentThread
+  // -> wtfThreadData
+  // -> ThreadSpecific::operator*
+  // -> isMainThread
+  // -> currentThread
+  static_assert(sizeof(ThreadIdentifier) <= sizeof(void*),
+                "ThreadIdentifier must fit in a void*.");
+  DCHECK(s_currentThreadKeyInitialized);
+  void* value = threadSpecificGet(s_currentThreadKey);
+  if (UNLIKELY(!value)) {
+    value = reinterpret_cast<void*>(
+        static_cast<intptr_t>(internal::currentThreadSyscall()));
+    DCHECK(value);
+    threadSpecificSet(s_currentThreadKey, value);
+  }
+  return reinterpret_cast<intptr_t>(threadSpecificGet(s_currentThreadKey));
 }
 
 MutexBase::MutexBase(bool recursive) {

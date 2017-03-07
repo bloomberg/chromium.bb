@@ -32,6 +32,8 @@
 
 #include "wtf/Assertions.h"
 #include "wtf/Functional.h"
+#include "wtf/StackUtil.h"
+#include "wtf/ThreadSpecific.h"
 #include "wtf/Threading.h"
 #include "wtf/allocator/Partitions.h"
 #include "wtf/text/AtomicString.h"
@@ -63,10 +65,13 @@ void initialize(void (*callOnMainThreadFunction)(MainThreadFunction, void*)) {
   // Make that explicit here.
   RELEASE_ASSERT(!s_initialized);
   s_initialized = true;
+  initializeCurrentThread();
+  s_mainThreadIdentifier = currentThread();
+
   initializeThreading();
 
   s_callOnMainThreadFunction = callOnMainThreadFunction;
-  s_mainThreadIdentifier = currentThread();
+  internal::initializeMainThreadStackEstimate();
   AtomicString::init();
   StringStatics::init();
 }
