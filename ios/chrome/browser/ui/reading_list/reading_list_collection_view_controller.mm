@@ -1068,6 +1068,7 @@ using ItemsMapByDate = std::multimap<int64_t, ReadingListCollectionViewItem*>;
 }
 
 - (void)exitEditingModeAnimated:(BOOL)animated {
+  [_actionSheet stop];
   [self.editor setEditing:NO animated:animated];
   [_toolbar setEditing:NO];
 }
