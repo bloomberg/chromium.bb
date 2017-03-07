@@ -497,6 +497,11 @@ TEST_F(WorkspaceWindowResizerTest, AttachedResize_BOTTOM_3_Compress) {
 // Tests that touch-dragging a window does not lock the mouse cursor
 // and therefore shows the cursor on a mousemove.
 TEST_F(WorkspaceWindowResizerTest, MouseMoveWithTouchDrag) {
+  // TODO: fails because mash doesn't support CursorManager.
+  // http://crbug.com/631103.
+  if (WmShell::Get()->IsRunningInMash())
+    return;
+
   window_->SetBounds(gfx::Rect(0, 300, 400, 300));
   window2_->SetBounds(gfx::Rect(400, 200, 100, 200));
 
@@ -589,7 +594,7 @@ TEST_F(WorkspaceWindowResizerTest, Edge) {
   EXPECT_EQ(root_windows[0], window_->GetRootWindow());
   // Window is wide enough not to get docked right away.
   window_->SetBoundsInScreen(gfx::Rect(800, 10, 400, 60),
-                             display_manager()->GetSecondaryDisplay());
+                             GetSecondaryDisplay());
   EXPECT_EQ(root_windows[1], window_->GetRootWindow());
   {
     EXPECT_EQ("800,10 400x60", window_->GetBoundsInScreen().ToString());

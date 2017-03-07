@@ -164,7 +164,6 @@ RootWindowController* WmShellMus::GetRootWindowControllerWithDisplayId(
     if (settings->display_id == id)
       return root_window_controller;
   }
-  NOTREACHED();
   return nullptr;
 }
 
@@ -221,8 +220,9 @@ WmWindow* WmShellMus::GetPrimaryRootWindow() {
 WmWindow* WmShellMus::GetRootWindowForDisplayId(int64_t display_id) {
   RootWindowController* root_window_controller =
       GetRootWindowControllerWithDisplayId(display_id);
-  DCHECK(root_window_controller);
-  return WmWindow::Get(root_window_controller->GetRootWindow());
+  return root_window_controller
+             ? WmWindow::Get(root_window_controller->GetRootWindow())
+             : nullptr;
 }
 
 const display::ManagedDisplayInfo& WmShellMus::GetDisplayInfo(

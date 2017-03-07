@@ -224,17 +224,29 @@ class PanelWindowResizerTransientTest
 // Verifies a window can be dragged from the panel and detached and then
 // reattached.
 TEST_F(PanelWindowResizerTest, PanelDetachReattachBottom) {
+  // TODO: investigate failure. http://crbug.com/698888.
+  if (WmShell::Get()->IsRunningInMash())
+    return;
+
   std::unique_ptr<aura::Window> window(CreatePanelWindow(gfx::Point(0, 0)));
   DetachReattachTest(window.get(), 0, -1);
 }
 
 TEST_F(PanelWindowResizerTest, PanelDetachReattachLeft) {
+  // TODO: investigate failure. http://crbug.com/698888.
+  if (WmShell::Get()->IsRunningInMash())
+    return;
+
   GetPrimaryShelf()->SetAlignment(SHELF_ALIGNMENT_LEFT);
   std::unique_ptr<aura::Window> window(CreatePanelWindow(gfx::Point(0, 0)));
   DetachReattachTest(window.get(), 1, 0);
 }
 
 TEST_F(PanelWindowResizerTest, PanelDetachReattachRight) {
+  // TODO: investigate failure. http://crbug.com/698888.
+  if (WmShell::Get()->IsRunningInMash())
+    return;
+
   GetPrimaryShelf()->SetAlignment(SHELF_ALIGNMENT_RIGHT);
   std::unique_ptr<aura::Window> window(CreatePanelWindow(gfx::Point(0, 0)));
   DetachReattachTest(window.get(), -1, 0);
@@ -269,6 +281,10 @@ TEST_F(PanelWindowResizerTest, DetachThenHideShelf) {
 }
 
 TEST_F(PanelWindowResizerTest, PanelDetachReattachMultipleDisplays) {
+  // TODO: investigate failure. http://crbug.com/698888.
+  if (WmShell::Get()->IsRunningInMash())
+    return;
+
   UpdateDisplay("600x400,600x400");
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
   std::unique_ptr<aura::Window> window(CreatePanelWindow(gfx::Point(600, 0)));
@@ -277,6 +293,10 @@ TEST_F(PanelWindowResizerTest, PanelDetachReattachMultipleDisplays) {
 }
 
 TEST_F(PanelWindowResizerTest, DetachThenDragAcrossDisplays) {
+  // TODO: investigate failure. http://crbug.com/698888.
+  if (WmShell::Get()->IsRunningInMash())
+    return;
+
   UpdateDisplay("600x400,600x400");
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
   std::unique_ptr<aura::Window> window(CreatePanelWindow(gfx::Point(0, 0)));
@@ -302,6 +322,10 @@ TEST_F(PanelWindowResizerTest, DetachThenDragAcrossDisplays) {
 }
 
 TEST_F(PanelWindowResizerTest, DetachAcrossDisplays) {
+  // TODO: investigate failure. http://crbug.com/698888.
+  if (WmShell::Get()->IsRunningInMash())
+    return;
+
   UpdateDisplay("600x400,600x400");
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
   std::unique_ptr<aura::Window> window(CreatePanelWindow(gfx::Point(0, 0)));
@@ -318,6 +342,10 @@ TEST_F(PanelWindowResizerTest, DetachAcrossDisplays) {
 }
 
 TEST_F(PanelWindowResizerTest, DetachThenAttachToSecondDisplay) {
+  // TODO: investigate failure. http://crbug.com/698888.
+  if (WmShell::Get()->IsRunningInMash())
+    return;
+
   UpdateDisplay("600x400,600x600");
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
   std::unique_ptr<aura::Window> window(CreatePanelWindow(gfx::Point(0, 0)));
@@ -347,6 +375,10 @@ TEST_F(PanelWindowResizerTest, DetachThenAttachToSecondDisplay) {
 }
 
 TEST_F(PanelWindowResizerTest, AttachToSecondDisplay) {
+  // TODO: investigate failure. http://crbug.com/698888.
+  if (WmShell::Get()->IsRunningInMash())
+    return;
+
   UpdateDisplay("600x400,600x600");
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
   std::unique_ptr<aura::Window> window(CreatePanelWindow(gfx::Point(0, 0)));
@@ -369,6 +401,10 @@ TEST_F(PanelWindowResizerTest, AttachToSecondDisplay) {
 }
 
 TEST_F(PanelWindowResizerTest, AttachToSecondFullscreenDisplay) {
+  // TODO: investigate failure. http://crbug.com/698888.
+  if (WmShell::Get()->IsRunningInMash())
+    return;
+
   UpdateDisplay("600x400,600x600");
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
   std::unique_ptr<aura::Window> window(CreatePanelWindow(gfx::Point(0, 0)));
@@ -455,6 +491,10 @@ TEST_F(PanelWindowResizerTest, DragReordersPanelsVertical) {
 // Tests that panels can have transient children of different types.
 // The transient children should be reparented in sync with the panel.
 TEST_P(PanelWindowResizerTransientTest, PanelWithTransientChild) {
+  // TODO: investigate failure. http://crbug.com/698888.
+  if (WmShell::Get()->IsRunningInMash())
+    return;
+
   std::unique_ptr<aura::Window> window(CreatePanelWindow(gfx::Point(0, 0)));
   std::unique_ptr<aura::Window> child(
       CreateTestWindowInShellWithDelegateAndType(

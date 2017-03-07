@@ -62,20 +62,23 @@ class WindowTreeClientDelegate : public aura::WindowTreeClientDelegate {
   DISALLOW_COPY_AND_ASSIGN(WindowTreeClientDelegate);
 };
 
-class WindowManagerTest : public service_manager::test::ServiceTest {
+// NOTE: this isn't named WindowManagerTest because gtest complains about tests
+// with the same name (there is already a WindowManagerTest in ash).
+class MusWindowManagerTest : public service_manager::test::ServiceTest {
  public:
-  WindowManagerTest() : service_manager::test::ServiceTest("mash_unittests") {}
-  ~WindowManagerTest() override {}
+  MusWindowManagerTest()
+      : service_manager::test::ServiceTest("mash_unittests") {}
+  ~MusWindowManagerTest() override {}
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(WindowManagerTest);
+  DISALLOW_COPY_AND_ASSIGN(MusWindowManagerTest);
 };
 
 void OnEmbed(bool success) {
   ASSERT_TRUE(success);
 }
 
-TEST_F(WindowManagerTest, OpenWindow) {
+TEST_F(MusWindowManagerTest, OpenWindow) {
   display::ScreenBase screen;
   screen.display_list().AddDisplay(
       display::Display(1, gfx::Rect(0, 0, 200, 200)),

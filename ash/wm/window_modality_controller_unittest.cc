@@ -473,7 +473,7 @@ TEST_F(WindowModalityControllerTest, ChildModal) {
 
   delegate->ShowChild();
   aura::Window* child = delegate->GetChild();
-  EXPECT_NE(static_cast<aura::Window*>(NULL), child);
+  EXPECT_NE(nullptr, child);
 
   EXPECT_TRUE(wm::IsActiveWindow(child));
   EXPECT_FALSE(wm::IsActiveWindow(modal_parent));

@@ -152,13 +152,19 @@ class SystemModalContainerLayoutManagerTest : public AshTestBase {
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         keyboard::switches::kEnableVirtualKeyboard);
     AshTestBase::SetUp();
-    Shell::GetPrimaryRootWindowController()->ActivateKeyboard(
-        keyboard::KeyboardController::GetInstance());
+    // TODO: mash doesn't support virtual keyboard. http://crbug.com/698892.
+    if (!WmShell::Get()->IsRunningInMash()) {
+      Shell::GetPrimaryRootWindowController()->ActivateKeyboard(
+          keyboard::KeyboardController::GetInstance());
+    }
   }
 
   void TearDown() override {
-    Shell::GetPrimaryRootWindowController()->DeactivateKeyboard(
-        keyboard::KeyboardController::GetInstance());
+    // TODO: mash doesn't support virtual keyboard. http://crbug.com/698892.
+    if (!WmShell::Get()->IsRunningInMash()) {
+      Shell::GetPrimaryRootWindowController()->DeactivateKeyboard(
+          keyboard::KeyboardController::GetInstance());
+    }
     AshTestBase::TearDown();
   }
 
@@ -641,6 +647,10 @@ TEST_F(SystemModalContainerLayoutManagerTest, MultiDisplays) {
 // positioned into the visible area.
 TEST_F(SystemModalContainerLayoutManagerTest,
        SystemModalDialogGetPushedFromKeyboard) {
+  // TODO: mash doesn't support virtual keyboard. http://crbug.com/698892.
+  if (WmShell::Get()->IsRunningInMash())
+    return;
+
   const gfx::Rect& container_bounds = GetModalContainer()->bounds();
   // Place the window at the bottom of the screen.
   gfx::Size modal_size(100, 100);
@@ -677,6 +687,10 @@ TEST_F(SystemModalContainerLayoutManagerTest,
 // if centered.
 TEST_F(SystemModalContainerLayoutManagerTest,
        SystemModalDialogGetPushedButNotCroppedFromKeyboard) {
+  // TODO: mash doesn't support virtual keyboard. http://crbug.com/698892.
+  if (WmShell::Get()->IsRunningInMash())
+    return;
+
   const gfx::Rect& container_bounds = GetModalContainer()->bounds();
   const gfx::Size screen_size = Shell::GetPrimaryRootWindow()->bounds().size();
   // Place the window at the bottom of the screen.
@@ -710,6 +724,10 @@ TEST_F(SystemModalContainerLayoutManagerTest,
 // if not centered.
 TEST_F(SystemModalContainerLayoutManagerTest,
        SystemModalDialogGetPushedButNotCroppedFromKeyboardIfNotCentered) {
+  // TODO: mash doesn't support virtual keyboard. http://crbug.com/698892.
+  if (WmShell::Get()->IsRunningInMash())
+    return;
+
   const gfx::Size screen_size = Shell::GetPrimaryRootWindow()->bounds().size();
   // Place the window at the bottom of the screen.
   gfx::Size modal_size(100, screen_size.height() - 70);
