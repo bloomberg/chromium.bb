@@ -82,7 +82,8 @@ ChooserBubbleUiViewDelegate::ChooserBubbleUiViewDelegate(
     views::View* anchor_view,
     views::BubbleBorder::Arrow anchor_arrow,
     std::unique_ptr<ChooserController> chooser_controller)
-    : views::BubbleDialogDelegateView(anchor_view, anchor_arrow) {
+    : views::BubbleDialogDelegateView(anchor_view, anchor_arrow),
+      device_chooser_content_view_(nullptr) {
   // ------------------------------------
   // | Chooser bubble title             |
   // | -------------------------------- |
@@ -184,46 +185,35 @@ void ChooserBubbleUiViewDelegate::UpdateTableView() const {
 ChooserBubbleUiView::ChooserBubbleUiView(
     Browser* browser,
     std::unique_ptr<ChooserController> chooser_controller)
-    : browser_(browser) {
+    : browser_(browser), chooser_bubble_ui_view_delegate_(nullptr) {
   DCHECK(browser_);
   DCHECK(chooser_controller);
-  bubble_view_ = new ChooserBubbleUiViewDelegate(
+  chooser_bubble_ui_view_delegate_ = new ChooserBubbleUiViewDelegate(
       GetAnchorView(), GetAnchorArrow(), std::move(chooser_controller));
 }
 
 ChooserBubbleUiView::~ChooserBubbleUiView() {}
 
 void ChooserBubbleUiView::Show(BubbleReference bubble_reference) {
-  bubble_view_->set_bubble_reference(bubble_reference);
+  chooser_bubble_ui_view_delegate_->set_bubble_reference(bubble_reference);
 
   // Set |parent_window| because some valid anchors can become hidden.
   views::Widget* widget = views::Widget::GetWidgetForNativeWindow(
       browser_->window()->GetNativeWindow());
-  bubble_view_->set_parent_window(widget->GetNativeView());
+  chooser_bubble_ui_view_delegate_->set_parent_window(widget->GetNativeView());
 
-  views::BubbleDialogDelegateView::CreateBubble(bubble_view_)->Show();
-  bubble_view_->GetWidget()->AddObserver(this);
-  bubble_view_->UpdateTableView();
+  views::BubbleDialogDelegateView::CreateBubble(
+      chooser_bubble_ui_view_delegate_)
+      ->Show();
+
+  chooser_bubble_ui_view_delegate_->UpdateTableView();
 }
 
-void ChooserBubbleUiView::Close() {
-  if (bubble_view_ && !bubble_view_->GetWidget()->IsClosed()) {
-    // The widget hierarchy must be destroyed synchronously by using CloseNow
-    // because the ChooserController may hold a raw pointer to the
-    // RenderFrameHost. See https://crbug.com/697486 for an example.
-    bubble_view_->GetWidget()->CloseNow();
-  }
-}
+void ChooserBubbleUiView::Close() {}
 
 void ChooserBubbleUiView::UpdateAnchorPosition() {
-  DCHECK(bubble_view_);
-  bubble_view_->UpdateAnchor(GetAnchorView(), GetAnchorArrow());
-}
-
-void ChooserBubbleUiView::OnWidgetClosing(views::Widget* widget) {
-  DCHECK_EQ(bubble_view_->GetWidget(), widget);
-  widget->RemoveObserver(this);
-  bubble_view_ = nullptr;
+  chooser_bubble_ui_view_delegate_->UpdateAnchor(GetAnchorView(),
+                                                 GetAnchorArrow());
 }
 
 views::View* ChooserBubbleUiView::GetAnchorView() {
