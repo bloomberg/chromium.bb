@@ -65,18 +65,20 @@ std::unique_ptr<WebScrollbarLayer>
 WebCompositorSupportImpl::createScrollbarLayer(
     std::unique_ptr<WebScrollbar> scrollbar,
     WebScrollbarThemePainter painter,
-    std::unique_ptr<WebScrollbarThemeGeometry> geometry) {
-  return base::MakeUnique<WebScrollbarLayerImpl>(std::move(scrollbar), painter,
-                                                 std::move(geometry));
+    std::unique_ptr<WebScrollbarThemeGeometry> geometry,
+    blink::WebLayer* scroll_layer) {
+  return base::MakeUnique<WebScrollbarLayerImpl>(
+      std::move(scrollbar), painter, std::move(geometry), false, scroll_layer);
 }
 
 std::unique_ptr<WebScrollbarLayer>
 WebCompositorSupportImpl::createOverlayScrollbarLayer(
     std::unique_ptr<WebScrollbar> scrollbar,
     WebScrollbarThemePainter painter,
-    std::unique_ptr<WebScrollbarThemeGeometry> geometry) {
-  return base::MakeUnique<WebScrollbarLayerImpl>(std::move(scrollbar), painter,
-                                                 std::move(geometry), true);
+    std::unique_ptr<WebScrollbarThemeGeometry> geometry,
+    blink::WebLayer* scroll_layer) {
+  return base::MakeUnique<WebScrollbarLayerImpl>(
+      std::move(scrollbar), painter, std::move(geometry), true, scroll_layer);
 }
 
 std::unique_ptr<WebScrollbarLayer>
@@ -84,10 +86,11 @@ WebCompositorSupportImpl::createSolidColorScrollbarLayer(
     WebScrollbar::Orientation orientation,
     int thumb_thickness,
     int track_start,
-    bool is_left_side_vertical_scrollbar) {
+    bool is_left_side_vertical_scrollbar,
+    blink::WebLayer* scroll_layer) {
   return base::MakeUnique<WebScrollbarLayerImpl>(
       orientation, thumb_thickness, track_start,
-      is_left_side_vertical_scrollbar);
+      is_left_side_vertical_scrollbar, scroll_layer);
 }
 
 }  // namespace cc_blink

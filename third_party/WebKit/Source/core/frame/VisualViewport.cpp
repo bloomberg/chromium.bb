@@ -434,8 +434,10 @@ void VisualViewport::setupScrollbar(WebScrollbar::Orientation orientation) {
     ASSERT(coordinator);
     ScrollbarOrientation webcoreOrientation =
         isHorizontal ? HorizontalScrollbar : VerticalScrollbar;
+    WebLayer* scrollLayer = layerForScrolling()->platformLayer();
     webScrollbarLayer = coordinator->createSolidColorScrollbarLayer(
-        webcoreOrientation, thumbThickness, scrollbarMargin, false);
+        webcoreOrientation, thumbThickness, scrollbarMargin, false,
+        scrollLayer);
 
     // The compositor will control the scrollbar's visibility. Set to invisible
     // by default so scrollbars don't show up in layout tests.
@@ -464,14 +466,6 @@ void VisualViewport::setupScrollbar(WebScrollbar::Orientation orientation) {
   scrollbarGraphicsLayer->setPosition(IntPoint(xPosition, yPosition));
   scrollbarGraphicsLayer->setSize(FloatSize(width, height));
   scrollbarGraphicsLayer->setContentsRect(IntRect(0, 0, width, height));
-}
-
-void VisualViewport::setScrollLayerOnScrollbars(WebLayer* scrollLayer) const {
-  // TODO(bokan): This is currently done while registering viewport layers
-  // with the compositor but could it actually be done earlier, like in
-  // setupScrollbars? Then we wouldn't need this method.
-  m_webOverlayScrollbarHorizontal->setScrollLayer(scrollLayer);
-  m_webOverlayScrollbarVertical->setScrollLayer(scrollLayer);
 }
 
 bool VisualViewport::visualViewportSuppliesScrollbars() const {

@@ -34,48 +34,41 @@ namespace cc_blink {
 WebScrollbarLayerImpl::WebScrollbarLayerImpl(
     std::unique_ptr<blink::WebScrollbar> scrollbar,
     blink::WebScrollbarThemePainter painter,
-    std::unique_ptr<blink::WebScrollbarThemeGeometry> geometry)
-    : layer_(new WebLayerImpl(PaintedScrollbarLayer::Create(
-          base::MakeUnique<ScrollbarImpl>(std::move(scrollbar),
-                                          painter,
-                                          std::move(geometry)),
-          0))) {}
-
-WebScrollbarLayerImpl::WebScrollbarLayerImpl(
-    std::unique_ptr<blink::WebScrollbar> scrollbar,
-    blink::WebScrollbarThemePainter painter,
     std::unique_ptr<blink::WebScrollbarThemeGeometry> geometry,
-    bool)
-    : layer_(new WebLayerImpl(PaintedOverlayScrollbarLayer::Create(
-          base::MakeUnique<ScrollbarImpl>(std::move(scrollbar),
-                                          painter,
-                                          std::move(geometry)),
-          0))) {}
+    bool is_overlay,
+    blink::WebLayer* scroll_layer)
+    : layer_(
+          is_overlay
+              ? new WebLayerImpl(PaintedOverlayScrollbarLayer::Create(
+                    base::MakeUnique<ScrollbarImpl>(std::move(scrollbar),
+                                                    painter,
+                                                    std::move(geometry)),
+                    static_cast<WebLayerImpl*>(scroll_layer)->layer()->id()))
+              : new WebLayerImpl(PaintedScrollbarLayer::Create(
+                    base::MakeUnique<ScrollbarImpl>(std::move(scrollbar),
+                                                    painter,
+                                                    std::move(geometry)),
+                    static_cast<WebLayerImpl*>(scroll_layer)->layer()->id()))) {
+}
 
 WebScrollbarLayerImpl::WebScrollbarLayerImpl(
     blink::WebScrollbar::Orientation orientation,
     int thumb_thickness,
     int track_start,
-    bool is_left_side_vertical_scrollbar)
-    : layer_(new WebLayerImpl(
-          SolidColorScrollbarLayer::Create(ConvertOrientation(orientation),
-                                           thumb_thickness,
-                                           track_start,
-                                           is_left_side_vertical_scrollbar,
-                                           0))) {}
+    bool is_left_side_vertical_scrollbar,
+    blink::WebLayer* scroll_layer)
+    : layer_(new WebLayerImpl(SolidColorScrollbarLayer::Create(
+          ConvertOrientation(orientation),
+          thumb_thickness,
+          track_start,
+          is_left_side_vertical_scrollbar,
+          static_cast<WebLayerImpl*>(scroll_layer)->layer()->id()))) {}
 
 WebScrollbarLayerImpl::~WebScrollbarLayerImpl() {
 }
 
 blink::WebLayer* WebScrollbarLayerImpl::layer() {
   return layer_.get();
-}
-
-void WebScrollbarLayerImpl::setScrollLayer(blink::WebLayer* layer) {
-  cc::Layer* scroll_layer =
-      layer ? static_cast<WebLayerImpl*>(layer)->layer() : 0;
-  layer_->layer()->ToScrollbarLayer()->SetScrollLayer(
-      scroll_layer ? scroll_layer->id() : cc::Layer::INVALID_ID);
 }
 
 }  // namespace cc_blink

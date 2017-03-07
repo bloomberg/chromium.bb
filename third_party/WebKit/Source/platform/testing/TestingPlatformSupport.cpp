@@ -120,7 +120,8 @@ std::unique_ptr<WebScrollbarLayer>
 TestingCompositorSupport::createScrollbarLayer(
     std::unique_ptr<WebScrollbar>,
     WebScrollbarThemePainter,
-    std::unique_ptr<WebScrollbarThemeGeometry>) {
+    std::unique_ptr<WebScrollbarThemeGeometry>,
+    WebLayer* scrollLayer) {
   return nullptr;
 }
 
@@ -128,7 +129,8 @@ std::unique_ptr<WebScrollbarLayer>
 TestingCompositorSupport::createOverlayScrollbarLayer(
     std::unique_ptr<WebScrollbar>,
     WebScrollbarThemePainter,
-    std::unique_ptr<WebScrollbarThemeGeometry>) {
+    std::unique_ptr<WebScrollbarThemeGeometry>,
+    WebLayer* scrollLayer) {
   return nullptr;
 }
 
@@ -137,7 +139,8 @@ TestingCompositorSupport::createSolidColorScrollbarLayer(
     WebScrollbar::Orientation,
     int thumbThickness,
     int trackStart,
-    bool isLeftSideVerticalScrollbar) {
+    bool isLeftSideVerticalScrollbar,
+    WebLayer* scrollLayer) {
   return nullptr;
 }
 

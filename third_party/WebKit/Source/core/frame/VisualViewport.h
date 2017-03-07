@@ -44,7 +44,6 @@
 
 namespace blink {
 class WebScrollbarLayer;
-class WebLayer;
 }
 
 namespace blink {
@@ -139,8 +138,6 @@ class CORE_EXPORT VisualViewport final
   // around the point specified by anchor in window coordinates. Returns false
   // if page scale factor is left unchanged.
   bool magnifyScaleAroundAnchor(float magnifyDelta, const FloatPoint& anchor);
-
-  void setScrollLayerOnScrollbars(WebLayer*) const;
 
   // The portion of the unzoomed frame visible in the visual viewport,
   // in partial CSS pixels. Relative to the main frame.

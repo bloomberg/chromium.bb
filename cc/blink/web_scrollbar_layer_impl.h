@@ -26,22 +26,19 @@ class WebScrollbarLayerImpl : public blink::WebScrollbarLayer {
   CC_BLINK_EXPORT WebScrollbarLayerImpl(
       std::unique_ptr<blink::WebScrollbar> scrollbar,
       blink::WebScrollbarThemePainter painter,
-      std::unique_ptr<blink::WebScrollbarThemeGeometry> geometry);
-  CC_BLINK_EXPORT WebScrollbarLayerImpl(
-      std::unique_ptr<blink::WebScrollbar> scrollbar,
-      blink::WebScrollbarThemePainter painter,
       std::unique_ptr<blink::WebScrollbarThemeGeometry> geometry,
-      bool temp);
+      bool is_overlay,
+      blink::WebLayer* scroll_layer);
   CC_BLINK_EXPORT WebScrollbarLayerImpl(
       blink::WebScrollbar::Orientation orientation,
       int thumb_thickness,
       int track_start,
-      bool is_left_side_vertical_scrollbar);
+      bool is_left_side_vertical_scrollbar,
+      blink::WebLayer* scroll_layer);
   ~WebScrollbarLayerImpl() override;
 
   // blink::WebScrollbarLayer implementation.
   blink::WebLayer* layer() override;
-  void setScrollLayer(blink::WebLayer* layer) override;
 
  private:
   std::unique_ptr<WebLayerImpl> layer_;
