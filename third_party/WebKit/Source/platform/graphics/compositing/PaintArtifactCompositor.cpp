@@ -276,7 +276,7 @@ static void applyClipsBetweenStates(const PropertyTreeState& localState,
                                     Vector<EndDisplayItemType>& endDisplayItems,
                                     GeometryMapper& geometryMapper) {
   DCHECK(localState.transform() == ancestorState.transform());
-#ifdef DCHECK_IS_ON
+#if DCHECK_IS_ON()
   const TransformPaintPropertyNode* transformNode =
       localState.clip()->localTransformSpace();
   if (transformNode != ancestorState.transform()) {
@@ -339,7 +339,7 @@ static void recordPairedBeginDisplayItems(
         // transform will be applied in applyClips.
         clipSpace = *pairedState;
         hasClip = true;
-#ifdef DCHECK_IS_ON
+#if DCHECK_IS_ON()
         if (pairedState->clip()->localTransformSpace() !=
             pairedState->transform()) {
           const TransformationMatrix& localTransformMatrix =
@@ -500,11 +500,6 @@ PaintArtifactCompositor::compositedLayerForPendingLayer(
   DCHECK(pendingLayer.paintChunks.size());
   const PaintChunk& firstPaintChunk = *pendingLayer.paintChunks[0];
   DCHECK(firstPaintChunk.size());
-#if DCHECK_IS_ON
-  for (const auto& paintChunk : pendingLayer.paintChunks) {
-    DCHECK(paintChunk.properties == firstPaintChunk.properties);
-  }
-#endif
 
   // If the paint chunk is a foreign layer, just return that layer.
   if (scoped_refptr<cc::Layer> foreignLayer = foreignLayerForPaintChunk(
