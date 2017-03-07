@@ -69,7 +69,7 @@ void SupervisedUserNavigationObserver::DidFinishNavigation(
       content::NavigationHandle* navigation_handle) {
   // Only filter same page navigations (eg. pushState/popState); others will
   // have been filtered by the ResourceThrottle.
-  if (!navigation_handle->IsSamePage())
+  if (!navigation_handle->IsSameDocument())
     return;
 
   if (!navigation_handle->IsInMainFrame())

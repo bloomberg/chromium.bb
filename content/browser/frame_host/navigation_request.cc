@@ -345,7 +345,7 @@ void NavigationRequest::BeginNavigation() {
   RenderFrameDevToolsAgentHost::OnBeforeNavigation(navigation_handle_.get());
 
   if (ShouldMakeNetworkRequestForURL(common_params_.url) &&
-      !navigation_handle_->IsSamePage()) {
+      !navigation_handle_->IsSameDocument()) {
     // It's safe to use base::Unretained because this NavigationRequest owns
     // the NavigationHandle where the callback will be stored.
     // TODO(clamy): pass the real value for |is_external_protocol| if needed.
@@ -753,7 +753,7 @@ void NavigationRequest::OnWillProcessResponseChecksComplete(
 
 void NavigationRequest::CommitNavigation() {
   DCHECK(response_ || !ShouldMakeNetworkRequestForURL(common_params_.url) ||
-         navigation_handle_->IsSamePage());
+         navigation_handle_->IsSameDocument());
   DCHECK(!common_params_.url.SchemeIs(url::kJavaScriptScheme));
 
   // Retrieve the RenderFrameHost that needs to commit the navigation.

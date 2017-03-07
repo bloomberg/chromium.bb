@@ -189,11 +189,12 @@ bool RecentTabHelper::EnsureInitialized() {
 void RecentTabHelper::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
   if (!navigation_handle->IsInMainFrame() ||
-      !navigation_handle->HasCommitted() || navigation_handle->IsSamePage()) {
+      !navigation_handle->HasCommitted() ||
+      navigation_handle->IsSameDocument()) {
     DVLOG_IF(1, navigation_handle->IsInMainFrame())
         << "Main frame navigation ignored (reasons: "
         << !navigation_handle->HasCommitted() << ", "
-        << navigation_handle->IsSamePage()
+        << navigation_handle->IsSameDocument()
         << ") to: " << web_contents()->GetLastCommittedURL().spec();
     return;
   }

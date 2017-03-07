@@ -166,7 +166,7 @@ void FirstWebContentsProfiler::DidFinishNavigation(
     //       to another page that does trigger it.
     if (navigation_handle->IsInMainFrame() &&
         navigation_handle->HasCommitted() &&
-        !navigation_handle->IsSamePage()) {
+        !navigation_handle->IsSameDocument()) {
       FinishedCollectingMetrics(FinishReason::ABANDON_NEW_NAVIGATION);
     }
     return;

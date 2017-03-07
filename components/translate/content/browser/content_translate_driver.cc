@@ -220,9 +220,9 @@ void ContentTranslateDriver::DidFinishNavigation(
   // Let the LanguageState clear its state.
   const bool reload =
       navigation_handle->GetReloadType() != content::ReloadType::NONE ||
-      navigation_handle->IsSamePage();
+      navigation_handle->IsSameDocument();
   translate_manager_->GetLanguageState().DidNavigate(
-      navigation_handle->IsSamePage(), navigation_handle->IsInMainFrame(),
+      navigation_handle->IsSameDocument(), navigation_handle->IsInMainFrame(),
       reload);
 }
 

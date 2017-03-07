@@ -265,7 +265,7 @@ RenderFrameHostImpl* NavigationHandleImpl::GetRenderFrameHost() {
   return render_frame_host_;
 }
 
-bool NavigationHandleImpl::IsSamePage() {
+bool NavigationHandleImpl::IsSameDocument() {
   return is_same_page_;
 }
 
@@ -623,7 +623,7 @@ void NavigationHandleImpl::ReadyToCommitNavigation(
   render_frame_host_ = render_frame_host;
   state_ = READY_TO_COMMIT;
 
-  if (!IsRendererDebugURL(url_) && !IsSamePage())
+  if (!IsRendererDebugURL(url_) && !IsSameDocument())
     GetDelegate()->ReadyToCommitNavigation(this);
 }
 

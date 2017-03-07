@@ -118,8 +118,10 @@ void MediaSessionImpl::RenderFrameDeleted(RenderFrameHost* rfh) {
 
 void MediaSessionImpl::DidFinishNavigation(
     NavigationHandle* navigation_handle) {
-  if (!navigation_handle->HasCommitted() || navigation_handle->IsSamePage())
+  if (!navigation_handle->HasCommitted() ||
+      navigation_handle->IsSameDocument()) {
     return;
+  }
 
   RenderFrameHost* rfh = navigation_handle->GetRenderFrameHost();
   if (services_.count(rfh))

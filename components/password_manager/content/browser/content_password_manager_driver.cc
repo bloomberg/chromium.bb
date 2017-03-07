@@ -229,7 +229,8 @@ void ContentPasswordManagerDriver::
 void ContentPasswordManagerDriver::DidNavigateFrame(
     content::NavigationHandle* navigation_handle) {
   // Clear page specific data after main frame navigation.
-  if (navigation_handle->IsInMainFrame() && !navigation_handle->IsSamePage()) {
+  if (navigation_handle->IsInMainFrame() &&
+      !navigation_handle->IsSameDocument()) {
     GetPasswordManager()->DidNavigateMainFrame();
     GetPasswordAutofillManager()->DidNavigateMainFrame();
   }

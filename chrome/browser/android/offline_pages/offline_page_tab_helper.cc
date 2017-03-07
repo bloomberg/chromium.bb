@@ -56,7 +56,8 @@ void OfflinePageTabHelper::DidStartNavigation(
   provisional_offline_info_.Clear();
 
   // If not a fragment navigation, clear the cached offline info.
-  if (offline_info_.offline_page.get() && !navigation_handle->IsSamePage()) {
+  if (offline_info_.offline_page.get() &&
+      !navigation_handle->IsSameDocument()) {
     offline_info_.Clear();
   }
 }
@@ -70,7 +71,7 @@ void OfflinePageTabHelper::DidFinishNavigation(
   if (!navigation_handle->HasCommitted())
     return;
 
-  if (navigation_handle->IsSamePage())
+  if (navigation_handle->IsSameDocument())
     return;
 
   GURL navigated_url = navigation_handle->GetURL();

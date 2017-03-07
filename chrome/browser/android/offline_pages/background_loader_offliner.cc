@@ -229,15 +229,17 @@ void BackgroundLoaderOffliner::DidFinishNavigation(
     }
   }
 
-  // If the page is not the same, invalidate any pending save tasks.
+  // If the document is not the same, invalidate any pending save tasks.
   //
   // Downloads or 204/205 response codes do not commit (no new navigation)
-  // Same-Page (committed) navigations are:
+  // Same-Document (committed) navigations are:
   // - reference fragment navigations
   // - pushState/replaceState
-  // - same page history navigation
-  if (navigation_handle->HasCommitted() && !navigation_handle->IsSamePage())
+  // - same document history navigation
+  if (navigation_handle->HasCommitted() &&
+      !navigation_handle->IsSameDocument()) {
     weak_ptr_factory_.InvalidateWeakPtrs();
+  }
 }
 
 void BackgroundLoaderOffliner::SetPageDelayForTest(long delay_ms) {

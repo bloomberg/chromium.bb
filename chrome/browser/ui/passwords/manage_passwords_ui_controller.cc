@@ -421,8 +421,8 @@ void ManagePasswordsUIController::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
   if (!navigation_handle->IsInMainFrame() ||
       !navigation_handle->HasCommitted() ||
-      // Don't react to in-page (fragment) navigations.
-      navigation_handle->IsSamePage()) {
+      // Don't react to same-document (fragment) navigations.
+      navigation_handle->IsSameDocument()) {
     return;
   }
 

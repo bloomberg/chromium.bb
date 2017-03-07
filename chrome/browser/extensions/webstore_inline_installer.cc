@@ -233,7 +233,7 @@ bool WebstoreInlineInstaller::CheckRequestorPermitted(
 void WebstoreInlineInstaller::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
   if (navigation_handle->HasCommitted() &&
-      !navigation_handle->IsSamePage() &&
+      !navigation_handle->IsSameDocument() &&
       (navigation_handle->GetRenderFrameHost() == host_ ||
        navigation_handle->IsInMainFrame())) {
     host_ = nullptr;

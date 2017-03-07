@@ -140,9 +140,9 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener,
   // Note that this is fired by navigations in any frame of the WebContents,
   // not just the main frame.
   //
-  // Note that this is fired by same-page navigations, such as fragment
+  // Note that this is fired by same-document navigations, such as fragment
   // navigations or pushState/replaceState, which will not result in a document
-  // change. To filter these out, use NavigationHandle::IsSamePage.
+  // change. To filter these out, use NavigationHandle::IsSameDocument.
   //
   // Note that more than one navigation can be ongoing in the same frame at the
   // same time (including the main frame). Each will get its own
@@ -179,9 +179,9 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener,
   // and related methods to listen for continued events from this
   // RenderFrameHost.
   //
-  // Note that this is fired by same-page navigations, such as fragment
+  // Note that this is fired by same-document navigations, such as fragment
   // navigations or pushState/replaceState, which will not result in a document
-  // change. To filter these out, use NavigationHandle::IsSamePage.
+  // change. To filter these out, use NavigationHandle::IsSameDocument.
   //
   // Note that |navigation_handle| will be destroyed at the end of this call,
   // so do not keep a reference to it afterward.

@@ -367,8 +367,8 @@ void ClientSideDetectionHost::DidFinishNavigation(
   // TODO(noelutz): move this DCHECK to WebContents and fix all the unit tests
   // that don't call this method on the UI thread.
   // DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (navigation_handle->IsSamePage()) {
-    // If the navigation is within the same page, the user isn't really
+  if (navigation_handle->IsSameDocument()) {
+    // If the navigation is within the same document, the user isn't really
     // navigating away.  We don't need to cancel a pending callback or
     // begin a new classification.
     return;

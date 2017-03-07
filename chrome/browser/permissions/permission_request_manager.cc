@@ -271,7 +271,7 @@ void PermissionRequestManager::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
   if (!navigation_handle->IsInMainFrame() ||
       !navigation_handle->HasCommitted() ||
-      navigation_handle->IsSamePage()) {
+      navigation_handle->IsSameDocument()) {
     return;
   }
 

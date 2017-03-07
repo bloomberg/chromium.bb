@@ -153,14 +153,14 @@ void ChromeDataUseAscriberService::ReadyToCommitNavigation(
   content::WebContents* web_contents = navigation_handle->GetWebContents();
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
-      base::Bind(
-          &ChromeDataUseAscriber::ReadyToCommitMainFrameNavigation,
-          base::Unretained(ascriber_), navigation_handle->GetURL(),
-          navigation_handle->GetGlobalRequestID(),
-          web_contents->GetRenderProcessHost()->GetID(),
-          web_contents->GetMainFrame()->GetRoutingID(),
-          !navigation_handle->HasCommitted() || navigation_handle->IsSamePage(),
-          navigation_handle));
+      base::Bind(&ChromeDataUseAscriber::ReadyToCommitMainFrameNavigation,
+                 base::Unretained(ascriber_), navigation_handle->GetURL(),
+                 navigation_handle->GetGlobalRequestID(),
+                 web_contents->GetRenderProcessHost()->GetID(),
+                 web_contents->GetMainFrame()->GetRoutingID(),
+                 !navigation_handle->HasCommitted() ||
+                     navigation_handle->IsSameDocument(),
+                 navigation_handle));
 }
 
 void ChromeDataUseAscriberService::SetDataUseAscriber(

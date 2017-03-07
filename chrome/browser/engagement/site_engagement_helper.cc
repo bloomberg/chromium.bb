@@ -235,7 +235,7 @@ void SiteEngagementService::Helper::DidFinishNavigation(
     content::NavigationHandle* handle) {
   // Ignore uncommitted, non main-frame, same page, or error page navigations.
   if (!handle->HasCommitted() || !handle->IsInMainFrame() ||
-      handle->IsSamePage() || handle->IsErrorPage()) {
+      handle->IsSameDocument() || handle->IsErrorPage()) {
     return;
   }
 

@@ -327,7 +327,7 @@ class LoadCommittedDetailsObserver : public WebContentsObserver {
     navigation_type_ = static_cast<NavigationHandleImpl*>(navigation_handle)
                            ->navigation_type();
     previous_url_ = navigation_handle->GetPreviousURL();
-    is_in_page_ = navigation_handle->IsSamePage();
+    is_in_page_ = navigation_handle->IsSameDocument();
     is_main_frame_ = navigation_handle->IsInMainFrame();
     did_replace_entry_ = navigation_handle->DidReplaceEntry();
   }

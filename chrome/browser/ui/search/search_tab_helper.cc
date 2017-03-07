@@ -246,8 +246,10 @@ void SearchTabHelper::DidStartNavigation(
   if (!content::IsBrowserSideNavigationEnabled())
     return;
 
-  if (!navigation_handle->IsInMainFrame() || navigation_handle->IsSamePage())
+  if (!navigation_handle->IsInMainFrame() ||
+      navigation_handle->IsSameDocument()) {
     return;
+  }
 
   if (search::IsNTPURL(navigation_handle->GetURL(), profile())) {
     // Set the title on any pending entry corresponding to the NTP. This
@@ -263,7 +265,8 @@ void SearchTabHelper::DidStartNavigation(
 
 void SearchTabHelper::DidFinishNavigation(
       content::NavigationHandle* navigation_handle) {
-  if (!navigation_handle->IsInMainFrame() || navigation_handle->IsSamePage())
+  if (!navigation_handle->IsInMainFrame() ||
+      navigation_handle->IsSameDocument())
     return;
 
   if (IsCacheableNTP(web_contents_)) {

@@ -701,8 +701,10 @@ void SSLErrorHandler::Observe(
 
 void SSLErrorHandler::DidStartNavigation(
     content::NavigationHandle* navigation_handle) {
-  if (!navigation_handle->IsInMainFrame() || navigation_handle->IsSamePage())
+  if (!navigation_handle->IsInMainFrame() ||
+      navigation_handle->IsSameDocument()) {
     return;
+  }
 
   // Destroy the error handler on all new navigations. This ensures that the
   // handler is properly recreated when a hanging page is navigated to an SSL

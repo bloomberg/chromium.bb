@@ -553,8 +553,10 @@ void PrerenderContents::DocumentLoadedInFrame(
 
 void PrerenderContents::DidStartNavigation(
     content::NavigationHandle* navigation_handle) {
-  if (!navigation_handle->IsInMainFrame() || navigation_handle->IsSamePage())
+  if (!navigation_handle->IsInMainFrame() ||
+      navigation_handle->IsSameDocument()) {
     return;
+  }
 
   if (!CheckURL(navigation_handle->GetURL()))
     return;

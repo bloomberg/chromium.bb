@@ -99,7 +99,7 @@ DeclarativeContentCssConditionTracker::PerWebContentsTracker::
 
 void DeclarativeContentCssConditionTracker::PerWebContentsTracker::
 OnWebContentsNavigation(content::NavigationHandle* navigation_handle) {
-  if (navigation_handle->IsSamePage()) {
+  if (navigation_handle->IsSameDocument()) {
     // Within-page navigations don't change the set of elements that
     // exist, and we only support filtering on the top-level URL, so
     // this can't change which rules match.

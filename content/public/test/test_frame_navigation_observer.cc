@@ -51,7 +51,7 @@ void TestFrameNavigationObserver::WaitForCommit() {
 
 void TestFrameNavigationObserver::DidStartNavigation(
     NavigationHandle* navigation_handle) {
-  if (!navigation_handle->IsSamePage() &&
+  if (!navigation_handle->IsSameDocument() &&
       navigation_handle->GetFrameTreeNodeId() == frame_tree_node_id_) {
     navigation_started_ = true;
     has_committed_ = false;

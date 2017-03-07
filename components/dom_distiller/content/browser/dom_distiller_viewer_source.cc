@@ -138,7 +138,7 @@ void DomDistillerViewerSource::RequestViewerHandle::DidFinishNavigation(
   bool expected_main_view_request =
       navigation.SchemeIs(expected_scheme_.c_str()) &&
       expected_request_path_ == navigation.query();
-  if (navigation_handle->IsSamePage() || expected_main_view_request) {
+  if (navigation_handle->IsSameDocument() || expected_main_view_request) {
     // In-page navigations, as well as the main view request can be ignored.
     if (expected_main_view_request) {
       content::RenderFrameHost* render_frame_host =

@@ -343,7 +343,7 @@ void AppBannerManager::SendBannerPromptRequest() {
 }
 
 void AppBannerManager::DidStartNavigation(content::NavigationHandle* handle) {
-  if (!handle->IsInMainFrame() || handle->IsSamePage())
+  if (!handle->IsInMainFrame() || handle->IsSameDocument())
     return;
 
   load_finished_ = false;
@@ -358,7 +358,7 @@ void AppBannerManager::DidStartNavigation(content::NavigationHandle* handle) {
 
 void AppBannerManager::DidFinishNavigation(content::NavigationHandle* handle) {
   if (handle->IsInMainFrame() && handle->HasCommitted() &&
-      !handle->IsSamePage()) {
+      !handle->IsSameDocument()) {
     ResetCurrentPageData();
     if (is_active_)
       Stop();

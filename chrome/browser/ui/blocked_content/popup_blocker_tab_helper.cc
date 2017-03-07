@@ -47,11 +47,11 @@ PopupBlockerTabHelper::~PopupBlockerTabHelper() {
 void PopupBlockerTabHelper::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
   // Clear all page actions, blocked content notifications and browser actions
-  // for this tab, unless this is an in-page navigation. Also only consider
-  // main frame navigations that successfully committed.
+  // for this tab, unless this is an same-document navigation. Also only
+  // consider main frame navigations that successfully committed.
   if (!navigation_handle->IsInMainFrame() ||
       !navigation_handle->HasCommitted() ||
-      navigation_handle->IsSamePage()) {
+      navigation_handle->IsSameDocument()) {
     return;
   }
 

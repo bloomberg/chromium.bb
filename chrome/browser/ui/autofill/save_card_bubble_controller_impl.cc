@@ -172,8 +172,8 @@ void SaveCardBubbleControllerImpl::DidFinishNavigation(
   if (save_card_callback_.is_null())
     return;
 
-  // Don't react to in-page (fragment) navigations.
-  if (navigation_handle->IsSamePage())
+  // Don't react to same-document (fragment) navigations.
+  if (navigation_handle->IsSameDocument())
     return;
 
   // Don't do anything if a navigation occurs before a user could reasonably

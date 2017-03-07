@@ -128,7 +128,7 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   bool IsExternalProtocol() override;
   net::Error GetNetErrorCode() override;
   RenderFrameHostImpl* GetRenderFrameHost() override;
-  bool IsSamePage() override;
+  bool IsSameDocument() override;
   bool HasCommitted() override;
   bool IsErrorPage() override;
   bool DidReplaceEntry() override;

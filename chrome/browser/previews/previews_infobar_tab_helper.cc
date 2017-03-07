@@ -62,7 +62,7 @@ void PreviewsInfoBarTabHelper::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
   // Only show the infobar if this is a full main frame navigation.
   if (!navigation_handle->IsInMainFrame() ||
-      !navigation_handle->HasCommitted() || navigation_handle->IsSamePage())
+      !navigation_handle->HasCommitted() || navigation_handle->IsSameDocument())
     return;
   displayed_preview_infobar_ = false;
 

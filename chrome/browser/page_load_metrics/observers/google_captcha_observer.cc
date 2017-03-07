@@ -46,8 +46,8 @@ GoogleCaptchaObserver::GoogleCaptchaObserver() {}
 
 page_load_metrics::PageLoadMetricsObserver::ObservePolicy
 GoogleCaptchaObserver::OnCommit(content::NavigationHandle* navigation_handle) {
-  if (!navigation_handle->IsSamePage()
-      && IsGoogleCaptcha(navigation_handle->GetURL())) {
+  if (!navigation_handle->IsSameDocument() &&
+      IsGoogleCaptcha(navigation_handle->GetURL())) {
     RecordGoogleCaptchaEvent(GOOGLE_CAPTCHA_SHOWN);
   }
   return CONTINUE_OBSERVING;

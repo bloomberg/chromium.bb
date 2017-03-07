@@ -160,8 +160,10 @@ void ChromeOmniboxNavigationObserver::Observe(
 
 void ChromeOmniboxNavigationObserver::DidStartNavigation(
       content::NavigationHandle* navigation_handle) {
-  if (!navigation_handle->IsInMainFrame() || navigation_handle->IsSamePage())
+  if (!navigation_handle->IsInMainFrame() ||
+      navigation_handle->IsSameDocument()) {
     return;
+  }
 
   if (load_state_ == LOAD_NOT_SEEN) {
     load_state_ = LOAD_PENDING;
@@ -174,10 +176,9 @@ void ChromeOmniboxNavigationObserver::DidStartNavigation(
 
 void ChromeOmniboxNavigationObserver::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
-  if ((load_state_ != LOAD_COMMITTED) &&
-      navigation_handle->IsErrorPage() &&
+  if ((load_state_ != LOAD_COMMITTED) && navigation_handle->IsErrorPage() &&
       navigation_handle->IsInMainFrame() &&
-      !navigation_handle->IsSamePage())
+      !navigation_handle->IsSameDocument())
     delete this;
 }
 

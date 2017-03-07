@@ -45,7 +45,7 @@ class TestNavigationObserver::TestWebContentsObserver
   }
 
   void DidStartNavigation(NavigationHandle* navigation_handle) override {
-    if (navigation_handle->IsSamePage())
+    if (navigation_handle->IsSameDocument())
       return;
 
     parent_->OnDidStartNavigation();

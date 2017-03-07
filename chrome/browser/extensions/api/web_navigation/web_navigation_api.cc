@@ -254,7 +254,7 @@ void WebNavigationTabObserver::RenderFrameHostChanged(
 
 void WebNavigationTabObserver::DidStartNavigation(
     content::NavigationHandle* navigation_handle) {
-  if (navigation_handle->IsSamePage() ||
+  if (navigation_handle->IsSameDocument() ||
       !FrameNavigationState::IsValidUrl(navigation_handle->GetURL())) {
     return;
   }
@@ -422,7 +422,7 @@ void WebNavigationTabObserver::HandleCommit(
 
   navigation_state_.StartTrackingDocumentLoad(
       navigation_handle->GetRenderFrameHost(), navigation_handle->GetURL(),
-      navigation_handle->IsSamePage(),
+      navigation_handle->IsSameDocument(),
       false);  // is_error_page
 
   events::HistogramValue histogram_value = events::UNKNOWN;
@@ -430,7 +430,7 @@ void WebNavigationTabObserver::HandleCommit(
   if (is_reference_fragment_navigation) {
     histogram_value = events::WEB_NAVIGATION_ON_REFERENCE_FRAGMENT_UPDATED;
     event_name = web_navigation::OnReferenceFragmentUpdated::kEventName;
-  } else if (navigation_handle->IsSamePage()) {
+  } else if (navigation_handle->IsSameDocument()) {
     histogram_value = events::WEB_NAVIGATION_ON_HISTORY_STATE_UPDATED;
     event_name = web_navigation::OnHistoryStateUpdated::kEventName;
   } else {
@@ -445,7 +445,7 @@ void WebNavigationTabObserver::HandleError(
   if (navigation_handle->HasCommitted()) {
     navigation_state_.StartTrackingDocumentLoad(
         navigation_handle->GetRenderFrameHost(), navigation_handle->GetURL(),
-        navigation_handle->IsSamePage(),
+        navigation_handle->IsSameDocument(),
         true);  // is_error_page
   }
 

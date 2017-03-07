@@ -293,7 +293,7 @@ void ZoomController::DidFinishNavigation(
   if (navigation_handle->IsErrorPage())
     content::HostZoomMap::SendErrorPageZoomLevelRefresh(web_contents());
 
-  if (!navigation_handle->IsSamePage())
+  if (!navigation_handle->IsSameDocument())
     ResetZoomModeOnNavigationIfNeeded(navigation_handle->GetURL());
 
   // If the main frame's content has changed, the new page may have a different

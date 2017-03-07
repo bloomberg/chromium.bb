@@ -46,7 +46,7 @@ class NavigationHandleObserver : public WebContentsObserver {
     is_main_frame_ = navigation_handle->IsInMainFrame();
     is_parent_main_frame_ = navigation_handle->IsParentMainFrame();
     is_renderer_initiated_ = navigation_handle->IsRendererInitiated();
-    is_same_page_ = navigation_handle->IsSamePage();
+    is_same_document_ = navigation_handle->IsSameDocument();
     was_redirected_ = navigation_handle->WasServerRedirect();
     frame_tree_node_id_ = navigation_handle->GetFrameTreeNodeId();
   }
@@ -57,7 +57,7 @@ class NavigationHandleObserver : public WebContentsObserver {
 
     DCHECK_EQ(is_main_frame_, navigation_handle->IsInMainFrame());
     DCHECK_EQ(is_parent_main_frame_, navigation_handle->IsParentMainFrame());
-    DCHECK_EQ(is_same_page_, navigation_handle->IsSamePage());
+    DCHECK_EQ(is_same_document_, navigation_handle->IsSameDocument());
     DCHECK_EQ(is_renderer_initiated_, navigation_handle->IsRendererInitiated());
     DCHECK_EQ(frame_tree_node_id_, navigation_handle->GetFrameTreeNodeId());
 
@@ -85,7 +85,7 @@ class NavigationHandleObserver : public WebContentsObserver {
   bool is_main_frame() { return is_main_frame_; }
   bool is_parent_main_frame() { return is_parent_main_frame_; }
   bool is_renderer_initiated() { return is_renderer_initiated_; }
-  bool is_same_page() { return is_same_page_; }
+  bool is_same_document() { return is_same_document_; }
   bool was_redirected() { return was_redirected_; }
   int frame_tree_node_id() { return frame_tree_node_id_; }
 
@@ -105,7 +105,7 @@ class NavigationHandleObserver : public WebContentsObserver {
   bool is_main_frame_ = false;
   bool is_parent_main_frame_ = false;
   bool is_renderer_initiated_ = true;
-  bool is_same_page_ = false;
+  bool is_same_document_ = false;
   bool was_redirected_ = false;
   int frame_tree_node_id_ = -1;
   ui::PageTransition page_transition_ = ui::PAGE_TRANSITION_LINK;
@@ -515,8 +515,9 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest, VerifySrcdoc) {
   EXPECT_EQ(GURL(kAboutSrcDocURL), observer.last_committed_url());
 }
 
-// Ensure that the IsSamePage() method on NavigationHandle behaves correctly.
-IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest, VerifySamePage) {
+// Ensure that the IsSameDocument() method on NavigationHandle behaves
+// correctly.
+IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest, VerifySameDocument) {
   GURL url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(a())"));
   EXPECT_TRUE(NavigateToURL(shell(), url));
@@ -533,7 +534,7 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest, VerifySamePage) {
 
     EXPECT_TRUE(observer.has_committed());
     EXPECT_FALSE(observer.is_error());
-    EXPECT_TRUE(observer.is_same_page());
+    EXPECT_TRUE(observer.is_same_document());
   }
   {
     NavigationHandleObserver observer(
@@ -544,7 +545,7 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest, VerifySamePage) {
 
     EXPECT_TRUE(observer.has_committed());
     EXPECT_FALSE(observer.is_error());
-    EXPECT_TRUE(observer.is_same_page());
+    EXPECT_TRUE(observer.is_same_document());
   }
   {
     NavigationHandleObserver observer(
@@ -555,7 +556,7 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest, VerifySamePage) {
 
     EXPECT_TRUE(observer.has_committed());
     EXPECT_FALSE(observer.is_error());
-    EXPECT_TRUE(observer.is_same_page());
+    EXPECT_TRUE(observer.is_same_document());
   }
 
   GURL about_blank_url(url::kAboutBlankURL);
@@ -566,7 +567,7 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest, VerifySamePage) {
 
     EXPECT_TRUE(observer.has_committed());
     EXPECT_FALSE(observer.is_error());
-    EXPECT_FALSE(observer.is_same_page());
+    EXPECT_FALSE(observer.is_same_document());
     EXPECT_EQ(about_blank_url, observer.last_committed_url());
   }
   {
@@ -575,7 +576,7 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest, VerifySamePage) {
 
     EXPECT_TRUE(observer.has_committed());
     EXPECT_FALSE(observer.is_error());
-    EXPECT_FALSE(observer.is_same_page());
+    EXPECT_FALSE(observer.is_same_document());
     EXPECT_EQ(about_blank_url, observer.last_committed_url());
   }
 }
@@ -969,7 +970,7 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplHttpsUpgradeBrowserTest,
 // Ensure that browser-initiated same-document navigations are detected and
 // don't issue network requests.  See crbug.com/663777.
 IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest,
-                       SamePageBrowserInitiatedNoReload) {
+                       SameDocumentBrowserInitiatedNoReload) {
   GURL url(embedded_test_server()->GetURL("/title1.html"));
   GURL url_fragment_1(embedded_test_server()->GetURL("/title1.html#id_1"));
   GURL url_fragment_2(embedded_test_server()->GetURL("/title1.html#id_2"));
@@ -983,7 +984,7 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest,
     EXPECT_TRUE(NavigateToURL(shell(), url));
     EXPECT_EQ(1, installer.will_start_called());
     EXPECT_EQ(1, installer.will_process_called());
-    EXPECT_FALSE(observer.is_same_page());
+    EXPECT_FALSE(observer.is_same_document());
   }
 
   // 2) Perform a same-document navigation by adding a fragment.
@@ -995,7 +996,7 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest,
     EXPECT_TRUE(NavigateToURL(shell(), url_fragment_1));
     EXPECT_EQ(0, installer.will_start_called());
     EXPECT_EQ(0, installer.will_process_called());
-    EXPECT_TRUE(observer.is_same_page());
+    EXPECT_TRUE(observer.is_same_document());
   }
 
   // 3) Perform a same-document navigation by modifying the fragment.
@@ -1007,7 +1008,7 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest,
     EXPECT_TRUE(NavigateToURL(shell(), url_fragment_2));
     EXPECT_EQ(0, installer.will_start_called());
     EXPECT_EQ(0, installer.will_process_called());
-    EXPECT_TRUE(observer.is_same_page());
+    EXPECT_TRUE(observer.is_same_document());
   }
 
   // 4) Redo the last navigation, but this time it should trigger a reload.
@@ -1019,7 +1020,7 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest,
     EXPECT_TRUE(NavigateToURL(shell(), url_fragment_2));
     EXPECT_EQ(1, installer.will_start_called());
     EXPECT_EQ(1, installer.will_process_called());
-    EXPECT_FALSE(observer.is_same_page());
+    EXPECT_FALSE(observer.is_same_document());
   }
 
   // 5) Perform a new-document navigation by removing the fragment.
@@ -1031,7 +1032,7 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest,
     EXPECT_TRUE(NavigateToURL(shell(), url));
     EXPECT_EQ(1, installer.will_start_called());
     EXPECT_EQ(1, installer.will_process_called());
-    EXPECT_FALSE(observer.is_same_page());
+    EXPECT_FALSE(observer.is_same_document());
   }
 }
 

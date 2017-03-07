@@ -644,7 +644,7 @@ class FrameNavigateParamsCapturer : public WebContentsObserver {
     navigation_types_.push_back(
         static_cast<NavigationHandleImpl*>(navigation_handle)
             ->navigation_type());
-    is_in_pages_.push_back(navigation_handle->IsSamePage());
+    is_in_pages_.push_back(navigation_handle->IsSameDocument());
     if (!navigations_remaining_ &&
         (!web_contents()->IsLoading() || !wait_for_load_))
       message_loop_runner_->Quit();
@@ -6666,7 +6666,7 @@ class NavigationHandleCommitObserver : public WebContentsObserver {
     if (handle->GetURL() != url_)
       return;
     has_committed_ = true;
-    was_same_page_ = handle->IsSamePage();
+    was_same_page_ = handle->IsSameDocument();
     was_renderer_initiated_ = handle->IsRendererInitiated();
   }
 

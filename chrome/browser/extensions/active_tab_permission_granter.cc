@@ -144,7 +144,7 @@ void ActiveTabPermissionGranter::DidFinishNavigation(
   // Important: sub-frames don't get granted!
   if (!navigation_handle->IsInMainFrame() ||
       !navigation_handle->HasCommitted() ||
-      navigation_handle->IsSamePage()) {
+      navigation_handle->IsSameDocument()) {
     return;
   }
 

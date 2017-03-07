@@ -119,8 +119,9 @@ bool MetricsWebContentsObserver::OnMessageReceived(
 
 void MetricsWebContentsObserver::WillStartNavigationRequest(
     content::NavigationHandle* navigation_handle) {
-  // Same-page navigations should never go through WillStartNavigationRequest.
-  DCHECK(!navigation_handle->IsSamePage());
+  // Same-document navigations should never go through
+  // WillStartNavigationRequest.
+  DCHECK(!navigation_handle->IsSameDocument());
 
   if (!navigation_handle->IsInMainFrame())
     return;
@@ -261,8 +262,9 @@ void MetricsWebContentsObserver::DidFinishNavigation(
       std::move(provisional_loads_[navigation_handle]));
   provisional_loads_.erase(navigation_handle);
 
-  // Ignore same-page navigations.
-  if (navigation_handle->HasCommitted() && navigation_handle->IsSamePage()) {
+  // Ignore same-document navigations.
+  if (navigation_handle->HasCommitted() &&
+      navigation_handle->IsSameDocument()) {
     if (finished_nav)
       finished_nav->StopTracking();
     return;
@@ -545,7 +547,7 @@ bool MetricsWebContentsObserver::ShouldTrackNavigation(
     content::NavigationHandle* navigation_handle) const {
   DCHECK(navigation_handle->IsInMainFrame());
   DCHECK(!navigation_handle->HasCommitted() ||
-         !navigation_handle->IsSamePage());
+         !navigation_handle->IsSameDocument());
 
   return BrowserPageTrackDecider(embedder_interface_.get(), web_contents(),
                                  navigation_handle).ShouldTrack();

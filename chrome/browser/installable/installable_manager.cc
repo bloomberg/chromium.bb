@@ -477,7 +477,7 @@ void InstallableManager::OnIconFetched(
 void InstallableManager::DidFinishNavigation(
     content::NavigationHandle* handle) {
   if (handle->IsInMainFrame() && handle->HasCommitted() &&
-      !handle->IsSamePage()) {
+      !handle->IsSameDocument()) {
     Reset();
   }
 }

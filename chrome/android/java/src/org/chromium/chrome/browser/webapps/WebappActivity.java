@@ -491,13 +491,13 @@ public class WebappActivity extends FullScreenActivity {
 
             @Override
             public void onDidStartNavigation(Tab tab, String url, boolean isInMainFrame,
-                    boolean isSamePage, boolean isErrorPage) {
-                if (isInMainFrame && !isSamePage) updateUrlBar();
+                    boolean isSameDocument, boolean isErrorPage) {
+                if (isInMainFrame && !isSameDocument) updateUrlBar();
             }
 
             @Override
             public void onDidFinishNavigation(Tab tab, String url, boolean isInMainFrame,
-                    boolean isErrorPage, boolean hasCommitted, boolean isSamePage,
+                    boolean isErrorPage, boolean hasCommitted, boolean isSameDocument,
                     boolean isFragmentNavigation, Integer pageTransition, int errorCode,
                     int httpStatusCode) {
                 if (hasCommitted && isInMainFrame) updateUrlBar();

@@ -448,12 +448,12 @@ void PresentationServiceImpl::DidFinishNavigation(
   std::string prev_url_host = navigation_handle->GetPreviousURL().host();
   std::string curr_url_host = navigation_handle->GetURL().host();
 
-  // If a frame navigation is in-page (e.g. navigating to a fragment in
+  // If a frame navigation is same-document (e.g. navigating to a fragment in
   // same page) then we do not unregister listeners.
   DVLOG(2) << "DidNavigateAnyFrame: "
            << "prev host: " << prev_url_host << ", curr host: " << curr_url_host
-           << ", details.is_in_page: " << navigation_handle->IsSamePage();
-  if (navigation_handle->IsSamePage())
+           << ", is_same_document: " << navigation_handle->IsSameDocument();
+  if (navigation_handle->IsSameDocument())
     return;
 
   // Reset if the frame actually navigated.

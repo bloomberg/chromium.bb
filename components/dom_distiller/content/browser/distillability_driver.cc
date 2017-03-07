@@ -91,7 +91,7 @@ void DistillabilityDriver::RenderFrameHostChanged(
 
 void DistillabilityDriver::ReadyToCommitNavigation(
       content::NavigationHandle* navigation_handle) {
-  if (!navigation_handle->IsSamePage())
+  if (!navigation_handle->IsSameDocument())
     SetupMojoService(navigation_handle->GetRenderFrameHost());
 }
 

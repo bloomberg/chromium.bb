@@ -564,7 +564,7 @@ void OptionsUI::ProcessAutocompleteSuggestions(
 
 void OptionsUI::ReadyToCommitNavigation(
     content::NavigationHandle* navigation_handle) {
-  if (navigation_handle->IsSamePage())
+  if (navigation_handle->IsSameDocument())
     return;
 
   load_start_time_ = base::Time::Now();

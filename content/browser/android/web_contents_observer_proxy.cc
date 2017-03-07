@@ -136,7 +136,7 @@ void WebContentsObserverProxy::DidStartNavigation(
       ConvertUTF8ToJavaString(env, navigation_handle->GetURL().spec()));
   Java_WebContentsObserverProxy_didStartNavigation(
       env, obj, jstring_url, navigation_handle->IsInMainFrame(),
-      navigation_handle->IsSamePage(), navigation_handle->IsErrorPage());
+      navigation_handle->IsSameDocument(), navigation_handle->IsErrorPage());
 }
 
 void WebContentsObserverProxy::DidFinishNavigation(
@@ -146,7 +146,7 @@ void WebContentsObserverProxy::DidFinishNavigation(
   ScopedJavaLocalRef<jstring> jstring_url(
       ConvertUTF8ToJavaString(env, navigation_handle->GetURL().spec()));
 
-  bool is_fragment_navigation = navigation_handle->IsSamePage();
+  bool is_fragment_navigation = navigation_handle->IsSameDocument();
 
   if (navigation_handle->HasCommitted()) {
     // See http://crbug.com/251330 for why it's determined this way.
@@ -164,7 +164,7 @@ void WebContentsObserverProxy::DidFinishNavigation(
   Java_WebContentsObserverProxy_didFinishNavigation(
       env, obj, jstring_url, navigation_handle->IsInMainFrame(),
       navigation_handle->IsErrorPage(), navigation_handle->HasCommitted(),
-      navigation_handle->IsSamePage(), is_fragment_navigation,
+      navigation_handle->IsSameDocument(), is_fragment_navigation,
       navigation_handle->HasCommitted() ? navigation_handle->GetPageTransition()
                                         : -1,
       navigation_handle->GetNetErrorCode(), jerror_description,

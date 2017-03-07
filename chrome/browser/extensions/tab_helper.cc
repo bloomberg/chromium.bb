@@ -348,7 +348,7 @@ void TabHelper::DidFinishNavigation(
         enabled_extensions.GetExtensionOrAppByURL(navigation_handle->GetURL()));
   }
 
-  if (!navigation_handle->IsSamePage())
+  if (!navigation_handle->IsSameDocument())
     ExtensionActionAPI::Get(context)->ClearAllValuesForTab(web_contents());
 }
 

@@ -75,7 +75,7 @@ class GuestViewBase::OwnerContentsObserver : public WebContentsObserver {
     // If the embedder navigates to a different page then destroy the guest.
     if (!navigation_handle->IsInMainFrame() ||
         !navigation_handle->HasCommitted() ||
-        navigation_handle->IsSamePage()) {
+        navigation_handle->IsSameDocument()) {
       return;
     }
 

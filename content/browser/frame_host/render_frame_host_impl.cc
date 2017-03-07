@@ -3379,10 +3379,10 @@ RenderFrameHostImpl::TakeNavigationHandleForCommit(
   if (params.was_within_same_page) {
     if (IsBrowserSideNavigationEnabled()) {
       // When browser-side navigation is enabled, a NavigationHandle is created
-      // for browser-initiated same-page navigation. Try to take it if it's
+      // for browser-initiated same-document navigation. Try to take it if it's
       // still available and matches the current navigation.
       if (is_browser_initiated && navigation_handle_ &&
-          navigation_handle_->IsSamePage() &&
+          navigation_handle_->IsSameDocument() &&
           navigation_handle_->GetURL() == params.url) {
         return std::move(navigation_handle_);
       }
@@ -3390,7 +3390,7 @@ RenderFrameHostImpl::TakeNavigationHandleForCommit(
       // When browser-side navigation is disabled, there is never any existing
       // NavigationHandle to use for the navigation. We don't ever expect
       // navigation_handle_ to match.
-      DCHECK(!navigation_handle_ || !navigation_handle_->IsSamePage());
+      DCHECK(!navigation_handle_ || !navigation_handle_->IsSameDocument());
     }
     // No existing NavigationHandle has been found. Create a new one, but don't
     // reset any NavigationHandle tracking an ongoing navigation, since this may

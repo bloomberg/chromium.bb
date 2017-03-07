@@ -50,8 +50,10 @@ class ExtensionWebUiTimer : public content::WebContentsObserver {
 
   void DidStartNavigation(
       content::NavigationHandle* navigation_handle) override {
-    if (navigation_handle->IsInMainFrame() && !navigation_handle->IsSamePage())
+    if (navigation_handle->IsInMainFrame() &&
+        !navigation_handle->IsSameDocument()) {
       timer_.reset(new base::ElapsedTimer());
+    }
   }
 
   void DocumentLoadedInFrame(

@@ -85,8 +85,9 @@ void NavigationMetricsRecorder::DidFinishNavigation(
   bool have_already_seen_origin = service->Insert(origin);
 
   navigation_metrics::RecordMainFrameNavigation(
-      last_committed_entry->GetVirtualURL(), navigation_handle->IsSamePage(),
-      context->IsOffTheRecord(), have_already_seen_origin);
+      last_committed_entry->GetVirtualURL(),
+      navigation_handle->IsSameDocument(), context->IsOffTheRecord(),
+      have_already_seen_origin);
 
   // Record the domain and registry of the URL that resulted in a navigation to
   // a |data:| URL, either by redirects or user clicking a link.

@@ -790,8 +790,10 @@ bool TabSpecificContentSettings::OnMessageReceived(
 
 void TabSpecificContentSettings::DidStartNavigation(
     content::NavigationHandle* navigation_handle) {
-  if (!navigation_handle->IsInMainFrame() || navigation_handle->IsSamePage())
+  if (!navigation_handle->IsInMainFrame() ||
+      navigation_handle->IsSameDocument()) {
     return;
+  }
 
   const content::NavigationController& controller =
       web_contents()->GetController();
@@ -814,7 +816,7 @@ void TabSpecificContentSettings::DidFinishNavigation(
       content::NavigationHandle* navigation_handle) {
   if (!navigation_handle->IsInMainFrame() ||
       !navigation_handle->HasCommitted() ||
-      navigation_handle->IsSamePage()) {
+      navigation_handle->IsSameDocument()) {
     return;
   }
 

@@ -60,8 +60,10 @@ class ExtensionMessagePort::FrameTracker : public content::WebContentsObserver,
 
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override {
-    if (navigation_handle->HasCommitted() && !navigation_handle->IsSamePage())
+    if (navigation_handle->HasCommitted() &&
+        !navigation_handle->IsSameDocument()) {
       port_->UnregisterFrame(navigation_handle->GetRenderFrameHost());
+    }
   }
 
   void DidDetachInterstitialPage() override {

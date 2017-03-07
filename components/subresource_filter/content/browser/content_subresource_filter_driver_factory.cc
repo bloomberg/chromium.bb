@@ -200,7 +200,8 @@ void ContentSubresourceFilterDriverFactory::ResetActivationState() {
 
 void ContentSubresourceFilterDriverFactory::DidStartNavigation(
     content::NavigationHandle* navigation_handle) {
-  if (navigation_handle->IsInMainFrame() && !navigation_handle->IsSamePage()) {
+  if (navigation_handle->IsInMainFrame() &&
+      !navigation_handle->IsSameDocument()) {
     activation_decision_ = ActivationDecision::UNKNOWN;
     ResetActivationState();
     navigation_chain_.push_back(navigation_handle->GetURL());
@@ -210,14 +211,14 @@ void ContentSubresourceFilterDriverFactory::DidStartNavigation(
 
 void ContentSubresourceFilterDriverFactory::DidRedirectNavigation(
     content::NavigationHandle* navigation_handle) {
-  DCHECK(!navigation_handle->IsSamePage());
+  DCHECK(!navigation_handle->IsSameDocument());
   if (navigation_handle->IsInMainFrame())
     navigation_chain_.push_back(navigation_handle->GetURL());
 }
 
 void ContentSubresourceFilterDriverFactory::ReadyToCommitNavigation(
     content::NavigationHandle* navigation_handle) {
-  DCHECK(!navigation_handle->IsSamePage());
+  DCHECK(!navigation_handle->IsSameDocument());
 
   // ReadyToCommitNavigation with browser-side navigation disabled is not called
   // in production code for failed navigations (e.g. network errors). We don't

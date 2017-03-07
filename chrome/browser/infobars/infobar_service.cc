@@ -97,8 +97,10 @@ void InfoBarService::RenderProcessGone(base::TerminationStatus status) {
 
 void InfoBarService::DidStartNavigation(
     content::NavigationHandle* navigation_handle) {
-  if (!navigation_handle->IsInMainFrame() || navigation_handle->IsSamePage())
+  if (!navigation_handle->IsInMainFrame() ||
+      navigation_handle->IsSameDocument()) {
     return;
+  }
 
   ignore_next_reload_ = false;
 }

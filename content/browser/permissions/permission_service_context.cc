@@ -131,7 +131,7 @@ void PermissionServiceContext::FrameDeleted(
 
 void PermissionServiceContext::DidFinishNavigation(
     NavigationHandle* navigation_handle) {
-  if (!navigation_handle->HasCommitted() || navigation_handle->IsSamePage())
+  if (!navigation_handle->HasCommitted() || navigation_handle->IsSameDocument())
     return;
 
   CancelPendingOperations(navigation_handle->GetRenderFrameHost());
