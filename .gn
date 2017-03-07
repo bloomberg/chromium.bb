@@ -257,7 +257,6 @@ exec_script_whitelist =
       # //build/dotfile_settings.gni instead, so that they can be shared
       # with other repos. The entries in this list should be only for files
       # in the Chromium repo outside of //build.
-      "//android_webview/BUILD.gn",
       "//build_overrides/build.gni",
       "//chromeos/BUILD.gn",
 
@@ -266,7 +265,6 @@ exec_script_whitelist =
       "//clank/java/BUILD.gn",
       "//clank/native/BUILD.gn",
 
-      "//jingle/BUILD.gn",
       "//remoting/host/installer/linux/BUILD.gn",
       "//remoting/remoting_version.gni",
       "//remoting/host/installer/win/generate_clsids.gni",
