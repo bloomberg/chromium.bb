@@ -22,6 +22,7 @@
 #import "ios/web/public/test/fakes/test_native_content_provider.h"
 #import "ios/web/public/test/fakes/test_web_client.h"
 #import "ios/web/public/test/fakes/test_web_state_delegate.h"
+#include "ios/web/public/test/fakes/test_web_state_observer.h"
 #import "ios/web/public/test/fakes/test_web_view_content_view.h"
 #import "ios/web/public/web_state/crw_web_controller_observer.h"
 #import "ios/web/public/web_state/ui/crw_content_view.h"
@@ -714,38 +715,18 @@ TEST_F(CRWWebControllerInvalidUrlTest, IFrameWithInvalidURL) {
 }
 
 // Real WKWebView is required for CRWWebControllerFormActivityTest.
-typedef web::WebTestWithWebController CRWWebControllerFormActivityTest;
+typedef web::WebTestWithWebState CRWWebControllerFormActivityTest;
 
 // Tests that keyup event correctly delivered to WebStateObserver.
 TEST_F(CRWWebControllerFormActivityTest, KeyUpEvent) {
-  // Observes and verifies FormActivityRegistered call.
-  class FormActivityObserver : public web::WebStateObserver {
-   public:
-    explicit FormActivityObserver(web::WebState* web_state)
-        : web::WebStateObserver(web_state) {}
-    bool form_activity_registered() const { return form_activity_registered_; }
-    // WebStateObserver overrides:
-    void FormActivityRegistered(const std::string& form_name,
-                                const std::string& field_name,
-                                const std::string& type,
-                                const std::string& value,
-                                bool input_missing) override {
-      EXPECT_EQ("keyup", type);
-      EXPECT_FALSE(input_missing);
-      form_activity_registered_ = true;
-    }
-
-   private:
-    bool form_activity_registered_ = false;
-  };
-  FormActivityObserver form_activity_observer(web_state());
-  FormActivityObserver& form_activity_observer_ref(form_activity_observer);
-
+  web::TestWebStateObserver observer(web_state());
   LoadHtml(@"<p></p>");
+  ASSERT_FALSE(observer.form_activity_info());
   ExecuteJavaScript(@"document.dispatchEvent(new KeyboardEvent('keyup'));");
-  base::test::ios::WaitUntilCondition(^{
-    return form_activity_observer_ref.form_activity_registered();
-  });
+  web::TestFormActivityInfo* info = observer.form_activity_info();
+  ASSERT_TRUE(info);
+  EXPECT_EQ("keyup", info->type);
+  EXPECT_FALSE(info->input_missing);
 }
 
 // Real WKWebView is required for CRWWebControllerJSExecutionTest.
@@ -1049,27 +1030,13 @@ class CRWWebControllerWebProcessTest : public web::WebTestWithWebController {
 // Tests that WebStateDelegate::RenderProcessGone is called when WKWebView web
 // process has crashed.
 TEST_F(CRWWebControllerWebProcessTest, Crash) {
-  // Observes and waits for RenderProcessGone call.
-  class RenderProcessGoneObserver : public web::WebStateObserver {
-   public:
-    explicit RenderProcessGoneObserver(web::WebState* web_state)
-        : web::WebStateObserver(web_state) {}
-    void WaitForRenderProcessGone() const {
-      base::test::ios::WaitUntilCondition(^{
-        return render_process_gone_;
-      });
-    }
-    // WebStateObserver overrides:
-    void RenderProcessGone() override { render_process_gone_ = true; }
-
-   private:
-    bool render_process_gone_ = false;
-  };
-
-  RenderProcessGoneObserver observer(web_state());
+  web::TestWebStateObserver observer(web_state());
+  web::TestWebStateObserver* observer_ptr = &observer;
   web::SimulateWKWebViewCrash(webView_);
-  observer.WaitForRenderProcessGone();
-
+  base::test::ios::WaitUntilCondition(^bool() {
+    return observer_ptr->render_process_gone_info();
+  });
+  EXPECT_EQ(web_state(), observer.render_process_gone_info()->web_state);
   EXPECT_FALSE([web_controller() isViewAlive]);
 };
 
