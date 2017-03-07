@@ -134,10 +134,6 @@ bool WmShellAura::IsInUnifiedModeIgnoreMirroring() const {
          display::DisplayManager::UNIFIED;
 }
 
-bool WmShellAura::IsForceMaximizeOnFirstRun() {
-  return delegate()->IsForceMaximizeOnFirstRun();
-}
-
 void WmShellAura::SetDisplayWorkAreaInsets(WmWindow* window,
                                            const gfx::Insets& insets) {
   Shell::GetInstance()

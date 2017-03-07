@@ -270,7 +270,7 @@ class ASH_EXPORT WmShell : public SessionStateObserver,
   // Returns true if the first window shown on first run should be
   // unconditionally maximized, overriding the heuristic that normally chooses
   // the window size.
-  virtual bool IsForceMaximizeOnFirstRun() = 0;
+  bool IsForceMaximizeOnFirstRun();
 
   // Sets work area insets of the display containing |window|, pings observers.
   virtual void SetDisplayWorkAreaInsets(WmWindow* window,

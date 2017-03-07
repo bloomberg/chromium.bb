@@ -318,6 +318,10 @@ WmWindow* WmShell::GetRootWindowForNewWindows() {
   return root_window_for_new_windows_;
 }
 
+bool WmShell::IsForceMaximizeOnFirstRun() {
+  return delegate()->IsForceMaximizeOnFirstRun();
+}
+
 bool WmShell::IsSystemModalWindowOpen() {
   if (simulate_modal_window_open_for_testing_)
     return true;

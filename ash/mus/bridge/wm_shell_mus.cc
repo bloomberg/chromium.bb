@@ -257,11 +257,6 @@ bool WmShellMus::IsInUnifiedModeIgnoreMirroring() const {
   return false;
 }
 
-bool WmShellMus::IsForceMaximizeOnFirstRun() {
-  NOTIMPLEMENTED();
-  return false;
-}
-
 void WmShellMus::SetDisplayWorkAreaInsets(WmWindow* window,
                                           const gfx::Insets& insets) {
   window_manager_->screen()->SetWorkAreaInsets(window->aura_window(), insets);
