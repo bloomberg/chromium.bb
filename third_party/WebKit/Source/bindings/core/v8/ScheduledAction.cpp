@@ -54,7 +54,7 @@ ScheduledAction* ScheduledAction::create(ScriptState* scriptState,
   ASSERT(handler.isFunction());
   if (!scriptState->world().isWorkerWorld()) {
     if (!BindingSecurity::shouldAllowAccessToFrame(
-            enteredOrMicrotaskDOMWindow(scriptState->isolate()),
+            enteredDOMWindow(scriptState->isolate()),
             toDocument(target)->frame(),
             BindingSecurity::ErrorReportOption::DoNotReport)) {
       UseCounter::count(target, UseCounter::ScheduledActionIgnored);
@@ -69,7 +69,7 @@ ScheduledAction* ScheduledAction::create(ScriptState* scriptState,
                                          const String& handler) {
   if (!scriptState->world().isWorkerWorld()) {
     if (!BindingSecurity::shouldAllowAccessToFrame(
-            enteredOrMicrotaskDOMWindow(scriptState->isolate()),
+            enteredDOMWindow(scriptState->isolate()),
             toDocument(target)->frame(),
             BindingSecurity::ErrorReportOption::DoNotReport)) {
       UseCounter::count(target, UseCounter::ScheduledActionIgnored);
