@@ -854,7 +854,7 @@ Tab* GetOpenerForTab(id<NSFastEnumeration> tabs, Tab* tab) {
     [tab webController].usePlaceholderOverlay = YES;
 
     // Restore the CertificatePolicyCache (note that webState is invalid after
-    // passing it via move semantic to -insertTabWithWebState:atIndex:).
+    // passing it via move semantic to -initWithWebState:model:).
     UpdateCertificatePolicyCacheFromWebState(policyCache, [tab webState]);
     [self insertTab:tab atIndex:self.count opener:nil];
     [restoredTabs addObject:tab.get()];
