@@ -196,6 +196,9 @@ class OpenInControllerBridge
   // YES if the OpenIn menu is displayed.
   BOOL isOpenInMenuDisplayed_;
 
+  // YES if the toolbar is displayed.
+  BOOL isOpenInToolbarDisplayed_;
+
   // Task runner on which file operations should happen.
   scoped_refptr<base::SequencedTaskRunner> sequencedTaskRunner_;
 
@@ -228,6 +231,7 @@ class OpenInControllerBridge
   [webController_ addGestureRecognizerToWebView:tapRecognizer_];
   [self openInToolbar].alpha = 0.0f;
   [webController_ addToolbarViewToWebView:[self openInToolbar]];
+  [self showOpenInToolbar];
 }
 
 - (void)disable {
@@ -259,7 +263,11 @@ class OpenInControllerBridge
 
 - (void)handleTapFrom:(UIGestureRecognizer*)gestureRecognizer {
   if ([gestureRecognizer state] == UIGestureRecognizerStateEnded) {
-    [self showOpenInToolbar];
+    if (isOpenInToolbarDisplayed_) {
+      [self hideOpenInToolbar];
+    } else {
+      [self showOpenInToolbar];
+    }
   }
 }
 
@@ -280,16 +288,19 @@ class OpenInControllerBridge
                        [openInToolbar setAlpha:1.0];
                      }];
   }
+  isOpenInToolbarDisplayed_ = YES;
 }
 
 - (void)hideOpenInToolbar {
   if (!openInToolbar_)
     return;
+  [openInTimer_ invalidate];
   UIView* openInToolbar = [self openInToolbar];
   [UIView animateWithDuration:kOpenInToolbarAnimationDuration
                    animations:^{
                      [openInToolbar setAlpha:0.0];
                    }];
+  isOpenInToolbarDisplayed_ = NO;
 }
 
 - (void)exportFileWithOpenInMenuAnchoredAt:(UIView*)view {
