@@ -290,6 +290,9 @@ class CC_EXPORT SchedulerStateMachine {
   }
 
   uint32_t begin_frame_source_id() const { return begin_frame_source_id_; }
+  uint64_t last_begin_frame_sequence_number_active_tree_was_fresh() const {
+    return last_begin_frame_sequence_number_active_tree_was_fresh_;
+  }
   uint64_t last_begin_frame_sequence_number_compositor_frame_was_fresh() const {
     return last_begin_frame_sequence_number_compositor_frame_was_fresh_;
   }

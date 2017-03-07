@@ -449,8 +449,9 @@ void SingleThreadProxy::CompositeImmediately(base::TimeTicks frame_begin_time) {
   }
 
   BeginFrameArgs begin_frame_args(BeginFrameArgs::Create(
-      BEGINFRAME_FROM_HERE, 0, 1, frame_begin_time, base::TimeTicks(),
-      BeginFrameArgs::DefaultInterval(), BeginFrameArgs::NORMAL));
+      BEGINFRAME_FROM_HERE, BeginFrameArgs::kManualSourceId, 1,
+      frame_begin_time, base::TimeTicks(), BeginFrameArgs::DefaultInterval(),
+      BeginFrameArgs::NORMAL));
 
   // Start the impl frame.
   {
@@ -485,6 +486,9 @@ void SingleThreadProxy::CompositeImmediately(base::TimeTicks frame_begin_time) {
     layer_tree_host_impl_->Animate();
 
     LayerTreeHostImpl::FrameData frame;
+    frame.begin_frame_ack = BeginFrameAck(
+        begin_frame_args.source_id, begin_frame_args.sequence_number,
+        begin_frame_args.sequence_number, 0, true);
     DoComposite(&frame);
 
     // DoComposite could abort, but because this is a synchronous composite
@@ -692,6 +696,8 @@ void SingleThreadProxy::BeginMainFrameAbortedOnImplThread(
 DrawResult SingleThreadProxy::ScheduledActionDrawIfPossible() {
   DebugScopedSetImplThread impl(task_runner_provider_);
   LayerTreeHostImpl::FrameData frame;
+  frame.begin_frame_ack =
+      scheduler_on_impl_thread_->CurrentBeginFrameAckForActiveTree();
   return DoComposite(&frame);
 }
 

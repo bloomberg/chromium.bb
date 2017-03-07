@@ -93,6 +93,13 @@ using media::VideoFrame;
 namespace cc {
 namespace {
 
+struct TestFrameData : public LayerTreeHostImpl::FrameData {
+  TestFrameData() {
+    // Set sequence number to something valid, so DCHECKs don't complain.
+    begin_frame_ack.sequence_number = 1;
+  }
+};
+
 class LayerTreeHostImplTest : public testing::Test,
                               public LayerTreeHostImplClient {
  public:
@@ -166,8 +173,7 @@ class LayerTreeHostImplTest : public testing::Test,
     did_complete_page_scale_animation_ = true;
   }
   void OnDrawForCompositorFrameSink(bool resourceless_software_draw) override {
-    std::unique_ptr<LayerTreeHostImpl::FrameData> frame(
-        new LayerTreeHostImpl::FrameData);
+    std::unique_ptr<TestFrameData> frame(new TestFrameData);
     EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(frame.get()));
     last_on_draw_render_passes_.clear();
     RenderPass::CopyAll(frame->render_passes, &last_on_draw_render_passes_);
@@ -459,7 +465,7 @@ class LayerTreeHostImplTest : public testing::Test,
   }
 
   void DrawFrame() {
-    LayerTreeHostImpl::FrameData frame;
+    TestFrameData frame;
     EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame));
     host_impl_->DrawLayers(&frame);
     host_impl_->DidDrawAllLayers(frame);
@@ -483,7 +489,7 @@ class LayerTreeHostImplTest : public testing::Test,
   }
 
   void DrawOneFrame() {
-    LayerTreeHostImpl::FrameData frame_data;
+    TestFrameData frame_data;
     host_impl_->PrepareToDraw(&frame_data);
     host_impl_->DidDrawAllLayers(frame_data);
   }
@@ -533,7 +539,7 @@ class LayerTreeHostImplTest : public testing::Test,
   bool did_request_impl_side_invalidation_;
   base::Closure animation_task_;
   base::TimeDelta requested_animation_delay_;
-  std::unique_ptr<LayerTreeHostImpl::FrameData> last_on_draw_frame_;
+  std::unique_ptr<TestFrameData> last_on_draw_frame_;
   RenderPassList last_on_draw_render_passes_;
   scoped_refptr<AnimationTimeline> timeline_;
   std::unique_ptr<base::Thread> image_worker_;
@@ -1634,7 +1640,7 @@ TEST_F(LayerTreeHostImplTest, AnimationMarksLayerNotReady) {
   host_impl_->ResetRequiresHighResToDraw();
 
   // Child layer has an animating transform but missing tiles.
-  FakeLayerTreeHostImpl::FrameData frame;
+  TestFrameData frame;
   DrawResult result = host_impl_->PrepareToDraw(&frame);
   EXPECT_EQ(DRAW_ABORTED_CHECKERBOARD_ANIMATIONS, result);
   host_impl_->DidDrawAllLayers(frame);
@@ -3526,7 +3532,7 @@ TEST_F(LayerTreeHostImplTest, WillDrawReturningFalseDoesNotCall) {
   host_impl_->active_tree()->BuildPropertyTreesForTesting();
 
   {
-    LayerTreeHostImpl::FrameData frame;
+    TestFrameData frame;
     EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame));
     host_impl_->DrawLayers(&frame);
     host_impl_->DidDrawAllLayers(frame);
@@ -3539,7 +3545,7 @@ TEST_F(LayerTreeHostImplTest, WillDrawReturningFalseDoesNotCall) {
   host_impl_->SetViewportDamage(gfx::Rect(10, 10));
 
   {
-    LayerTreeHostImpl::FrameData frame;
+    TestFrameData frame;
 
     layer->set_will_draw_returns_false();
     layer->ClearDidDrawCheck();
@@ -3572,7 +3578,7 @@ TEST_F(LayerTreeHostImplTest, DidDrawNotCalledOnHiddenLayer) {
   layer->SetBounds(gfx::Size(10, 10));
   host_impl_->active_tree()->BuildPropertyTreesForTesting();
 
-  LayerTreeHostImpl::FrameData frame;
+  TestFrameData frame;
 
   EXPECT_FALSE(layer->will_draw_called());
   EXPECT_FALSE(layer->did_draw_called());
@@ -3629,7 +3635,7 @@ TEST_F(LayerTreeHostImplTest, WillDrawNotCalledOnOccludedLayer) {
   top_layer->SetContentsOpaque(true);
   host_impl_->active_tree()->BuildPropertyTreesForTesting();
 
-  LayerTreeHostImpl::FrameData frame;
+  TestFrameData frame;
 
   EXPECT_FALSE(occluded_layer->will_draw_called());
   EXPECT_FALSE(occluded_layer->did_draw_called());
@@ -3671,7 +3677,7 @@ TEST_F(LayerTreeHostImplTest, DidDrawCalledOnAllLayers) {
   EXPECT_FALSE(layer1->did_draw_called());
   EXPECT_FALSE(layer2->did_draw_called());
 
-  LayerTreeHostImpl::FrameData frame;
+  TestFrameData frame;
   FakeLayerTreeHostImpl::RecursiveUpdateNumChildren(
       *host_impl_->active_tree()->begin());
   EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame));
@@ -3842,7 +3848,7 @@ TEST_F(LayerTreeHostImplTest, PrepareToDrawSucceedsAndFails) {
   root->test_properties()->force_render_surface = true;
   host_impl_->active_tree()->BuildPropertyTreesForTesting();
 
-  LayerTreeHostImpl::FrameData frame;
+  TestFrameData frame;
   EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame));
   host_impl_->DrawLayers(&frame);
   host_impl_->DidDrawAllLayers(frame);
@@ -3869,7 +3875,7 @@ TEST_F(LayerTreeHostImplTest, PrepareToDrawSucceedsAndFails) {
     if (testcase.high_res_required)
       host_impl_->SetRequiresHighResToDraw();
 
-    LayerTreeHostImpl::FrameData frame;
+    TestFrameData frame;
     EXPECT_EQ(testcase.expected_result, host_impl_->PrepareToDraw(&frame));
     host_impl_->DrawLayers(&frame);
     host_impl_->DidDrawAllLayers(frame);
@@ -5234,7 +5240,7 @@ TEST_F(LayerTreeHostImplTest, PageScaleDeltaAppliedToRootScrollLayerOnly) {
 
   // Make sure all the layers are drawn with the page scale delta applied, i.e.,
   // the page scale delta on the root layer is applied hierarchically.
-  LayerTreeHostImpl::FrameData frame;
+  TestFrameData frame;
   EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame));
   host_impl_->DrawLayers(&frame);
   host_impl_->DidDrawAllLayers(frame);
@@ -6083,7 +6089,7 @@ TEST_F(LayerTreeHostImplTest,
   host_impl_->active_tree()->BuildPropertyTreesForTesting();
 
   // Check scroll delta reflected in layer.
-  LayerTreeHostImpl::FrameData frame;
+  TestFrameData frame;
   EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame));
   host_impl_->DrawLayers(&frame);
   host_impl_->DidDrawAllLayers(frame);
@@ -7037,7 +7043,7 @@ TEST_F(LayerTreeHostImplTest, BlendingOffWhenDrawingOpaqueLayers) {
       static_cast<BlendStateCheckLayer*>(root->test_properties()->children[0]);
   layer1->SetPosition(gfx::PointF(2.f, 2.f));
 
-  LayerTreeHostImpl::FrameData frame;
+  TestFrameData frame;
 
   // Opaque layer, drawn without blending.
   layer1->SetContentsOpaque(true);
@@ -7279,7 +7285,7 @@ TEST_F(LayerTreeHostImplTest, BlendingOffWhenDrawingOpaqueLayers) {
 static bool MayContainVideoBitSetOnFrameData(LayerTreeHostImpl* host_impl) {
   host_impl->active_tree()->BuildPropertyTreesForTesting();
   host_impl->active_tree()->set_needs_update_draw_properties();
-  LayerTreeHostImpl::FrameData frame;
+  TestFrameData frame;
   EXPECT_EQ(DRAW_SUCCESS, host_impl->PrepareToDraw(&frame));
   host_impl->DrawLayers(&frame);
   host_impl->DidDrawAllLayers(frame);
@@ -7369,7 +7375,7 @@ class LayerTreeHostImplViewportCoveredTest : public LayerTreeHostImplTest {
     child_->SetQuadVisibleRect(gfx::Rect(layer_rect.size()));
     host_impl_->active_tree()->BuildPropertyTreesForTesting();
 
-    LayerTreeHostImpl::FrameData frame;
+    TestFrameData frame;
     EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame));
     ASSERT_EQ(1u, frame.render_passes.size());
 
@@ -7403,7 +7409,7 @@ class LayerTreeHostImplViewportCoveredTest : public LayerTreeHostImplTest {
 
   void TestEmptyLayer() {
     SetUpEmptylayer();
-    LayerTreeHostImpl::FrameData frame;
+    TestFrameData frame;
     EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame));
     VerifyEmptyLayerRenderPasses(frame.render_passes);
     host_impl_->DidDrawAllLayers(frame);
@@ -7440,7 +7446,7 @@ class LayerTreeHostImplViewportCoveredTest : public LayerTreeHostImplTest {
 
   void TestLayerInMiddleOfViewport() {
     SetUpLayerInMiddleOfViewport();
-    LayerTreeHostImpl::FrameData frame;
+    TestFrameData frame;
     EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame));
     VerifyLayerInMiddleOfViewport(frame.render_passes);
     host_impl_->DidDrawAllLayers(frame);
@@ -7476,7 +7482,7 @@ class LayerTreeHostImplViewportCoveredTest : public LayerTreeHostImplTest {
 
   void TestLayerIsLargerThanViewport() {
     SetUpLayerIsLargerThanViewport();
-    LayerTreeHostImpl::FrameData frame;
+    TestFrameData frame;
     EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame));
     VerifyLayerIsLargerThanViewport(frame.render_passes);
     host_impl_->DidDrawAllLayers(frame);
@@ -7674,7 +7680,7 @@ TEST_F(LayerTreeHostImplTest, PartialSwapReceivesDamageRect) {
   layer_tree_host_impl->active_tree()->SetRootLayerForTesting(std::move(root));
   layer_tree_host_impl->active_tree()->BuildPropertyTreesForTesting();
 
-  LayerTreeHostImpl::FrameData frame;
+  TestFrameData frame;
 
   // First frame, the entire screen should get swapped.
   EXPECT_EQ(DRAW_SUCCESS, layer_tree_host_impl->PrepareToDraw(&frame));
@@ -7736,7 +7742,7 @@ TEST_F(LayerTreeHostImplTest, RootLayerDoesntCreateExtraSurface) {
   host_impl_->active_tree()->SetRootLayerForTesting(std::move(root));
   host_impl_->active_tree()->BuildPropertyTreesForTesting();
 
-  LayerTreeHostImpl::FrameData frame;
+  TestFrameData frame;
 
   EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame));
   EXPECT_EQ(1u, frame.render_surface_layer_list->size());
@@ -7855,7 +7861,7 @@ TEST_F(LayerTreeHostImplTest, ContributingLayerEmptyScissorPartialSwap) {
       DefaultSettings(), true, this, &task_runner_provider_, &task_graph_runner,
       &stats_instrumentation_, compositor_frame_sink.get());
   {
-    LayerTreeHostImpl::FrameData frame;
+    TestFrameData frame;
     EXPECT_EQ(DRAW_SUCCESS, my_host_impl->PrepareToDraw(&frame));
 
     // Verify all quads have been computed
@@ -7884,7 +7890,7 @@ TEST_F(LayerTreeHostImplTest, ContributingLayerEmptyScissorNoPartialSwap) {
       DefaultSettings(), false, this, &task_runner_provider_,
       &task_graph_runner, &stats_instrumentation_, compositor_frame_sink.get());
   {
-    LayerTreeHostImpl::FrameData frame;
+    TestFrameData frame;
     EXPECT_EQ(DRAW_SUCCESS, my_host_impl->PrepareToDraw(&frame));
 
     // Verify all quads have been computed
@@ -7930,7 +7936,7 @@ TEST_F(LayerTreeHostImplTest, LayersFreeTextures) {
 
   EXPECT_EQ(0u, context3d->NumTextures());
 
-  LayerTreeHostImpl::FrameData frame;
+  TestFrameData frame;
   EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame));
   host_impl_->DrawLayers(&frame);
   host_impl_->DidDrawAllLayers(frame);
@@ -7958,7 +7964,7 @@ TEST_F(LayerTreeHostImplTest, HasTransparentBackground) {
 
   // Verify one quad is drawn when transparent background set is not set.
   host_impl_->active_tree()->set_has_transparent_background(false);
-  LayerTreeHostImpl::FrameData frame;
+  TestFrameData frame;
   EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame));
   {
     const auto& root_pass = frame.render_passes.back();
@@ -7992,7 +7998,7 @@ class LayerTreeHostImplTestDrawAndTestDamage : public LayerTreeHostImplTest {
   void DrawFrameAndTestDamage(const gfx::Rect& expected_damage) {
     bool expect_to_draw = !expected_damage.IsEmpty();
 
-    LayerTreeHostImpl::FrameData frame;
+    TestFrameData frame;
     EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame));
 
     if (!expect_to_draw) {
@@ -8124,7 +8130,7 @@ TEST_F(LayerTreeHostImplTest, FarAwayQuadsDontNeedAA) {
   host_impl_->active_tree()->UpdateDrawProperties(update_lcd_text);
   ASSERT_EQ(1u, host_impl_->active_tree()->RenderSurfaceLayerList().size());
 
-  LayerTreeHostImpl::FrameData frame;
+  TestFrameData frame;
   EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame));
 
   ASSERT_EQ(1u, frame.render_passes.size());
@@ -8159,7 +8165,7 @@ TEST_F(CompositorFrameMetadataTest, CompositorFrameAckCountsAsSwapComplete) {
   SetupRootLayerImpl(FakeLayerWithQuads::Create(host_impl_->active_tree(), 1));
   host_impl_->active_tree()->BuildPropertyTreesForTesting();
   {
-    LayerTreeHostImpl::FrameData frame;
+    TestFrameData frame;
     EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame));
     host_impl_->DrawLayers(&frame);
     host_impl_->DidDrawAllLayers(frame);
@@ -8499,7 +8505,7 @@ TEST_F(LayerTreeHostImplTest, ShutdownReleasesContext) {
           base::Bind(&ShutdownReleasesContext_Callback)));
   host_impl_->active_tree()->BuildPropertyTreesForTesting();
 
-  LayerTreeHostImpl::FrameData frame;
+  TestFrameData frame;
   EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame));
   host_impl_->DrawLayers(&frame);
   host_impl_->DidDrawAllLayers(frame);
@@ -8848,7 +8854,7 @@ TEST_F(LayerTreeHostImplTest, LatencyInfoPassedToCompositorFrameMetadata) {
   host_impl_->active_tree()->QueuePinnedSwapPromise(std::move(swap_promise));
 
   gfx::Rect full_frame_damage(host_impl_->DrawViewportSize());
-  LayerTreeHostImpl::FrameData frame;
+  TestFrameData frame;
   EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame));
   EXPECT_TRUE(host_impl_->DrawLayers(&frame));
   host_impl_->DidDrawAllLayers(frame);
@@ -8892,7 +8898,7 @@ TEST_F(LayerTreeHostImplTest, SelectionBoundsPassedToCompositorFrameMetadata) {
   host_impl_->SetNeedsRedraw();
 
   gfx::Rect full_frame_damage(host_impl_->DrawViewportSize());
-  LayerTreeHostImpl::FrameData frame;
+  TestFrameData frame;
   EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame));
   EXPECT_TRUE(host_impl_->DrawLayers(&frame));
   host_impl_->DidDrawAllLayers(frame);
@@ -11158,7 +11164,7 @@ size_t CountRenderPassesWithId(const RenderPassList& list, int id) {
 }
 
 TEST_F(LayerTreeHostImplTest, RemoveUnreferencedRenderPass) {
-  LayerTreeHostImpl::FrameData frame;
+  TestFrameData frame;
   frame.render_passes.push_back(RenderPass::Create());
   RenderPass* pass3 = frame.render_passes.back().get();
   frame.render_passes.push_back(RenderPass::Create());
@@ -11195,7 +11201,7 @@ TEST_F(LayerTreeHostImplTest, RemoveUnreferencedRenderPass) {
 }
 
 TEST_F(LayerTreeHostImplTest, RemoveEmptyRenderPass) {
-  LayerTreeHostImpl::FrameData frame;
+  TestFrameData frame;
   frame.render_passes.push_back(RenderPass::Create());
   RenderPass* pass3 = frame.render_passes.back().get();
   frame.render_passes.push_back(RenderPass::Create());
@@ -11237,7 +11243,7 @@ TEST_F(LayerTreeHostImplTest, RemoveEmptyRenderPass) {
 }
 
 TEST_F(LayerTreeHostImplTest, DoNotRemoveEmptyRootRenderPass) {
-  LayerTreeHostImpl::FrameData frame;
+  TestFrameData frame;
   frame.render_passes.push_back(RenderPass::Create());
   RenderPass* pass3 = frame.render_passes.back().get();
   frame.render_passes.push_back(RenderPass::Create());
@@ -11303,7 +11309,7 @@ TEST_F(LayerTreeHostImplTest, AddVideoFrameControllerInsideFrame) {
   host_impl_->DidFinishImplFrame();
 
   EXPECT_FALSE(controller.did_draw_frame());
-  LayerTreeHostImpl::FrameData frame;
+  TestFrameData frame;
   host_impl_->DidDrawAllLayers(frame);
   EXPECT_TRUE(controller.did_draw_frame());
 
@@ -11332,7 +11338,7 @@ TEST_F(LayerTreeHostImplTest, AddVideoFrameControllerOutsideFrame) {
   EXPECT_TRUE(controller.begin_frame_args().IsValid());
 
   EXPECT_FALSE(controller.did_draw_frame());
-  LayerTreeHostImpl::FrameData frame;
+  TestFrameData frame;
   host_impl_->DidDrawAllLayers(frame);
   EXPECT_TRUE(controller.did_draw_frame());
 

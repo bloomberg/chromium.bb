@@ -593,6 +593,7 @@ DrawResult ProxyImpl::DrawInternal(bool forced_draw) {
   // CanDraw() as well.
 
   LayerTreeHostImpl::FrameData frame;
+  frame.begin_frame_ack = scheduler_->CurrentBeginFrameAckForActiveTree();
   bool draw_frame = false;
 
   DrawResult result;

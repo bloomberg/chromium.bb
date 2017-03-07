@@ -152,6 +152,8 @@ class CC_EXPORT Scheduler : public BeginFrameObserverBase {
     return begin_frame_source_;
   }
 
+  BeginFrameAck CurrentBeginFrameAckForActiveTree() const;
+
  protected:
   // Virtual for testing.
   virtual base::TimeTicks Now() const;

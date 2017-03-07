@@ -50,6 +50,12 @@ struct CC_EXPORT BeginFrameArgs {
   };
   static const char* TypeToString(BeginFrameArgsType type);
 
+  static constexpr uint32_t kStartingSourceId = 0;
+  // |source_id| for BeginFrameArgs not created by a BeginFrameSource. Used to
+  // avoid sequence number conflicts of BeginFrameArgs manually fed to an
+  // observer with those fed to the observer by the its BeginFrameSource.
+  static constexpr uint32_t kManualSourceId = UINT32_MAX;
+
   static constexpr uint64_t kInvalidFrameNumber = 0;
   static constexpr uint64_t kStartingFrameNumber = 1;
 

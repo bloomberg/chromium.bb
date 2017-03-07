@@ -181,9 +181,6 @@ class StateMachine : public SchedulerStateMachine {
   uint64_t last_begin_frame_sequence_number_pending_tree_was_fresh() const {
     return last_begin_frame_sequence_number_pending_tree_was_fresh_;
   }
-  uint64_t last_begin_frame_sequence_number_active_tree_was_fresh() const {
-    return last_begin_frame_sequence_number_active_tree_was_fresh_;
-  }
 
   using SchedulerStateMachine::ShouldTriggerBeginImplFrameDeadlineImmediately;
   using SchedulerStateMachine::ProactiveBeginFrameWanted;

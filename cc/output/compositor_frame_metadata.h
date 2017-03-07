@@ -11,6 +11,7 @@
 
 #include "cc/base/cc_export.h"
 #include "cc/input/selection.h"
+#include "cc/output/begin_frame_args.h"
 #include "cc/surfaces/surface_id.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/events/latency_info.h"
@@ -87,6 +88,9 @@ class CC_EXPORT CompositorFrameMetadata {
   // TODO(kenrb, fsamuel): This should eventually by SurfaceID, when they
   // become available in all renderer processes. See https://crbug.com/695579.
   uint32_t content_source_id = 0;
+
+  // BeginFrameAck for the BeginFrame that this CompositorFrame answers.
+  BeginFrameAck begin_frame_ack;
 
  private:
   CompositorFrameMetadata(const CompositorFrameMetadata& other);
