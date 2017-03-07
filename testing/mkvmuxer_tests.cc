@@ -30,6 +30,7 @@ using mkvmuxer::Frame;
 using mkvmuxer::MkvWriter;
 using mkvmuxer::Segment;
 using mkvmuxer::SegmentInfo;
+using mkvmuxer::Tag;
 using mkvmuxer::Track;
 using mkvmuxer::VideoTrack;
 
@@ -994,6 +995,24 @@ TEST_F(MuxerTest, SetPixelWidthPixelHeight) {
 
   EXPECT_TRUE(CompareFiles(GetTestFilePath("set_pixelwidth_pixelheight.webm"),
                            filename_));
+}
+
+TEST_F(MuxerTest, LongTagString) {
+  EXPECT_TRUE(SegmentInit(false, false, false));
+  segment_.set_estimate_file_duration(false);
+  AddVideoTrack();
+  Tag* const tag = segment_.AddTag();
+  // 160 needs two bytes when varint encoded.
+  const std::string dummy_string(160, '0');
+  tag->add_simple_tag("long_tag", dummy_string.c_str());
+
+  EXPECT_TRUE(segment_.AddFrame(dummy_data_, kFrameLength, kVideoTrackNumber, 0,
+                                false));
+
+  segment_.Finalize();
+  CloseWriter();
+
+  EXPECT_TRUE(CompareFiles(GetTestFilePath("long_tag_string.webm"), filename_));
 }
 
 }  // namespace test

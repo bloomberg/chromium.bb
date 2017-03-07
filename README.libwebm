@@ -75,7 +75,7 @@ The tests rely upon the LIBWEBM_TEST_DATA_PATH environment variable to locate
 test input. The following example demonstrates running the muxer tests from the
 build directory:
 
-$ LIBWEBM_TEST_DATA_PATH=path/to/libwebm/testing/testdata ./muxer_tests
+$ LIBWEBM_TEST_DATA_PATH=path/to/libwebm/testing/testdata ./mkvmuxer_tests
 
 Note: Libwebm Googletest integration was built with googletest from
       https://github.com/google/googletest.git at git revision
