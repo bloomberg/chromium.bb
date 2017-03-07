@@ -4,7 +4,7 @@
 <link rel="import" href="chrome://resources/html/load_time_data.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://extensions/icons.html">
-<link rel="import" href="chrome://extensions/item_source.html">
+<link rel="import" href="chrome://extensions/item_util.html">
 <link rel="import" href="chrome://extensions/strings.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/iron-icons.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/communication-icons.html">
@@ -246,6 +246,7 @@
         </paper-button>
         <paper-toggle-button id="enable-toggle" class="action-button"
             checked="[[isEnabled_(data.state)]]" on-change="onEnableChange_"
+            enabled="[[isEnableToggleEnabled_(data)]]"
             hidden$="[[!showEnableToggle_(data.*)]]">
         </paper-toggle-button>
       </div>

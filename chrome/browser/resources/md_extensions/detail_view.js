@@ -8,7 +8,7 @@ cr.define('extensions', function() {
   var DetailView = Polymer({
     is: 'extensions-detail-view',
 
-    behaviors: [Polymer.NeonAnimatableBehavior],
+    behaviors: [I18nBehavior, Polymer.NeonAnimatableBehavior],
 
     properties: {
       /**
@@ -19,6 +19,9 @@ cr.define('extensions', function() {
 
       /** @type {!extensions.ItemDelegate} */
       delegate: Object,
+
+      /** Whether the user has enabled the UI's developer mode. */
+      inDevMode: Boolean,
     },
 
     ready: function() {
@@ -30,6 +33,20 @@ cr.define('extensions', function() {
     /** @private */
     onCloseButtonTap_: function() {
       this.fire('close');
+    },
+
+    /**
+     * @return {boolean}
+     * @private
+     */
+    isEnabled_: function() { return extensions.isEnabled(this.data.state); },
+
+    /**
+     * @return {boolean}
+     * @private
+     */
+    isEnableToggleEnabled_: function() {
+      return extensions.userCanChangeEnablement(this.data);
     },
 
     /**
@@ -49,6 +66,24 @@ cr.define('extensions', function() {
     },
 
     /**
+     * @return {string}
+     * @private
+     */
+    computeEnabledText_: function() {
+      // TODO(devlin): Get the full spectrum of these strings from bettes.
+      return this.isEnabled_() ? this.i18n('itemOn') : this.i18n('itemOff');
+    },
+
+    /**
+     * @param {!chrome.developerPrivate.ExtensionView} view
+     * @return {string}
+     * @private
+     */
+    computeInspectLabel_: function(view) {
+      return extensions.computeInspectableViewLabel(view);
+    },
+
+    /**
      * @return {boolean}
      * @private
      */
@@ -64,7 +99,7 @@ cr.define('extensions', function() {
      * @return {boolean}
      * @private
      */
-    shouldShowOptionsButton_: function() {
+    shouldShowOptionsLink_: function() {
       return !!this.data.optionsPage;
     },
 
@@ -80,8 +115,27 @@ cr.define('extensions', function() {
     },
 
     /** @private */
-    onOptionsButtonTap_: function() {
+    onEnableChange_: function() {
+      this.delegate.setItemEnabled(this.data.id,
+                                   this.$['enable-toggle'].checked);
+    },
+
+    /**
+     * @param {!{model: !{item: !chrome.developerPrivate.ExtensionView}}} e
+     * @private
+     */
+    onInspectTap_: function(e) {
+      this.delegate.inspectItemView(this.data.id, e.model.item);
+    },
+
+    /** @private */
+    onOptionsTap_: function() {
       this.delegate.showItemOptionsPage(this.data.id);
+    },
+
+    /** @private */
+    onRemoveTap_: function() {
+      this.delegate.deleteItem(this.data.id);
     },
 
     /** @private */

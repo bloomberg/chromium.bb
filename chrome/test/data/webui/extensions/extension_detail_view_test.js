@@ -44,6 +44,7 @@ cr.define('extension_detail_view_tests', function() {
         item = new extensions.DetailView();
         item.set('data', extensionData);
         item.set('delegate', mockDelegate);
+        item.set('inDevMode', false);
         document.body.appendChild(item);
       });
 
@@ -54,8 +55,9 @@ cr.define('extension_detail_view_tests', function() {
 
         var testIsVisible = extension_test_util.isVisible.bind(null, item);
         expectTrue(testIsVisible('#close-button'));
-        expectFalse(testIsVisible('#open-homepage'));
-        expectFalse(testIsVisible('#options'));
+        expectTrue(testIsVisible('#icon'));
+        expectTrue(testIsVisible('#enable-toggle'));
+        expectFalse(testIsVisible('#extensions-options'));
 
         // Check the checkboxes visibility and state. They should be visible
         // only if the associated option is enabled, and checked if the
@@ -107,12 +109,18 @@ cr.define('extension_detail_view_tests', function() {
         var optionsUrl =
              'chrome-extension://' + extensionData.id + '/options.html';
         item.set('data.optionsPage', {openInTab: true, url: optionsUrl});
-        expectTrue(testIsVisible('#options'));
+        expectTrue(testIsVisible('#extensions-options'));
 
-        var homepageUrl = 'https://www.example.com/';
-        item.set('data.homePage', {specified: true, url: homepageUrl});
-        expectTrue(testIsVisible('#open-homepage'));
-        expectEquals(homepageUrl, item.$$('#open-homepage').href);
+        // TODO(devlin): Add checks for homepage once it's added back to the
+        // mocks.
+
+        expectFalse(testIsVisible('#id-section'));
+        expectFalse(testIsVisible('#inspectable-views'));
+
+        item.set('inDevMode', true);
+        Polymer.dom.flush();
+        expectTrue(testIsVisible('#id-section'));
+        expectTrue(testIsVisible('#inspectable-views'));
       });
 
       test(assert(TestNames.ClickableElements), function() {
@@ -133,7 +141,11 @@ cr.define('extension_detail_view_tests', function() {
             item.$$('#collect-errors'), 'setItemCollectsErrors',
             [extensionData.id, true]);
         mockDelegate.testClickingCalls(
-            item.$$('#options'), 'showItemOptionsPage', [extensionData.id]);
+            item.$$('#extensions-options'), 'showItemOptionsPage',
+            [extensionData.id]);
+        mockDelegate.testClickingCalls(
+            item.$$('#remove-extension'), 'deleteItem',
+            [extensionData.id]);
       });
     });
   }

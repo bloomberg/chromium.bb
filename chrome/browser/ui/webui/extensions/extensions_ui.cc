@@ -147,11 +147,18 @@ content::WebUIDataSource* CreateMdExtensionsSource() {
                              IDS_MD_EXTENSIONS_DEPENDENT_ENTRY);
   source->AddLocalizedString("itemDetails", IDS_MD_EXTENSIONS_ITEM_DETAILS);
   source->AddLocalizedString("itemErrors", IDS_MD_EXTENSIONS_ITEM_ERRORS);
+  source->AddLocalizedString("itemIdHeading",
+                             IDS_MD_EXTENSIONS_ITEM_ID_HEADING);
+  source->AddLocalizedString("itemOff", IDS_MD_EXTENSIONS_ITEM_OFF);
+  source->AddLocalizedString("itemOn", IDS_MD_EXTENSIONS_ITEM_ON);
+  source->AddLocalizedString("itemOptions", IDS_MD_EXTENSIONS_ITEM_OPTIONS);
   source->AddLocalizedString("itemPermissions",
                              IDS_MD_EXTENSIONS_ITEM_PERMISSIONS);
   source->AddLocalizedString("itemPermissionsEmpty",
                              IDS_MD_EXTENSIONS_ITEM_PERMISSIONS_EMPTY);
   source->AddLocalizedString("itemRemove", IDS_MD_EXTENSIONS_ITEM_REMOVE);
+  source->AddLocalizedString("itemRemoveExtension",
+                             IDS_MD_EXTENSIONS_ITEM_REMOVE_EXTENSION);
   source->AddLocalizedString("itemSource",
                              IDS_MD_EXTENSIONS_ITEM_SOURCE);
   source->AddLocalizedString("itemSourcePolicy",
@@ -252,9 +259,8 @@ content::WebUIDataSource* CreateMdExtensionsSource() {
   source->AddResourcePath("item.js", IDR_MD_EXTENSIONS_ITEM_JS);
   source->AddResourcePath("item_list.html", IDR_MD_EXTENSIONS_ITEM_LIST_HTML);
   source->AddResourcePath("item_list.js", IDR_MD_EXTENSIONS_ITEM_LIST_JS);
-  source->AddResourcePath("item_source.html",
-                          IDR_MD_EXTENSIONS_ITEM_SOURCE_HTML);
-  source->AddResourcePath("item_source.js", IDR_MD_EXTENSIONS_ITEM_SOURCE_JS);
+  source->AddResourcePath("item_util.html", IDR_MD_EXTENSIONS_ITEM_UTIL_HTML);
+  source->AddResourcePath("item_util.js", IDR_MD_EXTENSIONS_ITEM_UTIL_JS);
   source->AddResourcePath("options_dialog.html",
                           IDR_MD_EXTENSIONS_OPTIONS_DIALOG_HTML);
   source->AddResourcePath("options_dialog.js",

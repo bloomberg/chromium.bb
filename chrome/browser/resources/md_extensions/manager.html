@@ -82,7 +82,8 @@
             hidden$="[[computeListHidden_(extensions, extensions.splices, apps, apps.splices)]]">
         </extensions-item-list>
         <extensions-detail-view id="details-view" delegate="[[itemDelegate]]"
-            data="[[detailViewItem_]]" on-close="onDetailsViewClose_">
+            in-dev-mode="[[inDevMode]]" data="[[detailViewItem_]]"
+            on-close="onDetailsViewClose_">
         </extensions-detail-view>
         <extensions-keyboard-shortcuts id="keyboard-shortcuts"
             items="[[extensions]]">

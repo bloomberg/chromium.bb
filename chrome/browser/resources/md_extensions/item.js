@@ -157,20 +157,17 @@ cr.define('extensions', function() {
     },
 
     /**
-     * Returns true if the extension is enabled, including terminated
-     * extensions.
      * @return {boolean}
      * @private
      */
-    isEnabled_: function() {
-      switch (this.data.state) {
-        case chrome.developerPrivate.ExtensionState.ENABLED:
-        case chrome.developerPrivate.ExtensionState.TERMINATED:
-          return true;
-        case chrome.developerPrivate.ExtensionState.DISABLED:
-          return false;
-      }
-      assertNotReached();  // FileNotFound.
+    isEnabled_: function() { return extensions.isEnabled(this.data.state); },
+
+    /**
+     * @return {boolean}
+     * @private
+     */
+    isEnableToggleEnabled_: function() {
+      return extensions.userCanChangeEnablement(this.data);
     },
 
     /**
@@ -244,22 +241,15 @@ cr.define('extensions', function() {
      * @private
      */
     computeFirstInspectLabel_: function() {
-      var view = this.data.views[0];
-      // Trim the "chrome-extension://<id>/".
-      var url = new URL(view.url);
-      var label = view.url;
-      if (url.protocol == 'chrome-extension:')
-        label = url.pathname.substring(1);
-      if (label == '_generated_background_page.html')
-        label = this.i18n('viewBackgroundPage');
-      // Add any qualifiers.
-      label += (view.incognito ? ' ' + this.i18n('viewIncognito') : '') +
-               (view.renderProcessId == -1 ?
-                    ' ' + this.i18n('viewInactive') : '') +
-               (view.isIframe ? ' ' + this.i18n('viewIframe') : '');
-      var index = this.data.views.indexOf(view);
-      assert(index >= 0);
-      if (index < this.data.views.length - 1)
+      // Note: theoretically, this wouldn't be called without any inspectable
+      // views (because it's in a dom-if="!computeInspectViewsHidden_()").
+      // However, due to the recycling behavior of iron list, it seems that
+      // sometimes it can. Even when it is, the UI behaves properly, but we
+      // need to handle the case gracefully.
+      if (this.data.views.length == 0)
+        return '';
+      var label = extensions.computeInspectableViewLabel(this.data.views[0]);
+      if (this.data.views.length > 1)
         label += ',';
       return label;
     },

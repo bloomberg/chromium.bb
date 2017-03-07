@@ -1,13 +1,14 @@
 <link rel="import" href="chrome://resources/html/cr.html">
+<link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout-classes.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/iron-icons.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-checkbox/paper-checkbox.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/color.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/neon-animatable-behavior.html">
 <link rel="import" href="chrome://extensions/animation_helper.html">
-<link rel="import" href="chrome://extensions/item_source.html">
+<link rel="import" href="chrome://extensions/item_util.html">
 
 <dom-module id="extensions-detail-view">
   <style include="iron-flex"></style>
@@ -25,11 +26,19 @@
 
       #top-bar {
         align-items: center;
-        color: var(--paper-grey-600);
+        color: #5a5a5a;
         display: flex;
+        font-size: 14px;
         height: 40px;
-        margin-bottom: 30px;
+        margin-bottom: 12px;
         padding: 8px 12px 0;
+      }
+
+      #icon {
+        -webkit-margin-end: 8px;
+        -webkit-margin-start: 20px;
+        height: 24px;
+        width: 24px;
       }
 
       a paper-icon-button {
@@ -40,9 +49,26 @@
         flex-grow: 1;
       }
 
+      .control-line {
+        align-items: center;
+        display: flex;
+        justify-content: space-between;
+      }
+
+      .control-line span {
+        color: #333;
+      }
+
+      #enable-section {
+        height: 48px;
+        margin-bottom: 8px;
+        padding: 0 20px;
+      }
+
       .section {
         border-bottom: 1px solid var(--paper-grey-400);
-        padding: 12px 20px;
+        font-size: 13px;
+        padding: 16px 20px;
       }
 
       .section:last-child {
@@ -50,42 +76,62 @@
       }
 
       .section-title {
-        color: var(--paper-grey-800);
+        color: #333;
+        margin-bottom: 12px;
       }
 
       .section-content {
-        color: var(--paper-grey-600);
+        color: #646464;
       }
 
-      .section paper-checkbox {
-        align-items: center;
-        display: flex;
-        min-height: 40px;
+      #options-section {
+        padding: 7px 20px;
       }
 
-      paper-checkbox {
-        --paper-checkbox-checked-color: var(--google-blue-500);
-        --primary-text-color: var(--paper-grey-800);
+      #options-section .control-line {
+        height: 52px;
+      }
+
+      .actionable {
+        cursor: pointer;
+      }
+
+      .inspectable-view {
+        color: var(--google-blue-700);
+        height: 20px;
+        width: auto;  /* override the default button size of 24x24 */
       }
 
       ul {
         -webkit-padding-start: 20px;
         margin: 0;
       }
+
+      button[is='paper-icon-button-light'].action-arrow {
+        background-image: url(chrome://resources/images/arrow_right.svg);
+      }
+
+      button[is='paper-icon-button-light'].open-in-new {
+        background-image: url(chrome://resources/images/open_in_new.svg);
+        background-size: contain;
+        height: 20px;
+        width: 20px;
+      }
     </style>
     <div id="main">
       <div id="top-bar">
         <paper-icon-button id="close-button" icon="arrow-back"
             on-tap="onCloseButtonTap_"></paper-icon-button>
+        <img alt="" id="icon" src="[[data.iconUrl]]">
         <span id="name">[[data.name]]</span>
-        <a id="open-homepage" href="[[data.homePage.url]]" tabindex="-1"
-            target="_blank" hidden$="[[!shouldShowHomepageButton_(data.*)]]">
-          <paper-icon-button icon="open-in-new"></paper-icon-button>
-        </a>
-        <paper-icon-button id="options" icon="settings"
-            on-tap="onOptionsButtonTap_"
-            hidden$="[[!shouldShowOptionsButton_(data.*)]]">
-        </paper-icon-button>
+      </div>
+      <div class="control-line" id="enable-section">
+        <span>[[computeEnabledText_(data.*)]]</span>
+        <paper-toggle-button id="enable-toggle"
+            checked="[[isEnabled_(data.state)]]"
+            on-change="onEnableChange_"
+            enabled="[[isEnableToggleEnabled_(data)]]">
+        </paper-toggle-button>
       </div>
       <div class="section">
         <div class="section-title">$i18n{itemDescriptionLabel}</div>
@@ -94,6 +140,25 @@
       <div class="section">
         <div class="section-title">$i18n{itemVersion}</div>
         <div class="section-content">[[data.version]]</div>
+      </div>
+      <div class="section" id="id-section" hidden$="[[!inDevMode]]">
+        <div class="section-title">$i18n{itemIdHeading}</div>
+        <div class="section-content">[[data.id]]</div>
+      </div>
+      <div class="section" id="inspectable-views" hidden$="[[!inDevMode]]">
+        <div class="section-title">$i18n{itemInspectViews}</div>
+        <div class="section-content">
+          <ul id="inspect-views">
+            <template is="dom-repeat" items="[[data.views]]">
+              <li>
+                <button class="inspectable-view" on-tap="onInspectTap_"
+                    is="paper-icon-button-light">
+                  [[computeInspectLabel_(item)]]
+                </button>
+              </li>
+            </template>
+          </ul>
+        </div>
       </div>
       <div class="section">
         <div class="section-title">$i18n{itemPermissions}</div>
@@ -124,37 +189,56 @@
         </div>
       </template>
       <template is="dom-if" if="[[shouldShowOptionsSection_(data.*)]]">
-        <div class="section layout vertical">
+        <div class="section layout vertical" id="options-section">
           <template is="dom-if" if="[[data.incognitoAccess.isEnabled]]">
-            <paper-checkbox id="allow-incognito" class="checkbox"
-                checked="[[data.incognitoAccess.isActive]]"
-                on-change="onAllowIncognitoChange_">
-              $i18n{itemAllowIncognito}
-            </paper-checkbox>
+            <div class="control-line">
+              <span>$i18n{itemAllowIncognito}</span>
+              <paper-toggle-button id="allow-incognito"
+                  checked="[[data.incognitoAccess.isActive]]"
+                  on-change="onAllowIncognitoChange_"></paper-toggle-button>
+            </div>
           </template>
           <template is="dom-if" if="[[data.fileAccess.isEnabled]]">
-            <paper-checkbox id="allow-on-file-urls" class="checkbox"
-                checked="[[data.fileAccess.isActive]]"
-                on-change="onAllowOnFileUrlsChange_">
-              $i18n{itemAllowOnFileUrls}
-            </paper-checkbox>
+            <div class="control-line">
+              <span>$i18n{itemAllowOnFileUrls}</span>
+              <paper-toggle-button id="allow-on-file-urls"
+                  checked="[[data.fileAccess.isActive]]"
+                  on-change="onAllowOnFileUrlsChange_"></paper-toggle-button>
+            </div>
           </template>
           <template is="dom-if" if="[[data.runOnAllUrls.isEnabled]]">
-            <paper-checkbox id="allow-on-all-sites" class="checkbox"
-                checked="[[data.runOnAllUrls.isActive]]"
-                on-change="onAllowOnAllSitesChange_">
-              $i18n{itemAllowOnAllSites}
-            </paper-checkbox>
+            <div class="control-line">
+              <span>$i18n{itemAllowOnAllSites}</span>
+              <paper-toggle-button id="allow-on-all-sites"
+                  checked="[[data.runOnAllUrls.isActive]]"
+                  on-change="onAllowOnAllSitesChange_"></paper-toggle-button>
+            </div>
           </template>
           <template is="dom-if" if="[[data.errorCollection.isEnabled]]">
-            <paper-checkbox id="collect-errors" class="checkbox"
-                checked="[[data.errorCollection.isActive]]"
-                on-change="onCollectErrorsChange_">
-              $i18n{itemCollectErrors}
-            </paper-checkbox>
+            <div class="control-line">
+              <span>$i18n{itemCollectErrors}</span>
+              <paper-toggle-button id="collect-errors"
+                  checked="[[data.errorCollection.isActive]]"
+                  on-change="onCollectErrorsChange_"></paper-toggle-button>
+            </div>
           </template>
         </div>
       </template>
+      <div class="section"
+          hidden$="[[!shouldShowOptionsLink_(data.*)]]">
+        <div class="control-line actionable" id="extensions-options"
+            on-tap="onOptionsTap_">
+          <span>$i18n{itemOptions}</span>
+          <button class="open-in-new" is="paper-icon-button-light"></button>
+        </div>
+      </div>
+      <div class="section">
+        <div class="control-line actionable" id="remove-extension"
+            on-tap="onRemoveTap_">
+          <span>$i18n{itemRemoveExtension}</span>
+          <button class="action-arrow" is="paper-icon-button-light"></button>
+        </div>
+      </div>
       <div class="section">
         <div class="section-title">$i18n{itemSource}</div>
         <div class="section-content">

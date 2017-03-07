@@ -4385,6 +4385,18 @@ From <ph name="DOWNLOAD_DOMAIN">$3<ex>example.com</ex></ph>
         <message name="IDS_MD_EXTENSIONS_ITEM_DETAILS" desc="The text on the button to show more details for a given extension.">
           Details
         </message>
+        <message name="IDS_MD_EXTENSIONS_ITEM_ID_HEADING" desc="The heading above the ID of the extension.">
+          ID
+        </message>
+        <message name="IDS_MD_EXTENSIONS_ITEM_OFF" desc="The label to indicate that a specific extension is not currently enabled.">
+          Off
+        </message>
+        <message name="IDS_MD_EXTENSIONS_ITEM_ON" desc="The label to indicate that a specific extension is currently enabled.">
+          On
+        </message>
+        <message name="IDS_MD_EXTENSIONS_ITEM_OPTIONS" desc="The label on the button to open an extension options page.">
+          Extension options
+        </message>
         <message name="IDS_MD_EXTENSIONS_ITEM_PERMISSIONS" desc="The label above the list of an extension's permissions.">
           Permissions
         </message>
@@ -4393,6 +4405,9 @@ From <ph name="DOWNLOAD_DOMAIN">$3<ex>example.com</ex></ph>
         </message>
         <message name="IDS_MD_EXTENSIONS_ITEM_REMOVE" desc="The label of the button to remove an extension.">
           Remove
+        </message>
+        <message name="IDS_MD_EXTENSIONS_ITEM_REMOVE_EXTENSION" desc="The label on the button to remove an extension.">
+          Remove extension
         </message>
         <message name="IDS_MD_EXTENSIONS_ITEM_SOURCE" desc="The label above an extension's source, which indicates where the extension came from (webstore, third-party, local disk, etc).">
           Source
