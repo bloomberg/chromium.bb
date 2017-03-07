@@ -4038,8 +4038,13 @@ TEST_F(LayerTreeHostCommonTest, ClipRectOfSurfaceWhoseParentIsAClipChild) {
   clip_parent->SetMasksToBounds(true);
   render_surface1->SetMasksToBounds(true);
 
-  ExecuteCalculateDrawProperties(root);
+  float device_scale_factor = 1.f;
+  ExecuteCalculateDrawProperties(root, device_scale_factor);
   EXPECT_EQ(gfx::Rect(50, 50),
+            render_surface2->GetRenderSurface()->clip_rect());
+  device_scale_factor = 2.f;
+  ExecuteCalculateDrawProperties(root, device_scale_factor);
+  EXPECT_EQ(gfx::Rect(100, 100),
             render_surface2->GetRenderSurface()->clip_rect());
 }
 
