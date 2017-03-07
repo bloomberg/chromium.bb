@@ -7,8 +7,8 @@
 <script>
 const longText = 'Good good good good good good good good good good good good good. '.repeat(600);
 spellcheck_test(
-    `<div contenteditable>zz zz zz. ${longText}zz zz zz.</div>`,
+    `<div contenteditable>${longText}zz zz zz.</div>`,
     document => document.querySelector('div').focus(),
-    `<div contenteditable>#zz# #zz# #zz#. ${longText}#zz# #zz# #zz#.</div>`,
+    `<div contenteditable>${longText}#zz# #zz# #zz#.</div>`,
     'Spellchecking long text does not freeze the page.');
 </script>
