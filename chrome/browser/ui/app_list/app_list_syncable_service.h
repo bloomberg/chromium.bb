@@ -85,6 +85,8 @@ class AppListSyncableService : public syncer::SyncableService,
 
   ~AppListSyncableService() override;
 
+  static const char kOemFolderId[];
+
   // Registers prefs to support local storage.
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 

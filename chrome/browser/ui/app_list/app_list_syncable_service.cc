@@ -54,8 +54,6 @@ namespace app_list {
 
 namespace {
 
-const char kOemFolderId[] = "ddb1da55-d478-4243-8642-56d3041f0263";
-
 const char kNameKey[] = "name";
 const char kParentIdKey[] = "parent_id";
 const char kPositionKey[] = "position";
@@ -287,6 +285,10 @@ class AppListSyncableService::ModelObserver : public AppListModelObserver {
 };
 
 // AppListSyncableService
+
+// static
+const char AppListSyncableService::kOemFolderId[] =
+    "ddb1da55-d478-4243-8642-56d3041f0263";
 
 // static
 void AppListSyncableService::RegisterProfilePrefs(
@@ -1143,18 +1145,21 @@ std::string AppListSyncableService::FindOrCreateOemFolder() {
   if (!oem_folder) {
     std::unique_ptr<AppListFolderItem> new_folder(new AppListFolderItem(
         kOemFolderId, AppListFolderItem::FOLDER_TYPE_OEM));
-    oem_folder =
-        static_cast<AppListFolderItem*>(model_->AddItem(std::move(new_folder)));
     SyncItem* oem_sync_item = FindSyncItem(kOemFolderId);
+    syncer::StringOrdinal oem_position;
     if (oem_sync_item) {
+      DCHECK(oem_sync_item->item_ordinal.IsValid());
       VLOG(1) << "Creating OEM folder from existing sync item: "
                << oem_sync_item->item_ordinal.ToDebugString();
-      model_->SetItemPosition(oem_folder, oem_sync_item->item_ordinal);
+      oem_position = oem_sync_item->item_ordinal;
     } else {
-      model_->SetItemPosition(oem_folder, GetOemFolderPos());
+      oem_position = GetOemFolderPos();
       // Do not create a sync item for the OEM folder here, do it in
       // ResolveFolderPositions() when the item position is finalized.
     }
+    oem_folder =
+        static_cast<AppListFolderItem*>(model_->AddItem(std::move(new_folder)));
+    model_->SetItemPosition(oem_folder, oem_position);
   }
   model_->SetItemName(oem_folder, oem_folder_name_);
   return oem_folder->id();
@@ -1181,24 +1186,40 @@ syncer::StringOrdinal AppListSyncableService::GetOemFolderPos() {
   // stable. TODO(stevenjb): consider explicitly setting the OEM folder location
   // along with the name in ServicesCustomizationDocument::SetOemFolderName().
   AppListItemList* item_list = model_->top_level_item_list();
-  if (item_list->item_count() == 0)
-    return syncer::StringOrdinal();
+  if (!item_list->item_count()) {
+    LOG(ERROR) << "No top level item was found. "
+               << "Placing OEM folder at the beginning.";
+    return syncer::StringOrdinal::CreateInitialOrdinal();
+  }
 
-  size_t oem_index = 0;
-  for (; oem_index < item_list->item_count() - 1; ++oem_index) {
-    AppListItem* cur_item = item_list->item_at(oem_index);
-    if (cur_item->id() == extensions::kWebStoreAppId)
-      break;
+  size_t web_store_app_index;
+  if (!item_list->FindItemIndex(extensions::kWebStoreAppId,
+                                &web_store_app_index)) {
+    LOG(ERROR) << "Web store position is not found it top items. "
+               << "Placing OEM folder at the end.";
+    return item_list->item_at(item_list->item_count() - 1)
+        ->position()
+        .CreateAfter();
   }
-  syncer::StringOrdinal oem_ordinal;
-  AppListItem* prev = item_list->item_at(oem_index);
-  if (oem_index + 1 < item_list->item_count()) {
-    AppListItem* next = item_list->item_at(oem_index + 1);
-    oem_ordinal = prev->position().CreateBetween(next->position());
-  } else {
-    oem_ordinal = prev->position().CreateAfter();
+
+  // Skip items with the same position.
+  const AppListItem* web_store_app_item =
+      item_list->item_at(web_store_app_index);
+  for (size_t j = web_store_app_index + 1; j < item_list->item_count(); ++j) {
+    const AppListItem* next_item = item_list->item_at(j);
+    DCHECK(next_item->position().IsValid());
+    if (!next_item->position().Equals(web_store_app_item->position())) {
+      const syncer::StringOrdinal oem_ordinal =
+          web_store_app_item->position().CreateBetween(next_item->position());
+      VLOG(1) << "Placing OEM Folder at: " << j
+              << " position: " << oem_ordinal.ToDebugString();
+      return oem_ordinal;
+    }
   }
-  VLOG(1) << "Placing OEM Folder at: " << oem_index
+
+  const syncer::StringOrdinal oem_ordinal =
+      web_store_app_item->position().CreateAfter();
+  VLOG(1) << "Placing OEM Folder at: " << item_list->item_count()
           << " position: " << oem_ordinal.ToDebugString();
   return oem_ordinal;
 }
