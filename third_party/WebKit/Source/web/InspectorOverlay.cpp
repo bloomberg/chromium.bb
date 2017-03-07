@@ -42,6 +42,7 @@
 #include "core/frame/LocalFrameClient.h"
 #include "core/frame/Settings.h"
 #include "core/frame/VisualViewport.h"
+#include "core/html/HTMLFrameOwnerElement.h"
 #include "core/input/EventHandler.h"
 #include "core/inspector/InspectorOverlayHost.h"
 #include "core/layout/api/LayoutViewItem.h"
@@ -734,6 +735,17 @@ bool InspectorOverlay::handleMouseMove(const WebMouseEvent& event) {
 
   if (!node)
     return true;
+
+  if (node->isFrameOwnerElement()) {
+    HTMLFrameOwnerElement* frameOwner = toHTMLFrameOwnerElement(node);
+    if (frameOwner->contentFrame() &&
+        !frameOwner->contentFrame()->isLocalFrame()) {
+      // Do not consume event so that remote frame can handle it.
+      hideHighlight();
+      m_hoveredNodeForInspectMode.clear();
+      return false;
+    }
+  }
 
   Node* eventTarget = (event.modifiers() & WebInputEvent::ShiftKey)
                           ? hoveredNodeForEvent(frame, event, false)
