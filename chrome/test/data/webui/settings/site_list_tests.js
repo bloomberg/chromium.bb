@@ -633,10 +633,13 @@ cr.define('site_list', function() {
 
           openActionMenu(0);
           assertMenu(['Allow', 'Block', 'Edit', 'Remove'], testElement);
+          var menu = testElement.$$('dialog[is=cr-action-menu]');
+          assertTrue(menu.open);
           var edit = testElement.$.edit;
           assertTrue(!!edit);
           MockInteractions.tap(edit);
           Polymer.dom.flush();
+          assertFalse(menu.open);
 
           assertTrue(!!testElement.$$('settings-edit-exception-dialog'));
         });

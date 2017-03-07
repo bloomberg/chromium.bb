@@ -449,15 +449,17 @@ Polymer({
 
   /** @private */
   onEditTap_: function() {
+    // Close action menu without resetting |this.actionMenuSite_| since it is
+    // bound to the dialog.
+    /** @type {!CrActionMenuElement} */ (
+        this.$$('dialog[is=cr-action-menu]')).close();
     this.showEditExceptionDialog_ = true;
   },
 
   /** @private */
   onEditExceptionDialogClosed_: function() {
     this.showEditExceptionDialog_ = false;
-    // Close action menu after dialog has been closed, otherwise
-    // |actionMenuSite_| is reset while the dialog is still accessing it.
-    this.closeActionMenu_();
+    this.actionMenuSite_ = null;
   },
 
   /** @private */
