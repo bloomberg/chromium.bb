@@ -486,7 +486,7 @@
       "configs": [
         {
           "builder": "RELEASE",
-          "experimental": true,
+          "experimental": false,
           "leader_board": false,
           "board_group": "oak",
           "arch": "ARM_INTERNAL"

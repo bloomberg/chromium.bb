@@ -11340,6 +11340,7 @@
             "hana"
         ],
         "chrome_sdk_build_chrome": false,
+        "important": true,
         "vm_tests": [],
         "vm_tests_override": null
     },
