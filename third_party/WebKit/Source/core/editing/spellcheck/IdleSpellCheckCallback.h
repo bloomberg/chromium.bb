@@ -84,6 +84,7 @@ class CORE_EXPORT IdleSpellCheckCallback final
   void coldModeTimerFired(TimerBase*);
   void coldModeInvocation(IdleDeadline*);
   bool coldModeFinishesFullDocument() const;
+  void chunkAndRequestFullCheckingFor(const Element&);
 
   // Implements |SynchronousMutationObserver|.
   void contextDestroyed(Document*) final;
@@ -93,6 +94,8 @@ class CORE_EXPORT IdleSpellCheckCallback final
   mutable bool m_needsMoreColdModeInvocationForTesting;
   const Member<LocalFrame> m_frame;
   uint64_t m_lastProcessedUndoStepSequence;
+  uint64_t m_lastCheckedDOMTreeVersionInColdMode;
+  Member<Node> m_nextNodeInColdMode;
   TaskRunnerTimer<IdleSpellCheckCallback> m_coldModeTimer;
 };
 

@@ -1,0 +1,82 @@
+<!doctype html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../assert_selection.js"></script>
+<script src="spellcheck_test.js"></script>
+<script>
+spellcheck_test(
+    '<div contenteditable>zz</div>',
+    '',
+    '<div contenteditable>#zz#</div>',
+    {
+      title: 'Check static contenteditable.',
+      needsFullCheck: true
+    });
+
+spellcheck_test(
+    '<textarea>zz</textarea>',
+    '',
+    '<textarea>#zz#</textarea>',
+    {
+      title: 'Check static TEXTAREA.',
+      needsFullCheck: true
+    });
+
+// No test case for INPUT because unfocused INPUT should not be checked.
+
+spellcheck_test(
+    '<div contenteditable>zz</div><div contenteditable>asd</div>',
+    '',
+    '<div contenteditable>#zz#</div><div contenteditable>#asd#</div>',
+    {
+      title: 'Check multiple fields.',
+      needsFullCheck: true
+    });
+
+spellcheck_test(
+    [
+      '<div contenteditable spellcheck="false">',
+        'zz',
+        '<div spellcheck="true">',
+          'foo',
+          '<div spellcheck="false">asd</div>',
+          'foo',
+        '</div>',
+        'zz',
+      '</div>'
+    ].join(''),
+    '',
+    [
+      '<div contenteditable spellcheck="false">',
+        'zz',
+        '<div spellcheck="true">',
+          '#foo#',
+          '<div spellcheck="false">asd</div>',
+          '#foo#',
+        '</div>',
+        'zz',
+      '</div>'
+    ].join(''),
+    {
+      title: 'Handle mixed spellcheck values.',
+      needsFullCheck: true
+    });
+
+spellcheck_test(
+    '<textarea disabled>zz</textarea>',
+    '',
+    '<textarea disabled>zz</textarea>',
+    {
+      title: 'Do not check disabled TEXTAREA.',
+      needsFullCheck: true
+    });
+
+spellcheck_test(
+    '<textarea readonly>zz</textarea>',
+    '',
+    '<textarea readonly>zz</textarea>',
+    {
+      title: 'Do not check readonly TEXTAREA.',
+      needsFullCheck: true
+    });
+</script>

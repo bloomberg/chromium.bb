@@ -290,6 +290,8 @@ const kTitle = 'title';
 const kCallback = 'callback';
 /** @type {string} */
 const kIsSpellcheckTest = 'isSpellcheckTest';
+/** @type {string} */
+const kNeedsFullCheck = 'needsFullCheck';
 
 // Spellchecker gets triggered not only by text and selection change, but also
 // by focus change. For example, misspelling markers in <INPUT> disappear when
@@ -357,9 +359,13 @@ function invokeSpellcheckTest(testObject, input, tester, expectedText) {
       });
     };
 
-    if (internals.idleTimeSpellCheckerState !== undefined &&
-        internals.idleTimeSpellCheckerState(sample.document) === 'HotModeRequested') {
+    if (internals.idleTimeSpellCheckerState !== undefined) {
+      if (internals.idleTimeSpellCheckerState(sample.document) === 'HotModeRequested')
         internals.runIdleTimeSpellChecker(sample.document);
+      if (testObject.properties[kNeedsFullCheck]) {
+        while (internals.idleTimeSpellCheckerState(sample.document) !== 'Inactive')
+          internals.runIdleTimeSpellChecker(sample.document);
+      }
     }
 
     // For a test that does not create new spell check request, a synchronous
@@ -407,7 +413,7 @@ add_result_callback(testObj => {
 function getTestArguments(passedArgs) {
   const args = {};
   args[kIsSpellcheckTest] = true;
-  [kTitle, kCallback].forEach(key => args[key] = undefined);
+  [kTitle, kCallback, kNeedsFullCheck].forEach(key => args[key] = undefined);
   if (!passedArgs)
     return args;
 
@@ -416,7 +422,8 @@ function getTestArguments(passedArgs) {
     return args;
   }
 
-  [kTitle, kCallback].forEach(key => args[key] = passedArgs[key]);
+  [kTitle, kCallback, kNeedsFullCheck].forEach(
+      key => args[key] = passedArgs[key]);
   return args;
 }
 

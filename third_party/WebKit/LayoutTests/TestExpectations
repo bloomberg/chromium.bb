@@ -2478,5 +2478,10 @@ crbug.com/697342 virtual/mojo-loading/http/tests/push_messaging/permission-state
 crbug.com/698520 external/wpt/preload/fetch-destination.https.html [ Failure Pass ]
 crbug.com/698521 external/wpt/preload/preload-with-type.html [ Failure Pass ]
 
+# TODO(xiaochengh): The following tests should pass if IdleTimeSpellChecking is enabled.
+crbug.com/517298 editing/spelling/spellcheck_test.html [ Failure ]
+crbug.com/517298 editing/spelling/cold_mode_static_page.html [ Skip ]
+crbug.com/517298 editing/spelling/cold_mode_type_idle.html [ Skip ]
+
 # Sheriff failures 2017-03-06
 crbug.com/698872 [ Linux Debug ] external/wpt/service-workers/service-worker/fetch-event-redirect.https.html [ Crash ]
