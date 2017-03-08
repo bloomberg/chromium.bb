@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2017 The Chromium Authors. All rights reserved.
+     Use of this source code is governed by a BSD-style license that can be
+     found in the LICENSE file. -->
+<!-- TODO(https://crbug.com/602627) tools:targetApi added to mute the NewApi lint error. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        tools:targetApi="21"
+        android:width="48dp"
+        android:height="48dp"
+        android:viewportWidth="48.0"
+        android:viewportHeight="48.0">
+    <path
+        android:pathData="M38,8L10,8c-2.21,0 -3.98,1.79 -3.98,4L6,36c0,2.21 1.79,4 4,4h28c2.21,0 4,-1.79 4,-4L42,12c0,-2.21 -1.79,-4 -4,-4zM28,36L10,36v-8h18v8zM28,26L10,26v-8h18v8zM38,36h-8L30,18h8v18z"
+        android:fillColor="#FFFFFF"/>
+</vector>

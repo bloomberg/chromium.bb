@@ -16,7 +16,6 @@ import android.graphics.Color;
 import android.net.Uri;
 import android.os.StrictMode;
 import android.provider.Browser;
-import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
 import android.support.customtabs.CustomTabsIntent;
 import android.text.TextUtils;
@@ -52,8 +51,6 @@ import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.widget.Toast;
 
 import java.io.File;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -87,16 +84,6 @@ public class DownloadUtils {
 
     @VisibleForTesting
     static final String ELLIPSIS = "\u2026";
-
-    /**
-     * Possible sizes of type-based icons.
-     */
-    @IntDef({ICON_SIZE_24_DP, ICON_SIZE_36_DP})
-    @Retention(RetentionPolicy.SOURCE)
-    public @interface IconSize {}
-
-    public static final int ICON_SIZE_24_DP = 24;
-    public static final int ICON_SIZE_36_DP = 36;
 
     /**
      * Displays the download manager UI. Note the UI is different on tablets and on phones.
@@ -689,29 +676,21 @@ public class DownloadUtils {
     /**
      * Return an icon for a given file type.
      * @param fileType Type of the file as returned by DownloadFilter.
-     * @param iconSize Size of the returned icon.
-     * @return Resource ID of the corresponding icon.
      */
-    public static int getIconResId(int fileType, @IconSize int iconSize) {
+    public static int getIconResId(int fileType) {
         switch (fileType) {
             case DownloadFilter.FILTER_PAGE:
-                return iconSize == ICON_SIZE_24_DP ? R.drawable.ic_drive_site_white_24dp
-                                                   : R.drawable.ic_drive_site_white_36dp;
+                return R.drawable.ic_drive_site_white;
             case DownloadFilter.FILTER_VIDEO:
-                return iconSize == ICON_SIZE_24_DP ? R.drawable.ic_play_arrow_white_24dp
-                                                   : R.drawable.ic_play_arrow_white_36dp;
+                return R.drawable.ic_play_arrow_white;
             case DownloadFilter.FILTER_AUDIO:
-                return iconSize == ICON_SIZE_24_DP ? R.drawable.ic_music_note_white_24dp
-                                                   : R.drawable.ic_music_note_white_36dp;
+                return R.drawable.ic_music_note_white;
             case DownloadFilter.FILTER_IMAGE:
-                return iconSize == ICON_SIZE_24_DP ? R.drawable.ic_image_white_24dp
-                                                   : R.drawable.ic_image_white_36dp;
+                return R.drawable.ic_image_white;
             case DownloadFilter.FILTER_DOCUMENT:
-                return iconSize == ICON_SIZE_24_DP ? R.drawable.ic_drive_text_white_24dp
-                                                   : R.drawable.ic_drive_text_white_36dp;
+                return R.drawable.ic_drive_text_white;
             default:
-                return iconSize == ICON_SIZE_24_DP ? R.drawable.ic_drive_file_white_24dp
-                                                   : R.drawable.ic_drive_text_white_36dp;
+                return R.drawable.ic_drive_file_white;
         }
     }
 

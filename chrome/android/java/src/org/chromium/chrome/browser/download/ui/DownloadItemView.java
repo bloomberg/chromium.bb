@@ -11,6 +11,7 @@ import android.text.TextUtils;
 import android.text.format.Formatter;
 import android.util.AttributeSet;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -32,6 +33,7 @@ public class DownloadItemView extends SelectableItemView<DownloadHistoryItemWrap
     private final int mMargin;
     private final int mIconBackgroundColor;
     private final int mIconBackgroundColorSelected;
+    private final int mFileTypeIconPaddingPx;
     private final ColorStateList mIconForegroundColorList;
 
     private DownloadHistoryItemWrapper mItem;
@@ -67,6 +69,8 @@ public class DownloadItemView extends SelectableItemView<DownloadHistoryItemWrap
         mIconBackgroundColorSelected =
                 ApiCompatibilityUtils.getColor(context.getResources(), R.color.google_grey_600);
         mIconForegroundColorList = DownloadUtils.getIconForegroundColorList(context);
+        mFileTypeIconPaddingPx = context.getResources().getDimensionPixelSize(
+                R.dimen.downloads_item_file_type_icon_padding);
     }
 
     @Override
@@ -153,7 +157,7 @@ public class DownloadItemView extends SelectableItemView<DownloadHistoryItemWrap
         }
 
         // Pick what icon to display for the item.
-        mIconResId = DownloadUtils.getIconResId(fileType, DownloadUtils.ICON_SIZE_24_DP);
+        mIconResId = DownloadUtils.getIconResId(fileType);
         updateIconView();
 
         Context context = mFilesizeView.getContext();
@@ -241,15 +245,22 @@ public class DownloadItemView extends SelectableItemView<DownloadHistoryItemWrap
 
     private void updateIconView() {
         if (isChecked()) {
+            mIconView.setScaleType(ImageView.ScaleType.CENTER);
+            mIconView.setPadding(0, 0, 0, 0);
             mIconView.setBackgroundColor(mIconBackgroundColorSelected);
             mIconView.setImageResource(R.drawable.ic_check_googblue_24dp);
             mIconView.setTint(mIconForegroundColorList);
         } else if (mThumbnailBitmap != null) {
             assert !mThumbnailBitmap.isRecycled();
+            mIconView.setScaleType(ImageView.ScaleType.CENTER);
+            mIconView.setPadding(0, 0, 0, 0);
             mIconView.setBackground(null);
             mIconView.setImageBitmap(mThumbnailBitmap);
             mIconView.setTint(null);
         } else {
+            mIconView.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
+            mIconView.setPadding(mFileTypeIconPaddingPx, mFileTypeIconPaddingPx,
+                    mFileTypeIconPaddingPx, mFileTypeIconPaddingPx);
             mIconView.setBackgroundColor(mIconBackgroundColor);
             mIconView.setImageResource(mIconResId);
             mIconView.setTint(mIconForegroundColorList);
