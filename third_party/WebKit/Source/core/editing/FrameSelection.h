@@ -178,7 +178,6 @@ class CORE_EXPORT FrameSelection final
   void didChangeFocus();
 
   const SelectionInDOMTree& selectionInDOMTree() const;
-  bool isInPasswordField() const;
   bool isDirectional() const { return selectionInDOMTree().isDirectional(); }
 
   // If this FrameSelection has a logical range which is still valid, this

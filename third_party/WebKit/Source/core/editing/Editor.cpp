@@ -283,12 +283,20 @@ bool Editor::canEditRichly() const {
 // copy/paste (like divs, or a document body).
 
 bool Editor::canDHTMLCut() {
-  return !frame().selection().isInPasswordField() &&
+  // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // needs to be audited.  See http://crbug.com/590369 for more details.
+  frame().document()->updateStyleAndLayoutIgnorePendingStylesheets();
+  return !isInPasswordField(
+             frame().selection().computeVisibleSelectionInDOMTree().start()) &&
          !dispatchCPPEvent(EventTypeNames::beforecut, DataTransferNumb);
 }
 
 bool Editor::canDHTMLCopy() {
-  return !frame().selection().isInPasswordField() &&
+  // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // needs to be audited.  See http://crbug.com/590369 for more details.
+  frame().document()->updateStyleAndLayoutIgnorePendingStylesheets();
+  return !isInPasswordField(
+             frame().selection().computeVisibleSelectionInDOMTree().start()) &&
          !dispatchCPPEvent(EventTypeNames::beforecopy, DataTransferNumb);
 }
 
@@ -317,7 +325,8 @@ bool Editor::canCopy() const {
     return true;
   FrameSelection& selection = frame().selection();
   return selection.computeVisibleSelectionInDOMTreeDeprecated().isRange() &&
-         !selection.isInPasswordField();
+         !isInPasswordField(
+             frame().selection().computeVisibleSelectionInDOMTree().start());
 }
 
 bool Editor::canPaste() const {
@@ -442,14 +451,22 @@ void Editor::pasteAsFragment(DocumentFragment* pastingFragment,
 }
 
 bool Editor::tryDHTMLCopy() {
-  if (frame().selection().isInPasswordField())
+  // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // needs to be audited.  See http://crbug.com/590369 for more details.
+  frame().document()->updateStyleAndLayoutIgnorePendingStylesheets();
+  if (isInPasswordField(
+          frame().selection().computeVisibleSelectionInDOMTree().start()))
     return false;
 
   return !dispatchCPPEvent(EventTypeNames::copy, DataTransferWritable);
 }
 
 bool Editor::tryDHTMLCut() {
-  if (frame().selection().isInPasswordField())
+  // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // needs to be audited.  See http://crbug.com/590369 for more details.
+  frame().document()->updateStyleAndLayoutIgnorePendingStylesheets();
+  if (isInPasswordField(
+          frame().selection().computeVisibleSelectionInDOMTree().start()))
     return false;
 
   return !dispatchCPPEvent(EventTypeNames::cut, DataTransferWritable);

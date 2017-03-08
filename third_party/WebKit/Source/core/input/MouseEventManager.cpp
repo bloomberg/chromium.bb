@@ -9,6 +9,7 @@
 #include "core/dom/Element.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/TaskRunnerHelper.h"
+#include "core/editing/EditingUtilities.h"
 #include "core/editing/FrameSelection.h"
 #include "core/editing/SelectionController.h"
 #include "core/events/DragEvent.h"
@@ -847,10 +848,17 @@ bool MouseEventManager::tryStartDrag(
   // reset. Hence, need to check if this particular drag operation can
   // continue even if dispatchEvent() indicates no (direct) cancellation.
   // Do that by checking if m_dragSrc is still set.
-  m_mouseDownMayStartDrag =
-      dispatchDragSrcEvent(EventTypeNames::dragstart, m_mouseDown) ==
+  m_mouseDownMayStartDrag = false;
+  if (dispatchDragSrcEvent(EventTypeNames::dragstart, m_mouseDown) ==
           WebInputEventResult::NotHandled &&
-      !m_frame->selection().isInPasswordField() && dragState().m_dragSrc;
+      dragState().m_dragSrc) {
+    // TODO(editing-dev): The use of
+    // updateStyleAndLayoutIgnorePendingStylesheets needs to be audited.  See
+    // http://crbug.com/590369 for more details.
+    m_frame->document()->updateStyleAndLayoutIgnorePendingStylesheets();
+    m_mouseDownMayStartDrag = !isInPasswordField(
+        m_frame->selection().computeVisibleSelectionInDOMTree().start());
+  }
 
   // Invalidate clipboard here against anymore pasteboard writing for security.
   // The drag image can still be changed as we drag, but not the pasteboard

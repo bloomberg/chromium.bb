@@ -670,13 +670,6 @@ Range* FrameSelection::firstRange() const {
   return m_selectionEditor->firstRange();
 }
 
-bool FrameSelection::isInPasswordField() const {
-  // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
-  // needs to be audited.  See http://crbug.com/590369 for more details.
-  document().updateStyleAndLayoutIgnorePendingStylesheets();
-  return blink::isInPasswordField(computeVisibleSelectionInDOMTree().start());
-}
-
 void FrameSelection::notifyAccessibilityForSelectionChange() {
   if (selectionInDOMTree().isNone())
     return;
