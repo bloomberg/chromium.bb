@@ -148,24 +148,25 @@ void od_ec_dec_init(od_ec_dec *dec, const unsigned char *buf,
   od_ec_dec_refill(dec);
 }
 
-/*Decode a bit that has an fz probability of being a zero in Q15.
-  fz: The probability that the bit is zero, scaled by 32768.
+/*Decode a single binary value.
+  {EC_SMALLMUL} f: The probability that the bit is one, scaled by 32768.
+  {else} f: The probability that the bit is zero, scaled by 32768.
   Return: The value decoded (0 or 1).*/
-int od_ec_decode_bool_q15(od_ec_dec *dec, unsigned fz) {
+int od_ec_decode_bool_q15(od_ec_dec *dec, unsigned f) {
   od_ec_window dif;
   od_ec_window vw;
   unsigned r;
   unsigned r_new;
   unsigned v;
   int ret;
-  OD_ASSERT(0 < fz);
-  OD_ASSERT(fz < 32768U);
+  OD_ASSERT(0 < f);
+  OD_ASSERT(f < 32768U);
   dif = dec->dif;
   r = dec->rng;
   OD_ASSERT(dif >> (OD_EC_WINDOW_SIZE - 16) < r);
   OD_ASSERT(32768U <= r);
 #if CONFIG_EC_SMALLMUL
-  v = (r >> 8) * (uint32_t)(32768U - fz) >> 7;
+  v = (r >> 8) * (uint32_t)f >> 7;
   vw = (od_ec_window)v << (OD_EC_WINDOW_SIZE - 16);
   ret = 1;
   r_new = v;
@@ -175,7 +176,7 @@ int od_ec_decode_bool_q15(od_ec_dec *dec, unsigned fz) {
     ret = 0;
   }
 #else
-  v = fz * (uint32_t)r >> 15;
+  v = f * (uint32_t)r >> 15;
   vw = (od_ec_window)v << (OD_EC_WINDOW_SIZE - 16);
   ret = 0;
   r_new = v;
@@ -193,6 +194,7 @@ int od_ec_decode_bool_q15(od_ec_dec *dec, unsigned fz) {
         [s > 0 ? cdf[s - 1] : 0, cdf[s]).
        The values must be monotonically non-increasing, and cdf[nsyms - 1]
         must be 32768.
+       {EC_SMALLMUL}: The CDF contains 32768 minus those values.
   nsyms: The number of symbols in the alphabet.
          This should be at most 16.
   Return: The decoded symbol s.*/
@@ -207,7 +209,7 @@ int od_ec_decode_cdf_q15(od_ec_dec *dec, const uint16_t *cdf, int nsyms) {
   dif = dec->dif;
   r = dec->rng;
   OD_ASSERT(dif >> (OD_EC_WINDOW_SIZE - 16) < r);
-  OD_ASSERT(cdf[nsyms - 1] == 32768U);
+  OD_ASSERT(cdf[nsyms - 1] == OD_ICDF(32768U));
   OD_ASSERT(32768U <= r);
 #if CONFIG_EC_SMALLMUL
   c = (unsigned)(dif >> (OD_EC_WINDOW_SIZE - 16));
@@ -215,7 +217,7 @@ int od_ec_decode_cdf_q15(od_ec_dec *dec, const uint16_t *cdf, int nsyms) {
   ret = -1;
   do {
     u = v;
-    v = (r >> 8) * (uint32_t)(32768U - cdf[++ret]) >> 7;
+    v = (r >> 8) * (uint32_t)cdf[++ret] >> 7;
   } while (c < v);
   OD_ASSERT(v < u);
   OD_ASSERT(u <= r);

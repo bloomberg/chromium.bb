@@ -57,7 +57,7 @@ static INLINE int aom_daala_read(daala_reader *r, int prob) {
 }*/
 #endif
 
-  bit = od_ec_decode_bool_q15(&r->ec, p);
+  bit = od_ec_decode_bool_q15(&r->ec, OD_ICDF(p));
 
 #if CONFIG_BITSTREAM_DEBUG
   {
@@ -108,7 +108,17 @@ static INLINE int aom_daala_reader_has_error(daala_reader *r) {
 
 static INLINE int daala_read_symbol(daala_reader *r, const aom_cdf_prob *cdf,
                                     int nsymbs) {
-  int symb = od_ec_decode_cdf_q15(&r->ec, cdf, nsymbs);
+  int symb;
+#if CONFIG_EC_SMALLMUL
+  {
+    aom_cdf_prob icdf[16];
+    int i;
+    for (i = 0; i < nsymbs; i++) icdf[i] = OD_ICDF(cdf[i]);
+    symb = od_ec_decode_cdf_q15(&r->ec, icdf, nsymbs);
+  }
+#else
+  symb = od_ec_decode_cdf_q15(&r->ec, cdf, nsymbs);
+#endif
 
 #if CONFIG_BITSTREAM_DEBUG
   {
