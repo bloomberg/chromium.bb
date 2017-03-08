@@ -68,6 +68,8 @@ content::WebUIDataSource* CreateMdBookmarksUIHTMLSource(Profile* profile) {
   // Resources.
   source->AddResourcePath("app.html", IDR_MD_BOOKMARKS_APP_HTML);
   source->AddResourcePath("app.js", IDR_MD_BOOKMARKS_APP_JS);
+  source->AddResourcePath("bookmarks_store.js",
+                          IDR_MD_BOOKMARKS_BOOKMARKS_STORE_JS);
   source->AddResourcePath("folder_node.html",
                           IDR_MD_BOOKMARKS_FOLDER_NODE_HTML);
   source->AddResourcePath("folder_node.js",
@@ -77,6 +79,8 @@ content::WebUIDataSource* CreateMdBookmarksUIHTMLSource(Profile* profile) {
   source->AddResourcePath("item.js", IDR_MD_BOOKMARKS_ITEM_JS);
   source->AddResourcePath("list.html", IDR_MD_BOOKMARKS_LIST_HTML);
   source->AddResourcePath("list.js", IDR_MD_BOOKMARKS_LIST_JS);
+  source->AddResourcePath("reducers.html", IDR_MD_BOOKMARKS_REDUCERS_HTML);
+  source->AddResourcePath("reducers.js", IDR_MD_BOOKMARKS_REDUCERS_JS);
   source->AddResourcePath("router.html", IDR_MD_BOOKMARKS_ROUTER_HTML);
   source->AddResourcePath("router.js", IDR_MD_BOOKMARKS_ROUTER_JS);
   source->AddResourcePath("shared_style.html",
@@ -87,6 +91,9 @@ content::WebUIDataSource* CreateMdBookmarksUIHTMLSource(Profile* profile) {
   source->AddResourcePath("sidebar.js", IDR_MD_BOOKMARKS_SIDEBAR_JS);
   source->AddResourcePath("store.html", IDR_MD_BOOKMARKS_STORE_HTML);
   source->AddResourcePath("store.js", IDR_MD_BOOKMARKS_STORE_JS);
+  source->AddResourcePath("store_client.html",
+                          IDR_MD_BOOKMARKS_STORE_CLIENT_HTML);
+  source->AddResourcePath("store_client.js", IDR_MD_BOOKMARKS_STORE_CLIENT_JS);
   source->AddResourcePath("toolbar.html", IDR_MD_BOOKMARKS_TOOLBAR_HTML);
   source->AddResourcePath("toolbar.js", IDR_MD_BOOKMARKS_TOOLBAR_JS);
   source->SetDefaultResource(IDR_MD_BOOKMARKS_BOOKMARKS_HTML);

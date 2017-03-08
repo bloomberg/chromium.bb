@@ -1,10 +1,16 @@
+<!-- New-style store: -->
+<link rel="import" href="chrome://resources/html/cr.html">
+<link rel="import" href="chrome://bookmarks/reducers.html">
+<script src="chrome://bookmarks/bookmarks_store.js"></script>
+
+<!-- Old-style store: -->
+<!-- TODO(tsergeant): Remove this version of the store once it is unused. -->
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://bookmarks/router.html">
-<script src="chrome://bookmarks/store.js"></script>
-
 <dom-module id="bookmarks-store">
   <template>
     <bookmarks-router id="router" search-term="[[searchTerm]]"
         selected-id="[[selectedId]]"></bookmarks-router>
   </template>
+  <script src="chrome://bookmarks/store.js"></script>
 </dom-module>

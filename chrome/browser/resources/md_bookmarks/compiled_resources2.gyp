@@ -7,16 +7,26 @@
       'target_name': 'app',
       'dependencies': [
         '<(EXTERNS_GYP):chrome_extensions',
-        'store'
+        'store',
       ],
       'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi'],
+    },
+    {
+      'target_name': 'bookmarks_store',
+      'dependencies': [
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
+        '<(EXTERNS_GYP):chrome_extensions',
+        'reducers',
+        'types',
+      ],
+      'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi']
     },
     {
       'target_name': 'folder_node',
       'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi'],
       'dependencies': [
         '<(EXTERNS_GYP):chrome_extensions',
-        'store'
+        'store',
       ],
     },
     {
@@ -32,9 +42,17 @@
       'dependencies': [
         '<(DEPTH)/ui/webui/resources/cr_elements/cr_action_menu/compiled_resources2.gyp:cr_action_menu',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:load_time_data',
-	'<(EXTERNS_GYP):bookmark_manager_private',
-	'<(EXTERNS_GYP):chrome_extensions',
+        '<(EXTERNS_GYP):bookmark_manager_private',
+        '<(EXTERNS_GYP):chrome_extensions',
         'item',
+      ],
+      'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi'],
+    },
+    {
+      'target_name': 'reducers',
+      'dependencies': [
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
+        'types',
       ],
       'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
@@ -58,6 +76,15 @@
       'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi']
     },
     {
+      'target_name': 'store_client',
+      'dependencies': [
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
+        'bookmarks_store',
+        'types',
+      ],
+      'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi']
+    },
+    {
       'target_name': 'toolbar',
       'dependencies': [
         '<(DEPTH)/ui/webui/resources/cr_elements/cr_action_menu/compiled_resources2.gyp:cr_action_menu',
@@ -65,6 +92,10 @@
         '<(EXTERNS_GYP):chrome_extensions',
       ],
       'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi'],
+    },
+    {
+      'target_name': 'types',
+      'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi']
     },
   ]
 }
