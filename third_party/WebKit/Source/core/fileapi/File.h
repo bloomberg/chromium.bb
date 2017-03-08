@@ -40,6 +40,7 @@ class ExecutionContext;
 class FilePropertyBag;
 class FileMetadata;
 class KURL;
+class ScriptState;
 
 class CORE_EXPORT File final : public Blob {
   DEFINE_WRAPPERTYPEINFO();
@@ -151,7 +152,7 @@ class CORE_EXPORT File final : public Blob {
               long long end,
               const String& contentType,
               ExceptionState&) const override;
-  void close(ExecutionContext*, ExceptionState&) override;
+  void close(ScriptState*, ExceptionState&) override;
 
   bool isFile() const override { return true; }
   bool hasBackingFile() const override { return m_hasBackingFile; }

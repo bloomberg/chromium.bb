@@ -48,6 +48,7 @@ namespace blink {
 class BlobPropertyBag;
 class ExceptionState;
 class ExecutionContext;
+class ScriptState;
 
 class CORE_EXPORT Blob : public GarbageCollectedFinalized<Blob>,
                          public ScriptWrappable,
@@ -98,7 +99,7 @@ class CORE_EXPORT Blob : public GarbageCollectedFinalized<Blob>,
     return slice(start, end, String(), exceptionState);
   }
 
-  virtual void close(ExecutionContext*, ExceptionState&);
+  virtual void close(ScriptState*, ExceptionState&);
 
   String type() const { return m_blobDataHandle->type(); }
   String uuid() const { return m_blobDataHandle->uuid(); }

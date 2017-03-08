@@ -43,5 +43,5 @@ typedef (ArrayBuffer or ArrayBufferView or Blob or USVString) BlobPart;
 
     // TODO(jsbell): start and end arguments should be [Clamp]
     [RaisesException] Blob slice(optional long long start, optional long long end, optional DOMString contentType);
-    [RaisesException, CallWith=ExecutionContext, RuntimeEnabled=FileAPIBlobClose] void close();
+    [RaisesException, CallWith=ScriptState, RuntimeEnabled=FileAPIBlobClose] void close();
 };

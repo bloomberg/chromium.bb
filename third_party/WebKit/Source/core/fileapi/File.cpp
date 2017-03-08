@@ -25,7 +25,9 @@
 
 #include "core/fileapi/File.h"
 
+#include <memory>
 #include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/ScriptState.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/fileapi/FilePropertyBag.h"
 #include "core/frame/UseCounter.h"
@@ -36,7 +38,6 @@
 #include "public/platform/WebFileUtilities.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/DateMath.h"
-#include <memory>
 
 namespace blink {
 
@@ -349,8 +350,7 @@ void File::captureSnapshot(long long& snapshotSize,
   snapshotModificationTimeMS = metadata.modificationTime;
 }
 
-void File::close(ExecutionContext* executionContext,
-                 ExceptionState& exceptionState) {
+void File::close(ScriptState* scriptState, ExceptionState& exceptionState) {
   if (isClosed()) {
     exceptionState.throwDOMException(InvalidStateError,
                                      "Blob has been closed.");
@@ -365,7 +365,7 @@ void File::close(ExecutionContext* executionContext,
   m_fileSystemURL = KURL();
   invalidateSnapshotMetadata();
   m_relativePath = String();
-  Blob::close(executionContext, exceptionState);
+  Blob::close(scriptState, exceptionState);
 }
 
 void File::appendTo(BlobData& blobData) const {

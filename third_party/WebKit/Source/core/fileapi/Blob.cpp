@@ -30,7 +30,9 @@
 
 #include "core/fileapi/Blob.h"
 
+#include <memory>
 #include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/ScriptState.h"
 #include "core/dom/DOMURL.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
@@ -38,7 +40,6 @@
 #include "core/frame/UseCounter.h"
 #include "platform/blob/BlobRegistry.h"
 #include "platform/blob/BlobURL.h"
-#include <memory>
 
 namespace blink {
 
@@ -193,8 +194,7 @@ Blob* Blob::slice(long long start,
   return Blob::create(BlobDataHandle::create(std::move(blobData), length));
 }
 
-void Blob::close(ExecutionContext* executionContext,
-                 ExceptionState& exceptionState) {
+void Blob::close(ScriptState* scriptState, ExceptionState& exceptionState) {
   if (isClosed()) {
     exceptionState.throwDOMException(InvalidStateError,
                                      "Blob has been closed.");
@@ -204,7 +204,7 @@ void Blob::close(ExecutionContext* executionContext,
   // Dereferencing a Blob that has been closed should result in
   // a network error. Revoke URLs registered against it through
   // its UUID.
-  DOMURL::revokeObjectUUID(executionContext, uuid());
+  DOMURL::revokeObjectUUID(scriptState->getExecutionContext(), uuid());
 
   // A Blob enters a 'readability state' of closed, where it will report its
   // size as zero. Blob and FileReader operations now throws on
