@@ -62,6 +62,9 @@ class PageLoadMetricsObserverTestHarness
   // Simulates a user input.
   void SimulateInputEvent(const blink::WebInputEvent& event);
 
+  // Simulates the app being backgrounded.
+  void SimulateAppEnterBackground();
+
   const base::HistogramTester& histogram_tester() const;
 
   // Gets the PageLoadExtraInfo for the committed_load_ in observer_.

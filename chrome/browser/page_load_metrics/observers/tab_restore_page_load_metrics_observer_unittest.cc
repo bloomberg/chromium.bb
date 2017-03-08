@@ -19,8 +19,6 @@
 #include "content/public/browser/web_contents.h"
 #include "url/gurl.h"
 
-namespace previews {
-
 namespace {
 
 const char kDefaultTestUrl[] = "https://google.com";
@@ -59,10 +57,13 @@ class TabRestorePageLoadMetricsObserverTest
     timing_.first_text_paint = base::TimeDelta::FromSeconds(6);
     timing_.load_event_start = base::TimeDelta::FromSeconds(7);
     PopulateRequiredTimingFields(&timing_);
+
+    network_bytes_ = 0;
+    cache_bytes_ = 0;
   }
 
-  void RunTest(content::RestoreType restore_type) {
-    is_restore_ = restore_type == content::RestoreType::NONE;
+  void SimulatePageLoad(bool is_restore, bool simulate_app_background) {
+    is_restore_ = is_restore;
     NavigateAndCommit(GURL(kDefaultTestUrl));
     SimulateTimingUpdate(timing_);
 
@@ -86,35 +87,20 @@ class TabRestorePageLoadMetricsObserverTest
          1024 * 40 /* original_network_content_length */},
     };
 
-    int64_t network_bytes = 0;
-    int64_t cache_bytes = 0;
     for (auto request : resources) {
       SimulateLoadedResource(request);
       if (!request.was_cached) {
-        network_bytes += request.raw_body_bytes;
+        network_bytes_ += request.raw_body_bytes;
       } else {
-        cache_bytes += request.raw_body_bytes;
+        cache_bytes_ += request.raw_body_bytes;
       }
     }
 
-    NavigateToUntrackedUrl();
-    if (!is_restore_.value()) {
-      histogram_tester().ExpectTotalCount(
-          "PageLoad.Clients.TabRestore.Experimental.Bytes.Network", 0);
-      histogram_tester().ExpectTotalCount(
-          "PageLoad.Clients.TabRestore.Experimental.Bytes.Cache", 0);
-      histogram_tester().ExpectTotalCount(
-          "PageLoad.Clients.TabRestore.Experimental.Bytes.Total", 0);
+    if (simulate_app_background) {
+      // The histograms should be logged when the app is backgrounded.
+      SimulateAppEnterBackground();
     } else {
-      histogram_tester().ExpectUniqueSample(
-          "PageLoad.Clients.TabRestore.Experimental.Bytes.Network",
-          static_cast<int>(network_bytes / 1024), 1);
-      histogram_tester().ExpectUniqueSample(
-          "PageLoad.Clients.TabRestore.Experimental.Bytes.Cache",
-          static_cast<int>(cache_bytes / 1024), 1);
-      histogram_tester().ExpectUniqueSample(
-          "PageLoad.Clients.TabRestore.Experimental.Bytes.Total",
-          static_cast<int>((network_bytes + cache_bytes) / 1024), 1);
+      NavigateToUntrackedUrl();
     }
   }
 
@@ -123,6 +109,10 @@ class TabRestorePageLoadMetricsObserverTest
     tracker->AddObserver(base::WrapUnique(
         new TestTabRestorePageLoadMetricsObserver(is_restore_.value())));
   }
+
+  // Simulated byte usage since the last time the test was reset.
+  int64_t network_bytes_;
+  int64_t cache_bytes_;
 
  private:
   base::Optional<bool> is_restore_;
@@ -133,12 +123,39 @@ class TabRestorePageLoadMetricsObserverTest
 
 TEST_F(TabRestorePageLoadMetricsObserverTest, NotRestored) {
   ResetTest();
-  RunTest(content::RestoreType::NONE);
+  SimulatePageLoad(false /* is_restore */, false /* simulate_app_background */);
+  histogram_tester().ExpectTotalCount(
+      "PageLoad.Clients.TabRestore.Experimental.Bytes.Network", 0);
+  histogram_tester().ExpectTotalCount(
+      "PageLoad.Clients.TabRestore.Experimental.Bytes.Cache", 0);
+  histogram_tester().ExpectTotalCount(
+      "PageLoad.Clients.TabRestore.Experimental.Bytes.Total", 0);
 }
 
 TEST_F(TabRestorePageLoadMetricsObserverTest, Restored) {
   ResetTest();
-  RunTest(content::RestoreType::CURRENT_SESSION);
+  SimulatePageLoad(true /* is_restore */, false /* simulate_app_background */);
+  histogram_tester().ExpectUniqueSample(
+      "PageLoad.Clients.TabRestore.Experimental.Bytes.Network",
+      static_cast<int>(network_bytes_ / 1024), 1);
+  histogram_tester().ExpectUniqueSample(
+      "PageLoad.Clients.TabRestore.Experimental.Bytes.Cache",
+      static_cast<int>(cache_bytes_ / 1024), 1);
+  histogram_tester().ExpectUniqueSample(
+      "PageLoad.Clients.TabRestore.Experimental.Bytes.Total",
+      static_cast<int>((network_bytes_ + cache_bytes_) / 1024), 1);
 }
 
-}  // namespace previews
+TEST_F(TabRestorePageLoadMetricsObserverTest, RestoredAppBackground) {
+  ResetTest();
+  SimulatePageLoad(true /* is_restore */, true /* simulate_app_background */);
+  histogram_tester().ExpectUniqueSample(
+      "PageLoad.Clients.TabRestore.Experimental.Bytes.Network",
+      static_cast<int>(network_bytes_ / 1024), 1);
+  histogram_tester().ExpectUniqueSample(
+      "PageLoad.Clients.TabRestore.Experimental.Bytes.Cache",
+      static_cast<int>(cache_bytes_ / 1024), 1);
+  histogram_tester().ExpectUniqueSample(
+      "PageLoad.Clients.TabRestore.Experimental.Bytes.Total",
+      static_cast<int>((network_bytes_ + cache_bytes_) / 1024), 1);
+}

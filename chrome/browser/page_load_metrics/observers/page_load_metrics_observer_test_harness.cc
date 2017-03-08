@@ -148,6 +148,10 @@ void PageLoadMetricsObserverTestHarness::SimulateInputEvent(
   observer_->OnInputEvent(event);
 }
 
+void PageLoadMetricsObserverTestHarness::SimulateAppEnterBackground() {
+  observer_->FlushMetricsOnAppEnterBackground();
+}
+
 const base::HistogramTester&
 PageLoadMetricsObserverTestHarness::histogram_tester() const {
   return histogram_tester_;

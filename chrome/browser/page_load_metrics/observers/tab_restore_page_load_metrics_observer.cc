@@ -56,7 +56,7 @@ TabRestorePageLoadMetricsObserver::FlushMetricsOnAppEnterBackground(
   // app is about to be backgrounded, as part of the Activity.onPause()
   // flow. After this method is invoked, Chrome may be killed without further
   // notification, so we record final metrics collected up to this point.
-  if (!info.did_commit) {
+  if (info.did_commit) {
     RecordByteHistograms();
   }
   return STOP_OBSERVING;
