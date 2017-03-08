@@ -340,6 +340,11 @@ void LayerTreeHost::FinishCommitOnImplThread(
     mutator_host_->PushPropertiesTo(host_impl->mutator_host());
   }
 
+  // Transfer image decode requests to the impl thread.
+  for (auto& request : queued_image_decodes_)
+    host_impl->QueueImageDecode(std::move(request.first), request.second);
+  queued_image_decodes_.clear();
+
   micro_benchmark_controller_.ScheduleImplBenchmarks(host_impl);
   property_trees_.ResetAllChangeTracking();
 }
@@ -1301,6 +1306,14 @@ gfx::ScrollOffset LayerTreeHost::GetScrollOffsetForAnimation(
   Layer* layer = LayerByElementId(element_id);
   DCHECK(layer);
   return layer->ScrollOffsetForAnimation();
+}
+
+void LayerTreeHost::QueueImageDecode(
+    sk_sp<const SkImage> image,
+    const base::Callback<void(bool)>& callback) {
+  TRACE_EVENT0("cc", "LayerTreeHost::QueueImageDecode");
+  queued_image_decodes_.emplace_back(std::move(image), callback);
+  SetNeedsCommit();
 }
 
 LayerListIterator<Layer> LayerTreeHost::begin() const {

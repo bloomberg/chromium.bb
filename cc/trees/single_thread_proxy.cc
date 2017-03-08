@@ -204,6 +204,12 @@ void SingleThreadProxy::DoCommit() {
     if (scheduler_on_impl_thread_)
       scheduler_on_impl_thread_->DidCommit();
 
+    // Issue decode callbacks.
+    auto completed_decode_callbacks =
+        layer_tree_host_impl_->TakeCompletedImageDecodeCallbacks();
+    for (auto& callback : completed_decode_callbacks)
+      callback.Run();
+
     layer_tree_host_impl_->CommitComplete();
 
     // Commit goes directly to the active tree, but we need to synchronously

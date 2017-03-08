@@ -604,6 +604,10 @@ class CC_EXPORT LayerTreeHostImpl
 
   LayerImpl* ViewportMainScrollLayer();
 
+  void QueueImageDecode(sk_sp<const SkImage> image,
+                        const base::Callback<void(bool)>& embedder_callback);
+  std::vector<base::Closure> TakeCompletedImageDecodeCallbacks();
+
  protected:
   LayerTreeHostImpl(
       const LayerTreeSettings& settings,
@@ -703,6 +707,8 @@ class CC_EXPORT LayerTreeHostImpl
                                    base::TimeDelta delayed_by);
 
   void SetContextVisibility(bool is_visible);
+  void ImageDecodeFinished(const base::Callback<void(bool)>& embedder_callback,
+                           bool decode_succeeded);
 
   using UIResourceMap = std::unordered_map<UIResourceId, UIResourceData>;
   UIResourceMap ui_resource_map_;
@@ -843,6 +849,10 @@ class CC_EXPORT LayerTreeHostImpl
 
   std::unique_ptr<PendingTreeDurationHistogramTimer>
       pending_tree_duration_timer_;
+
+  // These callbacks are stored here to be transfered to the main thread when we
+  // begin main frame. These callbacks must only be called on the main thread.
+  std::vector<base::Closure> completed_image_decode_callbacks_;
 
   DISALLOW_COPY_AND_ASSIGN(LayerTreeHostImpl);
 };

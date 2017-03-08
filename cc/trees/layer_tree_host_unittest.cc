@@ -7115,5 +7115,71 @@ class LayerTreeHostTestBeginFrameSequenceNumbers : public LayerTreeHostTest {
 
 MULTI_THREAD_BLOCKNOTIFY_TEST_F(LayerTreeHostTestBeginFrameSequenceNumbers);
 
+class LayerTreeHostTestQueueImageDecode : public LayerTreeHostTest {
+ protected:
+  void BeginTest() override { PostSetNeedsCommitToMainThread(); }
+
+  void WillBeginMainFrame() override {
+    if (!first_)
+      return;
+    first_ = false;
+
+    sk_sp<const SkImage> image = CreateDiscardableImage(gfx::Size(10, 10));
+    auto callback =
+        base::Bind(&LayerTreeHostTestQueueImageDecode::ImageDecodeFinished,
+                   base::Unretained(this));
+    // Schedule the decode twice for the same image.
+    layer_tree_host()->QueueImageDecode(image, callback);
+    layer_tree_host()->QueueImageDecode(image, callback);
+  }
+
+  void ImageDecodeFinished(bool decode_succeeded) {
+    EXPECT_TRUE(decode_succeeded);
+    ++finished_decode_count_;
+    EXPECT_LE(finished_decode_count_, 2);
+    if (finished_decode_count_ == 2)
+      EndTest();
+  }
+
+  void AfterTest() override {}
+
+ private:
+  bool first_ = true;
+  int finished_decode_count_ = 0;
+};
+
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestQueueImageDecode);
+
+class LayerTreeHostTestQueueImageDecodeNonLazy : public LayerTreeHostTest {
+ protected:
+  void BeginTest() override { PostSetNeedsCommitToMainThread(); }
+
+  void WillBeginMainFrame() override {
+    if (!first_)
+      return;
+    first_ = false;
+
+    bitmap_.allocN32Pixels(10, 10);
+    sk_sp<const SkImage> image = SkImage::MakeFromBitmap(bitmap_);
+    auto callback = base::Bind(
+        &LayerTreeHostTestQueueImageDecodeNonLazy::ImageDecodeFinished,
+        base::Unretained(this));
+    layer_tree_host()->QueueImageDecode(image, callback);
+  }
+
+  void ImageDecodeFinished(bool decode_succeeded) {
+    EXPECT_TRUE(decode_succeeded);
+    EndTest();
+  }
+
+  void AfterTest() override {}
+
+ private:
+  bool first_ = true;
+  SkBitmap bitmap_;
+};
+
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestQueueImageDecodeNonLazy);
+
 }  // namespace
 }  // namespace cc

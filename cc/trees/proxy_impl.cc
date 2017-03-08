@@ -462,6 +462,8 @@ void ProxyImpl::ScheduledActionSendBeginMainFrame(const BeginFrameArgs& args) {
       layer_tree_host_impl_->ProcessScrollDeltas();
   begin_main_frame_state->evicted_ui_resources =
       layer_tree_host_impl_->EvictedUIResourcesExist();
+  begin_main_frame_state->completed_image_decode_callbacks =
+      layer_tree_host_impl_->TakeCompletedImageDecodeCallbacks();
   MainThreadTaskRunner()->PostTask(
       FROM_HERE, base::Bind(&ProxyMain::BeginMainFrame, proxy_main_weak_ptr_,
                             base::Passed(&begin_main_frame_state)));
