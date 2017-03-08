@@ -1,0 +1,86 @@
+<link rel="import" href="chrome://resources/html/cr.html">
+<link rel="import" href="chrome://resources/html/polymer.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_toolbar/cr_toolbar.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/color.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-toggle-button/paper-toggle-button.html">
+<link rel="import" href="chrome://extensions/icons.html">
+<link rel="stylesheet" href="chrome://resources/css/md_colors.css">
+
+<dom-module id="extensions-toolbar">
+  <template>
+    <style>
+      :host {
+        --toolbar-width: 580px;
+        --toolbar-color: var(--md-toolbar-color);
+      }
+
+      [hidden] {
+        display: none !important;
+      }
+
+      cr-toolbar {
+        --cr-toolbar-field-width: var(--toolbar-width);
+        background: var(--toolbar-color);
+        font-size: 13px;
+      }
+
+      .dev-controls {
+        background: var(--toolbar-color);
+        display: flex;
+        justify-content: center;
+        width: 100%;
+      }
+
+      #button-strip {
+        /* We left-align the text of the left button with the left edge of the
+           search field. Since the buttons have 12px padding, add 24px to the
+           width of the button strip (12px each side) to make centering easy. */
+        width: calc(var(--toolbar-width) + 2 * 12px);
+      }
+
+      #button-strip paper-button {
+        -webkit-margin-end: 16px;
+        -webkit-margin-start: 0;
+        color: white;
+        font-size: 13px;
+        padding: 12px 9px;
+      }
+
+      .more-actions {
+        align-items: center;
+        display: flex;
+        justify-content: flex-end;
+      }
+
+      .more-actions span {
+        -webkit-margin-end: 16px;
+      }
+    </style>
+    <cr-toolbar class="paper-header"
+        page-name="$i18n{toolbarTitle}"
+        search-prompt="$i18n{search}"
+        clear-label="$i18n{clearSearch}"
+        show-menu>
+      <div class="more-actions">
+        <span>$i18n{toolbarDevMode}</span>
+        <paper-toggle-button id="dev-mode" on-change="onDevModeChange_"
+            checked="[[inDevMode]]">
+        </paper-toggle-button>
+      </div>
+    </cr-toolbar>
+    <div class="dev-controls" hidden$="[[!inDevMode]]">
+      <div id="button-strip">
+        <paper-button id="load-unpacked" on-tap="onLoadUnpackedTap_">
+          $i18n{toolbarLoadUnpacked}
+        </paper-button>
+        <paper-button id="pack-extensions" on-tap="onPackTap_">
+          $i18n{toolbarPack}
+        </paper-button>
+        <paper-button id="update-now" on-tap="onUpdateNowTap_">
+          $i18n{toolbarUpdateNow}
+        </paper-button>
+      </div>
+    </div>
+  </template>
+  <script src="chrome://extensions/toolbar.js"></script>
+</dom-module>

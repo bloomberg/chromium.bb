@@ -115,13 +115,6 @@ content::WebUIDataSource* CreateMdExtensionsSource() {
   source->AddLocalizedString("sidebarApps", IDS_MD_EXTENSIONS_SIDEBAR_APPS);
   source->AddLocalizedString("sidebarExtensions",
                              IDS_MD_EXTENSIONS_SIDEBAR_EXTENSIONS);
-  source->AddLocalizedString("sidebarLoadUnpacked",
-                             IDS_MD_EXTENSIONS_SIDEBAR_LOAD_UNPACKED);
-  source->AddLocalizedString("sidebarPack", IDS_MD_EXTENSIONS_SIDEBAR_PACK);
-  source->AddLocalizedString("sidebarUpdateNow",
-                             IDS_MD_EXTENSIONS_SIDEBAR_UPDATE_NOW);
-  source->AddLocalizedString("developerMode",
-                             IDS_MD_EXTENSIONS_SIDEBAR_DEVELOPER_MODE);
   source->AddLocalizedString("dropToInstall",
                              IDS_EXTENSIONS_INSTALL_DROP_TARGET);
   source->AddLocalizedString("errorsPageHeading",
@@ -215,6 +208,13 @@ content::WebUIDataSource* CreateMdExtensionsSource() {
                              IDS_MD_EXTENSIONS_SHORTCUT_SCOPE_IN_CHROME);
   source->AddLocalizedString("shortcutTypeAShortcut",
                              IDS_MD_EXTENSIONS_TYPE_A_SHORTCUT);
+  source->AddLocalizedString("toolbarDevMode",
+                             IDS_MD_EXTENSIONS_DEVELOPER_MODE);
+  source->AddLocalizedString("toolbarLoadUnpacked",
+                             IDS_MD_EXTENSIONS_TOOLBAR_LOAD_UNPACKED);
+  source->AddLocalizedString("toolbarPack", IDS_MD_EXTENSIONS_TOOLBAR_PACK);
+  source->AddLocalizedString("toolbarUpdateNow",
+                             IDS_MD_EXTENSIONS_TOOLBAR_UPDATE_NOW);
   source->AddLocalizedString("viewBackgroundPage",
                              IDS_EXTENSIONS_BACKGROUND_PAGE);
   source->AddLocalizedString("viewIncognito",
@@ -282,6 +282,8 @@ content::WebUIDataSource* CreateMdExtensionsSource() {
   source->AddResourcePath("sidebar.html", IDR_MD_EXTENSIONS_SIDEBAR_HTML);
   source->AddResourcePath("sidebar.js", IDR_MD_EXTENSIONS_SIDEBAR_JS);
   source->AddResourcePath("strings.html", IDR_MD_EXTENSIONS_STRINGS_HTML);
+  source->AddResourcePath("toolbar.html", IDR_MD_EXTENSIONS_TOOLBAR_HTML);
+  source->AddResourcePath("toolbar.js", IDR_MD_EXTENSIONS_TOOLBAR_JS);
   source->SetDefaultResource(IDR_MD_EXTENSIONS_EXTENSIONS_HTML);
 
   return source;

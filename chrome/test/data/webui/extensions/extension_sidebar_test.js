@@ -7,8 +7,7 @@ cr.define('extension_sidebar_tests', function() {
   /**
    * A mock delegate for the sidebar.
    * @constructor
-   * @implements {extensions.SidebarDelegate}
-   * @implements {extensions.SidebarScrollDelegate}
+   * @implements {extensions.SidebarListDelegate}
    * @extends {extension_test_util.ClickMock}
    */
   function MockDelegate() {}
@@ -17,28 +16,15 @@ cr.define('extension_sidebar_tests', function() {
     __proto__: extension_test_util.ClickMock.prototype,
 
     /** @override */
-    setProfileInDevMode: function(inDevMode) {},
-
-    /** @override */
-    loadUnpacked: function() {},
-
-    /** @override */
-    updateAllExtensions: function() {},
-
-    /** @override */
     showType: function() {},
 
     /** @override */
     showKeyboardShortcuts: function() {},
-
-    /** @override */
-    showPackDialog: function() {},
   };
 
   /** @enum {string} */
   var TestNames = {
-    Layout: 'layout',
-    ClickHandlers: 'click handlers',
+    LayoutAndClickHandlers: 'layout and click handlers',
   };
 
   function registerTests() {
@@ -59,42 +45,18 @@ cr.define('extension_sidebar_tests', function() {
         manager.$.drawer.openDrawer();
         sidebar = manager.sidebar;
         mockDelegate = new MockDelegate();
-        sidebar.setDelegate(mockDelegate);
         sidebar.setListDelegate(mockDelegate);
       });
 
-      test(assert(TestNames.Layout), function() {
+      test(assert(TestNames.LayoutAndClickHandlers), function() {
         extension_test_util.testIronIcons(sidebar);
 
         var testVisible = extension_test_util.testVisible.bind(null, sidebar);
-        testVisible('#load-unpacked', false);
-        testVisible('#pack-extensions', false);
-        testVisible('#update-now', false);
+        testVisible('#sections-extensions', true);
+        testVisible('#sections-apps', true);
+        testVisible('#sections-shortcuts', true);
+        testVisible('#more-extensions', true);
 
-        sidebar.set('inDevMode', true);
-        Polymer.dom.flush();
-
-        testVisible('#load-unpacked', true);
-        testVisible('#pack-extensions', true);
-        testVisible('#update-now', true);
-      });
-
-      test(assert(TestNames.ClickHandlers), function() {
-        sidebar.set('inDevMode', true);
-        Polymer.dom.flush();
-
-        mockDelegate.testClickingCalls(
-            sidebar.$['developer-mode-checkbox'], 'setProfileInDevMode',
-            [false]);
-        mockDelegate.testClickingCalls(
-            sidebar.$['developer-mode-checkbox'], 'setProfileInDevMode',
-            [true]);
-        mockDelegate.testClickingCalls(
-            sidebar.$$('#load-unpacked'), 'loadUnpacked', []);
-        mockDelegate.testClickingCalls(
-            sidebar.$$('#pack-extensions'), 'showPackDialog', []);
-        mockDelegate.testClickingCalls(
-            sidebar.$$('#update-now'), 'updateAllExtensions', []);
         mockDelegate.testClickingCalls(
             sidebar.$$('#sections-extensions'), 'showType',
             [extensions.ShowingType.EXTENSIONS]);

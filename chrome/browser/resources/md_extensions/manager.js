@@ -50,6 +50,9 @@ cr.define('extensions', function() {
       /** @type {extensions.Sidebar} */
       sidebar: Object,
 
+      /** @type {extensions.Toolbar} */
+      toolbar: Object,
+
       /** @type {extensions.ItemDelegate} */
       itemDelegate: Object,
 
@@ -106,6 +109,8 @@ cr.define('extensions', function() {
       /** @type {extensions.Sidebar} */
       this.sidebar =
           /** @type {extensions.Sidebar} */(this.$$('extensions-sidebar'));
+      this.toolbar =
+          /** @type {extensions.Toolbar} */(this.$$('extensions-toolbar'));
       this.listHelper_ = new ListHelper(this);
       this.sidebar.setListDelegate(this.listHelper_);
       this.readyPromiseResolver.resolve();
@@ -334,6 +339,11 @@ cr.define('extensions', function() {
       // Note: we don't reset errorPageItem_ here because doing so just causes
       // extra work for the data-bound error page.
       this.changePage(Page.ITEM_LIST);
+    },
+
+    /** @private */
+    onPackTap_: function() {
+      this.$['pack-dialog'].show();
     }
   });
 
@@ -367,11 +377,6 @@ cr.define('extensions', function() {
     showKeyboardShortcuts: function() {
       this.manager_.changePage(Page.KEYBOARD_SHORTCUTS);
     },
-
-    /** @override */
-    showPackDialog: function() {
-      this.manager_.packDialog.show();
-    }
   };
 
   return {Manager: Manager};

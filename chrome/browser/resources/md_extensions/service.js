@@ -8,7 +8,7 @@ cr.define('extensions', function() {
   /**
    * @constructor
    * @implements {extensions.ItemDelegate}
-   * @implements {extensions.SidebarDelegate}
+   * @implements {extensions.ToolbarDelegate}
    * @implements {extensions.PackDialogDelegate}
    * @implements {extensions.ErrorPageDelegate}
    */
@@ -22,7 +22,7 @@ cr.define('extensions', function() {
     managerReady: function(manager) {
       /** @private {extensions.Manager} */
       this.manager_ = manager;
-      this.manager_.sidebar.setDelegate(this);
+      this.manager_.toolbar.setDelegate(this);
       this.manager_.set('itemDelegate', this);
       this.manager_.packDialog.set('delegate', this);
       this.manager_.errorPage.delegate = this;

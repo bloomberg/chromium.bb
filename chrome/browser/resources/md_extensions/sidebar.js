@@ -13,23 +13,6 @@ extensions.ShowingType = {
 
 cr.define('extensions', function() {
   /** @interface */
-  var SidebarDelegate = function() {};
-
-  SidebarDelegate.prototype = {
-    /**
-     * Toggles whether or not the profile is in developer mode.
-     * @param {boolean} inDevMode
-     */
-    setProfileInDevMode: assertNotReached,
-
-    /** Opens the dialog to load unpacked extensions. */
-    loadUnpacked: assertNotReached,
-
-    /** Updates all extensions. */
-    updateAllExtensions: assertNotReached,
-  };
-
-  /** @interface */
   var SidebarListDelegate = function() {};
 
   SidebarListDelegate.prototype = {
@@ -41,28 +24,12 @@ cr.define('extensions', function() {
 
     /** Shows the keyboard shortcuts page. */
     showKeyboardShortcuts: assertNotReached,
-
-    /** Shows the pack extension dialog. */
-    showPackDialog: assertNotReached,
   };
 
   var Sidebar = Polymer({
     is: 'extensions-sidebar',
 
     behaviors: [I18nBehavior],
-
-    properties: {
-      inDevMode: {
-        type: Boolean,
-        value: false,
-      },
-    },
-
-    /** @param {extensions.SidebarDelegate} delegate */
-    setDelegate: function(delegate) {
-      /** @private {extensions.SidebarDelegate} */
-      this.delegate_ = delegate;
-    },
 
     /** @param {extensions.SidebarListDelegate} listDelegate */
     setListDelegate: function(listDelegate) {
@@ -81,27 +48,6 @@ cr.define('extensions', function() {
     },
 
     /** @private */
-    onDevModeChange_: function() {
-      this.delegate_.setProfileInDevMode(
-          this.$['developer-mode-checkbox'].checked);
-    },
-
-    /** @private */
-    onLoadUnpackedTap_: function() {
-      this.delegate_.loadUnpacked();
-    },
-
-    /** @private */
-    onPackTap_: function() {
-      this.listDelegate_.showPackDialog();
-    },
-
-    /** @private */
-    onUpdateNowTap_: function() {
-      this.delegate_.updateAllExtensions();
-    },
-
-    /** @private */
     onKeyboardShortcutsTap_: function() {
       this.listDelegate_.showKeyboardShortcuts();
     },
@@ -109,7 +55,6 @@ cr.define('extensions', function() {
 
   return {
     Sidebar: Sidebar,
-    SidebarDelegate: SidebarDelegate,
     SidebarListDelegate: SidebarListDelegate,
   };
 });

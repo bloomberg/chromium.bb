@@ -48,6 +48,7 @@ CrExtensionsBrowserTest.prototype = {
     'extension_service_test.js',
     'extension_shortcut_input_test.js',
     'extension_sidebar_test.js',
+    'extension_toolbar_test.js',
     'extension_manager_test.js',
     '../mock_controller.js',
     '../../../../../ui/webui/resources/js/promise_resolver.js',
@@ -111,14 +112,25 @@ CrExtensionsBrowserTestWithMultipleExtensionTypesInstalled.prototype = {
 ////////////////////////////////////////////////////////////////////////////////
 // Extension Sidebar Tests
 
-TEST_F('CrExtensionsBrowserTest', 'ExtensionSidebarLayoutTest', function() {
+TEST_F('CrExtensionsBrowserTest',
+       'ExtensionSidebarLayoutAndClickHandlersTest', function() {
   extension_sidebar_tests.registerTests();
-  mocha.grep(assert(extension_sidebar_tests.TestNames.Layout)).run();
+  mocha.grep(
+      assert(extension_sidebar_tests.TestNames.LayoutAndClickHandlers)).run();
 });
-TEST_F('CrExtensionsBrowserTest', 'ExtensionSidebarClickHandlerTest',
-       function() {
-  extension_sidebar_tests.registerTests();
-  mocha.grep(assert(extension_sidebar_tests.TestNames.ClickHandlers)).run();
+
+////////////////////////////////////////////////////////////////////////////////
+// Extension Sidebar Tests
+
+TEST_F('CrExtensionsBrowserTest', 'ExtensionToolbarLayoutTest', function() {
+  extension_toolbar_tests.registerTests();
+  mocha.grep(assert(extension_toolbar_tests.TestNames.Layout)).run();
+});
+
+TEST_F('CrExtensionsBrowserTest',
+       'ExtensionToolbarClickHandlersTest', function() {
+  extension_toolbar_tests.registerTests();
+  mocha.grep(assert(extension_toolbar_tests.TestNames.ClickHandlers)).run();
 });
 
 ////////////////////////////////////////////////////////////////////////////////

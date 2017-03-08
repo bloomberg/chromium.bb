@@ -4355,6 +4355,9 @@ From <ph name="DOWNLOAD_DOMAIN">$3<ex>example.com</ex></ph>
         <message name="IDS_EXTENSIONS_LOG_LEVEL_ERROR" desc="Alt-text indicating a high severity level for the error icon in the chrome://extensions page.">
           Error
         </message>
+        <message name="IDS_MD_EXTENSIONS_DEVELOPER_MODE" desc="The text displayed next to the checkbox to toggle developer mode in the extensions page.">
+          Developer mode
+        </message>
         <message name="IDS_MD_EXTENSIONS_ERROR_PAGE_HEADING" desc="The heading of the page displaying an extension's errors.">
           Errors
         </message>
@@ -4466,23 +4469,20 @@ From <ph name="DOWNLOAD_DOMAIN">$3<ex>example.com</ex></ph>
         <message name="IDS_MD_EXTENSIONS_SIDEBAR_EXTENSIONS" desc="The text displayed in the sidebar to go to the extensions section of the page.">
           Extensions
         </message>
-        <message name="IDS_MD_EXTENSIONS_SIDEBAR_LOAD_UNPACKED" desc="The text displayed in the sidebar to load unpacked extensions.">
-          Load unpacked extensions
-        </message>
-        <message name="IDS_MD_EXTENSIONS_SIDEBAR_PACK" desc="The text displayed in the sidebar to pack an extension directory.">
-          Pack extensions...
-        </message>
-        <message name="IDS_MD_EXTENSIONS_SIDEBAR_UPDATE_NOW" desc="The text displayed in the sidebar to update existing extensions now.">
-          Update extensions now
-        </message>
-        <message name="IDS_MD_EXTENSIONS_SIDEBAR_DEVELOPER_MODE" desc="The text displayed next to the checkbox to toggle developer mode in the extensions page.">
-          Developer mode
-        </message>
         <message name="IDS_MD_EXTENSIONS_SIDEBAR_GET_MORE_EXTENSIONS" desc="The text for the link to get more extensions in the extensions page.">
           Get more extensions
         </message>
         <message name="IDS_MD_EXTENSIONS_SIDEBAR_KEYBOARD_SHORTCUTS" desc="The text for the link to manage keyboard shortcuts for extensions.">
           Keyboard shortcuts
+        </message>
+        <message name="IDS_MD_EXTENSIONS_TOOLBAR_LOAD_UNPACKED" desc="The text displayed in the toolbar to load an unpacked extension.">
+          Load unpacked
+        </message>
+        <message name="IDS_MD_EXTENSIONS_TOOLBAR_PACK" desc="The text displayed in the toolbar to pack an extension directory.">
+          Pack extension
+        </message>
+        <message name="IDS_MD_EXTENSIONS_TOOLBAR_UPDATE_NOW" desc="The text displayed in the toolbar to update existing extensions now.">
+          Update
         </message>
         <message name="IDS_MD_EXTENSIONS_TYPE_A_SHORTCUT" desc="The prompt to the user to enter a keyboard shortcut in order to assign it to an extension.">
           Type a shortcut
