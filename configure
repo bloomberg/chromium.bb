@@ -40,7 +40,6 @@ Advanced options:
   ${toggle_av1}                  AV1 codec support
   ${toggle_internal_stats}        output of encoder internal stats for debug, if supported (encoders)
   ${toggle_postproc}              postprocessing
-  ${toggle_av1_postproc}          av1 specific postprocessing
   ${toggle_multithread}           multithreaded encoding and decoding
   ${toggle_spatial_resampling}    spatial sampling (scaling) support
   ${toggle_realtime_only}         enable this option while building for real-time encoding
@@ -331,7 +330,6 @@ CONFIG_LIST="
 
     runtime_cpu_detect
     postproc
-    av1_postproc
     multithread
     internal_stats
     ${CODECS}
@@ -393,7 +391,6 @@ CMDLINE_SELECT="
     debug_libs
 
     postproc
-    av1_postproc
     multithread
     internal_stats
     ${CODECS}
@@ -527,7 +524,7 @@ process_targets() {
     done
     enabled debug_libs && DIST_DIR="${DIST_DIR}-debug"
     enabled codec_srcs && DIST_DIR="${DIST_DIR}-src"
-    ! enabled postproc && ! enabled av1_postproc && DIST_DIR="${DIST_DIR}-nopost"
+    ! enabled postproc && DIST_DIR="${DIST_DIR}-nopost"
     ! enabled multithread && DIST_DIR="${DIST_DIR}-nomt"
     ! enabled install_docs && DIST_DIR="${DIST_DIR}-nodocs"
     DIST_DIR="${DIST_DIR}-${tgt_isa}-${tgt_os}"
