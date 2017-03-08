@@ -259,8 +259,7 @@ public class DownloadNotificationService extends Service {
      */
     private static Notification buildSummaryNotificationWithIcon(Context context, int iconId) {
         String title =
-                context.getResources().getString(R.string.download_notification_summary_title,
-                        DownloadSharedPreferenceHelper.getInstance().getEntries().size());
+                context.getResources().getString(R.string.download_notification_summary_title);
 
         ChromeNotificationBuilder builder =
                 AppHooks.get()
