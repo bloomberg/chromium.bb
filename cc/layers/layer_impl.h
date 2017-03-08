@@ -227,6 +227,9 @@ class CC_EXPORT LayerImpl {
 
   bool ShowDebugBorders() const;
 
+  // TODO(http://crbug.com/557160): Currently SPv2 creates dummy layers for the
+  // sole purpose of representing a render surface. Once that dependency is
+  // removed, also remove dummy layers from PaintArtifactCompositor.
   RenderSurfaceImpl* GetRenderSurface() const;
 
   // The render surface which this layer draws into. This can be either owned by
@@ -559,11 +562,6 @@ class CC_EXPORT LayerImpl {
   std::unique_ptr<base::trace_event::ConvertableToTraceFormat>
       owned_debug_info_;
   base::trace_event::ConvertableToTraceFormat* debug_info_;
-  // TODO(http://crbug.com/557160): EffectNode instead of LayerImpl should
-  // own RenderSurfaceImpl. Currently SPv2 creates dummy layers for the sole
-  // purpose of holding a render surface. Once done, remember to remove dummy
-  // layers from PaintArtifactCompositor as well
-  std::unique_ptr<RenderSurfaceImpl> render_surface_;
   gfx::Size preferred_raster_bounds_;
 
   bool has_preferred_raster_bounds_ : 1;
