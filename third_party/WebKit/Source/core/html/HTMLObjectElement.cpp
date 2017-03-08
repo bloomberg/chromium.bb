@@ -112,7 +112,7 @@ void HTMLObjectElement::parseAttribute(
   } else if (name == dataAttr) {
     m_url = stripLeadingAndTrailingHTMLSpaces(params.newValue);
     if (layoutObject() && isImageType()) {
-      setNeedsWidgetUpdate(true);
+      setNeedsPluginUpdate(true);
       if (!m_imageLoader)
         m_imageLoader = HTMLImageLoader::create(this);
       m_imageLoader->updateFromElement(ImageLoader::UpdateIgnorePreviousError);
@@ -264,17 +264,17 @@ void HTMLObjectElement::reloadPluginOnAttributeChange(
     NOTREACHED();
     needsInvalidation = false;
   }
-  setNeedsWidgetUpdate(true);
+  setNeedsPluginUpdate(true);
   if (needsInvalidation)
     lazyReattachIfNeeded();
 }
 
 // TODO(schenney): crbug.com/572908 This should be unified with
-// HTMLEmbedElement::updateWidget and moved down into HTMLPluginElement.cpp
-void HTMLObjectElement::updateWidgetInternal() {
+// HTMLEmbedElement::updatePlugin and moved down into HTMLPluginElement.cpp
+void HTMLObjectElement::updatePluginInternal() {
   DCHECK(!layoutEmbeddedItem().showsUnavailablePluginIndicator());
-  DCHECK(needsWidgetUpdate());
-  setNeedsWidgetUpdate(false);
+  DCHECK(needsPluginUpdate());
+  setNeedsPluginUpdate(false);
   // TODO(schenney): crbug.com/572908 This should ASSERT
   // isFinishedParsingChildren() instead.
   if (!isFinishedParsingChildren()) {
@@ -342,7 +342,7 @@ void HTMLObjectElement::removedFrom(ContainerNode* insertionPoint) {
 
 void HTMLObjectElement::childrenChanged(const ChildrenChange& change) {
   if (isConnected() && !useFallbackContent()) {
-    setNeedsWidgetUpdate(true);
+    setNeedsPluginUpdate(true);
     lazyReattachIfNeeded();
   }
   HTMLPlugInElement::childrenChanged(change);

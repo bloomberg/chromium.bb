@@ -58,9 +58,9 @@ TEST_F(HTMLEmbedElementTest, FallbackState) {
   ASSERT_TRUE(isHTMLObjectElement(objectElement));
   HTMLObjectElement* object = toHTMLObjectElement(objectElement);
 
-  // At this moment updateWidget() function is not called, so
+  // At this moment updatePlugin() function is not called, so
   // useFallbackContent() will return false.
-  // But the element will likely to use fallback content after updateWidget().
+  // But the element will likely to use fallback content after updatePlugin().
   EXPECT_TRUE(object->hasFallbackContent());
   EXPECT_FALSE(object->useFallbackContent());
   EXPECT_TRUE(object->willUseFallbackContentAtLayout());
@@ -77,7 +77,7 @@ TEST_F(HTMLEmbedElementTest, FallbackState) {
       ComputedStyle::initialStyle()));
 
   // This call will update fallback state of the object.
-  object->updateWidget();
+  object->updatePlugin();
 
   EXPECT_TRUE(object->hasFallbackContent());
   EXPECT_TRUE(object->useFallbackContent());

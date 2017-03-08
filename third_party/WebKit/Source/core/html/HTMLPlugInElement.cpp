@@ -77,11 +77,11 @@ HTMLPlugInElement::HTMLPlugInElement(
     PreferPlugInsForImagesOption preferPlugInsForImagesOption)
     : HTMLFrameOwnerElement(tagName, doc),
       m_isDelayingLoadEvent(false),
-      // m_needsWidgetUpdate(!createdByParser) allows HTMLObjectElement to delay
+      // m_needsPluginUpdate(!createdByParser) allows HTMLObjectElement to delay
       // FrameViewBase updates until after all children are parsed. For
       // HTMLEmbedElement this delay is unnecessary, but it is simpler to make
       // both classes share the same codepath in this class.
-      m_needsWidgetUpdate(!createdByParser),
+      m_needsPluginUpdate(!createdByParser),
       m_shouldPreferPlugInsForImages(preferPlugInsForImagesOption ==
                                      ShouldPreferPlugInsForImages) {}
 
@@ -187,7 +187,7 @@ void HTMLPlugInElement::attachLayoutTree(const AttachContext& context) {
     if (!m_imageLoader)
       m_imageLoader = HTMLImageLoader::create(this);
     m_imageLoader->updateFromElement();
-  } else if (needsWidgetUpdate() && !layoutEmbeddedItem().isNull() &&
+  } else if (needsPluginUpdate() && !layoutEmbeddedItem().isNull() &&
              !layoutEmbeddedItem().showsUnavailablePluginIndicator() &&
              !wouldLoadAsNetscapePlugin(m_url, m_serviceType) &&
              !m_isDelayingLoadEvent) {
@@ -197,8 +197,8 @@ void HTMLPlugInElement::attachLayoutTree(const AttachContext& context) {
   }
 }
 
-void HTMLPlugInElement::updateWidget() {
-  updateWidgetInternal();
+void HTMLPlugInElement::updatePlugin() {
+  updatePluginInternal();
   if (m_isDelayingLoadEvent) {
     m_isDelayingLoadEvent = false;
     document().decrementLoadEventDelayCount();
@@ -262,9 +262,10 @@ bool HTMLPlugInElement::shouldAccelerate() const {
 void HTMLPlugInElement::detachLayoutTree(const AttachContext& context) {
   // Update the FrameViewBase the next time we attach (detaching destroys the
   // plugin).
-  // FIXME: None of this "needsWidgetUpdate" related code looks right.
+  // FIXME: None of this "needsPluginUpdate" related code looks right.
   if (layoutObject() && !useFallbackContent())
-    setNeedsWidgetUpdate(true);
+    setNeedsPluginUpdate(true);
+
   if (m_isDelayingLoadEvent) {
     m_isDelayingLoadEvent = false;
     document().decrementLoadEventDelayCount();
@@ -307,7 +308,7 @@ void HTMLPlugInElement::finishParsingChildren() {
   if (useFallbackContent())
     return;
 
-  setNeedsWidgetUpdate(true);
+  setNeedsPluginUpdate(true);
   if (isConnected())
     lazyReattachIfNeeded();
 }
@@ -648,7 +649,7 @@ bool HTMLPlugInElement::useFallbackContent() const {
 }
 
 void HTMLPlugInElement::lazyReattachIfNeeded() {
-  if (!useFallbackContent() && needsWidgetUpdate() && layoutObject() &&
+  if (!useFallbackContent() && needsPluginUpdate() && layoutObject() &&
       !isImageType()) {
     lazyReattachIfAttached();
     setPersistedPluginWidget(nullptr);

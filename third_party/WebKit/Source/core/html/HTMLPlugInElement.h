@@ -55,11 +55,11 @@ class CORE_EXPORT HTMLPlugInElement : public HTMLFrameOwnerElement {
   const String& url() const { return m_url; }
 
   // Public for FrameView::addPartToUpdate()
-  bool needsWidgetUpdate() const { return m_needsWidgetUpdate; }
-  void setNeedsWidgetUpdate(bool needsWidgetUpdate) {
-    m_needsWidgetUpdate = needsWidgetUpdate;
+  bool needsPluginUpdate() const { return m_needsPluginUpdate; }
+  void setNeedsPluginUpdate(bool needsPluginUpdate) {
+    m_needsPluginUpdate = needsPluginUpdate;
   }
-  void updateWidget();
+  void updatePlugin();
 
   bool shouldAccelerate() const;
 
@@ -142,7 +142,7 @@ class CORE_EXPORT HTMLPlugInElement : public HTMLFrameOwnerElement {
   // Return any existing LayoutPart without triggering relayout, or 0 if it
   // doesn't yet exist.
   virtual LayoutPart* existingLayoutPart() const = 0;
-  virtual void updateWidgetInternal() = 0;
+  virtual void updatePluginInternal() = 0;
 
   bool loadPlugin(const KURL&,
                   const String& mimeType,
@@ -165,7 +165,7 @@ class CORE_EXPORT HTMLPlugInElement : public HTMLFrameOwnerElement {
                              const Vector<String>& paramValues);
 
   mutable RefPtr<SharedPersistent<v8::Object>> m_pluginWrapper;
-  bool m_needsWidgetUpdate;
+  bool m_needsPluginUpdate;
   bool m_shouldPreferPlugInsForImages;
   // Represents |layoutObject() && layoutObject()->isEmbeddedObject() &&
   // !layoutEmbeddedItem().showsUnavailablePluginIndicator()|.  We want to

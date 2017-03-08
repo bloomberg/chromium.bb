@@ -100,7 +100,7 @@ void HTMLEmbedElement::parseAttribute(
     if (pos != kNotFound)
       m_serviceType = m_serviceType.left(pos);
     if (layoutObject()) {
-      setNeedsWidgetUpdate(true);
+      setNeedsPluginUpdate(true);
       layoutObject()->setNeedsLayoutAndFullPaintInvalidation(
           "Embed type changed");
     } else {
@@ -119,7 +119,7 @@ void HTMLEmbedElement::parseAttribute(
     } else if (layoutObject()) {
       // Check if this Embed can transition from potentially-active to active
       if (fastHasAttribute(typeAttr)) {
-        setNeedsWidgetUpdate(true);
+        setNeedsPluginUpdate(true);
         lazyReattachIfNeeded();
       }
     } else {
@@ -139,12 +139,12 @@ void HTMLEmbedElement::parametersForPlugin(Vector<String>& paramNames,
   }
 }
 
-// FIXME: This should be unified with HTMLObjectElement::updateWidget and
+// FIXME: This should be unified with HTMLObjectElement::updatePlugin and
 // moved down into HTMLPluginElement.cpp
-void HTMLEmbedElement::updateWidgetInternal() {
+void HTMLEmbedElement::updatePluginInternal() {
   DCHECK(!layoutEmbeddedItem().showsUnavailablePluginIndicator());
-  DCHECK(needsWidgetUpdate());
-  setNeedsWidgetUpdate(false);
+  DCHECK(needsPluginUpdate());
+  setNeedsPluginUpdate(false);
 
   if (m_url.isEmpty() && m_serviceType.isEmpty())
     return;

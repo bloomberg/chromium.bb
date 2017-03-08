@@ -154,9 +154,9 @@ const int kA4PortraitPageHeight = 842;
 
 using namespace HTMLNames;
 
-// The maximum number of updateWidgets iterations that should be done before
+// The maximum number of updatePlugins iterations that should be done before
 // returning.
-static const unsigned maxUpdateWidgetsIterations = 2;
+static const unsigned maxUpdatePluginsIterations = 2;
 static const double resourcePriorityUpdateDelayAfterScroll = 0.250;
 
 static bool s_initialTrackAllPaintInvalidations = false;
@@ -171,10 +171,10 @@ FrameView::FrameView(LocalFrame& frame)
           TaskRunnerHelper::get(TaskType::UnspecedTimer, &frame),
           this,
           &FrameView::postLayoutTimerFired),
-      m_updateWidgetsTimer(
+      m_updatePluginsTimer(
           TaskRunnerHelper::get(TaskType::UnspecedTimer, &frame),
           this,
-          &FrameView::updateWidgetsTimerFired),
+          &FrameView::updatePluginsTimerFired),
       m_isTransparent(false),
       m_baseBackgroundColor(Color::white),
       m_mediaType(MediaTypeNames::screen),
@@ -261,7 +261,7 @@ void FrameView::reset() {
   m_layoutCount = 0;
   m_nestedLayoutCount = 0;
   m_postLayoutTasksTimer.stop();
-  m_updateWidgetsTimer.stop();
+  m_updatePluginsTimer.stop();
   m_firstLayout = true;
   m_safeToPropagateScrollToParent = true;
   m_lastViewportSize = IntSize();
@@ -1496,7 +1496,7 @@ void FrameView::addPartToUpdate(LayoutEmbeddedObject& object) {
   Node* node = object.node();
   ASSERT(node);
   if (isHTMLObjectElement(*node) || isHTMLEmbedElement(*node))
-    toHTMLPlugInElement(node)->setNeedsWidgetUpdate(true);
+    toHTMLPlugInElement(node)->setNeedsPluginUpdate(true);
 
   m_partUpdateSet.insert(&object);
 }
@@ -2412,9 +2412,9 @@ void FrameView::scrollToFragmentAnchor() {
       m_frame->document()->isLoadCompleted() ? nullptr : anchorNode;
 }
 
-bool FrameView::updateWidgets() {
-  // This is always called from updateWidgetsTimerFired.
-  // m_updateWidgetsTimer should only be scheduled if we have FrameViewBases to
+bool FrameView::updatePlugins() {
+  // This is always called from updatePluginsTimerFired.
+  // m_updatePluginsTimer should only be scheduled if we have FrameViewBases to
   // update. Thus I believe we can stop checking isEmpty here, and just ASSERT
   // isEmpty:
   // FIXME: This assert has been temporarily removed due to
@@ -2440,8 +2440,8 @@ bool FrameView::updateWidgets() {
     if (object.showsUnavailablePluginIndicator())
       continue;
 
-    if (element->needsWidgetUpdate())
-      element->updateWidget();
+    if (element->needsPluginUpdate())
+      element->updatePlugin();
     object.updateGeometry();
 
     // Prevent plugins from causing infinite updates of themselves.
@@ -2452,10 +2452,10 @@ bool FrameView::updateWidgets() {
   return m_partUpdateSet.isEmpty();
 }
 
-void FrameView::updateWidgetsTimerFired(TimerBase*) {
+void FrameView::updatePluginsTimerFired(TimerBase*) {
   ASSERT(!isInPerformLayout());
-  for (unsigned i = 0; i < maxUpdateWidgetsIterations; ++i) {
-    if (updateWidgets())
+  for (unsigned i = 0; i < maxUpdatePluginsIterations; ++i) {
+    if (updatePlugins())
       return;
   }
 }
@@ -2464,17 +2464,17 @@ void FrameView::flushAnyPendingPostLayoutTasks() {
   ASSERT(!isInPerformLayout());
   if (m_postLayoutTasksTimer.isActive())
     performPostLayoutTasks();
-  if (m_updateWidgetsTimer.isActive()) {
-    m_updateWidgetsTimer.stop();
-    updateWidgetsTimerFired(nullptr);
+  if (m_updatePluginsTimer.isActive()) {
+    m_updatePluginsTimer.stop();
+    updatePluginsTimerFired(nullptr);
   }
 }
 
-void FrameView::scheduleUpdateWidgetsIfNecessary() {
+void FrameView::scheduleUpdatePluginsIfNecessary() {
   ASSERT(!isInPerformLayout());
-  if (m_updateWidgetsTimer.isActive() || m_partUpdateSet.isEmpty())
+  if (m_updatePluginsTimer.isActive() || m_partUpdateSet.isEmpty())
     return;
-  m_updateWidgetsTimer.startOneShot(0, BLINK_FROM_HERE);
+  m_updatePluginsTimer.startOneShot(0, BLINK_FROM_HERE);
 }
 
 void FrameView::performPostLayoutTasks() {
@@ -2507,7 +2507,7 @@ void FrameView::performPostLayoutTasks() {
   if (layoutViewItem().isNull())
     return;
 
-  scheduleUpdateWidgetsIfNecessary();
+  scheduleUpdatePluginsIfNecessary();
 
   if (ScrollingCoordinator* scrollingCoordinator = this->scrollingCoordinator())
     scrollingCoordinator->notifyGeometryChanged();

@@ -968,9 +968,9 @@ class CORE_EXPORT FrameView final
 
   void updateParentScrollableAreaSet();
 
-  void scheduleUpdateWidgetsIfNecessary();
-  void updateWidgetsTimerFired(TimerBase*);
-  bool updateWidgets();
+  void scheduleUpdatePluginsIfNecessary();
+  void updatePluginsTimerFired(TimerBase*);
+  bool updatePlugins();
 
   bool processUrlFragmentHelper(const String&, UrlFragmentBehavior);
   void setFragmentAnchor(Node*);
@@ -1075,7 +1075,7 @@ class CORE_EXPORT FrameView final
   int m_layoutCount;
   unsigned m_nestedLayoutCount;
   TaskRunnerTimer<FrameView> m_postLayoutTasksTimer;
-  TaskRunnerTimer<FrameView> m_updateWidgetsTimer;
+  TaskRunnerTimer<FrameView> m_updatePluginsTimer;
 
   bool m_firstLayout;
   bool m_isTransparent;

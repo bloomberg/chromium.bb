@@ -103,7 +103,7 @@ class CORE_EXPORT HTMLObjectElement final : public HTMLPlugInElement,
 
   LayoutPart* existingLayoutPart() const override;
 
-  void updateWidgetInternal() override;
+  void updatePluginInternal() override;
   void updateDocNamedItem();
 
   void reattachFallbackContent();

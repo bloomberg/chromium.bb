@@ -52,7 +52,7 @@ class CORE_EXPORT HTMLEmbedElement final : public HTMLPlugInElement {
 
   LayoutPart* existingLayoutPart() const override;
 
-  void updateWidgetInternal() override;
+  void updatePluginInternal() override;
 
   void parametersForPlugin(Vector<String>& paramNames,
                            Vector<String>& paramValues);
