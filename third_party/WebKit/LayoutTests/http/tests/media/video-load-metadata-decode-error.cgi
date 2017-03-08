@@ -30,7 +30,7 @@ open FILE, $name or die;
 binmode FILE;
 my ($data, $n);
 my $total = 0;
-my $break = $filesize / 4;
+my $break = $filesize  * 3 / 4;
 my $string = "corrupt video";
 seek(FILE, 0, 0);
 
