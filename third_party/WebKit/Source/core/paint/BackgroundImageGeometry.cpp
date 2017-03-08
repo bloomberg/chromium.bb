@@ -520,7 +520,7 @@ void BackgroundImageGeometry::calculate(
   // It's necessary to apply the heuristic here prior to any further
   // calculations to avoid incorrectly using sub-pixel values that won't be
   // present in the painted tile.
-  setTileSize(applySubPixelHeuristicToImageSize(fillTileSize, m_destRect));
+  setTileSize(applySubPixelHeuristicToImageSize(fillTileSize, positioningArea));
 
   EFillRepeat backgroundRepeatX = fillLayer.repeatX();
   EFillRepeat backgroundRepeatY = fillLayer.repeatY();
@@ -553,7 +553,8 @@ void BackgroundImageGeometry::calculate(
     }
     fillTileSize.setWidth(roundedWidth);
 
-    setTileSize(applySubPixelHeuristicToImageSize(fillTileSize, m_destRect));
+    setTileSize(
+        applySubPixelHeuristicToImageSize(fillTileSize, positioningArea));
     setPhaseX(tileSize().width()
                   ? LayoutUnit(roundf(
                         tileSize().width() -
@@ -579,7 +580,8 @@ void BackgroundImageGeometry::calculate(
     }
     fillTileSize.setHeight(roundedHeight);
 
-    setTileSize(applySubPixelHeuristicToImageSize(fillTileSize, m_destRect));
+    setTileSize(
+        applySubPixelHeuristicToImageSize(fillTileSize, positioningArea));
     setPhaseY(tileSize().height()
                   ? LayoutUnit(roundf(
                         tileSize().height() -
