@@ -62,7 +62,7 @@ class AV1SelfguidedFilterTest
     };
     // Fix a parameter set, since the speed depends slightly on r.
     // Change this to test different combinations of values of r.
-    int eps = 4;
+    int eps = 15;
 
     av1_loop_restoration_precal();
 
@@ -84,7 +84,7 @@ class AV1SelfguidedFilterTest
 
   void RunCorrectnessTest() {
     const int w = 256, h = 256, stride = 672, out_stride = 672;
-    const int NUM_ITERS = 250;
+    const int NUM_ITERS = 81;
     int i, j, k;
 
     uint8_t *input = new uint8_t[stride * h];
@@ -98,8 +98,8 @@ class AV1SelfguidedFilterTest
     av1_loop_restoration_precal();
 
     for (i = 0; i < NUM_ITERS; ++i) {
-      for (j = 0; i < h; ++i)
-        for (k = 0; j < w; ++j) input[j * stride + k] = rnd.Rand16() & 0xFF;
+      for (j = 0; j < h; ++j)
+        for (k = 0; k < w; ++k) input[j * stride + k] = rnd.Rand16() & 0xFF;
 
       int xqd[2] = {
         SGRPROJ_PRJ_MIN0 +
@@ -109,12 +109,16 @@ class AV1SelfguidedFilterTest
       };
       int eps = rnd.PseudoUniform(1 << SGRPROJ_PARAMS_BITS);
 
-      apply_selfguided_restoration(input, w, h, stride, 8, eps, xqd, output,
-                                   out_stride, tmpbuf);
-      apply_selfguided_restoration_c(input, w, h, stride, 8, eps, xqd, output2,
-                                     out_stride, tmpbuf);
-      for (j = 0; j < h; ++j)
-        for (k = 0; k < w; ++k)
+      // Test various tile sizes around 256x256
+      int test_w = w + 4 - (i / 9);
+      int test_h = h + 4 - (i % 9);
+
+      apply_selfguided_restoration(input, test_w, test_h, stride, 8, eps, xqd,
+                                   output, out_stride, tmpbuf);
+      apply_selfguided_restoration_c(input, test_w, test_h, stride, 8, eps, xqd,
+                                     output2, out_stride, tmpbuf);
+      for (j = 0; j < test_h; ++j)
+        for (k = 0; k < test_w; ++k)
           ASSERT_EQ(output[j * out_stride + k], output2[j * out_stride + k]);
     }
 
