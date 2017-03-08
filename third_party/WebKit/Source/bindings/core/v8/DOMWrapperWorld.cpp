@@ -30,6 +30,7 @@
 
 #include "bindings/core/v8/DOMWrapperWorld.h"
 
+#include <memory>
 #include "bindings/core/v8/DOMDataStore.h"
 #include "bindings/core/v8/ScriptController.h"
 #include "bindings/core/v8/V8Binding.h"
@@ -42,7 +43,6 @@
 #include "wtf/HashTraits.h"
 #include "wtf/PtrUtil.h"
 #include "wtf/StdLibExtras.h"
-#include <memory>
 
 namespace blink {
 
@@ -81,7 +81,7 @@ class DOMObjectHolder : public DOMObjectHolderBase {
   Persistent<T> m_object;
 };
 
-unsigned DOMWrapperWorld::isolatedWorldCount = 0;
+unsigned DOMWrapperWorld::s_numberOfNonMainWorldsInMainThread = 0;
 
 PassRefPtr<DOMWrapperWorld> DOMWrapperWorld::create(v8::Isolate* isolate,
                                                     int worldId) {
@@ -95,6 +95,8 @@ DOMWrapperWorld::DOMWrapperWorld(v8::Isolate* isolate, int worldId)
   if (worldId == WorkerWorldId) {
     workerWorld() = this;
   }
+  if (worldId != MainWorldId && isMainThread())
+    s_numberOfNonMainWorldsInMainThread++;
 }
 
 DOMWrapperWorld& DOMWrapperWorld::mainWorld() {
@@ -167,6 +169,9 @@ DOMWrapperWorld::~DOMWrapperWorld() {
 
   dispose();
 
+  if (isMainThread())
+    s_numberOfNonMainWorldsInMainThread--;
+
   if (!isIsolatedWorld())
     return;
 
@@ -179,7 +184,6 @@ DOMWrapperWorld::~DOMWrapperWorld() {
   ASSERT(it->value == this);
 
   map.remove(it);
-  isolatedWorldCount--;
 }
 
 void DOMWrapperWorld::dispose() {
@@ -210,7 +214,6 @@ PassRefPtr<DOMWrapperWorld> DOMWrapperWorld::ensureIsolatedWorld(
 
   world = DOMWrapperWorld::create(isolate, worldId);
   result.storedValue->value = world.get();
-  isolatedWorldCount++;
   return world.release();
 }
 

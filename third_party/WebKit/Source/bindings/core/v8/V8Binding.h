@@ -191,15 +191,7 @@ inline void v8SetReturnValue(const CallbackInfo& callbackInfo,
 
 template <typename CallbackInfo>
 inline void v8SetReturnValue(const CallbackInfo& callbackInfo, Node* impl) {
-  if (UNLIKELY(!impl)) {
-    v8SetReturnValueNull(callbackInfo);
-    return;
-  }
-  if (DOMDataStore::setReturnValue(callbackInfo.GetReturnValue(), impl))
-    return;
-  v8::Local<v8::Object> wrapper = ScriptWrappable::fromNode(impl)->wrap(
-      callbackInfo.GetIsolate(), callbackInfo.Holder());
-  v8SetReturnValue(callbackInfo, wrapper);
+  v8SetReturnValue(callbackInfo, ScriptWrappable::fromNode(impl));
 }
 
 // Special versions for DOMWindow and EventTarget
@@ -306,16 +298,8 @@ template <typename CallbackInfo>
 inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo,
                                  Node* impl,
                                  const ScriptWrappable* wrappable) {
-  if (UNLIKELY(!impl)) {
-    v8SetReturnValueNull(callbackInfo);
-    return;
-  }
-  if (DOMDataStore::setReturnValueFast(callbackInfo.GetReturnValue(), impl,
-                                       callbackInfo.Holder(), wrappable))
-    return;
-  v8::Local<v8::Object> wrapper = ScriptWrappable::fromNode(impl)->wrap(
-      callbackInfo.GetIsolate(), callbackInfo.Holder());
-  v8SetReturnValue(callbackInfo, wrapper);
+  v8SetReturnValueFast(callbackInfo, ScriptWrappable::fromNode(impl),
+                       wrappable);
 }
 
 // Special versions for DOMWindow and EventTarget

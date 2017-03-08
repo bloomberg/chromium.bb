@@ -42,7 +42,6 @@
 
 namespace blink {
 
-class Node;
 struct WrapperTypeInfo;
 
 class V8DOMWrapper {
@@ -62,11 +61,6 @@ class V8DOMWrapper {
   WARN_UNUSED_RESULT static v8::Local<v8::Object> associateObjectWithWrapper(
       v8::Isolate*,
       ScriptWrappable*,
-      const WrapperTypeInfo*,
-      v8::Local<v8::Object> wrapper);
-  WARN_UNUSED_RESULT static v8::Local<v8::Object> associateObjectWithWrapper(
-      v8::Isolate*,
-      Node*,
       const WrapperTypeInfo*,
       v8::Local<v8::Object> wrapper);
   static void setNativeInfo(v8::Isolate*,
@@ -122,21 +116,6 @@ inline v8::Local<v8::Object> V8DOMWrapper::associateObjectWithWrapper(
     ASSERT(hasInternalFieldsSet(wrapper));
   }
   SECURITY_CHECK(toScriptWrappable(wrapper) == impl);
-  return wrapper;
-}
-
-inline v8::Local<v8::Object> V8DOMWrapper::associateObjectWithWrapper(
-    v8::Isolate* isolate,
-    Node* node,
-    const WrapperTypeInfo* wrapperTypeInfo,
-    v8::Local<v8::Object> wrapper) {
-  if (DOMDataStore::setWrapper(isolate, node, wrapperTypeInfo, wrapper)) {
-    wrapperTypeInfo->wrapperCreated();
-    setNativeInfo(isolate, wrapper, wrapperTypeInfo,
-                  ScriptWrappable::fromNode(node));
-    ASSERT(hasInternalFieldsSet(wrapper));
-  }
-  SECURITY_CHECK(toScriptWrappable(wrapper) == ScriptWrappable::fromNode(node));
   return wrapper;
 }
 

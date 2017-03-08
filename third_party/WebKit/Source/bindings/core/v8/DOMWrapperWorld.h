@@ -67,7 +67,9 @@ class CORE_EXPORT DOMWrapperWorld : public RefCounted<DOMWrapperWorld> {
   ~DOMWrapperWorld();
   void dispose();
 
-  static bool isolatedWorldsExist() { return isolatedWorldCount; }
+  static bool nonMainWorldsInMainThread() {
+    return s_numberOfNonMainWorldsInMainThread;
+  }
   static void allWorldsInMainThread(Vector<RefPtr<DOMWrapperWorld>>& worlds);
   static void markWrappersInAllWorlds(ScriptWrappable*,
                                       const ScriptWrappableVisitor*);
@@ -127,7 +129,7 @@ class CORE_EXPORT DOMWrapperWorld : public RefCounted<DOMWrapperWorld> {
   void registerDOMObjectHolderInternal(std::unique_ptr<DOMObjectHolderBase>);
   void unregisterDOMObjectHolder(DOMObjectHolderBase*);
 
-  static unsigned isolatedWorldCount;
+  static unsigned s_numberOfNonMainWorldsInMainThread;
 
   const int m_worldId;
   std::unique_ptr<DOMDataStore> m_domDataStore;

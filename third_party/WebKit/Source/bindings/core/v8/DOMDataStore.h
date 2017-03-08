@@ -41,11 +41,10 @@
 #include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/PtrUtil.h"
+#include "wtf/StackUtil.h"
 #include "wtf/StdLibExtras.h"
 
 namespace blink {
-
-class Node;
 
 class DOMDataStore {
   WTF_MAKE_NONCOPYABLE(DOMDataStore);
@@ -65,16 +64,10 @@ class DOMDataStore {
 
   static bool setReturnValue(v8::ReturnValue<v8::Value> returnValue,
                              ScriptWrappable* object) {
+    if (canUseMainWorldWrapper())
+      return object->setReturnValue(returnValue);
     return current(returnValue.GetIsolate())
         .setReturnValueFrom(returnValue, object);
-  }
-
-  static bool setReturnValue(v8::ReturnValue<v8::Value> returnValue,
-                             Node* object) {
-    if (canUseScriptWrappable(object))
-      return ScriptWrappable::fromNode(object)->setReturnValue(returnValue);
-    return current(returnValue.GetIsolate())
-        .setReturnValueFrom(returnValue, ScriptWrappable::fromNode(object));
   }
 
   static bool setReturnValueForMainWorld(v8::ReturnValue<v8::Value> returnValue,
@@ -86,36 +79,20 @@ class DOMDataStore {
                                  ScriptWrappable* object,
                                  v8::Local<v8::Object> holder,
                                  const ScriptWrappable* wrappable) {
-    // The second fastest way to check if we're in the main world is to check if
-    // the wrappable's wrapper is the same as the holder.
-    if (holderContainsWrapper(holder, wrappable))
+    if (canUseMainWorldWrapper()
+        // The second fastest way to check if we're in the main world is to
+        // check if the wrappable's wrapper is the same as the holder.
+        || holderContainsWrapper(holder, wrappable))
       return object->setReturnValue(returnValue);
     return current(returnValue.GetIsolate())
         .setReturnValueFrom(returnValue, object);
   }
 
-  static bool setReturnValueFast(v8::ReturnValue<v8::Value> returnValue,
-                                 Node* node,
-                                 v8::Local<v8::Object> holder,
-                                 const ScriptWrappable* wrappable) {
-    if (canUseScriptWrappable(node)
-        // The second fastest way to check if we're in the main world is to
-        // check if the wrappable's wrapper is the same as the holder.
-        || holderContainsWrapper(holder, wrappable))
-      return ScriptWrappable::fromNode(node)->setReturnValue(returnValue);
-    return current(returnValue.GetIsolate())
-        .setReturnValueFrom(returnValue, ScriptWrappable::fromNode(node));
-  }
-
   static v8::Local<v8::Object> getWrapper(ScriptWrappable* object,
                                           v8::Isolate* isolate) {
+    if (canUseMainWorldWrapper())
+      return object->mainWorldWrapper(isolate);
     return current(isolate).get(object, isolate);
-  }
-
-  static v8::Local<v8::Object> getWrapper(Node* node, v8::Isolate* isolate) {
-    if (canUseScriptWrappable(node))
-      return ScriptWrappable::fromNode(node)->mainWorldWrapper(isolate);
-    return current(isolate).get(ScriptWrappable::fromNode(node), isolate);
   }
 
   // Associates the given |object| with the given |wrapper| if the object is
@@ -128,19 +105,9 @@ class DOMDataStore {
       ScriptWrappable* object,
       const WrapperTypeInfo* wrapperTypeInfo,
       v8::Local<v8::Object>& wrapper) {
+    if (canUseMainWorldWrapper())
+      return object->setWrapper(isolate, wrapperTypeInfo, wrapper);
     return current(isolate).set(isolate, object, wrapperTypeInfo, wrapper);
-  }
-
-  WARN_UNUSED_RESULT static bool setWrapper(
-      v8::Isolate* isolate,
-      Node* node,
-      const WrapperTypeInfo* wrapperTypeInfo,
-      v8::Local<v8::Object>& wrapper) {
-    if (canUseScriptWrappable(node))
-      return ScriptWrappable::fromNode(node)->setWrapper(
-          isolate, wrapperTypeInfo, wrapper);
-    return current(isolate).set(isolate, ScriptWrappable::fromNode(node),
-                                wrapperTypeInfo, wrapper);
   }
 
   static bool containsWrapper(ScriptWrappable* object, v8::Isolate* isolate) {
@@ -187,15 +154,9 @@ class DOMDataStore {
   // method returns true, it is guaranteed that we're in the main world. On the
   // other hand, if this method returns false, nothing is guaranteed (we might
   // be in the main world).
-  static bool canUseScriptWrappable(Node*) {
-    // This helper function itself doesn't use the argument, but we have to
-    // make sure that the argument is type of Node* because Node and its
-    // subclasses satisfy the following two conditions.
-    //   1. Nodes never exist in worker.
-    //   2. Node inherits from ScriptWrappable.
-    // and if there exists no isolated world, we're sure that we're in the
-    // main world and we can use ScriptWrappable's wrapper.
-    return !DOMWrapperWorld::isolatedWorldsExist();
+  static bool canUseMainWorldWrapper() {
+    return !WTF::mayNotBeMainThread() &&
+           !DOMWrapperWorld::nonMainWorldsInMainThread();
   }
 
   static bool holderContainsWrapper(v8::Local<v8::Object> holder,

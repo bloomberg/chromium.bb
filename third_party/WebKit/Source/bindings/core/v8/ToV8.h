@@ -46,15 +46,7 @@ inline v8::Local<v8::Value> ToV8(ScriptWrappable* impl,
 inline v8::Local<v8::Value> ToV8(Node* impl,
                                  v8::Local<v8::Object> creationContext,
                                  v8::Isolate* isolate) {
-  if (UNLIKELY(!impl))
-    return v8::Null(isolate);
-  v8::Local<v8::Value> wrapper = DOMDataStore::getWrapper(impl, isolate);
-  if (!wrapper.IsEmpty())
-    return wrapper;
-
-  wrapper = ScriptWrappable::fromNode(impl)->wrap(isolate, creationContext);
-  DCHECK(!wrapper.IsEmpty());
-  return wrapper;
+  return ToV8(ScriptWrappable::fromNode(impl), creationContext, isolate);
 }
 
 // Special versions for DOMWindow and EventTarget

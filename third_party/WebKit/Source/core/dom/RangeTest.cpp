@@ -5,6 +5,7 @@
 #include "core/dom/Range.h"
 
 #include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/V8BindingForTesting.h"
 #include "core/dom/Element.h"
 #include "core/dom/NodeList.h"
 #include "core/dom/Text.h"
@@ -63,6 +64,8 @@ TEST_F(RangeTest, extractContentsWithDOMMutationEvent) {
 }
 
 TEST_F(RangeTest, SplitTextNodeRangeWithinText) {
+  V8TestingScope scope;
+
   document().body()->setInnerHTML("1234");
   Text* oldText = toText(document().body()->firstChild());
 
@@ -102,6 +105,8 @@ TEST_F(RangeTest, SplitTextNodeRangeWithinText) {
 }
 
 TEST_F(RangeTest, SplitTextNodeRangeOutsideText) {
+  V8TestingScope scope;
+
   document().body()->setInnerHTML(
       "<span id=\"outer\">0<span id=\"inner-left\">1</span>SPLITME<span "
       "id=\"inner-right\">2</span>3</span>");

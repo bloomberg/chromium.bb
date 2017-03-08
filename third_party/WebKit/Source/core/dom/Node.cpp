@@ -2541,27 +2541,6 @@ unsigned Node::lengthOfContents() const {
   return 0;
 }
 
-DISABLE_CFI_PERF
-v8::Local<v8::Object> Node::wrap(v8::Isolate* isolate,
-                                 v8::Local<v8::Object> creationContext) {
-  DCHECK(!DOMDataStore::containsWrapper(this, isolate));
-
-  const WrapperTypeInfo* wrapperType = wrapperTypeInfo();
-
-  v8::Local<v8::Object> wrapper =
-      V8DOMWrapper::createWrapper(isolate, creationContext, wrapperType);
-  DCHECK(!wrapper.IsEmpty());
-  return associateWithWrapper(isolate, wrapperType, wrapper);
-}
-
-v8::Local<v8::Object> Node::associateWithWrapper(
-    v8::Isolate* isolate,
-    const WrapperTypeInfo* wrapperType,
-    v8::Local<v8::Object> wrapper) {
-  return V8DOMWrapper::associateObjectWithWrapper(isolate, this, wrapperType,
-                                                  wrapper);
-}
-
 }  // namespace blink
 
 #ifndef NDEBUG

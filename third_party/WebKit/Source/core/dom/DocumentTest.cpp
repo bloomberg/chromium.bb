@@ -30,6 +30,8 @@
 
 #include "core/dom/Document.h"
 
+#include <memory>
+#include "bindings/core/v8/V8BindingForTesting.h"
 #include "core/dom/NodeWithIndex.h"
 #include "core/dom/SynchronousMutationObserver.h"
 #include "core/dom/Text.h"
@@ -43,7 +45,6 @@
 #include "platform/weborigin/SecurityOrigin.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include <memory>
 
 namespace blink {
 
@@ -575,6 +576,7 @@ TEST_F(DocumentTest, SynchronousMutationNotifieReplaceChild) {
 }
 
 TEST_F(DocumentTest, SynchronousMutationNotifierSplitTextNode) {
+  V8TestingScope scope;
   auto& observer = *new TestSynchronousMutationObserver(document());
 
   Text* splitSample = document().createTextNode("0123456789");
