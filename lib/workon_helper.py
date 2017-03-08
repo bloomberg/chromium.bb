@@ -210,8 +210,6 @@ class WorkonHelper(object):
     self._src_root = src_root
     self._cached_overlays = None
     self._cached_arch = None
-    if not os.path.exists(self._sysroot):
-      raise WorkonError('Sysroot %s is not setup.' % self._sysroot)
 
     profile = os.path.join(self._sysroot, 'etc', 'portage')
     self._unmasked_symlink = os.path.join(
@@ -284,6 +282,9 @@ class WorkonHelper(object):
     * package.unmask/cros-workon: list of packages to unmask.
     * package.keywords/cros-workon: list of hidden packages to accept.
     """
+    if not os.path.exists(self._sysroot):
+      return
+
     for target, symlink in ((self.masked_file_path, self._masked_symlink),
                             (self.workon_file_path, self._unmasked_symlink),
                             (self.workon_file_path, self._keywords_symlink)):
@@ -548,6 +549,9 @@ class WorkonHelper(object):
           consider all possible atoms for the system in question that define
           only the -9999 ebuild.
     """
+    if not os.path.exists(self._sysroot):
+      raise WorkonError('Sysroot %s is not setup.' % self._sysroot)
+
     if use_all or use_workon_only:
       ebuilds = self._GetWorkonEbuilds(filter_workon=use_workon_only)
       atoms = [portage_util.EbuildToCP(ebuild) for ebuild in ebuilds]

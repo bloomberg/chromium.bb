@@ -168,9 +168,10 @@ class WorkonHelperTest(cros_test_lib.MockTempDirTestCase):
   def testShouldDetectBoardNotSetUp(self):
     """Check that we complain if a board has not been previously setup."""
     with self.assertRaises(workon_helper.WorkonError):
-      workon_helper.WorkonHelper(os.path.join(self.tempdir, 'nonexistent'),
-                                 'this-board-is-not-setup.',
-                                 src_root=self._mock_srcdir)
+      h = workon_helper.WorkonHelper(os.path.join(self.tempdir, 'nonexistent'),
+                                     'this-board-is-not-setup.',
+                                     src_root=self._mock_srcdir)
+      h.StartWorkingOnPackages(['sys-apps/dbus'])
 
   def testShouldRegenerateSymlinks(self):
     """Check that the symlinks are regenerated when using a new sysroot."""
