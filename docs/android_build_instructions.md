@@ -112,19 +112,6 @@ keys](https://www.chromium.org/developers/how-tos/api-keys) if you want your
 build to talk to some Google services, but this is not necessary for most
 development and testing purposes.
 
-### Configure the JDK
-
-Make also sure that OpenJDK 1.7 is selected as default:
-
-```shell
-$ sudo update-alternatives --config javac
-$ sudo update-alternatives --config java
-$ sudo update-alternatives --config javaws
-$ sudo update-alternatives --config javap
-$ sudo update-alternatives --config jar
-$ sudo update-alternatives --config jarsigner
-```
-
 ## Setting up the build
 
 Chromium uses [Ninja](https://ninja-build.org) as its main build tool along
