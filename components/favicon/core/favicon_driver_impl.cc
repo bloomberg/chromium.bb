@@ -83,10 +83,6 @@ bool FaviconDriverImpl::HasPendingTasksForTest() {
   return false;
 }
 
-bool FaviconDriverImpl::WasUnableToDownloadFavicon(const GURL& url) {
-  return favicon_service_ && favicon_service_->WasUnableToDownloadFavicon(url);
-}
-
 void FaviconDriverImpl::SetFaviconOutOfDateForPage(const GURL& url,
                                                    bool force_reload) {
   if (favicon_service_) {

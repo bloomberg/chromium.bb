@@ -70,11 +70,6 @@ GURL WebFaviconDriver::GetActiveURL() {
 int WebFaviconDriver::DownloadImage(const GURL& url,
                                     int max_image_size,
                                     ImageDownloadCallback callback) {
-  if (WasUnableToDownloadFavicon(url)) {
-    DVLOG(1) << "Skip Failed FavIcon: " << url;
-    return 0;
-  }
-
   static int downloaded_image_count = 0;
   int local_download_id = ++downloaded_image_count;
 

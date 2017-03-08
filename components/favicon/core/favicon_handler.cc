@@ -661,6 +661,15 @@ void FaviconHandler::OnFaviconData(const std::vector<
 void FaviconHandler::ScheduleDownload(const GURL& image_url,
                                       favicon_base::IconType icon_type) {
   DCHECK(image_url.is_valid());
+  if (service_ && service_->WasUnableToDownloadFavicon(image_url)) {
+    DVLOG(1) << "Skip Failed FavIcon: " << image_url;
+    // Registration in download_requests_ is needed to prevent
+    // OnDidDownloadFavicon() from returning early.
+    download_requests_[0] = DownloadRequest(image_url, icon_type);
+    OnDidDownloadFavicon(0, 0, image_url, std::vector<SkBitmap>(),
+                         std::vector<gfx::Size>());
+    return;
+  }
   // A max bitmap size is specified to avoid receiving huge bitmaps in
   // OnDidDownloadFavicon(). See FaviconDriver::StartDownload()
   // for more details about the max bitmap size.
@@ -673,6 +682,8 @@ void FaviconHandler::ScheduleDownload(const GURL& image_url,
   DCHECK(download_requests_.find(download_id) == download_requests_.end());
   download_requests_[download_id] = DownloadRequest(image_url, icon_type);
 
+  // TODO(mastiz): Remove the download_id == 0 handling because it's not used
+  // in production code, only tests.
   if (download_id == 0) {
     // If DownloadFavicon() did not start a download, it returns a download id
     // of 0. We still need to call OnDidDownloadFavicon() because the method is

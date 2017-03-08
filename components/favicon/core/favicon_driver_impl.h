@@ -53,9 +53,6 @@ class FaviconDriverImpl : public FaviconDriver,
                     bookmarks::BookmarkModel* bookmark_model);
   ~FaviconDriverImpl() override;
 
-  // Returns whether downloading favicon for |url| previously failed.
-  bool WasUnableToDownloadFavicon(const GURL& url);
-
   // Informs FaviconService that the favicon for |url| is out of date. If
   // |force_reload| is true, then discard information about favicon download
   // failures.

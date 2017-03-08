@@ -109,11 +109,6 @@ ContentFaviconDriver::~ContentFaviconDriver() {
 int ContentFaviconDriver::DownloadImage(const GURL& url,
                                         int max_image_size,
                                         ImageDownloadCallback callback) {
-  if (WasUnableToDownloadFavicon(url)) {
-    DVLOG(1) << "Skip Failed FavIcon: " << url;
-    return 0;
-  }
-
   bool bypass_cache = (bypass_cache_page_url_ == GetActiveURL());
   bypass_cache_page_url_ = GURL();
 

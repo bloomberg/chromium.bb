@@ -72,48 +72,16 @@ class ContentFaviconDriverTest : public content::RenderViewHostTestHarness {
   testing::NiceMock<MockFaviconService> favicon_service_;
 };
 
-// Test that UnableToDownloadFavicon() is not called as a result of a favicon
-// download with 200 status.
-TEST_F(ContentFaviconDriverTest, ShouldNotCallUnableToDownloadFaviconFor200) {
-  EXPECT_CALL(favicon_service_, UnableToDownloadFavicon(kIconURL)).Times(0);
+// Test that a download is initiated when there isn't a favicon in the database
+// for either the page URL or the icon URL.
+TEST_F(ContentFaviconDriverTest, ShouldCauseImageDownload) {
   // Mimic a page load.
   TestFetchFaviconForPage(
       kPageURL,
       {content::FaviconURL(kIconURL, content::FaviconURL::FAVICON,
                            kEmptyIconSizes)});
-  // Completing the download should not cause a call to
-  // UnableToDownloadFavicon().
   EXPECT_TRUE(web_contents_tester()->TestDidDownloadImage(
       kIconURL, 200, kEmptyIcons, kEmptyIconSizes));
-}
-
-// Test that UnableToDownloadFavicon() is called as a result of a favicon
-// download with 404 status.
-TEST_F(ContentFaviconDriverTest, ShouldCallUnableToDownloadFaviconFor404) {
-  EXPECT_CALL(favicon_service_, UnableToDownloadFavicon(kIconURL));
-  // Mimic a page load.
-  TestFetchFaviconForPage(
-      kPageURL,
-      {content::FaviconURL(kIconURL, content::FaviconURL::FAVICON,
-                           kEmptyIconSizes)});
-  // Mimic the completion of an image download.
-  EXPECT_TRUE(web_contents_tester()->TestDidDownloadImage(
-      kIconURL, 404, kEmptyIcons, kEmptyIconSizes));
-}
-
-// Test that UnableToDownloadFavicon() is not called as a result of a favicon
-// download with 503 status.
-TEST_F(ContentFaviconDriverTest, ShouldNotCallUnableToDownloadFaviconFor503) {
-  EXPECT_CALL(favicon_service_, UnableToDownloadFavicon(kIconURL)).Times(0);
-  // Mimic a page load.
-  TestFetchFaviconForPage(
-      kPageURL,
-      {content::FaviconURL(kIconURL, content::FaviconURL::FAVICON,
-                           kEmptyIconSizes)});
-  // Completing the download should not cause a call to
-  // UnableToDownloadFavicon().
-  EXPECT_TRUE(web_contents_tester()->TestDidDownloadImage(
-      kIconURL, 503, kEmptyIcons, kEmptyIconSizes));
 }
 
 // Test that Favicon is not requested repeatedly during the same session if
@@ -128,6 +96,22 @@ TEST_F(ContentFaviconDriverTest, ShouldNotRequestRepeatedlyIfUnavailable) {
                            kEmptyIconSizes)});
   // Verify that no download request is pending for the image.
   EXPECT_FALSE(web_contents_tester()->HasPendingDownloadImage(kIconURL));
+}
+
+TEST_F(ContentFaviconDriverTest, ShouldDownloadSecondIfFirstUnavailable) {
+  const GURL kOtherIconURL = GURL("http://www.google.com/other-favicon.ico");
+  ON_CALL(favicon_service_, WasUnableToDownloadFavicon(kIconURL))
+      .WillByDefault(Return(true));
+  // Mimic a page load.
+  TestFetchFaviconForPage(
+      kPageURL,
+      {content::FaviconURL(kIconURL, content::FaviconURL::FAVICON,
+                           kEmptyIconSizes),
+       content::FaviconURL(kOtherIconURL, content::FaviconURL::FAVICON,
+                           kEmptyIconSizes)});
+  // Verify a  download request is pending for the second image.
+  EXPECT_FALSE(web_contents_tester()->HasPendingDownloadImage(kIconURL));
+  EXPECT_TRUE(web_contents_tester()->HasPendingDownloadImage(kOtherIconURL));
 }
 
 // Test that ContentFaviconDriver ignores updated favicon URLs if there is no
