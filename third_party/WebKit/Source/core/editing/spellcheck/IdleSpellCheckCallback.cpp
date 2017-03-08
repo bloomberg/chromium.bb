@@ -27,7 +27,7 @@ namespace {
 
 const int kColdModeTimerIntervalMS = 1000;
 const int kConsecutiveColdModeTimerIntervalMS = 200;
-const int kRequestTimeoutMS = 200;
+const int kHotModeRequestTimeoutMS = 200;
 const int kInvalidHandle = -1;
 const int kDummyHandleForForcedInvocation = -2;
 const double kForcedInvocationDeadlineSeconds = 10;
@@ -64,14 +64,6 @@ bool IdleSpellCheckCallback::isSpellCheckingEnabled() const {
   return frame().spellChecker().isSpellCheckingEnabled();
 }
 
-void IdleSpellCheckCallback::requestInvocation() {
-  DCHECK_EQ(m_idleCallbackHandle, kInvalidHandle);
-
-  IdleRequestOptions options;
-  options.setTimeout(kRequestTimeoutMS);
-  m_idleCallbackHandle = frame().document()->requestIdleCallback(this, options);
-}
-
 void IdleSpellCheckCallback::deactivate() {
   m_state = State::kInactive;
   if (m_coldModeTimer.isActive())
@@ -95,8 +87,14 @@ void IdleSpellCheckCallback::setNeedsInvocation() {
     m_coldModeTimer.stop();
   }
 
-  if (m_state != State::kColdModeRequested)
-    requestInvocation();
+  if (m_state == State::kColdModeRequested) {
+    frame().document()->cancelIdleCallback(m_idleCallbackHandle);
+    m_idleCallbackHandle = kInvalidHandle;
+  }
+
+  IdleRequestOptions options;
+  options.setTimeout(kHotModeRequestTimeoutMS);
+  m_idleCallbackHandle = frame().document()->requestIdleCallback(this, options);
   m_state = State::kHotModeRequested;
 }
 
@@ -126,7 +124,8 @@ void IdleSpellCheckCallback::coldModeTimerFired(TimerBase*) {
     return;
   }
 
-  requestInvocation();
+  m_idleCallbackHandle =
+      frame().document()->requestIdleCallback(this, IdleRequestOptions());
   m_state = State::kColdModeRequested;
 }
 

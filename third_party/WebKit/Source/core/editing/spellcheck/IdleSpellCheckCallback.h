@@ -73,9 +73,6 @@ class CORE_EXPORT IdleSpellCheckCallback final
   // Returns whether spell checking is globally enabled.
   bool isSpellCheckingEnabled() const;
 
-  // Calls requestIdleCallback with this IdleSpellCheckCallback.
-  void requestInvocation();
-
   // Functions for hot mode.
   void hotModeInvocation(IdleDeadline*);
 

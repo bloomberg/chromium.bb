@@ -79,7 +79,7 @@ TEST_F(IdleSpellCheckCallbackTest, RequestWhenColdModeRequested) {
   int handle = idleChecker().idleCallbackHandle();
   idleChecker().setNeedsInvocation();
   EXPECT_EQ(State::kHotModeRequested, idleChecker().state());
-  EXPECT_EQ(handle, idleChecker().idleCallbackHandle());
+  EXPECT_NE(handle, idleChecker().idleCallbackHandle());
   EXPECT_NE(-1, idleChecker().idleCallbackHandle());
 }
 
