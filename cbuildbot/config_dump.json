@@ -699,7 +699,6 @@
             "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
             "manifest_version": true,
             "overlays": "both",
-            "profile": "llvm",
             "useflags": [
                 "-cros-debug",
                 "-tests_cheets_SELinuxTest",
@@ -710,7 +709,6 @@
                 "-tests_security_OpenFDs",
                 "-tests_security_SMMLocked",
                 "chrome_internal",
-                "clang",
                 "llvm-next"
             ],
             "usepkg_build_packages": false,
@@ -746,7 +744,6 @@
             "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
             "manifest_version": true,
             "overlays": "both",
-            "profile": "llvm",
             "useflags": [
                 "-cros-debug",
                 "-tests_cheets_SELinuxTest",

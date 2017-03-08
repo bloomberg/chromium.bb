@@ -1669,7 +1669,6 @@ def ToolchainBuilders(site_config, boards_dict, ge_build_config):
       'llvm_toolchain',
       site_config.templates.toolchain,
       description='Full release build with LLVM toolchain',
-      profile='llvm',
       hw_tests=hw_test_list.ToolchainTestMedium(constants.HWTEST_SUITES_POOL),
       hw_tests_override=hw_test_list.ToolchainTestMedium(
           constants.HWTEST_SUITES_POOL),
@@ -1679,7 +1678,7 @@ def ToolchainBuilders(site_config, boards_dict, ge_build_config):
       site_config.templates.llvm_toolchain,
       description='Full release build with LLVM (next) toolchain',
       latest_toolchain=True,
-      useflags=append_useflags(['clang', 'llvm-next']),
+      useflags=append_useflags(['llvm-next']),
   )
 
   ### Toolchain waterfall entries.
