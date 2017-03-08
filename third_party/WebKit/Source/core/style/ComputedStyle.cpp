@@ -772,10 +772,8 @@ bool ComputedStyle::diffNeedsFullLayoutAndPaintInvalidation(
             other.m_rareInheritedData->m_textSizeAdjust ||
         m_rareInheritedData->listStyleImage !=
             other.m_rareInheritedData->listStyleImage ||
-        m_rareInheritedData->m_snapHeightUnit !=
-            other.m_rareInheritedData->m_snapHeightUnit ||
-        m_rareInheritedData->m_snapHeightPosition !=
-            other.m_rareInheritedData->m_snapHeightPosition ||
+        m_rareInheritedData->m_lineHeightStep !=
+            other.m_rareInheritedData->m_lineHeightStep ||
         m_rareInheritedData->textStrokeWidth !=
             other.m_rareInheritedData->textStrokeWidth)
       return true;

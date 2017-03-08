@@ -186,6 +186,7 @@ left: auto
 letter-spacing: normal
 lighting-color: rgb(255, 255, 255)
 line-height: normal
+line-height-step: 0px
 list-style-image: none
 list-style-position: outside
 list-style-type: disc
@@ -250,7 +251,6 @@ shape-image-threshold: 0
 shape-margin: 0px
 shape-outside: none
 shape-rendering: auto
-snap-height: 0px
 speak: normal
 stop-color: rgb(0, 0, 0)
 stop-opacity: 1

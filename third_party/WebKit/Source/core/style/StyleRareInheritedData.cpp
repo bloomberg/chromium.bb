@@ -49,7 +49,7 @@ struct SameSizeAsStyleRareInheritedData
   unsigned m_bitfields[2];
   short pagedMediaShorts[2];
   short hyphenationShorts[3];
-  uint8_t snapHeight;
+  uint8_t lineHeightStep;
 
   Color touchColors;
   TabSize tabSize;
@@ -102,11 +102,10 @@ StyleRareInheritedData::StyleRareInheritedData()
       m_subtreeWillChangeContents(false),
       m_selfOrAncestorHasDirAutoAttribute(false),
       m_respectImageOrientation(false),
-      m_snapHeightPosition(0),
       hyphenationLimitBefore(-1),
       hyphenationLimitAfter(-1),
       hyphenationLimitLines(-1),
-      m_snapHeightUnit(0),
+      m_lineHeightStep(0),
       tapHighlightColor(ComputedStyle::initialTapHighlightColor()),
       m_tabSize(ComputedStyle::initialTabSize()),
       m_textSizeAdjust(ComputedStyle::initialTextSizeAdjust()) {}
@@ -169,12 +168,11 @@ StyleRareInheritedData::StyleRareInheritedData(const StyleRareInheritedData& o)
       m_selfOrAncestorHasDirAutoAttribute(
           o.m_selfOrAncestorHasDirAutoAttribute),
       m_respectImageOrientation(o.m_respectImageOrientation),
-      m_snapHeightPosition(o.m_snapHeightPosition),
       hyphenationString(o.hyphenationString),
       hyphenationLimitBefore(o.hyphenationLimitBefore),
       hyphenationLimitAfter(o.hyphenationLimitAfter),
       hyphenationLimitLines(o.hyphenationLimitLines),
-      m_snapHeightUnit(o.m_snapHeightUnit),
+      m_lineHeightStep(o.m_lineHeightStep),
       textEmphasisCustomMark(o.textEmphasisCustomMark),
       tapHighlightColor(o.tapHighlightColor),
       appliedTextDecorations(o.appliedTextDecorations),
@@ -234,9 +232,8 @@ bool StyleRareInheritedData::operator==(const StyleRareInheritedData& o) const {
          m_selfOrAncestorHasDirAutoAttribute ==
              o.m_selfOrAncestorHasDirAutoAttribute &&
          m_respectImageOrientation == o.m_respectImageOrientation &&
-         m_snapHeightPosition == o.m_snapHeightPosition &&
          hyphenationString == o.hyphenationString &&
-         m_snapHeightUnit == o.m_snapHeightUnit &&
+         m_lineHeightStep == o.m_lineHeightStep &&
          textEmphasisCustomMark == o.textEmphasisCustomMark &&
          quotesDataEquivalent(o) && m_tabSize == o.m_tabSize &&
          m_imageRendering == o.m_imageRendering &&

@@ -220,14 +220,12 @@ class CORE_EXPORT StyleRareInheritedData
 
   unsigned m_respectImageOrientation : 1;
 
-  unsigned m_snapHeightPosition : 7;
-
   AtomicString hyphenationString;
   short hyphenationLimitBefore;
   short hyphenationLimitAfter;
   short hyphenationLimitLines;
 
-  uint8_t m_snapHeightUnit;
+  uint8_t m_lineHeightStep;
 
   AtomicString textEmphasisCustomMark;
   RefPtr<QuotesData> quotes;

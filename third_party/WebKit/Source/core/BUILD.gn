@@ -510,7 +510,7 @@ css_properties("make_core_generated_css_property_apis") {
     "$blink_core_output_dir/css/properties/CSSPropertyAPIJustifyItems.h",
     "$blink_core_output_dir/css/properties/CSSPropertyAPIBaselineShift.h",
     "$blink_core_output_dir/css/properties/CSSPropertyAPICaretColor.h",
-    "$blink_core_output_dir/css/properties/CSSPropertyAPISnapHeight.h",
+    "$blink_core_output_dir/css/properties/CSSPropertyAPILineHeightStep.h",
     "$blink_core_output_dir/css/properties/CSSPropertyAPIWebkitBorderSpacing.h",
     "$blink_core_output_dir/css/properties/CSSPropertyAPIColumnGap.h",
     "$blink_core_output_dir/css/properties/CSSPropertyAPIOffsetDistance.h",
