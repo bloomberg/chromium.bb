@@ -74,133 +74,7 @@ group("gn_all") {
   testonly = true
 
   deps = [
-    ":both_gn_and_gyp",
-    ":gn_only",
     ":gn_visibility",
-  ]
-
-  if (!is_ios) {
-    deps += [ "//v8:gn_all" ]
-  }
-}
-
-# TODO(GYP_GONE): This target exists for compatibility with GYP, specifically
-# for the iOS bots and the official builders.
-group("All") {
-  testonly = true
-
-  deps = [
-    ":gn_all",
-  ]
-}
-
-# TODO(GYP_GONE): This target exists for compatibility with GYP for the
-# builders that specify targets in the recipes directly.
-# Ideally it should not exist, and the builders should be specifying
-# more specific targets (or 'All') via the source-side
-# //testing/buildbot/*.json files. We should simply delete this target
-# and update any recipes that are using it.
-group("chromium_builder_tests") {
-  testonly = true
-  deps = []
-}
-
-# TODO(GYP_GONE): Figure out if we really need this target or if there's
-# some better way to specify things.
-if (is_win) {
-  group("chrome_official_builder_no_unittests") {
-    deps = [
-      "//base/win:eventlog_provider",
-      "//chrome/installer/gcapi",
-      "//chrome/installer/mini_installer",
-      "//cloud_print",
-      "//cloud_print/virtual_driver/win/port_monitor:copy_gcp_portmon_binaries",
-      "//components/policy:pack_policy_templates",
-      "//courgette",
-      "//courgette:copy_courgette_binaries",
-      "//remoting/webapp",
-    ]
-
-    if (target_cpu == "x86") {
-      if (is_clang) {
-        deps += [ "//courgette(//build/toolchain/win:clang_x64)" ]
-      } else {
-        deps += [ "//courgette(//build/toolchain/win:x64)" ]
-      }
-    }
-    if (is_chrome_branded) {
-      deps += [ "//remoting/host:remoting_host_installation" ]
-    }
-  }
-
-  group("chrome_official_builder") {
-    testonly = true
-
-    deps = [
-      ":chrome_official_builder_no_unittests",
-      "//base:base_unittests",
-      "//chrome/test:browser_tests",
-      "//chrome/test:sync_integration_tests",
-      "//ipc:ipc_tests",
-      "//media:media_unittests",
-      "//media/midi:midi_unittests",
-      "//net:net_unittests",
-      "//printing:printing_unittests",
-      "//sql:sql_unittests",
-      "//ui/base:ui_base_unittests",
-      "//ui/gfx:gfx_unittests",
-      "//ui/touch_selection:ui_touch_selection_unittests",
-      "//ui/views:views_unittests",
-      "//url:url_unittests",
-    ]
-  }
-
-  group("All_syzygy") {
-    if (is_syzyasan) {
-      deps = [
-        "//chrome/installer/mini_installer:mini_installer",
-        "//chrome/installer/mini_installer:mini_installer_syzygy",
-      ]
-    }
-  }
-
-  if (is_syzyasan) {
-    group("chrome_official_syzyasan_builder") {
-      deps = [
-        ":All_syzygy",
-        ":chrome_official_builder_no_unittests",
-      ]
-    }
-  }
-}
-
-if (is_chromeos) {
-  group("chromiumos_preflight") {
-    testonly = true
-    deps = [
-      "//breakpad:minidump_stackwalk($host_toolchain)",
-      "//chrome",
-      "//chrome/test/chromedriver",
-      "//media:media_unittests",
-      "//media/gpu:video_decode_accelerator_unittest",
-      "//media/gpu:video_encode_accelerator_unittest",
-      "//ppapi/examples/video_decode",
-      "//sandbox/linux:chrome_sandbox",
-      "//sandbox/linux:sandbox_linux_unittests",
-
-      # Blocked on https://github.com/catapult-project/catapult/issues/2297
-      #"//third_party/catapult/telemetry:bitmaptools",
-      "//tools/perf/clear_system_cache",
-    ]
-  }
-}
-
-# The "both_gn_and_gyp" target should reflect every target that is built
-# in both the GN and GYP builds, and ideally it should match the
-# "both_gn_and_gyp" target in build/gn_migration.gypi line-for-line.
-group("both_gn_and_gyp") {
-  testonly = true
-  deps = [
     "//base:base_unittests",
     "//chrome/installer",
     "//components:components_unittests",
@@ -706,12 +580,6 @@ group("both_gn_and_gyp") {
       "//third_party/openh264:processing",
     ]
   }
-}
-
-group("gn_only") {
-  testonly = true
-
-  deps = []
 
   if (!is_ios) {
     deps += [
@@ -838,6 +706,121 @@ group("gn_only") {
     deps += [
       "//headless",
       "//headless:headless_tests",
+    ]
+  }
+
+  if (!is_ios) {
+    deps += [ "//v8:gn_all" ]
+  }
+}
+
+# TODO(GYP_GONE): This target exists for compatibility with GYP, specifically
+# for the iOS bots and the official builders.
+group("All") {
+  testonly = true
+
+  deps = [
+    ":gn_all",
+  ]
+}
+
+# TODO(GYP_GONE): This target exists for compatibility with GYP for the
+# builders that specify targets in the recipes directly.
+# Ideally it should not exist, and the builders should be specifying
+# more specific targets (or 'All') via the source-side
+# //testing/buildbot/*.json files. We should simply delete this target
+# and update any recipes that are using it.
+group("chromium_builder_tests") {
+  testonly = true
+  deps = []
+}
+
+# TODO(GYP_GONE): Figure out if we really need this target or if there's
+# some better way to specify things.
+if (is_win) {
+  group("chrome_official_builder_no_unittests") {
+    deps = [
+      "//base/win:eventlog_provider",
+      "//chrome/installer/gcapi",
+      "//chrome/installer/mini_installer",
+      "//cloud_print",
+      "//cloud_print/virtual_driver/win/port_monitor:copy_gcp_portmon_binaries",
+      "//components/policy:pack_policy_templates",
+      "//courgette",
+      "//courgette:copy_courgette_binaries",
+      "//remoting/webapp",
+    ]
+
+    if (target_cpu == "x86") {
+      if (is_clang) {
+        deps += [ "//courgette(//build/toolchain/win:clang_x64)" ]
+      } else {
+        deps += [ "//courgette(//build/toolchain/win:x64)" ]
+      }
+    }
+    if (is_chrome_branded) {
+      deps += [ "//remoting/host:remoting_host_installation" ]
+    }
+  }
+
+  group("chrome_official_builder") {
+    testonly = true
+
+    deps = [
+      ":chrome_official_builder_no_unittests",
+      "//base:base_unittests",
+      "//chrome/test:browser_tests",
+      "//chrome/test:sync_integration_tests",
+      "//ipc:ipc_tests",
+      "//media:media_unittests",
+      "//media/midi:midi_unittests",
+      "//net:net_unittests",
+      "//printing:printing_unittests",
+      "//sql:sql_unittests",
+      "//ui/base:ui_base_unittests",
+      "//ui/gfx:gfx_unittests",
+      "//ui/touch_selection:ui_touch_selection_unittests",
+      "//ui/views:views_unittests",
+      "//url:url_unittests",
+    ]
+  }
+
+  group("All_syzygy") {
+    if (is_syzyasan) {
+      deps = [
+        "//chrome/installer/mini_installer:mini_installer",
+        "//chrome/installer/mini_installer:mini_installer_syzygy",
+      ]
+    }
+  }
+
+  if (is_syzyasan) {
+    group("chrome_official_syzyasan_builder") {
+      deps = [
+        ":All_syzygy",
+        ":chrome_official_builder_no_unittests",
+      ]
+    }
+  }
+}
+
+if (is_chromeos) {
+  group("chromiumos_preflight") {
+    testonly = true
+    deps = [
+      "//breakpad:minidump_stackwalk($host_toolchain)",
+      "//chrome",
+      "//chrome/test/chromedriver",
+      "//media:media_unittests",
+      "//media/gpu:video_decode_accelerator_unittest",
+      "//media/gpu:video_encode_accelerator_unittest",
+      "//ppapi/examples/video_decode",
+      "//sandbox/linux:chrome_sandbox",
+      "//sandbox/linux:sandbox_linux_unittests",
+
+      # Blocked on https://github.com/catapult-project/catapult/issues/2297
+      #"//third_party/catapult/telemetry:bitmaptools",
+      "//tools/perf/clear_system_cache",
     ]
   }
 }
