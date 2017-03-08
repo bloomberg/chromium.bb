@@ -195,6 +195,9 @@ std::string GetSyncErrorAction(sync_ui_util::ActionType action_type) {
   }
 }
 
+#if defined(OS_CHROMEOS)
+bool g_enable_polymer_preload = true;
+#endif  // defined(OS_CHROMEOS)
 }  // namespace
 
 namespace options {
@@ -722,7 +725,8 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
   magnifier_list->Append(std::move(option_partial));
 
   values->Set("magnifierList", magnifier_list.release());
-#endif
+  values->SetBoolean("enablePolymerPreload", g_enable_polymer_preload);
+#endif  // defined(OS_CHROMEOS)
 
 #if defined(OS_MACOSX)
   values->SetString("macPasswordsWarning",
@@ -2350,6 +2354,13 @@ void BrowserOptionsHandler::OnPolicyUpdated(const policy::PolicyNamespace& ns,
   if (base::ContainsKey(different_keys, policy::key::kMetricsReportingEnabled))
     SetupMetricsReportingCheckbox();
 }
+
+#if defined(OS_CHROMEOS)
+// static
+void BrowserOptionsHandler::DisablePolymerPreloadForTesting() {
+  g_enable_polymer_preload = false;
+}
+#endif  // defined(OS_CHROMEOS)
 
 bool BrowserOptionsHandler::IsDeviceOwnerProfile() {
 #if defined(OS_CHROMEOS)

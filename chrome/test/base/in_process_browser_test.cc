@@ -82,7 +82,8 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/input_method/input_method_configuration.h"
-#endif
+#include "chrome/browser/ui/webui/options/browser_options_handler.h"
+#endif  // defined(OS_CHROMEOS)
 
 #if defined(USE_ASH)
 #include "chrome/test/base/default_ash_event_generator_delegate.h"
@@ -248,6 +249,12 @@ void InProcessBrowserTest::SetUp() {
       chrome_browser_net::NetErrorTabHelper::TESTING_FORCE_DISABLED);
 
   google_util::SetMockLinkDoctorBaseURLForTesting();
+
+#if defined(OS_CHROMEOS)
+  // Polymer Elements are used for quick unlock configuration in options page,
+  // which is chromeos specific feature.
+  options::BrowserOptionsHandler::DisablePolymerPreloadForTesting();
+#endif  // defined(OS_CHROMEOS)
 
   // Use hardcoded quota settings to have a consistent testing environment.
   const int kQuota = 5 * 1024 * 1024;

@@ -30,6 +30,9 @@ cr.define('options', function() {
       $('screen-lock-done').onclick = function() {
         QuickUnlockConfigureOverlay.dismiss();
       };
+
+      if (loadTimeData.getBoolean('enablePolymerPreload'))
+        requestIdleCallback(this.ensurePolymerIsLoaded_.bind(this));
     },
 
     /** @override */

@@ -107,6 +107,10 @@ class BrowserOptionsHandler
   void OnPolicyUpdated(const policy::PolicyNamespace& ns,
                        const policy::PolicyMap& previous,
                        const policy::PolicyMap& current) override;
+#if defined(OS_CHROMEOS)
+  static void DisablePolymerPreloadForTesting();
+#endif  // defined(OS_CHROMEOS)
+
  private:
   // content::NotificationObserver implementation.
   void Observe(int type,
