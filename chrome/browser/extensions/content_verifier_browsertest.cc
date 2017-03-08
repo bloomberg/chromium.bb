@@ -22,6 +22,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
+#include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/content_verifier.h"
 #include "extensions/browser/content_verify_job.h"
@@ -36,6 +37,10 @@
 #include "extensions/browser/updater/extension_downloader_test_delegate.h"
 #include "extensions/browser/updater/manifest_fetch_data.h"
 #include "extensions/common/extension_urls.h"
+
+#if defined(OS_WIN)
+#include "base/win/windows_version.h"
+#endif
 
 namespace extensions {
 
@@ -500,6 +505,13 @@ class ContentVerifierTest : public ExtensionBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(ContentVerifierTest, FailOnRead) {
+#if defined(OS_WIN)
+  if (content::IsBrowserSideNavigationEnabled() &&
+      base::win::GetVersion() >= base::win::VERSION_WIN10) {
+    // http://crbug.com/699437
+    return;
+  }
+#endif
   EXPECT_EQ(0, delegate_.bytes_read_failed());
   delegate_.fail_next_read();
   OpenPageAndWaitForUnload();
@@ -507,6 +519,13 @@ IN_PROC_BROWSER_TEST_F(ContentVerifierTest, FailOnRead) {
 }
 
 IN_PROC_BROWSER_TEST_F(ContentVerifierTest, FailOnDone) {
+#if defined(OS_WIN)
+  if (content::IsBrowserSideNavigationEnabled() &&
+      base::win::GetVersion() >= base::win::VERSION_WIN10) {
+    // http://crbug.com/699437
+    return;
+  }
+#endif
   EXPECT_EQ(0, delegate_.done_reading_failed());
   delegate_.fail_next_done();
   OpenPageAndWaitForUnload();
