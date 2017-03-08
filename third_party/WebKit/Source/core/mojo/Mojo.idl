@@ -29,5 +29,6 @@ typedef unsigned long MojoResult;
     const MojoResult RESULT_SHOULD_WAIT = 17;
 
     static MojoCreateMessagePipeResult createMessagePipe();
+    static MojoCreateDataPipeResult createDataPipe(MojoCreateDataPipeOptions options);
     static MojoCreateSharedBufferResult createSharedBuffer(unsigned long numBytes);
 };

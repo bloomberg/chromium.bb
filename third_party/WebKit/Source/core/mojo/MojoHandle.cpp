@@ -9,11 +9,16 @@
 #include "core/dom/DOMArrayBuffer.h"
 #include "core/dom/DOMArrayBufferView.h"
 #include "core/mojo/MojoCreateSharedBufferResult.h"
+#include "core/mojo/MojoDiscardDataOptions.h"
 #include "core/mojo/MojoDuplicateBufferHandleOptions.h"
 #include "core/mojo/MojoMapBufferResult.h"
+#include "core/mojo/MojoReadDataOptions.h"
+#include "core/mojo/MojoReadDataResult.h"
 #include "core/mojo/MojoReadMessageFlags.h"
 #include "core/mojo/MojoReadMessageResult.h"
 #include "core/mojo/MojoWatcher.h"
+#include "core/mojo/MojoWriteDataOptions.h"
+#include "core/mojo/MojoWriteDataResult.h"
 
 // Mojo messages typically do not contain many handles. In fact most
 // messages do not contain any handle. An inline capacity of 4 should avoid
@@ -95,6 +100,79 @@ void MojoHandle::readMessage(const MojoReadMessageFlags& flagsDict,
   resultDict.setResult(result);
   resultDict.setBuffer(buffer);
   resultDict.setHandles(handles);
+}
+
+void MojoHandle::writeData(const ArrayBufferOrArrayBufferView& buffer,
+                           const MojoWriteDataOptions& optionsDict,
+                           MojoWriteDataResult& resultDict) {
+  MojoWriteDataFlags flags = MOJO_WRITE_DATA_FLAG_NONE;
+  if (optionsDict.allOrNone())
+    flags |= MOJO_WRITE_DATA_FLAG_ALL_OR_NONE;
+
+  const void* elements = nullptr;
+  uint32_t numBytes = 0;
+  if (buffer.isArrayBuffer()) {
+    DOMArrayBuffer* array = buffer.getAsArrayBuffer();
+    elements = array->data();
+    numBytes = array->byteLength();
+  } else {
+    DOMArrayBufferView* view = buffer.getAsArrayBufferView();
+    elements = view->baseAddress();
+    numBytes = view->byteLength();
+  }
+
+  MojoResult result =
+      MojoWriteData(m_handle->value(), elements, &numBytes, flags);
+  resultDict.setResult(result);
+  resultDict.setNumBytes(result == MOJO_RESULT_OK ? numBytes : 0);
+}
+
+void MojoHandle::queryData(MojoReadDataResult& resultDict) {
+  uint32_t numBytes = 0;
+  MojoResult result = MojoReadData(m_handle->value(), nullptr, &numBytes,
+                                   MOJO_READ_DATA_FLAG_QUERY);
+  resultDict.setResult(result);
+  resultDict.setNumBytes(numBytes);
+}
+
+void MojoHandle::discardData(unsigned numBytes,
+                             const MojoDiscardDataOptions& optionsDict,
+                             MojoReadDataResult& resultDict) {
+  MojoReadDataFlags flags = MOJO_READ_DATA_FLAG_DISCARD;
+  if (optionsDict.allOrNone())
+    flags |= MOJO_READ_DATA_FLAG_ALL_OR_NONE;
+
+  MojoResult result =
+      MojoReadData(m_handle->value(), nullptr, &numBytes, flags);
+  resultDict.setResult(result);
+  resultDict.setNumBytes(result == MOJO_RESULT_OK ? numBytes : 0);
+}
+
+void MojoHandle::readData(ArrayBufferOrArrayBufferView& buffer,
+                          const MojoReadDataOptions& optionsDict,
+                          MojoReadDataResult& resultDict) {
+  MojoReadDataFlags flags = MOJO_READ_DATA_FLAG_NONE;
+  if (optionsDict.allOrNone())
+    flags |= MOJO_READ_DATA_FLAG_ALL_OR_NONE;
+  if (optionsDict.peek())
+    flags |= MOJO_READ_DATA_FLAG_PEEK;
+
+  void* elements = nullptr;
+  unsigned numBytes = 0;
+  if (buffer.isArrayBuffer()) {
+    DOMArrayBuffer* array = buffer.getAsArrayBuffer();
+    elements = array->data();
+    numBytes = array->byteLength();
+  } else {
+    DOMArrayBufferView* view = buffer.getAsArrayBufferView();
+    elements = view->baseAddress();
+    numBytes = view->byteLength();
+  }
+
+  MojoResult result =
+      MojoReadData(m_handle->value(), elements, &numBytes, flags);
+  resultDict.setResult(result);
+  resultDict.setNumBytes(result == MOJO_RESULT_OK ? numBytes : 0);
 }
 
 void MojoHandle::mapBuffer(unsigned offset,

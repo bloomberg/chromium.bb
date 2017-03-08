@@ -12,13 +12,18 @@ namespace blink {
 
 class ArrayBufferOrArrayBufferView;
 class MojoCreateSharedBufferResult;
+class MojoDiscardDataOptions;
 class MojoDuplicateBufferHandleOptions;
 class MojoHandleSignals;
 class MojoMapBufferResult;
+class MojoReadDataOptions;
+class MojoReadDataResult;
 class MojoReadMessageFlags;
 class MojoReadMessageResult;
 class MojoWatchCallback;
 class MojoWatcher;
+class MojoWriteDataOptions;
+class MojoWriteDataResult;
 class ScriptState;
 
 class MojoHandle final : public GarbageCollectedFinalized<MojoHandle>,
@@ -37,6 +42,18 @@ class MojoHandle final : public GarbageCollectedFinalized<MojoHandle>,
   MojoResult writeMessage(ArrayBufferOrArrayBufferView&,
                           const HeapVector<Member<MojoHandle>>&);
   void readMessage(const MojoReadMessageFlags&, MojoReadMessageResult&);
+
+  // DataPipe handle.
+  void writeData(const ArrayBufferOrArrayBufferView&,
+                 const MojoWriteDataOptions&,
+                 MojoWriteDataResult&);
+  void queryData(MojoReadDataResult&);
+  void discardData(unsigned numBytes,
+                   const MojoDiscardDataOptions&,
+                   MojoReadDataResult&);
+  void readData(ArrayBufferOrArrayBufferView&,
+                const MojoReadDataOptions&,
+                MojoReadDataResult&);
 
   // SharedBuffer handle.
   void mapBuffer(unsigned offset, unsigned numBytes, MojoMapBufferResult&);

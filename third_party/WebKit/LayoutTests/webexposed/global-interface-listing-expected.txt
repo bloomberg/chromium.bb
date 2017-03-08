@@ -4105,6 +4105,7 @@ interface MimeTypeArray
     method item
     method namedItem
 interface Mojo
+    static method createDataPipe
     static method createMessagePipe
     static method createSharedBuffer
     attribute @@toStringTag
@@ -4131,10 +4132,14 @@ interface MojoHandle
     attribute @@toStringTag
     method close
     method constructor
+    method discardData
     method duplicateBufferHandle
     method mapBuffer
+    method queryData
+    method readData
     method readMessage
     method watch
+    method writeData
     method writeMessage
 interface MojoWatcher
     attribute @@toStringTag
