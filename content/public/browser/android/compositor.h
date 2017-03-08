@@ -8,13 +8,23 @@
 #include "base/callback.h"
 #include "cc/resources/ui_resource_bitmap.h"
 #include "content/common/content_export.h"
+#include "gpu/ipc/common/surface_handle.h"
 #include "ui/android/resources/ui_resource_provider.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace cc {
+class ContextProvider;
 class Layer;
+}
+
+namespace gpu {
+namespace gles2 {
+struct ContextCreationAttribHelper;
+}  // namespace gles2
+
+struct SharedMemoryLimits;
 }
 
 namespace ui {
@@ -33,6 +43,16 @@ class CONTENT_EXPORT Compositor {
   // Performs the global initialization needed before any compositor
   // instance can be used. This should be called only once.
   static void Initialize();
+
+  // Creates a GL context for the provided |handle|. If a null handle is passed,
+  // an offscreen context is created.
+  using ContextProviderCallback =
+      base::Callback<void(scoped_refptr<cc::ContextProvider>)>;
+  static void CreateContextProvider(
+      gpu::SurfaceHandle handle,
+      gpu::gles2::ContextCreationAttribHelper attributes,
+      gpu::SharedMemoryLimits shared_memory_limits,
+      ContextProviderCallback callback);
 
   // Creates and returns a compositor instance.  |root_window| needs to outlive
   // the compositor as it manages callbacks on the compositor.

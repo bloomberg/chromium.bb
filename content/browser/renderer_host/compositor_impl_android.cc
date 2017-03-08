@@ -184,6 +184,28 @@ gpu::gles2::ContextCreationAttribHelper GetCompositorContextAttributes(
   return attributes;
 }
 
+void CreateContextProviderAfterGpuChannelEstablished(
+    gpu::SurfaceHandle handle,
+    gpu::gles2::ContextCreationAttribHelper attributes,
+    gpu::SharedMemoryLimits shared_memory_limits,
+    Compositor::ContextProviderCallback callback,
+    scoped_refptr<gpu::GpuChannelHost> gpu_channel_host) {
+  if (!gpu_channel_host)
+    callback.Run(nullptr);
+
+  constexpr bool automatic_flushes = false;
+  constexpr bool support_locking = false;
+  scoped_refptr<ui::ContextProviderCommandBuffer> context_provider =
+      new ui::ContextProviderCommandBuffer(
+          std::move(gpu_channel_host), gpu::GPU_STREAM_DEFAULT,
+          gpu::GpuStreamPriority::NORMAL, handle,
+          GURL(std::string("chrome://gpu/Compositor::CreateContextProvider")),
+          automatic_flushes, support_locking, shared_memory_limits, attributes,
+          nullptr /* shared_context */,
+          ui::command_buffer_metrics::CONTEXT_TYPE_UNKNOWN);
+  callback.Run(std::move(context_provider));
+}
+
 class AndroidOutputSurface : public cc::OutputSurface {
  public:
   AndroidOutputSurface(
@@ -352,6 +374,17 @@ Compositor* Compositor::Create(CompositorClient* client,
 void Compositor::Initialize() {
   DCHECK(!CompositorImpl::IsInitialized());
   g_initialized = true;
+}
+
+// static
+void Compositor::CreateContextProvider(
+    gpu::SurfaceHandle handle,
+    gpu::gles2::ContextCreationAttribHelper attributes,
+    gpu::SharedMemoryLimits shared_memory_limits,
+    ContextProviderCallback callback) {
+  BrowserGpuChannelHostFactory::instance()->EstablishGpuChannel(
+      base::Bind(&CreateContextProviderAfterGpuChannelEstablished, handle,
+                 attributes, shared_memory_limits, callback));
 }
 
 // static
