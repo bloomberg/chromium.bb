@@ -53,9 +53,6 @@ Advanced options:
   ${toggle_static}                static library support
   ${toggle_small}                 favor smaller size over speed
   ${toggle_postproc_visualizer}   macro block / block level visualizers
-  ${toggle_temporal_denoising}    enable temporal denoising and disable the spatial denoiser
-  ${toggle_av1_temporal_denoising}
-                                  enable av1 temporal denoising
   ${toggle_webm_io}               enable input from and output to WebM container
   ${toggle_libyuv}                enable libyuv
   ${toggle_accounting}            enable bit accounting
@@ -200,7 +197,6 @@ enable_feature dependency_tracking
 enable_feature spatial_resampling
 enable_feature multithread
 enable_feature os_support
-enable_feature temporal_denoising
 
 CODECS="
     av1_encoder
@@ -357,8 +353,6 @@ CONFIG_LIST="
     inspection
     decode_perf_tests
     encode_perf_tests
-    temporal_denoising
-    av1_temporal_denoising
     coefficient_range_checking
     lowbitdepth
     aom_highbitdepth
@@ -416,8 +410,6 @@ CMDLINE_SELECT="
     inspection
     decode_perf_tests
     encode_perf_tests
-    temporal_denoising
-    av1_temporal_denoising
     coefficient_range_checking
     lowbitdepth
     aom_highbitdepth
