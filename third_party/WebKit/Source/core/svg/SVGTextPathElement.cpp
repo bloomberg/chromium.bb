@@ -20,8 +20,8 @@
 
 #include "core/svg/SVGTextPathElement.h"
 
+#include "core/dom/IdTargetObserver.h"
 #include "core/layout/svg/LayoutSVGTextPath.h"
-#include "core/svg/SVGTreeScopeResources.h"
 
 namespace blink {
 
@@ -75,11 +75,13 @@ DEFINE_TRACE(SVGTextPathElement) {
   visitor->trace(m_startOffset);
   visitor->trace(m_method);
   visitor->trace(m_spacing);
+  visitor->trace(m_targetIdObserver);
   SVGTextContentElement::trace(visitor);
   SVGURIReference::trace(visitor);
 }
 
 void SVGTextPathElement::clearResourceReferences() {
+  unobserveTarget(m_targetIdObserver);
   removeAllOutgoingReferences();
 }
 
@@ -121,24 +123,12 @@ void SVGTextPathElement::buildPendingResource() {
   clearResourceReferences();
   if (!isConnected())
     return;
-
-  AtomicString id;
-  Element* target = SVGURIReference::targetElementFromIRIString(
-      hrefString(), treeScope(), &id);
-  if (!target) {
-    // Do not register as pending if we are already pending this resource.
-    if (treeScope().ensureSVGTreeScopedResources().isElementPendingResource(
-            *this, id))
-      return;
-    if (!id.isEmpty()) {
-      treeScope().ensureSVGTreeScopedResources().addPendingResource(id, *this);
-      DCHECK(hasPendingResources());
-    }
-  } else if (isSVGPathElement(*target)) {
+  Element* target = observeTarget(m_targetIdObserver, *this);
+  if (isSVGPathElement(target)) {
     // Register us with the target in the dependencies map. Any change of
     // hrefElement that leads to relayout/repainting now informs us, so we can
     // react to it.
-    addReferenceTo(toSVGElement((target)));
+    addReferenceTo(toSVGElement(target));
   }
 
   if (LayoutObject* layoutObject = this->layoutObject())

@@ -19,10 +19,11 @@
 
 #include "core/svg/SVGMPathElement.h"
 
+#include "core/SVGNames.h"
 #include "core/dom/Document.h"
+#include "core/dom/IdTargetObserver.h"
 #include "core/svg/SVGAnimateMotionElement.h"
 #include "core/svg/SVGPathElement.h"
-#include "core/svg/SVGTreeScopeResources.h"
 
 namespace blink {
 
@@ -32,6 +33,7 @@ inline SVGMPathElement::SVGMPathElement(Document& document)
 }
 
 DEFINE_TRACE(SVGMPathElement) {
+  visitor->trace(m_targetIdObserver);
   SVGElement::trace(visitor);
   SVGURIReference::trace(visitor);
 }
@@ -44,30 +46,18 @@ void SVGMPathElement::buildPendingResource() {
   clearResourceReferences();
   if (!isConnected())
     return;
-
-  AtomicString id;
-  Element* target = SVGURIReference::targetElementFromIRIString(
-      hrefString(), treeScope(), &id);
-  if (!target) {
-    // Do not register as pending if we are already pending this resource.
-    if (treeScope().ensureSVGTreeScopedResources().isElementPendingResource(
-            *this, id))
-      return;
-    if (!id.isEmpty()) {
-      treeScope().ensureSVGTreeScopedResources().addPendingResource(id, *this);
-      DCHECK(hasPendingResources());
-    }
-  } else if (isSVGPathElement(target)) {
+  Element* target = observeTarget(m_targetIdObserver, *this);
+  if (isSVGPathElement(target)) {
     // Register us with the target in the dependencies map. Any change of
     // hrefElement that leads to relayout/repainting now informs us, so we can
     // react to it.
     addReferenceTo(toSVGElement(target));
   }
-
   targetPathChanged();
 }
 
 void SVGMPathElement::clearResourceReferences() {
+  unobserveTarget(m_targetIdObserver);
   removeAllOutgoingReferences();
 }
 

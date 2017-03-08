@@ -21,11 +21,28 @@
 #include "core/svg/SVGURIReference.h"
 
 #include "core/XLinkNames.h"
+#include "core/dom/IdTargetObserver.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/svg/SVGElement.h"
 #include "platform/weborigin/KURL.h"
 
 namespace blink {
+
+namespace {
+
+class SVGElementReferenceObserver : public IdTargetObserver {
+ public:
+  SVGElementReferenceObserver(TreeScope& treeScope,
+                              const AtomicString& id,
+                              std::unique_ptr<WTF::Closure> closure)
+      : IdTargetObserver(treeScope.idTargetObserverRegistry(), id),
+        m_closure(std::move(closure)) {}
+
+ private:
+  void idTargetChanged() override { (*m_closure)(); }
+  std::unique_ptr<WTF::Closure> m_closure;
+};
+}
 
 SVGURIReference::SVGURIReference(SVGElement* element)
     : m_href(SVGAnimatedHref::create(element)) {
@@ -96,6 +113,27 @@ Element* SVGURIReference::targetElementFromIRIString(
   if (fragmentIdentifier)
     *fragmentIdentifier = id;
   return treeScope.getElementById(id);
+}
+
+Element* SVGURIReference::observeTarget(Member<IdTargetObserver>& observer,
+                                        SVGElement& contextElement) {
+  DCHECK(!observer);
+  TreeScope& treeScope = contextElement.treeScope();
+  AtomicString id = fragmentIdentifierFromIRIString(hrefString(), treeScope);
+  if (id.isEmpty())
+    return nullptr;
+  observer = new SVGElementReferenceObserver(
+      treeScope, id,
+      WTF::bind(&SVGElement::buildPendingResource,
+                wrapWeakPersistent(&contextElement)));
+  return treeScope.getElementById(id);
+}
+
+void SVGURIReference::unobserveTarget(Member<IdTargetObserver>& observer) {
+  if (!observer)
+    return;
+  observer->unregister();
+  observer = nullptr;
 }
 
 }  // namespace blink

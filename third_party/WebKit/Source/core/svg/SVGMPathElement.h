@@ -20,7 +20,6 @@
 #ifndef SVGMPathElement_h
 #define SVGMPathElement_h
 
-#include "core/SVGNames.h"
 #include "core/svg/SVGElement.h"
 #include "core/svg/SVGURIReference.h"
 
@@ -55,6 +54,8 @@ class SVGMPathElement final : public SVGElement, public SVGURIReference {
 
   bool layoutObjectIsNeeded(const ComputedStyle&) override { return false; }
   void notifyParentOfPathChange(ContainerNode*);
+
+  Member<IdTargetObserver> m_targetIdObserver;
 };
 
 }  // namespace blink

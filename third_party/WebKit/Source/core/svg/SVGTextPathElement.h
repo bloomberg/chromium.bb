@@ -95,6 +95,7 @@ class SVGTextPathElement final : public SVGTextContentElement,
   Member<SVGAnimatedLength> m_startOffset;
   Member<SVGAnimatedEnumeration<SVGTextPathMethodType>> m_method;
   Member<SVGAnimatedEnumeration<SVGTextPathSpacingType>> m_spacing;
+  Member<IdTargetObserver> m_targetIdObserver;
 };
 
 }  // namespace blink
