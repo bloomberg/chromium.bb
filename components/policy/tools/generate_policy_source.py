@@ -190,6 +190,10 @@ def main():
                     dest='chrome_settings_proto_path',
                     help='generate chrome settings protobuf file',
                     metavar='FILE')
+  parser.add_option('--csfrp', '--chrome-settings-full-runtime-protobuf',
+                    dest='chrome_settings_full_runtime_proto_path',
+                    help='generate chrome settings full runtime protobuf',
+                    metavar='FILE')
   parser.add_option('--cpd', '--cloud-policy-decoder',
                     dest='cloud_policy_decoder_path',
                     help='generate C++ code decoding the cloud policy protobuf',
@@ -245,6 +249,9 @@ def main():
         _WriteCloudPolicyFullRuntimeProtobuf)
   if opts.chrome_settings_proto_path:
     GenerateFile(opts.chrome_settings_proto_path, _WriteChromeSettingsProtobuf)
+  if opts.chrome_settings_full_runtime_proto_path:
+    GenerateFile(opts.chrome_settings_full_runtime_proto_path,
+        _WriteChromeSettingsFullRuntimeProtobuf)
   if opts.cloud_policy_decoder_path:
     GenerateFile(opts.cloud_policy_decoder_path, _WriteCloudPolicyDecoder)
 
@@ -986,50 +993,6 @@ message StringListPolicyProto {
 '''
 
 
-CLOUD_POLICY_FULL_RUNTIME_PROTO_HEAD = '''
-syntax = "proto2";
-
-package enterprise_management;
-
-message StringList {
-  repeated string entries = 1;
-}
-
-message PolicyOptions {
-  enum PolicyMode {
-    // The given settings are applied regardless of user choice.
-    MANDATORY = 0;
-    // The user may choose to override the given settings.
-    RECOMMENDED = 1;
-    // No policy value is present and the policy should be ignored.
-    UNSET = 2;
-  }
-  optional PolicyMode mode = 1 [default = MANDATORY];
-}
-
-message BooleanPolicyProto {
-  optional PolicyOptions policy_options = 1;
-  optional bool value = 2;
-}
-
-message IntegerPolicyProto {
-  optional PolicyOptions policy_options = 1;
-  optional int64 value = 2;
-}
-
-message StringPolicyProto {
-  optional PolicyOptions policy_options = 1;
-  optional string value = 2;
-}
-
-message StringListPolicyProto {
-  optional PolicyOptions policy_options = 1;
-  optional StringList value = 2;
-}
-
-'''
-
-
 # Field IDs [1..RESERVED_IDS] will not be used in the wrapping protobuf.
 RESERVED_IDS = 2
 
@@ -1058,7 +1021,30 @@ def _WritePolicyProto(f, policy, fields):
 
 def _WriteChromeSettingsProtobuf(policies, os, f, riskTags):
   f.write(CHROME_SETTINGS_PROTO_HEAD)
+  fields = []
+  f.write('// PBs for individual settings.\n\n')
+  for policy in policies:
+    # Note: This protobuf also gets the unsupported policies, since it's an
+    # exhaustive list of all the supported user policies on any platform.
+    if not policy.is_device_only:
+      _WritePolicyProto(f, policy, fields)
 
+  f.write('// --------------------------------------------------\n'
+          '// Big wrapper PB containing the above groups.\n\n'
+          'message ChromeSettingsProto {\n')
+  f.write(''.join(fields))
+  f.write('}\n\n')
+
+
+def _WriteChromeSettingsFullRuntimeProtobuf(policies, os, f, riskTags):
+  # For full runtime, disable LITE_RUNTIME switch and import full runtime
+  # version of cloud_policy.proto.
+  f.write(CHROME_SETTINGS_PROTO_HEAD.replace(
+      "option optimize_for = LITE_RUNTIME;",
+      "//option optimize_for = LITE_RUNTIME;").replace(
+          "import \"cloud_policy.proto\";",
+          "import \"cloud_policy_full_runtime.proto\";"
+      ))
   fields = []
   f.write('// PBs for individual settings.\n\n')
   for policy in policies:
@@ -1086,7 +1072,10 @@ def _WriteCloudPolicyProtobuf(policies, os, f, riskTags):
 
 
 def _WriteCloudPolicyFullRuntimeProtobuf(policies, os, f, riskTags):
-  f.write(CLOUD_POLICY_FULL_RUNTIME_PROTO_HEAD)
+  # For full runtime, disable LITE_RUNTIME switch
+  f.write(CLOUD_POLICY_PROTO_HEAD.replace(
+      "option optimize_for = LITE_RUNTIME;",
+      "//option optimize_for = LITE_RUNTIME;"))
   f.write('message CloudPolicySettings {\n')
   for policy in policies:
     if policy.is_supported and not policy.is_device_only:

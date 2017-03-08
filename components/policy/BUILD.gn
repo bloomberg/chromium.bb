@@ -50,12 +50,20 @@ config("component_implementation") {
 # for policies of the same type, so that less classes have to be generated
 # and compiled.
 cloud_policy_proto_path = "$target_gen_dir/proto/cloud_policy.proto"
+
+# This file is used by tools/traffic_annotation/traffic_annotation.proto as it
+# needs a version without LITE_RUNTIME optimization.
 cloud_policy_full_runtime_proto_path =
     "$target_gen_dir/proto/cloud_policy_full_runtime.proto"
 
 # This is the "full" protobuf, which defines one protobuf message per
 # policy. It is also the format currently used by the server.
 chrome_settings_proto_path = "$target_gen_dir/proto/chrome_settings.proto"
+
+# This file is used by tools/traffic_annotation/traffic_annotation.proto as it
+# needs a version without LITE_RUNTIME optimization.
+chrome_settings_full_runtime_proto_path =
+    "$target_gen_dir/proto/chrome_settings_full_runtime.proto"
 
 constants_header_path = "$target_gen_dir/policy_constants.h"
 constants_source_path = "$target_gen_dir/policy_constants.cc"
@@ -113,7 +121,7 @@ action("cloud_policy_code_generate") {
   ]
 }
 
-action("cloud_policy_full_runtime_code_generate") {
+action("full_runtime_code_generate") {
   script = "tools/generate_policy_source.py"
   chrome_version_abspath = "//chrome/VERSION"
   chrome_version_path = rebase_path(chrome_version_abspath, root_build_dir)
@@ -130,11 +138,14 @@ action("cloud_policy_full_runtime_code_generate") {
   ]
   outputs = [
     cloud_policy_full_runtime_proto_path,
+    chrome_settings_full_runtime_proto_path,
   ]
 
   args = [
     "--cloud-policy-full-runtime-protobuf=" +
         rebase_path(cloud_policy_full_runtime_proto_path, root_build_dir),
+    "--chrome-settings-full-runtime-protobuf=" +
+        rebase_path(chrome_settings_full_runtime_proto_path, root_build_dir),
     chrome_version_path,
     target_os,
     chromeos_flag,
