@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/payments/editor_view_controller.h"
 
+#include <map>
 #include <memory>
 #include <utility>
 
@@ -71,9 +72,7 @@ std::unique_ptr<views::View> EditorViewController::CreateView() {
 
   return CreatePaymentView(
       CreateSheetHeaderView(
-          true, l10n_util::GetStringUTF16(
-                    IDS_PAYMENT_REQUEST_CREDIT_CARD_EDITOR_ADD_TITLE),
-          this),
+          true, l10n_util::GetStringUTF16(GetViewHeaderTitleId()), this),
       std::move(content_view));
 }
 

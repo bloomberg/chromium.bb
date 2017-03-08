@@ -5,9 +5,11 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_PAYMENTS_EDITOR_VIEW_CONTROLLER_H_
 #define CHROME_BROWSER_UI_VIEWS_PAYMENTS_EDITOR_VIEW_CONTROLLER_H_
 
+#include <map>
 #include <memory>
 #include <tuple>
 #include <unordered_map>
+#include <utility>
 #include <vector>
 
 #include "base/macros.h"
@@ -104,6 +106,8 @@ class EditorViewController : public PaymentRequestSheetController,
 
  protected:
   virtual std::unique_ptr<views::View> CreateHeaderView() = 0;
+  // Returns the resource id of the view header title.
+  virtual int GetViewHeaderTitleId() const = 0;
   // Returns the field definitions used to build the UI.
   virtual std::vector<EditorField> GetFieldDefinitions() = 0;
   // Validates the data entered and attempts to save; returns true on success.

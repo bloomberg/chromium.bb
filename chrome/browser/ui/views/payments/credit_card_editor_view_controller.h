@@ -5,7 +5,10 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_PAYMENTS_CREDIT_CARD_EDITOR_VIEW_CONTROLLER_H_
 #define CHROME_BROWSER_UI_VIEWS_PAYMENTS_CREDIT_CARD_EDITOR_VIEW_CONTROLLER_H_
 
+#include <memory>
 #include <set>
+#include <string>
+#include <vector>
 
 #include "base/macros.h"
 #include "chrome/browser/ui/views/payments/editor_view_controller.h"
@@ -27,6 +30,7 @@ class CreditCardEditorViewController : public EditorViewController {
 
   // EditorViewController:
   std::unique_ptr<views::View> CreateHeaderView() override;
+  int GetViewHeaderTitleId() const override;
   std::vector<EditorField> GetFieldDefinitions() override;
   bool ValidateModelAndSave() override;
   std::unique_ptr<ValidationDelegate> CreateValidationDelegate(

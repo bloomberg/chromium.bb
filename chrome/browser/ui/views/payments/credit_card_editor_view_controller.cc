@@ -4,7 +4,10 @@
 
 #include "chrome/browser/ui/views/payments/credit_card_editor_view_controller.h"
 
+#include <memory>
+#include <string>
 #include <utility>
+#include <vector>
 
 #include "base/memory/ptr_util.h"
 #include "base/strings/string16.h"
@@ -133,6 +136,10 @@ CreditCardEditorViewController::CreateHeaderView() {
   view->AddChildView(icons_row.release());
 
   return view;
+}
+
+int CreditCardEditorViewController::GetViewHeaderTitleId() const {
+  return IDS_PAYMENT_REQUEST_CREDIT_CARD_EDITOR_ADD_TITLE;
 }
 
 std::vector<EditorField> CreditCardEditorViewController::GetFieldDefinitions() {
