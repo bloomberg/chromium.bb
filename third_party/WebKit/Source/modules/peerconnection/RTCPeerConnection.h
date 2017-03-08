@@ -166,6 +166,7 @@ class RTCPeerConnection final : public EventTargetWithInlineData,
   DEFINE_ATTRIBUTE_EVENT_LISTENER(addstream);
   DEFINE_ATTRIBUTE_EVENT_LISTENER(removestream);
   DEFINE_ATTRIBUTE_EVENT_LISTENER(iceconnectionstatechange);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(icegatheringstatechange);
   DEFINE_ATTRIBUTE_EVENT_LISTENER(datachannel);
 
   // WebRTCPeerConnectionHandlerClient

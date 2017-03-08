@@ -17,6 +17,12 @@ var gPeerConnection = null;
 var gIceCandidates = [];
 
 /**
+ * This stores last ICE gathering state emitted on this side.
+ * @private
+ */
+var gIceGatheringState = 'no-gathering-state';
+
+/**
  * Keeps track of whether we have seen crypto information in the SDP.
  * @private
  */
@@ -417,6 +423,13 @@ function measureGetStatsCallbackPerformance() {
     });
 }
 
+/**
+ * Returns the last iceGatheringState emitted from icegatheringstatechange.
+ */
+function getLastGatheringState() {
+  returnToTest(gIceGatheringState);
+}
+
 // Internals.
 
 /** @private */
@@ -429,6 +442,7 @@ function createPeerConnection_(rtcConfig) {
   peerConnection.onaddstream = addStreamCallback_;
   peerConnection.onremovestream = removeStreamCallback_;
   peerConnection.onicecandidate = iceCallback_;
+  peerConnection.onicegatheringstatechange = iceGatheringCallback_;
   return peerConnection;
 }
 
@@ -444,6 +458,12 @@ function iceCallback_(event) {
   if (event.candidate)
     gIceCandidates.push(event.candidate);
 }
+
+/** @private */
+function iceGatheringCallback_() {
+  gIceGatheringState = peerConnection.iceGatheringState;
+}
+
 
 /** @private */
 function setLocalDescription(peerConnection, sessionDescription) {

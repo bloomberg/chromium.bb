@@ -8,7 +8,7 @@ CONSOLE ERROR: line 83: Uncaught (in promise) TypeError: Failed to execute 'setL
 CONSOLE ERROR: line 83: Uncaught (in promise) TypeError: Failed to execute 'setRemoteDescription' on 'RTCPeerConnection': 1 argument required, but only 0 present.
 CONSOLE ERROR: line 83: Uncaught (in promise) TypeError: Failed to execute 'addIceCandidate' on 'RTCPeerConnection': 1 argument required, but only 0 present.
 This is a testharness.js-based test.
-Found 116 tests; 59 PASS, 57 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 116 tests; 60 PASS, 56 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS EventTarget interface: existence and properties of interface object 
 PASS EventTarget interface object length 
 PASS EventTarget interface object name 
@@ -41,7 +41,7 @@ PASS RTCPeerConnection interface: attribute onnegotiationneeded
 PASS RTCPeerConnection interface: attribute onicecandidate 
 PASS RTCPeerConnection interface: attribute onsignalingstatechange 
 PASS RTCPeerConnection interface: attribute oniceconnectionstatechange 
-FAIL RTCPeerConnection interface: attribute onicegatheringstatechange assert_true: The prototype object must have a property "onicegatheringstatechange" expected true got false
+PASS RTCPeerConnection interface: attribute onicegatheringstatechange 
 FAIL RTCPeerConnection interface: operation createOffer(RTCSessionDescriptionCallback,RTCPeerConnectionErrorCallback,RTCOfferOptions) assert_throws: calling operation with this = null didn't throw TypeError function "function () {
             fn.apply(obj, args);
         }" did not throw
@@ -104,7 +104,7 @@ FAIL RTCPeerConnection interface: pc must inherit property "onnegotiationneeded"
 FAIL RTCPeerConnection interface: pc must inherit property "onicecandidate" with the proper type (19) Unrecognized type EventHandler
 FAIL RTCPeerConnection interface: pc must inherit property "onsignalingstatechange" with the proper type (20) Unrecognized type EventHandler
 FAIL RTCPeerConnection interface: pc must inherit property "oniceconnectionstatechange" with the proper type (21) Unrecognized type EventHandler
-FAIL RTCPeerConnection interface: pc must inherit property "onicegatheringstatechange" with the proper type (22) assert_inherits: property "onicegatheringstatechange" not found in prototype chain
+FAIL RTCPeerConnection interface: pc must inherit property "onicegatheringstatechange" with the proper type (22) Unrecognized type EventHandler
 PASS RTCPeerConnection interface: pc must inherit property "createOffer" with the proper type (23) 
 PASS RTCPeerConnection interface: calling createOffer(RTCSessionDescriptionCallback,RTCPeerConnectionErrorCallback,RTCOfferOptions) on pc with too few arguments must throw TypeError 
 PASS RTCPeerConnection interface: pc must inherit property "setLocalDescription" with the proper type (24) 

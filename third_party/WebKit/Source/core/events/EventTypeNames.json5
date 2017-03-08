@@ -123,6 +123,7 @@
     "hashchange",
     "icecandidate",
     "iceconnectionstatechange",
+    "icegatheringstatechange",
     "inactive",
     "input",
     "install",

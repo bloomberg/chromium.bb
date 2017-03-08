@@ -91,7 +91,7 @@ enum RTCIceConnectionState {
     attribute EventHandler onicecandidate;
     attribute EventHandler onsignalingstatechange;
     attribute EventHandler oniceconnectionstatechange;
-    // attribute EventHandler onicegatheringstatechange;
+    attribute EventHandler onicegatheringstatechange;
 
     // https://w3c.github.io/webrtc-pc/#legacy-interface-extensions
     // These methods return Promise<void> because having Promise-based versions requires that all overloads return Promises.

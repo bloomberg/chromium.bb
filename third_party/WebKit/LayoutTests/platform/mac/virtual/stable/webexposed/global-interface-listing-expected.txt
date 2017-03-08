@@ -4059,6 +4059,7 @@ interface RTCPeerConnection : EventTarget
     getter ondatachannel
     getter onicecandidate
     getter oniceconnectionstatechange
+    getter onicegatheringstatechange
     getter onnegotiationneeded
     getter onremovestream
     getter onsignalingstatechange
@@ -4084,6 +4085,7 @@ interface RTCPeerConnection : EventTarget
     setter ondatachannel
     setter onicecandidate
     setter oniceconnectionstatechange
+    setter onicegatheringstatechange
     setter onnegotiationneeded
     setter onremovestream
     setter onsignalingstatechange
@@ -7333,6 +7335,7 @@ interface webkitRTCPeerConnection : EventTarget
     getter ondatachannel
     getter onicecandidate
     getter oniceconnectionstatechange
+    getter onicegatheringstatechange
     getter onnegotiationneeded
     getter onremovestream
     getter onsignalingstatechange
@@ -7358,6 +7361,7 @@ interface webkitRTCPeerConnection : EventTarget
     setter ondatachannel
     setter onicecandidate
     setter oniceconnectionstatechange
+    setter onicegatheringstatechange
     setter onnegotiationneeded
     setter onremovestream
     setter onsignalingstatechange

@@ -1396,7 +1396,12 @@ void RTCPeerConnection::changeSignalingState(SignalingState signalingState) {
 
 void RTCPeerConnection::changeIceGatheringState(
     ICEGatheringState iceGatheringState) {
-  m_iceGatheringState = iceGatheringState;
+  if (m_iceConnectionState != ICEConnectionStateClosed &&
+      m_iceGatheringState != iceGatheringState) {
+    m_iceGatheringState = iceGatheringState;
+    scheduleDispatchEvent(
+        Event::create(EventTypeNames::icegatheringstatechange));
+  }
 }
 
 bool RTCPeerConnection::setIceConnectionState(
@@ -1428,7 +1433,6 @@ void RTCPeerConnection::closeInternal() {
   m_closed = true;
 
   changeIceConnectionState(ICEConnectionStateClosed);
-  changeIceGatheringState(ICEGatheringStateComplete);
   changeSignalingState(SignalingStateClosed);
   Document* document = toDocument(getExecutionContext());
   HostsUsingFeatures::countAnyWorld(
