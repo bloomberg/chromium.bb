@@ -10,12 +10,15 @@
 
 #include "base/macros.h"
 #include "build/build_config.h"
+#include "chrome/browser/autocomplete/autocomplete_classifier_factory.h"
 #include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
 #include "chrome/browser/command_updater.h"
+#include "chrome/browser/search_engines/template_url_service_factory_test_util.h"
 #include "chrome/browser/ui/omnibox/chrome_omnibox_client.h"
 #include "chrome/browser/ui/omnibox/chrome_omnibox_edit_controller.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/omnibox/browser/omnibox_edit_model.h"
+#include "components/toolbar/test_toolbar_model.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/ime/text_edit_commands.h"
@@ -71,15 +74,6 @@ class TestingOmniboxView : public OmniboxViewViews {
   void UpdatePopup() override;
   void SetEmphasis(bool emphasize, const Range& range) override;
   void UpdateSchemeStyle(const Range& range) override;
-
-  // Simplistic test override returns whether a given string looks like a URL
-  // without having to mock AutocompleteClassifier objects and their
-  // dependencies.
-  bool CurrentTextIsURL() override {
-    bool looks_like_url = (text().find(':') != std::string::npos ||
-                           text().find('/') != std::string::npos);
-    return looks_like_url;
-  }
 
   size_t update_popup_call_count_ = 0;
   base::string16 update_popup_text_;
@@ -150,16 +144,22 @@ void TestingOmniboxView::UpdateSchemeStyle(const Range& range) {
 
 class TestingOmniboxEditController : public ChromeOmniboxEditController {
  public:
-  explicit TestingOmniboxEditController(CommandUpdater* command_updater)
-      : ChromeOmniboxEditController(command_updater) {}
+  TestingOmniboxEditController(CommandUpdater* command_updater,
+                               ToolbarModel* toolbar_model)
+      : ChromeOmniboxEditController(command_updater),
+        toolbar_model_(toolbar_model) {}
 
  private:
   // ChromeOmniboxEditController:
   void UpdateWithoutTabRestore() override {}
   void OnChanged() override {}
-  ToolbarModel* GetToolbarModel() override { return nullptr; }
-  const ToolbarModel* GetToolbarModel() const override { return nullptr; }
+  ToolbarModel* GetToolbarModel() override { return toolbar_model_; }
+  const ToolbarModel* GetToolbarModel() const override {
+    return toolbar_model_;
+  }
   content::WebContents* GetWebContents() override { return nullptr; }
+
+  ToolbarModel* toolbar_model_;
 
   DISALLOW_COPY_AND_ASSIGN(TestingOmniboxEditController);
 };
@@ -178,8 +178,10 @@ class OmniboxViewViewsTest : public testing::Test {
     return test_api_->scheduled_text_edit_command();
   }
 
-  // Sets |new_text| as the omnibox text, and emphasizes it appropriately.
-  void SetAndEmphasizeText(const std::string& new_text);
+  // Sets |new_text| as the omnibox text, and emphasizes it appropriately.  If
+  // |accept_input| is true, pretends that the user has accepted this input
+  // (i.e. it's been navigated to).
+  void SetAndEmphasizeText(const std::string& new_text, bool accept_input);
 
  private:
   // testing::Test:
@@ -188,7 +190,9 @@ class OmniboxViewViewsTest : public testing::Test {
 
   content::TestBrowserThreadBundle thread_bundle_;
   TestingProfile profile_;
+  TemplateURLServiceFactoryTestUtil util_;
   CommandUpdater command_updater_;
+  TestToolbarModel toolbar_model_;
   TestingOmniboxEditController omnibox_edit_controller_;
   std::unique_ptr<TestingOmniboxView> omnibox_view_;
   std::unique_ptr<views::TextfieldTestApi> test_api_;
@@ -197,11 +201,20 @@ class OmniboxViewViewsTest : public testing::Test {
 };
 
 OmniboxViewViewsTest::OmniboxViewViewsTest()
-    : command_updater_(nullptr), omnibox_edit_controller_(&command_updater_) {}
+    : util_(&profile_),
+      command_updater_(nullptr),
+      omnibox_edit_controller_(&command_updater_, &toolbar_model_) {}
 
-void OmniboxViewViewsTest::SetAndEmphasizeText(const std::string& new_text) {
+void OmniboxViewViewsTest::SetAndEmphasizeText(const std::string& new_text,
+                                               bool accept_input) {
   omnibox_view()->ResetEmphasisTestState();
-  omnibox_view()->SetText(base::ASCIIToUTF16(new_text));
+  omnibox_view()->SetUserText(base::ASCIIToUTF16(new_text));
+  if (accept_input) {
+    // We don't need to actually navigate in this case (and doing so in a test
+    // would be difficult); it's sufficient to mark input as "no longer in
+    // progress", and the edit model will assume the current text is a URL.
+    omnibox_view()->model()->SetInputInProgress(false);
+  }
   omnibox_view()->EmphasizeURLComponents();
 }
 
@@ -210,6 +223,8 @@ void OmniboxViewViewsTest::SetUp() {
   chromeos::input_method::InitializeForTesting(
       new chromeos::input_method::MockInputMethodManagerImpl);
 #endif
+  AutocompleteClassifierFactory::GetInstance()->SetTestingFactoryAndUse(
+      &profile_, &AutocompleteClassifierFactory::BuildInstanceFor);
   omnibox_view_ = base::MakeUnique<TestingOmniboxView>(
       &omnibox_edit_controller_,
       base::MakeUnique<ChromeOmniboxClient>(&omnibox_edit_controller_,
@@ -290,12 +305,23 @@ TEST_F(OmniboxViewViewsTest, Emphasis) {
   for (const auto& test_case : test_cases) {
     SCOPED_TRACE(test_case.input);
 
-    SetAndEmphasizeText(test_case.input);
+    SetAndEmphasizeText(test_case.input, false);
     EXPECT_EQ(TestingOmniboxView::to_base_text_emphasis(
                   test_case.expected_base_text_emphasized),
               omnibox_view()->base_text_emphasis());
     EXPECT_EQ(test_case.expected_emphasis_range,
               omnibox_view()->emphasis_range());
-    EXPECT_EQ(test_case.expected_scheme_range, omnibox_view()->scheme_range());
+    EXPECT_FALSE(omnibox_view()->scheme_range().IsValid());
+
+    if (test_case.expected_scheme_range.IsValid()) {
+      SetAndEmphasizeText(test_case.input, true);
+      EXPECT_EQ(TestingOmniboxView::to_base_text_emphasis(
+                    test_case.expected_base_text_emphasized),
+                omnibox_view()->base_text_emphasis());
+      EXPECT_EQ(test_case.expected_emphasis_range,
+                omnibox_view()->emphasis_range());
+      EXPECT_EQ(test_case.expected_scheme_range,
+                omnibox_view()->scheme_range());
+    }
   }
 }

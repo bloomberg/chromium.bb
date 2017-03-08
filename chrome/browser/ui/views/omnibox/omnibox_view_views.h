@@ -86,6 +86,7 @@ class OmniboxViewViews
   // OmniboxView:
   void Update() override;
   base::string16 GetText() const override;
+  using OmniboxView::SetUserText;
   void SetUserText(const base::string16& text,
                    bool update_popup) override;
   void EnterKeywordModeForDefaultSearchProvider() override;

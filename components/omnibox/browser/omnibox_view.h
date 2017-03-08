@@ -249,10 +249,6 @@ class OmniboxView {
   // Internally invoked whenever the text changes in some way.
   virtual void TextChanged();
 
-  // Returns whether the current text in the model represents a URL. Provided
-  // to allow tests to override the result.
-  virtual bool CurrentTextIsURL();
-
   // Return the number of characters in the current buffer. The name
   // |GetTextLength| can't be used as the Windows override of this class
   // inherits from a class that defines a method with that name.
