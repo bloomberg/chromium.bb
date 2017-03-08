@@ -205,13 +205,12 @@ add_executable(aomenc
                $<TARGET_OBJECTS:aom_encoder_stats>)
 
 if (CONFIG_ANALYZER)
-add_executable(analyzer
-               "${AOM_ROOT}/examples/analyzer.cc"
-               $<TARGET_OBJECTS:aom_common_app_util>
-               $<TARGET_OBJECTS:aom_decoder_app_util>)
-set(AOM_APP_TARGETS ${AOM_APP_TARGETS} analyzer)
-append_cxx_flag("$ENV{WX_CXXFLAGS}")
-append_exe_linker_flag("$ENV{WX_LDFLAGS}")
+  add_executable(analyzer
+                 "${AOM_ROOT}/examples/analyzer.cc"
+                 $<TARGET_OBJECTS:aom_common_app_util>
+                 $<TARGET_OBJECTS:aom_decoder_app_util>)
+  target_link_libraries(analyzer PUBLIC ${wxWidgets_LIBRARIES})
+  set(AOM_APP_TARGETS ${AOM_APP_TARGETS} analyzer)
 endif ()
 
 add_executable(decode_to_md5

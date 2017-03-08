@@ -11,6 +11,7 @@
 include(FindGit)
 include(FindPerl)
 include(FindThreads)
+include(FindwxWidgets)
 
 # Generate the user config settings. This must occur before include of
 # aom_config_defaults.cmake (because it turns every config variable into a cache
@@ -140,6 +141,17 @@ aom_check_source_compiles("aom_ports_check"
                           HAVE_AOM_PORTS)
 aom_check_source_compiles("pthread_check" "#include <pthread.h>" HAVE_PTHREAD_H)
 aom_check_source_compiles("unistd_check" "#include <unistd.h>" HAVE_UNISTD_H)
+
+if (CONFIG_ANALYZER)
+  find_package(wxWidgets REQUIRED adv base core)
+  include(${wxWidgets_USE_FILE})
+
+  if (NOT CONFIG_INSPECTION)
+    set(CONFIG_INSPECTION 1)
+    message(WARNING
+            "--- Enabled CONFIG_INSPECTION, required for CONFIG_ANALYZER.")
+  endif ()
+endif ()
 
 if (CONFIG_ANS AND CONFIG_DAALA_EC)
   message(FATAL_ERROR
