@@ -3095,7 +3095,7 @@ IntSize WebViewImpl::mainFrameSize() {
 }
 
 PageScaleConstraintsSet& WebViewImpl::pageScaleConstraintsSet() const {
-  return page()->frameHost().pageScaleConstraintsSet();
+  return page()->pageScaleConstraintsSet();
 }
 
 void WebViewImpl::refreshPageScaleFactorAfterLayout() {

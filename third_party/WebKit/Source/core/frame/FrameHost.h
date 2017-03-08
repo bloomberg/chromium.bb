@@ -45,7 +45,6 @@ class ConsoleMessageStorage;
 class EventHandlerRegistry;
 class OverscrollController;
 class Page;
-class PageScaleConstraintsSet;
 class TopDocumentRootScrollerController;
 class VisualViewport;
 
@@ -78,9 +77,6 @@ class CORE_EXPORT FrameHost final
 
   VisualViewport& visualViewport();
   const VisualViewport& visualViewport() const;
-
-  PageScaleConstraintsSet& pageScaleConstraintsSet();
-  const PageScaleConstraintsSet& pageScaleConstraintsSet() const;
 
   EventHandlerRegistry& eventHandlerRegistry();
   const EventHandlerRegistry& eventHandlerRegistry() const;

@@ -70,8 +70,10 @@ IntSize TopDocumentRootScrollerController::rootScrollerVisibleArea() const {
   if (!topDocument() || !topDocument()->view())
     return IntSize();
 
-  float minimumPageScale =
-      m_frameHost->pageScaleConstraintsSet().finalConstraints().minimumScale;
+  float minimumPageScale = m_frameHost->page()
+                               .pageScaleConstraintsSet()
+                               .finalConstraints()
+                               .minimumScale;
   int browserControlsAdjustment =
       ceilf(m_frameHost->visualViewport().browserControlsAdjustment() /
             minimumPageScale);

@@ -95,14 +95,6 @@ const VisualViewport& FrameHost::visualViewport() const {
   return *m_visualViewport;
 }
 
-PageScaleConstraintsSet& FrameHost::pageScaleConstraintsSet() {
-  return page().pageScaleConstraintsSet();
-}
-
-const PageScaleConstraintsSet& FrameHost::pageScaleConstraintsSet() const {
-  return page().pageScaleConstraintsSet();
-}
-
 EventHandlerRegistry& FrameHost::eventHandlerRegistry() {
   return *m_eventHandlerRegistry;
 }

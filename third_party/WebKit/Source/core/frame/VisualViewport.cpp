@@ -528,8 +528,11 @@ ScrollOffset VisualViewport::maximumScrollOffset() const {
   FloatSize frameViewSize(contentsSize());
 
   if (m_browserControlsAdjustment) {
-    float minScale =
-        frameHost().pageScaleConstraintsSet().finalConstraints().minimumScale;
+    float minScale = frameHost()
+                         .page()
+                         .pageScaleConstraintsSet()
+                         .finalConstraints()
+                         .minimumScale;
     frameViewSize.expand(0, m_browserControlsAdjustment / minScale);
   }
 
@@ -780,7 +783,7 @@ bool VisualViewport::shouldDisableDesktopWorkarounds() const {
   //    the initial viewport width.
   // 2. The author has disabled viewport zoom.
   const PageScaleConstraints& constraints =
-      frameHost().pageScaleConstraintsSet().pageDefinedConstraints();
+      frameHost().page().pageScaleConstraintsSet().pageDefinedConstraints();
 
   return mainFrame()->view()->layoutSize().width() == m_size.width() ||
          (constraints.minimumScale == constraints.maximumScale &&
