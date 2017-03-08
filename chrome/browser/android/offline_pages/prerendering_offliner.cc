@@ -36,14 +36,10 @@ PrerenderingOffliner::~PrerenderingOffliner() {}
 
 void PrerenderingOffliner::OnNetworkProgress(const SavePageRequest& request,
                                              int64_t bytes) {
-  if (!pending_request_)
-    return;
-  DownloadUIAdapter* ui_adapter =
-      DownloadUIAdapter::FromOfflinePageModel(offline_page_model_);
-  if (!ui_adapter)
+  if (!pending_request_ || !progress_callback_)
     return;
 
-  ui_adapter->UpdateProgress(request.request_id(), bytes);
+  progress_callback_.Run(request, bytes);
 }
 
 void PrerenderingOffliner::OnLoadPageDone(
@@ -131,8 +127,10 @@ void PrerenderingOffliner::OnSavePageDone(
   completion_callback_.Run(request, save_status);
 }
 
-bool PrerenderingOffliner::LoadAndSave(const SavePageRequest& request,
-                                       const CompletionCallback& callback) {
+bool PrerenderingOffliner::LoadAndSave(
+    const SavePageRequest& request,
+    const CompletionCallback& completion_callback,
+    const ProgressCallback& progress_callback) {
   DCHECK(!pending_request_.get());
 
   if (pending_request_) {
@@ -190,7 +188,8 @@ bool PrerenderingOffliner::LoadAndSave(const SavePageRequest& request,
 
   // Track copy of pending request for callback handling.
   pending_request_.reset(new SavePageRequest(request));
-  completion_callback_ = callback;
+  completion_callback_ = completion_callback;
+  progress_callback_ = progress_callback;
 
   // Kick off load page attempt.
   bool accepted = GetOrCreateLoader()->LoadPage(

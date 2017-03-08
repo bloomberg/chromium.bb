@@ -63,6 +63,11 @@ class RequestNotifierStub : public RequestNotifier {
     total_expired_requests_++;
   }
 
+  void NotifyNetworkProgress(const SavePageRequest& request,
+                             int64_t received_bytes) override {
+    // This has nothing to do with the queue (progress is ephemeral) - no test.
+  }
+
   const SavePageRequest& last_expired_request() {
     return last_expired_request_;
   }

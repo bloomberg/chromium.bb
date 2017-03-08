@@ -173,6 +173,7 @@ class DownloadUIAdapterTest : public testing::Test,
 
   bool items_loaded;
   std::vector<std::string> added_guids, updated_guids, deleted_guids;
+  int64_t download_progress_bytes;
   std::unique_ptr<MockOfflinePageModel> model;
   DownloadUIAdapterDelegate* adapter_delegate;
   std::unique_ptr<DownloadUIAdapter> adapter;
@@ -220,6 +221,7 @@ void DownloadUIAdapterTest::ItemAdded(const DownloadUIItem& item) {
 
 void DownloadUIAdapterTest::ItemUpdated(const DownloadUIItem& item) {
   updated_guids.push_back(item.guid);
+  download_progress_bytes += item.download_progress_bytes;
 }
 
 void DownloadUIAdapterTest::ItemDeleted(const std::string& guid) {
@@ -462,16 +464,14 @@ TEST_F(DownloadUIAdapterTest, UpdateProgress) {
   AddRequest(GURL(kTestUrl), kTestClientId1);
   PumpLoop();
 
-  int64_t offline_id = adapter->GetOfflineIdByGuid(kTestGuid1);
   const DownloadUIItem* item = adapter->GetItem(kTestGuid1);
 
   ASSERT_NE(nullptr, item);
-  EXPECT_EQ(item->download_progress_bytes, 0);
-  updated_guids.clear();
-
-  adapter->UpdateProgress(offline_id, 15);
+  EXPECT_GT(item->download_progress_bytes, 0LL);
+  // Updated 2 times - with progress and to 'completed'.
+  EXPECT_EQ(2UL, updated_guids.size());
   EXPECT_EQ(kTestGuid1, updated_guids[0]);
-  EXPECT_EQ(item->download_progress_bytes, 15);
+  EXPECT_EQ(kTestGuid1, updated_guids[1]);
 }
 
 }  // namespace offline_pages

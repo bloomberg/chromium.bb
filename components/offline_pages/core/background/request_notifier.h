@@ -38,6 +38,11 @@ class RequestNotifier {
 
   // Notifies observers that |request| has been changed.
   virtual void NotifyChanged(const SavePageRequest& request) = 0;
+
+  // Notifies observers of progress on |request|, which received
+  // |received_bytes| at that point.
+  virtual void NotifyNetworkProgress(const SavePageRequest& request,
+                                     int64_t received_bytes) = 0;
 };
 
 }  // namespace offline_pages

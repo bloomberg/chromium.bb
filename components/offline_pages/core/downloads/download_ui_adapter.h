@@ -103,7 +103,6 @@ class DownloadUIAdapter : public OfflinePageModel::Observer,
   // via Observer or directly by the user (as in 'open').
   void DeleteItem(const std::string& guid);
   int64_t GetOfflineIdByGuid(const std::string& guid) const;
-  void UpdateProgress(int64_t offline_id, int64_t bytes);
 
   // OfflinePageModel::Observer
   void OfflinePageModelLoaded(OfflinePageModel* model) override;
@@ -117,6 +116,8 @@ class DownloadUIAdapter : public OfflinePageModel::Observer,
   void OnCompleted(const SavePageRequest& request,
                    RequestNotifier::BackgroundSavePageResult status) override;
   void OnChanged(const SavePageRequest& request) override;
+  void OnNetworkProgress(const SavePageRequest& request,
+                         int64_t received_bytes) override;
 
   // For the DownloadUIAdapter::Delegate, to report the temporary hidden status
   // change.

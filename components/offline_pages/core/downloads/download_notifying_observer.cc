@@ -64,6 +64,14 @@ void DownloadNotifyingObserver::OnChanged(const SavePageRequest& request) {
   NotifyRequestStateChange(request);
 }
 
+void DownloadNotifyingObserver::OnNetworkProgress(
+    const SavePageRequest& request,
+    int64_t received_bytes) {
+  DownloadUIItem item(request);
+  item.download_progress_bytes = received_bytes;
+  notifier_->NotifyDownloadProgress(item);
+}
+
 void DownloadNotifyingObserver::OnCompleted(
     const SavePageRequest& request,
     RequestCoordinator::BackgroundSavePageResult status) {

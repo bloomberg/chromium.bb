@@ -70,20 +70,20 @@ public class OfflinePageNotificationBridge {
      * @param displayName Name to be displayed on notification.
      */
     @CalledByNative
-    public static void notifyDownloadProgress(
-            Context context, String guid, String url, long startTime, String displayName) {
+    public static void notifyDownloadProgress(Context context, String guid, String url,
+            long startTime, long bytesReceived, String displayName) {
         DownloadNotifier notifier = getDownloadNotifier(context);
         if (notifier == null) return;
 
-        // Use -1 percentage for interdeterminate progress bar (until we have better value).
-        // TODO(qinmin): get the download percentage from native code,
-        int percentage = -1;
+        int percentage =
+                org.chromium.chrome.browser.download.DownloadItem.INDETERMINATE_DOWNLOAD_PERCENTAGE;
         DownloadInfo downloadInfo = new DownloadInfo.Builder()
                                             .setIsOfflinePage(true)
                                             .setDownloadGuid(guid)
                                             .setFileName(displayName)
                                             .setFilePath(url)
                                             .setPercentCompleted(percentage)
+                                            .setBytesReceived(bytesReceived)
                                             .setIsOffTheRecord(false)
                                             .setIsResumable(true)
                                             .setTimeRemainingInMillis(0)

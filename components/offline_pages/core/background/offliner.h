@@ -59,6 +59,9 @@ class Offliner {
     STATUS_COUNT
   };
 
+  // Reports the load progress of a request.
+  typedef base::Callback<void(const SavePageRequest&, int64_t received_bytes)>
+      ProgressCallback;
   // Reports the completion status of a request.
   // TODO(dougarnett): consider passing back a request id instead of request.
   typedef base::Callback<void(const SavePageRequest&, RequestStatus)>
@@ -71,10 +74,13 @@ class Offliner {
   virtual ~Offliner() {}
 
   // Processes |request| to load and save an offline page.
-  // Returns whether the request was accepted or not. |callback| is guaranteed
-  // to be called if the request was accepted and |Cancel()| is not called.
+  // Returns whether the request was accepted or not. |completion_callback| is
+  // guaranteed to be called if the request was accepted and |Cancel()| is not
+  // called on it. |progress_callback| is invoked periodically to report the
+  // number of bytes received from the network (for UI purposes).
   virtual bool LoadAndSave(const SavePageRequest& request,
-                           const CompletionCallback& callback) = 0;
+                           const CompletionCallback& completion_callback,
+                           const ProgressCallback& progress_callback) = 0;
 
   // Clears the currently processing request, if any, and skips running its
   // CompletionCallback.

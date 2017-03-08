@@ -39,9 +39,13 @@ BackgroundLoaderOffliner::BackgroundLoaderOffliner(
 
 BackgroundLoaderOffliner::~BackgroundLoaderOffliner() {}
 
-bool BackgroundLoaderOffliner::LoadAndSave(const SavePageRequest& request,
-                                           const CompletionCallback& callback) {
-  DCHECK(callback);
+// TODO(dimich): Invoke progress_callback as appropriate.
+bool BackgroundLoaderOffliner::LoadAndSave(
+    const SavePageRequest& request,
+    const CompletionCallback& completion_callback,
+    const ProgressCallback& progress_callback) {
+  DCHECK(completion_callback);
+  DCHECK(progress_callback);
 
   if (pending_request_) {
     DVLOG(1) << "Already have pending request";
@@ -104,7 +108,7 @@ bool BackgroundLoaderOffliner::LoadAndSave(const SavePageRequest& request,
 
   // Track copy of pending request.
   pending_request_.reset(new SavePageRequest(request));
-  completion_callback_ = callback;
+  completion_callback_ = completion_callback;
 
   // Listen for app foreground/background change.
   app_listener_.reset(new base::android::ApplicationStatusListener(

@@ -301,6 +301,10 @@ void OfflinePageEvaluationBridge::OnChanged(const SavePageRequest& request) {
       env, obj, ToJavaSavePageRequest(env, request));
 }
 
+void OfflinePageEvaluationBridge::OnNetworkProgress(
+    const SavePageRequest& request,
+    int64_t received_bytes) {}
+
 void OfflinePageEvaluationBridge::CustomLog(const std::string& message) {
   JNIEnv* env = base::android::AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = weak_java_ref_.get(env);

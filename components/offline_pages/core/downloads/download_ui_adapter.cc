@@ -164,6 +164,22 @@ void DownloadUIAdapter::OnChanged(const SavePageRequest& request) {
     observer.ItemUpdated(download_ui_item);
 }
 
+void DownloadUIAdapter::OnNetworkProgress(const SavePageRequest& request,
+                                          int64_t received_bytes) {
+  for (auto& item : items_) {
+    if (item.second->is_request &&
+        item.second->offline_id == request.request_id()) {
+      if (received_bytes == item.second->ui_item->download_progress_bytes)
+        return;
+
+      item.second->ui_item->download_progress_bytes = received_bytes;
+      for (Observer& observer : observers_)
+        observer.ItemUpdated(*(item.second->ui_item));
+      return;
+    }
+  }
+}
+
 void DownloadUIAdapter::TemporaryHiddenStatusChanged(
     const ClientId& client_id) {
   bool hidden = delegate_->IsTemporarilyHiddenInUI(client_id);
@@ -224,19 +240,6 @@ int64_t DownloadUIAdapter::GetOfflineIdByGuid(const std::string& guid) const {
   if (it != items_.end())
     return it->second->offline_id;
   return 0;
-}
-
-void DownloadUIAdapter::UpdateProgress(int64_t offline_id, int64_t bytes) {
-  for (auto& item : items_) {
-    if (item.second->is_request && item.second->offline_id == offline_id) {
-      if (bytes == item.second->ui_item->download_progress_bytes)
-        return;
-
-      item.second->ui_item->download_progress_bytes = bytes;
-      for (Observer& observer : observers_)
-        observer.ItemUpdated(*(item.second->ui_item));
-    }
-  }
 }
 
 // Note that several LoadCache calls may be issued before the async GetAllPages

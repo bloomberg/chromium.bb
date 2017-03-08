@@ -17,7 +17,8 @@ class OfflinerStub : public Offliner {
   ~OfflinerStub() override;
 
   bool LoadAndSave(const SavePageRequest& request,
-                   const CompletionCallback& callback) override;
+                   const CompletionCallback& completion_callback,
+                   const ProgressCallback& progress_callback) override;
 
   void Cancel(const CancelCallback& callback) override;
 
@@ -34,7 +35,8 @@ class OfflinerStub : public Offliner {
   void enable_snapshot_on_last_retry() { snapshot_on_last_retry_ = true; }
 
  private:
-  CompletionCallback callback_;
+  CompletionCallback completion_callback_;
+  ProgressCallback progress_callback_;
   bool disable_loading_;
   bool enable_callback_;
   bool cancel_called_;

@@ -53,6 +53,8 @@ class RequestCoordinator : public KeyedService,
         const SavePageRequest& request,
         RequestNotifier::BackgroundSavePageResult status) = 0;
     virtual void OnChanged(const SavePageRequest& request) = 0;
+    virtual void OnNetworkProgress(const SavePageRequest& request,
+                                   int64_t received_bytes) = 0;
   };
 
   enum class RequestAvailability {
@@ -184,6 +186,8 @@ class RequestCoordinator : public KeyedService,
       const SavePageRequest& request,
       RequestNotifier::BackgroundSavePageResult status) override;
   void NotifyChanged(const SavePageRequest& request) override;
+  void NotifyNetworkProgress(const SavePageRequest& request,
+                             int64_t received_bytes) override;
 
   // Returns the request queue used for requests.  Coordinator keeps ownership.
   RequestQueue* queue() { return queue_.get(); }
@@ -345,6 +349,11 @@ class RequestCoordinator : public KeyedService,
   // tests).
   void OfflinerDoneCallback(const SavePageRequest& request,
                             Offliner::RequestStatus status);
+
+  // Called by the offliner periodically to report the accumulated count of
+  // bytes received from the network.
+  void OfflinerProgressCallback(const SavePageRequest& request,
+                                int64_t received_bytes);
 
   // Records a completed attempt for the request and update it in the queue
   // (possibly removing it).

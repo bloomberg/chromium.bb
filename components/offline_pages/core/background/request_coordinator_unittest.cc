@@ -60,6 +60,8 @@ class ObserverStub : public RequestCoordinator::Observer {
       : added_called_(false),
         completed_called_(false),
         changed_called_(false),
+        network_progress_called_(false),
+        network_progress_bytes_(0),
         last_status_(RequestCoordinator::BackgroundSavePageResult::SUCCESS),
         state_(SavePageRequest::RequestState::OFFLINING) {}
 
@@ -67,6 +69,8 @@ class ObserverStub : public RequestCoordinator::Observer {
     added_called_ = false;
     completed_called_ = false;
     changed_called_ = false;
+    network_progress_called_ = false;
+    network_progress_bytes_ = 0;
     state_ = SavePageRequest::RequestState::OFFLINING;
     last_status_ = RequestCoordinator::BackgroundSavePageResult::SUCCESS;
   }
@@ -87,9 +91,17 @@ class ObserverStub : public RequestCoordinator::Observer {
     state_ = request.request_state();
   }
 
+  void OnNetworkProgress(const SavePageRequest& request,
+                         int64_t received_bytes) override {
+    network_progress_called_ = true;
+    network_progress_bytes_ = received_bytes;
+  }
+
   bool added_called() { return added_called_; }
   bool completed_called() { return completed_called_; }
   bool changed_called() { return changed_called_; }
+  bool network_progress_called() { return network_progress_called_; }
+  int64_t network_progress_bytes() { return network_progress_bytes_; }
   RequestCoordinator::BackgroundSavePageResult last_status() {
     return last_status_;
   }
@@ -99,6 +111,8 @@ class ObserverStub : public RequestCoordinator::Observer {
   bool added_called_;
   bool completed_called_;
   bool changed_called_;
+  bool network_progress_called_;
+  int64_t network_progress_bytes_;
   RequestCoordinator::BackgroundSavePageResult last_status_;
   SavePageRequest::RequestState state_;
 };
@@ -453,6 +467,13 @@ TEST_F(RequestCoordinatorTest, StartScheduledProcessingWithNoRequests) {
     histograms().ExpectBucketCount(
         "OfflinePages.Background.ScheduledStart.AvailableRequestCount", 0, 1);
   }
+}
+
+TEST_F(RequestCoordinatorTest, NetworkProgressCallback) {
+  EXPECT_NE(0, SavePageLater());
+  PumpLoop();
+  EXPECT_TRUE(observer().network_progress_called());
+  EXPECT_GT(observer().network_progress_bytes(), 0LL);
 }
 
 TEST_F(RequestCoordinatorTest, StartScheduledProcessingWithRequestInProgress) {

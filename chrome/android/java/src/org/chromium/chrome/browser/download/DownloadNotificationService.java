@@ -691,7 +691,7 @@ public class DownloadNotificationService extends Service {
     private void notifyDownloadPending(String downloadGuid, String fileName, boolean isOffTheRecord,
             boolean canDownloadWhileMetered, boolean isOfflinePage) {
         updateActiveDownloadNotification(downloadGuid, fileName,
-                DownloadItem.INVALID_DOWNLOAD_PERCENTAGE, 0, 0, 0, isOffTheRecord,
+                DownloadItem.INDETERMINATE_DOWNLOAD_PERCENTAGE, 0, 0, 0, isOffTheRecord,
                 canDownloadWhileMetered, isOfflinePage, true);
     }
 
@@ -715,7 +715,7 @@ public class DownloadNotificationService extends Service {
             boolean isOffTheRecord, boolean canDownloadWhileMetered, boolean isOfflinePage,
             boolean isDownloadPending) {
         boolean indeterminate =
-                (percentage == DownloadItem.INVALID_DOWNLOAD_PERCENTAGE) || isDownloadPending;
+                (percentage == DownloadItem.INDETERMINATE_DOWNLOAD_PERCENTAGE) || isDownloadPending;
         String contentText = null;
         if (isDownloadPending) {
             contentText = mContext.getResources().getString(R.string.download_notification_pending);

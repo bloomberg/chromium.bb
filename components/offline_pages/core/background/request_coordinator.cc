@@ -883,6 +883,8 @@ void RequestCoordinator::StartOffliner(
   if (offliner_->LoadAndSave(
           update_result->updated_items.at(0),
           base::Bind(&RequestCoordinator::OfflinerDoneCallback,
+                     weak_ptr_factory_.GetWeakPtr()),
+          base::Bind(&RequestCoordinator::OfflinerProgressCallback,
                      weak_ptr_factory_.GetWeakPtr()))) {
     base::TimeDelta timeout;
     if (processing_state_ == ProcessingWindowState::SCHEDULED_WINDOW) {
@@ -932,6 +934,14 @@ void RequestCoordinator::OfflinerDoneCallback(const SavePageRequest& request,
     TryNextRequest(!kStartOfProcessing);
   else
     scheduler_callback_.Run(true);
+}
+
+void RequestCoordinator::OfflinerProgressCallback(
+    const SavePageRequest& request,
+    int64_t received_bytes) {
+  DVLOG(2) << "offliner progress, received bytes: " << received_bytes;
+  DCHECK(received_bytes >= 0);
+  NotifyNetworkProgress(request, received_bytes);
 }
 
 void RequestCoordinator::UpdateRequestForCompletedAttempt(
@@ -1064,6 +1074,12 @@ void RequestCoordinator::NotifyCompleted(
 void RequestCoordinator::NotifyChanged(const SavePageRequest& request) {
   for (Observer& observer : observers_)
     observer.OnChanged(request);
+}
+
+void RequestCoordinator::NotifyNetworkProgress(const SavePageRequest& request,
+                                               int64_t received_bytes) {
+  for (Observer& observer : observers_)
+    observer.OnNetworkProgress(request, received_bytes);
 }
 
 ClientPolicyController* RequestCoordinator::GetPolicyController() {
