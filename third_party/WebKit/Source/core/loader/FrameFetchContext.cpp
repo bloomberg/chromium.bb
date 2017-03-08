@@ -807,7 +807,7 @@ ResourceRequestBlockedReason FrameFetchContext::canRequestInternal(
 }
 
 bool FrameFetchContext::isControlledByServiceWorker() const {
-  DCHECK(m_documentLoader || frame()->loader().documentLoader());
+  DCHECK(masterDocumentLoader());
 
   // Service workers are bypassed by suborigins (see
   // https://w3c.github.io/webappsec-suborigins/). Since service worker
@@ -823,30 +823,13 @@ bool FrameFetchContext::isControlledByServiceWorker() const {
   if (getSecurityOrigin() && getSecurityOrigin()->hasSuborigin())
     return false;
 
-  if (m_documentLoader) {
-    return m_documentLoader->frame()
-        ->loader()
-        .client()
-        ->isControlledByServiceWorker(*m_documentLoader);
-  }
-  // m_documentLoader is null while loading resources from an HTML import. In
-  // such cases whether the request is controlled by ServiceWorker or not is
-  // determined by the document loader of the frame.
   return localFrameClient()->isControlledByServiceWorker(
-      *frame()->loader().documentLoader());
+      *masterDocumentLoader());
 }
 
 int64_t FrameFetchContext::serviceWorkerID() const {
-  DCHECK(m_documentLoader || frame()->loader().documentLoader());
-  if (m_documentLoader) {
-    return m_documentLoader->frame()->client()->serviceWorkerID(
-        *m_documentLoader);
-  }
-  // m_documentLoader is null while loading resources from an HTML import.
-  // In such cases a service worker ID could be retrieved from the document
-  // loader of the frame.
-  return localFrameClient()->serviceWorkerID(
-      *frame()->loader().documentLoader());
+  DCHECK(masterDocumentLoader());
+  return localFrameClient()->serviceWorkerID(*masterDocumentLoader());
 }
 
 bool FrameFetchContext::isMainFrame() const {

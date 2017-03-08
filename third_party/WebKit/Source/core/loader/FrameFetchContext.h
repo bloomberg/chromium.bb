@@ -173,12 +173,17 @@ class CORE_EXPORT FrameFetchContext final : public FetchContext {
 
  private:
   FrameFetchContext(DocumentLoader*, Document*);
-  inline DocumentLoader* masterDocumentLoader() const;
+
+  // m_documentLoader is null when loading resources from an HTML import
+  // and in such cases we use the document loader of the importing frame.
+  // Convenient accessors below can be used to transparently access the
+  // relevant document loader or frame in either cases without null-checks.
+  // TODO(kinuko): Remove constness, these return non-const members.
+  DocumentLoader* masterDocumentLoader() const;
+  LocalFrame* frame() const;
+  LocalFrameClient* localFrameClient() const;
 
   LocalFrame* frameOfImportsController() const;
-  LocalFrame* frame() const;
-
-  LocalFrameClient* localFrameClient() const;
 
   void printAccessDeniedMessage(const KURL&) const;
   ResourceRequestBlockedReason canRequestInternal(
