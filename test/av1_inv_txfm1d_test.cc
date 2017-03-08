@@ -18,31 +18,26 @@ using libaom_test::input_base;
 
 namespace {
 const int txfm_type_num = 2;
-const int txfm_size_num = 5;
 const int txfm_size_ls[5] = { 4, 8, 16, 32, 64 };
 
-const TxfmFunc fwd_txfm_func_ls[2][5] = {
-  {
-      av1_fdct4_new, av1_fdct8_new, av1_fdct16_new, av1_fdct32_new,
+const TxfmFunc fwd_txfm_func_ls[][2] = {
+  { av1_fdct4_new, av1_fadst4_new },
+  { av1_fdct8_new, av1_fadst8_new },
+  { av1_fdct16_new, av1_fadst16_new },
+  { av1_fdct32_new, av1_fadst32_new },
 #if CONFIG_TX64X64
-      av1_fdct64_new,
-#else
-      NULL,
+  { av1_fdct64_new, NULL },
 #endif
-  },
-  { av1_fadst4_new, av1_fadst8_new, av1_fadst16_new, av1_fadst32_new, NULL }
 };
 
-const TxfmFunc inv_txfm_func_ls[2][5] = {
-  {
-      av1_idct4_new, av1_idct8_new, av1_idct16_new, av1_idct32_new,
+const TxfmFunc inv_txfm_func_ls[][2] = {
+  { av1_idct4_new, av1_iadst4_new },
+  { av1_idct8_new, av1_iadst8_new },
+  { av1_idct16_new, av1_iadst16_new },
+  { av1_idct32_new, av1_iadst32_new },
 #if CONFIG_TX64X64
-      av1_idct64_new,
-#else
-      NULL,
+  { av1_idct64_new, NULL },
 #endif
-  },
-  { av1_iadst4_new, av1_iadst8_new, av1_iadst16_new, av1_iadst32_new, NULL }
 };
 
 // the maximum stage number of fwd/inv 1d dct/adst txfm is 12
@@ -53,7 +48,7 @@ const int8_t range_bit[12] = { 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32 };
 
 TEST(av1_inv_txfm1d, round_trip) {
   ACMRandom rnd(ACMRandom::DeterministicSeed());
-  for (int si = 0; si < txfm_size_num; ++si) {
+  for (int si = 0; si < ARRAY_SIZE(fwd_txfm_func_ls); ++si) {
     int txfm_size = txfm_size_ls[si];
     int32_t input[64];
     int32_t output[64];
@@ -62,8 +57,8 @@ TEST(av1_inv_txfm1d, round_trip) {
     assert(txfm_size <= ARRAY_SIZE(input));
 
     for (int ti = 0; ti < txfm_type_num; ++ti) {
-      TxfmFunc fwd_txfm_func = fwd_txfm_func_ls[ti][si];
-      TxfmFunc inv_txfm_func = inv_txfm_func_ls[ti][si];
+      TxfmFunc fwd_txfm_func = fwd_txfm_func_ls[si][ti];
+      TxfmFunc inv_txfm_func = inv_txfm_func_ls[si][ti];
       int max_error = 2;
 
       if (fwd_txfm_func != NULL) {
