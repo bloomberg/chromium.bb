@@ -94,7 +94,10 @@ class NetworkListViewMd::SectionHeaderRowView : public views::View,
     AddToggleButton(enabled);
   }
 
-  virtual void SetEnabled(bool enabled) { toggle_->SetIsOn(enabled, true); }
+  virtual void SetIsOn(bool enabled) {
+    toggle_->SetEnabled(true);
+    toggle_->SetIsOn(enabled, true);
+  }
 
  protected:
   // This is called before the toggle button is added to give subclasses an
@@ -117,6 +120,11 @@ class NetworkListViewMd::SectionHeaderRowView : public views::View,
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override {
     DCHECK_EQ(toggle_, sender);
+    // In the event of frequent clicks, helps to prevent a toggle button state
+    // from becoming inconsistent with the async operation of enabling /
+    // disabling of mobile radio. The toggle will get re-enabled in the next
+    // call to NetworkListViewMd::Update().
+    toggle_->SetEnabled(false);
     OnToggleToggled(toggle_->is_on());
   }
 
@@ -209,9 +217,9 @@ class WifiHeaderRowView : public NetworkListViewMd::SectionHeaderRowView {
 
   ~WifiHeaderRowView() override {}
 
-  void SetEnabled(bool enabled) override {
+  void SetIsOn(bool enabled) override {
     join_->SetEnabled(enabled);
-    SectionHeaderRowView::SetEnabled(enabled);
+    SectionHeaderRowView::SetIsOn(enabled);
   }
 
   const char* GetClassName() const override { return "WifiHeaderRowView"; }
@@ -641,7 +649,7 @@ int NetworkListViewMd::UpdateSectionHeaderRow(
     *separator_view = nullptr;
   }
 
-  (*view)->SetEnabled(enabled);
+  (*view)->SetIsOn(enabled);
   PlaceViewAtIndex(*view, child_index++);
   return child_index;
 }

@@ -266,7 +266,7 @@ class BluetoothDetailedView : public TrayDetailsView {
     bool is_bluetooth_enabled =
         WmShell::Get()->system_tray_delegate()->GetBluetoothEnabled();
     if (toggle_)
-      toggle_->SetIsOn(is_bluetooth_enabled, false);
+      toggle_->SetIsOn(is_bluetooth_enabled, true);
   }
 
   void UpdateDeviceScrollList() {
