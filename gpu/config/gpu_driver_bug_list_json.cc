@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "9.32",
+  "version": "9.33",
   "entries": [
     {
       "id": 1,
@@ -2338,6 +2338,30 @@ LONG_STRING_CONST(
       "device_id": ["0xbad9"],
       "features": [
         "use_gpu_driver_workaround_for_testing"
+      ]
+    },
+    {
+      "id": 216,
+      "cr_bugs": [698926],
+      "description": "Pack parameters work incorrectly with pack buffer bound",
+      "os": {
+        "type": "android"
+      },
+      "gl_vendor": "NVIDIA.*",
+      "features": [
+        "pack_parameters_workaround_with_pack_buffer"
+      ]
+    },
+    {
+      "id": 217,
+      "cr_bugs": [698926],
+      "description": "Alignment works incorrectly with unpack buffer bound",
+      "os": {
+        "type": "android"
+      },
+      "gl_vendor": "NVIDIA.*",
+      "features": [
+        "unpack_alignment_workaround_with_unpack_buffer"
       ]
     }
   ]
