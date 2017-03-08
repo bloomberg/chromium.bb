@@ -19,8 +19,8 @@ using ::i18n::addressinput::Storage;
 
 // static
 std::unique_ptr<Storage> ValidationRulesStorageFactory::CreateStorage() {
-  static base::LazyInstance<ValidationRulesStorageFactory> instance =
-      LAZY_INSTANCE_INITIALIZER;
+  static base::LazyInstance<ValidationRulesStorageFactory>::DestructorAtExit
+      instance = LAZY_INSTANCE_INITIALIZER;
   return std::unique_ptr<Storage>(
       new ChromeStorageImpl(instance.Get().json_pref_store_.get()));
 }

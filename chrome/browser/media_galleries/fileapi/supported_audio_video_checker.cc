@@ -37,7 +37,7 @@ class SupportedAudioVideoExtensions {
             base::FilePath::kExtensionSeparator + extensions[i]);
       }
     }
-  };
+  }
 
   bool HasSupportedAudioVideoExtension(const base::FilePath& file) {
     return base::ContainsKey(audio_video_extensions_, file.Extension());
@@ -49,8 +49,8 @@ class SupportedAudioVideoExtensions {
   DISALLOW_COPY_AND_ASSIGN(SupportedAudioVideoExtensions);
 };
 
-base::LazyInstance<SupportedAudioVideoExtensions> g_audio_video_extensions =
-    LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<SupportedAudioVideoExtensions>::DestructorAtExit
+    g_audio_video_extensions = LAZY_INSTANCE_INITIALIZER;
 
 base::File OpenOnFileThread(const base::FilePath& path) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);

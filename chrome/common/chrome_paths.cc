@@ -72,7 +72,7 @@ const base::FilePath::CharType kChromeOSComponentFlash[] = FILE_PATH_LITERAL(
     "/run/imageloader/PepperFlashPlayer/libpepflashplayer.so");
 #endif  // defined(OS_CHROMEOS)
 
-static base::LazyInstance<base::FilePath>
+static base::LazyInstance<base::FilePath>::DestructorAtExit
     g_invalid_specified_user_data_dir = LAZY_INSTANCE_INITIALIZER;
 
 // Gets the path for internal plugins.

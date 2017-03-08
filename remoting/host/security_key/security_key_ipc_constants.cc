@@ -14,7 +14,7 @@
 #endif  // defined(OS_POSIX)
 
 namespace {
-base::LazyInstance<mojo::edk::NamedPlatformHandle>
+base::LazyInstance<mojo::edk::NamedPlatformHandle>::DestructorAtExit
     g_security_key_ipc_channel_name = LAZY_INSTANCE_INITIALIZER;
 
 constexpr char kSecurityKeyIpcChannelName[] = "security_key_ipc_channel";

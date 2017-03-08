@@ -27,7 +27,7 @@ using storage::StorageType;
 
 namespace content {
 
-static base::LazyInstance<base::ThreadLocalPointer<QuotaDispatcher> >::Leaky
+static base::LazyInstance<base::ThreadLocalPointer<QuotaDispatcher>>::Leaky
     g_quota_dispatcher_tls = LAZY_INSTANCE_INITIALIZER;
 
 namespace {

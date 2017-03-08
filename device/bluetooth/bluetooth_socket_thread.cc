@@ -10,8 +10,8 @@
 
 namespace device {
 
-base::LazyInstance<scoped_refptr<BluetoothSocketThread> > g_instance =
-    LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<scoped_refptr<BluetoothSocketThread>>::DestructorAtExit
+    g_instance = LAZY_INSTANCE_INITIALIZER;
 
 // static
 scoped_refptr<BluetoothSocketThread> BluetoothSocketThread::Get() {

@@ -12,7 +12,7 @@ using content::BrowserThread;
 
 namespace {
 
-base::LazyInstance<NTPSnippetsLauncher> g_snippets_launcher =
+base::LazyInstance<NTPSnippetsLauncher>::DestructorAtExit g_snippets_launcher =
     LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace

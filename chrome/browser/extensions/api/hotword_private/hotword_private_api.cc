@@ -45,8 +45,8 @@ namespace OnEnabledChanged =
     api::hotword_private::OnEnabledChanged;
 
 static base::LazyInstance<
-    BrowserContextKeyedAPIFactory<HotwordPrivateEventService> > g_factory =
-    LAZY_INSTANCE_INITIALIZER;
+    BrowserContextKeyedAPIFactory<HotwordPrivateEventService>>::DestructorAtExit
+    g_factory = LAZY_INSTANCE_INITIALIZER;
 
 HotwordPrivateEventService::HotwordPrivateEventService(
     content::BrowserContext* context)

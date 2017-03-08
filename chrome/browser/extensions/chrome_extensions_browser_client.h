@@ -126,7 +126,7 @@ class ChromeExtensionsBrowserClient : public ExtensionsBrowserClient {
   KioskDelegate* GetKioskDelegate() override;
 
  private:
-  friend struct base::DefaultLazyInstanceTraits<ChromeExtensionsBrowserClient>;
+  friend struct base::LazyInstanceTraitsBase<ChromeExtensionsBrowserClient>;
 
   // Support for ProcessManager.
   std::unique_ptr<ChromeProcessManagerDelegate> process_manager_delegate_;

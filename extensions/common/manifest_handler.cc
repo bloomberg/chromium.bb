@@ -18,8 +18,8 @@ namespace extensions {
 
 namespace {
 
-static base::LazyInstance<ManifestHandlerRegistry> g_registry =
-    LAZY_INSTANCE_INITIALIZER;
+static base::LazyInstance<ManifestHandlerRegistry>::DestructorAtExit
+    g_registry = LAZY_INSTANCE_INITIALIZER;
 static ManifestHandlerRegistry* g_registry_override = NULL;
 
 ManifestHandlerRegistry* GetRegistry() {

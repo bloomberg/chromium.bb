@@ -83,11 +83,12 @@ namespace {
 typedef base::hash_set<AXPlatformNodeWin*> AXPlatformNodeWinSet;
 // Set of all AXPlatformNodeWin objects that were the target of an
 // alert event.
-base::LazyInstance<AXPlatformNodeWinSet> g_alert_targets =
+base::LazyInstance<AXPlatformNodeWinSet>::DestructorAtExit g_alert_targets =
     LAZY_INSTANCE_INITIALIZER;
 
-base::LazyInstance<base::ObserverList<IAccessible2UsageObserver>>
-    g_iaccessible2_usage_observer_list = LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<base::ObserverList<IAccessible2UsageObserver>>::
+    DestructorAtExit g_iaccessible2_usage_observer_list =
+        LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 

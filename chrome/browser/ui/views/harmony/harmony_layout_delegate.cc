@@ -7,8 +7,8 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 
-static base::LazyInstance<HarmonyLayoutDelegate> harmony_layout_delegate_ =
-    LAZY_INSTANCE_INITIALIZER;
+static base::LazyInstance<HarmonyLayoutDelegate>::DestructorAtExit
+    harmony_layout_delegate_ = LAZY_INSTANCE_INITIALIZER;
 
 // static
 HarmonyLayoutDelegate* HarmonyLayoutDelegate::Get() {

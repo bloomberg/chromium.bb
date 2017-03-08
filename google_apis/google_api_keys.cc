@@ -289,7 +289,7 @@ class APIKeyCache {
   std::string client_secrets_[CLIENT_NUM_ITEMS];
 };
 
-static base::LazyInstance<APIKeyCache> g_api_key_cache =
+static base::LazyInstance<APIKeyCache>::DestructorAtExit g_api_key_cache =
     LAZY_INSTANCE_INITIALIZER;
 
 bool HasKeysConfigured() {

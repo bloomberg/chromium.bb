@@ -37,7 +37,7 @@ class HistogramManager : public base::HistogramFlattener {
   static HistogramManager* GetInstance();
 
  private:
-  friend struct base::DefaultLazyInstanceTraits<HistogramManager>;
+  friend struct base::LazyInstanceTraitsBase<HistogramManager>;
 
   // base::HistogramFlattener:
   void RecordDelta(const base::HistogramBase& histogram,

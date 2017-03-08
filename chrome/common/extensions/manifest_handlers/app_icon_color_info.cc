@@ -20,8 +20,8 @@ namespace errors = manifest_errors;
 
 namespace {
 
-static base::LazyInstance<AppIconColorInfo> g_empty_app_icon_color_info =
-    LAZY_INSTANCE_INITIALIZER;
+static base::LazyInstance<AppIconColorInfo>::DestructorAtExit
+    g_empty_app_icon_color_info = LAZY_INSTANCE_INITIALIZER;
 
 const AppIconColorInfo& GetInfo(const Extension* extension) {
   AppIconColorInfo* info = static_cast<AppIconColorInfo*>(

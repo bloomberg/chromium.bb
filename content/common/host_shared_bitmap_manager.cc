@@ -57,8 +57,8 @@ class HostSharedBitmap : public cc::SharedBitmap {
 
 }  // namespace
 
-base::LazyInstance<HostSharedBitmapManager> g_shared_memory_manager =
-    LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<HostSharedBitmapManager>::DestructorAtExit
+    g_shared_memory_manager = LAZY_INSTANCE_INITIALIZER;
 
 HostSharedBitmapManagerClient::HostSharedBitmapManagerClient(
     HostSharedBitmapManager* manager)

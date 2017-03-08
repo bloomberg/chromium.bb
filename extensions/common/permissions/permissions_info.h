@@ -56,7 +56,7 @@ class PermissionsInfo {
   size_t get_permission_count() const { return permission_count_; }
 
  private:
-  friend struct base::DefaultLazyInstanceTraits<PermissionsInfo>;
+  friend struct base::LazyInstanceTraitsBase<PermissionsInfo>;
 
   PermissionsInfo();
 

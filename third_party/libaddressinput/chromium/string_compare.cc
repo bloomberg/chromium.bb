@@ -41,7 +41,7 @@ class IcuStringComparer {
   DISALLOW_COPY_AND_ASSIGN(IcuStringComparer);
 };
 
-static base::LazyInstance<IcuStringComparer> g_comparer =
+static base::LazyInstance<IcuStringComparer>::DestructorAtExit g_comparer =
     LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace

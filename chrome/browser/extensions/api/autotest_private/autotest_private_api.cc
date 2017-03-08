@@ -378,8 +378,8 @@ AutotestPrivateGetVisibleNotificationsFunction::Run() {
   return RespondNow(OneArgument(std::move(values)));
 }
 
-static base::LazyInstance<BrowserContextKeyedAPIFactory<AutotestPrivateAPI> >
-    g_factory = LAZY_INSTANCE_INITIALIZER;
+static base::LazyInstance<BrowserContextKeyedAPIFactory<AutotestPrivateAPI>>::
+    DestructorAtExit g_factory = LAZY_INSTANCE_INITIALIZER;
 
 // static
 BrowserContextKeyedAPIFactory<AutotestPrivateAPI>*

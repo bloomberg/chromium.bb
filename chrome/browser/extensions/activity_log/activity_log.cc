@@ -387,7 +387,7 @@ class ActivityLogState {
   DISALLOW_COPY_AND_ASSIGN(ActivityLogState);
 };
 
-base::LazyInstance<ActivityLogState> g_activity_log_state =
+base::LazyInstance<ActivityLogState>::DestructorAtExit g_activity_log_state =
     LAZY_INSTANCE_INITIALIZER;
 
 // Returns the ActivityLog associated with the given |browser_context| after
@@ -533,8 +533,9 @@ void SetActivityHandlers() {
 
 // SET THINGS UP. --------------------------------------------------------------
 
-static base::LazyInstance<BrowserContextKeyedAPIFactory<ActivityLog> >
-    g_factory = LAZY_INSTANCE_INITIALIZER;
+static base::LazyInstance<
+    BrowserContextKeyedAPIFactory<ActivityLog>>::DestructorAtExit g_factory =
+    LAZY_INSTANCE_INITIALIZER;
 
 BrowserContextKeyedAPIFactory<ActivityLog>* ActivityLog::GetFactoryInstance() {
   return g_factory.Pointer();

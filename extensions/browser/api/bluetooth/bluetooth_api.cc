@@ -45,8 +45,9 @@ extensions::BluetoothEventRouter* GetEventRouter(BrowserContext* context) {
 
 namespace extensions {
 
-static base::LazyInstance<BrowserContextKeyedAPIFactory<BluetoothAPI> >
-    g_factory = LAZY_INSTANCE_INITIALIZER;
+static base::LazyInstance<
+    BrowserContextKeyedAPIFactory<BluetoothAPI>>::DestructorAtExit g_factory =
+    LAZY_INSTANCE_INITIALIZER;
 
 // static
 BrowserContextKeyedAPIFactory<BluetoothAPI>*

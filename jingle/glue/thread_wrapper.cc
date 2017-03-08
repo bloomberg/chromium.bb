@@ -31,8 +31,8 @@ struct JingleThreadWrapper::PendingSend {
   base::WaitableEvent done_event;
 };
 
-base::LazyInstance<base::ThreadLocalPointer<JingleThreadWrapper> >
-    g_jingle_thread_wrapper = LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<base::ThreadLocalPointer<JingleThreadWrapper>>::
+    DestructorAtExit g_jingle_thread_wrapper = LAZY_INSTANCE_INITIALIZER;
 
 // static
 void JingleThreadWrapper::EnsureForCurrentMessageLoop() {

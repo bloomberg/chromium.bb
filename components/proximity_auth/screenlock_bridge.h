@@ -171,7 +171,7 @@ class ScreenlockBridge {
   const AccountId& focused_account_id() const { return focused_account_id_; }
 
  private:
-  friend struct base::DefaultLazyInstanceTraits<ScreenlockBridge>;
+  friend struct base::LazyInstanceTraitsBase<ScreenlockBridge>;
   friend std::default_delete<ScreenlockBridge>;
 
   ScreenlockBridge();

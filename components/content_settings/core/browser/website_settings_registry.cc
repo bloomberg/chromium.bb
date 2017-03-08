@@ -12,8 +12,8 @@
 
 namespace {
 
-base::LazyInstance<content_settings::WebsiteSettingsRegistry> g_instance =
-    LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<content_settings::WebsiteSettingsRegistry>::DestructorAtExit
+    g_instance = LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 

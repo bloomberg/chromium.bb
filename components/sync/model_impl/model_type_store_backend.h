@@ -151,7 +151,7 @@ class ModelTypeStoreBackend
   // GetOrCreateBackend will return scoped_refptr of backend. backend_map_
   // doesn't take reference to backend, therefore doesn't block backend
   // destruction.
-  static base::LazyInstance<BackendMap> backend_map_;
+  static base::LazyInstance<BackendMap>::DestructorAtExit backend_map_;
 
   // Macro wrapped mutex to guard against concurrent calls in debug builds.
   DFAKE_MUTEX(push_pop_);

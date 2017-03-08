@@ -324,8 +324,8 @@ class InternalAuthVerificationService {
 
 namespace {
 
-static base::LazyInstance<chrome::InternalAuthVerificationService>
-    g_verification_service = LAZY_INSTANCE_INITIALIZER;
+static base::LazyInstance<chrome::InternalAuthVerificationService>::
+    DestructorAtExit g_verification_service = LAZY_INSTANCE_INITIALIZER;
 static base::LazyInstance<base::Lock>::Leaky
     g_verification_service_lock = LAZY_INSTANCE_INITIALIZER;
 
@@ -432,8 +432,8 @@ class InternalAuthGenerationService : public base::ThreadChecker {
 
 namespace {
 
-static base::LazyInstance<chrome::InternalAuthGenerationService>
-    g_generation_service = LAZY_INSTANCE_INITIALIZER;
+static base::LazyInstance<chrome::InternalAuthGenerationService>::
+    DestructorAtExit g_generation_service = LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 

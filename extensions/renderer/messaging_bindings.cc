@@ -54,8 +54,8 @@ using v8_helpers::ToV8String;
 namespace {
 
 // A global map between ScriptContext and MessagingBindings.
-base::LazyInstance<std::map<ScriptContext*, MessagingBindings*>>
-    g_messaging_map = LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<std::map<ScriptContext*, MessagingBindings*>>::
+    DestructorAtExit g_messaging_map = LAZY_INSTANCE_INITIALIZER;
 
 void HasMessagePort(const PortId& port_id,
                     bool* has_port,

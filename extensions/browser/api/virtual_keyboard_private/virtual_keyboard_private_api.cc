@@ -150,8 +150,8 @@ VirtualKeyboardAPI::VirtualKeyboardAPI(content::BrowserContext* context) {
 VirtualKeyboardAPI::~VirtualKeyboardAPI() {
 }
 
-static base::LazyInstance<BrowserContextKeyedAPIFactory<VirtualKeyboardAPI>>
-    g_factory = LAZY_INSTANCE_INITIALIZER;
+static base::LazyInstance<BrowserContextKeyedAPIFactory<VirtualKeyboardAPI>>::
+    DestructorAtExit g_factory = LAZY_INSTANCE_INITIALIZER;
 
 // static
 BrowserContextKeyedAPIFactory<VirtualKeyboardAPI>*

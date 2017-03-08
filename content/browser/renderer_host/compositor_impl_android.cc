@@ -104,8 +104,8 @@ struct CompositorDependencies {
 #endif
 };
 
-base::LazyInstance<CompositorDependencies> g_compositor_dependencies =
-    LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<CompositorDependencies>::DestructorAtExit
+    g_compositor_dependencies = LAZY_INSTANCE_INITIALIZER;
 
 const unsigned int kMaxDisplaySwapBuffers = 1U;
 

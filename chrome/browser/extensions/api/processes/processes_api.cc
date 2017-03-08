@@ -37,8 +37,8 @@ const char kInvalidArgument[] = "Invalid argument: *.";
 
 namespace {
 
-base::LazyInstance<BrowserContextKeyedAPIFactory<ProcessesAPI>>
-    g_processes_api_factory = LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<BrowserContextKeyedAPIFactory<ProcessesAPI>>::
+    DestructorAtExit g_processes_api_factory = LAZY_INSTANCE_INITIALIZER;
 
 int64_t GetRefreshTypesFlagOnlyEssentialData() {
   // This is the only non-optional data in the Process as defined by the API in

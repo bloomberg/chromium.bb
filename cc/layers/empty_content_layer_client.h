@@ -35,7 +35,7 @@ class CC_EXPORT EmptyContentLayerClient : public ContentLayerClient {
   size_t GetApproximateUnsharedMemoryUsage() const override;
 
  private:
-  friend struct base::DefaultLazyInstanceTraits<EmptyContentLayerClient>;
+  friend struct base::LazyInstanceTraitsBase<EmptyContentLayerClient>;
 
   EmptyContentLayerClient();
   ~EmptyContentLayerClient() override;

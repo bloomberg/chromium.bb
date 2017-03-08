@@ -141,8 +141,9 @@ CommandService::CommandService(content::BrowserContext* context)
 CommandService::~CommandService() {
 }
 
-static base::LazyInstance<BrowserContextKeyedAPIFactory<CommandService> >
-    g_factory = LAZY_INSTANCE_INITIALIZER;
+static base::LazyInstance<
+    BrowserContextKeyedAPIFactory<CommandService>>::DestructorAtExit g_factory =
+    LAZY_INSTANCE_INITIALIZER;
 
 // static
 BrowserContextKeyedAPIFactory<CommandService>*

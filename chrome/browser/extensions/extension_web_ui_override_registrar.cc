@@ -62,8 +62,8 @@ void ExtensionWebUIOverrideRegistrar::OnExtensionSystemReady(
       Profile::FromBrowserContext(context));
 }
 
-static base::LazyInstance<
-    BrowserContextKeyedAPIFactory<ExtensionWebUIOverrideRegistrar> > g_factory =
+static base::LazyInstance<BrowserContextKeyedAPIFactory<
+    ExtensionWebUIOverrideRegistrar>>::DestructorAtExit g_factory =
     LAZY_INSTANCE_INITIALIZER;
 
 // static

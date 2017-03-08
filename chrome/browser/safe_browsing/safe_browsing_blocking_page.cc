@@ -79,7 +79,7 @@ class SafeBrowsingBlockingPageFactoryImpl
   }
 
  private:
-  friend struct base::DefaultLazyInstanceTraits<
+  friend struct base::LazyInstanceTraitsBase<
       SafeBrowsingBlockingPageFactoryImpl>;
 
   SafeBrowsingBlockingPageFactoryImpl() { }
@@ -87,7 +87,7 @@ class SafeBrowsingBlockingPageFactoryImpl
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingBlockingPageFactoryImpl);
 };
 
-static base::LazyInstance<SafeBrowsingBlockingPageFactoryImpl>
+static base::LazyInstance<SafeBrowsingBlockingPageFactoryImpl>::DestructorAtExit
     g_safe_browsing_blocking_page_factory_impl = LAZY_INSTANCE_INITIALIZER;
 
 // static

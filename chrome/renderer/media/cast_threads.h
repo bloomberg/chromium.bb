@@ -23,7 +23,7 @@ class CastThreads {
   scoped_refptr<base::SingleThreadTaskRunner> GetVideoEncodeTaskRunner();
 
  private:
-  friend struct base::DefaultLazyInstanceTraits<CastThreads>;
+  friend struct base::LazyInstanceTraitsBase<CastThreads>;
 
   CastThreads();
 

@@ -30,7 +30,7 @@ namespace aura {
 namespace {
 
 // Env is thread local so that aura may be used on multiple threads.
-base::LazyInstance<base::ThreadLocalPointer<Env> >::Leaky lazy_tls_ptr =
+base::LazyInstance<base::ThreadLocalPointer<Env>>::Leaky lazy_tls_ptr =
     LAZY_INSTANCE_INITIALIZER;
 
 // Returns true if running inside of mus. Checks for mojo specific flag.

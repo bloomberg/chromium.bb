@@ -20,8 +20,8 @@ namespace remoting {
 namespace {
 
 // Holds a reference to the task runner used by the module.
-base::LazyInstance<scoped_refptr<AutoThreadTaskRunner> > g_module_task_runner =
-    LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<scoped_refptr<AutoThreadTaskRunner>>::DestructorAtExit
+    g_module_task_runner = LAZY_INSTANCE_INITIALIZER;
 
 // Lowers the process integrity level such that it does not exceed |max_level|.
 // |max_level| is expected to be one of SECURITY_MANDATORY_XXX constants.

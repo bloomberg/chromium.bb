@@ -37,8 +37,8 @@ namespace {
 
 const char kBackground[] = "background";
 
-static base::LazyInstance<BackgroundInfo> g_empty_background_info =
-    LAZY_INSTANCE_INITIALIZER;
+static base::LazyInstance<BackgroundInfo>::DestructorAtExit
+    g_empty_background_info = LAZY_INSTANCE_INITIALIZER;
 
 const BackgroundInfo& GetBackgroundInfo(const Extension* extension) {
   BackgroundInfo* info = static_cast<BackgroundInfo*>(

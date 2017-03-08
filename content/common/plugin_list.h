@@ -132,7 +132,7 @@ class CONTENT_EXPORT PluginList {
   };
 
   friend class PluginListTest;
-  friend struct base::DefaultLazyInstanceTraits<PluginList>;
+  friend struct base::LazyInstanceTraitsBase<PluginList>;
 
   PluginList();
 

@@ -83,7 +83,7 @@ namespace {
 
 typedef WebFileSystemImpl::WaitableCallbackResults WaitableCallbackResults;
 
-base::LazyInstance<base::ThreadLocalPointer<WebFileSystemImpl> >::Leaky
+base::LazyInstance<base::ThreadLocalPointer<WebFileSystemImpl>>::Leaky
     g_webfilesystem_tls = LAZY_INSTANCE_INITIALIZER;
 
 void DidReceiveSnapshotFile(int request_id) {

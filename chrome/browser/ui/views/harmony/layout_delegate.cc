@@ -10,7 +10,7 @@
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/views/layout/layout_constants.h"
 
-static base::LazyInstance<LayoutDelegate> layout_delegate_ =
+static base::LazyInstance<LayoutDelegate>::DestructorAtExit layout_delegate_ =
     LAZY_INSTANCE_INITIALIZER;
 
 // static

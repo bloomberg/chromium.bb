@@ -70,7 +70,7 @@ class CrashDumpObserver : public content::BrowserChildProcessObserver,
                                   content::FileDescriptorInfo* mappings);
 
  private:
-  friend struct base::DefaultLazyInstanceTraits<CrashDumpObserver>;
+  friend struct base::LazyInstanceTraitsBase<CrashDumpObserver>;
 
   CrashDumpObserver();
   ~CrashDumpObserver() override;

@@ -11,8 +11,8 @@ namespace extensions {
 using api::system_cpu::CpuInfo;
 
 // Static member intialization.
-base::LazyInstance<scoped_refptr<CpuInfoProvider> > CpuInfoProvider::provider_ =
-    LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<scoped_refptr<CpuInfoProvider>>::DestructorAtExit
+    CpuInfoProvider::provider_ = LAZY_INSTANCE_INITIALIZER;
 
 CpuInfoProvider::CpuInfoProvider() {
 }

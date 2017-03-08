@@ -17,8 +17,8 @@ namespace api {
 
 using content::BrowserThread;
 
-static base::LazyInstance<
-    BrowserContextKeyedAPIFactory<TCPServerSocketEventDispatcher> > g_factory =
+static base::LazyInstance<BrowserContextKeyedAPIFactory<
+    TCPServerSocketEventDispatcher>>::DestructorAtExit g_factory =
     LAZY_INSTANCE_INITIALIZER;
 
 // static

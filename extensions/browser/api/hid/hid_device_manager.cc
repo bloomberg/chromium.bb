@@ -112,8 +112,8 @@ HidDeviceManager::~HidDeviceManager() {
 // static
 BrowserContextKeyedAPIFactory<HidDeviceManager>*
 HidDeviceManager::GetFactoryInstance() {
-  static base::LazyInstance<BrowserContextKeyedAPIFactory<HidDeviceManager> >
-      factory = LAZY_INSTANCE_INITIALIZER;
+  static base::LazyInstance<BrowserContextKeyedAPIFactory<HidDeviceManager>>::
+      DestructorAtExit factory = LAZY_INSTANCE_INITIALIZER;
   return &factory.Get();
 }
 

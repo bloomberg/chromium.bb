@@ -146,9 +146,9 @@ device::serial::StopBits ConvertStopBitsToMojo(api::serial::StopBits input) {
 
 }  // namespace
 
-static base::LazyInstance<
-    BrowserContextKeyedAPIFactory<ApiResourceManager<SerialConnection> > >
-    g_factory = LAZY_INSTANCE_INITIALIZER;
+static base::LazyInstance<BrowserContextKeyedAPIFactory<
+    ApiResourceManager<SerialConnection>>>::DestructorAtExit g_factory =
+    LAZY_INSTANCE_INITIALIZER;
 
 // static
 template <>

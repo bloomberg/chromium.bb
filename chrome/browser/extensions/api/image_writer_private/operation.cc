@@ -24,8 +24,8 @@ using content::BrowserThread;
 const int kMD5BufferSize = 1024;
 
 #if !defined(OS_CHROMEOS)
-static base::LazyInstance<scoped_refptr<ImageWriterUtilityClient> >
-    g_utility_client = LAZY_INSTANCE_INITIALIZER;
+static base::LazyInstance<scoped_refptr<ImageWriterUtilityClient>>::
+    DestructorAtExit g_utility_client = LAZY_INSTANCE_INITIALIZER;
 #endif
 
 Operation::Operation(base::WeakPtr<OperationManager> manager,

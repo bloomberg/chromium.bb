@@ -161,7 +161,7 @@ class STORAGE_EXPORT IsolatedContext : public MountPoints {
   base::FilePath CreateVirtualRootPath(const std::string& filesystem_id) const;
 
  private:
-  friend struct base::DefaultLazyInstanceTraits<IsolatedContext>;
+  friend struct base::LazyInstanceTraitsBase<IsolatedContext>;
 
   // Represents each file system instance (defined in the .cc).
   class Instance;

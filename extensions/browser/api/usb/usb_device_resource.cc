@@ -21,9 +21,9 @@ using device::UsbDeviceHandle;
 
 namespace extensions {
 
-static base::LazyInstance<
-    BrowserContextKeyedAPIFactory<ApiResourceManager<UsbDeviceResource> > >
-    g_factory = LAZY_INSTANCE_INITIALIZER;
+static base::LazyInstance<BrowserContextKeyedAPIFactory<
+    ApiResourceManager<UsbDeviceResource>>>::DestructorAtExit g_factory =
+    LAZY_INSTANCE_INITIALIZER;
 
 // static
 template <>

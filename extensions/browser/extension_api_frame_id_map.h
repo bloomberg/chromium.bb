@@ -141,7 +141,7 @@ class ExtensionApiFrameIdMap {
                             content::RenderFrameHost* rfh);
 
  protected:
-  friend struct base::DefaultLazyInstanceTraits<ExtensionApiFrameIdMap>;
+  friend struct base::LazyInstanceTraitsBase<ExtensionApiFrameIdMap>;
 
   // A set of identifiers that uniquely identifies a RenderFrame.
   struct RenderFrameIdKey {

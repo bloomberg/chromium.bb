@@ -27,7 +27,7 @@ namespace android_webview {
 // asynchronous; even after Initialize has returned, some methods may not be
 // ready to use (see below).
 class AwMetricsServiceClientImpl : public AwMetricsServiceClient {
-  friend struct base::DefaultLazyInstanceTraits<AwMetricsServiceClientImpl>;
+  friend struct base::LazyInstanceTraitsBase<AwMetricsServiceClientImpl>;
 
  public:
   void Initialize(PrefService* pref_service,

@@ -22,11 +22,11 @@ namespace cc {
 
 namespace {
 
-base::LazyInstance<SynchronousTaskGraphRunner> g_synchronous_task_graph_runner =
-    LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<SynchronousTaskGraphRunner>::DestructorAtExit
+    g_synchronous_task_graph_runner = LAZY_INSTANCE_INITIALIZER;
 
-base::LazyInstance<FakeRasterBufferProviderImpl> g_fake_raster_buffer_provider =
-    LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<FakeRasterBufferProviderImpl>::DestructorAtExit
+    g_fake_raster_buffer_provider = LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 

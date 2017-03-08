@@ -35,7 +35,7 @@ class AppContextSurface {
   DISALLOW_COPY_AND_ASSIGN(AppContextSurface);
 };
 
-base::LazyInstance<AppContextSurface> g_app_context_surface =
+base::LazyInstance<AppContextSurface>::DestructorAtExit g_app_context_surface =
     LAZY_INSTANCE_INITIALIZER;
 
 // Make the global g_app_context_surface current so that the gl_binding is not

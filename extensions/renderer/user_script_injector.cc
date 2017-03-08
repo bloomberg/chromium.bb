@@ -51,7 +51,7 @@ using RoutingInfoMap = std::map<RoutingInfoKey, bool>;
 // After removed by the webview, the user scipt will also be removed
 // from the render. Therefore, there won't be any query from the same
 // |script_id| and |routing_id| pair.
-base::LazyInstance<RoutingInfoMap> g_routing_info_map =
+base::LazyInstance<RoutingInfoMap>::DestructorAtExit g_routing_info_map =
     LAZY_INSTANCE_INITIALIZER;
 
 // Greasemonkey API source that is injected with the scripts.

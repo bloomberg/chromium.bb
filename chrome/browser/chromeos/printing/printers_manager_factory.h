@@ -28,7 +28,7 @@ class PrintersManagerFactory : public BrowserContextKeyedServiceFactory {
       content::BrowserContext* context) const override;
 
  private:
-  friend struct base::DefaultLazyInstanceTraits<PrintersManagerFactory>;
+  friend struct base::LazyInstanceTraitsBase<PrintersManagerFactory>;
 
   PrintersManagerFactory();
   ~PrintersManagerFactory() override;

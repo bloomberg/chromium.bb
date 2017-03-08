@@ -70,17 +70,16 @@ class RfhToIoThreadClientMap {
   void Erase(pair<int, int> rfh_id);
 
  private:
-  static LazyInstance<RfhToIoThreadClientMap> g_instance_;
   base::Lock map_lock_;
   RenderFrameHostToIoThreadClientType rfh_to_io_thread_client_;
 };
 
 // static
-LazyInstance<RfhToIoThreadClientMap> RfhToIoThreadClientMap::g_instance_ =
+LazyInstance<RfhToIoThreadClientMap>::DestructorAtExit g_instance_ =
     LAZY_INSTANCE_INITIALIZER;
 
 // static
-LazyInstance<JavaObjectWeakGlobalRef> g_sw_instance_ =
+LazyInstance<JavaObjectWeakGlobalRef>::DestructorAtExit g_sw_instance_ =
     LAZY_INSTANCE_INITIALIZER;
 
 // static

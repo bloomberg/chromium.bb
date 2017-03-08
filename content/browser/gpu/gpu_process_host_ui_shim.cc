@@ -40,8 +40,8 @@ namespace {
 #undef DestroyAll
 #endif
 
-base::LazyInstance<IDMap<GpuProcessHostUIShim*>> g_hosts_by_id =
-    LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<IDMap<GpuProcessHostUIShim*>>::DestructorAtExit
+    g_hosts_by_id = LAZY_INSTANCE_INITIALIZER;
 
 void StopGpuProcessOnIO(int host_id) {
   GpuProcessHost* host = GpuProcessHost::FromID(host_id);

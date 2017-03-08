@@ -21,8 +21,8 @@ namespace chromeos {
 
 namespace {
 
-base::LazyInstance<PrintersManagerFactory> g_printers_manager =
-    LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<PrintersManagerFactory>::DestructorAtExit
+    g_printers_manager = LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 

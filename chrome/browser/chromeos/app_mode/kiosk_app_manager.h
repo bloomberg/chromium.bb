@@ -251,7 +251,7 @@ class KioskAppManager : public KioskAppDataDelegate,
   }
 
  private:
-  friend struct base::DefaultLazyInstanceTraits<KioskAppManager>;
+  friend struct base::LazyInstanceTraitsBase<KioskAppManager>;
   friend std::default_delete<KioskAppManager>;
   friend class KioskAppManagerTest;
   friend class KioskTest;

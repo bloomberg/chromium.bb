@@ -19,8 +19,8 @@ namespace extensions {
 const char kSocketTypeNotSupported[] = "Socket type does not support this API";
 
 static base::LazyInstance<
-    BrowserContextKeyedAPIFactory<ApiResourceManager<Socket> > > g_factory =
-    LAZY_INSTANCE_INITIALIZER;
+    BrowserContextKeyedAPIFactory<ApiResourceManager<Socket>>>::DestructorAtExit
+    g_factory = LAZY_INSTANCE_INITIALIZER;
 
 // static
 template <>

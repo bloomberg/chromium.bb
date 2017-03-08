@@ -17,7 +17,8 @@ namespace {
 
 typedef std::pair<int32_t, int32_t> RenderFrameHostID;
 typedef std::set<RenderFrameHostID> SingleTabIDSet;
-base::LazyInstance<SingleTabIDSet> g_blocked_ids = LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<SingleTabIDSet>::DestructorAtExit g_blocked_ids =
+    LAZY_INSTANCE_INITIALIZER;
 
 void AddPairOnIOThread(int32_t process_id, int32_t frame_routing_id) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);

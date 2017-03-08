@@ -60,8 +60,8 @@ enum RdpAudioMode {
 };
 
 // Points to a per-thread instance of the window activation hook handle.
-base::LazyInstance<base::ThreadLocalPointer<RdpClientWindow::WindowHook> >
-    g_window_hook = LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<base::ThreadLocalPointer<RdpClientWindow::WindowHook>>::
+    DestructorAtExit g_window_hook = LAZY_INSTANCE_INITIALIZER;
 
 // Finds a child window with the class name matching |class_name|. Unlike
 // FindWindowEx() this function walks the tree of windows recursively. The walk

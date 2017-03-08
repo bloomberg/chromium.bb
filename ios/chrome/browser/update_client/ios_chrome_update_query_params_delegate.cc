@@ -12,8 +12,8 @@
 
 namespace {
 
-base::LazyInstance<IOSChromeUpdateQueryParamsDelegate> g_delegate =
-    LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<IOSChromeUpdateQueryParamsDelegate>::DestructorAtExit
+    g_delegate = LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 

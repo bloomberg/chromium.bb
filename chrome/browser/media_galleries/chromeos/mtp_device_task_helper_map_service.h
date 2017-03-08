@@ -38,7 +38,7 @@ class MTPDeviceTaskHelperMapService {
                                            const bool read_only);
 
  private:
-  friend struct base::DefaultLazyInstanceTraits<MTPDeviceTaskHelperMapService>;
+  friend struct base::LazyInstanceTraitsBase<MTPDeviceTaskHelperMapService>;
 
   // A key to be used in TaskHelperMap.
   typedef std::string MTPDeviceTaskHelperKey;

@@ -25,8 +25,8 @@ namespace {
 
 // Map from unique_id to BrowserAccessibility
 using UniqueIDMap = base::hash_map<int32_t, BrowserAccessibility*>;
-base::LazyInstance<UniqueIDMap> g_unique_id_map = LAZY_INSTANCE_INITIALIZER;
-
+base::LazyInstance<UniqueIDMap>::DestructorAtExit g_unique_id_map =
+    LAZY_INSTANCE_INITIALIZER;
 }
 
 #if !defined(PLATFORM_HAS_NATIVE_ACCESSIBILITY_IMPL)

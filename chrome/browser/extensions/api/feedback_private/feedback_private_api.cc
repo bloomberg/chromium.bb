@@ -77,8 +77,8 @@ using feedback_private::FeedbackFlow;
 using SystemInformationList =
     std::vector<api::feedback_private::SystemInformation>;
 
-static base::LazyInstance<BrowserContextKeyedAPIFactory<FeedbackPrivateAPI> >
-    g_factory = LAZY_INSTANCE_INITIALIZER;
+static base::LazyInstance<BrowserContextKeyedAPIFactory<FeedbackPrivateAPI>>::
+    DestructorAtExit g_factory = LAZY_INSTANCE_INITIALIZER;
 
 // static
 BrowserContextKeyedAPIFactory<FeedbackPrivateAPI>*

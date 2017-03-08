@@ -10,8 +10,8 @@
 
 namespace chromeos {
 
-static base::LazyInstance<LoginEventRecorder> g_login_event_recorder =
-    LAZY_INSTANCE_INITIALIZER;
+static base::LazyInstance<LoginEventRecorder>::DestructorAtExit
+    g_login_event_recorder = LAZY_INSTANCE_INITIALIZER;
 
 LoginEventRecorder::LoginEventRecorder() : delegate_(NULL) {
 }

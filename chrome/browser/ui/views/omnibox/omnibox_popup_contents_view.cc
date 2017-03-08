@@ -34,8 +34,10 @@ namespace {
 
 // Cache the shadow images so that potentially expensive shadow drawing isn't
 // repeated.
-base::LazyInstance<gfx::ImageSkia> g_top_shadow = LAZY_INSTANCE_INITIALIZER;
-base::LazyInstance<gfx::ImageSkia> g_bottom_shadow = LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<gfx::ImageSkia>::DestructorAtExit g_top_shadow =
+    LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<gfx::ImageSkia>::DestructorAtExit g_bottom_shadow =
+    LAZY_INSTANCE_INITIALIZER;
 
 const int kPopupVerticalPadding = 4;
 

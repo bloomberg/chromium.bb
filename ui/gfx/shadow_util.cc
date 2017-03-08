@@ -74,7 +74,8 @@ class ShadowNineboxSource : public CanvasImageSource {
 
 // Map from elevation/corner radius pair to a cached shadow.
 using ShadowDetailsMap = std::map<std::pair<int, int>, ShadowDetails>;
-base::LazyInstance<ShadowDetailsMap> g_shadow_cache = LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<ShadowDetailsMap>::DestructorAtExit g_shadow_cache =
+    LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 

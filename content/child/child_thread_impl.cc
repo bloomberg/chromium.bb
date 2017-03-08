@@ -85,8 +85,8 @@ namespace {
 // How long to wait for a connection to the browser process before giving up.
 const int kConnectionTimeoutS = 15;
 
-base::LazyInstance<base::ThreadLocalPointer<ChildThreadImpl> > g_lazy_tls =
-    LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<base::ThreadLocalPointer<ChildThreadImpl>>::DestructorAtExit
+    g_lazy_tls = LAZY_INSTANCE_INITIALIZER;
 
 // This isn't needed on Windows because there the sandbox's job object
 // terminates child processes automatically. For unsandboxed processes (i.e.
@@ -226,7 +226,8 @@ void QuitClosure::PostQuitFromNonMainThread() {
   closure_.Run();
 }
 
-base::LazyInstance<QuitClosure> g_quit_closure = LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<QuitClosure>::DestructorAtExit g_quit_closure =
+    LAZY_INSTANCE_INITIALIZER;
 #endif
 
 void InitializeMojoIPCChannel() {

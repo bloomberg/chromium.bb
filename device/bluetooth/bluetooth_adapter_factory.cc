@@ -25,7 +25,7 @@ namespace {
 // if nobody is using it, so use a WeakPtr and create the object when needed.
 // Since Google C++ Style (and clang's static analyzer) forbids us having
 // exit-time destructors, we use a leaky lazy instance for it.
-base::LazyInstance<base::WeakPtr<BluetoothAdapter> >::Leaky default_adapter =
+base::LazyInstance<base::WeakPtr<BluetoothAdapter>>::Leaky default_adapter =
     LAZY_INSTANCE_INITIALIZER;
 
 #if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_CHROMEOS)
@@ -35,7 +35,7 @@ typedef std::vector<BluetoothAdapterFactory::AdapterCallback>
 // List of adapter callbacks to be called once the adapter is initialized.
 // Since Google C++ Style (and clang's static analyzer) forbids us having
 // exit-time destructors we use a lazy instance for it.
-base::LazyInstance<AdapterCallbackList> adapter_callbacks =
+base::LazyInstance<AdapterCallbackList>::DestructorAtExit adapter_callbacks =
     LAZY_INSTANCE_INITIALIZER;
 
 void RunAdapterCallbacks() {

@@ -38,7 +38,8 @@ struct Cache {
   base::MRUCache<uint64_t, ICCProfile> id_to_icc_profile_mru;
   base::Lock lock;
 };
-static base::LazyInstance<Cache> g_cache;
+static base::LazyInstance<Cache>::DestructorAtExit g_cache =
+    LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 

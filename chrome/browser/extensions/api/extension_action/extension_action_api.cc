@@ -91,8 +91,8 @@ ExtensionActionAPI::Observer::~Observer() {
 // ExtensionActionAPI
 //
 
-static base::LazyInstance<BrowserContextKeyedAPIFactory<ExtensionActionAPI> >
-    g_factory = LAZY_INSTANCE_INITIALIZER;
+static base::LazyInstance<BrowserContextKeyedAPIFactory<ExtensionActionAPI>>::
+    DestructorAtExit g_factory = LAZY_INSTANCE_INITIALIZER;
 
 ExtensionActionAPI::ExtensionActionAPI(content::BrowserContext* context)
     : browser_context_(context),

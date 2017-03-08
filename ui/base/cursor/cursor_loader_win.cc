@@ -13,7 +13,8 @@ namespace ui {
 
 namespace {
 
-base::LazyInstance<base::string16> g_cursor_resource_module_name;
+base::LazyInstance<base::string16>::DestructorAtExit
+    g_cursor_resource_module_name;
 
 const wchar_t* GetCursorId(gfx::NativeCursor native_cursor) {
   switch (native_cursor.native_type()) {

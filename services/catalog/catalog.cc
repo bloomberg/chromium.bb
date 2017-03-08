@@ -37,8 +37,8 @@ const char kCatalogServiceEmbeddedKey[] = "embedded";
 const char kCatalogServiceExecutableKey[] = "executable";
 const char kCatalogServiceManifestKey[] = "manifest";
 
-base::LazyInstance<std::unique_ptr<base::Value>> g_default_static_manifest =
-    LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<std::unique_ptr<base::Value>>::DestructorAtExit
+    g_default_static_manifest = LAZY_INSTANCE_INITIALIZER;
 
 void LoadCatalogManifestIntoCache(const base::Value* root, EntryCache* cache) {
   DCHECK(root);

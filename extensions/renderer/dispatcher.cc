@@ -217,8 +217,8 @@ void SendEventListenersIPC(binding::EventListenersChanged changed,
   }
 }
 
-base::LazyInstance<WorkerScriptContextSet> g_worker_script_context_set =
-    LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<WorkerScriptContextSet>::DestructorAtExit
+    g_worker_script_context_set = LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 

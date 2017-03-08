@@ -137,8 +137,8 @@ static const base::FilePath::CharType kLoginTimes[] = FPL("login-times");
 // Name of file collecting logout times.
 static const char kLogoutTimes[] = "logout-times";
 
-static base::LazyInstance<BootTimesRecorder> g_boot_times_recorder =
-    LAZY_INSTANCE_INITIALIZER;
+static base::LazyInstance<BootTimesRecorder>::DestructorAtExit
+    g_boot_times_recorder = LAZY_INSTANCE_INITIALIZER;
 
 // static
 BootTimesRecorder::Stats BootTimesRecorder::Stats::GetCurrentStats() {

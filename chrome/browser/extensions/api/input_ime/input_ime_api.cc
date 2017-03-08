@@ -421,8 +421,9 @@ InputImeAPI::~InputImeAPI() {
   registrar_.RemoveAll();
 }
 
-static base::LazyInstance<BrowserContextKeyedAPIFactory<InputImeAPI> >
-    g_factory = LAZY_INSTANCE_INITIALIZER;
+static base::LazyInstance<
+    BrowserContextKeyedAPIFactory<InputImeAPI>>::DestructorAtExit g_factory =
+    LAZY_INSTANCE_INITIALIZER;
 
 // static
 BrowserContextKeyedAPIFactory<InputImeAPI>* InputImeAPI::GetFactoryInstance() {

@@ -63,7 +63,7 @@ class CONTENT_EXPORT IndexedDBClassFactory {
  protected:
   IndexedDBClassFactory() {}
   virtual ~IndexedDBClassFactory() {}
-  friend struct base::DefaultLazyInstanceTraits<IndexedDBClassFactory>;
+  friend struct base::LazyInstanceTraitsBase<IndexedDBClassFactory>;
 };
 
 }  // namespace content

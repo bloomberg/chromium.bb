@@ -30,9 +30,9 @@ namespace {
 
 using SearchKeyToPredicateMap =
     base::hash_map<base::string16, AccessibilityMatchPredicate>;
-base::LazyInstance<SearchKeyToPredicateMap> g_search_key_to_predicate_map =
-    LAZY_INSTANCE_INITIALIZER;
-base::LazyInstance<base::string16> g_all_search_keys =
+base::LazyInstance<SearchKeyToPredicateMap>::DestructorAtExit
+    g_search_key_to_predicate_map = LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<base::string16>::DestructorAtExit g_all_search_keys =
     LAZY_INSTANCE_INITIALIZER;
 
 bool SectionPredicate(

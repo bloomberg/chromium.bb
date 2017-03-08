@@ -21,7 +21,8 @@ using content::BrowserThread;
 namespace breakpad {
 
 namespace {
-base::LazyInstance<CrashDumpObserver> g_instance = LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<CrashDumpObserver>::DestructorAtExit g_instance =
+    LAZY_INSTANCE_INITIALIZER;
 }
 
 // static

@@ -23,7 +23,7 @@
 
 namespace base {
 template <typename T>
-struct DefaultLazyInstanceTraits;
+struct LazyInstanceTraitsBase;
 }
 
 namespace metrics {
@@ -86,7 +86,7 @@ class LeakDetector {
   void RemoveObserver(Observer* observer);
 
  private:
-  friend base::DefaultLazyInstanceTraits<LeakDetector>;
+  friend base::LazyInstanceTraitsBase<LeakDetector>;
   FRIEND_TEST_ALL_PREFIXES(LeakDetectorTest, NotifyObservers);
 
   // Keep these private, as this class is meant to be initialized only through

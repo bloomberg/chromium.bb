@@ -57,7 +57,7 @@
 namespace content {
 namespace {
 
-static base::LazyInstance<scoped_refptr<ThreadSafeSender> >
+static base::LazyInstance<scoped_refptr<ThreadSafeSender>>::DestructorAtExit
     g_thread_safe_sender = LAZY_INSTANCE_INITIALIZER;
 
 bool GpuProcessLogMessageHandler(int severity,

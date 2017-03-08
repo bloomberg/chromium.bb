@@ -181,8 +181,8 @@ void StreamsPrivateAbortFunction::OnClose() {
   Respond(NoArguments());
 }
 
-static base::LazyInstance<BrowserContextKeyedAPIFactory<StreamsPrivateAPI> >
-    g_factory = LAZY_INSTANCE_INITIALIZER;
+static base::LazyInstance<BrowserContextKeyedAPIFactory<StreamsPrivateAPI>>::
+    DestructorAtExit g_factory = LAZY_INSTANCE_INITIALIZER;
 
 // static
 BrowserContextKeyedAPIFactory<StreamsPrivateAPI>*

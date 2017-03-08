@@ -306,11 +306,11 @@ namespace {
 
 static int g_request_count = 0;
 
-base::LazyInstance<base::TimeTicks> g_last_request_time =
+base::LazyInstance<base::TimeTicks>::DestructorAtExit g_last_request_time =
     LAZY_INSTANCE_INITIALIZER;
 
-base::LazyInstance<base::ThreadChecker> g_single_thread_checker =
-    LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<base::ThreadChecker>::DestructorAtExit
+    g_single_thread_checker = LAZY_INSTANCE_INITIALIZER;
 
 void LogRequestStartHistograms() {
   // Make sure we only ever call this from one thread, so that we don't have to

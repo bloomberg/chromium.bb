@@ -149,7 +149,7 @@ class TestLogCollector {
   DISALLOW_COPY_AND_ASSIGN(TestLogCollector);
 };
 
-base::LazyInstance<TestLogCollector> g_test_log_collector =
+base::LazyInstance<TestLogCollector>::DestructorAtExit g_test_log_collector =
     LAZY_INSTANCE_INITIALIZER;
 
 // TestLogCollector::EventListener implementation

@@ -170,7 +170,8 @@ const char KioskAppManager::kCrxCacheDir[] = "kiosk/crx";
 const char KioskAppManager::kCrxUnpackDir[] = "kiosk_unpack";
 
 // static
-static base::LazyInstance<KioskAppManager> instance = LAZY_INSTANCE_INITIALIZER;
+static base::LazyInstance<KioskAppManager>::DestructorAtExit instance =
+    LAZY_INSTANCE_INITIALIZER;
 KioskAppManager* KioskAppManager::Get() {
   return instance.Pointer();
 }

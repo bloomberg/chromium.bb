@@ -40,7 +40,7 @@ class MTPDeviceMapService {
   void RevokeMTPFileSystem(const std::string& filesystem_id);
 
  private:
-  friend struct base::DefaultLazyInstanceTraits<MTPDeviceMapService>;
+  friend struct base::LazyInstanceTraitsBase<MTPDeviceMapService>;
 
   // Adds the MTP device delegate to the map service. |device_location|
   // specifies the mount location of the MTP device.

@@ -92,8 +92,8 @@ class SuspendedProcessWatcher : public content::RenderProcessHostObserver {
   std::vector<int /* RenderProcessHost id */> suspended_processes_;
 };
 
-base::LazyInstance<SuspendedProcessWatcher> g_suspended_processes_watcher =
-    LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<SuspendedProcessWatcher>::DestructorAtExit
+    g_suspended_processes_watcher = LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 

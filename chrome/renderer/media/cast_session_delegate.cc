@@ -34,7 +34,7 @@ using media::cast::CastEnvironment;
 using media::cast::CastSender;
 using media::cast::FrameSenderConfig;
 
-static base::LazyInstance<CastThreads> g_cast_threads =
+static base::LazyInstance<CastThreads>::DestructorAtExit g_cast_threads =
     LAZY_INSTANCE_INITIALIZER;
 
 CastSessionDelegateBase::CastSessionDelegateBase()

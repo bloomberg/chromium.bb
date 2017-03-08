@@ -12,8 +12,8 @@ namespace extensions {
 
 namespace {
 
-base::LazyInstance<RendererExtensionRegistry> g_renderer_extension_registry =
-    LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<RendererExtensionRegistry>::DestructorAtExit
+    g_renderer_extension_registry = LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 

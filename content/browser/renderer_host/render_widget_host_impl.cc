@@ -127,8 +127,8 @@ bool g_check_for_pending_resize_ack = true;
 using RenderWidgetHostID = std::pair<int32_t, int32_t>;
 using RoutingIDWidgetMap =
     base::hash_map<RenderWidgetHostID, RenderWidgetHostImpl*>;
-base::LazyInstance<RoutingIDWidgetMap> g_routing_id_widget_map =
-    LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<RoutingIDWidgetMap>::DestructorAtExit
+    g_routing_id_widget_map = LAZY_INSTANCE_INITIALIZER;
 
 // Implements the RenderWidgetHostIterator interface. It keeps a list of
 // RenderWidgetHosts, and makes sure it returns a live RenderWidgetHost at each

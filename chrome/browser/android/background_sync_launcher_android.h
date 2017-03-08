@@ -31,7 +31,7 @@ class BackgroundSyncLauncherAndroid {
   static void SetPlayServicesVersionCheckDisabledForTests(bool disabled);
 
  private:
-  friend struct base::DefaultLazyInstanceTraits<BackgroundSyncLauncherAndroid>;
+  friend struct base::LazyInstanceTraitsBase<BackgroundSyncLauncherAndroid>;
 
   // Constructor and destructor marked private to enforce singleton
   BackgroundSyncLauncherAndroid();

@@ -18,9 +18,9 @@
 
 namespace extensions {
 
-static base::LazyInstance<
-    BrowserContextKeyedAPIFactory<ApiResourceManager<ResumableUDPSocket> > >
-    g_factory = LAZY_INSTANCE_INITIALIZER;
+static base::LazyInstance<BrowserContextKeyedAPIFactory<
+    ApiResourceManager<ResumableUDPSocket>>>::DestructorAtExit g_factory =
+    LAZY_INSTANCE_INITIALIZER;
 
 // static
 template <>

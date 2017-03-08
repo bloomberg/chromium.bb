@@ -87,8 +87,8 @@ void SignedInDevicesChangeObserver::OnDeviceInfoChange() {
 }
 
 static base::LazyInstance<
-    BrowserContextKeyedAPIFactory<SignedInDevicesManager> > g_factory =
-    LAZY_INSTANCE_INITIALIZER;
+    BrowserContextKeyedAPIFactory<SignedInDevicesManager>>::DestructorAtExit
+    g_factory = LAZY_INSTANCE_INITIALIZER;
 
 // static
 BrowserContextKeyedAPIFactory<SignedInDevicesManager>*

@@ -106,7 +106,7 @@ class TaskManagerImpl :
   static void OnMultipleBytesReadUI(std::vector<BytesReadParam>* params);
 
  private:
-  friend struct base::DefaultLazyInstanceTraits<TaskManagerImpl>;
+  friend struct base::LazyInstanceTraitsBase<TaskManagerImpl>;
 
   TaskManagerImpl();
 

@@ -36,8 +36,8 @@ namespace wap = api::webrtc_audio_private;
 
 using api::webrtc_audio_private::RequestInfo;
 
-static base::LazyInstance<
-    BrowserContextKeyedAPIFactory<WebrtcAudioPrivateEventService> > g_factory =
+static base::LazyInstance<BrowserContextKeyedAPIFactory<
+    WebrtcAudioPrivateEventService>>::DestructorAtExit g_factory =
     LAZY_INSTANCE_INITIALIZER;
 
 WebrtcAudioPrivateEventService::WebrtcAudioPrivateEventService(

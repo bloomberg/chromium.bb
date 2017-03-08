@@ -264,10 +264,11 @@ namespace content {
 //-----------------------------------------------------------------------------
 
 typedef std::map<blink::WebView*, RenderViewImpl*> ViewMap;
-static base::LazyInstance<ViewMap> g_view_map = LAZY_INSTANCE_INITIALIZER;
-typedef std::map<int32_t, RenderViewImpl*> RoutingIDViewMap;
-static base::LazyInstance<RoutingIDViewMap> g_routing_id_view_map =
+static base::LazyInstance<ViewMap>::DestructorAtExit g_view_map =
     LAZY_INSTANCE_INITIALIZER;
+typedef std::map<int32_t, RenderViewImpl*> RoutingIDViewMap;
+static base::LazyInstance<RoutingIDViewMap>::DestructorAtExit
+    g_routing_id_view_map = LAZY_INSTANCE_INITIALIZER;
 
 // Time, in seconds, we delay before sending content state changes (such as form
 // state and scroll position) to the browser. We delay sending changes to avoid

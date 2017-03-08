@@ -78,7 +78,8 @@ class BackoffPolicy {
 // We use a LazyInstance since one of the the policy values references an
 // extern symbol, which would cause a static initializer to be generated if we
 // just declared the policy struct as a static variable.
-base::LazyInstance<BackoffPolicy> g_backoff_policy = LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<BackoffPolicy>::DestructorAtExit g_backoff_policy =
+    LAZY_INSTANCE_INITIALIZER;
 
 BackoffPolicy::BackoffPolicy() {
   policy_ = {

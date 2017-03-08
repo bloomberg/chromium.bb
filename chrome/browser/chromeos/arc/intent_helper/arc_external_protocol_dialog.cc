@@ -35,7 +35,8 @@ namespace {
 
 // TODO(yusukes|djacobo): Find a better way to detect a request loop and remove
 // the global variables.
-base::LazyInstance<GURL> g_last_url = LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<GURL>::DestructorAtExit g_last_url =
+    LAZY_INSTANCE_INITIALIZER;
 ui::PageTransition g_last_page_transition;
 
 // Shows the Chrome OS' original external protocol dialog as a fallback.

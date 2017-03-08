@@ -42,8 +42,8 @@ class BrowserSideNavigationTestUtils {
   DISALLOW_COPY_AND_ASSIGN(BrowserSideNavigationTestUtils);
 };
 
-base::LazyInstance<std::unique_ptr<BrowserSideNavigationTestUtils>>
-    browser_side_navigation_test_utils;
+base::LazyInstance<std::unique_ptr<BrowserSideNavigationTestUtils>>::
+    DestructorAtExit browser_side_navigation_test_utils;
 
 }  // namespace
 

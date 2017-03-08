@@ -53,17 +53,17 @@ class RenderFrameObserverTracker {
  private:
   const RenderFrame* render_frame_;
 
-  static base::LazyInstance<
-      std::map<const RenderFrame*, RenderFrameObserverTracker<T>*>>
-      render_frame_map_;
+  static typename base::LazyInstance<
+      std::map<const RenderFrame*, RenderFrameObserverTracker<T>*>>::
+      DestructorAtExit render_frame_map_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderFrameObserverTracker<T>);
 };
 
 template <class T>
-base::LazyInstance<std::map<const RenderFrame*,
-                            RenderFrameObserverTracker<T>*>>
-    RenderFrameObserverTracker<T>::render_frame_map_ =
+typename base::LazyInstance<
+    std::map<const RenderFrame*, RenderFrameObserverTracker<T>*>>::
+    DestructorAtExit RenderFrameObserverTracker<T>::render_frame_map_ =
         LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace content

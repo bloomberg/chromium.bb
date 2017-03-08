@@ -29,7 +29,7 @@ class PrinterProviderAPIFactory : public BrowserContextKeyedServiceFactory {
   PrinterProviderAPI* GetForBrowserContext(content::BrowserContext* context);
 
  private:
-  friend struct base::DefaultLazyInstanceTraits<PrinterProviderAPIFactory>;
+  friend struct base::LazyInstanceTraitsBase<PrinterProviderAPIFactory>;
 
   PrinterProviderAPIFactory();
   ~PrinterProviderAPIFactory() override;

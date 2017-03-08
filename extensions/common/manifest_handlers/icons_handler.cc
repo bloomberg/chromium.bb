@@ -23,7 +23,7 @@ namespace extensions {
 
 namespace keys = manifest_keys;
 
-static base::LazyInstance<ExtensionIconSet> g_empty_icon_set =
+static base::LazyInstance<ExtensionIconSet>::DestructorAtExit g_empty_icon_set =
     LAZY_INSTANCE_INITIALIZER;
 
 // static

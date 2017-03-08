@@ -422,8 +422,8 @@ void WebcamPrivateResetFunction::OnResetWebcam(bool success) {
     SetError(kResetWebcamError);
 }
 
-static base::LazyInstance<BrowserContextKeyedAPIFactory<WebcamPrivateAPI>>
-    g_factory = LAZY_INSTANCE_INITIALIZER;
+static base::LazyInstance<BrowserContextKeyedAPIFactory<WebcamPrivateAPI>>::
+    DestructorAtExit g_factory = LAZY_INSTANCE_INITIALIZER;
 
 // static
 BrowserContextKeyedAPIFactory<WebcamPrivateAPI>*

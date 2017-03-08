@@ -50,7 +50,8 @@ class CpuInfoProvider : public SystemInfoProvider {
   // is true.
   api::system_cpu::CpuInfo info_;
 
-  static base::LazyInstance<scoped_refptr<CpuInfoProvider> > provider_;
+  static base::LazyInstance<scoped_refptr<CpuInfoProvider>>::DestructorAtExit
+      provider_;
   base::CPU cpu_;
 
   DISALLOW_COPY_AND_ASSIGN(CpuInfoProvider);

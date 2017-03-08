@@ -43,8 +43,9 @@ using navigation_interception::InterceptNavigationDelegate;
 
 namespace {
 
-base::LazyInstance<android_webview::AwResourceDispatcherHostDelegate>
-    g_webview_resource_dispatcher_host_delegate = LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<android_webview::AwResourceDispatcherHostDelegate>::
+    DestructorAtExit g_webview_resource_dispatcher_host_delegate =
+        LAZY_INSTANCE_INITIALIZER;
 
 void SetCacheControlFlag(
     net::URLRequest* request, int flag) {

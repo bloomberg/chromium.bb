@@ -107,7 +107,7 @@ class BackgroundTracingManagerImpl : public BackgroundTracingManager {
   base::Closure tracing_enabled_callback_for_testing_;
   base::Closure rule_triggered_callback_for_testing_;
 
-  friend struct base::DefaultLazyInstanceTraits<BackgroundTracingManagerImpl>;
+  friend struct base::LazyInstanceTraitsBase<BackgroundTracingManagerImpl>;
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundTracingManagerImpl);
 };

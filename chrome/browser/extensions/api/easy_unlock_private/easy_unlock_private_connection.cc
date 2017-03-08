@@ -10,8 +10,8 @@
 namespace extensions {
 
 static base::LazyInstance<BrowserContextKeyedAPIFactory<
-    ApiResourceManager<EasyUnlockPrivateConnection>>> g_factory =
-    LAZY_INSTANCE_INITIALIZER;
+    ApiResourceManager<EasyUnlockPrivateConnection>>>::DestructorAtExit
+    g_factory = LAZY_INSTANCE_INITIALIZER;
 
 template <>
 BrowserContextKeyedAPIFactory<ApiResourceManager<EasyUnlockPrivateConnection>>*

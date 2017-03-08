@@ -425,7 +425,8 @@ namespace {
 
 // Cached version of the locale so we can return the locale on the I/O
 // thread.
-base::LazyInstance<std::string> g_io_thread_application_locale;
+base::LazyInstance<std::string>::DestructorAtExit
+    g_io_thread_application_locale = LAZY_INSTANCE_INITIALIZER;
 
 const storage::QuotaSettings* g_default_quota_settings;
 

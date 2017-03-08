@@ -98,7 +98,7 @@ class URLMatcherConditionFactoryMethods {
   DISALLOW_COPY_AND_ASSIGN(URLMatcherConditionFactoryMethods);
 };
 
-static base::LazyInstance<URLMatcherConditionFactoryMethods>
+static base::LazyInstance<URLMatcherConditionFactoryMethods>::DestructorAtExit
     g_url_matcher_condition_factory_methods = LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace

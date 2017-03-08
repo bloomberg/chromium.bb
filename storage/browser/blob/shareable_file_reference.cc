@@ -55,7 +55,8 @@ class ShareableFileMap : public base::NonThreadSafe {
   DISALLOW_COPY_AND_ASSIGN(ShareableFileMap);
 };
 
-base::LazyInstance<ShareableFileMap> g_file_map = LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<ShareableFileMap>::DestructorAtExit g_file_map =
+    LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 

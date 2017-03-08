@@ -15,8 +15,8 @@
 
 namespace {
 
-base::LazyInstance<base::android::ScopedJavaGlobalRef<jobject> >
-    g_message_handler_obj = LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<base::android::ScopedJavaGlobalRef<jobject>>::
+    DestructorAtExit g_message_handler_obj = LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 

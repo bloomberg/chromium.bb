@@ -94,7 +94,7 @@ class ChildProcessSurfaceManager : public gpu::ScopedSurfaceRequestConduit,
   }
 
  private:
-  friend struct base::DefaultLazyInstanceTraits<ChildProcessSurfaceManager>;
+  friend struct base::LazyInstanceTraitsBase<ChildProcessSurfaceManager>;
   // The instance of org.chromium.content.app.ChildProcessServiceImpl.
   base::android::ScopedJavaGlobalRef<jobject> service_impl_;
 

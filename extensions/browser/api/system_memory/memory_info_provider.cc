@@ -11,7 +11,7 @@ namespace extensions {
 using api::system_memory::MemoryInfo;
 
 // Static member intialization.
-base::LazyInstance<scoped_refptr<MemoryInfoProvider> >
+base::LazyInstance<scoped_refptr<MemoryInfoProvider>>::DestructorAtExit
     MemoryInfoProvider::provider_ = LAZY_INSTANCE_INITIALIZER;
 
 MemoryInfoProvider::MemoryInfoProvider() {

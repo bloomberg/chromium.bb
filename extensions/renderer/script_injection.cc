@@ -33,7 +33,7 @@ namespace extensions {
 namespace {
 
 using IsolatedWorldMap = std::map<std::string, int>;
-base::LazyInstance<IsolatedWorldMap> g_isolated_worlds =
+base::LazyInstance<IsolatedWorldMap>::DestructorAtExit g_isolated_worlds =
     LAZY_INSTANCE_INITIALIZER;
 
 const int64_t kInvalidRequestId = -1;

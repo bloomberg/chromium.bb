@@ -32,8 +32,8 @@ ContentCapabilitiesInfo::ContentCapabilitiesInfo() {
 ContentCapabilitiesInfo::~ContentCapabilitiesInfo() {
 }
 
-static base::LazyInstance<ContentCapabilitiesInfo>
-g_empty_content_capabilities_info = LAZY_INSTANCE_INITIALIZER;
+static base::LazyInstance<ContentCapabilitiesInfo>::DestructorAtExit
+    g_empty_content_capabilities_info = LAZY_INSTANCE_INITIALIZER;
 
 // static
 const ContentCapabilitiesInfo& ContentCapabilitiesInfo::Get(

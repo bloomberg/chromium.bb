@@ -16,8 +16,8 @@ namespace media_router {
 
 namespace {
 
-base::LazyInstance<OffscreenPresentationManagerFactory> service_factory =
-    LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<OffscreenPresentationManagerFactory>::DestructorAtExit
+    service_factory = LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 

@@ -46,7 +46,7 @@
 #include "ui/gfx/x/x11_connection.h"  // nogncheck
 #endif
 
-base::LazyInstance<base::TestDiscardableMemoryAllocator>
+base::LazyInstance<base::TestDiscardableMemoryAllocator>::DestructorAtExit
     g_discardable_memory_allocator = LAZY_INSTANCE_INITIALIZER;
 
 int main(int argc, char** argv) {

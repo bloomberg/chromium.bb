@@ -6,7 +6,8 @@
 
 namespace chromecast {
 namespace {
-base::LazyInstance<CastVSyncSettings> g_instance = LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<CastVSyncSettings>::DestructorAtExit g_instance =
+    LAZY_INSTANCE_INITIALIZER;
 }  // namespace
 
 // static

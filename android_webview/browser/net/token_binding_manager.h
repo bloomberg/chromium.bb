@@ -56,7 +56,7 @@ class TokenBindingManager {
   void DeleteAllKeys(DeletionCompleteCallback callback);
 
  private:
-  friend struct base::DefaultLazyInstanceTraits<TokenBindingManager>;
+  friend struct base::LazyInstanceTraitsBase<TokenBindingManager>;
 
   TokenBindingManager();
   ~TokenBindingManager() {}

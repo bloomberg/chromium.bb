@@ -29,7 +29,7 @@ struct CurrentAppNameWithLock {
   std::string app_name;
 };
 
-base::LazyInstance<CurrentAppNameWithLock> g_current_app =
+base::LazyInstance<CurrentAppNameWithLock>::DestructorAtExit g_current_app =
     LAZY_INSTANCE_INITIALIZER;
 
 std::string GetAppName() {

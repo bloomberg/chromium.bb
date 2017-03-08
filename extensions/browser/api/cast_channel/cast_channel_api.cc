@@ -131,8 +131,9 @@ void CastChannelAPI::SendEvent(const std::string& extension_id,
   }
 }
 
-static base::LazyInstance<BrowserContextKeyedAPIFactory<CastChannelAPI> >
-    g_factory = LAZY_INSTANCE_INITIALIZER;
+static base::LazyInstance<
+    BrowserContextKeyedAPIFactory<CastChannelAPI>>::DestructorAtExit g_factory =
+    LAZY_INSTANCE_INITIALIZER;
 
 // static
 BrowserContextKeyedAPIFactory<CastChannelAPI>*

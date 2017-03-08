@@ -48,11 +48,12 @@ typedef std::unordered_set<std::string> StringSet;
 // A set of HTTPS headers that are allowed to be collected. Contains both
 // request and response headers. All entries in this list should be lower-case
 // to support case-insensitive comparison.
-struct WhitelistedHttpsHeadersTraits :
-    base::DefaultLazyInstanceTraits<StringSet> {
+struct WhitelistedHttpsHeadersTraits
+    : base::internal::DestructorAtExitLazyInstanceTraits<StringSet> {
   static StringSet* New(void* instance) {
-    StringSet* headers = base::DefaultLazyInstanceTraits<StringSet>::New(
-        instance);
+    StringSet* headers =
+        base::internal::DestructorAtExitLazyInstanceTraits<StringSet>::New(
+            instance);
     headers->insert({"google-creative-id", "google-lineitem-id", "referer",
         "content-type", "content-length", "date", "server", "cache-control",
         "pragma", "expires"});
@@ -144,14 +145,14 @@ class ThreatDetailsFactoryImpl : public ThreatDetailsFactory {
   }
 
  private:
-  friend struct base::DefaultLazyInstanceTraits<ThreatDetailsFactoryImpl>;
+  friend struct base::LazyInstanceTraitsBase<ThreatDetailsFactoryImpl>;
 
   ThreatDetailsFactoryImpl() {}
 
   DISALLOW_COPY_AND_ASSIGN(ThreatDetailsFactoryImpl);
 };
 
-static base::LazyInstance<ThreatDetailsFactoryImpl>
+static base::LazyInstance<ThreatDetailsFactoryImpl>::DestructorAtExit
     g_threat_details_factory_impl = LAZY_INSTANCE_INITIALIZER;
 
 // Create a ThreatDetails for the given tab.

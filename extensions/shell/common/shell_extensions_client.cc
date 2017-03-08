@@ -64,7 +64,7 @@ class ShellPermissionMessageProvider : public PermissionMessageProvider {
   DISALLOW_COPY_AND_ASSIGN(ShellPermissionMessageProvider);
 };
 
-base::LazyInstance<ShellPermissionMessageProvider>
+base::LazyInstance<ShellPermissionMessageProvider>::DestructorAtExit
     g_permission_message_provider = LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace

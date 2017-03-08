@@ -18,7 +18,7 @@ namespace content {
 
 namespace {
 
-base::LazyInstance<JavaBridgeThread> g_background_thread =
+base::LazyInstance<JavaBridgeThread>::DestructorAtExit g_background_thread =
     LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace

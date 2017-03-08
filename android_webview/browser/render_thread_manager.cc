@@ -88,7 +88,7 @@ void RequestInvokeGLTracker::SetQueuedFunctorOnUi(RenderThreadManager* state) {
 
 namespace {
 
-base::LazyInstance<internal::RequestInvokeGLTracker>
+base::LazyInstance<internal::RequestInvokeGLTracker>::DestructorAtExit
     g_request_invoke_gl_tracker = LAZY_INSTANCE_INITIALIZER;
 }
 

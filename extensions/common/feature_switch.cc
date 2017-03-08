@@ -73,7 +73,7 @@ class CommonSwitches {
   FeatureSwitch native_crx_bindings;
 };
 
-base::LazyInstance<CommonSwitches> g_common_switches =
+base::LazyInstance<CommonSwitches>::DestructorAtExit g_common_switches =
     LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace

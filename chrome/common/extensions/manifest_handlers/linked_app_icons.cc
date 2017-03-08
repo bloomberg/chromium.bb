@@ -19,8 +19,8 @@ namespace errors = manifest_errors;
 
 namespace {
 
-static base::LazyInstance<LinkedAppIcons> g_empty_linked_app_icons =
-    LAZY_INSTANCE_INITIALIZER;
+static base::LazyInstance<LinkedAppIcons>::DestructorAtExit
+    g_empty_linked_app_icons = LAZY_INSTANCE_INITIALIZER;
 
 const LinkedAppIcons& GetInfo(const Extension* extension) {
   LinkedAppIcons* info = static_cast<LinkedAppIcons*>(

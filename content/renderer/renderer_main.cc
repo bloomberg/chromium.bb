@@ -76,8 +76,8 @@ static void HandleRendererErrorTestParameters(
 }
 
 #if defined(USE_OZONE)
-base::LazyInstance<std::unique_ptr<ui::ClientNativePixmapFactory>>
-    g_pixmap_factory = LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<std::unique_ptr<ui::ClientNativePixmapFactory>>::
+    DestructorAtExit g_pixmap_factory = LAZY_INSTANCE_INITIALIZER;
 #endif
 
 }  // namespace

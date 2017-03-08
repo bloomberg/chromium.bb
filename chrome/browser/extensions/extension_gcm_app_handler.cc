@@ -29,8 +29,8 @@ namespace {
 
 const char kDummyAppId[] = "extension.guard.dummy.id";
 
-base::LazyInstance<BrowserContextKeyedAPIFactory<ExtensionGCMAppHandler> >
-    g_factory = LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<BrowserContextKeyedAPIFactory<ExtensionGCMAppHandler>>::
+    DestructorAtExit g_factory = LAZY_INSTANCE_INITIALIZER;
 
 bool IsGCMPermissionEnabled(const Extension* extension) {
   return extension->permissions_data()->HasAPIPermission(APIPermission::kGcm);

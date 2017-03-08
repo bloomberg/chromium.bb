@@ -90,7 +90,7 @@ class ACCELERATED_WIDGET_MAC_EXPORT DisplayLinkMac
   // Each display link instance consumes a non-negligible number of cycles, so
   // make all display links on the same screen share the same object.
   typedef std::map<CGDirectDisplayID, DisplayLinkMac*> DisplayMap;
-  static base::LazyInstance<DisplayMap> display_map_;
+  static base::LazyInstance<DisplayMap>::DestructorAtExit display_map_;
 };
 
 }  // ui

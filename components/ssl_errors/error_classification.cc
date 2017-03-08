@@ -114,7 +114,8 @@ bool IsWWWSubDomainMatch(const GURL& request_url,
 }
 
 // The time to use when doing build time operations in browser tests.
-base::LazyInstance<base::Time> g_testing_build_time = LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<base::Time>::DestructorAtExit g_testing_build_time =
+    LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 

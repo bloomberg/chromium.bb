@@ -48,7 +48,7 @@ class PortableDeviceMapService {
   IPortableDevice* GetPortableDevice(const base::string16& device_location);
 
  private:
-  friend struct base::DefaultLazyInstanceTraits<PortableDeviceMapService>;
+  friend struct base::LazyInstanceTraitsBase<PortableDeviceMapService>;
 
   struct PortableDeviceInfo {
     PortableDeviceInfo();  // Necessary for STL.

@@ -36,8 +36,9 @@ PluginManager::PluginManager(content::BrowserContext* context)
 PluginManager::~PluginManager() {
 }
 
-static base::LazyInstance<BrowserContextKeyedAPIFactory<PluginManager> >
-    g_factory = LAZY_INSTANCE_INITIALIZER;
+static base::LazyInstance<
+    BrowserContextKeyedAPIFactory<PluginManager>>::DestructorAtExit g_factory =
+    LAZY_INSTANCE_INITIALIZER;
 
 // static
 BrowserContextKeyedAPIFactory<PluginManager>*

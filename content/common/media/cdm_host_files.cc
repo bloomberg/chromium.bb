@@ -98,8 +98,8 @@ void GetRegisteredCdms(std::vector<base::FilePath>* cdm_adapter_paths) {
 
 // A global instance used on platforms where we have to open the files in the
 // Zygote process.
-base::LazyInstance<std::unique_ptr<CdmHostFiles>> g_cdm_host_files =
-    LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<std::unique_ptr<CdmHostFiles>>::DestructorAtExit
+    g_cdm_host_files = LAZY_INSTANCE_INITIALIZER;
 #endif
 
 }  // namespace

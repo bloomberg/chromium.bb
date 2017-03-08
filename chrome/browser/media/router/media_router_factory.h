@@ -32,7 +32,7 @@ class MediaRouterFactory : public BrowserContextKeyedServiceFactory {
   void BrowserContextShutdown(content::BrowserContext* context) override;
 
  private:
-  friend struct base::DefaultLazyInstanceTraits<MediaRouterFactory>;
+  friend struct base::LazyInstanceTraitsBase<MediaRouterFactory>;
   FRIEND_TEST_ALL_PREFIXES(MediaRouterFactoryTest,
                            IncognitoBrowserContextShutdown);
 

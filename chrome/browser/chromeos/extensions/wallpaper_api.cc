@@ -92,7 +92,7 @@ class WallpaperFetcher : public net::URLFetcherDelegate {
   FetchCallback callback_;
 };
 
-base::LazyInstance<WallpaperFetcher> g_wallpaper_fetcher =
+base::LazyInstance<WallpaperFetcher>::DestructorAtExit g_wallpaper_fetcher =
     LAZY_INSTANCE_INITIALIZER;
 
 // Gets the |User| for a given |BrowserContext|. The function will only return

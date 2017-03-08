@@ -10,7 +10,7 @@
 namespace chrome_browser_net {
 
 namespace {
-base::LazyInstance<std::unique_ptr<net::ct::STHDistributor>>
+base::LazyInstance<std::unique_ptr<net::ct::STHDistributor>>::DestructorAtExit
     global_sth_distributor = LAZY_INSTANCE_INITIALIZER;
 }  // namespace
 

@@ -13,8 +13,8 @@ namespace  content {
 
 namespace {
 
-base::LazyInstance<base::ThreadLocalPointer<NotificationServiceImpl> >
-    lazy_tls_ptr = LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<base::ThreadLocalPointer<NotificationServiceImpl>>::
+    DestructorAtExit lazy_tls_ptr = LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 

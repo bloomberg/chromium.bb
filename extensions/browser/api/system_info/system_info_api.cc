@@ -224,8 +224,9 @@ void RemoveEventListener(const std::string& event_name) {
 
 }  // namespace
 
-static base::LazyInstance<BrowserContextKeyedAPIFactory<SystemInfoAPI> >
-    g_factory = LAZY_INSTANCE_INITIALIZER;
+static base::LazyInstance<
+    BrowserContextKeyedAPIFactory<SystemInfoAPI>>::DestructorAtExit g_factory =
+    LAZY_INSTANCE_INITIALIZER;
 
 // static
 BrowserContextKeyedAPIFactory<SystemInfoAPI>*

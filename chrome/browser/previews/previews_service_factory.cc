@@ -11,8 +11,8 @@
 
 namespace {
 
-base::LazyInstance<PreviewsServiceFactory> g_previews_factory =
-    LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<PreviewsServiceFactory>::DestructorAtExit
+    g_previews_factory = LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 

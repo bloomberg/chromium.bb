@@ -15,7 +15,7 @@ namespace chromecast {
 namespace android {
 
 namespace {
-base::LazyInstance<ChromecastConfigAndroid> g_instance =
+base::LazyInstance<ChromecastConfigAndroid>::DestructorAtExit g_instance =
     LAZY_INSTANCE_INITIALIZER;
 }  // namespace
 

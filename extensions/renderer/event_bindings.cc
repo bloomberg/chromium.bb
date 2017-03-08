@@ -36,7 +36,7 @@ namespace {
 typedef std::map<std::string, int> EventListenerCounts;
 
 // A map of extension IDs to listener counts for that extension.
-base::LazyInstance<std::map<std::string, EventListenerCounts>>
+base::LazyInstance<std::map<std::string, EventListenerCounts>>::DestructorAtExit
     g_listener_counts = LAZY_INSTANCE_INITIALIZER;
 
 // A map of (extension ID, event name) pairs to the filtered listener counts
@@ -46,10 +46,11 @@ base::LazyInstance<std::map<std::string, EventListenerCounts>>
 using FilteredEventListenerKey = std::pair<std::string, std::string>;
 using FilteredEventListenerCounts =
     std::map<FilteredEventListenerKey, std::unique_ptr<ValueCounter>>;
-base::LazyInstance<FilteredEventListenerCounts> g_filtered_listener_counts =
-    LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<FilteredEventListenerCounts>::DestructorAtExit
+    g_filtered_listener_counts = LAZY_INSTANCE_INITIALIZER;
 
-base::LazyInstance<EventFilter> g_event_filter = LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<EventFilter>::DestructorAtExit g_event_filter =
+    LAZY_INSTANCE_INITIALIZER;
 
 // Gets a unique string key identifier for a ScriptContext.
 // TODO(kalman): Just use pointer equality...?

@@ -29,7 +29,7 @@ class CoordinatorImpl : public Coordinator, public mojom::Coordinator {
 
  private:
   friend class CoordinatorImplTest;  // For testing
-  friend struct base::DefaultLazyInstanceTraits<CoordinatorImpl>;
+  friend struct base::LazyInstanceTraitsBase<CoordinatorImpl>;
 
   struct QueuedMemoryDumpRequest {
     QueuedMemoryDumpRequest(const base::trace_event::MemoryDumpRequestArgs args,

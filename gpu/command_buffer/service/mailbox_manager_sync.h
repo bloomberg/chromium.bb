@@ -72,7 +72,8 @@ class GPU_EXPORT MailboxManagerSync : public MailboxManager {
 
     typedef std::map<Mailbox, scoped_refptr<TextureGroup>>
         MailboxToGroupMap;
-    static base::LazyInstance<MailboxToGroupMap> mailbox_to_group_;
+    static base::LazyInstance<MailboxToGroupMap>::DestructorAtExit
+        mailbox_to_group_;
   };
 
   struct TextureGroupRef {

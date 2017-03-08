@@ -44,7 +44,7 @@ namespace {
 
 typedef std::map<content::WebContents*, WebNavigationTabObserver*>
     TabObserverMap;
-static base::LazyInstance<TabObserverMap> g_tab_observer =
+static base::LazyInstance<TabObserverMap>::DestructorAtExit g_tab_observer =
     LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
@@ -573,8 +573,8 @@ void WebNavigationAPI::Shutdown() {
   EventRouter::Get(browser_context_)->UnregisterObserver(this);
 }
 
-static base::LazyInstance<BrowserContextKeyedAPIFactory<WebNavigationAPI> >
-    g_factory = LAZY_INSTANCE_INITIALIZER;
+static base::LazyInstance<BrowserContextKeyedAPIFactory<WebNavigationAPI>>::
+    DestructorAtExit g_factory = LAZY_INSTANCE_INITIALIZER;
 
 // static
 BrowserContextKeyedAPIFactory<WebNavigationAPI>*

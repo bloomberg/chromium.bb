@@ -214,7 +214,7 @@ void DisplayLinkMac::DisplayReconfigurationCallBack(
 }
 
 // static
-base::LazyInstance<DisplayLinkMac::DisplayMap>
+base::LazyInstance<DisplayLinkMac::DisplayMap>::DestructorAtExit
     DisplayLinkMac::display_map_ = LAZY_INSTANCE_INITIALIZER;
 
 }  // ui

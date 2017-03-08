@@ -66,7 +66,7 @@ class ACCELERATED_WIDGET_MAC_EXPORT WindowResizeHelperMac {
   bool WaitForSingleTaskToRun(const base::TimeDelta& max_delay);
 
  private:
-  friend struct base::DefaultLazyInstanceTraits<WindowResizeHelperMac>;
+  friend struct base::LazyInstanceTraitsBase<WindowResizeHelperMac>;
   WindowResizeHelperMac();
   ~WindowResizeHelperMac();
 

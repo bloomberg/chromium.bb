@@ -25,7 +25,7 @@ class PrinterDetectorFactory : public BrowserContextKeyedServiceFactory {
   PrinterDetector* Get(content::BrowserContext* context);
 
  private:
-  friend struct base::DefaultLazyInstanceTraits<PrinterDetectorFactory>;
+  friend struct base::LazyInstanceTraitsBase<PrinterDetectorFactory>;
   PrinterDetectorFactory();
   ~PrinterDetectorFactory() override;
 

@@ -37,7 +37,7 @@ namespace printing {
 
 namespace {
 
-base::LazyInstance<base::FilePath> g_debug_dump_info =
+base::LazyInstance<base::FilePath>::DestructorAtExit g_debug_dump_info =
     LAZY_INSTANCE_INITIALIZER;
 
 void DebugDumpPageTask(const base::string16& doc_name,

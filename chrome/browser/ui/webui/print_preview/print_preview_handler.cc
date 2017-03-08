@@ -436,8 +436,8 @@ void PrintersToValues(const printing::PrinterList& printer_list,
   }
 }
 
-base::LazyInstance<printing::StickySettings> g_sticky_settings =
-    LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<printing::StickySettings>::DestructorAtExit
+    g_sticky_settings = LAZY_INSTANCE_INITIALIZER;
 
 printing::StickySettings* GetStickySettings() {
   return g_sticky_settings.Pointer();

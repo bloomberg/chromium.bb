@@ -16,7 +16,7 @@ class LevelDBEnv : public leveldb_env::ChromiumEnv {
   LevelDBEnv();
 
  public:
-  friend struct base::DefaultLazyInstanceTraits<LevelDBEnv>;
+  friend struct base::LazyInstanceTraitsBase<LevelDBEnv>;
 
   CONTENT_EXPORT static LevelDBEnv* Get();
 };

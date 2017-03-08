@@ -25,8 +25,8 @@ namespace SetDiscoveryFilter = bt_private::SetDiscoveryFilter;
 
 namespace extensions {
 
-static base::LazyInstance<BrowserContextKeyedAPIFactory<BluetoothPrivateAPI>>
-    g_factory = LAZY_INSTANCE_INITIALIZER;
+static base::LazyInstance<BrowserContextKeyedAPIFactory<BluetoothPrivateAPI>>::
+    DestructorAtExit g_factory = LAZY_INSTANCE_INITIALIZER;
 
 namespace {
 

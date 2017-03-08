@@ -27,7 +27,7 @@ class CupsPrintJobManagerFactory : public BrowserContextKeyedServiceFactory {
       content::BrowserContext* context) const override;
 
  private:
-  friend struct base::DefaultLazyInstanceTraits<CupsPrintJobManagerFactory>;
+  friend struct base::LazyInstanceTraitsBase<CupsPrintJobManagerFactory>;
 
   CupsPrintJobManagerFactory();
   ~CupsPrintJobManagerFactory() override;

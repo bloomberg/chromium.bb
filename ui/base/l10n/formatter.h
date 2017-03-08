@@ -106,7 +106,8 @@ class UI_BASE_EXPORT FormatterContainer {
 
 // Windows compilation requires full definition of FormatterContainer before
 // LazyInstance<FormatterContainter> may be declared.
-extern UI_BASE_EXPORT base::LazyInstance<FormatterContainer> g_container;
+extern UI_BASE_EXPORT base::LazyInstance<FormatterContainer>::DestructorAtExit
+    g_container;
 
 // For use in unit tests only.
 extern UI_BASE_EXPORT bool formatter_force_fallback;

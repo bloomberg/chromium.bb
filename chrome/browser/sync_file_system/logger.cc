@@ -14,7 +14,7 @@ namespace sync_file_system {
 namespace util {
 namespace {
 
-static base::LazyInstance<drive::EventLogger> g_logger =
+static base::LazyInstance<drive::EventLogger>::DestructorAtExit g_logger =
     LAZY_INSTANCE_INITIALIZER;
 
 const char* LogSeverityToString(logging::LogSeverity level) {

@@ -65,7 +65,7 @@ class AwCookieAccessPolicy {
                       const net::CookieOptions& options);
 
  private:
-  friend struct base::DefaultLazyInstanceTraits<AwCookieAccessPolicy>;
+  friend struct base::LazyInstanceTraitsBase<AwCookieAccessPolicy>;
 
   AwCookieAccessPolicy();
   ~AwCookieAccessPolicy();

@@ -112,7 +112,7 @@ class MimeUtil {
   bool IsSupportedMimeType(const std::string& mime_type) const;
 
  private:
-  friend struct base::DefaultLazyInstanceTraits<MimeUtil>;
+  friend struct base::LazyInstanceTraitsBase<MimeUtil>;
 
   using MimeTypes = base::hash_set<std::string>;
 

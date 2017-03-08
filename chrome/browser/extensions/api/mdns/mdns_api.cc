@@ -54,7 +54,8 @@ MDnsAPI* MDnsAPI::Get(content::BrowserContext* context) {
   return BrowserContextKeyedAPIFactory<MDnsAPI>::Get(context);
 }
 
-static base::LazyInstance<BrowserContextKeyedAPIFactory<MDnsAPI> > g_factory =
+static base::LazyInstance<
+    BrowserContextKeyedAPIFactory<MDnsAPI>>::DestructorAtExit g_factory =
     LAZY_INSTANCE_INITIALIZER;
 
 // static

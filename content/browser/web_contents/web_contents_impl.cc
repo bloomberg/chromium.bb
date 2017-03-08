@@ -176,8 +176,8 @@ const char kDotGoogleDotCom[] = ".google.com";
 const char kWebContentsAndroidKey[] = "web_contents_android";
 #endif  // OS_ANDROID
 
-base::LazyInstance<std::vector<WebContentsImpl::CreatedCallback> >
-g_created_callbacks = LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<std::vector<WebContentsImpl::CreatedCallback>>::
+    DestructorAtExit g_created_callbacks = LAZY_INSTANCE_INITIALIZER;
 
 void NotifyCacheOnIO(
     scoped_refptr<net::URLRequestContextGetter> request_context,

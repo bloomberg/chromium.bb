@@ -31,8 +31,8 @@ namespace extensions {
 
 namespace {
 
-base::LazyInstance<BrowserContextKeyedAPIFactory<SettingsOverridesAPI> >
-    g_factory = LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<BrowserContextKeyedAPIFactory<SettingsOverridesAPI>>::
+    DestructorAtExit g_factory = LAZY_INSTANCE_INITIALIZER;
 
 const char kManyStartupPagesWarning[] = "* specifies more than 1 startup URL. "
     "All but the first will be ignored.";

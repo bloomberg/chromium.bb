@@ -39,8 +39,8 @@ namespace guest_view {
 namespace {
 
 using WebContentsGuestViewMap = std::map<const WebContents*, GuestViewBase*>;
-static base::LazyInstance<WebContentsGuestViewMap> webcontents_guestview_map =
-    LAZY_INSTANCE_INITIALIZER;
+static base::LazyInstance<WebContentsGuestViewMap>::DestructorAtExit
+    webcontents_guestview_map = LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 

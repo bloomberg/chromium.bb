@@ -68,8 +68,7 @@ class AwResourceDispatcherHostDelegate
                                  IoThreadClientThrottle* pending_throttle);
 
  private:
-  friend struct base::DefaultLazyInstanceTraits<
-      AwResourceDispatcherHostDelegate>;
+  friend struct base::LazyInstanceTraitsBase<AwResourceDispatcherHostDelegate>;
   AwResourceDispatcherHostDelegate();
   ~AwResourceDispatcherHostDelegate() override;
 

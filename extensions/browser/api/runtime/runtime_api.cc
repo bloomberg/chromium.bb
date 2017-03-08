@@ -170,8 +170,9 @@ std::string GetUninstallURL(ExtensionPrefs* prefs,
 
 ///////////////////////////////////////////////////////////////////////////////
 
-static base::LazyInstance<BrowserContextKeyedAPIFactory<RuntimeAPI> >
-    g_factory = LAZY_INSTANCE_INITIALIZER;
+static base::LazyInstance<
+    BrowserContextKeyedAPIFactory<RuntimeAPI>>::DestructorAtExit g_factory =
+    LAZY_INSTANCE_INITIALIZER;
 
 // static
 BrowserContextKeyedAPIFactory<RuntimeAPI>* RuntimeAPI::GetFactoryInstance() {

@@ -32,7 +32,7 @@ class ChromecastConfigAndroid {
   }
 
  private:
-  friend struct base::DefaultLazyInstanceTraits<ChromecastConfigAndroid>;
+  friend struct base::LazyInstanceTraitsBase<ChromecastConfigAndroid>;
 
   ChromecastConfigAndroid();
   ~ChromecastConfigAndroid();

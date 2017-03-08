@@ -30,9 +30,8 @@ namespace {
 typedef std::pair<int32_t, int32_t> RenderFrameProxyHostID;
 typedef base::hash_map<RenderFrameProxyHostID, RenderFrameProxyHost*>
     RoutingIDFrameProxyMap;
-base::LazyInstance<RoutingIDFrameProxyMap> g_routing_id_frame_proxy_map =
-  LAZY_INSTANCE_INITIALIZER;
-
+base::LazyInstance<RoutingIDFrameProxyMap>::DestructorAtExit
+    g_routing_id_frame_proxy_map = LAZY_INSTANCE_INITIALIZER;
 }
 
 // static

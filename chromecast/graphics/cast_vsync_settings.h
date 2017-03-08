@@ -32,7 +32,7 @@ class CastVSyncSettings {
   void RemoveObserver(Observer* observer);
 
  private:
-  friend struct base::DefaultLazyInstanceTraits<CastVSyncSettings>;
+  friend struct base::LazyInstanceTraitsBase<CastVSyncSettings>;
 
   CastVSyncSettings();
   ~CastVSyncSettings();

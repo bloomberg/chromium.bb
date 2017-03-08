@@ -24,7 +24,7 @@ namespace {
 
 // A copy of the application locale string, which should be ready for
 // CountryName's construction.
-static base::LazyInstance<std::string> g_application_locale =
+static base::LazyInstance<std::string>::DestructorAtExit g_application_locale =
     LAZY_INSTANCE_INITIALIZER;
 
 // Returns the ICU sort key corresponding to |str| for the given |collator|.

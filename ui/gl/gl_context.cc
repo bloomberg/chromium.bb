@@ -25,10 +25,10 @@
 namespace gl {
 
 namespace {
-base::LazyInstance<base::ThreadLocalPointer<GLContext> >::Leaky
+base::LazyInstance<base::ThreadLocalPointer<GLContext>>::Leaky
     current_context_ = LAZY_INSTANCE_INITIALIZER;
 
-base::LazyInstance<base::ThreadLocalPointer<GLContext> >::Leaky
+base::LazyInstance<base::ThreadLocalPointer<GLContext>>::Leaky
     current_real_context_ = LAZY_INSTANCE_INITIALIZER;
 }  // namespace
 

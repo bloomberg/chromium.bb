@@ -133,8 +133,8 @@ void RulesRegistryService::Shutdown() {
                  scoped_refptr<WebRequestRulesRegistry>(NULL)));
 }
 
-static base::LazyInstance<BrowserContextKeyedAPIFactory<RulesRegistryService> >
-    g_factory = LAZY_INSTANCE_INITIALIZER;
+static base::LazyInstance<BrowserContextKeyedAPIFactory<RulesRegistryService>>::
+    DestructorAtExit g_factory = LAZY_INSTANCE_INITIALIZER;
 
 // static
 BrowserContextKeyedAPIFactory<RulesRegistryService>*

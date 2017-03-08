@@ -35,7 +35,7 @@ class OffscreenPresentationManagerFactory
   static OffscreenPresentationManagerFactory* GetInstanceForTest();
 
  private:
-  friend struct base::DefaultLazyInstanceTraits<
+  friend struct base::LazyInstanceTraitsBase<
       OffscreenPresentationManagerFactory>;
 
   OffscreenPresentationManagerFactory();

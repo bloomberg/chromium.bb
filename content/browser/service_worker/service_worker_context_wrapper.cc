@@ -43,7 +43,7 @@ namespace content {
 namespace {
 
 typedef std::set<std::string> HeaderNameSet;
-base::LazyInstance<HeaderNameSet> g_excluded_header_name_set =
+base::LazyInstance<HeaderNameSet>::DestructorAtExit g_excluded_header_name_set =
     LAZY_INSTANCE_INITIALIZER;
 
 void RunSoon(const base::Closure& closure) {

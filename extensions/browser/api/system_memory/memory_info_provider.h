@@ -38,7 +38,8 @@ class MemoryInfoProvider : public SystemInfoProvider {
   // is true.
   api::system_memory::MemoryInfo info_;
 
-  static base::LazyInstance<scoped_refptr<MemoryInfoProvider> > provider_;
+  static base::LazyInstance<scoped_refptr<MemoryInfoProvider>>::DestructorAtExit
+      provider_;
 
   DISALLOW_COPY_AND_ASSIGN(MemoryInfoProvider);
 };

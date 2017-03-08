@@ -20,10 +20,10 @@ namespace extensions {
 
 namespace {
 
-base::LazyInstance<WorkerThreadDispatcher> g_instance =
+base::LazyInstance<WorkerThreadDispatcher>::DestructorAtExit g_instance =
     LAZY_INSTANCE_INITIALIZER;
-base::LazyInstance<base::ThreadLocalPointer<extensions::ServiceWorkerData>>
-    g_data_tls = LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<base::ThreadLocalPointer<extensions::ServiceWorkerData>>::
+    DestructorAtExit g_data_tls = LAZY_INSTANCE_INITIALIZER;
 
 void OnResponseOnWorkerThread(int request_id,
                               bool succeeded,

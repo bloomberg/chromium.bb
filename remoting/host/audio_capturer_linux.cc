@@ -18,7 +18,7 @@ namespace remoting {
 
 namespace {
 
-base::LazyInstance<scoped_refptr<AudioPipeReader> >::Leaky
+base::LazyInstance<scoped_refptr<AudioPipeReader>>::Leaky
     g_pulseaudio_pipe_sink_reader = LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace

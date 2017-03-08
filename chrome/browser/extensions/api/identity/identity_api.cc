@@ -184,8 +184,9 @@ void IdentityAPI::Shutdown() {
   account_tracker_.Shutdown();
 }
 
-static base::LazyInstance<BrowserContextKeyedAPIFactory<IdentityAPI> >
-    g_factory = LAZY_INSTANCE_INITIALIZER;
+static base::LazyInstance<
+    BrowserContextKeyedAPIFactory<IdentityAPI>>::DestructorAtExit g_factory =
+    LAZY_INSTANCE_INITIALIZER;
 
 // static
 BrowserContextKeyedAPIFactory<IdentityAPI>* IdentityAPI::GetFactoryInstance() {

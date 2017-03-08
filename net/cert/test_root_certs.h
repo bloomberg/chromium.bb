@@ -94,7 +94,7 @@ class NET_EXPORT TestRootCerts {
 #endif
 
  private:
-  friend struct base::DefaultLazyInstanceTraits<TestRootCerts>;
+  friend struct base::LazyInstanceTraitsBase<TestRootCerts>;
 
   TestRootCerts();
   ~TestRootCerts();

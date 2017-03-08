@@ -32,8 +32,9 @@ using activity_log_private::ActivityResultSet;
 using activity_log_private::ExtensionActivity;
 using activity_log_private::Filter;
 
-static base::LazyInstance<BrowserContextKeyedAPIFactory<ActivityLogAPI> >
-    g_factory = LAZY_INSTANCE_INITIALIZER;
+static base::LazyInstance<
+    BrowserContextKeyedAPIFactory<ActivityLogAPI>>::DestructorAtExit g_factory =
+    LAZY_INSTANCE_INITIALIZER;
 
 // static
 BrowserContextKeyedAPIFactory<ActivityLogAPI>*

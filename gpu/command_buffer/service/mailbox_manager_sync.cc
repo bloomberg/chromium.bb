@@ -25,14 +25,15 @@ namespace gles2 {
 
 namespace {
 
-base::LazyInstance<base::Lock> g_lock = LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<base::Lock>::DestructorAtExit g_lock =
+    LAZY_INSTANCE_INITIALIZER;
 
 #if !defined(OS_MACOSX)
 typedef std::map<SyncToken, std::unique_ptr<gl::GLFence>> SyncTokenToFenceMap;
-base::LazyInstance<SyncTokenToFenceMap> g_sync_point_to_fence =
-    LAZY_INSTANCE_INITIALIZER;
-base::LazyInstance<std::queue<SyncTokenToFenceMap::iterator>> g_sync_points =
-    LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<SyncTokenToFenceMap>::DestructorAtExit
+    g_sync_point_to_fence = LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<std::queue<SyncTokenToFenceMap::iterator>>::DestructorAtExit
+    g_sync_points = LAZY_INSTANCE_INITIALIZER;
 #endif
 
 void CreateFenceLocked(const SyncToken& sync_token) {
@@ -77,8 +78,8 @@ static const unsigned kNewTextureVersion = 1;
 
 }  // anonymous namespace
 
-base::LazyInstance<MailboxManagerSync::TextureGroup::MailboxToGroupMap>
-    MailboxManagerSync::TextureGroup::mailbox_to_group_ =
+base::LazyInstance<MailboxManagerSync::TextureGroup::MailboxToGroupMap>::
+    DestructorAtExit MailboxManagerSync::TextureGroup::mailbox_to_group_ =
         LAZY_INSTANCE_INITIALIZER;
 
 // static

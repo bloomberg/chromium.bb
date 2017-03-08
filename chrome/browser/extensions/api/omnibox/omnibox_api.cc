@@ -194,8 +194,9 @@ void OmniboxAPI::Shutdown() {
 OmniboxAPI::~OmniboxAPI() {
 }
 
-static base::LazyInstance<BrowserContextKeyedAPIFactory<OmniboxAPI> >
-    g_factory = LAZY_INSTANCE_INITIALIZER;
+static base::LazyInstance<
+    BrowserContextKeyedAPIFactory<OmniboxAPI>>::DestructorAtExit g_factory =
+    LAZY_INSTANCE_INITIALIZER;
 
 // static
 BrowserContextKeyedAPIFactory<OmniboxAPI>* OmniboxAPI::GetFactoryInstance() {

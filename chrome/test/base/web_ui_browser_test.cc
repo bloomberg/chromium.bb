@@ -50,7 +50,7 @@ using content::WebUIMessageHandler;
 
 namespace {
 
-base::LazyInstance<std::vector<std::string> > error_messages_ =
+base::LazyInstance<std::vector<std::string>>::DestructorAtExit error_messages_ =
     LAZY_INSTANCE_INITIALIZER;
 
 // Intercepts all log messages.
@@ -365,7 +365,7 @@ class MockWebUIProvider
   DISALLOW_COPY_AND_ASSIGN(MockWebUIProvider);
 };
 
-base::LazyInstance<MockWebUIProvider> mock_provider_ =
+base::LazyInstance<MockWebUIProvider>::DestructorAtExit mock_provider_ =
     LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace

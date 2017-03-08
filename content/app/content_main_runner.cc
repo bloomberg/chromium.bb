@@ -226,16 +226,16 @@ void InitializeV8IfNeeded(
 }  // namespace
 
 #if !defined(CHROME_MULTIPLE_DLL_CHILD)
-base::LazyInstance<ContentBrowserClient>
+base::LazyInstance<ContentBrowserClient>::DestructorAtExit
     g_empty_content_browser_client = LAZY_INSTANCE_INITIALIZER;
 #endif  //  !CHROME_MULTIPLE_DLL_CHILD
 
 #if !defined(CHROME_MULTIPLE_DLL_BROWSER)
-base::LazyInstance<ContentGpuClient>
+base::LazyInstance<ContentGpuClient>::DestructorAtExit
     g_empty_content_gpu_client = LAZY_INSTANCE_INITIALIZER;
-base::LazyInstance<ContentRendererClient>
+base::LazyInstance<ContentRendererClient>::DestructorAtExit
     g_empty_content_renderer_client = LAZY_INSTANCE_INITIALIZER;
-base::LazyInstance<ContentUtilityClient>
+base::LazyInstance<ContentUtilityClient>::DestructorAtExit
     g_empty_content_utility_client = LAZY_INSTANCE_INITIALIZER;
 #endif  // !CHROME_MULTIPLE_DLL_BROWSER
 

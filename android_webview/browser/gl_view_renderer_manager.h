@@ -41,7 +41,7 @@ class GLViewRendererManager {
   RendererType GetMostRecentlyDrawn() const;
 
  private:
-  friend struct base::DefaultLazyInstanceTraits<GLViewRendererManager>;
+  friend struct base::LazyInstanceTraitsBase<GLViewRendererManager>;
 
   GLViewRendererManager();
   ~GLViewRendererManager();

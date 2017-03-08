@@ -476,8 +476,8 @@ void CompileDownloadQueryOrderBy(
     DownloadQuery* query) {
   // TODO(benjhayden): Consider switching from LazyInstance to explicit string
   // comparisons.
-  static base::LazyInstance<SortTypeMap> sorter_types =
-    LAZY_INSTANCE_INITIALIZER;
+  static base::LazyInstance<SortTypeMap>::DestructorAtExit sorter_types =
+      LAZY_INSTANCE_INITIALIZER;
   if (sorter_types.Get().empty())
     InitSortTypeMap(sorter_types.Pointer());
 
@@ -509,8 +509,8 @@ void RunDownloadQuery(
     DownloadQuery::DownloadVector* results) {
   // TODO(benjhayden): Consider switching from LazyInstance to explicit string
   // comparisons.
-  static base::LazyInstance<FilterTypeMap> filter_types =
-    LAZY_INSTANCE_INITIALIZER;
+  static base::LazyInstance<FilterTypeMap>::DestructorAtExit filter_types =
+      LAZY_INSTANCE_INITIALIZER;
   if (filter_types.Get().empty())
     InitFilterTypeMap(filter_types.Pointer());
 

@@ -19,7 +19,7 @@ base::LazyInstance<std::string>::Leaky g_default_font_description =
     LAZY_INSTANCE_INITIALIZER;
 
 // The default instance of gfx::FontListImpl.
-base::LazyInstance<scoped_refptr<gfx::FontListImpl> >::Leaky g_default_impl =
+base::LazyInstance<scoped_refptr<gfx::FontListImpl>>::Leaky g_default_impl =
     LAZY_INSTANCE_INITIALIZER;
 bool g_default_impl_initialized = false;
 

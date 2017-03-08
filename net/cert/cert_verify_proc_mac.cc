@@ -616,7 +616,7 @@ class OSXKnownRootHelper {
   }
 
  private:
-  friend struct base::DefaultLazyInstanceTraits<OSXKnownRootHelper>;
+  friend struct base::LazyInstanceTraitsBase<OSXKnownRootHelper>;
 
   OSXKnownRootHelper() {
     CFArrayRef cert_array = NULL;

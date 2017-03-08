@@ -15,8 +15,8 @@
 
 namespace extensions {
 
-static base::LazyInstance<BrowserContextKeyedAPIFactory<LauncherPageAPI>>
-    g_factory = LAZY_INSTANCE_INITIALIZER;
+static base::LazyInstance<BrowserContextKeyedAPIFactory<LauncherPageAPI>>::
+    DestructorAtExit g_factory = LAZY_INSTANCE_INITIALIZER;
 
 // static
 BrowserContextKeyedAPIFactory<LauncherPageAPI>*

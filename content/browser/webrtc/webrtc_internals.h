@@ -123,7 +123,7 @@ class CONTENT_EXPORT WebRTCInternals : public RenderProcessHostObserver,
   ~WebRTCInternals() override;
 
  private:
-  friend struct base::DefaultLazyInstanceTraits<WebRTCInternals>;
+  friend struct base::LazyInstanceTraitsBase<WebRTCInternals>;
   FRIEND_TEST_ALL_PREFIXES(WebRtcAudioDebugRecordingsBrowserTest,
                            CallWithAudioDebugRecordings);
   FRIEND_TEST_ALL_PREFIXES(WebRtcAudioDebugRecordingsBrowserTest,

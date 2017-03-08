@@ -13,9 +13,9 @@
 
 namespace extensions {
 
-static base::LazyInstance<
-    BrowserContextKeyedAPIFactory<ApiResourceManager<HidConnectionResource> > >
-    g_factory = LAZY_INSTANCE_INITIALIZER;
+static base::LazyInstance<BrowserContextKeyedAPIFactory<
+    ApiResourceManager<HidConnectionResource>>>::DestructorAtExit g_factory =
+    LAZY_INSTANCE_INITIALIZER;
 
 // static
 template <>

@@ -51,8 +51,8 @@ URLOverrides::URLOverrides() {
 URLOverrides::~URLOverrides() {
 }
 
-static base::LazyInstance<URLOverrides::URLOverrideMap> g_empty_url_overrides =
-    LAZY_INSTANCE_INITIALIZER;
+static base::LazyInstance<URLOverrides::URLOverrideMap>::DestructorAtExit
+    g_empty_url_overrides = LAZY_INSTANCE_INITIALIZER;
 
 // static
 const URLOverrides::URLOverrideMap& URLOverrides::GetChromeURLOverrides(

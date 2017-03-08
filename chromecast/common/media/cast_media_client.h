@@ -35,7 +35,7 @@ class CastMediaClient : public ::media::MediaClient {
                               int level) override;
 
  private:
-  friend struct base::DefaultLazyInstanceTraits<CastMediaClient>;
+  friend struct base::LazyInstanceTraitsBase<CastMediaClient>;
 
   CastMediaClient(::media::MediaClient* content_media_client,
                   SupportedCodecProfileLevelsMemo* supported_profiles);

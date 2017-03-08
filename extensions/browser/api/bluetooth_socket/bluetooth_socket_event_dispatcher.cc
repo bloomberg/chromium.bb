@@ -60,8 +60,8 @@ namespace api {
 
 using content::BrowserThread;
 
-static base::LazyInstance<
-    BrowserContextKeyedAPIFactory<BluetoothSocketEventDispatcher> > g_factory =
+static base::LazyInstance<BrowserContextKeyedAPIFactory<
+    BluetoothSocketEventDispatcher>>::DestructorAtExit g_factory =
     LAZY_INSTANCE_INITIALIZER;
 
 // static

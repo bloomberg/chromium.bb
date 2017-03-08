@@ -72,7 +72,7 @@ class ChromeExtensionsClient : public ExtensionsClient {
   mutable GURL webstore_base_url_;
   mutable GURL webstore_update_url_;
 
-  friend struct base::DefaultLazyInstanceTraits<ChromeExtensionsClient>;
+  friend struct base::LazyInstanceTraitsBase<ChromeExtensionsClient>;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeExtensionsClient);
 };

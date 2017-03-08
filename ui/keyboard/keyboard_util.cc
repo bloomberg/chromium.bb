@@ -43,7 +43,7 @@ void SendProcessKeyEvent(ui::EventType type,
   CHECK(!details.dispatcher_destroyed);
 }
 
-base::LazyInstance<base::Time> g_keyboard_load_time_start =
+base::LazyInstance<base::Time>::DestructorAtExit g_keyboard_load_time_start =
     LAZY_INSTANCE_INITIALIZER;
 
 bool g_accessibility_keyboard_enabled = false;

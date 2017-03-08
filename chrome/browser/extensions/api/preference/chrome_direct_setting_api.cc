@@ -76,12 +76,12 @@ class PreferenceWhitelist {
   DISALLOW_COPY_AND_ASSIGN(PreferenceWhitelist);
 };
 
-base::LazyInstance<PreferenceWhitelist> preference_whitelist =
+base::LazyInstance<PreferenceWhitelist>::DestructorAtExit preference_whitelist =
     LAZY_INSTANCE_INITIALIZER;
 
 static base::LazyInstance<
-    BrowserContextKeyedAPIFactory<ChromeDirectSettingAPI> > g_factory =
-    LAZY_INSTANCE_INITIALIZER;
+    BrowserContextKeyedAPIFactory<ChromeDirectSettingAPI>>::DestructorAtExit
+    g_factory = LAZY_INSTANCE_INITIALIZER;
 
 ChromeDirectSettingAPI::ChromeDirectSettingAPI(content::BrowserContext* context)
     : profile_(Profile::FromBrowserContext(context)) {

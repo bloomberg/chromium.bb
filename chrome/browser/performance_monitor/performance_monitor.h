@@ -32,7 +32,7 @@ class PerformanceMonitor {
   void StartGatherCycle();
 
  private:
-  friend struct base::DefaultLazyInstanceTraits<PerformanceMonitor>;
+  friend struct base::LazyInstanceTraitsBase<PerformanceMonitor>;
 
   using MetricsMap =
       std::map<base::ProcessHandle, std::unique_ptr<ProcessMetricsHistory>>;

@@ -15,7 +15,7 @@ namespace chromeos {
 
 namespace {
 
-static base::LazyInstance<PrinterDetectorFactory> g_factory =
+static base::LazyInstance<PrinterDetectorFactory>::DestructorAtExit g_factory =
     LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace

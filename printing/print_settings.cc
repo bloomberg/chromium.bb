@@ -12,7 +12,7 @@
 
 namespace printing {
 
-base::LazyInstance<std::string> g_user_agent;
+base::LazyInstance<std::string>::DestructorAtExit g_user_agent;
 
 void SetAgent(const std::string& user_agent) {
   g_user_agent.Get() = user_agent;

@@ -54,7 +54,7 @@ namespace content {
 
 namespace {
 
-base::LazyInstance<std::map<std::string, BrowserContext*>>
+base::LazyInstance<std::map<std::string, BrowserContext*>>::DestructorAtExit
     g_user_id_to_context = LAZY_INSTANCE_INITIALIZER;
 
 class ServiceUserIdHolder : public base::SupportsUserData::Data {

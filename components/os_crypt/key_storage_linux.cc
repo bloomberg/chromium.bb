@@ -39,7 +39,8 @@ struct Configuration {
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_runner;
 };
 
-base::LazyInstance<Configuration> g_config = LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<Configuration>::DestructorAtExit g_config =
+    LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 

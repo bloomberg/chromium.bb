@@ -277,8 +277,8 @@ OperationManager* OperationManager::Get(content::BrowserContext* context) {
   return BrowserContextKeyedAPIFactory<OperationManager>::Get(context);
 }
 
-static base::LazyInstance<BrowserContextKeyedAPIFactory<OperationManager> >
-    g_factory = LAZY_INSTANCE_INITIALIZER;
+static base::LazyInstance<BrowserContextKeyedAPIFactory<OperationManager>>::
+    DestructorAtExit g_factory = LAZY_INSTANCE_INITIALIZER;
 
 BrowserContextKeyedAPIFactory<OperationManager>*
 OperationManager::GetFactoryInstance() {

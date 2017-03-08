@@ -96,8 +96,8 @@ class GpuInProcessThreadHolder : public base::Thread {
   scoped_refptr<InProcessCommandBuffer::Service> gpu_thread_service_;
 };
 
-base::LazyInstance<GpuInProcessThreadHolder> g_default_service =
-    LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<GpuInProcessThreadHolder>::DestructorAtExit
+    g_default_service = LAZY_INSTANCE_INITIALIZER;
 
 class ScopedEvent {
  public:

@@ -13,7 +13,8 @@
 
 namespace {
 
-base::LazyInstance<std::string> g_overridden_locale = LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<std::string>::DestructorAtExit g_overridden_locale =
+    LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 

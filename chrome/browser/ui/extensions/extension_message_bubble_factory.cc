@@ -29,7 +29,7 @@ namespace {
 // A map of all profiles evaluated, so we can tell if it's the initial check.
 // TODO(devlin): It would be nice to coalesce all the "profiles evaluated" maps
 // that are in the different bubble controllers.
-base::LazyInstance<std::set<Profile*> > g_profiles_evaluated =
+base::LazyInstance<std::set<Profile*>>::DestructorAtExit g_profiles_evaluated =
     LAZY_INSTANCE_INITIALIZER;
 
 // This is used to turn on override whether bubbles are enabled or disabled for

@@ -80,7 +80,7 @@ class WebsiteSettingsRegistry {
  private:
   friend class ContentSettingsRegistryTest;
   friend class WebsiteSettingsRegistryTest;
-  friend struct base::DefaultLazyInstanceTraits<WebsiteSettingsRegistry>;
+  friend struct base::LazyInstanceTraitsBase<WebsiteSettingsRegistry>;
 
   WebsiteSettingsRegistry();
   ~WebsiteSettingsRegistry();

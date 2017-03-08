@@ -103,7 +103,7 @@ class TracingControllerImpl
   void RemoveTraceMessageFilterObserver(TraceMessageFilterObserver* observer);
 
  private:
-  friend struct base::DefaultLazyInstanceTraits<TracingControllerImpl>;
+  friend struct base::LazyInstanceTraitsBase<TracingControllerImpl>;
   friend class TraceMessageFilter;
 
   // The arguments and callback for an queued global memory dump request.

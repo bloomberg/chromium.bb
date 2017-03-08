@@ -57,8 +57,8 @@
 
 namespace extensions {
 static base::LazyInstance<BrowserContextKeyedAPIFactory<
-    ApiResourceManager<api::cast_channel::CastSocket>>> g_factory =
-    LAZY_INSTANCE_INITIALIZER;
+    ApiResourceManager<api::cast_channel::CastSocket>>>::DestructorAtExit
+    g_factory = LAZY_INSTANCE_INITIALIZER;
 
 // static
 template <>

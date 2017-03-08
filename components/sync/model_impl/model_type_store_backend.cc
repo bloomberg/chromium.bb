@@ -32,7 +32,7 @@ const char ModelTypeStoreBackend::kStoreInitResultHistogramName[] =
     "Sync.ModelTypeStoreInitResult";
 
 // static
-base::LazyInstance<ModelTypeStoreBackend::BackendMap>
+base::LazyInstance<ModelTypeStoreBackend::BackendMap>::DestructorAtExit
     ModelTypeStoreBackend::backend_map_ = LAZY_INSTANCE_INITIALIZER;
 
 namespace {

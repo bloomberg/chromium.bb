@@ -701,7 +701,8 @@ class VIEWS_EXPORT HWNDMessageHandler :
   // to keep a raw pointer to the HWNDMessageHandler instance as we track the
   // window destruction and ensure that the map is cleaned up.
   using FullscreenWindowMonitorMap = std::map<HMONITOR, HWNDMessageHandler*>;
-  static base::LazyInstance<FullscreenWindowMonitorMap> fullscreen_monitor_map_;
+  static base::LazyInstance<FullscreenWindowMonitorMap>::DestructorAtExit
+      fullscreen_monitor_map_;
 
   // The WeakPtrFactories below must occur last in the class definition so they
   // get destroyed last.

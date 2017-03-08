@@ -108,8 +108,8 @@ GaiaAuthExtensionLoader* GaiaAuthExtensionLoader::Get(BrowserContext* context) {
 }
 
 static base::LazyInstance<
-    BrowserContextKeyedAPIFactory<GaiaAuthExtensionLoader> > g_factory =
-    LAZY_INSTANCE_INITIALIZER;
+    BrowserContextKeyedAPIFactory<GaiaAuthExtensionLoader>>::DestructorAtExit
+    g_factory = LAZY_INSTANCE_INITIALIZER;
 
 // static
 BrowserContextKeyedAPIFactory<GaiaAuthExtensionLoader>*

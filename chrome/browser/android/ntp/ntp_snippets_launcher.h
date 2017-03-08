@@ -25,7 +25,7 @@ class NTPSnippetsLauncher
   bool Unschedule() override;
 
  private:
-  friend struct base::DefaultLazyInstanceTraits<NTPSnippetsLauncher>;
+  friend struct base::LazyInstanceTraitsBase<NTPSnippetsLauncher>;
 
   // Constructor and destructor marked private to enforce singleton.
   NTPSnippetsLauncher();

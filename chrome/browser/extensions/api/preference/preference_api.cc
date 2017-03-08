@@ -517,8 +517,9 @@ void PreferenceAPI::Shutdown() {
   content_settings_store()->RemoveObserver(this);
 }
 
-static base::LazyInstance<BrowserContextKeyedAPIFactory<PreferenceAPI> >
-    g_factory = LAZY_INSTANCE_INITIALIZER;
+static base::LazyInstance<
+    BrowserContextKeyedAPIFactory<PreferenceAPI>>::DestructorAtExit g_factory =
+    LAZY_INSTANCE_INITIALIZER;
 
 // static
 BrowserContextKeyedAPIFactory<PreferenceAPI>*

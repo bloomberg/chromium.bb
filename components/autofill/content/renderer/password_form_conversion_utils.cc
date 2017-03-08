@@ -105,7 +105,7 @@ re2::RE2* CreateMatcher(void* instance, const char* pattern) {
 }
 
 struct LoginAndSignupLazyInstanceTraits
-    : public base::DefaultLazyInstanceTraits<re2::RE2> {
+    : public base::internal::DestructorAtExitLazyInstanceTraits<re2::RE2> {
   static re2::RE2* New(void* instance) {
     return CreateMatcher(instance, kLoginAndSignupRegex);
   }
@@ -308,7 +308,7 @@ const char kPasswordSiteUrlRegex[] =
     "passwords(?:-[a-z-]+\\.corp)?\\.google\\.com";
 
 struct PasswordSiteUrlLazyInstanceTraits
-    : public base::DefaultLazyInstanceTraits<re2::RE2> {
+    : public base::internal::DestructorAtExitLazyInstanceTraits<re2::RE2> {
   static re2::RE2* New(void* instance) {
     return CreateMatcher(instance, kPasswordSiteUrlRegex);
   }

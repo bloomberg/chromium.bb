@@ -27,7 +27,7 @@ class ValidationRulesStorageFactory {
   static std::unique_ptr<::i18n::addressinput::Storage> CreateStorage();
 
  private:
-  friend struct base::DefaultLazyInstanceTraits<ValidationRulesStorageFactory>;
+  friend struct base::LazyInstanceTraitsBase<ValidationRulesStorageFactory>;
 
   ValidationRulesStorageFactory();
   ~ValidationRulesStorageFactory();

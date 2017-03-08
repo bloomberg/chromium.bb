@@ -171,7 +171,7 @@ void HandleRequestOnIOThread(
                                        send_response_func)));
 }
 
-base::LazyInstance<base::ThreadLocalPointer<HttpServer> >
+base::LazyInstance<base::ThreadLocalPointer<HttpServer>>::DestructorAtExit
     lazy_tls_server = LAZY_INSTANCE_INITIALIZER;
 
 void StopServerOnIOThread() {

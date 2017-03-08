@@ -20,7 +20,7 @@ namespace content_settings {
 
 namespace {
 
-base::LazyInstance<ContentSettingsRegistry> g_instance =
+base::LazyInstance<ContentSettingsRegistry>::DestructorAtExit g_instance =
     LAZY_INSTANCE_INITIALIZER;
 
 // TODO(raymes): These overloaded functions make the registration code clearer.

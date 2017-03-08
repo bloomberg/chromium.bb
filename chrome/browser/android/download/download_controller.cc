@@ -45,7 +45,7 @@ using content::WebContents;
 
 namespace {
 // Guards download_controller_
-base::LazyInstance<base::Lock> g_download_controller_lock_;
+base::LazyInstance<base::Lock>::DestructorAtExit g_download_controller_lock_;
 
 WebContents* GetWebContents(int render_process_id, int render_view_id) {
   content::RenderViewHost* render_view_host =

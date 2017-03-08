@@ -46,7 +46,7 @@ class ContentSettingsRegistry {
 
  private:
   friend class ContentSettingsRegistryTest;
-  friend struct base::DefaultLazyInstanceTraits<ContentSettingsRegistry>;
+  friend struct base::LazyInstanceTraitsBase<ContentSettingsRegistry>;
 
   ContentSettingsRegistry();
   ContentSettingsRegistry(WebsiteSettingsRegistry* website_settings_registry);

@@ -59,7 +59,7 @@ typedef std::vector<scoped_refptr<UsbDevice> > UsbDevices;
 typedef std::set<scoped_refptr<UsbDevice> > UsbDeviceSet;
 
 // Stores android wrappers around claimed usb devices on caller thread.
-base::LazyInstance<std::vector<AndroidUsbDevice*> >::Leaky g_devices =
+base::LazyInstance<std::vector<AndroidUsbDevice*>>::Leaky g_devices =
     LAZY_INSTANCE_INITIALIZER;
 
 bool IsAndroidInterface(const UsbInterfaceDescriptor& interface) {

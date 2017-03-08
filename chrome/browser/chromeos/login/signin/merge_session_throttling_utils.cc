@@ -41,14 +41,15 @@ class ProfileSet : public base::NonThreadSafe, public std::set<Profile*> {
   static ProfileSet* Get();
 
  private:
-  friend struct ::base::DefaultLazyInstanceTraits<ProfileSet>;
+  friend struct ::base::LazyInstanceTraitsBase<ProfileSet>;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileSet);
 };
 
 // Set of all of profiles for which restore session is in progress.
 // This static member is accessible only form UI thread.
-base::LazyInstance<ProfileSet> g_blocked_profiles = LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<ProfileSet>::DestructorAtExit g_blocked_profiles =
+    LAZY_INSTANCE_INITIALIZER;
 
 ProfileSet* ProfileSet::Get() {
   return g_blocked_profiles.Pointer();

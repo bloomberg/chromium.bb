@@ -9,7 +9,7 @@
 namespace extensions {
 
 static base::LazyInstance<BrowserContextKeyedAPIFactory<
-    ApiResourceManager<BluetoothLowEnergyNotifySession>>>
+    ApiResourceManager<BluetoothLowEnergyNotifySession>>>::DestructorAtExit
     g_factory = LAZY_INSTANCE_INITIALIZER;
 
 template <>

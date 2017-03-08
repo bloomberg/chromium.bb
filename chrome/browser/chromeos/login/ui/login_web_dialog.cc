@@ -33,8 +33,8 @@ const double kDefaultHeightRatio = 0.6;
 const double kMinimumWidthRatio = 0.25;
 const double kMinimumHeightRatio = 0.25;
 
-base::LazyInstance<std::deque<WebContents*>> g_web_contents_stack =
-    LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<std::deque<WebContents*>>::DestructorAtExit
+    g_web_contents_stack = LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 

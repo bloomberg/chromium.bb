@@ -439,8 +439,8 @@ void FirstRunBubbleLauncher::Observe(
   delete this;
 }
 
-static base::LazyInstance<base::FilePath> master_prefs_path_for_testing
-    = LAZY_INSTANCE_INITIALIZER;
+static base::LazyInstance<base::FilePath>::DestructorAtExit
+    master_prefs_path_for_testing = LAZY_INSTANCE_INITIALIZER;
 
 // Loads master preferences from the master preference file into the installer
 // master preferences. Returns the pointer to installer::MasterPreferences

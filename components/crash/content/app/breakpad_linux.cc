@@ -143,7 +143,7 @@ class MicrodumpInfo {
 void SetMinidumpSanitizationFields(MinidumpDescriptor* minidump_descriptor,
                                    const SanitizationInfo& sanitization_info);
 
-base::LazyInstance<MicrodumpInfo> g_microdump_info =
+base::LazyInstance<MicrodumpInfo>::DestructorAtExit g_microdump_info =
     LAZY_INSTANCE_INITIALIZER;
 
 #endif

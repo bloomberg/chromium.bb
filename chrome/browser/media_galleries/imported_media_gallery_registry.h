@@ -55,7 +55,7 @@ class ImportedMediaGalleryRegistry {
 #endif  // defined(OS_WIN) || defined(OS_MACOSX)
 
  private:
-  friend struct base::DefaultLazyInstanceTraits<ImportedMediaGalleryRegistry>;
+  friend struct base::LazyInstanceTraitsBase<ImportedMediaGalleryRegistry>;
   friend class itunes::ITunesDataProviderTest;
   friend class picasa::PicasaDataProviderTest;
 

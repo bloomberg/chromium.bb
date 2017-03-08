@@ -85,7 +85,7 @@ class CONTENT_EXPORT BluetoothBlocklist final {
 
  private:
   // friend LazyInstance to permit access to private constructor.
-  friend base::DefaultLazyInstanceTraits<BluetoothBlocklist>;
+  friend base::LazyInstanceTraitsBase<BluetoothBlocklist>;
 
   BluetoothBlocklist();
 

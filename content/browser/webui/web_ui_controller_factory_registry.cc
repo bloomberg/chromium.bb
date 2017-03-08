@@ -13,8 +13,8 @@
 
 namespace content {
 
-base::LazyInstance<std::vector<WebUIControllerFactory*> > g_factories =
-    LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<std::vector<WebUIControllerFactory*>>::DestructorAtExit
+    g_factories = LAZY_INSTANCE_INITIALIZER;
 
 void WebUIControllerFactory::RegisterFactory(WebUIControllerFactory* factory) {
   g_factories.Pointer()->push_back(factory);

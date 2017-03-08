@@ -16,8 +16,8 @@
 namespace proximity_auth {
 namespace {
 
-base::LazyInstance<ScreenlockBridge> g_screenlock_bridge_instance =
-    LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<ScreenlockBridge>::DestructorAtExit
+    g_screenlock_bridge_instance = LAZY_INSTANCE_INITIALIZER;
 
 // Ids for the icons that are supported by lock screen and signin screen
 // account picker as user pod custom icons.

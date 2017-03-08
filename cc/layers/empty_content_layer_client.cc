@@ -10,8 +10,8 @@
 namespace cc {
 
 namespace {
-base::LazyInstance<EmptyContentLayerClient> g_empty_content_layer_client =
-    LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<EmptyContentLayerClient>::DestructorAtExit
+    g_empty_content_layer_client = LAZY_INSTANCE_INITIALIZER;
 }
 
 // static

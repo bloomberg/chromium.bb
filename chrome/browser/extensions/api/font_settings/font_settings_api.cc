@@ -201,8 +201,8 @@ FontSettingsAPI::FontSettingsAPI(content::BrowserContext* context)
 FontSettingsAPI::~FontSettingsAPI() {
 }
 
-static base::LazyInstance<BrowserContextKeyedAPIFactory<FontSettingsAPI> >
-    g_factory = LAZY_INSTANCE_INITIALIZER;
+static base::LazyInstance<BrowserContextKeyedAPIFactory<FontSettingsAPI>>::
+    DestructorAtExit g_factory = LAZY_INSTANCE_INITIALIZER;
 
 // static
 BrowserContextKeyedAPIFactory<FontSettingsAPI>*

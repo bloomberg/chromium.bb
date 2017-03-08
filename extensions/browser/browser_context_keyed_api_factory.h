@@ -56,8 +56,8 @@ class BrowserContextKeyedAPI : public KeyedService {
   //   };
   //
   // In the cc file, provide the implementation, e.g.:
-  //   static base::LazyInstance<BrowserContextKeyedAPIFactory<HistoryAPI> >
-  //   g_factory = LAZY_INSTANCE_INITIALIZER;
+  //   static base::LazyInstance<BrowserContextKeyedAPIFactory<HistoryAPI>>::
+  //      DestructorAtExit g_factory = LAZY_INSTANCE_INITIALIZER;
   //
   //   // static
   //   BrowserContextKeyedAPIFactory<HistoryAPI>*

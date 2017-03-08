@@ -11,7 +11,7 @@
 
 namespace {
 
-base::LazyInstance<MTPDeviceTaskHelperMapService>
+base::LazyInstance<MTPDeviceTaskHelperMapService>::DestructorAtExit
     g_mtp_device_task_helper_map_service = LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace

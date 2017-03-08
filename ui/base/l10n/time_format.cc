@@ -22,8 +22,8 @@ using ui::TimeFormat;
 
 namespace ui {
 
-UI_BASE_EXPORT base::LazyInstance<FormatterContainer> g_container =
-    LAZY_INSTANCE_INITIALIZER;
+UI_BASE_EXPORT base::LazyInstance<FormatterContainer>::DestructorAtExit
+    g_container = LAZY_INSTANCE_INITIALIZER;
 
 // static
 base::string16 TimeFormat::Simple(TimeFormat::Format format,

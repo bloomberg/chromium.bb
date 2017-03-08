@@ -22,7 +22,7 @@ const char kLog3[] = "Pine infested by hungry beetles";
 
 // Called for every log message added to the standard logging system. The new
 // log is saved in |g_standard_logs| and consumed so it does not flood stdout.
-base::LazyInstance<std::vector<std::string>> g_standard_logs =
+base::LazyInstance<std::vector<std::string>>::DestructorAtExit g_standard_logs =
     LAZY_INSTANCE_INITIALIZER;
 bool HandleStandardLogMessage(int severity,
                               const char* file,

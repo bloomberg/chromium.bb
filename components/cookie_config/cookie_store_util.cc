@@ -55,8 +55,8 @@ bool CookieOSCryptoDelegate::DecryptString(const std::string& ciphertext,
 
 // Using a LazyInstance is safe here because this class is stateless and
 // requires 0 initialization.
-base::LazyInstance<CookieOSCryptoDelegate> g_cookie_crypto_delegate =
-    LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<CookieOSCryptoDelegate>::DestructorAtExit
+    g_cookie_crypto_delegate = LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 

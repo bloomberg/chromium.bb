@@ -63,7 +63,7 @@ bool ShellExtensionHostDelegate::CheckMediaAccessPermission(
   return true;
 }
 
-static base::LazyInstance<SerialExtensionHostQueue> g_queue =
+static base::LazyInstance<SerialExtensionHostQueue>::DestructorAtExit g_queue =
     LAZY_INSTANCE_INITIALIZER;
 
 ExtensionHostQueue* ShellExtensionHostDelegate::GetExtensionHostQueue() const {

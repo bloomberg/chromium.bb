@@ -27,8 +27,8 @@ namespace extensions {
 
 namespace {
 
-base::LazyInstance<std::set<const ExtensionFrameHelper*>> g_frame_helpers =
-    LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<std::set<const ExtensionFrameHelper*>>::DestructorAtExit
+    g_frame_helpers = LAZY_INSTANCE_INITIALIZER;
 
 // Returns true if the render frame corresponding with |frame_helper| matches
 // the given criteria.

@@ -18,8 +18,8 @@ const char kSocketNotListeningError[] = "Socket not listening";
 namespace extensions {
 
 // static
-static base::LazyInstance<
-    BrowserContextKeyedAPIFactory<ApiResourceManager<BluetoothApiSocket> > >
+static base::LazyInstance<BrowserContextKeyedAPIFactory<
+    ApiResourceManager<BluetoothApiSocket>>>::DestructorAtExit
     g_server_factory = LAZY_INSTANCE_INITIALIZER;
 
 // static

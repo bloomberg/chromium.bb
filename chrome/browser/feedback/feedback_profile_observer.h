@@ -26,7 +26,7 @@ class FeedbackProfileObserver : public content::NotificationObserver {
   static void Initialize();
 
  private:
-  friend struct base::DefaultLazyInstanceTraits<FeedbackProfileObserver>;
+  friend struct base::LazyInstanceTraitsBase<FeedbackProfileObserver>;
 
   FeedbackProfileObserver();
   ~FeedbackProfileObserver() override;

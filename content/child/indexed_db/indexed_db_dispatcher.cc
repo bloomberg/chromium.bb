@@ -20,7 +20,7 @@ using blink::WebIDBObservation;
 using base::ThreadLocalPointer;
 
 namespace content {
-static base::LazyInstance<ThreadLocalPointer<IndexedDBDispatcher> >::Leaky
+static base::LazyInstance<ThreadLocalPointer<IndexedDBDispatcher>>::Leaky
     g_idb_dispatcher_tls = LAZY_INSTANCE_INITIALIZER;
 
 namespace {

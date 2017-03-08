@@ -44,7 +44,8 @@ const base::subtle::AtomicWord kUnlocked = 0;
 const base::subtle::AtomicWord kLocked = 1;
 base::subtle::AtomicWord g_method_id_map_lock = kUnlocked;
 
-base::LazyInstance<MethodIDMap> g_method_id_map = LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<MethodIDMap>::DestructorAtExit g_method_id_map =
+    LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 

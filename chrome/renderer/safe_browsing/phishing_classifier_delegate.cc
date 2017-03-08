@@ -39,11 +39,11 @@ static GURL StripRef(const GURL& url) {
 }
 
 typedef std::set<PhishingClassifierDelegate*> PhishingClassifierDelegates;
-static base::LazyInstance<PhishingClassifierDelegates>
+static base::LazyInstance<PhishingClassifierDelegates>::DestructorAtExit
     g_delegates = LAZY_INSTANCE_INITIALIZER;
 
-static base::LazyInstance<std::unique_ptr<const safe_browsing::Scorer>>
-    g_phishing_scorer = LAZY_INSTANCE_INITIALIZER;
+static base::LazyInstance<std::unique_ptr<const safe_browsing::Scorer>>::
+    DestructorAtExit g_phishing_scorer = LAZY_INSTANCE_INITIALIZER;
 
 // static
 PhishingClassifierFilter* PhishingClassifierFilter::Create() {

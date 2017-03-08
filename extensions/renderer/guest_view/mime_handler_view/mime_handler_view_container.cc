@@ -98,8 +98,9 @@ gin::WrapperInfo ScriptableObject::kWrapperInfo = { gin::kEmbedderNativeGin };
 // Maps from content::RenderFrame to the set of MimeHandlerViewContainers within
 // it.
 base::LazyInstance<
-    std::map<content::RenderFrame*, std::set<MimeHandlerViewContainer*>>>
-    g_mime_handler_view_container_map = LAZY_INSTANCE_INITIALIZER;
+    std::map<content::RenderFrame*, std::set<MimeHandlerViewContainer*>>>::
+    DestructorAtExit g_mime_handler_view_container_map =
+        LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 

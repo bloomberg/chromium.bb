@@ -107,14 +107,15 @@ class ArcAppIcon::Source : public gfx::ImageSkiaSource {
 
   // A map from a pair of a resource ID and size in DIP to an image. This
   // is a cache to avoid resizing IDR icons in GetImageForScale every time.
-  static base::LazyInstance<std::map<std::pair<int, int>, gfx::ImageSkia>>
-      default_icons_cache_;
+  static base::LazyInstance<std::map<std::pair<int, int>, gfx::ImageSkia>>::
+      DestructorAtExit default_icons_cache_;
 
   DISALLOW_COPY_AND_ASSIGN(Source);
 };
 
-base::LazyInstance<std::map<std::pair<int, int>, gfx::ImageSkia>>
-    ArcAppIcon::Source::default_icons_cache_ = LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<std::map<std::pair<int, int>, gfx::ImageSkia>>::
+    DestructorAtExit ArcAppIcon::Source::default_icons_cache_ =
+        LAZY_INSTANCE_INITIALIZER;
 
 ArcAppIcon::Source::Source(const base::WeakPtr<ArcAppIcon>& host,
                            int resource_size_in_dip)

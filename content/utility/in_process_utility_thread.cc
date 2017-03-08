@@ -15,7 +15,8 @@ namespace content {
 
 // We want to ensure there's only one utility thread running at a time, as there
 // are many globals used in the utility process.
-static base::LazyInstance<base::Lock> g_one_utility_thread_lock;
+static base::LazyInstance<base::Lock>::DestructorAtExit
+    g_one_utility_thread_lock;
 
 InProcessUtilityThread::InProcessUtilityThread(
     const InProcessChildThreadParams& params)

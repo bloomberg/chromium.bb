@@ -84,8 +84,8 @@ const char* const kPortableArch = "portable";
 // The base URL for resources used by the PNaCl translator processes.
 const char* kPNaClTranslatorBaseUrl = "chrome://pnacl-translator/";
 
-base::LazyInstance<scoped_refptr<PnaclTranslationResourceHost> >
-    g_pnacl_resource_host = LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<scoped_refptr<PnaclTranslationResourceHost>>::
+    DestructorAtExit g_pnacl_resource_host = LAZY_INSTANCE_INITIALIZER;
 
 bool InitializePnaclResourceHost() {
   // Must run on the main thread.
@@ -150,7 +150,8 @@ class NaClPluginInstance {
 
 typedef std::unordered_map<PP_Instance, std::unique_ptr<NaClPluginInstance>>
     InstanceMap;
-base::LazyInstance<InstanceMap> g_instance_map = LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<InstanceMap>::DestructorAtExit g_instance_map =
+    LAZY_INSTANCE_INITIALIZER;
 
 NaClPluginInstance* GetNaClPluginInstance(PP_Instance instance) {
   InstanceMap& map = g_instance_map.Get();

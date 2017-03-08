@@ -55,8 +55,8 @@ namespace {
 
 // TODO(boliu): Remove this global Allow once the underlying issues are
 // resolved - http://crbug.com/240453. See AwMainDelegate::RunProcess below.
-base::LazyInstance<std::unique_ptr<ScopedAllowWaitForLegacyWebViewApi>>
-    g_allow_wait_in_ui_thread = LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<std::unique_ptr<ScopedAllowWaitForLegacyWebViewApi>>::
+    DestructorAtExit g_allow_wait_in_ui_thread = LAZY_INSTANCE_INITIALIZER;
 }
 
 AwMainDelegate::AwMainDelegate() {

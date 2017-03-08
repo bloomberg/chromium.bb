@@ -213,7 +213,7 @@ class Wow64Functions {
 };
 
 // Global Wow64Function instance used by ScopedDisableWow64Redirection below.
-static base::LazyInstance<Wow64Functions> g_wow_64_functions =
+static base::LazyInstance<Wow64Functions>::DestructorAtExit g_wow_64_functions =
     LAZY_INSTANCE_INITIALIZER;
 
 // Scoper that switches off Wow64 File System Redirection during its lifetime.
@@ -266,8 +266,8 @@ class WinGPOListProvider : public AppliedGPOListProvider {
 };
 
 // The default windows GPO list provider used for PolicyLoaderWin.
-static base::LazyInstance<WinGPOListProvider> g_win_gpo_list_provider =
-    LAZY_INSTANCE_INITIALIZER;
+static base::LazyInstance<WinGPOListProvider>::DestructorAtExit
+    g_win_gpo_list_provider = LAZY_INSTANCE_INITIALIZER;
 
 // Parses |gpo_dict| according to |schema| and writes the resulting policy
 // settings to |policy| for the given |scope| and |level|.

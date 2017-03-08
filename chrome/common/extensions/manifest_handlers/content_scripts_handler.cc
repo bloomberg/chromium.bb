@@ -330,8 +330,8 @@ struct EmptyUserScriptList {
   UserScriptList user_script_list;
 };
 
-static base::LazyInstance<EmptyUserScriptList> g_empty_script_list =
-    LAZY_INSTANCE_INITIALIZER;
+static base::LazyInstance<EmptyUserScriptList>::DestructorAtExit
+    g_empty_script_list = LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 

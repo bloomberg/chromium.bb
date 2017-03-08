@@ -68,8 +68,8 @@ namespace easy_unlock_private = api::easy_unlock_private;
 
 namespace {
 
-static base::LazyInstance<BrowserContextKeyedAPIFactory<EasyUnlockPrivateAPI> >
-    g_factory = LAZY_INSTANCE_INITIALIZER;
+static base::LazyInstance<BrowserContextKeyedAPIFactory<EasyUnlockPrivateAPI>>::
+    DestructorAtExit g_factory = LAZY_INSTANCE_INITIALIZER;
 
 // Utility method for getting the API's crypto delegate.
 EasyUnlockPrivateCryptoDelegate* GetCryptoDelegate(

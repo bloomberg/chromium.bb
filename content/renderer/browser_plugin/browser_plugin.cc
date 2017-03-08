@@ -50,8 +50,8 @@ using blink::WebVector;
 namespace {
 using PluginContainerMap =
     std::map<blink::WebPluginContainer*, content::BrowserPlugin*>;
-static base::LazyInstance<PluginContainerMap> g_plugin_container_map =
-    LAZY_INSTANCE_INITIALIZER;
+static base::LazyInstance<PluginContainerMap>::DestructorAtExit
+    g_plugin_container_map = LAZY_INSTANCE_INITIALIZER;
 }  // namespace
 
 namespace content {

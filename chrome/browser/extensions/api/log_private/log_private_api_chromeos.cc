@@ -206,8 +206,9 @@ void LogPrivateAPI::RegisterTempFile(const std::string& owner_extension_id,
                  base::Unretained(this), owner_extension_id, file_path));
 }
 
-static base::LazyInstance<BrowserContextKeyedAPIFactory<LogPrivateAPI> >
-    g_factory = LAZY_INSTANCE_INITIALIZER;
+static base::LazyInstance<
+    BrowserContextKeyedAPIFactory<LogPrivateAPI>>::DestructorAtExit g_factory =
+    LAZY_INSTANCE_INITIALIZER;
 
 // static
 BrowserContextKeyedAPIFactory<LogPrivateAPI>*

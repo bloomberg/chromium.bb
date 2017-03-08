@@ -73,7 +73,8 @@ class StorageInfoProvider : public SystemInfoProvider {
   // the blocking pool, including fixed and removable devices.
   bool QueryInfo() override;
 
-  static base::LazyInstance<scoped_refptr<StorageInfoProvider> > provider_;
+  static base::LazyInstance<
+      scoped_refptr<StorageInfoProvider>>::DestructorAtExit provider_;
 
   DISALLOW_COPY_AND_ASSIGN(StorageInfoProvider);
 };

@@ -26,7 +26,7 @@
 
 namespace base {
 template <typename T>
-struct DefaultLazyInstanceTraits;
+struct LazyInstanceTraitsBase;
 class SingleThreadTaskRunner;
 class TaskRunner;
 }
@@ -100,7 +100,7 @@ class CONTENT_EXPORT BlobTransportController {
   void CancelAllBlobTransfers();
 
  private:
-  friend struct base::DefaultLazyInstanceTraits<BlobTransportController>;
+  friend struct base::LazyInstanceTraitsBase<BlobTransportController>;
   friend class BlobTransportControllerTest;
   FRIEND_TEST_ALL_PREFIXES(BlobTransportControllerTest, Descriptions);
   FRIEND_TEST_ALL_PREFIXES(BlobTransportControllerTest, Responses);

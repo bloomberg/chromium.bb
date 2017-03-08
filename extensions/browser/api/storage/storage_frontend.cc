@@ -31,8 +31,8 @@ namespace extensions {
 
 namespace {
 
-base::LazyInstance<BrowserContextKeyedAPIFactory<StorageFrontend> > g_factory =
-    LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<BrowserContextKeyedAPIFactory<StorageFrontend>>::
+    DestructorAtExit g_factory = LAZY_INSTANCE_INITIALIZER;
 
 // Settings change Observer which forwards changes on to the extension
 // processes for |context| and its incognito partner if it exists.

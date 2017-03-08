@@ -31,9 +31,8 @@ static void SigUSR1Handler(int signal) { }
 namespace content {
 
 namespace {
-
-base::LazyInstance<base::ThreadLocalPointer<ChildProcess> > g_lazy_tls =
-    LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<base::ThreadLocalPointer<ChildProcess>>::DestructorAtExit
+    g_lazy_tls = LAZY_INSTANCE_INITIALIZER;
 }
 
 ChildProcess::ChildProcess(

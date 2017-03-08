@@ -26,7 +26,7 @@ class AutofillClock {
 
  private:
   friend class TestAutofillClock;
-  friend struct base::DefaultLazyInstanceTraits<AutofillClock>;
+  friend struct base::LazyInstanceTraitsBase<AutofillClock>;
 
   // Resets a normal clock.
   static void SetClock();

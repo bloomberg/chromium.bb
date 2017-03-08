@@ -262,7 +262,8 @@ void CleanupKeyMapTls(void* data) {
 }
 
 struct PlatformKeyMapInstanceTlsTraits
-    : public base::DefaultLazyInstanceTraits<base::ThreadLocalStorage::Slot> {
+    : public base::internal::DestructorAtExitLazyInstanceTraits<
+          base::ThreadLocalStorage::Slot> {
   static base::ThreadLocalStorage::Slot* New(void* instance) {
     // Use placement new to initialize our instance in our preallocated space.
     // TODO(chongz): Use std::default_delete instead of providing own function.

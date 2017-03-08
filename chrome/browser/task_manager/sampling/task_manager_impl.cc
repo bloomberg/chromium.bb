@@ -39,8 +39,8 @@ scoped_refptr<base::SequencedTaskRunner> GetBlockingPoolRunner() {
       blocking_pool->GetSequenceToken());
 }
 
-base::LazyInstance<TaskManagerImpl> lazy_task_manager_instance =
-    LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<TaskManagerImpl>::DestructorAtExit
+    lazy_task_manager_instance = LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 

@@ -123,7 +123,7 @@ class ManifestHandlerRegistry {
  private:
   friend class ManifestHandler;
   friend class ScopedTestingManifestHandlerRegistry;
-  friend struct base::DefaultLazyInstanceTraits<ManifestHandlerRegistry>;
+  friend struct base::LazyInstanceTraitsBase<ManifestHandlerRegistry>;
 
   ManifestHandlerRegistry();
   ~ManifestHandlerRegistry();

@@ -28,8 +28,8 @@ const char kDefaultSandboxedPageContentSecurityPolicy[] =
     "sandbox allow-scripts allow-forms allow-popups allow-modals; "
     "script-src 'self' 'unsafe-inline' 'unsafe-eval'; child-src 'self';";
 
-static base::LazyInstance<SandboxedPageInfo> g_empty_sandboxed_info =
-    LAZY_INSTANCE_INITIALIZER;
+static base::LazyInstance<SandboxedPageInfo>::DestructorAtExit
+    g_empty_sandboxed_info = LAZY_INSTANCE_INITIALIZER;
 
 const SandboxedPageInfo& GetSandboxedPageInfo(const Extension* extension) {
   SandboxedPageInfo* info = static_cast<SandboxedPageInfo*>(

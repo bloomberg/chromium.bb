@@ -58,7 +58,7 @@ class CHROMEOS_EXPORT ProcessProxyRegistry : public base::NonThreadSafe {
   void ShutDown();
 
  private:
-  friend struct ::base::DefaultLazyInstanceTraits<ProcessProxyRegistry>;
+  friend struct ::base::LazyInstanceTraitsBase<ProcessProxyRegistry>;
 
   ProcessProxyRegistry();
   ~ProcessProxyRegistry();

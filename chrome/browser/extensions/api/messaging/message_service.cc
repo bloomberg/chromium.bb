@@ -199,8 +199,9 @@ MessageService::~MessageService() {
   channels_.clear();
 }
 
-static base::LazyInstance<BrowserContextKeyedAPIFactory<MessageService> >
-    g_factory = LAZY_INSTANCE_INITIALIZER;
+static base::LazyInstance<
+    BrowserContextKeyedAPIFactory<MessageService>>::DestructorAtExit g_factory =
+    LAZY_INSTANCE_INITIALIZER;
 
 // static
 BrowserContextKeyedAPIFactory<MessageService>*

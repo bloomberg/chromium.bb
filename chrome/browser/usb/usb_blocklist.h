@@ -66,7 +66,7 @@ class UsbBlocklist final {
 
  private:
   // friend LazyInstance to permit access to private constructor.
-  friend base::DefaultLazyInstanceTraits<UsbBlocklist>;
+  friend base::LazyInstanceTraitsBase<UsbBlocklist>;
 
   UsbBlocklist();
 

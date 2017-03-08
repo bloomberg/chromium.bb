@@ -23,11 +23,11 @@ using base::android::JavaParamRef;
 namespace content {
 
 namespace {
-LazyInstance<std::unique_ptr<ContentMainRunner>> g_content_runner =
-    LAZY_INSTANCE_INITIALIZER;
+LazyInstance<std::unique_ptr<ContentMainRunner>>::DestructorAtExit
+    g_content_runner = LAZY_INSTANCE_INITIALIZER;
 
-LazyInstance<std::unique_ptr<ContentMainDelegate>> g_content_main_delegate =
-    LAZY_INSTANCE_INITIALIZER;
+LazyInstance<std::unique_ptr<ContentMainDelegate>>::DestructorAtExit
+    g_content_main_delegate = LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 

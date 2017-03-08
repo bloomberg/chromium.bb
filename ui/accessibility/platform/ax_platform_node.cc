@@ -16,9 +16,8 @@ namespace {
 
 using UniqueIdMap = base::hash_map<int32_t, AXPlatformNode*>;
 // Map from each AXPlatformNode's unique id to its instance.
-base::LazyInstance<UniqueIdMap> g_unique_id_map =
+base::LazyInstance<UniqueIdMap>::DestructorAtExit g_unique_id_map =
     LAZY_INSTANCE_INITIALIZER;
-
 }
 
 #if !defined(PLATFORM_HAS_AX_PLATFORM_NODE_IMPL)

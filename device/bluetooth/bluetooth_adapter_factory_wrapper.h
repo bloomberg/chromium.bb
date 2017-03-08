@@ -56,7 +56,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterFactoryWrapper {
 
  private:
   // friend LazyInstance to permit access to private constructor.
-  friend base::DefaultLazyInstanceTraits<BluetoothAdapterFactoryWrapper>;
+  friend base::LazyInstanceTraitsBase<BluetoothAdapterFactoryWrapper>;
 
   BluetoothAdapterFactoryWrapper();
 

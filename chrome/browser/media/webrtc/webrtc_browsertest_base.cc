@@ -67,8 +67,8 @@ const char WebRtcTestBase::kUseDefaultVideoCodec[] = "";
 
 namespace {
 
-base::LazyInstance<bool> hit_javascript_errors_ =
-      LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<bool>::DestructorAtExit hit_javascript_errors_ =
+    LAZY_INSTANCE_INITIALIZER;
 
 // Intercepts all log messages. We always attach this handler but only look at
 // the results if the test requests so. Note that this will only work if the

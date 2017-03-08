@@ -27,7 +27,7 @@ class PreviewsServiceFactory : public BrowserContextKeyedServiceFactory {
   static PreviewsServiceFactory* GetInstance();
 
  private:
-  friend struct base::DefaultLazyInstanceTraits<PreviewsServiceFactory>;
+  friend struct base::LazyInstanceTraitsBase<PreviewsServiceFactory>;
 
   PreviewsServiceFactory();
   ~PreviewsServiceFactory() override;

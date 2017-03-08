@@ -46,8 +46,9 @@ SpellcheckAPI::SpellcheckAPI(content::BrowserContext* context)
 SpellcheckAPI::~SpellcheckAPI() {
 }
 
-static base::LazyInstance<BrowserContextKeyedAPIFactory<SpellcheckAPI> >
-    g_factory = LAZY_INSTANCE_INITIALIZER;
+static base::LazyInstance<
+    BrowserContextKeyedAPIFactory<SpellcheckAPI>>::DestructorAtExit g_factory =
+    LAZY_INSTANCE_INITIALIZER;
 
 // static
 BrowserContextKeyedAPIFactory<SpellcheckAPI>*

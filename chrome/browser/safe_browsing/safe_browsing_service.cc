@@ -262,7 +262,7 @@ class SafeBrowsingServiceFactoryImpl : public SafeBrowsingServiceFactory {
   }
 
  private:
-  friend struct base::DefaultLazyInstanceTraits<SafeBrowsingServiceFactoryImpl>;
+  friend struct base::LazyInstanceTraitsBase<SafeBrowsingServiceFactoryImpl>;
 
   SafeBrowsingServiceFactoryImpl() { }
 
