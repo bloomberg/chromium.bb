@@ -22,7 +22,6 @@ class NotificationSurface;
 
 namespace views {
 class FocusTraversable;
-class ImageButton;
 class Widget;
 }
 
@@ -110,8 +109,8 @@ class ArcCustomNotificationView
   std::unique_ptr<views::Widget> floating_control_buttons_widget_;
 
   views::View* control_buttons_view_ = nullptr;
-  views::ImageButton* close_button_ = nullptr;
-  views::ImageButton* settings_button_ = nullptr;
+  ControlButton* close_button_ = nullptr;
+  ControlButton* settings_button_ = nullptr;
 
   // Protects from call loops between Layout and OnWindowBoundsChanged.
   bool in_layout_ = false;

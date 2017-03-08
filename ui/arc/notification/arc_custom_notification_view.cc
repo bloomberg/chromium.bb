@@ -158,6 +158,30 @@ class ArcCustomNotificationView::SlideHelper
   DISALLOW_COPY_AND_ASSIGN(SlideHelper);
 };
 
+class ArcCustomNotificationView::ControlButton
+    : public message_center::PaddedButton {
+ public:
+  explicit ControlButton(ArcCustomNotificationView* owner)
+      : message_center::PaddedButton(owner), owner_(owner) {}
+
+  void OnFocus() override {
+    message_center::PaddedButton::OnFocus();
+    owner_->UpdateControlButtonsVisibility();
+  }
+
+  void OnBlur() override {
+    message_center::PaddedButton::OnBlur();
+    owner_->UpdateControlButtonsVisibility();
+  }
+
+  void HideInkDrop() { AnimateInkDrop(views::InkDropState::HIDDEN, nullptr); }
+
+ private:
+  ArcCustomNotificationView* const owner_;
+
+  DISALLOW_COPY_AND_ASSIGN(ControlButton);
+};
+
 class ArcCustomNotificationView::ContentViewDelegate
     : public message_center::CustomNotificationContentViewDelegate {
  public:
@@ -188,26 +212,6 @@ class ArcCustomNotificationView::ContentViewDelegate
   ArcCustomNotificationView* const owner_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentViewDelegate);
-};
-
-class ArcCustomNotificationView::ControlButton
-    : public message_center::PaddedButton {
- public:
-  explicit ControlButton(ArcCustomNotificationView* owner)
-      : message_center::PaddedButton(owner), owner_(owner) {}
-
-  void OnFocus() override {
-    message_center::PaddedButton::OnFocus();
-    owner_->UpdateControlButtonsVisibility();
-  }
-
-  void OnBlur() override {
-    message_center::PaddedButton::OnBlur();
-    owner_->UpdateControlButtonsVisibility();
-  }
-
- private:
-  ArcCustomNotificationView* const owner_;
 };
 
 ArcCustomNotificationView::ArcCustomNotificationView(
@@ -540,6 +544,7 @@ void ArcCustomNotificationView::ButtonPressed(views::Button* sender,
         ->OnCloseButtonPressed();
   }
   if (item_ && settings_button_ && sender == settings_button_) {
+    settings_button_->HideInkDrop();
     item_->OpenSettings();
   }
 }
