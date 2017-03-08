@@ -65,24 +65,27 @@ class MODULES_EXPORT InspectorDOMStorageAgent final
   void restore() override;
 
   // protocol::Dispatcher::DOMStorageCommandHandler overrides.
-  Response enable() override;
-  Response disable() override;
-  Response clear(std::unique_ptr<protocol::DOMStorage::StorageId>) override;
+  protocol::Response enable() override;
+  protocol::Response disable() override;
+  protocol::Response clear(
+      std::unique_ptr<protocol::DOMStorage::StorageId>) override;
 
-  Response getDOMStorageItems(
+  protocol::Response getDOMStorageItems(
       std::unique_ptr<protocol::DOMStorage::StorageId>,
       std::unique_ptr<protocol::Array<protocol::Array<String>>>* entries)
       override;
-  Response setDOMStorageItem(std::unique_ptr<protocol::DOMStorage::StorageId>,
-                             const String& key,
-                             const String& value) override;
-  Response removeDOMStorageItem(
+  protocol::Response setDOMStorageItem(
+      std::unique_ptr<protocol::DOMStorage::StorageId>,
+      const String& key,
+      const String& value) override;
+  protocol::Response removeDOMStorageItem(
       std::unique_ptr<protocol::DOMStorage::StorageId>,
       const String& key) override;
 
-  Response findStorageArea(std::unique_ptr<protocol::DOMStorage::StorageId>,
-                           LocalFrame*&,
-                           StorageArea*&);
+  protocol::Response findStorageArea(
+      std::unique_ptr<protocol::DOMStorage::StorageId>,
+      LocalFrame*&,
+      StorageArea*&);
   std::unique_ptr<protocol::DOMStorage::StorageId> storageId(
       SecurityOrigin*,
       bool isLocalStorage);

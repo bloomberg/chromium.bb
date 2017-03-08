@@ -12,6 +12,8 @@
 
 namespace blink {
 
+using protocol::Response;
+
 namespace DeviceOrientationInspectorAgentState {
 static const char alpha[] = "alpha";
 static const char beta[] = "beta";

@@ -73,6 +73,8 @@
 
 namespace blink {
 
+using protocol::Response;
+
 namespace PageAgentState {
 static const char pageAgentEnabled[] = "pageAgentEnabled";
 static const char pageAgentScriptsToEvaluateOnLoad[] =

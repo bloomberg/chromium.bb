@@ -84,6 +84,8 @@
 namespace blink {
 
 using namespace HTMLNames;
+using protocol::Maybe;
+using protocol::Response;
 
 namespace DOMAgentState {
 static const char domAgentEnabled[] = "domAgentEnabled";

@@ -34,21 +34,24 @@ class CORE_EXPORT InspectorAnimationAgent final
   void didCommitLoadForLocalFrame(LocalFrame*) override;
 
   // Protocol method implementations
-  Response enable() override;
-  Response disable() override;
-  Response getPlaybackRate(double* playbackRate) override;
-  Response setPlaybackRate(double) override;
-  Response getCurrentTime(const String& id, double* currentTime) override;
-  Response setPaused(std::unique_ptr<protocol::Array<String>> animations,
-                     bool paused) override;
-  Response setTiming(const String& animationId,
-                     double duration,
-                     double delay) override;
-  Response seekAnimations(std::unique_ptr<protocol::Array<String>> animations,
-                          double currentTime) override;
-  Response releaseAnimations(
+  protocol::Response enable() override;
+  protocol::Response disable() override;
+  protocol::Response getPlaybackRate(double* playbackRate) override;
+  protocol::Response setPlaybackRate(double) override;
+  protocol::Response getCurrentTime(const String& id,
+                                    double* currentTime) override;
+  protocol::Response setPaused(
+      std::unique_ptr<protocol::Array<String>> animations,
+      bool paused) override;
+  protocol::Response setTiming(const String& animationId,
+                               double duration,
+                               double delay) override;
+  protocol::Response seekAnimations(
+      std::unique_ptr<protocol::Array<String>> animations,
+      double currentTime) override;
+  protocol::Response releaseAnimations(
       std::unique_ptr<protocol::Array<String>> animations) override;
-  Response resolveAnimation(
+  protocol::Response resolveAnimation(
       const String& animationId,
       std::unique_ptr<v8_inspector::protocol::Runtime::API::RemoteObject>*)
       override;
@@ -61,7 +64,8 @@ class CORE_EXPORT InspectorAnimationAgent final
   void didClearDocumentOfWindowObject(LocalFrame*);
 
   // Methods for other agents to use.
-  Response assertAnimation(const String& id, blink::Animation*& result);
+  protocol::Response assertAnimation(const String& id,
+                                     blink::Animation*& result);
 
   DECLARE_VIRTUAL_TRACE();
 

@@ -12,6 +12,8 @@
 
 namespace blink {
 
+using protocol::Response;
+
 namespace LogAgentState {
 static const char logEnabled[] = "logEnabled";
 static const char logViolations[] = "logViolations";

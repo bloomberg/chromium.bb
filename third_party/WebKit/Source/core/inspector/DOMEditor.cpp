@@ -43,6 +43,8 @@
 
 namespace blink {
 
+using protocol::Response;
+
 class DOMEditor::RemoveChildAction final : public InspectorHistory::Action {
   WTF_MAKE_NONCOPYABLE(RemoveChildAction);
 

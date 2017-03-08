@@ -53,11 +53,11 @@ class CORE_EXPORT InspectorInputAgent final
   DECLARE_VIRTUAL_TRACE();
 
   // Methods called from the frontend for simulating input.
-  Response dispatchTouchEvent(
+  protocol::Response dispatchTouchEvent(
       const String& type,
       std::unique_ptr<protocol::Array<protocol::Input::TouchPoint>> touchPoints,
-      Maybe<int> modifiers,
-      Maybe<double> timestamp) override;
+      protocol::Maybe<int> modifiers,
+      protocol::Maybe<double> timestamp) override;
 
  private:
   explicit InspectorInputAgent(InspectedFrames*);

@@ -53,8 +53,8 @@ class MODULES_EXPORT InspectorIndexedDBAgent final
   void didCommitLoadForLocalFrame(LocalFrame*) override;
 
   // Called from the front-end.
-  Response enable() override;
-  Response disable() override;
+  protocol::Response enable() override;
+  protocol::Response disable() override;
   void requestDatabaseNames(
       const String& securityOrigin,
       std::unique_ptr<RequestDatabaseNamesCallback>) override;
@@ -67,7 +67,7 @@ class MODULES_EXPORT InspectorIndexedDBAgent final
                    const String& indexName,
                    int skipCount,
                    int pageSize,
-                   Maybe<protocol::IndexedDB::KeyRange>,
+                   protocol::Maybe<protocol::IndexedDB::KeyRange>,
                    std::unique_ptr<RequestDataCallback>) override;
   void clearObjectStore(const String& securityOrigin,
                         const String& databaseName,

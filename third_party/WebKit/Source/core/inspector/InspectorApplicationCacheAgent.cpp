@@ -36,6 +36,8 @@
 
 namespace blink {
 
+using protocol::Response;
+
 namespace ApplicationCacheAgentState {
 static const char applicationCacheAgentEnabled[] =
     "applicationCacheAgentEnabled";

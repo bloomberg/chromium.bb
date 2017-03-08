@@ -24,10 +24,12 @@ class MODULES_EXPORT DeviceOrientationInspectorAgent final
   DECLARE_VIRTUAL_TRACE();
 
   // Protocol methods.
-  Response setDeviceOrientationOverride(double, double, double) override;
-  Response clearDeviceOrientationOverride() override;
+  protocol::Response setDeviceOrientationOverride(double,
+                                                  double,
+                                                  double) override;
+  protocol::Response clearDeviceOrientationOverride() override;
 
-  Response disable() override;
+  protocol::Response disable() override;
   void restore() override;
   void didCommitLoadForLocalFrame(LocalFrame*) override;
 

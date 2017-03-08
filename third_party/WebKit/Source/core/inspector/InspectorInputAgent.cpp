@@ -139,6 +139,8 @@ void ConvertInspectorPoint(blink::LocalFrame* frame,
 
 namespace blink {
 
+using protocol::Response;
+
 InspectorInputAgent::InspectorInputAgent(InspectedFrames* inspectedFrames)
     : m_inspectedFrames(inspectedFrames) {}
 

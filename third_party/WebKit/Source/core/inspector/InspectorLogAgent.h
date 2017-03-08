@@ -32,13 +32,13 @@ class CORE_EXPORT InspectorLogAgent
   void consoleMessageAdded(ConsoleMessage*);
 
   // Protocol methods.
-  Response enable() override;
-  Response disable() override;
-  Response clear() override;
-  Response startViolationsReport(
+  protocol::Response enable() override;
+  protocol::Response disable() override;
+  protocol::Response clear() override;
+  protocol::Response startViolationsReport(
       std::unique_ptr<protocol::Array<protocol::Log::ViolationSetting>>)
       override;
-  Response stopViolationsReport() override;
+  protocol::Response stopViolationsReport() override;
 
  private:
   // PerformanceMonitor::Client implementation.

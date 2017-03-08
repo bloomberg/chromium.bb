@@ -51,21 +51,21 @@ class CORE_EXPORT InspectorApplicationCacheAgent final
 
   // InspectorBaseAgent
   void restore() override;
-  Response disable() override;
+  protocol::Response disable() override;
 
   // InspectorInstrumentation API
   void updateApplicationCacheStatus(LocalFrame*);
   void networkStateChanged(LocalFrame*, bool online);
 
   // ApplicationCache API for frontend
-  Response getFramesWithManifests(
+  protocol::Response getFramesWithManifests(
       std::unique_ptr<
           protocol::Array<protocol::ApplicationCache::FrameWithManifest>>*
           frameIds) override;
-  Response enable() override;
-  Response getManifestForFrame(const String& frameId,
-                               String* manifestURL) override;
-  Response getApplicationCacheForFrame(
+  protocol::Response enable() override;
+  protocol::Response getManifestForFrame(const String& frameId,
+                                         String* manifestURL) override;
+  protocol::Response getApplicationCacheForFrame(
       const String& frameId,
       std::unique_ptr<protocol::ApplicationCache::ApplicationCache>*) override;
 
@@ -83,7 +83,8 @@ class CORE_EXPORT InspectorApplicationCacheAgent final
   buildObjectForApplicationCacheResource(
       const ApplicationCacheHost::ResourceInfo&);
 
-  Response assertFrameWithDocumentLoader(String frameId, DocumentLoader*&);
+  protocol::Response assertFrameWithDocumentLoader(String frameId,
+                                                   DocumentLoader*&);
 
   Member<InspectedFrames> m_inspectedFrames;
 };

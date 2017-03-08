@@ -125,74 +125,80 @@ class CORE_EXPORT InspectorCSSAgent final
   void setUsageTrackerStatus(bool enabled);
 
   void enable(std::unique_ptr<EnableCallback>) override;
-  Response disable() override;
-  Response getMatchedStylesForNode(
+  protocol::Response disable() override;
+  protocol::Response getMatchedStylesForNode(
       int nodeId,
-      Maybe<protocol::CSS::CSSStyle>* inlineStyle,
-      Maybe<protocol::CSS::CSSStyle>* attributesStyle,
-      Maybe<protocol::Array<protocol::CSS::RuleMatch>>* matchedCSSRules,
-      Maybe<protocol::Array<protocol::CSS::PseudoElementMatches>>*,
-      Maybe<protocol::Array<protocol::CSS::InheritedStyleEntry>>*,
-      Maybe<protocol::Array<protocol::CSS::CSSKeyframesRule>>*) override;
-  Response getInlineStylesForNode(
+      protocol::Maybe<protocol::CSS::CSSStyle>* inlineStyle,
+      protocol::Maybe<protocol::CSS::CSSStyle>* attributesStyle,
+      protocol::Maybe<protocol::Array<protocol::CSS::RuleMatch>>*
+          matchedCSSRules,
+      protocol::Maybe<protocol::Array<protocol::CSS::PseudoElementMatches>>*,
+      protocol::Maybe<protocol::Array<protocol::CSS::InheritedStyleEntry>>*,
+      protocol::Maybe<protocol::Array<protocol::CSS::CSSKeyframesRule>>*)
+      override;
+  protocol::Response getInlineStylesForNode(
       int nodeId,
-      Maybe<protocol::CSS::CSSStyle>* inlineStyle,
-      Maybe<protocol::CSS::CSSStyle>* attributesStyle) override;
-  Response getComputedStyleForNode(
+      protocol::Maybe<protocol::CSS::CSSStyle>* inlineStyle,
+      protocol::Maybe<protocol::CSS::CSSStyle>* attributesStyle) override;
+  protocol::Response getComputedStyleForNode(
       int nodeId,
       std::unique_ptr<
           protocol::Array<protocol::CSS::CSSComputedStyleProperty>>*) override;
-  Response getPlatformFontsForNode(
+  protocol::Response getPlatformFontsForNode(
       int nodeId,
       std::unique_ptr<protocol::Array<protocol::CSS::PlatformFontUsage>>* fonts)
       override;
-  Response collectClassNames(
+  protocol::Response collectClassNames(
       const String& styleSheetId,
       std::unique_ptr<protocol::Array<String>>* classNames) override;
-  Response getStyleSheetText(const String& styleSheetId, String* text) override;
-  Response setStyleSheetText(const String& styleSheetId,
-                             const String& text,
-                             Maybe<String>* sourceMapURL) override;
-  Response setRuleSelector(
+  protocol::Response getStyleSheetText(const String& styleSheetId,
+                                       String* text) override;
+  protocol::Response setStyleSheetText(
+      const String& styleSheetId,
+      const String& text,
+      protocol::Maybe<String>* sourceMapURL) override;
+  protocol::Response setRuleSelector(
       const String& styleSheetId,
       std::unique_ptr<protocol::CSS::SourceRange>,
       const String& selector,
       std::unique_ptr<protocol::CSS::SelectorList>*) override;
-  Response setKeyframeKey(
+  protocol::Response setKeyframeKey(
       const String& styleSheetId,
       std::unique_ptr<protocol::CSS::SourceRange>,
       const String& keyText,
       std::unique_ptr<protocol::CSS::Value>* outKeyText) override;
-  Response setStyleTexts(
+  protocol::Response setStyleTexts(
       std::unique_ptr<protocol::Array<protocol::CSS::StyleDeclarationEdit>>
           edits,
       std::unique_ptr<protocol::Array<protocol::CSS::CSSStyle>>* styles)
       override;
-  Response setMediaText(const String& styleSheetId,
-                        std::unique_ptr<protocol::CSS::SourceRange>,
-                        const String& text,
-                        std::unique_ptr<protocol::CSS::CSSMedia>*) override;
-  Response createStyleSheet(const String& frameId,
-                            String* styleSheetId) override;
-  Response addRule(const String& styleSheetId,
-                   const String& ruleText,
-                   std::unique_ptr<protocol::CSS::SourceRange>,
-                   std::unique_ptr<protocol::CSS::CSSRule>*) override;
-  Response forcePseudoState(
+  protocol::Response setMediaText(
+      const String& styleSheetId,
+      std::unique_ptr<protocol::CSS::SourceRange>,
+      const String& text,
+      std::unique_ptr<protocol::CSS::CSSMedia>*) override;
+  protocol::Response createStyleSheet(const String& frameId,
+                                      String* styleSheetId) override;
+  protocol::Response addRule(const String& styleSheetId,
+                             const String& ruleText,
+                             std::unique_ptr<protocol::CSS::SourceRange>,
+                             std::unique_ptr<protocol::CSS::CSSRule>*) override;
+  protocol::Response forcePseudoState(
       int nodeId,
       std::unique_ptr<protocol::Array<String>> forcedPseudoClasses) override;
-  Response getMediaQueries(
+  protocol::Response getMediaQueries(
       std::unique_ptr<protocol::Array<protocol::CSS::CSSMedia>>*) override;
-  Response setEffectivePropertyValueForNode(int nodeId,
-                                            const String& propertyName,
-                                            const String& value) override;
-  Response getBackgroundColors(
+  protocol::Response setEffectivePropertyValueForNode(
       int nodeId,
-      Maybe<protocol::Array<String>>* backgroundColors) override;
+      const String& propertyName,
+      const String& value) override;
+  protocol::Response getBackgroundColors(
+      int nodeId,
+      protocol::Maybe<protocol::Array<String>>* backgroundColors) override;
 
-  Response startRuleUsageTracking() override;
+  protocol::Response startRuleUsageTracking() override;
 
-  Response stopRuleUsageTracking(
+  protocol::Response stopRuleUsageTracking(
       std::unique_ptr<protocol::Array<protocol::CSS::RuleUsage>>* result)
       override;
 
@@ -211,7 +217,7 @@ class CORE_EXPORT InspectorCSSAgent final
   CSSStyleDeclaration* findEffectiveDeclaration(
       CSSPropertyID,
       const HeapVector<Member<CSSStyleDeclaration>>& styles);
-  Response getLayoutTreeAndStyles(
+  protocol::Response getLayoutTreeAndStyles(
       std::unique_ptr<protocol::Array<String>> styleWhitelist,
       std::unique_ptr<protocol::Array<protocol::CSS::LayoutTreeNode>>*
           layoutTreeNodes,
@@ -254,11 +260,11 @@ class CORE_EXPORT InspectorCSSAgent final
   void updateActiveStyleSheets(Document*);
   void setActiveStyleSheets(Document*,
                             const HeapVector<Member<CSSStyleSheet>>&);
-  Response setStyleText(InspectorStyleSheetBase*,
-                        const SourceRange&,
-                        const String&,
-                        CSSStyleDeclaration*&);
-  Response multipleStyleTextsActions(
+  protocol::Response setStyleText(InspectorStyleSheetBase*,
+                                  const SourceRange&,
+                                  const String&,
+                                  CSSStyleDeclaration*&);
+  protocol::Response multipleStyleTextsActions(
       std::unique_ptr<protocol::Array<protocol::CSS::StyleDeclarationEdit>>,
       HeapVector<Member<StyleSheetAction>>* actions);
 
@@ -274,8 +280,10 @@ class CORE_EXPORT InspectorCSSAgent final
   InspectorStyleSheet* inspectorStyleSheetForRule(CSSStyleRule*);
 
   InspectorStyleSheet* viaInspectorStyleSheet(Document*);
-  Response assertInspectorStyleSheetForId(const String&, InspectorStyleSheet*&);
-  Response assertStyleSheetForId(const String&, InspectorStyleSheetBase*&);
+  protocol::Response assertInspectorStyleSheetForId(const String&,
+                                                    InspectorStyleSheet*&);
+  protocol::Response assertStyleSheetForId(const String&,
+                                           InspectorStyleSheetBase*&);
   String detectOrigin(CSSStyleSheet* pageStyleSheet, Document* ownerDocument);
 
   std::unique_ptr<protocol::CSS::CSSRule> buildObjectForRule(CSSStyleRule*);

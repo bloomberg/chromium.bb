@@ -45,9 +45,9 @@ class CORE_EXPORT InspectorMemoryAgent final
   static InspectorMemoryAgent* create() { return new InspectorMemoryAgent(); }
   ~InspectorMemoryAgent() override;
 
-  Response getDOMCounters(int* documents,
-                          int* nodes,
-                          int* jsEventListeners) override;
+  protocol::Response getDOMCounters(int* documents,
+                                    int* nodes,
+                                    int* jsEventListeners) override;
 
  private:
   InspectorMemoryAgent();

@@ -21,6 +21,9 @@
 
 namespace blink {
 
+using protocol::Maybe;
+using protocol::Response;
+
 namespace EmulationAgentState {
 static const char scriptExecutionDisabled[] = "scriptExecutionDisabled";
 static const char touchEventEmulationEnabled[] = "touchEventEmulationEnabled";

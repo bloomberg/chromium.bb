@@ -54,6 +54,9 @@ typedef blink::protocol::Database::Backend::ExecuteSQLCallback
 
 namespace blink {
 
+using protocol::Maybe;
+using protocol::Response;
+
 namespace DatabaseAgentState {
 static const char databaseAgentEnabled[] = "databaseAgentEnabled";
 };

@@ -192,30 +192,31 @@ class CORE_EXPORT InspectorNetworkAgent final
   void didReceiveWebSocketFrameError(unsigned long identifier, const String&);
 
   // Called from frontend
-  Response enable(Maybe<int> totalBufferSize,
-                  Maybe<int> resourceBufferSize) override;
-  Response disable() override;
-  Response setUserAgentOverride(const String&) override;
-  Response setExtraHTTPHeaders(
+  protocol::Response enable(Maybe<int> totalBufferSize,
+                            Maybe<int> resourceBufferSize) override;
+  protocol::Response disable() override;
+  protocol::Response setUserAgentOverride(const String&) override;
+  protocol::Response setExtraHTTPHeaders(
       std::unique_ptr<protocol::Network::Headers>) override;
   void getResponseBody(const String& requestId,
                        std::unique_ptr<GetResponseBodyCallback>) override;
-  Response addBlockedURL(const String& url) override;
-  Response removeBlockedURL(const String& url) override;
-  Response replayXHR(const String& requestId) override;
-  Response setMonitoringXHREnabled(bool) override;
-  Response canClearBrowserCache(bool* result) override;
-  Response canClearBrowserCookies(bool* result) override;
-  Response emulateNetworkConditions(bool offline,
-                                    double latency,
-                                    double downloadThroughput,
-                                    double uploadThroughput,
-                                    Maybe<String> connectionType) override;
-  Response setCacheDisabled(bool) override;
-  Response setBypassServiceWorker(bool) override;
-  Response setDataSizeLimitsForTest(int maxTotalSize,
-                                    int maxResourceSize) override;
-  Response getCertificate(
+  protocol::Response addBlockedURL(const String& url) override;
+  protocol::Response removeBlockedURL(const String& url) override;
+  protocol::Response replayXHR(const String& requestId) override;
+  protocol::Response setMonitoringXHREnabled(bool) override;
+  protocol::Response canClearBrowserCache(bool* result) override;
+  protocol::Response canClearBrowserCookies(bool* result) override;
+  protocol::Response emulateNetworkConditions(
+      bool offline,
+      double latency,
+      double downloadThroughput,
+      double uploadThroughput,
+      Maybe<String> connectionType) override;
+  protocol::Response setCacheDisabled(bool) override;
+  protocol::Response setBypassServiceWorker(bool) override;
+  protocol::Response setDataSizeLimitsForTest(int maxTotalSize,
+                                              int maxResourceSize) override;
+  protocol::Response getCertificate(
       const String& origin,
       std::unique_ptr<protocol::Array<String>>* certificate) override;
 

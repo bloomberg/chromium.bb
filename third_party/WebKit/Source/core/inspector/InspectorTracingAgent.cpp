@@ -15,6 +15,9 @@
 
 namespace blink {
 
+using protocol::Maybe;
+using protocol::Response;
+
 namespace TracingAgentState {
 const char sessionId[] = "sessionId";
 }

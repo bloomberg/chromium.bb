@@ -70,29 +70,30 @@ class CORE_EXPORT InspectorLayerTreeAgent final
   void didPaint(const GraphicsLayer*, GraphicsContext&, const LayoutRect&);
 
   // Called from the front-end.
-  Response enable() override;
-  Response disable() override;
-  Response compositingReasons(
+  protocol::Response enable() override;
+  protocol::Response disable() override;
+  protocol::Response compositingReasons(
       const String& layerId,
       std::unique_ptr<protocol::Array<String>>* compositingReasons) override;
-  Response makeSnapshot(const String& layerId, String* snapshotId) override;
-  Response loadSnapshot(
+  protocol::Response makeSnapshot(const String& layerId,
+                                  String* snapshotId) override;
+  protocol::Response loadSnapshot(
       std::unique_ptr<protocol::Array<protocol::LayerTree::PictureTile>> tiles,
       String* snapshotId) override;
-  Response releaseSnapshot(const String& snapshotId) override;
-  Response profileSnapshot(
+  protocol::Response releaseSnapshot(const String& snapshotId) override;
+  protocol::Response profileSnapshot(
       const String& snapshotId,
-      Maybe<int> minRepeatCount,
-      Maybe<double> minDuration,
-      Maybe<protocol::DOM::Rect> clipRect,
+      protocol::Maybe<int> minRepeatCount,
+      protocol::Maybe<double> minDuration,
+      protocol::Maybe<protocol::DOM::Rect> clipRect,
       std::unique_ptr<protocol::Array<protocol::Array<double>>>* timings)
       override;
-  Response replaySnapshot(const String& snapshotId,
-                          Maybe<int> fromStep,
-                          Maybe<int> toStep,
-                          Maybe<double> scale,
-                          String* dataURL) override;
-  Response snapshotCommandLog(
+  protocol::Response replaySnapshot(const String& snapshotId,
+                                    protocol::Maybe<int> fromStep,
+                                    protocol::Maybe<int> toStep,
+                                    protocol::Maybe<double> scale,
+                                    String* dataURL) override;
+  protocol::Response snapshotCommandLog(
       const String& snapshotId,
       std::unique_ptr<protocol::Array<protocol::DictionaryValue>>* commandLog)
       override;
@@ -108,8 +109,9 @@ class CORE_EXPORT InspectorLayerTreeAgent final
   GraphicsLayer* rootGraphicsLayer();
 
   PaintLayerCompositor* paintLayerCompositor();
-  Response layerById(const String& layerId, GraphicsLayer*&);
-  Response snapshotById(const String& snapshotId, const PictureSnapshot*&);
+  protocol::Response layerById(const String& layerId, GraphicsLayer*&);
+  protocol::Response snapshotById(const String& snapshotId,
+                                  const PictureSnapshot*&);
 
   typedef HashMap<int, int> LayerIdToNodeIdMap;
   void buildLayerIdToNodeIdMap(PaintLayer*, LayerIdToNodeIdMap&);

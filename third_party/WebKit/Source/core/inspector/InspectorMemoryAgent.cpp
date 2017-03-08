@@ -34,6 +34,8 @@
 
 namespace blink {
 
+using protocol::Response;
+
 InspectorMemoryAgent::~InspectorMemoryAgent() {}
 
 Response InspectorMemoryAgent::getDOMCounters(int* documents,

@@ -108,19 +108,20 @@ class CORE_EXPORT InspectorPageAgent final
   static String cachedResourceTypeJson(const Resource&);
 
   // Page API for frontend
-  Response enable() override;
-  Response disable() override;
-  Response addScriptToEvaluateOnLoad(const String& scriptSource,
-                                     String* identifier) override;
-  Response removeScriptToEvaluateOnLoad(const String& identifier) override;
-  Response setAutoAttachToCreatedPages(bool) override;
-  Response reload(Maybe<bool> bypassCache,
-                  Maybe<String> scriptToEvaluateOnLoad) override;
-  Response navigate(const String& url,
-                    Maybe<String> referrer,
-                    String* frameId) override;
-  Response stopLoading() override;
-  Response getResourceTree(
+  protocol::Response enable() override;
+  protocol::Response disable() override;
+  protocol::Response addScriptToEvaluateOnLoad(const String& scriptSource,
+                                               String* identifier) override;
+  protocol::Response removeScriptToEvaluateOnLoad(
+      const String& identifier) override;
+  protocol::Response setAutoAttachToCreatedPages(bool) override;
+  protocol::Response reload(Maybe<bool> bypassCache,
+                            Maybe<String> scriptToEvaluateOnLoad) override;
+  protocol::Response navigate(const String& url,
+                              Maybe<String> referrer,
+                              String* frameId) override;
+  protocol::Response stopLoading() override;
+  protocol::Response getResourceTree(
       std::unique_ptr<protocol::Page::FrameResourceTree>* frameTree) override;
   void getResourceContent(const String& frameId,
                           const String& url,
@@ -131,19 +132,20 @@ class CORE_EXPORT InspectorPageAgent final
                         Maybe<bool> caseSensitive,
                         Maybe<bool> isRegex,
                         std::unique_ptr<SearchInResourceCallback>) override;
-  Response setDocumentContent(const String& frameId,
-                              const String& html) override;
-  Response startScreencast(Maybe<String> format,
-                           Maybe<int> quality,
-                           Maybe<int> maxWidth,
-                           Maybe<int> maxHeight,
-                           Maybe<int> everyNthFrame) override;
-  Response stopScreencast() override;
-  Response configureOverlay(Maybe<bool> suspended,
-                            Maybe<String> message) override;
-  Response getLayoutMetrics(std::unique_ptr<protocol::Page::LayoutViewport>*,
-                            std::unique_ptr<protocol::Page::VisualViewport>*,
-                            std::unique_ptr<protocol::DOM::Rect>*) override;
+  protocol::Response setDocumentContent(const String& frameId,
+                                        const String& html) override;
+  protocol::Response startScreencast(Maybe<String> format,
+                                     Maybe<int> quality,
+                                     Maybe<int> maxWidth,
+                                     Maybe<int> maxHeight,
+                                     Maybe<int> everyNthFrame) override;
+  protocol::Response stopScreencast() override;
+  protocol::Response configureOverlay(Maybe<bool> suspended,
+                                      Maybe<String> message) override;
+  protocol::Response getLayoutMetrics(
+      std::unique_ptr<protocol::Page::LayoutViewport>*,
+      std::unique_ptr<protocol::Page::VisualViewport>*,
+      std::unique_ptr<protocol::DOM::Rect>*) override;
 
   // InspectorInstrumentation API
   void didClearDocumentOfWindowObject(LocalFrame*);

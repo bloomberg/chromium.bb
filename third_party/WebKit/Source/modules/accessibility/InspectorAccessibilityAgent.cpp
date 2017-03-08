@@ -34,6 +34,8 @@ using protocol::Accessibility::AXRelationshipAttributes;
 using protocol::Accessibility::AXValue;
 using protocol::Accessibility::AXWidgetAttributes;
 using protocol::Accessibility::AXWidgetStates;
+using protocol::Maybe;
+using protocol::Response;
 
 using namespace HTMLNames;
 

@@ -36,22 +36,24 @@ class InspectorEmulationAgent final
   ~InspectorEmulationAgent() override;
 
   // protocol::Dispatcher::EmulationCommandHandler implementation.
-  Response forceViewport(double x, double y, double scale) override;
-  Response resetViewport() override;
-  Response resetPageScaleFactor() override;
-  Response setPageScaleFactor(double) override;
-  Response setScriptExecutionDisabled(bool value) override;
-  Response setTouchEmulationEnabled(bool enabled,
-                                    Maybe<String> configuration) override;
-  Response setEmulatedMedia(const String&) override;
-  Response setCPUThrottlingRate(double) override;
-  Response setVirtualTimePolicy(const String& policy,
-                                Maybe<int> virtualTimeBudgetMs) override;
-  Response setDefaultBackgroundColorOverride(
-      Maybe<protocol::DOM::RGBA>) override;
+  protocol::Response forceViewport(double x, double y, double scale) override;
+  protocol::Response resetViewport() override;
+  protocol::Response resetPageScaleFactor() override;
+  protocol::Response setPageScaleFactor(double) override;
+  protocol::Response setScriptExecutionDisabled(bool value) override;
+  protocol::Response setTouchEmulationEnabled(
+      bool enabled,
+      protocol::Maybe<String> configuration) override;
+  protocol::Response setEmulatedMedia(const String&) override;
+  protocol::Response setCPUThrottlingRate(double) override;
+  protocol::Response setVirtualTimePolicy(
+      const String& policy,
+      protocol::Maybe<int> virtualTimeBudgetMs) override;
+  protocol::Response setDefaultBackgroundColorOverride(
+      protocol::Maybe<protocol::DOM::RGBA>) override;
 
   // InspectorBaseAgent overrides.
-  Response disable() override;
+  protocol::Response disable() override;
   void restore() override;
 
   DECLARE_VIRTUAL_TRACE();

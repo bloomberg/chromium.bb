@@ -13,6 +13,8 @@
 
 namespace blink {
 
+using protocol::Response;
+
 namespace RenderingAgentState {
 static const char showDebugBorders[] = "showDebugBorders";
 static const char showFPSCounter[] = "showFPSCounter";

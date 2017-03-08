@@ -44,6 +44,8 @@
 
 namespace blink {
 
+using protocol::Response;
+
 namespace DOMStorageAgentState {
 static const char domStorageAgentEnabled[] = "domStorageAgentEnabled";
 };

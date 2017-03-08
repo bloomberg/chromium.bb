@@ -68,6 +68,8 @@ using blink::protocol::IndexedDB::KeyPath;
 using blink::protocol::IndexedDB::KeyRange;
 using blink::protocol::IndexedDB::ObjectStore;
 using blink::protocol::IndexedDB::ObjectStoreIndex;
+using blink::protocol::Maybe;
+using blink::protocol::Response;
 
 typedef blink::protocol::IndexedDB::Backend::RequestDatabaseNamesCallback
     RequestDatabaseNamesCallback;

@@ -92,6 +92,8 @@
 
 namespace blink {
 
+using protocol::Response;
+
 namespace {
 
 int s_frontendOperationCounter = 0;

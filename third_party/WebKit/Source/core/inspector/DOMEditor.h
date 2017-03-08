@@ -43,7 +43,6 @@ class ExceptionState;
 class InspectorHistory;
 class Node;
 class Text;
-using protocol::Response;
 
 class DOMEditor final : public GarbageCollected<DOMEditor> {
   WTF_MAKE_NONCOPYABLE(DOMEditor);
@@ -71,12 +70,16 @@ class DOMEditor final : public GarbageCollected<DOMEditor> {
                     ExceptionState&);
   bool setNodeValue(Node* parentNode, const String& value, ExceptionState&);
 
-  Response insertBefore(ContainerNode* parentNode, Node*, Node* anchorNode);
-  Response removeChild(ContainerNode* parentNode, Node*);
-  Response setAttribute(Element*, const String& name, const String& value);
-  Response removeAttribute(Element*, const String& name);
-  Response setOuterHTML(Node*, const String& html, Node** newNode);
-  Response replaceWholeText(Text*, const String& text);
+  protocol::Response insertBefore(ContainerNode* parentNode,
+                                  Node*,
+                                  Node* anchorNode);
+  protocol::Response removeChild(ContainerNode* parentNode, Node*);
+  protocol::Response setAttribute(Element*,
+                                  const String& name,
+                                  const String& value);
+  protocol::Response removeAttribute(Element*, const String& name);
+  protocol::Response setOuterHTML(Node*, const String& html, Node** newNode);
+  protocol::Response replaceWholeText(Text*, const String& text);
 
  private:
   class DOMAction;

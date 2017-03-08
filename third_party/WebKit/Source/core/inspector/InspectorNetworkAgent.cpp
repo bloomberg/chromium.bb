@@ -84,6 +84,7 @@ namespace blink {
 
 using GetResponseBodyCallback =
     protocol::Network::Backend::GetResponseBodyCallback;
+using protocol::Response;
 
 namespace NetworkAgentState {
 static const char networkAgentEnabled[] = "networkAgentEnabled";

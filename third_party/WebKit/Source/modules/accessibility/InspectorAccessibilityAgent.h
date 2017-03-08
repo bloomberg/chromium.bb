@@ -30,9 +30,9 @@ class MODULES_EXPORT InspectorAccessibilityAgent
   DECLARE_VIRTUAL_TRACE();
 
   // Protocol methods.
-  Response getPartialAXTree(
+  protocol::Response getPartialAXTree(
       int domNodeId,
-      Maybe<bool> fetchRelatives,
+      protocol::Maybe<bool> fetchRelatives,
       std::unique_ptr<protocol::Array<protocol::Accessibility::AXNode>>*)
       override;
 

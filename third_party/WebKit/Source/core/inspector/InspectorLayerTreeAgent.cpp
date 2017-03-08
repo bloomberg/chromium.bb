@@ -60,6 +60,8 @@
 namespace blink {
 
 using protocol::Array;
+using protocol::Maybe;
+using protocol::Response;
 unsigned InspectorLayerTreeAgent::s_lastSnapshotId;
 
 inline String idForLayer(const GraphicsLayer* graphicsLayer) {

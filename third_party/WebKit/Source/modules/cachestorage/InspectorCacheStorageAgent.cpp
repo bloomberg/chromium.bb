@@ -31,6 +31,7 @@
 using blink::protocol::Array;
 using blink::protocol::CacheStorage::Cache;
 using blink::protocol::CacheStorage::DataEntry;
+using blink::protocol::Response;
 
 typedef blink::protocol::CacheStorage::Backend::DeleteCacheCallback
     DeleteCacheCallback;

@@ -62,6 +62,9 @@ const int domBreakpointDerivedTypeShift = 16;
 
 namespace blink {
 
+using protocol::Maybe;
+using protocol::Response;
+
 static const char webglErrorFiredEventName[] = "webglErrorFired";
 static const char webglWarningFiredEventName[] = "webglWarningFired";
 static const char webglErrorNameProperty[] = "webglErrorName";

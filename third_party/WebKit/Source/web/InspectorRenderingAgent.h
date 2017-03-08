@@ -22,21 +22,21 @@ class InspectorRenderingAgent final
   static InspectorRenderingAgent* create(WebLocalFrameImpl*, InspectorOverlay*);
 
   // protocol::Dispatcher::PageCommandHandler implementation.
-  Response setShowPaintRects(bool) override;
-  Response setShowDebugBorders(bool) override;
-  Response setShowFPSCounter(bool) override;
-  Response setShowScrollBottleneckRects(bool) override;
-  Response setShowViewportSizeOnResize(bool) override;
+  protocol::Response setShowPaintRects(bool) override;
+  protocol::Response setShowDebugBorders(bool) override;
+  protocol::Response setShowFPSCounter(bool) override;
+  protocol::Response setShowScrollBottleneckRects(bool) override;
+  protocol::Response setShowViewportSizeOnResize(bool) override;
 
   // InspectorBaseAgent overrides.
-  Response disable() override;
+  protocol::Response disable() override;
   void restore() override;
 
   DECLARE_VIRTUAL_TRACE();
 
  private:
   InspectorRenderingAgent(WebLocalFrameImpl*, InspectorOverlay*);
-  Response compositingEnabled();
+  protocol::Response compositingEnabled();
   WebViewImpl* webViewImpl();
 
   Member<WebLocalFrameImpl> m_webLocalFrameImpl;

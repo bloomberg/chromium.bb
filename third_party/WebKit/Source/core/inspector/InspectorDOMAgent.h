@@ -96,7 +96,7 @@ class CORE_EXPORT InspectorDOMAgent final
                                 std::unique_ptr<InspectorHighlightConfig>) {}
   };
 
-  static Response toResponse(ExceptionState&);
+  static protocol::Response toResponse(ExceptionState&);
   static bool getPseudoElementType(PseudoId, String*);
   static ShadowRoot* userAgentShadowRoot(Node*);
 
@@ -113,105 +113,116 @@ class CORE_EXPORT InspectorDOMAgent final
   void reset();
 
   // Methods called from the frontend for DOM nodes inspection.
-  Response enable() override;
-  Response disable() override;
-  Response getDocument(Maybe<int> depth,
-                       Maybe<bool> traverseFrames,
-                       std::unique_ptr<protocol::DOM::Node>* root) override;
-  Response getFlattenedDocument(
-      Maybe<int> depth,
-      Maybe<bool> pierce,
+  protocol::Response enable() override;
+  protocol::Response disable() override;
+  protocol::Response getDocument(
+      protocol::Maybe<int> depth,
+      protocol::Maybe<bool> traverseFrames,
+      std::unique_ptr<protocol::DOM::Node>* root) override;
+  protocol::Response getFlattenedDocument(
+      protocol::Maybe<int> depth,
+      protocol::Maybe<bool> pierce,
       std::unique_ptr<protocol::Array<protocol::DOM::Node>>* nodes) override;
-  Response collectClassNamesFromSubtree(
+  protocol::Response collectClassNamesFromSubtree(
       int nodeId,
       std::unique_ptr<protocol::Array<String>>* classNames) override;
-  Response requestChildNodes(int nodeId,
-                             Maybe<int> depth,
-                             Maybe<bool> traverseFrames) override;
-  Response querySelector(int nodeId,
-                         const String& selector,
-                         int* outNodeId) override;
-  Response querySelectorAll(
+  protocol::Response requestChildNodes(
+      int nodeId,
+      protocol::Maybe<int> depth,
+      protocol::Maybe<bool> traverseFrames) override;
+  protocol::Response querySelector(int nodeId,
+                                   const String& selector,
+                                   int* outNodeId) override;
+  protocol::Response querySelectorAll(
       int nodeId,
       const String& selector,
       std::unique_ptr<protocol::Array<int>>* nodeIds) override;
-  Response setNodeName(int nodeId, const String& name, int* outNodeId) override;
-  Response setNodeValue(int nodeId, const String& value) override;
-  Response removeNode(int nodeId) override;
-  Response setAttributeValue(int nodeId,
-                             const String& name,
-                             const String& value) override;
-  Response setAttributesAsText(int nodeId,
-                               const String& text,
-                               Maybe<String> name) override;
-  Response removeAttribute(int nodeId, const String& name) override;
-  Response getOuterHTML(int nodeId, String* outerHTML) override;
-  Response setOuterHTML(int nodeId, const String& outerHTML) override;
-  Response performSearch(const String& query,
-                         Maybe<bool> includeUserAgentShadowDOM,
-                         String* searchId,
-                         int* resultCount) override;
-  Response getSearchResults(
+  protocol::Response setNodeName(int nodeId,
+                                 const String& name,
+                                 int* outNodeId) override;
+  protocol::Response setNodeValue(int nodeId, const String& value) override;
+  protocol::Response removeNode(int nodeId) override;
+  protocol::Response setAttributeValue(int nodeId,
+                                       const String& name,
+                                       const String& value) override;
+  protocol::Response setAttributesAsText(int nodeId,
+                                         const String& text,
+                                         protocol::Maybe<String> name) override;
+  protocol::Response removeAttribute(int nodeId, const String& name) override;
+  protocol::Response getOuterHTML(int nodeId, String* outerHTML) override;
+  protocol::Response setOuterHTML(int nodeId, const String& outerHTML) override;
+  protocol::Response performSearch(
+      const String& query,
+      protocol::Maybe<bool> includeUserAgentShadowDOM,
+      String* searchId,
+      int* resultCount) override;
+  protocol::Response getSearchResults(
       const String& searchId,
       int fromIndex,
       int toIndex,
       std::unique_ptr<protocol::Array<int>>* nodeIds) override;
-  Response discardSearchResults(const String& searchId) override;
-  Response requestNode(const String& objectId, int* outNodeId) override;
-  Response setInspectMode(const String& mode,
-                          Maybe<protocol::DOM::HighlightConfig>) override;
-  Response highlightRect(int x,
-                         int y,
-                         int width,
-                         int height,
-                         Maybe<protocol::DOM::RGBA> color,
-                         Maybe<protocol::DOM::RGBA> outlineColor) override;
-  Response highlightQuad(std::unique_ptr<protocol::Array<double>> quad,
-                         Maybe<protocol::DOM::RGBA> color,
-                         Maybe<protocol::DOM::RGBA> outlineColor) override;
-  Response highlightNode(std::unique_ptr<protocol::DOM::HighlightConfig>,
-                         Maybe<int> nodeId,
-                         Maybe<int> backendNodeId,
-                         Maybe<String> objectId) override;
-  Response hideHighlight() override;
-  Response highlightFrame(
+  protocol::Response discardSearchResults(const String& searchId) override;
+  protocol::Response requestNode(const String& objectId,
+                                 int* outNodeId) override;
+  protocol::Response setInspectMode(
+      const String& mode,
+      protocol::Maybe<protocol::DOM::HighlightConfig>) override;
+  protocol::Response highlightRect(
+      int x,
+      int y,
+      int width,
+      int height,
+      protocol::Maybe<protocol::DOM::RGBA> color,
+      protocol::Maybe<protocol::DOM::RGBA> outlineColor) override;
+  protocol::Response highlightQuad(
+      std::unique_ptr<protocol::Array<double>> quad,
+      protocol::Maybe<protocol::DOM::RGBA> color,
+      protocol::Maybe<protocol::DOM::RGBA> outlineColor) override;
+  protocol::Response highlightNode(
+      std::unique_ptr<protocol::DOM::HighlightConfig>,
+      protocol::Maybe<int> nodeId,
+      protocol::Maybe<int> backendNodeId,
+      protocol::Maybe<String> objectId) override;
+  protocol::Response hideHighlight() override;
+  protocol::Response highlightFrame(
       const String& frameId,
-      Maybe<protocol::DOM::RGBA> contentColor,
-      Maybe<protocol::DOM::RGBA> contentOutlineColor) override;
-  Response pushNodeByPathToFrontend(const String& path,
-                                    int* outNodeId) override;
-  Response pushNodesByBackendIdsToFrontend(
+      protocol::Maybe<protocol::DOM::RGBA> contentColor,
+      protocol::Maybe<protocol::DOM::RGBA> contentOutlineColor) override;
+  protocol::Response pushNodeByPathToFrontend(const String& path,
+                                              int* outNodeId) override;
+  protocol::Response pushNodesByBackendIdsToFrontend(
       std::unique_ptr<protocol::Array<int>> backendNodeIds,
       std::unique_ptr<protocol::Array<int>>* nodeIds) override;
-  Response setInspectedNode(int nodeId) override;
-  Response resolveNode(
+  protocol::Response setInspectedNode(int nodeId) override;
+  protocol::Response resolveNode(
       int nodeId,
-      Maybe<String> objectGroup,
+      protocol::Maybe<String> objectGroup,
       std::unique_ptr<v8_inspector::protocol::Runtime::API::RemoteObject>*)
       override;
-  Response getAttributes(
+  protocol::Response getAttributes(
       int nodeId,
       std::unique_ptr<protocol::Array<String>>* attributes) override;
-  Response copyTo(int nodeId,
-                  int targetNodeId,
-                  Maybe<int> insertBeforeNodeId,
-                  int* outNodeId) override;
-  Response moveTo(int nodeId,
-                  int targetNodeId,
-                  Maybe<int> insertBeforeNodeId,
-                  int* outNodeId) override;
-  Response undo() override;
-  Response redo() override;
-  Response markUndoableState() override;
-  Response focus(int nodeId) override;
-  Response setFileInputFiles(
+  protocol::Response copyTo(int nodeId,
+                            int targetNodeId,
+                            protocol::Maybe<int> insertBeforeNodeId,
+                            int* outNodeId) override;
+  protocol::Response moveTo(int nodeId,
+                            int targetNodeId,
+                            protocol::Maybe<int> insertBeforeNodeId,
+                            int* outNodeId) override;
+  protocol::Response undo() override;
+  protocol::Response redo() override;
+  protocol::Response markUndoableState() override;
+  protocol::Response focus(int nodeId) override;
+  protocol::Response setFileInputFiles(
       int nodeId,
       std::unique_ptr<protocol::Array<String>> files) override;
-  Response getBoxModel(int nodeId,
-                       std::unique_ptr<protocol::DOM::BoxModel>*) override;
-  Response getNodeForLocation(int x, int y, int* outNodeId) override;
-  Response getRelayoutBoundary(int nodeId, int* outNodeId) override;
-  Response getHighlightObjectForTest(
+  protocol::Response getBoxModel(
+      int nodeId,
+      std::unique_ptr<protocol::DOM::BoxModel>*) override;
+  protocol::Response getNodeForLocation(int x, int y, int* outNodeId) override;
+  protocol::Response getRelayoutBoundary(int nodeId, int* outNodeId) override;
+  protocol::Response getHighlightObjectForTest(
       int nodeId,
       std::unique_ptr<protocol::DictionaryValue>* highlight) override;
 
@@ -271,18 +282,19 @@ class CORE_EXPORT InspectorDOMAgent final
                            Function<bool(Node*)>*,
                            HeapVector<Member<Node>>* result);
 
-  Response assertNode(int nodeId, Node*&);
-  Response assertElement(int nodeId, Element*&);
+  protocol::Response assertNode(int nodeId, Node*&);
+  protocol::Response assertElement(int nodeId, Element*&);
   Document* document() const { return m_document.get(); }
 
  private:
   void setDocument(Document*);
   void innerEnable();
 
-  Response setSearchingForNode(SearchMode,
-                               Maybe<protocol::DOM::HighlightConfig>);
-  Response highlightConfigFromInspectorObject(
-      Maybe<protocol::DOM::HighlightConfig> highlightInspectorObject,
+  protocol::Response setSearchingForNode(
+      SearchMode,
+      protocol::Maybe<protocol::DOM::HighlightConfig>);
+  protocol::Response highlightConfigFromInspectorObject(
+      protocol::Maybe<protocol::DOM::HighlightConfig> highlightInspectorObject,
       std::unique_ptr<InspectorHighlightConfig>*);
 
   // Node-related methods.
@@ -290,9 +302,11 @@ class CORE_EXPORT InspectorDOMAgent final
   int bind(Node*, NodeToIdMap*);
   void unbind(Node*, NodeToIdMap*);
 
-  Response assertEditableNode(int nodeId, Node*&);
-  Response assertEditableChildNode(Element* parentElement, int nodeId, Node*&);
-  Response assertEditableElement(int nodeId, Element*&);
+  protocol::Response assertEditableNode(int nodeId, Node*&);
+  protocol::Response assertEditableChildNode(Element* parentElement,
+                                             int nodeId,
+                                             Node*&);
+  protocol::Response assertEditableElement(int nodeId, Element*&);
 
   int pushNodePathToFrontend(Node*, NodeToIdMap* nodeMap);
   void pushChildNodesToFrontend(int nodeId,
@@ -324,15 +338,15 @@ class CORE_EXPORT InspectorDOMAgent final
   buildDistributedNodesForSlot(HTMLSlotElement*);
 
   Node* nodeForPath(const String& path);
-  Response nodeForRemoteId(const String& id, Node*&);
+  protocol::Response nodeForRemoteId(const String& id, Node*&);
 
   void discardFrontendBindings();
 
   void innerHighlightQuad(std::unique_ptr<FloatQuad>,
-                          Maybe<protocol::DOM::RGBA> color,
-                          Maybe<protocol::DOM::RGBA> outlineColor);
+                          protocol::Maybe<protocol::DOM::RGBA> color,
+                          protocol::Maybe<protocol::DOM::RGBA> outlineColor);
 
-  Response pushDocumentUponHandlelessOperation();
+  protocol::Response pushDocumentUponHandlelessOperation();
 
   InspectorRevalidateDOMTask* revalidateTask();
 

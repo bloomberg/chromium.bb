@@ -38,6 +38,8 @@
 
 namespace blink {
 
+using protocol::Response;
+
 namespace WorkerAgentState {
 static const char autoAttach[] = "autoAttach";
 static const char waitForDebuggerOnStart[] = "waitForDebuggerOnStart";
