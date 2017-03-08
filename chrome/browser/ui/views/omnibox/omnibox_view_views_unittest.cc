@@ -26,59 +26,49 @@
 #include "chrome/browser/chromeos/input_method/mock_input_method_manager_impl.h"
 #endif
 
+using gfx::Range;
+
 namespace {
 
-class TestingOmniboxViewViews : public OmniboxViewViews {
+// TestingOmniboxView ---------------------------------------------------------
+
+class TestingOmniboxView : public OmniboxViewViews {
  public:
-  TestingOmniboxViewViews(OmniboxEditController* controller,
-                          Profile* profile,
-                          CommandUpdater* command_updater)
-      : OmniboxViewViews(controller,
-                         profile,
-                         command_updater,
-                         false,
-                         nullptr,
-                         gfx::FontList()),
-        update_popup_call_count_(0),
-        profile_(profile),
-        base_text_is_emphasized_(false) {}
+  enum BaseTextEmphasis {
+    DEEMPHASIZED,
+    EMPHASIZED,
+    UNSET,
+  };
 
-  void CheckUpdatePopupCallInfo(size_t call_count, const base::string16& text,
-                                const gfx::Range& selection_range) {
-    EXPECT_EQ(call_count, update_popup_call_count_);
-    EXPECT_EQ(text, update_popup_text_);
-    EXPECT_EQ(selection_range, update_popup_selection_range_);
+  TestingOmniboxView(OmniboxEditController* controller,
+                     Profile* profile,
+                     CommandUpdater* command_updater);
+
+  static BaseTextEmphasis to_base_text_emphasis(bool emphasize) {
+    return emphasize ? EMPHASIZED : DEEMPHASIZED;
   }
 
-  void EmphasizeURLComponents() override {
-    UpdateTextStyle(text(), ChromeAutocompleteSchemeClassifier(profile_));
-  }
+  void ResetEmphasisTestState();
 
-  gfx::Range scheme_range() const { return scheme_range_; }
-  gfx::Range emphasis_range() const { return emphasis_range_; }
-  bool base_text_is_emphasized() const { return base_text_is_emphasized_; }
+  void CheckUpdatePopupCallInfo(size_t call_count,
+                                const base::string16& text,
+                                const Range& selection_range);
+
+  Range scheme_range() const { return scheme_range_; }
+  Range emphasis_range() const { return emphasis_range_; }
+  BaseTextEmphasis base_text_emphasis() const { return base_text_emphasis_; }
+
+  // OmniboxViewViews:
+  void EmphasizeURLComponents() override;
 
  private:
-  // OmniboxView:
-  void UpdatePopup() override {
-    ++update_popup_call_count_;
-    update_popup_text_ = text();
-    update_popup_selection_range_ = GetSelectedRange();
-  }
-
-  void SetEmphasis(bool emphasize, const gfx::Range& range) override {
-    if (range == gfx::Range::InvalidRange()) {
-      base_text_is_emphasized_ = emphasize;
-      return;
-    }
-
-    EXPECT_TRUE(emphasize);
-    emphasis_range_ = range;
-  }
-
-  void UpdateSchemeStyle(const gfx::Range& range) override {
-    scheme_range_ = range;
-  }
+  // OmniboxViewViews:
+  // There is no popup and it doesn't actually matter whether we change the
+  // visual style of the text, so these methods are all overridden merely to
+  // capture relevant state at the time of the call, to be checked by test code.
+  void UpdatePopup() override;
+  void SetEmphasis(bool emphasize, const Range& range) override;
+  void UpdateSchemeStyle(const Range& range) override;
 
   // Simplistic test override returns whether a given string looks like a URL
   // without having to mock AutocompleteClassifier objects and their
@@ -89,29 +79,81 @@ class TestingOmniboxViewViews : public OmniboxViewViews {
     return looks_like_url;
   }
 
-  size_t update_popup_call_count_;
+  size_t update_popup_call_count_ = 0;
   base::string16 update_popup_text_;
-  gfx::Range update_popup_selection_range_;
+  Range update_popup_selection_range_;
   Profile* profile_;
 
   // Range of the last scheme logged by UpdateSchemeStyle().
-  gfx::Range scheme_range_;
+  Range scheme_range_;
 
   // Range of the last text emphasized by SetEmphasis().
-  gfx::Range emphasis_range_;
+  Range emphasis_range_;
 
   // SetEmphasis() logs whether the base color of the text is emphasized.
-  bool base_text_is_emphasized_;
+  BaseTextEmphasis base_text_emphasis_ = UNSET;
 
-  DISALLOW_COPY_AND_ASSIGN(TestingOmniboxViewViews);
+  DISALLOW_COPY_AND_ASSIGN(TestingOmniboxView);
 };
+
+TestingOmniboxView::TestingOmniboxView(OmniboxEditController* controller,
+                                       Profile* profile,
+                                       CommandUpdater* command_updater)
+    : OmniboxViewViews(controller,
+                       profile,
+                       command_updater,
+                       false,
+                       nullptr,
+                       gfx::FontList()),
+      profile_(profile) {}
+
+void TestingOmniboxView::ResetEmphasisTestState() {
+  base_text_emphasis_ = UNSET;
+  emphasis_range_ = Range::InvalidRange();
+  scheme_range_ = Range::InvalidRange();
+}
+
+void TestingOmniboxView::CheckUpdatePopupCallInfo(
+    size_t call_count,
+    const base::string16& text,
+    const Range& selection_range) {
+  EXPECT_EQ(call_count, update_popup_call_count_);
+  EXPECT_EQ(text, update_popup_text_);
+  EXPECT_EQ(selection_range, update_popup_selection_range_);
+}
+
+void TestingOmniboxView::EmphasizeURLComponents() {
+  UpdateTextStyle(text(), ChromeAutocompleteSchemeClassifier(profile_));
+}
+
+void TestingOmniboxView::UpdatePopup() {
+  ++update_popup_call_count_;
+  update_popup_text_ = text();
+  update_popup_selection_range_ = GetSelectedRange();
+}
+
+void TestingOmniboxView::SetEmphasis(bool emphasize, const Range& range) {
+  if (range == Range::InvalidRange()) {
+    base_text_emphasis_ = to_base_text_emphasis(emphasize);
+    return;
+  }
+
+  EXPECT_TRUE(emphasize);
+  emphasis_range_ = range;
+}
+
+void TestingOmniboxView::UpdateSchemeStyle(const Range& range) {
+  scheme_range_ = range;
+}
+
+// TestingOmniboxEditController -----------------------------------------------
 
 class TestingOmniboxEditController : public ChromeOmniboxEditController {
  public:
   explicit TestingOmniboxEditController(CommandUpdater* command_updater)
       : ChromeOmniboxEditController(command_updater) {}
 
- protected:
+ private:
   // ChromeOmniboxEditController:
   void UpdateWithoutTabRestore() override {}
   void OnChanged() override {}
@@ -119,65 +161,69 @@ class TestingOmniboxEditController : public ChromeOmniboxEditController {
   const ToolbarModel* GetToolbarModel() const override { return nullptr; }
   content::WebContents* GetWebContents() override { return nullptr; }
 
- private:
   DISALLOW_COPY_AND_ASSIGN(TestingOmniboxEditController);
 };
 
 }  // namespace
 
+// OmniboxViewViewsTest -------------------------------------------------------
+
 class OmniboxViewViewsTest : public testing::Test {
  public:
-  OmniboxViewViewsTest()
-      : command_updater_(NULL),
-        omnibox_edit_controller_(&command_updater_) {
-  }
+  OmniboxViewViewsTest();
 
-  TestingOmniboxViewViews* omnibox_view() {
-    return omnibox_view_.get();
-  }
-
-  views::Textfield* omnibox_textfield() {
-    return omnibox_view();
-  }
-
+  TestingOmniboxView* omnibox_view() { return omnibox_view_.get(); }
+  views::Textfield* omnibox_textfield() { return omnibox_view(); }
   ui::TextEditCommand scheduled_text_edit_command() const {
     return test_api_->scheduled_text_edit_command();
   }
 
-  void SetAndEmphasizeText(const std::string& new_text) {
-    omnibox_textfield()->SetText(base::ASCIIToUTF16(new_text));
-    omnibox_view()->EmphasizeURLComponents();
-  }
+  // Sets |new_text| as the omnibox text, and emphasizes it appropriately.
+  void SetAndEmphasizeText(const std::string& new_text);
 
  private:
   // testing::Test:
-  void SetUp() override {
-#if defined(OS_CHROMEOS)
-    chromeos::input_method::InitializeForTesting(
-        new chromeos::input_method::MockInputMethodManagerImpl);
-#endif
-    omnibox_view_.reset(new TestingOmniboxViewViews(
-        &omnibox_edit_controller_, &profile_, &command_updater_));
-    test_api_.reset(new views::TextfieldTestApi(omnibox_view_.get()));
-    omnibox_view_->Init();
-  }
-
-  void TearDown() override {
-    omnibox_view_.reset();
-#if defined(OS_CHROMEOS)
-    chromeos::input_method::Shutdown();
-#endif
-  }
+  void SetUp() override;
+  void TearDown() override;
 
   content::TestBrowserThreadBundle thread_bundle_;
   TestingProfile profile_;
   CommandUpdater command_updater_;
   TestingOmniboxEditController omnibox_edit_controller_;
-  std::unique_ptr<TestingOmniboxViewViews> omnibox_view_;
+  std::unique_ptr<TestingOmniboxView> omnibox_view_;
   std::unique_ptr<views::TextfieldTestApi> test_api_;
 
   DISALLOW_COPY_AND_ASSIGN(OmniboxViewViewsTest);
 };
+
+OmniboxViewViewsTest::OmniboxViewViewsTest()
+    : command_updater_(nullptr), omnibox_edit_controller_(&command_updater_) {}
+
+void OmniboxViewViewsTest::SetAndEmphasizeText(const std::string& new_text) {
+  omnibox_view()->ResetEmphasisTestState();
+  omnibox_view()->SetText(base::ASCIIToUTF16(new_text));
+  omnibox_view()->EmphasizeURLComponents();
+}
+
+void OmniboxViewViewsTest::SetUp() {
+#if defined(OS_CHROMEOS)
+  chromeos::input_method::InitializeForTesting(
+      new chromeos::input_method::MockInputMethodManagerImpl);
+#endif
+  omnibox_view_ = base::MakeUnique<TestingOmniboxView>(
+      &omnibox_edit_controller_, &profile_, &command_updater_);
+  test_api_ = base::MakeUnique<views::TextfieldTestApi>(omnibox_view_.get());
+  omnibox_view_->Init();
+}
+
+void OmniboxViewViewsTest::TearDown() {
+  omnibox_view_.reset();
+#if defined(OS_CHROMEOS)
+  chromeos::input_method::Shutdown();
+#endif
+}
+
+// Actual tests ---------------------------------------------------------------
 
 // Checks that a single change of the text in the omnibox invokes
 // only one call to OmniboxViewViews::UpdatePopup().
@@ -186,20 +232,20 @@ TEST_F(OmniboxViewViewsTest, UpdatePopupCall) {
                           ui::DomKey::FromCharacter('a'),
                           ui::EventTimeForNow());
   omnibox_textfield()->InsertChar(char_event);
-  omnibox_view()->CheckUpdatePopupCallInfo(
-      1, base::ASCIIToUTF16("a"), gfx::Range(1));
+  omnibox_view()->CheckUpdatePopupCallInfo(1, base::ASCIIToUTF16("a"),
+                                           Range(1));
 
   char_event =
       ui::KeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_B, ui::DomCode::US_B, 0,
                    ui::DomKey::FromCharacter('b'), ui::EventTimeForNow());
   omnibox_textfield()->InsertChar(char_event);
-  omnibox_view()->CheckUpdatePopupCallInfo(
-      2, base::ASCIIToUTF16("ab"), gfx::Range(2));
+  omnibox_view()->CheckUpdatePopupCallInfo(2, base::ASCIIToUTF16("ab"),
+                                           Range(2));
 
   ui::KeyEvent pressed(ui::ET_KEY_PRESSED, ui::VKEY_BACK, 0);
   omnibox_textfield()->OnKeyEvent(&pressed);
-  omnibox_view()->CheckUpdatePopupCallInfo(
-      3, base::ASCIIToUTF16("a"), gfx::Range(1));
+  omnibox_view()->CheckUpdatePopupCallInfo(3, base::ASCIIToUTF16("a"),
+                                           Range(1));
 }
 
 // Test that the scheduled text edit command is cleared when Textfield receives
@@ -216,67 +262,37 @@ TEST_F(OmniboxViewViewsTest, ScheduledTextEditCommand) {
             scheduled_text_edit_command());
 }
 
-// Ensure that the scheme is emphasized for data: URLs.
-TEST_F(OmniboxViewViewsTest, TestEmphasisForDATA) {
-  SetAndEmphasizeText("data:text/html,Hello%20World");
-  EXPECT_EQ(gfx::Range(0, 4), omnibox_view()->scheme_range());
-  EXPECT_FALSE(omnibox_view()->base_text_is_emphasized());
-  EXPECT_EQ(gfx::Range(0, 4), omnibox_view()->emphasis_range());
-}
+TEST_F(OmniboxViewViewsTest, Emphasis) {
+  constexpr struct {
+    const char* input;
+    bool expected_base_text_emphasized;
+    Range expected_emphasis_range;
+    Range expected_scheme_range;
+  } test_cases[] = {
+      {"data:text/html,Hello%20World", false, Range(0, 4), Range(0, 4)},
+      {"http://www.example.com/path/file.htm", false, Range(7, 22),
+       Range(0, 4)},
+      {"https://www.example.com/path/file.htm", false, Range(8, 23),
+       Range(0, 5)},
+      {"chrome-extension://ldfbacdbackkjhclmhnjabngnppnkagl", false,
+       Range::InvalidRange(), Range(0, 16)},
+      {"nosuchscheme://opaque/string", true, Range::InvalidRange(),
+       Range(0, 12)},
+      {"nosuchscheme:opaquestring", true, Range::InvalidRange(), Range(0, 12)},
+      {"host.com/path/file", false, Range(0, 8), Range::InvalidRange()},
+      {"This is plain text", true, Range::InvalidRange(),
+       Range::InvalidRange()},
+  };
 
-// Ensure that the origin is emphasized for http: URLs.
-TEST_F(OmniboxViewViewsTest, TestEmphasisForHTTP) {
-  SetAndEmphasizeText("http://www.example.com/path/file.htm");
-  EXPECT_EQ(gfx::Range(0, 4), omnibox_view()->scheme_range());
-  EXPECT_FALSE(omnibox_view()->base_text_is_emphasized());
-  EXPECT_EQ(gfx::Range(7, 22), omnibox_view()->emphasis_range());
-}
+  for (const auto& test_case : test_cases) {
+    SCOPED_TRACE(test_case.input);
 
-// Ensure that the origin is emphasized for https: URLs.
-TEST_F(OmniboxViewViewsTest, TestEmphasisForHTTPS) {
-  SetAndEmphasizeText("https://www.example.com/path/file.htm");
-  EXPECT_EQ(gfx::Range(0, 5), omnibox_view()->scheme_range());
-  EXPECT_FALSE(omnibox_view()->base_text_is_emphasized());
-  EXPECT_EQ(gfx::Range(8, 23), omnibox_view()->emphasis_range());
-}
-
-// Ensure that nothing is emphasized for chrome-extension: URLs.
-TEST_F(OmniboxViewViewsTest, TestEmphasisForChromeExtensionScheme) {
-  SetAndEmphasizeText("chrome-extension://ldfbacdbackkjhclmhnjabngnppnkagl");
-  EXPECT_EQ(gfx::Range(0, 16), omnibox_view()->scheme_range());
-  EXPECT_FALSE(omnibox_view()->base_text_is_emphasized());
-  EXPECT_EQ(gfx::Range(), omnibox_view()->emphasis_range());
-}
-
-// Ensure that everything is emphasized for unknown scheme hierarchical URLs.
-TEST_F(OmniboxViewViewsTest, TestEmphasisForUnknownHierarchicalScheme) {
-  SetAndEmphasizeText("nosuchscheme://opaque/string");
-  EXPECT_EQ(gfx::Range(0, 12), omnibox_view()->scheme_range());
-  EXPECT_TRUE(omnibox_view()->base_text_is_emphasized());
-  EXPECT_EQ(gfx::Range(), omnibox_view()->emphasis_range());
-}
-
-// Ensure that everything is emphasized for unknown scheme URLs.
-TEST_F(OmniboxViewViewsTest, TestEmphasisForUnknownScheme) {
-  SetAndEmphasizeText("nosuchscheme:opaquestring");
-  EXPECT_EQ(gfx::Range(0, 12), omnibox_view()->scheme_range());
-  EXPECT_TRUE(omnibox_view()->base_text_is_emphasized());
-  EXPECT_EQ(gfx::Range(), omnibox_view()->emphasis_range());
-}
-
-// Ensure that the origin is emphasized for URL-like text.
-TEST_F(OmniboxViewViewsTest, TestEmphasisForPartialURLs) {
-  SetAndEmphasizeText("example/path/file");
-  EXPECT_EQ(gfx::Range(), omnibox_view()->scheme_range());
-  EXPECT_FALSE(omnibox_view()->base_text_is_emphasized());
-  EXPECT_EQ(gfx::Range(0, 7), omnibox_view()->emphasis_range());
-}
-
-// Ensure that everything is emphasized for plain text.
-TEST_F(OmniboxViewViewsTest, TestEmphasisForNonURLs) {
-  SetAndEmphasizeText("This is plain text");
-
-  EXPECT_EQ(gfx::Range(), omnibox_view()->scheme_range());
-  EXPECT_TRUE(omnibox_view()->base_text_is_emphasized());
-  EXPECT_EQ(gfx::Range(), omnibox_view()->emphasis_range());
+    SetAndEmphasizeText(test_case.input);
+    EXPECT_EQ(TestingOmniboxView::to_base_text_emphasis(
+                  test_case.expected_base_text_emphasized),
+              omnibox_view()->base_text_emphasis());
+    EXPECT_EQ(test_case.expected_emphasis_range,
+              omnibox_view()->emphasis_range());
+    EXPECT_EQ(test_case.expected_scheme_range, omnibox_view()->scheme_range());
+  }
 }
