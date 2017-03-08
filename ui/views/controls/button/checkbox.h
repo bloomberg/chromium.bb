@@ -41,7 +41,6 @@ class VIEWS_EXPORT Checkbox : public LabelButton {
   static bool UseMd();
 
   // Overridden from LabelButton:
-  void Layout() override;
   const char* GetClassName() const override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   void OnPaint(gfx::Canvas* canvas) override;

@@ -33,13 +33,13 @@ Checkbox::Checkbox(const base::string16& label)
       checked_(false) {
   SetHorizontalAlignment(gfx::ALIGN_LEFT);
   SetFocusForPlatform();
+  SetFocusPainter(nullptr);
 
   if (UseMd()) {
     set_request_focus_on_press(false);
     SetInkDropMode(PlatformStyle::kUseRipples ? InkDropMode::ON
                                               : InkDropMode::OFF);
     set_has_ink_drop_action_on_click(true);
-    SetFocusPainter(nullptr);
   } else {
     std::unique_ptr<LabelButtonBorder> button_border(new LabelButtonBorder());
     // Inset the trailing side by a couple pixels for the focus border.
@@ -102,18 +102,6 @@ void Checkbox::SetChecked(bool checked) {
 // static
 bool Checkbox::UseMd() {
   return ui::MaterialDesignController::IsSecondaryUiMaterial();
-}
-
-void Checkbox::Layout() {
-  LabelButton::Layout();
-
-  if (!UseMd()) {
-    // Construct a focus painter that only surrounds the label area.
-    gfx::Rect rect = label()->GetMirroredBounds();
-    rect.Inset(-2, 3);
-    SetFocusPainter(Painter::CreateDashedFocusPainterWithInsets(gfx::Insets(
-        rect.y(), rect.x(), height() - rect.bottom(), width() - rect.right())));
-  }
 }
 
 const char* Checkbox::GetClassName() const {
