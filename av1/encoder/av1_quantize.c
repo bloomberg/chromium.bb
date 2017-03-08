@@ -453,6 +453,8 @@ void av1_quantize_fp_facade(const tran_low_t *coeff_ptr, intptr_t n_coeffs,
   switch (qparam->log_scale) {
     case 0:
       if (n_coeffs < 16) {
+        // TODO(jingning): Need SIMD implementation for smaller block size
+        // quantization.
         av1_quantize_fp_c(coeff_ptr, n_coeffs, skip_block, p->zbin, p->round_fp,
                           p->quant_fp, p->quant_shift, qcoeff_ptr, dqcoeff_ptr,
                           pd->dequant, eob_ptr, sc->scan, sc->iscan
@@ -731,6 +733,8 @@ void av1_highbd_quantize_fp_facade(const tran_low_t *coeff_ptr,
 #endif  // CONFIG_AOM_QM
 
   if (n_coeffs < 16) {
+    // TODO(jingning): Need SIMD implementation for smaller block size
+    // quantization.
     av1_highbd_quantize_fp_c(coeff_ptr, n_coeffs, skip_block, p->zbin,
                              p->round_fp, p->quant_fp, p->quant_shift,
                              qcoeff_ptr, dqcoeff_ptr, pd->dequant, eob_ptr,
