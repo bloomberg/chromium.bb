@@ -6,7 +6,6 @@
 #define CC_PAINT_PAINT_RECORD_H_
 
 #include "third_party/skia/include/core/SkPicture.h"
-#include "third_party/skia/include/utils/SkPictureUtils.h"
 
 namespace cc {
 
