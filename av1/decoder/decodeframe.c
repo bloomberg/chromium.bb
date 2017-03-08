@@ -1701,10 +1701,6 @@ static void decode_token_and_recon_block(AV1Decoder *const pbi,
 #if CONFIG_WARPED_MOTION
     if (mbmi->motion_mode == WARPED_CAUSAL) {
       int i;
-#if CONFIG_AOM_HIGHBITDEPTH
-      int use_hbd = xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH;
-#endif  // CONFIG_AOM_HIGHBITDEPTH
-
       for (i = 0; i < 3; ++i) {
         const struct macroblockd_plane *pd = &xd->plane[i];
 

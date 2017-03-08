@@ -8810,10 +8810,6 @@ static int64_t handle_inter_mode(
       if (find_projection(mbmi->num_proj_ref[0], pts, pts_inref,
                           &mbmi->wm_params[0], mi_row, mi_col) == 0) {
         int plane;
-#if CONFIG_AOM_HIGHBITDEPTH
-        int use_hbd = xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH;
-#endif  // CONFIG_AOM_HIGHBITDEPTH
-
         for (plane = 0; plane < 3; ++plane) {
           const struct macroblockd_plane *pd = &xd->plane[plane];
 
@@ -10701,12 +10697,9 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
     if (is_inter_mode(mbmi->mode)) {
 #if CONFIG_WARPED_MOTION
       if (mbmi->motion_mode == WARPED_CAUSAL) {
-        int plane;
-#if CONFIG_AOM_HIGHBITDEPTH
-        int use_hbd = xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH;
-#endif  // CONFIG_AOM_HIGHBITDEPTH
         assert(!has_second_ref(mbmi));
 
+        int plane;
         for (plane = 0; plane < 3; ++plane) {
           const struct macroblockd_plane *pd = &xd->plane[plane];
 
