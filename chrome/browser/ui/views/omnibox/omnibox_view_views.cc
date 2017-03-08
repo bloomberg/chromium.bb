@@ -758,6 +758,10 @@ void OmniboxViewViews::OnFocus() {
     SelectRange(saved_selection_for_focus_change_);
     saved_selection_for_focus_change_ = gfx::Range::InvalidRange();
   }
+
+  // Focus changes can affect the visibility of any keyword hint.
+  if (model()->is_keyword_hint())
+    location_bar_view_->Layout();
 }
 
 void OmniboxViewViews::OnBlur() {
@@ -782,6 +786,10 @@ void OmniboxViewViews::OnBlur() {
 
   // Make sure the beginning of the text is visible.
   SelectRange(gfx::Range(0));
+
+  // Focus changes can affect the visibility of any keyword hint.
+  if (model()->is_keyword_hint())
+    location_bar_view_->Layout();
 
   // The location bar needs to repaint without a focus ring.
   location_bar_view_->SchedulePaint();

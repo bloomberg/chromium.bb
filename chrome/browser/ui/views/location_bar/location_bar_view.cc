@@ -555,7 +555,8 @@ void LocationBarView::Layout() {
   }
   // Because IMEs may eat the tab key, we don't show "press tab to search" while
   // IME composition is in progress.
-  if (!keyword.empty() && omnibox_view_->model()->is_keyword_hint() &&
+  if (HasFocus() && !keyword.empty() &&
+      omnibox_view_->model()->is_keyword_hint() &&
       !omnibox_view_->IsImeComposing()) {
     trailing_decorations.AddDecoration(vertical_padding, location_height, true,
                                        0, item_padding, item_padding,
