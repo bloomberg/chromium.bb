@@ -37,6 +37,7 @@
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8DOMActivityLogger.h"
 #include "bindings/core/v8/V8DOMWrapper.h"
+#include "bindings/core/v8/V8GCForContextDispose.h"
 #include "bindings/core/v8/V8HTMLDocument.h"
 #include "bindings/core/v8/V8HiddenValue.h"
 #include "bindings/core/v8/V8Initializer.h"
@@ -77,7 +78,32 @@ void LocalWindowProxy::disposeContext(GlobalDetachmentBehavior behavior) {
                                                        m_world->worldId());
   MainThreadDebugger::instance()->contextWillBeDestroyed(m_scriptState.get());
 
-  WindowProxy::disposeContext(behavior);
+  if (behavior == DetachGlobal) {
+    v8::Local<v8::Context> context = m_scriptState->context();
+    // Clean up state on the global proxy, which will be reused.
+    if (!m_globalProxy.isEmpty()) {
+      // TODO(yukishiino): This DCHECK failed on Canary (M57) and Dev (M56).
+      // We need to figure out why m_globalProxy != context->Global().
+      DCHECK(m_globalProxy == context->Global());
+      DCHECK_EQ(toScriptWrappable(context->Global()),
+                toScriptWrappable(
+                    context->Global()->GetPrototype().As<v8::Object>()));
+      m_globalProxy.get().SetWrapperClassId(0);
+    }
+    V8DOMWrapper::clearNativeInfo(isolate(), context->Global());
+    m_scriptState->detachGlobalObject();
+  }
+
+  m_scriptState->disposePerContextData();
+
+  // It's likely that disposing the context has created a lot of
+  // garbage. Notify V8 about this so it'll have a chance of cleaning
+  // it up when idle.
+  V8GCForContextDispose::instance().notifyContextDisposed(
+      frame()->isMainFrame());
+
+  DCHECK(m_lifecycle == Lifecycle::ContextInitialized);
+  m_lifecycle = Lifecycle::ContextDetached;
 }
 
 void LocalWindowProxy::initialize() {

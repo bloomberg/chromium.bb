@@ -162,7 +162,7 @@ class WindowProxy : public GarbageCollectedFinalized<WindowProxy> {
   virtual void initialize() = 0;
 
   enum GlobalDetachmentBehavior { DoNotDetachGlobal, DetachGlobal };
-  virtual void disposeContext(GlobalDetachmentBehavior);
+  virtual void disposeContext(GlobalDetachmentBehavior) = 0;
 
   v8::Isolate* isolate() const { return m_isolate; }
   Frame* frame() const { return m_frame.get(); }

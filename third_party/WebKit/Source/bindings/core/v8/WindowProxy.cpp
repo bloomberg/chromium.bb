@@ -61,37 +61,6 @@ WindowProxy::WindowProxy(v8::Isolate* isolate,
       m_world(std::move(world)),
       m_lifecycle(Lifecycle::ContextUninitialized) {}
 
-void WindowProxy::disposeContext(GlobalDetachmentBehavior behavior) {
-  DCHECK(m_lifecycle == Lifecycle::ContextInitialized);
-
-  if (behavior == DetachGlobal) {
-    v8::Local<v8::Context> context = m_scriptState->context();
-    // Clean up state on the global proxy, which will be reused.
-    if (!m_globalProxy.isEmpty()) {
-      // TODO(yukishiino): This DCHECK failed on Canary (M57) and Dev (M56).
-      // We need to figure out why m_globalProxy != context->Global().
-      DCHECK(m_globalProxy == context->Global());
-      DCHECK_EQ(toScriptWrappable(context->Global()),
-                toScriptWrappable(
-                    context->Global()->GetPrototype().As<v8::Object>()));
-      m_globalProxy.get().SetWrapperClassId(0);
-    }
-    V8DOMWrapper::clearNativeInfo(m_isolate, context->Global());
-    m_scriptState->detachGlobalObject();
-  }
-
-  m_scriptState->disposePerContextData();
-
-  // It's likely that disposing the context has created a lot of
-  // garbage. Notify V8 about this so it'll have a chance of cleaning
-  // it up when idle.
-  V8GCForContextDispose::instance().notifyContextDisposed(
-      m_frame->isMainFrame());
-
-  DCHECK(m_lifecycle == Lifecycle::ContextInitialized);
-  m_lifecycle = Lifecycle::ContextDetached;
-}
-
 void WindowProxy::clearForClose() {
   disposeContext(DoNotDetachGlobal);
 }

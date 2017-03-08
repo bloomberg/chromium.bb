@@ -32,6 +32,7 @@
 #define RemoteWindowProxy_h
 
 #include "bindings/core/v8/DOMWrapperWorld.h"
+#include "bindings/core/v8/WindowProxy.h"
 #include "core/frame/RemoteFrame.h"
 #include "v8/include/v8.h"
 
