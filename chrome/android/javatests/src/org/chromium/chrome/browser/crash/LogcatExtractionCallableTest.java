@@ -62,15 +62,15 @@ public class LogcatExtractionCallableTest extends CrashTestCase {
             }
         };
 
-        LogcatExtractionCallable callable = new LogcatExtractionCallable(
-                testContext, dumps, testIntent) {
-            @Override
-            protected List<String> getLogcat() throws IOException, InterruptedException {
-                    List<String> result = new ArrayList<String>();
-                    result.add(logContent);
-                    return result;
-            }
-        };
+        LogcatExtractionCallable callable =
+                new LogcatExtractionCallable(testContext, dumps, testIntent) {
+                    @Override
+                    protected List<String> getLogcat() throws IOException, InterruptedException {
+                        List<String> result = new ArrayList<String>();
+                        result.add(logContent);
+                        return result;
+                    }
+                };
 
         callable.call();
 

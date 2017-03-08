@@ -45,8 +45,7 @@ public class CrashFileManager {
     @VisibleForTesting
     public static final String CRASH_DUMP_LOGFILE = "uploads.log";
 
-    private static final Pattern MINIDUMP_FIRST_TRY_PATTERN =
-            Pattern.compile("\\.dmp([0-9]*)$\\z");
+    private static final Pattern MINIDUMP_FIRST_TRY_PATTERN = Pattern.compile("\\.dmp([0-9]*)$\\z");
 
     private static final Pattern MINIDUMP_MIME_FIRST_TRY_PATTERN =
             Pattern.compile("\\.dmp([0-9]+)$\\z");
@@ -102,7 +101,7 @@ public class CrashFileManager {
      * @return Comparator for prioritizing the more recently modified file
      */
     @VisibleForTesting
-    protected static final Comparator<File> sFileComparator =  new Comparator<File>() {
+    protected static final Comparator<File> sFileComparator = new Comparator<File>() {
         @Override
         public int compare(File lhs, File rhs) {
             if (lhs.lastModified() == rhs.lastModified()) {
@@ -265,8 +264,7 @@ public class CrashFileManager {
         if (cacheDir == null) {
             throw new NullPointerException("Specified context cannot be null.");
         } else if (!cacheDir.isDirectory()) {
-            throw new IllegalArgumentException(cacheDir.getAbsolutePath()
-                    + " is not a directory.");
+            throw new IllegalArgumentException(cacheDir.getAbsolutePath() + " is not a directory.");
         }
         mCacheDir = cacheDir;
     }
@@ -404,8 +402,7 @@ public class CrashFileManager {
             if (f.delete()) {
                 f = new File(getCrashDirectory(), name);
             } else {
-                Log.w(TAG, "Unable to delete previous logfile"
-                        + f.getAbsolutePath());
+                Log.w(TAG, "Unable to delete previous logfile" + f.getAbsolutePath());
             }
         }
         return f;
@@ -495,8 +492,7 @@ public class CrashFileManager {
      * @return The new minidump file copied with the contents of the File Descriptor, or null if the
      *         copying failed.
      */
-    public File copyMinidumpFromFD(FileDescriptor fd, File tmpDir, int uid)
-            throws IOException {
+    public File copyMinidumpFromFD(FileDescriptor fd, File tmpDir, int uid) throws IOException {
         File crashDirectory = getCrashDirectory();
         if (!crashDirectory.isDirectory() && !crashDirectory.mkdir()) {
             throw new RuntimeException("Couldn't create " + crashDirectory.getAbsolutePath());
@@ -547,7 +543,6 @@ public class CrashFileManager {
             } catch (IOException e) {
                 Log.w(TAG, "Couldn't close minidump input stream ", e);
             }
-
         }
         File minidumpFile = new File(crashDirectory, createUniqueMinidumpNameForUid(uid));
         if (tmpFile.renameTo(minidumpFile)) {

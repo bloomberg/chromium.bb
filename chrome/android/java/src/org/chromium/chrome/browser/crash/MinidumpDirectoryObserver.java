@@ -20,13 +20,12 @@ import java.io.File;
  * The FileObserver to monitor the minidump directory.
  */
 public class MinidumpDirectoryObserver extends FileObserver {
-
     private static final String TAG = "MinidumpDirObserver";
 
     public MinidumpDirectoryObserver() {
         // The file observer detects MOVED_TO for child processes.
-        super(new File(PathUtils.getCacheDirectory(),
-                CrashFileManager.CRASH_DUMP_DIR).toString(), FileObserver.MOVED_TO);
+        super(new File(PathUtils.getCacheDirectory(), CrashFileManager.CRASH_DUMP_DIR).toString(),
+                FileObserver.MOVED_TO);
     }
 
     /**

@@ -44,7 +44,6 @@ import java.util.regex.Pattern;
  * along with the intent provided here.
  */
 public class LogcatExtractionCallable implements Callable<Boolean> {
-
     private static final String TAG = "LogcatExtraction";
     private static final long HALF_SECOND = 500;
 
@@ -55,8 +54,7 @@ public class LogcatExtractionCallable implements Callable<Boolean> {
     @VisibleForTesting
     protected static final String URL_ELISION = "HTTP://WEBADDRESS.ELIDED";
 
-    private static final String GOOD_IRI_CHAR =
-            "a-zA-Z0-9\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF";
+    private static final String GOOD_IRI_CHAR = "a-zA-Z0-9\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF";
 
     private static final Pattern IP_ADDRESS = Pattern.compile(
             "((25[0-5]|2[0-4][0-9]|[0-1][0-9]{2}|[1-9][0-9]|[1-9])\\.(25[0-5]|2[0-4]"
@@ -65,27 +63,25 @@ public class LogcatExtractionCallable implements Callable<Boolean> {
             + "|[1-9][0-9]|[0-9]))");
 
     private static final String IRI =
-            "[" + GOOD_IRI_CHAR + "]([" + GOOD_IRI_CHAR + "\\-]{0,61}["
-            + GOOD_IRI_CHAR + "]){0,1}";
+            "[" + GOOD_IRI_CHAR + "]([" + GOOD_IRI_CHAR + "\\-]{0,61}[" + GOOD_IRI_CHAR + "]){0,1}";
 
-    private static final String GOOD_GTLD_CHAR =
-            "a-zA-Z\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF";
+    private static final String GOOD_GTLD_CHAR = "a-zA-Z\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF";
     private static final String GTLD = "[" + GOOD_GTLD_CHAR + "]{2,63}";
     private static final String HOST_NAME = "(" + IRI + "\\.)+" + GTLD;
 
     private static final Pattern DOMAIN_NAME =
             Pattern.compile("(" + HOST_NAME + "|" + IP_ADDRESS + ")");
 
-    private static final Pattern WEB_URL = Pattern.compile(
-            "(?:\\b|^)((?:(http|https|Http|Https|rtsp|Rtsp):"
-            + "\\/\\/(?:(?:[a-zA-Z0-9\\$\\-\\_\\.\\+\\!\\*\\'\\(\\)"
-            + "\\,\\;\\?\\&\\=]|(?:\\%[a-fA-F0-9]{2})){1,64}(?:\\:(?:[a-zA-Z0-9\\$\\-\\_"
-            + "\\.\\+\\!\\*\\'\\(\\)\\,\\;\\?\\&\\=]|(?:\\%[a-fA-F0-9]{2})){1,25})?\\@)?)?"
-            + "(?:" + DOMAIN_NAME + ")"
-            + "(?:\\:\\d{1,5})?)"
-            + "(\\/(?:(?:[" + GOOD_IRI_CHAR + "\\;\\/\\?\\:\\@\\&\\=\\#\\~"
-            + "\\-\\.\\+\\!\\*\\'\\(\\)\\,\\_])|(?:\\%[a-fA-F0-9]{2}))*)?"
-            + "(?:\\b|$)");
+    private static final Pattern WEB_URL =
+            Pattern.compile("(?:\\b|^)((?:(http|https|Http|Https|rtsp|Rtsp):"
+                    + "\\/\\/(?:(?:[a-zA-Z0-9\\$\\-\\_\\.\\+\\!\\*\\'\\(\\)"
+                    + "\\,\\;\\?\\&\\=]|(?:\\%[a-fA-F0-9]{2})){1,64}(?:\\:(?:[a-zA-Z0-9\\$\\-\\_"
+                    + "\\.\\+\\!\\*\\'\\(\\)\\,\\;\\?\\&\\=]|(?:\\%[a-fA-F0-9]{2})){1,25})?\\@)?)?"
+                    + "(?:" + DOMAIN_NAME + ")"
+                    + "(?:\\:\\d{1,5})?)"
+                    + "(\\/(?:(?:[" + GOOD_IRI_CHAR + "\\;\\/\\?\\:\\@\\&\\=\\#\\~"
+                    + "\\-\\.\\+\\!\\*\\'\\(\\)\\,\\_])|(?:\\%[a-fA-F0-9]{2}))*)?"
+                    + "(?:\\b|$)");
 
     @VisibleForTesting
     protected static final String BEGIN_MICRODUMP = "-----BEGIN BREAKPAD MICRODUMP-----";
@@ -104,35 +100,30 @@ public class LogcatExtractionCallable implements Callable<Boolean> {
     private static final String LOGCAT_EXTENSION = ".logcat";
 
     @VisibleForTesting
-    protected static final String CONSOLE_ELISION =
-            "[ELIDED:CONSOLE(0)] ELIDED CONSOLE MESSAGE";
+    protected static final String CONSOLE_ELISION = "[ELIDED:CONSOLE(0)] ELIDED CONSOLE MESSAGE";
 
     private static final Pattern MAC_ADDRESS =
             Pattern.compile("([0-9a-fA-F]{2}[-:]+){5}[0-9a-fA-F]{2}");
 
-    private static final Pattern CONSOLE_MSG =
-            Pattern.compile("\\[\\w*:CONSOLE.*\\].*");
+    private static final Pattern CONSOLE_MSG = Pattern.compile("\\[\\w*:CONSOLE.*\\].*");
 
     private static final Pattern MINIDUMP_EXTENSION = Pattern.compile("\\.dmp");
 
-    private static final String[] CHROME_NAMESPACE = new String[] {
-            "org.chromium.", "com.google."
-    };
+    private static final String[] CHROME_NAMESPACE = new String[] {"org.chromium.", "com.google."};
 
-    private static final String[] SYSTEM_NAMESPACE = new String[] {
-            "android.accessibilityservice", "android.accounts", "android.animation",
-            "android.annotation", "android.app", "android.appwidget", "android.bluetooth",
-            "android.content", "android.database", "android.databinding", "android.drm",
-            "android.gesture", "android.graphics", "android.hardware",
-            "android.inputmethodservice", "android.location", "android.media", "android.mtp",
-            "android.net", "android.nfc", "android.opengl", "android.os", "android.preference",
-            "android.print", "android.printservice", "android.provider", "android.renderscript",
-            "android.sax", "android.security", "android.service", "android.speech",
-            "android.support", "android.system", "android.telecom", "android.telephony",
-            "android.test", "android.text", "android.transition", "android.util", "android.view",
-            "android.webkit", "android.widget", "com.android.", "dalvik.", "java.", "javax.",
-            "org.apache.", "org.json.", "org.w3c.dom.", "org.xml.", "org.xmlpull."
-    };
+    private static final String[] SYSTEM_NAMESPACE = new String[] {"android.accessibilityservice",
+            "android.accounts", "android.animation", "android.annotation", "android.app",
+            "android.appwidget", "android.bluetooth", "android.content", "android.database",
+            "android.databinding", "android.drm", "android.gesture", "android.graphics",
+            "android.hardware", "android.inputmethodservice", "android.location", "android.media",
+            "android.mtp", "android.net", "android.nfc", "android.opengl", "android.os",
+            "android.preference", "android.print", "android.printservice", "android.provider",
+            "android.renderscript", "android.sax", "android.security", "android.service",
+            "android.speech", "android.support", "android.system", "android.telecom",
+            "android.telephony", "android.test", "android.text", "android.transition",
+            "android.util", "android.view", "android.webkit", "android.widget", "com.android.",
+            "dalvik.", "java.", "javax.", "org.apache.", "org.json.", "org.w3c.dom.", "org.xml.",
+            "org.xmlpull."};
 
     private final Context mContext;
     private final String[] mMinidumpFilenames;
@@ -175,8 +166,8 @@ public class LogcatExtractionCallable implements Callable<Boolean> {
         }
     }
 
-    private void processMinidump(File logcatFile, String name,
-            CrashFileManager manager, boolean isLast) throws IOException {
+    private void processMinidump(File logcatFile, String name, CrashFileManager manager,
+            boolean isLast) throws IOException {
         String toPath = MINIDUMP_EXTENSION.matcher(name).replaceAll(LOGCAT_EXTENSION);
         File toFile = manager.createNewTempFile(toPath);
 
@@ -186,20 +177,19 @@ public class LogcatExtractionCallable implements Callable<Boolean> {
         Intent intent = null;
         if (isLast) {
             move(logcatFile, toFile);
-            intent = MinidumpPreparationService.createMinidumpPreparationIntent(mContext,
-                    manager.getCrashFile(name), toFile, mRedirectIntent);
+            intent = MinidumpPreparationService.createMinidumpPreparationIntent(
+                    mContext, manager.getCrashFile(name), toFile, mRedirectIntent);
         } else {
             copy(logcatFile, toFile);
-            intent = MinidumpPreparationService.createMinidumpPreparationIntent(mContext,
-                    manager.getCrashFile(name), toFile, null);
+            intent = MinidumpPreparationService.createMinidumpPreparationIntent(
+                    mContext, manager.getCrashFile(name), toFile, null);
         }
         mContext.startService(intent);
     }
 
     private File getElidedLogcat() throws IOException, InterruptedException {
         List<String> rawLogcat = getLogcat();
-        List<String> elidedLogcat =
-                Collections.unmodifiableList(processLogcat(rawLogcat));
+        List<String> elidedLogcat = Collections.unmodifiableList(processLogcat(rawLogcat));
         return writeLogcat(elidedLogcat);
     }
 

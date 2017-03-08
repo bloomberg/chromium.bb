@@ -12,7 +12,6 @@ import java.net.URL;
  * Default implementation of HttpURLConnectionFactory.
  */
 public class HttpURLConnectionFactoryImpl implements HttpURLConnectionFactory {
-
     @Override
     public HttpURLConnection createHttpURLConnection(String url) {
         try {

@@ -93,8 +93,8 @@ public class MinidumpUploadService extends IntentService {
             onHandleIntent(redirectAction);
             return;
         }
-        context.startService(LogcatExtractionService.createLogcatExtractionTask(
-                context, dumps, redirectAction));
+        context.startService(
+                LogcatExtractionService.createLogcatExtractionTask(context, dumps, redirectAction));
     }
 
     @Override
@@ -138,15 +138,11 @@ public class MinidumpUploadService extends IntentService {
         for (String type : TYPES) {
             for (int success = pref.getCrashSuccessUploadCount(type); success > 0; success--) {
                 RecordHistogram.recordEnumeratedHistogram(
-                        HISTOGRAM_NAME_PREFIX + type,
-                        SUCCESS,
-                        HISTOGRAM_MAX);
+                        HISTOGRAM_NAME_PREFIX + type, SUCCESS, HISTOGRAM_MAX);
             }
             for (int fail = pref.getCrashFailureUploadCount(type); fail > 0; fail--) {
                 RecordHistogram.recordEnumeratedHistogram(
-                        HISTOGRAM_NAME_PREFIX + type,
-                        FAILURE,
-                        HISTOGRAM_MAX);
+                        HISTOGRAM_NAME_PREFIX + type, FAILURE, HISTOGRAM_MAX);
             }
 
             pref.setCrashSuccessUploadCount(type, 0);

@@ -123,12 +123,10 @@ public class DeferredStartupHandler {
 
     private void recordDeferredStartupStats() {
         RecordHistogram.recordLongTimesHistogram(
-                "UMA.Debug.EnableCrashUpload.DeferredStartUpDuration",
-                mDeferredStartupDuration,
+                "UMA.Debug.EnableCrashUpload.DeferredStartUpDuration", mDeferredStartupDuration,
                 TimeUnit.MILLISECONDS);
         RecordHistogram.recordLongTimesHistogram(
-                "UMA.Debug.EnableCrashUpload.DeferredStartUpMaxTaskDuration",
-                mMaxTaskDuration,
+                "UMA.Debug.EnableCrashUpload.DeferredStartUpMaxTaskDuration", mMaxTaskDuration,
                 TimeUnit.MILLISECONDS);
         RecordHistogram.recordLongTimesHistogram(
                 "UMA.Debug.EnableCrashUpload.DeferredStartUpCompleteTime",
@@ -162,8 +160,7 @@ public class DeferredStartupHandler {
         mDeferredStartupInitializedForApp = true;
         ThreadUtils.assertOnUiThread();
 
-        RecordHistogram.recordLongTimesHistogram(
-                "UMA.Debug.EnableCrashUpload.DeferredStartUptime2",
+        RecordHistogram.recordLongTimesHistogram("UMA.Debug.EnableCrashUpload.DeferredStartUptime2",
                 SystemClock.uptimeMillis() - UmaUtils.getForegroundStartTime(),
                 TimeUnit.MILLISECONDS);
 
@@ -297,8 +294,7 @@ public class DeferredStartupHandler {
 
                 RecordHistogram.recordLongTimesHistogram(
                         "UMA.Debug.EnableCrashUpload.DeferredStartUpAsyncTaskDuration",
-                        SystemClock.uptimeMillis() - mAsyncTaskStartTime,
-                        TimeUnit.MILLISECONDS);
+                        SystemClock.uptimeMillis() - mAsyncTaskStartTime, TimeUnit.MILLISECONDS);
             }
         }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
@@ -321,8 +317,7 @@ public class DeferredStartupHandler {
     @WorkerThread
     private void removeSnapshotDatabase() {
         synchronized (SNAPSHOT_DATABASE_LOCK) {
-            SharedPreferences prefs =
-                    ContextUtils.getAppSharedPreferences();
+            SharedPreferences prefs = ContextUtils.getAppSharedPreferences();
             if (!prefs.getBoolean(SNAPSHOT_DATABASE_REMOVED, false)) {
                 mAppContext.deleteDatabase(SNAPSHOT_DATABASE_NAME);
                 prefs.edit().putBoolean(SNAPSHOT_DATABASE_REMOVED, true).apply();
@@ -360,8 +355,8 @@ public class DeferredStartupHandler {
     }
 
     /**
-    * @return Whether deferred startup has been completed.
-    */
+     * @return Whether deferred startup has been completed.
+     */
     @VisibleForTesting
     public boolean isDeferredStartupCompleteForApp() {
         return mDeferredStartupCompletedForApp;

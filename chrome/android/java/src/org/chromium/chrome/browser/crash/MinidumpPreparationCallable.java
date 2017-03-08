@@ -31,14 +31,12 @@ import java.util.concurrent.Callable;
  * This class will append a logcat file to a minidump file for upload.
  */
 public class MinidumpPreparationCallable implements Callable<Boolean> {
-
     private static final String TAG = "DumpPrepCallable";
 
     private static final String LOGCAT_CONTENT_DISPOSITION =
             "Content-Disposition: form-data; name=\"logcat\"; filename=\"logcat\"";
 
-    private static final String LOGCAT_CONTENT_TYPE =
-            "Content-Type: text/plain";
+    private static final String LOGCAT_CONTENT_TYPE = "Content-Type: text/plain";
 
     private final File mLogcatFile;
     private final File mMinidumpFile;
@@ -47,10 +45,7 @@ public class MinidumpPreparationCallable implements Callable<Boolean> {
     private final CrashFileManager mFileManager;
 
     public MinidumpPreparationCallable(
-            Context context,
-            File miniDumpFile,
-            File logcatFile,
-            Intent redirectIntent) {
+            Context context, File miniDumpFile, File logcatFile, Intent redirectIntent) {
         mContext = context;
         mLogcatFile = logcatFile;
         mMinidumpFile = miniDumpFile;
@@ -115,8 +110,8 @@ public class MinidumpPreparationCallable implements Callable<Boolean> {
      * @param targetFile File to which data should be appended.
      * @throws IOException when standard IO errors occur.
      */
-    private static void appendMinidump(
-            File processMinidumpFile, File targetFile) throws IOException {
+    private static void appendMinidump(File processMinidumpFile, File targetFile)
+            throws IOException {
         BufferedInputStream bIn = null;
         BufferedOutputStream bOut = null;
         try {

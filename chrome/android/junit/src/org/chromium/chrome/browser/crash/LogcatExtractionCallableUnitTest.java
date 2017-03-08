@@ -132,8 +132,8 @@ public class LogcatExtractionCallableUnitTest {
 
     @Test
     public void testLogcatWithoutBeginOrEnd_smallLogcat() {
-        final List<String> original = Arrays.asList("Line 1", "Line 2", "Line 3", "Line 4",
-                "Line 5");
+        final List<String> original =
+                Arrays.asList("Line 1", "Line 2", "Line 3", "Line 4", "Line 5");
         assertLogcatLists(original, original);
     }
 
@@ -155,8 +155,8 @@ public class LogcatExtractionCallableUnitTest {
 
     @Test
     public void testLogcatWithBegin() {
-        final List<String> original = Arrays.asList("Line 1", "Line 2", BEGIN_MICRODUMP, "a",
-                "b", "c", "d", "e");
+        final List<String> original =
+                Arrays.asList("Line 1", "Line 2", BEGIN_MICRODUMP, "a", "b", "c", "d", "e");
         final List<String> expected = Arrays.asList("Line 1", "Line 2", SNIPPED_MICRODUMP);
         assertLogcatLists(expected, original);
     }
@@ -169,8 +169,8 @@ public class LogcatExtractionCallableUnitTest {
 
     @Test
     public void testLogcatWithBeginAndEnd_smallLogcat() {
-        final List<String> original = Arrays.asList("Line 1", "Line 2", BEGIN_MICRODUMP, "a", "b",
-                "c", "d", "e", END_MICRODUMP);
+        final List<String> original = Arrays.asList(
+                "Line 1", "Line 2", BEGIN_MICRODUMP, "a", "b", "c", "d", "e", END_MICRODUMP);
         final List<String> expected = Arrays.asList("Line 1", "Line 2", SNIPPED_MICRODUMP);
         assertLogcatLists(expected, original);
     }
@@ -195,8 +195,8 @@ public class LogcatExtractionCallableUnitTest {
 
     @Test
     public void testLogcatWithEndAndBegin_smallLogcat() {
-        final List<String> original = Arrays.asList(END_MICRODUMP, "Line 1", "Line 2",
-                BEGIN_MICRODUMP, "a", "b", "c", "d", "e");
+        final List<String> original = Arrays.asList(
+                END_MICRODUMP, "Line 1", "Line 2", BEGIN_MICRODUMP, "a", "b", "c", "d", "e");
         final List<String> expected =
                 Arrays.asList(END_MICRODUMP, "Line 1", "Line 2", SNIPPED_MICRODUMP);
         assertLogcatLists(expected, original);

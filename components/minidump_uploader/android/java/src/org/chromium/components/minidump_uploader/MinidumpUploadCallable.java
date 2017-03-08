@@ -200,8 +200,7 @@ public class MinidumpUploadCallable implements Callable<Integer> {
         } else {
             // Log the results of the upload. Note that periodic upload failures aren't bad
             // because we will need to throttle uploads in the future anyway.
-            String msg = String.format(Locale.US,
-                    "Failed to upload %s with code: %d (%s).",
+            String msg = String.format(Locale.US, "Failed to upload %s with code: %d (%s).",
                     mFileToUpload.getName(), responseCode, connection.getResponseMessage());
             Log.i(TAG, msg);
 
@@ -295,8 +294,8 @@ public class MinidumpUploadCallable implements Callable<Integer> {
      * @param outStream the stream to write to
      * @throws IOException
      */
-    private static void streamCopy(InputStream inStream,
-                                   OutputStream outStream) throws IOException {
+    private static void streamCopy(InputStream inStream, OutputStream outStream)
+            throws IOException {
         byte[] temp = new byte[4096];
         int bytesRead = inStream.read(temp);
         while (bytesRead >= 0) {
@@ -311,9 +310,9 @@ public class MinidumpUploadCallable implements Callable<Integer> {
     private void removeOutdatedPrefs(SharedPreferences sharedPreferences) {
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.remove(PREF_DAY_UPLOAD_COUNT)
-              .remove(PREF_LAST_UPLOAD_DAY)
-              .remove(PREF_LAST_UPLOAD_WEEK)
-              .remove(PREF_WEEK_UPLOAD_SIZE)
-              .apply();
+                .remove(PREF_LAST_UPLOAD_DAY)
+                .remove(PREF_LAST_UPLOAD_WEEK)
+                .remove(PREF_WEEK_UPLOAD_SIZE)
+                .apply();
     }
 }

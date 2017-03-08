@@ -25,10 +25,7 @@ public class MinidumpPreparationService extends IntentService {
     private static final String REDIRECT_INTENT_KEY = "redirect_intent";
 
     public static Intent createMinidumpPreparationIntent(
-            Context context,
-            File minidumpFile,
-            File logcatFile,
-            Intent redirectIntent) {
+            Context context, File minidumpFile, File logcatFile, Intent redirectIntent) {
         Intent intent = new Intent(context, MinidumpPreparationService.class);
         if (minidumpFile != null) {
             intent.putExtra(MINIDUMP_FILE_KEY, minidumpFile.getName());
