@@ -27631,6 +27631,12 @@
      {}
     ]
    ],
+   "IndexedDB/event-dispatch-active-flag.html": [
+    [
+     "/IndexedDB/event-dispatch-active-flag.html",
+     {}
+    ]
+   ],
    "IndexedDB/fire-error-event-exception.html": [
     [
      "/IndexedDB/fire-error-event-exception.html",
@@ -29455,6 +29461,12 @@
      {}
     ]
    ],
+   "IndexedDB/transaction-deactivation-timing.html": [
+    [
+     "/IndexedDB/transaction-deactivation-timing.html",
+     {}
+    ]
+   ],
    "IndexedDB/transaction-lifetime-blocked.htm": [
     [
      "/IndexedDB/transaction-lifetime-blocked.htm",
@@ -29482,6 +29494,12 @@
    "IndexedDB/transaction_bubble-and-capture.htm": [
     [
      "/IndexedDB/transaction_bubble-and-capture.htm",
+     {}
+    ]
+   ],
+   "IndexedDB/upgrade-transaction-deactivation-timing.html": [
+    [
+     "/IndexedDB/upgrade-transaction-deactivation-timing.html",
      {}
     ]
    ],
@@ -43503,6 +43521,18 @@
      {}
     ]
    ],
+   "pointerevents/extension/idlharness.html": [
+    [
+     "/pointerevents/extension/idlharness.html",
+     {}
+    ]
+   ],
+   "pointerevents/extension/pointerevent_constructor.html": [
+    [
+     "/pointerevents/extension/pointerevent_constructor.html",
+     {}
+    ]
+   ],
    "pointerevents/idlharness.html": [
     [
      "/pointerevents/idlharness.html",
@@ -57390,6 +57420,10 @@
    "3e69684b6dc5e23508ced8c7a033a389f6e135b6",
    "testharness"
   ],
+  "IndexedDB/event-dispatch-active-flag.html": [
+   "7a1be612f5b1bcd951425afc24b41308cd2a12e1",
+   "testharness"
+  ],
   "IndexedDB/fire-error-event-exception.html": [
    "062ef43542e434d6eb7c6ea2c7aefbf8ff4ac198",
    "testharness"
@@ -58591,7 +58625,7 @@
    "support"
   ],
   "IndexedDB/support.js": [
-   "508530c1b101f1c728f7bc4e221efc596c5ff063",
+   "6544b743611f07c4f6ef2533e9bd0213a23fba07",
    "support"
   ],
   "IndexedDB/transaction-abort-generator-revert.html": [
@@ -58614,6 +58648,10 @@
    "a0237aa82de84dd351a4854a55075fbfbaba3c2e",
    "testharness"
   ],
+  "IndexedDB/transaction-deactivation-timing.html": [
+   "fba494c08ff581cfea0ddc6d1959313c3ea34bd6",
+   "testharness"
+  ],
   "IndexedDB/transaction-lifetime-blocked.htm": [
    "e05a90c62a9f304bb5e7b0c7d8f4360ea860c907",
    "testharness"
@@ -58632,6 +58670,10 @@
   ],
   "IndexedDB/transaction_bubble-and-capture.htm": [
    "4a75702a58021e337f884590508c1a0b84063edc",
+   "testharness"
+  ],
+  "IndexedDB/upgrade-transaction-deactivation-timing.html": [
+   "92fd15b524b75f878c5719e906e2cf027382a69b",
    "testharness"
   ],
   "IndexedDB/upgrade-transaction-lifecycle-backend-aborted.html": [
@@ -78965,6 +79007,14 @@
   "pointerevents/compat/pointerevent_touch-action_two-finger_interaction-manual.html": [
    "cba44e2dd2a3c54106bfecc6cdd407643e2ba995",
    "manual"
+  ],
+  "pointerevents/extension/idlharness.html": [
+   "64ed6d6c201773f0b5ab4b81369a2d601fe3363a",
+   "testharness"
+  ],
+  "pointerevents/extension/pointerevent_constructor.html": [
+   "2af9a0d673339553ddfd30433c569f42b4803c22",
+   "testharness"
   ],
   "pointerevents/idlharness-expected.txt": [
    "4a3c8f5f9332c268d13f404a09c54e7812f30c0c",
