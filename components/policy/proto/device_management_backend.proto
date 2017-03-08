@@ -1055,6 +1055,9 @@ message RemoteCommand {
 
     // Take a screenshot.
     DEVICE_SCREENSHOT = 1;
+
+    // Set device volume.
+    DEVICE_SET_VOLUME = 2;
   }
 
   // The command type.

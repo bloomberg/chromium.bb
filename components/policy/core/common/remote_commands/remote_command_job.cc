@@ -54,8 +54,11 @@ bool RemoteCommandJob::Init(base::TimeTicks now,
     issued_time_ = now;
   }
 
-  if (!ParseCommandPayload(command.payload()))
+  if (!ParseCommandPayload(command.payload())) {
+    SYSLOG(ERROR) << "Unable to parse command payload for type "
+                  << command.type() << ": " << command.payload();
     return false;
+  }
 
   switch (command.type()) {
     case em::RemoteCommand_Type_COMMAND_ECHO_TEST: {
@@ -69,6 +72,11 @@ bool RemoteCommandJob::Init(base::TimeTicks now,
     }
     case em::RemoteCommand_Type_DEVICE_SCREENSHOT: {
       SYSLOG(INFO) << "Remote screenshot command " << unique_id_
+                   << " initialized.";
+      break;
+    }
+    case em::RemoteCommand_Type_DEVICE_SET_VOLUME: {
+      SYSLOG(INFO) << "Remote set volume command " << unique_id_
                    << " initialized.";
       break;
     }
