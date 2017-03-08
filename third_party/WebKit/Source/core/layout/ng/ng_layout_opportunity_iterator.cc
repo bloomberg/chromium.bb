@@ -28,7 +28,7 @@ void AppendNodeToString(const NGLayoutOpportunityTreeNode* node,
   for (unsigned i = 0; i < indent; i++)
     indent_builder.append("\t");
 
-  if (node->IsLeafNode())
+  if (!node->exclusion)
     return;
 
   string_builder->append(indent_builder.toString());
@@ -160,13 +160,6 @@ NGLayoutOpportunityTreeNode* CreateRightNGLayoutOpportunityTreeNode(
   return nullptr;
 }
 
-void SplitNGLayoutOpportunityTreeNode(const NGLogicalRect& rect,
-                                      NGLayoutOpportunityTreeNode* node) {
-  node->left = CreateLeftNGLayoutOpportunityTreeNode(node, rect);
-  node->right = CreateRightNGLayoutOpportunityTreeNode(node, rect);
-  node->bottom = CreateBottomNGLayoutOpportunityTreeNode(node, rect);
-}
-
 // Gets/Creates the "TOP" positioned constraint space by splitting
 // the parent node with the exclusion.
 //
@@ -204,29 +197,24 @@ void InsertExclusion(NGLayoutOpportunityTreeNode* node,
   if (!exclusion->rect.IsContained(node->opportunity))
     return;
 
-  if (node->exclusions.isEmpty()) {
-    SplitNGLayoutOpportunityTreeNode(exclusion->rect, node);
-
-    NGLayoutOpportunity top_layout_opp =
-        GetTopSpace(node->opportunity, exclusion->rect);
-    if (!top_layout_opp.IsEmpty())
-      opportunities.push_back(top_layout_opp);
-
-    node->exclusions.push_back(exclusion);
-    node->combined_exclusion = WTF::makeUnique<NGExclusion>(*exclusion);
-    return;
-  }
-
-  DCHECK(!node->exclusions.isEmpty());
-
-  if (node->combined_exclusion->MaybeCombineWith(*exclusion)) {
-    SplitNGLayoutOpportunityTreeNode(node->combined_exclusion->rect, node);
-    node->exclusions.push_back(exclusion);
-  } else {
+  if (node->exclusion) {
     InsertExclusion(node->left, exclusion, opportunities);
     InsertExclusion(node->bottom, exclusion, opportunities);
     InsertExclusion(node->right, exclusion, opportunities);
+    return;
   }
+
+  // Split the current node.
+  node->left = CreateLeftNGLayoutOpportunityTreeNode(node, exclusion->rect);
+  node->right = CreateRightNGLayoutOpportunityTreeNode(node, exclusion->rect);
+  node->bottom = CreateBottomNGLayoutOpportunityTreeNode(node, exclusion->rect);
+
+  NGLayoutOpportunity top_layout_opp =
+      GetTopSpace(node->opportunity, exclusion->rect);
+  if (!top_layout_opp.IsEmpty())
+    opportunities.push_back(top_layout_opp);
+
+  node->exclusion = exclusion;
 }
 
 // Compares exclusions by their top position.
