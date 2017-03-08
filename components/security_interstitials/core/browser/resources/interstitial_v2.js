@@ -115,10 +115,7 @@ function setupEvents() {
     $('body').classList.add('safe-browsing');
   }
 
-  if (loadTimeData.getBoolean('iconUpdate') === true)
-    $('icon').classList.add('new-icons');
-  else
-    $('icon').classList.add('old-icons');
+  $('icon').classList.add('icon');
 
   if (hidePrimaryButton) {
     $('primary-button').classList.add('hidden');

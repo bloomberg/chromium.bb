@@ -202,16 +202,10 @@ input[type=checkbox]:focus ~ .checkbox {
   display: none;
 }
 
-.safe-browsing .new-icons {
+.safe-browsing .icon {
   background-image: -webkit-image-set(
       url(images/1x/triangle_white.png) 1x,
       url(images/2x/triangle_white.png) 2x);
-}
-
-.safe-browsing .old-icons {
-  background-image: -webkit-image-set(
-      url(images/1x/stop_sign.png) 1x,
-      url(images/2x/stop_sign.png) 2x);
 }
 
 .small-link {
@@ -219,16 +213,10 @@ input[type=checkbox]:focus ~ .checkbox {
   font-size: .875em;
 }
 
-.ssl .new-icons {
+.ssl .icon {
   background-image: -webkit-image-set(
       url(images/1x/triangle_red.png) 1x,
       url(images/2x/triangle_red.png) 2x);
-}
-
-.ssl .old-icons {
-  background-image: -webkit-image-set(
-      url(images/1x/brokenssl_red.png) 1x,
-      url(images/2x/brokenssl_red.png) 2x);
 }
 
 .captive-portal .icon {
