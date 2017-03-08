@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_COMMON_SYSTEM_CHROMEOS_NETWORK_NETWORK_LIST_H_
-#define ASH_COMMON_SYSTEM_CHROMEOS_NETWORK_NETWORK_LIST_H_
+#ifndef ASH_COMMON_SYSTEM_CHROMEOS_NETWORK_NETWORK_LIST_MD_H_
+#define ASH_COMMON_SYSTEM_CHROMEOS_NETWORK_NETWORK_LIST_MD_H_
 
 #include <map>
 #include <memory>
@@ -32,13 +32,13 @@ class NetworkListDelegate;
 
 // A list of available networks of a given type. This class is used for all
 // network types except VPNs. For VPNs, see the |VPNList| class.
-class NetworkListView : public NetworkListViewBase,
-                        public network_icon::AnimationObserver {
+class NetworkListViewMd : public NetworkListViewBase,
+                          public network_icon::AnimationObserver {
  public:
   class SectionHeaderRowView;
 
-  explicit NetworkListView(NetworkListDelegate* delegate);
-  ~NetworkListView() override;
+  explicit NetworkListViewMd(NetworkListDelegate* delegate);
+  ~NetworkListViewMd() override;
 
   // NetworkListViewBase:
   void Update() override;
@@ -124,9 +124,9 @@ class NetworkListView : public NetworkListViewBase,
   typedef std::map<std::string, views::View*> NetworkGuidMap;
   NetworkGuidMap network_guid_map_;
 
-  DISALLOW_COPY_AND_ASSIGN(NetworkListView);
+  DISALLOW_COPY_AND_ASSIGN(NetworkListViewMd);
 };
 
 }  // namespace ash
 
-#endif  // ASH_COMMON_SYSTEM_CHROMEOS_NETWORK_NETWORK_LIST_H_
+#endif  // ASH_COMMON_SYSTEM_CHROMEOS_NETWORK_NETWORK_LIST_MD_H_
