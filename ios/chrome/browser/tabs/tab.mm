@@ -1444,17 +1444,10 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
 }
 
 - (id<CRWNativeContent>)controllerForUnhandledContentAtURL:(const GURL&)url {
-  StoreKitTabHelper* helper = StoreKitTabHelper::FromWebState(self.webState);
-  if (!helper)
-    return nil;
-  id<StoreKitLauncher> storeKitLauncher = helper->GetLauncher();
-  if (!storeKitLauncher)
-    return nil;
+  // Shows download manager UI for unhandled content.
   DownloadManagerController* downloadController =
-      [[[DownloadManagerController alloc]
-                   initWithURL:url
-          requestContextGetter:browserState_->GetRequestContext()
-              storeKitLauncher:storeKitLauncher] autorelease];
+      [[[DownloadManagerController alloc] initWithWebState:self.webState
+                                               downloadURL:url] autorelease];
   [downloadController start];
   return downloadController;
 }

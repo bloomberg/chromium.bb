@@ -75,8 +75,10 @@ source_set("unit_tests") {
     "//base",
     "//ios/chrome/browser",
     "//ios/chrome/browser/store_kit",
+    "//ios/chrome/browser/web:test_support",
     "//ios/web:test_support",
     "//net:test_support",
     "//testing/gtest",
+    "//third_party/ocmock:ocmock",
   ]
 }

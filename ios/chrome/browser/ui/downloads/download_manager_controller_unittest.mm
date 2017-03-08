@@ -11,6 +11,8 @@
 #import "base/mac/scoped_nsobject.h"
 #include "base/message_loop/message_loop.h"
 #import "ios/chrome/browser/store_kit/store_kit_launcher.h"
+#import "ios/chrome/browser/store_kit/store_kit_tab_helper.h"
+#import "ios/chrome/browser/web/chrome_web_test.h"
 #include "ios/web/public/test/test_web_thread.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"
@@ -19,6 +21,7 @@
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest_mac.h"
 #include "testing/platform_test.h"
+#import "third_party/ocmock/OCMock/OCMock.h"
 
 using net::HttpResponseHeaders;
 using net::URLRequestStatus;
@@ -41,45 +44,25 @@ using net::URLRequestStatus;
 - (long long)totalFileSize;
 @end
 
-@interface TestStoreKitLauncher : NSObject<StoreKitLauncher>
-@end
-
-@implementation TestStoreKitLauncher
-- (void)openAppStore:(NSString*)appId {
-}
-@end
-
 namespace {
 
 const GURL kTestURL = GURL("http://www.example.com/test_download_file.txt");
 
-class DownloadManagerControllerTest : public PlatformTest {
- public:
-  DownloadManagerControllerTest()
-      : _message_loop(base::MessageLoop::TYPE_UI),
-        _ui_thread(web::WebThread::UI, &_message_loop) {}
-
+class DownloadManagerControllerTest : public ChromeWebTest {
  protected:
   void SetUp() override {
-    PlatformTest::SetUp();
-
-    _request_context_getter =
-        new net::TestURLRequestContextGetter(_message_loop.task_runner());
-
+    ChromeWebTest::SetUp();
     _fetcher_factory.reset(new net::TestURLFetcherFactory());
-
-    _store_kit_launcher.reset([[TestStoreKitLauncher alloc] init]);
-
+    StoreKitTabHelper::CreateForWebState(web_state());
+    StoreKitTabHelper* helper = StoreKitTabHelper::FromWebState(web_state());
+    id mock_launcher =
+        [OCMockObject niceMockForProtocol:@protocol(StoreKitLauncher)];
+    helper->SetLauncher(mock_launcher);
     _controller.reset([[DownloadManagerController alloc]
-                 initWithURL:kTestURL
-        requestContextGetter:_request_context_getter.get()
-            storeKitLauncher:_store_kit_launcher.get()]);
+        initWithWebState:web_state()
+             downloadURL:kTestURL]);
   }
 
-  base::MessageLoop _message_loop;
-  web::TestWebThread _ui_thread;
-  base::scoped_nsobject<TestStoreKitLauncher> _store_kit_launcher;
-  scoped_refptr<net::TestURLRequestContextGetter> _request_context_getter;
   std::unique_ptr<net::TestURLFetcherFactory> _fetcher_factory;
   base::scoped_nsobject<DownloadManagerController> _controller;
 };

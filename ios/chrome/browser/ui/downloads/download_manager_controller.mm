@@ -23,7 +23,7 @@
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/installation_notifier.h"
 #include "ios/chrome/browser/native_app_launcher/ios_appstore_ids.h"
-#import "ios/chrome/browser/store_kit/store_kit_launcher.h"
+#import "ios/chrome/browser/store_kit/store_kit_tab_helper.h"
 #import "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
 #import "ios/chrome/browser/ui/network_activity_indicator_manager.h"
@@ -37,6 +37,8 @@
 #import "ios/third_party/material_components_ios/src/components/Buttons/src/MaterialButtons.h"
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 #import "ios/third_party/material_roboto_font_loader_ios/src/src/MaterialRobotoFontLoader.h"
+#include "ios/web/public/browser_state.h"
+#include "ios/web/public/web_state/web_state.h"
 #include "ios/web/public/web_thread.h"
 #include "net/base/filename_util.h"
 #include "net/http/http_response_headers.h"
@@ -374,11 +376,11 @@ class DownloadContentDelegate : public URLFetcherDelegate {
   BOOL _isFileTypeLabelCentered;
   BOOL _isDisplayingError;
   BOOL _didSuccessfullyFinishHeadFetch;
-  scoped_refptr<URLRequestContextGetter> _requestContextGetter;
+  // WebState provides access to the *TabHelper objects.
+  web::WebState* _webState;
   std::unique_ptr<URLFetcher> _fetcher;
   std::unique_ptr<DownloadHeadDelegate> _headFetcherDelegate;
   std::unique_ptr<DownloadContentDelegate> _contentFetcherDelegate;
-  base::WeakNSProtocol<id<StoreKitLauncher>> _storeKitLauncher;
   base::FilePath _downloadFilePath;
   base::scoped_nsobject<MDCActivityIndicator> _activityIndicator;
   // Set to YES when a download begins and is used to determine if the
@@ -518,20 +520,19 @@ class DownloadContentDelegate : public URLFetcherDelegate {
 @synthesize fractionDownloaded = _fractionDownloaded;
 @synthesize googleDriveMetadata = _googleDriveMetadata;
 
-- (id)initWithURL:(const GURL&)url
-    requestContextGetter:(URLRequestContextGetter*)requestContextGetter
-        storeKitLauncher:(id<StoreKitLauncher>)storeLauncher {
+- (instancetype)initWithWebState:(web::WebState*)webState
+                     downloadURL:(const GURL&)url {
   self = [super initWithNibName:@"DownloadManagerController" url:url];
   if (self) {
     _downloadManagerId = g_download_manager_id++;
     _propertyReleaser_DownloadManagerController.Init(
         self, [DownloadManagerController class]);
 
-    _requestContextGetter = requestContextGetter;
+    DCHECK(webState);
+    _webState = webState;
     _headFetcherDelegate.reset(new DownloadHeadDelegate(self));
     _contentFetcherDelegate.reset(new DownloadContentDelegate(self));
     _downloadFilePath = base::FilePath();
-    _storeKitLauncher.reset(storeLauncher);
 
     [_documentContainer
         setBackgroundColor:UIColorFromRGB(kUndownloadedDocumentColor)];
@@ -954,7 +955,8 @@ class DownloadContentDelegate : public URLFetcherDelegate {
 - (void)startHeadFetch {
   _fetcher = URLFetcher::Create([self url], URLFetcher::HEAD,
                                 _headFetcherDelegate.get());
-  _fetcher->SetRequestContext(_requestContextGetter.get());
+  _fetcher->SetRequestContext(
+      _webState->GetBrowserState()->GetRequestContext());
   [[NetworkActivityIndicatorManager sharedInstance]
       startNetworkTaskForGroup:[self getNetworkActivityKey]];
   _fetcher->Start();
@@ -1067,9 +1069,10 @@ class DownloadContentDelegate : public URLFetcherDelegate {
                          message:message]);
 
   // |googleDriveMetadata| contains the information necessary to either launch
-  // |the Google Drive app or navigate to its StoreKit page.  If the metadata is
-  // |not present, do not show the upload button at all.
-  if (self.googleDriveMetadata) {
+  // the Google Drive app or navigate to its StoreKit page.  If the metadata is
+  // not present, do not show the upload button at all.
+  StoreKitTabHelper* tabHelper = StoreKitTabHelper::FromWebState(_webState);
+  if (self.googleDriveMetadata && tabHelper) {
     NSString* googleDriveButtonTitle =
         l10n_util::GetNSString(IDS_IOS_DOWNLOAD_MANAGER_UPLOAD_TO_GOOGLE_DRIVE);
     base::WeakNSObject<DownloadManagerController> weakSelf(self);
@@ -1265,7 +1268,8 @@ class DownloadContentDelegate : public URLFetcherDelegate {
 
   _fetcher = URLFetcher::Create([self url], URLFetcher::GET,
                                 _contentFetcherDelegate.get());
-  _fetcher->SetRequestContext(_requestContextGetter.get());
+  _fetcher->SetRequestContext(
+      _webState->GetBrowserState()->GetRequestContext());
   base::SequencedWorkerPool::SequenceToken sequenceToken =
       web::WebThread::GetBlockingPool()->GetSequenceToken();
   _fetcher->SaveResponseToFileAtPath(
@@ -1576,12 +1580,14 @@ class DownloadContentDelegate : public URLFetcherDelegate {
 }
 
 - (void)openGoogleDriveInAppStore {
-  [[InstallationNotifier sharedInstance]
-      registerForInstallationNotifications:self
-                              withSelector:@selector(hideGoogleDriveButton)
-                                 forScheme:[_googleDriveMetadata anyScheme]];
-
-  [_storeKitLauncher openAppStore:[_googleDriveMetadata appId]];
+  StoreKitTabHelper* helper = StoreKitTabHelper::FromWebState(_webState);
+  if (helper) {
+    [[InstallationNotifier sharedInstance]
+        registerForInstallationNotifications:self
+                                withSelector:@selector(hideGoogleDriveButton)
+                                   forScheme:[_googleDriveMetadata anyScheme]];
+    helper->OpenAppStore([_googleDriveMetadata appId]);
+  }
 }
 
 - (NSString*)getNetworkActivityKey {

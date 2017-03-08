@@ -9,11 +9,9 @@
 
 #import "ios/chrome/browser/ui/native_content_controller.h"
 
-@protocol StoreKitLauncher;
-
-namespace net {
-class URLRequestContextGetter;
-}
+namespace web {
+class WebState;
+}  // namespace web
 
 // This controller shows the native download manager. It shows the user basic
 // information about the file (namely its type, size, and name), and gives them
@@ -23,13 +21,11 @@ class URLRequestContextGetter;
 @interface DownloadManagerController
     : NativeContentController<UIDocumentInteractionControllerDelegate>
 
-// Initializes a controller for content from |url|, using
-// |requestContextGetter| for all requests necessary to download the file.
-// |storeLauncher| is used to open a controller that allows the user to
-// install Google Drive if they don't have it installed.
-- (id)initWithURL:(const GURL&)url
-    requestContextGetter:(net::URLRequestContextGetter*)requestContextGetter
-        storeKitLauncher:(id<StoreKitLauncher>)storeLauncher;
+// Initializes a controller for content from |url| using |webState| to provide
+// the context to open a controller that allows the user to install Google Drive
+// if they don't have it installed.
+- (instancetype)initWithWebState:(web::WebState*)webState
+                     downloadURL:(const GURL&)url;
 
 // Starts loading the data for the file at the url passed into the
 // initializer. This should only be called once, immediately after
