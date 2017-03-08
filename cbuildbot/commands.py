@@ -732,7 +732,7 @@ def RunTestSuite(buildroot, board, image_path, results_dir, test_type,
   osutils.RmDir(results_dir_in_chroot, ignore_missing=True)
 
   cwd = os.path.join(buildroot, 'src', 'scripts')
-  dut_type = 'gce' if test_type == constants.GCE_VM_TEST_TYPE else 'vm'
+  dut_type = 'gce' if test_type in constants.VALID_GCE_TEST_TYPES else 'vm'
 
   cmd = ['bin/ctest',
          '--board=%s' % board,
@@ -743,7 +743,8 @@ def RunTestSuite(buildroot, board, image_path, results_dir, test_type,
          '--test_results_root=%s' % results_dir_in_chroot
         ]
 
-  if test_type not in constants.VALID_VM_TEST_TYPES:
+  if test_type not in (constants.VALID_VM_TEST_TYPES +
+                       constants.VALID_GCE_TEST_TYPES):
     raise AssertionError('Unrecognized test type %r' % test_type)
 
   if test_type == constants.FULL_AU_TEST_TYPE:
@@ -752,9 +753,12 @@ def RunTestSuite(buildroot, board, image_path, results_dir, test_type,
     if test_type == constants.SMOKE_SUITE_TEST_TYPE:
       cmd.append('--only_verify')
       cmd.append('--suite=smoke')
-    elif test_type == constants.GCE_VM_TEST_TYPE:
+    elif test_type == constants.GCE_SMOKE_TEST_TYPE:
       cmd.append('--only_verify')
       cmd.append('--suite=gce-smoke')
+    elif test_type == constants.GCE_SANITY_TEST_TYPE:
+      cmd.append('--only_verify')
+      cmd.append('--suite=gce-sanity')
     elif test_type == constants.TELEMETRY_SUITE_TEST_TYPE:
       cmd.append('--only_verify')
       cmd.append('--suite=telemetry_unit')

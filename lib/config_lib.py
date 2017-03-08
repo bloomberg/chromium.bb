@@ -351,6 +351,26 @@ class VMTestConfig(object):
   def __eq__(self, other):
     return self.__dict__ == other.__dict__
 
+
+class GCETestConfig(object):
+  """Config object for GCE tests suites.
+
+  Members:
+    test_type: Test type to be run.
+    timeout: Number of seconds to wait before timing out waiting for
+             results.
+  """
+  DEFAULT_TEST_TIMEOUT = 60 * 60
+
+  def __init__(self, test_type, timeout=DEFAULT_TEST_TIMEOUT):
+    """Constructor -- see members above."""
+    self.test_type = test_type
+    self.timeout = timeout
+
+  def __eq__(self, other):
+    return self.__dict__ == other.__dict__
+
+
 class HWTestConfig(object):
   """Config object for hardware tests suites.
 
@@ -667,9 +687,9 @@ def DefaultSettings():
       # If true, uploads individual image tarballs.
       upload_standalone_images=True,
 
-      # If true, runs tests as specified in overlay private gce_tests.json, or
-      # the default gce-smoke suite if none, on GCE VMs.
-      run_gce_tests=False,
+      # Default to not run gce tests. Currently only some lakitu builders run
+      # gce tests.
+      gce_tests=[],
 
       # List of patterns for portage packages for which stripped binpackages
       # should be uploaded to GS. The patterns are used to search for packages
@@ -1653,9 +1673,18 @@ def _CreateHwTestConfig(jsonString):
   return HWTestConfig(**hw_test_config)
 
 
+def _CreateGceTestConfig(jsonString):
+  """Create a GCETestConfig object from a JSON string."""
+  if isinstance(jsonString, GCETestConfig):
+    return jsonString
+  # Each GCE Test is dumped as a json string embedded in json.
+  gce_test_config = json.loads(jsonString, object_hook=_DecodeDict)
+  return GCETestConfig(**gce_test_config)
+
+
 def _UpdateConfig(build_dict):
   """Updates a config dictionary with recreated objects."""
-  # Both VM and HW test configs are serialized as strings (rather than JSON
+  # VM, HW and GCE test configs are serialized as strings (rather than JSON
   # objects), so we need to turn them into real objects before they can be
   # consumed.
   vmtests = build_dict.pop('vm_tests', None)
@@ -1681,6 +1710,11 @@ def _UpdateConfig(build_dict):
     ]
   else:
     build_dict['hw_tests_override'] = None
+
+  gcetests = build_dict.pop('gce_tests', None)
+  if gcetests is not None:
+    build_dict['gce_tests'] = [_CreateGceTestConfig(gcetest) for gcetest in
+                               gcetests]
 
 
 def _CreateBuildConfig(name, default, build_dict, templates):

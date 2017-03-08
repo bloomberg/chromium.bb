@@ -48,6 +48,7 @@
         "factory_install_netboot": true,
         "factory_toolkit": true,
         "gcc_githash": null,
+        "gce_tests": [],
         "git_sync": false,
         "grouped": false,
         "gs_path": "default",
@@ -85,7 +86,6 @@
         "push_image": false,
         "push_overlays": null,
         "rootfs_verification": true,
-        "run_gce_tests": false,
         "sanity_check_slaves": null,
         "separate_debug_symbols": true,
         "shared_user_password": null,
@@ -12696,6 +12696,10 @@
         "factory": false,
         "factory_install_netboot": false,
         "factory_toolkit": false,
+        "gce_tests": [
+            "{\n    \"test_type\": \"gce_sanity_test\",\n    \"timeout\": 3600\n}",
+            "{\n    \"test_type\": \"gce_smoke_test\",\n    \"timeout\": 3600\n}"
+        ],
         "health_alert_recipients": [
             "gci-alerts+buildbots@google.com"
         ],
@@ -12704,7 +12708,6 @@
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
         "overlays": "both",
-        "run_gce_tests": true,
         "sync_chrome": false,
         "useflags": [
             "chrome_internal"
@@ -12741,6 +12744,9 @@
         "factory": false,
         "factory_install_netboot": false,
         "factory_toolkit": false,
+        "gce_tests": [
+            "{\n    \"test_type\": \"gce_sanity_test\",\n    \"timeout\": 3600\n}"
+        ],
         "image_test": false,
         "important": false,
         "internal": true,
@@ -12748,7 +12754,6 @@
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
         "overlays": "both",
         "prebuilts": "private",
-        "run_gce_tests": true,
         "sync_chrome": false,
         "useflags": [
             "chrome_internal"
@@ -12775,12 +12780,15 @@
         "factory": false,
         "factory_install_netboot": false,
         "factory_toolkit": false,
+        "gce_tests": [
+            "{\n    \"test_type\": \"gce_sanity_test\",\n    \"timeout\": 3600\n}",
+            "{\n    \"test_type\": \"gce_smoke_test\",\n    \"timeout\": 3600\n}"
+        ],
         "image_test": false,
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
         "overlays": "both",
-        "run_gce_tests": true,
         "sync_chrome": false,
         "useflags": [
             "chrome_internal"
@@ -12803,6 +12811,10 @@
         "factory": false,
         "factory_install_netboot": false,
         "factory_toolkit": false,
+        "gce_tests": [
+            "{\n    \"test_type\": \"gce_sanity_test\",\n    \"timeout\": 3600\n}",
+            "{\n    \"test_type\": \"gce_smoke_test\",\n    \"timeout\": 3600\n}"
+        ],
         "health_alert_recipients": [
             "gci-alerts+buildbots@google.com"
         ],
@@ -12815,7 +12827,6 @@
             "recovery",
             "test"
         ],
-        "run_gce_tests": true,
         "sign_types": [
             "base"
         ],
@@ -12884,6 +12895,10 @@
         "factory": false,
         "factory_install_netboot": false,
         "factory_toolkit": false,
+        "gce_tests": [
+            "{\n    \"test_type\": \"gce_sanity_test\",\n    \"timeout\": 3600\n}",
+            "{\n    \"test_type\": \"gce_smoke_test\",\n    \"timeout\": 3600\n}"
+        ],
         "health_alert_recipients": [
             "gci-alerts+buildbots@google.com"
         ],
@@ -12892,7 +12907,6 @@
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
         "overlays": "both",
-        "run_gce_tests": true,
         "sync_chrome": false,
         "useflags": [
             "chrome_internal"
@@ -12930,6 +12944,9 @@
         "factory": false,
         "factory_install_netboot": false,
         "factory_toolkit": false,
+        "gce_tests": [
+            "{\n    \"test_type\": \"gce_sanity_test\",\n    \"timeout\": 3600\n}"
+        ],
         "image_test": false,
         "internal": true,
         "manifest": "official.xml",
@@ -12962,12 +12979,15 @@
         "factory": false,
         "factory_install_netboot": false,
         "factory_toolkit": false,
+        "gce_tests": [
+            "{\n    \"test_type\": \"gce_sanity_test\",\n    \"timeout\": 3600\n}",
+            "{\n    \"test_type\": \"gce_smoke_test\",\n    \"timeout\": 3600\n}"
+        ],
         "image_test": false,
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
         "overlays": "both",
-        "run_gce_tests": true,
         "sync_chrome": false,
         "useflags": [
             "chrome_internal"
@@ -12991,6 +13011,10 @@
         "factory": false,
         "factory_install_netboot": false,
         "factory_toolkit": false,
+        "gce_tests": [
+            "{\n    \"test_type\": \"gce_sanity_test\",\n    \"timeout\": 3600\n}",
+            "{\n    \"test_type\": \"gce_smoke_test\",\n    \"timeout\": 3600\n}"
+        ],
         "health_alert_recipients": [
             "gci-alerts+buildbots@google.com"
         ],
@@ -13004,7 +13028,6 @@
             "test"
         ],
         "important": true,
-        "run_gce_tests": true,
         "sign_types": [
             "base"
         ],
@@ -13147,6 +13170,10 @@
         "factory": false,
         "factory_install_netboot": false,
         "factory_toolkit": false,
+        "gce_tests": [
+            "{\n    \"test_type\": \"gce_sanity_test\",\n    \"timeout\": 3600\n}",
+            "{\n    \"test_type\": \"gce_smoke_test\",\n    \"timeout\": 3600\n}"
+        ],
         "health_alert_recipients": [
             "gci-alerts+buildbots@google.com"
         ],
@@ -13155,7 +13182,6 @@
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
         "overlays": "both",
-        "run_gce_tests": true,
         "sync_chrome": false,
         "useflags": [
             "chrome_internal"
@@ -13192,6 +13218,9 @@
         "factory": false,
         "factory_install_netboot": false,
         "factory_toolkit": false,
+        "gce_tests": [
+            "{\n    \"test_type\": \"gce_sanity_test\",\n    \"timeout\": 3600\n}"
+        ],
         "image_test": false,
         "important": false,
         "internal": true,
@@ -13199,7 +13228,6 @@
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
         "overlays": "both",
         "prebuilts": "private",
-        "run_gce_tests": true,
         "sync_chrome": false,
         "useflags": [
             "chrome_internal"
@@ -13226,12 +13254,15 @@
         "factory": false,
         "factory_install_netboot": false,
         "factory_toolkit": false,
+        "gce_tests": [
+            "{\n    \"test_type\": \"gce_sanity_test\",\n    \"timeout\": 3600\n}",
+            "{\n    \"test_type\": \"gce_smoke_test\",\n    \"timeout\": 3600\n}"
+        ],
         "image_test": false,
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
         "overlays": "both",
-        "run_gce_tests": true,
         "sync_chrome": false,
         "useflags": [
             "chrome_internal"
@@ -13255,6 +13286,10 @@
         "factory": false,
         "factory_install_netboot": false,
         "factory_toolkit": false,
+        "gce_tests": [
+            "{\n    \"test_type\": \"gce_sanity_test\",\n    \"timeout\": 3600\n}",
+            "{\n    \"test_type\": \"gce_smoke_test\",\n    \"timeout\": 3600\n}"
+        ],
         "health_alert_recipients": [
             "gci-alerts+buildbots@google.com"
         ],
@@ -13267,7 +13302,6 @@
             "recovery",
             "test"
         ],
-        "run_gce_tests": true,
         "signer_tests": false,
         "sync_chrome": false,
         "vm_tests": [

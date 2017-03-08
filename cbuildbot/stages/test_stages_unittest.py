@@ -30,6 +30,60 @@ from chromite.lib import timeout_util
 
 # pylint: disable=too-many-ancestors
 
+class GCETestStageTest(generic_stages_unittest.AbstractStageTestCase,
+                       cbuildbot_unittest.SimpleBuilderTestCase):
+  """Tests for the GCETest stage."""
+
+  BOT_ID = 'x86-generic-full'
+  RELEASE_TAG = ''
+
+  def setUp(self):
+    for cmd in ('RunTestSuite', 'CreateTestRoot', 'GenerateStackTraces',
+                'ArchiveFile', 'ArchiveTestResults', 'ArchiveVMFiles',
+                'UploadArchivedFile', 'RunDevModeTest', 'RunCrosVMTest',
+                'ListFailedTests', 'GetTestResultsDir',
+                'BuildAndArchiveTestResultsTarball'):
+      self.PatchObject(commands, cmd, autospec=True)
+    self.PatchObject(test_stages.VMTestStage, '_NoTestResults',
+                     autospec=True, return_value=False)
+    self.PatchObject(osutils, 'RmDir', autospec=True)
+    self.PatchObject(cgroups, 'SimpleContainChildren', autospec=True)
+    self._Prepare()
+
+    # Simulate breakpad symbols being ready.
+    board_runattrs = self._run.GetBoardRunAttrs(self._current_board)
+    board_runattrs.SetParallel('breakpad_symbols_generated', True)
+
+  def ConstructStage(self):
+    # pylint: disable=W0212
+    self._run.GetArchive().SetupArchivePath()
+    stage = test_stages.GCETestStage(self._run, self._current_board)
+    image_dir = stage.GetImageDirSymlink()
+    osutils.Touch(os.path.join(image_dir, constants.TEST_KEY_PRIVATE),
+                  makedirs=True)
+    return stage
+
+  def testGceTests(self):
+    """Verifies that GCE_SMOKE_TEST_TYPE tests are run on GCE."""
+    self._run.config['gce_tests'] = [
+        config_lib.GCETestConfig(constants.GCE_SMOKE_TEST_TYPE)
+    ]
+    gce_tarball = constants.TEST_IMAGE_GCE_TAR
+
+    # pylint: disable=unused-argument
+    def _MockRunTestSuite(buildroot, board, image_path, results_dir, test_type,
+                          *args, **kwargs):
+      self.assertEndsWith(image_path, gce_tarball)
+      self.assertEqual(test_type, constants.GCE_SMOKE_TEST_TYPE)
+    # pylint: enable=unused-argument
+
+    commands.RunTestSuite.side_effect = _MockRunTestSuite
+
+    self.RunStage()
+
+    self.assertTrue(commands.RunTestSuite.called and
+                    commands.RunTestSuite.call_count == 1)
+
 
 class VMTestStageTest(generic_stages_unittest.AbstractStageTestCase,
                       cbuildbot_unittest.SimpleBuilderTestCase):
@@ -77,27 +131,6 @@ class VMTestStageTest(generic_stages_unittest.AbstractStageTestCase,
         config_lib.VMTestConfig(constants.SIMPLE_AU_TEST_TYPE)
     ]
     self.RunStage()
-
-  def testGceTests(self):
-    """Tests if GCE_VM_TEST_TYPE tests are run on GCE."""
-    self._run.config['vm_tests'] = [
-        config_lib.VMTestConfig(constants.GCE_VM_TEST_TYPE)
-    ]
-    gce_tarball = constants.TEST_IMAGE_GCE_TAR
-
-    # pylint: disable=unused-argument
-    def _MockRunTestSuite(buildroot, board, image_path, results_dir, test_type,
-                          *args, **kwargs):
-      self.assertEndsWith(image_path, gce_tarball)
-      self.assertEqual(test_type, constants.GCE_VM_TEST_TYPE)
-    # pylint: enable=unused-argument
-
-    commands.RunTestSuite.side_effect = _MockRunTestSuite
-
-    self.RunStage()
-
-    self.assertTrue(commands.RunTestSuite.called and
-                    commands.RunTestSuite.call_count == 1)
 
   def testFailedTest(self):
     """Tests if quick unit and cros_au_test_harness tests are run correctly."""

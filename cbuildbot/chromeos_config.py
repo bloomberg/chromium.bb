@@ -958,14 +958,14 @@ def GeneralTemplates(site_config, ge_build_config):
       'no_vmtest_builder',
       vm_tests=[],
       vm_tests_override=None,
-      run_gce_tests=False,
+      gce_tests=[],
   )
 
   site_config.AddTemplate(
       'smoke_only_vmtest_builder',
       vm_tests=[config_lib.VMTestConfig(constants.SMOKE_SUITE_TEST_TYPE)],
       vm_tests_override=None,
-      run_gce_tests=False,
+      gce_tests=[],
   )
 
   site_config.AddTemplate(
@@ -1105,7 +1105,16 @@ def GeneralTemplates(site_config, ge_build_config):
       'lakitu_test_customizations',
       vm_tests=[config_lib.VMTestConfig(constants.SMOKE_SUITE_TEST_TYPE),
                 config_lib.VMTestConfig(constants.SIMPLE_AU_TEST_TYPE)],
-      run_gce_tests=True,
+      gce_tests=[config_lib.GCETestConfig(constants.GCE_SANITY_TEST_TYPE),
+                 config_lib.GCETestConfig(constants.GCE_SMOKE_TEST_TYPE)],
+  )
+
+  # Test customizations for lakitu boards' paladin builders.
+  site_config.AddTemplate(
+      'lakitu_paladin_test_customizations',
+      vm_tests=[config_lib.VMTestConfig(constants.SMOKE_SUITE_TEST_TYPE),
+                config_lib.VMTestConfig(constants.SIMPLE_AU_TEST_TYPE)],
+      gce_tests=[config_lib.GCETestConfig(constants.GCE_SANITY_TEST_TYPE)],
   )
 
   # An anchor of Laktiu' notification email settings.
@@ -2342,13 +2351,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       customizations.update(prebuilts=constants.PUBLIC)
 
     if board in _lakitu_boards:
-      lakitu_test_customizations = (site_config.templates
-                                    .lakitu_test_customizations.deepcopy())
-      if board == 'lakitu':
-        # Temporarily disable GCE tests for lakitu-paladin, as we want it to be
-        # "important" while we are making GCE tests less flaky.
-        # TODO(b/35992898): reenable it.
-        lakitu_test_customizations['run_gce_tests'] = False
       # Note: Because |customizations| precedes |base_config|, it will be
       # overridden by |base_config|. So we have to append lakitu
       # customizations after |base_config| is applied.
@@ -2361,7 +2363,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
           site_config.templates.paladin,
           customizations,
           base_config,
-          lakitu_test_customizations,
+          site_config.templates.lakitu_paladin_test_customizations,
       )
     else:
       site_config.Add(

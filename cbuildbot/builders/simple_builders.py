@@ -206,7 +206,7 @@ class SimpleBuilder(generic_builders.Builder):
       stage_list += [[generic_stages.RetryStage, 1, test_stages.VMTestStage,
                       board]]
 
-    if config.run_gce_tests:
+    if config.gce_tests:
       # Give the GCETests one retry attempt in case failures are flaky.
       stage_list += [[generic_stages.RetryStage, 1, test_stages.GCETestStage,
                       board]]

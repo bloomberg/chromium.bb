@@ -143,13 +143,19 @@ class RunTestSuiteTest(cros_build_lib_unittest.RunCommandTempDirTestCase):
     self._RunTestSuite(constants.SMOKE_SUITE_TEST_TYPE)
     self.assertCommandContains(['--only_verify'])
 
-  def testGceVmTestType(self):
-    """Test GCE_VM_TEST_TYPE."""
-    self._RunTestSuite(constants.GCE_VM_TEST_TYPE)
+  def testGceSmokeTestType(self):
+    """Test GCE_SMOKE_TEST_TYPE."""
+    self._RunTestSuite(constants.GCE_SMOKE_TEST_TYPE)
     self.assertCommandContains(['--only_verify'])
     self.assertCommandContains(['--type=gce'])
     self.assertCommandContains(['--suite=gce-smoke'])
 
+  def testGceSanityTestType(self):
+    """Test GCE_SANITY_TEST_TYPE."""
+    self._RunTestSuite(constants.GCE_SANITY_TEST_TYPE)
+    self.assertCommandContains(['--only_verify'])
+    self.assertCommandContains(['--type=gce'])
+    self.assertCommandContains(['--suite=gce-sanity'])
 
 class ChromeSDKTest(cros_build_lib_unittest.RunCommandTempDirTestCase):
   """Basic tests for ChromeSDK commands with RunCommand mocked out."""

@@ -372,6 +372,16 @@ class CBuildBotTest(ChromeosConfigTestBase):
             vm_test.test_type in constants.VALID_VM_TEST_TYPES,
             'Config %s: has unexpected vm test type value.' % build_name)
 
+  def testValidGCETestType(self):
+    """Verify gce_tests has an expected value"""
+    for build_name, config in self.site_config.iteritems():
+      if config['gce_tests'] is None:
+        continue
+      for gce_test in config['gce_tests']:
+        self.assertTrue(
+            gce_test.test_type in constants.VALID_GCE_TEST_TYPES,
+            'Config %s: has unexpected gce test type value.' % build_name)
+
   def testImageTestMustHaveBaseImage(self):
     """Verify image_test build is only enabled with 'base' in images."""
     for build_name, config in self.site_config.iteritems():
