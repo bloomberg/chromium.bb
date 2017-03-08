@@ -302,8 +302,8 @@ bool SecurityPolicy::referrerPolicyFromHeaderValue(
   headerValue.split(',', true, tokens);
   for (const auto& token : tokens) {
     ReferrerPolicy currentResult;
-    if (SecurityPolicy::referrerPolicyFromString(token, legacyKeywordsSupport,
-                                                 &currentResult)) {
+    if (SecurityPolicy::referrerPolicyFromString(
+            token.stripWhiteSpace(), legacyKeywordsSupport, &currentResult)) {
       referrerPolicy = currentResult;
     }
   }
