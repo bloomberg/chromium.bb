@@ -123,6 +123,11 @@ class NavigationItemImpl : public web::NavigationItem {
   // doesn't specify a title.
   static base::string16 GetDisplayTitleForURL(const GURL& url);
 
+#ifndef NDEBUG
+  // Returns a human-readable description of the state for debugging purposes.
+  NSString* GetDescription() const;
+#endif
+
  private:
   // The NavigationManItemStorageBuilder functions require access to
   // private variables of NavigationItemImpl.

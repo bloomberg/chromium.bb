@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "base/strings/utf_string_conversions.h"
 #include "components/url_formatter/url_formatter.h"
 #import "ios/web/navigation/navigation_manager_impl.h"
 #import "ios/web/public/web_client.h"
@@ -315,5 +316,18 @@ base::string16 NavigationItemImpl::GetDisplayTitleForURL(const GURL& url) {
   gfx::ElideString(title, kMaxTitleChars, &title);
   return title;
 }
+
+#ifndef NDEBUG
+NSString* NavigationItemImpl::GetDescription() const {
+  return [NSString
+      stringWithFormat:
+          @"url:%s originalurl:%s title:%s transition:%d displayState:%@ "
+          @"userAgentType:%s",
+          url_.spec().c_str(), original_request_url_.spec().c_str(),
+          base::UTF16ToUTF8(title_).c_str(), transition_type_,
+          page_display_state_.GetDescription(),
+          GetUserAgentTypeDescription(user_agent_type_).c_str()];
+}
+#endif
 
 }  // namespace web

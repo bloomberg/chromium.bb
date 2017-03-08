@@ -50,18 +50,11 @@
 }
 
 - (NSString*)description {
-  return [NSString
-      stringWithFormat:
-          @"url:%@ originalurl:%@ title:%@ transition:%d displayState:%@ "
-          @"userAgentType:%s",
-          base::SysUTF8ToNSString(_navigationItem->GetURL().spec()),
-          base::SysUTF8ToNSString(
-              _navigationItem->GetOriginalRequestURL().spec()),
-          base::SysUTF16ToNSString(_navigationItem->GetTitle()),
-          _navigationItem->GetTransitionType(),
-          _navigationItem->GetPageDisplayState().GetDescription(),
-          web::GetUserAgentTypeDescription(_navigationItem->GetUserAgentType())
-              .c_str()];
+#ifndef NDEBUG
+  return _navigationItem->GetDescription();
+#else
+  return [super description];
+#endif
 }
 
 - (web::NavigationItem*)navigationItem {

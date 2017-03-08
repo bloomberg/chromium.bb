@@ -534,7 +534,6 @@ test("ios_web_unittests") {
     "history_state_util_unittest.mm",
     "navigation/crw_navigation_item_storage_unittest.mm",
     "navigation/crw_session_controller_unittest.mm",
-    "navigation/crw_session_entry_unittest.mm",
     "navigation/crw_session_storage_unittest.mm",
     "navigation/navigation_item_impl_unittest.mm",
     "navigation/navigation_item_storage_test_util.h",

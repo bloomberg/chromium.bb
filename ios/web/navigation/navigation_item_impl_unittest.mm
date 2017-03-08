@@ -8,7 +8,7 @@
 
 #include "base/logging.h"
 #import "base/mac/scoped_nsobject.h"
-#include "base/strings/sys_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
 #include "testing/platform_test.h"
@@ -44,6 +44,18 @@ TEST_F(NavigationItemTest, Dummy) {
   item_->SetURL(url);
   EXPECT_TRUE(item_->GetURL().is_valid());
 }
+
+#ifndef NDEBUG
+// Tests that the debug description is as expected.
+TEST_F(NavigationItemTest, Description) {
+  item_->SetTitle(base::UTF8ToUTF16("Title"));
+  EXPECT_NSEQ(@"url:http://init.test/ originalurl:http://init.test/ "
+              @"title:Title transition:2 displayState:{ scrollOffset:(nan, "
+              @"nan), zoomScaleRange:(nan, nan), zoomScale:nan } "
+              @"userAgentType:MOBILE",
+              item_->GetDescription());
+}
+#endif
 
 // Tests that copied NavigationItemImpls create copies of data members that are
 // objects.
@@ -120,6 +132,20 @@ TEST_F(NavigationItemTest, OriginalURL) {
   item_->SetOriginalRequestURL(new_url);
   EXPECT_EQ(new_url, item_->GetOriginalRequestURL());
   EXPECT_EQ(original_url, copy.GetOriginalRequestURL());
+}
+
+// Tests the behavior of GetVirtualURL().
+TEST_F(NavigationItemTest, VirtualURLTest) {
+  // Ensure that GetVirtualURL() returns GetURL() when not set to a custom
+  // value.
+  GURL original_url = item_->GetURL();
+  EXPECT_EQ(original_url, item_->GetVirtualURL());
+  // Set the virtual URL and check that the correct value is reported and that
+  // GetURL() still reports the original URL.
+  GURL new_virtual_url = GURL("http://new_url.test");
+  item_->SetVirtualURL(new_virtual_url);
+  EXPECT_EQ(new_virtual_url, item_->GetVirtualURL());
+  EXPECT_EQ(original_url, item_->GetURL());
 }
 
 }  // namespace
