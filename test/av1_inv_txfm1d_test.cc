@@ -50,11 +50,6 @@ TEST(av1_inv_txfm1d, round_trip) {
   ACMRandom rnd(ACMRandom::DeterministicSeed());
   for (int si = 0; si < ARRAY_SIZE(fwd_txfm_func_ls); ++si) {
     int txfm_size = txfm_size_ls[si];
-    int32_t input[64];
-    int32_t output[64];
-    int32_t round_trip_output[64];
-
-    assert(txfm_size <= ARRAY_SIZE(input));
 
     for (int ti = 0; ti < txfm_type_num; ++ti) {
       TxfmFunc fwd_txfm_func = fwd_txfm_func_ls[si][ti];
@@ -65,6 +60,12 @@ TEST(av1_inv_txfm1d, round_trip) {
 
       const int count_test_block = 5000;
       for (int ci = 0; ci < count_test_block; ++ci) {
+        int32_t input[64];
+        int32_t output[64];
+        int32_t round_trip_output[64];
+
+        assert(txfm_size <= ARRAY_SIZE(input));
+
         for (int ni = 0; ni < txfm_size; ++ni) {
           input[ni] = rnd.Rand16() % input_base - rnd.Rand16() % input_base;
         }
