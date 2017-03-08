@@ -751,4 +751,40 @@ TEST_F(NativeExtensionBindingsSystemUnittest, TestCustomProperties) {
   }
 }
 
+// Ensure that different contexts have different API objects.
+TEST_F(NativeExtensionBindingsSystemUnittest,
+       CheckDifferentContextsHaveDifferentAPIObjects) {
+  scoped_refptr<Extension> extension =
+      CreateExtension("extension", ItemType::EXTENSION, {"idle"});
+  RegisterExtension(extension->id());
+
+  v8::HandleScope handle_scope(isolate());
+  v8::Local<v8::Context> context_a = MainContext();
+  v8::Local<v8::Context> context_b = AddContext();
+
+  ScriptContext* script_context_a = CreateScriptContext(
+      context_a, extension.get(), Feature::BLESSED_EXTENSION_CONTEXT);
+  script_context_a->set_url(extension->url());
+  bindings_system()->UpdateBindingsForContext(script_context_a);
+
+  ScriptContext* script_context_b = CreateScriptContext(
+      context_b, extension.get(), Feature::BLESSED_EXTENSION_CONTEXT);
+  script_context_b->set_url(extension->url());
+  bindings_system()->UpdateBindingsForContext(script_context_b);
+
+  auto check_properties_inequal = [](v8::Local<v8::Context> context_a,
+                                     v8::Local<v8::Context> context_b,
+                                     base::StringPiece property) {
+    v8::Local<v8::Value> value_a = V8ValueFromScriptSource(context_a, property);
+    v8::Local<v8::Value> value_b = V8ValueFromScriptSource(context_b, property);
+    EXPECT_FALSE(value_a.IsEmpty()) << property;
+    EXPECT_FALSE(value_b.IsEmpty()) << property;
+    EXPECT_NE(value_a, value_b) << property;
+  };
+
+  check_properties_inequal(context_a, context_b, "chrome");
+  check_properties_inequal(context_a, context_b, "chrome.idle");
+  check_properties_inequal(context_a, context_b, "chrome.idle.onStateChanged");
+}
+
 }  // namespace extensions

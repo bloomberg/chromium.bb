@@ -75,6 +75,9 @@ struct BindingsSystemPerContextData : public base::SupportsUserData::Data {
 // If no 'chrome' property exists (or is undefined), creates a new
 // object, assigns it to Global().chrome, and returns it.
 v8::Local<v8::Object> GetOrCreateChrome(v8::Local<v8::Context> context) {
+  // Ensure that the creation context for any new chrome object is |context|.
+  v8::Context::Scope context_scope(context);
+
   // TODO(devlin): This is a little silly. We expect that this may do the wrong
   // thing if the window has set some other 'chrome' (as in the case of script
   // doing 'window.chrome = true'), but we don't really handle it. It could also
@@ -87,19 +90,20 @@ v8::Local<v8::Object> GetOrCreateChrome(v8::Local<v8::Context> context) {
   if (!context->Global()->Get(context, chrome_string).ToLocal(&chrome_value))
     return v8::Local<v8::Object>();
 
+  v8::Local<v8::Object> chrome_object;
   if (chrome_value->IsUndefined()) {
-    v8::Local<v8::Object> chrome = v8::Object::New(context->GetIsolate());
+    chrome_object = v8::Object::New(context->GetIsolate());
     v8::Maybe<bool> success =
-        context->Global()->CreateDataProperty(context, chrome_string, chrome);
+        context->Global()->CreateDataProperty(context, chrome_string,
+                                              chrome_object);
     if (!success.IsJust() || !success.FromJust())
       return v8::Local<v8::Object>();
-    return chrome;
+  } else if (chrome_value->IsObject()) {
+    chrome_object = chrome_value.As<v8::Object>();
+    DCHECK(chrome_object->CreationContext() == context);
   }
 
-  if (chrome_value->IsObject())
-    return chrome_value.As<v8::Object>();
-
-  return v8::Local<v8::Object>();
+  return chrome_object;
 }
 
 BindingsSystemPerContextData* GetBindingsDataFromContext(
