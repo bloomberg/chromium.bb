@@ -400,6 +400,8 @@ void installMethodInternal(
         v8::FunctionTemplate::New(isolate, callback, v8::Local<v8::Value>(),
                                   signature, method.length);
     functionTemplate->RemovePrototype();
+    if (method.accessCheckConfiguration == V8DOMConfiguration::CheckAccess)
+      functionTemplate->SetAcceptAnyReceiver(false);
     v8::Local<v8::Function> function =
         functionTemplate->GetFunction(isolate->GetCurrentContext())
             .ToLocalChecked();
