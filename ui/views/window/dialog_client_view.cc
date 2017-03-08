@@ -190,7 +190,7 @@ void DialogClientView::ViewHierarchyChanged(
     return;
 
   // SetupViews() removes all children, managing data members itself.
-  if (preserve_button_row_data_members_)
+  if (adding_or_removing_views_)
     return;
 
   // Otherwise, this should only happen during teardown. Ensure there are no
@@ -240,7 +240,7 @@ DialogDelegate* DialogClientView::GetDialogDelegate() const {
 }
 
 void DialogClientView::ChildPreferredSizeChanged(View* child) {
-  if (child == extra_view_)
+  if (!adding_or_removing_views_ && child == extra_view_)
     Layout();
 }
 
@@ -316,6 +316,7 @@ DialogClientView::GetButtonRowViews() {
 }
 
 void DialogClientView::SetupLayout() {
+  base::AutoReset<bool> auto_reset(&adding_or_removing_views_, true);
   GridLayout* layout = new GridLayout(button_row_container_);
   layout->set_minimum_size(minimum_size_);
 
@@ -401,14 +402,11 @@ void DialogClientView::SetupLayout() {
 }
 
 void DialogClientView::SetupViews() {
-  {
-    base::AutoReset<bool> auto_reset(&preserve_button_row_data_members_, true);
-    button_row_container_->RemoveAllChildViews(false /* delete children */);
-    // If SetupLayout() "stored" a hidden |extra_view_| in |this|, ensure it can
-    // be re-added to the layout when becoming visible.
-    if (extra_view_)
-      RemoveChildView(extra_view_);
-  }
+  button_row_container_->RemoveAllChildViews(false /* delete children */);
+  // If SetupLayout() "stored" a hidden |extra_view_| in |this|, ensure it can
+  // be re-added to the layout when becoming visible.
+  if (extra_view_)
+    RemoveChildView(extra_view_);
 
   UpdateDialogButton(&ok_button_, ui::DIALOG_BUTTON_OK);
   UpdateDialogButton(&cancel_button_, ui::DIALOG_BUTTON_CANCEL);

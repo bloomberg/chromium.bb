@@ -127,8 +127,9 @@ class VIEWS_EXPORT DialogClientView : public ClientView,
   // twice, which can have bad consequences.
   bool delegate_allowed_close_ = false;
 
-  // When true, prevents ViewHierarchyChanged() from clearing out data members.
-  bool preserve_button_row_data_members_ = false;
+  // Used to prevent unnecessary or potentially harmful changes during
+  // SetupLayout(). Everything will be manually updated afterwards.
+  bool adding_or_removing_views_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(DialogClientView);
 };
