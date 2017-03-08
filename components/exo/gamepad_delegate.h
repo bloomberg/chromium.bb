@@ -5,25 +5,13 @@
 #ifndef COMPONENTS_EXO_GAMEPAD_DELEGATE_H_
 #define COMPONENTS_EXO_GAMEPAD_DELEGATE_H_
 
-#include "base/memory/weak_ptr.h"
-
 namespace exo {
-class Gamepad;
-class Surface;
 
-// Handles events on multiple gamepad
+// Handles events for a specific gamepad.
 class GamepadDelegate {
  public:
-  // Gives the delegate a chance to clean up when the Gamepad instance is
-  // destroyed.
-  virtual void OnGamepadDestroying(Gamepad* gamepad) = 0;
-
-  // This should return true if |surface| is a valid target for this gamepad.
-  // E.g. the surface is owned by the same client as the gamepad.
-  virtual bool CanAcceptGamepadEventsForSurface(Surface* surface) const = 0;
-
-  // Called when the state of the gamepad has changed.
-  virtual void OnStateChange(bool connected) = 0;
+  // Called when the gamepad has been removed.
+  virtual void OnRemoved() = 0;
 
   // Called when the user moved an axis of the gamepad. Valid axes are defined
   // by the W3C 'standard gamepad' specification.

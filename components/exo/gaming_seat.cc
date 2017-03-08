@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/exo/gamepad.h"
+#include "components/exo/gaming_seat.h"
 
 #include <cmath>
 
@@ -12,6 +12,7 @@
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/exo/gamepad_delegate.h"
+#include "components/exo/gaming_seat_delegate.h"
 #include "components/exo/shell_surface.h"
 #include "components/exo/surface.h"
 #include "device/gamepad/gamepad_data_fetcher.h"
@@ -38,18 +39,18 @@ constexpr unsigned kPollingTimeIntervalMs = 16;
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
-// Gamepad::ThreadSafeGamepadChangeFetcher
+// GamingSeat::ThreadSafeGamepadChangeFetcher
 
 // Implements all methods and resources running on the polling thread.
 // This class is reference counted to allow it to shut down safely on the
 // polling thread even if the Gamepad has been destroyed on the origin thread.
-class Gamepad::ThreadSafeGamepadChangeFetcher
+class GamingSeat::ThreadSafeGamepadChangeFetcher
     : public device::GamepadPadStateProvider,
       public base::RefCountedThreadSafe<
-          Gamepad::ThreadSafeGamepadChangeFetcher> {
+          GamingSeat::ThreadSafeGamepadChangeFetcher> {
  public:
   using ProcessGamepadChangesCallback =
-      base::Callback<void(const blink::WebGamepad)>;
+      base::Callback<void(int index, const blink::WebGamepad)>;
 
   ThreadSafeGamepadChangeFetcher(
       const ProcessGamepadChangesCallback& post_gamepad_changes,
@@ -123,30 +124,33 @@ class Gamepad::ThreadSafeGamepadChangeFetcher
     fetcher_->GetGamepadData(
         false /* No hardware changed notification from the system */);
 
-    device::PadState& pad_state = pad_states_.get()[0];
+    for (size_t i = 0; i < blink::WebGamepads::itemsLengthCap; ++i) {
+      device::PadState& pad_state = pad_states_.get()[i];
 
-    // After querying the gamepad clear the state if it did not have it's active
-    // state updated but is still listed as being associated with a specific
-    // source. This indicates the gamepad is disconnected.
-    if (!pad_state.active_state &&
-        pad_state.source != device::GAMEPAD_SOURCE_NONE) {
-      ClearPadState(pad_state);
+      // After querying the gamepad clear the state if it did not have it's
+      // active
+      // state updated but is still listed as being associated with a specific
+      // source. This indicates the gamepad is disconnected.
+      if (!pad_state.active_state &&
+          pad_state.source != device::GAMEPAD_SOURCE_NONE) {
+        ClearPadState(pad_state);
+      }
+
+      MapAndSanitizeGamepadData(&pad_state, &new_state.items[i],
+                                false /* Don't sanitize gamepad data */);
+
+      // If the gamepad is still actively reporting the next call to
+      // GetGamepadData will set the active state to active again.
+      if (pad_state.active_state)
+        pad_state.active_state = device::GAMEPAD_INACTIVE;
+
+      if (new_state.items[i].connected != state_.items[i].connected ||
+          new_state.items[i].timestamp > state_.items[i].timestamp) {
+        origin_task_runner_->PostTask(
+            FROM_HERE,
+            base::Bind(process_gamepad_changes_, i, new_state.items[i]));
+      }
     }
-
-    MapAndSanitizeGamepadData(&pad_state, &new_state.items[0],
-                              false /* Don't sanitize gamepad data */);
-
-    // If the gamepad is still actively reporting the next call to
-    // GetGamepadData will set the active state to active again.
-    if (pad_state.active_state)
-      pad_state.active_state = device::GAMEPAD_INACTIVE;
-
-    if (new_state.items[0].connected != state_.items[0].connected ||
-        new_state.items[0].timestamp > state_.items[0].timestamp) {
-      origin_task_runner_->PostTask(
-          FROM_HERE, base::Bind(process_gamepad_changes_, new_state.items[0]));
-    }
-
     state_ = new_state;
     SchedulePollOnPollingThread();
   }
@@ -182,20 +186,23 @@ class Gamepad::ThreadSafeGamepadChangeFetcher
 };
 
 ////////////////////////////////////////////////////////////////////////////////
-// Gamepad, public:
+// GamingSeat, public:
 
-Gamepad::Gamepad(GamepadDelegate* delegate,
-                 base::SingleThreadTaskRunner* polling_task_runner)
-    : Gamepad(delegate,
-              polling_task_runner,
-              base::Bind(CreateGamepadPlatformDataFetcher)) {}
+GamingSeat::GamingSeat(GamingSeatDelegate* gaming_seat_delegate,
+                       base::SingleThreadTaskRunner* polling_task_runner)
+    : GamingSeat(gaming_seat_delegate,
+                 polling_task_runner,
+                 base::Bind(CreateGamepadPlatformDataFetcher)) {}
 
-Gamepad::Gamepad(GamepadDelegate* delegate,
-                 base::SingleThreadTaskRunner* polling_task_runner,
-                 CreateGamepadDataFetcherCallback create_fetcher_callback)
-    : delegate_(delegate), weak_factory_(this) {
+GamingSeat::GamingSeat(GamingSeatDelegate* gaming_seat_delegate,
+                       base::SingleThreadTaskRunner* polling_task_runner,
+                       CreateGamepadDataFetcherCallback create_fetcher_callback)
+    : delegate_(gaming_seat_delegate),
+      gamepad_delegates_{nullptr},
+      weak_ptr_factory_(this) {
   gamepad_change_fetcher_ = new ThreadSafeGamepadChangeFetcher(
-      base::Bind(&Gamepad::ProcessGamepadChanges, weak_factory_.GetWeakPtr()),
+      base::Bind(&GamingSeat::ProcessGamepadChanges,
+                 weak_ptr_factory_.GetWeakPtr()),
       create_fetcher_callback, polling_task_runner);
 
   auto* helper = WMHelper::GetInstance();
@@ -203,20 +210,25 @@ Gamepad::Gamepad(GamepadDelegate* delegate,
   OnWindowFocused(helper->GetFocusedWindow(), nullptr);
 }
 
-Gamepad::~Gamepad() {
+GamingSeat::~GamingSeat() {
   // Disable polling. Since ThreadSafeGamepadChangeFetcher are reference
   // counted, we can safely have it shut down after Gamepad has been destroyed.
   gamepad_change_fetcher_->EnablePolling(false);
 
-  delegate_->OnGamepadDestroying(this);
+  delegate_->OnGamingSeatDestroying(this);
+  for (size_t i = 0; i < blink::WebGamepads::itemsLengthCap; ++i) {
+    if (gamepad_delegates_[i]) {
+      gamepad_delegates_[i]->OnRemoved();
+    }
+  }
   WMHelper::GetInstance()->RemoveFocusObserver(this);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // aura::client::FocusChangeObserver overrides:
 
-void Gamepad::OnWindowFocused(aura::Window* gained_focus,
-                              aura::Window* lost_focus) {
+void GamingSeat::OnWindowFocused(aura::Window* gained_focus,
+                                 aura::Window* lost_focus) {
   DCHECK(thread_checker_.CalledOnValidThread());
   Surface* target = nullptr;
   if (gained_focus) {
@@ -229,52 +241,68 @@ void Gamepad::OnWindowFocused(aura::Window* gained_focus,
   }
 
   bool focused = target && delegate_->CanAcceptGamepadEventsForSurface(target);
+
   gamepad_change_fetcher_->EnablePolling(focused);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// Gamepad, private:
+// GamingSeat, private:
 
-void Gamepad::ProcessGamepadChanges(const blink::WebGamepad new_pad) {
+void GamingSeat::ProcessGamepadChanges(int index,
+                                       const blink::WebGamepad new_pad) {
   DCHECK(thread_checker_.CalledOnValidThread());
   bool send_frame = false;
 
+  blink::WebGamepad& pad_state = pad_state_.items[index];
   // Update connection state.
-  if (new_pad.connected != pad_state_.connected) {
-    delegate_->OnStateChange(new_pad.connected);
+  GamepadDelegate* delegate = gamepad_delegates_[index];
+  if (new_pad.connected != pad_state.connected) {
+    // New pad is disconnected.
+    if (!new_pad.connected) {
+      // If gamepad is disconnected now, it should be connected before, then
+      // gamepad_delegate should not be null.
+      DCHECK(delegate);
+      delegate->OnRemoved();
+      gamepad_delegates_[index] = nullptr;
+      pad_state = new_pad;
+      return;
+    } else if (new_pad.connected) {
+      gamepad_delegates_[index] = delegate_->GamepadAdded();
+    }
   }
 
-  if (!new_pad.connected || new_pad.timestamp <= pad_state_.timestamp) {
-    pad_state_ = new_pad;
+  if (!delegate || !new_pad.connected ||
+      new_pad.timestamp <= pad_state.timestamp) {
+    pad_state = new_pad;
     return;
   }
 
   // Notify delegate of updated axes.
   for (size_t axis = 0;
-       axis < std::max(pad_state_.axesLength, new_pad.axesLength); ++axis) {
+       axis < std::max(pad_state.axesLength, new_pad.axesLength); ++axis) {
     if (!GamepadButtonValuesAreEqual(new_pad.axes[axis],
-                                     pad_state_.axes[axis])) {
+                                     pad_state.axes[axis])) {
       send_frame = true;
-      delegate_->OnAxis(axis, new_pad.axes[axis]);
+      delegate->OnAxis(axis, new_pad.axes[axis]);
     }
   }
 
   // Notify delegate of updated buttons.
   for (size_t button_id = 0;
-       button_id < std::max(pad_state_.buttonsLength, new_pad.buttonsLength);
+       button_id < std::max(pad_state.buttonsLength, new_pad.buttonsLength);
        ++button_id) {
-    auto button = pad_state_.buttons[button_id];
+    auto button = pad_state.buttons[button_id];
     auto new_button = new_pad.buttons[button_id];
     if (button.pressed != new_button.pressed ||
         !GamepadButtonValuesAreEqual(button.value, new_button.value)) {
       send_frame = true;
-      delegate_->OnButton(button_id, new_button.pressed, new_button.value);
+      delegate->OnButton(button_id, new_button.pressed, new_button.value);
     }
   }
   if (send_frame)
-    delegate_->OnFrame();
+    delegate->OnFrame();
 
-  pad_state_ = new_pad;
+  pad_state = new_pad;
 }
 
 }  // namespace exo

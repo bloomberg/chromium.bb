@@ -6,6 +6,7 @@
 
 #include <alpha-compositing-unstable-v1-server-protocol.h>
 #include <gaming-input-unstable-v1-server-protocol.h>
+#include <gaming-input-unstable-v2-server-protocol.h>
 #include <grp.h>
 #include <keyboard-configuration-unstable-v1-server-protocol.h>
 #include <linux/input.h>
@@ -44,8 +45,9 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/exo/buffer.h"
 #include "components/exo/display.h"
-#include "components/exo/gamepad.h"
 #include "components/exo/gamepad_delegate.h"
+#include "components/exo/gaming_seat.h"
+#include "components/exo/gaming_seat_delegate.h"
 #include "components/exo/keyboard.h"
 #include "components/exo/keyboard_delegate.h"
 #include "components/exo/keyboard_device_configuration_delegate.h"
@@ -3356,42 +3358,65 @@ class WaylandGamepadDelegate : public GamepadDelegate {
   explicit WaylandGamepadDelegate(wl_resource* gamepad_resource)
       : gamepad_resource_(gamepad_resource) {}
 
-  // Overridden from GamepadDelegate:
-  void OnGamepadDestroying(Gamepad* gamepad) override { delete this; }
-  bool CanAcceptGamepadEventsForSurface(Surface* surface) const override {
-    wl_resource* surface_resource = GetSurfaceResource(surface);
-    return surface_resource &&
-           wl_resource_get_client(surface_resource) == client();
+  // If gamepad_resource_ is destroyed first, ResetGamepadResource will
+  // be called to remove the resource from delegate, and delegate won't
+  // do anything after that. If delegate is destructed first, it will
+  // set the data to null in the gamepad_resource_, then the resource
+  // destroy won't reset the delegate (cause it's gone).
+  static void ResetGamepadResource(wl_resource* resource) {
+    WaylandGamepadDelegate* delegate =
+        GetUserDataAs<WaylandGamepadDelegate>(resource);
+    if (delegate) {
+      delegate->gamepad_resource_ = nullptr;
+    }
   }
-  void OnStateChange(bool connected) override {
-    uint32_t status = connected ? ZCR_GAMEPAD_V1_GAMEPAD_STATE_ON
-                                : ZCR_GAMEPAD_V1_GAMEPAD_STATE_OFF;
-    zcr_gamepad_v1_send_state_change(gamepad_resource_, status);
+
+  // Override from GamepadDelegate:
+  void OnRemoved() override {
+    if (!gamepad_resource_) {
+      return;
+    }
+    zcr_gamepad_v2_send_removed(gamepad_resource_);
     wl_client_flush(client());
+    // Reset the user data in gamepad_resource.
+    wl_resource_set_user_data(gamepad_resource_, nullptr);
+    delete this;
   }
   void OnAxis(int axis, double value) override {
-    zcr_gamepad_v1_send_axis(gamepad_resource_, NowInMilliseconds(), axis,
+    if (!gamepad_resource_) {
+      return;
+    }
+    zcr_gamepad_v2_send_axis(gamepad_resource_, NowInMilliseconds(), axis,
                              wl_fixed_from_double(value));
   }
   void OnButton(int button, bool pressed, double value) override {
-    uint32_t state = pressed ? ZCR_GAMEPAD_V1_BUTTON_STATE_PRESSED
-                             : ZCR_GAMEPAD_V1_BUTTON_STATE_RELEASED;
-    zcr_gamepad_v1_send_button(gamepad_resource_, NowInMilliseconds(), button,
+    if (!gamepad_resource_) {
+      return;
+    }
+    uint32_t state = pressed ? ZCR_GAMEPAD_V2_BUTTON_STATE_PRESSED
+                             : ZCR_GAMEPAD_V2_BUTTON_STATE_RELEASED;
+    zcr_gamepad_v2_send_button(gamepad_resource_, NowInMilliseconds(), button,
                                state, wl_fixed_from_double(value));
   }
   void OnFrame() override {
-    zcr_gamepad_v1_send_frame(gamepad_resource_, NowInMilliseconds());
+    if (!gamepad_resource_) {
+      return;
+    }
+    zcr_gamepad_v2_send_frame(gamepad_resource_, NowInMilliseconds());
     wl_client_flush(client());
   }
 
  private:
+  // The object should be deleted by OnRemoved().
+  ~WaylandGamepadDelegate() override {}
+
   // The client who own this gamepad instance.
   wl_client* client() const {
     return wl_resource_get_client(gamepad_resource_);
   }
 
   // The gamepad resource associated with the gamepad.
-  wl_resource* const gamepad_resource_;
+  wl_resource* gamepad_resource_;
 
   DISALLOW_COPY_AND_ASSIGN(WaylandGamepadDelegate);
 };
@@ -3400,33 +3425,85 @@ void gamepad_destroy(wl_client* client, wl_resource* resource) {
   wl_resource_destroy(resource);
 }
 
-const struct zcr_gamepad_v1_interface gamepad_implementation = {
+const struct zcr_gamepad_v2_interface gamepad_implementation = {
     gamepad_destroy};
 
-void gaming_input_get_gamepad(wl_client* client,
-                              wl_resource* resource,
-                              uint32_t id,
-                              wl_resource* seat) {
-  wl_resource* gamepad_resource = wl_resource_create(
-      client, &zcr_gamepad_v1_interface, wl_resource_get_version(resource), id);
+// GamingSeat delegate that provide gamepad added.
+class WaylandGamingSeatDelegate : public GamingSeatDelegate {
+ public:
+  explicit WaylandGamingSeatDelegate(wl_resource* gaming_seat_resource)
+      : gaming_seat_resource_{gaming_seat_resource} {}
+
+  // Override from GamingSeatDelegate:
+  void OnGamingSeatDestroying(GamingSeat*) override { delete this; }
+  bool CanAcceptGamepadEventsForSurface(Surface* surface) const override {
+    wl_resource* surface_resource = GetSurfaceResource(surface);
+    return surface_resource &&
+           wl_resource_get_client(surface_resource) ==
+               wl_resource_get_client(gaming_seat_resource_);
+  }
+  GamepadDelegate* GamepadAdded() override {
+    wl_resource* gamepad_resource =
+        wl_resource_create(wl_resource_get_client(gaming_seat_resource_),
+                           &zcr_gamepad_v2_interface,
+                           wl_resource_get_version(gaming_seat_resource_), 0);
+
+    GamepadDelegate* gamepad_delegate =
+        new WaylandGamepadDelegate(gamepad_resource);
+
+    wl_resource_set_implementation(
+        gamepad_resource, &gamepad_implementation, gamepad_delegate,
+        &WaylandGamepadDelegate::ResetGamepadResource);
+
+    zcr_gaming_seat_v2_send_gamepad_added(gaming_seat_resource_,
+                                          gamepad_resource);
+
+    return gamepad_delegate;
+  }
+
+ private:
+  // The gaming seat resource associated with the gaming seat.
+  wl_resource* const gaming_seat_resource_;
+
+  DISALLOW_COPY_AND_ASSIGN(WaylandGamingSeatDelegate);
+};
+
+void gaming_seat_destroy(wl_client* client, wl_resource* resource) {
+  wl_resource_destroy(resource);
+}
+
+const struct zcr_gaming_seat_v2_interface gaming_seat_implementation = {
+    gaming_seat_destroy};
+
+void gaming_input_get_gaming_seat(wl_client* client,
+                                  wl_resource* resource,
+                                  uint32_t id,
+                                  wl_resource* seat) {
+  wl_resource* gaming_seat_resource =
+      wl_resource_create(client, &zcr_gaming_seat_v2_interface,
+                         wl_resource_get_version(resource), id);
 
   base::Thread* gaming_input_thread = GetUserDataAs<base::Thread>(resource);
 
-  SetImplementation(
-      gamepad_resource, &gamepad_implementation,
-      base::MakeUnique<Gamepad>(new WaylandGamepadDelegate(gamepad_resource),
-                                gaming_input_thread->task_runner().get()));
+  SetImplementation(gaming_seat_resource, &gaming_seat_implementation,
+                    base::MakeUnique<GamingSeat>(
+                        new WaylandGamingSeatDelegate(gaming_seat_resource),
+                        gaming_input_thread->task_runner().get()));
 }
 
-const struct zcr_gaming_input_v1_interface gaming_input_implementation = {
-    gaming_input_get_gamepad};
+void gaming_input_destroy(wl_client* client, wl_resource* resource) {
+  wl_resource_destroy(resource);
+}
+
+const struct zcr_gaming_input_v2_interface gaming_input_implementation = {
+    gaming_input_get_gaming_seat, gaming_input_destroy};
 
 void bind_gaming_input(wl_client* client,
                        void* data,
                        uint32_t version,
                        uint32_t id) {
   wl_resource* resource =
-      wl_resource_create(client, &zcr_gaming_input_v1_interface, version, id);
+      wl_resource_create(client, &zcr_gaming_input_v2_interface, version, id);
 
   std::unique_ptr<base::Thread> gaming_input_thread(
       new base::Thread("Exo gaming input polling thread."));
@@ -3435,6 +3512,46 @@ void bind_gaming_input(wl_client* client,
 
   SetImplementation(resource, &gaming_input_implementation,
                     std::move(gaming_input_thread));
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// dummy interface for gaming_input_v1:
+/* Following is a dummy interface for gaming_input_v1.
+ * It makes sure the "old" android with v1 interface won't break. However, "old"
+ * android will not receive any gamepad input. This interface implementation
+ * should be removed once android is updated.
+ */
+// TODO(jkwang): Remove the following interface function once android updated.
+void gamepad_v1_destroy_DEPRECATED(wl_client* client, wl_resource* resource) {
+  wl_resource_destroy(resource);
+}
+
+const struct zcr_gamepad_v1_interface gamepad_v1_implementation = {
+    gamepad_v1_destroy_DEPRECATED};
+
+void gaming_input_v1_get_gamepad_DEPRECATED(wl_client* client,
+                                            wl_resource* resource,
+                                            uint32_t id,
+                                            wl_resource* seat) {
+  wl_resource* gamepad_resource = wl_resource_create(
+      client, &zcr_gamepad_v1_interface, wl_resource_get_version(resource), id);
+
+  wl_resource_set_implementation(gamepad_resource, &gamepad_v1_implementation,
+                                 NULL, NULL);
+}
+
+const struct zcr_gaming_input_v1_interface gaming_input_v1_implementation = {
+    gaming_input_v1_get_gamepad_DEPRECATED};
+
+void bind_gaming_input_v1_DEPRECATED(wl_client* client,
+                                     void* data,
+                                     uint32_t version,
+                                     uint32_t id) {
+  wl_resource* resource =
+      wl_resource_create(client, &zcr_gaming_input_v1_interface, version, id);
+
+  wl_resource_set_implementation(resource, &gaming_input_v1_implementation,
+                                 NULL, NULL);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -3693,6 +3810,8 @@ Server::Server(Display* display)
   wl_global_create(wl_display_.get(), &zcr_remote_shell_v1_interface,
                    remote_shell_version, display_, bind_remote_shell);
   wl_global_create(wl_display_.get(), &zcr_gaming_input_v1_interface, 1,
+                   display_, bind_gaming_input_v1_DEPRECATED);
+  wl_global_create(wl_display_.get(), &zcr_gaming_input_v2_interface, 1,
                    display_, bind_gaming_input);
   wl_global_create(wl_display_.get(), &zcr_stylus_v1_interface, 2, display_,
                    bind_stylus_v1_DEPRECATED);

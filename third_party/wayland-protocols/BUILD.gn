@@ -181,7 +181,10 @@ source_set("gaming_input_protocol") {
   sources = [
     "include/protocol/gaming-input-unstable-v1-client-protocol.h",
     "include/protocol/gaming-input-unstable-v1-server-protocol.h",
-    "protocol/gaming-input-protocol.c",
+    "include/protocol/gaming-input-unstable-v2-client-protocol.h",
+    "include/protocol/gaming-input-unstable-v2-server-protocol.h",
+    "protocol/gaming-input-protocol-v1.c",
+    "protocol/gaming-input-protocol-v2.c",
   ]
 
   deps = [
