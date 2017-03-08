@@ -38,6 +38,11 @@ class CORE_EXPORT NGLayoutOpportunityIterator final {
   // TODO(chrome-layout-team): Refactor with using C++ <iterator> library.
   const NGLayoutOpportunity Next();
 
+#ifndef NDEBUG
+  // Prints Layout Opportunity tree for debug purposes.
+  void ShowLayoutOpportunityTree() const;
+#endif
+
  private:
   // Mutable Getters.
   NGLayoutOpportunityTreeNode* MutableOpportunityTreeRoot() {

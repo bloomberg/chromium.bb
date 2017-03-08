@@ -20,6 +20,13 @@ NGLayoutOpportunityTreeNode::NGLayoutOpportunityTreeNode(
       exclusion_edge(exclusion_edge),
       exclusion(nullptr) {}
 
+String NGLayoutOpportunityTreeNode::ToString() const {
+  return String::format(
+      "Opportunity: '%s' Exclusion: '%s'",
+      opportunity.ToString().ascii().data(),
+      exclusion ? exclusion->ToString().ascii().data() : "null");
+}
+
 DEFINE_TRACE(NGLayoutOpportunityTreeNode) {
   visitor->trace(left);
   visitor->trace(bottom);

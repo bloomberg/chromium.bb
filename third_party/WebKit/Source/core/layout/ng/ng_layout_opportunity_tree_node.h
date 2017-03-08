@@ -48,8 +48,20 @@ struct CORE_EXPORT NGLayoutOpportunityTreeNode
   // The node is a leaf if it doesn't have an exclusion that splits it apart.
   bool IsLeafNode() const { return !exclusion; }
 
+  String ToString() const;
+
   DECLARE_TRACE();
 };
+
+inline std::ostream& operator<<(std::ostream& stream,
+                                const NGLayoutOpportunityTreeNode& value) {
+  return stream << value.ToString();
+}
+
+inline std::ostream& operator<<(std::ostream& out,
+                                const NGLayoutOpportunityTreeNode* value) {
+  return out << (value ? value->ToString() : "(null)");
+}
 
 }  // namespace blink
 #endif  // NGLayoutOpportunityTreeNode_h

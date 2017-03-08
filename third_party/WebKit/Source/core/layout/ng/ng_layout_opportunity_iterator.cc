@@ -7,9 +7,40 @@
 #include "core/layout/ng/ng_constraint_space.h"
 #include "core/layout/ng/ng_exclusion.h"
 #include "wtf/NonCopyingSort.h"
+#include "wtf/text/StringBuilder.h"
 
 namespace blink {
 namespace {
+
+void AppendNodeToString(const NGLayoutOpportunityTreeNode* node,
+                        StringBuilder* string_builder,
+                        unsigned indent = 0) {
+  DCHECK(string_builder);
+  if (!node) {
+    string_builder->append("'null'\n");
+    return;
+  }
+
+  string_builder->append(node->ToString());
+  string_builder->append("\n");
+
+  StringBuilder indent_builder;
+  for (unsigned i = 0; i < indent; i++)
+    indent_builder.append("\t");
+
+  if (!node->exclusion)
+    return;
+
+  string_builder->append(indent_builder.toString());
+  string_builder->append("Left:\t");
+  AppendNodeToString(node->left, string_builder, indent + 2);
+  string_builder->append(indent_builder.toString());
+  string_builder->append("Right:\t");
+  AppendNodeToString(node->right, string_builder, indent + 2);
+  string_builder->append(indent_builder.toString());
+  string_builder->append("Bottom:\t");
+  AppendNodeToString(node->bottom, string_builder, indent + 2);
+}
 
 // Collects all opportunities from leaves of Layout Opportunity spatial tree.
 void CollectAllOpportunities(const NGLayoutOpportunityTreeNode* node,
@@ -275,5 +306,14 @@ const NGLayoutOpportunity NGLayoutOpportunityIterator::Next() {
   opportunity_iter_++;
   return NGLayoutOpportunity(*opportunity);
 }
+
+#ifndef NDEBUG
+void NGLayoutOpportunityIterator::ShowLayoutOpportunityTree() const {
+  StringBuilder string_builder;
+  string_builder.append("\n.:: LayoutOpportunity Tree ::.\n\nRoot Node: ");
+  AppendNodeToString(opportunity_tree_root_.get(), &string_builder);
+  fprintf(stderr, "%s\n", string_builder.toString().utf8().data());
+}
+#endif
 
 }  // namespace blink
