@@ -435,8 +435,6 @@ def generate_member_init(param):
 def agent_class_name(agent):
     if agent == "Performance":
         return "PerformanceMonitor"
-    if agent == "TraceEvents":
-        return "InspectorTraceEvents"
     return "Inspector%sAgent" % agent
 
 

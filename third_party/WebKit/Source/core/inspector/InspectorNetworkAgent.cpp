@@ -804,8 +804,7 @@ void InspectorNetworkAgent::didReceiveEncodedDataLength(
 
 void InspectorNetworkAgent::didFinishLoading(unsigned long identifier,
                                              double monotonicFinishTime,
-                                             int64_t encodedDataLength,
-                                             int64_t decodedBodyLength) {
+                                             int64_t encodedDataLength) {
   String requestId = IdentifiersFactory::requestId(identifier);
   NetworkResourcesData::ResourceData const* resourceData =
       m_resourcesData->data(requestId);
@@ -840,8 +839,8 @@ void InspectorNetworkAgent::didReceiveCORSRedirectResponse(
     Resource* resource) {
   // Update the response and finish loading
   didReceiveResourceResponse(frame, identifier, loader, response, resource);
-  didFinishLoading(identifier, 0, WebURLLoaderClient::kUnknownEncodedDataLength,
-                   0);
+  didFinishLoading(identifier, 0,
+                   WebURLLoaderClient::kUnknownEncodedDataLength);
 }
 
 void InspectorNetworkAgent::didFailLoading(unsigned long identifier,

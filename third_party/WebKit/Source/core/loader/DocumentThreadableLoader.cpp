@@ -772,6 +772,9 @@ void DocumentThreadableLoader::reportResponseReceived(
   LocalFrame* frame = document() ? document()->frame() : nullptr;
   if (!frame)
     return;
+  TRACE_EVENT1(
+      "devtools.timeline", "ResourceReceiveResponse", "data",
+      InspectorReceiveResponseEvent::data(identifier, frame, response));
   DocumentLoader* loader = frame->loader().documentLoader();
   probe::didReceiveResourceResponse(frame, identifier, loader, response,
                                     resource());

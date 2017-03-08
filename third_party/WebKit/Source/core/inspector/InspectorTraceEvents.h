@@ -5,16 +5,14 @@
 #ifndef InspectorTraceEvents_h
 #define InspectorTraceEvents_h
 
-#include <memory>
-
 #include "core/CoreExport.h"
 #include "core/css/CSSSelector.h"
-#include "core/inspector/InspectorBaseAgent.h"
 #include "platform/heap/Handle.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/instrumentation/tracing/TracedValue.h"
 #include "wtf/Forward.h"
 #include "wtf/Functional.h"
+#include <memory>
 
 namespace v8 {
 class Function;
@@ -31,11 +29,9 @@ class Animation;
 class CSSStyleSheetResource;
 class ContainerNode;
 class Document;
-class DocumentLoader;
 class Element;
 class Event;
 class ExecutionContext;
-struct FetchInitiatorInfo;
 class FrameView;
 class GraphicsLayer;
 class HitTestLocation;
@@ -43,15 +39,13 @@ class HitTestRequest;
 class HitTestResult;
 class ImageResourceContent;
 class InvalidationSet;
-class LayoutImage;
-class LayoutObject;
+class PaintLayer;
 class LayoutRect;
 class LocalFrame;
 class Node;
-class PaintLayer;
 class QualifiedName;
-class Resource;
-class ResourceError;
+class LayoutImage;
+class LayoutObject;
 class ResourceRequest;
 class ResourceResponse;
 class StyleChangeReasonForTracing;
@@ -60,44 +54,6 @@ class WorkerThread;
 class XMLHttpRequest;
 
 enum ResourceLoadPriority : int;
-
-class CORE_EXPORT InspectorTraceEvents : public InspectorAgent {
-  WTF_MAKE_NONCOPYABLE(InspectorTraceEvents);
-
- public:
-  InspectorTraceEvents() {}
-
-  void init(InstrumentingAgents*,
-            protocol::UberDispatcher*,
-            protocol::DictionaryValue*) override;
-  void dispose() override;
-
-  void willSendRequest(LocalFrame*,
-                       unsigned long identifier,
-                       DocumentLoader*,
-                       ResourceRequest&,
-                       const ResourceResponse& redirectResponse,
-                       const FetchInitiatorInfo&);
-  void didReceiveResourceResponse(LocalFrame*,
-                                  unsigned long identifier,
-                                  DocumentLoader*,
-                                  const ResourceResponse&,
-                                  Resource*);
-  void didReceiveData(LocalFrame*,
-                      unsigned long identifier,
-                      const char* data,
-                      int dataLength);
-  void didFinishLoading(unsigned long identifier,
-                        double monotonicFinishTime,
-                        int64_t encodedDataLength,
-                        int64_t decodedBodyLength);
-  void didFailLoading(unsigned long identifier, const ResourceError&);
-
-  DECLARE_VIRTUAL_TRACE();
-
- private:
-  Member<InstrumentingAgents> m_instrumentingAgents;
-};
 
 namespace InspectorLayoutEvent {
 std::unique_ptr<TracedValue> beginData(FrameView*);

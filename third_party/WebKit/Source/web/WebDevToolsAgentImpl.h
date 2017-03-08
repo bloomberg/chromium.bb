@@ -31,8 +31,6 @@
 #ifndef WebDevToolsAgentImpl_h
 #define WebDevToolsAgentImpl_h
 
-#include <memory>
-
 #include "core/inspector/InspectorPageAgent.h"
 #include "core/inspector/InspectorSession.h"
 #include "core/inspector/InspectorTracingAgent.h"
@@ -43,6 +41,7 @@
 #include "web/InspectorEmulationAgent.h"
 #include "wtf/Forward.h"
 #include "wtf/Vector.h"
+#include <memory>
 
 namespace blink {
 
@@ -51,7 +50,6 @@ class InspectedFrames;
 class InspectorOverlay;
 class InspectorResourceContainer;
 class InspectorResourceContentLoader;
-class InspectorTraceEvents;
 class LocalFrame;
 class WebDevToolsAgentClient;
 class WebLayerTreeView;
@@ -159,7 +157,6 @@ class WebDevToolsAgentImpl final
   Member<InspectorNetworkAgent> m_networkAgent;
   Member<InspectorLayerTreeAgent> m_layerTreeAgent;
   Member<InspectorTracingAgent> m_tracingAgent;
-  Member<InspectorTraceEvents> m_traceEventsAgent;
 
   Member<InspectorSession> m_session;
   bool m_includeViewAgents;

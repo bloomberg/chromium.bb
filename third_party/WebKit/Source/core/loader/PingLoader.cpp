@@ -342,6 +342,9 @@ bool PingLoaderImpl::willFollowRedirect(
 
 void PingLoaderImpl::didReceiveResponse(const WebURLResponse& response) {
   if (frame()) {
+    TRACE_EVENT1(
+        "devtools.timeline", "ResourceFinish", "data",
+        InspectorResourceFinishEvent::data(m_identifier, 0, true, 0, 0));
     const ResourceResponse& resourceResponse = response.toResourceResponse();
     probe::didReceiveResourceResponse(frame(), m_identifier, 0,
                                       resourceResponse, 0);
@@ -351,30 +354,46 @@ void PingLoaderImpl::didReceiveResponse(const WebURLResponse& response) {
 }
 
 void PingLoaderImpl::didReceiveData(const char*, int dataLength) {
-  if (frame())
+  if (frame()) {
+    TRACE_EVENT1("devtools.timeline", "ResourceFinish", "data",
+                 InspectorResourceFinishEvent::data(m_identifier, 0, true,
+                                                    dataLength, 0));
     didFailLoading(frame());
+  }
   dispose();
 }
 
 void PingLoaderImpl::didFinishLoading(double,
                                       int64_t,
                                       int64_t encodedDataLength) {
-  if (frame())
+  if (frame()) {
+    TRACE_EVENT1("devtools.timeline", "ResourceFinish", "data",
+                 InspectorResourceFinishEvent::data(m_identifier, 0, true,
+                                                    encodedDataLength, 0));
     didFailLoading(frame());
+  }
   dispose();
 }
 
 void PingLoaderImpl::didFail(const WebURLError& resourceError,
                              int64_t,
                              int64_t encodedDataLength) {
-  if (frame())
+  if (frame()) {
+    TRACE_EVENT1("devtools.timeline", "ResourceFinish", "data",
+                 InspectorResourceFinishEvent::data(m_identifier, 0, true,
+                                                    encodedDataLength, 0));
     didFailLoading(frame());
+  }
   dispose();
 }
 
 void PingLoaderImpl::timeout(TimerBase*) {
-  if (frame())
+  if (frame()) {
+    TRACE_EVENT1(
+        "devtools.timeline", "ResourceFinish", "data",
+        InspectorResourceFinishEvent::data(m_identifier, 0, true, 0, 0));
     didFailLoading(frame());
+  }
   dispose();
 }
 
