@@ -68,7 +68,8 @@ public class AddToHomescreenManager {
         nativeAddShortcut(mNativeAddToHomescreenManager, userRequestedTitle);
     }
 
-    public void onDismissed() {
+    @CalledByNative
+    public void onFinished() {
         destroy();
     }
 

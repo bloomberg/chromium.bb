@@ -127,7 +127,7 @@ public class AddToHomescreenDialog implements AddToHomescreenManager.Observer {
             @Override
             public void onDismiss(DialogInterface dialog) {
                 mDialog = null;
-                mManager.onDismissed();
+                mManager.onFinished();
             }
         });
 

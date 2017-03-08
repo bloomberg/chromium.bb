@@ -33,7 +33,7 @@ public class AddToHomescreenDialogTest extends ChromeActivityTestCaseBase<Chrome
         @Override
         public void addShortcut(String userRequestedTitle) {}
         @Override
-        public void onDismissed() {}
+        public void onFinished() {}
     }
 
     public AddToHomescreenDialogTest() {

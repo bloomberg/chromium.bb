@@ -171,14 +171,17 @@ void AddToHomescreenManager::OnDataAvailable(const ShortcutInfo& info,
       ShortcutHelper::ShowWebApkInstallInProgressToast();
     else
       CreateInfoBarForWebApk(info, primary_icon);
+
+    JNIEnv* env = base::android::AttachCurrentThread();
+    Java_AddToHomescreenManager_onFinished(env, java_ref_);
     return;
   }
 
-  JNIEnv* env = base::android::AttachCurrentThread();
   ScopedJavaLocalRef<jobject> java_bitmap;
   if (!primary_icon.drawsNothing())
     java_bitmap = gfx::ConvertToJavaBitmap(&primary_icon);
 
+  JNIEnv* env = base::android::AttachCurrentThread();
   Java_AddToHomescreenManager_onReadyToAdd(env, java_ref_, java_bitmap);
 
   if (add_shortcut_pending_)
