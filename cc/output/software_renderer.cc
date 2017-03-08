@@ -460,7 +460,11 @@ void SoftwareRenderer::DrawRenderPassQuad(const RenderPassDrawQuad* quad) {
   SkRect dest_visible_rect = gfx::RectFToSkRect(
       MathUtil::ScaleRectProportional(QuadVertexRect(), gfx::RectF(quad->rect),
                                       gfx::RectF(quad->visible_rect)));
-  SkRect content_rect = SkRect::MakeWH(quad->rect.width(), quad->rect.height());
+  // TODO(sunxd): make this never be empty.
+  SkRect content_rect =
+      quad->tex_coord_rect.IsEmpty()
+          ? SkRect::MakeWH(quad->rect.width(), quad->rect.height())
+          : RectFToSkRect(quad->tex_coord_rect);
 
   const SkBitmap* content = lock.sk_bitmap();
 

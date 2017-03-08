@@ -1321,8 +1321,13 @@ void GLRenderer::ChooseRPDQProgram(DrawRenderPassDrawQuadParams* params) {
 }
 
 void GLRenderer::UpdateRPDQUniforms(DrawRenderPassDrawQuadParams* params) {
-  gfx::RectF tex_rect(params->src_offset.x(), params->src_offset.y(),
-                      params->dst_rect.width(), params->dst_rect.height());
+  gfx::RectF tex_rect = params->quad->tex_coord_rect;
+  if (tex_rect.IsEmpty()) {
+    // TODO(sunxd): make this never be empty.
+    tex_rect =
+        gfx::RectF(gfx::PointF(params->src_offset), params->dst_rect.size());
+  }
+
   gfx::Size texture_size;
   if (params->filter_image) {
     texture_size.set_width(params->filter_image->width());
@@ -1362,25 +1367,23 @@ void GLRenderer::UpdateRPDQUniforms(DrawRenderPassDrawQuadParams* params) {
       mask_uv_rect.Scale(params->quad->mask_texture_size.width(),
                          params->quad->mask_texture_size.height());
     }
+
+    SkMatrix tex_to_mask = SkMatrix::MakeRectToRect(RectFToSkRect(tex_rect),
+                                                    RectFToSkRect(mask_uv_rect),
+                                                    SkMatrix::kFill_ScaleToFit);
+
     if (params->source_needs_flip) {
       // Mask textures are oriented vertically flipped relative to the
       // framebuffer and the RenderPass contents texture, so we flip the tex
       // coords from the RenderPass texture to find the mask texture coords.
-      gl_->Uniform2f(
-          current_program_->mask_tex_coord_offset_location(), mask_uv_rect.x(),
-          mask_uv_rect.height() / tex_rect.height() + mask_uv_rect.y());
-      gl_->Uniform2f(current_program_->mask_tex_coord_scale_location(),
-                     mask_uv_rect.width() / tex_rect.width(),
-                     -mask_uv_rect.height() / tex_rect.height());
-    } else {
-      // Tile textures are oriented the same way as mask textures.
-      gl_->Uniform2f(current_program_->mask_tex_coord_offset_location(),
-                     mask_uv_rect.x(), mask_uv_rect.y());
-      gl_->Uniform2f(current_program_->mask_tex_coord_scale_location(),
-                     mask_uv_rect.width() / tex_rect.width(),
-                     mask_uv_rect.height() / tex_rect.height());
+      tex_to_mask.preTranslate(0, 1);
+      tex_to_mask.preScale(1, -1);
     }
 
+    gl_->Uniform2f(current_program_->mask_tex_coord_offset_location(),
+                   tex_to_mask.getTranslateX(), tex_to_mask.getTranslateY());
+    gl_->Uniform2f(current_program_->mask_tex_coord_scale_location(),
+                   tex_to_mask.getScaleX(), tex_to_mask.getScaleY());
     last_texture_unit = 1;
   }
 
