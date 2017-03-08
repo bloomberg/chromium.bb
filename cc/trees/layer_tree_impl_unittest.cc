@@ -2242,13 +2242,13 @@ TEST_F(LayerTreeImplTest, DeviceScaleFactorNeedsDrawPropertiesUpdate) {
   EXPECT_TRUE(host_impl().active_tree()->needs_update_draw_properties());
 }
 
-TEST_F(LayerTreeImplTest, DeviceColorSpaceDoesNotNeedDrawPropertiesUpdate) {
+TEST_F(LayerTreeImplTest, RasterColorSpaceDoesNotNeedDrawPropertiesUpdate) {
   host_impl().active_tree()->BuildPropertyTreesForTesting();
-  host_impl().active_tree()->SetDeviceColorSpace(
+  host_impl().active_tree()->SetRasterColorSpace(
       gfx::ColorSpace::CreateXYZD50());
   host_impl().active_tree()->UpdateDrawProperties(false);
   EXPECT_FALSE(host_impl().active_tree()->needs_update_draw_properties());
-  host_impl().active_tree()->SetDeviceColorSpace(gfx::ColorSpace::CreateSRGB());
+  host_impl().active_tree()->SetRasterColorSpace(gfx::ColorSpace::CreateSRGB());
   EXPECT_FALSE(host_impl().active_tree()->needs_update_draw_properties());
 }
 

@@ -111,7 +111,7 @@ class CONTENT_EXPORT RenderWidgetCompositor
   bool SendMessageToMicroBenchmark(int id, std::unique_ptr<base::Value> value);
   void SetFrameSinkId(const cc::FrameSinkId& frame_sink_id);
   void SetPaintedDeviceScaleFactor(float device_scale);
-  void SetDeviceColorSpace(const gfx::ColorSpace& color_space);
+  void SetRasterColorSpace(const gfx::ColorSpace& color_space);
   void SetIsForOopif(bool is_for_oopif);
   void SetContentSourceId(uint32_t);
 

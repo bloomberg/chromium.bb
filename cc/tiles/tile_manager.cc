@@ -802,7 +802,7 @@ void TileManager::ScheduleTasks(
 
   graph_.Reset();
 
-  gfx::ColorSpace target_color_space = client_->GetTileColorSpace();
+  gfx::ColorSpace raster_color_space = client_->GetRasterColorSpace();
 
   scoped_refptr<TileTask> required_for_activation_done_task =
       CreateTaskSetFinishedTask(
@@ -823,7 +823,7 @@ void TileManager::ScheduleTasks(
 
     if (!tile->raster_task_) {
       tile->raster_task_ =
-          CreateRasterTask(prioritized_tile, target_color_space);
+          CreateRasterTask(prioritized_tile, raster_color_space);
     }
 
     TileTask* task = tile->raster_task_.get();

@@ -1196,7 +1196,7 @@ void RenderWidget::Resize(const ResizeParams& params) {
   if (compositor_) {
     compositor_->setViewportSize(params.physical_backing_size);
     compositor_->setBottomControlsHeight(params.bottom_controls_height);
-    compositor_->SetDeviceColorSpace(screen_info_.icc_profile.GetColorSpace());
+    compositor_->SetRasterColorSpace(screen_info_.icc_profile.GetColorSpace());
   }
 
   visible_viewport_size_ = params.visible_viewport_size;
@@ -1286,7 +1286,7 @@ blink::WebLayerTreeView* RenderWidget::initializeLayerTreeView() {
   compositor_->SetIsForOopif(for_oopif_);
   compositor_->setViewportSize(physical_backing_size_);
   OnDeviceScaleFactorChanged();
-  compositor_->SetDeviceColorSpace(screen_info_.icc_profile.GetColorSpace());
+  compositor_->SetRasterColorSpace(screen_info_.icc_profile.GetColorSpace());
   compositor_->SetContentSourceId(current_content_source_id_);
   // For background pages and certain tests, we don't want to trigger
   // CompositorFrameSink creation.

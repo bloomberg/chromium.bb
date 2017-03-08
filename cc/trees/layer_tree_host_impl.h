@@ -355,7 +355,7 @@ class CC_EXPORT LayerTreeHostImpl
   std::unique_ptr<EvictionTilePriorityQueue> BuildEvictionQueue(
       TreePriority tree_priority) override;
   void SetIsLikelyToRequireADraw(bool is_likely_to_require_a_draw) override;
-  gfx::ColorSpace GetTileColorSpace() const override;
+  gfx::ColorSpace GetRasterColorSpace() const override;
   void RequestImplSideInvalidation() override;
 
   // ScrollbarAnimationControllerClient implementation.

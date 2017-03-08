@@ -407,11 +407,11 @@ ResourceProvider::Settings::Settings(
     ContextProvider* compositor_context_provider,
     bool delegated_sync_points_required,
     bool use_gpu_memory_buffer_resources,
-    bool enable_color_correct_rendering)
+    bool enable_color_correct_rasterization)
     : default_resource_type(use_gpu_memory_buffer_resources
                                 ? RESOURCE_TYPE_GPU_MEMORY_BUFFER
                                 : RESOURCE_TYPE_GL_TEXTURE),
-      enable_color_correct_rendering(enable_color_correct_rendering),
+      enable_color_correct_rasterization(enable_color_correct_rasterization),
       delegated_sync_points_required(delegated_sync_points_required) {
   if (!compositor_context_provider) {
     default_resource_type = RESOURCE_TYPE_BITMAP;
@@ -454,12 +454,12 @@ ResourceProvider::ResourceProvider(
     size_t id_allocation_chunk_size,
     bool delegated_sync_points_required,
     bool use_gpu_memory_buffer_resources,
-    bool enable_color_correct_rendering,
+    bool enable_color_correct_rasterization,
     const BufferToTextureTargetMap& buffer_to_texture_target_map)
     : settings_(compositor_context_provider,
                 delegated_sync_points_required,
                 use_gpu_memory_buffer_resources,
-                enable_color_correct_rendering),
+                enable_color_correct_rasterization),
       compositor_context_provider_(compositor_context_provider),
       shared_bitmap_manager_(shared_bitmap_manager),
       gpu_memory_buffer_manager_(gpu_memory_buffer_manager),
@@ -882,7 +882,7 @@ ResourceProvider::TextureHint ResourceProvider::GetTextureHint(ResourceId id) {
 
 sk_sp<SkColorSpace> ResourceProvider::GetResourceSkColorSpace(
     const Resource* resource) const {
-  if (!settings_.enable_color_correct_rendering)
+  if (!settings_.enable_color_correct_rasterization)
     return nullptr;
   // Returning the nonlinear blended color space matches the expectation of the
   // web that colors are blended in the output color space, not in a
@@ -1363,7 +1363,8 @@ ResourceProvider::ScopedWriteLockGpuMemoryBuffer::
   Resource* resource = resource_provider_->GetResource(resource_id_);
   DCHECK(resource);
   if (gpu_memory_buffer_) {
-    if (resource_provider_->settings_.enable_color_correct_rendering)
+    // Note that this impacts overlay compositing, not rasterization.
+    if (resource_provider_->settings_.enable_color_correct_rasterization)
       gpu_memory_buffer_->SetColorSpaceForScanout(resource->color_space);
     DCHECK(!resource->gpu_memory_buffer);
     resource_provider_->LazyCreate(resource);
@@ -1990,8 +1991,9 @@ void ResourceProvider::LazyAllocate(Resource* resource) {
         gpu_memory_buffer_manager_->CreateGpuMemoryBuffer(
             size, BufferFormat(format), resource->usage,
             gpu::kNullSurfaceHandle);
+    // Note that this impacts overlay compositing, not rasterization.
     if (resource->gpu_memory_buffer &&
-        settings_.enable_color_correct_rendering) {
+        settings_.enable_color_correct_rasterization) {
       resource->gpu_memory_buffer->SetColorSpaceForScanout(
           resource->color_space);
     }

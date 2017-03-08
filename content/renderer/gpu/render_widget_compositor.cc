@@ -329,7 +329,7 @@ cc::LayerTreeSettings RenderWidgetCompositor::GenerateLayerTreeSettings(
       compositor_deps->IsElasticOverscrollEnabled();
   settings.renderer_settings.use_gpu_memory_buffer_resources =
       compositor_deps->IsGpuMemoryBufferCompositorResourcesEnabled();
-  settings.enable_color_correct_rendering =
+  settings.enable_color_correct_rasterization =
       cmd.HasSwitch(cc::switches::kEnableColorCorrectRendering) ||
       cmd.HasSwitch(cc::switches::kEnableTrueColorRendering);
   settings.renderer_settings.buffer_to_texture_target_map =
@@ -1121,9 +1121,9 @@ void RenderWidgetCompositor::SetPaintedDeviceScaleFactor(float device_scale) {
   layer_tree_host_->SetPaintedDeviceScaleFactor(device_scale);
 }
 
-void RenderWidgetCompositor::SetDeviceColorSpace(
+void RenderWidgetCompositor::SetRasterColorSpace(
     const gfx::ColorSpace& color_space) {
-  layer_tree_host_->SetDeviceColorSpace(color_space);
+  layer_tree_host_->SetRasterColorSpace(color_space);
 }
 
 void RenderWidgetCompositor::SetIsForOopif(bool is_for_oopif) {

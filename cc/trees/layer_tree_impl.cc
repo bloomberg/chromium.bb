@@ -485,7 +485,7 @@ void LayerTreeImpl::PushPropertiesTo(LayerTreeImpl* target_tree) {
                                             max_page_scale_factor());
   target_tree->SetDeviceScaleFactor(device_scale_factor());
   target_tree->set_painted_device_scale_factor(painted_device_scale_factor());
-  target_tree->SetDeviceColorSpace(device_color_space_);
+  target_tree->SetRasterColorSpace(raster_color_space_);
   target_tree->elastic_overscroll()->PushPendingToActive();
 
   target_tree->set_content_source_id(content_source_id());
@@ -937,11 +937,11 @@ void LayerTreeImpl::SetDeviceScaleFactor(float device_scale_factor) {
   layer_tree_host_impl_->SetNeedUpdateGpuRasterizationStatus();
 }
 
-void LayerTreeImpl::SetDeviceColorSpace(
-    const gfx::ColorSpace& device_color_space) {
-  if (device_color_space == device_color_space_)
+void LayerTreeImpl::SetRasterColorSpace(
+    const gfx::ColorSpace& raster_color_space) {
+  if (raster_color_space == raster_color_space_)
     return;
-  device_color_space_ = device_color_space;
+  raster_color_space_ = raster_color_space;
 }
 
 SyncedProperty<ScaleGroup>* LayerTreeImpl::page_scale_factor() {

@@ -1889,7 +1889,7 @@ class LayerTreeHostTestDeviceScaleFactorChange : public LayerTreeHostTest {
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestDeviceScaleFactorChange);
 
-class LayerTreeHostTestDeviceColorSpaceChange : public LayerTreeHostTest {
+class LayerTreeHostTestRasterColorSpaceChange : public LayerTreeHostTest {
  public:
   void SetupTree() override {
     space1_ = gfx::ColorSpace::CreateXYZD50();
@@ -1903,7 +1903,7 @@ class LayerTreeHostTestDeviceColorSpaceChange : public LayerTreeHostTest {
     root_layer_->AddChild(child_layer_);
 
     layer_tree_host()->SetRootLayer(root_layer_);
-    layer_tree_host()->SetDeviceColorSpace(space1_);
+    layer_tree_host()->SetRasterColorSpace(space1_);
     LayerTreeHostTest::SetupTree();
     client_.set_bounds(root_layer_->bounds());
   }
@@ -1921,32 +1921,32 @@ class LayerTreeHostTestDeviceColorSpaceChange : public LayerTreeHostTest {
         // The first frame will have full damage, and should be in the initial
         // color space.
         EXPECT_FALSE(frame_data->has_no_damage);
-        EXPECT_TRUE(space1_ == host_impl->active_tree()->device_color_space());
+        EXPECT_TRUE(space1_ == host_impl->active_tree()->raster_color_space());
         break;
       case 1:
         // Empty commit.
         EXPECT_TRUE(frame_data->has_no_damage);
-        EXPECT_TRUE(space1_ == host_impl->active_tree()->device_color_space());
+        EXPECT_TRUE(space1_ == host_impl->active_tree()->raster_color_space());
         break;
       case 2:
         // The change from space1 to space2 should cause full damage.
         EXPECT_FALSE(frame_data->has_no_damage);
-        EXPECT_TRUE(space2_ == host_impl->active_tree()->device_color_space());
+        EXPECT_TRUE(space2_ == host_impl->active_tree()->raster_color_space());
         break;
       case 3:
         // Empty commit with the color space set to space2 redundantly.
         EXPECT_TRUE(frame_data->has_no_damage);
-        EXPECT_TRUE(space2_ == host_impl->active_tree()->device_color_space());
+        EXPECT_TRUE(space2_ == host_impl->active_tree()->raster_color_space());
         break;
       case 4:
         // The change from space2 to space1 should cause full damage.
         EXPECT_FALSE(frame_data->has_no_damage);
-        EXPECT_TRUE(space1_ == host_impl->active_tree()->device_color_space());
+        EXPECT_TRUE(space1_ == host_impl->active_tree()->raster_color_space());
         break;
       case 5:
         // Empty commit.
         EXPECT_TRUE(frame_data->has_no_damage);
-        EXPECT_TRUE(space1_ == host_impl->active_tree()->device_color_space());
+        EXPECT_TRUE(space1_ == host_impl->active_tree()->raster_color_space());
         EndTest();
         break;
       default:
@@ -1973,19 +1973,19 @@ class LayerTreeHostTestDeviceColorSpaceChange : public LayerTreeHostTest {
         break;
       case 2:
         EXPECT_FALSE(child_layer_->NeedsDisplayForTesting());
-        layer_tree_host()->SetDeviceColorSpace(space2_);
+        layer_tree_host()->SetRasterColorSpace(space2_);
         EXPECT_TRUE(child_layer_->NeedsDisplayForTesting());
         break;
       case 3:
-        // The redundant SetDeviceColorSpace should cause no commit and no
+        // The redundant SetRasterColorSpace should cause no commit and no
         // damage. Force a commit for the test to continue.
-        layer_tree_host()->SetDeviceColorSpace(space2_);
+        layer_tree_host()->SetRasterColorSpace(space2_);
         PostSetNeedsCommitToMainThread();
         EXPECT_FALSE(child_layer_->NeedsDisplayForTesting());
         break;
       case 4:
         EXPECT_FALSE(child_layer_->NeedsDisplayForTesting());
-        layer_tree_host()->SetDeviceColorSpace(space1_);
+        layer_tree_host()->SetRasterColorSpace(space1_);
         EXPECT_TRUE(child_layer_->NeedsDisplayForTesting());
         break;
       case 5:
@@ -2010,7 +2010,7 @@ class LayerTreeHostTestDeviceColorSpaceChange : public LayerTreeHostTest {
   scoped_refptr<Layer> child_layer_;
 };
 
-SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestDeviceColorSpaceChange);
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestRasterColorSpaceChange);
 
 class LayerTreeHostTestSetNextCommitForcesRedraw : public LayerTreeHostTest {
  public:

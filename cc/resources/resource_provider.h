@@ -86,7 +86,7 @@ class CC_EXPORT ResourceProvider
       size_t id_allocation_chunk_size,
       bool delegated_sync_points_required,
       bool use_gpu_memory_buffer_resources,
-      bool enable_color_correct_rendering,
+      bool enable_color_correct_rasterization,
       const BufferToTextureTargetMap& buffer_to_texture_target_map);
   ~ResourceProvider() override;
 
@@ -712,7 +712,7 @@ class CC_EXPORT ResourceProvider
   gpu::gles2::GLES2Interface* ContextGL() const;
   bool IsGLContextLost() const;
 
-  // Returns null if |settings_.enable_color_correct_rendering| is false.
+  // Returns null if |settings_.enable_color_correct_rasterization| is false.
   sk_sp<SkColorSpace> GetResourceSkColorSpace(const Resource* resource) const;
 
   // Holds const settings for the ResourceProvider. Never changed after init.
@@ -720,7 +720,7 @@ class CC_EXPORT ResourceProvider
     Settings(ContextProvider* compositor_context_provider,
              bool delegated_sync_points_required,
              bool use_gpu_memory_buffer_resources,
-             bool enable_color_correct_rendering);
+             bool enable_color_correct_rasterization);
 
     int max_texture_size = 0;
     bool use_texture_storage_ext = false;
@@ -732,7 +732,7 @@ class CC_EXPORT ResourceProvider
     ResourceFormat yuv_highbit_resource_format = LUMINANCE_8;
     ResourceFormat best_texture_format = RGBA_8888;
     ResourceFormat best_render_buffer_format = RGBA_8888;
-    bool enable_color_correct_rendering = false;
+    bool enable_color_correct_rasterization = false;
     bool delegated_sync_points_required = false;
   } const settings_;
 

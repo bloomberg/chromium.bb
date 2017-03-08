@@ -79,7 +79,7 @@ class CC_EXPORT TileManagerClient {
   virtual void SetIsLikelyToRequireADraw(bool is_likely_to_require_a_draw) = 0;
 
   // Requests the color space into which tiles should be rasterized.
-  virtual gfx::ColorSpace GetTileColorSpace() const = 0;
+  virtual gfx::ColorSpace GetRasterColorSpace() const = 0;
 
   // Requests that a pending tree be scheduled to invalidate content on the
   // pending on active tree. This is currently used when tiles that are
@@ -167,7 +167,7 @@ class CC_EXPORT TileManager : CheckerImageTrackerClient {
       draw_info.set_resource(resource_pool_->AcquireResource(
           tiles[i]->desired_texture_size(),
           raster_buffer_provider_->GetResourceFormat(false),
-          client_->GetTileColorSpace()));
+          client_->GetRasterColorSpace()));
       draw_info.set_resource_ready_for_draw();
     }
   }

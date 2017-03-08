@@ -161,11 +161,11 @@ Compositor::Compositor(const cc::FrameSinkId& frame_sink_id,
   settings.use_layer_lists =
       command_line->HasSwitch(cc::switches::kUIEnableLayerLists);
 
-  settings.enable_color_correct_rendering =
+  settings.enable_color_correct_rasterization =
       command_line->HasSwitch(cc::switches::kEnableColorCorrectRendering) ||
       command_line->HasSwitch(cc::switches::kEnableTrueColorRendering);
   settings.renderer_settings.enable_color_correct_rendering =
-      settings.enable_color_correct_rendering ||
+      settings.enable_color_correct_rasterization ||
       command_line->HasSwitch(switches::kEnableHDROutput);
 
   // UI compositor always uses partial raster if not using zero-copy. Zero copy
@@ -362,7 +362,7 @@ void Compositor::SetDisplayColorSpace(const gfx::ColorSpace& color_space) {
     blending_color_space_ = gfx::ColorSpace::CreateExtendedSRGB();
     output_color_space_ = gfx::ColorSpace::CreateSCRGBLinear();
   }
-  host_->SetDeviceColorSpace(blending_color_space_);
+  host_->SetRasterColorSpace(color_space);
   // Color space is reset when the output surface is lost, so this must also be
   // updated then.
   // TODO(fsamuel): Get rid of this.

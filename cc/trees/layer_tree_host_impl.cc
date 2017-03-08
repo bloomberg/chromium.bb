@@ -1323,10 +1323,10 @@ void LayerTreeHostImpl::SetIsLikelyToRequireADraw(
   is_likely_to_require_a_draw_ = is_likely_to_require_a_draw;
 }
 
-gfx::ColorSpace LayerTreeHostImpl::GetTileColorSpace() const {
+gfx::ColorSpace LayerTreeHostImpl::GetRasterColorSpace() const {
   if (!sync_tree())
     return gfx::ColorSpace::CreateSRGB();
-  return sync_tree()->device_color_space();
+  return sync_tree()->raster_color_space();
 }
 
 void LayerTreeHostImpl::RequestImplSideInvalidation() {
@@ -2402,7 +2402,7 @@ bool LayerTreeHostImpl::InitializeRenderer(
       settings_.renderer_settings.texture_id_allocation_chunk_size,
       compositor_frame_sink_->capabilities().delegated_sync_points_required,
       settings_.renderer_settings.use_gpu_memory_buffer_resources,
-      settings_.enable_color_correct_rendering,
+      settings_.enable_color_correct_rasterization,
       settings_.renderer_settings.buffer_to_texture_target_map);
 
   // Since the new context may be capable of MSAA, update status here. We don't

@@ -96,7 +96,7 @@ class CC_EXPORT LayerTreeSettings {
   size_t software_decoded_image_budget_bytes = 128 * 1024 * 1024;
   int max_preraster_distance_in_screen_pixels = 1000;
 
-  bool enable_color_correct_rendering = false;
+  bool enable_color_correct_rasterization = false;
 
   // TODO(sunxd): remove this flag when filter demoting and aa of mask layers
   // are implemented.

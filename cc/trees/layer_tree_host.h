@@ -314,9 +314,9 @@ class CC_EXPORT LayerTreeHost : public NON_EXPORTED_BASE(SurfaceReferenceOwner),
   void SetContentSourceId(uint32_t);
   uint32_t content_source_id() const { return content_source_id_; }
 
-  void SetDeviceColorSpace(const gfx::ColorSpace& device_color_space);
-  const gfx::ColorSpace& device_color_space() const {
-    return device_color_space_;
+  void SetRasterColorSpace(const gfx::ColorSpace& raster_color_space);
+  const gfx::ColorSpace& raster_color_space() const {
+    return raster_color_space_;
   }
 
   // Used externally by blink for setting the PropertyTrees when
@@ -576,7 +576,7 @@ class CC_EXPORT LayerTreeHost : public NON_EXPORTED_BASE(SurfaceReferenceOwner),
   float page_scale_factor_ = 1.f;
   float min_page_scale_factor_ = 1.f;
   float max_page_scale_factor_ = 1.f;
-  gfx::ColorSpace device_color_space_;
+  gfx::ColorSpace raster_color_space_;
 
   uint32_t content_source_id_;
 
