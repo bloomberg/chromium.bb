@@ -296,8 +296,11 @@ void RunUpdateOnFileThread(
     }
   }
 
-  if (!base::CreateDirectory(icon_dir))
+  // If CreateDirectory() fails, exit early.
+  if (!base::CreateDirectory(icon_dir)) {
     folder_operation_status |= FolderOperationResult::CREATE_SRC_FAILED;
+    return;
+  }
 
   // Create temporary icon files for shortcuts in the "Most Visited" category.
   CreateIconFiles(icon_dir, local_most_visited_pages);
