@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/sys_string_conversions.h"
 #import "ios/chrome/browser/store_kit/store_kit_tab_helper.h"
 #import "ios/web/public/web_state/web_state.h"
@@ -35,8 +36,8 @@
 - (instancetype)initWithWebState:(web::WebState*)webState {
   self = [super init];
   if (self) {
-    _webStateObserverBridge.reset(
-        new web::WebStateObserverBridge(webState, self));
+    _webStateObserverBridge =
+        base::MakeUnique<web::WebStateObserverBridge>(webState, self);
     _webState = webState;
   }
   return self;
