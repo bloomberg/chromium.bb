@@ -48,6 +48,7 @@ class SettingsResetPromptModel {
     NO_RESET_REQUIRED_DUE_TO_RECENTLY_PROMPTED = 4,
     NO_RESET_REQUIRED_DUE_TO_OTHER_SETTING_REQUIRING_RESET = 5,
     NO_RESET_REQUIRED_DUE_TO_POLICY = 6,
+    RESET_STATE_MAX = 7
   };
 
   using ExtensionMap =
@@ -102,6 +103,8 @@ class SettingsResetPromptModel {
   // Returns a map of extension ID -> ExtensionInfo for all extensions that will
   // be disabled.
   virtual const ExtensionMap& extensions_to_disable() const;
+
+  void ReportUmaMetrics() const;
 
  protected:
   // Exposed for mocking in tests.

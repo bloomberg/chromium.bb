@@ -8,6 +8,7 @@
 
 #include "base/bind_helpers.h"
 #include "base/callback.h"
+#include "base/metrics/histogram_macros.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/google/google_brand.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
@@ -36,6 +37,15 @@ namespace {
 #if defined(GOOGLE_CHROME_BUILD)
 constexpr char kOmahaUrl[] = "https://tools.google.com/service/update2";
 #endif  // defined(GOOGLE_CHROME_BUILD)
+
+// These values are used for UMA metrics reporting. New enum values can be
+// added, but existing enums must never be renumbered or deleted and reused.
+enum SettingsReset {
+  SETTINGS_RESET_HOMEPAGE = 1,
+  SETTINGS_RESET_DEFAULT_SEARCH = 2,
+  SETTINGS_RESET_STARTUP_URLS = 3,
+  SETTINGS_RESET_MAX,
+};
 
 // Used to keep track of which settings types have been initialized in
 // |SettingsResetPromptModel|.
@@ -209,15 +219,28 @@ void SettingsResetPromptModel::PerformReset(
     extension_service->DisableExtension(
         extension_id, extensions::Extension::DISABLE_USER_ACTION);
   }
+  UMA_HISTOGRAM_COUNTS_100("SettingsResetPrompt.NumberOfExtensionsDisabled",
+                           extensions_to_disable().size());
 
   // Disable all the settings that need to be reset.
   ProfileResetter::ResettableFlags reset_flags = 0;
-  if (homepage_reset_state() == RESET_REQUIRED)
+  if (homepage_reset_state() == RESET_REQUIRED) {
     reset_flags |= ProfileResetter::HOMEPAGE;
-  if (default_search_reset_state() == RESET_REQUIRED)
+    UMA_HISTOGRAM_ENUMERATION("SettingsResetPrompt.SettingsReset",
+                              SETTINGS_RESET_HOMEPAGE, SETTINGS_RESET_MAX);
+  }
+  if (default_search_reset_state() == RESET_REQUIRED) {
     reset_flags |= ProfileResetter::DEFAULT_SEARCH_ENGINE;
-  if (startup_urls_reset_state() == RESET_REQUIRED)
+    UMA_HISTOGRAM_ENUMERATION("SettingsResetPrompt.SettingsReset",
+                              SETTINGS_RESET_DEFAULT_SEARCH,
+                              SETTINGS_RESET_MAX);
+  }
+  if (startup_urls_reset_state() == RESET_REQUIRED) {
     reset_flags |= ProfileResetter::STARTUP_PAGES;
+    UMA_HISTOGRAM_ENUMERATION("SettingsResetPrompt.SettingsReset",
+                              SETTINGS_RESET_STARTUP_URLS, SETTINGS_RESET_MAX);
+  }
+
   profile_resetter_->Reset(reset_flags, std::move(default_settings_),
                            done_callback);
 }
@@ -274,6 +297,22 @@ SettingsResetPromptModel::startup_urls_reset_state() const {
 const SettingsResetPromptModel::ExtensionMap&
 SettingsResetPromptModel::extensions_to_disable() const {
   return extensions_to_disable_;
+}
+
+void SettingsResetPromptModel::ReportUmaMetrics() const {
+  UMA_HISTOGRAM_BOOLEAN("SettingsResetPrompt.PromptRequired",
+                        ShouldPromptForReset());
+  UMA_HISTOGRAM_ENUMERATION("SettingsResetPrompt.ResetState_DefaultSearch",
+                            default_search_reset_state(), RESET_STATE_MAX);
+  UMA_HISTOGRAM_ENUMERATION("SettingsResetPrompt.ResetState_StartupUrls",
+                            startup_urls_reset_state(), RESET_STATE_MAX);
+  UMA_HISTOGRAM_ENUMERATION("SettingsResetPrompt.ResetState_Homepage",
+                            homepage_reset_state(), RESET_STATE_MAX);
+  UMA_HISTOGRAM_COUNTS_100("SettingsResetPrompt.NumberOfExtensionsToDisable",
+                           extensions_to_disable().size());
+  UMA_HISTOGRAM_SPARSE_SLOWLY(
+      "SettingsResetPrompt.DelayBeforePromptParam",
+      prompt_config_->delay_before_prompt().InSeconds());
 }
 
 // static

@@ -10,6 +10,9 @@
 #include "base/bind_helpers.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
+#include "base/metrics/user_metrics.h"
+#include "base/metrics/user_metrics_action.h"
 #include "base/time/time.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/settings_reset_prompt/settings_reset_prompt_config.h"
@@ -53,7 +56,12 @@ bool ResetHomepageEnabled(const SettingsResetPromptModel& model) {
 // the settings reset prompt if required by the model and there is at least one
 // non-incognito browser available for the corresponding profile.
 void OnModelCreated(std::unique_ptr<SettingsResetPromptModel> model) {
-  if (!model || !model->ShouldPromptForReset())
+  if (!model)
+    return;
+
+  model->ReportUmaMetrics();
+
+  if (!model->ShouldPromptForReset())
     return;
 
   Profile* profile = model->profile();
@@ -137,15 +145,28 @@ gfx::Range SettingsResetPromptController::GetMainTextUrlRange() const {
 
 void SettingsResetPromptController::DialogShown() {
   model_->DialogShown();
+  time_dialog_shown_ = base::Time::Now();
+  base::RecordAction(base::UserMetricsAction("SettingsResetPrompt_Shown"));
+  UMA_HISTOGRAM_BOOLEAN("SettingsResetPrompt.DialogShown", true);
 }
 
 void SettingsResetPromptController::Accept() {
+  DCHECK(!time_dialog_shown_.is_null());
+  base::RecordAction(base::UserMetricsAction("SettingsResetPrompt_Accepted"));
+  UMA_HISTOGRAM_LONG_TIMES_100("SettingsResetPrompt.TimeUntilAccepted",
+                               base::Time::Now() - time_dialog_shown_);
+  UMA_HISTOGRAM_BOOLEAN("SettingsResetPrompt.PromptAccepted", true);
   model_->PerformReset(
       base::Bind(&SettingsResetPromptController::OnInteractionDone,
                  base::Unretained(this)));
 }
 
 void SettingsResetPromptController::Cancel() {
+  DCHECK(!time_dialog_shown_.is_null());
+  base::RecordAction(base::UserMetricsAction("SettingsResetPrompt_Declined"));
+  UMA_HISTOGRAM_LONG_TIMES_100("SettingsResetPrompt.TimeUntilDeclined",
+                               base::Time::Now() - time_dialog_shown_);
+  UMA_HISTOGRAM_BOOLEAN("SettingsResetPrompt.PromptAccepted", false);
   OnInteractionDone();
 }
 
@@ -204,7 +225,6 @@ void SettingsResetPromptController::InitMainText() {
 }
 
 void SettingsResetPromptController::OnInteractionDone() {
-  // TODO(alito): Add metrics reporting here.
   delete this;
 }
 

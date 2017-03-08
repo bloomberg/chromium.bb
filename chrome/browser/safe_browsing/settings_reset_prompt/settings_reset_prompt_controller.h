@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "base/strings/string16.h"
+#include "base/time/time.h"
 #include "ui/gfx/range/range.h"
 
 class Browser;
@@ -62,6 +63,9 @@ class SettingsResetPromptController {
   std::unique_ptr<SettingsResetPromptModel> model_;
   base::string16 main_text_;
   gfx::Range main_text_url_range_;
+
+  // Used for metrics reporting.
+  base::Time time_dialog_shown_;
 
   DISALLOW_COPY_AND_ASSIGN(SettingsResetPromptController);
 };

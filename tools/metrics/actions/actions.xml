@@ -14330,6 +14330,23 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="SettingsResetPrompt_Accepted">
+  <owner>alito@chromium.org</owner>
+  <description>The user accepted the settings reset prompt.</description>
+</action>
+
+<action name="SettingsResetPrompt_Declined">
+  <owner>alito@chromium.org</owner>
+  <description>The user declined the settings reset prompt.</description>
+</action>
+
+<action name="SettingsResetPrompt_Shown">
+  <owner>alito@chromium.org</owner>
+  <description>
+    The settings reset dialog was displayed to the user.
+  </description>
+</action>
+
 <action name="Shelf_AlignmentSetBottom">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
