@@ -1108,8 +1108,6 @@ component("platform") {
     "network/HTTPHeaderMap.h",
     "network/HTTPParsers.cpp",
     "network/HTTPParsers.h",
-    "network/LinkHeader.cpp",
-    "network/LinkHeader.h",
     "network/NetworkHints.cpp",
     "network/NetworkHints.h",
     "network/NetworkInstrumentation.cpp",
@@ -1436,7 +1434,6 @@ component("platform") {
   ]
   deps = [
     "//cc/surfaces:surfaces",
-    "//components/link_header_util:link_header_util",
     "//components/mime_util:mime_util",
     "//device/base/synchronization",
     "//mojo/public/cpp/bindings",
@@ -1749,6 +1746,7 @@ test("blink_platform_unittests") {
     "instrumentation/tracing/web_process_memory_dump_test.cc",
     "json/JSONParserTest.cpp",
     "json/JSONValuesTest.cpp",
+    "loader/LinkHeaderTest.cpp",
     "loader/fetch/ClientHintsPreferencesTest.cpp",
     "loader/fetch/CrossOriginAccessControlTest.cpp",
     "loader/fetch/FetchUtilsTest.cpp",
@@ -1765,7 +1763,6 @@ test("blink_platform_unittests") {
     "mojo/KURLSecurityOriginTest.cpp",
     "network/EncodedFormDataTest.cpp",
     "network/HTTPParsersTest.cpp",
-    "network/LinkHeaderTest.cpp",
     "network/NetworkStateNotifierTest.cpp",
     "network/NetworkUtilsTest.cpp",
     "network/ParsedContentTypeTest.cpp",

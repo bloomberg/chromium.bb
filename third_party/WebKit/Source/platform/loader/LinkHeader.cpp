@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/network/LinkHeader.h"
+#include "platform/loader/LinkHeader.h"
 
 #include "base/strings/string_util.h"
 #include "components/link_header_util/link_header_util.h"

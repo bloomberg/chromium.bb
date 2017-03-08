@@ -19,6 +19,8 @@ source_set("loader") {
   visibility = [ "//third_party/WebKit/Source/platform" ]
 
   sources = [
+    "LinkHeader.cpp",
+    "LinkHeader.h",
     "fetch/AccessControlStatus.h",
     "fetch/CachedMetadata.cpp",
     "fetch/CachedMetadata.h",
@@ -72,6 +74,7 @@ source_set("loader") {
 
   deps = [
     ":make_platform_loader_generated_fetch_initiator_type_names",
+    "//components/link_header_util:link_header_util",
   ]
 
   public_deps = [

@@ -1,5 +1,4 @@
 include_rules = [
-    "+components/link_header_util",
     "+components/mime_util",
     "+media",
     "-media/blink",
