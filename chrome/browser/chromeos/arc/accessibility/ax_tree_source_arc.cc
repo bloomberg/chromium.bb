@@ -10,6 +10,7 @@
 #include "chrome/browser/ui/aura/accessibility/automation_manager_aura.h"
 #include "chrome/common/extensions/chrome_extension_messages.h"
 #include "components/exo/wm_helper.h"
+#include "ui/accessibility/platform/ax_android_constants.h"
 #include "ui/aura/window.h"
 
 namespace {
@@ -70,6 +71,18 @@ const gfx::Rect GetBounds(arc::mojom::AccessibilityNodeInfoData* node) {
   return bounds_in_screen;
 }
 
+bool GetBooleanProperty(arc::mojom::AccessibilityNodeInfoData* node,
+                        arc::mojom::AccessibilityBooleanProperty prop) {
+  if (!node->booleanProperties)
+    return false;
+
+  auto it = node->booleanProperties->find(prop);
+  if (it == node->booleanProperties->end())
+    return false;
+
+  return it->second;
+}
+
 bool GetStringProperty(arc::mojom::AccessibilityNodeInfoData* node,
                        arc::mojom::AccessibilityStringProperty prop,
                        std::string* out_value) {
@@ -82,6 +95,87 @@ bool GetStringProperty(arc::mojom::AccessibilityNodeInfoData* node,
 
   *out_value = it->second;
   return true;
+}
+
+void PopulateAXRole(arc::mojom::AccessibilityNodeInfoData* node,
+                    ui::AXNodeData* out_data) {
+  std::string class_name;
+  GetStringProperty(node, arc::mojom::AccessibilityStringProperty::CLASS_NAME,
+                    &class_name);
+
+#define MAP_ROLE(android_class_name, chrome_role) \
+  if (class_name == android_class_name) {         \
+    out_data->role = chrome_role;                 \
+    return;                                       \
+  }
+
+  // These mappings were taken from accessibility utils (Android -> Chrome) and
+  // BrowserAccessibilityAndroid. They do not completely match the above two
+  // sources.
+  MAP_ROLE(ui::kAXAbsListViewClassname, ui::AX_ROLE_LIST);
+  MAP_ROLE(ui::kAXButtonClassname, ui::AX_ROLE_BUTTON);
+  MAP_ROLE(ui::kAXCheckBoxClassname, ui::AX_ROLE_CHECK_BOX);
+  MAP_ROLE(ui::kAXCheckedTextViewClassname, ui::AX_ROLE_STATIC_TEXT);
+  MAP_ROLE(ui::kAXCompoundButtonClassname, ui::AX_ROLE_CHECK_BOX);
+  MAP_ROLE(ui::kAXDialogClassname, ui::AX_ROLE_DIALOG);
+  MAP_ROLE(ui::kAXEditTextClassname, ui::AX_ROLE_TEXT_FIELD);
+  MAP_ROLE(ui::kAXGridViewClassname, ui::AX_ROLE_TABLE);
+  MAP_ROLE(ui::kAXImageClassname, ui::AX_ROLE_IMAGE);
+  if (GetBooleanProperty(node,
+                         arc::mojom::AccessibilityBooleanProperty::CLICKABLE)) {
+    MAP_ROLE(ui::kAXImageViewClassname, ui::AX_ROLE_BUTTON);
+  } else {
+    MAP_ROLE(ui::kAXImageViewClassname, ui::AX_ROLE_IMAGE);
+  }
+  MAP_ROLE(ui::kAXListViewClassname, ui::AX_ROLE_LIST);
+  MAP_ROLE(ui::kAXMenuItemClassname, ui::AX_ROLE_MENU_ITEM);
+  MAP_ROLE(ui::kAXPagerClassname, ui::AX_ROLE_SCROLL_AREA);
+  MAP_ROLE(ui::kAXProgressBarClassname, ui::AX_ROLE_PROGRESS_INDICATOR);
+  MAP_ROLE(ui::kAXRadioButtonClassname, ui::AX_ROLE_RADIO_BUTTON);
+  MAP_ROLE(ui::kAXSeekBarClassname, ui::AX_ROLE_SLIDER);
+  MAP_ROLE(ui::kAXSpinnerClassname, ui::AX_ROLE_POP_UP_BUTTON);
+  MAP_ROLE(ui::kAXSwitchClassname, ui::AX_ROLE_SWITCH);
+  MAP_ROLE(ui::kAXTabWidgetClassname, ui::AX_ROLE_TAB_LIST);
+  MAP_ROLE(ui::kAXToggleButtonClassname, ui::AX_ROLE_TOGGLE_BUTTON);
+  MAP_ROLE(ui::kAXViewClassname, ui::AX_ROLE_DIV);
+  MAP_ROLE(ui::kAXViewGroupClassname, ui::AX_ROLE_GROUP);
+  MAP_ROLE(ui::kAXWebViewClassname, ui::AX_ROLE_WEB_VIEW);
+
+#undef MAP_ROLE
+
+  std::string text;
+  GetStringProperty(node, arc::mojom::AccessibilityStringProperty::TEXT, &text);
+  if (!text.empty())
+    out_data->role = ui::AX_ROLE_STATIC_TEXT;
+  else
+    out_data->role = ui::AX_ROLE_DIV;
+}
+
+void PopulateAXState(arc::mojom::AccessibilityNodeInfoData* node,
+                     ui::AXNodeData* out_data) {
+  out_data->state = 0;
+
+#define MAP_STATE(android_boolean_property, chrome_state) \
+  if (GetBooleanProperty(node, android_boolean_property)) \
+    out_data->AddStateFlag(chrome_state);
+
+  using AXBooleanProperty = arc::mojom::AccessibilityBooleanProperty;
+
+  // These mappings were taken from accessibility utils (Android -> Chrome) and
+  // BrowserAccessibilityAndroid. They do not completely match the above two
+  // sources.
+  // The FOCUSABLE state is not mapped because Android places focusability on
+  // many ancestor nodes.
+  MAP_STATE(AXBooleanProperty::CHECKED, ui::AX_STATE_CHECKED);
+  MAP_STATE(AXBooleanProperty::EDITABLE, ui::AX_STATE_EDITABLE);
+  MAP_STATE(AXBooleanProperty::MULTI_LINE, ui::AX_STATE_MULTILINE);
+  MAP_STATE(AXBooleanProperty::PASSWORD, ui::AX_STATE_PROTECTED);
+  MAP_STATE(AXBooleanProperty::SELECTED, ui::AX_STATE_SELECTED);
+
+#undef MAP_STATE
+
+  if (!GetBooleanProperty(node, AXBooleanProperty::ENABLED))
+    out_data->AddStateFlag(ui::AX_STATE_DISABLED);
 }
 
 }  // namespace
@@ -103,7 +197,6 @@ void AXTreeSourceArc::NotifyAccessibilityEvent(
   tree_map_.clear();
   parent_map_.clear();
   root_id_ = -1;
-  focused_node_id_ = -1;
   for (size_t i = 0; i < event_data->nodeData.size(); ++i) {
     if (!event_data->nodeData[i]->intListProperties)
       continue;
@@ -128,6 +221,8 @@ void AXTreeSourceArc::NotifyAccessibilityEvent(
   params.event_type = ToAXEvent(event_data->eventType);
   if (params.event_type == ui::AX_EVENT_FOCUS)
     focused_node_id_ = params.id;
+  else if (params.event_type == ui::AX_EVENT_BLUR)
+    focused_node_id_ = -1;
   params.tree_id = tree_id_;
   params.id = event_data->sourceId;
 
@@ -210,7 +305,6 @@ void AXTreeSourceArc::SerializeNode(mojom::AccessibilityNodeInfoData* node,
   if (!node)
     return;
   out_data->id = node->id;
-  out_data->state = 0;
 
   using AXStringProperty = arc::mojom::AccessibilityStringProperty;
   std::string text;
@@ -223,15 +317,18 @@ void AXTreeSourceArc::SerializeNode(mojom::AccessibilityNodeInfoData* node,
   int32_t id = node->id;
   if (id == root_id_)
     out_data->role = ui::AX_ROLE_ROOT_WEB_AREA;
-  else if (!text.empty())
-    out_data->role = ui::AX_ROLE_STATIC_TEXT;
   else
-    out_data->role = ui::AX_ROLE_DIV;
+    PopulateAXRole(node, out_data);
+
+  PopulateAXState(node, out_data);
 
   const gfx::Rect bounds_in_screen = GetBounds(node);
   out_data->location.SetRect(bounds_in_screen.x(), bounds_in_screen.y(),
                              bounds_in_screen.width(),
                              bounds_in_screen.height());
+
+  if (out_data->role == ui::AX_ROLE_TEXT_FIELD && !text.empty())
+    out_data->AddStringAttribute(ui::AX_ATTR_VALUE, text);
 }
 
 void AXTreeSourceArc::Reset() {

@@ -14,6 +14,7 @@
 #include "content/common/accessibility_messages.h"
 #include "content/public/common/content_client.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/accessibility/platform/ax_android_constants.h"
 
 namespace {
 
@@ -330,69 +331,69 @@ const char* BrowserAccessibilityAndroid::GetClassName() const {
     case ui::AX_ROLE_SEARCH_BOX:
     case ui::AX_ROLE_SPIN_BUTTON:
     case ui::AX_ROLE_TEXT_FIELD:
-      class_name = "android.widget.EditText";
+      class_name = ui::kAXEditTextClassname;
       break;
     case ui::AX_ROLE_SLIDER:
-      class_name = "android.widget.SeekBar";
+      class_name = ui::kAXSeekBarClassname;
       break;
     case ui::AX_ROLE_COLOR_WELL:
     case ui::AX_ROLE_COMBO_BOX:
     case ui::AX_ROLE_DATE:
     case ui::AX_ROLE_POP_UP_BUTTON:
     case ui::AX_ROLE_INPUT_TIME:
-      class_name = "android.widget.Spinner";
+      class_name = ui::kAXSpinnerClassname;
       break;
     case ui::AX_ROLE_BUTTON:
     case ui::AX_ROLE_MENU_BUTTON:
-      class_name = "android.widget.Button";
+      class_name = ui::kAXButtonClassname;
       break;
     case ui::AX_ROLE_CHECK_BOX:
     case ui::AX_ROLE_SWITCH:
-      class_name = "android.widget.CheckBox";
+      class_name = ui::kAXCheckBoxClassname;
       break;
     case ui::AX_ROLE_RADIO_BUTTON:
-      class_name = "android.widget.RadioButton";
+      class_name = ui::kAXRadioButtonClassname;
       break;
     case ui::AX_ROLE_TOGGLE_BUTTON:
-      class_name = "android.widget.ToggleButton";
+      class_name = ui::kAXToggleButtonClassname;
       break;
     case ui::AX_ROLE_CANVAS:
     case ui::AX_ROLE_IMAGE:
     case ui::AX_ROLE_SVG_ROOT:
-      class_name = "android.widget.Image";
+      class_name = ui::kAXImageClassname;
       break;
     case ui::AX_ROLE_METER:
     case ui::AX_ROLE_PROGRESS_INDICATOR:
-      class_name = "android.widget.ProgressBar";
+      class_name = ui::kAXProgressBarClassname;
       break;
     case ui::AX_ROLE_TAB_LIST:
-      class_name = "android.widget.TabWidget";
+      class_name = ui::kAXTabWidgetClassname;
       break;
     case ui::AX_ROLE_GRID:
     case ui::AX_ROLE_TABLE:
-      class_name = "android.widget.GridView";
+      class_name = ui::kAXGridViewClassname;
       break;
     case ui::AX_ROLE_LIST:
     case ui::AX_ROLE_LIST_BOX:
     case ui::AX_ROLE_DESCRIPTION_LIST:
-      class_name = "android.widget.ListView";
+      class_name = ui::kAXListViewClassname;
       break;
     case ui::AX_ROLE_DIALOG:
-      class_name = "android.app.Dialog";
+      class_name = ui::kAXDialogClassname;
       break;
     case ui::AX_ROLE_ROOT_WEB_AREA:
       if (GetParent() == nullptr)
-        class_name = "android.webkit.WebView";
+        class_name = ui::kAXWebViewClassname;
       else
-        class_name = "android.view.View";
+        class_name = ui::kAXViewClassname;
       break;
     case ui::AX_ROLE_MENU_ITEM:
     case ui::AX_ROLE_MENU_ITEM_CHECK_BOX:
     case ui::AX_ROLE_MENU_ITEM_RADIO:
-      class_name = "android.view.MenuItem";
+      class_name = ui::kAXMenuItemClassname;
       break;
     default:
-      class_name = "android.view.View";
+      class_name = ui::kAXViewClassname;
       break;
   }
 

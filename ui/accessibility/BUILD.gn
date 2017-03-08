@@ -47,6 +47,8 @@ component("accessibility") {
     "ax_tree_serializer.h",
     "ax_tree_source.h",
     "ax_tree_update.h",
+    "platform/ax_android_constants.cc",
+    "platform/ax_android_constants.h",
     "platform/ax_platform_node.cc",
     "platform/ax_platform_node.h",
     "platform/ax_platform_node_base.cc",
