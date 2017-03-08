@@ -1939,9 +1939,7 @@ void av1_filter_block_plane_ss11_hor(AV1_COMMON *const cm,
 }
 
 #if CONFIG_PARALLEL_DEBLOCKING
-
 typedef enum EDGE_DIR { VERT_EDGE = 0, HORZ_EDGE = 1, NUM_EDGE_DIRS } EDGE_DIR;
-
 static const uint32_t av1_prediction_masks[NUM_EDGE_DIRS][BLOCK_SIZES] = {
   // mask for vertical edges filtering
   {
@@ -1969,7 +1967,6 @@ static const uint32_t av1_prediction_masks[NUM_EDGE_DIRS][BLOCK_SIZES] = {
       128 - 1   // BLOCK_128X128
 #endif          // CONFIG_EXT_PARTITION
   },
-
   // mask for horizontal edges filtering
   {
 #if CONFIG_CB4X4
@@ -1997,7 +1994,6 @@ static const uint32_t av1_prediction_masks[NUM_EDGE_DIRS][BLOCK_SIZES] = {
 #endif          // CONFIG_EXT_PARTITION
   },
 };
-
 static const uint32_t av1_transform_masks[NUM_EDGE_DIRS][TX_SIZES_ALL] = {
   {
 #if CONFIG_CB4X4
@@ -2021,7 +2017,6 @@ static const uint32_t av1_transform_masks[NUM_EDGE_DIRS][TX_SIZES_ALL] = {
       8 - 1,   // TX_8X32
       32 - 1   // TX_32X8
   },
-
   {
 #if CONFIG_CB4X4
       2 - 1,  // TX_2X2
@@ -2045,40 +2040,32 @@ static const uint32_t av1_transform_masks[NUM_EDGE_DIRS][TX_SIZES_ALL] = {
       8 - 1    // TX_32X8
   }
 };
-
 static TX_SIZE av1_get_transform_size(const MODE_INFO *const pCurr,
                                       const EDGE_DIR edgeDir,
                                       const uint32_t scaleHorz,
                                       const uint32_t scaleVert) {
   const BLOCK_SIZE bs = pCurr->mbmi.sb_type;
   TX_SIZE txSize;
-
   // since in case of chrominance or non-square transorm need to convert
   // transform size into transform size in particular direction.
-
   txSize = uv_txsize_lookup[bs][pCurr->mbmi.tx_size][scaleHorz][scaleVert];
-
   if (VERT_EDGE == edgeDir) {
     txSize = txsize_horz_map[txSize];
   } else {
     txSize = txsize_vert_map[txSize];
   }
-
   return txSize;
 }
-
 typedef struct AV1_DEBLOCKING_PARAMETERS {
   // length of the filter applied to the outer edge
   uint32_t filterLength;
   // length of the filter applied to the inner edge
   uint32_t filterLengthInternal;
-
   // deblocking limits
   const uint8_t *lim;
   const uint8_t *mblim;
   const uint8_t *hev_thr;
 } AV1_DEBLOCKING_PARAMETERS;
-
 static void set_lpf_parameters(AV1_DEBLOCKING_PARAMETERS *const pParams,
                                const MODE_INFO **const ppCurr,
                                const ptrdiff_t modeStep,
@@ -2090,17 +2077,14 @@ static void set_lpf_parameters(AV1_DEBLOCKING_PARAMETERS *const pParams,
   // reset to initial values
   pParams->filterLength = 0;
   pParams->filterLengthInternal = 0;
-
   // no deblocking is required
   if ((width <= x) || (height <= y)) {
     return;
   }
-
 #if CONFIG_EXT_PARTITION
   // not sure if changes are required.
   assert(0 && "Not yet updated");
 #endif  // CONFIG_EXT_PARTITION
-
   {
     const TX_SIZE ts =
         av1_get_transform_size(ppCurr[0], edgeDir, scaleHorz, scaleVert);
@@ -2109,7 +2093,6 @@ static void set_lpf_parameters(AV1_DEBLOCKING_PARAMETERS *const pParams,
         ppCurr[0]->mbmi.skip && is_inter_block(&ppCurr[0]->mbmi);
     const uint32_t coord = (VERT_EDGE == edgeDir) ? (x) : (y);
     uint32_t level = currLevel;
-
     // prepare outer edge parameters. deblock the edge if it's an edge of a TU
     if (coord) {
 #if CONFIG_LOOPFILTERING_ACROSS_TILES
@@ -2122,7 +2105,6 @@ static void set_lpf_parameters(AV1_DEBLOCKING_PARAMETERS *const pParams,
       {
         const int32_t tuEdge =
             (coord & av1_transform_masks[edgeDir][ts]) ? (0) : (1);
-
         if (tuEdge) {
           const MODE_INFO *const pPrev = *(ppCurr - modeStep);
           const TX_SIZE pvTs =
@@ -2136,27 +2118,36 @@ static void set_lpf_parameters(AV1_DEBLOCKING_PARAMETERS *const pParams,
                                                   [scaleHorz][scaleVert]])
                   ? (0)
                   : (1);
-
           // if the current and the previous blocks are skipped,
           // deblock the edge if the edge belongs to a PU's edge only.
           if ((currLevel || pvLvl) && (!pvSkip || !currSkipped || puEdge)) {
+#if CONFIG_PARALLEL_DEBLOCKING_15TAP
+            const TX_SIZE minTs = AOMMIN(ts, pvTs);
+            if (TX_4X4 >= minTs) {
+              pParams->filterLength = 4;
+            } else if (TX_8X8 == minTs) {
+              pParams->filterLength = 8;
+            } else {
+              pParams->filterLength = 16;
+            }
+#else
             pParams->filterLength = (TX_4X4 >= AOMMIN(ts, pvTs)) ? (4) : (8);
+
+#endif  // CONFIG_PARALLEL_DEBLOCKING_15TAP
+
             // update the level if the current block is skipped,
             // but the previous one is not
             level = (currLevel) ? (currLevel) : (pvLvl);
           }
         }
       }
-
       // prepare internal edge parameters
       if (currLevel && !currSkipped) {
         pParams->filterLengthInternal = (TX_4X4 >= ts) ? (4) : (0);
       }
-
       // prepare common parameters
       if (pParams->filterLength || pParams->filterLengthInternal) {
         const loop_filter_thresh *const limits = cm->lf_info.lfthr + level;
-
         pParams->lim = limits->lim;
         pParams->mblim = limits->mblim;
         pParams->hev_thr = limits->hev_thr;
@@ -2164,7 +2155,6 @@ static void set_lpf_parameters(AV1_DEBLOCKING_PARAMETERS *const pParams,
     }
   }
 }
-
 static void av1_filter_block_plane_vert(const AV1_COMMON *const cm,
                                         const MACROBLOCKD_PLANE *const pPlane,
                                         const MODE_INFO **ppModeInfo,
@@ -2177,49 +2167,47 @@ static void av1_filter_block_plane_vert(const AV1_COMMON *const cm,
   const uint32_t height = pPlane->dst.height;
   uint8_t *const pDst = pPlane->dst.buf;
   const int dstStride = pPlane->dst.stride;
-
   for (int y = 0; y < (MAX_MIB_SIZE >> scaleVert); y += 1) {
     uint8_t *p = pDst + y * MI_SIZE * dstStride;
-
     for (int x = 0; x < (MAX_MIB_SIZE >> scaleHorz); x += 1) {
       const MODE_INFO **const pCurr =
           ppModeInfo + (y << scaleVert) * modeStride + (x << scaleHorz);
       AV1_DEBLOCKING_PARAMETERS params;
       memset(&params, 0, sizeof(params));
-
       set_lpf_parameters(&params, pCurr, ((ptrdiff_t)1 << scaleHorz), cm,
                          VERT_EDGE, cuX + x * MI_SIZE, cuY + y * MI_SIZE, width,
                          height, scaleHorz, scaleVert);
-
       switch (params.filterLength) {
         // apply 4-tap filtering
         case 4:
           aom_lpf_vertical_4(p, dstStride, params.mblim, params.lim,
                              params.hev_thr);
           break;
-
         // apply 8-tap filtering
         case 8:
           aom_lpf_vertical_8(p, dstStride, params.mblim, params.lim,
                              params.hev_thr);
           break;
-
+#if CONFIG_PARALLEL_DEBLOCKING_15TAP
+        // apply 16-tap filtering
+        case 16:
+          aom_lpf_vertical_16(p, dstStride, params.mblim, params.lim,
+                              params.hev_thr);
+          break;
+#endif  // CONFIG_PARALLEL_DEBLOCKING_15TAP
         // no filtering
         default: break;
       }
-
       // process the internal edge
       if (params.filterLengthInternal) {
         aom_lpf_vertical_4(p + 4, dstStride, params.mblim, params.lim,
                            params.hev_thr);
       }
-
       // advance the destination pointer
       p += 8;
     }
   }
 }
-
 static void av1_filter_block_plane_horz(const AV1_COMMON *const cm,
                                         const MACROBLOCKD_PLANE *const pPlane,
                                         const MODE_INFO **ppModeInfo,
@@ -2232,49 +2220,47 @@ static void av1_filter_block_plane_horz(const AV1_COMMON *const cm,
   const uint32_t height = pPlane->dst.height;
   uint8_t *const pDst = pPlane->dst.buf;
   const int dstStride = pPlane->dst.stride;
-
   for (int y = 0; y < (MAX_MIB_SIZE >> scaleVert); y += 1) {
     uint8_t *p = pDst + y * MI_SIZE * dstStride;
-
     for (int x = 0; x < (MAX_MIB_SIZE >> scaleHorz); x += 1) {
       const MODE_INFO **const pCurr =
           ppModeInfo + (y << scaleVert) * modeStride + (x << scaleHorz);
       AV1_DEBLOCKING_PARAMETERS params;
       memset(&params, 0, sizeof(params));
-
       set_lpf_parameters(&params, pCurr, (modeStride << scaleVert), cm,
                          HORZ_EDGE, cuX + x * MI_SIZE, cuY + y * MI_SIZE, width,
                          height, scaleHorz, scaleVert);
-
       switch (params.filterLength) {
         // apply 4-tap filtering
         case 4:
           aom_lpf_horizontal_4(p, dstStride, params.mblim, params.lim,
                                params.hev_thr);
           break;
-
         // apply 8-tap filtering
         case 8:
           aom_lpf_horizontal_8(p, dstStride, params.mblim, params.lim,
                                params.hev_thr);
           break;
-
+#if CONFIG_PARALLEL_DEBLOCKING_15TAP
+        // apply 16-tap filtering
+        case 16:
+          aom_lpf_horizontal_edge_16(p, dstStride, params.mblim, params.lim,
+                                     params.hev_thr);
+          break;
+#endif  // CONFIG_PARALLEL_DEBLOCKING_15TAP
         // no filtering
         default: break;
       }
-
       // process the internal edge
       if (params.filterLengthInternal) {
         aom_lpf_horizontal_4(p + 4 * dstStride, dstStride, params.mblim,
                              params.lim, params.hev_thr);
       }
-
       // advance the destination pointer
       p += 8;
     }
   }
 }
-
 #endif  // CONFIG_PARALLEL_DEBLOCKING
 
 void av1_loop_filter_rows(YV12_BUFFER_CONFIG *frame_buffer, AV1_COMMON *cm,
@@ -2322,17 +2308,14 @@ void av1_loop_filter_rows(YV12_BUFFER_CONFIG *frame_buffer, AV1_COMMON *cm,
   else
     path = LF_PATH_SLOW;
 #endif
-
 #if CONFIG_PARALLEL_DEBLOCKING
   for (mi_row = start; mi_row < stop; mi_row += MAX_MIB_SIZE) {
     MODE_INFO **mi = cm->mi_grid_visible + mi_row * cm->mi_stride;
     for (mi_col = 0; mi_col < cm->mi_cols; mi_col += MAX_MIB_SIZE) {
       av1_setup_dst_planes(planes, frame_buffer, mi_row, mi_col);
-
       for (int planeIdx = 0; planeIdx < num_planes; planeIdx += 1) {
         const int32_t scaleHorz = planes[planeIdx].subsampling_x;
         const int32_t scaleVert = planes[planeIdx].subsampling_y;
-
         av1_filter_block_plane_vert(
             cm, planes + planeIdx, (const MODE_INFO **)(mi + mi_col),
             cm->mi_stride, (mi_col * MI_SIZE) >> scaleHorz,
@@ -2344,11 +2327,9 @@ void av1_loop_filter_rows(YV12_BUFFER_CONFIG *frame_buffer, AV1_COMMON *cm,
     MODE_INFO **mi = cm->mi_grid_visible + mi_row * cm->mi_stride;
     for (mi_col = 0; mi_col < cm->mi_cols; mi_col += MAX_MIB_SIZE) {
       av1_setup_dst_planes(planes, frame_buffer, mi_row, mi_col);
-
       for (int planeIdx = 0; planeIdx < num_planes; planeIdx += 1) {
         const int32_t scaleHorz = planes[planeIdx].subsampling_x;
         const int32_t scaleVert = planes[planeIdx].subsampling_y;
-
         av1_filter_block_plane_horz(
             cm, planes + planeIdx, (const MODE_INFO **)(mi + mi_col),
             cm->mi_stride, (mi_col * MI_SIZE) >> scaleHorz,
