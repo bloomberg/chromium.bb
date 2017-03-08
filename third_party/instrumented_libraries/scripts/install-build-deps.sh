@@ -68,7 +68,6 @@ udev \
 zlib1g \
 brltty"
 
-precise_specific_packages="libtasn1-3"
 trusty_specific_packages="\
 libtasn1-6 \
 harfbuzz
@@ -76,9 +75,7 @@ libsecret"
 
 ubuntu_release=$(lsb_release -cs)
 
-if test "$ubuntu_release" = "precise" ; then
-  packages="$common_packages $precise_specific_packages"
-else
+if test "$ubuntu_release" = "trusty" ; then
   packages="$common_packages $trusty_specific_packages"
 fi
 

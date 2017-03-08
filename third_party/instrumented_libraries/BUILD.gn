@@ -89,15 +89,8 @@ if (prebuilt_instrumented_libraries_available) {
 }
 
 if (use_locally_built_instrumented_libraries) {
-  if (instrumented_libraries_platform == "precise") {
-    is_precise = true
-    is_trusty = false
-  } else if (instrumented_libraries_platform == "trusty") {
-    is_precise = false
-    is_trusty = true
-  } else {
-    assert(false, "Unsupported platform " + instrumented_libraries_platform)
-  }
+  assert(instrumented_libraries_platform == "trusty",
+         "Currently, the only supported platform is Trusty.")
   group("locally_built") {
     visibility = [ ":deps" ]
     deps = [
@@ -105,6 +98,7 @@ if (use_locally_built_instrumented_libraries) {
       ":brltty",
       ":dee",
       ":freetype",
+      ":harfbuzz",
       ":libappindicator1",
       ":libasound2",
       ":libatk-bridge2.0-0",
@@ -125,13 +119,15 @@ if (use_locally_built_instrumented_libraries) {
       ":libglib2.0-0",
       ":libgnome-keyring0",
       ":libgpg-error0",
-      ":libgtk2.0-0",
       ":libgtk-3-0",
+      ":libgtk2.0-0",
       ":libnspr4",
       ":libp11-kit0",
       ":libpci3",
       ":libpcre3",
       ":libpixman-1-0",
+      ":libsecret",
+      ":libtasn1-6",
       ":libunity9",
       ":libva1",
       ":libx11-6",
@@ -155,16 +151,6 @@ if (use_locally_built_instrumented_libraries) {
       ":udev",
       ":zlib1g",
     ]
-    if (is_precise) {
-      deps += [ ":libtasn1-3" ]
-    }
-    if (is_trusty) {
-      deps += [
-        ":harfbuzz",
-        ":libsecret",
-        ":libtasn1-6",
-      ]
-    }
     if (is_msan) {
       deps += [ ":libcups2" ]
     }
@@ -360,7 +346,7 @@ if (use_locally_built_instrumented_libraries) {
   instrumented_library("libatspi2.0-0") {
     extra_configure_flags = [
       "--disable-static",
-      "--disable-introspection"
+      "--disable-introspection",
     ]
   }
 
@@ -704,9 +690,6 @@ if (use_locally_built_instrumented_libraries) {
       "--disable-static",
     ]
     pre_build = "scripts/pre-build/autoreconf.sh"
-    if (is_precise) {
-      patch = "patches/libxcb1.precise.diff"
-    }
   }
 
   instrumented_library("libxcomposite1") {
@@ -796,12 +779,7 @@ if (use_locally_built_instrumented_libraries) {
 
   instrumented_library("pulseaudio") {
     # New location of libpulsecommon.
-    if (is_precise) {
-      patch = "patches/pulseaudio.precise.diff"
-    }
-    if (is_trusty) {
-      package_ldflags = [ "-Wl,-R,XORIGIN/pulseaudio/." ]
-    }
+    package_ldflags = [ "-Wl,-R,XORIGIN/pulseaudio/." ]
     extra_configure_flags = [
       "--disable-static",
 
