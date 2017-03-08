@@ -88,7 +88,7 @@ static void od_ec_dec_refill(od_ec_dec *dec) {
   s = OD_EC_WINDOW_SIZE - 9 - (cnt + 15);
   for (; s >= 0 && bptr < end; s -= 8, bptr++) {
     OD_ASSERT(s <= OD_EC_WINDOW_SIZE - 8);
-    dif |= (od_ec_window)bptr[0] << s;
+    dif ^= (od_ec_window)bptr[0] << s;
     cnt += 8;
   }
   if (bptr >= end) {
@@ -114,7 +114,12 @@ static int od_ec_dec_normalize(od_ec_dec *dec, od_ec_window dif, unsigned rng,
   OD_ASSERT(rng <= 65535U);
   d = 16 - OD_ILOG_NZ(rng);
   dec->cnt -= d;
+#if CONFIG_EC_SMALLMUL
+  /*This is equivalent to shifting in 1's instead of 0's.*/
+  dec->dif = ((dif + 1) << d) - 1;
+#else
   dec->dif = dif << d;
+#endif
   dec->rng = rng << d;
   if (dec->cnt < 0) od_ec_dec_refill(dec);
   return ret;
@@ -132,7 +137,11 @@ void od_ec_dec_init(od_ec_dec *dec, const unsigned char *buf,
   dec->tell_offs = 10 - (OD_EC_WINDOW_SIZE - 8);
   dec->end = buf + storage;
   dec->bptr = buf;
+#if CONFIG_EC_SMALLMUL
+  dec->dif = ((od_ec_window)1 << (OD_EC_WINDOW_SIZE - 1)) - 1;
+#else
   dec->dif = 0;
+#endif
   dec->rng = 0x8000;
   dec->cnt = -15;
   dec->error = 0;
@@ -156,10 +165,17 @@ int od_ec_decode_bool_q15(od_ec_dec *dec, unsigned fz) {
   OD_ASSERT(dif >> (OD_EC_WINDOW_SIZE - 16) < r);
   OD_ASSERT(32768U <= r);
 #if CONFIG_EC_SMALLMUL
-  v = r - ((r >> 8) * (uint32_t)(32768U - fz) >> 7);
+  v = (r >> 8) * (uint32_t)(32768U - fz) >> 7;
+  vw = (od_ec_window)v << (OD_EC_WINDOW_SIZE - 16);
+  ret = 1;
+  r_new = v;
+  if (dif >= vw) {
+    r_new = r - v;
+    dif -= vw;
+    ret = 0;
+  }
 #else
   v = fz * (uint32_t)r >> 15;
-#endif
   vw = (od_ec_window)v << (OD_EC_WINDOW_SIZE - 16);
   ret = 0;
   r_new = v;
@@ -168,6 +184,7 @@ int od_ec_decode_bool_q15(od_ec_dec *dec, unsigned fz) {
     dif -= vw;
     ret = 1;
   }
+#endif
   return od_ec_dec_normalize(dec, dif, r_new, ret);
 }
 
@@ -192,20 +209,31 @@ int od_ec_decode_cdf_q15(od_ec_dec *dec, const uint16_t *cdf, int nsyms) {
   OD_ASSERT(dif >> (OD_EC_WINDOW_SIZE - 16) < r);
   OD_ASSERT(cdf[nsyms - 1] == 32768U);
   OD_ASSERT(32768U <= r);
+#if CONFIG_EC_SMALLMUL
+  c = (unsigned)(dif >> (OD_EC_WINDOW_SIZE - 16));
+  v = r;
+  ret = -1;
+  do {
+    u = v;
+    v = (r >> 8) * (uint32_t)(32768U - cdf[++ret]) >> 7;
+  } while (c < v);
+  OD_ASSERT(v < u);
+  OD_ASSERT(u <= r);
+  r = u - v;
+  dif -= (od_ec_window)v << (OD_EC_WINDOW_SIZE - 16);
+#else
   c = (unsigned)(dif >> (OD_EC_WINDOW_SIZE - 16));
   v = 0;
   ret = -1;
   do {
     u = v;
-#if CONFIG_EC_SMALLMUL
-    v = r - ((r >> 8) * (uint32_t)(32768U - cdf[++ret]) >> 7);
-#else
     v = cdf[++ret] * (uint32_t)r >> 15;
-#endif
   } while (v <= c);
+  OD_ASSERT(u < v);
   OD_ASSERT(v <= r);
   r = v - u;
   dif -= (od_ec_window)u << (OD_EC_WINDOW_SIZE - 16);
+#endif
   return od_ec_dec_normalize(dec, dif, r, ret);
 }
 
