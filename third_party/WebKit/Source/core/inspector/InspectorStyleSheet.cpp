@@ -1423,7 +1423,8 @@ InspectorStyleSheet::buildObjectForStyleSheetInfo() {
 
   Document* document = styleSheet->ownerDocument();
   LocalFrame* frame = document ? document->frame() : nullptr;
-
+  String text;
+  getText(&text);
   std::unique_ptr<protocol::CSS::CSSStyleSheetHeader> result =
       protocol::CSS::CSSStyleSheetHeader::create()
           .setStyleSheetId(id())
@@ -1437,6 +1438,7 @@ InspectorStyleSheet::buildObjectForStyleSheetInfo() {
               styleSheet->startPositionInSource().m_line.zeroBasedInt())
           .setStartColumn(
               styleSheet->startPositionInSource().m_column.zeroBasedInt())
+          .setLength(text.length())
           .build();
 
   if (hasSourceURL())

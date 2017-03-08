@@ -2772,7 +2772,8 @@
                     { "name": "hasSourceURL", "type": "boolean", "optional": true, "description": "Whether the sourceURL field value comes from the sourceURL comment." },
                     { "name": "isInline", "type": "boolean", "description": "Whether this stylesheet is created for STYLE tag by parser. This flag is not set for document.written STYLE tags." },
                     { "name": "startLine", "type": "number", "description": "Line offset of the stylesheet within the resource (zero based)." },
-                    { "name": "startColumn", "type": "number", "description": "Column offset of the stylesheet within the resource (zero based)." }
+                    { "name": "startColumn", "type": "number", "description": "Column offset of the stylesheet within the resource (zero based)." },
+                    { "name": "length", "type": "number", "description": "Size of the content (in characters).", "experimental": true }
                 ],
                 "description": "CSS stylesheet metainformation."
             },
