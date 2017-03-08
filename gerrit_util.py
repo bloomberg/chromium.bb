@@ -386,7 +386,7 @@ def ReadHttpJsonResponse(conn, expect_status=200, ignore_404=True):
 
 
 def QueryChanges(host, param_dict, first_param=None, limit=None, o_params=None,
-                 sortkey=None):
+                 start=None):
   """
   Queries a gerrit-on-borg server for changes matching query terms.
 
@@ -395,6 +395,7 @@ def QueryChanges(host, param_dict, first_param=None, limit=None, o_params=None,
         http://gerrit-documentation.googlecode.com/svn/Documentation/2.6/user-search.html
     first_param: A change identifier
     limit: Maximum number of results to return.
+    start: how many changes to skip (starting with the most recent)
     o_params: A list of additional output specifiers, as documented here:
         https://gerrit-review.googlesource.com/Documentation/rest-api-changes.html#list-changes
   Returns:
@@ -404,8 +405,8 @@ def QueryChanges(host, param_dict, first_param=None, limit=None, o_params=None,
   if not param_dict and not first_param:
     raise RuntimeError('QueryChanges requires search parameters')
   path = 'changes/?q=%s' % _QueryString(param_dict, first_param)
-  if sortkey:
-    path = '%s&N=%s' % (path, sortkey)
+  if start:
+    path = '%s&start=%s' % (path, start)
   if limit:
     path = '%s&n=%d' % (path, limit)
   if o_params:
@@ -415,30 +416,49 @@ def QueryChanges(host, param_dict, first_param=None, limit=None, o_params=None,
 
 
 def GenerateAllChanges(host, param_dict, first_param=None, limit=500,
-                       o_params=None, sortkey=None):
+                       o_params=None, start=None):
   """
   Queries a gerrit-on-borg server for all the changes matching the query terms.
 
+  WARNING: this is unreliable if a change matching the query is modified while
+    this function is being called.
+
   A single query to gerrit-on-borg is limited on the number of results by the
   limit parameter on the request (see QueryChanges) and the server maximum
-  limit. This function uses the "_more_changes" and "_sortkey" attributes on
-  the returned changes to iterate all of them making multiple queries to the
-  server, regardless the query limit.
+  limit.
 
   Args:
     param_dict, first_param: Refer to QueryChanges().
     limit: Maximum number of requested changes per query.
     o_params: Refer to QueryChanges().
-    sortkey: The value of the "_sortkey" attribute where starts from. None to
-        start from the first change.
+    start: Refer to QueryChanges().
 
   Returns:
-    A generator object to the list of returned changes, possibly unbound.
+    A generator object to the list of returned changes.
   """
+  already_returned = set()
+  def at_most_once(cls):
+    for cl in cls:
+      if cl['_number'] not in already_returned:
+        already_returned.add(cl['_number'])
+        yield cl
+
+  start = start or 0
+  cur_start = start
   more_changes = True
+
   while more_changes:
-    page = QueryChanges(host, param_dict, first_param, limit, o_params, sortkey)
-    for cl in page:
+    # This will fetch changes[start..start+limit] sorted by most recently
+    # updated. Since the rank of any change in this list can be changed any time
+    # (say user posting comment), subsequent calls may overalp like this:
+    #   > initial order ABCDEFGH
+    #   query[0..3]  => ABC
+    #   > E get's updated. New order: EABCDFGH
+    #   query[3..6] => CDF   # C is a dup
+    #   query[6..9] => GH    # E is missed.
+    page = QueryChanges(host, param_dict, first_param, limit, o_params,
+                        cur_start)
+    for cl in at_most_once(page):
       yield cl
 
     more_changes = [cl for cl in page if '_more_changes' in cl]
@@ -448,11 +468,18 @@ def GenerateAllChanges(host, param_dict, first_param=None, limit=500,
           'Received %d changes with a _more_changes attribute set but should '
           'receive at most one.' % len(more_changes))
     if more_changes:
-      sortkey = more_changes[0]['_sortkey']
+      cur_start += len(page)
+
+  # If we paged through, query again the first page which in most circumstances
+  # will fetch all changes that were modified while this function was run.
+  if start != cur_start:
+    page = QueryChanges(host, param_dict, first_param, limit, o_params, start)
+    for cl in at_most_once(page):
+      yield cl
 
 
 def MultiQueryChanges(host, param_dict, change_list, limit=None, o_params=None,
-                      sortkey=None):
+                      start=None):
   """Initiate a query composed of multiple sets of query parameters."""
   if not change_list:
     raise RuntimeError(
@@ -462,8 +489,8 @@ def MultiQueryChanges(host, param_dict, change_list, limit=None, o_params=None,
     q.append(_QueryString(param_dict))
   if limit:
     q.append('n=%d' % limit)
-  if sortkey:
-    q.append('N=%s' % sortkey)
+  if start:
+    q.append('S=%s' % start)
   if o_params:
     q.extend(['o=%s' % p for p in o_params])
   path = 'changes/?%s' % '&'.join(q)
