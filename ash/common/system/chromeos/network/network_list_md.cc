@@ -75,8 +75,8 @@ bool IsProhibitedByPolicy(const chromeos::NetworkState* network) {
 // A header row for sections in network detailed view which contains a title and
 // a toggle button to turn on/off the section. Subclasses are given the
 // opportunity to add extra buttons before the toggle button is added.
-class NetworkListViewMd::SectionHeaderRowView : public views::View,
-                                                public views::ButtonListener {
+class NetworkListView::SectionHeaderRowView : public views::View,
+                                              public views::ButtonListener {
  public:
   explicit SectionHeaderRowView(int title_id)
       : title_id_(title_id),
@@ -123,7 +123,7 @@ class NetworkListViewMd::SectionHeaderRowView : public views::View,
     // In the event of frequent clicks, helps to prevent a toggle button state
     // from becoming inconsistent with the async operation of enabling /
     // disabling of mobile radio. The toggle will get re-enabled in the next
-    // call to NetworkListViewMd::Update().
+    // call to NetworkListView::Update().
     toggle_->SetEnabled(false);
     OnToggleToggled(toggle_->is_on());
   }
@@ -169,7 +169,7 @@ class NetworkListViewMd::SectionHeaderRowView : public views::View,
 
 namespace {
 
-class CellularHeaderRowView : public NetworkListViewMd::SectionHeaderRowView {
+class CellularHeaderRowView : public NetworkListView::SectionHeaderRowView {
  public:
   CellularHeaderRowView()
       : SectionHeaderRowView(IDS_ASH_STATUS_TRAY_NETWORK_MOBILE) {}
@@ -190,7 +190,7 @@ class CellularHeaderRowView : public NetworkListViewMd::SectionHeaderRowView {
   DISALLOW_COPY_AND_ASSIGN(CellularHeaderRowView);
 };
 
-class TetherHeaderRowView : public NetworkListViewMd::SectionHeaderRowView {
+class TetherHeaderRowView : public NetworkListView::SectionHeaderRowView {
  public:
   TetherHeaderRowView()
       : SectionHeaderRowView(IDS_ASH_STATUS_TRAY_NETWORK_TETHER) {}
@@ -208,7 +208,7 @@ class TetherHeaderRowView : public NetworkListViewMd::SectionHeaderRowView {
   DISALLOW_COPY_AND_ASSIGN(TetherHeaderRowView);
 };
 
-class WifiHeaderRowView : public NetworkListViewMd::SectionHeaderRowView {
+class WifiHeaderRowView : public NetworkListView::SectionHeaderRowView {
  public:
   explicit WifiHeaderRowView(NetworkListDelegate* network_list_delegate)
       : SectionHeaderRowView(IDS_ASH_STATUS_TRAY_NETWORK_WIFI),
@@ -281,9 +281,9 @@ class WifiHeaderRowView : public NetworkListViewMd::SectionHeaderRowView {
 
 }  // namespace
 
-// NetworkListViewMd:
+// NetworkListView:
 
-NetworkListViewMd::NetworkListViewMd(NetworkListDelegate* delegate)
+NetworkListView::NetworkListView(NetworkListDelegate* delegate)
     : needs_relayout_(false),
       delegate_(delegate),
       no_wifi_networks_view_(nullptr),
@@ -297,11 +297,11 @@ NetworkListViewMd::NetworkListViewMd(NetworkListDelegate* delegate)
   CHECK(delegate_);
 }
 
-NetworkListViewMd::~NetworkListViewMd() {
+NetworkListView::~NetworkListView() {
   network_icon::NetworkIconAnimation::GetInstance()->RemoveObserver(this);
 }
 
-void NetworkListViewMd::Update() {
+void NetworkListView::Update() {
   CHECK(container());
 
   NetworkStateHandler* handler = NetworkHandler::Get()->network_state_handler();
@@ -322,8 +322,8 @@ void NetworkListViewMd::Update() {
   UpdateNetworkListInternal();
 }
 
-bool NetworkListViewMd::IsNetworkEntry(views::View* view,
-                                       std::string* guid) const {
+bool NetworkListView::IsNetworkEntry(views::View* view,
+                                     std::string* guid) const {
   std::map<views::View*, std::string>::const_iterator found =
       network_map_.find(view);
   if (found == network_map_.end())
@@ -332,7 +332,7 @@ bool NetworkListViewMd::IsNetworkEntry(views::View* view,
   return true;
 }
 
-void NetworkListViewMd::UpdateNetworks(
+void NetworkListView::UpdateNetworks(
     const NetworkStateHandler::NetworkStateList& networks) {
   SCOPED_NET_LOG_IF_SLOW();
   network_list_.clear();
@@ -343,7 +343,7 @@ void NetworkListViewMd::UpdateNetworks(
   }
 }
 
-void NetworkListViewMd::OrderNetworks() {
+void NetworkListView::OrderNetworks() {
   struct CompareNetwork {
     explicit CompareNetwork(NetworkStateHandler* handler) : handler_(handler) {}
 
@@ -387,7 +387,7 @@ void NetworkListViewMd::OrderNetworks() {
             CompareNetwork(NetworkHandler::Get()->network_state_handler()));
 }
 
-void NetworkListViewMd::UpdateNetworkIcons() {
+void NetworkListView::UpdateNetworkIcons() {
   SCOPED_NET_LOG_IF_SLOW();
   NetworkStateHandler* handler = NetworkHandler::Get()->network_state_handler();
 
@@ -429,7 +429,7 @@ void NetworkListViewMd::UpdateNetworkIcons() {
     network_icon::NetworkIconAnimation::GetInstance()->RemoveObserver(this);
 }
 
-void NetworkListViewMd::UpdateNetworkListInternal() {
+void NetworkListView::UpdateNetworkListInternal() {
   SCOPED_NET_LOG_IF_SLOW();
   // Get the updated list entries.
   needs_relayout_ = false;
@@ -467,7 +467,7 @@ void NetworkListViewMd::UpdateNetworkListInternal() {
 }
 
 std::unique_ptr<std::set<std::string>>
-NetworkListViewMd::UpdateNetworkListEntries() {
+NetworkListView::UpdateNetworkListEntries() {
   NetworkStateHandler* handler = NetworkHandler::Get()->network_state_handler();
 
   // First add high-priority networks (not Wi-Fi nor cellular).
@@ -556,7 +556,7 @@ NetworkListViewMd::UpdateNetworkListEntries() {
   return new_guids;
 }
 
-std::unique_ptr<std::set<std::string>> NetworkListViewMd::UpdateNetworkChildren(
+std::unique_ptr<std::set<std::string>> NetworkListView::UpdateNetworkChildren(
     NetworkInfo::Type type,
     int index) {
   std::unique_ptr<std::set<std::string>> new_guids(new std::set<std::string>);
@@ -569,7 +569,7 @@ std::unique_ptr<std::set<std::string>> NetworkListViewMd::UpdateNetworkChildren(
   return new_guids;
 }
 
-void NetworkListViewMd::UpdateNetworkChild(int index, const NetworkInfo* info) {
+void NetworkListView::UpdateNetworkChild(int index, const NetworkInfo* info) {
   views::View* network_view = nullptr;
   NetworkGuidMap::const_iterator found = network_guid_map_.find(info->guid);
   if (found == network_guid_map_.end()) {
@@ -588,7 +588,7 @@ void NetworkListViewMd::UpdateNetworkChild(int index, const NetworkInfo* info) {
   network_guid_map_[info->guid] = network_view;
 }
 
-void NetworkListViewMd::PlaceViewAtIndex(views::View* view, int index) {
+void NetworkListView::PlaceViewAtIndex(views::View* view, int index) {
   if (view->parent() != container()) {
     container()->AddChildViewAt(view, index);
   } else {
@@ -599,9 +599,9 @@ void NetworkListViewMd::PlaceViewAtIndex(views::View* view, int index) {
   needs_relayout_ = true;
 }
 
-void NetworkListViewMd::UpdateInfoLabel(int message_id,
-                                        int insertion_index,
-                                        views::Label** label_ptr) {
+void NetworkListView::UpdateInfoLabel(int message_id,
+                                      int insertion_index,
+                                      views::Label** label_ptr) {
   views::Label* label = *label_ptr;
   if (!message_id) {
     if (label) {
@@ -620,12 +620,11 @@ void NetworkListViewMd::UpdateInfoLabel(int message_id,
   *label_ptr = label;
 }
 
-int NetworkListViewMd::UpdateSectionHeaderRow(
-    NetworkTypePattern pattern,
-    bool enabled,
-    int child_index,
-    SectionHeaderRowView** view,
-    views::Separator** separator_view) {
+int NetworkListView::UpdateSectionHeaderRow(NetworkTypePattern pattern,
+                                            bool enabled,
+                                            int child_index,
+                                            SectionHeaderRowView** view,
+                                            views::Separator** separator_view) {
   if (!*view) {
     if (pattern.Equals(NetworkTypePattern::Cellular()))
       *view = new CellularHeaderRowView();
@@ -654,7 +653,7 @@ int NetworkListViewMd::UpdateSectionHeaderRow(
   return child_index;
 }
 
-void NetworkListViewMd::NetworkIconChanged() {
+void NetworkListView::NetworkIconChanged() {
   Update();
 }
 

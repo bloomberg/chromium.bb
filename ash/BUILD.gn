@@ -235,8 +235,6 @@ component("ash") {
     "common/system/chromeos/network/network_icon_animation_observer.h",
     "common/system/chromeos/network/network_info.cc",
     "common/system/chromeos/network/network_info.h",
-    "common/system/chromeos/network/network_list.cc",
-    "common/system/chromeos/network/network_list.h",
     "common/system/chromeos/network/network_list_delegate.h",
     "common/system/chromeos/network/network_list_md.cc",
     "common/system/chromeos/network/network_list_md.h",

@@ -27,13 +27,10 @@ class NetworkListViewBase;
 
 namespace views {
 class BubbleDialogDelegateView;
-class ImageButton;
 }
 
 namespace ash {
 class SystemTrayItem;
-class ThrobberView;
-class TrayPopupHeaderButton;
 
 namespace tray {
 
@@ -66,33 +63,15 @@ class NetworkStateListDetailedView
   // Launches the WebUI settings in a browser and closes the system menu.
   void ShowSettings();
 
-  // Create UI components.
-  void CreateHeaderEntry();
-  void CreateNetworkExtra();
-
   // Update UI components.
-  void UpdateTechnologyButton(TrayPopupHeaderButton* button,
-                              const chromeos::NetworkTypePattern& technology);
   void UpdateNetworkList();
   void UpdateHeaderButtons();
-
-  bool OrderChild(views::View* view, int index);
-
-  // Adds a settings entry when logged in, and an entry for changing proxy
-  // settings otherwise.
-  void CreateSettingsEntry();
-
-  // Sets the visibility and focusability of Network Info Button and
-  // WiFi scanning indicator. This will hide Network info button and display
-  // the scanning indicator when |is_scanning| is true.
-  void SetScanningStateForThrobberView(bool is_scanning);
 
   // Create and manage the network info bubble.
   void ToggleInfoBubble();
   bool ResetInfoBubble();
   void OnInfoBubbleDestroyed();
   views::View* CreateNetworkInfoView();
-  const gfx::ImageSkia* GetControlledByExtensionIcon();
 
   // Creates the view of an extra icon appearing next to the network name
   // indicating that the network is controlled by an extension. If no extension
@@ -101,9 +80,6 @@ class NetworkStateListDetailedView
 
   // Periodically request a network scan.
   void CallRequestScan();
-
-  // Handle toggile mobile action
-  void ToggleMobile();
 
   // NetworkListDelegate:
   views::View* CreateViewForNetwork(const NetworkInfo& info) override;
@@ -122,26 +98,12 @@ class NetworkStateListDetailedView
   // Track login state.
   LoginStatus login_;
 
-  // Tracks the WiFi scanning state to help detect if the state has changed. Use
-  // NetworkHandler::GetScanningByType() if you require the current wifi
-  // scanning state.
-  bool prev_wifi_scanning_state_;
-
-  // Not used for material design.
-  views::ImageButton* info_icon_;
-
-  // Only used in material design.
-  views::CustomButton* info_button_md_;
-  views::CustomButton* settings_button_md_;
-  views::CustomButton* proxy_settings_button_md_;
+  views::CustomButton* info_button_;
+  views::CustomButton* settings_button_;
+  views::CustomButton* proxy_settings_button_;
 
   // A small bubble for displaying network info.
   views::BubbleDialogDelegateView* info_bubble_;
-
-  // WiFi scanning throbber.
-  ThrobberView* scanning_throbber_;
-
-  gfx::Image controlled_by_extension_icon_;
 
   std::unique_ptr<NetworkListViewBase> network_list_view_;
 

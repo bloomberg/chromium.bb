@@ -98,8 +98,6 @@
         <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_CHILD_USER" file="cros/status/status_child_user.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_ENTERPRISE" file="cros/status/status_managed.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_SUPERVISED_USER" file="cros/status/status_managed_mode_user.png" />
-        <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NETWORK_INFO" file="cros/network/status_network_info.png" />
-        <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NETWORK_INFO_HOVER" file="cros/network/status_network_info_hover.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NOTIFICATION_SESSION_LENGTH_LIMIT" file="cros/notification/notification_session_length_timer.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_POWER_SMALL" file="cros/status/status_power_small_all.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_POWER_SMALL_CHARGING_UNRELIABLE" file="cros/status/status_power_small_all_fluctuating.png" />
