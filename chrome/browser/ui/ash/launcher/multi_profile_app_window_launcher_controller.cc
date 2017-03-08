@@ -6,6 +6,7 @@
 
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
 #include "components/signin/core/account_id/account_id.h"
@@ -15,7 +16,14 @@
 
 MultiProfileAppWindowLauncherController::
     MultiProfileAppWindowLauncherController(ChromeLauncherController* owner)
-    : ExtensionAppWindowLauncherController(owner) {}
+    : ExtensionAppWindowLauncherController(owner) {
+  // We might have already active windows.
+  extensions::AppWindowRegistry* registry =
+      extensions::AppWindowRegistry::Get(owner->profile());
+  app_window_list_.insert(app_window_list_.end(),
+                          registry->app_windows().begin(),
+                          registry->app_windows().end());
+}
 
 MultiProfileAppWindowLauncherController::
     ~MultiProfileAppWindowLauncherController() {
@@ -61,6 +69,7 @@ void MultiProfileAppWindowLauncherController::AdditionalUserAddedToSession(
   // Each users AppWindowRegistry needs to be observed.
   extensions::AppWindowRegistry* registry =
       extensions::AppWindowRegistry::Get(profile);
+  DCHECK(registry->app_windows().empty());
   multi_user_registry_.push_back(registry);
   registry->AddObserver(this);
 }
