@@ -138,7 +138,6 @@ template("google_apis_tmpl") {
       "//base",
       "//base/third_party/dynamic_annotations",
       "//crypto",
-      "//third_party/libxml",
     ]
 
     if (defined(invoker.deps)) {

@@ -49,7 +49,6 @@ component("chromeos") {
     "//net",
     "//skia",  # For components/user_manager
     "//third_party/icu",
-    "//third_party/libxml",
     "//third_party/protobuf:protobuf_lite",
     "//url",
   ]

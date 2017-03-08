@@ -526,7 +526,6 @@
         '../google_apis/google_apis.gyp:google_apis',
         '../net/net.gyp:net',
         '../third_party/icu/icu.gyp:icui18n',
-        '../third_party/libxml/libxml.gyp:libxml',
         '../third_party/protobuf/protobuf.gyp:protobuf_lite',
         '../url/url.gyp:url_lib',
         'attestation_proto',
