@@ -61,22 +61,22 @@ TEST(av1_inv_txfm1d, round_trip) {
       TxfmFunc inv_txfm_func = inv_txfm_func_ls[si][ti];
       int max_error = 2;
 
-      if (fwd_txfm_func != NULL) {
-        const int count_test_block = 5000;
-        for (int ci = 0; ci < count_test_block; ++ci) {
-          for (int ni = 0; ni < txfm_size; ++ni) {
-            input[ni] = rnd.Rand16() % input_base - rnd.Rand16() % input_base;
-          }
+      if (!fwd_txfm_func) continue;
 
-          fwd_txfm_func(input, output, cos_bit, range_bit);
-          inv_txfm_func(output, round_trip_output, cos_bit, range_bit);
+      const int count_test_block = 5000;
+      for (int ci = 0; ci < count_test_block; ++ci) {
+        for (int ni = 0; ni < txfm_size; ++ni) {
+          input[ni] = rnd.Rand16() % input_base - rnd.Rand16() % input_base;
+        }
 
-          for (int ni = 0; ni < txfm_size; ++ni) {
-            int node_err =
-                abs(input[ni] - round_shift(round_trip_output[ni],
-                                            get_max_bit(txfm_size) - 1));
-            EXPECT_LE(node_err, max_error);
-          }
+        fwd_txfm_func(input, output, cos_bit, range_bit);
+        inv_txfm_func(output, round_trip_output, cos_bit, range_bit);
+
+        for (int ni = 0; ni < txfm_size; ++ni) {
+          int node_err =
+              abs(input[ni] - round_shift(round_trip_output[ni],
+                                          get_max_bit(txfm_size) - 1));
+          EXPECT_LE(node_err, max_error);
         }
       }
     }
