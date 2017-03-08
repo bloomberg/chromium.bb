@@ -24,7 +24,9 @@
           align-items: flex-start;
           display: inline-flex;
           flex-direction: column;
+          opacity: 0;
           padding: 4em 1.5em 1.5em 1.5em;
+          transition: opacity 300ms;
         }
 
         a {
@@ -34,6 +36,7 @@
 
         ol {
           margin: 0;
+          overflow: auto;
           padding: 0;
         }
 
@@ -56,11 +59,11 @@
           margin-bottom: 2em;
         }
 
-        .section.expandable {
+        .section.expandable:first-child {
           border-top: 1px solid var(--google-grey-300);
         }
 
-        .section.expandable:last-child {
+        .section.expandable {
           border-bottom: 1px solid var(--google-grey-300);
         }
 
@@ -114,6 +117,7 @@
         }
 
         .section.expandable .section-steps {
+          height: 26.375em;
           max-height: 0;
           opacity: 0;
           transition: max-height 300ms cubic-bezier(.4, .2, 0, 1) 50ms,
@@ -122,7 +126,7 @@
         }
 
         .section.expandable.expanded .section-steps {
-          max-height: 28.75em;
+          max-height: 26.375em;
           opacity: 1;
           transition: max-height 300ms cubic-bezier(.4, .2, 0, 1) 50ms,
                       opacity 150ms 250ms;
@@ -198,6 +202,11 @@
           box-sizing: border-box;
           line-height: 0;
           position: absolute;
+          user-select: none;
+        }
+
+        .screenshot-overlay div {
+          cursor: default;
         }
 
         #browser-overlay {

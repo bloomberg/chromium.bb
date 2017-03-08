@@ -11,36 +11,31 @@ Polymer({
     isCombined: Boolean
   },
 
-  receivePinnedState: function(isPinnedToTaskbar) {
-    this.isCombined = !isPinnedToTaskbar;
+  receivePinnedState_: function(isPinnedToTaskbar) {
     // Allow overriding of the result via a query parameter.
     // TODO(pmonette): Remove these checks when they are no longer needed.
     /** @const */
     var VARIANT_KEY = 'variant';
-    var VariantType = {
-      DEFAULT_ONLY: 'defaultonly',
-      COMBINED: 'combined'
-    };
+    var VariantTypeMap = { 'defaultonly': false, 'combined': true };
     var params = new URLSearchParams(location.search.slice(1));
-    if (params.has(VARIANT_KEY)) {
-      if (params.get(VARIANT_KEY) === VariantType.DEFAULT_ONLY)
-        this.isCombined = false;
-      else if (params.get(VARIANT_KEY) === VariantType.COMBINED)
-        this.isCombined = true;
-    }
+    if (params.has(VARIANT_KEY) && params.get(VARIANT_KEY) in VariantTypeMap)
+      this.isCombined = VariantTypeMap[params.get(VARIANT_KEY)];
+    else
+      this.isCombined = !isPinnedToTaskbar;
+
+    // Show the module.
+    this.style.opacity = 1;
   },
 
   ready: function() {
     this.isCombined = false;
     // Asynchronously check if Chrome is pinned to the taskbar.
     cr.sendWithPromise('getPinnedToTaskbarState').then(
-      this.receivePinnedState.bind(this));
+      this.receivePinnedState_.bind(this));
   },
 
   computeClasses: function(isCombined) {
-    if (isCombined)
-      return 'section expandable expanded';
-    return 'section';
+    return isCombined ? 'section expandable expanded' : 'section';
   },
 
   onContinue: function() {
