@@ -115,9 +115,22 @@
         position: absolute;
       }
 
-      #source-indicator iron-icon {
+      .source-icon-wrapper {
+        align-items: center;
+        background: rgb(241, 89, 43);
+        border-radius: 100px;  /* excessive border radius == a circle */
+        box-shadow: 0 1px 1px 0 rgba(0, 0, 0, 0.22),
+                    0 2px 2px 0 rgba(0, 0, 0, 0.12);
+        display: flex;
         height: 22px;
+        justify-content: center;
         width: 22px;
+      }
+
+      #source-indicator iron-icon {
+        color: white;
+        height: 16px;
+        width: 16px;
       }
 
       #source-indicator-text {
@@ -169,8 +182,10 @@
         <template is="dom-if"
             if="[[computeSourceIndicatorIcon_(data.*)]]">
           <div id="source-indicator">
-            <iron-icon icon="[[computeSourceIndicatorIcon_(data.*)]]">
-            </iron-icon>
+            <div class="source-icon-wrapper">
+              <iron-icon icon="[[computeSourceIndicatorIcon_(data.*)]]">
+              </iron-icon>
+            </div>
             <div id="source-indicator-text">
               [[computeSourceIndicatorText_(data.*)]]
             </div>
