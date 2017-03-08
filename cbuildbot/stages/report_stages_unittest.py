@@ -174,6 +174,20 @@ class BuildStartStageTest(generic_stages_unittest.AbstractStageTestCase):
     self.assertEqual(self._run.attrs.metadata.GetValue('db_type'),
                      cidb.CONNECTION_TYPE_MOCK)
 
+  def testSuiteSchedulingEqualsFalse(self):
+    """Test that a run of the stage makes suite_scheduling False."""
+    # Test suite_scheduling for **-paladin
+    self._Prepare(bot_id='x86-generic-paladin')
+    self.RunStage()
+    self.assertFalse(self._run.attrs.metadata.GetValue('suite_scheduling'))
+
+  def testSuiteSchedulingEqualsTrue(self):
+    """Test that a run of the stage makes suite_scheduling True."""
+    # Test suite_scheduling for **-release
+    self._Prepare(bot_id='x86-alex-release')
+    self.RunStage()
+    self.assertTrue(self._run.attrs.metadata.GetValue('suite_scheduling'))
+
   def testHandleSkipWithInstanceChange(self):
     """Test that HandleSkip disables cidb and dies when necessary."""
     # This test verifies that switching to a 'mock' database type once

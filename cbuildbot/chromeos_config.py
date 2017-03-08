@@ -1374,6 +1374,7 @@ def GeneralTemplates(site_config, ge_build_config):
       site_config.templates.internal,
       site_config.templates.default_hw_tests_override,
       build_type=constants.CANARY_TYPE,
+      suite_scheduling=True,
       build_timeout=12 * 60 * 60 if is_release_branch else (7 * 60 + 50) * 60,
       useflags=append_useflags(['-cros-debug']),
       afdo_use=True,
@@ -1416,6 +1417,7 @@ def GeneralTemplates(site_config, ge_build_config):
   site_config.AddTemplate(
       'release_afdo',
       site_config.templates.release,
+      suite_scheduling=False,
       trybot_list=False,
       hw_tests=(
           hw_test_list.DefaultList(pool=constants.HWTEST_SUITES_POOL, num=4) +

@@ -94,6 +94,7 @@
         "sign_types": null,
         "signer_tests": false,
         "slave_configs": null,
+        "suite_scheduling": false,
         "sync_chrome": null,
         "trybot_list": false,
         "unittest_blacklist": [],
@@ -424,6 +425,7 @@
             "sign_types": [
                 "firmware"
             ],
+            "suite_scheduling": true,
             "sync_chrome": false,
             "unittests": false,
             "useflags": [
@@ -494,6 +496,7 @@
             "sign_types": [
                 "factory"
             ],
+            "suite_scheduling": true,
             "trybot_list": true,
             "upload_hw_test_artifacts": false,
             "useflags": [
@@ -535,6 +538,7 @@
             "sign_types": [
                 "firmware"
             ],
+            "suite_scheduling": true,
             "sync_chrome": false,
             "unittests": false,
             "useflags": [
@@ -904,6 +908,7 @@
                 "recovery"
             ],
             "signer_tests": true,
+            "suite_scheduling": true,
             "trybot_list": true,
             "upload_symbols": true,
             "useflags": [

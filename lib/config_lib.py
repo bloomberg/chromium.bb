@@ -738,6 +738,10 @@ def DefaultSettings():
       # Type of builder.  Check constants.VALID_BUILD_TYPES.
       build_type=constants.PFQ_TYPE,
 
+      # Whether to schedule test suites by suite_scheduler. Generally only
+      # True for "release" builders.
+      suite_scheduling=False,
+
       # The class name used to build this config.  See the modules in
       # cbuildbot / builders/*_builders.py for possible values.  This should
       # be the name in string form -- e.g. "simple_builders.SimpleBuilder" to

@@ -79,6 +79,7 @@ def WriteBasicMetadata(builder_run):
           'start': start_time_stamp,
       },
       'master_build_id': builder_run.options.master_build_id,
+      'suite_scheduling': builder_run.config['suite_scheduling'],
   }
 
   builder_run.attrs.metadata.UpdateWithDict(metadata)

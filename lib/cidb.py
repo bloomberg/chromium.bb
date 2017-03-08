@@ -819,7 +819,7 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
               'board': board}
     return self._Insert('buildMessageTable', values)
 
-  @minimum_schema(55)
+  @minimum_schema(56)
   def UpdateMetadata(self, build_id, metadata):
     """Update the given metadata row in database.
 
@@ -841,7 +841,8 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
                          'toolchain_url': d.get('toolchain-url'),
                          'build_type': d.get('build_type'),
                          'important': d.get('important'),
-                         'unibuild': d.get('unibuild', False)})
+                         'unibuild': d.get('unibuild', False),
+                         'suite_scheduling': d.get('suite_scheduling', False)})
 
   @minimum_schema(2)
   def GetMetadata(self, build_id):
