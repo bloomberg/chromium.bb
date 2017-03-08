@@ -28,7 +28,6 @@ grit("theme_resources") {
 grit("chrome_unscaled_resources") {
   source = "chrome_unscaled_resources.grd"
   defines = chrome_grit_defines
-  use_qualified_include = true
   outputs = [
     "grit/chrome_unscaled_resources.h",
     "chrome_unscaled_resources.pak",

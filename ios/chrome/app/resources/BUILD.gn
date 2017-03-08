@@ -23,7 +23,6 @@ group("resources") {
 grit("ios_resources") {
   source = "ios_resources.grd"
   output_dir = "$root_gen_dir/ios/chrome"
-  use_qualified_include = true
   outputs = [
     "grit/ios_resources.h",
     "ios_resources.pak",

@@ -92,7 +92,6 @@ source_set("unittests") {
 
 grit("resources") {
   source = "//chromecast/app/resources/shell_resources.grd"
-  use_qualified_include = true
 
   resource_ids = "//chromecast/app/resources/resource_ids"
 

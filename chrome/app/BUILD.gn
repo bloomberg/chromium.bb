@@ -103,7 +103,6 @@ if (is_android) {
 
 grit("generated_resources") {
   source = "generated_resources.grd"
-  use_qualified_include = true
   defines = chrome_grit_defines
   output_dir = "$root_gen_dir/chrome"
   outputs = [
@@ -182,7 +181,6 @@ if (is_android) {
 
 grit("google_chrome_strings") {
   source = "google_chrome_strings.grd"
-  use_qualified_include = true
   defines = chrome_grit_defines
   output_dir = "$root_gen_dir/chrome"
   outputs = [
@@ -246,7 +244,6 @@ grit("google_chrome_strings") {
 
 grit("chromium_strings") {
   source = "chromium_strings.grd"
-  use_qualified_include = true
   defines = chrome_grit_defines
   output_dir = "$root_gen_dir/chrome"
   outputs = [

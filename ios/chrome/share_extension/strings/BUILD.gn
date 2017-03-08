@@ -8,7 +8,6 @@ import("//tools/grit/grit_rule.gni")
 grit("strings") {
   source = "ios_share_extension_strings.grd"
   output_dir = "$root_gen_dir/ios/share_extension"
-  use_qualified_include = true
   outputs = [
     "grit/ios_share_extension_strings.h",
   ]

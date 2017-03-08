@@ -28,7 +28,6 @@ repack("packed_resources") {
 
 grit("resources") {
   source = "test_resources.grd"
-  use_qualified_include = true
   inputs = [
     "${root_gen_dir}/ios/web/test/mojo_test.mojom.js",
   ]

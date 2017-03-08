@@ -18,7 +18,6 @@ if (enable_pdf) {
 
 grit("resources") {
   source = "common_resources.grd"
-  use_qualified_include = true
   defines = chrome_grit_defines
   output_dir = "$root_gen_dir/chrome"
   output_name = "common_resources"

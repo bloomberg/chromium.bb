@@ -384,7 +384,6 @@ grit("content_shell_resources_grit") {
   # External code should depend on ":resources" instead.
   visibility = [ ":*" ]
   source = "shell_resources.grd"
-  use_qualified_include = true
   outputs = [
     "grit/shell_resources.h",
     "shell_resources.pak",

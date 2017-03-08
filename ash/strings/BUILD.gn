@@ -9,7 +9,6 @@ assert(is_chromeos)
 
 grit("strings") {
   source = "../ash_strings.grd"
-  use_qualified_include = true
   outputs = [
     "grit/ash_strings.h",
     "ash_strings_am.pak",

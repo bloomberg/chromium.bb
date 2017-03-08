@@ -218,7 +218,6 @@ grit("generate_webui_resources") {
 
 grit("generate_components_resources") {
   source = "../components/resources/components_resources.grd"
-  use_qualified_include = true
 
   # See :generate_webui_resources for an explanation of the whitelist
   whitelist = rebase_path("ui/grit_resources_whitelist.txt")
@@ -237,7 +236,6 @@ grit("generate_components_resources") {
 
 grit("generate_components_strings") {
   source = "../components/components_strings.grd"
-  use_qualified_include = true
 
   # components_strings contains strings from all components. WebView
   # will never display most of them, so we try to limit the included

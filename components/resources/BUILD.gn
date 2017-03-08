@@ -18,7 +18,6 @@ group("resources") {
 
 grit("components_resources") {
   source = "components_resources.grd"
-  use_qualified_include = true
 
   # TODO(hashimoto): Remove this line.
   output_name = "components_resources_new"
@@ -41,9 +40,6 @@ grit("components_resources") {
 
 grit("components_scaled_resources") {
   source = "components_scaled_resources.grd"
-
-  # TODO(thakis): Enable this, https://crbug.com/401588
-  #use_qualified_include = true
 
   # TODO(hashimoto): Remove this line.
   output_name = "components_scaled_resources_new"

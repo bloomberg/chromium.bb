@@ -67,7 +67,6 @@ group("strings") {
 
 grit("components_strings") {
   source = "../components_strings.grd"
-  use_qualified_include = true
   defines = [ "enable_plugins=$enable_plugins" ]
 
   outputs = [
@@ -95,7 +94,6 @@ if (is_android) {
 
 grit("components_chromium_strings") {
   source = "../components_chromium_strings.grd"
-  use_qualified_include = true
   outputs = [
     "grit/components_chromium_strings.h",
   ]
@@ -106,7 +104,6 @@ grit("components_chromium_strings") {
 
 grit("components_google_chrome_strings") {
   source = "../components_google_chrome_strings.grd"
-  use_qualified_include = true
   outputs = [
     "grit/components_google_chrome_strings.h",
   ]
@@ -166,7 +163,6 @@ if (is_android) {
 
 grit("components_locale_settings") {
   source = "../components_locale_settings.grd"
-  use_qualified_include = true
   outputs = [
     "grit/components_locale_settings.h",
   ]

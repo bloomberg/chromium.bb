@@ -5,7 +5,6 @@
 import("//tools/grit/grit_rule.gni")
 
 grit("strings") {
-  use_qualified_include = true
   source = "content_strings.grd"
   outputs = [
     "grit/content_strings.h",

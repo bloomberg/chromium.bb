@@ -6,7 +6,6 @@ import("//tools/grit/grit_rule.gni")
 
 grit("strings") {
   source = "../bluetooth_strings.grd"
-  use_qualified_include = true
   outputs = [
     "grit/bluetooth_strings.h",
     "bluetooth_strings_am.pak",

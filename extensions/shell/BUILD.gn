@@ -13,7 +13,6 @@ assert(enable_extensions)
 
 grit("resources") {
   source = "app_shell_resources.grd"
-  use_qualified_include = true
   outputs = [
     "grit/app_shell_resources.h",
     "app_shell_resources.pak",

@@ -13,7 +13,6 @@ import("//tools/grit/grit_rule.gni")
 grit("resources") {
   source = "resources/renderer_resources.grd"
   defines = chrome_grit_defines
-  use_qualified_include = true
   output_dir = "$root_gen_dir/chrome"
   output_name = "renderer_resources"
   outputs = [

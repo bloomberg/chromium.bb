@@ -208,7 +208,6 @@ grit("resources") {
     "//chromecast:cast_shell_pak",
   ]
   source = "cast_browser_resources.grd"
-  use_qualified_include = true
   output_dir = "$root_gen_dir/chromecast/browser"
   outputs = [
     "grit/cast_browser_resources.h",

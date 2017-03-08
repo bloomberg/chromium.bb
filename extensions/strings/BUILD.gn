@@ -9,7 +9,6 @@ assert(enable_extensions)
 
 grit("strings") {
   source = "extensions_strings.grd"
-  use_qualified_include = true
   outputs = [
     "grit/extensions_strings.h",
     "extensions_strings_am.pak",

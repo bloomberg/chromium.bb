@@ -28,8 +28,6 @@ polymer_css_build("build") {
 
 grit("flattened_resources") {
   source = "settings_resources.grd"
-
-  # TODO(thestig): use_qualified_include = true
   defines = chrome_grit_defines
   outputs = [
     "grit/settings_resources.h",

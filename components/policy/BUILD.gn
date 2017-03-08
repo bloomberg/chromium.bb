@@ -146,7 +146,6 @@ policy_templates_grd_file = "resources/policy_templates.grd"
 
 grit("grit_policy_templates") {
   source = policy_templates_grd_file
-  use_qualified_include = true
   output_dir = "$root_gen_dir/chrome"
   outputs = []
   defines = []

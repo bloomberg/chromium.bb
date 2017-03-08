@@ -613,7 +613,6 @@ group("blink_generate_devtools_grd") {
 
 grit("resources") {
   output_dir = "$root_gen_dir/blink/public/resources"
-  use_qualified_include = true
   source = "blink_resources.grd"
   outputs = [
     "grit/blink_resources.h",
@@ -637,7 +636,6 @@ grit("resources") {
 
 grit("image_resources") {
   output_dir = "$root_gen_dir/blink/public/resources"
-  use_qualified_include = true
   source = "blink_image_resources.grd"
   outputs = [
     "grit/blink_image_resources.h",

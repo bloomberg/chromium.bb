@@ -666,7 +666,6 @@ js_compile_checked("js_resources") {
 
 grit("resources") {
   source = "ios_web_resources.grd"
-  use_qualified_include = true
   outputs = [
     "grit/ios_web_resources.h",
     "ios_web_resources.pak",

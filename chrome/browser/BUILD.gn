@@ -4168,7 +4168,6 @@ proto_library("resource_prefetch_predictor_proto") {
 
 grit("resources") {
   source = "browser_resources.grd"
-  use_qualified_include = true
 
   defines = chrome_grit_defines
   if (enable_hangout_services_extension) {

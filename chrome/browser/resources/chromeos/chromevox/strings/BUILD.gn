@@ -10,7 +10,6 @@ chromevox_out_dir = "$root_out_dir/resources/chromeos/chromevox"
 grit("chromevox_strings") {
   source = "chromevox_strings.grd"
   defines = chrome_grit_defines
-  use_qualified_include = true
   outputs = [
     "_locales/am/messages.json",
     "_locales/ar/messages.json",
