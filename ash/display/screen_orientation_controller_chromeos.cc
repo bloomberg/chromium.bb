@@ -19,6 +19,7 @@
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/manager/managed_display_info.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/wm/public/activation_client.h"
 
 namespace ash {
 
@@ -74,7 +75,7 @@ ScreenOrientationController::~ScreenOrientationController() {
   WmShell::Get()->RemoveShellObserver(this);
   chromeos::AccelerometerReader::GetInstance()->RemoveObserver(this);
   WmShell::Get()->RemoveDisplayObserver(this);
-  WmShell::Get()->RemoveActivationObserver(this);
+  Shell::GetInstance()->activation_client()->RemoveObserver(this);
   for (auto& windows : locking_windows_)
     windows.first->aura_window()->RemoveObserver(this);
 }
@@ -91,7 +92,7 @@ void ScreenOrientationController::LockOrientationForWindow(
     WmWindow* requesting_window,
     blink::WebScreenOrientationLockType lock_orientation) {
   if (locking_windows_.empty())
-    WmShell::Get()->AddActivationObserver(this);
+    Shell::GetInstance()->activation_client()->AddObserver(this);
 
   if (!requesting_window->aura_window()->HasObserver(this))
     requesting_window->aura_window()->AddObserver(this);
@@ -103,7 +104,7 @@ void ScreenOrientationController::LockOrientationForWindow(
 void ScreenOrientationController::UnlockOrientationForWindow(WmWindow* window) {
   locking_windows_.erase(window);
   if (locking_windows_.empty())
-    WmShell::Get()->RemoveActivationObserver(this);
+    Shell::GetInstance()->activation_client()->RemoveObserver(this);
   window->aura_window()->RemoveObserver(this);
   ApplyLockForActiveWindow();
 }
@@ -112,7 +113,7 @@ void ScreenOrientationController::UnlockAll() {
   for (auto pair : locking_windows_)
     pair.first->aura_window()->RemoveObserver(this);
   locking_windows_.clear();
-  WmShell::Get()->RemoveActivationObserver(this);
+  Shell::GetInstance()->activation_client()->RemoveObserver(this);
   SetRotationLocked(false);
   if (user_rotation_ != current_rotation_)
     SetDisplayRotation(user_rotation_, display::Display::ROTATION_SOURCE_USER);
@@ -155,8 +156,9 @@ void ScreenOrientationController::SetDisplayRotation(
       display::Display::InternalDisplayId(), rotation, source);
 }
 
-void ScreenOrientationController::OnWindowActivated(WmWindow* gained_active,
-                                                    WmWindow* lost_active) {
+void ScreenOrientationController::OnWindowActivated(ActivationReason reason,
+                                                    aura::Window* gained_active,
+                                                    aura::Window* lost_active) {
   ApplyLockForActiveWindow();
 }
 

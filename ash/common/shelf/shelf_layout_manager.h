@@ -15,7 +15,6 @@
 #include "ash/common/wm/lock_state_observer.h"
 #include "ash/common/wm/wm_snap_to_pixel_layout_manager.h"
 #include "ash/common/wm/workspace/workspace_types.h"
-#include "ash/common/wm_activation_observer.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
@@ -23,6 +22,7 @@
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/keyboard/keyboard_controller_observer.h"
+#include "ui/wm/public/activation_change_observer.h"
 
 namespace ui {
 class ImplicitAnimationObserver;
@@ -47,7 +47,7 @@ class WmShelf;
 // On mus, widget bounds management is handled by the window manager.
 class ASH_EXPORT ShelfLayoutManager
     : public ShellObserver,
-      public WmActivationObserver,
+      public aura::client::ActivationChangeObserver,
       public DockedWindowLayoutManagerObserver,
       public keyboard::KeyboardControllerObserver,
       public LockStateObserver,
@@ -136,9 +136,10 @@ class ASH_EXPORT ShelfLayoutManager
   void OnShelfAutoHideBehaviorChanged(WmWindow* root_window) override;
   void OnPinnedStateChanged(WmWindow* pinned_window) override;
 
-  // Overridden from WmActivationObserver:
-  void OnWindowActivated(WmWindow* gained_active,
-                         WmWindow* lost_active) override;
+  // Overridden from aura::client::ActivationChangeObserver:
+  void OnWindowActivated(ActivationReason reason,
+                         aura::Window* gained_active,
+                         aura::Window* lost_active) override;
 
   // Overridden from keyboard::KeyboardControllerObserver:
   void OnKeyboardBoundsChanging(const gfx::Rect& new_bounds) override;

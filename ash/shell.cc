@@ -680,6 +680,8 @@ void Shell::Init(const ShellInitParams& init_params) {
       new ::wm::FocusController(focus_rules);
   focus_client_.reset(focus_controller);
   activation_client_ = focus_controller;
+  // TODO(sky): Shell should implement ActivationChangeObserver, not WmShell.
+  activation_client_->AddObserver(wm_shell_.get());
 
   screen_position_controller_.reset(new ScreenPositionController);
 

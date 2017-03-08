@@ -19,6 +19,7 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/root_window_controller.h"
+#include "ash/shell.h"
 #include "ash/wm/window_properties.h"
 #include "base/auto_reset.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -29,6 +30,7 @@
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/views/background.h"
 #include "ui/views/widget/widget.h"
+#include "ui/wm/public/activation_client.h"
 
 namespace ash {
 namespace {
@@ -249,7 +251,7 @@ PanelLayoutManager::PanelLayoutManager(WmWindow* panel_container)
       weak_factory_(this) {
   DCHECK(panel_container);
   WmShell* shell = panel_container->GetShell();
-  shell->AddActivationObserver(this);
+  Shell::GetInstance()->activation_client()->AddObserver(this);
   shell->AddDisplayObserver(this);
   shell->AddShellObserver(this);
 }
@@ -280,7 +282,7 @@ void PanelLayoutManager::Shutdown() {
   }
   panel_windows_.clear();
   WmShell* shell = panel_container_->GetShell();
-  shell->RemoveActivationObserver(this);
+  Shell::GetInstance()->activation_client()->RemoveObserver(this);
   shell->RemoveDisplayObserver(this);
   shell->RemoveShellObserver(this);
 }
@@ -488,14 +490,17 @@ void PanelLayoutManager::OnPostWindowStateTypeChange(
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// PanelLayoutManager, WmActivationObserver implementation:
+// PanelLayoutManager, aura::client::ActivationChangeObserver implementation:
 
-void PanelLayoutManager::OnWindowActivated(WmWindow* gained_active,
-                                           WmWindow* lost_active) {
+void PanelLayoutManager::OnWindowActivated(ActivationReason reason,
+                                           aura::Window* gained_active,
+                                           aura::Window* lost_active) {
+  WmWindow* wm_gained_active = WmWindow::Get(gained_active);
   // Ignore if the panel that is not managed by this was activated.
-  if (gained_active && gained_active->GetType() == ui::wm::WINDOW_TYPE_PANEL &&
-      gained_active->GetParent() == panel_container_) {
-    UpdateStacking(gained_active);
+  if (wm_gained_active &&
+      wm_gained_active->GetType() == ui::wm::WINDOW_TYPE_PANEL &&
+      wm_gained_active->GetParent() == panel_container_) {
+    UpdateStacking(wm_gained_active);
     UpdateCallouts();
   }
 }

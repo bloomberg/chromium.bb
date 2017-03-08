@@ -24,6 +24,7 @@
 #include "ash/common/wm_window.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
+#include "ash/shell.h"
 #include "base/auto_reset.h"
 #include "base/command_line.h"
 #include "base/i18n/rtl.h"
@@ -40,6 +41,7 @@
 #include "ui/keyboard/keyboard_util.h"
 #include "ui/views/border.h"
 #include "ui/views/widget/widget.h"
+#include "ui/wm/public/activation_client.h"
 
 namespace ash {
 namespace {
@@ -156,7 +158,7 @@ ShelfLayoutManager::ShelfLayoutManager(ShelfWidget* shelf_widget,
   DCHECK(wm_shelf_);
   WmShell::Get()->AddShellObserver(this);
   WmShell::Get()->AddLockStateObserver(this);
-  WmShell::Get()->AddActivationObserver(this);
+  Shell::GetInstance()->activation_client()->AddObserver(this);
   WmShell::Get()->session_controller()->AddSessionStateObserver(this);
   state_.session_state =
       WmShell::Get()->session_controller()->GetSessionState();
@@ -176,7 +178,7 @@ ShelfLayoutManager::~ShelfLayoutManager() {
 void ShelfLayoutManager::PrepareForShutdown() {
   in_shutdown_ = true;
   // Stop observing changes to avoid updating a partially destructed shelf.
-  WmShell::Get()->RemoveActivationObserver(this);
+  Shell::GetInstance()->activation_client()->RemoveObserver(this);
 }
 
 bool ShelfLayoutManager::IsVisible() const {
@@ -403,8 +405,9 @@ void ShelfLayoutManager::OnPinnedStateChanged(WmWindow* pinned_window) {
   UpdateVisibilityState();
 }
 
-void ShelfLayoutManager::OnWindowActivated(WmWindow* gained_active,
-                                           WmWindow* lost_active) {
+void ShelfLayoutManager::OnWindowActivated(ActivationReason reason,
+                                           aura::Window* gained_active,
+                                           aura::Window* lost_active) {
   UpdateAutoHideStateNow();
 }
 

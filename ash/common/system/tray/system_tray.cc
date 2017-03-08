@@ -45,11 +45,11 @@
 #include "ash/common/system/user/tray_user.h"
 #include "ash/common/system/web_notification/web_notification_tray.h"
 #include "ash/common/wm/container_finder.h"
-#include "ash/common/wm_activation_observer.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
+#include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
@@ -69,6 +69,8 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
+#include "ui/wm/public/activation_change_observer.h"
+#include "ui/wm/public/activation_client.h"
 
 using views::TrayBubbleView;
 
@@ -158,37 +160,38 @@ class SystemBubbleWrapper {
 
 // An activation observer to close the bubble if the window other
 // than system bubble nor popup notification is activated.
-class SystemTray::ActivationObserver : public WmActivationObserver {
+class SystemTray::ActivationObserver
+    : public aura::client::ActivationChangeObserver {
  public:
   explicit ActivationObserver(SystemTray* tray) : tray_(tray) {
     DCHECK(tray_);
-    WmShell::Get()->AddActivationObserver(this);
+    Shell::GetInstance()->activation_client()->AddObserver(this);
   }
 
   ~ActivationObserver() override {
-    WmShell::Get()->RemoveActivationObserver(this);
+    Shell::GetInstance()->activation_client()->RemoveObserver(this);
   }
 
   // WmActivationObserver:
-  void OnWindowActivated(WmWindow* gained_active,
-                         WmWindow* lost_active) override {
+  void OnWindowActivated(ActivationReason reason,
+                         aura::Window* gained_active,
+                         aura::Window* lost_active) override {
+    WmWindow* wm_gained_active = WmWindow::Get(gained_active);
     if (!tray_->HasSystemBubble() || !gained_active)
       return;
 
     int container_id =
-        wm::GetContainerForWindow(gained_active)->GetShellWindowId();
+        wm::GetContainerForWindow(wm_gained_active)->GetShellWindowId();
 
     // Don't close the bubble if a popup notification is activated.
     if (container_id == kShellWindowId_StatusContainer)
       return;
 
     if (tray_->GetSystemBubble()->bubble_view()->GetWidget() !=
-        gained_active->GetInternalWidget()) {
+        wm_gained_active->GetInternalWidget()) {
       tray_->CloseSystemBubble();
     }
   }
-  void OnAttemptToReactivateWindow(WmWindow* request_active,
-                                   WmWindow* actual_active) override {}
 
  private:
   SystemTray* tray_;

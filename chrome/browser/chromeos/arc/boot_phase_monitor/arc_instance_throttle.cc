@@ -7,10 +7,12 @@
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/shared/app_types.h"
+#include "ash/shell.h"
 #include "base/bind.h"
 #include "base/logging.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager_client.h"
+#include "ui/wm/public/activation_client.h"
 
 namespace arc {
 
@@ -50,21 +52,19 @@ void ThrottleInstanceIfNeeded(ash::WmWindow* active) {
 }  // namespace
 
 ArcInstanceThrottle::ArcInstanceThrottle() {
-  ash::WmShell* shell = ash::WmShell::Get();
-  DCHECK(shell);
-  shell->AddActivationObserver(this);
-  ThrottleInstanceIfNeeded(shell->GetActiveWindow());
+  ash::Shell::GetInstance()->activation_client()->AddObserver(this);
+  ThrottleInstanceIfNeeded(ash::WmShell::Get()->GetActiveWindow());
 }
 
 ArcInstanceThrottle::~ArcInstanceThrottle() {
-  ash::WmShell* shell = ash::WmShell::Get();
-  if (shell)
-    shell->RemoveActivationObserver(this);
+  if (ash::Shell::HasInstance())
+    ash::Shell::GetInstance()->activation_client()->RemoveObserver(this);
 }
 
-void ArcInstanceThrottle::OnWindowActivated(ash::WmWindow* gained_active,
-                                            ash::WmWindow* lost_active) {
-  ThrottleInstanceIfNeeded(gained_active);
+void ArcInstanceThrottle::OnWindowActivated(ActivationReason reason,
+                                            aura::Window* gained_active,
+                                            aura::Window* lost_active) {
+  ThrottleInstanceIfNeeded(ash::WmWindow::Get(gained_active));
 }
 
 }  // namespace arc

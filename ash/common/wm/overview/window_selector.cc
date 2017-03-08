@@ -26,6 +26,7 @@
 #include "ash/common/wm_window.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
+#include "ash/shell.h"
 #include "base/auto_reset.h"
 #include "base/command_line.h"
 #include "base/metrics/histogram_macros.h"
@@ -42,6 +43,7 @@
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/layout/box_layout.h"
+#include "ui/wm/public/activation_client.h"
 
 namespace ash {
 
@@ -304,7 +306,7 @@ void WindowSelector::Init(const WindowList& windows) {
   DCHECK(!grid_list_.empty());
   UMA_HISTOGRAM_COUNTS_100("Ash.WindowSelector.Items", num_items_);
 
-  shell->AddActivationObserver(this);
+  Shell::GetInstance()->activation_client()->AddObserver(this);
 
   display::Screen::GetScreen()->AddObserver(this);
   shell->RecordUserMetricsAction(UMA_WINDOW_OVERVIEW);
@@ -373,7 +375,7 @@ void WindowSelector::RemoveAllObservers() {
   for (WmWindow* window : observed_windows_)
     window->aura_window()->RemoveObserver(this);
 
-  WmShell::Get()->RemoveActivationObserver(this);
+  Shell::GetInstance()->activation_client()->RemoveObserver(this);
   display::Screen::GetScreen()->RemoveObserver(this);
   if (restore_focus_window_)
     restore_focus_window_->aura_window()->RemoveObserver(this);
@@ -544,14 +546,16 @@ void WindowSelector::OnWindowDestroying(aura::Window* window) {
     restore_focus_window_ = nullptr;
 }
 
-void WindowSelector::OnWindowActivated(WmWindow* gained_active,
-                                       WmWindow* lost_active) {
-  if (ignore_activations_ || !gained_active ||
-      gained_active == GetTextFilterWidgetWindow()) {
+void WindowSelector::OnWindowActivated(ActivationReason reason,
+                                       aura::Window* gained_active,
+                                       aura::Window* lost_active) {
+  WmWindow* wm_gained_active = WmWindow::Get(gained_active);
+  if (ignore_activations_ || !wm_gained_active ||
+      wm_gained_active == GetTextFilterWidgetWindow()) {
     return;
   }
 
-  WmWindow* root_window = gained_active->GetRootWindow();
+  WmWindow* root_window = wm_gained_active->GetRootWindow();
   auto grid =
       std::find_if(grid_list_.begin(), grid_list_.end(),
                    [root_window](const std::unique_ptr<WindowGrid>& grid) {
@@ -563,12 +567,12 @@ void WindowSelector::OnWindowActivated(WmWindow* gained_active,
 
   auto iter = std::find_if(
       windows.begin(), windows.end(),
-      [gained_active](const std::unique_ptr<WindowSelectorItem>& window) {
-        return window->Contains(gained_active);
+      [wm_gained_active](const std::unique_ptr<WindowSelectorItem>& window) {
+        return window->Contains(wm_gained_active);
       });
 
   if (iter == windows.end() && showing_text_filter_ &&
-      lost_active == GetTextFilterWidgetWindow()) {
+      WmWindow::Get(lost_active) == GetTextFilterWidgetWindow()) {
     return;
   }
 
@@ -577,9 +581,10 @@ void WindowSelector::OnWindowActivated(WmWindow* gained_active,
   CancelSelection();
 }
 
-void WindowSelector::OnAttemptToReactivateWindow(WmWindow* request_active,
-                                                 WmWindow* actual_active) {
-  OnWindowActivated(request_active, actual_active);
+void WindowSelector::OnAttemptToReactivateWindow(aura::Window* request_active,
+                                                 aura::Window* actual_active) {
+  OnWindowActivated(ActivationReason::ACTIVATION_CLIENT, request_active,
+                    actual_active);
 }
 
 void WindowSelector::ContentsChanged(views::Textfield* sender,

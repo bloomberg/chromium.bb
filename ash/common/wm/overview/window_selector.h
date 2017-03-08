@@ -13,13 +13,13 @@
 #include <vector>
 
 #include "ash/ash_export.h"
-#include "ash/common/wm_activation_observer.h"
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "ui/aura/window_observer.h"
 #include "ui/display/display_observer.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
+#include "ui/wm/public/activation_change_observer.h"
 
 namespace views {
 class Textfield;
@@ -31,12 +31,13 @@ class WindowSelectorDelegate;
 class WindowSelectorItem;
 class WindowSelectorTest;
 class WindowGrid;
+class WmWindow;
 
 // The WindowSelector shows a grid of all of your windows, allowing to select
 // one by clicking or tapping on it.
 class ASH_EXPORT WindowSelector : public display::DisplayObserver,
                                   public aura::WindowObserver,
-                                  public WmActivationObserver,
+                                  public aura::client::ActivationChangeObserver,
                                   public views::TextfieldController {
  public:
   // Returns true if the window can be selected in overview mode.
@@ -95,11 +96,12 @@ class ASH_EXPORT WindowSelector : public display::DisplayObserver,
   void OnWindowHierarchyChanged(const HierarchyChangeParams& params) override;
   void OnWindowDestroying(aura::Window* window) override;
 
-  // WmActivationObserver
-  void OnWindowActivated(WmWindow* gained_active,
-                         WmWindow* lost_active) override;
-  void OnAttemptToReactivateWindow(WmWindow* request_active,
-                                   WmWindow* actual_active) override;
+  // aura::client::ActivationChangeObserver:
+  void OnWindowActivated(ActivationReason reason,
+                         aura::Window* gained_active,
+                         aura::Window* lost_active) override;
+  void OnAttemptToReactivateWindow(aura::Window* request_active,
+                                   aura::Window* actual_active) override;
 
   // views::TextfieldController:
   void ContentsChanged(views::Textfield* sender,

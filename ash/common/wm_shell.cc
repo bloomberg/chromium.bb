@@ -46,7 +46,6 @@
 #include "ash/common/wm/root_window_finder.h"
 #include "ash/common/wm/system_modal_container_layout_manager.h"
 #include "ash/common/wm/window_cycle_controller.h"
-#include "ash/common/wm_activation_observer.h"
 #include "ash/common/wm_window.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
@@ -115,8 +114,7 @@ void WmShell::Initialize(const scoped_refptr<base::SequencedWorkerPool>& pool) {
 }
 
 void WmShell::Shutdown() {
-  if (added_activation_observer_)
-    Shell::GetInstance()->activation_client()->RemoveObserver(this);
+  Shell::GetInstance()->activation_client()->RemoveObserver(this);
 
   // These members access WmShell in their destructors.
   wallpaper_controller_.reset();
@@ -228,18 +226,6 @@ void WmShell::NotifyShelfAlignmentChanged(WmWindow* root_window) {
 void WmShell::NotifyShelfAutoHideBehaviorChanged(WmWindow* root_window) {
   for (auto& observer : shell_observers_)
     observer.OnShelfAutoHideBehaviorChanged(root_window);
-}
-
-void WmShell::AddActivationObserver(WmActivationObserver* observer) {
-  if (!added_activation_observer_) {
-    added_activation_observer_ = true;
-    Shell::GetInstance()->activation_client()->AddObserver(this);
-  }
-  activation_observers_.AddObserver(observer);
-}
-
-void WmShell::RemoveActivationObserver(WmActivationObserver* observer) {
-  activation_observers_.RemoveObserver(observer);
 }
 
 void WmShell::AddShellObserver(ShellObserver* observer) {
@@ -455,20 +441,10 @@ void WmShell::OnWindowActivated(
     aura::client::ActivationChangeObserver::ActivationReason reason,
     aura::Window* gained_active,
     aura::Window* lost_active) {
+  // TODO(sky): Shell should implement ActivationChangeObserver, not WmShell.
   WmWindow* gained_active_wm = WmWindow::Get(gained_active);
-  WmWindow* lost_active_wm = WmWindow::Get(lost_active);
   if (gained_active_wm)
     set_root_window_for_new_windows(gained_active_wm->GetRootWindow());
-  for (auto& observer : activation_observers_)
-    observer.OnWindowActivated(gained_active_wm, lost_active_wm);
-}
-
-void WmShell::OnAttemptToReactivateWindow(aura::Window* request_active,
-                                          aura::Window* actual_active) {
-  for (auto& observer : activation_observers_) {
-    observer.OnAttemptToReactivateWindow(WmWindow::Get(request_active),
-                                         WmWindow::Get(actual_active));
-  }
 }
 
 }  // namespace ash

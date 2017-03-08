@@ -19,6 +19,7 @@
 #include "ash/common/wm_window.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
+#include "ash/shell.h"
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_state_aura.h"
 #include "base/command_line.h"
@@ -29,6 +30,7 @@
 #include "ui/display/screen.h"
 #include "ui/keyboard/keyboard_controller.h"
 #include "ui/keyboard/keyboard_controller_observer.h"
+#include "ui/wm/public/activation_client.h"
 
 namespace ash {
 
@@ -40,7 +42,7 @@ WorkspaceLayoutManager::WorkspaceLayoutManager(WmWindow* window)
       work_area_in_parent_(wm::GetDisplayWorkAreaBoundsInParent(window_)),
       is_fullscreen_(wm::GetWindowForFullscreenMode(window) != nullptr) {
   shell_->AddShellObserver(this);
-  shell_->AddActivationObserver(this);
+  Shell::GetInstance()->activation_client()->AddObserver(this);
   root_window_->aura_window()->AddObserver(this);
   display::Screen::GetScreen()->AddObserver(this);
   DCHECK(window->aura_window()->GetProperty(kSnapChildrenToPixelBoundary));
@@ -55,7 +57,7 @@ WorkspaceLayoutManager::~WorkspaceLayoutManager() {
     window->aura_window()->RemoveObserver(this);
   }
   display::Screen::GetScreen()->RemoveObserver(this);
-  shell_->RemoveActivationObserver(this);
+  Shell::GetInstance()->activation_client()->RemoveObserver(this);
   shell_->RemoveShellObserver(this);
 }
 
@@ -243,12 +245,14 @@ void WorkspaceLayoutManager::OnWindowBoundsChanged(
 // WorkspaceLayoutManager,
 // aura::client::ActivationChangeObserver implementation:
 
-void WorkspaceLayoutManager::OnWindowActivated(WmWindow* gained_active,
-                                               WmWindow* lost_active) {
+void WorkspaceLayoutManager::OnWindowActivated(ActivationReason reason,
+                                               aura::Window* gained_active,
+                                               aura::Window* lost_active) {
+  WmWindow* wm_gained_active = WmWindow::Get(gained_active);
   wm::WindowState* window_state =
-      gained_active ? gained_active->GetWindowState() : nullptr;
+      wm_gained_active ? wm_gained_active->GetWindowState() : nullptr;
   if (window_state && window_state->IsMinimized() &&
-      !gained_active->IsVisible()) {
+      !wm_gained_active->IsVisible()) {
     window_state->Unminimize();
     DCHECK(!window_state->IsMinimized());
   }

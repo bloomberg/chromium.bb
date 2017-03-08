@@ -12,13 +12,13 @@
 #include "ash/common/shell_observer.h"
 #include "ash/common/wm/window_state_observer.h"
 #include "ash/common/wm/wm_types.h"
-#include "ash/common/wm_activation_observer.h"
 #include "ash/common/wm_layout_manager.h"
 #include "base/macros.h"
 #include "ui/aura/window_observer.h"
 #include "ui/display/display_observer.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/keyboard/keyboard_controller_observer.h"
+#include "ui/wm/public/activation_change_observer.h"
 
 namespace ash {
 
@@ -35,7 +35,7 @@ class WMEvent;
 class ASH_EXPORT WorkspaceLayoutManager
     : public WmLayoutManager,
       public aura::WindowObserver,
-      public WmActivationObserver,
+      public aura::client::ActivationChangeObserver,
       public keyboard::KeyboardControllerObserver,
       public display::DisplayObserver,
       public ShellObserver,
@@ -71,9 +71,10 @@ class ASH_EXPORT WorkspaceLayoutManager
                              const gfx::Rect& old_bounds,
                              const gfx::Rect& new_bounds) override;
 
-  // WmActivationObserver overrides:
-  void OnWindowActivated(WmWindow* gained_active,
-                         WmWindow* lost_active) override;
+  // aura::client::ActivationChangeObserver overrides:
+  void OnWindowActivated(ActivationReason reason,
+                         aura::Window* gained_active,
+                         aura::Window* lost_active) override;
 
   // keyboard::KeyboardControllerObserver overrides:
   void OnKeyboardBoundsChanging(const gfx::Rect& new_bounds) override;

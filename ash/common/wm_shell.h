@@ -90,7 +90,6 @@ class WindowCycleController;
 class WindowCycleEventFilter;
 class WindowResizer;
 class WindowSelectorController;
-class WmActivationObserver;
 class WmDisplayObserver;
 class WmWindow;
 class WorkspaceEventHandler;
@@ -409,9 +408,6 @@ class ASH_EXPORT WmShell : public SessionStateObserver,
 
   virtual SessionStateDelegate* GetSessionStateDelegate() = 0;
 
-  void AddActivationObserver(WmActivationObserver* observer);
-  void RemoveActivationObserver(WmActivationObserver* observer);
-
   virtual void AddDisplayObserver(WmDisplayObserver* observer) = 0;
   virtual void RemoveDisplayObserver(WmDisplayObserver* observer) = 0;
 
@@ -498,8 +494,6 @@ class ASH_EXPORT WmShell : public SessionStateObserver,
   void OnWindowActivated(ActivationReason reason,
                          aura::Window* gained_active,
                          aura::Window* lost_active) override;
-  void OnAttemptToReactivateWindow(aura::Window* request_active,
-                                   aura::Window* actual_active) override;
 
   static WmShell* instance_;
 
@@ -548,9 +542,6 @@ class ASH_EXPORT WmShell : public SessionStateObserver,
   WmWindow* scoped_root_window_for_new_windows_ = nullptr;
 
   bool simulate_modal_window_open_for_testing_ = false;
-
-  bool added_activation_observer_ = false;
-  base::ObserverList<WmActivationObserver> activation_observers_;
 
   scoped_refptr<base::SequencedWorkerPool> blocking_pool_;
 };

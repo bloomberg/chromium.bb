@@ -12,8 +12,10 @@
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/shell.h"
 #include "base/bind.h"
 #include "ui/aura/window.h"
+#include "ui/wm/public/activation_client.h"
 
 namespace ash {
 
@@ -99,11 +101,11 @@ MruWindowTracker::WindowList BuildWindowListInternal(
 // MruWindowTracker, public:
 
 MruWindowTracker::MruWindowTracker() : ignore_window_activations_(false) {
-  WmShell::Get()->AddActivationObserver(this);
+  Shell::GetInstance()->activation_client()->AddObserver(this);
 }
 
 MruWindowTracker::~MruWindowTracker() {
-  WmShell::Get()->RemoveActivationObserver(this);
+  Shell::GetInstance()->activation_client()->RemoveObserver(this);
   for (WmWindow* window : mru_windows_)
     window->aura_window()->RemoveObserver(this);
 }
@@ -144,10 +146,11 @@ void MruWindowTracker::SetActiveWindow(WmWindow* active_window) {
   mru_windows_.push_front(active_window);
 }
 
-void MruWindowTracker::OnWindowActivated(WmWindow* gained_active,
-                                         WmWindow* lost_active) {
+void MruWindowTracker::OnWindowActivated(ActivationReason reason,
+                                         aura::Window* gained_active,
+                                         aura::Window* lost_active) {
   if (!ignore_window_activations_)
-    SetActiveWindow(gained_active);
+    SetActiveWindow(WmWindow::Get(gained_active));
 }
 
 void MruWindowTracker::OnWindowDestroyed(aura::Window* window) {

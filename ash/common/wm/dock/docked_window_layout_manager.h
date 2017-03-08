@@ -13,7 +13,6 @@
 #include "ash/common/wm/dock/docked_window_layout_manager_observer.h"
 #include "ash/common/wm/window_state_observer.h"
 #include "ash/common/wm/wm_snap_to_pixel_layout_manager.h"
-#include "ash/common/wm_activation_observer.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
@@ -22,6 +21,7 @@
 #include "ui/display/display_observer.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/keyboard/keyboard_controller_observer.h"
+#include "ui/wm/public/activation_change_observer.h"
 
 namespace ash {
 class DockedBackgroundWidget;
@@ -46,7 +46,7 @@ class ASH_EXPORT DockedWindowLayoutManager
     : public wm::WmSnapToPixelLayoutManager,
       public display::DisplayObserver,
       public aura::WindowObserver,
-      public WmActivationObserver,
+      public aura::client::ActivationChangeObserver,
       public ShellObserver,
       public keyboard::KeyboardControllerObserver,
       public wm::WindowStateObserver {
@@ -150,9 +150,10 @@ class ASH_EXPORT DockedWindowLayoutManager
   void OnWindowVisibilityChanging(aura::Window* window, bool visible) override;
   void OnWindowDestroying(aura::Window* window) override;
 
-  // WmActivationObserver:
-  void OnWindowActivated(WmWindow* gained_active,
-                         WmWindow* lost_active) override;
+  // aura::client::ActivationChangeObserver:
+  void OnWindowActivated(ActivationReason reason,
+                         aura::Window* gained_active,
+                         aura::Window* lost_active) override;
 
   // ShellObserver:
   void OnShelfAlignmentChanged(WmWindow* root_window) override;

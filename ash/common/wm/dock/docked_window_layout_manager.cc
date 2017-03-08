@@ -20,6 +20,7 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/resources/grit/ash_resources.h"
 #include "ash/root_window_controller.h"
+#include "ash/shell.h"
 #include "ash/wm/window_state_aura.h"
 #include "base/auto_reset.h"
 #include "base/metrics/histogram_macros.h"
@@ -31,6 +32,7 @@
 #include "ui/views/background.h"
 #include "ui/wm/core/coordinate_conversion.h"
 #include "ui/wm/core/window_animations.h"
+#include "ui/wm/public/activation_client.h"
 
 namespace ash {
 
@@ -381,7 +383,7 @@ DockedWindowLayoutManager::DockedWindowLayoutManager(WmWindow* dock_container)
       background_widget_(nullptr) {
   DCHECK(dock_container);
   dock_container_->GetShell()->AddShellObserver(this);
-  dock_container->GetShell()->AddActivationObserver(this);
+  Shell::GetInstance()->activation_client()->AddObserver(this);
   display::Screen::GetScreen()->AddObserver(this);
 }
 
@@ -408,7 +410,7 @@ void DockedWindowLayoutManager::Shutdown() {
     child->aura_window()->RemoveObserver(this);
     child->GetWindowState()->RemoveObserver(this);
   }
-  dock_container_->GetShell()->RemoveActivationObserver(this);
+  Shell::GetInstance()->activation_client()->RemoveObserver(this);
   dock_container_->GetShell()->RemoveShellObserver(this);
   display::Screen::GetScreen()->RemoveObserver(this);
 }
@@ -802,15 +804,18 @@ void DockedWindowLayoutManager::OnWindowDestroying(aura::Window* window) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// DockedWindowLayoutManager, WmActivationObserver implementation:
+// DockedWindowLayoutManager, ActivationChangeObserver implementation:
 
-void DockedWindowLayoutManager::OnWindowActivated(WmWindow* gained_active,
-                                                  WmWindow* lost_active) {
-  if (gained_active && IsPopupOrTransient(gained_active))
+void DockedWindowLayoutManager::OnWindowActivated(ActivationReason reason,
+                                                  aura::Window* gained_active,
+                                                  aura::Window* lost_active) {
+  WmWindow* wm_gained_active = WmWindow::Get(gained_active);
+  if (wm_gained_active && IsPopupOrTransient(wm_gained_active))
     return;
   // Ignore if the window that is not managed by this was activated.
   WmWindow* ancestor = nullptr;
-  for (WmWindow* parent = gained_active; parent; parent = parent->GetParent()) {
+  for (WmWindow* parent = wm_gained_active; parent;
+       parent = parent->GetParent()) {
     if (parent->GetParent() == dock_container_) {
       ancestor = parent;
       break;
@@ -819,7 +824,7 @@ void DockedWindowLayoutManager::OnWindowActivated(WmWindow* gained_active,
   if (ancestor) {
     // Window activation from overview mode may unminimize a window and require
     // layout update.
-    MaybeMinimizeChildrenExcept(gained_active);
+    MaybeMinimizeChildrenExcept(wm_gained_active);
     Relayout();
     UpdateStacking(ancestor);
   }

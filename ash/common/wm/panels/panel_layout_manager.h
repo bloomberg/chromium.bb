@@ -12,7 +12,6 @@
 #include "ash/common/shelf/wm_shelf_observer.h"
 #include "ash/common/shell_observer.h"
 #include "ash/common/wm/window_state_observer.h"
-#include "ash/common/wm_activation_observer.h"
 #include "ash/common/wm_display_observer.h"
 #include "ash/common/wm_layout_manager.h"
 #include "ash/root_window_controller.h"
@@ -23,6 +22,7 @@
 #include "ui/aura/window_tracker.h"
 #include "ui/keyboard/keyboard_controller.h"
 #include "ui/keyboard/keyboard_controller_observer.h"
+#include "ui/wm/public/activation_change_observer.h"
 
 namespace gfx {
 class Rect;
@@ -52,7 +52,7 @@ class RootWindowController;
 class ASH_EXPORT PanelLayoutManager
     : public WmLayoutManager,
       public wm::WindowStateObserver,
-      public WmActivationObserver,
+      public aura::client::ActivationChangeObserver,
       public WmDisplayObserver,
       public ShellObserver,
       public aura::WindowObserver,
@@ -105,9 +105,10 @@ class ASH_EXPORT PanelLayoutManager
   void OnPostWindowStateTypeChange(wm::WindowState* window_state,
                                    wm::WindowStateType old_type) override;
 
-  // Overridden from WmActivationObserver
-  void OnWindowActivated(WmWindow* gained_active,
-                         WmWindow* lost_active) override;
+  // Overridden from aura::client::ActivationChangeObserver
+  void OnWindowActivated(ActivationReason reason,
+                         aura::Window* gained_active,
+                         aura::Window* lost_active) override;
 
   // Overridden from WindowTreeHostManager::Observer
   void OnDisplayConfigurationChanged() override;

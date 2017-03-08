@@ -579,7 +579,6 @@ component("ash") {
     "common/wm/workspace/workspace_window_resizer.h",
     "common/wm/workspace_controller.cc",
     "common/wm/workspace_controller.h",
-    "common/wm_activation_observer.h",
     "common/wm_display_observer.h",
     "common/wm_layout_manager.h",
     "common/wm_shell.cc",
