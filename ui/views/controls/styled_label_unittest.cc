@@ -562,4 +562,21 @@ TEST_F(StyledLabelTest, CacheSize) {
   EXPECT_NE(first_child_after_text_update, first_child_after_layout);
 }
 
+TEST_F(StyledLabelTest, Border) {
+  const std::string text("One line");
+  InitStyledLabel(text);
+  Label label(ASCIIToUTF16(text));
+  gfx::Size label_preferred_size = label.GetPreferredSize();
+  styled()->SetBorder(
+      CreateEmptyBorder(5 /*top*/, 10 /*left*/, 6 /*bottom*/, 20 /*right*/));
+  styled()->SetBounds(0, 0, 1000, 0);
+  styled()->Layout();
+  EXPECT_EQ(
+      label_preferred_size.height() + 5 /*top border*/ + 6 /*bottom border*/,
+      styled()->GetPreferredSize().height());
+  EXPECT_EQ(
+      label_preferred_size.width() + 10 /*left border*/ + 20 /*right border*/,
+      styled()->GetPreferredSize().width());
+}
+
 }  // namespace views

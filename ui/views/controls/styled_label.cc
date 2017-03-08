@@ -353,16 +353,19 @@ gfx::Size StyledLabel::CalculateAndDoLayout(int width, bool dry_run) {
     // Calculate the size of the optional focus border, and overlap by that
     // amount. Otherwise, "<a>link</a>," will render as "link ,".
     gfx::Insets focus_border_insets(label->GetInsets());
-    focus_border_insets += -label->View::GetInsets();
+    focus_border_insets -= label->View::GetInsets();
     const gfx::Size view_size = label->GetPreferredSize();
+    const gfx::Insets insets = GetInsets();
     label->SetBoundsRect(gfx::Rect(
         gfx::Point(
-            GetInsets().left() + x - focus_border_insets.left(),
-            GetInsets().top() + line * line_height - focus_border_insets.top()),
+            insets.left() + x - focus_border_insets.left(),
+            insets.top() + line * line_height - focus_border_insets.top()),
         view_size));
     x += view_size.width() - focus_border_insets.width();
     used_width = std::max(used_width, x);
-    total_height = std::max(total_height, label->bounds().bottom());
+    total_height =
+        std::max(total_height, label->bounds().bottom() + insets.bottom() -
+                                   focus_border_insets.bottom());
     if (!dry_run)
       AddChildView(label.release());
 
