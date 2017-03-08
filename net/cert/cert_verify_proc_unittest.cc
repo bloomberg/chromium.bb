@@ -272,18 +272,11 @@ TEST_P(CertVerifyProcInternalTest, DISABLED_EVVerification) {
     return;
   }
 
-  CertificateList certs =
-      CreateCertificateListFromFile(GetTestCertsDirectory(), "comodo.chain.pem",
-                                    X509Certificate::FORMAT_PEM_CERT_SEQUENCE);
-  ASSERT_EQ(3U, certs.size());
-
-  X509Certificate::OSCertHandles intermediates;
-  intermediates.push_back(certs[1]->os_cert_handle());
-  intermediates.push_back(certs[2]->os_cert_handle());
-
-  scoped_refptr<X509Certificate> comodo_chain =
-      X509Certificate::CreateFromHandle(certs[0]->os_cert_handle(),
-                                        intermediates);
+  scoped_refptr<X509Certificate> comodo_chain = CreateCertificateChainFromFile(
+      GetTestCertsDirectory(), "comodo.chain.pem",
+      X509Certificate::FORMAT_PEM_CERT_SEQUENCE);
+  ASSERT_TRUE(comodo_chain);
+  ASSERT_EQ(2U, comodo_chain->GetIntermediateCertificates().size());
 
   scoped_refptr<CRLSet> crl_set(CRLSet::ForTesting(false, NULL, ""));
   CertVerifyResult verify_result;
@@ -383,13 +376,10 @@ TEST_P(CertVerifyProcInternalTest, RejectExpiredCert) {
   ScopedTestRoot test_root(
       ImportCertFromFile(certs_dir, "root_ca_cert.pem").get());
 
-  CertificateList certs = CreateCertificateListFromFile(
+  scoped_refptr<X509Certificate> cert = CreateCertificateChainFromFile(
       certs_dir, "expired_cert.pem", X509Certificate::FORMAT_AUTO);
-  ASSERT_EQ(1U, certs.size());
-
-  X509Certificate::OSCertHandles intermediates;
-  scoped_refptr<X509Certificate> cert = X509Certificate::CreateFromHandle(
-      certs[0]->os_cert_handle(), intermediates);
+  ASSERT_TRUE(cert);
+  ASSERT_EQ(0U, cert->GetIntermediateCertificates().size());
 
   int flags = 0;
   CertVerifyResult verify_result;
@@ -612,14 +602,11 @@ TEST_P(CertVerifyProcInternalTest, NameConstraintsOk) {
   ASSERT_EQ(1U, ca_cert_list.size());
   ScopedTestRoot test_root(ca_cert_list[0].get());
 
-  CertificateList cert_list = CreateCertificateListFromFile(
+  scoped_refptr<X509Certificate> leaf = CreateCertificateChainFromFile(
       GetTestCertsDirectory(), "name_constraint_good.pem",
       X509Certificate::FORMAT_AUTO);
-  ASSERT_EQ(1U, cert_list.size());
-
-  X509Certificate::OSCertHandles intermediates;
-  scoped_refptr<X509Certificate> leaf = X509Certificate::CreateFromHandle(
-      cert_list[0]->os_cert_handle(), intermediates);
+  ASSERT_TRUE(leaf);
+  ASSERT_EQ(0U, leaf->GetIntermediateCertificates().size());
 
   int flags = 0;
   CertVerifyResult verify_result;
