@@ -6,7 +6,8 @@
 #define EventHandlerRegistry_h
 
 #include "core/CoreExport.h"
-#include "core/frame/FrameHost.h"
+#include "core/frame/FrameHost.h"  // TODO(sashab): Remove this.
+#include "core/page/Page.h"
 #include "wtf/HashCountedSet.h"
 
 namespace blink {
@@ -20,11 +21,11 @@ typedef HashCountedSet<UntracedMember<EventTarget>> EventTargetSet;
 
 // Registry for keeping track of event handlers. Note that only handlers on
 // documents that can be rendered or can receive input (i.e., are attached to a
-// FrameHost) are registered here.
+// Page) are registered here.
 class CORE_EXPORT EventHandlerRegistry final
     : public GarbageCollectedFinalized<EventHandlerRegistry> {
  public:
-  explicit EventHandlerRegistry(FrameHost&);
+  explicit EventHandlerRegistry(Page&);
   virtual ~EventHandlerRegistry();
 
   // Supported event handler classes. Note that each one may correspond to
@@ -44,7 +45,7 @@ class CORE_EXPORT EventHandlerRegistry final
     EventHandlerClassCount,  // Must be the last entry.
   };
 
-  // Returns true if the FrameHost has event handlers of the specified class.
+  // Returns true if the Page has event handlers of the specified class.
   bool hasEventHandlers(EventHandlerClass) const;
 
   // Returns a set of EventTargets which have registered handlers of the given
@@ -62,11 +63,11 @@ class CORE_EXPORT EventHandlerRegistry final
   void didRemoveEventHandler(EventTarget&, EventHandlerClass);
   void didRemoveAllEventHandlers(EventTarget&);
 
-  void didMoveIntoFrameHost(EventTarget&);
-  void didMoveOutOfFrameHost(EventTarget&);
+  void didMoveIntoPage(EventTarget&);
+  void didMoveOutOfPage(EventTarget&);
 
-  // Either |documentDetached| or |didMove{Into,OutOf,Between}FrameHosts| must
-  // be called whenever the FrameHost that is associated with a registered event
+  // Either |documentDetached| or |didMove{Into,OutOf,Between}Pages| must
+  // be called whenever the Page that is associated with a registered event
   // target changes. This ensures the registry does not end up with stale
   // references to handlers that are no longer related to it.
   void documentDetached(Document&);
@@ -120,7 +121,7 @@ class CORE_EXPORT EventHandlerRegistry final
 
   void checkConsistency(EventHandlerClass) const;
 
-  Member<FrameHost> m_frameHost;
+  Member<Page> m_page;
   EventTargetSet m_targets[EventHandlerClassCount];
 };
 
