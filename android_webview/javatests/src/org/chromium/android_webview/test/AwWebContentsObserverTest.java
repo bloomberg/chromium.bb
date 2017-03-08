@@ -89,17 +89,17 @@ public class AwWebContentsObserverTest extends AwTestBase  {
         boolean isInMainFrame = true;
         boolean isErrorPage = false;
         boolean hasCommitted = true;
-        boolean isSamePage = true;
+        boolean isSameDocument = true;
         boolean fragmentNavigation = true;
         int errorCode = 0;
         String errorDescription = "";
         int httpStatusCode = 200;
         callCount = onPageFinishedHelper.getCallCount();
         mWebContentsObserver.didFinishNavigation(EXAMPLE_URL, isInMainFrame, isErrorPage,
-                hasCommitted, !isSamePage, !fragmentNavigation, PageTransition.TYPED, errorCode,
+                hasCommitted, !isSameDocument, !fragmentNavigation, PageTransition.TYPED, errorCode,
                 errorDescription, httpStatusCode);
         mWebContentsObserver.didFinishNavigation(EXAMPLE_URL_WITH_FRAGMENT, isInMainFrame,
-                isErrorPage, hasCommitted, isSamePage, fragmentNavigation, PageTransition.TYPED,
+                isErrorPage, hasCommitted, isSameDocument, fragmentNavigation, PageTransition.TYPED,
                 errorCode, errorDescription, httpStatusCode);
         onPageFinishedHelper.waitForCallback(callCount);
         assertEquals("onPageFinished should be called for main frame fragment navigations.",
@@ -109,7 +109,7 @@ public class AwWebContentsObserverTest extends AwTestBase  {
 
         callCount = onPageFinishedHelper.getCallCount();
         mWebContentsObserver.didFinishNavigation(EXAMPLE_URL, isInMainFrame, isErrorPage,
-                hasCommitted, !isSamePage, !fragmentNavigation, PageTransition.TYPED, errorCode,
+                hasCommitted, !isSameDocument, !fragmentNavigation, PageTransition.TYPED, errorCode,
                 errorDescription, httpStatusCode);
         mWebContentsObserver.didFinishLoad(frameId, SYNC_URL, mainFrame);
         mWebContentsObserver.didStopLoading(SYNC_URL);
@@ -129,7 +129,7 @@ public class AwWebContentsObserverTest extends AwTestBase  {
         boolean isInMainFrame = true;
         boolean isErrorPage = false;
         boolean hasCommitted = true;
-        boolean isSamePage = true;
+        boolean isSameDocument = true;
         boolean fragmentNavigation = false;
         int errorCode = 0;
         String errorDescription = "";
@@ -139,8 +139,8 @@ public class AwWebContentsObserverTest extends AwTestBase  {
 
         int callCount = doUpdateVisitedHistoryHelper.getCallCount();
         mWebContentsObserver.didFinishNavigation(nullUrl, isInMainFrame, !isErrorPage, hasCommitted,
-                !isSamePage, fragmentNavigation, PageTransition.TYPED, errorCode, errorDescription,
-                httpStatusCode);
+                !isSameDocument, fragmentNavigation, PageTransition.TYPED, errorCode,
+                errorDescription, httpStatusCode);
         doUpdateVisitedHistoryHelper.waitForCallback(callCount);
         assertEquals("doUpdateVisitedHistory should be called for any url.", callCount + 1,
                 doUpdateVisitedHistoryHelper.getCallCount());
@@ -150,7 +150,7 @@ public class AwWebContentsObserverTest extends AwTestBase  {
 
         callCount = doUpdateVisitedHistoryHelper.getCallCount();
         mWebContentsObserver.didFinishNavigation(EXAMPLE_URL, isInMainFrame, isErrorPage,
-                hasCommitted, !isSamePage, fragmentNavigation, PageTransition.TYPED, errorCode,
+                hasCommitted, !isSameDocument, fragmentNavigation, PageTransition.TYPED, errorCode,
                 errorDescription, httpStatusCode);
         doUpdateVisitedHistoryHelper.waitForCallback(callCount);
         assertEquals("doUpdateVisitedHistory should be called for any url.", callCount + 1,
@@ -161,7 +161,7 @@ public class AwWebContentsObserverTest extends AwTestBase  {
 
         callCount = doUpdateVisitedHistoryHelper.getCallCount();
         mWebContentsObserver.didFinishNavigation(EXAMPLE_URL, isInMainFrame, isErrorPage,
-                hasCommitted, isSamePage, !fragmentNavigation, PageTransition.RELOAD, errorCode,
+                hasCommitted, isSameDocument, !fragmentNavigation, PageTransition.RELOAD, errorCode,
                 errorDescription, httpStatusCode);
         doUpdateVisitedHistoryHelper.waitForCallback(callCount);
         assertEquals("doUpdateVisitedHistory should be called for reloads.", callCount + 1,

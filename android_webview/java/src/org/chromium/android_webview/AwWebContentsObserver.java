@@ -89,7 +89,7 @@ public class AwWebContentsObserver extends WebContentsObserver {
 
     @Override
     public void didFinishNavigation(final String url, boolean isInMainFrame, boolean isErrorPage,
-            boolean hasCommitted, boolean isSamePage, boolean isFragmentNavigation,
+            boolean hasCommitted, boolean isSameDocument, boolean isFragmentNavigation,
             Integer pageTransition, int errorCode, String errorDescription, int httpStatusCode) {
         if (errorCode != 0) {
             didFailLoad(isInMainFrame, errorCode, errorDescription, url);
@@ -108,9 +108,9 @@ public class AwWebContentsObserver extends WebContentsObserver {
 
         if (!isInMainFrame) return;
 
-        // Only invoke the onPageCommitVisible callback when navigating to a different page,
-        // but not when navigating to a different fragment within the same page.
-        if (!isSamePage) {
+        // Only invoke the onPageCommitVisible callback when navigating to a different document,
+        // but not when navigating to a different fragment within the same document.
+        if (!isSameDocument) {
             ThreadUtils.postOnUiThread(new Runnable() {
                 @Override
                 public void run() {
