@@ -49,6 +49,7 @@
 #include "window.h"
 
 static int option_fullscreen;
+static int option_maximize;
 static char *option_font;
 static int option_font_size;
 static char *option_term;
@@ -3048,6 +3049,8 @@ terminal_run(struct terminal *terminal, const char *path)
 
 	if (option_fullscreen)
 		window_set_fullscreen(terminal->window, 1);
+	else if (option_maximize)
+		window_set_maximized(terminal->window, 1);
 	else
 		terminal_resize(terminal, 80, 24);
 
@@ -3056,6 +3059,7 @@ terminal_run(struct terminal *terminal, const char *path)
 
 static const struct weston_option terminal_options[] = {
 	{ WESTON_OPTION_BOOLEAN, "fullscreen", 'f', &option_fullscreen },
+	{ WESTON_OPTION_BOOLEAN, "maximized", 'm', &option_maximize },
 	{ WESTON_OPTION_STRING, "font", 0, &option_font },
 	{ WESTON_OPTION_INTEGER, "font-size", 0, &option_font_size },
 	{ WESTON_OPTION_STRING, "shell", 0, &option_shell },
@@ -3089,6 +3093,7 @@ int main(int argc, char *argv[])
 			  ARRAY_LENGTH(terminal_options), &argc, argv) > 1) {
 		printf("Usage: %s [OPTIONS]\n"
 		       "  --fullscreen or -f\n"
+		       "  --maximized or -m\n"
 		       "  --font=NAME\n"
 		       "  --font-size=SIZE\n"
 		       "  --shell=NAME\n", argv[0]);
