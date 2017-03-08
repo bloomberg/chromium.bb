@@ -30,14 +30,7 @@ struct StructTraits<display::mojom::DisplayModeDataView,
   }
 
   static bool Read(display::mojom::DisplayModeDataView data,
-                   std::unique_ptr<display::DisplayMode>* out) {
-    gfx::Size size;
-    if (!data.ReadSize(&size))
-      return false;
-    *out = base::MakeUnique<display::DisplayMode>(size, data.is_interlaced(),
-                                                  data.refresh_rate());
-    return true;
-  }
+                   std::unique_ptr<display::DisplayMode>* out);
 };
 
 }  // namespace mojo

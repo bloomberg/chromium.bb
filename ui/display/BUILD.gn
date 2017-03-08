@@ -22,6 +22,8 @@ component("display") {
     "display_list.h",
     "display_observer.cc",
     "display_observer.h",
+    "display_snapshot_mojo.cc",
+    "display_snapshot_mojo.h",
     "display_switches.cc",
     "display_switches.h",
     "fake_display_delegate.cc",

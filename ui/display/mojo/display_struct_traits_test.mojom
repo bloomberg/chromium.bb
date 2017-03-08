@@ -7,6 +7,7 @@ module display.mojom;
 import "ui/display/mojo/display.mojom";
 import "ui/display/mojo/display_layout.mojom";
 import "ui/display/mojo/display_mode.mojom";
+import "ui/display/mojo/display_snapshot_mojo.mojom";
 import "ui/display/mojo/gamma_ramp_rgb_entry.mojom";
 
 interface DisplayStructTraitsTest {
@@ -15,6 +16,10 @@ interface DisplayStructTraitsTest {
 
   [Sync]
   EchoDisplayMode(DisplayMode in) => (DisplayMode out);
+
+  [Sync]
+  EchoDisplaySnapshotMojo(DisplaySnapshotMojo in) => (DisplaySnapshotMojo
+    out);
 
   [Sync]
   EchoDisplayPlacement(DisplayPlacement in) => (DisplayPlacement out);

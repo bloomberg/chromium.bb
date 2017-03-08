@@ -7,12 +7,15 @@ import("//mojo/public/tools/bindings/mojom.gni")
 mojom("interfaces") {
   sources = [
     "display.mojom",
+    "display_constants.mojom",
     "display_layout.mojom",
     "display_mode.mojom",
+    "display_snapshot_mojo.mojom",
     "gamma_ramp_rgb_entry.mojom",
   ]
 
   public_deps = [
+    "//mojo/common:common_custom_types",
     "//ui/gfx/geometry/mojo",
   ]
 }
