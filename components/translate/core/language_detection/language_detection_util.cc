@@ -19,6 +19,7 @@
 #include "components/translate/core/common/translate_constants.h"
 #include "components/translate/core/common/translate_metrics.h"
 #include "components/translate/core/common/translate_util.h"
+#include "components/translate/core/language_detection/chinese_script_classifier.h"
 #include "third_party/cld/cld_version.h"
 
 #if BUILDFLAG(CLD_VERSION) == 2
@@ -207,19 +208,30 @@ std::string DetermineTextLanguage(const base::string16& text,
       predicted_language != "zh-Latn" &&
       predicted_language !=
           chrome_lang_id::NNetLanguageIdentifier::kUnknown) {
-    // CLD3 returns 'zh' for Chinese but Translate doesn't accept it. Thus,
-    // analogously to CLD2, 'zh-CN' is returned instead.
-    if (predicted_language == "zh") {
-      language = "zh-CN";
-    } else {
+    if (predicted_language != "zh") {
       language = predicted_language;
+    } else {
+      // If prediction is "zh" (Chinese), then we need to determine whether the
+      // text is zh-Hant (Chinese Traditional) or zh-Hans (Chinese Simplified).
+      translate::ChineseScriptClassifier zh_classifier;
+
+      // The Classify function returns either "zh-Hant" or "zh-Hans".
+      // Convert to the old-style language codes used by the Translate API.
+      const std::string zh_classification = zh_classifier.Classify(utf8_text);
+      if (zh_classification == "zh-Hant") {
+        language = "zh-TW";
+      } else if (zh_classification == "zh-Hans") {
+        language = "zh-CN";
+      } else {
+        language = translate::kUnknownLanguageCode;
+      }
     }
   }
-
 #else
 # error "CLD_VERSION must be 2 or 3"
 #endif
 
+  VLOG(1) << "Detected language: " << language;
   return language;
 }
 

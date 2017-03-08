@@ -4,6 +4,18 @@
 
 import("//build/config/features.gni")
 
+static_library("chinese_script_classifier") {
+  sources = [
+    "chinese_script_classifier.cc",
+    "chinese_script_classifier.h",
+  ]
+
+  deps = [
+    "//base",
+    "//third_party/icu",
+  ]
+}
+
 static_library("language_detection") {
   sources = [
     "language_detection_util.cc",
@@ -11,9 +23,11 @@ static_library("language_detection") {
   ]
 
   deps = [
+    ":chinese_script_classifier",
     "//base",
     "//components/translate/core/common",
     "//third_party/cld",
+    "//third_party/icu",
     "//url",
   ]
 }
@@ -21,13 +35,16 @@ static_library("language_detection") {
 source_set("unit_tests") {
   testonly = true
   sources = [
+    "chinese_script_classifier_test.cc",
     "language_detection_util_unittest.cc",
   ]
   deps = [
+    ":chinese_script_classifier",
     ":language_detection",
     "//base",
     "//components/translate/core/common",
     "//testing/gtest",
+    "//third_party/icu",
     "//url",
   ]
 }
