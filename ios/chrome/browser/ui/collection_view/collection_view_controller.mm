@@ -72,8 +72,8 @@
          inSectionWithIdentifier:(NSInteger)sectionIdentifier {
   for (CollectionViewItem* item in items) {
     NSIndexPath* indexPath =
-        [_collectionViewModel indexPathForItem:item
-                       inSectionWithIdentifier:sectionIdentifier];
+        [self.collectionViewModel indexPathForItem:item
+                           inSectionWithIdentifier:sectionIdentifier];
     MDCCollectionViewCell* cell =
         base::mac::ObjCCastStrict<MDCCollectionViewCell>(
             [self.collectionView cellForItemAtIndexPath:indexPath]);
@@ -99,14 +99,15 @@
   NSArray* sortedIndexPaths =
       [indexPaths sortedArrayUsingSelector:@selector(compare:)];
   for (NSIndexPath* indexPath in [sortedIndexPaths reverseObjectEnumerator]) {
-    NSInteger sectionIdentifier =
-        [_collectionViewModel sectionIdentifierForSection:indexPath.section];
-    NSInteger itemType = [_collectionViewModel itemTypeForIndexPath:indexPath];
+    NSInteger sectionIdentifier = [self.collectionViewModel
+        sectionIdentifierForSection:indexPath.section];
+    NSInteger itemType =
+        [self.collectionViewModel itemTypeForIndexPath:indexPath];
     NSUInteger index =
-        [_collectionViewModel indexInItemTypeForIndexPath:indexPath];
-    [_collectionViewModel removeItemWithType:itemType
-                   fromSectionWithIdentifier:sectionIdentifier
-                                     atIndex:index];
+        [self.collectionViewModel indexInItemTypeForIndexPath:indexPath];
+    [self.collectionViewModel removeItemWithType:itemType
+                       fromSectionWithIdentifier:sectionIdentifier
+                                         atIndex:index];
   }
 }
 
@@ -145,17 +146,18 @@
 
 - (NSInteger)numberOfSectionsInCollectionView:
     (UICollectionView*)collectionView {
-  return [_collectionViewModel numberOfSections];
+  return [self.collectionViewModel numberOfSections];
 }
 
 - (NSInteger)collectionView:(UICollectionView*)collectionView
      numberOfItemsInSection:(NSInteger)section {
-  return [_collectionViewModel numberOfItemsInSection:section];
+  return [self.collectionViewModel numberOfItemsInSection:section];
 }
 
 - (UICollectionViewCell*)collectionView:(UICollectionView*)collectionView
                  cellForItemAtIndexPath:(NSIndexPath*)indexPath {
-  CollectionViewItem* item = [_collectionViewModel itemAtIndexPath:indexPath];
+  CollectionViewItem* item =
+      [self.collectionViewModel itemAtIndexPath:indexPath];
   Class cellClass = [item cellClass];
   NSString* reuseIdentifier = NSStringFromClass(cellClass);
   [self.collectionView registerClass:cellClass
@@ -173,10 +175,10 @@
   CollectionViewItem* item = nil;
   UIAccessibilityTraits traits = UIAccessibilityTraitNone;
   if ([kind isEqualToString:UICollectionElementKindSectionHeader]) {
-    item = [_collectionViewModel headerForSection:indexPath.section];
+    item = [self.collectionViewModel headerForSection:indexPath.section];
     traits = UIAccessibilityTraitHeader;
   } else if ([kind isEqualToString:UICollectionElementKindSectionFooter]) {
-    item = [_collectionViewModel footerForSection:indexPath.section];
+    item = [self.collectionViewModel footerForSection:indexPath.section];
   } else {
     return [super collectionView:collectionView
         viewForSupplementaryElementOfKind:kind
@@ -203,7 +205,8 @@
                              layout:
                                  (UICollectionViewLayout*)collectionViewLayout
     referenceSizeForHeaderInSection:(NSInteger)section {
-  CollectionViewItem* item = [_collectionViewModel headerForSection:section];
+  CollectionViewItem* item =
+      [self.collectionViewModel headerForSection:section];
 
   if (item) {
     // TODO(crbug.com/635604): Support arbitrary sized headers.
@@ -216,7 +219,8 @@
                              layout:
                                  (UICollectionViewLayout*)collectionViewLayout
     referenceSizeForFooterInSection:(NSInteger)section {
-  CollectionViewItem* item = [_collectionViewModel footerForSection:section];
+  CollectionViewItem* item =
+      [self.collectionViewModel footerForSection:section];
 
   if (item) {
     // TODO(crbug.com/635604): Support arbitrary sized footers.

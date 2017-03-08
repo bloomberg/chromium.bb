@@ -178,7 +178,8 @@ typedef NSMutableArray<CollectionViewItem*> SectionItems;
   return [_footers objectForKey:key];
 }
 
-- (NSArray*)itemsInSectionWithIdentifier:(NSInteger)sectionIdentifier {
+- (NSArray<CollectionViewItem*>*)itemsInSectionWithIdentifier:
+    (NSInteger)sectionIdentifier {
   NSInteger section = [self sectionForSectionIdentifier:sectionIdentifier];
   DCHECK_LT(static_cast<NSUInteger>(section), [_sections count]);
   return [_sections objectAtIndex:section];

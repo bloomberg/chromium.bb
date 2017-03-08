@@ -5,10 +5,11 @@
 #ifndef IOS_CHROME_BROWSER_UI_COLLECTION_VIEW_COLLECTION_VIEW_CONTROLLER_H_
 #define IOS_CHROME_BROWSER_UI_COLLECTION_VIEW_COLLECTION_VIEW_CONTROLLER_H_
 
+#import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
 #import "ios/chrome/browser/ui/material_components/app_bar_presenting.h"
 #import "ios/third_party/material_components_ios/src/components/Collections/src/MaterialCollections.h"
 
-@class CollectionViewModel;
+@class CollectionViewItem;
 
 typedef NS_ENUM(NSInteger, CollectionViewControllerStyle) {
   // A simple collection view controller.
@@ -24,7 +25,8 @@ typedef NS_ENUM(NSInteger, CollectionViewControllerStyle) {
     : MDCCollectionViewController<AppBarPresenting>
 
 // The model of this controller.
-@property(nonatomic, readonly) CollectionViewModel* collectionViewModel;
+@property(nonatomic, readonly)
+    CollectionViewModel<CollectionViewItem*>* collectionViewModel;
 
 // Initializer with the desired style.
 - (instancetype)initWithStyle:(CollectionViewControllerStyle)style

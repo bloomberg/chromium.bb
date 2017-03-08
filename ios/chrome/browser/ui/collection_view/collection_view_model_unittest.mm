@@ -31,6 +31,11 @@
 
 @end
 
+@interface TestCollectionViewItemSubclass : CollectionViewItem
+@end
+@implementation TestCollectionViewItemSubclass
+@end
+
 namespace {
 
 typedef NS_ENUM(NSInteger, SectionIdentifier) {
@@ -51,6 +56,18 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 void LogSink(const std::string& str) {
   // No-op.
+}
+
+// Test generic model boxing (check done at compilation time).
+TEST(CollectionViewModelTest, GenericModelBoxing) {
+  CollectionViewModel<TestCollectionViewItemSubclass*>* specificModel =
+      [[CollectionViewModel alloc] init];
+
+  // |generalModel| is a superclass of |specificModel|. So specificModel can be
+  // boxed into generalModel, but not the other way around.
+  // specificModel = generalModel would not compile.
+  CollectionViewModel<CollectionViewItem*>* generalModel = specificModel;
+  generalModel = nil;
 }
 
 TEST(CollectionViewModelTest, EmptyModel) {
