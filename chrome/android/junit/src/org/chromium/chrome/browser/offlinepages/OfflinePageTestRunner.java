@@ -27,6 +27,7 @@ public class OfflinePageTestRunner extends LocalRobolectricTestRunner {
         InstrumentationConfiguration.Builder builder = InstrumentationConfiguration.newBuilder();
         builder.addInstrumentedPackage("com.google.android.gms.common");
         builder.addInstrumentedPackage("com.google.android.gms.gcm");
+        builder.addInstrumentedClass("org.chromium.chrome.browser.offlinepages.DeviceConditions");
         return builder.build();
     }
 }
