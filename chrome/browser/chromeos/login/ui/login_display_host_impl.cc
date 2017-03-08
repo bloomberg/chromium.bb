@@ -379,7 +379,7 @@ LoginDisplayHostImpl::LoginDisplayHostImpl(const gfx::Rect& wallpaper_bounds)
   }
 
   if (!ash_util::IsRunningInMash())
-    ash::WmShell::Get()->AddShellObserver(this);
+    ash::Shell::GetInstance()->AddShellObserver(this);
   else
     NOTIMPLEMENTED();
   display::Screen::GetScreen()->AddObserver(this);
@@ -498,7 +498,7 @@ LoginDisplayHostImpl::~LoginDisplayHostImpl() {
   }
 
   if (!ash_util::IsRunningInMash())
-    ash::WmShell::Get()->RemoveShellObserver(this);
+    ash::Shell::GetInstance()->RemoveShellObserver(this);
   else
     NOTIMPLEMENTED();
   display::Screen::GetScreen()->RemoveObserver(this);

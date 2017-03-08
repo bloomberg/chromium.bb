@@ -28,6 +28,7 @@
 #include "ash/common/shelf/shelf_model.h"
 #include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/shell_delegate.h"
+#include "ash/common/shell_observer.h"
 #include "ash/common/system/chromeos/bluetooth/bluetooth_notification_controller.h"
 #include "ash/common/system/chromeos/network/sms_observer.h"
 #include "ash/common/system/chromeos/power/power_status.h"
@@ -290,17 +291,17 @@ void Shell::SetDisplayWorkAreaInsets(Window* contains,
 }
 
 void Shell::OnLoginStateChanged(LoginStatus status) {
-  for (auto& observer : *wm_shell_->shell_observers())
+  for (auto& observer : shell_observers_)
     observer.OnLoginStateChanged(status);
 }
 
 void Shell::OnAppTerminating() {
-  for (auto& observer : *wm_shell_->shell_observers())
+  for (auto& observer : shell_observers_)
     observer.OnAppTerminating();
 }
 
 void Shell::OnLockStateChanged(bool locked) {
-  for (auto& observer : *wm_shell_->shell_observers())
+  for (auto& observer : shell_observers_)
     observer.OnLockStateChanged(locked);
 #ifndef NDEBUG
   // Make sure that there is no system modal in Lock layer when unlocked.
@@ -315,12 +316,12 @@ void Shell::OnLockStateChanged(bool locked) {
 }
 
 void Shell::OnCastingSessionStartedOrStopped(bool started) {
-  for (auto& observer : *wm_shell_->shell_observers())
+  for (auto& observer : shell_observers_)
     observer.OnCastingSessionStartedOrStopped(started);
 }
 
 void Shell::OnRootWindowAdded(WmWindow* root_window) {
-  for (auto& observer : *wm_shell_->shell_observers())
+  for (auto& observer : shell_observers_)
     observer.OnRootWindowAdded(root_window);
 }
 
@@ -378,7 +379,7 @@ void Shell::SetTouchHudProjectionEnabled(bool enabled) {
     return;
 
   is_touch_hud_projection_enabled_ = enabled;
-  for (auto& observer : *wm_shell_->shell_observers())
+  for (auto& observer : shell_observers_)
     observer.OnTouchHudProjectionToggled(enabled);
 }
 
@@ -401,6 +402,70 @@ void Shell::DoInitialWorkspaceAnimation() {
   return GetPrimaryRootWindowController()
       ->workspace_controller()
       ->DoInitialAnimation();
+}
+
+void Shell::AddShellObserver(ShellObserver* observer) {
+  shell_observers_.AddObserver(observer);
+}
+
+void Shell::RemoveShellObserver(ShellObserver* observer) {
+  shell_observers_.RemoveObserver(observer);
+}
+
+void Shell::NotifyMaximizeModeStarted() {
+  for (auto& observer : shell_observers_)
+    observer.OnMaximizeModeStarted();
+}
+
+void Shell::NotifyMaximizeModeEnding() {
+  for (auto& observer : shell_observers_)
+    observer.OnMaximizeModeEnding();
+}
+
+void Shell::NotifyMaximizeModeEnded() {
+  for (auto& observer : shell_observers_)
+    observer.OnMaximizeModeEnded();
+}
+
+void Shell::NotifyOverviewModeStarting() {
+  for (auto& observer : shell_observers_)
+    observer.OnOverviewModeStarting();
+}
+
+void Shell::NotifyOverviewModeEnded() {
+  for (auto& observer : shell_observers_)
+    observer.OnOverviewModeEnded();
+}
+
+void Shell::NotifyFullscreenStateChanged(bool is_fullscreen,
+                                         WmWindow* root_window) {
+  for (auto& observer : shell_observers_)
+    observer.OnFullscreenStateChanged(is_fullscreen, root_window);
+}
+
+void Shell::NotifyPinnedStateChanged(WmWindow* pinned_window) {
+  for (auto& observer : shell_observers_)
+    observer.OnPinnedStateChanged(pinned_window);
+}
+
+void Shell::NotifyVirtualKeyboardActivated(bool activated) {
+  for (auto& observer : shell_observers_)
+    observer.OnVirtualKeyboardStateChanged(activated);
+}
+
+void Shell::NotifyShelfCreatedForRootWindow(WmWindow* root_window) {
+  for (auto& observer : shell_observers_)
+    observer.OnShelfCreatedForRootWindow(root_window);
+}
+
+void Shell::NotifyShelfAlignmentChanged(WmWindow* root_window) {
+  for (auto& observer : shell_observers_)
+    observer.OnShelfAlignmentChanged(root_window);
+}
+
+void Shell::NotifyShelfAutoHideBehaviorChanged(WmWindow* root_window) {
+  for (auto& observer : shell_observers_)
+    observer.OnShelfAutoHideBehaviorChanged(root_window);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -571,7 +636,7 @@ Shell::~Shell() {
     display_configurator_->RemoveObserver(display_error_observer_.get());
   if (projecting_observer_) {
     display_configurator_->RemoveObserver(projecting_observer_.get());
-    wm_shell_->RemoveShellObserver(projecting_observer_.get());
+    RemoveShellObserver(projecting_observer_.get());
   }
   display_change_observer_.reset();
   shutdown_observer_.reset();
@@ -635,7 +700,7 @@ void Shell::Init(const ShellInitParams& init_params) {
   projecting_observer_.reset(
       new ProjectingObserver(dbus_thread_manager->GetPowerManagerClient()));
   display_configurator_->AddObserver(projecting_observer_.get());
-  wm_shell_->AddShellObserver(projecting_observer_.get());
+  AddShellObserver(projecting_observer_.get());
 
   if (!display_initialized && chromeos::IsRunningAsSystemCompositor()) {
     display_change_observer_ = base::MakeUnique<display::DisplayChangeObserver>(
@@ -727,7 +792,7 @@ void Shell::Init(const ShellInitParams& init_params) {
 
   overlay_filter_.reset(new OverlayEventFilter);
   AddPreTargetHandler(overlay_filter_.get());
-  wm_shell_->AddShellObserver(overlay_filter_.get());
+  AddShellObserver(overlay_filter_.get());
 
   accelerator_filter_.reset(new ::wm::AcceleratorFilter(
       std::unique_ptr<::wm::AcceleratorDelegate>(new AcceleratorDelegate),
@@ -759,7 +824,7 @@ void Shell::Init(const ShellInitParams& init_params) {
   power_button_controller_->OnDisplayModeChanged(
       display_configurator_->cached_displays());
 
-  wm_shell_->AddShellObserver(lock_state_controller_.get());
+  AddShellObserver(lock_state_controller_.get());
 
   // The connector is unavailable in some tests.
   if (is_mash && wm_shell_->delegate()->GetShellConnector()) {
@@ -868,7 +933,7 @@ void Shell::Init(const ShellInitParams& init_params) {
   if (!is_mash)
     display_manager_->CreateMirrorWindowAsyncIfAny();
 
-  for (auto& observer : *wm_shell_->shell_observers())
+  for (auto& observer : shell_observers_)
     observer.OnShellInitialized();
 
   if (!is_mash)

@@ -81,7 +81,7 @@ Preferences::Preferences()
   // Do not observe shell, if there is no shell instance; e.g., in some unit
   // tests.
   if (ash::WmShell::HasInstance())
-    ash::WmShell::Get()->AddShellObserver(this);
+    ash::Shell::GetInstance()->AddShellObserver(this);
 }
 
 Preferences::Preferences(input_method::InputMethodManager* input_method_manager)
@@ -92,7 +92,7 @@ Preferences::Preferences(input_method::InputMethodManager* input_method_manager)
   // Do not observe shell, if there is no shell instance; e.g., in some unit
   // tests.
   if (ash::WmShell::HasInstance())
-    ash::WmShell::Get()->AddShellObserver(this);
+    ash::Shell::GetInstance()->AddShellObserver(this);
 }
 
 Preferences::~Preferences() {
@@ -101,7 +101,7 @@ Preferences::~Preferences() {
   // If shell instance is destoryed before this preferences instance, there is
   // no need to remove this shell observer.
   if (ash::WmShell::HasInstance())
-    ash::WmShell::Get()->RemoveShellObserver(this);
+    ash::Shell::GetInstance()->RemoveShellObserver(this);
 }
 
 // static

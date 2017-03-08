@@ -10,6 +10,7 @@
 #include "ash/common/wm/maximize_mode/maximize_mode_window_manager.h"
 #include "ash/common/wm/maximize_mode/scoped_disable_internal_mouse_and_keyboard.h"
 #include "ash/common/wm_shell.h"
+#include "ash/shell.h"
 #include "base/command_line.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/time/default_tick_clock.h"
@@ -91,7 +92,7 @@ MaximizeModeController::MaximizeModeController()
       tick_clock_(new base::DefaultTickClock()),
       tablet_mode_switch_is_on_(false),
       lid_is_closed_(false) {
-  WmShell::Get()->AddShellObserver(this);
+  Shell::GetInstance()->AddShellObserver(this);
   WmShell::Get()->RecordUserMetricsAction(UMA_MAXIMIZE_MODE_INITIALLY_DISABLED);
 
   // TODO(jonross): Do not create MaximizeModeController if the flag is
@@ -107,7 +108,7 @@ MaximizeModeController::MaximizeModeController()
 }
 
 MaximizeModeController::~MaximizeModeController() {
-  WmShell::Get()->RemoveShellObserver(this);
+  Shell::GetInstance()->RemoveShellObserver(this);
 
   if (IsEnabled()) {
     WmShell::Get()->RemoveDisplayObserver(this);
@@ -139,17 +140,17 @@ void MaximizeModeController::EnableMaximizeModeWindowManager(
     // TODO(jonross): Move the maximize mode notifications from ShellObserver
     // to MaximizeModeController::Observer
     shell->RecordUserMetricsAction(UMA_MAXIMIZE_MODE_ENABLED);
-    shell->OnMaximizeModeStarted();
+    Shell::GetInstance()->NotifyMaximizeModeStarted();
 
     observers_.ForAllPtrs([](mojom::TouchViewObserver* observer) {
       observer->OnTouchViewToggled(true);
     });
 
   } else {
-    shell->OnMaximizeModeEnding();
+    Shell::GetInstance()->NotifyMaximizeModeEnding();
     maximize_mode_window_manager_.reset();
     shell->RecordUserMetricsAction(UMA_MAXIMIZE_MODE_DISABLED);
-    shell->OnMaximizeModeEnded();
+    Shell::GetInstance()->NotifyMaximizeModeEnded();
 
     observers_.ForAllPtrs([](mojom::TouchViewObserver* observer) {
       observer->OnTouchViewToggled(false);

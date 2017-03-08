@@ -48,7 +48,7 @@ MaximizeModeWindowManager::~MaximizeModeWindowManager() {
   for (aura::Window* window : added_windows_)
     window->RemoveObserver(this);
   added_windows_.clear();
-  WmShell::Get()->RemoveShellObserver(this);
+  Shell::GetInstance()->RemoveShellObserver(this);
   display::Screen::GetScreen()->RemoveObserver(this);
   EnableBackdropBehindTopWindowOnEachDisplay(false);
   RemoveWindowCreationObservers();
@@ -206,7 +206,7 @@ MaximizeModeWindowManager::MaximizeModeWindowManager()
   AddWindowCreationObservers();
   EnableBackdropBehindTopWindowOnEachDisplay(true);
   display::Screen::GetScreen()->AddObserver(this);
-  WmShell::Get()->AddShellObserver(this);
+  Shell::GetInstance()->AddShellObserver(this);
   event_handler_ = WmShell::Get()->CreateMaximizeModeEventHandler();
 }
 

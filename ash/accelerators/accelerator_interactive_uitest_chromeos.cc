@@ -62,7 +62,7 @@ class AcceleratorInteractiveUITest : public AshInteractiveUITestBase,
   void SetUp() override {
     AshInteractiveUITestBase::SetUp();
 
-    WmShell::Get()->AddShellObserver(this);
+    Shell::GetInstance()->AddShellObserver(this);
 
     chromeos::NetworkHandler::Initialize();
   }
@@ -70,7 +70,7 @@ class AcceleratorInteractiveUITest : public AshInteractiveUITestBase,
   void TearDown() override {
     chromeos::NetworkHandler::Shutdown();
 
-    WmShell::Get()->RemoveShellObserver(this);
+    Shell::GetInstance()->RemoveShellObserver(this);
 
     AshInteractiveUITestBase::TearDown();
   }

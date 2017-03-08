@@ -382,7 +382,7 @@ DockedWindowLayoutManager::DockedWindowLayoutManager(WmWindow* dock_container)
       last_action_time_(base::Time::Now()),
       background_widget_(nullptr) {
   DCHECK(dock_container);
-  dock_container_->GetShell()->AddShellObserver(this);
+  Shell::GetInstance()->AddShellObserver(this);
   Shell::GetInstance()->activation_client()->AddObserver(this);
   display::Screen::GetScreen()->AddObserver(this);
 }
@@ -411,7 +411,7 @@ void DockedWindowLayoutManager::Shutdown() {
     child->GetWindowState()->RemoveObserver(this);
   }
   Shell::GetInstance()->activation_client()->RemoveObserver(this);
-  dock_container_->GetShell()->RemoveShellObserver(this);
+  Shell::GetInstance()->RemoveShellObserver(this);
   display::Screen::GetScreen()->RemoveObserver(this);
 }
 

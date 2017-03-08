@@ -156,7 +156,7 @@ ShelfLayoutManager::ShelfLayoutManager(ShelfWidget* shelf_widget,
       shelf_background_type_(SHELF_BACKGROUND_OVERLAP) {
   DCHECK(shelf_widget_);
   DCHECK(wm_shelf_);
-  WmShell::Get()->AddShellObserver(this);
+  Shell::GetInstance()->AddShellObserver(this);
   WmShell::Get()->AddLockStateObserver(this);
   Shell::GetInstance()->activation_client()->AddObserver(this);
   WmShell::Get()->session_controller()->AddSessionStateObserver(this);
@@ -170,7 +170,7 @@ ShelfLayoutManager::~ShelfLayoutManager() {
 
   for (auto& observer : observers_)
     observer.WillDeleteShelfLayoutManager();
-  WmShell::Get()->RemoveShellObserver(this);
+  Shell::GetInstance()->RemoveShellObserver(this);
   WmShell::Get()->RemoveLockStateObserver(this);
   WmShell::Get()->session_controller()->RemoveSessionStateObserver(this);
 }

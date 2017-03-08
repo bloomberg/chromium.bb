@@ -358,16 +358,6 @@ std::unique_ptr<KeyEventWatcher> WmShellMus::CreateKeyEventWatcher() {
   return std::unique_ptr<KeyEventWatcher>();
 }
 
-void WmShellMus::OnOverviewModeStarting() {
-  for (auto& observer : *shell_observers())
-    observer.OnOverviewModeStarting();
-}
-
-void WmShellMus::OnOverviewModeEnded() {
-  for (auto& observer : *shell_observers())
-    observer.OnOverviewModeEnded();
-}
-
 SessionStateDelegate* WmShellMus::GetSessionStateDelegate() {
   return session_state_delegate_
              ? session_state_delegate_.get()

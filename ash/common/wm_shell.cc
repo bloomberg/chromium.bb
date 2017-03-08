@@ -172,65 +172,11 @@ void WmShell::CreateShelfDelegate() {
   shelf_window_watcher_.reset(new ShelfWindowWatcher(shelf_model()));
 }
 
-void WmShell::OnMaximizeModeStarted() {
-  for (auto& observer : shell_observers_)
-    observer.OnMaximizeModeStarted();
-}
-
-void WmShell::OnMaximizeModeEnding() {
-  for (auto& observer : shell_observers_)
-    observer.OnMaximizeModeEnding();
-}
-
-void WmShell::OnMaximizeModeEnded() {
-  for (auto& observer : shell_observers_)
-    observer.OnMaximizeModeEnded();
-}
-
 void WmShell::UpdateAfterLoginStatusChange(LoginStatus status) {
   for (WmWindow* root_window : GetAllRootWindows()) {
     root_window->GetRootWindowController()->UpdateAfterLoginStatusChange(
         status);
   }
-}
-
-void WmShell::NotifyFullscreenStateChanged(bool is_fullscreen,
-                                           WmWindow* root_window) {
-  for (auto& observer : shell_observers_)
-    observer.OnFullscreenStateChanged(is_fullscreen, root_window);
-}
-
-void WmShell::NotifyPinnedStateChanged(WmWindow* pinned_window) {
-  for (auto& observer : shell_observers_)
-    observer.OnPinnedStateChanged(pinned_window);
-}
-
-void WmShell::NotifyVirtualKeyboardActivated(bool activated) {
-  for (auto& observer : shell_observers_)
-    observer.OnVirtualKeyboardStateChanged(activated);
-}
-
-void WmShell::NotifyShelfCreatedForRootWindow(WmWindow* root_window) {
-  for (auto& observer : shell_observers_)
-    observer.OnShelfCreatedForRootWindow(root_window);
-}
-
-void WmShell::NotifyShelfAlignmentChanged(WmWindow* root_window) {
-  for (auto& observer : shell_observers_)
-    observer.OnShelfAlignmentChanged(root_window);
-}
-
-void WmShell::NotifyShelfAutoHideBehaviorChanged(WmWindow* root_window) {
-  for (auto& observer : shell_observers_)
-    observer.OnShelfAutoHideBehaviorChanged(root_window);
-}
-
-void WmShell::AddShellObserver(ShellObserver* observer) {
-  shell_observers_.AddObserver(observer);
-}
-
-void WmShell::RemoveShellObserver(ShellObserver* observer) {
-  shell_observers_.RemoveObserver(observer);
 }
 
 void WmShell::OnLockStateEvent(LockStateObserver::EventType event) {

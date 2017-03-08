@@ -6,7 +6,6 @@
 
 #include <stddef.h>
 
-#include "ash/common/wm_shell.h"
 #include "ash/shell.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -22,7 +21,7 @@ namespace policy {
 
 DisplayRotationDefaultHandler::DisplayRotationDefaultHandler() {
   ash::Shell::GetInstance()->window_tree_host_manager()->AddObserver(this);
-  ash::WmShell::Get()->AddShellObserver(this);
+  ash::Shell::GetInstance()->AddShellObserver(this);
   settings_observer_ = chromeos::CrosSettings::Get()->AddSettingsObserver(
       chromeos::kDisplayRotationDefault,
       base::Bind(&DisplayRotationDefaultHandler::OnCrosSettingsChanged,
@@ -43,7 +42,7 @@ void DisplayRotationDefaultHandler::OnDisplayConfigurationChanged() {
 
 void DisplayRotationDefaultHandler::OnWindowTreeHostManagerShutdown() {
   ash::Shell::GetInstance()->window_tree_host_manager()->RemoveObserver(this);
-  ash::WmShell::Get()->RemoveShellObserver(this);
+  ash::Shell::GetInstance()->RemoveShellObserver(this);
   settings_observer_.reset();
   base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
 }

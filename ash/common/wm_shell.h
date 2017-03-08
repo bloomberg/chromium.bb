@@ -76,7 +76,6 @@ class ShelfModel;
 class ShelfWindowWatcher;
 class ShellDelegate;
 struct ShellInitParams;
-class ShellObserver;
 class ShutdownController;
 class SystemTrayDelegate;
 class SystemTrayController;
@@ -351,55 +350,14 @@ class ASH_EXPORT WmShell : public SessionStateObserver {
 
   void CreateShelfDelegate();
 
-  // Called after maximize mode has started, windows might still animate though.
-  void OnMaximizeModeStarted();
-
-  // Called after maximize mode is about to end.
-  void OnMaximizeModeEnding();
-
-  // Called after maximize mode has ended, windows might still be returning to
-  // their original position.
-  void OnMaximizeModeEnded();
-
-  // Called when the overview mode is about to be started (before the windows
-  // get re-arranged).
-  virtual void OnOverviewModeStarting() = 0;
-
-  // Called after overview mode has ended.
-  virtual void OnOverviewModeEnded() = 0;
-
   // Called when the login status changes.
   // TODO(oshima): Investigate if we can merge this and |OnLoginStateChanged|.
   void UpdateAfterLoginStatusChange(LoginStatus status);
-
-  // Notify observers that fullscreen mode has changed for |root_window|.
-  void NotifyFullscreenStateChanged(bool is_fullscreen, WmWindow* root_window);
-
-  // Notify observers that |pinned_window| changed its pinned window state.
-  void NotifyPinnedStateChanged(WmWindow* pinned_window);
-
-  // Notify observers that the virtual keyboard has been activated/deactivated.
-  void NotifyVirtualKeyboardActivated(bool activated);
-
-  // Notify observers that the shelf was created for |root_window|.
-  // TODO(jamescook): Move to Shelf.
-  void NotifyShelfCreatedForRootWindow(WmWindow* root_window);
-
-  // Notify observers that |root_window|'s shelf changed auto-hide alignment.
-  // TODO(jamescook): Move to Shelf.
-  void NotifyShelfAlignmentChanged(WmWindow* root_window);
-
-  // Notify observers that |root_window|'s shelf changed auto-hide behavior.
-  // TODO(jamescook): Move to Shelf.
-  void NotifyShelfAutoHideBehaviorChanged(WmWindow* root_window);
 
   virtual SessionStateDelegate* GetSessionStateDelegate() = 0;
 
   virtual void AddDisplayObserver(WmDisplayObserver* observer) = 0;
   virtual void RemoveDisplayObserver(WmDisplayObserver* observer) = 0;
-
-  void AddShellObserver(ShellObserver* observer);
-  void RemoveShellObserver(ShellObserver* observer);
 
   // If |events| is PointerWatcherEventTypes::MOVES,
   // PointerWatcher::OnPointerEventObserved() is called for pointer move events.
@@ -442,10 +400,6 @@ class ASH_EXPORT WmShell : public SessionStateObserver {
   virtual void CreatePrimaryHost() = 0;
   virtual void InitHosts(const ShellInitParams& init_params) = 0;
 
-  base::ObserverList<ShellObserver>* shell_observers() {
-    return &shell_observers_;
-  }
-
   void SetKeyboardUI(std::unique_ptr<KeyboardUI> keyboard_ui);
 
   // Helpers to set (and initialize) or destroy various delegates.
@@ -478,7 +432,6 @@ class ASH_EXPORT WmShell : public SessionStateObserver {
 
   static WmShell* instance_;
 
-  base::ObserverList<ShellObserver> shell_observers_;
   std::unique_ptr<ShellDelegate> delegate_;
 
   scoped_refptr<preferences::PrefClientStore> pref_store_;

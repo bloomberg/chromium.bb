@@ -331,9 +331,11 @@ class ShelfInitializer : public ShellObserver {
  public:
   ShelfInitializer(ShelfAlignment alignment, ShelfAutoHideBehavior auto_hide)
       : alignment_(alignment), auto_hide_(auto_hide) {
-    WmShell::Get()->AddShellObserver(this);
+    Shell::GetInstance()->AddShellObserver(this);
   }
-  ~ShelfInitializer() override { WmShell::Get()->RemoveShellObserver(this); }
+  ~ShelfInitializer() override {
+    Shell::GetInstance()->RemoveShellObserver(this);
+  }
 
   // ShellObserver:
   void OnShelfCreatedForRootWindow(WmWindow* root_window) override {

@@ -224,16 +224,6 @@ std::unique_ptr<KeyEventWatcher> WmShellAura::CreateKeyEventWatcher() {
   return base::MakeUnique<KeyEventWatcherAura>();
 }
 
-void WmShellAura::OnOverviewModeStarting() {
-  for (auto& observer : *shell_observers())
-    observer.OnOverviewModeStarting();
-}
-
-void WmShellAura::OnOverviewModeEnded() {
-  for (auto& observer : *shell_observers())
-    observer.OnOverviewModeEnded();
-}
-
 SessionStateDelegate* WmShellAura::GetSessionStateDelegate() {
   return Shell::GetInstance()->session_state_delegate();
 }

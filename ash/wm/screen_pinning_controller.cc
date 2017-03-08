@@ -10,11 +10,11 @@
 #include "ash/common/wm/container_finder.h"
 #include "ash/common/wm/window_dimmer.h"
 #include "ash/common/wm/window_state.h"
-#include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/common/wm_window_user_data.h"
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/shell.h"
 #include "base/auto_reset.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
@@ -225,7 +225,7 @@ void ScreenPinningController::SetPinnedWindow(WmWindow* pinned_window) {
     pinned_window_ = nullptr;
   }
 
-  WmShell::Get()->NotifyPinnedStateChanged(pinned_window);
+  Shell::GetInstance()->NotifyPinnedStateChanged(pinned_window);
 }
 
 void ScreenPinningController::OnWindowAddedToPinnedContainer(

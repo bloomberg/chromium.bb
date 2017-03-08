@@ -7,8 +7,8 @@
 #include "ash/common/wm/lock_window_state.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm/wm_event.h"
-#include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
+#include "ash/shell.h"
 #include "ui/events/event.h"
 #include "ui/keyboard/keyboard_controller.h"
 #include "ui/keyboard/keyboard_util.h"
@@ -20,7 +20,7 @@ LockLayoutManager::LockLayoutManager(WmWindow* window)
       window_(window),
       root_window_(window->GetRootWindow()),
       is_observing_keyboard_(false) {
-  WmShell::Get()->AddShellObserver(this);
+  Shell::GetInstance()->AddShellObserver(this);
   root_window_->aura_window()->AddObserver(this);
   if (keyboard::KeyboardController::GetInstance()) {
     keyboard::KeyboardController::GetInstance()->AddObserver(this);
@@ -35,7 +35,7 @@ LockLayoutManager::~LockLayoutManager() {
   for (WmWindow* child : window_->GetChildren())
     child->aura_window()->RemoveObserver(this);
 
-  WmShell::Get()->RemoveShellObserver(this);
+  Shell::GetInstance()->RemoveShellObserver(this);
 
   if (keyboard::KeyboardController::GetInstance() && is_observing_keyboard_) {
     keyboard::KeyboardController::GetInstance()->RemoveObserver(this);

@@ -16,6 +16,7 @@
 #include "ash/common/wm_shell.h"
 #include "ash/resources/grit/ash_resources.h"
 #include "ash/resources/vector_icons/vector_icons.h"
+#include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
@@ -118,7 +119,7 @@ BrightnessView::BrightnessView(bool default_view, double initial_percent)
   tri_view->AddView(TriView::Container::CENTER, slider_);
 
   if (is_default_view_) {
-    WmShell::Get()->AddShellObserver(this);
+    Shell::GetInstance()->AddShellObserver(this);
     SetVisible(WmShell::Get()
                    ->maximize_mode_controller()
                    ->IsMaximizeModeWindowManagerEnabled());
@@ -129,7 +130,7 @@ BrightnessView::BrightnessView(bool default_view, double initial_percent)
 
 BrightnessView::~BrightnessView() {
   if (is_default_view_)
-    WmShell::Get()->RemoveShellObserver(this);
+    Shell::GetInstance()->RemoveShellObserver(this);
 }
 
 void BrightnessView::SetBrightnessPercent(double percent) {

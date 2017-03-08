@@ -16,6 +16,7 @@
 #include "ash/common/wm_window.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
+#include "ash/shell.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
@@ -74,7 +75,7 @@ WallpaperController::WallpaperController(
       wallpaper_reload_delay_(kWallpaperReloadDelayMs),
       task_runner_(task_runner) {
   WmShell::Get()->AddDisplayObserver(this);
-  WmShell::Get()->AddShellObserver(this);
+  Shell::GetInstance()->AddShellObserver(this);
 }
 
 WallpaperController::~WallpaperController() {
@@ -83,7 +84,7 @@ WallpaperController::~WallpaperController() {
   if (color_calculator_)
     color_calculator_->RemoveObserver(this);
   WmShell::Get()->RemoveDisplayObserver(this);
-  WmShell::Get()->RemoveShellObserver(this);
+  Shell::GetInstance()->RemoveShellObserver(this);
 }
 
 void WallpaperController::BindRequest(

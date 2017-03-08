@@ -168,7 +168,8 @@ void WmShelf::SetAlignment(ShelfAlignment alignment) {
   shelf_widget_->OnShelfAlignmentChanged();
   shelf_layout_manager_->LayoutShelf();
   WmShell::Get()->shelf_controller()->NotifyShelfAlignmentChanged(this);
-  WmShell::Get()->NotifyShelfAlignmentChanged(GetWindow()->GetRootWindow());
+  Shell::GetInstance()->NotifyShelfAlignmentChanged(
+      GetWindow()->GetRootWindow());
 }
 
 bool WmShelf::IsHorizontalAlignment() const {
@@ -212,7 +213,7 @@ void WmShelf::SetAutoHideBehavior(ShelfAutoHideBehavior auto_hide_behavior) {
 
   auto_hide_behavior_ = auto_hide_behavior;
   WmShell::Get()->shelf_controller()->NotifyShelfAutoHideBehaviorChanged(this);
-  WmShell::Get()->NotifyShelfAutoHideBehaviorChanged(
+  Shell::GetInstance()->NotifyShelfAutoHideBehaviorChanged(
       GetWindow()->GetRootWindow());
 }
 

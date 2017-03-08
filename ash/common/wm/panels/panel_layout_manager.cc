@@ -253,7 +253,7 @@ PanelLayoutManager::PanelLayoutManager(WmWindow* panel_container)
   WmShell* shell = panel_container->GetShell();
   Shell::GetInstance()->activation_client()->AddObserver(this);
   shell->AddDisplayObserver(this);
-  shell->AddShellObserver(this);
+  Shell::GetInstance()->AddShellObserver(this);
 }
 
 PanelLayoutManager::~PanelLayoutManager() {
@@ -284,7 +284,7 @@ void PanelLayoutManager::Shutdown() {
   WmShell* shell = panel_container_->GetShell();
   Shell::GetInstance()->activation_client()->RemoveObserver(this);
   shell->RemoveDisplayObserver(this);
-  shell->RemoveShellObserver(this);
+  Shell::GetInstance()->RemoveShellObserver(this);
 }
 
 void PanelLayoutManager::StartDragging(WmWindow* panel) {

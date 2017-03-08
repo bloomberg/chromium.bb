@@ -109,6 +109,7 @@ class ScreenPinningController;
 class ScreenPositionController;
 class SessionStateDelegate;
 struct ShellInitParams;
+class ShellObserver;
 class ShutdownObserver;
 class SmsObserver;
 class StickyKeysController;
@@ -410,6 +411,49 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
 
   GPUSupport* gpu_support() { return gpu_support_.get(); }
 
+  void AddShellObserver(ShellObserver* observer);
+  void RemoveShellObserver(ShellObserver* observer);
+
+  // Notifies observers that maximize mode has started, windows might still
+  // animate.
+  void NotifyMaximizeModeStarted();
+
+  // Notifies observers that maximize mode is about to end.
+  void NotifyMaximizeModeEnding();
+
+  // Notifies observers that maximize mode has ended, windows might still be
+  // returning to their original position.
+  void NotifyMaximizeModeEnded();
+
+  // Notifies observers that overview mode is about to be started (before the
+  // windows get re-arranged).
+  void NotifyOverviewModeStarting();
+
+  // Notifies observers that overview mode has ended.
+  void NotifyOverviewModeEnded();
+
+  // Notifies observers that fullscreen mode has changed for |root_window|.
+  void NotifyFullscreenStateChanged(bool is_fullscreen, WmWindow* root_window);
+
+  // Notifies observers that |pinned_window| changed its pinned window state.
+  void NotifyPinnedStateChanged(WmWindow* pinned_window);
+
+  // Notifies observers that the virtual keyboard has been
+  // activated/deactivated.
+  void NotifyVirtualKeyboardActivated(bool activated);
+
+  // Notifies observers that the shelf was created for |root_window|.
+  // TODO(jamescook): Move to Shelf.
+  void NotifyShelfCreatedForRootWindow(WmWindow* root_window);
+
+  // Notifies observers that |root_window|'s shelf changed alignment.
+  // TODO(jamescook): Move to Shelf.
+  void NotifyShelfAlignmentChanged(WmWindow* root_window);
+
+  // Notifies observers that |root_window|'s shelf changed auto-hide behavior.
+  // TODO(jamescook): Move to Shelf.
+  void NotifyShelfAutoHideBehaviorChanged(WmWindow* root_window);
+
  private:
   FRIEND_TEST_ALL_PREFIXES(ExtendedDesktopTest, TestCursor);
   FRIEND_TEST_ALL_PREFIXES(WindowManagerTest, MouseEventCursors);
@@ -579,6 +623,8 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   std::unique_ptr<ImmersiveHandlerFactoryAsh> immersive_handler_factory_;
 
   std::unique_ptr<AppListDelegateImpl> app_list_delegate_impl_;
+
+  base::ObserverList<ShellObserver> shell_observers_;
 
   DISALLOW_COPY_AND_ASSIGN(Shell);
 };

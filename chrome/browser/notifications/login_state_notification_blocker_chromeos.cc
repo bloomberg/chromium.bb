@@ -5,8 +5,8 @@
 #include "chrome/browser/notifications/login_state_notification_blocker_chromeos.h"
 
 #include "ash/common/system/system_notifier.h"
-#include "ash/common/wm_shell.h"
 #include "ash/root_window_controller.h"
+#include "ash/shell.h"
 #include "ash/wm/window_properties.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "content/public/browser/notification_service.h"
@@ -23,8 +23,8 @@ LoginStateNotificationBlockerChromeOS::LoginStateNotificationBlockerChromeOS(
   // when a notification is created, so ash::Shell should be initialized, except
   // when running as a mus client (ash::Shell is not initialized when that is
   // the case).
-  if (ash::WmShell::HasInstance())
-    ash::WmShell::Get()->AddShellObserver(this);
+  if (ash::Shell::HasInstance())
+    ash::Shell::GetInstance()->AddShellObserver(this);
 
   // LoginState may not exist in some tests.
   if (chromeos::LoginState::IsInitialized())
@@ -39,8 +39,8 @@ LoginStateNotificationBlockerChromeOS::
   if (chromeos::LoginState::IsInitialized())
     chromeos::LoginState::Get()->RemoveObserver(this);
   if (observing_) {
-    if (ash::WmShell::HasInstance())
-      ash::WmShell::Get()->RemoveShellObserver(this);
+    if (ash::Shell::HasInstance())
+      ash::Shell::GetInstance()->RemoveShellObserver(this);
     chromeos::UserAddingScreen::Get()->RemoveObserver(this);
   }
 }
@@ -68,8 +68,8 @@ void LoginStateNotificationBlockerChromeOS::OnLockStateChanged(bool locked) {
 }
 
 void LoginStateNotificationBlockerChromeOS::OnAppTerminating() {
-  if (ash::WmShell::HasInstance())
-    ash::WmShell::Get()->RemoveShellObserver(this);
+  if (ash::Shell::HasInstance())
+    ash::Shell::GetInstance()->RemoveShellObserver(this);
   chromeos::UserAddingScreen::Get()->RemoveObserver(this);
   observing_ = false;
 }

@@ -9,6 +9,7 @@
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
+#include "ash/shell.h"
 #include "ui/gfx/canvas.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/widget/widget.h"
@@ -30,11 +31,11 @@ HeaderView::HeaderView(views::Widget* target_widget,
   header_painter_->Init(target_widget_, this, caption_button_container_);
   UpdateAvatarIcon();
 
-  WmShell::Get()->AddShellObserver(this);
+  Shell::GetInstance()->AddShellObserver(this);
 }
 
 HeaderView::~HeaderView() {
-  WmShell::Get()->RemoveShellObserver(this);
+  Shell::GetInstance()->RemoveShellObserver(this);
 }
 
 void HeaderView::SchedulePaintForTitle() {

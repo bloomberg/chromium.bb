@@ -11,6 +11,7 @@
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/system/tray/system_tray_notifier.h"
 #include "ash/common/wm_shell.h"
+#include "ash/shell.h"
 #include "base/location.h"
 #include "base/time/default_tick_clock.h"
 #include "base/time/tick_clock.h"
@@ -28,14 +29,14 @@ LogoutConfirmationController::LogoutConfirmationController(
       dialog_(NULL),
       logout_timer_(false, false) {
   if (WmShell::HasInstance()) {
-    WmShell::Get()->AddShellObserver(this);
+    Shell::GetInstance()->AddShellObserver(this);
     WmShell::Get()->system_tray_notifier()->AddLastWindowClosedObserver(this);
   }
 }
 
 LogoutConfirmationController::~LogoutConfirmationController() {
   if (WmShell::HasInstance()) {
-    WmShell::Get()->RemoveShellObserver(this);
+    Shell::GetInstance()->RemoveShellObserver(this);
     WmShell::Get()->system_tray_notifier()->RemoveLastWindowClosedObserver(
         this);
   }

@@ -264,7 +264,7 @@ ArcAppWindowLauncherController::~ArcAppWindowLauncherController() {
   if (observed_profile_)
     StopObserving(observed_profile_);
   if (observing_shell_)
-    ash::WmShell::Get()->RemoveShellObserver(this);
+    ash::Shell::GetInstance()->RemoveShellObserver(this);
 }
 
 // static
@@ -398,7 +398,7 @@ void ArcAppWindowLauncherController::AttachControllerToWindowIfNeeded(
   // the layout switch information.
   if (!observing_shell_) {
     observing_shell_ = true;
-    ash::WmShell::Get()->AddShellObserver(this);
+    ash::Shell::GetInstance()->AddShellObserver(this);
   }
 
   // Check if we have controller for this task.

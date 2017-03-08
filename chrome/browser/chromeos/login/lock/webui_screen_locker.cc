@@ -126,7 +126,7 @@ WebUIScreenLocker::WebUIScreenLocker(ScreenLocker* screen_locker)
       weak_factory_(this) {
   set_should_emit_login_prompt_visible(false);
   ash::WmShell::Get()->AddLockStateObserver(this);
-  ash::WmShell::Get()->AddShellObserver(this);
+  ash::Shell::GetInstance()->AddShellObserver(this);
   display::Screen::GetScreen()->AddObserver(this);
   DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(this);
 
@@ -140,7 +140,7 @@ WebUIScreenLocker::~WebUIScreenLocker() {
   DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(this);
   display::Screen::GetScreen()->RemoveObserver(this);
   ash::WmShell::Get()->RemoveLockStateObserver(this);
-  ash::WmShell::Get()->RemoveShellObserver(this);
+  ash::Shell::GetInstance()->RemoveShellObserver(this);
   // In case of shutdown, lock_window_ may be deleted before WebUIScreenLocker.
   if (lock_window_) {
     lock_window_->RemoveObserver(this);

@@ -24,6 +24,7 @@
 #include "ash/common/wm_window.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
+#include "ash/shell.h"
 #include "ash/wm/window_state_aura.h"
 #include "base/command_line.h"
 #include "base/run_loop.h"
@@ -63,10 +64,12 @@ class MaximizeDelegateView : public views::WidgetDelegateView {
 class TestShellObserver : public ShellObserver {
  public:
   TestShellObserver() : call_count_(0), is_fullscreen_(false) {
-    WmShell::Get()->AddShellObserver(this);
+    Shell::GetInstance()->AddShellObserver(this);
   }
 
-  ~TestShellObserver() override { WmShell::Get()->RemoveShellObserver(this); }
+  ~TestShellObserver() override {
+    Shell::GetInstance()->RemoveShellObserver(this);
+  }
 
   void OnFullscreenStateChanged(bool is_fullscreen,
                                 WmWindow* root_window) override {

@@ -21,7 +21,7 @@ namespace exo {
 // WMHelperAsh, public:
 
 WMHelperAsh::WMHelperAsh() {
-  ash::WmShell::Get()->AddShellObserver(this);
+  ash::Shell::GetInstance()->AddShellObserver(this);
   ash::Shell::GetInstance()->activation_client()->AddObserver(this);
   aura::client::FocusClient* focus_client =
       aura::client::GetFocusClient(ash::Shell::GetPrimaryRootWindow());
@@ -37,7 +37,7 @@ WMHelperAsh::~WMHelperAsh() {
       aura::client::GetFocusClient(ash::Shell::GetPrimaryRootWindow());
   focus_client->RemoveObserver(this);
   ash::Shell::GetInstance()->activation_client()->RemoveObserver(this);
-  ash::WmShell::Get()->RemoveShellObserver(this);
+  ash::Shell::GetInstance()->RemoveShellObserver(this);
   ui::DeviceDataManager::GetInstance()->RemoveObserver(this);
   ash::WmShell::Get()->system_tray_notifier()->RemoveAccessibilityObserver(
       this);

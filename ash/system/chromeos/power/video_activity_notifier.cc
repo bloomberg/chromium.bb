@@ -26,14 +26,14 @@ VideoActivityNotifier::VideoActivityNotifier(VideoDetector* detector)
       screen_is_locked_(
           Shell::GetInstance()->session_state_delegate()->IsScreenLocked()) {
   detector_->AddObserver(this);
-  WmShell::Get()->AddShellObserver(this);
+  Shell::GetInstance()->AddShellObserver(this);
 
   MaybeNotifyPowerManager();
   UpdateTimer();
 }
 
 VideoActivityNotifier::~VideoActivityNotifier() {
-  WmShell::Get()->RemoveShellObserver(this);
+  Shell::GetInstance()->RemoveShellObserver(this);
   detector_->RemoveObserver(this);
 }
 

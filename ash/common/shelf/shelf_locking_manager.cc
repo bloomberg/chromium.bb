@@ -7,6 +7,7 @@
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/wm_shell.h"
+#include "ash/shell.h"
 
 namespace ash {
 
@@ -17,13 +18,13 @@ ShelfLockingManager::ShelfLockingManager(WmShelf* shelf) : shelf_(shelf) {
       delegate->GetSessionState() != session_manager::SessionState::ACTIVE;
   screen_locked_ = delegate->IsScreenLocked();
   delegate->AddSessionStateObserver(this);
-  WmShell::Get()->AddShellObserver(this);
+  Shell::GetInstance()->AddShellObserver(this);
 }
 
 ShelfLockingManager::~ShelfLockingManager() {
   WmShell::Get()->RemoveLockStateObserver(this);
   WmShell::Get()->GetSessionStateDelegate()->RemoveSessionStateObserver(this);
-  WmShell::Get()->RemoveShellObserver(this);
+  Shell::GetInstance()->RemoveShellObserver(this);
 }
 
 void ShelfLockingManager::OnLockStateChanged(bool locked) {

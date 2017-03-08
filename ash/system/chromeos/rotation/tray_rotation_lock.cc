@@ -93,14 +93,14 @@ RotationLockDefaultView::RotationLockDefaultView(SystemTrayItem* owner)
   SetInkDropMode(InkDropHostView::InkDropMode::ON);
 
   SetVisible(IsMaximizeModeWindowManagerEnabled());
-  WmShell::Get()->AddShellObserver(this);
+  Shell::GetInstance()->AddShellObserver(this);
   if (IsMaximizeModeWindowManagerEnabled())
     Shell::GetInstance()->screen_orientation_controller()->AddObserver(this);
 }
 
 RotationLockDefaultView::~RotationLockDefaultView() {
   StopObservingRotation();
-  WmShell::Get()->RemoveShellObserver(this);
+  Shell::GetInstance()->RemoveShellObserver(this);
 }
 
 void RotationLockDefaultView::Update() {
@@ -160,11 +160,11 @@ TrayRotationLock::TrayRotationLock(SystemTray* system_tray)
     : TrayImageItem(system_tray,
                     kSystemTrayRotationLockLockedIcon,
                     UMA_ROTATION_LOCK) {
-  WmShell::Get()->AddShellObserver(this);
+  Shell::GetInstance()->AddShellObserver(this);
 }
 
 TrayRotationLock::~TrayRotationLock() {
-  WmShell::Get()->RemoveShellObserver(this);
+  Shell::GetInstance()->RemoveShellObserver(this);
 }
 
 void TrayRotationLock::OnRotationLockChanged(bool rotation_locked) {
@@ -189,7 +189,7 @@ void TrayRotationLock::OnMaximizeModeEnded() {
 
 void TrayRotationLock::DestroyTrayView() {
   StopObservingRotation();
-  WmShell::Get()->RemoveShellObserver(this);
+  Shell::GetInstance()->RemoveShellObserver(this);
   TrayImageItem::DestroyTrayView();
 }
 

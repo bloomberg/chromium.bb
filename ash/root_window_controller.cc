@@ -386,7 +386,7 @@ void RootWindowController::CreateShelfView() {
   // Notify shell observers that the shelf has been created.
   // TODO(jamescook): Move this into WmShelf::InitializeShelf(). This will
   // require changing AttachedPanelWidgetTargeter's access to WmShelf.
-  WmShell::Get()->NotifyShelfCreatedForRootWindow(
+  Shell::GetInstance()->NotifyShelfCreatedForRootWindow(
       WmWindow::Get(GetRootWindow()));
 
   wm_shelf_->shelf_widget()->PostCreateShelf();
@@ -551,7 +551,7 @@ void RootWindowController::OnWallpaperAnimationFinished(views::Widget* widget) {
 }
 
 void RootWindowController::Shutdown() {
-  WmShell::Get()->RemoveShellObserver(this);
+  Shell::GetInstance()->RemoveShellObserver(this);
 
   touch_exploration_manager_.reset();
 
@@ -680,7 +680,7 @@ void RootWindowController::ActivateKeyboard(
   keyboard_controller->AddObserver(workspace_controller()->layout_manager());
   keyboard_controller->AddObserver(
       always_on_top_controller_->GetLayoutManager());
-  WmShell::Get()->NotifyVirtualKeyboardActivated(true);
+  Shell::GetInstance()->NotifyVirtualKeyboardActivated(true);
   aura::Window* parent = GetContainer(kShellWindowId_ImeWindowParentContainer);
   DCHECK(parent);
   aura::Window* keyboard_container = keyboard_controller->GetContainerWindow();
@@ -711,7 +711,7 @@ void RootWindowController::DeactivateKeyboard(
         workspace_controller()->layout_manager());
     keyboard_controller->RemoveObserver(
         always_on_top_controller_->GetLayoutManager());
-    WmShell::Get()->NotifyVirtualKeyboardActivated(false);
+    Shell::GetInstance()->NotifyVirtualKeyboardActivated(false);
   }
 }
 
@@ -804,7 +804,7 @@ void RootWindowController::Init(RootWindowType root_window_type) {
     GetSystemModalLayoutManager(nullptr)->CreateModalBackground();
   }
 
-  wm_shell->AddShellObserver(this);
+  shell->AddShellObserver(this);
 
   root_window_layout_manager_->OnWindowResized();
   if (root_window_type == RootWindowType::PRIMARY) {

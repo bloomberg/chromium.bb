@@ -41,7 +41,7 @@ WorkspaceLayoutManager::WorkspaceLayoutManager(WmWindow* window)
       shell_(window_->GetShell()),
       work_area_in_parent_(wm::GetDisplayWorkAreaBoundsInParent(window_)),
       is_fullscreen_(wm::GetWindowForFullscreenMode(window) != nullptr) {
-  shell_->AddShellObserver(this);
+  Shell::GetInstance()->AddShellObserver(this);
   Shell::GetInstance()->activation_client()->AddObserver(this);
   root_window_->aura_window()->AddObserver(this);
   display::Screen::GetScreen()->AddObserver(this);
@@ -58,7 +58,7 @@ WorkspaceLayoutManager::~WorkspaceLayoutManager() {
   }
   display::Screen::GetScreen()->RemoveObserver(this);
   Shell::GetInstance()->activation_client()->RemoveObserver(this);
-  shell_->RemoveShellObserver(this);
+  Shell::GetInstance()->RemoveShellObserver(this);
 }
 
 void WorkspaceLayoutManager::SetMaximizeBackdropDelegate(
@@ -368,7 +368,8 @@ void WorkspaceLayoutManager::UpdateFullscreenState() {
     return;
   bool is_fullscreen = wm::GetWindowForFullscreenMode(window_) != nullptr;
   if (is_fullscreen != is_fullscreen_) {
-    WmShell::Get()->NotifyFullscreenStateChanged(is_fullscreen, root_window_);
+    Shell::GetInstance()->NotifyFullscreenStateChanged(is_fullscreen,
+                                                       root_window_);
     is_fullscreen_ = is_fullscreen;
   }
 }

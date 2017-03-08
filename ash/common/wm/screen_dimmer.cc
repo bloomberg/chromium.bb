@@ -10,6 +10,7 @@
 #include "ash/common/wm_window.h"
 #include "ash/common/wm_window_user_data.h"
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/shell.h"
 #include "base/memory/ptr_util.h"
 
 namespace ash {
@@ -28,13 +29,13 @@ ScreenDimmer::ScreenDimmer(Container container)
       is_dimming_(false),
       at_bottom_(false),
       window_dimmers_(base::MakeUnique<WmWindowUserData<WindowDimmer>>()) {
-  WmShell::Get()->AddShellObserver(this);
+  Shell::GetInstance()->AddShellObserver(this);
 }
 
 ScreenDimmer::~ScreenDimmer() {
   // Usage in chrome results in ScreenDimmer outliving the shell.
-  if (WmShell::HasInstance())
-    WmShell::Get()->RemoveShellObserver(this);
+  if (Shell::HasInstance())
+    Shell::GetInstance()->RemoveShellObserver(this);
 }
 
 void ScreenDimmer::SetDimming(bool should_dim) {

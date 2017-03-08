@@ -13,6 +13,7 @@
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/root_window_controller.h"
+#include "ash/shell.h"
 #include "ash/wm/window_properties.h"
 #include "base/memory/ptr_util.h"
 #include "ui/aura/window.h"
@@ -26,8 +27,10 @@ TestShelfDelegate* TestShelfDelegate::instance_ = nullptr;
 // shelf is created, to simulate ChromeLauncherController's behavior.
 class ShelfInitializer : public ShellObserver {
  public:
-  ShelfInitializer() { WmShell::Get()->AddShellObserver(this); }
-  ~ShelfInitializer() override { WmShell::Get()->RemoveShellObserver(this); }
+  ShelfInitializer() { Shell::GetInstance()->AddShellObserver(this); }
+  ~ShelfInitializer() override {
+    Shell::GetInstance()->RemoveShellObserver(this);
+  }
 
   // ShellObserver:
   void OnShelfCreatedForRootWindow(WmWindow* root_window) override {

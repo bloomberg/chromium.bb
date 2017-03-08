@@ -4,7 +4,7 @@
 
 #include "ash/display/shutdown_observer_chromeos.h"
 
-#include "ash/common/wm_shell.h"
+#include "ash/shell.h"
 #include "ui/display/manager/chromeos/display_configurator.h"
 
 namespace ash {
@@ -12,11 +12,11 @@ namespace ash {
 ShutdownObserver::ShutdownObserver(
     display::DisplayConfigurator* display_configurator)
     : display_configurator_(display_configurator) {
-  WmShell::Get()->AddShellObserver(this);
+  Shell::GetInstance()->AddShellObserver(this);
 }
 
 ShutdownObserver::~ShutdownObserver() {
-  WmShell::Get()->RemoveShellObserver(this);
+  Shell::GetInstance()->RemoveShellObserver(this);
 }
 
 void ShutdownObserver::OnAppTerminating() {

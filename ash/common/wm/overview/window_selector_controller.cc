@@ -13,6 +13,7 @@
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
+#include "ash/shell.h"
 #include "base/metrics/histogram_macros.h"
 
 namespace ash {
@@ -63,7 +64,7 @@ bool WindowSelectorController::ToggleOverview() {
     if (windows.empty())
       return false;
 
-    WmShell::Get()->OnOverviewModeStarting();
+    Shell::GetInstance()->NotifyOverviewModeStarting();
     window_selector_.reset(new WindowSelector(this));
     window_selector_->Init(windows);
     OnSelectionStarted();
@@ -96,7 +97,7 @@ void WindowSelectorController::OnSelectionEnded() {
   window_selector_->Shutdown();
   window_selector_.reset();
   last_selection_time_ = base::Time::Now();
-  WmShell::Get()->OnOverviewModeEnded();
+  Shell::GetInstance()->NotifyOverviewModeEnded();
 }
 
 void WindowSelectorController::AddDelayedAnimationObserver(

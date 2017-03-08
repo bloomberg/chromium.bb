@@ -11,8 +11,8 @@
 #include "ash/common/frame/default_header_painter.h"
 #include "ash/common/frame/frame_border_hit_test.h"
 #include "ash/common/frame/header_painter_util.h"
-#include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
+#include "ash/shell.h"
 #include "base/feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profiles_state.h"
@@ -77,11 +77,11 @@ BrowserNonClientFrameViewAsh::BrowserNonClientFrameViewAsh(
       window_icon_(nullptr) {
   ash::WmWindow::Get(frame->GetNativeWindow())
       ->InstallResizeHandleWindowTargeter(nullptr);
-  ash::WmShell::Get()->AddShellObserver(this);
+  ash::Shell::GetInstance()->AddShellObserver(this);
 }
 
 BrowserNonClientFrameViewAsh::~BrowserNonClientFrameViewAsh() {
-  ash::WmShell::Get()->RemoveShellObserver(this);
+  ash::Shell::GetInstance()->RemoveShellObserver(this);
 }
 
 void BrowserNonClientFrameViewAsh::Init() {

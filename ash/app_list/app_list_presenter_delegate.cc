@@ -67,7 +67,7 @@ AppListPresenterDelegate::AppListPresenterDelegate(
     app_list::AppListPresenterImpl* presenter,
     app_list::AppListViewDelegateFactory* view_delegate_factory)
     : presenter_(presenter), view_delegate_factory_(view_delegate_factory) {
-  WmShell::Get()->AddShellObserver(this);
+  Shell::GetInstance()->AddShellObserver(this);
 }
 
 AppListPresenterDelegate::~AppListPresenterDelegate() {
@@ -79,7 +79,7 @@ AppListPresenterDelegate::~AppListPresenterDelegate() {
   Shell::GetInstance()->RemovePreTargetHandler(this);
   WmWindow* window = WmWindow::Get(view_->GetWidget()->GetNativeWindow());
   window->GetRootWindowController()->GetShelf()->RemoveObserver(this);
-  WmShell::Get()->RemoveShellObserver(this);
+  Shell::GetInstance()->RemoveShellObserver(this);
 }
 
 app_list::AppListViewDelegate* AppListPresenterDelegate::GetViewDelegate() {
