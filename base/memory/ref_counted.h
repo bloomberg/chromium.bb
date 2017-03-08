@@ -7,6 +7,7 @@
 
 #include <stddef.h>
 
+#include <algorithm>
 #include <cassert>
 #include <iosfwd>
 #include <type_traits>
@@ -354,15 +355,7 @@ class scoped_refptr {
     return *this;
   }
 
-  void swap(T** pp) {
-    T* p = ptr_;
-    ptr_ = *pp;
-    *pp = p;
-  }
-
-  void swap(scoped_refptr<T>& r) {
-    swap(&r.ptr_);
-  }
+  void swap(scoped_refptr<T>& r) { std::swap(ptr_, r.ptr_); }
 
   explicit operator bool() const { return ptr_ != nullptr; }
 

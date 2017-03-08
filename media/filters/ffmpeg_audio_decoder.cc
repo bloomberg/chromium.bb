@@ -45,8 +45,8 @@ static inline int DetermineChannels(AVFrame* frame) {
 // Called by FFmpeg's allocation routine to free a buffer. |opaque| is the
 // AudioBuffer allocated, so unref it.
 static void ReleaseAudioBufferImpl(void* opaque, uint8_t* data) {
-  scoped_refptr<AudioBuffer> buffer;
-  buffer.swap(reinterpret_cast<AudioBuffer**>(&opaque));
+  if (opaque)
+    static_cast<AudioBuffer*>(opaque)->Release();
 }
 
 // Called by FFmpeg's allocation routine to allocate a buffer. Uses
@@ -124,8 +124,8 @@ static int GetAudioBuffer(struct AVCodecContext* s, AVFrame* frame, int flags) {
 
   // Now create an AVBufferRef for the data just allocated. It will own the
   // reference to the AudioBuffer object.
-  void* opaque = NULL;
-  buffer.swap(reinterpret_cast<AudioBuffer**>(&opaque));
+  AudioBuffer* opaque = buffer.get();
+  opaque->AddRef();
   frame->buf[0] = av_buffer_create(
       frame->data[0], buffer_size_in_bytes, ReleaseAudioBufferImpl, opaque, 0);
   return 0;

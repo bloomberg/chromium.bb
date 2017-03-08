@@ -102,8 +102,8 @@ static int GetVideoBufferImpl(struct AVCodecContext* s,
 }
 
 static void ReleaseVideoBufferImpl(void* opaque, uint8_t* data) {
-  scoped_refptr<VideoFrame> video_frame;
-  video_frame.swap(reinterpret_cast<VideoFrame**>(&opaque));
+  if (opaque)
+    static_cast<VideoFrame*>(opaque)->Release();
 }
 
 // static
@@ -206,8 +206,8 @@ int FFmpegVideoDecoder::GetVideoBuffer(struct AVCodecContext* codec_context,
 
   // Now create an AVBufferRef for the data just allocated. It will own the
   // reference to the VideoFrame object.
-  void* opaque = NULL;
-  video_frame.swap(reinterpret_cast<VideoFrame**>(&opaque));
+  VideoFrame* opaque = video_frame.get();
+  opaque->AddRef();
   frame->buf[0] =
       av_buffer_create(frame->data[0],
                        VideoFrame::AllocationSize(format, coded_size),
