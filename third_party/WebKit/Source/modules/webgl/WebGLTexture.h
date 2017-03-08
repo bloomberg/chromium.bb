@@ -42,8 +42,6 @@ class WebGLTexture final : public WebGLSharedPlatform3DObject {
 
   GLenum getTarget() const { return m_target; }
 
-  static GLenum getValidFormatForInternalFormat(GLenum);
-
   bool hasEverBeenBound() const { return object() && m_target; }
 
   static GLint computeLevelCount(GLsizei width, GLsizei height, GLsizei depth);
