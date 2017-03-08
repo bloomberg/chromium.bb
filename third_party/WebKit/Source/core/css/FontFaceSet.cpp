@@ -243,7 +243,8 @@ void FontFaceSet::removeFromLoadingFonts(FontFace* fontFace) {
 }
 
 ScriptPromise FontFaceSet::ready(ScriptState* scriptState) {
-  if (m_ready->getState() != ReadyProperty::Pending) {
+  if (m_ready->getState() != ReadyProperty::Pending &&
+      inActiveDocumentContext()) {
     // |m_ready| is already resolved, but there may be pending stylesheet
     // changes and/or layout operations that may cause another font loads.
     // So synchronously update style and layout here.
