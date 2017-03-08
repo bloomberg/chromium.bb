@@ -22,9 +22,15 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
         BaseTestCase.setUp(self)
         LoggingTestCase.setUp(self)
 
+        builds = [
+            Build('MOCK Try Win', 5000),
+            Build('MOCK Try Mac', 4000),
+            Build('MOCK Try Linux', 6000),
+        ]
+
         git_cl = GitCL(self.tool)
         git_cl.get_issue_number = lambda: '11112222'
-        git_cl.latest_try_jobs = lambda _: [Build('MOCK Try Win', 5000)]
+        git_cl.latest_try_jobs = lambda _: builds
         self.command.git_cl = lambda: git_cl
 
         git = MockGit(filesystem=self.tool.filesystem, executive=self.tool.executive)
@@ -35,15 +41,20 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
         self.tool.git = lambda: git
 
         self.tool.builders = BuilderList({
-            "MOCK Try Win": {
-                "port_name": "test-win-win7",
-                "specifiers": ["Win7", "Release"],
-                "is_try_builder": True,
+            'MOCK Try Win': {
+                'port_name': 'test-win-win7',
+                'specifiers': ['Win7', 'Release'],
+                'is_try_builder': True,
             },
-            "MOCK Try Linux": {
-                "port_name": "test-linux-trusty",
-                "specifiers": ["Trusty", "Release"],
-                "is_try_builder": True,
+            'MOCK Try Linux': {
+                'port_name': 'test-linux-trusty',
+                'specifiers': ['Trusty', 'Release'],
+                'is_try_builder': True,
+            },
+            'MOCK Try Mac': {
+                'port_name': 'test-mac-mac10.11',
+                'specifiers': ['Mac10.11', 'Release'],
+                'is_try_builder': True,
             },
         })
         layout_test_results = LayoutTestResults({
@@ -99,22 +110,21 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
                 }
             }
         })
-        for build in [Build('MOCK Try Win', 5000), Build('MOCK Try Mac', 4000)]:
-            self.tool.buildbot.set_results(build, layout_test_results)
 
-        self.tool.buildbot.set_retry_sumary_json(Build('MOCK Try Win', 5000), json.dumps({
-            'failures': [
-                'fast/dom/prototype-inheritance.html',
-                'fast/dom/prototype-newtest.html',
-                'fast/dom/prototype-slowtest.html',
-                'fast/dom/prototype-taco.html',
-                'svg/dynamic-updates/SVGFEDropShadowElement-dom-stdDeviation-attr.html',
-            ],
-            'ignored': [],
-        }))
+        for build in builds:
+            self.tool.buildbot.set_results(build, layout_test_results)
+            self.tool.buildbot.set_retry_sumary_json(build, json.dumps({
+                'failures': [
+                    'fast/dom/prototype-inheritance.html',
+                    'fast/dom/prototype-newtest.html',
+                    'fast/dom/prototype-slowtest.html',
+                    'fast/dom/prototype-taco.html',
+                    'svg/dynamic-updates/SVGFEDropShadowElement-dom-stdDeviation-attr.html',
+                ],
+                'ignored': [],
+            }))
 
         # Write to the mock filesystem so that these tests are considered to exist.
-        port = self.mac_port
         tests = [
             'fast/dom/prototype-taco.html',
             'fast/dom/prototype-inheritance.html',
@@ -122,7 +132,7 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
             'svg/dynamic-updates/SVGFEDropShadowElement-dom-stdDeviation-attr.html',
         ]
         for test in tests:
-            self._write(port.host.filesystem.join(port.layout_tests_dir(), test), 'contents')
+            self._write(self.mac_port.host.filesystem.join(self.mac_port.layout_tests_dir(), test), 'contents')
 
     def tearDown(self):
         BaseTestCase.tearDown(self)
@@ -158,7 +168,7 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
         self.command.git_cl = lambda: git_cl
         return_code = self.command.execute(self.command_options(), [], self.tool)
         self.assertEqual(return_code, 1)
-        self.assertLog(['ERROR: No CL number for current branch.\n'])
+        self.assertLog(['ERROR: No issue number for current branch.\n'])
 
     def test_execute_with_issue_number_from_branch(self):
         return_code = self.command.execute(self.command_options(), [], self.tool)
@@ -187,13 +197,19 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
         # svg/dynamic-updates/SVGFEDropShadowElement-dom-stdDeviation-attr.html
         # failed both with and without the patch in the try job, so it is not
         # rebaselined.
-        self.tool.buildbot.set_retry_sumary_json(Build('MOCK Try Win', 5000), json.dumps({
-            'failures': [
-                'fast/dom/prototype-taco.html',
-                'fast/dom/prototype-inheritance.html',
-            ],
-            'ignored': ['svg/dynamic-updates/SVGFEDropShadowElement-dom-stdDeviation-attr.html'],
-        }))
+        builds = [
+            Build('MOCK Try Win', 5000),
+            Build('MOCK Try Mac', 4000),
+            Build('MOCK Try Linux', 6000),
+        ]
+        for build in builds:
+            self.tool.buildbot.set_retry_sumary_json(build, json.dumps({
+                'failures': [
+                    'fast/dom/prototype-taco.html',
+                    'fast/dom/prototype-inheritance.html',
+                ],
+                'ignored': ['svg/dynamic-updates/SVGFEDropShadowElement-dom-stdDeviation-attr.html'],
+            }))
         return_code = self.command.execute(self.command_options(), [], self.tool)
         self.assertEqual(return_code, 0)
         self.assertLog([
@@ -219,7 +235,17 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
         ])
 
     def test_execute_with_trigger_jobs_option(self):
+        builds = [
+            Build('MOCK Try Win', 5000),
+            Build('MOCK Try Mac', 4000),
+        ]
+        git_cl = GitCL(self.tool)
+        git_cl.get_issue_number = lambda: '11112222'
+        git_cl.latest_try_jobs = lambda _: builds
+        self.command.git_cl = lambda: git_cl
+
         return_code = self.command.execute(self.command_options(trigger_jobs=True), [], self.tool)
+
         self.assertEqual(return_code, 1)
         self.assertLog([
             'INFO: Triggering try jobs for:\n',
@@ -262,9 +288,9 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
                 [['python', 'echo', 'optimize-baselines', '--suffixes', 'txt', 'fast/dom/prototype-taco.html']]
             ])
 
-    def test_trigger_jobs_for_missing_builds_empty_list(self):
-        # Passing in no builds implies that no try jobs were started.
-        self.assertTrue(self.command.trigger_jobs_for_missing_builds([]))
+    def test_trigger_builds(self):
+        # The trigger_builds method just uses git cl to trigger jobs for the given builders.
+        self.command.trigger_builds(['MOCK Try Linux', 'MOCK Try Win'])
         self.assertEqual(
             self.tool.executive.calls,
             [['git', 'cl', 'try', '-b', 'MOCK Try Linux', '-b', 'MOCK Try Win']])
@@ -274,32 +300,14 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
             'INFO:   MOCK Try Win\n',
         ])
 
-    def test_trigger_jobs_for_missing_builds_started_and_successful(self):
+    def test_builders_with_pending_builds(self):
         # A build number of None implies that a job has been started but not finished yet.
-        self.assertTrue(self.command.trigger_jobs_for_missing_builds([
-            Build('MOCK Try Linux', None),
-            Build('MOCK Try Win', 123),
-        ]))
-        self.assertEqual(self.tool.executive.calls, [])
-        self.assertLog([
-            'INFO: There are existing pending builds for:\n',
-            'INFO:   MOCK Try Linux\n',
-        ])
-
-    def test_trigger_jobs_for_missing_builds_one_started(self):
-        self.assertTrue(self.command.trigger_jobs_for_missing_builds([
-            Build('MOCK Try Linux', None),
-        ]))
-        self.assertEqual(self.tool.executive.calls, [['git', 'cl', 'try', '-b', 'MOCK Try Win']])
-        self.assertLog([
-            'INFO: There are existing pending builds for:\n',
-            'INFO:   MOCK Try Linux\n',
-            'INFO: Triggering try jobs for:\n',
-            'INFO:   MOCK Try Win\n',
-        ])
+        self.assertEqual(
+            self.command.builders_with_pending_builds([Build('MOCK Try Linux', None), Build('MOCK Try Win', 123)]),
+            {'MOCK Try Linux'})
 
     def test_bails_when_one_build_is_missing_results(self):
-        self.tool.buildbot.set_results(Build("MOCK Try Win", 5000), None)
+        self.tool.buildbot.set_results(Build('MOCK Try Win', 5000), None)
         return_code = self.command.execute(self.command_options(), [], self.tool)
         self.assertEqual(return_code, 1)
         self.assertLog([
