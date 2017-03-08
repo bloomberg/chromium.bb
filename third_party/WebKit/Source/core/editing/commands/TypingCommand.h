@@ -73,7 +73,7 @@ class CORE_EXPORT TypingCommand final : public CompositeEditCommand {
                          const bool isIncrementalInsertion = false);
   static void insertText(Document&,
                          const String&,
-                         const VisibleSelection&,
+                         const SelectionInDOMTree&,
                          Options,
                          TextCompositionType = TextCompositionNone,
                          const bool isIncrementalInsertion = false);

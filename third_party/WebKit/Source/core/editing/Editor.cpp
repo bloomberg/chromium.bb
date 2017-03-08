@@ -1026,7 +1026,7 @@ bool Editor::insertTextWithoutSendingTextEvent(const String& text,
 
   // Insert the text
   TypingCommand::insertText(
-      *selection.start().document(), text, selection,
+      *selection.start().document(), text, selection.asSelection(),
       selectInsertedText ? TypingCommand::SelectInsertedText : 0,
       triggeringEvent && triggeringEvent->isComposition()
           ? TypingCommand::TextCompositionConfirm

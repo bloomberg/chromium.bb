@@ -270,9 +270,8 @@ void TypingCommand::insertText(Document& document,
     document.frame()->spellChecker().updateMarkersForWordsAffectedByEditing(
         isSpaceOrNewline(text[0]));
 
-  insertText(document, text,
-             frame->selection().computeVisibleSelectionInDOMTreeDeprecated(),
-             options, composition, isIncrementalInsertion);
+  insertText(document, text, frame->selection().selectionInDOMTree(), options,
+             composition, isIncrementalInsertion);
 }
 
 void TypingCommand::adjustSelectionAfterIncrementalInsertion(
@@ -308,17 +307,20 @@ void TypingCommand::adjustSelectionAfterIncrementalInsertion(
 
 // FIXME: We shouldn't need to take selectionForInsertion. It should be
 // identical to FrameSelection's current selection.
-void TypingCommand::insertText(Document& document,
-                               const String& text,
-                               const VisibleSelection& selectionForInsertion,
-                               Options options,
-                               TextCompositionType compositionType,
-                               const bool isIncrementalInsertion) {
+void TypingCommand::insertText(
+    Document& document,
+    const String& text,
+    const SelectionInDOMTree& passedSelectionForInsertion,
+    Options options,
+    TextCompositionType compositionType,
+    const bool isIncrementalInsertion) {
   LocalFrame* frame = document.frame();
   DCHECK(frame);
 
   VisibleSelection currentSelection =
       frame->selection().computeVisibleSelectionInDOMTreeDeprecated();
+  const VisibleSelection& selectionForInsertion =
+      createVisibleSelection(passedSelectionForInsertion);
 
   String newText = text;
   if (compositionType != TextCompositionUpdate)
