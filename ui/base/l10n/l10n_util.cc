@@ -357,6 +357,10 @@ bool CheckAndResolveLocale(const std::string& locale,
     if (base::LowerCaseEqualsASCII(lang, "es") &&
         !base::LowerCaseEqualsASCII(region, "es")) {
       tmp_locale.append("-419");
+    } else if (base::LowerCaseEqualsASCII(lang, "pt")) {
+      // Map pt-RR other than pt-BR to pt-PT. Note that "pt" by itself maps to
+      // pt-BR (logic below).
+      tmp_locale.append("-PT");
     } else if (base::LowerCaseEqualsASCII(lang, "zh")) {
       // Map zh-HK and zh-MO to zh-TW. Otherwise, zh-FOO is mapped to zh-CN.
       if (base::LowerCaseEqualsASCII(region, "hk") ||
@@ -387,14 +391,13 @@ bool CheckAndResolveLocale(const std::string& locale,
   }
 
   // Google updater uses no, tl, iw and en for our nb, fil, he, and en-US.
+  // Note that pt-RR is mapped to pt-PT above, but we want pt -> pt-BR here.
   struct {
     const char* source;
     const char* dest;
   } alias_map[] = {
-      {"no", "nb"},
-      {"tl", "fil"},
-      {"iw", "he"},
-      {"en", "en-US"},
+      {"en", "en-US"}, {"iw", "he"},  {"no", "nb"},
+      {"pt", "pt-BR"}, {"tl", "fil"}, {"zh", "zh-CN"},
   };
   for (const auto& alias : alias_map) {
     if (base::LowerCaseEqualsASCII(lang, alias.source)) {

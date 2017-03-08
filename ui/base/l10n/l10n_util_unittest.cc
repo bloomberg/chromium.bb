@@ -113,19 +113,8 @@ TEST_F(L10nUtilTest, GetAppLocale) {
   ASSERT_TRUE(PathService::Get(ui::DIR_LOCALES, &new_locale_dir));
   // Make fake locale files.
   std::string filenames[] = {
-    "en-US",
-    "en-GB",
-    "fr",
-    "es-419",
-    "es",
-    "zh-TW",
-    "zh-CN",
-    "he",
-    "fil",
-    "nb",
-    "am",
-    "ca",
-    "ca@valencia",
+      "am", "ca", "ca@valencia", "en-GB", "en-US", "es",    "es-419", "fil",
+      "fr", "he", "nb",          "pt-BR", "pt-PT", "zh-CN", "zh-TW",
   };
 
   for (size_t i = 0; i < arraysize(filenames); ++i) {
@@ -267,6 +256,22 @@ TEST_F(L10nUtilTest, GetAppLocale) {
     EXPECT_EQ("es", l10n_util::GetApplicationLocale(std::string()));
     EXPECT_STREQ("es", icu::Locale::getDefault().getLanguage());
 
+    SetDefaultLocaleForTest("pt-PT", env.get());
+    EXPECT_EQ("pt-PT", l10n_util::GetApplicationLocale(std::string()));
+    EXPECT_STREQ("pt", icu::Locale::getDefault().getLanguage());
+
+    SetDefaultLocaleForTest("pt-BR", env.get());
+    EXPECT_EQ("pt-BR", l10n_util::GetApplicationLocale(std::string()));
+    EXPECT_STREQ("pt", icu::Locale::getDefault().getLanguage());
+
+    SetDefaultLocaleForTest("pt-AO", env.get());
+    EXPECT_EQ("pt-PT", l10n_util::GetApplicationLocale(std::string()));
+    EXPECT_STREQ("pt", icu::Locale::getDefault().getLanguage());
+
+    SetDefaultLocaleForTest("pt", env.get());
+    EXPECT_EQ("pt-BR", l10n_util::GetApplicationLocale(std::string()));
+    EXPECT_STREQ("pt", icu::Locale::getDefault().getLanguage());
+
     SetDefaultLocaleForTest("zh-HK", env.get());
     EXPECT_EQ("zh-TW", l10n_util::GetApplicationLocale(std::string()));
     EXPECT_STREQ("zh", icu::Locale::getDefault().getLanguage());
@@ -276,6 +281,10 @@ TEST_F(L10nUtilTest, GetAppLocale) {
     EXPECT_STREQ("zh", icu::Locale::getDefault().getLanguage());
 
     SetDefaultLocaleForTest("zh-SG", env.get());
+    EXPECT_EQ("zh-CN", l10n_util::GetApplicationLocale(std::string()));
+    EXPECT_STREQ("zh", icu::Locale::getDefault().getLanguage());
+
+    SetDefaultLocaleForTest("zh", env.get());
     EXPECT_EQ("zh-CN", l10n_util::GetApplicationLocale(std::string()));
     EXPECT_STREQ("zh", icu::Locale::getDefault().getLanguage());
 
