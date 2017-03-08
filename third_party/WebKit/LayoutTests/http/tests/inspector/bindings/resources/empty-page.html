@@ -1,0 +1,15 @@
+<html>
+<script>
+window.onload = function()
+{
+    function notifyFrontend()
+    {
+        InspectorTest.pageLoaded();
+    }
+    testRunner.dumpAsText();
+    testRunner.waitUntilDone();
+    testRunner.evaluateInWebInspector(42, "(" + notifyFrontend + ")()");
+}
+</script>
+<p>empty page</p>
+</html>

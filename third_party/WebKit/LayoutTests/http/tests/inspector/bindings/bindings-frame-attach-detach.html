@@ -1,0 +1,32 @@
+<html>
+<head>
+<script src="../inspector-test.js"></script>
+<script src="./bindings-test.js"></script>
+
+<script>
+
+async function test()
+{
+    InspectorTest.markStep('dumpInitialWorkspace');
+    InspectorTest.dumpWorkspace();
+
+    InspectorTest.markStep('attachFrame');
+    await InspectorTest.attachFrame('frame', './resources/magic-frame.html', '_test_attachFrame.js');
+    InspectorTest.dumpWorkspace();
+
+    InspectorTest.markStep('detachFrame');
+    await InspectorTest.detachFrame('frame', '_test_detachFrame.js');
+    InspectorTest.dumpWorkspace();
+
+    InspectorTest.completeTest();
+}
+
+</script>
+
+</head>
+<body onload="runTest()">
+<p>
+Verify that UISourceCodes are added and removed as iframe gets attached and detached.
+</p>
+</body>
+</html>
