@@ -47,7 +47,8 @@ class NumberInputType final : public TextFieldInputType {
   const AtomicString& formControlType() const override;
   void setValue(const String&,
                 bool valueChanged,
-                TextFieldEventBehavior) override;
+                TextFieldEventBehavior,
+                TextControlSetValueSelection) override;
   double valueAsDouble() const override;
   void setValueAsDouble(double,
                         TextFieldEventBehavior,

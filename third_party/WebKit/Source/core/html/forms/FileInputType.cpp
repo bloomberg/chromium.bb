@@ -193,7 +193,8 @@ String FileInputType::valueInFilenameValueMode() const {
 
 void FileInputType::setValue(const String&,
                              bool valueChanged,
-                             TextFieldEventBehavior) {
+                             TextFieldEventBehavior,
+                             TextControlSetValueSelection) {
   if (!valueChanged)
     return;
 

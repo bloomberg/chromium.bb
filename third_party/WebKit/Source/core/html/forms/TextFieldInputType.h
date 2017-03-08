@@ -65,7 +65,8 @@ class TextFieldInputType : public InputType,
   String sanitizeValue(const String&) const override;
   void setValue(const String&,
                 bool valueChanged,
-                TextFieldEventBehavior) override;
+                TextFieldEventBehavior,
+                TextControlSetValueSelection) override;
   void updateView() override;
   LayoutObject* createLayoutObject(const ComputedStyle&) const override;
 

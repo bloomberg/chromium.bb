@@ -122,7 +122,9 @@ class CORE_EXPORT HTMLInputElement : public TextControlElement {
                 ExceptionState&,
                 TextFieldEventBehavior = DispatchNoEvent);
   void setValue(const String&,
-                TextFieldEventBehavior = DispatchNoEvent) override;
+                TextFieldEventBehavior = DispatchNoEvent,
+                TextControlSetValueSelection =
+                    TextControlSetValueSelection::kSetSelectionToEnd) override;
   void setValueForUser(const String&);
   // Update the value, and clear hasDirtyValue() flag.
   void setNonDirtyValue(const String&);

@@ -105,11 +105,13 @@ const AtomicString& NumberInputType::formControlType() const {
 
 void NumberInputType::setValue(const String& sanitizedValue,
                                bool valueChanged,
-                               TextFieldEventBehavior eventBehavior) {
+                               TextFieldEventBehavior eventBehavior,
+                               TextControlSetValueSelection selection) {
   if (!valueChanged && sanitizedValue.isEmpty() &&
       !element().innerEditorValue().isEmpty())
     element().updateView();
-  TextFieldInputType::setValue(sanitizedValue, valueChanged, eventBehavior);
+  TextFieldInputType::setValue(sanitizedValue, valueChanged, eventBehavior,
+                               selection);
 }
 
 double NumberInputType::valueAsDouble() const {

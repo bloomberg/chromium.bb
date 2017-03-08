@@ -291,7 +291,8 @@ void TextControlElement::setRangeText(const String& replacement,
   else
     text.insert(replacement, start);
 
-  setValue(text, TextFieldEventBehavior::DispatchNoEvent);
+  setValue(text, TextFieldEventBehavior::DispatchNoEvent,
+           TextControlSetValueSelection::kDoNotSet);
 
   if (selectionMode == "select") {
     newSelectionStart = start;
@@ -410,14 +411,14 @@ bool TextControlElement::setSelectionRange(
   if (direction == SelectionHasNoDirection && frame &&
       frame->editor().behavior().shouldConsiderSelectionAsDirectional())
     direction = SelectionHasForwardDirection;
-  cacheSelection(start, end, direction);
+  bool didChange = cacheSelection(start, end, direction);
 
   if (document().focusedElement() != this)
-    return true;
+    return didChange;
 
   HTMLElement* innerEditor = innerEditorElement();
   if (!frame || !innerEditor)
-    return true;
+    return didChange;
 
   Position startPosition = positionForIndex(innerEditor, start);
   Position endPosition =
@@ -444,7 +445,20 @@ bool TextControlElement::setSelectionRange(
           .build(),
       FrameSelection::CloseTyping | FrameSelection::ClearTypingStyle |
           FrameSelection::DoNotSetFocus);
-  return true;
+  return didChange;
+}
+
+bool TextControlElement::cacheSelection(unsigned start,
+                                        unsigned end,
+                                        TextFieldSelectionDirection direction) {
+  DCHECK_LE(start, end);
+  bool didChange = m_cachedSelectionStart != start ||
+                   m_cachedSelectionEnd != end ||
+                   m_cachedSelectionDirection != direction;
+  m_cachedSelectionStart = start;
+  m_cachedSelectionEnd = end;
+  m_cachedSelectionDirection = direction;
+  return didChange;
 }
 
 VisiblePosition TextControlElement::visiblePositionForIndex(int index) const {
@@ -732,7 +746,7 @@ void TextControlElement::selectionChanged(bool userTriggered) {
 void TextControlElement::scheduleSelectEvent() {
   Event* event = Event::createBubble(EventTypeNames::select);
   event->setTarget(this);
-  document().enqueueUniqueAnimationFrameEvent(event);
+  document().enqueueAnimationFrameEvent(event);
 }
 
 void TextControlElement::parseAttribute(

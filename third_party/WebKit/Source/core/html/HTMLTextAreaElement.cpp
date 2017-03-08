@@ -377,18 +377,22 @@ String HTMLTextAreaElement::value() const {
 }
 
 void HTMLTextAreaElement::setValue(const String& value,
-                                   TextFieldEventBehavior eventBehavior) {
-  setValueCommon(value, eventBehavior);
+                                   TextFieldEventBehavior eventBehavior,
+                                   TextControlSetValueSelection selection) {
+  setValueCommon(value, eventBehavior, selection);
   m_isDirty = true;
 }
 
 void HTMLTextAreaElement::setNonDirtyValue(const String& value) {
-  setValueCommon(value, DispatchNoEvent);
+  setValueCommon(value, DispatchNoEvent,
+                 TextControlSetValueSelection::kSetSelectionToEnd);
   m_isDirty = false;
 }
 
-void HTMLTextAreaElement::setValueCommon(const String& newValue,
-                                         TextFieldEventBehavior eventBehavior) {
+void HTMLTextAreaElement::setValueCommon(
+    const String& newValue,
+    TextFieldEventBehavior eventBehavior,
+    TextControlSetValueSelection selection) {
   // Code elsewhere normalizes line endings added by the user via the keyboard
   // or pasting.  We normalize line endings coming from JavaScript here.
   String normalizedValue = newValue.isNull() ? "" : newValue;
@@ -411,7 +415,8 @@ void HTMLTextAreaElement::setValueCommon(const String& newValue,
                                               StyleChangeReason::ControlValue));
   m_suggestedValue = String();
   setNeedsValidityCheck();
-  if (isFinishedParsingChildren()) {
+  if (isFinishedParsingChildren() &&
+      selection == TextControlSetValueSelection::kSetSelectionToEnd) {
     // Set the caret to the end of the text value except for initialize.
     unsigned endOfString = m_value.length();
     setSelectionRange(endOfString, endOfString);
@@ -632,7 +637,8 @@ void HTMLTextAreaElement::copyNonAttributePropertiesFromElement(
     const Element& source) {
   const HTMLTextAreaElement& sourceElement =
       static_cast<const HTMLTextAreaElement&>(source);
-  setValueCommon(sourceElement.value(), DispatchNoEvent);
+  setValueCommon(sourceElement.value(), DispatchNoEvent,
+                 TextControlSetValueSelection::kSetSelectionToEnd);
   m_isDirty = sourceElement.m_isDirty;
   TextControlElement::copyNonAttributePropertiesFromElement(source);
 }

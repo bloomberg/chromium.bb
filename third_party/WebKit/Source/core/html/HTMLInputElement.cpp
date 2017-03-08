@@ -1071,7 +1071,8 @@ void HTMLInputElement::setValue(const String& value,
 }
 
 void HTMLInputElement::setValue(const String& value,
-                                TextFieldEventBehavior eventBehavior) {
+                                TextFieldEventBehavior eventBehavior,
+                                TextControlSetValueSelection selection) {
   m_inputType->warnIfValueIsInvalidAndElementIsVisible(value);
   if (!m_inputType->canSetValue(value))
     return;
@@ -1085,7 +1086,7 @@ void HTMLInputElement::setValue(const String& value,
   // Prevent TextFieldInputType::setValue from using the suggested value.
   m_suggestedValue = String();
 
-  m_inputType->setValue(sanitizedValue, valueChanged, eventBehavior);
+  m_inputType->setValue(sanitizedValue, valueChanged, eventBehavior, selection);
   m_inputTypeView->didSetValue(sanitizedValue, valueChanged);
 
   if (valueChanged)

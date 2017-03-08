@@ -47,6 +47,11 @@ enum TextFieldEventBehavior {
   DispatchInputAndChangeEvent
 };
 
+enum class TextControlSetValueSelection {
+  kSetSelectionToEnd,
+  kDoNotSet,
+};
+
 class CORE_EXPORT TextControlElement : public HTMLFormControlElementWithState {
  public:
   // Common flag for HTMLInputElement::tooLong(),
@@ -124,8 +129,11 @@ class CORE_EXPORT TextControlElement : public HTMLFormControlElementWithState {
   void setChangedSinceLastFormControlChangeEvent(bool);
 
   virtual String value() const = 0;
-  virtual void setValue(const String&,
-                        TextFieldEventBehavior = DispatchNoEvent) = 0;
+  virtual void setValue(
+      const String&,
+      TextFieldEventBehavior = DispatchNoEvent,
+      TextControlSetValueSelection =
+          TextControlSetValueSelection::kSetSelectionToEnd) = 0;
 
   HTMLElement* innerEditorElement() const;
 
@@ -160,14 +168,10 @@ class CORE_EXPORT TextControlElement : public HTMLFormControlElementWithState {
   unsigned computeSelectionStart() const;
   unsigned computeSelectionEnd() const;
   TextFieldSelectionDirection computeSelectionDirection() const;
-  void cacheSelection(unsigned start,
+  // Returns true if cached values and arguments are not same.
+  bool cacheSelection(unsigned start,
                       unsigned end,
-                      TextFieldSelectionDirection direction) {
-    DCHECK_LE(start, end);
-    m_cachedSelectionStart = start;
-    m_cachedSelectionEnd = end;
-    m_cachedSelectionDirection = direction;
-  }
+                      TextFieldSelectionDirection);
   static unsigned indexForPosition(HTMLElement* innerEditor, const Position&);
 
   void dispatchFocusEvent(Element* oldFocusedElement,

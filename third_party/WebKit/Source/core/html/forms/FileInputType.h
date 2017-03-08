@@ -81,7 +81,8 @@ class CORE_EXPORT FileInputType final : public InputType,
   String valueInFilenameValueMode() const override;
   void setValue(const String&,
                 bool valueChanged,
-                TextFieldEventBehavior) override;
+                TextFieldEventBehavior,
+                TextControlSetValueSelection) override;
   bool receiveDroppedFiles(const DragData*) override;
   String droppedFileSystemId() override;
   void createShadowSubtree() override;

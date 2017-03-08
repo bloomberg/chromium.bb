@@ -510,7 +510,8 @@ void InputType::dispatchSearchEvent() {}
 
 void InputType::setValue(const String& sanitizedValue,
                          bool valueChanged,
-                         TextFieldEventBehavior eventBehavior) {
+                         TextFieldEventBehavior eventBehavior,
+                         TextControlSetValueSelection) {
   // This setValue() implementation is used only for ValueMode::kValue except
   // TextFieldInputType. That is to say, type=color, type=range, and temporal
   // input types.

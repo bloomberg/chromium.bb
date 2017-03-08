@@ -179,7 +179,8 @@ class CORE_EXPORT InputType : public GarbageCollectedFinalized<InputType> {
   virtual bool canSetValue(const String&);
   virtual void setValue(const String&,
                         bool valueChanged,
-                        TextFieldEventBehavior);
+                        TextFieldEventBehavior,
+                        TextControlSetValueSelection);
   virtual bool shouldRespectListAttribute();
   virtual bool isEnumeratable();
   virtual bool isCheckable();

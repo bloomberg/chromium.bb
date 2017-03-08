@@ -45,7 +45,9 @@ class CORE_EXPORT HTMLTextAreaElement final : public TextControlElement {
 
   String value() const override;
   void setValue(const String&,
-                TextFieldEventBehavior = DispatchNoEvent) override;
+                TextFieldEventBehavior = DispatchNoEvent,
+                TextControlSetValueSelection =
+                    TextControlSetValueSelection::kSetSelectionToEnd) override;
   String defaultValue() const;
   void setDefaultValue(const String&);
   int textLength() const { return value().length(); }
@@ -79,7 +81,9 @@ class CORE_EXPORT HTMLTextAreaElement final : public TextControlElement {
   void updateValue() const;
   void setInnerEditorValue(const String&) override;
   void setNonDirtyValue(const String&);
-  void setValueCommon(const String&, TextFieldEventBehavior);
+  void setValueCommon(const String&,
+                      TextFieldEventBehavior,
+                      TextControlSetValueSelection);
 
   bool isPlaceholderVisible() const override { return m_isPlaceholderVisible; }
   void setPlaceholderVisibility(bool) override;

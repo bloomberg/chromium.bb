@@ -93,7 +93,8 @@ InputType::ValueMode HiddenInputType::valueMode() const {
 
 void HiddenInputType::setValue(const String& sanitizedValue,
                                bool,
-                               TextFieldEventBehavior) {
+                               TextFieldEventBehavior,
+                               TextControlSetValueSelection) {
   element().setAttribute(valueAttr, AtomicString(sanitizedValue));
 }
 

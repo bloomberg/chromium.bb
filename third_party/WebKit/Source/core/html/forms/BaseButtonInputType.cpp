@@ -87,7 +87,8 @@ InputType::ValueMode BaseButtonInputType::valueMode() const {
 
 void BaseButtonInputType::setValue(const String& sanitizedValue,
                                    bool,
-                                   TextFieldEventBehavior) {
+                                   TextFieldEventBehavior,
+                                   TextControlSetValueSelection) {
   element().setAttribute(valueAttr, AtomicString(sanitizedValue));
 }
 

@@ -56,7 +56,10 @@ class BaseButtonInputType : public InputType,
   void appendToFormData(FormData&) const override;
   LayoutObject* createLayoutObject(const ComputedStyle&) const override;
   ValueMode valueMode() const override;
-  void setValue(const String&, bool, TextFieldEventBehavior) override;
+  void setValue(const String&,
+                bool,
+                TextFieldEventBehavior,
+                TextControlSetValueSelection) override;
   bool matchesDefaultPseudoClass() override;
 
   String displayValue() const;

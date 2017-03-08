@@ -148,7 +148,8 @@ bool TextFieldInputType::canSetSuggestedValue() {
 
 void TextFieldInputType::setValue(const String& sanitizedValue,
                                   bool valueChanged,
-                                  TextFieldEventBehavior eventBehavior) {
+                                  TextFieldEventBehavior eventBehavior,
+                                  TextControlSetValueSelection selection) {
   // We don't use InputType::setValue.  TextFieldInputType dispatches events
   // different way from InputType::setValue.
   element().setNonAttributeValue(sanitizedValue);
@@ -156,8 +157,10 @@ void TextFieldInputType::setValue(const String& sanitizedValue,
   if (valueChanged)
     element().updateView();
 
-  unsigned max = visibleValue().length();
-  element().setSelectionRange(max, max);
+  if (selection == TextControlSetValueSelection::kSetSelectionToEnd) {
+    unsigned max = visibleValue().length();
+    element().setSelectionRange(max, max);
+  }
 
   if (!valueChanged)
     return;

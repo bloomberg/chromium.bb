@@ -104,7 +104,8 @@ InputType::ValueMode BaseCheckableInputType::valueMode() const {
 
 void BaseCheckableInputType::setValue(const String& sanitizedValue,
                                       bool,
-                                      TextFieldEventBehavior) {
+                                      TextFieldEventBehavior,
+                                      TextControlSetValueSelection) {
   element().setAttribute(valueAttr, AtomicString(sanitizedValue));
 }
 
