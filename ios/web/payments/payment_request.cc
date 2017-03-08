@@ -12,23 +12,6 @@ namespace {
 // All of these are defined here (even though most are only used once each) so
 // the format details are easy to locate and update or compare to the spec doc.
 // (https://w3c.github.io/browser-payment-api/).
-static const char kAddressAddressLine[] = "addressLine";
-static const char kAddressCity[] = "city";
-static const char kAddressCountry[] = "country";
-static const char kAddressDependentLocality[] = "dependentLocality";
-static const char kAddressLanguageCode[] = "languageCode";
-static const char kAddressOrganization[] = "organization";
-static const char kAddressPhone[] = "phone";
-static const char kAddressPostalCode[] = "postalCode";
-static const char kAddressRecipient[] = "recipient";
-static const char kAddressRegion[] = "region";
-static const char kAddressSortingCode[] = "sortingCode";
-static const char kCardBillingAddress[] = "billingAddress";
-static const char kCardCardholderName[] = "cardholderName";
-static const char kCardCardNumber[] = "cardNumber";
-static const char kCardCardSecurityCode[] = "cardSecurityCode";
-static const char kCardExpiryMonth[] = "expiryMonth";
-static const char kCardExpiryYear[] = "expiryYear";
 static const char kMethodDataData[] = "data";
 static const char kPaymentCurrencyAmountCurrencySystemISO4217[] =
     "urn:iso:std:iso:4217";
@@ -69,65 +52,6 @@ static const char kSupportedMethods[] = "supportedMethods";
 }  // namespace
 
 namespace web {
-
-PaymentAddress::PaymentAddress() {}
-PaymentAddress::PaymentAddress(const PaymentAddress& other) = default;
-PaymentAddress::~PaymentAddress() = default;
-
-bool PaymentAddress::operator==(const PaymentAddress& other) const {
-  return this->country == other.country &&
-         this->address_line == other.address_line &&
-         this->region == other.region && this->city == other.city &&
-         this->dependent_locality == other.dependent_locality &&
-         this->postal_code == other.postal_code &&
-         this->sorting_code == other.sorting_code &&
-         this->language_code == other.language_code &&
-         this->organization == other.organization &&
-         this->recipient == other.recipient && this->care_of == other.care_of &&
-         this->phone == other.phone;
-}
-
-bool PaymentAddress::operator!=(const PaymentAddress& other) const {
-  return !(*this == other);
-}
-
-std::unique_ptr<base::DictionaryValue> PaymentAddress::ToDictionaryValue()
-    const {
-  std::unique_ptr<base::DictionaryValue> result(new base::DictionaryValue());
-
-  if (!this->country.empty())
-    result->SetString(kAddressCountry, this->country);
-
-  if (!this->address_line.empty()) {
-    std::unique_ptr<base::ListValue> address_line(new base::ListValue);
-    for (base::string16 address_line_string : this->address_line) {
-      if (!address_line_string.empty())
-        address_line->AppendString(address_line_string);
-    }
-    result->Set(kAddressAddressLine, std::move(address_line));
-  }
-
-  if (!this->region.empty())
-    result->SetString(kAddressRegion, this->region);
-  if (!this->city.empty())
-    result->SetString(kAddressCity, this->city);
-  if (!this->dependent_locality.empty())
-    result->SetString(kAddressDependentLocality, this->dependent_locality);
-  if (!this->postal_code.empty())
-    result->SetString(kAddressPostalCode, this->postal_code);
-  if (!this->sorting_code.empty())
-    result->SetString(kAddressSortingCode, this->sorting_code);
-  if (!this->language_code.empty())
-    result->SetString(kAddressLanguageCode, this->language_code);
-  if (!this->organization.empty())
-    result->SetString(kAddressOrganization, this->organization);
-  if (!this->recipient.empty())
-    result->SetString(kAddressRecipient, this->recipient);
-  if (!this->phone.empty())
-    result->SetString(kAddressPhone, this->phone);
-
-  return result;
-}
 
 PaymentMethodData::PaymentMethodData() {}
 PaymentMethodData::PaymentMethodData(const PaymentMethodData& other) = default;
@@ -450,42 +374,6 @@ bool PaymentRequest::FromDictionaryValue(const base::DictionaryValue& value) {
       return false;
 
   return true;
-}
-
-BasicCardResponse::BasicCardResponse() {}
-BasicCardResponse::BasicCardResponse(const BasicCardResponse& other) = default;
-BasicCardResponse::~BasicCardResponse() = default;
-
-bool BasicCardResponse::operator==(const BasicCardResponse& other) const {
-  return this->cardholder_name == other.cardholder_name &&
-         this->card_number == other.card_number &&
-         this->expiry_month == other.expiry_month &&
-         this->expiry_year == other.expiry_year &&
-         this->card_security_code == other.card_security_code &&
-         this->billing_address == other.billing_address;
-}
-
-bool BasicCardResponse::operator!=(const BasicCardResponse& other) const {
-  return !(*this == other);
-}
-
-std::unique_ptr<base::DictionaryValue> BasicCardResponse::ToDictionaryValue()
-    const {
-  std::unique_ptr<base::DictionaryValue> result(new base::DictionaryValue());
-
-  if (!this->cardholder_name.empty())
-    result->SetString(kCardCardholderName, this->cardholder_name);
-  result->SetString(kCardCardNumber, this->card_number);
-  if (!this->expiry_month.empty())
-    result->SetString(kCardExpiryMonth, this->expiry_month);
-  if (!this->expiry_year.empty())
-    result->SetString(kCardExpiryYear, this->expiry_year);
-  if (!this->card_security_code.empty())
-    result->SetString(kCardCardSecurityCode, this->card_security_code);
-  if (!this->billing_address.ToDictionaryValue()->empty())
-    result->Set(kCardBillingAddress, this->billing_address.ToDictionaryValue());
-
-  return result;
 }
 
 PaymentResponse::PaymentResponse() {}

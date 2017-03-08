@@ -10,6 +10,7 @@
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/test_personal_data_manager.h"
+#include "components/payments/core/payment_address.h"
 #include "ios/chrome/browser/payments/payment_request_test_util.h"
 #import "ios/chrome/browser/payments/payment_request_view_controller.h"
 #import "ios/chrome/test/scoped_key_window.h"
@@ -38,7 +39,7 @@ typedef void (^mock_coordinator_confirm)(PaymentRequestCoordinator*,
                                          web::PaymentResponse);
 typedef void (^mock_coordinator_select_shipping_address)(
     PaymentRequestCoordinator*,
-    web::PaymentAddress);
+    payments::PaymentAddress);
 typedef void (^mock_coordinator_select_shipping_option)(
     PaymentRequestCoordinator*,
     web::PaymentShippingOption);
@@ -56,7 +57,7 @@ typedef void (^mock_coordinator_select_shipping_option)(
 }
 
 - (void)paymentRequestCoordinator:(PaymentRequestCoordinator*)coordinator
-         didSelectShippingAddress:(web::PaymentAddress)shippingAddress {
+         didSelectShippingAddress:(payments::PaymentAddress)shippingAddress {
   return static_cast<mock_coordinator_select_shipping_address>(
       [self blockForSelector:_cmd])(coordinator, shippingAddress);
 }
@@ -174,7 +175,7 @@ TEST(PaymentRequestCoordinatorTest, DidSelectShippingAddress) {
   SEL selector = @selector(paymentRequestCoordinator:didSelectShippingAddress:);
   [delegate_mock onSelector:selector
        callBlockExpectation:^(PaymentRequestCoordinator* callerCoordinator,
-                              web::PaymentAddress shippingAddress) {
+                              payments::PaymentAddress shippingAddress) {
          EXPECT_EQ(base::ASCIIToUTF16("John Mitchell Doe"),
                    shippingAddress.recipient);
          EXPECT_EQ(base::ASCIIToUTF16("Fox"), shippingAddress.organization);

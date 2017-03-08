@@ -9,6 +9,8 @@
 #include <vector>
 
 #include "base/strings/string16.h"
+#include "components/payments/core/basic_card_response.h"
+#include "components/payments/core/payment_address.h"
 
 // C++ bindings for the PaymentRequest API. Conforms to the following specs:
 // https://w3c.github.io/browser-payment-api/ (18 July 2016 editor's draft)
@@ -19,63 +21,6 @@ class DictionaryValue;
 }
 
 namespace web {
-
-// A shipping or billing address.
-class PaymentAddress {
- public:
-  PaymentAddress();
-  PaymentAddress(const PaymentAddress& other);
-  ~PaymentAddress();
-
-  bool operator==(const PaymentAddress& other) const;
-  bool operator!=(const PaymentAddress& other) const;
-
-  // Populates |value| with the properties of this PaymentAddress.
-  std::unique_ptr<base::DictionaryValue> ToDictionaryValue() const;
-
-  // The CLDR (Common Locale Data Repository) region code. For example, US, GB,
-  // CN, or JP.
-  base::string16 country;
-
-  // The most specific part of the address. It can include, for example, a
-  // street name, a house number, apartment number, a rural delivery route,
-  // descriptive instructions, or a post office box number.
-  std::vector<base::string16> address_line;
-
-  // The top level administrative subdivision of the country. For example, this
-  // can be a state, a province, an oblast, or a prefecture.
-  base::string16 region;
-
-  // The city/town portion of the address.
-  base::string16 city;
-
-  // The dependent locality or sublocality within a city. For example, used for
-  // neighborhoods, boroughs, districts, or UK dependent localities.
-  base::string16 dependent_locality;
-
-  // The postal code or ZIP code, also known as PIN code in India.
-  base::string16 postal_code;
-
-  // The sorting code as used in, for example, France.
-  base::string16 sorting_code;
-
-  // The BCP-47 language code for the address. It's used to determine the field
-  // separators and the order of fields when formatting the address for display.
-  base::string16 language_code;
-
-  // The organization, firm, company, or institution at this address.
-  base::string16 organization;
-
-  // The name of the recipient or contact person.
-  base::string16 recipient;
-
-  // The name of an intermediary party or entity responsible for transferring
-  // packages between the postal service and the recipient.
-  base::string16 care_of;
-
-  // The phone number of the recipient or contact person.
-  base::string16 phone;
-};
 
 // A set of supported payment methods and any associated payment method specific
 // data for those methods.
@@ -316,7 +261,7 @@ class PaymentRequest {
   base::string16 payment_request_id;
 
   // Properties set in order to communicate user choices back to the page.
-  PaymentAddress shipping_address;
+  payments::PaymentAddress shipping_address;
   base::string16 shipping_option;
 
   // Properties set via the constructor for communicating from the page to the
@@ -324,41 +269,6 @@ class PaymentRequest {
   std::vector<PaymentMethodData> method_data;
   PaymentDetails details;
   PaymentOptions options;
-};
-
-// Contains the response from the PaymentRequest API when a user accepts
-// payment with a Basic Payment Card payment method (which is currently the only
-// method supported on iOS).
-class BasicCardResponse {
- public:
-  BasicCardResponse();
-  BasicCardResponse(const BasicCardResponse& other);
-  ~BasicCardResponse();
-
-  bool operator==(const BasicCardResponse& other) const;
-  bool operator!=(const BasicCardResponse& other) const;
-
-  // Populates |value| with the properties of this BasicCardResponse.
-  std::unique_ptr<base::DictionaryValue> ToDictionaryValue() const;
-
-  // The cardholder's name as it appears on the card.
-  base::string16 cardholder_name;
-
-  // The primary account number (PAN) for the payment card.
-  base::string16 card_number;
-
-  // A two-digit string for the expiry month of the card in the range 01 to 12.
-  base::string16 expiry_month;
-
-  // A two-digit string for the expiry year of the card in the range 00 to 99.
-  base::string16 expiry_year;
-
-  // A three or four digit string for the security code of the card (sometimes
-  // known as the CVV, CVC, CVN, CVE or CID).
-  base::string16 card_security_code;
-
-  // The billing address information associated with the payment card.
-  PaymentAddress billing_address;
 };
 
 // Information provided in the Promise returned by a call to
@@ -384,12 +294,12 @@ class PaymentResponse {
 
   // A credit card response object used by the merchant to process the
   // transaction and determine successful fund transfer.
-  BasicCardResponse details;
+  payments::BasicCardResponse details;
 
   // If request_shipping was set to true in the PaymentOptions passed to the
   // PaymentRequest constructor, this will be the full and final shipping
   // address chosen by the user.
-  PaymentAddress shipping_address;
+  payments::PaymentAddress shipping_address;
 
   // If the request_shipping flag was set to true in the PaymentOptions passed
   // to the PaymentRequest constructor, this will be the id attribute of the

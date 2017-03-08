@@ -22,6 +22,10 @@ namespace ios {
 class ChromeBrowserState;
 }
 
+namespace payments {
+struct PaymentAddress;
+}
+
 @class PaymentRequestCoordinator;
 
 // Delegate protocol for PaymentRequestCoordinator.
@@ -37,7 +41,7 @@ class ChromeBrowserState;
 
 // Notifies the delegate that the user has selected a shipping address.
 - (void)paymentRequestCoordinator:(PaymentRequestCoordinator*)coordinator
-         didSelectShippingAddress:(web::PaymentAddress)shippingAddress;
+         didSelectShippingAddress:(payments::PaymentAddress)shippingAddress;
 
 // Notifies the delegate that the user has selected a shipping option.
 - (void)paymentRequestCoordinator:(PaymentRequestCoordinator*)coordinator

@@ -13,6 +13,7 @@
 #include "base/observer_list.h"
 #include "components/payments/content/payment_request.mojom.h"
 #include "components/payments/content/payment_request_delegate.h"
+#include "components/payments/core/payment_instrument.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
 namespace autofill {
@@ -30,7 +31,8 @@ namespace payments {
 class CurrencyFormatter;
 class PaymentRequestWebContentsManager;
 
-class PaymentRequest : payments::mojom::PaymentRequest {
+class PaymentRequest : public mojom::PaymentRequest,
+                       public PaymentInstrument::Delegate {
  public:
   class Observer {
    public:
@@ -57,8 +59,14 @@ class PaymentRequest : payments::mojom::PaymentRequest {
   void Show() override;
   void UpdateWith(payments::mojom::PaymentDetailsPtr details) override {}
   void Abort() override;
-  void Complete(payments::mojom::PaymentComplete result) override {}
-  void CanMakePayment() override {}
+  void Complete(payments::mojom::PaymentComplete result) override;
+  void CanMakePayment() override;
+
+  // PaymentInstrument::Delegate:
+  void OnInstrumentDetailsReady(
+      const std::string& method_name,
+      const std::string& stringified_details) override;
+  void OnInstrumentDetailsError() override {}
 
   // Called when the user explicitely cancelled the flow. Will send a message
   // to the renderer which will indirectly destroy this object (through
@@ -184,6 +192,8 @@ class PaymentRequest : payments::mojom::PaymentRequest {
   // A set of supported basic card networks.
   std::vector<std::string> supported_card_networks_;
   bool is_ready_to_pay_;
+  std::unique_ptr<PaymentInstrument> selected_payment_instrument_;
+  mojom::PaymentResponsePtr payment_response_;
 
   base::ObserverList<Observer> observers_;
 

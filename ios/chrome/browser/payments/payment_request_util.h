@@ -11,13 +11,7 @@
 
 namespace autofill {
 class AutofillProfile;
-class CreditCard;
 }  // namespace autofill
-
-namespace web {
-class BasicCardResponse;
-class PaymentAddress;
-}  // namespace web
 
 class PaymentRequest;
 
@@ -42,18 +36,6 @@ NSString* GetPhoneNumberLabelFromAutofillProfile(
 // if the email field is empty.
 NSString* GetEmailLabelFromAutofillProfile(
     const autofill::AutofillProfile& profile);
-
-// Helper function to get an instance of web::PaymentAddress from an autofill
-// profile.
-web::PaymentAddress GetPaymentAddressFromAutofillProfile(
-    const autofill::AutofillProfile& profile);
-
-// Helper function to get an instance of web::BasicCardResponse from an autofill
-// credit card.
-web::BasicCardResponse GetBasicCardResponseFromAutofillCreditCard(
-    const PaymentRequest& payment_request,
-    const autofill::CreditCard& card,
-    const base::string16& cvc);
 
 // Returns the title for the shipping section of the payment summary view given
 // the shipping type specified in |payment_request|.

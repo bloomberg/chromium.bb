@@ -10,7 +10,7 @@
 #include "base/bind_helpers.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
-#include "base/strings/string16.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -131,6 +131,23 @@ void PaymentRequestBrowserTestBase::InvokePaymentRequestUI() {
   web_modal::WebContentsModalDialogManager* web_contents_modal_dialog_manager =
       web_modal::WebContentsModalDialogManager::FromWebContents(web_contents);
   EXPECT_TRUE(web_contents_modal_dialog_manager->IsDialogActive());
+}
+
+void PaymentRequestBrowserTestBase::ExpectBodyContains(
+    const std::vector<base::string16>& expected_strings) {
+  content::WebContents* web_contents = GetActiveWebContents();
+  const std::string extract_contents_js =
+      "(function() { "
+      "window.domAutomationController.send(window.document.body.textContent); "
+      "})()";
+  std::string contents;
+  EXPECT_TRUE(content::ExecuteScriptAndExtractString(
+      web_contents, extract_contents_js, &contents));
+  for (const auto expected_string : expected_strings) {
+    EXPECT_NE(std::string::npos,
+              contents.find(base::UTF16ToUTF8(expected_string)))
+        << "String not present: " << expected_string;
+  }
 }
 
 void PaymentRequestBrowserTestBase::OpenOrderSummaryScreen() {

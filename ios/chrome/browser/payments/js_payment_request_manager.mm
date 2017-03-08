@@ -8,6 +8,7 @@
 #include "base/json/string_escape.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/values.h"
+#include "components/payments/core/payment_address.h"
 #include "ios/web/public/payments/payment_request.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -79,7 +80,7 @@ NSString* JSONEscape(NSString* JSON) {
   [self executeScript:script completionHandler:completionHandler];
 }
 
-- (void)updateShippingAddress:(const web::PaymentAddress&)shippingAddress
+- (void)updateShippingAddress:(const payments::PaymentAddress&)shippingAddress
             completionHandler:(ProceduralBlockWithBool)completionHanlder {
   std::unique_ptr<base::DictionaryValue> shippingAddressData =
       shippingAddress.ToDictionaryValue();

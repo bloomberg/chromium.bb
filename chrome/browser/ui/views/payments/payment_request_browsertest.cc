@@ -10,6 +10,9 @@
 #include "chrome/browser/ui/views/payments/payment_request_browsertest_base.h"
 #include "chrome/browser/ui/views/payments/payment_request_dialog_view_ids.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/autofill/core/browser/autofill_profile.h"
+#include "components/autofill/core/browser/autofill_test_utils.h"
+#include "components/autofill/core/browser/credit_card.h"
 #include "components/payments/content/payment_request.h"
 #include "components/payments/content/payment_request_web_contents_manager.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
@@ -91,6 +94,38 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestNoShippingTest, OpenAndReload) {
   chrome::Reload(browser(), WindowOpenDisposition::CURRENT_TAB);
 
   WaitForObservedEvent();
+}
+
+IN_PROC_BROWSER_TEST_F(PaymentRequestNoShippingTest, PayWithVisa) {
+  autofill::AutofillProfile billing_address = autofill::test::GetFullProfile();
+  AddAutofillProfile(billing_address);
+  autofill::CreditCard card = autofill::test::GetCreditCard();
+  card.set_billing_address_id(billing_address.guid());
+  AddCreditCard(card);  // Visa.
+
+  InvokePaymentRequestUI();
+
+  ResetEventObserver(DialogEvent::DIALOG_CLOSED);
+
+  ClickOnDialogViewAndWait(DialogViewID::PAY_BUTTON);
+
+  WaitForObservedEvent();
+
+  // The actual structure of the card response is unit-tested.
+  ExpectBodyContains(std::vector<base::string16>{
+      card.GetRawInfo(autofill::CREDIT_CARD_NUMBER),
+      card.GetRawInfo(autofill::CREDIT_CARD_NAME_FULL),
+      card.GetRawInfo(autofill::CREDIT_CARD_EXP_MONTH),
+      card.GetRawInfo(autofill::CREDIT_CARD_EXP_4_DIGIT_YEAR)});
+  ExpectBodyContains(std::vector<base::string16>{
+      billing_address.GetRawInfo(autofill::NAME_FIRST),
+      billing_address.GetRawInfo(autofill::NAME_LAST),
+      billing_address.GetRawInfo(autofill::ADDRESS_HOME_LINE1),
+      billing_address.GetRawInfo(autofill::ADDRESS_HOME_LINE2),
+      billing_address.GetRawInfo(autofill::ADDRESS_HOME_COUNTRY),
+      billing_address.GetRawInfo(autofill::ADDRESS_HOME_ZIP),
+      billing_address.GetRawInfo(autofill::ADDRESS_HOME_CITY),
+      billing_address.GetRawInfo(autofill::ADDRESS_HOME_STATE)});
 }
 
 class PaymentRequestAbortTest : public PaymentRequestBrowserTestBase {

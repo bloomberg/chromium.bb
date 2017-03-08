@@ -14,11 +14,17 @@
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/payments/content/payment_details_validation.h"
 #include "components/payments/content/payment_request_web_contents_manager.h"
+#include "components/payments/core/autofill_payment_instrument.h"
 #include "components/payments/core/currency_formatter.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 
 namespace payments {
+
+namespace {
+// Identifier for the basic card payment method in the PaymentMethodData.
+static const char* const kBasicCardMethodName = "basic-card";
+}  // namespace
 
 PaymentRequest::PaymentRequest(
     content::WebContents* web_contents,
@@ -81,6 +87,30 @@ void PaymentRequest::Abort() {
     client_->OnAbort(true /* aborted_successfully */);
 }
 
+void PaymentRequest::Complete(payments::mojom::PaymentComplete result) {
+  if (!client_.is_bound())
+    return;
+
+  // TODO(mathp): Validate |result|.
+
+  // When the renderer closes the connection,
+  // PaymentRequest::OnConnectionTerminated will be called.
+  client_->OnComplete();
+}
+
+void PaymentRequest::CanMakePayment() {
+  // TODO(mathp): Return whether we can make payment.
+  client_->OnCanMakePayment(mojom::CanMakePaymentQueryResult::CAN_MAKE_PAYMENT);
+}
+
+void PaymentRequest::OnInstrumentDetailsReady(
+    const std::string& method_name,
+    const std::string& stringified_details) {
+  payment_response_->method_name = method_name;
+  payment_response_->stringified_details = stringified_details;
+  client_->OnPaymentResponse(std::move(payment_response_));
+}
+
 void PaymentRequest::UserCancelled() {
   // If |client_| is not bound, then the object is already being destroyed as
   // a result of a renderer event.
@@ -111,8 +141,19 @@ void PaymentRequest::OnConnectionTerminated() {
 void PaymentRequest::Pay() {
   DCHECK(is_ready_to_pay_);
 
-  // TODO(mathp): Return the PaymentResponse to the |client_|.
-  OnConnectionTerminated();
+  // TODO(mathp): Fill other fields in the PaymentResponsePtr object.
+  payment_response_ = mojom::PaymentResponse::New();
+
+  // TODO(mathp): PaymentRequest should know about the currently selected
+  // instrument, and not |selected_credit_card_| which is too specific.
+  // TODO(mathp): The method_name should reflect what the merchant asked, and
+  // not necessarily basic-card.
+  selected_payment_instrument_.reset(new AutofillPaymentInstrument(
+      kBasicCardMethodName, *selected_credit_card_, shipping_profiles_,
+      delegate_->GetApplicationLocale()));
+  // Fetch the instrument details, will call back into
+  // PaymentRequest::OnInstrumentsDetailsReady.
+  selected_payment_instrument_->InvokePaymentApp(this);
 }
 
 void PaymentRequest::AddObserver(Observer* observer) {
@@ -223,8 +264,6 @@ void PaymentRequest::PopulateValidatedMethodData(
     return;
   }
 
-  // Identifier for the basic card payment method in the PaymentMethodData.
-  const char* const kBasicCardMethodName = "basic-card";
   std::set<std::string> card_networks{"amex",     "diners",     "discover",
                                       "jcb",      "mastercard", "mir",
                                       "unionpay", "visa"};

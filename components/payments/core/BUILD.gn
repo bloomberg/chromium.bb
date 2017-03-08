@@ -6,8 +6,17 @@ static_library("core") {
   sources = [
     "address_normalizer.cc",
     "address_normalizer.h",
+    "autofill_payment_instrument.cc",
+    "autofill_payment_instrument.h",
+    "basic_card_response.cc",
+    "basic_card_response.h",
     "currency_formatter.cc",
     "currency_formatter.h",
+    "payment_address.cc",
+    "payment_address.h",
+    "payment_instrument.h",
+    "payment_request_data_util.cc",
+    "payment_request_data_util.h",
   ]
 
   deps = [
@@ -25,7 +34,10 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "address_normalizer_unittest.cc",
+    "basic_card_response_unittest.cc",
     "currency_formatter_unittest.cc",
+    "payment_address_unittest.cc",
+    "payment_request_data_util_unittest.cc",
   ]
 
   deps = [
@@ -33,6 +45,7 @@ source_set("unit_tests") {
     "//base",
     "//base/test:test_support",
     "//components/autofill/core/browser",
+    "//components/autofill/core/browser:test_support",
     "//testing/gtest",
     "//third_party/libaddressinput:test_support",
   ]

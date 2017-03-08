@@ -87,6 +87,9 @@ class PaymentRequestBrowserTestBase
   // it's open.
   void InvokePaymentRequestUI();
 
+  // Will expect that all strings in |expected_strings| are present in output.
+  void ExpectBodyContains(const std::vector<base::string16>& expected_strings);
+
   // Utility functions that will click on Dialog views and wait for the
   // associated action to happen.
   void OpenOrderSummaryScreen();

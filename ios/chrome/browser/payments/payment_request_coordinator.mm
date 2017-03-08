@@ -19,6 +19,8 @@
 #include "components/autofill/core/browser/payments/full_card_request.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/ui/card_unmask_prompt_controller_impl.h"
+#include "components/payments/core/payment_address.h"
+#include "components/payments/core/payment_request_data_util.h"
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
@@ -32,8 +34,8 @@
 #endif
 
 namespace {
-using ::payment_request_util::GetBasicCardResponseFromAutofillCreditCard;
-using ::payment_request_util::GetPaymentAddressFromAutofillProfile;
+using ::payments::data_util::GetBasicCardResponseFromAutofillCreditCard;
+using ::payments::data_util::GetPaymentAddressFromAutofillProfile;
 }  // namespace
 
 // The unmask prompt UI for Payment Request.
@@ -195,8 +197,9 @@ class FullCardRequester
       base::ASCIIToUTF16(autofill::data_util::GetPaymentRequestData(card.type())
                              .basic_card_payment_type);
 
-  paymentResponse.details =
-      GetBasicCardResponseFromAutofillCreditCard(*_paymentRequest, card, cvc);
+  paymentResponse.details = GetBasicCardResponseFromAutofillCreditCard(
+      card, cvc, _paymentRequest->billing_profiles(),
+      GetApplicationContext()->GetApplicationLocale());
 
   if (_paymentRequest->payment_options().request_shipping) {
     autofill::AutofillProfile* shippingAddress =
@@ -204,8 +207,8 @@ class FullCardRequester
     // TODO(crbug.com/602666): User should get here only if they have selected
     // a shipping address.
     DCHECK(shippingAddress);
-    paymentResponse.shipping_address =
-        GetPaymentAddressFromAutofillProfile(*shippingAddress);
+    paymentResponse.shipping_address = GetPaymentAddressFromAutofillProfile(
+        *shippingAddress, GetApplicationContext()->GetApplicationLocale());
 
     web::PaymentShippingOption* shippingOption =
         _paymentRequest->selected_shipping_option();
@@ -396,8 +399,8 @@ class FullCardRequester
                        (autofill::AutofillProfile*)shippingAddress {
   _pendingShippingAddress = shippingAddress;
   DCHECK(shippingAddress);
-  web::PaymentAddress address =
-      GetPaymentAddressFromAutofillProfile(*shippingAddress);
+  payments::PaymentAddress address = GetPaymentAddressFromAutofillProfile(
+      *shippingAddress, GetApplicationContext()->GetApplicationLocale());
   [_delegate paymentRequestCoordinator:self didSelectShippingAddress:address];
 }
 

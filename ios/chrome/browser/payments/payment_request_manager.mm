@@ -14,6 +14,7 @@
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/ios/browser/autofill_driver_ios.h"
+#include "components/payments/core/payment_address.h"
 #include "ios/chrome/browser/autofill/personal_data_manager_factory.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/payments/js_payment_request_manager.h"
@@ -549,7 +550,7 @@ const NSTimeInterval kTimeoutInterval = 60.0;
 }
 
 - (void)paymentRequestCoordinator:(PaymentRequestCoordinator*)coordinator
-         didSelectShippingAddress:(web::PaymentAddress)shippingAddress {
+         didSelectShippingAddress:(payments::PaymentAddress)shippingAddress {
   [_paymentRequestJsManager updateShippingAddress:shippingAddress
                                 completionHandler:nil];
   [self setUnblockEventQueueTimer];

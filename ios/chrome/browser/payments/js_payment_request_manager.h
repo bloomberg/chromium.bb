@@ -9,8 +9,11 @@
 #include "ios/chrome/browser/procedural_block_types.h"
 #import "ios/web/public/web_state/js/crw_js_injection_manager.h"
 
+namespace payments {
+struct PaymentAddress;
+}
+
 namespace web {
-class PaymentAddress;
 class PaymentResponse;
 class PaymentShippingOption;
 }
@@ -52,7 +55,7 @@ class PaymentShippingOption;
 
 // Updates the shippingAddress property on the PaymentRequest object and
 // dispatches a shippingaddresschange event.
-- (void)updateShippingAddress:(const web::PaymentAddress&)shippingAddress
+- (void)updateShippingAddress:(const payments::PaymentAddress&)shippingAddress
             completionHandler:(ProceduralBlockWithBool)completionHanlder;
 
 // Updates the shippingOption property on the PaymentRequest object and
