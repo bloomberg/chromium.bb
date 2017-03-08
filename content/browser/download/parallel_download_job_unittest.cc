@@ -65,8 +65,7 @@ class ParallelDownloadJobTest : public testing::Test {
   void CreateNewDownloadRequests(int64_t total_bytes,
                                  int64_t bytes_received,
                                  int request_num) {
-    job_->request_num_ = request_num;
-    job_->ForkRequestsForNewDownload(bytes_received, total_bytes);
+    job_->ForkRequestsForNewDownload(bytes_received, total_bytes, request_num);
   }
 
   content::TestBrowserThreadBundle browser_threads_;

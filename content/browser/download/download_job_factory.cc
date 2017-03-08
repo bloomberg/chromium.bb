@@ -11,20 +11,17 @@
 #include "content/browser/download/download_job.h"
 #include "content/browser/download/download_job_impl.h"
 #include "content/browser/download/parallel_download_job.h"
+#include "content/browser/download/parallel_download_utils.h"
 #include "content/public/common/content_features.h"
 
 namespace content {
 
 namespace {
 
-// Default minimum file size in bytes to enable a parallel download, 2048KB.
-// TODO(xingliu): Use finch parameters to configure minimum file size.
-const int64_t kMinFileSizeParallelDownload = 2097152;
-
 bool ShouldUseParallelDownload(const DownloadCreateInfo& create_info) {
   // 1. Accept-Ranges, Content-Length and strong validators response headers.
   // 2. Feature |kParallelDownloading| enabled.
-  // 3. Content-Length is no less than |kMinFileSizeParallelDownload|.
+  // 3. Content-Length is no less than the minimum slice size configuration.
   // 3. (Undetermined) Http/1.1 protocol.
   // 4. (Undetermined) Not under http proxy, e.g. data saver.
 
@@ -35,7 +32,7 @@ bool ShouldUseParallelDownload(const DownloadCreateInfo& create_info) {
       !create_info.etag.empty() || !create_info.last_modified.empty();
 
   return has_strong_validator && create_info.accept_range &&
-         create_info.total_bytes >= kMinFileSizeParallelDownload &&
+         create_info.total_bytes >= GetMinSliceSizeConfig() &&
          base::FeatureList::IsEnabled(features::kParallelDownloading);
 }
 

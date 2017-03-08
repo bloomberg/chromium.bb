@@ -41,7 +41,9 @@ class CONTENT_EXPORT ParallelDownloadJob : public DownloadJobImpl {
   // the rest of the bytes starting from |bytes_received| will be equally
   // distributed to each connection, including the original connection.
   // the last connection may take additional bytes.
-  void ForkRequestsForNewDownload(int64_t bytes_received, int64_t total_bytes);
+  void ForkRequestsForNewDownload(int64_t bytes_received,
+                                  int64_t total_bytes,
+                                  int request_count);
 
   // Build parallel requests to download the remaining slices.
   // TODO(qinmin): remove ForkRequestsForNewDownload() and move the logic into
@@ -50,10 +52,6 @@ class CONTENT_EXPORT ParallelDownloadJob : public DownloadJobImpl {
 
   // Create one range request, virtual for testing.
   virtual void CreateRequest(int64_t offset, int64_t length);
-
-  // Number of concurrent requests for a new download, include the original
-  // request.
-  int request_num_;
 
   // Information about the initial request when download is started.
   int64_t initial_request_offset_;

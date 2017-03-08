@@ -367,6 +367,8 @@ void DownloadFileImpl::StreamActive(SourceStream* source_stream) {
     // Inform observers.
     SendUpdate();
 
+    // TODO(xingliu): Use slice info to determine if the file is fully
+    // downloaded.
     bool all_stream_complete = true;
     for (auto& stream : source_streams_) {
       if (!stream.second->is_finished()) {

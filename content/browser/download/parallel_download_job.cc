@@ -12,21 +12,11 @@
 
 namespace content {
 
-namespace {
-
-// TODO(xingliu): Use finch parameters to configure constants.
-// Default number of requests in a parallel download, including the original
-// request.
-const int kParallelRequestCount = 2;
-
-}  // namespace
-
 ParallelDownloadJob::ParallelDownloadJob(
     DownloadItemImpl* download_item,
     std::unique_ptr<DownloadRequestHandleInterface> request_handle,
     const DownloadCreateInfo& create_info)
     : DownloadJobImpl(download_item, std::move(request_handle)),
-      request_num_(kParallelRequestCount),
       initial_request_offset_(create_info.save_info->offset),
       initial_request_length_(create_info.save_info->length) {}
 
@@ -60,14 +50,15 @@ void ParallelDownloadJob::Resume(bool resume_request) {
 }
 
 void ParallelDownloadJob::ForkRequestsForNewDownload(int64_t bytes_received,
-                                                     int64_t total_bytes) {
+                                                     int64_t total_bytes,
+                                                     int request_count) {
   if (!download_item_ || total_bytes <= 0 || bytes_received >= total_bytes ||
-      request_num_ <= 1) {
+      request_count <= 1) {
     return;
   }
 
   int64_t bytes_left = total_bytes - bytes_received;
-  int64_t slice_size = bytes_left / request_num_;
+  int64_t slice_size = bytes_left / request_count;
   slice_size = slice_size > 0 ? slice_size : 1;
   int num_requests = bytes_left / slice_size;
   int64_t current_offset = bytes_received + slice_size;
@@ -92,7 +83,8 @@ void ParallelDownloadJob::BuildParallelRequests() {
          initial_request_offset_ + initial_request_length_ >=
              slices_to_download[0].offset +
              slices_to_download[0].received_bytes);
-  if (slices_to_download.size() >= kParallelRequestCount) {
+  if (slices_to_download.size() >=
+      static_cast<size_t>(GetParallelRequestCountConfig())) {
     // The size of |slices_to_download| should be no larger than
     // |kParallelRequestCount| unless |kParallelRequestCount| is changed after
     // a download is interrupted. This could happen if we use finch to config
