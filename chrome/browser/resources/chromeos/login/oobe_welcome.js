@@ -404,6 +404,24 @@ Polymer({
     this.currentLanguage = Oobe.getSelectedTitle(this.languages);
   },
 
+  setSelectedKeyboard: function(keyboard_id) {
+    var found = false;
+    for (var i = 0; i < this.keyboards.length; ++i) {
+      if (this.keyboards[i].value != keyboard_id) {
+        this.keyboards[i].selected = false;
+        continue;
+      }
+      this.keyboards[i].selected = true;
+      found = true;
+    }
+    if (!found)
+      return;
+
+    // Force i18n-dropdown to refresh.
+    this.keyboards = this.keyboards.slice();
+    this.onKeyboardsChanged_();
+  },
+
   onKeyboardsChanged_: function() {
     this.currentKeyboard = Oobe.getSelectedTitle(this.keyboards);
   },

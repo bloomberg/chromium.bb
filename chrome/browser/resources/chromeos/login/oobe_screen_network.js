@@ -72,6 +72,8 @@ login.createScreen('NetworkScreen', 'connect', function() {
       this.context.addObserver(
           CONTEXT_KEY_INPUT_METHOD,
           function(inputMethodId) {
+            $('oobe-welcome-md').setSelectedKeyboard(inputMethodId);
+
             option = $('keyboard-select').querySelector(
                 'option[value="' + inputMethodId + '"]');
             if (option)
