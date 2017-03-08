@@ -141,6 +141,11 @@ aom_check_source_compiles("aom_ports_check"
 aom_check_source_compiles("pthread_check" "#include <pthread.h>" HAVE_PTHREAD_H)
 aom_check_source_compiles("unistd_check" "#include <unistd.h>" HAVE_UNISTD_H)
 
+if (CONFIG_ANS AND CONFIG_DAALA_EC)
+  message(FATAL_ERROR
+          "CONFIG_ANS and CONFIG_DAALA_EC cannot be enabled together.")
+endif ()
+
 # TODO(tomfinegan): consume trailing whitespace after configure_file() when
 # target platform check produces empty INLINE and RESTRICT values (aka empty
 # values require special casing).
