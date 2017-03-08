@@ -38,7 +38,8 @@ You must have the 14393 SDK installed or else you will hit compile errors such
 as undefined or redefined macros.
 
 Install the Windows SDK 10, and choose Debugging Tools For Windows when you
-install this in order to get windbg.
+install this in order to get windbg and cdb. The latter is required for the
+build to succeed as some tests use it for symbolizing crash dumps.
 
 ## Install `depot_tools`
 
