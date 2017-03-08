@@ -732,6 +732,7 @@ void FFmpegDemuxerStream::set_enabled(bool enabled, base::TimeDelta timestamp) {
     return;
 
   is_enabled_ = enabled;
+  av_stream()->discard = enabled ? AVDISCARD_DEFAULT : AVDISCARD_ALL;
   if (is_enabled_) {
     waiting_for_keyframe_ = true;
   }
@@ -1287,9 +1288,11 @@ void FFmpegDemuxer::OnFindStreamInfoDone(const PipelineStatusCB& status_cb,
     } else if (codec_type == AVMEDIA_TYPE_SUBTITLE) {
       detected_text_track_count++;
       if (codec_id != AV_CODEC_ID_WEBVTT || !text_enabled_) {
+        stream->discard = AVDISCARD_ALL;
         continue;
       }
     } else {
+      stream->discard = AVDISCARD_ALL;
       continue;
     }
 
