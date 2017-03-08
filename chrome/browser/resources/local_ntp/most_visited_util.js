@@ -7,7 +7,21 @@
  * @fileoverview Utilities for rendering most visited thumbnails and titles.
  */
 
+// Don't remove; see crbug.com/678778.
 // <include src="instant_iframe_validation.js">
+
+
+/**
+  * The different types of events that are logged from the NTP. The multi-iframe
+  * version of the NTP does *not* actually log any statistics anymore; this is
+  * only required as a workaround for crbug.com/698675.
+  * Note: Keep in sync with common/ntp_logging_events.h
+  * @enum {number}
+  * @const
+  */
+var NTP_LOGGING_EVENT_TYPE = {
+  NTP_ALL_TILES_RECEIVED: 12,
+};
 
 
 /**
@@ -212,6 +226,11 @@ function fillMostVisited(location, fill) {
     };
   } else {
     var apiHandle = chrome.embeddedSearch.newTabPage;
+    // Note: This does not actually result in any logging; it's a workaround for
+    // crbug.com/698675. It effectively sets the "instant support" state of the
+    // tab to true, which makes later calls to fetch the most visited items
+    // succeed.
+    apiHandle.logEvent(NTP_LOGGING_EVENT_TYPE.NTP_ALL_TILES_RECEIVED);
     data = apiHandle.getMostVisitedItemData(params.rid);
     if (!data)
       return;
