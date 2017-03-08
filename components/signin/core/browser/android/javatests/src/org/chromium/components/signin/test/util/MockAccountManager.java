@@ -5,11 +5,9 @@
 package org.chromium.components.signin.test.util;
 
 import android.accounts.Account;
-import android.accounts.AccountManager;
 import android.accounts.AuthenticatorDescription;
 import android.app.Activity;
 import android.content.Context;
-import android.content.Intent;
 import android.os.AsyncTask;
 
 import org.chromium.base.Callback;
@@ -98,45 +96,24 @@ public class MockAccountManager implements AccountManagerDelegate {
         mGetAccountsTaskCounter.waitUntilZero();
     }
 
-    @VisibleForTesting
-    public boolean addAccountHolderExplicitly(AccountHolder accountHolder) {
-        return addAccountHolderExplicitly(accountHolder, false);
-    }
-
     /**
      * Add an AccountHolder directly.
      *
      * @param accountHolder the account holder to add
-     * @param broadcastEvent whether to broadcast an AccountChangedEvent
      * @return whether the account holder was added successfully
      */
-    public boolean addAccountHolderExplicitly(AccountHolder accountHolder, boolean broadcastEvent) {
-        boolean result = mAccounts.add(accountHolder);
-        if (broadcastEvent) {
-            postAsyncAccountChangedEvent();
-        }
-        return result;
-    }
-
-    @VisibleForTesting
-    public boolean removeAccountHolderExplicitly(AccountHolder accountHolder) {
-        return removeAccountHolderExplicitly(accountHolder, false);
+    public boolean addAccountHolderExplicitly(AccountHolder accountHolder) {
+        return mAccounts.add(accountHolder);
     }
 
     /**
      * Remove an AccountHolder directly.
      *
      * @param accountHolder the account holder to remove
-     * @param broadcastEvent whether to broadcast an AccountChangedEvent
      * @return whether the account holder was removed successfully
      */
-    public boolean removeAccountHolderExplicitly(
-            AccountHolder accountHolder, boolean broadcastEvent) {
-        boolean result = mAccounts.remove(accountHolder);
-        if (broadcastEvent) {
-            postAsyncAccountChangedEvent();
-        }
-        return result;
+    public boolean removeAccountHolderExplicitly(AccountHolder accountHolder) {
+        return mAccounts.remove(accountHolder);
     }
 
     @Override
@@ -225,17 +202,6 @@ public class MockAccountManager implements AccountManagerDelegate {
             }
         }
         throw new IllegalArgumentException("Can not find AccountHolder for account " + account);
-    }
-
-    private void postAsyncAccountChangedEvent() {
-        // Mimic that this does not happen on the main thread.
-        new AsyncTask<Void, Void, Void>() {
-            @Override
-            protected Void doInBackground(Void... params) {
-                mContext.sendBroadcast(new Intent(AccountManager.LOGIN_ACCOUNTS_CHANGED_ACTION));
-                return null;
-            }
-        }.execute();
     }
 
     /**

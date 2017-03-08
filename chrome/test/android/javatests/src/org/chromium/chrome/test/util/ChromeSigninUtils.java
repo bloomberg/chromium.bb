@@ -90,7 +90,7 @@ public class ChromeSigninUtils {
     public void removeAllFakeAccountsFromOs() {
         for (Account acct : mMockAccountManager.getAccountsByType(GOOGLE_ACCOUNT_TYPE)) {
             mMockAccountManager.removeAccountHolderExplicitly(
-                    new AccountHolder.Builder().account(acct).build(), true);
+                    new AccountHolder.Builder().account(acct).build());
         }
     }
 
