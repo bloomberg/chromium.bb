@@ -97,7 +97,8 @@ class ExtensionManagementServiceTest : public testing::Test {
         pref_names::kInstallForceList);
     pref_service_->registry()->RegisterDictionaryPref(
         pref_names::kExtensionManagement);
-    extension_management_.reset(new ExtensionManagement(pref_service_.get()));
+    extension_management_.reset(
+        new ExtensionManagement(pref_service_.get(), false));
   }
 
   void SetPref(bool managed, const char* path, base::Value* value) {

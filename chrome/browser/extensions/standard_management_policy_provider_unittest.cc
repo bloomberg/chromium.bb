@@ -25,7 +25,7 @@ class StandardManagementPolicyProviderTest : public testing::Test {
       : ui_thread_(content::BrowserThread::UI, &message_loop_),
         file_thread_(content::BrowserThread::FILE, &message_loop_),
         prefs_(message_loop_.task_runner().get()),
-        settings_(new ExtensionManagement(prefs()->pref_service())),
+        settings_(new ExtensionManagement(prefs()->pref_service(), false)),
         provider_(settings_.get()) {}
 
  protected:

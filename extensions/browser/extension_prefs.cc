@@ -1766,6 +1766,7 @@ void ExtensionPrefs::RegisterProfilePrefs(
   registry->RegisterListPref(pref_names::kInstallAllowList);
   registry->RegisterListPref(pref_names::kInstallDenyList);
   registry->RegisterDictionaryPref(pref_names::kInstallForceList);
+  registry->RegisterDictionaryPref(pref_names::kInstallLoginScreenAppList);
   registry->RegisterListPref(pref_names::kAllowedTypes);
   registry->RegisterBooleanPref(pref_names::kStorageGarbageCollect, false);
   registry->RegisterInt64Pref(pref_names::kLastUpdateCheck, 0);

@@ -36,10 +36,15 @@
 #include "extensions/common/url_pattern.h"
 #include "url/gurl.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
+#endif
+
 namespace extensions {
 
-ExtensionManagement::ExtensionManagement(PrefService* pref_service)
-    : pref_service_(pref_service) {
+ExtensionManagement::ExtensionManagement(PrefService* pref_service,
+                                         bool is_signin_profile)
+    : pref_service_(pref_service), is_signin_profile_(is_signin_profile) {
   TRACE_EVENT0("browser,startup",
                "ExtensionManagement::ExtensionManagement::ctor");
   pref_change_registrar_.Init(pref_service_);
@@ -50,6 +55,8 @@ ExtensionManagement::ExtensionManagement(PrefService* pref_service)
   pref_change_registrar_.Add(pref_names::kInstallDenyList,
                              pref_change_callback);
   pref_change_registrar_.Add(pref_names::kInstallForceList,
+                             pref_change_callback);
+  pref_change_registrar_.Add(pref_names::kInstallLoginScreenAppList,
                              pref_change_callback);
   pref_change_registrar_.Add(pref_names::kAllowedInstallSites,
                              pref_change_callback);
@@ -111,28 +118,12 @@ ExtensionManagement::InstallationMode ExtensionManagement::GetInstallationMode(
 
 std::unique_ptr<base::DictionaryValue>
 ExtensionManagement::GetForceInstallList() const {
-  std::unique_ptr<base::DictionaryValue> install_list(
-      new base::DictionaryValue());
-  for (const auto& entry : settings_by_id_) {
-    if (entry.second->installation_mode == INSTALLATION_FORCED) {
-      ExternalPolicyLoader::AddExtension(install_list.get(), entry.first,
-                                         entry.second->update_url);
-    }
-  }
-  return install_list;
+  return GetInstallListByMode(INSTALLATION_FORCED);
 }
 
 std::unique_ptr<base::DictionaryValue>
 ExtensionManagement::GetRecommendedInstallList() const {
-  std::unique_ptr<base::DictionaryValue> install_list(
-      new base::DictionaryValue());
-  for (const auto& entry : settings_by_id_) {
-    if (entry.second->installation_mode == INSTALLATION_RECOMMENDED) {
-      ExternalPolicyLoader::AddExtension(install_list.get(), entry.first,
-                                         entry.second->update_url);
-    }
-  }
-  return install_list;
+  return GetInstallListByMode(INSTALLATION_RECOMMENDED);
 }
 
 bool ExtensionManagement::IsInstallationExplicitlyAllowed(
@@ -255,6 +246,12 @@ void ExtensionManagement::Refresh() {
   const base::DictionaryValue* forced_list_pref =
       static_cast<const base::DictionaryValue*>(LoadPreference(
           pref_names::kInstallForceList, true, base::Value::Type::DICTIONARY));
+  const base::DictionaryValue* login_screen_app_list_pref = nullptr;
+  if (is_signin_profile_) {
+    login_screen_app_list_pref = static_cast<const base::DictionaryValue*>(
+        LoadPreference(pref_names::kInstallLoginScreenAppList, true,
+                       base::Value::Type::DICTIONARY));
+  }
   const base::ListValue* install_sources_pref =
       static_cast<const base::ListValue*>(LoadPreference(
           pref_names::kAllowedInstallSites, true, base::Value::Type::LIST));
@@ -315,22 +312,8 @@ void ExtensionManagement::Refresh() {
     }
   }
 
-  if (forced_list_pref) {
-    std::string update_url;
-    for (base::DictionaryValue::Iterator it(*forced_list_pref); !it.IsAtEnd();
-         it.Advance()) {
-      if (!crx_file::id_util::IdIsValid(it.key()))
-        continue;
-      const base::DictionaryValue* dict_value = NULL;
-      if (it.value().GetAsDictionary(&dict_value) &&
-          dict_value->GetStringWithoutPathExpansion(
-              ExternalProviderImpl::kExternalUpdateUrl, &update_url)) {
-        internal::IndividualSettings* by_id = AccessById(it.key());
-        by_id->installation_mode = INSTALLATION_FORCED;
-        by_id->update_url = update_url;
-      }
-    }
-  }
+  UpdateForcedExtensions(forced_list_pref);
+  UpdateForcedExtensions(login_screen_app_list_pref);
 
   if (install_sources_pref) {
     global_settings_->has_restricted_install_sources = true;
@@ -438,6 +421,40 @@ void ExtensionManagement::NotifyExtensionManagementPrefChanged() {
     observer.OnExtensionManagementSettingsChanged();
 }
 
+std::unique_ptr<base::DictionaryValue>
+ExtensionManagement::GetInstallListByMode(
+    InstallationMode installation_mode) const {
+  auto extension_dict = base::MakeUnique<base::DictionaryValue>();
+  for (const auto& entry : settings_by_id_) {
+    if (entry.second->installation_mode == installation_mode) {
+      ExternalPolicyLoader::AddExtension(extension_dict.get(), entry.first,
+                                         entry.second->update_url);
+    }
+  }
+  return extension_dict;
+}
+
+void ExtensionManagement::UpdateForcedExtensions(
+    const base::DictionaryValue* extension_dict) {
+  if (!extension_dict)
+    return;
+
+  std::string update_url;
+  for (base::DictionaryValue::Iterator it(*extension_dict); !it.IsAtEnd();
+       it.Advance()) {
+    if (!crx_file::id_util::IdIsValid(it.key()))
+      continue;
+    const base::DictionaryValue* dict_value = nullptr;
+    if (it.value().GetAsDictionary(&dict_value) &&
+        dict_value->GetStringWithoutPathExpansion(
+            ExternalProviderImpl::kExternalUpdateUrl, &update_url)) {
+      internal::IndividualSettings* by_id = AccessById(it.key());
+      by_id->installation_mode = INSTALLATION_FORCED;
+      by_id->update_url = update_url;
+    }
+  }
+}
+
 internal::IndividualSettings* ExtensionManagement::AccessById(
     const ExtensionId& id) {
   DCHECK(crx_file::id_util::IdIsValid(id)) << "Invalid ID: " << id;
@@ -484,8 +501,12 @@ KeyedService* ExtensionManagementFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   TRACE_EVENT0("browser,startup",
                "ExtensionManagementFactory::BuildServiceInstanceFor");
-  return new ExtensionManagement(
-      Profile::FromBrowserContext(context)->GetPrefs());
+  Profile* profile = Profile::FromBrowserContext(context);
+  bool is_signin_profile = false;
+#if defined(OS_CHROMEOS)
+  is_signin_profile = chromeos::ProfileHelper::IsSigninProfile(profile);
+#endif
+  return new ExtensionManagement(profile->GetPrefs(), is_signin_profile);
 }
 
 content::BrowserContext* ExtensionManagementFactory::GetBrowserContextToUse(

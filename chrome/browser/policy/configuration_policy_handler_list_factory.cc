@@ -885,6 +885,9 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
   handlers->AddHandler(
       base::MakeUnique<extensions::ExtensionInstallForcelistPolicyHandler>());
   handlers->AddHandler(
+      base::MakeUnique<
+          extensions::ExtensionInstallLoginScreenAppListPolicyHandler>());
+  handlers->AddHandler(
       base::MakeUnique<extensions::ExtensionURLPatternListPolicyHandler>(
           key::kExtensionInstallSources,
           extensions::pref_names::kAllowedInstallSites));

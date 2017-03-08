@@ -31,7 +31,7 @@ class PermissionsBasedManagementPolicyProviderTest : public testing::Test {
 
   PermissionsBasedManagementPolicyProviderTest()
       : pref_service_(new TestingPrefServiceSimple()),
-        settings_(new ExtensionManagement(pref_service_.get())),
+        settings_(new ExtensionManagement(pref_service_.get(), false)),
         provider_(settings_.get()) {}
 
   void SetUp() override {
