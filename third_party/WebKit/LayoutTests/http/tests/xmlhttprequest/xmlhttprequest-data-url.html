@@ -18,7 +18,7 @@ test.step(function() {
 
         assert_equals(xhr.status, 200, 'status');
         assert_equals(xhr.statusText, 'OK', 'statusText');
-        assert_equals(xhr.getAllResponseHeaders(), 'Content-Type: text/html;charset=US-ASCII\r\n', 'getAllResponseheaders()');
+        assert_equals(xhr.getAllResponseHeaders(), 'Content-Type: text/html\r\n', 'getAllResponseheaders()');
         assert_equals(xhr.response, 'Foobar', 'response');
 
         test.done();
