@@ -49,13 +49,17 @@ const TxfmFunc inv_txfm_func_ls[2][5] = {
 const int8_t cos_bit[12] = { 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14 };
 const int8_t range_bit[12] = { 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32 };
 
+#define ARRAY_SIZE(x) (int)(sizeof(x) / sizeof(x[0]))
+
 TEST(av1_inv_txfm1d, round_trip) {
   ACMRandom rnd(ACMRandom::DeterministicSeed());
   for (int si = 0; si < txfm_size_num; ++si) {
     int txfm_size = txfm_size_ls[si];
-    int32_t *input = new int32_t[txfm_size];
-    int32_t *output = new int32_t[txfm_size];
-    int32_t *round_trip_output = new int32_t[txfm_size];
+    int32_t input[64];
+    int32_t output[64];
+    int32_t round_trip_output[64];
+
+    assert(txfm_size <= ARRAY_SIZE(input));
 
     for (int ti = 0; ti < txfm_type_num; ++ti) {
       TxfmFunc fwd_txfm_func = fwd_txfm_func_ls[ti][si];
@@ -81,9 +85,6 @@ TEST(av1_inv_txfm1d, round_trip) {
         }
       }
     }
-    delete[] input;
-    delete[] output;
-    delete[] round_trip_output;
   }
 }
 
