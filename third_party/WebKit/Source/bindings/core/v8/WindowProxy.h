@@ -164,10 +164,6 @@ class WindowProxy : public GarbageCollectedFinalized<WindowProxy> {
   enum GlobalDetachmentBehavior { DoNotDetachGlobal, DetachGlobal };
   virtual void disposeContext(GlobalDetachmentBehavior);
 
-  // Associates the window wrapper and its prototype chain with the native
-  // DOMWindow object.  Also does some more Window-specific initialization.
-  void setupWindowPrototypeChain();
-
   v8::Isolate* isolate() const { return m_isolate; }
   Frame* frame() const { return m_frame.get(); }
   ScriptState* getScriptState() const { return m_scriptState.get(); }

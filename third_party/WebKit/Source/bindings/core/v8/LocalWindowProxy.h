@@ -74,6 +74,10 @@ class LocalWindowProxy final : public WindowProxy {
   // wrapper is not yet associated with the native DOMWindow object.
   void createContext();
 
+  // Associates the window wrapper and its prototype chain with the native
+  // DOMWindow object. Also does some more Window-specific initialization.
+  void setupWindowPrototypeChain();
+
   void setSecurityToken(SecurityOrigin*);
 
   // Triggers updates of objects that are associated with a Document:
