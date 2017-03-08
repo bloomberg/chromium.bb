@@ -11,6 +11,7 @@
 #include "chrome/browser/extensions/extension_uninstall_dialog.h"
 #include "chrome/browser/ui/app_list/app_list_service.h"
 #include "chrome/browser/ui/native_window_tracker.h"
+#include "chrome/browser/ui/views/harmony/layout_delegate.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/constrained_window/constrained_window_views.h"
 #include "components/strings/grit/components_strings.h"
@@ -170,7 +171,9 @@ ExtensionUninstallDialogDelegateView::ExtensionUninstallDialogDelegateView(
       report_abuse_checkbox_(nullptr) {
   SetLayoutManager(new views::BoxLayout(
       views::BoxLayout::kHorizontal, views::kButtonHEdgeMarginNew,
-      views::kPanelVertMargin, views::kRelatedControlHorizontalSpacing));
+      LayoutDelegate::Get()->GetMetric(
+          LayoutDelegate::Metric::PANEL_CONTENT_MARGIN),
+      views::kRelatedControlHorizontalSpacing));
 
   icon_ = new views::ImageView();
   DCHECK_GE(image->width(), kIconSize);

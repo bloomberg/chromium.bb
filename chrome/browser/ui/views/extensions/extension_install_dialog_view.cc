@@ -418,7 +418,9 @@ views::GridLayout* ExtensionInstallDialogView::CreateLayout(
   // right margin (we effectively get a top margin anyway from the empty dialog
   // title, and we add an explicit padding column as a right margin below).
   views::GridLayout* layout = new views::GridLayout(container_);
-  layout->SetInsets(0, views::kButtonHEdgeMarginNew, views::kPanelVertMargin,
+  layout->SetInsets(0, views::kButtonHEdgeMarginNew,
+                    LayoutDelegate::Get()->GetMetric(
+                        LayoutDelegate::Metric::PANEL_CONTENT_MARGIN),
                     0);
   container_->SetLayoutManager(layout);
   AddChildView(container_);

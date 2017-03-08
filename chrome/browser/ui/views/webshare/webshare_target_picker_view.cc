@@ -80,11 +80,11 @@ WebShareTargetPickerView::WebShareTargetPickerView(
     : targets_(targets),
       table_model_(base::MakeUnique<TargetPickerTableModel>(&targets_)),
       close_callback_(close_callback) {
-  views::BoxLayout* layout = new views::BoxLayout(
-      views::BoxLayout::kVertical,
-      LayoutDelegate::Get()->GetMetric(
-          LayoutDelegate::Metric::PANEL_CONTENT_MARGIN),
-      views::kPanelVertMargin, views::kRelatedControlVerticalSpacing);
+  const int panel_margin = LayoutDelegate::Get()->GetMetric(
+      LayoutDelegate::Metric::PANEL_CONTENT_MARGIN);
+  views::BoxLayout* layout =
+      new views::BoxLayout(views::BoxLayout::kVertical, panel_margin,
+                           panel_margin, views::kRelatedControlVerticalSpacing);
   SetLayoutManager(layout);
 
   views::Label* overview_label = new views::Label(

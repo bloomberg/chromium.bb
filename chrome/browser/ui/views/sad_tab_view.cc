@@ -9,6 +9,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
 #include "chrome/app/vector_icons/vector_icons.h"
+#include "chrome/browser/ui/views/harmony/layout_delegate.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -27,8 +28,9 @@
 
 namespace {
 
-const int kMaxContentWidth = 600;
-const int kMinColumnWidth = 120;
+constexpr int kMaxContentWidth = 600;
+constexpr int kMinColumnWidth = 120;
+constexpr int kTitleBottomSpacing = 13;
 
 }  // namespace
 
@@ -79,7 +81,7 @@ SadTabView::SadTabView(content::WebContents* web_contents,
   message_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   message_->SetLineHeight(views::kPanelSubVerticalSpacing);
 
-  layout->StartRowWithPadding(0, column_set_id, 0, views::kPanelVertMargin);
+  layout->StartRowWithPadding(0, column_set_id, 0, kTitleBottomSpacing);
   layout->AddView(message_, 2, 1, views::GridLayout::LEADING,
                   views::GridLayout::LEADING);
 

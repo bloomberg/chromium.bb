@@ -22,6 +22,7 @@
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/views/collected_cookies_views.h"
+#include "chrome/browser/ui/views/harmony/layout_delegate.h"
 #include "chrome/browser/ui/views/website_settings/chosen_object_row.h"
 #include "chrome/browser/ui/views/website_settings/non_accessible_image_view.h"
 #include "chrome/browser/ui/views/website_settings/permission_selector_row.h"
@@ -54,7 +55,6 @@
 #include "ui/views/controls/styled_label.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/grid_layout.h"
-#include "ui/views/layout/layout_constants.h"
 #include "ui/views/layout/layout_manager.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
@@ -81,7 +81,7 @@ const int kMaxPopupWidth = 1000;
 
 // Margin and padding values for the |PopupHeaderView|.
 const int kHeaderMarginBottom = 10;
-const int kHeaderPaddingBottom = views::kPanelVertMargin;
+const int kHeaderPaddingBottom = 13;
 
 // Spacing between labels in the header.
 const int kHeaderLabelSpacing = 4;
@@ -439,7 +439,9 @@ WebsiteSettingsPopupView::WebsiteSettingsPopupView(
     // In non-material, titles are inset from the dialog margin. Ensure the
     // horizontal insets match.
     set_title_margins(
-        gfx::Insets(views::kPanelVertMargin, side_margin, 0, side_margin));
+        gfx::Insets(LayoutDelegate::Get()->GetMetric(
+                        LayoutDelegate::Metric::PANEL_CONTENT_MARGIN),
+                    side_margin, 0, side_margin));
   }
   views::BubbleDialogDelegateView::CreateBubble(this);
 

@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/views/harmony/layout_delegate.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/constrained_window/constrained_window_views.h"
@@ -193,8 +194,10 @@ void ProfileSigninConfirmationDialogViews::ViewHierarchyChanged(
       views::StyledLabel::RangeStyleInfo::CreateForLink());
 
   // Layout the components.
+  const int panel_margin = LayoutDelegate::Get()->GetMetric(
+      LayoutDelegate::Metric::PANEL_CONTENT_MARGIN);
   views::GridLayout* dialog_layout = new views::GridLayout(this);
-  dialog_layout->SetInsets(views::kPanelVertMargin, 0, 0, 0);
+  dialog_layout->SetInsets(panel_margin, 0, 0, 0);
   SetLayoutManager(dialog_layout);
 
   // Use GridLayout inside the prompt bar because StyledLabel requires it.
@@ -215,7 +218,7 @@ void ProfileSigninConfirmationDialogViews::ViewHierarchyChanged(
       views::GridLayout::FILL, views::GridLayout::FILL, 0, 0);
 
   // Use a new column set for the explanation label so we can add padding.
-  dialog_layout->AddPaddingRow(0.0, views::kPanelVertMargin);
+  dialog_layout->AddPaddingRow(0.0, panel_margin);
   views::ColumnSet* explanation_columns = dialog_layout->AddColumnSet(1);
   explanation_columns->AddPaddingColumn(0.0, views::kButtonHEdgeMarginNew);
   explanation_columns->AddColumn(

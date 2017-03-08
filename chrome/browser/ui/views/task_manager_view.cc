@@ -17,6 +17,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/task_manager/task_manager_columns.h"
 #include "chrome/browser/ui/user_manager.h"
+#include "chrome/browser/ui/views/harmony/layout_delegate.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
@@ -332,9 +333,10 @@ void TaskManagerView::Init() {
   AddChildView(tab_table_parent_);
 
   SetLayoutManager(new views::FillLayout());
-  SetBorder(views::CreateEmptyBorder(views::kPanelVertMargin,
-                                     views::kButtonHEdgeMarginNew, 0,
-                                     views::kButtonHEdgeMarginNew));
+  SetBorder(views::CreateEmptyBorder(
+      LayoutDelegate::Get()->GetMetric(
+          LayoutDelegate::Metric::PANEL_CONTENT_MARGIN),
+      views::kButtonHEdgeMarginNew, 0, views::kButtonHEdgeMarginNew));
 
   table_model_->RetrieveSavedColumnsSettingsAndUpdateTable();
 

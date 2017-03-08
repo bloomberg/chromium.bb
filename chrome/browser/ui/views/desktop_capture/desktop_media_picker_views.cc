@@ -10,6 +10,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/views/desktop_capture/desktop_media_list_view.h"
 #include "chrome/browser/ui/views/desktop_capture/desktop_media_source_view.h"
+#include "chrome/browser/ui/views/harmony/layout_delegate.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/constrained_window/constrained_window_views.h"
@@ -64,8 +65,10 @@ DesktopMediaPickerDialogView::DesktopMediaPickerDialogView(
       audio_share_checkbox_(nullptr),
       pane_(new views::TabbedPane()) {
   SetLayoutManager(new views::BoxLayout(
-        views::BoxLayout::kVertical, views::kButtonHEdgeMarginNew,
-        views::kPanelVertMargin, views::kLabelToControlVerticalSpacing));
+      views::BoxLayout::kVertical, views::kButtonHEdgeMarginNew,
+      LayoutDelegate::Get()->GetMetric(
+          LayoutDelegate::Metric::PANEL_CONTENT_MARGIN),
+      views::kLabelToControlVerticalSpacing));
 
   description_label_->SetMultiLine(true);
   description_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
