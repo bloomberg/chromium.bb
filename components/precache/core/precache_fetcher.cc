@@ -315,8 +315,40 @@ PrecacheFetcher::Fetcher::~Fetcher() {}
 
 void PrecacheFetcher::Fetcher::LoadFromCache() {
   fetch_stage_ = FetchStage::CACHE;
-  cache_url_fetcher_ =
-      net::URLFetcher::Create(url_, net::URLFetcher::GET, this);
+  net::NetworkTrafficAnnotationTag traffic_annotation =
+      net::DefineNetworkTrafficAnnotation("wifi_prefetch_from_cache", R"(
+        semantics {
+          sender: "Wifi Prefetch"
+          description:
+            "Speeds up mobile web page loads by downloading some common static "
+            "assets (such as JS and CSS) for sites that the user browses "
+            "frequently, in advance of the browser needing them. Only applies "
+            "to users with tab sync enabled."
+          trigger:
+            "Background service that runs when the device is plugged into "
+            "power, on unmetered wifi, and Chromium is not in the foreground."
+          data:
+            "Local cache fetches; no data is sent over the network."
+          destination: OTHER
+        }
+        policy {
+          cookies_allowed: false
+          setting:
+            "Users can disable this feature by several settings: Disabling tab "
+            "sync via unchecking 'Open tabs' in Chromium settings under "
+            "'Advanced sync settings'; Disabling predicting required downloads "
+            "via unchecking 'Use a prediction service to load pages more "
+            "quickly' in Chromium settings under Privacy; Enabling 'Data "
+            "Saver' in Chromium settings on Android."
+          policy {
+            NetworkPredictionOptions {
+              policy_options {mode: MANDATORY}
+              NetworkPredictionOptions: 2
+            }
+          }
+        })");
+  cache_url_fetcher_ = net::URLFetcher::Create(url_, net::URLFetcher::GET, this,
+                                               traffic_annotation);
   data_use_measurement::DataUseUserData::AttachToFetcher(
       cache_url_fetcher_.get(),
       data_use_measurement::DataUseUserData::PRECACHE);
@@ -331,8 +363,80 @@ void PrecacheFetcher::Fetcher::LoadFromCache() {
 
 void PrecacheFetcher::Fetcher::LoadFromNetwork() {
   fetch_stage_ = FetchStage::NETWORK;
-  network_url_fetcher_ =
-      net::URLFetcher::Create(url_, net::URLFetcher::GET, this);
+  if (is_resource_request_) {
+    net::NetworkTrafficAnnotationTag traffic_annotation =
+        net::DefineNetworkTrafficAnnotation(
+            "wifi_prefetch_resource_from_network", R"(
+            semantics {
+              sender: "Wifi Prefetch"
+              description:
+                "Speeds up mobile web page loads by downloading common static "
+                "assets (such as JS and CSS) for sites that the user browses "
+                "frequently, in advance of the browser needing them. Only "
+                "applies to users with tab sync enabled."
+              trigger:
+                "Background service that runs when the device is plugged into "
+                "power, on unmetered wifi, and Chromium is not in the "
+                "foreground."
+              data: "Link to the requested resrouce."
+              destination: WEBSITE
+            }
+            policy {
+              cookies_allowed: false
+              setting:
+                "Users can disable this feature by several settings: Disabling "
+                "tab sync via unchecking 'Open tabs' in Chromium settings "
+                "under 'Advanced sync settings'; Disabling predicting required "
+                "downloads via unchecking 'Use a prediction service to load "
+                "pages more quickly' in Chromium settings under Privacy; "
+                "Enabling 'Data Saver' in Chromium settings on Android."
+              policy {
+                NetworkPredictionOptions {
+                  policy_options {mode: MANDATORY}
+                  NetworkPredictionOptions: 2
+                }
+              }
+            })");
+    network_url_fetcher_ = net::URLFetcher::Create(url_, net::URLFetcher::GET,
+                                                   this, traffic_annotation);
+  } else {
+    net::NetworkTrafficAnnotationTag traffic_annotation =
+        net::DefineNetworkTrafficAnnotation("wifi_prefetch_sites_from_network",
+                                            R"(
+          semantics {
+            sender: "Wifi Prefetch"
+            description:
+              "Speeds up mobile web page loads by downloading common static "
+              "assets (such as JS and CSS) for sites that the user browses "
+              "frequently, in advance of the browser needing them. The first "
+              "step is to download the list of common static assets from "
+              "Google. Only applies to users with tab sync enabled."
+            trigger:
+              "Background service that runs when the device is plugged into "
+              "power, on unmetered wifi, and Chromium is not in the foreground."
+            data: "A list of the top hosts that the user visits."
+            destination: GOOGLE_OWNED_SERVICE
+          }
+          policy {
+            cookies_allowed: false
+            setting:
+              "Users can disable this feature by several settings: Disabling "
+              "tab sync via unchecking 'Open tabs' in Chromium settings under "
+              "'Advanced sync settings'; Disabling predicting required "
+              "downloads via unchecking 'Use a prediction service to load "
+              "pages more quickly' in Chromium settings under Privacy; "
+              "Enabling 'Data Saver' in Chromium settings on Android."
+            policy {
+              NetworkPredictionOptions {
+                policy_options {mode: MANDATORY}
+                NetworkPredictionOptions: 2
+              }
+            }
+          })");
+    network_url_fetcher_ = net::URLFetcher::Create(url_, net::URLFetcher::GET,
+                                                   this, traffic_annotation);
+  }
+
   data_use_measurement::DataUseUserData::AttachToFetcher(
       network_url_fetcher_.get(),
       data_use_measurement::DataUseUserData::PRECACHE);
