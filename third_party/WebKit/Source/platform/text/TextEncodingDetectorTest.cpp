@@ -9,7 +9,7 @@
 
 namespace blink {
 
-TEST(TextResourceDecoderTest, RespectIso2022Jp) {
+TEST(TextEncodingDetectorTest, RespectIso2022Jp) {
   // ISO-2022-JP is the only 7-bit encoding defined in WHATWG standard.
   std::string iso2022jp =
       " \x1B"
@@ -21,7 +21,7 @@ TEST(TextResourceDecoderTest, RespectIso2022Jp) {
   EXPECT_EQ(WTF::TextEncoding("ISO-2022-JP"), encoding);
 }
 
-TEST(TextResourceDecoderTest, Ignore7BitEncoding) {
+TEST(TextEncodingDetectorTest, Ignore7BitEncoding) {
   // 7-bit encodings except ISO-2022-JP are not supported by WHATWG.
   // They should be detected as plain text (US-ASCII).
   std::string hzGb2312 =
@@ -29,6 +29,19 @@ TEST(TextResourceDecoderTest, Ignore7BitEncoding) {
   WTF::TextEncoding encoding;
   bool result = detectTextEncoding(hzGb2312.c_str(), hzGb2312.length(), nullptr,
                                    nullptr, nullptr, &encoding);
+  EXPECT_TRUE(result);
+  EXPECT_EQ(WTF::TextEncoding("US-ASCII"), encoding);
+}
+
+TEST(TextEncodingDetectorTest, NonWHATWGEncodingBecomesAscii) {
+  std::string pseudoJpg =
+      "\xff\xd8\xff\xe0\x00\x10JFIF foo bar baz\xff\xe1\x00\xa5"
+      "\x01\xd7\xff\x01\x57\x33\x44\x55\x66\x77\xed\xcb\xa9\x87"
+      "\xff\xd7\xff\xe0\x00\x10JFIF foo bar baz\xff\xe1\x00\xa5"
+      "\x87\x01\xd7\xff\x01\x57\x33\x44\x55\x66\x77\xed\xcb\xa9";
+  WTF::TextEncoding encoding;
+  bool result = detectTextEncoding(pseudoJpg.c_str(), pseudoJpg.length(),
+                                   nullptr, nullptr, nullptr, &encoding);
   EXPECT_TRUE(result);
   EXPECT_EQ(WTF::TextEncoding("US-ASCII"), encoding);
 }
