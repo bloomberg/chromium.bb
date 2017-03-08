@@ -9,6 +9,7 @@ mojom("interfaces") {
     "display.mojom",
     "display_layout.mojom",
     "display_mode.mojom",
+    "gamma_ramp_rgb_entry.mojom",
   ]
 
   public_deps = [

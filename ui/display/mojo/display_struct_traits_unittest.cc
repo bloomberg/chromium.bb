@@ -9,6 +9,7 @@
 #include "ui/display/display_layout.h"
 #include "ui/display/mojo/display_struct_traits_test.mojom.h"
 #include "ui/display/types/display_mode.h"
+#include "ui/display/types/gamma_ramp_rgb_entry.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -50,6 +51,12 @@ class DisplayStructTraitsTest : public testing::Test,
   void EchoDisplayLayout(std::unique_ptr<display::DisplayLayout> in,
                          const EchoDisplayLayoutCallback& callback) override {
     callback.Run(std::move(in));
+  }
+
+  void EchoGammaRampRGBEntry(
+      const GammaRampRGBEntry& in,
+      const EchoGammaRampRGBEntryCallback& callback) override {
+    callback.Run(in);
   }
 
   base::MessageLoop loop_;  // A MessageLoop is needed for Mojo IPC to work.
@@ -217,6 +224,17 @@ TEST_F(DisplayStructTraitsTest, DisplayLayoutTwoMirrored) {
   GetTraitsTestProxy()->EchoDisplayLayout(input->Copy(), &output);
 
   CheckDisplayLayoutsEqual(*input, *output);
+}
+
+TEST_F(DisplayStructTraitsTest, BasicGammaRampRGBEntry) {
+  const GammaRampRGBEntry input{259, 81, 16};
+
+  GammaRampRGBEntry output;
+  GetTraitsTestProxy()->EchoGammaRampRGBEntry(input, &output);
+
+  EXPECT_EQ(input.r, output.r);
+  EXPECT_EQ(input.g, output.g);
+  EXPECT_EQ(input.b, output.b);
 }
 
 }  // namespace display
