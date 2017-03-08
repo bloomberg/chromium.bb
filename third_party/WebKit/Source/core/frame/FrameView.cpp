@@ -490,7 +490,7 @@ void FrameView::invalidateAllCustomScrollbarsOnActiveChanged() {
   bool usesWindowInactiveSelector =
       m_frame->document()->styleEngine().usesWindowInactiveSelector();
 
-  const ChildrenWidgetSet* viewChildren = children();
+  const ChildrenSet* viewChildren = children();
   for (const Member<FrameViewBase>& child : *viewChildren) {
     FrameViewBase* frameViewBase = child.get();
     if (frameViewBase->isFrameView()) {
@@ -3310,7 +3310,7 @@ void FrameView::updateStyleAndLayoutIfNeededRecursiveInternal() {
   // TODO(leviw): This currently runs the entire lifecycle on plugin WebViews.
   // We should have a way to only run these other Documents to the same
   // lifecycle stage as this frame.
-  const ChildrenWidgetSet* viewChildren = children();
+  const ChildrenSet* viewChildren = children();
   for (const Member<FrameViewBase>& child : *viewChildren) {
     if ((*child).isPluginContainer())
       toPluginView(child.get())->updateAllLifecyclePhases();

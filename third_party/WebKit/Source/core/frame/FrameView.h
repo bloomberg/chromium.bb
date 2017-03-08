@@ -458,13 +458,13 @@ class CORE_EXPORT FrameView final
   // and repaints to the host window in the window's coordinate space.
   HostWindow* getHostWindow() const;
 
-  typedef HeapHashSet<Member<FrameViewBase>> ChildrenWidgetSet;
+  typedef HeapHashSet<Member<FrameViewBase>> ChildrenSet;
 
   // Functions for child manipulation and inspection.
   void setParent(FrameViewBase*) override;
   void removeChild(FrameViewBase*);
   void addChild(FrameViewBase*);
-  const ChildrenWidgetSet* children() const { return &m_children; }
+  const ChildrenSet* children() const { return &m_children; }
 
   // If the scroll view does not use a native widget, then it will have
   // cross-platform Scrollbars. These functions can be used to obtain those
@@ -1130,7 +1130,7 @@ class CORE_EXPORT FrameView final
   bool m_horizontalScrollbarLock;
   bool m_verticalScrollbarLock;
 
-  ChildrenWidgetSet m_children;
+  ChildrenSet m_children;
 
   ScrollOffset m_pendingScrollDelta;
   ScrollOffset m_scrollOffset;

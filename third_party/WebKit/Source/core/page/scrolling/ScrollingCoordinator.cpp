@@ -1005,7 +1005,7 @@ Region ScrollingCoordinator::computeShouldHandleScrollGestureOnMainThreadRegion(
     }
   }
 
-  if (const FrameView::ChildrenWidgetSet* children = frameView->children()) {
+  if (const FrameView::ChildrenSet* children = frameView->children()) {
     for (const Member<FrameViewBase>& child : *children) {
       if (!(*child).isPluginView())
         continue;

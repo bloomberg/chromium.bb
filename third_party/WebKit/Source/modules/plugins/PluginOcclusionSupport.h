@@ -29,7 +29,7 @@ class FrameViewBase;
 class IntRect;
 
 MODULES_EXPORT void getPluginOcclusions(Element*,
-                                        FrameViewBase* parentWidget,
+                                        FrameViewBase* parent,
                                         const IntRect& frameRect,
                                         Vector<IntRect>& occlusions);
 
