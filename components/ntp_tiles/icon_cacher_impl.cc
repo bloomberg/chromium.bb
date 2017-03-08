@@ -49,8 +49,11 @@ void IconCacherImpl::StartFetch(
     PopularSites::Site site,
     const base::Closure& icon_available,
     const base::Closure& preliminary_icon_available) {
+  // Copy values from |site| before it is moved.
+  GURL site_url = site.url;
+  favicon_base::IconType icon_type = IconType(site);
   favicon::GetFaviconImageForPageURL(
-      favicon_service_, site.url, IconType(site),
+      favicon_service_, site_url, icon_type,
       base::Bind(&IconCacherImpl::OnGetFaviconImageForPageURLFinished,
                  base::Unretained(this), std::move(site), icon_available,
                  preliminary_icon_available),
