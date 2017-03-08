@@ -33,13 +33,16 @@ static struct {
 } const kControls[] = {{V4L2_CID_USER_BASE, V4L2_CID_USER_CLASS},
                        {V4L2_CID_CAMERA_CLASS_BASE, V4L2_CID_CAMERA_CLASS}};
 
-// Determines if |control_id| is special, i.e. controls another one's state.
-static bool IsSpecialControl(int control_id) {
+// Determines if |control_id| is special, i.e. controls another one's state, or
+// if it should be skipped (blacklisted, https://crbug.com/697885).
+static bool IsSpecialOrBlacklistedControl(int control_id) {
   switch (control_id) {
     case V4L2_CID_AUTO_WHITE_BALANCE:
     case V4L2_CID_EXPOSURE_AUTO:
     case V4L2_CID_EXPOSURE_AUTO_PRIORITY:
     case V4L2_CID_FOCUS_AUTO:
+    case V4L2_CID_PAN_ABSOLUTE:
+    case V4L2_CID_TILT_ABSOLUTE:
       return true;
   }
   return false;
@@ -87,7 +90,7 @@ static void SetControlsToMaxValues(int device_fd) {
         break;
       range.id |= V4L2_CTRL_FLAG_NEXT_CTRL;
 
-      if (IsSpecialControl(range.id & ~V4L2_CTRL_FLAG_NEXT_CTRL))
+      if (IsSpecialOrBlacklistedControl(range.id & ~V4L2_CTRL_FLAG_NEXT_CTRL))
         continue;
       DVLOG(1) << __func__ << " " << range.name << " set to " << range.maximum;
 
@@ -112,7 +115,7 @@ static void SetControlsToMaxValues(int device_fd) {
         break;
       range.id |= V4L2_CTRL_FLAG_NEXT_CTRL;
 
-      if (IsSpecialControl(range.id & ~V4L2_CTRL_FLAG_NEXT_CTRL))
+      if (IsSpecialOrBlacklistedControl(range.id & ~V4L2_CTRL_FLAG_NEXT_CTRL))
         continue;
       DVLOG(1) << __func__ << " " << range.name << " set to " << range.maximum;
 
