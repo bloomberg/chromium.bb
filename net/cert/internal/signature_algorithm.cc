@@ -17,6 +17,21 @@ namespace net {
 
 namespace {
 
+// md2WithRSAEncryption
+// In dotted notation: 1.2.840.113549.1.1.2
+const uint8_t kOidMd2WithRsaEncryption[] = {0x2a, 0x86, 0x48, 0x86, 0xf7,
+                                            0x0d, 0x01, 0x01, 0x02};
+
+// md4WithRSAEncryption
+// In dotted notation: 1.2.840.113549.1.1.3
+const uint8_t kOidMd4WithRsaEncryption[] = {0x2a, 0x86, 0x48, 0x86, 0xf7,
+                                            0x0d, 0x01, 0x01, 0x03};
+
+// md5WithRSAEncryption
+// In dotted notation: 1.2.840.113549.1.1.4
+const uint8_t kOidMd5WithRsaEncryption[] = {0x2a, 0x86, 0x48, 0x86, 0xf7,
+                                            0x0d, 0x01, 0x01, 0x04};
+
 // From RFC 5912:
 //
 //     sha1WithRSAEncryption OBJECT IDENTIFIER ::= {
@@ -516,6 +531,7 @@ WARN_UNUSED_RESULT bool ParseHashAlgorithm(const der::Input input,
   } else if (oid == der::Input(kOidSha512)) {
     hash = DigestAlgorithm::Sha512;
   } else {
+    // TODO(eroman): Support MD2, MD4, MD5 for completeness?
     // Unsupported digest algorithm.
     return false;
   }
@@ -579,6 +595,15 @@ std::unique_ptr<SignatureAlgorithm> SignatureAlgorithm::Create(
 
   if (oid == der::Input(kOidSha1WithRsaSignature))
     return ParseRsaPkcs1(DigestAlgorithm::Sha1, params);
+
+  if (oid == der::Input(kOidMd2WithRsaEncryption))
+    return ParseRsaPkcs1(DigestAlgorithm::Md2, params);
+
+  if (oid == der::Input(kOidMd4WithRsaEncryption))
+    return ParseRsaPkcs1(DigestAlgorithm::Md4, params);
+
+  if (oid == der::Input(kOidMd5WithRsaEncryption))
+    return ParseRsaPkcs1(DigestAlgorithm::Md5, params);
 
   // TODO(crbug.com/634443): Add an error indicating what the OID
   // was.

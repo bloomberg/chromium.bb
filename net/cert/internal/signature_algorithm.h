@@ -23,6 +23,9 @@ class Input;
 
 // The digest algorithm used within a signature.
 enum class DigestAlgorithm {
+  Md2,
+  Md4,
+  Md5,
   Sha1,
   Sha256,
   Sha384,
