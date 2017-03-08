@@ -720,6 +720,16 @@ void PrecacheFetcher::OnQuotaInfoRetrieved(const PrecacheQuota& quota) {
   if (IsQuotaTimeExpired(quota_, time_now)) {
     // This is a new day. Update daily quota, that starts today and expires by
     // end of today.
+
+    // If a previous day existed, report its usage.
+    if (quota_.has_start_time()) {
+      UMA_HISTOGRAM_CUSTOM_COUNTS(
+          "Precache.Fetch.ResponseBytes.Daily",
+          unfinished_work_->config_settings().daily_quota_total() -
+              quota_.remaining(),
+          1, kMaxResponseBytes, 100);
+    }
+
     quota_.set_start_time(time_now.LocalMidnight().ToInternalValue());
     quota_.set_remaining(
         unfinished_work_->config_settings().daily_quota_total());
