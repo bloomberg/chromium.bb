@@ -35,6 +35,7 @@ source_set("crash") {
     "//breakpad:client",
     "//chromecast/base",
     "//chromecast/base:cast_version",
+    "//components/crash/core/common",
     "//components/metrics",
     "//components/prefs",
   ]

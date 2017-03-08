@@ -2,29 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/macros.h"
 #include "chromecast/crash/cast_crash_keys.h"
 
-// TODO(kjoswiak): Potentially refactor chunk size info as well as non-cast
-// specific keys out and make shared with chrome/common/crash_keys.cc.
-namespace {
-
-// A small crash key, guaranteed to never be split into multiple pieces.
-const size_t kSmallSize = 63;
-
-// A medium crash key, which will be chunked on certain platforms but not
-// others. Guaranteed to never be more than four chunks.
-const size_t kMediumSize = kSmallSize * 4;
-
-// A large crash key, which will be chunked on all platforms. This should be
-// used sparingly.
-const size_t kLargeSize = kSmallSize * 16;
-
-// The maximum lengths specified by breakpad include the trailing NULL, so
-// the actual length of the string is one less.
-static const size_t kChunkMaxLength = 63;
-
-}  // namespace
+#include "components/crash/core/common/crash_keys.h"
 
 namespace chromecast {
 namespace crash_keys {
@@ -35,82 +15,107 @@ const char kPreviousApp[] = "previous_app";
 
 size_t RegisterCastCrashKeys() {
   const base::debug::CrashKey fixed_keys[] = {
-    { kLastApp, kSmallSize },
-    { kCurrentApp, kSmallSize },
-    { kPreviousApp, kSmallSize },
-    // content/:
-    { "discardable-memory-allocated", kSmallSize },
-    { "discardable-memory-free", kSmallSize },
-    { "ppapi_path", kMediumSize },
-    { "subresource_url", kLargeSize },
-    { "total-discardable-memory-allocated", kSmallSize },
+      {kLastApp, ::crash_keys::kSmallSize},
+      {kCurrentApp, ::crash_keys::kSmallSize},
+      {kPreviousApp, ::crash_keys::kSmallSize},
 
-    // gin/:
-    { "v8-ignition", kSmallSize },
+      // TODO(sanfin): The following crash keys are copied from
+      // chrome/common/crash_keys.cc. When http://crbug.com/598854 is fixed,
+      // remove these and refactor as necessary.
 
-    // Copied from common/crash_keys. Remove when
-    // http://crbug.com/598854 is resolved.
+      {::crash_keys::kClientId, ::crash_keys::kSmallSize},
+      {::crash_keys::kChannel, ::crash_keys::kSmallSize},
+      {"url-chunk", ::crash_keys::kLargeSize},
+      {::crash_keys::kNumVariations, ::crash_keys::kSmallSize},
+      {::crash_keys::kVariations, ::crash_keys::kHugeSize},
+      {"num-extensions", ::crash_keys::kSmallSize},
+      {"shutdown-type", ::crash_keys::kSmallSize},
+      {"browser-unpin-trace", ::crash_keys::kMediumSize},
+      {"gpu-driver", ::crash_keys::kSmallSize},
+      {"gpu-psver", ::crash_keys::kSmallSize},
+      {"gpu-vsver", ::crash_keys::kSmallSize},
 
-    // Temporary for http://crbug.com/575245
-    { "swapout_frame_id", kSmallSize },
-    { "swapout_proxy_id", kSmallSize },
-    { "swapout_view_id", kSmallSize },
-    { "commit_frame_id", kSmallSize },
-    { "commit_proxy_id", kSmallSize },
-    { "commit_view_id", kSmallSize },
-    { "commit_main_render_frame_id", kSmallSize },
-    { "newproxy_proxy_id", kSmallSize },
-    { "newproxy_view_id", kSmallSize },
-    { "newproxy_opener_id", kSmallSize },
-    { "newproxy_parent_id", kSmallSize },
-    { "rvinit_view_id", kSmallSize },
-    { "rvinit_proxy_id", kSmallSize },
-    { "rvinit_main_frame_id", kSmallSize },
-    { "initrf_frame_id", kSmallSize },
-    { "initrf_proxy_id", kSmallSize },
-    { "initrf_view_id", kSmallSize },
-    { "initrf_main_frame_id", kSmallSize },
-    { "initrf_view_is_live", kSmallSize },
+      // content/:
+      {"bad_message_reason", ::crash_keys::kSmallSize},
+      {"discardable-memory-allocated", ::crash_keys::kSmallSize},
+      {"discardable-memory-free", ::crash_keys::kSmallSize},
+      {"font_key_name", ::crash_keys::kSmallSize},
+      {"mojo-message-error", ::crash_keys::kMediumSize},
+      {"ppapi_path", ::crash_keys::kMediumSize},
+      {"subresource_url", ::crash_keys::kLargeSize},
+      {"total-discardable-memory-allocated", ::crash_keys::kSmallSize},
+      {"input-event-filter-send-failure", ::crash_keys::kSmallSize},
+      // media/:
+      {::crash_keys::kBug464926CrashKey, ::crash_keys::kSmallSize},
+      {"view-count", ::crash_keys::kSmallSize},
 
-    // Keys for https://crbug.com/591478
-    { "initrf_parent_proxy_exists", kSmallSize },
-    { "initrf_render_view_is_live", kSmallSize },
-    { "initrf_parent_is_in_same_site_instance", kSmallSize},
-    { "initrf_parent_process_is_live", kSmallSize},
-    { "initrf_root_is_in_same_site_instance", kSmallSize},
-    { "initrf_root_is_in_same_site_instance_as_parent", kSmallSize},
-    { "initrf_root_process_is_live", kSmallSize},
-    { "initrf_root_proxy_is_live", kSmallSize},
+      // media/:
+      {"zero-encode-details", ::crash_keys::kSmallSize},
 
-    // Temporary for https://crbug.com/626802.
-    { "newframe_routing_id", kSmallSize },
-    { "newframe_proxy_id", kSmallSize },
-    { "newframe_opener_id", kSmallSize },
-    { "newframe_parent_id", kSmallSize },
-    { "newframe_widget_id", kSmallSize },
-    { "newframe_widget_hidden", kSmallSize },
-    { "newframe_replicated_origin", kSmallSize },
-    { "newframe_oopifs_possible", kSmallSize },
+      // gin/:
+      {"v8-ignition", ::crash_keys::kSmallSize},
 
-    // Temporary for https://crbug.com/630103.
-    { "origin_mismatch_url", kLargeSize },
-    { "origin_mismatch_origin", kMediumSize },
-    { "origin_mismatch_transition", kSmallSize },
-    { "origin_mismatch_redirects", kSmallSize },
-    { "origin_mismatch_same_page", kSmallSize },
+      // Temporary for http://crbug.com/575245.
+      {"swapout_frame_id", ::crash_keys::kSmallSize},
+      {"swapout_proxy_id", ::crash_keys::kSmallSize},
+      {"swapout_view_id", ::crash_keys::kSmallSize},
+      {"commit_frame_id", ::crash_keys::kSmallSize},
+      {"commit_proxy_id", ::crash_keys::kSmallSize},
+      {"commit_view_id", ::crash_keys::kSmallSize},
+      {"commit_main_render_frame_id", ::crash_keys::kSmallSize},
+      {"newproxy_proxy_id", ::crash_keys::kSmallSize},
+      {"newproxy_view_id", ::crash_keys::kSmallSize},
+      {"newproxy_opener_id", ::crash_keys::kSmallSize},
+      {"newproxy_parent_id", ::crash_keys::kSmallSize},
+      {"rvinit_view_id", ::crash_keys::kSmallSize},
+      {"rvinit_proxy_id", ::crash_keys::kSmallSize},
+      {"rvinit_main_frame_id", ::crash_keys::kSmallSize},
+      {"initrf_frame_id", ::crash_keys::kSmallSize},
+      {"initrf_proxy_id", ::crash_keys::kSmallSize},
+      {"initrf_view_id", ::crash_keys::kSmallSize},
+      {"initrf_main_frame_id", ::crash_keys::kSmallSize},
+      {"initrf_view_is_live", ::crash_keys::kSmallSize},
 
-    // Temporary for https://crbug.com/612711.
-    { "aci_wrong_sp_extension_id", kSmallSize },
+      // Temporary for https://crbug.com/591478.
+      {"initrf_parent_proxy_exists", ::crash_keys::kSmallSize},
+      {"initrf_render_view_is_live", ::crash_keys::kSmallSize},
+      {"initrf_parent_is_in_same_site_instance", ::crash_keys::kSmallSize},
+      {"initrf_parent_process_is_live", ::crash_keys::kSmallSize},
+      {"initrf_root_is_in_same_site_instance", ::crash_keys::kSmallSize},
+      {"initrf_root_is_in_same_site_instance_as_parent",
+       ::crash_keys::kSmallSize},
+      {"initrf_root_process_is_live", ::crash_keys::kSmallSize},
+      {"initrf_root_proxy_is_live", ::crash_keys::kSmallSize},
 
-    // Temporary for https://crbug.com/668633.
-    { "swdh_set_hosted_version_worker_pid", kSmallSize },
-    { "swdh_set_hosted_version_host_pid", kSmallSize },
-    { "swdh_set_hosted_version_is_new_process", kSmallSize },
-    { "swdh_set_hosted_version_restart_count", kSmallSize },
+      // Temporary for https://crbug.com/626802.
+      {"newframe_routing_id", ::crash_keys::kSmallSize},
+      {"newframe_proxy_id", ::crash_keys::kSmallSize},
+      {"newframe_opener_id", ::crash_keys::kSmallSize},
+      {"newframe_parent_id", ::crash_keys::kSmallSize},
+      {"newframe_widget_id", ::crash_keys::kSmallSize},
+      {"newframe_widget_hidden", ::crash_keys::kSmallSize},
+      {"newframe_replicated_origin", ::crash_keys::kSmallSize},
+      {"newframe_oopifs_possible", ::crash_keys::kSmallSize},
+
+      // Temporary for https://crbug.com/630103.
+      {"origin_mismatch_url", ::crash_keys::kLargeSize},
+      {"origin_mismatch_origin", ::crash_keys::kMediumSize},
+      {"origin_mismatch_transition", ::crash_keys::kSmallSize},
+      {"origin_mismatch_redirects", ::crash_keys::kSmallSize},
+      {"origin_mismatch_same_page", ::crash_keys::kSmallSize},
+
+      // Temporary for https://crbug.com/612711.
+      {"aci_wrong_sp_extension_id", ::crash_keys::kSmallSize},
+
+      // Temporary for https://crbug.com/668633.
+      {"swdh_set_hosted_version_worker_pid", ::crash_keys::kSmallSize},
+      {"swdh_set_hosted_version_host_pid", ::crash_keys::kSmallSize},
+      {"swdh_set_hosted_version_is_new_process", ::crash_keys::kSmallSize},
+      {"swdh_set_hosted_version_restart_count", ::crash_keys::kSmallSize},
   };
 
   return base::debug::InitCrashKeys(fixed_keys, arraysize(fixed_keys),
-                                    kChunkMaxLength);
+                                    ::crash_keys::kChunkMaxLength);
 }
 
 }  // namespace crash_keys

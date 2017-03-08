@@ -103,7 +103,8 @@ size_t RegisterChromeCrashKeys() {
   // If you're adding keys here, please also add them to the following lists:
   // chrome/app/chrome_crash_reporter_client_win.cc::RegisterCrashKeysHelper(),
   // android_webview/common/crash_reporter/crash_keys.cc::
-  //     RegisterWebViewCrashKeys().
+  //     RegisterWebViewCrashKeys(),
+  // chromecast/crash/cast_crash_keys.cc::RegisterCastCrashKeys().
   base::debug::CrashKey fixed_keys[] = {
 #if defined(OS_MACOSX) || defined(OS_WIN)
     {kMetricsClientId, kSmallSize},
