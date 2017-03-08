@@ -28,11 +28,16 @@
         top: 0;
       }
 
-      .title-container {
+      .top-container {
         align-items: center;
         border-bottom: 1px solid var(--divider-color);
         display: flex;
         min-height: 52px;
+      }
+
+      .title-container {
+        display: flex;
+        flex: 1;
         outline: none;
       }
 
@@ -95,8 +100,10 @@
         border-top: 1px solid var(--divider-color);
       }
     </style>
-    <div class="title-container" tabindex="-1">
-      <content select=".title"></content>
+    <div class="top-container">
+      <div class="title-container" tabindex="-1">
+        <content select=".title"></content>
+      </div>
       <paper-icon-button icon="cr:clear" on-tap="cancel" id="close"
           aria-label$="[[closeText]]">
       </paper-icon-button>
