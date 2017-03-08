@@ -11,6 +11,7 @@ Evaluate: {"str":"foo","num":42} (exception: undefined)
 RUNNING TEST: extension_testEvalStatement
 Evaluate: 0 (exception: undefined)
 RUNNING TEST: extension_testEvalStringifyingLoopFailed
+error: Object reference chain is too long
 error: Extension server error: Inspector protocol error: Object reference chain is too long
 Evaluate: undefined (exception: {"code":"E_PROTOCOLERROR","description":"Inspector protocol error: %s","details":["Object reference chain is too long"],"isError":true})
 RUNNING TEST: extension_testEvalThrows

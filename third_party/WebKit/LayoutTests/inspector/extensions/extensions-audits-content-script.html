@@ -37,7 +37,7 @@ function extension_testAudits(nextTest)
         pendingOutput.sort().forEach(output);
         nextTest();
     }
-    webInspector.inspectedWindow.eval("", function() {
+    webInspector.inspectedWindow.eval("undefined", function() {
         extension_runAudits(auditsDone);
     });
 }

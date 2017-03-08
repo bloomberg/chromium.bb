@@ -35,7 +35,7 @@ function extension_testUserAgent(nextTest)
     function onEval(result)
     {
         queuedOutput.push("navigator.userAgent: " + result);
-        webInspector.inspectedWindow.eval("", cleanUp);
+        webInspector.inspectedWindow.eval("undefined", cleanUp);
     }
     function cleanUp()
     {

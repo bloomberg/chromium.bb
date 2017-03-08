@@ -153,7 +153,7 @@ function extension_testElementsSidebarSetExpression(nextTest)
         }
         // Do an extra round-trip to the inspected page to assure inspect()'s round-trip to
         // front-end is complete and $0 is properly updated with currently inspected node.
-        webInspector.inspectedWindow.eval("", function() {
+        webInspector.inspectedWindow.eval("undefined", function() {
             sidebar.setExpression("(" + expression.toString() + ")();", "title", extension_dumpSidebarContent.bind(this, panelName, nextTest));
         });
     }
