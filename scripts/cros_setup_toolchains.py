@@ -999,8 +999,15 @@ def _ProcessBinutilsConfig(target, output_dir):
     logging.warning('%s: binutils lacks support for the gold linker', target)
   else:
     assert len(srcpath) == 1, '%s: did not match exactly 1 path' % globpath
-    gold_supported = True
     srcpath = srcpath[0]
+
+    # Package the binutils-bin directory without the '-gold' suffix
+    # if gold is not enabled as the default linker for this target.
+    gold_supported = CONFIG_TARGET_SUFFIXES['binutils'].get(target) == '-gold'
+    if not gold_supported:
+      srcpath = srcpath[:-len('-gold')]
+      ld_path = os.path.join(srcpath, 'ld')
+      assert os.path.exists(ld_path), '%s: linker is missing!' % ld_path
 
   srcpath = srcpath[len(output_dir):]
   gccpath = os.path.join('/usr', 'libexec', 'gcc')
@@ -1016,6 +1023,12 @@ def _ProcessBinutilsConfig(target, output_dir):
   envd = os.path.join(output_dir, 'etc', 'env.d', 'binutils', '*')
   if gold_supported:
     envd += '-gold'
+  else:
+    # If gold is not enabled as the default linker and 2 env.d
+    # files exist, pick the one without the '-gold' suffix.
+    envds = sorted(glob.glob(envd))
+    if len(envds) == 2 and envds[1] == envds[0] + '-gold':
+      envd = envds[0]
   srcpath = _EnvdGetVar(envd, 'LIBPATH')
   os.symlink(os.path.relpath(srcpath, os.path.dirname(libpath)),
              output_dir + libpath)
