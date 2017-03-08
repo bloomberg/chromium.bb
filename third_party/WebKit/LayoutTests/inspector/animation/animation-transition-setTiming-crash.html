@@ -1,0 +1,42 @@
+<html>
+<head>
+<style>
+#node {
+    transition: left 100s;
+    left: 0px;
+}
+</style>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/elements-test.js"></script>
+<script>
+function startCSSTransition() {
+    node.style.left = "100px";
+}
+
+var initialize_Animations = function() {
+    InspectorTest.preloadModule("animation");
+}
+
+function test() {
+    UI.viewManager.showView("animations");
+    var timeline = self.runtime.sharedInstance(Animation.AnimationTimeline);
+    InspectorTest.evaluateInPage("startCSSTransition()");
+    InspectorTest.waitForAnimationAdded(animationAdded);
+    function animationAdded(group) {
+        group.animations()[0].setTiming(1, 0);
+        InspectorTest.completeTest();
+    }
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+This test passes if it does not crash.
+</p>
+
+<div id="node"></div>
+
+</body>
+</html>
