@@ -10,6 +10,7 @@
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/page/ChromeClient.h"
+#include "core/page/Page.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
 
 namespace blink {
@@ -29,7 +30,8 @@ WebEventListenerProperties webEventListenerProperties(bool hasBlocking,
 
 }  // namespace
 
-EventHandlerRegistry::EventHandlerRegistry(Page& page) : m_page(&page) {}
+EventHandlerRegistry::EventHandlerRegistry(FrameHost& frameHost)
+    : m_frameHost(&frameHost) {}
 
 EventHandlerRegistry::~EventHandlerRegistry() {
   for (size_t i = 0; i < EventHandlerClassCount; ++i) {
@@ -173,7 +175,7 @@ void EventHandlerRegistry::didRemoveEventHandler(
   updateEventHandlerInternal(Remove, handlerClass, &target);
 }
 
-void EventHandlerRegistry::didMoveIntoPage(EventTarget& target) {
+void EventHandlerRegistry::didMoveIntoFrameHost(EventTarget& target) {
   if (!target.hasEventListeners())
     return;
 
@@ -194,7 +196,7 @@ void EventHandlerRegistry::didMoveIntoPage(EventTarget& target) {
   }
 }
 
-void EventHandlerRegistry::didMoveOutOfPage(EventTarget& target) {
+void EventHandlerRegistry::didMoveOutOfFrameHost(EventTarget& target) {
   didRemoveAllEventHandlers(target);
 }
 
@@ -211,19 +213,19 @@ void EventHandlerRegistry::notifyHasHandlersChanged(
     bool hasActiveHandlers) {
   switch (handlerClass) {
     case ScrollEvent:
-      m_page->chromeClient().setHasScrollEventHandlers(frame,
-                                                       hasActiveHandlers);
+      m_frameHost->page().chromeClient().setHasScrollEventHandlers(
+          frame, hasActiveHandlers);
       break;
     case WheelEventBlocking:
     case WheelEventPassive:
-      m_page->chromeClient().setEventListenerProperties(
+      m_frameHost->page().chromeClient().setEventListenerProperties(
           frame, WebEventListenerClass::MouseWheel,
           webEventListenerProperties(hasEventHandlers(WheelEventBlocking),
                                      hasEventHandlers(WheelEventPassive)));
       break;
     case TouchStartOrMoveEventBlocking:
     case TouchStartOrMoveEventPassive:
-      m_page->chromeClient().setEventListenerProperties(
+      m_frameHost->page().chromeClient().setEventListenerProperties(
           frame, WebEventListenerClass::TouchStartOrMove,
           webEventListenerProperties(
               hasEventHandlers(TouchStartOrMoveEventBlocking),
@@ -231,7 +233,7 @@ void EventHandlerRegistry::notifyHasHandlersChanged(
       break;
     case TouchEndOrCancelEventBlocking:
     case TouchEndOrCancelEventPassive:
-      m_page->chromeClient().setEventListenerProperties(
+      m_frameHost->page().chromeClient().setEventListenerProperties(
           frame, WebEventListenerClass::TouchEndOrCancel,
           webEventListenerProperties(
               hasEventHandlers(TouchEndOrCancelEventBlocking),
@@ -249,13 +251,14 @@ void EventHandlerRegistry::notifyHasHandlersChanged(
 
 void EventHandlerRegistry::notifyDidAddOrRemoveEventHandlerTarget(
     EventHandlerClass handlerClass) {
-  ScrollingCoordinator* scrollingCoordinator = m_page->scrollingCoordinator();
+  ScrollingCoordinator* scrollingCoordinator =
+      m_frameHost->page().scrollingCoordinator();
   if (scrollingCoordinator && handlerClass == TouchStartOrMoveEventBlocking)
     scrollingCoordinator->touchEventTargetRectsDidChange();
 }
 
 DEFINE_TRACE(EventHandlerRegistry) {
-  visitor->trace(m_page);
+  visitor->trace(m_frameHost);
   visitor->template registerWeakMembers<
       EventHandlerRegistry, &EventHandlerRegistry::clearWeakMembers>(this);
 }
@@ -316,14 +319,14 @@ void EventHandlerRegistry::checkConsistency(
     if (Node* node = eventTarget.key->toNode()) {
       // See the comment for |documentDetached| if either of these assertions
       // fails.
-      DCHECK(node->document().page());
-      DCHECK(node->document().page() == m_page);
+      DCHECK(node->document().frameHost());
+      DCHECK(node->document().frameHost() == m_frameHost);
     } else if (LocalDOMWindow* window = eventTarget.key->toLocalDOMWindow()) {
       // If any of these assertions fail, LocalDOMWindow failed to unregister
       // its handlers properly.
       DCHECK(window->frame());
-      DCHECK(window->frame()->page());
-      DCHECK(window->frame()->page() == m_page);
+      DCHECK(window->frame()->host());
+      DCHECK(window->frame()->host() == m_frameHost);
     }
   }
 #endif  // DCHECK_IS_ON()
