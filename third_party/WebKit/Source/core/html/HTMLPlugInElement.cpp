@@ -159,7 +159,7 @@ bool HTMLPlugInElement::willRespondToMouseClickEvents() {
 void HTMLPlugInElement::removeAllEventListeners() {
   HTMLFrameOwnerElement::removeAllEventListeners();
   if (LayoutPart* layoutObject = existingLayoutPart()) {
-    if (FrameViewBase* frameViewBase = layoutObject->widget())
+    if (FrameViewBase* frameViewBase = layoutObject->frameViewBase())
       frameViewBase->eventListenersRemoved();
   }
 }
@@ -341,7 +341,7 @@ SharedPersistent<v8::Object>* HTMLPlugInElement::pluginWrapper() {
 
 FrameViewBase* HTMLPlugInElement::pluginWidget() const {
   if (LayoutPart* layoutPart = layoutPartForJSBindings())
-    return layoutPart->widget();
+    return layoutPart->frameViewBase();
   return nullptr;
 }
 
@@ -394,7 +394,7 @@ void HTMLPlugInElement::defaultEventHandler(Event* event) {
             .showsUnavailablePluginIndicator())
       return;
   }
-  FrameViewBase* frameViewBase = toLayoutPart(r)->widget();
+  FrameViewBase* frameViewBase = toLayoutPart(r)->frameViewBase();
   if (!frameViewBase)
     return;
   frameViewBase->handleEvent(event);

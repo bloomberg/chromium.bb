@@ -69,10 +69,10 @@ void PartPainter::paint(const PaintInfo& paintInfo,
   if (paintInfo.phase != PaintPhaseForeground)
     return;
 
-  if (m_layoutPart.widget()) {
+  if (m_layoutPart.frameViewBase()) {
     // TODO(schenney) crbug.com/93805 Speculative release assert to verify that
-    // the crashes we see in widget painting are due to a destroyed LayoutPart
-    // object.
+    // the crashes we see in FrameViewBase painting are due to a destroyed
+    // LayoutPart object.
     CHECK(m_layoutPart.node());
     Optional<RoundedInnerRectClipper> clipper;
     if (m_layoutPart.style()->hasBorderRadius()) {
@@ -95,7 +95,7 @@ void PartPainter::paint(const PaintInfo& paintInfo,
     m_layoutPart.paintContents(paintInfo, paintOffset);
   }
 
-  // Paint a partially transparent wash over selected widgets.
+  // Paint a partially transparent wash over selected FrameViewBases.
   if (isSelected() && !paintInfo.isPrinting() &&
       !LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(
           paintInfo.context, m_layoutPart, paintInfo.phase)) {
@@ -118,23 +118,23 @@ void PartPainter::paintContents(const PaintInfo& paintInfo,
                                 const LayoutPoint& paintOffset) {
   LayoutPoint adjustedPaintOffset = paintOffset + m_layoutPart.location();
 
-  FrameViewBase* frameViewBase = m_layoutPart.widget();
+  FrameViewBase* frameViewBase = m_layoutPart.frameViewBase();
   CHECK(frameViewBase);
 
   IntPoint paintLocation(roundedIntPoint(
       adjustedPaintOffset + m_layoutPart.replacedContentRect().location()));
 
   // FrameViewBases don't support painting with a paint offset, but instead
-  // offset themselves using the frame rect location. To paint widgets at our
-  // desired location, we need to apply paint offset as a transform, with the
-  // frame rect neutralized.
-  IntSize widgetPaintOffset =
+  // offset themselves using the frame rect location. To paint FrameViewBases at
+  // our desired location, we need to apply paint offset as a transform, with
+  // the frame rect neutralized.
+  IntSize frameViewBasePaintOffset =
       paintLocation - frameViewBase->frameRect().location();
   TransformRecorder transform(
       paintInfo.context, m_layoutPart,
-      AffineTransform::translation(widgetPaintOffset.width(),
-                                   widgetPaintOffset.height()));
-  CullRect adjustedCullRect(paintInfo.cullRect(), -widgetPaintOffset);
+      AffineTransform::translation(frameViewBasePaintOffset.width(),
+                                   frameViewBasePaintOffset.height()));
+  CullRect adjustedCullRect(paintInfo.cullRect(), -frameViewBasePaintOffset);
   frameViewBase->paint(paintInfo.context, adjustedCullRect);
 }
 

@@ -183,7 +183,7 @@ FrameViewBase* PluginDocument::pluginWidget() {
   if (m_pluginNode && m_pluginNode->layoutObject()) {
     CHECK(m_pluginNode->layoutObject()->isEmbeddedObject());
     FrameViewBase* frameViewBase =
-        toLayoutEmbeddedObject(m_pluginNode->layoutObject())->widget();
+        toLayoutEmbeddedObject(m_pluginNode->layoutObject())->frameViewBase();
     if (!frameViewBase || !frameViewBase->isPluginContainer())
       return nullptr;
     return frameViewBase;

@@ -88,7 +88,7 @@ LayoutPart::~LayoutPart() {
   ASSERT(m_refCount <= 0);
 }
 
-FrameViewBase* LayoutPart::widget() const {
+FrameViewBase* LayoutPart::frameViewBase() const {
   // Plugin FrameViewBases are stored in their DOM node.
   Element* element = toElement(node());
 
@@ -110,8 +110,8 @@ bool LayoutPart::requiresAcceleratedCompositing() const {
   // a plugin LayoutObject and the plugin has a layer, then we need a layer.
   // Second, if this is a LayoutObject with a contentDocument and that document
   // needs a layer, then we need a layer.
-  if (widget() && widget()->isPluginView() &&
-      toPluginView(widget())->platformLayer())
+  if (frameViewBase() && frameViewBase()->isPluginView() &&
+      toPluginView(frameViewBase())->platformLayer())
     return true;
 
   if (!node() || !node()->isFrameOwnerElement())
@@ -157,21 +157,21 @@ bool LayoutPart::nodeAtPoint(HitTestResult& result,
                              const HitTestLocation& locationInContainer,
                              const LayoutPoint& accumulatedOffset,
                              HitTestAction action) {
-  if (!widget() || !widget()->isFrameView() ||
+  if (!frameViewBase() || !frameViewBase()->isFrameView() ||
       !result.hitTestRequest().allowsChildFrameContent())
     return nodeAtPointOverWidget(result, locationInContainer, accumulatedOffset,
                                  action);
 
   // A hit test can never hit an off-screen element; only off-screen iframes are
   // throttled; therefore, hit tests can skip descending into throttled iframes.
-  if (toFrameView(widget())->shouldThrottleRendering())
+  if (toFrameView(frameViewBase())->shouldThrottleRendering())
     return nodeAtPointOverWidget(result, locationInContainer, accumulatedOffset,
                                  action);
 
   ASSERT(document().lifecycle().state() >= DocumentLifecycle::CompositingClean);
 
   if (action == HitTestForeground) {
-    FrameView* childFrameView = toFrameView(widget());
+    FrameView* childFrameView = toFrameView(frameViewBase());
     LayoutViewItem childRootItem = childFrameView->layoutViewItem();
 
     if (visibleToHitTestRequest(result.hitTestRequest()) &&
@@ -234,7 +234,7 @@ CompositingReasons LayoutPart::additionalCompositingReasons() const {
 void LayoutPart::styleDidChange(StyleDifference diff,
                                 const ComputedStyle* oldStyle) {
   LayoutReplaced::styleDidChange(diff, oldStyle);
-  FrameViewBase* frameViewBase = this->widget();
+  FrameViewBase* frameViewBase = this->frameViewBase();
 
   if (!frameViewBase)
     return;
@@ -268,7 +268,7 @@ void LayoutPart::paintContents(const PaintInfo& paintInfo,
 
 CursorDirective LayoutPart::getCursor(const LayoutPoint& point,
                                       Cursor& cursor) const {
-  if (widget() && widget()->isPluginView()) {
+  if (frameViewBase() && frameViewBase()->isPluginView()) {
     // A plugin is responsible for setting the cursor when the pointer is over
     // it.
     return DoNotSetCursor;
@@ -287,7 +287,7 @@ LayoutRect LayoutPart::replacedContentRect() const {
 }
 
 void LayoutPart::updateOnWidgetChange() {
-  FrameViewBase* frameViewBase = this->widget();
+  FrameViewBase* frameViewBase = this->frameViewBase();
   if (!frameViewBase)
     return;
 
@@ -308,7 +308,7 @@ void LayoutPart::updateOnWidgetChange() {
 }
 
 void LayoutPart::updateGeometry() {
-  FrameViewBase* frameViewBase = this->widget();
+  FrameViewBase* frameViewBase = this->frameViewBase();
   if (!frameViewBase ||
       !node())  // Check the node in case destroy() has been called.
     return;
@@ -341,7 +341,7 @@ void LayoutPart::updateGeometry() {
 }
 
 void LayoutPart::updateGeometryInternal() {
-  FrameViewBase* frameViewBase = this->widget();
+  FrameViewBase* frameViewBase = this->frameViewBase();
   DCHECK(frameViewBase);
 
   // Ignore transform here, as we only care about the sub-pixel accumulation.
@@ -373,8 +373,9 @@ void LayoutPart::updateGeometryInternal() {
 
 void LayoutPart::invalidatePaintOfSubtreesIfNeeded(
     const PaintInvalidationState& paintInvalidationState) {
-  if (widget() && widget()->isFrameView() && !isThrottledFrameView()) {
-    FrameView* childFrameView = toFrameView(widget());
+  if (frameViewBase() && frameViewBase()->isFrameView() &&
+      !isThrottledFrameView()) {
+    FrameView* childFrameView = toFrameView(frameViewBase());
     // |childFrameView| is in another document, which could be
     // missing its LayoutView. TODO(jchaffraix): Ideally we should
     // not need this code.
@@ -391,9 +392,9 @@ void LayoutPart::invalidatePaintOfSubtreesIfNeeded(
 }
 
 bool LayoutPart::isThrottledFrameView() const {
-  if (!widget() || !widget()->isFrameView())
+  if (!frameViewBase() || !frameViewBase()->isFrameView())
     return false;
-  const FrameView* frameView = toFrameView(widget());
+  const FrameView* frameView = toFrameView(frameViewBase());
   return frameView->shouldThrottleRendering();
 }
 

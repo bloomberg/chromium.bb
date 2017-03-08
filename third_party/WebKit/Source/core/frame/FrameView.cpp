@@ -1476,7 +1476,7 @@ void FrameView::updateGeometries() {
     if (layoutViewItem().isNull())
       break;
 
-    if (FrameViewBase* frameViewBase = part->widget()) {
+    if (FrameViewBase* frameViewBase = part->frameViewBase()) {
       if (frameViewBase->isFrameView()) {
         FrameView* frameView = toFrameView(frameViewBase);
         bool didNeedLayout = frameView->needsLayout();

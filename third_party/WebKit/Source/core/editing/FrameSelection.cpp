@@ -805,7 +805,7 @@ static bool isFrameElement(const Node* n) {
   LayoutObject* layoutObject = n->layoutObject();
   if (!layoutObject || !layoutObject->isLayoutPart())
     return false;
-  FrameViewBase* frameViewBase = toLayoutPart(layoutObject)->widget();
+  FrameViewBase* frameViewBase = toLayoutPart(layoutObject)->frameViewBase();
   return frameViewBase && frameViewBase->isFrameView();
 }
 

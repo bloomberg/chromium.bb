@@ -48,7 +48,7 @@ class CORE_EXPORT LayoutPart : public LayoutReplaced {
   void ref() { ++m_refCount; }
   void deref();
 
-  FrameViewBase* widget() const;
+  FrameViewBase* frameViewBase() const;
 
   LayoutRect replacedContentRect() const final;
 

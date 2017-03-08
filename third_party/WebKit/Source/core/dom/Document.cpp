@@ -372,7 +372,7 @@ static FrameViewBase* widgetForElement(const Element& focusedElement) {
   LayoutObject* layoutObject = focusedElement.layoutObject();
   if (!layoutObject || !layoutObject->isLayoutPart())
     return 0;
-  return toLayoutPart(layoutObject)->widget();
+  return toLayoutPart(layoutObject)->frameViewBase();
 }
 
 static bool acceptsEditingFocus(const Element& element) {

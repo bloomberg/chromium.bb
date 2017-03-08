@@ -493,10 +493,9 @@ class PaintPropertyTreeGraphBuilder {
     for (const LayoutObject* child = object.slowFirstChild(); child;
          child = child->nextSibling())
       writeLayoutObjectNode(*child);
-    if (object.isLayoutPart() && toLayoutPart(object).widget() &&
-        toLayoutPart(object).widget()->isFrameView()) {
-      FrameView* frameView =
-          static_cast<FrameView*>(toLayoutPart(object).widget());
+    if (object.isLayoutPart() && toLayoutPart(object).frameViewBase() &&
+        toLayoutPart(object).frameViewBase()->isFrameView()) {
+      FrameView* frameView = toFrameView(toLayoutPart(object).frameViewBase());
       writeFrameViewNode(*frameView, &object);
     }
   }

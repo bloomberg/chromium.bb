@@ -186,7 +186,7 @@ WebPluginContainer* WebNode::pluginContainerFromNode(const Node* node) {
 
   LayoutObject* object = node->layoutObject();
   if (object && object->isLayoutPart()) {
-    FrameViewBase* frameViewBase = toLayoutPart(object)->widget();
+    FrameViewBase* frameViewBase = toLayoutPart(object)->frameViewBase();
     if (frameViewBase && frameViewBase->isPluginContainer())
       return toWebPluginContainerImpl(frameViewBase);
   }

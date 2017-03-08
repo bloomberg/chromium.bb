@@ -250,7 +250,7 @@ bool ContextMenuClientImpl::showContextMenu(const ContextMenu* defaultMenu,
              isHTMLEmbedElement(*r.innerNode())) {
     LayoutObject* object = r.innerNode()->layoutObject();
     if (object && object->isLayoutPart()) {
-      FrameViewBase* frameViewBase = toLayoutPart(object)->widget();
+      FrameViewBase* frameViewBase = toLayoutPart(object)->frameViewBase();
       if (frameViewBase && frameViewBase->isPluginContainer()) {
         data.mediaType = WebContextMenuData::MediaTypePlugin;
         WebPluginContainerImpl* plugin =

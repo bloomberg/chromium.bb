@@ -361,7 +361,7 @@ WebInputEventResult ScrollManager::passScrollGestureEventToWidget(
       !layoutObject->isLayoutPart())
     return WebInputEventResult::NotHandled;
 
-  FrameViewBase* frameViewBase = toLayoutPart(layoutObject)->widget();
+  FrameViewBase* frameViewBase = toLayoutPart(layoutObject)->frameViewBase();
 
   if (!frameViewBase || !frameViewBase->isFrameView())
     return WebInputEventResult::NotHandled;

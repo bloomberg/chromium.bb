@@ -1158,7 +1158,7 @@ WebInputEventResult WebViewImpl::handleKeyEvent(const WebKeyboardEvent& event) {
           // If the plugin supports keyboard focus then we should not send a tab
           // keypress event.
           FrameViewBase* frameViewBase =
-              toLayoutPart(element->layoutObject())->widget();
+              toLayoutPart(element->layoutObject())->frameViewBase();
           if (frameViewBase && frameViewBase->isPluginContainer()) {
             WebPluginContainerImpl* plugin =
                 toWebPluginContainerImpl(frameViewBase);
@@ -3346,7 +3346,7 @@ void WebViewImpl::performPluginAction(const WebPluginAction& action,
 
   LayoutObject* object = node->layoutObject();
   if (object && object->isLayoutPart()) {
-    FrameViewBase* frameViewWidget = toLayoutPart(object)->widget();
+    FrameViewBase* frameViewWidget = toLayoutPart(object)->frameViewBase();
     if (frameViewWidget && frameViewWidget->isPluginContainer()) {
       WebPluginContainerImpl* plugin =
           toWebPluginContainerImpl(frameViewWidget);

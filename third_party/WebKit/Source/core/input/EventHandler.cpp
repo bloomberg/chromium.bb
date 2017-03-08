@@ -319,7 +319,7 @@ static LocalFrame* subframeForTargetNode(Node* node) {
   if (!layoutObject || !layoutObject->isLayoutPart())
     return nullptr;
 
-  FrameViewBase* frameViewBase = toLayoutPart(layoutObject)->widget();
+  FrameViewBase* frameViewBase = toLayoutPart(layoutObject)->frameViewBase();
   if (!frameViewBase || !frameViewBase->isFrameView())
     return nullptr;
 

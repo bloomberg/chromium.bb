@@ -135,7 +135,7 @@ void LayoutEmbeddedObject::layout() {
 
   updateLayerTransformAfterLayout();
 
-  FrameViewBase* frameViewBase = this->widget();
+  FrameViewBase* frameViewBase = this->frameViewBase();
   if (!frameViewBase && frameView())
     frameView()->addPartToUpdate(*this);
 
@@ -154,9 +154,9 @@ CompositingReasons LayoutEmbeddedObject::additionalCompositingReasons() const {
 }
 
 LayoutReplaced* LayoutEmbeddedObject::embeddedReplacedContent() const {
-  if (!node() || !widget() || !widget()->isFrameView())
+  if (!node() || !frameViewBase() || !frameViewBase()->isFrameView())
     return nullptr;
-  return toFrameView(widget())->embeddedReplacedContent();
+  return toFrameView(frameViewBase())->embeddedReplacedContent();
 }
 
 }  // namespace blink

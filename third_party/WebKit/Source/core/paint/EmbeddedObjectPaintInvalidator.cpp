@@ -16,7 +16,7 @@ EmbeddedObjectPaintInvalidator::invalidatePaintIfNeeded() {
       BoxPaintInvalidator(m_embeddedObject, m_context)
           .invalidatePaintIfNeeded();
 
-  FrameViewBase* frameViewBase = m_embeddedObject.widget();
+  FrameViewBase* frameViewBase = m_embeddedObject.frameViewBase();
   if (frameViewBase && frameViewBase->isPluginView())
     toPluginView(frameViewBase)->invalidatePaintIfNeeded();
 

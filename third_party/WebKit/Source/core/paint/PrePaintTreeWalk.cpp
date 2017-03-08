@@ -264,7 +264,7 @@ void PrePaintTreeWalk::walk(const LayoutObject& object,
 
   if (object.isLayoutPart()) {
     const LayoutPart& layoutPart = toLayoutPart(object);
-    FrameViewBase* frameViewBase = layoutPart.widget();
+    FrameViewBase* frameViewBase = layoutPart.frameViewBase();
     if (frameViewBase && frameViewBase->isFrameView()) {
       context.treeBuilderContext.current.paintOffset +=
           layoutPart.replacedContentRect().location() -
