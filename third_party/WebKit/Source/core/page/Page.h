@@ -47,6 +47,7 @@
 namespace blink {
 
 class AutoscrollController;
+class BrowserControls;
 class ChromeClient;
 class ClientRectList;
 class ContextMenuClient;
@@ -185,6 +186,9 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
   PageScaleConstraintsSet& pageScaleConstraintsSet();
   const PageScaleConstraintsSet& pageScaleConstraintsSet() const;
 
+  BrowserControls& browserControls();
+  const BrowserControls& browserControls() const;
+
   void setTabKeyCyclesThroughElements(bool b) {
     m_tabKeyCyclesThroughElements = b;
   }
@@ -270,6 +274,7 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
   const std::unique_ptr<PageScaleConstraintsSet> m_pageScaleConstraintsSet;
   const Member<PointerLockController> m_pointerLockController;
   Member<ScrollingCoordinator> m_scrollingCoordinator;
+  const Member<BrowserControls> m_browserControls;
 
   // Typically, the main frame and Page should both be owned by the embedder,
   // which must call Page::willBeDestroyed() prior to destroying Page. This

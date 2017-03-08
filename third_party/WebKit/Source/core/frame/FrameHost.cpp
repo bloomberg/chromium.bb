@@ -30,7 +30,6 @@
 
 #include "core/frame/FrameHost.h"
 
-#include "core/frame/BrowserControls.h"
 #include "core/frame/EventHandlerRegistry.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/VisualViewport.h"
@@ -49,7 +48,6 @@ FrameHost* FrameHost::create(Page& page) {
 
 FrameHost::FrameHost(Page& page)
     : m_page(&page),
-      m_browserControls(BrowserControls::create(page)),
       m_visualViewport(VisualViewport::create(*this)),
       m_overscrollController(
           OverscrollController::create(*m_visualViewport,
@@ -72,11 +70,11 @@ const Page& FrameHost::page() const {
 }
 
 BrowserControls& FrameHost::browserControls() {
-  return *m_browserControls;
+  return m_page->browserControls();
 }
 
 const BrowserControls& FrameHost::browserControls() const {
-  return *m_browserControls;
+  return m_page->browserControls();
 }
 
 OverscrollController& FrameHost::overscrollController() {
@@ -118,7 +116,6 @@ TopDocumentRootScrollerController& FrameHost::globalRootScrollerController()
 
 DEFINE_TRACE(FrameHost) {
   visitor->trace(m_page);
-  visitor->trace(m_browserControls);
   visitor->trace(m_visualViewport);
   visitor->trace(m_overscrollController);
   visitor->trace(m_eventHandlerRegistry);

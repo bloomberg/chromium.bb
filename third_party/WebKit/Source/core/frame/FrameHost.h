@@ -104,7 +104,6 @@ class CORE_EXPORT FrameHost final
   explicit FrameHost(Page&);
 
   const Member<Page> m_page;
-  const Member<BrowserControls> m_browserControls;
   const Member<VisualViewport> m_visualViewport;
   const Member<OverscrollController> m_overscrollController;
   const Member<EventHandlerRegistry> m_eventHandlerRegistry;
