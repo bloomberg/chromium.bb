@@ -320,6 +320,10 @@ const wchar_t* GetAppGuid() {
   return InstallDetails::Get().app_guid();
 }
 
+const wchar_t* GetBaseAppId() {
+  return InstallDetails::Get().base_app_id();
+}
+
 bool GetCollectStatsConsent() {
   bool enabled = true;
 

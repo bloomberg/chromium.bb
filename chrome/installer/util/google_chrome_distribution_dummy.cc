@@ -52,10 +52,6 @@ int GoogleChromeDistribution::GetIconIndex() {
   return 0;
 }
 
-base::string16 GoogleChromeDistribution::GetBaseAppId() {
-  return base::string16();
-}
-
 base::string16 GoogleChromeDistribution::GetBrowserProgIdPrefix() {
   return base::string16();
 }

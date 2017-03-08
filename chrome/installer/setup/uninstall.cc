@@ -651,7 +651,8 @@ bool DeleteChromeRegistrationKeys(const InstallerState& installer_state,
   reg_app_id.push_back(base::FilePath::kSeparators[0]);
   // Append the requested suffix manually here (as ShellUtil::GetBrowserModelId
   // would otherwise try to figure out the currently installed suffix).
-  reg_app_id.append(dist->GetBaseAppId() + browser_entry_suffix);
+  DCHECK_EQ(BrowserDistribution::GetDistribution(), dist);
+  reg_app_id.append(install_static::GetBaseAppId() + browser_entry_suffix);
   InstallUtil::DeleteRegistryKey(root, reg_app_id, WorkItem::kWow64Default);
 
   // Delete all Start Menu Internet registrations that refer to this Chrome.

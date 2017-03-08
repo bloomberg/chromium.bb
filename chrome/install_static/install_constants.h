@@ -59,6 +59,15 @@ struct InstallConstants {
   // empty string if the brand does not integrate with Google Update.
   const wchar_t* app_guid;
 
+  // The unsuffixed portion of the AppUserModelId. The AppUserModelId is used to
+  // group an app's windows together on the Windows taskbar along with its
+  // corresponding shortcuts; see
+  // https://msdn.microsoft.com/library/windows/desktop/dd378459.aspx for more
+  // information. Use ShellUtil::GetBrowserModelId to get the suffixed value --
+  // it is almost never correct to use the unsuffixed (base) portion of this id
+  // directly.
+  const wchar_t* base_app_id;
+
   // The default name for this mode's update channel.
   const wchar_t* default_channel_name;
 

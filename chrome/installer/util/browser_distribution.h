@@ -80,12 +80,6 @@ class BrowserDistribution {
   virtual base::string16 GetStartMenuShortcutSubfolder(
       Subfolder subfolder_type);
 
-  // Returns the unsuffixed appid of this program.
-  // The AppUserModelId is a property of Windows programs.
-  // IMPORTANT: This should only be called by ShellUtil::GetAppId as the appid
-  // should be suffixed in all scenarios.
-  virtual base::string16 GetBaseAppId();
-
   // Returns the Browser ProgId prefix (e.g. ChromeHTML, ChromiumHTM, etc...).
   // The full id is of the form |prefix|.|suffix| and is limited to a maximum
   // length of 39 characters including null-terminator.  See

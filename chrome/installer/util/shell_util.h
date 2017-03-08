@@ -389,12 +389,11 @@ class ShellUtil {
   static base::string16 GetApplicationName(BrowserDistribution* dist,
                                            const base::FilePath& chrome_exe);
 
-  // Returns the AppUserModelId for |dist|. This identifier is unconditionally
-  // suffixed with a unique id for this user on user-level installs (in contrast
-  // to other registration entries which are suffixed as described in
+  // Returns the AppUserModelId. This identifier is unconditionally suffixed
+  // with a unique id for this user on user-level installs (in contrast to other
+  // registration entries which are suffixed as described in
   // GetCurrentInstallationSuffix() above).
-  static base::string16 GetBrowserModelId(BrowserDistribution* dist,
-                                          bool is_per_user_install);
+  static base::string16 GetBrowserModelId(bool is_per_user_install);
 
   // Returns an AppUserModelId composed of each member of |components| separated
   // by dots.

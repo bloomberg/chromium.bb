@@ -21,7 +21,7 @@
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths_internal.h"
-#include "chrome/installer/util/browser_distribution.h"
+#include "chrome/install_static/install_util.h"
 #include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/shell_util.h"
 #include "chrome/installer/util/util_constants.h"
@@ -50,9 +50,7 @@ class ShellIntegrationWinMigrateShortcutTest : public testing::Test {
     // This doesn't need to actually have a base name of "chrome.exe".
     base::CreateTemporaryFileInDir(temp_dir_.GetPath(), &chrome_exe_);
 
-    chrome_app_id_ =
-        ShellUtil::GetBrowserModelId(BrowserDistribution::GetDistribution(),
-                                     true);
+    chrome_app_id_ = ShellUtil::GetBrowserModelId(true);
 
     base::FilePath default_user_data_dir;
     chrome::GetDefaultUserDataDirectory(&default_user_data_dir);
@@ -294,8 +292,7 @@ TEST_F(ShellIntegrationWinMigrateShortcutTest, ClearDualModeAndAdjustAppIds) {
 }
 
 TEST(ShellIntegrationWinTest, GetAppModelIdForProfileTest) {
-  const base::string16 base_app_id(
-      BrowserDistribution::GetDistribution()->GetBaseAppId());
+  const base::string16 base_app_id(install_static::GetBaseAppId());
 
   // Empty profile path should get chrome::kBrowserAppID
   base::FilePath empty_path;

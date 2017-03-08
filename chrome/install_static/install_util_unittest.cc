@@ -392,7 +392,7 @@ TEST_P(InstallStaticUtilTest, GetAppGuid) {
   }
 
 #if defined(GOOGLE_CHROME_BUILD)
-  // The app guids for the brand's install modes; parallel to kInstalLModes.
+  // The app guids for the brand's install modes; parallel to kInstallModes.
   static constexpr const wchar_t* kAppGuids[] = {
       L"{8A69D345-D564-463c-AFF1-A69D9E530F96}",  // Google Chrome.
       L"{4EA16AC7-FD5A-47C3-875B-DBF4A2008C20}",  // Google Chrome SxS (Canary).
@@ -403,6 +403,23 @@ TEST_P(InstallStaticUtilTest, GetAppGuid) {
 #else
   FAIL() << "Not implemented.";
 #endif
+}
+
+TEST_P(InstallStaticUtilTest, GetBaseAppId) {
+#if defined(GOOGLE_CHROME_BUILD)
+  // The base app ids for the brand's install modes; parallel to kInstallModes.
+  static constexpr const wchar_t* kBaseAppIds[] = {
+      L"Chrome", L"ChromeCanary",
+  };
+#else
+  // The base app ids for the brand's install modes; parallel to kInstallModes.
+  static constexpr const wchar_t* kBaseAppIds[] = {
+      L"Chromium",
+  };
+#endif
+  static_assert(arraysize(kBaseAppIds) == NUM_INSTALL_MODES,
+                "kBaseAppIds out of date.");
+  EXPECT_THAT(GetBaseAppId(), StrCaseEq(kBaseAppIds[std::get<0>(GetParam())]));
 }
 
 TEST_P(InstallStaticUtilTest, UsageStatsAbsent) {

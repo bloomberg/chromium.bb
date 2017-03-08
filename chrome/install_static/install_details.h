@@ -95,6 +95,15 @@ class InstallDetails {
   // empty string if this brand does not integrate with Google Update.
   const wchar_t* app_guid() const { return payload_->mode->app_guid; }
 
+  // Returns the unsuffixed portion of the AppUserModelId. The AppUserModelId is
+  // used to group an app's windows together on the Windows taskbar along with
+  // its corresponding shortcuts; see
+  // https://msdn.microsoft.com/library/windows/desktop/dd378459.aspx for more
+  // information. Use ShellUtil::GetBrowserModelId to get the suffixed value --
+  // it is almost never correct to use the unsuffixed (base) portion of this id
+  // directly.
+  const wchar_t* base_app_id() const { return payload_->mode->base_app_id; }
+
   // True if the mode supports installation at system-level.
   bool supports_system_level() const {
     return payload_->mode->supports_system_level;

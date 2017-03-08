@@ -27,6 +27,7 @@
 #include "base/win/registry.h"
 #include "base/win/shortcut.h"
 #include "base/win/windows_version.h"
+#include "chrome/install_static/install_util.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/product.h"
 #include "chrome/installer/util/util_constants.h"
@@ -181,7 +182,7 @@ class ShellUtilShortcutTest : public testing::Test {
       expected_properties.set_app_id(properties.app_id);
     } else {
       // Tests are always seen as user-level installs in ShellUtil.
-      expected_properties.set_app_id(ShellUtil::GetBrowserModelId(dist, true));
+      expected_properties.set_app_id(ShellUtil::GetBrowserModelId(true));
     }
 
     base::win::ValidateShortcut(expected_path, expected_properties);
@@ -938,16 +939,15 @@ TEST_F(ShellUtilRegistryTest, DeleteFileAssociations) {
 
 TEST(ShellUtilTest, BuildAppModelIdBasic) {
   std::vector<base::string16> components;
-  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-  const base::string16 base_app_id(dist->GetBaseAppId());
+  const base::string16 base_app_id(install_static::GetBaseAppId());
   components.push_back(base_app_id);
   ASSERT_EQ(base_app_id, ShellUtil::BuildAppModelId(components));
 }
 
 TEST(ShellUtilTest, BuildAppModelIdManySmall) {
   std::vector<base::string16> components;
-  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-  const base::string16 suffixed_app_id(dist->GetBaseAppId().append(L".gab"));
+  const base::string16 suffixed_app_id(install_static::GetBaseAppId() +
+                                       base::string16(L".gab"));
   components.push_back(suffixed_app_id);
   components.push_back(L"Default");
   components.push_back(L"Test");

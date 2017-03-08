@@ -144,10 +144,6 @@ base::string16 BrowserDistribution::GetStartMenuShortcutSubfolder(
   }
 }
 
-base::string16 BrowserDistribution::GetBaseAppId() {
-  return L"Chromium";
-}
-
 base::string16 BrowserDistribution::GetBrowserProgIdPrefix() {
   // This used to be "ChromiumHTML", but was forced to become "ChromiumHTM"
   // because of http://crbug.com/153349.  See the declaration of this function

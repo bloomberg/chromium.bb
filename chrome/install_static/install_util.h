@@ -71,6 +71,15 @@ std::wstring GetRegistryPath();
 // a simple convenience wrapper around InstallDetails.
 const wchar_t* GetAppGuid();
 
+// Returns the unsuffixed portion of the AppUserModelId. The AppUserModelId is
+// used to group an app's windows together on the Windows taskbar along with its
+// corresponding shortcuts; see
+// https://msdn.microsoft.com/library/windows/desktop/dd378459.aspx for more
+// information. Use ShellUtil::GetBrowserModelId to get the suffixed value -- it
+// is almost never correct to use the unsuffixed (base) portion of this id
+// directly.
+const wchar_t* GetBaseAppId();
+
 // Returns true if usage stats collecting is enabled for this user for the
 // current executable.
 bool GetCollectStatsConsent();

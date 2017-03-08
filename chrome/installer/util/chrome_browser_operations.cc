@@ -38,8 +38,9 @@ void ChromeBrowserOperations::AddDefaultShortcutProperties(
     properties->set_icon(target_exe, dist->GetIconIndex());
 
   if (!properties->has_app_id()) {
+    DCHECK_EQ(BrowserDistribution::GetDistribution(), dist);
     properties->set_app_id(
-        ShellUtil::GetBrowserModelId(dist, InstallUtil::IsPerUserInstall()));
+        ShellUtil::GetBrowserModelId(InstallUtil::IsPerUserInstall()));
   }
 
   if (!properties->has_description())

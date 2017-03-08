@@ -46,6 +46,7 @@
 #include "base/win/windows_version.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/install_static/install_util.h"
 #include "chrome/installer/util/beacons.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/install_util.h"
@@ -360,8 +361,9 @@ void GetChromeProgIdEntries(BrowserDistribution* dist,
   app_info.command_line = ShellUtil::GetChromeShellOpenCmd(chrome_exe);
   // For user-level installs: entries for the app id will be in HKCU; thus we
   // do not need a suffix on those entries.
+  DCHECK_EQ(BrowserDistribution::GetDistribution(), dist);
   app_info.app_id =
-      ShellUtil::GetBrowserModelId(dist, InstallUtil::IsPerUserInstall());
+      ShellUtil::GetBrowserModelId(InstallUtil::IsPerUserInstall());
 
   // TODO(grt): http://crbug.com/75152 Write a reference to a localized
   // resource for name, description, and company.
@@ -1000,7 +1002,7 @@ base::win::ShortcutProperties TranslateShortcutProperties(
 
 // Cleans up an old verb (run) we used to register in
 // <root>\Software\Classes\Chrome<.suffix>\.exe\shell\run on Windows 8.
-void RemoveRunVerbOnWindows8(BrowserDistribution* dist) {
+void RemoveRunVerbOnWindows8() {
   if (base::win::GetVersion() >= base::win::VERSION_WIN8) {
     bool is_per_user_install = InstallUtil::IsPerUserInstall();
     HKEY root_key = DetermineRegistrationRoot(is_per_user_install);
@@ -1008,8 +1010,7 @@ void RemoveRunVerbOnWindows8(BrowserDistribution* dist) {
     // remove the key from the registry.
     base::string16 run_verb_key(ShellUtil::kRegClasses);
     run_verb_key.push_back(base::FilePath::kSeparators[0]);
-    run_verb_key.append(ShellUtil::GetBrowserModelId(
-        dist, is_per_user_install));
+    run_verb_key.append(ShellUtil::GetBrowserModelId(is_per_user_install));
     run_verb_key.append(ShellUtil::kRegExePath);
     run_verb_key.append(ShellUtil::kRegShellPath);
     run_verb_key.push_back(base::FilePath::kSeparators[0]);
@@ -1130,9 +1131,7 @@ ShellUtil::DefaultState ProbeProtocolHandlers(
 
 // (Windows 8+) Finds and stores an app shortcuts folder path in *|path|.
 // Returns true on success.
-bool GetAppShortcutsFolder(BrowserDistribution* dist,
-                           ShellUtil::ShellChange level,
-                           base::FilePath *path) {
+bool GetAppShortcutsFolder(ShellUtil::ShellChange level, base::FilePath* path) {
   DCHECK(path);
   DCHECK_GE(base::win::GetVersion(), base::win::VERSION_WIN8);
 
@@ -1143,7 +1142,7 @@ bool GetAppShortcutsFolder(BrowserDistribution* dist,
   }
 
   folder = folder.Append(
-      ShellUtil::GetBrowserModelId(dist, level == ShellUtil::CURRENT_USER));
+      ShellUtil::GetBrowserModelId(level == ShellUtil::CURRENT_USER));
   if (!base::DirectoryExists(folder)) {
     VLOG(1) << "No start screen shortcuts.";
     return false;
@@ -1442,6 +1441,7 @@ bool ShellUtil::GetShortcutPath(ShortcutLocation location,
                                 ShellChange level,
                                 base::FilePath* path) {
   DCHECK(path);
+  DCHECK_EQ(BrowserDistribution::GetDistribution(), dist);
   int dir_key = -1;
   base::string16 folder_to_append;
   switch (location) {
@@ -1475,7 +1475,7 @@ bool ShellUtil::GetShortcutPath(ShortcutLocation location,
       break;
     case SHORTCUT_LOCATION_APP_SHORTCUTS:
       // TODO(huangs): Move GetAppShortcutsFolder() logic into base_paths_win.
-      return GetAppShortcutsFolder(dist, level, path);
+      return GetAppShortcutsFolder(level, path);
 
     default:
       NOTREACHED();
@@ -1706,9 +1706,8 @@ base::string16 ShellUtil::GetApplicationName(BrowserDistribution* dist,
   return app_name;
 }
 
-base::string16 ShellUtil::GetBrowserModelId(BrowserDistribution* dist,
-                                            bool is_per_user_install) {
-  base::string16 app_id(dist->GetBaseAppId());
+base::string16 ShellUtil::GetBrowserModelId(bool is_per_user_install) {
+  base::string16 app_id(install_static::GetBaseAppId());
   base::string16 suffix;
 
   // TODO(robertshield): Temporary hack to make the kRegisterChromeBrowserSuffix
@@ -2052,6 +2051,7 @@ bool ShellUtil::RegisterChromeBrowser(BrowserDistribution* dist,
                                       const base::FilePath& chrome_exe,
                                       const base::string16& unique_suffix,
                                       bool elevate_if_not_admin) {
+  DCHECK_EQ(BrowserDistribution::GetDistribution(), dist);
   if (dist->GetDefaultBrowserControlPolicy() ==
       BrowserDistribution::DEFAULT_BROWSER_UNSUPPORTED) {
     return false;
@@ -2070,7 +2070,7 @@ bool ShellUtil::RegisterChromeBrowser(BrowserDistribution* dist,
     return false;
   }
 
-  RemoveRunVerbOnWindows8(dist);
+  RemoveRunVerbOnWindows8();
 
   bool user_level = InstallUtil::IsPerUserInstall();
   HKEY root = DetermineRegistrationRoot(user_level);
