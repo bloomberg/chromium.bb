@@ -110,6 +110,7 @@ CastContentBrowserClient::~CastContentBrowserClient() {
 
 void CastContentBrowserClient::AppendExtraCommandLineSwitches(
     base::CommandLine* command_line) {
+#if defined(USE_AURA)
   std::string process_type =
       command_line->GetSwitchValueNative(switches::kProcessType);
   if (process_type == switches::kGpuProcess) {
@@ -124,6 +125,7 @@ void CastContentBrowserClient::AppendExtraCommandLineSwitches(
                                       base::IntToString(res.height()));
     }
   }
+#endif  // defined(USE_AURA)
 }
 
 void CastContentBrowserClient::PreCreateThreads() {
