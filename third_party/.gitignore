@@ -21,6 +21,7 @@
 /apache-win32/bin/iconv/*.so
 /apache-win32/modules/*.so
 /apache-win32/modules/*.dll
+/apk-patch-size-estimator/lib/*.jar
 /asan
 /bidichecker
 /bison
