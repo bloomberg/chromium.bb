@@ -52,7 +52,8 @@ class CORE_EXPORT InsertListCommand final : public CompositeEditCommand {
   InputEvent::InputType inputType() const override;
 
   HTMLUListElement* fixOrphanedListChild(Node*, EditingState*);
-  bool selectionHasListOfType(const VisibleSelection&,
+  bool selectionHasListOfType(const Position& selectionStart,
+                              const Position& selectionEnd,
                               const HTMLQualifiedName&);
   HTMLElement* mergeWithNeighboringLists(HTMLElement*, EditingState*);
   bool doApplyForSingleParagraph(bool forceCreateList,
