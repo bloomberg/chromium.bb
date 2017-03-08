@@ -114,8 +114,6 @@ void DelegatedFrameHostAndroid::SubmitCompositorFrame(
     current_frame_->has_transparent_background =
         root_pass->has_transparent_background;
     current_frame_->viewport_selection = frame.metadata.selection;
-    support_->SubmitCompositorFrame(current_frame_->local_surface_id,
-                                    std::move(frame));
 
     content_layer_ = CreateSurfaceLayer(
         surface_manager_,
@@ -123,10 +121,9 @@ void DelegatedFrameHostAndroid::SubmitCompositorFrame(
         current_frame_->surface_size,
         !current_frame_->has_transparent_background);
     view_->GetLayer()->AddChild(content_layer_);
-  } else {
-    support_->SubmitCompositorFrame(current_frame_->local_surface_id,
-                                    std::move(frame));
   }
+  support_->SubmitCompositorFrame(current_frame_->local_surface_id,
+                                  std::move(frame));
 }
 
 cc::FrameSinkId DelegatedFrameHostAndroid::GetFrameSinkId() const {
