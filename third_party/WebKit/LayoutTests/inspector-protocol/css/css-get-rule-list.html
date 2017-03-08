@@ -7,39 +7,35 @@
 function test()
 {
     InspectorTest.sendCommandOrDie("DOM.enable", {});
-    InspectorTest.sendCommandOrDie("CSS.enable", {}, () => InspectorTest.runTestSuite(testSuite));
+    InspectorTest.sendCommandOrDie("CSS.enable", {}, () => testGetRuleListAfterStartingRecording());
 
-    var testSuite = [
-        function testGetRuleListAfterStartingRecording(next)
-        {
-            InspectorTest.sendCommandOrDie("CSS.startRuleUsageTracking", {},  () =>
-                                           { InspectorTest.sendCommandOrDie("CSS.stopRuleUsageTracking", {}, ruleListLoaded); });
+    function testGetRuleListAfterStartingRecording()
+    {
+        InspectorTest.sendCommandOrDie("CSS.startRuleUsageTracking", {},  () =>
+                                       { InspectorTest.sendCommandOrDie("CSS.stopRuleUsageTracking", {}, ruleListLoaded); });
+    }
 
-            function ruleListLoaded(result)
-            {
-                if(!result) {
-                    next();
-                    return;
-                }
-                var rules = result.ruleUsage;
-                var usedLines = rules.filter(rule => rule.used);
-                var unusedLines = rules.filter(rule => !rule.used);
-
-                usedLines.sort();
-                unusedLines.sort();
-                InspectorTest.log("=== Size of array: " + rules.length);
-                InspectorTest.log("   Number of used Rules: " + usedLines.length);
-                for(var line of usedLines)
-                    InspectorTest.log(line.range.startLine);
-
-                InspectorTest.log("   Number of unused Rules: " + unusedLines.length);
-                for(var line of unusedLines)
-                    InspectorTest.log(line.range.startLine);
-
-                next();
-            }
+    function ruleListLoaded(result)
+    {
+        if (!result) {
+            InspectorTest.completeTest();
+            return;
         }
-   ];
+        var rules = result.ruleUsage;
+        rules.sort((a, b) => a.startOffset - b.startOffset);
+        var usedLines = rules.filter(rule => rule.used);
+        var unusedLines = rules.filter(rule => !rule.used);
+
+        InspectorTest.log("Used rules offsets: " + usedLines.length);
+        for (var line of usedLines)
+            InspectorTest.log(line.startOffset);
+
+        InspectorTest.log("Unused rules offsets: " + unusedLines.length);
+        for (var line of unusedLines)
+            InspectorTest.log(line.startOffset);
+
+        InspectorTest.completeTest();
+    }
 }
 
 </script>

@@ -2,15 +2,12 @@ Class Selector
 
 ID Selector
 
-
-Running test: testGetRuleListAfterStartingRecording
-=== Size of array: 6
-   Number of used Rules: 5
+Used rules offsets: 5
 0
-1
-2
-5
-16
-   Number of unused Rules: 1
-3
+36
+57
+141
+327
+Unused rules offsets: 1
+75
 

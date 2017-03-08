@@ -1547,7 +1547,8 @@ InspectorStyleSheet::buildObjectForRuleUsage(CSSRule* rule, bool wasUsed) {
   std::unique_ptr<protocol::CSS::RuleUsage> result =
       protocol::CSS::RuleUsage::create()
           .setStyleSheetId(id())
-          .setRange(buildSourceRangeObject(wholeRuleRange))
+          .setStartOffset(wholeRuleRange.start)
+          .setEndOffset(wholeRuleRange.end)
           .setUsed(wasUsed)
           .build();
 

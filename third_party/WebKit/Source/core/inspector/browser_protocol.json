@@ -2793,7 +2793,8 @@
                 "type": "object",
                 "properties": [
                     { "name": "styleSheetId", "$ref": "StyleSheetId", "description": "The css style sheet identifier (absent for user agent stylesheet and user-specified stylesheet rules) this rule came from." },
-                    { "name": "range", "$ref": "SourceRange", "description": "Style declaration range in the enclosing stylesheet (if available)." },
+                    { "name": "startOffset", "type": "number", "description": "Offset of the start of the rule (including selector) from the beginning of the stylesheet." },
+                    { "name": "endOffset", "type": "number", "description": "Offset of the end of the rule body from the beginning of the stylesheet." },
                     { "name": "used", "type": "boolean", "description": "Indicates whether the rule was actually used by some element in the page." }
                 ],
                 "description": "CSS rule usage information.",
