@@ -3735,7 +3735,13 @@ void WebViewImpl::setPageOverlayColor(WebColor color) {
 
   m_pageColorOverlay = PageOverlay::create(
       mainFrameImpl(), WTF::makeUnique<ColorOverlay>(color));
-  m_pageColorOverlay->update();
+
+  // Run compositing update before calling updatePageOverlays.
+  mainFrameImpl()
+      ->frameView()
+      ->updateLifecycleToCompositingCleanPlusScrolling();
+
+  updatePageOverlays();
 }
 
 WebPageImportanceSignals* WebViewImpl::pageImportanceSignals() {

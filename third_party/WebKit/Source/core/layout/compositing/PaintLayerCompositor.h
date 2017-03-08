@@ -129,16 +129,6 @@ class CORE_EXPORT PaintLayerCompositor final : public GraphicsLayerClient {
   GraphicsLayer* containerLayer() const;
   GraphicsLayer* rootContentLayer() const;
 
-  enum RootLayerAttachment {
-    RootLayerUnattached,
-    RootLayerAttachedViaChromeClient,
-    RootLayerAttachedViaEnclosingFrame
-  };
-
-  RootLayerAttachment getRootLayerAttachment() const {
-    return m_rootLayerAttachment;
-  }
-  void updateRootLayerAttachment();
   void updateRootLayerPosition();
 
   // If the root scroller isn't the root layer then the PaintLayerCompositor
@@ -218,7 +208,7 @@ class CORE_EXPORT PaintLayerCompositor final : public GraphicsLayerClient {
   void ensureRootLayer();
   void destroyRootLayer();
 
-  void attachRootLayer(RootLayerAttachment);
+  void attachRootLayer();
   void detachRootLayer();
 
   void attachCompositorTimeline();
@@ -270,6 +260,12 @@ class CORE_EXPORT PaintLayerCompositor final : public GraphicsLayerClient {
   bool m_isTrackingRasterInvalidations;  // Used for testing.
   bool m_inOverlayFullscreenVideo;
 
+  enum RootLayerAttachment {
+    RootLayerUnattached,
+    RootLayerPendingAttachViaChromeClient,
+    RootLayerAttachedViaChromeClient,
+    RootLayerAttachedViaEnclosingFrame
+  };
   RootLayerAttachment m_rootLayerAttachment;
 
   // Enclosing container layer, which clips for iframe content

@@ -461,6 +461,14 @@ void PaintLayerCompositor::updateIfNeeded() {
         layersNeedingPaintInvalidation[i]->layoutObject());
   }
 
+  if (m_rootLayerAttachment == RootLayerPendingAttachViaChromeClient) {
+    if (Page* page = m_layoutView.frame()->page()) {
+      page->chromeClient().attachRootGraphicsLayer(rootGraphicsLayer(),
+                                                   m_layoutView.frame());
+      m_rootLayerAttachment = RootLayerAttachedViaChromeClient;
+    }
+  }
+
   // Inform the inspector that the layer tree has changed.
   if (isMainFrame())
     probe::layerTreeDidChange(m_layoutView.frame());
@@ -566,7 +574,7 @@ bool PaintLayerCompositor::allocateOrClearCompositedLayerMapping(
     PaintLayerCompositor* innerCompositor =
         frameContentsCompositor(toLayoutPart(layer->layoutObject()));
     if (innerCompositor && innerCompositor->staleInCompositingMode())
-      innerCompositor->updateRootLayerAttachment();
+      innerCompositor->ensureRootLayer();
   }
 
   if (compositedLayerMappingChanged) {
@@ -751,7 +759,7 @@ bool PaintLayerCompositor::attachFrameContentLayersToIframeLayer(
     LayoutPart& layoutObject) {
   PaintLayerCompositor* innerCompositor = frameContentsCompositor(layoutObject);
   if (!innerCompositor || !innerCompositor->staleInCompositingMode() ||
-      innerCompositor->getRootLayerAttachment() !=
+      innerCompositor->m_rootLayerAttachment !=
           RootLayerAttachedViaEnclosingFrame)
     return false;
 
@@ -817,11 +825,8 @@ void PaintLayerCompositor::setIsInWindow(bool isInWindow) {
     if (m_rootLayerAttachment != RootLayerUnattached)
       return;
 
-    RootLayerAttachment attachment = m_layoutView.frame()->isLocalRoot()
-                                         ? RootLayerAttachedViaChromeClient
-                                         : RootLayerAttachedViaEnclosingFrame;
     attachCompositorTimeline();
-    attachRootLayer(attachment);
+    attachRootLayer();
   } else {
     if (m_rootLayerAttachment == RootLayerUnattached)
       return;
@@ -1110,10 +1115,7 @@ void PaintLayerCompositor::updateOverflowControlsLayers() {
 }
 
 void PaintLayerCompositor::ensureRootLayer() {
-  RootLayerAttachment expectedAttachment =
-      m_layoutView.frame()->isLocalRoot() ? RootLayerAttachedViaChromeClient
-                                          : RootLayerAttachedViaEnclosingFrame;
-  if (expectedAttachment == m_rootLayerAttachment)
+  if (m_rootLayerAttachment != RootLayerUnattached)
     return;
 
   if (isMainFrame())
@@ -1163,14 +1165,8 @@ void PaintLayerCompositor::ensureRootLayer() {
     frameViewDidChangeSize();
   }
 
-  // Check to see if we have to change the attachment
-  if (m_rootLayerAttachment != RootLayerUnattached) {
-    detachRootLayer();
-    detachCompositorTimeline();
-  }
-
   attachCompositorTimeline();
-  attachRootLayer(expectedAttachment);
+  attachRootLayer();
 }
 
 void PaintLayerCompositor::destroyRootLayer() {
@@ -1215,7 +1211,7 @@ void PaintLayerCompositor::destroyRootLayer() {
   m_rootContentLayer = nullptr;
 }
 
-void PaintLayerCompositor::attachRootLayer(RootLayerAttachment attachment) {
+void PaintLayerCompositor::attachRootLayer() {
   if (!m_rootContentLayer)
     return;
 
@@ -1224,31 +1220,17 @@ void PaintLayerCompositor::attachRootLayer(RootLayerAttachment attachment) {
   if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
     return;
 
-  switch (attachment) {
-    case RootLayerUnattached:
-      ASSERT_NOT_REACHED();
-      break;
-    case RootLayerAttachedViaChromeClient: {
-      LocalFrame& frame = m_layoutView.frameView()->frame();
-      Page* page = frame.page();
-      if (!page)
-        return;
-      page->chromeClient().attachRootGraphicsLayer(rootGraphicsLayer(), &frame);
-      break;
-    }
-    case RootLayerAttachedViaEnclosingFrame: {
-      HTMLFrameOwnerElement* ownerElement =
-          m_layoutView.document().localOwner();
-      ASSERT(ownerElement);
-      // The layer will get hooked up via
-      // CompositedLayerMapping::updateGraphicsLayerConfiguration() for the
-      // frame's layoutObject in the parent document.
-      ownerElement->setNeedsCompositingUpdate();
-      break;
-    }
+  if (m_layoutView.frame()->isLocalRoot()) {
+    m_rootLayerAttachment = RootLayerPendingAttachViaChromeClient;
+  } else {
+    HTMLFrameOwnerElement* ownerElement = m_layoutView.document().localOwner();
+    DCHECK(ownerElement);
+    // The layer will get hooked up via
+    // CompositedLayerMapping::updateGraphicsLayerConfiguration() for the
+    // frame's layoutObject in the parent document.
+    ownerElement->setNeedsCompositingUpdate();
+    m_rootLayerAttachment = RootLayerAttachedViaEnclosingFrame;
   }
-
-  m_rootLayerAttachment = attachment;
 }
 
 void PaintLayerCompositor::detachRootLayer() {
@@ -1278,15 +1260,12 @@ void PaintLayerCompositor::detachRootLayer() {
       page->chromeClient().attachRootGraphicsLayer(0, &frame);
       break;
     }
+    case RootLayerPendingAttachViaChromeClient:
     case RootLayerUnattached:
       break;
   }
 
   m_rootLayerAttachment = RootLayerUnattached;
-}
-
-void PaintLayerCompositor::updateRootLayerAttachment() {
-  ensureRootLayer();
 }
 
 void PaintLayerCompositor::attachCompositorTimeline() {
