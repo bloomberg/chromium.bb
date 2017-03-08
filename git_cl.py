@@ -3034,7 +3034,7 @@ class ChangeDescription(object):
   """Contains a parsed form of the change description."""
   R_LINE = r'^[ \t]*(TBR|R)[ \t]*=[ \t]*(.*?)[ \t]*$'
   CC_LINE = r'^[ \t]*(CC)[ \t]*=[ \t]*(.*?)[ \t]*$'
-  BUG_LINE = r'^[ \t]*(BUG)[ \t]*=[ \t]*(.*?)[ \t]*$'
+  BUG_LINE = r'^[ \t]*(BUGS?|Bugs?)[ \t]*[:=][ \t]*(.*?)[ \t]*$'
   CHERRY_PICK_LINE = r'^\(cherry picked from commit [a-fA-F0-9]{40}\)$'
 
   def __init__(self, description):
