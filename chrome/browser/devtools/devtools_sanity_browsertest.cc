@@ -1321,17 +1321,9 @@ IN_PROC_BROWSER_TEST_F(WorkerDevToolsSanityTest, InspectSharedWorker) {
   RunTest("testSharedWorker", kSharedWorkerTestPage, kSharedWorkerTestWorker);
 }
 
-// Flaky on Windows and on Mac.
-// http://crbug.com/663351 and http://crbug.com/432444.
-#if defined(OS_WIN) || defined(OS_MACOSX)
-#define MAYBE_PauseInSharedWorkerInitialization \
-  DISABLED_PauseInSharedWorkerInitialization
-#else
-#define MAYBE_PauseInSharedWorkerInitialization \
-  PauseInSharedWorkerInitialization
-#endif
+// Flaky on multiple platforms. See http://crbug.com/432444
 IN_PROC_BROWSER_TEST_F(WorkerDevToolsSanityTest,
-                       MAYBE_PauseInSharedWorkerInitialization) {
+                       DISABLED_PauseInSharedWorkerInitialization) {
   ASSERT_TRUE(spawned_test_server()->Start());
   GURL url = spawned_test_server()->GetURL(kReloadSharedWorkerTestPage);
   ui_test_utils::NavigateToURL(browser(), url);
