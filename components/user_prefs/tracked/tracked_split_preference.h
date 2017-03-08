@@ -15,7 +15,11 @@
 #include "components/user_prefs/tracked/tracked_preference.h"
 #include "components/user_prefs/tracked/tracked_preference_helper.h"
 
+namespace prefs {
+namespace mojom {
 class TrackedPreferenceValidationDelegate;
+}
+}
 
 // A TrackedSplitPreference must be tracking a dictionary pref. Each top-level
 // entry in its dictionary is tracked and enforced independently. An optional
@@ -25,12 +29,13 @@ class TrackedPreferenceValidationDelegate;
 class TrackedSplitPreference : public TrackedPreference {
  public:
   // Constructs a TrackedSplitPreference. |pref_path| must be a dictionary pref.
-  TrackedSplitPreference(const std::string& pref_path,
-                         size_t reporting_id,
-                         size_t reporting_ids_count,
-                         PrefHashFilter::EnforcementLevel enforcement_level,
-                         PrefHashFilter::ValueType value_type,
-                         TrackedPreferenceValidationDelegate* delegate);
+  TrackedSplitPreference(
+      const std::string& pref_path,
+      size_t reporting_id,
+      size_t reporting_ids_count,
+      PrefHashFilter::EnforcementLevel enforcement_level,
+      PrefHashFilter::ValueType value_type,
+      prefs::mojom::TrackedPreferenceValidationDelegate* delegate);
 
   // TrackedPreference implementation.
   TrackedPreferenceType GetType() const override;
@@ -44,7 +49,7 @@ class TrackedSplitPreference : public TrackedPreference {
  private:
   const std::string pref_path_;
   const TrackedPreferenceHelper helper_;
-  TrackedPreferenceValidationDelegate* delegate_;
+  prefs::mojom::TrackedPreferenceValidationDelegate* delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(TrackedSplitPreference);
 };

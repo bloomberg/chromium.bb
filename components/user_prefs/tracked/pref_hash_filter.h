@@ -24,12 +24,17 @@
 
 class PrefHashStore;
 class PrefService;
-class TrackedPreferenceValidationDelegate;
 
 namespace base {
 class DictionaryValue;
 class Time;
 }  // namespace base
+
+namespace prefs {
+namespace mojom {
+class TrackedPreferenceValidationDelegate;
+}
+}
 
 namespace user_prefs {
 class PrefRegistrySyncable;
@@ -84,7 +89,7 @@ class PrefHashFilter : public InterceptablePrefFilter {
       StoreContentsPair external_validation_hash_store_pair_,
       const std::vector<TrackedPreferenceMetadata>& tracked_preferences,
       const base::Closure& on_reset_on_load,
-      TrackedPreferenceValidationDelegate* delegate,
+      prefs::mojom::TrackedPreferenceValidationDelegate* delegate,
       size_t reporting_ids_count,
       bool report_super_mac_validity);
 

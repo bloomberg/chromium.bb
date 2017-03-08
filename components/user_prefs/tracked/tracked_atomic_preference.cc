@@ -6,7 +6,7 @@
 
 #include "base/values.h"
 #include "components/user_prefs/tracked/pref_hash_store_transaction.h"
-#include "components/user_prefs/tracked/tracked_preference_validation_delegate.h"
+#include "services/preferences/public/interfaces/tracked_preference_validation_delegate.mojom.h"
 
 TrackedAtomicPreference::TrackedAtomicPreference(
     const std::string& pref_path,
@@ -14,15 +14,14 @@ TrackedAtomicPreference::TrackedAtomicPreference(
     size_t reporting_ids_count,
     PrefHashFilter::EnforcementLevel enforcement_level,
     PrefHashFilter::ValueType value_type,
-    TrackedPreferenceValidationDelegate* delegate)
+    prefs::mojom::TrackedPreferenceValidationDelegate* delegate)
     : pref_path_(pref_path),
       helper_(pref_path,
               reporting_id,
               reporting_ids_count,
               enforcement_level,
               value_type),
-      delegate_(delegate) {
-}
+      delegate_(delegate) {}
 
 TrackedPreferenceType TrackedAtomicPreference::GetType() const {
   return TrackedPreferenceType::ATOMIC;
@@ -55,9 +54,9 @@ bool TrackedAtomicPreference::EnforceAndReport(
   }
 
   if (delegate_) {
-    delegate_->OnAtomicPreferenceValidation(pref_path_, value, value_state,
-                                            external_validation_value_state,
-                                            helper_.IsPersonal());
+    delegate_->OnAtomicPreferenceValidation(
+        pref_path_, value ? value->CreateDeepCopy() : nullptr, value_state,
+        external_validation_value_state, helper_.IsPersonal());
   }
   TrackedPreferenceHelper::ResetAction reset_action =
       helper_.GetAction(value_state);

@@ -13,6 +13,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "components/safe_browsing_db/v4_local_database_manager.h"
 #include "content/public/browser/browser_thread.h"
+#include "services/preferences/public/interfaces/tracked_preference_validation_delegate.mojom.h"
 
 namespace safe_browsing {
 
@@ -120,7 +121,7 @@ void ServicesDelegateImpl::ProcessResourceRequest(
     resource_request_detector_->ProcessResourceRequest(request);
 }
 
-std::unique_ptr<TrackedPreferenceValidationDelegate>
+std::unique_ptr<prefs::mojom::TrackedPreferenceValidationDelegate>
 ServicesDelegateImpl::CreatePreferenceValidationDelegate(Profile* profile) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   return incident_service_->CreatePreferenceValidationDelegate(profile);

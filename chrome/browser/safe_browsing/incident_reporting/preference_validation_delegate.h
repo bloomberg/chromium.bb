@@ -9,7 +9,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "components/user_prefs/tracked/tracked_preference_validation_delegate.h"
+#include "services/preferences/public/interfaces/tracked_preference_validation_delegate.mojom.h"
 
 class Profile;
 
@@ -21,7 +21,7 @@ class IncidentReceiver;
 // for preference validation failures. The profile for which the delegate
 // operates must outlive the delegate itself.
 class PreferenceValidationDelegate
-    : public TrackedPreferenceValidationDelegate {
+    : public prefs::mojom::TrackedPreferenceValidationDelegate {
  public:
   PreferenceValidationDelegate(
       Profile* profile,
@@ -32,13 +32,12 @@ class PreferenceValidationDelegate
   // TrackedPreferenceValidationDelegate methods.
   void OnAtomicPreferenceValidation(
       const std::string& pref_path,
-      const base::Value* value,
+      std::unique_ptr<base::Value> value,
       PrefHashStoreTransaction::ValueState value_state,
       PrefHashStoreTransaction::ValueState external_validation_value_state,
       bool is_personal) override;
   void OnSplitPreferenceValidation(
       const std::string& pref_path,
-      const base::DictionaryValue* dict_value,
       const std::vector<std::string>& invalid_keys,
       const std::vector<std::string>& external_validation_invalid_keys,
       PrefHashStoreTransaction::ValueState value_state,

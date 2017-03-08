@@ -102,7 +102,6 @@
 #include "components/ssl_config/ssl_config_service_manager.h"
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "components/url_formatter/url_fixer.h"
-#include "components/user_prefs/tracked/tracked_preference_validation_delegate.h"
 #include "components/user_prefs/user_prefs.h"
 #include "components/zoom/zoom_event_manager.h"
 #include "content/public/browser/browser_thread.h"
@@ -117,6 +116,7 @@
 #include "extensions/features/features.h"
 #include "ppapi/features/features.h"
 #include "printing/features/features.h"
+#include "services/preferences/public/interfaces/tracked_preference_validation_delegate.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_CHROMEOS)

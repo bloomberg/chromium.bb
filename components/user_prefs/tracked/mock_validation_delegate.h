@@ -14,10 +14,13 @@
 #include "base/macros.h"
 #include "components/user_prefs/tracked/pref_hash_filter.h"
 #include "components/user_prefs/tracked/pref_hash_store_transaction.h"
-#include "components/user_prefs/tracked/tracked_preference_validation_delegate.h"
+#include "services/preferences/public/interfaces/tracked_preference_validation_delegate.mojom.h"
+
+class MockValidationDelegate;
 
 // A mock tracked preference validation delegate for use by tests.
-class MockValidationDelegate : public TrackedPreferenceValidationDelegate {
+class MockValidationDelegateRecord
+    : public base::RefCounted<MockValidationDelegateRecord> {
  public:
   struct ValidationEvent {
     ValidationEvent(
@@ -39,8 +42,7 @@ class MockValidationDelegate : public TrackedPreferenceValidationDelegate {
     PrefHashFilter::PrefTrackingStrategy strategy;
   };
 
-  MockValidationDelegate();
-  ~MockValidationDelegate() override;
+  MockValidationDelegateRecord();
 
   // Returns the number of recorded validations.
   size_t recorded_validations_count() const { return validations_.size(); }
@@ -56,16 +58,41 @@ class MockValidationDelegate : public TrackedPreferenceValidationDelegate {
   // Returns the event for the preference with a given path.
   const ValidationEvent* GetEventForPath(const std::string& pref_path) const;
 
+ private:
+  friend class MockValidationDelegate;
+  friend class base::RefCounted<MockValidationDelegateRecord>;
+
+  ~MockValidationDelegateRecord();
+
+  // Adds a new validation event.
+  void RecordValidation(
+      const std::string& pref_path,
+      PrefHashStoreTransaction::ValueState value_state,
+      PrefHashStoreTransaction::ValueState external_validation_value_state,
+      bool is_personal,
+      PrefHashFilter::PrefTrackingStrategy strategy);
+
+  std::vector<ValidationEvent> validations_;
+
+  DISALLOW_COPY_AND_ASSIGN(MockValidationDelegateRecord);
+};
+
+class MockValidationDelegate
+    : public prefs::mojom::TrackedPreferenceValidationDelegate {
+ public:
+  explicit MockValidationDelegate(
+      scoped_refptr<MockValidationDelegateRecord> record);
+  ~MockValidationDelegate() override;
+
   // TrackedPreferenceValidationDelegate implementation.
   void OnAtomicPreferenceValidation(
       const std::string& pref_path,
-      const base::Value* value,
+      std::unique_ptr<base::Value> value,
       PrefHashStoreTransaction::ValueState value_state,
       PrefHashStoreTransaction::ValueState external_validation_value_state,
       bool is_personal) override;
   void OnSplitPreferenceValidation(
       const std::string& pref_path,
-      const base::DictionaryValue* dict_value,
       const std::vector<std::string>& invalid_keys,
       const std::vector<std::string>& external_validation_invalid_keys,
       PrefHashStoreTransaction::ValueState value_state,
@@ -81,7 +108,7 @@ class MockValidationDelegate : public TrackedPreferenceValidationDelegate {
       bool is_personal,
       PrefHashFilter::PrefTrackingStrategy strategy);
 
-  std::vector<ValidationEvent> validations_;
+  scoped_refptr<MockValidationDelegateRecord> record_;
 
   DISALLOW_COPY_AND_ASSIGN(MockValidationDelegate);
 };

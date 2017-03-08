@@ -54,7 +54,7 @@ PrefHashFilter::PrefHashFilter(
     StoreContentsPair external_validation_hash_store_pair,
     const std::vector<TrackedPreferenceMetadata>& tracked_preferences,
     const base::Closure& on_reset_on_load,
-    TrackedPreferenceValidationDelegate* delegate,
+    prefs::mojom::TrackedPreferenceValidationDelegate* delegate,
     size_t reporting_ids_count,
     bool report_super_mac_validity)
     : pref_hash_store_(std::move(pref_hash_store)),

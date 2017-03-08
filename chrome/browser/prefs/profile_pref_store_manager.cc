@@ -102,7 +102,7 @@ void ProfilePrefStoreManager::SetPreferenceValidationRegistryPathForTesting(
 PersistentPrefStore* ProfilePrefStoreManager::CreateProfilePrefStore(
     const scoped_refptr<base::SequencedTaskRunner>& io_task_runner,
     const base::Closure& on_reset_on_load,
-    TrackedPreferenceValidationDelegate* validation_delegate) {
+    prefs::mojom::TrackedPreferenceValidationDelegate* validation_delegate) {
   std::unique_ptr<PrefFilter> pref_filter;
   if (!kPlatformSupportsPreferenceTracking) {
     return new JsonPrefStore(profile_path_.Append(chrome::kPreferencesFilename),

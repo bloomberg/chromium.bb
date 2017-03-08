@@ -38,10 +38,10 @@
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing_db/database_manager.h"
 #include "components/safe_browsing_db/safe_browsing_prefs.h"
-#include "components/user_prefs/tracked/tracked_preference_validation_delegate.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "services/preferences/public/interfaces/tracked_preference_validation_delegate.mojom.h"
 
 namespace safe_browsing {
 
@@ -366,14 +366,14 @@ IncidentReportingService::GetIncidentReceiver() {
   return base::MakeUnique<Receiver>(receiver_weak_ptr_factory_.GetWeakPtr());
 }
 
-std::unique_ptr<TrackedPreferenceValidationDelegate>
+std::unique_ptr<prefs::mojom::TrackedPreferenceValidationDelegate>
 IncidentReportingService::CreatePreferenceValidationDelegate(Profile* profile) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   if (profile->IsOffTheRecord())
-    return std::unique_ptr<TrackedPreferenceValidationDelegate>();
-  return std::unique_ptr<TrackedPreferenceValidationDelegate>(
-      new PreferenceValidationDelegate(profile, GetIncidentReceiver()));
+    return std::unique_ptr<prefs::mojom::TrackedPreferenceValidationDelegate>();
+  return base::MakeUnique<PreferenceValidationDelegate>(profile,
+                                                        GetIncidentReceiver());
 }
 
 void IncidentReportingService::RegisterDelayedAnalysisCallback(

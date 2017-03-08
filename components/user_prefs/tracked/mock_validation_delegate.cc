@@ -4,13 +4,11 @@
 
 #include "components/user_prefs/tracked/mock_validation_delegate.h"
 
-MockValidationDelegate::MockValidationDelegate() {
-}
+MockValidationDelegateRecord::MockValidationDelegateRecord() = default;
 
-MockValidationDelegate::~MockValidationDelegate() {
-}
+MockValidationDelegateRecord::~MockValidationDelegateRecord() = default;
 
-size_t MockValidationDelegate::CountValidationsOfState(
+size_t MockValidationDelegateRecord::CountValidationsOfState(
     PrefHashStoreTransaction::ValueState value_state) const {
   size_t count = 0;
   for (size_t i = 0; i < validations_.size(); ++i) {
@@ -20,7 +18,7 @@ size_t MockValidationDelegate::CountValidationsOfState(
   return count;
 }
 
-size_t MockValidationDelegate::CountExternalValidationsOfState(
+size_t MockValidationDelegateRecord::CountExternalValidationsOfState(
     PrefHashStoreTransaction::ValueState value_state) const {
   size_t count = 0;
   for (size_t i = 0; i < validations_.size(); ++i) {
@@ -30,8 +28,9 @@ size_t MockValidationDelegate::CountExternalValidationsOfState(
   return count;
 }
 
-const MockValidationDelegate::ValidationEvent*
-MockValidationDelegate::GetEventForPath(const std::string& pref_path) const {
+const MockValidationDelegateRecord::ValidationEvent*
+MockValidationDelegateRecord::GetEventForPath(
+    const std::string& pref_path) const {
   for (size_t i = 0; i < validations_.size(); ++i) {
     if (validations_[i].pref_path == pref_path)
       return &validations_[i];
@@ -39,29 +38,7 @@ MockValidationDelegate::GetEventForPath(const std::string& pref_path) const {
   return NULL;
 }
 
-void MockValidationDelegate::OnAtomicPreferenceValidation(
-    const std::string& pref_path,
-    const base::Value* value,
-    PrefHashStoreTransaction::ValueState value_state,
-    PrefHashStoreTransaction::ValueState external_validation_value_state,
-    bool is_personal) {
-  RecordValidation(pref_path, value_state, external_validation_value_state,
-                   is_personal, PrefHashFilter::TRACKING_STRATEGY_ATOMIC);
-}
-
-void MockValidationDelegate::OnSplitPreferenceValidation(
-    const std::string& pref_path,
-    const base::DictionaryValue* dict_value,
-    const std::vector<std::string>& invalid_keys,
-    const std::vector<std::string>& external_validation_invalid_keys,
-    PrefHashStoreTransaction::ValueState value_state,
-    PrefHashStoreTransaction::ValueState external_validation_value_state,
-    bool is_personal) {
-  RecordValidation(pref_path, value_state, external_validation_value_state,
-                   is_personal, PrefHashFilter::TRACKING_STRATEGY_SPLIT);
-}
-
-void MockValidationDelegate::RecordValidation(
+void MockValidationDelegateRecord::RecordValidation(
     const std::string& pref_path,
     PrefHashStoreTransaction::ValueState value_state,
     PrefHashStoreTransaction::ValueState external_validation_value_state,
@@ -70,4 +47,33 @@ void MockValidationDelegate::RecordValidation(
   validations_.push_back(ValidationEvent(pref_path, value_state,
                                          external_validation_value_state,
                                          is_personal, strategy));
+}
+
+MockValidationDelegate::MockValidationDelegate(
+    scoped_refptr<MockValidationDelegateRecord> record)
+    : record_(std::move(record)) {}
+
+MockValidationDelegate::~MockValidationDelegate() = default;
+
+void MockValidationDelegate::OnAtomicPreferenceValidation(
+    const std::string& pref_path,
+    std::unique_ptr<base::Value> value,
+    PrefHashStoreTransaction::ValueState value_state,
+    PrefHashStoreTransaction::ValueState external_validation_value_state,
+    bool is_personal) {
+  record_->RecordValidation(pref_path, value_state,
+                            external_validation_value_state, is_personal,
+                            PrefHashFilter::TRACKING_STRATEGY_ATOMIC);
+}
+
+void MockValidationDelegate::OnSplitPreferenceValidation(
+    const std::string& pref_path,
+    const std::vector<std::string>& invalid_keys,
+    const std::vector<std::string>& external_validation_invalid_keys,
+    PrefHashStoreTransaction::ValueState value_state,
+    PrefHashStoreTransaction::ValueState external_validation_value_state,
+    bool is_personal) {
+  record_->RecordValidation(pref_path, value_state,
+                            external_validation_value_state, is_personal,
+                            PrefHashFilter::TRACKING_STRATEGY_SPLIT);
 }

@@ -27,8 +27,6 @@
 
 class PrefService;
 
-class TrackedPreferenceValidationDelegate;
-
 #if defined(OS_CHROMEOS)
 namespace chromeos {
 class KioskTest;
@@ -50,6 +48,12 @@ namespace policy {
 class ConfigurationPolicyProvider;
 class ProfilePolicyConnector;
 class SchemaRegistryService;
+}
+
+namespace prefs {
+namespace mojom {
+class TrackedPreferenceValidationDelegate;
+}
 }
 
 namespace ssl_config {
@@ -215,7 +219,7 @@ class ProfileImpl : public Profile {
 
   // Keep |pref_validation_delegate_| above |prefs_| so that the former outlives
   // the latter.
-  std::unique_ptr<TrackedPreferenceValidationDelegate>
+  std::unique_ptr<prefs::mojom::TrackedPreferenceValidationDelegate>
       pref_validation_delegate_;
 
   // Keep |prefs_| on top for destruction order because |extension_prefs_|,

@@ -576,6 +576,8 @@ class PrefHashFilterTest
   PrefHashFilterTest()
       : mock_pref_hash_store_(NULL),
         pref_store_contents_(new base::DictionaryValue),
+        mock_validation_delegate_record_(new MockValidationDelegateRecord),
+        mock_validation_delegate_(mock_validation_delegate_record_),
         reset_recorded_(false) {}
 
   void SetUp() override {
@@ -641,7 +643,7 @@ class PrefHashFilterTest
   MockPrefHashStore* mock_external_validation_pref_hash_store_;
   MockHashStoreContents* mock_external_validation_hash_store_contents_;
   std::unique_ptr<base::DictionaryValue> pref_store_contents_;
-  MockValidationDelegate mock_validation_delegate_;
+  scoped_refptr<MockValidationDelegateRecord> mock_validation_delegate_record_;
   std::unique_ptr<PrefHashFilter> pref_hash_filter_;
 
  private:
@@ -662,6 +664,7 @@ class PrefHashFilterTest
     reset_recorded_ = true;
   }
 
+  MockValidationDelegate mock_validation_delegate_;
   bool reset_recorded_;
 
   DISALLOW_COPY_AND_ASSIGN(PrefHashFilterTest);
@@ -686,9 +689,9 @@ TEST_P(PrefHashFilterTest, EmptyAndUnchanged) {
 
   // Delegate saw all paths, and all unchanged.
   ASSERT_EQ(arraysize(kTestTrackedPrefs),
-            mock_validation_delegate_.recorded_validations_count());
+            mock_validation_delegate_record_->recorded_validations_count());
   ASSERT_EQ(arraysize(kTestTrackedPrefs),
-            mock_validation_delegate_.CountValidationsOfState(
+            mock_validation_delegate_record_->CountValidationsOfState(
                 PrefHashStoreTransaction::UNCHANGED));
 }
 
@@ -875,20 +878,20 @@ TEST_P(PrefHashFilterTest, UnknownNullValue) {
 
   // Delegate saw all prefs, two of which had the expected value_state.
   ASSERT_EQ(arraysize(kTestTrackedPrefs),
-            mock_validation_delegate_.recorded_validations_count());
-  ASSERT_EQ(2u, mock_validation_delegate_.CountValidationsOfState(
+            mock_validation_delegate_record_->recorded_validations_count());
+  ASSERT_EQ(2u, mock_validation_delegate_record_->CountValidationsOfState(
                     PrefHashStoreTransaction::TRUSTED_NULL_VALUE));
   ASSERT_EQ(arraysize(kTestTrackedPrefs) - 2u,
-            mock_validation_delegate_.CountValidationsOfState(
+            mock_validation_delegate_record_->CountValidationsOfState(
                 PrefHashStoreTransaction::UNCHANGED));
 
-  const MockValidationDelegate::ValidationEvent* validated_split_pref =
-      mock_validation_delegate_.GetEventForPath(kSplitPref);
+  const MockValidationDelegateRecord::ValidationEvent* validated_split_pref =
+      mock_validation_delegate_record_->GetEventForPath(kSplitPref);
   ASSERT_EQ(PrefHashFilter::TRACKING_STRATEGY_SPLIT,
             validated_split_pref->strategy);
   ASSERT_FALSE(validated_split_pref->is_personal);
-  const MockValidationDelegate::ValidationEvent* validated_atomic_pref =
-      mock_validation_delegate_.GetEventForPath(kAtomicPref);
+  const MockValidationDelegateRecord::ValidationEvent* validated_atomic_pref =
+      mock_validation_delegate_record_->GetEventForPath(kAtomicPref);
   ASSERT_EQ(PrefHashFilter::TRACKING_STRATEGY_ATOMIC,
             validated_atomic_pref->strategy);
   ASSERT_TRUE(validated_atomic_pref->is_personal);
@@ -920,11 +923,11 @@ TEST_P(PrefHashFilterTest, InitialValueUnknown) {
 
   // Delegate saw all prefs, two of which had the expected value_state.
   ASSERT_EQ(arraysize(kTestTrackedPrefs),
-            mock_validation_delegate_.recorded_validations_count());
-  ASSERT_EQ(2u, mock_validation_delegate_.CountValidationsOfState(
+            mock_validation_delegate_record_->recorded_validations_count());
+  ASSERT_EQ(2u, mock_validation_delegate_record_->CountValidationsOfState(
                     PrefHashStoreTransaction::UNTRUSTED_UNKNOWN_VALUE));
   ASSERT_EQ(arraysize(kTestTrackedPrefs) - 2u,
-            mock_validation_delegate_.CountValidationsOfState(
+            mock_validation_delegate_record_->CountValidationsOfState(
                 PrefHashStoreTransaction::UNCHANGED));
 
   MockPrefHashStore::ValuePtrStrategyPair stored_atomic_value =
@@ -986,11 +989,11 @@ TEST_P(PrefHashFilterTest, InitialValueTrustedUnknown) {
 
   // Delegate saw all prefs, two of which had the expected value_state.
   ASSERT_EQ(arraysize(kTestTrackedPrefs),
-            mock_validation_delegate_.recorded_validations_count());
-  ASSERT_EQ(2u, mock_validation_delegate_.CountValidationsOfState(
+            mock_validation_delegate_record_->recorded_validations_count());
+  ASSERT_EQ(2u, mock_validation_delegate_record_->CountValidationsOfState(
                     PrefHashStoreTransaction::TRUSTED_UNKNOWN_VALUE));
   ASSERT_EQ(arraysize(kTestTrackedPrefs) - 2u,
-            mock_validation_delegate_.CountValidationsOfState(
+            mock_validation_delegate_record_->CountValidationsOfState(
                 PrefHashStoreTransaction::UNCHANGED));
 
   // Seeding is always allowed for trusted unknown values.
@@ -1105,11 +1108,11 @@ TEST_P(PrefHashFilterTest, EmptyCleared) {
 
   // Delegate saw all prefs, two of which had the expected value_state.
   ASSERT_EQ(arraysize(kTestTrackedPrefs),
-            mock_validation_delegate_.recorded_validations_count());
-  ASSERT_EQ(2u, mock_validation_delegate_.CountValidationsOfState(
+            mock_validation_delegate_record_->recorded_validations_count());
+  ASSERT_EQ(2u, mock_validation_delegate_record_->CountValidationsOfState(
                     PrefHashStoreTransaction::CLEARED));
   ASSERT_EQ(arraysize(kTestTrackedPrefs) - 2u,
-            mock_validation_delegate_.CountValidationsOfState(
+            mock_validation_delegate_record_->CountValidationsOfState(
                 PrefHashStoreTransaction::UNCHANGED));
 
   // Regardless of the enforcement level, the only thing that should be done is
@@ -1152,11 +1155,11 @@ TEST_P(PrefHashFilterTest, InitialValueUnchangedLegacyId) {
 
   // Delegate saw all prefs, two of which had the expected value_state.
   ASSERT_EQ(arraysize(kTestTrackedPrefs),
-            mock_validation_delegate_.recorded_validations_count());
-  ASSERT_EQ(2u, mock_validation_delegate_.CountValidationsOfState(
+            mock_validation_delegate_record_->recorded_validations_count());
+  ASSERT_EQ(2u, mock_validation_delegate_record_->CountValidationsOfState(
                     PrefHashStoreTransaction::SECURE_LEGACY));
   ASSERT_EQ(arraysize(kTestTrackedPrefs) - 2u,
-            mock_validation_delegate_.CountValidationsOfState(
+            mock_validation_delegate_record_->CountValidationsOfState(
                 PrefHashStoreTransaction::UNCHANGED));
 
   // Ensure that both the atomic and split hashes were restored.
@@ -1221,11 +1224,11 @@ TEST_P(PrefHashFilterTest, DontResetReportOnly) {
 
   // Delegate saw all prefs, four of which had the expected value_state.
   ASSERT_EQ(arraysize(kTestTrackedPrefs),
-            mock_validation_delegate_.recorded_validations_count());
-  ASSERT_EQ(4u, mock_validation_delegate_.CountValidationsOfState(
+            mock_validation_delegate_record_->recorded_validations_count());
+  ASSERT_EQ(4u, mock_validation_delegate_record_->CountValidationsOfState(
                     PrefHashStoreTransaction::CHANGED));
   ASSERT_EQ(arraysize(kTestTrackedPrefs) - 4u,
-            mock_validation_delegate_.CountValidationsOfState(
+            mock_validation_delegate_record_->CountValidationsOfState(
                 PrefHashStoreTransaction::UNCHANGED));
 
   // No matter what the enforcement level is, the report only pref should never
@@ -1372,18 +1375,19 @@ TEST_P(PrefHashFilterTest, ExternalValidationValueChanged) {
       1u, mock_external_validation_pref_hash_store_->transactions_performed());
 
   ASSERT_EQ(arraysize(kTestTrackedPrefs),
-            mock_validation_delegate_.recorded_validations_count());
+            mock_validation_delegate_record_->recorded_validations_count());
 
   // Regular validation should not have any CHANGED prefs.
   ASSERT_EQ(arraysize(kTestTrackedPrefs),
-            mock_validation_delegate_.CountValidationsOfState(
+            mock_validation_delegate_record_->CountValidationsOfState(
                 PrefHashStoreTransaction::UNCHANGED));
 
   // External validation should have two CHANGED prefs (kAtomic and kSplit).
-  ASSERT_EQ(2u, mock_validation_delegate_.CountExternalValidationsOfState(
-                    PrefHashStoreTransaction::CHANGED));
+  ASSERT_EQ(2u,
+            mock_validation_delegate_record_->CountExternalValidationsOfState(
+                PrefHashStoreTransaction::CHANGED));
   ASSERT_EQ(arraysize(kTestTrackedPrefs) - 2u,
-            mock_validation_delegate_.CountExternalValidationsOfState(
+            mock_validation_delegate_record_->CountExternalValidationsOfState(
                 PrefHashStoreTransaction::UNCHANGED));
 }
 

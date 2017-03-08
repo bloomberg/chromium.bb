@@ -20,6 +20,12 @@ namespace policy {
 class PolicyService;
 }
 
+namespace prefs {
+namespace mojom {
+class TrackedPreferenceValidationDelegate;
+}
+}
+
 namespace sync_preferences {
 class PrefServiceSyncable;
 }
@@ -34,7 +40,6 @@ class PrefService;
 class PrefStore;
 class Profile;
 class SupervisedUserSettingsService;
-class TrackedPreferenceValidationDelegate;
 
 namespace chrome_prefs {
 
@@ -73,7 +78,7 @@ std::unique_ptr<PrefService> CreateLocalState(
 std::unique_ptr<sync_preferences::PrefServiceSyncable> CreateProfilePrefs(
     const base::FilePath& pref_filename,
     base::SequencedTaskRunner* pref_io_task_runner,
-    TrackedPreferenceValidationDelegate* validation_delegate,
+    prefs::mojom::TrackedPreferenceValidationDelegate* validation_delegate,
     policy::PolicyService* policy_service,
     SupervisedUserSettingsService* supervised_user_settings,
     const scoped_refptr<PrefStore>& extension_prefs,

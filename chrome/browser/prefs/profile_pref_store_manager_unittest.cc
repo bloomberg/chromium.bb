@@ -99,6 +99,9 @@ class ProfilePrefStoreManagerTest : public testing::Test {
         reset_recorded_(false) {}
 
   void SetUp() override {
+    mock_validation_delegate_record_ = new MockValidationDelegateRecord;
+    mock_validation_delegate_ = base::MakeUnique<MockValidationDelegate>(
+        mock_validation_delegate_record_);
     ProfilePrefStoreManager::RegisterProfilePrefs(profile_pref_registry_.get());
     for (const PrefHashFilter::TrackedPreferenceMetadata* it = kConfiguration;
          it != kConfiguration + arraysize(kConfiguration);
@@ -172,7 +175,7 @@ class ProfilePrefStoreManagerTest : public testing::Test {
             main_message_loop_.task_runner(),
             base::Bind(&ProfilePrefStoreManagerTest::RecordReset,
                        base::Unretained(this)),
-            &mock_validation_delegate_);
+            mock_validation_delegate_.get());
     InitializePrefStore(pref_store.get());
     pref_store = NULL;
     base::RunLoop().RunUntilIdle();
@@ -255,7 +258,7 @@ class ProfilePrefStoreManagerTest : public testing::Test {
     // No validations are expected for platforms that do not support tracking.
     if (!ProfilePrefStoreManager::kPlatformSupportsPreferenceTracking)
       return;
-    if (!mock_validation_delegate_.GetEventForPath(pref_path))
+    if (!mock_validation_delegate_record_->GetEventForPath(pref_path))
       ADD_FAILURE() << "No validation observed for preference: " << pref_path;
   }
 
@@ -265,7 +268,8 @@ class ProfilePrefStoreManagerTest : public testing::Test {
   TestingPrefServiceSimple local_state_;
   scoped_refptr<user_prefs::PrefRegistrySyncable> profile_pref_registry_;
   RegistryVerifier registry_verifier_;
-  MockValidationDelegate mock_validation_delegate_;
+  scoped_refptr<MockValidationDelegateRecord> mock_validation_delegate_record_;
+  std::unique_ptr<MockValidationDelegate> mock_validation_delegate_;
   std::unique_ptr<ProfilePrefStoreManager> manager_;
   scoped_refptr<PersistentPrefStore> pref_store_;
 

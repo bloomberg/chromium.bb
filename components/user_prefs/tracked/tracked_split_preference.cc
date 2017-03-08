@@ -9,7 +9,7 @@
 #include "base/logging.h"
 #include "base/values.h"
 #include "components/user_prefs/tracked/pref_hash_store_transaction.h"
-#include "components/user_prefs/tracked/tracked_preference_validation_delegate.h"
+#include "services/preferences/public/interfaces/tracked_preference_validation_delegate.mojom.h"
 
 TrackedSplitPreference::TrackedSplitPreference(
     const std::string& pref_path,
@@ -17,15 +17,14 @@ TrackedSplitPreference::TrackedSplitPreference(
     size_t reporting_ids_count,
     PrefHashFilter::EnforcementLevel enforcement_level,
     PrefHashFilter::ValueType value_type,
-    TrackedPreferenceValidationDelegate* delegate)
+    prefs::mojom::TrackedPreferenceValidationDelegate* delegate)
     : pref_path_(pref_path),
       helper_(pref_path,
               reporting_id,
               reporting_ids_count,
               enforcement_level,
               value_type),
-      delegate_(delegate) {
-}
+      delegate_(delegate) {}
 
 TrackedPreferenceType TrackedSplitPreference::GetType() const {
   return TrackedPreferenceType::SPLIT;
@@ -77,8 +76,8 @@ bool TrackedSplitPreference::EnforceAndReport(
 
   if (delegate_) {
     delegate_->OnSplitPreferenceValidation(
-        pref_path_, dict_value, invalid_keys, external_validation_invalid_keys,
-        value_state, external_validation_value_state, helper_.IsPersonal());
+        pref_path_, invalid_keys, external_validation_invalid_keys, value_state,
+        external_validation_value_state, helper_.IsPersonal());
   }
   TrackedPreferenceHelper::ResetAction reset_action =
       helper_.GetAction(value_state);

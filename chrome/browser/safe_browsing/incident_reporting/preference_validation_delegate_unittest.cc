@@ -25,16 +25,16 @@ using ::testing::IsNull;
 using ::testing::NiceMock;
 using ::testing::WithArg;
 
+namespace {
+const char kPrefPath[] = "atomic.pref";
+}
+
 // A basic test harness that creates a delegate instance for which it stores all
 // incidents. Tests can push data to the delegate and verify that the test
 // instance was provided with the expected data.
 class PreferenceValidationDelegateTest : public testing::Test {
  protected:
   typedef std::vector<std::unique_ptr<safe_browsing::Incident>> IncidentVector;
-
-  PreferenceValidationDelegateTest()
-      : kPrefPath_("atomic.pref"),
-        null_value_(base::Value::CreateNullValue()) {}
 
   void SetUp() override {
     testing::Test::SetUp();
@@ -90,19 +90,16 @@ class PreferenceValidationDelegateTest : public testing::Test {
     }
   }
 
-  const std::string kPrefPath_;
   IncidentVector incidents_;
-  std::unique_ptr<base::Value> null_value_;
-  base::DictionaryValue dict_value_;
   std::vector<std::string> invalid_keys_;
   std::vector<std::string> external_validation_invalid_keys_;
-  std::unique_ptr<TrackedPreferenceValidationDelegate> instance_;
+  std::unique_ptr<prefs::mojom::TrackedPreferenceValidationDelegate> instance_;
 };
 
 // Tests that a NULL value results in an incident with no value.
 TEST_F(PreferenceValidationDelegateTest, NullValue) {
   instance_->OnAtomicPreferenceValidation(
-      kPrefPath_, NULL, PrefHashStoreTransaction::CLEARED,
+      kPrefPath, NULL, PrefHashStoreTransaction::CLEARED,
       PrefHashStoreTransaction::UNSUPPORTED, false /* is_personal */);
   std::unique_ptr<safe_browsing::ClientIncidentReport_IncidentData> incident(
       incidents_.back()->TakePayload());
@@ -165,9 +162,8 @@ class PreferenceValidationDelegateValues
 
 TEST_P(PreferenceValidationDelegateValues, Value) {
   instance_->OnAtomicPreferenceValidation(
-      kPrefPath_, MakeValue(value_type_).get(),
-      PrefHashStoreTransaction::CLEARED, PrefHashStoreTransaction::UNSUPPORTED,
-      false /* is_personal */);
+      kPrefPath, MakeValue(value_type_), PrefHashStoreTransaction::CLEARED,
+      PrefHashStoreTransaction::UNSUPPORTED, false /* is_personal */);
   ASSERT_EQ(1U, incidents_.size());
   std::unique_ptr<safe_browsing::ClientIncidentReport_IncidentData> incident(
       incidents_.back()->TakePayload());
@@ -216,15 +212,14 @@ class PreferenceValidationDelegateNoIncident
 
 TEST_P(PreferenceValidationDelegateNoIncident, Atomic) {
   instance_->OnAtomicPreferenceValidation(
-      kPrefPath_, null_value_.get(), value_state_,
+      kPrefPath, base::Value::CreateNullValue(), value_state_,
       external_validation_value_state_, false /* is_personal */);
   EXPECT_EQ(0U, incidents_.size());
 }
 
 TEST_P(PreferenceValidationDelegateNoIncident, Split) {
   instance_->OnSplitPreferenceValidation(
-      kPrefPath_, &dict_value_, invalid_keys_,
-      external_validation_invalid_keys_, value_state_,
+      kPrefPath, invalid_keys_, external_validation_invalid_keys_, value_state_,
       external_validation_value_state_, false /* is_personal */);
   EXPECT_EQ(0U, incidents_.size());
 }
@@ -263,7 +258,7 @@ class PreferenceValidationDelegateWithIncident
 
 TEST_P(PreferenceValidationDelegateWithIncident, Atomic) {
   instance_->OnAtomicPreferenceValidation(
-      kPrefPath_, null_value_.get(), value_state_,
+      kPrefPath, base::Value::CreateNullValue(), value_state_,
       external_validation_value_state_, is_personal_);
   ASSERT_EQ(1U, incidents_.size());
   std::unique_ptr<safe_browsing::ClientIncidentReport_IncidentData> incident(
@@ -272,7 +267,7 @@ TEST_P(PreferenceValidationDelegateWithIncident, Atomic) {
   const safe_browsing::
       ClientIncidentReport_IncidentData_TrackedPreferenceIncident& tp_incident =
           incident->tracked_preference();
-  EXPECT_EQ(kPrefPath_, tp_incident.path());
+  EXPECT_EQ(kPrefPath, tp_incident.path());
   EXPECT_EQ(0, tp_incident.split_key_size());
   if (!is_personal_) {
     EXPECT_TRUE(tp_incident.has_atomic_value());
@@ -287,8 +282,7 @@ TEST_P(PreferenceValidationDelegateWithIncident, Atomic) {
 
 TEST_P(PreferenceValidationDelegateWithIncident, Split) {
   instance_->OnSplitPreferenceValidation(
-      kPrefPath_, &dict_value_, invalid_keys_,
-      external_validation_invalid_keys_, value_state_,
+      kPrefPath, invalid_keys_, external_validation_invalid_keys_, value_state_,
       external_validation_value_state_, is_personal_);
   ASSERT_EQ(1U, incidents_.size());
   std::unique_ptr<safe_browsing::ClientIncidentReport_IncidentData> incident(
@@ -297,7 +291,7 @@ TEST_P(PreferenceValidationDelegateWithIncident, Split) {
   const safe_browsing::
       ClientIncidentReport_IncidentData_TrackedPreferenceIncident& tp_incident =
           incident->tracked_preference();
-  EXPECT_EQ(kPrefPath_, tp_incident.path());
+  EXPECT_EQ(kPrefPath, tp_incident.path());
   EXPECT_FALSE(tp_incident.has_atomic_value());
   if (!is_personal_) {
     if (value_state_ == PrefHashStoreTransaction::CLEARED ||

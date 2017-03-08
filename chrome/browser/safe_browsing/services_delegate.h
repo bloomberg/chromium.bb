@@ -9,7 +9,6 @@
 
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/safe_browsing/incident_reporting/delayed_analysis_callback.h"
-#include "components/user_prefs/tracked/tracked_preference_validation_delegate.h"
 
 class Profile;
 
@@ -19,6 +18,12 @@ class DownloadManager;
 
 namespace net {
 class URLRequestContextGetter;
+}
+
+namespace prefs {
+namespace mojom {
+class TrackedPreferenceValidationDelegate;
+}
 }
 
 namespace safe_browsing {
@@ -86,8 +91,8 @@ class ServicesDelegate {
 
   // See the SafeBrowsingService methods of the same name.
   virtual void ProcessResourceRequest(const ResourceRequestInfo* request) = 0;
-  virtual std::unique_ptr<TrackedPreferenceValidationDelegate>
-      CreatePreferenceValidationDelegate(Profile* profile) = 0;
+  virtual std::unique_ptr<prefs::mojom::TrackedPreferenceValidationDelegate>
+  CreatePreferenceValidationDelegate(Profile* profile) = 0;
   virtual void RegisterDelayedAnalysisCallback(
       const DelayedAnalysisCallback& callback) = 0;
   virtual void AddDownloadManager(

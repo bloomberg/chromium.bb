@@ -498,7 +498,7 @@ std::unique_ptr<PrefService> CreateLocalState(
 std::unique_ptr<sync_preferences::PrefServiceSyncable> CreateProfilePrefs(
     const base::FilePath& profile_path,
     base::SequencedTaskRunner* pref_io_task_runner,
-    TrackedPreferenceValidationDelegate* validation_delegate,
+    prefs::mojom::TrackedPreferenceValidationDelegate* validation_delegate,
     policy::PolicyService* policy_service,
     SupervisedUserSettingsService* supervised_user_settings,
     const scoped_refptr<PrefStore>& extension_prefs,

@@ -34,7 +34,6 @@
 class PrefChangeRegistrar;
 class PrefService;
 class Profile;
-class TrackedPreferenceValidationDelegate;
 
 namespace content {
 class DownloadManager;
@@ -43,6 +42,12 @@ class DownloadManager;
 namespace net {
 class URLRequest;
 class URLRequestContextGetter;
+}
+
+namespace prefs {
+namespace mojom {
+class TrackedPreferenceValidationDelegate;
+}
 }
 
 namespace safe_browsing {
@@ -163,7 +168,7 @@ class SafeBrowsingService : public base::RefCountedThreadSafe<
   // Returns a preference validation delegate that adds incidents to the
   // incident reporting service for validation failures. Returns NULL if the
   // service is not applicable for the given profile.
-  std::unique_ptr<TrackedPreferenceValidationDelegate>
+  std::unique_ptr<prefs::mojom::TrackedPreferenceValidationDelegate>
   CreatePreferenceValidationDelegate(Profile* profile) const;
 
   // Registers |callback| to be run after some delay following process launch.

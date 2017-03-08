@@ -43,7 +43,6 @@
 #include "components/safe_browsing_db/v4_feature_list.h"
 #include "components/safe_browsing_db/v4_get_hash_protocol_manager.h"
 #include "components/safe_browsing_db/v4_local_database_manager.h"
-#include "components/user_prefs/tracked/tracked_preference_validation_delegate.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/cookie_store_factory.h"
 #include "content/public/browser/notification_service.h"
@@ -58,6 +57,7 @@
 #include "net/ssl/default_channel_id_store.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "services/preferences/public/interfaces/tracked_preference_validation_delegate.mojom.h"
 
 #if defined(OS_WIN)
 #include "chrome/installer/util/browser_distribution.h"
@@ -457,7 +457,7 @@ PasswordProtectionService* SafeBrowsingService::password_protection_service() {
   return password_protection_service_.get();
 }
 
-std::unique_ptr<TrackedPreferenceValidationDelegate>
+std::unique_ptr<prefs::mojom::TrackedPreferenceValidationDelegate>
 SafeBrowsingService::CreatePreferenceValidationDelegate(
     Profile* profile) const {
   return services_delegate_->CreatePreferenceValidationDelegate(profile);

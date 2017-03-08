@@ -28,7 +28,6 @@
 #include "content/public/browser/notification_registrar.h"
 
 class Profile;
-class TrackedPreferenceValidationDelegate;
 
 namespace base {
 class TaskRunner;
@@ -42,6 +41,12 @@ class NotificationSource;
 
 namespace net {
 class URLRequestContextGetter;
+}
+
+namespace prefs {
+namespace mojom {
+class TrackedPreferenceValidationDelegate;
+}
 }
 
 namespace safe_browsing {
@@ -94,7 +99,7 @@ class IncidentReportingService : public content::NotificationObserver {
   // for validation failures in |profile|. The delegate may outlive the service,
   // but incidents reported by it will no longer have any effect after the
   // service is deleted.
-  std::unique_ptr<TrackedPreferenceValidationDelegate>
+  std::unique_ptr<prefs::mojom::TrackedPreferenceValidationDelegate>
   CreatePreferenceValidationDelegate(Profile* profile);
 
   // Registers |callback| to be run after some delay following process launch.
