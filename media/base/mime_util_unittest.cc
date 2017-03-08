@@ -7,7 +7,10 @@
 #include "base/macros.h"
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/scoped_command_line.h"
 #include "build/build_config.h"
+#include "media/base/media.h"
+#include "media/base/media_switches.h"
 #include "media/base/mime_util.h"
 #include "media/base/mime_util_internal.h"
 #include "media/media_features.h"
@@ -217,6 +220,18 @@ TEST(MimeUtilTest, SplitCodecsToVector) {
   ASSERT_EQ(2u, codecs_out.size());
   EXPECT_EQ("avc1.42E01E", codecs_out[0]);
   EXPECT_EQ("mp4a.40.2", codecs_out[1]);
+}
+
+// See deeper string parsing testing in video_codecs_unittests.cc.
+TEST(MimeUtilTest, ExperimentalMultiPartVp9) {
+  base::test::ScopedCommandLine scoped_command_line;
+
+  // Multi-part VP9 string not enabled by default.
+  EXPECT_FALSE(IsSupportedMediaFormat("video/webm", {"vp09.00.01.08"}));
+
+  // Should work if enabled.
+  EnableNewVp9CodecStringSupport();
+  EXPECT_TRUE(IsSupportedMediaFormat("video/webm", {"vp09.00.01.08"}));
 }
 
 TEST(IsCodecSupportedOnAndroidTest, EncryptedCodecsFailWithoutPlatformSupport) {

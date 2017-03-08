@@ -85,15 +85,21 @@ const std::map<std::string, MimeUtil::Codec>& GetStringToCodecMap() {
 static bool ParseVp9CodecID(const std::string& mime_type_lower_case,
                             const std::string& codec_id,
                             VideoCodecProfile* out_profile,
-                            uint8_t* out_level) {
+                            uint8_t* out_level,
+                            gfx::ColorSpace::TransferID* out_eotf) {
   if (mime_type_lower_case == "video/mp4") {
     if (base::CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kEnableVp9InMp4)) {
-      return ParseNewStyleVp9CodecID(codec_id, out_profile, out_level);
+      // Only new style is allowed for mp4.
+      return ParseNewStyleVp9CodecID(codec_id, out_profile, out_level,
+                                     out_eotf);
     }
   } else if (mime_type_lower_case == "video/webm") {
-    // Only legacy codec strings are supported in WebM.
-    // TODO(kqyang): Should we support new codec string in WebM?
+    if (HasNewVp9CodecStringSupport() &&
+        ParseNewStyleVp9CodecID(codec_id, out_profile, out_level, out_eotf)) {
+      return true;
+    }
+
     return ParseLegacyVp9CodecID(codec_id, out_profile, out_level);
   }
   return false;
@@ -165,9 +171,10 @@ SupportsType MimeUtil::AreSupportedCodecs(
     Codec codec = INVALID_CODEC;
     VideoCodecProfile video_profile = VIDEO_CODEC_PROFILE_UNKNOWN;
     uint8_t video_level = 0;
+    gfx::ColorSpace::TransferID eotf = gfx::ColorSpace::TransferID::INVALID;
     if (!ParseCodecString(mime_type_lower_case, codecs[i], &codec,
-                          &ambiguous_codec_string, &video_profile,
-                          &video_level)) {
+                          &ambiguous_codec_string, &video_profile, &video_level,
+                          &eotf)) {
       return IsNotSupported;
     }
 
@@ -191,8 +198,9 @@ SupportsType MimeUtil::AreSupportedCodecs(
     }
 
     // Check platform support.
-    SupportsType result = IsCodecSupported(
-        mime_type_lower_case, codec, video_profile, video_level, is_encrypted);
+    SupportsType result =
+        IsCodecSupported(mime_type_lower_case, codec, video_profile,
+                         video_level, eotf, is_encrypted);
     if (result == IsNotSupported)
       return IsNotSupported;
 
@@ -556,7 +564,8 @@ bool MimeUtil::ParseCodecString(const std::string& mime_type_lower_case,
                                 Codec* codec,
                                 bool* ambiguous_codec_string,
                                 VideoCodecProfile* out_profile,
-                                uint8_t* out_level) const {
+                                uint8_t* out_level,
+                                gfx::ColorSpace::TransferID* out_eotf) const {
   DCHECK_EQ(base::ToLowerASCII(mime_type_lower_case), mime_type_lower_case);
   DCHECK(codec);
   DCHECK(out_profile);
@@ -566,6 +575,11 @@ bool MimeUtil::ParseCodecString(const std::string& mime_type_lower_case,
   *ambiguous_codec_string = false;
   *out_profile = VIDEO_CODEC_PROFILE_UNKNOWN;
   *out_level = 0;
+
+  // Most codec strings do not yet specify EOTF. We choose 709 as default color
+  // space elsewhere, so defaulting to 709 EOTF as well. See here for context:
+  // https://crrev.com/1221903003/
+  *out_eotf = gfx::ColorSpace::TransferID::BT709;
 
   std::map<std::string, Codec>::const_iterator itr =
       GetStringToCodecMap().find(codec_id);
@@ -593,7 +607,8 @@ bool MimeUtil::ParseCodecString(const std::string& mime_type_lower_case,
   // either VP9, H.264 or HEVC/H.265 codec ID because currently those are the
   // only ones that are not added to the |kStringToCodecMap| and require
   // parsing.
-  if (ParseVp9CodecID(mime_type_lower_case, codec_id, out_profile, out_level)) {
+  if (ParseVp9CodecID(mime_type_lower_case, codec_id, out_profile, out_level,
+                      out_eotf)) {
     *codec = MimeUtil::VP9;
     return true;
   }
@@ -631,9 +646,9 @@ SupportsType MimeUtil::IsSimpleCodecSupported(
   // be specified. There is no "default" video codec for a given container.
   DCHECK_EQ(MimeUtilToVideoCodec(codec), kUnknownVideoCodec);
 
-  SupportsType result =
-      IsCodecSupported(mime_type_lower_case, codec, VIDEO_CODEC_PROFILE_UNKNOWN,
-                       0 /* video_level */, is_encrypted);
+  SupportsType result = IsCodecSupported(
+      mime_type_lower_case, codec, VIDEO_CODEC_PROFILE_UNKNOWN,
+      0 /* video_level */, gfx::ColorSpace::TransferID::INVALID, is_encrypted);
 
   // Platform support should never be ambiguous for simple codecs (no range of
   // profiles to consider).
@@ -645,6 +660,7 @@ SupportsType MimeUtil::IsCodecSupported(const std::string& mime_type_lower_case,
                                         Codec codec,
                                         VideoCodecProfile video_profile,
                                         uint8_t video_level,
+                                        gfx::ColorSpace::TransferID eotf,
                                         bool is_encrypted) const {
   DCHECK_EQ(base::ToLowerASCII(mime_type_lower_case), mime_type_lower_case);
   DCHECK_NE(codec, INVALID_CODEC);
@@ -693,8 +709,8 @@ SupportsType MimeUtil::IsCodecSupported(const std::string& mime_type_lower_case,
   }
 
   if (GetMediaClient() && video_codec != kUnknownVideoCodec &&
-      !GetMediaClient()->IsSupportedVideoConfig(video_codec, video_profile,
-                                                video_level)) {
+      !GetMediaClient()->IsSupportedVideoConfig(
+          {video_codec, video_profile, video_level, eotf})) {
     return IsNotSupported;
   }
 

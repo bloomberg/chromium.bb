@@ -130,6 +130,7 @@
 #include "ipc/ipc_channel_mojo.h"
 #include "ipc/ipc_platform_file.h"
 #include "media/base/media.h"
+#include "media/base/media_switches.h"
 #include "media/media_features.h"
 #include "media/renderers/gpu_video_accelerator_factories.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
@@ -808,6 +809,13 @@ void RenderThreadImpl::Init(
     media::EnablePlatformDecoderSupport();
   }
 #endif
+
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableHDROutput) ||
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableNewVp9CodecString)) {
+    media::EnableNewVp9CodecStringSupport();
+  }
 
   memory_pressure_listener_.reset(new base::MemoryPressureListener(
       base::Bind(&RenderThreadImpl::OnMemoryPressure, base::Unretained(this)),

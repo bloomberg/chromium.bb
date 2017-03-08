@@ -57,15 +57,17 @@ void CastMediaClient::RecordRapporURL(const std::string& metric,
 }
 
 // static
-bool CastMediaClient::IsSupportedVideoConfig(::media::VideoCodec codec,
-                                             ::media::VideoCodecProfile profile,
-                                             int level) {
+bool CastMediaClient::IsSupportedVideoConfig(
+    const ::media::VideoConfig& config) {
+// TODO(servolk): make use of eotf.
 #if defined(OS_ANDROID)
   return supported_profiles_->IsSupportedVideoConfig(
-      ToCastVideoCodec(codec, profile), ToCastVideoProfile(profile), level);
+      ToCastVideoCodec(config.codec, config.profile),
+      ToCastVideoProfile(config.profile), config.level);
 #else
   return MediaCapabilitiesShlib::IsSupportedVideoConfig(
-      ToCastVideoCodec(codec, profile), ToCastVideoProfile(profile), level);
+      ToCastVideoCodec(config.codec, config.profile),
+      ToCastVideoProfile(config.profile), config.level);
 #endif
 }
 

@@ -181,4 +181,64 @@ TEST_F(RenderMediaClientTest, IsKeySystemsUpdateNeeded) {
 #endif
 }
 
+TEST_F(RenderMediaClientTest, IsSupportedVideoConfigBasics) {
+  // Default to common 709.
+  const gfx::ColorSpace::TransferID kTransferId =
+      gfx::ColorSpace::TransferID::BT709;
+
+  // Some codecs do not have a notion of level.
+  const int kUnspecifiedLevel = 0;
+
+  // Expect support for baseline configuration of known codecs.
+  EXPECT_TRUE(render_media_client_->IsSupportedVideoConfig(
+      {media::kCodecH264, media::H264PROFILE_BASELINE, 1, kTransferId}));
+  EXPECT_TRUE(render_media_client_->IsSupportedVideoConfig(
+      {media::kCodecVP8, media::VP8PROFILE_ANY, kUnspecifiedLevel,
+       kTransferId}));
+  EXPECT_TRUE(render_media_client_->IsSupportedVideoConfig(
+      {media::kCodecVP9, media::VP9PROFILE_PROFILE0, kUnspecifiedLevel,
+       kTransferId}));
+  EXPECT_TRUE(render_media_client_->IsSupportedVideoConfig(
+      {media::kCodecTheora, media::VIDEO_CODEC_PROFILE_UNKNOWN,
+       kUnspecifiedLevel, kTransferId}));
+
+  // Expect non-support for the following.
+  EXPECT_FALSE(render_media_client_->IsSupportedVideoConfig(
+      {media::kUnknownVideoCodec, media::VIDEO_CODEC_PROFILE_UNKNOWN,
+       kUnspecifiedLevel, kTransferId}));
+  EXPECT_FALSE(render_media_client_->IsSupportedVideoConfig(
+      {media::kCodecVC1, media::VIDEO_CODEC_PROFILE_UNKNOWN, kUnspecifiedLevel,
+       kTransferId}));
+  EXPECT_FALSE(render_media_client_->IsSupportedVideoConfig(
+      {media::kCodecMPEG2, media::VIDEO_CODEC_PROFILE_UNKNOWN,
+       kUnspecifiedLevel, kTransferId}));
+  EXPECT_FALSE(render_media_client_->IsSupportedVideoConfig(
+      {media::kCodecMPEG4, media::VIDEO_CODEC_PROFILE_UNKNOWN,
+       kUnspecifiedLevel, kTransferId}));
+  EXPECT_FALSE(render_media_client_->IsSupportedVideoConfig(
+      {media::kCodecHEVC, media::VIDEO_CODEC_PROFILE_UNKNOWN, kUnspecifiedLevel,
+       kTransferId}));
+}
+
+TEST_F(RenderMediaClientTest, IsSupportedVideoConfig_VP9TransferFunctions) {
+  // TODO(hubbe): Verify support for HDR codecs when color management enabled.
+  const std::set<gfx::ColorSpace::TransferID> kSupportedTransfers = {
+      gfx::ColorSpace::TransferID::GAMMA22,
+      gfx::ColorSpace::TransferID::BT709,
+      gfx::ColorSpace::TransferID::SMPTE170M,
+      gfx::ColorSpace::TransferID::BT2020_10,
+      gfx::ColorSpace::TransferID::BT2020_12,
+      gfx::ColorSpace::TransferID::IEC61966_2_1,
+  };
+
+  for (int i = 0; i <= static_cast<int>(gfx::ColorSpace::TransferID::LAST);
+       i++) {
+    gfx::ColorSpace::TransferID transfer =
+        static_cast<gfx::ColorSpace::TransferID>(i);
+    EXPECT_EQ(kSupportedTransfers.find(transfer) != kSupportedTransfers.end(),
+              render_media_client_->IsSupportedVideoConfig(
+                  {media::kCodecVP9, media::VP9PROFILE_PROFILE0, 1, transfer}));
+  }
+}
+
 }  // namespace content

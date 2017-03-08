@@ -30,9 +30,7 @@ class CastMediaClient : public ::media::MediaClient {
       std::vector<std::unique_ptr<::media::KeySystemProperties>>*
           key_systems_properties) override;
   void RecordRapporURL(const std::string& metric, const GURL& url) override;
-  bool IsSupportedVideoConfig(::media::VideoCodec codec,
-                              ::media::VideoCodecProfile profile,
-                              int level) override;
+  bool IsSupportedVideoConfig(const ::media::VideoConfig& config) override;
 
  private:
   friend struct base::LazyInstanceTraitsBase<CastMediaClient>;

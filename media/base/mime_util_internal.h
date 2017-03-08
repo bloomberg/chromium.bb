@@ -114,12 +114,16 @@ class MEDIA_EXPORT MimeUtil {
   // whenever |codec_id| is incomplete/invalid, or in some cases when
   // |ambiguous_codec_string| is set to true.
   // |is_encrypted| means the codec will be used with encrypted blocks.
+  // |out_eotf| is the electro-optical transfer function described by the
+  // |codec_id|. Will be gfx::ColorSpace::TransferID::INVALID for many codec
+  // strings where EOTF is not described.
   bool ParseCodecString(const std::string& mime_type_lower_case,
                         const std::string& codec_id,
                         Codec* codec,
                         bool* ambiguous_codec_string,
                         VideoCodecProfile* out_profile,
-                        uint8_t* out_level) const;
+                        uint8_t* out_level,
+                        gfx::ColorSpace::TransferID* out_eotf) const;
 
   // Returns IsSupported if |codec| when platform supports codec contained in
   // |mime_type_lower_case|. Returns MayBeSupported when platform support is
@@ -133,6 +137,7 @@ class MEDIA_EXPORT MimeUtil {
                                 Codec codec,
                                 VideoCodecProfile video_profile,
                                 uint8_t video_level,
+                                gfx::ColorSpace::TransferID eotf,
                                 bool is_encrypted) const;
 
   // Wrapper around IsCodecSupported for simple codecs that are entirely

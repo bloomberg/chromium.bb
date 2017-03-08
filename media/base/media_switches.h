@@ -24,6 +24,8 @@ MEDIA_EXPORT extern const char kDisableMediaSuspend[];
 
 MEDIA_EXPORT extern const char kReportVp9AsAnUnsupportedMimeType[];
 
+MEDIA_EXPORT extern const char kEnableNewVp9CodecString[];
+
 #if defined(OS_LINUX) || defined(OS_FREEBSD) || defined(OS_SOLARIS)
 MEDIA_EXPORT extern const char kAlsaInputDevice[];
 MEDIA_EXPORT extern const char kAlsaOutputDevice[];

@@ -9,6 +9,7 @@
 #include <string>
 #include "media/base/media_export.h"
 #include "media/media_features.h"
+#include "ui/gfx/color_space.h"
 
 namespace media {
 
@@ -102,7 +103,9 @@ std::string MEDIA_EXPORT GetProfileName(VideoCodecProfile profile);
 // TODO(kqyang): Consolidate the two functions once we address crbug.com/667834
 MEDIA_EXPORT bool ParseNewStyleVp9CodecID(const std::string& codec_id,
                                           VideoCodecProfile* profile,
-                                          uint8_t* level_idc);
+                                          uint8_t* level_idc,
+                                          gfx::ColorSpace::TransferID* eotf);
+
 MEDIA_EXPORT bool ParseLegacyVp9CodecID(const std::string& codec_id,
                                         VideoCodecProfile* profile,
                                         uint8_t* level_idc);

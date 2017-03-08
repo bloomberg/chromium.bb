@@ -180,9 +180,7 @@ class TestMediaClient : public MediaClient {
   void AddSupportedKeySystems(std::vector<std::unique_ptr<KeySystemProperties>>*
                                   key_systems_properties) override;
   void RecordRapporURL(const std::string& metric, const GURL& url) final;
-  bool IsSupportedVideoConfig(media::VideoCodec codec,
-                              media::VideoCodecProfile profile,
-                              int level) final;
+  bool IsSupportedVideoConfig(const media::VideoConfig& config) final;
 
   // Helper function to test the case where IsKeySystemsUpdateNeeded() is true
   // after AddSupportedKeySystems() is called.
@@ -233,9 +231,7 @@ void TestMediaClient::RecordRapporURL(const std::string& /* metric */,
   NOTIMPLEMENTED();
 }
 
-bool TestMediaClient::IsSupportedVideoConfig(media::VideoCodec codec,
-                                             media::VideoCodecProfile profile,
-                                             int level) {
+bool TestMediaClient::IsSupportedVideoConfig(const media::VideoConfig& config) {
   return true;
 }
 

@@ -89,13 +89,32 @@ void RenderMediaClient::RecordRapporURL(const std::string& metric,
   GetContentClient()->renderer()->RecordRapporURL(metric, url);
 }
 
-bool RenderMediaClient::IsSupportedVideoConfig(media::VideoCodec codec,
-                                               media::VideoCodecProfile profile,
-                                               int level) {
-  switch (codec) {
+bool IsTransferFunctionSupported(gfx::ColorSpace::TransferID eotf) {
+  switch (eotf) {
+    // Transfers supported without color management.
+    case gfx::ColorSpace::TransferID::GAMMA22:
+    case gfx::ColorSpace::TransferID::BT709:
+    case gfx::ColorSpace::TransferID::SMPTE170M:
+    case gfx::ColorSpace::TransferID::BT2020_10:
+    case gfx::ColorSpace::TransferID::BT2020_12:
+    case gfx::ColorSpace::TransferID::IEC61966_2_1:
+      return true;
+    default:
+      // TODO(hubbe): wire up support for HDR transfers.
+      return false;
+  }
+}
+
+bool RenderMediaClient::IsSupportedVideoConfig(
+    const media::VideoConfig& config) {
+  // TODO(chcunningham): Query decoders for codec profile support.
+  switch (config.codec) {
+    case media::kCodecVP9:
+      // Color management required for HDR to not look terrible.
+      return IsTransferFunctionSupported(config.eotf);
+
     case media::kCodecH264:
     case media::kCodecVP8:
-    case media::kCodecVP9:
     case media::kCodecTheora:
       return true;
 
