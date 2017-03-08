@@ -7,7 +7,6 @@
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/TaskRunnerHelper.h"
 #include "core/events/Event.h"
-#include "core/page/NetworkStateNotifier.h"
 #include "modules/EventTargetModules.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "wtf/text/WTFString.h"

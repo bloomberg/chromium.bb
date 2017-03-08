@@ -4,19 +4,19 @@
 
 #include "core/html/HTMLVideoElement.h"
 
+#include <memory>
 #include "core/dom/Document.h"
 #include "core/dom/DocumentUserGestureToken.h"
 #include "core/loader/EmptyClients.h"
-#include "core/page/NetworkStateNotifier.h"
 #include "core/testing/DummyPageHolder.h"
 #include "platform/UserGestureIndicator.h"
+#include "platform/network/NetworkStateNotifier.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "public/platform/WebMediaPlayer.h"
 #include "public/platform/WebSize.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/PtrUtil.h"
-#include <memory>
 
 namespace blink {
 

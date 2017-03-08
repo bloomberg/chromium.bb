@@ -27,8 +27,8 @@
 #define NetworkStateNotifier_h
 
 #include <memory>
-#include "core/CoreExport.h"
 #include "platform/CrossThreadCopier.h"
+#include "platform/PlatformExport.h"
 #include "platform/WebTaskRunner.h"
 #include "public/platform/WebConnectionType.h"
 #include "wtf/Allocator.h"
@@ -39,7 +39,7 @@
 
 namespace blink {
 
-class CORE_EXPORT NetworkStateNotifier {
+class PLATFORM_EXPORT NetworkStateNotifier {
   WTF_MAKE_NONCOPYABLE(NetworkStateNotifier);
   USING_FAST_MALLOC(NetworkStateNotifier);
 
@@ -96,7 +96,7 @@ class CORE_EXPORT NetworkStateNotifier {
       case WebConnectionTypeUnknown:
         return false;
     }
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return false;
   }
 
@@ -194,7 +194,7 @@ class CORE_EXPORT NetworkStateNotifier {
   ObserverListMap m_onLineStateObservers;
 };
 
-CORE_EXPORT NetworkStateNotifier& networkStateNotifier();
+PLATFORM_EXPORT NetworkStateNotifier& networkStateNotifier();
 
 }  // namespace blink
 

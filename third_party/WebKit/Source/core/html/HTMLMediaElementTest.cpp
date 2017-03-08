@@ -7,8 +7,8 @@
 #include "core/frame/Settings.h"
 #include "core/html/HTMLAudioElement.h"
 #include "core/html/HTMLVideoElement.h"
-#include "core/page/NetworkStateNotifier.h"
 #include "core/testing/DummyPageHolder.h"
+#include "platform/network/NetworkStateNotifier.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {

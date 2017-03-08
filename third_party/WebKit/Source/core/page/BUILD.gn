@@ -23,8 +23,6 @@ blink_core_sources("page") {
     "FocusChangedObserver.h",
     "FocusController.cpp",
     "FrameTree.cpp",
-    "NetworkStateNotifier.cpp",
-    "NetworkStateNotifier.h",
     "Page.cpp",
     "Page.h",
     "PageAnimator.cpp",

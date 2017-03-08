@@ -28,24 +28,19 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebNetworkStateNotifier_h
-#define WebNetworkStateNotifier_h
+#include "public/platform/WebNetworkStateNotifier.h"
 
-#include "../platform/WebCommon.h"
-#include "../platform/WebConnectionType.h"
+#include "platform/network/NetworkStateNotifier.h"
 
 namespace blink {
 
-class WebNetworkStateNotifier {
- public:
-  BLINK_EXPORT static void setOnLine(bool);
-  BLINK_EXPORT static void setWebConnection(WebConnectionType,
-                                            double maxBandwidthMbps);
+void WebNetworkStateNotifier::setOnLine(bool onLine) {
+  networkStateNotifier().setOnLine(onLine);
+}
 
- private:
-  WebNetworkStateNotifier();
-};
+void WebNetworkStateNotifier::setWebConnection(WebConnectionType type,
+                                               double maxBandwidthMbps) {
+  networkStateNotifier().setWebConnection(type, maxBandwidthMbps);
+}
 
 }  // namespace blink
-
-#endif

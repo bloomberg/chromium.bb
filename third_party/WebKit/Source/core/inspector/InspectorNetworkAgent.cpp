@@ -30,6 +30,7 @@
 
 #include "core/inspector/InspectorNetworkAgent.h"
 
+#include <memory>
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/SourceLocation.h"
 #include "core/dom/Document.h"
@@ -50,7 +51,6 @@
 #include "core/loader/FrameLoader.h"
 #include "core/loader/MixedContentChecker.h"
 #include "core/loader/ThreadableLoaderClient.h"
-#include "core/page/NetworkStateNotifier.h"
 #include "core/page/Page.h"
 #include "core/xmlhttprequest/XMLHttpRequest.h"
 #include "platform/RuntimeEnabledFeatures.h"
@@ -62,6 +62,7 @@
 #include "platform/loader/fetch/ResourceFetcher.h"
 #include "platform/loader/fetch/UniqueIdentifier.h"
 #include "platform/network/HTTPHeaderMap.h"
+#include "platform/network/NetworkStateNotifier.h"
 #include "platform/network/ResourceError.h"
 #include "platform/network/ResourceLoadTiming.h"
 #include "platform/network/ResourceRequest.h"
@@ -78,7 +79,6 @@
 #include "wtf/CurrentTime.h"
 #include "wtf/RefPtr.h"
 #include "wtf/text/Base64.h"
-#include <memory>
 
 namespace blink {
 

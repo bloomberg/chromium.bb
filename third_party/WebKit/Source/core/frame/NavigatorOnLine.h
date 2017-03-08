@@ -32,7 +32,7 @@
 #define NavigatorOnLine_h
 
 #include "core/CoreExport.h"
-#include "core/page/NetworkStateNotifier.h"
+#include "platform/network/NetworkStateNotifier.h"
 
 namespace blink {
 

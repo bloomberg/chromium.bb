@@ -210,7 +210,6 @@ component("web") {
     "WebMediaStreamRegistry.cpp",
     "WebMemoryStatistics.cpp",
     "WebMetaElement.cpp",
-    "WebNetworkStateNotifier.cpp",
     "WebNode.cpp",
     "WebOptionElement.cpp",
     "WebPageImportanceSignals.cpp",

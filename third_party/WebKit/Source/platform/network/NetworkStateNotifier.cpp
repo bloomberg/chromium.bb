@@ -23,7 +23,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/page/NetworkStateNotifier.h"
+#include "platform/network/NetworkStateNotifier.h"
 
 #include "platform/CrossThreadFunctional.h"
 #include "wtf/Assertions.h"
