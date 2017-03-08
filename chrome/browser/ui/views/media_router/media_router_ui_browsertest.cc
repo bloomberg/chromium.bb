@@ -7,6 +7,7 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/extensions/browser_action_test_util.h"
 #include "chrome/browser/media/router/media_router_ui_service.h"
+#include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu_test_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -31,6 +32,11 @@
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
 #include "ui/views/widget/widget.h"
+
+namespace {
+constexpr char kToolbarMigratedComponentActionStatus[] =
+    "toolbar_migrated_component_action_status";
+}
 
 namespace media_router {
 
@@ -114,6 +120,18 @@ class MediaRouterUIBrowserTest : public InProcessBrowserTest {
     return BrowserView::GetBrowserViewForBrowser(browser())
         ->toolbar()
         ->app_menu_button();
+  }
+
+  // Sets the old preference to show the toolbar action icon to |always_show|,
+  // and migrates the preference.
+  void MigrateToolbarIconPref(bool always_show) {
+    {
+      DictionaryPrefUpdate update(browser()->profile()->GetPrefs(),
+                                  kToolbarMigratedComponentActionStatus);
+      update->SetBoolean(ComponentToolbarActionsFactory::kMediaRouterActionId,
+                         always_show);
+    }
+    chrome::MigrateObsoleteProfilePrefs(browser()->profile());
   }
 
  protected:
@@ -349,6 +367,19 @@ IN_PROC_BROWSER_TEST_F(MediaRouterUIBrowserTest, UpdateActionLocation) {
   // The action should be back on the main bar.
   EXPECT_TRUE(
       toolbar_actions_bar_->IsActionVisibleOnMainBar(GetMediaRouterAction()));
+}
+
+IN_PROC_BROWSER_TEST_F(MediaRouterUIBrowserTest, MigrateToolbarIconShownPref) {
+  MigrateToolbarIconPref(true);
+  EXPECT_TRUE(MediaRouterActionController::GetAlwaysShowActionPref(
+      browser()->profile()));
+}
+
+IN_PROC_BROWSER_TEST_F(MediaRouterUIBrowserTest,
+                       MigrateToolbarIconUnshownPref) {
+  MigrateToolbarIconPref(false);
+  EXPECT_FALSE(MediaRouterActionController::GetAlwaysShowActionPref(
+      browser()->profile()));
 }
 
 }  // namespace media_router
