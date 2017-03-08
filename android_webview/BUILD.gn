@@ -789,7 +789,7 @@ android_library("android_webview_crash_services_java") {
 }
 
 android_aidl("crash_receiver_aidl") {
-  import_include = "java/src"
+  import_include = [ "java/src" ]
   sources = [
     "java/src/org/chromium/android_webview/crash/ICrashReceiverService.aidl",
   ]

@@ -14,7 +14,7 @@ import("//chrome/android/webapk/libs/runtime_library_version.gni")
 runtime_library_dex_asset_name = "webapk$runtime_library_version.dex"
 
 android_aidl("webapk_service_aidl") {
-  import_include = "src/org/chromium/webapk/lib/runtime_library"
+  import_include = [ "src/org/chromium/webapk/lib/runtime_library" ]
   interface_file = "src/org/chromium/webapk/lib/runtime_library/common.aidl"
   sources = [
     "src/org/chromium/webapk/lib/runtime_library/IWebApkApi.aidl",
