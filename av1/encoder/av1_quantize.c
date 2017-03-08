@@ -730,6 +730,18 @@ void av1_highbd_quantize_fp_facade(const tran_low_t *coeff_ptr,
   const qm_val_t *iqm_ptr = qparam->iqmatrix;
 #endif  // CONFIG_AOM_QM
 
+  if (n_coeffs < 16) {
+    av1_highbd_quantize_fp_c(coeff_ptr, n_coeffs, skip_block, p->zbin,
+                             p->round_fp, p->quant_fp, p->quant_shift,
+                             qcoeff_ptr, dqcoeff_ptr, pd->dequant, eob_ptr,
+                             sc->scan, sc->iscan,
+#if CONFIG_AOM_QM
+                             qm_ptr, iqm_ptr,
+#endif
+                             qparam->log_scale);
+    return;
+  }
+
   av1_highbd_quantize_fp(coeff_ptr, n_coeffs, skip_block, p->zbin, p->round_fp,
                          p->quant_fp, p->quant_shift, qcoeff_ptr, dqcoeff_ptr,
                          pd->dequant, eob_ptr, sc->scan, sc->iscan,
