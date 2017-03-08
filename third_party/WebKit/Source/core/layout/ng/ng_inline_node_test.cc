@@ -30,11 +30,11 @@ class NGInlineNodeForTest : public NGInlineNode {
   String& Text() { return text_content_; }
   Vector<NGLayoutInlineItem>& Items() { return items_; }
 
-  void Append(const String& text, const ComputedStyle* style = nullptr) {
+  void Append(const String& text,
+              const ComputedStyle* style = nullptr,
+              LayoutObject* layout_object = nullptr) {
     unsigned start = text_content_.length();
     text_content_.append(text);
-    // Pass non-null LayoutObject to indicate this is a text from LayoutText.
-    LayoutObject* layout_object = reinterpret_cast<LayoutObject*>(1);
     items_.push_back(
         NGLayoutInlineItem(start, start + text.length(), style, layout_object));
   }
@@ -67,13 +67,14 @@ class NGInlineNodeTest : public RenderingTest {
     style_->font().update(nullptr);
   }
 
-  void setAhemToStyle() {
+  void UseLayoutObjectAndAhem() {
     // Get Ahem from document. Loading "Ahem.woff" using |createTestFont| fails
     // on linux_chromium_asan_rel_ng.
     loadAhem();
     setBodyInnerHTML("<div id=t style='font:10px Ahem'></div>");
-    LayoutObject* layout_object = getLayoutObjectByElementId("t");
-    style_->setFont(layout_object->style()->font());
+    layout_object_ = getLayoutObjectByElementId("t");
+    DCHECK(layout_object_);
+    style_ = layout_object_->style();
   }
 
   void CreateLine(NGInlineNode* node,
@@ -96,7 +97,8 @@ class NGInlineNodeTest : public RenderingTest {
     }
   }
 
-  RefPtr<ComputedStyle> style_;
+  RefPtr<const ComputedStyle> style_;
+  LayoutObject* layout_object_ = nullptr;
 };
 
 #define TEST_ITEM_OFFSET_DIR(item, start, end, direction) \
@@ -163,23 +165,25 @@ TEST_F(NGInlineNodeTest, SegmentBidiOverride) {
   TEST_ITEM_OFFSET_DIR(items[3], 10u, 11u, TextDirection::kLtr);
 }
 
-static NGInlineNodeForTest* CreateBidiIsolateNode(const ComputedStyle* style) {
+static NGInlineNodeForTest* CreateBidiIsolateNode(const ComputedStyle* style,
+                                                  LayoutObject* layout_object) {
   NGInlineNodeForTest* node = new NGInlineNodeForTest(style);
-  node->Append("Hello ", style);
+  node->Append("Hello ", style, layout_object);
   node->Append(rightToLeftIsolateCharacter);
-  node->Append(u"\u05E2\u05D1\u05E8\u05D9\u05EA ", style);
+  node->Append(u"\u05E2\u05D1\u05E8\u05D9\u05EA ", style, layout_object);
   node->Append(leftToRightIsolateCharacter);
-  node->Append("A", style);
+  node->Append("A", style, layout_object);
   node->Append(popDirectionalIsolateCharacter);
-  node->Append(u"\u05E2\u05D1\u05E8\u05D9\u05EA", style);
+  node->Append(u"\u05E2\u05D1\u05E8\u05D9\u05EA", style, layout_object);
   node->Append(popDirectionalIsolateCharacter);
-  node->Append(" World", style);
+  node->Append(" World", style, layout_object);
   node->SegmentText();
   return node;
 }
 
 TEST_F(NGInlineNodeTest, SegmentBidiIsolate) {
-  NGInlineNodeForTest* node = CreateBidiIsolateNode(style_.get());
+  NGInlineNodeForTest* node =
+      CreateBidiIsolateNode(style_.get(), layout_object_);
   Vector<NGLayoutInlineItem>& items = node->Items();
   ASSERT_EQ(9u, items.size());
   TEST_ITEM_OFFSET_DIR(items[0], 0u, 6u, TextDirection::kLtr);
@@ -202,10 +206,12 @@ TEST_F(NGInlineNodeTest, SegmentBidiIsolate) {
   EXPECT_EQ(dir, node->Items()[fragment->ItemIndex()].Direction())
 
 TEST_F(NGInlineNodeTest, CreateLineBidiIsolate) {
+  UseLayoutObjectAndAhem();
   RefPtr<ComputedStyle> style = ComputedStyle::create();
   style->setLineHeight(Length(1, Fixed));
   style->font().update(nullptr);
-  NGInlineNodeForTest* node = CreateBidiIsolateNode(style.get());
+  NGInlineNodeForTest* node =
+      CreateBidiIsolateNode(style.get(), layout_object_);
   Vector<RefPtr<const NGPhysicalTextFragment>> fragments;
   CreateLine(node, &fragments);
   ASSERT_EQ(5u, fragments.size());
@@ -217,9 +223,9 @@ TEST_F(NGInlineNodeTest, CreateLineBidiIsolate) {
 }
 
 TEST_F(NGInlineNodeTest, MinMaxContentSize) {
-  setAhemToStyle();
+  UseLayoutObjectAndAhem();
   NGInlineNodeForTest* node = new NGInlineNodeForTest(style_.get());
-  node->Append("AB CDE", style_.get());
+  node->Append("AB CDE", style_.get(), layout_object_);
   node->ShapeText();
   MinMaxContentSize sizes = node->ComputeMinMaxContentSize();
   // TODO(kojii): min_content should be 20, but is 30 until NGLineBuilder
@@ -229,10 +235,10 @@ TEST_F(NGInlineNodeTest, MinMaxContentSize) {
 }
 
 TEST_F(NGInlineNodeTest, MinMaxContentSizeElementBoundary) {
-  setAhemToStyle();
+  UseLayoutObjectAndAhem();
   NGInlineNodeForTest* node = new NGInlineNodeForTest(style_.get());
-  node->Append("A B", style_.get());
-  node->Append("C D", style_.get());
+  node->Append("A B", style_.get(), layout_object_);
+  node->Append("C D", style_.get(), layout_object_);
   node->ShapeText();
   MinMaxContentSize sizes = node->ComputeMinMaxContentSize();
   // |min_content| should be the width of "BC" because there is an element
