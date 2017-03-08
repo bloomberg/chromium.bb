@@ -1097,10 +1097,12 @@ void RenderWidgetHostImpl::ForwardGestureEventWithLatencyInfo(
     *is_in_gesture_scroll = true;
   } else if (gesture_event.type() == blink::WebInputEvent::GestureScrollEnd ||
              gesture_event.type() == blink::WebInputEvent::GestureFlingStart) {
-    DCHECK(*is_in_gesture_scroll ||
-           (gesture_event.type() == blink::WebInputEvent::GestureFlingStart &&
-            gesture_event.sourceDevice ==
-                blink::WebGestureDevice::WebGestureDeviceTouchpad));
+    // TODO(wjmaclean): Re-enable the following DCHECK once crbug.com/695187
+    // is fixed.
+    // DCHECK(*is_in_gesture_scroll ||
+    //       (gesture_event.type() == blink::WebInputEvent::GestureFlingStart &&
+    //        gesture_event.sourceDevice ==
+    //            blink::WebGestureDevice::WebGestureDeviceTouchpad));
     *is_in_gesture_scroll = false;
   }
 
