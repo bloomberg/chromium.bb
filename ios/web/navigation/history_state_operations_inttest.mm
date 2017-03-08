@@ -6,7 +6,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/ios/wait_util.h"
+#import "ios/testing/wait_util.h"
 #import "ios/web/navigation/navigation_item_impl.h"
 #import "ios/web/public/navigation_item.h"
 #import "ios/web/public/navigation_manager.h"
@@ -47,6 +47,9 @@ NSString* const kUpdateStateParamsScriptFormat =
     @"updateStateParams('%s', '%s', '%s')";
 NSString* const kOnLoadCheckScript = @"isOnLoadPlaceholderTextVisible()";
 NSString* const kNoOpCheckScript = @"isNoOpPlaceholderTextVisible()";
+
+// Wait timeout for state updates.
+const NSTimeInterval kWaitForStateUpdateTimeout = 2.0;
 
 }  // namespace
 
@@ -110,9 +113,11 @@ class HistoryStateOperationsTest : public web::WebIntTest {
 
   // Waits for the NoOp text to be visible.
   void WaitForNoOpText() {
-    base::test::ios::WaitUntilCondition(^bool {
-      return IsNoOpTextVisible();
-    });
+    BOOL completed = testing::WaitUntilConditionOrTimeout(
+        testing::kWaitForJSCompletionTimeout, ^{
+          return IsNoOpTextVisible();
+        });
+    EXPECT_TRUE(completed) << "NoOp text failed to be visible.";
   }
 
  private:
@@ -247,9 +252,11 @@ TEST_F(HistoryStateOperationsTest, DISABLED_TitleReplacement) {
   SetStateParams(empty_state, new_title, empty_url);
   ASSERT_TRUE(web::test::TapWebViewElementWithId(web_state(), kReplaceStateId));
   // Wait for the title to be reflected in the NavigationItem.
-  base::test::ios::WaitUntilCondition(^bool {
-    return GetLastCommittedItem()->GetTitle() == ASCIIToUTF16(new_title);
-  });
+  BOOL completed =
+      testing::WaitUntilConditionOrTimeout(kWaitForStateUpdateTimeout, ^{
+        return GetLastCommittedItem()->GetTitle() == ASCIIToUTF16(new_title);
+      });
+  EXPECT_TRUE(completed) << "Failed to validate NavigationItem title.";
   // Verify that the forward navigation was not pruned.
   EXPECT_EQ(GetIndexOfNavigationItem(GetLastCommittedItem()) + 1,
             GetIndexOfNavigationItem(about_blank_item));
@@ -275,18 +282,25 @@ TEST_F(HistoryStateOperationsTest, StateReplacement) {
   SetStateParams(new_state, empty_title, empty_url);
   ASSERT_TRUE(web::test::TapWebViewElementWithId(web_state(), kReplaceStateId));
   // Verify that the state is reflected in the JavaScript context.
-  base::test::ios::WaitUntilCondition(^bool {
-    return GetJavaScriptState() == new_state;
-  });
+  BOOL verify_java_script_context_completed =
+      testing::WaitUntilConditionOrTimeout(
+          testing::kWaitForJSCompletionTimeout, ^{
+            return GetJavaScriptState() == new_state;
+          });
+  EXPECT_TRUE(verify_java_script_context_completed)
+      << "Failed to validate JavaScript state.";
   // Verify that the state is reflected in the latest NavigationItem.
   std::string serialized_state("\"STATE OBJECT\"");
-  base::test::ios::WaitUntilCondition(^bool {
-    web::NavigationItemImpl* item =
-        static_cast<web::NavigationItemImpl*>(GetLastCommittedItem());
-    std::string item_state =
-        base::SysNSStringToUTF8(item->GetSerializedStateObject());
-    return item_state == serialized_state;
-  });
+  BOOL verify_navigation_item_completed =
+      testing::WaitUntilConditionOrTimeout(kWaitForStateUpdateTimeout, ^{
+        web::NavigationItemImpl* item =
+            static_cast<web::NavigationItemImpl*>(GetLastCommittedItem());
+        std::string item_state =
+            base::SysNSStringToUTF8(item->GetSerializedStateObject());
+        return item_state == serialized_state;
+      });
+  EXPECT_TRUE(verify_navigation_item_completed)
+      << "Failed to validate NavigationItem state.";
   // Verify that the forward navigation was not pruned.
   EXPECT_EQ(GetIndexOfNavigationItem(GetLastCommittedItem()) + 1,
             GetIndexOfNavigationItem(about_blank_item));
@@ -304,9 +318,11 @@ TEST_F(HistoryStateOperationsTest, StateReplacementReload) {
   // Reload the page and check that the state object is present.
   Reload();
   ASSERT_TRUE(IsOnLoadTextVisible());
-  base::test::ios::WaitUntilCondition(^bool {
-    return GetJavaScriptState() == new_state;
-  });
+  BOOL completed = testing::WaitUntilConditionOrTimeout(
+      testing::kWaitForJSCompletionTimeout, ^{
+        return GetJavaScriptState() == new_state;
+      });
+  EXPECT_TRUE(completed) << "Failed to validate JavaScript state.";
 }
 
 // Tests that the state object is correctly set for a page after a back/forward
@@ -335,9 +351,11 @@ TEST_F(HistoryStateOperationsTest, StateReplacementBackForward) {
     navigation_manager()->GoBack();
   });
   ASSERT_TRUE(IsOnLoadTextVisible());
-  base::test::ios::WaitUntilCondition(^bool {
-    return GetJavaScriptState() == new_state;
-  });
+  BOOL completed = testing::WaitUntilConditionOrTimeout(
+      testing::kWaitForJSCompletionTimeout, ^{
+        return GetJavaScriptState() == new_state;
+      });
+  EXPECT_TRUE(completed) << "Failed to validate JavaScript state.";
 }
 
 // Tests that calling window.history.pushState() creates a new NavigationItem
@@ -361,9 +379,11 @@ TEST_F(HistoryStateOperationsTest, PushState) {
   SetStateParams(empty_state, empty_title, new_url);
   ASSERT_TRUE(web::test::TapWebViewElementWithId(web_state(), kPushStateId));
   // Verify that the url with the path is pushed.
-  base::test::ios::WaitUntilCondition(^bool {
-    return GetLastCommittedItem()->GetURL() == new_url;
-  });
+  BOOL completed =
+      testing::WaitUntilConditionOrTimeout(kWaitForStateUpdateTimeout, ^{
+        return GetLastCommittedItem()->GetURL() == new_url;
+      });
+  EXPECT_TRUE(completed) << "Failed to validate current url.";
   // Verify that a new NavigationItem was created and that the forward item was
   // pruned.
   EXPECT_EQ(GetIndexOfNavigationItem(non_pushed_item) + 1,
@@ -386,9 +406,11 @@ TEST_F(HistoryStateOperationsTest, ReplaceStatePostRequest) {
   SetStateParams(new_state, empty_title, new_url);
   ASSERT_TRUE(web::test::TapWebViewElementWithId(web_state(), kReplaceStateId));
   // Verify that url has been replaced.
-  base::test::ios::WaitUntilCondition(^bool {
-    return GetLastCommittedItem()->GetURL() == new_url;
-  });
+  BOOL completed =
+      testing::WaitUntilConditionOrTimeout(kWaitForStateUpdateTimeout, ^{
+        return GetLastCommittedItem()->GetURL() == new_url;
+      });
+  EXPECT_TRUE(completed) << "Failed to validate current url.";
   // Verify that the NavigationItem no longer has POST data.
   EXPECT_FALSE(GetLastCommittedItem()->HasPostData());
 }
@@ -403,9 +425,11 @@ TEST_F(HistoryStateOperationsTest, ReplaceStateNoHashChangeEvent) {
   SetStateParams(empty_state, empty_title, new_url);
   ASSERT_TRUE(web::test::TapWebViewElementWithId(web_state(), kReplaceStateId));
   // Verify that url has been replaced.
-  base::test::ios::WaitUntilCondition(^bool {
-    return GetLastCommittedItem()->GetURL() == new_url;
-  });
+  BOOL completed =
+      testing::WaitUntilConditionOrTimeout(kWaitForStateUpdateTimeout, ^{
+        return GetLastCommittedItem()->GetURL() == new_url;
+      });
+  EXPECT_TRUE(completed) << "Failed to validate current url.";
   // Verify that the hashchange event was not fired.
   EXPECT_FALSE(static_cast<web::NavigationItemImpl*>(GetLastCommittedItem())
                    ->IsCreatedFromHashChange());

@@ -599,6 +599,7 @@ test("ios_web_inttests") {
     ":web",
     "//base/test:test_support",
     "//ios/testing:http_server_bundle_data",
+    "//ios/testing:ios_test_support",
     "//ios/web/test:mojo_bindings",
     "//ios/web/test:packed_resources",
     "//ios/web/test:resources",
