@@ -23,7 +23,8 @@ void range_check_func(int32_t stage, const int32_t *input, const int32_t *buf,
       fprintf(stderr, "Error: coeffs contain out-of-range values\n");
       fprintf(stderr, "stage: %d\n", stage);
       fprintf(stderr, "node: %d\n", i);
-      fprintf(stderr, "allowed range: [%d;%d]\n", minValue, maxValue);
+      fprintf(stderr, "allowed range: [%" PRId64 ";%" PRId64 "]\n", minValue,
+              maxValue);
       fprintf(stderr, "coeffs: ");
 
       fprintf(stderr, "[");
