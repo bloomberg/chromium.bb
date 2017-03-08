@@ -1240,20 +1240,34 @@ const AtomicString& Node::lookupPrefix(const AtomicString& namespaceURI) const {
   return context->locateNamespacePrefix(namespaceURI);
 }
 
-const AtomicString& Node::lookupNamespaceURI(const String& prefix) const {
+const AtomicString& Node::lookupNamespaceURI(
+    const String& specifiedPrefix) const {
   // Implemented according to
-  // http://www.w3.org/TR/2004/REC-DOM-Level-3-Core-20040407/namespaces-algorithms.html#lookupNamespaceURIAlgo
+  // https://dom.spec.whatwg.org/#dom-node-lookupnamespaceuri
 
-  if (!prefix.isNull() && prefix.isEmpty())
-    return nullAtom;
+  // 1. If prefix is the empty string, then set it to null.
+  String prefix = specifiedPrefix;
+  if (!specifiedPrefix.isNull() && specifiedPrefix.isEmpty())
+    prefix = String();
 
+  // 2. Return the result of running locate a namespace for the context object
+  // using prefix.
+
+  // https://dom.spec.whatwg.org/#locate-a-namespace
   switch (getNodeType()) {
     case kElementNode: {
       const Element& element = toElement(*this);
 
+      // 1. If its namespace is not null and its namespace prefix is prefix,
+      // then return namespace.
       if (!element.namespaceURI().isNull() && element.prefix() == prefix)
         return element.namespaceURI();
 
+      // 2. If it has an attribute whose namespace is the XMLNS namespace,
+      // namespace prefix is "xmlns", and local name is prefix, or if prefix is
+      // null and it has an attribute whose namespace is the XMLNS namespace,
+      // namespace prefix is null, and local name is "xmlns", then return its
+      // value if it is not the empty string, and null otherwise.
       AttributeCollection attributes = element.attributes();
       for (const Attribute& attr : attributes) {
         if (attr.prefix() == xmlnsAtom && attr.localName() == prefix) {
@@ -1268,6 +1282,9 @@ const AtomicString& Node::lookupNamespaceURI(const String& prefix) const {
         }
       }
 
+      // 3. If its parent element is null, then return null.
+      // 4. Return the result of running locate a namespace on its parent
+      // element using prefix.
       if (Element* parent = parentElement())
         return parent->lookupNamespaceURI(prefix);
       return nullAtom;
