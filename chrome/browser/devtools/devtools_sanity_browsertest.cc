@@ -1321,8 +1321,9 @@ IN_PROC_BROWSER_TEST_F(WorkerDevToolsSanityTest, InspectSharedWorker) {
   RunTest("testSharedWorker", kSharedWorkerTestPage, kSharedWorkerTestWorker);
 }
 
-// Flakey on Win.  http://crbug.com/663351
-#if defined(OS_WIN)
+// Flaky on Windows and on Mac.
+// http://crbug.com/663351 and http://crbug.com/432444.
+#if defined(OS_WIN) || defined(OS_MACOSX)
 #define MAYBE_PauseInSharedWorkerInitialization \
   DISABLED_PauseInSharedWorkerInitialization
 #else
