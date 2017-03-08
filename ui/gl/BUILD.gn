@@ -14,7 +14,7 @@ declare_args() {
 }
 
 use_egl = is_win || is_android || is_linux
-use_glx = use_x11 || ozone_platform_x11
+build_x11_gl = use_x11 || ozone_platform_x11
 
 if (is_android) {
   import("//build/config/android/config.gni")
@@ -28,7 +28,7 @@ buildflag_header("gl_features") {
 
 config("gl_config") {
   defines = []
-  if (use_glx) {
+  if (build_x11_gl) {
     defines += [
       "GL_GLEXT_PROTOTYPES",
       "USE_GLX",
@@ -189,8 +189,6 @@ component("gl") {
       "gl_surface_egl_x11.h",
       "gl_surface_glx_x11.cc",
       "gl_surface_glx_x11.h",
-      "gl_surface_osmesa_x11.cc",
-      "gl_surface_osmesa_x11.h",
     ]
 
     deps += [ "//ui/base/x" ]
@@ -200,7 +198,7 @@ component("gl") {
       "//third_party/angle:libGLESv2",
     ]
   }
-  if (use_glx) {
+  if (build_x11_gl) {
     sources += [
       "gl_bindings_autogen_glx.cc",
       "gl_bindings_autogen_glx.h",
@@ -212,6 +210,8 @@ component("gl") {
       "gl_image_glx.h",
       "gl_surface_glx.cc",
       "gl_surface_glx.h",
+      "gl_surface_osmesa_x11.cc",
+      "gl_surface_osmesa_x11.h",
       "gl_visual_picker_glx.cc",
       "gl_visual_picker_glx.h",
     ]
@@ -383,7 +383,7 @@ test("gl_unittests") {
     ]
   }
 
-  if (use_glx) {
+  if (build_x11_gl) {
     sources += [ "glx_api_unittest.cc" ]
   }
 
