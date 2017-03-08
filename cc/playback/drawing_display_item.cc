@@ -14,7 +14,6 @@
 #include "base/values.h"
 #include "cc/debug/picture_debug_util.h"
 #include "third_party/skia/include/core/SkCanvas.h"
-#include "third_party/skia/include/utils/SkPictureUtils.h"
 #include "ui/gfx/skia_util.h"
 
 namespace cc {
