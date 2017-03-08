@@ -7,7 +7,7 @@
 #include <map>
 
 #include "base/lazy_instance.h"
-#include "services/ui/public/cpp/window_compositor_frame_sink.h"
+#include "services/ui/public/cpp/client_compositor_frame_sink.h"
 
 namespace content {
 
@@ -58,8 +58,8 @@ RendererWindowTreeClient::CreateCompositorFrameSink(
     const cc::FrameSinkId& frame_sink_id,
     scoped_refptr<cc::ContextProvider> context_provider,
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager) {
-  std::unique_ptr<ui::WindowCompositorFrameSinkBinding> frame_sink_binding;
-  auto frame_sink = ui::WindowCompositorFrameSink::Create(
+  std::unique_ptr<ui::ClientCompositorFrameSinkBinding> frame_sink_binding;
+  auto frame_sink = ui::ClientCompositorFrameSink::Create(
       frame_sink_id, std::move(context_provider), gpu_memory_buffer_manager,
       &frame_sink_binding);
   if (tree_) {

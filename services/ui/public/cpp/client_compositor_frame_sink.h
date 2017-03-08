@@ -16,22 +16,22 @@
 
 namespace ui {
 
-class WindowCompositorFrameSinkBinding;
+class ClientCompositorFrameSinkBinding;
 
-class WindowCompositorFrameSink
+class ClientCompositorFrameSink
     : public cc::CompositorFrameSink,
       public cc::mojom::MojoCompositorFrameSinkClient,
       public cc::ExternalBeginFrameSourceClient {
  public:
   // static
-  static std::unique_ptr<WindowCompositorFrameSink> Create(
+  static std::unique_ptr<ClientCompositorFrameSink> Create(
       const cc::FrameSinkId& frame_sink_id,
       scoped_refptr<cc::ContextProvider> context_provider,
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
-      std::unique_ptr<WindowCompositorFrameSinkBinding>*
+      std::unique_ptr<ClientCompositorFrameSinkBinding>*
           compositor_frame_sink_binding);
 
-  ~WindowCompositorFrameSink() override;
+  ~ClientCompositorFrameSink() override;
 
   // cc::CompositorFrameSink implementation.
   bool BindToClient(cc::CompositorFrameSinkClient* client) override;
@@ -39,7 +39,7 @@ class WindowCompositorFrameSink
   void SubmitCompositorFrame(cc::CompositorFrame frame) override;
 
  private:
-  WindowCompositorFrameSink(
+  ClientCompositorFrameSink(
       const cc::FrameSinkId& frame_sink_id,
       scoped_refptr<cc::ContextProvider> context_provider,
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
@@ -69,26 +69,26 @@ class WindowCompositorFrameSink
   std::unique_ptr<base::ThreadChecker> thread_checker_;
   const cc::FrameSinkId frame_sink_id_;
 
-  DISALLOW_COPY_AND_ASSIGN(WindowCompositorFrameSink);
+  DISALLOW_COPY_AND_ASSIGN(ClientCompositorFrameSink);
 };
 
-// A WindowCompositorFrameSinkBinding is a bundle of mojo interfaces that is
-// created by WindowCompositorFrameSink::Create and is used by or implemented by
+// A ClientCompositorFrameSinkBinding is a bundle of mojo interfaces that is
+// created by ClientCompositorFrameSink::Create and is used by or implemented by
 // Mus when a window is attached to a frame-sink..
-// WindowCompositorFrameSinkBinding has no standalone functionality. Its purpose
+// ClientCompositorFrameSinkBinding has no standalone functionality. Its purpose
 // is to allow safely creating and attaching a CompositorFrameSink on one
 // thread and using it on another.
-class WindowCompositorFrameSinkBinding {
+class ClientCompositorFrameSinkBinding {
  public:
-  ~WindowCompositorFrameSinkBinding();
+  ~ClientCompositorFrameSinkBinding();
 
   cc::mojom::MojoCompositorFrameSinkRequest TakeFrameSinkRequest();
   cc::mojom::MojoCompositorFrameSinkClientPtrInfo TakeFrameSinkClient();
 
  private:
-  friend class WindowCompositorFrameSink;
+  friend class ClientCompositorFrameSink;
 
-  WindowCompositorFrameSinkBinding(
+  ClientCompositorFrameSinkBinding(
       cc::mojom::MojoCompositorFrameSinkRequest compositor_frame_sink_request,
       cc::mojom::MojoCompositorFrameSinkClientPtrInfo
           compositor_frame_sink_client);
@@ -96,7 +96,7 @@ class WindowCompositorFrameSinkBinding {
   cc::mojom::MojoCompositorFrameSinkRequest compositor_frame_sink_request_;
   cc::mojom::MojoCompositorFrameSinkClientPtrInfo compositor_frame_sink_client_;
 
-  DISALLOW_COPY_AND_ASSIGN(WindowCompositorFrameSinkBinding);
+  DISALLOW_COPY_AND_ASSIGN(ClientCompositorFrameSinkBinding);
 };
 }  // namespace ui
 

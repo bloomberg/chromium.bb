@@ -8,9 +8,9 @@ import("//build/config/ui.gni")
 # implementation (and private haders) are in 'internal'.
 source_set("cpp") {
   sources = [
+    "client_compositor_frame_sink.h",
     "property_type_converters.h",
     "raster_thread_helper.h",
-    "window_compositor_frame_sink.h",
   ]
 
   public_deps = [
@@ -54,9 +54,9 @@ source_set("internal") {
   ]
 
   sources = [
+    "client_compositor_frame_sink.cc",
     "property_type_converters.cc",
     "raster_thread_helper.cc",
-    "window_compositor_frame_sink.cc",
   ]
 
   deps = [

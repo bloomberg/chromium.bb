@@ -20,7 +20,7 @@ class GpuMemoryBufferManager;
 }
 
 namespace ui {
-class WindowCompositorFrameSinkBinding;
+class ClientCompositorFrameSinkBinding;
 }
 
 namespace content {
@@ -150,7 +150,7 @@ class RendererWindowTreeClient : public ui::mojom::WindowTreeClient {
   const int routing_id_;
   ui::Id root_window_id_;
   ui::mojom::WindowTreePtr tree_;
-  std::unique_ptr<ui::WindowCompositorFrameSinkBinding> pending_frame_sink_;
+  std::unique_ptr<ui::ClientCompositorFrameSinkBinding> pending_frame_sink_;
   mojo::Binding<ui::mojom::WindowTreeClient> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(RendererWindowTreeClient);

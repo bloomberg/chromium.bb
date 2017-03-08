@@ -78,14 +78,14 @@ void WindowPortMus::Embed(
   window_tree_client_->Embed(window_, std::move(client), flags, callback);
 }
 
-std::unique_ptr<ui::WindowCompositorFrameSink>
+std::unique_ptr<ui::ClientCompositorFrameSink>
 WindowPortMus::RequestCompositorFrameSink(
     scoped_refptr<cc::ContextProvider> context_provider,
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager) {
-  std::unique_ptr<ui::WindowCompositorFrameSinkBinding>
+  std::unique_ptr<ui::ClientCompositorFrameSinkBinding>
       compositor_frame_sink_binding;
-  std::unique_ptr<ui::WindowCompositorFrameSink> compositor_frame_sink =
-      ui::WindowCompositorFrameSink::Create(
+  std::unique_ptr<ui::ClientCompositorFrameSink> compositor_frame_sink =
+      ui::ClientCompositorFrameSink::Create(
           cc::FrameSinkId(server_id(), 0), std::move(context_provider),
           gpu_memory_buffer_manager, &compositor_frame_sink_binding);
   AttachCompositorFrameSink(std::move(compositor_frame_sink_binding));
@@ -93,7 +93,7 @@ WindowPortMus::RequestCompositorFrameSink(
 }
 
 void WindowPortMus::AttachCompositorFrameSink(
-    std::unique_ptr<ui::WindowCompositorFrameSinkBinding>
+    std::unique_ptr<ui::ClientCompositorFrameSinkBinding>
         compositor_frame_sink_binding) {
   window_tree_client_->AttachCompositorFrameSink(
       server_id(), compositor_frame_sink_binding->TakeFrameSinkRequest(),

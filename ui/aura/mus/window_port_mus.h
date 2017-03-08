@@ -13,7 +13,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "cc/surfaces/surface_info.h"
-#include "services/ui/public/cpp/window_compositor_frame_sink.h"
+#include "services/ui/public/cpp/client_compositor_frame_sink.h"
 #include "services/ui/public/interfaces/cursor.mojom.h"
 #include "services/ui/public/interfaces/window_tree.mojom.h"
 #include "services/ui/public/interfaces/window_tree_constants.mojom.h"
@@ -65,12 +65,12 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
              uint32_t flags,
              const ui::mojom::WindowTree::EmbedCallback& callback);
 
-  std::unique_ptr<ui::WindowCompositorFrameSink> RequestCompositorFrameSink(
+  std::unique_ptr<ui::ClientCompositorFrameSink> RequestCompositorFrameSink(
       scoped_refptr<cc::ContextProvider> context_provider,
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager);
 
   void AttachCompositorFrameSink(
-      std::unique_ptr<ui::WindowCompositorFrameSinkBinding>
+      std::unique_ptr<ui::ClientCompositorFrameSinkBinding>
           compositor_frame_sink_binding);
 
  private:
