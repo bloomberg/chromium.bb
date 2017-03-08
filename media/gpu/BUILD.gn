@@ -187,6 +187,8 @@ component("gpu") {
       "avda_shared_state.cc",
       "avda_shared_state.h",
       "avda_state_provider.h",
+      "avda_surface_bundle.cc",
+      "avda_surface_bundle.h",
       "surface_texture_gl_owner.cc",
       "surface_texture_gl_owner.h",
     ]

@@ -242,7 +242,6 @@ AndroidVideoDecodeAccelerator::AndroidVideoDecodeAccelerator(
       deferred_initialization_pending_(false),
       codec_needs_reset_(false),
       defer_surface_creation_(false),
-      last_release_task_type_(TaskType::AUTO_CODEC),
       weak_this_factory_(this) {}
 
 AndroidVideoDecodeAccelerator::~AndroidVideoDecodeAccelerator() {
@@ -289,6 +288,7 @@ bool AndroidVideoDecodeAccelerator::Initialize(const Config& config,
   codec_config_->codec = VideoCodecProfileToVideoCodec(config.profile);
   codec_config_->initial_expected_coded_size =
       config.initial_expected_coded_size;
+  incoming_bundle_ = new AVDASurfaceBundle(config_.surface_id);
 
   if (codec_config_->codec != kCodecVP8 && codec_config_->codec != kCodecVP9 &&
 #if BUILDFLAG(ENABLE_HEVC_DEMUXING)
@@ -330,10 +330,10 @@ bool AndroidVideoDecodeAccelerator::Initialize(const Config& config,
 
   // If we're low on resources, we may decide to defer creation of the surface
   // until the codec is actually used.
-  if (ShouldDeferSurfaceCreation(codec_allocator_, config_.surface_id,
+  if (ShouldDeferSurfaceCreation(codec_allocator_, surface_id(),
                                  codec_config_->codec)) {
     // We should never be here if a SurfaceView is required.
-    DCHECK_EQ(config_.surface_id, SurfaceManager::kNoSurfaceID);
+    DCHECK_EQ(surface_id(), SurfaceManager::kNoSurfaceID);
     defer_surface_creation_ = true;
   }
 
@@ -362,6 +362,7 @@ bool AndroidVideoDecodeAccelerator::Initialize(const Config& config,
 void AndroidVideoDecodeAccelerator::StartSurfaceCreation() {
   // We might be called during Initialize, during deferred initialization, or
   // afterwards (::Decode, for deferred surface init, UpdateSurface).
+  DCHECK(incoming_bundle_);
 
   // If surface creation is deferred, then do nothing except signal that init
   // is complete, if needed.  We might still fail to get a surface or codec,
@@ -376,7 +377,7 @@ void AndroidVideoDecodeAccelerator::StartSurfaceCreation() {
     return;
   }
 
-  if (!codec_allocator_->AllocateSurface(this, config_.surface_id)) {
+  if (!codec_allocator_->AllocateSurface(this, incoming_bundle_->surface_id)) {
     // We have to wait for some other AVDA instance to free up the surface.
     // OnSurfaceAvailable will be called when it's available.
     // Note that if we aren't deferring init, then we'll signal success, and
@@ -393,9 +394,11 @@ void AndroidVideoDecodeAccelerator::StartSurfaceCreation() {
 void AndroidVideoDecodeAccelerator::OnSurfaceAvailable(bool success) {
   DCHECK(!defer_surface_creation_);
   DCHECK_EQ(state_, WAITING_FOR_SURFACE);
+  DCHECK(incoming_bundle_);
 
   if (!success) {
     NOTIFY_ERROR(PLATFORM_FAILURE, "Surface is not available");
+    incoming_bundle_ = nullptr;
     return;
   }
 
@@ -404,6 +407,7 @@ void AndroidVideoDecodeAccelerator::OnSurfaceAvailable(bool success) {
 
 void AndroidVideoDecodeAccelerator::InitializePictureBufferManager() {
   DCHECK(!defer_surface_creation_);
+  DCHECK(incoming_bundle_);
 
   if (!make_context_current_cb_.Run()) {
     NOTIFY_ERROR(PLATFORM_FAILURE,
@@ -411,24 +415,43 @@ void AndroidVideoDecodeAccelerator::InitializePictureBufferManager() {
     return;
   }
 
-  codec_config_->surface =
-      picture_buffer_manager_.Initialize(config_.surface_id);
-  codec_config_->surface_texture = picture_buffer_manager_.surface_texture();
-  if (codec_config_->surface.IsEmpty()) {
+  // Move |incoming_bundle_| to |codec_config_|.  Our caller must set up an
+  // incoming bundle properly, since we don't want to accidentally overwrite
+  // |surface_bundle| for a codec that's being released elsewhere.
+  incoming_bundle_->surface = picture_buffer_manager_.Initialize(surface_id());
+  incoming_bundle_->surface_texture = picture_buffer_manager_.surface_texture();
+  if (incoming_bundle_->surface.IsEmpty()) {
     NOTIFY_ERROR(PLATFORM_FAILURE, "Codec surface is empty");
+    incoming_bundle_ = nullptr;
     return;
   }
 
-  // If we have a media codec, then setSurface.  If that doesn't work, then we
+  // If we have a media codec, then SetSurface.  If that doesn't work, then we
   // do not try to allocate a new codec; we might not be at a keyframe, etc.
   // If we get here with a codec, then we must setSurface.
   if (media_codec_) {
     // TODO(liberato): fail on api check?
-    if (!media_codec_->SetSurface(codec_config_->surface.j_surface().obj())) {
+    if (!media_codec_->SetSurface(
+            incoming_bundle_->surface.j_surface().obj())) {
       NOTIFY_ERROR(PLATFORM_FAILURE, "MediaCodec failed to switch surfaces.");
+      // We're not going to use |incoming_bundle_|.
+    } else {
+      // We've switched surfaces, so replace |surface_bundle|.
+      codec_config_->surface_bundle = incoming_bundle_;
+      // We could be in WAITING_FOR_SURFACE, but we're not anymore.
+      state_ = NO_ERROR;
     }
+    incoming_bundle_ = nullptr;
     return;
   }
+
+  // We're going to create a codec with |incoming_bundle_|.  It might fail, but
+  // either way, we're done with any previous bundle.  Note that, since we
+  // never get here after init (i.e., we never change surfaces without using
+  // SetSurface), there shouldn't be any previous bundle.  However, this is the
+  // right thing to do even if we can switch.
+  codec_config_->surface_bundle = incoming_bundle_;
+  incoming_bundle_ = nullptr;
 
   // If the client doesn't support deferred initialization (WebRTC), then we
   // should complete it now and return a meaningful result.  Note that it would
@@ -1177,7 +1200,7 @@ void AndroidVideoDecodeAccelerator::SetSurface(int32_t surface_id) {
   DVLOG(1) << __func__;
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  if (surface_id == config_.surface_id) {
+  if (surface_id == this->surface_id()) {
     pending_surface_id_.reset();
     return;
   }
@@ -1213,20 +1236,7 @@ void AndroidVideoDecodeAccelerator::ActualDestroy() {
 
   // We no longer care about |surface_id|, in case we did before.  It's okay
   // if we have no surface and/or weren't the owner or a waiter.
-  codec_allocator_->DeallocateSurface(this, config_.surface_id);
-
-  // Hop the SurfaceTexture release call through the task runner used last time
-  // we released a codec. This ensures that we release the surface texture after
-  // the codec it's attached to (if any) is released. It's not sufficient to use
-  // |codec_config_->task_type| because that might have changed since we
-  // released the codec this surface was attached to.
-  if (codec_config_->surface_texture) {
-    codec_allocator_->TaskRunnerFor(last_release_task_type_)
-        ->PostTaskAndReply(
-            FROM_HERE, base::Bind(&base::DoNothing),
-            base::Bind(&gl::SurfaceTexture::ReleaseSurfaceTexture,
-                       codec_config_->surface_texture));
-  }
+  codec_allocator_->DeallocateSurface(this, surface_id());
 
   delete this;
 }
@@ -1267,7 +1277,7 @@ void AndroidVideoDecodeAccelerator::OnSurfaceDestroyed() {
     picture_buffer_manager_.ReleaseCodecBuffers(output_picture_buffers_);
 
     // Switch away from the surface being destroyed to a surface texture.
-    DCHECK_NE(config_.surface_id, SurfaceManager::kNoSurfaceID);
+    DCHECK_NE(surface_id(), SurfaceManager::kNoSurfaceID);
 
     // The leaving fullscreen notification may come in before this point.
     if (pending_surface_id_)
@@ -1545,11 +1555,11 @@ bool AndroidVideoDecodeAccelerator::IsMediaCodecSoftwareDecodingForbidden()
 
 bool AndroidVideoDecodeAccelerator::UpdateSurface() {
   DCHECK(pending_surface_id_);
-  DCHECK_NE(config_.surface_id, pending_surface_id_.value());
-  DCHECK(config_.surface_id == SurfaceManager::kNoSurfaceID ||
+  DCHECK_NE(surface_id(), pending_surface_id_.value());
+  DCHECK(surface_id() == SurfaceManager::kNoSurfaceID ||
          pending_surface_id_.value() == SurfaceManager::kNoSurfaceID);
 
-  const int previous_surface_id = config_.surface_id;
+  const int previous_surface_id = surface_id();
   const int new_surface_id = pending_surface_id_.value();
   pending_surface_id_.reset();
 
@@ -1557,7 +1567,8 @@ bool AndroidVideoDecodeAccelerator::UpdateSurface() {
   // then this must complete synchronously or it will DCHECK.  Otherwise, we
   // might still be using the destroyed surface.  We don't enforce this, but
   // it's worth remembering that there are cases where it's required.
-  config_.surface_id = new_surface_id;
+  // Note that we don't re-use |surface_bundle|, since the codec is using it!
+  incoming_bundle_ = new AVDASurfaceBundle(new_surface_id);
   StartSurfaceCreation();
   if (state_ == ERROR) {
     // This might be called from OnSurfaceDestroyed(), so we have to release the
@@ -1568,13 +1579,23 @@ bool AndroidVideoDecodeAccelerator::UpdateSurface() {
     // wouldn't be necessarily true anymore.
     // Also note that we might not have switched surfaces yet, which is also bad
     // for OnSurfaceDestroyed, because of WAITING_FOR_SURFACE.  Shouldn't
-    // happen with SurfaceTexture, and OnSurfaceDestroyed checks for it.
-    config_.surface_id = previous_surface_id;
+    // happen with SurfaceTexture, and OnSurfaceDestroyed checks for it.  In
+    // either case, we definitely should not still have an incoming bundle; it
+    // should have been dropped.
+    DCHECK(!incoming_bundle_);
     ReleaseCodec();
+    // We no longer own the new surface.
     codec_allocator_->DeallocateSurface(this, new_surface_id);
   }
 
   // Regardless of whether we succeeded, we no longer own the previous surface.
+  // This is the only case where we start a new incoming bundle, and we maintain
+  // the property that |incoming_bundle_| is the one that we own, as documented
+  // for surface_id().
+  // It would be nice if the outgoing surface bundle did this.
+  // TODO(liberato): It could, but the CVV implementation of AndroidOverlay
+  // will do it too when the bundle holding it is dropped.  We'll do it this way
+  // until then, just to minimize changes.
   codec_allocator_->DeallocateSurface(this, previous_surface_id);
 
   return state_ != ERROR;
@@ -1585,9 +1606,9 @@ void AndroidVideoDecodeAccelerator::ReleaseCodec() {
     return;
 
   picture_buffer_manager_.CodecChanged(nullptr);
-  codec_allocator_->ReleaseMediaCodec(
-      std::move(media_codec_), codec_config_->task_type, config_.surface_id);
-  last_release_task_type_ = codec_config_->task_type;
+  codec_allocator_->ReleaseMediaCodec(std::move(media_codec_),
+                                      codec_config_->task_type,
+                                      codec_config_->surface_bundle);
 }
 
 }  // namespace media

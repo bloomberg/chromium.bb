@@ -24,6 +24,7 @@
 #include "media/base/media.h"
 #include "media/base/surface_manager.h"
 #include "media/base/video_codecs.h"
+#include "media/gpu/avda_surface_bundle.h"
 #include "media/gpu/media_gpu_export.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gl/android/scoped_java_surface.h"
@@ -50,12 +51,7 @@ class CodecConfig : public base::RefCountedThreadSafe<CodecConfig> {
   VideoCodec codec = kUnknownVideoCodec;
 
   // The surface that MediaCodec is configured to output to.
-  gl::ScopedJavaSurface surface;
-  int surface_id = SurfaceManager::kNoSurfaceID;
-
-  // The SurfaceTexture attached to |surface|, or nullptr if |surface| is
-  // SurfaceView backed.
-  scoped_refptr<gl::SurfaceTexture> surface_texture;
+  scoped_refptr<AVDASurfaceBundle> surface_bundle;
 
   // The MediaCrypto that MediaCodec is configured with for an encrypted stream.
   MediaDrmBridgeCdmContext::JavaObjectPtr media_crypto;
@@ -144,12 +140,18 @@ class MEDIA_GPU_EXPORT AVDACodecAllocator {
       base::WeakPtr<AVDACodecAllocatorClient> client,
       scoped_refptr<CodecConfig> codec_config);
 
-  // Asynchronously release |media_codec| with the attached surface.
+  // Asynchronously release |media_codec| with the attached surface.  We will
+  // drop our reference to |surface_bundle| on the main thread after the codec
+  // is deallocated, since the codec isn't using it anymore.  We will not take
+  // other action on it (e.g., calling ReleaseSurfaceTexture if it has one),
+  // since some other codec might be going to use it.  We just want to be sure
+  // that it outlives |media_codec|.
   // TODO(watk): Bundle the MediaCodec and surface together so you can't get
   // this pairing wrong.
-  void ReleaseMediaCodec(std::unique_ptr<MediaCodecBridge> media_codec,
-                         TaskType task_type,
-                         int surface_id);
+  void ReleaseMediaCodec(
+      std::unique_ptr<MediaCodecBridge> media_codec,
+      TaskType task_type,
+      const scoped_refptr<AVDASurfaceBundle>& surface_bundle);
 
   // Returns a hint about whether the construction thread has hung for
   // |task_type|.  Note that if a thread isn't started, then we'll just return
@@ -175,6 +177,14 @@ class MEDIA_GPU_EXPORT AVDACodecAllocator {
   AVDACodecAllocator(base::TickClock* tick_clock = nullptr,
                      base::WaitableEvent* stop_event = nullptr);
   virtual ~AVDACodecAllocator();
+
+  // Forward |media_codec|, which is configured to output to |surface_bundle|,
+  // to |client| if |client| is still around.  Otherwise, release the codec and
+  // then drop our ref to |surface_bundle|.
+  void ForwardOrDropCodec(base::WeakPtr<AVDACodecAllocatorClient> client,
+                          TaskType task_type,
+                          scoped_refptr<AVDASurfaceBundle> surface_bundle,
+                          std::unique_ptr<MediaCodecBridge> media_codec);
 
  private:
   friend class AVDACodecAllocatorTest;
@@ -210,7 +220,9 @@ class MEDIA_GPU_EXPORT AVDACodecAllocator {
     HangDetector hang_detector;
   };
 
-  void OnMediaCodecAndSurfaceReleased(int surface_id);
+  // Called on the gpu main thread when a codec is freed on a codec thread.
+  // |surface_bundle| is the surface bundle that the codec was using.
+  void OnMediaCodecReleased(scoped_refptr<AVDASurfaceBundle> surface_bundle);
 
   // Stop the thread indicated by |index|. This signals stop_event_for_testing_
   // after both threads are stopped.

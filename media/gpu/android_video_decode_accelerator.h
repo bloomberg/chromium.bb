@@ -115,6 +115,8 @@ class MEDIA_GPU_EXPORT AndroidVideoDecodeAccelerator
   // will wait for OnSurfaceAvailable to do it.  This will transition |state_|
   // to WAITING_FOR_SURFACE or WAITING_FOR_CODEC, as needed (or NO_ERROR if it
   // gets the surface and the codec without waiting).
+  // Note that this requires that you create a new |incoming_bundle_| with the
+  // appropriate surface id.
   void StartSurfaceCreation();
 
   // Initialize of the picture buffer manager to use the current surface, once
@@ -125,6 +127,9 @@ class MEDIA_GPU_EXPORT AndroidVideoDecodeAccelerator
   // ready even if this succeeds, but async config will be started.  If
   // setSurface fails, this will not replace the codec.  On failure, this will
   // transition |state_| to ERROR.
+  // Note that this assumes that there is an |incoming_bundle_| that we'll use.
+  // On success, we'll replace the bundle in |codec_config_|.  On failure, we'll
+  // delete the incoming bundle.
   void InitializePictureBufferManager();
 
   // A part of destruction process that is sometimes postponed after the drain.
@@ -240,6 +245,16 @@ class MEDIA_GPU_EXPORT AndroidVideoDecodeAccelerator
   // |picture_buffer_manager_|.
   void ReleaseCodec();
 
+  // Returns the surface ID from the incoming bundle, if we have one, or
+  // the current surface bundle if not.  The reasoning is that, if we have an
+  // incoming bundle, then the current (outgoing) one has already been returned
+  // to the codec allocator via DeallocateSurface.  The only place this happens
+  // is UpdateSurface, which handles it specially.
+  int surface_id() const {
+    return incoming_bundle_ ? incoming_bundle_->surface_id
+                            : codec_config_->surface_bundle->surface_id;
+  }
+
   // Used to DCHECK that we are called on the correct thread.
   base::ThreadChecker thread_checker_;
 
@@ -353,12 +368,15 @@ class MEDIA_GPU_EXPORT AndroidVideoDecodeAccelerator
   // pictures have been rendered in DequeueOutput().
   base::Optional<int32_t> pending_surface_id_;
 
-  // The task type used for the last codec release. For posting SurfaceTexture
-  // release to the same thread.
-  TaskType last_release_task_type_;
-
   // Copy of the VDA::Config we were given.
   Config config_;
+
+  // SurfaceBundle that we're going to use for StartSurfaceCreation.  This is
+  // separate than the bundle in |codec_config_|, since we can start surface
+  // creation while another codec is using the old surface.  For example, if
+  // we're going to SetSurface, then the current codec will depend on the
+  // current bundle until then.
+  scoped_refptr<AVDASurfaceBundle> incoming_bundle_;
 
   // WeakPtrFactory for posting tasks back to |this|.
   base::WeakPtrFactory<AndroidVideoDecodeAccelerator> weak_this_factory_;
