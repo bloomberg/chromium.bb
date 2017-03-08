@@ -2356,9 +2356,7 @@ public class AwContents implements SmartClipProvider {
     void startProcessTextIntent(Intent intent) {
         // on Android M, WebView is not able to replace the text with the processed text.
         // So set the readonly flag for M.
-        // TODO(hush): remove the part about VERSION.CODENAME equality with N, after N release.
-        // crbug.com/543272
-        if (Build.VERSION.SDK_INT == Build.VERSION_CODES.M && !Build.VERSION.CODENAME.equals("N")) {
+        if (Build.VERSION.SDK_INT == Build.VERSION_CODES.M) {
             intent.putExtra(Intent.EXTRA_PROCESS_TEXT_READONLY, true);
         }
 

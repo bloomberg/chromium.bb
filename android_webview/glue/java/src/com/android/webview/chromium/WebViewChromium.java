@@ -63,7 +63,6 @@ import org.chromium.content_public.browser.NavigationHistory;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.concurrent.Callable;
 
@@ -1730,8 +1729,7 @@ class WebViewChromium implements WebViewProvider, WebViewProvider.ScrollDelegate
         mAwContents.onConfigurationChanged(newConfig);
     }
 
-    //TODO(hush): add override after release.
-    //@Override
+    @Override
     public boolean onDragEvent(final DragEvent event) {
         mFactory.startYourEngines(false);
         if (checkNeedsPost()) {
@@ -2213,15 +2211,7 @@ class WebViewChromium implements WebViewProvider, WebViewProvider.ScrollDelegate
 
         @Override
         public void super_startActivityForResult(Intent intent, int requestCode) {
-            // TODO(hush): Use mWebViewPrivate.super_startActivityForResult
-            // after N release. crbug.com/543272.
-            try {
-                Method startActivityForResultMethod =
-                        View.class.getMethod("startActivityForResult", Intent.class, int.class);
-                startActivityForResultMethod.invoke(mWebView, intent, requestCode);
-            } catch (Exception e) {
-                throw new RuntimeException("Invalid reflection", e);
-            }
+            mWebViewPrivate.super_startActivityForResult(intent, requestCode);
         }
 
         @Override
