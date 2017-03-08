@@ -85,7 +85,7 @@
 #import "ios/chrome/browser/snapshots/snapshot_overlay_provider.h"
 #import "ios/chrome/browser/snapshots/web_controller_snapshot_helper.h"
 #include "ios/chrome/browser/ssl/ios_security_state_tab_helper.h"
-#import "ios/chrome/browser/storekit_launcher.h"
+#import "ios/chrome/browser/store_kit/store_kit_tab_helper.h"
 #include "ios/chrome/browser/sync/ios_chrome_synced_tab_delegate.h"
 #import "ios/chrome/browser/tabs/legacy_tab_helper.h"
 #import "ios/chrome/browser/tabs/tab_delegate.h"
@@ -222,9 +222,6 @@ enum class RendererTerminationTabState {
 
   base::scoped_nsobject<OpenInController> openInController_;
   base::WeakNSProtocol<id<PassKitDialogProvider>> passKitDialogProvider_;
-  // TODO(crbug.com/546213): Move this out of Tab, probably to native app
-  // launcher since that's the only thing that uses it.
-  base::WeakNSProtocol<id<StoreKitLauncher>> storeKitLauncher_;
 
   // Whether or not this tab is currently being displayed.
   BOOL visible_;
@@ -565,6 +562,7 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
       RepostFormTabHelper::CreateForWebState(self.webState);
       BlockedPopupTabHelper::CreateForWebState(self.webState);
       FindTabHelper::CreateForWebState(self.webState, self);
+      StoreKitTabHelper::CreateForWebState(self.webState);
 
       if (reading_list::switches::IsReadingListEnabled()) {
         ReadingListModel* model =
@@ -878,14 +876,6 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
 
 - (web::NavigationManagerImpl*)navigationManagerImpl {
   return webStateImpl_ ? &(webStateImpl_->GetNavigationManagerImpl()) : nullptr;
-}
-
-- (id<StoreKitLauncher>)storeKitLauncher {
-  return storeKitLauncher_.get();
-}
-
-- (void)setStoreKitLauncher:(id<StoreKitLauncher>)storeKitLauncher {
-  storeKitLauncher_.reset(storeKitLauncher);
 }
 
 // Swap out the existing session history with a new list of navigations. Forces
@@ -1216,7 +1206,6 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
   self.overscrollActionsControllerDelegate = nil;
   self.passKitDialogProvider = nil;
   self.snapshotOverlayProvider = nil;
-  self.storeKitLauncher = nil;
 
   [[NSNotificationCenter defaultCenter] removeObserver:self];
 
@@ -1455,11 +1444,17 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
 }
 
 - (id<CRWNativeContent>)controllerForUnhandledContentAtURL:(const GURL&)url {
+  StoreKitTabHelper* helper = StoreKitTabHelper::FromWebState(self.webState);
+  if (!helper)
+    return nil;
+  id<StoreKitLauncher> storeKitLauncher = helper->GetLauncher();
+  if (!storeKitLauncher)
+    return nil;
   DownloadManagerController* downloadController =
       [[[DownloadManagerController alloc]
                    initWithURL:url
           requestContextGetter:browserState_->GetRequestContext()
-              storeKitLauncher:self.storeKitLauncher] autorelease];
+              storeKitLauncher:storeKitLauncher] autorelease];
   [downloadController start];
   return downloadController;
 }
@@ -1559,10 +1554,6 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
 }
 
 #pragma mark -
-
-- (void)openAppStore:(NSString*)appId {
-  [storeKitLauncher_ openAppStore:appId];
-}
 
 - (BOOL)usesDesktopUserAgent {
   if (!self.navigationManager)
@@ -2194,10 +2185,8 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
   if (browserState_->IsOffTheRecord())
     return;
   DCHECK(!nativeAppNavigationController_);
-  nativeAppNavigationController_.reset([[NativeAppNavigationController alloc]
-          initWithWebState:self.webState
-      requestContextGetter:browserState_->GetRequestContext()
-                       tab:self]);
+  nativeAppNavigationController_.reset(
+      [[NativeAppNavigationController alloc] initWithWebState:self.webState]);
   DCHECK(nativeAppNavigationController_);
 }
 

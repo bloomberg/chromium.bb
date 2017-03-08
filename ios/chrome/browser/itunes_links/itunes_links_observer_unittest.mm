@@ -6,7 +6,7 @@
 
 #import "ios/chrome/browser/itunes_links/itunes_links_observer.h"
 
-#import "ios/chrome/browser/storekit_launcher.h"
+#import "ios/chrome/browser/store_kit/store_kit_tab_helper.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
 #include "testing/gtest_mac.h"
 #include "testing/platform_test.h"
@@ -23,6 +23,7 @@ namespace {
 class ITunesLinksObserverTest : public PlatformTest {
  protected:
   void SetUp() override {
+    StoreKitTabHelper::CreateForWebState(&web_state_);
     mocked_store_kit_launcher_ =
         [OCMockObject mockForProtocol:@protocol(StoreKitLauncher)];
     link_observer_ = [[ITunesLinksObserver alloc] initWithWebState:&web_state_];

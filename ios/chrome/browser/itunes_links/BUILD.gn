@@ -10,7 +10,7 @@ source_set("itunes_links") {
   ]
   deps = [
     "//base",
-    "//ios/chrome/browser",
+    "//ios/chrome/browser/store_kit",
     "//ios/web",
     "//url",
   ]
@@ -25,7 +25,7 @@ source_set("unit_tests") {
   deps = [
     ":itunes_links",
     "//base",
-    "//ios/chrome/browser",
+    "//ios/chrome/browser/store_kit",
     "//ios/web:test_support",
     "//testing/gtest",
     "//third_party/ocmock",

@@ -8,9 +8,9 @@
 
 #include "base/logging.h"
 #include "base/strings/sys_string_conversions.h"
-#import "ios/chrome/browser/storekit_launcher.h"
+#import "ios/chrome/browser/store_kit/store_kit_tab_helper.h"
+#import "ios/web/public/web_state/web_state.h"
 #import "ios/web/public/web_state/web_state_observer_bridge.h"
-#include "ios/web/public/web_state/web_state.h"
 #include "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -28,7 +28,7 @@
 @end
 
 @implementation ITunesLinksObserver {
-  __weak id<StoreKitLauncher> _storeKitLauncher;
+  web::WebState* _webState;
   std::unique_ptr<web::WebStateObserverBridge> _webStateObserverBridge;
 }
 
@@ -37,13 +37,9 @@
   if (self) {
     _webStateObserverBridge.reset(
         new web::WebStateObserverBridge(webState, self));
+    _webState = webState;
   }
   return self;
-}
-
-- (instancetype)init {
-  NOTREACHED();
-  return nil;
 }
 
 + (NSString*)productIDFromURL:(const GURL&)URL {
@@ -57,17 +53,22 @@
   return base::SysUTF8ToNSString(productID);
 }
 
-#pragma mark - CRWWebStateObserver
+#pragma mark - WebStateObserverBridge
 
 - (void)webState:(web::WebState*)webState didLoadPageWithSuccess:(BOOL)success {
   GURL URL = webState->GetLastCommittedURL();
   NSString* productID = [ITunesLinksObserver productIDFromURL:URL];
-  if (productID)
-    [_storeKitLauncher openAppStore:productID];
+  if (productID) {
+    StoreKitTabHelper* tabHelper = StoreKitTabHelper::FromWebState(_webState);
+    if (tabHelper)
+      tabHelper->OpenAppStore(productID);
+  }
 }
 
 - (void)setStoreKitLauncher:(id<StoreKitLauncher>)storeKitLauncher {
-  _storeKitLauncher = storeKitLauncher;
+  StoreKitTabHelper* tabHelper = StoreKitTabHelper::FromWebState(_webState);
+  if (tabHelper)
+    tabHelper->SetLauncher(storeKitLauncher);
 }
 
 @end

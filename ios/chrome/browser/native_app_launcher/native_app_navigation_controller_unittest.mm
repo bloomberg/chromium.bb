@@ -48,10 +48,8 @@ class NativeAppNavigationControllerTest : public ChromeWebTest {
  protected:
   void SetUp() override {
     ChromeWebTest::SetUp();
-    controller_.reset([[NativeAppNavigationController alloc]
-            initWithWebState:web_state()
-        requestContextGetter:GetBrowserState()->GetRequestContext()
-                         tab:nil]);
+    controller_.reset(
+        [[NativeAppNavigationController alloc] initWithWebState:web_state()]);
 
     action_callback_ =
         base::Bind(&NativeAppNavigationControllerTest::OnUserAction,

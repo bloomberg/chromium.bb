@@ -10,7 +10,7 @@
 
 #import "base/mac/scoped_nsobject.h"
 #include "base/message_loop/message_loop.h"
-#import "ios/chrome/browser/storekit_launcher.h"
+#import "ios/chrome/browser/store_kit/store_kit_launcher.h"
 #include "ios/web/public/test/test_web_thread.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"

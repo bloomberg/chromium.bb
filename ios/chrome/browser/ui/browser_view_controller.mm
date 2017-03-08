@@ -80,7 +80,7 @@
 #import "ios/chrome/browser/snapshots/snapshot_cache.h"
 #import "ios/chrome/browser/snapshots/snapshot_overlay.h"
 #import "ios/chrome/browser/snapshots/snapshot_overlay_provider.h"
-#import "ios/chrome/browser/storekit_launcher.h"
+#import "ios/chrome/browser/store_kit/store_kit_tab_helper.h"
 #import "ios/chrome/browser/tabs/legacy_tab_helper.h"
 #import "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/tabs/tab_dialog_delegate.h"
@@ -2115,7 +2115,6 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
   // deallocation.
   tab.dialogDelegate = self;
   tab.snapshotOverlayProvider = self;
-  tab.storeKitLauncher = self;
   tab.passKitDialogProvider = self;
   tab.fullScreenControllerDelegate = self;
   if (!IsIPadIdiom()) {
@@ -2126,6 +2125,11 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
   // Install the proper CRWWebController delegates.
   tab.webController.nativeProvider = self;
   tab.webController.swipeRecognizerProvider = self.sideSwipeController;
+  // BrowserViewController presents SKStoreKitViewController on behalf of a
+  // tab.
+  StoreKitTabHelper* tabHelper = StoreKitTabHelper::FromWebState(tab.webState);
+  if (tabHelper)
+    tabHelper->SetLauncher(self);
   // Delegate will remove itself on destruction.
   tab.webState->SetDelegate(_webStateDelegate.get());
 }

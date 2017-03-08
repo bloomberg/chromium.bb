@@ -33,7 +33,6 @@ class GURL;
 @class PasswordController;
 @class SnapshotManager;
 @protocol SnapshotOverlayProvider;
-@protocol StoreKitLauncher;
 @class FormSuggestionController;
 @protocol TabDelegate;
 @protocol TabDialogDelegate;
@@ -143,7 +142,6 @@ extern NSString* const kProxyPassthroughHeaderValue;
 // Whether or not desktop user agent is used for the currently visible page.
 @property(nonatomic, readonly) BOOL usesDesktopUserAgent;
 
-@property(nonatomic, assign) id<StoreKitLauncher> storeKitLauncher;
 @property(nonatomic, assign) id<FullScreenControllerDelegate>
     fullScreenControllerDelegate;
 @property(nonatomic, readonly)
@@ -241,10 +239,6 @@ extern NSString* const kProxyPassthroughHeaderValue;
 
 // Dismisses all modals owned by the tab.
 - (void)dismissModals;
-
-// Opens StoreKit modal to download a native application identified with
-// |appId|.
-- (void)openAppStore:(NSString*)appId;
 
 // Returns the NavigationManager for this tab's WebState. Requires WebState to
 // be populated. Can return null.

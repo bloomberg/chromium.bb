@@ -7,12 +7,6 @@
 
 #import <Foundation/Foundation.h>
 
-@class Tab;
-
-namespace net {
-class URLRequestContextGetter;
-}  // namespace net
-
 namespace web {
 class WebState;
 }  // namespace web
@@ -22,12 +16,8 @@ class WebState;
 // display.
 @interface NativeAppNavigationController : NSObject
 
-// Designated initializer. The use of |tab| will be phased out in the future
-// when all the information needed can be fulfilled by |webState|. Use this
-// instead of -init.
 - (instancetype)initWithWebState:(web::WebState*)webState
-            requestContextGetter:(net::URLRequestContextGetter*)context
-                             tab:(Tab*)tab NS_DESIGNATED_INITIALIZER;
+    NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)init NS_UNAVAILABLE;
 
