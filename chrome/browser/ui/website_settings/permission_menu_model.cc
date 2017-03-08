@@ -27,6 +27,7 @@ PermissionMenuModel::PermissionMenuModel(
   DCHECK(!callback_.is_null());
   base::string16 label;
 
+  // Retrieve the string to show for the default setting for this permission.
   ContentSetting effective_default_setting = permission_.default_setting;
 
 #if BUILDFLAG(ENABLE_PLUGINS)
@@ -68,12 +69,13 @@ PermissionMenuModel::PermissionMenuModel(
   // of simply setting a shorter label on the menubutton.
   if (ui::MaterialDesignController::IsSecondaryUiMaterial()) {
     label = WebsiteSettingsUI::PermissionActionToUIString(
-        profile, info.type, info.setting, effective_default_setting,
-        info.source);
+        profile, permission_.type, CONTENT_SETTING_DEFAULT,
+        effective_default_setting, permission_.source);
   }
 
   AddCheckItem(CONTENT_SETTING_DEFAULT, label);
 
+  // Retrieve the string to show for allowing the permission.
   // Notifications does not support CONTENT_SETTING_ALLOW in incognito.
   bool allow_disabled_for_notifications =
       permission_.is_incognito &&
@@ -86,6 +88,11 @@ PermissionMenuModel::PermissionMenuModel(
       (!is_media_permission || content::IsOriginSecure(url))) {
     label = l10n_util::GetStringUTF16(
         IDS_WEBSITE_SETTINGS_MENU_ITEM_ALLOW);
+    if (ui::MaterialDesignController::IsSecondaryUiMaterial()) {
+      label = WebsiteSettingsUI::PermissionActionToUIString(
+          profile, permission_.type, CONTENT_SETTING_ALLOW,
+          effective_default_setting, permission_.source);
+    }
     AddCheckItem(CONTENT_SETTING_ALLOW, label);
   }
 
@@ -99,7 +106,13 @@ PermissionMenuModel::PermissionMenuModel(
     AddCheckItem(CONTENT_SETTING_DETECT_IMPORTANT_CONTENT, label);
   }
 
+  // Retrieve the string to show for blocking the permission.
   label = l10n_util::GetStringUTF16(IDS_WEBSITE_SETTINGS_MENU_ITEM_BLOCK);
+  if (ui::MaterialDesignController::IsSecondaryUiMaterial()) {
+    label = WebsiteSettingsUI::PermissionActionToUIString(
+        profile, info.type, CONTENT_SETTING_BLOCK, effective_default_setting,
+        info.source);
+  }
   AddCheckItem(CONTENT_SETTING_BLOCK, label);
 }
 

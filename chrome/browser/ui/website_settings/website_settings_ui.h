@@ -146,7 +146,8 @@ class WebsiteSettingsUI {
 
   // Returns the UI string describing the action taken for a permission,
   // including why that action was taken. E.g. "Allowed by you",
-  // "Blocked by default".
+  // "Blocked by default". If |setting| is default, specify the actual default
+  // setting using |default_setting|.
   static base::string16 PermissionActionToUIString(
       Profile* profile,
       ContentSettingsType type,
