@@ -50,7 +50,7 @@ static INLINE void aom_daala_write(daala_writer *w, int bit, int prob) {
   bitstream_queue_push(bit, cdf, 2);
 #endif
 
-  od_ec_encode_bool_q15(&w->ec, bit, p);
+  od_ec_encode_bool_q15(&w->ec, bit, OD_ICDF(p));
 }
 
 #if CONFIG_RAWBITS
@@ -73,7 +73,16 @@ static INLINE void daala_write_symbol(daala_writer *w, int symb,
   bitstream_queue_push(symb, cdf, nsymbs);
 #endif
 
+#if CONFIG_EC_SMALLMUL
+  {
+    aom_cdf_prob icdf[16];
+    int i;
+    for (i = 0; i < nsymbs; i++) icdf[i] = OD_ICDF(cdf[i]);
+    od_ec_encode_cdf_q15(&w->ec, symb, icdf, nsymbs);
+  }
+#else
   od_ec_encode_cdf_q15(&w->ec, symb, cdf, nsymbs);
+#endif
 }
 
 #ifdef __cplusplus
