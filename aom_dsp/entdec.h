@@ -77,14 +77,6 @@ OD_WARN_UNUSED_RESULT int od_ec_decode_cdf_unscaled(od_ec_dec *dec,
                                                     const uint16_t *cdf,
                                                     int nsyms) OD_ARG_NONNULL(1)
     OD_ARG_NONNULL(2);
-OD_WARN_UNUSED_RESULT int od_ec_decode_cdf_unscaled_dyadic(od_ec_dec *dec,
-                                                           const uint16_t *cdf,
-                                                           int nsyms,
-                                                           unsigned _ftb)
-    OD_ARG_NONNULL(1) OD_ARG_NONNULL(2);
-
-OD_WARN_UNUSED_RESULT uint32_t od_ec_dec_uint(od_ec_dec *dec, uint32_t ft)
-    OD_ARG_NONNULL(1);
 
 OD_WARN_UNUSED_RESULT uint32_t od_ec_dec_bits_(od_ec_dec *dec, unsigned ftb)
     OD_ARG_NONNULL(1);

@@ -350,50 +350,6 @@ int od_ec_decode_cdf_unscaled(od_ec_dec *dec, const uint16_t *cdf, int nsyms) {
   return od_ec_dec_normalize(dec, dif, r, ret);
 }
 
-/*Decodes a symbol given a cumulative distribution function (CDF) table that
-   sums to a power of two.
-  This is a simpler, lower overhead version of od_ec_decode_cdf() for use when
-   cdf[nsyms - 1] is a power of two.
-  To be decoded properly by this function, symbols cannot have been encoded by
-   od_ec_encode(), but must have been encoded with one of the equivalent _q15()
-   functions instead.
-  cdf: The CDF, such that symbol s falls in the range
-        [s > 0 ? cdf[s - 1] : 0, cdf[s]).
-       The values must be monotonically non-increasing, and cdf[nsyms - 1]
-       must be exactly 1 << ftb.
-  nsyms: The number of symbols in the alphabet.
-         This should be at most 16.
-  ftb: The number of bits of precision in the cumulative distribution.
-       This must be no more than 15.
-  Return: The decoded symbol s.*/
-int od_ec_decode_cdf_unscaled_dyadic(od_ec_dec *dec, const uint16_t *cdf,
-                                     int nsyms, unsigned ftb) {
-  od_ec_window dif;
-  unsigned r;
-  unsigned c;
-  unsigned u;
-  unsigned v;
-  int ret;
-  (void)nsyms;
-  dif = dec->dif;
-  r = dec->rng;
-  OD_ASSERT(dif >> (OD_EC_WINDOW_SIZE - 16) < r);
-  OD_ASSERT(ftb <= 15);
-  OD_ASSERT(cdf[nsyms - 1] == 1U << ftb);
-  OD_ASSERT(32768U <= r);
-  c = (unsigned)(dif >> (OD_EC_WINDOW_SIZE - 16));
-  v = 0;
-  ret = -1;
-  do {
-    u = v;
-    v = cdf[++ret] * (uint32_t)r >> ftb;
-  } while (v <= c);
-  OD_ASSERT(v <= r);
-  r = v - u;
-  dif -= (od_ec_window)u << (OD_EC_WINDOW_SIZE - 16);
-  return od_ec_dec_normalize(dec, dif, r, ret);
-}
-
 /*Decodes a symbol given a cumulative distribution function (CDF) table in Q15.
   This is a simpler, lower overhead version of od_ec_decode_cdf() for use when
    cdf[nsyms - 1] == 32768.
@@ -408,34 +364,32 @@ int od_ec_decode_cdf_unscaled_dyadic(od_ec_dec *dec, const uint16_t *cdf,
          This should be at most 16.
   Return: The decoded symbol s.*/
 int od_ec_decode_cdf_q15(od_ec_dec *dec, const uint16_t *cdf, int nsyms) {
-  return od_ec_decode_cdf_unscaled_dyadic(dec, cdf, nsyms, 15);
+  od_ec_window dif;
+  unsigned r;
+  unsigned c;
+  unsigned u;
+  unsigned v;
+  int ret;
+  (void)nsyms;
+  dif = dec->dif;
+  r = dec->rng;
+  OD_ASSERT(dif >> (OD_EC_WINDOW_SIZE - 16) < r);
+  OD_ASSERT(cdf[nsyms - 1] == 32768U);
+  OD_ASSERT(32768U <= r);
+  c = (unsigned)(dif >> (OD_EC_WINDOW_SIZE - 16));
+  v = 0;
+  ret = -1;
+  do {
+    u = v;
+    v = cdf[++ret] * (uint32_t)r >> 15;
+  } while (v <= c);
+  OD_ASSERT(v <= r);
+  r = v - u;
+  dif -= (od_ec_window)u << (OD_EC_WINDOW_SIZE - 16);
+  return od_ec_dec_normalize(dec, dif, r, ret);
 }
 
 #if CONFIG_RAWBITS
-/*Extracts a raw unsigned integer with a non-power-of-2 range from the stream.
-  The integer must have been encoded with od_ec_enc_uint().
-  ft: The number of integers that can be decoded (one more than the max).
-      This must be at least 2, and no more than 2**29.
-  Return: The decoded bits.*/
-uint32_t od_ec_dec_uint(od_ec_dec *dec, uint32_t ft) {
-  OD_ASSERT(ft >= 2);
-  OD_ASSERT(ft <= (uint32_t)1 << (25 + OD_EC_UINT_BITS));
-  if (ft > 1U << OD_EC_UINT_BITS) {
-    uint32_t t;
-    int ft1;
-    int ftb;
-    ft--;
-    ftb = OD_ILOG_NZ(ft) - OD_EC_UINT_BITS;
-    ft1 = (int)(ft >> ftb) + 1;
-    t = od_ec_decode_cdf_q15(dec, OD_UNIFORM_CDF_Q15(ft1), ft1);
-    t = t << ftb | od_ec_dec_bits(dec, ftb, "");
-    if (t <= ft) return t;
-    dec->error = 1;
-    return ft;
-  }
-  return od_ec_decode_cdf_q15(dec, OD_UNIFORM_CDF_Q15(ft), (int)ft);
-}
-
 /*Extracts a sequence of raw bits from the stream.
   The bits must have been encoded with od_ec_enc_bits().
   ftb: The number of bits to extract.

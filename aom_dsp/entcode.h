@@ -90,13 +90,6 @@ typedef uint32_t od_ec_window;
    3 => 1/8th bits.*/
 #define OD_BITRES (3)
 
-extern const uint16_t OD_UNIFORM_CDFS_Q15[135];
-
-/*Returns a Q15 CDF for a uniform probability distribution of the given size.
-  n: The size of the distribution.
-     This must be at least 2, and no more than 16.*/
-#define OD_UNIFORM_CDF_Q15(n) (OD_UNIFORM_CDFS_Q15 + ((n) * ((n)-1) >> 1) - 1)
-
 /*See entcode.c for further documentation.*/
 
 OD_WARN_UNUSED_RESULT uint32_t od_ec_tell_frac(uint32_t nbits_total,

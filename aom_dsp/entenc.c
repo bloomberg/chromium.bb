@@ -367,51 +367,7 @@ void od_ec_encode_cdf_unscaled(od_ec_enc *enc, int s, const uint16_t *cdf,
   od_ec_encode_unscaled(enc, s > 0 ? cdf[s - 1] : 0, cdf[s], cdf[nsyms - 1]);
 }
 
-/*Equivalent to od_ec_encode_cdf_q15() with the cdf scaled by
-   (1 << (15 - ftb)).
-  s: The index of the symbol to encode.
-  cdf: The CDF, such that symbol s falls in the range
-        [s > 0 ? cdf[s - 1] : 0, cdf[s]).
-       The values must be monotonically non-decreasing, and the last value
-        must be exactly 1 << ftb.
-  nsyms: The number of symbols in the alphabet.
-         This should be at most 16.
-  ftb: The number of bits of precision in the cumulative distribution.
-       This must be no more than 15.*/
-void od_ec_encode_cdf_unscaled_dyadic(od_ec_enc *enc, int s,
-                                      const uint16_t *cdf, int nsyms,
-                                      unsigned ftb) {
-  (void)nsyms;
-  OD_ASSERT(s >= 0);
-  OD_ASSERT(s < nsyms);
-  OD_ASSERT(ftb <= 15);
-  OD_ASSERT(cdf[nsyms - 1] == 1U << ftb);
-  od_ec_encode_q15(enc, s > 0 ? cdf[s - 1] << (15 - ftb) : 0,
-                   cdf[s] << (15 - ftb));
-}
-
 #if CONFIG_RAWBITS
-/*Encodes a raw unsigned integer in the stream.
-  fl: The integer to encode.
-  ft: The number of integers that can be encoded (one more than the max).
-      This must be at least 2, and no more than 2**29.*/
-void od_ec_enc_uint(od_ec_enc *enc, uint32_t fl, uint32_t ft) {
-  OD_ASSERT(ft >= 2);
-  OD_ASSERT(fl < ft);
-  OD_ASSERT(ft <= (uint32_t)1 << (25 + OD_EC_UINT_BITS));
-  if (ft > 1U << OD_EC_UINT_BITS) {
-    int ft1;
-    int ftb;
-    ft--;
-    ftb = OD_ILOG_NZ(ft) - OD_EC_UINT_BITS;
-    ft1 = (int)(ft >> ftb) + 1;
-    od_ec_encode_cdf_q15(enc, (int)(fl >> ftb), OD_UNIFORM_CDF_Q15(ft1), ft1);
-    od_ec_enc_bits(enc, fl & (((uint32_t)1 << ftb) - 1), ftb);
-  } else {
-    od_ec_encode_cdf_q15(enc, (int)fl, OD_UNIFORM_CDF_Q15(ft), (int)ft);
-  }
-}
-
 /*Encodes a sequence of raw bits in the stream.
   fl: The bits to encode.
   ftb: The number of bits to encode.
