@@ -49,6 +49,7 @@ class UiInterface {
   void SetURL(const GURL& url);
   void SetOmniboxSuggestions(std::unique_ptr<base::Value> suggestions);
   void HandleAppButtonClicked();
+  void SetHistoryButtonsEnabled(bool can_go_back, bool can_go_forward);
 
   // Handlers for HTML UI commands and notifications.
   void OnDomContentsLoaded();

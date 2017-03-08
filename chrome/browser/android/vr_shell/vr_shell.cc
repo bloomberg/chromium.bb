@@ -366,6 +366,13 @@ void VrShell::RestoreContentSurface(JNIEnv* env,
       base::Bind(&VrShellGl::CreateContentSurface, gl_thread_->GetVrShellGl()));
 }
 
+void VrShell::SetHistoryButtonsEnabled(JNIEnv* env,
+                                       const JavaParamRef<jobject>& obj,
+                                       jboolean can_go_back,
+                                       jboolean can_go_forward) {
+  html_interface_->SetHistoryButtonsEnabled(can_go_back, can_go_forward);
+}
+
 void VrShell::UiSurfaceChanged(jobject surface) {
   ui_compositor_->SurfaceChanged(surface);
 }

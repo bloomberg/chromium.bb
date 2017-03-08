@@ -118,6 +118,10 @@ html {
   opacity: 1;
 }
 
+.disabled-button {
+  background-color: #aaa;
+}
+
 #back-button,
 #forward-button {
   background-image: url(../../../../ui/webui/resources/images/vr_back.svg);

@@ -115,6 +115,13 @@ void UiInterface::HandleAppButtonClicked() {
   FlushUpdates();
 }
 
+void UiInterface::SetHistoryButtonsEnabled(bool can_go_back,
+                                           bool can_go_forward) {
+  updates_.SetBoolean("canGoBack", can_go_back);
+  updates_.SetBoolean("canGoForward", can_go_forward);
+  FlushUpdates();
+}
+
 void UiInterface::OnDomContentsLoaded() {
   loaded_ = true;
 #if defined(ENABLE_VR_SHELL_UI_DEV)

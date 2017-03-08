@@ -627,6 +627,13 @@ api.NativeCommandHandler = class {
   onRemoveTab(tab) {}
 
   /**
+   * Set back/forward history buttons to enabled/disabled.
+   * @param {boolean} canGoBack
+   * @param {boolean} canGoForward
+   */
+  onSetHistoryButtonsEnabled(canGoBack, canGoForward) {}
+
+  /**
    * This function is executed after command parsing completes.
    */
   onCommandHandlerFinished() {}
@@ -672,6 +679,9 @@ api.NativeCommandHandler = class {
     }
     if ('removeTab' in dict) {
       this.onRemoveTab(dict['removeTab']);
+    }
+    if ('canGoBack' in dict) {
+      this.onSetHistoryButtonsEnabled(dict['canGoBack'], dict['canGoForward']);
     }
 
     this.onCommandHandlerFinished()

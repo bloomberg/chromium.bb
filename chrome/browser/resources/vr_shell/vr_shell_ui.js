@@ -161,6 +161,8 @@ var vrShellUi = (function() {
       let captionId = domId + '-caption';
       this.button = document.querySelector(domId);
       this.caption = document.querySelector(captionId);
+      this.callback = callback;
+      this.enabled = true;
 
       // Create an invisible parent, from which the button will hover.
       let backing = new api.UiElement(0, 0, 0, 0);
@@ -182,7 +184,7 @@ var vrShellUi = (function() {
 
       this.button.addEventListener('mouseenter', this.onMouseEnter.bind(this));
       this.button.addEventListener('mouseleave', this.onMouseLeave.bind(this));
-      this.button.addEventListener('click', callback);
+      this.button.addEventListener('click', this.callback);
     }
 
     setTranslation(x, y, z) {
@@ -200,6 +202,17 @@ var vrShellUi = (function() {
       ui.updateElement(this.captionElement.id, update);
     }
 
+    setEnabled(enabled) {
+      this.enabled = enabled;
+      if (enabled) {
+        this.button.classList.remove('disabled-button');
+        this.button.addEventListener('click', this.callback);
+      } else {
+        this.button.classList.add('disabled-button');
+        this.button.removeEventListener('click', this.callback);
+      }
+    }
+
     configure(buttonOpacity, captionOpacity, distanceForward) {
       this.button.style.opacity = buttonOpacity;
       this.caption.style.opacity = captionOpacity;
@@ -211,7 +224,9 @@ var vrShellUi = (function() {
     }
 
     onMouseEnter() {
-      this.configure(1, 1, 0.015);
+      if (this.enabled) {
+        this.configure(1, 1, 0.015);
+      }
     }
 
     onMouseLeave() {
@@ -223,22 +238,26 @@ var vrShellUi = (function() {
     constructor(contentQuadId) {
       this.enabled = false;
 
-      this.buttons = [];
+      this.buttons = {
+        backButton: null,
+        reloadButton: null,
+        forwardButton: null
+      };
       let descriptors = [
         [
-          '#back-button',
+          'backButton', '#back-button',
           function() {
             api.doAction(api.Action.HISTORY_BACK, {});
           }
         ],
         [
-          '#reload-button',
+          'reloadButton', '#reload-button',
           function() {
             api.doAction(api.Action.RELOAD, {});
           }
         ],
         [
-          '#forward-button',
+          'forwardButton', '#forward-button',
           function() {
             api.doAction(api.Action.HISTORY_FORWARD, {});
           }
@@ -257,11 +276,12 @@ var vrShellUi = (function() {
       let startPosition = -BUTTON_SPACING * (descriptors.length / 2.0 - 0.5);
 
       for (let i = 0; i < descriptors.length; i++) {
-        let domId = descriptors[i][0];
-        let callback = descriptors[i][1];
+        let name = descriptors[i][0];
+        let domId = descriptors[i][1];
+        let callback = descriptors[i][2];
         let button = new Button(domId, callback, this.controlsId);
         button.setTranslation(startPosition + i * BUTTON_SPACING, 0, 0);
-        this.buttons.push(button);
+        this.buttons[name] = button;
       }
     }
 
@@ -271,9 +291,17 @@ var vrShellUi = (function() {
     }
 
     configure() {
-      for (let i = 0; i < this.buttons.length; i++) {
-        this.buttons[i].setVisible(this.enabled);
+      for (let key in this.buttons) {
+        this.buttons[key].setVisible(this.enabled);
       }
+    }
+
+    setBackButtonEnabled(enabled) {
+      this.buttons.backButton.setEnabled(enabled);
+    }
+
+    setForwardButtonEnabled(enabled) {
+      this.buttons.forwardButton.setEnabled(enabled);
     }
   };
 
@@ -909,6 +937,8 @@ var vrShellUi = (function() {
       this.mode = api.Mode.UNKNOWN;
       this.menuMode = false;
       this.fullscreen = false;
+      this.canGoBack = false;
+      this.canGoForward = false;
 
       this.background = new Background();
       this.contentQuad = new ContentQuad();
@@ -938,6 +968,15 @@ var vrShellUi = (function() {
       this.updateState();
     }
 
+    setHistoryButtonsEnabled(canGoBack, canGoForward) {
+      this.canGoBack = canGoBack;
+      this.canGoForward = canGoForward;
+
+      /** No need to call updateState to adjust button properties. */
+      this.controls.setBackButtonEnabled(this.canGoBack || this.fullscreen);
+      this.controls.setForwardButtonEnabled(this.canGoForward);
+    }
+
     updateState() {
       /** @const */ var URL_INDICATOR_VISIBILITY_TIMEOUT_MS = 5000;
 
@@ -952,6 +991,8 @@ var vrShellUi = (function() {
       this.contentQuad.setMenuMode(menuMode);
       // TODO(crbug/643815): Set aspect ratio on content quad when available.
       this.controls.setEnabled(menuMode);
+      this.controls.setBackButtonEnabled(this.canGoBack || this.fullscreen);
+      this.controls.setForwardButtonEnabled(this.canGoForward);
       this.omnibox.setEnabled(menuMode);
       this.urlIndicator.setEnabled(mode == api.Mode.STANDARD && !menuMode);
       this.urlIndicator.setVisibilityTimeout(
@@ -1059,6 +1100,11 @@ var vrShellUi = (function() {
     /** @override */
     onRemoveTab(tab) {
       uiManager.tabContainer.removeTab(tab);
+    }
+
+    /** @override */
+    onSetHistoryButtonsEnabled(canGoBack, canGoForward) {
+      uiManager.setHistoryButtonsEnabled(canGoBack, canGoForward);
     }
 
     /** @override */

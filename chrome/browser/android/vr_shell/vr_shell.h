@@ -116,6 +116,10 @@ class VrShell : public device::GvrDelegate, content::WebContentsObserver {
       const base::android::JavaParamRef<jobject>& obj);
   void RestoreContentSurface(JNIEnv* env,
                              const base::android::JavaParamRef<jobject>& obj);
+  void SetHistoryButtonsEnabled(JNIEnv* env,
+                                const base::android::JavaParamRef<jobject>& obj,
+                                jboolean can_go_back,
+                                jboolean can_go_forward);
 
   void ContentWebContentsDestroyed();
   // Called when our WebContents have been hidden. Usually a sign that something

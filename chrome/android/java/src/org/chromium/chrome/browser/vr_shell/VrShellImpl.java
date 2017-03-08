@@ -204,6 +204,7 @@ public class VrShellImpl
                 } else {
                     nativeSwapContents(mNativeVrShell, null, mMotionEventSynthesizer);
                 }
+                updateHistoryButtonsVisibility();
             }
 
             @Override
@@ -558,11 +559,19 @@ public class VrShellImpl
     @CalledByNative
     public void navigateForward() {
         mActivity.getToolbarManager().forward();
+        updateHistoryButtonsVisibility();
     }
 
     @CalledByNative
     public void navigateBack() {
         mActivity.getToolbarManager().back();
+        updateHistoryButtonsVisibility();
+    }
+
+    private void updateHistoryButtonsVisibility() {
+        boolean canGoBack = mTab != null && mTab.canGoBack();
+        boolean canGoForward = mTab != null && mTab.canGoForward();
+        nativeSetHistoryButtonsEnabled(mNativeVrShell, canGoBack, canGoForward);
     }
 
     @CalledByNative
@@ -619,4 +628,6 @@ public class VrShellImpl
     private native void nativeOnTabRemoved(long nativeVrShell, boolean incognito, int id);
     private native Surface nativeTakeContentSurface(long nativeVrShell);
     private native void nativeRestoreContentSurface(long nativeVrShell);
+    private native void nativeSetHistoryButtonsEnabled(
+            long nativeVrShell, boolean canGoBack, boolean canGoForward);
 }
