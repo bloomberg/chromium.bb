@@ -91,6 +91,10 @@ def IsBoolean(new_content_lines, metric_name, input_api):
       any(input_api.re.search(type_re, match.group(i)) for i in (1, 3)))
 
 
+def CheckHtml(input_api, output_api):
+  return input_api.canned_checks.CheckLongLines(input_api, output_api, 80)
+
+
 def RunVulcanizeTests(input_api, output_api):
   presubmit_path = input_api.PresubmitLocalPath()
   tests = [input_api.os_path.join(presubmit_path, 'vulcanize_gn_test.py')]
@@ -100,6 +104,8 @@ def RunVulcanizeTests(input_api, output_api):
 def _CheckChangeOnUploadOrCommit(input_api, output_api):
   results = CheckUserActionUpdate(input_api, output_api, ACTION_XML_PATH)
   affected = input_api.AffectedFiles()
+  if any(f for f in affected if f.LocalPath().endswith('.html')):
+    results += CheckHtml(input_api, output_api)
   if any(f for f in affected if f.LocalPath().endswith('vulcanize_gn.py')):
     results += RunVulcanizeTests(input_api, output_api)
   return results
