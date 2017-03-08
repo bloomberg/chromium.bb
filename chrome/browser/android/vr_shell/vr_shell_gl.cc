@@ -810,7 +810,8 @@ void VrShellGl::DrawUiView(const gvr::Mat4f* head_pose,
     buffer_viewport_list_->GetBufferViewport(eye + viewport_offset,
                                              buffer_viewport_.get());
 
-    view_matrix = MatrixMul(gvr_api_->GetEyeFromHeadMatrix(eye), view_matrix);
+    const gvr::Mat4f eye_view_matrix =
+        MatrixMul(gvr_api_->GetEyeFromHeadMatrix(eye), view_matrix);
 
     gvr::Recti pixel_rect =
         CalculatePixelSpaceRect(render_size, buffer_viewport_->GetSourceUv());
@@ -821,9 +822,9 @@ void VrShellGl::DrawUiView(const gvr::Mat4f* head_pose,
     const gvr::Mat4f render_matrix =
         MatrixMul(PerspectiveMatrixFromView(buffer_viewport_->GetSourceFov(),
                                             kZNear, kZFar),
-                  view_matrix);
+                  eye_view_matrix);
 
-    DrawElements(render_matrix, view_matrix, elementsInDrawOrder);
+    DrawElements(render_matrix, eye_view_matrix, elementsInDrawOrder);
     if (head_pose != nullptr && !web_vr_mode_) {
       DrawCursor(render_matrix);
     }
