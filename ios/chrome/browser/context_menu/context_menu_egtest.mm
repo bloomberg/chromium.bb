@@ -30,6 +30,7 @@
 #endif
 
 using chrome_test_util::ButtonWithAccessibilityLabelId;
+using chrome_test_util::OpenLinkInNewTabButton;
 
 namespace {
 const char kUrlChromiumLogoPage[] =
@@ -174,8 +175,7 @@ void SelectTabAtIndexInCurrentMode(NSUInteger index) {
   [ChromeEarlGrey loadURL:initialURL];
   chrome_test_util::AssertMainTabCount(1U);
 
-  LongPressElementAndTapOnButton(kDestinationLinkID,
-                                 chrome_test_util::OpenLinkInNewTabMenuItem());
+  LongPressElementAndTapOnButton(kDestinationLinkID, OpenLinkInNewTabButton());
 
   SelectTabAtIndexInCurrentMode(1U);
 
@@ -217,8 +217,7 @@ void SelectTabAtIndexInCurrentMode(NSUInteger index) {
                                           kDestinationLinkID)]
       assertWithMatcher:grey_notNil()];
 
-  LongPressElementAndTapOnButton(kDestinationLinkID,
-                                 chrome_test_util::OpenLinkInNewTabMenuItem());
+  LongPressElementAndTapOnButton(kDestinationLinkID, OpenLinkInNewTabButton());
 
   // Earl Grey cannot preperly synchronize some animations, so adding a
   // WaitUntilCondition to wait for the new tab opening animation to finish

@@ -227,7 +227,7 @@ id<GREYMatcher> CollectionViewSwitchCell(NSString* accessibilityIdentifier,
                     nil);
 }
 
-id<GREYMatcher> OpenLinkInNewTabMenuItem() {
+id<GREYMatcher> OpenLinkInNewTabButton() {
   return ButtonWithAccessibilityLabelId(IDS_IOS_CONTENT_CONTEXT_OPENLINKNEWTAB);
 }
 

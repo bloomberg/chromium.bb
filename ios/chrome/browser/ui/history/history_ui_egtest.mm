@@ -43,7 +43,7 @@
 
 using chrome_test_util::ButtonWithAccessibilityLabelId;
 using chrome_test_util::NavigationBarDoneButton;
-using chrome_test_util::OpenLinkInNewTabMenuItem;
+using chrome_test_util::OpenLinkInNewTabButton;
 using chrome_test_util::WebViewContainingText;
 
 namespace {
@@ -424,7 +424,7 @@ void MockSignIn() {
 
   // Select "Open in New Tab" and confirm that new tab is opened with selected
   // URL.
-  [[EarlGrey selectElementWithMatcher:OpenLinkInNewTabMenuItem()]
+  [[EarlGrey selectElementWithMatcher:OpenLinkInNewTabButton()]
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
                                           _URL1.GetContent())]

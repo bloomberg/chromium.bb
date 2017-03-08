@@ -44,6 +44,8 @@
 #error "This file requires ARC support."
 #endif
 
+using chrome_test_util::OpenLinkInNewTabButton;
+
 namespace {
 
 const char kTestUrl1[] =
@@ -853,8 +855,7 @@ void SelectTabUsingUI(NSString* title) {
       selectElementWithMatcher:chrome_test_util::WebViewContainingText("link")]
       performAction:grey_longPress()];
 
-  [[EarlGrey
-      selectElementWithMatcher:chrome_test_util::OpenLinkInNewTabMenuItem()]
+  [[EarlGrey selectElementWithMatcher:OpenLinkInNewTabButton()]
       performAction:grey_tap()];
   chrome_test_util::AssertMainTabCount(numberOfTabs + 1);
 

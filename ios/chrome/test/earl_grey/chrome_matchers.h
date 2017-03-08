@@ -86,7 +86,7 @@ id<GREYMatcher> CollectionViewSwitchCell(NSString* accessibilityIdentifier,
 
 // Matcher for the Open in New Tab option in the context menu when long pressing
 // a link.
-id<GREYMatcher> OpenLinkInNewTabMenuItem();
+id<GREYMatcher> OpenLinkInNewTabButton();
 
 // Matcher for the done button on the navigation bar.
 id<GREYMatcher> NavigationBarDoneButton();
