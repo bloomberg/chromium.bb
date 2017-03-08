@@ -32,6 +32,8 @@
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/permissions/chooser_context_base.h"
+#include "chrome/browser/permissions/permission_manager.h"
+#include "chrome/browser/permissions/permission_result.h"
 #include "chrome/browser/permissions/permission_uma_util.h"
 #include "chrome/browser/permissions/permission_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -672,6 +674,28 @@ void WebsiteSettings::PresentSitePermissions() {
       permission_info.default_setting =
           content_settings_->GetDefaultContentSetting(permission_info.type,
                                                       NULL);
+    }
+
+    // For permissions that are still prompting the user and haven't been
+    // explicitly set by another source, check its embargo status.
+    if (PermissionUtil::IsPermission(permission_info.type) &&
+        permission_info.setting == CONTENT_SETTING_DEFAULT &&
+        permission_info.source ==
+            content_settings::SettingSource::SETTING_SOURCE_USER) {
+      // TODO(raymes): Use GetPermissionStatus() to retrieve information
+      // about *all* permissions once it has default behaviour implemented for
+      // ContentSettingTypes that aren't permissions.
+      PermissionResult permission_result =
+          PermissionManager::Get(profile_)->GetPermissionStatus(
+              permission_info.type, site_url_, site_url_);
+
+      // If under embargo, update |permission_info| to reflect that.
+      if (permission_result.content_setting == CONTENT_SETTING_BLOCK &&
+          (permission_result.source ==
+               PermissionStatusSource::MULTIPLE_DISMISSALS ||
+           permission_result.source ==
+               PermissionStatusSource::SAFE_BROWSING_BLACKLIST))
+        permission_info.setting = permission_result.content_setting;
     }
 
     permission_info_list.push_back(permission_info);

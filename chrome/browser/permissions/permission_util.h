@@ -61,6 +61,11 @@ class PermissionUtil {
   static bool GetPermissionType(ContentSettingsType type,
                                 content::PermissionType* out);
 
+  // Checks whether the given ContentSettingsType is a permission. Use this
+  // to determine whether a specific ContentSettingsType is supported by the
+  // PermissionManager.
+  static bool IsPermission(ContentSettingsType type);
+
   static bool ShouldShowPersistenceToggle();
 
   // A scoped class that will check the current resolved content setting on
