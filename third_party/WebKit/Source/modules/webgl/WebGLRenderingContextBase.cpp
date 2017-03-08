@@ -111,8 +111,13 @@ namespace {
 
 const double secondsBetweenRestoreAttempts = 1.0;
 const int maxGLErrorsAllowedToConsole = 256;
-const unsigned maxGLActiveContexts = 16;
 const unsigned maxGLActiveContextsOnWorker = 4;
+
+#if OS(ANDROID)
+const unsigned maxGLActiveContexts = 8;
+#else   // OS(ANDROID)
+const unsigned maxGLActiveContexts = 16;
+#endif  // OS(ANDROID)
 
 unsigned currentMaxGLContexts() {
   return isMainThread() ? maxGLActiveContexts : maxGLActiveContextsOnWorker;
