@@ -47,7 +47,7 @@ ExtensionPopup* ExtensionPopup::Create(extensions::ExtensionViewHost* host,
                                        views::View* anchor_view,
                                        views::BubbleBorder::Arrow arrow,
                                        ShowAction show_action) {
-  auto popup = new ExtensionPopup(host, anchor_view, arrow, show_action);
+  auto* popup = new ExtensionPopup(host, anchor_view, arrow, show_action);
   views::BubbleDialogDelegateView::CreateBubble(popup);
   return popup;
 }
