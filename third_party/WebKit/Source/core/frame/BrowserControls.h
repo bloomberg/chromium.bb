@@ -10,7 +10,7 @@
 #include "public/platform/WebBrowserControlsState.h"
 
 namespace blink {
-class FrameHost;
+class Page;
 class FloatSize;
 
 // This class encapsulate data and logic required to show/hide browser controls
@@ -20,8 +20,8 @@ class FloatSize;
 class CORE_EXPORT BrowserControls final
     : public GarbageCollected<BrowserControls> {
  public:
-  static BrowserControls* create(const FrameHost& host) {
-    return new BrowserControls(host);
+  static BrowserControls* create(const Page& page) {
+    return new BrowserControls(page);
   }
 
   DECLARE_TRACE();
@@ -52,10 +52,10 @@ class CORE_EXPORT BrowserControls final
   WebBrowserControlsState permittedState() const { return m_permittedState; }
 
  private:
-  explicit BrowserControls(const FrameHost&);
+  explicit BrowserControls(const Page&);
   void resetBaseline();
 
-  Member<const FrameHost> m_frameHost;
+  Member<const Page> m_page;
 
   // The browser controls height regardless of whether it is visible or not.
   float m_height;

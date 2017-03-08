@@ -14,8 +14,8 @@
 
 namespace blink {
 
-BrowserControls::BrowserControls(const FrameHost& frameHost)
-    : m_frameHost(&frameHost),
+BrowserControls::BrowserControls(const Page& page)
+    : m_page(&page),
       m_height(0),
       m_shownRatio(0),
       m_baselineContentOffset(0),
@@ -24,7 +24,7 @@ BrowserControls::BrowserControls(const FrameHost& frameHost)
       m_permittedState(WebBrowserControlsBoth) {}
 
 DEFINE_TRACE(BrowserControls) {
-  visitor->trace(m_frameHost);
+  visitor->trace(m_page);
 }
 
 void BrowserControls::scrollBegin() {
@@ -42,7 +42,7 @@ FloatSize BrowserControls::scrollBy(FloatSize pendingDelta) {
     return pendingDelta;
 
   float oldOffset = contentOffset();
-  float pageScale = m_frameHost->visualViewport().scale();
+  float pageScale = m_page->frameHost().visualViewport().scale();
 
   // Update accumulated vertical scroll and apply it to browser controls
   // Compute scroll delta in viewport space by applying page scale
@@ -88,7 +88,7 @@ void BrowserControls::setShownRatio(float shownRatio) {
     return;
 
   m_shownRatio = shownRatio;
-  m_frameHost->page().chromeClient().didUpdateBrowserControls();
+  m_page->chromeClient().didUpdateBrowserControls();
 }
 
 void BrowserControls::updateConstraintsAndState(
@@ -125,7 +125,7 @@ void BrowserControls::setHeight(float height, bool shrinkViewport) {
 
   m_height = height;
   m_shrinkViewport = shrinkViewport;
-  m_frameHost->page().chromeClient().didUpdateBrowserControls();
+  m_page->chromeClient().didUpdateBrowserControls();
 }
 
 }  // namespace blink

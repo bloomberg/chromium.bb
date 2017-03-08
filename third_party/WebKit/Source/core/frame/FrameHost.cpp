@@ -49,7 +49,7 @@ FrameHost* FrameHost::create(Page& page) {
 
 FrameHost::FrameHost(Page& page)
     : m_page(&page),
-      m_browserControls(BrowserControls::create(*this)),
+      m_browserControls(BrowserControls::create(page)),
       m_visualViewport(VisualViewport::create(*this)),
       m_overscrollController(
           OverscrollController::create(*m_visualViewport,
