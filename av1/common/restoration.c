@@ -615,7 +615,7 @@ void av1_selfguided_restoration(int32_t *dgd, int width, int height, int stride,
                                 int bit_depth, int r, int eps,
                                 int32_t *tmpbuf) {
   int32_t *A = tmpbuf;
-  int32_t *B = A + RESTORATION_TILEPELS_MAX;
+  int32_t *B = A + SGRPROJ_OUTBUF_SIZE;
   int8_t num[RESTORATION_TILEPELS_MAX];
   int i, j;
   // Adjusting the stride of A and B here appears to avoid bad cache effects,
