@@ -286,35 +286,32 @@ static void search_selfguided_restoration(uint8_t *dat8, int width, int height,
   int32_t *flt1 = rstbuf;
   int32_t *flt2 = flt1 + RESTORATION_TILEPELS_MAX;
   int32_t *tmpbuf2 = flt2 + RESTORATION_TILEPELS_MAX;
-  int i, j, ep, bestep = 0;
+  int ep, bestep = 0;
   int64_t err, besterr = -1;
   int exqd[2], bestxqd[2] = { 0, 0 };
 
   for (ep = 0; ep < SGRPROJ_PARAMS; ep++) {
     int exq[2];
+#if CONFIG_AOM_HIGHBITDEPTH
     if (bit_depth > 8) {
       uint16_t *dat = CONVERT_TO_SHORTPTR(dat8);
-      for (i = 0; i < height; ++i) {
-        for (j = 0; j < width; ++j) {
-          flt1[i * width + j] = (int32_t)dat[i * dat_stride + j];
-          flt2[i * width + j] = (int32_t)dat[i * dat_stride + j];
-        }
-      }
+      av1_selfguided_restoration_highbd(dat, width, height, dat_stride, flt1,
+                                        width, bit_depth, sgr_params[ep].r1,
+                                        sgr_params[ep].e1, tmpbuf2);
+      av1_selfguided_restoration_highbd(dat, width, height, dat_stride, flt2,
+                                        width, bit_depth, sgr_params[ep].r2,
+                                        sgr_params[ep].e2, tmpbuf2);
     } else {
-      uint8_t *dat = dat8;
-      for (i = 0; i < height; ++i) {
-        for (j = 0; j < width; ++j) {
-          const int k = i * width + j;
-          const int l = i * dat_stride + j;
-          flt1[k] = (int32_t)dat[l];
-          flt2[k] = (int32_t)dat[l];
-        }
-      }
+#endif
+      av1_selfguided_restoration(dat8, width, height, dat_stride, flt1, width,
+                                 bit_depth, sgr_params[ep].r1,
+                                 sgr_params[ep].e1, tmpbuf2);
+      av1_selfguided_restoration(dat8, width, height, dat_stride, flt2, width,
+                                 bit_depth, sgr_params[ep].r2,
+                                 sgr_params[ep].e2, tmpbuf2);
+#if CONFIG_AOM_HIGHBITDEPTH
     }
-    av1_selfguided_restoration(flt1, width, height, width, bit_depth,
-                               sgr_params[ep].r1, sgr_params[ep].e1, tmpbuf2);
-    av1_selfguided_restoration(flt2, width, height, width, bit_depth,
-                               sgr_params[ep].r2, sgr_params[ep].e2, tmpbuf2);
+#endif
     get_proj_subspace(src8, width, height, src_stride, dat8, dat_stride,
                       bit_depth, flt1, width, flt2, width, exq);
     encode_xq(exq, exqd);

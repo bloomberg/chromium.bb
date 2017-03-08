@@ -68,8 +68,8 @@ class AV1SelfguidedFilterTest
 
     std::clock_t start = std::clock();
     for (i = 0; i < NUM_ITERS; ++i) {
-      apply_selfguided_restoration(input, w, h, w, 8, eps, xqd, output, w,
-                                   tmpbuf);
+      apply_selfguided_restoration_c(input, w, h, w, 8, eps, xqd, output, w,
+                                     tmpbuf);
     }
     std::clock_t end = std::clock();
     double elapsed = ((end - start) / (double)CLOCKS_PER_SEC);

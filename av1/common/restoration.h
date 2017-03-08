@@ -249,8 +249,6 @@ int av1_alloc_restoration_struct(struct AV1Common *cm,
 void av1_free_restoration_struct(RestorationInfo *rst_info);
 
 void extend_frame(uint8_t *data, int width, int height, int stride);
-void av1_selfguided_restoration(int32_t *dgd, int width, int height, int stride,
-                                int bit_depth, int r, int eps, int32_t *tmpbuf);
 #if USE_DOMAINTXFMRF
 void av1_domaintxfmrf_restoration(uint8_t *dgd, int width, int height,
                                   int stride, int param, uint8_t *dst,
