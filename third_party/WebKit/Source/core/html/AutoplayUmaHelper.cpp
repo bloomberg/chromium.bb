@@ -322,13 +322,7 @@ void AutoplayUmaHelper::maybeStopRecordingMutedVideoOffscreenDuration() {
       std::min<int64_t>(m_mutedVideoAutoplayOffscreenDurationMS,
                         std::numeric_limits<int32_t>::max()));
 
-  if (m_source == AutoplaySource::Attribute) {
-    DEFINE_STATIC_LOCAL(
-        CustomCountHistogram, durationHistogram,
-        ("Media.Video.Autoplay.Muted.Attribute.OffscreenDuration", 1,
-         maxOffscreenDurationUmaMS, offscreenDurationUmaBucketCount));
-    durationHistogram.count(boundedTime);
-  } else {
+  if (m_source == AutoplaySource::Method) {
     DEFINE_STATIC_LOCAL(
         CustomCountHistogram, durationHistogram,
         ("Media.Video.Autoplay.Muted.PlayMethod.OffscreenDuration", 1,
