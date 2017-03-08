@@ -1298,6 +1298,7 @@ source_set("unit_tests") {
     "layout/ScrollAnchorTest.cpp",
     "layout/TextAutosizerTest.cpp",
     "layout/VisualRectMappingTest.cpp",
+    "layout/api/SelectionStateTest.cpp",
     "layout/compositing/CompositedLayerMappingTest.cpp",
     "layout/compositing/CompositingReasonFinderTest.cpp",
     "layout/line/InlineBoxTest.cpp",
