@@ -16,6 +16,7 @@
 #include "chrome/renderer/autofill/password_generation_test_utils.h"
 #include "chrome/test/base/chrome_render_view_test.h"
 #include "components/autofill/content/renderer/autofill_agent.h"
+#include "components/autofill/content/renderer/form_autofill_util.h"
 #include "components/autofill/content/renderer/test_password_generation_agent.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/password_generation_util.h"
@@ -721,6 +722,49 @@ TEST_F(PasswordGenerationAgentTest, FormClassifierDisabled) {
   LoadHTMLWithUserGesture(kSigninFormHTML);
   ExpectFormClassifierVoteReceived(false /* vote is not expected */,
                                    base::string16());
+}
+
+TEST_F(PasswordGenerationAgentTest, ConfirmationFieldVoteFromServer) {
+  LoadHTMLWithUserGesture(kPasswordChangeFormHTML);
+  SetNotBlacklistedMessage(password_generation_, kPasswordChangeFormHTML);
+
+  WebDocument document = GetMainFrame()->document();
+  blink::WebVector<blink::WebFormElement> web_forms;
+  document.forms(web_forms);
+  autofill::FormData form_data;
+  WebFormElementToFormData(web_forms[0], blink::WebFormControlElement(),
+                           nullptr, form_util::EXTRACT_NONE, &form_data,
+                           nullptr /* FormFieldData */);
+
+  std::vector<autofill::PasswordFormGenerationData> forms;
+  autofill::PasswordFormGenerationData generation_data(
+      CalculateFormSignature(form_data),
+      CalculateFieldSignatureForField(form_data.fields[1]));
+  generation_data.confirmation_field_signature.emplace(
+      CalculateFieldSignatureForField(form_data.fields[3]));
+  forms.push_back(generation_data);
+  password_generation_->FoundFormsEligibleForGeneration(forms);
+
+  WebElement element =
+      document.getElementById(WebString::fromUTF16(form_data.fields[1].name));
+  ASSERT_FALSE(element.isNull());
+  WebInputElement generation_element = element.to<WebInputElement>();
+  element =
+      document.getElementById(WebString::fromUTF16(form_data.fields[2].name));
+  ASSERT_FALSE(element.isNull());
+  WebInputElement ignored_password_element = element.to<WebInputElement>();
+  element =
+      document.getElementById(WebString::fromUTF16(form_data.fields[3].name));
+  ASSERT_FALSE(element.isNull());
+  WebInputElement confirmation_password_element = element.to<WebInputElement>();
+
+  base::string16 password = base::ASCIIToUTF16("random_password");
+  password_generation_->GeneratedPasswordAccepted(password);
+  EXPECT_EQ(password, generation_element.value().utf16());
+  // Check that the generated password was copied according to the server's
+  // response.
+  EXPECT_EQ(base::string16(), ignored_password_element.value().utf16());
+  EXPECT_EQ(password, confirmation_password_element.value().utf16());
 }
 
 }  // namespace autofill

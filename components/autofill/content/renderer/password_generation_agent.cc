@@ -75,21 +75,30 @@ const PasswordFormGenerationData* FindFormGenerationData(
 // than 2 elements.
 std::vector<blink::WebInputElement> FindPasswordElementsForGeneration(
     const std::vector<blink::WebInputElement>& all_password_elements,
-    const FieldSignature field_signature) {
-  auto iter = std::find_if(
-      all_password_elements.begin(), all_password_elements.end(),
-      [&field_signature](const blink::WebInputElement& input) {
-        FieldSignature signature = CalculateFieldSignatureByNameAndType(
-            input.nameForAutofill().utf16(), input.formControlType().utf8());
-        return signature == field_signature;
-      });
-  std::vector<blink::WebInputElement> passwords;
+    const PasswordFormGenerationData& generation_data) {
+  auto generation_field_iter = all_password_elements.end();
+  auto confirmation_field_iter = all_password_elements.end();
+  for (auto iter = all_password_elements.begin();
+       iter != all_password_elements.end(); ++iter) {
+    const blink::WebInputElement& input = *iter;
+    FieldSignature signature = CalculateFieldSignatureByNameAndType(
+        input.nameForAutofill().utf16(), input.formControlType().utf8());
+    if (signature == generation_data.field_signature)
+      generation_field_iter = iter;
+    else if (generation_data.confirmation_field_signature &&
+             signature == *generation_data.confirmation_field_signature)
+      confirmation_field_iter = iter;
+  }
 
-  // We copy not more than 2 fields because occasionally there are forms where
-  // the security question answers are put in password fields and we don't want
-  // to fill those.
-  for (; iter != all_password_elements.end() && passwords.size() < 2; ++iter)
-    passwords.push_back(*iter);
+  std::vector<blink::WebInputElement> passwords;
+  if (generation_field_iter != all_password_elements.end()) {
+    passwords.push_back(*generation_field_iter);
+
+    if (confirmation_field_iter == all_password_elements.end())
+      confirmation_field_iter = generation_field_iter + 1;
+    if (confirmation_field_iter != all_password_elements.end())
+      passwords.push_back(*confirmation_field_iter);
+  }
   return passwords;
 }
 
@@ -404,10 +413,10 @@ void PasswordGenerationAgent::DetermineGenerationElement() {
 
     VLOG(2) << "Password generation eligible form found";
     std::vector<blink::WebInputElement> password_elements =
-        generation_data ? FindPasswordElementsForGeneration(
-                              possible_form_data.password_elements,
-                              generation_data->field_signature)
-                        : possible_form_data.password_elements;
+        generation_data
+            ? FindPasswordElementsForGeneration(
+                  possible_form_data.password_elements, *generation_data)
+            : possible_form_data.password_elements;
     if (password_elements.empty()) {
       // It might be if JavaScript changes field names.
       VLOG(2) << "Fields for generation are not found";
@@ -565,9 +574,11 @@ void PasswordGenerationAgent::UserTriggeredGeneratePassword() {
   GetAccountCreationPasswordFields(control_elements, &password_elements);
   password_elements = FindPasswordElementsForGeneration(
       password_elements,
-      CalculateFieldSignatureByNameAndType(
-          last_focused_password_element_.nameForAutofill().utf16(),
-          last_focused_password_element_.formControlType().utf8()));
+      PasswordFormGenerationData(
+          0, /* form_signature */
+          CalculateFieldSignatureByNameAndType(
+              last_focused_password_element_.nameForAutofill().utf16(),
+              last_focused_password_element_.formControlType().utf8())));
   generation_form_data_.reset(new AccountCreationFormData(
       make_linked_ptr(password_form.release()), password_elements));
   is_manually_triggered_ = true;

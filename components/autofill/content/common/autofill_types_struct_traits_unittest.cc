@@ -201,6 +201,10 @@ void CheckEqualPasswordFormGenerationData(
     const PasswordFormGenerationData& actual) {
   EXPECT_EQ(expected.form_signature, actual.form_signature);
   EXPECT_EQ(expected.field_signature, actual.field_signature);
+  ASSERT_EQ(expected.confirmation_field_signature.has_value(),
+            actual.confirmation_field_signature.has_value());
+  EXPECT_EQ(expected.confirmation_field_signature.value(),
+            actual.confirmation_field_signature.value());
 }
 
 }  // namespace
@@ -407,7 +411,10 @@ TEST_F(AutofillTypeTraitsTestImpl, PassPasswordFormGenerationData) {
   FormSignature form_signature = CalculateFormSignature(form);
   FieldSignature field_signature =
       CalculateFieldSignatureForField(form.fields[0]);
-  PasswordFormGenerationData input{form_signature, field_signature};
+  FieldSignature confirmation_field_signature =
+      CalculateFieldSignatureForField(form.fields[1]);
+  PasswordFormGenerationData input(form_signature, field_signature);
+  input.confirmation_field_signature.emplace(confirmation_field_signature);
 
   base::RunLoop loop;
   mojom::TypeTraitsTestPtr proxy = GetTypeTraitsTestProxy();

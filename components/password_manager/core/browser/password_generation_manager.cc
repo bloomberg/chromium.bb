@@ -4,6 +4,7 @@
 
 #include "components/password_manager/core/browser/password_generation_manager.h"
 
+#include "base/optional.h"
 #include "components/autofill/core/browser/autofill_field.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/form_structure.h"
@@ -11,6 +12,11 @@
 #include "components/password_manager/core/browser/password_manager.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/browser/password_manager_driver.h"
+
+using autofill::AutofillField;
+using autofill::FieldSignature;
+using autofill::FormSignature;
+using autofill::FormStructure;
 
 namespace password_manager {
 
@@ -31,16 +37,26 @@ void PasswordGenerationManager::DetectFormsEligibleForGeneration(
   std::vector<autofill::PasswordFormGenerationData>
       forms_eligible_for_generation;
   for (auto form_it = forms.begin(); form_it != forms.end(); ++form_it) {
-    autofill::FormStructure* form = *form_it;
+    FormStructure* form = *form_it;
+    AutofillField* generation_field = nullptr;
+    AutofillField* confirmation_field = nullptr;
     for (auto field_it = form->begin(); field_it != form->end(); ++field_it) {
-      autofill::AutofillField* field = field_it->get();
+      AutofillField* field = field_it->get();
       if (field->server_type() == autofill::ACCOUNT_CREATION_PASSWORD ||
           field->server_type() == autofill::NEW_PASSWORD) {
-        forms_eligible_for_generation.push_back(
-            autofill::PasswordFormGenerationData{form->form_signature(),
-                                                 field->GetFieldSignature()});
-        break;
+        generation_field = field;
+      } else if (field->server_type() == autofill::CONFIRMATION_PASSWORD) {
+        confirmation_field = field;
       }
+    }
+    if (generation_field) {
+      autofill::PasswordFormGenerationData data(
+          form->form_signature(), generation_field->GetFieldSignature());
+      if (confirmation_field != nullptr) {
+        data.confirmation_field_signature.emplace(
+            confirmation_field->GetFieldSignature());
+      }
+      forms_eligible_for_generation.push_back(data);
     }
   }
   if (!forms_eligible_for_generation.empty())

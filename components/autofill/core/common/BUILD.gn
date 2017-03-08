@@ -33,6 +33,7 @@ static_library("common") {
     "password_form_field_prediction_map.h",
     "password_form_fill_data.cc",
     "password_form_fill_data.h",
+    "password_form_generation_data.cc",
     "password_form_generation_data.h",
     "password_generation_util.cc",
     "password_generation_util.h",

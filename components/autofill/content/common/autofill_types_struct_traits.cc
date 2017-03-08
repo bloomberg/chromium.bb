@@ -474,6 +474,12 @@ bool StructTraits<mojom::PasswordFormGenerationDataDataView,
          PasswordFormGenerationData* out) {
   out->form_signature = data.form_signature();
   out->field_signature = data.field_signature();
+  if (data.has_confirmation_field()) {
+    out->confirmation_field_signature.emplace(
+        data.confirmation_field_signature());
+  } else {
+    DCHECK(!out->confirmation_field_signature);
+  }
   return true;
 }
 

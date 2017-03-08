@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include "base/optional.h"
 #include "base/strings/string16.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/autofill/core/common/signatures_util.h"
@@ -17,6 +18,12 @@ namespace autofill {
 // Structure used for sending information from browser to renderer about on
 // which fields password should be generated.
 struct PasswordFormGenerationData {
+  PasswordFormGenerationData();
+  PasswordFormGenerationData(FormSignature form_signature,
+                             FieldSignature field_signature);
+  PasswordFormGenerationData(const PasswordFormGenerationData& other);
+  ~PasswordFormGenerationData();
+
   // The unique signature of form where password should be generated
   // (see components/autofill/core/browser/form_structure.h).
   FormSignature form_signature;
@@ -24,6 +31,10 @@ struct PasswordFormGenerationData {
   // The unique signature of field where password should be generated
   // (see components/autofill/core/browser/autofill_field.h).
   FieldSignature field_signature;
+
+  // The unique signature of the confirmation field where the generated password
+  // should be copied to.
+  base::Optional<FieldSignature> confirmation_field_signature;
 };
 
 }  // namespace autofill

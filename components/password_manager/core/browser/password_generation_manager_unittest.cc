@@ -201,13 +201,15 @@ TEST_F(PasswordGenerationManagerTest, DetectFormsEligibleForGeneration) {
   account_creation_form.fields.push_back(password);
   autofill::FormFieldData confirm_password;
   confirm_password.label = ASCIIToUTF16("confirm_password");
-  confirm_password.name = ASCIIToUTF16("password");
+  confirm_password.name = ASCIIToUTF16("confirm_password");
   confirm_password.form_control_type = "password";
   account_creation_form.fields.push_back(confirm_password);
   autofill::FormSignature account_creation_form_signature =
       autofill::CalculateFormSignature(account_creation_form);
   autofill::FieldSignature account_creation_field_signature =
       autofill::CalculateFieldSignatureForField(password);
+  autofill::FieldSignature confirmation_field_signature =
+      autofill::CalculateFieldSignatureForField(confirm_password);
   autofill::FormStructure form2(account_creation_form);
   forms.push_back(&form2);
 
@@ -231,6 +233,7 @@ TEST_F(PasswordGenerationManagerTest, DetectFormsEligibleForGeneration) {
   // PASSWORD = 75
   // ACCOUNT_CREATION_PASSWORD = 76
   // NEW_PASSWORD = 88
+  // CONFIRMATION_PASSWORD = 95
   autofill::AutofillQueryResponseContents response;
   response.add_field()->set_autofill_type(9);
   response.add_field()->set_autofill_type(75);
@@ -238,7 +241,7 @@ TEST_F(PasswordGenerationManagerTest, DetectFormsEligibleForGeneration) {
   response.add_field()->set_autofill_type(76);
   response.add_field()->set_autofill_type(75);
   response.add_field()->set_autofill_type(88);
-  response.add_field()->set_autofill_type(88);
+  response.add_field()->set_autofill_type(95);
 
   std::string response_string;
   ASSERT_TRUE(response.SerializeToString(&response_string));
@@ -252,6 +255,9 @@ TEST_F(PasswordGenerationManagerTest, DetectFormsEligibleForGeneration) {
   EXPECT_EQ(
       account_creation_field_signature,
       GetTestDriver()->GetFoundEligibleForGenerationForms()[0].field_signature);
+  EXPECT_FALSE(GetTestDriver()
+                   ->GetFoundEligibleForGenerationForms()[0]
+                   .confirmation_field_signature.has_value());
 
   EXPECT_EQ(
       change_password_form_signature,
@@ -259,6 +265,13 @@ TEST_F(PasswordGenerationManagerTest, DetectFormsEligibleForGeneration) {
   EXPECT_EQ(
       change_password_field_signature,
       GetTestDriver()->GetFoundEligibleForGenerationForms()[1].field_signature);
+  ASSERT_TRUE(GetTestDriver()
+                  ->GetFoundEligibleForGenerationForms()[1]
+                  .confirmation_field_signature.has_value());
+  EXPECT_EQ(confirmation_field_signature,
+            GetTestDriver()
+                ->GetFoundEligibleForGenerationForms()[1]
+                .confirmation_field_signature.value());
 }
 
 TEST_F(PasswordGenerationManagerTest, UpdatePasswordSyncStateIncognito) {

@@ -146,6 +146,8 @@ struct PasswordFormFillData {
 struct PasswordFormGenerationData {
   uint64 form_signature;
   uint32 field_signature;
+  bool has_confirmation_field;
+  uint32 confirmation_field_signature;
 };
 
 // autofill::PasswordForm
