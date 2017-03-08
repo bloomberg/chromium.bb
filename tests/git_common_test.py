@@ -286,15 +286,16 @@ class GitReadOnlyFunctionsTest(git_test_utils.GitRepoReadOnlyTestBase,
       return info.split('\n')
 
     # Expect to blame line 1 on C, line 2 on E.
-    c_short = self.repo['C'][:8]
+    ABBREV_LEN = 7
+    c_short = self.repo['C'][:1 + ABBREV_LEN]
     c_author = self.repo.show_commit('C', format_string='%an %ai')
-    e_short = self.repo['E'][:8]
+    e_short = self.repo['E'][:1 + ABBREV_LEN]
     e_author = self.repo.show_commit('E', format_string='%an %ai')
     expected_output = ['%s (%s 1) file2 - vanilla' % (c_short, c_author),
                        '%s (%s 2) file2 - merged' % (e_short, e_author)]
     self.assertEqual(expected_output,
                      self.repo.run(self.gc.blame, 'some/files/file2',
-                                   'tag_D').split('\n'))
+                                   'tag_D', abbrev=ABBREV_LEN).split('\n'))
 
     # Test porcelain.
     expected_output = []

@@ -294,12 +294,14 @@ def die(message, *args):
   sys.exit(1)
 
 
-def blame(filename, revision=None, porcelain=False, *_args):
+def blame(filename, revision=None, porcelain=False, abbrev=None, *_args):
   command = ['blame']
   if porcelain:
     command.append('-p')
   if revision is not None:
     command.append(revision)
+  if abbrev is not None:
+    command.append('--abbrev=%d' % abbrev)
   command.extend(['--', filename])
   return run(*command)
 
