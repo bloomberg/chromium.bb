@@ -58,6 +58,9 @@ class StatsCommand(command.CliCommand):
                             help='Do not show stats for all stages run.')
     stats_args.add_argument('--nostages', dest='stages', action='store_false',
                             help='Do not show stats for all stages run.')
+    stats_args.add_argument('--update-cidb-creds', dest='force_update',
+                            action='store_true',
+                            help='force updating the cidb credentials.')
 
     # Which builds are we generating a report for?
     ex_group = parser.add_mutually_exclusive_group(required=True)
@@ -130,7 +133,8 @@ class StatsCommand(command.CliCommand):
 
     credentials = self.options.cred_dir
     if not credentials:
-      credentials = cros_cidbcreds.CheckAndGetCIDBCreds()
+      credentials = cros_cidbcreds.CheckAndGetCIDBCreds(
+          force_update=self.options.force_update)
 
     # Delay import so sqlalchemy isn't pulled in until we need it.
     from chromite.lib import cidb
