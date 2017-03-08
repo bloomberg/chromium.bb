@@ -73,7 +73,7 @@
     Sign in to Chrome
   </message>
   <message name="IDS_SETTINGS_SYNC_DATA_ENCRYPTED_TEXT" desc="Text alerting the user that synced data is encrypted.">
-    For added security, Google Chrome will encrypt your data.
+    For added security, Google Chrome will encrypt your data
   </message>
   <message name="IDS_SETTINGS_SYNC_DISCONNECT_TITLE" desc="The title of the dialog to stop syncing and sign out.">
     Sign out of Chrome
@@ -82,7 +82,7 @@
   <!-- Languages Page -->
   <if expr="chromeos">
     <message name="IDS_SETTINGS_LANGUAGES_IS_DISPLAYED_IN_THIS_LANGUAGE" desc="The label for a language that is currently used as the UI display language.">
-      Chrome OS is displayed in this language.
+      Chrome OS is displayed in this language
     </message>
     <message name="IDS_SETTINGS_LANGUAGES_DISPLAY_IN_THIS_LANGUAGE" desc="The label used for a button that changes the UI language.">
       Display Chrome OS in this language
@@ -90,7 +90,7 @@
   </if>
   <if expr="not chromeos">
     <message name="IDS_SETTINGS_LANGUAGES_IS_DISPLAYED_IN_THIS_LANGUAGE" desc="The label for a language that is currently used as the UI display language.">
-      Google Chrome is displayed in this language.
+      Google Chrome is displayed in this language
     </message>
     <message name="IDS_SETTINGS_LANGUAGES_DISPLAY_IN_THIS_LANGUAGE" desc="The label used for a button that changes the UI language.">
       Display Google Chrome in this language

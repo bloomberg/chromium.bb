@@ -709,7 +709,7 @@ void AddDownloadsStrings(content::WebUIDataSource* html_source) {
 void AddResetStrings(content::WebUIDataSource* html_source) {
   LocalizedString localized_strings[] = {
     {"resetPageTitle", IDS_SETTINGS_RESET},
-    {"resetPageDescription", IDS_RESET_PROFILE_SETTINGS_DESCRIPTION},
+    {"resetPageDescription", IDS_SETTINGS_RESET_PROFILE_SETTINGS_DESCRIPTION},
     {"resetPageExplanation", IDS_RESET_PROFILE_SETTINGS_EXPLANATION},
     {"triggeredResetPageExplanation",
      IDS_TRIGGERED_RESET_PROFILE_SETTINGS_EXPLANATION},
@@ -1086,7 +1086,7 @@ void AddPasswordsAndFormsStrings(content::WebUIDataSource* html_source) {
       {"showPassword", IDS_SETTINGS_PASSWORD_SHOW},
       {"hidePassword", IDS_SETTINGS_PASSWORD_HIDE},
       {"passwordDetailsTitle", IDS_SETTINGS_PASSWORDS_VIEW_DETAILS_TITLE},
-      {"passwordViewDetails", IDS_SETTINGS_PASSWORD_VIEW_DETAILS},
+      {"passwordViewDetails", IDS_SETTINGS_PASSWORD_DETAILS},
       {"editPasswordWebsiteLabel", IDS_SETTINGS_PASSWORDS_WEBSITE},
       {"editPasswordUsernameLabel", IDS_SETTINGS_PASSWORDS_USERNAME},
       {"editPasswordPasswordLabel", IDS_SETTINGS_PASSWORDS_PASSWORD},
