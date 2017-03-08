@@ -547,31 +547,6 @@ void RenderWidgetHostViewAndroid::SetBounds(const gfx::Rect& rect) {
   default_bounds_ = rect;
 }
 
-void RenderWidgetHostViewAndroid::GetScaledContentBitmap(
-    float scale,
-    SkColorType preferred_color_type,
-    gfx::Rect src_subrect,
-    const ReadbackRequestCallback& result_callback) {
-  if (!host_ || host_->is_hidden() || !IsSurfaceAvailableForCopy()) {
-    result_callback.Run(SkBitmap(), READBACK_SURFACE_UNAVAILABLE);
-    return;
-  }
-  gfx::Size bounds = current_surface_size_;
-  if (src_subrect.IsEmpty())
-    src_subrect = gfx::Rect(bounds);
-  DCHECK_LE(src_subrect.width() + src_subrect.x(), bounds.width());
-  DCHECK_LE(src_subrect.height() + src_subrect.y(), bounds.height());
-  const display::Display& display =
-      display::Screen::GetScreen()->GetDisplayNearestWindow(GetNativeView());
-  float device_scale_factor = display.device_scale_factor();
-  DCHECK_GT(device_scale_factor, 0);
-  gfx::Size dst_size(
-      gfx::ScaleToCeiledSize(src_subrect.size(), scale / device_scale_factor));
-  src_subrect = gfx::ConvertRectToDIP(device_scale_factor, src_subrect);
-
-  CopyFromSurface(src_subrect, dst_size, result_callback, preferred_color_type);
-}
-
 bool RenderWidgetHostViewAndroid::HasValidFrame() const {
   if (!content_view_core_)
     return false;
@@ -1073,8 +1048,14 @@ void RenderWidgetHostViewAndroid::CopyFromSurface(
   float device_scale_factor = display.device_scale_factor();
   gfx::Size dst_size_in_pixel =
       gfx::ConvertRectToPixel(device_scale_factor, gfx::Rect(dst_size)).size();
-  gfx::Rect src_subrect_in_pixel =
-      gfx::ConvertRectToPixel(device_scale_factor, src_subrect);
+  // Note: When |src_subrect| is empty, a conversion from the view size must be
+  // made instead of using |current_frame_size_|. The latter sometimes also
+  // includes extra height for the toolbar UI, which is not intended for
+  // capture.
+  gfx::Rect src_subrect_in_pixel = gfx::ConvertRectToPixel(
+      device_scale_factor, src_subrect.IsEmpty()
+                               ? gfx::Rect(GetVisibleViewportSize())
+                               : src_subrect);
 
   if (!using_browser_compositor_) {
     SynchronousCopyContents(src_subrect_in_pixel, dst_size_in_pixel, callback,
@@ -1323,11 +1304,10 @@ void RenderWidgetHostViewAndroid::SynchronousCopyContents(
     const gfx::Size& dst_size_in_pixel,
     const ReadbackRequestCallback& callback,
     const SkColorType color_type) {
-  gfx::Size input_size_in_pixel;
-  if (src_subrect_in_pixel.IsEmpty())
-    input_size_in_pixel = current_surface_size_;
-  else
-    input_size_in_pixel = src_subrect_in_pixel.size();
+  // TODO(crbug/698974): [BUG] Current implementation does not support read-back
+  // of regions that do not originate at (0,0).
+  const gfx::Size& input_size_in_pixel = src_subrect_in_pixel.size();
+  DCHECK(!input_size_in_pixel.IsEmpty());
 
   gfx::Size output_size_in_pixel;
   if (dst_size_in_pixel.IsEmpty())

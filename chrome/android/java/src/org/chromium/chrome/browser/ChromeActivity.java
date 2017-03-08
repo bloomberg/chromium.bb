@@ -1263,10 +1263,10 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
                         });
             }
         };
-        if (!mScreenshotCaptureSkippedForTesting) {
-            webContents.getContentBitmapAsync(Bitmap.Config.ARGB_8888, 1.f, EMPTY_RECT, callback);
-        } else {
+        if (mScreenshotCaptureSkippedForTesting) {
             callback.onFinishGetBitmap(null, ReadbackResponse.SURFACE_UNAVAILABLE);
+        } else {
+            webContents.getContentBitmapAsync(0, 0, callback);
         }
     }
 

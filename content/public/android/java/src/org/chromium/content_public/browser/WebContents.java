@@ -4,8 +4,6 @@
 
 package org.chromium.content_public.browser;
 
-import android.graphics.Bitmap;
-import android.graphics.Rect;
 import android.os.Handler;
 import android.os.Parcelable;
 
@@ -344,8 +342,16 @@ public interface WebContents extends Parcelable {
      */
     void setOverscrollRefreshHandler(OverscrollRefreshHandler handler);
 
-    public void getContentBitmapAsync(Bitmap.Config config, float scale, Rect srcRect,
-            ContentBitmapCallback callback);
+    /**
+     * Requests an image snapshot of the content.
+     *
+     * @param width The width of the resulting bitmap, or 0 for "auto."
+     * @param height The height of the resulting bitmap, or 0 for "auto."
+     * @param callback May be called synchronously, or at a later point, to deliver the bitmap
+     *                 result (or a failure code).
+     */
+    public void getContentBitmapAsync(int width, int height, ContentBitmapCallback callback);
+
     /**
      * Reloads all the Lo-Fi images in this WebContents.
      */

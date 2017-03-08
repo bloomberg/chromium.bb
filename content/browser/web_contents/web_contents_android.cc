@@ -656,31 +656,20 @@ void WebContentsAndroid::SetOverscrollRefreshHandler(
 void WebContentsAndroid::GetContentBitmap(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
-    const JavaParamRef<jobject>& jcallback,
-    const JavaParamRef<jobject>& color_type,
-    jfloat scale,
-    jfloat x,
-    jfloat y,
-    jfloat width,
-    jfloat height) {
+    jint width,
+    jint height,
+    const JavaParamRef<jobject>& jcallback) {
   RenderWidgetHostViewAndroid* view = GetRenderWidgetHostViewAndroid();
   const ReadbackRequestCallback result_callback = base::Bind(
       &WebContentsAndroid::OnFinishGetContentBitmap, weak_factory_.GetWeakPtr(),
       ScopedJavaGlobalRef<jobject>(env, obj),
       ScopedJavaGlobalRef<jobject>(env, jcallback));
-  SkColorType pref_color_type = gfx::ConvertToSkiaColorType(color_type);
-  if (!view || pref_color_type == kUnknown_SkColorType) {
+  if (!view) {
     result_callback.Run(SkBitmap(), READBACK_FAILED);
     return;
   }
-  if (!view->IsSurfaceAvailableForCopy()) {
-    result_callback.Run(SkBitmap(), READBACK_SURFACE_UNAVAILABLE);
-    return;
-  }
-  view->GetScaledContentBitmap(scale,
-                               pref_color_type,
-                               gfx::Rect(x, y, width, height),
-                               result_callback);
+  view->CopyFromSurface(gfx::Rect(), gfx::Size(width, height), result_callback,
+                        kN32_SkColorType);
 }
 
 void WebContentsAndroid::ReloadLoFiImages(JNIEnv* env,

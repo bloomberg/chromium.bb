@@ -173,16 +173,12 @@ class CONTENT_EXPORT WebContentsAndroid
       const base::android::JavaParamRef<jobject>& obj,
       const base::android::JavaParamRef<jobject>& overscroll_refresh_handler);
 
-  // Relay the access from Java layer to GetScaledContentBitmap through JNI.
+  // Relay the access from Java layer to RWHV::CopyFromSurface() through JNI.
   void GetContentBitmap(JNIEnv* env,
                         const base::android::JavaParamRef<jobject>& obj,
-                        const base::android::JavaParamRef<jobject>& jcallback,
-                        const base::android::JavaParamRef<jobject>& color_type,
-                        jfloat scale,
-                        jfloat x,
-                        jfloat y,
-                        jfloat width,
-                        jfloat height);
+                        jint width,
+                        jint height,
+                        const base::android::JavaParamRef<jobject>& jcallback);
 
   void ReloadLoFiImages(JNIEnv* env,
                         const base::android::JavaParamRef<jobject>& obj);

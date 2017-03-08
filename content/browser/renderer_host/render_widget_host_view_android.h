@@ -227,11 +227,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
 
   void WasResized();
 
-  void GetScaledContentBitmap(float scale,
-                              SkColorType preferred_color_type,
-                              gfx::Rect src_subrect,
-                              const ReadbackRequestCallback& result_callback);
-
   bool HasValidFrame() const;
 
   void MoveCaret(const gfx::Point& point);

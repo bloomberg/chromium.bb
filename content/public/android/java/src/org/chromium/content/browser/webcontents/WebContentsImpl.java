@@ -488,10 +488,8 @@ import java.util.UUID;
     }
 
     @Override
-    public void getContentBitmapAsync(
-            Bitmap.Config config, float scale, Rect srcRect, ContentBitmapCallback callback) {
-        nativeGetContentBitmap(mNativeWebContentsAndroid, callback, config, scale,
-                srcRect.left, srcRect.top, srcRect.width(), srcRect.height());
+    public void getContentBitmapAsync(int width, int height, ContentBitmapCallback callback) {
+        nativeGetContentBitmap(mNativeWebContentsAndroid, width, height, callback);
     }
 
     @CalledByNative
@@ -613,9 +611,8 @@ import java.util.UUID;
             long nativeWebContentsAndroid, AccessibilitySnapshotCallback callback);
     private native void nativeSetOverscrollRefreshHandler(
             long nativeWebContentsAndroid, OverscrollRefreshHandler nativeOverscrollRefreshHandler);
-    private native void nativeGetContentBitmap(long nativeWebContentsAndroid,
-            ContentBitmapCallback callback, Bitmap.Config config, float scale,
-            float x, float y, float width, float height);
+    private native void nativeGetContentBitmap(
+            long nativeWebContentsAndroid, int width, int height, ContentBitmapCallback callback);
     private native void nativeReloadLoFiImages(long nativeWebContentsAndroid);
     private native int nativeDownloadImage(long nativeWebContentsAndroid,
             String url, boolean isFavicon, int maxBitmapSize,

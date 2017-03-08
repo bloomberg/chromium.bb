@@ -32,7 +32,8 @@ class CustomTabObserver extends EmptyTabObserver {
     private final CustomTabsConnection mCustomTabsConnection;
     private final CustomTabsSessionToken mSession;
     private final boolean mOpenedByChrome;
-    private float mScaleForNavigationInfo = 1f;
+    private int mContentBitmapWidth;
+    private int mContentBitmapHeight;
 
     private long mIntentReceivedTimestamp;
     private long mPageLoadStartedTimestamp;
@@ -58,8 +59,17 @@ class CustomTabObserver extends EmptyTabObserver {
             float desiredHeight = application.getResources().getDimensionPixelSize(
                     R.dimen.custom_tabs_screenshot_height);
             Rect bounds = ExternalPrerenderHandler.estimateContentSize(application, false);
-            mScaleForNavigationInfo = (bounds.width() == 0 || bounds.height() == 0) ? 1f :
-                    Math.min(desiredWidth / bounds.width(), desiredHeight / bounds.height());
+            if (bounds.width() == 0 || bounds.height() == 0) {
+                mContentBitmapWidth = (int) Math.round(desiredWidth);
+                mContentBitmapHeight = (int) Math.round(desiredHeight);
+            } else {
+                // Compute a size that scales the content bitmap to fit one (or both) dimensions,
+                // but also preserves aspect ratio.
+                float scale =
+                        Math.min(desiredWidth / bounds.width(), desiredHeight / bounds.height());
+                mContentBitmapWidth = (int) Math.round(bounds.width() * scale);
+                mContentBitmapHeight = (int) Math.round(bounds.height() * scale);
+            }
         }
         mOpenedByChrome = openedByChrome;
         resetPageLoadTracking();
@@ -191,7 +201,7 @@ class CustomTabObserver extends EmptyTabObserver {
                 if (!tab.isHidden() && mCurrentState != STATE_RESET) return;
                 if (tab.getWebContents() == null) return;
                 tab.getWebContents().getContentBitmapAsync(
-                        Bitmap.Config.ARGB_8888, mScaleForNavigationInfo, new Rect(), callback);
+                        mContentBitmapWidth, mContentBitmapHeight, callback);
                 mScreenshotTakenForCurrentNavigation = true;
             }
         }, 1000);
