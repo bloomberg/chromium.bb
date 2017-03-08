@@ -7,8 +7,8 @@ Set timer for test function.
 Script execution paused.
 Call stack:
     0) window.removeIframe (pause-in-removed-frame.html:11)
-    1) onXhrLoad (child.html:12)
-    2) sendRequest (child.html:16)
+    1) onXhrLoad (resources/child.html:12)
+    2) sendRequest (resources/child.html:16)
     3) testFunction (pause-in-removed-frame.html:17)
 Script execution resumed.
 

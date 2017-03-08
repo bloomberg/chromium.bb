@@ -51,6 +51,7 @@ top
   frame2 (sourcemap-frame.html)
     127.0.0.1:8000
       inspector/bindings/resources
+        sourcemap-frame.html
         sourcemap-script.js
         sourcemap-sass.scss
         sourcemap-style.css
@@ -70,6 +71,7 @@ top
   frame2 (sourcemap-frame.html)
     127.0.0.1:8000
       inspector/bindings/resources
+        sourcemap-frame.html
         sourcemap-script.js
         sourcemap-sass.scss
         sourcemap-style.css
