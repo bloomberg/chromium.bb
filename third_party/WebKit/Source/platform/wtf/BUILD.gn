@@ -1,0 +1,126 @@
+# Copyright 2017 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# The below is a temporary setup during the WTF migration project:
+# https://groups.google.com/a/chromium.org/d/msg/blink-dev/tLdAZCTlcAA/bYXVT8gYCAAJ
+#
+# We are moving wtf/ files to platform/wtf/ incrementally, thus, conceptually,
+# the "wtf" target in wtf/BUILD.gn is being split into two, in a way that
+# only wtf/ can refer the contents in platform/wtf/.
+#
+# To achieve this, we introduce a new target "platform_wtf" here, and configure
+# it so the source files are compiled in the same way as the original "wtf"
+# target. This gn file should only be used from wtf/BUILD.gn, and this
+# restriction is enforced by the visibility rule below (but it's okay to
+# #include a header in this directory from core/ or modules/).
+#
+# The following configurations are mostly copied from wtf/BUILD.gn, so we
+# can build the source files in the same way.
+#
+# When we finish moving all the files, "platform_wtf" target will take over
+# the role of "wtf".
+#
+# TODO(yutak): Set up platform_wtf_unittests in the similar manner.
+
+assert(!is_ios)
+
+import("//third_party/WebKit/Source/config.gni")
+
+visibility = [ "//third_party/WebKit/Source/wtf/*" ]
+
+config("wtf_config") {
+  if (is_win) {
+    defines = [
+      "__STD_C",
+      "_CRT_SECURE_NO_DEPRECATE",
+      "_SCL_SECURE_NO_DEPRECATE",
+    ]
+    include_dirs = [ "os-win32" ]
+
+    cflags = [
+      # Don't complain about calling specific versions of templatized
+      # functions (e.g. in RefPtrHashMap.h).
+      "/wd4344",
+
+      # dtoa, icu, etc. like doing assignment within conditional.
+      "/wd4706",
+    ]
+
+    if (is_component_build) {
+      # Chromium windows multi-dll build enables C++ exceptions and this causes
+      # wtf to generate 4291 warning due to operator new/delete
+      # implementations. Disable the warning for chromium windows multi-dll
+      # build.
+      cflags += [ "/wd4291" ]
+    }
+  }
+}
+
+component("platform_wtf") {
+  sources = [
+    "CryptographicallyRandomNumber.cpp",
+    "CryptographicallyRandomNumber.h",
+    "WTFExport.h",
+  ]
+
+  configs += [
+    "//third_party/WebKit/Source:config",
+    "//third_party/WebKit/Source:non_test_config",
+    "//third_party/WebKit/Source:blink_pch",
+  ]
+
+  defines = [ "WTF_IMPLEMENTATION=1" ]
+
+  public_configs = [
+    ":wtf_config",
+
+    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+    "//build/config/compiler:no_size_t_to_int_warning",
+    "//third_party/WebKit/Source:features",
+  ]
+
+  public_deps = [
+    "//base",
+    "//third_party/icu",
+  ]
+
+  # Rules changing the |sources| list are temporarily commented out, until
+  # those files are actually moved to here.
+
+  if (is_win) {
+    # sources -= [ "ThreadingPthreads.cpp" ]
+
+    cflags = [ "/wd4068" ]  # Unknown pragma.
+  } else {
+    # Non-Windows.
+    # sources -= [
+    #   "ThreadSpecificWin.cpp",
+    #   "ThreadingWin.cpp",
+    # ]
+  }
+
+  if (is_android) {
+    libs = [ "log" ]
+  }
+  if (is_linux) {
+    libs = [ "dl" ]
+  }
+
+  if (is_mac) {
+    libs = [
+      "CoreFoundation.framework",
+      "Foundation.framework",
+    ]
+  } else {
+    # sources -= [
+    #   "text/AtomicStringCF.cpp",
+    #   "text/StringImplCF.cpp",
+    # ]
+  }
+
+  if (remove_webcore_debug_symbols) {
+    configs -= [ "//build/config/compiler:default_symbols" ]
+    configs += [ "//build/config/compiler:no_symbols" ]
+  }
+}

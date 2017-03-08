@@ -13,31 +13,7 @@ visibility = [
 ]
 
 config("wtf_config") {
-  if (is_win) {
-    defines = [
-      "__STD_C",
-      "_CRT_SECURE_NO_DEPRECATE",
-      "_SCL_SECURE_NO_DEPRECATE",
-    ]
-    include_dirs = [ "os-win32" ]
-
-    cflags = [
-      # Don't complain about calling specific versions of templatized
-      # functions (e.g. in RefPtrHashMap.h).
-      "/wd4344",
-
-      # dtoa, icu, etc. like doing assignment within conditional.
-      "/wd4706",
-    ]
-
-    if (is_component_build) {
-      # Chromium windows multi-dll build enables C++ exceptions and this causes
-      # wtf to generate 4291 warning due to operator new/delete
-      # implementations. Disable the warning for chromium windows multi-dll
-      # build.
-      cflags += [ "/wd4291" ]
-    }
-  }
+  configs = [ "//third_party/WebKit/Source/platform/wtf:wtf_config" ]
 }
 
 component("wtf") {
@@ -62,7 +38,6 @@ component("wtf") {
     "Compiler.h",
     "ConditionalDestructor.h",
     "ContainerAnnotations.h",
-    "CryptographicallyRandomNumber.cpp",
     "CryptographicallyRandomNumber.h",
     "CurrentTime.cpp",
     "CurrentTime.h",
@@ -258,6 +233,7 @@ component("wtf") {
 
   public_deps = [
     "//base",
+    "//third_party/WebKit/Source/platform/wtf:platform_wtf",
     "//third_party/icu",
   ]
 
