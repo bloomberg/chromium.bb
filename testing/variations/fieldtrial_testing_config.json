@@ -2634,13 +2634,6 @@
                     "enable_features": [
                         "NegotiateTLS13"
                     ]
-                },
-                {
-                    "name": "EnabledWithShortRecordHeader",
-                    "enable_features": [
-                        "NegotiateTLS13",
-                        "SSLShortRecordHeader"
-                    ]
                 }
             ]
         }

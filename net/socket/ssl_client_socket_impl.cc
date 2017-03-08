@@ -234,9 +234,6 @@ bool AreLegacyECDSACiphersEnabled() {
 }
 #endif
 
-const base::Feature kShortRecordHeaderFeature{
-    "SSLShortRecordHeader", base::FEATURE_DISABLED_BY_DEFAULT};
-
 scoped_refptr<X509Certificate> OSChainFromOpenSSL(STACK_OF(X509) *
                                                   openssl_chain) {
   if (sk_X509_num(openssl_chain) == 0) {
@@ -331,10 +328,6 @@ class SSLClientSocketImpl::SSLContext {
 
     // Deduplicate all certificates minted from the SSL_CTX in memory.
     SSL_CTX_set0_buffer_pool(ssl_ctx_.get(), x509_util::GetBufferPool());
-
-    if (base::FeatureList::IsEnabled(kShortRecordHeaderFeature)) {
-      SSL_CTX_set_short_header_enabled(ssl_ctx_.get(), 1);
-    }
 
     if (!SSL_CTX_add_client_custom_ext(ssl_ctx_.get(), kTbExtNum,
                                        &TokenBindingAddCallback,
