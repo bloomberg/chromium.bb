@@ -13,6 +13,7 @@
 #include "components/data_use_measurement/core/data_use_user_data.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_fetcher.h"
 
 namespace {
@@ -113,8 +114,34 @@ void LogUploader::StartScheduledUpload() {
     return;
   DVLOG(2) << "Upload to " << server_url_.spec() << " starting.";
   has_callback_pending_ = true;
-  current_fetch_ =
-      net::URLFetcher::Create(server_url_, net::URLFetcher::POST, this);
+  net::NetworkTrafficAnnotationTag traffic_annotation =
+      net::DefineNetworkTrafficAnnotation("rappor_report", R"(
+        semantics {
+          sender: "RAPPOR"
+          description:
+            "This service sends RAPPOR anonymous usage statistics to Google."
+          trigger:
+            "Reports are automatically generated on startup and at intervals "
+            "while Chromium is running."
+          data: "A protocol buffer with RAPPOR anonymous usage statistics."
+          destination: GOOGLE_OWNED_SERVICE
+        }
+        policy {
+          cookies_allowed: false
+          setting:
+            "Users can enable or disable this feature by stopping "
+            "'Automatically send usage statistics and crash reports to Google'"
+            "in Chromium's settings under Advanced Settings, Privacy. The "
+            "feature is enabled by default."
+          policy {
+            MetricsReportingEnabled {
+              policy_options {mode: MANDATORY}
+              MetricsReportingEnabled: false
+            }
+          }
+        })");
+  current_fetch_ = net::URLFetcher::Create(server_url_, net::URLFetcher::POST,
+                                           this, traffic_annotation);
   data_use_measurement::DataUseUserData::AttachToFetcher(
       current_fetch_.get(), data_use_measurement::DataUseUserData::RAPPOR);
   current_fetch_->SetRequestContext(request_context_.get());
