@@ -142,6 +142,12 @@ class FindObjectPropertiesNeedingUpdateScope {
                                 objectProperties->transform());
       DCHECK_OBJECT_PROPERTY_EQ(m_object, m_originalProperties->effect(),
                                 objectProperties->effect());
+      DCHECK_OBJECT_PROPERTY_EQ(m_object, m_originalProperties->filter(),
+                                objectProperties->filter());
+      DCHECK_OBJECT_PROPERTY_EQ(m_object, m_originalProperties->mask(),
+                                objectProperties->mask());
+      DCHECK_OBJECT_PROPERTY_EQ(m_object, m_originalProperties->maskClip(),
+                                objectProperties->maskClip());
       DCHECK_OBJECT_PROPERTY_EQ(m_object, m_originalProperties->cssClip(),
                                 objectProperties->cssClip());
       DCHECK_OBJECT_PROPERTY_EQ(m_object,

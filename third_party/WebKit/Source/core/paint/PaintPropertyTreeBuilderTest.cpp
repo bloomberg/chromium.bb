@@ -3306,4 +3306,31 @@ TEST_P(PaintPropertyTreeBuilderTest, MaskInline) {
             properties2->localBorderBoxProperties()->effect());
 }
 
+TEST_P(PaintPropertyTreeBuilderTest, MaskClipNodeInvalidation) {
+  // This test verifies the clip node generated for mask's implicit clip
+  // is correctly invalidated when a box resizes.
+  setBodyInnerHTML(
+      "<style>"
+      "#mask {"
+      "  width: 100px;"
+      "  height:100px;"
+      "  -webkit-mask:linear-gradient(red,red);"
+      "}"
+      "</style>"
+      "<div id='mask'>"
+      "  <div style='width:500px; height:500px; background:green;'></div>"
+      "</div>");
+  const ObjectPaintProperties* properties = paintPropertiesForElement("mask");
+  const ClipPaintPropertyNode* maskClip = properties->maskClip();
+  EXPECT_EQ(FloatRoundedRect(8, 8, 100, 100), maskClip->clipRect());
+
+  Element* mask = document().getElementById("mask");
+  mask->setAttribute(HTMLNames::styleAttr, "height: 200px");
+  document().view()->updateAllLifecyclePhases();
+
+  ASSERT_EQ(properties, paintPropertiesForElement("mask"));
+  ASSERT_EQ(maskClip, properties->maskClip());
+  EXPECT_EQ(FloatRoundedRect(8, 8, 100, 200), maskClip->clipRect());
+}
+
 }  // namespace blink

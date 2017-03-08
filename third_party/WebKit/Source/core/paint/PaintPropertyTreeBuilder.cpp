@@ -1069,6 +1069,11 @@ void PaintPropertyTreeBuilder::updateForObjectLocationAndSize(
   if (box.size() == box.previousSize())
     return;
 
+  // CSS mask and clip-path comes with an implicit clip to the border box.
+  // Currently only SPv2 generate and take advantage of those.
+  const bool boxGeneratesPropertyNodesForMaskAndClipPath =
+      RuntimeEnabledFeatures::slimmingPaintV2Enabled() &&
+      (box.hasMask() || box.hasClipPath());
   // The overflow clip paint property depends on the border box rect through
   // overflowClipRect(). The border box rect's size equals the frame rect's
   // size so we trigger a paint property update when the frame rect changes.
@@ -1080,7 +1085,8 @@ void PaintPropertyTreeBuilder::updateForObjectLocationAndSize(
       // transform-origin, and perspective-origin can depend on the size of the
       // frame rect, so force a property update if it changes. TODO(pdr): We
       // only need to update properties if there are relative lengths.
-      box.styleRef().hasTransform() || box.styleRef().hasPerspective())
+      box.styleRef().hasTransform() || box.styleRef().hasPerspective() ||
+      boxGeneratesPropertyNodesForMaskAndClipPath)
     box.getMutableForPainting().setNeedsPaintPropertyUpdate();
 }
 

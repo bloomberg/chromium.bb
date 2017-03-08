@@ -2284,11 +2284,16 @@ bool LayoutBox::paintedOutputOfObjectHasNoEffectRegardlessOfSize() const {
       styleRef().hasVisualOverflowingEffect())
     return false;
 
-  // If the box has clip or mask, we need issue paint invalidation to cover
+  // Both mask and clip-path generates drawing display items that depends on
+  // the size of the box.
+  if (hasMask() || hasClipPath())
+    return false;
+
+  // If the box has any kind of clip, we need issue paint invalidation to cover
   // the changed part of children when the box got resized. In SPv2 this is
   // handled by detecting paint property changes.
   if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
-    if (hasClipRelatedProperty() || hasControlClip() || hasMask())
+    if (hasClipRelatedProperty() || hasControlClip())
       return false;
   }
 
