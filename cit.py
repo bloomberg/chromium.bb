@@ -146,7 +146,7 @@ def run(args):
 
 def main():
   parser = argparse.ArgumentParser("Chrome Infrastructure CLI.")
-  parser.add_argument('-b', '--infra-branch', default='deployed',
+  parser.add_argument('-b', '--infra-branch', default='cit',
       help="The name of the 'infra' branch to use (default is %(default)s).")
   parser.add_argument('args', nargs=argparse.REMAINDER)
 
