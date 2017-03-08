@@ -359,15 +359,16 @@ class TestRunner(object):
         else:
           raise
 
-      # Retry failed test cases.
-      if self.retries and failed:
+      # Retry failed test cases. Currently, XCTests don't support retries
+      # because there are no arguments to select specific tests to run.
+      if self.retries and failed and not self.xctest_path:
         print '%s tests failed and will be retried.' % len(failed)
         print
-      for i in xrange(self.retries):
-        for test in failed:
-          print 'Retry #%s for %s.' % (i + 1, test)
-          print
-          self._run(self.get_launch_command(test_filter=[test]))
+        for i in xrange(self.retries):
+          for test in failed:
+            print 'Retry #%s for %s.' % (i + 1, test)
+            print
+            self._run(self.get_launch_command(test_filter=[test]))
 
       # Build test_results.json.
       self.test_results['interrupted'] = result.crashed
