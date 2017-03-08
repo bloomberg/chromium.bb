@@ -1832,7 +1832,7 @@ void Node::willMoveToNewDocument(Document& oldDocument, Document& newDocument) {
       oldDocument.frameHost() == newDocument.frameHost())
     return;
 
-  oldDocument.frameHost()->eventHandlerRegistry().didMoveOutOfFrameHost(*this);
+  oldDocument.frameHost()->eventHandlerRegistry().didMoveOutOfPage(*this);
 }
 
 void Node::didMoveToNewDocument(Document& oldDocument) {
@@ -1849,7 +1849,7 @@ void Node::didMoveToNewDocument(Document& oldDocument) {
   oldDocument.markers().removeMarkers(this);
   if (document().frameHost() &&
       document().frameHost() != oldDocument.frameHost()) {
-    document().frameHost()->eventHandlerRegistry().didMoveIntoFrameHost(*this);
+    document().frameHost()->eventHandlerRegistry().didMoveIntoPage(*this);
   }
 
   if (const HeapVector<TraceWrapperMember<MutationObserverRegistration>>*

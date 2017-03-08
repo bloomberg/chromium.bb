@@ -54,7 +54,7 @@ FrameHost::FrameHost(Page& page)
       m_overscrollController(
           OverscrollController::create(*m_visualViewport,
                                        m_page->chromeClient())),
-      m_eventHandlerRegistry(new EventHandlerRegistry(*this)),
+      m_eventHandlerRegistry(new EventHandlerRegistry(page)),
       m_consoleMessageStorage(new ConsoleMessageStorage()),
       m_globalRootScrollerController(
           TopDocumentRootScrollerController::create(*this)),
