@@ -15,6 +15,7 @@ const char kStabilityReporterPlatform[] = "reporter-platform";
 const char kStabilityReporterProduct[] = "reporter-product";
 const char kStabilityReporterVersion[] = "reporter-version";
 const char kStabilitySpecialBuild[] = "special-build";
+const char kStabilityStartTimestamp[] = "start-timestamp";
 const char kStabilityVersion[] = "version";
 
 }  // namespace browser_watcher

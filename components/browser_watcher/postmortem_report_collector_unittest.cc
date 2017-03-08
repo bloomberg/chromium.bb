@@ -108,18 +108,21 @@ class MockCrashReportDatabase : public CrashReportDatabase {
                CrashReportDatabase::OperationStatus(const UUID& uuid));
 };
 
-// Used for testing CollectAndSubmitForUpload.
+// Used for testing CollectAndSubmitAllPendingReports.
 class MockPostmortemReportCollector : public PostmortemReportCollector {
  public:
   MockPostmortemReportCollector()
-      : PostmortemReportCollector(kProductName, kVersionNumber, kChannelName) {}
+      : PostmortemReportCollector(kProductName,
+                                  kVersionNumber,
+                                  kChannelName,
+                                  nullptr) {}
 
   MOCK_METHOD3(GetDebugStateFilePaths,
                std::vector<base::FilePath>(
                    const base::FilePath& debug_info_dir,
                    const base::FilePath::StringType& debug_file_pattern,
                    const std::set<base::FilePath>&));
-  MOCK_METHOD2(Collect,
+  MOCK_METHOD2(CollectOneReport,
                CollectionStatus(const base::FilePath&,
                                 StabilityReport* report));
   MOCK_METHOD4(WriteReportToMinidump,
@@ -127,6 +130,12 @@ class MockPostmortemReportCollector : public PostmortemReportCollector {
                     const crashpad::UUID& client_id,
                     const crashpad::UUID& report_id,
                     base::PlatformFile minidump_file));
+};
+
+class MockSystemSessionAnalyzer : public SystemSessionAnalyzer {
+ public:
+  MockSystemSessionAnalyzer() : SystemSessionAnalyzer(10U) {}
+  MOCK_METHOD1(IsSessionUnclean, Status(base::Time timestamp));
 };
 
 // Checks if two proto messages are the same based on their serializations. Note
@@ -150,7 +159,8 @@ MATCHER_P(EqualsProto, message, "") {
 
 }  // namespace
 
-class PostmortemReportCollectorCollectAndSubmitTest : public testing::Test {
+class PostmortemReportCollectorCollectAndSubmitAllPendingReportsTest
+    : public testing::Test {
  public:
   void SetUp() override {
     testing::Test::SetUp();
@@ -175,7 +185,7 @@ class PostmortemReportCollectorCollectAndSubmitTest : public testing::Test {
     EXPECT_CALL(database_, GetSettings()).Times(1).WillOnce(Return(nullptr));
 
     // Expect a single collection call.
-    EXPECT_CALL(collector_, Collect(debug_file_, _))
+    EXPECT_CALL(collector_, CollectOneReport(debug_file_, _))
         .Times(1)
         .WillOnce(Return(SUCCESS));
 
@@ -210,22 +220,22 @@ class PostmortemReportCollectorCollectAndSubmitTest : public testing::Test {
   CrashReportDatabase::NewReport crashpad_report_;
 };
 
-TEST_F(PostmortemReportCollectorCollectAndSubmitTest,
-       CollectAndSubmitForUpload) {
+TEST_F(PostmortemReportCollectorCollectAndSubmitAllPendingReportsTest,
+       CollectAndSubmitAllPendingReports) {
   EXPECT_CALL(database_, FinishedWritingCrashReport(&crashpad_report_, _))
       .Times(1)
       .WillOnce(Return(CrashReportDatabase::kNoError));
 
   // Run the test.
-  int success_cnt = collector_.CollectAndSubmitForUpload(
+  int success_cnt = collector_.CollectAndSubmitAllPendingReports(
       debug_file_.DirName(), debug_file_pattern_, no_excluded_files_,
       &database_);
   ASSERT_EQ(1, success_cnt);
   ASSERT_FALSE(base::PathExists(debug_file_));
 }
 
-TEST_F(PostmortemReportCollectorCollectAndSubmitTest,
-       CollectAndSubmitForUploadStuckFile) {
+TEST_F(PostmortemReportCollectorCollectAndSubmitAllPendingReportsTest,
+       CollectAndSubmitAllPendingReportsStuckFile) {
   // Open the stability debug file to prevent its deletion.
   base::ScopedFILE file(base::OpenFile(debug_file_, "w"));
   ASSERT_NE(file.get(), nullptr);
@@ -236,7 +246,7 @@ TEST_F(PostmortemReportCollectorCollectAndSubmitTest,
       .WillOnce(Return(CrashReportDatabase::kNoError));
 
   // Run the test.
-  int success_cnt = collector_.CollectAndSubmitForUpload(
+  int success_cnt = collector_.CollectAndSubmitAllPendingReports(
       debug_file_.DirName(), debug_file_pattern_, no_excluded_files_,
       &database_);
   ASSERT_EQ(0, success_cnt);
@@ -276,7 +286,7 @@ TEST(PostmortemReportCollectorTest, GetDebugStateFilePaths) {
   }
 
   PostmortemReportCollector collector(kProductName, kVersionNumber,
-                                      kChannelName);
+                                      kChannelName, nullptr);
   EXPECT_THAT(
       collector.GetDebugStateFilePaths(
           temp_dir.GetPath(), FILE_PATH_LITERAL("foo*.pma"), excluded_paths),
@@ -296,9 +306,10 @@ TEST(PostmortemReportCollectorTest, CollectEmptyFile) {
 
   // Validate collection: an empty file cannot suppport an analyzer.
   PostmortemReportCollector collector(kProductName, kVersionNumber,
-                                      kChannelName);
+                                      kChannelName, nullptr);
   StabilityReport report;
-  ASSERT_EQ(ANALYZER_CREATION_FAILED, collector.Collect(file_path, &report));
+  ASSERT_EQ(ANALYZER_CREATION_FAILED,
+            collector.CollectOneReport(file_path, &report));
 }
 
 TEST(PostmortemReportCollectorTest, CollectRandomFile) {
@@ -322,9 +333,9 @@ TEST(PostmortemReportCollectorTest, CollectRandomFile) {
   // Validate collection: random content appears as though there is not
   // stability data.
   PostmortemReportCollector collector(kProductName, kVersionNumber,
-                                      kChannelName);
+                                      kChannelName, nullptr);
   StabilityReport report;
-  ASSERT_EQ(DEBUG_FILE_NO_DATA, collector.Collect(file_path, &report));
+  ASSERT_EQ(DEBUG_FILE_NO_DATA, collector.CollectOneReport(file_path, &report));
 }
 
 namespace {
@@ -448,9 +459,9 @@ TEST_F(PostmortemReportCollectorCollectionTest, CollectSuccess) {
 
   // Validate collection returns the expected report.
   PostmortemReportCollector collector(kProductName, kVersionNumber,
-                                      kChannelName);
+                                      kChannelName, nullptr);
   StabilityReport report;
-  ASSERT_EQ(SUCCESS, collector.Collect(debug_file_path(), &report));
+  ASSERT_EQ(SUCCESS, collector.CollectOneReport(debug_file_path(), &report));
 
   // Validate the report.
   ASSERT_EQ(1, report.process_states_size());
@@ -545,9 +556,9 @@ TEST_F(PostmortemReportCollectorCollectionFromGlobalTrackerTest,
 
   // Collect the stability report.
   PostmortemReportCollector collector(kProductName, kVersionNumber,
-                                      kChannelName);
+                                      kChannelName, nullptr);
   StabilityReport report;
-  ASSERT_EQ(SUCCESS, collector.Collect(debug_file_path(), &report));
+  ASSERT_EQ(SUCCESS, collector.CollectOneReport(debug_file_path(), &report));
 
   // Validate the report's log content.
   ASSERT_EQ(2, report.log_messages_size());
@@ -575,9 +586,9 @@ TEST_F(PostmortemReportCollectorCollectionFromGlobalTrackerTest,
 
   // Collect the stability report.
   PostmortemReportCollector collector(kProductName, kVersionNumber,
-                                      kChannelName);
+                                      kChannelName, nullptr);
   StabilityReport report;
-  ASSERT_EQ(SUCCESS, collector.Collect(debug_file_path(), &report));
+  ASSERT_EQ(SUCCESS, collector.CollectOneReport(debug_file_path(), &report));
 
   // Validate the report's user data.
   const auto& collected_data = report.global_data();
@@ -644,9 +655,9 @@ TEST_F(PostmortemReportCollectorCollectionFromGlobalTrackerTest,
 
   // Collect the stability report.
   PostmortemReportCollector collector(kProductName, kVersionNumber,
-                                      kChannelName);
+                                      kChannelName, nullptr);
   StabilityReport report;
-  ASSERT_EQ(SUCCESS, collector.Collect(debug_file_path(), &report));
+  ASSERT_EQ(SUCCESS, collector.CollectOneReport(debug_file_path(), &report));
 
   // Validate the report's experiment and global data.
   ASSERT_EQ(2, report.field_trials_size());
@@ -685,9 +696,9 @@ TEST_F(PostmortemReportCollectorCollectionFromGlobalTrackerTest,
 
   // Collect the stability report.
   PostmortemReportCollector collector(kProductName, kVersionNumber,
-                                      kChannelName);
+                                      kChannelName, nullptr);
   StabilityReport report;
-  ASSERT_EQ(SUCCESS, collector.Collect(debug_file_path(), &report));
+  ASSERT_EQ(SUCCESS, collector.CollectOneReport(debug_file_path(), &report));
 
   // Validate the report's modules content.
   ASSERT_EQ(1, report.process_states_size());
@@ -706,6 +717,29 @@ TEST_F(PostmortemReportCollectorCollectionFromGlobalTrackerTest,
   EXPECT_EQ("", collected_module.version());
   EXPECT_EQ(0LL, collected_module.shrink_down_delta());
   EXPECT_EQ(!module_info.is_loaded, collected_module.is_unloaded());
+}
+
+TEST_F(PostmortemReportCollectorCollectionFromGlobalTrackerTest,
+       SystemStateTest) {
+  // Setup.
+  GlobalActivityTracker::CreateWithFile(debug_file_path(), kMemorySize, 0ULL,
+                                        "", 3);
+  ActivityUserData& global_data = GlobalActivityTracker::Get()->global_data();
+  global_data.SetInt(kStabilityStartTimestamp, 12345LL);
+
+  // Collect.
+  MockSystemSessionAnalyzer analyzer;
+  EXPECT_CALL(analyzer,
+              IsSessionUnclean(base::Time::FromInternalValue(12345LL)))
+      .Times(1)
+      .WillOnce(Return(SystemSessionAnalyzer::CLEAN));
+  PostmortemReportCollector collector(kProductName, kVersionNumber,
+                                      kChannelName, &analyzer);
+  StabilityReport report;
+  ASSERT_EQ(SUCCESS, collector.CollectOneReport(debug_file_path(), &report));
+
+  // Validate the report.
+  ASSERT_EQ(SystemState::CLEAN, report.system_state().session_state());
 }
 
 }  // namespace browser_watcher

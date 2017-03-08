@@ -10,9 +10,18 @@ package browser_watcher;
 
 // The state of the system on which Chrome is running (shutting down, battery
 // level, load, etc.).
-// Next id: 1
+// Next id: 2
 message SystemState {
-  // TODO(manzagop): flesh out.
+  // The state of a system session. A system session begins when the system
+  // starts and ends when it shuts down.
+  enum SessionState {
+    UNKNOWN = 0;
+    CLEAN = 1;    // Normal shutdown.
+    UNCLEAN = 2;  // Abnormal shutdown (system crash, power loss).
+  }
+
+  // The state of the system session that contained Chrome's execution.
+  optional SessionState session_state = 1;
 }
 
 // Next id: 10

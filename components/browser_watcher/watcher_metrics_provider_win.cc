@@ -9,6 +9,7 @@
 #include <limits>
 #include <memory>
 #include <set>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -25,6 +26,7 @@
 #include "components/browser_watcher/features.h"
 #include "components/browser_watcher/postmortem_report_collector.h"
 #include "components/browser_watcher/stability_debugging.h"
+#include "components/browser_watcher/system_session_analyzer_win.h"
 #include "third_party/crashpad/crashpad/client/crash_report_database.h"
 
 namespace browser_watcher {
@@ -263,15 +265,18 @@ void WatcherMetricsProviderWin::CollectPostmortemReportsOnBlockingPool() {
 
   LogCollectionInitStatus(INIT_SUCCESS);
 
-  // TODO(manzagop): fix incorrect version attribution on update.
+  // Get the reporter's version details.
   base::string16 product_name, version_number, channel_name;
   exe_details_cb_.Run(&product_name, &version_number, &channel_name);
-  PostmortemReportCollector collector(base::UTF16ToUTF8(product_name),
-                                      base::UTF16ToUTF8(version_number),
-                                      base::UTF16ToUTF8(channel_name));
-  collector.CollectAndSubmitForUpload(stability_dir, GetStabilityFilePattern(),
-                                      excluded_debug_files,
-                                      crashpad_database.get());
+
+  const size_t kSystemSessionsToInspect = 5U;
+  SystemSessionAnalyzer analyzer(kSystemSessionsToInspect);
+  PostmortemReportCollector collector(
+      base::UTF16ToUTF8(product_name), base::UTF16ToUTF8(version_number),
+      base::UTF16ToUTF8(channel_name), &analyzer);
+  collector.CollectAndSubmitAllPendingReports(
+      stability_dir, GetStabilityFilePattern(), excluded_debug_files,
+      crashpad_database.get());
 }
 
 }  // namespace browser_watcher

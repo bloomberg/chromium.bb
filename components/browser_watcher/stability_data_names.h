@@ -17,6 +17,7 @@ extern const char kStabilityReporterPlatform[];
 extern const char kStabilityReporterProduct[];
 extern const char kStabilityReporterVersion[];
 extern const char kStabilitySpecialBuild[];
+extern const char kStabilityStartTimestamp[];
 extern const char kStabilityVersion[];
 
 }  // namespace browser_watcher

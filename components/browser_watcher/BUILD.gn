@@ -43,38 +43,28 @@ if (is_win) {
     ]
   }
 
-  static_library("postmortem_minidump_writer") {
-    # TODO(manzagop): remove this lib once Crashpad writes the minidumps.
+  static_library("postmortem_report_collector") {
     sources = [
       "postmortem_minidump_writer.h",
       "postmortem_minidump_writer_win.cc",
-    ]
-    deps = [
-      ":stability_data",
-      ":stability_report_proto",
-      "//base",
-      "//third_party/crashpad/crashpad/client",
-      "//third_party/crashpad/crashpad/minidump",
-      "//third_party/crashpad/crashpad/util",
-    ]
-  }
-
-  static_library("postmortem_report_collector") {
-    sources = [
       "postmortem_report_collector.cc",
       "postmortem_report_collector.h",
       "postmortem_report_extractor.cc",
       "postmortem_report_extractor.h",
+      "system_session_analyzer_win.cc",
+      "system_session_analyzer_win.h",
     ]
     deps = [
-      ":postmortem_minidump_writer",
       ":stability_data",
       ":stability_report_proto",
       "//base",
       "//components/variations",
       "//third_party/crashpad/crashpad/client",
+      "//third_party/crashpad/crashpad/minidump",
       "//third_party/crashpad/crashpad/util",
     ]
+    libs = [ "wevtapi.lib" ]
+    ldflags = [ "/DELAYLOAD:wevtapi.dll" ]  # Only used after unclean shutdowns.
   }
 }
 
@@ -105,6 +95,7 @@ if (is_win) {
       "exit_code_watcher_win_unittest.cc",
       "postmortem_minidump_writer_win_unittest.cc",
       "postmortem_report_collector_unittest.cc",
+      "system_session_analyzer_win_unittest.cc",
       "watcher_client_win_unittest.cc",
       "watcher_metrics_provider_win_unittest.cc",
       "window_hang_monitor_win_unittest.cc",
@@ -113,7 +104,6 @@ if (is_win) {
     deps = [
       ":browser_watcher",
       ":browser_watcher_client",
-      ":postmortem_minidump_writer",
       ":postmortem_report_collector",
       ":stability_data",
       ":stability_report_proto",
@@ -137,6 +127,16 @@ if (is_win) {
     ]
     deps = [
       ":stability_report_proto",
+      "//base",
+    ]
+  }
+
+  executable("fetch_system_session_events") {
+    sources = [
+      "fetch_system_session_events_main_win.cc",
+    ]
+    deps = [
+      ":postmortem_report_collector",
       "//base",
     ]
   }

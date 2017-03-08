@@ -24,20 +24,53 @@ namespace browser_watcher {
 using base::FilePath;
 using crashpad::CrashReportDatabase;
 
+namespace {
+
+// DO NOT CHANGE VALUES. This is logged persistently in a histogram.
+enum SystemSessionAnalysisStatus {
+  SYSTEM_SESSION_ANALYSIS_SUCCESS = 0,
+  SYSTEM_SESSION_ANALYSIS_NO_TIMESTAMP = 1,
+  SYSTEM_SESSION_ANALYSIS_NO_ANALYZER = 2,
+  SYSTEM_SESSION_ANALYSIS_FAILED = 3,
+  SYSTEM_SESSION_ANALYSIS_OUTSIDE_RANGE = 4,
+  SYSTEM_SESSION_ANALYSIS_STATUS_MAX = 5
+};
+
+bool GetStartTimestamp(
+    const google::protobuf::Map<std::string, TypedValue>& global_data,
+    base::Time* time) {
+  DCHECK(time);
+
+  const auto& it = global_data.find(kStabilityStartTimestamp);
+  if (it == global_data.end())
+    return false;
+
+  const TypedValue& value = it->second;
+  if (value.value_case() != TypedValue::kSignedValue)
+    return false;
+
+  *time = base::Time::FromInternalValue(value.signed_value());
+  return true;
+}
+
+}  // namespace
+
 PostmortemReportCollector::PostmortemReportCollector(
     const std::string& product_name,
     const std::string& version_number,
-    const std::string& channel_name)
+    const std::string& channel_name,
+    SystemSessionAnalyzer* analyzer)
     : product_name_(product_name),
       version_number_(version_number),
-      channel_name_(channel_name) {}
+      channel_name_(channel_name),
+      system_session_analyzer_(analyzer) {}
 
 PostmortemReportCollector::~PostmortemReportCollector() {}
 
-int PostmortemReportCollector::CollectAndSubmitForUpload(
-    const FilePath& debug_info_dir,
-    const FilePath::StringType& debug_file_pattern,
-    const std::set<FilePath>& excluded_debug_files,
+int PostmortemReportCollector::CollectAndSubmitAllPendingReports(
+    const base::FilePath& debug_info_dir,
+    const base::FilePath::StringType& debug_file_pattern,
+    const std::set<base::FilePath>& excluded_debug_files,
     crashpad::CrashReportDatabase* report_database) {
   DCHECK_NE(true, debug_info_dir.empty());
   DCHECK_NE(true, debug_file_pattern.empty());
@@ -62,7 +95,7 @@ int PostmortemReportCollector::CollectAndSubmitForUpload(
   int success_cnt = 0;
   for (const FilePath& file : debug_files) {
     CollectionStatus status =
-        CollectAndSubmit(client_id, file, report_database);
+        CollectAndSubmitOneReport(client_id, file, report_database);
     // TODO(manzagop): consider making this a stability metric.
     UMA_HISTOGRAM_ENUMERATION("ActivityTracker.Collect.Status", status,
                               COLLECTION_STATUS_MAX);
@@ -92,7 +125,7 @@ std::vector<FilePath> PostmortemReportCollector::GetDebugStateFilePaths(
   return paths;
 }
 
-CollectionStatus PostmortemReportCollector::CollectAndSubmit(
+CollectionStatus PostmortemReportCollector::CollectAndSubmitOneReport(
     const crashpad::UUID& client_id,
     const FilePath& file,
     crashpad::CrashReportDatabase* report_database) {
@@ -104,7 +137,7 @@ CollectionStatus PostmortemReportCollector::CollectAndSubmit(
   // Collect the data from the debug file to a proto. Note: a non-empty report
   // is interpreted here as an unclean exit.
   StabilityReport report_proto;
-  CollectionStatus status = Collect(file, &report_proto);
+  CollectionStatus status = CollectOneReport(file, &report_proto);
   if (status != SUCCESS) {
     // The file was empty, or there was an error collecting the data. Detailed
     // logging happens within the Collect function.
@@ -159,16 +192,30 @@ CollectionStatus PostmortemReportCollector::CollectAndSubmit(
   return SUCCESS;
 }
 
-CollectionStatus PostmortemReportCollector::Collect(const base::FilePath& file,
-                                                    StabilityReport* report) {
+CollectionStatus PostmortemReportCollector::CollectOneReport(
+    const base::FilePath& file,
+    StabilityReport* report) {
   DCHECK(report);
+
   CollectionStatus status = Extract(file, report);
   if (status != SUCCESS)
     return status;
 
-  // Add the reporter's details to the report.
+  SetReporterDetails(report);
+  RecordSystemShutdownState(report);
+
+  return SUCCESS;
+}
+
+void PostmortemReportCollector::SetReporterDetails(
+    StabilityReport* report) const {
+  DCHECK(report);
+
   google::protobuf::Map<std::string, TypedValue>& global_data =
       *(report->mutable_global_data());
+
+  // Reporter version details. These are useful as the reporter may be of a
+  // different version.
   global_data[kStabilityReporterChannel].set_string_value(channel_name());
 #if defined(ARCH_CPU_X86)
   global_data[kStabilityReporterPlatform].set_string_value(
@@ -179,8 +226,47 @@ CollectionStatus PostmortemReportCollector::Collect(const base::FilePath& file,
 #endif
   global_data[kStabilityReporterProduct].set_string_value(product_name());
   global_data[kStabilityReporterVersion].set_string_value(version_number());
+}
 
-  return SUCCESS;
+void PostmortemReportCollector::RecordSystemShutdownState(
+    StabilityReport* report) const {
+  DCHECK(report);
+
+  // The session state for the stability report, recorded to provided visibility
+  // into whether the system session was clean.
+  SystemState::SessionState session_state = SystemState::UNKNOWN;
+  // The status of the analysis, recorded to provide insight into the success
+  // or failure of the analysis.
+  SystemSessionAnalysisStatus status = SYSTEM_SESSION_ANALYSIS_SUCCESS;
+
+  base::Time time;
+  if (!GetStartTimestamp(report->global_data(), &time)) {
+    status = SYSTEM_SESSION_ANALYSIS_NO_TIMESTAMP;
+  } else if (!system_session_analyzer_) {
+    status = SYSTEM_SESSION_ANALYSIS_NO_ANALYZER;
+  } else {
+    SystemSessionAnalyzer::Status analyzer_status =
+        system_session_analyzer_->IsSessionUnclean(time);
+    switch (analyzer_status) {
+      case SystemSessionAnalyzer::FAILED:
+        status = SYSTEM_SESSION_ANALYSIS_FAILED;
+        break;
+      case SystemSessionAnalyzer::CLEAN:
+        session_state = SystemState::CLEAN;
+        break;
+      case SystemSessionAnalyzer::UNCLEAN:
+        session_state = SystemState::UNCLEAN;
+        break;
+      case SystemSessionAnalyzer::OUTSIDE_RANGE:
+        status = SYSTEM_SESSION_ANALYSIS_OUTSIDE_RANGE;
+        break;
+    }
+  }
+
+  report->mutable_system_state()->set_session_state(session_state);
+  UMA_HISTOGRAM_ENUMERATION(
+      "ActivityTracker.Collect.SystemSessionAnalysisStatus", status,
+      SYSTEM_SESSION_ANALYSIS_STATUS_MAX);
 }
 
 bool PostmortemReportCollector::WriteReportToMinidump(

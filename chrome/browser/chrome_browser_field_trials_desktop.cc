@@ -18,6 +18,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
+#include "base/time/time.h"
 #include "chrome/browser/features.h"
 #include "chrome/browser/prerender/prerender_field_trial.h"
 #include "chrome/common/chrome_features.h"
@@ -174,6 +175,8 @@ void SetupStabilityDebugging() {
 #elif defined(ARCH_CPU_X86_64)
     global_data.SetString(browser_watcher::kStabilityPlatform, "Win64");
 #endif
+    global_data.SetInt(browser_watcher::kStabilityStartTimestamp,
+                       base::Time::Now().ToInternalValue());
 
     // Record information about chrome's module. We want this to be done early.
     RecordChromeModuleInfo(global_tracker);
