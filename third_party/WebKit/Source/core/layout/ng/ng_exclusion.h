@@ -31,7 +31,25 @@ struct CORE_EXPORT NGExclusion {
   Type type;
 
   bool operator==(const NGExclusion& other) const;
+
   String ToString() const;
+
+  // Tries to combine the current exclusion with {@code other} exclusion and
+  // returns true if successful.
+  // We can combine 2 exclusions if they
+  // - adjoining to each other and have the same exclusion type
+  // - {@code other} exclusion shadows the current one.
+  //   That's because it's not allowed to position anything in the shadowed
+  //   area.
+  //
+  //   Example:
+  //   <div id="SS" style="float: left; height: 10px; width: 10px"></div>
+  //   <div id="BB" style="float: left; height: 20px; width: 20px"></div>
+  //   +----------------+
+  //   |SSBB
+  //   |**BB
+  //   We combine SS and BB exclusions including the shadowed area (**).
+  bool MaybeCombineWith(const NGExclusion& other);
 };
 
 CORE_EXPORT std::ostream& operator<<(std::ostream&, const NGExclusion&);
