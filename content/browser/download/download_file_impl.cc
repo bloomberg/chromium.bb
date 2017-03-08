@@ -96,9 +96,17 @@ void DownloadFileImpl::Initialize(const InitializeCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
 
   update_timer_.reset(new base::RepeatingTimer());
+  int64_t bytes_so_far = 0;
+  if (is_sparse_file_) {
+    for (const auto& received_slice : received_slices_) {
+      bytes_so_far += received_slice.received_bytes;
+    }
+  } else {
+    bytes_so_far = save_info_->offset;
+  }
   DownloadInterruptReason result =
       file_.Initialize(save_info_->file_path, default_download_directory_,
-                       std::move(save_info_->file), save_info_->offset,
+                       std::move(save_info_->file), bytes_so_far,
                        save_info_->hash_of_partial_file,
                        std::move(save_info_->hash_state), is_sparse_file_);
   if (result != DOWNLOAD_INTERRUPT_REASON_NONE) {
@@ -410,7 +418,6 @@ void DownloadFileImpl::RegisterAndActivateStream(SourceStream* source_stream) {
 }
 
 int64_t DownloadFileImpl::TotalBytesReceived() const {
-  // TODO(xingliu): Use slice info to figure out total bytes received.
   return file_.bytes_so_far();
 }
 
