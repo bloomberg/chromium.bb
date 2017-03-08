@@ -18,12 +18,14 @@ top
         navigator-main-frame-navigated.html
         bindings-test.js
       inspector-test.js
-  frame (magic-frame.html)
+  frame (sourcemap-frame.html)
     127.0.0.1:8000
       inspector/bindings/resources
-        magic-frame.html
-        magic-script.js
-        magic-style.css
+        sourcemap-frame.html
+        sourcemap-script.js
+        sourcemap-typescript.ts
+        sourcemap-sass.scss
+        sourcemap-style.css
 
 Running: navigateMainFrame
 Page reloaded.

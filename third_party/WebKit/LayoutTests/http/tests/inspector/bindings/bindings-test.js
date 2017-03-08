@@ -62,5 +62,26 @@ InspectorTest.markStep = function(title) {
     InspectorTest.addResult('\nRunning: ' + title);
 }
 
+InspectorTest.addSniffer(Bindings.CompilerScriptMapping.prototype, "_sourceMapAttachedForTest", onSourceMap, true);
+InspectorTest.addSniffer(Bindings.SASSSourceMapping.prototype, "_sourceMapAttachedForTest", onSourceMap, true);
+var sourceMapCallbacks = new Map();
+function onSourceMap(sourceMap) {
+    for (var urlSuffix of sourceMapCallbacks.keys()) {
+        if (sourceMap.url().endsWith(urlSuffix)) {
+            var callback = sourceMapCallbacks.get(urlSuffix);
+            callback.call(null);
+            sourceMapCallbacks.delete(urlSuffix);
+        }
+    }
+}
+
+InspectorTest.waitForSourceMap = function(sourceMapURLSuffix) {
+    var fulfill;
+    var promise = new Promise(x => fulfill = x);
+    sourceMapCallbacks.set(sourceMapURLSuffix, fulfill);
+    return promise;
+}
+
+
 }
 

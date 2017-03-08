@@ -11,7 +11,11 @@ async function test()
     InspectorTest.dumpWorkspace();
 
     InspectorTest.markStep('attachFrame');
-    await InspectorTest.attachFrame('frame', './resources/magic-frame.html', '_test_attachFrame.js');
+    await Promise.all([
+        InspectorTest.attachFrame('frame', './resources/sourcemap-frame.html', '_test_attachFrame.js'),
+        InspectorTest.waitForSourceMap('sourcemap-script.js.map'),
+        InspectorTest.waitForSourceMap('sourcemap-style.css.map'),
+    ]);
     InspectorTest.dumpWorkspace();
 
     InspectorTest.markStep('navigateMainFrame');

@@ -1,0 +1,38 @@
+<head>
+<script src="../inspector-test.js"></script>
+<script src="./bindings-test.js"></script>
+
+<script>
+
+async function test()
+{
+    InspectorTest.markStep('initialWorkspace');
+    InspectorTest.dumpWorkspace();
+
+    InspectorTest.markStep('createIframesAndWaitForSourceMaps');
+    await Promise.all([
+        InspectorTest.attachFrame('frame1', './resources/sourcemap-frame.html', '_test_create-iframe1.js'),
+        InspectorTest.attachFrame('frame2', './resources/sourcemap-frame.html', '_test_create-iframe2.js'),
+        InspectorTest.waitForSourceMap('sourcemap-script.js.map'),
+        InspectorTest.waitForSourceMap('sourcemap-style.css.map')
+    ]);
+    InspectorTest.dumpWorkspace();
+
+    InspectorTest.markStep('detachFrame1');
+    await InspectorTest.detachFrame('frame1', '_test_detachFrame1.js');
+    InspectorTest.dumpWorkspace();
+
+    InspectorTest.markStep('detachFrame2');
+    await InspectorTest.detachFrame('frame2', '_test_detachFrame2.js');
+    InspectorTest.dumpWorkspace();
+
+    InspectorTest.completeTest();
+}
+
+</script>
+</head>
+<body onload="runTest()">
+<p>
+Verify that SourceMap bindings are generating UISourceCodes properly.
+</p>
+</body>
