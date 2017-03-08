@@ -87,11 +87,6 @@ When the DRM backend is loaded,
 .B weston
 will understand the following additional command line options.
 .TP
-\fB\-\-connector\fR=\fIconnectorid\fR
-Use the connector with id number
-.I connectorid
-as the only initial output.
-.TP
 .B \-\-current\-mode
 By default, use the current video mode of all outputs, instead of
 switching to the monitor preferred mode.

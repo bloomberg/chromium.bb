@@ -562,7 +562,6 @@ usage(int error_code)
 #if defined(BUILD_DRM_COMPOSITOR)
 	fprintf(stderr,
 		"Options for drm-backend.so:\n\n"
-		"  --connector=ID\tBring up only this connector\n"
 		"  --seat=SEAT\t\tThe seat that weston should run on\n"
 		"  --tty=TTY\t\tThe tty to use\n"
 		"  --use-pixman\t\tUse the pixman (CPU) renderer\n"
@@ -1222,7 +1221,6 @@ load_drm_backend(struct weston_compositor *c,
 	wet->drm_use_current_mode = false;
 
 	const struct weston_option options[] = {
-		{ WESTON_OPTION_INTEGER, "connector", 0, &config.connector },
 		{ WESTON_OPTION_STRING, "seat", 0, &config.seat_id },
 		{ WESTON_OPTION_INTEGER, "tty", 0, &config.tty },
 		{ WESTON_OPTION_BOOLEAN, "current-mode", 0, &wet->drm_use_current_mode },
