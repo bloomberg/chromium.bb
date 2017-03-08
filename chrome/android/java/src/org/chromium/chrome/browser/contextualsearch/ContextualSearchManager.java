@@ -42,7 +42,7 @@ import org.chromium.chrome.browser.widget.findinpage.FindToolbarManager;
 import org.chromium.chrome.browser.widget.findinpage.FindToolbarObserver;
 import org.chromium.components.navigation_interception.NavigationParams;
 import org.chromium.content.browser.ContentViewCore;
-import org.chromium.content.browser.ContextualSearchClient;
+import org.chromium.content.browser.SelectionClient;
 import org.chromium.content_public.browser.GestureStateListener;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.NavigationEntry;
@@ -64,9 +64,9 @@ import javax.annotation.Nullable;
  * with the layout.
  */
 public class ContextualSearchManager implements ContextualSearchManagementDelegate,
-        ContextualSearchTranslateInterface, ContextualSearchNetworkCommunicator,
-        ContextualSearchSelectionHandler, ContextualSearchClient {
-
+                                                ContextualSearchTranslateInterface,
+                                                ContextualSearchNetworkCommunicator,
+                                                ContextualSearchSelectionHandler, SelectionClient {
     private static final String INTENT_URL_PREFIX = "intent:";
 
     // The animation duration of a URL being promoted to a tab when triggered by an
@@ -1207,7 +1207,7 @@ public class ContextualSearchManager implements ContextualSearchManagementDelega
     }
 
     // ============================================================================================
-    // ContextualSearchClient -- interface used by ContentViewCore.
+    // SelectionClient -- interface used by ContentViewCore.
     // ============================================================================================
 
     @Override

@@ -5,9 +5,9 @@
 package org.chromium.content.browser;
 
 /**
- * Interface to a client that implements Contextual Search handling for the content layer.
+ * Interface to a content layer client that can process and modify selection text.
  */
-public interface ContextualSearchClient {
+public interface SelectionClient {
     /**
      * Notification that the web content selection has changed, regardless of the causal action.
      * @param selection The newly established selection.

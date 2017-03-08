@@ -112,8 +112,8 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
     private PastePopupMenu mPastePopupMenu;
     private boolean mWasPastePopupShowingOnInsertionDragStart;
 
-    // The client that implements Contextual Search functionality, or null if none exists.
-    private ContextualSearchClient mContextualSearchClient;
+    // The client that processes textual selection, or null if none exists.
+    private SelectionClient mSelectionClient;
 
     /**
      * Create {@link SelectionPopupController} instance.
@@ -835,11 +835,11 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
                 assert false : "Invalid selection event type.";
         }
 
-        if (mContextualSearchClient != null) {
+        if (mSelectionClient != null) {
             final float deviceScale = mRenderCoordinates.getDeviceScaleFactor();
             int xAnchorPix = (int) (xAnchor * deviceScale);
             int yAnchorPix = (int) (yAnchor * deviceScale);
-            mContextualSearchClient.onSelectionEvent(eventType, xAnchorPix, yAnchorPix);
+            mSelectionClient.onSelectionEvent(eventType, xAnchorPix, yAnchorPix);
         }
     }
 
@@ -858,19 +858,19 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
 
     void onSelectionChanged(String text) {
         mLastSelectedText = text;
-        if (mContextualSearchClient != null) {
-            mContextualSearchClient.onSelectionChanged(text);
+        if (mSelectionClient != null) {
+            mSelectionClient.onSelectionChanged(text);
         }
     }
 
-    // The client that implements Contextual Search functionality, or null if none exists.
-    void setContextualSearchClient(ContextualSearchClient contextualSearchClient) {
-        mContextualSearchClient = contextualSearchClient;
+    // The client that implements selection augmenting functionality, or null if none exists.
+    void setSelectionClient(SelectionClient selectionClient) {
+        mSelectionClient = selectionClient;
     }
 
     void onShowUnhandledTapUIIfNeeded(int x, int y) {
-        if (mContextualSearchClient != null) {
-            mContextualSearchClient.showUnhandledTapUIIfNeeded(x, y);
+        if (mSelectionClient != null) {
+            mSelectionClient.showUnhandledTapUIIfNeeded(x, y);
         }
     }
 

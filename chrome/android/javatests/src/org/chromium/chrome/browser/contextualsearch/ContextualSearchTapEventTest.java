@@ -23,7 +23,7 @@ import org.chromium.chrome.browser.compositor.layouts.LayoutUpdateHost;
 import org.chromium.chrome.browser.compositor.layouts.eventfilter.EventFilterHost;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.content.browser.ContentViewCore;
-import org.chromium.content.browser.ContextualSearchClient;
+import org.chromium.content.browser.SelectionClient;
 import org.chromium.content.browser.SelectionPopupController;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.WindowAndroid;
@@ -40,7 +40,7 @@ public class ContextualSearchTapEventTest extends ChromeActivityTestCaseBase<Chr
     private ContextualSearchManagerWrapper mContextualSearchManager;
     private ContextualSearchPanel mPanel;
     private OverlayPanelManagerWrapper mPanelManager;
-    private ContextualSearchClient mContextualSearchClient;
+    private SelectionClient mContextualSearchClient;
 
     /**
      * A ContextualSearchRequest that forgoes URI template lookup.
@@ -92,7 +92,7 @@ public class ContextualSearchTapEventTest extends ChromeActivityTestCaseBase<Chr
             contentView.setSelectionPopupControllerForTesting(
                     new SelectionPopupController(activity, null, null, null,
                             contentView.getRenderCoordinates(), null));
-            contentView.setContextualSearchClient(this);
+            contentView.setSelectionClient(this);
             MockContextualSearchPolicy policy = new MockContextualSearchPolicy();
             setContextualSearchPolicy(policy);
             mTranslateController = new MockedCSTranslateController(activity, policy, null);

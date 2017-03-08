@@ -2677,11 +2677,11 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
     }
 
     /**
-     * Sets the client to use for Contextual Search functionality.
-     * @param contextualSearchClient The client to notify for Contextual Search operations.
+     * Sets the client that can process and augment existing text selection, e.g. Contextual Search.
+     * @param selectionClient The client that receives related notifications.
      */
-    public void setContextualSearchClient(ContextualSearchClient contextualSearchClient) {
-        mSelectionPopupController.setContextualSearchClient(contextualSearchClient);
+    public void setSelectionClient(SelectionClient selectionClient) {
+        mSelectionPopupController.setSelectionClient(selectionClient);
     }
 
     /**
