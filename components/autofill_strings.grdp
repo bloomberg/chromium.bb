@@ -221,19 +221,19 @@
   </message>
 
   <message name="IDS_AUTOFILL_CREDIT_CARD_EXP_AND_LAST_USED_DATE" desc="Text displayed in the Autofill Credit Card popup to indicate the credit card expiration date and the date when this card was last used.">
-    Exp: <ph name="EXPIRATION_DATE_ABBR">$1<ex>06/17</ex></ph>, last used: <ph name="LAST_USED_DATE_NO_DETAIL">$2<ex>Jan 10</ex></ph>
+    Exp: <ph name="EXPIRATION_DATE_ABBR">$1<ex>06/17</ex></ph>, last used <ph name="LAST_USED_DATE_NO_DETAIL">$2<ex>Jan 10</ex></ph>
   </message>
 
   <message name="IDS_AUTOFILL_CREDIT_CARD_LAST_USED_DATE" desc="Text displayed in the Autofill Credit Card popup to indicate the date when this card was last used.">
-    Last used: <ph name="LAST_USED_MONTH">$1<ex>Jan 10</ex></ph>
+    Last used <ph name="LAST_USED_MONTH">$1<ex>Jan 10</ex></ph>
   </message>
 
   <message name="IDS_AUTOFILL_CREDIT_CARD_EXP_AND_ADDED_DATE" desc="Text displayed in the Autofill Credit Card popup to indicate the credit card expiration date and the date when this card was added to autofill.">
-    Exp: <ph name="EXPIRATION_DATE_ABBR">$1<ex>06/17</ex></ph>, added: <ph name="ADDED_TO_AUTOFILL_MONTH">$2<ex>Jan 10</ex></ph>
+    Exp: <ph name="EXPIRATION_DATE_ABBR">$1<ex>06/17</ex></ph>, added <ph name="ADDED_TO_AUTOFILL_MONTH">$2<ex>Jan 10</ex></ph>
   </message>
 
   <message name="IDS_AUTOFILL_CREDIT_CARD_ADDED_DATE" desc="Text displayed in the Autofill Credit Card popup to indicate the date when this card was added to autofill.">
-    Added: <ph name="ADDED_TO_AUTOFILL_MONTH">$1<ex>Jan 10</ex></ph>
+    Added <ph name="ADDED_TO_AUTOFILL_MONTH">$1<ex>Jan 10</ex></ph>
   </message>
 
   <message name="IDS_AUTOFILL_CREDIT_CARD_EXP_AND_LAST_USED_YEAR_AGO" desc="Text displayed in the Autofill Credit Card popup to indicate the credit card expiration date and this card was used in autofill more than a year ago.">

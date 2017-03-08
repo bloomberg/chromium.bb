@@ -929,12 +929,12 @@ TEST(CreditCardTest, GetLastUsedDateForDisplay) {
     base::string16 last_used_year_ago;
   } kTestCases[] = {
       // only show last used date.
-      {"false", "en_US", ASCIIToUTF16("Added: Dec 09"),
-       ASCIIToUTF16("Last used: Nov 30"),
+      {"false", "en_US", ASCIIToUTF16("Added Dec 09"),
+       ASCIIToUTF16("Last used Nov 30"),
        ASCIIToUTF16("Last used over a year ago")},
       // show expiration date and last used date.
-      {"true", "en_US", ASCIIToUTF16("Exp: 01/21, added: Dec 09"),
-       ASCIIToUTF16("Exp: 04/21, last used: Nov 30"),
+      {"true", "en_US", ASCIIToUTF16("Exp: 01/21, added Dec 09"),
+       ASCIIToUTF16("Exp: 04/21, last used Nov 30"),
        ASCIIToUTF16("Exp: 12/21, last used over a year ago")},
   };
 

@@ -566,7 +566,7 @@ base::string16 CreditCard::GetLastUsedDateForDisplay(
   // use_count() > 1 when the card has been used in autofill.
 
   // If the card was last used in autofill more than a year ago,
-  // display "last used > 1 year ago" without showing date detail.
+  // display "last used over a year ago" without showing date detail.
   if ((AutofillClock::Now() - use_date()).InDays() > 365) {
     return show_expiration_date
                ? l10n_util::GetStringFUTF16(
