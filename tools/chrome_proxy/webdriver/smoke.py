@@ -5,11 +5,14 @@
 import common
 from common import TestDriver
 from common import IntegrationTest
+from common import NotAndroid
 
 
 class Smoke(IntegrationTest):
 
   # Ensure Chrome does not use DataSaver in Incognito mode.
+  # Clank does not honor the --incognito flag.
+  @NotAndroid
   def testCheckPageWithIncognito(self):
     with TestDriver() as t:
       t.AddChromeArg('--enable-spdy-proxy-auth')
