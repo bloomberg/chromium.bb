@@ -227,4 +227,8 @@ void DelegatedFrameHostAndroid::CreateNewCompositorFrameSinkSupport() {
       true /* needs_sync_points */);
 }
 
+cc::SurfaceId DelegatedFrameHostAndroid::SurfaceId() const {
+  return cc::SurfaceId(frame_sink_id_, current_frame_->local_surface_id);
+}
+
 }  // namespace ui

@@ -68,6 +68,9 @@ class UI_ANDROID_EXPORT DelegatedFrameHostAndroid
   void AttachToCompositor(WindowAndroidCompositor* compositor);
   void DetachFromCompositor();
 
+  // Returns the ID for the current Surface.
+  cc::SurfaceId SurfaceId() const;
+
  private:
   // cc::CompositorFrameSinkSupportClient implementation.
   void DidReceiveCompositorFrameAck() override;

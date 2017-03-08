@@ -235,6 +235,25 @@ class TestInputEventObserver : public RenderWidgetHost::InputEventObserver {
   DISALLOW_COPY_AND_ASSIGN(TestInputEventObserver);
 };
 
+double GetFrameDeviceScaleFactor(const ToRenderFrameHost& adapter) {
+  double device_scale_factor;
+  const char kGetFrameDeviceScaleFactor[] =
+      "window.domAutomationController.send(window.devicePixelRatio);";
+  EXPECT_TRUE(ExecuteScriptAndExtractDouble(adapter, kGetFrameDeviceScaleFactor,
+                                            &device_scale_factor));
+  return device_scale_factor;
+}
+
+// This method returns the scale factor on Android and 1.0 on other
+// platforms in order to adjust coordinates appropriately.
+double GetAdjustmentScaleFactorForAndroid(Shell* shell) {
+#if defined(OS_ANDROID)
+  return GetFrameDeviceScaleFactor(shell->web_contents());
+#else
+  return 1.0;
+#endif
+}
+
 // Helper function that performs a surface hittest.
 void SurfaceHitTestTestHelper(
     Shell* shell,
@@ -274,21 +293,40 @@ void SurfaceHitTestTestHelper(
       static_cast<RenderWidgetHostViewChildFrame*>(rwhv_child));
   notifier.WaitForSurfaceReady();
 
+  float scale_factor = GetAdjustmentScaleFactorForAndroid(shell);
+
+  // Get the view bounds of the child iframe, which should account for the
+  // relative offset of its direct parent within the root frame, for use in
+  // targeting the input event.
+  gfx::Rect bounds = rwhv_child->GetViewBounds();
+
   // Target input event to child frame.
   blink::WebMouseEvent child_event(blink::WebInputEvent::MouseDown,
                                    blink::WebInputEvent::NoModifiers,
                                    blink::WebInputEvent::TimeStampForTesting);
   child_event.button = blink::WebPointerProperties::Button::Left;
-  child_event.x = 75;
-  child_event.y = 75;
+  child_event.x =
+      gfx::ToCeiledInt((bounds.x() - root_view->GetViewBounds().x()) /
+                       scale_factor) +
+      3;
+  child_event.y =
+      gfx::ToCeiledInt((bounds.y() - root_view->GetViewBounds().y()) /
+                       scale_factor) +
+      3;
   child_event.clickCount = 1;
   main_frame_monitor.ResetEventReceived();
   child_frame_monitor.ResetEventReceived();
   router->RouteMouseEvent(root_view, &child_event, ui::LatencyInfo());
 
   EXPECT_TRUE(child_frame_monitor.EventWasReceived());
-  EXPECT_EQ(23, child_frame_monitor.event().x);
-  EXPECT_EQ(23, child_frame_monitor.event().y);
+  // The expected result coordinates are (3, 3), but can get slightly
+  // different results due to rounding error with some device scale factors.
+  EXPECT_TRUE(child_frame_monitor.event().x <= 5 &&
+              child_frame_monitor.event().x >= 1)
+      << " actual event.x: " << child_frame_monitor.event().x;
+  EXPECT_TRUE(child_frame_monitor.event().y <= 5 &&
+              child_frame_monitor.event().y >= 1)
+      << " actual event.y: " << child_frame_monitor.event().y;
   EXPECT_FALSE(main_frame_monitor.EventWasReceived());
 
   child_frame_monitor.ResetEventReceived();
@@ -706,15 +744,6 @@ bool operator==(const ParsedFeaturePolicyDeclaration& first,
                                              second.origins);
 }
 
-double GetFrameDeviceScaleFactor(const ToRenderFrameHost& adapter) {
-  double device_scale_factor;
-  const char kGetFrameDeviceScaleFactor[] =
-      "window.domAutomationController.send(window.devicePixelRatio);";
-  EXPECT_TRUE(ExecuteScriptAndExtractDouble(adapter, kGetFrameDeviceScaleFactor,
-                                            &device_scale_factor));
-  return device_scale_factor;
-}
-
 IN_PROC_BROWSER_TEST_F(SitePerProcessHighDPIBrowserTest,
                        SubframeLoadsWithCorrectDeviceScaleFactor) {
   GURL main_url(embedded_test_server()->GetURL(
@@ -965,15 +994,7 @@ class FrameRectChangedMessageFilter : public content::BrowserMessageFilter {
 // Test that the view bounds for an out-of-process iframe are set and updated
 // correctly, including accounting for local frame offsets in the parent and
 // scroll positions.
-#if defined(OS_ANDROID)
-// Browser process hit testing is not implemented on Android.
-// https://crbug.com/491334
-#define MAYBE_ViewBoundsInNestedFrameTest DISABLED_ViewBoundsInNestedFrameTest
-#else
-#define MAYBE_ViewBoundsInNestedFrameTest ViewBoundsInNestedFrameTest
-#endif
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
-                       MAYBE_ViewBoundsInNestedFrameTest) {
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ViewBoundsInNestedFrameTest) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(a)"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -1010,11 +1031,26 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
       static_cast<RenderWidgetHostViewChildFrame*>(rwhv_nested));
   notifier.WaitForSurfaceReady();
 
+#if defined(OS_ANDROID)
+  // Android browser tests have some differences that affect the results. One
+  // is viewport dimensions, the other is that it handles scale factor
+  // differently.
+  int expected_x = 487;
+#else
+  int expected_x = 397;
+#endif
+  int expected_y = 112;
+  float scale_factor = GetAdjustmentScaleFactorForAndroid(shell());
+
   // Verify the view bounds of the nested iframe, which should account for the
   // relative offset of its direct parent within the root frame.
   gfx::Rect bounds = rwhv_nested->GetViewBounds();
-  EXPECT_EQ(bounds.x() - rwhv_root->GetViewBounds().x(), 397);
-  EXPECT_EQ(bounds.y() - rwhv_root->GetViewBounds().y(), 112);
+  int diff_x = bounds.x() - rwhv_root->GetViewBounds().x() - expected_x;
+  int diff_y = bounds.y() - rwhv_root->GetViewBounds().y() - expected_y;
+  // diff_x and diff_y should usually be zero, but can get slightly different
+  // results due to rounding error with some device scale factors.
+  EXPECT_TRUE(diff_x <= 2 && diff_x >= -2) << " actual diff_x: " << diff_x;
+  EXPECT_TRUE(diff_y <= 2 && diff_y >= -2) << " actual diff_y: " << diff_y;
 
   scoped_refptr<FrameRectChangedMessageFilter> filter =
       new FrameRectChangedMessageFilter();
@@ -1025,8 +1061,11 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   blink::WebMouseWheelEvent scroll_event(
       blink::WebInputEvent::MouseWheel, blink::WebInputEvent::NoModifiers,
       blink::WebInputEvent::TimeStampForTesting);
-  scroll_event.x = 387;
-  scroll_event.y = 110;
+
+  scroll_event.x = gfx::ToFlooredInt(
+      (bounds.x() - rwhv_root->GetViewBounds().x() - 5) / scale_factor);
+  scroll_event.y = gfx::ToFlooredInt(
+      (bounds.y() - rwhv_root->GetViewBounds().y() - 5) / scale_factor);
   scroll_event.deltaX = 0.0f;
   scroll_event.deltaY = -30.0f;
   rwhv_root->ProcessMouseWheelEvent(scroll_event, ui::LatencyInfo());
@@ -1042,8 +1081,6 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
 // Test that scrolling a nested out-of-process iframe bubbles unused scroll
 // delta to a parent frame.
-// Browser process hit testing is not implemented on Android.
-// https://crbug.com/491334
 // Flaky: https://crbug.com/627238
 IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
                        DISABLED_ScrollBubblingFromOOPIFTest) {
@@ -1265,9 +1302,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, MAYBE_ScrollEventToOOPIF) {
 
 // Test that mouse events are being routed to the correct RenderWidgetHostView
 // based on coordinates.
-#if defined(OS_ANDROID) || defined(THREAD_SANITIZER)
-// Browser process hit testing is not implemented on Android.
-// https://crbug.com/491334
+#if defined(THREAD_SANITIZER)
 // The test times out often on TSAN bot.
 // https://crbug.com/591170.
 #define MAYBE_SurfaceHitTestTest DISABLED_SurfaceHitTestTest
@@ -1280,8 +1315,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, MAYBE_SurfaceHitTestTest) {
 
 // Same test as above, but runs in high-dpi mode.
 #if defined(OS_ANDROID) || defined(OS_WIN)
-// Browser process hit testing is not implemented on Android.
-// https://crbug.com/491334
+// High DPI browser tests are not needed on Android, and confuse some of the
+// coordinate calculations. Android uses fixed device scale factor.
 // Windows is disabled because of https://crbug.com/545547.
 #define MAYBE_HighDPISurfaceHitTestTest DISABLED_SurfaceHitTestTest
 #else
@@ -1294,15 +1329,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessHighDPIBrowserTest,
 
 // Test that mouse events are being routed to the correct RenderWidgetHostView
 // when there are nested out-of-process iframes.
-#if defined(OS_ANDROID)
-// Browser process hit testing is not implemented on Android.
-// https://crbug.com/491334
-#define MAYBE_NestedSurfaceHitTestTest DISABLED_NestedSurfaceHitTestTest
-#else
-#define MAYBE_NestedSurfaceHitTestTest NestedSurfaceHitTestTest
-#endif
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
-                       MAYBE_NestedSurfaceHitTestTest) {
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, NestedSurfaceHitTestTest) {
   GURL main_url(embedded_test_server()->GetURL(
       "/frame_tree/page_with_positioned_nested_frames.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -1348,36 +1375,47 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
       static_cast<RenderWidgetHostViewChildFrame*>(rwhv_nested));
   notifier.WaitForSurfaceReady();
 
+  float scale_factor = GetAdjustmentScaleFactorForAndroid(shell());
+
+  // Get the view bounds of the nested iframe, which should account for the
+  // relative offset of its direct parent within the root frame, for use in
+  // targeting the input event.
+  gfx::Rect bounds = rwhv_nested->GetViewBounds();
+
   // Target input event to nested frame.
   blink::WebMouseEvent nested_event(blink::WebInputEvent::MouseDown,
                                     blink::WebInputEvent::NoModifiers,
                                     blink::WebInputEvent::TimeStampForTesting);
   nested_event.button = blink::WebPointerProperties::Button::Left;
-  nested_event.x = 125;
-  nested_event.y = 125;
+  nested_event.x =
+      gfx::ToCeiledInt((bounds.x() - root_view->GetViewBounds().x()) /
+                       scale_factor) +
+      5;
+  nested_event.y =
+      gfx::ToCeiledInt((bounds.y() - root_view->GetViewBounds().y()) /
+                       scale_factor) +
+      5;
   nested_event.clickCount = 1;
   nested_frame_monitor.ResetEventReceived();
   main_frame_monitor.ResetEventReceived();
   router->RouteMouseEvent(root_view, &nested_event, ui::LatencyInfo());
 
   EXPECT_TRUE(nested_frame_monitor.EventWasReceived());
-  EXPECT_EQ(21, nested_frame_monitor.event().x);
-  EXPECT_EQ(21, nested_frame_monitor.event().y);
+  // The expected result coordinates are (5, 5), but can get slightly
+  // different results due to rounding error with some device scale factors.
+  EXPECT_TRUE(nested_frame_monitor.event().x <= 6 &&
+              nested_frame_monitor.event().x >= 4)
+      << " actual event.x: " << nested_frame_monitor.event().x;
+  EXPECT_TRUE(nested_frame_monitor.event().y <= 6 &&
+              nested_frame_monitor.event().y >= 4)
+      << " actual event.y: " << nested_frame_monitor.event().y;
   EXPECT_FALSE(main_frame_monitor.EventWasReceived());
 }
 
 // This test tests that browser process hittesting ignores frames with
 // pointer-events: none.
-#if defined(OS_ANDROID)
-// Browser process hit testing is not implemented on Android.
-// https://crbug.com/491334
-#define MAYBE_SurfaceHitTestPointerEventsNone \
-  DISABLED_SurfaceHitTestPointerEventsNone
-#else
-#define MAYBE_SurfaceHitTestPointerEventsNone SurfaceHitTestPointerEventsNone
-#endif
 IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
-                       MAYBE_SurfaceHitTestPointerEventsNone) {
+                       SurfaceHitTestPointerEventsNone) {
   GURL main_url(embedded_test_server()->GetURL(
       "/frame_tree/page_with_positioned_frame_pointer-events_none.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -1430,17 +1468,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
 // This test verifies that MouseEnter and MouseLeave events fire correctly
 // when the mouse cursor moves between processes.
-#if defined(OS_ANDROID)
-// Browser process hit testing is not implemented on Android.
-// https://crbug.com/491334
-#define MAYBE_CrossProcessMouseEnterAndLeaveTest \
-  DISABLED_CrossProcessMouseEnterAndLeaveTest
-#else
-#define MAYBE_CrossProcessMouseEnterAndLeaveTest \
-  CrossProcessMouseEnterAndLeaveTest
-#endif
 IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
-                       MAYBE_CrossProcessMouseEnterAndLeaveTest) {
+                       CrossProcessMouseEnterAndLeaveTest) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b,c(d))"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -1494,9 +1523,22 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   RenderWidgetHostMouseEventMonitor d_frame_monitor(
       d_node->current_frame_host()->GetRenderWidgetHost());
 
+  float scale_factor = GetAdjustmentScaleFactorForAndroid(shell());
+
+  // Get the view bounds of the child iframe, which should account for the
+  // relative offset of its direct parent within the root frame, for use in
+  // targeting the input event.
+  gfx::Rect a_bounds = rwhv_a->GetViewBounds();
+  gfx::Rect b_bounds = rwhv_b->GetViewBounds();
+  gfx::Rect d_bounds = rwhv_d->GetViewBounds();
+
   gfx::Point point_in_a_frame(2, 2);
-  gfx::Point point_in_b_frame(313, 147);
-  gfx::Point point_in_d_frame(471, 207);
+  gfx::Point point_in_b_frame(
+      gfx::ToCeiledInt((b_bounds.x() - a_bounds.x()) / scale_factor) + 25,
+      gfx::ToCeiledInt((b_bounds.y() - a_bounds.y()) / scale_factor) + 25);
+  gfx::Point point_in_d_frame(
+      gfx::ToCeiledInt((d_bounds.x() - a_bounds.x()) / scale_factor) + 25,
+      gfx::ToCeiledInt((d_bounds.y() - a_bounds.y()) / scale_factor) + 25);
 
   blink::WebMouseEvent mouse_event(blink::WebInputEvent::MouseMove,
                                    blink::WebInputEvent::NoModifiers,
@@ -1546,15 +1588,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 // Verify that mouse capture works on a RenderWidgetHostView level, so that
 // dragging scroll bars and selecting text continues even when the mouse
 // cursor crosses over cross-process frame boundaries.
-#if defined(OS_ANDROID)
-// Browser process hit testing is not implemented on Android.
-// https://crbug.com/491334
-#define MAYBE_CrossProcessMouseCapture DISABLED_CrossProcessMouseCapture
-#else
-#define MAYBE_CrossProcessMouseCapture CrossProcessMouseCapture
-#endif
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
-                       MAYBE_CrossProcessMouseCapture) {
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, CrossProcessMouseCapture) {
   GURL main_url(embedded_test_server()->GetURL(
       "/frame_tree/page_with_positioned_frame.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -1587,13 +1621,28 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
       static_cast<RenderWidgetHostViewChildFrame*>(rwhv_child));
   notifier.WaitForSurfaceReady();
 
+  float scale_factor = GetAdjustmentScaleFactorForAndroid(shell());
+
+  // Get the view bounds of the child iframe, which should account for the
+  // relative offset of its direct parent within the root frame, for use in
+  // targeting the input event.
+  gfx::Rect bounds = rwhv_child->GetViewBounds();
+  int child_frame_target_x =
+      gfx::ToCeiledInt((bounds.x() - root_view->GetViewBounds().x()) /
+                       scale_factor) +
+      5;
+  int child_frame_target_y =
+      gfx::ToCeiledInt((bounds.y() - root_view->GetViewBounds().y()) /
+                       scale_factor) +
+      5;
+
   // Target MouseDown to child frame.
   blink::WebMouseEvent mouse_event(blink::WebInputEvent::MouseDown,
                                    blink::WebInputEvent::NoModifiers,
                                    blink::WebInputEvent::TimeStampForTesting);
   mouse_event.button = blink::WebPointerProperties::Button::Left;
-  mouse_event.x = 75;
-  mouse_event.y = 75;
+  mouse_event.x = child_frame_target_x;
+  mouse_event.y = child_frame_target_y;
   mouse_event.clickCount = 1;
   main_frame_monitor.ResetEventReceived();
   child_frame_monitor.ResetEventReceived();
@@ -1625,8 +1674,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   // A MouseUp to the child frame should cancel the mouse capture.
   mouse_event.setType(blink::WebInputEvent::MouseUp);
   mouse_event.setModifiers(blink::WebInputEvent::NoModifiers);
-  mouse_event.x = 75;
-  mouse_event.y = 75;
+  mouse_event.x = child_frame_target_x;
+  mouse_event.y = child_frame_target_y;
   main_frame_monitor.ResetEventReceived();
   child_frame_monitor.ResetEventReceived();
   router->RouteMouseEvent(root_view, &mouse_event, ui::LatencyInfo());
@@ -1665,8 +1714,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   // frame receiving the event.
   mouse_event.setType(blink::WebInputEvent::MouseMove);
   mouse_event.setModifiers(blink::WebInputEvent::LeftButtonDown);
-  mouse_event.x = 75;
-  mouse_event.y = 75;
+  mouse_event.x = child_frame_target_x;
+  mouse_event.y = child_frame_target_y;
   main_frame_monitor.ResetEventReceived();
   child_frame_monitor.ResetEventReceived();
   router->RouteMouseEvent(root_view, &mouse_event, ui::LatencyInfo());
@@ -5964,7 +6013,14 @@ void CreateContextMenuTestHelper(
       static_cast<WebContentsImpl*>(shell->web_contents())
           ->GetInputEventRouter();
 
-  gfx::Point point(75, 75);
+  float scale_factor = GetAdjustmentScaleFactorForAndroid(shell);
+
+  gfx::Rect root_bounds = root_view->GetViewBounds();
+  gfx::Rect bounds = rwhv_child->GetViewBounds();
+
+  gfx::Point point(
+      gfx::ToCeiledInt((bounds.x() - root_bounds.x()) / scale_factor) + 10,
+      gfx::ToCeiledInt((bounds.y() - root_bounds.y()) / scale_factor) + 10);
 
   // Target right-click event to child frame.
   blink::WebMouseEvent click_event(blink::WebInputEvent::MouseDown,
@@ -5992,14 +6048,7 @@ void CreateContextMenuTestHelper(
 
 // Test that a mouse right-click to an out-of-process iframe causes a context
 // menu to be generated with the correct screen position.
-#if defined(OS_ANDROID)
-// Browser process hit testing is not implemented on Android.
-// https://crbug.com/491334
-#define MAYBE_CreateContextMenuTest DISABLED_CreateContextMenuTest
-#else
-#define MAYBE_CreateContextMenuTest CreateContextMenuTest
-#endif
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, MAYBE_CreateContextMenuTest) {
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, CreateContextMenuTest) {
   CreateContextMenuTestHelper(shell(), embedded_test_server());
 }
 
@@ -6007,8 +6056,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, MAYBE_CreateContextMenuTest) {
 // menu to be generated with the correct screen position on a screen with
 // non-default scale factor.
 #if defined(OS_ANDROID) || defined(OS_WIN)
-// Browser process hit testing is not implemented on Android.
-// https://crbug.com/491334
+// High DPI tests don't work properly on Android, which has fixed scale factor.
 // Windows is disabled because of https://crbug.com/545547.
 #define MAYBE_HighDPICreateContextMenuTest DISABLED_HighDPICreateContextMenuTest
 #else
@@ -6085,22 +6133,15 @@ class ShowWidgetMessageFilter : public content::BrowserMessageFilter {
 
 // Test that clicking a select element in an out-of-process iframe creates
 // a popup menu in the correct position.
-#if defined(OS_ANDROID)
-// Surface-based hit testing and coordinate translation is not yet available
-// on Android.
-#define MAYBE_PopupMenuTest DISABLED_PopupMenuTest
-#else
-#define MAYBE_PopupMenuTest PopupMenuTest
-#endif
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, MAYBE_PopupMenuTest) {
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, PopupMenuTest) {
   GURL main_url(
       embedded_test_server()->GetURL("/cross_site_iframe_factory.html?a(a)"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
 
   FrameTreeNode* root = web_contents()->GetFrameTree()->root();
 
-#if !defined(OS_MACOSX)
-  // Unused variable on Mac.
+#if !defined(OS_MACOSX) && !defined(OS_ANDROID)
+  // Unused variable on Mac and Android.
   RenderWidgetHostViewBase* rwhv_root = static_cast<RenderWidgetHostViewBase*>(
       root->current_frame_host()->GetRenderWidgetHost()->GetView());
 #endif
@@ -6139,9 +6180,9 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, MAYBE_PopupMenuTest) {
 
   filter->Wait();
   gfx::Rect popup_rect = filter->last_initial_rect();
-#if defined(OS_MACOSX)
-  // On Mac we receive the coordinates before they are transformed, so they
-  // are still relative to the out-of-process iframe origin.
+#if defined(OS_MACOSX) || defined(OS_ANDROID)
+  // On Mac and Android we receive the coordinates before they are transformed,
+  // so they are still relative to the out-of-process iframe origin.
   EXPECT_EQ(popup_rect.x(), 9);
   EXPECT_EQ(popup_rect.y(), 9);
 #else
@@ -8993,8 +9034,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 // Test that MouseDown and MouseUp to the same coordinates do not result in
 // different coordinates after routing. See bug https://crbug.com/670253.
 #if defined(OS_ANDROID)
-// Browser process hit testing is not implemented on Android.
-// https://crbug.com/491334
+// Android uses fixed scale factor, which makes this test unnecessary.
 #define MAYBE_MouseClickWithNonIntegerScaleFactor \
   DISABLED_MouseClickWithNonIntegerScaleFactor
 #else

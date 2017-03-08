@@ -135,13 +135,31 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   bool IsInVR() const override;
   void DidOverscroll(const ui::DidOverscrollParams& params) override;
   void DidStopFlinging() override;
-  cc::FrameSinkId GetFrameSinkId() override;
   void ShowDisambiguationPopup(const gfx::Rect& rect_pixels,
                                const SkBitmap& zoomed_bitmap) override;
   std::unique_ptr<SyntheticGestureTarget> CreateSyntheticGestureTarget()
       override;
   void OnDidNavigateMainFrameToNewPage() override;
   void SetNeedsBeginFrames(bool needs_begin_frames) override;
+  cc::FrameSinkId GetFrameSinkId() override;
+  cc::FrameSinkId FrameSinkIdAtPoint(cc::SurfaceHittestDelegate* delegate,
+                                     const gfx::Point& point,
+                                     gfx::Point* transformed_point) override;
+  void ProcessMouseEvent(const blink::WebMouseEvent& event,
+                         const ui::LatencyInfo& latency) override;
+  void ProcessMouseWheelEvent(const blink::WebMouseWheelEvent& event,
+                              const ui::LatencyInfo& latency) override;
+  void ProcessTouchEvent(const blink::WebTouchEvent& event,
+                         const ui::LatencyInfo& latency) override;
+  void ProcessGestureEvent(const blink::WebGestureEvent& event,
+                           const ui::LatencyInfo& latency) override;
+  bool TransformPointToLocalCoordSpace(const gfx::Point& point,
+                                       const cc::SurfaceId& original_surface,
+                                       gfx::Point* transformed_point) override;
+  bool TransformPointToCoordSpaceForView(
+      const gfx::Point& point,
+      RenderWidgetHostViewBase* target_view,
+      gfx::Point* transformed_point) override;
 
   // ui::GestureProviderClient implementation.
   void OnGestureEvent(const ui::GestureEventData& gesture) override;
@@ -246,6 +264,9 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
                               RenderWidgetHostViewBase* updated_view) override;
 
   ImeAdapterAndroid* ime_adapter_for_testing() { return &ime_adapter_android_; }
+
+  // Exposed for tests.
+  cc::SurfaceId SurfaceIdForTesting() const override;
 
  private:
   void RunAckCallbacks();
