@@ -206,6 +206,7 @@ void AddGpuFingerprintToMicrodumpCrashHandler(
 }
 
 bool DumpWithoutCrashingToFd(int fd) {
+  ::crash_reporter::SetCrashReporterClient(g_crash_reporter_client.Pointer());
   return g_crash_reporter_client.Pointer()->DumpWithoutCrashingToFd(fd);
 }
 
