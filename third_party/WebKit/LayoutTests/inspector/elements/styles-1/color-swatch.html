@@ -23,10 +23,10 @@ function test() {
             var swatch = treeItem.valueElement.querySelector("span[is=color-swatch]").shadowRoot.querySelector(".color-swatch-inner");
             swatch.dispatchEvent(createShiftClick());
             InspectorTest.addResult("After shift-click: " + treeItem.valueElement.textContent);
-            InspectorTest.addResult("Has popover before click: " + !!document.querySelector("body > .popover-container"));
+            InspectorTest.addResult("Has popover before click: " + popoverVisible());
 
             swatch.click();
-            InspectorTest.addResult("Has popover after click: " + !!document.querySelector("body > .popover-container"));
+            InspectorTest.addResult("Has popover after click: " + popoverVisible());
             next();
         },
 
@@ -55,6 +55,11 @@ function test() {
         var event = document.createEvent("MouseEvent");
         event.initMouseEvent("click", true, true, null, 1, 0, 0, 0, 0, false, false, true, false, 0, null);
         return event;
+    }
+
+    function popoverVisible()
+    {
+        return UI.Popover._popover ? UI.Popover._popover.contentElement.isSelfOrDescendant(document.body) : false;
     }
 }
 </script>
