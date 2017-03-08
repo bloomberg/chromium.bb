@@ -77,12 +77,12 @@ void RequestContext::AddWatchNotifyFinalizer(
     const HandleSignalsState& state) {
   DCHECK(IsCurrent());
   watch_notify_finalizers_->push_back(
-      WatchNotifyFinalizer(watcher, result, state));
+      WatchNotifyFinalizer(std::move(watcher), result, state));
 }
 
 void RequestContext::AddWatchCancelFinalizer(scoped_refptr<Watcher> watcher) {
   DCHECK(IsCurrent());
-  watch_cancel_finalizers_->push_back(watcher);
+  watch_cancel_finalizers_->push_back(std::move(watcher));
 }
 
 bool RequestContext::IsCurrent() const {
@@ -93,8 +93,7 @@ RequestContext::WatchNotifyFinalizer::WatchNotifyFinalizer(
     scoped_refptr<Watcher> watcher,
     MojoResult result,
     const HandleSignalsState& state)
-    : watcher(watcher), result(result), state(state) {
-}
+    : watcher(std::move(watcher)), result(result), state(state) {}
 
 RequestContext::WatchNotifyFinalizer::WatchNotifyFinalizer(
     const WatchNotifyFinalizer& other) = default;

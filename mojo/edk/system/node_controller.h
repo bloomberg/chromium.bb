@@ -97,7 +97,7 @@ class NodeController : public ports::NodeDelegate,
   // Sets a port's observer. If |observer| is null the port's current observer
   // is removed.
   void SetPortObserver(const ports::PortRef& port,
-                       const scoped_refptr<PortObserver>& observer);
+                       scoped_refptr<PortObserver> observer);
 
   // Closes a port. Use this in lieu of calling Node::ClosePort() directly, as
   // it ensures the port's observer has also been removed.
@@ -152,9 +152,9 @@ class NodeController : public ports::NodeDelegate,
     PeerConnection();
     PeerConnection(const PeerConnection& other);
     PeerConnection(PeerConnection&& other);
-    PeerConnection(const scoped_refptr<NodeChannel>& channel,
-                          const ports::PortRef& local_port,
-                          const std::string& peer_token);
+    PeerConnection(scoped_refptr<NodeChannel> channel,
+                   const ports::PortRef& local_port,
+                   const std::string& peer_token);
     ~PeerConnection();
 
     PeerConnection& operator=(const PeerConnection& other);

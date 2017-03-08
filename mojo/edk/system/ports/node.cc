@@ -117,8 +117,7 @@ int Node::CreateUninitializedPort(PortRef* port_ref) {
   PortName port_name;
   delegate_->GenerateRandomPortName(&port_name);
 
-  scoped_refptr<Port> port = make_scoped_refptr(new Port(kInitialSequenceNum,
-                                                         kInitialSequenceNum));
+  scoped_refptr<Port> port(new Port(kInitialSequenceNum, kInitialSequenceNum));
   int rv = AddPortWithName(port_name, port);
   if (rv != OK)
     return rv;
@@ -170,7 +169,7 @@ int Node::CreatePortPair(PortRef* port0_ref, PortRef* port1_ref) {
 }
 
 int Node::SetUserData(const PortRef& port_ref,
-                      const scoped_refptr<UserData>& user_data) {
+                      scoped_refptr<UserData> user_data) {
   Port* port = port_ref.port();
 
   base::AutoLock lock(port->lock);
@@ -505,7 +504,7 @@ int Node::OnPortAccepted(const PortName& port_name) {
            << " pointing to "
            << port->peer_port_name << "@" << port->peer_node_name;
 
-  return BeginProxying(PortRef(port_name, port));
+  return BeginProxying(PortRef(port_name, std::move(port)));
 }
 
 int Node::OnObserveProxy(const PortName& port_name,
@@ -620,7 +619,7 @@ int Node::OnObserveProxyAck(const PortName& port_name,
     port->remove_proxy_on_last_message = true;
     port->last_sequence_num_to_receive = last_sequence_num;
   }
-  TryRemoveProxy(PortRef(port_name, port));
+  TryRemoveProxy(PortRef(port_name, std::move(port)));
   return OK;
 }
 
@@ -697,7 +696,7 @@ int Node::OnObserveClosure(const PortName& port_name,
                          forwarded_data));
 
   if (notify_delegate) {
-    PortRef port_ref(port_name, port);
+    PortRef port_ref(port_name, std::move(port));
     delegate_->PortStatusChanged(port_ref);
   }
   return OK;
@@ -772,11 +771,10 @@ int Node::OnMergePort(const PortName& port_name,
   return ERROR_PORT_STATE_UNEXPECTED;
 }
 
-int Node::AddPortWithName(const PortName& port_name,
-                          const scoped_refptr<Port>& port) {
+int Node::AddPortWithName(const PortName& port_name, scoped_refptr<Port> port) {
   base::AutoLock lock(ports_lock_);
 
-  if (!ports_.insert(std::make_pair(port_name, port)).second)
+  if (!ports_.insert(std::make_pair(port_name, std::move(port))).second)
     return OOPS(ERROR_PORT_EXISTS);  // Suggests a bad UUID generator.
 
   DVLOG(2) << "Created port " << port_name << "@" << name_;
@@ -999,7 +997,7 @@ int Node::AcceptPort(const PortName& port_name,
   // new port finds its way to the consumer (see GetMessage).
   port->message_queue.set_signalable(false);
 
-  int rv = AddPortWithName(port_name, port);
+  int rv = AddPortWithName(port_name, std::move(port));
   if (rv != OK)
     return rv;
 

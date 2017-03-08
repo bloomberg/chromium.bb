@@ -135,7 +135,7 @@ SyncPointOrderData::OrderFence::OrderFence(
     : order_num(order),
       fence_release(release),
       release_callback(callback),
-      client_state(state) {}
+      client_state(std::move(state)) {}
 
 SyncPointOrderData::OrderFence::OrderFence(const OrderFence& other) = default;
 
@@ -168,7 +168,8 @@ bool SyncPointOrderData::ValidateReleaseOrderNumber(
   uint32_t expected_order_num =
       std::min(unprocessed_order_num_, wait_order_num);
   order_fence_queue_.push(OrderFence(expected_order_num, fence_release,
-                                     release_callback, client_state));
+                                     release_callback,
+                                     std::move(client_state)));
   return true;
 }
 
@@ -184,7 +185,7 @@ SyncPointClientState::ReleaseCallback::~ReleaseCallback() {}
 
 SyncPointClientState::SyncPointClientState(
     scoped_refptr<SyncPointOrderData> order_data)
-    : order_data_(order_data) {}
+    : order_data_(std::move(order_data)) {}
 
 SyncPointClientState::~SyncPointClientState() {}
 
@@ -277,8 +278,8 @@ SyncPointClient::SyncPointClient(SyncPointManager* sync_point_manager,
                                  CommandBufferNamespace namespace_id,
                                  CommandBufferId command_buffer_id)
     : sync_point_manager_(sync_point_manager),
-      order_data_(order_data),
-      client_state_(new SyncPointClientState(order_data)),
+      order_data_(std::move(order_data)),
+      client_state_(new SyncPointClientState(order_data_)),
       namespace_id_(namespace_id),
       command_buffer_id_(command_buffer_id) {
   sync_point_manager_->RegisterSyncPointClient(client_state_, namespace_id,
@@ -385,7 +386,7 @@ void SyncPointManager::RegisterSyncPointClient(
   base::AutoLock auto_lock(client_state_maps_lock_);
   DCHECK(!client_state_maps_[namespace_id].count(command_buffer_id));
   client_state_maps_[namespace_id].insert(
-      std::make_pair(command_buffer_id, client_state));
+      std::make_pair(command_buffer_id, std::move(client_state)));
 }
 
 void SyncPointManager::DeregisterSyncPointClient(

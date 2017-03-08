@@ -21,7 +21,8 @@ MojoHandle HandleTable::AddDispatcher(scoped_refptr<Dispatcher> dispatcher) {
     return MOJO_HANDLE_INVALID;
 
   MojoHandle handle = next_available_handle_++;
-  auto result = handles_.insert(std::make_pair(handle, Entry(dispatcher)));
+  auto result =
+      handles_.insert(std::make_pair(handle, Entry(std::move(dispatcher))));
   DCHECK(result.second);
 
   return handle;
@@ -66,7 +67,7 @@ MojoResult HandleTable::GetAndRemoveDispatcher(
   if (it->second.busy)
     return MOJO_RESULT_BUSY;
 
-  *dispatcher = it->second.dispatcher;
+  *dispatcher = std::move(it->second.dispatcher);
   handles_.erase(it);
   return MOJO_RESULT_OK;
 }
@@ -124,7 +125,7 @@ void HandleTable::GetActiveHandlesForTest(std::vector<MojoHandle>* handles) {
 HandleTable::Entry::Entry() {}
 
 HandleTable::Entry::Entry(scoped_refptr<Dispatcher> dispatcher)
-    : dispatcher(dispatcher) {}
+    : dispatcher(std::move(dispatcher)) {}
 
 HandleTable::Entry::Entry(const Entry& other) = default;
 

@@ -16,9 +16,8 @@ PortRef::~PortRef() {
 PortRef::PortRef() {
 }
 
-PortRef::PortRef(const PortName& name, const scoped_refptr<Port>& port)
-    : name_(name), port_(port) {
-}
+PortRef::PortRef(const PortName& name, scoped_refptr<Port> port)
+    : name_(name), port_(std::move(port)) {}
 
 PortRef::PortRef(const PortRef& other)
     : name_(other.name_), port_(other.port_) {

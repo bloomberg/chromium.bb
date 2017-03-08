@@ -273,10 +273,9 @@ void NodeController::ConnectToPeer(ScopedPlatformHandle handle,
                             node_name, port, peer_token));
 }
 
-void NodeController::SetPortObserver(
-    const ports::PortRef& port,
-    const scoped_refptr<PortObserver>& observer) {
-  node_->SetUserData(port, observer);
+void NodeController::SetPortObserver(const ports::PortRef& port,
+                                     scoped_refptr<PortObserver> observer) {
+  node_->SetUserData(port, std::move(observer));
 }
 
 void NodeController::ClosePort(const ports::PortRef& port) {
@@ -1440,10 +1439,12 @@ NodeController::PeerConnection::PeerConnection(
     PeerConnection&& other) = default;
 
 NodeController::PeerConnection::PeerConnection(
-    const scoped_refptr<NodeChannel>& channel,
+    scoped_refptr<NodeChannel> channel,
     const ports::PortRef& local_port,
     const std::string& peer_token)
-    : channel(channel), local_port(local_port), peer_token(peer_token) {}
+    : channel(std::move(channel)),
+      local_port(local_port),
+      peer_token(peer_token) {}
 
 NodeController::PeerConnection::~PeerConnection() = default;
 

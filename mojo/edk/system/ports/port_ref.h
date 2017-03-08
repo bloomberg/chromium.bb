@@ -19,7 +19,7 @@ class PortRef {
  public:
   ~PortRef();
   PortRef();
-  PortRef(const PortName& name, const scoped_refptr<Port>& port);
+  PortRef(const PortName& name, scoped_refptr<Port> port);
 
   PortRef(const PortRef& other);
   PortRef& operator=(const PortRef& other);

@@ -90,8 +90,7 @@ class Node {
   int CreatePortPair(PortRef* port0_ref, PortRef* port1_ref);
 
   // User data associated with the port.
-  int SetUserData(const PortRef& port_ref,
-                  const scoped_refptr<UserData>& user_data);
+  int SetUserData(const PortRef& port_ref, scoped_refptr<UserData> user_data);
   int GetUserData(const PortRef& port_ref,
                   scoped_refptr<UserData>* user_data);
 
@@ -164,8 +163,7 @@ class Node {
   int OnObserveClosure(const PortName& port_name, uint64_t last_sequence_num);
   int OnMergePort(const PortName& port_name, const MergePortEventData& event);
 
-  int AddPortWithName(const PortName& port_name,
-                      const scoped_refptr<Port>& port);
+  int AddPortWithName(const PortName& port_name, scoped_refptr<Port> port);
   void ErasePort(const PortName& port_name);
   void ErasePort_Locked(const PortName& port_name);
   scoped_refptr<Port> GetPort(const PortName& port_name);
