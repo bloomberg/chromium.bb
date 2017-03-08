@@ -6,9 +6,6 @@ import("//build/config/sanitizers/sanitizers.gni")
 import("//build/toolchain/goma.gni")
 
 declare_args() {
-  # The default number of jobs to use when building instrumented libraries.
-  instrumented_libraries_jobs = 8
-
   # The platform on which the instrumented libraries are being built.
   instrumented_libraries_platform = "trusty"
 }
@@ -202,10 +199,6 @@ if (use_locally_built_instrumented_libraries) {
         cc = "${goma_dir}/gomacc ${cc}"
         cxx = "${goma_dir}/gomacc ${cxx}"
       }
-      jobs = instrumented_libraries_jobs
-      if (defined(invoker.jobs)) {
-        jobs = invoker.jobs
-      }
       package_cflags = [
         "-O2",
         "-gline-tables-only",
@@ -244,7 +237,6 @@ if (use_locally_built_instrumented_libraries) {
         "--cc=${cc}",
         "--cxx=${cxx}",
         "--intermediate-dir=${intermediate_dir}",
-        "--jobs=${jobs}",
         "--libdir=lib",
         "--package=${target_name}",
         "--product-dir=${product_dir}",
@@ -353,7 +345,6 @@ if (use_locally_built_instrumented_libraries) {
       # See above.
       "--disable-introspection",
     ]
-    jobs = 1
     pre_build = "scripts/pre-build/autogen.sh"
   }
 
@@ -391,7 +382,6 @@ if (use_locally_built_instrumented_libraries) {
 
   instrumented_library("libcups2") {
     patch = "patches/libcups2.diff"
-    jobs = 1
     extra_configure_flags = [
       "--disable-static",
 
@@ -623,7 +613,6 @@ if (use_locally_built_instrumented_libraries) {
   instrumented_library("libpci3") {
     extra_configure_flags = [ "--disable-static" ]
     build_method = "custom_libpci3"
-    jobs = 1
   }
 
   instrumented_library("libpcre3") {
@@ -809,7 +798,6 @@ if (use_locally_built_instrumented_libraries) {
     # New location of libpulsecommon.
     if (is_precise) {
       patch = "patches/pulseaudio.precise.diff"
-      jobs = 1
     }
     if (is_trusty) {
       package_ldflags = [ "-Wl,-R,XORIGIN/pulseaudio/." ]

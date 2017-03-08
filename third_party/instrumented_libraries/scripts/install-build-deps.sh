@@ -19,6 +19,8 @@ dee \
 freetype \
 libappindicator1 \
 libasound2 \
+libatk-bridge2.0-0 \
+libatspi2.0-0 \
 libcairo2 \
 libcap2 \
 libcups2 \
@@ -35,6 +37,7 @@ libgdk-pixbuf2.0-0 \
 libglib2.0-0 \
 libgnome-keyring0 \
 libgpg-error0 \
+libgtk-3-0 \
 libgtk2.0-0 \
 libnspr4 \
 libp11-kit0 \
