@@ -27,6 +27,8 @@
 #include "ui/app_list/views/app_list_main_view.h"
 #include "ui/app_list/views/app_list_view.h"
 #include "ui/app_list/views/contents_view.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
 
 namespace {
 
@@ -69,6 +71,12 @@ class AppListPresenterDelegateFactoryMus
 
   DISALLOW_COPY_AND_ASSIGN(AppListPresenterDelegateFactoryMus);
 };
+
+int64_t GetDisplayIdToShowAppListOn() {
+  return display::Screen::GetScreen()
+      ->GetDisplayNearestWindow(ash::Shell::GetRootWindowForNewWindows())
+      .id();
+}
 
 }  // namespace
 
@@ -124,7 +132,7 @@ void AppListServiceAsh::ShowAndSwitchToState(
     // TODO(calamity): This may cause the app list to show briefly before the
     // state change. If this becomes an issue, add the ability to ash::Shell to
     // load the app list without showing it.
-    app_list_presenter_->Show(ash::Shell::GetTargetDisplayId());
+    app_list_presenter_->Show(GetDisplayIdToShowAppListOn());
     app_list_was_open = false;
     app_list_view = app_list_presenter_->GetView();
     DCHECK(app_list_view);
@@ -146,7 +154,7 @@ base::FilePath AppListServiceAsh::GetProfilePath(
 void AppListServiceAsh::ShowForProfile(Profile* /*default_profile*/) {
   // This may not work correctly if the profile passed in is different from the
   // one the ash Shell is currently using.
-  app_list_presenter_->Show(ash::Shell::GetTargetDisplayId());
+  app_list_presenter_->Show(GetDisplayIdToShowAppListOn());
 }
 
 void AppListServiceAsh::ShowForAppInstall(Profile* profile,

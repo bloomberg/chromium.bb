@@ -319,7 +319,7 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
   // Disables projection touch HUD.
   void DisableTouchHudProjection();
 
-  // Resets WmShell::GetRootWindowForNewWindows() if appropriate. This is called
+  // Resets Shell::GetRootWindowForNewWindows() if appropriate. This is called
   // during shutdown to make sure GetRootWindowForNewWindows() isn't referencing
   // this.
   void ResetRootForNewWindowsIfNecessary();

@@ -372,7 +372,7 @@ class ShelfAppBrowserTest : public ExtensionBrowserTest {
   }
 
   aura::Window* CurrentContext() {
-    aura::Window* root_window = ash::Shell::GetTargetRootWindow();
+    aura::Window* root_window = ash::Shell::GetRootWindowForNewWindows();
     DCHECK(root_window);
     return root_window;
   }

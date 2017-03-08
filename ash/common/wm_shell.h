@@ -19,7 +19,6 @@
 #include "components/ui_devtools/devtools_server.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/compositor/layer_type.h"
-#include "ui/wm/public/activation_change_observer.h"
 #include "ui/wm/public/window_types.h"
 
 namespace app_list {
@@ -103,8 +102,7 @@ class WindowState;
 }
 
 // Similar to ash::Shell. Eventually the two will be merged.
-class ASH_EXPORT WmShell : public SessionStateObserver,
-                           public aura::client::ActivationChangeObserver {
+class ASH_EXPORT WmShell : public SessionStateObserver {
  public:
   ~WmShell() override;
 
@@ -161,11 +159,6 @@ class ASH_EXPORT WmShell : public SessionStateObserver,
 
   NewWindowController* new_window_controller() {
     return new_window_controller_.get();
-  }
-
-  // NOTE: Prefer ScopedRootWindowForNewWindows when setting temporarily.
-  void set_root_window_for_new_windows(WmWindow* root) {
-    root_window_for_new_windows_ = root;
   }
 
   PaletteDelegate* palette_delegate() { return palette_delegate_.get(); }
@@ -236,12 +229,6 @@ class ASH_EXPORT WmShell : public SessionStateObserver,
 
   // Returns the root window for the specified display.
   virtual WmWindow* GetRootWindowForDisplayId(int64_t display_id) = 0;
-
-  // Returns the root window that newly created windows should be added to.
-  // Value can be temporarily overridden using ScopedRootWindowForNewWindows.
-  // NOTE: this returns the root, newly created window should be added to the
-  // appropriate container in the returned window.
-  WmWindow* GetRootWindowForNewWindows();
 
   // Retuns the display info associated with |display_id|.
   // TODO(mash): Remove when DisplayManager has been moved. crbug.com/622480
@@ -486,14 +473,8 @@ class ASH_EXPORT WmShell : public SessionStateObserver,
 
  private:
   friend class AcceleratorControllerTest;
-  friend class ScopedRootWindowForNewWindows;
   friend class Shell;
   friend class WmShellTestApi;
-
-  // aura::client::ActivationChangeObserver:
-  void OnWindowActivated(ActivationReason reason,
-                         aura::Window* gained_active,
-                         aura::Window* lost_active) override;
 
   static WmShell* instance_;
 
@@ -536,10 +517,6 @@ class ASH_EXPORT WmShell : public SessionStateObserver,
   std::unique_ptr<ui::devtools::UiDevToolsServer> devtools_server_;
 
   base::ObserverList<LockStateObserver> lock_state_observers_;
-
-  // See comment for GetRootWindowForNewWindows().
-  WmWindow* root_window_for_new_windows_ = nullptr;
-  WmWindow* scoped_root_window_for_new_windows_ = nullptr;
 
   bool simulate_modal_window_open_for_testing_ = false;
 

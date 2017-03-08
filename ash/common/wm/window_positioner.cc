@@ -10,6 +10,7 @@
 #include "ash/common/wm/wm_screen_util.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
+#include "ash/shell.h"
 #include "ui/compositor/layer.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
@@ -217,7 +218,7 @@ void WindowPositioner::GetBoundsAndShowStateForNewWindow(
     gfx::Rect* bounds_in_out,
     ui::WindowShowState* show_state_out) {
   // Always open new window in the target display.
-  WmWindow* target = WmShell::Get()->GetRootWindowForNewWindows();
+  WmWindow* target = Shell::GetWmRootWindowForNewWindows();
 
   WmWindow* top_window = GetReferenceWindow(target, nullptr, nullptr);
   // Our window should not have any impact if we are already on top.

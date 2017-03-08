@@ -244,16 +244,18 @@ aura::Window* Shell::GetPrimaryRootWindow() {
 }
 
 // static
-aura::Window* Shell::GetTargetRootWindow() {
-  CHECK(WmShell::HasInstance());
-  return WmWindow::GetAuraWindow(WmShell::Get()->GetRootWindowForNewWindows());
+aura::Window* Shell::GetRootWindowForNewWindows() {
+  CHECK(Shell::HasInstance());
+  return WmWindow::GetAuraWindow(Shell::GetWmRootWindowForNewWindows());
 }
 
 // static
-int64_t Shell::GetTargetDisplayId() {
-  return display::Screen::GetScreen()
-      ->GetDisplayNearestWindow(GetTargetRootWindow())
-      .id();
+WmWindow* Shell::GetWmRootWindowForNewWindows() {
+  CHECK(Shell::HasInstance());
+  Shell* shell = Shell::GetInstance();
+  if (shell->scoped_root_window_for_new_windows_)
+    return shell->scoped_root_window_for_new_windows_;
+  return shell->root_window_for_new_windows_;
 }
 
 // static
@@ -348,6 +350,10 @@ bool Shell::ShouldSaveDisplaySettings() {
       resolution_notification_controller_->DoesNotificationTimeout());
 }
 
+aura::client::ActivationClient* Shell::activation_client() {
+  return focus_controller_.get();
+}
+
 void Shell::UpdateShelfVisibility() {
   for (WmWindow* root : wm_shell_->GetAllRootWindows())
     root->GetRootWindowController()->GetShelf()->UpdateVisibilityState();
@@ -403,7 +409,6 @@ void Shell::DoInitialWorkspaceAnimation() {
 Shell::Shell(std::unique_ptr<WmShell> wm_shell)
     : wm_shell_(std::move(wm_shell)),
       link_handler_model_factory_(nullptr),
-      activation_client_(nullptr),
       display_configurator_(new display::DisplayConfigurator()),
       native_cursor_manager_(nullptr),
       simulate_modal_window_open_for_testing_(false),
@@ -551,9 +556,10 @@ Shell::~Shell() {
   app_list_delegate_impl_.reset();
 
   wm_shell_->Shutdown();
-  // Depends on |focus_client_|, so must be destroyed before.
+  // Depends on |focus_controller_|, so must be destroyed before.
   window_tree_host_manager_.reset();
-  focus_client_.reset();
+  focus_controller_->RemoveObserver(this);
+  focus_controller_.reset();
   screen_position_controller_.reset();
 
   keyboard::KeyboardController::ResetInstance(nullptr);
@@ -674,20 +680,15 @@ void Shell::Init(const ShellInitParams& init_params) {
   env_filter_.reset(new ::wm::CompoundEventFilter);
   AddPreTargetHandler(env_filter_.get());
 
-  wm::AshFocusRules* focus_rules = new wm::AshFocusRules();
-
-  ::wm::FocusController* focus_controller =
-      new ::wm::FocusController(focus_rules);
-  focus_client_.reset(focus_controller);
-  activation_client_ = focus_controller;
-  // TODO(sky): Shell should implement ActivationChangeObserver, not WmShell.
-  activation_client_->AddObserver(wm_shell_.get());
+  // FocusController takes ownership of AshFocusRules.
+  focus_controller_ =
+      base::MakeUnique<::wm::FocusController>(new wm::AshFocusRules());
+  focus_controller_->AddObserver(this);
 
   screen_position_controller_.reset(new ScreenPositionController);
 
   wm_shell_->CreatePrimaryHost();
-  wm_shell_->set_root_window_for_new_windows(
-      WmWindow::Get(GetPrimaryRootWindow()));
+  root_window_for_new_windows_ = WmWindow::Get(GetPrimaryRootWindow());
 
   if (!is_mash) {
     resolution_notification_controller_.reset(
@@ -812,7 +813,7 @@ void Shell::Init(const ShellInitParams& init_params) {
   wm_shell_->CreatePointerWatcherAdapter();
 
   resize_shadow_controller_.reset(new ResizeShadowController());
-  shadow_controller_.reset(new ::wm::ShadowController(activation_client_));
+  shadow_controller_.reset(new ::wm::ShadowController(focus_controller_.get()));
 
   wm_shell_->SetSystemTrayDelegate(
       base::WrapUnique(wm_shell_->delegate()->CreateSystemTrayDelegate()));
@@ -892,15 +893,13 @@ void Shell::InitKeyboard() {
 }
 
 void Shell::InitRootWindow(aura::Window* root_window) {
-  DCHECK(activation_client_);
+  DCHECK(focus_controller_);
   DCHECK(visibility_controller_.get());
   DCHECK(drag_drop_controller_.get());
 
-  aura::client::SetFocusClient(root_window, focus_client_.get());
-  aura::client::SetActivationClient(root_window, activation_client_);
-  ::wm::FocusController* focus_controller =
-      static_cast<::wm::FocusController*>(activation_client_);
-  root_window->AddPreTargetHandler(focus_controller);
+  aura::client::SetFocusClient(root_window, focus_controller_.get());
+  aura::client::SetActivationClient(root_window, focus_controller_.get());
+  root_window->AddPreTargetHandler(focus_controller_.get());
   aura::client::SetVisibilityClient(root_window, visibility_controller_.get());
   aura::client::SetDragDropClient(root_window, drag_drop_controller_.get());
   aura::client::SetScreenPositionClient(root_window,
@@ -957,6 +956,15 @@ std::unique_ptr<ui::EventTargetIterator> Shell::GetChildIterator() const {
 ui::EventTargeter* Shell::GetEventTargeter() {
   NOTREACHED();
   return nullptr;
+}
+
+void Shell::OnWindowActivated(
+    aura::client::ActivationChangeObserver::ActivationReason reason,
+    aura::Window* gained_active,
+    aura::Window* lost_active) {
+  WmWindow* gained_active_wm = WmWindow::Get(gained_active);
+  if (gained_active_wm)
+    root_window_for_new_windows_ = gained_active_wm->GetRootWindow();
 }
 
 }  // namespace ash

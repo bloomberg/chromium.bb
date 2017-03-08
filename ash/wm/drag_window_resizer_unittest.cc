@@ -306,10 +306,10 @@ TEST_F(DragWindowResizerTest, WindowDragWithMultiDisplaysActiveRoot) {
   window->SetBoundsInScreen(gfx::Rect(0, 0, 50, 60),
                             display::Screen::GetScreen()->GetPrimaryDisplay());
   window->Show();
-  EXPECT_TRUE(ash::wm::CanActivateWindow(window.get()));
-  ash::wm::ActivateWindow(window.get());
+  EXPECT_TRUE(wm::CanActivateWindow(window.get()));
+  wm::ActivateWindow(window.get());
   EXPECT_EQ(root_windows[0], window->GetRootWindow());
-  EXPECT_EQ(root_windows[0], ash::Shell::GetTargetRootWindow());
+  EXPECT_EQ(root_windows[0], Shell::GetRootWindowForNewWindows());
   {
     // Grab (0, 0) of the window.
     std::unique_ptr<WindowResizer> resizer(
@@ -322,7 +322,7 @@ TEST_F(DragWindowResizerTest, WindowDragWithMultiDisplaysActiveRoot) {
     // The whole window is on the secondary display now. The parent should be
     // changed.
     EXPECT_EQ(root_windows[1], window->GetRootWindow());
-    EXPECT_EQ(root_windows[1], ash::Shell::GetTargetRootWindow());
+    EXPECT_EQ(root_windows[1], Shell::GetRootWindowForNewWindows());
   }
 }
 

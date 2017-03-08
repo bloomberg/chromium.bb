@@ -227,7 +227,7 @@ TestSessionStateDelegate* AshTestHelper::GetTestSessionStateDelegate() {
 }
 
 aura::Window* AshTestHelper::CurrentContext() {
-  aura::Window* root_window = Shell::GetTargetRootWindow();
+  aura::Window* root_window = Shell::GetRootWindowForNewWindows();
   if (!root_window)
     root_window = Shell::GetPrimaryRootWindow();
   DCHECK(root_window);

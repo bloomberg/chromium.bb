@@ -214,7 +214,7 @@ StickyKeysOverlay::StickyKeysOverlay()
   params.keep_on_top = true;
   params.remove_standard_frame = true;
   params.bounds = CalculateOverlayBounds();
-  params.parent = Shell::GetContainer(Shell::GetTargetRootWindow(),
+  params.parent = Shell::GetContainer(Shell::GetRootWindowForNewWindows(),
                                       kShellWindowId_OverlayContainer);
   overlay_widget_.reset(new views::Widget);
   overlay_widget_->Init(params);

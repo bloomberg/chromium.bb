@@ -72,7 +72,7 @@ void MultiprofilesSessionAbortedView::ShowDialog(
   MultiprofilesSessionAbortedView* dialog_view =
       new MultiprofilesSessionAbortedView();
   views::DialogDelegate::CreateDialogWidget(
-      dialog_view, ash::Shell::GetTargetRootWindow(), NULL);
+      dialog_view, ash::Shell::GetRootWindowForNewWindows(), NULL);
   dialog_view->InitDialog(user_email);
   views::Widget* widget = dialog_view->GetWidget();
   DCHECK(widget);

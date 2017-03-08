@@ -45,7 +45,7 @@ MruWindowTracker::WindowList BuildWindowListInternal(
     const std::list<WmWindow*>* mru_windows,
     const CanActivateWindowPredicate& should_include_window_predicate) {
   MruWindowTracker::WindowList windows;
-  WmWindow* active_root = WmShell::Get()->GetRootWindowForNewWindows();
+  WmWindow* active_root = Shell::GetWmRootWindowForNewWindows();
   for (WmWindow* window : WmShell::Get()->GetAllRootWindows()) {
     if (window == active_root)
       continue;

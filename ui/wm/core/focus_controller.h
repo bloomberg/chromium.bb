@@ -49,7 +49,6 @@ class WM_EXPORT FocusController : public aura::client::ActivationClient,
   explicit FocusController(FocusRules* rules);
   ~FocusController() override;
 
- protected:
   // Overridden from aura::client::ActivationClient:
   void AddObserver(aura::client::ActivationChangeObserver* observer) override;
   void RemoveObserver(
@@ -68,6 +67,7 @@ class WM_EXPORT FocusController : public aura::client::ActivationClient,
   void ResetFocusWithinActiveWindow(aura::Window* window) override;
   aura::Window* GetFocusedWindow() override;
 
+ protected:
   // Overridden from ui::EventHandler:
   void OnKeyEvent(ui::KeyEvent* event) override;
   void OnMouseEvent(ui::MouseEvent* event) override;

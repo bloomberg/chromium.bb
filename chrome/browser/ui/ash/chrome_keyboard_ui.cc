@@ -138,7 +138,7 @@ ChromeKeyboardUI::~ChromeKeyboardUI() {
 }
 
 ui::InputMethod* ChromeKeyboardUI::GetInputMethod() {
-  aura::Window* root_window = ash::Shell::GetTargetRootWindow();
+  aura::Window* root_window = ash::Shell::GetRootWindowForNewWindows();
   DCHECK(root_window);
   return root_window->GetHost()->GetInputMethod();
 }

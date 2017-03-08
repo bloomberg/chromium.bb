@@ -224,7 +224,7 @@ TEST_F(ExtendedDesktopTest, SystemModal) {
   views::Widget* widget_on_1st = CreateTestWidget(gfx::Rect(10, 10, 100, 100));
   EXPECT_TRUE(wm::IsActiveWindow(widget_on_1st->GetNativeView()));
   EXPECT_EQ(root_windows[0], widget_on_1st->GetNativeView()->GetRootWindow());
-  EXPECT_EQ(root_windows[0], Shell::GetTargetRootWindow());
+  EXPECT_EQ(root_windows[0], Shell::GetRootWindowForNewWindows());
 
   // Open system modal. Make sure it's on 2nd root window and active.
   views::Widget* modal_widget = views::Widget::CreateWindowWithContextAndBounds(
@@ -233,7 +233,7 @@ TEST_F(ExtendedDesktopTest, SystemModal) {
   modal_widget->Show();
   EXPECT_TRUE(wm::IsActiveWindow(modal_widget->GetNativeView()));
   EXPECT_EQ(root_windows[1], modal_widget->GetNativeView()->GetRootWindow());
-  EXPECT_EQ(root_windows[1], Shell::GetTargetRootWindow());
+  EXPECT_EQ(root_windows[1], Shell::GetRootWindowForNewWindows());
 
   ui::test::EventGenerator& event_generator(GetEventGenerator());
 
@@ -241,14 +241,14 @@ TEST_F(ExtendedDesktopTest, SystemModal) {
   event_generator.MoveMouseToCenterOf(widget_on_1st->GetNativeView());
   event_generator.ClickLeftButton();
   EXPECT_TRUE(wm::IsActiveWindow(modal_widget->GetNativeView()));
-  EXPECT_EQ(root_windows[1], Shell::GetTargetRootWindow());
+  EXPECT_EQ(root_windows[1], Shell::GetRootWindowForNewWindows());
 
   // Close system modal and so clicking a widget should work now.
   modal_widget->Close();
   event_generator.MoveMouseToCenterOf(widget_on_1st->GetNativeView());
   event_generator.ClickLeftButton();
   EXPECT_TRUE(wm::IsActiveWindow(widget_on_1st->GetNativeView()));
-  EXPECT_EQ(root_windows[0], Shell::GetTargetRootWindow());
+  EXPECT_EQ(root_windows[0], Shell::GetRootWindowForNewWindows());
 }
 
 TEST_F(ExtendedDesktopTest, TestCursor) {

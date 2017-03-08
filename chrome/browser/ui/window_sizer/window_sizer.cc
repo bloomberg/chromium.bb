@@ -161,7 +161,7 @@ class DefaultTargetDisplayProvider : public WindowSizer::TargetDisplayProvider {
 #if defined(USE_ASH)
     // Use the target display on ash.
     if (ash_util::ShouldOpenAshOnStartup()) {
-      aura::Window* target = ash::Shell::GetTargetRootWindow();
+      aura::Window* target = ash::Shell::GetRootWindowForNewWindows();
       return screen->GetDisplayNearestWindow(target);
     }
 #endif

@@ -540,7 +540,7 @@ void MagnificationControllerImpl::OnWindowDestroying(
     // destroyed before the root windows get destroyed.
     DCHECK(root_window);
 
-    aura::Window* target_root_window = Shell::GetTargetRootWindow();
+    aura::Window* target_root_window = Shell::GetRootWindowForNewWindows();
     CHECK(target_root_window);
 
     // The destroyed root window must not be target.

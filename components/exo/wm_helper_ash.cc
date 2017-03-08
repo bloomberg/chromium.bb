@@ -53,7 +53,7 @@ const display::ManagedDisplayInfo WMHelperAsh::GetDisplayInfo(
 }
 
 aura::Window* WMHelperAsh::GetContainer(int container_id) {
-  return ash::Shell::GetContainer(ash::Shell::GetTargetRootWindow(),
+  return ash::Shell::GetContainer(ash::Shell::GetRootWindowForNewWindows(),
                                   container_id);
 }
 

@@ -11,6 +11,7 @@
 #include "ash/common/wm_shell.h"
 #include "ash/mus/accelerators/accelerator_ids.h"
 #include "ash/mus/window_manager.h"
+#include "ash/shell.h"
 #include "base/logging.h"
 #include "services/ui/common/accelerator_util.h"
 #include "ui/base/accelerators/accelerator_history.h"
@@ -83,7 +84,7 @@ ui::mojom::EventResult AcceleratorControllerRegistrar::OnAccelerator(
         accelerator);
     WmWindow* target_window = WmShell::Get()->GetFocusedWindow();
     if (!target_window)
-      target_window = WmShell::Get()->GetRootWindowForNewWindows();
+      target_window = Shell::GetWmRootWindowForNewWindows();
     DCHECK(target_window);
     return router_->ProcessAccelerator(target_window, *(event.AsKeyEvent()),
                                        accelerator)

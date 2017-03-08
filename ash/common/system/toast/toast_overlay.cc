@@ -5,10 +5,10 @@
 #include "ash/common/system/toast/toast_overlay.h"
 
 #include "ash/common/shelf/wm_shelf.h"
-#include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
+#include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -54,7 +54,7 @@ const int kToastMinimumWidth = 288;
 // Returns the work area bounds for the root window where new windows are added
 // (including new toasts).
 gfx::Rect GetUserWorkAreaBounds() {
-  return WmShelf::ForWindow(WmShell::Get()->GetRootWindowForNewWindows())
+  return WmShelf::ForWindow(Shell::GetWmRootWindowForNewWindows())
       ->GetUserWorkAreaBounds();
 }
 
@@ -226,8 +226,7 @@ ToastOverlay::ToastOverlay(Delegate* delegate,
   params.remove_standard_frame = true;
   params.bounds = CalculateOverlayBounds();
   // Show toasts above the app list and below the lock screen.
-  WmShell::Get()
-      ->GetRootWindowForNewWindows()
+  Shell::GetWmRootWindowForNewWindows()
       ->GetRootWindowController()
       ->ConfigureWidgetInitParamsForContainer(
           overlay_widget_.get(), kShellWindowId_SystemModalContainer, &params);

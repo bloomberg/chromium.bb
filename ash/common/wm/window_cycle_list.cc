@@ -13,6 +13,7 @@
 #include "ash/common/wm_window.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
+#include "ash/shell.h"
 #include "base/command_line.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
@@ -532,7 +533,7 @@ void WindowCycleList::InitWindowCycleView() {
   params.name = "WindowCycleList (Alt+Tab)";
   // TODO(estade): make sure nothing untoward happens when the lock screen
   // or a system modal dialog is shown.
-  WmWindow* root_window = WmShell::Get()->GetRootWindowForNewWindows();
+  WmWindow* root_window = Shell::GetWmRootWindowForNewWindows();
   root_window->GetRootWindowController()->ConfigureWidgetInitParamsForContainer(
       widget, kShellWindowId_OverlayContainer, &params);
   gfx::Rect widget_rect = root_window->GetDisplayNearestWindow().bounds();

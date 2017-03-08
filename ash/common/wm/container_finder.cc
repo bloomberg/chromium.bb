@@ -13,15 +13,16 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/root_window_controller.h"
+#include "ash/shell.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace ash {
 namespace wm {
 namespace {
 
-WmWindow* FindContainerRoot(WmShell* shell, const gfx::Rect& bounds) {
+WmWindow* FindContainerRoot(const gfx::Rect& bounds) {
   if (bounds == gfx::Rect())
-    return shell->GetRootWindowForNewWindows();
+    return Shell::GetWmRootWindowForNewWindows();
   return GetRootWindowMatching(bounds);
 }
 
@@ -77,7 +78,7 @@ WmWindow* GetDefaultParent(WmWindow* context,
     // Transient window should use the same root as its transient parent.
     target_root = transient_parent->GetRootWindow();
   } else {
-    target_root = FindContainerRoot(context->GetShell(), bounds);
+    target_root = FindContainerRoot(bounds);
   }
 
   switch (window->GetType()) {

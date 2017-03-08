@@ -324,7 +324,7 @@ RootWindowController* RootWindowController::ForWindow(
 // static
 RootWindowController* RootWindowController::ForTargetRootWindow() {
   CHECK(Shell::HasInstance());
-  return GetRootWindowController(Shell::GetTargetRootWindow());
+  return GetRootWindowController(Shell::GetRootWindowForNewWindows());
 }
 
 void RootWindowController::ConfigureWidgetInitParamsForContainer(
@@ -1124,18 +1124,17 @@ void RootWindowController::DisableTouchHudProjection() {
 }
 
 void RootWindowController::ResetRootForNewWindowsIfNecessary() {
-  WmShell* shell = WmShell::Get();
   // Change the target root window before closing child windows. If any child
   // being removed triggers a relayout of the shelf it will try to build a
   // window list adding windows from the target root window's containers which
   // may have already gone away.
   WmWindow* root = GetWindow();
-  if (shell->GetRootWindowForNewWindows() == root) {
+  if (Shell::GetWmRootWindowForNewWindows() == root) {
     // The root window for new windows is being destroyed. Switch to the primary
     // root window if possible.
-    WmWindow* primary_root = shell->GetPrimaryRootWindow();
-    shell->set_root_window_for_new_windows(primary_root == root ? nullptr
-                                                                : primary_root);
+    WmWindow* primary_root = WmShell::Get()->GetPrimaryRootWindow();
+    Shell::GetInstance()->set_root_window_for_new_windows(
+        primary_root == root ? nullptr : primary_root);
   }
 }
 

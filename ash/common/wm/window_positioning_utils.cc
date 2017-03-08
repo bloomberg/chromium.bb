@@ -178,7 +178,7 @@ void SetBoundsInScreen(WmWindow* window,
       // Restore focused/active window.
       if (focused && tracker.Contains(focused->aura_window())) {
         focused->SetFocused();
-        WmShell::Get()->set_root_window_for_new_windows(
+        Shell::GetInstance()->set_root_window_for_new_windows(
             focused->GetRootWindow());
       } else if (active && tracker.Contains(active->aura_window())) {
         active->Activate();

@@ -7,7 +7,6 @@
 #include <memory>
 
 #include "ash/common/scoped_root_window_for_new_windows.h"
-#include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
@@ -68,7 +67,7 @@ TEST_F(DragDropTrackerTest, GetTarget) {
 
   // RootWindow0 is active so the capture window is parented to it.
   EXPECT_EQ(WmWindow::Get(root_windows[0]),
-            WmShell::Get()->GetRootWindowForNewWindows());
+            Shell::GetWmRootWindowForNewWindows());
 
   // Start tracking from the RootWindow1 and check the point on RootWindow0 that
   // |window0| covers.
@@ -126,7 +125,7 @@ TEST_F(DragDropTrackerTest, ConvertEvent) {
 
   // RootWindow0 is active so the capture window is parented to it.
   EXPECT_EQ(WmWindow::Get(root_windows[0]),
-            WmShell::Get()->GetRootWindowForNewWindows());
+            Shell::GetWmRootWindowForNewWindows());
 
   // Start tracking from the RootWindow0 and converts the mouse event into
   // |window0|'s coodinates.

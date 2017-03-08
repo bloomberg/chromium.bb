@@ -9,6 +9,7 @@
 #include "ash/common/wm_window.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
+#include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
@@ -143,7 +144,7 @@ void ExitWarningHandler::CancelTimer() {
 void ExitWarningHandler::Show() {
   if (widget_)
     return;
-  WmWindow* root_window = WmShell::Get()->GetRootWindowForNewWindows();
+  WmWindow* root_window = Shell::GetWmRootWindowForNewWindows();
   ExitWarningWidgetDelegateView* delegate = new ExitWarningWidgetDelegateView;
   gfx::Size rs = root_window->GetBounds().size();
   gfx::Size ps = delegate->GetPreferredSize();

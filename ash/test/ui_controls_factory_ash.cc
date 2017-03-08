@@ -73,8 +73,8 @@ class UIControlsAsh : public UIControlsAura {
                                   bool alt,
                                   bool command,
                                   const base::Closure& closure) override {
-    aura::Window* root =
-        window ? window->GetRootWindow() : ash::Shell::GetTargetRootWindow();
+    aura::Window* root = window ? window->GetRootWindow()
+                                : ash::Shell::GetRootWindowForNewWindows();
     UIControlsAura* ui_controls = GetUIControlsForRootWindow(root);
     return ui_controls &&
            ui_controls->SendKeyPressNotifyWhenDone(window, key, control, shift,
@@ -120,7 +120,7 @@ class UIControlsAsh : public UIControlsAura {
   void RunClosureAfterAllPendingUIEvents(
       const base::Closure& closure) override {
     UIControlsAura* ui_controls =
-        GetUIControlsForRootWindow(ash::Shell::GetTargetRootWindow());
+        GetUIControlsForRootWindow(ash::Shell::GetRootWindowForNewWindows());
     if (ui_controls)
       ui_controls->RunClosureAfterAllPendingUIEvents(closure);
   }

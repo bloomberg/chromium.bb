@@ -71,7 +71,7 @@ void MultiprofilesIntroView::ShowDialog(
       new MultiprofilesIntroView(on_accept);
   dialog_view->InitDialog();
   views::DialogDelegate::CreateDialogWidget(
-      dialog_view, ash::Shell::GetTargetRootWindow(), NULL);
+      dialog_view, ash::Shell::GetRootWindowForNewWindows(), NULL);
   views::Widget* widget = dialog_view->GetWidget();
   DCHECK(widget);
   widget->Show();

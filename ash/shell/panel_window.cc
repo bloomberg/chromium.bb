@@ -44,7 +44,8 @@ views::Widget* PanelWindow::CreateWidget() {
     params().bounds.set_width(kDefaultWidth);
   if (params().bounds.height() == 0)
     params().bounds.set_height(kDefaultHeight);
-  ::wm::ConvertRectToScreen(Shell::GetTargetRootWindow(), &params().bounds);
+  ::wm::ConvertRectToScreen(Shell::GetRootWindowForNewWindows(),
+                            &params().bounds);
 
   widget->Init(params());
   widget->GetNativeView()->SetName(name_);

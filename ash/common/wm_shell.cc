@@ -60,7 +60,6 @@
 #include "ui/app_list/presenter/app_list.h"
 #include "ui/display/display.h"
 #include "ui/views/focus/focus_manager_factory.h"
-#include "ui/wm/public/activation_client.h"
 
 namespace ash {
 
@@ -114,8 +113,6 @@ void WmShell::Initialize(const scoped_refptr<base::SequencedWorkerPool>& pool) {
 }
 
 void WmShell::Shutdown() {
-  Shell::GetInstance()->activation_client()->RemoveObserver(this);
-
   // These members access WmShell in their destructors.
   wallpaper_controller_.reset();
   accessibility_delegate_.reset();
@@ -298,12 +295,6 @@ RootWindowController* WmShell::GetPrimaryRootWindowController() {
   return GetPrimaryRootWindow()->GetRootWindowController();
 }
 
-WmWindow* WmShell::GetRootWindowForNewWindows() {
-  if (scoped_root_window_for_new_windows_)
-    return scoped_root_window_for_new_windows_;
-  return root_window_for_new_windows_;
-}
-
 bool WmShell::IsForceMaximizeOnFirstRun() {
   return delegate()->IsForceMaximizeOnFirstRun();
 }
@@ -354,7 +345,8 @@ void WmShell::OnModalWindowRemoved(WmWindow* removed) {
 
 void WmShell::ShowAppList() {
   // Show the app list on the default display for new windows.
-  app_list_->Show(GetRootWindowForNewWindows()->GetDisplayNearestWindow().id());
+  app_list_->Show(
+      Shell::GetWmRootWindowForNewWindows()->GetDisplayNearestWindow().id());
 }
 
 void WmShell::DismissAppList() {
@@ -364,7 +356,7 @@ void WmShell::DismissAppList() {
 void WmShell::ToggleAppList() {
   // Toggle the app list on the default display for new windows.
   app_list_->ToggleAppList(
-      GetRootWindowForNewWindows()->GetDisplayNearestWindow().id());
+      Shell::GetWmRootWindowForNewWindows()->GetDisplayNearestWindow().id());
 }
 
 bool WmShell::IsApplistVisible() const {
@@ -435,16 +427,6 @@ void WmShell::SessionStateChanged(session_manager::SessionState state) {
   // multiple times (e.g. initial login vs. multiprofile add session).
   if (state == session_manager::SessionState::ACTIVE)
     CreateShelfView();
-}
-
-void WmShell::OnWindowActivated(
-    aura::client::ActivationChangeObserver::ActivationReason reason,
-    aura::Window* gained_active,
-    aura::Window* lost_active) {
-  // TODO(sky): Shell should implement ActivationChangeObserver, not WmShell.
-  WmWindow* gained_active_wm = WmWindow::Get(gained_active);
-  if (gained_active_wm)
-    set_root_window_for_new_windows(gained_active_wm->GetRootWindow());
 }
 
 }  // namespace ash

@@ -22,6 +22,7 @@
 #include "ui/display/screen.h"
 #include "ui/events/event_target.h"
 #include "ui/wm/core/cursor_manager.h"
+#include "ui/wm/public/activation_change_observer.h"
 
 namespace aura {
 class RootWindow;
@@ -31,7 +32,6 @@ class WindowManagerClient;
 class WindowTreeClient;
 namespace client {
 class ActivationClient;
-class FocusClient;
 }
 }
 
@@ -65,6 +65,7 @@ class TooltipController;
 namespace wm {
 class AcceleratorFilter;
 class CompoundEventFilter;
+class FocusController;
 class ShadowController;
 class VisibilityController;
 class WindowModalityController;
@@ -141,7 +142,8 @@ class SmsObserverTest;
 // Upon creation, the Shell sets itself as the RootWindow's delegate, which
 // takes ownership of the Shell.
 class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
-                         public ui::EventTarget {
+                         public ui::EventTarget,
+                         public aura::client::ActivationChangeObserver {
  public:
   typedef std::vector<RootWindowController*> RootWindowControllerList;
 
@@ -175,16 +177,12 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   // has a launcher.
   static aura::Window* GetPrimaryRootWindow();
 
-  // Returns a root Window when used as a target when creating a new window.
-  // The root window of the active window is used in most cases, but can
-  // be overridden by using ScopedRootWindowForNewWindows.
-  // If you want to get the root Window of the active window, just use
-  // |wm::GetActiveWindow()->GetRootWindow()|.
-  static aura::Window* GetTargetRootWindow();
-
-  // Returns the id of the display::Display corresponding to the window returned
-  // by |GetTargetRootWindow()|
-  static int64_t GetTargetDisplayId();
+  // Returns the root window that newly created windows should be added to.
+  // Value can be temporarily overridden using ScopedRootWindowForNewWindows.
+  // NOTE: this returns the root, newly created window should be added to the
+  // appropriate container in the returned window.
+  static aura::Window* GetRootWindowForNewWindows();
+  static WmWindow* GetWmRootWindowForNewWindows();
 
   // Returns all root windows.
   static aura::Window::Windows GetAllRootWindows();
@@ -318,9 +316,7 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
     return autoclick_controller_.get();
   }
 
-  aura::client::ActivationClient* activation_client() {
-    return activation_client_;
-  }
+  aura::client::ActivationClient* activation_client();
 
   // Force the shelf to query for it's current visibility state.
   // TODO(jamescook): Move to Shelf.
@@ -389,6 +385,11 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
     return is_touch_hud_projection_enabled_;
   }
 
+  // NOTE: Prefer ScopedRootWindowForNewWindows when setting temporarily.
+  void set_root_window_for_new_windows(WmWindow* root) {
+    root_window_for_new_windows_ = root;
+  }
+
   // Creates instance of FirstRunHelper. Caller is responsible for deleting
   // returned object.
   ash::FirstRunHelper* CreateFirstRunHelper();
@@ -414,9 +415,10 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   FRIEND_TEST_ALL_PREFIXES(WindowManagerTest, MouseEventCursors);
   FRIEND_TEST_ALL_PREFIXES(WindowManagerTest, TransformActivate);
   friend class RootWindowController;
+  friend class ScopedRootWindowForNewWindows;
+  friend class SmsObserverTest;
   friend class test::ShellTestApi;
   friend class shell::WindowWatcher;
-  friend class SmsObserverTest;
 
   explicit Shell(std::unique_ptr<WmShell> wm_shell);
   ~Shell() override;
@@ -440,6 +442,11 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   EventTarget* GetParentTarget() override;
   std::unique_ptr<ui::EventTargetIterator> GetChildIterator() const override;
   ui::EventTargeter* GetEventTargeter() override;
+
+  // aura::client::ActivationChangeObserver:
+  void OnWindowActivated(ActivationReason reason,
+                         aura::Window* gained_active,
+                         aura::Window* lost_active) override;
 
   static Shell* instance_;
 
@@ -479,9 +486,7 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   std::unique_ptr<HighContrastController> high_contrast_controller_;
   std::unique_ptr<MagnificationController> magnification_controller_;
   std::unique_ptr<AutoclickController> autoclick_controller_;
-  std::unique_ptr<aura::client::FocusClient> focus_client_;
-
-  aura::client::ActivationClient* activation_client_;
+  std::unique_ptr<::wm::FocusController> focus_controller_;
 
   std::unique_ptr<ScreenshotController> screenshot_controller_;
 
@@ -563,6 +568,10 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   bool simulate_modal_window_open_for_testing_;
 
   bool is_touch_hud_projection_enabled_;
+
+  // See comment for GetWmRootWindowForNewWindows().
+  WmWindow* root_window_for_new_windows_ = nullptr;
+  WmWindow* scoped_root_window_for_new_windows_ = nullptr;
 
   // Injected content::GPUDataManager support.
   std::unique_ptr<GPUSupport> gpu_support_;

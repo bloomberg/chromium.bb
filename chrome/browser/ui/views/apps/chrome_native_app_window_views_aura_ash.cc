@@ -199,9 +199,9 @@ void ChromeNativeAppWindowViewsAuraAsh::OnBeforePanelWidgetInit(
                 ash::TYPE_APP_PANEL));
   } else if (ash::Shell::HasInstance() && use_default_bounds) {
     // Open a new panel on the target root.
-    init_params->context = ash::Shell::GetTargetRootWindow();
+    init_params->context = ash::Shell::GetRootWindowForNewWindows();
     init_params->bounds = gfx::Rect(GetPreferredSize());
-    wm::ConvertRectToScreen(ash::Shell::GetTargetRootWindow(),
+    wm::ConvertRectToScreen(ash::Shell::GetRootWindowForNewWindows(),
                             &init_params->bounds);
   }
 }

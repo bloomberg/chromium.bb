@@ -121,7 +121,7 @@ void KioskExternalUpdateNotification::CreateAndShowNotificationView(
   view_ = new KioskExternalUpdateNotificationView(this);
   view_->SetMessage(message);
 
-  aura::Window* root_window = ash::Shell::GetTargetRootWindow();
+  aura::Window* root_window = ash::Shell::GetRootWindowForNewWindows();
   gfx::Size rs = root_window->bounds().size();
   gfx::Size ps = view_->GetPreferredSize();
   gfx::Rect bounds((rs.width() - ps.width()) / 2,
