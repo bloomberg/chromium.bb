@@ -1,0 +1,46 @@
+<html>
+<head>
+<script src='inspector-test.js'></script>
+<script>
+
+function startWorker() {
+  window.worker = new Worker('resources/worker.js');
+}
+
+async function test() {
+  var workerTargetId;
+  var navigated = false;
+  var observer = {
+    targetAdded(target) {
+      if (!InspectorTest.isDedicatedWorker(target))
+        return;
+      InspectorTest.addResult('Worker added');
+      workerTargetId = target.id();
+      if (navigated)
+        InspectorTest.completeTest();
+    },
+    targetRemoved(target) {
+      if (!InspectorTest.isDedicatedWorker(target))
+        return;
+      if (target.id() === workerTargetId) {
+        InspectorTest.addResult('Worker removed');
+        workerTargetId = '';
+      } else {
+        InspectorTest.addResult('Unknown worker removed');
+      }
+    }
+  };
+
+  SDK.targetManager.observeTargets(observer);
+  await InspectorTest.evaluateInPagePromise('startWorker()');
+  await InspectorTest.navigatePromise('http://localhost:8080/inspector/workers-on-navigation.html');
+  navigated = true;
+  await InspectorTest.evaluateInPagePromise('startWorker()');
+}
+
+</script>
+</head>
+<body onload='runTest()'>
+<p>Tests that workers are correctly detached upon navigation.</p>
+</body>
+</html>

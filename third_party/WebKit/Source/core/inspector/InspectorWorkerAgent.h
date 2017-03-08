@@ -73,6 +73,7 @@ class CORE_EXPORT InspectorWorkerAgent final
   void connectToAllProxies();
   void disconnectFromAllProxies(bool reportToFrontend);
   void connectToProxy(WorkerInspectorProxy*, bool waitingForDebugger);
+  protocol::DictionaryValue* attachedWorkerIds();
 
   // WorkerInspectorProxy::PageInspector implementation.
   void dispatchMessageFromWorker(WorkerInspectorProxy*,

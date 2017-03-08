@@ -469,6 +469,14 @@ InspectorTest.navigate = function(url, callback)
     InspectorTest.evaluateInPage("window.location.replace('" + url + "')");
 }
 
+InspectorTest.navigatePromise = function(url)
+{
+    var fulfill;
+    var promise = new Promise(callback => fulfill = callback);
+    InspectorTest.navigate(url, fulfill);
+    return promise;
+}
+
 InspectorTest.hardReloadPage = function(callback, scriptToEvaluateOnLoad, scriptPreprocessor)
 {
     InspectorTest._innerReloadPage(true, callback, scriptToEvaluateOnLoad, scriptPreprocessor);
