@@ -9,8 +9,10 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/strings/string_piece.h"
 #include "components/metrics/metrics_log_uploader.h"
 #include "net/url_request/url_fetcher_delegate.h"
+#include "url/gurl.h"
 
 namespace net {
 class URLFetcher;
@@ -23,13 +25,15 @@ namespace metrics {
 class NetMetricsLogUploader : public MetricsLogUploader,
                               public net::URLFetcherDelegate {
  public:
-  // Constructs a NetMetricsLogUploader with the specified request context and
-  // other params (see comments on MetricsLogUploader for details). The caller
-  // must ensure that |request_context_getter| remains valid for the lifetime
-  // of this class.
+  // Constructs a NetMetricsLogUploader which uploads data to |server_url| with
+  // the specified |mime_type|. The |service_type| marks which service the
+  // data usage should be attributed to. The |on_upload_complete| callback will
+  // be called with the HTTP response code of the upload or with -1 on an error.
+  // The caller must ensure that |request_context_getter| remains valid for the
+  // lifetime of this class.
   NetMetricsLogUploader(net::URLRequestContextGetter* request_context_getter,
-                        const std::string& server_url,
-                        const std::string& mime_type,
+                        base::StringPiece server_url,
+                        base::StringPiece mime_type,
                         MetricsLogUploader::MetricServiceType service_type,
                         const base::Callback<void(int)>& on_upload_complete);
   ~NetMetricsLogUploader() override;
@@ -44,6 +48,11 @@ class NetMetricsLogUploader : public MetricsLogUploader,
 
   // The request context for fetches done using the network stack.
   net::URLRequestContextGetter* const request_context_getter_;
+
+  const GURL server_url_;
+  const std::string mime_type_;
+  const MetricsLogUploader::MetricServiceType service_type_;
+  const base::Callback<void(int)> on_upload_complete_;
 
   // The outstanding transmission appears as a URL Fetch operation.
   std::unique_ptr<net::URLFetcher> current_fetch_;

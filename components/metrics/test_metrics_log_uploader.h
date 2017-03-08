@@ -11,10 +11,8 @@ namespace metrics {
 
 class TestMetricsLogUploader : public MetricsLogUploader {
  public:
-  TestMetricsLogUploader(const std::string& server_url,
-                         const std::string& mime_type,
-                         MetricsLogUploader::MetricServiceType service_type,
-                         const base::Callback<void(int)>& on_upload_complete);
+  explicit TestMetricsLogUploader(
+      const base::Callback<void(int)>& on_upload_complete);
   ~TestMetricsLogUploader() override;
 
   // Mark the current upload complete with the given response code.
@@ -28,6 +26,7 @@ class TestMetricsLogUploader : public MetricsLogUploader {
   void UploadLog(const std::string& compressed_log_data,
                  const std::string& log_hash) override;
 
+  const base::Callback<void(int)> on_upload_complete_;
   bool is_uploading_;
 
   DISALLOW_COPY_AND_ASSIGN(TestMetricsLogUploader);

@@ -8,15 +8,8 @@
 namespace metrics {
 
 TestMetricsLogUploader::TestMetricsLogUploader(
-    const std::string& server_url,
-    const std::string& mime_type,
-    MetricsLogUploader::MetricServiceType service_type,
     const base::Callback<void(int)>& on_upload_complete)
-    : MetricsLogUploader(server_url,
-                         mime_type,
-                         service_type,
-                         on_upload_complete),
-      is_uploading_(false) {}
+    : on_upload_complete_(on_upload_complete), is_uploading_(false) {}
 
 TestMetricsLogUploader::~TestMetricsLogUploader() = default;
 

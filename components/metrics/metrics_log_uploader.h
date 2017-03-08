@@ -9,6 +9,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/strings/string_piece.h"
 
 namespace metrics {
 
@@ -23,34 +24,13 @@ class MetricsLogUploader {
     UKM,
   };
 
-  // Constructs the uploader that will upload logs to the specified |server_url|
-  // with the given |mime_type|. The |service_type| marks which service the
-  // data usage should be attributed to. The |on_upload_complete| callback will
-  // be called with the HTTP response code of the upload or with -1 on an error.
-  MetricsLogUploader(const std::string& server_url,
-                     const std::string& mime_type,
-                     MetricServiceType service_type,
-                     const base::Callback<void(int)>& on_upload_complete);
-  virtual ~MetricsLogUploader();
+  virtual ~MetricsLogUploader() {}
 
   // Uploads a log with the specified |compressed_log_data| and |log_hash|.
   // |log_hash| is expected to be the hex-encoded SHA1 hash of the log data
   // before compression.
   virtual void UploadLog(const std::string& compressed_log_data,
                          const std::string& log_hash) = 0;
-
- protected:
-  const std::string server_url_;
-  const std::string mime_type_;
-
-  // Which service type this uploads for. This is used for bandwidth
-  // attribution.
-  const MetricServiceType service_type_;
-
-  const base::Callback<void(int)> on_upload_complete_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MetricsLogUploader);
 };
 
 }  // namespace metrics

@@ -15,15 +15,15 @@ namespace metrics {
 
 NetMetricsLogUploader::NetMetricsLogUploader(
     net::URLRequestContextGetter* request_context_getter,
-    const std::string& server_url,
-    const std::string& mime_type,
+    base::StringPiece server_url,
+    base::StringPiece mime_type,
     MetricsLogUploader::MetricServiceType service_type,
     const base::Callback<void(int)>& on_upload_complete)
-    : MetricsLogUploader(server_url,
-                         mime_type,
-                         service_type,
-                         on_upload_complete),
-      request_context_getter_(request_context_getter) {}
+    : request_context_getter_(request_context_getter),
+      server_url_(server_url),
+      mime_type_(mime_type.data(), mime_type.size()),
+      service_type_(service_type),
+      on_upload_complete_(on_upload_complete) {}
 
 NetMetricsLogUploader::~NetMetricsLogUploader() {
 }
