@@ -60,12 +60,11 @@ const int unrequestedTextCheckingSequence = -1;
 
 class TextCheckingRequestData final {
   DISALLOW_NEW();
-  friend class SpellCheckRequest;  // For access to m_sequence.
  public:
-  TextCheckingRequestData() : m_sequence(unrequestedTextCheckingSequence) {}
-  TextCheckingRequestData(int sequence, const String& text)
-      : m_sequence(sequence), m_text(text) {}
+  TextCheckingRequestData(const String& text)
+      : m_sequence(unrequestedTextCheckingSequence), m_text(text) {}
 
+  void setSequence(int sequence) { m_sequence = sequence; }
   int sequence() const { return m_sequence; }
   String text() const { return m_text; }
 

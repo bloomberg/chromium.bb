@@ -45,7 +45,7 @@ SpellCheckRequest::SpellCheckRequest(Range* checkingRange,
       m_checkingRange(checkingRange),
       m_rootEditableElement(
           blink::rootEditableElement(*m_checkingRange->startContainer())),
-      m_requestData(unrequestedTextCheckingSequence, text),
+      m_requestData(text),
       m_requestNumber(requestNumber) {
   DCHECK(m_checkingRange);
   DCHECK(m_checkingRange->isConnected());
@@ -117,7 +117,7 @@ void SpellCheckRequest::setCheckerAndSequence(SpellCheckRequester* requester,
   DCHECK(!m_requester);
   DCHECK_EQ(m_requestData.sequence(), unrequestedTextCheckingSequence);
   m_requester = requester;
-  m_requestData.m_sequence = sequence;
+  m_requestData.setSequence(sequence);
 }
 
 SpellCheckRequester::SpellCheckRequester(LocalFrame& frame)
