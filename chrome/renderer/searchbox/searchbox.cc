@@ -253,8 +253,7 @@ SearchBox::SearchBox(content::RenderFrame* render_frame)
                      std::move(search_box));
 }
 
-SearchBox::~SearchBox() {
-}
+SearchBox::~SearchBox() = default;
 
 void SearchBox::LogEvent(NTPLoggingEventType event) {
   // navigation_start in ms.
@@ -289,8 +288,10 @@ void SearchBox::CheckIsUserSyncingHistory() {
 
 void SearchBox::DeleteMostVisitedItem(
     InstantRestrictedID most_visited_item_id) {
-  instant_service_->DeleteMostVisitedItem(
-      page_seq_no_, GetURLForMostVisitedItem(most_visited_item_id));
+  GURL url = GetURLForMostVisitedItem(most_visited_item_id);
+  if (!url.is_valid())
+    return;
+  instant_service_->DeleteMostVisitedItem(page_seq_no_, url);
 }
 
 bool SearchBox::GenerateImageURLFromTransientURL(const GURL& transient_url,
@@ -338,8 +339,10 @@ void SearchBox::UndoAllMostVisitedDeletions() {
 
 void SearchBox::UndoMostVisitedDeletion(
     InstantRestrictedID most_visited_item_id) {
-  instant_service_->UndoMostVisitedDeletion(
-      page_seq_no_, GetURLForMostVisitedItem(most_visited_item_id));
+  GURL url = GetURLForMostVisitedItem(most_visited_item_id);
+  if (!url.is_valid())
+    return;
+  instant_service_->UndoMostVisitedDeletion(page_seq_no_, url);
 }
 
 void SearchBox::SetPageSequenceNumber(int page_seq_no) {
