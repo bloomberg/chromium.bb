@@ -2152,7 +2152,8 @@ static void write_tokens_b(AV1_COMP *cpi, const TileInfo *const tile,
                            int mi_col) {
   AV1_COMMON *const cm = &cpi->common;
   MACROBLOCKD *const xd = &cpi->td.mb.e_mbd;
-  MODE_INFO *m;
+  MODE_INFO *const m = xd->mi[0];
+  MB_MODE_INFO *const mbmi = &m->mbmi;
   int plane;
   int bh, bw;
 #if CONFIG_PVQ
@@ -2161,12 +2162,11 @@ static void write_tokens_b(AV1_COMP *cpi, const TileInfo *const tile,
   (void)tok_end;
 #endif
   xd->mi = cm->mi_grid_visible + (mi_row * cm->mi_stride + mi_col);
-  m = xd->mi[0];
 
-  assert(m->mbmi.sb_type <= cm->sb_size);
+  assert(mbmi->sb_type <= cm->sb_size);
 
-  bh = mi_size_high[m->mbmi.sb_type];
-  bw = mi_size_wide[m->mbmi.sb_type];
+  bh = mi_size_high[mbmi->sb_type];
+  bw = mi_size_wide[mbmi->sb_type];
   cpi->td.mb.mbmi_ext = cpi->mbmi_ext_base + (mi_row * cm->mi_cols + mi_col);
 
 #if CONFIG_DEPENDENT_HORZTILES
@@ -2179,31 +2179,31 @@ static void write_tokens_b(AV1_COMP *cpi, const TileInfo *const tile,
 #if CONFIG_PALETTE
   for (plane = 0; plane <= 1; ++plane) {
     const uint8_t palette_size_plane =
-        m->mbmi.palette_mode_info.palette_size[plane];
+        mbmi->palette_mode_info.palette_size[plane];
     if (palette_size_plane > 0) {
       int rows, cols;
-      av1_get_block_dimensions(m->mbmi.sb_type, plane, xd, NULL, NULL, &rows,
+      av1_get_block_dimensions(mbmi->sb_type, plane, xd, NULL, NULL, &rows,
                                &cols);
       assert(*tok < tok_end);
       pack_palette_tokens(w, tok, palette_size_plane, rows * cols - 1);
-      assert(*tok < tok_end + m->mbmi.skip);
+      assert(*tok < tok_end + mbmi->skip);
     }
   }
 #endif  // CONFIG_PALETTE
 
 #if CONFIG_COEF_INTERLEAVE
-  if (!m->mbmi.skip) {
+  if (!mbmi->skip) {
     const struct macroblockd_plane *const pd_y = &xd->plane[0];
     const struct macroblockd_plane *const pd_c = &xd->plane[1];
-    const TX_SIZE tx_log2_y = m->mbmi.tx_size;
-    const TX_SIZE tx_log2_c = get_uv_tx_size(&m->mbmi, pd_c);
+    const TX_SIZE tx_log2_y = mbmi->tx_size;
+    const TX_SIZE tx_log2_c = get_uv_tx_size(mbmi, pd_c);
     const int tx_sz_y = (1 << tx_log2_y);
     const int tx_sz_c = (1 << tx_log2_c);
 
     const BLOCK_SIZE plane_bsize_y =
-        get_plane_block_size(AOMMAX(m->mbmi.sb_type, 3), pd_y);
+        get_plane_block_size(AOMMAX(mbmi->sb_type, 3), pd_y);
     const BLOCK_SIZE plane_bsize_c =
-        get_plane_block_size(AOMMAX(m->mbmi.sb_type, 3), pd_c);
+        get_plane_block_size(AOMMAX(mbmi->sb_type, 3), pd_c);
 
     const int num_4x4_w_y = num_4x4_blocks_wide_lookup[plane_bsize_y];
     const int num_4x4_w_c = num_4x4_blocks_wide_lookup[plane_bsize_c];
@@ -2267,12 +2267,11 @@ static void write_tokens_b(AV1_COMP *cpi, const TileInfo *const tile,
     }
   }
 #else  // CONFIG_COEF_INTERLEAVE
-  if (!m->mbmi.skip) {
+  if (!mbmi->skip) {
 #if !CONFIG_PVQ
     assert(*tok < tok_end);
 #endif
     for (plane = 0; plane < MAX_MB_PLANE; ++plane) {
-      MB_MODE_INFO *mbmi = &m->mbmi;
 
 #if CONFIG_CB4X4
       if (mbmi->sb_type < BLOCK_8X8 && plane &&
@@ -2320,7 +2319,7 @@ static void write_tokens_b(AV1_COMP *cpi, const TileInfo *const tile,
         }
 #if CONFIG_RD_DEBUG
         if (mbmi->sb_type >= BLOCK_8X8 &&
-            rd_token_stats_mismatch(&m->mbmi.rd_stats, &token_stats, plane)) {
+            rd_token_stats_mismatch(&mbmi->rd_stats, &token_stats, plane)) {
           dump_mode_info(m);
           assert(0);
         }
@@ -2351,12 +2350,10 @@ static void write_tokens_b(AV1_COMP *cpi, const TileInfo *const tile,
 #endif
 #if CONFIG_RD_DEBUG
       if (is_inter_block(mbmi) && mbmi->sb_type >= BLOCK_8X8 &&
-          rd_token_stats_mismatch(&m->mbmi.rd_stats, &token_stats, plane)) {
+          rd_token_stats_mismatch(&mbmi->rd_stats, &token_stats, plane)) {
         dump_mode_info(m);
         assert(0);
       }
-#else
-      (void)mbmi;
 #endif  // CONFIG_RD_DEBUG
 #endif  // CONFIG_VAR_TX
 
