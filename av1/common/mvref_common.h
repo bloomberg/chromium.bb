@@ -345,10 +345,15 @@ static INLINE int_mv scale_mv(const MB_MODE_INFO *mbmi, int ref,
 
 // Checks that the given mi_row, mi_col and search point
 // are inside the borders of the tile.
-#if CONFIG_DEPENDENT_HORZTILES
 static INLINE int is_inside(const TileInfo *const tile, int mi_col, int mi_row,
-                            int mi_rows, int dependent_horz_tile_flag,
+                            int mi_rows, const AV1_COMMON *cm,
                             const POSITION *mi_pos) {
+#if CONFIG_DEPENDENT_HORZTILES
+  const int dependent_horz_tile_flag = cm->dependent_horz_tiles;
+#else
+  const int dependent_horz_tile_flag = 0;
+  (void)cm;
+#endif
 #if CONFIG_TILE_GROUPS
   if (dependent_horz_tile_flag && !tile->tg_horz_boundary) {
 #else
@@ -365,15 +370,6 @@ static INLINE int is_inside(const TileInfo *const tile, int mi_col, int mi_row,
              mi_col + mi_pos->col >= tile->mi_col_end);
   }
 }
-#else
-static INLINE int is_inside(const TileInfo *const tile, int mi_col, int mi_row,
-                            const POSITION *mi_pos) {
-  return !(mi_row + mi_pos->row < tile->mi_row_start ||
-           mi_col + mi_pos->col < tile->mi_col_start ||
-           mi_row + mi_pos->row >= tile->mi_row_end ||
-           mi_col + mi_pos->col >= tile->mi_col_end);
-}
-#endif
 
 static INLINE void lower_mv_precision(MV *mv, int allow_hp) {
   if (!allow_hp) {
@@ -513,10 +509,10 @@ void av1_append_sub8x8_mvs_for_idx(const AV1_COMMON *cm, MACROBLOCKD *xd,
 
 #if CONFIG_EXT_INTER
 // This function keeps a mode count for a given MB/SB
-void av1_update_mv_context(const MACROBLOCKD *xd, MODE_INFO *mi,
-                           MV_REFERENCE_FRAME ref_frame, int_mv *mv_ref_list,
-                           int block, int mi_row, int mi_col,
-                           int16_t *mode_context);
+void av1_update_mv_context(const AV1_COMMON *cm, const MACROBLOCKD *xd,
+                           MODE_INFO *mi, MV_REFERENCE_FRAME ref_frame,
+                           int_mv *mv_ref_list, int block, int mi_row,
+                           int mi_col, int16_t *mode_context);
 #endif  // CONFIG_EXT_INTER
 
 #if CONFIG_WARPED_MOTION
