@@ -54,6 +54,7 @@
 #include "core/editing/FrameSelection.h"
 #include "core/editing/VisiblePosition.h"
 #include "core/editing/markers/DocumentMarkerController.h"
+#include "core/editing/spellcheck/IdleSpellCheckCallback.h"
 #include "core/editing/spellcheck/SpellChecker.h"
 #include "core/events/MouseEvent.h"
 #include "core/frame/FrameHost.h"
@@ -6276,7 +6277,7 @@ class SpellCheckClient : public WebSpellCheckClient {
 TEST_P(ParameterizedWebFrameTest, ReplaceMisspelledRange) {
   registerMockedHttpURLLoad("spell.html");
   FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(m_baseURL + "spell.html");
+  initializeTextSelectionWebView(m_baseURL + "spell.html", &webViewHelper);
   SpellCheckClient spellcheck;
   webViewHelper.webView()->setSpellCheckClient(&spellcheck);
 
@@ -6291,6 +6292,13 @@ TEST_P(ParameterizedWebFrameTest, ReplaceMisspelledRange) {
   NonThrowableExceptionState exceptionState;
   document->execCommand("InsertText", false, "_wellcome_.", exceptionState);
   EXPECT_FALSE(exceptionState.hadException());
+
+  if (RuntimeEnabledFeatures::idleTimeSpellCheckingEnabled()) {
+    document->frame()
+        ->spellChecker()
+        .idleSpellCheckCallback()
+        .forceInvocationForTesting();
+  }
 
   const int allTextBeginOffset = 0;
   const int allTextLength = 11;
@@ -6316,7 +6324,7 @@ TEST_P(ParameterizedWebFrameTest, ReplaceMisspelledRange) {
 TEST_P(ParameterizedWebFrameTest, RemoveSpellingMarkers) {
   registerMockedHttpURLLoad("spell.html");
   FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(m_baseURL + "spell.html");
+  initializeTextSelectionWebView(m_baseURL + "spell.html", &webViewHelper);
   SpellCheckClient spellcheck;
   webViewHelper.webView()->setSpellCheckClient(&spellcheck);
 
@@ -6331,6 +6339,13 @@ TEST_P(ParameterizedWebFrameTest, RemoveSpellingMarkers) {
   NonThrowableExceptionState exceptionState;
   document->execCommand("InsertText", false, "_wellcome_.", exceptionState);
   EXPECT_FALSE(exceptionState.hadException());
+
+  if (RuntimeEnabledFeatures::idleTimeSpellCheckingEnabled()) {
+    document->frame()
+        ->spellChecker()
+        .idleSpellCheckCallback()
+        .forceInvocationForTesting();
+  }
 
   frame->removeSpellingMarkers();
 
@@ -6351,7 +6366,7 @@ TEST_P(ParameterizedWebFrameTest, RemoveSpellingMarkers) {
 TEST_P(ParameterizedWebFrameTest, RemoveSpellingMarkersUnderWords) {
   registerMockedHttpURLLoad("spell.html");
   FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(m_baseURL + "spell.html");
+  initializeTextSelectionWebView(m_baseURL + "spell.html", &webViewHelper);
   SpellCheckClient spellcheck;
   webViewHelper.webView()->setSpellCheckClient(&spellcheck);
 
@@ -6366,6 +6381,9 @@ TEST_P(ParameterizedWebFrameTest, RemoveSpellingMarkersUnderWords) {
   NonThrowableExceptionState exceptionState;
   document->execCommand("InsertText", false, " wellcome ", exceptionState);
   EXPECT_FALSE(exceptionState.hadException());
+
+  if (RuntimeEnabledFeatures::idleTimeSpellCheckingEnabled())
+    frame->spellChecker().idleSpellCheckCallback().forceInvocationForTesting();
 
   WebVector<unsigned> offsets1;
   webViewHelper.webView()->spellingMarkerOffsetsForTest(&offsets1);
@@ -6424,7 +6442,7 @@ class StubbornSpellCheckClient : public WebSpellCheckClient {
 TEST_P(ParameterizedWebFrameTest, SlowSpellcheckMarkerPosition) {
   registerMockedHttpURLLoad("spell.html");
   FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(m_baseURL + "spell.html");
+  initializeTextSelectionWebView(m_baseURL + "spell.html", &webViewHelper);
 
   StubbornSpellCheckClient spellcheck;
   webViewHelper.webView()->setSpellCheckClient(&spellcheck);
@@ -6443,6 +6461,13 @@ TEST_P(ParameterizedWebFrameTest, SlowSpellcheckMarkerPosition) {
   document->execCommand("InsertText", false, "he", exceptionState);
   EXPECT_FALSE(exceptionState.hadException());
 
+  if (RuntimeEnabledFeatures::idleTimeSpellCheckingEnabled()) {
+    document->frame()
+        ->spellChecker()
+        .idleSpellCheckCallback()
+        .forceInvocationForTesting();
+  }
+
   spellcheck.kick();
 
   WebVector<unsigned> offsets;
@@ -6453,6 +6478,10 @@ TEST_P(ParameterizedWebFrameTest, SlowSpellcheckMarkerPosition) {
 // This test verifies that cancelling spelling request does not cause a
 // write-after-free when there's no spellcheck client set.
 TEST_P(ParameterizedWebFrameTest, CancelSpellingRequestCrash) {
+  // The relevant code paths are obsolete with idle time spell checker.
+  if (RuntimeEnabledFeatures::idleTimeSpellCheckingEnabled())
+    return;
+
   registerMockedHttpURLLoad("spell.html");
   FrameTestHelpers::WebViewHelper webViewHelper;
   webViewHelper.initializeAndLoad(m_baseURL + "spell.html");
@@ -6474,7 +6503,7 @@ TEST_P(ParameterizedWebFrameTest, CancelSpellingRequestCrash) {
 TEST_P(ParameterizedWebFrameTest, SpellcheckResultErasesMarkers) {
   registerMockedHttpURLLoad("spell.html");
   FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(m_baseURL + "spell.html");
+  initializeTextSelectionWebView(m_baseURL + "spell.html", &webViewHelper);
 
   StubbornSpellCheckClient spellcheck;
   webViewHelper.webView()->setSpellCheckClient(&spellcheck);
@@ -6489,6 +6518,13 @@ TEST_P(ParameterizedWebFrameTest, SpellcheckResultErasesMarkers) {
   element->focus();
   NonThrowableExceptionState exceptionState;
   document->execCommand("InsertText", false, "welcome ", exceptionState);
+
+  if (RuntimeEnabledFeatures::idleTimeSpellCheckingEnabled()) {
+    document->frame()
+        ->spellChecker()
+        .idleSpellCheckCallback()
+        .forceInvocationForTesting();
+  }
 
   document->updateStyleAndLayout();
 
@@ -6507,7 +6543,7 @@ TEST_P(ParameterizedWebFrameTest, SpellcheckResultErasesMarkers) {
 TEST_P(ParameterizedWebFrameTest, SpellcheckResultsSavedInDocument) {
   registerMockedHttpURLLoad("spell.html");
   FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(m_baseURL + "spell.html");
+  initializeTextSelectionWebView(m_baseURL + "spell.html", &webViewHelper);
 
   StubbornSpellCheckClient spellcheck;
   webViewHelper.webView()->setSpellCheckClient(&spellcheck);
@@ -6524,6 +6560,13 @@ TEST_P(ParameterizedWebFrameTest, SpellcheckResultsSavedInDocument) {
   document->execCommand("InsertText", false, "wellcome ", exceptionState);
   EXPECT_FALSE(exceptionState.hadException());
 
+  if (RuntimeEnabledFeatures::idleTimeSpellCheckingEnabled()) {
+    document->frame()
+        ->spellChecker()
+        .idleSpellCheckCallback()
+        .forceInvocationForTesting();
+  }
+
   spellcheck.kick();
   ASSERT_EQ(1U, document->markers().markers().size());
   ASSERT_NE(static_cast<DocumentMarker*>(0), document->markers().markers()[0]);
@@ -6532,13 +6575,17 @@ TEST_P(ParameterizedWebFrameTest, SpellcheckResultsSavedInDocument) {
   document->execCommand("InsertText", false, "wellcome ", exceptionState);
   EXPECT_FALSE(exceptionState.hadException());
 
+  if (RuntimeEnabledFeatures::idleTimeSpellCheckingEnabled()) {
+    document->frame()
+        ->spellChecker()
+        .idleSpellCheckCallback()
+        .forceInvocationForTesting();
+  }
+
   spellcheck.kickGrammar();
   ASSERT_EQ(1U, document->markers().markers().size());
   ASSERT_NE(static_cast<DocumentMarker*>(0), document->markers().markers()[0]);
   EXPECT_EQ(DocumentMarker::Grammar, document->markers().markers()[0]->type());
-
-  document->execCommand("InsertText", false, "wellcome ", exceptionState);
-  EXPECT_FALSE(exceptionState.hadException());
 }
 
 class TestAccessInitialDocumentWebFrameClient
