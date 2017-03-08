@@ -188,16 +188,39 @@ SelectionState InlineTextBox::getSelectionState() const {
 
 bool InlineTextBox::hasWrappedSelectionNewline() const {
   DCHECK(!getLineLayoutItem().needsLayout());
+
   SelectionState state = getSelectionState();
-  return (state == SelectionStart || state == SelectionInside)
-         // Checking last leaf child can be slow, so we make sure to do this
-         // only after the other simple conditionals.
-         && (root().lastLeafChild() == this)
-         // It's possible to have mixed LTR/RTL on a single line, and we only
-         // want to paint a newline when we're the last leaf child and we make
-         // sure there isn't a differently-directioned box following us.
-         && ((!isLeftToRightDirection() && root().firstSelectedBox() == this) ||
-             (isLeftToRightDirection() && root().lastSelectedBox() == this));
+  if (state != SelectionStart && state != SelectionInside)
+    return false;
+
+  // Checking last leaf child can be slow, so we make sure to do this
+  // only after checking selection state.
+  if (root().lastLeafChild() != this)
+    return false;
+
+  // It's possible to have mixed LTR/RTL on a single line, and we only
+  // want to paint a newline when we're the last leaf child and we make
+  // sure there isn't a differently-directioned box following us.
+  bool isLTR = isLeftToRightDirection();
+  if ((!isLTR && root().firstSelectedBox() != this) ||
+      (isLTR && root().lastSelectedBox() != this))
+    return false;
+
+  // If we're the last inline text box in containing block, our containing block
+  // is inline, and the selection continues into that block, then rely on the
+  // next inline text box (if any) to paint a wrapped new line as needed.
+  if (nextTextBox())
+    return true;
+  auto rootBlock = root().block();
+  if (rootBlock.isInline() && rootBlock.getSelectionState() != SelectionEnd &&
+      rootBlock.getSelectionState() != SelectionBoth &&
+      rootBlock.inlineBoxWrapper() &&
+      ((isLTR && rootBlock.inlineBoxWrapper()->nextOnLine()) ||
+       (!isLTR && rootBlock.inlineBoxWrapper()->prevOnLine()))) {
+    return false;
+  }
+
+  return true;
 }
 
 float InlineTextBox::newlineSpaceWidth() const {
