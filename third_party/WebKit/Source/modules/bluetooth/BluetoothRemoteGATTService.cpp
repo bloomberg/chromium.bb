@@ -48,9 +48,8 @@ void BluetoothRemoteGATTService::GetCharacteristicsCallback(
 
   // If the device is disconnected, reject.
   if (!m_device->gatt()->RemoveFromActiveAlgorithms(resolver)) {
-    resolver->reject(BluetoothError::createDOMException(
-        mojom::blink::WebBluetoothResult::
-            GATT_SERVER_DISCONNECTED_WHILE_RETRIEVING_CHARACTERISTICS));
+    resolver->reject(BluetoothError::createNotConnectedException(
+        BluetoothOperation::CharacteristicsRetrieval));
     return;
   }
 
@@ -127,10 +126,8 @@ ScriptPromise BluetoothRemoteGATTService::getCharacteristicsImpl(
     const String& characteristicsUUID) {
   if (!m_device->gatt()->connected()) {
     return ScriptPromise::rejectWithDOMException(
-        scriptState,
-        BluetoothError::createDOMException(
-            mojom::blink::WebBluetoothResult::
-                GATT_SERVER_NOT_CONNECTED_CANNOT_RETRIEVE_CHARACTERISTICS));
+        scriptState, BluetoothError::createNotConnectedException(
+                         BluetoothOperation::CharacteristicsRetrieval));
   }
 
   if (!m_device->isValidService(m_service->instance_id)) {

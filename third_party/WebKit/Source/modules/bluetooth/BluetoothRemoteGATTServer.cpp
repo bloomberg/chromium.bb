@@ -19,14 +19,6 @@
 
 namespace blink {
 
-namespace {
-
-const char kGATTServerNotConnected[] =
-    "GATT Server is disconnected. Cannot retrieve services. (Re)connect first "
-    "with `device.gatt.connect`.";
-
-}  // namespace
-
 BluetoothRemoteGATTServer::BluetoothRemoteGATTServer(BluetoothDevice* device)
     : m_device(device), m_connected(false) {}
 
@@ -107,8 +99,8 @@ void BluetoothRemoteGATTServer::GetPrimaryServicesCallback(
 
   // If the device is disconnected, reject.
   if (!RemoveFromActiveAlgorithms(resolver)) {
-    resolver->reject(
-        DOMException::create(NetworkError, kGATTServerNotConnected));
+    resolver->reject(BluetoothError::createNotConnectedException(
+        BluetoothOperation::ServicesRetrieval));
     return;
   }
 
@@ -182,8 +174,8 @@ ScriptPromise BluetoothRemoteGATTServer::getPrimaryServicesImpl(
     String servicesUUID) {
   if (!m_connected) {
     return ScriptPromise::rejectWithDOMException(
-        scriptState,
-        DOMException::create(NetworkError, kGATTServerNotConnected));
+        scriptState, BluetoothError::createNotConnectedException(
+                         BluetoothOperation::ServicesRetrieval));
   }
 
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);

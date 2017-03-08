@@ -15,7 +15,8 @@ promise_test(() => {
           let promise = assert_promise_rejects_with_message(
             service.getCharacteristic('heart_rate_measurement'),
             new DOMException(
-              'GATT Server disconnected while retrieving characteristics.',
+              'GATT Server is disconnected. Cannot retrieve characteristics. ' +
+              '(Re)connect first with `device.gatt.connect`.',
               'NetworkError'));
           gattServer.disconnect();
           return gattServer.connect().then(() => promise);

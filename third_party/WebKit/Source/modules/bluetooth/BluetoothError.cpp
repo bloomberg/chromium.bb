@@ -9,6 +9,32 @@
 
 namespace blink {
 
+namespace {
+
+const char kGATTServerNotConnectedBase[] =
+    "GATT Server is disconnected. "
+    "Cannot %s. (Re)connect first with `device.gatt.connect`.";
+
+}  // namespace
+
+// static
+DOMException* BluetoothError::createNotConnectedException(
+    BluetoothOperation operation) {
+  const char* operationString = nullptr;
+  switch (operation) {
+    case BluetoothOperation::ServicesRetrieval:
+      operationString = "retrieve services";
+      break;
+    case BluetoothOperation::CharacteristicsRetrieval:
+      operationString = "retrieve characteristics";
+      break;
+  }
+
+  return DOMException::create(
+      NetworkError,
+      String::format(kGATTServerNotConnectedBase, operationString));
+}
+
 // static
 DOMException* BluetoothError::createDOMException(
     BluetoothErrorCode error,
@@ -98,13 +124,6 @@ DOMException* BluetoothError::createDOMException(
                 "GATT Server is disconnected. Cannot perform GATT operations.");
       MAP_ERROR(GATT_SERVER_DISCONNECTED, NetworkError,
                 "GATT Server disconnected while performing a GATT operation.");
-      MAP_ERROR(GATT_SERVER_DISCONNECTED_WHILE_RETRIEVING_CHARACTERISTICS,
-                NetworkError,
-                "GATT Server disconnected while retrieving characteristics.");
-      MAP_ERROR(
-          GATT_SERVER_NOT_CONNECTED_CANNOT_RETRIEVE_CHARACTERISTICS,
-          NetworkError,
-          "GATT Server is disconnected. Cannot retrieve characteristics.");
 
       // NotFoundErrors:
       MAP_ERROR(WEB_BLUETOOTH_NOT_SUPPORTED, NotFoundError,

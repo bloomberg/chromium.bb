@@ -13,7 +13,8 @@ promise_test(() => {
           getCharacteristics()|
           getCharacteristics('measurement_interval')[UUID]]),
         new DOMException(
-          'GATT Server disconnected while retrieving characteristics.',
+          'GATT Server is disconnected. Cannot retrieve characteristics. ' +
+          '(Re)connect first with `device.gatt.connect`.',
           'NetworkError'));
       // Disconnect called to clear attributeInstanceMap and allow the
       // object to get garbage collected.

@@ -11,6 +11,13 @@
 
 namespace blink {
 
+// Used when generating DOMExceptions specific to each operation.
+// TODO(crbug.com/684445): Add DescriptorsRetrieval and GATTOperation.
+enum class BluetoothOperation {
+  ServicesRetrieval,
+  CharacteristicsRetrieval,
+};
+
 // These error codes requires detailed error messages.
 enum class BluetoothErrorCode {
   InvalidService,
@@ -29,6 +36,7 @@ class BluetoothError {
   STATIC_ONLY(BluetoothError);
 
  public:
+  static DOMException* createNotConnectedException(BluetoothOperation);
   static DOMException* createDOMException(BluetoothErrorCode,
                                           const String& detailedMessage);
 

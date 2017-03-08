@@ -16,7 +16,8 @@ promise_test(() => {
           return assert_promise_rejects_with_message(
             heart_rate_service.getCharacteristics('heart_rate_measurement'),
             new DOMException(
-              'GATT Server is disconnected. Cannot retrieve characteristics.',
+              'GATT Server is disconnected. Cannot retrieve characteristics. ' +
+              '(Re)connect first with `device.gatt.connect`.',
               'NetworkError'));
         });
     });
