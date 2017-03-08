@@ -13,6 +13,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/permissions/permission_request.h"
+#include "chrome/browser/permissions/permission_request_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/grit/generated_resources.h"
@@ -31,7 +32,6 @@
 #include "components/infobars/core/confirm_infobar_delegate.h"
 #include "components/infobars/core/infobar.h"
 #else
-#include "chrome/browser/permissions/permission_request_manager.h"
 #include "ui/vector_icons/vector_icons.h"
 #endif
 
@@ -264,24 +264,26 @@ void ChromeQuotaPermissionContext::RequestQuotaPermission(
     return;
   }
 
+  if (PermissionRequestManager::IsEnabled()) {
+    PermissionRequestManager* permission_request_manager =
+        PermissionRequestManager::FromWebContents(web_contents);
+    if (permission_request_manager) {
+      permission_request_manager->AddRequest(
+          new QuotaPermissionRequest(this, params.origin_url, callback));
+      return;
+    }
 #if defined(OS_ANDROID)
-  InfoBarService* infobar_service =
-      InfoBarService::FromWebContents(web_contents);
-  if (infobar_service) {
-    RequestQuotaInfoBarDelegate::Create(
-        infobar_service, this, params.origin_url, params.requested_size,
-        callback);
-    return;
-  }
-#else
-  PermissionRequestManager* permission_request_manager =
-      PermissionRequestManager::FromWebContents(web_contents);
-  if (permission_request_manager) {
-    permission_request_manager->AddRequest(
-        new QuotaPermissionRequest(this, params.origin_url, callback));
-    return;
-  }
+  } else {
+    InfoBarService* infobar_service =
+        InfoBarService::FromWebContents(web_contents);
+    if (infobar_service) {
+      RequestQuotaInfoBarDelegate::Create(infobar_service, this,
+                                          params.origin_url,
+                                          params.requested_size, callback);
+      return;
+    }
 #endif
+  }
 
   // The tab has no UI service for presenting the permissions request.
   LOG(WARNING) << "Attempt to request quota from a background page: "

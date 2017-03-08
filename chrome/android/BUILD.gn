@@ -470,6 +470,7 @@ android_library("chrome_test_java") {
     "//chrome/test/data/translate/",
     "//chrome/test/media_router/resources/",
     "//content/test/data/android/geolocation.html",
+    "//content/test/data/android/quota_permissions.html",
     "//content/test/data/android/media_permissions.html",
     "//content/test/data/android/webshare.html",
     "//content/test/data/media/bear.webm",
