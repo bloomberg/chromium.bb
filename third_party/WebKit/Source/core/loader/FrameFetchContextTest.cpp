@@ -95,6 +95,10 @@ class FixedPolicySubresourceFilter : public WebDocumentSubresourceFilter {
     return m_policy;
   }
 
+  LoadPolicy getLoadPolicyForWebSocketConnect(const WebURL& url) override {
+    return m_policy;
+  }
+
   void reportDisallowedLoad() override { ++*m_filteredLoadCounter; }
 
  private:

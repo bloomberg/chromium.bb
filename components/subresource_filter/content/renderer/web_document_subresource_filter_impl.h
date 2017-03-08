@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "components/subresource_filter/core/common/document_subresource_filter.h"
+#include "components/subresource_filter/core/common/proto/rules.pb.h"
 #include "third_party/WebKit/public/platform/WebDocumentSubresourceFilter.h"
 
 namespace subresource_filter {
@@ -35,12 +36,16 @@ class WebDocumentSubresourceFilterImpl
   const DocumentSubresourceFilter& filter() const { return filter_; }
 
   // blink::WebDocumentSubresourceFilter:
-  blink::WebDocumentSubresourceFilter::LoadPolicy getLoadPolicy(
-      const blink::WebURL& resourceUrl,
-      blink::WebURLRequest::RequestContext) override;
+  LoadPolicy getLoadPolicy(const blink::WebURL& resourceUrl,
+                           blink::WebURLRequest::RequestContext) override;
+  LoadPolicy getLoadPolicyForWebSocketConnect(
+      const blink::WebURL& url) override;
   void reportDisallowedLoad() override;
 
  private:
+  LoadPolicy getLoadPolicyImpl(const blink::WebURL& url,
+                               proto::ElementType element_type);
+
   DocumentSubresourceFilter filter_;
   base::OnceClosure first_disallowed_load_callback_;
 

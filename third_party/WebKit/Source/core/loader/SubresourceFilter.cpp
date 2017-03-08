@@ -41,14 +41,8 @@ bool SubresourceFilter::allowLoad(
 }
 
 bool SubresourceFilter::allowWebSocketConnection(const KURL& url) {
-  // TODO(csharrison): Should probably have a new API for this in
-  // WebDocumentSubresourceFilter rather than sending subresource context.
-  // Alternatively, could augment the filter API so that we send a
-  // WebDocumentSubresourceFilterResourceType that matches
-  // subresource_filter::proto::ElementType.
   WebDocumentSubresourceFilter::LoadPolicy loadPolicy =
-      m_subresourceFilter->getLoadPolicy(
-          url, WebURLRequest::RequestContextSubresource);
+      m_subresourceFilter->getLoadPolicyForWebSocketConnect(url);
 
   // Post a task to notify this load to avoid unduly blocking the worker
   // thread. Note that this unconditionally calls reportLoad unlike allowLoad,

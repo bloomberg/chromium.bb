@@ -466,6 +466,7 @@ TEST_F(IndexedRulesetTest, OneRuleWithElementTypes) {
   constexpr proto::ElementType kScript = proto::ELEMENT_TYPE_SCRIPT;
   constexpr proto::ElementType kSubdoc = proto::ELEMENT_TYPE_SUBDOCUMENT;
   constexpr proto::ElementType kPopup = proto::ELEMENT_TYPE_POPUP;
+  constexpr proto::ElementType kWebSocket = proto::ELEMENT_TYPE_WEBSOCKET;
 
   const struct {
     const char* url_pattern;
@@ -495,6 +496,8 @@ TEST_F(IndexedRulesetTest, OneRuleWithElementTypes) {
 
       {"ex.com", kAll, "http://ex.com", proto::ELEMENT_TYPE_OTHER, false},
       {"ex.com", kAll, "http://ex.com", proto::ELEMENT_TYPE_UNSPECIFIED, true},
+      {"ex.com", kWebSocket, "ws://ex.com", proto::ELEMENT_TYPE_WEBSOCKET,
+       false},
   };
 
   for (const auto& test_case : kTestCases) {

@@ -32,7 +32,7 @@ class CORE_EXPORT SubresourceFilter final
   bool allowLoad(const KURL& resourceUrl,
                  WebURLRequest::RequestContext,
                  SecurityViolationReportingPolicy);
-  bool allowWebSocketConnection(const KURL& resourceUrl);
+  bool allowWebSocketConnection(const KURL&);
 
   DEFINE_INLINE_TRACE() { visitor->trace(m_documentLoader); }
 

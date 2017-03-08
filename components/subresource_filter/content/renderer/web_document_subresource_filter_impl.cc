@@ -9,7 +9,6 @@
 #include "base/memory/ref_counted.h"
 #include "components/subresource_filter/core/common/activation_state.h"
 #include "components/subresource_filter/core/common/memory_mapped_ruleset.h"
-#include "components/subresource_filter/core/common/proto/rules.pb.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "url/gurl.h"
@@ -101,24 +100,35 @@ WebDocumentSubresourceFilterImpl::WebDocumentSubresourceFilterImpl(
       first_disallowed_load_callback_(
           std::move(first_disallowed_load_callback)) {}
 
-blink::WebDocumentSubresourceFilter::LoadPolicy
-WebDocumentSubresourceFilterImpl::getLoadPolicy(
+WebLoadPolicy WebDocumentSubresourceFilterImpl::getLoadPolicy(
     const blink::WebURL& resourceUrl,
     blink::WebURLRequest::RequestContext request_context) {
-  if (filter_.activation_state().filtering_disabled_for_document ||
-      resourceUrl.protocolIs(url::kDataScheme)) {
-    ++filter_.statistics().num_loads_total;
-    return WebLoadPolicy::Allow;
-  }
+  return getLoadPolicyImpl(resourceUrl, ToElementType(request_context));
+}
 
-  // TODO(pkalinnikov): Would be good to avoid converting to GURL.
-  return ToWebLoadPolicy(
-      filter_.GetLoadPolicy(GURL(resourceUrl), ToElementType(request_context)));
+WebLoadPolicy
+WebDocumentSubresourceFilterImpl::getLoadPolicyForWebSocketConnect(
+    const blink::WebURL& url) {
+  DCHECK(url.protocolIs("ws") || url.protocolIs("wss"));
+  return getLoadPolicyImpl(url, proto::ELEMENT_TYPE_WEBSOCKET);
 }
 
 void WebDocumentSubresourceFilterImpl::reportDisallowedLoad() {
   if (!first_disallowed_load_callback_.is_null())
     std::move(first_disallowed_load_callback_).Run();
+}
+
+WebLoadPolicy WebDocumentSubresourceFilterImpl::getLoadPolicyImpl(
+    const blink::WebURL& url,
+    proto::ElementType element_type) {
+  if (filter_.activation_state().filtering_disabled_for_document ||
+      url.protocolIs(url::kDataScheme)) {
+    ++filter_.statistics().num_loads_total;
+    return WebLoadPolicy::Allow;
+  }
+
+  // TODO(pkalinnikov): Would be good to avoid converting to GURL.
+  return ToWebLoadPolicy(filter_.GetLoadPolicy(GURL(url), element_type));
 }
 
 }  // namespace subresource_filter

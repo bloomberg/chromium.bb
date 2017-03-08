@@ -37,6 +37,10 @@ class TestDocumentSubresourceFilter : public WebDocumentSubresourceFilter {
     return m_allowLoads ? Allow : Disallow;
   }
 
+  LoadPolicy getLoadPolicyForWebSocketConnect(const WebURL& url) override {
+    return Allow;
+  }
+
   void reportDisallowedLoad() override {}
 
   const std::vector<std::string>& queriedSubresourcePaths() const {

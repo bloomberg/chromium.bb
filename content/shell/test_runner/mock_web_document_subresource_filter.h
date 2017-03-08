@@ -28,9 +28,12 @@ class MockWebDocumentSubresourceFilter
   // blink::WebDocumentSubresourceFilter:
   LoadPolicy getLoadPolicy(const blink::WebURL& resource_url,
                            blink::WebURLRequest::RequestContext) override;
+  LoadPolicy getLoadPolicyForWebSocketConnect(
+      const blink::WebURL& url) override;
   void reportDisallowedLoad() override;
 
  private:
+  LoadPolicy getLoadPolicyImpl(const blink::WebURL& url);
   std::vector<std::string> disallowed_path_suffixes_;
 
   DISALLOW_COPY_AND_ASSIGN(MockWebDocumentSubresourceFilter);

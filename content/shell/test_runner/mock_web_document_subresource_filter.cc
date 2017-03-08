@@ -21,12 +21,23 @@ MockWebDocumentSubresourceFilter::~MockWebDocumentSubresourceFilter() {}
 blink::WebDocumentSubresourceFilter::LoadPolicy
 MockWebDocumentSubresourceFilter::getLoadPolicy(
     const blink::WebURL& resource_url,
-    blink::WebURLRequest::RequestContext /* ignored */) {
-  const std::string resource_path(GURL(resource_url).path());
+    blink::WebURLRequest::RequestContext) {
+  return getLoadPolicyImpl(resource_url);
+}
+
+blink::WebDocumentSubresourceFilter::LoadPolicy
+MockWebDocumentSubresourceFilter::getLoadPolicyForWebSocketConnect(
+    const blink::WebURL& url) {
+  return getLoadPolicyImpl(url);
+}
+
+blink::WebDocumentSubresourceFilter::LoadPolicy
+MockWebDocumentSubresourceFilter::getLoadPolicyImpl(const blink::WebURL& url) {
+  const std::string path(GURL(url).path());
   return std::find_if(disallowed_path_suffixes_.begin(),
                       disallowed_path_suffixes_.end(),
-                      [&resource_path](const std::string& suffix) {
-                        return base::EndsWith(resource_path, suffix,
+                      [&path](const std::string& suffix) {
+                        return base::EndsWith(path, suffix,
                                               base::CompareCase::SENSITIVE);
                       }) == disallowed_path_suffixes_.end()
              ? Allow
