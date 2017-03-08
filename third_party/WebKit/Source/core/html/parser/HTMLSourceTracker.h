@@ -50,6 +50,8 @@ class HTMLSourceTracker {
   String sourceForToken(const HTMLToken&);
 
  private:
+  bool needToCheckTokenizerBuffer(HTMLTokenizer*);
+
   SegmentedString m_previousSource;
   SegmentedString m_currentSource;
 

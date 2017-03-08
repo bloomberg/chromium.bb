@@ -61,22 +61,6 @@ static inline bool vectorEqualsString(const Vector<LChar, 32>& vector,
   return equal(string.impl(), vector.data(), vector.size());
 }
 
-static inline bool isEndTagBufferingState(HTMLTokenizer::State state) {
-  switch (state) {
-    case HTMLTokenizer::RCDATAEndTagOpenState:
-    case HTMLTokenizer::RCDATAEndTagNameState:
-    case HTMLTokenizer::RAWTEXTEndTagOpenState:
-    case HTMLTokenizer::RAWTEXTEndTagNameState:
-    case HTMLTokenizer::ScriptDataEndTagOpenState:
-    case HTMLTokenizer::ScriptDataEndTagNameState:
-    case HTMLTokenizer::ScriptDataEscapedEndTagOpenState:
-    case HTMLTokenizer::ScriptDataEscapedEndTagNameState:
-      return true;
-    default:
-      return false;
-  }
-}
-
 #define HTML_BEGIN_STATE(stateName) BEGIN_STATE(HTMLTokenizer, stateName)
 #define HTML_RECONSUME_IN(stateName) RECONSUME_IN(HTMLTokenizer, stateName)
 #define HTML_ADVANCE_TO(stateName) ADVANCE_TO(HTMLTokenizer, stateName)

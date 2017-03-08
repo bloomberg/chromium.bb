@@ -180,6 +180,22 @@ class CORE_EXPORT HTMLTokenizer {
             m_state == HTMLTokenizer::RAWTEXTState);
   }
 
+  inline static bool isEndTagBufferingState(HTMLTokenizer::State state) {
+    switch (state) {
+      case HTMLTokenizer::RCDATAEndTagOpenState:
+      case HTMLTokenizer::RCDATAEndTagNameState:
+      case HTMLTokenizer::RAWTEXTEndTagOpenState:
+      case HTMLTokenizer::RAWTEXTEndTagNameState:
+      case HTMLTokenizer::ScriptDataEndTagOpenState:
+      case HTMLTokenizer::ScriptDataEndTagNameState:
+      case HTMLTokenizer::ScriptDataEscapedEndTagOpenState:
+      case HTMLTokenizer::ScriptDataEscapedEndTagNameState:
+        return true;
+      default:
+        return false;
+    }
+  }
+
  private:
   explicit HTMLTokenizer(const HTMLParserOptions&);
 

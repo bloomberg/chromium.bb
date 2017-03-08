@@ -37,10 +37,12 @@ void HTMLSourceTracker::start(SegmentedString& currentInput,
                               HTMLToken& token) {
   if (token.type() == HTMLToken::Uninitialized && !m_isStarted) {
     m_previousSource.clear();
-    if (tokenizer->numberOfBufferedCharacters())
+    if (needToCheckTokenizerBuffer(tokenizer) &&
+        tokenizer->numberOfBufferedCharacters())
       m_previousSource = tokenizer->bufferedCharacters();
-  } else
+  } else {
     m_previousSource.append(m_currentSource);
+  }
 
   m_isStarted = true;
   m_currentSource = currentInput;
@@ -56,8 +58,12 @@ void HTMLSourceTracker::end(SegmentedString& currentInput,
   m_cachedSourceForToken = String();
 
   // FIXME: This work should really be done by the HTMLTokenizer.
+  size_t numberOfBufferedCharacters = 0u;
+  if (needToCheckTokenizerBuffer(tokenizer)) {
+    numberOfBufferedCharacters = tokenizer->numberOfBufferedCharacters();
+  }
   token.end(currentInput.numberOfCharactersConsumed() -
-            tokenizer->numberOfBufferedCharacters());
+            numberOfBufferedCharacters);
 }
 
 String HTMLSourceTracker::sourceForToken(const HTMLToken& token) {
@@ -90,6 +96,15 @@ String HTMLSourceTracker::sourceForToken(const HTMLToken& token) {
 
   m_cachedSourceForToken = source.toString();
   return m_cachedSourceForToken;
+}
+
+bool HTMLSourceTracker::needToCheckTokenizerBuffer(HTMLTokenizer* tokenizer) {
+  HTMLTokenizer::State state = tokenizer->getState();
+  // The temporary buffer must not be used unconditionally, because in some
+  // states (e.g. ScriptDataDoubleEscapedStartState), data is appended to
+  // both the temporary buffer and the token itself.
+  return state == HTMLTokenizer::DataState ||
+         HTMLTokenizer::isEndTagBufferingState(state);
 }
 
 }  // namespace blink
