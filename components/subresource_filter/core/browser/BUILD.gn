@@ -7,7 +7,6 @@ static_library("browser") {
     "ruleset_service.cc",
     "ruleset_service.h",
     "ruleset_service_delegate.h",
-    "subresource_filter_client.h",
     "subresource_filter_constants.cc",
     "subresource_filter_constants.h",
     "subresource_filter_features.cc",

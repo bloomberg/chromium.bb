@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_SUBRESOURCE_FILTER_CHROME_SUBRESOURCE_FILTER_CLIENT_H_
 
 #include "base/macros.h"
-#include "components/subresource_filter/core/browser/subresource_filter_client.h"
+#include "components/subresource_filter/content/browser/subresource_filter_client.h"
 
 namespace content {
 class WebContents;
