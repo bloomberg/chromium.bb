@@ -376,7 +376,7 @@ deps_os = {
       Var('chromium_git') + '/external/github.com/material-foundation/material-font-disk-loader-ios.git' + '@' + '8e30188777b016182658fbaa0a4a020a48183224',
 
     'src/ios/third_party/material_roboto_font_loader_ios/src':
-      Var('chromium_git') + '/external/github.com/material-foundation/material-roboto-font-loader-ios.git' + '@' + '2e25f314512e71d3413315a20e62a4d0126671f5',
+      Var('chromium_git') + '/external/github.com/material-foundation/material-roboto-font-loader-ios.git' + '@' + 'deb87ba2179ef6458c0efbfd4304c004c637f801',
 
     'src/ios/third_party/material_sprited_animation_view_ios/src':
       Var('chromium_git') + '/external/github.com/material-foundation/material-sprited-animation-view-ios.git' + '@' + 'c6e16d06bdafd95540c62b3402d9414692fbca81',
