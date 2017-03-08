@@ -258,7 +258,9 @@ static bool isCacheableHTTPMethod(const AtomicString& method) {
   return method != "POST" && method != "PUT" && method != "DELETE";
 }
 
-bool RawResource::canReuse(const ResourceRequest& newRequest) const {
+bool RawResource::canReuse(const FetchRequest& newFetchRequest) const {
+  const ResourceRequest& newRequest = newFetchRequest.resourceRequest();
+
   if (getDataBufferingPolicy() == DoNotBufferData)
     return false;
 

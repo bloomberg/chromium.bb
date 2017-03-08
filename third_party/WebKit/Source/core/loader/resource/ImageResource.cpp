@@ -171,18 +171,17 @@ ImageResource* ImageResource::fetch(FetchRequest& request,
     return nullptr;
   }
 
-  ImageResource* resource = toImageResource(
+  return toImageResource(
       fetcher->requestResource(request, ImageResourceFactory(request)));
-  if (resource &&
-      request.placeholderImageRequestType() != FetchRequest::AllowPlaceholder &&
-      resource->shouldShowPlaceholder()) {
-    // If the image is a placeholder, but this fetch doesn't allow a
-    // placeholder, then load the original image. Note that the cache is not
-    // bypassed here - it should be fine to use a cached copy if possible.
-    resource->reloadIfLoFiOrPlaceholderImage(
-        fetcher, kReloadAlwaysWithExistingCachePolicy);
-  }
-  return resource;
+}
+
+bool ImageResource::canReuse(const FetchRequest& request) const {
+  // If the image is a placeholder, but this fetch doesn't allow a
+  // placeholder, then do not reuse this resource.
+  if (request.placeholderImageRequestType() != FetchRequest::AllowPlaceholder &&
+      m_placeholderOption != PlaceholderOption::DoNotReloadPlaceholder)
+    return false;
+  return true;
 }
 
 ImageResource* ImageResource::create(const ResourceRequest& request) {
@@ -488,8 +487,7 @@ void ImageResource::reloadIfLoFiOrPlaceholderImage(
   DCHECK(!m_isSchedulingReload);
   m_isSchedulingReload = true;
 
-  if (policy != kReloadAlwaysWithExistingCachePolicy)
-    setCachePolicyBypassingCache();
+  setCachePolicyBypassingCache();
 
   setPreviewsStateNoTransform();
 

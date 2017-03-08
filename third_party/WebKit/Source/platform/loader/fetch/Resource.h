@@ -96,7 +96,6 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
   // Used by reloadIfLoFiOrPlaceholderImage().
   enum ReloadLoFiOrPlaceholderPolicy {
     kReloadIfNeeded,
-    kReloadAlwaysWithExistingCachePolicy,
     kReloadAlways,
   };
 
@@ -308,7 +307,7 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
     m_response.addToDecodedBodyLength(value);
   }
 
-  virtual bool canReuse(const ResourceRequest&) const { return true; }
+  virtual bool canReuse(const FetchRequest&) const { return true; }
 
   // If cache-aware loading is activated, this callback is called when the first
   // disk-cache-only request failed due to cache miss. After this callback,

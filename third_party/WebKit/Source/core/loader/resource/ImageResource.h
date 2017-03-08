@@ -79,6 +79,8 @@ class CORE_EXPORT ImageResource final
 
   void allClientsAndObserversRemoved() override;
 
+  bool canReuse(const FetchRequest&) const override;
+
   PassRefPtr<const SharedBuffer> resourceBuffer() const override;
   void appendData(const char*, size_t) override;
   void error(const ResourceError&) override;

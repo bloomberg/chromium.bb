@@ -62,7 +62,7 @@ class PLATFORM_EXPORT RawResource final : public Resource {
   void setDefersLoading(bool);
 
   // Resource implementation
-  bool canReuse(const ResourceRequest&) const override;
+  bool canReuse(const FetchRequest&) const override;
   bool willFollowRedirect(const ResourceRequest&,
                           const ResourceResponse&) override;
 

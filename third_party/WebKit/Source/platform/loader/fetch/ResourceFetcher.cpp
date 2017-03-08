@@ -887,7 +887,7 @@ ResourceFetcher::determineRevalidationPolicy(Resource::Type type,
   if (isStaticData)
     return Use;
 
-  if (!existingResource->canReuse(request))
+  if (!existingResource->canReuse(fetchRequest))
     return Reload;
 
   // Certain requests (e.g., XHRs) might have manually set headers that require

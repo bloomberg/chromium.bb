@@ -1210,15 +1210,40 @@ TEST(ImageResourceTest, FetchAllowPlaceholderThenDisallowPlaceholder) {
       MockImageResourceObserver::create(imageResource->getContent());
 
   FetchRequest nonPlaceholderRequest(testURL, FetchInitiatorInfo());
-  ImageResource* secondImageResource =
+  ImageResource* imageResource2 =
       ImageResource::fetch(nonPlaceholderRequest, fetcher);
+  std::unique_ptr<MockImageResourceObserver> observer2 =
+      MockImageResourceObserver::create(imageResource2->getContent());
 
-  EXPECT_EQ(imageResource, secondImageResource);
+  ImageResource* imageResource3 =
+      ImageResource::fetch(nonPlaceholderRequest, fetcher);
+  std::unique_ptr<MockImageResourceObserver> observer3 =
+      MockImageResourceObserver::create(imageResource3->getContent());
+
+  // |imageResource| remains a placeholder, while following non-placeholder
+  // requests start non-placeholder loading with a separate ImageResource.
+  ASSERT_NE(imageResource, imageResource2);
+  ASSERT_NE(imageResource->loader(), imageResource2->loader());
+  ASSERT_NE(imageResource->getContent(), imageResource2->getContent());
+  ASSERT_EQ(imageResource2, imageResource3);
+
   EXPECT_FALSE(observer->imageNotifyFinishedCalled());
+  EXPECT_FALSE(observer2->imageNotifyFinishedCalled());
+  EXPECT_FALSE(observer3->imageNotifyFinishedCalled());
 
-  testThatReloadIsStartedThenServeReload(
-      testURL, imageResource, imageResource->getContent(), observer.get(),
-      WebCachePolicy::UseProtocolCachePolicy);
+  // Checks that |imageResource2| (and |imageResource3|) loads a
+  // non-placeholder image.
+  testThatIsNotPlaceholderRequestAndServeResponse(testURL, imageResource2,
+                                                  observer2.get());
+  EXPECT_TRUE(observer3->imageNotifyFinishedCalled());
+
+  // Checks that |imageResource| will loads a placeholder image.
+  testThatIsPlaceholderRequestAndServeResponse(testURL, imageResource,
+                                               observer.get());
+
+  // |imageResource2| is still a non-placeholder image.
+  EXPECT_FALSE(imageResource2->shouldShowPlaceholder());
+  EXPECT_TRUE(imageResource2->getContent()->getImage()->isBitmapImage());
 }
 
 TEST(ImageResourceTest,
@@ -1238,13 +1263,27 @@ TEST(ImageResourceTest,
                                                observer.get());
 
   FetchRequest nonPlaceholderRequest(testURL, FetchInitiatorInfo());
-  ImageResource* secondImageResource =
+  ImageResource* imageResource2 =
       ImageResource::fetch(nonPlaceholderRequest, fetcher);
-  EXPECT_EQ(imageResource, secondImageResource);
+  std::unique_ptr<MockImageResourceObserver> observer2 =
+      MockImageResourceObserver::create(imageResource2->getContent());
 
-  testThatReloadIsStartedThenServeReload(
-      testURL, imageResource, imageResource->getContent(), observer.get(),
-      WebCachePolicy::UseProtocolCachePolicy);
+  ImageResource* imageResource3 =
+      ImageResource::fetch(nonPlaceholderRequest, fetcher);
+  std::unique_ptr<MockImageResourceObserver> observer3 =
+      MockImageResourceObserver::create(imageResource3->getContent());
+
+  EXPECT_FALSE(observer2->imageNotifyFinishedCalled());
+  EXPECT_FALSE(observer3->imageNotifyFinishedCalled());
+
+  // |imageResource| remains a placeholder, while following non-placeholder
+  // requests start non-placeholder loading with a separate ImageResource.
+  ASSERT_NE(imageResource, imageResource2);
+  ASSERT_EQ(imageResource2, imageResource3);
+
+  testThatIsNotPlaceholderRequestAndServeResponse(testURL, imageResource2,
+                                                  observer2.get());
+  EXPECT_TRUE(observer3->imageNotifyFinishedCalled());
 }
 
 TEST(ImageResourceTest, FetchAllowPlaceholderFullResponseDecodeSuccess) {
