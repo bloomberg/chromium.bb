@@ -12,6 +12,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "chrome/browser/android/vr_shell/mailbox_to_surface_bridge.h"
 #include "chrome/browser/android/vr_shell/ui_elements.h"
 #include "chrome/browser/android/vr_shell/ui_scene.h"
 #include "chrome/browser/android/vr_shell/vr_controller.h"
@@ -80,9 +81,12 @@ static constexpr int kViewportListHeadlockedOffset = 2;
 // 2-3 frames.
 static constexpr unsigned kPoseRingBufferSize = 8;
 
-// Magic numbers used to mark valid pose index values encoded in frame
-// data. Must match the magic numbers used in blink's VRDisplay.cpp.
-static constexpr std::array<uint8_t, 2> kWebVrPosePixelMagicNumbers{{42, 142}};
+// Default downscale factor for computing the recommended WebVR
+// renderWidth/Height from the 1:1 pixel mapped size. Using a rather
+// aggressive downscale due to the high overhead of copying pixels
+// twice before handing off to GVR. For comparison, the polyfill
+// uses approximately 0.55 on a Pixel XL.
+static constexpr float kWebVrRecommendedResolutionScale = 0.5;
 
 float Distance(const gvr::Vec3f& vec1, const gvr::Vec3f& vec2) {
   float xdiff = (vec1.x - vec2.x);
@@ -172,6 +176,12 @@ VrShellGl::VrShellGl(
 
 VrShellGl::~VrShellGl() {
   vsync_task_.Cancel();
+  // TODO(mthiesse): Can we omit the Close() here? Concern is that if
+  // both ends of the connection ever live in the same process for
+  // some reason, we could receive another VSync request in response
+  // to the closing message in the destructor but fail to respond to
+  // the callback.
+  binding_.Close();
   if (!callback_.is_null()) {
     // When this VSync provider is going away we have to respond to pending
     // callbacks, so instead of providing a VSync, tell the requester to try
@@ -179,13 +189,7 @@ VrShellGl::~VrShellGl() {
     // to this message will go through some other VSyncProvider.
     base::ResetAndReturn(&callback_)
         .Run(nullptr, base::TimeDelta(), -1,
-             device::mojom::VRVSyncProvider::Status::RETRY);
-  }
-  if (binding_.is_bound()) {
-    main_thread_task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(&VrShellDelegate::OnVRVsyncProviderRequest,
-                   delegate_provider_, base::Passed(binding_.Unbind())));
+             device::mojom::VRVSyncProvider::Status::CLOSING);
   }
 }
 
@@ -232,23 +236,47 @@ void VrShellGl::InitializeGl(gfx::AcceleratedWidget window) {
     return;
   }
 
-  unsigned int textures[2];
-  glGenTextures(2, textures);
+  unsigned int textures[3];
+  glGenTextures(3, textures);
   ui_texture_id_ = textures[0];
   content_texture_id_ = textures[1];
+  webvr_texture_id_ = textures[2];
   ui_surface_texture_ = gl::SurfaceTexture::Create(ui_texture_id_);
   content_surface_texture_ = gl::SurfaceTexture::Create(content_texture_id_);
+  webvr_surface_texture_ = gl::SurfaceTexture::Create(webvr_texture_id_);
   CreateUiSurface();
   CreateContentSurface();
   ui_surface_texture_->SetFrameAvailableCallback(base::Bind(
       &VrShellGl::OnUIFrameAvailable, weak_ptr_factory_.GetWeakPtr()));
   content_surface_texture_->SetFrameAvailableCallback(base::Bind(
       &VrShellGl::OnContentFrameAvailable, weak_ptr_factory_.GetWeakPtr()));
-  content_surface_texture_->SetDefaultBufferSize(
-      content_tex_physical_size_.width, content_tex_physical_size_.height);
+  webvr_surface_texture_->SetFrameAvailableCallback(base::Bind(
+      &VrShellGl::OnWebVRFrameAvailable, weak_ptr_factory_.GetWeakPtr()));
   ui_surface_texture_->SetDefaultBufferSize(ui_tex_physical_size_.width,
                                             ui_tex_physical_size_.height);
+  content_surface_texture_->SetDefaultBufferSize(
+      content_tex_physical_size_.width, content_tex_physical_size_.height);
   InitializeRenderer();
+
+  // Pick a reasonable default size for the WebVR transfer surface
+  // based on a downscaled 1:1 render resolution. This size will also
+  // be reported to the client via CreateVRDisplayInfo as the
+  // client-recommended renderWidth/renderHeight and for the GVR
+  // framebuffer. If the client chooses a different size or resizes it
+  // while presenting, we'll resize the transfer surface and GVR
+  // framebuffer to match.
+  gvr::Sizei render_target_size =
+      gvr_api_->GetMaximumEffectiveRenderTargetSize();
+  gvr::Sizei webvr_size = {static_cast<int>(render_target_size.width *
+                                            kWebVrRecommendedResolutionScale),
+                           static_cast<int>(render_target_size.height *
+                                            kWebVrRecommendedResolutionScale)};
+
+  // TODO(klausw,crbug.com/699350): should we round the recommended
+  // size to a multiple of 2^N pixels to be friendlier to the GPU? The
+  // exact size doesn't matter.
+
+  CreateOrResizeWebVRSurface(webvr_size);
 
   vsync_task_.Reset(base::Bind(&VrShellGl::OnVSync, base::Unretained(this)));
   OnVSync();
@@ -272,6 +300,73 @@ void VrShellGl::CreateUiSurface() {
                             ui_surface_->j_surface().obj()));
 }
 
+void VrShellGl::CreateOrResizeWebVRSurface(const gvr::Sizei& size) {
+  if (!webvr_surface_texture_) {
+    DLOG(ERROR) << "No WebVR surface texture available";
+    return;
+  }
+
+  // ContentPhysicalBoundsChanged is getting called twice with
+  // identical sizes? Avoid thrashing the existing context.
+  if (size == webvr_surface_size_) {
+    return;
+  }
+
+  if (!size.width || !size.height) {
+    // Invalid size, defer until a new size arrives on a future bounds update.
+    return;
+  }
+
+  webvr_surface_texture_->SetDefaultBufferSize(size.width, size.height);
+  webvr_surface_size_ = size;
+
+  if (mailbox_bridge_) {
+    mailbox_bridge_->ResizeSurface(size.width, size.height);
+  } else {
+    mailbox_bridge_ = base::MakeUnique<MailboxToSurfaceBridge>();
+    mailbox_bridge_->CreateSurface(webvr_surface_texture_.get());
+  }
+}
+
+void VrShellGl::SubmitWebVRFrame(int16_t frame_index,
+                                 const gpu::MailboxHolder& mailbox) {
+  TRACE_EVENT0("gpu", "VrShellGl::SubmitWebVRFrame");
+
+  // Swapping twice on a Surface without calling updateTexImage in
+  // between can lose frames, so don't draw+swap if we already have
+  // a pending frame we haven't consumed yet.
+  bool swapped = false;
+  if (pending_frames_.empty()) {
+    swapped = mailbox_bridge_->CopyMailboxToSurfaceAndSwap(mailbox);
+    if (swapped) {
+      // Tell OnWebVRFrameAvailable to expect a new frame to arrive on
+      // the SurfaceTexture, and save the associated frame index.
+      pending_frames_.emplace(frame_index);
+    }
+  }
+  // Always notify the client that we're done with the mailbox even
+  // if we haven't drawn it, so that it's eligible for destruction.
+  submit_client_->OnSubmitFrameTransferred();
+  if (!swapped) {
+    // We dropped without drawing, report this as completed rendering
+    // now to unblock the client. We're not going to receive it in
+    // OnWebVRFrameAvailable where we'd normally report that.
+    submit_client_->OnSubmitFrameRendered();
+  }
+
+  TRACE_EVENT0("gpu", "VrShellGl::glFinish");
+  // This is a load-bearing glFinish, please don't remove it without
+  // before/after timing comparisons. Goal is to clear the GPU queue
+  // of the native GL context to avoid stalls later in GVR frame
+  // acquire/submit.
+  glFinish();
+}
+
+void VrShellGl::SetSubmitClient(
+    device::mojom::VRSubmitFrameClientPtrInfo submit_client_info) {
+  submit_client_.Bind(std::move(submit_client_info));
+}
+
 void VrShellGl::OnUIFrameAvailable() {
   ui_surface_texture_->UpdateTexImage();
 }
@@ -281,42 +376,30 @@ void VrShellGl::OnContentFrameAvailable() {
   received_frame_ = true;
 }
 
-bool VrShellGl::GetPixelEncodedFrameIndex(uint16_t* frame_index) {
-  TRACE_EVENT0("gpu", "VrShellGl::GetPixelEncodedFrameIndex");
-  if (!received_frame_) {
-    if (last_frame_index_ == (uint16_t)-1)
-      return false;
-    *frame_index = last_frame_index_;
-    return true;
+void VrShellGl::OnWebVRFrameAvailable() {
+  // A "while" loop here is a bad idea. It's legal to call
+  // UpdateTexImage repeatedly even if no frames are available, but
+  // that does *not* wait for a new frame, it just reuses the most
+  // recent one. That would mess up the count.
+  if (pending_frames_.empty()) {
+    // We're expecting a frame, but it's not here yet. Retry in OnVsync.
+    ++premature_received_frames_;
+    return;
   }
-  received_frame_ = false;
 
-  // Read the pose index encoded in a bottom left pixel as color values.
-  // See also third_party/WebKit/Source/modules/vr/VRDisplay.cpp which
-  // encodes the pose index, and device/vr/android/gvr/gvr_device.cc
-  // which tracks poses. Returns the low byte (0..255) if valid, or -1
-  // if not valid due to bad magic number.
-  uint8_t pixels[4];
-  // Assume we're reading from the framebuffer we just wrote to.
-  // That's true currently, we may need to use glReadBuffer(GL_BACK)
-  // or equivalent if the rendering setup changes in the future.
-  glReadPixels(0, 0, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+  webvr_surface_texture_->UpdateTexImage();
+  int frame_index = pending_frames_.front();
+  TRACE_EVENT1("gpu", "VrShellGl::OnWebVRFrameAvailable", "frame", frame_index);
+  pending_frames_.pop();
 
-  // Check for the magic number written by VRDevice.cpp on submit.
-  // This helps avoid glitches from garbage data in the render
-  // buffer that can appear during initialization or resizing. These
-  // often appear as flashes of all-black or all-white pixels.
-  if (pixels[1] == kWebVrPosePixelMagicNumbers[0] &&
-      pixels[2] == kWebVrPosePixelMagicNumbers[1]) {
-    // Pose is good.
-    *frame_index = pixels[0];
-    last_frame_index_ = pixels[0];
-    return true;
-  }
-  VLOG(1) << "WebVR: reject decoded pose index " << static_cast<int>(pixels[0])
-          << ", bad magic number " << static_cast<int>(pixels[1]) << ", "
-          << static_cast<int>(pixels[2]);
-  return false;
+  // It is legal for the WebVR client to submit a new frame now, since
+  // we've consumed the image. TODO(klausw): would timing be better if
+  // we move the "rendered" notification after draw, or suppress
+  // the next vsync until that's done?
+
+  submit_client_->OnSubmitFrameRendered();
+
+  DrawFrame(frame_index);
 }
 
 void VrShellGl::GvrInit(gvr_context* gvr_api) {
@@ -341,12 +424,6 @@ void VrShellGl::GvrInit(gvr_context* gvr_api) {
 }
 
 void VrShellGl::InitializeRenderer() {
-  // While WebVR is going through the compositor path, it shares
-  // the same texture ID. This will change once it gets its own
-  // surface, but store it separately to avoid future confusion.
-  // TODO(klausw,crbug.com/655722): remove this.
-  webvr_texture_id_ = content_texture_id_;
-
   gvr_api_->InitializeGl();
   webvr_head_pose_.assign(kPoseRingBufferSize,
                           gvr_api_->GetHeadSpaceFromStartSpaceRotation(
@@ -356,6 +433,7 @@ void VrShellGl::InitializeRenderer() {
   // For kFramePrimaryBuffer (primary VrShell and WebVR content)
   specs.push_back(gvr_api_->CreateBufferSpec());
   render_size_primary_ = specs[kFramePrimaryBuffer].GetSize();
+  render_size_vrshell_ = render_size_primary_;
 
   // For kFrameHeadlockedBuffer (for WebVR insecure content warning).
   // Set this up at fixed resolution, the (smaller) FOV gets set below.
@@ -632,15 +710,33 @@ void VrShellGl::SendGesture(InputTarget input_target,
       base::Bind(target, weak_vr_shell_, base::Passed(std::move(event))));
 }
 
-void VrShellGl::DrawFrame() {
-  TRACE_EVENT0("gpu", "VrShellGl::DrawFrame");
+void VrShellGl::DrawFrame(int16_t frame_index) {
+  TRACE_EVENT1("gpu", "VrShellGl::DrawFrame", "frame", frame_index);
 
   // Reset the viewport list to just the pair of viewports for the
   // primary buffer each frame. Head-locked viewports get added by
   // DrawVrShell if needed.
   buffer_viewport_list_->SetToRecommendedBufferViewports();
 
+  // If needed, resize the primary buffer for use with WebVR.
+  if (web_vr_mode_) {
+    if (render_size_primary_ != webvr_surface_size_) {
+      if (!webvr_surface_size_.width) {
+        return;
+      }
+      render_size_primary_ = webvr_surface_size_;
+      swap_chain_->ResizeBuffer(kFramePrimaryBuffer, render_size_primary_);
+    }
+  } else {
+    if (render_size_primary_ != render_size_vrshell_) {
+      render_size_primary_ = render_size_vrshell_;
+      swap_chain_->ResizeBuffer(kFramePrimaryBuffer, render_size_primary_);
+    }
+  }
+
+  TRACE_EVENT_BEGIN0("gpu", "VrShellGl::AcquireFrame");
   gvr::Frame frame = swap_chain_->AcquireFrame();
+  TRACE_EVENT_END0("gpu", "VrShellGl::AcquireFrame");
   if (!frame.is_valid()) {
     return;
   }
@@ -649,18 +745,12 @@ void VrShellGl::DrawFrame() {
     DrawWebVr();
   }
 
-  uint16_t frame_index;
   gvr::Mat4f head_pose;
 
   // When using async reprojection, we need to know which pose was used in
-  // the WebVR app for drawing this frame. Due to unknown amounts of
-  // buffering in the compositor and SurfaceTexture, we read the pose number
-  // from a corner pixel. There's no point in doing this for legacy
-  // distortion rendering since that doesn't need a pose, and reading back
-  // pixels is an expensive operation. TODO(klausw,crbug.com/655722): stop
-  // doing this once we have working no-compositor rendering for WebVR.
-  if (web_vr_mode_ && gvr_api_->GetAsyncReprojectionEnabled() &&
-      GetPixelEncodedFrameIndex(&frame_index)) {
+  // the WebVR app for drawing this frame. Only needed if reprojection is
+  // in use.
+  if (web_vr_mode_ && gvr_api_->GetAsyncReprojectionEnabled()) {
     static_assert(!((kPoseRingBufferSize - 1) & kPoseRingBufferSize),
                   "kPoseRingBufferSize must be a power of 2");
     head_pose = webvr_head_pose_[frame_index % kPoseRingBufferSize];
@@ -684,9 +774,10 @@ void VrShellGl::DrawFrame() {
       if (index > frame_index && index <= frame_index + kPoseRingBufferSize)
         break;
 
-      const BoundsPair& bounds = pending_bounds_.front().second;
-      webvr_left_viewport_->SetSourceUv(bounds.first);
-      webvr_right_viewport_->SetSourceUv(bounds.second);
+      const WebVrBounds& bounds = pending_bounds_.front().second;
+      webvr_left_viewport_->SetSourceUv(bounds.left_bounds);
+      webvr_right_viewport_->SetSourceUv(bounds.right_bounds);
+      CreateOrResizeWebVRSurface(bounds.source_size);
       pending_bounds_.pop();
     }
     buffer_viewport_list_->SetBufferViewport(GVR_LEFT_EYE,
@@ -712,21 +803,31 @@ void VrShellGl::DrawFrame() {
   // Update the render position of all UI elements (including desktop).
   scene_->UpdateTransforms(TimeInMicroseconds());
 
-  UpdateController(GetForwardVector(head_pose));
+  {
+    TRACE_EVENT0("gpu", "VrShellGl::UpdateController");
+    UpdateController(GetForwardVector(head_pose));
+  }
 
-  DrawVrShell(head_pose, frame);
+  // Finish drawing in the primary buffer, and draw the headlocked buffer
+  // if needed. This must be the last drawing call, this method will
+  // return with no frame being bound.
+  DrawVrShellAndUnbind(head_pose, frame);
 
-  frame.Unbind();
-  frame.Submit(*buffer_viewport_list_, head_pose);
+  {
+    TRACE_EVENT0("gpu", "VrShellGl::Submit");
+    frame.Submit(*buffer_viewport_list_, head_pose);
+  }
 
   // No need to swap buffers for surfaceless rendering.
   if (!surfaceless_rendering_) {
     // TODO(mthiesse): Support asynchronous SwapBuffers.
+    TRACE_EVENT0("gpu", "VrShellGl::SwapBuffers");
     surface_->SwapBuffers();
   }
 }
 
-void VrShellGl::DrawVrShell(const gvr::Mat4f& head_pose, gvr::Frame& frame) {
+void VrShellGl::DrawVrShellAndUnbind(const gvr::Mat4f& head_pose,
+                                     gvr::Frame& frame) {
   TRACE_EVENT0("gpu", "VrShellGl::DrawVrShell");
   std::vector<const ContentRectangle*> head_locked_elements;
   std::vector<const ContentRectangle*> world_elements;
@@ -763,6 +864,7 @@ void VrShellGl::DrawVrShell(const gvr::Mat4f& head_pose, gvr::Frame& frame) {
     DrawUiView(&head_pose, world_elements, render_size_primary_,
                kViewportListPrimaryOffset);
   }
+  frame.Unbind();  // Done with the primary buffer.
 
   if (!head_locked_elements.empty()) {
     // Add head-locked viewports. The list gets reset to just
@@ -775,21 +877,13 @@ void VrShellGl::DrawVrShell(const gvr::Mat4f& head_pose, gvr::Frame& frame) {
         *headlocked_right_viewport_);
 
     // Bind the headlocked framebuffer.
-    // TODO(mthiesse): We don't unbind this? Maybe some cleanup is in order
-    // here.
     frame.BindBuffer(kFrameHeadlockedBuffer);
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     DrawUiView(nullptr, head_locked_elements, render_size_headlocked_,
                kViewportListHeadlockedOffset);
+    frame.Unbind();  // Done with the headlocked buffer.
   }
-}
-
-gvr::Sizei VrShellGl::GetWebVRCompositorSurfaceSize() {
-  // This is a stopgap while we're using the WebVR compositor rendering path.
-  // TODO(klausw,crbug.com/655722): Remove this method and member once we're
-  // using a separate WebVR render surface.
-  return content_tex_physical_size_;
 }
 
 void VrShellGl::DrawUiView(const gvr::Mat4f* head_pose,
@@ -998,7 +1092,7 @@ void VrShellGl::DrawWebVr() {
   glDisable(GL_BLEND);
   glDisable(GL_POLYGON_OFFSET_FILL);
 
-  glViewport(0, 0, render_size_primary_.width, render_size_primary_.height);
+  glViewport(0, 0, webvr_surface_size_.width, webvr_surface_size_.height);
   vr_shell_renderer_->GetWebVrRenderer()->Draw(webvr_texture_id_);
 }
 
@@ -1029,13 +1123,14 @@ void VrShellGl::SetWebVrMode(bool enabled) {
 
 void VrShellGl::UpdateWebVRTextureBounds(int16_t frame_index,
                                          const gvr::Rectf& left_bounds,
-                                         const gvr::Rectf& right_bounds) {
+                                         const gvr::Rectf& right_bounds,
+                                         const gvr::Sizei& source_size) {
   if (frame_index < 0) {
     webvr_left_viewport_->SetSourceUv(left_bounds);
     webvr_right_viewport_->SetSourceUv(right_bounds);
   } else {
     pending_bounds_.emplace(
-        std::make_pair(frame_index, std::make_pair(left_bounds, right_bounds)));
+        frame_index, WebVrBounds(left_bounds, right_bounds, source_size));
   }
 }
 
@@ -1069,6 +1164,12 @@ base::WeakPtr<VrShellGl> VrShellGl::GetWeakPtr() {
 }
 
 void VrShellGl::OnVSync() {
+  while (premature_received_frames_ > 0) {
+    TRACE_EVENT0("gpu", "VrShellGl::OnWebVRFrameAvailableRetry");
+    --premature_received_frames_;
+    OnWebVRFrameAvailable();
+  }
+
   base::TimeTicks now = base::TimeTicks::Now();
   base::TimeTicks target;
 
@@ -1088,7 +1189,9 @@ void VrShellGl::OnVSync() {
     pending_vsync_ = true;
     pending_time_ = time;
   }
-  DrawFrame();
+  if (!web_vr_mode_) {
+    DrawFrame(-1);
+  }
 }
 
 void VrShellGl::OnRequest(device::mojom::VRVSyncProviderRequest request) {
@@ -1158,8 +1261,11 @@ void VrShellGl::ResetPose() {
 void VrShellGl::CreateVRDisplayInfo(
     const base::Callback<void(device::mojom::VRDisplayInfoPtr)>& callback,
     uint32_t device_id) {
+  // This assumes that the initial webvr_surface_size_ was set to the
+  // appropriate recommended render resolution as the default size during
+  // InitializeGl. Revisit if the initialization order changes.
   device::mojom::VRDisplayInfoPtr info = VrShell::CreateVRDisplayInfo(
-      gvr_api_.get(), content_tex_physical_size_, device_id);
+      gvr_api_.get(), webvr_surface_size_, device_id);
   main_thread_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&RunVRDisplayInfoCallback, callback, base::Passed(&info)));

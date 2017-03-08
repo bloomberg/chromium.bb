@@ -40,8 +40,9 @@ void GvrDevice::ResetPose() {
     delegate->ResetPose();
 }
 
-void GvrDevice::RequestPresent(const base::Callback<void(bool)>& callback) {
-  gvr_provider_->RequestPresent(callback);
+void GvrDevice::RequestPresent(mojom::VRSubmitFrameClientPtr submit_client,
+                               const base::Callback<void(bool)>& callback) {
+  gvr_provider_->RequestPresent(std::move(submit_client), callback);
 }
 
 void GvrDevice::SetSecureOrigin(bool secure_origin) {
@@ -56,15 +57,19 @@ void GvrDevice::ExitPresent() {
   OnExitPresent();
 }
 
-void GvrDevice::SubmitFrame(mojom::VRPosePtr pose) {
+void GvrDevice::SubmitFrame(int16_t frame_index,
+                            const gpu::MailboxHolder& mailbox) {
   GvrDelegate* delegate = GetGvrDelegate();
-  if (delegate)
-    delegate->SubmitWebVRFrame();
+  if (delegate) {
+    delegate->SubmitWebVRFrame(frame_index, mailbox);
+  }
 }
 
 void GvrDevice::UpdateLayerBounds(int16_t frame_index,
                                   mojom::VRLayerBoundsPtr left_bounds,
-                                  mojom::VRLayerBoundsPtr right_bounds) {
+                                  mojom::VRLayerBoundsPtr right_bounds,
+                                  int16_t source_width,
+                                  int16_t source_height) {
   GvrDelegate* delegate = GetGvrDelegate();
   if (!delegate)
     return;
@@ -81,8 +86,9 @@ void GvrDevice::UpdateLayerBounds(int16_t frame_index,
   right_gvr_bounds.right = right_bounds->left + right_bounds->width;
   right_gvr_bounds.bottom = 1.0f - (right_bounds->top + right_bounds->height);
 
+  gvr::Sizei source_size = {source_width, source_height};
   delegate->UpdateWebVRTextureBounds(frame_index, left_gvr_bounds,
-                                     right_gvr_bounds);
+                                     right_gvr_bounds, source_size);
 }
 
 void GvrDevice::GetVRVSyncProvider(mojom::VRVSyncProviderRequest request) {
@@ -103,7 +109,7 @@ void GvrDevice::OnDelegateChanged() {
 }
 
 GvrDelegate* GvrDevice::GetGvrDelegate() {
-  GvrDelegateProvider* delegate_provider = GvrDelegateProvider::GetInstance();
+  GvrDelegateProvider* delegate_provider = gvr_provider_->GetDelegateProvider();
   if (delegate_provider)
     return delegate_provider->GetDelegate();
   return nullptr;

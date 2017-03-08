@@ -37,14 +37,27 @@ class ScopedJavaSurface;
 class SurfaceTexture;
 }
 
+namespace gpu {
+struct MailboxHolder;
+}
+
 namespace vr_shell {
 
+class MailboxToSurfaceBridge;
 class UiScene;
 class VrController;
 class VrShell;
 class VrShellDelegate;
 class VrShellRenderer;
 struct ContentRectangle;
+
+struct WebVrBounds {
+  WebVrBounds(gvr::Rectf left, gvr::Rectf right, gvr::Sizei size)
+      : left_bounds(left), right_bounds(right), source_size(size) {}
+  gvr::Rectf left_bounds;
+  gvr::Rectf right_bounds;
+  gvr::Sizei source_size;
+};
 
 // This class manages all GLThread owned objects and GL rendering for VrShell.
 // It is not threadsafe and must only be used on the GL thread.
@@ -72,6 +85,7 @@ class VrShellGl : public device::mojom::VRVSyncProvider {
   void OnResume();
 
   void SetWebVrMode(bool enabled);
+  void CreateOrResizeWebVRSurface(const gvr::Sizei& size);
   void CreateContentSurface();
   void ContentBoundsChanged(int width, int height);
   void ContentPhysicalBoundsChanged(int width, int height);
@@ -81,8 +95,8 @@ class VrShellGl : public device::mojom::VRVSyncProvider {
 
   void UpdateWebVRTextureBounds(int16_t frame_index,
                                 const gvr::Rectf& left_bounds,
-                                const gvr::Rectf& right_bounds);
-  gvr::Sizei GetWebVRCompositorSurfaceSize();
+                                const gvr::Rectf& right_bounds,
+                                const gvr::Sizei& source_size);
 
   void UpdateScene(std::unique_ptr<base::ListValue> commands);
 
@@ -93,12 +107,15 @@ class VrShellGl : public device::mojom::VRVSyncProvider {
   void CreateVRDisplayInfo(
       const base::Callback<void(device::mojom::VRDisplayInfoPtr)>& callback,
       uint32_t device_id);
+  void SubmitWebVRFrame(int16_t frame_index, const gpu::MailboxHolder& mailbox);
+  void SetSubmitClient(
+      device::mojom::VRSubmitFrameClientPtrInfo submit_client_info);
 
  private:
   void GvrInit(gvr_context* gvr_api);
   void InitializeRenderer();
-  void DrawFrame();
-  void DrawVrShell(const gvr::Mat4f& head_pose, gvr::Frame& frame);
+  void DrawFrame(int16_t frame_index);
+  void DrawVrShellAndUnbind(const gvr::Mat4f& head_pose, gvr::Frame& frame);
   void DrawUiView(const gvr::Mat4f* head_pose,
                   const std::vector<const ContentRectangle*>& elements,
                   const gvr::Sizei& render_size,
@@ -120,6 +137,7 @@ class VrShellGl : public device::mojom::VRVSyncProvider {
   void CreateUiSurface();
   void OnUIFrameAvailable();
   void OnContentFrameAvailable();
+  void OnWebVRFrameAvailable();
   bool GetPixelEncodedFrameIndex(uint16_t* frame_index);
 
   void OnVSync();
@@ -135,6 +153,8 @@ class VrShellGl : public device::mojom::VRVSyncProvider {
   int ui_texture_id_ = 0;
   // samplerExternalOES texture data for main content image.
   int content_texture_id_ = 0;
+  // samplerExternalOES texture data for WebVR content image.
+  int webvr_texture_id_ = 0;
 
   std::unique_ptr<UiScene> scene_;
 
@@ -142,6 +162,7 @@ class VrShellGl : public device::mojom::VRVSyncProvider {
   scoped_refptr<gl::GLContext> context_;
   scoped_refptr<gl::SurfaceTexture> ui_surface_texture_;
   scoped_refptr<gl::SurfaceTexture> content_surface_texture_;
+  scoped_refptr<gl::SurfaceTexture> webvr_surface_texture_;
 
   std::unique_ptr<gl::ScopedJavaSurface> ui_surface_;
   std::unique_ptr<gl::ScopedJavaSurface> content_surface_;
@@ -154,12 +175,18 @@ class VrShellGl : public device::mojom::VRVSyncProvider {
   std::unique_ptr<gvr::BufferViewport> webvr_left_viewport_;
   std::unique_ptr<gvr::BufferViewport> webvr_right_viewport_;
   std::unique_ptr<gvr::SwapChain> swap_chain_;
-  using BoundsPair = std::pair<gvr::Rectf, gvr::Rectf>;
-  std::queue<std::pair<uint8_t, BoundsPair>> pending_bounds_;
+  std::queue<std::pair<uint8_t, WebVrBounds>> pending_bounds_;
+  int premature_received_frames_ = 0;
+  std::queue<uint16_t> pending_frames_;
+  std::unique_ptr<MailboxToSurfaceBridge> mailbox_bridge_;
 
   // Current sizes for the render buffers.
   gvr::Sizei render_size_primary_;
   gvr::Sizei render_size_headlocked_;
+
+  // Intended render_size_primary_ for use by VrShell, so that it
+  // can be restored after exiting WebVR mode.
+  gvr::Sizei render_size_vrshell_;
 
   std::unique_ptr<VrShellRenderer> vr_shell_renderer_;
 
@@ -175,10 +202,10 @@ class VrShellGl : public device::mojom::VRVSyncProvider {
   int content_tex_css_width_ = 0;
   int content_tex_css_height_ = 0;
   gvr::Sizei content_tex_physical_size_ = {0, 0};
+  gvr::Sizei webvr_surface_size_ = {0, 0};
   gvr::Sizei ui_tex_physical_size_ = {0, 0};
 
   std::vector<gvr::Mat4f> webvr_head_pose_;
-  int webvr_texture_id_ = 0;
   bool web_vr_mode_;
   bool ready_to_draw_ = false;
   bool surfaceless_rendering_;
@@ -195,6 +222,7 @@ class VrShellGl : public device::mojom::VRVSyncProvider {
   GetVSyncCallback callback_;
   bool received_frame_ = false;
   mojo::Binding<device::mojom::VRVSyncProvider> binding_;
+  device::mojom::VRSubmitFrameClientPtr submit_client_;
 
   base::WeakPtr<VrShell> weak_vr_shell_;
   base::WeakPtr<VrShellDelegate> delegate_provider_;

@@ -17,10 +17,12 @@ constexpr gvr::Sizei kInvalidRenderTargetSize = {0, 0};
 class DEVICE_VR_EXPORT GvrDelegate {
  public:
   virtual void SetWebVRSecureOrigin(bool secure_origin) = 0;
-  virtual void SubmitWebVRFrame() = 0;
+  virtual void SubmitWebVRFrame(int16_t frame_index,
+                                const gpu::MailboxHolder& mailbox) = 0;
   virtual void UpdateWebVRTextureBounds(int16_t frame_index,
                                         const gvr::Rectf& left_bounds,
-                                        const gvr::Rectf& right_bounds) = 0;
+                                        const gvr::Rectf& right_bounds,
+                                        const gvr::Sizei& source_size) = 0;
   virtual void OnVRVsyncProviderRequest(
       mojom::VRVSyncProviderRequest request) = 0;
   virtual void UpdateVSyncInterval(int64_t timebase_nanos,
@@ -44,6 +46,7 @@ class DEVICE_VR_EXPORT GvrDelegateProvider {
   virtual void SetDeviceProvider(GvrDeviceProvider* device_provider) = 0;
   virtual void ClearDeviceProvider() = 0;
   virtual void RequestWebVRPresent(
+      mojom::VRSubmitFrameClientPtr submit_client,
       const base::Callback<void(bool)>& callback) = 0;
   virtual void ExitWebVRPresent() = 0;
   virtual GvrDelegate* GetDelegate() = 0;

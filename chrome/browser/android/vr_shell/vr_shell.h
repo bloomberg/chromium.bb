@@ -32,6 +32,10 @@ namespace content {
 class WebContents;
 }
 
+namespace gpu {
+struct MailboxHolder;
+}
+
 namespace ui {
 class WindowAndroid;
 }
@@ -173,7 +177,7 @@ class VrShell : public device::GvrDelegate, content::WebContentsObserver {
   static device::mojom::VRPosePtr VRPosePtrFromGvrPose(gvr::Mat4f head_mat);
   static device::mojom::VRDisplayInfoPtr CreateVRDisplayInfo(
       gvr::GvrApi* gvr_api,
-      gvr::Sizei compositor_size,
+      gvr::Sizei recommended_size,
       uint32_t device_id);
 
  private:
@@ -190,10 +194,12 @@ class VrShell : public device::GvrDelegate, content::WebContentsObserver {
 
   // device::GvrDelegate implementation
   void SetWebVRSecureOrigin(bool secure_origin) override;
-  void SubmitWebVRFrame() override;
+  void SubmitWebVRFrame(int16_t frame_index,
+                        const gpu::MailboxHolder& mailbox) override;
   void UpdateWebVRTextureBounds(int16_t frame_index,
                                 const gvr::Rectf& left_bounds,
-                                const gvr::Rectf& right_bounds) override;
+                                const gvr::Rectf& right_bounds,
+                                const gvr::Sizei& source_size) override;
   void OnVRVsyncProviderRequest(
       device::mojom::VRVSyncProviderRequest request) override;
   void UpdateVSyncInterval(int64_t timebase_nanos,

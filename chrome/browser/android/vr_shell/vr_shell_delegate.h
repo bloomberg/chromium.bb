@@ -49,16 +49,17 @@ class VrShellDelegate : public device::GvrDelegateProvider {
   void Destroy(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
   void ShowTab(int id);
   void OpenNewTab(bool incognito);
+  device::mojom::VRSubmitFrameClientPtr TakeSubmitFrameClient();
 
   device::GvrDeviceProvider* device_provider() { return device_provider_; }
-  void OnVRVsyncProviderRequest(device::mojom::VRVSyncProviderRequest request);
   base::WeakPtr<VrShellDelegate> GetWeakPtr();
 
  private:
   // device::GvrDelegateProvider implementation
   void SetDeviceProvider(device::GvrDeviceProvider* device_provider) override;
   void ClearDeviceProvider() override;
-  void RequestWebVRPresent(const base::Callback<void(bool)>& callback) override;
+  void RequestWebVRPresent(device::mojom::VRSubmitFrameClientPtr submit_client,
+                           const base::Callback<void(bool)>& callback) override;
   void ExitWebVRPresent() override;
   device::GvrDelegate* GetDelegate() override;
   void SetListeningForActivate(bool listening) override;
@@ -72,10 +73,7 @@ class VrShellDelegate : public device::GvrDelegateProvider {
   base::Callback<void(bool)> present_callback_;
   int64_t timebase_nanos_ = 0;
   double interval_seconds_ = 0;
-
-  // TODO(mthiesse): Remove the need for this to be stored here.
-  // crbug.com/674594
-  gvr_context* context_ = nullptr;
+  device::mojom::VRSubmitFrameClientPtr submit_client_;
 
   base::WeakPtrFactory<VrShellDelegate> weak_ptr_factory_;
 
