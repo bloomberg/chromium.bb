@@ -55,6 +55,9 @@ class BookmarkNode;
                    image:(NSImage*)image
           menuController:(BookmarkContextMenuCocoaController*)menuController;
 
+// Create an |OffTheSideButtonCell| (aka the overflow chevron.)
++ (id)offTheSideButtonCell;
+
 // Initialize a button cell which draws with a theme.
 // Designated initializer.
 - (id)initForNode:(const bookmarks::BookmarkNode*)node

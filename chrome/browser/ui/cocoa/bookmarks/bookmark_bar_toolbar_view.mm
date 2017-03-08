@@ -23,6 +23,10 @@
 
 @implementation BookmarkBarToolbarView
 
+- (void)setController:(id<BookmarkBarToolbarViewController>)controller {
+  controller_ = controller;
+}
+
 - (BOOL)isOpaque {
   // -drawRect: calls -drawAsDetachedBubble: or -drawBackground:, both of which
   // fill the dirty rect with an opaque color.

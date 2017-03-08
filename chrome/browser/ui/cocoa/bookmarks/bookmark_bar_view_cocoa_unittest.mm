@@ -35,7 +35,7 @@ const NSPoint kPoint = {10, 10};
 }  // namespace
 
 // Fake DraggingInfo, fake BookmarkBarController, fake NSPasteboard...
-@interface FakeBookmarkDraggingInfo : NSObject {
+@interface FakeBookmarkDraggingInfo : BookmarkBarController {
  @public
   BOOL dragButtonToPong_;
   BOOL dragButtonToShouldCopy_;
@@ -46,14 +46,14 @@ const NSPoint kPoint = {10, 10};
   // Only mock one type of drag data at a time.
   NSString* dragDataType_;
   BookmarkButton* button_;  // weak
-  BookmarkModel* bookmarkModel_;  // weak
+  BookmarkModel* stubbedBookmarkModel_;  // weak
   id draggingSource_;
 }
 @property (nonatomic) BOOL dropIndicatorShown;
 @property (nonatomic) BOOL draggingEnteredCalled;
 @property (nonatomic, copy) NSString* dragDataType;
 @property (nonatomic, assign) BookmarkButton* button;
-@property (nonatomic, assign) BookmarkModel* bookmarkModel;
+
 @end
 
 @implementation FakeBookmarkDraggingInfo
@@ -62,7 +62,6 @@ const NSPoint kPoint = {10, 10};
 @synthesize draggingEnteredCalled = draggingEnteredCalled_;
 @synthesize dragDataType = dragDataType_;
 @synthesize button = button_;
-@synthesize bookmarkModel = bookmarkModel_;
 
 - (id)init {
   if ((self = [super init])) {
@@ -130,6 +129,18 @@ const NSPoint kPoint = {10, 10};
 }
 
 // Fake a controller for callback ponging
+
+- (void)viewDidLoad {
+  // no-op
+}
+
+- (void)setBookmarkModel:(BookmarkModel*)model {
+  stubbedBookmarkModel_ = model;
+}
+
+- (BookmarkModel*)bookmarkModel {
+  return stubbedBookmarkModel_;
+}
 
 - (BOOL)dragButton:(BookmarkButton*)button to:(NSPoint)point copy:(BOOL)copy {
   dragButtonToPong_ = YES;

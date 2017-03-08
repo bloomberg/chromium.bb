@@ -10,7 +10,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-#import "third_party/google_toolbox_for_mac/src/AppKit/GTMUILocalizerAndLayoutTweaker.h"
+#include "base/mac/scoped_nsobject.h"
 
 @class BookmarkBarController;
 
@@ -19,22 +19,26 @@
   BOOL dropIndicatorShown_;
   CGFloat dropIndicatorPosition_;  // x position
 
-  IBOutlet BookmarkBarController* controller_;
-  IBOutlet NSTextField* noItemTextfield_;
-  IBOutlet NSButton* importBookmarksButton_;
-  GTMWidthBasedTweaker* noItemContainer_;
+  BookmarkBarController* controller_;
+  base::scoped_nsobject<NSTextField> noItemTextfield_;
+  base::scoped_nsobject<NSButton> importBookmarksButton_;
+  base::scoped_nsobject<NSView> noItemContainer_;
 }
 - (NSTextField*)noItemTextfield;
 - (NSButton*)importBookmarksButton;
-- (BookmarkBarController*)controller;
+- (NSView*)noItemContainer;
 
-@property(nonatomic, assign) IBOutlet GTMWidthBasedTweaker* noItemContainer;
+- (instancetype)initWithController:(BookmarkBarController*)controller
+                             frame:(NSRect)frame;
+- (void)registerForNotificationsAndDraggedTypes;
+
+// Exposed so the controller can nil itself out.
+@property(nonatomic, assign) BookmarkBarController* controller;
 @end
 
 @interface BookmarkBarView()  // TestingOrInternalAPI
 @property(nonatomic, readonly) BOOL dropIndicatorShown;
 @property(nonatomic, readonly) CGFloat dropIndicatorPosition;
-- (void)setController:(id)controller;
 @end
 
 #endif  // CHROME_BROWSER_UI_COCOA_BOOKMARKS_BOOKMARK_BAR_VIEW_COCOA_H_

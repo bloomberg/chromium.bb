@@ -14,16 +14,28 @@
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
 #import "chrome/browser/ui/cocoa/view_id_util.h"
+#include "chrome/grit/generated_resources.h"
 #include "components/bookmarks/browser/bookmark_pasteboard_helper_mac.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
 #include "content/public/browser/user_metrics.h"
 #import "third_party/mozilla/NSPasteboard+Utils.h"
 #include "ui/base/clipboard/clipboard_util_mac.h"
+#import "ui/base/cocoa/controls/hyperlink_button_cell.h"
 #import "ui/base/cocoa/nsview_additions.h"
+#include "ui/base/l10n/l10n_util_mac.h"
 
 using base::UserMetricsAction;
 using bookmarks::BookmarkModel;
 using bookmarks::BookmarkNode;
+
+static const CGFloat kInitialContainerWidth = 596;
+static const CGFloat kInitialContainerHeight = 41;
+static const CGFloat kInitialElementYOrigin = 20;
+static const CGFloat kInitialElementHeight = 14;
+static const CGFloat kInitialTextFieldXOrigin = 5;
+// static const CGFloat kInitialTextFieldWidth = 167;
+static const CGFloat kTextFieldTrailingPadding = 5;
+// static const CGFloat kInitialButtonWidth = 199;
 
 @interface BookmarkBarView (Private)
 - (void)themeDidChangeNotification:(NSNotification*)aNotification;
@@ -37,7 +49,7 @@ using bookmarks::BookmarkNode;
 
 @synthesize dropIndicatorShown = dropIndicatorShown_;
 @synthesize dropIndicatorPosition = dropIndicatorPosition_;
-@synthesize noItemContainer = noItemContainer_;
+@synthesize controller = controller_;
 
 - (void)setFrameSize:(NSSize)size {
   NSSize oldFrameSize = [self frame].size;
@@ -55,20 +67,72 @@ using bookmarks::BookmarkNode;
   [self unregisterDraggedTypes];
   [super dealloc];
 
-  // To be clear, our controller_ is an IBOutlet and owns us, so we
-  // don't deallocate it explicitly.  It is owned by the browser
-  // window controller, so gets deleted with a browser window is
-  // closed.
+  // To be clear, our controller_ owns us, so we on't deallocate it explicitly.
+  // It is owned by the browser window controller, so gets deleted with a
+  // browser window is closed.
 }
 
-- (void)awakeFromNib {
+- (instancetype)initWithController:(BookmarkBarController*)controller
+                             frame:(NSRect)frame {
+  DCHECK(controller) << "Controller shouldn't be nil";
+  if (self = [super initWithFrame:frame]) {
+    controller_ = controller;
+
+    NSFont* smallSystemFont =
+        [NSFont systemFontOfSize:[NSFont smallSystemFontSize]];
+    noItemContainer_.reset(
+        [[NSView alloc] initWithFrame:NSMakeRect(0, 0, kInitialContainerWidth,
+                                                 kInitialContainerHeight)]);
+    [noItemContainer_ setAutoresizingMask:NSViewMaxXMargin];
+
+    noItemTextfield_.reset([[NSTextField alloc]
+        initWithFrame:NSMakeRect(kInitialTextFieldXOrigin,
+                                 kInitialElementYOrigin, CGFLOAT_MAX,
+                                 kInitialElementHeight)]);
+    [noItemTextfield_ setAutoresizingMask:NSViewWidthSizable];
+    [noItemTextfield_ setFont:smallSystemFont];
+    [noItemTextfield_
+        setStringValue:l10n_util::GetNSString(IDS_BOOKMARKS_NO_ITEMS)];
+
+    [noItemTextfield_ setBordered:NO];
+    [[noItemTextfield_ cell] setLineBreakMode:NSLineBreakByTruncatingTail];
+
+    [noItemTextfield_ setTextColor:[NSColor controlTextColor]];
+    [noItemTextfield_ setBackgroundColor:[NSColor controlColor]];
+
+    [noItemTextfield_ setDrawsBackground:NO];
+    [noItemTextfield_ setTextColor:[NSColor controlTextColor]];
+    [noItemTextfield_ setBackgroundColor:[NSColor controlColor]];
+    [noItemTextfield_ sizeToFit];
+
+    NSButton* importButton = [HyperlinkButtonCell
+        buttonWithString:l10n_util::GetNSString(IDS_BOOKMARK_BAR_IMPORT_LINK)];
+    importBookmarksButton_.reset([importButton retain]);
+    [importBookmarksButton_
+        setFrame:NSMakeRect(NSMaxX([noItemTextfield_ frame]) +
+                                kTextFieldTrailingPadding,
+                            kInitialElementYOrigin, CGFLOAT_MAX,
+                            kInitialElementHeight)];
+    [importBookmarksButton_ setAutoresizingMask:NSViewMaxXMargin];
+    [importBookmarksButton_ setFont:smallSystemFont];
+    [importBookmarksButton_ sizeToFit];
+    [noItemContainer_ addSubview:importBookmarksButton_];
+
+    [noItemContainer_ addSubview:noItemTextfield_];
+
+    [self addSubview:noItemContainer_];
+    [self registerForNotificationsAndDraggedTypes];
+  }
+  return self;
+}
+
+- (void)registerForNotificationsAndDraggedTypes {
   NSNotificationCenter* defaultCenter = [NSNotificationCenter defaultCenter];
   [defaultCenter addObserver:self
                     selector:@selector(themeDidChangeNotification:)
                         name:kBrowserThemeDidChangeNotification
                       object:nil];
 
-  DCHECK(controller_) << "Expected this to be hooked up via Interface Builder";
   NSArray* types = @[
     NSStringPboardType, NSHTMLPboardType, NSURLPboardType,
     ui::ClipboardUtil::UTIForPasteboardType(kBookmarkButtonDragType),
@@ -117,12 +181,12 @@ using bookmarks::BookmarkNode;
   return noItemTextfield_;
 }
 
-- (NSButton*)importBookmarksButton {
-  return importBookmarksButton_;
+- (NSView*)noItemContainer {
+  return noItemContainer_;
 }
 
-- (BookmarkBarController*)controller {
-  return controller_;
+- (NSButton*)importBookmarksButton {
+  return importBookmarksButton_;
 }
 
 // Internal method, needs to be called whenever a change has been made to
@@ -279,10 +343,6 @@ using bookmarks::BookmarkNode;
 
 - (NSMenu*)menu {
   return [[controller_ menuController] menuForBookmarkBar];
-}
-
-- (void)setController:(id)controller {
-  controller_ = controller;
 }
 
 - (ViewID)viewID {

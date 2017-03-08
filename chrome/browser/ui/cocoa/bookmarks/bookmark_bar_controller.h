@@ -229,8 +229,9 @@ willAnimateFromState:(BookmarkBar::State)oldState
   // a click outside the bounds of the window.
   id exitEventTap_;
 
-  IBOutlet BookmarkBarView* buttonView_;  // Contains 'no items' text fields.
-  IBOutlet BookmarkButton* offTheSideButton_;  // aka the chevron.
+  base::scoped_nsobject<BookmarkBarView>
+      buttonView_;  // Contains 'no items' text fields.
+  base::scoped_nsobject<BookmarkButton> offTheSideButton_;  // aka the chevron.
 
   NSRect originalNoItemsRect_;  // Original, pre-resized field rect.
   NSRect originalImportBookmarksRect_;  // Original, pre-resized field rect.
@@ -391,12 +392,12 @@ willAnimateFromState:(BookmarkBar::State)oldState
 
 // Actions for manipulating bookmarks.
 // Open a normal bookmark or folder from a button, ...
-- (IBAction)openBookmark:(id)sender;
-- (IBAction)openBookmarkFolderFromButton:(id)sender;
+- (void)openBookmark:(id)sender;
+- (void)openBookmarkFolderFromButton:(id)sender;
 // From the "off the side" button, ...
-- (IBAction)openOffTheSideFolderFromButton:(id)sender;
+- (void)openOffTheSideFolderFromButton:(id)sender;
 // Import bookmarks from another browser.
-- (IBAction)importBookmarks:(id)sender;
+- (void)importBookmarks:(id)sender;
 
 // Returns the app page shortcut button.
 - (NSButton*)appsPageShortcutButton;

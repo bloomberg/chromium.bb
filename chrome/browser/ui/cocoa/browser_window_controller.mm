@@ -331,8 +331,10 @@ bool IsTabDetachingInFullscreenEnabled() {
         initWithBrowser:browser_.get()
            initialWidth:NSWidth([[[self window] contentView] frame])
                delegate:self]);
-    // This call triggers an -awakeFromNib for ToolbarView.xib.
-    [[bookmarkBarController_ controlledView] setResizeDelegate:self];
+    // This call loads the view.
+    BookmarkBarToolbarView* bookmarkBarView =
+        [bookmarkBarController_ controlledView];
+    [bookmarkBarView setResizeDelegate:self];
 
     [bookmarkBarController_ setBookmarkBarEnabled:[self supportsBookmarkBar]];
 

@@ -32,10 +32,13 @@ class Profile;
 
 @interface BookmarkBarToolbarView : AnimatableView {
  @private
-   // The controller which tells us how we should be drawing (as normal or as a
-   // floating bar).
-   IBOutlet id<BookmarkBarToolbarViewController> controller_;
+  // The controller which tells us how we should be drawing (as normal or as a
+  // floating bar). Weak reference.
+  id<BookmarkBarToolbarViewController> controller_;
 }
+
+// Exposed so that the controller can nil itself out
+- (void)setController:(id<BookmarkBarToolbarViewController>)controller;
 @end
 
 #endif  // CHROME_BROWSER_UI_COCOA_BOOKMARKS_BOOKMARK_BAR_TOOLBAR_VIEW_H_

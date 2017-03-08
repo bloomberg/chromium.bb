@@ -37,6 +37,8 @@ const int kDefaultFontSize = 12;
 
 };  // namespace
 
+// TODO(lgrey): Bake setting the chevron image into this
+// class instead of setting it externally.
 @interface OffTheSideButtonCell : BookmarkButtonCell
 
 - (NSString*)accessibilityTitle;
@@ -104,6 +106,10 @@ const int kDefaultFontSize = 12;
                                  menuController:menuController]
        autorelease];
   return buttonCell;
+}
+
++ (id)offTheSideButtonCell {
+  return [[[OffTheSideButtonCell alloc] init] autorelease];
 }
 
 - (id)initForNode:(const BookmarkNode*)node

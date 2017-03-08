@@ -208,4 +208,9 @@ TEST_F(BookmarkButtonCellTest, VerticalTextOffset) {
             [gradient_cell verticalTextOffset]);
 }
 
+TEST_F(BookmarkButtonCellTest, OffTheSideCell) {
+  Class offTheSideButtonCellClass = NSClassFromString(@"OffTheSideButtonCell");
+  EXPECT_TRUE([[BookmarkButtonCell offTheSideButtonCell]
+      isKindOfClass:offTheSideButtonCellClass]);
+}
 }  // namespace
