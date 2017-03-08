@@ -37,6 +37,17 @@ class ImageLoaderClientImpl : public ImageLoaderClient {
         base::Bind(&ImageLoaderClientImpl::OnBoolMethod, callback));
   }
 
+  void LoadComponent(const std::string& name,
+                     const StringDBusMethodCallback& callback) override {
+    dbus::MethodCall method_call(imageloader::kImageLoaderServiceInterface,
+                                 imageloader::kLoadComponent);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendString(name);
+    proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::Bind(&ImageLoaderClientImpl::OnStringMethod, callback));
+  }
+
  protected:
   // DBusClient override.
   void Init(dbus::Bus* bus) override {
@@ -56,6 +67,22 @@ class ImageLoaderClientImpl : public ImageLoaderClient {
     bool result = false;
     if (!reader.PopBool(&result)) {
       callback.Run(DBUS_METHOD_CALL_FAILURE, false);
+      LOG(ERROR) << "Invalid response: " << response->ToString();
+      return;
+    }
+    callback.Run(DBUS_METHOD_CALL_SUCCESS, result);
+  }
+
+  static void OnStringMethod(const StringDBusMethodCallback& callback,
+                             dbus::Response* response) {
+    if (!response) {
+      callback.Run(DBUS_METHOD_CALL_FAILURE, "");
+      return;
+    }
+    dbus::MessageReader reader(response);
+    std::string result;
+    if (!reader.PopString(&result)) {
+      callback.Run(DBUS_METHOD_CALL_FAILURE, "");
       LOG(ERROR) << "Invalid response: " << response->ToString();
       return;
     }
