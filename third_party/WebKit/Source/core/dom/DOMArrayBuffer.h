@@ -31,11 +31,8 @@ class CORE_EXPORT DOMArrayBuffer final : public DOMArrayBufferBase {
 
   // Only for use by XMLHttpRequest::responseArrayBuffer and
   // Internals::serializeObject.
-  static DOMArrayBuffer* createUninitialized(unsigned numElements,
-                                             unsigned elementByteSize) {
-    return create(
-        WTF::ArrayBuffer::createUninitialized(numElements, elementByteSize));
-  }
+  static DOMArrayBuffer* createUninitializedOrNull(unsigned numElements,
+                                                   unsigned elementByteSize);
 
   DOMArrayBuffer* slice(int begin, int end) const {
     return create(buffer()->slice(begin, end));

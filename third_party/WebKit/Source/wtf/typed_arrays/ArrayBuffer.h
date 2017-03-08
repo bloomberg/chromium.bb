@@ -50,9 +50,8 @@ class WTF_EXPORT ArrayBuffer : public RefCounted<ArrayBuffer> {
   static inline PassRefPtr<ArrayBuffer> createOrNull(unsigned numElements,
                                                      unsigned elementByteSize);
 
-  // Only for use by XMLHttpRequest::responseArrayBuffer and
-  // Internals::serializeObject (through DOMArrayBuffer::createUninitialized).
-  static inline PassRefPtr<ArrayBuffer> createUninitialized(
+  // Only for use by DOMArrayBuffer::createUninitializedOrNull().
+  static inline PassRefPtr<ArrayBuffer> createUninitializedOrNull(
       unsigned numElements,
       unsigned elementByteSize);
 
@@ -154,11 +153,11 @@ PassRefPtr<ArrayBuffer> ArrayBuffer::createOrNull(unsigned numElements,
                       ArrayBufferContents::ZeroInitialize);
 }
 
-PassRefPtr<ArrayBuffer> ArrayBuffer::createUninitialized(
+PassRefPtr<ArrayBuffer> ArrayBuffer::createUninitializedOrNull(
     unsigned numElements,
     unsigned elementByteSize) {
-  return create(numElements, elementByteSize,
-                ArrayBufferContents::DontInitialize);
+  return createOrNull(numElements, elementByteSize,
+                      ArrayBufferContents::DontInitialize);
 }
 
 PassRefPtr<ArrayBuffer> ArrayBuffer::create(

@@ -5,8 +5,19 @@
 #include "core/dom/DOMArrayBuffer.h"
 
 #include "bindings/core/v8/DOMDataStore.h"
+#include "wtf/RefPtr.h"
 
 namespace blink {
+
+DOMArrayBuffer* DOMArrayBuffer::createUninitializedOrNull(
+    unsigned numElements,
+    unsigned elementByteSize) {
+  RefPtr<ArrayBuffer> buffer =
+      WTF::ArrayBuffer::createUninitializedOrNull(numElements, elementByteSize);
+  if (!buffer)
+    return nullptr;
+  return create(std::move(buffer));
+}
 
 v8::Local<v8::Object> DOMArrayBuffer::wrap(
     v8::Isolate* isolate,

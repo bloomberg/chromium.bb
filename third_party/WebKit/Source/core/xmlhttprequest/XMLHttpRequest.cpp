@@ -251,7 +251,8 @@ XMLHttpRequest::XMLHttpRequest(
       m_sameOriginRequest(true),
       m_downloadingToFile(false),
       m_responseTextOverflow(false),
-      m_sendFlag(false) {}
+      m_sendFlag(false),
+      m_responseArrayBufferFailure(false) {}
 
 XMLHttpRequest::~XMLHttpRequest() {}
 
@@ -386,14 +387,23 @@ DOMArrayBuffer* XMLHttpRequest::responseArrayBuffer() {
   if (m_error || m_state != kDone)
     return nullptr;
 
-  if (!m_responseArrayBuffer) {
+  if (!m_responseArrayBuffer && !m_responseArrayBufferFailure) {
     if (m_binaryResponseBuilder && m_binaryResponseBuilder->size()) {
-      DOMArrayBuffer* buffer = DOMArrayBuffer::createUninitialized(
+      DOMArrayBuffer* buffer = DOMArrayBuffer::createUninitializedOrNull(
           m_binaryResponseBuilder->size(), 1);
-      m_binaryResponseBuilder->getAsBytes(
-          buffer->data(), static_cast<size_t>(buffer->byteLength()));
-      m_responseArrayBuffer = buffer;
+      if (buffer) {
+        m_binaryResponseBuilder->getAsBytes(
+            buffer->data(), static_cast<size_t>(buffer->byteLength()));
+        m_responseArrayBuffer = buffer;
+      }
+      // https://xhr.spec.whatwg.org/#arraybuffer-response allows clearing
+      // of the 'received bytes' payload when the response buffer allocation
+      // fails.
       m_binaryResponseBuilder.clear();
+      // Mark allocation as failed; subsequent calls to the accessor must
+      // continue to report |null|.
+      //
+      m_responseArrayBufferFailure = !buffer;
     } else {
       m_responseArrayBuffer = DOMArrayBuffer::create(nullptr, 0);
     }
@@ -1194,6 +1204,7 @@ void XMLHttpRequest::clearResponse() {
   // this only when we clear the response holder variables above.
   m_binaryResponseBuilder.clear();
   m_responseArrayBuffer.clear();
+  m_responseArrayBufferFailure = false;
 }
 
 void XMLHttpRequest::clearRequest() {

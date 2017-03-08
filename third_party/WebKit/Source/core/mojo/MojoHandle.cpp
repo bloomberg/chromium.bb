@@ -79,7 +79,9 @@ void MojoHandle::readMessage(const MojoReadMessageFlags& flagsDict,
     return;
   }
 
-  DOMArrayBuffer* buffer = DOMArrayBuffer::createUninitialized(numBytes, 1);
+  DOMArrayBuffer* buffer =
+      DOMArrayBuffer::createUninitializedOrNull(numBytes, 1);
+  CHECK(buffer);
   Vector<::MojoHandle, kHandleVectorInlineCapacity> rawHandles(numHandles);
   result = MojoReadMessage(m_handle->value(), buffer->data(), &numBytes,
                            rawHandles.data(), &numHandles, flags);

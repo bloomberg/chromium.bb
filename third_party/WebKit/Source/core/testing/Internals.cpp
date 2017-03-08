@@ -2644,10 +2644,12 @@ bool Internals::cursorUpdatePending() const {
 DOMArrayBuffer* Internals::serializeObject(
     PassRefPtr<SerializedScriptValue> value) const {
   String stringValue = value->toWireString();
-  DOMArrayBuffer* buffer =
-      DOMArrayBuffer::createUninitialized(stringValue.length(), sizeof(UChar));
-  stringValue.copyTo(static_cast<UChar*>(buffer->data()), 0,
-                     stringValue.length());
+  DOMArrayBuffer* buffer = DOMArrayBuffer::createUninitializedOrNull(
+      stringValue.length(), sizeof(UChar));
+  if (buffer) {
+    stringValue.copyTo(static_cast<UChar*>(buffer->data()), 0,
+                       stringValue.length());
+  }
   return buffer;
 }
 

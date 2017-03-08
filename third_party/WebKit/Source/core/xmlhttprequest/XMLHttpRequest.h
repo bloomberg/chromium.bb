@@ -355,6 +355,7 @@ class XMLHttpRequest final : public XMLHttpRequestEventTarget,
   bool m_downloadingToFile;
   bool m_responseTextOverflow;
   bool m_sendFlag;
+  bool m_responseArrayBufferFailure;
 };
 
 std::ostream& operator<<(std::ostream&, const XMLHttpRequest*);
