@@ -2438,11 +2438,46 @@
       "All"
     ]
   },
-  "Linux ChromiumOS Ozone Builder": {
-    "additional_compile_targets": [
-      "All"
-    ]
+  "Linux ChromiumOS Ozone (Intel)": {
+    "gtest_tests": [
+      {
+        "args": [
+          "--use-gpu-in-tests",
+          "--test-launcher-retry-limit=0"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": false,
+          "dimension_sets": [
+            {
+              "gpu": "8086:1912",
+              "os": "Ubuntu"
+            }
+          ]
+        },
+        "test": "angle_end2end_tests",
+        "use_xvfb": false
+      },
+      {
+        "args": [
+          "--use-gpu-in-tests",
+          "--test-launcher-retry-limit=0"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": false,
+          "dimension_sets": [
+            {
+              "gpu": "8086:1912",
+              "os": "Ubuntu"
+            }
+          ]
+        },
+        "test": "angle_unittests",
+        "use_xvfb": false
+      }
+    ],
+    "isolated_scripts": []
   },
+  "Linux ChromiumOS Ozone Builder": {},
   "Linux Debug (Intel HD 530)": {
     "gtest_tests": [
       {

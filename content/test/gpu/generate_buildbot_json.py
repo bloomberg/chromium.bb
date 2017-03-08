@@ -179,9 +179,7 @@ FYI_WATERFALL = {
     'Linux ChromiumOS Builder' : {
       'additional_compile_targets' : [ "All" ]
     },
-    'Linux ChromiumOS Ozone Builder' : {
-      'additional_compile_targets' : [ "All" ]
-    },
+    'Linux ChromiumOS Ozone Builder' : {},
   },
 
   'testers': {
@@ -603,6 +601,19 @@ FYI_WATERFALL = {
       'os_type': 'linux',
       'instrumentation_type': 'tsan',
     },
+    'Linux ChromiumOS Ozone (Intel)': {
+      'swarming_dimensions': [
+        {
+          'gpu': '8086:1912',
+          'os': 'Ubuntu'
+        },
+      ],
+      'build_config': 'Release',
+      # This bot is a one-off and doesn't have similar slaves in the
+      # swarming pool.
+      'swarming': False,
+      'os_type': 'linux',
+    },
     'Android Release (Nexus 5)': {
       'swarming_dimensions': [
         {
@@ -951,6 +962,13 @@ COMMON_GTESTS = {
         ],
       },
     ],
+    'disabled_tester_configs': [
+      {
+        'names': [
+          'Linux ChromiumOS Ozone (Intel)',
+        ],
+      },
+    ],
     'args': [
       '--test-launcher-batch-limit=400'
     ]
@@ -976,6 +994,13 @@ COMMON_GTESTS = {
             'gpu': '1002:6613',
             'os': 'Windows-2008ServerR2-SP1'
           },
+        ],
+      },
+    ],
+    'disabled_tester_configs': [
+      {
+        'names': [
+          'Linux ChromiumOS Ozone (Intel)',
         ],
       },
     ],
@@ -1006,6 +1031,13 @@ COMMON_GTESTS = {
         ],
       },
     ],
+    'disabled_tester_configs': [
+      {
+        'names': [
+          'Linux ChromiumOS Ozone (Intel)',
+        ],
+      },
+    ],
     'desktop_swarming': {
       'shards': 4,
     },
@@ -1030,6 +1062,13 @@ COMMON_GTESTS = {
             'device_os': 'M',
             'os': 'Android'
           }
+        ],
+      },
+    ],
+    'disabled_tester_configs': [
+      {
+        'names': [
+          'Linux ChromiumOS Ozone (Intel)',
         ],
       },
     ],
@@ -1066,6 +1105,13 @@ COMMON_GTESTS = {
         ],
       }
     ],
+    'disabled_tester_configs': [
+      {
+        'names': [
+          'Linux ChromiumOS Ozone (Intel)',
+        ],
+      },
+    ],
     'swarming': {
       'shards': 12,
     },
@@ -1093,6 +1139,13 @@ COMMON_GTESTS = {
         ],
       }
     ],
+    'disabled_tester_configs': [
+      {
+        'names': [
+          'Linux ChromiumOS Ozone (Intel)',
+        ],
+      },
+    ],
     'swarming': {
       'shards': 12,
     },
@@ -1116,6 +1169,13 @@ COMMON_GTESTS = {
           }
         ],
       }
+    ],
+    'disabled_tester_configs': [
+      {
+        'names': [
+          'Linux ChromiumOS Ozone (Intel)',
+        ],
+      },
     ],
     'swarming': {
       # TODO(geofflang): Increase the number of shards as more tests start to
@@ -1146,6 +1206,13 @@ COMMON_GTESTS = {
           }
         ],
       }
+    ],
+    'disabled_tester_configs': [
+      {
+        'names': [
+          'Linux ChromiumOS Ozone (Intel)',
+        ],
+      },
     ],
     'swarming': {
       # TODO(geofflang): Increase the number of shards as more tests start to
@@ -1199,6 +1266,13 @@ COMMON_GTESTS = {
         'os_types': ['win'],
       },
     ],
+    'disabled_tester_configs': [
+      {
+        'names': [
+          'Linux ChromiumOS Ozone (Intel)',
+        ],
+      },
+    ],
     'desktop_args': [
       # ANGLE test retries deliberately disabled to prevent flakiness.
       # http://crbug.com/669196
@@ -1230,6 +1304,11 @@ COMMON_GTESTS = {
     # Don't run these tests on Android.
     'disabled_tester_configs': [
       {
+        'names': [
+          'Linux ChromiumOS Ozone (Intel)',
+        ],
+      },
+      {
         'os_types': ['android'],
       },
     ],
@@ -1247,12 +1326,21 @@ COMMON_GTESTS = {
           # TODO(kbr): investigate inability to recognize this
           # configuration in the various tests. crbug.com/624621
           'Android Release (Pixel C)',
+
+          'Linux ChromiumOS Ozone (Intel)',
         ],
       },
     ],
     'desktop_args': ['--use-gpu-in-tests']
   },
   'gl_unittests': {
+    'disabled_tester_configs': [
+      {
+        'names': [
+          'Linux ChromiumOS Ozone (Intel)',
+        ],
+      },
+    ],
     'desktop_args': ['--use-gpu-in-tests']
   },
   # The gles2_conform_tests are closed-source and deliberately only run
@@ -1267,6 +1355,11 @@ COMMON_GTESTS = {
     # Don't run these tests on Android.
     'disabled_tester_configs': [
       {
+        'names': [
+          'Linux ChromiumOS Ozone (Intel)',
+        ],
+      },
+      {
         'os_types': ['android'],
       },
     ],
@@ -1279,6 +1372,13 @@ COMMON_GTESTS = {
         'predicate': Predicates.FYI_AND_OPTIONAL,
         'os_types': ['win'],
       }
+    ],
+    'disabled_tester_configs': [
+      {
+        'names': [
+          'Linux ChromiumOS Ozone (Intel)',
+        ],
+      },
     ],
     'args': [
       '--use-gpu-in-tests',
@@ -1293,6 +1393,13 @@ COMMON_GTESTS = {
         'predicate': Predicates.FYI_AND_OPTIONAL,
         'os_types': ['win'],
       }
+    ],
+    'disabled_tester_configs': [
+      {
+        'names': [
+          'Linux ChromiumOS Ozone (Intel)',
+        ],
+      },
     ],
     'args': [
       '--use-gpu-in-tests',
@@ -1312,6 +1419,11 @@ COMMON_GTESTS = {
       },
     ],
     'disabled_tester_configs': [
+      {
+        'names': [
+          'Linux ChromiumOS Ozone (Intel)',
+        ],
+      },
       {
         'swarming_dimension_sets': [
           # These tests fail on the Mac Pros.
@@ -1334,6 +1446,13 @@ COMMON_GTESTS = {
         'os_types': ['win', 'linux'],
       },
     ],
+    'disabled_tester_configs': [
+      {
+        'names': [
+          'Linux ChromiumOS Ozone (Intel)',
+        ],
+      },
+    ],
   },
   'tab_capture_end2end_tests': {
     'tester_configs': [
@@ -1345,6 +1464,9 @@ COMMON_GTESTS = {
     # Don't run these tests on Android.
     'disabled_tester_configs': [
       {
+        'names': [
+          'Linux ChromiumOS Ozone (Intel)',
+        ],
         'os_types': ['android'],
       },
     ],
@@ -1356,6 +1478,13 @@ COMMON_GTESTS = {
     'tester_configs': [
       {
         'os_types': ['win']
+      },
+    ],
+    'disabled_tester_configs': [
+      {
+        'names': [
+          'Linux ChromiumOS Ozone (Intel)',
+        ],
       },
     ],
     'args': [
@@ -1378,6 +1507,9 @@ NON_SWARMED_GTESTS = {
     # Don't run these tests on Android.
     'disabled_tester_configs': [
       {
+        'names': [
+          'Linux ChromiumOS Ozone (Intel)',
+        ],
         'os_types': ['android'],
       },
     ],
@@ -1403,7 +1535,14 @@ TELEMETRY_GPU_INTEGRATION_TESTS = {
         'predicate': Predicates.DEFAULT_PLUS_V8,
         'disabled_instrumentation_types': ['tsan'],
       },
-    ]
+    ],
+    'disabled_tester_configs': [
+      {
+        'names': [
+          'Linux ChromiumOS Ozone (Intel)',
+        ],
+      },
+    ],
   },
   'depth_capture': {
     'tester_configs': [
@@ -1411,7 +1550,14 @@ TELEMETRY_GPU_INTEGRATION_TESTS = {
         'predicate': Predicates.DEFAULT_PLUS_V8,
         'disabled_instrumentation_types': ['tsan'],
       },
-    ]
+    ],
+    'disabled_tester_configs': [
+      {
+        'names': [
+          'Linux ChromiumOS Ozone (Intel)',
+        ],
+      },
+    ],
   },
   'gpu_process_launch_tests': {
     'target_name': 'gpu_process',
@@ -1421,12 +1567,26 @@ TELEMETRY_GPU_INTEGRATION_TESTS = {
         'disabled_instrumentation_types': ['tsan'],
       }
     ],
+    'disabled_tester_configs': [
+      {
+        'names': [
+          'Linux ChromiumOS Ozone (Intel)',
+        ],
+      },
+    ],
   },
   'hardware_accelerated_feature': {
     'tester_configs': [
       {
         'predicate': Predicates.DEFAULT_PLUS_V8,
         'disabled_instrumentation_types': ['tsan'],
+      },
+    ],
+    'disabled_tester_configs': [
+      {
+        'names': [
+          'Linux ChromiumOS Ozone (Intel)',
+        ],
       },
     ],
   },
@@ -1444,6 +1604,13 @@ TELEMETRY_GPU_INTEGRATION_TESTS = {
       {
         'predicate': Predicates.DEFAULT_PLUS_V8,
         'disabled_instrumentation_types': ['tsan'],
+      },
+    ],
+    'disabled_tester_configs': [
+      {
+        'names': [
+          'Linux ChromiumOS Ozone (Intel)',
+        ],
       },
     ],
   },
@@ -1471,12 +1638,26 @@ TELEMETRY_GPU_INTEGRATION_TESTS = {
         'disabled_instrumentation_types': ['tsan'],
       },
     ],
+    'disabled_tester_configs': [
+      {
+        'names': [
+          'Linux ChromiumOS Ozone (Intel)',
+        ],
+      },
+    ],
   },
   'screenshot_sync': {
     'tester_configs': [
       {
         'predicate': Predicates.DEFAULT_PLUS_V8,
         'disabled_instrumentation_types': ['tsan'],
+      },
+    ],
+    'disabled_tester_configs': [
+      {
+        'names': [
+          'Linux ChromiumOS Ozone (Intel)',
+        ],
       },
     ],
   },
@@ -1487,12 +1668,26 @@ TELEMETRY_GPU_INTEGRATION_TESTS = {
         'disabled_instrumentation_types': ['tsan'],
       },
     ],
+    'disabled_tester_configs': [
+      {
+        'names': [
+          'Linux ChromiumOS Ozone (Intel)',
+        ],
+      },
+    ],
   },
   'webgl_conformance': {
     'tester_configs': [
       {
         'predicate': Predicates.DEFAULT_PLUS_V8,
         'disabled_instrumentation_types': ['tsan'],
+      },
+    ],
+    'disabled_tester_configs': [
+      {
+        'names': [
+          'Linux ChromiumOS Ozone (Intel)',
+        ],
       },
     ],
     'asan_args': ['--is-asan'],
@@ -1504,6 +1699,13 @@ TELEMETRY_GPU_INTEGRATION_TESTS = {
         'predicate': Predicates.FYI_AND_OPTIONAL,
         'os_types': ['win'],
       }
+    ],
+    'disabled_tester_configs': [
+      {
+        'names': [
+          'Linux ChromiumOS Ozone (Intel)',
+        ],
+      },
     ],
     'target_name': 'webgl_conformance',
     'extra_browser_args': [
@@ -1520,6 +1722,11 @@ TELEMETRY_GPU_INTEGRATION_TESTS = {
       }
     ],
     'disabled_tester_configs': [
+      {
+        'names': [
+          'Linux ChromiumOS Ozone (Intel)',
+        ],
+      },
       {
         'swarming_dimension_sets': [
           # crbug.com/555545 and crbug.com/649824:
@@ -1562,6 +1769,13 @@ TELEMETRY_GPU_INTEGRATION_TESTS = {
         'disabled_instrumentation_types': ['tsan'],
       }
     ],
+    'disabled_tester_configs': [
+      {
+        'names': [
+          'Linux ChromiumOS Ozone (Intel)',
+        ],
+      },
+    ],
     'target_name': 'webgl_conformance',
     'extra_browser_args': [
       '--use-gl=angle',
@@ -1575,6 +1789,13 @@ TELEMETRY_GPU_INTEGRATION_TESTS = {
         'predicate': Predicates.FYI_AND_OPTIONAL,
         'os_types': ['win'],
       }
+    ],
+    'disabled_tester_configs': [
+      {
+        'names': [
+          'Linux ChromiumOS Ozone (Intel)',
+        ],
+      },
     ],
     'target_name': 'webgl_conformance',
     'extra_browser_args': [
@@ -1597,6 +1818,13 @@ TELEMETRY_GPU_INTEGRATION_TESTS = {
         'os_types': ['linux'],
       }
     ],
+    'disabled_tester_configs': [
+      {
+        'names': [
+          'Linux ChromiumOS Ozone (Intel)',
+        ],
+      },
+    ],
     'target_name': 'webgl_conformance',
     'extra_browser_args': [
       '--use-gl=angle',
@@ -1618,6 +1846,8 @@ TELEMETRY_GPU_INTEGRATION_TESTS = {
     'disabled_tester_configs': [
       {
         'names': [
+          'Linux ChromiumOS Ozone (Intel)',
+
           # http://crbug.com/599451: this test is currently too slow
           # to run on x64 in Debug mode. Need to shard the tests.
           'Win7 x64 Debug (NVIDIA)',
@@ -1667,6 +1897,13 @@ TELEMETRY_GPU_INTEGRATION_TESTS = {
         'disabled_instrumentation_types': ['tsan'],
       },
     ],
+    'disabled_tester_configs': [
+      {
+        'names': [
+          'Linux ChromiumOS Ozone (Intel)',
+        ],
+      },
+    ],
     'target_name': 'webgl_conformance',
     'extra_browser_args': [
       '--use-gl=angle',
@@ -1699,6 +1936,13 @@ TELEMETRY_GPU_INTEGRATION_TESTS = {
             'gpu': '10de:104a',
             'os': 'Windows-2008ServerR2-SP1'
           },
+        ],
+      },
+    ],
+    'disabled_tester_configs': [
+      {
+        'names': [
+          'Linux ChromiumOS Ozone (Intel)',
         ],
       },
     ],
@@ -1742,6 +1986,13 @@ NON_TELEMETRY_ISOLATED_SCRIPT_TESTS = {
             'gpu': '10de:104a',
             'os': 'Ubuntu'
           }
+        ],
+      },
+    ],
+    'disabled_tester_configs': [
+      {
+        'names': [
+          'Linux ChromiumOS Ozone (Intel)',
         ],
       },
     ],
