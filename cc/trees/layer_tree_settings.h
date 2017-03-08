@@ -27,8 +27,6 @@ class CC_EXPORT LayerTreeSettings {
   LayerTreeSettings(const LayerTreeSettings& other);
   virtual ~LayerTreeSettings();
 
-  bool operator==(const LayerTreeSettings& other) const;
-
   SchedulerSettings ToSchedulerSettings() const;
   TileManagerSettings ToTileManagerSettings() const;
 
