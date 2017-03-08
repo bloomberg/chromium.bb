@@ -151,6 +151,9 @@ crbug.com/696724 fast/canvas/canvas-large-pattern.html [ Failure ]
 crbug.com/696724 virtual/display_list_2d_canvas/fast/canvas/canvas-large-pattern.html [ Failure ]
 crbug.com/696724 virtual/gpu/fast/canvas/canvas-large-pattern.html [ Failure ]
 
+crbug.com/667045 paint/invalidation/table/composited-cell-collapsed-border-add-anonymous.html [ Crash Timeout ]
+crbug.com/667045 virtual/disable-spinvalidation/paint/invalidation/table/composited-cell-collapsed-border-add-anonymous.html [ Crash Timeout ]
+
 # ====== Paint team owned tests to here ======
 
 # ====== LayoutNG-only failures from here ======
