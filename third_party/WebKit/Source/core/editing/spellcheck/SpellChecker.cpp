@@ -185,9 +185,8 @@ void SpellChecker::didBeginEditing(Element* element) {
 }
 
 void SpellChecker::ignoreSpelling() {
-  removeMarkers(
-      frame().selection().computeVisibleSelectionInDOMTreeDeprecated(),
-      DocumentMarker::Spelling);
+  removeMarkers(frame().selection().computeVisibleSelectionInDOMTree(),
+                DocumentMarker::Spelling);
 }
 
 void SpellChecker::advanceToNextMisspelling(bool startBeforeSelection) {
@@ -201,7 +200,7 @@ void SpellChecker::advanceToNextMisspelling(bool startBeforeSelection) {
   // Start at the end of the selection, search to edge of document. Starting at
   // the selection end makes repeated "check spelling" commands work.
   VisibleSelection selection(
-      frame().selection().computeVisibleSelectionInDOMTreeDeprecated());
+      frame().selection().computeVisibleSelectionInDOMTree());
   Position spellingSearchStart, spellingSearchEnd;
   Range::selectNodeContents(frame().document(), spellingSearchStart,
                             spellingSearchEnd);
@@ -600,15 +599,12 @@ void SpellChecker::markAndReplaceFor(
   int selectionOffset = 0;
   int ambiguousBoundaryOffset = -1;
 
-  if (frame()
-          .selection()
-          .computeVisibleSelectionInDOMTreeDeprecated()
-          .isCaret()) {
+  if (frame().selection().computeVisibleSelectionInDOMTree().isCaret()) {
     // TODO(xiaochengh): The following comment does not match the current
     // behavior and should be rewritten.
     // Attempt to save the caret position so we can restore it later if needed
     const Position& caretPosition =
-        frame().selection().computeVisibleSelectionInDOMTreeDeprecated().end();
+        frame().selection().computeVisibleSelectionInDOMTree().end();
     selectionOffset = paragraph.offsetTo(caretPosition);
     if (selectionOffset > 0 &&
         static_cast<unsigned>(selectionOffset) <= paragraph.text().length() &&
@@ -667,16 +663,16 @@ void SpellChecker::updateMarkersForWordsAffectedByEditing(
     bool doNotRemoveIfSelectionAtWordBoundary) {
   DCHECK(frame().selection().isAvailable());
   TRACE_EVENT0("blink", "SpellChecker::updateMarkersForWordsAffectedByEditing");
+  // TODO(editing-dev): We should hoist
+  // updateStyleAndLayoutIgnorePendingStylesheets to caller. See
+  // http://crbug.com/590369 for more details.
+  frame().document()->updateStyleAndLayoutIgnorePendingStylesheets();
   if (!isSpellCheckingEnabledFor(
-          frame().selection().computeVisibleSelectionInDOMTreeDeprecated()))
+          frame().selection().computeVisibleSelectionInDOMTree()))
     return;
 
   Document* document = frame().document();
   DCHECK(document);
-
-  // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
-  // needs to be audited.  See http://crbug.com/590369 for more details.
-  document->updateStyleAndLayoutIgnorePendingStylesheets();
 
   // We want to remove the markers from a word if an editing command will change
   // the word. This can happen in one of several scenarios:
@@ -689,15 +685,9 @@ void SpellChecker::updateMarkersForWordsAffectedByEditing(
   // that fall on the boundaries of selection, and remove words between the
   // selection boundaries.
   VisiblePosition startOfSelection =
-      frame()
-          .selection()
-          .computeVisibleSelectionInDOMTreeDeprecated()
-          .visibleStart();
+      frame().selection().computeVisibleSelectionInDOMTree().visibleStart();
   VisiblePosition endOfSelection =
-      frame()
-          .selection()
-          .computeVisibleSelectionInDOMTreeDeprecated()
-          .visibleEnd();
+      frame().selection().computeVisibleSelectionInDOMTree().visibleEnd();
   if (startOfSelection.isNull())
     return;
   // First word is the word that ends after or on the start of selection.
@@ -800,7 +790,7 @@ void SpellChecker::removeSpellingAndGrammarMarkers(const HTMLElement& element,
 void SpellChecker::replaceMisspelledRange(const String& text) {
   EphemeralRange caretRange = frame()
                                   .selection()
-                                  .computeVisibleSelectionInDOMTreeDeprecated()
+                                  .computeVisibleSelectionInDOMTree()
                                   .toNormalizedEphemeralRange();
   if (caretRange.isNull())
     return;
@@ -900,7 +890,7 @@ void SpellChecker::respondToChangedSelection(
 
   VisibleSelection newAdjacentWords;
   const VisibleSelection newSelection =
-      frame().selection().computeVisibleSelectionInDOMTreeDeprecated();
+      frame().selection().computeVisibleSelectionInDOMTree();
   if (newSelection.isContentEditable()) {
     newAdjacentWords =
         createVisibleSelection(selectWord(newSelection.visibleStart()));
@@ -938,33 +928,28 @@ void SpellChecker::spellCheckAfterBlur() {
   if (RuntimeEnabledFeatures::idleTimeSpellCheckingEnabled())
     return;
 
+  // TODO(yosin): We should hoist updateStyleAndLayoutIgnorePendingStylesheets
+  // to caller. See http://crbug.com/590369 for more details.
+  // TODO(xiaochengh): In the long term we should use idle time spell checker to
+  // prevent synchronous layout caused by spell checking (see crbug.com/517298).
+  frame().document()->updateStyleAndLayoutIgnorePendingStylesheets();
+  DocumentLifecycle::DisallowTransitionScope disallowTransition(
+      frame().document()->lifecycle());
   if (!frame()
            .selection()
-           .computeVisibleSelectionInDOMTreeDeprecated()
+           .computeVisibleSelectionInDOMTree()
            .isContentEditable())
     return;
 
-  if (isPositionInTextField(frame()
-                                .selection()
-                                .computeVisibleSelectionInDOMTreeDeprecated()
-                                .start())) {
+  if (isPositionInTextField(
+          frame().selection().computeVisibleSelectionInDOMTree().start())) {
     // textFieldDidEndEditing() and textFieldDidBeginEditing() handle this.
     return;
   }
 
-  // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
-  // needs to be audited.  See http://crbug.com/590369 for more details.
-  // In the long term we should use idle time spell checker to prevent
-  // synchronous layout caused by spell checking (see crbug.com/517298).
-  frame().document()->updateStyleAndLayoutIgnorePendingStylesheets();
-
-  DocumentLifecycle::DisallowTransitionScope disallowTransition(
-      frame().document()->lifecycle());
-
   VisibleSelection empty;
   spellCheckOldSelection(
-      frame().selection().computeVisibleSelectionInDOMTreeDeprecated().start(),
-      empty);
+      frame().selection().computeVisibleSelectionInDOMTree().start(), empty);
 }
 
 void SpellChecker::spellCheckOldSelection(
@@ -1008,12 +993,11 @@ bool SpellChecker::selectionStartHasMarkerFor(
     DocumentMarker::MarkerType markerType,
     int from,
     int length) const {
-  Node* node =
-      findFirstMarkable(frame()
-                            .selection()
-                            .computeVisibleSelectionInDOMTreeDeprecated()
-                            .start()
-                            .anchorNode());
+  Node* node = findFirstMarkable(frame()
+                                     .selection()
+                                     .computeVisibleSelectionInDOMTree()
+                                     .start()
+                                     .anchorNode());
   if (!node)
     return false;
 
@@ -1030,6 +1014,7 @@ bool SpellChecker::selectionStartHasMarkerFor(
   return false;
 }
 
+// TODO(editing-dev): No one uses this function. Remove it.
 bool SpellChecker::selectionStartHasSpellingMarkerFor(int from,
                                                       int length) const {
   return selectionStartHasMarkerFor(DocumentMarker::Spelling, from, length);
