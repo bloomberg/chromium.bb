@@ -66,17 +66,14 @@ TEST_F(DataReductionProxySettingsTest, TestIsProxyEnabledOrManaged) {
   test_context_->config()->UpdateConfigForTesting(false, true);
 
   EXPECT_FALSE(settings_->IsDataReductionProxyEnabled());
-  EXPECT_FALSE(settings_->UpdateDataSavings(std::string(), 0, 0));
   EXPECT_FALSE(settings_->IsDataReductionProxyManaged());
 
   CheckOnPrefChange(true, true, false);
   EXPECT_TRUE(settings_->IsDataReductionProxyEnabled());
-  EXPECT_TRUE(settings_->UpdateDataSavings(std::string(), 0, 0));
   EXPECT_FALSE(settings_->IsDataReductionProxyManaged());
 
   CheckOnPrefChange(true, true, true);
   EXPECT_TRUE(settings_->IsDataReductionProxyEnabled());
-  EXPECT_TRUE(settings_->UpdateDataSavings(std::string(), 0, 0));
   EXPECT_TRUE(settings_->IsDataReductionProxyManaged());
 
   test_context_->RunUntilIdle();

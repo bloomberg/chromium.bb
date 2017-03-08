@@ -22,7 +22,6 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_metrics.h"
 #include "components/data_reduction_proxy/core/browser/db_data_owner.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
-#include "components/data_reduction_proxy/core/common/data_savings_recorder.h"
 #include "components/prefs/pref_member.h"
 
 class PrefService;
@@ -61,13 +60,6 @@ class DataReductionProxyCompressionStats {
                                      PrefService* pref_service,
                                      const base::TimeDelta& delay);
   ~DataReductionProxyCompressionStats();
-
-  // Records detailed data usage broken down by connection type and domain.
-  // Assumes that the |data_used| has been recoreded by previous calls to
-  // UpdateContentLengths.
-  void UpdateDataSavings(const std::string& data_usage_host,
-                         int64_t data_used,
-                         int64_t original_size);
 
   // Records detailed data usage broken down by connection type and domain. Also
   // records daily data savings statistics to prefs and reports data savings

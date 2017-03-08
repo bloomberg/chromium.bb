@@ -424,20 +424,6 @@ void DataReductionProxyCompressionStats::Init() {
   InitListPref(prefs::kDailyOriginalContentLengthWithDataReductionProxyEnabled);
 }
 
-void DataReductionProxyCompressionStats::UpdateDataSavings(
-    const std::string& data_usage_host,
-    int64_t data_used,
-    int64_t original_size) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  // Data is recorded at the URLRequest level, so an update should only change
-  // the original size amount by the savings amount.
-  int64_t update_to_original_size = original_size - data_used;
-  int64_t update_to_data_used = 0;
-  RecordData(update_to_data_used, update_to_original_size,
-             true /* data_saver_enabled */, UPDATE, data_usage_host,
-             std::string());
-}
-
 void DataReductionProxyCompressionStats::UpdateContentLengths(
     int64_t data_used,
     int64_t original_size,

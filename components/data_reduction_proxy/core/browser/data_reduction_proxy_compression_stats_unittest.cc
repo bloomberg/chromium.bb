@@ -583,28 +583,6 @@ TEST_F(DataReductionProxyCompressionStatsTest, TotalLengths) {
             GetInt64(data_reduction_proxy::prefs::kHttpOriginalContentLength));
 }
 
-TEST_F(DataReductionProxyCompressionStatsTest, TotalLengthsUpdate) {
-  const int64_t kOriginalLength = 200;
-  const int64_t kReceivedLength = 100;
-
-  compression_stats()->UpdateDataSavings(std::string(), kReceivedLength,
-                                         kOriginalLength);
-
-  EXPECT_EQ(0,
-            GetInt64(data_reduction_proxy::prefs::kHttpReceivedContentLength));
-  EXPECT_EQ(kOriginalLength - kReceivedLength,
-            GetInt64(data_reduction_proxy::prefs::kHttpOriginalContentLength));
-
-  // Record the same numbers again, and total lengths should be doubled.
-  compression_stats()->UpdateDataSavings(std::string(), kReceivedLength,
-                                         kOriginalLength);
-
-  EXPECT_EQ(0,
-            GetInt64(data_reduction_proxy::prefs::kHttpReceivedContentLength));
-  EXPECT_EQ(kOriginalLength * 2 - kReceivedLength * 2,
-            GetInt64(data_reduction_proxy::prefs::kHttpOriginalContentLength));
-}
-
 TEST_F(DataReductionProxyCompressionStatsTest, OneResponse) {
   const int64_t kOriginalLength = 200;
   const int64_t kReceivedLength = 100;
