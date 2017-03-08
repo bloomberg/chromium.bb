@@ -11,6 +11,7 @@ import android.util.JsonReader;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
+import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.preferences.ButtonPreference;
@@ -35,8 +36,8 @@ import java.util.concurrent.TimeoutException;
 /**
  * UI Tests for the history page.
  */
+@CommandLineFlags.Add("disable-features=AndroidHistoryManager")
 public class HistoryUITest extends ChromeActivityTestCaseBase<ChromeActivity> {
-
     private static final String HISTORY_URL = "chrome://history-frame/";
 
     private EmbeddedTestServer mTestServer;
