@@ -254,8 +254,14 @@ base::DictionaryValue* ExtensionTabUtil::OpenTab(
   tab_strip = navigate_params.browser->tab_strip_model();
   int new_index =
       tab_strip->GetIndexOfWebContents(navigate_params.target_contents);
-  if (opener)
-    tab_strip->SetOpenerOfWebContentsAt(new_index, opener);
+  if (opener) {
+    // Only set the opener if the opener tab is in the same tab strip as the
+    // new tab.
+    // TODO(devlin): We should be a) catching this sooner and b) alerting that
+    // this failed by reporting an error.
+    if (tab_strip->GetIndexOfWebContents(opener) != TabStripModel::kNoTab)
+      tab_strip->SetOpenerOfWebContentsAt(new_index, opener);
+  }
 
   if (active)
     navigate_params.target_contents->SetInitialFocus();

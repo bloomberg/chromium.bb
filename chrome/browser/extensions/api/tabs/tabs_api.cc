@@ -1262,6 +1262,11 @@ bool TabsUpdateFunction::RunAsync() {
                                       &opener_contents, nullptr))
       return false;
 
+    if (tab_strip->GetIndexOfWebContents(opener_contents) ==
+        TabStripModel::kNoTab) {
+      error_ = "Tab opener must be in the same window as the updated tab.";
+      return false;
+    }
     tab_strip->SetOpenerOfWebContentsAt(tab_index, opener_contents);
   }
 
