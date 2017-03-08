@@ -14,9 +14,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
-#include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
 #include "chrome/browser/command_updater.h"
-#include "chrome/browser/ui/omnibox/chrome_omnibox_client.h"
 #include "chrome/browser/ui/omnibox/clipboard_utils.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
@@ -24,6 +22,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/omnibox/browser/autocomplete_input.h"
 #include "components/omnibox/browser/autocomplete_match.h"
+#include "components/omnibox/browser/omnibox_client.h"
 #include "components/omnibox/browser/omnibox_edit_controller.h"
 #include "components/omnibox/browser/omnibox_edit_model.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
@@ -106,15 +105,12 @@ OmniboxState::~OmniboxState() {
 const char OmniboxViewViews::kViewClassName[] = "OmniboxViewViews";
 
 OmniboxViewViews::OmniboxViewViews(OmniboxEditController* controller,
-                                   Profile* profile,
+                                   std::unique_ptr<OmniboxClient> client,
                                    CommandUpdater* command_updater,
                                    bool popup_window_mode,
                                    LocationBarView* location_bar,
                                    const gfx::FontList& font_list)
-    : OmniboxView(
-          controller,
-          base::WrapUnique(new ChromeOmniboxClient(controller, profile))),
-      profile_(profile),
+    : OmniboxView(controller, std::move(client)),
       popup_window_mode_(popup_window_mode),
       security_level_(security_state::NONE),
       saved_selection_for_focus_change_(gfx::Range::InvalidRange()),
@@ -594,7 +590,7 @@ void OmniboxViewViews::EmphasizeURLComponents() {
                                              ? gfx::DIRECTIONALITY_FORCE_LTR
                                              : gfx::DIRECTIONALITY_FROM_TEXT);
   SetStyle(gfx::DIAGONAL_STRIKE, false);
-  UpdateTextStyle(text(), ChromeAutocompleteSchemeClassifier(profile_));
+  UpdateTextStyle(text(), model()->client()->GetSchemeClassifier());
 }
 
 bool OmniboxViewViews::IsItemForCommandIdDynamic(int command_id) const {

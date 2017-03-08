@@ -12,8 +12,10 @@
 #include "build/build_config.h"
 #include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
 #include "chrome/browser/command_updater.h"
+#include "chrome/browser/ui/omnibox/chrome_omnibox_client.h"
 #include "chrome/browser/ui/omnibox/chrome_omnibox_edit_controller.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/omnibox/browser/omnibox_edit_model.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/ime/text_edit_commands.h"
@@ -41,7 +43,7 @@ class TestingOmniboxView : public OmniboxViewViews {
   };
 
   TestingOmniboxView(OmniboxEditController* controller,
-                     Profile* profile,
+                     std::unique_ptr<OmniboxClient> client,
                      CommandUpdater* command_updater);
 
   static BaseTextEmphasis to_base_text_emphasis(bool emphasize) {
@@ -82,7 +84,6 @@ class TestingOmniboxView : public OmniboxViewViews {
   size_t update_popup_call_count_ = 0;
   base::string16 update_popup_text_;
   Range update_popup_selection_range_;
-  Profile* profile_;
 
   // Range of the last scheme logged by UpdateSchemeStyle().
   Range scheme_range_;
@@ -97,15 +98,14 @@ class TestingOmniboxView : public OmniboxViewViews {
 };
 
 TestingOmniboxView::TestingOmniboxView(OmniboxEditController* controller,
-                                       Profile* profile,
+                                       std::unique_ptr<OmniboxClient> client,
                                        CommandUpdater* command_updater)
     : OmniboxViewViews(controller,
-                       profile,
+                       std::move(client),
                        command_updater,
                        false,
                        nullptr,
-                       gfx::FontList()),
-      profile_(profile) {}
+                       gfx::FontList()) {}
 
 void TestingOmniboxView::ResetEmphasisTestState() {
   base_text_emphasis_ = UNSET;
@@ -123,7 +123,7 @@ void TestingOmniboxView::CheckUpdatePopupCallInfo(
 }
 
 void TestingOmniboxView::EmphasizeURLComponents() {
-  UpdateTextStyle(text(), ChromeAutocompleteSchemeClassifier(profile_));
+  UpdateTextStyle(text(), model()->client()->GetSchemeClassifier());
 }
 
 void TestingOmniboxView::UpdatePopup() {
@@ -211,7 +211,10 @@ void OmniboxViewViewsTest::SetUp() {
       new chromeos::input_method::MockInputMethodManagerImpl);
 #endif
   omnibox_view_ = base::MakeUnique<TestingOmniboxView>(
-      &omnibox_edit_controller_, &profile_, &command_updater_);
+      &omnibox_edit_controller_,
+      base::MakeUnique<ChromeOmniboxClient>(&omnibox_edit_controller_,
+                                            &profile_),
+      &command_updater_);
   test_api_ = base::MakeUnique<views::TextfieldTestApi>(omnibox_view_.get());
   omnibox_view_->Init();
 }

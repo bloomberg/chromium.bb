@@ -27,8 +27,8 @@
 
 class CommandUpdater;
 class LocationBarView;
+class OmniboxClient;
 class OmniboxPopupView;
-class Profile;
 
 namespace content {
 class WebContents;
@@ -56,7 +56,7 @@ class OmniboxViewViews
   static const char kViewClassName[];
 
   OmniboxViewViews(OmniboxEditController* controller,
-                   Profile* profile,
+                   std::unique_ptr<OmniboxClient> client,
                    CommandUpdater* command_updater,
                    bool popup_window_mode,
                    LocationBarView* location_bar,
@@ -199,8 +199,6 @@ class OmniboxViewViews
       std::set<ui::Clipboard::FormatType>* format_types) override;
   int OnDrop(const ui::OSExchangeData& data) override;
   void UpdateContextMenu(ui::SimpleMenuModel* menu_contents) override;
-
-  Profile* profile_;
 
   // When true, the location bar view is read only and also is has a slightly
   // different presentation (smaller font size). This is used for popups.
