@@ -9,6 +9,7 @@
 #include "platform/geometry/FloatPoint3D.h"
 #include "platform/graphics/CompositingReasons.h"
 #include "platform/graphics/CompositorElementId.h"
+#include "platform/graphics/paint/GeometryMapperTransformCache.h"
 #include "platform/graphics/paint/ScrollPaintPropertyNode.h"
 #include "platform/transforms/TransformationMatrix.h"
 #include "wtf/PassRefPtr.h"
@@ -207,6 +208,20 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
         m_compositorElementId(compositorElementId),
         m_scroll(scroll) {}
 
+  // For access to getTransformCache() and setCachedTransform.
+  friend class GeometryMapper;
+  friend class GeometryMapperTest;
+
+  GeometryMapperTransformCache& getTransformCache() const {
+    return const_cast<TransformPaintPropertyNode*>(this)->getTransformCache();
+  }
+
+  GeometryMapperTransformCache& getTransformCache() {
+    if (!m_geometryMapperTransformCache)
+      m_geometryMapperTransformCache.reset(new GeometryMapperTransformCache());
+    return *m_geometryMapperTransformCache.get();
+  }
+
   RefPtr<const TransformPaintPropertyNode> m_parent;
   TransformationMatrix m_matrix;
   FloatPoint3D m_origin;
@@ -215,6 +230,8 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
   CompositingReasons m_directCompositingReasons;
   CompositorElementId m_compositorElementId;
   RefPtr<ScrollPaintPropertyNode> m_scroll;
+
+  std::unique_ptr<GeometryMapperTransformCache> m_geometryMapperTransformCache;
 };
 
 // Redeclared here to avoid ODR issues.

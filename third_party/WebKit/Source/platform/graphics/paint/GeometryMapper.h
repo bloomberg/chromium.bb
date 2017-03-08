@@ -156,7 +156,7 @@ class PLATFORM_EXPORT GeometryMapper {
       const TransformPaintPropertyNode* ancestorTransformNode,
       bool& success);
 
-  FloatClipRect localToAncestorClipRectInternal(
+  const FloatClipRect& localToAncestorClipRectInternal(
       const ClipPaintPropertyNode* descendant,
       const ClipPaintPropertyNode* ancestorClip,
       const TransformPaintPropertyNode* ancestorTransform,
@@ -173,45 +173,11 @@ class PLATFORM_EXPORT GeometryMapper {
       const PropertyTreeState& ancestorState,
       bool& success);
 
-  // Maps from a transform node that is a descendant of the implied ancestor
-  // transform node to the combined transform between the descendant's and the
-  // ancestor's coordinate space.
-  // The "implied ancestor" is the key of the m_transformCache object for which
-  // this TransformCache is a value.
-  using TransformCache =
-      HashMap<const TransformPaintPropertyNode*, TransformationMatrix>;
-
-  // Returns the transform cache for the given ancestor transform node.
-  TransformCache& getTransformCache(const TransformPaintPropertyNode* ancestor);
-
-  // Maps from a descendant clip node to its equivalent "clip visual rect" in
-  // the local transform space of the implied ancestor clip node. The clip
-  // visual rect is defined as the intersection of all clips between the
-  // descendant and the ancestor (*not* including the ancestor) in the clip
-  // tree, individually transformed from their localTransformSpace into the
-  // ancestor's localTransformSpace. If one of the clips that contributes to it
-  // has a border radius, the hasRadius() field is set to true.
-  // The "implied ancestor" is the key of the TransformToClip cachefor which
-  // this ClipCache is a value.
-  using ClipCache = HashMap<const ClipPaintPropertyNode*, FloatClipRect>;
-
-  using TransformToClip =
-      HashMap<const TransformPaintPropertyNode*, std::unique_ptr<ClipCache>>;
-
-  // Returns the clip cache for the given transform space relative to the
-  // given ancestor clip node.
-  ClipCache& getClipCache(const ClipPaintPropertyNode* ancestorClip,
-                          const TransformPaintPropertyNode* ancestorTransform);
-
   friend class GeometryMapperTest;
   friend class PaintLayerClipperTest;
 
-  HashMap<const TransformPaintPropertyNode*, std::unique_ptr<TransformCache>>
-      m_transformCache;
-  HashMap<const ClipPaintPropertyNode*, std::unique_ptr<TransformToClip>>
-      m_clipCache;
-
   const TransformationMatrix m_identity;
+  const FloatClipRect m_infiniteClip;
 
   DISALLOW_COPY_AND_ASSIGN(GeometryMapper);
 };
