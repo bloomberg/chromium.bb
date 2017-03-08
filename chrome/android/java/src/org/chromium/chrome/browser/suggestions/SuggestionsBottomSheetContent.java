@@ -69,6 +69,10 @@ public class SuggestionsBottomSheetContent implements BottomSheet.BottomSheetCon
                 adapter.refreshSuggestions();
             }
         });
+
+        if (activity.getBottomSheet().getSheetState() != BottomSheet.SHEET_STATE_PEEK) {
+            adapter.refreshSuggestions();
+        }
     }
 
     @Override
