@@ -98,7 +98,6 @@ class CORE_EXPORT HTMLOptionElement final : public HTMLElement {
   bool matchesDefaultPseudoClass() const override;
   bool matchesEnabledPseudoClass() const override;
   void attachLayoutTree(const AttachContext& = AttachContext()) override;
-  void detachLayoutTree(const AttachContext& = AttachContext()) override;
   void parseAttribute(const AttributeModificationParams&) override;
   InsertionNotificationRequest insertedInto(ContainerNode*) override;
   void removedFrom(ContainerNode*) override;

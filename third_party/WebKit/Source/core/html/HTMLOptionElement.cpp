@@ -100,10 +100,6 @@ void HTMLOptionElement::attachLayoutTree(const AttachContext& context) {
   HTMLElement::attachLayoutTree(optionContext);
 }
 
-void HTMLOptionElement::detachLayoutTree(const AttachContext& context) {
-  HTMLElement::detachLayoutTree(context);
-}
-
 bool HTMLOptionElement::supportsFocus() const {
   HTMLSelectElement* select = ownerSelectElement();
   if (select && select->usesMenuList())
