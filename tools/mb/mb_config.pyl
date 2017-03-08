@@ -434,6 +434,7 @@
     },
 
     'official.desktop': {
+      'linux64': 'official',
       'mac64': 'official',
       'precise64': 'official',
 
