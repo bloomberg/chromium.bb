@@ -164,6 +164,8 @@ class SDKFetcher(object):
     """
     version = osutils.ReadFile(os.path.join(
         chrome_src_dir, constants.PATH_TO_CHROME_LKGM))
+    logging.debug('Loading LKGM version from "%s": %s',
+                  constants.PATH_TO_CHROME_LKGM, version)
     return version
 
   def _GetRepoCheckoutVersion(self, repo_root):
