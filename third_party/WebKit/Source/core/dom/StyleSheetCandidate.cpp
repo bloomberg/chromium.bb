@@ -110,14 +110,14 @@ StyleSheetCandidate::Type StyleSheetCandidate::typeOf(Node& node) {
       return HTMLStyle;
 
     NOTREACHED();
-    return HTMLStyle;
+    return Invalid;
   }
 
   if (isSVGStyleElement(node))
     return SVGStyle;
 
   NOTREACHED();
-  return HTMLStyle;
+  return Invalid;
 }
 
 StyleSheet* StyleSheetCandidate::sheet() const {
@@ -130,10 +130,10 @@ StyleSheet* StyleSheetCandidate::sheet() const {
       return toSVGStyleElement(node()).sheet();
     case Pi:
       return toProcessingInstruction(node()).sheet();
+    default:
+      NOTREACHED();
+      return nullptr;
   }
-
-  NOTREACHED();
-  return 0;
 }
 
 }  // namespace blink

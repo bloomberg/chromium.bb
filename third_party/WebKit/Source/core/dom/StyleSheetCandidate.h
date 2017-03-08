@@ -41,7 +41,7 @@ class StyleSheetCandidate {
   STACK_ALLOCATED();
 
  public:
-  enum Type { HTMLLink, HTMLStyle, SVGStyle, Pi };
+  enum Type { HTMLLink, HTMLStyle, SVGStyle, Pi, Invalid };
 
   StyleSheetCandidate(Node& node) : m_node(node), m_type(typeOf(node)) {}
 
