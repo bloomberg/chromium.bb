@@ -3,10 +3,9 @@
 <script src="../../http/tests/inspector/inspector-test.js"></script>
 <script src="../../http/tests/inspector/console-test.js"></script>
 <script>
-function overflow()
-{
-    overflow();
-}
+// Both the call and the function entry may trigger stack overflow.
+// Intentionally keep both on the same line to avoid flaky test failures.
+function overflow() { overflow(); }
 
 function doOverflow()
 {
