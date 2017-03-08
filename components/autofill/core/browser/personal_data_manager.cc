@@ -1952,7 +1952,6 @@ bool PersonalDataManager::UpdateWalletCardsAlreadyConvertedBillingAddresses(
         guids_merge_map->find(billing_address_id) == guids_merge_map->end()) {
       // Get the profile.
       auto it = server_id_profiles_map->find(billing_address_id);
-      DCHECK(it != server_id_profiles_map->end());
       if (it != server_id_profiles_map->end()) {
         AutofillProfile* billing_address = it->second;
 
