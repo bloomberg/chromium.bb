@@ -587,8 +587,8 @@ public class AccountSigninView extends FrameLayout implements ProfileDownloader.
 
     private String getSettingsControlDescription(boolean childAccount) {
         if (childAccount) {
-            return getResources().getString(R.string.signin_signed_in_settings_description) + '\n'
-                    + getResources().getString(R.string.signin_signed_in_description_uca_addendum);
+            return getResources().getString(
+                    R.string.signin_signed_in_settings_description_child_account);
         } else {
             return getResources().getString(R.string.signin_signed_in_settings_description);
         }

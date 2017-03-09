@@ -1975,8 +1975,8 @@ To obtain new licenses, connect to the internet and play your downloaded content
       <message name="IDS_SIGNIN_HI_NAME" desc="Title welcoming the user by their name after they have signed in.">
         Hi, <ph name="FULL_NAME">%1$s<ex>John Smith</ex></ph>
       </message>
-      <message name="IDS_SIGNIN_SIGNED_IN_DESCRIPTION_UCA_ADDENDUM" desc="Additional explanation for child accounts that synced settings are managed by parents.">
-        Your parents help manage these settings.
+      <message name="IDS_SIGNIN_SIGNED_IN_SETTINGS_DESCRIPTION_CHILD_ACCOUNT" desc="Label of the section containing the link to go to the settings page, when signing in to a child account.">
+        You and your parents can control how this works in <ph name="BEGIN_LINK1">&lt;LINK1&gt;</ph>Settings<ph name="END_LINK1">&lt;/LINK1&gt;</ph>
       </message>
       <message name="IDS_SIGNIN_SIGNED_IN_SETTINGS_DESCRIPTION" desc="Label of the section containing the link to go to the settings page.">
         Control how this works in <ph name="BEGIN_LINK1">&lt;LINK1&gt;</ph>Settings<ph name="END_LINK1">&lt;/LINK1&gt;</ph>
