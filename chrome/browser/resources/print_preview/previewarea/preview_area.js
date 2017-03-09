@@ -602,14 +602,21 @@ cr.define('print_preview', function() {
     },
 
     /**
-     * Called when the generation of a preview fails. Shows an error message.
-     * @private
+     * Cancels the timeout so that an error message can be shown.
      */
-    onPreviewGenerationFail_: function() {
+    cancelTimeout: function() {
       if (this.loadingTimeout_) {
         clearTimeout(this.loadingTimeout_);
         this.loadingTimeout_ = null;
       }
+    },
+
+    /**
+     * Called when the generation of a preview fails. Shows an error message.
+     * @private
+     */
+    onPreviewGenerationFail_: function() {
+      this.cancelTimeout();
       this.showMessage_(PreviewArea.MessageId_.PREVIEW_FAILED);
       cr.dispatchSimpleEvent(
           this, PreviewArea.EventType.PREVIEW_GENERATION_FAIL);
@@ -622,11 +629,7 @@ cr.define('print_preview', function() {
      * @private
      */
     onPluginLoad_: function() {
-      if (this.loadingTimeout_) {
-        clearTimeout(this.loadingTimeout_);
-        this.loadingTimeout_ = null;
-      }
-
+      this.cancelTimeout();
       this.setOverlayVisible_(false);
       this.isPluginReloaded_ = true;
       this.dispatchPreviewGenerationDoneIfReady_();

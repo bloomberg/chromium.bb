@@ -957,7 +957,10 @@ cr.define('print_preview', function() {
      */
     onSettingsInvalid_: function() {
       this.uiState_ = PrintPreview.UiState_.ERROR;
+      this.isPreviewGenerationInProgress_ = false;
+      this.printHeader_.isPrintButtonEnabled = false;
       console.error('Invalid settings error reported from native layer');
+      this.previewArea_.cancelTimeout();
       this.previewArea_.showCustomMessage(
           loadTimeData.getString('invalidPrinterSettings'));
     },
