@@ -87,8 +87,6 @@ SectionIdentifier SectionIdentifierForInfo(
     NSMutableDictionary<NSNumber*, ContentSuggestionsSectionInformation*>*
         sectionInfoBySectionIdentifier;
 
-// Reloads all the data from the data source, deleting all the current items.
-- (void)reloadData;
 // Adds a new section if needed and returns the section identifier.
 - (NSInteger)addSectionIfNeeded:
     (ContentSuggestionsSectionInformation*)sectionInformation;
@@ -120,13 +118,13 @@ SectionIdentifier SectionIdentifierForInfo(
     (ContentSuggestionsViewController*)collectionViewController {
   _collectionViewController = collectionViewController;
 
-  [self reloadData];
+  [self reloadAllData];
 }
 
 #pragma mark - ContentSuggestionsDataSink
 
 - (void)dataAvailable {
-  [self reloadData];
+  [self reloadAllData];
 }
 
 - (void)clearSuggestion:(ContentSuggestionIdentifier*)suggestionIdentifier {
@@ -157,6 +155,37 @@ SectionIdentifier SectionIdentifierForInfo(
              indexPathForItem:correspondingItem
       inSectionWithIdentifier:sectionIdentifier];
   [self.collectionViewController dismissEntryAtIndexPath:indexPath];
+}
+
+- (void)reloadAllData {
+  [self resetModels];
+  CollectionViewModel* model =
+      self.collectionViewController.collectionViewModel;
+
+  NSArray<ContentSuggestion*>* suggestions = [self.dataSource allSuggestions];
+
+  for (ContentSuggestion* suggestion in suggestions) {
+    NSInteger sectionIdentifier =
+        [self addSectionIfNeeded:suggestion.suggestionIdentifier.sectionInfo];
+    ContentSuggestionsArticleItem* articleItem =
+        [[ContentSuggestionsArticleItem alloc]
+            initWithType:ItemTypeForContentSuggestionType(suggestion.type)
+                   title:suggestion.title
+                subtitle:suggestion.text
+                delegate:self
+                     url:suggestion.url];
+
+    articleItem.publisher = suggestion.publisher;
+    articleItem.publishDate = suggestion.publishDate;
+
+    articleItem.suggestionIdentifier = suggestion.suggestionIdentifier;
+
+    [model addItem:articleItem toSectionWithIdentifier:sectionIdentifier];
+  }
+
+  if ([self.collectionViewController isViewLoaded]) {
+    [self.collectionViewController.collectionView reloadData];
+  }
 }
 
 #pragma mark - Public methods
@@ -205,37 +234,6 @@ SectionIdentifier SectionIdentifierForInfo(
 }
 
 #pragma mark - Private methods
-
-- (void)reloadData {
-  [self resetModels];
-  CollectionViewModel* model =
-      self.collectionViewController.collectionViewModel;
-
-  NSArray<ContentSuggestion*>* suggestions = [self.dataSource allSuggestions];
-
-  for (ContentSuggestion* suggestion in suggestions) {
-    NSInteger sectionIdentifier =
-        [self addSectionIfNeeded:suggestion.suggestionIdentifier.sectionInfo];
-    ContentSuggestionsArticleItem* articleItem =
-        [[ContentSuggestionsArticleItem alloc]
-            initWithType:ItemTypeForContentSuggestionType(suggestion.type)
-                   title:suggestion.title
-                subtitle:suggestion.text
-                delegate:self
-                     url:suggestion.url];
-
-    articleItem.publisher = suggestion.publisher;
-    articleItem.publishDate = suggestion.publishDate;
-
-    articleItem.suggestionIdentifier = suggestion.suggestionIdentifier;
-
-    [model addItem:articleItem toSectionWithIdentifier:sectionIdentifier];
-  }
-
-  if ([self.collectionViewController isViewLoaded]) {
-    [self.collectionViewController.collectionView reloadData];
-  }
-}
 
 - (NSInteger)addSectionIfNeeded:
     (ContentSuggestionsSectionInformation*)sectionInformation {

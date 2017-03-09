@@ -19,6 +19,10 @@
 // about the data source pushing something to the data sink.
 - (void)clearSuggestion:(ContentSuggestionIdentifier*)suggestionIdentifier;
 
+// Notifies the Data Sink that it must remove all current data and reload new
+// ones.
+- (void)reloadAllData;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_CONTENT_SUGGESTIONS_CONTENT_SUGGESTIONS_DATA_SINK_H_

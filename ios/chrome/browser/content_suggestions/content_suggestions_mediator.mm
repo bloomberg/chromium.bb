@@ -213,7 +213,7 @@ ntp_snippets::ContentSuggestion::ID SuggestionIDForSectionID(
 
 - (void)contentSuggestionsServiceFullRefreshRequired:
     (ntp_snippets::ContentSuggestionsService*)suggestionsService {
-  // Update dataSink.
+  [self.dataSink reloadAllData];
 }
 
 - (void)contentSuggestionsServiceShutdown:
