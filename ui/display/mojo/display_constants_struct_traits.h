@@ -19,6 +19,13 @@ struct EnumTraits<display::mojom::DisplayConnectionType,
                         display::DisplayConnectionType* out);
 };
 
+template <>
+struct EnumTraits<display::mojom::HDCPState, display::HDCPState> {
+  static display::mojom::HDCPState ToMojom(display::HDCPState type);
+  static bool FromMojom(display::mojom::HDCPState type,
+                        display::HDCPState* out);
+};
+
 };  // namespace mojo
 
 #endif  // UI_DISPLAY_MOJO_DISPLAY_CONSTANTS_STRUCT_TRAITS_H_

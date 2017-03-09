@@ -64,6 +64,11 @@ class DisplayStructTraitsTest : public testing::Test,
     callback.Run(std::move(in));
   }
 
+  void EchoHDCPState(display::HDCPState in,
+                     const EchoHDCPStateCallback& callback) override {
+    callback.Run(in);
+  }
+
   void EchoGammaRampRGBEntry(
       const GammaRampRGBEntry& in,
       const EchoGammaRampRGBEntryCallback& callback) override {
@@ -441,6 +446,13 @@ TEST_F(DisplayStructTraitsTest, DisplaySnapshotInternal) {
   GetTraitsTestProxy()->EchoDisplaySnapshotMojo(input->Clone(), &output);
 
   CheckDisplaySnapShotMojoEqual(*input, *output);
+}
+
+TEST_F(DisplayStructTraitsTest, HDCPStateBasic) {
+  const display::HDCPState input(HDCP_STATE_ENABLED);
+  display::HDCPState output;
+  GetTraitsTestProxy()->EchoHDCPState(input, &output);
+  EXPECT_EQ(input, output);
 }
 
 }  // namespace display

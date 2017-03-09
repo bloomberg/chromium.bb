@@ -5,6 +5,7 @@
 module display.mojom;
 
 import "ui/display/mojo/display.mojom";
+import "ui/display/mojo/display_constants.mojom";
 import "ui/display/mojo/display_layout.mojom";
 import "ui/display/mojo/display_mode.mojom";
 import "ui/display/mojo/display_snapshot_mojo.mojom";
@@ -26,6 +27,9 @@ interface DisplayStructTraitsTest {
 
   [Sync]
   EchoDisplayLayout(DisplayLayout in) => (DisplayLayout out);
+
+  [Sync]
+  EchoHDCPState(HDCPState in) => (HDCPState out);
 
   [Sync]
   EchoGammaRampRGBEntry(GammaRampRGBEntry in) => (GammaRampRGBEntry out);

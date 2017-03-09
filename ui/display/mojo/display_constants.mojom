@@ -16,3 +16,10 @@ enum DisplayConnectionType {
   DISPLAY_CONNECTION_TYPE_NETWORK = 64,
   DISPLAY_CONNECTION_TYPE_VIRTUAL = 128,
 };
+
+// Corresponding to display::HDCPState.
+enum HDCPState {
+  HDCP_STATE_UNDESIRED,
+  HDCP_STATE_DESIRED,
+  HDCP_STATE_ENABLED,
+};
