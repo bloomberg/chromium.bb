@@ -227,6 +227,32 @@ TEST_F('CrElementsPolicyPrefIndicatorTest', 'All', function() {
   mocha.run();
 });
 
+GEN('#if defined(OS_CHROMEOS)');
+/**
+ * @constructor
+ * @extends {CrElementsBrowserTest}
+ */
+function CrElementsPolicyNetworkIndicatorTest() {}
+
+CrElementsPolicyNetworkIndicatorTest.prototype = {
+  __proto__: CrElementsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload:
+      'chrome://resources/cr_elements/policy/cr_policy_network_indicator.html',
+
+  /** @override */
+  extraLibraries: CrElementsBrowserTest.prototype.extraLibraries.concat([
+    'cr_policy_strings.js',
+    'cr_policy_network_indicator_tests.js',
+  ]),
+};
+
+TEST_F('CrElementsPolicyNetworkIndicatorTest', 'All', function() {
+  mocha.run();
+});
+GEN('#endif');
+
 /**
  * @constructor
  * @extends {CrElementsBrowserTest}

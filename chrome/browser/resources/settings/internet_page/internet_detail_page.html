@@ -4,6 +4,7 @@
 <link rel="import" href="chrome://resources/cr_elements/network/cr_onc_types.html">
 <link rel="import" href="chrome://resources/cr_elements/policy/cr_policy_network_behavior.html">
 <link rel="import" href="chrome://resources/cr_elements/policy/cr_policy_network_indicator.html">
+<link rel="import" href="chrome://resources/cr_elements/policy/cr_policy_pref_indicator.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-collapse/iron-collapse.html">
@@ -41,7 +42,8 @@
       }
 
       paper-toggle-button,
-      cr-policy-network-indicator {
+      cr-policy-network-indicator,
+      cr-policy-pref-indicator {
         -webkit-margin-start: var(--checkbox-spacing);
       }
 
@@ -94,10 +96,10 @@
         </div>
         <template is="dom-if"
             if="[[isPolicySource(networkProperties.Source))]]">
-          <cr-policy-network-indicator
+          <cr-policy-pref-indicator
               indicator-type="[[getIndicatorTypeForSource(
                   networkProperties.Source)]]">
-          </cr-policy-network-indicator>
+          </cr-policy-pref-indicator>
         </template>
       </div>
       <div id="buttonDiv" class="layout horizontal center">

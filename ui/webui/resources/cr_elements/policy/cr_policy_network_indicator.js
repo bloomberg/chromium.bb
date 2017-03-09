@@ -17,7 +17,7 @@ Polymer({
      * Network property associated with the indicator.
      * @type {!CrOnc.ManagedProperty|undefined}
      */
-    property: {type: Object, observer: 'propertyChanged_'},
+    property: Object,
 
     /**
      * Recommended value for non enforced properties.
@@ -28,15 +28,15 @@ Polymer({
     /** @override */
     indicatorTooltip: {
       type: String,
-      computed: 'getNetworkIndicatorTooltip_(indicatorType)',
+      computed: 'getNetworkIndicatorTooltip_(indicatorType, property.*)',
     },
   },
 
-  /**
-   * @param {!CrOnc.ManagedProperty} property Always defined property value.
-   * @private
-   */
-  propertyChanged_: function(property) {
+  observers: ['propertyChanged_(property.*)'],
+
+  /** @private */
+  propertyChanged_: function() {
+    var property = this.property;
     if (!this.isControlled(property)) {
       this.indicatorType = CrPolicyIndicatorType.NONE;
       return;
