@@ -11,11 +11,10 @@ import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.RetryOnFailure;
+import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.chrome.test.util.ChromeRestriction;
-import org.chromium.content_public.browser.WebContents;
-import org.chromium.content_public.browser.WebContentsObserver;
 import org.chromium.net.test.EmbeddedTestServer;
 
 import java.util.concurrent.Callable;
@@ -37,21 +36,26 @@ public class TabThemeTest extends ChromeActivityTestCaseBase<ChromeTabbedActivit
     /**
      * A WebContentsObserver for watching changes in the theme color.
      */
-    private static class ThemeColorWebContentsObserver extends WebContentsObserver {
+    private static class ThemeColorWebContentsObserver extends EmptyTabObserver {
         private CallbackHelper mCallbackHelper;
+        private int mColor;
 
-        public ThemeColorWebContentsObserver(WebContents webContents) {
-            super(webContents);
+        public ThemeColorWebContentsObserver() {
             mCallbackHelper = new CallbackHelper();
         }
 
         @Override
-        public void didChangeThemeColor(int color) {
+        public void onDidChangeThemeColor(Tab tab, int color) {
+            mColor = color;
             mCallbackHelper.notifyCalled();
         }
 
         public CallbackHelper getCallbackHelper() {
             return mCallbackHelper;
+        }
+
+        public int getColor() {
+            return mColor;
         }
     }
 
@@ -86,9 +90,9 @@ public class TabThemeTest extends ChromeActivityTestCaseBase<ChromeTabbedActivit
 
         final Tab tab = getActivity().getActivityTab();
 
-        ThemeColorWebContentsObserver colorObserver =
-                new ThemeColorWebContentsObserver(tab.getWebContents());
+        ThemeColorWebContentsObserver colorObserver = new ThemeColorWebContentsObserver();
         CallbackHelper themeColorHelper = colorObserver.getCallbackHelper();
+        tab.addObserver(colorObserver);
 
         // Navigate to a themed page.
         int curCallCount = themeColorHelper.getCallCount();
@@ -111,18 +115,21 @@ public class TabThemeTest extends ChromeActivityTestCaseBase<ChromeTabbedActivit
         curCallCount = themeColorHelper.getCallCount();
         loadUrl(testServer.getURL(THEMED_TEST_PAGE));
         themeColorHelper.waitForCallback(curCallCount, 1);
+        assertColorsEqual(THEME_COLOR, colorObserver.getColor());
         assertColorsEqual(THEME_COLOR, tab.getThemeColor());
 
         // Navigate to a non-native non-themed page.
         curCallCount = themeColorHelper.getCallCount();
         loadUrl(testServer.getURL(TEST_PAGE));
         themeColorHelper.waitForCallback(curCallCount, 1);
+        assertColorsEqual(tab.getDefaultThemeColor(), colorObserver.getColor());
         assertColorsEqual(tab.getDefaultThemeColor(), tab.getThemeColor());
 
         // Navigate to a themed page from a non-native page.
         curCallCount = themeColorHelper.getCallCount();
         loadUrl(testServer.getURL(THEMED_TEST_PAGE));
         themeColorHelper.waitForCallback(curCallCount, 1);
+        assertColorsEqual(THEME_COLOR, colorObserver.getColor());
         assertColorsEqual(THEME_COLOR, tab.getThemeColor());
     }
 }
