@@ -11,6 +11,7 @@ import dalvik.system.DexClassLoader;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.UrlUtils;
+import org.chromium.content.browser.JavaBridgeTestCommon.Controller;
 
 import java.io.File;
 

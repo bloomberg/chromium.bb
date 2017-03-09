@@ -11,6 +11,7 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
+import org.chromium.content.browser.JavaBridgeTestCommon.Controller;
 import org.chromium.content_public.browser.JavaScriptCallback;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.NavigationController;
@@ -253,8 +254,7 @@ public class JavaBridgeChildFrameTest extends JavaBridgeTestBase {
     private String executeJavaScriptAndGetResult(final WebContents webContents,
             final String script) throws Throwable {
         final String[] result = new String[1];
-        class ResultCallback extends JavaBridgeTestBase.Controller
-                implements JavaScriptCallback {
+        class ResultCallback extends Controller implements JavaScriptCallback {
             @Override
             public void handleJavaScriptResult(String jsonResult) {
                 result[0] = jsonResult;
@@ -277,7 +277,7 @@ public class JavaBridgeChildFrameTest extends JavaBridgeTestBase {
      */
     private void loadDataSync(final NavigationController navigationController, final String data,
             final String mimeType, final boolean isBase64Encoded) throws Throwable {
-        loadUrl(navigationController, mTestCallbackHelperContainer,
+        loadUrl(navigationController, getTestCallBackHelperContainer(),
                 LoadUrlParams.createLoadDataParams(data, mimeType, isBase64Encoded));
     }
 }

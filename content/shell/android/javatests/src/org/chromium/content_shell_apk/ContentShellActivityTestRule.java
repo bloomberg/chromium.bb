@@ -52,26 +52,6 @@ public class ContentShellActivityTestRule extends ActivityTestRule<ContentShellA
     }
 
     @Override
-    public ContentShellActivity getActivityForTestCommon() {
-        return getActivity();
-    }
-
-    @Override
-    public Instrumentation getInstrumentationForTestCommon() {
-        return InstrumentationRegistry.getInstrumentation();
-    }
-
-    @Override
-    public ContentShellActivity launchActivityWithIntentForTestCommon(Intent t) {
-        return launchActivity(t);
-    }
-
-    @Override
-    public void runOnUiThreadForTestCommon(Runnable runnable) throws Throwable {
-        runOnUiThread(runnable);
-    }
-
-    @Override
     protected void beforeActivityLaunched() {
         mDelegate.assertScreenIsOn();
     }
@@ -181,4 +161,44 @@ public class ContentShellActivityTestRule extends ActivityTestRule<ContentShellA
     @Target(ElementType.METHOD)
     @Retention(RetentionPolicy.RUNTIME)
     public @interface RerunWithUpdatedContainerView {}
+
+    @Override
+    public ContentShellActivity getActivityForTestCommon() {
+        return getActivity();
+    }
+
+    @Override
+    public Instrumentation getInstrumentationForTestCommon() {
+        return InstrumentationRegistry.getInstrumentation();
+    }
+
+    @Override
+    public ContentShellActivity launchActivityWithIntentForTestCommon(Intent t) {
+        return launchActivity(t);
+    }
+
+    @Override
+    public void runOnUiThreadForTestCommon(Runnable runnable) throws Throwable {
+        runOnUiThread(runnable);
+    }
+
+    @Override
+    public ContentViewCore getContentViewCoreForTestCommon() {
+        return getContentViewCore();
+    }
+
+    @Override
+    public WebContents getWebContentsForTestCommon() {
+        return getWebContents();
+    }
+
+    @Override
+    public void waitForActiveShellToBeDoneLoadingForTestCommon() {
+        waitForActiveShellToBeDoneLoading();
+    }
+
+    @Override
+    public ContentShellActivity launchContentShellWithUrlForTestCommon(String url) {
+        return launchContentShellWithUrl(url);
+    }
 }

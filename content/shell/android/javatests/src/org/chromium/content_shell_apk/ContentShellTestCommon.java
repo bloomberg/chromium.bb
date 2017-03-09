@@ -191,5 +191,9 @@ public final class ContentShellTestCommon {
         T launchActivityWithIntentForTestCommon(Intent t);
         T getActivityForTestCommon();
         void runOnUiThreadForTestCommon(Runnable runnable) throws Throwable;
+        ContentViewCore getContentViewCoreForTestCommon();
+        ContentShellActivity launchContentShellWithUrlForTestCommon(String url);
+        WebContents getWebContentsForTestCommon();
+        void waitForActiveShellToBeDoneLoadingForTestCommon();
     }
 }

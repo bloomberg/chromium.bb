@@ -8,6 +8,7 @@ import android.support.test.filters.SmallTest;
 
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.test.util.Feature;
+import org.chromium.content.browser.JavaBridgeTestCommon.Controller;
 
 /**
  * Part of the test suite for the Java Bridge. This test tests the

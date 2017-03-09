@@ -13,6 +13,7 @@ import junit.framework.Assert;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
+import org.chromium.content.browser.JavaBridgeTestCommon.Controller;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer;
 import org.chromium.content_public.browser.LoadUrlParams;
 
@@ -179,7 +180,7 @@ public class JavaBridgeBasicsTest extends JavaBridgeTestBase {
     @Feature({"AndroidWebView", "Android-JavaBridge"})
     public void testRemoveObjectNotAdded() throws Throwable {
         TestCallbackHelperContainer.OnPageFinishedHelper onPageFinishedHelper =
-                mTestCallbackHelperContainer.getOnPageFinishedHelper();
+                getTestCallBackHelperContainer().getOnPageFinishedHelper();
         int currentCallCount = onPageFinishedHelper.getCallCount();
         runTestOnUiThread(new Runnable() {
             @Override
@@ -863,7 +864,7 @@ public class JavaBridgeBasicsTest extends JavaBridgeTestBase {
         // Manually inject the Test object, making sure to use the
         // ContentViewCore#addJavascriptInterface, not the possibly unsafe version.
         TestCallbackHelperContainer.OnPageFinishedHelper onPageFinishedHelper =
-                mTestCallbackHelperContainer.getOnPageFinishedHelper();
+                getTestCallBackHelperContainer().getOnPageFinishedHelper();
         int currentCallCount = onPageFinishedHelper.getCallCount();
         runTestOnUiThread(new Runnable() {
             @Override

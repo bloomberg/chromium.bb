@@ -40,31 +40,6 @@ public class ContentShellTestBase extends BaseActivityInstrumentationTestCase<Co
         mDelegate = new ContentShellTestCommon(this);
     }
 
-    @SuppressWarnings("deprecation")
-    @Override
-    public ContentShellActivity getActivityForTestCommon() {
-        return getActivity();
-    }
-
-    @Override
-    @SuppressWarnings("deprecation")
-    public Instrumentation getInstrumentationForTestCommon() {
-        return getInstrumentation();
-    }
-
-    @SuppressWarnings("deprecation")
-    @Override
-    public ContentShellActivity launchActivityWithIntentForTestCommon(Intent intent) {
-        setActivityIntent(intent);
-        return getActivity();
-    }
-
-    @SuppressWarnings("deprecation")
-    @Override
-    public void runOnUiThreadForTestCommon(Runnable runnable) throws Throwable {
-        runTestOnUiThread(runnable);
-    }
-
     @Override
     @SuppressWarnings("deprecation")
     protected void setUp() throws Exception {
@@ -184,5 +159,50 @@ public class ContentShellTestBase extends BaseActivityInstrumentationTestCase<Co
             throw new Throwable("@RerunWithUpdatedContainerView failed."
                     + " See ContentShellTestBase#runTest.", e);
         }
+    }
+
+    @SuppressWarnings("deprecation")
+    @Override
+    public ContentShellActivity getActivityForTestCommon() {
+        return getActivity();
+    }
+
+    @Override
+    @SuppressWarnings("deprecation")
+    public Instrumentation getInstrumentationForTestCommon() {
+        return getInstrumentation();
+    }
+
+    @SuppressWarnings("deprecation")
+    @Override
+    public ContentShellActivity launchActivityWithIntentForTestCommon(Intent intent) {
+        setActivityIntent(intent);
+        return getActivity();
+    }
+
+    @SuppressWarnings("deprecation")
+    @Override
+    public void runOnUiThreadForTestCommon(Runnable runnable) throws Throwable {
+        runTestOnUiThread(runnable);
+    }
+
+    @Override
+    public ContentViewCore getContentViewCoreForTestCommon() {
+        return getContentViewCore();
+    }
+
+    @Override
+    public WebContents getWebContentsForTestCommon() {
+        return getWebContents();
+    }
+
+    @Override
+    public void waitForActiveShellToBeDoneLoadingForTestCommon() {
+        waitForActiveShellToBeDoneLoading();
+    }
+
+    @Override
+    public ContentShellActivity launchContentShellWithUrlForTestCommon(String url) {
+        return launchContentShellWithUrl(url);
     }
 }
