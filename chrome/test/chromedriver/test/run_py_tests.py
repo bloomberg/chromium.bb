@@ -71,14 +71,19 @@ _NEGATIVE_FILTER = [
 
 _VERSION_SPECIFIC_FILTER = {}
 _VERSION_SPECIFIC_FILTER['HEAD'] = [
-    # https://code.google.com/p/chromedriver/issues/detail?id=992
+    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=992
     'ChromeDownloadDirTest.testDownloadDirectoryOverridesExistingPreferences',
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1673
     'ChromeDownloadDirTest.testFileDownloadWithGet',
     'ChromeDriverPageLoadTimeoutTest.*',
 ]
+_VERSION_SPECIFIC_FILTER['58'] = [
+    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1673
+    'ChromeDownloadDirTest.testFileDownloadWithGet',
+    'ChromeDriverPageLoadTimeoutTest.*',
+]
 _VERSION_SPECIFIC_FILTER['57'] = [
-    # https://code.google.com/p/chromedriver/issues/detail?id=992
+    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=992
     'ChromeDownloadDirTest.testDownloadDirectoryOverridesExistingPreferences',
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1625
     'ChromeDriverTest.testWindowMaximize',
@@ -91,7 +96,7 @@ _VERSION_SPECIFIC_FILTER['57'] = [
 
 _OS_SPECIFIC_FILTER = {}
 _OS_SPECIFIC_FILTER['win'] = [
-    # https://code.google.com/p/chromedriver/issues/detail?id=299
+    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=299
     'ChromeLogPathCapabilityTest.testChromeLogPath',
 ]
 _OS_SPECIFIC_FILTER['linux'] = [
@@ -134,7 +139,7 @@ _ANDROID_NEGATIVE_FILTER['chrome'] = (
         'ChromeDownloadDirTest.*',
         # https://crbug.com/274650
         'ChromeDriverTest.testCloseWindow',
-        # https://code.google.com/p/chromedriver/issues/detail?id=298
+        # https://bugs.chromium.org/p/chromedriver/issues/detail?id=298
         'ChromeDriverTest.testWindowPosition',
         'ChromeDriverTest.testWindowSize',
         'ChromeDriverTest.testWindowMaximize',
@@ -148,7 +153,7 @@ _ANDROID_NEGATIVE_FILTER['chrome'] = (
         'SessionHandlingTest.testGetSessions',
         # Android doesn't use the chrome://print dialog.
         'ChromeDriverTest.testCanSwitchToPrintPreviewDialog',
-        # https://code.google.com/p/chromedriver/issues/detail?id=1175
+        # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1175
         'ChromeDriverTest.testChromeDriverSendLargeData',
         # Chrome 44+ for Android doesn't dispatch the dblclick event
         'ChromeDriverTest.testMouseDoubleClick',
@@ -821,7 +826,7 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
     self.assertEquals(position, self._driver.GetWindowPosition())
 
     # Resize so the window isn't moved offscreen.
-    # See https://code.google.com/p/chromedriver/issues/detail?id=297.
+    # See https://bugs.chromium.org/p/chromedriver/issues/detail?id=297.
     self._driver.SetWindowSize(300, 300)
 
     self._driver.SetWindowPosition(100, 200)
@@ -843,7 +848,7 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
     self.assertNotEqual([100, 200], self._driver.GetWindowPosition())
     self.assertNotEqual([600, 400], self._driver.GetWindowSize())
     # Set size first so that the window isn't moved offscreen.
-    # See https://code.google.com/p/chromedriver/issues/detail?id=297.
+    # See https://bugs.chromium.org/p/chromedriver/issues/detail?id=297.
     self._driver.SetWindowSize(600, 400)
     self._driver.SetWindowPosition(100, 200)
     self.assertEquals([100, 200], self._driver.GetWindowPosition())
@@ -928,7 +933,7 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
   def testTabCrash(self):
     # If a tab is crashed, the session will be deleted.
     # When 31 is released, will reload the tab instead.
-    # https://code.google.com/p/chromedriver/issues/detail?id=547
+    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=547
     self.assertRaises(chromedriver.UnknownError,
                       self._driver.Load, 'chrome://crash')
     self.assertRaises(chromedriver.NoSuchSession,
@@ -1170,7 +1175,7 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
     self.assertEquals(0, self._driver.ExecuteScript(scroll_top))
     target = self._driver.FindElement('id', 'target')
     self._driver.TouchScroll(target, 47, 53)
-    # https://code.google.com/p/chromedriver/issues/detail?id=1179
+    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1179
     self.assertAlmostEqual(47, self._driver.ExecuteScript(scroll_left), delta=1)
     self.assertAlmostEqual(53, self._driver.ExecuteScript(scroll_top), delta=1)
 

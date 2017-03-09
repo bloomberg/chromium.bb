@@ -44,7 +44,7 @@ _REVISION_NEGATIVE_FILTER['HEAD'] = [
     'ExecutingJavascriptTest.testShouldThrowAnExceptionWithMessageAndStacktraceWhenTheJavascriptIsBad',
     'FormHandlingTest.testShouldNotBeAbleToSubmitAFormThatDoesNotExist',
     'FrameSwitchingTest.testShouldNotBeAbleToDoAnythingTheFrameIsDeletedFromUnderUs',
-    # https://code.google.com/p/chromedriver/issues/detail?id=1249
+    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1249
     'FrameSwitchingTest.testGetCurrentUrl',
     'I18nTest.testShouldBeAbleToActivateIMEEngine',
     # Broken because AddWebStorage.java is broken.
@@ -84,16 +84,16 @@ _REVISION_NEGATIVE_FILTER['HEAD'] = [
     'WindowTest.testCanMaximizeTheWindowFromIframe',
     'WindowTest.testSetsTheSizeOfTheCurrentWindow',
     'WindowTest.testCanMaximizeTheWindow',
-    # Flaky: https://code.google.com/p/chromedriver/issues/detail?id=528
+    # Flaky: https://bugs.chromium.org/p/chromedriver/issues/detail?id=528
     'PageLoadingTest.testShouldDoNothingIfThereIsNothingToGoBackTo',
-    # Flaky: https://code.google.com/p/chromedriver/issues/detail?id=653
+    # Flaky: https://bugs.chromium.org/p/chromedriver/issues/detail?id=653
     'PageLoadingTest.testShouldBeAbleToNavigateBackInTheBrowserHistoryInPresenceOfIframes',
     'PageLoadingTest.testShouldBeAbleToNavigateBackInTheBrowserHistory',
-    # https://code.google.com/p/chromedriver/issues/detail?id=1117
+    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1117
     'PageLoadingTest.testShouldBeAbleToAccessPagesWithAnInsecureSslCertificate',
-    # Flaky: https://code.google.com/p/chromedriver/issues/detail?id=1113
+    # Flaky: https://bugs.chromium.org/p/chromedriver/issues/detail?id=1113
     'FrameSwitchingTest.testShouldNotSwitchMagicallyToTheTopWindow',
-    # Flaky: https://code.google.com/p/chromedriver/issues/detail?id=1151
+    # Flaky: https://bugs.chromium.org/p/chromedriver/issues/detail?id=1151
     'DragAndDropTest.testDragAndDrop',
     'DragAndDropTest.testShouldAllowUsersToDragAndDropToElementsOffTheCurrentViewPort',
     'DragAndDropTest.testElementInDiv',
@@ -102,6 +102,11 @@ _REVISION_NEGATIVE_FILTER['HEAD'] = [
     'BasicMouseInterfaceTest.testDraggingElementWithMouseMovesItToAnotherList',
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1674
     'WindowSwitchingTest.testShouldBeAbleToIterateOverAllOpenWindows',
+]
+_REVISION_NEGATIVE_FILTER['58'] = (
+    _REVISION_NEGATIVE_FILTER['HEAD'] + [
+        # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1674
+        'WindowSwitchingTest.testShouldBeAbleToIterateOverAllOpenWindows',
 ]
 _REVISION_NEGATIVE_FILTER['57'] = (
     _REVISION_NEGATIVE_FILTER['HEAD'] + [
@@ -113,33 +118,33 @@ _REVISION_NEGATIVE_FILTER['57'] = (
 
 _OS_NEGATIVE_FILTER = {}
 _OS_NEGATIVE_FILTER['win'] = [
-    # Flaky: https://code.google.com/p/chromedriver/issues/detail?id=373
+    # Flaky: https://bugs.chromium.org/p/chromedriver/issues/detail?id=373
     'RenderedWebElementTest.testHoverPersists',
     'RenderedWebElementTest.canClickOnASuckerFishStyleMenu',
-    # Flaky: https://code.google.com/p/chromedriver/issues/detail?id=416
+    # Flaky: https://bugs.chromium.org/p/chromedriver/issues/detail?id=416
     'TakesScreenshotTest.testShouldCaptureScreenshotAtFramePageAfterSwitching',
     'TakesScreenshotTest.testShouldCaptureScreenshotAtFramePage',
 ]
 _OS_NEGATIVE_FILTER['linux'] = [
-    # Flaky: https://code.google.com/p/chromedriver/issues/detail?id=416
+    # Flaky: https://bugs.chromium.org/p/chromedriver/issues/detail?id=416
     'TakesScreenshotTest.testShouldCaptureScreenshotAtFramePage',
-    # Flaky: https://code.google.com/p/chromedriver/issues/detail?id=1148
+    # Flaky: https://bugs.chromium.org/p/chromedriver/issues/detail?id=1148
     'CombinedInputActionsTest.testCombiningShiftAndClickResultsInANewWindow',
-    # Flaky: https://code.google.com/p/chromedriver/issues/detail?id=1150
+    # Flaky: https://bugs.chromium.org/p/chromedriver/issues/detail?id=1150
     'BasicKeyboardInterfaceTest.testBasicKeyboardInputOnActiveElement',
 ]
 _OS_NEGATIVE_FILTER['mac'] = [
-    # https://code.google.com/p/chromedriver/issues/detail?id=26
+    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=26
     'AlertsTest.testAlertShouldNotAllowAdditionalCommandsIfDismissed',
     'AlertsTest.testShouldAllowUsersToDismissAnAlertManually',
     'FormHandlingTest.handleFormWithJavascriptAction',
-    # Flaky: https://code.google.com/p/chromedriver/issues/detail?id=354
+    # Flaky: https://bugs.chromium.org/p/chromedriver/issues/detail?id=354
     'AlertsTest.testShouldAllowUsersToAcceptAnAlertInAFrame',
-    # Flaky: https://code.google.com/p/chromedriver/issues/detail?id=375
+    # Flaky: https://bugs.chromium.org/p/chromedriver/issues/detail?id=375
     'PageLoadingTest.testShouldBeAbleToNavigateBackInTheBrowserHistoryInPresenceOfIframes',
-    # Flaky: https://code.google.com/p/chromedriver/issues/detail?id=416
+    # Flaky: https://bugs.chromium.org/p/chromedriver/issues/detail?id=416
     'TakesScreenshotTest.testShouldCaptureScreenshotAtFramePage',
-    # Flaky: https://code.google.com/p/chromedriver/issues/detail?id=1149
+    # Flaky: https://bugs.chromium.org/p/chromedriver/issues/detail?id=1149
     'ChromeDriverTests.testShouldAllowTheUserToSwitchToAnIFrameAndRemainFocusedOnIt',
 ]
 
@@ -193,26 +198,26 @@ _OS_NEGATIVE_FILTER['android:chrome'] = [
     # Test is written using local files; doesn't work on Android.
     'UploadTest.testFileUploading',
 
-    # Flaky: https://code.google.com/p/chromedriver/issues/detail?id=528
+    # Flaky: https://bugs.chromium.org/p/chromedriver/issues/detail?id=528
     'PageLoadingTest.testShouldDoNothingIfThereIsNothingToGoBackTo',
 
-    # https://code.google.com/p/chromedriver/issues/detail?id=604
+    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=604
     'I18nTest.testShouldBeAbleToActivateIMEEngine',
 
-    # https://code.google.com/p/chromium/issues/detail?id=418590
+    # https://bugs.chromium.org/p/chromium/issues/detail?id=418590
     'ClearTest.testContentEditableAreaShouldClear',
     'ClickScrollingTest.testClickingOnAnchorScrollsPage',
     'JavascriptEnabledDriverTest.testChangeEventIsFiredAppropriatelyWhenFocusIsLost',
     'TypingTest.testShouldBeAbleToTypeIntoEmptyContentEditableElement',
 
-    # https://code.google.com/p/chromedriver/issues/detail?id=922
+    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=922
     'CorrectEventFiringTest.testShouldEmitOnClickEventsWhenSelectingElements',
     'CorrectEventFiringTest.testSendingKeysToAnotherElementShouldCauseTheBlurEventToFire',
 
-    # https://code.google.com/p/chromedriver/issues/detail?id=1176
+    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1176
     'ChromeDriverTests.clientLogShouldBeEnabledByDefault',
 
-    # https://code.google.com/p/chromedriver/issues/detail?id=1119
+    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1119
     'CombinedInputActionsTest.testCanClickOnLinksWithAnOffset',
     'CombinedInputActionsTest.testMouseMovementWorksWhenNavigatingToAnotherPage',
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1005
@@ -247,7 +252,7 @@ _OS_NEGATIVE_FILTER['android:chromium'] = (
 )
 _OS_NEGATIVE_FILTER['android:chrome_beta'] = (
     _OS_NEGATIVE_FILTER['android:chrome'] + [
-         # https://code.google.com/p/chromedriver/issues/detail?id=1220
+         # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1220
         'BasicMouseInterfaceTest.testDragAndDrop',
         'BasicMouseInterfaceTest.testDraggingElementWithMouseFiresEvents',
         'BasicMouseInterfaceTest.testDraggingElementWithMouseMovesItToAnotherList',
@@ -269,7 +274,7 @@ _OS_NEGATIVE_FILTER['android:chrome_beta'] = (
 )
 _OS_NEGATIVE_FILTER['android:chromedriver_webview_shell'] = (
     _OS_NEGATIVE_FILTER['android:chrome'] + [
-         # https://code.google.com/p/chromedriver/issues/detail?id=645
+         # https://bugs.chromium.org/p/chromedriver/issues/detail?id=645
         'ClickScrollingTest.testShouldBeAbleToClickElementInAFrameThatIsOutOfView',
         'ClickScrollingTest.testShouldBeAbleToClickElementThatIsOutOfViewInAFrameThatIsOutOfView',
         'FormHandlingTest.handleFormWithJavascriptAction',
