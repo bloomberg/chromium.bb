@@ -10,6 +10,7 @@
 
 #import "ios/chrome/browser/ui/settings/settings_navigation_controller.h"
 #import "ios/clean/chrome/browser/browser_coordinator+internal.h"
+#import "ios/clean/chrome/browser/model/browser.h"
 #import "ios/clean/chrome/browser/ui/commands/settings_commands.h"
 #import "ios/shared/chrome/browser/coordinator_context/coordinator_context.h"
 
@@ -29,8 +30,10 @@
 
 - (void)start {
   self.viewController = [SettingsNavigationController
-      newSettingsMainControllerWithMainBrowserState:self.browserState
-                                currentBrowserState:self.browserState
+      newSettingsMainControllerWithMainBrowserState:self.browser
+                                                        ->browser_state()
+                                currentBrowserState:self.browser
+                                                        ->browser_state()
                                            delegate:self];
   [self.context.baseViewController presentViewController:self.viewController
                                                 animated:self.context.animated

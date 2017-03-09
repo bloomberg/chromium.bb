@@ -11,10 +11,8 @@
 
 #import <UIKit/UIKit.h>
 
+class Browser;
 @class CoordinatorContext;
-namespace ios {
-class ChromeBrowserState;
-}
 
 // An object that manages a UI component via a view controller.
 // This is the public interface to this class; subclasses should also import
@@ -26,10 +24,10 @@ class ChromeBrowserState;
 // The context object for this coordinator.
 @property(nonatomic, strong, readonly) CoordinatorContext* context;
 
-// The browser state used by this coordinator and passed into any child
+// The browser object used by this coordinator and passed into any child
 // coordinators added to it. This is a weak pointer, and setting this property
-// doesn't transfer ownership of the browser state.
-@property(nonatomic, assign) ios::ChromeBrowserState* browserState;
+// doesn't transfer ownership of the browser.
+@property(nonatomic, assign) Browser* browser;
 
 // The basic lifecycle methods for coordinators are -start and -stop. These
 // are blank template methods; child classes are expected to implement them and

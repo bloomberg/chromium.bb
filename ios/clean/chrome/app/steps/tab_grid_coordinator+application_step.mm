@@ -11,6 +11,8 @@
 #import "base/supports_user_data.h"
 #import "ios/clean/chrome/app/application_state.h"
 #import "ios/clean/chrome/browser/browser_coordinator+internal.h"
+#import "ios/clean/chrome/browser/model/browser.h"
+#import "ios/clean/chrome/browser/model/browser_list.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -43,7 +45,8 @@ const char kRootCoordinatorContainerKey[] = "root_coordinator";
 }
 
 - (void)runInState:(ApplicationState*)state {
-  self.browserState = state.browserState;
+  self.browser =
+      BrowserList::FromBrowserState(state.browserState)->CreateNewBrowser();
   [self start];
 
   state.window.rootViewController = self.viewController;

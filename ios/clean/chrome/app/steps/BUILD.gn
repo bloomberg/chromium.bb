@@ -29,6 +29,7 @@ source_set("steps") {
     "//ios/chrome/browser/web:web_internal",
     "//ios/clean/chrome/app:application_state",
     "//ios/clean/chrome/browser",
+    "//ios/clean/chrome/browser/model",
     "//ios/clean/chrome/browser/ui/tab_grid",
     "//ios/net",
     "//ios/web:web_arc",

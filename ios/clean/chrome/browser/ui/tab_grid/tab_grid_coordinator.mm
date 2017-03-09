@@ -13,6 +13,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/clean/chrome/browser/browser_coordinator+internal.h"
+#import "ios/clean/chrome/browser/model/browser.h"
 #import "ios/clean/chrome/browser/ui/commands/settings_commands.h"
 #import "ios/clean/chrome/browser/ui/commands/tab_commands.h"
 #import "ios/clean/chrome/browser/ui/commands/tab_grid_commands.h"
@@ -47,11 +48,11 @@
 
 #pragma mark - Properties
 
-- (void)setBrowserState:(ios::ChromeBrowserState*)browserState {
-  [super setBrowserState:browserState];
+- (void)setBrowser:(Browser*)browser {
+  [super setBrowser:browser];
 
   for (int i = 0; i < 7; i++) {
-    web::WebState::CreateParams webStateCreateParams(browserState);
+    web::WebState::CreateParams webStateCreateParams(browser->browser_state());
     std::unique_ptr<web::WebState> webState =
         web::WebState::Create(webStateCreateParams);
     _webStates.push_back(std::move(webState));
@@ -118,7 +119,8 @@
 }
 
 - (void)createNewTabAtIndexPath:(NSIndexPath*)indexPath {
-  web::WebState::CreateParams webStateCreateParams(self.browserState);
+  web::WebState::CreateParams webStateCreateParams(
+      self.browser->browser_state());
   std::unique_ptr<web::WebState> webState =
       web::WebState::Create(webStateCreateParams);
   _webStates.push_back(std::move(webState));

@@ -27,7 +27,7 @@
 @implementation BrowserCoordinator
 
 @synthesize context = _context;
-@synthesize browserState = _browserState;
+@synthesize browser = _browser;
 @synthesize childCoordinators = _childCoordinators;
 @synthesize parentCoordinator = _parentCoordinator;
 @synthesize overlaying = _overlaying;
@@ -66,7 +66,7 @@
          "property.";
   [self.childCoordinators addObject:coordinator];
   coordinator.parentCoordinator = self;
-  coordinator.browserState = self.browserState;
+  coordinator.browser = self.browser;
   coordinator.context.baseViewController = self.viewController;
 }
 
