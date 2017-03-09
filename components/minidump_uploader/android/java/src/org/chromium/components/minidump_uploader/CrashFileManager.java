@@ -45,8 +45,6 @@ public class CrashFileManager {
     @VisibleForTesting
     public static final String CRASH_DUMP_LOGFILE = "uploads.log";
 
-    private static final Pattern MINIDUMP_FIRST_TRY_PATTERN = Pattern.compile("\\.dmp([0-9]*)$\\z");
-
     private static final Pattern MINIDUMP_MIME_FIRST_TRY_PATTERN =
             Pattern.compile("\\.dmp([0-9]+)$\\z");
 
@@ -123,10 +121,6 @@ public class CrashFileManager {
             Log.w(TAG, "Unable to delete " + fileToDelete.getAbsolutePath());
         }
         return isSuccess;
-    }
-
-    public File[] getMinidumpWithoutLogcat() {
-        return listCrashFiles(MINIDUMP_FIRST_TRY_PATTERN);
     }
 
     public static boolean isMinidumpMIMEFirstTry(String path) {

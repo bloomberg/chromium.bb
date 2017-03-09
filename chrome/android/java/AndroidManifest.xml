@@ -805,10 +805,6 @@ by a child template that "extends" this file.
             </intent-filter>
         </service>
         <service android:name="android.support.customtabs.PostMessageService" />
-        <service android:name="org.chromium.chrome.browser.crash.LogcatExtractionService"
-                 android:exported="false"/>
-        <service android:name="org.chromium.chrome.browser.crash.MinidumpPreparationService"
-                 android:exported="false"/>
         <service android:name="org.chromium.chrome.browser.crash.MinidumpUploadService"
             android:exported="false"/>
 

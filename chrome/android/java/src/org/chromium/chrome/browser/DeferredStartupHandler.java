@@ -19,6 +19,7 @@ import android.view.inputmethod.InputMethodSubtype;
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.FieldTrialList;
+import org.chromium.base.Log;
 import org.chromium.base.PowerMonitor;
 import org.chromium.base.SysUtils;
 import org.chromium.base.ThreadUtils;
@@ -26,6 +27,7 @@ import org.chromium.base.TraceEvent;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.bookmarkswidget.BookmarkWidgetProvider;
+import org.chromium.chrome.browser.crash.LogcatExtractionRunnable;
 import org.chromium.chrome.browser.crash.MinidumpUploadService;
 import org.chromium.chrome.browser.init.ProcessInitializationHandler;
 import org.chromium.chrome.browser.locale.LocaleManager;
@@ -48,7 +50,10 @@ import org.chromium.chrome.browser.webapps.WebappRegistry;
 import org.chromium.components.minidump_uploader.CrashFileManager;
 import org.chromium.content.browser.ChildProcessLauncher;
 
+import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
@@ -59,7 +64,7 @@ import java.util.concurrent.TimeUnit;
  * Handler for application level tasks to be completed on deferred startup.
  */
 public class DeferredStartupHandler {
-    private static final String TAG = "DeferredStartupHandler";
+    private static final String TAG = "DeferredStartup";
     /** Prevents race conditions when deleting snapshot database. */
     private static final Object SNAPSHOT_DATABASE_LOCK = new Object();
     private static final String SNAPSHOT_DATABASE_REMOVED = "snapshot_database_removed";
@@ -234,6 +239,21 @@ public class DeferredStartupHandler {
 
     private void initAsyncDiskTask() {
         new AsyncTask<Void, Void, Void>() {
+            /**
+             * The threshold after which it's no longer appropriate to try to attach logcat output
+             * to a minidump file.
+             * Note: This threshold of 12 hours was chosen fairly imprecisely, based on the
+             * following intuition: On the one hand, Chrome can only access its own logcat output,
+             * so the most recent lines should be relevant when available. On a typical device,
+             * multiple hours of logcat output are available. On the other hand, it's important to
+             * provide an escape hatch in case the logcat extraction code itself crashes, as
+             * described in the doesCrashMinidumpNeedLogcat() documentation. Since this is a fairly
+             * small and relatively frequently-executed piece of code, crashes are expected to be
+             * unlikely; so it's okay for the escape hatch to be hard to use -- it's intended as an
+             * extreme last resort.
+             */
+            private static final long LOGCAT_RELEVANCE_THRESHOLD_IN_HOURS = 12;
+
             private long mAsyncTaskStartTime;
 
             @Override
@@ -242,22 +262,7 @@ public class DeferredStartupHandler {
                     TraceEvent.begin("ChromeBrowserInitializer.onDeferredStartup.doInBackground");
                     mAsyncTaskStartTime = SystemClock.uptimeMillis();
 
-                    boolean crashDumpDisabled = CommandLine.getInstance().hasSwitch(
-                            ChromeSwitches.DISABLE_CRASH_DUMP_UPLOAD);
-                    if (!crashDumpDisabled) {
-                        RecordHistogram.recordLongTimesHistogram(
-                                "UMA.Debug.EnableCrashUpload.Uptime3",
-                                mAsyncTaskStartTime - UmaUtils.getForegroundStartTime(),
-                                TimeUnit.MILLISECONDS);
-                        PrivacyPreferencesManager.getInstance().enablePotentialCrashUploading();
-                        MinidumpUploadService.tryUploadAllCrashDumps(mAppContext);
-                    }
-                    CrashFileManager crashFileManager =
-                            new CrashFileManager(mAppContext.getCacheDir());
-                    crashFileManager.cleanOutAllNonFreshMinidumpFiles();
-
-                    MinidumpUploadService.storeBreakpadUploadStatsInUma(
-                            ChromePreferenceManager.getInstance());
+                    initCrashReporting();
 
                     // Initialize the WebappRegistry if it's not already initialized. Must be in
                     // async task due to shared preferences disk access on N.
@@ -296,7 +301,97 @@ public class DeferredStartupHandler {
                         "UMA.Debug.EnableCrashUpload.DeferredStartUpAsyncTaskDuration",
                         SystemClock.uptimeMillis() - mAsyncTaskStartTime, TimeUnit.MILLISECONDS);
             }
-        }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+
+            /**
+             * Initializes the crash reporting system. More specifically, enables the crash
+             * reporting system if it is user-permitted, and initiates uploading of any pending
+             * crash reports. Also updates some UMA metrics and performs cleanup in the local crash
+             * minidump storage directory.
+             */
+            private void initCrashReporting() {
+                // Perform cleanup prior to checking whether crash reporting is enabled, so that
+                // users who disable crash reporting are still able to eventually recover disk space
+                // dedicated to storing pending crash reports.
+                CrashFileManager crashFileManager = new CrashFileManager(mAppContext.getCacheDir());
+                crashFileManager.cleanOutAllNonFreshMinidumpFiles();
+
+                // Likewise, there might be pending metrics from previous runs when crash reporting
+                // was enabled.
+                MinidumpUploadService.storeBreakpadUploadStatsInUma(
+                        ChromePreferenceManager.getInstance());
+
+                // Now check whether crash reporting is enabled. If it is, broadcast the appropriate
+                // permission.
+                boolean crashReportingDisabled = CommandLine.getInstance().hasSwitch(
+                        ChromeSwitches.DISABLE_CRASH_DUMP_UPLOAD);
+                if (crashReportingDisabled) return;
+
+                RecordHistogram.recordLongTimesHistogram("UMA.Debug.EnableCrashUpload.Uptime3",
+                        mAsyncTaskStartTime - UmaUtils.getForegroundStartTime(),
+                        TimeUnit.MILLISECONDS);
+                PrivacyPreferencesManager.getInstance().enablePotentialCrashUploading();
+
+                // Finally, uploading any pending crash reports.
+                File[] minidumps = crashFileManager.getAllMinidumpFiles(
+                        MinidumpUploadService.MAX_TRIES_ALLOWED);
+                int numMinidumpsSansLogcat = 0;
+                for (File minidump : minidumps) {
+                    if (CrashFileManager.isMinidumpMIMEFirstTry(minidump.getName())) {
+                        ++numMinidumpsSansLogcat;
+                    }
+                }
+                // TODO(isherman): These two histograms are intended to be temporary, and can
+                // probably be removed around the M60 timeframe: http://crbug.com/699785
+                RecordHistogram.recordSparseSlowlyHistogram(
+                        "Stability.Android.PendingMinidumpsOnStartup", minidumps.length);
+                RecordHistogram.recordSparseSlowlyHistogram(
+                        "Stability.Android.PendingMinidumpsOnStartup.SansLogcat",
+                        numMinidumpsSansLogcat);
+                if (minidumps.length == 0) return;
+
+                Log.i(TAG, "Attempting to upload %d accumulated crash dumps.", minidumps.length);
+                File mostRecentMinidump = minidumps[0];
+                if (doesCrashMinidumpNeedLogcat(mostRecentMinidump)) {
+                    AsyncTask.THREAD_POOL_EXECUTOR.execute(
+                            new LogcatExtractionRunnable(mAppContext, mostRecentMinidump));
+                } else {
+                    MinidumpUploadService.tryUploadCrashDump(mAppContext, mostRecentMinidump);
+                }
+                // TODO(isherman): Once there is support implemented for the JobScheduler API,
+                // we should only explicitly upload the remaining files here if not using that
+                // API. If we *are* using the JobScheduler API, then the JobScheduler will
+                // schedule uploads for all of the available minidumps once the logcat is
+                // attached.
+                List<File> remainingMinidumps =
+                        Arrays.asList(minidumps).subList(1, minidumps.length);
+                for (File minidump : remainingMinidumps) {
+                    MinidumpUploadService.tryUploadCrashDump(mAppContext, minidump);
+                }
+            }
+
+            /**
+             * Returns whether or not it's appropriate to try to extract recent logcat output and
+             * include that logcat output alongside the given {@param minidump} in a crash report.
+             * Logcat output should only be extracted if (a) it hasn't already been extracted for
+             * this minidump file, and (b) the minidump is fairly fresh. The freshness check is
+             * important for two reasons: (1) First of all, it helps avoid including irrelevant
+             * logcat output for a crash report. (2) Secondly, it provides an escape hatch that can
+             * help circumvent a possible infinite crash loop, if the code responsible for
+             * extracting and appending the logcat content is itself crashing. That is, the user can
+             * wait 12 hours prior to relaunching Chrome, at which point this potential crash loop
+             * would be circumvented.
+             * @return Whether to try to include logcat output in the crash report corresponding to
+             *     the given minidump.
+             */
+            private boolean doesCrashMinidumpNeedLogcat(File minidump) {
+                if (!CrashFileManager.isMinidumpMIMEFirstTry(minidump.getName())) return false;
+
+                long ageInMillis = new Date().getTime() - minidump.lastModified();
+                long ageInHours = TimeUnit.HOURS.convert(ageInMillis, TimeUnit.MILLISECONDS);
+                return ageInHours < LOGCAT_RELEVANCE_THRESHOLD_IN_HOURS;
+            }
+        }
+                .executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     private void startModerateBindingManagementIfNeeded() {

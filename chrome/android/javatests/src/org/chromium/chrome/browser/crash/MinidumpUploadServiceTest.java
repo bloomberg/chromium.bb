@@ -19,7 +19,6 @@ import android.support.test.filters.SmallTest;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.test.util.AdvancedMockContext;
 import org.chromium.base.test.util.Feature;
-import org.chromium.components.minidump_uploader.CrashFileManager;
 import org.chromium.components.minidump_uploader.CrashTestCase;
 import org.chromium.components.minidump_uploader.MinidumpUploadCallable;
 import org.chromium.components.minidump_uploader.util.CrashReportingPermissionManager;
@@ -39,44 +38,6 @@ public class MinidumpUploadServiceTest extends CrashTestCase {
     private static final int CHECK_INTERVAL_MS = 250;
     private static final int MAX_TIMEOUT_MS = 20000;
     private static final String BOUNDARY = "TESTBOUNDARY";
-
-    @SmallTest
-    @Feature({"Android-AppBase"})
-    public void testFindAndUploadLastCrash() throws IOException {
-        // Setup prerequisites.
-        final AtomicInteger numServiceStarts = new AtomicInteger(0);
-        final File minidumpFile = new File(mCrashDir, "chromium_renderer-123.dmp");
-        MinidumpPreparationContext context = new MinidumpPreparationContext(
-                getInstrumentation().getTargetContext()) {
-            @Override
-            public ComponentName startService(Intent intentToCheck) {
-                String filePath =
-                        intentToCheck.getStringExtra(MinidumpUploadService.FILE_TO_UPLOAD_KEY);
-                assertEquals("Minidump path should be the absolute path",
-                        minidumpFile.getAbsolutePath(), filePath);
-                assertEquals(
-                        "Should only call service once", 1, numServiceStarts.incrementAndGet());
-                assertEquals("Action should be correct", MinidumpUploadService.ACTION_UPLOAD,
-                        intentToCheck.getAction());
-                return new ComponentName(getPackageName(), MinidumpUploadService.class.getName());
-            }
-
-        };
-        MinidumpUploadService service = new TestMinidumpUploadService(context);
-        setUpMinidumpFile(minidumpFile, BOUNDARY);
-
-        // Run test.
-        Intent findAndUploadLastCrashIntent =
-                MinidumpUploadService.createFindAndUploadLastCrashIntent(context);
-        service.onCreate();
-        findAndUploadLastCrashIntent.putExtra(
-                MinidumpUploadService.FINISHED_LOGCAT_EXTRACTION_KEY, true);
-        service.onHandleIntent(findAndUploadLastCrashIntent);
-
-        // Verify.
-        assertTrue("Minidump file should exist", minidumpFile.isFile());
-        assertEquals("Should have called startService() once", 1, numServiceStarts.intValue());
-    }
 
     private static class TestMinidumpUploadService extends MinidumpUploadService {
         private final NetworkChangingPermissionManager mPermissionManager =
@@ -112,34 +73,7 @@ public class MinidumpUploadServiceTest extends CrashTestCase {
 
     @SmallTest
     @Feature({"Android-AppBase"})
-    public void testFindAndUploadLastCrashNoFile() {
-        // Setup prerequisites.
-        MinidumpPreparationContext context = new MinidumpPreparationContext(
-                getInstrumentation().getTargetContext()) {
-            @Override
-            public ComponentName startService(Intent intentToCheck) {
-                fail("Should not start service");
-                return new ComponentName(getPackageName(), MinidumpUploadService.class.getName());
-            }
-
-        };
-        MinidumpUploadService service = new TestMinidumpUploadService(context);
-
-        // Run test.
-        Intent findAndUploadLastCrashIntent =
-                MinidumpUploadService.createFindAndUploadLastCrashIntent(context);
-        findAndUploadLastCrashIntent.putExtra(
-                MinidumpUploadService.FINISHED_LOGCAT_EXTRACTION_KEY, true);
-        service.onCreate();
-        service.onHandleIntent(findAndUploadLastCrashIntent);
-
-        // Verification is done by the test NOT failing with fail(...) in the
-        // MinidumpPreparationContext startService(...) method.
-    }
-
-    @SmallTest
-    @Feature({"Android-AppBase"})
-    public void testFindAndUploadAllCrashes() throws IOException {
+    public void testTryUploadAllCrashDumps() throws IOException {
         // Setup prerequisites.
         final AtomicInteger numServiceStarts = new AtomicInteger(0);
         final File[] minidumpFiles = {
@@ -170,12 +104,8 @@ public class MinidumpUploadServiceTest extends CrashTestCase {
         }
 
         // Run test.
-        Intent findAndUploadAllCrashesIntent =
-                MinidumpUploadService.createFindAndUploadAllCrashesIntent(context);
-        findAndUploadAllCrashesIntent.putExtra(
-                MinidumpUploadService.FINISHED_LOGCAT_EXTRACTION_KEY, true);
         service.onCreate();
-        service.onHandleIntent(findAndUploadAllCrashesIntent);
+        MinidumpUploadService.tryUploadAllCrashDumps(context);
 
         // Verify.
         for (File minidumpFile : minidumpFiles) {
@@ -310,8 +240,7 @@ public class MinidumpUploadServiceTest extends CrashTestCase {
 
             @Override
             public ComponentName startService(final Intent intentToCheck) {
-                assertTrue(MinidumpUploadService.ACTION_UPLOAD.equals(intentToCheck.getAction())
-                        || MinidumpUploadService.ACTION_FIND_ALL.equals(intentToCheck.getAction()));
+                assertTrue(MinidumpUploadService.ACTION_UPLOAD.equals(intentToCheck.getAction()));
                 // Post to the handler thread to run the retry intent.
                 mHandler.post(new Runnable() {
                     @Override
@@ -329,15 +258,11 @@ public class MinidumpUploadServiceTest extends CrashTestCase {
         // Create the file used for uploading.
         File minidumpFile = new File(mCrashDir, "chromium_renderer-111.dmp1");
         minidumpFile.createNewFile();
-        File logfile = new File(mCrashDir, CrashFileManager.CRASH_DUMP_LOGFILE);
         setUpMinidumpFile(minidumpFile, BOUNDARY);
 
         // Run test.
-        Intent uploadIntent =
-                MinidumpUploadService.createUploadIntent(context, minidumpFile, logfile);
-        uploadIntent.putExtra(MinidumpUploadService.FINISHED_LOGCAT_EXTRACTION_KEY, true);
         service.onCreate();
-        service.onHandleIntent(uploadIntent);
+        MinidumpUploadService.tryUploadCrashDump(context, minidumpFile);
 
         // Verify asynchronously.
         CriteriaHelper.pollInstrumentationThread(
@@ -353,58 +278,6 @@ public class MinidumpUploadServiceTest extends CrashTestCase {
                     }
                 },
                 MAX_TIMEOUT_MS, CHECK_INTERVAL_MS);
-    }
-
-    /**
-     * This tests how we instantiate crash uploading from Main, so it is just a sanity check.
-     */
-    @SmallTest
-    @Feature({"Android-AppBase"})
-    public void testTryUploadAllCrashDumpsHelperMethod() {
-        // Setup prerequisites.
-        final String startServiceFlag = "startServiceFlag";
-        MinidumpPreparationContext context = new MinidumpPreparationContext(
-                getInstrumentation().getTargetContext()) {
-            @Override
-            public ComponentName startService(Intent intentToCheck) {
-                assertEquals(MinidumpUploadService.ACTION_FIND_ALL, intentToCheck.getAction());
-                setFlag(startServiceFlag);
-                return new ComponentName(getPackageName(), MinidumpUploadService.class.getName());
-            }
-        };
-
-        // Run test.
-        MinidumpUploadService.tryUploadAllCrashDumps(context);
-
-        // Verify.
-        assertTrue("Should have called startService(...)", context.isFlagSet(startServiceFlag));
-    }
-
-    /**
-     * This just tests that the wrapper function creates the expected intent.
-     */
-    @SmallTest
-    @Feature({"Android-AppBase"})
-    public void testTryUploadCrashDumpWithLocalId() throws IOException {
-        // Set up prerequisites.
-        final String startServiceFlag = "startServiceFlag";
-        MinidumpPreparationContext context = new MinidumpPreparationContext(
-                getInstrumentation().getTargetContext()) {
-            @Override
-            public ComponentName startService(Intent intentToCheck) {
-                assertEquals(MinidumpUploadService.ACTION_FORCE_UPLOAD, intentToCheck.getAction());
-                String id = intentToCheck.getStringExtra(MinidumpUploadService.LOCAL_CRASH_ID_KEY);
-                assertEquals("The crash id should be set correctly", "f297dbcba7a2d0bb", id);
-                setFlag(startServiceFlag);
-                return new ComponentName(getPackageName(), MinidumpUploadService.class.getName());
-            }
-        };
-
-        // Run test.
-        MinidumpUploadService.tryUploadCrashDumpWithLocalId(context, "f297dbcba7a2d0bb");
-
-        // Verify.
-        assertTrue("Should have called startService(...)", context.isFlagSet(startServiceFlag));
     }
 
     @SmallTest
@@ -432,12 +305,7 @@ public class MinidumpUploadServiceTest extends CrashTestCase {
         };
 
         // Run test.
-        Intent intent = new Intent(context, MinidumpUploadService.class);
-        intent.setAction(MinidumpUploadService.ACTION_FORCE_UPLOAD);
-        intent.putExtra(MinidumpUploadService.LOCAL_CRASH_ID_KEY, "f297dbcba7a2d0bb");
-        MinidumpUploadService service = new TestMinidumpUploadService(context);
-        service.onCreate();
-        service.onHandleIntent(intent);
+        MinidumpUploadService.tryUploadCrashDumpWithLocalId(context, "f297dbcba7a2d0bb");
 
         // Verify.
         assertTrue("Should have called startService(...)", context.isFlagSet(startServiceFlag));
@@ -468,12 +336,7 @@ public class MinidumpUploadServiceTest extends CrashTestCase {
         };
 
         // Run test.
-        Intent intent = new Intent(context, MinidumpUploadService.class);
-        intent.setAction(MinidumpUploadService.ACTION_FORCE_UPLOAD);
-        intent.putExtra(MinidumpUploadService.LOCAL_CRASH_ID_KEY, "f297dbcba7a2d0bb");
-        MinidumpUploadService service = new TestMinidumpUploadService(context);
-        service.onCreate();
-        service.onHandleIntent(intent);
+        MinidumpUploadService.tryUploadCrashDumpWithLocalId(context, "f297dbcba7a2d0bb");
 
         // Verify.
         assertTrue("Should have called startService(...)", context.isFlagSet(startServiceFlag));
@@ -487,20 +350,14 @@ public class MinidumpUploadServiceTest extends CrashTestCase {
         MinidumpPreparationContext context = new MinidumpPreparationContext(
                 getInstrumentation().getTargetContext()) {
             @Override
-            public ComponentName startService(Intent intentToCheck) {
-                assertEquals(MinidumpUploadService.ACTION_FORCE_UPLOAD, intentToCheck.getAction());
+            public ComponentName startService(Intent unused) {
                 setFlag(startServiceFlag);
                 return new ComponentName(getPackageName(), MinidumpUploadService.class.getName());
             }
         };
 
         // Run test.
-        Intent intent = new Intent(context, MinidumpUploadService.class);
-        intent.setAction(MinidumpUploadService.ACTION_FORCE_UPLOAD);
-        intent.putExtra(MinidumpUploadService.LOCAL_CRASH_ID_KEY, "f297dbcba7a2d0bb");
-        MinidumpUploadService service = new TestMinidumpUploadService(context);
-        service.onCreate();
-        service.onHandleIntent(intent);
+        MinidumpUploadService.tryUploadCrashDumpWithLocalId(context, "f297dbcba7a2d0bb");
 
         // Verify.
         assertFalse(
@@ -518,20 +375,14 @@ public class MinidumpUploadServiceTest extends CrashTestCase {
         MinidumpPreparationContext context = new MinidumpPreparationContext(
                 getInstrumentation().getTargetContext()) {
             @Override
-            public ComponentName startService(Intent intentToCheck) {
-                assertEquals(MinidumpUploadService.ACTION_FORCE_UPLOAD, intentToCheck.getAction());
+            public ComponentName startService(Intent unused) {
                 setFlag(startServiceFlag);
                 return new ComponentName(getPackageName(), MinidumpUploadService.class.getName());
             }
         };
 
         // Run test.
-        Intent intent = new Intent(context, MinidumpUploadService.class);
-        intent.setAction(MinidumpUploadService.ACTION_FORCE_UPLOAD);
-        intent.putExtra(MinidumpUploadService.LOCAL_CRASH_ID_KEY, "f297dbcba7a2d0bb");
-        MinidumpUploadService service = new TestMinidumpUploadService(context);
-        service.onCreate();
-        service.onHandleIntent(intent);
+        MinidumpUploadService.tryUploadCrashDumpWithLocalId(context, "f297dbcba7a2d0bb");
 
         // Verify.
         assertFalse(

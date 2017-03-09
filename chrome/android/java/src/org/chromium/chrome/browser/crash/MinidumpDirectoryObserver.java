@@ -5,51 +5,46 @@
 package org.chromium.chrome.browser.crash;
 
 import android.content.Context;
-import android.content.Intent;
-import android.os.Build;
+import android.os.AsyncTask;
 import android.os.FileObserver;
 
 import org.chromium.base.ContextUtils;
-import org.chromium.base.Log;
-import org.chromium.base.PathUtils;
 import org.chromium.components.minidump_uploader.CrashFileManager;
 
 import java.io.File;
 
 /**
- * The FileObserver to monitor the minidump directory.
+ * The FileObserver that monitors the minidump directory for new crash records.
  */
 public class MinidumpDirectoryObserver extends FileObserver {
-    private static final String TAG = "MinidumpDirObserver";
+    /**
+     * A utility class to help manage the contents of the crash minidump local storage directory.
+     */
+    final CrashFileManager mFileManager;
 
     public MinidumpDirectoryObserver() {
+        this(new CrashFileManager(ContextUtils.getApplicationContext().getCacheDir()));
+    }
+
+    private MinidumpDirectoryObserver(CrashFileManager fileManager) {
         // The file observer detects MOVED_TO for child processes.
-        super(new File(PathUtils.getCacheDirectory(), CrashFileManager.CRASH_DUMP_DIR).toString(),
-                FileObserver.MOVED_TO);
+        super(fileManager.getCrashDirectory().toString(), FileObserver.MOVED_TO);
+        mFileManager = fileManager;
     }
 
     /**
-     *  When a minidump is detected, upload it to Google crash server
+     * When a minidump is detected, extract and append a logcat to it, then upload it to the crash
+     * server.
      */
     @Override
     public void onEvent(int event, String path) {
         // This is executed on a thread dedicated to FileObserver.
         if (CrashFileManager.isMinidumpMIMEFirstTry(path)) {
-            Context appContext = ContextUtils.getApplicationContext();
-            try {
-                Intent intent =
-                        MinidumpUploadService.createFindAndUploadLastCrashIntent(appContext);
-                appContext.startService(intent);
-                Log.i(TAG, "Detects a new minidump %s send intent to MinidumpUploadService", path);
-            } catch (SecurityException e) {
-                // For KitKat and below, there was a framework bug which cause us to not be able to
-                // find our own crash uploading service. Ignore a SecurityException here on older
-                // OS versions since the crash will eventually get uploaded on next start.
-                // crbug/542533
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                    throw e;
-                }
-            }
+            // Note that the logcat extraction might fail. This is ok; in that case, the minidump
+            // will be found and uploaded upon the next browser launch.
+            Context context = ContextUtils.getApplicationContext();
+            File minidump = mFileManager.getCrashFile(path);
+            AsyncTask.THREAD_POOL_EXECUTOR.execute(new LogcatExtractionRunnable(context, minidump));
         }
     }
 }

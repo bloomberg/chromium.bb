@@ -30,32 +30,20 @@ import java.io.IOException;
  */
 public class MinidumpUploadService extends IntentService {
     private static final String TAG = "MinidmpUploadService";
+
     // Intent actions
-    private static final String ACTION_FIND_LAST =
-            "com.google.android.apps.chrome.crash.ACTION_FIND_LAST";
-
-    @VisibleForTesting
-    static final String ACTION_FIND_ALL = "com.google.android.apps.chrome.crash.ACTION_FIND_ALL";
-
     @VisibleForTesting
     static final String ACTION_UPLOAD = "com.google.android.apps.chrome.crash.ACTION_UPLOAD";
-
-    @VisibleForTesting
-    static final String ACTION_FORCE_UPLOAD =
-            "com.google.android.apps.chrome.crash.ACTION_FORCE_UPLOAD";
 
     // Intent bundle keys
     @VisibleForTesting
     static final String FILE_TO_UPLOAD_KEY = "minidump_file";
     static final String UPLOAD_LOG_KEY = "upload_log";
-    static final String FINISHED_LOGCAT_EXTRACTION_KEY = "upload_extraction_completed";
-    static final String LOCAL_CRASH_ID_KEY = "local_id";
 
     /**
      * The number of times we will try to upload a crash.
      */
-    @VisibleForTesting
-    static final int MAX_TRIES_ALLOWED = 3;
+    public static final int MAX_TRIES_ALLOWED = 3;
 
     /**
      * Histogram related constants.
@@ -80,58 +68,6 @@ public class MinidumpUploadService extends IntentService {
     }
 
     /**
-     * Attempts to populate logcat dumps to be associated with the minidumps
-     * if they do not already exists.
-     */
-    private void tryPopulateLogcat(Intent redirectAction) {
-        redirectAction.putExtra(FINISHED_LOGCAT_EXTRACTION_KEY, true);
-        Context context = getApplicationContext();
-        CrashFileManager fileManager = new CrashFileManager(context.getCacheDir());
-        File[] dumps = fileManager.getMinidumpWithoutLogcat();
-
-        if (dumps.length == 0) {
-            onHandleIntent(redirectAction);
-            return;
-        }
-        context.startService(
-                LogcatExtractionService.createLogcatExtractionTask(context, dumps, redirectAction));
-    }
-
-    @Override
-    protected void onHandleIntent(Intent intent) {
-        if (intent == null) return;
-        if (!intent.getBooleanExtra(FINISHED_LOGCAT_EXTRACTION_KEY, false)) {
-            // The current intent was sent before a chance to gather some
-            // logcat information. tryPopulateLogcat will re-send the
-            // same action once it has a go at gather logcat.
-            tryPopulateLogcat(intent);
-        } else if (ACTION_FIND_LAST.equals(intent.getAction())) {
-            handleFindAndUploadLastCrash(intent);
-        } else if (ACTION_FIND_ALL.equals(intent.getAction())) {
-            handleFindAndUploadAllCrashes();
-        } else if (ACTION_UPLOAD.equals(intent.getAction())) {
-            handleUploadCrash(intent);
-        } else if (ACTION_FORCE_UPLOAD.equals(intent.getAction())) {
-            handleForceUploadCrash(intent);
-        } else {
-            Log.w(TAG, "Got unknown action from intent: " + intent.getAction());
-        }
-    }
-
-    /**
-     * Creates an intent that when started will find the last created or
-     * updated minidump, and try to upload it.
-     *
-     * @param context the context to use for the intent.
-     * @return an Intent to use to start the service.
-     */
-    public static Intent createFindAndUploadLastCrashIntent(Context context) {
-        Intent intent = new Intent(context, MinidumpUploadService.class);
-        intent.setAction(ACTION_FIND_LAST);
-        return intent;
-    }
-
-    /**
      * Stores the successes and failures from uploading crash to UMA,
      */
     public static void storeBreakpadUploadStatsInUma(ChromePreferenceManager pref) {
@@ -150,63 +86,14 @@ public class MinidumpUploadService extends IntentService {
         }
     }
 
-    private void handleFindAndUploadLastCrash(Intent intent) {
-        CrashFileManager fileManager = new CrashFileManager(getApplicationContext().getCacheDir());
-        File[] minidumpFiles = fileManager.getAllMinidumpFiles(MAX_TRIES_ALLOWED);
-        if (minidumpFiles.length == 0) {
-            // Try again later. Maybe the minidump hasn't finished being written.
-            Log.d(TAG, "Could not find any crash dumps to upload");
+    @Override
+    protected void onHandleIntent(Intent intent) {
+        if (intent == null) return;
+        if (!ACTION_UPLOAD.equals(intent.getAction())) {
+            Log.w(TAG, "Got unknown action from intent: " + intent.getAction());
             return;
         }
-        File minidumpFile = minidumpFiles[0];
-        File logfile = fileManager.getCrashUploadLogFile();
-        Intent uploadIntent = createUploadIntent(getApplicationContext(), minidumpFile, logfile);
 
-        // We should have at least one chance to secure logcat to the minidump now.
-        uploadIntent.putExtra(FINISHED_LOGCAT_EXTRACTION_KEY, true);
-        startService(uploadIntent);
-    }
-
-    /**
-     * Creates an intent that when started will find all minidumps, and try to upload them.
-     *
-     * @param context the context to use for the intent.
-     * @return an Intent to use to start the service.
-     */
-    @VisibleForTesting
-    static Intent createFindAndUploadAllCrashesIntent(Context context) {
-        Intent intent = new Intent(context, MinidumpUploadService.class);
-        intent.setAction(ACTION_FIND_ALL);
-        return intent;
-    }
-
-    private void handleFindAndUploadAllCrashes() {
-        CrashFileManager fileManager = new CrashFileManager(getApplicationContext().getCacheDir());
-        File[] minidumps = fileManager.getAllMinidumpFiles(MAX_TRIES_ALLOWED);
-        File logfile = fileManager.getCrashUploadLogFile();
-        Log.i(TAG, "Attempting to upload accumulated crash dumps.");
-        for (File minidump : minidumps) {
-            Intent uploadIntent = createUploadIntent(getApplicationContext(), minidump, logfile);
-            startService(uploadIntent);
-        }
-    }
-
-    /**
-     * Creates an intent that when started will find all minidumps, and try to upload them.
-     *
-     * @param minidumpFile the minidump file to upload.
-     * @return an Intent to use to start the service.
-     */
-    @VisibleForTesting
-    public static Intent createUploadIntent(Context context, File minidumpFile, File logfile) {
-        Intent intent = new Intent(context, MinidumpUploadService.class);
-        intent.setAction(ACTION_UPLOAD);
-        intent.putExtra(FILE_TO_UPLOAD_KEY, minidumpFile.getAbsolutePath());
-        intent.putExtra(UPLOAD_LOG_KEY, logfile.getAbsolutePath());
-        return intent;
-    }
-
-    private void handleUploadCrash(Intent intent) {
         String minidumpFileName = intent.getStringExtra(FILE_TO_UPLOAD_KEY);
         if (minidumpFileName == null || minidumpFileName.isEmpty()) {
             Log.w(TAG, "Cannot upload crash data since minidump is absent.");
@@ -351,6 +238,26 @@ public class MinidumpUploadService extends IntentService {
     }
 
     /**
+     * Attempts to upload the specified {@param minidumpFile}.
+     *
+     * Note that this method is asynchronous. All that is guaranteed is that an upload attempt will
+     * be enqueued.
+     *
+     * @param context The application context, in which to initiate the crash report upload.
+     * @throws A security excpetion if the caller doesn't have permission to start the upload
+     *         service. This can only happen on KitKat and below, due to a framework bug.
+     */
+    public static void tryUploadCrashDump(Context context, File minidumpFile)
+            throws SecurityException {
+        CrashFileManager fileManager = new CrashFileManager(context.getCacheDir());
+        Intent intent = new Intent(context, MinidumpUploadService.class);
+        intent.setAction(ACTION_UPLOAD);
+        intent.putExtra(FILE_TO_UPLOAD_KEY, minidumpFile.getAbsolutePath());
+        intent.putExtra(UPLOAD_LOG_KEY, fileManager.getCrashUploadLogFile().getAbsolutePath());
+        context.startService(intent);
+    }
+
+    /**
      * Attempts to upload all minidump files using the given {@link android.content.Context}.
      *
      * Note that this method is asynchronous. All that is guaranteed is that
@@ -361,8 +268,12 @@ public class MinidumpUploadService extends IntentService {
      * @param context Context of the application.
      */
     public static void tryUploadAllCrashDumps(Context context) {
-        Intent findAndUploadAllCrashesIntent = createFindAndUploadAllCrashesIntent(context);
-        context.startService(findAndUploadAllCrashesIntent);
+        CrashFileManager fileManager = new CrashFileManager(context.getCacheDir());
+        File[] minidumps = fileManager.getAllMinidumpFiles(MAX_TRIES_ALLOWED);
+        Log.i(TAG, "Attempting to upload accumulated crash dumps.");
+        for (File minidump : minidumps) {
+            MinidumpUploadService.tryUploadCrashDump(context, minidump);
+        }
     }
 
     /**
@@ -378,20 +289,11 @@ public class MinidumpUploadService extends IntentService {
      */
     @CalledByNative
     public static void tryUploadCrashDumpWithLocalId(Context context, String localId) {
-        Intent intent = new Intent(context, MinidumpUploadService.class);
-        intent.setAction(ACTION_FORCE_UPLOAD);
-        intent.putExtra(LOCAL_CRASH_ID_KEY, localId);
-        context.startService(intent);
-    }
-
-    private void handleForceUploadCrash(Intent intent) {
-        String localId = intent.getStringExtra(LOCAL_CRASH_ID_KEY);
         if (localId == null || localId.isEmpty()) {
             Log.w(TAG, "Cannot force crash upload since local crash id is absent.");
             return;
         }
 
-        Context context = getApplicationContext();
         CrashFileManager fileManager = new CrashFileManager(context.getCacheDir());
         File minidumpFile = fileManager.getCrashFileWithLocalId(localId);
         if (minidumpFile == null) {
@@ -403,15 +305,6 @@ public class MinidumpUploadService extends IntentService {
             Log.w(TAG, "Could not rename the file " + minidumpFile.getName() + " for re-upload");
             return;
         }
-        File logfile = fileManager.getCrashUploadLogFile();
-        Intent uploadIntent = createUploadIntent(context, renamedMinidumpFile, logfile);
-
-        // This method is intended to be used for manually triggering an attempt to upload an
-        // already existing crash dump. Such a crash dump should already have had a chance to attach
-        // the logcat to the minidump. Moreover, it's almost certainly too late to try to extract
-        // the logcat now, since typically some time has passed between the crash and the user's
-        // manual upload attempt.
-        uploadIntent.putExtra(FINISHED_LOGCAT_EXTRACTION_KEY, true);
-        startService(uploadIntent);
+        MinidumpUploadService.tryUploadCrashDump(context, renamedMinidumpFile);
     }
 }
