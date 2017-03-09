@@ -492,7 +492,8 @@ class ResourceLoaderTest : public testing::Test,
     EXPECT_EQ(1, did_start_request_);
     ++did_received_redirect_;
   }
-  void DidReceiveResponse(ResourceLoader* loader) override {
+  void DidReceiveResponse(ResourceLoader* loader,
+                          ResourceResponse* response) override {
     EXPECT_EQ(loader, loader_.get());
     EXPECT_EQ(0, did_finish_loading_);
     EXPECT_EQ(0, did_receive_response_);

@@ -32,7 +32,8 @@ class CONTENT_EXPORT ResourceLoaderDelegate {
   virtual void DidReceiveRedirect(ResourceLoader* loader,
                                   const GURL& new_url,
                                   ResourceResponse* response) = 0;
-  virtual void DidReceiveResponse(ResourceLoader* loader) = 0;
+  virtual void DidReceiveResponse(ResourceLoader* loader,
+                                  ResourceResponse* response) = 0;
 
   // This method informs the delegate that the loader is done, and the loader
   // expects to be destroyed as a side-effect of this call.

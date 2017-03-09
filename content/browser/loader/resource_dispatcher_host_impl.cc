@@ -774,7 +774,9 @@ void ResourceDispatcherHostImpl::DidReceiveRedirect(
       info->GetWebContentsGetterForRequest(), std::move(detail));
 }
 
-void ResourceDispatcherHostImpl::DidReceiveResponse(ResourceLoader* loader) {
+void ResourceDispatcherHostImpl::DidReceiveResponse(
+    ResourceLoader* loader,
+    ResourceResponse* response) {
   ResourceRequestInfoImpl* info = loader->GetRequestInfo();
   net::URLRequest* request = loader->request();
   if (request->was_fetched_via_proxy() &&
@@ -792,9 +794,8 @@ void ResourceDispatcherHostImpl::DidReceiveResponse(ResourceLoader* loader) {
 
   ProcessRequestForLinkHeaders(request);
 
-  int render_process_id, render_frame_host;
-  if (!info->GetAssociatedRenderFrame(&render_process_id, &render_frame_host))
-    return;
+  if (delegate_)
+    delegate_->OnResponseStarted(request, info->GetContext(), response);
 
   // Don't notify WebContents observers for requests known to be
   // downloads; they aren't really associated with the Webcontents.

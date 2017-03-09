@@ -99,10 +99,7 @@ class TestResourceDispatcherHostDelegate final
     : public ResourceDispatcherHostDelegate {
  public:
   TestResourceDispatcherHostDelegate() = default;
-  ~TestResourceDispatcherHostDelegate() override {
-    EXPECT_EQ(num_on_response_started_calls_expectation_,
-              num_on_response_started_calls_);
-  }
+  ~TestResourceDispatcherHostDelegate() override = default;
 
   bool ShouldBeginRequest(const std::string& method,
                           const GURL& url,
@@ -168,7 +165,6 @@ class TestResourceDispatcherHostDelegate final
   void OnResponseStarted(net::URLRequest* request,
                          ResourceContext* resource_context,
                          ResourceResponse* response) override {
-    ++num_on_response_started_calls_;
   }
 
   void OnRequestRedirected(const GURL& redirect_url,
@@ -200,17 +196,7 @@ class TestResourceDispatcherHostDelegate final
     return nullptr;
   }
 
-  int num_on_response_started_calls() const {
-    return num_on_response_started_calls_;
-  }
-  void set_num_on_response_started_calls_expectation(int expectation) {
-    num_on_response_started_calls_expectation_ = expectation;
-  }
-
  private:
-  int num_on_response_started_calls_ = 0;
-  int num_on_response_started_calls_expectation_ = 0;
-
   DISALLOW_COPY_AND_ASSIGN(TestResourceDispatcherHostDelegate);
 };
 
@@ -398,7 +384,6 @@ class MojoAsyncResourceHandlerTestBase {
 
   // Returns false if something bad happens.
   bool CallOnResponseStarted() {
-    rdh_delegate_.set_num_on_response_started_calls_expectation(1);
     MockResourceLoader::Status result = mock_loader_->OnResponseStarted(
         make_scoped_refptr(new ResourceResponse()));
     EXPECT_EQ(MockResourceLoader::Status::IDLE, result);
@@ -483,7 +468,6 @@ TEST_F(MojoAsyncResourceHandlerTest, OnWillStart) {
 }
 
 TEST_F(MojoAsyncResourceHandlerTest, OnResponseStarted) {
-  rdh_delegate_.set_num_on_response_started_calls_expectation(1);
   scoped_refptr<net::IOBufferWithSize> metadata = new net::IOBufferWithSize(5);
   memcpy(metadata->data(), "hello", 5);
   handler_->SetMetadata(metadata);
@@ -498,7 +482,6 @@ TEST_F(MojoAsyncResourceHandlerTest, OnResponseStarted) {
   response->head.response_start =
       base::TimeTicks::UnixEpoch() + base::TimeDelta::FromDays(28);
 
-  EXPECT_EQ(0, rdh_delegate_.num_on_response_started_calls());
   base::TimeTicks now1 = base::TimeTicks::Now();
   ASSERT_EQ(MockResourceLoader::Status::IDLE,
             mock_loader_->OnResponseStarted(response));
@@ -507,7 +490,6 @@ TEST_F(MojoAsyncResourceHandlerTest, OnResponseStarted) {
   EXPECT_EQ(request_->creation_time(), response->head.request_start);
   EXPECT_LE(now1, response->head.response_start);
   EXPECT_LE(response->head.response_start, now2);
-  EXPECT_EQ(1, rdh_delegate_.num_on_response_started_calls());
 
   url_loader_client_.RunUntilResponseReceived();
   EXPECT_EQ(response->head.request_start,
@@ -1104,8 +1086,6 @@ TEST_P(MojoAsyncResourceHandlerWithAllocationSizeTest, CancelWhileWaiting) {
 }
 
 TEST_P(MojoAsyncResourceHandlerWithAllocationSizeTest, RedirectHandling) {
-  rdh_delegate_.set_num_on_response_started_calls_expectation(1);
-
   ASSERT_EQ(MockResourceLoader::Status::IDLE,
             mock_loader_->OnWillStart(request_->url()));
 
@@ -1178,7 +1158,6 @@ TEST_P(MojoAsyncResourceHandlerWithAllocationSizeTest,
 TEST_P(
     MojoAsyncResourceHandlerWithAllocationSizeTest,
     OnWillStartThenOnResponseStartedThenOnWillReadThenOnReadCompletedThenOnResponseCompleted) {
-  rdh_delegate_.set_num_on_response_started_calls_expectation(1);
 
   ASSERT_EQ(MockResourceLoader::Status::IDLE,
             mock_loader_->OnWillStart(request_->url()));
@@ -1229,7 +1208,6 @@ TEST_P(
 TEST_P(
     MojoAsyncResourceHandlerWithAllocationSizeTest,
     OnWillStartThenOnWillReadThenOnResponseStartedThenOnReadCompletedThenOnResponseCompleted) {
-  rdh_delegate_.set_num_on_response_started_calls_expectation(1);
 
   ASSERT_EQ(MockResourceLoader::Status::IDLE,
             mock_loader_->OnWillStart(request_->url()));

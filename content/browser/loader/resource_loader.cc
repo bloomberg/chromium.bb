@@ -634,7 +634,7 @@ void ResourceLoader::CompleteResponseStarted() {
   scoped_refptr<ResourceResponse> response = new ResourceResponse();
   PopulateResourceResponse(info, request_.get(), response.get());
 
-  delegate_->DidReceiveResponse(this);
+  delegate_->DidReceiveResponse(this, response.get());
 
   read_deferral_start_time_ = base::TimeTicks::Now();
   // Using a ScopedDeferral here would result in calling ReadMore(true) on sync

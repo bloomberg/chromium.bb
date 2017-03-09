@@ -420,7 +420,8 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   void DidStartRequest(ResourceLoader* loader) override;
   void DidReceiveRedirect(ResourceLoader* loader, const GURL& new_url,
                           ResourceResponse* response) override;
-  void DidReceiveResponse(ResourceLoader* loader) override;
+  void DidReceiveResponse(ResourceLoader* loader,
+                          ResourceResponse* response) override;
   void DidFinishLoading(ResourceLoader* loader) override;
   std::unique_ptr<net::ClientCertStore> CreateClientCertStore(
       ResourceLoader* loader) override;

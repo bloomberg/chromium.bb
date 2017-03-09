@@ -25,7 +25,6 @@
 #include "content/browser/loader/upload_progress_tracker.h"
 #include "content/common/resource_request_completion_status.h"
 #include "content/public/browser/global_request_id.h"
-#include "content/public/browser/resource_dispatcher_host_delegate.h"
 #include "content/public/common/resource_response.h"
 #include "mojo/public/c/system/data_pipe.h"
 #include "mojo/public/cpp/bindings/message.h"
@@ -180,11 +179,6 @@ void MojoAsyncResourceHandler::OnResponseStarted(
   }
 
   const ResourceRequestInfoImpl* info = GetRequestInfo();
-  if (rdh_->delegate()) {
-    rdh_->delegate()->OnResponseStarted(request(), info->GetContext(),
-                                        response);
-  }
-
   NetLogObserver::PopulateResponseInfo(request(), response);
   response->head.encoded_data_length = request()->raw_header_size();
   reported_total_received_bytes_ = response->head.encoded_data_length;
