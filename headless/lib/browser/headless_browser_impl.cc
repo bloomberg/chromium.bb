@@ -25,6 +25,11 @@
 #include "ui/events/devices/device_data_manager.h"
 #include "ui/gfx/geometry/size.h"
 
+#if defined(OS_WIN)
+#include "content/public/app/sandbox_helper_win.h"
+#include "sandbox/win/src/sandbox_types.h"
+#endif
+
 namespace headless {
 namespace {
 
@@ -32,8 +37,14 @@ int RunContentMain(
     HeadlessBrowser::Options options,
     const base::Callback<void(HeadlessBrowser*)>& on_browser_start_callback) {
   content::ContentMainParams params(nullptr);
+#if defined(OS_WIN)
+  sandbox::SandboxInterfaceInfo sandbox_info = {0};
+  content::InitializeSandboxInfo(&sandbox_info);
+  params.sandbox_info = &sandbox_info;
+#elif !defined(OS_ANDROID)
   params.argc = options.argc;
   params.argv = options.argv;
+#endif
 
   // TODO(skyostil): Implement custom message pumps.
   DCHECK(!options.message_pump);

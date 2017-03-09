@@ -220,7 +220,9 @@ void HeadlessContentMainDelegate::ZygoteForked() {
   // Unconditionally try to turn on crash reporting since we do not have access
   // to the latest browser options at this point when testing. Breakpad will
   // bail out gracefully if the browser process hasn't enabled crash reporting.
+#if defined(HEADLESS_USE_BREAKPAD)
   breakpad::InitCrashReporter(process_type);
+#endif
 }
 #endif
 
