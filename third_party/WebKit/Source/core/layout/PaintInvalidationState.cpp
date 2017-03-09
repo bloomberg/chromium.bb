@@ -133,7 +133,10 @@ PaintInvalidationState::PaintInvalidationState(
     // paintInvalidationContainer.
     m_paintInvalidationContainerForStackedContents =
         m_paintInvalidationContainer;
-  } else if (currentObject.isFloatingWithNonContainingBlockParent()) {
+  } else if (currentObject.isFloatingWithNonContainingBlockParent() ||
+             currentObject.isColumnSpanAll()) {
+    // In these cases, the object may belong to an ancestor of the current
+    // paint invalidation container, in paint order.
     m_paintInvalidationContainer =
         &currentObject.containerForPaintInvalidation();
     m_cachedOffsetsEnabled = false;

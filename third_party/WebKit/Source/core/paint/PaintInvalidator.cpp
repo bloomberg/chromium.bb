@@ -297,7 +297,10 @@ void PaintInvalidator::updatePaintInvalidationContainer(
     // this frame's paintInvalidationContainer.
     context.paintInvalidationContainerForStackedContents =
         context.paintInvalidationContainer;
-  } else if (object.isFloatingWithNonContainingBlockParent()) {
+  } else if (object.isFloatingWithNonContainingBlockParent() ||
+             object.isColumnSpanAll()) {
+    // In these cases, the object may belong to an ancestor of the current
+    // paint invalidation container, in paint order.
     context.paintInvalidationContainer =
         &object.containerForPaintInvalidation();
   } else if (object.styleRef().isStacked() &&

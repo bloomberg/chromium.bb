@@ -1,0 +1,36 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow (column spanner) DIV id='target'",
+          "rect": [8, 8, 100, 100],
+          "reason": "style change"
+        }
+      ]
+    },
+    {
+      "name": "LayoutBlockFlow DIV",
+      "position": [8, 8],
+      "transformOrigin": [392, 0],
+      "contentsOpaque": true
+    },
+    {
+      "name": "LayoutBlockFlow (relative positioned) DIV",
+      "position": [8, 8],
+      "contentsOpaque": true,
+      "drawsContent": true
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow (column spanner) DIV id='target'",
+      "reason": "style change"
+    }
+  ]
+}
+
