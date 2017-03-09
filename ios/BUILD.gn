@@ -57,6 +57,7 @@ group("all") {
       "//ios/testing:all_tests",
       "//ios/web:all_tests",
       "//ios/web/shell/test:all_tests",
+      "//ios/web_view/shell/test:all_tests",
     ]
   }
 }

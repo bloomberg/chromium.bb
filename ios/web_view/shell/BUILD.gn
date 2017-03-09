@@ -6,16 +6,20 @@ import("//tools/grit/repack.gni")
 import("//build/config/ios/rules.gni")
 
 ios_app_bundle("ios_web_view_shell") {
-  configs += [ "//build/config/compiler:enable_arc" ]
+  info_plist = "Info.plist"
+
   deps = [
-    "//base",
-    "//ios/web_view",
+    ":shell",
   ]
   bundle_deps = [
     ":resources",
     ":packed_resources",
   ]
-  info_plist = "Info.plist"
+
+  configs += [ "//build/config/compiler:enable_arc" ]
+}
+
+source_set("shell") {
   sources = [
     "shell_app_delegate.h",
     "shell_app_delegate.m",
@@ -27,6 +31,12 @@ ios_app_bundle("ios_web_view_shell") {
     "translate_controller.h",
     "translate_controller.m",
   ]
+
+  deps = [
+    "//base",
+    "//ios/web_view",
+  ]
+
   libs = [
     "CFNetwork.framework",
     "CoreFoundation.framework",
@@ -41,6 +51,8 @@ ios_app_bundle("ios_web_view_shell") {
     "WebKit.framework",
     "resolv",
   ]
+
+  configs += [ "//build/config/compiler:enable_arc" ]
 }
 
 bundle_data("resources") {

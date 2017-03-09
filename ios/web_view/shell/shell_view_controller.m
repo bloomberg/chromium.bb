@@ -16,6 +16,9 @@
 #endif
 
 // Externed accessibility identifier.
+NSString* const kWebViewShellBackButtonAccessibilityLabel = @"Back";
+NSString* const kWebViewShellForwardButtonAccessibilityLabel = @"Forward";
+NSString* const kWebViewShellAddressFieldAccessibilityLabel = @"Address field";
 NSString* const kWebViewShellJavaScriptDialogTextFieldAccessibiltyIdentifier =
     @"WebViewShellJavaScriptDialogTextFieldAccessibiltyIdentifier";
 
@@ -88,6 +91,7 @@ NSString* const kWebViewShellJavaScriptDialogTextFieldAccessibiltyIdentifier =
   [_field setKeyboardType:UIKeyboardTypeWebSearch];
   [_field setAutocorrectionType:UITextAutocorrectionTypeNo];
   [_field setClearButtonMode:UITextFieldViewModeWhileEditing];
+  [_field setAccessibilityLabel:kWebViewShellAddressFieldAccessibilityLabel];
 
   // Set up the toolbar buttons.
   // Back.
@@ -101,6 +105,7 @@ NSString* const kWebViewShellJavaScriptDialogTextFieldAccessibiltyIdentifier =
   [back addTarget:self
                 action:@selector(back)
       forControlEvents:UIControlEventTouchUpInside];
+  [back setAccessibilityLabel:kWebViewShellBackButtonAccessibilityLabel];
 
   // Forward.
   UIButton* forward = [UIButton buttonWithType:UIButtonTypeCustom];
@@ -112,6 +117,7 @@ NSString* const kWebViewShellJavaScriptDialogTextFieldAccessibiltyIdentifier =
   [forward addTarget:self
                 action:@selector(forward)
       forControlEvents:UIControlEventTouchUpInside];
+  [forward setAccessibilityLabel:kWebViewShellForwardButtonAccessibilityLabel];
 
   // Stop.
   UIButton* stop = [UIButton buttonWithType:UIButtonTypeCustom];
