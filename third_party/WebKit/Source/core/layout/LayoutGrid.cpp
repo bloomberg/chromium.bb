@@ -1468,7 +1468,8 @@ void LayoutGrid::applyStretchAlignmentToChildIfNeeded(LayoutBox& child) {
     LayoutUnit desiredLogicalHeight = child.constrainLogicalHeightByMinMax(
         stretchedLogicalHeight, LayoutUnit(-1));
     child.setOverrideLogicalContentHeight(
-        desiredLogicalHeight - child.borderAndPaddingLogicalHeight());
+        (desiredLogicalHeight - child.borderAndPaddingLogicalHeight())
+            .clampNegativeToZero());
     if (desiredLogicalHeight != child.logicalHeight()) {
       // TODO (lajava): Can avoid laying out here in some cases. See
       // https://webkit.org/b/87905.
