@@ -6,7 +6,6 @@
 #define CONTENT_PUBLIC_BROWSER_WEB_CONTENTS_UNRESPONSIVE_STATE_H_
 
 #include "content/common/content_export.h"
-#include "content/public/browser/renderer_unresponsive_type.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
 
 namespace content {
@@ -16,9 +15,6 @@ namespace content {
 // this information may be provided in a crash report.
 struct CONTENT_EXPORT WebContentsUnresponsiveState {
   WebContentsUnresponsiveState();
-
-  // The reason why the renderer was unresponsive.
-  RendererUnresponsiveType reason;
 
   // TODO(dtapuska): Remove these fields once crbug.com/615090 is fixed.
   // The number of outstanding blocking input events sent to the renderer

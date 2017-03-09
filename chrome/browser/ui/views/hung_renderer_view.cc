@@ -352,9 +352,6 @@ bool HungRendererDialogView::Cancel() {
     crash_keys.push_back(
         std::make_pair(crash_keys::kHungRendererLastEventType,
                        base::IntToString(unresponsive_state_.last_event_type)));
-    crash_keys.push_back(
-        std::make_pair(crash_keys::kHungRendererReason,
-                       base::IntToString(unresponsive_state_.reason)));
 
     // Try to generate a crash report for the hung process.
     CrashDumpAndTerminateHungChildProcess(rph->GetHandle(), crash_keys);

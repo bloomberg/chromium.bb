@@ -413,8 +413,7 @@ class MockRenderWidgetHostDelegate : public RenderWidgetHostDelegate {
     return handle_wheel_event_;
   }
 
-  void RendererUnresponsive(RenderWidgetHostImpl* render_widget_host,
-                            RendererUnresponsiveType type) override {
+  void RendererUnresponsive(RenderWidgetHostImpl* render_widget_host) override {
     unresponsive_timer_fired_ = true;
   }
 
@@ -1120,15 +1119,13 @@ TEST_F(RenderWidgetHostTest, UnhandledGestureEvent) {
 // while one is in progress (see crbug.com/11007).
 TEST_F(RenderWidgetHostTest, DontPostponeHangMonitorTimeout) {
   // Start with a short timeout.
-  host_->StartHangMonitorTimeout(
-      TimeDelta::FromMilliseconds(10), WebInputEvent::Undefined,
-      RendererUnresponsiveType::RENDERER_UNRESPONSIVE_UNKNOWN);
+  host_->StartHangMonitorTimeout(TimeDelta::FromMilliseconds(10),
+                                 WebInputEvent::Undefined);
 
   // Immediately try to add a long 30 second timeout.
   EXPECT_FALSE(delegate_->unresponsive_timer_fired());
-  host_->StartHangMonitorTimeout(
-      TimeDelta::FromSeconds(30), WebInputEvent::Undefined,
-      RendererUnresponsiveType::RENDERER_UNRESPONSIVE_UNKNOWN);
+  host_->StartHangMonitorTimeout(TimeDelta::FromSeconds(30),
+                                 WebInputEvent::Undefined);
 
   // Wait long enough for first timeout and see if it fired.
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
@@ -1142,16 +1139,14 @@ TEST_F(RenderWidgetHostTest, DontPostponeHangMonitorTimeout) {
 // and then started again.
 TEST_F(RenderWidgetHostTest, StopAndStartHangMonitorTimeout) {
   // Start with a short timeout, then stop it.
-  host_->StartHangMonitorTimeout(
-      TimeDelta::FromMilliseconds(10), WebInputEvent::Undefined,
-      RendererUnresponsiveType::RENDERER_UNRESPONSIVE_UNKNOWN);
+  host_->StartHangMonitorTimeout(TimeDelta::FromMilliseconds(10),
+                                 WebInputEvent::Undefined);
   host_->StopHangMonitorTimeout();
 
   // Start it again to ensure it still works.
   EXPECT_FALSE(delegate_->unresponsive_timer_fired());
-  host_->StartHangMonitorTimeout(
-      TimeDelta::FromMilliseconds(10), WebInputEvent::Undefined,
-      RendererUnresponsiveType::RENDERER_UNRESPONSIVE_UNKNOWN);
+  host_->StartHangMonitorTimeout(TimeDelta::FromMilliseconds(10),
+                                 WebInputEvent::Undefined);
 
   // Wait long enough for first timeout and see if it fired.
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
@@ -1165,15 +1160,13 @@ TEST_F(RenderWidgetHostTest, StopAndStartHangMonitorTimeout) {
 // updated to a shorter duration.
 TEST_F(RenderWidgetHostTest, ShorterDelayHangMonitorTimeout) {
   // Start with a timeout.
-  host_->StartHangMonitorTimeout(
-      TimeDelta::FromMilliseconds(100), WebInputEvent::Undefined,
-      RendererUnresponsiveType::RENDERER_UNRESPONSIVE_UNKNOWN);
+  host_->StartHangMonitorTimeout(TimeDelta::FromMilliseconds(100),
+                                 WebInputEvent::Undefined);
 
   // Start it again with shorter delay.
   EXPECT_FALSE(delegate_->unresponsive_timer_fired());
-  host_->StartHangMonitorTimeout(
-      TimeDelta::FromMilliseconds(20), WebInputEvent::Undefined,
-      RendererUnresponsiveType::RENDERER_UNRESPONSIVE_UNKNOWN);
+  host_->StartHangMonitorTimeout(TimeDelta::FromMilliseconds(20),
+                                 WebInputEvent::Undefined);
 
   // Wait long enough for the second timeout and see if it fired.
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(

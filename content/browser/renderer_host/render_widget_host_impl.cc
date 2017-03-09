@@ -288,8 +288,6 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
       is_focused_(false),
       hung_renderer_delay_(
           base::TimeDelta::FromMilliseconds(kHungRendererDelayMs)),
-      hang_monitor_reason_(
-          RendererUnresponsiveType::RENDERER_UNRESPONSIVE_UNKNOWN),
       hang_monitor_event_type_(blink::WebInputEvent::Undefined),
       last_event_type_(blink::WebInputEvent::Undefined),
       new_content_rendering_delay_(
@@ -948,28 +946,20 @@ bool RenderWidgetHostImpl::ScheduleComposite() {
 
 void RenderWidgetHostImpl::StartHangMonitorTimeout(
     base::TimeDelta delay,
-    blink::WebInputEvent::Type event_type,
-    RendererUnresponsiveType hang_monitor_reason) {
+    blink::WebInputEvent::Type event_type) {
   if (!hang_monitor_timeout_)
     return;
   if (!hang_monitor_timeout_->IsRunning())
     hang_monitor_event_type_ = event_type;
   last_event_type_ = event_type;
   hang_monitor_timeout_->Start(delay);
-  hang_monitor_reason_ = hang_monitor_reason;
 }
 
 void RenderWidgetHostImpl::RestartHangMonitorTimeoutIfNecessary() {
   if (!hang_monitor_timeout_)
     return;
-  if (in_flight_event_count_ > 0 && !is_hidden_) {
-    if (hang_monitor_reason_ ==
-        RendererUnresponsiveType::RENDERER_UNRESPONSIVE_UNKNOWN) {
-      hang_monitor_reason_ =
-          RendererUnresponsiveType::RENDERER_UNRESPONSIVE_IN_FLIGHT_EVENTS;
-    }
+  if (in_flight_event_count_ > 0 && !is_hidden_)
     hang_monitor_timeout_->Restart(hung_renderer_delay_);
-  }
 }
 
 void RenderWidgetHostImpl::DisableHangMonitorForTesting() {
@@ -978,11 +968,8 @@ void RenderWidgetHostImpl::DisableHangMonitorForTesting() {
 }
 
 void RenderWidgetHostImpl::StopHangMonitorTimeout() {
-  if (hang_monitor_timeout_) {
+  if (hang_monitor_timeout_)
     hang_monitor_timeout_->Stop();
-    hang_monitor_reason_ =
-        RendererUnresponsiveType::RENDERER_UNRESPONSIVE_UNKNOWN;
-  }
   RendererIsResponsive();
 }
 
@@ -1706,12 +1693,9 @@ void RenderWidgetHostImpl::RendererIsUnresponsive() {
       Source<RenderWidgetHost>(this),
       NotificationService::NoDetails());
   is_unresponsive_ = true;
-  RendererUnresponsiveType reason = hang_monitor_reason_;
-  hang_monitor_reason_ =
-      RendererUnresponsiveType::RENDERER_UNRESPONSIVE_UNKNOWN;
 
   if (delegate_)
-    delegate_->RendererUnresponsive(this, reason);
+    delegate_->RendererUnresponsive(this);
 
   // Do not add code after this since the Delegate may delete this
   // RenderWidgetHostImpl in RendererUnresponsive.
@@ -2114,11 +2098,8 @@ InputEventAckState RenderWidgetHostImpl::FilterInputEvent(
 void RenderWidgetHostImpl::IncrementInFlightEventCount(
     blink::WebInputEvent::Type event_type) {
   increment_in_flight_event_count();
-  if (!is_hidden_) {
-    StartHangMonitorTimeout(
-        hung_renderer_delay_, event_type,
-        RendererUnresponsiveType::RENDERER_UNRESPONSIVE_IN_FLIGHT_EVENTS);
-  }
+  if (!is_hidden_)
+    StartHangMonitorTimeout(hung_renderer_delay_, event_type);
 }
 
 void RenderWidgetHostImpl::DecrementInFlightEventCount(

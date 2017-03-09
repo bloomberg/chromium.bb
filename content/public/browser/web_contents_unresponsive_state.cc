@@ -7,8 +7,7 @@
 namespace content {
 
 WebContentsUnresponsiveState::WebContentsUnresponsiveState()
-    : reason(RendererUnresponsiveType::RENDERER_UNRESPONSIVE_UNKNOWN),
-      outstanding_ack_count(0),
+    : outstanding_ack_count(0),
       last_event_type(blink::WebInputEvent::Undefined) {}
 
 }  // namespace content

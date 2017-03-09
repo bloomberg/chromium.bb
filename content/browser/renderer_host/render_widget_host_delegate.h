@@ -12,7 +12,6 @@
 #include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "content/common/drag_event_source_info.h"
-#include "content/public/browser/renderer_unresponsive_type.h"
 #include "content/public/common/drop_data.h"
 #include "third_party/WebKit/public/platform/WebDisplayMode.h"
 #include "third_party/WebKit/public/platform/WebDragOperation.h"
@@ -151,8 +150,7 @@ class CONTENT_EXPORT RenderWidgetHostDelegate {
 
   // Notification that the renderer has become unresponsive. The
   // delegate can use this notification to show a warning to the user.
-  virtual void RendererUnresponsive(RenderWidgetHostImpl* render_widget_host,
-                                    RendererUnresponsiveType type) {}
+  virtual void RendererUnresponsive(RenderWidgetHostImpl* render_widget_host) {}
 
   // Notification that a previously unresponsive renderer has become
   // responsive again. The delegate can use this notification to end the

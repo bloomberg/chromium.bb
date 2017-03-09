@@ -317,8 +317,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
   // the new one will only fire if it has a shorter delay than the time
   // left on the existing timeouts.
   void StartHangMonitorTimeout(base::TimeDelta delay,
-                               blink::WebInputEvent::Type event_type,
-                               RendererUnresponsiveType hang_monitor_reason);
+                               blink::WebInputEvent::Type event_type);
 
   // Stops all existing hang monitor timeouts and assumes the renderer is
   // responsive.
@@ -876,10 +875,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
 
   // This value indicates how long to wait before we consider a renderer hung.
   base::TimeDelta hung_renderer_delay_;
-
-  // Stores the reason the hang_monitor_timeout_ has been started. Used to
-  // report histograms if the renderer is hung.
-  RendererUnresponsiveType hang_monitor_reason_;
 
   // Type of the last blocking event that started the hang monitor.
   blink::WebInputEvent::Type hang_monitor_event_type_;

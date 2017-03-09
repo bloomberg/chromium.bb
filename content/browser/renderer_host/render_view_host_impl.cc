@@ -959,11 +959,6 @@ void RenderViewHostImpl::ClosePageTimeout() {
   if (delegate_->ShouldIgnoreUnresponsiveRenderer())
     return;
 
-  UMA_HISTOGRAM_ENUMERATION(
-      "ChildProcess.HangRendererType",
-      RendererUnresponsiveType::RENDERER_UNRESPONSIVE_CLOSE_PAGE,
-      RendererUnresponsiveType::RENDERER_UNRESPONSIVE_MAX);
-
   ClosePageIgnoringUnloadEvents();
 }
 

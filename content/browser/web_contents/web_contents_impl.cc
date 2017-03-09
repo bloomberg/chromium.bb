@@ -4833,8 +4833,7 @@ void WebContentsImpl::OnIgnoredUIEvent() {
 }
 
 void WebContentsImpl::RendererUnresponsive(
-    RenderWidgetHostImpl* render_widget_host,
-    RendererUnresponsiveType type) {
+    RenderWidgetHostImpl* render_widget_host) {
   for (auto& observer : observers_)
     observer.OnRendererUnresponsive(render_widget_host);
 
@@ -4844,11 +4843,6 @@ void WebContentsImpl::RendererUnresponsive(
 
   if (ShouldIgnoreUnresponsiveRenderer())
     return;
-
-  // Record histograms about the type of renderer hang.
-  UMA_HISTOGRAM_ENUMERATION(
-      "ChildProcess.HangRendererType", type,
-      RendererUnresponsiveType::RENDERER_UNRESPONSIVE_MAX);
 
   RenderFrameHostImpl* rfhi =
       static_cast<RenderFrameHostImpl*>(GetRenderViewHost()->GetMainFrame());
@@ -4865,7 +4859,6 @@ void WebContentsImpl::RendererUnresponsive(
 
   if (delegate_) {
     WebContentsUnresponsiveState unresponsive_state;
-    unresponsive_state.reason = type;
     unresponsive_state.outstanding_ack_count =
         render_widget_host->in_flight_event_count();
     unresponsive_state.outstanding_event_type =
