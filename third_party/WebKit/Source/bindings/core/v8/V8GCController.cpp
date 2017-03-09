@@ -449,7 +449,9 @@ void V8GCController::gcEpilogue(v8::Isolate* isolate,
 void V8GCController::collectGarbage(v8::Isolate* isolate, bool onlyMinorGC) {
   v8::HandleScope handleScope(isolate);
   RefPtr<ScriptState> scriptState = ScriptState::create(
-      v8::Context::New(isolate), DOMWrapperWorld::create(isolate));
+      v8::Context::New(isolate),
+      DOMWrapperWorld::create(isolate,
+                              DOMWrapperWorld::WorldType::GarbageCollector));
   ScriptState::Scope scope(scriptState.get());
   StringBuilder builder;
   builder.append("if (gc) gc(");

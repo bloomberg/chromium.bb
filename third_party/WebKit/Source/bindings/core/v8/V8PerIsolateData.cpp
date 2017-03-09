@@ -193,8 +193,9 @@ v8::Local<v8::Context> V8PerIsolateData::ensureScriptRegexpContext() {
   if (!m_scriptRegexpScriptState) {
     LEAK_SANITIZER_DISABLED_SCOPE;
     v8::Local<v8::Context> context(v8::Context::New(isolate()));
-    m_scriptRegexpScriptState =
-        ScriptState::create(context, DOMWrapperWorld::create(isolate()));
+    m_scriptRegexpScriptState = ScriptState::create(
+        context,
+        DOMWrapperWorld::create(isolate(), DOMWrapperWorld::WorldType::RegExp));
   }
   return m_scriptRegexpScriptState->context();
 }

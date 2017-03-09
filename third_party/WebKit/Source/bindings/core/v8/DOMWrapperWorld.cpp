@@ -51,7 +51,7 @@ class DOMObjectHolderBase {
 
  public:
   DOMObjectHolderBase(v8::Isolate* isolate, v8::Local<v8::Value> wrapper)
-      : m_wrapper(isolate, wrapper), m_world(0) {}
+      : m_wrapper(isolate, wrapper), m_world(nullptr) {}
   virtual ~DOMObjectHolderBase() {}
 
   DOMWrapperWorld* world() const { return m_world; }
@@ -84,18 +84,22 @@ class DOMObjectHolder : public DOMObjectHolderBase {
 unsigned DOMWrapperWorld::s_numberOfNonMainWorldsInMainThread = 0;
 
 PassRefPtr<DOMWrapperWorld> DOMWrapperWorld::create(v8::Isolate* isolate,
-                                                    int worldId) {
-  return adoptRef(new DOMWrapperWorld(isolate, worldId));
+                                                    WorldType worldType) {
+  DCHECK_NE(WorldType::Isolated, worldType);
+  return adoptRef(
+      new DOMWrapperWorld(isolate, worldType, getWorldIdForType(worldType)));
 }
 
-DOMWrapperWorld::DOMWrapperWorld(v8::Isolate* isolate, int worldId)
-    : m_worldId(worldId),
+DOMWrapperWorld::DOMWrapperWorld(v8::Isolate* isolate,
+                                 WorldType worldType,
+                                 int worldId)
+    : m_worldType(worldType),
+      m_worldId(worldId),
       m_domDataStore(
           WTF::wrapUnique(new DOMDataStore(isolate, isMainWorld()))) {
-  if (worldId == WorkerWorldId) {
+  if (isWorkerWorld())
     workerWorld() = this;
-  }
-  if (worldId != MainWorldId && isMainThread())
+  if (worldId != WorldId::MainWorldId && isMainThread())
     s_numberOfNonMainWorldsInMainThread++;
 }
 
@@ -103,7 +107,7 @@ DOMWrapperWorld& DOMWrapperWorld::mainWorld() {
   ASSERT(isMainThread());
   DEFINE_STATIC_REF(
       DOMWrapperWorld, cachedMainWorld,
-      (DOMWrapperWorld::create(v8::Isolate::GetCurrent(), MainWorldId)));
+      (DOMWrapperWorld::create(v8::Isolate::GetCurrent(), WorldType::Main)));
   return *cachedMainWorld;
 }
 
@@ -195,7 +199,8 @@ void DOMWrapperWorld::dispose() {
 
 #if DCHECK_IS_ON()
 static bool isIsolatedWorldId(int worldId) {
-  return MainWorldId < worldId && worldId < IsolatedWorldIdLimit;
+  return DOMWrapperWorld::MainWorldId < worldId &&
+         worldId < DOMWrapperWorld::IsolatedWorldIdLimit;
 }
 #endif
 
@@ -212,7 +217,7 @@ PassRefPtr<DOMWrapperWorld> DOMWrapperWorld::ensureIsolatedWorld(
     return world.release();
   }
 
-  world = DOMWrapperWorld::create(isolate, worldId);
+  world = adoptRef(new DOMWrapperWorld(isolate, WorldType::Isolated, worldId));
   result.storedValue->value = world.get();
   return world.release();
 }
@@ -316,6 +321,32 @@ void DOMWrapperWorld::weakCallbackForDOMObjectHolder(
     const v8::WeakCallbackInfo<DOMObjectHolderBase>& data) {
   DOMObjectHolderBase* holderBase = data.GetParameter();
   holderBase->world()->unregisterDOMObjectHolder(holderBase);
+}
+
+int DOMWrapperWorld::getWorldIdForType(WorldType worldType) {
+  switch (worldType) {
+    case WorldType::Main:
+      return MainWorldId;
+    case WorldType::Isolated:
+      // This function should not be called for IsolatedWorld because an
+      // identifier for the world is given from out of DOMWrapperWorld.
+      NOTREACHED();
+      return InvalidWorldId;
+    case WorldType::GarbageCollector:
+      return GarbageCollectorWorldId;
+    case WorldType::RegExp:
+      return RegExpWorldId;
+    case WorldType::Testing:
+      return TestingWorldId;
+    // Currently, WorldId for a worker/worklet is a fixed value, but this
+    // doesn't work when multiple worklets are created on a thread.
+    // TODO(nhiroki): Expand the identifier space for workers/worklets.
+    // (https://crbug.com/697622)
+    case WorldType::Worker:
+      return WorkerWorldId;
+  }
+  NOTREACHED();
+  return InvalidWorldId;
 }
 
 }  // namespace blink

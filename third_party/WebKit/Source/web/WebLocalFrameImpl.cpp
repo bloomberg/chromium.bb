@@ -671,7 +671,7 @@ void WebLocalFrameImpl::executeScriptInIsolatedWorld(
     unsigned numSources) {
   DCHECK(frame());
   CHECK_GT(worldID, 0);
-  CHECK_LT(worldID, EmbedderWorldIdLimit);
+  CHECK_LT(worldID, DOMWrapperWorld::EmbedderWorldIdLimit);
 
   HeapVector<ScriptSourceCode> sources =
       createSourcesVector(sourcesIn, numSources);
@@ -775,7 +775,7 @@ void WebLocalFrameImpl::executeScriptInIsolatedWorld(
     WebVector<v8::Local<v8::Value>>* results) {
   DCHECK(frame());
   CHECK_GT(worldID, 0);
-  CHECK_LT(worldID, EmbedderWorldIdLimit);
+  CHECK_LT(worldID, DOMWrapperWorld::EmbedderWorldIdLimit);
 
   HeapVector<ScriptSourceCode> sources =
       createSourcesVector(sourcesIn, numSources);
@@ -803,7 +803,7 @@ void WebLocalFrameImpl::requestExecuteScriptInIsolatedWorld(
     WebScriptExecutionCallback* callback) {
   DCHECK(frame());
   CHECK_GT(worldID, 0);
-  CHECK_LT(worldID, EmbedderWorldIdLimit);
+  CHECK_LT(worldID, DOMWrapperWorld::EmbedderWorldIdLimit);
 
   SuspendableScriptExecutor::createAndRun(
       frame(), worldID, createSourcesVector(sourcesIn, numSources), userGesture,

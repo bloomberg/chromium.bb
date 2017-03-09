@@ -69,8 +69,10 @@ void DataConsumerHandleTestUtil::Thread::initialize() {
   m_thread->initialize();
   if (m_initializationPolicy >= ScriptExecution) {
     v8::HandleScope handleScope(isolate());
-    m_scriptState = ScriptState::create(v8::Context::New(isolate()),
-                                        DOMWrapperWorld::create(isolate()));
+    m_scriptState = ScriptState::create(
+        v8::Context::New(isolate()),
+        DOMWrapperWorld::create(isolate(),
+                                DOMWrapperWorld::WorldType::Testing));
   }
   if (m_initializationPolicy >= WithExecutionContext) {
     m_executionContext = new NullExecutionContext();

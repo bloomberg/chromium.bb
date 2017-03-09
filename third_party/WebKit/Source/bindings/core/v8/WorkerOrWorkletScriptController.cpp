@@ -103,7 +103,8 @@ WorkerOrWorkletScriptController::WorkerOrWorkletScriptController(
       m_rejectedPromises(RejectedPromises::create()),
       m_executionState(0) {
   ASSERT(isolate);
-  m_world = DOMWrapperWorld::create(isolate, WorkerWorldId);
+  m_world =
+      DOMWrapperWorld::create(isolate, DOMWrapperWorld::WorldType::Worker);
 }
 
 WorkerOrWorkletScriptController::~WorkerOrWorkletScriptController() {

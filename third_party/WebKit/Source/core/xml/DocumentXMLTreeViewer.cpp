@@ -24,7 +24,7 @@ void transformDocumentToXMLTreeView(Document& document) {
   v8::HandleScope handleScope(V8PerIsolateData::mainThreadIsolate());
 
   document.frame()->script().executeScriptInIsolatedWorld(
-      WorldIdConstants::DocumentXMLTreeViewerWorldId, sources, nullptr);
+      DOMWrapperWorld::DocumentXMLTreeViewerWorldId, sources, nullptr);
 
   Element* element = document.getElementById("xml-viewer-style");
   if (element) {
