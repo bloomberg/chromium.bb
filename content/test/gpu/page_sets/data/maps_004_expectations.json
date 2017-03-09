@@ -23,7 +23,8 @@
         "scale_factor": 1.566
       },
       {
-        "device_type": "NVIDIA Shield",
+        "comment": "NVIDIA Shield",
+        "device_type": "sb_na_wf",
         "scale_factor": 1.226
       }
     ]
