@@ -21,10 +21,10 @@ log_and_count_errors(logLevels level, const char *message)
     {
     case LOG_ERROR:
       errorCount++;
-      lou_logPrint("\n  ERROR >> %s\n", message);
+      printf("\n  ERROR >> %s\n", message);
       break;
     default:
-      lou_logPrint("%s", message);
+      printf("%s", message);
     }
 }
 
