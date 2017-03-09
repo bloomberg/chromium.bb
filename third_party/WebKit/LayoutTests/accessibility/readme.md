@@ -3,7 +3,7 @@
 ## General Info on LayoutTests: Building and Running the Tests
 
 See [Layout Tests](/docs/testing/layout_tests.md) for general
-info on how to build and run layout tests. 
+info on how to build and run layout tests.
 
 ## Old vs. New
 
@@ -20,7 +20,7 @@ These tests check the accessibility tree directly in Blink using ```Accessibilit
 
 The code that implements the bindings is here:
 
-* ```components/test_runner/accessibility_controller.cc```
-* ```components/test_runner/web_ax_object_proxy.cc```
+* ```content/shell/test_runner/accessibility_controller.cc```
+* ```content/shell/test_runner/web_ax_object_proxy.cc```
 
 You'll probably find bindings for the features you want to test already. If not, it's not hard to add new ones.
