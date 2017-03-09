@@ -20,7 +20,7 @@ namespace content {
 // to the DataManager and invokes calls given the stored batch_guid.
 class CONTENT_EXPORT BackgroundFetchJobData {
  public:
-  explicit BackgroundFetchJobData(BackgroundFetchRequestInfos request_infos);
+  explicit BackgroundFetchJobData(BackgroundFetchRequestInfos& request_infos);
   ~BackgroundFetchJobData();
 
   // Called by the JobController to inform the JobData that the given fetch
@@ -39,7 +39,7 @@ class CONTENT_EXPORT BackgroundFetchJobData {
   bool IsComplete() const;
 
  private:
-  BackgroundFetchRequestInfos request_infos_;
+  BackgroundFetchRequestInfos& request_infos_;
 
   // Map from fetch_guid to index in request_infos_. Only currently
   // outstanding requests should be in this map.

@@ -10,8 +10,8 @@
 namespace content {
 
 BackgroundFetchJobData::BackgroundFetchJobData(
-    BackgroundFetchRequestInfos request_infos)
-    : request_infos_(std::move(request_infos)) {}
+    BackgroundFetchRequestInfos& request_infos)
+    : request_infos_(request_infos) {}
 
 BackgroundFetchJobData::~BackgroundFetchJobData() {}
 

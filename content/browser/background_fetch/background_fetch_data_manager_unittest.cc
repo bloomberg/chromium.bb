@@ -60,7 +60,7 @@ TEST_F(BackgroundFetchDataManagerTest, AddRequest) {
 
   // Initialize a BackgroundFetchJobData with the constructed requests.
   BackgroundFetchDataManager* data_manager = GetDataManager();
-  BackgroundFetchJobData* job_data =
+  std::unique_ptr<BackgroundFetchJobData> job_data =
       data_manager->CreateRequest(job_info, request_infos);
 
   // Get all of the fetch requests from the BackgroundFetchJobData.

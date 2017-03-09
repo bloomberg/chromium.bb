@@ -32,10 +32,7 @@ namespace content {
 class BackgroundFetchJobControllerTest : public ::testing::Test {
  public:
   BackgroundFetchJobControllerTest()
-      : job_controller_(
-            &browser_context_,
-            BrowserContext::GetDefaultStoragePartition(&browser_context_)),
-        download_manager_(new MockDownloadManager()) {}
+      : download_manager_(new MockDownloadManager()) {}
   ~BackgroundFetchJobControllerTest() override = default;
 
   void SetUp() override {
@@ -45,31 +42,37 @@ class BackgroundFetchJobControllerTest : public ::testing::Test {
                                                  download_manager_);
   }
 
-  void ProcessJob(const std::string& job_guid,
-                  BackgroundFetchJobData* job_data) {
+  void InitializeJobController(
+      std::unique_ptr<BackgroundFetchJobData> job_data) {
+    job_controller_ = base::MakeUnique<BackgroundFetchJobController>(
+        kJobGuid, &browser_context_,
+        BrowserContext::GetDefaultStoragePartition(&browser_context_),
+        std::move(job_data));
+  }
+
+  void StartProcessing() {
     base::RunLoop run_loop;
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(&BackgroundFetchJobControllerTest::ProcessJobOnIO,
-                   base::Unretained(this), job_guid, job_data,
-                   run_loop.QuitClosure()));
+        base::Bind(&BackgroundFetchJobControllerTest::StartProcessingOnIO,
+                   base::Unretained(this), run_loop.QuitClosure()));
     run_loop.Run();
   }
 
-  void ProcessJobOnIO(const std::string& job_guid,
-                      BackgroundFetchJobData* job_data,
-                      const base::Closure& closure) {
-    job_controller_.ProcessJob(job_guid, job_data);
+  void StartProcessingOnIO(const base::Closure& closure) {
+    job_controller_->StartProcessing();
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, closure);
   }
 
-  BackgroundFetchJobController* job_controller() { return &job_controller_; }
+  BackgroundFetchJobController* job_controller() {
+    return job_controller_.get();
+  }
   MockDownloadManager* download_manager() { return download_manager_; }
 
  private:
   TestBrowserThreadBundle thread_bundle_;
   TestBrowserContext browser_context_;
-  BackgroundFetchJobController job_controller_;
+  std::unique_ptr<BackgroundFetchJobController> job_controller_;
   MockDownloadManager* download_manager_;
 };
 
@@ -81,14 +84,16 @@ TEST_F(BackgroundFetchJobControllerTest, StartDownload) {
 
   // Get a JobData to give to the JobController. The JobController then gets
   // the BackgroundFetchRequestInfos from the JobData.
-  BackgroundFetchJobData job_data(request_infos);
+  std::unique_ptr<BackgroundFetchJobData> job_data =
+      base::MakeUnique<BackgroundFetchJobData>(request_infos);
+  InitializeJobController(std::move(job_data));
 
   EXPECT_CALL(*(download_manager()),
               DownloadUrlMock(::testing::Pointee(::testing::Property(
                   &DownloadUrlParameters::url, GURL(kTestUrl)))))
       .Times(1);
 
-  ProcessJob(kJobGuid, &job_data);
+  StartProcessing();
 }
 
 }  // namespace content

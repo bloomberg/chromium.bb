@@ -6,7 +6,6 @@
 
 #include "base/memory/ptr_util.h"
 #include "content/browser/background_fetch/background_fetch_context.h"
-#include "content/browser/background_fetch/background_fetch_job_info.h"
 #include "content/browser/background_fetch/background_fetch_request_info.h"
 
 namespace content {
@@ -20,7 +19,8 @@ BackgroundFetchDataManager::BackgroundFetchDataManager(
 
 BackgroundFetchDataManager::~BackgroundFetchDataManager() = default;
 
-BackgroundFetchJobData* BackgroundFetchDataManager::CreateRequest(
+std::unique_ptr<BackgroundFetchJobData>
+BackgroundFetchDataManager::CreateRequest(
     const BackgroundFetchJobInfo& job_info,
     BackgroundFetchRequestInfos request_infos) {
   JobIdentifier id(job_info.service_worker_registration_id(), job_info.tag());
@@ -32,19 +32,32 @@ BackgroundFetchJobData* BackgroundFetchDataManager::CreateRequest(
     // TODO(harkness) Figure out how to return errors like this.
     return nullptr;
   }
-  if (batch_map_.find(job_info.guid()) != batch_map_.end()) {
-    DVLOG(1) << "Job with UID " << job_info.guid() << " already exists.";
-    // TODO(harkness) Figure out how to return errors like this.
-    return nullptr;
-  }
 
   // Add the request to our maps and return a JobData to track the individual
   // files in the request.
   service_worker_tag_map_[id] = job_info.guid();
-  // TODO(harkness): When a job is complete, remove the JobData from the map.
-  batch_map_[job_info.guid()] =
-      base::MakeUnique<BackgroundFetchJobData>(std::move(request_infos));
-  return batch_map_[job_info.guid()].get();
+  WriteJobToStorage(job_info, std::move(request_infos));
+  // TODO(harkness): Remove data when the job is complete.
+
+  return base::MakeUnique<BackgroundFetchJobData>(
+      ReadRequestsFromStorage(job_info.guid()));
+}
+
+void BackgroundFetchDataManager::WriteJobToStorage(
+    const BackgroundFetchJobInfo& job_info,
+    BackgroundFetchRequestInfos request_infos) {
+  // TODO(harkness): Replace these maps with actually writing to storage.
+  // TODO(harkness): Check for job_guid clash.
+  job_map_[job_info.guid()] = job_info;
+  request_map_[job_info.guid()] = std::move(request_infos);
+}
+
+// TODO(harkness): This should be changed to read (and cache) small numbers of
+// the RequestInfos instead of returning all of them.
+BackgroundFetchRequestInfos&
+BackgroundFetchDataManager::ReadRequestsFromStorage(
+    const std::string& job_guid) {
+  return request_map_[job_guid];
 }
 
 }  // namespace content

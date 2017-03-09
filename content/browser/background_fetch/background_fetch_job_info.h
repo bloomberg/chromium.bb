@@ -8,7 +8,6 @@
 #include <string>
 #include <vector>
 
-#include "base/macros.h"
 #include "content/common/content_export.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "url/origin.h"
@@ -22,6 +21,10 @@ class CONTENT_EXPORT BackgroundFetchJobInfo {
   BackgroundFetchJobInfo(const std::string& tag,
                          const url::Origin& origin,
                          int64_t service_worker_registration_id);
+  // TODO(harkness): Remove copy constructor once the final (non-map-based)
+  // state management is in place and make the class DISALLOW_COPY_AND_ASSIGN.
+  BackgroundFetchJobInfo();
+  BackgroundFetchJobInfo(const BackgroundFetchJobInfo& other);
   ~BackgroundFetchJobInfo();
 
   const std::string& guid() const { return guid_; }
@@ -46,8 +49,6 @@ class CONTENT_EXPORT BackgroundFetchJobInfo {
   // size, current download size, total number of files, number of complete
   // files, (possibly) data to show the notification, (possibly) list of in
   // progress FetchRequests.
-
-  DISALLOW_COPY_AND_ASSIGN(BackgroundFetchJobInfo);
 };
 
 }  // namespace content

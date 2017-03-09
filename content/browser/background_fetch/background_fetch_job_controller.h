@@ -5,37 +5,41 @@
 #ifndef CONTENT_BROWSER_BACKGROUND_FETCH_BACKGROUND_FETCH_JOB_CONTROLLER_H_
 #define CONTENT_BROWSER_BACKGROUND_FETCH_BACKGROUND_FETCH_JOB_CONTROLLER_H_
 
+#include <memory>
 #include <string>
-#include <unordered_map>
-#include <vector>
 
-#include "content/browser/background_fetch/background_fetch_data_manager.h"
-#include "content/browser/background_fetch/background_fetch_request_info.h"
+#include "base/macros.h"
 #include "content/common/content_export.h"
 
 namespace content {
 
+class BackgroundFetchJobData;
+class BackgroundFetchRequestInfo;
 class BrowserContext;
 class StoragePartition;
 
 // The JobController will be responsible for coordinating communication with the
 // DownloadManager. It will get requests from the JobData and dispatch them to
-// the DownloadManager.
+// the DownloadManager. It lives entirely on the IO thread.
 // TODO(harkness): The JobController should also observe downloads.
 class CONTENT_EXPORT BackgroundFetchJobController {
  public:
-  BackgroundFetchJobController(BrowserContext* browser_context,
-                               StoragePartition* storage_partition);
+  BackgroundFetchJobController(
+      const std::string& job_guid,
+      BrowserContext* browser_context,
+      StoragePartition* storage_partition,
+      std::unique_ptr<BackgroundFetchJobData> job_data);
   ~BackgroundFetchJobController();
 
   // Start processing on a batch of requests. Some of these may already be in
   // progress or completed from a previous chromium instance.
-  void ProcessJob(const std::string& job_guid,
-                  BackgroundFetchJobData* job_data);
+  void StartProcessing();
+
+  // Called by the BackgroundFetchContext when the system is shutting down.
+  void Shutdown();
 
  private:
-  void ProcessRequest(const std::string& job_guid,
-                      const BackgroundFetchRequestInfo& request);
+  void ProcessRequest(const BackgroundFetchRequestInfo& request);
 
   // Pointer to the browser context. The BackgroundFetchJobController is owned
   // by the BrowserContext via the StoragePartition.
@@ -45,9 +49,8 @@ class CONTENT_EXPORT BackgroundFetchJobController {
   // (through a sequence of other classes).
   StoragePartition* storage_partition_;
 
-  // The fetch_map holds any requests which have been sent to the
-  // DownloadManager indexed by the job_guid.
-  std::unordered_map<std::string, BackgroundFetchRequestInfo> fetch_map_;
+  // The JobData which talks to the DataManager for this job_guid.
+  std::unique_ptr<BackgroundFetchJobData> job_data_;
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundFetchJobController);
 };
