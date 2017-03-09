@@ -1859,7 +1859,7 @@ void WebViewImpl::didUpdateBrowserControls() {
 }
 
 BrowserControls& WebViewImpl::browserControls() {
-  return page()->frameHost().browserControls();
+  return page()->browserControls();
 }
 
 void WebViewImpl::resizeViewWhileAnchored(float browserControlsHeight,

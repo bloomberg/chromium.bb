@@ -227,8 +227,8 @@ void TopDocumentRootScrollerController::initializeViewportScrollCallback(
     RootFrameViewport& rootFrameViewport) {
   DCHECK(m_frameHost);
   m_viewportApplyScroll = ViewportScrollCallback::create(
-      &m_frameHost->browserControls(), &m_frameHost->overscrollController(),
-      rootFrameViewport);
+      &m_frameHost->page().browserControls(),
+      &m_frameHost->overscrollController(), rootFrameViewport);
 
   recomputeGlobalRootScroller();
 }

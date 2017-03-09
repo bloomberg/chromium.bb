@@ -1415,7 +1415,7 @@ FloatSize FrameView::viewportSizeForViewportUnits() const {
   layoutSize.setWidth(layoutViewItem.viewWidth(IncludeScrollbars) / zoom);
   layoutSize.setHeight(layoutViewItem.viewHeight(IncludeScrollbars) / zoom);
 
-  BrowserControls& browserControls = m_frame->host()->browserControls();
+  BrowserControls& browserControls = m_frame->page()->browserControls();
   if (RuntimeEnabledFeatures::inertTopControlsEnabled() &&
       browserControls.permittedState() != WebBrowserControlsHidden) {
     // We use the layoutSize rather than frameRect to calculate viewport units
@@ -1646,7 +1646,7 @@ void FrameView::viewportSizeChanged(bool widthChanged, bool heightChanged) {
   }
 
   if (RuntimeEnabledFeatures::inertTopControlsEnabled() && layoutView() &&
-      m_frame->isMainFrame() && m_frame->host()->browserControls().height()) {
+      m_frame->isMainFrame() && m_frame->page()->browserControls().height()) {
     if (layoutView()->style()->hasFixedBackgroundImage()) {
       // In the case where we don't change layout size from top control resizes,
       // we wont perform a layout. If we have a fixed background image however,

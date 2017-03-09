@@ -98,9 +98,9 @@ class RootScrollerTest : public ::testing::Test {
 
   WebViewImpl* webViewImpl() const { return m_helper.webView(); }
 
-  FrameHost& frameHost() const {
-    return m_helper.webView()->page()->frameHost();
-  }
+  Page& page() const { return *m_helper.webView()->page(); }
+
+  FrameHost& frameHost() const { return page().frameHost(); }
 
   LocalFrame* mainFrame() const {
     return webViewImpl()->mainFrameImpl()->frame();
@@ -116,9 +116,7 @@ class RootScrollerTest : public ::testing::Test {
     return frameHost().visualViewport();
   }
 
-  BrowserControls& browserControls() const {
-    return frameHost().browserControls();
-  }
+  BrowserControls& browserControls() const { return page().browserControls(); }
 
   Node* effectiveRootScroller(Document* doc) const {
     return &doc->rootScrollerController().effectiveRootScroller();
