@@ -235,6 +235,55 @@ TEST_F(ChromeNetworkDelegateTest, ReportOffTheRecordDataUseToAggregator) {
             fake_aggregator.off_the_record_rx_bytes());
 }
 
+TEST_F(ChromeNetworkDelegateTest, HttpRequestCompletionErrorCodes) {
+  Initialize();
+
+  const struct {
+    const GURL url;
+    int net_error;
+    bool is_main_frame;
+    int expected_sample_bucket;
+    int expected_request_completion_count;
+    int expected_request_completion_main_frame_count;
+  } kTests[] = {
+      {GURL("http://example.com"), net::OK, true, std::abs(net::OK), 1, 1},
+      {GURL("http://example.com"), net::ERR_ABORTED, true,
+       std::abs(net::ERR_ABORTED), 1, 1},
+      {GURL("http://example.com"), net::OK, false, std::abs(net::OK), 1, 0},
+      {GURL("https://example.com"), net::OK, true, std::abs(net::OK), 0, 0},
+  };
+
+  const char kHttpRequestCompletionErrorCode[] =
+      "Net.HttpRequestCompletionErrorCodes";
+  const char kHttpRequestCompletionErrorCodeMainFrame[] =
+      "Net.HttpRequestCompletionErrorCodes.MainFrame";
+
+  for (const auto& test : kTests) {
+    base::HistogramTester histograms;
+
+    net::TestDelegate test_delegate;
+    std::unique_ptr<net::URLRequest> request(context()->CreateRequest(
+        test.url, net::DEFAULT_PRIORITY, &test_delegate));
+    if (test.is_main_frame) {
+      request->SetLoadFlags(request->load_flags() |
+                            net::LOAD_MAIN_FRAME_DEPRECATED);
+    }
+    network_delegate()->NotifyCompleted(request.get(), false, test.net_error);
+
+    histograms.ExpectTotalCount(kHttpRequestCompletionErrorCode,
+                                test.expected_request_completion_count);
+    histograms.ExpectUniqueSample(kHttpRequestCompletionErrorCode,
+                                  test.expected_sample_bucket,
+                                  test.expected_request_completion_count);
+    histograms.ExpectTotalCount(
+        kHttpRequestCompletionErrorCodeMainFrame,
+        test.expected_request_completion_main_frame_count);
+    histograms.ExpectUniqueSample(
+        kHttpRequestCompletionErrorCodeMainFrame, test.expected_sample_bucket,
+        test.expected_request_completion_main_frame_count);
+  }
+}
+
 class ChromeNetworkDelegatePolicyTest : public testing::Test {
  public:
   ChromeNetworkDelegatePolicyTest()
