@@ -1,0 +1,19 @@
+# Copyright 2017 The Chromium Authors. All rights reserved.
+config("include_config") {
+  include_dirs = [ "src/" ]
+}
+
+source_set("libprotobuf-mutator") {
+  testonly = true
+  configs += [ ":include_config" ]
+  public_configs = [ ":include_config" ]
+  sources = [
+    "src/src/binary_format.cc",
+    "src/src/libfuzzer/libfuzzer_mutator.cc",
+    "src/src/mutator.cc",
+    "src/src/text_format.cc",
+  ]
+  deps = [
+    "//third_party/protobuf:protobuf_full",
+  ]
+}
