@@ -52,6 +52,7 @@ TARGET_VERSION_MAP = {
     'host' : {
         'gdb' : PACKAGE_NONE,
         'ex_go' : PACKAGE_NONE,
+        'ex_compiler-rt': PACKAGE_NONE,
     },
 }
 
@@ -61,6 +62,12 @@ TARGET_GO_ENABLED = (
     'armv7a-cros-linux-gnueabi',
 )
 CROSSDEV_GO_ARGS = ['--ex-pkg', 'dev-lang/go']
+
+# Enable llvm's compiler-rt for these targets.
+TARGET_COMPILER_RT_ENABLED = (
+    'armv7a-cros-linux-gnueabi',
+)
+CROSSDEV_COMPILER_RT_ARGS = ['--ex-pkg', 'sys-libs/compiler-rt']
 
 # Overrides for {gcc,binutils}-config, pick a package with particular suffix.
 CONFIG_TARGET_SUFFIXES = {
@@ -121,6 +128,8 @@ class Crossdev(object):
       cmd = ['crossdev', '--show-target-cfg', '--ex-gdb']
       if target in TARGET_GO_ENABLED:
         cmd.extend(CROSSDEV_GO_ARGS)
+      if target in TARGET_COMPILER_RT_ENABLED:
+        cmd.extend(CROSSDEV_COMPILER_RT_ARGS)
       cmd.extend(['-t', target_tuple])
       # Catch output of crossdev.
       out = cros_build_lib.RunCommand(cmd, print_cmd=False,
@@ -177,6 +186,8 @@ class Crossdev(object):
         elif pkg == 'ex_go':
           # Go does not have selectable versions.
           cmd.extend(CROSSDEV_GO_ARGS)
+        elif pkg == 'ex_compiler-rt':
+          cmd.extend(CROSSDEV_COMPILER_RT_ARGS)
         elif pkg in cls.MANUAL_PKGS:
           pass
         else:
@@ -1193,6 +1204,11 @@ def main(argv):
   boards_wanted = (set(options.include_boards.split(','))
                    if options.include_boards else set())
 
+  # pylint: disable=global-statement
+  # Disable compiler-rt if using binary packages till binary package is available
+  global TARGET_COMPILER_RT_ENABLED
+  if options.usepkg:
+    TARGET_COMPILER_RT_ENABLED = ()
   if options.cfg_name:
     ShowConfig(options.cfg_name)
   elif options.create_packages:
