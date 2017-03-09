@@ -1148,10 +1148,6 @@ EOF
             enabled pic && add_asflags --apcs=/fpic
             enabled shared && add_cflags --shared
           fi
-          if enabled analyzer; then
-            add_cxxflags ${WX_CXXFLAGS}
-            add_extralibs ${WX_LDFLAGS}
-          fi
           ;;
       esac
       ;;

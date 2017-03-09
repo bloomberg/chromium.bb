@@ -62,13 +62,6 @@ ifeq ($(CONFIG_WEBM_IO),yes)
   INC_PATH-yes += $(SRC_PATH_BARE)/third_party/libwebm
 endif
 
-# TODO(tomfinegan): Figure out why add_{c,cpp}flags/add_extralibs doesn't work
-#                   for CXX examples.
-ifeq ($(CONFIG_ANALYZER),yes)
-  CXXFLAGS += ${WX_CXXFLAGS}
-  extralibs += ${WX_LDFLAGS}
-endif
-
 # List of examples to build. UTILS are tools meant for distribution
 # while EXAMPLES demonstrate specific portions of the API.
 UTILS-$(CONFIG_DECODERS)    += aomdec.c
