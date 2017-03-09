@@ -682,6 +682,8 @@ if (!is_android) {
       # panels).
       sources += [
         "../browser/notifications/notification_interactive_uitest.cc",
+        "../browser/notifications/notification_interactive_uitest_mac.mm",
+        "../browser/notifications/notification_interactive_uitest_support.cc",
         "../browser/notifications/platform_notification_service_interactive_uitest.cc",
       ]
     }
@@ -4510,9 +4512,8 @@ test("unit_tests") {
       "//third_party/ocmock",
     ]
 
-    sources += [
-      "../browser/ui/cocoa/applescript/apple_event_util_unittest.mm",
-    ]
+    sources +=
+        [ "../browser/ui/cocoa/applescript/apple_event_util_unittest.mm" ]
 
     if (mac_views_browser) {
       # TODO(tapted): Add chrome_unit_tests_views_non_mac_sources.

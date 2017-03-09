@@ -301,12 +301,14 @@ class ScopedBrowserShower {
         chrome::NavigateParams::SHOW_WINDOW_INACTIVE) {
       params_->browser->window()->ShowInactive();
     } else if (params_->window_action == chrome::NavigateParams::SHOW_WINDOW) {
-      params_->browser->window()->Show();
+      BrowserWindow* window = params_->browser->window();
+      window->Show();
       // If a user gesture opened a popup window, focus the contents.
       if (params_->user_gesture &&
           params_->disposition == WindowOpenDisposition::NEW_POPUP &&
           params_->target_contents) {
         params_->target_contents->Focus();
+        window->Activate();
       }
     }
   }

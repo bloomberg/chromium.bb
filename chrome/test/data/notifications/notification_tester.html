@@ -14,12 +14,13 @@ var g_permissionGranted = false;
 // Returns an id for the notification, which can be used to cancel it with
 // |cancelNotification|. If two notifications are created with the same
 // tag, the second one should replace the first.
-function createNotification(iconUrl, title, text, tag) {
+function createNotification(iconUrl, title, text, tag, onclick) {
   var notification = new Notification(title, {
     icon: iconUrl,
     body: text,
     tag: tag
   });
+  notification.onclick = onclick;
 
   createNotificationHelper(notification, true);
 }
