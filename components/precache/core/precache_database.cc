@@ -148,11 +148,9 @@ void PrecacheDatabase::GetURLListForReferrerHost(
 }
 
 void PrecacheDatabase::RecordURLPrefetchMetrics(
-    const net::HttpResponseInfo& info,
-    const base::TimeDelta& latency) {
+    const net::HttpResponseInfo& info) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  UMA_HISTOGRAM_TIMES("Precache.Latency.Prefetch", latency);
   UMA_HISTOGRAM_ENUMERATION("Precache.CacheStatus.Prefetch",
                             info.cache_entry_status,
                             net::HttpResponseInfo::CacheEntryStatus::ENTRY_MAX);
@@ -233,13 +231,11 @@ void PrecacheDatabase::RecordURLPrefetchInternal(
 }
 
 void PrecacheDatabase::RecordURLNonPrefetch(const GURL& url,
-                                            const base::TimeDelta& latency,
                                             const base::Time& fetch_time,
                                             const net::HttpResponseInfo& info,
                                             int64_t size,
                                             int host_rank,
                                             bool is_connection_cellular) {
-  UMA_HISTOGRAM_TIMES("Precache.Latency.NonPrefetch", latency);
   UMA_HISTOGRAM_ENUMERATION("Precache.CacheStatus.NonPrefetch",
                             info.cache_entry_status,
                             net::HttpResponseInfo::CacheEntryStatus::ENTRY_MAX);
@@ -247,11 +243,15 @@ void PrecacheDatabase::RecordURLNonPrefetch(const GURL& url,
   if (host_rank != history::kMaxTopHosts) {
     // The resource was loaded on a page that could have been affected by
     // precaching.
-    UMA_HISTOGRAM_TIMES("Precache.Latency.NonPrefetch.TopHosts", latency);
+    UMA_HISTOGRAM_ENUMERATION(
+        "Precache.CacheStatus.NonPrefetch.TopHosts", info.cache_entry_status,
+        net::HttpResponseInfo::CacheEntryStatus::ENTRY_MAX);
   } else {
     // The resource was loaded on a page that could NOT have been affected by
     // precaching.
-    UMA_HISTOGRAM_TIMES("Precache.Latency.NonPrefetch.NonTopHosts", latency);
+    UMA_HISTOGRAM_ENUMERATION(
+        "Precache.CacheStatus.NonPrefetch.NonTopHosts", info.cache_entry_status,
+        net::HttpResponseInfo::CacheEntryStatus::ENTRY_MAX);
   }
 
   if (!IsDatabaseAccessible()) {

@@ -440,9 +440,9 @@ class PrecacheFetcherTest : public testing::Test {
     net::HttpResponseInfo info;
     info.was_cached = true;
     info.headers = new net::HttpResponseHeaders(std::string());
-    precache_database_.RecordURLNonPrefetch(
-        url, base::TimeDelta(), base::Time::Now(), info, 1000 /* size */,
-        0 /* host_rank */, false /* is_connection_cellular */);
+    precache_database_.RecordURLNonPrefetch(url, base::Time::Now(), info,
+                                            1000 /* size */, 0 /* host_rank */,
+                                            false /* is_connection_cellular */);
   }
 
  protected:

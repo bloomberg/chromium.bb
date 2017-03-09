@@ -31,7 +31,6 @@ const char kPrecacheSynthetic1D[] = "PrecacheSynthetic1D";
 
 void UpdatePrecacheMetricsAndStateOnUIThread(const GURL& url,
                                              const GURL& referrer,
-                                             base::TimeDelta latency,
                                              const base::Time& fetch_time,
                                              const net::HttpResponseInfo& info,
                                              int64_t size,
@@ -50,7 +49,7 @@ void UpdatePrecacheMetricsAndStateOnUIThread(const GURL& url,
     return;
 
   precache_manager->UpdatePrecacheMetricsAndState(
-      url, referrer, latency, fetch_time, info, size, is_user_traffic,
+      url, referrer, fetch_time, info, size, is_user_traffic,
       base::Bind(&precache::RegisterPrecacheSyntheticFieldTrial));
 }
 
@@ -67,14 +66,13 @@ void UpdatePrecacheMetricsAndState(const net::URLRequest* request,
   // specified with the Content-Length header, which may be inaccurate,
   // or missing, as is the case with chunked encoding.
   int64_t received_content_length = request->received_response_content_length();
-  base::TimeDelta latency = base::TimeTicks::Now() - request->creation_time();
 
   // Record precache metrics when a fetch is completed successfully, if
   // precaching is allowed.
   content::BrowserThread::PostTask(
       content::BrowserThread::UI, FROM_HERE,
       base::Bind(&UpdatePrecacheMetricsAndStateOnUIThread, request->url(),
-                 GURL(request->referrer()), latency, base::Time::Now(),
+                 GURL(request->referrer()), base::Time::Now(),
                  request->response_info(), received_content_length,
                  data_use_measurement::IsUserRequest(*request), profile_id));
 }

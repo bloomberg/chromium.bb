@@ -29,7 +29,6 @@
 namespace base {
 class FilePath;
 class Time;
-class TimeDelta;
 }
 
 namespace content {
@@ -123,7 +122,6 @@ class PrecacheManager : public KeyedService,
   void UpdatePrecacheMetricsAndState(
       const GURL& url,
       const GURL& referrer,
-      const base::TimeDelta& latency,
       const base::Time& fetch_time,
       const net::HttpResponseInfo& info,
       int64_t size,
@@ -190,7 +188,6 @@ class PrecacheManager : public KeyedService,
   void RecordStatsForFetch(
       const GURL& url,
       const GURL& referrer,
-      const base::TimeDelta& latency,
       const base::Time& fetch_time,
       const net::HttpResponseInfo& info,
       int64_t size,
@@ -201,7 +198,6 @@ class PrecacheManager : public KeyedService,
   // by RecordStatsForFetch() by way of an asynchronous HistoryService callback.
   void RecordStatsForFetchInternal(const GURL& url,
                                    const std::string& referrer_host,
-                                   const base::TimeDelta& latency,
                                    const base::Time& fetch_time,
                                    const net::HttpResponseInfo& info,
                                    int64_t size,

@@ -69,8 +69,7 @@ class PrecacheDatabase {
   // Report precache-related metrics in response to a URL being fetched, where
   // the fetch was motivated by precaching. This is called from the network
   // delegate, via precache_util.
-  void RecordURLPrefetchMetrics(const net::HttpResponseInfo& info,
-                                const base::TimeDelta& latency);
+  void RecordURLPrefetchMetrics(const net::HttpResponseInfo& info);
 
   // Records the precache of an url |url| for top host |referrer_host|. This is
   // called from PrecacheFetcher.
@@ -85,7 +84,6 @@ class PrecacheDatabase {
   // indicates whether the current network connection is a cellular network.
   // This is called from the network delegate, via precache_util.
   void RecordURLNonPrefetch(const GURL& url,
-                            const base::TimeDelta& latency,
                             const base::Time& fetch_time,
                             const net::HttpResponseInfo& info,
                             int64_t size,
