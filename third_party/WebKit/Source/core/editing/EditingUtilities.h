@@ -84,8 +84,7 @@ CORE_EXPORT Element* rootEditableElement(const Node&);
 Element* rootEditableElementOf(const Position&);
 Element* rootEditableElementOf(const PositionInFlatTree&);
 Element* rootEditableElementOf(const VisiblePosition&);
-ContainerNode* rootEditableElementOrTreeScopeRootNodeOf(
-    const VisibleSelection&);
+ContainerNode* rootEditableElementOrTreeScopeRootNodeOf(const Position&);
 // highestEditableRoot returns the highest editable node. If the
 // rootEditableElement of the speicified Position is <body>, this returns the
 // <body>. Otherwise, this searches ancestors for the highest editable node in

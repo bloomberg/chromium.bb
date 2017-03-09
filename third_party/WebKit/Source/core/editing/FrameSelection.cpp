@@ -141,12 +141,12 @@ Element* FrameSelection::rootEditableElementOrDocumentElement() const {
 // TODO(yosin): We should move |rootEditableElementOrTreeScopeRootNodeOf()| to
 // "EditingUtilities.cpp"
 ContainerNode* rootEditableElementOrTreeScopeRootNodeOf(
-    const VisibleSelection& visibleSelection) {
-  Element* selectionRoot = visibleSelection.rootEditableElement();
+    const Position& position) {
+  Element* selectionRoot = rootEditableElementOf(position);
   if (selectionRoot)
     return selectionRoot;
 
-  Node* const node = visibleSelection.base().computeContainerNode();
+  Node* const node = position.computeContainerNode();
   return node ? &node->treeScope().rootNode() : 0;
 }
 
