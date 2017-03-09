@@ -57,6 +57,7 @@ enum class PaymentSheetViewControllerTags {
   SHOW_SHIPPING_BUTTON,
   SHOW_PAYMENT_METHOD_BUTTON,
   SHOW_CONTACT_INFO_BUTTON,
+  SHOW_SHIPPING_OPTION_BUTTON,
   PAY_BUTTON
 };
 
@@ -215,6 +216,8 @@ std::unique_ptr<views::View> PaymentSheetViewController::CreateView() {
   if (request()->request_shipping()) {
     layout->StartRow(0, 0);
     layout->AddView(CreateShippingRow().release());
+    layout->StartRow(0, 0);
+    layout->AddView(CreateShippingOptionRow().release());
   }
   layout->StartRow(0, 0);
   layout->AddView(CreatePaymentMethodRow().release());
@@ -497,6 +500,44 @@ PaymentSheetViewController::CreateContactInfoRow() {
       PaymentSheetViewControllerTags::SHOW_CONTACT_INFO_BUTTON));
   section->set_id(
       static_cast<int>(DialogViewID::PAYMENT_SHEET_CONTACT_INFO_SECTION));
+  return section;
+}
+
+std::unique_ptr<views::View>
+PaymentSheetViewController::CreateShippingOptionContent() {
+  std::unique_ptr<views::View> container = base::MakeUnique<views::View>();
+
+  std::unique_ptr<views::BoxLayout> layout =
+      base::MakeUnique<views::BoxLayout>(views::BoxLayout::kVertical, 0, 0, 0);
+  layout->set_cross_axis_alignment(
+      views::BoxLayout::CROSS_AXIS_ALIGNMENT_START);
+  container->SetLayoutManager(layout.release());
+
+  payments::mojom::PaymentShippingOption* selected_shipping_option =
+      request()->selected_shipping_option();
+  if (selected_shipping_option) {
+    container->AddChildView(
+        new views::Label(base::ASCIIToUTF16(selected_shipping_option->label)));
+    container->AddChildView(
+        new views::Label(request()->GetFormattedCurrencyAmount(
+            selected_shipping_option->amount->value)));
+  }
+
+  return container;
+}
+
+std::unique_ptr<views::Button>
+PaymentSheetViewController::CreateShippingOptionRow() {
+  // TODO(anthonyvd): Use the correct IDS_PAYMENTS_*_OPTION_LABEL string based
+  // on the data passed by the website.
+  std::unique_ptr<views::Button> section = CreatePaymentSheetRow(
+      this, l10n_util::GetStringUTF16(IDS_PAYMENTS_SHIPPING_OPTION_LABEL),
+      CreateShippingOptionContent(), std::unique_ptr<views::View>(nullptr),
+      widest_name_column_view_width_);
+  section->set_tag(static_cast<int>(
+      PaymentSheetViewControllerTags::SHOW_SHIPPING_OPTION_BUTTON));
+  section->set_id(
+      static_cast<int>(DialogViewID::PAYMENT_SHEET_SHIPPING_OPTION_SECTION));
   return section;
 }
 

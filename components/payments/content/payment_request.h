@@ -130,6 +130,10 @@ class PaymentRequest : public mojom::PaymentRequest,
   // card.
   autofill::CreditCard* selected_credit_card() { return selected_credit_card_; }
 
+  payments::mojom::PaymentShippingOption* selected_shipping_option() {
+    return selected_shipping_option_;
+  }
+
   // Sets the |profile| to be the selected one and will update state and notify
   // observers.
   void SetSelectedShippingProfile(autofill::AutofillProfile* profile);
@@ -180,6 +184,11 @@ class PaymentRequest : public mojom::PaymentRequest,
   // (contact info, shipping address).
   bool ArePaymentOptionsSatisfied();
 
+  // Updates the selected_shipping_option based on the data passed to this
+  // payment request by the website. This will set selected_shipping_option_ to
+  // the last option marked selected in the options array.
+  void UpdateSelectedShippingOptionFromDetails();
+
   content::WebContents* web_contents_;
   std::unique_ptr<PaymentRequestDelegate> delegate_;
   // |manager_| owns this PaymentRequest.
@@ -208,6 +217,9 @@ class PaymentRequest : public mojom::PaymentRequest,
   std::vector<std::unique_ptr<autofill::CreditCard>> card_cache_;
   std::vector<autofill::CreditCard*> credit_cards_;
   autofill::CreditCard* selected_credit_card_;
+  // This is owned by |details_|, which is owned by this object and lives until
+  // |this| is destructed so it's safe to keep this raw pointer.
+  payments::mojom::PaymentShippingOption* selected_shipping_option_;
 
   DISALLOW_COPY_AND_ASSIGN(PaymentRequest);
 };

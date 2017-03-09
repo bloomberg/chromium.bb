@@ -46,6 +46,8 @@ class PaymentSheetViewController : public PaymentRequestSheetController,
   std::unique_ptr<views::Button> CreatePaymentMethodRow();
   std::unique_ptr<views::View> CreateContactInfoSectionContent();
   std::unique_ptr<views::Button> CreateContactInfoRow();
+  std::unique_ptr<views::View> CreateShippingOptionContent();
+  std::unique_ptr<views::Button> CreateShippingOptionRow();
 
   views::Button* pay_button_;
 

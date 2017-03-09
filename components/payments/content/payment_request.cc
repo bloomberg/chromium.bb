@@ -5,6 +5,7 @@
 #include "components/payments/content/payment_request.h"
 
 #include <algorithm>
+#include <set>
 #include <unordered_map>
 #include <utility>
 
@@ -38,7 +39,8 @@ PaymentRequest::PaymentRequest(
       is_ready_to_pay_(false),
       selected_shipping_profile_(nullptr),
       selected_contact_profile_(nullptr),
-      selected_credit_card_(nullptr) {
+      selected_credit_card_(nullptr),
+      selected_shipping_option_(nullptr) {
   // OnConnectionTerminated will be called when the Mojo pipe is closed. This
   // will happen as a result of many renderer-side events (both successful and
   // erroneous in nature).
@@ -68,6 +70,7 @@ void PaymentRequest::Init(
   PopulateValidatedMethodData(method_data);
   PopulateProfileCache();
   SetDefaultProfileSelections();
+  UpdateSelectedShippingOptionFromDetails();
 }
 
 void PaymentRequest::Show() {
@@ -385,6 +388,21 @@ bool PaymentRequest::ArePaymentOptionsSatisfied() {
   }
 
   return true;
+}
+
+void PaymentRequest::UpdateSelectedShippingOptionFromDetails() {
+  selected_shipping_option_ = nullptr;
+
+  // As per the spec, the selected shipping option should initially be the last
+  // one in the array that has its selected field set to true.
+  auto selected_shipping_option_it = std::find_if(
+      details()->shipping_options.rbegin(), details()->shipping_options.rend(),
+      [](const payments::mojom::PaymentShippingOptionPtr& element) {
+        return element->selected;
+      });
+  if (selected_shipping_option_it != details()->shipping_options.rend()) {
+    selected_shipping_option_ = selected_shipping_option_it->get();
+  }
 }
 
 }  // namespace payments
