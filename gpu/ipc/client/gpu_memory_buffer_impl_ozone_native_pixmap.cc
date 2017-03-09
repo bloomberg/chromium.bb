@@ -97,7 +97,7 @@ base::Closure GpuMemoryBufferImplOzoneNativePixmap::AllocateForTesting(
           ->GetSurfaceFactoryOzone()
           ->CreateNativePixmap(gfx::kNullAcceleratedWidget, size, format,
                                usage);
-  handle->type = gfx::OZONE_NATIVE_PIXMAP;
+  handle->type = gfx::NATIVE_PIXMAP;
   handle->native_pixmap_handle = pixmap->ExportHandle();
   return base::Bind(&FreeNativePixmapForTesting, pixmap);
 }
@@ -127,7 +127,7 @@ int GpuMemoryBufferImplOzoneNativePixmap::stride(size_t plane) const {
 gfx::GpuMemoryBufferHandle GpuMemoryBufferImplOzoneNativePixmap::GetHandle()
     const {
   gfx::GpuMemoryBufferHandle handle;
-  handle.type = gfx::OZONE_NATIVE_PIXMAP;
+  handle.type = gfx::NATIVE_PIXMAP;
   handle.id = id_;
   if (fd_.is_valid()) {
     handle.native_pixmap_handle.fds.emplace_back(fd_.get(),

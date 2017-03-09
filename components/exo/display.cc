@@ -101,7 +101,7 @@ std::unique_ptr<Buffer> Display::CreateLinuxDMABufBuffer(
                size.ToString());
 
   gfx::GpuMemoryBufferHandle handle;
-  handle.type = gfx::OZONE_NATIVE_PIXMAP;
+  handle.type = gfx::NATIVE_PIXMAP;
   for (auto& fd : fds)
     handle.native_pixmap_handle.fds.emplace_back(std::move(fd));
 

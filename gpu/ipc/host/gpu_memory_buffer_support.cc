@@ -96,7 +96,7 @@ uint32_t GetImageTextureTarget(gfx::BufferFormat format,
   }
 
   switch (GetNativeGpuMemoryBufferType()) {
-    case gfx::OZONE_NATIVE_PIXMAP:
+    case gfx::NATIVE_PIXMAP:
       // GPU memory buffers that are shared with the GL using EGLImages
       // require TEXTURE_EXTERNAL_OES.
       return GL_TEXTURE_EXTERNAL_OES;

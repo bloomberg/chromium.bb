@@ -51,7 +51,7 @@ std::unique_ptr<GpuMemoryBufferImpl> GpuMemoryBufferImpl::CreateFromHandle(
           handle, size, format, usage, callback);
 #endif
 #if defined(USE_OZONE)
-    case gfx::OZONE_NATIVE_PIXMAP:
+    case gfx::NATIVE_PIXMAP:
       return GpuMemoryBufferImplOzoneNativePixmap::CreateFromHandle(
           handle, size, format, usage, callback);
 #endif

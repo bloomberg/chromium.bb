@@ -169,12 +169,12 @@ TEST_F(StructTraitsTest, GpuMemoryBufferHandle) {
 #if defined(OS_LINUX)
   const uint64_t kSize = kOffset + kStride;
   const uint64_t kModifier = 2;
-  handle.type = gfx::OZONE_NATIVE_PIXMAP;
+  handle.type = gfx::NATIVE_PIXMAP;
   handle.id = kId;
   handle.native_pixmap_handle.planes.emplace_back(kOffset, kStride, kSize,
                                                   kModifier);
   proxy->EchoGpuMemoryBufferHandle(handle, &output);
-  EXPECT_EQ(gfx::OZONE_NATIVE_PIXMAP, output.type);
+  EXPECT_EQ(gfx::NATIVE_PIXMAP, output.type);
   EXPECT_EQ(kId, output.id);
   ASSERT_EQ(1u, output.native_pixmap_handle.planes.size());
   EXPECT_EQ(kSize, output.native_pixmap_handle.planes.back().size);

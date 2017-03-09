@@ -146,7 +146,7 @@ bool StructTraits<gfx::mojom::GpuMemoryBufferHandleDataView,
     out->stride = data.stride();
   }
 #if defined(OS_LINUX)
-  if (out->type == gfx::OZONE_NATIVE_PIXMAP &&
+  if (out->type == gfx::NATIVE_PIXMAP &&
       !data.ReadNativePixmapHandle(&out->native_pixmap_handle))
     return false;
 #endif

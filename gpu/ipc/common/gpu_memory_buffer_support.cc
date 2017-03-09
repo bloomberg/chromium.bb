@@ -18,7 +18,7 @@ gfx::GpuMemoryBufferType GetNativeGpuMemoryBufferType() {
   return gfx::IO_SURFACE_BUFFER;
 #endif
 #if defined(USE_OZONE)
-  return gfx::OZONE_NATIVE_PIXMAP;
+  return gfx::NATIVE_PIXMAP;
 #endif
   return gfx::EMPTY_BUFFER;
 }

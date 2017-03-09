@@ -387,7 +387,7 @@ gfx::GpuMemoryBufferHandle TextureRef::ExportGpuMemoryBufferHandle() const {
   CHECK(pixmap_);
   int duped_fd = HANDLE_EINTR(dup(pixmap_->GetDmaBufFd(0)));
   LOG_ASSERT(duped_fd != -1) << "Failed duplicating dmabuf fd";
-  handle.type = gfx::OZONE_NATIVE_PIXMAP;
+  handle.type = gfx::NATIVE_PIXMAP;
   handle.native_pixmap_handle.fds.emplace_back(
       base::FileDescriptor(duped_fd, true));
   handle.native_pixmap_handle.planes.emplace_back(

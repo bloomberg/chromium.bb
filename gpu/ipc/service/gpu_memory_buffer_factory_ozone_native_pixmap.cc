@@ -39,7 +39,7 @@ GpuMemoryBufferFactoryOzoneNativePixmap::CreateGpuMemoryBuffer(
   }
 
   gfx::GpuMemoryBufferHandle new_handle;
-  new_handle.type = gfx::OZONE_NATIVE_PIXMAP;
+  new_handle.type = gfx::NATIVE_PIXMAP;
   new_handle.id = id;
   new_handle.native_pixmap_handle = pixmap->ExportHandle();
 
@@ -74,7 +74,7 @@ GpuMemoryBufferFactoryOzoneNativePixmap::CreateImageForGpuMemoryBuffer(
     unsigned internalformat,
     int client_id,
     SurfaceHandle surface_handle) {
-  DCHECK_EQ(handle.type, gfx::OZONE_NATIVE_PIXMAP);
+  DCHECK_EQ(handle.type, gfx::NATIVE_PIXMAP);
 
   scoped_refptr<ui::NativePixmap> pixmap;
 

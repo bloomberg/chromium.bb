@@ -32,9 +32,9 @@ GpuMemoryBufferHandle CloneHandleForIPC(
       handle.stride = source_handle.stride;
       return handle;
     }
-    case gfx::OZONE_NATIVE_PIXMAP: {
+    case gfx::NATIVE_PIXMAP: {
       gfx::GpuMemoryBufferHandle handle;
-      handle.type = gfx::OZONE_NATIVE_PIXMAP;
+      handle.type = gfx::NATIVE_PIXMAP;
       handle.id = source_handle.id;
 #if defined(OS_LINUX)
       handle.native_pixmap_handle =
