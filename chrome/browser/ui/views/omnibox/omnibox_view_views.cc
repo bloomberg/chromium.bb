@@ -570,11 +570,16 @@ void OmniboxViewViews::SetEmphasis(bool emphasize, const gfx::Range& range) {
 
 void OmniboxViewViews::UpdateSchemeStyle(const gfx::Range& range) {
   DCHECK(range.IsValid());
-  const SkColor security_color =
-      location_bar_view_->GetSecureTextColor(security_level_);
-  const bool strike = security_level_ == security_state::DANGEROUS;
-  ApplyColor(security_color, range);
-  ApplyStyle(gfx::DIAGONAL_STRIKE, strike, range);
+  // Only SECURE and DANGEROUS levels (pages served over HTTPS or flagged by
+  // SafeBrowsing) get a special scheme color treatment. If the security level
+  // is NONE or HTTP_SHOW_WARNING, we do not override the text style previously
+  // applied to the scheme text range by SetEmphasis().
+  if (security_level_ == security_state::NONE ||
+      security_level_ == security_state::HTTP_SHOW_WARNING)
+    return;
+  ApplyColor(location_bar_view_->GetSecureTextColor(security_level_), range);
+  if (security_level_ == security_state::DANGEROUS)
+    ApplyStyle(gfx::DIAGONAL_STRIKE, true, range);
 }
 
 void OmniboxViewViews::EmphasizeURLComponents() {
