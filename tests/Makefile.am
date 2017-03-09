@@ -132,6 +132,7 @@ XFAIL_TESTS +=					\
 dist_yaml_TESTS =				\
 	yaml/ar-ar-g1_harness.yaml		\
 	yaml/ar-fa_harness.yaml			\
+	yaml/capsnocont.yaml			\
 	yaml/chr-us-g1_harness.yaml		\
 	yaml/da-dk-g16-dictionary_harness.yaml	\
 	yaml/da-dk-g18-dictionary_harness.yaml	\
