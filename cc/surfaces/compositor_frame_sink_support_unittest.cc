@@ -4,6 +4,7 @@
 
 #include "cc/surfaces/compositor_frame_sink_support.h"
 
+#include "base/debug/stack_trace.h"
 #include "base/macros.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/surfaces/compositor_frame_sink_support_client.h"
@@ -18,6 +19,9 @@
 using testing::UnorderedElementsAre;
 using testing::IsEmpty;
 using testing::SizeIs;
+using testing::Invoke;
+using testing::_;
+using testing::InSequence;
 
 namespace cc {
 namespace test {
@@ -28,6 +32,34 @@ constexpr FrameSinkId kParentFrameSink(3, 0);
 constexpr FrameSinkId kChildFrameSink1(65563, 0);
 constexpr FrameSinkId kChildFrameSink2(65564, 0);
 constexpr FrameSinkId kArbitraryFrameSink(1337, 7331);
+
+class MockCompositorFrameSinkSupportClient
+    : public CompositorFrameSinkSupportClient {
+ public:
+  MockCompositorFrameSinkSupportClient() {
+    ON_CALL(*this, ReclaimResources(_))
+        .WillByDefault(Invoke(
+            this,
+            &MockCompositorFrameSinkSupportClient::ReclaimResourcesInternal));
+  }
+
+  ReturnedResourceArray& last_returned_resources() {
+    return last_returned_resources_;
+  }
+
+  // CompositorFrameSinkSupportClient implementation.
+  MOCK_METHOD0(DidReceiveCompositorFrameAck, void());
+  MOCK_METHOD1(OnBeginFrame, void(const BeginFrameArgs&));
+  MOCK_METHOD1(ReclaimResources, void(const ReturnedResourceArray&));
+  MOCK_METHOD2(WillDrawSurface, void(const LocalSurfaceId&, const gfx::Rect&));
+
+ private:
+  void ReclaimResourcesInternal(const ReturnedResourceArray& resources) {
+    last_returned_resources_ = resources;
+  }
+
+  ReturnedResourceArray last_returned_resources_;
+};
 
 std::vector<SurfaceId> empty_surface_ids() {
   return std::vector<SurfaceId>();
@@ -71,8 +103,7 @@ TransferableResource MakeResource(ResourceId id,
 
 }  // namespace
 
-class CompositorFrameSinkSupportTest : public testing::Test,
-                                       public CompositorFrameSinkSupportClient {
+class CompositorFrameSinkSupportTest : public testing::Test {
  public:
   CompositorFrameSinkSupportTest()
       : surface_manager_(SurfaceManager::LifetimeType::REFERENCES) {}
@@ -124,10 +155,6 @@ class CompositorFrameSinkSupportTest : public testing::Test,
     return begin_frame_source_.get();
   }
 
-  ReturnedResourceArray& last_returned_resources() {
-    return last_returned_resources_;
-  }
-
   // testing::Test:
   void SetUp() override {
     testing::Test::SetUp();
@@ -138,20 +165,20 @@ class CompositorFrameSinkSupportTest : public testing::Test,
                                      begin_frame_source_.get()));
     surface_manager_.SetDependencyTracker(std::move(dependency_tracker));
     supports_.push_back(base::MakeUnique<CompositorFrameSinkSupport>(
-        this, &surface_manager_, kDisplayFrameSink, true /* is_root */,
-        true /* handles_frame_sink_id_invalidation */,
+        &support_client_, &surface_manager_, kDisplayFrameSink,
+        true /* is_root */, true /* handles_frame_sink_id_invalidation */,
         true /* needs_sync_points */));
     supports_.push_back(base::MakeUnique<CompositorFrameSinkSupport>(
-        this, &surface_manager_, kParentFrameSink, false /* is_root */,
-        true /* handles_frame_sink_id_invalidation */,
+        &support_client_, &surface_manager_, kParentFrameSink,
+        false /* is_root */, true /* handles_frame_sink_id_invalidation */,
         true /* needs_sync_points */));
     supports_.push_back(base::MakeUnique<CompositorFrameSinkSupport>(
-        this, &surface_manager_, kChildFrameSink1, false /* is_root */,
-        true /* handles_frame_sink_id_invalidation */,
+        &support_client_, &surface_manager_, kChildFrameSink1,
+        false /* is_root */, true /* handles_frame_sink_id_invalidation */,
         true /* needs_sync_points */));
     supports_.push_back(base::MakeUnique<CompositorFrameSinkSupport>(
-        this, &surface_manager_, kChildFrameSink2, false /* is_root */,
-        true /* handles_frame_sink_id_invalidation */,
+        &support_client_, &surface_manager_, kChildFrameSink2,
+        false /* is_root */, true /* handles_frame_sink_id_invalidation */,
         true /* needs_sync_points */));
 
     // Normally, the BeginFrameSource would be registered by the Display. We
@@ -173,20 +200,13 @@ class CompositorFrameSinkSupportTest : public testing::Test,
     supports_.clear();
   }
 
-  // CompositorFrameSinkSupportClient implementation.
-  void DidReceiveCompositorFrameAck() override {}
-  void OnBeginFrame(const BeginFrameArgs& args) override {}
-  void ReclaimResources(const ReturnedResourceArray& resources) override {
-    last_returned_resources_ = resources;
-  }
-  void WillDrawSurface(const LocalSurfaceId& local_surface_id,
-                       const gfx::Rect& damage_rect) override {}
+ protected:
+  testing::NiceMock<MockCompositorFrameSinkSupportClient> support_client_;
 
  private:
   SurfaceManager surface_manager_;
   std::unique_ptr<FakeExternalBeginFrameSource> begin_frame_source_;
   std::vector<std::unique_ptr<CompositorFrameSinkSupport>> supports_;
-  ReturnedResourceArray last_returned_resources_;
 
   DISALLOW_COPY_AND_ASSIGN(CompositorFrameSinkSupportTest);
 };
@@ -582,7 +602,7 @@ TEST_F(CompositorFrameSinkSupportTest,
   EXPECT_FALSE(parent_surface()->HasPendingFrame());
   EXPECT_THAT(parent_surface()->blocking_surfaces_for_testing(), IsEmpty());
   ReturnedResource returned_resource = resource.ToReturnedResource();
-  EXPECT_THAT(last_returned_resources(),
+  EXPECT_THAT(support_client_.last_returned_resources(),
               UnorderedElementsAre(returned_resource));
 }
 
@@ -945,6 +965,23 @@ TEST_F(CompositorFrameSinkSupportTest, PassesOnBeginFrameAcks) {
   BeginFrameAck ack(0, 1, 1, 0, false);
   display_support().DidFinishFrame(ack);
   EXPECT_EQ(ack, begin_frame_source()->LastAckForObserver(&display_support()));
+}
+
+// Checks whether the resources are returned before we send an ack.
+TEST_F(CompositorFrameSinkSupportTest, ReturnResourcesBeforeAck) {
+  const SurfaceId parent_id = MakeSurfaceId(kParentFrameSink, 1);
+  TransferableResource resource;
+  resource.id = 1234;
+  parent_support().SubmitCompositorFrame(
+      parent_id.local_surface_id(),
+      MakeCompositorFrameWithResources(empty_surface_ids(), {resource}));
+  {
+    InSequence x;
+    EXPECT_CALL(support_client_, ReclaimResources(_));
+    EXPECT_CALL(support_client_, DidReceiveCompositorFrameAck());
+  }
+  parent_support().SubmitCompositorFrame(parent_id.local_surface_id(),
+                                         CompositorFrame());
 }
 
 }  // namespace test

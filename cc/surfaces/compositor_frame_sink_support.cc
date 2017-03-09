@@ -134,11 +134,14 @@ void CompositorFrameSinkSupport::DidReceiveCompositorFrameAck() {
 
   if (!client_)
     return;
-  client_->DidReceiveCompositorFrameAck();
+
+  // We return the resources before sending an ack so they can be reused in
+  // making the next CompositorFrame.
   if (!surface_returned_resources_.empty()) {
     client_->ReclaimResources(surface_returned_resources_);
     surface_returned_resources_.clear();
   }
+  client_->DidReceiveCompositorFrameAck();
 }
 
 void CompositorFrameSinkSupport::ForceReclaimResources() {
