@@ -441,5 +441,10 @@ disableTextSelectAndDrag(function(e) {
   document.addEventListener('DOMContentLoaded', function() {
     Oobe.initialize();
   });
+
+  // Install a global error handler so stack traces are included in logs.
+  window.onerror = function(message, file, line, column, error) {
+    console.error(error.stack);
+  }
 })();
 
