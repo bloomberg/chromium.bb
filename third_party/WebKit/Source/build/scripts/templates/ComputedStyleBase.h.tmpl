@@ -35,16 +35,6 @@ class CORE_EXPORT ComputedStyleBase {
   {% endfor %}
   {}
 
-  bool operator==(const ComputedStyleBase& o) const {
-    return (
-    {% for field in fields %}
-        {{field.name}} == o.{{field.name}}{{print_if(not loop.last, ' &&')}}
-    {% endfor %}
-    );
-  }
-
-  bool operator!=(const ComputedStyleBase& o) const { return !(*this == o); }
-
   inline bool inheritedEqual(const ComputedStyleBase& o) const {
     return (
     {% for field in fields if field.is_property and field.is_inherited %}
