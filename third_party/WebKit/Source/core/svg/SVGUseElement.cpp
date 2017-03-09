@@ -25,14 +25,13 @@
 
 #include "core/svg/SVGUseElement.h"
 
-#include "bindings/core/v8/ExceptionState.h"
 #include "core/SVGNames.h"
 #include "core/XLinkNames.h"
 #include "core/dom/Document.h"
 #include "core/dom/ElementTraversal.h"
+#include "core/dom/IdTargetObserver.h"
 #include "core/dom/StyleChangeReason.h"
 #include "core/dom/TaskRunnerHelper.h"
-#include "core/dom/shadow/ElementShadow.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/events/Event.h"
 #include "core/layout/svg/LayoutSVGTransformableContainer.h"
@@ -41,7 +40,6 @@
 #include "core/svg/SVGSVGElement.h"
 #include "core/svg/SVGSymbolElement.h"
 #include "core/svg/SVGTitleElement.h"
-#include "core/svg/SVGTreeScopeResources.h"
 #include "core/xml/parser/XMLDocumentParser.h"
 #include "platform/loader/fetch/FetchRequest.h"
 #include "platform/loader/fetch/ResourceFetcher.h"
@@ -98,6 +96,7 @@ DEFINE_TRACE(SVGUseElement) {
   visitor->trace(m_width);
   visitor->trace(m_height);
   visitor->trace(m_targetElementInstance);
+  visitor->trace(m_targetIdObserver);
   visitor->trace(m_resource);
   SVGGraphicsElement::trace(visitor);
   SVGURIReference::trace(visitor);
@@ -128,8 +127,7 @@ Node::InsertionNotificationRequest SVGUseElement::insertedInto(
 void SVGUseElement::removedFrom(ContainerNode* rootParent) {
   SVGGraphicsElement::removedFrom(rootParent);
   if (rootParent->isConnected()) {
-    clearInstanceRoot();
-    removeAllOutgoingReferences();
+    clearResourceReference();
     cancelShadowTreeRecreation();
   }
 }
@@ -287,52 +285,40 @@ void SVGUseElement::cancelShadowTreeRecreation() {
 }
 
 void SVGUseElement::clearInstanceRoot() {
-  if (m_targetElementInstance)
-    m_targetElementInstance = nullptr;
+  m_targetElementInstance = nullptr;
 }
 
-void SVGUseElement::clearShadowTree() {
+void SVGUseElement::clearResourceReference() {
+  unobserveTarget(m_targetIdObserver);
   clearInstanceRoot();
-
-  // FIXME: We should try to optimize this, to at least allow partial reclones.
-  if (ShadowRoot* shadowTreeRootElement = userAgentShadowRoot())
-    shadowTreeRootElement->removeChildren(OmitSubtreeModifiedEvent);
-
   removeAllOutgoingReferences();
 }
 
 Element* SVGUseElement::resolveTargetElement() {
   if (m_elementIdentifier.isEmpty())
     return nullptr;
-  const TreeScope* lookupScope = nullptr;
-  if (m_elementIdentifierIsLocal)
-    lookupScope = &treeScope();
-  else if (resourceIsValid())
-    lookupScope = m_resource->document();
-  else
-    return nullptr;
-  Element* target = lookupScope->getElementById(m_elementIdentifier);
-  // TODO(fs): Why would the Element not be "connected" at this point?
-  if (target && target->isConnected())
-    return target;
-  // Don't record any pending references for external resources.
-  if (!m_resource) {
-    treeScope().ensureSVGTreeScopedResources().addPendingResource(
-        m_elementIdentifier, *this);
-    DCHECK(hasPendingResources());
+  if (m_elementIdentifierIsLocal) {
+    return observeTarget(m_targetIdObserver, treeScope(), m_elementIdentifier,
+                         WTF::bind(&SVGUseElement::invalidateShadowTree,
+                                   wrapWeakPersistent(this)));
   }
-  return nullptr;
+  if (!resourceIsValid())
+    return nullptr;
+  return m_resource->document()->getElementById(m_elementIdentifier);
 }
 
 void SVGUseElement::buildPendingResource() {
   if (inUseShadowTree())
     return;
-  clearShadowTree();
+  // FIXME: We should try to optimize this, to at least allow partial reclones.
+  userAgentShadowRoot()->removeChildren(OmitSubtreeModifiedEvent);
+  clearResourceReference();
   cancelShadowTreeRecreation();
   if (!isConnected())
     return;
   Element* target = resolveTargetElement();
-  if (target && target->isSVGElement()) {
+  // TODO(fs): Why would the Element not be "connected" at this point?
+  if (target && target->isConnected() && target->isSVGElement()) {
     buildShadowAndInstanceTree(toSVGElement(*target));
     invalidateDependentShadowTrees();
   }
@@ -463,7 +449,8 @@ void SVGUseElement::buildShadowAndInstanceTree(SVGElement& target) {
   // Expand all <use> elements in the shadow tree.
   // Expand means: replace the actual <use> element by what it references.
   if (!expandUseElementsInShadowTree()) {
-    clearShadowTree();
+    shadowTreeRootElement->removeChildren(OmitSubtreeModifiedEvent);
+    clearResourceReference();
     return;
   }
 

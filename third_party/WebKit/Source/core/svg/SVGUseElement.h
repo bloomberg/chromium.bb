@@ -94,7 +94,7 @@ class SVGUseElement final : public SVGGraphicsElement,
   void buildShadowAndInstanceTree(SVGElement& target);
   void clearInstanceRoot();
   Element* createInstanceTree(SVGElement& targetRoot) const;
-  void clearShadowTree();
+  void clearResourceReference();
   bool hasCycleUseReferencing(const SVGUseElement&,
                               const ContainerNode& targetInstance,
                               SVGElement*& newTarget) const;
@@ -121,6 +121,7 @@ class SVGUseElement final : public SVGGraphicsElement,
   bool m_haveFiredLoadEvent;
   bool m_needsShadowTreeRecreation;
   Member<SVGElement> m_targetElementInstance;
+  Member<IdTargetObserver> m_targetIdObserver;
   Member<DocumentResource> m_resource;
 };
 

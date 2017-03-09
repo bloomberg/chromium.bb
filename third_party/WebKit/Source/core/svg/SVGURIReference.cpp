@@ -21,6 +21,7 @@
 #include "core/svg/SVGURIReference.h"
 
 #include "core/XLinkNames.h"
+#include "core/dom/Document.h"
 #include "core/dom/IdTargetObserver.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/svg/SVGElement.h"
@@ -117,15 +118,21 @@ Element* SVGURIReference::targetElementFromIRIString(
 
 Element* SVGURIReference::observeTarget(Member<IdTargetObserver>& observer,
                                         SVGElement& contextElement) {
-  DCHECK(!observer);
   TreeScope& treeScope = contextElement.treeScope();
   AtomicString id = fragmentIdentifierFromIRIString(hrefString(), treeScope);
+  return observeTarget(observer, treeScope, id,
+                       WTF::bind(&SVGElement::buildPendingResource,
+                                 wrapWeakPersistent(&contextElement)));
+}
+
+Element* SVGURIReference::observeTarget(Member<IdTargetObserver>& observer,
+                                        TreeScope& treeScope,
+                                        const AtomicString& id,
+                                        std::unique_ptr<WTF::Closure> closure) {
+  DCHECK(!observer);
   if (id.isEmpty())
     return nullptr;
-  observer = new SVGElementReferenceObserver(
-      treeScope, id,
-      WTF::bind(&SVGElement::buildPendingResource,
-                wrapWeakPersistent(&contextElement)));
+  observer = new SVGElementReferenceObserver(treeScope, id, std::move(closure));
   return treeScope.getElementById(id);
 }
 
