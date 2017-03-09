@@ -7898,6 +7898,7 @@ typedef struct {
   // it is a local variable of handle_inter_mode if CONFIG_EXT_INTER
   int_mv *single_newmv;
 #endif  // CONFIG_EXT_INTER
+  InterpFilter single_filter[MB_MODE_COUNT][TOTAL_REFS_PER_FRAME];
 } HandleInterModeArgs;
 
 static int64_t handle_newmv(const AV1_COMP *const cpi, MACROBLOCK *const x,
@@ -8133,14 +8134,11 @@ int64_t interpolation_filter_search(
   return 0;
 }
 
-// TODO(afergs): put arrays of size TOTAL_REFS_PER_FRAME in a single struct
 static int64_t handle_inter_mode(
     const AV1_COMP *const cpi, MACROBLOCK *x, BLOCK_SIZE bsize,
     RD_STATS *rd_stats, RD_STATS *rd_stats_y, RD_STATS *rd_stats_uv,
     int *disable_skip, int_mv (*mode_mv)[TOTAL_REFS_PER_FRAME], int mi_row,
-    int mi_col, HandleInterModeArgs *opt_args,
-    InterpFilter (*single_filter)[TOTAL_REFS_PER_FRAME],
-    int (*single_skippable)[TOTAL_REFS_PER_FRAME], const int64_t ref_best_rd) {
+    int mi_col, HandleInterModeArgs *opt_args, const int64_t ref_best_rd) {
   const AV1_COMMON *cm = &cpi->common;
   MACROBLOCKD *xd = &x->e_mbd;
   MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
@@ -8404,8 +8402,8 @@ static int64_t handle_inter_mode(
     return INT64_MAX;
 
   int64_t ret_val = interpolation_filter_search(
-      x, cpi, bsize, mi_row, mi_col, &tmp_dst, &orig_dst, single_filter, &rd,
-      &rs, &skip_txfm_sb, &skip_sse_sb);
+      x, cpi, bsize, mi_row, mi_col, &tmp_dst, &orig_dst,
+      opt_args->single_filter, &rd, &rs, &skip_txfm_sb, &skip_sse_sb);
   if (ret_val != 0) return ret_val;
 
 #if CONFIG_EXT_INTER
@@ -8700,10 +8698,11 @@ static int64_t handle_inter_mode(
   }
 #endif  // CONFIG_EXT_INTER
 
+  if (!is_comp_pred)
 #if CONFIG_DUAL_FILTER
-  if (!is_comp_pred) single_filter[this_mode][refs[0]] = mbmi->interp_filter[0];
+    opt_args->single_filter[this_mode][refs[0]] = mbmi->interp_filter[0];
 #else
-  if (!is_comp_pred) single_filter[this_mode][refs[0]] = mbmi->interp_filter;
+    opt_args->single_filter[this_mode][refs[0]] = mbmi->interp_filter;
 #endif  // CONFIG_DUAL_FILTER
 
 #if CONFIG_EXT_INTER
@@ -8988,10 +8987,6 @@ static int64_t handle_inter_mode(
       rd_stats_uv->rate = 0;
       rd_stats->skip = 1;
     }
-#if CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
-    if (!is_comp_pred && mbmi->motion_mode == SIMPLE_TRANSLATION)
-      single_skippable[this_mode][refs[0]] = rd_stats->skip;
-#endif  // CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
 
 #if CONFIG_GLOBAL_MOTION
     if (this_mode == ZEROMV
@@ -9055,10 +9050,6 @@ static int64_t handle_inter_mode(
   x->skip = best_xskip;
   *disable_skip = best_disable_skip;
 #endif  // CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
-
-#if !(CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION)
-  if (!is_comp_pred) single_skippable[this_mode][refs[0]] = rd_stats->skip;
-#endif  // !(CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION)
 
   restore_dst_buf(xd, orig_dst);
   return 0;  // The rate-distortion cost will be re-calculated by caller.
@@ -9452,8 +9443,6 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
 #else
   int_mv single_newmv[TOTAL_REFS_PER_FRAME] = { { 0 } };
 #endif  // CONFIG_EXT_INTER
-  InterpFilter single_inter_filter[MB_MODE_COUNT][TOTAL_REFS_PER_FRAME];
-  int single_skippable[MB_MODE_COUNT][TOTAL_REFS_PER_FRAME];
   static const int flag_list[TOTAL_REFS_PER_FRAME] = {
     0,
     AOM_LAST_FLAG,
@@ -9538,6 +9527,7 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
 #else   // CONFIG_EXT_INTER
     NULL,
 #endif  // CONFIG_EXT_INTER
+    { { 0 } },
   };
 
 #if CONFIG_PALETTE || CONFIG_EXT_INTRA
@@ -9615,8 +9605,7 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
   for (i = 0; i < TOTAL_REFS_PER_FRAME; ++i) x->pred_sse[i] = INT_MAX;
   for (i = 0; i < MB_MODE_COUNT; ++i) {
     for (k = 0; k < TOTAL_REFS_PER_FRAME; ++k) {
-      single_inter_filter[i][k] = SWITCHABLE;
-      single_skippable[i][k] = 0;
+      opt_args.single_filter[i][k] = SWITCHABLE;
     }
   }
 
@@ -10273,10 +10262,9 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
 #else
         opt_args.single_newmv = single_newmv;
 #endif  // CONFIG_EXT_INTER
-        this_rd = handle_inter_mode(
-            cpi, x, bsize, &rd_stats, &rd_stats_y, &rd_stats_uv, &disable_skip,
-            frame_mv, mi_row, mi_col, &opt_args, single_inter_filter,
-            single_skippable, best_rd);
+        this_rd = handle_inter_mode(cpi, x, bsize, &rd_stats, &rd_stats_y,
+                                    &rd_stats_uv, &disable_skip, frame_mv,
+                                    mi_row, mi_col, &opt_args, best_rd);
 // Prevent pointers from escaping local scope
 #if CONFIG_EXT_INTER
         opt_args.compmode_interintra_cost = NULL;
@@ -10382,9 +10370,6 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
           clamp_mv2(&cur_mv.as_mv, xd);
 
           if (!mv_check_bounds(x, &cur_mv.as_mv)) {
-            int dummy_single_skippable[MB_MODE_COUNT][TOTAL_REFS_PER_FRAME] = {
-              { 0 }
-            };
 #if CONFIG_EXT_INTER
             int_mv dummy_single_newmvs[2][TOTAL_REFS_PER_FRAME] = { { { 0 } },
                                                                     { { 0 } } };
@@ -10407,10 +10392,10 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
 #else
             opt_args.single_newmv = dummy_single_newmv;
 #endif  // CONFIG_EXT_INTER
-            tmp_alt_rd = handle_inter_mode(
-                cpi, x, bsize, &tmp_rd_stats, &tmp_rd_stats_y, &tmp_rd_stats_uv,
-                &dummy_disable_skip, frame_mv, mi_row, mi_col, &opt_args,
-                single_inter_filter, dummy_single_skippable, best_rd);
+            tmp_alt_rd =
+                handle_inter_mode(cpi, x, bsize, &tmp_rd_stats, &tmp_rd_stats_y,
+                                  &tmp_rd_stats_uv, &dummy_disable_skip,
+                                  frame_mv, mi_row, mi_col, &opt_args, best_rd);
 // Prevent pointers from escaping local scope
 #if CONFIG_EXT_INTER
             opt_args.single_newmvs = NULL;
