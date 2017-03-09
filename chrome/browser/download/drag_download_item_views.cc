@@ -14,13 +14,13 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
+#include "ui/base/dragdrop/drag_utils.h"
 #include "ui/base/dragdrop/file_info.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"
-#include "ui/views/button_drag_utils.h"
 #include "ui/views/widget/widget.h"
 #include "url/gurl.h"
 
@@ -37,10 +37,10 @@ void DragDownloadItem(const content::DownloadItem* download,
   // Set up our OLE machinery
   ui::OSExchangeData data;
 
-  button_drag_utils::SetDragImage(
-      GURL(), download->GetFileNameToReportUser().BaseName().LossyDisplayName(),
-      icon ? icon->AsImageSkia() : gfx::ImageSkia(), nullptr, &data,
-      views::Widget::GetWidgetForNativeView(view));
+  drag_utils::CreateDragImageForFile(
+      download->GetFileNameToReportUser(),
+      icon ? icon->AsImageSkia() : gfx::ImageSkia(),
+      &data);
 
   base::FilePath full_path = download->GetTargetFilePath();
 #if defined(OS_CHROMEOS)
