@@ -448,6 +448,7 @@
     },
     {
       name: "IdleTimeSpellChecking",
+      status: "test",
     },
     {
       name: "ImageCapture",
