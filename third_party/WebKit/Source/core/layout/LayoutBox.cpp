@@ -1982,7 +1982,7 @@ void LayoutBox::mapLocalToAncestor(const LayoutBoxModelObject* ancestor,
   // If this box has a transform or contains paint, it acts as a fixed position
   // container for fixed descendants, and may itself also be fixed position. So
   // propagate 'fixed' up only if this box is fixed position.
-  if (style()->canContainFixedPositionObjects() && !isFixedPos)
+  if (canContainFixedPositionObjects() && !isFixedPos)
     mode &= ~IsFixed;
   else if (isFixedPos)
     mode |= IsFixed;
@@ -2001,7 +2001,7 @@ void LayoutBox::mapAncestorToLocal(const LayoutBoxModelObject* ancestor,
   // If this box has a transform or contains paint, it acts as a fixed position
   // container for fixed descendants, and may itself also be fixed position. So
   // propagate 'fixed' up only if this box is fixed position.
-  if (style()->canContainFixedPositionObjects() && !isFixedPos)
+  if (canContainFixedPositionObjects() && !isFixedPos)
     mode &= ~IsFixed;
   else if (isFixedPos)
     mode |= IsFixed;

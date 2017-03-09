@@ -31,9 +31,10 @@ function runIFrameLoaded(config)
     testInput.focus();
     var spinButton = getSpinButton(testInput);
     if (spinButton) {
+        var rect = spinButton.getBoundingClientRect();
         mouseMoveTo(
-            iframe.offsetLeft + spinButton.offsetLeft + spinButton.offsetWidth / 2,
-            iframe.offsetTop + spinButton.offsetTop + spinButton.offsetHeight / 4);
+            iframe.offsetLeft + rect.left + rect.width / 2,
+            iframe.offsetTop + rect.top + rect.height / 4);
     }
     mouseClick();
     shouldBeEqualToString('testInput.value', config['expectedValue']);

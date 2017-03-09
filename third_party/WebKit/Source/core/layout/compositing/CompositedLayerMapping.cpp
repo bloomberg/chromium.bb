@@ -1532,7 +1532,7 @@ void CompositedLayerMapping::registerScrollingLayers() {
   // the scroll layer is further up in the hierarchy, we need to avoid marking
   // the root layout view layer as a container.
   bool isContainer =
-      m_owningLayer.layoutObject().style()->canContainFixedPositionObjects() &&
+      m_owningLayer.layoutObject().canContainFixedPositionObjects() &&
       !m_owningLayer.isRootLayer();
   scrollingCoordinator->setLayerIsContainerForFixedPositionLayers(
       m_graphicsLayer.get(), isContainer);
