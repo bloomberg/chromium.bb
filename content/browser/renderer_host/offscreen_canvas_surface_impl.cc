@@ -11,7 +11,7 @@
 #include "cc/surfaces/surface.h"
 #include "cc/surfaces/surface_manager.h"
 #include "content/browser/compositor/surface_utils.h"
-#include "content/browser/renderer_host/offscreen_canvas_surface_manager.h"
+#include "content/browser/renderer_host/offscreen_canvas_compositor_frame_sink_manager.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace content {
@@ -23,13 +23,13 @@ OffscreenCanvasSurfaceImpl::OffscreenCanvasSurfaceImpl(
     : client_(std::move(client)),
       frame_sink_id_(frame_sink_id),
       parent_frame_sink_id_(parent_frame_sink_id) {
-  OffscreenCanvasSurfaceManager::GetInstance()
+  OffscreenCanvasCompositorFrameSinkManager::GetInstance()
       ->RegisterOffscreenCanvasSurfaceInstance(frame_sink_id_, this);
 }
 
 OffscreenCanvasSurfaceImpl::~OffscreenCanvasSurfaceImpl() {
   if (frame_sink_id_.is_valid()) {
-    OffscreenCanvasSurfaceManager::GetInstance()
+    OffscreenCanvasCompositorFrameSinkManager::GetInstance()
         ->UnregisterOffscreenCanvasSurfaceInstance(frame_sink_id_);
   }
 }

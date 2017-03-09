@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_RENDERER_HOST_OFFSCREEN_CANVAS_SURFACE_MANAGER_H_
-#define CONTENT_BROWSER_RENDERER_HOST_OFFSCREEN_CANVAS_SURFACE_MANAGER_H_
+#ifndef CONTENT_BROWSER_RENDERER_HOST_OFFSCREEN_CANVAS_COMPOSITOR_FRAME_SINK_MANAGER_H_
+#define CONTENT_BROWSER_RENDERER_HOST_OFFSCREEN_CANVAS_COMPOSITOR_FRAME_SINK_MANAGER_H_
 
 #include "base/memory/weak_ptr.h"
 #include "cc/surfaces/surface_id.h"
@@ -12,13 +12,13 @@
 
 namespace content {
 
-class CONTENT_EXPORT OffscreenCanvasSurfaceManager
+class CONTENT_EXPORT OffscreenCanvasCompositorFrameSinkManager
     : public cc::SurfaceObserver {
  public:
-  OffscreenCanvasSurfaceManager();
-  virtual ~OffscreenCanvasSurfaceManager();
+  OffscreenCanvasCompositorFrameSinkManager();
+  virtual ~OffscreenCanvasCompositorFrameSinkManager();
 
-  static OffscreenCanvasSurfaceManager* GetInstance();
+  static OffscreenCanvasCompositorFrameSinkManager* GetInstance();
 
   // Registration of the frame sink with the given frame sink id to its parent
   // frame sink (if it has one), so that parent frame is able to send signals
@@ -35,7 +35,7 @@ class CONTENT_EXPORT OffscreenCanvasSurfaceManager
       const cc::FrameSinkId& frame_sink_id);
 
  private:
-  friend class OffscreenCanvasSurfaceManagerTest;
+  friend class OffscreenCanvasCompositorFrameSinkManagerTest;
 
   // cc::SurfaceObserver implementation.
   void OnSurfaceCreated(const cc::SurfaceInfo& surface_info) override;
@@ -47,9 +47,9 @@ class CONTENT_EXPORT OffscreenCanvasSurfaceManager
                      OffscreenCanvasSurfaceImpl*,
                      cc::FrameSinkIdHash>
       registered_surface_instances_;
-  DISALLOW_COPY_AND_ASSIGN(OffscreenCanvasSurfaceManager);
+  DISALLOW_COPY_AND_ASSIGN(OffscreenCanvasCompositorFrameSinkManager);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_RENDERER_HOST_OFFSCREEN_CANVAS_SURFACE_MANAGER_H_
+#endif  // CONTENT_BROWSER_RENDERER_HOST_OFFSCREEN_CANVAS_COMPOSITOR_FRAME_SINK_MANAGER_H_

@@ -7,7 +7,7 @@
 #include "base/memory/ptr_util.h"
 #include "content/browser/compositor/surface_utils.h"
 #include "content/browser/renderer_host/offscreen_canvas_compositor_frame_sink.h"
-#include "content/browser/renderer_host/offscreen_canvas_surface_manager.h"
+#include "content/browser/renderer_host/offscreen_canvas_compositor_frame_sink_manager.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 
 namespace content {
@@ -31,8 +31,8 @@ void OffscreenCanvasCompositorFrameSinkProviderImpl::CreateCompositorFrameSink(
       base::MakeUnique<OffscreenCanvasCompositorFrameSink>(
           this, frame_sink_id, std::move(request), std::move(client));
 
-  OffscreenCanvasSurfaceManager::GetInstance()->RegisterFrameSinkToParent(
-      frame_sink_id);
+  OffscreenCanvasCompositorFrameSinkManager::GetInstance()
+      ->RegisterFrameSinkToParent(frame_sink_id);
 }
 
 cc::SurfaceManager*
@@ -50,8 +50,8 @@ void OffscreenCanvasCompositorFrameSinkProviderImpl::
 
 void OffscreenCanvasCompositorFrameSinkProviderImpl::
     OnCompositorFrameSinkClientDestroyed(const cc::FrameSinkId& frame_sink_id) {
-  OffscreenCanvasSurfaceManager::GetInstance()->UnregisterFrameSinkFromParent(
-      frame_sink_id);
+  OffscreenCanvasCompositorFrameSinkManager::GetInstance()
+      ->UnregisterFrameSinkFromParent(frame_sink_id);
 }
 
 }  // namespace content

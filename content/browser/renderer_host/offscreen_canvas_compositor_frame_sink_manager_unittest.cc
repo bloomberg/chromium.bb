@@ -5,8 +5,8 @@
 #include "base/message_loop/message_loop.h"
 #include "cc/surfaces/local_surface_id_allocator.h"
 #include "content/browser/compositor/test/no_transport_image_transport_factory.h"
+#include "content/browser/renderer_host/offscreen_canvas_compositor_frame_sink_manager.h"
 #include "content/browser/renderer_host/offscreen_canvas_surface_impl.h"
-#include "content/browser/renderer_host/offscreen_canvas_surface_manager.h"
 #include "content/public/test/test_browser_thread.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -19,15 +19,15 @@
 
 namespace content {
 
-class OffscreenCanvasSurfaceManagerTest : public testing::Test {
+class OffscreenCanvasCompositorFrameSinkManagerTest : public testing::Test {
  public:
   int getNumSurfaceImplInstances() {
-    return OffscreenCanvasSurfaceManager::GetInstance()
+    return OffscreenCanvasCompositorFrameSinkManager::GetInstance()
         ->registered_surface_instances_.size();
   }
 
   void OnSurfaceCreated(const cc::SurfaceId& surface_id) {
-    OffscreenCanvasSurfaceManager::GetInstance()->OnSurfaceCreated(
+    OffscreenCanvasCompositorFrameSinkManager::GetInstance()->OnSurfaceCreated(
         cc::SurfaceInfo(surface_id, 1.0f, gfx::Size(10, 10)));
   }
 
@@ -40,7 +40,7 @@ class OffscreenCanvasSurfaceManagerTest : public testing::Test {
   base::MessageLoopForUI message_loop_;
 };
 
-void OffscreenCanvasSurfaceManagerTest::SetUp() {
+void OffscreenCanvasCompositorFrameSinkManagerTest::SetUp() {
 #if !defined(OS_ANDROID)
   ImageTransportFactory::InitializeForUnitTests(
       std::unique_ptr<ImageTransportFactory>(
@@ -49,7 +49,7 @@ void OffscreenCanvasSurfaceManagerTest::SetUp() {
   ui_thread_.reset(new TestBrowserThread(BrowserThread::UI, &message_loop_));
 }
 
-void OffscreenCanvasSurfaceManagerTest::TearDown() {
+void OffscreenCanvasCompositorFrameSinkManagerTest::TearDown() {
 #if !defined(OS_ANDROID)
   ImageTransportFactory::Terminate();
 #endif
@@ -57,7 +57,7 @@ void OffscreenCanvasSurfaceManagerTest::TearDown() {
 
 // This test mimics the workflow of OffscreenCanvas.commit() on renderer
 // process.
-TEST_F(OffscreenCanvasSurfaceManagerTest,
+TEST_F(OffscreenCanvasCompositorFrameSinkManagerTest,
        SingleHTMLCanvasElementTransferToOffscreen) {
   cc::mojom::DisplayCompositorClientPtr client;
   cc::FrameSinkId frame_sink_id(3, 3);
@@ -69,8 +69,8 @@ TEST_F(OffscreenCanvasSurfaceManagerTest,
       cc::FrameSinkId(), frame_sink_id, std::move(client)));
   EXPECT_EQ(1, this->getNumSurfaceImplInstances());
   EXPECT_EQ(surface_impl.get(),
-            OffscreenCanvasSurfaceManager::GetInstance()->GetSurfaceInstance(
-                frame_sink_id));
+            OffscreenCanvasCompositorFrameSinkManager::GetInstance()
+                ->GetSurfaceInstance(frame_sink_id));
 
   this->OnSurfaceCreated(
       cc::SurfaceId(frame_sink_id, current_local_surface_id));
@@ -80,7 +80,7 @@ TEST_F(OffscreenCanvasSurfaceManagerTest,
   EXPECT_EQ(0, this->getNumSurfaceImplInstances());
 }
 
-TEST_F(OffscreenCanvasSurfaceManagerTest,
+TEST_F(OffscreenCanvasCompositorFrameSinkManagerTest,
        MultiHTMLCanvasElementTransferToOffscreen) {
   cc::mojom::DisplayCompositorClientPtr client_a;
   cc::FrameSinkId dummy_parent_frame_sink_id(0, 0);
@@ -96,11 +96,11 @@ TEST_F(OffscreenCanvasSurfaceManagerTest,
 
   EXPECT_EQ(2, this->getNumSurfaceImplInstances());
   EXPECT_EQ(surface_impl_a.get(),
-            OffscreenCanvasSurfaceManager::GetInstance()->GetSurfaceInstance(
-                frame_sink_id_a));
+            OffscreenCanvasCompositorFrameSinkManager::GetInstance()
+                ->GetSurfaceInstance(frame_sink_id_a));
   EXPECT_EQ(surface_impl_b.get(),
-            OffscreenCanvasSurfaceManager::GetInstance()->GetSurfaceInstance(
-                frame_sink_id_b));
+            OffscreenCanvasCompositorFrameSinkManager::GetInstance()
+                ->GetSurfaceInstance(frame_sink_id_b));
 
   surface_impl_a = nullptr;
   EXPECT_EQ(1, this->getNumSurfaceImplInstances());
