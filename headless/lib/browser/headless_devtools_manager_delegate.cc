@@ -108,6 +108,18 @@ base::DictionaryValue* HeadlessDevToolsManagerDelegate::HandleCommand(
   return cmd_result.release();
 }
 
+scoped_refptr<content::DevToolsAgentHost>
+HeadlessDevToolsManagerDelegate::CreateNewTarget(const GURL& url) {
+  HeadlessBrowserContext* context = browser_->GetDefaultBrowserContext();
+  HeadlessWebContentsImpl* web_contents_impl = HeadlessWebContentsImpl::From(
+      context->CreateWebContentsBuilder()
+          .SetInitialURL(url)
+          .SetWindowSize(browser_->options()->window_size)
+          .Build());
+  return content::DevToolsAgentHost::GetOrCreateFor(
+      web_contents_impl->web_contents());
+}
+
 std::string HeadlessDevToolsManagerDelegate::GetDiscoveryPageHTML() {
   return ResourceBundle::GetSharedInstance()
       .GetRawDataResource(IDR_HEADLESS_LIB_DEVTOOLS_DISCOVERY_PAGE)

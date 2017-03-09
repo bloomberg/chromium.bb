@@ -27,6 +27,8 @@ class HeadlessDevToolsManagerDelegate
   // DevToolsManagerDelegate implementation:
   base::DictionaryValue* HandleCommand(content::DevToolsAgentHost* agent_host,
                                        base::DictionaryValue* command) override;
+  scoped_refptr<content::DevToolsAgentHost> CreateNewTarget(
+      const GURL& url) override;
   std::string GetDiscoveryPageHTML() override;
   std::string GetFrontendResource(const std::string& path) override;
 
