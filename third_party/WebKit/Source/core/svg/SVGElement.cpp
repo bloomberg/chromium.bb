@@ -41,6 +41,7 @@
 #include "core/events/Event.h"
 #include "core/frame/Settings.h"
 #include "core/html/HTMLElement.h"
+#include "core/inspector/ConsoleMessage.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/svg/LayoutSVGResourceContainer.h"
 #include "core/svg/SVGDocumentExtensions.h"
@@ -157,8 +158,9 @@ void SVGElement::reportAttributeParsingError(SVGParsingError error,
   // Don't report any errors on attribute removal.
   if (value.isNull())
     return;
-  document().accessSVGExtensions().reportError(
-      error.format(tagName(), name, value));
+  document().addConsoleMessage(
+      ConsoleMessage::create(RenderingMessageSource, ErrorMessageLevel,
+                             "Error: " + error.format(tagName(), name, value)));
 }
 
 String SVGElement::title() const {

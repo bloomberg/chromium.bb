@@ -22,7 +22,6 @@
 #include "core/svg/SVGDocumentExtensions.h"
 
 #include "core/dom/Document.h"
-#include "core/inspector/ConsoleMessage.h"
 #include "core/svg/SVGSVGElement.h"
 #include "core/svg/animation/SMILTimeContainer.h"
 #include "wtf/AutoReset.h"
@@ -111,12 +110,6 @@ void SVGDocumentExtensions::dispatchSVGLoadEventToOutermostSVGElements() {
         !outerSVG->document().isSVGDocument())
       outerSVG->sendSVGLoadEventIfPossible();
   }
-}
-
-void SVGDocumentExtensions::reportError(const String& message) {
-  ConsoleMessage* consoleMessage = ConsoleMessage::create(
-      RenderingMessageSource, ErrorMessageLevel, "Error: " + message);
-  m_document->addConsoleMessage(consoleMessage);
 }
 
 void SVGDocumentExtensions::addSVGRootWithRelativeLengthDescendents(

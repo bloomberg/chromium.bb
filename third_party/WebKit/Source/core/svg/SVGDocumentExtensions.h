@@ -53,9 +53,9 @@ class SVGDocumentExtensions
 
   void startAnimations();
   void pauseAnimations();
-  void dispatchSVGLoadEventToOutermostSVGElements();
+  void serviceAnimations();
 
-  void reportError(const String&);
+  void dispatchSVGLoadEventToOutermostSVGElements();
 
   SVGResourcesCache& resourcesCache() { return m_resourcesCache; }
 
@@ -86,9 +86,6 @@ class SVGDocumentExtensions
 #if DCHECK_IS_ON()
   bool m_inRelativeLengthSVGRootsInvalidation = false;
 #endif
-
- public:
-  void serviceAnimations();
 };
 
 }  // namespace blink
