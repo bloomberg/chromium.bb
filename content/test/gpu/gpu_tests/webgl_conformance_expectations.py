@@ -138,6 +138,8 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['passthrough'], bug=1635) # angle bug ID
     self.Fail('conformance/reading/read-pixels-test.html',
         ['passthrough'], bug=1639) # angle bug ID
+    self.Fail('conformance/renderbuffers/renderbuffer-initialization.html',
+        ['passthrough'], bug=1635) # angle bug ID
     self.Fail('conformance/textures/misc/texture-mips.html',
         ['passthrough'], bug=665518)
     self.Fail('WebglExtension_OES_texture_float_linear',
@@ -188,6 +190,8 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['passthrough', 'opengl', 'amd', 'linux'], bug=665521)
     self.Fail('conformance/glsl/misc/shader-struct-scope.html',
         ['passthrough', 'opengl', 'amd', 'linux'], bug=665521)
+    self.Skip('conformance/glsl/misc/shaders-with-invariance.html',
+        ['passthrough', 'opengl', 'amd', 'linux'], bug=1007) # angle bug ID
     self.Fail('conformance/glsl/misc/struct-nesting-of-variable-names.html',
         ['passthrough', 'opengl', 'amd', 'linux'], bug=665521)
     self.Fail('conformance/renderbuffers/framebuffer-state-restoration.html',
@@ -385,8 +389,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     # Win / Intel / Passthrough command decoder
     self.Flaky('conformance/renderbuffers/framebuffer-state-restoration.html',
         ['win', 'intel', 'passthrough', 'd3d11'], bug=602688)
-    self.Fail('conformance/renderbuffers/renderbuffer-initialization.html',
-        ['win', 'intel', 'passthrough', 'd3d11'], bug=1635) # angle bug ID
     self.Fail('conformance/textures/misc/' +
         'copytexsubimage2d-large-partial-copy-corruption.html',
         ['win', 'intel', 'passthrough', 'd3d11'], bug=602688)
