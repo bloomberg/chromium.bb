@@ -79,8 +79,10 @@ AudioContext* AudioContext::create(Document& document,
   // startRendering() call from JavaScript.  We may want to consider
   // requiring it for symmetry with OfflineAudioContext.
   audioContext->maybeUnlockUserGesture();
-  if (audioContext->isAllowedToStart())
+  if (audioContext->isAllowedToStart()) {
     audioContext->startRendering();
+    audioContext->setContextState(Running);
+  }
   ++s_hardwareContextCount;
 #if DEBUG_AUDIONODE_REFERENCES
   fprintf(stderr, "[%16p]: AudioContext::AudioContext(): %u #%u\n",
@@ -156,8 +158,11 @@ ScriptPromise AudioContext::resumeContext(ScriptState* scriptState) {
   // Restart the destination node to pull on the audio graph.
   if (destination()) {
     maybeUnlockUserGesture();
-    if (isAllowedToStart())
+    if (isAllowedToStart()) {
+      // Do not set the state to running here.  We wait for the
+      // destination to start to set the state.
       startRendering();
+    }
   }
 
   // Save the resolver which will get resolved when the destination node starts

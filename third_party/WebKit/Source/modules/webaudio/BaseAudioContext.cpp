@@ -770,6 +770,7 @@ void BaseAudioContext::resolvePromisesForResumeOnMainThread() {
       resolver->reject(DOMException::create(
           InvalidStateError, "Cannot resume a context that has been closed"));
     } else {
+      setContextState(Running);
       resolver->resolve();
     }
   }
@@ -871,14 +872,16 @@ ExecutionContext* BaseAudioContext::getExecutionContext() const {
 }
 
 void BaseAudioContext::startRendering() {
-  // This is called for both online and offline contexts.
+  // This is called for both online and offline contexts.  The caller
+  // must set the context state appropriately. In particular, resuming
+  // a context should wait until the context has actually resumed to
+  // set the state.
   DCHECK(isMainThread());
   DCHECK(m_destinationNode);
   DCHECK(isAllowedToStart());
 
   if (m_contextState == Suspended) {
     destination()->audioDestinationHandler().startRendering();
-    setContextState(Running);
   }
 }
 

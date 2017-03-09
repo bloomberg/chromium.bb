@@ -305,7 +305,9 @@ class MODULES_EXPORT BaseAudioContext
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(statechange);
 
-  // Start the AudioContext. `isAllowedToStart()` MUST be called before.
+  // Start the AudioContext. `isAllowedToStart()` MUST be called
+  // before.  This does NOT set the context state to running.  The
+  // caller must set the state AFTER calling startRendering.
   void startRendering();
 
   void notifyStateChange();
