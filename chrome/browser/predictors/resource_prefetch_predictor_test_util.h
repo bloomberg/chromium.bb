@@ -30,6 +30,10 @@ void InitializeRedirectStat(RedirectStat* redirect,
                             int number_of_misses,
                             int consecutive_misses);
 
+void InitializePrecacheResource(precache::PrecacheResource* resource,
+                                const std::string& url,
+                                double weight_ratio);
+
 PrefetchData CreatePrefetchData(const std::string& primary_key,
                                 uint64_t last_visit_time = 0);
 RedirectData CreateRedirectData(const std::string& primary_key,
@@ -79,5 +83,17 @@ bool operator==(const ResourcePrefetchPredictor::URLRequestSummary& lhs,
                 const ResourcePrefetchPredictor::URLRequestSummary& rhs);
 
 }  // namespace predictors
+
+namespace precache {
+
+std::ostream& operator<<(std::ostream& stream,
+                         const PrecacheManifest& manifest);
+std::ostream& operator<<(std::ostream& stream,
+                         const PrecacheResource& resource);
+
+bool operator==(const PrecacheManifest& lhs, const PrecacheManifest& rhs);
+bool operator==(const PrecacheResource& lhs, const PrecacheResource& rhs);
+
+}  // namespace precache
 
 #endif  // CHROME_BROWSER_PREDICTORS_RESOURCE_PREFETCH_PREDICTOR_TEST_UTIL_H_

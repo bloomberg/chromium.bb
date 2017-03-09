@@ -33,6 +33,8 @@ message PrecacheManifestId {
 };
 
 // A manifest of cacheable resources to be precached for a specific host.
+// CAUTION: When any change is done here, bump kDatabaseVersion in
+// chrome/browser/predictors/resource_prefetch_predictor_tables.h
 message PrecacheManifest {
   // List of resources that we predict that the user will need if they are
   // likely to fetch the host.

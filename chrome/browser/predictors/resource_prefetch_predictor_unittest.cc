@@ -41,6 +41,7 @@ using URLRequestSummary = ResourcePrefetchPredictor::URLRequestSummary;
 using PageRequestSummary = ResourcePrefetchPredictor::PageRequestSummary;
 using PrefetchDataMap = ResourcePrefetchPredictorTables::PrefetchDataMap;
 using RedirectDataMap = ResourcePrefetchPredictorTables::RedirectDataMap;
+using ManifestDataMap = ResourcePrefetchPredictorTables::ManifestDataMap;
 
 scoped_refptr<net::HttpResponseHeaders> MakeResponseHeaders(
     const char* headers) {
@@ -130,11 +131,12 @@ class MockResourcePrefetchPredictorTables
  public:
   MockResourcePrefetchPredictorTables() { }
 
-  MOCK_METHOD4(GetAllData,
+  MOCK_METHOD5(GetAllData,
                void(PrefetchDataMap* url_data_map,
                     PrefetchDataMap* host_data_map,
                     RedirectDataMap* url_redirect_data_map,
-                    RedirectDataMap* host_redirect_data_map));
+                    RedirectDataMap* host_redirect_data_map,
+                    ManifestDataMap* manifest_data_map));
   MOCK_METHOD4(UpdateData,
                void(const PrefetchData& url_data,
                     const PrefetchData& host_data,
@@ -257,6 +259,7 @@ class ResourcePrefetchPredictorTest : public testing::Test {
   PrefetchDataMap test_host_data_;
   RedirectDataMap test_url_redirect_data_;
   RedirectDataMap test_host_redirect_data_;
+  ManifestDataMap test_manifest_data_;
   PrefetchData empty_resource_data_;
   RedirectData empty_redirect_data_;
 
@@ -293,7 +296,8 @@ void ResourcePrefetchPredictorTest::SetUp() {
               GetAllData(Pointee(ContainerEq(PrefetchDataMap())),
                          Pointee(ContainerEq(PrefetchDataMap())),
                          Pointee(ContainerEq(RedirectDataMap())),
-                         Pointee(ContainerEq(RedirectDataMap()))));
+                         Pointee(ContainerEq(RedirectDataMap())),
+                         Pointee(ContainerEq(ManifestDataMap()))));
   InitializePredictor();
   EXPECT_TRUE(predictor_->inflight_navigations_.empty());
   EXPECT_EQ(predictor_->initialization_state_,
@@ -501,11 +505,13 @@ TEST_F(ResourcePrefetchPredictorTest, LazilyInitializeWithData) {
               GetAllData(Pointee(ContainerEq(PrefetchDataMap())),
                          Pointee(ContainerEq(PrefetchDataMap())),
                          Pointee(ContainerEq(RedirectDataMap())),
-                         Pointee(ContainerEq(RedirectDataMap()))))
+                         Pointee(ContainerEq(RedirectDataMap())),
+                         Pointee(ContainerEq(ManifestDataMap()))))
       .WillOnce(DoAll(SetArgPointee<0>(test_url_data_),
                       SetArgPointee<1>(test_host_data_),
                       SetArgPointee<2>(test_url_redirect_data_),
-                      SetArgPointee<3>(test_host_redirect_data_)));
+                      SetArgPointee<3>(test_host_redirect_data_),
+                      SetArgPointee<4>(test_manifest_data_)));
 
   ResetPredictor();
   InitializePredictor();
@@ -519,6 +525,7 @@ TEST_F(ResourcePrefetchPredictorTest, LazilyInitializeWithData) {
   EXPECT_EQ(test_host_data_, *predictor_->host_table_cache_);
   EXPECT_EQ(test_url_redirect_data_, *predictor_->url_redirect_table_cache_);
   EXPECT_EQ(test_host_redirect_data_, *predictor_->host_redirect_table_cache_);
+  EXPECT_EQ(test_manifest_data_, *predictor_->manifest_table_cache_);
 }
 
 // Single navigation but history count is low, so should not record.
@@ -667,7 +674,8 @@ TEST_F(ResourcePrefetchPredictorTest, NavigationUrlInDB) {
               GetAllData(Pointee(ContainerEq(PrefetchDataMap())),
                          Pointee(ContainerEq(PrefetchDataMap())),
                          Pointee(ContainerEq(RedirectDataMap())),
-                         Pointee(ContainerEq(RedirectDataMap()))))
+                         Pointee(ContainerEq(RedirectDataMap())),
+                         Pointee(ContainerEq(ManifestDataMap()))))
       .WillOnce(DoAll(SetArgPointee<0>(test_url_data_),
                       SetArgPointee<1>(test_host_data_)));
   ResetPredictor();
@@ -772,7 +780,8 @@ TEST_F(ResourcePrefetchPredictorTest, NavigationUrlNotInDBAndDBFull) {
               GetAllData(Pointee(ContainerEq(PrefetchDataMap())),
                          Pointee(ContainerEq(PrefetchDataMap())),
                          Pointee(ContainerEq(RedirectDataMap())),
-                         Pointee(ContainerEq(RedirectDataMap()))))
+                         Pointee(ContainerEq(RedirectDataMap())),
+                         Pointee(ContainerEq(ManifestDataMap()))))
       .WillOnce(DoAll(SetArgPointee<0>(test_url_data_),
                       SetArgPointee<1>(test_host_data_)));
   ResetPredictor();
@@ -892,7 +901,8 @@ TEST_F(ResourcePrefetchPredictorTest, RedirectUrlInDB) {
               GetAllData(Pointee(ContainerEq(PrefetchDataMap())),
                          Pointee(ContainerEq(PrefetchDataMap())),
                          Pointee(ContainerEq(RedirectDataMap())),
-                         Pointee(ContainerEq(RedirectDataMap()))))
+                         Pointee(ContainerEq(RedirectDataMap())),
+                         Pointee(ContainerEq(ManifestDataMap()))))
       .WillOnce(DoAll(SetArgPointee<2>(test_url_redirect_data_),
                       SetArgPointee<3>(test_host_redirect_data_)));
   ResetPredictor();

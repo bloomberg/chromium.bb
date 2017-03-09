@@ -1483,6 +1483,7 @@ split_static_library("browser") {
     "//components/policy:generated",
     "//components/policy/core/browser",
     "//components/policy/proto",
+    "//components/precache/core:proto",
     "//components/prefs:prefs",
     "//components/previews/core",
     "//components/profile_metrics",

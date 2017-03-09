@@ -16,6 +16,7 @@
 #include "chrome/browser/predictors/predictor_table_base.h"
 #include "chrome/browser/predictors/resource_prefetch_common.h"
 #include "chrome/browser/predictors/resource_prefetch_predictor.pb.h"
+#include "components/precache/core/proto/precache.pb.h"
 
 namespace sql {
 class Statement;
@@ -37,17 +38,16 @@ using RedirectStat = RedirectData_RedirectStat;
 //  - HostRedirectTable - redirects per host.
 class ResourcePrefetchPredictorTables : public PredictorTableBase {
  public:
-  // Map from primary key to PrefetchData for the key.
   typedef std::map<std::string, PrefetchData> PrefetchDataMap;
-
-  // Map from primary key to RedirectData for the key.
   typedef std::map<std::string, RedirectData> RedirectDataMap;
+  typedef std::map<std::string, precache::PrecacheManifest> ManifestDataMap;
 
   // Returns data for all Urls and Hosts.
   virtual void GetAllData(PrefetchDataMap* url_data_map,
                           PrefetchDataMap* host_data_map,
                           RedirectDataMap* url_redirect_data_map,
-                          RedirectDataMap* host_redirect_data_map);
+                          RedirectDataMap* host_redirect_data_map,
+                          ManifestDataMap* manifest_map);
 
   // Updates data for a Url and a host. If either of the |url_data| or
   // |host_data| or |url_redirect_data| or |host_redirect_data| has an empty
@@ -59,6 +59,11 @@ class ResourcePrefetchPredictorTables : public PredictorTableBase {
                           const PrefetchData& host_data,
                           const RedirectData& url_redirect_data,
                           const RedirectData& host_redirect_data);
+
+  // Updates manifest data for the input |host|.
+  virtual void UpdateManifestData(
+      const std::string& host,
+      const precache::PrecacheManifest& manifest_data);
 
   // Delete data for the input |urls| and |hosts|.
   virtual void DeleteResourceData(const std::vector<std::string>& urls,
@@ -75,6 +80,9 @@ class ResourcePrefetchPredictorTables : public PredictorTableBase {
   // Wrapper over DeleteRedirectData for convenience.
   virtual void DeleteSingleRedirectDataPoint(const std::string& key,
                                              PrefetchKeyType key_type);
+
+  // Delete data for the input |hosts|.
+  virtual void DeleteManifestData(const std::vector<std::string>& hosts);
 
   // Deletes all data in all the tables.
   virtual void DeleteAllData();
@@ -104,7 +112,7 @@ class ResourcePrefetchPredictorTables : public PredictorTableBase {
 
  private:
   // Represents the type of information that is stored in prefetch database.
-  enum class PrefetchDataType { RESOURCE, REDIRECT };
+  enum class PrefetchDataType { RESOURCE, REDIRECT, MANIFEST };
 
   enum class TableOperationType { INSERT, REMOVE };
 
@@ -116,7 +124,7 @@ class ResourcePrefetchPredictorTables : public PredictorTableBase {
 
   // Database version. Always increment it when any change is made to the data
   // schema (including the .proto).
-  static constexpr int kDatabaseVersion = 5;
+  static constexpr int kDatabaseVersion = 6;
 
   // Helper functions below help perform functions on the Url and host table
   // using the same code.
@@ -124,6 +132,8 @@ class ResourcePrefetchPredictorTables : public PredictorTableBase {
                                 PrefetchDataMap* data_map);
   void GetAllRedirectDataHelper(PrefetchKeyType key_type,
                                 RedirectDataMap* redirect_map);
+  void GetAllManifestDataHelper(ManifestDataMap* manifest_map);
+
   bool UpdateDataHelper(PrefetchKeyType key_type,
                         PrefetchDataType data_type,
                         const std::string& key,

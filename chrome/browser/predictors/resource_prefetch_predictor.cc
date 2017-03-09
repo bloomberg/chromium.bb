@@ -21,6 +21,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "components/history/core/browser/history_database.h"
 #include "components/history/core/browser/history_service.h"
+#include "components/history/core/browser/url_utils.h"
 #include "components/mime_util/mime_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/resource_request_info.h"
@@ -503,6 +504,7 @@ void ResourcePrefetchPredictor::StartInitialization() {
   auto host_data_map = base::MakeUnique<PrefetchDataMap>();
   auto url_redirect_data_map = base::MakeUnique<RedirectDataMap>();
   auto host_redirect_data_map = base::MakeUnique<RedirectDataMap>();
+  auto manifest_data_map = base::MakeUnique<ManifestDataMap>();
 
   // Get raw pointers to pass to the first task. Ownership of the unique_ptrs
   // will be passed to the reply task.
@@ -510,16 +512,18 @@ void ResourcePrefetchPredictor::StartInitialization() {
   auto* host_data_map_ptr = host_data_map.get();
   auto* url_redirect_data_map_ptr = url_redirect_data_map.get();
   auto* host_redirect_data_map_ptr = host_redirect_data_map.get();
+  auto* manifest_data_map_ptr = manifest_data_map.get();
 
   BrowserThread::PostTaskAndReply(
       BrowserThread::DB, FROM_HERE,
       base::Bind(&ResourcePrefetchPredictorTables::GetAllData, tables_,
                  url_data_map_ptr, host_data_map_ptr, url_redirect_data_map_ptr,
-                 host_redirect_data_map_ptr),
+                 host_redirect_data_map_ptr, manifest_data_map_ptr),
       base::Bind(&ResourcePrefetchPredictor::CreateCaches, AsWeakPtr(),
                  base::Passed(&url_data_map), base::Passed(&host_data_map),
                  base::Passed(&url_redirect_data_map),
-                 base::Passed(&host_redirect_data_map)));
+                 base::Passed(&host_redirect_data_map),
+                 base::Passed(&manifest_data_map)));
 }
 
 void ResourcePrefetchPredictor::RecordURLRequest(
@@ -860,7 +864,8 @@ void ResourcePrefetchPredictor::CreateCaches(
     std::unique_ptr<PrefetchDataMap> url_data_map,
     std::unique_ptr<PrefetchDataMap> host_data_map,
     std::unique_ptr<RedirectDataMap> url_redirect_data_map,
-    std::unique_ptr<RedirectDataMap> host_redirect_data_map) {
+    std::unique_ptr<RedirectDataMap> host_redirect_data_map,
+    std::unique_ptr<ManifestDataMap> manifest_data_map) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   DCHECK_EQ(INITIALIZING, initialization_state_);
@@ -868,12 +873,14 @@ void ResourcePrefetchPredictor::CreateCaches(
   DCHECK(!host_table_cache_);
   DCHECK(!url_redirect_table_cache_);
   DCHECK(!host_redirect_table_cache_);
+  DCHECK(!manifest_table_cache_);
   DCHECK(inflight_navigations_.empty());
 
   url_table_cache_ = std::move(url_data_map);
   host_table_cache_ = std::move(host_data_map);
   url_redirect_table_cache_ = std::move(url_redirect_data_map);
   host_redirect_table_cache_ = std::move(host_redirect_data_map);
+  manifest_table_cache_ = std::move(manifest_data_map);
 
   ConnectToHistoryService();
 }
@@ -943,6 +950,7 @@ void ResourcePrefetchPredictor::DeleteAllUrls() {
   host_table_cache_->clear();
   url_redirect_table_cache_->clear();
   host_redirect_table_cache_->clear();
+  manifest_table_cache_->clear();
 
   BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
       base::Bind(&ResourcePrefetchPredictorTables::DeleteAllData, tables_));
@@ -953,6 +961,7 @@ void ResourcePrefetchPredictor::DeleteUrls(const history::URLRows& urls) {
   // in the cache.
   std::vector<std::string> urls_to_delete, hosts_to_delete;
   std::vector<std::string> url_redirects_to_delete, host_redirects_to_delete;
+  std::vector<std::string> manifest_hosts_to_delete;
 
   for (const auto& it : urls) {
     const std::string& url_spec = it.url().spec();
@@ -978,6 +987,13 @@ void ResourcePrefetchPredictor::DeleteUrls(const history::URLRows& urls) {
       host_redirects_to_delete.push_back(host);
       host_redirect_table_cache_->erase(host);
     }
+
+    std::string manifest_host = history::HostForTopHosts(it.url());
+    if (manifest_table_cache_->find(manifest_host) !=
+        manifest_table_cache_->end()) {
+      manifest_hosts_to_delete.push_back(manifest_host);
+      manifest_table_cache_->erase(manifest_host);
+    }
   }
 
   if (!urls_to_delete.empty() || !hosts_to_delete.empty()) {
@@ -992,6 +1008,13 @@ void ResourcePrefetchPredictor::DeleteUrls(const history::URLRows& urls) {
         BrowserThread::DB, FROM_HERE,
         base::Bind(&ResourcePrefetchPredictorTables::DeleteRedirectData,
                    tables_, url_redirects_to_delete, host_redirects_to_delete));
+  }
+
+  if (!manifest_hosts_to_delete.empty()) {
+    BrowserThread::PostTask(
+        BrowserThread::DB, FROM_HERE,
+        base::Bind(&ResourcePrefetchPredictorTables::DeleteManifestData,
+                   tables_, manifest_hosts_to_delete));
   }
 }
 

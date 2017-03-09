@@ -265,6 +265,7 @@ class ResourcePrefetchPredictor
   };
   typedef ResourcePrefetchPredictorTables::PrefetchDataMap PrefetchDataMap;
   typedef ResourcePrefetchPredictorTables::RedirectDataMap RedirectDataMap;
+  typedef ResourcePrefetchPredictorTables::ManifestDataMap ManifestDataMap;
 
   typedef std::map<NavigationID, std::unique_ptr<PageRequestSummary>>
       NavigationMap;
@@ -323,7 +324,8 @@ class ResourcePrefetchPredictor
   void CreateCaches(std::unique_ptr<PrefetchDataMap> url_data_map,
                     std::unique_ptr<PrefetchDataMap> host_data_map,
                     std::unique_ptr<RedirectDataMap> url_redirect_data_map,
-                    std::unique_ptr<RedirectDataMap> host_redirect_data_map);
+                    std::unique_ptr<RedirectDataMap> host_redirect_data_map,
+                    std::unique_ptr<ManifestDataMap> manifest_data_map);
 
   // Called during initialization when history is read and the predictor
   // database has been read.
@@ -409,6 +411,7 @@ class ResourcePrefetchPredictor
   std::unique_ptr<PrefetchDataMap> host_table_cache_;
   std::unique_ptr<RedirectDataMap> url_redirect_table_cache_;
   std::unique_ptr<RedirectDataMap> host_redirect_table_cache_;
+  std::unique_ptr<ManifestDataMap> manifest_table_cache_;
 
   std::map<GURL, base::TimeTicks> inflight_prefetches_;
   NavigationMap inflight_navigations_;

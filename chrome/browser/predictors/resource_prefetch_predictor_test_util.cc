@@ -4,6 +4,8 @@
 
 #include "chrome/browser/predictors/resource_prefetch_predictor_test_util.h"
 
+#include <limits>
+
 #include "chrome/browser/predictors/resource_prefetch_predictor_tables.h"
 
 namespace predictors {
@@ -42,6 +44,13 @@ void InitializeRedirectStat(RedirectStat* redirect,
   redirect->set_number_of_hits(number_of_hits);
   redirect->set_number_of_misses(number_of_misses);
   redirect->set_consecutive_misses(consecutive_misses);
+}
+
+void InitializePrecacheResource(precache::PrecacheResource* resource,
+                                const std::string& url,
+                                double weight_ratio) {
+  resource->set_url(url);
+  resource->set_weight_ratio(weight_ratio);
 }
 
 PrefetchData CreatePrefetchData(const std::string& primary_key,
@@ -220,3 +229,38 @@ bool operator==(const URLRequestSummary& lhs, const URLRequestSummary& rhs) {
 }
 
 }  // namespace predictors
+
+namespace precache {
+
+std::ostream& operator<<(std::ostream& os, const PrecacheManifest& manifest) {
+  os << "[" << manifest.id().id() << "]" << std::endl;
+  for (const PrecacheResource& resource : manifest.resource())
+    os << "\t\t" << resource << std::endl;
+  return os;
+}
+
+std::ostream& operator<<(std::ostream& os, const PrecacheResource& resource) {
+  return os << "[" << resource.url() << "," << resource.top_host_name() << ","
+            << resource.weight_ratio() << "," << resource.weight() << "]";
+}
+
+bool operator==(const PrecacheManifest& lhs, const PrecacheManifest& rhs) {
+  bool equal = lhs.id().id() == rhs.id().id() &&
+               lhs.resource_size() == rhs.resource_size();
+
+  if (!equal)
+    return false;
+
+  for (int i = 0; i < lhs.resource_size(); ++i)
+    equal = equal && lhs.resource(i) == rhs.resource(i);
+
+  return equal;
+}
+
+bool operator==(const PrecacheResource& lhs, const PrecacheResource& rhs) {
+  return lhs.url() == rhs.url() &&
+         std::fabs(lhs.weight_ratio() - rhs.weight_ratio()) <
+             std::numeric_limits<double>::epsilon();
+}
+
+}  // namespace precache
