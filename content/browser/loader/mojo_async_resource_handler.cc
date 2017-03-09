@@ -223,11 +223,14 @@ void MojoAsyncResourceHandler::OnWillStart(
   controller->Resume();
 }
 
-bool MojoAsyncResourceHandler::OnWillRead(scoped_refptr<net::IOBuffer>* buf,
-                                          int* buf_size) {
-  // TODO(mmenke):  Cancel with net::ERR_INSUFFICIENT_RESOURCES instead.
-  if (!CheckForSufficientResource())
-    return false;
+void MojoAsyncResourceHandler::OnWillRead(
+    scoped_refptr<net::IOBuffer>* buf,
+    int* buf_size,
+    std::unique_ptr<ResourceController> controller) {
+  if (!CheckForSufficientResource()) {
+    controller->CancelWithError(net::ERR_INSUFFICIENT_RESOURCES);
+    return;
+  }
 
   if (!shared_writer_) {
     MojoCreateDataPipeOptions options;
@@ -248,18 +251,23 @@ bool MojoAsyncResourceHandler::OnWillRead(scoped_refptr<net::IOBuffer>* buf,
 
     bool defer = false;
     scoped_refptr<net::IOBufferWithSize> buffer;
-    if (!AllocateWriterIOBuffer(&buffer, &defer))
-      return false;
+    if (!AllocateWriterIOBuffer(&buffer, &defer)) {
+      controller->CancelWithError(net::ERR_INSUFFICIENT_RESOURCES);
+      return;
+    }
     if (!defer) {
       if (static_cast<size_t>(buffer->size()) >= kMinAllocationSize) {
         *buf = buffer_ = buffer;
         *buf_size = buffer_->size();
-        return true;
+        controller->Resume();
+        return;
       }
 
       // The allocated buffer is too small.
-      if (EndWrite(0) != MOJO_RESULT_OK)
-        return false;
+      if (EndWrite(0) != MOJO_RESULT_OK) {
+        controller->CancelWithError(net::ERR_INSUFFICIENT_RESOURCES);
+        return;
+      }
     }
     DCHECK(!is_using_io_buffer_not_from_writer_);
     is_using_io_buffer_not_from_writer_ = true;
@@ -269,7 +277,7 @@ bool MojoAsyncResourceHandler::OnWillRead(scoped_refptr<net::IOBuffer>* buf,
   DCHECK_EQ(0u, buffer_offset_);
   *buf = buffer_;
   *buf_size = buffer_->size();
-  return true;
+  controller->Resume();
 }
 
 void MojoAsyncResourceHandler::OnReadCompleted(

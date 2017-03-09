@@ -21,7 +21,9 @@ namespace content {
 class InterceptingResourceHandler::Controller : public ResourceController {
  public:
   explicit Controller(InterceptingResourceHandler* mime_handler)
-      : intercepting_handler_(mime_handler) {}
+      : intercepting_handler_(mime_handler) {
+    DCHECK(intercepting_handler_->has_controller());
+  }
 
   void Resume() override {
     MarkAsUsed();
@@ -92,21 +94,27 @@ void InterceptingResourceHandler::OnResponseStarted(
   DoLoop();
 }
 
-bool InterceptingResourceHandler::OnWillRead(scoped_refptr<net::IOBuffer>* buf,
-                                             int* buf_size) {
-  if (state_ == State::PASS_THROUGH)
-    return next_handler_->OnWillRead(buf, buf_size);
+void InterceptingResourceHandler::OnWillRead(
+    scoped_refptr<net::IOBuffer>* buf,
+    int* buf_size,
+    std::unique_ptr<ResourceController> controller) {
+  if (state_ == State::PASS_THROUGH) {
+    next_handler_->OnWillRead(buf, buf_size, std::move(controller));
+    return;
+  }
 
   DCHECK_EQ(State::STARTING, state_);
+  DCHECK(!first_read_buffer_);
+  DCHECK_EQ(0, first_read_buffer_size_);
+  DCHECK(!parent_read_buffer_);
+  DCHECK(!parent_read_buffer_size_);
 
-  if (!next_handler_->OnWillRead(buf, buf_size))
-    return false;
+  parent_read_buffer_ = buf;
+  parent_read_buffer_size_ = buf_size;
 
-  first_read_buffer_ = *buf;
-  first_read_buffer_size_ = *buf_size;
-  first_read_buffer_double_ = new net::IOBuffer(static_cast<size_t>(*buf_size));
-  *buf = first_read_buffer_double_;
-  return true;
+  state_ = State::SENDING_ON_WILL_READ_TO_OLD_HANDLER;
+  HoldController(std::move(controller));
+  DoLoop();
 }
 
 void InterceptingResourceHandler::OnReadCompleted(
@@ -191,6 +199,12 @@ void InterceptingResourceHandler::DoLoop() {
       case State::PASS_THROUGH:
         NOTREACHED();
         break;
+      case State::SENDING_ON_WILL_READ_TO_OLD_HANDLER:
+        SendOnWillReadToOldHandler();
+        break;
+      case State::WAITING_FOR_OLD_HANDLERS_BUFFER:
+        OnBufferReceived();
+        break;
       case State::SENDING_ON_WILL_START_TO_NEW_HANDLER:
         SendOnResponseStartedToNewHandler();
         break;
@@ -213,8 +227,14 @@ void InterceptingResourceHandler::DoLoop() {
       case State::SENDING_PAYLOAD_TO_OLD_HANDLER:
         SendPayloadToOldHandler();
         break;
+      case State::RECEIVING_BUFFER_FROM_OLD_HANDLER:
+        ReceivedBufferFromOldHandler();
+        break;
       case State::SENDING_BUFFER_TO_NEW_HANDLER:
         SendFirstReadBufferToNewHandler();
+        break;
+      case State::SENDING_BUFFER_TO_NEW_HANDLER_WAITING_FOR_BUFFER:
+        ReceivedBufferFromNewHandler();
         break;
     }
   }
@@ -245,6 +265,36 @@ void InterceptingResourceHandler::ResumeInternal() {
                             weak_ptr_factory_.GetWeakPtr()));
 }
 
+void InterceptingResourceHandler::SendOnWillReadToOldHandler() {
+  DCHECK_EQ(State::SENDING_ON_WILL_READ_TO_OLD_HANDLER, state_);
+
+  state_ = State::WAITING_FOR_OLD_HANDLERS_BUFFER;
+  next_handler_->OnWillRead(&first_read_buffer_, &first_read_buffer_size_,
+                            base::MakeUnique<Controller>(this));
+}
+
+void InterceptingResourceHandler::OnBufferReceived() {
+  DCHECK_EQ(State::WAITING_FOR_OLD_HANDLERS_BUFFER, state_);
+
+  // TODO(mmenke):  If this method is just going to allocate a double buffer
+  // anyways, can the call to the old handler's OnWillRead be removed? That
+  // would mean handling replaying data in the case that |next_handler_|'s
+  // buffer is smaller than the double buffer, but SendPayloadToOldHandler
+  // already handles that case, anyways, so could share that code with the
+  // no-swap path as well. Or better, just have MimeSniffingResourceHandler
+  // create and manage the buffer itself.
+  first_read_buffer_double_ =
+      new net::IOBuffer(static_cast<size_t>(first_read_buffer_size_));
+  *parent_read_buffer_ = first_read_buffer_double_;
+  *parent_read_buffer_size_ = first_read_buffer_size_;
+
+  parent_read_buffer_ = nullptr;
+  parent_read_buffer_size_ = nullptr;
+
+  state_ = State::STARTING;
+  Resume();
+}
+
 void InterceptingResourceHandler::SendOnResponseStartedToOldHandler() {
   state_ = State::SENDING_PAYLOAD_TO_OLD_HANDLER;
   next_handler_->OnResponseStarted(response_.get(),
@@ -253,7 +303,10 @@ void InterceptingResourceHandler::SendOnResponseStartedToOldHandler() {
 
 void InterceptingResourceHandler::SendPayloadToOldHandler() {
   DCHECK_EQ(State::SENDING_PAYLOAD_TO_OLD_HANDLER, state_);
-  if (payload_bytes_written_ == payload_for_old_handler_.size()) {
+  DCHECK(has_controller());
+
+  if (static_cast<size_t>(payload_bytes_written_) ==
+      payload_for_old_handler_.size()) {
     net::URLRequestStatus status(net::URLRequestStatus::SUCCESS, 0);
     if (payload_for_old_handler_.empty()) {
       // If there is no payload, just finalize the request on the old handler.
@@ -273,29 +326,43 @@ void InterceptingResourceHandler::SendPayloadToOldHandler() {
     return;
   }
 
-  scoped_refptr<net::IOBuffer> buffer;
-  int size = 0;
-  if (first_read_buffer_) {
-    // |first_read_buffer_| is a buffer gotten from |next_handler_| via
-    // OnWillRead. Use the buffer.
-    buffer = first_read_buffer_;
-    size = first_read_buffer_size_;
+  state_ = State::RECEIVING_BUFFER_FROM_OLD_HANDLER;
 
-    first_read_buffer_ = nullptr;
-    first_read_buffer_size_ = 0;
-  } else {
-    if (!next_handler_->OnWillRead(&buffer, &size)) {
-      Cancel();
-      return;
-    }
+  scoped_refptr<net::IOBuffer> buffer;
+  // If |first_read_buffer_| is non-NULL, it was already received from
+  // |next_handler_| via OnWillRead.  Can just use the buffer.
+  if (first_read_buffer_) {
+    DCHECK_GT(first_read_buffer_size_, 0);
+
+    ResumeInternal();
+    return;
   }
 
-  size = std::min(size, static_cast<int>(payload_for_old_handler_.size() -
-                                         payload_bytes_written_));
-  memcpy(buffer->data(),
-         payload_for_old_handler_.data() + payload_bytes_written_, size);
-  payload_bytes_written_ += size;
-  next_handler_->OnReadCompleted(size, base::MakeUnique<Controller>(this));
+  DCHECK(!first_read_buffer_size_);
+  next_handler_->OnWillRead(&first_read_buffer_, &first_read_buffer_size_,
+                            base::MakeUnique<Controller>(this));
+}
+
+void InterceptingResourceHandler::ReceivedBufferFromOldHandler() {
+  DCHECK_EQ(State::RECEIVING_BUFFER_FROM_OLD_HANDLER, state_);
+  DCHECK(first_read_buffer_);
+  DCHECK_GT(first_read_buffer_size_, 0);
+
+  int bytes_to_copy =
+      std::min(first_read_buffer_size_,
+               static_cast<int>(payload_for_old_handler_.size() -
+                                payload_bytes_written_));
+  memcpy(first_read_buffer_->data(),
+         payload_for_old_handler_.data() + payload_bytes_written_,
+         bytes_to_copy);
+  payload_bytes_written_ += bytes_to_copy;
+
+  first_read_buffer_ = nullptr;
+  first_read_buffer_size_ = 0;
+
+  state_ = State::SENDING_PAYLOAD_TO_OLD_HANDLER;
+  next_handler_->OnReadCompleted(bytes_to_copy,
+                                 base::MakeUnique<Controller>(this));
 }
 
 void InterceptingResourceHandler::SendOnResponseStartedToNewHandler() {
@@ -306,6 +373,8 @@ void InterceptingResourceHandler::SendOnResponseStartedToNewHandler() {
 
 void InterceptingResourceHandler::SendFirstReadBufferToNewHandler() {
   DCHECK_EQ(state_, State::SENDING_BUFFER_TO_NEW_HANDLER);
+  DCHECK(!new_handler_read_buffer_);
+  DCHECK(!new_handler_read_buffer_size_);
 
   if (first_read_buffer_bytes_written_ == first_read_buffer_bytes_read_) {
     state_ = State::PASS_THROUGH;
@@ -314,19 +383,32 @@ void InterceptingResourceHandler::SendFirstReadBufferToNewHandler() {
     return;
   }
 
-  scoped_refptr<net::IOBuffer> buf;
-  int size = 0;
-  if (!next_handler_->OnWillRead(&buf, &size)) {
-    Cancel();
-    return;
-  }
-  size = std::min(size, static_cast<int>(first_read_buffer_bytes_read_ -
-                                         first_read_buffer_bytes_written_));
-  memcpy(buf->data(),
+  state_ = State::SENDING_BUFFER_TO_NEW_HANDLER_WAITING_FOR_BUFFER;
+  next_handler_->OnWillRead(&new_handler_read_buffer_,
+                            &new_handler_read_buffer_size_,
+                            base::MakeUnique<Controller>(this));
+}
+
+void InterceptingResourceHandler::ReceivedBufferFromNewHandler() {
+  DCHECK_EQ(state_, State::SENDING_BUFFER_TO_NEW_HANDLER_WAITING_FOR_BUFFER);
+  DCHECK(new_handler_read_buffer_);
+  DCHECK(new_handler_read_buffer_size_);
+
+  int bytes_to_copy =
+      std::min(new_handler_read_buffer_size_,
+               static_cast<int>(first_read_buffer_bytes_read_ -
+                                first_read_buffer_bytes_written_));
+  memcpy(new_handler_read_buffer_->data(),
          first_read_buffer_double_->data() + first_read_buffer_bytes_written_,
-         size);
-  first_read_buffer_bytes_written_ += size;
-  next_handler_->OnReadCompleted(size, base::MakeUnique<Controller>(this));
+         bytes_to_copy);
+  first_read_buffer_bytes_written_ += bytes_to_copy;
+
+  new_handler_read_buffer_ = nullptr;
+  new_handler_read_buffer_size_ = 0;
+
+  state_ = State::SENDING_BUFFER_TO_NEW_HANDLER;
+  next_handler_->OnReadCompleted(bytes_to_copy,
+                                 base::MakeUnique<Controller>(this));
 }
 
 }  // namespace content

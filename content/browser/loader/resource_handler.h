@@ -106,12 +106,11 @@ class CONTENT_EXPORT ResourceHandler
   // Unlike other methods, may be called synchronously on Resume, for
   // performance reasons.
   //
-  // If the handler returns false, then the request is cancelled.  Otherwise,
-  // once data is available, OnReadCompleted will be called.
-  // TODO(mmenke):  Make this method use a ResourceController, and allow it to
-  // succeed asynchronously.
-  virtual bool OnWillRead(scoped_refptr<net::IOBuffer>* buf,
-                          int* buf_size) = 0;
+  // The request will not continue until one of |controller|'s resume or
+  // cancellation methods is invoked.
+  virtual void OnWillRead(scoped_refptr<net::IOBuffer>* buf,
+                          int* buf_size,
+                          std::unique_ptr<ResourceController> controller) = 0;
 
   // Data (*bytes_read bytes) was written into the buffer provided by
   // OnWillRead.  The request will not continue until one of |controller|'s

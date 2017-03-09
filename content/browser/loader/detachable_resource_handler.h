@@ -14,6 +14,7 @@
 #include "base/timer/timer.h"
 #include "content/browser/loader/resource_controller.h"
 #include "content/browser/loader/resource_handler.h"
+#include "content/common/content_export.h"
 
 namespace net {
 class IOBuffer;
@@ -34,7 +35,7 @@ class ResourceController;
 //
 // Note that, once detached, the request continues without the original next
 // handler, so any policy decisions in that handler are skipped.
-class DetachableResourceHandler : public ResourceHandler {
+class CONTENT_EXPORT DetachableResourceHandler : public ResourceHandler {
  public:
   DetachableResourceHandler(net::URLRequest* request,
                             base::TimeDelta cancel_delay,
@@ -60,8 +61,9 @@ class DetachableResourceHandler : public ResourceHandler {
       std::unique_ptr<ResourceController> controller) override;
   void OnWillStart(const GURL& url,
                    std::unique_ptr<ResourceController> controller) override;
-  bool OnWillRead(scoped_refptr<net::IOBuffer>* buf,
-                  int* buf_size) override;
+  void OnWillRead(scoped_refptr<net::IOBuffer>* buf,
+                  int* buf_size,
+                  std::unique_ptr<ResourceController> controller) override;
   void OnReadCompleted(int bytes_read,
                        std::unique_ptr<ResourceController> controller) override;
   void OnResponseCompleted(
@@ -72,6 +74,7 @@ class DetachableResourceHandler : public ResourceHandler {
  private:
   class Controller;
 
+  void ResumeInternal();
   void OnTimedOut();
 
   std::unique_ptr<ResourceHandler> next_handler_;
@@ -79,6 +82,12 @@ class DetachableResourceHandler : public ResourceHandler {
 
   std::unique_ptr<base::OneShotTimer> detached_timer_;
   base::TimeDelta cancel_delay_;
+
+  // Only non-NULL between a call to |next_handler_|'s OnWillRead and it
+  // resuming the request.  Needed so that if detached during that time, can
+  // complete the call.
+  scoped_refptr<net::IOBuffer>* parent_read_buffer_;
+  int* parent_read_buffer_size_;
 
   bool is_finished_;
 

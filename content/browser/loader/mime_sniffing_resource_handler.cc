@@ -125,6 +125,8 @@ MimeSniffingResourceHandler::MimeSniffingResourceHandler(
       must_download_is_set_(false),
       read_buffer_size_(0),
       bytes_read_(0),
+      parent_read_buffer_(nullptr),
+      parent_read_buffer_size_(nullptr),
       intercepting_handler_(intercepting_handler),
       request_context_type_(request_context_type),
       in_state_loop_(false),
@@ -215,24 +217,41 @@ void MimeSniffingResourceHandler::OnResponseStarted(
   AdvanceState();
 }
 
-bool MimeSniffingResourceHandler::OnWillRead(scoped_refptr<net::IOBuffer>* buf,
-                                             int* buf_size) {
-  if (state_ == STATE_STREAMING)
-    return next_handler_->OnWillRead(buf, buf_size);
+void MimeSniffingResourceHandler::OnWillRead(
+    scoped_refptr<net::IOBuffer>* buf,
+    int* buf_size,
+    std::unique_ptr<ResourceController> controller) {
+  DCHECK(buf);
+  DCHECK(buf_size);
+  DCHECK(!parent_read_buffer_);
+  DCHECK(!parent_read_buffer_size_);
+
+  if (state_ == STATE_STREAMING) {
+    next_handler_->OnWillRead(buf, buf_size, std::move(controller));
+    return;
+  }
+
+  DCHECK_EQ(State::STATE_BUFFERING, state_);
 
   if (read_buffer_.get()) {
     CHECK_LT(bytes_read_, read_buffer_size_);
     *buf = new DependentIOBuffer(read_buffer_.get(), bytes_read_);
     *buf_size = read_buffer_size_ - bytes_read_;
-  } else {
-    if (!next_handler_->OnWillRead(buf, buf_size))
-      return false;
-
-    read_buffer_ = *buf;
-    read_buffer_size_ = *buf_size;
-    DCHECK_GE(read_buffer_size_, net::kMaxBytesToSniff * 2);
+    controller->Resume();
+    return;
   }
-  return true;
+
+  DCHECK(!read_buffer_size_);
+
+  parent_read_buffer_ = buf;
+  parent_read_buffer_size_ = buf_size;
+
+  HoldController(std::move(controller));
+
+  // Have to go through AdvanceState here so that if OnWillRead completes
+  // synchronously, won't post a task.
+  state_ = State::STATE_CALLING_ON_WILL_READ;
+  AdvanceState();
 }
 
 void MimeSniffingResourceHandler::OnReadCompleted(
@@ -316,6 +335,12 @@ void MimeSniffingResourceHandler::AdvanceState() {
       case STATE_BUFFERING:
         MaybeIntercept();
         break;
+      case STATE_CALLING_ON_WILL_READ:
+        CallOnWillRead();
+        break;
+      case STATE_WAITING_FOR_BUFFER:
+        BufferReceived();
+        break;
       case STATE_INTERCEPTION_CHECK_DONE:
         ReplayResponseReceived();
         break;
@@ -324,7 +349,6 @@ void MimeSniffingResourceHandler::AdvanceState() {
         break;
       case STATE_STARTING:
       case STATE_STREAMING:
-        in_state_loop_ = false;
         Resume();
         return;
       default:
@@ -346,6 +370,32 @@ void MimeSniffingResourceHandler::MaybeIntercept() {
 
   state_ = STATE_INTERCEPTION_CHECK_DONE;
   ResumeInternal();
+}
+
+void MimeSniffingResourceHandler::CallOnWillRead() {
+  DCHECK_EQ(STATE_CALLING_ON_WILL_READ, state_);
+
+  state_ = STATE_WAITING_FOR_BUFFER;
+  next_handler_->OnWillRead(&read_buffer_, &read_buffer_size_,
+                            base::MakeUnique<Controller>(this));
+}
+
+void MimeSniffingResourceHandler::BufferReceived() {
+  DCHECK_EQ(STATE_WAITING_FOR_BUFFER, state_);
+
+  DCHECK(read_buffer_);
+  DCHECK(parent_read_buffer_);
+  DCHECK(parent_read_buffer_size_);
+  DCHECK_GE(read_buffer_size_, net::kMaxBytesToSniff * 2);
+
+  *parent_read_buffer_ = read_buffer_;
+  *parent_read_buffer_size_ = read_buffer_size_;
+
+  parent_read_buffer_ = nullptr;
+  parent_read_buffer_size_ = nullptr;
+
+  state_ = State::STATE_BUFFERING;
+  Resume();
 }
 
 void MimeSniffingResourceHandler::ReplayResponseReceived() {

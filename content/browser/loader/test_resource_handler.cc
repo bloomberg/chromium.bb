@@ -141,8 +141,10 @@ void TestResourceHandler::OnWillStart(
   controller->Resume();
 }
 
-bool TestResourceHandler::OnWillRead(scoped_refptr<net::IOBuffer>* buf,
-                                     int* buf_size) {
+void TestResourceHandler::OnWillRead(
+    scoped_refptr<net::IOBuffer>* buf,
+    int* buf_size,
+    std::unique_ptr<ResourceController> controller) {
   EXPECT_FALSE(canceled_);
   EXPECT_FALSE(expect_on_data_downloaded_);
   EXPECT_EQ(0, on_response_completed_called_);
@@ -157,13 +159,22 @@ bool TestResourceHandler::OnWillRead(scoped_refptr<net::IOBuffer>* buf,
 
   if (!on_will_read_result_) {
     canceled_ = true;
-  } else {
-    *buf = buffer_;
-    *buf_size = buffer_size_;
-    memset(buffer_->data(), '\0', buffer_size_);
+    controller->Cancel();
+    return;
   }
 
-  return on_will_read_result_;
+  if (defer_on_will_read_) {
+    parent_read_buffer_ = buf;
+    parent_read_buffer_size_ = buf_size;
+    defer_on_will_read_ = false;
+    HoldController(std::move(controller));
+    deferred_run_loop_->Quit();
+    return;
+  }
+
+  *buf = buffer_;
+  *buf_size = buffer_size_;
+  controller->Resume();
 }
 
 void TestResourceHandler::OnReadCompleted(
@@ -174,12 +185,12 @@ void TestResourceHandler::OnReadCompleted(
   EXPECT_EQ(1, on_will_start_called_);
   EXPECT_EQ(1, on_response_started_called_);
   EXPECT_EQ(0, on_response_completed_called_);
-  EXPECT_EQ(0, on_read_eof_);
+  EXPECT_EQ(0, on_read_eof_called_);
   ScopedCallDepthTracker call_depth_tracker(&call_depth_);
 
   ++on_read_completed_called_;
   if (bytes_read == 0)
-    ++on_read_eof_;
+    ++on_read_eof_called_;
 
   EXPECT_LE(static_cast<size_t>(bytes_read), buffer_size_);
   if (body_ptr_)
@@ -207,9 +218,13 @@ void TestResourceHandler::OnResponseCompleted(
     std::unique_ptr<ResourceController> controller) {
   ScopedCallDepthTracker call_depth_tracker(&call_depth_);
 
+  // These may be non-NULL if there was an out-of-band cancel.
+  parent_read_buffer_ = nullptr;
+  parent_read_buffer_size_ = nullptr;
+
   EXPECT_EQ(0, on_response_completed_called_);
   if (status.is_success() && !expect_on_data_downloaded_ && expect_eof_read_)
-    EXPECT_EQ(1, on_read_eof_);
+    EXPECT_EQ(1, on_read_eof_called_);
 
   ++on_response_completed_called_;
 
@@ -242,12 +257,26 @@ void TestResourceHandler::OnDataDownloaded(int bytes_downloaded) {
 
 void TestResourceHandler::Resume() {
   ScopedCallDepthTracker call_depth_tracker(&call_depth_);
+
+  if (parent_read_buffer_) {
+    *parent_read_buffer_ = buffer_;
+    *parent_read_buffer_size_ = buffer_size_;
+    parent_read_buffer_ = nullptr;
+    parent_read_buffer_size_ = nullptr;
+    memset(buffer_->data(), '\0', buffer_size_);
+  }
+
   ResourceHandler::Resume();
 }
 
 void TestResourceHandler::CancelWithError(net::Error net_error) {
   ScopedCallDepthTracker call_depth_tracker(&call_depth_);
   canceled_ = true;
+
+  // Don't want to populate these after a cancel.
+  parent_read_buffer_ = nullptr;
+  parent_read_buffer_size_ = nullptr;
+
   ResourceHandler::CancelWithError(net_error);
 }
 

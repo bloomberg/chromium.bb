@@ -154,11 +154,13 @@ void NavigationResourceHandler::OnWillStart(
   controller->Resume();
 }
 
-bool NavigationResourceHandler::OnWillRead(scoped_refptr<net::IOBuffer>* buf,
-                                           int* buf_size) {
+void NavigationResourceHandler::OnWillRead(
+    scoped_refptr<net::IOBuffer>* buf,
+    int* buf_size,
+    std::unique_ptr<ResourceController> controller) {
   DCHECK(!has_controller());
   writer_.OnWillRead(buf, buf_size, -1);
-  return true;
+  controller->Resume();
 }
 
 void NavigationResourceHandler::OnReadCompleted(

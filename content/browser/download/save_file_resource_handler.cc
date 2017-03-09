@@ -70,8 +70,10 @@ void SaveFileResourceHandler::OnWillStart(
   }
 }
 
-bool SaveFileResourceHandler::OnWillRead(scoped_refptr<net::IOBuffer>* buf,
-                                         int* buf_size) {
+void SaveFileResourceHandler::OnWillRead(
+    scoped_refptr<net::IOBuffer>* buf,
+    int* buf_size,
+    std::unique_ptr<ResourceController> controller) {
   DCHECK_EQ(AuthorizationState::AUTHORIZED, authorization_state_);
   DCHECK(buf && buf_size);
   if (!read_buffer_.get()) {
@@ -79,7 +81,7 @@ bool SaveFileResourceHandler::OnWillRead(scoped_refptr<net::IOBuffer>* buf,
     read_buffer_ = new net::IOBuffer(*buf_size);
   }
   *buf = read_buffer_.get();
-  return true;
+  controller->Resume();
 }
 
 void SaveFileResourceHandler::OnReadCompleted(

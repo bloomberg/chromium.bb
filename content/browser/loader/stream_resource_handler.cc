@@ -43,10 +43,12 @@ void StreamResourceHandler::OnWillStart(
   controller->Resume();
 }
 
-bool StreamResourceHandler::OnWillRead(scoped_refptr<net::IOBuffer>* buf,
-                                       int* buf_size) {
+void StreamResourceHandler::OnWillRead(
+    scoped_refptr<net::IOBuffer>* buf,
+    int* buf_size,
+    std::unique_ptr<ResourceController> controller) {
   writer_.OnWillRead(buf, buf_size, -1);
-  return true;
+  controller->Resume();
 }
 
 void StreamResourceHandler::OnReadCompleted(

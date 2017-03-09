@@ -66,8 +66,9 @@ class CONTENT_EXPORT DownloadResourceHandler
 
   // Create a new buffer, which will be handed to the download thread for file
   // writing and deletion.
-  bool OnWillRead(scoped_refptr<net::IOBuffer>* buf,
-                  int* buf_size) override;
+  void OnWillRead(scoped_refptr<net::IOBuffer>* buf,
+                  int* buf_size,
+                  std::unique_ptr<ResourceController> controller) override;
 
   void OnReadCompleted(int bytes_read,
                        std::unique_ptr<ResourceController> controller) override;

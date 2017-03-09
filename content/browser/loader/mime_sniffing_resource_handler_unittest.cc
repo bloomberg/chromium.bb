@@ -189,6 +189,7 @@ class MimeSniffingResourceHandlerTest : public testing::Test {
   void TestHandlerSniffing(bool response_started,
                            bool defer_response_started,
                            bool will_read,
+                           bool defer_will_read,
                            bool read_completed,
                            bool defer_read_completed);
 
@@ -197,6 +198,7 @@ class MimeSniffingResourceHandlerTest : public testing::Test {
   void TestHandlerNoSniffing(bool response_started,
                              bool defer_response_started,
                              bool will_read,
+                             bool defer_will_read,
                              bool read_completed,
                              bool defer_read_completed);
 
@@ -312,6 +314,7 @@ void MimeSniffingResourceHandlerTest::TestHandlerSniffing(
     bool response_started,
     bool defer_response_started,
     bool will_read,
+    bool defer_will_read,
     bool read_completed,
     bool defer_read_completed) {
   net::URLRequestContext context;
@@ -343,6 +346,7 @@ void MimeSniffingResourceHandlerTest::TestHandlerSniffing(
   scoped_test_handler->set_on_response_started_result(response_started);
   scoped_test_handler->set_defer_on_response_started(defer_response_started);
   scoped_test_handler->set_on_will_read_result(will_read);
+  scoped_test_handler->set_defer_on_will_read(defer_will_read);
   scoped_test_handler->set_on_read_completed_result(read_completed);
   scoped_test_handler->set_defer_on_read_completed(defer_read_completed);
   TestResourceHandler* test_handler = scoped_test_handler.get();
@@ -382,6 +386,16 @@ void MimeSniffingResourceHandlerTest::TestHandlerSniffing(
     // Process all messages to ensure proper test teardown.
     content::RunAllPendingInMessageLoop();
     return;
+  }
+
+  if (defer_will_read) {
+    ASSERT_EQ(MockResourceLoader::Status::CALLBACK_PENDING,
+              mock_loader.status());
+    EXPECT_EQ(MimeSniffingResourceHandler::STATE_WAITING_FOR_BUFFER,
+              mime_sniffing_handler.state_);
+    test_handler->Resume();
+    // MimeSniffingResourceHandler may not synchronously resume the request.
+    base::RunLoop().RunUntilIdle();
   }
 
   ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader.status());
@@ -462,6 +476,7 @@ void MimeSniffingResourceHandlerTest::TestHandlerNoSniffing(
     bool response_started,
     bool defer_response_started,
     bool will_read,
+    bool defer_will_read,
     bool read_completed,
     bool defer_read_completed) {
   net::URLRequestContext context;
@@ -493,6 +508,7 @@ void MimeSniffingResourceHandlerTest::TestHandlerNoSniffing(
   scoped_test_handler->set_on_response_started_result(response_started);
   scoped_test_handler->set_defer_on_response_started(defer_response_started);
   scoped_test_handler->set_on_will_read_result(will_read);
+  scoped_test_handler->set_defer_on_will_read(defer_will_read);
   scoped_test_handler->set_on_read_completed_result(read_completed);
   scoped_test_handler->set_defer_on_read_completed(defer_read_completed);
   TestResourceHandler* test_handler = scoped_test_handler.get();
@@ -558,6 +574,16 @@ void MimeSniffingResourceHandlerTest::TestHandlerNoSniffing(
     // Process all messages to ensure proper test teardown.
     content::RunAllPendingInMessageLoop();
     return;
+  }
+
+  if (defer_will_read) {
+    ASSERT_EQ(MockResourceLoader::Status::CALLBACK_PENDING,
+              mock_loader.status());
+    EXPECT_EQ(MimeSniffingResourceHandler::STATE_STREAMING,
+              mime_sniffing_handler.state_);
+    test_handler->Resume();
+    // MimeSniffingResourceHandler may not synchronously resume the request.
+    base::RunLoop().RunUntilIdle();
   }
 
   ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader.status());
@@ -722,136 +748,110 @@ TEST_F(MimeSniffingResourceHandlerTest, StreamHandling) {
 
 // Test that the MimeSniffingHandler operates properly when it doesn't sniff
 // resources.
+// TODO(mmenke):  None of these test async cancellation.  Should they?
 TEST_F(MimeSniffingResourceHandlerTest, NoSniffing) {
   // Test simple case.
   TestHandlerNoSniffing(
-      true  /* response_started_succeeds */,
-      false /* defer_response_started */,
-      true  /* will_read_succeeds */,
-      true  /* read_completed_succeeds */,
-      false /* defer_read_completed */);
+      true /* response_started_succeeds */, false /* defer_response_started */,
+      true /* will_read_succeeds */, false /* defer_will_read */,
+      true /* read_completed_succeeds */, false /* defer_read_completed */);
 
-  // Test deferral in OnResponseStarted and/or in OnReadCompleted.
+  // Test deferral.
   TestHandlerNoSniffing(
-      true  /* response_started_succeeds */,
-      true  /* defer_response_started */,
-      true  /* will_read_succeeds */,
-      true  /* read_completed_succeeds */,
-      false /* defer_read_completed */);
+      true /* response_started_succeeds */, true /* defer_response_started */,
+      true /* will_read_succeeds */, false /* defer_will_read */,
+      true /* read_completed_succeeds */, false /* defer_read_completed */);
   TestHandlerNoSniffing(
-      true  /* response_started_succeeds */,
-      false /* defer_response_started */,
-      true  /* will_read_succeeds */,
-      true  /* read_completed_succeeds */,
-      true  /* defer_read_completed */);
+      true /* response_started_succeeds */, false /* defer_response_started */,
+      true /* will_read_succeeds */, true /* defer_will_read */,
+      true /* read_completed_succeeds */, false /* defer_read_completed */);
   TestHandlerNoSniffing(
-      true  /* response_started_succeeds */,
-      true  /* defer_response_started */,
-      true  /* will_read_succeeds */,
-      true  /* read_completed_succeeds */,
-      true  /* defer_read_completed */);
+      true /* response_started_succeeds */, false /* defer_response_started */,
+      true /* will_read_succeeds */, false /* defer_will_read */,
+      true /* read_completed_succeeds */, true /* defer_read_completed */);
+  TestHandlerNoSniffing(
+      true /* response_started_succeeds */, true /* defer_response_started */,
+      true /* will_read_succeeds */, true /* defer_will_read */,
+      true /* read_completed_succeeds */, true /* defer_read_completed */);
 
   // Test cancel in OnResponseStarted, OnWillRead, OnReadCompleted.
   TestHandlerNoSniffing(
-      false /* response_started_succeeds */,
-      false /* defer_response_started */,
-      false /* will_read_succeeds */,
-      false /* read_completed_succeeds */,
-      false /* defer_read_completed */);
+      false /* response_started_succeeds */, false /* defer_response_started */,
+      false /* will_read_succeeds */, false /* defer_will_read */,
+      false /* read_completed_succeeds */, false /* defer_read_completed */);
   TestHandlerNoSniffing(
-      true  /* response_started_succeeds */,
-      false /* defer_response_started */,
-      false /* will_read_succeeds */,
-      false /* read_completed_succeeds */,
-      false /* defer_read_completed */);
+      true /* response_started_succeeds */, false /* defer_response_started */,
+      false /* will_read_succeeds */, false /* defer_will_read */,
+      false /* read_completed_succeeds */, false /* defer_read_completed */);
   TestHandlerNoSniffing(
-      true  /* response_started_succeeds */,
-      false /* defer_response_started */,
-      true  /* will_read_succeeds */,
-      false /* read_completed_succeeds */,
-      false /* defer_read_completed */);
+      true /* response_started_succeeds */, false /* defer_response_started */,
+      true /* will_read_succeeds */, false /* defer_will_read */,
+      false /* read_completed_succeeds */, false /* defer_read_completed */);
 
-  // Test cancel after OnResponseStarted deferral.
+  // Test cancel after deferral.
   TestHandlerNoSniffing(
-      true  /* response_started_succeeds */,
-      true  /* defer_response_started */,
-      false /* will_read_succeeds */,
-      false /* read_completed_succeeds */,
-      false /* defer_read_completed */);
+      true /* response_started_succeeds */, true /* defer_response_started */,
+      false /* will_read_succeeds */, false /* defer_will_read */,
+      false /* read_completed_succeeds */, false /* defer_read_completed */);
   TestHandlerNoSniffing(
-      true  /* response_started_succeeds */,
-      true  /* defer_response_started */,
-      true  /* will_read_succeeds */,
-      false /* read_completed_succeeds */,
-      false /* defer_read_completed */);
+      true /* response_started_succeeds */, true /* defer_response_started */,
+      true /* defer_will_read */, true /* will_read_succeeds */,
+      false /* read_completed_succeeds */, false /* defer_read_completed */);
 
   content::RunAllPendingInMessageLoop();
 }
 
 // Test that the MimeSniffingHandler operates properly when it sniffs
 // resources.
+// TODO(mmenke):  None of these test async cancellation.  Should they?
 TEST_F(MimeSniffingResourceHandlerTest, Sniffing) {
   // Test simple case.
   TestHandlerSniffing(
-      true  /* response_started_succeeds */,
-      false /* defer_response_started */,
-      true  /* will_read_succeeds */,
-      true  /* read_completed_succeeds */,
-      false /* defer_read_completed */);
+      true /* response_started_succeeds */, false /* defer_response_started */,
+      true /* will_read_succeeds */, false /* defer_will_read */,
+      true /* read_completed_succeeds */, false /* defer_read_completed */);
 
-  // Test deferral in OnResponseStarted and/or in OnReadCompleted.
+  // Test deferral.
   TestHandlerSniffing(
-      true  /* response_started_succeeds */,
-      true  /* defer_response_started */,
-      true  /* will_read_succeeds */,
-      true  /* read_completed_succeeds */,
-      false /* defer_read_completed */);
+      true /* response_started_succeeds */, true /* defer_response_started */,
+      true /* will_read_succeeds */, false /* defer_will_read */,
+      true /* read_completed_succeeds */, false /* defer_read_completed */);
   TestHandlerSniffing(
-      true  /* response_started_succeeds */,
-      false /* defer_response_started */,
-      true  /* will_read_succeeds */,
-      true  /* read_completed_succeeds */,
-      true  /* defer_read_completed */);
+      true /* response_started_succeeds */, false /* defer_response_started */,
+      true /* will_read_succeeds */, true /* defer_will_read */,
+      true /* read_completed_succeeds */, false /* defer_read_completed */);
   TestHandlerSniffing(
-      true  /* response_started_succeeds */,
-      true  /* defer_response_started */,
-      true  /* will_read_succeeds */,
-      true  /* read_completed_succeeds */,
-      true  /* defer_read_completed */);
+      true /* response_started_succeeds */, false /* defer_response_started */,
+      true /* will_read_succeeds */, false /* defer_will_read */,
+      true /* read_completed_succeeds */, true /* defer_read_completed */);
+  TestHandlerSniffing(
+      true /* response_started_succeeds */, true /* defer_response_started */,
+      true /* will_read_succeeds */, true /* defer_will_read */,
+      true /* read_completed_succeeds */, true /* defer_read_completed */);
 
   // Test cancel in OnResponseStarted, OnWillRead, OnReadCompleted.
   TestHandlerSniffing(
-      false /* response_started_succeeds */,
-      false /* defer_response_started */,
-      false /* will_read_succeeds */,
-      false /* read_completed_succeeds */,
-      false /* defer_read_completed */);
+      false /* response_started_succeeds */, false /* defer_response_started */,
+      false /* will_read_succeeds */, false /* defer_will_read */,
+      false /* read_completed_succeeds */, false /* defer_read_completed */);
   TestHandlerSniffing(
-      true  /* response_started_succeeds */,
-      false /* defer_response_started */,
-      false /* will_read_succeeds */,
-      false /* read_completed_succeeds */,
-      false /* defer_read_completed */);
+      true /* response_started_succeeds */, false /* defer_response_started */,
+      false /* will_read_succeeds */, false /* defer_will_read */,
+      false /* read_completed_succeeds */, false /* defer_read_completed */);
   TestHandlerSniffing(
-      true  /* response_started_succeeds */,
-      false /* defer_response_started */,
-      true  /* will_read_succeeds */,
-      false /* read_completed_succeeds */,
-      false /* defer_read_completed */);
+      true /* response_started_succeeds */, false /* defer_response_started */,
+      true /* will_read_succeeds */, false /* defer_will_read */,
+      false /* read_completed_succeeds */, false /* defer_read_completed */);
 
-  // Test cancel after OnResponseStarted deferral.
+  // Test cancel after deferral.
   TestHandlerSniffing(
-      true  /* response_started_succeeds */,
-      true  /* defer_response_started */,
-      false /* will_read_succeeds */,
-      false /* read_completed_succeeds */,
-      false /* defer_read_completed */);
+      true /* response_started_succeeds */, true /* defer_response_started */,
+      false /* will_read_succeeds */, false /* defer_will_read */,
+      false /* read_completed_succeeds */, false /* defer_read_completed */);
   TestHandlerSniffing(
-      true  /* response_started_succeeds */,
-      true  /* defer_response_started */,
-      true  /* will_read_succeeds */,
-      false /* read_completed_succeeds */,
-      false /* defer_read_completed */);
+      true /* response_started_succeeds */, true /* defer_response_started */,
+      true /* will_read_succeeds */, true /* defer_will_read */,
+      false /* read_completed_succeeds */, false /* defer_read_completed */);
 
   content::RunAllPendingInMessageLoop();
 }

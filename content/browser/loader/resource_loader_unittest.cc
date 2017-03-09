@@ -799,6 +799,7 @@ TEST_F(ResourceLoaderTest, AsyncResourceHandler) {
   raw_ptr_resource_handler_->set_defer_on_will_start(true);
   raw_ptr_resource_handler_->set_defer_on_request_redirected(true);
   raw_ptr_resource_handler_->set_defer_on_response_started(true);
+  raw_ptr_resource_handler_->set_defer_on_will_read(true);
   raw_ptr_resource_handler_->set_defer_on_read_completed(true);
   raw_ptr_resource_handler_->set_defer_on_read_eof(true);
   raw_ptr_resource_handler_->set_defer_on_response_completed(true);
@@ -845,6 +846,18 @@ TEST_F(ResourceLoaderTest, AsyncResourceHandler) {
   EXPECT_EQ(0, raw_ptr_resource_handler_->on_will_read_called());
   EXPECT_EQ(0, raw_ptr_resource_handler_->on_response_completed_called());
 
+  // Resume and run until OnWillRead.
+  raw_ptr_resource_handler_->Resume();
+  raw_ptr_resource_handler_->WaitUntilDeferred();
+  EXPECT_EQ(1, raw_ptr_resource_handler_->on_will_read_called());
+
+  // Spinning the message loop should not advance the state further.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1, raw_ptr_resource_handler_->on_will_read_called());
+  EXPECT_EQ(0, raw_ptr_resource_handler_->on_read_completed_called());
+  EXPECT_EQ(0, raw_ptr_resource_handler_->on_read_eof_called());
+  EXPECT_EQ(0, raw_ptr_resource_handler_->on_response_completed_called());
+
   // Resume and run until OnReadCompleted.
   raw_ptr_resource_handler_->Resume();
   raw_ptr_resource_handler_->WaitUntilDeferred();
@@ -854,17 +867,32 @@ TEST_F(ResourceLoaderTest, AsyncResourceHandler) {
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, raw_ptr_resource_handler_->on_will_read_called());
   EXPECT_EQ(1, raw_ptr_resource_handler_->on_read_completed_called());
-  EXPECT_EQ(0, raw_ptr_resource_handler_->on_read_eof());
+  EXPECT_EQ(0, raw_ptr_resource_handler_->on_read_eof_called());
+  EXPECT_EQ(0, raw_ptr_resource_handler_->on_response_completed_called());
+
+  // Defer on the next OnWillRead call, for the EOF.
+  raw_ptr_resource_handler_->set_defer_on_will_read(true);
+
+  // Resume and run until the next OnWillRead call.
+  raw_ptr_resource_handler_->Resume();
+  raw_ptr_resource_handler_->WaitUntilDeferred();
+  EXPECT_EQ(1, raw_ptr_resource_handler_->on_read_completed_called());
+
+  // Spinning the message loop should not advance the state further.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(2, raw_ptr_resource_handler_->on_will_read_called());
+  EXPECT_EQ(1, raw_ptr_resource_handler_->on_read_completed_called());
+  EXPECT_EQ(0, raw_ptr_resource_handler_->on_read_eof_called());
   EXPECT_EQ(0, raw_ptr_resource_handler_->on_response_completed_called());
 
   // Resume and run until the final 0-byte read, signaling EOF.
   raw_ptr_resource_handler_->Resume();
   raw_ptr_resource_handler_->WaitUntilDeferred();
-  EXPECT_EQ(1, raw_ptr_resource_handler_->on_read_eof());
+  EXPECT_EQ(1, raw_ptr_resource_handler_->on_read_eof_called());
 
   // Spinning the message loop should not advance the state further.
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(1, raw_ptr_resource_handler_->on_read_eof());
+  EXPECT_EQ(1, raw_ptr_resource_handler_->on_read_eof_called());
   EXPECT_EQ(0, raw_ptr_resource_handler_->on_response_completed_called());
   EXPECT_EQ(test_data(), raw_ptr_resource_handler_->body());
 
@@ -896,6 +924,7 @@ TEST_F(ResourceLoaderTest, AsyncResourceHandlerAsyncReads) {
 
   raw_ptr_resource_handler_->set_defer_on_will_start(true);
   raw_ptr_resource_handler_->set_defer_on_response_started(true);
+  raw_ptr_resource_handler_->set_defer_on_will_read(true);
   raw_ptr_resource_handler_->set_defer_on_read_completed(true);
   raw_ptr_resource_handler_->set_defer_on_read_eof(true);
   raw_ptr_resource_handler_->set_defer_on_response_completed(true);
@@ -927,6 +956,18 @@ TEST_F(ResourceLoaderTest, AsyncResourceHandlerAsyncReads) {
   EXPECT_EQ(0, raw_ptr_resource_handler_->on_will_read_called());
   EXPECT_EQ(0, raw_ptr_resource_handler_->on_response_completed_called());
 
+  // Resume and run until OnWillRead.
+  raw_ptr_resource_handler_->Resume();
+  raw_ptr_resource_handler_->WaitUntilDeferred();
+  EXPECT_EQ(1, raw_ptr_resource_handler_->on_will_read_called());
+
+  // Spinning the message loop should not advance the state further.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1, raw_ptr_resource_handler_->on_will_read_called());
+  EXPECT_EQ(0, raw_ptr_resource_handler_->on_read_completed_called());
+  EXPECT_EQ(0, raw_ptr_resource_handler_->on_read_eof_called());
+  EXPECT_EQ(0, raw_ptr_resource_handler_->on_response_completed_called());
+
   // Resume and run until OnReadCompleted.
   raw_ptr_resource_handler_->Resume();
   raw_ptr_resource_handler_->WaitUntilDeferred();
@@ -936,17 +977,32 @@ TEST_F(ResourceLoaderTest, AsyncResourceHandlerAsyncReads) {
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, raw_ptr_resource_handler_->on_will_read_called());
   EXPECT_EQ(1, raw_ptr_resource_handler_->on_read_completed_called());
-  EXPECT_EQ(0, raw_ptr_resource_handler_->on_read_eof());
+  EXPECT_EQ(0, raw_ptr_resource_handler_->on_read_eof_called());
+  EXPECT_EQ(0, raw_ptr_resource_handler_->on_response_completed_called());
+
+  // Defer on the next OnWillRead call, for the EOF.
+  raw_ptr_resource_handler_->set_defer_on_will_read(true);
+
+  // Resume and run until the next OnWillRead.
+  raw_ptr_resource_handler_->Resume();
+  raw_ptr_resource_handler_->WaitUntilDeferred();
+  EXPECT_EQ(1, raw_ptr_resource_handler_->on_read_completed_called());
+
+  // Spinning the message loop should not advance the state further.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(2, raw_ptr_resource_handler_->on_will_read_called());
+  EXPECT_EQ(1, raw_ptr_resource_handler_->on_read_completed_called());
+  EXPECT_EQ(0, raw_ptr_resource_handler_->on_read_eof_called());
   EXPECT_EQ(0, raw_ptr_resource_handler_->on_response_completed_called());
 
   // Resume and run until the final 0-byte read, signalling EOF.
   raw_ptr_resource_handler_->Resume();
   raw_ptr_resource_handler_->WaitUntilDeferred();
-  EXPECT_EQ(1, raw_ptr_resource_handler_->on_read_eof());
+  EXPECT_EQ(1, raw_ptr_resource_handler_->on_read_eof_called());
 
   // Spinning the message loop should not advance the state further.
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(1, raw_ptr_resource_handler_->on_read_eof());
+  EXPECT_EQ(1, raw_ptr_resource_handler_->on_read_eof_called());
   EXPECT_EQ(0, raw_ptr_resource_handler_->on_response_completed_called());
   EXPECT_EQ(test_data(), raw_ptr_resource_handler_->body());
 
@@ -1055,7 +1111,7 @@ TEST_F(ResourceLoaderTest, SyncCancelOnReadCompleted) {
   EXPECT_EQ(1, did_receive_response_);
   EXPECT_EQ(1, did_finish_loading_);
   EXPECT_EQ(1, raw_ptr_resource_handler_->on_read_completed_called());
-  EXPECT_EQ(0, raw_ptr_resource_handler_->on_read_eof());
+  EXPECT_EQ(0, raw_ptr_resource_handler_->on_read_eof_called());
   EXPECT_EQ(1, raw_ptr_resource_handler_->on_response_completed_called());
 
   EXPECT_EQ(net::ERR_ABORTED,
@@ -1071,7 +1127,7 @@ TEST_F(ResourceLoaderTest, SyncCancelOnReceivedEof) {
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, did_receive_response_);
   EXPECT_EQ(1, did_finish_loading_);
-  EXPECT_EQ(1, raw_ptr_resource_handler_->on_read_eof());
+  EXPECT_EQ(1, raw_ptr_resource_handler_->on_read_eof_called());
   EXPECT_EQ(1, raw_ptr_resource_handler_->on_response_completed_called());
 
   EXPECT_EQ(net::ERR_ABORTED,
@@ -1089,7 +1145,7 @@ TEST_F(ResourceLoaderTest, SyncCancelOnAsyncReadCompleted) {
   EXPECT_EQ(1, did_receive_response_);
   EXPECT_EQ(1, did_finish_loading_);
   EXPECT_EQ(1, raw_ptr_resource_handler_->on_read_completed_called());
-  EXPECT_EQ(0, raw_ptr_resource_handler_->on_read_eof());
+  EXPECT_EQ(0, raw_ptr_resource_handler_->on_read_eof_called());
   EXPECT_EQ(1, raw_ptr_resource_handler_->on_response_completed_called());
 
   EXPECT_EQ(net::ERR_ABORTED,
@@ -1106,7 +1162,7 @@ TEST_F(ResourceLoaderTest, SyncCancelOnAsyncReceivedEof) {
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, did_receive_response_);
   EXPECT_EQ(1, did_finish_loading_);
-  EXPECT_EQ(1, raw_ptr_resource_handler_->on_read_eof());
+  EXPECT_EQ(1, raw_ptr_resource_handler_->on_read_eof_called());
   EXPECT_EQ(1, raw_ptr_resource_handler_->on_response_completed_called());
 
   EXPECT_EQ(net::ERR_ABORTED,
@@ -1171,6 +1227,23 @@ TEST_F(ResourceLoaderTest, AsyncCancelOnResponseStarted) {
   EXPECT_EQ("", raw_ptr_resource_handler_->body());
 }
 
+TEST_F(ResourceLoaderTest, AsyncCancelOnWillRead) {
+  raw_ptr_resource_handler_->set_defer_on_will_read(true);
+
+  loader_->StartRequest();
+  raw_ptr_resource_handler_->WaitUntilDeferred();
+  raw_ptr_resource_handler_->CancelWithError(net::ERR_FAILED);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1, did_receive_response_);
+  EXPECT_EQ(1, did_finish_loading_);
+  EXPECT_EQ(1, raw_ptr_resource_handler_->on_will_read_called());
+  EXPECT_EQ(0, raw_ptr_resource_handler_->on_read_completed_called());
+  EXPECT_EQ(0, raw_ptr_resource_handler_->on_read_eof_called());
+  EXPECT_EQ(1, raw_ptr_resource_handler_->on_response_completed_called());
+
+  EXPECT_EQ(net::ERR_FAILED, raw_ptr_resource_handler_->final_status().error());
+}
+
 TEST_F(ResourceLoaderTest, AsyncCancelOnReadCompleted) {
   raw_ptr_resource_handler_->set_defer_on_read_completed(true);
 
@@ -1181,7 +1254,7 @@ TEST_F(ResourceLoaderTest, AsyncCancelOnReadCompleted) {
   EXPECT_EQ(1, did_receive_response_);
   EXPECT_EQ(1, did_finish_loading_);
   EXPECT_EQ(1, raw_ptr_resource_handler_->on_read_completed_called());
-  EXPECT_EQ(0, raw_ptr_resource_handler_->on_read_eof());
+  EXPECT_EQ(0, raw_ptr_resource_handler_->on_read_eof_called());
   EXPECT_EQ(1, raw_ptr_resource_handler_->on_response_completed_called());
 
   EXPECT_EQ(net::ERR_FAILED, raw_ptr_resource_handler_->final_status().error());
@@ -1197,7 +1270,7 @@ TEST_F(ResourceLoaderTest, AsyncCancelOnReceivedEof) {
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, did_receive_response_);
   EXPECT_EQ(1, did_finish_loading_);
-  EXPECT_EQ(1, raw_ptr_resource_handler_->on_read_eof());
+  EXPECT_EQ(1, raw_ptr_resource_handler_->on_read_eof_called());
   EXPECT_EQ(1, raw_ptr_resource_handler_->on_response_completed_called());
 
   EXPECT_EQ(net::ERR_FAILED, raw_ptr_resource_handler_->final_status().error());
@@ -1215,7 +1288,7 @@ TEST_F(ResourceLoaderTest, AsyncCancelOnAsyncReadCompleted) {
   EXPECT_EQ(1, did_receive_response_);
   EXPECT_EQ(1, did_finish_loading_);
   EXPECT_EQ(1, raw_ptr_resource_handler_->on_read_completed_called());
-  EXPECT_EQ(0, raw_ptr_resource_handler_->on_read_eof());
+  EXPECT_EQ(0, raw_ptr_resource_handler_->on_read_eof_called());
   EXPECT_EQ(1, raw_ptr_resource_handler_->on_response_completed_called());
 
   EXPECT_EQ(net::ERR_FAILED, raw_ptr_resource_handler_->final_status().error());
@@ -1232,7 +1305,7 @@ TEST_F(ResourceLoaderTest, AsyncCancelOnAsyncReceivedEof) {
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, did_receive_response_);
   EXPECT_EQ(1, did_finish_loading_);
-  EXPECT_EQ(1, raw_ptr_resource_handler_->on_read_eof());
+  EXPECT_EQ(1, raw_ptr_resource_handler_->on_read_eof_called());
   EXPECT_EQ(1, raw_ptr_resource_handler_->on_response_completed_called());
 
   EXPECT_EQ(net::ERR_FAILED, raw_ptr_resource_handler_->final_status().error());

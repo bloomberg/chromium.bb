@@ -45,8 +45,9 @@ class CONTENT_EXPORT InterceptingResourceHandler
   void OnResponseStarted(
       ResourceResponse* response,
       std::unique_ptr<ResourceController> controller) override;
-  bool OnWillRead(scoped_refptr<net::IOBuffer>* buf,
-                  int* buf_size) override;
+  void OnWillRead(scoped_refptr<net::IOBuffer>* buf,
+                  int* buf_size,
+                  std::unique_ptr<ResourceController> controller) override;
   void OnReadCompleted(int bytes_read,
                        std::unique_ptr<ResourceController> controller) override;
   void OnResponseCompleted(
@@ -81,10 +82,18 @@ class CONTENT_EXPORT InterceptingResourceHandler
     // handlers.
     SWAPPING_HANDLERS,
 
+    // States where the InterceptingResourceHandler passes the initial
+    // OnWillRead call to the old handler, and then waits for the resulting
+    // buffer read buffer.
+    SENDING_ON_WILL_READ_TO_OLD_HANDLER,
+    WAITING_FOR_OLD_HANDLERS_BUFFER,
+
     // The InterceptingResourceHandler is sending the payload given via
-    // UseNewHandler to the old handler and waiting for its completion via
-    // Resume().
+    // UseNewHandler to the old handler. The first state starts retrieving a
+    // buffer from the old handler, the second state copies as much of the data
+    // as possible to the received buffer and passes it to the old handler.
     SENDING_PAYLOAD_TO_OLD_HANDLER,
+    RECEIVING_BUFFER_FROM_OLD_HANDLER,
 
     // The InterceptingResourcHandler is calling the new handler's
     // OnResponseStarted method and waiting for its completion via Resume().
@@ -102,9 +111,12 @@ class CONTENT_EXPORT InterceptingResourceHandler
     // called.
     WAITING_FOR_ON_READ_COMPLETED,
 
-    // The InterceptingResourceHandler is sending the old handler's contents to
-    // the new handler and waiting for its completion via Resume().
+    // The two phases of uploading previously received data stored in
+    // |first_read_buffer_double_| to the new handler, which is now stored in
+    // |next_handler_|. The first state gets a buffer to write to, and the next
+    // copies all the data it can to that buffer.
     SENDING_BUFFER_TO_NEW_HANDLER,
+    SENDING_BUFFER_TO_NEW_HANDLER_WAITING_FOR_BUFFER,
 
     // The InterceptingResourceHandler has replaced its next ResourceHandler if
     // needed, and has ensured the buffered read data was properly transmitted
@@ -118,10 +130,14 @@ class CONTENT_EXPORT InterceptingResourceHandler
 
   void ResumeInternal();
 
+  void SendOnWillReadToOldHandler();
+  void OnBufferReceived();
   void SendOnResponseStartedToOldHandler();
   void SendPayloadToOldHandler();
+  void ReceivedBufferFromOldHandler();
   void SendFirstReadBufferToNewHandler();
   void SendOnResponseStartedToNewHandler();
+  void ReceivedBufferFromNewHandler();
 
   State state_ = State::STARTING;
 
@@ -135,9 +151,21 @@ class CONTENT_EXPORT InterceptingResourceHandler
   // Instead of |first_read_buffer_|, this handler creates a new IOBuffer with
   // the same size and return it to the client.
   scoped_refptr<net::IOBuffer> first_read_buffer_double_;
-  size_t first_read_buffer_size_ = 0;
-  size_t first_read_buffer_bytes_read_ = 0;
-  size_t first_read_buffer_bytes_written_ = 0;
+  int first_read_buffer_size_ = 0;
+  int first_read_buffer_bytes_read_ = 0;
+  int first_read_buffer_bytes_written_ = 0;
+
+  // Information about the new handler's buffer while copying data from
+  // |first_read_buffer_double_| to the new handler's buffer.
+  // Note that when these are used, the old handler has been destroyed, and
+  // |next_handler_| is now the new one.
+  scoped_refptr<net::IOBuffer> new_handler_read_buffer_;
+  int new_handler_read_buffer_size_ = 0;
+
+  // Pointers to parent-owned read buffer and its size.  Only used for first
+  // OnWillRead call.
+  scoped_refptr<net::IOBuffer>* parent_read_buffer_ = nullptr;
+  int* parent_read_buffer_size_ = nullptr;
 
   scoped_refptr<ResourceResponse> response_;
 

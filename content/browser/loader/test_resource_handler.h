@@ -52,8 +52,9 @@ class TestResourceHandler : public ResourceHandler {
       std::unique_ptr<ResourceController> controller) override;
   void OnWillStart(const GURL& url,
                    std::unique_ptr<ResourceController> controller) override;
-  bool OnWillRead(scoped_refptr<net::IOBuffer>* buf,
-                  int* buf_size) override;
+  void OnWillRead(scoped_refptr<net::IOBuffer>* buf,
+                  int* buf_size,
+                  std::unique_ptr<ResourceController> controller) override;
   void OnReadCompleted(int bytes_read,
                        std::unique_ptr<ResourceController> controller) override;
   void OnResponseCompleted(
@@ -102,6 +103,10 @@ class TestResourceHandler : public ResourceHandler {
   void set_defer_on_response_started(bool defer_on_response_started) {
     defer_on_response_started_ = defer_on_response_started;
   }
+  // Only the next OnWillRead call will set |defer| to true.
+  void set_defer_on_will_read(bool defer_on_will_read) {
+    defer_on_will_read_ = defer_on_will_read;
+  }
   // Only the next OnReadCompleted call will set |defer| to true.
   void set_defer_on_read_completed(bool defer_on_read_completed) {
     defer_on_read_completed_ = defer_on_read_completed;
@@ -134,7 +139,7 @@ class TestResourceHandler : public ResourceHandler {
   int on_response_started_called() const { return on_response_started_called_; }
   int on_will_read_called() const { return on_will_read_called_; }
   int on_read_completed_called() const { return on_read_completed_called_; }
-  int on_read_eof() const { return on_read_eof_; }
+  int on_read_eof_called() const { return on_read_eof_called_; }
   int on_response_completed_called() const {
     return on_response_completed_called_;
   }
@@ -181,6 +186,7 @@ class TestResourceHandler : public ResourceHandler {
   bool defer_on_will_start_ = false;
   bool defer_on_request_redirected_ = false;
   bool defer_on_response_started_ = false;
+  bool defer_on_will_read_ = false;
   bool defer_on_read_completed_ = false;
   bool defer_on_read_eof_ = false;
   bool defer_on_response_completed_ = false;
@@ -194,7 +200,7 @@ class TestResourceHandler : public ResourceHandler {
   int on_response_started_called_ = 0;
   int on_will_read_called_ = 0;
   int on_read_completed_called_ = 0;
-  int on_read_eof_ = 0;
+  int on_read_eof_called_ = 0;
   int on_response_completed_called_ = 0;
 
   GURL start_url_;
@@ -204,6 +210,11 @@ class TestResourceHandler : public ResourceHandler {
   net::URLRequestStatus final_status_ =
       net::URLRequestStatus::FromError(net::ERR_UNEXPECTED);
   bool canceled_ = false;
+
+  // Pointers to the parent's read buffer and size. Only non-NULL during
+  // OnWillRead call, until cancellation or resumption.
+  scoped_refptr<net::IOBuffer>* parent_read_buffer_ = nullptr;
+  int* parent_read_buffer_size_ = nullptr;
 
   // Tracks recursive calls, which aren't allowed.
   int call_depth_ = 0;

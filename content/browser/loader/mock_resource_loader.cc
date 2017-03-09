@@ -98,25 +98,19 @@ MockResourceLoader::Status MockResourceLoader::OnWillRead() {
   EXPECT_EQ(Status::IDLE, status_);
 
   status_ = Status::CALLING_HANDLER;
-  bool result =
-      resource_handler_->OnWillRead(&io_buffer_, &io_buffer_size_);
-
-  // The second case isn't really allowed, but a number of classes do it
-  // anyways.
-  EXPECT_TRUE(status_ == Status::CALLING_HANDLER ||
-              (result == false && status_ == Status::CANCELED));
-  if (!result) {
-    // In the case of double-cancels, keep the old error code.
-    if (status_ != Status::CANCELED)
-      error_code_ = net::ERR_ABORTED;
-    EXPECT_EQ(0, io_buffer_size_);
+  waiting_on_buffer_ = true;
+  resource_handler_->OnWillRead(
+      &io_buffer_, &io_buffer_size_,
+      base::MakeUnique<TestResourceController>(weak_factory_.GetWeakPtr()));
+  if (status_ == Status::CALLING_HANDLER) {
+    // Shouldn't update  |io_buffer_| or |io_buffer_size_| yet if Resume()
+    // hasn't yet been called.
     EXPECT_FALSE(io_buffer_);
-    status_ = Status::CANCELED;
-  } else {
-    EXPECT_LT(0, io_buffer_size_);
-    EXPECT_TRUE(io_buffer_);
-    status_ = Status::IDLE;
+    EXPECT_EQ(0, io_buffer_size_);
+
+    status_ = Status::CALLBACK_PENDING;
   }
+
   return status_;
 };
 
@@ -196,6 +190,9 @@ void MockResourceLoader::OutOfBandCancel(int error_code, bool tell_renderer) {
   status_ = Status::CANCELED;
   canceled_out_of_band_ = true;
 
+  // If OnWillRead was deferred, no longer waiting on a buffer.
+  waiting_on_buffer_ = false;
+
   // To mimic real behavior, keep old error, in the case of double-cancel.
   if (error_code_ == net::OK)
     error_code_ = error_code;
@@ -211,6 +208,13 @@ void MockResourceLoader::OnCancel(int error_code) {
   if (canceled_out_of_band_ && status_ == Status::CANCELED)
     return;
 
+  // Shouldn't update |io_buffer_| or |io_buffer_size_| on cancel.
+  if (waiting_on_buffer_) {
+    EXPECT_FALSE(io_buffer_);
+    EXPECT_EQ(0, io_buffer_size_);
+    waiting_on_buffer_ = false;
+  }
+
   EXPECT_LT(error_code, 0);
   EXPECT_TRUE(status_ == Status::CALLBACK_PENDING ||
               status_ == Status::CALLING_HANDLER);
@@ -222,6 +226,14 @@ void MockResourceLoader::OnCancel(int error_code) {
 }
 
 void MockResourceLoader::OnResume() {
+  if (waiting_on_buffer_) {
+    EXPECT_TRUE(io_buffer_);
+    EXPECT_LT(0, io_buffer_size_);
+
+    waiting_on_buffer_ = false;
+  }
+
+  // Shouldn't update |io_buffer_| or |io_buffer_size_| on cancel.
   EXPECT_TRUE(status_ == Status::CALLBACK_PENDING ||
               status_ == Status::CALLING_HANDLER);
 

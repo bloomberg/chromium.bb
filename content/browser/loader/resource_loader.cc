@@ -512,10 +512,20 @@ void ResourceLoader::Resume(bool called_from_resource_controller) {
       // was called from Resume().
       FollowDeferredRedirectInternal();
       break;
+    case DEFERRED_ON_WILL_READ:
+      // Always post a task, as synchronous resumes don't go through this
+      // method.
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE,
+          base::Bind(&ResourceLoader::ReadMore, weak_ptr_factory_.GetWeakPtr(),
+                     false /* handle_result_asynchronously */));
+      break;
     case DEFERRED_READ:
       if (called_from_resource_controller) {
-        // TODO(mmenke):  Call ReadMore instead?  Strange that this is the only
-        // path which calls different methods, depending on the path.
+        // TODO(mmenke):  Call PrepareToReadMore instead?  Strange that this is
+        // the only case which calls different methods, depending on the path.
+        // ResumeReading does check for cancellation. Should other paths do that
+        // as well?
         base::ThreadTaskRunnerHandle::Get()->PostTask(
             FROM_HERE, base::Bind(&ResourceLoader::ResumeReading,
                                   weak_ptr_factory_.GetWeakPtr()));
@@ -523,7 +533,7 @@ void ResourceLoader::Resume(bool called_from_resource_controller) {
         // If this was called as a result of a handler succeeding synchronously,
         // force the result of the next read to be handled asynchronously, to
         // avoid blocking the IO thread.
-        ReadMore(true /* handle_result_asynchronously */);
+        PrepareToReadMore(true /* handle_result_asynchronously */);
       }
       break;
     case DEFERRED_RESPONSE_COMPLETE:
@@ -638,40 +648,45 @@ void ResourceLoader::CompleteResponseStarted() {
 
   read_deferral_start_time_ = base::TimeTicks::Now();
   // Using a ScopedDeferral here would result in calling ReadMore(true) on sync
-  // success. Calling ReadMore(false) here instead allows small responses to be
-  // handled completely synchronously, if no ResourceHandler defers handling of
-  // the response.
+  // success. Calling PrepareToReadMore(false) here instead allows small
+  // responses to be handled completely synchronously, if no ResourceHandler
+  // defers handling of the response.
   deferred_stage_ = DEFERRED_SYNC;
   handler_->OnResponseStarted(response.get(),
                               base::MakeUnique<Controller>(this));
   if (is_deferred()) {
     deferred_stage_ = DEFERRED_READ;
   } else {
-    ReadMore(false);
+    PrepareToReadMore(false);
+  }
+}
+
+void ResourceLoader::PrepareToReadMore(bool handle_result_async) {
+  TRACE_EVENT_WITH_FLOW0("loading", "ResourceLoader::PrepareToReadMore", this,
+                         TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
+  DCHECK(!is_deferred());
+
+  deferred_stage_ = DEFERRED_SYNC;
+
+  handler_->OnWillRead(&read_buffer_, &read_buffer_size_,
+                       base::MakeUnique<Controller>(this));
+
+  if (is_deferred()) {
+    deferred_stage_ = DEFERRED_ON_WILL_READ;
+  } else {
+    ReadMore(handle_result_async);
   }
 }
 
 void ResourceLoader::ReadMore(bool handle_result_async) {
-  TRACE_EVENT_WITH_FLOW0("loading", "ResourceLoader::ReadMore", this,
-                         TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
-  DCHECK(!is_deferred());
+  DCHECK(read_buffer_.get());
+  DCHECK_GT(read_buffer_size_, 0);
 
-  // Make sure we track the buffer in at least one place.  This ensures it gets
-  // deleted even in the case the request has already finished its job and
-  // doesn't use the buffer.
-  scoped_refptr<net::IOBuffer> buf;
-  int buf_size;
-  if (!handler_->OnWillRead(&buf, &buf_size)) {
-    // Cancel the request, which will then call back into |this| to inform it of
-    // a "read error".
-    Cancel();
-    return;
-  }
-
-  DCHECK(buf.get());
-  DCHECK(buf_size > 0);
-
-  int result = request_->Read(buf.get(), buf_size);
+  int result = request_->Read(read_buffer_.get(), read_buffer_size_);
+  // Have to do this after the Read call, to ensure it still has an outstanding
+  // reference.
+  read_buffer_ = nullptr;
+  read_buffer_size_ = 0;
 
   if (result == net::ERR_IO_PENDING)
     return;
@@ -697,7 +712,7 @@ void ResourceLoader::ResumeReading() {
     read_deferral_start_time_ = base::TimeTicks();
   }
   if (request_->status().is_success()) {
-    ReadMore(false /* handle_result_asynchronously */);
+    PrepareToReadMore(false /* handle_result_asynchronously */);
   } else {
     ResponseCompleted();
   }

@@ -103,6 +103,10 @@ class MockResourceLoader : public ResourceHandler::Delegate {
   scoped_refptr<net::IOBuffer> io_buffer_;
   int io_buffer_size_ = 0;
 
+  // True if waiting to receive a buffer due to an OnWillRead call. This does
+  // not affect behavior; it's only used for DCHECKing.
+  bool waiting_on_buffer_ = false;
+
   std::unique_ptr<base::RunLoop> canceled_or_idle_run_loop_;
 
   base::WeakPtrFactory<MockResourceLoader> weak_factory_;

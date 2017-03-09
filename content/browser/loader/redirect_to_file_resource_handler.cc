@@ -185,9 +185,10 @@ void RedirectToFileResourceHandler::OnWillStart(
   }
 }
 
-bool RedirectToFileResourceHandler::OnWillRead(
+void RedirectToFileResourceHandler::OnWillRead(
     scoped_refptr<net::IOBuffer>* buf,
-    int* buf_size) {
+    int* buf_size,
+    std::unique_ptr<ResourceController> controller) {
   if (buf_->capacity() < next_buffer_size_)
     buf_->SetCapacity(next_buffer_size_);
 
@@ -198,7 +199,7 @@ bool RedirectToFileResourceHandler::OnWillRead(
   *buf_size = buf_->RemainingCapacity();
 
   buf_write_pending_ = true;
-  return true;
+  controller->Resume();
 }
 
 void RedirectToFileResourceHandler::OnReadCompleted(

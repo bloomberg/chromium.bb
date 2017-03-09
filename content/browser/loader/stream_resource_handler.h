@@ -46,8 +46,9 @@ class StreamResourceHandler : public ResourceHandler {
                    std::unique_ptr<ResourceController> controller) override;
 
   // Create a new buffer to store received data.
-  bool OnWillRead(scoped_refptr<net::IOBuffer>* buf,
-                  int* buf_size) override;
+  void OnWillRead(scoped_refptr<net::IOBuffer>* buf,
+                  int* buf_size,
+                  std::unique_ptr<ResourceController> controller) override;
 
   // A read was completed, forward the data to the Stream.
   void OnReadCompleted(int bytes_read,

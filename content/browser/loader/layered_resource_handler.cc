@@ -47,10 +47,12 @@ void LayeredResourceHandler::OnWillStart(
   next_handler_->OnWillStart(url, std::move(controller));
 }
 
-bool LayeredResourceHandler::OnWillRead(scoped_refptr<net::IOBuffer>* buf,
-                                        int* buf_size) {
+void LayeredResourceHandler::OnWillRead(
+    scoped_refptr<net::IOBuffer>* buf,
+    int* buf_size,
+    std::unique_ptr<ResourceController> controller) {
   DCHECK(next_handler_.get());
-  return next_handler_->OnWillRead(buf, buf_size);
+  return next_handler_->OnWillRead(buf, buf_size, std::move(controller));
 }
 
 void LayeredResourceHandler::OnReadCompleted(

@@ -36,22 +36,6 @@ namespace content {
 
 namespace {
 
-class TestResourceController : public ResourceController {
- public:
-  TestResourceController() = default;
-  void Cancel() override {}
-  void CancelAndIgnore() override {}
-  void CancelWithError(int error_code) override {}
-  void Resume() override { ++resume_calls_; }
-
-  int resume_calls() const { return resume_calls_; }
-
- private:
-  int resume_calls_ = 0;
-
-  DISALLOW_COPY_AND_ASSIGN(TestResourceController);
-};
-
 class InterceptingResourceHandlerTest : public testing::Test {
  public:
   InterceptingResourceHandlerTest()
@@ -383,8 +367,10 @@ TEST_F(InterceptingResourceHandlerTest, NewHandlerFailsReadCompleted) {
 // OnResponseStarted and OnReadCompleted.
 TEST_F(InterceptingResourceHandlerTest, DeferredOperations) {
   const char kData[] = "The data";
-  const std::string kPayload = "The long long long long long payload";
-  const int kOldHandlerBufferSize = 10;
+  const char kPayload[] = "The long long long long long payload";
+  // This should be less than half the size of the payload, so it needs at least
+  // 3 reads to receive.
+  const int kOldHandlerBufferSize = arraysize(kPayload) / 3;
 
   // When sending a payload to the old ResourceHandler, the
   // InterceptingResourceHandler doesn't send a final EOF read.
@@ -392,13 +378,35 @@ TEST_F(InterceptingResourceHandlerTest, DeferredOperations) {
   // entirely?
   old_handler_->set_expect_eof_read(false);
   old_handler_->SetBufferSize(kOldHandlerBufferSize);
+  old_handler_->set_defer_on_will_read(true);
   old_handler_->set_defer_on_read_completed(true);
   scoped_refptr<net::IOBuffer> old_buffer = old_handler_->buffer();
 
   // Simulate the MimeSniffingResourceHandler buffering the data.
+
   ASSERT_EQ(MockResourceLoader::Status::IDLE,
             mock_loader_->OnWillStart(request_->url()));
-  ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnWillRead());
+  // The old handler defers the read.
+  ASSERT_EQ(MockResourceLoader::Status::CALLBACK_PENDING,
+            mock_loader_->OnWillRead());
+  old_handler_->WaitUntilDeferred();
+
+  EXPECT_EQ(net::URLRequestStatus::IO_PENDING, old_handler_status_.status());
+  EXPECT_EQ(1, old_handler_->on_will_read_called());
+  EXPECT_EQ(0, old_handler_->on_read_completed_called());
+  EXPECT_EQ(0, old_handler_->on_response_completed_called());
+
+  // Defer the next OnWillRead, too. This is needed to test the case where
+  // OnWillRead completes asynchronously when passing the payload to the old
+  // handler.
+  old_handler_->set_defer_on_will_read(true);
+
+  // The old handle resumes the request.
+  old_handler_->Resume();
+
+  // Resume() call may do work asynchronously. Wait until that's done.
+  mock_loader_->WaitUntilIdleOrCanceled();
+  ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->status());
 
   ASSERT_NE(mock_loader_->io_buffer(), old_buffer.get());
 
@@ -415,6 +423,7 @@ TEST_F(InterceptingResourceHandlerTest, DeferredOperations) {
   scoped_new_handler->SetBufferSize(1);
   scoped_new_handler->set_defer_on_will_start(true);
   scoped_new_handler->set_defer_on_response_started(true);
+  scoped_new_handler->set_defer_on_will_read(true);
   scoped_new_handler->set_defer_on_read_completed(true);
   scoped_new_handler->set_defer_on_response_completed(true);
   intercepting_handler_->UseNewHandler(std::move(scoped_new_handler), kPayload);
@@ -424,6 +433,11 @@ TEST_F(InterceptingResourceHandlerTest, DeferredOperations) {
   ASSERT_EQ(MockResourceLoader::Status::CALLBACK_PENDING,
             mock_loader_->OnResponseStarted(
                 make_scoped_refptr(new ResourceResponse())));
+  old_handler_->WaitUntilDeferred();
+
+  EXPECT_EQ(1, old_handler_->on_read_completed_called());
+  EXPECT_EQ(0, old_handler_->on_response_completed_called());
+  EXPECT_EQ(0, new_handler->on_response_started_called());
 
   // The old handler has received the first N bytes of the payload synchronously
   // where N is the size of the buffer exposed via OnWillRead.
@@ -432,10 +446,24 @@ TEST_F(InterceptingResourceHandlerTest, DeferredOperations) {
   EXPECT_EQ(net::URLRequestStatus::IO_PENDING, old_handler_status_.status());
   EXPECT_EQ(net::URLRequestStatus::IO_PENDING, new_handler_status.status());
 
+  // Run until the old handler's OnWillRead method defers the request while
+  // replaying the payload.
+  old_handler_->Resume();
+  old_handler_->WaitUntilDeferred();
+  EXPECT_EQ(2, old_handler_->on_will_read_called());
+  EXPECT_EQ(1, old_handler_->on_read_completed_called());
+  EXPECT_EQ(0, old_handler_->on_response_completed_called());
+  EXPECT_EQ(std::string(kPayload, 0, kOldHandlerBufferSize), old_handler_body_);
+  EXPECT_EQ(std::string(), new_handler_body);
+  EXPECT_EQ(net::URLRequestStatus::IO_PENDING, old_handler_status_.status());
+  EXPECT_EQ(net::URLRequestStatus::IO_PENDING, new_handler_status.status());
+
   // Run until the new handler's OnWillStart method defers the request.
   old_handler_->Resume();
-  // Resume() call may do work asynchronously. Wait until that's done.
-  base::RunLoop().RunUntilIdle();
+  new_handler->WaitUntilDeferred();
+
+  EXPECT_EQ(1, new_handler->on_will_start_called());
+  EXPECT_EQ(0, new_handler->on_response_started_called());
   ASSERT_EQ(MockResourceLoader::Status::CALLBACK_PENDING,
             mock_loader_->status());
   EXPECT_EQ(kPayload, old_handler_body_);
@@ -447,7 +475,10 @@ TEST_F(InterceptingResourceHandlerTest, DeferredOperations) {
   // Run until the new handler's OnResponseStarted method defers the request.
   new_handler->Resume();
   // Resume() call may do work asynchronously. Wait until that's done.
-  base::RunLoop().RunUntilIdle();
+  new_handler->WaitUntilDeferred();
+
+  EXPECT_EQ(1, new_handler->on_response_started_called());
+  EXPECT_EQ(0, new_handler->on_will_read_called());
   ASSERT_EQ(MockResourceLoader::Status::CALLBACK_PENDING,
             mock_loader_->status());
   EXPECT_EQ(std::string(), new_handler_body);
@@ -458,27 +489,44 @@ TEST_F(InterceptingResourceHandlerTest, DeferredOperations) {
   mock_loader_->WaitUntilIdleOrCanceled();
   ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->status());
 
-  // Data is read, the new handler defers completion of the read.
+  // Data is read, the new handler defers OnWillRead.
   ASSERT_EQ(MockResourceLoader::Status::CALLBACK_PENDING,
             mock_loader_->OnReadCompleted(kData));
+  new_handler->WaitUntilDeferred();
+  EXPECT_EQ(1, new_handler->on_will_read_called());
+  EXPECT_EQ(0, new_handler->on_read_completed_called());
+
+  // The new ResourceHandler resumes, and then defers again in OnReadCompleted.
+  new_handler->Resume();
+  new_handler->WaitUntilDeferred();
+  EXPECT_EQ(1, new_handler->on_will_read_called());
+  EXPECT_EQ(1, new_handler->on_read_completed_called());
+  EXPECT_EQ(0, new_handler->on_response_completed_called());
 
   EXPECT_EQ("T", new_handler_body);
 
+  // New handler resumes again, everything continues synchronously until all
+  // written data is consumed.
   new_handler->Resume();
   mock_loader_->WaitUntilIdleOrCanceled();
   ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->status());
   EXPECT_EQ(kData, new_handler_body);
   EXPECT_EQ(net::URLRequestStatus::IO_PENDING, new_handler_status.status());
+  EXPECT_EQ(0, new_handler->on_read_eof_called());
+  EXPECT_EQ(0, new_handler->on_response_completed_called());
 
   // Final EOF byte is read.
   ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnWillRead());
   ASSERT_EQ(MockResourceLoader::Status::IDLE,
             mock_loader_->OnReadCompleted(""));
+  EXPECT_EQ(1, new_handler->on_read_eof_called());
+  EXPECT_EQ(0, new_handler->on_response_completed_called());
 
   ASSERT_EQ(
       MockResourceLoader::Status::CALLBACK_PENDING,
       mock_loader_->OnResponseCompleted({net::URLRequestStatus::SUCCESS, 0}));
   EXPECT_EQ(net::URLRequestStatus::SUCCESS, new_handler_status.status());
+  EXPECT_EQ(1, new_handler->on_response_completed_called());
 }
 
 // Test cancellation where there is only the old handler in an

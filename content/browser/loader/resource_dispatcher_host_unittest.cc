@@ -2429,15 +2429,14 @@ TEST_P(ResourceDispatcherHostTest, TooManyOutstandingRequests) {
   for (size_t i = 0; i < kMaxRequestsPerProcess; ++i)
     CheckSuccessfulRequest(msgs[i], net::URLRequestTestJob::test_data_2());
 
-  // TODO(mmenke):  These should be failing with ERR_INSUFFICIENT_RESOURCES.
-  // Update OnWillRead to use a ResourceController so it can fail with different
-  // error codes.
   CheckFailedRequest(msgs[kMaxRequestsPerProcess + 0],
-                     net::URLRequestTestJob::test_data_2(), net::ERR_ABORTED);
+                     net::URLRequestTestJob::test_data_2(),
+                     net::ERR_INSUFFICIENT_RESOURCES);
   CheckSuccessfulRequest(msgs[kMaxRequestsPerProcess + 1],
                          net::URLRequestTestJob::test_data_2());
   CheckFailedRequest(msgs[kMaxRequestsPerProcess + 2],
-                     net::URLRequestTestJob::test_data_2(), net::ERR_ABORTED);
+                     net::URLRequestTestJob::test_data_2(),
+                     net::ERR_INSUFFICIENT_RESOURCES);
 
   second_filter->OnChannelClosing();
   third_filter->OnChannelClosing();

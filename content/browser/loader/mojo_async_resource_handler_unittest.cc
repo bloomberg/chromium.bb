@@ -518,8 +518,7 @@ TEST_F(MojoAsyncResourceHandlerTest, OnWillReadWithInsufficientResource) {
   ASSERT_TRUE(CallOnWillStartAndOnResponseStarted());
 
   ASSERT_EQ(MockResourceLoader::Status::CANCELED, mock_loader_->OnWillRead());
-  // TODO(mmenke): Make this fail with net::ERR_INSUFFICIENT_RESOURCES.
-  EXPECT_EQ(net::ERR_ABORTED, mock_loader_->error_code());
+  EXPECT_EQ(net::ERR_INSUFFICIENT_RESOURCES, mock_loader_->error_code());
   EXPECT_EQ(1, rdh_.num_in_flight_requests_for_testing());
   handler_ = nullptr;
   EXPECT_EQ(0, rdh_.num_in_flight_requests_for_testing());

@@ -96,11 +96,13 @@ void SyncResourceHandler::OnWillStart(
   controller->Resume();
 }
 
-bool SyncResourceHandler::OnWillRead(scoped_refptr<net::IOBuffer>* buf,
-                                     int* buf_size) {
+void SyncResourceHandler::OnWillRead(
+    scoped_refptr<net::IOBuffer>* buf,
+    int* buf_size,
+    std::unique_ptr<ResourceController> controller) {
   *buf = read_buffer_.get();
   *buf_size = kReadBufSize;
-  return true;
+  controller->Resume();
 }
 
 void SyncResourceHandler::OnReadCompleted(

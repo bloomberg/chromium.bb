@@ -99,8 +99,11 @@ class CONTENT_EXPORT ResourceLoader : public net::URLRequest::Delegate,
   void CancelRequestInternal(int error, bool from_renderer);
   void FollowDeferredRedirectInternal();
   void CompleteResponseStarted();
-  // If |handle_result_async| is true, the result of a read that completed
-  // synchronously will be handled asynchronously, except on EOF or error.
+  // If |handle_result_async| is true, the result of the following read will be
+  // handled asynchronously if it completes synchronously, unless it's EOF or an
+  // error. This is to prevent a single request from blocking the thread for too
+  // long.
+  void PrepareToReadMore(bool handle_result_async);
   void ReadMore(bool handle_result_async);
   void ResumeReading();
   // Passes a read result to the handler.
@@ -133,6 +136,7 @@ class CONTENT_EXPORT ResourceLoader : public net::URLRequest::Delegate,
     DEFERRED_SYNC,
     DEFERRED_START,
     DEFERRED_REDIRECT,
+    DEFERRED_ON_WILL_READ,
     DEFERRED_READ,
     DEFERRED_RESPONSE_COMPLETE,
     DEFERRED_FINISH
@@ -166,6 +170,11 @@ class CONTENT_EXPORT ResourceLoader : public net::URLRequest::Delegate,
 
   // Stores the URL from a deferred redirect.
   GURL deferred_redirect_url_;
+
+  // Read buffer and its size.  Class members as OnWillRead can complete
+  // asynchronously.
+  scoped_refptr<net::IOBuffer> read_buffer_;
+  int read_buffer_size_;
 
   base::WeakPtrFactory<ResourceLoader> weak_ptr_factory_;
 

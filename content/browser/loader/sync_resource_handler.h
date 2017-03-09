@@ -42,8 +42,9 @@ class SyncResourceHandler : public ResourceHandler {
       std::unique_ptr<ResourceController> controller) override;
   void OnWillStart(const GURL& url,
                    std::unique_ptr<ResourceController> controller) override;
-  bool OnWillRead(scoped_refptr<net::IOBuffer>* buf,
-                  int* buf_size) override;
+  void OnWillRead(scoped_refptr<net::IOBuffer>* buf,
+                  int* buf_size,
+                  std::unique_ptr<ResourceController> controller) override;
   void OnReadCompleted(int bytes_read,
                        std::unique_ptr<ResourceController> controller) override;
   void OnResponseCompleted(
