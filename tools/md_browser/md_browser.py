@@ -149,6 +149,7 @@ class Handler(SimpleHTTPServer.SimpleHTTPRequestHandler):
         'markdown.extensions.toc',
         'gitiles_autolink',
         'gitiles_ext_blocks',
+        'gitiles_smart_quotes',
     ]
     extension_configs = {
         'markdown.extensions.toc': {
