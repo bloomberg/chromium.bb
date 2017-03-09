@@ -11,7 +11,6 @@
 #include "base/pickle.h"
 #include "base/run_loop.h"
 #include "base/test/histogram_tester.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -213,9 +212,6 @@ class ThreatDetailsTest : public ChromeRenderViewHostTestHarness {
     ChromeRenderViewHostTestHarness::SetUp();
     ASSERT_TRUE(profile()->CreateHistoryService(true /* delete_file */,
                                                 false /* no_db */));
-
-    feature_list_.reset(new base::test::ScopedFeatureList);
-    feature_list_->InitAndEnableFeature(kFillDOMInThreatDetails);
   }
 
   std::string WaitForSerializedReport(ThreatDetails* report,
@@ -371,7 +367,6 @@ class ThreatDetailsTest : public ChromeRenderViewHostTestHarness {
   }
 
   scoped_refptr<MockSafeBrowsingUIManager> ui_manager_;
-  std::unique_ptr<base::test::ScopedFeatureList> feature_list_;
 };
 
 // Tests creating a simple threat report of a malware URL.

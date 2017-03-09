@@ -335,9 +335,8 @@ class SafeBrowsingBlockingPageBrowserTest
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitchASCII(
-        "enable-features",
-        "FillDOMInThreatDetails,ThreatDomDetailsTagAttributes<SBDomStudy");
+    command_line->AppendSwitchASCII("enable-features",
+                                    "ThreatDomDetailsTagAttributes<SBDomStudy");
     command_line->AppendSwitchASCII("force-fieldtrials",
                                     "SBDomStudy/SBDomGroup");
     command_line->AppendSwitchASCII(

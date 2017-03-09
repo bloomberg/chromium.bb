@@ -17,7 +17,6 @@
 #include <vector>
 
 #include "base/containers/hash_tables.h"
-#include "base/feature_list.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -36,8 +35,6 @@ class Profile;
 struct SafeBrowsingHostMsg_ThreatDOMDetails_Node;
 
 namespace safe_browsing {
-
-extern const base::Feature kFillDOMInThreatDetails;
 
 // Maps a URL to its Resource.
 class ThreatDetailsCacheCollector;

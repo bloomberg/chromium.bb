@@ -39,9 +39,6 @@ namespace safe_browsing {
 // static
 ThreatDetailsFactory* ThreatDetails::factory_ = NULL;
 
-const base::Feature kFillDOMInThreatDetails{"FillDOMInThreatDetails",
-                                            base::FEATURE_DISABLED_BY_DEFAULT};
-
 namespace {
 
 typedef std::unordered_set<std::string> StringSet;
@@ -286,10 +283,6 @@ void ThreatDetails::AddDomElement(
     const int parent_element_node_id,
     const std::vector<AttributeNameValue>& attributes,
     const ClientSafeBrowsingReportRequest::Resource* resource) {
-  if (!base::FeatureList::IsEnabled(kFillDOMInThreatDetails)) {
-    return;
-  }
-
   // Create the element. It should not exist already since this function should
   // only be called once for each element.
   const std::string element_key =
