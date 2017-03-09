@@ -41,11 +41,11 @@ const double kMinHours = 0.5;
 const char kMinHoursParam[] = "user_classifier_min_hours";
 
 // Classification constants.
-const double kActiveConsumerScrollsAtLeastOncePerHours = 24;
-const char kActiveConsumerScrollsAtLeastOncePerHoursParam[] =
-    "user_classifier_active_consumer_scrolls_at_least_once_per_hours";
+const double kActiveConsumerClicksAtLeastOncePerHours = 72;
+const char kActiveConsumerClicksAtLeastOncePerHoursParam[] =
+    "user_classifier_active_consumer_clicks_at_least_once_per_hours";
 
-const double kRareUserOpensNTPAtMostOncePerHours = 72;
+const double kRareUserOpensNTPAtMostOncePerHours = 96;
 const char kRareUserOpensNTPAtMostOncePerHoursParam[] =
     "user_classifier_rare_user_opens_ntp_at_most_once_per_hours";
 
@@ -73,7 +73,7 @@ const char* kLastTimeKeys[] = {prefs::kUserClassifierLastTimeToOpenNTP,
                                prefs::kUserClassifierLastTimeToUseSuggestions};
 
 // Default lengths of the intervals for new users for the metrics.
-const double kInitialHoursBetweenEvents[] = {24, 36, 48};
+const double kInitialHoursBetweenEvents[] = {24, 48, 96};
 const char* kInitialHoursBetweenEventsParams[] = {
     "user_classifier_default_interval_ntp_opened",
     "user_classifier_default_interval_suggestions_shown",
@@ -186,11 +186,11 @@ UserClassifier::UserClassifier(PrefService* pref_service)
       discount_rate_per_hour_(GetDiscountRatePerHour()),
       min_hours_(GetMinHours()),
       max_hours_(GetMaxHours()),
-      active_consumer_scrolls_at_least_once_per_hours_(
+      active_consumer_clicks_at_least_once_per_hours_(
           variations::GetVariationParamByFeatureAsDouble(
               kArticleSuggestionsFeature,
-              kActiveConsumerScrollsAtLeastOncePerHoursParam,
-              kActiveConsumerScrollsAtLeastOncePerHours)),
+              kActiveConsumerClicksAtLeastOncePerHoursParam,
+              kActiveConsumerClicksAtLeastOncePerHours)),
       rare_user_opens_ntp_at_most_once_per_hours_(
           variations::GetVariationParamByFeatureAsDouble(
               kArticleSuggestionsFeature,
@@ -276,8 +276,8 @@ UserClassifier::UserClass UserClassifier::GetUserClass() const {
     return UserClass::RARE_NTP_USER;
   }
 
-  if (GetEstimatedAvgTime(Metric::SUGGESTIONS_SHOWN) <=
-      active_consumer_scrolls_at_least_once_per_hours_) {
+  if (GetEstimatedAvgTime(Metric::SUGGESTIONS_USED) <=
+      active_consumer_clicks_at_least_once_per_hours_) {
     return UserClass::ACTIVE_SUGGESTIONS_CONSUMER;
   }
 

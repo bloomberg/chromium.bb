@@ -41,6 +41,8 @@ class UserClassifier {
   enum class Metric {
     NTP_OPENED,  // When the user opens a new NTP - this indicates potential
                  // use of content suggestions.
+    // TODO(jkrcal): Remove the following metric as for condensed NTP / Chrome
+    // Home, this coincides with NTP_OPENED.
     SUGGESTIONS_SHOWN,  // When the content suggestions are shown to the user -
                         // in the current implementation when the user scrolls
                         // below the fold.
@@ -98,7 +100,7 @@ class UserClassifier {
   const double max_hours_;
 
   // Params of the classification.
-  const double active_consumer_scrolls_at_least_once_per_hours_;
+  const double active_consumer_clicks_at_least_once_per_hours_;
   const double rare_user_opens_ntp_at_most_once_per_hours_;
 
   DISALLOW_COPY_AND_ASSIGN(UserClassifier);
