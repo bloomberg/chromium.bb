@@ -6,6 +6,7 @@
 
 #include "base/base_switches.h"
 #include "base/command_line.h"
+#include "base/environment.h"
 #include "base/files/file_util.h"
 #include "base/lazy_instance.h"
 #include "base/path_service.h"
@@ -39,6 +40,8 @@ HeadlessContentMainDelegate* g_current_headless_content_main_delegate = nullptr;
 
 base::LazyInstance<HeadlessCrashReporterClient>::Leaky g_headless_crash_client =
     LAZY_INSTANCE_INITIALIZER;
+
+const char kLogFileName[] = "CHROME_LOG_FILE";
 }  // namespace
 
 HeadlessContentMainDelegate::HeadlessContentMainDelegate(
@@ -125,6 +128,12 @@ void HeadlessContentMainDelegate::InitLogging(
     log_path = log_path.Append(log_filename);
   } else {
     log_path = log_filename;
+  }
+
+  std::string filename;
+  std::unique_ptr<base::Environment> env(base::Environment::Create());
+  if (env->GetVar(kLogFileName, &filename) && !filename.empty()) {
+    log_path = base::FilePath::FromUTF8Unsafe(filename);
   }
 
   const std::string process_type =
