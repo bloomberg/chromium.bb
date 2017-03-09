@@ -146,7 +146,7 @@ def UploadPDBToSymbolServer():
     for f, f_id in ((binary_path, binary_id), (pdb_path, pdb_id)):
       subprocess.check_call(
           ['makecab', '/D', 'CompressionType=LZX', '/D', 'CompressionMemory=21',
-           f, '/L', os.path.dirname(f)])
+           f, '/L', os.path.dirname(f)], stdout=open(os.devnull, 'w'))
       f_cab = f[:-1] + '_'
 
       dest = '%s/%s/%s' % (os.path.basename(f), f_id, os.path.basename(f_cab))
