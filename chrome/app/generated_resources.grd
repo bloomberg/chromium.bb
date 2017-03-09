@@ -4996,6 +4996,16 @@ Keep your key file in a safe place. You will need it to create new versions of y
         "No-State Prefetch" pre-downloads resources to improve load times. "Prerender" does a full pre-rendering of the page, to improve load times even more. "Simple Load" does nothing and is similar to disabling the feature, but collects more metrics for comparison purposes.
       </message>
 
+      <message name="IDS_FLAGS_SPECULATIVE_PREFETCH_NAME" desc="Name for the flag to set parameters for Speculative Prefetch">
+        Speculative Prefetch
+      </message>
+      <message name="IDS_FLAGS_SPECULATIVE_PREFETCH_DESCRIPTION" desc="Description for the flag to set parameters for Speculative Prefetch.">
+        "Speculative Prefetch" fetches likely resources early to improve load times,
+        based on a local database (see chrome://predictors).
+        "Learning" means that only the database construction is enabled,
+        "Prefetching" that learning and prefetching are enabled.
+      </message>
+
       <!-- Print Preview features -->
       <message name="IDS_FLAGS_PRINT_PDF_AS_IMAGE_NAME" desc="Name for the flag to add the option to print PDFs as images to print preview.">
         Print Pdf as Image

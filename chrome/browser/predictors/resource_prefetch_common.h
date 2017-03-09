@@ -7,6 +7,7 @@
 
 #include <stddef.h>
 
+#include "base/feature_list.h"
 #include "base/time/time.h"
 #include "components/sessions/core/session_id.h"
 #include "url/gurl.h"
@@ -25,6 +26,7 @@ extern const char kLearningMode[];
 extern const char kExternalPrefetchingMode[];
 extern const char kPrefetchingMode[];
 extern const char kEnableUrlLearningParamName[];
+extern const base::Feature kSpeculativeResourcePrefetchingFeature;
 
 struct ResourcePrefetchPredictorConfig;
 

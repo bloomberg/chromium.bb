@@ -7,7 +7,6 @@
 #include <string>
 #include <tuple>
 
-#include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
 #include "chrome/browser/net/prediction_options.h"
 #include "chrome/browser/profiles/profile.h"
@@ -26,11 +25,11 @@ const char kExternalPrefetchingMode[] = "external-prefetching";
 const char kPrefetchingMode[] = "prefetching";
 const char kEnableUrlLearningParamName[] = "enable-url-learning";
 
-namespace {
+const base::Feature kSpeculativeResourcePrefetchingFeature =
+    base::Feature(kSpeculativeResourcePrefetchingFeatureName,
+                  base::FEATURE_DISABLED_BY_DEFAULT);
 
-const base::Feature kSpeculativeResourcePrefetchingFeature{
-    kSpeculativeResourcePrefetchingFeatureName,
-    base::FEATURE_DISABLED_BY_DEFAULT};
+namespace {
 
 bool IsPrefetchingEnabledInternal(Profile* profile, int mode, int mask) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);

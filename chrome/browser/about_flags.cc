@@ -27,6 +27,7 @@
 #include "build/build_config.h"
 #include "cc/base/switches.h"
 #include "chrome/browser/ntp_snippets/ntp_snippets_features.h"
+#include "chrome/browser/predictors/resource_prefetch_common.h"
 #include "chrome/browser/prerender/prerender_field_trial.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_content_client.h"
@@ -675,6 +676,19 @@ const FeatureEntry::FeatureVariation kNoStatePrefetchFeatureVariations[] = {
      arraysize(kNoStatePrefetchPrerender), nullptr},
     {"Simple load", kNoStatePrefetchSimpleLoad,
      arraysize(kNoStatePrefetchSimpleLoad), nullptr}};
+
+const FeatureEntry::FeatureParam kSpeculativeResourcePrefetchingPrefetching[] =
+    {{predictors::kModeParamName, predictors::kPrefetchingMode}};
+
+const FeatureEntry::FeatureParam kSpeculativeResourcePrefetchingLearning[] = {
+    {predictors::kModeParamName, predictors::kLearningMode}};
+
+const FeatureEntry::FeatureVariation
+    kSpeculativeResourcePrefetchingFeatureVariations[] = {
+        {"Prefetching", kSpeculativeResourcePrefetchingPrefetching,
+         arraysize(kSpeculativeResourcePrefetchingPrefetching), nullptr},
+        {"Learning", kSpeculativeResourcePrefetchingLearning,
+         arraysize(kSpeculativeResourcePrefetchingLearning), nullptr}};
 
 #if defined(OS_ANDROID)
 const FeatureEntry::FeatureParam
@@ -2324,6 +2338,13 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_ENABLE_CUSTOM_FEEDBACK_UI_DESCRIPTION, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kCustomFeedbackUi)},
 #endif  // OS_ANDROID
+
+    {"enable-resource-prefetch", IDS_FLAGS_SPECULATIVE_PREFETCH_NAME,
+     IDS_FLAGS_SPECULATIVE_PREFETCH_DESCRIPTION, kOsAll,
+     FEATURE_WITH_VARIATIONS_VALUE_TYPE(
+         predictors::kSpeculativeResourcePrefetchingFeature,
+         kSpeculativeResourcePrefetchingFeatureVariations,
+         "SpeculativeResourcePrefetchingValidation")},
 
     // NOTE: Adding new command-line switches requires adding corresponding
     // entries to enum "LoginCustomFlags" in histograms.xml. See note in
