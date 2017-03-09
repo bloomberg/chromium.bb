@@ -4,10 +4,8 @@
 
 #import "ios/chrome/browser/ui/collection_view/collection_view_controller_test.h"
 
-#include "base/ios/weak_nsobject.h"
 #include "base/logging.h"
 #import "base/mac/foundation_util.h"
-#include "base/mac/scoped_nsobject.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_detail_item.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_footer_item.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
@@ -18,6 +16,10 @@
 
 #include "testing/gtest_mac.h"
 #include "ui/base/l10n/l10n_util.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 CollectionViewControllerTest::CollectionViewControllerTest() {}
 
@@ -183,10 +185,9 @@ void CollectionViewControllerTest::DeleteItem(
     ProceduralBlock completion_block) {
   NSIndexPath* index_path =
       [NSIndexPath indexPathForItem:item inSection:section];
-  base::WeakNSObject<CollectionViewController> weak_controller(controller_);
+  __weak CollectionViewController* weak_controller = controller_;
   void (^batch_updates)() = ^{
-    base::scoped_nsobject<CollectionViewController> strong_controller(
-        [weak_controller retain]);
+    CollectionViewController* strong_controller = weak_controller;
     if (!strong_controller)
       return;
     // Notify delegate to delete data.
@@ -200,8 +201,7 @@ void CollectionViewControllerTest::DeleteItem(
 
   void (^completion)(BOOL finished) = ^(BOOL finished) {
     // Notify delegate of deletion.
-    base::scoped_nsobject<CollectionViewController> strong_controller(
-        [weak_controller retain]);
+    CollectionViewController* strong_controller = weak_controller;
     if (!strong_controller)
       return;
     [strong_controller collectionView:[strong_controller collectionView]

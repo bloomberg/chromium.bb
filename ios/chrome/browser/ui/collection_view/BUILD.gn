@@ -20,6 +20,7 @@ source_set("collection_view") {
 }
 
 source_set("test_support") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
     "collection_view_controller_test.h",
