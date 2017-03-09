@@ -47,14 +47,9 @@ class VRDisplayImplTest : public testing::Test {
   }
 
   void RequestPresent(VRDisplayImpl* display_impl) {
-    // TODO(klausw,mthiesse): set up a VRSubmitFrameClient here? Currently,
-    // the FakeVRDisplay doesn't access the submit client, so a nullptr
-    // is ok.
-    device::mojom::VRSubmitFrameClientPtr submit_client = nullptr;
     display_impl->RequestPresent(
-        true, std::move(submit_client),
-        base::Bind(&VRDisplayImplTest::onPresentComplete,
-                   base::Unretained(this)));
+        true, base::Bind(&VRDisplayImplTest::onPresentComplete,
+                         base::Unretained(this)));
   }
 
   void ExitPresent(VRDisplayImpl* display_impl) { display_impl->ExitPresent(); }

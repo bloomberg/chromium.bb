@@ -60,7 +60,6 @@ component("vr") {
 
       deps += [
         "//device/gamepad",
-        "//gpu/ipc/common:interfaces",
         "//third_party/WebKit/public:blink_headers",
       ]
       ldflags = [ "-landroid" ]
@@ -100,7 +99,6 @@ mojom("mojo_bindings") {
   ]
 
   public_deps = [
-    "//gpu/ipc/common:interfaces",
     "//mojo/common:common_custom_types",
   ]
 

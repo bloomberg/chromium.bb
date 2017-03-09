@@ -27,17 +27,13 @@ class FakeVRDevice : public VRDevice {
       const base::Callback<void(mojom::VRDisplayInfoPtr)>& callback) override;
   void ResetPose() override;
 
-  void RequestPresent(mojom::VRSubmitFrameClientPtr submit_client,
-                      const base::Callback<void(bool)>& callback) override;
+  void RequestPresent(const base::Callback<void(bool)>& callback) override;
   void SetSecureOrigin(bool secure_origin) override;
   void ExitPresent() override;
-  void SubmitFrame(int16_t frame_index,
-                   const gpu::MailboxHolder& mailbox) override;
+  void SubmitFrame(mojom::VRPosePtr pose) override;
   void UpdateLayerBounds(int16_t frame_index,
                          mojom::VRLayerBoundsPtr leftBounds,
-                         mojom::VRLayerBoundsPtr rightBounds,
-                         int16_t source_width,
-                         int16_t source_height) override;
+                         mojom::VRLayerBoundsPtr rightBounds) override;
   void GetVRVSyncProvider(mojom::VRVSyncProviderRequest request) override;
 
  private:

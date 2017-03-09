@@ -46,9 +46,14 @@ VrShellDelegate* VrShellDelegate::GetNativeVrShellDelegate(JNIEnv* env,
 
 void VrShellDelegate::SetDelegate(device::GvrDelegate* delegate,
                                   gvr_context* context) {
+  context_ = context;
   delegate_ = delegate;
   // Clean up the non-presenting delegate.
-  if (delegate_ && non_presenting_delegate_) {
+  if (non_presenting_delegate_) {
+    device::mojom::VRVSyncProviderRequest request =
+        non_presenting_delegate_->OnSwitchToPresentingDelegate();
+    if (request.is_pending())
+      delegate->OnVRVsyncProviderRequest(std::move(request));
     non_presenting_delegate_ = nullptr;
     JNIEnv* env = AttachCurrentThread();
     Java_VrShellDelegate_shutdownNonPresentingNativeContext(
@@ -131,16 +136,8 @@ void VrShellDelegate::OpenNewTab(bool incognito) {
   Java_VrShellDelegate_openNewTab(env, j_vr_shell_delegate_.obj(), incognito);
 }
 
-device::mojom::VRSubmitFrameClientPtr VrShellDelegate::TakeSubmitFrameClient() {
-  return std::move(submit_client_);
-}
-
 void VrShellDelegate::SetDeviceProvider(
     device::GvrDeviceProvider* device_provider) {
-  if (device_provider_ == device_provider)
-    return;
-  if (device_provider_)
-    ClearDeviceProvider();
   CHECK(!device_provider_);
   device_provider_ = device_provider;
   if (!delegate_)
@@ -157,7 +154,6 @@ void VrShellDelegate::ClearDeviceProvider() {
 }
 
 void VrShellDelegate::RequestWebVRPresent(
-    device::mojom::VRSubmitFrameClientPtr submit_client,
     const base::Callback<void(bool)>& callback) {
   if (!present_callback_.is_null()) {
     // Can only handle one request at a time. This is also extremely unlikely to
@@ -167,7 +163,6 @@ void VrShellDelegate::RequestWebVRPresent(
   }
 
   present_callback_ = std::move(callback);
-  submit_client_ = std::move(submit_client);
 
   // If/When VRShell is ready for use it will call SetPresentResult.
   JNIEnv* env = AttachCurrentThread();
@@ -185,11 +180,19 @@ base::WeakPtr<VrShellDelegate> VrShellDelegate::GetWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
 }
 
+void VrShellDelegate::OnVRVsyncProviderRequest(
+    device::mojom::VRVSyncProviderRequest request) {
+  GetDelegate()->OnVRVsyncProviderRequest(std::move(request));
+}
+
 void VrShellDelegate::CreateNonPresentingDelegate() {
   JNIEnv* env = AttachCurrentThread();
   gvr_context* context = reinterpret_cast<gvr_context*>(
       Java_VrShellDelegate_createNonPresentingNativeContext(
           env, j_vr_shell_delegate_.obj()));
+  if (!context)
+    return;
+  context_ = context;
   non_presenting_delegate_ =
       base::MakeUnique<NonPresentingGvrDelegate>(context);
   non_presenting_delegate_->UpdateVSyncInterval(timebase_nanos_,

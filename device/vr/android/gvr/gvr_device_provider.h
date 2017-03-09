@@ -11,11 +11,9 @@
 #include "base/macros.h"
 #include "device/vr/vr_device_provider.h"
 #include "device/vr/vr_export.h"
-#include "device/vr/vr_service.mojom.h"
 
 namespace device {
 
-class GvrDelegateProvider;
 class GvrDevice;
 
 class DEVICE_VR_EXPORT GvrDeviceProvider : public VRDeviceProvider {
@@ -29,17 +27,14 @@ class DEVICE_VR_EXPORT GvrDeviceProvider : public VRDeviceProvider {
   void SetListeningForActivate(bool listening) override;
 
   // Called from GvrDevice.
-  void RequestPresent(mojom::VRSubmitFrameClientPtr submit_client,
-                      const base::Callback<void(bool)>& callback);
+  void RequestPresent(const base::Callback<void(bool)>& callback);
   void ExitPresent();
-
-  device::GvrDelegateProvider* GetDelegateProvider();
 
   GvrDevice* Device() { return vr_device_.get(); }
 
  private:
-  void Initialize(device::GvrDelegateProvider* provider);
   std::unique_ptr<GvrDevice> vr_device_;
+  bool initialized_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(GvrDeviceProvider);
 };

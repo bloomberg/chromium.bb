@@ -41,8 +41,7 @@ enum VREye { VREyeNone, VREyeLeft, VREyeRight };
 class VRDisplay final : public EventTargetWithInlineData,
                         public ActiveScriptWrappable<VRDisplay>,
                         public ContextLifecycleObserver,
-                        public device::mojom::blink::VRDisplayClient,
-                        public device::mojom::blink::VRSubmitFrameClient {
+                        public device::mojom::blink::VRDisplayClient {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(VRDisplay);
   USING_PRE_FINALIZER(VRDisplay, dispose);
@@ -117,6 +116,7 @@ class VRDisplay final : public EventTargetWithInlineData,
   VRController* controller();
 
  private:
+  void onFullscreenCheck(TimerBase*);
   void onPresentComplete(bool);
 
   void onConnected();
@@ -125,10 +125,6 @@ class VRDisplay final : public EventTargetWithInlineData,
   void stopPresenting();
 
   void OnPresentChange();
-
-  // VRSubmitFrameClient
-  void OnSubmitFrameTransferred();
-  void OnSubmitFrameRendered();
 
   // VRDisplayClient
   void OnChanged(device::mojom::blink::VRDisplayInfoPtr) override;
@@ -143,7 +139,6 @@ class VRDisplay final : public EventTargetWithInlineData,
                int16_t frameId,
                device::mojom::blink::VRVSyncProvider::Status);
   void ConnectVSyncProvider();
-  void OnVSyncConnectionError();
 
   ScriptedAnimationController& ensureScriptedAnimationController(Document*);
 
@@ -167,33 +162,24 @@ class VRDisplay final : public EventTargetWithInlineData,
   double m_depthNear = 0.01;
   double m_depthFar = 10000.0;
 
-  // Current dimensions of the WebVR source canvas. May be different from
-  // the recommended renderWidth/Height if the client overrides dimensions.
-  int m_sourceWidth = 0;
-  int m_sourceHeight = 0;
-
   void dispose();
 
+  TaskRunnerTimer<VRDisplay> m_fullscreenCheckTimer;
+  String m_fullscreenOrigWidth;
+  String m_fullscreenOrigHeight;
   gpu::gles2::GLES2Interface* m_contextGL = nullptr;
   Member<WebGLRenderingContextBase> m_renderingContext;
-
-  // Used to keep the image alive until the next frame if using
-  // waitForPreviousTransferToFinish.
-  RefPtr<Image> m_previousImage;
 
   Member<ScriptedAnimationController> m_scriptedAnimationController;
   bool m_pendingRaf = false;
   bool m_pendingVsync = false;
   bool m_inAnimationFrame = false;
   bool m_displayBlurred = false;
+  bool m_reenteredFullscreen = false;
   double m_timebase = -1;
-  bool m_pendingPreviousFrameRender = false;
-  bool m_pendingSubmitFrame = false;
 
   device::mojom::blink::VRDisplayPtr m_display;
 
-  mojo::Binding<device::mojom::blink::VRSubmitFrameClient>
-      m_submit_frame_client_binding;
   mojo::Binding<device::mojom::blink::VRDisplayClient> m_displayClientBinding;
   device::mojom::blink::VRVSyncProviderPtr m_vrVSyncProvider;
 
