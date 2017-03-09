@@ -135,12 +135,12 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
 
         @Override
         public void didFinishNavigation(String url, boolean isInMainFrame, boolean isErrorPage,
-                boolean hasCommitted, boolean isSamePage, boolean isFragmentNavigation,
+                boolean hasCommitted, boolean isSameDocument, boolean isFragmentNavigation,
                 Integer pageTransition, int errorCode, String errorDescription,
                 int httpStatusCode) {
             determinedProcessVisibility();
 
-            if (hasCommitted && isInMainFrame && !isSamePage) {
+            if (hasCommitted && isInMainFrame && !isSameDocument) {
                 resetPopupsAndInput();
             }
         }
