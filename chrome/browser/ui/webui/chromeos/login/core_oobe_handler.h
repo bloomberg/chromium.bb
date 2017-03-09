@@ -39,17 +39,9 @@ class CoreOobeHandler : public BaseWebUIHandler,
                         public CoreOobeView,
                         public ui::EventSource {
  public:
-  class Delegate {
-   public:
-    // Called when current screen is changed.
-    virtual void OnCurrentScreenChanged(OobeScreen screen) = 0;
-  };
-
   explicit CoreOobeHandler(OobeUI* oobe_ui,
                            JSCallsContainer* js_calls_container);
   ~CoreOobeHandler() override;
-
-  void SetDelegate(Delegate* delegate);
 
   // BaseScreenHandler implementation:
   void DeclareLocalizedValues(
@@ -81,7 +73,7 @@ class CoreOobeHandler : public BaseWebUIHandler,
   void UpdateShutdownAndRebootVisibility(bool reboot_on_shutdown);
 
  private:
-  // CoreOobeActor implementation:
+  // CoreOobeView implementation:
   void ShowSignInError(int login_attempts,
                        const std::string& error_text,
                        const std::string& help_link_text,
@@ -163,8 +155,6 @@ class CoreOobeHandler : public BaseWebUIHandler,
 
   // Help application used for help dialogs.
   scoped_refptr<HelpAppLauncher> help_app_;
-
-  Delegate* delegate_ = nullptr;
 
   std::unique_ptr<AccessibilityStatusSubscription> accessibility_subscription_;
 

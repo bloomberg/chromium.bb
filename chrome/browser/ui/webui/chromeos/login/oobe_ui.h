@@ -67,7 +67,6 @@ class WrongHWIDScreenView;
 // - eula screen (CrOS (+ OEM) EULA content/TPM password/crash reporting).
 // - update screen.
 class OobeUI : public content::WebUIController,
-               public CoreOobeHandler::Delegate,
                public ShutdownPolicyHandler::Delegate {
  public:
   // List of known types of OobeUI. Type added as path in chrome://oobe url, for
@@ -127,6 +126,9 @@ class OobeUI : public content::WebUIController,
   // Initializes the handlers.
   void InitializeHandlers();
 
+  // Called when the screen has changed.
+  void CurrentScreenChanged(OobeScreen screen);
+
   // Invoked after the async assets load. The screen handler that has the same
   // async assets load id will be initialized.
   void OnScreenAssetsLoaded(const std::string& async_assets_load_id);
@@ -183,9 +185,6 @@ class OobeUI : public content::WebUIController,
 
   void AddWebUIHandler(std::unique_ptr<BaseWebUIHandler> handler);
   void AddScreenHandler(std::unique_ptr<BaseScreenHandler> handler);
-
-  // CoreOobeHandler::Delegate implementation:
-  void OnCurrentScreenChanged(OobeScreen screen) override;
 
   // Type of UI.
   std::string display_type_;

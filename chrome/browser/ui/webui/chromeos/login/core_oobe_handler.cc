@@ -76,10 +76,6 @@ CoreOobeHandler::CoreOobeHandler(OobeUI* oobe_ui,
 CoreOobeHandler::~CoreOobeHandler() {
 }
 
-void CoreOobeHandler::SetDelegate(Delegate* delegate) {
-  delegate_ = delegate;
-}
-
 void CoreOobeHandler::DeclareLocalizedValues(
     ::login::LocalizedValuesBuilder* builder) {
   builder->Add("title", IDS_SHORT_PRODUCT_NAME);
@@ -282,8 +278,7 @@ void CoreOobeHandler::HandleSkipUpdateEnrollAfterEula() {
 void CoreOobeHandler::HandleUpdateCurrentScreen(
     const std::string& screen_name) {
   const OobeScreen screen = GetOobeScreenFromName(screen_name);
-  if (delegate_)
-    delegate_->OnCurrentScreenChanged(screen);
+  oobe_ui_->CurrentScreenChanged(screen);
   // TODO(mash): Support EventRewriterController; see crbug.com/647781
   if (!ash_util::IsRunningInMash()) {
     KeyboardDrivenEventRewriter::GetInstance()->SetArrowToTabRewritingEnabled(

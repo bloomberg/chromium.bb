@@ -219,7 +219,6 @@ OobeUI::OobeUI(content::WebUI* web_ui, const GURL& url)
       base::MakeUnique<CoreOobeHandler>(this, js_calls_container.get());
   core_handler_ = core_handler.get();
   AddWebUIHandler(std::move(core_handler));
-  core_handler_->SetDelegate(this);
 
   auto network_dropdown_handler = base::MakeUnique<NetworkDropdownHandler>();
   network_dropdown_handler_ = network_dropdown_handler.get();
@@ -328,7 +327,6 @@ OobeUI::OobeUI(content::WebUI* web_ui, const GURL& url)
 }
 
 OobeUI::~OobeUI() {
-  core_handler_->SetDelegate(nullptr);
   network_dropdown_handler_->RemoveObserver(GetView<ErrorScreenHandler>());
   if (ash_util::IsRunningInMash()) {
     // TODO: Ash needs to expose screen dimming api. See
@@ -503,6 +501,31 @@ void OobeUI::InitializeHandlers() {
   shutdown_policy_handler_->NotifyDelegateWithShutdownPolicy();
 }
 
+void OobeUI::CurrentScreenChanged(OobeScreen new_screen) {
+  previous_screen_ = current_screen_;
+
+  const bool should_dim =
+      std::find(std::begin(kDimOverlayScreenIds),
+                std::end(kDimOverlayScreenIds),
+                new_screen) != std::end(kDimOverlayScreenIds);
+  if (!ash_util::IsRunningInMash()) {
+    if (!screen_dimmer_) {
+      screen_dimmer_ = base::MakeUnique<ash::ScreenDimmer>(
+          ash::ScreenDimmer::Container::LOCK_SCREEN);
+    }
+    screen_dimmer_->set_at_bottom(true);
+    screen_dimmer_->SetDimming(should_dim);
+  } else {
+    // TODO: Ash needs to expose screen dimming api. See
+    // http://crbug.com/646034.
+    NOTIMPLEMENTED();
+  }
+
+  current_screen_ = new_screen;
+  for (Observer& observer : observer_list_)
+    observer.OnCurrentScreenChanged(current_screen_, new_screen);
+}
+
 void OobeUI::OnScreenAssetsLoaded(const std::string& async_assets_load_id) {
   DCHECK(!async_assets_load_id.empty());
 
@@ -555,31 +578,6 @@ void OobeUI::AddObserver(Observer* observer) {
 
 void OobeUI::RemoveObserver(Observer* observer) {
   observer_list_.RemoveObserver(observer);
-}
-
-void OobeUI::OnCurrentScreenChanged(OobeScreen new_screen) {
-  previous_screen_ = current_screen_;
-
-  const bool should_dim =
-      std::find(std::begin(kDimOverlayScreenIds),
-                std::end(kDimOverlayScreenIds),
-                new_screen) != std::end(kDimOverlayScreenIds);
-  if (!ash_util::IsRunningInMash()) {
-    if (!screen_dimmer_) {
-      screen_dimmer_ = base::MakeUnique<ash::ScreenDimmer>(
-          ash::ScreenDimmer::Container::LOCK_SCREEN);
-    }
-    screen_dimmer_->set_at_bottom(true);
-    screen_dimmer_->SetDimming(should_dim);
-  } else {
-    // TODO: Ash needs to expose screen dimming api. See
-    // http://crbug.com/646034.
-    NOTIMPLEMENTED();
-  }
-
-  current_screen_ = new_screen;
-  for (Observer& observer : observer_list_)
-    observer.OnCurrentScreenChanged(current_screen_, new_screen);
 }
 
 void OobeUI::UpdateLocalizedStringsIfNeeded() {
