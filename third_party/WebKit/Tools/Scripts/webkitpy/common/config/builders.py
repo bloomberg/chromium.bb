@@ -67,6 +67,10 @@ BUILDERS = {
         "port_name": "mac-retina",
         "specifiers": ['Retina', 'Release']
     },
+    "WebKit Mac10.12": {
+        "port_name": "mac-mac10.12",
+        "specifiers": ['Mac10.12', 'Release']
+    },
     "WebKit Android (Nexus4)": {
         "port_name": "android",
         "specifiers": ['Android', 'Release']
@@ -94,6 +98,11 @@ BUILDERS = {
     "mac10.11_retina_blink_rel": {
         "port_name": "mac-retina",
         "specifiers": ['Retina', 'Release'],
+        "is_try_builder": True,
+    },
+    "mac10.12_blink_rel": {
+        "port_name": "mac-mac10.12",
+        "specifiers": ['Mac10.12', 'Release'],
         "is_try_builder": True,
     },
     "win7_blink_rel": {
