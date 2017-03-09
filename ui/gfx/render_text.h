@@ -245,7 +245,7 @@ class GFX_EXPORT RenderText {
   void SetHorizontalAlignment(HorizontalAlignment alignment);
 
   const FontList& font_list() const { return font_list_; }
-  void SetFontList(const FontList& font_list);
+  virtual void SetFontList(const FontList& font_list);
 
   bool cursor_enabled() const { return cursor_enabled_; }
   void SetCursorEnabled(bool cursor_enabled);

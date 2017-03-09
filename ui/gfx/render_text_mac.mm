@@ -61,6 +61,30 @@ base::ScopedCFTypeRef<CTFontRef> CopyFontWithSymbolicTraits(CTFontRef font,
       CTFontCreateWithFontDescriptor(desc, 0.0, nullptr));
 }
 
+// Returns whether |font_list| has a valid primary native font.
+bool HasValidPrimaryNativeFont(const gfx::FontList& font_list) {
+  return font_list.GetPrimaryFont().GetNativeFont();
+}
+
+// Checks whether |font_list| is valid. If it isn't, returns the default font
+// list (or a font list derived from it). The returned font list will have a
+// valid primary native font.
+gfx::FontList GetValidFontList(const gfx::FontList& font_list) {
+  if (HasValidPrimaryNativeFont(font_list))
+    return font_list;
+
+  const gfx::FontList default_font_list;
+  const int size_delta =
+      font_list.GetFontSize() - default_font_list.GetFontSize();
+  const gfx::FontList derived_font_list = default_font_list.Derive(
+      size_delta, font_list.GetFontStyle(), font_list.GetFontWeight());
+  if (HasValidPrimaryNativeFont(derived_font_list))
+    return derived_font_list;
+
+  DCHECK(HasValidPrimaryNativeFont(default_font_list));
+  return default_font_list;
+}
+
 }  // namespace
 
 namespace gfx {
@@ -88,6 +112,11 @@ RenderTextMac::~RenderTextMac() {}
 
 std::unique_ptr<RenderText> RenderTextMac::CreateInstanceOfSameType() const {
   return base::WrapUnique(new RenderTextMac);
+}
+
+void RenderTextMac::SetFontList(const FontList& font_list) {
+  // Ensure the font list used has a valid native font.
+  RenderText::SetFontList(GetValidFontList(font_list));
 }
 
 bool RenderTextMac::MultilineSupported() const {
@@ -283,6 +312,7 @@ base::ScopedCFTypeRef<CTLineRef> RenderTextMac::EnsureLayoutInternal(
     base::ScopedCFTypeRef<CFMutableArrayRef>* attributes_owner) {
   CTFontRef ct_font =
       base::mac::NSToCFCast(font_list().GetPrimaryFont().GetNativeFont());
+  DCHECK(ct_font);
 
   const void* keys[] = {kCTFontAttributeName};
   const void* values[] = {ct_font};
