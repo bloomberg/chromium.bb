@@ -35,7 +35,8 @@ inline sk_sp<PaintShader> MakePaintShaderRecord(sk_sp<PaintRecord> record,
                                                 SkShader::TileMode ty,
                                                 const SkMatrix* local_matrix,
                                                 const SkRect* tile) {
-  return SkShader::MakePictureShader(record, tx, ty, local_matrix, tile);
+  return SkShader::MakePictureShader(ToSkPicture(record), tx, ty, local_matrix,
+                                     tile);
 }
 
 }  // namespace cc

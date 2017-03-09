@@ -178,6 +178,8 @@ class PLATFORM_EXPORT Canvas2DLayerBridge
   void setLoggerForTesting(std::unique_ptr<Logger>);
 
  private:
+  void ResetSurface();
+
 #if USE_IOSURFACE_FOR_2D_CANVAS
   // All information associated with a CHROMIUM image.
   struct ImageInfo;
@@ -205,7 +207,7 @@ class PLATFORM_EXPORT Canvas2DLayerBridge
   void flushRecordingOnly();
   void reportSurfaceCreationFailure();
 
-  PaintSurface* getOrCreateSurface(AccelerationHint = PreferAcceleration);
+  SkSurface* getOrCreateSurface(AccelerationHint = PreferAcceleration);
   bool shouldAccelerate(AccelerationHint) const;
 
   // Returns the GL filter associated with |m_filterQuality|.
@@ -242,7 +244,8 @@ class PLATFORM_EXPORT Canvas2DLayerBridge
   void resetSkiaTextureBinding();
 
   std::unique_ptr<PaintRecorder> m_recorder;
-  sk_sp<PaintSurface> m_surface;
+  sk_sp<SkSurface> m_surface;
+  std::unique_ptr<PaintCanvas> m_surfacePaintCanvas;
   sk_sp<SkImage> m_hibernationImage;
   int m_initialSurfaceSaveCount;
   std::unique_ptr<WebExternalTextureLayer> m_layer;
