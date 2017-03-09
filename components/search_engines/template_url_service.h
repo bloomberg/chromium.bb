@@ -725,6 +725,13 @@ class TemplateURLService : public WebDataServiceConsumer,
   TemplateURL* FindMatchingDefaultExtensionTemplateURL(
       const TemplateURLData& data);
 
+#if DCHECK_IS_ON()
+  // Returns whether |template_urls_| contains more than one normal engine with
+  // same keyword. Used to validate state after search engines are
+  // added/updated.
+  bool HasDuplicateKeywords() const;
+#endif
+
   // ---------- Browser state related members ---------------------------------
   PrefService* prefs_;
 

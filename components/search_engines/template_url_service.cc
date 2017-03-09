@@ -11,6 +11,8 @@
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
+#include "base/debug/crash_logging.h"
+#include "base/format_macros.h"
 #include "base/guid.h"
 #include "base/i18n/case_conversion.h"
 #include "base/memory/ptr_util.h"
@@ -18,6 +20,7 @@
 #include "base/profiler/scoped_tracker.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/default_clock.h"
 #include "base/time/time.h"
@@ -689,7 +692,7 @@ void TemplateURLService::RepairPrepopulatedSearchEngines() {
           FindPrepopulatedTemplateURL(fallback_engine_data->prepopulate_id);
       // The fallback engine is created from built-in/override data that should
       // always have a prepopulate ID, so this engine should always exist after
-      // a repair."
+      // a repair.
       DCHECK(fallback_engine);
       // Write the fallback engine's GUID to prefs, which will cause
       // OnSyncedDefaultSearchProviderGUIDChanged() to set it as the new
@@ -1435,10 +1438,31 @@ TemplateURL* TemplateURLService::BestEngineForKeyword(TemplateURL* engine1,
                                                       TemplateURL* engine2) {
   DCHECK(engine1);
   DCHECK(engine2);
+  DCHECK_NE(engine1, engine2);
   DCHECK_EQ(engine1->keyword(), engine2->keyword());
+
+  std::string engine1_params =
+      base::StringPrintf("%s, %i, %" PRId64 ", %i, %s",
+                         base::UTF16ToUTF8(engine1->keyword()).c_str(),
+                         static_cast<int>(engine1->type()), engine1->id(),
+                         engine1->prepopulate_id(), engine1->url().c_str());
+
+  std::string engine2_params =
+      base::StringPrintf("%s, %i, %" PRId64 ", %i, %s",
+                         base::UTF16ToUTF8(engine2->keyword()).c_str(),
+                         static_cast<int>(engine2->type()), engine2->id(),
+                         engine2->prepopulate_id(), engine2->url().c_str());
+
+  base::debug::ScopedCrashKey scoped_crash_key1("engine1_params",
+                                                engine1_params);
+  base::debug::ScopedCrashKey scoped_crash_key2("engine2_params",
+                                                engine2_params);
+
   // We should only have overlapping keywords when at least one comes from
   // an extension.
-  DCHECK(IsCreatedByExtension(engine1) || IsCreatedByExtension(engine2));
+  // TODO(a-v-y) Replace CHECK with DCHECK when reasons for crash
+  // https://bugs.chromium.org/p/chromium/issues/detail?id=697745 become clear.
+  CHECK(IsCreatedByExtension(engine1) || IsCreatedByExtension(engine2));
 
   if (engine2->type() == engine1->type()) {
     return engine1->extension_info_->install_time >
@@ -1459,11 +1483,9 @@ void TemplateURLService::RemoveFromMaps(TemplateURL* template_url) {
   DCHECK_NE(0U, keyword_to_turl_and_length_.count(keyword));
   if (keyword_to_turl_and_length_[keyword].first == template_url) {
     // We need to check whether the keyword can now be provided by another
-    // TemplateURL.  See the comments in AddToMaps() for more information on
-    // extension keywords and how they can coexist with non-extension keywords.
-    // In the case of more than one extension, we use the most recently
-    // installed (which will be the most recently added, which will have the
-    // highest ID).
+    // TemplateURL. See the comments for BestEngineForKeyword() for more
+    // information on extension keywords and how they can coexist with
+    // non-extension keywords.
     TemplateURL* best_fallback = nullptr;
     for (const auto& turl : template_urls_) {
       if ((turl.get() != template_url) && (turl->keyword() == keyword)) {
@@ -1504,6 +1526,7 @@ void TemplateURLService::AddToMaps(TemplateURL* template_url) {
     AddToDomainMap(template_url);
   } else {
     TemplateURL* existing_url = i->second.first;
+    DCHECK_NE(existing_url, template_url);
     if (BestEngineForKeyword(existing_url, template_url) != existing_url) {
       RemoveFromDomainMap(existing_url);
       AddToMap(template_url);
@@ -1566,6 +1589,23 @@ void TemplateURLService::SetTemplateURLs(
   auto first_invalid = std::partition(
       urls->begin(), urls->end(), [](const std::unique_ptr<TemplateURL>& turl) {
         return turl->id() != kInvalidTemplateURLID;
+      });
+
+  // Check that no extension engines are coming from DB.
+  // TODO(a-v-y) Replace CHECK with DCHECK when reasons for crash
+  // https://bugs.chromium.org/p/chromium/issues/detail?id=697745 become clear.
+  for_each(
+      urls->begin(), urls->end(), [](const std::unique_ptr<TemplateURL>& turl) {
+        if (IsCreatedByExtension(turl.get())) {
+          std::string engine_params =
+              base::StringPrintf("%s, %i, %" PRId64 ", %i, %s",
+                                 base::UTF16ToUTF8(turl->keyword()).c_str(),
+                                 static_cast<int>(turl->type()), turl->id(),
+                                 turl->prepopulate_id(), turl->url().c_str());
+          base::debug::ScopedCrashKey scoped_crash_key1("engine_params",
+                                                        engine_params);
+          CHECK(false) << "Unexpected search engine type";
+        }
       });
 
   // First, add the items that already have id's, so that the next_id_ gets
@@ -1649,80 +1689,61 @@ TemplateURL* TemplateURLService::FindNonExtensionTemplateURLForKeyword(
 bool TemplateURLService::UpdateNoNotify(TemplateURL* existing_turl,
                                         const TemplateURL& new_values) {
   DCHECK(existing_turl);
+  DCHECK(!IsCreatedByExtension(existing_turl));
   if (!Contains(&template_urls_, existing_turl))
     return false;
 
-  DCHECK(!IsCreatedByExtension(existing_turl));
-
-  base::string16 old_keyword(existing_turl->keyword());
-  keyword_to_turl_and_length_.erase(old_keyword);
-  RemoveFromDomainMap(existing_turl);
-  if (!existing_turl->sync_guid().empty())
-    guid_to_turl_.erase(existing_turl->sync_guid());
-
-  // |provider_map_| is only initialized after loading has completed.
-  if (loaded_)
-    provider_map_->Remove(existing_turl);
-
+  base::string16 old_keyword = existing_turl->keyword();
   TemplateURLID previous_id = existing_turl->id();
+  RemoveFromMaps(existing_turl);
+
+  // Check if new keyword conflicts with another normal engine.
+  // This is possible when autogeneration of the keyword for a Google default
+  // search provider at load time causes it to conflict with an existing
+  // keyword. In this case we delete the existing keyword if it's replaceable,
+  // or else undo the change in keyword for |existing_turl|.
+  // Conflicts with extension engines are handled in AddToMaps/RemoveFromMaps
+  // functions.
+  // Search for conflicting keyword turl before updating values of
+  // existing_turl.
+  TemplateURL* conflicting_keyword_turl =
+      FindNonExtensionTemplateURLForKeyword(new_values.keyword());
+
+  // Update existing turl with new values.
   existing_turl->CopyFrom(new_values);
   existing_turl->data_.id = previous_id;
 
-  if (loaded_) {
-    provider_map_->Add(existing_turl, search_terms_data());
+  if (conflicting_keyword_turl && conflicting_keyword_turl != existing_turl) {
+    if (CanReplace(conflicting_keyword_turl))
+      RemoveNoNotify(conflicting_keyword_turl);
+    else
+      existing_turl->data_.SetKeyword(old_keyword);
   }
 
-  const base::string16& keyword = existing_turl->keyword();
-  KeywordToTURLAndMeaningfulLength::const_iterator i =
-      keyword_to_turl_and_length_.find(keyword);
-  if (i == keyword_to_turl_and_length_.end()) {
-    AddToMap(existing_turl);
-    AddToDomainMap(existing_turl);
-  } else {
-    // We can theoretically reach here in two cases:
-    //   * There is an existing extension keyword and sync brings in a rename of
-    //     a non-extension keyword to match.  In this case we just need to pick
-    //     which keyword has priority to update the keyword map.
-    //   * Autogeneration of the keyword for a Google default search provider
-    //     at load time causes it to conflict with an existing keyword.  In this
-    //     case we delete the existing keyword if it's replaceable, or else undo
-    //     the change in keyword for |existing_turl|.
-    TemplateURL* existing_keyword_turl = i->second.first;
-    if (existing_keyword_turl->type() != TemplateURL::NORMAL) {
-      if (!CanReplace(existing_turl)) {
-        AddToMap(existing_turl);
-        AddToDomainMap(existing_turl);
-      }
-    } else {
-      if (CanReplace(existing_keyword_turl)) {
-        RemoveNoNotify(existing_keyword_turl);
-      } else {
-        existing_turl->data_.SetKeyword(old_keyword);
-        AddToMap(existing_turl);
-        AddToDomainMap(existing_turl);
-      }
-    }
+  AddToMaps(existing_turl);
+
+  if (existing_turl->type() == TemplateURL::NORMAL) {
+    if (web_data_service_)
+      web_data_service_->UpdateKeyword(existing_turl->data());
+
+    // Inform sync of the update.
+    ProcessTemplateURLChange(FROM_HERE, existing_turl,
+                             syncer::SyncChange::ACTION_UPDATE);
   }
-  if (!existing_turl->sync_guid().empty())
-    guid_to_turl_[existing_turl->sync_guid()] = existing_turl;
-
-  if (web_data_service_.get())
-    web_data_service_->UpdateKeyword(existing_turl->data());
-
-  // Inform sync of the update.
-  ProcessTemplateURLChange(
-      FROM_HERE, existing_turl, syncer::SyncChange::ACTION_UPDATE);
 
   if (default_search_provider_ == existing_turl &&
       default_search_provider_source_ == DefaultSearchManager::FROM_USER) {
     default_search_manager_.SetUserSelectedDefaultSearchEngine(
         default_search_provider_->data());
   }
+#if DCHECK_IS_ON()
+  DCHECK(!HasDuplicateKeywords());
+#endif
   return true;
 }
 
 bool TemplateURLService::Update(TemplateURL* existing_turl,
-                                        const TemplateURL& new_values) {
+                                const TemplateURL& new_values) {
   const bool updated = UpdateNoNotify(existing_turl, new_values);
   if (updated)
     NotifyObservers();
@@ -1788,7 +1809,8 @@ void TemplateURLService::UpdateKeywordSearchTermsForURL(
       // later after iteration.
       // Note: UpdateNoNotify() will replace the entry from the container of
       // this iterator, so update here directly will cause an error about it.
-      visited_url = *i;
+      if (!IsCreatedByExtension(*i))
+        visited_url = *i;
     }
   }
   if (visited_url)
@@ -2063,6 +2085,7 @@ TemplateURL* TemplateURLService::AddNoNotify(
         base::string16 new_keyword = UniquifyKeyword(*existing_turl, false);
         ResetTemplateURLNoNotify(existing_turl, existing_turl->short_name(),
                                  new_keyword, existing_turl->url());
+        DCHECK_EQ(new_keyword, existing_turl->keyword());
       }
     }
   }
@@ -2079,7 +2102,9 @@ TemplateURL* TemplateURLService::AddNoNotify(
     ProcessTemplateURLChange(FROM_HERE, template_url_ptr,
                              syncer::SyncChange::ACTION_ADD);
   }
-
+#if DCHECK_IS_ON()
+  DCHECK(!HasDuplicateKeywords());
+#endif
   return template_url_ptr;
 }
 
@@ -2118,6 +2143,7 @@ bool TemplateURLService::ResetTemplateURLNoNotify(
     const base::string16& title,
     const base::string16& keyword,
     const std::string& search_url) {
+  DCHECK(!IsCreatedByExtension(url));
   DCHECK(!keyword.empty());
   DCHECK(!search_url.empty());
   TemplateURLData data(url->data());
@@ -2213,8 +2239,7 @@ base::string16 TemplateURLService::UniquifyKeyword(const TemplateURL& turl,
     if (!GetTemplateURLForKeyword(turl.keyword()))
       return turl.keyword();
 
-    // First, try to return the generated keyword for the TemplateURL (except
-    // for extensions, as their keywords are not associated with their URLs).
+    // First, try to return the generated keyword for the TemplateURL.
     GURL gurl(turl.url());
     if (gurl.is_valid()) {
       base::string16 keyword_candidate = TemplateURL::GenerateKeyword(gurl);
@@ -2479,3 +2504,20 @@ TemplateURL* TemplateURLService::FindMatchingDefaultExtensionTemplateURL(
   }
   return nullptr;
 }
+
+#if DCHECK_IS_ON()
+bool TemplateURLService::HasDuplicateKeywords() const {
+  std::map<base::string16, TemplateURL*> keyword_to_template_url;
+  for (const auto& template_url : template_urls_) {
+    // Validate no duplicate normal engines with same keyword.
+    if (!IsCreatedByExtension(template_url.get())) {
+      if (keyword_to_template_url.find(template_url->keyword()) !=
+          keyword_to_template_url.end()) {
+        return true;
+      }
+      keyword_to_template_url[template_url->keyword()] = template_url.get();
+    }
+  }
+  return false;
+}
+#endif

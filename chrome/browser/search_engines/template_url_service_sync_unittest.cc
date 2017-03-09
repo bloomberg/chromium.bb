@@ -1806,6 +1806,82 @@ TEST_F(TemplateURLServiceSyncTest, SyncWithExtensionDefaultSearch) {
   EXPECT_EQ(expected_default, model()->GetDefaultSearchProvider());
 }
 
+// Check that keyword conflict between synced engine and extension engine is
+// resolved correctly.
+TEST_F(TemplateURLServiceSyncTest, ExtensionAndNormalEngineConflict) {
+  // Start with empty model.
+  model()->MergeDataAndStartSyncing(syncer::SEARCH_ENGINES,
+                                    syncer::SyncDataList(), PassProcessor(),
+                                    CreateAndPassSyncErrorFactory());
+  const base::string16 kCommonKeyword = ASCIIToUTF16("common_keyword");
+  // Change the default search provider to an extension one.
+  std::unique_ptr<TemplateURLData> extension =
+      GenerateDummyTemplateURLData("common_keyword");
+  auto ext_dse = base::MakeUnique<TemplateURL>(
+      *extension, TemplateURL::NORMAL_CONTROLLED_BY_EXTENSION);
+  auto ext_info = base::MakeUnique<TemplateURL::AssociatedExtensionInfo>("ext");
+  ext_info->wants_to_be_default_engine = true;
+  const TemplateURL* extension_turl = test_util_a_->AddExtensionControlledTURL(
+      std::move(ext_dse), std::move(ext_info));
+  EXPECT_TRUE(model()->IsExtensionControlledDefaultSearch());
+  EXPECT_EQ(extension_turl, model()->GetTemplateURLForKeyword(kCommonKeyword));
+
+  // Add through sync normal engine with the same keyword as extension.
+  syncer::SyncChangeList changes;
+  changes.push_back(CreateTestSyncChange(
+      syncer::SyncChange::ACTION_ADD,
+      CreateTestTemplateURL(kCommonKeyword, "http://normal.com", "normal_guid",
+                            10)));
+  model()->ProcessSyncChanges(FROM_HERE, changes);
+
+  // Expect new engine synced in and kept keyword.
+  const TemplateURL* normal_turl =
+      model()->GetTemplateURLForGUID("normal_guid");
+  ASSERT_TRUE(normal_turl);
+  EXPECT_EQ(kCommonKeyword, normal_turl->keyword());
+  EXPECT_EQ(TemplateURL::NORMAL, normal_turl->type());
+
+  // Check that extension engine remains default and is accessible by keyword.
+  EXPECT_TRUE(model()->IsExtensionControlledDefaultSearch());
+  EXPECT_EQ(extension_turl, model()->GetTemplateURLForKeyword(kCommonKeyword));
+
+  // Update through sync normal engine changing keyword to nonconflicting value.
+  changes.clear();
+  changes.push_back(CreateTestSyncChange(
+      syncer::SyncChange::ACTION_UPDATE,
+      CreateTestTemplateURL(ASCIIToUTF16("nonconflicting_keyword"),
+                            "http://normal.com", "normal_guid", 11)));
+  model()->ProcessSyncChanges(FROM_HERE, changes);
+  normal_turl = model()->GetTemplateURLForGUID("normal_guid");
+  ASSERT_TRUE(normal_turl);
+  EXPECT_EQ(ASCIIToUTF16("nonconflicting_keyword"), normal_turl->keyword());
+  // Check that extension engine remains default and is accessible by keyword.
+  EXPECT_TRUE(model()->IsExtensionControlledDefaultSearch());
+  EXPECT_EQ(extension_turl, model()->GetTemplateURLForKeyword(kCommonKeyword));
+
+  // Update through sync normal engine changing keyword back to conflicting
+  // value.
+  changes.clear();
+  changes.push_back(CreateTestSyncChange(
+      syncer::SyncChange::ACTION_UPDATE,
+      CreateTestTemplateURL(kCommonKeyword, "http://normal.com", "normal_guid",
+                            12)));
+  model()->ProcessSyncChanges(FROM_HERE, changes);
+  normal_turl = model()->GetTemplateURLForGUID("normal_guid");
+  ASSERT_TRUE(normal_turl);
+  EXPECT_EQ(kCommonKeyword, normal_turl->keyword());
+
+  // Check extension engine still remains default.
+  EXPECT_TRUE(model()->IsExtensionControlledDefaultSearch());
+  EXPECT_EQ(extension_turl, model()->GetTemplateURLForKeyword(kCommonKeyword));
+
+  // Remove extension engine and expect that normal engine can be acessed by
+  // keyword.
+  test_util_a_->RemoveExtensionControlledTURL("ext");
+  EXPECT_EQ(model()->GetTemplateURLForGUID("normal_guid"),
+            model()->GetTemplateURLForKeyword(kCommonKeyword));
+}
+
 TEST_F(TemplateURLServiceSyncTest, SyncMergeDeletesDefault) {
   // If the value from Sync is a duplicate of the local default and is newer, it
   // should safely replace the local value and set as the new default.

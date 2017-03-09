@@ -193,6 +193,11 @@ size_t RegisterCrashKeysHelper() {
       {"swdh_set_hosted_version_host_pid", crash_keys::kSmallSize},
       {"swdh_set_hosted_version_is_new_process", crash_keys::kSmallSize},
       {"swdh_set_hosted_version_restart_count", crash_keys::kSmallSize},
+
+      // Temporary for https://crbug.com/697745.
+      { "engine_params", crash_keys::kMediumSize },
+      { "engine1_params", crash_keys::kMediumSize },
+      { "engine2_params", crash_keys::kMediumSize },
   };
 
   // This dynamic set of keys is used for sets of key value pairs when gathering
