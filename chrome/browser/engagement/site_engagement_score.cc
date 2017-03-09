@@ -15,6 +15,8 @@
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/engagement/site_engagement_metrics.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/content_settings/core/common/content_settings.h"
+#include "components/content_settings/core/common/content_settings_types.h"
 #include "components/variations/variations_associated_data.h"
 
 namespace {
@@ -88,6 +90,8 @@ SiteEngagementScore::ParamValues SiteEngagementScore::BuildParamValues() {
   param_values[MAX_DECAYS_PER_SCORE] = {"max_decays_per_score", 4};
   param_values[LAST_ENGAGEMENT_GRACE_PERIOD_IN_HOURS] = {
       "last_engagement_grace_period_in_hours", 1};
+  param_values[NOTIFICATION_PERMISSION_POINTS] = {
+      "notification_permission_points", 5};
   return param_values;
 }
 
@@ -153,6 +157,10 @@ double SiteEngagementScore::GetMaxDecaysPerScore() {
 
 double SiteEngagementScore::GetLastEngagementGracePeriodInHours() {
   return GetParamValues()[LAST_ENGAGEMENT_GRACE_PERIOD_IN_HOURS].second;
+}
+
+double SiteEngagementScore::GetNotificationPermissionPoints() {
+  return GetParamValues()[NOTIFICATION_PERMISSION_POINTS].second;
 }
 
 // static
@@ -333,7 +341,8 @@ SiteEngagementScore::SiteEngagementScore(
       last_engagement_time_(),
       last_shortcut_launch_time_(),
       score_dict_(score_dict.release()),
-      origin_(origin) {
+      origin_(origin),
+      settings_map_(nullptr) {
   if (!score_dict_)
     return;
 
@@ -363,12 +372,21 @@ double SiteEngagementScore::DecayedScore() const {
 }
 
 double SiteEngagementScore::BonusScore() const {
+  double bonus = 0;
   int days_since_shortcut_launch =
       (clock_->Now() - last_shortcut_launch_time_).InDays();
   if (days_since_shortcut_launch <= kMaxDaysSinceShortcutLaunch)
-    return GetWebAppInstalledPoints();
+    bonus += GetWebAppInstalledPoints();
 
-  return 0;
+  // TODO(dominickn, raymes): call PermissionManager::GetPermissionStatus when
+  // the PermissionManager is thread-safe.
+  if (settings_map_ && settings_map_->GetContentSetting(
+                           origin_, GURL(), CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+                           std::string()) == CONTENT_SETTING_ALLOW) {
+    bonus += GetNotificationPermissionPoints();
+  }
+
+  return bonus;
 }
 
 void SiteEngagementScore::SetParamValuesForTesting() {
@@ -385,6 +403,7 @@ void SiteEngagementScore::SetParamValuesForTesting() {
   GetParamValues()[HIGH_ENGAGEMENT_BOUNDARY].second = 50;
   GetParamValues()[MAX_DECAYS_PER_SCORE].second = 1;
   GetParamValues()[LAST_ENGAGEMENT_GRACE_PERIOD_IN_HOURS].second = 72;
+  GetParamValues()[NOTIFICATION_PERMISSION_POINTS].second = 5;
 
   // This is set to values that avoid interference with tests and are set when
   // testing these features.

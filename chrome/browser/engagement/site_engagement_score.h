@@ -84,6 +84,9 @@ class SiteEngagementScore {
     // period prior to clock_->Now().
     LAST_ENGAGEMENT_GRACE_PERIOD_IN_HOURS,
 
+    // THe number of points given for having notification permission granted.
+    NOTIFICATION_PERMISSION_POINTS,
+
     MAX_VARIATION
   };
 
@@ -106,6 +109,7 @@ class SiteEngagementScore {
   static double GetHighEngagementBoundary();
   static double GetMaxDecaysPerScore();
   static double GetLastEngagementGracePeriodInHours();
+  static double GetNotificationPermissionPoints();
 
   // Update the default engagement settings via variations.
   static void UpdateFromVariations(const char* param_name);
@@ -164,6 +168,7 @@ class SiteEngagementScore {
   friend class ChromePluginServiceFilterTest;
   friend class ImportantSitesUtil;
   friend class ImportantSitesUtilTest;
+  friend class PushMessagingBrowserTest;
   friend class SiteEngagementHelperTest;
   friend class SiteEngagementScoreTest;
   friend class SiteEngagementServiceTest;

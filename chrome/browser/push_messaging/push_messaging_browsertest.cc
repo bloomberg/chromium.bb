@@ -23,6 +23,7 @@
 #include "chrome/browser/browsing_data/browsing_data_remover_factory.h"
 #include "chrome/browser/browsing_data/browsing_data_remover_test_util.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
+#include "chrome/browser/engagement/site_engagement_score.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/gcm/fake_gcm_profile_service.h"
 #include "chrome/browser/gcm/gcm_profile_service_factory.h"
@@ -124,6 +125,7 @@ class PushMessagingBrowserTest : public InProcessBrowserTest {
 
     notification_manager_.reset(new StubNotificationUIManager);
 
+    SiteEngagementScore::SetParamValuesForTesting();
     InProcessBrowserTest::SetUp();
   }
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -272,10 +274,15 @@ class PushMessagingBrowserTest : public InProcessBrowserTest {
 
   PushMessagingServiceImpl* push_service() const { return push_service_; }
 
-  void SetSiteEngagementScore(const GURL& url, double score) {
+  void SetSiteEngagementScore(const GURL& url,
+                              double score,
+                              double expected_score) {
+    // There will be a bonus of 5.0 points for having notification permission
+    // granted, so we assert that the final score is as expected.
     SiteEngagementService* service =
         SiteEngagementService::Get(GetBrowser()->profile());
     service->ResetScoreForURL(url, score);
+    EXPECT_EQ(expected_score, service->GetScore(url));
   }
 
  protected:
@@ -1240,7 +1247,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
   // Set the site engagement score for the site. Setting it to 10 means it
   // should have a budget of 4, enough for two non-shown notification, which
   // cost 2 each.
-  SetSiteEngagementScore(web_contents->GetURL(), 10.0);
+  SetSiteEngagementScore(web_contents->GetURL(), 5.0, 10.0);
 
   // If the site is visible in an active tab, we should not force a notification
   // to be shown. Try it twice, since we allow one mistake per 10 push events.
@@ -1342,21 +1349,27 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
   content::WebContents* web_contents =
       GetBrowser()->tab_strip_model()->GetActiveWebContents();
 
+  SetSiteEngagementScore(web_contents->GetURL(), 0.0, 5.0);
+
   ui_test_utils::NavigateToURLWithDisposition(
       GetBrowser(), GURL("about:blank"),
       WindowOpenDisposition::NEW_FOREGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB);
 
-  SetSiteEngagementScore(web_contents->GetURL(), 0.0);
-
-  // If the Service Worker push event handler does not show a notification, we
-  // should show a forced one providing there is no foreground tab and the
-  // origin ran out of budget.
+  // Send a missed notification to use up the budget.
   gcm::IncomingMessage message;
   message.sender_id = GetTestApplicationServerKey();
   message.raw_data = "testdata";
   message.decrypted = true;
 
+  SendMessageAndWaitUntilHandled(app_identifier, message);
+  ASSERT_TRUE(RunScript("resultQueue.pop()", &script_result, web_contents));
+  EXPECT_EQ("testdata", script_result);
+  EXPECT_EQ(0u, notification_manager()->GetNotificationCount());
+
+  // If the Service Worker push event handler does not show a notification, we
+  // should show a forced one providing there is no foreground tab and the
+  // origin ran out of budget.
   SendMessageAndWaitUntilHandled(app_identifier, message);
   ASSERT_TRUE(RunScript("resultQueue.pop()", &script_result, web_contents));
   EXPECT_EQ("testdata", script_result);

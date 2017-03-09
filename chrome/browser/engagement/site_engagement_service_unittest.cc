@@ -25,6 +25,8 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/content_settings/core/browser/content_settings_observer.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/content_settings/core/common/content_settings.h"
+#include "components/content_settings/core/common/content_settings_types.h"
 #include "components/history/core/browser/history_database_params.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/history/core/test/test_history_database.h"
@@ -480,6 +482,51 @@ TEST_F(SiteEngagementServiceTest, LastShortcutLaunch) {
   clock->SetNow(GetReferenceTime() + base::TimeDelta::FromDays(11));
   EXPECT_DOUBLE_EQ(1.0, service->GetScore(url1));
   EXPECT_DOUBLE_EQ(0.0, service->GetScore(url2));
+}
+
+TEST_F(SiteEngagementServiceTest, NotificationPermission) {
+  base::SimpleTestClock* clock = new base::SimpleTestClock();
+  std::unique_ptr<SiteEngagementService> service(
+      new SiteEngagementService(profile(), base::WrapUnique(clock)));
+
+  GURL url1("https://www.google.com/");
+  GURL url2("http://www.google.com/");
+  GURL url3("https://drive.google.com/");
+  clock->SetNow(GetReferenceTime());
+
+  EXPECT_EQ(0, service->GetScore(url1));
+  EXPECT_EQ(0, service->GetScore(url2));
+  EXPECT_EQ(0, service->GetScore(url3));
+
+  HostContentSettingsMap* settings_map =
+      HostContentSettingsMapFactory::GetForProfile(profile());
+
+  settings_map->SetContentSettingDefaultScope(
+      url1, url1, CONTENT_SETTINGS_TYPE_NOTIFICATIONS, std::string(),
+      CONTENT_SETTING_ALLOW);
+
+  settings_map->SetContentSettingDefaultScope(
+      url2, url2, CONTENT_SETTINGS_TYPE_NOTIFICATIONS, std::string(),
+      CONTENT_SETTING_BLOCK);
+
+  settings_map->SetContentSettingDefaultScope(
+      url3, url3, CONTENT_SETTINGS_TYPE_NOTIFICATIONS, std::string(),
+      CONTENT_SETTING_ASK);
+
+  EXPECT_EQ(5, service->GetScore(url1));
+  EXPECT_EQ(0, service->GetScore(url2));
+  EXPECT_EQ(0, service->GetScore(url3));
+
+  service->AddPoints(url1, 1.0);
+  service->AddPoints(url2, 3.0);
+  EXPECT_EQ(6, service->GetScore(url1));
+  EXPECT_EQ(3, service->GetScore(url2));
+
+  settings_map->SetContentSettingDefaultScope(
+      url1, url1, CONTENT_SETTINGS_TYPE_NOTIFICATIONS, std::string(),
+      CONTENT_SETTING_BLOCK);
+
+  EXPECT_EQ(1, service->GetScore(url1));
 }
 
 TEST_F(SiteEngagementServiceTest, CheckHistograms) {
