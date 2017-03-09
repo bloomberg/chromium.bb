@@ -181,8 +181,7 @@ function removePeerConnection(data) {
   var element = $(getPeerConnectionId(data));
   if (element) {
     delete peerConnectionDataStore[element.id];
-    // add a [x] button to close this tab instead of removing it immediately.
-    tabView.makeTabRemovable(element.id);
+    tabView.removeTab(element.id);
   }
 }
 

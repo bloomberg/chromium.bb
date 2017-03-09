@@ -85,17 +85,6 @@ var TabView = (function() {
       }
     },
 
-    makeTabRemovable: function(id) {
-      if (!this.tabElements_[id])
-        return;
-      var close = document.createElement('a');
-      close.textContent = '[x]';
-      close.addEventListener('click', function() {
-        this.removeTab(id);
-      }.bind(this));
-      this.tabElements_[id].head.appendChild(close);
-    },
-
     /**
      * Switches the specified tab into view.
      *
