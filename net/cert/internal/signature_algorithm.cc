@@ -513,7 +513,7 @@ std::unique_ptr<SignatureAlgorithm> ParseRsaPss(const der::Input& params) {
 
 }  // namespace
 
-WARN_UNUSED_RESULT bool ParseHashAlgorithm(const der::Input input,
+WARN_UNUSED_RESULT bool ParseHashAlgorithm(const der::Input& input,
                                            DigestAlgorithm* out) {
   der::Input oid;
   der::Input params;
@@ -636,6 +636,39 @@ const RsaPssParameters* SignatureAlgorithm::ParamsForRsaPss() const {
   if (algorithm_ == SignatureAlgorithmId::RsaPss)
     return static_cast<RsaPssParameters*>(params_.get());
   return nullptr;
+}
+
+bool SignatureAlgorithm::IsEquivalent(const der::Input& alg1_tlv,
+                                      const der::Input& alg2_tlv) {
+  if (alg1_tlv == alg2_tlv)
+    return true;
+
+  std::unique_ptr<SignatureAlgorithm> alg1 = Create(alg1_tlv, nullptr);
+  std::unique_ptr<SignatureAlgorithm> alg2 = Create(alg2_tlv, nullptr);
+
+  // Do checks that apply to all algorithms.
+  if (!alg1 || !alg2 || (alg1->algorithm() != alg2->algorithm()) ||
+      (alg1->digest() != alg2->digest())) {
+    return false;
+  }
+
+  // Check algorithm-specific parameters for equality.
+  switch (alg1->algorithm()) {
+    case SignatureAlgorithmId::RsaPkcs1:
+    case SignatureAlgorithmId::Ecdsa:
+      DCHECK(!alg1->has_params());
+      DCHECK(!alg2->has_params());
+      return true;
+    case SignatureAlgorithmId::RsaPss: {
+      const RsaPssParameters* params1 = alg1->ParamsForRsaPss();
+      const RsaPssParameters* params2 = alg2->ParamsForRsaPss();
+      return params1 && params2 &&
+             (params1->salt_length() == params2->salt_length()) &&
+             (params1->mgf1_hash() == params2->mgf1_hash());
+    }
+  }
+
+  return false;
 }
 
 SignatureAlgorithm::SignatureAlgorithm(
