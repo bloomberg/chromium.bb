@@ -41,6 +41,7 @@ source_set("unit_tests") {
     "async_document_subresource_filter_unittest.cc",
     "content_ruleset_service_delegate_unittest.cc",
     "content_subresource_filter_driver_factory_unittest.cc",
+    "subframe_navigation_filtering_throttle_unittest.cc",
     "verified_ruleset_dealer_unittest.cc",
   ]
   deps = [

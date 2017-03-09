@@ -7,6 +7,9 @@
 
 #include <memory>
 
+#include "base/callback.h"
+#include "base/optional.h"
+#include "content/public/browser/navigation_throttle.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/referrer.h"
 #include "content/public/test/navigation_simulator.h"
@@ -85,6 +88,18 @@ class NavigationSimulator : public WebContentsObserver {
   //       NavigationSimulator::CreateRendererInitiated(
   //           original_url, render_frame_host);
   //   simulator->CommitSamePage();
+  //
+  // Example of usage for a renderer-initiated navigation which is cancelled by
+  // a throttle upon redirecting. Note that registering the throttle is done
+  // elsewhere:
+  //   unique_ptr<NavigationSimulator> simulator =
+  //       NavigationSimulator::CreateRendererInitiated(
+  //           original_url, render_frame_host);
+  //   simulator->SetTransition(ui::PAGE_TRANSITION_LINK);
+  //   simulator->Start();
+  //   simulator->Redirect(redirect_url);
+  //   EXPECT_EQ(NavigationThrottle::CANCEL,
+  //             simulator->GetLastThrottleCheckResult());
 
   // Simulates the start of the navigation.
   virtual void Start();
@@ -122,6 +137,10 @@ class NavigationSimulator : public WebContentsObserver {
   // |Redirect|.
   virtual void SetReferrer(const Referrer& referrer);
 
+  // Gets the last throttle check result computed by the navigation throttles.
+  // It is an error to call this before Start() is called.
+  virtual NavigationThrottle::ThrottleCheckResult GetLastThrottleCheckResult();
+
  private:
   // WebContentsObserver:
   void DidStartNavigation(NavigationHandle* navigation_handle) override;
@@ -132,6 +151,17 @@ class NavigationSimulator : public WebContentsObserver {
   void OnWillStartRequest();
   void OnWillRedirectRequest();
   void OnWillProcessResponse();
+
+  // This method will block waiting for throttle checks to complete.
+  void WaitForThrottleChecksComplete();
+
+  // Sets |last_throttle_check_result_| and calls
+  // |throttle_checks_wait_closure_|.
+  void OnThrottleChecksComplete(NavigationThrottle::ThrottleCheckResult result);
+
+  // Helper method to set the OnThrottleChecksComplete callback on the
+  // NavigationHandle.
+  void PrepareCompleteCallbackOnHandle();
 
   enum State {
     INITIALIZATION,
@@ -161,6 +191,15 @@ class NavigationSimulator : public WebContentsObserver {
   int num_will_process_response_called_ = 0;
   int num_ready_to_commit_called_ = 0;
   int num_did_finish_navigation_called_ = 0;
+
+  // Holds the last ThrottleCheckResult calculated by the navigation's
+  // throttles. Will be unset before WillStartRequest is finished. Will be unset
+  // while throttles are being run, but before they finish.
+  base::Optional<NavigationThrottle::ThrottleCheckResult>
+      last_throttle_check_result_;
+
+  // Closure that is set when WaitForThrottleChecksComplete is called.
+  base::Closure throttle_checks_wait_closure_;
 
   base::WeakPtrFactory<NavigationSimulator> weak_factory_;
 };

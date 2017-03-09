@@ -346,6 +346,11 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
     response_headers_ = response_headers;
   }
 
+  void set_complete_callback_for_testing(
+      const ThrottleChecksFinishedCallback& callback) {
+    complete_callback_for_testing_ = callback;
+  }
+
  private:
   friend class NavigationHandleImplTest;
 
@@ -447,8 +452,15 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   // The mixed content context type for potential mixed content checks.
   blink::WebMixedContentContextType mixed_content_context_type_;
 
-  // This callback will be run when all throttle checks have been performed.
+  // This callback will be run when all throttle checks have been performed. Be
+  // careful about relying on it as the member may be removed as part of the
+  // PlzNavigate refactoring.
   ThrottleChecksFinishedCallback complete_callback_;
+
+  // This test-only callback will be run when all throttle checks have been
+  // performed.
+  // TODO(clamy): Revisit the unit test architecture when PlzNavigate ships.
+  ThrottleChecksFinishedCallback complete_callback_for_testing_;
 
   // PlzNavigate
   // Manages the lifetime of a pre-created ServiceWorkerProviderHost until a

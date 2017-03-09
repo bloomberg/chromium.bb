@@ -880,6 +880,11 @@ void NavigationHandleImpl::RunCompleteCallback(
   ThrottleChecksFinishedCallback callback = complete_callback_;
   complete_callback_.Reset();
 
+  if (!complete_callback_for_testing_.is_null()) {
+    complete_callback_for_testing_.Run(result);
+    complete_callback_for_testing_.Reset();
+  }
+
   if (!callback.is_null())
     callback.Run(result);
 

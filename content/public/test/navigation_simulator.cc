@@ -4,6 +4,9 @@
 
 #include "content/public/test/navigation_simulator.h"
 
+#include "base/bind.h"
+#include "base/memory/ptr_util.h"
+#include "base/run_loop.h"
 #include "content/browser/frame_host/navigation_handle_impl.h"
 #include "content/browser/frame_host/navigation_request.h"
 #include "content/common/frame_messages.h"
@@ -123,7 +126,10 @@ void NavigationSimulator::Start() {
         render_frame_host_->GetRoutingID(), common_params, begin_params));
     NavigationRequest* request =
         render_frame_host_->frame_tree_node()->navigation_request();
-    DCHECK(request);
+
+    // The request failed synchronously.
+    if (!request)
+      return;
     DCHECK_EQ(handle_, request->navigation_handle());
   } else {
     render_frame_host_->OnMessageReceived(
@@ -141,14 +147,16 @@ void NavigationSimulator::Start() {
   }
 
   CHECK(handle_);
-
-  // Make sure all NavigationThrottles have run.
-  // TODO(clamy): provide a non auto-advance mode if needed.
-  while (handle_->state_for_testing() == NavigationHandleImpl::DEFERRING_START)
-    handle_->Resume();
+  WaitForThrottleChecksComplete();
 
   CHECK_EQ(1, num_did_start_navigation_called_);
-  CHECK_EQ(1, num_will_start_request_called_);
+  if (GetLastThrottleCheckResult() == NavigationThrottle::PROCEED) {
+    CHECK_EQ(1, num_will_start_request_called_);
+  } else {
+    // TODO(clamy): Add error handling code based on the
+    // NavigationThrottleCheckResult here and in other methods.
+    state_ = FAILED;
+  }
 }
 
 void NavigationSimulator::Redirect(const GURL& new_url) {
@@ -168,6 +176,7 @@ void NavigationSimulator::Redirect(const GURL& new_url) {
   int previous_did_redirect_navigation_called =
       num_did_redirect_navigation_called_;
 
+  PrepareCompleteCallbackOnHandle();
   if (IsBrowserSideNavigationEnabled()) {
     NavigationRequest* request =
         render_frame_host_->frame_tree_node()->navigation_request();
@@ -194,17 +203,16 @@ void NavigationSimulator::Redirect(const GURL& new_url) {
         base::Callback<void(NavigationThrottle::ThrottleCheckResult)>());
   }
 
-  // Make sure all NavigationThrottles have run.
-  // TODO(clamy): provide a non auto-advance mode if needed.
-  while (handle_->state_for_testing() ==
-         NavigationHandleImpl::DEFERRING_REDIRECT) {
-    handle_->Resume();
-  }
+  WaitForThrottleChecksComplete();
 
-  CHECK_EQ(previous_num_will_redirect_request_called + 1,
-           num_will_redirect_request_called_);
-  CHECK_EQ(previous_did_redirect_navigation_called + 1,
-           num_did_redirect_navigation_called_);
+  if (GetLastThrottleCheckResult() == NavigationThrottle::PROCEED) {
+    CHECK_EQ(previous_num_will_redirect_request_called + 1,
+             num_will_redirect_request_called_);
+    CHECK_EQ(previous_did_redirect_navigation_called + 1,
+             num_did_redirect_navigation_called_);
+  } else {
+    state_ = FAILED;
+  }
 }
 
 void NavigationSimulator::Commit() {
@@ -218,14 +226,16 @@ void NavigationSimulator::Commit() {
   if (state_ == INITIALIZATION)
     Start();
 
+  PrepareCompleteCallbackOnHandle();
   if (IsBrowserSideNavigationEnabled() &&
       render_frame_host_->frame_tree_node()->navigation_request()) {
     render_frame_host_->PrepareForCommit();
   }
 
   // Call NavigationHandle::WillProcessResponse if needed.
-  if (handle_->state_for_testing() <
-      NavigationHandleImpl::WILL_PROCESS_RESPONSE) {
+  // Note that the handle's state can be CANCELING if a throttle cancelled it
+  // synchronously in PrepareForCommit.
+  if (handle_->state_for_testing() < NavigationHandleImpl::CANCELING) {
     handle_->WillProcessResponse(
         render_frame_host_, scoped_refptr<net::HttpResponseHeaders>(),
         net::HttpResponseInfo::ConnectionInfo(), SSLStatus(), GlobalRequestID(),
@@ -234,11 +244,11 @@ void NavigationSimulator::Commit() {
         base::Callback<void(NavigationThrottle::ThrottleCheckResult)>());
   }
 
-  // Make sure all NavigationThrottles have run.
-  // TODO(clamy): provide a non auto-advance mode if needed.
-  while (handle_->state_for_testing() ==
-         NavigationHandleImpl::DEFERRING_RESPONSE) {
-    handle_->Resume();
+  WaitForThrottleChecksComplete();
+
+  if (GetLastThrottleCheckResult() != NavigationThrottle::PROCEED) {
+    state_ = FAILED;
+    return;
   }
 
   CHECK_EQ(1, num_will_process_response_called_);
@@ -446,6 +456,11 @@ void NavigationSimulator::SetReferrer(const Referrer& referrer) {
   referrer_ = referrer;
 }
 
+NavigationThrottle::ThrottleCheckResult
+NavigationSimulator::GetLastThrottleCheckResult() {
+  return last_throttle_check_result_.value();
+}
+
 void NavigationSimulator::DidStartNavigation(
     NavigationHandle* navigation_handle) {
   // Check if this navigation is the one we're simulating.
@@ -475,6 +490,8 @@ void NavigationSimulator::DidStartNavigation(
                      weak_factory_.GetWeakPtr()),
           base::Bind(&NavigationSimulator::OnWillProcessResponse,
                      weak_factory_.GetWeakPtr())));
+
+  PrepareCompleteCallbackOnHandle();
 }
 
 void NavigationSimulator::DidRedirectNavigation(
@@ -505,6 +522,33 @@ void NavigationSimulator::OnWillRedirectRequest() {
 
 void NavigationSimulator::OnWillProcessResponse() {
   num_will_process_response_called_++;
+}
+
+void NavigationSimulator::WaitForThrottleChecksComplete() {
+  // If last_throttle_check_result_ is set, then throttle checks completed
+  // synchronously.
+  if (last_throttle_check_result_)
+    return;
+
+  base::RunLoop run_loop;
+  throttle_checks_wait_closure_ = run_loop.QuitClosure();
+  run_loop.Run();
+  throttle_checks_wait_closure_.Reset();
+}
+
+void NavigationSimulator::OnThrottleChecksComplete(
+    NavigationThrottle::ThrottleCheckResult result) {
+  DCHECK(!last_throttle_check_result_);
+  last_throttle_check_result_ = result;
+  if (throttle_checks_wait_closure_)
+    throttle_checks_wait_closure_.Run();
+}
+
+void NavigationSimulator::PrepareCompleteCallbackOnHandle() {
+  last_throttle_check_result_.reset();
+  handle_->set_complete_callback_for_testing(
+      base::Bind(&NavigationSimulator::OnThrottleChecksComplete,
+                 weak_factory_.GetWeakPtr()));
 }
 
 }  // namespace content
