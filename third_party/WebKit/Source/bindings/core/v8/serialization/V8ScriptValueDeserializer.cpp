@@ -208,8 +208,8 @@ ScriptWrappable* V8ScriptValueDeserializer::readDOMObject(
       const uint32_t validPropertiesMask = static_cast<uint32_t>(
           (1u << CompositorMutableProperty::kNumProperties) - 1);
       if (!RuntimeEnabledFeatures::compositorWorkerEnabled() ||
-          !readUint64(&element) || !readUint32(&properties) || !properties ||
-          (properties & ~validPropertiesMask))
+          !readUint64(&element) || !readUint32(&properties) || element == 0 ||
+          !properties || (properties & ~validPropertiesMask))
         return nullptr;
       return CompositorProxy::create(m_scriptState->getExecutionContext(),
                                      element, properties);

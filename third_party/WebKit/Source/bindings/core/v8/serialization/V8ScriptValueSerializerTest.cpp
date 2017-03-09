@@ -1034,6 +1034,22 @@ TEST(V8ScriptValueSerializerTest, RoundTripCompositorProxy) {
             newProxy->compositorMutableProperties());
 }
 
+TEST(V8ScriptValueSerializerTest, CompositorProxyBadElementDeserialization) {
+  ScopedEnableCompositorWorker enableCompositorWorker;
+  V8TestingScope scope;
+
+  // Normally a CompositorProxy will not be constructed with an element id of 0,
+  // but we force it here to test the deserialization code.
+  uint8_t elementId = 0;
+  uint8_t mutableProperties = CompositorMutableProperty::kOpacity;
+  RefPtr<SerializedScriptValue> input = serializedValue(
+      {0xff, 0x09, 0x3f, 0x00, 0x43, elementId, mutableProperties, 0x00});
+  v8::Local<v8::Value> result =
+      V8ScriptValueDeserializer(scope.getScriptState(), input).deserialize();
+
+  EXPECT_TRUE(result->IsNull());
+}
+
 // Decode tests aren't included here because they're slightly non-trivial (an
 // element with the right ID must actually exist) and this feature is both
 // unshipped and likely to not use this mechanism when it does.
