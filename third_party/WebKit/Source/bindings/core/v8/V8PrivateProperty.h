@@ -34,6 +34,7 @@ class ScriptWrappable;
   X(IntersectionObserver, Callback)                   \
   X(MessageEvent, CachedData)                         \
   X(MutationObserver, Callback)                       \
+  X(NamedConstructor, Initialized)                    \
   X(PerformanceObserver, Callback)                    \
   X(SameObject, NotificationActions)                  \
   X(SameObject, NotificationData)                     \

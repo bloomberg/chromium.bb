@@ -16,6 +16,7 @@
 #include "bindings/core/v8/NativeValueTraitsImpl.h"
 #include "bindings/core/v8/V8DOMConfiguration.h"
 #include "bindings/core/v8/V8ObjectConstructor.h"
+#include "bindings/core/v8/V8PrivateProperty.h"
 #include "core/dom/Document.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "wtf/GetPtr.h"
@@ -63,7 +64,7 @@ namespace TestInterfaceNamedConstructorV8Internal {
 #pragma clang diagnostic ignored "-Wglobal-constructors"
 #endif
 const V8DOMConfiguration::AttributeConfiguration V8TestInterfaceNamedConstructorLazyDataAttributes[] = {
-    {"testNamedConstructorConstructorAttribute", v8ConstructorAttributeGetter, nullptr, nullptr, nullptr, nullptr, const_cast<WrapperTypeInfo*>(&V8TestNamedConstructor::wrapperTypeInfo), static_cast<v8::PropertyAttribute>(v8::DontEnum), V8DOMConfiguration::OnInstance, V8DOMConfiguration::CheckHolder},
+    {"testNamedConstructorConstructorAttribute", V8TestNamedConstructor::NamedConstructorAttributeGetter, nullptr, nullptr, nullptr, nullptr, const_cast<WrapperTypeInfo*>(&V8TestNamedConstructor::wrapperTypeInfo), static_cast<v8::PropertyAttribute>(v8::DontEnum), V8DOMConfiguration::OnInstance, V8DOMConfiguration::CheckHolder},
 };
 #if defined(COMPONENT_BUILD) && defined(WIN32) && COMPILER(CLANG)
 #pragma clang diagnostic pop
@@ -168,10 +169,39 @@ v8::Local<v8::FunctionTemplate> V8TestInterfaceNamedConstructorConstructor::domT
   result = v8::FunctionTemplate::New(isolate, V8TestInterfaceNamedConstructorConstructorCallback);
   v8::Local<v8::ObjectTemplate> instanceTemplate = result->InstanceTemplate();
   instanceTemplate->SetInternalFieldCount(V8TestInterfaceNamedConstructor::internalFieldCount);
-  result->SetClassName(v8AtomicString(isolate, "TestInterfaceNamedConstructor"));
+  result->SetClassName(v8AtomicString(isolate, "Audio"));
   result->Inherit(V8TestInterfaceNamedConstructor::domTemplate(isolate, world));
   data->setInterfaceTemplate(world, &domTemplateKey, result);
   return result;
+}
+
+void V8TestInterfaceNamedConstructorConstructor::NamedConstructorAttributeGetter(
+    v8::Local<v8::Name> propertyName,
+    const v8::PropertyCallbackInfo<v8::Value>& info) {
+  v8::Local<v8::Context> creationContext = info.Holder()->CreationContext();
+  V8PerContextData* perContextData = V8PerContextData::from(creationContext);
+  if (!perContextData) {
+    // TODO(yukishiino): Return a valid named constructor even after the context is detached
+    return;
+  }
+
+  v8::Local<v8::Function> namedConstructor = perContextData->constructorForType(&V8TestInterfaceNamedConstructorConstructor::wrapperTypeInfo);
+
+  // Set the prototype of named constructors to the regular constructor.
+  auto privateProperty = V8PrivateProperty::getNamedConstructorInitialized(info.GetIsolate());
+  v8::Local<v8::Context> currentContext = info.GetIsolate()->GetCurrentContext();
+  v8::Local<v8::Value> privateValue = privateProperty.get(currentContext, namedConstructor);
+
+  if (privateValue.IsEmpty()) {
+    v8::Local<v8::Function> interface = perContextData->constructorForType(&V8TestInterfaceNamedConstructor::wrapperTypeInfo);
+    v8::Local<v8::Value> interfacePrototype = interface->Get(currentContext, v8AtomicString(info.GetIsolate(), "prototype")).ToLocalChecked();
+    bool result = namedConstructor->Set(currentContext, v8AtomicString(info.GetIsolate(), "prototype"), interfacePrototype).ToChecked();
+    if (!result)
+      return;
+    privateProperty.set(currentContext, namedConstructor, v8::True(info.GetIsolate()));
+  }
+
+  v8SetReturnValue(info, namedConstructor);
 }
 
 static void installV8TestInterfaceNamedConstructorTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world, v8::Local<v8::FunctionTemplate> interfaceTemplate) {

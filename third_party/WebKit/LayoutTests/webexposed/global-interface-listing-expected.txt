@@ -136,6 +136,7 @@ interface Attr : Node
     method constructor
     setter value
 interface Audio
+    attribute @@toStringTag
     method constructor
 interface AudioBuffer
     attribute @@toStringTag
@@ -3669,7 +3670,48 @@ interface IdleDeadline
     method constructor
     method timeRemaining
 interface Image
+    attribute @@toStringTag
+    getter align
+    getter alt
+    getter border
+    getter complete
+    getter crossOrigin
+    getter currentSrc
+    getter height
+    getter hspace
+    getter isMap
+    getter longDesc
+    getter lowsrc
+    getter name
+    getter naturalHeight
+    getter naturalWidth
+    getter referrerPolicy
+    getter sizes
+    getter src
+    getter srcset
+    getter useMap
+    getter vspace
+    getter width
+    getter x
+    getter y
     method constructor
+    setter align
+    setter alt
+    setter border
+    setter crossOrigin
+    setter height
+    setter hspace
+    setter isMap
+    setter longDesc
+    setter lowsrc
+    setter name
+    setter referrerPolicy
+    setter sizes
+    setter src
+    setter srcset
+    setter useMap
+    setter vspace
+    setter width
 interface ImageBitmap
     attribute @@toStringTag
     getter height
@@ -4504,7 +4546,22 @@ interface OffscreenCanvasRenderingContext2D
     setter shadowOffsetY
     setter strokeStyle
 interface Option
+    attribute @@toStringTag
+    getter defaultSelected
+    getter disabled
+    getter form
+    getter index
+    getter label
+    getter selected
+    getter text
+    getter value
     method constructor
+    setter defaultSelected
+    setter disabled
+    setter label
+    setter selected
+    setter text
+    setter value
 interface OscillatorNode : AudioScheduledSourceNode
     attribute @@toStringTag
     getter detune

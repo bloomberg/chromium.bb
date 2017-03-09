@@ -297,6 +297,8 @@ def interface_context(interface, interfaces):
             raise Exception('[Constructor] and [NamedConstructor] MUST NOT be'
                             ' specified on partial interface definitions: '
                             '%s' % interface.name)
+        if named_constructor:
+            includes.add('bindings/core/v8/V8PrivateProperty.h')
 
         includes.add('bindings/core/v8/V8ObjectConstructor.h')
         includes.add('core/frame/LocalDOMWindow.h')

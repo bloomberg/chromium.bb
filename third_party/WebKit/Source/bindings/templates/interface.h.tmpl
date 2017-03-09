@@ -21,6 +21,7 @@ class {{v8_class}}Constructor {
   STATIC_ONLY({{v8_class}}Constructor);
  public:
   static v8::Local<v8::FunctionTemplate> domTemplate(v8::Isolate*, const DOMWrapperWorld&);
+  static void NamedConstructorAttributeGetter(v8::Local<v8::Name> propertyName, const v8::PropertyCallbackInfo<v8::Value>& info);
   {{exported}}static const WrapperTypeInfo wrapperTypeInfo;
 };
 

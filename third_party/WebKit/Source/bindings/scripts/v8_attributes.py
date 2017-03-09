@@ -155,6 +155,7 @@ def attribute_context(interface, attribute, interfaces):
         'is_lenient_this': 'LenientThis' in extended_attributes,
         'is_nullable': idl_type.is_nullable,
         'is_explicit_nullable': idl_type.is_explicit_nullable,
+        'is_named_constructor': is_named_constructor_attribute(attribute),
         'is_partial_interface_member':
             'PartialInterfaceImplementedAs' in extended_attributes,
         'is_per_world_bindings': 'PerWorldBindings' in extended_attributes,
@@ -553,13 +554,15 @@ def has_custom_setter(attribute):
 ################################################################################
 
 idl_types.IdlType.constructor_type_name = property(
-    # FIXME: replace this with a [ConstructorAttribute] extended attribute
     lambda self: strip_suffix(self.base_type, 'Constructor'))
 
 
 def is_constructor_attribute(attribute):
-    # FIXME: replace this with [ConstructorAttribute] extended attribute
     return attribute.idl_type.name.endswith('Constructor')
+
+
+def is_named_constructor_attribute(attribute):
+    return attribute.idl_type.name.endswith('ConstructorConstructor')
 
 
 def update_constructor_attribute_context(interface, attribute, context):

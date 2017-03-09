@@ -461,10 +461,12 @@ const v8::FunctionCallbackInfo<v8::Value>& info
 {% macro attribute_configuration(attribute) %}
 {% from 'utilities.cpp.tmpl' import property_location %}
 {% if attribute.constructor_type %}
-{% set getter_callback =
-       '%s::%sConstructorGetterCallback' % (v8_class_or_partial, attribute.name)
-       if attribute.needs_constructor_getter_callback else
-       'v8ConstructorAttributeGetter' %}
+  {% if attribute.needs_constructor_getter_callback %}
+    {% set getter_callback = '%s::%sConstructorGetterCallback' % (v8_class_or_partial, attribute.name) %}
+  {% else %}
+    {% set getter_callback = 'V8%s::NamedConstructorAttributeGetter' % (attribute.constructor_type)
+       if attribute.is_named_constructor else 'v8ConstructorAttributeGetter' %}
+  {% endif %}
 {% set setter_callback = 'nullptr' %}
 {% else %}{# regular attributes #}
 {% set getter_callback = '%s::%sAttributeGetterCallback' %
