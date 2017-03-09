@@ -235,23 +235,27 @@ bool PrePaintTreeWalk::shouldEndWalkBefore(
 
 void PrePaintTreeWalk::walk(const LayoutObject& object,
                             const PrePaintTreeWalkContext& parentContext) {
-  PrePaintTreeWalkContext context(parentContext);
-
   if (shouldEndWalkBefore(object, parentContext))
     return;
 
+  // PrePaintTreeWalkContext is large and can lead to stack overflows when
+  // recursion is deep so this context object is allocated on the heap.
+  // See: https://crbug.com/698653.
+  std::unique_ptr<PrePaintTreeWalkContext> context =
+      WTF::wrapUnique(new PrePaintTreeWalkContext(parentContext));
+
   // This must happen before updatePropertiesForSelf, because the latter reads
   // some of the state computed here.
-  updateAuxiliaryObjectProperties(object, context);
+  updateAuxiliaryObjectProperties(object, *context);
 
   m_propertyTreeBuilder.updatePropertiesForSelf(object,
-                                                context.treeBuilderContext);
+                                                context->treeBuilderContext);
   m_paintInvalidator.invalidatePaintIfNeeded(object,
-                                             context.paintInvalidatorContext);
-  m_propertyTreeBuilder.updatePropertiesForChildren(object,
-                                                    context.treeBuilderContext);
+                                             context->paintInvalidatorContext);
+  m_propertyTreeBuilder.updatePropertiesForChildren(
+      object, context->treeBuilderContext);
 
-  invalidatePaintLayerOptimizationsIfNeeded(object, context);
+  invalidatePaintLayerOptimizationsIfNeeded(object, *context);
 
   for (const LayoutObject* child = object.slowFirstChild(); child;
        child = child->nextSibling()) {
@@ -259,19 +263,19 @@ void PrePaintTreeWalk::walk(const LayoutObject& object,
       child->getMutableForPainting().clearPaintFlags();
       continue;
     }
-    walk(*child, context);
+    walk(*child, *context);
   }
 
   if (object.isLayoutPart()) {
     const LayoutPart& layoutPart = toLayoutPart(object);
     FrameViewBase* frameViewBase = layoutPart.frameViewBase();
     if (frameViewBase && frameViewBase->isFrameView()) {
-      context.treeBuilderContext.current.paintOffset +=
+      context->treeBuilderContext.current.paintOffset +=
           layoutPart.replacedContentRect().location() -
           frameViewBase->frameRect().location();
-      context.treeBuilderContext.current.paintOffset =
-          roundedIntPoint(context.treeBuilderContext.current.paintOffset);
-      walk(*toFrameView(frameViewBase), context);
+      context->treeBuilderContext.current.paintOffset =
+          roundedIntPoint(context->treeBuilderContext.current.paintOffset);
+      walk(*toFrameView(frameViewBase), *context);
     }
     // TODO(pdr): Investigate RemoteFrameView (crbug.com/579281).
   }
