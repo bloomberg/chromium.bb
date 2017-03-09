@@ -11403,4 +11403,50 @@ TEST_F(WebFrameTest, ClearClosedOpener) {
   EXPECT_EQ(nullptr, helper.webView()->mainFrameImpl()->opener());
 }
 
+class ShowVirtualKeyboardObserverWidgetClient
+    : public FrameTestHelpers::TestWebWidgetClient {
+ public:
+  ShowVirtualKeyboardObserverWidgetClient() : m_didShowVirtualKeyboard(false) {}
+
+  void showVirtualKeyboardOnElementFocus() override {
+    m_didShowVirtualKeyboard = true;
+  }
+
+  bool didShowVirtualKeyboard() const { return m_didShowVirtualKeyboard; }
+
+ private:
+  bool m_didShowVirtualKeyboard;
+};
+
+TEST_F(WebFrameTest, ShowVirtualKeyboardOnElementFocus) {
+  FrameTestHelpers::WebViewHelper webViewHelper;
+  WebViewImpl* webView = webViewHelper.initialize(true);
+  WebRemoteFrameImpl* remoteFrame = static_cast<WebRemoteFrameImpl*>(
+      WebRemoteFrame::create(WebTreeScopeType::Document, nullptr));
+  webView->setMainFrame(remoteFrame);
+  RefPtr<SecurityOrigin> uniqueOrigin = SecurityOrigin::createUnique();
+  remoteFrame->frame()->securityContext()->setSecurityOrigin(uniqueOrigin);
+
+  ShowVirtualKeyboardObserverWidgetClient webWidgetClient;
+  WebLocalFrameImpl* localFrame = FrameTestHelpers::createLocalChild(
+      remoteFrame, "child", nullptr, &webWidgetClient);
+
+  registerMockedHttpURLLoad("input_field_default.html");
+  FrameTestHelpers::loadFrame(localFrame,
+                              m_baseURL + "input_field_default.html");
+
+  // Simulate an input element focus leading to Element::focus() call with a
+  // user gesture.
+  localFrame->setHasReceivedUserGesture();
+  localFrame->executeScript(
+      WebScriptSource("window.focus();"
+                      "document.querySelector('input').focus();"));
+
+  // Verify that the right WebWidgetClient has been notified.
+  EXPECT_TRUE(webWidgetClient.didShowVirtualKeyboard());
+
+  remoteFrame->close();
+  webViewHelper.reset();
+}
+
 }  // namespace blink

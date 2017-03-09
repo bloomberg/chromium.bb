@@ -1069,9 +1069,11 @@ void ChromeClientImpl::didAssociateFormControlsAfterLoad(LocalFrame* frame) {
     webframe->autofillClient()->didAssociateFormControlsDynamically();
 }
 
-void ChromeClientImpl::showVirtualKeyboardOnElementFocus() {
-  if (m_webView->client())
-    m_webView->client()->showVirtualKeyboardOnElementFocus();
+void ChromeClientImpl::showVirtualKeyboardOnElementFocus(LocalFrame& frame) {
+  WebLocalFrameImpl::fromFrame(frame.localFrameRoot())
+      ->frameWidget()
+      ->client()
+      ->showVirtualKeyboardOnElementFocus();
 }
 
 void ChromeClientImpl::showUnhandledTapUIIfNeeded(

@@ -22,7 +22,7 @@ using blink::URLTestHelpers::registerMockedURLLoadFromBase;
 namespace blink {
 
 class ImeRequestTrackingWebViewClient
-    : public FrameTestHelpers::TestWebViewClient {
+    : public FrameTestHelpers::TestWebWidgetClient {
  public:
   ImeRequestTrackingWebViewClient() : m_virtualKeyboardRequestCount(0) {}
 
@@ -95,7 +95,7 @@ void ImeOnFocusTest::runImeOnFocusTest(std::string fileName,
   registerMockedURLLoadFromBase(WebString::fromUTF8(m_baseURL),
                                 testing::webTestDataPath(),
                                 WebString::fromUTF8(fileName));
-  WebViewImpl* webView = m_webViewHelper.initialize(true, 0, &client);
+  WebViewImpl* webView = m_webViewHelper.initialize(true, 0, nullptr, &client);
   webView->resize(WebSize(800, 1200));
   loadFrame(webView->mainFrame(), m_baseURL + fileName);
   m_document =

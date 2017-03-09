@@ -1898,10 +1898,6 @@ void RenderViewImpl::setTouchAction(blink::WebTouchAction touchAction) {
   RenderWidget::setTouchAction(touchAction);
 }
 
-void RenderViewImpl::showVirtualKeyboardOnElementFocus() {
-  RenderWidget::showVirtualKeyboardOnElementFocus();
-}
-
 void RenderViewImpl::showUnhandledTapUIIfNeeded(
     const blink::WebPoint& tappedPosition,
     const blink::WebNode& tappedNode,

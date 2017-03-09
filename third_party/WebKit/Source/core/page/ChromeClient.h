@@ -313,7 +313,7 @@ class CORE_EXPORT ChromeClient : public HostWindow {
   // Input method editor related functions.
   virtual void resetInputMethod() {}
   virtual void didUpdateTextOfFocusedElementByNonUserInput(LocalFrame&) {}
-  virtual void showVirtualKeyboardOnElementFocus() {}
+  virtual void showVirtualKeyboardOnElementFocus(LocalFrame&) {}
 
   virtual void registerViewportLayers() const {}
 
