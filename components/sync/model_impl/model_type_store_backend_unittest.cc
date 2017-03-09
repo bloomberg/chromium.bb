@@ -61,12 +61,8 @@ class ModelTypeStoreBackendTest : public testing::Test {
     return backend;
   }
 
-  bool BackendExistsForPath(std::string path) {
-    if (ModelTypeStoreBackend::backend_map_.Get().end() ==
-        ModelTypeStoreBackend::backend_map_.Get().find(path)) {
-      return false;
-    }
-    return true;
+  bool BackendExistsForPath(const std::string& path) {
+    return ModelTypeStoreBackend::BackendExistsForTest(path);
   }
 
   std::string GetBackendPath(scoped_refptr<ModelTypeStoreBackend> backend) {

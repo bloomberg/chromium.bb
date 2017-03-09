@@ -37,6 +37,7 @@ class ChromeSyncClient : public syncer::SyncClient {
 
   // SyncClient implementation.
   void Initialize() override;
+  base::SequencedWorkerPool* GetBlockingPool() override;
   syncer::SyncService* GetSyncService() override;
   PrefService* GetPrefService() override;
   base::FilePath GetLocalSyncBackendFolder() override;

@@ -20,6 +20,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/observer_list.h"
 #include "base/strings/string16.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -56,7 +57,6 @@
 #include "net/base/backoff_entry.h"
 #include "url/gurl.h"
 
-class Profile;
 class ProfileOAuth2TokenService;
 class SigninManagerWrapper;
 
@@ -240,7 +240,6 @@ class ProfileSyncService : public syncer::SyncServiceBase,
     scoped_refptr<net::URLRequestContextGetter> url_request_context;
     std::string debug_identifier;
     version_info::Channel channel = version_info::Channel::UNKNOWN;
-    scoped_refptr<base::SequencedTaskRunner> blocking_task_runner;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(InitParams);
@@ -552,9 +551,13 @@ class ProfileSyncService : public syncer::SyncServiceBase,
       const PlatformSyncAllowedProvider& platform_sync_allowed_provider);
 
   // Returns a function for |type| that will create a ModelTypeStore that shares
-  // the sync LevelDB backend.
-  syncer::ModelTypeStoreFactory GetModelTypeStoreFactory(
-      syncer::ModelType type);
+  // the sync LevelDB backend. |base_path| should be set to profile path.
+  // |sequenced_worker_pool| is obtained from content::BrowserThread or
+  // web::WebThread depending on platform.
+  static syncer::ModelTypeStoreFactory GetModelTypeStoreFactory(
+      syncer::ModelType type,
+      const base::FilePath& base_path,
+      base::SequencedWorkerPool* sequenced_worker_pool);
 
   // Needed to test whether the directory is deleted properly.
   base::FilePath GetDirectoryPathForTest() const;
@@ -758,9 +761,6 @@ class ProfileSyncService : public syncer::SyncServiceBase,
 
   // The request context in which sync should operate.
   scoped_refptr<net::URLRequestContextGetter> url_request_context_;
-
-  // The task runner to use for blocking IO operations.
-  scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
 
   // Indicates if this is the first time sync is being configured.  This value
   // is equal to !IsFirstSetupComplete() at the time of OnEngineInitialized().

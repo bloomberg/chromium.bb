@@ -40,6 +40,10 @@ FakeSyncClient::~FakeSyncClient() {}
 
 void FakeSyncClient::Initialize() {}
 
+base::SequencedWorkerPool* FakeSyncClient::GetBlockingPool() {
+  return nullptr;
+}
+
 SyncService* FakeSyncClient::GetSyncService() {
   return sync_service_.get();
 }

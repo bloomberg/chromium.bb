@@ -48,6 +48,16 @@ class SyncServiceBase : public SyncService, public SyncEngineHost {
   void RemoveObserver(SyncServiceObserver* observer) override;
   bool HasObserver(const SyncServiceObserver* observer) const override;
 
+  // Given base path (path to profile) formats path to "Sync Data" folder where
+  // sync engine stores directory database.
+  static base::FilePath FormatSyncDataPath(
+      const base::FilePath& base_directory);
+
+  // Given base path (path to profile) formats path to a folder containing
+  // ModelTypeStore's leveldb database.
+  static base::FilePath FormatSharedModelTypeStorePath(
+      const base::FilePath& base_directory);
+
  protected:
   // Notify all observers that a change has occurred.
   void NotifyObservers();
@@ -86,11 +96,6 @@ class SyncServiceBase : public SyncService, public SyncEngineHost {
   // The path to the base directory under which sync should store its
   // information.
   const base::FilePath base_directory_;
-
-  // The full path to the sync data folder. The folder is not fully deleted when
-  // sync is disabled, since it holds both Directory and ModelTypeStore data.
-  // Directory files will be selectively targeted instead.
-  const base::FilePath sync_data_folder_;
 
   // An identifier representing this instance for debugging purposes.
   const std::string debug_identifier_;

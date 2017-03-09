@@ -22,6 +22,10 @@ namespace autofill {
 class PersonalDataManager;
 }  // namespace autofill
 
+namespace base {
+class SequencedWorkerPool;
+}  // namespace base
+
 namespace bookmarks {
 class BookmarkModel;
 }  // namespace bookmarks
@@ -60,6 +64,10 @@ class SyncClient {
 
   // Initializes the sync client with the specified sync service.
   virtual void Initialize() = 0;
+
+  // Returns SequencedWorkerPool to be used by ProfileSyncService for blocking
+  // operations.
+  virtual base::SequencedWorkerPool* GetBlockingPool() = 0;
 
   // Returns the current SyncService instance.
   virtual SyncService* GetSyncService() = 0;

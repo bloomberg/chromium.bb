@@ -131,7 +131,7 @@ class ModelTypeStore {
   //     content::BrowserThread::GetBlockingPool();
   // scoped_refptr<base::SequencedTaskRunner> blocking_task_runner(
   //     worker_pool->GetSequencedTaskRunnerWithShutdownBehavior(
-  //         worker_pool->GetSequenceToken(),
+  //         worker_pool->GetNamedSequenceToken(path),
   //         base::SequencedWorkerPool::SKIP_ON_SHUTDOWN));
   //
   // In test get task runner from MessageLoop::task_runner().

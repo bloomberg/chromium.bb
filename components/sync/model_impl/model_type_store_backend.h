@@ -9,9 +9,8 @@
 #include <string>
 #include <unordered_map>
 
-#include "base/lazy_instance.h"
 #include "base/macros.h"
-#include "base/threading/thread_collision_warner.h"
+#include "base/sequence_checker.h"
 #include "components/sync/model/model_type_store.h"
 #include "third_party/leveldatabase/src/include/leveldb/status.h"
 
@@ -55,8 +54,6 @@ enum StoreInitResultForHistogram {
 class ModelTypeStoreBackend
     : public base::RefCountedThreadSafe<ModelTypeStoreBackend> {
  public:
-  using BackendMap = std::unordered_map<std::string, ModelTypeStoreBackend*>;
-
   // Helper function to create in memory environment for leveldb.
   static std::unique_ptr<leveldb::Env> CreateInMemoryEnv();
 
@@ -134,6 +131,10 @@ class ModelTypeStoreBackend
   static void RecordStoreInitResultHistogram(
       StoreInitResultForHistogram result);
 
+  // Helper function for unittests to check if backend already exists for a
+  // given path.
+  static bool BackendExistsForTest(const std::string& path);
+
   // In some scenarios ModelTypeStoreBackend holds ownership of env. Typical
   // example is when test creates in memory environment with CreateInMemoryEnv
   // and wants it to be destroyed along with backend. This is achieved by
@@ -147,14 +148,9 @@ class ModelTypeStoreBackend
 
   std::string path_;
 
-  // backend_map_ holds raw pointer of backend, and when stores ask for backend,
-  // GetOrCreateBackend will return scoped_refptr of backend. backend_map_
-  // doesn't take reference to backend, therefore doesn't block backend
-  // destruction.
-  static base::LazyInstance<BackendMap>::DestructorAtExit backend_map_;
-
-  // Macro wrapped mutex to guard against concurrent calls in debug builds.
-  DFAKE_MUTEX(push_pop_);
+  // Ensures that operations with backend are performed seqentially, not
+  // concurrently.
+  base::SequenceChecker sequence_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(ModelTypeStoreBackend);
 };
