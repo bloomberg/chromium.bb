@@ -28,6 +28,7 @@ class WIN_WINDOW_EXPORT WinWindow : public NON_EXPORTED_BASE(PlatformWindow),
   void Show() override;
   void Hide() override;
   void Close() override;
+  void PrepareForShutdown() override;
   void SetBounds(const gfx::Rect& bounds) override;
   gfx::Rect GetBounds() override;
   void SetTitle(const base::string16& title) override;

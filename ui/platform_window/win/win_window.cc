@@ -74,6 +74,8 @@ void WinWindow::Close() {
   Destroy();
 }
 
+void WinWindow::PrepareForShutdown() {}
+
 void WinWindow::SetBounds(const gfx::Rect& bounds) {
   gfx::Rect window_bounds = GetWindowBoundsForClientBounds(
       GetWindowLong(hwnd(), GWL_STYLE),

@@ -20,13 +20,13 @@ class X11_WINDOW_EXPORT X11WindowOzone : public X11WindowBase,
                                          public PlatformEventDispatcher,
                                          public XEventDispatcher {
  public:
-  X11WindowOzone(X11EventSourceLibevent* event_source,
-                 X11WindowManagerOzone* window_manager,
+  X11WindowOzone(X11WindowManagerOzone* window_manager,
                  PlatformWindowDelegate* delegate,
                  const gfx::Rect& bounds);
   ~X11WindowOzone() override;
 
   // PlatformWindow:
+  void PrepareForShutdown() override;
   void SetCapture() override;
   void ReleaseCapture() override;
   void SetCursor(PlatformCursor cursor) override;
@@ -39,7 +39,6 @@ class X11_WINDOW_EXPORT X11WindowOzone : public X11WindowBase,
   bool CanDispatchEvent(const PlatformEvent& event) override;
   uint32_t DispatchEvent(const PlatformEvent& event) override;
 
-  X11EventSourceLibevent* event_source_;
   X11WindowManagerOzone* window_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(X11WindowOzone);

@@ -74,6 +74,8 @@ void DrmWindowHost::Hide() {
 void DrmWindowHost::Close() {
 }
 
+void DrmWindowHost::PrepareForShutdown() {}
+
 void DrmWindowHost::SetBounds(const gfx::Rect& bounds) {
   bounds_ = bounds;
   delegate_->OnBoundsChanged(bounds);

@@ -52,6 +52,8 @@ void HeadlessWindow::Hide() {}
 
 void HeadlessWindow::Close() {}
 
+void HeadlessWindow::PrepareForShutdown() {}
+
 void HeadlessWindow::SetCapture() {}
 
 void HeadlessWindow::ReleaseCapture() {}

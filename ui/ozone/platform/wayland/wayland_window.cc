@@ -81,6 +81,8 @@ void WaylandWindow::Close() {
   NOTIMPLEMENTED();
 }
 
+void WaylandWindow::PrepareForShutdown() {}
+
 void WaylandWindow::SetBounds(const gfx::Rect& bounds) {
   if (bounds == bounds_)
     return;

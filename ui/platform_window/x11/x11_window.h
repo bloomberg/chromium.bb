@@ -20,6 +20,7 @@ class X11_WINDOW_EXPORT X11Window : public X11WindowBase,
   ~X11Window() override;
 
   // PlatformWindow:
+  void PrepareForShutdown() override;
   void SetCursor(PlatformCursor cursor) override;
 
  private:

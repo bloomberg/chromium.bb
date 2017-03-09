@@ -24,6 +24,10 @@ X11Window::X11Window(PlatformWindowDelegate* delegate, const gfx::Rect& bounds)
 }
 
 X11Window::~X11Window() {
+  X11Window::PrepareForShutdown();
+}
+
+void X11Window::PrepareForShutdown() {
   PlatformEventSource::GetInstance()->RemovePlatformEventDispatcher(this);
 }
 

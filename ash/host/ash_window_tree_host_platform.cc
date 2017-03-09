@@ -75,6 +75,10 @@ void AshWindowTreeHostPlatform::PrepareForShutdown() {
   // coordinates.
   window()->SetEventTargeter(
       std::unique_ptr<ui::EventTargeter>(new ui::NullEventTargeter));
+
+  // Do anything platform specific necessary before shutdown (eg. stop
+  // listening for configuration XEvents).
+  platform_window()->PrepareForShutdown();
 }
 
 void AshWindowTreeHostPlatform::SetRootTransform(

@@ -178,6 +178,8 @@ void PlatformWindowAndroid::Close() {
   delegate_->OnCloseRequest();
 }
 
+void PlatformWindowAndroid::PrepareForShutdown() {}
+
 void PlatformWindowAndroid::SetBounds(const gfx::Rect& bounds) {
   NOTIMPLEMENTED();
 }

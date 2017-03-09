@@ -30,6 +30,8 @@ void StubWindow::Close() {
   delegate_->OnClosed();
 }
 
+void StubWindow::PrepareForShutdown() {}
+
 void StubWindow::SetBounds(const gfx::Rect& bounds) {
   if (bounds_ == bounds)
     return;

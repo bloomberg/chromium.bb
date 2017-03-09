@@ -26,6 +26,7 @@ class STUB_WINDOW_EXPORT StubWindow : NON_EXPORTED_BASE(public PlatformWindow) {
   void Show() override;
   void Hide() override;
   void Close() override;
+  void PrepareForShutdown() override;
   void SetBounds(const gfx::Rect& bounds) override;
   gfx::Rect GetBounds() override;
   void SetTitle(const base::string16& title) override;
