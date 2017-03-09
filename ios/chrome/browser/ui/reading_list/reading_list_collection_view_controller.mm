@@ -128,14 +128,14 @@ using ItemsMapByDate = std::multimap<int64_t, ReadingListCollectionViewItem*>;
 - (void)markAllRead;
 // Marks all items as unread.
 - (void)markAllUnread;
-// Marks the selected items as read.
-- (void)markItemsRead;
-// Marks the selected items as unread.
-- (void)markItemsUnread;
+// Marks the items at |indexPaths| as read.
+- (void)markItemsReadAtIndexPath:(NSArray*)indexPaths;
+// Marks the items at |indexPaths| as unread.
+- (void)markItemsUnreadAtIndexPath:(NSArray*)indexPaths;
 // Deletes all the read items.
 - (void)deleteAllReadItems;
-// Deletes all the selected items.
-- (void)deleteSelectedItems;
+// Deletes all the items at |indexPaths|.
+- (void)deleteItemsAtIndexPaths:(NSArray*)indexPaths;
 // Initializes |_actionSheet| with |self| as base view controller, and the
 // toolbar's mark button as anchor point.
 - (void)initializeActionSheet;
@@ -599,10 +599,12 @@ using ItemsMapByDate = std::multimap<int64_t, ReadingListCollectionViewItem*>;
       [self markAllItemsAs];
       break;
     case OnlyUnreadSelected:
-      [self markItemsRead];
+      [self markItemsReadAtIndexPath:self.collectionView
+                                         .indexPathsForSelectedItems];
       break;
     case OnlyReadSelected:
-      [self markItemsUnread];
+      [self markItemsUnreadAtIndexPath:self.collectionView
+                                           .indexPathsForSelectedItems];
       break;
     case MixedItemsSelected:
       [self markMixedItemsAs];
@@ -617,7 +619,8 @@ using ItemsMapByDate = std::multimap<int64_t, ReadingListCollectionViewItem*>;
   if ([_toolbar state] == NoneSelected) {
     [self deleteAllReadItems];
   } else {
-    [self deleteSelectedItems];
+    [self
+        deleteItemsAtIndexPaths:self.collectionView.indexPathsForSelectedItems];
   }
 }
 - (void)enterEditingModePressed {
@@ -707,18 +710,24 @@ using ItemsMapByDate = std::multimap<int64_t, ReadingListCollectionViewItem*>;
 - (void)markMixedItemsAs {
   [self initializeActionSheet];
   __weak ReadingListCollectionViewController* weakSelf = self;
-  [_actionSheet addItemWithTitle:l10n_util::GetNSStringWithFixup(
-                                     IDS_IOS_READING_LIST_MARK_READ_BUTTON)
-                          action:^{
-                            [weakSelf markItemsRead];
-                          }
-                           style:UIAlertActionStyleDefault];
-  [_actionSheet addItemWithTitle:l10n_util::GetNSStringWithFixup(
-                                     IDS_IOS_READING_LIST_MARK_UNREAD_BUTTON)
-                          action:^{
-                            [weakSelf markItemsUnread];
-                          }
-                           style:UIAlertActionStyleDefault];
+  [_actionSheet
+      addItemWithTitle:l10n_util::GetNSStringWithFixup(
+                           IDS_IOS_READING_LIST_MARK_READ_BUTTON)
+                action:^{
+                  [weakSelf
+                      markItemsReadAtIndexPath:weakSelf.collectionView
+                                                   .indexPathsForSelectedItems];
+                }
+                 style:UIAlertActionStyleDefault];
+  [_actionSheet
+      addItemWithTitle:l10n_util::GetNSStringWithFixup(
+                           IDS_IOS_READING_LIST_MARK_UNREAD_BUTTON)
+                action:^{
+                  [weakSelf
+                      markItemsUnreadAtIndexPath:
+                          weakSelf.collectionView.indexPathsForSelectedItems];
+                }
+                 style:UIAlertActionStyleDefault];
   [_actionSheet start];
 }
 
@@ -743,6 +752,7 @@ using ItemsMapByDate = std::multimap<int64_t, ReadingListCollectionViewItem*>;
                      usingEntryUpdater:^(const GURL& url) {
                        [self readingListModel]->SetReadStatus(url, true);
                      }];
+
   [self exitEditingModeAnimated:YES];
   [self moveItemsFromSection:SectionIdentifierUnread
                    toSection:SectionIdentifierRead];
@@ -758,15 +768,16 @@ using ItemsMapByDate = std::multimap<int64_t, ReadingListCollectionViewItem*>;
                      usingEntryUpdater:^(const GURL& url) {
                        [self readingListModel]->SetReadStatus(url, false);
                      }];
+
   [self exitEditingModeAnimated:YES];
   [self moveItemsFromSection:SectionIdentifierRead
                    toSection:SectionIdentifierUnread];
 }
 
-- (void)markItemsRead {
+- (void)markItemsReadAtIndexPath:(NSArray*)indexPaths {
   base::RecordAction(base::UserMetricsAction("MobileReadingListMarkRead"));
-  NSArray* sortedIndexPaths = [self.collectionView.indexPathsForSelectedItems
-      sortedArrayUsingSelector:@selector(compare:)];
+  NSArray* sortedIndexPaths =
+      [indexPaths sortedArrayUsingSelector:@selector(compare:)];
   [self updateIndexPaths:sortedIndexPaths
        usingEntryUpdater:^(const GURL& url) {
          [self readingListModel]->SetReadStatus(url, true);
@@ -776,10 +787,10 @@ using ItemsMapByDate = std::multimap<int64_t, ReadingListCollectionViewItem*>;
   [self moveSelectedItems:sortedIndexPaths toSection:SectionIdentifierRead];
 }
 
-- (void)markItemsUnread {
+- (void)markItemsUnreadAtIndexPath:(NSArray*)indexPaths {
   base::RecordAction(base::UserMetricsAction("MobileReadingListMarkUnread"));
-  NSArray* sortedIndexPaths = [self.collectionView.indexPathsForSelectedItems
-      sortedArrayUsingSelector:@selector(compare:)];
+  NSArray* sortedIndexPaths =
+      [indexPaths sortedArrayUsingSelector:@selector(compare:)];
   [self updateIndexPaths:sortedIndexPaths
        usingEntryUpdater:^(const GURL& url) {
          [self readingListModel]->SetReadStatus(url, false);
@@ -820,8 +831,7 @@ using ItemsMapByDate = std::multimap<int64_t, ReadingListCollectionViewItem*>;
   [self removeEmptySections];
 }
 
-- (void)deleteSelectedItems {
-  NSArray* indexPaths = [self.collectionView.indexPathsForSelectedItems copy];
+- (void)deleteItemsAtIndexPaths:(NSArray*)indexPaths {
   [self updateIndexPaths:indexPaths
        usingEntryUpdater:^(const GURL& url) {
          [self logDeletionHistogramsForEntry:url];
@@ -907,44 +917,28 @@ using ItemsMapByDate = std::multimap<int64_t, ReadingListCollectionViewItem*>;
 
 - (void)moveItemsFromSection:(SectionIdentifier)sourceSectionIdentifier
                    toSection:(SectionIdentifier)destinationSectionIdentifier {
-  [self initializeSection:destinationSectionIdentifier];
-
   NSInteger sourceSection = [self.collectionViewModel
       sectionForSectionIdentifier:sourceSectionIdentifier];
-  NSInteger destinationSection = [self.collectionViewModel
-      sectionForSectionIdentifier:destinationSectionIdentifier];
   NSInteger numberOfSourceItems =
       [self.collectionViewModel numberOfItemsInSection:sourceSection];
 
-  [self.collectionView performBatchUpdates:^{
-    for (int index = 0; index < numberOfSourceItems; index++) {
-      NSIndexPath* firstItemIndex =
-          [NSIndexPath indexPathForItem:0 inSection:sourceSection];
-      NSIndexPath* sourceItemIndex =
-          [NSIndexPath indexPathForItem:index inSection:sourceSection];
-      NSIndexPath* destinationItemIndex =
-          [NSIndexPath indexPathForItem:index inSection:destinationSection];
+  NSMutableArray* sortedIndexPaths = [NSMutableArray array];
 
-      // The collection view model gets updated instantaneously, the collection
-      // view does batch updates.
-      [self collectionView:self.collectionView
-          willMoveItemAtIndexPath:firstItemIndex
-                      toIndexPath:destinationItemIndex];
-      [self.collectionView moveItemAtIndexPath:sourceItemIndex
-                                   toIndexPath:destinationItemIndex];
-    }
+  for (int index = 0; index < numberOfSourceItems; index++) {
+    NSIndexPath* itemIndex =
+        [NSIndexPath indexPathForItem:index inSection:sourceSection];
+    [sortedIndexPaths addObject:itemIndex];
   }
-      completion:^(BOOL) {
-        // Reload data to take into account possible sync events.
-        [self applyPendingUpdates];
-      }];
-  // As we modified the section in the batch update block, remove the section in
-  // another block.
-  [self removeEmptySections];
+
+  [self moveSelectedItems:sortedIndexPaths
+                toSection:destinationSectionIdentifier];
 }
 
 - (void)moveSelectedItems:(NSArray*)sortedIndexPaths
                 toSection:(SectionIdentifier)sectionIdentifier {
+  // Reconfigure cells, allowing the custom actions to be updated.
+  [self reconfigureCellsAtIndexPaths:sortedIndexPaths];
+
   NSInteger sectionCreatedIndex = [self initializeSection:sectionIdentifier];
 
   [self.collectionView performBatchUpdates:^{
@@ -975,6 +969,7 @@ using ItemsMapByDate = std::multimap<int64_t, ReadingListCollectionViewItem*>;
       // this item in the targeted section.
       NSIndexPath* newIndexPath =
           [NSIndexPath indexPathForItem:newItemIndex++ inSection:section];
+
       [self collectionView:self.collectionView
           willMoveItemAtIndexPath:indexForModel
                       toIndexPath:newIndexPath];
