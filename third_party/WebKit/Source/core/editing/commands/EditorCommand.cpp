@@ -2077,7 +2077,7 @@ static String valueFormatBlock(LocalFrame& frame, Event*) {
     return "";
   Element* formatBlockElement =
       FormatBlockCommand::elementForFormatBlockCommand(
-          createRange(firstEphemeralRangeOf(selection)));
+          firstEphemeralRangeOf(selection));
   if (!formatBlockElement)
     return "";
   return formatBlockElement->localName();

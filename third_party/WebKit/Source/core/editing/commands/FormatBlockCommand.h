@@ -27,6 +27,7 @@
 #define FormatBlockCommand_h
 
 #include "core/dom/QualifiedName.h"
+#include "core/editing/EphemeralRange.h"
 #include "core/editing/Position.h"
 #include "core/editing/VisiblePosition.h"
 #include "core/editing/commands/ApplyBlockElementCommand.h"
@@ -35,7 +36,6 @@ namespace blink {
 
 class Document;
 class Element;
-class Range;
 
 class CORE_EXPORT FormatBlockCommand final : public ApplyBlockElementCommand {
  public:
@@ -46,7 +46,7 @@ class CORE_EXPORT FormatBlockCommand final : public ApplyBlockElementCommand {
 
   bool preservesTypingStyle() const override { return true; }
 
-  static Element* elementForFormatBlockCommand(Range*);
+  static Element* elementForFormatBlockCommand(const EphemeralRange&);
   bool didApply() const { return m_didApply; }
 
  private:

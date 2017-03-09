@@ -139,18 +139,17 @@ void FormatBlockCommand::formatRange(const Position& start,
     insertBlockPlaceholder(lastParagraphInBlockNode, editingState);
 }
 
-Element* FormatBlockCommand::elementForFormatBlockCommand(Range* range) {
-  if (!range)
-    return 0;
-
-  Node* commonAncestor = range->commonAncestorContainer();
+Element* FormatBlockCommand::elementForFormatBlockCommand(
+    const EphemeralRange& range) {
+  Node* commonAncestor = range.commonAncestorContainer();
   while (commonAncestor && !isElementForFormatBlock(commonAncestor))
     commonAncestor = commonAncestor->parentNode();
 
   if (!commonAncestor)
     return 0;
 
-  Element* element = rootEditableElement(*range->startContainer());
+  Element* element =
+      rootEditableElement(*range.startPosition().computeContainerNode());
   if (!element || commonAncestor->contains(element))
     return 0;
 
