@@ -17,6 +17,34 @@ String NGExclusion::ToString() const {
                         type);
 }
 
+bool NGExclusion::MaybeCombineWith(const NGExclusion& other) {
+  if (other.rect.BlockEndOffset() < rect.BlockEndOffset())
+    return false;
+
+  if (other.type != type)
+    return false;
+
+  switch (other.type) {
+    case NGExclusion::kFloatLeft: {
+      if (other.rect.offset == rect.InlineEndBlockStartOffset()) {
+        rect.size = {other.rect.InlineSize() + rect.InlineSize(),
+                     other.rect.BlockSize()};
+        return true;
+      }
+    }
+    case NGExclusion::kFloatRight: {
+      if (rect.offset == other.rect.InlineEndBlockStartOffset()) {
+        rect.offset = other.rect.offset;
+        rect.size = {other.rect.InlineSize() + rect.InlineSize(),
+                     other.rect.BlockSize()};
+        return true;
+      }
+    }
+    default:
+      return false;
+  }
+}
+
 std::ostream& operator<<(std::ostream& stream, const NGExclusion& value) {
   return stream << value.ToString();
 }
