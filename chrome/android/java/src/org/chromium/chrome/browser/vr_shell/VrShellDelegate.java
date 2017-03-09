@@ -115,6 +115,10 @@ public class VrShellDelegate {
      * Called when the native library is first available.
      */
     public static void onNativeLibraryAvailable() {
+        // Check if VR classes are available before trying to use them. Note that the native
+        // vr_shell_delegate.cc is compiled out of unsupported platforms (like x86).
+        VrClassesWrapper wrapper = getVrClassesWrapper();
+        if (wrapper == null) return;
         nativeOnLibraryAvailable();
     }
 
@@ -234,7 +238,9 @@ public class VrShellDelegate {
         if (!LibraryLoader.isInitialized()) return null;
         // Note that we only support ChromeTabbedActivity for now.
         if (activity == null || !(activity instanceof ChromeTabbedActivity)) return null;
-        sInstance = new VrShellDelegate((ChromeActivity) activity);
+        VrClassesWrapper wrapper = getVrClassesWrapper();
+        if (wrapper == null) return null;
+        sInstance = new VrShellDelegate((ChromeActivity) activity, wrapper);
 
         return sInstance;
     }
@@ -308,9 +314,9 @@ public class VrShellDelegate {
         return ChromeFeatureList.isEnabled(ChromeFeatureList.VR_SHELL);
     }
 
-    private VrShellDelegate(ChromeActivity activity) {
+    private VrShellDelegate(ChromeActivity activity, VrClassesWrapper wrapper) {
         mActivity = activity;
-        mVrClassesWrapper = createVrClassesWrapper();
+        mVrClassesWrapper = wrapper;
         updateVrSupportLevel();
         mNativeVrShellDelegate = nativeInit();
         Choreographer choreographer = Choreographer.getInstance();
