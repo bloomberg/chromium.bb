@@ -6939,7 +6939,6 @@ interface VRFrameData
     getter pose
     getter rightProjectionMatrix
     getter rightViewMatrix
-    getter timestamp
     method constructor
 interface VRPose
     attribute @@toStringTag

@@ -167,7 +167,7 @@ bool matrixInvert(DOMFloat32Array* outArray) {
   return true;
 };
 
-VRFrameData::VRFrameData() : m_timestamp(0.0) {
+VRFrameData::VRFrameData() {
   m_leftProjectionMatrix = DOMFloat32Array::create(16);
   m_leftViewMatrix = DOMFloat32Array::create(16);
   m_rightProjectionMatrix = DOMFloat32Array::create(16);
@@ -180,8 +180,6 @@ bool VRFrameData::update(const device::mojom::blink::VRPosePtr& pose,
                          VREyeParameters* rightEye,
                          float depthNear,
                          float depthFar) {
-  m_timestamp = pose->timestamp;
-
   // Build the projection matrices
   projectionFromFieldOfView(m_leftProjectionMatrix, leftEye->fieldOfView(),
                             depthNear, depthFar);

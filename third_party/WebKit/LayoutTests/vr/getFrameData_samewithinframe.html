@@ -24,9 +24,6 @@ vr_test( (t, mock_service) => {
         assert_true(display.getFrameData(fd2));
       }, "getFrameData successfully updated object");
       t.step( () => {
-        // Use assert_equals instead of assert_approx_equals since they should
-        // be completely identical
-        assert_equals(fd1.timestamp, fd2.timestamp);
         for (let i = 0; i < 16; i++) {
           assert_equals(fd1.leftProjectionMatrix[i],
               fd2.leftProjectionMatrix[i]);

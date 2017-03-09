@@ -67,7 +67,6 @@ let mockVRService = loadMojoModules(
     }
     getVSync() {
       if (this.pose_) {
-        this.pose_.timestamp = this.timeDelta_;
         this.pose_.poseIndex++;
       }
 
@@ -85,7 +84,6 @@ let mockVRService = loadMojoModules(
     }
     initPose() {
       this.pose_ = {
-        timestamp: 0,
         orientation: null,
         position: null,
         angularVelocity: null,

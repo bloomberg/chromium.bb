@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 100 tests; 77 PASS, 23 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 99 tests; 76 PASS, 23 FAIL, 0 TIMEOUT, 0 NOTRUN.
 FAIL Window interface: attribute onvrdisplayconnect assert_own_property: The global object must have a property "onvrdisplayconnect" expected property "onvrdisplayconnect" missing
 FAIL Window interface: attribute onvrdisplaydisconnect assert_own_property: The global object must have a property "onvrdisplaydisconnect" expected property "onvrdisplaydisconnect" missing
 FAIL Window interface: attribute onvrdisplayactivate assert_own_property: The global object must have a property "onvrdisplayactivate" expected property "onvrdisplayactivate" missing
@@ -70,7 +70,6 @@ PASS VRFrameData interface object length
 PASS VRFrameData interface object name 
 FAIL VRFrameData interface: existence and properties of interface prototype object assert_equals: class string of VRFrameData.prototype expected "[object VRFrameDataPrototype]" but got "[object VRFrameData]"
 PASS VRFrameData interface: existence and properties of interface prototype object's "constructor" property 
-PASS VRFrameData interface: attribute timestamp 
 PASS VRFrameData interface: attribute leftProjectionMatrix 
 PASS VRFrameData interface: attribute leftViewMatrix 
 PASS VRFrameData interface: attribute rightProjectionMatrix 

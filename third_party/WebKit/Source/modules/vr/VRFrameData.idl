@@ -7,8 +7,6 @@
     OriginTrialEnabled=WebVR,
     Constructor,
 ] interface VRFrameData {
-    readonly attribute DOMHighResTimeStamp timestamp;
-
     readonly attribute Float32Array leftProjectionMatrix;
     readonly attribute Float32Array leftViewMatrix;
 

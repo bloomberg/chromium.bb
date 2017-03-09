@@ -6,7 +6,6 @@
 #define VRFrameData_h
 
 #include "bindings/core/v8/ScriptWrappable.h"
-#include "core/dom/DOMHighResTimeStamp.h"
 #include "core/dom/DOMTypedArray.h"
 #include "device/vr/vr_service.mojom-blink.h"
 #include "platform/heap/Handle.h"
@@ -26,7 +25,6 @@ class VRFrameData final : public GarbageCollected<VRFrameData>,
 
   VRFrameData();
 
-  DOMHighResTimeStamp timestamp() const { return m_timestamp; }
   DOMFloat32Array* leftProjectionMatrix() const {
     return m_leftProjectionMatrix;
   }
@@ -49,7 +47,6 @@ class VRFrameData final : public GarbageCollected<VRFrameData>,
   DECLARE_VIRTUAL_TRACE()
 
  private:
-  DOMHighResTimeStamp m_timestamp;
   Member<DOMFloat32Array> m_leftProjectionMatrix;
   Member<DOMFloat32Array> m_leftViewMatrix;
   Member<DOMFloat32Array> m_rightProjectionMatrix;

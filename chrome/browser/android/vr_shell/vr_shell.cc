@@ -616,7 +616,6 @@ void VrShell::ProcessContentGesture(
 device::mojom::VRPosePtr VrShell::VRPosePtrFromGvrPose(gvr::Mat4f head_mat) {
   device::mojom::VRPosePtr pose = device::mojom::VRPose::New();
 
-  pose->timestamp = base::Time::Now().ToJsTime();
   pose->orientation.emplace(4);
 
   gfx::Transform inv_transform(

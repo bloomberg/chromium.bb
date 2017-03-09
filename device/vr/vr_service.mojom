@@ -19,7 +19,6 @@ struct VRFieldOfView {
 // A display's position, orientation, velocity, and acceleration state at the
 // given timestamp.
 struct VRPose {
-  double timestamp;
   array<float, 4>? orientation;
   array<float, 3>? position;
   array<float, 3>? angularVelocity;
