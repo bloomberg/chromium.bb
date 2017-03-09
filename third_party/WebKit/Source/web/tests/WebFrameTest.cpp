@@ -6669,13 +6669,7 @@ TEST_P(ParameterizedWebFrameTest, DidAccessInitialDocumentViaJavascriptUrl) {
   EXPECT_TRUE(webFrameClient.m_didAccessInitialDocument);
 }
 
-// Fails on the WebKit XP (deps) bot. http://crbug.com/312192
-#if OS(WIN)
-TEST_P(ParameterizedWebFrameTest,
-       DISABLED_DidAccessInitialDocumentBodyBeforeModalDialog)
-#else
 TEST_P(ParameterizedWebFrameTest, DidAccessInitialDocumentBodyBeforeModalDialog)
-#endif
 {
   // FIXME: Why is this local webViewClient needed instead of the default
   // WebViewHelper one? With out it there's some mysterious crash in the
@@ -6710,13 +6704,7 @@ TEST_P(ParameterizedWebFrameTest, DidAccessInitialDocumentBodyBeforeModalDialog)
   EXPECT_TRUE(webFrameClient.m_didAccessInitialDocument);
 }
 
-// Fails on the WebKit XP (deps) bot. http://crbug.com/312192
-#if OS(WIN)
-TEST_P(ParameterizedWebFrameTest,
-       DISABLED_DidWriteToInitialDocumentBeforeModalDialog)
-#else
 TEST_P(ParameterizedWebFrameTest, DidWriteToInitialDocumentBeforeModalDialog)
-#endif
 {
   // FIXME: Why is this local webViewClient needed instead of the default
   // WebViewHelper one? With out it there's some mysterious crash in the
