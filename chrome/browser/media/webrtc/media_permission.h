@@ -34,12 +34,6 @@ class MediaPermission {
   ContentSetting GetPermissionStatus(
       content::MediaStreamRequestResult* denial_reason) const;
 
-  // Returns the status of the permission as with GetPermissionStatus but also
-  // checks that the specified |device_id| is an available device.
-  ContentSetting GetPermissionStatusWithDeviceRequired(
-      const std::string& device_id,
-      content::MediaStreamRequestResult* denial_reason) const;
-
  private:
   bool HasAvailableDevices(const std::string& device_id) const;
 
