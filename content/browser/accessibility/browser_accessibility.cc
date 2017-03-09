@@ -83,7 +83,6 @@ bool BrowserAccessibility::PlatformIsLeaf() const {
   // buttons are allowed to have content.)
   switch (GetRole()) {
     case ui::AX_ROLE_IMAGE:
-    case ui::AX_ROLE_MATH:
     case ui::AX_ROLE_METER:
     case ui::AX_ROLE_SCROLL_BAR:
     case ui::AX_ROLE_SLIDER:
