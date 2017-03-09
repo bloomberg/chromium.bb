@@ -146,10 +146,10 @@ void FrameCaret::updateStyleAndLayoutIfNeeded() {
       shouldPaintCaret ? caretPosition() : PositionWithAffinity());
 }
 
-void FrameCaret::invalidatePaintIfNeeded(const LayoutBlock& block,
-                                         const PaintInvalidatorContext& context,
-                                         PaintInvalidationReason reason) {
-  m_displayItemClient->invalidatePaintIfNeeded(block, context, reason);
+void FrameCaret::invalidatePaintIfNeeded(
+    const LayoutBlock& block,
+    const PaintInvalidatorContext& context) {
+  m_displayItemClient->invalidatePaintIfNeeded(block, context);
 }
 
 bool FrameCaret::caretPositionIsValidForDocument(

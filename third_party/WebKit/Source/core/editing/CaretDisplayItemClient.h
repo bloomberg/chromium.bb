@@ -74,10 +74,8 @@ class CaretDisplayItemClient final : public DisplayItemClient {
   void updateStyleAndLayoutIfNeeded(const PositionWithAffinity& caretPosition);
 
   // Called during LayoutBlock paint invalidation.
-  void invalidatePaintIfNeeded(
-      const LayoutBlock&,
-      const PaintInvalidatorContext&,
-      PaintInvalidationReason layoutBlockPaintInvalidationReason);
+  void invalidatePaintIfNeeded(const LayoutBlock&,
+                               const PaintInvalidatorContext&);
 
   bool shouldPaintCaret(const LayoutBlock& block) const {
     return &block == m_layoutBlock;
@@ -91,32 +89,25 @@ class CaretDisplayItemClient final : public DisplayItemClient {
   String debugName() const final;
 
  private:
-  void invalidatePaintInCurrentLayoutBlock(
-      const PaintInvalidatorContext&,
-      PaintInvalidationReason layoutBlockPaintInvalidationReason);
+  void invalidatePaintInCurrentLayoutBlock(const PaintInvalidatorContext&);
 
-  void invalidatePaintInPreviousLayoutBlock(
-      const PaintInvalidatorContext&,
-      PaintInvalidationReason layoutBlockPaintInvalidationReason);
+  void invalidatePaintInPreviousLayoutBlock(const PaintInvalidatorContext&);
 
   // These are updated by updateStyleAndLayoutIfNeeded().
   Color m_color;
   LayoutRect m_localRect;
   LayoutBlock* m_layoutBlock = nullptr;
 
-  // This is set to the previous value of m_layoutBlock during
-  // updateStyleAndLayoutIfNeeded() and can be used in invalidatePaintIfNeeded()
-  // only.
-  const LayoutBlock* m_previousLayoutBlock = nullptr;
-
   // Visual rect of the caret in m_layoutBlock. This is updated by
   // invalidatePaintIfNeeded().
   LayoutRect m_visualRect;
 
-  // This is set to the previous value of m_visualRect during
-  // updateStyleAndLayoutIfNeeded() and can be used in invalidatePaintIfNeeded()
-  // only.
-  LayoutRect m_previousVisualRect;
+  // These are set to the previous value of m_layoutBlock and m_visualRect
+  // during updateStyleAndLayoutIfNeeded() if they haven't been set since the
+  // last paint invalidation. They can only be used in invalidatePaintIfNeeded()
+  // to invalidate the caret in the previous layout block.
+  const LayoutBlock* m_previousLayoutBlock = nullptr;
+  LayoutRect m_visualRectInPreviousLayoutBlock;
 
   bool m_needsPaintInvalidation = false;
 };

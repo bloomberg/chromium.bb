@@ -52,8 +52,7 @@ class DragCaret final : public GarbageCollectedFinalized<DragCaret>,
   void layoutBlockWillBeDestroyed(const LayoutBlock&);
   void updateStyleAndLayoutIfNeeded();
   void invalidatePaintIfNeeded(const LayoutBlock&,
-                               const PaintInvalidatorContext&,
-                               PaintInvalidationReason);
+                               const PaintInvalidatorContext&);
 
   bool shouldPaintCaret(const LayoutBlock&) const;
   void paintDragCaret(const LocalFrame*,

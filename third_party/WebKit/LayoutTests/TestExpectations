@@ -154,6 +154,9 @@ crbug.com/696724 virtual/gpu/fast/canvas/canvas-large-pattern.html [ Failure ]
 crbug.com/667045 paint/invalidation/table/composited-cell-collapsed-border-add-anonymous.html [ Crash Timeout ]
 crbug.com/667045 virtual/disable-spinvalidation/paint/invalidation/table/composited-cell-collapsed-border-add-anonymous.html [ Crash Timeout ]
 
+crbug.com/699044 virtual/disable-spinvalidation/paint/invalidation/caret-subpixel.html [ NeedsRebaseline ]
+crbug.com/699044 virtual/disable-spinvalidation/paint/invalidation/caret-with-composited-scroll.html [ NeedsRebaseline ]
+
 # ====== Paint team owned tests to here ======
 
 # ====== LayoutNG-only failures from here ======

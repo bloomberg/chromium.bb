@@ -199,8 +199,7 @@ class CORE_EXPORT FrameSelection final
   void layoutBlockWillBeDestroyed(const LayoutBlock&);
   void updateStyleAndLayoutIfNeeded();
   void invalidatePaintIfNeeded(const LayoutBlock&,
-                               const PaintInvalidatorContext&,
-                               PaintInvalidationReason);
+                               const PaintInvalidatorContext&);
 
   void paintCaret(GraphicsContext&, const LayoutPoint&);
 

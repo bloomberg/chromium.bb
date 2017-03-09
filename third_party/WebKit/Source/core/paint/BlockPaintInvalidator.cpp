@@ -25,11 +25,11 @@ PaintInvalidationReason BlockPaintInvalidator::invalidatePaintIfNeeded(
   PaintInvalidationReason reason =
       BoxPaintInvalidator(m_block, context).invalidatePaintIfNeeded();
 
-  m_block.frame()->selection().invalidatePaintIfNeeded(m_block, context,
-                                                       reason);
-  m_block.frame()->page()->dragCaret().invalidatePaintIfNeeded(m_block, context,
-                                                               reason);
+  m_block.frame()->selection().invalidatePaintIfNeeded(m_block, context);
+  m_block.frame()->page()->dragCaret().invalidatePaintIfNeeded(m_block,
+                                                               context);
 
   return reason;
 }
-}
+
+}  // namespace blink

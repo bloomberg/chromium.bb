@@ -50,6 +50,14 @@ class CaretDisplayItemClientTest : public RenderingTest {
     document().body()->appendChild(block);
     return block;
   }
+
+  void updateAllLifecyclePhases() {
+    // Partial lifecycle updates should not affect caret paint invalidation.
+    document().view()->updateLifecycleToLayoutClean();
+    document().view()->updateAllLifecyclePhases();
+    // Partial lifecycle updates should not affect caret paint invalidation.
+    document().view()->updateLifecycleToLayoutClean();
+  }
 };
 
 TEST_F(CaretDisplayItemClientTest, CaretPaintInvalidation) {
@@ -58,13 +66,13 @@ TEST_F(CaretDisplayItemClientTest, CaretPaintInvalidation) {
   document().page()->focusController().setFocused(true);
 
   Text* text = appendTextNode("Hello, World!");
-  document().view()->updateAllLifecyclePhases();
+  updateAllLifecyclePhases();
   const auto* block = toLayoutBlock(document().body()->layoutObject());
 
   // Focus the body. Should invalidate the new caret.
   document().view()->setTracksPaintInvalidations(true);
   document().body()->focus();
-  document().view()->updateAllLifecyclePhases();
+  updateAllLifecyclePhases();
   EXPECT_TRUE(block->shouldPaintCursorCaret());
 
   LayoutRect caretVisualRect = caretDisplayItemClient().visualRect();
@@ -91,7 +99,7 @@ TEST_F(CaretDisplayItemClientTest, CaretPaintInvalidation) {
   document().view()->setTracksPaintInvalidations(true);
   selection().setSelection(
       SelectionInDOMTree::Builder().collapse(Position(text, 5)).build());
-  document().view()->updateAllLifecyclePhases();
+  updateAllLifecyclePhases();
   EXPECT_TRUE(block->shouldPaintCursorCaret());
 
   LayoutRect newCaretVisualRect = caretDisplayItemClient().visualRect();
@@ -121,7 +129,7 @@ TEST_F(CaretDisplayItemClientTest, CaretPaintInvalidation) {
   LayoutRect oldCaretVisualRect = newCaretVisualRect;
   document().view()->setTracksPaintInvalidations(true);
   selection().setSelection(SelectionInDOMTree());
-  document().view()->updateAllLifecyclePhases();
+  updateAllLifecyclePhases();
   EXPECT_FALSE(block->shouldPaintCursorCaret());
   EXPECT_EQ(LayoutRect(), caretDisplayItemClient().visualRect());
 
@@ -146,13 +154,13 @@ TEST_F(CaretDisplayItemClientTest, CaretMovesBetweenBlocks) {
   document().page()->focusController().setFocused(true);
   auto* blockElement1 = appendBlock("Block1");
   auto* blockElement2 = appendBlock("Block2");
-  document().view()->updateAllLifecyclePhases();
+  updateAllLifecyclePhases();
   auto* block1 = toLayoutBlock(blockElement1->layoutObject());
   auto* block2 = toLayoutBlock(blockElement2->layoutObject());
 
   // Focus the body.
   document().body()->focus();
-  document().view()->updateAllLifecyclePhases();
+  updateAllLifecyclePhases();
   LayoutRect caretVisualRect1 = caretDisplayItemClient().visualRect();
   EXPECT_EQ(1, caretVisualRect1.width());
   EXPECT_EQ(block1->visualRect().location(), caretVisualRect1.location());
@@ -164,7 +172,7 @@ TEST_F(CaretDisplayItemClientTest, CaretMovesBetweenBlocks) {
   selection().setSelection(SelectionInDOMTree::Builder()
                                .collapse(Position(blockElement2, 0))
                                .build());
-  document().view()->updateAllLifecyclePhases();
+  updateAllLifecyclePhases();
 
   LayoutRect caretVisualRect2 = caretDisplayItemClient().visualRect();
   EXPECT_EQ(1, caretVisualRect2.width());
@@ -192,7 +200,7 @@ TEST_F(CaretDisplayItemClientTest, CaretMovesBetweenBlocks) {
   selection().setSelection(SelectionInDOMTree::Builder()
                                .collapse(Position(blockElement1, 0))
                                .build());
-  document().view()->updateAllLifecyclePhases();
+  updateAllLifecyclePhases();
 
   EXPECT_EQ(caretVisualRect1, caretDisplayItemClient().visualRect());
   EXPECT_TRUE(block1->shouldPaintCursorCaret());
