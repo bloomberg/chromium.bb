@@ -202,7 +202,7 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
     void connectSyncBase(SVGSMILElement&);
     void disconnectSyncBase(SVGSMILElement&);
     bool syncBaseEquals(SVGSMILElement& timedElement) const {
-      return m_syncBase == timedElement;
+      return m_baseElement == timedElement;
     }
 
     void connectEventBase(SVGSMILElement&);
@@ -224,7 +224,7 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
     AtomicString m_name;
     SMILTime m_offset;
     int m_repeat;
-    Member<SVGSMILElement> m_syncBase;
+    Member<SVGElement> m_baseElement;
     Member<ConditionEventListener> m_eventListener;
   };
   bool parseCondition(const String&, BeginOrEnd beginOrEnd);

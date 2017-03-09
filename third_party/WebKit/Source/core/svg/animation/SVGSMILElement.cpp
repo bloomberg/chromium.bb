@@ -144,27 +144,29 @@ SVGSMILElement::Condition::Condition(Type type,
 SVGSMILElement::Condition::~Condition() = default;
 
 DEFINE_TRACE(SVGSMILElement::Condition) {
-  visitor->trace(m_syncBase);
+  visitor->trace(m_baseElement);
   visitor->trace(m_eventListener);
 }
 
 void SVGSMILElement::Condition::connectSyncBase(SVGSMILElement& timedElement) {
   DCHECK(!m_baseID.isEmpty());
+  DCHECK_EQ(m_type, Syncbase);
   Element* element = timedElement.treeScope().getElementById(m_baseID);
   if (!element || !isSVGSMILElement(*element)) {
-    m_syncBase = nullptr;
+    m_baseElement = nullptr;
     return;
   }
-  m_syncBase = toSVGSMILElement(element);
-  m_syncBase->addSyncBaseDependent(timedElement);
+  m_baseElement = toSVGSMILElement(element);
+  toSVGSMILElement(*element).addSyncBaseDependent(timedElement);
 }
 
 void SVGSMILElement::Condition::disconnectSyncBase(
     SVGSMILElement& timedElement) {
-  if (!m_syncBase)
+  DCHECK_EQ(m_type, Syncbase);
+  if (!m_baseElement)
     return;
-  m_syncBase->removeSyncBaseDependent(timedElement);
-  m_syncBase = nullptr;
+  toSVGSMILElement(*m_baseElement).removeSyncBaseDependent(timedElement);
+  m_baseElement = nullptr;
 }
 
 SVGElement* SVGSMILElement::Condition::lookupEventBase(
@@ -178,7 +180,8 @@ SVGElement* SVGSMILElement::Condition::lookupEventBase(
 }
 
 void SVGSMILElement::Condition::connectEventBase(SVGSMILElement& timedElement) {
-  DCHECK(!m_syncBase);
+  DCHECK_EQ(m_type, EventBase);
+  DCHECK(!m_baseElement);
   SVGElement* eventBase = lookupEventBase(timedElement);
   if (!eventBase) {
     if (m_baseID.isEmpty())
@@ -191,22 +194,18 @@ void SVGSMILElement::Condition::connectEventBase(SVGSMILElement& timedElement) {
   }
   DCHECK(!m_eventListener);
   m_eventListener = ConditionEventListener::create(&timedElement, this);
-  eventBase->addEventListener(m_name, m_eventListener, false);
-  timedElement.addReferenceTo(eventBase);
+  m_baseElement = eventBase;
+  m_baseElement->addEventListener(m_name, m_eventListener, false);
+  timedElement.addReferenceTo(m_baseElement);
 }
 
 void SVGSMILElement::Condition::disconnectEventBase(
     SVGSMILElement& timedElement) {
-  DCHECK(!m_syncBase);
+  DCHECK_EQ(m_type, EventBase);
   if (!m_eventListener)
     return;
-  // Note: It's a memory optimization to try to remove our condition event
-  // listener, but it's not guaranteed to work, since we have no guarantee that
-  // we will be able to find our condition's original eventBase. So, we also
-  // have to disconnect ourselves from our condition event listener, in case it
-  // later fires.
-  if (SVGElement* eventBase = lookupEventBase(timedElement))
-    eventBase->removeEventListener(m_name, m_eventListener, false);
+  m_baseElement->removeEventListener(m_name, m_eventListener, false);
+  m_baseElement = nullptr;
   m_eventListener->disconnectAnimation();
   m_eventListener = nullptr;
 }
