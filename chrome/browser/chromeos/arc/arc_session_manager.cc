@@ -64,6 +64,17 @@ bool g_enable_check_android_management_for_testing = false;
 // but present the UI to try again.
 constexpr base::TimeDelta kArcSignInTimeout = base::TimeDelta::FromMinutes(5);
 
+// Updates UMA with user cancel only if error is not currently shown.
+void MaybeUpdateOptInCancelUMA(const ArcSupportHost* support_host) {
+  if (!support_host ||
+      support_host->ui_page() == ArcSupportHost::UIPage::NO_PAGE ||
+      support_host->ui_page() == ArcSupportHost::UIPage::ERROR) {
+    return;
+  }
+
+  UpdateOptInCancelUMA(OptInCancelReason::USER_CANCEL);
+}
+
 }  // namespace
 
 ArcSessionManager::ArcSessionManager(
@@ -522,7 +533,7 @@ void ArcSessionManager::CancelAuthCode() {
   // LSO, closing the window should stop ARC since the user activity chooses to
   // not sign in. In any other case, ARC is booting normally and the instance
   // should not be stopped.
-  if ((state_ != State::SHOWING_TERMS_OF_SERVICE &&
+  if ((state_ != State::NEGOTIATING_TERMS_OF_SERVICE &&
        state_ != State::CHECKING_ANDROID_MANAGEMENT) &&
       (!support_host_ ||
        (support_host_->ui_page() != ArcSupportHost::UIPage::ERROR &&
@@ -530,13 +541,7 @@ void ArcSessionManager::CancelAuthCode() {
     return;
   }
 
-  // Update UMA with user cancel only if error is not currently shown.
-  if (support_host_ &&
-      support_host_->ui_page() != ArcSupportHost::UIPage::NO_PAGE &&
-      support_host_->ui_page() != ArcSupportHost::UIPage::ERROR) {
-    UpdateOptInCancelUMA(OptInCancelReason::USER_CANCEL);
-  }
-
+  MaybeUpdateOptInCancelUMA(support_host_.get());
   StopArc();
   SetArcPlayStoreEnabledForProfile(profile_, false);
 }
@@ -580,27 +585,14 @@ void ArcSessionManager::RequestEnableImpl() {
 
   PrefService* const prefs = profile_->GetPrefs();
 
-  // For ARC Kiosk we skip ToS because it is very likely that near the device
-  // there will be no one who is eligible to accept them.
-  // TODO(poromov): Move to more Kiosk dedicated set-up phase.
-  if (IsArcKioskMode())
-    prefs->SetBoolean(prefs::kArcTermsAccepted, true);
-
-  // Skip to show UI asking users to set up ARC OptIn preferences, if all of
-  // them are managed by the admin policy. Note that the ToS agreement is anyway
-  // not shown in the case of the managed ARC.
-  if (IsArcPlayStoreEnabledPreferenceManagedForProfile(profile_) &&
-      AreArcAllOptInPreferencesManagedForProfile(profile_)) {
-    prefs->SetBoolean(prefs::kArcTermsAccepted, true);
-  }
-
   // If it is marked that sign in has been successfully done, if ARC has been
   // set up to always start, then directly start ARC.
-  // For testing, and for Kiosk mode, we also skip ToS negotiation procedure.
-  // For backward compatibility, this check needs to be prior to the
-  // kArcTermsAccepted check below.
+  // For Kiosk mode, skip ToS because it is very likely that near the device
+  // there will be no one who is eligible to accept them.
+  // If opt-in verification is disabled, skip negotiation, too. This is for
+  // testing purpose.
   if (prefs->GetBoolean(prefs::kArcSignedIn) || ShouldArcAlwaysStart() ||
-      IsArcOptInVerificationDisabled() || IsArcKioskMode()) {
+      IsArcKioskMode() || IsArcOptInVerificationDisabled()) {
     StartArc();
     // Check Android management in parallel.
     // Note: StartBackgroundAndroidManagementCheck() may call
@@ -611,23 +603,6 @@ void ArcSessionManager::RequestEnableImpl() {
     // Thus, StartArc() should be called so that disabling should work even
     // if synchronous call case.
     StartBackgroundAndroidManagementCheck();
-    return;
-  }
-
-  // If it is marked that the Terms of service is accepted already,
-  // just skip the negotiation with user, and start Android management
-  // check directly.
-  // This happens, e.g., when;
-  // 1) User accepted the Terms of service on OOBE flow.
-  // 2) User accepted the Terms of service on Opt-in flow, but logged out
-  //   before ARC sign in procedure was done. Then, logs in again.
-  if (prefs->GetBoolean(prefs::kArcTermsAccepted)) {
-    // Don't show UI for this progress if it was not shown.
-    if (support_host_ &&
-        support_host_->ui_page() != ArcSupportHost::UIPage::NO_PAGE) {
-      support_host_->ShowArcLoading();
-    }
-    StartAndroidManagementCheck();
     return;
   }
 
@@ -653,8 +628,16 @@ void ArcSessionManager::RequestDisable() {
 
 void ArcSessionManager::StartTermsOfServiceNegotiation() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK(profile_);
   DCHECK(!terms_of_service_negotiator_);
+  // In Kiosk-mode, Terms of Service negotiation should be skipped.
+  // See also RequestEnableImpl().
+  DCHECK(!IsArcKioskMode());
+  // If opt-in verification is disabled, Terms of Service negotiation should
+  // be skipped, too. See also RequestEnableImpl().
+  DCHECK(!IsArcOptInVerificationDisabled());
 
+  // TODO(hidehiko): Remove this condition, when the state machine is fixed.
   if (!arc_session_runner_->IsStopped()) {
     // If the user attempts to re-enable ARC while the ARC instance is still
     // running the user should not be able to continue until the ARC instance
@@ -666,7 +649,17 @@ void ArcSessionManager::StartTermsOfServiceNegotiation() {
     return;
   }
 
-  SetState(State::SHOWING_TERMS_OF_SERVICE);
+  // TODO(hidehiko): DCHECK if |state_| is STOPPED, when the state machine
+  // is fixed.
+  SetState(State::NEGOTIATING_TERMS_OF_SERVICE);
+
+  if (!IsArcTermsOfServiceNegotiationNeeded()) {
+    // Moves to next state, Android management check, immediately, as if
+    // Terms of Service negotiation is done successfully.
+    StartAndroidManagementCheck();
+    return;
+  }
+
   if (IsOobeOptInActive()) {
     VLOG(1) << "Use OOBE negotiator.";
     terms_of_service_negotiator_ =
@@ -676,45 +669,78 @@ void ArcSessionManager::StartTermsOfServiceNegotiation() {
     terms_of_service_negotiator_ =
         base::MakeUnique<ArcTermsOfServiceDefaultNegotiator>(
             profile_->GetPrefs(), support_host_.get());
+  } else {
+    // The only case reached here is when g_disable_ui_for_testing is set
+    // so ARC support host is not created in SetProfile(), for testing purpose.
+    DCHECK(g_disable_ui_for_testing)
+        << "Negotiator is not created on production.";
+    return;
   }
 
-  if (terms_of_service_negotiator_) {
-    terms_of_service_negotiator_->StartNegotiation(
-        base::Bind(&ArcSessionManager::OnTermsOfServiceNegotiated,
-                   weak_ptr_factory_.GetWeakPtr()));
-  }
+  terms_of_service_negotiator_->StartNegotiation(
+      base::Bind(&ArcSessionManager::OnTermsOfServiceNegotiated,
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 void ArcSessionManager::OnTermsOfServiceNegotiated(bool accepted) {
+  DCHECK_EQ(state_, State::NEGOTIATING_TERMS_OF_SERVICE);
+  DCHECK(profile_);
   DCHECK(terms_of_service_negotiator_);
   terms_of_service_negotiator_.reset();
 
   if (!accepted) {
-    // To cancel, user needs to close the window. Note that clicking "Cancel"
-    // button effectively just closes the window.
-    CancelAuthCode();
+    // User does not accept the Terms of Service. Disable Google Play Store.
+    MaybeUpdateOptInCancelUMA(support_host_.get());
+    SetArcPlayStoreEnabledForProfile(profile_, false);
     return;
   }
 
   // Terms were accepted.
   profile_->GetPrefs()->SetBoolean(prefs::kArcTermsAccepted, true);
-
-  // Don't show UI for this progress if it was not shown.
-  if (support_host_ &&
-      support_host_->ui_page() != ArcSupportHost::UIPage::NO_PAGE)
-    support_host_->ShowArcLoading();
   StartAndroidManagementCheck();
+}
+
+bool ArcSessionManager::IsArcTermsOfServiceNegotiationNeeded() const {
+  DCHECK(profile_);
+
+  // Skip to show UI asking users to set up ARC OptIn preferences, if all of
+  // them are managed by the admin policy. Note that the ToS agreement is anyway
+  // not shown in the case of the managed ARC.
+  if (AreArcAllOptInPreferencesManagedForProfile(profile_)) {
+    VLOG(1) << "All opt-in preferences are under managed. "
+            << "Skip ARC Terms of Service negotiation.";
+    return false;
+  }
+
+  // If it is marked that the Terms of service is accepted already,
+  // just skip the negotiation with user, and start Android management
+  // check directly.
+  // This happens, e.g., when a user accepted the Terms of service on Opt-in
+  // flow, but logged out before ARC sign in procedure was done. Then, logs
+  // in again.
+  if (profile_->GetPrefs()->GetBoolean(prefs::kArcTermsAccepted)) {
+    VLOG(1) << "The user already accepts ARC Terms of Service.";
+    return false;
+  }
+
+  return true;
 }
 
 void ArcSessionManager::StartAndroidManagementCheck() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(arc_session_runner_->IsStopped());
-  DCHECK(state_ == State::SHOWING_TERMS_OF_SERVICE ||
-         state_ == State::CHECKING_ANDROID_MANAGEMENT ||
-         (state_ == State::STOPPED &&
-          profile_->GetPrefs()->GetBoolean(prefs::kArcTermsAccepted)));
-  DCHECK(!android_management_checker_);
+  DCHECK(state_ == State::NEGOTIATING_TERMS_OF_SERVICE ||
+         state_ == State::CHECKING_ANDROID_MANAGEMENT);
   SetState(State::CHECKING_ANDROID_MANAGEMENT);
+
+  // Show loading UI only if ARC support app's window is already shown.
+  // User may not see any ARC support UI if everything needed is done in
+  // background. In such a case, showing loading UI here (then closed sometime
+  // soon later) would look just noisy.
+  if (support_host_ &&
+      support_host_->ui_page() != ArcSupportHost::UIPage::NO_PAGE) {
+    support_host_->ShowArcLoading();
+  }
 
   android_management_checker_ = base::MakeUnique<ArcAndroidManagementChecker>(
       profile_, context_->token_service(), context_->account_id(),
@@ -869,7 +895,6 @@ void ArcSessionManager::OnRetryClicked() {
     // Otherwise, we restart ARC. Note: this is the first boot case.
     // For second or later boot, either ERROR_WITH_FEEDBACK case or ACTIVE
     // case must hit.
-    support_host_->ShowArcLoading();
     StartAndroidManagementCheck();
   }
 }
@@ -904,7 +929,7 @@ std::ostream& operator<<(std::ostream& os,
   switch (state) {
     MAP_STATE(NOT_INITIALIZED);
     MAP_STATE(STOPPED);
-    MAP_STATE(SHOWING_TERMS_OF_SERVICE);
+    MAP_STATE(NEGOTIATING_TERMS_OF_SERVICE);
     MAP_STATE(CHECKING_ANDROID_MANAGEMENT);
     MAP_STATE(REMOVING_DATA_DIR);
     MAP_STATE(ACTIVE);

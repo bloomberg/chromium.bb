@@ -42,8 +42,14 @@ class ArcSessionManager : public ArcSessionRunner::Observer,
   //   so that this service is not yet initialized, or Chrome is being shut
   //   down so that this is destroyed.
   // STOPPED: ARC session is not running, or being terminated.
-  // SHOWING_TERMS_OF_SERVICE: "Terms Of Service" page is shown on ARC support
-  //   Chrome app.
+  // NEGOTIATING_TERMS_OF_SERVICE: Negotiating Google Play Store "Terms of
+  //   Service" with a user. There are several ways for the negotiation,
+  //   including opt-in flow, which shows "Terms of Service" page on ARC
+  //   support app, and OOBE flow, which shows "Terms of Service" page as a
+  //   part of Chrome OOBE flow.
+  //   If user does not accept the Terms of Service, disables Google Play
+  //   Store, which triggers RequestDisable() and the state will be set to
+  //   STOPPED, then.
   // CHECKING_ANDROID_MANAGEMENT: Checking Android management status. Note that
   //   the status is checked for each ARC session starting, but this is the
   //   state only for the first boot case (= opt-in case). The second time and
@@ -60,9 +66,9 @@ class ArcSessionManager : public ArcSessionRunner::Observer,
   // ...(any)... -> STOPPED: on error.
   //
   // In the first boot case:
-  //   STOPPED -> SHOWING_TERMS_OF_SERVICE: when arc.enabled preference is set.
-  //   SHOWING_TERMS_OF_SERVICE -> CHECKING_ANDROID_MANAGEMENT: when a user
-  //     agree with "Terms Of Service"
+  //   STOPPED -> NEGOTIATING_TERMS_OF_SERVICE: On request to enable.
+  //   NEGOTIATING_TERMS_OF_SERVICE -> CHECKING_ANDROID_MANAGEMENT: when a user
+  //     accepts "Terms Of Service"
   //   CHECKING_ANDROID_MANAGEMENT -> ACTIVE: when the auth token is
   //     successfully fetched.
   //
@@ -75,7 +81,7 @@ class ArcSessionManager : public ArcSessionRunner::Observer,
   enum class State {
     NOT_INITIALIZED,
     STOPPED,
-    SHOWING_TERMS_OF_SERVICE,
+    NEGOTIATING_TERMS_OF_SERVICE,
     CHECKING_ANDROID_MANAGEMENT,
     REMOVING_DATA_DIR,
     ACTIVE,
@@ -229,6 +235,11 @@ class ArcSessionManager : public ArcSessionRunner::Observer,
   // Negotiates the terms of service to user.
   void StartTermsOfServiceNegotiation();
   void OnTermsOfServiceNegotiated(bool accepted);
+
+  // Returns true if Terms of Service negotiation is needed. Otherwise false.
+  // TODO(crbug.com/698418): Write unittest for this utility after extracting
+  //   ToS related code from ArcSessionManager into a dedicated class.
+  bool IsArcTermsOfServiceNegotiationNeeded() const;
 
   void SetState(State state);
   void ShutdownSession();
