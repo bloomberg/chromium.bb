@@ -505,7 +505,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // called.
   int instance_id_ = 1;
 
-  BrowserContext* browser_context_;
+  BrowserContext* const browser_context_;
 
   // Owned by |browser_context_|.
   StoragePartitionImpl* storage_partition_impl_;

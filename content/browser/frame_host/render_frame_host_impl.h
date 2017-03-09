@@ -891,28 +891,28 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // we have a RenderViewHost for each RenderFrameHost.
   // TODO(creis): RenderViewHost will eventually go away and be replaced with
   // some form of page context.
-  RenderViewHostImpl* render_view_host_;
+  RenderViewHostImpl* const render_view_host_;
 
-  RenderFrameHostDelegate* delegate_;
+  RenderFrameHostDelegate* const delegate_;
 
   // The SiteInstance associated with this RenderFrameHost. All content drawn
   // in this RenderFrameHost is part of this SiteInstance. Cannot change over
   // time.
-  scoped_refptr<SiteInstanceImpl> site_instance_;
+  const scoped_refptr<SiteInstanceImpl> site_instance_;
 
   // The renderer process this RenderFrameHost is associated with. It is
   // equivalent to the result of site_instance_->GetProcess(), but that
   // method has the side effect of creating the process if it doesn't exist.
   // Cache a pointer to avoid unnecessary process creation.
-  RenderProcessHost* process_;
+  RenderProcessHost* const process_;
 
   // Reference to the whole frame tree that this RenderFrameHost belongs to.
   // Allows this RenderFrameHost to add and remove nodes in response to
   // messages from the renderer requesting DOM manipulation.
-  FrameTree* frame_tree_;
+  FrameTree* const frame_tree_;
 
   // The FrameTreeNode which this RenderFrameHostImpl is hosted in.
-  FrameTreeNode* frame_tree_node_;
+  FrameTreeNode* const frame_tree_node_;
 
   // The active parent RenderFrameHost for this frame, if it is a subframe.
   // Null for the main frame.  This is cached because the parent FrameTreeNode
