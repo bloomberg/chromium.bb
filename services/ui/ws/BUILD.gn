@@ -9,6 +9,10 @@ import("//services/service_manager/public/cpp/service.gni")
 import("//services/service_manager/public/service_manifest.gni")
 import("//services/service_manager/public/tools/test/service_test.gni")
 
+# In external window mode, top-level windows are native platform windows i.e.
+# not children of a Chrome OS window manager's root window.
+is_external_mode = use_ozone && !is_chromeos
+
 static_library("lib") {
   sources = [
     "accelerator.cc",
@@ -171,9 +175,17 @@ static_library("test_support") {
     "test_change_tracker.h",
     "window_server_service_test_base.cc",
     "window_server_service_test_base.h",
-    "window_server_test_base.cc",
-    "window_server_test_base.h",
   ]
+
+  if (!is_external_mode) {
+    # WindowServerTestBase assumes an initial display (and root) is provided
+    # at startup, which is not the case on platforms running external window
+    # mode.
+    sources += [
+      "window_server_test_base.cc",
+      "window_server_test_base.h",
+    ]
+  }
 
   deps = [
     "//base",
@@ -223,11 +235,16 @@ service_test("mus_ws_unittests") {
     "user_display_manager_unittest.cc",
     "window_coordinate_conversions_unittest.cc",
     "window_finder_unittest.cc",
-    "window_manager_client_unittest.cc",
     "window_manager_state_unittest.cc",
     "window_tree_client_unittest.cc",
     "window_tree_unittest.cc",
   ]
+
+  if (!is_external_mode) {
+    # A window manager client is not needed on platforms running external
+    # window mode, since the host system is always the window manager.
+    sources += [ "window_manager_client_unittest.cc" ]
+  }
 
   catalog = ":mus_ws_unittests_catalog"
 
