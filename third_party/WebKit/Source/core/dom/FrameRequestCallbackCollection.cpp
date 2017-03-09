@@ -76,9 +76,6 @@ void FrameRequestCallbackCollection::executeCallbacks(
         callback->handleEvent(highResNowMsLegacy);
       else
         callback->handleEvent(highResNowMs);
-      TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"),
-                           "UpdateCounters", TRACE_EVENT_SCOPE_THREAD, "data",
-                           InspectorUpdateCountersEvent::data());
     }
   }
 

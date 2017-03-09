@@ -170,10 +170,6 @@ void DOMTimer::fired() {
 
   action->execute(context);
 
-  TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"),
-                       "UpdateCounters", TRACE_EVENT_SCOPE_THREAD, "data",
-                       InspectorUpdateCountersEvent::data());
-
   // ExecutionContext might be already gone when we executed action->execute().
   ExecutionContext* executionContext = getExecutionContext();
   if (!executionContext)

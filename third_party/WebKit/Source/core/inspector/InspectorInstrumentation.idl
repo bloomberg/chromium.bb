@@ -65,6 +65,7 @@ interface InspectorInstrumentation {
 #include "core/html/HTMLSlotElement.h"
 
 class ConsoleMessage;
+class HTMLDocumentParser;
 class ThreadableLoaderClient;
 class WebSocketHandshakeRequest;
 class WebSocketHandshakeResponse;
@@ -336,11 +337,14 @@ class XMLHttpRequest;
     [Performance, DOMDebugger]
     ExecuteScript([Keep] ExecutionContext* context);
 
-    [Performance]
-    CallFunction([Keep] ExecutionContext* context, v8::Local<v8::Function> function);
+    [Performance, TraceEvents]
+    CallFunction([Keep] ExecutionContext* context, v8::Local<v8::Function> function, int depth = 0);
 
     [Performance, DOMDebugger]
     UserCallback([Keep] ExecutionContext* context, const char* name, const AtomicString& atomicName, bool recurring, EventTarget* eventTarget = nullptr);
+
+    [TraceEvents]
+    ParseHTML(Document* document, HTMLDocumentParser* parser);
 }
 
 interface InspectorOverrides {

@@ -616,10 +616,7 @@ void HTMLDocumentParser::pumpPendingSpeculations() {
     return;
   }
 
-  // FIXME: Pass in current input length.
-  TRACE_EVENT_BEGIN1("devtools.timeline", "ParseHTML", "beginData",
-                     InspectorParseHtmlEvent::beginData(
-                         document(), lineNumber().zeroBasedInt()));
+  probe::ParseHTML probe(document(), this);
 
   SpeculationsPumpSession session(m_pumpSpeculationsSessionNestingLevel);
   while (!m_speculations.isEmpty()) {
@@ -641,13 +638,6 @@ void HTMLDocumentParser::pumpPendingSpeculations() {
             session, m_speculations.first()->startingScript))
       break;
   }
-
-  TRACE_EVENT_END1(
-      "devtools.timeline", "ParseHTML", "endData",
-      InspectorParseHtmlEvent::endData(lineNumber().zeroBasedInt() - 1));
-  TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"),
-                       "UpdateCounters", TRACE_EVENT_SCOPE_THREAD, "data",
-                       InspectorUpdateCountersEvent::data());
 }
 
 void HTMLDocumentParser::forcePlaintextForTextDocument() {

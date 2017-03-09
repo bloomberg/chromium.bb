@@ -544,9 +544,6 @@ void XMLHttpRequest::dispatchReadyStateChangeEvent() {
     }
     m_progressEventThrottle->dispatchReadyStateChangeEvent(
         Event::create(EventTypeNames::readystatechange), action);
-    TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"),
-                         "UpdateCounters", TRACE_EVENT_SCOPE_THREAD, "data",
-                         InspectorUpdateCountersEvent::data());
   }
 
   if (m_state == kDone && !m_error) {
@@ -554,9 +551,6 @@ void XMLHttpRequest::dispatchReadyStateChangeEvent() {
                  InspectorXhrLoadEvent::data(getExecutionContext(), this));
     dispatchProgressEventFromSnapshot(EventTypeNames::load);
     dispatchProgressEventFromSnapshot(EventTypeNames::loadend);
-    TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"),
-                         "UpdateCounters", TRACE_EVENT_SCOPE_THREAD, "data",
-                         InspectorUpdateCountersEvent::data());
   }
 }
 

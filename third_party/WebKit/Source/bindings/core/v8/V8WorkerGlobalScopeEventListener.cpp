@@ -83,10 +83,6 @@ v8::Local<v8::Value> V8WorkerGlobalScopeEventListener::callListenerFunction(
       handlerFunction, scriptState->getExecutionContext(), receiver,
       WTF_ARRAY_LENGTH(parameters), parameters, isolate());
 
-  TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"),
-                       "UpdateCounters", TRACE_EVENT_SCOPE_THREAD, "data",
-                       InspectorUpdateCountersEvent::data());
-
   v8::Local<v8::Value> result;
   if (!maybeResult.ToLocal(&result))
     return v8::Local<v8::Value>();

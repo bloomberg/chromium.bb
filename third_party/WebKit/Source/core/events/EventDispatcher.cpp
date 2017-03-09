@@ -162,9 +162,6 @@ DispatchEventResult EventDispatcher::dispatch() {
   // outermost shadow DOM boundary.
   m_event->setTarget(m_event->eventPath().windowEventContext().target());
   m_event->setCurrentTarget(nullptr);
-  TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"),
-                       "UpdateCounters", TRACE_EVENT_SCOPE_THREAD, "data",
-                       InspectorUpdateCountersEvent::data());
 
   return EventTarget::dispatchEventResult(*m_event);
 }

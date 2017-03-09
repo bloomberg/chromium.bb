@@ -609,18 +609,14 @@ v8::MaybeLocal<v8::Value> V8ScriptRunner::callAsConstructor(
   CHECK(constructor->IsFunction());
   v8::Local<v8::Function> function = constructor.As<v8::Function>();
 
-  if (!depth)
-    TRACE_EVENT_BEGIN1("devtools.timeline", "FunctionCall", "data",
-                       InspectorFunctionCallEvent::data(context, function));
   v8::MicrotasksScope microtasksScope(isolate,
                                       v8::MicrotasksScope::kRunMicrotasks);
+  probe::CallFunction probe(context, function, depth);
   ThreadDebugger::willExecuteScript(isolate, function->ScriptId());
   v8::MaybeLocal<v8::Value> result =
       constructor->CallAsConstructor(isolate->GetCurrentContext(), argc, argv);
   CHECK(!isolate->IsDead());
   ThreadDebugger::didExecuteScript(isolate);
-  if (!depth)
-    TRACE_EVENT_END0("devtools.timeline", "FunctionCall");
   return result;
 }
 
@@ -647,9 +643,6 @@ v8::MaybeLocal<v8::Value> V8ScriptRunner::callFunction(
     throwScriptForbiddenException(isolate);
     return v8::MaybeLocal<v8::Value>();
   }
-  if (!depth)
-    TRACE_EVENT_BEGIN1("devtools.timeline", "FunctionCall", "data",
-                       InspectorFunctionCallEvent::data(context, function));
 
   DCHECK(!frame ||
          BindingSecurity::shouldAllowAccessToFrame(
@@ -658,14 +651,13 @@ v8::MaybeLocal<v8::Value> V8ScriptRunner::callFunction(
   CHECK(!ThreadState::current()->isWrapperTracingForbidden());
   v8::MicrotasksScope microtasksScope(isolate,
                                       v8::MicrotasksScope::kRunMicrotasks);
-  probe::CallFunction probe(context, function);
+  probe::CallFunction probe(context, function, depth);
   ThreadDebugger::willExecuteScript(isolate, function->ScriptId());
   v8::MaybeLocal<v8::Value> result =
       function->Call(isolate->GetCurrentContext(), receiver, argc, args);
   CHECK(!isolate->IsDead());
   ThreadDebugger::didExecuteScript(isolate);
-  if (!depth)
-    TRACE_EVENT_END0("devtools.timeline", "FunctionCall");
+
   return result;
 }
 

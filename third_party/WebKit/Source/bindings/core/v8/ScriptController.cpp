@@ -150,10 +150,6 @@ v8::Local<v8::Value> ScriptController::executeScriptAndReturnValue(
       return result;
   }
 
-  TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"),
-                       "UpdateCounters", TRACE_EVENT_SCOPE_THREAD, "data",
-                       InspectorUpdateCountersEvent::data());
-
   return result;
 }
 

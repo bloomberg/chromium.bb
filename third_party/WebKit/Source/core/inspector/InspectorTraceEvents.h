@@ -59,6 +59,12 @@ class StyleImage;
 class WorkerThread;
 class XMLHttpRequest;
 
+namespace probe {
+class CallFunction;
+class ExecuteScript;
+class ParseHTML;
+}
+
 enum ResourceLoadPriority : int;
 
 class CORE_EXPORT InspectorTraceEvents : public InspectorAgent {
@@ -92,6 +98,15 @@ class CORE_EXPORT InspectorTraceEvents : public InspectorAgent {
                         int64_t encodedDataLength,
                         int64_t decodedBodyLength);
   void didFailLoading(unsigned long identifier, const ResourceError&);
+
+  void will(const probe::ExecuteScript&);
+  void did(const probe::ExecuteScript&);
+
+  void will(const probe::ParseHTML&);
+  void did(const probe::ParseHTML&);
+
+  void will(const probe::CallFunction&);
+  void did(const probe::CallFunction&);
 
   DECLARE_VIRTUAL_TRACE();
 

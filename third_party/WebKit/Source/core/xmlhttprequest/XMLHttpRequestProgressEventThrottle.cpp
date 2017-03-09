@@ -148,9 +148,6 @@ void XMLHttpRequestProgressEventThrottle::dispatchProgressProgressEvent(
     probe::AsyncTask asyncTask(m_target->getExecutionContext(), m_target,
                                m_target->isAsync());
     m_target->dispatchEvent(Event::create(EventTypeNames::readystatechange));
-    TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"),
-                         "UpdateCounters", TRACE_EVENT_SCOPE_THREAD, "data",
-                         InspectorUpdateCountersEvent::data());
   }
 
   if (m_target->readyState() != state)
