@@ -1791,25 +1791,28 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees,
   // Two content layers for the differentiated rect drawings and three dummy
   // layers for each of the transform, clip and effect nodes.
   EXPECT_EQ(5u, rootLayer()->children().size());
-  EXPECT_EQ(1, propertyTrees().sequence_number);
+  int sequenceNumber = propertyTrees().sequence_number;
+  EXPECT_GT(sequenceNumber, 0);
   for (auto layer : rootLayer()->children()) {
-    EXPECT_EQ(1, layer->property_tree_sequence_number());
+    EXPECT_EQ(sequenceNumber, layer->property_tree_sequence_number());
   }
 
   update(artifact.build());
 
   EXPECT_EQ(5u, rootLayer()->children().size());
-  EXPECT_EQ(2, propertyTrees().sequence_number);
+  sequenceNumber++;
+  EXPECT_EQ(sequenceNumber, propertyTrees().sequence_number);
   for (auto layer : rootLayer()->children()) {
-    EXPECT_EQ(2, layer->property_tree_sequence_number());
+    EXPECT_EQ(sequenceNumber, layer->property_tree_sequence_number());
   }
 
   update(artifact.build());
 
   EXPECT_EQ(5u, rootLayer()->children().size());
-  EXPECT_EQ(3, propertyTrees().sequence_number);
+  sequenceNumber++;
+  EXPECT_EQ(sequenceNumber, propertyTrees().sequence_number);
   for (auto layer : rootLayer()->children()) {
-    EXPECT_EQ(3, layer->property_tree_sequence_number());
+    EXPECT_EQ(sequenceNumber, layer->property_tree_sequence_number());
   }
 }
 
