@@ -1184,6 +1184,7 @@ split_static_library("ui") {
       "//components/proximity_auth/webui",
       "//components/web_modal",
       "//device/bluetooth",
+      "//extensions/common:mojo",
       "//mash/public/interfaces",
       "//ui/vector_icons",
     ]

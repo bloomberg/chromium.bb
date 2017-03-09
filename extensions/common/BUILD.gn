@@ -19,6 +19,7 @@ source_set("common_constants") {
 if (enable_extensions) {
   mojom("mojo") {
     sources = [
+      "mojo/app_window.mojom",
       "mojo/keep_alive.mojom",
     ]
     if (proprietary_codecs && enable_wifi_display) {

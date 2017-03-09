@@ -46,8 +46,7 @@ ChromeRenderViewObserver::ChromeRenderViewObserver(
     content::RenderView* render_view,
     web_cache::WebCacheImpl* web_cache_impl)
     : content::RenderViewObserver(render_view),
-      web_cache_impl_(web_cache_impl),
-      webview_visually_deemphasized_(false) {}
+      web_cache_impl_(web_cache_impl) {}
 
 ChromeRenderViewObserver::~ChromeRenderViewObserver() {
 }
@@ -57,10 +56,6 @@ bool ChromeRenderViewObserver::OnMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(ChromeRenderViewObserver, message)
 #if !defined(OS_ANDROID)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_WebUIJavaScript, OnWebUIJavaScript)
-#endif
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-    IPC_MESSAGE_HANDLER(ChromeViewMsg_SetVisuallyDeemphasized,
-                        OnSetVisuallyDeemphasized)
 #endif
 #if defined(OS_ANDROID)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_UpdateBrowserControlsState,
@@ -147,23 +142,6 @@ void ChromeRenderViewObserver::Navigate(const GURL& url) {
   if (web_cache_impl_)
     web_cache_impl_->ExecutePendingClearCache();
 }
-
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-void ChromeRenderViewObserver::OnSetVisuallyDeemphasized(bool deemphasized) {
-  if (webview_visually_deemphasized_ == deemphasized)
-    return;
-
-  webview_visually_deemphasized_ = deemphasized;
-
-  if (deemphasized) {
-    // 70% opaque grey.
-    SkColor greyish = SkColorSetARGB(178, 0, 0, 0);
-    render_view()->GetWebView()->setPageOverlayColor(greyish);
-  } else {
-    render_view()->GetWebView()->setPageOverlayColor(SK_ColorTRANSPARENT);
-  }
-}
-#endif
 
 void ChromeRenderViewObserver::DidCommitProvisionalLoad(
     blink::WebLocalFrame* frame,

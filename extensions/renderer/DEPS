@@ -20,5 +20,7 @@ include_rules = [
   "+v8/include",
 
   "+storage/common/fileapi",
+
+  "+services/service_manager/public/cpp",
 ]
 

@@ -36,11 +36,6 @@ IPC_ENUM_TRAITS_MAX_VALUE(extensions::webstore_install::Result,
 
 // Messages sent from the browser to the renderer.
 
-// Toggles visual muting of the render view area. This is on when a constrained
-// window is showing.
-IPC_MESSAGE_ROUTED1(ChromeViewMsg_SetVisuallyDeemphasized,
-                    bool /* deemphazied */)
-
 // Sent to the renderer if install stage updates were requested for an inline
 // install.
 IPC_MESSAGE_ROUTED1(ExtensionMsg_InlineInstallStageChanged,

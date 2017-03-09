@@ -9,9 +9,12 @@
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/public/renderer/render_frame.h"
+#include "content/public/renderer/render_view.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/stack_frame.h"
+#include "services/service_manager/public/cpp/interface_registry.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
+#include "third_party/WebKit/public/web/WebView.h"
 
 namespace extensions {
 
@@ -76,10 +79,30 @@ StackTrace GetStackTraceFromMessage(base::string16* message,
 
 ExtensionsRenderFrameObserver::ExtensionsRenderFrameObserver(
     content::RenderFrame* render_frame)
-    : content::RenderFrameObserver(render_frame) {
+    : content::RenderFrameObserver(render_frame),
+      webview_visually_deemphasized_(false) {
+  render_frame->GetInterfaceRegistry()->AddInterface(
+      base::Bind(&ExtensionsRenderFrameObserver::BindAppWindowRequest,
+                 base::Unretained(this)));
 }
 
 ExtensionsRenderFrameObserver::~ExtensionsRenderFrameObserver() {
+}
+
+void ExtensionsRenderFrameObserver::BindAppWindowRequest(
+    mojom::AppWindowRequest request) {
+  bindings_.AddBinding(this, std::move(request));
+}
+
+void ExtensionsRenderFrameObserver::SetVisuallyDeemphasized(bool deemphasized) {
+  if (webview_visually_deemphasized_ == deemphasized)
+    return;
+
+  webview_visually_deemphasized_ = deemphasized;
+
+  SkColor color =
+      deemphasized ? SkColorSetARGB(178, 0, 0, 0) : SK_ColorTRANSPARENT;
+  render_frame()->GetRenderView()->GetWebView()->setPageOverlayColor(color);
 }
 
 void ExtensionsRenderFrameObserver::DetailedConsoleMessageAdded(

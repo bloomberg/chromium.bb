@@ -9,19 +9,27 @@
 
 #include "base/macros.h"
 #include "content/public/renderer/render_frame_observer.h"
+#include "extensions/common/mojo/app_window.mojom.h"
+#include "mojo/public/cpp/bindings/binding_set.h"
 
 namespace extensions {
 
 // This class holds the extensions specific parts of RenderFrame, and has the
 // same lifetime.
-class ExtensionsRenderFrameObserver
-    : public content::RenderFrameObserver {
+class ExtensionsRenderFrameObserver : public content::RenderFrameObserver,
+                                      public mojom::AppWindow {
  public:
   explicit ExtensionsRenderFrameObserver(
       content::RenderFrame* render_frame);
   ~ExtensionsRenderFrameObserver() override;
 
  private:
+  void BindAppWindowRequest(mojom::AppWindowRequest request);
+
+  // Toggles visual muting of the render view area. This is on when a
+  // constrained window is showing.
+  void SetVisuallyDeemphasized(bool deemphasized) override;
+
   // RenderFrameObserver implementation.
   void DetailedConsoleMessageAdded(const base::string16& message,
                                    const base::string16& source,
@@ -29,6 +37,11 @@ class ExtensionsRenderFrameObserver
                                    uint32_t line_number,
                                    int32_t severity_level) override;
   void OnDestruct() override;
+
+  // true if webview is overlayed with grey color.
+  bool webview_visually_deemphasized_;
+
+  mojo::BindingSet<mojom::AppWindow> bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionsRenderFrameObserver);
 };
