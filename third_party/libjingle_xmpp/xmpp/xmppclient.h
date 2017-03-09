@@ -14,12 +14,12 @@
 #include <memory>
 #include <string>
 
+#include "third_party/libjingle_xmpp/task_runner/task.h"
 #include "third_party/libjingle_xmpp/xmpp/asyncsocket.h"
 #include "third_party/libjingle_xmpp/xmpp/xmppclientsettings.h"
 #include "third_party/libjingle_xmpp/xmpp/xmppengine.h"
 #include "third_party/libjingle_xmpp/xmpp/xmpptask.h"
 #include "third_party/webrtc/base/sigslot.h"
-#include "third_party/webrtc/base/task.h"
 
 namespace buzz {
 
