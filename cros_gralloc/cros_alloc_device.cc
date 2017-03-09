@@ -22,7 +22,7 @@ static struct cros_gralloc_bo *cros_gralloc_bo_create(struct driver *drv,
 	supported = drv_is_combination_supported(drv, drv_format, drv_usage,
 						 DRM_FORMAT_MOD_NONE);
 
-	if (!supported && (drv_usage & BO_USE_SCANOUT)) {
+	if (!supported && (usage & GRALLOC_USAGE_HW_COMPOSER)) {
 		drv_usage &= ~BO_USE_SCANOUT;
 		supported = drv_is_combination_supported(drv, drv_format,
 							 drv_usage,
