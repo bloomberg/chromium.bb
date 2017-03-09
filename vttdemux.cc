@@ -262,6 +262,8 @@ ChapterAtomParser::ChapterAtomParser(
     const mkvparser::Chapters::Display* display)
     : display_(display) {
   str_ = display->GetString();
+  if (str_ == NULL)
+    return;
   const size_t len = strlen(str_);
   str_end_ = str_ + len;
 }
@@ -269,7 +271,7 @@ ChapterAtomParser::ChapterAtomParser(
 ChapterAtomParser::~ChapterAtomParser() {}
 
 int ChapterAtomParser::GetChar(char* c) {
-  if (str_ >= str_end_)  // end-of-stream
+  if (str_ == NULL || str_ >= str_end_)  // end-of-stream
     return 1;  // per the semantics of libwebvtt::Reader::GetChar
 
   *c = *str_++;  // consume this character in the stream
