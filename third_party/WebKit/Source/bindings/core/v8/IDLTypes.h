@@ -19,41 +19,39 @@ namespace blink {
 class ScriptPromise;
 
 // Boolean
-struct CORE_EXPORT IDLBoolean final : public IDLBaseHelper<bool> {};
+struct IDLBoolean final : public IDLBaseHelper<bool> {};
 
 // Integers
-struct CORE_EXPORT IDLByte final : public IDLBaseHelper<int8_t> {};
-struct CORE_EXPORT IDLOctet final : public IDLBaseHelper<uint8_t> {};
-struct CORE_EXPORT IDLShort final : public IDLBaseHelper<int16_t> {};
-struct CORE_EXPORT IDLUnsignedShort final : public IDLBaseHelper<uint16_t> {};
-struct CORE_EXPORT IDLLong final : public IDLBaseHelper<int32_t> {};
-struct CORE_EXPORT IDLUnsignedLong final : public IDLBaseHelper<uint32_t> {};
-struct CORE_EXPORT IDLLongLong final : public IDLBaseHelper<int64_t> {};
-struct CORE_EXPORT IDLUnsignedLongLong final : public IDLBaseHelper<uint64_t> {
-};
+struct IDLByte final : public IDLBaseHelper<int8_t> {};
+struct IDLOctet final : public IDLBaseHelper<uint8_t> {};
+struct IDLShort final : public IDLBaseHelper<int16_t> {};
+struct IDLUnsignedShort final : public IDLBaseHelper<uint16_t> {};
+struct IDLLong final : public IDLBaseHelper<int32_t> {};
+struct IDLUnsignedLong final : public IDLBaseHelper<uint32_t> {};
+struct IDLLongLong final : public IDLBaseHelper<int64_t> {};
+struct IDLUnsignedLongLong final : public IDLBaseHelper<uint64_t> {};
 
 // Strings
-struct CORE_EXPORT IDLByteString final : public IDLBaseHelper<String> {};
-struct CORE_EXPORT IDLString final : public IDLBaseHelper<String> {};
-struct CORE_EXPORT IDLUSVString final : public IDLBaseHelper<String> {};
+struct IDLByteString final : public IDLBaseHelper<String> {};
+struct IDLString final : public IDLBaseHelper<String> {};
+struct IDLUSVString final : public IDLBaseHelper<String> {};
 
 // Double
-struct CORE_EXPORT IDLDouble final : public IDLBaseHelper<double> {};
-struct CORE_EXPORT IDLUnrestrictedDouble final : public IDLBaseHelper<double> {
-};
+struct IDLDouble final : public IDLBaseHelper<double> {};
+struct IDLUnrestrictedDouble final : public IDLBaseHelper<double> {};
 
 // Float
-struct CORE_EXPORT IDLFloat final : public IDLBaseHelper<float> {};
-struct CORE_EXPORT IDLUnrestrictedFloat final : public IDLBaseHelper<float> {};
+struct IDLFloat final : public IDLBaseHelper<float> {};
+struct IDLUnrestrictedFloat final : public IDLBaseHelper<float> {};
 
-struct CORE_EXPORT IDLDate final : public IDLBaseHelper<double> {};
+struct IDLDate final : public IDLBaseHelper<double> {};
 
 // Promise
-struct CORE_EXPORT IDLPromise final : public IDLBaseHelper<ScriptPromise> {};
+struct IDLPromise final : public IDLBaseHelper<ScriptPromise> {};
 
 // Sequence
 template <typename T>
-struct CORE_EXPORT IDLSequence final : public IDLBase {
+struct IDLSequence final : public IDLBase {
  private:
   using CppType = typename NativeValueTraits<T>::ImplType;
   using MaybeWrappedCppType =

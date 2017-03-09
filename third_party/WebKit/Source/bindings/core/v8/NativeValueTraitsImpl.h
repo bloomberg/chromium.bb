@@ -15,11 +15,11 @@ namespace blink {
 
 // Boolean
 template <>
-struct NativeValueTraits<IDLBoolean>
+struct CORE_EXPORT NativeValueTraits<IDLBoolean>
     : public NativeValueTraitsBase<IDLBoolean> {
-  CORE_EXPORT static inline bool nativeValue(v8::Isolate* isolate,
-                                             v8::Local<v8::Value> value,
-                                             ExceptionState& exceptionState) {
+  static inline bool nativeValue(v8::Isolate* isolate,
+                                 v8::Local<v8::Value> value,
+                                 ExceptionState& exceptionState) {
     return toBoolean(isolate, value, exceptionState);
   }
 };
@@ -31,14 +31,15 @@ struct NativeValueTraits<IDLBoolean>
 // specify how the integers should be converted. The default nativeValue()
 // overload will always use NormalConversion.
 template <>
-struct NativeValueTraits<IDLByte> : public NativeValueTraitsBase<IDLByte> {
-  CORE_EXPORT static inline int8_t nativeValue(v8::Isolate* isolate,
-                                               v8::Local<v8::Value> value,
-                                               ExceptionState& exceptionState) {
+struct CORE_EXPORT NativeValueTraits<IDLByte>
+    : public NativeValueTraitsBase<IDLByte> {
+  static inline int8_t nativeValue(v8::Isolate* isolate,
+                                   v8::Local<v8::Value> value,
+                                   ExceptionState& exceptionState) {
     return nativeValue(isolate, value, exceptionState, NormalConversion);
   }
 
-  CORE_EXPORT static inline int8_t nativeValue(
+  static inline int8_t nativeValue(
       v8::Isolate* isolate,
       v8::Local<v8::Value> value,
       ExceptionState& exceptionState,
@@ -48,15 +49,15 @@ struct NativeValueTraits<IDLByte> : public NativeValueTraitsBase<IDLByte> {
 };
 
 template <>
-struct NativeValueTraits<IDLOctet> : public NativeValueTraitsBase<IDLOctet> {
-  CORE_EXPORT static inline uint8_t nativeValue(
-      v8::Isolate* isolate,
-      v8::Local<v8::Value> value,
-      ExceptionState& exceptionState) {
+struct CORE_EXPORT NativeValueTraits<IDLOctet>
+    : public NativeValueTraitsBase<IDLOctet> {
+  static inline uint8_t nativeValue(v8::Isolate* isolate,
+                                    v8::Local<v8::Value> value,
+                                    ExceptionState& exceptionState) {
     return nativeValue(isolate, value, exceptionState, NormalConversion);
   }
 
-  CORE_EXPORT static inline uint8_t nativeValue(
+  static inline uint8_t nativeValue(
       v8::Isolate* isolate,
       v8::Local<v8::Value> value,
       ExceptionState& exceptionState,
@@ -66,15 +67,15 @@ struct NativeValueTraits<IDLOctet> : public NativeValueTraitsBase<IDLOctet> {
 };
 
 template <>
-struct NativeValueTraits<IDLShort> : public NativeValueTraitsBase<IDLShort> {
-  CORE_EXPORT static inline int16_t nativeValue(
-      v8::Isolate* isolate,
-      v8::Local<v8::Value> value,
-      ExceptionState& exceptionState) {
+struct CORE_EXPORT NativeValueTraits<IDLShort>
+    : public NativeValueTraitsBase<IDLShort> {
+  static inline int16_t nativeValue(v8::Isolate* isolate,
+                                    v8::Local<v8::Value> value,
+                                    ExceptionState& exceptionState) {
     return nativeValue(isolate, value, exceptionState, NormalConversion);
   }
 
-  CORE_EXPORT static inline int16_t nativeValue(
+  static inline int16_t nativeValue(
       v8::Isolate* isolate,
       v8::Local<v8::Value> value,
       ExceptionState& exceptionState,
@@ -84,16 +85,15 @@ struct NativeValueTraits<IDLShort> : public NativeValueTraitsBase<IDLShort> {
 };
 
 template <>
-struct NativeValueTraits<IDLUnsignedShort>
+struct CORE_EXPORT NativeValueTraits<IDLUnsignedShort>
     : public NativeValueTraitsBase<IDLUnsignedShort> {
-  CORE_EXPORT static inline uint16_t nativeValue(
-      v8::Isolate* isolate,
-      v8::Local<v8::Value> value,
-      ExceptionState& exceptionState) {
+  static inline uint16_t nativeValue(v8::Isolate* isolate,
+                                     v8::Local<v8::Value> value,
+                                     ExceptionState& exceptionState) {
     return nativeValue(isolate, value, exceptionState, NormalConversion);
   }
 
-  CORE_EXPORT static inline uint16_t nativeValue(
+  static inline uint16_t nativeValue(
       v8::Isolate* isolate,
       v8::Local<v8::Value> value,
       ExceptionState& exceptionState,
@@ -103,15 +103,15 @@ struct NativeValueTraits<IDLUnsignedShort>
 };
 
 template <>
-struct NativeValueTraits<IDLLong> : public NativeValueTraitsBase<IDLLong> {
-  CORE_EXPORT static inline int32_t nativeValue(
-      v8::Isolate* isolate,
-      v8::Local<v8::Value> value,
-      ExceptionState& exceptionState) {
+struct CORE_EXPORT NativeValueTraits<IDLLong>
+    : public NativeValueTraitsBase<IDLLong> {
+  static inline int32_t nativeValue(v8::Isolate* isolate,
+                                    v8::Local<v8::Value> value,
+                                    ExceptionState& exceptionState) {
     return nativeValue(isolate, value, exceptionState, NormalConversion);
   }
 
-  CORE_EXPORT static inline int32_t nativeValue(
+  static inline int32_t nativeValue(
       v8::Isolate* isolate,
       v8::Local<v8::Value> value,
       ExceptionState& exceptionState,
@@ -121,16 +121,15 @@ struct NativeValueTraits<IDLLong> : public NativeValueTraitsBase<IDLLong> {
 };
 
 template <>
-struct NativeValueTraits<IDLUnsignedLong>
+struct CORE_EXPORT NativeValueTraits<IDLUnsignedLong>
     : public NativeValueTraitsBase<IDLUnsignedLong> {
-  CORE_EXPORT static inline uint32_t nativeValue(
-      v8::Isolate* isolate,
-      v8::Local<v8::Value> value,
-      ExceptionState& exceptionState) {
+  static inline uint32_t nativeValue(v8::Isolate* isolate,
+                                     v8::Local<v8::Value> value,
+                                     ExceptionState& exceptionState) {
     return nativeValue(isolate, value, exceptionState, NormalConversion);
   }
 
-  CORE_EXPORT static inline uint32_t nativeValue(
+  static inline uint32_t nativeValue(
       v8::Isolate* isolate,
       v8::Local<v8::Value> value,
       ExceptionState& exceptionState,
@@ -140,16 +139,15 @@ struct NativeValueTraits<IDLUnsignedLong>
 };
 
 template <>
-struct NativeValueTraits<IDLLongLong>
+struct CORE_EXPORT NativeValueTraits<IDLLongLong>
     : public NativeValueTraitsBase<IDLLongLong> {
-  CORE_EXPORT static inline int64_t nativeValue(
-      v8::Isolate* isolate,
-      v8::Local<v8::Value> value,
-      ExceptionState& exceptionState) {
+  static inline int64_t nativeValue(v8::Isolate* isolate,
+                                    v8::Local<v8::Value> value,
+                                    ExceptionState& exceptionState) {
     return nativeValue(isolate, value, exceptionState, NormalConversion);
   }
 
-  CORE_EXPORT static inline int64_t nativeValue(
+  static inline int64_t nativeValue(
       v8::Isolate* isolate,
       v8::Local<v8::Value> value,
       ExceptionState& exceptionState,
@@ -159,16 +157,15 @@ struct NativeValueTraits<IDLLongLong>
 };
 
 template <>
-struct NativeValueTraits<IDLUnsignedLongLong>
+struct CORE_EXPORT NativeValueTraits<IDLUnsignedLongLong>
     : public NativeValueTraitsBase<IDLUnsignedLongLong> {
-  CORE_EXPORT static inline uint64_t nativeValue(
-      v8::Isolate* isolate,
-      v8::Local<v8::Value> value,
-      ExceptionState& exceptionState) {
+  static inline uint64_t nativeValue(v8::Isolate* isolate,
+                                     v8::Local<v8::Value> value,
+                                     ExceptionState& exceptionState) {
     return nativeValue(isolate, value, exceptionState, NormalConversion);
   }
 
-  CORE_EXPORT static inline uint64_t nativeValue(
+  static inline uint64_t nativeValue(
       v8::Isolate* isolate,
       v8::Local<v8::Value> value,
       ExceptionState& exceptionState,
@@ -179,28 +176,29 @@ struct NativeValueTraits<IDLUnsignedLongLong>
 
 // Strings
 template <>
-struct NativeValueTraits<IDLByteString>
+struct CORE_EXPORT NativeValueTraits<IDLByteString>
     : public NativeValueTraitsBase<IDLByteString> {
-  CORE_EXPORT static inline String nativeValue(v8::Isolate* isolate,
-                                               v8::Local<v8::Value> value,
-                                               ExceptionState& exceptionState) {
+  static inline String nativeValue(v8::Isolate* isolate,
+                                   v8::Local<v8::Value> value,
+                                   ExceptionState& exceptionState) {
     return toByteString(isolate, value, exceptionState);
   }
 };
 
 template <>
-struct NativeValueTraits<IDLString> : public NativeValueTraitsBase<IDLString> {
-  CORE_EXPORT static inline String nativeValue(v8::Isolate* isolate,
-                                               v8::Local<v8::Value> value,
-                                               ExceptionState& exceptionState) {
+struct CORE_EXPORT NativeValueTraits<IDLString>
+    : public NativeValueTraitsBase<IDLString> {
+  static inline String nativeValue(v8::Isolate* isolate,
+                                   v8::Local<v8::Value> value,
+                                   ExceptionState& exceptionState) {
     return nativeValue<V8StringResourceMode::DefaultMode>(isolate, value,
                                                           exceptionState);
   }
 
   template <V8StringResourceMode Mode = DefaultMode>
-  CORE_EXPORT static inline String nativeValue(v8::Isolate* isolate,
-                                               v8::Local<v8::Value> value,
-                                               ExceptionState& exceptionState) {
+  static inline String nativeValue(v8::Isolate* isolate,
+                                   v8::Local<v8::Value> value,
+                                   ExceptionState& exceptionState) {
     V8StringResource<Mode> string(value);
     if (!string.prepare(isolate, exceptionState))
       return String();
@@ -209,78 +207,79 @@ struct NativeValueTraits<IDLString> : public NativeValueTraitsBase<IDLString> {
 };
 
 template <>
-struct NativeValueTraits<IDLUSVString>
+struct CORE_EXPORT NativeValueTraits<IDLUSVString>
     : public NativeValueTraitsBase<IDLUSVString> {
-  CORE_EXPORT static inline String nativeValue(v8::Isolate* isolate,
-                                               v8::Local<v8::Value> value,
-                                               ExceptionState& exceptionState) {
+  static inline String nativeValue(v8::Isolate* isolate,
+                                   v8::Local<v8::Value> value,
+                                   ExceptionState& exceptionState) {
     return toUSVString(isolate, value, exceptionState);
   }
 };
 
 // Floats and doubles
 template <>
-struct NativeValueTraits<IDLDouble> : public NativeValueTraitsBase<IDLDouble> {
-  CORE_EXPORT static inline double nativeValue(v8::Isolate* isolate,
-                                               v8::Local<v8::Value> value,
-                                               ExceptionState& exceptionState) {
+struct CORE_EXPORT NativeValueTraits<IDLDouble>
+    : public NativeValueTraitsBase<IDLDouble> {
+  static inline double nativeValue(v8::Isolate* isolate,
+                                   v8::Local<v8::Value> value,
+                                   ExceptionState& exceptionState) {
     return toRestrictedDouble(isolate, value, exceptionState);
   }
 };
 
 template <>
-struct NativeValueTraits<IDLUnrestrictedDouble>
+struct CORE_EXPORT NativeValueTraits<IDLUnrestrictedDouble>
     : public NativeValueTraitsBase<IDLUnrestrictedDouble> {
-  CORE_EXPORT static inline double nativeValue(v8::Isolate* isolate,
-                                               v8::Local<v8::Value> value,
-                                               ExceptionState& exceptionState) {
+  static inline double nativeValue(v8::Isolate* isolate,
+                                   v8::Local<v8::Value> value,
+                                   ExceptionState& exceptionState) {
     return toDouble(isolate, value, exceptionState);
   }
 };
 
 template <>
-struct NativeValueTraits<IDLFloat> : public NativeValueTraitsBase<IDLFloat> {
-  CORE_EXPORT static inline float nativeValue(v8::Isolate* isolate,
-                                              v8::Local<v8::Value> value,
-                                              ExceptionState& exceptionState) {
+struct CORE_EXPORT NativeValueTraits<IDLFloat>
+    : public NativeValueTraitsBase<IDLFloat> {
+  static inline float nativeValue(v8::Isolate* isolate,
+                                  v8::Local<v8::Value> value,
+                                  ExceptionState& exceptionState) {
     return toRestrictedFloat(isolate, value, exceptionState);
   }
 };
 
 template <>
-struct NativeValueTraits<IDLUnrestrictedFloat>
+struct CORE_EXPORT NativeValueTraits<IDLUnrestrictedFloat>
     : public NativeValueTraitsBase<IDLUnrestrictedFloat> {
-  CORE_EXPORT static inline float nativeValue(v8::Isolate* isolate,
-                                              v8::Local<v8::Value> value,
-                                              ExceptionState& exceptionState) {
+  static inline float nativeValue(v8::Isolate* isolate,
+                                  v8::Local<v8::Value> value,
+                                  ExceptionState& exceptionState) {
     return toFloat(isolate, value, exceptionState);
   }
 };
 
 // Promises
 template <>
-struct NativeValueTraits<IDLPromise>
+struct CORE_EXPORT NativeValueTraits<IDLPromise>
     : public NativeValueTraitsBase<IDLPromise> {
-  CORE_EXPORT static inline ScriptPromise nativeValue(
-      v8::Isolate* isolate,
-      v8::Local<v8::Value> value,
-      ExceptionState& exceptionState) {
+  static inline ScriptPromise nativeValue(v8::Isolate* isolate,
+                                          v8::Local<v8::Value> value,
+                                          ExceptionState& exceptionState) {
     return nativeValue(isolate, value);
   }
 
-  CORE_EXPORT static inline ScriptPromise nativeValue(
-      v8::Isolate* isolate,
-      v8::Local<v8::Value> value) {
+  static inline ScriptPromise nativeValue(v8::Isolate* isolate,
+                                          v8::Local<v8::Value> value) {
     return ScriptPromise::cast(ScriptState::current(isolate), value);
   }
 };
 
 // Type-specific overloads
 template <>
-struct NativeValueTraits<IDLDate> : public NativeValueTraitsBase<IDLDate> {
-  CORE_EXPORT static inline double nativeValue(v8::Isolate* isolate,
-                                               v8::Local<v8::Value> value,
-                                               ExceptionState& exceptionState) {
+struct CORE_EXPORT NativeValueTraits<IDLDate>
+    : public NativeValueTraitsBase<IDLDate> {
+  static inline double nativeValue(v8::Isolate* isolate,
+                                   v8::Local<v8::Value> value,
+                                   ExceptionState& exceptionState) {
     return toCoreDate(isolate, value, exceptionState);
   }
 };
@@ -292,17 +291,16 @@ struct NativeValueTraits<IDLSequence<T>>
   // Nondependent types need to be explicitly qualified to be accessible.
   using typename NativeValueTraitsBase<IDLSequence<T>>::ImplType;
 
-  CORE_EXPORT static inline ImplType nativeValue(
-      v8::Isolate* isolate,
-      v8::Local<v8::Value> value,
-      ExceptionState& exceptionState) {
+  static inline ImplType nativeValue(v8::Isolate* isolate,
+                                     v8::Local<v8::Value> value,
+                                     ExceptionState& exceptionState) {
     return nativeValue(isolate, value, exceptionState, 0);
   }
 
-  CORE_EXPORT static inline ImplType nativeValue(v8::Isolate* isolate,
-                                                 v8::Local<v8::Value> value,
-                                                 ExceptionState& exceptionState,
-                                                 int index) {
+  static inline ImplType nativeValue(v8::Isolate* isolate,
+                                     v8::Local<v8::Value> value,
+                                     ExceptionState& exceptionState,
+                                     int index) {
     return toImplArray<ImplType, T>(value, index, isolate, exceptionState);
   }
 };
