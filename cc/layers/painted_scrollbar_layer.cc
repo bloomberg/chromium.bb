@@ -61,6 +61,14 @@ int PaintedScrollbarLayer::ScrollLayerId() const {
   return scroll_layer_id_;
 }
 
+void PaintedScrollbarLayer::SetScrollLayer(int layer_id) {
+  if (layer_id == scroll_layer_id_)
+    return;
+
+  scroll_layer_id_ = layer_id;
+  SetNeedsFullTreeSync();
+}
+
 bool PaintedScrollbarLayer::OpacityCanAnimateOnImplThread() const {
   return scrollbar_->IsOverlay();
 }

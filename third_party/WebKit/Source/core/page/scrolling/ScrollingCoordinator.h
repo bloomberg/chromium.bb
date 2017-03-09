@@ -49,7 +49,6 @@ class Page;
 class PaintLayer;
 class Region;
 class ScrollableArea;
-class WebLayer;
 class WebLayerTreeView;
 class WebScrollbarLayer;
 
@@ -106,8 +105,7 @@ class CORE_EXPORT ScrollingCoordinator final
       ScrollbarOrientation,
       int thumbThickness,
       int trackStart,
-      bool isLeftSideVerticalScrollbar,
-      WebLayer* scrollLayer);
+      bool isLeftSideVerticalScrollbar);
 
   void willDestroyScrollableArea(ScrollableArea*);
   // Returns true if the coordinator handled this change.

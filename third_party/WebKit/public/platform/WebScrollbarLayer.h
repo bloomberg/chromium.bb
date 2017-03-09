@@ -37,6 +37,8 @@ class WebScrollbarLayer {
   virtual ~WebScrollbarLayer() {}
 
   virtual WebLayer* layer() = 0;
+
+  virtual void setScrollLayer(WebLayer*) = 0;
 };
 
 }  // namespace blink

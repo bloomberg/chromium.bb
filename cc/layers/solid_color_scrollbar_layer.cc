@@ -99,6 +99,14 @@ int SolidColorScrollbarLayer::ScrollLayerId() const {
   return solid_color_scrollbar_layer_inputs_.scroll_layer_id;
 }
 
+void SolidColorScrollbarLayer::SetScrollLayer(int layer_id) {
+  if (layer_id == solid_color_scrollbar_layer_inputs_.scroll_layer_id)
+    return;
+
+  solid_color_scrollbar_layer_inputs_.scroll_layer_id = layer_id;
+  SetNeedsFullTreeSync();
+}
+
 ScrollbarOrientation SolidColorScrollbarLayer::orientation() const {
   return solid_color_scrollbar_layer_inputs_.orientation;
 }

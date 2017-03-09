@@ -339,8 +339,7 @@ void ScrollingCoordinator::removeWebScrollbarLayer(
 
 static std::unique_ptr<WebScrollbarLayer> createScrollbarLayer(
     Scrollbar& scrollbar,
-    float deviceScaleFactor,
-    WebLayer* scrollLayer) {
+    float deviceScaleFactor) {
   ScrollbarTheme& theme = scrollbar.theme();
   WebScrollbarThemePainter painter(theme, scrollbar, deviceScaleFactor);
   std::unique_ptr<WebScrollbarThemeGeometry> geometry(
@@ -350,13 +349,11 @@ static std::unique_ptr<WebScrollbarLayer> createScrollbarLayer(
   if (theme.usesOverlayScrollbars() && theme.usesNinePatchThumbResource()) {
     scrollbarLayer =
         Platform::current()->compositorSupport()->createOverlayScrollbarLayer(
-            WebScrollbarImpl::create(&scrollbar), painter, std::move(geometry),
-            scrollLayer);
+            WebScrollbarImpl::create(&scrollbar), painter, std::move(geometry));
   } else {
     scrollbarLayer =
         Platform::current()->compositorSupport()->createScrollbarLayer(
-            WebScrollbarImpl::create(&scrollbar), painter, std::move(geometry),
-            scrollLayer);
+            WebScrollbarImpl::create(&scrollbar), painter, std::move(geometry));
   }
   GraphicsLayer::registerContentsLayer(scrollbarLayer->layer());
   return scrollbarLayer;
@@ -367,15 +364,14 @@ ScrollingCoordinator::createSolidColorScrollbarLayer(
     ScrollbarOrientation orientation,
     int thumbThickness,
     int trackStart,
-    bool isLeftSideVerticalScrollbar,
-    WebLayer* scrollLayer) {
+    bool isLeftSideVerticalScrollbar) {
   WebScrollbar::Orientation webOrientation =
       (orientation == HorizontalScrollbar) ? WebScrollbar::Horizontal
                                            : WebScrollbar::Vertical;
   std::unique_ptr<WebScrollbarLayer> scrollbarLayer =
       Platform::current()->compositorSupport()->createSolidColorScrollbarLayer(
           webOrientation, thumbThickness, trackStart,
-          isLeftSideVerticalScrollbar, scrollLayer);
+          isLeftSideVerticalScrollbar);
   GraphicsLayer::registerContentsLayer(scrollbarLayer->layer());
   return scrollbarLayer;
 }
@@ -397,6 +393,7 @@ static void setupScrollbarLayer(GraphicsLayer* scrollbarGraphicsLayer,
     detachScrollbarLayer(scrollbarGraphicsLayer);
     return;
   }
+  scrollbarLayer->setScrollLayer(scrollLayer);
   scrollbarGraphicsLayer->setContentsToPlatformLayer(scrollbarLayer->layer());
   scrollbarGraphicsLayer->setDrawsContent(false);
 }
@@ -448,13 +445,6 @@ void ScrollingCoordinator::scrollableAreaScrollbarLayerDidChange(
     // scrollbar becomes a non-custom one.
     scrollbarGraphicsLayer->platformLayer()->clearMainThreadScrollingReasons(
         MainThreadScrollingReason::kCustomScrollbarScrolling);
-
-    WebLayer* scrollLayer = toWebLayer(scrollableArea->layerForScrolling());
-    if (!scrollLayer) {
-      detachScrollbarLayer(scrollbarGraphicsLayer);
-      return;
-    }
-
     WebScrollbarLayer* scrollbarLayer =
         getWebScrollbarLayer(scrollableArea, orientation);
     if (!scrollbarLayer) {
@@ -466,15 +456,16 @@ void ScrollingCoordinator::scrollableAreaScrollbarLayerDidChange(
         webScrollbarLayer = createSolidColorScrollbarLayer(
             orientation, scrollbar.theme().thumbThickness(scrollbar),
             scrollbar.theme().trackPosition(scrollbar),
-            scrollableArea->shouldPlaceVerticalScrollbarOnLeft(), scrollLayer);
+            scrollableArea->shouldPlaceVerticalScrollbarOnLeft());
       } else {
         webScrollbarLayer = createScrollbarLayer(
-            scrollbar, m_page->deviceScaleFactorDeprecated(), scrollLayer);
+            scrollbar, m_page->deviceScaleFactorDeprecated());
       }
       scrollbarLayer = addWebScrollbarLayer(scrollableArea, orientation,
                                             std::move(webScrollbarLayer));
     }
 
+    WebLayer* scrollLayer = toWebLayer(scrollableArea->layerForScrolling());
     setupScrollbarLayer(scrollbarGraphicsLayer, scrollbarLayer, scrollLayer);
 
     // Root layer non-overlay scrollbars should be marked opaque to disable

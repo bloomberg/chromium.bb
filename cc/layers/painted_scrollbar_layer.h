@@ -30,6 +30,8 @@ class CC_EXPORT PaintedScrollbarLayer : public ScrollbarLayerInterface,
 
   // ScrollbarLayerInterface
   int ScrollLayerId() const override;
+  void SetScrollLayer(int layer_id) override;
+
   ScrollbarOrientation orientation() const override;
 
   // Layer interface

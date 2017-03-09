@@ -3838,6 +3838,12 @@ void WebViewImpl::registerViewportLayersWithCompositor() {
                                 : nullptr;
 
   VisualViewport& visualViewport = page()->frameHost().visualViewport();
+
+  // TODO(bokan): This was moved here from when registerViewportLayers was a
+  // part of VisualViewport and maybe doesn't belong here. See comment inside
+  // the mehtod.
+  visualViewport.setScrollLayerOnScrollbars(layoutViewportWebLayer);
+
   m_layerTreeView->registerViewportLayers(
       visualViewport.overscrollElasticityLayer()->platformLayer(),
       visualViewport.pageScaleLayer()->platformLayer(),

@@ -68,21 +68,18 @@ class WebCompositorSupport {
   virtual std::unique_ptr<WebScrollbarLayer> createScrollbarLayer(
       std::unique_ptr<WebScrollbar>,
       WebScrollbarThemePainter,
-      std::unique_ptr<WebScrollbarThemeGeometry>,
-      WebLayer* scrollLayer) = 0;
+      std::unique_ptr<WebScrollbarThemeGeometry>) = 0;
 
   virtual std::unique_ptr<WebScrollbarLayer> createOverlayScrollbarLayer(
       std::unique_ptr<WebScrollbar>,
       WebScrollbarThemePainter,
-      std::unique_ptr<WebScrollbarThemeGeometry>,
-      WebLayer* scrollLayer) = 0;
+      std::unique_ptr<WebScrollbarThemeGeometry>) = 0;
 
   virtual std::unique_ptr<WebScrollbarLayer> createSolidColorScrollbarLayer(
       WebScrollbar::Orientation,
       int thumbThickness,
       int trackStart,
-      bool isLeftSideVerticalScrollbar,
-      WebLayer* scrollLayer) = 0;
+      bool isLeftSideVerticalScrollbar) = 0;
 
  protected:
   virtual ~WebCompositorSupport() {}

@@ -36,6 +36,7 @@ class CC_EXPORT SolidColorScrollbarLayer : public ScrollbarLayerInterface,
 
   // ScrollbarLayerInterface
   int ScrollLayerId() const override;
+  void SetScrollLayer(int layer_id) override;
 
   ScrollbarOrientation orientation() const override;
 
