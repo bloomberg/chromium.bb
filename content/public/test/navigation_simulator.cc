@@ -230,6 +230,11 @@ void NavigationSimulator::Commit() {
   if (IsBrowserSideNavigationEnabled() &&
       render_frame_host_->frame_tree_node()->navigation_request()) {
     render_frame_host_->PrepareForCommit();
+    // Synchronous failure can cause the navigation to finish here.
+    if (!handle_) {
+      state_ = FAILED;
+      return;
+    }
   }
 
   // Call NavigationHandle::WillProcessResponse if needed.
@@ -508,8 +513,10 @@ void NavigationSimulator::ReadyToCommitNavigation(
 
 void NavigationSimulator::DidFinishNavigation(
     NavigationHandle* navigation_handle) {
-  if (navigation_handle == handle_)
+  if (navigation_handle == handle_) {
     num_did_finish_navigation_called_++;
+    handle_ = nullptr;
+  }
 }
 
 void NavigationSimulator::OnWillStartRequest() {
