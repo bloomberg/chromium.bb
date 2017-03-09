@@ -47,6 +47,10 @@ typedef NS_ENUM(NSInteger, CollectionViewControllerStyle) {
 - (void)reconfigureCellsForItems:(NSArray*)items
          inSectionWithIdentifier:(NSInteger)sectionIdentifier;
 
+// Reconfigures the cells corresponding to the given |indexPaths| by calling
+// |configureCell:| on each cell.
+- (void)reconfigureCellsAtIndexPaths:(NSArray*)indexPaths;
+
 #pragma mark MDCCollectionViewEditingDelegate
 
 // Updates the model with changes to the collection view items. Must be called

@@ -74,14 +74,15 @@
     NSIndexPath* indexPath =
         [self.collectionViewModel indexPathForItem:item
                            inSectionWithIdentifier:sectionIdentifier];
-    MDCCollectionViewCell* cell =
-        base::mac::ObjCCastStrict<MDCCollectionViewCell>(
-            [self.collectionView cellForItemAtIndexPath:indexPath]);
+    [self reconfigureCellAtIndexPath:indexPath withItem:item];
+  }
+}
 
-    // |cell| may be nil if the row is not currently on screen.
-    if (cell) {
-      [item configureCell:cell];
-    }
+- (void)reconfigureCellsAtIndexPaths:(NSArray*)indexPaths {
+  for (NSIndexPath* indexPath in indexPaths) {
+    CollectionViewItem* item =
+        [self.collectionViewModel itemAtIndexPath:indexPath];
+    [self reconfigureCellAtIndexPath:indexPath withItem:item];
   }
 }
 
@@ -265,6 +266,21 @@
     [headerView
         trackingScrollViewWillEndDraggingWithVelocity:velocity
                                   targetContentOffset:targetContentOffset];
+  }
+}
+
+#pragma mark - Private
+
+// Reconfigures the cell at |indexPath| by calling |configureCell:| with |item|.
+- (void)reconfigureCellAtIndexPath:(NSIndexPath*)indexPath
+                          withItem:(CollectionViewItem*)item {
+  MDCCollectionViewCell* cell =
+      base::mac::ObjCCastStrict<MDCCollectionViewCell>(
+          [self.collectionView cellForItemAtIndexPath:indexPath]);
+
+  // |cell| may be nil if the row is not currently on screen.
+  if (cell) {
+    [item configureCell:cell];
   }
 }
 
