@@ -18,6 +18,7 @@
 #include "base/logging_win.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/process/memory.h"
 #include "base/process/process.h"
 #include "base/run_loop.h"
 #include "base/sequenced_task_runner.h"
@@ -31,6 +32,7 @@
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "base/win/process_startup_helper.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/win_util.h"
 #include "chrome/chrome_watcher/chrome_watcher_main_api.h"
@@ -201,6 +203,13 @@ extern "C" int WatcherMain(const base::char16* registry_path,
   // Arrange to be shut down as late as possible, as we want to outlive
   // chrome.exe in order to report its exit status.
   ::SetProcessShutdownParameters(0x100, SHUTDOWN_NORETRY);
+
+  // Make sure the process exits cleanly on unexpected errors.
+  base::EnableTerminationOnHeapCorruption();
+  base::EnableTerminationOnOutOfMemory();
+  base::win::RegisterInvalidParamHandler();
+  const base::CommandLine& cmd_line = *base::CommandLine::ForCurrentProcess();
+  base::win::SetupCRT(cmd_line);
 
   // Run a UI message loop on the main thread.
   base::PlatformThread::SetName("WatcherMainThread");
