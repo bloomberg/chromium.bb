@@ -1824,6 +1824,8 @@ crbug.com/695270 [ Linux ] external/csswg-test/css-writing-modes-3/overconstrain
 crbug.com/695270 [ Linux ] external/csswg-test/css-writing-modes-3/overconstrained-rel-pos-rtl-top-bottom-vlr-007.xht [ Failure ]
 crbug.com/695270 [ Linux ] external/csswg-test/css-writing-modes-3/overconstrained-rel-pos-rtl-top-bottom-vrl-006.xht [ Failure ]
 
+crbug.com/626703 external/wpt/domxpath/001.html [ Failure ]
+
 # ====== New tests from w3c-test-autoroller added here ======
 crbug.com/626703 [ Android Win10 ] external/wpt/fullscreen/api/document-exit-fullscreen-nested-in-iframe-manual.html [ Timeout ]
 crbug.com/626703 external/wpt/html/infrastructure/urls/resolving-urls/query-encoding/utf-16be.html [ Timeout ]

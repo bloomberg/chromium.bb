@@ -661,10 +661,6 @@ external/wpt/html/semantics/embedded-content/the-iframe-element/iframe_sandbox_p
 external/wpt/html/semantics/forms/form-submission-0/url-encoded.html [ Skip ]
 external/wpt/svg/linking/scripted [ Skip ]
 
-# They have a wrong encoding, and test_parser.py throws UnicodeEncodeError.
-external/wpt/domxpath/001.html [ Skip ]
-external/wpt/domxpath/002.html [ Skip ]
-
 # This test depends on a support file with non-LF new lines, which
 # causes a patch error in the bot_update step when importing this test.
 crbug.com/691107 external/wpt/webvtt/webvtt-file-format-parsing/webvtt-file-parsing/001.html [ Skip ]
