@@ -58,10 +58,6 @@ std::unique_ptr<LayerImpl> PaintedScrollbarLayerImpl::CreateLayerImpl(
 }
 
 void PaintedScrollbarLayerImpl::PushPropertiesTo(LayerImpl* layer) {
-  // TODO(bokan): Remove these CHECKS once the cause of the crash is
-  // determined. http://crbug.com/699504.
-  CHECK(layer_tree_impl());
-  CHECK(layer->layer_tree_impl());
   ScrollbarLayerImplBase::PushPropertiesTo(layer);
 
   PaintedScrollbarLayerImpl* scrollbar_layer =

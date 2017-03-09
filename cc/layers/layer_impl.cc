@@ -84,9 +84,7 @@ LayerImpl::LayerImpl(LayerTreeImpl* tree_impl, int id)
       scrollbars_hidden_(false) {
   DCHECK_GT(layer_id_, 0);
 
-  // TODO(bokan): Demote this CHECK back to a DCHECK once the cause of the
-  // crash is determined. http://crbug.com/699504.
-  CHECK(layer_tree_impl_);
+  DCHECK(layer_tree_impl_);
   layer_tree_impl_->RegisterLayer(this);
   layer_tree_impl_->AddToElementMap(this);
 
