@@ -21,6 +21,7 @@
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_status.h"
@@ -81,8 +82,38 @@ void ThreatDetailsCacheCollector::OpenEntry() {
     return;
   }
 
-  current_fetch_ = net::URLFetcher::Create(GURL(resources_it_->first),
-                                           net::URLFetcher::GET, this);
+  net::NetworkTrafficAnnotationTag traffic_annotation =
+      net::DefineNetworkTrafficAnnotation("safe_browsing_cache_collector", R"(
+        semantics {
+          sender: "Threat Details Cache Collector"
+          description:
+            "This request fetches different items from safe browsing cache "
+            "and DOES NOT make an actual network request."
+          trigger:
+            "When safe browsing extended report is collecting data."
+          data:
+            "None"
+          destination: OTHER
+        }
+        policy {
+          cookies_allowed: false
+          setting:
+            "Users can enable or disable this feature by stopping sending "
+            "security incident reports to Google via disabling 'Automatically "
+            "report details of possible security incdients to Google.' in "
+            "Chrome's settings under Advanced Settings, Privacy. The feature "
+            "is disabled by default."
+          chrome_policy {
+            SafeBrowsingExtendedReportingOptInAllowed {
+              policy_options {mode: MANDATORY}
+              SafeBrowsingExtendedReportingOptInAllowed: false
+            }
+          }
+        })");
+
+  current_fetch_ =
+      net::URLFetcher::Create(GURL(resources_it_->first), net::URLFetcher::GET,
+                              this, traffic_annotation);
   data_use_measurement::DataUseUserData::AttachToFetcher(
       current_fetch_.get(),
       data_use_measurement::DataUseUserData::SAFE_BROWSING);

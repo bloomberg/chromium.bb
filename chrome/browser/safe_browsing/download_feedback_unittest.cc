@@ -14,6 +14,7 @@
 #include "chrome/common/safe_browsing/csd.pb.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -75,7 +76,8 @@ class FakeUploaderFactory : public TwoPhaseUploaderFactory {
       const std::string& metadata,
       const base::FilePath& file_path,
       const TwoPhaseUploader::ProgressCallback& progress_callback,
-      const TwoPhaseUploader::FinishCallback& finish_callback) override;
+      const TwoPhaseUploader::FinishCallback& finish_callback,
+      const net::NetworkTrafficAnnotationTag& traffic_annotation) override;
 
   FakeUploader* uploader_;
 };
@@ -87,7 +89,8 @@ std::unique_ptr<TwoPhaseUploader> FakeUploaderFactory::CreateTwoPhaseUploader(
     const std::string& metadata,
     const base::FilePath& file_path,
     const TwoPhaseUploader::ProgressCallback& progress_callback,
-    const TwoPhaseUploader::FinishCallback& finish_callback) {
+    const TwoPhaseUploader::FinishCallback& finish_callback,
+    const net::NetworkTrafficAnnotationTag& traffic_annotation) {
   EXPECT_FALSE(uploader_);
 
   uploader_ = new FakeUploader(url_request_context_getter, file_task_runner,

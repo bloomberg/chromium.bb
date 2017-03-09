@@ -128,12 +128,48 @@ void DownloadFeedbackImpl::Start(const base::Closure& finish_callback) {
   std::string metadata_string;
   bool ok = report_metadata.SerializeToString(&metadata_string);
   DCHECK(ok);
+
+  net::NetworkTrafficAnnotationTag traffic_annotation =
+      net::DefineNetworkTrafficAnnotation("safe_browsing_feedback", R"(
+        semantics {
+          sender: "Safe Browsing Download Protection Feedback"
+          description:
+            "When a user downloads a binary that Safe Browsing declares as "
+            "suspicious, opted-in clients may upload that binary to Safe "
+            "Browsing to improve the classification. This helps protect users "
+            "from malware and unwanted software."
+          trigger:
+            "The browser will upload the binary to Google when a "
+            "download-protection verdict is 'Not Safe', and the user is opted "
+            "in to extended reporting."
+          data:
+            "The suspicious binary file."
+          destination: GOOGLE_OWNED_SERVICE
+        }
+        policy {
+          cookies_allowed: true
+          cookies_store: "Safe Browsing Cookie Store"
+          setting:
+            "Users can enable or disable this feature by stopping sending "
+            "security incident reports to Google via disabling 'Automatically "
+            "report details of possible security incidents to Google.' in "
+            "Chrome's settings under Advanced Settings, Privacy. The feature "
+            "is disabled by default."
+          chrome_policy {
+            SafeBrowsingExtendedReportingOptInAllowed {
+              policy_options {mode: MANDATORY}
+              SafeBrowsingExtendedReportingOptInAllowed: false
+            }
+          }
+        })");
+
   uploader_ = TwoPhaseUploader::Create(
       request_context_getter_.get(), file_task_runner_.get(),
       GURL(kSbFeedbackURL), metadata_string, file_path_,
       TwoPhaseUploader::ProgressCallback(),
       base::Bind(&DownloadFeedbackImpl::FinishedUpload, base::Unretained(this),
-                 finish_callback));
+                 finish_callback),
+      traffic_annotation);
   uploader_->Start();
 }
 

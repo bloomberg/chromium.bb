@@ -12,6 +12,7 @@
 
 #include "base/callback.h"
 #include "base/files/file_path.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "url/gurl.h"
 
@@ -69,7 +70,8 @@ class TwoPhaseUploader {
       const std::string& metadata,
       const base::FilePath& file_path,
       const ProgressCallback& progress_callback,
-      const FinishCallback& finish_callback);
+      const FinishCallback& finish_callback,
+      const net::NetworkTrafficAnnotationTag& traffic_annotation);
 
   // Makes the passed |factory| the factory used to instantiate
   // a TwoPhaseUploader. Useful for tests.
@@ -97,7 +99,8 @@ class TwoPhaseUploaderFactory {
       const std::string& metadata,
       const base::FilePath& file_path,
       const TwoPhaseUploader::ProgressCallback& progress_callback,
-      const TwoPhaseUploader::FinishCallback& finish_callback) = 0;
+      const TwoPhaseUploader::FinishCallback& finish_callback,
+      const net::NetworkTrafficAnnotationTag& traffic_annotation) = 0;
 };
 
 #endif  // CHROME_BROWSER_SAFE_BROWSING_TWO_PHASE_UPLOADER_H_

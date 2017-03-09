@@ -12,6 +12,7 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
 #include "net/base/net_errors.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -84,7 +85,8 @@ TEST_F(TwoPhaseUploaderTest, UploadFile) {
       test_server.GetURL("start"), "metadata", GetTestFilePath(),
       base::Bind(&Delegate::ProgressCallback, base::Unretained(&delegate)),
       base::Bind(&Delegate::FinishCallback, base::Unretained(&delegate),
-                 runner)));
+                 runner),
+      TRAFFIC_ANNOTATION_FOR_TESTS));
   uploader->Start();
   runner->Run();
   EXPECT_EQ(TwoPhaseUploader::STATE_SUCCESS, delegate.state_);
@@ -108,7 +110,8 @@ TEST_F(TwoPhaseUploaderTest, BadPhaseOneResponse) {
       test_server.GetURL("start?p1code=500"), "metadata", GetTestFilePath(),
       base::Bind(&Delegate::ProgressCallback, base::Unretained(&delegate)),
       base::Bind(&Delegate::FinishCallback, base::Unretained(&delegate),
-                 runner)));
+                 runner),
+      TRAFFIC_ANNOTATION_FOR_TESTS));
   uploader->Start();
   runner->Run();
   EXPECT_EQ(TwoPhaseUploader::UPLOAD_METADATA, delegate.state_);
@@ -128,7 +131,8 @@ TEST_F(TwoPhaseUploaderTest, BadPhaseTwoResponse) {
       test_server.GetURL("start?p2code=500"), "metadata", GetTestFilePath(),
       base::Bind(&Delegate::ProgressCallback, base::Unretained(&delegate)),
       base::Bind(&Delegate::FinishCallback, base::Unretained(&delegate),
-                 runner)));
+                 runner),
+      TRAFFIC_ANNOTATION_FOR_TESTS));
   uploader->Start();
   runner->Run();
   EXPECT_EQ(TwoPhaseUploader::UPLOAD_FILE, delegate.state_);
@@ -152,7 +156,8 @@ TEST_F(TwoPhaseUploaderTest, PhaseOneConnectionClosed) {
       test_server.GetURL("start?p1close=1"), "metadata", GetTestFilePath(),
       base::Bind(&Delegate::ProgressCallback, base::Unretained(&delegate)),
       base::Bind(&Delegate::FinishCallback, base::Unretained(&delegate),
-                 runner)));
+                 runner),
+      TRAFFIC_ANNOTATION_FOR_TESTS));
   uploader->Start();
   runner->Run();
   EXPECT_EQ(TwoPhaseUploader::UPLOAD_METADATA, delegate.state_);
@@ -172,7 +177,8 @@ TEST_F(TwoPhaseUploaderTest, PhaseTwoConnectionClosed) {
       test_server.GetURL("start?p2close=1"), "metadata", GetTestFilePath(),
       base::Bind(&Delegate::ProgressCallback, base::Unretained(&delegate)),
       base::Bind(&Delegate::FinishCallback, base::Unretained(&delegate),
-                 runner)));
+                 runner),
+      TRAFFIC_ANNOTATION_FOR_TESTS));
   uploader->Start();
   runner->Run();
   EXPECT_EQ(TwoPhaseUploader::UPLOAD_FILE, delegate.state_);
