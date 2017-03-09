@@ -301,11 +301,9 @@ static void search_selfguided_restoration(uint8_t *dat8, int width, int height,
     } else {
 #endif
       av1_selfguided_restoration(dat8, width, height, dat_stride, flt1, width,
-                                 bit_depth, sgr_params[ep].r1,
-                                 sgr_params[ep].e1, tmpbuf2);
+                                 sgr_params[ep].r1, sgr_params[ep].e1, tmpbuf2);
       av1_selfguided_restoration(dat8, width, height, dat_stride, flt2, width,
-                                 bit_depth, sgr_params[ep].r2,
-                                 sgr_params[ep].e2, tmpbuf2);
+                                 sgr_params[ep].r2, sgr_params[ep].e2, tmpbuf2);
 #if CONFIG_AOM_HIGHBITDEPTH
     }
 #endif
