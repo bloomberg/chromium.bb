@@ -1091,14 +1091,14 @@ void FrameSelection::moveRangeSelectionExtent(const IntPoint& contentsPoint) {
   if (computeVisibleSelectionInDOMTreeDeprecated().isNone())
     return;
 
-  VisibleSelection newSelection =
-      granularityStrategy()->updateExtent(contentsPoint, m_frame);
-  setSelection(SelectionInDOMTree::Builder(newSelection.asSelection())
+  const SetSelectionOptions options =
+      FrameSelection::CloseTyping | FrameSelection::ClearTypingStyle |
+      FrameSelection::DoNotClearStrategy | UserTriggered;
+  setSelection(SelectionInDOMTree::Builder(
+                   granularityStrategy()->updateExtent(contentsPoint, m_frame))
                    .setIsHandleVisible(true)
                    .build(),
-               FrameSelection::CloseTyping | FrameSelection::ClearTypingStyle |
-                   FrameSelection::DoNotClearStrategy | UserTriggered,
-               CursorAlignOnScroll::IfNeeded, CharacterGranularity);
+               options);
 }
 
 // TODO(yosin): We should make |FrameSelection::moveRangeSelection()| to take

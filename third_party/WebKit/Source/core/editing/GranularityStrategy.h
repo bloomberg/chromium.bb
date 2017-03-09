@@ -6,7 +6,7 @@
 #define GranularityStrategy_h
 
 #include "core/editing/SelectionStrategy.h"
-#include "core/editing/VisibleSelection.h"
+#include "core/editing/SelectionTemplate.h"
 #include "wtf/Allocator.h"
 
 namespace blink {
@@ -21,7 +21,7 @@ class GranularityStrategy {
 
   // Calculates and returns the new selection based on the updated extent
   // location in absolute coordinates.
-  virtual VisibleSelection updateExtent(const IntPoint&, LocalFrame*) = 0;
+  virtual SelectionInDOMTree updateExtent(const IntPoint&, LocalFrame*) = 0;
 
  protected:
   GranularityStrategy();
@@ -36,7 +36,7 @@ class CharacterGranularityStrategy final : public GranularityStrategy {
   // GranularityStrategy:
   SelectionStrategy GetType() const final;
   void Clear() final;
-  VisibleSelection updateExtent(const IntPoint&, LocalFrame*) final;
+  SelectionInDOMTree updateExtent(const IntPoint&, LocalFrame*) final;
 };
 
 // "Expand by word, shrink by character" selection strategy.
@@ -84,7 +84,7 @@ class DirectionGranularityStrategy final : public GranularityStrategy {
   // GranularityStrategy:
   SelectionStrategy GetType() const final;
   void Clear() final;
-  VisibleSelection updateExtent(const IntPoint&, LocalFrame*) final;
+  SelectionInDOMTree updateExtent(const IntPoint&, LocalFrame*) final;
 
  private:
   enum class StrategyState {
