@@ -1531,8 +1531,7 @@ static const aom_prob default_inter_ext_tx_prob[EXT_TX_SIZES][TX_TYPES - 1] = {
 };
 #endif  // CONFIG_EXT_TX
 
-#if CONFIG_EXT_INTRA
-#if CONFIG_INTRA_INTERP
+#if CONFIG_EXT_INTRA && CONFIG_INTRA_INTERP
 static const aom_prob
     default_intra_filter_probs[INTRA_FILTERS + 1][INTRA_FILTERS - 1] = {
       { 98, 63, 60 }, { 98, 82, 80 }, { 94, 65, 103 },
@@ -1542,8 +1541,11 @@ const aom_tree_index av1_intra_filter_tree[TREE_SIZE(INTRA_FILTERS)] = {
   -INTRA_FILTER_LINEAR,      2, -INTRA_FILTER_8TAP, 4, -INTRA_FILTER_8TAP_SHARP,
   -INTRA_FILTER_8TAP_SMOOTH,
 };
-#endif  // CONFIG_INTRA_INTERP
-#endif  // CONFIG_EXT_INTRA
+#if CONFIG_EC_MULTISYMBOL
+int av1_intra_filter_ind[INTRA_FILTERS];
+int av1_intra_filter_inv[INTRA_FILTERS];
+#endif  // CONFIG_EC_MULTISYMBOL
+#endif  // CONFIG_EXT_INTRA && CONFIG_INTRA_INTERP
 
 #if CONFIG_FILTER_INTRA
 static const aom_prob default_filter_intra_probs[2] = { 230, 230 };
@@ -1742,7 +1744,16 @@ static const aom_cdf_prob
       { 22528, 25928, 29348, 32768, 0 },
       { 24576, 27296, 30032, 32768, 0 },
     };
-#endif
+#endif  // !CONFIG_EXT_TX
+
+#if CONFIG_EXT_INTRA && CONFIG_INTRA_INTERP
+static const aom_cdf_prob
+    default_intra_filter_cdf[INTRA_FILTERS + 1][CDF_SIZE(INTRA_FILTERS)] = {
+      { 12544, 17521, 21095, 32768, 0 }, { 12544, 19022, 23318, 32768, 0 },
+      { 12032, 17297, 23522, 32768, 0 }, { 6272, 8860, 11101, 32768, 0 },
+      { 9216, 12712, 16629, 32768, 0 },
+    };
+#endif  // CONFIG_EXT_INTRA && CONFIG_INTRA_INTERP
 
 // CDF version of 'av1_kf_y_mode_prob'.
 const aom_cdf_prob
@@ -2284,16 +2295,19 @@ static void init_mode_probs(FRAME_CONTEXT *fc) {
 #if !CONFIG_EXT_TX
   av1_copy(fc->intra_ext_tx_cdf, default_intra_ext_tx_cdf);
   av1_copy(fc->inter_ext_tx_cdf, default_inter_ext_tx_cdf);
-#endif
+#endif  // !CONFIG_EXT_TX
+#if CONFIG_EXT_INTRA && CONFIG_INTRA_INTERP
+  av1_copy(fc->intra_filter_cdf, default_intra_filter_cdf);
+#endif  // CONFIG_EXT_INTRA && CONFIG_INTRA_INTERP
   av1_copy(fc->seg.tree_cdf, default_seg_tree_cdf);
   av1_copy(fc->tx_size_cdf, default_tx_size_cdf);
-#endif
+#endif  // CONFIG_EC_MULTISYMBOL
 #if CONFIG_DELTA_Q
   av1_copy(fc->delta_q_prob, default_delta_q_probs);
 #if CONFIG_EC_MULTISYMBOL
   av1_copy(fc->delta_q_cdf, default_delta_q_cdf);
-#endif
-#endif
+#endif  // CONFIG_EC_MULTISYMBOL
+#endif  // CONFIG_DELTA_Q
 }
 
 #if CONFIG_EC_MULTISYMBOL
@@ -2374,9 +2388,15 @@ void av1_set_mode_cdfs(struct AV1Common *cm) {
                       fc->tx_size_cdf[i][j]);
     }
   }
+#if CONFIG_EXT_INTRA && CONFIG_INTRA_INTERP
+  for (i = 0; i < INTRA_FILTERS + 1; ++i) {
+    av1_tree_to_cdf(av1_intra_filter_tree, fc->intra_filter_probs[i],
+                    fc->intra_filter_cdf[i]);
+  }
+#endif  // CONFIG_EXT_INTRA && CONFIG_INTRA_INTERP
 }
 #endif  // !CONFIG_EC_ADAPT
-#endif
+#endif  // CONFIG_EC_MULTISYMBOL
 
 #if CONFIG_DUAL_FILTER
 const aom_tree_index av1_switchable_interp_tree[TREE_SIZE(SWITCHABLE_FILTERS)] =

@@ -4471,7 +4471,7 @@ static int read_compressed_header(AV1Decoder *pbi, const uint8_t *data,
   FRAME_CONTEXT *const fc = cm->fc;
   aom_reader r;
   int k, i;
-#if !CONFIG_EC_ADAPT || CONFIG_EXT_INTRA
+#if !CONFIG_EC_ADAPT
   int j;
 #endif
 
@@ -4548,13 +4548,13 @@ static int read_compressed_header(AV1Decoder *pbi, const uint8_t *data,
   for (; j < PARTITION_CONTEXTS_PRIMARY + 2 * PARTITION_BLOCK_SIZES; ++j)
     av1_diff_update_prob(&r, &fc->partition_prob[j][PARTITION_HORZ], ACCT_STR);
 #endif  // CONFIG_UNPOISON_PARTITION_CTX
-#endif  // !CONFIG_EC_ADAPT
 
 #if CONFIG_EXT_INTRA && CONFIG_INTRA_INTERP
   for (i = 0; i < INTRA_FILTERS + 1; ++i)
     for (j = 0; j < INTRA_FILTERS - 1; ++j)
       av1_diff_update_prob(&r, &fc->intra_filter_probs[i][j], ACCT_STR);
 #endif  // CONFIG_EXT_INTRA && CONFIG_INTRA_INTERP
+#endif  // !CONFIG_EC_ADAPT
 
   if (frame_is_intra_only(cm)) {
     av1_copy(cm->kf_y_prob, av1_kf_y_mode_prob);

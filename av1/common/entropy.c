@@ -5699,13 +5699,10 @@ void av1_average_tile_intra_cdfs(FRAME_CONTEXT *fc, FRAME_CONTEXT *ec_ctxs[],
 #if CONFIG_DELTA_Q
   AVERAGE_TILE_CDFS(delta_q_cdf)
 #endif
-#if CONFIG_EXT_INTRA
-#if CONFIG_INTRA_INTERP
-// FIXME: intra_filter probs
-#endif  // CONFIG_INTRA_INTERP
-#endif  // CONFIG_EXT_INTRA
+#if CONFIG_EXT_INTRA && CONFIG_INTRA_INTERP
+  AVERAGE_TILE_CDFS(intra_filter_cdf)
+#endif  // CONFIG_EXT_INTRA && CONFIG_INTRA_INTERP
 #if CONFIG_FILTER_INTRA
-// FIXME: intra_filter probs
 #endif  // CONFIG_FILTER_INTRA
 }
 

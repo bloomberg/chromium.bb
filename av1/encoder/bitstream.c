@@ -168,11 +168,9 @@ void av1_encode_token_init(void) {
   }
 #endif  // CONFIG_PALETTE
 
-#if CONFIG_EXT_INTRA
-#if CONFIG_INTRA_INTERP
+#if CONFIG_EXT_INTRA && CONFIG_INTRA_INTERP
   av1_tokens_from_tree(intra_filter_encodings, av1_intra_filter_tree);
-#endif  // CONFIG_INTRA_INTERP
-#endif  // CONFIG_EXT_INTRA
+#endif  // CONFIG_EXT_INTRA && CONFIG_INTRA_INTERP
 #if CONFIG_EXT_INTER
   av1_tokens_from_tree(interintra_mode_encodings, av1_interintra_mode_tree);
   av1_tokens_from_tree(compound_type_encodings, av1_compound_type_tree);
@@ -1263,8 +1261,8 @@ static void write_filter_intra_mode_info(const AV1_COMMON *const cm,
 #endif  // CONFIG_FILTER_INTRA
 
 #if CONFIG_EXT_INTRA
-static void write_intra_angle_info(const AV1_COMMON *cm, const MACROBLOCKD *xd,
-                                   aom_writer *w) {
+static void write_intra_angle_info(const MACROBLOCKD *xd,
+                                   FRAME_CONTEXT *const ec_ctx, aom_writer *w) {
   const MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
   const BLOCK_SIZE bsize = mbmi->sb_type;
 #if CONFIG_INTRA_INTERP
@@ -1272,7 +1270,7 @@ static void write_intra_angle_info(const AV1_COMMON *cm, const MACROBLOCKD *xd,
   int p_angle;
 #endif  // CONFIG_INTRA_INTERP
 
-  (void)cm;
+  (void)ec_ctx;
   if (bsize < BLOCK_8X8) return;
 
   if (av1_is_directional_mode(mbmi->mode, bsize)) {
@@ -1283,9 +1281,15 @@ static void write_intra_angle_info(const AV1_COMMON *cm, const MACROBLOCKD *xd,
     p_angle = mode_to_angle_map[mbmi->mode] +
               mbmi->angle_delta[0] * av1_get_angle_step(mbmi->sb_type, 0);
     if (av1_is_intra_filter_switchable(p_angle)) {
+#if CONFIG_EC_MULTISYMBOL
+      aom_write_symbol(w, mbmi->intra_filter,
+                       ec_ctx->intra_filter_cdf[intra_filter_ctx],
+                       INTRA_FILTERS);
+#else
       av1_write_token(w, av1_intra_filter_tree,
-                      cm->fc->intra_filter_probs[intra_filter_ctx],
+                      ec_ctx->intra_filter_probs[intra_filter_ctx],
                       &intra_filter_encodings[mbmi->intra_filter]);
+#endif  // CONFIG_EC_MULTISYMBOL
     }
 #endif  // CONFIG_INTRA_INTERP
   }
@@ -1653,7 +1657,7 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const MODE_INFO *mi,
 #endif  // CONFIG_CB4X4
 
 #if CONFIG_EXT_INTRA
-    write_intra_angle_info(cm, xd, w);
+    write_intra_angle_info(xd, ec_ctx, w);
 #endif  // CONFIG_EXT_INTRA
 #if CONFIG_PALETTE
     if (bsize >= BLOCK_8X8 && cm->allow_screen_content_tools)
@@ -1994,7 +1998,7 @@ static void write_mb_modes_kf(AV1_COMMON *cm, const MACROBLOCKD *xd,
 #endif  // CONFIG_CB4X4
 
 #if CONFIG_EXT_INTRA
-  write_intra_angle_info(cm, xd, w);
+  write_intra_angle_info(xd, ec_ctx, w);
 #endif  // CONFIG_EXT_INTRA
 #if CONFIG_PALETTE
   if (bsize >= BLOCK_8X8 && cm->allow_screen_content_tools)
@@ -4623,13 +4627,12 @@ static uint32_t write_compressed_header(AV1_COMP *cpi, uint8_t *data) {
                               ct, probwt);
   }
 #endif
-#endif  // !CONFIG_EC_ADAPT
-
 #if CONFIG_EXT_INTRA && CONFIG_INTRA_INTERP
   for (i = 0; i < INTRA_FILTERS + 1; ++i)
     prob_diff_update(av1_intra_filter_tree, fc->intra_filter_probs[i],
                      counts->intra_filter[i], INTRA_FILTERS, probwt, header_bc);
 #endif  // CONFIG_EXT_INTRA && CONFIG_INTRA_INTERP
+#endif  // !CONFIG_EC_ADAPT
 
   if (frame_is_intra_only(cm)) {
     av1_copy(cm->kf_y_prob, av1_kf_y_mode_prob);
