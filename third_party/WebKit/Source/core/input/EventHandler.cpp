@@ -816,7 +816,7 @@ WebInputEventResult EventHandler::handleMouseMoveOrLeaveEvent(
 
   // Treat any mouse move events as readonly if the user is currently touching
   // the screen.
-  if (m_pointerEventManager->isAnyTouchActive())
+  if (m_pointerEventManager->isAnyTouchActive() && !forceLeave)
     hitType |= HitTestRequest::Active | HitTestRequest::ReadOnly;
   HitTestRequest request(hitType);
   MouseEventWithHitTestResults mev = MouseEventWithHitTestResults(

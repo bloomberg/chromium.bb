@@ -6167,6 +6167,8 @@ static LayoutObject* nearestCommonHoverAncestor(LayoutObject* obj1,
   return 0;
 }
 
+// TODO(mustaq) |request| parameter maybe a misuse of HitTestRequest in
+// updateHoverActiveState() since the function doesn't bother with hit-testing.
 void Document::updateHoverActiveState(const HitTestRequest& request,
                                       Element* innerElement,
                                       Scrollbar* hitScrollbar) {
