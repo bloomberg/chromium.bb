@@ -154,27 +154,27 @@ gfx::ShadowValue GetShadowForZHeight(int z_height) {
 
   switch (z_height) {
     case 1:
-      return gfx::ShadowValue(gfx::Vector2d(0, 1), 2,
+      return gfx::ShadowValue(gfx::Vector2d(0, 1), 4,
                               SkColorSetARGB(0x4C, 0, 0, 0));
     case 2:
-      return gfx::ShadowValue(gfx::Vector2d(0, 2), 4,
+      return gfx::ShadowValue(gfx::Vector2d(0, 2), 8,
                               SkColorSetARGB(0x33, 0, 0, 0));
     default:
-      return gfx::ShadowValue(gfx::Vector2d(0, 8), 12,
+      return gfx::ShadowValue(gfx::Vector2d(0, 8), 24,
                               SkColorSetARGB(0x3F, 0, 0, 0));
   }
 }
 
 const gfx::ShadowValues& IconStartShadows() {
   CR_DEFINE_STATIC_LOCAL(const gfx::ShadowValues, icon_shadows,
-                         (1, gfx::ShadowValue(gfx::Vector2d(0, 1), 2,
+                         (1, gfx::ShadowValue(gfx::Vector2d(0, 1), 4,
                                               SkColorSetARGB(0x33, 0, 0, 0))));
   return icon_shadows;
 }
 
 const gfx::ShadowValues& IconEndShadows() {
   CR_DEFINE_STATIC_LOCAL(const gfx::ShadowValues, icon_shadows,
-                         (1, gfx::ShadowValue(gfx::Vector2d(0, 4), 4,
+                         (1, gfx::ShadowValue(gfx::Vector2d(0, 4), 8,
                                               SkColorSetARGB(0x50, 0, 0, 0))));
   return icon_shadows;
 }

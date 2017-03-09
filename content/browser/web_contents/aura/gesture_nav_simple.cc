@@ -277,7 +277,7 @@ void GestureNavSimple::Affordance::OnPaintLayer(
   gfx::ShadowValues shadow;
   shadow.emplace_back(gfx::Vector2d(0, kBgShadowOffsetY), kBgShadowBlurRadius,
                       kBgShadowColor);
-  bg_flags.setLooper(gfx::CreateShadowDrawLooperCorrectBlur(shadow));
+  bg_flags.setLooper(gfx::CreateShadowDrawLooper(shadow));
   canvas->DrawCircle(center_point, kBackgroundRadius, bg_flags);
 
   // Draw the arrow.

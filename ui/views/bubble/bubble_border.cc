@@ -539,7 +539,7 @@ void BubbleBorder::PaintMd(const View& view, gfx::Canvas* canvas) {
                        2 * kSmallShadowBlur, kSmallShadowColor);
   shadows.emplace_back(gfx::Vector2d(0, kLargeShadowVerticalOffset),
                        2 * kLargeShadowBlur, kLargeShadowColor);
-  flags.setLooper(gfx::CreateShadowDrawLooperCorrectBlur(shadows));
+  flags.setLooper(gfx::CreateShadowDrawLooper(shadows));
   flags.setColor(SkColorSetA(SK_ColorBLACK, 0x26));
   flags.setAntiAlias(true);
 

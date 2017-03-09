@@ -1332,7 +1332,7 @@ void RenderText::ApplyFadeEffects(internal::SkiaTextRenderer* renderer) {
 }
 
 void RenderText::ApplyTextShadows(internal::SkiaTextRenderer* renderer) {
-  renderer->SetDrawLooper(CreateShadowDrawLooperCorrectBlur(shadows_));
+  renderer->SetDrawLooper(CreateShadowDrawLooper(shadows_));
 }
 
 base::i18n::TextDirection RenderText::GetTextDirection(

@@ -410,7 +410,7 @@ class HorizontalShadowSource : public CanvasImageSource {
   // CanvasImageSource overrides:
   void Draw(Canvas* canvas) override {
     cc::PaintFlags flags;
-    flags.setLooper(CreateShadowDrawLooperCorrectBlur(shadows_));
+    flags.setLooper(CreateShadowDrawLooper(shadows_));
     canvas->DrawRect(RectF(0, fades_down_ ? -1 : size().height(), 1, 1), flags);
   }
 

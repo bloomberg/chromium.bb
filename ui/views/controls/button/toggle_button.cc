@@ -79,7 +79,7 @@ class ToggleButton::ThumbView : public InkDropHostView {
                     0x99));
     shadows.push_back(shadow.Scale(dsf));
     cc::PaintFlags thumb_flags;
-    thumb_flags.setLooper(gfx::CreateShadowDrawLooperCorrectBlur(shadows));
+    thumb_flags.setLooper(gfx::CreateShadowDrawLooper(shadows));
     thumb_flags.setAntiAlias(true);
     const SkColor thumb_on_color = GetNativeTheme()->GetSystemColor(
         ui::NativeTheme::kColorId_ProminentButtonColor);

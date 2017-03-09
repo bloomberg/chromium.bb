@@ -162,8 +162,7 @@ class PartialMagnificationController::BorderRenderer
     cc::PaintFlags shadow_flags;
     shadow_flags.setAntiAlias(true);
     shadow_flags.setColor(SK_ColorTRANSPARENT);
-    shadow_flags.setLooper(
-        gfx::CreateShadowDrawLooperCorrectBlur(magnifier_shadows_));
+    shadow_flags.setLooper(gfx::CreateShadowDrawLooper(magnifier_shadows_));
     gfx::Rect shadow_bounds(magnifier_window_bounds_.size());
     recorder.canvas()->DrawCircle(
         shadow_bounds.CenterPoint(),

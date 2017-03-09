@@ -168,7 +168,7 @@ void BorderShadowLayerDelegate::OnPaintLayer(const ui::PaintContext& context) {
   recorder.canvas()->sk_canvas()->drawRRect(r_rect, flags);
 
   // Now the shadow.
-  flags.setLooper(gfx::CreateShadowDrawLooperCorrectBlur(shadows_));
+  flags.setLooper(gfx::CreateShadowDrawLooper(shadows_));
   recorder.canvas()->sk_canvas()->clipRRect(r_rect, SkClipOp::kDifference,
                                             true);
   recorder.canvas()->sk_canvas()->drawRRect(r_rect, flags);

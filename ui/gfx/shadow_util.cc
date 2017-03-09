@@ -37,7 +37,7 @@ class ShadowNineboxSource : public CanvasImageSource {
   // CanvasImageSource overrides:
   void Draw(Canvas* canvas) override {
     cc::PaintFlags flags;
-    flags.setLooper(CreateShadowDrawLooperCorrectBlur(shadows_));
+    flags.setLooper(CreateShadowDrawLooper(shadows_));
     Insets insets = -ShadowValue::GetMargin(shadows_);
     gfx::Rect bounds(size());
     bounds.Inset(insets);
