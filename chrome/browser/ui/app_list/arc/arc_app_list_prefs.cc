@@ -274,8 +274,8 @@ ArcAppListPrefs::~ArcAppListPrefs() {
 }
 
 void ArcAppListPrefs::StartPrefs() {
-  // Don't tie ArcAppListPrefs created with sync test profie in sync integration
-  // test to ArcSessionManager.
+  // Don't tie ArcAppListPrefs created with sync test profile in sync
+  // integration test to ArcSessionManager.
   if (!ArcAppListPrefsFactory::IsFactorySetForSyncTest()) {
     arc::ArcSessionManager* arc_session_manager = arc::ArcSessionManager::Get();
     CHECK(arc_session_manager);
@@ -628,7 +628,7 @@ void ArcAppListPrefs::RemoveAllApps() {
 }
 
 void ArcAppListPrefs::OnArcPlayStoreEnabledChanged(bool enabled) {
-  UpdateDefaultAppsHiddenState();
+  SetDefaultAppsFilterLevel();
 
   // TODO(victorhsieh): Implement opt-in and opt-out.
   if (arc::ShouldArcAlwaysStart())
@@ -640,16 +640,22 @@ void ArcAppListPrefs::OnArcPlayStoreEnabledChanged(bool enabled) {
     RemoveAllApps();
 }
 
-void ArcAppListPrefs::UpdateDefaultAppsHiddenState() {
-  const bool was_hidden = default_apps_.is_hidden();
+void ArcAppListPrefs::SetDefaultAppsFilterLevel() {
   // There is no a blacklisting mechanism for Android apps. Until there is
   // one, we have no option but to ban all pre-installed apps on Android side.
   // Match this requirement and don't show pre-installed apps for managed users
   // in app list.
-  const bool now_hidden = arc::policy_util::IsAccountManaged(profile_);
-  default_apps_.set_hidden(now_hidden);
-  if (was_hidden && !default_apps_.is_hidden())
-    RegisterDefaultApps();
+  if (arc::policy_util::IsAccountManaged(profile_)) {
+    default_apps_.set_filter_level(
+        arc::IsArcPlayStoreEnabledForProfile(profile_)
+            ? ArcDefaultAppList::FilterLevel::OPTIONAL_APPS
+            : ArcDefaultAppList::FilterLevel::ALL);
+  } else {
+    default_apps_.set_filter_level(ArcDefaultAppList::FilterLevel::NOTHING);
+  }
+
+  // Register default apps if it was not registered before.
+  RegisterDefaultApps();
 }
 
 void ArcAppListPrefs::OnDefaultAppsReady() {
@@ -660,7 +666,7 @@ void ArcAppListPrefs::OnDefaultAppsReady() {
   for (const auto& uninstalled_package_name : uninstalled_package_names)
     default_apps_.MaybeMarkPackageUninstalled(uninstalled_package_name, true);
 
-  UpdateDefaultAppsHiddenState();
+  SetDefaultAppsFilterLevel();
 
   default_apps_ready_ = true;
   if (!default_apps_ready_callback_.is_null())
@@ -670,10 +676,14 @@ void ArcAppListPrefs::OnDefaultAppsReady() {
 }
 
 void ArcAppListPrefs::RegisterDefaultApps() {
-  // Report default apps first, note, app_map includes uninstalled apps as well.
+  // Report default apps first, note, app_map includes uninstalled and filtered
+  // out apps as well.
   for (const auto& default_app : default_apps_.app_map()) {
     const std::string& app_id = default_app.first;
     if (!default_apps_.HasApp(app_id))
+      continue;
+    // Skip already tracked app.
+    if (tracked_apps_.count(app_id))
       continue;
     const ArcDefaultAppList::AppInfo& app_info = *default_app.second.get();
     AddAppAndShortcut(false /* app_ready */,

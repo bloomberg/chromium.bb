@@ -46,6 +46,17 @@ class ArcDefaultAppList {
     base::FilePath app_path;  // App folder that contains pre-installed icons.
   };
 
+  enum class FilterLevel {
+    // Filter nothing.
+    NOTHING,
+    // Filter out only optional apps, excluding Play Store for example. Used in
+    // case when Play Store is managed and enabled.
+    OPTIONAL_APPS,
+    // Filter out everything. Used in case when Play Store is managed and
+    // disabled.
+    ALL
+  };
+
   // Defines App id to default AppInfo mapping.
   using AppInfoMap = std::map<std::string, std::unique_ptr<AppInfo>>;
 
@@ -73,10 +84,9 @@ class ArcDefaultAppList {
 
   const AppInfoMap& app_map() const { return apps_; }
 
-  // Marks default apps as hidden for user, for example in case ARC is managed
-  // and disabled.
-  void set_hidden(bool hidden) { hidden_ = hidden; }
-  bool is_hidden() const { return hidden_; }
+  void set_filter_level(FilterLevel filter_level) {
+    filter_level_ = filter_level;
+  }
 
  private:
   // Defines mapping package name to uninstalled state.
@@ -88,7 +98,7 @@ class ArcDefaultAppList {
   // Unowned pointer.
   Delegate* const delegate_;
   content::BrowserContext* const context_;
-  bool hidden_ = true;
+  FilterLevel filter_level_ = FilterLevel::ALL;
 
   AppInfoMap apps_;
   PackageMap packages_;

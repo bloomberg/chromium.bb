@@ -21,9 +21,9 @@
 #include "chrome/browser/chromeos/arc/arc_support_host.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_service_test_base.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/policy/profile_policy_connector_factory.h"
-#include "chrome/browser/ui/app_list/app_list_test_util.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_icon.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_icon_loader.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_item.h"
@@ -37,9 +37,11 @@
 #include "chrome/browser/ui/app_list/arc/arc_package_syncable_service_factory.h"
 #include "chrome/browser/ui/app_list/test/test_app_list_controller_delegate.h"
 #include "chrome/browser/ui/ash/launcher/arc_app_window_launcher_controller.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/arc/arc_util.h"
 #include "components/arc/test/fake_app_instance.h"
+#include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
@@ -93,10 +95,37 @@ void WaitForIconReady(ArcAppListPrefs* prefs,
   } while (!base::PathExists(icon_path));
 }
 
+enum class ArcState {
+  // By default, ARC is non-persistent and Play Store is unmanaged.
+  ARC_PLAY_STORE_UNMANAGED,
+  // ARC is persistent and Play Store is unmanaged
+  ARC_PERSISTENT_PLAY_STORE_UNMANAGED,
+  // ARC is non-persistent and Play Store is managed and enabled.
+  ARC_PLAY_STORE_MANAGED_AND_ENABLED,
+  // ARC is non-persistent and Play Store is managed and disabled.
+  ARC_PLAY_STORE_MANAGED_AND_DISABLED,
+  // ARC is persistent and Play Store is managed and enabled.
+  ARC_PERSISTENT_PLAY_STORE_MANAGED_AND_ENABLED,
+  // ARC is persistent and Play Store is managed and disabled.
+  ARC_PERSISTENT_PLAY_STORE_MANAGED_AND_DISABLED,
+};
+
+constexpr ArcState kManagedArcStates[] = {
+    ArcState::ARC_PLAY_STORE_MANAGED_AND_ENABLED,
+    ArcState::ARC_PLAY_STORE_MANAGED_AND_DISABLED,
+    ArcState::ARC_PERSISTENT_PLAY_STORE_MANAGED_AND_ENABLED,
+    ArcState::ARC_PERSISTENT_PLAY_STORE_MANAGED_AND_DISABLED,
+};
+
+constexpr ArcState kUnmanagedArcStates[] = {
+    ArcState::ARC_PLAY_STORE_UNMANAGED,
+    ArcState::ARC_PERSISTENT_PLAY_STORE_UNMANAGED,
+};
+
 }  // namespace
 
-class ArcAppModelBuilderTest : public AppListTestBase,
-                               public ::testing::WithParamInterface<bool> {
+class ArcAppModelBuilderTest : public extensions::ExtensionServiceTestBase,
+                               public ::testing::WithParamInterface<ArcState> {
  public:
   ArcAppModelBuilderTest() = default;
   ~ArcAppModelBuilderTest() override {
@@ -105,9 +134,27 @@ class ArcAppModelBuilderTest : public AppListTestBase,
   }
 
   void SetUp() override {
-    if (GetParam())
-      arc::SetArcAlwaysStartForTesting();
-    AppListTestBase::SetUp();
+    switch (GetParam()) {
+      case ArcState::ARC_PERSISTENT_PLAY_STORE_UNMANAGED:
+      case ArcState::ARC_PERSISTENT_PLAY_STORE_MANAGED_AND_ENABLED:
+      case ArcState::ARC_PERSISTENT_PLAY_STORE_MANAGED_AND_DISABLED:
+        arc::SetArcAlwaysStartForTesting();
+        break;
+      default:
+        break;
+    }
+
+    extensions::ExtensionServiceTestBase::SetUp();
+    InitializeExtensionService(ExtensionServiceInitParams());
+    service_->Init();
+    // ExtensionService needs a real I/O thread.
+    service_->SetFileTaskRunnerForTesting(
+        content::BrowserThread::GetBlockingPool()
+            ->GetSequencedTaskRunnerWithShutdownBehavior(
+                content::BrowserThread::GetBlockingPool()
+                    ->GetNamedSequenceToken("ext_install-"),
+                base::SequencedWorkerPool::SKIP_ON_SHUTDOWN));
+
     OnBeforeArcTestSetup();
     arc_test_.SetUp(profile_.get());
     CreateBuilder();
@@ -336,7 +383,7 @@ class ArcAppModelBuilderTest : public AppListTestBase,
 
   AppListControllerDelegate* controller() { return controller_.get(); }
 
-  Profile* profile() { return profile_.get(); }
+  TestingProfile* profile() { return profile_.get(); }
 
   ArcAppTest* arc_test() { return &arc_test_; }
 
@@ -386,26 +433,6 @@ class ArcDefaulAppTest : public ArcAppModelBuilderTest {
   DISALLOW_COPY_AND_ASSIGN(ArcDefaulAppTest);
 };
 
-class ArcDefaulAppForManagedUserTest : public ArcDefaulAppTest {
- public:
-  ArcDefaulAppForManagedUserTest() = default;
-  ~ArcDefaulAppForManagedUserTest() override = default;
-
- protected:
-  // ArcAppModelBuilderTest:
-  void OnBeforeArcTestSetup() override {
-    ArcDefaulAppTest::OnBeforeArcTestSetup();
-
-    policy::ProfilePolicyConnector* const connector =
-        policy::ProfilePolicyConnectorFactory::GetForBrowserContext(
-            profile());
-    connector->OverrideIsManagedForTesting(true);
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ArcDefaulAppForManagedUserTest);
-};
-
 class ArcPlayStoreAppTest : public ArcDefaulAppTest {
  public:
   ArcPlayStoreAppTest() = default;
@@ -439,6 +466,41 @@ class ArcPlayStoreAppTest : public ArcDefaulAppTest {
   scoped_refptr<extensions::Extension> arc_support_host_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcPlayStoreAppTest);
+};
+
+class ArcDefaulAppForManagedUserTest : public ArcPlayStoreAppTest {
+ public:
+  ArcDefaulAppForManagedUserTest() = default;
+  ~ArcDefaulAppForManagedUserTest() override = default;
+
+ protected:
+  bool IsEnabledByPolicy() const {
+    switch (GetParam()) {
+      case ArcState::ARC_PLAY_STORE_MANAGED_AND_ENABLED:
+      case ArcState::ARC_PERSISTENT_PLAY_STORE_MANAGED_AND_ENABLED:
+        return true;
+      case ArcState::ARC_PLAY_STORE_MANAGED_AND_DISABLED:
+      case ArcState::ARC_PERSISTENT_PLAY_STORE_MANAGED_AND_DISABLED:
+        return false;
+      default:
+        NOTREACHED();
+        return false;
+    }
+  }
+
+  // ArcPlayStoreAppTest:
+  void OnBeforeArcTestSetup() override {
+    policy::ProfilePolicyConnector* const connector =
+        policy::ProfilePolicyConnectorFactory::GetForBrowserContext(profile());
+    connector->OverrideIsManagedForTesting(true);
+    profile()->GetTestingPrefService()->SetManagedPref(
+        prefs::kArcEnabled, new base::Value(IsEnabledByPolicy()));
+
+    ArcPlayStoreAppTest::OnBeforeArcTestSetup();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ArcDefaulAppForManagedUserTest);
 };
 
 class ArcAppModelBuilderRecreate : public ArcAppModelBuilderTest {
@@ -1377,10 +1439,31 @@ TEST_P(ArcDefaulAppForManagedUserTest, DefaultAppsForManagedUser) {
     EXPECT_FALSE(prefs->IsRegistered(app_id));
     EXPECT_FALSE(prefs->GetApp(app_id));
   }
+
+  // PlayStor exists for managed and enabled state.
+  std::unique_ptr<ArcAppListPrefs::AppInfo> app_info =
+      prefs->GetApp(arc::kPlayStoreAppId);
+  if (IsEnabledByPolicy()) {
+    ASSERT_TRUE(app_info);
+    EXPECT_FALSE(app_info->ready);
+  } else {
+    EXPECT_FALSE(prefs->IsRegistered(arc::kPlayStoreAppId));
+    EXPECT_FALSE(app_info);
+  }
 }
 
-INSTANTIATE_TEST_CASE_P(, ArcAppModelBuilderTest, ::testing::Bool());
-INSTANTIATE_TEST_CASE_P(, ArcDefaulAppTest, ::testing::Bool());
-INSTANTIATE_TEST_CASE_P(, ArcDefaulAppForManagedUserTest, ::testing::Bool());
-INSTANTIATE_TEST_CASE_P(, ArcPlayStoreAppTest, ::testing::Bool());
-INSTANTIATE_TEST_CASE_P(, ArcAppModelBuilderRecreate, ::testing::Bool());
+INSTANTIATE_TEST_CASE_P(,
+                        ArcAppModelBuilderTest,
+                        ::testing::ValuesIn(kUnmanagedArcStates));
+INSTANTIATE_TEST_CASE_P(,
+                        ArcDefaulAppTest,
+                        ::testing::ValuesIn(kUnmanagedArcStates));
+INSTANTIATE_TEST_CASE_P(,
+                        ArcDefaulAppForManagedUserTest,
+                        ::testing::ValuesIn(kManagedArcStates));
+INSTANTIATE_TEST_CASE_P(,
+                        ArcPlayStoreAppTest,
+                        ::testing::ValuesIn(kUnmanagedArcStates));
+INSTANTIATE_TEST_CASE_P(,
+                        ArcAppModelBuilderRecreate,
+                        ::testing::ValuesIn(kUnmanagedArcStates));
