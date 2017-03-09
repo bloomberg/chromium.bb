@@ -1,65 +1,12 @@
 <!DOCTYPE html>
 <script src='../../../resources/testharness.js'></script>
 <script src='../../../resources/testharnessreport.js'></script>
+<script src='config-templates.js'></script>
 <script src='property-suite.js'></script>
-
 <script>
-
-runInlineStylePropertyMapTests({
-  property: 'bottom',
-  validKeywords: [
-    'auto'
-  ],
-  validObjects: [
-    new CSSSimpleLength(1, 'px'),
-    new CSSSimpleLength(2, 'percent'),
-    new CSSSimpleLength(3, 'em'),
-    new CSSSimpleLength(4, 'ex'),
-    new CSSSimpleLength(5, 'ch'),
-    new CSSSimpleLength(6, 'rem'),
-    new CSSSimpleLength(7, 'vw'),
-    new CSSSimpleLength(8, 'vh'),
-    new CSSSimpleLength(9, 'vmin'),
-    new CSSSimpleLength(10, 'vmax'),
-    new CSSSimpleLength(11, 'cm'),
-    new CSSSimpleLength(12, 'mm'),
-    new CSSSimpleLength(13, 'in'),
-    new CSSSimpleLength(14, 'pc'),
-    new CSSSimpleLength(15, 'pt'),
-    // Fully populated calc
-    new CSSCalcLength({
-      px: 1.2,
-      percent: -2.3,
-      em: 4.5,
-      ex: -6.7,
-      ch: 8.9,
-      rem: -10,
-      vw: 1.1,
-      vh: -1.2,
-      vmin: 1.3,
-      vmax: -1.4,
-      cm: 1.56,
-      mm: -1.7,
-      in: 1.8,
-      pc: -1.9,
-      pt: 2.1}),
-    // Contains only px
-    new CSSCalcLength({px: 10}),
-    // Contains only percent
-    new CSSCalcLength({percent: 10}),
-    // Contains px and percent
-    new CSSCalcLength({px: 6, percent: 10}),
-    // Contains neither pixels or percent
-    new CSSCalcLength({vmin: 5, in: 10}),
-  ],
-  validStringMappings: {
-    // Contains multiplication
-    'calc(3 * (5px - 2%))': new CSSCalcLength({px: 15, percent: -6}),
-    // Contains division
-    'calc((5vmin + 1mm) / 2)': new CSSCalcLength({vmin: 2.5, mm: 0.5}),
-  },
-  supportsMultiple: false,
-  invalidObjects: [new CSSNumberValue(1)]
-});
+let config = config_templates.lengthPercentConfig();
+config['property'] = 'bottom';
+config['validKeywords'] = ['auto'];
+runInlineStylePropertyMapTests(config);
 
 </script>

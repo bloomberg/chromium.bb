@@ -4,7 +4,8 @@
 <script src='property-suite.js'></script>
 <script src='config-templates.js'></script>
 <script>
-let config = config_templates.borderConfig();
-config['property'] = 'border-bottom-style';
+let config = config_templates.lengthPercentConfig();
+config['property'] = 'border-top-width';
+config['validKeywords'] = ['thin', 'medium', 'thick'];
 runInlineStylePropertyMapTests(config);
 </script>

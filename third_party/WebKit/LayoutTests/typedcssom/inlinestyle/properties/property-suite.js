@@ -1,5 +1,5 @@
 /**
- * @fileoverview A standard set of tests for using a single property in an
+ * A standard set of tests for using a single property in an
  *     inline StylePropertyMap
  *     (https://www.w3.org/TR/css-typed-om-1/#the-stylepropertymap).
  *
@@ -29,6 +29,10 @@
 function runInlineStylePropertyMapTests(config) {
   let element = document.createElement('div');
   document.documentElement.appendChild(element);
+  if (!config.validKeywords) {
+    throw new Error('Must specify valid keywords (may be the empty list if ' +
+          'only css-wide keywords apply)');
+  }
   let validKeywords = config.validKeywords.concat([
     // CSS-wide keywords
     'initial',
