@@ -1,6 +1,6 @@
 Name: woff2
 URL: https://github.com/google/woff2
-Version: a15a8ab86b934cf436f8fac4a8a11ddf8b59d792
+Version: cbea7b962ea73b6d3ec7e7c1ad2c2a90604b9b9d
 License: Apache 2.0
 License File: LICENSE
 Security Critical: yes
@@ -13,4 +13,3 @@ Local Modifications:
 
 - BUILD.gn: Added.
 - woff2.gyp: Added.
-- src/woff2_dec.cc modified to use new Brotli API at lines 739-741
