@@ -386,22 +386,18 @@ public class SelectFileDialog
     // now we want to distinguish between generic, photo and visual media pickers.
     @VisibleForTesting
     int determineSelectFileDialogScope() {
-        boolean isGeneric = noSpecificType();
+        if (mFileTypes.size() == 0) return SELECT_FILE_DIALOG_SCOPE_GENERIC;
 
-        if (!isGeneric && shouldShowImageTypes()) {
-            return SELECT_FILE_DIALOG_SCOPE_IMAGES;
-        } else if (!isGeneric && shouldShowVideoTypes()) {
-            return SELECT_FILE_DIALOG_SCOPE_VIDEOS;
-        } else if (mFileTypes.size() == 2) {
-            // The shouldShow{Image,Video}Types() methods cannot be used here since they test for
-            // a generic dialog, which any request with more than one file type is considered as.
-            if ((mFileTypes.contains(ALL_IMAGE_TYPES) || acceptSpecificType(IMAGE_TYPE))
-                    && (mFileTypes.contains(ALL_VIDEO_TYPES) || acceptSpecificType(VIDEO_TYPE))) {
-                return SELECT_FILE_DIALOG_SCOPE_IMAGES_AND_VIDEOS;
-            }
+        int acceptsImages = countAcceptTypesFor(IMAGE_TYPE);
+        int acceptsVideos = countAcceptTypesFor(VIDEO_TYPE);
+        int acceptsOthers = mFileTypes.size() - acceptsImages - acceptsVideos;
+
+        if (acceptsOthers > 0) return SELECT_FILE_DIALOG_SCOPE_GENERIC;
+        if (acceptsVideos > 0) {
+            return (acceptsImages == 0) ? SELECT_FILE_DIALOG_SCOPE_VIDEOS
+                                        : SELECT_FILE_DIALOG_SCOPE_IMAGES_AND_VIDEOS;
         }
-
-        return SELECT_FILE_DIALOG_SCOPE_GENERIC;
+        return SELECT_FILE_DIALOG_SCOPE_IMAGES;
     }
 
     private boolean noSpecificType() {
@@ -414,7 +410,7 @@ public class SelectFileDialog
 
     private boolean shouldShowTypes(String allTypes, String specificType) {
         if (noSpecificType() || mFileTypes.contains(allTypes)) return true;
-        return acceptSpecificType(specificType);
+        return countAcceptTypesFor(specificType) > 0;
     }
 
     private boolean shouldShowImageTypes() {
@@ -445,13 +441,14 @@ public class SelectFileDialog
         return mCapture && acceptsSpecificType(ALL_AUDIO_TYPES);
     }
 
-    private boolean acceptSpecificType(String accept) {
+    private int countAcceptTypesFor(String accept) {
+        int count = 0;
         for (String type : mFileTypes) {
             if (type.startsWith(accept)) {
-                return true;
+                count++;
             }
         }
-        return false;
+        return count;
     }
 
     private class GetDisplayNameTask extends AsyncTask<Uri, Void, String[]> {

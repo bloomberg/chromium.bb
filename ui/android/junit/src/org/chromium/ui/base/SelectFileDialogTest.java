@@ -51,6 +51,10 @@ public class SelectFileDialogTest {
                 SelectFileDialog.SELECT_FILE_DIALOG_SCOPE_VIDEOS, scopeForFileTypes("video/ogg"));
         assertEquals(SelectFileDialog.SELECT_FILE_DIALOG_SCOPE_GENERIC,
                 scopeForFileTypes("video/*", "test/plain"));
+        assertEquals(SelectFileDialog.SELECT_FILE_DIALOG_SCOPE_IMAGES,
+                scopeForFileTypes("image/x-png", "image/gif", "image/jpeg"));
+        assertEquals(SelectFileDialog.SELECT_FILE_DIALOG_SCOPE_GENERIC,
+                scopeForFileTypes("image/x-png", "image/gif", "image/jpeg", "text/plain"));
 
         assertEquals(SelectFileDialog.SELECT_FILE_DIALOG_SCOPE_IMAGES_AND_VIDEOS,
                 scopeForFileTypes("video/*", "image/*"));
