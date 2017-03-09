@@ -24,6 +24,7 @@
 #include "net/http/http_network_layer.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/static_http_user_agent_settings.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_job_factory_impl.h"
@@ -234,8 +235,36 @@ void HttpBridge::MakeAsynchronousPost() {
 
   DCHECK(request_context_getter_.get());
   fetch_state_.start_time = base::Time::Now();
+  net::NetworkTrafficAnnotationTag traffic_annotation =
+      net::DefineNetworkTrafficAnnotation("sync_http_bridge", R"(
+        semantics {
+          sender: "Chrome Sync"
+          description:
+            "Chrome Sync synchronizes profile data between Chromium clients "
+            "and Google for a given user account."
+          trigger:
+            "User makes a change to syncable profile data after enabling sync "
+            "on the device."
+          data:
+            "The device and user identifiers, along with any profile data that "
+            "is changing."
+          destination: GOOGLE_OWNED_SERVICE
+        }
+        policy {
+          cookies_allowed: false
+          setting:
+            "Users can disable Chrome Sync by going into the profile settings "
+            "and choosing to Sign Out."
+          chrome_policy {
+            SyncDisabled {
+              policy_options {mode: MANDATORY}
+              SyncDisabled: true
+            }
+          }
+        })");
   fetch_state_.url_poster =
-      net::URLFetcher::Create(url_for_request_, net::URLFetcher::POST, this)
+      net::URLFetcher::Create(url_for_request_, net::URLFetcher::POST, this,
+                              traffic_annotation)
           .release();
   if (!bind_to_tracker_callback_.is_null())
     bind_to_tracker_callback_.Run(fetch_state_.url_poster);

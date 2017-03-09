@@ -13,6 +13,7 @@
 #include "components/sync/protocol/sync.pb.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 
 namespace {
 
@@ -61,8 +62,29 @@ void SyncStoppedReporter::ReportSyncStopped(const std::string& access_token,
   std::string msg;
   event_request.SerializeToString(&msg);
 
-  fetcher_ =
-      net::URLFetcher::Create(sync_event_url_, net::URLFetcher::POST, this);
+  net::NetworkTrafficAnnotationTag traffic_annotation =
+      net::DefineNetworkTrafficAnnotation("sync_stop_reporter", R"(
+        semantics {
+          sender: "Chrome Sync"
+          description:
+            "A network request to inform Chrome Sync that sync has been "
+            "disabled for this device."
+          trigger: "User disables sync."
+          data: "Sync device identifier and metadata."
+          destination: GOOGLE_OWNED_SERVICE
+        }
+        policy {
+          cookies_allowed: false
+          setting: "This feature cannot be disabled by settings."
+          chrome_policy {
+            SyncDisabled {
+              policy_options {mode: MANDATORY}
+              SyncDisabled: true
+            }
+          }
+        })");
+  fetcher_ = net::URLFetcher::Create(sync_event_url_, net::URLFetcher::POST,
+                                     this, traffic_annotation);
   fetcher_->AddExtraRequestHeader(base::StringPrintf(
       "%s: Bearer %s", net::HttpRequestHeaders::kAuthorization,
       access_token.c_str()));
