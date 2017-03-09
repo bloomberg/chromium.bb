@@ -21,9 +21,9 @@
 
         // The thresholds are experimentally determined.
         tester.setThresholds({
-          snr: 81.57,
-          maxDiff: 7.26,
-          diffCount: 18260
+          snr: 1000,
+          maxDiff: 0,
+          diffCount: 0
         });
         tester.runTest(context, "square",
           "Square Oscillator with Exponential Sweep", task, should);

@@ -85,31 +85,29 @@ function generateExponentialOscillatorSweep(context, oscillatorType) {
 
 function calculateSNR(sPower, nPower)
 {
-    if (nPower == 0 && sPower > 0) {
-        return 1000;
-    }
     return 10 * Math.log10(sPower / nPower);
 }
 
 function loadReferenceAndRunTest(context, oscType, task, should) {
-     var bufferLoader = new BufferLoader(
-        context,
-        [ "../Oscillator/oscillator-" + oscType + "-expected.wav" ],
-        function (bufferList) {
-            reference = bufferList[0].getChannelData(0);
+    Audit
+        .loadFileFromUrl(
+            '../Oscillator/oscillator-' + oscType + '-expected.wav')
+        .then(response => {
+            return context.decodeAudioData(response);
+        })
+        .then(audioBuffer => {
+            reference = audioBuffer.getChannelData(0);
             generateExponentialOscillatorSweep(context, oscType);
-            context.oncomplete = () => {
-              checkResult(event, should, oscType);
-              task.done();
-            };
-            context.startRendering();
-        });
-
-    bufferLoader.load();
+            return context.startRendering();
+        })
+        .then(resultBuffer => {
+            checkResult(resultBuffer, should, oscType);
+        })
+        .then(() => task.done());
 }
 
-function checkResult (event, should, oscType) {
-    let renderedData = event.renderedBuffer.getChannelData(0);
+function checkResult (renderedBuffer, should, oscType) {
+    let renderedData = renderedBuffer.getChannelData(0);
     // Compute signal to noise ratio between the result and the reference. Also keep track
     // of the max difference (and position).
 
@@ -127,7 +125,7 @@ function checkResult (event, should, oscType) {
         }
         // The reference file is a 16-bit WAV file, so we will almost never get an exact match
         // between it and the actual floating-point result.
-        if (diff > 1/waveScaleFactor) {
+        if (diff > 0) {
             diffCount++;
         }
     }
@@ -135,8 +133,8 @@ function checkResult (event, should, oscType) {
     var snr = calculateSNR(signalPower, noisePower);
     should(snr, "SNR")
         .beGreaterThanOrEqualTo(thresholdSNR);
-    should(maxError * waveScaleFactor, "Maximum difference in ulp (16-bits)")
-        .beLessThanOrEqualTo(thresholdDiff * waveScaleFactor);
+    should(maxError, "Maximum difference")
+        .beLessThanOrEqualTo(thresholdDiff);
 
     should(diffCount,
            "Number of differences between actual and expected result out of "
@@ -144,31 +142,18 @@ function checkResult (event, should, oscType) {
         .beLessThanOrEqualTo(thresholdDiffCount);
 
     var filename = "oscillator-" + oscType + "-actual.wav";
-    if (downloadAudioBuffer(event.renderedBuffer, filename))
+    if (downloadAudioBuffer(renderedBuffer, filename, true))
       should(true, "Saved reference file").message(filename, "");
 }
 
 function setThresholds(thresholds) {
     thresholdSNR = thresholds.snr;
-    thresholdDiff = thresholds.maxDiff / waveScaleFactor;
+    thresholdDiff = thresholds.maxDiff;
     thresholdDiffCount = thresholds.diffCount;
 }
 
 function runTest(context, oscType, description, task, should) {
   loadReferenceAndRunTest(context, oscType, task, should);
-}
-
-function createNewReference(oscType) {
-     if (!window.testRunner)
-         return;
-
-     context = new OfflineAudioContext(1, sampleRate * lengthInSeconds, sampleRate);
-     generateExponentialOscillatorSweep(context, oscType);
-
-     context.oncomplete = finishAudioTest;
-     context.startRendering();
-
-     testRunner.waitUntilDone();
 }
 
 return {
@@ -180,7 +165,6 @@ return {
     waveScaleFactor: waveScaleFactor,
     setThresholds: setThresholds,
     runTest: runTest,
-    createNewReference: createNewReference,
 };
 
 }());
