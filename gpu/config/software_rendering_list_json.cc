@@ -18,7 +18,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "12.19",
+  "version": "12.20",
   "entries": [
     {
       "id": 1,
@@ -1494,6 +1494,20 @@ LONG_STRING_CONST(
                     "0x1058", "0x1059", "0x105a", "0x107d", "0x1140"],
       "features": [
         "gpu_rasterization"
+      ]
+    },
+    {
+      "id": 137,
+      "description": "GPU rasterization on CrOS is blacklisted on non-Intel GPUs for now.",
+      "cr_bugs": [684094],
+      "os": {
+        "type": "chromeos"
+      },
+      "features": [
+        "gpu_rasterization"
+      ],
+      "exceptions": [
+        { "vendor_id": "0x8086" }
       ]
     }
   ]
