@@ -1796,8 +1796,6 @@ source_set("browser") {
       "android/tracing_controller_android.h",
       "android/web_contents_observer_proxy.cc",
       "android/web_contents_observer_proxy.h",
-      "frame_host/render_frame_host_android.cc",
-      "frame_host/render_frame_host_android.h",
       "media/capture/screen_capture_device_android.cc",
       "media/capture/screen_capture_device_android.h",
       "renderer_host/compositor_impl_android.cc",

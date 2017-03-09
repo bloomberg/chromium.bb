@@ -3586,13 +3586,6 @@ bool WebContentsImpl::ShouldAllowRunningInsecureContent(
       web_contents, allowed_per_prefs, origin, resource_url);
 }
 
-#if defined(OS_ANDROID)
-base::android::ScopedJavaLocalRef<jobject>
-WebContentsImpl::GetJavaRenderFrameHostDelegate() {
-  return GetJavaWebContents();
-}
-#endif
-
 void WebContentsImpl::OnDidDisplayContentWithCertificateErrors(
     RenderFrameHostImpl* source,
     const GURL& url) {

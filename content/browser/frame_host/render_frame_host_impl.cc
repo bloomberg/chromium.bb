@@ -112,9 +112,8 @@
 #include "url/gurl.h"
 
 #if defined(OS_ANDROID)
-#include "content/browser/frame_host/render_frame_host_android.h"
-#include "content/browser/media/android/media_player_renderer.h"
 #include "content/public/browser/android/java_interfaces.h"
+#include "content/browser/media/android/media_player_renderer.h"
 #include "media/base/audio_renderer_sink.h"
 #include "media/base/video_renderer_sink.h"
 #include "media/mojo/services/mojo_renderer_service.h"  // nogncheck
@@ -135,10 +134,6 @@ using base::TimeDelta;
 namespace content {
 
 namespace {
-
-#if defined(OS_ANDROID)
-const void* const kRenderFrameHostAndroidKey = &kRenderFrameHostAndroidKey;
-#endif  // OS_ANDROID
 
 // The next value to use for the accessibility reset token.
 int g_next_accessibility_reset_token = 1;
@@ -3466,19 +3461,5 @@ RenderFrameHostImpl::TakeNavigationHandleForCommit(
       params.was_within_same_page, base::TimeTicks::Now(),
       entry_id_for_data_nav, false);  // started_from_context_menu
 }
-
-#if defined(OS_ANDROID)
-base::android::ScopedJavaLocalRef<jobject>
-RenderFrameHostImpl::GetJavaRenderFrameHost() {
-  RenderFrameHostAndroid* render_frame_host_android =
-      static_cast<RenderFrameHostAndroid*>(
-          GetUserData(kRenderFrameHostAndroidKey));
-  if (!render_frame_host_android) {
-    render_frame_host_android = new RenderFrameHostAndroid(this);
-    SetUserData(kRenderFrameHostAndroidKey, render_frame_host_android);
-  }
-  return render_frame_host_android->GetJavaObject();
-}
-#endif
 
 }  // namespace content

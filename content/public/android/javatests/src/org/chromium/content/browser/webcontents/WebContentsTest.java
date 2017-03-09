@@ -11,7 +11,6 @@ import android.os.Parcel;
 import android.support.test.filters.SmallTest;
 
 import org.chromium.base.ThreadUtils;
-import org.chromium.content_public.browser.RenderFrameHost;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_shell.Shell;
 import org.chromium.content_shell_apk.ContentShellActivity;
@@ -309,35 +308,6 @@ public class WebContentsTest extends ContentShellTestBase {
         } finally {
             parcel.recycle();
         }
-    }
-
-    /**
-     * Check that the main frame associated with the WebContents is not null
-     * and corresponds with the test URL.
-     *
-     * @throws InterruptedException
-     */
-    @SmallTest
-    public void testWebContentsMainFrame() throws InterruptedException {
-        final ContentShellActivity activity = launchContentShellWithUrl(TEST_URL_1);
-        waitForActiveShellToBeDoneLoading();
-        final WebContents webContents = activity.getActiveWebContents();
-
-        ThreadUtils.postOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                RenderFrameHost frameHost = webContents.getMainFrame();
-
-                assertNotNull(frameHost);
-
-                assertEquals("RenderFrameHost has incorrect last committed URL", "about:blank",
-                        frameHost.getLastCommittedURL());
-
-                WebContents associatedWebContents = WebContentsImpl.fromRenderFrameHost(frameHost);
-                assertEquals("RenderFrameHost associated with different WebContents", webContents,
-                        associatedWebContents);
-            }
-        });
     }
 
     private boolean isWebContentsDestroyed(final WebContents webContents) {

@@ -26,10 +26,6 @@
 #include "ui/gfx/native_widget_types.h"
 #endif
 
-#if defined(OS_ANDROID)
-#include "base/android/scoped_java_ref.h"
-#endif
-
 class GURL;
 
 namespace IPC {
@@ -293,11 +289,6 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
                                                  bool allowed_per_prefs,
                                                  const url::Origin& origin,
                                                  const GURL& resource_url);
-
-#if defined(OS_ANDROID)
-  virtual base::android::ScopedJavaLocalRef<jobject>
-  GetJavaRenderFrameHostDelegate();
-#endif
 
  protected:
   virtual ~RenderFrameHostDelegate() {}

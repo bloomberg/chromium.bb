@@ -516,10 +516,6 @@ class CONTENT_EXPORT WebContentsImpl
                                          bool allowed_per_prefs,
                                          const url::Origin& origin,
                                          const GURL& resource_url) override;
-#if defined(OS_ANDROID)
-  base::android::ScopedJavaLocalRef<jobject> GetJavaRenderFrameHostDelegate()
-      override;
-#endif
 
   // RenderViewHostDelegate ----------------------------------------------------
   RenderViewHostDelegateView* GetDelegateView() override;
