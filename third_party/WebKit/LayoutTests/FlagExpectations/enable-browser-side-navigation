@@ -37,7 +37,6 @@ crbug.com/695072 virtual/mojo-loading/http/tests/security/location-href-clears-u
 crbug.com/695072 virtual/mojo-loading/http/tests/security/mixedContent/insecure-iframe-with-hsts.https.html [ Failure ]
 
 # These tests are flaky.
-Bug(none) external/wpt/service-workers/service-worker/fetch-event-redirect.https.html [ Crash ]
 Bug(none) http/tests/misc/window-open-then-write.html [ Timeout ]
 Bug(none) external/wpt/html/browsers/browsing-the-web/unloading-documents/beforeunload-on-history-back.html [ Failure ]
 Bug(none) virtual/mojo-loading/http/tests/misc/window-open-then-write.html [ Timeout ]
