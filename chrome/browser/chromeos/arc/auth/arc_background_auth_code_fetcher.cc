@@ -117,7 +117,7 @@ void ArcBackgroundAuthCodeFetcher::OnGetTokenSuccess(
 void ArcBackgroundAuthCodeFetcher::OnGetTokenFailure(
     const OAuth2TokenService::Request* request,
     const GoogleServiceAuthError& error) {
-  VLOG(2) << "Failed to get LST " << error.ToString() << ".";
+  LOG(WARNING) << "Failed to get LST " << error.ToString() << ".";
   ResetFetchers();
   ReportResult(std::string(), OptInSilentAuthCode::NO_LST_TOKEN);
 }
@@ -131,7 +131,8 @@ void ArcBackgroundAuthCodeFetcher::OnURLFetchComplete(
   ResetFetchers();
 
   if (response_code != net::HTTP_OK) {
-    VLOG(2) << "Server returned wrong response code: " << response_code << ".";
+    LOG(WARNING) << "Server returned wrong response code: " << response_code
+                 << ".";
     OptInSilentAuthCode uma_status;
     if (response_code >= 400 && response_code < 500)
       uma_status = OptInSilentAuthCode::HTTP_CLIENT_FAILURE;
@@ -148,8 +149,8 @@ void ArcBackgroundAuthCodeFetcher::OnURLFetchComplete(
   std::unique_ptr<base::Value> auth_code_info =
       deserializer.Deserialize(nullptr, &error_msg);
   if (!auth_code_info) {
-    VLOG(2) << "Unable to deserialize auth code json data: " << error_msg
-            << ".";
+    LOG(WARNING) << "Unable to deserialize auth code json data: " << error_msg
+                 << ".";
     ReportResult(std::string(), OptInSilentAuthCode::RESPONSE_PARSE_FAILURE);
     return;
   }
@@ -165,7 +166,7 @@ void ArcBackgroundAuthCodeFetcher::OnURLFetchComplete(
   std::string auth_code;
   if (!auth_code_dictionary->GetString(kToken, &auth_code) ||
       auth_code.empty()) {
-    VLOG(2) << "Response does not contain auth code.";
+    LOG(WARNING) << "Response does not contain auth code.";
     ReportResult(std::string(), OptInSilentAuthCode::NO_AUTH_CODE_IN_RESPONSE);
     return;
   }

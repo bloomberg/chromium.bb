@@ -81,7 +81,7 @@ void ArcAuthContext::OnRefreshTokensLoaded() {
 }
 
 void ArcAuthContext::OnRefreshTokenTimeout() {
-  VLOG(2) << "Failed to wait for refresh token.";
+  LOG(WARNING) << "Failed to wait for refresh token.";
   token_service_->RemoveObserver(this);
   base::ResetAndReturn(&callback_).Run(nullptr);
 }
@@ -104,7 +104,7 @@ void ArcAuthContext::OnUbertokenSuccess(const std::string& token) {
 }
 
 void ArcAuthContext::OnUbertokenFailure(const GoogleServiceAuthError& error) {
-  VLOG(2) << "Failed to get ubertoken " << error.ToString() << ".";
+  LOG(WARNING) << "Failed to get ubertoken " << error.ToString() << ".";
   ResetFetchers();
   base::ResetAndReturn(&callback_).Run(nullptr);
 }
@@ -118,7 +118,7 @@ void ArcAuthContext::OnMergeSessionSuccess(const std::string& data) {
 
 void ArcAuthContext::OnMergeSessionFailure(
     const GoogleServiceAuthError& error) {
-  VLOG(2) << "Failed to merge gaia session " << error.ToString() << ".";
+  LOG(WARNING) << "Failed to merge gaia session " << error.ToString() << ".";
   ResetFetchers();
   base::ResetAndReturn(&callback_).Run(nullptr);
 }
