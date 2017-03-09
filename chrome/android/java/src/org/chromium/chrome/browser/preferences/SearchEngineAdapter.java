@@ -315,9 +315,7 @@ public class SearchEngineAdapter extends BaseAdapter
 
         TextView url = (TextView) view.findViewById(R.id.url);
         url.setText(templateUrl.getKeyword());
-        if (templateUrl.getType() == TemplateUrlService.TYPE_PREPOPULATED
-                || templateUrl.getType() == TemplateUrlService.TYPE_DEFAULT
-                || templateUrl.getKeyword().length() == 0) {
+        if (TextUtils.isEmpty(templateUrl.getKeyword())) {
             url.setVisibility(View.GONE);
         }
 
