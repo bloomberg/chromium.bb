@@ -34,7 +34,6 @@ class Text;
 
 #define AppleInterchangeNewline "Apple-interchange-newline"
 #define AppleConvertedSpace "Apple-converted-space"
-#define AppleTabSpanClass "Apple-tab-span"
 
 enum EAnnotateForInterchange {
   DoNotAnnotateForInterchange,

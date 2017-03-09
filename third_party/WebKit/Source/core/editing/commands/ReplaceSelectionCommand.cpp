@@ -997,11 +997,6 @@ static bool isInlineHTMLElementWithStyle(const Node* node) {
   // one of our internal classes.
   const HTMLElement* element = toHTMLElement(node);
   const AtomicString& classAttributeValue = element->getAttribute(classAttr);
-  if (classAttributeValue == AppleTabSpanClass) {
-    UseCounter::count(element->document(),
-                      UseCounter::EditingAppleTabSpanClass);
-    return true;
-  }
   if (classAttributeValue == AppleConvertedSpace) {
     UseCounter::count(element->document(),
                       UseCounter::EditingAppleConvertedSpace);

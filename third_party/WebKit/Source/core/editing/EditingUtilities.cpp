@@ -1572,11 +1572,12 @@ HTMLElement* createHTMLElement(Document& document, const QualifiedName& name) {
 }
 
 bool isTabHTMLSpanElement(const Node* node) {
-  if (!isHTMLSpanElement(node) ||
-      toHTMLSpanElement(node)->getAttribute(classAttr) != AppleTabSpanClass)
+  if (!isHTMLSpanElement(node) || !node->firstChild())
     return false;
-  UseCounter::count(node->document(), UseCounter::EditingAppleTabSpanClass);
-  return true;
+  if (node->firstChild()->isCharacterDataNode() &&
+      toCharacterData(node->firstChild())->data().contains('\t'))
+    return true;
+  return false;
 }
 
 bool isTabHTMLSpanElementTextNode(const Node* node) {
@@ -1594,7 +1595,6 @@ static HTMLSpanElement* createTabSpanElement(Document& document,
                                              Text* tabTextNode) {
   // Make the span to hold the tab.
   HTMLSpanElement* spanElement = HTMLSpanElement::create(document);
-  spanElement->setAttribute(classAttr, AppleTabSpanClass);
   spanElement->setAttribute(styleAttr, "white-space:pre");
 
   // Add tab text to that span.

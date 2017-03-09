@@ -333,7 +333,6 @@ class CORE_EXPORT UseCounter {
     EditingAppleConvertedSpace = 459,
     EditingApplePasteAsQuotation = 460,
     EditingAppleStyleSpanClass = 461,
-    EditingAppleTabSpanClass = 462,
     HTMLImportsAsyncAttribute = 463,
     XMLHttpRequestSynchronous = 465,
     CSSSelectorPseudoUnresolved = 466,

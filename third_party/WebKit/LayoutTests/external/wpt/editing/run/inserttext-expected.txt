@@ -20,7 +20,7 @@ PASS [["inserttext",""]] "foo[bar]baz" queryCommandState("inserttext") after
 PASS [["inserttext",""]] "foo[bar]baz" queryCommandValue("inserttext") after 
 PASS [["inserttext","\t"]] "foo[]bar": execCommand("inserttext", false, "\t") return value 
 PASS [["inserttext","\t"]] "foo[]bar" checks for modifications to non-editable content 
-FAIL [["inserttext","\t"]] "foo[]bar" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "foo\tbar" but got "foo<span class=\"Apple-tab-span\" style=\"white-space:pre\">\t</span>bar"
+FAIL [["inserttext","\t"]] "foo[]bar" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "foo\tbar" but got "foo<span style=\"white-space:pre\">\t</span>bar"
 PASS [["inserttext","\t"]] "foo[]bar" queryCommandIndeterm("inserttext") before 
 PASS [["inserttext","\t"]] "foo[]bar" queryCommandState("inserttext") before 
 PASS [["inserttext","\t"]] "foo[]bar" queryCommandValue("inserttext") before 
@@ -1038,7 +1038,7 @@ PASS [["inserttext","a"]] "http://a[]" queryCommandState("inserttext") after
 PASS [["inserttext","a"]] "http://a[]" queryCommandValue("inserttext") after 
 PASS [["inserttext","\t"]] "http://a[]": execCommand("inserttext", false, "\t") return value 
 PASS [["inserttext","\t"]] "http://a[]" checks for modifications to non-editable content 
-FAIL [["inserttext","\t"]] "http://a[]" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<a href=\"http://a\">http://a</a>\t" but got "http://a<span class=\"Apple-tab-span\" style=\"white-space:pre\">\t</span>"
+FAIL [["inserttext","\t"]] "http://a[]" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<a href=\"http://a\">http://a</a>\t" but got "http://a<span style=\"white-space:pre\">\t</span>"
 PASS [["inserttext","\t"]] "http://a[]" queryCommandIndeterm("inserttext") before 
 PASS [["inserttext","\t"]] "http://a[]" queryCommandState("inserttext") before 
 PASS [["inserttext","\t"]] "http://a[]" queryCommandValue("inserttext") before 
