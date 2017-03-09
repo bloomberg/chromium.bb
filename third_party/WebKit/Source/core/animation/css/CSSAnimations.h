@@ -154,15 +154,25 @@ class CSSAnimations final {
 
   ActiveInterpolationsMap m_previousActiveInterpolationsForAnimations;
 
-  static void calculateTransitionUpdateForProperty(
-      const PropertyHandle&,
-      const CSSTransitionData&,
-      size_t transitionIndex,
-      const ComputedStyle& oldStyle,
-      const ComputedStyle&,
-      const TransitionMap* activeTransitions,
-      CSSAnimationUpdate&,
-      const Element*);
+  struct TransitionUpdateState {
+    STACK_ALLOCATED();
+    CSSAnimationUpdate& update;
+    Member<const Element> animatingElement;
+    const ComputedStyle& oldStyle;
+    const ComputedStyle& style;
+    const TransitionMap* activeTransitions;
+    std::bitset<numCSSProperties>& listedProperties;
+    const CSSTransitionData& transitionData;
+  };
+
+  static void calculateTransitionUpdateForStandardProperty(
+      TransitionUpdateState&,
+      const CSSTransitionData::TransitionProperty&,
+      size_t transitionIndex);
+
+  static void calculateTransitionUpdateForProperty(TransitionUpdateState&,
+                                                   const PropertyHandle&,
+                                                   size_t transitionIndex);
 
   static void calculateAnimationActiveInterpolations(
       CSSAnimationUpdate&,

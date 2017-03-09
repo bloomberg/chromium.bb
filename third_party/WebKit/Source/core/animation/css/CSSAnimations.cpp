@@ -613,48 +613,60 @@ void CSSAnimations::maybeApplyPendingUpdate(Element* element) {
 }
 
 void CSSAnimations::calculateTransitionUpdateForProperty(
+    TransitionUpdateState& state,
     const PropertyHandle& property,
-    const CSSTransitionData& transitionData,
-    size_t transitionIndex,
-    const ComputedStyle& oldStyle,
-    const ComputedStyle& style,
-    const TransitionMap* activeTransitions,
-    CSSAnimationUpdate& update,
-    const Element* element) {
+    size_t transitionIndex) {
+  state.listedProperties.set(property.cssProperty() - firstCSSProperty);
+
+  // FIXME: We should transition if an !important property changes even when an
+  // animation is running, but this is a bit hard to do with the current
+  // applyMatchedProperties system.
+  if (state.update.activeInterpolationsForAnimations().contains(property) ||
+      (state.animatingElement->elementAnimations() &&
+       state.animatingElement->elementAnimations()
+           ->cssAnimations()
+           .m_previousActiveInterpolationsForAnimations.contains(property))) {
+    return;
+  }
+
   RefPtr<AnimatableValue> to = nullptr;
   const RunningTransition* interruptedTransition = nullptr;
-  if (activeTransitions) {
+  if (state.activeTransitions) {
     TransitionMap::const_iterator activeTransitionIter =
-        activeTransitions->find(property);
-    if (activeTransitionIter != activeTransitions->end()) {
+        state.activeTransitions->find(property);
+    if (activeTransitionIter != state.activeTransitions->end()) {
       const RunningTransition* runningTransition = &activeTransitionIter->value;
-      to = CSSAnimatableValueFactory::create(property.cssProperty(), style);
+      to = CSSAnimatableValueFactory::create(property.cssProperty(),
+                                             state.style);
       const AnimatableValue* activeTo = runningTransition->to.get();
       if (to->equals(activeTo))
         return;
-      update.cancelTransition(property);
-      DCHECK(!element->elementAnimations() ||
-             !element->elementAnimations()->isAnimationStyleChange());
+      state.update.cancelTransition(property);
+      DCHECK(!state.animatingElement->elementAnimations() ||
+             !state.animatingElement->elementAnimations()
+                  ->isAnimationStyleChange());
 
-      if (to->equals(runningTransition->reversingAdjustedStartValue.get()))
+      if (to->equals(runningTransition->reversingAdjustedStartValue.get())) {
         interruptedTransition = runningTransition;
+      }
     }
   }
 
-  if (CSSPropertyEquality::propertiesEqual(property.cssProperty(), oldStyle,
-                                           style))
+  if (CSSPropertyEquality::propertiesEqual(property.cssProperty(),
+                                           state.oldStyle, state.style)) {
     return;
+  }
 
   if (!to)
-    to = CSSAnimatableValueFactory::create(property.cssProperty(), style);
+    to = CSSAnimatableValueFactory::create(property.cssProperty(), state.style);
   RefPtr<AnimatableValue> from =
-      CSSAnimatableValueFactory::create(property.cssProperty(), oldStyle);
+      CSSAnimatableValueFactory::create(property.cssProperty(), state.oldStyle);
 
   // TODO(alancutter): Support transitions on registered custom properties and
   // give the map a PropertyRegistry.
   CSSInterpolationTypesMap map(nullptr);
-  InterpolationEnvironment oldEnvironment(map, oldStyle);
-  InterpolationEnvironment newEnvironment(map, style);
+  InterpolationEnvironment oldEnvironment(map, state.oldStyle);
+  InterpolationEnvironment newEnvironment(map, state.style);
   InterpolationValue start = nullptr;
   InterpolationValue end = nullptr;
   const InterpolationType* transitionType = nullptr;
@@ -683,14 +695,14 @@ void CSSAnimations::calculateTransitionUpdateForProperty(
   // If we have multiple transitions on the same property, we will use the
   // last one since we iterate over them in order.
 
-  Timing timing = transitionData.convertToTiming(transitionIndex);
+  Timing timing = state.transitionData.convertToTiming(transitionIndex);
   if (timing.startDelay + timing.iterationDuration <= 0) {
     // We may have started a transition in a prior CSSTransitionData update,
     // this CSSTransitionData update needs to override them.
     // TODO(alancutter): Just iterate over the CSSTransitionDatas in reverse and
     // skip any properties that have already been visited so we don't need to
     // "undo" work like this.
-    update.unstartTransition(property);
+    state.update.unstartTransition(property);
     return;
   }
 
@@ -755,11 +767,44 @@ void CSSAnimations::calculateTransitionUpdateForProperty(
 
   TransitionKeyframeEffectModel* model =
       TransitionKeyframeEffectModel::create(keyframes);
-  update.startTransition(property, from.get(), to.get(),
-                         reversingAdjustedStartValue, reversingShorteningFactor,
-                         *InertEffect::create(model, timing, false, 0));
-  DCHECK(!element->elementAnimations() ||
-         !element->elementAnimations()->isAnimationStyleChange());
+  state.update.startTransition(
+      property, from.get(), to.get(), reversingAdjustedStartValue,
+      reversingShorteningFactor, *InertEffect::create(model, timing, false, 0));
+  DCHECK(
+      !state.animatingElement->elementAnimations() ||
+      !state.animatingElement->elementAnimations()->isAnimationStyleChange());
+}
+
+void CSSAnimations::calculateTransitionUpdateForStandardProperty(
+    TransitionUpdateState& state,
+    const CSSTransitionData::TransitionProperty& transitionProperty,
+    size_t transitionIndex) {
+  if (transitionProperty.propertyType !=
+      CSSTransitionData::TransitionKnownProperty) {
+    return;
+  }
+
+  CSSPropertyID resolvedID =
+      resolveCSSPropertyID(transitionProperty.unresolvedProperty);
+  bool animateAll = resolvedID == CSSPropertyAll;
+  const StylePropertyShorthand& propertyList =
+      animateAll ? propertiesForTransitionAll()
+                 : shorthandForProperty(resolvedID);
+  // If not a shorthand we only execute one iteration of this loop, and
+  // refer to the property directly.
+  for (unsigned i = 0; !i || i < propertyList.length(); ++i) {
+    CSSPropertyID longhandID =
+        propertyList.length() ? propertyList.properties()[i] : resolvedID;
+    PropertyHandle property = PropertyHandle(longhandID);
+    DCHECK_GE(longhandID, firstCSSProperty);
+
+    if (!animateAll &&
+        !CSSPropertyMetadata::isInterpolableProperty(longhandID)) {
+      continue;
+    }
+
+    calculateTransitionUpdateForProperty(state, property, transitionIndex);
+  }
 }
 
 void CSSAnimations::calculateTransitionUpdate(CSSAnimationUpdate& update,
@@ -785,51 +830,21 @@ void CSSAnimations::calculateTransitionUpdate(CSSAnimationUpdate& update,
   const LayoutObject* layoutObject = animatingElement->layoutObject();
   if (!animationStyleRecalc && style.display() != EDisplay::None &&
       layoutObject && layoutObject->style() && transitionData) {
-    const ComputedStyle& oldStyle = *layoutObject->style();
+    TransitionUpdateState state = {
+        update,         animatingElement,  *layoutObject->style(),
+        style,          activeTransitions, listedProperties,
+        *transitionData};
 
-    for (size_t i = 0; i < transitionData->propertyList().size(); ++i) {
+    for (size_t transitionIndex = 0;
+         transitionIndex < transitionData->propertyList().size();
+         ++transitionIndex) {
       const CSSTransitionData::TransitionProperty& transitionProperty =
-          transitionData->propertyList()[i];
-      if (transitionProperty.propertyType !=
-          CSSTransitionData::TransitionKnownProperty)
-        continue;
-
-      CSSPropertyID property =
-          resolveCSSPropertyID(transitionProperty.unresolvedProperty);
-      bool animateAll = property == CSSPropertyAll;
-      if (animateAll)
+          transitionData->propertyList()[transitionIndex];
+      if (transitionProperty.unresolvedProperty == CSSPropertyAll) {
         anyTransitionHadTransitionAll = true;
-      const StylePropertyShorthand& propertyList =
-          animateAll ? CSSAnimations::propertiesForTransitionAll()
-                     : shorthandForProperty(property);
-      // If not a shorthand we only execute one iteration of this loop, and
-      // refer to the property directly.
-      for (unsigned j = 0; !j || j < propertyList.length(); ++j) {
-        CSSPropertyID id =
-            propertyList.length() ? propertyList.properties()[j] : property;
-        DCHECK_GE(id, firstCSSProperty);
-
-        if (!animateAll) {
-          if (CSSPropertyMetadata::isInterpolableProperty(id))
-            listedProperties.set(id - firstCSSProperty);
-          else
-            continue;
-        }
-
-        // FIXME: We should transition if an !important property changes even
-        // when an animation is running, but this is a bit hard to do with the
-        // current applyMatchedProperties system.
-        PropertyHandle property = PropertyHandle(id);
-        if (!update.activeInterpolationsForAnimations().contains(property) &&
-            (!elementAnimations ||
-             !elementAnimations->cssAnimations()
-                  .m_previousActiveInterpolationsForAnimations.contains(
-                      property))) {
-          calculateTransitionUpdateForProperty(
-              property, *transitionData, i, oldStyle, style, activeTransitions,
-              update, animatingElement);
-        }
       }
+      calculateTransitionUpdateForStandardProperty(state, transitionProperty,
+                                                   transitionIndex);
     }
   }
 
