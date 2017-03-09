@@ -113,7 +113,7 @@ class ArcFileSystemOperationRunner
   void RemoveWatcher(int64_t watcher_id, const RemoveWatcherCallback& callback);
 
   // FileSystemHost overrides:
-  void OnDocumentChanged(int64_t watcher_id, mojom::ChangeType type) override;
+  void OnDocumentChanged(int64_t watcher_id, ChangeType type) override;
 
   // ArcSessionManager::Observer overrides:
   void OnArcPlayStoreEnabledChanged(bool enabled) override;

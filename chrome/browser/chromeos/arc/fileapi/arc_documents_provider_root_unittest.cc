@@ -19,6 +19,7 @@
 #include "components/arc/common/file_system.mojom.h"
 #include "components/arc/test/fake_file_system_instance.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "storage/browser/fileapi/watcher_manager.h"
 #include "storage/common/fileapi/directory_entry.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -317,7 +318,7 @@ TEST_F(ArcDocumentsProviderRootTest, WatchChanged) {
 
   EXPECT_EQ(0, num_called);
   fake_file_system_.TriggerWatchers(kAuthority, kDirSpec.document_id,
-                                    mojom::ChangeType::CHANGED);
+                                    storage::WatcherManager::CHANGED);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, num_called);
 
@@ -359,7 +360,7 @@ TEST_F(ArcDocumentsProviderRootTest, WatchDeleted) {
 
   EXPECT_EQ(0, num_called);
   fake_file_system_.TriggerWatchers(kAuthority, kDirSpec.document_id,
-                                    mojom::ChangeType::DELETED);
+                                    storage::WatcherManager::DELETED);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, num_called);
 

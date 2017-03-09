@@ -121,9 +121,10 @@ void FakeFileSystemInstance::AddDocument(const Document& document) {
   }
 }
 
-void FakeFileSystemInstance::TriggerWatchers(const std::string& authority,
-                                             const std::string& document_id,
-                                             mojom::ChangeType type) {
+void FakeFileSystemInstance::TriggerWatchers(
+    const std::string& authority,
+    const std::string& document_id,
+    storage::WatcherManager::ChangeType type) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (!host_) {
     LOG(ERROR) << "FileSystemHost is not available.";

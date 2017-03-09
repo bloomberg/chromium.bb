@@ -17,6 +17,7 @@
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
 #include "components/arc/common/file_system.mojom.h"
+#include "storage/browser/fileapi/watcher_manager.h"
 
 namespace arc {
 
@@ -115,7 +116,7 @@ class FakeFileSystemInstance : public mojom::FileSystemInstance {
   // Triggers watchers installed to a document.
   void TriggerWatchers(const std::string& authority,
                        const std::string& document_id,
-                       mojom::ChangeType type);
+                       storage::WatcherManager::ChangeType type);
 
   // mojom::FileSystemInstance:
   void AddWatcher(const std::string& authority,

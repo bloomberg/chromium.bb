@@ -6,6 +6,7 @@ typemaps = [
   "//components/arc/common/app.typemap",
   "//components/arc/common/bitmap.typemap",
   "//components/arc/common/bluetooth.typemap",
+  "//components/arc/common/file_system.typemap",
   "//components/arc/common/intent_helper.typemap",
   "//components/arc/common/video_accelerator.typemap",
 ]

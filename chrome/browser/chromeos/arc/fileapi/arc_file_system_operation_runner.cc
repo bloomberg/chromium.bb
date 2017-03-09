@@ -20,23 +20,6 @@ using content::BrowserThread;
 
 namespace arc {
 
-namespace {
-
-// TODO(nya): Use typemaps.
-ArcFileSystemOperationRunner::ChangeType FromMojoChangeType(
-    mojom::ChangeType type) {
-  switch (type) {
-    case mojom::ChangeType::CHANGED:
-      return ArcFileSystemOperationRunner::ChangeType::CHANGED;
-    case mojom::ChangeType::DELETED:
-      return ArcFileSystemOperationRunner::ChangeType::DELETED;
-  }
-  NOTREACHED();
-  return ArcFileSystemOperationRunner::ChangeType::CHANGED;
-}
-
-}  // namespace
-
 // static
 const char ArcFileSystemOperationRunner::kArcServiceName[] =
     "arc::ArcFileSystemOperationRunner";
@@ -245,7 +228,7 @@ void ArcFileSystemOperationRunner::RemoveWatcher(
 }
 
 void ArcFileSystemOperationRunner::OnDocumentChanged(int64_t watcher_id,
-                                                     mojom::ChangeType type) {
+                                                     ChangeType type) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   auto iter = watcher_callbacks_.find(watcher_id);
   if (iter == watcher_callbacks_.end()) {
@@ -254,7 +237,7 @@ void ArcFileSystemOperationRunner::OnDocumentChanged(int64_t watcher_id,
     return;
   }
   WatcherCallback watcher_callback = iter->second;
-  watcher_callback.Run(FromMojoChangeType(type));
+  watcher_callback.Run(type);
 }
 
 void ArcFileSystemOperationRunner::OnArcPlayStoreEnabledChanged(bool enabled) {

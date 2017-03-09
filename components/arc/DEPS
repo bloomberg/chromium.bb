@@ -7,6 +7,7 @@ include_rules = [
   "+components/signin/core/account_id",
   "+components/user_manager",
   "+mojo",
+  "+storage/browser/fileapi",
   "+third_party/re2",
   "+third_party/skia",
   "+ui/gfx/geometry/rect.h",
