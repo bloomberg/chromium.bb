@@ -319,19 +319,6 @@ void SearchTabHelper::NavigationEntryCommitted(
       web_contents_->GetController().GetVisibleEntry();
   DCHECK(entry);
 
-  // Already determined the instant support state for this page, do not reset
-  // the instant support state.
-  if (load_details.is_in_page) {
-    // When an "in-page" navigation happens, we will not receive a
-    // DidFinishLoad() event. Therefore, we will not determine the Instant
-    // support for the navigated page. So, copy over the Instant support from
-    // the previous entry. If the page does not support Instant, update the
-    // location bar from here to turn off search terms replacement.
-    if (delegate_ && model_.instant_support() == INSTANT_SUPPORT_NO)
-      delegate_->OnWebContentsInstantSupportDisabled(web_contents_);
-    return;
-  }
-
   model_.SetInstantSupportState(INSTANT_SUPPORT_UNKNOWN);
 
   if (InInstantProcess(profile(), web_contents_))
@@ -488,11 +475,6 @@ void SearchTabHelper::InstantSupportChanged(bool instant_support) {
       INSTANT_SUPPORT_NO;
 
   model_.SetInstantSupportState(new_state);
-
-  if (web_contents_->GetController().GetLastCommittedEntry() && delegate_ &&
-      !instant_support) {
-    delegate_->OnWebContentsInstantSupportDisabled(web_contents_);
-  }
 }
 
 void SearchTabHelper::UpdateMode(bool update_origin) {

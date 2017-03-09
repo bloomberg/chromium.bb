@@ -4,10 +4,6 @@
 
 #include "chrome/browser/ui/search/search_tab_helper_delegate.h"
 
-void SearchTabHelperDelegate::OnWebContentsInstantSupportDisabled(
-    const content::WebContents* web_contents) {
-}
-
 OmniboxView* SearchTabHelperDelegate::GetOmniboxView() {
   return nullptr;
 }

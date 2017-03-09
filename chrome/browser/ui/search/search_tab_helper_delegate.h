@@ -5,20 +5,12 @@
 #ifndef CHROME_BROWSER_UI_SEARCH_SEARCH_TAB_HELPER_DELEGATE_H_
 #define CHROME_BROWSER_UI_SEARCH_SEARCH_TAB_HELPER_DELEGATE_H_
 
-namespace content {
-class WebContents;
-}
-
 class OmniboxView;
 
-// Objects implement this interface to get notified about changes in the
-// SearchTabHelper and to provide necessary functionality.
+// Objects implement this interface to provide necessary functionality to
+// SearchTabHelper.
 class SearchTabHelperDelegate {
  public:
-  // Invoked when the |web_contents| no longer supports Instant.
-  virtual void OnWebContentsInstantSupportDisabled(
-      const content::WebContents* web_contents);
-
   // Returns the OmniboxView or NULL if not available.
   virtual OmniboxView* GetOmniboxView();
 

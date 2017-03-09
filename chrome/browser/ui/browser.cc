@@ -1985,13 +1985,6 @@ bool Browser::CanSaveContents(content::WebContents* web_contents) const {
 ///////////////////////////////////////////////////////////////////////////////
 // Browser, SearchTabHelperDelegate implementation:
 
-void Browser::OnWebContentsInstantSupportDisabled(
-    const content::WebContents* web_contents) {
-  DCHECK(web_contents);
-  if (tab_strip_model_->GetActiveWebContents() == web_contents)
-    UpdateToolbar(false);
-}
-
 OmniboxView* Browser::GetOmniboxView() {
   return window_->GetLocationBar()->GetOmniboxView();
 }
