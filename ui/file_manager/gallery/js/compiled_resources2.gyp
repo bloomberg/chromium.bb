@@ -1,13 +1,17 @@
 # Copyright 2016 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-# TODO(oka): Compile all the targets.
 {
   'targets': [
-#    {
-#      'target_name': 'background',
-#      'includes': ['../../compile_js2.gypi'],
-#    },
+    {
+      'target_name': 'background',
+      'dependencies': [
+        '../../file_manager/background/js/compiled_resources2.gyp:app_window_wrapper',
+        '../../file_manager/background/js/compiled_resources2.gyp:background_base',
+        '../../file_manager/common/js/compiled_resources2.gyp:util',
+      ],
+      'includes': ['../../compile_js2.gypi'],
+    },
     {
       'target_name': 'dimmable_ui_controller',
       'dependencies': [
@@ -35,10 +39,22 @@
       ],
       'includes': ['../../compile_js2.gypi'],
     },
-#    {
-#      'target_name': 'gallery',
-#      'includes': ['../../compile_js2.gypi'],
-#    },
+    {
+      'target_name': 'gallery',
+      'dependencies': [
+        '../../externs/compiled_resources2.gyp:volume_manager',
+        '../../file_manager/common/js/compiled_resources2.gyp:util',
+        '../../file_manager/foreground/js/compiled_resources2.gyp:volume_manager_wrapper',
+        '../../file_manager/foreground/js/ui/compiled_resources2.gyp:files_confirm_dialog',
+        '../../file_manager/foreground/js/ui/compiled_resources2.gyp:share_dialog',
+        '../../gallery/js/compiled_resources2.gyp:slide_mode',
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:i18n_template_no_process',
+        'gallery_constants',
+        'gallery_item',
+        'thumbnail_mode',
+      ],
+      'includes': ['../../compile_js2.gypi'],
+    },
     {
       'target_name': 'gallery_constants',
       'includes': ['../../compile_js2.gypi'],
@@ -68,10 +84,6 @@
       ],
       'includes': ['../../compile_js2.gypi'],
     },
-#    {
-#      'target_name': 'gallery_scripts',
-#      'includes': ['../../compile_js2.gypi'],
-#    },
     {
       'target_name': 'gallery_util',
       'dependencies': [

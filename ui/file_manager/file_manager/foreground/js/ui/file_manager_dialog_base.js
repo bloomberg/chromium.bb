@@ -18,23 +18,6 @@ FileManagerDialogBase.prototype = {
 };
 
 /**
- * The FileManager object. This is used to notify events of showing or hiding
- * dialog to file manager.
- *
- * @type {FileManager}
- * @private
- */
-FileManagerDialogBase.fileManager_ = null;
-
-/**
- * Setter of FileManagerDialogBase.fileManager_.
- * @param {FileManager} fileManager The fileManager object.
- */
-FileManagerDialogBase.setFileManager = function(fileManager) {
-  FileManagerDialogBase.fileManager_ = fileManager;
-};
-
-/**
  * The flag if any dialog is shown. True if a dialog is visible, false
  *     otherwise.
  * @type {boolean}

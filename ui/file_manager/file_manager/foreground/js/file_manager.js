@@ -879,9 +879,6 @@ FileManager.prototype = /** @struct */ {
     var dom = this.dialogDom_;
     assert(dom);
 
-    // Initialize the dialog.
-    FileManagerDialogBase.setFileManager(this);
-
     var table = queryRequiredElement('.detail-table', dom);
     FileTable.decorate(
         table,
