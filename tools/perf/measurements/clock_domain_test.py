@@ -15,7 +15,9 @@ class ClockDomainTest(tab_test_case.TabTestCase):
   # Don't run this test on Android; it's not supposed to work on Android
   # (since when doing Android tracing there are two different devices,
   # so the clock domains will be different)
-  @benchmark.Disabled('android')
+  # TODO(rnephew): Revert change from android to all once
+  # https://codereview.chromium.org/2741533003/ lands.
+  @benchmark.Disabled('all')
   def testTelemetryUsesChromeClockDomain(self):
 
     tracing_controller = self._browser.platform.tracing_controller
