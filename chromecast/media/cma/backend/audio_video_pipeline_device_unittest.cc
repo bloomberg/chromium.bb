@@ -1050,13 +1050,20 @@ TEST_F(AudioVideoPipelineDeviceTest, VideoImmediateEos) {
   Initialize();
   MediaPipelineBackend::VideoDecoder* video_decoder =
       backend()->CreateVideoDecoder();
-
-  std::unique_ptr<BufferFeeder> feeder(new BufferFeeder(
+  std::unique_ptr<BufferFeeder> video_feeder(new BufferFeeder(
       base::Bind(&AudioVideoPipelineDeviceTest::EndImmediateEosTest,
                  base::Unretained(this))));
-  feeder->Initialize(backend(), video_decoder, BufferList());
-  feeder->SetVideoConfig(DefaultVideoConfig());
-  SetVideoFeeder(std::move(feeder));
+  video_feeder->Initialize(backend(), video_decoder, BufferList());
+  video_feeder->SetVideoConfig(DefaultVideoConfig());
+  SetVideoFeeder(std::move(video_feeder));
+
+  MediaPipelineBackend::AudioDecoder* audio_decoder =
+      backend()->CreateAudioDecoder();
+  std::unique_ptr<BufferFeeder> audio_feeder(
+      new BufferFeeder(base::Bind(&IgnoreEos)));
+  audio_feeder->Initialize(backend(), audio_decoder, BufferList());
+  audio_feeder->SetAudioConfig(DefaultAudioConfig());
+  SetAudioFeeder(std::move(audio_feeder));
 
   StartImmediateEosTest();
   base::RunLoop().RunUntilIdle();
