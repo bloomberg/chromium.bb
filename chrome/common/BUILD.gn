@@ -196,7 +196,6 @@ static_library("common") {
     "//components/policy:generated",
     "//components/policy/core/common",
     "//components/prefs",
-    "//components/safe_browsing:csd_proto",
     "//components/signin/core/common",
     "//components/strings",
     "//components/translate/content/common",

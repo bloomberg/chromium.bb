@@ -216,7 +216,6 @@ static_library("renderer") {
       ]
       deps += [
         "//chrome/common/safe_browsing:proto",
-        "//components/safe_browsing:csd_proto",
         "//third_party/smhasher:murmurhash3",
       ]
     }

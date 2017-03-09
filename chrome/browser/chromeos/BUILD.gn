@@ -69,7 +69,6 @@ source_set("chromeos") {
     "//components/pairing",
     "//components/policy:generated",
     "//components/proxy_config",
-    "//components/safe_browsing:csd_proto",
     "//components/safe_browsing_db:metadata_proto",
     "//components/session_manager/core",
     "//components/sync_wifi",
