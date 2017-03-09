@@ -1384,10 +1384,13 @@ GLenum Texture::SetParameterf(
     case GL_TEXTURE_BASE_LEVEL:
     case GL_TEXTURE_MAX_LEVEL:
     case GL_TEXTURE_USAGE_ANGLE:
-      {
-        GLint iparam = static_cast<GLint>(std::round(param));
-        return SetParameteri(feature_info, pname, iparam);
-      }
+    case GL_TEXTURE_SWIZZLE_R:
+    case GL_TEXTURE_SWIZZLE_G:
+    case GL_TEXTURE_SWIZZLE_B:
+    case GL_TEXTURE_SWIZZLE_A: {
+      GLint iparam = static_cast<GLint>(std::round(param));
+      return SetParameteri(feature_info, pname, iparam);
+    }
     case GL_TEXTURE_MIN_LOD:
       sampler_state_.min_lod = param;
       break;
