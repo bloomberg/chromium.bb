@@ -179,14 +179,6 @@ class MemberBase {
 #if DCHECK_IS_ON()
   const ThreadState* m_creationThreadState;
 #endif
-
-  template <bool x,
-            WTF::WeakHandlingFlag y,
-            WTF::ShouldWeakPointersBeMarkedStrongly z,
-            typename U,
-            typename V>
-  friend struct CollectionBackingTraceTrait;
-  friend class Visitor;
 };
 
 // Members are used in classes to contain strong pointers to other oilpan heap
@@ -240,15 +232,6 @@ class Member : public MemberBase<T, TracenessMemberConfiguration::Traced> {
     Parent::operator=(nullptr);
     return *this;
   }
-
- protected:
-  template <bool x,
-            WTF::WeakHandlingFlag y,
-            WTF::ShouldWeakPointersBeMarkedStrongly z,
-            typename U,
-            typename V>
-  friend struct CollectionBackingTraceTrait;
-  friend class Visitor;
 };
 
 // A checked version of Member<>, verifying that only same-thread references
@@ -332,15 +315,6 @@ class SameThreadCheckedMember : public Member<T> {
     Parent::operator=(nullptr);
     return *this;
   }
-
- protected:
-  template <bool x,
-            WTF::WeakHandlingFlag y,
-            WTF::ShouldWeakPointersBeMarkedStrongly z,
-            typename U,
-            typename V>
-  friend struct CollectionBackingTraceTrait;
-  friend class Visitor;
 
  private:
   void checkPointer() {
