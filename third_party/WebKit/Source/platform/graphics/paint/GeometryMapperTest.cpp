@@ -31,20 +31,15 @@ class GeometryMapperTest : public ::testing::Test,
     return state;
   }
 
-  const FloatClipRect* getClip(
-      const ClipPaintPropertyNode* descendantClip,
-      const PropertyTreeState& ancestorPropertyTreeState) {
-    GeometryMapperClipCache::ClipAndTransform clipAndTransform(
-        ancestorPropertyTreeState.clip(),
-        ancestorPropertyTreeState.transform());
-    return descendantClip->getClipCache().getCachedClip(clipAndTransform);
+  GeometryMapper::TransformCache& getTransformCache(
+      const PropertyTreeState& propertyTreeState) {
+    return geometryMapper->getTransformCache(propertyTreeState.transform());
   }
 
-  const TransformationMatrix* getTransform(
-      const TransformPaintPropertyNode* descendantTransform,
-      const TransformPaintPropertyNode* ancestorTransform) {
-    return descendantTransform->getTransformCache().getCachedTransform(
-        ancestorTransform);
+  GeometryMapper::ClipCache& getClipCache(
+      const PropertyTreeState& propertyTreeState) {
+    return geometryMapper->getClipCache(propertyTreeState.clip(),
+                                        propertyTreeState.transform());
   }
 
   const TransformPaintPropertyNode* lowestCommonAncestor(
@@ -145,19 +140,19 @@ const static float kTestEpsilon = 1e-6;
                        ancestorPropertyTreeState.transform()));                \
     if (ancestorPropertyTreeState.transform() !=                               \
         localPropertyTreeState.transform()) {                                  \
-      const TransformationMatrix* transformForTesting =                        \
-          getTransform(localPropertyTreeState.transform(),                     \
-                       ancestorPropertyTreeState.transform());                 \
-      CHECK(transformForTesting);                                              \
-      EXPECT_EQ(expectedTransformToAncestor, *transformForTesting);            \
+      EXPECT_EQ(expectedTransformToAncestor,                                   \
+                getTransformCache(ancestorPropertyTreeState)                   \
+                    .at(localPropertyTreeState.transform()));                  \
     }                                                                          \
     if (ancestorPropertyTreeState.clip() != localPropertyTreeState.clip()) {   \
-      const FloatClipRect* outputClipForTesting =                              \
-          getClip(localPropertyTreeState.clip(), ancestorPropertyTreeState);   \
-      DCHECK(outputClipForTesting);                                            \
-      EXPECT_EQ(expectedClipInAncestorSpace, *outputClipForTesting)            \
+      EXPECT_EQ(expectedClipInAncestorSpace,                                   \
+                getClipCache(ancestorPropertyTreeState)                        \
+                    .at(localPropertyTreeState.clip()))                        \
           << expectedClipInAncestorSpace.rect().toString() << " "              \
-          << outputClipForTesting->rect().toString();                          \
+          << getClipCache(ancestorPropertyTreeState)                           \
+                 .at(localPropertyTreeState.clip())                            \
+                 .rect()                                                       \
+                 .toString();                                                  \
     }                                                                          \
   } while (false)
 
@@ -270,9 +265,8 @@ TEST_F(GeometryMapperTest, NestedTransforms) {
                  rootPropertyTreeState(), hasRadius);
 
   // Check the cached matrix for the intermediate transform.
-  EXPECT_EQ(
-      rotateTransform,
-      *getTransform(transform1.get(), rootPropertyTreeState().transform()));
+  EXPECT_EQ(rotateTransform,
+            getTransformCache(rootPropertyTreeState()).at(transform1.get()));
 }
 
 TEST_F(GeometryMapperTest, NestedTransformsScaleAndTranslation) {
@@ -302,8 +296,10 @@ TEST_F(GeometryMapperTest, NestedTransformsScaleAndTranslation) {
                  rootPropertyTreeState(), hasRadius);
 
   // Check the cached matrix for the intermediate transform.
-  EXPECT_EQ(scaleTransform, *getTransform(transform1.get(),
-                                          rootPropertyTreeState().transform()));
+  EXPECT_EQ(scaleTransform,
+            getTransformCache(rootPropertyTreeState())
+
+                .at(transform1.get()));
 }
 
 TEST_F(GeometryMapperTest, NestedTransformsIntermediateDestination) {
