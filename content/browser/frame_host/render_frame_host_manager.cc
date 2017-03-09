@@ -2168,6 +2168,15 @@ void RenderFrameHostManager::CommitPending() {
   // The process will no longer try to exit, so we can decrement the count.
   render_frame_host_->GetProcess()->RemovePendingView();
 
+  // Save off the old background color before possibly deleting the
+  // old RenderWidgetHostView.
+  SkColor old_background_color = SK_ColorWHITE;
+  bool has_old_background_color = false;
+  if (old_render_frame_host->GetView()) {
+    has_old_background_color = true;
+    old_background_color = old_render_frame_host->GetView()->background_color();
+  }
+
   // The RenderViewHost keeps track of the main RenderFrameHost routing id.
   // If this is committing a main frame navigation, update it and set the
   // routing id in the RenderViewHost associated with the old RenderFrameHost
@@ -2243,6 +2252,9 @@ void RenderFrameHostManager::CommitPending() {
   // the RFH so that we can clean up RendererResources related to the RFH first.
   delegate_->NotifySwappedFromRenderManager(
       old_render_frame_host.get(), render_frame_host_.get(), is_main_frame);
+
+  if (has_old_background_color && render_frame_host_->GetView())
+    render_frame_host_->GetView()->SetBackgroundColor(old_background_color);
 
   // Swap out the old frame now that the new one is visible.
   // This will swap it out and schedule it for deletion when the swap out ack

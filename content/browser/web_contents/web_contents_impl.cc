@@ -4090,18 +4090,6 @@ void WebContentsImpl::NotifyViewSwapped(RenderViewHost* old_host,
 
 void WebContentsImpl::NotifyFrameSwapped(RenderFrameHost* old_host,
                                          RenderFrameHost* new_host) {
-  // Copies the background color from an old WebContents to a new one that
-  // replaces it on the screen. This allows the new WebContents to use the
-  // old one's background color as the starting background color, before having
-  // loaded any contents. As a result, we avoid flashing white when navigating
-  // from a site whith a dark background to another site with a dark background.
-  if (old_host && new_host) {
-    RenderWidgetHostView* old_view = old_host->GetView();
-    RenderWidgetHostView* new_view = new_host->GetView();
-    if (old_view && new_view)
-      new_view->SetBackgroundColor(old_view->background_color());
-  }
-
   for (auto& observer : observers_)
     observer.RenderFrameHostChanged(old_host, new_host);
 }
