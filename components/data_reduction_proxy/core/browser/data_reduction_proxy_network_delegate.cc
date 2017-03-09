@@ -514,19 +514,22 @@ void DataReductionProxyNetworkDelegate::MaybeAddChromeProxyECTHeader(
   DCHECK(!request.url().SchemeIsCryptographic());
   DCHECK(request.url().SchemeIsHTTPOrHTTPS());
 
-  if (!params::IsAddChromeProxyECTHeaderEnabled())
-    return;
-
   DCHECK(!request_headers->HasHeader(chrome_proxy_ect_header()));
 
-  if (!request.context()->network_quality_estimator())
-    return;
-
-  net::EffectiveConnectionType ect = request.context()
-                                         ->network_quality_estimator()
-                                         ->GetEffectiveConnectionType();
-  if (ect <= net::EFFECTIVE_CONNECTION_TYPE_OFFLINE)
-    return;
+  if (request.context()->network_quality_estimator()) {
+    net::EffectiveConnectionType type = request.context()
+                                            ->network_quality_estimator()
+                                            ->GetEffectiveConnectionType();
+    if (type > net::EFFECTIVE_CONNECTION_TYPE_OFFLINE) {
+      DCHECK_NE(net::EFFECTIVE_CONNECTION_TYPE_LAST, type);
+      request_headers->SetHeader(chrome_proxy_ect_header(),
+                                 net::GetNameForEffectiveConnectionType(type));
+      return;
+    }
+  }
+  request_headers->SetHeader(chrome_proxy_ect_header(),
+                             net::GetNameForEffectiveConnectionType(
+                                 net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN));
 
   static_assert(net::EFFECTIVE_CONNECTION_TYPE_OFFLINE + 1 ==
                     net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G,
@@ -534,9 +537,6 @@ void DataReductionProxyNetworkDelegate::MaybeAddChromeProxyECTHeader(
   static_assert(net::EFFECTIVE_CONNECTION_TYPE_4G + 1 ==
                     net::EFFECTIVE_CONNECTION_TYPE_LAST,
                 "ECT enum value is not handled.");
-
-  request_headers->SetHeader(chrome_proxy_ect_header(),
-                             net::GetNameForEffectiveConnectionType(ect));
 }
 
 void DataReductionProxyNetworkDelegate::RemoveChromeProxyECTHeader(
