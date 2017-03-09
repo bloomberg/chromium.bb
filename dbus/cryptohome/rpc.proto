@@ -57,6 +57,8 @@ enum CryptohomeErrorCode {
   CRYPTOHOME_ERROR_FIRMWARE_MANAGEMENT_PARAMETERS_INVALID = 26;
   CRYPTOHOME_ERROR_FIRMWARE_MANAGEMENT_PARAMETERS_CANNOT_STORE = 27;
   CRYPTOHOME_ERROR_FIRMWARE_MANAGEMENT_PARAMETERS_CANNOT_REMOVE = 28;
+  CRYPTOHOME_ERROR_MOUNT_OLD_ENCRYPTION = 29;
+  CRYPTOHOME_ERROR_MOUNT_PREVIOUS_MIGRATION_INCOMPLETE = 30;
 }
 
 message AccountIdentifier {
@@ -86,6 +88,10 @@ message MountRequest {
   // Additionally, a failed AuthorizationRequest will be expected as
   // there will be no existing keys.
   optional CreateRequest create = 2;
+  // If set to true, and cryptohomed supports the new "dircrypto" encryption,
+  // forces to use the new encryption. That is, makes it an error to mount
+  // an existing home directory encrypted in the old way (ecryptfs).
+  optional bool force_dircrypto_if_available = 3;
 }
 
 // A BaseReply type is used for all cryptohomed responses. A shared base class

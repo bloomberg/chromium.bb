@@ -139,6 +139,10 @@ enum MountError {
   MOUNT_ERROR_TPM_DEFEND_LOCK = 1 << 4,
   MOUNT_ERROR_USER_DOES_NOT_EXIST = 1 << 5,
   MOUNT_ERROR_TPM_NEEDS_REBOOT = 1 << 6,
+  // Encrypted in old method, need migration before mounting.
+  MOUNT_ERROR_OLD_ENCRYPTION = 1 << 7,
+  // Previous migration attempt was aborted in the middle. Must resume it first.
+  MOUNT_ERROR_PREVIOUS_MIGRATION_INCOMPLETE = 1 << 8,
   MOUNT_ERROR_RECREATED = 1 << 31,
 };
 }  // namespace cryptohome
