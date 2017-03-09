@@ -7,5 +7,10 @@ import("//mojo/public/tools/bindings/mojom.gni")
 mojom("interfaces") {
   sources = [
     "memory/memory_instrumentation.mojom",
+    "tracing/tracing.mojom",
+  ]
+
+  public_deps = [
+    "//mojo/common:common_custom_types",
   ]
 }
