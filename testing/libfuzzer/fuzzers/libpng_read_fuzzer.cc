@@ -67,6 +67,10 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
         &png_destroy_read_struct, &png_ptr, &info_ptr, nullptr));
 
 #ifdef PNG_FUZZ_PROGRESSIVE
+  if (setjmp(png_jmpbuf(png_ptr))) {
+    return 0;
+  }
+
   png_set_progressive_read_fn(png_ptr, nullptr, nullptr, nullptr, nullptr);
   png_process_data(png_ptr, info_ptr, const_cast<uint8_t*>(data), size);
 #else
