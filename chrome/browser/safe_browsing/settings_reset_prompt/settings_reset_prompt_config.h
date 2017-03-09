@@ -65,6 +65,10 @@ class SettingsResetPromptConfig {
   std::unordered_map<SHA256Hash, int, SHA256HashHasher> domain_hashes_;
 
   // Other feature parameters.
+  //
+  // If you add any required feature parameters, make sure to update the field
+  // trial testing configuration for the "SettingsResetPrompt" feature in
+  // src/testing/variations/fieldtrial_testing_config.json
   base::TimeDelta delay_before_prompt_;
   int prompt_wave_ = 0;
   base::TimeDelta time_between_prompts_;
