@@ -17,8 +17,18 @@
 }
 
 @synthesize webState = _webState;
+@synthesize webStateCreationRequested = _webStateCreationRequested;
 @synthesize repostFormWarningRequested = _repostFormWarningRequested;
 @synthesize authenticationRequested = _authenticationRequested;
+
+- (web::WebState*)webState:(web::WebState*)webState
+    createNewWebStateForURL:(const GURL&)URL
+                  openerURL:(const GURL&)openerURL
+            initiatedByUser:(BOOL)initiatedByUser {
+  _webState = webState;
+  _webStateCreationRequested = YES;
+  return nil;
+}
 
 - (web::WebState*)webState:(web::WebState*)webState
          openURLWithParams:(const web::WebState::OpenURLParams&)params {

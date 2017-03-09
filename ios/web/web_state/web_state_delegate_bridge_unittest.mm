@@ -56,6 +56,19 @@ class WebStateDelegateBridgeTest : public PlatformTest {
   web::TestWebState test_web_state_;
 };
 
+// Tests |webState:createNewWebStateForURL:openerURL:initiatedByUser:|
+// forwarding.
+TEST_F(WebStateDelegateBridgeTest, CreateNewWebState) {
+  ASSERT_FALSE([delegate_ webState]);
+  ASSERT_FALSE([delegate_ webStateCreationRequested]);
+
+  EXPECT_FALSE(
+      bridge_->CreateNewWebState(&test_web_state_, GURL(), GURL(), true));
+
+  EXPECT_EQ(&test_web_state_, [delegate_ webState]);
+  ASSERT_TRUE([delegate_ webStateCreationRequested]);
+}
+
 // Tests |webState:openURLWithParams:| forwarding.
 TEST_F(WebStateDelegateBridgeTest, OpenURLFromWebState) {
   ASSERT_FALSE([delegate_ webState]);

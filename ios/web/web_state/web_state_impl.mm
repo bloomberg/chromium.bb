@@ -504,6 +504,16 @@ void WebStateImpl::RunJavaScriptDialog(
                                  message_text, default_prompt_text, callback);
 }
 
+WebState* WebStateImpl::CreateNewWebState(const GURL& url,
+                                          const GURL& opener_url,
+                                          bool initiated_by_user) {
+  if (delegate_) {
+    return delegate_->CreateNewWebState(this, url, opener_url,
+                                        initiated_by_user);
+  }
+  return nullptr;
+}
+
 void WebStateImpl::OnAuthRequired(
     NSURLProtectionSpace* protection_space,
     NSURLCredential* proposed_credential,

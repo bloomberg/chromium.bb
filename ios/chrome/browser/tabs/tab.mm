@@ -1985,39 +1985,6 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
   [delegate_ discardPrerender];
 }
 
-- (CRWWebController*)webController:(CRWWebController*)webController
-         createWebControllerForURL:(const GURL&)URL
-                         openerURL:(const GURL&)openerURL
-                   initiatedByUser:(BOOL)initiatedByUser {
-  // Check if requested web controller is a popup and block it if necessary.
-  if (!initiatedByUser) {
-    web::WebState* webState = webController.webState;
-    auto* helper = BlockedPopupTabHelper::FromWebState(webState);
-    if (helper->ShouldBlockPopup(openerURL)) {
-      web::NavigationItem* item =
-          webState->GetNavigationManager()->GetLastCommittedItem();
-      web::Referrer referrer(openerURL, item->GetReferrer().policy);
-      helper->HandlePopup(URL, referrer);
-      return nil;
-    }
-  }
-
-  // Requested web controller should not be blocked from opening.
-  [self updateSnapshotWithOverlay:YES visibleFrameOnly:YES];
-
-  // Tabs open by DOM are always renderer initiated.
-  web::NavigationManager::WebLoadParams params(GURL{});
-  params.transition_type = ui::PAGE_TRANSITION_LINK;
-  params.is_renderer_initiated = YES;
-  Tab* tab = [parentTabModel_
-      insertTabWithLoadParams:params
-                       opener:self
-                  openedByDOM:YES
-                      atIndex:TabModelConstants::kTabPositionAutomatically
-                 inBackground:NO];
-  return tab.webController;
-}
-
 - (CGFloat)headerHeightForWebController:(CRWWebController*)webController {
   return [self.tabHeadersDelegate headerHeightForTab:self];
 }

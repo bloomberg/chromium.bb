@@ -56,47 +56,9 @@ using web::NavigationManagerImpl;
 
 // Used to mock CRWWebDelegate methods with C++ params.
 @interface MockInteractionLoader : OCMockComplexTypeHelper
-// Whether or not the delegate should block popups.
-@property(nonatomic, assign) BOOL blockPopups;
-// A web controller that will be returned by webPageOrdered... methods.
-@property(nonatomic, assign) CRWWebController* childWebController;
-
-// Values of arguments passed to
-// |webController:createWebControllerForURL:openerURL:initiatedByUser:|.
-@property(nonatomic, readonly) CRWWebController* webController;
-@property(nonatomic, readonly) GURL childURL;
-@property(nonatomic, readonly) GURL openerURL;
-@property(nonatomic, readonly) BOOL initiatedByUser;
 @end
 
 @implementation MockInteractionLoader
-
-@synthesize blockPopups = _blockPopups;
-@synthesize childWebController = _childWebController;
-@synthesize webController = _webController;
-@synthesize childURL = _childURL;
-@synthesize openerURL = _openerURL;
-@synthesize initiatedByUser = _initiatedByUser;
-
-- (instancetype)initWithRepresentedObject:(id)representedObject {
-  self = [super initWithRepresentedObject:representedObject];
-  if (self) {
-    _blockPopups = YES;
-  }
-  return self;
-}
-
-- (CRWWebController*)webController:(CRWWebController*)webController
-         createWebControllerForURL:(const GURL&)childURL
-                         openerURL:(const GURL&)openerURL
-                   initiatedByUser:(BOOL)initiatedByUser {
-  _webController = webController;
-  _childURL = childURL;
-  _openerURL = openerURL;
-  _initiatedByUser = initiatedByUser;
-
-  return (_blockPopups && !initiatedByUser) ? nil : _childWebController;
-}
 
 typedef BOOL (^openExternalURLBlockType)(const GURL&);
 
@@ -863,42 +825,18 @@ TEST_F(CRWWebControllerObserversTest, Observers) {
 };
 
 // Test fixture for window.open tests.
-class CRWWebControllerWindowOpenTest : public web::WebTestWithWebController {
+class WindowOpenByDomTest : public web::WebTestWithWebController {
  protected:
+  WindowOpenByDomTest() : opener_url_("http://test") {}
+
   void SetUp() override {
-    web::WebTestWithWebController::SetUp();
-
-    // Configure web delegate.
-    delegate_.reset([[MockInteractionLoader alloc]
-        initWithRepresentedObject:
-            [OCMockObject niceMockForProtocol:@protocol(CRWWebDelegate)]]);
-    ASSERT_TRUE([delegate_ blockPopups]);
-    [web_controller() setDelegate:delegate_];
-
-    // Configure child web state.
-    child_web_state_.reset(new web::WebStateImpl(GetBrowserState()));
-    child_web_state_->SetWebUsageEnabled(true);
-    [delegate_ setChildWebController:child_web_state_->GetWebController()];
-
-    // Configure child web controller's session controller mock.
-    id sessionController =
-        [OCMockObject niceMockForClass:[CRWSessionController class]];
-    BOOL yes = YES;
-    [[[sessionController stub] andReturnValue:OCMOCK_VALUE(yes)] isOpenedByDOM];
-    child_web_state_->GetNavigationManagerImpl().SetSessionController(
-        sessionController);
-
-    LoadHtml(@"<html><body></body></html>", GURL("http://test"));
-  }
-  void TearDown() override {
-    EXPECT_OCMOCK_VERIFY(delegate_);
-    [web_controller() setDelegate:nil];
-
-    web::WebTestWithWebController::TearDown();
+    WebTestWithWebController::SetUp();
+    web_state()->SetDelegate(&delegate_);
+    LoadHtml(@"<html><body></body></html>", opener_url_);
   }
   // Executes JavaScript that opens a new window and returns evaluation result
   // as a string.
-  id OpenWindowByDOM() {
+  id OpenWindowByDom() {
     NSString* const kOpenWindowScript =
         @"var w = window.open('javascript:void(0);', target='_blank');"
          "w ? w.toString() : null;";
@@ -906,70 +844,54 @@ class CRWWebControllerWindowOpenTest : public web::WebTestWithWebController {
     WaitForBackgroundTasks();
     return windowJSObject;
   }
-  // A CRWWebDelegate mock used for testing.
-  base::scoped_nsobject<id> delegate_;
-  // A child WebState used for testing.
-  std::unique_ptr<web::WebStateImpl> child_web_state_;
+  // URL of a page which opens child windows.
+  const GURL opener_url_;
+  web::TestWebStateDelegate delegate_;
 };
 
-// Tests that absence of web delegate is handled gracefully.
-TEST_F(CRWWebControllerWindowOpenTest, NoDelegate) {
-  [web_controller() setDelegate:nil];
+// Tests that absence of web state delegate is handled gracefully.
+TEST_F(WindowOpenByDomTest, NoDelegate) {
+  web_state()->SetDelegate(nullptr);
 
-  EXPECT_NSEQ([NSNull null], OpenWindowByDOM());
+  EXPECT_NSEQ([NSNull null], OpenWindowByDom());
 
-  EXPECT_FALSE([delegate_ webController]);
-  EXPECT_FALSE([delegate_ childURL].is_valid());
-  EXPECT_FALSE([delegate_ openerURL].is_valid());
-  EXPECT_FALSE([delegate_ initiatedByUser]);
+  EXPECT_TRUE(delegate_.child_windows().empty());
+  EXPECT_TRUE(delegate_.popups().empty());
 }
 
 // Tests that window.open triggered by user gesture opens a new non-popup
 // window.
-TEST_F(CRWWebControllerWindowOpenTest, OpenWithUserGesture) {
+TEST_F(WindowOpenByDomTest, OpenWithUserGesture) {
   [web_controller() touched:YES];
-  EXPECT_NSEQ(@"[object Window]", OpenWindowByDOM());
+  EXPECT_NSEQ(@"[object Window]", OpenWindowByDom());
 
-  EXPECT_EQ(web_controller(), [delegate_ webController]);
-  EXPECT_EQ("javascript:void(0);", [delegate_ childURL].spec());
-  EXPECT_EQ("http://test/", [delegate_ openerURL].spec());
-  EXPECT_TRUE([delegate_ initiatedByUser]);
+  ASSERT_EQ(1U, delegate_.child_windows().size());
+  ASSERT_TRUE(delegate_.child_windows()[0]);
+  EXPECT_TRUE(delegate_.popups().empty());
 }
 
-// Tests that window.open executed w/o user gesture does not open a new window.
-// Once the blocked popup is allowed a new window is opened.
-TEST_F(CRWWebControllerWindowOpenTest, AllowPopup) {
+// Tests that window.open executed w/o user gesture does not open a new window,
+// but blocks popup instead.
+TEST_F(WindowOpenByDomTest, BlockPopup) {
   ASSERT_FALSE([web_controller() userIsInteracting]);
-  EXPECT_NSEQ([NSNull null], OpenWindowByDOM());
+  EXPECT_NSEQ([NSNull null], OpenWindowByDom());
 
-  EXPECT_EQ(web_controller(), [delegate_ webController]);
-  EXPECT_EQ("javascript:void(0);", [delegate_ childURL].spec());
-  EXPECT_EQ("http://test/", [delegate_ openerURL].spec());
-  EXPECT_FALSE([delegate_ initiatedByUser]);
+  EXPECT_TRUE(delegate_.child_windows().empty());
+  ASSERT_EQ(1U, delegate_.popups().size());
+  EXPECT_EQ(GURL("javascript:void(0);"), delegate_.popups()[0].url);
+  EXPECT_EQ(opener_url_, delegate_.popups()[0].opener_url);
 }
 
 // Tests that window.open executed w/o user gesture opens a new window, assuming
 // that delegate allows popups.
-TEST_F(CRWWebControllerWindowOpenTest, DontBlockPopup) {
-  [delegate_ setBlockPopups:NO];
-  EXPECT_NSEQ(@"[object Window]", OpenWindowByDOM());
+TEST_F(WindowOpenByDomTest, DontBlockPopup) {
+  delegate_.allow_popups(opener_url_);
+  EXPECT_NSEQ(@"[object Window]", OpenWindowByDom());
 
-  EXPECT_EQ(web_controller(), [delegate_ webController]);
-  EXPECT_EQ("javascript:void(0);", [delegate_ childURL].spec());
-  EXPECT_EQ("http://test/", [delegate_ openerURL].spec());
-  EXPECT_FALSE([delegate_ initiatedByUser]);
+  ASSERT_EQ(1U, delegate_.child_windows().size());
+  ASSERT_TRUE(delegate_.child_windows()[0]);
+  EXPECT_TRUE(delegate_.popups().empty());
 }
-
-// Tests that window.open executed w/o user gesture does not open a new window.
-TEST_F(CRWWebControllerWindowOpenTest, BlockPopup) {
-  ASSERT_FALSE([web_controller() userIsInteracting]);
-  EXPECT_NSEQ([NSNull null], OpenWindowByDOM());
-
-  EXPECT_EQ(web_controller(), [delegate_ webController]);
-  EXPECT_EQ("javascript:void(0);", [delegate_ childURL].spec());
-  EXPECT_EQ("http://test/", [delegate_ openerURL].spec());
-  EXPECT_FALSE([delegate_ initiatedByUser]);
-};
 
 // Tests page title changes.
 typedef web::WebTestWithWebState CRWWebControllerTitleTest;

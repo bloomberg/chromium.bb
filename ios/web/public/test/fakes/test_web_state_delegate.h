@@ -8,12 +8,21 @@
 #import <Foundation/Foundation.h>
 
 #include <memory>
+#include <set>
 
 #include "base/mac/scoped_nsobject.h"
 #import "ios/web/public/web_state/web_state_delegate.h"
 #import "ios/web/public/test/fakes/test_java_script_dialog_presenter.h"
 
 namespace web {
+
+// Encapsulates parameters passed to CreateNewWebState.
+struct TestCreateNewWebStateRequest {
+  WebState* web_state = nullptr;
+  GURL url;
+  GURL opener_url;
+  bool initiated_by_user = false;
+};
 
 // Encapsulates parameters passed to OpenURLFromWebState.
 struct TestOpenURLRequest {
@@ -44,6 +53,14 @@ struct TestAuthenticationRequest {
   WebStateDelegate::AuthCallback auth_callback;
 };
 
+// Encapsulates information about popup.
+struct TestPopup {
+  TestPopup(const GURL& url, const GURL& opener_url)
+      : url(url), opener_url(opener_url) {}
+  GURL url;
+  GURL opener_url;
+};
+
 // Fake WebStateDelegate used for testing purposes.
 class TestWebStateDelegate : public WebStateDelegate {
  public:
@@ -51,6 +68,10 @@ class TestWebStateDelegate : public WebStateDelegate {
   ~TestWebStateDelegate() override;
 
   // WebStateDelegate overrides:
+  WebState* CreateNewWebState(WebState* source,
+                              const GURL& url,
+                              const GURL& opener_url,
+                              bool initiated_by_user) override;
   WebState* OpenURLFromWebState(WebState*,
                                 const WebState::OpenURLParams&) override;
   JavaScriptDialogPresenter* GetJavaScriptDialogPresenter(WebState*) override;
@@ -65,9 +86,27 @@ class TestWebStateDelegate : public WebStateDelegate {
                       NSURLCredential* proposed_credential,
                       const AuthCallback& callback) override;
 
+  // Allows popups requested by a page with |opener_url|.
+  void allow_popups(const GURL& opener_url) {
+    allowed_popups_.insert(opener_url);
+  }
+
+  // Returns list of all child windows opened via CreateNewWebState.
+  const std::vector<std::unique_ptr<WebState>>& child_windows() const {
+    return child_windows_;
+  }
+
+  // Returns list of all popups requested via CreateNewWebState.
+  const std::vector<TestPopup>& popups() const { return popups_; }
+
   // True if the WebStateDelegate HandleContextMenu method has been called.
   bool handle_context_menu_called() const {
     return handle_context_menu_called_;
+  }
+
+  // Returns the last Web State creation request passed to |CreateNewWebState|.
+  TestCreateNewWebStateRequest* last_create_new_web_state_request() const {
+    return last_create_new_web_state_request_.get();
   }
 
   // Returns the last Open URL request passed to |OpenURLFromWebState|.
@@ -98,7 +137,13 @@ class TestWebStateDelegate : public WebStateDelegate {
   }
 
  private:
+  std::vector<std::unique_ptr<WebState>> child_windows_;
+  // A page can open popup if its URL is in this set.
+  std::set<GURL> allowed_popups_;
+  std::vector<TestPopup> popups_;
   bool handle_context_menu_called_ = false;
+  std::unique_ptr<TestCreateNewWebStateRequest>
+      last_create_new_web_state_request_;
   std::unique_ptr<TestOpenURLRequest> last_open_url_request_;
   std::unique_ptr<TestRepostFormRequest> last_repost_form_request_;
   bool get_java_script_dialog_presenter_called_ = false;

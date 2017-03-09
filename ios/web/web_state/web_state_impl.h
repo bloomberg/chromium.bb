@@ -253,6 +253,14 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
                            NSString* default_prompt_text,
                            const DialogClosedCallback& callback);
 
+  // Instructs the delegate to create a new web state. Called when this WebState
+  // wants to open a new window. |url| is the URL of the new window;
+  // |opener_url| is the URL of the page which requested a window to be open;
+  // |initiated_by_user| is true if action was caused by the user.
+  WebState* CreateNewWebState(const GURL& url,
+                              const GURL& opener_url,
+                              bool initiated_by_user);
+
   // Notifies the delegate that request receives an authentication challenge
   // and is unable to respond using cached credentials.
   void OnAuthRequired(NSURLProtectionSpace* protection_space,

@@ -14,6 +14,21 @@ WebStateDelegateBridge::WebStateDelegateBridge(id<CRWWebStateDelegate> delegate)
 
 WebStateDelegateBridge::~WebStateDelegateBridge() {}
 
+WebState* WebStateDelegateBridge::CreateNewWebState(WebState* source,
+                                                    const GURL& url,
+                                                    const GURL& opener_url,
+                                                    bool initiated_by_user) {
+  SEL selector =
+      @selector(webState:createNewWebStateForURL:openerURL:initiatedByUser:);
+  if ([delegate_ respondsToSelector:selector]) {
+    return [delegate_ webState:source
+        createNewWebStateForURL:url
+                      openerURL:opener_url
+                initiatedByUser:initiated_by_user];
+  }
+  return nullptr;
+}
+
 WebState* WebStateDelegateBridge::OpenURLFromWebState(
     WebState* source,
     const WebState::OpenURLParams& params) {

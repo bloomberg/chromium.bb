@@ -19,6 +19,9 @@
 // ContextMenuParams reveived in |webState:handleContextMenu:| call.
 // nullptr if that delegate method was not called.
 @property(nonatomic, readonly) web::ContextMenuParams* contextMenuParams;
+// Whether |webState:createNewWebStateForURL:openerURL:initiatedByUser:| has
+// been called or not.
+@property(nonatomic, readonly) BOOL webStateCreationRequested;
 // Whether |webState:runRepostFormDialogWithCompletionHandler:| has been called
 // or not.
 @property(nonatomic, readonly) BOOL repostFormWarningRequested;

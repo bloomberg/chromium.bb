@@ -155,6 +155,7 @@
 #import "ios/chrome/browser/ui/util/pasteboard_util.h"
 #import "ios/chrome/browser/ui/voice/text_to_speech_player.h"
 #include "ios/chrome/browser/upgrade/upgrade_center.h"
+#import "ios/chrome/browser/web/blocked_popup_tab_helper.h"
 #import "ios/chrome/browser/web/error_page_content.h"
 #import "ios/chrome/browser/web/passkit_dialog_provider.h"
 #import "ios/chrome/browser/web/repost_form_tab_helper.h"
@@ -2380,6 +2381,39 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
 }
 
 #pragma mark - CRWWebStateDelegate methods.
+
+- (web::WebState*)webState:(web::WebState*)webState
+    createNewWebStateForURL:(const GURL&)URL
+                  openerURL:(const GURL&)openerURL
+            initiatedByUser:(BOOL)initiatedByUser {
+  // Check if requested web state is a popup and block it if necessary.
+  if (!initiatedByUser) {
+    auto* helper = BlockedPopupTabHelper::FromWebState(webState);
+    if (helper->ShouldBlockPopup(openerURL)) {
+      web::NavigationItem* item =
+          webState->GetNavigationManager()->GetLastCommittedItem();
+      web::Referrer referrer(openerURL, item->GetReferrer().policy);
+      helper->HandlePopup(URL, referrer);
+      return nil;
+    }
+  }
+
+  // Requested web state should not be blocked from opening.
+  Tab* currentTab = LegacyTabHelper::GetTabForWebState(webState);
+  [currentTab updateSnapshotWithOverlay:YES visibleFrameOnly:YES];
+
+  // Tabs open by DOM are always renderer initiated.
+  web::NavigationManager::WebLoadParams params(GURL{});
+  params.transition_type = ui::PAGE_TRANSITION_LINK;
+  params.is_renderer_initiated = true;
+  Tab* childTab = [[self tabModel]
+      insertTabWithLoadParams:params
+                       opener:currentTab
+                  openedByDOM:YES
+                      atIndex:TabModelConstants::kTabPositionAutomatically
+                 inBackground:NO];
+  return childTab.webState;
+}
 
 - (web::WebState*)webState:(web::WebState*)webState
          openURLWithParams:(const web::WebState::OpenURLParams&)params {

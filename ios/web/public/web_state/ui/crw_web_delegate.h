@@ -71,17 +71,6 @@ class GURL;
 // TODO(crbug.com/692331): Remove this method and use |DidFinishNavigation|.
 - (void)webWillFinishHistoryNavigation;
 
-// ---------------------------------------------------------------------
-// Called when |webController| wants to open a new window. |URL| is the URL of
-// the new window; |openerURL| is the URL of the page which requested a window
-// to be open; |initiatedByUser| is YES if action was caused by the user.
-// |webController| will not open a window if this method returns nil. This
-// method can not return |webController|.
-- (CRWWebController*)webController:(CRWWebController*)webController
-         createWebControllerForURL:(const GURL&)URL
-                         openerURL:(const GURL&)openerURL
-                   initiatedByUser:(BOOL)initiatedByUser;
-
 @optional
 
 // Called to ask CRWWebDelegate if |CRWWebController| should open the given URL.

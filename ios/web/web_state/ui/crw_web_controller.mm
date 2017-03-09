@@ -4341,11 +4341,17 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   NSString* referrer = [self referrerFromNavigationAction:action];
   GURL openerURL =
       referrer ? GURL(base::SysNSStringToUTF8(referrer)) : _documentURL;
-  CRWWebController* child = [_delegate webController:self
-                           createWebControllerForURL:requestURL
-                                           openerURL:openerURL
-                                     initiatedByUser:[self userIsInteracting]];
-  DCHECK(!child || child.sessionController.openedByDOM);
+
+  WebState* childWebState = _webStateImpl->CreateNewWebState(
+      requestURL, openerURL, [self userIsInteracting]);
+  if (!childWebState)
+    return nil;
+
+  CRWWebController* childWebController =
+      static_cast<WebStateImpl*>(childWebState)->GetWebController();
+
+  DCHECK(!childWebController ||
+         childWebController.sessionController.openedByDOM);
 
   // WKWebView requires WKUIDelegate to return a child view created with
   // exactly the same |configuration| object (exception is raised if config is
@@ -4353,8 +4359,8 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   // WKWebViewConfigurationProvider are different objects because WKWebView
   // makes a shallow copy of the config inside init, so every WKWebView
   // owns a separate shallow copy of WKWebViewConfiguration.
-  [child ensureWebViewCreatedWithConfiguration:configuration];
-  return child.webView;
+  [childWebController ensureWebViewCreatedWithConfiguration:configuration];
+  return childWebController.webView;
 }
 
 - (void)webViewDidClose:(WKWebView*)webView {

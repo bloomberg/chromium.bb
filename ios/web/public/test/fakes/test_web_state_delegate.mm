@@ -5,6 +5,7 @@
 #import "ios/web/public/test/fakes/test_web_state_delegate.h"
 
 #include "base/memory/ptr_util.h"
+#import "ios/web/web_state/web_state_impl.h"
 
 namespace web {
 
@@ -36,6 +37,32 @@ TestAuthenticationRequest::TestAuthenticationRequest(
 TestWebStateDelegate::TestWebStateDelegate() {}
 
 TestWebStateDelegate::~TestWebStateDelegate() = default;
+
+WebState* TestWebStateDelegate::CreateNewWebState(WebState* source,
+                                                  const GURL& url,
+                                                  const GURL& opener_url,
+                                                  bool initiated_by_user) {
+  last_create_new_web_state_request_ =
+      base::MakeUnique<TestCreateNewWebStateRequest>();
+  last_create_new_web_state_request_->web_state = source;
+  last_create_new_web_state_request_->url = url;
+  last_create_new_web_state_request_->opener_url = opener_url;
+  last_create_new_web_state_request_->initiated_by_user = initiated_by_user;
+
+  if (!initiated_by_user &&
+      allowed_popups_.find(opener_url) == allowed_popups_.end()) {
+    popups_.push_back(TestPopup(url, opener_url));
+    return nullptr;
+  }
+
+  std::unique_ptr<WebStateImpl> child(
+      base::MakeUnique<WebStateImpl>(source->GetBrowserState()));
+  child->GetNavigationManagerImpl().InitializeSession(YES /*opened_by_dom*/);
+  child->SetWebUsageEnabled(true);
+
+  child_windows_.push_back(std::move(child));
+  return child_windows_.back().get();
+}
 
 WebState* TestWebStateDelegate::OpenURLFromWebState(
     WebState* web_state,
