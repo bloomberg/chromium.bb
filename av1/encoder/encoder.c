@@ -2187,6 +2187,7 @@ AV1_COMP *av1_create_compressor(AV1EncoderConfig *oxcf,
   cpi->od_rc.keyframe_rate = oxcf->key_freq;
   cpi->od_rc.goldenframe_rate = FIXED_GF_INTERVAL;
   cpi->od_rc.altref_rate = 25;
+  cpi->od_rc.firstpass_quant = 1;
   cpi->od_rc.bit_depth = cm->bit_depth;
   cpi->od_rc.minq = oxcf->best_allowed_q;
   cpi->od_rc.maxq = oxcf->worst_allowed_q;
@@ -2314,6 +2315,12 @@ AV1_COMP *av1_create_compressor(AV1EncoderConfig *oxcf,
   kf_list = fopen("kf_list.stt", "w");
 #endif
 
+#if CONFIG_XIPHRC
+  if (oxcf->pass == 2) {
+    cpi->od_rc.twopass_allframes_buf = oxcf->two_pass_stats_in.buf;
+    cpi->od_rc.twopass_allframes_buf_size = oxcf->two_pass_stats_in.sz;
+  }
+#else
   if (oxcf->pass == 1) {
     av1_init_first_pass(cpi);
   } else if (oxcf->pass == 2) {
@@ -2339,6 +2346,7 @@ AV1_COMP *av1_create_compressor(AV1EncoderConfig *oxcf,
 
     av1_init_second_pass(cpi);
   }
+#endif
 
   init_upsampled_ref_frame_bufs(cpi);
 
@@ -3972,9 +3980,11 @@ static void set_frame_size(AV1_COMP *cpi) {
     }
   }
 
+#if !CONFIG_XIPHRC
   if (oxcf->pass == 2) {
     av1_set_target_rate(cpi);
   }
+#endif
 
   alloc_frame_mvs(cm, cm->new_fb_idx);
 
@@ -4705,7 +4715,7 @@ static void make_update_tile_list_enc(AV1_COMP *cpi, const int tile_rows,
 
 #endif
 static void encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
-                                      uint8_t *dest,
+                                      uint8_t *dest, int skip_adapt,
                                       unsigned int *frame_flags) {
   AV1_COMMON *const cm = &cpi->common;
   const AV1EncoderConfig *const oxcf = &cpi->oxcf;
@@ -4951,6 +4961,8 @@ static void encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
   // Build the bitstream
   av1_pack_bitstream(cpi, dest, size);
 
+  if (skip_adapt) return;
+
 #if CONFIG_REFERENCE_BUFFER
   {
     int i;
@@ -5099,7 +5111,7 @@ static void encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
 }
 
 static void Pass0Encode(AV1_COMP *cpi, size_t *size, uint8_t *dest,
-                        unsigned int *frame_flags) {
+                        int skip_adapt, unsigned int *frame_flags) {
 #if CONFIG_XIPHRC
   int64_t ip_count;
   int frame_type, is_golden, is_altref;
@@ -5132,12 +5144,13 @@ static void Pass0Encode(AV1_COMP *cpi, size_t *size, uint8_t *dest,
     av1_rc_get_one_pass_vbr_params(cpi);
   }
 #endif
-  encode_frame_to_data_rate(cpi, size, dest, frame_flags);
+  encode_frame_to_data_rate(cpi, size, dest, skip_adapt, frame_flags);
 }
 
+#if !CONFIG_XIPHRC
 static void Pass2Encode(AV1_COMP *cpi, size_t *size, uint8_t *dest,
                         unsigned int *frame_flags) {
-  encode_frame_to_data_rate(cpi, size, dest, frame_flags);
+  encode_frame_to_data_rate(cpi, size, dest, 0, frame_flags);
 
 #if CONFIG_EXT_REFS
   // Do not do post-encoding update for those frames that do not have a spot in
@@ -5151,6 +5164,7 @@ static void Pass2Encode(AV1_COMP *cpi, size_t *size, uint8_t *dest,
   av1_twopass_postencode_update(cpi);
 #endif  // CONFIG_EXT_REFS
 }
+#endif
 
 static void init_ref_frame_bufs(AV1_COMMON *cm) {
   int i;
@@ -5673,7 +5687,9 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
   } else {
     *size = 0;
     if (flush && oxcf->pass == 1 && !cpi->twopass.first_pass_done) {
-#if !CONFIG_XIPHRC
+#if CONFIG_XIPHRC
+      od_enc_rc_2pass_out(&cpi->od_rc, cpi->output_pkt_list, 1);
+#else
       av1_end_first_pass(cpi); /* get last stats packet */
 #endif
       cpi->twopass.first_pass_done = 1;
@@ -5725,12 +5741,15 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
   cpi->frame_flags = *frame_flags;
 
   if (oxcf->pass == 2) {
-#if !CONFIG_XIPHRC
+#if CONFIG_XIPHRC
+    if (od_enc_rc_2pass_in(&cpi->od_rc) < 0) return -1;
+  }
+#else
     av1_rc_get_second_pass_params(cpi);
-#endif
   } else if (oxcf->pass == 1) {
     set_frame_size(cpi);
   }
+#endif
 
   if (cpi->oxcf.pass != 0 || frame_is_intra_only(cm) == 1) {
     for (i = 0; i < TOTAL_REFS_PER_FRAME; ++i)
@@ -5749,6 +5768,23 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
   }
 #endif
 
+#if CONFIG_XIPHRC
+  if (oxcf->pass == 1) {
+    size_t tmp;
+    if (cpi->od_rc.cur_frame == 0) Pass0Encode(cpi, &tmp, dest, 1, frame_flags);
+    cpi->od_rc.firstpass_quant = cpi->od_rc.target_quantizer;
+    Pass0Encode(cpi, &tmp, dest, 0, frame_flags);
+    od_enc_rc_2pass_out(&cpi->od_rc, cpi->output_pkt_list, 0);
+  } else if (oxcf->pass == 2) {
+    Pass0Encode(cpi, size, dest, 0, frame_flags);
+  } else {
+    if (cpi->od_rc.cur_frame == 0) {
+      size_t tmp;
+      Pass0Encode(cpi, &tmp, dest, 1, frame_flags);
+    }
+    Pass0Encode(cpi, size, dest, 0, frame_flags);
+  }
+#else
   if (oxcf->pass == 1) {
     cpi->td.mb.e_mbd.lossless[0] = is_lossless_requested(oxcf);
     av1_first_pass(cpi, source);
@@ -5756,8 +5792,9 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
     Pass2Encode(cpi, size, dest, frame_flags);
   } else {
     // One pass encode
-    Pass0Encode(cpi, size, dest, frame_flags);
+    Pass0Encode(cpi, size, dest, 0, frame_flags);
   }
+#endif
 
   if (!cm->error_resilient_mode)
     cm->frame_contexts[cm->frame_context_idx] = *cm->fc;

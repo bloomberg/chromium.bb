@@ -293,13 +293,16 @@ static aom_codec_err_t validate_config(aom_codec_alg_priv_t *ctx,
     ERROR("Option --tune=ssim is not currently supported in AV1.");
 
   if (cfg->g_pass == AOM_RC_LAST_PASS) {
+#if !CONFIG_XIPHRC
     const size_t packet_sz = sizeof(FIRSTPASS_STATS);
     const int n_packets = (int)(cfg->rc_twopass_stats_in.sz / packet_sz);
     const FIRSTPASS_STATS *stats;
+#endif
 
     if (cfg->rc_twopass_stats_in.buf == NULL)
       ERROR("rc_twopass_stats_in.buf not set.");
 
+#if !CONFIG_XIPHRC
     if (cfg->rc_twopass_stats_in.sz % packet_sz)
       ERROR("rc_twopass_stats_in.sz indicates truncated packet.");
 
@@ -311,6 +314,7 @@ static aom_codec_err_t validate_config(aom_codec_alg_priv_t *ctx,
 
     if ((int)(stats->count + 0.5) != n_packets - 1)
       ERROR("rc_twopass_stats_in missing EOS stats packet");
+#endif
   }
 
 #if !CONFIG_AOM_HIGHBITDEPTH

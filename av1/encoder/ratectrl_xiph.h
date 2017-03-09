@@ -13,6 +13,7 @@
 #define _ratectrl_xiph_H (1)
 
 #include "av1/encoder/ratectrl.h"
+#include "aom/internal/aom_codec_internal.h"
 
 /*Frame types.*/
 #define OD_I_FRAME (0)
@@ -48,6 +49,12 @@
    conversion (6.235 * 2^45) */
 #define OD_LOG_QUANTIZER_OFFSET_Q45 (0x0000C7851EB851ECLL)
 
+#define OD_RC_2PASS_MAGIC (0x53015641) /* [A, V, 1, S] in little endian */
+#define OD_RC_2PASS_SUMMARY_SZ (4 + 1 + (4 + 4 + 8) * OD_FRAME_NSUBTYPES)
+#define OD_RC_2PASS_PACKET_SZ (1 + 4)
+#define OD_RC_2PASS_MIN (OD_RC_2PASS_PACKET_SZ + OD_RC_2PASS_SUMMARY_SZ)
+#define OD_RC_2PASS_VERSION (1)
+
 /*A 2nd order low-pass Bessel follower.
   We use this for rate control because it has fast reaction time, but is
    critically damped.*/
@@ -57,6 +64,14 @@ typedef struct od_iir_bessel2 {
   int32_t x[2];
   int32_t y[2];
 } od_iir_bessel2;
+
+/* The 2-pass metrics associated with a single frame. */
+typedef struct od_frame_metrics {
+  /*The log base 2 of the scale factor for this frame in Q24 format.*/
+  int64_t log_scale;
+  /*The frame type from pass 1.*/
+  unsigned frame_type : 1;
+} od_frame_metrics;
 
 /*Rate control setup and working state information.*/
 typedef struct od_rc_state {
@@ -83,6 +98,26 @@ typedef struct od_rc_state {
   int maxq;
   /* Min Q */
   int minq;
+  /* Quantizer to use for the first pass */
+  int firstpass_quant;
+
+  /* 2-pass metrics */
+  od_frame_metrics cur_metrics;
+
+  /* 2-pass state */
+  int64_t scale_sum[OD_FRAME_NSUBTYPES];
+  int nframes[OD_FRAME_NSUBTYPES];
+
+  /* 2-pass bytestream reader/writer context */
+  uint8_t *twopass_buffer;
+  int twopass_buffer_bytes;
+
+  /* Pass 1 stats packet storage */
+  uint8_t firstpass_buffer[OD_RC_2PASS_SUMMARY_SZ];
+
+  /* Every state packet from the first pass in a single buffer */
+  uint8_t *twopass_allframes_buf;
+  size_t twopass_allframes_buf_size;
 
   /* Actual returned quantizer */
   int target_quantizer;
@@ -156,5 +191,10 @@ int od_frame_type(od_rc_state *rc, int64_t coding_frame_count, int *is_golden,
                   int *is_altref, int64_t *ip_count);
 
 int od_enc_rc_resize(od_rc_state *rc);
+
+int od_enc_rc_2pass_out(od_rc_state *rc, struct aom_codec_pkt_list *pkt_list,
+                        int summary);
+
+int od_enc_rc_2pass_in(od_rc_state *rc);
 
 #endif
