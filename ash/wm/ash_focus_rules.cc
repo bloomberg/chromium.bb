@@ -120,11 +120,10 @@ aura::Window* AshFocusRules::GetTopmostWindowToActivateForContainerIndex(
     aura::Window* ignore) const {
   aura::Window* window = nullptr;
   aura::Window* root = ignore ? ignore->GetRootWindow() : nullptr;
-  WmWindow::Windows containers = GetContainersFromAllRootWindows(
-      kActivatableShellWindowIds[index], WmWindow::Get(root));
-  for (WmWindow* container : containers) {
-    window = GetTopmostWindowToActivateInContainer(
-        WmWindow::GetAuraWindow(container), ignore);
+  aura::Window::Windows containers =
+      GetContainersFromAllRootWindows(kActivatableShellWindowIds[index], root);
+  for (aura::Window* container : containers) {
+    window = GetTopmostWindowToActivateInContainer(container, ignore);
     if (window)
       return window;
   }

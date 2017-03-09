@@ -6,11 +6,10 @@
 
 #include <memory>
 
-#include "ash/common/wm_shell.h"
-#include "ash/common/wm_window.h"
 #include "base/time/time.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
+#include "ui/wm/core/visibility_controller.h"
 #include "ui/wm/core/window_animations.h"
 
 namespace ash {
@@ -22,64 +21,63 @@ const float kDefaultDimOpacity = 0.5f;
 
 }  // namespace
 
-WindowDimmer::WindowDimmer(WmWindow* parent)
+WindowDimmer::WindowDimmer(aura::Window* parent)
     : parent_(parent),
-      window_(WmWindow::Get(
-          new aura::Window(nullptr, ui::wm::WINDOW_TYPE_NORMAL))) {
-  window_->aura_window()->Init(ui::LAYER_SOLID_COLOR);
-  window_->SetVisibilityChangesAnimated();
-  window_->SetVisibilityAnimationType(
-      ::wm::WINDOW_VISIBILITY_ANIMATION_TYPE_FADE);
-  window_->SetVisibilityAnimationDuration(
+      window_(new aura::Window(nullptr, ui::wm::WINDOW_TYPE_NORMAL)) {
+  window_->Init(ui::LAYER_SOLID_COLOR);
+  ::wm::SetWindowVisibilityChangesAnimated(window_);
+  ::wm::SetWindowVisibilityAnimationType(
+      window_, ::wm::WINDOW_VISIBILITY_ANIMATION_TYPE_FADE);
+  ::wm::SetWindowVisibilityAnimationDuration(
+      window_,
       base::TimeDelta::FromMilliseconds(kDefaultDimAnimationDurationMs));
-  window_->aura_window()->AddObserver(this);
+  window_->AddObserver(this);
 
   SetDimOpacity(kDefaultDimOpacity);
 
   parent->AddChild(window_);
-  parent->aura_window()->AddObserver(this);
+  parent->AddObserver(this);
   parent->StackChildAtTop(window_);
 
-  window_->SetBounds(gfx::Rect(parent_->GetBounds().size()));
+  window_->SetBounds(gfx::Rect(parent_->bounds().size()));
 }
 
 WindowDimmer::~WindowDimmer() {
   if (parent_)
-    parent_->aura_window()->RemoveObserver(this);
+    parent_->RemoveObserver(this);
   if (window_) {
-    window_->aura_window()->RemoveObserver(this);
-    window_->Destroy();
+    window_->RemoveObserver(this);
+    // See class description for details on ownership.
+    delete window_;
   }
 }
 
 void WindowDimmer::SetDimOpacity(float target_opacity) {
   DCHECK(window_);
-  window_->GetLayer()->SetColor(
-      SkColorSetA(SK_ColorBLACK, 255 * target_opacity));
+  window_->layer()->SetColor(SkColorSetA(SK_ColorBLACK, 255 * target_opacity));
 }
 
 void WindowDimmer::OnWindowBoundsChanged(aura::Window* window,
                                          const gfx::Rect& old_bounds,
                                          const gfx::Rect& new_bounds) {
-  if (WmWindow::Get(window) == parent_)
+  if (window == parent_)
     window_->SetBounds(gfx::Rect(new_bounds.size()));
 }
 
 void WindowDimmer::OnWindowDestroying(aura::Window* window) {
-  if (WmWindow::Get(window) == parent_) {
-    parent_->aura_window()->RemoveObserver(this);
+  if (window == parent_) {
+    parent_->RemoveObserver(this);
     parent_ = nullptr;
   } else {
-    DCHECK_EQ(window_, WmWindow::Get(window));
-    window_->aura_window()->RemoveObserver(this);
+    DCHECK_EQ(window_, window);
+    window_->RemoveObserver(this);
     window_ = nullptr;
   }
 }
 
 void WindowDimmer::OnWindowHierarchyChanging(
     const HierarchyChangeParams& params) {
-  if (WmWindow::Get(params.receiver) == window_ &&
-      params.target == params.receiver) {
+  if (params.receiver == window_ && params.target == params.receiver) {
     // This may happen on a display change or some unexpected condition. Hide
     // the window to ensure it isn't obscuring the wrong thing.
     window_->Hide();

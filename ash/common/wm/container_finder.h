@@ -9,6 +9,10 @@
 
 #include "ash/ash_export.h"
 
+namespace aura {
+class Window;
+}
+
 namespace gfx {
 class Rect;
 }
@@ -32,9 +36,9 @@ ASH_EXPORT WmWindow* GetDefaultParent(WmWindow* context,
 // Returns the list of containers that match |container_id| in all root windows.
 // If |priority_root| is non-null, the container in |priority_root| is placed at
 // the front of the list.
-ASH_EXPORT std::vector<WmWindow*> GetContainersFromAllRootWindows(
+ASH_EXPORT std::vector<aura::Window*> GetContainersFromAllRootWindows(
     int container_id,
-    WmWindow* priority_root = nullptr);
+    aura::Window* priority_root = nullptr);
 
 }  // namespace wm
 }  // namespace ash

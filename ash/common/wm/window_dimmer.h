@@ -11,28 +11,28 @@
 
 namespace ash {
 
-class WmWindow;
-
 // WindowDimmer creates a window whose opacity is animated by way of
 // SetDimOpacity() and whose size matches that of its parent. WindowDimmer is
 // intended to be used in cases where a certain set of windows need to appear
 // partially obscured. This is achieved by creating WindowDimmer, setting the
 // opacity, and then stacking window() above the windows that are to appear
-// obscured. The window created by WindowDimmer is owned by the parent, but also
-// deleted if WindowDimmer is deleted. It is expected that WindowDimmer is
-// deleted when the parent window is deleted (such as happens with
-// WmWindowUserData).
+// obscured.
+//
+// WindowDimmer owns the window it creates, but supports having that window
+// deleted out from under it (this generally happens if the parent of the
+// window is deleted). If WindowDimmer is deleted and the window it created is
+// still valid, then WindowDimmer deletes the window.
 class ASH_EXPORT WindowDimmer : public aura::WindowObserver {
  public:
   // Creates a new WindowDimmer. The window() created by WindowDimmer is added
   // to |parent| and stacked above all other child windows.
-  explicit WindowDimmer(WmWindow* parent);
+  explicit WindowDimmer(aura::Window* parent);
   ~WindowDimmer() override;
 
   void SetDimOpacity(float target_opacity);
 
-  WmWindow* parent() { return parent_; }
-  WmWindow* window() { return window_; }
+  aura::Window* parent() { return parent_; }
+  aura::Window* window() { return window_; }
 
   // NOTE: WindowDimmer is an observer for both |parent_| and |window_|.
   // aura::WindowObserver:
@@ -43,8 +43,9 @@ class ASH_EXPORT WindowDimmer : public aura::WindowObserver {
   void OnWindowHierarchyChanging(const HierarchyChangeParams& params) override;
 
  private:
-  WmWindow* parent_;
-  WmWindow* window_;
+  aura::Window* parent_;
+  // See class description for details on ownership.
+  aura::Window* window_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowDimmer);
 };

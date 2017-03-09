@@ -2,14 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/common/wm_window_user_data.h"
+#include "ash/common/window_user_data.h"
 
 #include <memory>
 
 #include "ash/common/test/ash_test.h"
-#include "ash/common/wm_shell.h"
-#include "ash/common/wm_window.h"
-#include "ash/common/wm_window_user_data.h"
+#include "ash/common/window_user_data.h"
 #include "base/memory/ptr_util.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/layer_type.h"
@@ -32,55 +30,49 @@ class Data {
 
 }  // namespace
 
-using WmWindowUserDataTest = AshTest;
+using WindowUserDataTest = AshTest;
 
 // Verifies clear() deletes the data associated with a window.
-TEST_F(WmWindowUserDataTest, ClearDestroys) {
-  WmWindowUserData<Data> user_data;
-  std::unique_ptr<aura::Window> window(
-      base::MakeUnique<aura::Window>(nullptr, ui::wm::WINDOW_TYPE_UNKNOWN));
-  window->Init(ui::LAYER_NOT_DRAWN);
+TEST_F(WindowUserDataTest, ClearDestroys) {
+  WindowUserData<Data> user_data;
+  aura::Window window(nullptr, ui::wm::WINDOW_TYPE_UNKNOWN);
+  window.Init(ui::LAYER_NOT_DRAWN);
   bool data_deleted = false;
-  user_data.Set(WmWindow::Get(window.get()),
-                base::MakeUnique<Data>(&data_deleted));
+  user_data.Set(&window, base::MakeUnique<Data>(&data_deleted));
   EXPECT_FALSE(data_deleted);
   user_data.clear();
   EXPECT_TRUE(data_deleted);
 }
 
 // Verifies Set() called with an existing window replaces the existing data.
-TEST_F(WmWindowUserDataTest, ReplaceDestroys) {
-  WmWindowUserData<Data> user_data;
+TEST_F(WindowUserDataTest, ReplaceDestroys) {
+  WindowUserData<Data> user_data;
   std::unique_ptr<aura::Window> window(
       base::MakeUnique<aura::Window>(nullptr, ui::wm::WINDOW_TYPE_UNKNOWN));
   window->Init(ui::LAYER_NOT_DRAWN);
   bool data1_deleted = false;
-  user_data.Set(WmWindow::Get(window.get()),
-                base::MakeUnique<Data>(&data1_deleted));
+  user_data.Set(window.get(), base::MakeUnique<Data>(&data1_deleted));
   EXPECT_FALSE(data1_deleted);
   bool data2_deleted = false;
-  user_data.Set(WmWindow::Get(window.get()),
-                base::MakeUnique<Data>(&data2_deleted));
+  user_data.Set(window.get(), base::MakeUnique<Data>(&data2_deleted));
   EXPECT_TRUE(data1_deleted);
   EXPECT_FALSE(data2_deleted);
   ASSERT_EQ(1u, user_data.GetWindows().size());
-  EXPECT_EQ(WmWindow::Get(window.get()), *user_data.GetWindows().begin());
+  EXPECT_EQ(window.get(), *user_data.GetWindows().begin());
   window.reset();
   EXPECT_TRUE(data2_deleted);
   EXPECT_TRUE(user_data.GetWindows().empty());
 }
 
 // Verifies Set() with null deletes existing data.
-TEST_F(WmWindowUserDataTest, NullClears) {
-  WmWindowUserData<Data> user_data;
-  std::unique_ptr<aura::Window> window(
-      base::MakeUnique<aura::Window>(nullptr, ui::wm::WINDOW_TYPE_UNKNOWN));
-  window->Init(ui::LAYER_NOT_DRAWN);
+TEST_F(WindowUserDataTest, NullClears) {
+  WindowUserData<Data> user_data;
+  aura::Window window(nullptr, ui::wm::WINDOW_TYPE_UNKNOWN);
+  window.Init(ui::LAYER_NOT_DRAWN);
   bool data1_deleted = false;
-  user_data.Set(WmWindow::Get(window.get()),
-                base::MakeUnique<Data>(&data1_deleted));
+  user_data.Set(&window, base::MakeUnique<Data>(&data1_deleted));
   EXPECT_FALSE(data1_deleted);
-  user_data.Set(WmWindow::Get(window.get()), nullptr);
+  user_data.Set(&window, nullptr);
   EXPECT_TRUE(data1_deleted);
   EXPECT_TRUE(user_data.GetWindows().empty());
 }

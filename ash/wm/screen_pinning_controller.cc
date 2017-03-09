@@ -7,18 +7,20 @@
 #include <algorithm>
 #include <vector>
 
+#include "ash/common/window_user_data.h"
 #include "ash/common/wm/container_finder.h"
 #include "ash/common/wm/window_dimmer.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm_window.h"
-#include "ash/common/wm_window_user_data.h"
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
 #include "base/auto_reset.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
+#include "ui/wm/core/window_util.h"
 
 namespace ash {
 namespace {
@@ -30,11 +32,11 @@ std::vector<WmWindow*> GetSystemModalWindowsExceptPinned(
   WmWindow* pinned_root = pinned_window->GetRootWindow();
 
   std::vector<WmWindow*> result;
-  for (WmWindow* system_modal : wm::GetContainersFromAllRootWindows(
+  for (aura::Window* system_modal : wm::GetContainersFromAllRootWindows(
            kShellWindowId_SystemModalContainer)) {
-    if (system_modal->GetRootWindow() == pinned_root)
+    if (WmWindow::Get(system_modal)->GetRootWindow() == pinned_root)
       continue;
-    result.push_back(system_modal);
+    result.push_back(WmWindow::Get(system_modal));
   }
   return result;
 }
@@ -51,6 +53,11 @@ void RemoveObserverFromChildren(WmWindow* container,
   for (WmWindow* child : container->GetChildren()) {
     WmWindow::GetAuraWindow(child)->RemoveObserver(observer);
   }
+}
+
+// Returns true if the aura::Window from a WindowDimmer is visible.
+bool IsWindowDimmerWindowVisible(WindowDimmer* window_dimmer) {
+  return window_dimmer->window()->layer()->GetTargetVisibility();
 }
 
 }  // namespace
@@ -142,7 +149,7 @@ class ScreenPinningController::SystemModalContainerWindowObserver
 
 ScreenPinningController::ScreenPinningController(
     WindowTreeHostManager* window_tree_host_manager)
-    : window_dimmers_(base::MakeUnique<WmWindowUserData<WindowDimmer>>()),
+    : window_dimmers_(base::MakeUnique<WindowUserData<WindowDimmer>>()),
       window_tree_host_manager_(window_tree_host_manager),
       pinned_container_window_observer_(
           base::MakeUnique<PinnedContainerWindowObserver>(this)),
@@ -252,7 +259,7 @@ void ScreenPinningController::OnPinnedContainerWindowStackingChanged(
 
 void ScreenPinningController::OnWindowAddedToSystemModalContainer(
     WmWindow* new_window) {
-  KeepDimWindowAtBottom(new_window->GetParent());
+  KeepDimWindowAtBottom(new_window->GetParent()->aura_window());
   WmWindow::GetAuraWindow(new_window)
       ->AddObserver(system_modal_container_child_window_observer_.get());
 }
@@ -265,17 +272,17 @@ void ScreenPinningController::OnWillRemoveWindowFromSystemModalContainer(
 
 void ScreenPinningController::OnSystemModalContainerWindowStackingChanged(
     WmWindow* window) {
-  KeepDimWindowAtBottom(window->GetParent());
+  KeepDimWindowAtBottom(window->GetParent()->aura_window());
 }
 
 WmWindow* ScreenPinningController::CreateWindowDimmer(WmWindow* container) {
   std::unique_ptr<WindowDimmer> window_dimmer =
-      base::MakeUnique<WindowDimmer>(container);
+      base::MakeUnique<WindowDimmer>(container->aura_window());
   window_dimmer->SetDimOpacity(1);  // Fully opaque.
-  window_dimmer->window()->SetFullscreen(true);
+  ::wm::SetWindowFullscreen(window_dimmer->window(), true);
   window_dimmer->window()->Show();
-  WmWindow* window = window_dimmer->window();
-  window_dimmers_->Set(container, std::move(window_dimmer));
+  WmWindow* window = WmWindow::Get(window_dimmer->window());
+  window_dimmers_->Set(container->aura_window(), std::move(window_dimmer));
   return window;
 }
 
@@ -292,9 +299,9 @@ void ScreenPinningController::OnDisplayConfigurationChanged() {
   // WindowDimmer. So create it.
 
   // First, delete unnecessary WindowDimmers.
-  for (WmWindow* container : window_dimmers_->GetWindows()) {
-    if (container != pinned_window_->GetParent() &&
-        !window_dimmers_->Get(container)->window()->GetTargetVisibility()) {
+  for (aura::Window* container : window_dimmers_->GetWindows()) {
+    if (container != pinned_window_->GetParent()->aura_window() &&
+        !IsWindowDimmerWindowVisible(window_dimmers_->Get(container))) {
       window_dimmers_->Set(container, nullptr);
     }
   }
@@ -303,7 +310,7 @@ void ScreenPinningController::OnDisplayConfigurationChanged() {
   std::vector<WmWindow*> system_modal_containers =
       GetSystemModalWindowsExceptPinned(pinned_window_);
   for (WmWindow* system_modal : system_modal_containers) {
-    if (window_dimmers_->Get(system_modal)) {
+    if (window_dimmers_->Get(system_modal->aura_window())) {
       // |system_modal| already has a WindowDimmer.
       continue;
     }
@@ -326,12 +333,15 @@ void ScreenPinningController::KeepPinnedWindowOnTop() {
   base::AutoReset<bool> auto_reset(&in_restacking_, true);
   WmWindow* container = pinned_window_->GetParent();
   container->StackChildAtTop(pinned_window_);
-  WindowDimmer* pinned_window_dimmer = window_dimmers_->Get(container);
-  if (pinned_window_dimmer && pinned_window_dimmer->window())
-    container->StackChildBelow(pinned_window_dimmer->window(), pinned_window_);
+  WindowDimmer* pinned_window_dimmer =
+      window_dimmers_->Get(container->aura_window());
+  if (pinned_window_dimmer && pinned_window_dimmer->window()) {
+    container->StackChildBelow(WmWindow::Get(pinned_window_dimmer->window()),
+                               pinned_window_);
+  }
 }
 
-void ScreenPinningController::KeepDimWindowAtBottom(WmWindow* container) {
+void ScreenPinningController::KeepDimWindowAtBottom(aura::Window* container) {
   if (in_restacking_)
     return;
 

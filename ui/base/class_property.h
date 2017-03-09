@@ -30,7 +30,7 @@
 //
 //    // Use this to define an exported property whose value is a heap
 //    // allocated object, and has to be owned and freed by the class.
-//    DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(gfx::Rect, kRestoreBoundsKey, NULL);
+//    DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(gfx::Rect, kRestoreBoundsKey, nullptr);
 //
 //    // Use this to define a non exported property that is primitive,
 //    // or a pointer you don't want to automatically deleted, and is used

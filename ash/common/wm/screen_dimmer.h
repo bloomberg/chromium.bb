@@ -12,15 +12,20 @@
 #include "ash/common/shell_observer.h"
 #include "base/macros.h"
 
-namespace ash {
-namespace test {
-class ScreenDimmerTest;
+namespace aura {
+class Window;
 }
+
+namespace ash {
 
 class WindowDimmer;
 
 template <typename UserData>
-class WmWindowUserData;
+class WindowUserData;
+
+namespace test {
+class ScreenDimmerTest;
+}
 
 // ScreenDimmer displays a partially-opaque layer above everything
 // else in the given container window to darken the display.  It shouldn't be
@@ -53,8 +58,9 @@ class ASH_EXPORT ScreenDimmer : public ShellObserver {
  private:
   friend class test::ScreenDimmerTest;
 
-  // Returns the WmWindows (one per display) that correspond to |container_|.
-  std::vector<WmWindow*> GetAllContainers();
+  // Returns the aura::Windows (one per display) that correspond to
+  // |container_|.
+  std::vector<aura::Window*> GetAllContainers();
 
   // ShellObserver:
   void OnRootWindowAdded(WmWindow* root_window) override;
@@ -70,7 +76,7 @@ class ASH_EXPORT ScreenDimmer : public ShellObserver {
   bool at_bottom_;
 
   // Owns the WindowDimmers.
-  std::unique_ptr<WmWindowUserData<WindowDimmer>> window_dimmers_;
+  std::unique_ptr<WindowUserData<WindowDimmer>> window_dimmers_;
 
   DISALLOW_COPY_AND_ASSIGN(ScreenDimmer);
 };

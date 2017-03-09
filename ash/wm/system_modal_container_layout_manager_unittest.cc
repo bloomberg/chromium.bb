@@ -48,12 +48,12 @@ aura::Window* GetModalContainer() {
 }
 
 bool AllRootWindowsHaveModalBackgroundsForContainer(int container_id) {
-  WmWindow::Windows containers =
+  aura::Window::Windows containers =
       wm::GetContainersFromAllRootWindows(container_id);
   bool has_modal_screen = !containers.empty();
-  for (WmWindow* container : containers) {
+  for (aura::Window* container : containers) {
     has_modal_screen &= static_cast<SystemModalContainerLayoutManager*>(
-                            container->GetLayoutManager())
+                            WmWindow::Get(container)->GetLayoutManager())
                             ->has_window_dimmer();
   }
   return has_modal_screen;

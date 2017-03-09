@@ -306,11 +306,10 @@ void Shell::OnLockStateChanged(bool locked) {
 #ifndef NDEBUG
   // Make sure that there is no system modal in Lock layer when unlocked.
   if (!locked) {
-    std::vector<WmWindow*> containers = wm::GetContainersFromAllRootWindows(
-        kShellWindowId_LockSystemModalContainer,
-        WmWindow::Get(GetPrimaryRootWindow()));
-    for (WmWindow* container : containers)
-      DCHECK(container->GetChildren().empty());
+    aura::Window::Windows containers = wm::GetContainersFromAllRootWindows(
+        kShellWindowId_LockSystemModalContainer, GetPrimaryRootWindow());
+    for (aura::Window* container : containers)
+      DCHECK(container->children().empty());
   }
 #endif
 }

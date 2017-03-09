@@ -11,6 +11,10 @@
 #include "ash/display/window_tree_host_manager.h"
 #include "base/macros.h"
 
+namespace aura {
+class Window;
+}
+
 namespace ash {
 
 class WindowDimmer;
@@ -18,7 +22,7 @@ class WindowTreeHostManager;
 class WmWindow;
 
 template <typename UserData>
-class WmWindowUserData;
+class WindowUserData;
 
 // Handles pinned state.
 class ScreenPinningController : public WindowTreeHostManager::Observer {
@@ -68,7 +72,7 @@ class ScreenPinningController : public WindowTreeHostManager::Observer {
   void KeepPinnedWindowOnTop();
 
   // Keeps the dim window at bottom of the container.
-  void KeepDimWindowAtBottom(WmWindow* container);
+  void KeepDimWindowAtBottom(aura::Window* container);
 
   // Creates a WindowDimmer for |container| and places it in |window_dimmers_|.
   // Returns the window from WindowDimmer.
@@ -83,7 +87,7 @@ class ScreenPinningController : public WindowTreeHostManager::Observer {
   // Owns the WindowDimmers. There is one WindowDimmer for the parent of
   // |pinned_window_| and one for each display other than the display
   // |pinned_window_| is on.
-  std::unique_ptr<WmWindowUserData<WindowDimmer>> window_dimmers_;
+  std::unique_ptr<WindowUserData<WindowDimmer>> window_dimmers_;
 
   // Set true only when restacking done by this controller.
   bool in_restacking_ = false;

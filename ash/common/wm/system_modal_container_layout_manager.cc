@@ -160,7 +160,7 @@ bool SystemModalContainerLayoutManager::ActivateNextModalWindow() {
 
 void SystemModalContainerLayoutManager::CreateModalBackground() {
   if (!window_dimmer_) {
-    window_dimmer_ = base::MakeUnique<WindowDimmer>(container_);
+    window_dimmer_ = base::MakeUnique<WindowDimmer>(container_->aura_window());
     window_dimmer_->window()->SetName(
         "SystemModalContainerLayoutManager.ModalBackground");
     // There isn't always a keyboard controller.
@@ -189,7 +189,7 @@ bool SystemModalContainerLayoutManager::IsModalBackground(WmWindow* window) {
       static_cast<SystemModalContainerLayoutManager*>(
           window->GetParent()->GetLayoutManager());
   return layout_manager->window_dimmer_ &&
-         layout_manager->window_dimmer_->window() == window;
+         WmWindow::Get(layout_manager->window_dimmer_->window()) == window;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -14,6 +14,7 @@
 #include "ash/public/cpp/window_properties.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
+#include "ui/aura/window.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace ash {
@@ -110,12 +111,12 @@ WmWindow* GetDefaultParent(WmWindow* context,
   return nullptr;
 }
 
-std::vector<WmWindow*> GetContainersFromAllRootWindows(
+aura::Window::Windows GetContainersFromAllRootWindows(
     int container_id,
-    WmWindow* priority_root) {
-  std::vector<WmWindow*> containers;
-  for (WmWindow* root : WmShell::Get()->GetAllRootWindows()) {
-    WmWindow* container = root->GetChildByShellWindowId(container_id);
+    aura::Window* priority_root) {
+  aura::Window::Windows containers;
+  for (aura::Window* root : Shell::GetAllRootWindows()) {
+    aura::Window* container = root->GetChildById(container_id);
     if (!container)
       continue;
 
