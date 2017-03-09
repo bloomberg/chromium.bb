@@ -1470,8 +1470,10 @@ bool NetworkQualityEstimator::ReadCachedNetworkQualityEstimate() {
 
   const bool cached_estimate_available = network_quality_store_->GetById(
       current_network_id_, &cached_network_quality);
-  UMA_HISTOGRAM_BOOLEAN("NQE.CachedNetworkQualityAvailable",
-                        cached_estimate_available);
+  if (network_quality_store_->EligibleForCaching(current_network_id_)) {
+    UMA_HISTOGRAM_BOOLEAN("NQE.CachedNetworkQualityAvailable",
+                          cached_estimate_available);
+  }
 
   if (!cached_estimate_available)
     return false;
