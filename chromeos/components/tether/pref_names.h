@@ -22,6 +22,18 @@ extern const char kMostRecentTetherAvailablilityResponderIds[];
 // a response code indicating that its hotspot has started up successfully.
 extern const char kMostRecentConnectTetheringResponderId[];
 
+// The status of the active host. The value stored for this key is the integer
+// version of an ActiveHost::ActiveHostStatus enumeration value.
+extern const char kActiveHostStatus[];
+
+// The device ID of the active host. If there is no active host, the value at
+// this key is "".
+extern const char kActiveHostDeviceId[];
+
+// The Wi-Fi network ID of the active host. If there is no active host, the
+// value at this key is "".
+extern const char kWifiNetworkId[];
+
 }  // namespace prefs
 
 }  // namespace tether

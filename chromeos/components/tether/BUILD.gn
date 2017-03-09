@@ -6,6 +6,8 @@ assert(is_chromeos, "Non-ChromeOS builds cannot depend on //chromeos")
 
 static_library("tether") {
   sources = [
+    "active_host.cc",
+    "active_host.h",
     "ble_advertisement_device_queue.cc",
     "ble_advertisement_device_queue.h",
     "ble_advertiser.cc",
@@ -83,6 +85,7 @@ source_set("unit_tests") {
   testonly = true
 
   sources = [
+    "active_host_unittest.cc",
     "ble_advertisement_device_queue_unittest.cc",
     "ble_advertiser_unittest.cc",
     "ble_connection_manager_unittest.cc",
