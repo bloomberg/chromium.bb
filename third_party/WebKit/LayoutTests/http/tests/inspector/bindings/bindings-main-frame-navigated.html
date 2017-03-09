@@ -19,12 +19,12 @@ async function test()
     InspectorTest.dumpWorkspace();
 
     InspectorTest.markStep('navigateMainFrame');
-    var url = "http://localhost:8000/inspector/bindings/resources/empty-page.html";
+    var url = "http://127.0.0.1:8000/inspector/bindings/resources/empty-page.html";
     await InspectorTest.navigatePromise(url);
     InspectorTest.dumpWorkspace();
 
     InspectorTest.markStep('navigateBack');
-    var originalUrl = "http://localhost:8000/inspector/bindings/bindings-main-frame-navigated.html";
+    var originalUrl = "http://127.0.0.1:8000/inspector/bindings/bindings-main-frame-navigated.html";
     await InspectorTest.navigatePromise(originalUrl);
 
     InspectorTest.completeTest();

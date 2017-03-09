@@ -33,7 +33,7 @@ Running: navigateMainFrame
 Page reloaded.
 Workspace: 2 uiSourceCodes.
     debugger:///VM[XXX] empty-page.html
-    http://localhost:8000/inspector/bindings/resources/empty-page.html
+    http://127.0.0.1:8000/inspector/bindings/resources/empty-page.html
 
 Running: navigateBack
 Page reloaded.
