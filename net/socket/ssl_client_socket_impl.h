@@ -175,11 +175,6 @@ class SSLClientSocketImpl : public SSLClientSocket,
   // a certificate for this client.
   int ClientCertRequestCallback(SSL* ssl);
 
-  // CertVerifyCallback is called to verify the server's certificates. We do
-  // verification after the handshake so this function only enforces that the
-  // certificates don't change during renegotiation.
-  int CertVerifyCallback(X509_STORE_CTX* store_ctx);
-
   // Called after the initial handshake completes and after the server
   // certificate has been verified. The order of handshake completion and
   // certificate verification depends on whether the connection was false

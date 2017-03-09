@@ -234,41 +234,35 @@ bool AreLegacyECDSACiphersEnabled() {
 }
 #endif
 
-scoped_refptr<X509Certificate> OSChainFromOpenSSL(STACK_OF(X509) *
+scoped_refptr<X509Certificate> OSChainFromBuffers(STACK_OF(CRYPTO_BUFFER) *
                                                   openssl_chain) {
-  if (sk_X509_num(openssl_chain) == 0) {
+  if (sk_CRYPTO_BUFFER_num(openssl_chain) == 0) {
     NOTREACHED();
     return nullptr;
   }
 
-#if defined(USE_OPENSSL_CERTS)
-  // When OSCertHandle is typedef'ed to X509, this implementation does a short
-  // cut to avoid converting back and forth between DER and the X509 struct.
-  X509Certificate::OSCertHandles intermediates;
-  for (size_t i = 1; i < sk_X509_num(openssl_chain); ++i) {
-    X509* cert = sk_X509_value(openssl_chain, i);
-    DCHECK(cert->buf);
-    intermediates.push_back(cert);
-  }
-
-  X509* leaf = sk_X509_value(openssl_chain, 0);
-  DCHECK(leaf->buf);
-  return X509Certificate::CreateFromHandle(leaf, intermediates);
-#else
   // Convert the certificate chains to a platform certificate handle.
   std::vector<base::StringPiece> der_chain;
-  der_chain.reserve(sk_X509_num(openssl_chain));
-  for (size_t i = 0; i < sk_X509_num(openssl_chain); ++i) {
-    X509* cert = sk_X509_value(openssl_chain, i);
-    DCHECK(cert->buf);
+  der_chain.reserve(sk_CRYPTO_BUFFER_num(openssl_chain));
+  for (size_t i = 0; i < sk_CRYPTO_BUFFER_num(openssl_chain); ++i) {
+    const CRYPTO_BUFFER* cert = sk_CRYPTO_BUFFER_value(openssl_chain, i);
     base::StringPiece der;
-    if (!x509_util::GetDER(cert, &der))
-      return nullptr;
-    der_chain.push_back(der);
+    der_chain.push_back(base::StringPiece(
+        reinterpret_cast<const char*>(CRYPTO_BUFFER_data(cert)),
+        CRYPTO_BUFFER_len(cert)));
   }
   return X509Certificate::CreateFromDERCertChain(der_chain);
-#endif
 }
+
+#if !defined(OS_IOS)
+bssl::UniquePtr<CRYPTO_BUFFER> OSCertHandleToBuffer(
+    X509Certificate::OSCertHandle os_handle) {
+  std::string der_encoded;
+  if (!X509Certificate::GetDEREncoded(os_handle, &der_encoded))
+    return nullptr;
+  return x509_util::CreateCryptoBuffer(der_encoded);
+}
+#endif
 
 }  // namespace
 
@@ -312,10 +306,11 @@ class SSLClientSocketImpl::SSLContext {
     crypto::EnsureOpenSSLInit();
     ssl_socket_data_index_ = SSL_get_ex_new_index(0, 0, 0, 0, 0);
     DCHECK_NE(ssl_socket_data_index_, -1);
-    ssl_ctx_.reset(SSL_CTX_new(SSLv23_client_method()));
-    SSL_CTX_set_cert_verify_callback(ssl_ctx_.get(), CertVerifyCallback, NULL);
+    ssl_ctx_.reset(SSL_CTX_new(TLS_with_buffers_method()));
     SSL_CTX_set_cert_cb(ssl_ctx_.get(), ClientCertRequestCallback, NULL);
-    SSL_CTX_set_verify(ssl_ctx_.get(), SSL_VERIFY_PEER, NULL);
+
+    // The server certificate is verified after the handshake in DoVerifyCert.
+    SSL_CTX_i_promise_to_verify_certs_after_the_handshake(ssl_ctx_.get());
 
     // Disable the internal session cache. Session caching is handled
     // externally (i.e. by SSLClientSessionCache).
@@ -375,15 +370,6 @@ class SSLClientSocketImpl::SSLContext {
     SSLClientSocketImpl* socket = GetInstance()->GetClientSocketFromSSL(ssl);
     DCHECK(socket);
     return socket->ClientCertRequestCallback(ssl);
-  }
-
-  static int CertVerifyCallback(X509_STORE_CTX* store_ctx, void* arg) {
-    SSL* ssl = reinterpret_cast<SSL*>(X509_STORE_CTX_get_ex_data(
-        store_ctx, SSL_get_ex_data_X509_STORE_CTX_idx()));
-    SSLClientSocketImpl* socket = GetInstance()->GetClientSocketFromSSL(ssl);
-    CHECK(socket);
-
-    return socket->CertVerifyCallback(store_ctx);
   }
 
   static int NewSessionCallback(SSL* ssl, SSL_SESSION* session) {
@@ -523,18 +509,13 @@ void SSLClientSocketImpl::GetSSLCertRequestInfo(
   cert_request_info->host_and_port = host_and_port_;
 
   cert_request_info->cert_authorities.clear();
-  STACK_OF(X509_NAME)* authorities = SSL_get_client_CA_list(ssl_.get());
-  for (size_t i = 0; i < sk_X509_NAME_num(authorities); i++) {
-    X509_NAME* ca_name = sk_X509_NAME_value(authorities, i);
-    uint8_t* str = nullptr;
-    int length = i2d_X509_NAME(ca_name, &str);
-    if (length > 0) {
-      cert_request_info->cert_authorities.push_back(std::string(
-          reinterpret_cast<const char*>(str), static_cast<size_t>(length)));
-    } else {
-      NOTREACHED();  // Error serializing |ca_name|.
-    }
-    OPENSSL_free(str);
+  const STACK_OF(CRYPTO_BUFFER)* authorities =
+      SSL_get0_server_requested_CAs(ssl_.get());
+  for (size_t i = 0; i < sk_CRYPTO_BUFFER_num(authorities); i++) {
+    const CRYPTO_BUFFER* ca_name = sk_CRYPTO_BUFFER_value(authorities, i);
+    cert_request_info->cert_authorities.push_back(
+        std::string(reinterpret_cast<const char*>(CRYPTO_BUFFER_data(ca_name)),
+                    CRYPTO_BUFFER_len(ca_name)));
   }
 
   cert_request_info->cert_key_types.clear();
@@ -788,17 +769,14 @@ int64_t SSLClientSocketImpl::GetTotalReceivedBytes() const {
 void SSLClientSocketImpl::DumpMemoryStats(SocketMemoryStats* stats) const {
   if (transport_adapter_)
     stats->buffer_size = transport_adapter_->GetAllocationSize();
-  STACK_OF(X509)* server_cert_chain = SSL_get_peer_cert_chain(ssl_.get());
+  const STACK_OF(CRYPTO_BUFFER)* server_cert_chain =
+      SSL_get0_peer_certificates(ssl_.get());
   if (server_cert_chain) {
-    for (size_t i = 0; i < sk_X509_num(server_cert_chain); ++i) {
-      X509* cert = sk_X509_value(server_cert_chain, i);
-      // Estimate the size of the certificate before deduplication.
-      // The multiplier (4) is added to account for the difference between the
-      // serialized cert size and the actual cert allocation.
-      // TODO(xunjieli): Update this after crbug.com/671420 is done.
-      stats->cert_size += 4 * i2d_X509(cert, nullptr);
+    for (size_t i = 0; i < sk_CRYPTO_BUFFER_num(server_cert_chain); ++i) {
+      const CRYPTO_BUFFER* cert = sk_CRYPTO_BUFFER_value(server_cert_chain, i);
+      stats->cert_size += CRYPTO_BUFFER_len(cert);
     }
-    stats->cert_count = sk_X509_num(server_cert_chain);
+    stats->cert_count = sk_CRYPTO_BUFFER_num(server_cert_chain);
   }
   stats->total_size = stats->buffer_size + stats->cert_size;
 }
@@ -1194,7 +1172,7 @@ int SSLClientSocketImpl::DoChannelIDLookupComplete(int result) {
 int SSLClientSocketImpl::DoVerifyCert(int result) {
   DCHECK(start_cert_verification_time_.is_null());
 
-  server_cert_ = OSChainFromOpenSSL(SSL_get_peer_cert_chain(ssl_.get()));
+  server_cert_ = OSChainFromBuffers(SSL_get0_peer_certificates(ssl_.get()));
 
   // OpenSSL decoded the certificate, but the platform certificate
   // implementation could not. This is treated as a fatal SSL-level protocol
@@ -1615,28 +1593,6 @@ int SSLClientSocketImpl::ClientCertRequestCallback(SSL* ssl) {
 
   // Second pass: a client certificate should have been selected.
   if (ssl_config_.client_cert.get()) {
-    bssl::UniquePtr<X509> leaf_x509 =
-        OSCertHandleToOpenSSL(ssl_config_.client_cert->os_cert_handle());
-    if (!leaf_x509) {
-      LOG(WARNING) << "Failed to import certificate";
-      OpenSSLPutNetError(FROM_HERE, ERR_SSL_CLIENT_AUTH_CERT_BAD_FORMAT);
-      return -1;
-    }
-
-    bssl::UniquePtr<STACK_OF(X509)> chain = OSCertHandlesToOpenSSL(
-        ssl_config_.client_cert->GetIntermediateCertificates());
-    if (!chain) {
-      LOG(WARNING) << "Failed to import intermediate certificates";
-      OpenSSLPutNetError(FROM_HERE, ERR_SSL_CLIENT_AUTH_CERT_BAD_FORMAT);
-      return -1;
-    }
-
-    if (!SSL_use_certificate(ssl_.get(), leaf_x509.get()) ||
-        !SSL_set1_chain(ssl_.get(), chain.get())) {
-      LOG(WARNING) << "Failed to set client certificate";
-      return -1;
-    }
-
     if (!ssl_config_.client_private_key) {
       // The caller supplied a null private key. Fail the handshake and surface
       // an appropriate error to the caller.
@@ -1645,7 +1601,35 @@ int SSLClientSocketImpl::ClientCertRequestCallback(SSL* ssl) {
       return -1;
     }
 
-    SSL_set_private_key_method(ssl_.get(), &SSLContext::kPrivateKeyMethod);
+    std::vector<bssl::UniquePtr<CRYPTO_BUFFER>> chain;
+    std::vector<CRYPTO_BUFFER*> chain_raw;
+    bssl::UniquePtr<CRYPTO_BUFFER> buf =
+        OSCertHandleToBuffer(ssl_config_.client_cert->os_cert_handle());
+    if (!buf) {
+      LOG(WARNING) << "Failed to import certificate";
+      OpenSSLPutNetError(FROM_HERE, ERR_SSL_CLIENT_AUTH_CERT_BAD_FORMAT);
+      return -1;
+    }
+    chain_raw.push_back(buf.get());
+    chain.push_back(std::move(buf));
+
+    for (X509Certificate::OSCertHandle cert :
+         ssl_config_.client_cert->GetIntermediateCertificates()) {
+      bssl::UniquePtr<CRYPTO_BUFFER> buf = OSCertHandleToBuffer(cert);
+      if (!buf) {
+        LOG(WARNING) << "Failed to import intermediate";
+        OpenSSLPutNetError(FROM_HERE, ERR_SSL_CLIENT_AUTH_CERT_BAD_FORMAT);
+        return -1;
+      }
+      chain_raw.push_back(buf.get());
+      chain.push_back(std::move(buf));
+    }
+
+    if (!SSL_set_chain_and_key(ssl_.get(), chain_raw.data(), chain_raw.size(),
+                               nullptr, &SSLContext::kPrivateKeyMethod)) {
+      LOG(WARNING) << "Failed to set client certificate";
+      return -1;
+    }
 
     std::vector<SSLPrivateKey::Hash> digest_prefs =
         ssl_config_.client_private_key->GetDigestPreferences();
@@ -1675,9 +1659,8 @@ int SSLClientSocketImpl::ClientCertRequestCallback(SSL* ssl) {
     SSL_set_private_key_digest_prefs(ssl_.get(), digests.data(),
                                      digests.size());
 
-    int cert_count = 1 + sk_X509_num(chain.get());
     net_log_.AddEvent(NetLogEventType::SSL_CLIENT_CERT_PROVIDED,
-                      NetLog::IntCallback("cert_count", cert_count));
+                      NetLog::IntCallback("cert_count", chain.size()));
     return 1;
   }
 #endif  // defined(OS_IOS)
@@ -1685,11 +1668,6 @@ int SSLClientSocketImpl::ClientCertRequestCallback(SSL* ssl) {
   // Send no client certificate.
   net_log_.AddEvent(NetLogEventType::SSL_CLIENT_CERT_PROVIDED,
                     NetLog::IntCallback("cert_count", 0));
-  return 1;
-}
-
-int SSLClientSocketImpl::CertVerifyCallback(X509_STORE_CTX* store_ctx) {
-  // The server certificate is verified later in DoVerifyCert.
   return 1;
 }
 
