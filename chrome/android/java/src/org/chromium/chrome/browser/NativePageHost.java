@@ -41,4 +41,7 @@ public interface NativePageHost {
      * @return The active tab.
      */
     Tab getActiveTab();
+
+    /** @return whether the hosted native page is currently visible. */
+    boolean isVisible();
 }

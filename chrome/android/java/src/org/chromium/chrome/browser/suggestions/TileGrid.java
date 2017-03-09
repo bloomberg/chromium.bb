@@ -85,6 +85,10 @@ public class TileGrid extends OptionalLeaf implements TileGroup.Observer {
     @Override
     public void onLoadTaskCompleted() {}
 
+    public TileGroup getTileGroup() {
+        return mTileGroup;
+    }
+
     private static int getMaxTileRows() {
         int defaultValue = 1;
         return ChromeFeatureList.getFieldTrialParamByFeatureAsInt(

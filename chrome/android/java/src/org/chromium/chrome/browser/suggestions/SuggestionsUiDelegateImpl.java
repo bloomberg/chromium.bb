@@ -94,6 +94,11 @@ public class SuggestionsUiDelegateImpl implements SuggestionsUiDelegate {
         mDestructionObservers.add(destructionObserver);
     }
 
+    @Override
+    public boolean isVisible() {
+        return mHost.isVisible();
+    }
+
     /** Invalidates the delegate and calls the registered destruction observers. */
     public void onDestroy() {
         assert !mIsDestroyed;

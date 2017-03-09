@@ -440,6 +440,11 @@ public class BottomSheet
         return mTabModelSelector.getCurrentTab();
     }
 
+    @Override
+    public boolean isVisible() {
+        return mCurrentState != SHEET_STATE_PEEK;
+    }
+
     /**
      * Determines if a touch event is inside the toolbar. This assumes the toolbar is the full
      * width of the screen and that the toolbar is at the top of the bottom sheet.

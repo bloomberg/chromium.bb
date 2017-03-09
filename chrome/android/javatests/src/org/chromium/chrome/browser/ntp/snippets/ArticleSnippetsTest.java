@@ -233,6 +233,11 @@ public class ArticleSnippetsTest extends ChromeActivityTestCaseBase<ChromeActivi
         public void addDestructionObserver(DestructionObserver destructionObserver) {}
 
         @Override
+        public boolean isVisible() {
+            return true;
+        }
+
+        @Override
         public SuggestionsMetricsReporter getMetricsReporter() {
             return mSuggestionsMetricsReporter;
         }

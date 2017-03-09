@@ -431,6 +431,12 @@ public class NewTabPageTest extends ChromeTabbedActivityTestBase {
         });
         mMostVisitedSites.setTileSuggestions(
                 new String[] {}, new String[] {}, new String[] {}, new int[] {});
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                ntpView.getTileGroup().onSwitchToForeground(); // Force the tiles to be refreshed.
+            }
+        });
         CriteriaHelper.pollUiThread(new Criteria("The tile grid was not updated.") {
             @Override
             public boolean isSatisfied() {

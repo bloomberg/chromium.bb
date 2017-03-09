@@ -171,6 +171,44 @@ public class TileGroupTest {
     }
 
     @Test
+    public void testTileLoadingWhenVisibleNotBlockedForInit() {
+        SuggestionsUiDelegate uiDelegate = mock(SuggestionsUiDelegate.class);
+        when(uiDelegate.isVisible()).thenReturn(true);
+        TileGroup tileGroup = new TileGroup(RuntimeEnvironment.application, uiDelegate,
+                mock(ContextMenuManager.class), mTileGroupDelegate, mTileGroupObserver,
+                mock(OfflinePageBridge.class), TILE_TITLE_LINES);
+        tileGroup.startObserving(MAX_TILES_TO_FETCH);
+
+        notifyTileUrlsAvailable(URLS);
+
+        // Because it's the first load, we accept the incoming tiles and refresh the view.
+        verify(mTileGroupObserver).onTileDataChanged();
+    }
+
+    @Test
+    public void testTileLoadingWhenVisibleBlocked() {
+        SuggestionsUiDelegate uiDelegate = mock(SuggestionsUiDelegate.class);
+        when(uiDelegate.isVisible()).thenReturn(true);
+        TileGroup tileGroup = new TileGroup(RuntimeEnvironment.application, uiDelegate,
+                mock(ContextMenuManager.class), mTileGroupDelegate, mTileGroupObserver,
+                mock(OfflinePageBridge.class), TILE_TITLE_LINES);
+        tileGroup.startObserving(MAX_TILES_TO_FETCH);
+
+        notifyTileUrlsAvailable(URLS);
+        reset(mTileGroupObserver);
+        notifyTileUrlsAvailable(URLS[0]);
+
+        // Even though the data changed, the notification should not happen because we want to not
+        // show changes to UI elements currently visible
+        verify(mTileGroupObserver, never()).onTileDataChanged();
+
+        // Simulating a switch from background to foreground should force the tilegrid to load the
+        // new data.
+        tileGroup.onSwitchToForeground();
+        verify(mTileGroupObserver).onTileDataChanged();
+    }
+
+    @Test
     public void testRenderTileView() {
         TileGroup tileGroup =
                 new TileGroup(RuntimeEnvironment.application, mock(SuggestionsUiDelegate.class),

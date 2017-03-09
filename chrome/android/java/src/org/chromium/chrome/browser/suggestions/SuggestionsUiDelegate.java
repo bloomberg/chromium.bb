@@ -61,4 +61,7 @@ public interface SuggestionsUiDelegate {
      * Registers a {@link DestructionObserver}, notified when the New Tab Page goes away.
      */
     void addDestructionObserver(DestructionObserver destructionObserver);
+
+    /** @return whether the suggestions UI is currently visible. */
+    boolean isVisible();
 }

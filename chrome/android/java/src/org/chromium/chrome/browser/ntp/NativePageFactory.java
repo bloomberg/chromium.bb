@@ -219,5 +219,10 @@ public class NativePageFactory {
         public Tab getActiveTab() {
             return mTab;
         }
+
+        @Override
+        public boolean isVisible() {
+            return mTab == mTab.getTabModelSelector().getCurrentTab();
+        }
     }
 }

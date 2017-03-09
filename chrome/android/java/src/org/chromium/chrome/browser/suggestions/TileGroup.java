@@ -141,6 +141,18 @@ public class TileGroup implements MostVisitedSites.Observer {
      * @see #getTile(String)
      */
     private Tile[] mTiles = new Tile[0];
+
+    /** Most recently received tile data that has not been displayed yet. */
+    @Nullable
+    private Tile[] mPendingTileData;
+
+    /**
+     * URL of the most recently removed tile. Used to identify when a tile removal is confirmed by
+     * the tile backend.
+     */
+    @Nullable
+    private String mPendingRemovalUrl;
+
     private boolean mHasReceivedData;
 
     /**
@@ -183,13 +195,9 @@ public class TileGroup implements MostVisitedSites.Observer {
     @Override
     public void onMostVisitedURLsAvailable(final String[] titles, final String[] urls,
             final String[] whitelistIconPaths, final int[] sources) {
-        boolean isInitialLoad = !mHasReceivedData;
-        mHasReceivedData = true;
-
-        Tile[] newTiles = new Tile[titles.length];
+        boolean removalCompleted = mPendingRemovalUrl != null;
         Set<String> addedUrls = new HashSet<>();
-        boolean countChanged = isInitialLoad || mTiles.length != titles.length;
-        boolean dataChanged = countChanged;
+        mPendingTileData = new Tile[titles.length];
         for (int i = 0; i < titles.length; i++) {
             assert urls[i] != null; // We assume everywhere that the url is not null.
 
@@ -200,22 +208,15 @@ public class TileGroup implements MostVisitedSites.Observer {
                 continue;
             }
 
-            newTiles[i] = new Tile(titles[i], urls[i], whitelistIconPaths[i], i, sources[i]);
-            if (newTiles[i].importData(getTile(urls[i]))) dataChanged = true;
+            mPendingTileData[i] =
+                    new Tile(titles[i], urls[i], whitelistIconPaths[i], i, sources[i]);
             addedUrls.add(urls[i]);
+
+            if (urls[i].equals(mPendingRemovalUrl)) removalCompleted = false;
         }
 
-        if (!dataChanged) return;
-
-        mTiles = newTiles;
-
-        if (mOfflineModelObserver != null) {
-            mOfflineModelObserver.updateOfflinableSuggestionsAvailability();
-        }
-
-        if (countChanged) mObserver.onTileCountChanged();
-        if (isInitialLoad) mObserver.onLoadTaskCompleted();
-        mObserver.onTileDataChanged();
+        if (removalCompleted) mPendingRemovalUrl = null;
+        if (!mHasReceivedData || !mUiDelegate.isVisible() || removalCompleted) loadTiles();
     }
 
     @Override
@@ -278,6 +279,11 @@ public class TileGroup implements MostVisitedSites.Observer {
         return mHasReceivedData;
     }
 
+    /** To be called when the view displaying the tile group becomes visible. */
+    public void onSwitchToForeground() {
+        if (mPendingTileData != null) loadTiles();
+    }
+
     /**
      * Inflates a new tile view, initializes it, and loads an icon for it.
      * @param tile The tile that holds the data to populate the new tile view.
@@ -319,6 +325,33 @@ public class TileGroup implements MostVisitedSites.Observer {
         }
         iconCallback.onLargeIconAvailable(bitmap, Color.BLACK, false);
         return true;
+    }
+
+    /** Loads tile data from {@link #mPendingTileData} and clears it afterwards. */
+    private void loadTiles() {
+        assert mPendingTileData != null;
+
+        boolean isInitialLoad = !mHasReceivedData;
+        mHasReceivedData = true;
+
+        boolean countChanged = isInitialLoad || mTiles.length != mPendingTileData.length;
+        boolean dataChanged = countChanged;
+        for (Tile newTile : mPendingTileData) {
+            if (newTile.importData(getTile(newTile.getUrl()))) dataChanged = true;
+        }
+
+        mTiles = mPendingTileData;
+        mPendingTileData = null;
+
+        if (!dataChanged) return;
+
+        if (mOfflineModelObserver != null) {
+            mOfflineModelObserver.updateOfflinableSuggestionsAvailability();
+        }
+
+        if (countChanged) mObserver.onTileCountChanged();
+        if (isInitialLoad) mObserver.onLoadTaskCompleted();
+        mObserver.onTileDataChanged();
     }
 
     /** @return A tile matching the provided URL, or {@code null} if none is found. */
@@ -400,6 +433,9 @@ public class TileGroup implements MostVisitedSites.Observer {
             Tile tile = getTile(mUrl);
             if (tile == null) return;
 
+            // Note: This does not track all the removals, but will track the most recent one. If
+            // that removal is committed, it's good enough for change detection.
+            mPendingRemovalUrl = mUrl;
             mTileGroupDelegate.removeMostVisitedItem(tile);
         }
 
