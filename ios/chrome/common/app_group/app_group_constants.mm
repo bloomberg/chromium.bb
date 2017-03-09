@@ -38,17 +38,31 @@ const char kUserMetricsEnabledDate[] = "UserMetricsEnabledDate";
 const char kInstallDate[] = "InstallDate";
 const char kBrandCode[] = "BrandCode";
 
+NSString* const kShareItemSource = @"Source";
 NSString* const kShareItemURL = @"URL";
 NSString* const kShareItemTitle = @"Title";
 NSString* const kShareItemDate = @"Date";
 NSString* const kShareItemCancel = @"Cancel";
 NSString* const kShareItemType = @"Type";
 
+NSString* const kShareItemShareExtensionSource = @"ChromeShareExtension";
+
 NSString* ApplicationGroup() {
   NSBundle* bundle = [NSBundle mainBundle];
   NSString* group = [bundle objectForInfoDictionaryKey:@"KSApplicationGroup"];
   if (![group length]) {
     return [NSString stringWithFormat:@"group.%s.chrome",
+                                      BUILDFLAG(IOS_APP_BUNDLE_ID_PREFIX), nil];
+  }
+  return group;
+}
+
+NSString* CommonApplicationGroup() {
+  NSBundle* bundle = [NSBundle mainBundle];
+  NSString* group =
+      [bundle objectForInfoDictionaryKey:@"KSCommonApplicationGroup"];
+  if (![group length]) {
+    return [NSString stringWithFormat:@"group.%s.common",
                                       BUILDFLAG(IOS_APP_BUNDLE_ID_PREFIX), nil];
   }
   return group;
@@ -78,13 +92,24 @@ NSUserDefaults* GetGroupUserDefaults() {
   return [NSUserDefaults standardUserDefaults];
 }
 
-NSURL* ShareExtensionItemsFolder() {
+NSURL* LegacyShareExtensionItemsFolder() {
   NSURL* groupURL = [[NSFileManager defaultManager]
       containerURLForSecurityApplicationGroupIdentifier:ApplicationGroup()];
   NSURL* readingListURL =
       [groupURL URLByAppendingPathComponent:@"ShareExtensionItems"
                                 isDirectory:YES];
   return readingListURL;
+}
+
+NSURL* ExternalCommandsItemsFolder() {
+  NSURL* groupURL = [[NSFileManager defaultManager]
+      containerURLForSecurityApplicationGroupIdentifier:ApplicationGroup()];
+  NSURL* chromeURL =
+      [groupURL URLByAppendingPathComponent:@"Chrome" isDirectory:YES];
+  NSURL* externalCommandsURL =
+      [chromeURL URLByAppendingPathComponent:@"ExternalCommands"
+                                 isDirectory:YES];
+  return externalCommandsURL;
 }
 
 }  // namespace app_group

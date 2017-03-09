@@ -38,6 +38,21 @@ enum ShareExtensionItemReceived {
   SHARE_EXTENSION_ITEM_RECEIVED_COUNT
 };
 
+// Enum used to send metrics on item reception.
+// If you change this enum, update histograms.xml.
+enum ShareExtensionSource {
+  UNKNOWN_SOURCE = 0,
+  SHARE_EXTENSION,
+  SHARE_EXTENSION_SOURCE_COUNT
+};
+
+ShareExtensionSource SourceIDFromSource(NSString* source) {
+  if ([source isEqualToString:app_group::kShareItemShareExtensionSource]) {
+    return SHARE_EXTENSION;
+  }
+  return UNKNOWN_SOURCE;
+}
+
 void LogHistogramReceivedItem(ShareExtensionItemReceived type) {
   UMA_HISTOGRAM_ENUMERATION("IOS.ShareExtension.ReceivedEntry", type,
                             SHARE_EXTENSION_ITEM_RECEIVED_COUNT);
@@ -128,6 +143,7 @@ void LogHistogramReceivedItem(ShareExtensionItemReceived type) {
     [NSFileCoordinator removeFilePresenter:self];
   }
   _readingListModel = nil;
+  _bookmarkModel = nil;
 }
 
 - (void)dealloc {
@@ -188,8 +204,10 @@ void LogHistogramReceivedItem(ShareExtensionItemReceived type) {
       [entry objectForKey:app_group::kShareItemDate]);
   NSNumber* entryType = base::mac::ObjCCast<NSNumber>(
       [entry objectForKey:app_group::kShareItemType]);
+  NSString* entrySource = base::mac::ObjCCast<NSString>(
+      [entry objectForKey:app_group::kShareItemSource]);
 
-  if (!entryURL.is_valid() || !entryDate || !entryType ||
+  if (!entryURL.is_valid() || !entrySource || !entryDate || !entryType ||
       !entryURL.SchemeIsHTTPOrHTTPS()) {
     if (completion) {
       completion();
@@ -201,37 +219,44 @@ void LogHistogramReceivedItem(ShareExtensionItemReceived type) {
                       base::TimeDelta::FromSecondsD(
                           [[NSDate date] timeIntervalSinceDate:entryDate]));
 
+  UMA_HISTOGRAM_ENUMERATION("IOS.ShareExtension.Source",
+                            SourceIDFromSource(entrySource),
+                            SHARE_EXTENSION_SOURCE_COUNT);
+
   // Entry is valid. Add it to the reading list model.
+  ProceduralBlock processEntryBlock = ^() {
+    if (!_readingListModel || !_bookmarkModel) {
+      // Models may have been deleted after the file
+      // processing started.
+      return;
+    }
+    app_group::ShareExtensionItemType type =
+        static_cast<app_group::ShareExtensionItemType>(
+            [entryType integerValue]);
+    switch (type) {
+      case app_group::READING_LIST_ITEM: {
+        LogHistogramReceivedItem(READINGLIST_ENTRY);
+        _readingListModel->AddEntry(entryURL, entryTitle,
+                                    reading_list::ADDED_VIA_EXTENSION);
+        break;
+      }
+      case app_group::BOOKMARK_ITEM: {
+        LogHistogramReceivedItem(BOOKMARK_ENTRY);
+        _bookmarkModel->AddURL(_bookmarkModel->mobile_node(), 0,
+                               base::UTF8ToUTF16(entryTitle), entryURL);
+        break;
+      }
+    }
+
+    if (completion) {
+      web::WebThread::PostTask(web::WebThread::FILE, FROM_HERE,
+                               base::BindBlockArc(^() {
+                                 completion();
+                               }));
+    }
+  };
   web::WebThread::PostTask(web::WebThread::UI, FROM_HERE,
-                           base::BindBlockArc(^() {
-                             if (!_readingListModel || !_bookmarkModel) {
-                               // Models may have been deleted after the file
-                               // processing started.
-                               return;
-                             }
-                             app_group::ShareExtensionItemType type =
-                                 static_cast<app_group::ShareExtensionItemType>(
-                                     [entryType integerValue]);
-                             if (type == app_group::READING_LIST_ITEM) {
-                               LogHistogramReceivedItem(READINGLIST_ENTRY);
-                               _readingListModel->AddEntry(
-                                   entryURL, entryTitle,
-                                   reading_list::ADDED_VIA_EXTENSION);
-                             }
-                             if (type == app_group::BOOKMARK_ITEM) {
-                               LogHistogramReceivedItem(BOOKMARK_ENTRY);
-                               _bookmarkModel->AddURL(
-                                   _bookmarkModel->mobile_node(), 0,
-                                   base::UTF8ToUTF16(entryTitle), entryURL);
-                             }
-                             if (completion) {
-                               web::WebThread::PostTask(web::WebThread::FILE,
-                                                        FROM_HERE,
-                                                        base::BindBlockArc(^() {
-                                                          completion();
-                                                        }));
-                             }
-                           }));
+                           base::BindBlockArc(processEntryBlock));
   return YES;
 }
 
@@ -292,11 +317,22 @@ void LogHistogramReceivedItem(ShareExtensionItemReceived type) {
   // There may already be files. Process them.
   web::WebThread::PostTask(
       web::WebThread::FILE, FROM_HERE, base::BindBlockArc(^() {
-        NSArray<NSURL*>* files = [[NSFileManager defaultManager]
+        NSMutableArray<NSURL*>* files = [NSMutableArray array];
+        NSArray* oldFiles = [[NSFileManager defaultManager]
+              contentsOfDirectoryAtURL:app_group::
+                                           LegacyShareExtensionItemsFolder()
+            includingPropertiesForKeys:nil
+                               options:NSDirectoryEnumerationSkipsHiddenFiles
+                                 error:nil];
+        [files addObjectsFromArray:oldFiles];
+
+        NSArray* newFiles = [[NSFileManager defaultManager]
               contentsOfDirectoryAtURL:[self presentedItemURL]
             includingPropertiesForKeys:nil
                                options:NSDirectoryEnumerationSkipsHiddenFiles
                                  error:nil];
+        [files addObjectsFromArray:newFiles];
+
         if ([files count] == 0) {
           return;
         }
@@ -347,7 +383,7 @@ void LogHistogramReceivedItem(ShareExtensionItemReceived type) {
 }
 
 - (NSURL*)presentedItemURL {
-  return app_group::ShareExtensionItemsFolder();
+  return app_group::ExternalCommandsItemsFolder();
 }
 
 @end

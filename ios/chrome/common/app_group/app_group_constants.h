@@ -24,7 +24,6 @@ enum AppGroupApplications {
 enum ShareExtensionItemType {
   READING_LIST_ITEM = 0,
   BOOKMARK_ITEM,
-  SHARE_EXTENSION_ITEM_TYPE_COUNT,
 };
 
 // The x-callback-url indicating that an application in the group requires a
@@ -72,13 +71,17 @@ extern const char kChromeAppClientID[];
 // metrics reporting.
 extern const char kUserMetricsEnabledDate[];
 
-// The five keys of the items sent by the share extension to Chrome (URL,
+// The six keys of the items sent by the share extension to Chrome (source, URL,
 // title, date, cancel, type).
+extern NSString* const kShareItemSource;
 extern NSString* const kShareItemURL;
 extern NSString* const kShareItemTitle;
 extern NSString* const kShareItemDate;
 extern NSString* const kShareItemCancel;
 extern NSString* const kShareItemType;
+
+// The value used by Chrome share extension in |kShareItemSource|.
+extern NSString* const kShareItemShareExtensionSource;
 
 // The current epoch time, on the first run of chrome on this machine. It is set
 // once and must be attached to metrics reports forever thereafter.
@@ -88,12 +91,20 @@ extern const char kInstallDate[];
 // added to metrics logs.
 extern const char kBrandCode[];
 
-// Gets the application group
+// Gets the application group.
 NSString* ApplicationGroup();
 
-// Gets the share extension folder URL.
-// If the folder does not exist, create it.
-NSURL* ShareExtensionItemsFolder();
+// Gets the common application group.
+NSString* CommonApplicationGroup();
+
+// Gets the legacy share extension folder URL.
+// This folder is deprecated and will be removed soon. Please do not add items
+// to it.
+// TODO(crbug.com/695381): Remove this value.
+NSURL* LegacyShareExtensionItemsFolder();
+
+// Gets the shared folder URL containing commands from other applications.
+NSURL* ExternalCommandsItemsFolder();
 
 // Returns an autoreleased pointer to the shared user defaults if an
 // application group is defined. If not (i.e. on simulator, or if entitlements

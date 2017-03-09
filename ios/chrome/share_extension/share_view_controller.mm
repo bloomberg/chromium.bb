@@ -270,7 +270,7 @@ const CGFloat kMediumAlpha = 0.5;
                     action:(app_group::ShareExtensionItemType)actionType
                     cancel:(BOOL)cancel
                 completion:(ProceduralBlock)completion {
-  NSURL* readingListURL = app_group::ShareExtensionItemsFolder();
+  NSURL* readingListURL = app_group::ExternalCommandsItemsFolder();
   if (![[NSFileManager defaultManager]
           fileExistsAtPath:[readingListURL path]]) {
     [[NSFileManager defaultManager] createDirectoryAtPath:[readingListURL path]
@@ -294,6 +294,8 @@ const CGFloat kMediumAlpha = 0.5;
   if (title)
     [dict setObject:title forKey:app_group::kShareItemTitle];
   [dict setObject:date forKey:app_group::kShareItemDate];
+  [dict setObject:app_group::kShareItemShareExtensionSource
+           forKey:app_group::kShareItemSource];
 
   if (!cancel) {
     NSNumber* entryType = [NSNumber numberWithInteger:actionType];
