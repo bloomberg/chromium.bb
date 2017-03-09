@@ -366,6 +366,7 @@
 
     'client.v8.fyi': {
       'Android Builder': 'official_goma_minimal_symbols_android',
+      'Android Release (Nexus 5X)': 'gpu_tests_deqp_android_release_trybot_arm64',
       'Chromium ASAN - debug': 'asan_lsan_edge_debug_bot',
       'Chromium ASAN (symbolized)': 'asan_lsan_release_bot',
       'Chromium Win SyzyASAN': 'syzyasan_no_pch_release_x86',
