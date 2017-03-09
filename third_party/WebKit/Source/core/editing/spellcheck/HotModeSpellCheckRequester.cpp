@@ -73,11 +73,13 @@ EphemeralRange calculateHotModeCheckingRange(const Element& editable,
                                       .build();
   BackwardsCharacterIterator backwardIterator(fullRange.startPosition(),
                                               position, behavior);
-  backwardIterator.advance(kHotModeChunkSize / 2);
+  if (!backwardIterator.atEnd())
+    backwardIterator.advance(kHotModeChunkSize / 2);
   const Position& chunkStart = backwardIterator.endPosition();
   CharacterIterator forwardIterator(position, fullRange.endPosition(),
                                     behavior);
-  forwardIterator.advance(kHotModeChunkSize / 2);
+  if (!forwardIterator.atEnd())
+    forwardIterator.advance(kHotModeChunkSize / 2);
   const Position& chunkEnd = forwardIterator.endPosition();
   return expandRangeToSentenceBoundary(EphemeralRange(chunkStart, chunkEnd));
 }
