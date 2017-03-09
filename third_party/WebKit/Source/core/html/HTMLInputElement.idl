@@ -102,7 +102,9 @@ interface HTMLInputElement : HTMLElement {
     [Measure] attribute DOMString autocapitalize;
 
     // HTML Media Capture
-    // http://www.w3.org/TR/html-media-capture/
+    // https://w3c.github.io/html-media-capture/#the-capture-attribute
+    // TODO(mcasas): |capture| is a |CaptureFacingMode| enum in the spec.
+    // https://crbug.com/698853
     [Measure, RuntimeEnabled=MediaCapture, Reflect] attribute boolean capture;
 
     // Non-standard APIs
