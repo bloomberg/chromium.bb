@@ -6,8 +6,8 @@
 
 #include "ash/common/palette_delegate.h"
 #include "ash/common/system/chromeos/palette/palette_ids.h"
-#include "ash/common/wm_shell.h"
 #include "ash/resources/vector_icons/vector_icons.h"
+#include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -29,14 +29,14 @@ PaletteToolId CreateNoteAction::GetToolId() const {
 void CreateNoteAction::OnEnable() {
   CommonPaletteTool::OnEnable();
 
-  WmShell::Get()->palette_delegate()->CreateNote();
+  Shell::GetInstance()->palette_delegate()->CreateNote();
 
   delegate()->DisableTool(GetToolId());
   delegate()->HidePalette();
 }
 
 views::View* CreateNoteAction::CreateView() {
-  if (!WmShell::Get()->palette_delegate()->HasNoteApp())
+  if (!Shell::GetInstance()->palette_delegate()->HasNoteApp())
     return nullptr;
 
   return CreateDefaultView(

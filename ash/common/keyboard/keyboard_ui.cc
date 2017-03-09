@@ -10,6 +10,7 @@
 #include "ash/common/system/tray/system_tray_notifier.h"
 #include "ash/common/system/tray_accessibility.h"
 #include "ash/common/wm_shell.h"
+#include "ash/shell.h"
 #include "base/memory/ptr_util.h"
 #include "ui/keyboard/keyboard_controller.h"
 
@@ -39,7 +40,9 @@ class KeyboardUIImpl : public KeyboardUI, public AccessibilityObserver {
     // to the appropriate keyboard functions.
   }
   bool IsEnabled() override {
-    return WmShell::Get()->accessibility_delegate()->IsVirtualKeyboardEnabled();
+    return Shell::GetInstance()
+        ->accessibility_delegate()
+        ->IsVirtualKeyboardEnabled();
   }
 
   // AccessibilityObserver:

@@ -8,8 +8,8 @@
 
 #include "ash/common/ash_constants.h"
 #include "ash/common/wallpaper/wallpaper_controller.h"
-#include "ash/common/wm_shell.h"
 #include "ash/public/interfaces/constants.mojom.h"
+#include "ash/shell.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
@@ -210,11 +210,11 @@ void SetWallpaper(const gfx::ImageSkia& image,
     // TODO(crbug.com/655875): Optimize ash wallpaper transport; avoid sending
     // large bitmaps over Mojo; use shared memory like BitmapUploader, etc.
     wallpaper_controller->SetWallpaper(*image.bitmap(), layout);
-  } else if (ash::WmShell::HasInstance()) {
+  } else if (ash::Shell::HasInstance()) {
     // Note: Wallpaper setting is skipped in unit tests without shell instances.
     // In classic ash, interact with the WallpaperController class directly.
-    ash::WmShell::Get()->wallpaper_controller()->SetWallpaperImage(image,
-                                                                   layout);
+    ash::Shell::GetInstance()->wallpaper_controller()->SetWallpaperImage(
+        image, layout);
   }
 }
 
@@ -473,7 +473,7 @@ void WallpaperManager::InitializeWallpaper() {
   // Zero delays is also set in autotests.
   if (WizardController::IsZeroDelayEnabled()) {
     // Ensure tests have some sort of wallpaper.
-    ash::WmShell::Get()->wallpaper_controller()->CreateEmptyWallpaper();
+    ash::Shell::GetInstance()->wallpaper_controller()->CreateEmptyWallpaper();
     return;
   }
 
@@ -1369,7 +1369,7 @@ void WallpaperManager::SetDefaultWallpaperPath(
   default_large_wallpaper_file_ = default_large_wallpaper_file;
 
   ash::WallpaperController* controller =
-      ash::WmShell::Get()->wallpaper_controller();
+      ash::Shell::GetInstance()->wallpaper_controller();
 
   // |need_update_screen| is true if the previous default wallpaper is visible
   // now, so we need to update wallpaper on the screen.

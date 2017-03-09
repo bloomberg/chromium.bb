@@ -2,18 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "components/exo/shell_surface.h"
 #include "ash/common/accessibility_delegate.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm/wm_event.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/shell.h"
 #include "ash/wm/window_state_aura.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/exo/buffer.h"
 #include "components/exo/display.h"
-#include "components/exo/shell_surface.h"
 #include "components/exo/sub_surface.h"
 #include "components/exo/surface.h"
 #include "components/exo/test/exo_test_base.h"
@@ -901,7 +902,7 @@ TEST_F(ShellSurfaceTest, SpokenFeedbackFullscreenBackground) {
   EXPECT_FALSE(targeter->SubtreeShouldBeExploredForEvent(shell_window, ev_out));
 
   // Enable spoken feedback.
-  ash::WmShell::Get()->accessibility_delegate()->ToggleSpokenFeedback(
+  ash::Shell::GetInstance()->accessibility_delegate()->ToggleSpokenFeedback(
       ash::A11Y_NOTIFICATION_NONE);
   shell_surface.OnAccessibilityModeChanged();
 
@@ -938,7 +939,7 @@ TEST_F(ShellSurfaceTest, SpokenFeedbackFullscreenBackground) {
   EXPECT_EQ(shadow_bounds, shell_surface.shadow_underlay()->bounds());
 
   // Disable spoken feedback. Shadow underlay is restored.
-  ash::WmShell::Get()->accessibility_delegate()->ToggleSpokenFeedback(
+  ash::Shell::GetInstance()->accessibility_delegate()->ToggleSpokenFeedback(
       ash::A11Y_NOTIFICATION_NONE);
   shell_surface.OnAccessibilityModeChanged();
   shell_surface2.OnAccessibilityModeChanged();

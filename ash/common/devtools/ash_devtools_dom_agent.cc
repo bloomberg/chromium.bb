@@ -7,6 +7,7 @@
 #include "ash/common/wm_window.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
+#include "ash/shell.h"
 #include "components/ui_devtools/devtools_server.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/display/display.h"
@@ -104,9 +105,7 @@ views::Widget* GetWidgetFromWmWindow(WmWindow* window) {
 
 }  // namespace
 
-AshDevToolsDOMAgent::AshDevToolsDOMAgent(ash::WmShell* shell) : shell_(shell) {
-  DCHECK(shell_);
-}
+AshDevToolsDOMAgent::AshDevToolsDOMAgent() {}
 
 AshDevToolsDOMAgent::~AshDevToolsDOMAgent() {
   RemoveObservers();
@@ -247,8 +246,8 @@ void AshDevToolsDOMAgent::RemoveObserver(
 std::unique_ptr<ui::devtools::protocol::DOM::Node>
 AshDevToolsDOMAgent::BuildInitialTree() {
   std::unique_ptr<Array<DOM::Node>> children = Array<DOM::Node>::create();
-  for (ash::WmWindow* window : shell_->GetAllRootWindows())
-    children->addItem(BuildTreeForWindow(window));
+  for (aura::Window* window : Shell::GetAllRootWindows())
+    children->addItem(BuildTreeForWindow(WmWindow::Get(window)));
   return BuildNode("root", nullptr, std::move(children));
 }
 
@@ -475,7 +474,7 @@ void AshDevToolsDOMAgent::InitializeHighlightingWidget() {
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.opacity = views::Widget::InitParams::WindowOpacity::TRANSLUCENT_WINDOW;
   params.name = "HighlightingWidget";
-  shell_->GetPrimaryRootWindowController()
+  Shell::GetPrimaryRootWindowController()
       ->ConfigureWidgetInitParamsForContainer(widget_for_highlighting_.get(),
                                               kShellWindowId_OverlayContainer,
                                               &params);

@@ -310,7 +310,7 @@ void WindowSelector::Init(const WindowList& windows) {
   display::Screen::GetScreen()->AddObserver(this);
   shell->RecordUserMetricsAction(UMA_WINDOW_OVERVIEW);
   // Send an a11y alert.
-  WmShell::Get()->accessibility_delegate()->TriggerAccessibilityAlert(
+  Shell::GetInstance()->accessibility_delegate()->TriggerAccessibilityAlert(
       A11Y_ALERT_WINDOW_OVERVIEW_MODE_ENTERED);
 
   UpdateShelfVisibility();

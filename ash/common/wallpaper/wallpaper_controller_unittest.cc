@@ -13,6 +13,7 @@
 #include "ash/common/wm_window.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
+#include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/test_wallpaper_delegate.h"
 #include "base/message_loop/message_loop.h"
@@ -115,7 +116,7 @@ class WallpaperControllerTest : public test::AshTestBase {
         WmShell::Get()->GetPrimaryRootWindow()->GetRootWindowController();
     root_window_controller->SetWallpaperWidgetController(nullptr);
     root_window_controller->SetAnimatingWallpaperWidgetController(nullptr);
-    controller_ = WmShell::Get()->wallpaper_controller();
+    controller_ = Shell::GetInstance()->wallpaper_controller();
     wallpaper_delegate_ = static_cast<test::TestWallpaperDelegate*>(
         WmShell::Get()->wallpaper_delegate());
     controller_->set_wallpaper_reload_delay_for_test(0);
@@ -200,7 +201,8 @@ class WallpaperControllerTest : public test::AshTestBase {
 };
 
 TEST_F(WallpaperControllerTest, BasicReparenting) {
-  WallpaperController* controller = WmShell::Get()->wallpaper_controller();
+  WallpaperController* controller =
+      Shell::GetInstance()->wallpaper_controller();
   controller->CreateEmptyWallpaper();
 
   // Wallpaper view/window exists in the wallpaper container and nothing is in
@@ -232,7 +234,8 @@ TEST_F(WallpaperControllerTest, ControllerOwnership) {
       ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
 
   // Create the wallpaper and its view.
-  WallpaperController* controller = WmShell::Get()->wallpaper_controller();
+  WallpaperController* controller =
+      Shell::GetInstance()->wallpaper_controller();
   controller->CreateEmptyWallpaper();
 
   // The new wallpaper is ready to animate.
@@ -257,7 +260,8 @@ TEST_F(WallpaperControllerTest, WallpaperMovementDuringUnlock) {
       ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
 
   // Reset wallpaper state, see ControllerOwnership above.
-  WallpaperController* controller = WmShell::Get()->wallpaper_controller();
+  WallpaperController* controller =
+      Shell::GetInstance()->wallpaper_controller();
   controller->CreateEmptyWallpaper();
 
   // Run wallpaper show animation to completion.
@@ -304,7 +308,8 @@ TEST_F(WallpaperControllerTest, ChangeWallpaperQuick) {
       ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
 
   // Reset wallpaper state, see ControllerOwnership above.
-  WallpaperController* controller = WmShell::Get()->wallpaper_controller();
+  WallpaperController* controller =
+      Shell::GetInstance()->wallpaper_controller();
   controller->CreateEmptyWallpaper();
 
   // Run wallpaper show animation to completion.
@@ -356,7 +361,7 @@ TEST_F(WallpaperControllerTest, ResizeCustomWallpaper) {
   // that the resized image is the expected size.
   controller_->SetWallpaperImage(image, WALLPAPER_LAYOUT_STRETCH);
   EXPECT_TRUE(image.BackedBySameObjectAs(controller_->GetWallpaper()));
-  RunAllBlockingPoolTasksUntilIdle(WmShell::Get()->blocking_pool().get());
+  RunAllBlockingPoolTasksUntilIdle(Shell::GetInstance()->blocking_pool().get());
   gfx::ImageSkia resized_image = controller_->GetWallpaper();
   EXPECT_FALSE(image.BackedBySameObjectAs(resized_image));
   EXPECT_EQ(gfx::Size(320, 200).ToString(), resized_image.size().ToString());
@@ -365,7 +370,7 @@ TEST_F(WallpaperControllerTest, ResizeCustomWallpaper) {
   // previously-resized image instead of doing another resize
   // (http://crbug.com/321402).
   controller_->SetWallpaperImage(image, WALLPAPER_LAYOUT_STRETCH);
-  RunAllBlockingPoolTasksUntilIdle(WmShell::Get()->blocking_pool().get());
+  RunAllBlockingPoolTasksUntilIdle(Shell::GetInstance()->blocking_pool().get());
   EXPECT_TRUE(resized_image.BackedBySameObjectAs(controller_->GetWallpaper()));
 }
 

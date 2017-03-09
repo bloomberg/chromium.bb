@@ -5,8 +5,8 @@
 #ifndef ASH_COMMON_DEVTOOLS_ASH_DEVTOOLS_DOM_AGENT_H_
 #define ASH_COMMON_DEVTOOLS_ASH_DEVTOOLS_DOM_AGENT_H_
 
-#include "ash/common/wm_shell.h"
-#include "base/compiler_specific.h"
+#include "ash/ash_export.h"
+#include "base/macros.h"
 #include "base/observer_list.h"
 #include "components/ui_devtools/DOM.h"
 #include "components/ui_devtools/devtools_base_agent.h"
@@ -18,6 +18,9 @@
 #include "ui/views/widget/widget_removals_observer.h"
 
 namespace ash {
+
+class WmWindow;
+
 namespace devtools {
 
 class ASH_EXPORT AshDevToolsDOMAgentObserver {
@@ -35,7 +38,7 @@ class ASH_EXPORT AshDevToolsDOMAgent
       public views::WidgetRemovalsObserver,
       public views::ViewObserver {
  public:
-  AshDevToolsDOMAgent(ash::WmShell* shell);
+  AshDevToolsDOMAgent();
   ~AshDevToolsDOMAgent() override;
 
   // DOM::Backend
@@ -127,7 +130,6 @@ class ASH_EXPORT AshDevToolsDOMAgent
   bool IsHighlightingWindow(WmWindow* window);
 
   std::unique_ptr<views::Widget> widget_for_highlighting_;
-  ash::WmShell* shell_;
 
   using WindowToNodeIdMap = std::unordered_map<WmWindow*, int>;
   WindowToNodeIdMap window_to_node_id_map_;

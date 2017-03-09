@@ -59,7 +59,7 @@ class DockedBackgroundWidget : public views::Widget,
         alignment_(DOCKED_ALIGNMENT_NONE),
         background_animator_(SHELF_BACKGROUND_DEFAULT,
                              nullptr,
-                             WmShell::Get()->wallpaper_controller()),
+                             Shell::GetInstance()->wallpaper_controller()),
         opaque_background_(ui::LAYER_SOLID_COLOR),
         visible_background_type_(manager_->shelf()->GetBackgroundType()),
         visible_background_change_type_(AnimationChangeType::IMMEDIATE) {

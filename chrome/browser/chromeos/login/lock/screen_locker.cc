@@ -504,7 +504,7 @@ ScreenLocker::~ScreenLocker() {
   ClearErrors();
 
   VLOG(1) << "Moving wallpaper to unlocked container";
-  ash::WmShell::Get()->wallpaper_controller()->MoveToUnlockedContainer();
+  ash::Shell::GetInstance()->wallpaper_controller()->MoveToUnlockedContainer();
 
   screen_locker_ = NULL;
   bool state = false;
@@ -538,7 +538,7 @@ void ScreenLocker::ScreenLockReady() {
   UMA_HISTOGRAM_TIMES("ScreenLocker.ScreenLockTime", delta);
 
   VLOG(1) << "Moving wallpaper to locked container";
-  ash::WmShell::Get()->wallpaper_controller()->MoveToLockedContainer();
+  ash::Shell::GetInstance()->wallpaper_controller()->MoveToLockedContainer();
 
   bool state = true;
   VLOG(1) << "Emitting SCREEN_LOCK_STATE_CHANGED with state=" << state;

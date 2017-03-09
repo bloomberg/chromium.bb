@@ -35,6 +35,10 @@ class ActivationClient;
 }
 }
 
+namespace base {
+class SequencedWorkerPool;
+}
+
 namespace chromeos {
 class AudioA11yController;
 }
@@ -52,6 +56,9 @@ class Insets;
 namespace ui {
 class UserActivityDetector;
 class UserActivityPowerManagerNotifier;
+namespace devtools {
+class UiDevToolsServer;
+}
 }
 
 namespace views {
@@ -74,8 +81,10 @@ class WindowModalityController;
 namespace ash {
 
 class AcceleratorControllerDelegateAura;
+class AccessibilityDelegate;
 class AppListDelegateImpl;
 class AshNativeCursorManager;
+class AshTouchTransformController;
 class AutoclickController;
 class BluetoothNotificationController;
 class DisplayColorManager;
@@ -95,6 +104,7 @@ enum class LoginStatus;
 class MagnificationController;
 class MouseCursorEventFilter;
 class OverlayEventFilter;
+class PaletteDelegate;
 class PartialMagnificationController;
 class PowerButtonController;
 class PowerEventObserver;
@@ -117,11 +127,12 @@ class SystemGestureEventFilter;
 class SystemModalContainerEventFilter;
 class SystemTray;
 class ToplevelWindowEventHandler;
-class AshTouchTransformController;
 class ScreenLayoutObserver;
+class ToastManager;
 class VirtualKeyboardController;
 class VideoActivityNotifier;
 class VideoDetector;
+class WallpaperController;
 class WebNotificationTray;
 class WindowPositioner;
 class WindowTreeHostManager;
@@ -252,6 +263,12 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
     return accelerator_controller_delegate_.get();
   }
 
+  AccessibilityDelegate* accessibility_delegate() {
+    return accessibility_delegate_.get();
+  }
+  const scoped_refptr<base::SequencedWorkerPool>& blocking_pool() {
+    return blocking_pool_;
+  }
   display::DisplayManager* display_manager() { return display_manager_.get(); }
   DisplayConfigurationController* display_configuration_controller() {
     return display_configuration_controller_.get();
@@ -274,7 +291,11 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   LockStateController* lock_state_controller() {
     return lock_state_controller_.get();
   }
+  PaletteDelegate* palette_delegate() { return palette_delegate_.get(); }
   VideoDetector* video_detector() { return video_detector_.get(); }
+  WallpaperController* wallpaper_controller() {
+    return wallpaper_controller_.get();
+  }
   WindowTreeHostManager* window_tree_host_manager() {
     return window_tree_host_manager_.get();
   }
@@ -316,6 +337,8 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   AutoclickController* autoclick_controller() {
     return autoclick_controller_.get();
   }
+
+  ToastManager* toast_manager() { return toast_manager_.get(); }
 
   aura::client::ActivationClient* activation_client();
 
@@ -515,11 +538,16 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   std::unique_ptr<SessionStateDelegate> session_state_delegate_;
   std::unique_ptr<WindowPositioner> window_positioner_;
 
+  std::unique_ptr<AccessibilityDelegate> accessibility_delegate_;
+  std::unique_ptr<PaletteDelegate> palette_delegate_;
   std::unique_ptr<DragDropController> drag_drop_controller_;
   std::unique_ptr<ResizeShadowController> resize_shadow_controller_;
+  std::unique_ptr<ToastManager> toast_manager_;
+  std::unique_ptr<WallpaperController> wallpaper_controller_;
   std::unique_ptr<::wm::ShadowController> shadow_controller_;
   std::unique_ptr<::wm::VisibilityController> visibility_controller_;
   std::unique_ptr<::wm::WindowModalityController> window_modality_controller_;
+  std::unique_ptr<ui::devtools::UiDevToolsServer> devtools_server_;
   std::unique_ptr<views::corewm::TooltipController> tooltip_controller_;
   LinkHandlerModelFactory* link_handler_model_factory_;
   std::unique_ptr<PowerButtonController> power_button_controller_;
@@ -625,6 +653,8 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   std::unique_ptr<AppListDelegateImpl> app_list_delegate_impl_;
 
   base::ObserverList<ShellObserver> shell_observers_;
+
+  scoped_refptr<base::SequencedWorkerPool> blocking_pool_;
 
   DISALLOW_COPY_AND_ASSIGN(Shell);
 };

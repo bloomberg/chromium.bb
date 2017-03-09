@@ -20,6 +20,7 @@
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/root_window_controller.h"
+#include "ash/shell.h"
 #include "ash/wm/window_properties.h"
 #include "base/memory/ptr_util.h"
 #include "ui/compositor/layer.h"
@@ -134,7 +135,7 @@ ShelfWidget::ShelfWidget(WmWindow* shelf_container, WmShelf* wm_shelf)
       shelf_view_(nullptr),
       background_animator_(SHELF_BACKGROUND_DEFAULT,
                            wm_shelf_,
-                           WmShell::Get()->wallpaper_controller()),
+                           Shell::GetInstance()->wallpaper_controller()),
       activating_as_fallback_(false) {
   DCHECK(wm_shelf_);
   background_animator_.AddObserver(this);

@@ -14,6 +14,7 @@
 #include "ash/common/wm_shell.h"
 #include "ash/resources/grit/ash_resources.h"
 #include "ash/resources/vector_icons/vector_icons.h"
+#include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "base/sys_info.h"
 #include "ui/accessibility/ax_node_data.h"
@@ -158,7 +159,7 @@ void TrayCapsLock::OnCapsLockChanged(bool enabled) {
   caps_lock_enabled_ = enabled;
 
   // Send an a11y alert.
-  WmShell::Get()->accessibility_delegate()->TriggerAccessibilityAlert(
+  Shell::GetInstance()->accessibility_delegate()->TriggerAccessibilityAlert(
       enabled ? A11Y_ALERT_CAPS_ON : A11Y_ALERT_CAPS_OFF);
 
   if (tray_view())

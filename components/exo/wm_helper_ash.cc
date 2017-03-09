@@ -98,13 +98,14 @@ bool WMHelperAsh::IsMaximizeModeWindowManagerEnabled() const {
 }
 
 bool WMHelperAsh::IsSpokenFeedbackEnabled() const {
-  return ash::WmShell::Get()
+  return ash::Shell::GetInstance()
       ->accessibility_delegate()
       ->IsSpokenFeedbackEnabled();
 }
 
 void WMHelperAsh::PlayEarcon(int sound_key) const {
-  return ash::WmShell::Get()->accessibility_delegate()->PlayEarcon(sound_key);
+  return ash::Shell::GetInstance()->accessibility_delegate()->PlayEarcon(
+      sound_key);
 }
 
 void WMHelperAsh::OnWindowActivated(

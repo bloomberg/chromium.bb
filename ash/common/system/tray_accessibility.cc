@@ -21,6 +21,7 @@
 #include "ash/common/wm_shell.h"
 #include "ash/resources/grit/ash_resources.h"
 #include "ash/resources/vector_icons/vector_icons.h"
+#include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -49,7 +50,8 @@ enum AccessibilityState {
 };
 
 uint32_t GetAccessibilityState() {
-  AccessibilityDelegate* delegate = WmShell::Get()->accessibility_delegate();
+  AccessibilityDelegate* delegate =
+      Shell::GetInstance()->accessibility_delegate();
   uint32_t state = A11Y_NONE;
   if (delegate->IsSpokenFeedbackEnabled())
     state |= A11Y_SPOKEN_FEEDBACK;
@@ -162,7 +164,8 @@ void AccessibilityDetailedView::AppendAccessibilityList() {
   CreateScrollableList();
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
 
-  AccessibilityDelegate* delegate = WmShell::Get()->accessibility_delegate();
+  AccessibilityDelegate* delegate =
+      Shell::GetInstance()->accessibility_delegate();
   spoken_feedback_enabled_ = delegate->IsSpokenFeedbackEnabled();
   spoken_feedback_view_ =
       AddScrollListItem(bundle.GetLocalizedString(
@@ -239,7 +242,8 @@ HoverHighlightView* AccessibilityDetailedView::AddScrollListItem(
 }
 
 void AccessibilityDetailedView::HandleViewClicked(views::View* view) {
-  AccessibilityDelegate* delegate = WmShell::Get()->accessibility_delegate();
+  AccessibilityDelegate* delegate =
+      Shell::GetInstance()->accessibility_delegate();
   UserMetricsAction user_action;
   if (view == spoken_feedback_view_) {
     user_action = delegate->IsSpokenFeedbackEnabled()
@@ -361,7 +365,8 @@ views::View* TrayAccessibility::CreateDefaultView(LoginStatus status) {
   // - "Enable accessibility menu" on chrome://settings is checked;
   // - or any of accessibility features is enabled
   // Otherwise, not shows it.
-  AccessibilityDelegate* delegate = WmShell::Get()->accessibility_delegate();
+  AccessibilityDelegate* delegate =
+      Shell::GetInstance()->accessibility_delegate();
   if (login_ != LoginStatus::NOT_LOGGED_IN &&
       !delegate->ShouldShowAccessibilityMenu() &&
       // On login screen, keeps the initial visibility of the menu.

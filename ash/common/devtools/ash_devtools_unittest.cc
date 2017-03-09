@@ -199,8 +199,7 @@ class AshDevToolsTest : public AshTest {
     fake_frontend_channel_ = base::MakeUnique<FakeFrontendChannel>();
     uber_dispatcher_ =
         base::MakeUnique<UberDispatcher>(fake_frontend_channel_.get());
-    dom_agent_ =
-        base::MakeUnique<devtools::AshDevToolsDOMAgent>(WmShell::Get());
+    dom_agent_ = base::MakeUnique<devtools::AshDevToolsDOMAgent>();
     dom_agent_->Init(uber_dispatcher_.get());
     css_agent_ =
         base::MakeUnique<devtools::AshDevToolsCSSAgent>(dom_agent_.get());

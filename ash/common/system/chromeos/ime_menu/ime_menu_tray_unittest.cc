@@ -12,6 +12,7 @@
 #include "ash/common/system/tray/system_tray_notifier.h"
 #include "ash/common/test/test_system_tray_delegate.h"
 #include "ash/common/wm_shell.h"
+#include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/status_area_widget_test_helper.h"
 #include "base/strings/utf_string_conversions.h"
@@ -259,7 +260,7 @@ TEST_F(ImeMenuTrayTest, ShowEmojiKeyset) {
   EXPECT_TRUE(IsBubbleShown());
 
   AccessibilityDelegate* accessibility_delegate =
-      WmShell::Get()->accessibility_delegate();
+      Shell::GetInstance()->accessibility_delegate();
 
   accessibility_delegate->SetVirtualKeyboardEnabled(true);
   EXPECT_TRUE(accessibility_delegate->IsVirtualKeyboardEnabled());
@@ -278,7 +279,7 @@ TEST_F(ImeMenuTrayTest, ShowEmojiKeyset) {
 
 TEST_F(ImeMenuTrayTest, ForceToShowEmojiKeyset) {
   AccessibilityDelegate* accessibility_delegate =
-      WmShell::Get()->accessibility_delegate();
+      Shell::GetInstance()->accessibility_delegate();
   accessibility_delegate->SetVirtualKeyboardEnabled(false);
   ASSERT_FALSE(accessibility_delegate->IsVirtualKeyboardEnabled());
 

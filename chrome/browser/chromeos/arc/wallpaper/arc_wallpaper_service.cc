@@ -5,7 +5,7 @@
 #include "chrome/browser/chromeos/arc/wallpaper/arc_wallpaper_service.h"
 
 #include "ash/common/wallpaper/wallpaper_controller.h"
-#include "ash/common/wm_shell.h"
+#include "ash/shell.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/task_scheduler/post_task.h"
@@ -67,10 +67,9 @@ std::vector<uint8_t> EncodeImagePng(const gfx::ImageSkia image) {
 }
 
 ash::WallpaperController* GetWallpaperController() {
-  ash::WmShell* wm_shell = ash::WmShell::Get();
-  if (!wm_shell)
+  if (!ash::Shell::HasInstance())
     return nullptr;
-  return wm_shell->wallpaper_controller();
+  return ash::Shell::GetInstance()->wallpaper_controller();
 }
 
 }  // namespace
@@ -97,7 +96,7 @@ void ArcWallpaperService::OnInstanceReady() {
       ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service()->wallpaper(), Init);
   DCHECK(wallpaper_instance);
   wallpaper_instance->Init(binding_.CreateInterfacePtrAndBind());
-  ash::WmShell::Get()->wallpaper_controller()->AddObserver(this);
+  ash::Shell::GetInstance()->wallpaper_controller()->AddObserver(this);
 }
 
 void ArcWallpaperService::OnInstanceClosed() {
@@ -116,7 +115,8 @@ void ArcWallpaperService::SetWallpaper(const std::vector<uint8_t>& data) {
 
 void ArcWallpaperService::GetWallpaper(const GetWallpaperCallback& callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  ash::WallpaperController* wc = ash::WmShell::Get()->wallpaper_controller();
+  ash::WallpaperController* wc =
+      ash::Shell::GetInstance()->wallpaper_controller();
   gfx::ImageSkia wallpaper = wc->GetWallpaper();
   base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE, base::TaskTraits().MayBlock().WithPriority(

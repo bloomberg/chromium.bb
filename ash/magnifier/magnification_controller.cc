@@ -10,7 +10,6 @@
 #include "ash/common/accelerators/accelerator_controller.h"
 #include "ash/common/accessibility_delegate.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
-#include "ash/common/wm_shell.h"
 #include "ash/display/root_window_transformers.h"
 #include "ash/host/ash_window_tree_host.h"
 #include "ash/host/root_window_transformer.h"
@@ -566,7 +565,8 @@ void MagnificationControllerImpl::SetScale(float scale, bool animate) {
     return;
 
   ValidateScale(&scale);
-  WmShell::Get()->accessibility_delegate()->SaveScreenMagnifierScale(scale);
+  Shell::GetInstance()->accessibility_delegate()->SaveScreenMagnifierScale(
+      scale);
   RedrawKeepingMousePosition(scale, animate);
 }
 
@@ -597,9 +597,9 @@ void MagnificationControllerImpl::SetEnabled(bool enabled) {
     if (!is_enabled_ && input_method)
       input_method->AddObserver(this);
 
-    WmShell* wm_shell = WmShell::Get();
+    Shell* shell = Shell::GetInstance();
     float scale =
-        wm_shell->accessibility_delegate()->GetSavedScreenMagnifierScale();
+        shell->accessibility_delegate()->GetSavedScreenMagnifierScale();
     if (scale <= 0.0f)
       scale = kInitialMagnifiedScale;
     ValidateScale(&scale);
@@ -610,7 +610,7 @@ void MagnificationControllerImpl::SetEnabled(bool enabled) {
 
     is_enabled_ = enabled;
     RedrawKeepingMousePosition(scale, true);
-    wm_shell->accessibility_delegate()->SaveScreenMagnifierScale(scale);
+    shell->accessibility_delegate()->SaveScreenMagnifierScale(scale);
   } else {
     // Do nothing, if already disabled.
     if (!is_enabled_)

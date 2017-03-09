@@ -20,6 +20,7 @@
 #include "ash/common/wallpaper/wallpaper_controller.h"
 #include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/common/wm_shell.h"
+#include "ash/shell.h"
 #include "base/bind.h"
 #include "services/service_manager/public/cpp/interface_registry.h"
 #include "ui/app_list/presenter/app_list.h"
@@ -85,7 +86,7 @@ void BindVpnListRequestOnMainThread(mojom::VpnListRequest request) {
 
 void BindWallpaperRequestOnMainThread(
     mojom::WallpaperControllerRequest request) {
-  WmShell::Get()->wallpaper_controller()->BindRequest(std::move(request));
+  Shell::GetInstance()->wallpaper_controller()->BindRequest(std::move(request));
 }
 
 }  // namespace

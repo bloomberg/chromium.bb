@@ -9,6 +9,7 @@
 #include "ash/common/wallpaper/wallpaper_delegate.h"
 #include "ash/common/wm_shell.h"
 #include "ash/public/cpp/shelf_types.h"
+#include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 
 namespace ash {
@@ -46,7 +47,7 @@ void ContextMenuMus::ExecuteCommand(int command_id, int event_flags) {
                                        ? SHELF_AUTO_HIDE_BEHAVIOR_NEVER
                                        : SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
   } else if (command_id == MENU_CHANGE_WALLPAPER) {
-    WmShell::Get()->wallpaper_controller()->OpenSetWallpaperPage();
+    Shell::GetInstance()->wallpaper_controller()->OpenSetWallpaperPage();
   }
 }
 

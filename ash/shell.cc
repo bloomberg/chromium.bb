@@ -16,11 +16,16 @@
 #include "ash/aura/wm_shell_aura.h"
 #include "ash/autoclick/autoclick_controller.h"
 #include "ash/common/accelerators/accelerator_controller.h"
+#include "ash/common/accelerators/ash_focus_manager_factory.h"
+#include "ash/common/accessibility_delegate.h"
 #include "ash/common/ash_constants.h"
+#include "ash/common/devtools/ash_devtools_css_agent.h"
+#include "ash/common/devtools/ash_devtools_dom_agent.h"
 #include "ash/common/frame/custom_frame_view_ash.h"
 #include "ash/common/gpu_support.h"
 #include "ash/common/keyboard/keyboard_ui.h"
 #include "ash/common/login_status.h"
+#include "ash/common/palette_delegate.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shelf/app_list_shelf_item_delegate.h"
 #include "ash/common/shelf/shelf_delegate.h"
@@ -33,7 +38,9 @@
 #include "ash/common/system/chromeos/network/sms_observer.h"
 #include "ash/common/system/chromeos/power/power_status.h"
 #include "ash/common/system/status_area_widget.h"
+#include "ash/common/system/toast/toast_manager.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
+#include "ash/common/wallpaper/wallpaper_controller.h"
 #include "ash/common/wallpaper/wallpaper_delegate.h"
 #include "ash/common/wm/container_finder.h"
 #include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
@@ -103,6 +110,7 @@
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/system/devicemode.h"
+#include "components/ui_devtools/devtools_server.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/ui/public/interfaces/constants.mojom.h"
 #include "ui/aura/client/aura_constants.h"
@@ -129,6 +137,7 @@
 #include "ui/keyboard/keyboard_util.h"
 #include "ui/views/corewm/tooltip_aura.h"
 #include "ui/views/corewm/tooltip_controller.h"
+#include "ui/views/focus/focus_manager_factory.h"
 #include "ui/views/widget/native_widget_aura.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/accelerator_filter.h"
@@ -549,8 +558,7 @@ Shell::~Shell() {
   // layout.
   DeactivateKeyboard();
 
-  // Destroy toasts
-  wm_shell_->DeleteToastManager();
+  toast_manager_.reset();
 
   // Destroy SystemTrayDelegate before destroying the status area(s). Make sure
   // to deinitialize the shelf first, as it is initialized after the delegate.
@@ -619,6 +627,13 @@ Shell::~Shell() {
   // AppListDelegateImpl depends upon AppList.
   app_list_delegate_impl_.reset();
 
+  // These members access Shell in their destructors.
+  wallpaper_controller_.reset();
+  accessibility_delegate_.reset();
+
+  // Balances the Install() in Initialize().
+  views::FocusManagerFactory::Install(nullptr);
+
   wm_shell_->Shutdown();
   // Depends on |focus_controller_|, so must be destroyed before.
   window_tree_host_manager_.reset();
@@ -655,7 +670,37 @@ Shell::~Shell() {
 void Shell::Init(const ShellInitParams& init_params) {
   const bool is_mash = wm_shell_->IsRunningInMash();
 
-  wm_shell_->Initialize(init_params.blocking_pool);
+  blocking_pool_ = init_params.blocking_pool;
+
+  // Some delegates access WmShell during their construction. Create them here
+  // instead of the WmShell constructor.
+  accessibility_delegate_.reset(
+      wm_shell_->delegate()->CreateAccessibilityDelegate());
+  palette_delegate_ = wm_shell_->delegate()->CreatePaletteDelegate();
+  toast_manager_ = base::MakeUnique<ToastManager>();
+
+  // Create the app list item in the shelf data model.
+  AppListShelfItemDelegate::CreateAppListItemAndDelegate(
+      wm_shell_->shelf_model());
+
+  // Install the custom factory early on so that views::FocusManagers for Tray,
+  // Shelf, and WallPaper could be created by the factory.
+  views::FocusManagerFactory::Install(new AshFocusManagerFactory);
+
+  wallpaper_controller_ = base::MakeUnique<WallpaperController>(blocking_pool_);
+
+  // Start devtools server
+  devtools_server_ = ui::devtools::UiDevToolsServer::Create(nullptr);
+  if (devtools_server_) {
+    auto dom_backend = base::MakeUnique<devtools::AshDevToolsDOMAgent>();
+    auto css_backend =
+        base::MakeUnique<devtools::AshDevToolsCSSAgent>(dom_backend.get());
+    auto devtools_client = base::MakeUnique<ui::devtools::UiDevToolsClient>(
+        "Ash", devtools_server_.get());
+    devtools_client->AddAgent(std::move(dom_backend));
+    devtools_client->AddAgent(std::move(css_backend));
+    devtools_server_->AttachClient(std::move(devtools_client));
+  }
 
   if (is_mash)
     app_list_delegate_impl_ = base::MakeUnique<AppListDelegateImpl>();

@@ -15,6 +15,7 @@
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/root_window_controller.h"
+#include "ash/shell.h"
 #include "ash/wm/window_properties.h"
 #include "base/command_line.h"
 #include "base/metrics/user_metrics.h"
@@ -103,7 +104,7 @@ gfx::ImageSkia CreateWallpaperImage(SkColor fill, SkColor rect) {
 void HandleToggleWallpaperMode() {
   static int index = 0;
   WallpaperController* wallpaper_controller =
-      WmShell::Get()->wallpaper_controller();
+      Shell::GetInstance()->wallpaper_controller();
   switch (++index % 4) {
     case 0:
       ash::WmShell::Get()->wallpaper_delegate()->InitializeWallpaper();
@@ -187,7 +188,7 @@ void PerformDebugActionIfEnabled(AcceleratorAction action) {
       HandlePrintWindowHierarchy();
       break;
     case DEBUG_SHOW_TOAST:
-      WmShell::Get()->toast_manager()->Show(
+      Shell::GetInstance()->toast_manager()->Show(
           ToastData("id", base::ASCIIToUTF16("Toast"), 5000 /* duration_ms */,
                     base::ASCIIToUTF16("Dismiss")));
       break;

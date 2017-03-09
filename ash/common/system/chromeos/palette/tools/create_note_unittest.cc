@@ -7,8 +7,9 @@
 #include "ash/common/system/chromeos/palette/palette_tool.h"
 #include "ash/common/system/chromeos/palette/tools/create_note_action.h"
 #include "ash/common/test/test_palette_delegate.h"
-#include "ash/common/wm_shell.h"
+#include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/test/shell_test_api.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "ui/views/view.h"
@@ -26,7 +27,7 @@ class CreateNoteTest : public test::AshTestBase {
   void SetUp() override {
     test::AshTestBase::SetUp();
 
-    WmShell::Get()->SetPaletteDelegateForTesting(
+    test::ShellTestApi().SetPaletteDelegate(
         base::MakeUnique<TestPaletteDelegate>());
 
     palette_tool_delegate_ = base::MakeUnique<MockPaletteToolDelegate>();
@@ -35,7 +36,7 @@ class CreateNoteTest : public test::AshTestBase {
 
   TestPaletteDelegate* test_palette_delegate() {
     return static_cast<TestPaletteDelegate*>(
-        WmShell::Get()->palette_delegate());
+        Shell::GetInstance()->palette_delegate());
   }
 
  protected:

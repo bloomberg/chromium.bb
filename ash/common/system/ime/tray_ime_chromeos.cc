@@ -25,6 +25,7 @@
 #include "ash/common/wm_shell.h"
 #include "ash/resources/grit/ash_resources.h"
 #include "ash/resources/vector_icons/vector_icons.h"
+#include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
@@ -274,8 +275,9 @@ void TrayIME::UpdateTrayLabel(const IMEInfo& current, size_t count) {
 }
 
 bool TrayIME::ShouldShowKeyboardToggle() {
-  return keyboard_suppressed_ &&
-         !WmShell::Get()->accessibility_delegate()->IsVirtualKeyboardEnabled();
+  return keyboard_suppressed_ && !Shell::GetInstance()
+                                      ->accessibility_delegate()
+                                      ->IsVirtualKeyboardEnabled();
 }
 
 base::string16 TrayIME::GetDefaultViewLabel(bool show_ime_label) {

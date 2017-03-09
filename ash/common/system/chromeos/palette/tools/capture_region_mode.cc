@@ -9,8 +9,8 @@
 #include "ash/common/system/chromeos/palette/palette_ids.h"
 #include "ash/common/system/toast/toast_data.h"
 #include "ash/common/system/toast/toast_manager.h"
-#include "ash/common/wm_shell.h"
 #include "ash/resources/vector_icons/vector_icons.h"
+#include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -46,9 +46,9 @@ void CaptureRegionMode::OnEnable() {
   ToastData toast(kToastId, l10n_util::GetStringUTF16(
                                 IDS_ASH_STYLUS_TOOLS_CAPTURE_REGION_TOAST),
                   kToastDurationMs, base::Optional<base::string16>());
-  ash::WmShell::Get()->toast_manager()->Show(toast);
+  Shell::GetInstance()->toast_manager()->Show(toast);
 
-  WmShell::Get()->palette_delegate()->TakePartialScreenshot(base::Bind(
+  Shell::GetInstance()->palette_delegate()->TakePartialScreenshot(base::Bind(
       &CaptureRegionMode::OnScreenshotDone, weak_factory_.GetWeakPtr()));
   delegate()->HidePalette();
 }
@@ -58,7 +58,7 @@ void CaptureRegionMode::OnDisable() {
 
   // If the user manually cancelled the action we need to make sure to cancel
   // the screenshot session as well.
-  WmShell::Get()->palette_delegate()->CancelPartialScreenshot();
+  Shell::GetInstance()->palette_delegate()->CancelPartialScreenshot();
 }
 
 views::View* CaptureRegionMode::CreateView() {

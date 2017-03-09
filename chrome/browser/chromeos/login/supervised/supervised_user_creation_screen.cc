@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "ash/common/wallpaper/wallpaper_controller.h"
-#include "ash/common/wm_shell.h"
+#include "ash/shell.h"
 #include "base/memory/ptr_util.h"
 #include "base/rand_util.h"
 #include "base/values.h"
@@ -365,7 +365,7 @@ void SupervisedUserCreationScreen::OnManagerFullyAuthenticated(
   DCHECK(controller_.get());
   // For manager user, move wallpaper to locked container so that windows
   // created during the user image picker step are below it.
-  ash::WmShell::Get()->wallpaper_controller()->MoveToLockedContainer();
+  ash::Shell::GetInstance()->wallpaper_controller()->MoveToLockedContainer();
 
   controller_->SetManagerProfile(manager_profile);
   if (view_)

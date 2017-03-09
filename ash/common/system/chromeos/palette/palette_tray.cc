@@ -288,7 +288,7 @@ void PaletteTray::OnTouchscreenDeviceConfigurationChanged() {
 }
 
 void PaletteTray::OnStylusStateChanged(ui::StylusState stylus_state) {
-  PaletteDelegate* palette_delegate = WmShell::Get()->palette_delegate();
+  PaletteDelegate* palette_delegate = Shell::GetInstance()->palette_delegate();
 
   // Don't do anything if the palette should not be shown or if the user has
   // disabled it all-together.
@@ -400,7 +400,7 @@ void PaletteTray::AnchorUpdated() {
 }
 
 void PaletteTray::Initialize() {
-  PaletteDelegate* delegate = WmShell::Get()->palette_delegate();
+  PaletteDelegate* delegate = Shell::GetInstance()->palette_delegate();
   // |delegate| can be null in tests.
   if (!delegate)
     return;

@@ -9,6 +9,7 @@
 #include "ash/common/system/chromeos/ime_menu/ime_list_view.h"
 #include "ash/common/system/tray/system_tray_notifier.h"
 #include "ash/common/wm_shell.h"
+#include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/events/devices/device_data_manager.h"
@@ -59,7 +60,8 @@ class TrayIMETest : public test::AshTestBase {
 };
 
 void TrayIMETest::SetAccessibilityKeyboardEnabled(bool enabled) {
-  WmShell::Get()->accessibility_delegate()->SetVirtualKeyboardEnabled(enabled);
+  Shell::GetInstance()->accessibility_delegate()->SetVirtualKeyboardEnabled(
+      enabled);
   keyboard::SetAccessibilityKeyboardEnabled(enabled);
   AccessibilityNotificationVisibility notification =
       enabled ? A11Y_NOTIFICATION_SHOW : A11Y_NOTIFICATION_NONE;

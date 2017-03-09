@@ -7,16 +7,11 @@
 #include <utility>
 
 #include "ash/common/accelerators/accelerator_controller.h"
-#include "ash/common/accelerators/ash_focus_manager_factory.h"
-#include "ash/common/accessibility_delegate.h"
 #include "ash/common/cast_config_controller.h"
-#include "ash/common/devtools/ash_devtools_css_agent.h"
-#include "ash/common/devtools/ash_devtools_dom_agent.h"
 #include "ash/common/focus_cycler.h"
 #include "ash/common/keyboard/keyboard_ui.h"
 #include "ash/common/media_controller.h"
 #include "ash/common/new_window_controller.h"
-#include "ash/common/palette_delegate.h"
 #include "ash/common/session/session_controller.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shelf/app_list_shelf_item_delegate.h"
@@ -33,11 +28,9 @@
 #include "ash/common/system/chromeos/session/logout_confirmation_controller.h"
 #include "ash/common/system/keyboard_brightness_control_delegate.h"
 #include "ash/common/system/locale/locale_notification_controller.h"
-#include "ash/common/system/toast/toast_manager.h"
 #include "ash/common/system/tray/system_tray_controller.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/system/tray/system_tray_notifier.h"
-#include "ash/common/wallpaper/wallpaper_controller.h"
 #include "ash/common/wallpaper/wallpaper_delegate.h"
 #include "ash/common/wm/immersive_context_ash.h"
 #include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
@@ -53,13 +46,11 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "base/threading/sequenced_worker_pool.h"
 #include "services/preferences/public/cpp/pref_client_store.h"
 #include "services/preferences/public/interfaces/preferences.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/app_list/presenter/app_list.h"
 #include "ui/display/display.h"
-#include "ui/views/focus/focus_manager_factory.h"
 
 namespace ash {
 
@@ -80,43 +71,7 @@ WmShell* WmShell::Get() {
   return instance_;
 }
 
-void WmShell::Initialize(const scoped_refptr<base::SequencedWorkerPool>& pool) {
-  blocking_pool_ = pool;
-
-  // Some delegates access WmShell during their construction. Create them here
-  // instead of the WmShell constructor.
-  accessibility_delegate_.reset(delegate_->CreateAccessibilityDelegate());
-  palette_delegate_ = delegate_->CreatePaletteDelegate();
-  toast_manager_.reset(new ToastManager);
-
-  // Create the app list item in the shelf data model.
-  AppListShelfItemDelegate::CreateAppListItemAndDelegate(shelf_model());
-
-  // Install the custom factory early on so that views::FocusManagers for Tray,
-  // Shelf, and WallPaper could be created by the factory.
-  views::FocusManagerFactory::Install(new AshFocusManagerFactory);
-
-  wallpaper_controller_.reset(new WallpaperController(blocking_pool_));
-
-  // Start devtools server
-  devtools_server_ = ui::devtools::UiDevToolsServer::Create(nullptr);
-  if (devtools_server_) {
-    auto dom_backend = base::MakeUnique<devtools::AshDevToolsDOMAgent>(this);
-    auto css_backend =
-        base::MakeUnique<devtools::AshDevToolsCSSAgent>(dom_backend.get());
-    auto devtools_client = base::MakeUnique<ui::devtools::UiDevToolsClient>(
-        "Ash", devtools_server_.get());
-    devtools_client->AddAgent(std::move(dom_backend));
-    devtools_client->AddAgent(std::move(css_backend));
-    devtools_server_->AttachClient(std::move(devtools_client));
-  }
-}
-
 void WmShell::Shutdown() {
-  // These members access WmShell in their destructors.
-  wallpaper_controller_.reset();
-  accessibility_delegate_.reset();
-
   // ShelfWindowWatcher has window observers and a pointer to the shelf model.
   shelf_window_watcher_.reset();
   // ShelfItemDelegate subclasses it owns have complex cleanup to run (e.g. ARC
@@ -124,9 +79,6 @@ void WmShell::Shutdown() {
   shelf_model()->DestroyItemDelegates();
   // Must be destroyed before FocusClient.
   shelf_delegate_.reset();
-
-  // Balances the Install() in Initialize().
-  views::FocusManagerFactory::Install(nullptr);
 
   // Removes itself as an observer of |pref_store_|.
   shelf_controller_.reset();
@@ -195,11 +147,6 @@ void WmShell::RemoveLockStateObserver(LockStateObserver* observer) {
 void WmShell::SetShelfDelegateForTesting(
     std::unique_ptr<ShelfDelegate> test_delegate) {
   shelf_delegate_ = std::move(test_delegate);
-}
-
-void WmShell::SetPaletteDelegateForTesting(
-    std::unique_ptr<PaletteDelegate> palette_delegate) {
-  palette_delegate_ = std::move(palette_delegate);
 }
 
 WmShell::WmShell(std::unique_ptr<ShellDelegate> shell_delegate)
@@ -357,10 +304,6 @@ void WmShell::CreateMruWindowTracker() {
 
 void WmShell::DeleteMruWindowTracker() {
   mru_window_tracker_.reset();
-}
-
-void WmShell::DeleteToastManager() {
-  toast_manager_.reset();
 }
 
 void WmShell::SetAcceleratorController(

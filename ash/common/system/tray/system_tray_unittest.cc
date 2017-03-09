@@ -20,6 +20,7 @@
 #include "ash/common/wm_window.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
+#include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/status_area_widget_test_helper.h"
 #include "ash/test/test_system_tray_item.h"
@@ -484,7 +485,8 @@ TEST_F(SystemTrayTest, PersistentBubble) {
 
 TEST_F(SystemTrayTest, WithSystemModal) {
   // Check if the accessibility item is created even with system modal dialog.
-  WmShell::Get()->accessibility_delegate()->SetVirtualKeyboardEnabled(true);
+  Shell::GetInstance()->accessibility_delegate()->SetVirtualKeyboardEnabled(
+      true);
   std::unique_ptr<views::Widget> widget(CreateTestWidget(
       new ModalWidgetDelegate, kShellWindowId_SystemModalContainer,
       gfx::Rect(0, 0, 100, 100)));

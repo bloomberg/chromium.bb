@@ -58,8 +58,8 @@ void AshTouchExplorationManager::SetOutputLevel(int volume) {
 }
 
 void AshTouchExplorationManager::SilenceSpokenFeedback() {
-  if (WmShell::Get()->accessibility_delegate()->IsSpokenFeedbackEnabled())
-    WmShell::Get()->accessibility_delegate()->SilenceSpokenFeedback();
+  if (Shell::GetInstance()->accessibility_delegate()->IsSpokenFeedbackEnabled())
+    Shell::GetInstance()->accessibility_delegate()->SilenceSpokenFeedback();
 }
 
 void AshTouchExplorationManager::PlayVolumeAdjustEarcon() {
@@ -67,29 +67,30 @@ void AshTouchExplorationManager::PlayVolumeAdjustEarcon() {
     return;
   if (!audio_handler_->IsOutputMuted() &&
       audio_handler_->GetOutputVolumePercent() != 100) {
-    WmShell::Get()->accessibility_delegate()->PlayEarcon(
+    Shell::GetInstance()->accessibility_delegate()->PlayEarcon(
         chromeos::SOUND_VOLUME_ADJUST);
   }
 }
 
 void AshTouchExplorationManager::PlayPassthroughEarcon() {
-  WmShell::Get()->accessibility_delegate()->PlayEarcon(
+  Shell::GetInstance()->accessibility_delegate()->PlayEarcon(
       chromeos::SOUND_PASSTHROUGH);
 }
 
 void AshTouchExplorationManager::PlayExitScreenEarcon() {
-  WmShell::Get()->accessibility_delegate()->PlayEarcon(
+  Shell::GetInstance()->accessibility_delegate()->PlayEarcon(
       chromeos::SOUND_EXIT_SCREEN);
 }
 
 void AshTouchExplorationManager::PlayEnterScreenEarcon() {
-  WmShell::Get()->accessibility_delegate()->PlayEarcon(
+  Shell::GetInstance()->accessibility_delegate()->PlayEarcon(
       chromeos::SOUND_ENTER_SCREEN);
 }
 
 void AshTouchExplorationManager::HandleAccessibilityGesture(
     ui::AXGesture gesture) {
-  WmShell::Get()->accessibility_delegate()->HandleAccessibilityGesture(gesture);
+  Shell::GetInstance()->accessibility_delegate()->HandleAccessibilityGesture(
+      gesture);
 }
 
 void AshTouchExplorationManager::OnDisplayMetricsChanged(
@@ -102,13 +103,15 @@ void AshTouchExplorationManager::OnDisplayMetricsChanged(
 
 void AshTouchExplorationManager::PlaySpokenFeedbackToggleCountdown(
     int tick_count) {
-  AccessibilityDelegate* delegate = WmShell::Get()->accessibility_delegate();
+  AccessibilityDelegate* delegate =
+      Shell::GetInstance()->accessibility_delegate();
   if (delegate->ShouldToggleSpokenFeedbackViaTouch())
     delegate->PlaySpokenFeedbackToggleCountdown(tick_count);
 }
 
 void AshTouchExplorationManager::ToggleSpokenFeedback() {
-  AccessibilityDelegate* delegate = WmShell::Get()->accessibility_delegate();
+  AccessibilityDelegate* delegate =
+      Shell::GetInstance()->accessibility_delegate();
   if (delegate->ShouldToggleSpokenFeedbackViaTouch())
     delegate->ToggleSpokenFeedback(ash::A11Y_NOTIFICATION_SHOW);
 }
@@ -138,7 +141,7 @@ void AshTouchExplorationManager::UpdateTouchExplorationState() {
       wm::GetActiveWindow()->GetName() == kExoShellSurfaceWindowName;
 
   const bool spoken_feedback_enabled =
-      WmShell::Get()->accessibility_delegate()->IsSpokenFeedbackEnabled();
+      Shell::GetInstance()->accessibility_delegate()->IsSpokenFeedbackEnabled();
 
   if (!touch_accessibility_enabler_) {
     // Always enable gesture to toggle spoken feedback.
@@ -159,7 +162,7 @@ void AshTouchExplorationManager::UpdateTouchExplorationState() {
                                        .work_area();
       touch_exploration_controller_->SetExcludeBounds(work_area);
       SilenceSpokenFeedback();
-      WmShell::Get()->accessibility_delegate()->ClearFocusHighlight();
+      Shell::GetInstance()->accessibility_delegate()->ClearFocusHighlight();
     } else {
       touch_exploration_controller_->SetExcludeBounds(gfx::Rect());
     }

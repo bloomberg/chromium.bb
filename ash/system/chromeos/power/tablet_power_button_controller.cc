@@ -222,7 +222,7 @@ void TabletPowerButtonController::SetDisplayForcedOff(bool forced_off) {
   delegate->UpdateTouchscreenStatusFromPrefs();
 
   // Send an a11y alert.
-  WmShell::Get()->accessibility_delegate()->TriggerAccessibilityAlert(
+  Shell::GetInstance()->accessibility_delegate()->TriggerAccessibilityAlert(
       forced_off ? A11Y_ALERT_SCREEN_OFF : A11Y_ALERT_SCREEN_ON);
 }
 

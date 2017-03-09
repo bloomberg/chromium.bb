@@ -25,6 +25,7 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/resources/grit/ash_resources.h"
 #include "ash/root_window_controller.h"
+#include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
@@ -470,7 +471,7 @@ void ImeMenuTray::ShowKeyboardWithKeyset(const std::string& keyset) {
   }
 
   AccessibilityDelegate* accessibility_delegate =
-      WmShell::Get()->accessibility_delegate();
+      Shell::GetInstance()->accessibility_delegate();
   // Fails to show the keyboard.
   if (accessibility_delegate->IsVirtualKeyboardEnabled())
     return;
@@ -503,8 +504,9 @@ bool ImeMenuTray::ShouldShowEmojiHandwritingVoiceButtons() const {
 }
 
 bool ImeMenuTray::ShouldShowKeyboardToggle() const {
-  return keyboard_suppressed_ &&
-         !WmShell::Get()->accessibility_delegate()->IsVirtualKeyboardEnabled();
+  return keyboard_suppressed_ && !Shell::GetInstance()
+                                      ->accessibility_delegate()
+                                      ->IsVirtualKeyboardEnabled();
 }
 
 void ImeMenuTray::SetShelfAlignment(ShelfAlignment alignment) {
@@ -626,7 +628,8 @@ void ImeMenuTray::OnKeyboardHidden() {
   if (!force_show_keyboard_)
     return;
 
-  WmShell::Get()->accessibility_delegate()->SetVirtualKeyboardEnabled(false);
+  Shell::GetInstance()->accessibility_delegate()->SetVirtualKeyboardEnabled(
+      false);
   force_show_keyboard_ = false;
 }
 

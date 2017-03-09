@@ -1,6 +1,5 @@
 include_rules = [
   "+components/prefs",
-  "+components/ui_devtools",
   "+mojo/public/cpp",
   "+services/preferences/public",
   "+ui",

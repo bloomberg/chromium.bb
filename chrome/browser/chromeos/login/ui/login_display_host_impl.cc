@@ -561,7 +561,9 @@ void LoginDisplayHostImpl::Finalize() {
   // See crbug.com/541864.
   if (ash::WmShell::HasInstance() &&
       finalize_animation_type_ != ANIMATION_ADD_USER) {
-    ash::WmShell::Get()->wallpaper_controller()->MoveToUnlockedContainer();
+    ash::Shell::GetInstance()
+        ->wallpaper_controller()
+        ->MoveToUnlockedContainer();
   }
 
   switch (finalize_animation_type_) {
@@ -685,7 +687,7 @@ void LoginDisplayHostImpl::StartUserAdding(
         ash::kShellWindowId_LockScreenContainersContainer);
     lock_container->layer()->SetOpacity(1.0);
 
-    ash::WmShell::Get()->wallpaper_controller()->MoveToLockedContainer();
+    ash::Shell::GetInstance()->wallpaper_controller()->MoveToLockedContainer();
   } else {
     NOTIMPLEMENTED();
   }
@@ -948,7 +950,9 @@ void LoginDisplayHostImpl::Observe(
     if (!ash_util::IsRunningInMash()) {
       // For new user, move wallpaper to lock container so that windows created
       // during the user image picker step are below it.
-      ash::WmShell::Get()->wallpaper_controller()->MoveToLockedContainer();
+      ash::Shell::GetInstance()
+          ->wallpaper_controller()
+          ->MoveToLockedContainer();
     } else {
       NOTIMPLEMENTED();
     }
@@ -1118,7 +1122,9 @@ void LoginDisplayHostImpl::ShutdownDisplayHost(bool post_quit_task) {
   if (ash::Shell::HasInstance() &&
       finalize_animation_type_ == ANIMATION_ADD_USER) {
     if (!ash_util::IsRunningInMash()) {
-      ash::WmShell::Get()->wallpaper_controller()->MoveToUnlockedContainer();
+      ash::Shell::GetInstance()
+          ->wallpaper_controller()
+          ->MoveToUnlockedContainer();
     } else {
       NOTIMPLEMENTED();
     }

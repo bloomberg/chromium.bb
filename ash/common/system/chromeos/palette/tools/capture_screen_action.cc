@@ -6,8 +6,8 @@
 
 #include "ash/common/palette_delegate.h"
 #include "ash/common/system/chromeos/palette/palette_ids.h"
-#include "ash/common/wm_shell.h"
 #include "ash/resources/vector_icons/vector_icons.h"
+#include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -31,7 +31,7 @@ void CaptureScreenAction::OnEnable() {
 
   delegate()->DisableTool(GetToolId());
   delegate()->HidePaletteImmediately();
-  WmShell::Get()->palette_delegate()->TakeScreenshot();
+  Shell::GetInstance()->palette_delegate()->TakeScreenshot();
 }
 
 views::View* CaptureScreenAction::CreateView() {

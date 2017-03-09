@@ -34,7 +34,7 @@ class ToastManagerTest : public test::AshTestBase {
   void SetUp() override {
     test::AshTestBase::SetUp();
 
-    manager_ = WmShell::Get()->toast_manager();
+    manager_ = Shell::GetInstance()->toast_manager();
 
     manager_->ResetSerialForTesting();
     EXPECT_EQ(0, GetToastSerial());

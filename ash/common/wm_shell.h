@@ -16,7 +16,6 @@
 #include "ash/common/session/session_state_observer.h"
 #include "ash/common/wm/lock_state_observer.h"
 #include "base/observer_list.h"
-#include "components/ui_devtools/devtools_server.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/compositor/layer_type.h"
 #include "ui/wm/public/activation_change_observer.h"
@@ -24,10 +23,6 @@
 
 namespace app_list {
 class AppList;
-}
-
-namespace base {
-class SequencedWorkerPool;
 }
 
 namespace display {
@@ -51,7 +46,6 @@ enum class PointerWatcherEventTypes;
 
 namespace ash {
 class AcceleratorController;
-class AccessibilityDelegate;
 class BrightnessControlDelegate;
 class CastConfigController;
 class FocusCycler;
@@ -66,7 +60,6 @@ class MaximizeModeController;
 class MediaController;
 class MruWindowTracker;
 class NewWindowController;
-class PaletteDelegate;
 class RootWindowController;
 class ScopedDisableInternalMouseAndKeyboard;
 class SessionController;
@@ -81,9 +74,7 @@ class ShutdownController;
 class SystemTrayDelegate;
 class SystemTrayController;
 class SystemTrayNotifier;
-class ToastManager;
 class VpnList;
-class WallpaperController;
 class WallpaperDelegate;
 class WindowCycleController;
 class WindowCycleEventFilter;
@@ -112,17 +103,12 @@ class ASH_EXPORT WmShell : public SessionStateObserver {
   static WmShell* Get();
   static bool HasInstance() { return instance_ != nullptr; }
 
-  virtual void Initialize(const scoped_refptr<base::SequencedWorkerPool>& pool);
   virtual void Shutdown();
 
   ShellDelegate* delegate() { return delegate_.get(); }
 
   AcceleratorController* accelerator_controller() {
     return accelerator_controller_.get();
-  }
-
-  AccessibilityDelegate* accessibility_delegate() {
-    return accessibility_delegate_.get();
   }
 
   app_list::AppList* app_list() { return app_list_.get(); }
@@ -161,8 +147,6 @@ class ASH_EXPORT WmShell : public SessionStateObserver {
     return new_window_controller_.get();
   }
 
-  PaletteDelegate* palette_delegate() { return palette_delegate_.get(); }
-
   preferences::PrefClientStore* pref_store() { return pref_store_.get(); }
 
   SessionController* session_controller() { return session_controller_.get(); }
@@ -189,13 +173,7 @@ class ASH_EXPORT WmShell : public SessionStateObserver {
     return system_tray_delegate_.get();
   }
 
-  ToastManager* toast_manager() { return toast_manager_.get(); }
-
   VpnList* vpn_list() { return vpn_list_.get(); }
-
-  WallpaperController* wallpaper_controller() {
-    return wallpaper_controller_.get();
-  }
 
   WallpaperDelegate* wallpaper_delegate() { return wallpaper_delegate_.get(); }
 
@@ -205,10 +183,6 @@ class ASH_EXPORT WmShell : public SessionStateObserver {
 
   WindowSelectorController* window_selector_controller() {
     return window_selector_controller_.get();
-  }
-
-  const scoped_refptr<base::SequencedWorkerPool>& blocking_pool() {
-    return blocking_pool_;
   }
 
   // Returns true when ash is running as a service_manager::Service.
@@ -373,8 +347,6 @@ class ASH_EXPORT WmShell : public SessionStateObserver {
   void RemoveLockStateObserver(LockStateObserver* observer);
 
   void SetShelfDelegateForTesting(std::unique_ptr<ShelfDelegate> test_delegate);
-  void SetPaletteDelegateForTesting(
-      std::unique_ptr<PaletteDelegate> palette_delegate);
 
   // True if any touch points are down.
   virtual bool IsTouchDown() = 0;
@@ -415,8 +387,6 @@ class ASH_EXPORT WmShell : public SessionStateObserver {
   void CreateMruWindowTracker();
   void DeleteMruWindowTracker();
 
-  void DeleteToastManager();
-
   void SetAcceleratorController(
       std::unique_ptr<AcceleratorController> accelerator_controller);
 
@@ -435,7 +405,6 @@ class ASH_EXPORT WmShell : public SessionStateObserver {
   scoped_refptr<preferences::PrefClientStore> pref_store_;
 
   std::unique_ptr<AcceleratorController> accelerator_controller_;
-  std::unique_ptr<AccessibilityDelegate> accessibility_delegate_;
   std::unique_ptr<app_list::AppList> app_list_;
   std::unique_ptr<BrightnessControlDelegate> brightness_control_delegate_;
   std::unique_ptr<CastConfigController> cast_config_;
@@ -450,7 +419,6 @@ class ASH_EXPORT WmShell : public SessionStateObserver {
   std::unique_ptr<MediaController> media_controller_;
   std::unique_ptr<MruWindowTracker> mru_window_tracker_;
   std::unique_ptr<NewWindowController> new_window_controller_;
-  std::unique_ptr<PaletteDelegate> palette_delegate_;
   std::unique_ptr<SessionController> session_controller_;
   std::unique_ptr<ShelfController> shelf_controller_;
   std::unique_ptr<ShelfDelegate> shelf_delegate_;
@@ -459,19 +427,14 @@ class ASH_EXPORT WmShell : public SessionStateObserver {
   std::unique_ptr<SystemTrayController> system_tray_controller_;
   std::unique_ptr<SystemTrayNotifier> system_tray_notifier_;
   std::unique_ptr<SystemTrayDelegate> system_tray_delegate_;
-  std::unique_ptr<ToastManager> toast_manager_;
   std::unique_ptr<VpnList> vpn_list_;
-  std::unique_ptr<WallpaperController> wallpaper_controller_;
   std::unique_ptr<WallpaperDelegate> wallpaper_delegate_;
   std::unique_ptr<WindowCycleController> window_cycle_controller_;
   std::unique_ptr<WindowSelectorController> window_selector_controller_;
-  std::unique_ptr<ui::devtools::UiDevToolsServer> devtools_server_;
 
   base::ObserverList<LockStateObserver> lock_state_observers_;
 
   bool simulate_modal_window_open_for_testing_ = false;
-
-  scoped_refptr<base::SequencedWorkerPool> blocking_pool_;
 };
 
 }  // namespace ash
