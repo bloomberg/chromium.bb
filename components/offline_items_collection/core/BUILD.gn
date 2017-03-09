@@ -2,6 +2,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+if (is_android) {
+  import("//build/config/android/config.gni")
+  import("//build/config/android/rules.gni")
+}
+
 static_library("core") {
   sources = [
     "offline_content_aggregator.cc",
@@ -16,10 +21,23 @@ static_library("core") {
     "offline_item_state.h",
   ]
 
-  deps = [
+  public_deps = [
     "//base",
     "//url",
   ]
+
+  deps = []
+
+  if (is_android) {
+    sources += [
+      "android/offline_content_aggregator_bridge.cc",
+      "android/offline_content_aggregator_bridge.h",
+      "android/offline_item_bridge.cc",
+      "android/offline_item_bridge.h",
+    ]
+
+    deps += [ ":jni_headers" ]
+  }
 }
 
 source_set("unit_tests") {
@@ -34,4 +52,43 @@ source_set("unit_tests") {
     "//base/test:test_support",
     "//components/offline_items_collection/core/test_support",
   ]
+}
+
+if (is_android) {
+  android_library("core_java") {
+    java_files = [
+      "android/java/src/org/chromium/components/offline_items_collection/ContentId.java",
+      "android/java/src/org/chromium/components/offline_items_collection/OfflineContentAggregatorBridge.java",
+      "android/java/src/org/chromium/components/offline_items_collection/OfflineContentProvider.java",
+      "android/java/src/org/chromium/components/offline_items_collection/OfflineItem.java",
+      "android/java/src/org/chromium/components/offline_items_collection/OfflineItemBridge.java",
+    ]
+
+    srcjar_deps = [ ":jni_enums" ]
+
+    deps = [
+      "//base:base_java",
+      "//third_party/android_tools:android_support_annotations_java",
+    ]
+  }
+
+  generate_jni("jni_headers") {
+    visibility = [ ":*" ]
+
+    sources = [
+      "android/java/src/org/chromium/components/offline_items_collection/OfflineContentAggregatorBridge.java",
+      "android/java/src/org/chromium/components/offline_items_collection/OfflineItemBridge.java",
+    ]
+
+    jni_package = "components/offline_items_collection/core/android"
+  }
+
+  java_cpp_enum("jni_enums") {
+    visibility = [ ":*" ]
+
+    sources = [
+      "offline_item_filter.h",
+      "offline_item_state.h",
+    ]
+  }
 }

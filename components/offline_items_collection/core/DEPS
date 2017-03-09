@@ -1,6 +1,7 @@
 include_rules = [
   "+base",
   "+components/offline_pages",
+  "+jni",
   "+testing",
   "+url",
 ]

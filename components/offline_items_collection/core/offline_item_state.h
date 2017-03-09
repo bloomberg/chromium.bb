@@ -8,7 +8,7 @@
 namespace offline_items_collection {
 
 // A Java counterpart will be generated for this enum.
-// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.offline_items_collection.core.item
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.components.offline_items_collection
 enum OfflineItemState {
   IN_PROGRESS = 0,
   COMPLETE,
