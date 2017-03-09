@@ -20,6 +20,8 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.content.browser.AppWebMessagePort;
 import org.chromium.content.browser.MediaSessionImpl;
+import org.chromium.content.browser.framehost.RenderFrameHostDelegate;
+import org.chromium.content.browser.framehost.RenderFrameHostImpl;
 import org.chromium.content_public.browser.AccessibilitySnapshotCallback;
 import org.chromium.content_public.browser.AccessibilitySnapshotNode;
 import org.chromium.content_public.browser.ContentBitmapCallback;
@@ -27,6 +29,7 @@ import org.chromium.content_public.browser.ImageDownloadCallback;
 import org.chromium.content_public.browser.JavaScriptCallback;
 import org.chromium.content_public.browser.MessagePort;
 import org.chromium.content_public.browser.NavigationController;
+import org.chromium.content_public.browser.RenderFrameHost;
 import org.chromium.content_public.browser.SmartClipCallback;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsObserver;
@@ -43,9 +46,9 @@ import java.util.UUID;
  * object.
  */
 @JNINamespace("content")
-//TODO(tedchoc): Remove the package restriction once this class moves to a non-public content
+// TODO(tedchoc): Remove the package restriction once this class moves to a non-public content
 //               package whose visibility will be enforced via DEPS.
-/* package */ class WebContentsImpl implements WebContents {
+/* package */ class WebContentsImpl implements WebContents, RenderFrameHostDelegate {
     private static final String PARCEL_VERSION_KEY = "version";
     private static final String PARCEL_WEBCONTENTS_KEY = "webcontents";
     private static final String PARCEL_PROCESS_GUARD_KEY = "processguard";
@@ -92,8 +95,17 @@ import java.util.UUID;
                 }
             };
 
+    public static WebContents fromRenderFrameHost(RenderFrameHost rfh) {
+        RenderFrameHostDelegate delegate = ((RenderFrameHostImpl) rfh).getRenderFrameHostDelegate();
+        if (delegate == null || !(delegate instanceof WebContents)) {
+            return null;
+        }
+        return (WebContents) delegate;
+    }
+
     private long mNativeWebContentsAndroid;
     private NavigationController mNavigationController;
+    private RenderFrameHost mMainFrame;
 
     // Lazily created proxy observer for handling all Java-based WebContentsObservers.
     private WebContentsObserverProxy mObserverProxy;
@@ -169,6 +181,14 @@ import java.util.UUID;
     @Override
     public NavigationController getNavigationController() {
         return mNavigationController;
+    }
+
+    @Override
+    public RenderFrameHost getMainFrame() {
+        if (mMainFrame == null) {
+            mMainFrame = nativeGetMainFrame(mNativeWebContentsAndroid);
+        }
+        return mMainFrame;
     }
 
     @Override
@@ -562,6 +582,7 @@ import java.util.UUID;
     private static native WebContents nativeFromNativePtr(long webContentsAndroidPtr);
 
     private native WindowAndroid nativeGetTopLevelNativeWindow(long nativeWebContentsAndroid);
+    private native RenderFrameHost nativeGetMainFrame(long nativeWebContentsAndroid);
     private native String nativeGetTitle(long nativeWebContentsAndroid);
     private native String nativeGetVisibleURL(long nativeWebContentsAndroid);
     private native boolean nativeIsLoading(long nativeWebContentsAndroid);
