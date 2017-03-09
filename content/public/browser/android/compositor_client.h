@@ -15,13 +15,8 @@ class CONTENT_EXPORT CompositorClient {
   // Gives the client a chance to update the layer tree host before compositing.
   virtual void UpdateLayerTreeHost() {}
 
-  // The compositor has completed swapping a frame. This is a subset of
-  // DidSwapBuffers and corresponds only to frames where Compositor submits a
-  // new frame.
+  // The compositor has completed swapping a frame.
   virtual void DidSwapFrame(int pending_frames) {}
-
-  // This is called on all swap buffers, regardless of cause.
-  virtual void DidSwapBuffers() {}
 
  protected:
   CompositorClient() {}
