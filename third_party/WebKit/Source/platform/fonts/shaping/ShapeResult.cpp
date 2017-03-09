@@ -181,9 +181,9 @@ size_t ShapeResult::byteSize() const {
   return selfByteSize;
 }
 
-int ShapeResult::offsetForPosition(float targetX,
-                                   bool includePartialGlyphs) const {
-  int charactersSoFar = 0;
+unsigned ShapeResult::offsetForPosition(float targetX,
+                                        bool includePartialGlyphs) const {
+  unsigned charactersSoFar = 0;
   float currentX = 0;
 
   if (rtl()) {
@@ -219,6 +219,49 @@ int ShapeResult::offsetForPosition(float targetX,
   }
 
   return charactersSoFar;
+}
+
+float ShapeResult::positionForOffset(unsigned absoluteOffset) const {
+  float x = 0;
+  float offsetX = 0;
+
+  // The absoluteOffset argument represents the offset for the entire
+  // ShapeResult while offset is continuously updated to be relative to the
+  // current run.
+  unsigned offset = absoluteOffset;
+
+  if (rtl()) {
+    // Convert logical offsets to visual offsets, because results are in
+    // logical order while runs are in visual order.
+    x = m_width;
+    if (offset < numCharacters())
+      offset = numCharacters() - offset - 1;
+    x -= width();
+  }
+
+  for (unsigned i = 0; i < m_runs.size(); i++) {
+    if (!m_runs[i])
+      continue;
+    DCHECK_EQ(rtl(), m_runs[i]->rtl());
+    unsigned numCharacters = m_runs[i]->m_numCharacters;
+
+    if (!offsetX && offset < numCharacters) {
+      offsetX = m_runs[i]->xPositionForVisualOffset(offset, AdjustToEnd) + x;
+      break;
+    }
+
+    offset -= numCharacters;
+    x += m_runs[i]->m_width;
+  }
+
+  if (rtl())
+    x -= width();
+
+  // The position in question might be just after the text.
+  if (!offsetX && absoluteOffset == numCharacters())
+    return rtl() ? 0 : m_width;
+
+  return offsetX;
 }
 
 void ShapeResult::fallbackFonts(

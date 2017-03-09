@@ -265,4 +265,86 @@ TEST_F(HarfBuzzShaperTest, DISABLED_ShapeArabicWithContext) {
   ASSERT_NEAR(combined->width(), first->width() + second->width(), 0.1);
 }
 
+TEST_F(HarfBuzzShaperTest, PositionForOffsetLatin) {
+  String string = to16Bit("Hello World!", 12);
+  TextDirection direction = TextDirection::kLtr;
+
+  HarfBuzzShaper shaper(string.characters16(), 12);
+  RefPtr<ShapeResult> result = shaper.shape(&font, direction);
+  RefPtr<ShapeResult> first = shaper.shape(&font, direction, 0, 5);    // Hello
+  RefPtr<ShapeResult> second = shaper.shape(&font, direction, 6, 11);  // World
+
+  ASSERT_EQ(0.0f, result->positionForOffset(0));
+  ASSERT_NEAR(first->width(), result->positionForOffset(5), 1);
+  ASSERT_NEAR(second->width(),
+              result->positionForOffset(11) - result->positionForOffset(6), 1);
+  ASSERT_NEAR(result->width(), result->positionForOffset(12), 0.1);
+}
+
+TEST_F(HarfBuzzShaperTest, PositionForOffsetArabic) {
+  UChar arabicString[] = {0x628, 0x64A, 0x629};
+  TextDirection direction = TextDirection::kRtl;
+
+  HarfBuzzShaper shaper(arabicString, 3);
+  RefPtr<ShapeResult> result = shaper.shape(&font, direction);
+
+  ASSERT_EQ(0.0f, result->positionForOffset(3));
+  ASSERT_NEAR(result->width(), result->positionForOffset(0), 0.1);
+}
+
+TEST_F(HarfBuzzShaperTest, OffsetForPositionMatchesPositionForOffsetLatin) {
+  String string = to16Bit("Hello World!", 12);
+  TextDirection direction = TextDirection::kLtr;
+
+  HarfBuzzShaper shaper(string.characters16(), 12);
+  RefPtr<ShapeResult> result = shaper.shape(&font, direction);
+
+  // Last argument is includePartialGlyphs
+  ASSERT_EQ(0u, result->offsetForPosition(result->positionForOffset(0), true));
+  ASSERT_EQ(1u, result->offsetForPosition(result->positionForOffset(1), true));
+  ASSERT_EQ(2u, result->offsetForPosition(result->positionForOffset(2), true));
+  ASSERT_EQ(3u, result->offsetForPosition(result->positionForOffset(3), true));
+  ASSERT_EQ(4u, result->offsetForPosition(result->positionForOffset(4), true));
+  ASSERT_EQ(5u, result->offsetForPosition(result->positionForOffset(5), true));
+  ASSERT_EQ(6u, result->offsetForPosition(result->positionForOffset(6), true));
+  ASSERT_EQ(7u, result->offsetForPosition(result->positionForOffset(7), true));
+  ASSERT_EQ(8u, result->offsetForPosition(result->positionForOffset(8), true));
+  ASSERT_EQ(9u, result->offsetForPosition(result->positionForOffset(9), true));
+  ASSERT_EQ(10u,
+            result->offsetForPosition(result->positionForOffset(10), true));
+  ASSERT_EQ(11u,
+            result->offsetForPosition(result->positionForOffset(11), true));
+  ASSERT_EQ(12u,
+            result->offsetForPosition(result->positionForOffset(12), true));
+}
+
+TEST_F(HarfBuzzShaperTest, OffsetForPositionMatchesPositionForOffsetArabic) {
+  UChar arabicString[] = {0x628, 0x64A, 0x629};
+  TextDirection direction = TextDirection::kRtl;
+
+  HarfBuzzShaper shaper(arabicString, 3);
+  RefPtr<ShapeResult> result = shaper.shape(&font, direction);
+
+  // Last argument is includePartialGlyphs
+  ASSERT_EQ(0u, result->offsetForPosition(result->positionForOffset(0), true));
+  ASSERT_EQ(1u, result->offsetForPosition(result->positionForOffset(1), true));
+  ASSERT_EQ(2u, result->offsetForPosition(result->positionForOffset(2), true));
+  ASSERT_EQ(3u, result->offsetForPosition(result->positionForOffset(3), true));
+}
+
+TEST_F(HarfBuzzShaperTest, OffsetForPositionMatchesPositionForOffsetMixed) {
+  UChar mixedString[] = {0x628, 0x64A, 0x629, 0xE20, 0x65E5, 0x62};
+  HarfBuzzShaper shaper(mixedString, 6);
+  RefPtr<ShapeResult> result = shaper.shape(&font, TextDirection::kLtr);
+
+  // Last argument is includePartialGlyphs
+  ASSERT_EQ(0u, result->offsetForPosition(result->positionForOffset(0), true));
+  ASSERT_EQ(1u, result->offsetForPosition(result->positionForOffset(1), true));
+  ASSERT_EQ(2u, result->offsetForPosition(result->positionForOffset(2), true));
+  ASSERT_EQ(3u, result->offsetForPosition(result->positionForOffset(3), true));
+  ASSERT_EQ(4u, result->offsetForPosition(result->positionForOffset(4), true));
+  ASSERT_EQ(5u, result->offsetForPosition(result->positionForOffset(5), true));
+  ASSERT_EQ(6u, result->offsetForPosition(result->positionForOffset(6), true));
+}
+
 }  // namespace blink

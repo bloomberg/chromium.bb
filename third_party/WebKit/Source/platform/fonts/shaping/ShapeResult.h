@@ -75,7 +75,8 @@ class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
   // For memory reporting.
   size_t byteSize() const;
 
-  int offsetForPosition(float targetX, bool includePartialGlyphs) const;
+  unsigned offsetForPosition(float targetX, bool includePartialGlyphs) const;
+  float positionForOffset(unsigned offset) const;
 
   PassRefPtr<ShapeResult> applySpacingToCopy(ShapeResultSpacing&,
                                              const TextRun&) const;
