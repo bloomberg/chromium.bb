@@ -22,11 +22,19 @@
 #include "aom_ports/mem.h"
 
 const sgr_params_type sgr_params[SGRPROJ_PARAMS] = {
+#if USE_HIGHPASS_IN_SGRPROJ
+  // corner, edge, r2, eps2
+  { -1, 2, 1, 1 }, { -1, 2, 1, 2 }, { -1, 2, 1, 3 }, { -1, 2, 1, 4 },
+  { -1, 2, 1, 5 }, { -2, 3, 1, 2 }, { -2, 3, 1, 3 }, { -2, 3, 1, 4 },
+  { -2, 3, 1, 5 }, { -2, 3, 1, 6 }, { -3, 4, 1, 3 }, { -3, 4, 1, 4 },
+  { -3, 4, 1, 5 }, { -3, 4, 1, 6 }, { -3, 4, 1, 7 }, { -3, 4, 1, 8 }
+#else
   // r1, eps1, r2, eps2
   { 2, 12, 1, 4 },  { 2, 15, 1, 6 },  { 2, 18, 1, 8 },  { 2, 20, 1, 9 },
   { 2, 22, 1, 10 }, { 2, 25, 1, 11 }, { 2, 35, 1, 12 }, { 2, 45, 1, 13 },
   { 2, 55, 1, 14 }, { 2, 65, 1, 15 }, { 2, 75, 1, 16 }, { 3, 30, 1, 10 },
   { 3, 50, 1, 12 }, { 3, 50, 2, 25 }, { 3, 60, 2, 35 }, { 3, 70, 2, 45 },
+#endif
 };
 
 typedef void (*restore_func_type)(uint8_t *data8, int width, int height,
@@ -518,7 +526,7 @@ static void boxnum(int width, int height, int r, int8_t *num, int num_stride) {
 }
 
 void decode_xq(int *xqd, int *xq) {
-  xq[0] = -xqd[0];
+  xq[0] = xqd[0];
   xq[1] = (1 << SGRPROJ_PRJ_BITS) - xq[0] - xqd[1];
 }
 
@@ -742,6 +750,108 @@ void av1_selfguided_restoration_c(uint8_t *dgd, int width, int height,
                                       tmpbuf);
 }
 
+#if USE_HIGHPASS_IN_SGRPROJ
+void av1_highpass_filter_internal(int32_t *A, int width, int height, int stride,
+                                  int corner, int edge, int32_t *tmpbuf) {
+  const int center = (1 << SGRPROJ_RST_BITS) - 4 * (corner + edge);
+  int i, j;
+  int buf_stride = ((width + 3) & ~3) + 16;
+
+  i = 0;
+  j = 0;
+  {
+    const int k = i * stride + j;
+    const int l = i * buf_stride + j;
+    tmpbuf[l] = center * A[k] + edge * (A[k + 1] + A[k + stride] + A[k] * 2) +
+                corner * (A[k + stride + 1] + A[k + 1] + A[k + stride] + A[k]);
+  }
+  i = 0;
+  j = width - 1;
+  {
+    const int k = i * stride + j;
+    const int l = i * buf_stride + j;
+    tmpbuf[l] = center * A[k] + edge * (A[k - 1] + A[k + stride] + A[k] * 2) +
+                corner * (A[k + stride - 1] + A[k - 1] + A[k + stride] + A[k]);
+  }
+  i = height - 1;
+  j = 0;
+  {
+    const int k = i * stride + j;
+    const int l = i * buf_stride + j;
+    tmpbuf[l] = center * A[k] + edge * (A[k + 1] + A[k - stride] + A[k] * 2) +
+                corner * (A[k - stride + 1] + A[k + 1] + A[k - stride] + A[k]);
+  }
+  i = height - 1;
+  j = width - 1;
+  {
+    const int k = i * stride + j;
+    const int l = i * buf_stride + j;
+    tmpbuf[l] = center * A[k] + edge * (A[k - 1] + A[k - stride] + A[k] * 2) +
+                corner * (A[k - stride - 1] + A[k - 1] + A[k - stride] + A[k]);
+  }
+  i = 0;
+  for (j = 1; j < width - 1; ++j) {
+    const int k = i * stride + j;
+    const int l = i * buf_stride + j;
+    tmpbuf[l] =
+        center * A[k] + edge * (A[k - 1] + A[k + stride] + A[k + 1] + A[k]) +
+        corner * (A[k + stride - 1] + A[k + stride + 1] + A[k - 1] + A[k + 1]);
+  }
+  i = height - 1;
+  for (j = 1; j < width - 1; ++j) {
+    const int k = i * stride + j;
+    const int l = i * buf_stride + j;
+    tmpbuf[l] =
+        center * A[k] + edge * (A[k - 1] + A[k - stride] + A[k + 1] + A[k]) +
+        corner * (A[k - stride - 1] + A[k - stride + 1] + A[k - 1] + A[k + 1]);
+  }
+  j = 0;
+  for (i = 1; i < height - 1; ++i) {
+    const int k = i * stride + j;
+    const int l = i * buf_stride + j;
+    tmpbuf[l] = center * A[k] +
+                edge * (A[k - stride] + A[k + 1] + A[k + stride] + A[k]) +
+                corner * (A[k + stride + 1] + A[k - stride + 1] +
+                          A[k - stride] + A[k + stride]);
+  }
+  j = width - 1;
+  for (i = 1; i < height - 1; ++i) {
+    const int k = i * stride + j;
+    const int l = i * buf_stride + j;
+    tmpbuf[l] = center * A[k] +
+                edge * (A[k - stride] + A[k - 1] + A[k + stride] + A[k]) +
+                corner * (A[k + stride - 1] + A[k - stride - 1] +
+                          A[k - stride] + A[k + stride]);
+  }
+  for (i = 1; i < height - 1; ++i) {
+    for (j = 1; j < width - 1; ++j) {
+      const int k = i * stride + j;
+      const int l = i * buf_stride + j;
+      tmpbuf[l] = center * A[k] +
+                  edge * (A[k - stride] + A[k - 1] + A[k + stride] + A[k + 1]) +
+                  corner * (A[k + stride - 1] + A[k - stride - 1] +
+                            A[k - stride + 1] + A[k + stride + 1]);
+    }
+  }
+  for (i = 0; i < height; ++i) {
+    memcpy(A + stride * i, tmpbuf + buf_stride * i, sizeof(*A) * width);
+  }
+}
+
+void av1_highpass_filter_c(uint8_t *dgd, int width, int height, int stride,
+                           int32_t *dst, int dst_stride, int corner, int edge,
+                           int32_t *tmpbuf) {
+  int i, j;
+  for (i = 0; i < height; ++i) {
+    for (j = 0; j < width; ++j) {
+      dst[i * dst_stride + j] = dgd[i * stride + j];
+    }
+  }
+  av1_highpass_filter_internal(dst, width, height, dst_stride, corner, edge,
+                               tmpbuf);
+}
+#endif  // USE_HIGHPASS_IN_SGRPROJ
+
 void apply_selfguided_restoration_c(uint8_t *dat, int width, int height,
                                     int stride, int eps, int *xqd, uint8_t *dst,
                                     int dst_stride, int32_t *tmpbuf) {
@@ -751,8 +861,13 @@ void apply_selfguided_restoration_c(uint8_t *dat, int width, int height,
   int32_t *tmpbuf2 = flt2 + RESTORATION_TILEPELS_MAX;
   int i, j;
   assert(width * height <= RESTORATION_TILEPELS_MAX);
+#if USE_HIGHPASS_IN_SGRPROJ
+  av1_highpass_filter_c(dat, width, height, stride, flt1, width,
+                        sgr_params[eps].corner, sgr_params[eps].edge, tmpbuf2);
+#else
   av1_selfguided_restoration_c(dat, width, height, stride, flt1, width,
                                sgr_params[eps].r1, sgr_params[eps].e1, tmpbuf2);
+#endif  // USE_HIGHPASS_IN_SGRPROJ
   av1_selfguided_restoration_c(dat, width, height, stride, flt2, width,
                                sgr_params[eps].r2, sgr_params[eps].e2, tmpbuf2);
   decode_xq(xqd, xq);
@@ -924,6 +1039,19 @@ void av1_selfguided_restoration_highbd_c(uint16_t *dgd, int width, int height,
                                       r, eps, tmpbuf);
 }
 
+void av1_highpass_filter_highbd_c(uint16_t *dgd, int width, int height,
+                                  int stride, int32_t *dst, int dst_stride,
+                                  int corner, int edge, int32_t *tmpbuf) {
+  int i, j;
+  for (i = 0; i < height; ++i) {
+    for (j = 0; j < width; ++j) {
+      dst[i * dst_stride + j] = dgd[i * stride + j];
+    }
+  }
+  av1_highpass_filter_internal(dst, width, height, dst_stride, corner, edge,
+                               tmpbuf);
+}
+
 void apply_selfguided_restoration_highbd_c(uint16_t *dat, int width, int height,
                                            int stride, int bit_depth, int eps,
                                            int *xqd, uint16_t *dst,
@@ -934,9 +1062,15 @@ void apply_selfguided_restoration_highbd_c(uint16_t *dat, int width, int height,
   int32_t *tmpbuf2 = flt2 + RESTORATION_TILEPELS_MAX;
   int i, j;
   assert(width * height <= RESTORATION_TILEPELS_MAX);
+#if USE_HIGHPASS_IN_SGRPROJ
+  av1_highpass_filter_highbd_c(dat, width, height, stride, flt1, width,
+                               sgr_params[eps].corner, sgr_params[eps].edge,
+                               tmpbuf2);
+#else
   av1_selfguided_restoration_highbd_c(dat, width, height, stride, flt1, width,
                                       bit_depth, sgr_params[eps].r1,
                                       sgr_params[eps].e1, tmpbuf2);
+#endif  // USE_HIGHPASS_IN_SGRPROJ
   av1_selfguided_restoration_highbd_c(dat, width, height, stride, flt2, width,
                                       bit_depth, sgr_params[eps].r2,
                                       sgr_params[eps].e2, tmpbuf2);

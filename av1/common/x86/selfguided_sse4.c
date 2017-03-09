@@ -893,9 +893,14 @@ void apply_selfguided_restoration_sse4_1(uint8_t *dat, int width, int height,
   int32_t *tmpbuf2 = flt2 + RESTORATION_TILEPELS_MAX;
   int i, j;
   assert(width * height <= RESTORATION_TILEPELS_MAX);
-  av1_selfguided_restoration_sse4_1(dat, width, height, stride, flt1, width,
-                                    sgr_params[eps].r1, sgr_params[eps].e1,
-                                    tmpbuf2);
+#if USE_HIGHPASS_IN_SGRPROJ
+  av1_highpass_filter_c(dat, width, height, stride, flt1, width,
+                        sgr_params[eps].corner, sgr_params[eps].edge, tmpbuf2);
+#else
+    av1_selfguided_restoration_sse4_1(dat, width, height, stride, flt1, width,
+                                      sgr_params[eps].r1, sgr_params[eps].e1,
+                                      tmpbuf2);
+#endif  // USE_HIGHPASS_IN_SGRPROJ
   av1_selfguided_restoration_sse4_1(dat, width, height, stride, flt2, width,
                                     sgr_params[eps].r2, sgr_params[eps].e2,
                                     tmpbuf2);
@@ -1431,9 +1436,15 @@ void apply_selfguided_restoration_highbd_sse4_1(
   int32_t *tmpbuf2 = flt2 + RESTORATION_TILEPELS_MAX;
   int i, j;
   assert(width * height <= RESTORATION_TILEPELS_MAX);
+#if USE_HIGHPASS_IN_SGRPROJ
+  av1_highpass_filter_highbd_c(dat, width, height, stride, flt1, width,
+                               sgr_params[eps].corner, sgr_params[eps].edge,
+                               tmpbuf2);
+#else
   av1_selfguided_restoration_highbd_sse4_1(dat, width, height, stride, flt1,
                                            width, bit_depth, sgr_params[eps].r1,
                                            sgr_params[eps].e1, tmpbuf2);
+#endif  // USE_HIGHPASS_IN_SGRPROJ
   av1_selfguided_restoration_highbd_sse4_1(dat, width, height, stride, flt2,
                                            width, bit_depth, sgr_params[eps].r2,
                                            sgr_params[eps].e2, tmpbuf2);

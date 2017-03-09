@@ -218,8 +218,9 @@ static void get_proj_subspace(uint8_t *src8, int width, int height,
   double x[2];
   const int size = width * height;
 
-  xq[0] = -(1 << SGRPROJ_PRJ_BITS) / 4;
-  xq[1] = (1 << SGRPROJ_PRJ_BITS) - xq[0];
+  // Default
+  xq[0] = 0;
+  xq[1] = 0;
   if (bit_depth == 8) {
     const uint8_t *src = src8;
     const uint8_t *dat = dat8;
@@ -270,9 +271,9 @@ static void get_proj_subspace(uint8_t *src8, int width, int height,
 }
 
 void encode_xq(int *xq, int *xqd) {
-  xqd[0] = -xq[0];
+  xqd[0] = xq[0];
   xqd[0] = clamp(xqd[0], SGRPROJ_PRJ_MIN0, SGRPROJ_PRJ_MAX0);
-  xqd[1] = (1 << SGRPROJ_PRJ_BITS) + xqd[0] - xq[1];
+  xqd[1] = (1 << SGRPROJ_PRJ_BITS) - xqd[0] - xq[1];
   xqd[1] = clamp(xqd[1], SGRPROJ_PRJ_MIN1, SGRPROJ_PRJ_MAX1);
 }
 
@@ -292,16 +293,27 @@ static void search_selfguided_restoration(uint8_t *dat8, int width, int height,
 #if CONFIG_AOM_HIGHBITDEPTH
     if (bit_depth > 8) {
       uint16_t *dat = CONVERT_TO_SHORTPTR(dat8);
+#if USE_HIGHPASS_IN_SGRPROJ
+      av1_highpass_filter_highbd(dat, width, height, dat_stride, flt1, width,
+                                 sgr_params[ep].corner, sgr_params[ep].edge,
+                                 tmpbuf2);
+#else
       av1_selfguided_restoration_highbd(dat, width, height, dat_stride, flt1,
                                         width, bit_depth, sgr_params[ep].r1,
                                         sgr_params[ep].e1, tmpbuf2);
+#endif  // USE_HIGHPASS_IN_SGRPROJ
       av1_selfguided_restoration_highbd(dat, width, height, dat_stride, flt2,
                                         width, bit_depth, sgr_params[ep].r2,
                                         sgr_params[ep].e2, tmpbuf2);
     } else {
 #endif
-      av1_selfguided_restoration(dat8, width, height, dat_stride, flt1, width,
-                                 sgr_params[ep].r1, sgr_params[ep].e1, tmpbuf2);
+#if USE_HIGHPASS_IN_SGRPROJ
+      av1_highpass_filter(dat8, width, height, dat_stride, flt1, width,
+                          sgr_params[ep].corner, sgr_params[ep].edge, tmpbuf2);
+#else
+    av1_selfguided_restoration(dat8, width, height, dat_stride, flt1, width,
+                               sgr_params[ep].r1, sgr_params[ep].e1, tmpbuf2);
+#endif  // USE_HIGHPASS_IN_SGRPROJ
       av1_selfguided_restoration(dat8, width, height, dat_stride, flt2, width,
                                  sgr_params[ep].r2, sgr_params[ep].e2, tmpbuf2);
 #if CONFIG_AOM_HIGHBITDEPTH
