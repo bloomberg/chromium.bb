@@ -1912,9 +1912,6 @@ const CSSValue* CSSPropertyParser::parseSingleValue(
       return CSSPropertyFontUtils::consumeFontFamily(m_range);
     case CSSPropertyFontWeight:
       return CSSPropertyFontUtils::consumeFontWeight(m_range);
-    case CSSPropertyFontSize:
-      return CSSPropertyFontUtils::consumeFontSize(m_range, m_context->mode(),
-                                                   UnitlessQuirk::Allow);
     case CSSPropertyLineHeight:
       return CSSPropertyFontUtils::consumeLineHeight(m_range,
                                                      m_context->mode());

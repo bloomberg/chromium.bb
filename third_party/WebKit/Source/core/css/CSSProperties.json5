@@ -353,6 +353,8 @@
     },
     {
       name: "font-size",
+      api_class: true,
+      api_methods: ["parseSingleValue"],
       converter: "convertFontSize",
       font: true,
       getter: "getSize",
