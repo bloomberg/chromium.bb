@@ -232,8 +232,9 @@ void SchedulingRemoteSuggestionsProvider::OnProviderDeactivated() {
 }
 
 void SchedulingRemoteSuggestionsProvider::OnSuggestionsCleared() {
-  // There are no suggestions, be as eager to fetch as possible.
-  ClearLastFetchAttemptTime();
+  // Some user action causes suggestions to be cleared, fetch now (as an
+  // interactive request).
+  ReloadSuggestions();
 }
 
 void SchedulingRemoteSuggestionsProvider::OnHistoryCleared() {

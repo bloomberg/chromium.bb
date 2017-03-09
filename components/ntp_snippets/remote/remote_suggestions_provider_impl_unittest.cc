@@ -1758,9 +1758,14 @@ TEST_F(RemoteSuggestionsProviderImplTest, CallsSchedulerWhenDisabled) {
   // The provider is not initialized yet, no callback should be called yet.
   service->SetRemoteSuggestionsScheduler(&scheduler);
 
-  // Should be called when becoming disabled.
-  EXPECT_CALL(scheduler, OnProviderDeactivated());
-  EXPECT_CALL(scheduler, OnSuggestionsCleared());
+  // Should be called when becoming disabled. First deactivate and only after
+  // that clear the suggestions so that they are not fetched again.
+  {
+    InSequence s;
+    EXPECT_CALL(scheduler, OnProviderDeactivated());
+    ASSERT_THAT(service->ready(), Eq(false));
+    EXPECT_CALL(scheduler, OnSuggestionsCleared());
+  }
   service->EnterState(RemoteSuggestionsProviderImpl::State::DISABLED);
 }
 

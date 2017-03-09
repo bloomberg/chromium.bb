@@ -1048,6 +1048,7 @@ void RemoteSuggestionsProviderImpl::EnterState(State state) {
 
       DVLOG(1) << "Entering state: READY";
       state_ = State::READY;
+      NotifyStateChanged();
       EnterStateReady();
       break;
 
@@ -1055,13 +1056,21 @@ void RemoteSuggestionsProviderImpl::EnterState(State state) {
       DCHECK(state_ == State::NOT_INITED || state_ == State::READY);
 
       DVLOG(1) << "Entering state: DISABLED";
+      // TODO(jkrcal): Fix the fragility of the following code. Currently, it is
+      // important that we first change the state and notify the scheduler (as
+      // it will update its state) and only at last we EnterStateDisabled()
+      // which clears suggestions. Clearing suggestions namely notifies the
+      // scheduler to fetch them again, which is ignored because the scheduler
+      // is disabled. crbug/695447
       state_ = State::DISABLED;
+      NotifyStateChanged();
       EnterStateDisabled();
       break;
 
     case State::ERROR_OCCURRED:
       DVLOG(1) << "Entering state: ERROR_OCCURRED";
       state_ = State::ERROR_OCCURRED;
+      NotifyStateChanged();
       EnterStateError();
       break;
 
@@ -1069,8 +1078,6 @@ void RemoteSuggestionsProviderImpl::EnterState(State state) {
       NOTREACHED();
       break;
   }
-
-  NotifyStateChanged();
 }
 
 void RemoteSuggestionsProviderImpl::NotifyStateChanged() {

@@ -663,7 +663,7 @@ TEST_F(SchedulingRemoteSuggestionsProviderTest,
 }
 
 TEST_F(SchedulingRemoteSuggestionsProviderTest,
-       ShouldAllowImmediateFetchingAfterSuggestionsCleared) {
+       ShouldImmediatelyFetchAfterSuggestionsCleared) {
   RemoteSuggestionsProvider::FetchStatusCallback signal_fetch_done;
 
   // First enable the scheduler -- this will trigger the persistent scheduling.
@@ -678,11 +678,9 @@ TEST_F(SchedulingRemoteSuggestionsProviderTest,
   EXPECT_CALL(persistent_scheduler_, Schedule(_, _));
   signal_fetch_done.Run(Status::Success());
 
-  // Clear the suggestions.
+  // Clear the suggestions - results in an immediate fetch.
+  EXPECT_CALL(*underlying_provider_, ReloadSuggestions());
   scheduling_provider_->OnSuggestionsCleared();
-  // Another trigger right after results in a fetch again.
-  EXPECT_CALL(*underlying_provider_, RefetchInTheBackground(_));
-  scheduling_provider_->OnBrowserForegrounded();
 }
 
 TEST_F(SchedulingRemoteSuggestionsProviderTest,
