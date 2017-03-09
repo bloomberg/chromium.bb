@@ -42,8 +42,6 @@
 #include "chrome/browser/ui/views/location_bar/keyword_hint_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_layout.h"
 #include "chrome/browser/ui/views/location_bar/location_icon_view.h"
-#include "chrome/browser/ui/views/location_bar/page_action_image_view.h"
-#include "chrome/browser/ui/views/location_bar/page_action_with_badge_view.h"
 #include "chrome/browser/ui/views/location_bar/selected_keyword_view.h"
 #include "chrome/browser/ui/views/location_bar/star_view.h"
 #include "chrome/browser/ui/views/location_bar/zoom_bubble_view.h"
@@ -133,8 +131,7 @@ LocationBarView::LocationBarView(Browser* browser,
       size_animation_(this),
       is_popup_mode_(is_popup_mode),
       show_focus_rect_(false),
-      template_url_service_(NULL),
-      web_contents_null_at_last_refresh_(true) {
+      template_url_service_(NULL) {
   edit_bookmarks_enabled_.Init(
       bookmarks::prefs::kEditBookmarksEnabled, profile->GetPrefs(),
       base::Bind(&LocationBarView::UpdateWithoutTabRestore,
@@ -330,16 +327,6 @@ void LocationBarView::ZoomChangedForActiveTab(bool can_show_bubble) {
     ZoomBubbleView::ShowBubble(web_contents, ZoomBubbleView::AUTOMATIC);
 }
 
-PageActionWithBadgeView* LocationBarView::GetPageActionView(
-    ExtensionAction* page_action) {
-  DCHECK(page_action);
-  for (const auto& action_view : page_action_views_) {
-    if (action_view->image_view()->extension_action() == page_action)
-      return action_view.get();
-  }
-  return nullptr;
-}
-
 void LocationBarView::SetStarToggled(bool on) {
   if (star_view_)
     star_view_->SetToggled(on);
@@ -452,8 +439,6 @@ gfx::Size LocationBarView::GetPreferredSize() const {
                     IncrementalMinimumWidth(save_credit_card_icon_view_) +
                     IncrementalMinimumWidth(manage_passwords_icon_view_) +
                     IncrementalMinimumWidth(zoom_view_);
-  for (const auto& action_view : page_action_views_)
-    trailing_width += IncrementalMinimumWidth(action_view.get());
   for (auto i = content_setting_views_.begin();
        i != content_setting_views_.end(); ++i) {
     trailing_width += IncrementalMinimumWidth((*i));
@@ -535,12 +520,6 @@ void LocationBarView::Layout() {
   if (manage_passwords_icon_view_->visible()) {
     trailing_decorations.AddDecoration(vertical_padding, location_height,
                                        manage_passwords_icon_view_);
-  }
-  for (const auto& action_view : page_action_views_) {
-    if (action_view->visible()) {
-      trailing_decorations.AddDecoration(vertical_padding, location_height,
-                                         action_view.get());
-    }
   }
   if (zoom_view_->visible()) {
     trailing_decorations.AddDecoration(vertical_padding, location_height,
@@ -625,7 +604,6 @@ void LocationBarView::OnNativeThemeChanged(const ui::NativeTheme* theme) {
 void LocationBarView::Update(const WebContents* contents) {
   RefreshContentSettingViews();
   RefreshZoomView();
-  RefreshPageActionViews();
   RefreshTranslateIcon();
   RefreshSaveCreditCardIconView();
   RefreshManagePasswordsIconView();
@@ -715,80 +693,6 @@ bool LocationBarView::RefreshContentSettingViews() {
       visibility_changed = true;
   }
   return visibility_changed;
-}
-
-void LocationBarView::DeletePageActionViews() {
-  for (const auto& action_view : page_action_views_)
-    RemoveChildView(action_view.get());
-  page_action_views_.clear();
-}
-
-bool LocationBarView::RefreshPageActionViews() {
-  if (is_popup_mode_)
-    return false;
-
-  bool changed = false;
-  PageActions new_page_actions;
-
-  WebContents* web_contents = GetWebContents();
-  if (web_contents) {
-    extensions::TabHelper* extensions_tab_helper =
-        extensions::TabHelper::FromWebContents(web_contents);
-    extensions::LocationBarController* controller =
-        extensions_tab_helper->location_bar_controller();
-    new_page_actions = controller->GetCurrentActions();
-  }
-  web_contents_null_at_last_refresh_ = web_contents == nullptr;
-
-  // On startup we sometimes haven't loaded any extensions. This makes sure
-  // we catch up when the extensions (and any page actions) load.
-  if (PageActionsDiffer(new_page_actions)) {
-    changed = true;
-
-    DeletePageActionViews();
-
-    // Create the page action views.
-    for (PageActions::const_iterator i = new_page_actions.begin();
-         i != new_page_actions.end(); ++i) {
-      std::unique_ptr<PageActionWithBadgeView> page_action_view =
-          base::MakeUnique<PageActionWithBadgeView>(
-              delegate_->CreatePageActionImageView(this, *i));
-      page_action_view->SetVisible(false);
-      page_action_views_.push_back(std::move(page_action_view));
-    }
-
-    View* right_anchor = star_view_;
-    DCHECK(right_anchor);
-
-    // |page_action_views_| are ordered right-to-left.  Add them as children in
-    // reverse order so the logical order and visual order match for
-    // accessibility purposes.
-    for (PageActionViews::reverse_iterator i = page_action_views_.rbegin();
-         i != page_action_views_.rend(); ++i)
-      AddChildViewAt(i->get(), GetIndexOf(right_anchor));
-  }
-
-  for (const auto& action_view : page_action_views_) {
-    bool old_visibility = action_view->visible();
-    action_view->UpdateVisibility(
-        GetToolbarModel()->input_in_progress() ? nullptr : web_contents);
-    changed |= old_visibility != action_view->visible();
-  }
-  return changed;
-}
-
-bool LocationBarView::PageActionsDiffer(
-    const PageActions& page_actions) const {
-  if (page_action_views_.size() != page_actions.size())
-    return true;
-
-  for (size_t index = 0; index < page_actions.size(); ++index) {
-    PageActionWithBadgeView* view = page_action_views_[index].get();
-    if (view->image_view()->extension_action() != page_actions[index])
-      return true;
-  }
-
-  return false;
 }
 
 bool LocationBarView::RefreshZoomView() {
@@ -961,12 +865,7 @@ void LocationBarView::UpdateSaveCreditCardIcon() {
   }
 }
 
-void LocationBarView::UpdatePageActions() {
-  if (RefreshPageActionViews()) {  // Changed.
-    Layout();
-    SchedulePaint();
-  }
-}
+void LocationBarView::UpdatePageActions() {}
 
 void LocationBarView::UpdateBookmarkStarVisibility() {
   if (star_view_) {
@@ -993,24 +892,8 @@ void LocationBarView::UpdateLocationBarVisibility(bool visible, bool animate) {
 bool LocationBarView::ShowPageActionPopup(
     const extensions::Extension* extension,
     bool grant_tab_permissions) {
-  ExtensionAction* extension_action =
-      extensions::ExtensionActionManager::Get(profile())->GetPageAction(
-          *extension);
-  CHECK(extension_action);
-  PageActionWithBadgeView* page_action_view =
-      GetPageActionView(extension_action);
-  if (!page_action_view) {
-    CHECK(!web_contents_null_at_last_refresh_);
-    CHECK(!is_popup_mode_);
-    CHECK(!extensions::FeatureSwitch::extension_action_redesign()->IsEnabled());
-    CHECK(false);
-  }
-  PageActionImageView* page_action_image_view = page_action_view->image_view();
-  CHECK(page_action_image_view);
-  ExtensionActionViewController* extension_action_view_controller =
-      page_action_image_view->view_controller();
-  CHECK(extension_action_view_controller);
-  return extension_action_view_controller->ExecuteAction(grant_tab_permissions);
+  NOTREACHED();
+  return false;
 }
 
 void LocationBarView::SaveStateToContents(WebContents* contents) {
@@ -1029,53 +912,26 @@ LocationBarTesting* LocationBarView::GetLocationBarForTesting() {
 // LocationBarView, private LocationBarTesting implementation:
 
 int LocationBarView::PageActionCount() {
-  return page_action_views_.size();
+  NOTREACHED();
+  return 0;
 }
 
 int LocationBarView::PageActionVisibleCount() {
-  int result = 0;
-  for (const auto& action_view : page_action_views_) {
-    if (action_view->visible())
-      ++result;
-  }
-  return result;
+  NOTREACHED();
+  return 0;
 }
 
 ExtensionAction* LocationBarView::GetPageAction(size_t index) {
-  if (index < page_action_views_.size())
-    return page_action_views_[index]->image_view()->extension_action();
-
   NOTREACHED();
   return nullptr;
 }
 
 ExtensionAction* LocationBarView::GetVisiblePageAction(size_t index) {
-  size_t current = 0;
-  for (const auto& action_view : page_action_views_) {
-    if (action_view->visible()) {
-      if (current == index)
-        return action_view->image_view()->extension_action();
-
-      ++current;
-    }
-  }
-
   NOTREACHED();
   return nullptr;
 }
 
 void LocationBarView::TestPageActionPressed(size_t index) {
-  size_t current = 0;
-  for (const auto& action_view : page_action_views_) {
-    if (action_view->visible()) {
-      if (current == index) {
-        action_view->image_view()->view_controller()->ExecuteAction(true);
-        return;
-      }
-      ++current;
-    }
-  }
-
   NOTREACHED();
 }
 

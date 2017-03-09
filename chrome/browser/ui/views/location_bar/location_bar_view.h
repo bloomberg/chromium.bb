@@ -37,8 +37,6 @@ class GURL;
 class KeywordHintView;
 class LocationIconView;
 class ManagePasswordsIconViews;
-class PageActionWithBadgeView;
-class PageActionImageView;
 class Profile;
 class SelectedKeywordView;
 class StarView;
@@ -79,11 +77,6 @@ class LocationBarView : public LocationBar,
 
     virtual ToolbarModel* GetToolbarModel() = 0;
     virtual const ToolbarModel* GetToolbarModel() const = 0;
-
-    // Creates PageActionImageView. Caller gets an ownership.
-    virtual PageActionImageView* CreatePageActionImageView(
-        LocationBarView* owner,
-        ExtensionAction* action) = 0;
 
     // Returns ContentSettingBubbleModelDelegate.
     virtual ContentSettingBubbleModelDelegate*
@@ -159,9 +152,6 @@ class LocationBarView : public LocationBar,
   ManagePasswordsIconViews* manage_passwords_icon_view() {
     return manage_passwords_icon_view_;
   }
-
-  // Retrieves the PageAction View which is associated with |page_action|.
-  PageActionWithBadgeView* GetPageActionView(ExtensionAction* page_action);
 
   // Toggles the star on or off.
   void SetStarToggled(bool on);
@@ -250,11 +240,6 @@ class LocationBarView : public LocationBar,
  private:
   using ContentSettingViews = std::vector<ContentSettingImageView*>;
 
-  friend class PageActionImageView;
-  friend class PageActionWithBadgeView;
-  using PageActions = std::vector<ExtensionAction*>;
-  using PageActionViews = std::vector<std::unique_ptr<PageActionWithBadgeView>>;
-
   // Helper for GetMinimumWidth().  Calculates the incremental minimum width
   // |view| should add to the trailing width after the omnibox.
   int IncrementalMinimumWidth(views::View* view) const;
@@ -277,19 +262,6 @@ class LocationBarView : public LocationBar,
   // is actually blocked on the current page. Returns true if the visibility
   // of at least one of the views in |content_setting_views_| changed.
   bool RefreshContentSettingViews();
-
-  // Clears |page_action_views_| and removes the elements from the view
-  // hierarchy.
-  void DeletePageActionViews();
-
-  // Updates the views for the Page Actions, to reflect state changes for
-  // PageActions. Returns true if the visibility of a PageActionWithBadgeView
-  // changed, or PageActionWithBadgeView were created/destroyed.
-  bool RefreshPageActionViews();
-
-  // Whether the page actions represented by |page_action_views_| differ
-  // in ordering or value from |page_actions|.
-  bool PageActionsDiffer(const PageActions& page_actions) const;
 
   // Updates the view for the zoom icon based on the current tab's zoom. Returns
   // true if the visibility of the view changed.
@@ -433,9 +405,6 @@ class LocationBarView : public LocationBar,
   // The manage passwords icon.
   ManagePasswordsIconViews* manage_passwords_icon_view_;
 
-  // The page action icon views.
-  PageActionViews page_action_views_;
-
   // The save credit card icon.
   autofill::SaveCardIconView* save_credit_card_icon_view_;
 
@@ -462,10 +431,6 @@ class LocationBarView : public LocationBar,
 
   // Tracks this preference to determine whether bookmark editing is allowed.
   BooleanPrefMember edit_bookmarks_enabled_;
-
-  // This is a debug state variable that stores if the WebContents was null
-  // during the last RefreshPageAction.
-  bool web_contents_null_at_last_refresh_;
 
   DISALLOW_COPY_AND_ASSIGN(LocationBarView);
 };

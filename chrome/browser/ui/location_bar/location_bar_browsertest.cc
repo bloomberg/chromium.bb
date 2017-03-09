@@ -88,11 +88,19 @@ const extensions::Extension* LocationBarBrowserTest::LoadPageActionExtension(
   return extension;
 }
 
+// The page action UI has been removed on Windows, Linux, and CrOS.
+// TODO(devlin): Remove this fully when the Mac UI is also cleaned up.
+#if defined(OS_MACOSX)
+#define MAYBE_PageActionUITest PageActionUITest
+#else
+#define MAYBE_PageActionUITest DISABLED_PageActionUITest
+#endif
+
 // Test that page actions show up properly in the location bar. Since the
 // page action logic is more fully tested as part of the extensions system, this
 // only needs to check that they are displayed and clicking on them triggers
 // the action.
-IN_PROC_BROWSER_TEST_F(LocationBarBrowserTest, PageActionUITest) {
+IN_PROC_BROWSER_TEST_F(LocationBarBrowserTest, MAYBE_PageActionUITest) {
   LocationBarTesting* location_bar =
       browser()->window()->GetLocationBar()->GetLocationBarForTesting();
 
@@ -188,10 +196,18 @@ void LocationBarBrowserTestWithRedesign::SetUpCommandLine(
       extensions::FeatureSwitch::extension_action_redesign(), true));
 }
 
+// The page action UI has been removed on Windows, Linux, and CrOS.
+// TODO(devlin): Remove this fully when the Mac UI is also cleaned up.
+#if defined(OS_MACOSX)
+#define MAYBE_PageActionUITestWithRedesign PageActionUITestWithRedesign
+#else
+#define MAYBE_PageActionUITestWithRedesign DISABLED_PageActionUITestWithRedesign
+#endif
+
 // Test that page actions are not displayed in the location bar if the
 // extension action redesign switch is enabled.
 IN_PROC_BROWSER_TEST_F(LocationBarBrowserTestWithRedesign,
-                       PageActionUITestWithRedesign) {
+                       MAYBE_PageActionUITestWithRedesign) {
   LocationBarTesting* location_bar =
       browser()->window()->GetLocationBar()->GetLocationBarForTesting();
   EXPECT_EQ(0, location_bar->PageActionCount());

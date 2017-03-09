@@ -35,8 +35,6 @@
 #include "chrome/browser/ui/views/bookmarks/bookmark_bubble_view.h"
 #include "chrome/browser/ui/views/extensions/extension_popup.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
-#include "chrome/browser/ui/views/location_bar/page_action_image_view.h"
-#include "chrome/browser/ui/views/location_bar/page_action_with_badge_view.h"
 #include "chrome/browser/ui/views/location_bar/star_view.h"
 #include "chrome/browser/ui/views/outdated_upgrade_bubble_view.h"
 #include "chrome/browser/ui/views/toolbar/app_menu_button.h"
@@ -425,11 +423,6 @@ ToolbarView::GetContentSettingBubbleModelDelegate() {
 
 void ToolbarView::ShowWebsiteSettings(content::WebContents* web_contents) {
   chrome::ShowWebsiteSettings(browser_, web_contents);
-}
-
-PageActionImageView* ToolbarView::CreatePageActionImageView(
-    LocationBarView* owner, ExtensionAction* action) {
-  return new PageActionImageView(owner, action, browser_);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

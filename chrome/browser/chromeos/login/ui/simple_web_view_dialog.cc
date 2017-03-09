@@ -301,15 +301,6 @@ void SimpleWebViewDialog::ShowWebsiteSettings(
   // TODO (markusheintz@): implement this
 }
 
-PageActionImageView* SimpleWebViewDialog::CreatePageActionImageView(
-    LocationBarView* owner,
-    ExtensionAction* action) {
-  // Notreached because SimpleWebViewDialog uses a popup-mode LocationBarView,
-  // and it doesn't create PageActionImageViews.
-  NOTREACHED();
-  return NULL;
-}
-
 content::WebContents* SimpleWebViewDialog::GetActiveWebContents() const {
   return web_view_->web_contents();
 }

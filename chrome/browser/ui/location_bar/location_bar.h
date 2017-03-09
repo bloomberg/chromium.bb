@@ -61,6 +61,8 @@ class LocationBar {
   virtual void UpdateSaveCreditCardIcon() = 0;
 
   // Updates the state of the page actions.
+  // TODO(devlin): Remove all these page action functions once Cocoa stops
+  // using them.
   virtual void UpdatePageActions() = 0;
 
   // Updates the visibility of the bookmark star.

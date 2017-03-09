@@ -180,8 +180,8 @@ IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, BroadcastEvent) {
 
   // Lazy Background Page doesn't exist yet.
   EXPECT_FALSE(IsBackgroundPageAlive(last_loaded_extension_id()));
-  int num_page_actions = browser()->window()->GetLocationBar()->
-      GetLocationBarForTesting()->PageActionVisibleCount();
+  EXPECT_EQ(0u, extension_action_test_util::GetVisiblePageActionCount(
+                    browser()->tab_strip_model()->GetActiveWebContents()));
 
   // Open a tab to a URL that will trigger the page action to show.
   LazyBackgroundObserver page_complete;
@@ -192,10 +192,9 @@ IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, BroadcastEvent) {
   EXPECT_FALSE(IsBackgroundPageAlive(last_loaded_extension_id()));
 
   // Page action is shown.
-  WaitForPageActionVisibilityChangeTo(num_page_actions + 1);
-  EXPECT_EQ(static_cast<size_t>(num_page_actions + 1),
-            extension_action_test_util::GetVisiblePageActionCount(
-                browser()->tab_strip_model()->GetActiveWebContents()));
+  WaitForPageActionVisibilityChangeTo(1);
+  EXPECT_EQ(1u, extension_action_test_util::GetVisiblePageActionCount(
+                    browser()->tab_strip_model()->GetActiveWebContents()));
 }
 
 IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, Filters) {
