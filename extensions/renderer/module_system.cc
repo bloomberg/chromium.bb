@@ -561,6 +561,11 @@ void ModuleSystem::SetGetInternalAPIHook(
   get_internal_api_.Set(GetIsolate(), get_internal_api);
 }
 
+void ModuleSystem::SetJSBindingUtilGetter(const JSBindingUtilGetter& getter) {
+  DCHECK(js_binding_util_getter_.is_null());
+  js_binding_util_getter_ = getter;
+}
+
 v8::Local<v8::Value> ModuleSystem::RunString(v8::Local<v8::String> code,
                                              v8::Local<v8::String> name) {
   return context_->RunScript(
@@ -641,7 +646,7 @@ v8::Local<v8::String> ModuleSystem::WrapSource(v8::Local<v8::String> source) {
   v8::Local<v8::String> left = ToV8StringUnsafe(
       GetIsolate(),
       "(function(define, require, requireNative, requireAsync, exports, "
-      "console, privates, apiBridge, getInternalApi,"
+      "console, privates, apiBridge, bindingUtil, getInternalApi,"
       "$Array, $Function, $JSON, $Object, $RegExp, $String, $Error) {"
       "'use strict';");
   v8::Local<v8::String> right = ToV8StringUnsafe(GetIsolate(), "\n})");
@@ -748,6 +753,19 @@ v8::Local<v8::Value> ModuleSystem::LoadModuleWithNativeAPIBridge(
                            .ToLocalChecked();
   }
 
+  v8::Local<v8::Value> binding_util;
+  if (!js_binding_util_getter_.is_null()) {
+    js_binding_util_getter_.Run(v8_context, &binding_util);
+    if (binding_util.IsEmpty()) {
+      // The NativeExtensionBindingsSystem was destroyed. This shouldn't happen,
+      // but JS makes the impossible possible!
+      NOTREACHED();
+      return v8::Undefined(GetIsolate());
+    }
+  } else {
+    binding_util = v8::Undefined(GetIsolate());
+  }
+
   // These must match the argument order in WrapSource.
   v8::Local<v8::Value> args[] = {
       // AMD.
@@ -765,6 +783,7 @@ v8::Local<v8::Value> ModuleSystem::LoadModuleWithNativeAPIBridge(
       GetPropertyUnsafe(v8_context, natives, "privates",
                         v8::NewStringType::kInternalized),
       api_bridge,        // exposed as apiBridge.
+      binding_util,      // exposed as bindingUtil.
       get_internal_api,  // exposed as getInternalApi.
       // Each safe builtin. Keep in order with the arguments in WrapSource.
       context_->safe_builtins()->GetArray(),

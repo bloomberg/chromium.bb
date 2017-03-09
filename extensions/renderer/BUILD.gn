@@ -23,6 +23,8 @@ source_set("renderer") {
     "api_binding_bridge.h",
     "api_binding_hooks.cc",
     "api_binding_hooks.h",
+    "api_binding_js_util.cc",
+    "api_binding_js_util.h",
     "api_binding_types.h",
     "api_bindings_system.cc",
     "api_bindings_system.h",

@@ -13,6 +13,7 @@
 #include "extensions/common/features/feature_provider.h"
 #include "extensions/renderer/api_binding_bridge.h"
 #include "extensions/renderer/api_binding_hooks.h"
+#include "extensions/renderer/api_binding_js_util.h"
 #include "extensions/renderer/chrome_setting.h"
 #include "extensions/renderer/module_system.h"
 #include "extensions/renderer/script_context.h"
@@ -189,10 +190,8 @@ v8::Local<v8::Object> CreateRootBinding(v8::Local<v8::Context> context,
 
   gin::Handle<APIBindingBridge> bridge_handle = gin::CreateHandle(
       context->GetIsolate(),
-      new APIBindingBridge(bindings_system->type_reference_map(),
-                           bindings_system->request_handler(),
-                           bindings_system->event_handler(), hooks, context,
-                           binding_object, script_context->GetExtensionID(),
+      new APIBindingBridge(hooks, context, binding_object,
+                           script_context->GetExtensionID(),
                            script_context->GetContextTypeDescription(),
                            base::Bind(&CallJsFunction)));
   v8::Local<v8::Value> native_api_bridge = bridge_handle.ToV8();
@@ -369,6 +368,9 @@ void NativeExtensionBindingsSystem::DidCreateScriptContext(
   // web/guest view.
   context->module_system()->SetGetInternalAPIHook(
       get_internal_api_.Get(isolate));
+  context->module_system()->SetJSBindingUtilGetter(
+      base::Bind(&NativeExtensionBindingsSystem::GetJSBindingUtil,
+                 weak_factory_.GetWeakPtr()));
 }
 
 void NativeExtensionBindingsSystem::WillReleaseScriptContext(
@@ -635,6 +637,17 @@ void NativeExtensionBindingsSystem::OnEventListenerChanged(
     v8::Local<v8::Context> context) {
   send_event_listener_ipc_.Run(
       change, ScriptContextSet::GetContextByV8Context(context), event_name);
+}
+
+void NativeExtensionBindingsSystem::GetJSBindingUtil(
+    v8::Local<v8::Context> context,
+    v8::Local<v8::Value>* binding_util_out) {
+  gin::Handle<APIBindingJSUtil> handle =
+      gin::CreateHandle(context->GetIsolate(),
+                        new APIBindingJSUtil(api_system_.type_reference_map(),
+                                             api_system_.request_handler(),
+                                             api_system_.event_handler()));
+  *binding_util_out = handle.ToV8();
 }
 
 }  // namespace extensions

@@ -8,8 +8,9 @@ var binding = apiBridge || require('binding').Binding.create('browserAction');
 
 var setIcon = require('setIcon').setIcon;
 var getExtensionViews = requireNative('runtime').GetExtensionViews;
-var sendRequest = apiBridge ?
-    apiBridge.sendRequest.bind(apiBridge) : require('sendRequest').sendRequest;
+var sendRequest = bindingUtil ?
+    bindingUtil.sendRequest.bind(bindingUtil) :
+    require('sendRequest').sendRequest;
 var lastError = require('lastError');
 
 binding.registerCustomHook(function(bindingsAPI) {

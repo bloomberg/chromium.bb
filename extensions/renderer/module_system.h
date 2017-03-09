@@ -162,6 +162,10 @@ class ModuleSystem : public ObjectBackedNativeHandler,
 
   void SetGetInternalAPIHook(v8::Local<v8::FunctionTemplate> get_internal_api);
 
+  using JSBindingUtilGetter =
+      base::Callback<void(v8::Local<v8::Context>, v8::Local<v8::Value>*)>;
+  void SetJSBindingUtilGetter(const JSBindingUtilGetter& getter);
+
  protected:
   friend class ModuleSystemTestEnvironment;
   friend class ScriptContext;
@@ -270,6 +274,8 @@ class ModuleSystem : public ObjectBackedNativeHandler,
 
   // The template to be used for retrieving an internal API.
   v8::Eternal<v8::FunctionTemplate> get_internal_api_;
+
+  JSBindingUtilGetter js_binding_util_getter_;
 
   base::WeakPtrFactory<ModuleSystem> weak_factory_;
 

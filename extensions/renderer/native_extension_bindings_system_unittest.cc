@@ -502,7 +502,7 @@ TEST_F(NativeExtensionBindingsSystemUnittest, TestSendRequestHook) {
       "apiBridge.registerCustomHook((api) => {\n"
       "  api.apiFunctions.setHandleRequest('queryState',\n"
       "                                    (time, callback) => {\n"
-      "    apiBridge.sendRequest('idle.queryState', [time, callback]);\n"
+      "    bindingUtil.sendRequest('idle.queryState', [time, callback]);\n"
       "  });\n"
       "});\n";
 
