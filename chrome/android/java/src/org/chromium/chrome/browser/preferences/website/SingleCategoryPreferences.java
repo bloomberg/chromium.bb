@@ -28,6 +28,7 @@ import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import org.chromium.base.BuildInfo;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
@@ -609,7 +610,7 @@ public class SingleCategoryPreferences extends PreferenceFragment
         // Configure/hide the notifications vibrate toggle, as needed.
         Preference notificationsVibrate =
                 getPreferenceScreen().findPreference(NOTIFICATIONS_VIBRATE_TOGGLE_KEY);
-        if (mCategory.showNotificationsSites()) {
+        if (mCategory.showNotificationsSites() && !BuildInfo.isAtLeastO()) {
             notificationsVibrate.setOnPreferenceChangeListener(this);
             updateNotificationsVibrateCheckBox();
         } else {
@@ -727,7 +728,9 @@ public class SingleCategoryPreferences extends PreferenceFragment
         ChromeBaseCheckBoxPreference preference =
                 (ChromeBaseCheckBoxPreference) getPreferenceScreen().findPreference(
                         NOTIFICATIONS_VIBRATE_TOGGLE_KEY);
-        preference.setEnabled(PrefServiceBridge.getInstance().isNotificationsEnabled());
+        if (preference != null) {
+            preference.setEnabled(PrefServiceBridge.getInstance().isNotificationsEnabled());
+        }
     }
 
     private void showManagedToast() {
