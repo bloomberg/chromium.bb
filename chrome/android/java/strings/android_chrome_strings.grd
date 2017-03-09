@@ -1607,9 +1607,6 @@ To obtain new licenses, connect to the internet and play your downloaded content
       <message name="IDS_OPEN_WEBAPK_FAILED" desc="Opening of a WebAPK failed. [CHAR-LIMIT=27]">
         Could not launch app
       </message>
-      <message name="IDS_MENU_ADD_TO_HOMESCREEN_ADD" desc="Menu item for adding a shortcut to the Home screen. [CHAR-LIMIT=27]">
-        Add shortcut
-      </message>
       <message name="IDS_MENU_ADD_TO_HOMESCREEN_INSTALL" desc="Menu item for adding a shortcut to the Home screen. [CHAR-LIMIT=27]">
         Install web app
       </message>
