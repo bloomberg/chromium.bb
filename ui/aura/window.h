@@ -80,8 +80,11 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
 
   typedef std::vector<Window*> Windows;
 
-  explicit Window(WindowDelegate* delegate);
-  Window(WindowDelegate* delegate, std::unique_ptr<WindowPort> port);
+  explicit Window(WindowDelegate* delegate,
+                  ui::wm::WindowType type = ui::wm::WINDOW_TYPE_UNKNOWN);
+  Window(WindowDelegate* delegate,
+         std::unique_ptr<WindowPort> port,
+         ui::wm::WindowType type = ui::wm::WINDOW_TYPE_UNKNOWN);
   ~Window() override;
 
   // Initializes the window. This creates the window's layer.

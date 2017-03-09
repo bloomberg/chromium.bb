@@ -19,6 +19,7 @@
 #include "components/ui_devtools/devtools_server.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/compositor/layer_type.h"
+#include "ui/wm/public/activation_change_observer.h"
 #include "ui/wm/public/window_types.h"
 
 namespace app_list {
@@ -212,9 +213,6 @@ class ASH_EXPORT WmShell : public SessionStateObserver {
 
   // Returns true when ash is running as a service_manager::Service.
   virtual bool IsRunningInMash() const = 0;
-
-  virtual WmWindow* NewWindow(ui::wm::WindowType window_type,
-                              ui::LayerType layer_type) = 0;
 
   virtual WmWindow* GetFocusedWindow() = 0;
   virtual WmWindow* GetActiveWindow() = 0;

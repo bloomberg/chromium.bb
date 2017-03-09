@@ -14,6 +14,7 @@
 #include "ash/root_window_controller.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
+#include "ui/aura/window.h"
 #include "ui/compositor/layer_type.h"
 #include "ui/display/display.h"
 
@@ -68,13 +69,14 @@ std::unique_ptr<WindowOwner> AshTest::CreateToplevelTestWindow(
 std::unique_ptr<WindowOwner> AshTest::CreateChildWindow(WmWindow* parent,
                                                         const gfx::Rect& bounds,
                                                         int shell_window_id) {
+  aura::Window* window = new aura::Window(nullptr, ui::wm::WINDOW_TYPE_NORMAL);
+  window->Init(ui::LAYER_NOT_DRAWN);
   std::unique_ptr<WindowOwner> window_owner =
-      base::MakeUnique<WindowOwner>(WmShell::Get()->NewWindow(
-          ui::wm::WINDOW_TYPE_NORMAL, ui::LAYER_NOT_DRAWN));
-  window_owner->window()->SetBounds(bounds);
-  window_owner->window()->SetShellWindowId(shell_window_id);
-  parent->AddChild(window_owner->window());
-  window_owner->window()->Show();
+      base::MakeUnique<WindowOwner>(WmWindow::Get(window));
+  window->SetBounds(bounds);
+  window->set_id(shell_window_id);
+  parent->aura_window()->AddChild(window);
+  window->Show();
   return window_owner;
 }
 

@@ -46,13 +46,16 @@
 
 namespace aura {
 
-Window::Window(WindowDelegate* delegate) : Window(delegate, nullptr) {}
+Window::Window(WindowDelegate* delegate, ui::wm::WindowType type)
+    : Window(delegate, nullptr, type) {}
 
-Window::Window(WindowDelegate* delegate, std::unique_ptr<WindowPort> port)
+Window::Window(WindowDelegate* delegate,
+               std::unique_ptr<WindowPort> port,
+               ui::wm::WindowType type)
     : port_owner_(std::move(port)),
       port_(port_owner_.get()),
       host_(nullptr),
-      type_(ui::wm::WINDOW_TYPE_UNKNOWN),
+      type_(type),
       owned_by_parent_(true),
       delegate_(delegate),
       parent_(nullptr),

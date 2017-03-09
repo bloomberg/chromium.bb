@@ -58,12 +58,8 @@ class WmShellMus : public WmShell {
   WindowManager* window_manager() { return window_manager_; }
 
   // WmShell:
-  void Initialize(
-      const scoped_refptr<base::SequencedWorkerPool>& pool) override;
   void Shutdown() override;
   bool IsRunningInMash() const override;
-  WmWindow* NewWindow(ui::wm::WindowType window_type,
-                      ui::LayerType layer_type) override;
   WmWindow* GetFocusedWindow() override;
   WmWindow* GetActiveWindow() override;
   WmWindow* GetCaptureWindow() override;

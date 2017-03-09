@@ -14,8 +14,11 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/root_window_controller.h"
+#include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "ui/aura/window.h"
 #include "ui/base/hit_test.h"
+#include "ui/compositor/layer_type.h"
 #include "ui/views/widget/widget.h"
 
 namespace ash {
@@ -345,28 +348,27 @@ TEST_F(ShelfWindowWatcherTest, PanelWindow) {
 TEST_F(ShelfWindowWatcherTest, DontCreateShelfEntriesForChildWindows) {
   const int initial_item_count = model_->item_count();
 
-  WmWindow* window = WmShell::Get()->NewWindow(ui::wm::WINDOW_TYPE_NORMAL,
-                                               ui::LAYER_NOT_DRAWN);
-  window->aura_window()->SetProperty(kShelfItemTypeKey,
-                                     static_cast<int32_t>(TYPE_APP));
-  WmShell::Get()
-      ->GetPrimaryRootWindow()
-      ->GetChildByShellWindowId(kShellWindowId_DefaultContainer)
-      ->AddChild(window);
+  std::unique_ptr<aura::Window> window(
+      base::MakeUnique<aura::Window>(nullptr, ui::wm::WINDOW_TYPE_NORMAL));
+  window->Init(ui::LAYER_NOT_DRAWN);
+  window->SetProperty(kShelfItemTypeKey, static_cast<int32_t>(TYPE_APP));
+  Shell::GetPrimaryRootWindow()
+      ->GetChildById(kShellWindowId_DefaultContainer)
+      ->AddChild(window.get());
   window->Show();
   EXPECT_EQ(initial_item_count + 1, model_->item_count());
 
-  WmWindow* child_window = WmShell::Get()->NewWindow(ui::wm::WINDOW_TYPE_NORMAL,
-                                                     ui::LAYER_NOT_DRAWN);
-  child_window->aura_window()->SetProperty(kShelfItemTypeKey,
-                                           static_cast<int32_t>(TYPE_APP));
-  window->AddChild(child_window);
+  std::unique_ptr<aura::Window> child_window(
+      base::MakeUnique<aura::Window>(nullptr, ui::wm::WINDOW_TYPE_NORMAL));
+  child_window->Init(ui::LAYER_NOT_DRAWN);
+  child_window->SetProperty(kShelfItemTypeKey, static_cast<int32_t>(TYPE_APP));
+  window->AddChild(child_window.get());
   child_window->Show();
   // |child_window| should not result in adding a new entry.
   EXPECT_EQ(initial_item_count + 1, model_->item_count());
 
-  child_window->Destroy();
-  window->Destroy();
+  child_window.reset();
+  window.reset();
   EXPECT_EQ(initial_item_count, model_->item_count());
 }
 

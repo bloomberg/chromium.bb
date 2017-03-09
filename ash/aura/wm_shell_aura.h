@@ -29,8 +29,6 @@ class ASH_EXPORT WmShellAura : public WmShell,
   // WmShell:
   void Shutdown() override;
   bool IsRunningInMash() const override;
-  WmWindow* NewWindow(ui::wm::WindowType window_type,
-                      ui::LayerType layer_type) override;
   WmWindow* GetFocusedWindow() override;
   WmWindow* GetActiveWindow() override;
   WmWindow* GetCaptureWindow() override;

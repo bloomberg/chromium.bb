@@ -253,19 +253,18 @@ void ReparentAllWindows(WmWindow* src, WmWindow* dst) {
 // Creates a new window for use as a container.
 // TODO(sky): This should create an aura::Window. http://crbug.com/671246.
 WmWindow* CreateContainer(int window_id, const char* name, WmWindow* parent) {
-  WmWindow* window = WmShell::Get()->NewWindow(ui::wm::WINDOW_TYPE_UNKNOWN,
-                                               ui::LAYER_NOT_DRAWN);
+  aura::Window* window = new aura::Window(nullptr, ui::wm::WINDOW_TYPE_UNKNOWN);
+  window->Init(ui::LAYER_NOT_DRAWN);
   if (WmShell::Get()->IsRunningInMash()) {
-    aura::WindowPortMus::Get(window->aura_window())
-        ->SetEventTargetingPolicy(
-            ui::mojom::EventTargetingPolicy::DESCENDANTS_ONLY);
+    aura::WindowPortMus::Get(window)->SetEventTargetingPolicy(
+        ui::mojom::EventTargetingPolicy::DESCENDANTS_ONLY);
   }
-  window->SetShellWindowId(window_id);
+  window->set_id(window_id);
   window->SetName(name);
-  parent->AddChild(window);
+  parent->aura_window()->AddChild(window);
   if (window_id != kShellWindowId_UnparentedControlContainer)
     window->Show();
-  return window;
+  return WmWindow::Get(window);
 }
 
 // TODO(sky): This should take an aura::Window. http://crbug.com/671246.

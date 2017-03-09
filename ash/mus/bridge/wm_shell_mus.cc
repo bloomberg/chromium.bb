@@ -171,11 +171,6 @@ aura::WindowTreeClient* WmShellMus::window_tree_client() {
   return window_manager_->window_tree_client();
 }
 
-void WmShellMus::Initialize(
-    const scoped_refptr<base::SequencedWorkerPool>& pool) {
-  WmShell::Initialize(pool);
-}
-
 void WmShellMus::Shutdown() {
   WmShell::Shutdown();
 
@@ -184,14 +179,6 @@ void WmShellMus::Shutdown() {
 
 bool WmShellMus::IsRunningInMash() const {
   return true;
-}
-
-WmWindow* WmShellMus::NewWindow(ui::wm::WindowType window_type,
-                                ui::LayerType layer_type) {
-  aura::Window* window = new aura::Window(nullptr);
-  window->SetType(window_type);
-  window->Init(layer_type);
-  return WmWindow::Get(window);
 }
 
 WmWindow* WmShellMus::GetFocusedWindow() {

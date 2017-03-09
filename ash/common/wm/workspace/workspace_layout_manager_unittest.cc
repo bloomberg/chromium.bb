@@ -29,8 +29,10 @@
 #include "base/command_line.h"
 #include "base/run_loop.h"
 #include "ui/aura/env.h"
+#include "ui/aura/window.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/base/ui_base_types.h"
+#include "ui/compositor/layer_type.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
@@ -335,29 +337,29 @@ class DontClobberRestoreBoundsWindowObserver : public aura::WindowObserver {
 // doesn't effect the restore bounds.
 TEST_F(WorkspaceLayoutManagerTest, DontClobberRestoreBounds) {
   DontClobberRestoreBoundsWindowObserver window_observer;
-  WindowOwner window_owner(WmShell::Get()->NewWindow(ui::wm::WINDOW_TYPE_NORMAL,
-                                                     ui::LAYER_TEXTURED));
-  WmWindow* window = window_owner.window();
+  std::unique_ptr<aura::Window> window(
+      base::MakeUnique<aura::Window>(nullptr, ui::wm::WINDOW_TYPE_NORMAL));
+  window->Init(ui::LAYER_TEXTURED);
   window->SetBounds(gfx::Rect(10, 20, 30, 40));
   // NOTE: for this test to exercise the failure the observer needs to be added
   // before the parent set. This mimics what BrowserFrameAsh does.
-  window->aura_window()->AddObserver(&window_observer);
-  ParentWindowInPrimaryRootWindow(window);
+  window->AddObserver(&window_observer);
+  ParentWindowInPrimaryRootWindow(WmWindow::Get(window.get()));
   window->Show();
 
-  wm::WindowState* window_state = window->GetWindowState();
+  wm::WindowState* window_state = wm::GetWindowState(window.get());
   window_state->Activate();
 
   std::unique_ptr<WindowOwner> window2_owner(
       CreateTestWindow(gfx::Rect(12, 20, 30, 40)));
   WmWindow* window2 = window2_owner->window();
-  AddTransientChild(window, window2);
+  AddTransientChild(WmWindow::Get(window.get()), window2);
   window2->Show();
 
   window_observer.set_window(window2);
   window_state->Maximize();
   EXPECT_EQ("10,20 30x40", window_state->GetRestoreBoundsInScreen().ToString());
-  window->aura_window()->RemoveObserver(&window_observer);
+  window->RemoveObserver(&window_observer);
 }
 
 // Verifies when a window is maximized all descendant windows have a size.
@@ -378,14 +380,14 @@ TEST_F(WorkspaceLayoutManagerTest, ChildBoundsResetOnMaximize) {
 // Verifies a window created with maximized state has the maximized
 // bounds.
 TEST_F(WorkspaceLayoutManagerTest, MaximizeWithEmptySize) {
-  WindowOwner window_owner(WmShell::Get()->NewWindow(ui::wm::WINDOW_TYPE_NORMAL,
-                                                     ui::LAYER_TEXTURED));
-  WmWindow* window = window_owner.window();
-  window->GetWindowState()->Maximize();
+  std::unique_ptr<aura::Window> window(
+      base::MakeUnique<aura::Window>(nullptr, ui::wm::WINDOW_TYPE_NORMAL));
+  window->Init(ui::LAYER_TEXTURED);
+  wm::GetWindowState(window.get())->Maximize();
   WmWindow* default_container =
       WmShell::Get()->GetPrimaryRootWindowController()->GetWmContainer(
           kShellWindowId_DefaultContainer);
-  default_container->AddChild(window);
+  default_container->aura_window()->AddChild(window.get());
   window->Show();
   gfx::Rect work_area(
       display::Screen::GetScreen()->GetPrimaryDisplay().work_area());
@@ -575,21 +577,22 @@ TEST_F(WorkspaceLayoutManagerTest,
 TEST_F(WorkspaceLayoutManagerTest,
        DoNotAdjustTransientWindowBoundsToEnsureMinimumVisibility) {
   UpdateDisplay("300x400");
-  WindowOwner window_owner(WmShell::Get()->NewWindow(ui::wm::WINDOW_TYPE_NORMAL,
-                                                     ui::LAYER_TEXTURED));
-  WmWindow* window = window_owner.window();
+  std::unique_ptr<aura::Window> window(
+      base::MakeUnique<aura::Window>(nullptr, ui::wm::WINDOW_TYPE_NORMAL));
+  window->Init(ui::LAYER_TEXTURED);
   window->SetBounds(gfx::Rect(10, 0, 100, 200));
-  ParentWindowInPrimaryRootWindow(window);
+  ParentWindowInPrimaryRootWindow(WmWindow::Get(window.get()));
   window->Show();
 
   std::unique_ptr<WindowOwner> window2_owner(
       CreateTestWindow(gfx::Rect(10, 0, 40, 20)));
   WmWindow* window2 = window2_owner->window();
-  AddTransientChild(window, window2);
+  AddTransientChild(WmWindow::Get(window.get()), window2);
   window2->Show();
 
   gfx::Rect expected_bounds = window2->GetBounds();
-  WmShell::Get()->SetDisplayWorkAreaInsets(window, gfx::Insets(50, 0, 0, 0));
+  WmShell::Get()->SetDisplayWorkAreaInsets(WmWindow::Get(window.get()),
+                                           gfx::Insets(50, 0, 0, 0));
   EXPECT_EQ(expected_bounds.ToString(), window2->GetBounds().ToString());
 }
 

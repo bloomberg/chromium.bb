@@ -71,14 +71,6 @@ bool WmShellAura::IsRunningInMash() const {
   return false;
 }
 
-WmWindow* WmShellAura::NewWindow(ui::wm::WindowType window_type,
-                                 ui::LayerType layer_type) {
-  aura::Window* aura_window = new aura::Window(nullptr);
-  aura_window->SetType(window_type);
-  aura_window->Init(layer_type);
-  return WmWindow::Get(aura_window);
-}
-
 WmWindow* WmShellAura::GetFocusedWindow() {
   return WmWindow::Get(
       aura::client::GetFocusClient(Shell::GetPrimaryRootWindow())

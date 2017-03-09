@@ -11,6 +11,8 @@
 #include "ash/common/wm_window.h"
 #include "ash/common/wm_window_user_data.h"
 #include "base/memory/ptr_util.h"
+#include "ui/aura/window.h"
+#include "ui/compositor/layer_type.h"
 
 namespace ash {
 namespace {
@@ -35,31 +37,35 @@ using WmWindowUserDataTest = AshTest;
 // Verifies clear() deletes the data associated with a window.
 TEST_F(WmWindowUserDataTest, ClearDestroys) {
   WmWindowUserData<Data> user_data;
-  WmWindow* window = WmShell::Get()->NewWindow(ui::wm::WINDOW_TYPE_UNKNOWN,
-                                               ui::LAYER_NOT_DRAWN);
+  std::unique_ptr<aura::Window> window(
+      base::MakeUnique<aura::Window>(nullptr, ui::wm::WINDOW_TYPE_UNKNOWN));
+  window->Init(ui::LAYER_NOT_DRAWN);
   bool data_deleted = false;
-  user_data.Set(window, base::MakeUnique<Data>(&data_deleted));
+  user_data.Set(WmWindow::Get(window.get()),
+                base::MakeUnique<Data>(&data_deleted));
   EXPECT_FALSE(data_deleted);
   user_data.clear();
   EXPECT_TRUE(data_deleted);
-  window->Destroy();
 }
 
 // Verifies Set() called with an existing window replaces the existing data.
 TEST_F(WmWindowUserDataTest, ReplaceDestroys) {
   WmWindowUserData<Data> user_data;
-  WmWindow* window = WmShell::Get()->NewWindow(ui::wm::WINDOW_TYPE_UNKNOWN,
-                                               ui::LAYER_NOT_DRAWN);
+  std::unique_ptr<aura::Window> window(
+      base::MakeUnique<aura::Window>(nullptr, ui::wm::WINDOW_TYPE_UNKNOWN));
+  window->Init(ui::LAYER_NOT_DRAWN);
   bool data1_deleted = false;
-  user_data.Set(window, base::MakeUnique<Data>(&data1_deleted));
+  user_data.Set(WmWindow::Get(window.get()),
+                base::MakeUnique<Data>(&data1_deleted));
   EXPECT_FALSE(data1_deleted);
   bool data2_deleted = false;
-  user_data.Set(window, base::MakeUnique<Data>(&data2_deleted));
+  user_data.Set(WmWindow::Get(window.get()),
+                base::MakeUnique<Data>(&data2_deleted));
   EXPECT_TRUE(data1_deleted);
   EXPECT_FALSE(data2_deleted);
   ASSERT_EQ(1u, user_data.GetWindows().size());
-  EXPECT_EQ(window, *user_data.GetWindows().begin());
-  window->Destroy();
+  EXPECT_EQ(WmWindow::Get(window.get()), *user_data.GetWindows().begin());
+  window.reset();
   EXPECT_TRUE(data2_deleted);
   EXPECT_TRUE(user_data.GetWindows().empty());
 }
@@ -67,15 +73,16 @@ TEST_F(WmWindowUserDataTest, ReplaceDestroys) {
 // Verifies Set() with null deletes existing data.
 TEST_F(WmWindowUserDataTest, NullClears) {
   WmWindowUserData<Data> user_data;
-  WmWindow* window = WmShell::Get()->NewWindow(ui::wm::WINDOW_TYPE_UNKNOWN,
-                                               ui::LAYER_NOT_DRAWN);
+  std::unique_ptr<aura::Window> window(
+      base::MakeUnique<aura::Window>(nullptr, ui::wm::WINDOW_TYPE_UNKNOWN));
+  window->Init(ui::LAYER_NOT_DRAWN);
   bool data1_deleted = false;
-  user_data.Set(window, base::MakeUnique<Data>(&data1_deleted));
+  user_data.Set(WmWindow::Get(window.get()),
+                base::MakeUnique<Data>(&data1_deleted));
   EXPECT_FALSE(data1_deleted);
-  user_data.Set(window, nullptr);
+  user_data.Set(WmWindow::Get(window.get()), nullptr);
   EXPECT_TRUE(data1_deleted);
   EXPECT_TRUE(user_data.GetWindows().empty());
-  window->Destroy();
 }
 
 }  // namespace ash
