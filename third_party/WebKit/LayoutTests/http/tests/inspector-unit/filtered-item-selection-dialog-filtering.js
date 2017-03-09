@@ -6,7 +6,7 @@ function test() {
     var overrideShowMatchingItems = true;
     var history = [];
 
-    var StubDelegate = class extends QuickOpen.FilteredListWidget.Delegate {
+    var StubProvider = class extends QuickOpen.FilteredListWidget.Provider {
         itemKeyAt(itemIndex) { return overridenInput[itemIndex]; }
         itemScoreAt(itemIndex) { return 0; }
         itemCount() { return overridenInput.length; }
@@ -17,7 +17,7 @@ function test() {
         shouldShowMatchingItems () { return overrideShowMatchingItems; }
     };
 
-    var delegate = new StubDelegate();
+    var provider = new StubProvider();
 
     function checkQuery(query, input, hideMatchingItems)
     {
@@ -26,7 +26,7 @@ function test() {
 
         TestRunner.addResult("Input:" + JSON.stringify(input));
 
-        var filteredSelectionDialog = new QuickOpen.FilteredListWidget(delegate, history);
+        var filteredSelectionDialog = new QuickOpen.FilteredListWidget(provider, history);
         filteredSelectionDialog.showAsDialog();
         var promise = TestRunner.addSniffer(filteredSelectionDialog, "_itemsFilteredForTest").then(accept);
         filteredSelectionDialog.setQuery(query);
@@ -39,7 +39,7 @@ function test() {
             var list = filteredSelectionDialog._list;
             var output = [];
             for (var i = 0; i < list.length(); ++i)
-                output.push(delegate.itemKeyAt(list.itemAtIndex(i)));
+                output.push(provider.itemKeyAt(list.itemAtIndex(i)));
             TestRunner.addResult("Output:" + JSON.stringify(output));
         }
 
