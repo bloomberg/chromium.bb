@@ -31,7 +31,7 @@ void QuicHeaderList::OnHeaderBlockStart() {
       << "OnHeaderBlockStart called more than once!";
 }
 
-void QuicHeaderList::OnHeader(base::StringPiece name, base::StringPiece value) {
+void QuicHeaderList::OnHeader(QuicStringPiece name, QuicStringPiece value) {
   // Avoid infinte buffering of headers. No longer store headers
   // once the current headers are over the limit.
   if (uncompressed_header_bytes_ == 0 || !header_list_.empty()) {

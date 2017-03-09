@@ -33,6 +33,7 @@
 #include "net/quic/platform/api/quic_ptr_util.h"
 #include "net/quic/platform/api/quic_socket_address.h"
 #include "net/quic/platform/api/quic_str_cat.h"
+#include "net/quic/platform/api/quic_string_piece.h"
 #include "net/quic/platform/api/quic_text_utils.h"
 #include "net/quic/test_tools/crypto_test_utils.h"
 #include "net/quic/test_tools/quic_config_peer.h"
@@ -64,7 +65,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::IntToString;
-using base::StringPiece;
 using base::WaitableEvent;
 using std::string;
 
@@ -477,7 +477,9 @@ class EndToEndTest : public ::testing::TestWithParam<TestParams> {
     }
   }
 
-  void AddToCache(StringPiece path, int response_code, StringPiece body) {
+  void AddToCache(QuicStringPiece path,
+                  int response_code,
+                  QuicStringPiece body) {
     response_cache_.AddSimpleResponse(server_hostname_, path, response_code,
                                       body);
   }
