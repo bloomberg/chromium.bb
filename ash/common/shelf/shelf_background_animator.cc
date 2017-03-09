@@ -203,35 +203,49 @@ void ShelfBackgroundAnimator::GetTargetValues(
     ShelfBackgroundType background_type,
     AnimationValues* shelf_background_values,
     AnimationValues* item_background_values) const {
-  int target_shelf_background_alpha = 0;
-  int target_shelf_item_background_alpha = 0;
+  int target_shelf_color_alpha = 0;
+  int target_item_color_alpha = 0;
 
   switch (background_type) {
     case SHELF_BACKGROUND_DEFAULT:
-      target_shelf_background_alpha = 0;
-      target_shelf_item_background_alpha = kShelfTranslucentAlpha;
+      target_shelf_color_alpha = 0;
+      target_item_color_alpha = kShelfTranslucentAlpha;
       break;
     case SHELF_BACKGROUND_OVERLAP:
-      target_shelf_background_alpha = kShelfTranslucentAlpha;
-      target_shelf_item_background_alpha = 0;
+      target_shelf_color_alpha = kShelfTranslucentAlpha;
+      target_item_color_alpha = 0;
       break;
     case SHELF_BACKGROUND_MAXIMIZED:
-      target_shelf_background_alpha = kMaxAlpha;
-      target_shelf_item_background_alpha = 0;
+      target_shelf_color_alpha = kMaxAlpha;
+      target_item_color_alpha = 0;
       break;
   }
 
   SkColor target_color = wallpaper_controller_
                              ? wallpaper_controller_->prominent_color()
                              : kShelfDefaultBaseColor;
-
-  if (target_color == SK_ColorTRANSPARENT)
+  if (target_color == SK_ColorTRANSPARENT) {
     target_color = kShelfDefaultBaseColor;
+  } else {
+    int darkening_alpha = 0;
+
+    switch (background_type) {
+      case SHELF_BACKGROUND_DEFAULT:
+      case SHELF_BACKGROUND_OVERLAP:
+        darkening_alpha = kShelfTranslucentColorDarkenAlpha;
+        break;
+      case SHELF_BACKGROUND_MAXIMIZED:
+        darkening_alpha = kShelfOpaqueColorDarkenAlpha;
+        break;
+    }
+    target_color = color_utils::GetResultingPaintColor(
+        SkColorSetA(kShelfDefaultBaseColor, darkening_alpha), target_color);
+  }
 
   shelf_background_values->SetTargetValues(
-      SkColorSetA(target_color, target_shelf_background_alpha));
+      SkColorSetA(target_color, target_shelf_color_alpha));
   item_background_values->SetTargetValues(
-      SkColorSetA(target_color, target_shelf_item_background_alpha));
+      SkColorSetA(target_color, target_item_color_alpha));
 }
 
 void ShelfBackgroundAnimator::SetAnimationValues(double t) {

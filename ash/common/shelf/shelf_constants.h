@@ -61,6 +61,13 @@ ASH_EXPORT extern const SkColor kShelfIconColor;
 // The alpha value for the shelf background when a window is overlapping.
 ASH_EXPORT extern const int kShelfTranslucentAlpha;
 
+// The alpha value used to darken a colorized shelf when the shelf is
+// translucent.
+extern const int kShelfTranslucentColorDarkenAlpha;
+
+// The alpha vlaue usesd to darken a colorized shelf when the shelf is opaque.
+extern const int kShelfOpaqueColorDarkenAlpha;
+
 // The width and height of the material design overflow button.
 // TODO(tdanderson): Refactor constants which are common between the shelf
 // and the tray. See crbug.com/623987.
