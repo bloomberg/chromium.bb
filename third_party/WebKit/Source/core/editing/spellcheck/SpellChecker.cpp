@@ -185,7 +185,10 @@ void SpellChecker::didBeginEditing(Element* element) {
 }
 
 void SpellChecker::ignoreSpelling() {
-  removeMarkers(frame().selection().computeVisibleSelectionInDOMTree(),
+  removeMarkers(frame()
+                    .selection()
+                    .computeVisibleSelectionInDOMTree()
+                    .toNormalizedEphemeralRange(),
                 DocumentMarker::Spelling);
 }
 
@@ -317,7 +320,8 @@ void SpellChecker::showSpellingGuessPanel() {
 
 void SpellChecker::clearMisspellingsForMovingParagraphs(
     const VisibleSelection& movingSelection) {
-  removeMarkers(movingSelection, DocumentMarker::MisspellingMarkers());
+  removeMarkers(movingSelection.toNormalizedEphemeralRange(),
+                DocumentMarker::MisspellingMarkers());
 }
 
 void SpellChecker::markMisspellingsForMovingParagraphs(
@@ -1020,11 +1024,10 @@ bool SpellChecker::selectionStartHasSpellingMarkerFor(int from,
   return selectionStartHasMarkerFor(DocumentMarker::Spelling, from, length);
 }
 
-void SpellChecker::removeMarkers(const VisibleSelection& selection,
+void SpellChecker::removeMarkers(const EphemeralRange& range,
                                  DocumentMarker::MarkerTypes markerTypes) {
   DCHECK(!frame().document()->needsLayoutTreeUpdate());
 
-  const EphemeralRange& range = selection.toNormalizedEphemeralRange();
   if (range.isNull())
     return;
 

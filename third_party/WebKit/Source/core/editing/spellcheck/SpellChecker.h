@@ -126,7 +126,7 @@ class CORE_EXPORT SpellChecker final : public GarbageCollected<SpellChecker> {
   void markMisspellingsAfterReplaceSelectionCommand(
       const ReplaceSelectionCommand&);
 
-  void removeMarkers(const VisibleSelection&, DocumentMarker::MarkerTypes);
+  void removeMarkers(const EphemeralRange&, DocumentMarker::MarkerTypes);
 
   void markMisspellingsInternal(const VisibleSelection&);
   void chunkAndMarkAllMisspellings(
