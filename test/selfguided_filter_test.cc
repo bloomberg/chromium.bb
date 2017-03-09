@@ -87,9 +87,9 @@ class AV1SelfguidedFilterTest
     const int NUM_ITERS = 81;
     int i, j, k;
 
-    uint8_t *input = new uint8_t[stride * h];
-    uint8_t *output = new uint8_t[out_stride * h];
-    uint8_t *output2 = new uint8_t[out_stride * h];
+    uint8_t *input = new uint8_t[stride * (h + 16)];
+    uint8_t *output = new uint8_t[out_stride * (h + 16)];
+    uint8_t *output2 = new uint8_t[out_stride * (h + 16)];
     int32_t *tmpbuf = (int32_t *)aom_malloc(RESTORATION_TMPBUF_SIZE);
     memset(tmpbuf, 0, RESTORATION_TMPBUF_SIZE);
 
