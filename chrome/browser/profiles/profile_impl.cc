@@ -644,6 +644,16 @@ void ProfileImpl::DoFinalInit() {
   dom_distiller::RegisterViewerSource(this);
 
 #if defined(OS_CHROMEOS)
+  // Finished profile initialization - let the UserManager know so it can
+  // mark the session as initialized. Need to do this before we restart below
+  // so we don't get in a weird state where we restart before the session is
+  // marked as initialized and so try to initialize it again.
+  if (!chromeos::ProfileHelper::IsSigninProfile(this)) {
+    chromeos::ProfileHelper* profile_helper = chromeos::ProfileHelper::Get();
+    user_manager::UserManager::Get()->OnProfileInitialized(
+        profile_helper->GetUserByProfile(this));
+  }
+
   if (chromeos::UserSessionManager::GetInstance()
           ->RestartToApplyPerSessionFlagsIfNeed(this, true)) {
     return;

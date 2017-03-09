@@ -350,6 +350,13 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, CreateNewProfileSynchronous) {
     std::unique_ptr<Profile> profile(CreateProfile(
         temp_dir.GetPath(), &delegate, Profile::CREATE_MODE_SYNCHRONOUS));
     CheckChromeVersion(profile.get(), true);
+
+#if defined(OS_CHROMEOS)
+    // Make sure session is marked as initialized.
+    user_manager::User* user =
+        chromeos::ProfileHelper::Get()->GetUserByProfile(profile.get());
+    EXPECT_TRUE(user->profile_ever_initialized());
+#endif
   }
 
   FlushIoTaskRunnerAndSpinThreads();
@@ -396,6 +403,12 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest,
     // Wait for the profile to be created.
     observer.Wait();
     CheckChromeVersion(profile.get(), true);
+#if defined(OS_CHROMEOS)
+    // Make sure session is marked as initialized.
+    user_manager::User* user =
+        chromeos::ProfileHelper::Get()->GetUserByProfile(profile.get());
+    EXPECT_TRUE(user->profile_ever_initialized());
+#endif
   }
 
   FlushIoTaskRunnerAndSpinThreads();

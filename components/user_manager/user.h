@@ -171,6 +171,9 @@ class USER_MANAGER_EXPORT User : public UserInfo {
   // user's next sign-in.
   bool force_online_signin() const { return force_online_signin_; }
 
+  // Whether the user's session has completed initialization yet.
+  bool profile_ever_initialized() const { return profile_ever_initialized_; }
+
   // True if the user's session can be locked (i.e. the user has a password with
   // which to unlock the session).
   bool can_lock() const;
@@ -200,6 +203,7 @@ class USER_MANAGER_EXPORT User : public UserInfo {
   friend class chromeos::MockUserManager;
   friend class chromeos::UserAddingScreenTest;
   FRIEND_TEST_ALL_PREFIXES(UserTest, DeviceLocalAccountAffiliation);
+  FRIEND_TEST_ALL_PREFIXES(UserTest, UserSessionInitialized);
 
   // Do not allow anyone else to create new User instances.
   static User* CreateRegularUser(const AccountId& account_id);
@@ -249,6 +253,10 @@ class USER_MANAGER_EXPORT User : public UserInfo {
     force_online_signin_ = force_online_signin;
   }
 
+  void set_profile_ever_initialized(bool profile_ever_initialized) {
+    profile_ever_initialized_ = profile_ever_initialized;
+  }
+
   void set_username_hash(const std::string& username_hash) {
     username_hash_ = username_hash;
   }
@@ -276,6 +284,7 @@ class USER_MANAGER_EXPORT User : public UserInfo {
   std::unique_ptr<UserImage> user_image_;
   OAuthTokenStatus oauth_token_status_ = OAUTH_TOKEN_STATUS_UNKNOWN;
   bool force_online_signin_ = false;
+  bool profile_ever_initialized_ = false;
 
   // This is set to chromeos locale if account data has been downloaded.
   // (Or failed to download, but at least one download attempt finished).

@@ -64,6 +64,7 @@ class USER_MANAGER_EXPORT FakeUserManager : public UserManagerBase {
   user_manager::UserList GetUnlockUsers() const override;
   const AccountId& GetOwnerAccountId() const override;
   void OnSessionStarted() override {}
+  void OnProfileInitialized(User* user) override;
   void RemoveUser(const AccountId& account_id,
                   user_manager::RemoveUserDelegate* delegate) override {}
   void RemoveUserFromList(const AccountId& account_id) override;

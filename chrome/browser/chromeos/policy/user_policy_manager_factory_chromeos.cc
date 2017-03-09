@@ -199,17 +199,14 @@ UserPolicyManagerFactoryChromeOS::CreateManagerForProfile(
   const user_manager::UserManager* const user_manager =
       user_manager::UserManager::Get();
 
-  // We want to block for policy in a few situations: if the user is new, or if
-  // we are forcing an online signin. An online signin will be forced if there
-  // has been a credential error, or if the initial session creation was not
-  // completed (the oauth_token_status is not set to valid by OAuth2LoginManager
-  // until profile creation/session restore is complete).
+  // We want to block for policy if the session has never been initialized
+  // (generally true if the user is new, or if there was a crash before the
+  // profile finished initializing). There is code in UserSelectionScreen to
+  // force an online signin for uninitialized sessions to help ensure we are
+  // able to load policy.
   const bool block_forever_for_policy =
       !user_manager->IsLoggedInAsStub() &&
-      (user_manager->IsCurrentUserNew() ||
-       user_manager->GetActiveUser()->force_online_signin() ||
-       user_manager->GetActiveUser()->oauth_token_status() !=
-           user_manager::User::OAUTH2_TOKEN_STATUS_VALID);
+      !user_manager->GetActiveUser()->profile_ever_initialized();
 
   const bool wait_for_policy_fetch =
       block_forever_for_policy || !is_browser_restart;

@@ -197,6 +197,10 @@ const AccountId& FakeChromeUserManager::GetOwnerAccountId() const {
 
 void FakeChromeUserManager::OnSessionStarted() {}
 
+void FakeChromeUserManager::OnProfileInitialized(user_manager::User* user) {
+  user->set_profile_ever_initialized(true);
+}
+
 void FakeChromeUserManager::RemoveUser(
     const AccountId& account_id,
     user_manager::RemoveUserDelegate* delegate) {}

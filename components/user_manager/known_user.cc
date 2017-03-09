@@ -53,6 +53,9 @@ const char kReauthReasonKey[] = "reauth_reason";
 // Key for the GaiaId migration status.
 const char kGaiaIdMigration[] = "gaia_id_migration";
 
+// Key of the boolean flag telling if user session has finished init yet.
+const char kProfileEverInitialized[] = "profile_ever_initialized";
+
 PrefService* GetLocalState() {
   if (!UserManager::IsInitialized())
     return nullptr;
@@ -451,6 +454,22 @@ bool IsUsingSAML(const AccountId& account_id) {
   return false;
 }
 
+bool WasProfileEverInitialized(const AccountId& account_id) {
+  bool profile_ever_initialized;
+  if (GetBooleanPref(account_id, kProfileEverInitialized,
+                     &profile_ever_initialized))
+    return profile_ever_initialized;
+
+  // Sessions created before we started setting the session_initialized flag
+  // should default to "initialized = true".
+  LOG(WARNING) << "Treating unmigrated user as profile_ever_initialized=true";
+  return true;
+}
+
+void SetProfileEverInitialized(const AccountId& account_id, bool initialized) {
+  SetBooleanPref(account_id, kProfileEverInitialized, initialized);
+}
+
 void UpdateReauthReason(const AccountId& account_id, const int reauth_reason) {
   SetIntegerPref(account_id, kReauthReasonKey, reauth_reason);
 }
@@ -476,6 +495,11 @@ void RemovePrefs(const AccountId& account_id) {
       }
     }
   }
+}
+
+// Exported so tests can call this from other components.
+void RemovePrefsForTesting(const AccountId& account_id) {
+  RemovePrefs(account_id);
 }
 
 void RegisterPrefs(PrefRegistrySimple* registry) {

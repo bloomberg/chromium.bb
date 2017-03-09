@@ -175,6 +175,14 @@ class USER_MANAGER_EXPORT UserManager {
   // Invoked by session manager to inform session start.
   virtual void OnSessionStarted() = 0;
 
+  // Invoked once profile initialization has been completed. This allows various
+  // subsystems (for example, policy framework) to skip an expensive online
+  // initialization process, and also allows the signin screen to force an
+  // online signin if it knows that profile initialization has not yet
+  // completed. |user| is the User associated with the profile that has
+  // completed initialization.
+  virtual void OnProfileInitialized(User* user) = 0;
+
   // Removes the user from the device. Note, it will verify that the given user
   // isn't the owner, so calling this method for the owner will take no effect.
   // Note, |delegate| can be NULL.

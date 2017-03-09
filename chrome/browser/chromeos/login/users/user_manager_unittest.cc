@@ -26,6 +26,7 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "components/prefs/pref_service.h"
+#include "components/user_manager/known_user.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/common/content_switches.h"
@@ -238,6 +239,38 @@ TEST_F(UserManagerTest, ScreenLockAvailability) {
   EXPECT_EQ(0U, user_manager::UserManager::Get()->GetUnlockUsers().size());
 
   ResetUserManager();
+}
+
+TEST_F(UserManagerTest, ProfileInitialized) {
+  user_manager::UserManager::Get()->UserLoggedIn(
+      owner_account_id_at_invalid_domain_,
+      owner_account_id_at_invalid_domain_.GetUserEmail(), false);
+  const user_manager::UserList* users =
+      &user_manager::UserManager::Get()->GetUsers();
+  ASSERT_EQ(1U, users->size());
+  EXPECT_FALSE((*users)[0]->profile_ever_initialized());
+  ResetUserManager();
+  users = &user_manager::UserManager::Get()->GetUsers();
+  ASSERT_EQ(1U, users->size());
+  EXPECT_FALSE((*users)[0]->profile_ever_initialized());
+}
+
+TEST_F(UserManagerTest, ProfileInitializedMigration) {
+  user_manager::UserManager::Get()->UserLoggedIn(
+      owner_account_id_at_invalid_domain_,
+      owner_account_id_at_invalid_domain_.GetUserEmail(), false);
+  const user_manager::UserList* users =
+      &user_manager::UserManager::Get()->GetUsers();
+  ASSERT_EQ(1U, users->size());
+  EXPECT_FALSE((*users)[0]->profile_ever_initialized());
+
+  // Clear the stored user data - when UserManager loads again, it should
+  // migrate existing users by setting session_initialized to true for them.
+  user_manager::known_user::RemovePrefsForTesting((*users)[0]->GetAccountId());
+  ResetUserManager();
+  users = &user_manager::UserManager::Get()->GetUsers();
+  ASSERT_EQ(1U, users->size());
+  EXPECT_TRUE((*users)[0]->profile_ever_initialized());
 }
 
 }  // namespace chromeos

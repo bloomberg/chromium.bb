@@ -264,6 +264,16 @@ void UserManagerBase::OnSessionStarted() {
   GetLocalState()->CommitPendingWrite();
 }
 
+void UserManagerBase::OnProfileInitialized(User* user) {
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+
+  // Mark the user as having an initialized session and persist this in
+  // the known_user DB.
+  user->set_profile_ever_initialized(true);
+  known_user::SetProfileEverInitialized(user->GetAccountId(), true);
+  GetLocalState()->CommitPendingWrite();
+}
+
 void UserManagerBase::RemoveUser(const AccountId& account_id,
                                  RemoveUserDelegate* delegate) {
   DCHECK(task_runner_->RunsTasksOnCurrentThread());
@@ -799,6 +809,8 @@ void UserManagerBase::EnsureUsersLoaded() {
     const AccountId account_id = user->GetAccountId();
     user->set_oauth_token_status(LoadUserOAuthStatus(*it));
     user->set_force_online_signin(LoadForceOnlineSignin(*it));
+    user->set_profile_ever_initialized(
+        known_user::WasProfileEverInitialized(*it));
     user->set_using_saml(known_user::IsUsingSAML(*it));
     users_.push_back(user);
 
@@ -820,7 +832,6 @@ void UserManagerBase::EnsureUsersLoaded() {
       user->set_display_email(display_email);
     }
   }
-
   user_loading_stage_ = STAGE_LOADED;
 
   PerformPostUserListLoadingActions();
@@ -883,6 +894,8 @@ void UserManagerBase::RegularUserLoggedIn(const AccountId& account_id) {
     active_user_->set_oauth_token_status(LoadUserOAuthStatus(account_id));
     SaveUserDisplayName(active_user_->GetAccountId(),
                         base::UTF8ToUTF16(active_user_->GetAccountName(true)));
+    known_user::SetProfileEverInitialized(
+        active_user_->GetAccountId(), active_user_->profile_ever_initialized());
   }
 
   AddUserRecord(active_user_);

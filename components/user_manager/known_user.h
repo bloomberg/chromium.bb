@@ -127,6 +127,17 @@ void USER_MANAGER_EXPORT UpdateUsingSAML(const AccountId& account_id,
 // returns false.
 bool USER_MANAGER_EXPORT IsUsingSAML(const AccountId& account_id);
 
+// Returns true if the user's session has already completed initialization
+// (set to false when session is created, and then is set to true once
+// the profile is intiaiized - this allows us to detect crashes/restarts during
+// initial session creation so we can recover gracefully).
+bool USER_MANAGER_EXPORT WasProfileEverInitialized(const AccountId& account_id);
+
+// Sets the flag that denotes whether the session associated with a user has
+// completed initialization at least once.
+void USER_MANAGER_EXPORT SetProfileEverInitialized(const AccountId& account_id,
+                                                   bool initialized);
+
 // Saves why the user has to go through re-auth flow.
 void USER_MANAGER_EXPORT UpdateReauthReason(const AccountId& account_id,
                                             const int reauth_reason);
@@ -138,8 +149,10 @@ bool USER_MANAGER_EXPORT FindReauthReason(const AccountId& account_id,
                                           int* out_value);
 
 // Removes all user preferences associated with |account_id|.
-// (This one used by user_manager only and thus not exported.)
+// Not exported as code should not be calling this outside this component
+// (with the exception of tests, so a test-only API is exposed).
 void RemovePrefs(const AccountId& account_id);
+void USER_MANAGER_EXPORT RemovePrefsForTesting(const AccountId& account_id);
 
 // Register known user prefs.
 void USER_MANAGER_EXPORT RegisterPrefs(PrefRegistrySimple* registry);

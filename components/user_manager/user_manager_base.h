@@ -56,6 +56,7 @@ class USER_MANAGER_EXPORT UserManagerBase : public UserManager {
   void SwitchActiveUser(const AccountId& account_id) override;
   void SwitchToLastActiveUser() override;
   void OnSessionStarted() override;
+  void OnProfileInitialized(User* user) override;
   void RemoveUser(const AccountId& account_id,
                   RemoveUserDelegate* delegate) override;
   void RemoveUserFromList(const AccountId& account_id) override;
@@ -310,6 +311,10 @@ class USER_MANAGER_EXPORT UserManagerBase : public UserManager {
   // Read a flag indicating whether online authentication against GAIA should
   // be enforced during the user's next sign-in from local state preferences.
   bool LoadForceOnlineSignin(const AccountId& account_id) const;
+
+  // Read a flag indicating whether session initialization has completed at
+  // least once.
+  bool LoadSessionInitialized(const AccountId& account_id) const;
 
   // Notifies observers that merge session state had changed.
   void NotifyMergeSessionStateChanged();
