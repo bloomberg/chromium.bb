@@ -15,6 +15,7 @@ namespace favicon {
 class LargeIconService;
 }
 
+class GURL;
 @class ReadingListCollectionViewController;
 @class ReadingListCollectionViewItem;
 class ReadingListDownloadService;
@@ -53,6 +54,21 @@ readingListCollectionViewController:
     (ReadingListCollectionViewController*)readingListCollectionViewController
                            openItem:
                                (ReadingListCollectionViewItem*)readingListItem;
+
+// Opens |URL| in a new tab |incognito| or not.
+- (void)readingListCollectionViewController:
+            (ReadingListCollectionViewController*)
+                readingListCollectionViewController
+                          openNewTabWithURL:(const GURL&)URL
+                                  incognito:(BOOL)incognito;
+
+// Opens the offline url |offlineURL| of the entry saved in the reading list
+// model with the |entryURL| url.
+- (void)readingListCollectionViewController:
+            (ReadingListCollectionViewController*)
+                readingListCollectionViewController
+                             openOfflineURL:(const GURL&)offlineURL
+                      correspondingEntryURL:(const GURL&)entryURL;
 
 @end
 
