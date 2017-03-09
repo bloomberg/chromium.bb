@@ -21,9 +21,11 @@
 
 #include "core/svg/SVGFEImageElement.h"
 
+#include "core/SVGNames.h"
 #include "core/dom/Document.h"
+#include "core/dom/IdTargetObserver.h"
+#include "core/loader/resource/ImageResourceContent.h"
 #include "core/svg/SVGPreserveAspectRatio.h"
-#include "core/svg/SVGTreeScopeResources.h"
 #include "core/svg/graphics/filters/SVGFEImage.h"
 #include "platform/graphics/Image.h"
 #include "platform/loader/fetch/FetchRequest.h"
@@ -43,15 +45,13 @@ inline SVGFEImageElement::SVGFEImageElement(Document& document)
 DEFINE_NODE_FACTORY(SVGFEImageElement)
 
 SVGFEImageElement::~SVGFEImageElement() {
-  if (m_cachedImage) {
-    m_cachedImage->removeObserver(this);
-    m_cachedImage = nullptr;
-  }
+  clearImageResource();
 }
 
 DEFINE_TRACE(SVGFEImageElement) {
   visitor->trace(m_preserveAspectRatio);
   visitor->trace(m_cachedImage);
+  visitor->trace(m_targetIdObserver);
   SVGFilterPrimitiveStandardAttributes::trace(visitor);
   SVGURIReference::trace(visitor);
 }
@@ -64,21 +64,25 @@ bool SVGFEImageElement::currentFrameHasSingleSecurityOrigin() const {
 }
 
 void SVGFEImageElement::clearResourceReferences() {
-  if (m_cachedImage) {
-    m_cachedImage->removeObserver(this);
-    m_cachedImage = nullptr;
-  }
-
+  clearImageResource();
+  unobserveTarget(m_targetIdObserver);
   removeAllOutgoingReferences();
 }
 
 void SVGFEImageElement::fetchImageResource() {
-  FetchRequest request(
-      ResourceRequest(ownerDocument()->completeURL(hrefString())), localName());
+  FetchRequest request(ResourceRequest(document().completeURL(hrefString())),
+                       localName());
   m_cachedImage = ImageResourceContent::fetch(request, document().fetcher());
 
   if (m_cachedImage)
     m_cachedImage->addObserver(this);
+}
+
+void SVGFEImageElement::clearImageResource() {
+  if (!m_cachedImage)
+    return;
+  m_cachedImage->removeObserver(this);
+  m_cachedImage = nullptr;
 }
 
 void SVGFEImageElement::buildPendingResource() {
@@ -86,16 +90,10 @@ void SVGFEImageElement::buildPendingResource() {
   if (!isConnected())
     return;
 
-  AtomicString id;
-  Element* target = SVGURIReference::targetElementFromIRIString(
-      hrefString(), treeScope(), &id);
+  Element* target = observeTarget(m_targetIdObserver, *this);
   if (!target) {
-    if (id.isEmpty()) {
+    if (!SVGURLReferenceResolver(hrefString(), document()).isLocal())
       fetchImageResource();
-    } else {
-      treeScope().ensureSVGTreeScopedResources().addPendingResource(id, *this);
-      DCHECK(hasPendingResources());
-    }
   } else if (target->isSVGElement()) {
     // Register us with the target in the dependencies map. Any change of
     // hrefElement that leads to relayout/repainting now informs us, so we can

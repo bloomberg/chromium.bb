@@ -21,8 +21,6 @@
 #ifndef SVGFEImageElement_h
 #define SVGFEImageElement_h
 
-#include "core/SVGNames.h"
-#include "core/loader/resource/ImageResourceContent.h"
 #include "core/loader/resource/ImageResourceObserver.h"
 #include "core/svg/SVGAnimatedPreserveAspectRatio.h"
 #include "core/svg/SVGFilterPrimitiveStandardAttributes.h"
@@ -30,6 +28,8 @@
 #include "platform/heap/Handle.h"
 
 namespace blink {
+
+class ImageResourceContent;
 
 class SVGFEImageElement final : public SVGFilterPrimitiveStandardAttributes,
                                 public SVGURIReference,
@@ -62,6 +62,7 @@ class SVGFEImageElement final : public SVGFilterPrimitiveStandardAttributes,
 
   void clearResourceReferences();
   void fetchImageResource();
+  void clearImageResource();
 
   void buildPendingResource() override;
   InsertionNotificationRequest insertedInto(ContainerNode*) override;
@@ -70,6 +71,7 @@ class SVGFEImageElement final : public SVGFilterPrimitiveStandardAttributes,
   Member<SVGAnimatedPreserveAspectRatio> m_preserveAspectRatio;
 
   Member<ImageResourceContent> m_cachedImage;
+  Member<IdTargetObserver> m_targetIdObserver;
 };
 
 }  // namespace blink
