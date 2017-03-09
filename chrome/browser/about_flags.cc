@@ -2074,6 +2074,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"android-payment-apps", IDS_FLAGS_ANDROID_PAYMENT_APPS_NAME,
      IDS_FLAGS_ANDROID_PAYMENT_APPS_DESCRIPTION, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kAndroidPaymentApps)},
+    {"android-payment-apps-filter", IDS_FLAGS_ANDROID_PAYMENT_APPS_FILTER_TITLE,
+     IDS_FLAGS_ANDROID_PAYMENT_APPS_FILTER_DESCRIPTION, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kAndroidPaymentAppsFilter)},
 #endif  // OS_ANDROID
 #if defined(OS_CHROMEOS)
     {"disable-eol-notification", IDS_FLAGS_EOL_NOTIFICATION_NAME,

@@ -14,6 +14,7 @@ import android.util.Pair;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.payments.PaymentAppFactory.PaymentAppCreatedCallback;
 import org.chromium.chrome.browser.payments.PaymentAppFactory.PaymentAppFactoryAddition;
@@ -51,6 +52,10 @@ public class AndroidPaymentAppFactory implements PaymentAppFactoryAddition {
         PackageManager pm = context.getPackageManager();
         Intent payIntent = new Intent();
 
+        boolean paymentAppsFilterEnabled =
+                ChromeFeatureList.isEnabled(ChromeFeatureList.ANDROID_PAYMENT_APPS_FILTER);
+        Intent filterIntent = new Intent(AndroidPaymentApp.ACTION_PAY);
+
         for (String methodName : methods) {
             if (methodName.startsWith(UrlConstants.HTTPS_URL_PREFIX)) {
                 payIntent.setAction(AndroidPaymentApp.ACTION_PAY);
@@ -66,6 +71,10 @@ public class AndroidPaymentAppFactory implements PaymentAppFactoryAddition {
             for (int i = 0; i < matches.size(); i++) {
                 ResolveInfo match = matches.get(i);
                 String packageName = match.activityInfo.packageName;
+                if (paymentAppsFilterEnabled) {
+                    filterIntent.setPackage(packageName);
+                    if (pm.resolveActivity(filterIntent, 0) == null) continue;
+                }
                 // Do not recommend disabled apps.
                 if (!PaymentPreferencesUtil.isAndroidPaymentAppEnabled(packageName)) continue;
                 AndroidPaymentApp installedApp = installedApps.get(packageName);
