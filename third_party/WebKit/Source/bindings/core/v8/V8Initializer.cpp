@@ -377,8 +377,6 @@ static void initializeV8Common(v8::Isolate* isolate) {
   isolate->SetEmbedderHeapTracer(
       V8PerIsolateData::from(isolate)->scriptWrappableVisitor());
 
-  v8::Debug::SetLiveEditEnabled(isolate, false);
-
   isolate->SetMicrotasksPolicy(v8::MicrotasksPolicy::kScoped);
 
   isolate->SetUseCounterCallback(&useCounterCallback);
