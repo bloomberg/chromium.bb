@@ -92,7 +92,7 @@ ipp_attribute_t* MakeString(ipp_t* ipp, const char* value) {
 }
 
 ipp_attribute_t* MakeStringCollection(ipp_t* ipp,
-                                      std::vector<const char*> strings) {
+                                      const std::vector<const char*>& strings) {
   return ippAddStrings(ipp, IPP_TAG_PRINTER, IPP_TAG_KEYWORD, "TEST_DATA",
                        strings.size(), nullptr, strings.data());
 }

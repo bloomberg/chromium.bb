@@ -15,10 +15,6 @@
 #include "printing/printing_export.h"
 #include "url/gurl.h"
 
-namespace base {
-class FilePath;
-}
-
 namespace printing {
 
 struct PrinterBasicInfo;
@@ -77,8 +73,8 @@ class PRINTING_EXPORT CupsPrinter : public CupsOptionProvider {
   bool CheckOptionSupported(base::StringPiece name,
                             base::StringPiece value) const override;
 
-  // Returns the file name for the PPD retrieved from the print server.
-  base::FilePath GetPPD() const;
+  // Returns the contents of the PPD retrieved from the print server.
+  std::string GetPPD() const;
 
   // Returns the name of the printer as configured in CUPS
   std::string GetName() const;

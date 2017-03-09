@@ -5,28 +5,19 @@
 #include "printing/backend/print_backend_cups_ipp.h"
 
 #include <cups/cups.h>
-#include <dlfcn.h>
-#include <errno.h>
-#include <pthread.h>
 
 #include <memory>
 #include <utility>
 #include <vector>
 
-#include "base/debug/leak_annotations.h"
 #include "base/files/file_util.h"
-#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
-#include "base/synchronization/lock.h"
-#include "base/values.h"
 #include "printing/backend/cups_connection.h"
 #include "printing/backend/cups_ipp_util.h"
 #include "printing/backend/print_backend_consts.h"
 #include "printing/units.h"
-#include "url/gurl.h"
 
 namespace printing {
 
@@ -101,33 +92,24 @@ bool PrintBackendCupsIpp::GetPrinterCapsAndDefaults(
     PrinterCapsAndDefaults* printer_info) {
   DCHECK(printer_info);
 
-  // Read the ppd file for Cloud Print.  We don't use PPD anymore otherwise.
+  // Read the PPD file for Cloud Print.  We don't use PPD anymore otherwise.
   std::unique_ptr<CupsPrinter> printer(
       cups_connection_->GetPrinter(printer_name));
   if (!printer)
     return false;
 
-  base::FilePath ppd_path(printer->GetPPD());
-  // In some cases CUPS failed to get ppd file.
-  if (ppd_path.empty()) {
+  std::string ppd_contents = printer->GetPPD();
+  if (ppd_contents.empty()) {
     LOG(ERROR) << "CUPS: Failed to get PPD, printer name: " << printer_name;
     return false;
   }
 
-  std::string content;
-  bool res = base::ReadFileToString(ppd_path, &content);
-
-  base::DeleteFile(ppd_path, false);
-
-  if (res) {
-    printer_info->printer_capabilities.swap(content);
-    printer_info->caps_mime_type = "application/pagemaker";
-    // In CUPS, printer defaults is a part of PPD file. Nothing to upload here.
-    printer_info->printer_defaults.clear();
-    printer_info->defaults_mime_type.clear();
-  }
-
-  return res;
+  printer_info->printer_capabilities.swap(ppd_contents);
+  printer_info->caps_mime_type = "application/pagemaker";
+  // In CUPS, printer defaults is a part of PPD file. Nothing to upload here.
+  printer_info->printer_defaults.clear();
+  printer_info->defaults_mime_type.clear();
+  return true;
 }
 
 std::string PrintBackendCupsIpp::GetPrinterDriverInfo(
@@ -144,10 +126,7 @@ std::string PrintBackendCupsIpp::GetPrinterDriverInfo(
 bool PrintBackendCupsIpp::IsValidPrinter(const std::string& printer_name) {
   std::unique_ptr<CupsPrinter> printer(
       cups_connection_->GetPrinter(printer_name));
-  if (!printer)
-    return false;
-
-  return printer->IsAvailable();
+  return printer ? printer->IsAvailable() : false;
 }
 
 }  // namespace printing

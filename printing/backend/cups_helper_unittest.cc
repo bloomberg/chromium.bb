@@ -36,7 +36,7 @@ TEST(PrintBackendCupsHelperTest, TestPpdParsingNoColorDuplexLongEdge) {
   EXPECT_TRUE(caps.collate_default);
   EXPECT_TRUE(caps.copies_capable);
   EXPECT_TRUE(caps.duplex_capable);
-  EXPECT_EQ(caps.duplex_default, printing::LONG_EDGE);
+  EXPECT_EQ(printing::LONG_EDGE, caps.duplex_default);
   EXPECT_FALSE(caps.color_changeable);
   EXPECT_FALSE(caps.color_default);
 }
@@ -63,7 +63,7 @@ TEST(PrintBackendCupsHelperTest, TestPpdParsingNoColorDuplexSimples) {
   EXPECT_TRUE(caps.collate_default);
   EXPECT_TRUE(caps.copies_capable);
   EXPECT_TRUE(caps.duplex_capable);
-  EXPECT_EQ(caps.duplex_default, printing::SIMPLEX);
+  EXPECT_EQ(printing::SIMPLEX, caps.duplex_default);
   EXPECT_FALSE(caps.color_changeable);
   EXPECT_FALSE(caps.color_default);
 }
@@ -89,7 +89,7 @@ TEST(PrintBackendCupsHelperTest, TestPpdParsingNoColorNoDuplex) {
   EXPECT_TRUE(caps.collate_default);
   EXPECT_TRUE(caps.copies_capable);
   EXPECT_FALSE(caps.duplex_capable);
-  EXPECT_EQ(caps.duplex_default, printing::UNKNOWN_DUPLEX_MODE);
+  EXPECT_EQ(printing::UNKNOWN_DUPLEX_MODE, caps.duplex_default);
   EXPECT_FALSE(caps.color_changeable);
   EXPECT_FALSE(caps.color_default);
 }
@@ -124,7 +124,7 @@ TEST(PrintBackendCupsHelperTest, TestPpdParsingColorTrueDuplexLongEdge) {
   EXPECT_TRUE(caps.collate_default);
   EXPECT_TRUE(caps.copies_capable);
   EXPECT_TRUE(caps.duplex_capable);
-  EXPECT_EQ(caps.duplex_default, printing::LONG_EDGE);
+  EXPECT_EQ(printing::LONG_EDGE, caps.duplex_default);
   EXPECT_TRUE(caps.color_changeable);
   EXPECT_TRUE(caps.color_default);
 }
@@ -163,7 +163,7 @@ TEST(PrintBackendCupsHelperTest, TestPpdParsingColorFalseDuplexLongEdge) {
   EXPECT_TRUE(caps.collate_default);
   EXPECT_TRUE(caps.copies_capable);
   EXPECT_TRUE(caps.duplex_capable);
-  EXPECT_EQ(caps.duplex_default, printing::LONG_EDGE);
+  EXPECT_EQ(printing::LONG_EDGE, caps.duplex_default);
   EXPECT_TRUE(caps.color_changeable);
   EXPECT_FALSE(caps.color_default);
 }

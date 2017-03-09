@@ -10,7 +10,6 @@
 
 #include "printing/backend/cups_connection.h"
 #include "printing/backend/print_backend.h"
-#include "url/gurl.h"
 
 namespace printing {
 
