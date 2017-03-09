@@ -28,6 +28,7 @@
 #include "content/public/renderer/render_view.h"
 #include "extensions/common/constants.h"
 #include "printing/features/features.h"
+#include "services/service_manager/public/cpp/interface_registry.h"
 #include "skia/ext/image_operations.h"
 #include "third_party/WebKit/public/platform/WebImage.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
@@ -112,7 +113,11 @@ ChromeRenderFrameObserver::ChromeRenderFrameObserver(
     : content::RenderFrameObserver(render_frame),
       translate_helper_(nullptr),
       phishing_classifier_(nullptr) {
-  // Don't do anything for subframes.
+  render_frame->GetInterfaceRegistry()->AddInterface(
+      base::Bind(&ChromeRenderFrameObserver::OnImageContextMenuRendererRequest,
+                 base::Unretained(this)));
+
+  // Don't do anything else for subframes.
   if (!render_frame->IsMainFrame())
     return;
 
@@ -139,8 +144,11 @@ bool ChromeRenderFrameObserver::OnMessageReceived(const IPC::Message& message) {
     return false;
 
   IPC_BEGIN_MESSAGE_MAP(ChromeRenderFrameObserver, message)
+    // TODO(nigeltao): delete the
+    // ChromeViewMsg_RequestReloadImageForContextNode handler when
+    // tab_android.cc's use is converted to Mojo.
     IPC_MESSAGE_HANDLER(ChromeViewMsg_RequestReloadImageForContextNode,
-                        OnRequestReloadImageForContextNode)
+                        RequestReloadImageForContextNode)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_RequestThumbnailForContextNode,
                         OnRequestThumbnailForContextNode)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_SetClientSidePhishingDetection,
@@ -171,7 +179,7 @@ void ChromeRenderFrameObserver::OnSetIsPrerendering(
   }
 }
 
-void ChromeRenderFrameObserver::OnRequestReloadImageForContextNode() {
+void ChromeRenderFrameObserver::RequestReloadImageForContextNode() {
   WebLocalFrame* frame = render_frame()->GetWebFrame();
   // TODO(dglazkov): This code is clearly in the wrong place. Need
   // to investigate what it is doing and fix (http://crbug.com/606164).
@@ -346,4 +354,9 @@ void ChromeRenderFrameObserver::DidMeaningfulLayout(
 
 void ChromeRenderFrameObserver::OnDestruct() {
   delete this;
+}
+
+void ChromeRenderFrameObserver::OnImageContextMenuRendererRequest(
+    chrome::mojom::ImageContextMenuRendererRequest request) {
+  image_context_menu_renderer_bindings_.AddBinding(this, std::move(request));
 }

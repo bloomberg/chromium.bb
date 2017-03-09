@@ -135,6 +135,8 @@ IPC_MESSAGE_ROUTED1(ChromeViewMsg_SetClientSidePhishingDetection,
 
 // Reloads the image selected by the most recently opened context menu
 // (if there indeed is an image at that location).
+//
+// TODO(nigeltao): delete this when tab_android.cc's use is converted to Mojo.
 IPC_MESSAGE_ROUTED0(ChromeViewMsg_RequestReloadImageForContextNode)
 
 // Asks the renderer for a thumbnail of the image selected by the most

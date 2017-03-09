@@ -655,6 +655,7 @@ void TabAndroid::LoadOriginalImage(JNIEnv* env,
                                    const JavaParamRef<jobject>& obj) {
   content::RenderFrameHost* render_frame_host =
       web_contents()->GetFocusedFrame();
+  // TODO(nigeltao): convert this to Mojo.
   render_frame_host->Send(new ChromeViewMsg_RequestReloadImageForContextNode(
       render_frame_host->GetRoutingID()));
 }

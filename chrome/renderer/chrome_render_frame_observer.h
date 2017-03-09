@@ -7,8 +7,10 @@
 
 #include "base/macros.h"
 #include "base/timer/timer.h"
+#include "chrome/common/image_context_menu_renderer.mojom.h"
 #include "chrome/common/prerender_types.h"
 #include "content/public/renderer/render_frame_observer.h"
+#include "mojo/public/cpp/bindings/binding_set.h"
 
 namespace gfx {
 class Size;
@@ -24,7 +26,9 @@ class TranslateHelper;
 
 // This class holds the Chrome specific parts of RenderFrame, and has the same
 // lifetime.
-class ChromeRenderFrameObserver : public content::RenderFrameObserver {
+class ChromeRenderFrameObserver
+    : public content::RenderFrameObserver,
+      public chrome::mojom::ImageContextMenuRenderer {
  public:
   explicit ChromeRenderFrameObserver(content::RenderFrame* render_frame);
   ~ChromeRenderFrameObserver() override;
@@ -41,9 +45,15 @@ class ChromeRenderFrameObserver : public content::RenderFrameObserver {
   void DidMeaningfulLayout(blink::WebMeaningfulLayout layout_type) override;
   void OnDestruct() override;
 
+  // chrome::mojom::ImageContextMenuRenderer:
+  void RequestReloadImageForContextNode() override;
+
+  // Mojo handlers.
+  void OnImageContextMenuRendererRequest(
+      chrome::mojom::ImageContextMenuRendererRequest request);
+
   // IPC handlers
   void OnSetIsPrerendering(prerender::PrerenderMode mode);
-  void OnRequestReloadImageForContextNode();
   void OnRequestThumbnailForContextNode(
       int thumbnail_min_area_pixels,
       const gfx::Size& thumbnail_max_size_pixels,
@@ -64,6 +74,9 @@ class ChromeRenderFrameObserver : public content::RenderFrameObserver {
   // Have the same lifetime as us.
   translate::TranslateHelper* translate_helper_;
   safe_browsing::PhishingClassifierDelegate* phishing_classifier_;
+
+  mojo::BindingSet<chrome::mojom::ImageContextMenuRenderer>
+      image_context_menu_renderer_bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeRenderFrameObserver);
 };
