@@ -92,6 +92,10 @@ void LocalWindowProxy::disposeContext(GlobalDetachmentBehavior behavior) {
     }
     V8DOMWrapper::clearNativeInfo(isolate(), context->Global());
     m_scriptState->detachGlobalObject();
+
+#if DCHECK_IS_ON()
+    didDetachGlobalObject();
+#endif
   }
 
   m_scriptState->disposePerContextData();
@@ -186,6 +190,10 @@ void LocalWindowProxy::createContext() {
                          m_globalProxy.newLocal(isolate()));
   }
   CHECK(!context.IsEmpty());
+
+#if DCHECK_IS_ON()
+  didAttachGlobalObject();
+#endif
 
   m_scriptState = ScriptState::create(context, m_world);
 

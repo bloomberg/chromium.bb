@@ -80,10 +80,11 @@ v8::Local<v8::Object> WindowProxy::globalIfNotDetached() {
 
 v8::Local<v8::Object> WindowProxy::releaseGlobal() {
   DCHECK(m_lifecycle != Lifecycle::ContextInitialized);
+
   // Make sure the global object was detached from the proxy by calling
   // clearForNavigation().
-  if (m_lifecycle == Lifecycle::ContextDetached)
-    ASSERT(m_scriptState->isGlobalObjectDetached());
+  DLOG_IF(FATAL, m_isGlobalObjectAttached)
+      << "Context not detached by calling clearForNavigation()";
 
   v8::Local<v8::Object> global = m_globalProxy.newLocal(m_isolate);
   m_globalProxy.clear();

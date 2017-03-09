@@ -168,9 +168,17 @@ class WindowProxy : public GarbageCollectedFinalized<WindowProxy> {
   Frame* frame() const { return m_frame.get(); }
   ScriptState* getScriptState() const { return m_scriptState.get(); }
 
+#if DCHECK_IS_ON()
+  void didAttachGlobalObject() { m_isGlobalObjectAttached = true; }
+  void didDetachGlobalObject() { m_isGlobalObjectAttached = false; }
+#endif
+
  private:
   v8::Isolate* const m_isolate;
   const Member<Frame> m_frame;
+#if DCHECK_IS_ON()
+  bool m_isGlobalObjectAttached = false;
+#endif
 
  protected:
   // TODO(dcheng): Move this to LocalWindowProxy once RemoteWindowProxy uses

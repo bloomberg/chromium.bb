@@ -51,9 +51,6 @@ ScriptState::~ScriptState() {
 void ScriptState::detachGlobalObject() {
   ASSERT(!m_context.isEmpty());
   context()->DetachGlobal();
-#if DCHECK_IS_ON()
-  m_globalObjectDetached = true;
-#endif
 }
 
 void ScriptState::disposePerContextData() {
