@@ -10,11 +10,11 @@
 #include <deque>
 #include <limits>
 
-#include "base/lazy_instance.h"
 #include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "cc/raster/raster_buffer.h"
 #include "cc/raster/synchronous_task_graph_runner.h"
+#include "cc/test/fake_raster_buffer_provider.h"
 #include "cc/test/fake_tile_task_manager.h"
 #include "cc/trees/layer_tree_settings.h"
 
@@ -22,11 +22,15 @@ namespace cc {
 
 namespace {
 
-base::LazyInstance<SynchronousTaskGraphRunner>::DestructorAtExit
-    g_synchronous_task_graph_runner = LAZY_INSTANCE_INITIALIZER;
+SynchronousTaskGraphRunner* GetGlobalTaskGraphRunner() {
+  static auto* task_graph_runner = new SynchronousTaskGraphRunner;
+  return task_graph_runner;
+}
 
-base::LazyInstance<FakeRasterBufferProviderImpl>::DestructorAtExit
-    g_fake_raster_buffer_provider = LAZY_INSTANCE_INITIALIZER;
+FakeRasterBufferProviderImpl* GetGlobalRasterBufferProvider() {
+  static auto* buffer_provider = new FakeRasterBufferProviderImpl;
+  return buffer_provider;
+}
 
 }  // namespace
 
@@ -41,9 +45,8 @@ FakeTileManager::FakeTileManager(TileManagerClient* client,
           ResourceFormat::RGBA_8888,
           LayerTreeSettings().software_decoded_image_budget_bytes) {
   SetDecodedImageTracker(&decoded_image_tracker_);
-  SetResources(resource_pool, &image_decode_cache_,
-               g_synchronous_task_graph_runner.Pointer(),
-               g_fake_raster_buffer_provider.Pointer(),
+  SetResources(resource_pool, &image_decode_cache_, GetGlobalTaskGraphRunner(),
+               GetGlobalRasterBufferProvider(),
                std::numeric_limits<size_t>::max(),
                false /* use_gpu_rasterization */);
   SetTileTaskManagerForTesting(base::MakeUnique<FakeTileTaskManagerImpl>());
