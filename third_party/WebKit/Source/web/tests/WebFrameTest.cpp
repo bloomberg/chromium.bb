@@ -7265,11 +7265,9 @@ TEST_P(ParameterizedWebFrameTest, WebNodeImageContents) {
   ASSERT_FALSE(image.isNull());
   EXPECT_EQ(image.size().width, 10);
   EXPECT_EQ(image.size().height, 10);
-  // FIXME: The rest of this test is disabled since the ImageDecodeCache state
-  // may be inconsistent when this test runs, crbug.com/266088
-  // SkBitmap bitmap = image.getSkBitmap();
-  // SkAutoLockPixels locker(bitmap);
-  // EXPECT_EQ(bitmap.getColor(0, 0), SK_ColorBLUE);
+  SkBitmap bitmap = image.getSkBitmap();
+  SkAutoLockPixels locker(bitmap);
+  EXPECT_EQ(bitmap.getColor(0, 0), SK_ColorBLUE);
 }
 
 class TestStartStopCallbackWebFrameClient
