@@ -23,6 +23,7 @@ constexpr float kMostlyFillViewportThresholdOfVisibleProportion = 0.75f;
 MediaCustomControlsFullscreenDetector::MediaCustomControlsFullscreenDetector(
     HTMLVideoElement& video)
     : EventListener(CPPEventListenerType),
+      ContextLifecycleObserver(nullptr),
       m_videoElement(video),
       m_checkViewportIntersectionTimer(
           TaskRunnerHelper::get(TaskType::Unthrottled, &video.document()),
@@ -43,6 +44,7 @@ bool MediaCustomControlsFullscreenDetector::operator==(
 }
 
 void MediaCustomControlsFullscreenDetector::attach() {
+  setContext(&videoElement().document());
   videoElement().document().addEventListener(
       EventTypeNames::webkitfullscreenchange, this, true);
   videoElement().document().addEventListener(EventTypeNames::fullscreenchange,
@@ -50,10 +52,12 @@ void MediaCustomControlsFullscreenDetector::attach() {
 }
 
 void MediaCustomControlsFullscreenDetector::detach() {
+  setContext(nullptr);
   videoElement().document().removeEventListener(
       EventTypeNames::webkitfullscreenchange, this, true);
   videoElement().document().removeEventListener(
       EventTypeNames::fullscreenchange, this, true);
+  m_checkViewportIntersectionTimer.stop();
 }
 
 bool MediaCustomControlsFullscreenDetector::computeIsDominantVideoForTests(
@@ -126,6 +130,14 @@ void MediaCustomControlsFullscreenDetector::handleEvent(
                                                 BLINK_FROM_HERE);
 }
 
+void MediaCustomControlsFullscreenDetector::contextDestroyed(
+    ExecutionContext*) {
+  if (videoElement().webMediaPlayer())
+    videoElement().webMediaPlayer()->setIsEffectivelyFullscreen(false);
+
+  detach();
+}
+
 void MediaCustomControlsFullscreenDetector::
     onCheckViewportIntersectionTimerFired(TimerBase*) {
   DCHECK(isVideoOrParentFullscreen());
@@ -152,6 +164,7 @@ bool MediaCustomControlsFullscreenDetector::isVideoOrParentFullscreen() {
 
 DEFINE_TRACE(MediaCustomControlsFullscreenDetector) {
   EventListener::trace(visitor);
+  ContextLifecycleObserver::trace(visitor);
   visitor->trace(m_videoElement);
 }
 

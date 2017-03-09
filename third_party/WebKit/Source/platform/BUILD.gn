@@ -1569,6 +1569,8 @@ static_library("test_support") {
     "scroll/ScrollbarTestSuite.h",
     "testing/CompositorTest.cpp",
     "testing/CompositorTest.h",
+    "testing/EmptyWebMediaPlayer.cpp",
+    "testing/EmptyWebMediaPlayer.h",
     "testing/FakeDisplayItemClient.h",
     "testing/FakeGraphicsLayer.h",
     "testing/FakeGraphicsLayerClient.h",

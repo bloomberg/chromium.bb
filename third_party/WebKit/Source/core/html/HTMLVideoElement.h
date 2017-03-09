@@ -123,6 +123,7 @@ class CORE_EXPORT HTMLVideoElement final : public HTMLMediaElement,
 
  private:
   friend class MediaCustomControlsFullscreenDetectorTest;
+  friend class HTMLMediaElementEventListenersTest;
 
   HTMLVideoElement(Document&);
 
