@@ -411,12 +411,10 @@ content::Referrer CreateReferrer(const GURL& url,
 content::WebContents* GetWebContentsToUse(content::WebContents* web_contents) {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   // If we're viewing in a MimeHandlerViewGuest, use its embedder WebContents.
-  if (extensions::MimeHandlerViewGuest::FromWebContents(web_contents)) {
-    WebContents* top_level_web_contents =
-        guest_view::GuestViewBase::GetTopLevelWebContents(web_contents);
-    if (top_level_web_contents)
-      return top_level_web_contents;
-  }
+  auto* guest_view =
+      extensions::MimeHandlerViewGuest::FromWebContents(web_contents);
+  if (guest_view)
+    return guest_view->embedder_web_contents();
 #endif
   return web_contents;
 }

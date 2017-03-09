@@ -2935,6 +2935,24 @@ function testPDFInWebview() {
   document.body.appendChild(webview);
 }
 
+function testNavigateToPDFInWebview() {
+  var webview = document.createElement('webview');
+  var pdfUrl = 'test.pdf';
+  // partition 'foobar' has access to local resource |pdfUrl|.
+  webview.partition = 'foobar';
+  webview.onloadabort = embedder.test.fail;
+
+  var loadstopHandler = function(e) {
+    webview.removeEventListener('loadstop', loadstopHandler);
+    webview.addEventListener('loadstop', embedder.test.succeed);
+    webview.setAttribute('src', pdfUrl);
+  };
+  webview.addEventListener('loadstop', loadstopHandler);
+
+  webview.setAttribute('src', 'about:blank');
+  document.body.appendChild(webview);
+}
+
 // This test verifies that mailto links are enabled.
 function testMailtoLink() {
   var webview = new WebView();
@@ -3135,6 +3153,7 @@ embedder.test.testList = {
   'testCloseNewWindowCleanup': testCloseNewWindowCleanup,
   'testFocusWhileFocused': testFocusWhileFocused,
   'testPDFInWebview': testPDFInWebview,
+  'testNavigateToPDFInWebview': testNavigateToPDFInWebview,
   'testMailtoLink': testMailtoLink,
   'testRendererNavigationRedirectWhileUnattached':
        testRendererNavigationRedirectWhileUnattached,

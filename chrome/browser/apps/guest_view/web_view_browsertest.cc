@@ -63,6 +63,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/download_test_observer.h"
 #include "content/public/test/fake_speech_recognition_manager.h"
+#include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_renderer_host.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/api/declarative/rules_registry.h"
@@ -3230,6 +3231,40 @@ IN_PROC_BROWSER_TEST_P(WebViewTest, NestedGuestContainerBounds) {
       mime_handler_view_contents->GetContainerBounds();
   EXPECT_EQ(web_view_container_bounds.origin(),
             mime_handler_view_container_bounds.origin());
+}
+
+// Test that context menu Back/Forward items in a MimeHandlerViewGuest affect
+// the embedder WebContents. See crbug.com/587355.
+IN_PROC_BROWSER_TEST_P(WebViewTest, ContextMenuNavigationInMimeHandlerView) {
+  TestHelper("testNavigateToPDFInWebview", "web_view/shim", NO_TEST_SERVER);
+
+  std::vector<content::WebContents*> guest_web_contents_list;
+  GetGuestViewManager()->WaitForNumGuestsCreated(2u);
+  GetGuestViewManager()->GetGuestWebContentsList(&guest_web_contents_list);
+  ASSERT_EQ(2u, guest_web_contents_list.size());
+
+  content::WebContents* web_view_contents = guest_web_contents_list[0];
+  content::WebContents* mime_handler_view_contents = guest_web_contents_list[1];
+  ASSERT_TRUE(pdf_extension_test_util::EnsurePDFHasLoaded(web_view_contents));
+
+  // Ensure the <webview> has a previous entry, so we can navigate back to it.
+  ASSERT_TRUE(web_view_contents->GetController().CanGoBack());
+
+  // Open a context menu for the MimeHandlerViewGuest. Since the <webview> can
+  // navigate back, the Back item should be enabled.
+  content::ContextMenuParams params;
+  TestRenderViewContextMenu menu(mime_handler_view_contents->GetMainFrame(),
+                                 params);
+  menu.Init();
+  ASSERT_TRUE(menu.IsCommandIdEnabled(IDC_BACK));
+
+  // Verify that the Back item causes the <webview> to navigate back to the
+  // previous entry.
+  content::TestNavigationObserver observer(web_view_contents);
+  menu.ExecuteCommand(IDC_BACK, 0);
+  observer.Wait();
+  EXPECT_EQ(GURL(url::kAboutBlankURL),
+            web_view_contents->GetLastCommittedURL());
 }
 
 IN_PROC_BROWSER_TEST_P(WebViewTest, Shim_TestMailtoLink) {
