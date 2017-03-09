@@ -423,6 +423,67 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, FallbackSurfaceReference) {
   fallback_child_factory.EvictSurface();
 }
 
+// This test verifies that in the presence of both primary Surface and fallback
+// Surface, the fallback will not be used.
+TEST_F(SurfaceAggregatorValidSurfaceTest, FallbackSurfaceReferenceWithPrimary) {
+  SurfaceFactory primary_child_factory(kArbitraryChildFrameSinkId1, &manager_,
+                                       &empty_client_);
+  LocalSurfaceId primary_child_local_surface_id = allocator_.GenerateId();
+  SurfaceId primary_child_surface_id(primary_child_factory.frame_sink_id(),
+                                     primary_child_local_surface_id);
+  test::Quad primary_child_quads[] = {
+      test::Quad::SolidColorQuad(SK_ColorGREEN)};
+  test::Pass primary_child_passes[] = {
+      test::Pass(primary_child_quads, arraysize(primary_child_quads))};
+
+  // Submit a CompositorFrame to the primary Surface containing a green
+  // SolidColorDrawQuad.
+  SubmitCompositorFrame(&primary_child_factory, primary_child_passes,
+                        arraysize(primary_child_passes),
+                        primary_child_local_surface_id);
+
+  SurfaceFactory fallback_child_factory(kArbitraryChildFrameSinkId2, &manager_,
+                                        &empty_client_);
+  LocalSurfaceId fallback_child_local_surface_id = allocator_.GenerateId();
+  SurfaceId fallback_child_surface_id(fallback_child_factory.frame_sink_id(),
+                                      fallback_child_local_surface_id);
+
+  test::Quad fallback_child_quads[] = {test::Quad::SolidColorQuad(SK_ColorRED)};
+  test::Pass fallback_child_passes[] = {
+      test::Pass(fallback_child_quads, arraysize(fallback_child_quads))};
+
+  // Submit a CompositorFrame to the fallback Surface containing a red
+  // SolidColorDrawQuad.
+  SubmitCompositorFrame(&fallback_child_factory, fallback_child_passes,
+                        arraysize(fallback_child_passes),
+                        fallback_child_local_surface_id);
+
+  // Try to embed |primary_child_surface_id| and if unavailabe, embed
+  // |fallback_child_surface_id|.
+  test::Quad root_quads[] = {test::Quad::SurfaceQuad(
+      primary_child_surface_id, fallback_child_surface_id, 1.f)};
+  test::Pass root_passes[] = {test::Pass(root_quads, arraysize(root_quads))};
+
+  SubmitCompositorFrame(&factory_, root_passes, arraysize(root_passes),
+                        root_local_surface_id_);
+
+  // The CompositorFrame is submitted to |primary_child_surface_id|, so
+  // |fallback_child_surface_id| will not be used and we should see a green
+  // SolidColorDrawQuad.
+  test::Quad expected_quads1[] = {test::Quad::SolidColorQuad(SK_ColorGREEN)};
+  test::Pass expected_passes1[] = {
+      test::Pass(expected_quads1, arraysize(expected_quads1))};
+
+  SurfaceId root_surface_id(factory_.frame_sink_id(), root_local_surface_id_);
+  SurfaceId ids[] = {root_surface_id, primary_child_surface_id,
+                     fallback_child_surface_id};
+  AggregateAndVerify(expected_passes1, arraysize(expected_passes1), ids,
+                     arraysize(ids));
+
+  primary_child_factory.EvictSurface();
+  fallback_child_factory.EvictSurface();
+}
+
 TEST_F(SurfaceAggregatorValidSurfaceTest, CopyRequest) {
   SurfaceFactory embedded_factory(kArbitraryChildFrameSinkId1, &manager_,
                                   &empty_client_);
