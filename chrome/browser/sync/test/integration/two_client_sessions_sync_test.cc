@@ -33,8 +33,8 @@ class TwoClientSessionsSyncTest : public SyncTest {
   ~TwoClientSessionsSyncTest() override {}
 
   void WaitForWindowsInForeignSession(int index, ScopedWindowMap windows) {
-    std::vector<ScopedWindowMap> expected_windows;
-    expected_windows.push_back(std::move(windows));
+    std::vector<ScopedWindowMap> expected_windows(1);
+    expected_windows[0] = std::move(windows);
     EXPECT_TRUE(ForeignSessionsMatchChecker(index, expected_windows).Wait());
   }
 
