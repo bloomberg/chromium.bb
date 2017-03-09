@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.ntp;
 
 import android.content.Context;
 import android.content.res.Resources;
+import android.support.annotation.Nullable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -13,6 +14,7 @@ import android.view.View.OnClickListener;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.NativePage;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.compositor.layouts.EmptyOverviewModeObserver;
@@ -38,6 +40,7 @@ public class ChromeHomeNewTabPage implements NativePage, TemplateUrlServiceObser
     private final TabModelSelector mTabModelSelector;
     private final LogoView.Delegate mLogoDelegate;
     private final OverviewModeObserver mOverviewModeObserver;
+    @Nullable
     private final LayoutManagerChrome mLayoutManager;
     private final BottomSheet mBottomSheet;
 
@@ -56,10 +59,14 @@ public class ChromeHomeNewTabPage implements NativePage, TemplateUrlServiceObser
      * Constructs a ChromeHomeNewTabPage.
      * @param context The context used to inflate the view.
      * @param tab The Tab that is showing this new tab page.
-     * @param tabModelSelector The TabModelSelector used to open tabs.
+     * @param tabModelSelector The {@link TabModelSelector} used to open tabs.
+     * @param layoutManager The {@link LayoutManagerChrome} used to observe overview mode changes.
+     *                      This may be null if the NTP is created on startup due to
+     *                      PartnerBrowserCustomizations.
      */
     public ChromeHomeNewTabPage(final Context context, final Tab tab,
-            final TabModelSelector tabModelSelector, final LayoutManagerChrome layoutManager) {
+            final TabModelSelector tabModelSelector,
+            @Nullable final LayoutManagerChrome layoutManager) {
         mTab = tab;
         mTabModelSelector = tabModelSelector;
         mLayoutManager = layoutManager;
@@ -75,14 +82,23 @@ public class ChromeHomeNewTabPage implements NativePage, TemplateUrlServiceObser
         mBackgroundColor = ApiCompatibilityUtils.getColor(res, R.color.ntp_bg);
         mThemeColor = ApiCompatibilityUtils.getColor(res, R.color.default_primary_color);
 
-        mShowOverviewOnClose = mLayoutManager.overviewVisible();
-        mOverviewModeObserver = new EmptyOverviewModeObserver() {
-            @Override
-            public void onOverviewModeFinishedHiding() {
-                mShowOverviewOnClose = mTabModelSelector.getCurrentTab() == mTab;
-            }
-        };
-        mLayoutManager.addOverviewModeObserver(mOverviewModeObserver);
+        // A new tab may be created on startup due to PartnerBrowserCustomizations before the
+        // LayoutManagerChrome has been created (see ChromeTabbedActivity#initializeState()).
+        if (mLayoutManager != null) {
+            mShowOverviewOnClose = mLayoutManager.overviewVisible();
+
+            // TODO(twellington): Long term we will not allow NTPs to remain open after the user
+            // navigates away from them. Remove this observer after that happens.
+            mOverviewModeObserver = new EmptyOverviewModeObserver() {
+                @Override
+                public void onOverviewModeFinishedHiding() {
+                    mShowOverviewOnClose = mTabModelSelector.getCurrentTab() == mTab;
+                }
+            };
+            mLayoutManager.addOverviewModeObserver(mOverviewModeObserver);
+        } else {
+            mOverviewModeObserver = null;
+        }
 
         mTabObserver = new EmptyTabObserver() {
             @Override
@@ -153,7 +169,9 @@ public class ChromeHomeNewTabPage implements NativePage, TemplateUrlServiceObser
         mFadingBackgroundView.setEnabled(
                 !isTabChromeHomeNewTabPage(mTabModelSelector.getCurrentTab()));
 
-        mLayoutManager.removeOverviewModeObserver(mOverviewModeObserver);
+        if (mLayoutManager != null) {
+            mLayoutManager.removeOverviewModeObserver(mOverviewModeObserver);
+        }
         mTab.removeObserver(mTabObserver);
     }
 
@@ -170,7 +188,7 @@ public class ChromeHomeNewTabPage implements NativePage, TemplateUrlServiceObser
         // OverviewModeBehavior, we have no good signal to show the BottomSheet when an NTP is
         // selected in the tab switcher. Eventually this won't matter because we will not allow
         // NTPs to remain open after the user leaves them.
-        if (mLayoutManager.overviewVisible()) return;
+        if (getLayoutManager().overviewVisible()) return;
 
         mBottomSheet.setSheetState(BottomSheet.SHEET_STATE_HALF, true);
     }
@@ -200,7 +218,7 @@ public class ChromeHomeNewTabPage implements NativePage, TemplateUrlServiceObser
             @Override
             public void onClick(View v) {
                 mBottomSheet.setSheetState(BottomSheet.SHEET_STATE_PEEK, true);
-                if (mShowOverviewOnClose) mLayoutManager.showOverview(false);
+                if (mShowOverviewOnClose) getLayoutManager().showOverview(false);
 
                 // Close the tab after showing the overview mode so the bottom sheet doesn't open
                 // if another NTP is selected when this one is closed.
@@ -208,6 +226,12 @@ public class ChromeHomeNewTabPage implements NativePage, TemplateUrlServiceObser
                 mTabModelSelector.closeTab(mTab);
             }
         });
+    }
+
+    private LayoutManagerChrome getLayoutManager() {
+        if (mLayoutManager != null) return mLayoutManager;
+
+        return ((ChromeTabbedActivity) mTab.getActivity()).getLayoutManager();
     }
 
     // TemplateUrlServiceObserver overrides.
