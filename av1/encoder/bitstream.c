@@ -446,6 +446,12 @@ static void write_selected_tx_size(const AV1_COMMON *cm, const MACROBLOCKD *xd,
                                    aom_writer *w) {
   const MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
   const BLOCK_SIZE bsize = mbmi->sb_type;
+#if CONFIG_EC_ADAPT
+  FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
+  (void)cm;
+#else
+  FRAME_CONTEXT *ec_ctx = cm->fc;
+#endif
 // For sub8x8 blocks the tx_size symbol does not need to be sent
 #if CONFIG_CB4X4 && (CONFIG_VAR_TX || CONFIG_RECT_TX)
 #if CONFIG_RECT_TX
@@ -470,11 +476,11 @@ static void write_selected_tx_size(const AV1_COMMON *cm, const MACROBLOCKD *xd,
 #endif  // CONFIG_EXT_TX && CONFIG_RECT_TX
 
 #if CONFIG_EC_MULTISYMBOL
-    aom_write_symbol(w, depth, cm->fc->tx_size_cdf[tx_size_cat][tx_size_ctx],
+    aom_write_symbol(w, depth, ec_ctx->tx_size_cdf[tx_size_cat][tx_size_ctx],
                      tx_size_cat + 2);
 #else
     av1_write_token(w, av1_tx_size_tree[tx_size_cat],
-                    cm->fc->tx_size_probs[tx_size_cat][tx_size_ctx],
+                    ec_ctx->tx_size_probs[tx_size_cat][tx_size_ctx],
                     &tx_size_encodings[tx_size_cat][depth]);
 #endif
   }
