@@ -203,7 +203,15 @@ variable-rgx=[a-z_][a-z0-9_]{1,30}$
 inlinevar-rgx=[A-Za-z_][A-Za-z0-9_]*$
 
 # Good variable names which should always be accepted, separated by a comma.
-good-names=i,j,k,ex,Run,_,_log
+# These short names are acceptable in the following cases:
+#  _        - unused value
+#  i/j/k    - for XXX in range():
+#  k/v      - for k, v in x.items():
+#  x/y/z    - coordinates
+#  e        - except XXXError as e:
+#  f/fd     - with open('blah') as f:
+#  _log/Run - webkitpy functions
+good-names=_,i,j,k,v,x,y,z,e,f,fd,_log,Run
 
 # Bad variable names which should always be refused, separated by a comma.
 bad-names=foo,bar,baz,toto,tutu,tata
