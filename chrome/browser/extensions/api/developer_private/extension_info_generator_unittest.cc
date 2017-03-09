@@ -172,7 +172,7 @@ class ExtensionInfoGeneratorUnitTest : public ExtensionServiceTestBase {
 
     // Produce test output.
     std::unique_ptr<developer::ExtensionInfo> info =
-        CreateExtensionInfoFromPath(extension_path, Manifest::INVALID_LOCATION);
+        CreateExtensionInfoFromPath(extension_path, Manifest::UNPACKED);
     info->views = std::move(views);
     std::unique_ptr<base::DictionaryValue> actual_output_data = info->ToValue();
     ASSERT_TRUE(actual_output_data);

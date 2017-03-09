@@ -89,12 +89,9 @@ static scoped_refptr<Extension> CreateExtension(
   std::string error;
   scoped_refptr<Extension> extension;
 
-  extension = Extension::Create(
-      bogus_file_pathname(name),
-      extensions::Manifest::INVALID_LOCATION,
-      manifest,
-      Extension::NO_FLAGS,
-      &error);
+  extension = Extension::Create(bogus_file_pathname(name),
+                                extensions::Manifest::INTERNAL, manifest,
+                                Extension::NO_FLAGS, &error);
 
   // Cannot ASSERT_* here because that attempts an illegitimate return.
   // Cannot EXPECT_NE here because that assumes non-pointers unlike EXPECT_EQ

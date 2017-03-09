@@ -110,6 +110,10 @@ class Manifest {
     return location == COMPONENT || location == EXTERNAL_COMPONENT;
   }
 
+  static inline bool IsValidLocation(Location location) {
+    return location > INVALID_LOCATION && location < NUM_LOCATIONS;
+  }
+
   // Unpacked extensions start off with file access since they are a developer
   // feature.
   static inline bool ShouldAlwaysAllowFileAccess(Location location) {

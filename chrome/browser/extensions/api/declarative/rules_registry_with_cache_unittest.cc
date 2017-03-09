@@ -342,13 +342,9 @@ TEST_F(RulesRegistryWithCacheTest, RulesPreservedAcrossRestart) {
 
   // 1. Add an extension, before rules registry gets created.
   std::string error;
-  scoped_refptr<Extension> extension(
-      LoadManifestUnchecked("permissions",
-                            "web_request_all_host_permissions.json",
-                            Manifest::INVALID_LOCATION,
-                            Extension::NO_FLAGS,
-                            extension1_->id(),
-                            &error));
+  scoped_refptr<Extension> extension(LoadManifestUnchecked(
+      "permissions", "web_request_all_host_permissions.json",
+      Manifest::UNPACKED, Extension::NO_FLAGS, extension1_->id(), &error));
   ASSERT_TRUE(error.empty());
   extension_service->AddExtension(extension.get());
   EXPECT_TRUE(extensions::ExtensionRegistry::Get(env_.profile())

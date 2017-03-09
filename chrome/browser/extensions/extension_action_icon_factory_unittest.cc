@@ -96,8 +96,7 @@ class ExtensionActionIconFactoryTest
     quit_in_icon_updated_ = false;
   }
 
-  scoped_refptr<Extension> CreateExtension(const char* name,
-                                           Manifest::Location location) {
+  scoped_refptr<Extension> CreateExtension(const char* name) {
     // Create and load an extension.
     base::FilePath test_file;
     if (!PathService::Get(chrome::DIR_TEST_DATA, &test_file)) {
@@ -121,7 +120,7 @@ class ExtensionActionIconFactoryTest
       return NULL;
 
     scoped_refptr<Extension> extension =
-        Extension::Create(test_file, location, *valid_value,
+        Extension::Create(test_file, Manifest::UNPACKED, *valid_value,
                           Extension::NO_FLAGS, &error);
     EXPECT_TRUE(extension.get()) << error;
     if (extension.get())
@@ -191,8 +190,7 @@ INSTANTIATE_TEST_CASE_P(
 TEST_P(ExtensionActionIconFactoryTest, NoIcons) {
   // Load an extension that has browser action without default icon set in the
   // manifest and does not call |SetIcon| by default.
-  scoped_refptr<Extension> extension(CreateExtension(
-      "browser_action/no_icon", Manifest::INVALID_LOCATION));
+  scoped_refptr<Extension> extension(CreateExtension("browser_action/no_icon"));
   ASSERT_TRUE(extension.get() != NULL);
   ExtensionAction* browser_action = GetBrowserAction(*extension);
   ASSERT_TRUE(browser_action);
@@ -216,8 +214,7 @@ TEST_P(ExtensionActionIconFactoryTest, AfterSetIcon) {
   // Load an extension that has browser action without default icon set in the
   // manifest and does not call |SetIcon| by default (but has an browser action
   // icon resource).
-  scoped_refptr<Extension> extension(CreateExtension(
-      "browser_action/no_icon", Manifest::INVALID_LOCATION));
+  scoped_refptr<Extension> extension(CreateExtension("browser_action/no_icon"));
   ASSERT_TRUE(extension.get() != NULL);
   ExtensionAction* browser_action = GetBrowserAction(*extension);
   ASSERT_TRUE(browser_action);
@@ -255,8 +252,7 @@ TEST_P(ExtensionActionIconFactoryTest, DefaultIcon) {
   // Load an extension that has browser action without default icon set in the
   // manifest and does not call |SetIcon| by default (but has an browser action
   // icon resource).
-  scoped_refptr<Extension> extension(CreateExtension(
-      "browser_action/no_icon", Manifest::INVALID_LOCATION));
+  scoped_refptr<Extension> extension(CreateExtension("browser_action/no_icon"));
   ASSERT_TRUE(extension.get() != NULL);
   ExtensionAction* browser_action = GetBrowserAction(*extension);
   ASSERT_TRUE(browser_action);
@@ -264,7 +260,7 @@ TEST_P(ExtensionActionIconFactoryTest, DefaultIcon) {
   ASSERT_TRUE(browser_action->GetExplicitlySetIcon(0 /*tab id*/).IsEmpty());
 
   scoped_refptr<const Extension> extension_with_icon =
-      CreateExtension("browser_action_with_icon", Manifest::INVALID_LOCATION);
+      CreateExtension("browser_action_with_icon");
   ASSERT_TRUE(extension_with_icon);
 
   int icon_size = ExtensionAction::ActionIconSize();

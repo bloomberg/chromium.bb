@@ -13,6 +13,8 @@
 #include <utility>
 
 #include "base/command_line.h"
+#include "base/debug/alias.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/location.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
@@ -1481,6 +1483,26 @@ void ExtensionService::OnLoadedInstalledExtensions() {
 }
 
 void ExtensionService::AddExtension(const Extension* extension) {
+  if (!Manifest::IsValidLocation(extension->location())) {
+    // TODO(devlin): We should *never* add an extension with an invalid
+    // location, but some bugs (e.g. crbug.com/692069) seem to indicate we do.
+    // Track down the cases when this can happen, and remove this
+    // DumpWithoutCrashing() (possibly replacing it with a CHECK).
+    NOTREACHED();
+    char extension_id_copy[33];
+    base::strlcpy(extension_id_copy, extension->id().c_str(),
+                  arraysize(extension_id_copy));
+    Manifest::Location location = extension->location();
+    int creation_flags = extension->creation_flags();
+    Manifest::Type type = extension->manifest()->type();
+    base::debug::Alias(extension_id_copy);
+    base::debug::Alias(&location);
+    base::debug::Alias(&creation_flags);
+    base::debug::Alias(&type);
+    base::debug::DumpWithoutCrashing();
+    return;
+  }
+
   // TODO(jstritar): We may be able to get rid of this branch by overriding the
   // default extension state to DISABLED when the --disable-extensions flag
   // is set (http://crbug.com/29067).
