@@ -110,7 +110,6 @@ class CORE_EXPORT FrameHost final
   const Member<TopDocumentRootScrollerController>
       m_globalRootScrollerController;
 
-  AtomicString m_overrideEncoding;
   int m_subframeCount;
 };
 
