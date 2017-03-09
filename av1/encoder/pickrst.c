@@ -37,11 +37,7 @@ typedef double (*search_restore_type)(const YV12_BUFFER_CONFIG *src,
                                       double *best_tile_cost,
                                       YV12_BUFFER_CONFIG *dst_frame);
 
-#if USE_DOMAINTXFMRF
-const int frame_level_restore_bits[RESTORE_TYPES] = { 2, 2, 3, 3, 2 };
-#else
 const int frame_level_restore_bits[RESTORE_TYPES] = { 2, 2, 2, 2 };
-#endif  // USE_DOMAINTXFMRF
 
 static int64_t sse_restoration_tile(const YV12_BUFFER_CONFIG *src,
                                     const YV12_BUFFER_CONFIG *dst,
@@ -412,225 +408,6 @@ static double search_sgrproj(const YV12_BUFFER_CONFIG *src, AV1_COMP *cpi,
 
   return cost_sgrproj;
 }
-
-#if USE_DOMAINTXFMRF
-static int64_t compute_sse(uint8_t *dgd, int width, int height, int dgd_stride,
-                           uint8_t *src, int src_stride) {
-  int64_t sse = 0;
-  int i, j;
-  for (i = 0; i < height; ++i) {
-    for (j = 0; j < width; ++j) {
-      const int diff =
-          (int)dgd[i * dgd_stride + j] - (int)src[i * src_stride + j];
-      sse += diff * diff;
-    }
-  }
-  return sse;
-}
-
-#if CONFIG_AOM_HIGHBITDEPTH
-static int64_t compute_sse_highbd(uint16_t *dgd, int width, int height,
-                                  int dgd_stride, uint16_t *src,
-                                  int src_stride) {
-  int64_t sse = 0;
-  int i, j;
-  for (i = 0; i < height; ++i) {
-    for (j = 0; j < width; ++j) {
-      const int diff =
-          (int)dgd[i * dgd_stride + j] - (int)src[i * src_stride + j];
-      sse += diff * diff;
-    }
-  }
-  return sse;
-}
-#endif  // CONFIG_AOM_HIGHBITDEPTH
-
-static void search_domaintxfmrf_restoration(uint8_t *dgd8, int width,
-                                            int height, int dgd_stride,
-                                            uint8_t *src8, int src_stride,
-                                            int bit_depth, int *sigma_r,
-                                            uint8_t *fltbuf, int32_t *tmpbuf) {
-  const int first_p_step = 8;
-  const int second_p_range = first_p_step >> 1;
-  const int second_p_step = 2;
-  const int third_p_range = second_p_step >> 1;
-  const int third_p_step = 1;
-  int p, best_p0, best_p = -1;
-  int64_t best_sse = INT64_MAX, sse;
-  if (bit_depth == 8) {
-    uint8_t *flt = fltbuf;
-    uint8_t *dgd = dgd8;
-    uint8_t *src = src8;
-    // First phase
-    for (p = first_p_step / 2; p < DOMAINTXFMRF_PARAMS; p += first_p_step) {
-      av1_domaintxfmrf_restoration(dgd, width, height, dgd_stride, p, flt,
-                                   width, tmpbuf);
-      sse = compute_sse(flt, width, height, width, src, src_stride);
-      if (sse < best_sse || best_p == -1) {
-        best_p = p;
-        best_sse = sse;
-      }
-    }
-    // Second Phase
-    best_p0 = best_p;
-    for (p = best_p0 - second_p_range; p <= best_p0 + second_p_range;
-         p += second_p_step) {
-      if (p < 0 || p == best_p || p >= DOMAINTXFMRF_PARAMS) continue;
-      av1_domaintxfmrf_restoration(dgd, width, height, dgd_stride, p, flt,
-                                   width, tmpbuf);
-      sse = compute_sse(flt, width, height, width, src, src_stride);
-      if (sse < best_sse) {
-        best_p = p;
-        best_sse = sse;
-      }
-    }
-    // Third Phase
-    best_p0 = best_p;
-    for (p = best_p0 - third_p_range; p <= best_p0 + third_p_range;
-         p += third_p_step) {
-      if (p < 0 || p == best_p || p >= DOMAINTXFMRF_PARAMS) continue;
-      av1_domaintxfmrf_restoration(dgd, width, height, dgd_stride, p, flt,
-                                   width, tmpbuf);
-      sse = compute_sse(flt, width, height, width, src, src_stride);
-      if (sse < best_sse) {
-        best_p = p;
-        best_sse = sse;
-      }
-    }
-  } else {
-#if CONFIG_AOM_HIGHBITDEPTH
-    uint16_t *flt = (uint16_t *)fltbuf;
-    uint16_t *dgd = CONVERT_TO_SHORTPTR(dgd8);
-    uint16_t *src = CONVERT_TO_SHORTPTR(src8);
-    // First phase
-    for (p = first_p_step / 2; p < DOMAINTXFMRF_PARAMS; p += first_p_step) {
-      av1_domaintxfmrf_restoration_highbd(dgd, width, height, dgd_stride, p,
-                                          bit_depth, flt, width, tmpbuf);
-      sse = compute_sse_highbd(flt, width, height, width, src, src_stride);
-      if (sse < best_sse || best_p == -1) {
-        best_p = p;
-        best_sse = sse;
-      }
-    }
-    // Second Phase
-    best_p0 = best_p;
-    for (p = best_p0 - second_p_range; p <= best_p0 + second_p_range;
-         p += second_p_step) {
-      if (p < 0 || p == best_p || p >= DOMAINTXFMRF_PARAMS) continue;
-      av1_domaintxfmrf_restoration_highbd(dgd, width, height, dgd_stride, p,
-                                          bit_depth, flt, width, tmpbuf);
-      sse = compute_sse_highbd(flt, width, height, width, src, src_stride);
-      if (sse < best_sse) {
-        best_p = p;
-        best_sse = sse;
-      }
-    }
-    // Third Phase
-    best_p0 = best_p;
-    for (p = best_p0 - third_p_range; p <= best_p0 + third_p_range;
-         p += third_p_step) {
-      if (p < 0 || p == best_p || p >= DOMAINTXFMRF_PARAMS) continue;
-      av1_domaintxfmrf_restoration_highbd(dgd, width, height, dgd_stride, p,
-                                          bit_depth, flt, width, tmpbuf);
-      sse = compute_sse_highbd(flt, width, height, width, src, src_stride);
-      if (sse < best_sse) {
-        best_p = p;
-        best_sse = sse;
-      }
-    }
-#else
-    assert(0);
-#endif  // CONFIG_AOM_HIGHBITDEPTH
-  }
-  *sigma_r = best_p;
-}
-
-static double search_domaintxfmrf(const YV12_BUFFER_CONFIG *src, AV1_COMP *cpi,
-                                  int partial_frame, RestorationInfo *info,
-                                  RestorationType *type, double *best_tile_cost,
-                                  YV12_BUFFER_CONFIG *dst_frame) {
-  DomaintxfmrfInfo *domaintxfmrf_info = info->domaintxfmrf_info;
-  double cost_norestore, cost_domaintxfmrf;
-  int64_t err;
-  int bits;
-  MACROBLOCK *x = &cpi->td.mb;
-  AV1_COMMON *const cm = &cpi->common;
-  const YV12_BUFFER_CONFIG *dgd = cm->frame_to_show;
-  RestorationInfo *rsi = &cpi->rst_search[0];
-  int tile_idx, tile_width, tile_height, nhtiles, nvtiles;
-  int h_start, h_end, v_start, v_end;
-  const int ntiles = av1_get_rest_ntiles(
-      cm->width, cm->height, cm->rst_info[0].restoration_tilesize, &tile_width,
-      &tile_height, &nhtiles, &nvtiles);
-
-  rsi->frame_restoration_type = RESTORE_DOMAINTXFMRF;
-
-  for (tile_idx = 0; tile_idx < ntiles; ++tile_idx) {
-    rsi->restoration_type[tile_idx] = RESTORE_NONE;
-  }
-  // Compute best Domaintxfm filters for each tile
-  for (tile_idx = 0; tile_idx < ntiles; ++tile_idx) {
-    av1_get_rest_tile_limits(tile_idx, 0, 0, nhtiles, nvtiles, tile_width,
-                             tile_height, cm->width, cm->height, 0, 0, &h_start,
-                             &h_end, &v_start, &v_end);
-    err = sse_restoration_tile(src, cm->frame_to_show, cm, h_start,
-                               h_end - h_start, v_start, v_end - v_start, 1);
-    // #bits when a tile is not restored
-    bits = av1_cost_bit(RESTORE_NONE_DOMAINTXFMRF_PROB, 0);
-    cost_norestore = RDCOST_DBL(x->rdmult, x->rddiv, (bits >> 4), err);
-    best_tile_cost[tile_idx] = DBL_MAX;
-
-    search_domaintxfmrf_restoration(
-        dgd->y_buffer + v_start * dgd->y_stride + h_start, h_end - h_start,
-        v_end - v_start, dgd->y_stride,
-        src->y_buffer + v_start * src->y_stride + h_start, src->y_stride,
-#if CONFIG_AOM_HIGHBITDEPTH
-        cm->bit_depth,
-#else
-        8,
-#endif  // CONFIG_AOM_HIGHBITDEPTH
-        &rsi->domaintxfmrf_info[tile_idx].sigma_r, cpi->extra_rstbuf,
-        cm->rst_internal.tmpbuf);
-
-    rsi->restoration_type[tile_idx] = RESTORE_DOMAINTXFMRF;
-    err = try_restoration_tile(src, cpi, rsi, 1, partial_frame, tile_idx, 0, 0,
-                               dst_frame);
-    bits = DOMAINTXFMRF_PARAMS_BITS << AV1_PROB_COST_SHIFT;
-    bits += av1_cost_bit(RESTORE_NONE_DOMAINTXFMRF_PROB, 1);
-    cost_domaintxfmrf = RDCOST_DBL(x->rdmult, x->rddiv, (bits >> 4), err);
-    if (cost_domaintxfmrf >= cost_norestore) {
-      type[tile_idx] = RESTORE_NONE;
-    } else {
-      type[tile_idx] = RESTORE_DOMAINTXFMRF;
-      memcpy(&domaintxfmrf_info[tile_idx], &rsi->domaintxfmrf_info[tile_idx],
-             sizeof(domaintxfmrf_info[tile_idx]));
-      bits = DOMAINTXFMRF_PARAMS_BITS << AV1_PROB_COST_SHIFT;
-      best_tile_cost[tile_idx] = RDCOST_DBL(
-          x->rdmult, x->rddiv,
-          (bits + cpi->switchable_restore_cost[RESTORE_DOMAINTXFMRF]) >> 4,
-          err);
-    }
-    rsi->restoration_type[tile_idx] = RESTORE_NONE;
-  }
-  // Cost for Domaintxfmrf filtering
-  bits = frame_level_restore_bits[rsi->frame_restoration_type]
-         << AV1_PROB_COST_SHIFT;
-  for (tile_idx = 0; tile_idx < ntiles; ++tile_idx) {
-    bits += av1_cost_bit(RESTORE_NONE_DOMAINTXFMRF_PROB,
-                         type[tile_idx] != RESTORE_NONE);
-    memcpy(&rsi->domaintxfmrf_info[tile_idx], &domaintxfmrf_info[tile_idx],
-           sizeof(domaintxfmrf_info[tile_idx]));
-    if (type[tile_idx] == RESTORE_DOMAINTXFMRF) {
-      bits += (DOMAINTXFMRF_PARAMS_BITS << AV1_PROB_COST_SHIFT);
-    }
-    rsi->restoration_type[tile_idx] = type[tile_idx];
-  }
-  err = try_restoration_frame(src, cpi, rsi, 1, partial_frame, dst_frame);
-  cost_domaintxfmrf = RDCOST_DBL(x->rdmult, x->rddiv, (bits >> 4), err);
-
-  return cost_domaintxfmrf;
-}
-#endif  // USE_DOMAINTXFMRF
 
 static double find_average(uint8_t *src, int h_start, int h_end, int v_start,
                            int v_end, int stride) {
@@ -1278,12 +1055,7 @@ static double search_switchable_restoration(
 void av1_pick_filter_restoration(const YV12_BUFFER_CONFIG *src, AV1_COMP *cpi,
                                  LPF_PICK_METHOD method) {
   static search_restore_type search_restore_fun[RESTORE_SWITCHABLE_TYPES] = {
-    search_norestore,
-    search_wiener,
-    search_sgrproj,
-#if USE_DOMAINTXFMRF
-    search_domaintxfmrf,
-#endif  // USE_DOMAINTXFMRF
+    search_norestore, search_wiener, search_sgrproj,
   };
   AV1_COMMON *const cm = &cpi->common;
   double cost_restore[RESTORE_TYPES];
@@ -1339,19 +1111,10 @@ void av1_pick_filter_restoration(const YV12_BUFFER_CONFIG *src, AV1_COMP *cpi,
          cm->rst_info[0].frame_restoration_type,
          cm->rst_info[1].frame_restoration_type,
          cm->rst_info[2].frame_restoration_type);
-         */
-  /*
-#if USE_DOMAINTXFMRF
-  printf("Frame %d/%d frame_restore_type %d : %f %f %f %f %f\n",
-         cm->current_video_frame, cm->show_frame,
-         cm->rst_info[0].frame_restoration_type, cost_restore[0],
-         cost_restore[1], cost_restore[2], cost_restore[3], cost_restore[4]);
-#else
   printf("Frame %d/%d frame_restore_type %d : %f %f %f %f\n",
          cm->current_video_frame, cm->show_frame,
          cm->rst_info[0].frame_restoration_type, cost_restore[0],
          cost_restore[1], cost_restore[2], cost_restore[3]);
-#endif  // USE_DOMAINTXFMRF
          */
 
   for (r = 0; r < RESTORE_SWITCHABLE_TYPES; r++) {

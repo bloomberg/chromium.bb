@@ -28,29 +28,6 @@ extern "C" {
 #define RESTORATION_TILEPELS_MAX \
   (RESTORATION_TILESIZE_MAX * RESTORATION_TILESIZE_MAX * 9 / 4)
 
-#if USE_DOMAINTXFMRF
-#define DOMAINTXFMRF_PARAMS_BITS 6
-#define DOMAINTXFMRF_PARAMS (1 << DOMAINTXFMRF_PARAMS_BITS)
-#define DOMAINTXFMRF_SIGMA_SCALEBITS 4
-#define DOMAINTXFMRF_SIGMA_SCALE (1 << DOMAINTXFMRF_SIGMA_SCALEBITS)
-#define DOMAINTXFMRF_ITERS 3
-#define DOMAINTXFMRF_VTABLE_PRECBITS 8
-#define DOMAINTXFMRF_VTABLE_PREC (1 << DOMAINTXFMRF_VTABLE_PRECBITS)
-#define DOMAINTXFMRF_MULT \
-  sqrt(((1 << (DOMAINTXFMRF_ITERS * 2)) - 1) * 2.0 / 3.0)
-// 1 32-bit and 2 8-bit buffers needed for the filter
-#define DOMAINTXFMRF_TMPBUF_SIZE \
-  (RESTORATION_TILEPELS_MAX * (sizeof(int32_t) + 2 * sizeof(uint8_t)))
-// One extra buffer needed in encoder, which is either 8-bit or 16-bit
-// depending on the video bit depth.
-#if CONFIG_AOM_HIGHBITDEPTH
-#define DOMAINTXFMRF_EXTBUF_SIZE (RESTORATION_TILEPELS_MAX * sizeof(uint16_t))
-#else
-#define DOMAINTXFMRF_EXTBUF_SIZE (RESTORATION_TILEPELS_MAX * sizeof(uint8_t))
-#endif
-#define DOMAINTXFMRF_BITS (DOMAINTXFMRF_PARAMS_BITS)
-#endif  // USE_DOMAINTXFMRF
-
 // 4 32-bit buffers needed for the filter:
 // 2 for the restored versions of the frame and
 // 2 for each restoration operation
@@ -123,12 +100,8 @@ extern "C" {
 // Max of SGRPROJ_TMPBUF_SIZE, DOMAINTXFMRF_TMPBUF_SIZE, WIENER_TMPBUF_SIZE
 #define RESTORATION_TMPBUF_SIZE (SGRPROJ_TMPBUF_SIZE)
 
-#if USE_DOMAINTXFMRF
-// Max of SGRPROJ_EXTBUF_SIZE, DOMAINTXFMRF_EXTBUF_SIZE, WIENER_EXTBUF_SIZE
-#define RESTORATION_EXTBUF_SIZE (DOMAINTXFMRF_EXTBUF_SIZE)
-#else
+// Max of SGRPROJ_EXTBUF_SIZE, WIENER_EXTBUF_SIZE
 #define RESTORATION_EXTBUF_SIZE (WIENER_EXTBUF_SIZE)
-#endif  // USE_DOMAINTXFMRF
 
 // Check the assumptions of the existing code
 #if SUBPEL_TAPS != WIENER_WIN + 1
@@ -154,10 +127,6 @@ typedef struct {
   int xqd[2];
 } SgrprojInfo;
 
-#if USE_DOMAINTXFMRF
-typedef struct { int sigma_r; } DomaintxfmrfInfo;
-#endif  // USE_DOMAINTXFMRF
-
 typedef struct {
   int restoration_tilesize;
   RestorationType frame_restoration_type;
@@ -166,10 +135,6 @@ typedef struct {
   WienerInfo *wiener_info;
   // Selfguided proj filter
   SgrprojInfo *sgrproj_info;
-#if USE_DOMAINTXFMRF
-  // Domain transform filter
-  DomaintxfmrfInfo *domaintxfmrf_info;
-#endif  // USE_DOMAINTXFMRF
 } RestorationInfo;
 
 typedef struct {
@@ -241,19 +206,8 @@ int av1_alloc_restoration_struct(struct AV1Common *cm,
 void av1_free_restoration_struct(RestorationInfo *rst_info);
 
 void extend_frame(uint8_t *data, int width, int height, int stride);
-#if USE_DOMAINTXFMRF
-void av1_domaintxfmrf_restoration(uint8_t *dgd, int width, int height,
-                                  int stride, int param, uint8_t *dst,
-                                  int dst_stride, int32_t *tmpbuf);
-#endif  // USE_DOMAINTXFMRF
 #if CONFIG_AOM_HIGHBITDEPTH
 void extend_frame_highbd(uint16_t *data, int width, int height, int stride);
-#if USE_DOMAINTXFMRF
-void av1_domaintxfmrf_restoration_highbd(uint16_t *dgd, int width, int height,
-                                         int stride, int param, int bit_depth,
-                                         uint16_t *dst, int dst_stride,
-                                         int32_t *tmpbuf);
-#endif  // USE_DOMAINTXFMRF
 #endif  // CONFIG_AOM_HIGHBITDEPTH
 void decode_xq(int *xqd, int *xq);
 void av1_loop_restoration_frame(YV12_BUFFER_CONFIG *frame, struct AV1Common *cm,
