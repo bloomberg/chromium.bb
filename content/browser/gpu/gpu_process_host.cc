@@ -1178,11 +1178,16 @@ std::string GpuProcessHost::GetShaderPrefixKey(const std::string& shader) {
 
     shader_prefix_key_info_ =
         GetContentClient()->GetProduct() + "-" +
-#if defined(OS_ANDROID)
-        base::android::BuildInfo::GetInstance()->android_build_fp() + "-" +
-#endif
         info.gl_vendor + "-" + info.gl_renderer + "-" + info.driver_version +
         "-" + info.driver_vendor;
+
+#if defined(OS_ANDROID)
+    std::string build_fp =
+        base::android::BuildInfo::GetInstance()->android_build_fp();
+    // TODO(ericrk): Remove this after it's up for a few days. crbug.com/699122
+    CHECK(!build_fp.empty());
+    shader_prefix_key_info_ += "-" + build_fp;
+#endif
   }
 
   // The shader prefix key is a SHA1 hash of a set of per-machine info, such as
