@@ -205,7 +205,7 @@ TranslatorPatterns = [
   ( '-fPIC',           "env.set('PIC', '1')\n"
                        "env.set('SZ_UNSUPPORTED', '1')"),
 
-  ( '(--build-id)',    "env.append('LD_FLAGS', $0)"),
+  ( '(--build-id(?:=.+)?)',    "env.append('LD_FLAGS', $0)"),
   ( '-(split-module|threads)=([0-9]+|auto|seq)', "env.set('SPLIT_MODULE', $1)"),
   ( '-split-module-sched=(.*)', "env.set('SPLIT_MODULE_SCHED', $0)"),
   ( '-stream-bitcode', "env.set('STREAM_BITCODE', '1')"),

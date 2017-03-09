@@ -202,7 +202,7 @@ LDPatterns = [
   ( ('(-Ttext-segment=.*)'), AddToNativeFlags),
   ( ('(-Trodata-segment=.*)'), AddToNativeFlags),
   ( ('(--section-start)', '(.+)'), AddToNativeFlags),
-  ( ('(--build-id)'), AddToNativeFlags),
+  ( ('(--build-id(?:=.+)?)'), AddToNativeFlags),
 
   # Flags to pass to translate
   ( '-Wt,(.*)', "env.append('TRANSLATE_FLAGS_USER', *($0.split(',')))"),
