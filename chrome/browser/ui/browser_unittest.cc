@@ -11,9 +11,11 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "components/zoom/zoom_controller.h"
+#include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/web_contents_tester.h"
+#include "third_party/skia/include/core/SkColor.h"
 
 using content::SiteInstance;
 using content::WebContents;
@@ -64,6 +66,27 @@ TEST_F(BrowserUnitTest, ReloadCrashedTab) {
   EXPECT_TRUE(tab_strip_model->IsTabSelected(1));
   EXPECT_FALSE(contents2->IsLoading());
   EXPECT_TRUE(contents2->IsCrashed());
+}
+
+TEST_F(BrowserUnitTest, SetBackgroundColorForNewTab) {
+  TabStripModel* tab_strip_model = browser()->tab_strip_model();
+
+  WebContents* contents1 = CreateTestWebContents();
+  tab_strip_model->AppendWebContents(contents1, true);
+  WebContentsTester::For(contents1)->NavigateAndCommit(GURL("about:blank"));
+  WebContentsTester::For(contents1)->TestSetIsLoading(false);
+
+  contents1->GetMainFrame()->GetView()->SetBackgroundColor(SK_ColorRED);
+
+  // Add a second tab in the background.
+  WebContents* contents2 = CreateTestWebContents();
+  tab_strip_model->AppendWebContents(contents2, false);
+  WebContentsTester::For(contents2)->NavigateAndCommit(GURL("about:blank"));
+  WebContentsTester::For(contents2)->TestSetIsLoading(false);
+
+  tab_strip_model->ActivateTabAt(1, true);
+  EXPECT_EQ(SK_ColorRED,
+            contents2->GetMainFrame()->GetView()->background_color());
 }
 
 // Ensure the print command gets disabled when a tab crashes.

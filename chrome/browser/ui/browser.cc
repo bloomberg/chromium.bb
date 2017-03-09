@@ -1040,6 +1040,22 @@ void Browser::ActiveTabChanged(WebContents* old_contents,
                                WebContents* new_contents,
                                int index,
                                int reason) {
+  // Copies the background color from an old WebContents to a new one that
+  // replaces it on the screen. This allows the new WebContents to use the
+  // old one's background color as the starting background color, before having
+  // loaded any contents. As a result, we avoid flashing white when moving to
+  // a new tab. (There is also code in RenderFrameHostManager to do something
+  // similar for intra-tab navigations.)
+  if (old_contents && new_contents) {
+    // While GetMainFrame() is guaranteed to return non-null, GetView() is not,
+    // e.g. between WebContents creation and creation of the
+    // RenderWidgetHostView.
+    RenderWidgetHostView* old_view = old_contents->GetMainFrame()->GetView();
+    RenderWidgetHostView* new_view = new_contents->GetMainFrame()->GetView();
+    if (old_view && new_view)
+      new_view->SetBackgroundColor(old_view->background_color());
+  }
+
   content::RecordAction(UserMetricsAction("ActiveTabChanged"));
 
   // Update the bookmark state, since the BrowserWindow may query it during
