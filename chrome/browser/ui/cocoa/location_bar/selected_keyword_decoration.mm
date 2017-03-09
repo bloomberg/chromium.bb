@@ -8,7 +8,6 @@
 #import "chrome/browser/ui/cocoa/omnibox/omnibox_view_mac.h"
 #include "chrome/browser/ui/location_bar/location_bar_util.h"
 #include "chrome/grit/generated_resources.h"
-#include "chrome/grit/theme_resources.h"
 #include "skia/ext/skia_utils_mac.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/base/material_design/material_design_controller.h"
@@ -50,10 +49,6 @@ CGFloat SelectedKeywordDecoration::GetWidthForSpace(CGFloat width) {
 
   SetLabel(partial_string_);
   return GetWidthForImageAndLabel(nil, partial_string_);
-}
-
-ui::NinePartImageIds SelectedKeywordDecoration::GetBubbleImageIds() {
-  return IMAGE_GRID(IDR_OMNIBOX_SELECTED_KEYWORD_BUBBLE);
 }
 
 void SelectedKeywordDecoration::SetKeyword(const base::string16& short_name,

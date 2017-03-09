@@ -13,7 +13,6 @@
 #import "chrome/browser/ui/cocoa/location_bar/location_icon_decoration.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
 #include "chrome/grit/generated_resources.h"
-#include "chrome/grit/theme_resources.h"
 #include "skia/ext/skia_utils_mac.h"
 #import "ui/base/cocoa/nsview_additions.h"
 #include "ui/base/l10n/l10n_util_mac.h"
@@ -299,10 +298,6 @@ NSString* SecurityStateBubbleDecoration::GetToolTip() {
 NSColor* SecurityStateBubbleDecoration::GetBackgroundBorderColor() {
   return skia::SkColorToSRGBNSColor(
       SkColorSetA(label_color_, 255.0 * GetAnimationProgress()));
-}
-
-ui::NinePartImageIds SecurityStateBubbleDecoration::GetBubbleImageIds() {
-  return IMAGE_GRID(IDR_OMNIBOX_EV_BUBBLE);
 }
 
 NSColor* SecurityStateBubbleDecoration::GetDarkModeTextColor() {

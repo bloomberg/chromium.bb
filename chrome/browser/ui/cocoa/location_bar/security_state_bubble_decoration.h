@@ -76,7 +76,6 @@ class SecurityStateBubbleDecoration : public BubbleDecoration,
 
   // BubbleDecoration:
   NSColor* GetBackgroundBorderColor() override;
-  ui::NinePartImageIds GetBubbleImageIds() override;
 
   // gfx::AnimationDelegate:
   void AnimationProgressed(const gfx::Animation* animation) override;

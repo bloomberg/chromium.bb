@@ -11,7 +11,6 @@
 #include "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
 #include "chrome/browser/ui/cocoa/location_bar/location_bar_decoration.h"
-#import "ui/base/cocoa/appkit_utils.h"
 
 // Draws an outlined rounded rect, with an optional image to the left
 // and an optional text label to the right.
@@ -29,7 +28,6 @@ class BubbleDecoration : public LocationBarDecoration {
   void SetTextColor(NSColor* text_color);
   void SetFont(NSFont* font);
   void SetRetinaBaselineOffset(CGFloat offset);
-  virtual ui::NinePartImageIds GetBubbleImageIds() = 0;
 
   // Implement |LocationBarDecoration|.
   CGFloat GetWidthForSpace(CGFloat width) override;
