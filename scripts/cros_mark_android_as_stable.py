@@ -8,7 +8,8 @@ After calling, it prints outs ANDROID_VERSION_ATOM=(version atom string).  A
 caller could then use this atom with emerge to build the newly uprevved version
 of Android e.g.
 
-./cros_mark_android_as_stable
+./cros_mark_android_as_stable --android_build_branch git_mnc-dr-arc-dev \
+    --android_git_build_branch git_mnc-dev
 Returns chromeos-base/android-container-2559197
 
 emerge-veyron_minnie-cheets =chromeos-base/android-container-2559197-r1
@@ -59,6 +60,9 @@ def IsBuildIdValid(bucket_url, build_branch, build_id, targets):
     Returns subpaths dictionary if build_id is valid.
     None if the build_id is not valid.
   """
+  if build_branch is None:
+    raise ValueError('build_branch is None')
+
   gs_context = gs.GSContext()
   subpaths_dict = {}
   for build, (target, _) in targets.iteritems():
@@ -431,9 +435,13 @@ def GetParser():
                       default=constants.ANDROID_BUCKET_URL,
                       type='gs_path')
   parser.add_argument('--android_build_branch',
-                      default=constants.ANDROID_BUILD_BRANCH)
+                      required=True,
+                      help='Android branch to import from. '
+                           'Ex: git_mnc-dr-arc-dev')
   parser.add_argument('--android_gts_build_branch',
-                      default=constants.ANDROID_GTS_BUILD_BRANCH)
+                      required=True,
+                      help='Android GTS branch to copy artifacts from. '
+                           'Ex: git_mnc-dev')
   parser.add_argument('--android_package',
                       default=constants.ANDROID_PACKAGE_NAME)
   parser.add_argument('--arc_bucket_url',
