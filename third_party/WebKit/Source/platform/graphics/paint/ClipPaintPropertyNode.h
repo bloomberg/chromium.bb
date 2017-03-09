@@ -7,6 +7,7 @@
 
 #include "platform/PlatformExport.h"
 #include "platform/geometry/FloatRoundedRect.h"
+#include "platform/graphics/paint/GeometryMapperClipCache.h"
 #include "platform/graphics/paint/TransformPaintPropertyNode.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
@@ -16,6 +17,8 @@
 #include <iosfwd>
 
 namespace blink {
+
+class GeometryMapperClipCache;
 
 // A clip rect created by a css property such as "overflow" or "clip".
 // Along with a reference to the transform space the clip rect is based on,
@@ -97,10 +100,26 @@ class PLATFORM_EXPORT ClipPaintPropertyNode
         m_clipRect(clipRect),
         m_directCompositingReasons(directCompositingReasons) {}
 
+  // For access to getClipCache();
+  friend class GeometryMapper;
+  friend class GeometryMapperTest;
+
+  GeometryMapperClipCache& getClipCache() const {
+    return const_cast<ClipPaintPropertyNode*>(this)->getClipCache();
+  }
+
+  GeometryMapperClipCache& getClipCache() {
+    if (!m_geometryMapperClipCache)
+      m_geometryMapperClipCache.reset(new GeometryMapperClipCache());
+    return *m_geometryMapperClipCache.get();
+  }
+
   RefPtr<const ClipPaintPropertyNode> m_parent;
   RefPtr<const TransformPaintPropertyNode> m_localTransformSpace;
   FloatRoundedRect m_clipRect;
   CompositingReasons m_directCompositingReasons;
+
+  std::unique_ptr<GeometryMapperClipCache> m_geometryMapperClipCache;
 };
 
 // Redeclared here to avoid ODR issues.

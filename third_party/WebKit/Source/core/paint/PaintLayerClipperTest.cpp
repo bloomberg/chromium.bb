@@ -31,11 +31,6 @@ class PaintLayerClipperTest : public ::testing::WithParamInterface<bool>,
     LayoutTestSupport::setMockThemeEnabledForTest(false);
     RenderingTest::TearDown();
   }
-
-  bool geometryMapperCacheEmpty(const PaintLayerClipper& clipper) {
-    return clipper.m_geometryMapper->m_transformCache.isEmpty() &&
-           clipper.m_geometryMapper->m_clipCache.isEmpty();
-  }
 };
 
 INSTANTIATE_TEST_CASE_P(All,

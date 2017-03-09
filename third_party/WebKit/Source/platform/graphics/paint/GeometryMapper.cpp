@@ -214,31 +214,6 @@ FloatRect GeometryMapper::ancestorToLocalRect(
   return transformMatrix.inverse().mapRect(rect);
 }
 
-GeometryMapper::TransformCache& GeometryMapper::getTransformCache(
-    const TransformPaintPropertyNode* ancestor) {
-  auto addResult = m_transformCache.insert(ancestor, nullptr);
-  if (addResult.isNewEntry)
-    addResult.storedValue->value = WTF::wrapUnique(new TransformCache);
-  return *addResult.storedValue->value;
-}
-
-GeometryMapper::ClipCache& GeometryMapper::getClipCache(
-    const ClipPaintPropertyNode* ancestorClip,
-    const TransformPaintPropertyNode* ancestorTransform) {
-  auto addResultTransform = m_clipCache.insert(ancestorClip, nullptr);
-  if (addResultTransform.isNewEntry) {
-    addResultTransform.storedValue->value =
-        WTF::wrapUnique(new TransformToClip);
-  }
-
-  auto addResultClip =
-      addResultTransform.storedValue->value->insert(ancestorTransform, nullptr);
-  if (addResultClip.isNewEntry)
-    addResultClip.storedValue->value = WTF::wrapUnique(new ClipCache);
-
-  return *addResultClip.storedValue->value;
-}
-
 FloatClipRect GeometryMapper::localToAncestorClipRect(
     const PropertyTreeState& localState,
     const PropertyTreeState& ancestorState) {
@@ -274,7 +249,8 @@ FloatClipRect GeometryMapper::sourceToDestinationClipRectInternal(
   if (success)
     return result;
 
-  // Otherwise first map to the lowest common ancestor, then map to destination.
+  // Otherwise first map to the lowest common ancestor, then map to
+  // destination.
   const TransformPaintPropertyNode* lcaTransform = lowestCommonAncestor(
       sourceState.transform(), destinationState.transform());
   DCHECK(lcaTransform);
@@ -291,9 +267,9 @@ FloatClipRect GeometryMapper::sourceToDestinationClipRectInternal(
     if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
       // On SPv1 we may fail when the paint invalidation container creates an
       // overflow clip (in ancestorState) which is not in localState of an
-      // out-of-flow positioned descendant. See crbug.com/513108 and layout test
-      // compositing/overflow/handle-non-ancestor-clip-parent.html (run with
-      // --enable-prefer-compositing-to-lcd-text) for details.
+      // out-of-flow positioned descendant. See crbug.com/513108 and layout
+      // test compositing/overflow/handle-non-ancestor-clip-parent.html (run
+      // with --enable-prefer-compositing-to-lcd-text) for details.
       // Ignore it for SPv1 for now.
       success = true;
     }
@@ -307,7 +283,7 @@ FloatClipRect GeometryMapper::sourceToDestinationClipRectInternal(
   return result;
 }
 
-FloatClipRect GeometryMapper::localToAncestorClipRectInternal(
+const FloatClipRect& GeometryMapper::localToAncestorClipRectInternal(
     const ClipPaintPropertyNode* descendant,
     const ClipPaintPropertyNode* ancestorClip,
     const TransformPaintPropertyNode* ancestorTransform,
@@ -315,28 +291,29 @@ FloatClipRect GeometryMapper::localToAncestorClipRectInternal(
   FloatClipRect clip;
   if (descendant == ancestorClip) {
     success = true;
-    // Return an infinite clip.
-    return clip;
+    return m_infiniteClip;
   }
 
-  ClipCache& clipCache = getClipCache(ancestorClip, ancestorTransform);
   const ClipPaintPropertyNode* clipNode = descendant;
   Vector<const ClipPaintPropertyNode*> intermediateNodes;
 
+  GeometryMapperClipCache::ClipAndTransform clipAndTransform(ancestorClip,
+                                                             ancestorTransform);
   // Iterate over the path from localState.clip to ancestorState.clip. Stop if
   // we've found a memoized (precomputed) clip for any particular node.
   while (clipNode && clipNode != ancestorClip) {
-    auto it = clipCache.find(clipNode);
-    if (it != clipCache.end()) {
-      clip = it->value;
+    if (const FloatClipRect* cachedClip =
+            clipNode->getClipCache().getCachedClip(clipAndTransform)) {
+      clip = *cachedClip;
       break;
     }
+
     intermediateNodes.push_back(clipNode);
     clipNode = clipNode->parent();
   }
   if (!clipNode) {
     success = false;
-    return clip;
+    return m_infiniteClip;
   }
 
   // Iterate down from the top intermediate node found in the previous loop,
@@ -347,16 +324,20 @@ FloatClipRect GeometryMapper::localToAncestorClipRectInternal(
     const TransformationMatrix& transformMatrix = localToAncestorMatrixInternal(
         (*it)->localTransformSpace(), ancestorTransform, success);
     if (!success)
-      return clip;
+      return m_infiniteClip;
     FloatRect mappedRect = transformMatrix.mapRect((*it)->clipRect().rect());
     clip.intersect(mappedRect);
     if ((*it)->clipRect().isRounded())
       clip.setHasRadius();
-    clipCache.set(*it, clip);
+    (*it)->getClipCache().setCachedClip(clipAndTransform, clip);
   }
 
   success = true;
-  return clipCache.find(descendant)->value;
+
+  const FloatClipRect* cachedClip =
+      descendant->getClipCache().getCachedClip(clipAndTransform);
+  DCHECK(cachedClip);
+  return *cachedClip;
 }
 
 const TransformationMatrix& GeometryMapper::localToAncestorMatrix(
@@ -378,8 +359,6 @@ const TransformationMatrix& GeometryMapper::localToAncestorMatrixInternal(
     return m_identity;
   }
 
-  TransformCache& transformCache = getTransformCache(ancestorTransformNode);
-
   const TransformPaintPropertyNode* transformNode = localTransformNode;
   Vector<const TransformPaintPropertyNode*> intermediateNodes;
   TransformationMatrix transformMatrix;
@@ -388,11 +367,13 @@ const TransformationMatrix& GeometryMapper::localToAncestorMatrixInternal(
   // Stop if we've found a memoized (precomputed) transform for any particular
   // node.
   while (transformNode && transformNode != ancestorTransformNode) {
-    auto it = transformCache.find(transformNode);
-    if (it != transformCache.end()) {
-      transformMatrix = it->value;
+    if (const TransformationMatrix* cachedMatrix =
+            transformNode->getTransformCache().getCachedTransform(
+                ancestorTransformNode)) {
+      transformMatrix = *cachedMatrix;
       break;
     }
+
     intermediateNodes.push_back(transformNode);
     transformNode = transformNode->parent();
   }
@@ -408,15 +389,20 @@ const TransformationMatrix& GeometryMapper::localToAncestorMatrixInternal(
     TransformationMatrix localTransformMatrix = (*it)->matrix();
     localTransformMatrix.applyTransformOrigin((*it)->origin());
     transformMatrix = transformMatrix * localTransformMatrix;
-    transformCache.set(*it, transformMatrix);
+    (*it)->getTransformCache().setCachedTransform(ancestorTransformNode,
+                                                  transformMatrix);
   }
   success = true;
-  return transformCache.find(localTransformNode)->value;
+  const TransformationMatrix* cachedMatrix =
+      localTransformNode->getTransformCache().getCachedTransform(
+          ancestorTransformNode);
+  DCHECK(cachedMatrix);
+  return *cachedMatrix;
 }
 
 void GeometryMapper::clearCache() {
-  m_transformCache.clear();
-  m_clipCache.clear();
+  GeometryMapperTransformCache::clearCache();
+  GeometryMapperClipCache::clearCache();
 }
 
 namespace {
