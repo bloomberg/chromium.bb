@@ -57,9 +57,11 @@
 #include "ui/base/ui_base_switches.h"
 
 #if defined(OS_POSIX)
+#include <signal.h>
+
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/app/shutdown_signal_handlers_posix.h"
-#endif
+#endif  // defined(OS_POSIX)
 
 using service_manager::mojom::ServiceFactory;
 
@@ -260,6 +262,16 @@ int MashMain() {
 #if !defined(OFFICIAL_BUILD) && defined(OS_WIN)
   base::RouteStdioToConsole(false);
 #endif
+
+#if defined(OS_POSIX)
+  // We inherit the signal mask of our parent process, which might block signals
+  // like SIGTERM that we need in order to cleanly shut down. Reset the signal
+  // mask to unblock all signals. http://crbug.com/699777
+  sigset_t empty_signal_set;
+  CHECK_EQ(0, sigemptyset(&empty_signal_set));
+  CHECK_EQ(0, sigprocmask(SIG_SETMASK, &empty_signal_set, nullptr));
+#endif
+
   // TODO(sky): wire this up correctly.
   service_manager::InitializeLogging();
 
