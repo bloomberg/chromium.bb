@@ -86,7 +86,7 @@ void CSSSegmentedFontFace::removeFontFace(FontFace* fontFace) {
 
   if (it == m_firstNonCssConnectedFace)
     ++m_firstNonCssConnectedFace;
-  m_fontFaces.remove(it);
+  m_fontFaces.erase(it);
 
   pruneTable();
   fontFace->cssFontFace()->clearSegmentedFontFace();

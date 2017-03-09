@@ -296,7 +296,7 @@ bool FontFaceSet::deleteForBinding(ScriptState*,
   HeapListHashSet<Member<FontFace>>::iterator it =
       m_nonCSSConnectedFaces.find(fontFace);
   if (it != m_nonCSSConnectedFaces.end()) {
-    m_nonCSSConnectedFaces.remove(it);
+    m_nonCSSConnectedFaces.erase(it);
     CSSFontSelector* fontSelector = document()->styleEngine().fontSelector();
     fontSelector->fontFaceCache()->removeFontFace(fontFace, false);
     if (fontFace->loadStatus() == FontFace::Loading)

@@ -212,8 +212,8 @@ class ListHashSet
   template <typename IncomingValueType>
   AddResult insertBefore(iterator, IncomingValueType&&);
 
-  void remove(ValuePeekInType value) { return remove(find(value)); }
-  void remove(iterator);
+  void erase(ValuePeekInType value) { return erase(find(value)); }
+  void erase(iterator);
   void clear();
   template <typename Collection>
   void removeAll(const Collection& other) {
@@ -993,7 +993,7 @@ ListHashSet<T, inlineCapacity, U, V>::insertBefore(
 }
 
 template <typename T, size_t inlineCapacity, typename U, typename V>
-inline void ListHashSet<T, inlineCapacity, U, V>::remove(iterator it) {
+inline void ListHashSet<T, inlineCapacity, U, V>::erase(iterator it) {
   if (it == end())
     return;
   m_impl.remove(it.getNode());

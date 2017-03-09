@@ -247,10 +247,10 @@ TYPED_TEST(ListOrLinkedHashSetTest, InsertBefore) {
   --it;
   EXPECT_EQ(1, *it);
   if (canModifyWhileIterating) {
-    set.remove(-1);
-    set.remove(0);
-    set.remove(2);
-    set.remove(3);
+    set.erase(-1);
+    set.erase(0);
+    set.erase(2);
+    set.erase(3);
     EXPECT_EQ(1u, set.size());
     EXPECT_EQ(1, *it);
     ++it;
@@ -292,11 +292,11 @@ TYPED_TEST(ListOrLinkedHashSetTest, AddReturnIterator) {
   EXPECT_EQ(0, *it);
   it = set.addReturnIterator(4);
   if (canModifyWhileIterating) {
-    set.remove(3);
-    set.remove(2);
-    set.remove(1);
-    set.remove(0);
-    set.remove(-1);
+    set.erase(3);
+    set.erase(2);
+    set.erase(1);
+    set.erase(0);
+    set.erase(-1);
     EXPECT_EQ(1u, set.size());
   }
   EXPECT_EQ(4, *it);
@@ -314,7 +314,7 @@ TYPED_TEST(ListOrLinkedHashSetTest, AddReturnIterator) {
   EXPECT_EQ(6u, set.size());
   it = set.addReturnIterator(5);
   EXPECT_EQ(7u, set.size());
-  set.remove(it);
+  set.erase(it);
   EXPECT_EQ(6u, set.size());
   EXPECT_EQ(4, set.back());
 }
@@ -355,8 +355,8 @@ TYPED_TEST(ListOrLinkedHashSetTest, Swap) {
   EXPECT_EQ(set2.begin(), set2.end());
 
   int removedIndex = num >> 1;
-  set0.remove(removedIndex + 1);
-  set1.remove(num - removedIndex);
+  set0.erase(removedIndex + 1);
+  set1.erase(num - removedIndex);
 
   it1 = set0.begin();
   it2 = set1.begin();
@@ -421,7 +421,7 @@ TYPED_TEST(ListOrLinkedHashSetRefPtrTest, WithRefPtr) {
   EXPECT_FALSE(isDeleted);
   EXPECT_EQ(1, DummyRefCounted::m_refInvokesCount);
 
-  set.remove(rawPtr);
+  set.erase(rawPtr);
   EXPECT_TRUE(isDeleted);
 
   EXPECT_EQ(1, DummyRefCounted::m_refInvokesCount);
@@ -450,7 +450,7 @@ TYPED_TEST(ListOrLinkedHashSetRefPtrTest, ExerciseValuePeekInType) {
   EXPECT_EQ(1u, set.size());
   set.insert(ptr2);
   ptr2.clear();
-  set.remove(ptr);
+  set.erase(ptr);
 
   EXPECT_FALSE(isDeleted);
   ptr.clear();
@@ -573,7 +573,7 @@ TEST(ListHashSetTest, WithOwnPtr) {
   EXPECT_NE(set.end(), it2);
   EXPECT_EQ(ptr2, (*it2).get());
 
-  set.remove(ptr1);
+  set.erase(ptr1);
   EXPECT_TRUE(deleted1);
 
   set.clear();
@@ -813,7 +813,7 @@ TYPED_TEST(ListOrLinkedHashSetMoveOnlyTest, MoveOnlyValue) {
 
   // ... but they don't have any pass-out (like take()) methods.
 
-  set.remove(MoveOnly(3));
+  set.erase(MoveOnly(3));
   set.clear();
 }
 

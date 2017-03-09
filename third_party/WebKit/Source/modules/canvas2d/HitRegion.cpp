@@ -50,7 +50,7 @@ void HitRegionManager::removeHitRegion(HitRegion* hitRegion) {
   if (hitRegion->control())
     m_hitRegionControlMap.erase(hitRegion->control());
 
-  m_hitRegionList.remove(hitRegion);
+  m_hitRegionList.erase(hitRegion);
 }
 
 void HitRegionManager::removeHitRegionById(const String& id) {

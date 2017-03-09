@@ -78,7 +78,7 @@ PassRefPtr<SimpleFontData> FontDataCache::get(
 
   if (!result.get()->value.second) {
     ASSERT(m_inactiveFontData.contains(result.get()->value.first));
-    m_inactiveFontData.remove(result.get()->value.first);
+    m_inactiveFontData.erase(result.get()->value.first);
   }
 
   if (shouldRetain == Retain) {
@@ -157,7 +157,7 @@ bool FontDataCache::purgeLeastRecentlyUsed(int count) {
     m_inactiveFontData.clear();
   } else {
     for (int i = 0; i < count; ++i)
-      m_inactiveFontData.remove(m_inactiveFontData.begin());
+      m_inactiveFontData.erase(m_inactiveFontData.begin());
   }
 
   bool didWork = fontDataToDelete.size();

@@ -67,7 +67,7 @@ LayoutFlowThread* LayoutFlowThread::locateFlowThreadContainingBlockOf(
 void LayoutFlowThread::removeColumnSetFromThread(
     LayoutMultiColumnSet* columnSet) {
   ASSERT(columnSet);
-  m_multiColumnSetList.remove(columnSet);
+  m_multiColumnSetList.erase(columnSet);
   invalidateColumnSets();
   // Clear the interval tree right away, instead of leaving it around with dead
   // objects. Not that anyone _should_ try to access the interval tree when the

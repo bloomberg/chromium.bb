@@ -258,7 +258,7 @@ void IntersectionObserver::unobserve(Element* target,
   if (IntersectionObservation* observation =
           target->intersectionObserverData()->getObservationFor(*this)) {
     observation->disconnect();
-    m_observations.remove(observation);
+    m_observations.erase(observation);
   }
 }
 

@@ -410,7 +410,7 @@ void DocumentState::addControl(HTMLFormControlElementWithState* control) {
 
 void DocumentState::removeControl(HTMLFormControlElementWithState* control) {
   CHECK(m_formControls.contains(control));
-  m_formControls.remove(control);
+  m_formControls.erase(control);
 }
 
 static String formStateSignature() {

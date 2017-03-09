@@ -103,7 +103,7 @@ bool DOMWindowEventQueue::cancelEvent(Event* event) {
   bool found = it != m_queuedEvents.end();
   if (found) {
     probe::asyncTaskCanceled(event->target()->getExecutionContext(), event);
-    m_queuedEvents.remove(it);
+    m_queuedEvents.erase(it);
   }
   if (m_queuedEvents.isEmpty())
     m_pendingEventTimer->stop();
@@ -134,7 +134,7 @@ void DOMWindowEventQueue::pendingEventTimerFired() {
   while (!m_queuedEvents.isEmpty()) {
     HeapListHashSet<Member<Event>, 16>::iterator iter = m_queuedEvents.begin();
     Event* event = *iter;
-    m_queuedEvents.remove(iter);
+    m_queuedEvents.erase(iter);
     if (!event)
       break;
     dispatchEvent(event);

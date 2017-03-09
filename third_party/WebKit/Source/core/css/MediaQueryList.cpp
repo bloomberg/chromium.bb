@@ -76,7 +76,7 @@ void MediaQueryList::removeListener(MediaQueryListListener* listener) {
   if (!listener)
     return;
 
-  m_listeners.remove(listener);
+  m_listeners.erase(listener);
 }
 
 bool MediaQueryList::hasPendingActivity() const {

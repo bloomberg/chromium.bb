@@ -3064,7 +3064,7 @@ void orderedSetHelper(bool strong) {
   EXPECT_EQ(set2->end(), iX);
 
   if (strong)
-    set1->remove(keepNumbersAlive[0]);
+    set1->erase(keepNumbersAlive[0]);
 
   keepNumbersAlive[0] = nullptr;
 
@@ -3497,7 +3497,7 @@ TEST(HeapTest, HeapWeakCollectionTypes) {
           } else if (collectionNumber == weakOrderedSetIndex && firstAlive) {
             ASSERT_TRUE(weakOrderedSet->contains(keepNumbersAlive[i]));
             if (deleteAfterwards)
-              weakOrderedSet->remove(keepNumbersAlive[i]);
+              weakOrderedSet->erase(keepNumbersAlive[i]);
             else
               count++;
           }

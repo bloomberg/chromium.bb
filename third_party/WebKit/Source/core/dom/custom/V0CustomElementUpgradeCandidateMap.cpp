@@ -69,7 +69,7 @@ void V0CustomElementUpgradeCandidateMap::elementWasDestroyed(Element* element) {
   UnresolvedDefinitionMap::iterator elements =
       m_unresolvedDefinitions.find(candidate->value);
   SECURITY_DCHECK(elements != m_unresolvedDefinitions.end());
-  elements->value->remove(element);
+  elements->value->erase(element);
   m_upgradeCandidates.remove(candidate);
 }
 

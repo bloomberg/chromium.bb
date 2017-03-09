@@ -98,7 +98,7 @@ void ScriptedAnimationController::dispatchEvents(
     HeapVector<Member<Event>> remaining;
     for (auto& event : m_eventQueue) {
       if (event && event->interfaceName() == eventInterfaceFilter) {
-        m_perFrameEvents.remove(eventTargetKey(event.get()));
+        m_perFrameEvents.erase(eventTargetKey(event.get()));
         events.push_back(event.release());
       } else {
         remaining.push_back(event.release());

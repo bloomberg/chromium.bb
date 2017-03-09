@@ -377,7 +377,7 @@ void IDBTransaction::registerRequest(IDBRequest* request) {
 void IDBTransaction::unregisterRequest(IDBRequest* request) {
   DCHECK(request);
   // If we aborted the request, it will already have been removed.
-  m_requestList.remove(request);
+  m_requestList.erase(request);
 }
 
 void IDBTransaction::onAbort(DOMException* error) {

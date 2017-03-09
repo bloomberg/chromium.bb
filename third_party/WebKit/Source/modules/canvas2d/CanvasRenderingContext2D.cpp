@@ -461,7 +461,7 @@ void CanvasRenderingContext2D::setFont(const String& newFont) {
         m_fontsResolvedUsingCurrentStyle.find(newFont);
     if (i != m_fontsResolvedUsingCurrentStyle.end()) {
       DCHECK(m_fontLRUList.contains(newFont));
-      m_fontLRUList.remove(newFont);
+      m_fontLRUList.erase(newFont);
       m_fontLRUList.insert(newFont);
       modifiableState().setFont(
           i->value, canvas()->document().styleEngine().fontSelector());

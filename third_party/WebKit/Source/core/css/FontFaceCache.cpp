@@ -105,7 +105,7 @@ void FontFaceCache::removeFontFace(FontFace* fontFace, bool cssConnected) {
   }
   m_fonts.erase(fontFace->family());
   if (cssConnected)
-    m_cssConnectedFontFaces.remove(fontFace);
+    m_cssConnectedFontFaces.erase(fontFace);
 
   incrementVersion();
 }

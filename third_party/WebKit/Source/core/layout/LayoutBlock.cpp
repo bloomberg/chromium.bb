@@ -1030,7 +1030,7 @@ void LayoutBlock::removePositionedObject(LayoutBox* o) {
   TrackedLayoutBoxListHashSet* positionedDescendants =
       gPositionedDescendantsMap->at(container);
   ASSERT(positionedDescendants && positionedDescendants->contains(o));
-  positionedDescendants->remove(o);
+  positionedDescendants->erase(o);
   if (positionedDescendants->isEmpty()) {
     gPositionedDescendantsMap->erase(container);
     container->m_hasPositionedObjects = false;
@@ -1096,7 +1096,7 @@ void LayoutBlock::removePositionedObjects(
 
   for (auto object : deadObjects) {
     ASSERT(gPositionedContainerMap->at(object) == this);
-    positionedDescendants->remove(object);
+    positionedDescendants->erase(object);
     gPositionedContainerMap->erase(object);
   }
   if (positionedDescendants->isEmpty()) {
@@ -1130,7 +1130,7 @@ void LayoutBlock::addPercentHeightDescendant(LayoutBox* descendant) {
 
 void LayoutBlock::removePercentHeightDescendant(LayoutBox* descendant) {
   if (TrackedLayoutBoxListHashSet* descendants = percentHeightDescendants()) {
-    descendants->remove(descendant);
+    descendants->erase(descendant);
     descendant->setPercentHeightContainer(nullptr);
     if (descendants->isEmpty()) {
       gPercentHeightDescendantsMap->erase(this);

@@ -1290,7 +1290,7 @@ void ThreadState::invokePreFinalizers() {
       if (!done)
         --it;
       if ((entry->second)(entry->first))
-        m_orderedPreFinalizers.remove(entry);
+        m_orderedPreFinalizers.erase(entry);
     } while (!done);
   }
   if (isMainThread()) {

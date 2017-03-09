@@ -1110,7 +1110,7 @@ void ResourceFetcher::clearPreloads(ClearPreloadsPolicy policy) {
       resource->decreasePreloadCount();
       if (resource->getPreloadResult() == Resource::PreloadNotReferenced)
         memoryCache()->remove(resource.get());
-      m_preloads->remove(resource);
+      m_preloads->erase(resource);
     }
   }
   if (!m_preloads->size())

@@ -59,7 +59,7 @@ bool CanvasFontCache::getFontUsingDefaultStyle(const String& fontString,
       m_fontsResolvedUsingDefaultStyle.find(fontString);
   if (i != m_fontsResolvedUsingDefaultStyle.end()) {
     ASSERT(m_fontLRUList.contains(fontString));
-    m_fontLRUList.remove(fontString);
+    m_fontLRUList.erase(fontString);
     m_fontLRUList.insert(fontString);
     resolvedFont = i->value;
     return true;
@@ -84,7 +84,7 @@ MutableStylePropertySet* CanvasFontCache::parseFont(const String& fontString) {
   if (i != m_fetchedFonts.end()) {
     ASSERT(m_fontLRUList.contains(fontString));
     parsedStyle = i->value;
-    m_fontLRUList.remove(fontString);
+    m_fontLRUList.erase(fontString);
     m_fontLRUList.insert(fontString);
   } else {
     parsedStyle = MutableStylePropertySet::create(HTMLStandardMode);

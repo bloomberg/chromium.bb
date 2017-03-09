@@ -288,8 +288,8 @@ class LinkedHashSet {
         std::forward<IncomingValueType>(newValue), it.getNode());
   }
 
-  void remove(ValuePeekInType);
-  void remove(iterator);
+  void erase(ValuePeekInType);
+  void erase(iterator);
   void clear() { m_impl.clear(); }
   template <typename Collection>
   void removeAll(const Collection& other) {
@@ -865,15 +865,15 @@ LinkedHashSet<T, U, V, W>::insertBefore(ValuePeekInType beforeValue,
 }
 
 template <typename T, typename U, typename V, typename W>
-inline void LinkedHashSet<T, U, V, W>::remove(iterator it) {
+inline void LinkedHashSet<T, U, V, W>::erase(iterator it) {
   if (it == end())
     return;
   m_impl.remove(it.getNode());
 }
 
 template <typename T, typename U, typename V, typename W>
-inline void LinkedHashSet<T, U, V, W>::remove(ValuePeekInType value) {
-  remove(find(value));
+inline void LinkedHashSet<T, U, V, W>::erase(ValuePeekInType value) {
+  erase(find(value));
 }
 
 inline void swapAnchor(LinkedHashSetNodeBase& a, LinkedHashSetNodeBase& b) {

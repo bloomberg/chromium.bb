@@ -107,7 +107,7 @@ void SMILTimeContainer::unschedule(SVGSMILElement* animation,
   ASSERT(scheduled);
   AnimationsLinkedHashSet::iterator itAnimation = scheduled->find(animation);
   ASSERT(itAnimation != scheduled->end());
-  scheduled->remove(itAnimation);
+  scheduled->erase(itAnimation);
 
   if (scheduled->isEmpty())
     m_scheduledAnimations.remove(it);

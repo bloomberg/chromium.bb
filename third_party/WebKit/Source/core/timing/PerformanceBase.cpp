@@ -506,9 +506,9 @@ void PerformanceBase::unregisterPerformanceObserver(
   if (m_activeObservers.contains(&oldObserver) &&
       !oldObserver.shouldBeSuspended()) {
     oldObserver.deliver();
-    m_activeObservers.remove(&oldObserver);
+    m_activeObservers.erase(&oldObserver);
   }
-  m_observers.remove(&oldObserver);
+  m_observers.erase(&oldObserver);
   updatePerformanceObserverFilterOptions();
   updateLongTaskInstrumentation();
 }
@@ -549,7 +549,7 @@ void PerformanceBase::resumeSuspendedObservers() {
   copyToVector(m_suspendedObservers, suspended);
   for (size_t i = 0; i < suspended.size(); ++i) {
     if (!suspended[i]->shouldBeSuspended()) {
-      m_suspendedObservers.remove(suspended[i]);
+      m_suspendedObservers.erase(suspended[i]);
       activateObserver(*suspended[i]);
     }
   }
