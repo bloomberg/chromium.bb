@@ -4,7 +4,7 @@
 
 #include "ui/gfx/native_pixmap_handle.h"
 
-#if defined(USE_OZONE)
+#if defined(OS_LINUX)
 #include "base/posix/eintr_wrapper.h"
 #endif
 
@@ -29,7 +29,7 @@ NativePixmapHandle::NativePixmapHandle(const NativePixmapHandle& other) =
 
 NativePixmapHandle::~NativePixmapHandle() {}
 
-#if defined(USE_OZONE)
+#if defined(OS_LINUX)
 NativePixmapHandle CloneHandleForIPC(const NativePixmapHandle& handle) {
   NativePixmapHandle clone;
   std::vector<base::ScopedFD> scoped_fds;
@@ -46,6 +46,6 @@ NativePixmapHandle CloneHandleForIPC(const NativePixmapHandle& handle) {
   clone.planes = handle.planes;
   return clone;
 }
-#endif  // defined(USE_OZONE)
+#endif  // defined(OS_LINUX)
 
 }  // namespace gfx

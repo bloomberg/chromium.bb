@@ -235,10 +235,10 @@ struct StructTraits<gfx::mojom::NativePixmapHandleDataView,
                               void* context);
 
   static bool IsNull(const gfx::NativePixmapHandle& handle) {
-#if defined(USE_OZONE)
+#if defined(OS_LINUX)
     return false;
 #else
-    // NativePixmapHandle are not used on non-ozone platforms.
+    // NativePixmapHandle are not used on non-linux platforms.
     return true;
 #endif
   }

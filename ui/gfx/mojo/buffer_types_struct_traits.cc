@@ -25,7 +25,7 @@ std::vector<mojo::ScopedHandle> StructTraits<
     gfx::NativePixmapHandle>::fds(const gfx::NativePixmapHandle& pixmap_handle,
                                   void* context) {
   PixmapHandleFdList* handles = static_cast<PixmapHandleFdList*>(context);
-#if defined(USE_OZONE)
+#if defined(OS_LINUX)
   if (handles->empty()) {
     // Generate the handles here, but do not send them yet.
     for (const base::FileDescriptor& fd : pixmap_handle.fds) {
@@ -34,7 +34,7 @@ std::vector<mojo::ScopedHandle> StructTraits<
     }
     return PixmapHandleFdList(handles->size());
   }
-#endif  // defined(USE_OZONE)
+#endif  // defined(OS_LINUX)
   return std::move(*handles);
 }
 
@@ -42,7 +42,7 @@ bool StructTraits<
     gfx::mojom::NativePixmapHandleDataView,
     gfx::NativePixmapHandle>::Read(gfx::mojom::NativePixmapHandleDataView data,
                                    gfx::NativePixmapHandle* out) {
-#if defined(USE_OZONE)
+#if defined(OS_LINUX)
   mojo::ArrayDataView<mojo::ScopedHandle> handles_data_view;
   data.GetFdsDataView(&handles_data_view);
   for (size_t i = 0; i < handles_data_view.size(); ++i) {
@@ -89,7 +89,7 @@ const gfx::NativePixmapHandle&
 StructTraits<gfx::mojom::GpuMemoryBufferHandleDataView,
              gfx::GpuMemoryBufferHandle>::
     native_pixmap_handle(const gfx::GpuMemoryBufferHandle& handle) {
-#if defined(USE_OZONE)
+#if defined(OS_LINUX)
   return handle.native_pixmap_handle;
 #else
   static gfx::NativePixmapHandle pixmap_handle;
@@ -145,7 +145,7 @@ bool StructTraits<gfx::mojom::GpuMemoryBufferHandleDataView,
     out->offset = data.offset();
     out->stride = data.stride();
   }
-#if defined(USE_OZONE)
+#if defined(OS_LINUX)
   if (out->type == gfx::OZONE_NATIVE_PIXMAP &&
       !data.ReadNativePixmapHandle(&out->native_pixmap_handle))
     return false;

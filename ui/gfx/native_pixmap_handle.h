@@ -10,9 +10,10 @@
 
 #include <vector>
 
+#include "build/build_config.h"
 #include "ui/gfx/gfx_export.h"
 
-#if defined(USE_OZONE)
+#if defined(OS_LINUX)
 #include "base/file_descriptor_posix.h"
 #endif
 
@@ -45,14 +46,14 @@ struct GFX_EXPORT NativePixmapHandle {
 
   ~NativePixmapHandle();
 
-#if defined(USE_OZONE)
+#if defined(OS_LINUX)
   // File descriptors for the underlying memory objects (usually dmabufs).
   std::vector<base::FileDescriptor> fds;
 #endif
   std::vector<NativePixmapPlane> planes;
 };
 
-#if defined(USE_OZONE)
+#if defined(OS_LINUX)
 // Returns an instance of |handle| which can be sent over IPC. This duplicates
 // the file-handles, so that the IPC code take ownership of them, without
 // invalidating |handle|.

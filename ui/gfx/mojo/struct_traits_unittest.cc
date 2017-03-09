@@ -166,7 +166,7 @@ TEST_F(StructTraitsTest, GpuMemoryBufferHandle) {
   base::SharedMemory output_memory(output.handle, true);
   EXPECT_TRUE(output_memory.Map(1024));
 
-#if defined(USE_OZONE)
+#if defined(OS_LINUX)
   const uint64_t kSize = kOffset + kStride;
   const uint64_t kModifier = 2;
   handle.type = gfx::OZONE_NATIVE_PIXMAP;
