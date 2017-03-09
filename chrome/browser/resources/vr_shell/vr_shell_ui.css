@@ -282,7 +282,6 @@ html {
   display: flex;
   height: 24px;
   overflow: hidden;
-  visibility: hidden;
   white-space: nowrap;
 }
 

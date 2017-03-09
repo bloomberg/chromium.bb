@@ -690,13 +690,13 @@ var vrShellUi = (function() {
     constructor() {
       this.enabled = false;
 
-      this.domUiElement = new DomUiElement('#omnibox-ui-element');
-      let root = this.domUiElement.domElement;
+      let root = document.querySelector('#omnibox-ui-element');
+      this.domUiElement = new DomUiElement('#omnibox-url-element');
       this.inputField = root.querySelector('#omnibox-input-field');
 
       // Initially invisible.
       let update = new api.UiElementUpdate();
-      update.setVisible(true);
+      update.setVisible(false);
       ui.updateElement(this.domUiElement.id, update);
 
       // Field-clearing button.
@@ -724,6 +724,8 @@ var vrShellUi = (function() {
       // Clicking on suggestions triggers navigation.
       let elements = root.querySelectorAll('.suggestion');
       this.maxSuggestions = elements.length;
+      this.suggestions = [];
+      this.suggestionUiElements = [];
       for (var i = 0; i < elements.length; i++) {
         elements[i].addEventListener('click', function(index, e) {
           if (e.target.url) {
@@ -731,7 +733,19 @@ var vrShellUi = (function() {
             this.setSuggestions([]);
           }
         }.bind(this, i));
+
+        let elem = new DomUiElement('#suggestion-' + i);
+        this.suggestionUiElements.push(elem);
+        let update = new api.UiElementUpdate();
+        update.setVisible(false);
+        update.setParentId(this.domUiElement.id);
+        update.setAnchoring(api.XAnchoring.XNONE, api.YAnchoring.YTOP);
+        // Vertically offset suggestions to stack on top of the omnibox. The 0.5
+        // offset moves each anchor point from center to edge.
+        update.setTranslation(0, elem.sizeY * (i + 0.5), 0);
+        ui.updateElement(elem.id, update);
       }
+      this.setSuggestions([]);
     }
 
     setEnabled(enabled) {
@@ -739,6 +753,7 @@ var vrShellUi = (function() {
       let update = new api.UiElementUpdate();
       update.setVisible(enabled);
       ui.updateElement(this.domUiElement.id, update);
+      this.updateSuggestions();
     }
 
     setURL(url) {
@@ -746,17 +761,24 @@ var vrShellUi = (function() {
     }
 
     setSuggestions(suggestions) {
+      this.suggestions = suggestions;
+      this.updateSuggestions();
+    }
+
+    updateSuggestions() {
       for (var i = 0; i < this.maxSuggestions; i++) {
         let element = document.querySelector('#suggestion-' + i);
-        if (i >= suggestions.length) {
-          element.textContent = '';
-          element.style.visibility = 'hidden';
-          element.url = null;
+        let update = new api.UiElementUpdate();
+        if (this.enabled && i < this.suggestions.length) {
+          element.textContent = this.suggestions[i].description;
+          element.url = this.suggestions[i].url;
+          update.setVisible(true);
         } else {
-          element.textContent = suggestions[i].description;
-          element.style.visibility = 'visible';
-          element.url = suggestions[i].url;
+          element.textContent = '';
+          element.url = null;
+          update.setVisible(false);
         }
+        ui.updateElement(this.suggestionUiElements[i].id, update);
       }
     }
   };
