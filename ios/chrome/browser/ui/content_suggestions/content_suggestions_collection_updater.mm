@@ -129,6 +129,36 @@ SectionIdentifier SectionIdentifierForInfo(
   [self reloadData];
 }
 
+- (void)clearSuggestion:(ContentSuggestionIdentifier*)suggestionIdentifier {
+  SectionIdentifier sectionIdentifier =
+      SectionIdentifierForInfo(suggestionIdentifier.sectionInfo);
+  if (![self.collectionViewController.collectionViewModel
+          hasSectionForSectionIdentifier:sectionIdentifier]) {
+    return;
+  }
+
+  NSArray<CollectionViewItem<ContentSuggestionIdentification>*>*
+      itemsInSection = [self.collectionViewController.collectionViewModel
+          itemsInSectionWithIdentifier:sectionIdentifier];
+
+  CollectionViewItem<ContentSuggestionIdentification>* correspondingItem = nil;
+  for (CollectionViewItem<ContentSuggestionIdentification>* item in
+           itemsInSection) {
+    if (item.suggestionIdentifier == suggestionIdentifier) {
+      correspondingItem = item;
+      break;
+    }
+  }
+
+  if (!correspondingItem)
+    return;
+
+  NSIndexPath* indexPath = [self.collectionViewController.collectionViewModel
+             indexPathForItem:correspondingItem
+      inSectionWithIdentifier:sectionIdentifier];
+  [self.collectionViewController dismissEntryAtIndexPath:indexPath];
+}
+
 #pragma mark - Public methods
 
 - (BOOL)shouldUseCustomStyleForSection:(NSInteger)section {

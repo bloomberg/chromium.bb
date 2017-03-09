@@ -40,6 +40,7 @@ const NSTimeInterval kAnimationDuration = 0.35;
 
 @synthesize suggestionCommandHandler = _suggestionCommandHandler;
 @synthesize collectionUpdater = _collectionUpdater;
+@dynamic collectionViewModel;
 
 #pragma mark - Public
 
@@ -64,7 +65,10 @@ const NSTimeInterval kAnimationDuration = 0.35;
 
     [self.collectionView deleteItemsAtIndexPaths:@[ indexPath ]];
   }
-                                completion:nil];
+      completion:^(BOOL) {
+        // The context menu could be displayed for the delete entry.
+        [self.suggestionCommandHandler dismissContextMenu];
+      }];
 }
 
 #pragma mark - UIViewController

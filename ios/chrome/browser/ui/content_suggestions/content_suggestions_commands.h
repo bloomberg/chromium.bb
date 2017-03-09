@@ -23,6 +23,8 @@ class GURL;
 - (void)displayContextMenuForArticle:(ContentSuggestionsArticleItem*)articleItem
                              atPoint:(CGPoint)touchLocation
                          atIndexPath:(NSIndexPath*)indexPath;
+// Dismisses the context menu if it is displayed.
+- (void)dismissContextMenu;
 
 @end
 

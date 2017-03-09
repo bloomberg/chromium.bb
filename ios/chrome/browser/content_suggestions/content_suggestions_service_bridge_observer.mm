@@ -37,7 +37,7 @@ void ContentSuggestionsServiceBridge::OnCategoryStatusChanged(
 void ContentSuggestionsServiceBridge::OnSuggestionInvalidated(
     const ntp_snippets::ContentSuggestion::ID& suggestion_id) {
   [observer_ contentSuggestionsService:service_
-                 SuggestionInvalidated:suggestion_id];
+                 suggestionInvalidated:suggestion_id];
 }
 
 void ContentSuggestionsServiceBridge::OnFullRefreshRequired() {

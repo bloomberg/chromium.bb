@@ -5,12 +5,19 @@
 #ifndef IOS_CHROME_BROWSER_UI_CONTENT_SUGGESTIONS_CONTENT_SUGGESTIONS_DATA_SINK_H_
 #define IOS_CHROME_BROWSER_UI_CONTENT_SUGGESTIONS_CONTENT_SUGGESTIONS_DATA_SINK_H_
 
+@class ContentSuggestionIdentifier;
+
 // Data sink for the ContentSuggestions. It will be notified when new data needs
 // to be pulled.
 @protocol ContentSuggestionsDataSink
 
 // Notifies the Data Sink that new data is available.
 - (void)dataAvailable;
+
+// The suggestion associated with |suggestionIdentifier| has been invalidated by
+// the backend data source and should be cleared now. This is why this method is
+// about the data source pushing something to the data sink.
+- (void)clearSuggestion:(ContentSuggestionIdentifier*)suggestionIdentifier;
 
 @end
 

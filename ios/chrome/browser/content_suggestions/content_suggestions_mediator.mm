@@ -198,9 +198,17 @@ ntp_snippets::ContentSuggestion::ID SuggestionIDForSectionID(
 
 - (void)contentSuggestionsService:
             (ntp_snippets::ContentSuggestionsService*)suggestionsService
-            SuggestionInvalidated:
+            suggestionInvalidated:
                 (const ntp_snippets::ContentSuggestion::ID&)suggestion_id {
-  // Update dataSink.
+  ContentSuggestionsCategoryWrapper* wrapper =
+      [[ContentSuggestionsCategoryWrapper alloc]
+          initWithCategory:suggestion_id.category()];
+  ContentSuggestionIdentifier* suggestionIdentifier =
+      [[ContentSuggestionIdentifier alloc] init];
+  suggestionIdentifier.IDInSection = suggestion_id.id_within_category();
+  suggestionIdentifier.sectionInfo = self.sectionInformationByCategory[wrapper];
+
+  [self.dataSink clearSuggestion:suggestionIdentifier];
 }
 
 - (void)contentSuggestionsServiceFullRefreshRequired:

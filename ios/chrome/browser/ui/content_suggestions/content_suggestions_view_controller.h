@@ -13,6 +13,7 @@
 
 @protocol ContentSuggestionsCommands;
 @protocol ContentSuggestionsDataSource;
+@protocol ContentSuggestionIdentification;
 
 // CollectionViewController to display the suggestions items.
 @interface ContentSuggestionsViewController
@@ -29,6 +30,10 @@
 // Handler for the commands sent by the ContentSuggestionsViewController.
 @property(nonatomic, weak) id<ContentSuggestionsCommands>
     suggestionCommandHandler;
+// Override from superclass to have a more specific type.
+@property(nonatomic, readonly)
+    CollectionViewModel<CollectionViewItem<ContentSuggestionIdentification>*>*
+        collectionViewModel;
 
 // Removes the entry at |indexPath|, from the collection and its model.
 - (void)dismissEntryAtIndexPath:(NSIndexPath*)indexPath;

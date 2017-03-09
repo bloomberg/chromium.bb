@@ -26,7 +26,7 @@
 // Invoked by ntp_snippets::ContentSuggestionsService::OnSuggestionInvalidated.
 - (void)contentSuggestionsService:
             (ntp_snippets::ContentSuggestionsService*)suggestionsService
-            SuggestionInvalidated:
+            suggestionInvalidated:
                 (const ntp_snippets::ContentSuggestion::ID&)suggestion_id;
 
 // Invoked by ntp_snippets::ContentSuggestionsService::OnFullRefreshRequired.

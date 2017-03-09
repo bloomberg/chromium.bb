@@ -96,6 +96,7 @@
                          completion:nil];
   self.navigationController = nil;
   self.contentSuggestionsMediator = nil;
+  self.alertCoordinator = nil;
   _visible = NO;
 }
 
@@ -174,6 +175,11 @@
                                     style:UIAlertActionStyleCancel];
 
   [self.alertCoordinator start];
+}
+
+- (void)dismissContextMenu {
+  [self.alertCoordinator stop];
+  self.alertCoordinator = nil;
 }
 
 #pragma mark - Private
