@@ -1556,13 +1556,6 @@ static_library("test_support") {
   testonly = true
 
   sources = [
-    "loader/testing/FetchTestingPlatformSupport.cpp",
-    "loader/testing/FetchTestingPlatformSupport.h",
-    "loader/testing/MockFetchContext.h",
-    "loader/testing/MockResource.cpp",
-    "loader/testing/MockResource.h",
-    "loader/testing/MockResourceClient.cpp",
-    "loader/testing/MockResourceClient.h",
     "network/mime/MockMimeRegistry.h",
     "scheduler/base/task_queue_manager_delegate_for_test.cc",
     "scheduler/base/test_time_source.cc",
@@ -1634,6 +1627,7 @@ static_library("test_support") {
   deps = [
     "//base/test:test_support",
     "//mojo/edk/system",
+    "//third_party/WebKit/Source/platform/loader:test_support",
   ]
 
   if (is_win) {

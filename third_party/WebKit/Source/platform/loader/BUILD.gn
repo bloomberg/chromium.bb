@@ -118,3 +118,33 @@ source_set("unit_tests") {
     "//third_party/WebKit/Source/platform",
   ]
 }
+
+source_set("test_support") {
+  # This target defines test files for platform:test_support that
+  # blink_platform_unittests and webkit_unit_tests can use.
+  visibility = [ "//third_party/WebKit/Source/platform:test_support" ]
+  testonly = true
+
+  # Source files that can be called from blink_platform_unittests and
+  # webkit_unit_tests.
+  sources = [
+    "testing/FetchTestingPlatformSupport.cpp",
+    "testing/FetchTestingPlatformSupport.h",
+    "testing/MockFetchContext.h",
+    "testing/MockResource.cpp",
+    "testing/MockResource.h",
+    "testing/MockResourceClient.cpp",
+    "testing/MockResourceClient.h",
+  ]
+
+  defines = [ "INSIDE_BLINK" ]
+
+  configs += [
+    "//third_party/WebKit/Source/wtf:wtf_config",
+    "//third_party/WebKit/Source:config",
+  ]
+
+  deps = [
+    "//third_party/WebKit/Source/platform",
+  ]
+}
