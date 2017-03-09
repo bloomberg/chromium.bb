@@ -742,44 +742,43 @@ void av1_make_masked_inter_predictor(const uint8_t *pre, int pre_stride,
 }
 #endif  // CONFIG_EXT_INTER
 
+// TODO(sarahparker) av1_highbd_build_inter_predictor and
+// av1_build_inter_predictor should be combined with
+// av1_make_inter_predictor
 #if CONFIG_AOM_HIGHBITDEPTH
-void av1_highbd_build_inter_predictor(
-    const uint8_t *src, int src_stride, uint8_t *dst, int dst_stride,
-    const MV *src_mv, const struct scale_factors *sf, int w, int h, int ref,
+void av1_highbd_build_inter_predictor(const uint8_t *src, int src_stride,
+                                      uint8_t *dst, int dst_stride,
+                                      const MV *src_mv,
+                                      const struct scale_factors *sf, int w,
+                                      int h, int ref,
 #if CONFIG_DUAL_FILTER
-    const InterpFilter *interp_filter,
+                                      const InterpFilter *interp_filter,
 #else
-    const InterpFilter interp_filter,
+                                      const InterpFilter interp_filter,
 #endif
-    enum mv_precision precision, int x, int y, int bd) {
+#if CONFIG_GLOBAL_MOTION
+                                      int is_global, int p_col, int p_row,
+#endif  // CONFIG_GLOBAL_MOTION
+                                      int plane, enum mv_precision precision,
+                                      int x, int y, const MACROBLOCKD *xd) {
   const int is_q4 = precision == MV_PRECISION_Q4;
   const MV mv_q4 = { is_q4 ? src_mv->row : src_mv->row * 2,
                      is_q4 ? src_mv->col : src_mv->col * 2 };
   MV32 mv = av1_scale_mv(&mv_q4, x, y, sf);
   const int subpel_x = mv.col & SUBPEL_MASK;
   const int subpel_y = mv.row & SUBPEL_MASK;
+  ConvolveParams conv_params = get_conv_params(ref, plane);
 
   src += (mv.row >> SUBPEL_BITS) * src_stride + (mv.col >> SUBPEL_BITS);
 
-  highbd_inter_predictor(src, src_stride, dst, dst_stride, subpel_x, subpel_y,
-                         sf, w, h, ref, interp_filter, sf->x_step_q4,
-                         sf->y_step_q4, bd);
+  av1_make_inter_predictor(src, src_stride, dst, dst_stride, subpel_x, subpel_y,
+                           sf, w, h, &conv_params, interp_filter,
+#if CONFIG_GLOBAL_MOTION
+                           is_global, p_col, p_row, plane, ref,
+#endif  // CONFIG_GLOBAL_MOTION
+                           sf->x_step_q4, sf->y_step_q4, xd);
 }
 #endif  // CONFIG_AOM_HIGHBITDEPTH
-
-#if CONFIG_GLOBAL_MOTION
-static INLINE int is_global_mv_block(const MODE_INFO *mi, int block,
-                                     TransformationType type) {
-  PREDICTION_MODE mode = get_y_mode(mi, block);
-#if GLOBAL_SUB8X8_USED
-  const int block_size_allowed = 1;
-#else
-  const BLOCK_SIZE bsize = mi->mbmi.sb_type;
-  const int block_size_allowed = (bsize >= BLOCK_8X8);
-#endif  // GLOBAL_SUB8X8_USED
-  return mode == ZEROMV && type > TRANSLATION && block_size_allowed;
-}
-#endif  // CONFIG_GLOBAL_MOTION
 
 void av1_build_inter_predictor(const uint8_t *src, int src_stride, uint8_t *dst,
                                int dst_stride, const MV *src_mv,
@@ -790,7 +789,12 @@ void av1_build_inter_predictor(const uint8_t *src, int src_stride, uint8_t *dst,
 #else
                                const InterpFilter interp_filter,
 #endif
-                               enum mv_precision precision, int x, int y) {
+#if CONFIG_GLOBAL_MOTION
+                               int is_global, int p_col, int p_row, int plane,
+                               int ref,
+#endif  // CONFIG_GLOBAL_MOTION
+                               enum mv_precision precision, int x, int y,
+                               const MACROBLOCKD *xd) {
   const int is_q4 = precision == MV_PRECISION_Q4;
   const MV mv_q4 = { is_q4 ? src_mv->row : src_mv->row * 2,
                      is_q4 ? src_mv->col : src_mv->col * 2 };
@@ -800,8 +804,12 @@ void av1_build_inter_predictor(const uint8_t *src, int src_stride, uint8_t *dst,
 
   src += (mv.row >> SUBPEL_BITS) * src_stride + (mv.col >> SUBPEL_BITS);
 
-  inter_predictor(src, src_stride, dst, dst_stride, subpel_x, subpel_y, sf, w,
-                  h, conv_params, interp_filter, sf->x_step_q4, sf->y_step_q4);
+  av1_make_inter_predictor(src, src_stride, dst, dst_stride, subpel_x, subpel_y,
+                           sf, w, h, conv_params, interp_filter,
+#if CONFIG_GLOBAL_MOTION
+                           is_global, p_col, p_row, plane, ref,
+#endif  // CONFIG_GLOBAL_MOTION
+                           sf->x_step_q4, sf->y_step_q4, xd);
 }
 
 typedef struct SubpelParams {
@@ -1060,6 +1068,15 @@ void av1_build_inter_predictor_sub8x8(MACROBLOCKD *xd, int plane, int i, int ir,
   uint8_t *const dst = &pd->dst.buf[(ir * pd->dst.stride + ic) << 2];
   int ref;
   const int is_compound = has_second_ref(&mi->mbmi);
+#if CONFIG_GLOBAL_MOTION
+  const int p_col = ((mi_col * MI_SIZE) >> pd->subsampling_x) + 4 * ic;
+  const int p_row = ((mi_row * MI_SIZE) >> pd->subsampling_y) + 4 * ir;
+  int is_global[2];
+  for (ref = 0; ref < 1 + is_compound; ++ref) {
+    WarpedMotionParams *const wm = &xd->global_motion[mi->mbmi.ref_frame[ref]];
+    is_global[ref] = is_global_mv_block(mi, i, wm->wmtype);
+  }
+#endif  // CONFIG_GLOBAL_MOTION
 
   for (ref = 0; ref < 1 + is_compound; ++ref) {
     ConvolveParams conv_params = get_conv_params(ref, plane);
@@ -1070,15 +1087,23 @@ void av1_build_inter_predictor_sub8x8(MACROBLOCKD *xd, int plane, int i, int ir,
       av1_highbd_build_inter_predictor(
           pre, pd->pre[ref].stride, dst, pd->dst.stride,
           &mi->bmi[i].as_mv[ref].as_mv, &xd->block_refs[ref]->sf, width, height,
-          ref, mi->mbmi.interp_filter, MV_PRECISION_Q3,
-          mi_col * MI_SIZE + 4 * ic, mi_row * MI_SIZE + 4 * ir, xd->bd);
+          ref, mi->mbmi.interp_filter,
+#if CONFIG_GLOBAL_MOTION
+          is_global[ref], p_col, p_row,
+#endif  // CONFIG_GLOBAL_MOTION
+          plane, MV_PRECISION_Q3, mi_col * MI_SIZE + 4 * ic,
+          mi_row * MI_SIZE + 4 * ir, xd);
     else
 #endif  // CONFIG_AOM_HIGHBITDEPTH
-      av1_build_inter_predictor(
-          pre, pd->pre[ref].stride, dst, pd->dst.stride,
-          &mi->bmi[i].as_mv[ref].as_mv, &xd->block_refs[ref]->sf, width, height,
-          &conv_params, mi->mbmi.interp_filter, MV_PRECISION_Q3,
-          mi_col * MI_SIZE + 4 * ic, mi_row * MI_SIZE + 4 * ir);
+      av1_build_inter_predictor(pre, pd->pre[ref].stride, dst, pd->dst.stride,
+                                &mi->bmi[i].as_mv[ref].as_mv,
+                                &xd->block_refs[ref]->sf, width, height,
+                                &conv_params, mi->mbmi.interp_filter,
+#if CONFIG_GLOBAL_MOTION
+                                is_global[ref], p_col, p_row, plane, ref,
+#endif  // CONFIG_GLOBAL_MOTION
+                                MV_PRECISION_Q3, mi_col * MI_SIZE + 4 * ic,
+                                mi_row * MI_SIZE + 4 * ir, xd);
   }
 }
 

@@ -5493,6 +5493,8 @@ static void joint_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
   const int ph = block_size_high[bsize];
   MACROBLOCKD *xd = &x->e_mbd;
   MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
+  // This function should only ever be called for compound modes
+  assert(has_second_ref(mbmi));
   const int refs[2] = { mbmi->ref_frame[0],
                         mbmi->ref_frame[1] < 0 ? 0 : mbmi->ref_frame[1] };
   int_mv ref_mv[2];
@@ -5506,6 +5508,20 @@ static void joint_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
   const InterpFilter interp_filter = mbmi->interp_filter;
 #endif  // CONFIG_DUAL_FILTER
   struct scale_factors sf;
+  struct macroblockd_plane *const pd = &xd->plane[0];
+#if CONFIG_GLOBAL_MOTION
+  // ic and ir are the 4x4 coordiantes of the sub8x8 at index "block"
+  const int ic = block & 1;
+  const int ir = (block - ic) >> 1;
+  const int p_col = ((mi_col * MI_SIZE) >> pd->subsampling_x) + 4 * ic;
+  const int p_row = ((mi_row * MI_SIZE) >> pd->subsampling_y) + 4 * ir;
+  int is_global[2];
+  for (ref = 0; ref < 2; ++ref) {
+    WarpedMotionParams *const wm =
+        &xd->global_motion[xd->mi[0]->mbmi.ref_frame[ref]];
+    is_global[ref] = is_global_mv_block(xd->mi[0], block, wm->wmtype);
+  }
+#endif  // CONFIG_GLOBAL_MOTION
 
   // Do joint motion search in compound mode to get more accurate mv.
   struct buf_2d backup_yv12[2][MAX_MB_PLANE];
@@ -5597,19 +5613,28 @@ static void joint_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
       av1_highbd_build_inter_predictor(
           ref_yv12[!id].buf, ref_yv12[!id].stride, second_pred, pw,
           &frame_mv[refs[!id]].as_mv, &sf, pw, ph, 0, interp_filter,
-          MV_PRECISION_Q3, mi_col * MI_SIZE, mi_row * MI_SIZE, xd->bd);
+#if CONFIG_GLOBAL_MOTION
+          is_global[!id], p_col, p_row,
+#endif  // CONFIG_GLOBAL_MOTION
+          plane, MV_PRECISION_Q3, mi_col * MI_SIZE, mi_row * MI_SIZE, xd);
     } else {
       second_pred = (uint8_t *)second_pred_alloc_16;
       av1_build_inter_predictor(
           ref_yv12[!id].buf, ref_yv12[!id].stride, second_pred, pw,
           &frame_mv[refs[!id]].as_mv, &sf, pw, ph, &conv_params, interp_filter,
-          MV_PRECISION_Q3, mi_col * MI_SIZE, mi_row * MI_SIZE);
+#if CONFIG_GLOBAL_MOTION
+          is_global[!id], p_col, p_row, plane, !id,
+#endif  // CONFIG_GLOBAL_MOTION
+          MV_PRECISION_Q3, mi_col * MI_SIZE, mi_row * MI_SIZE, xd);
     }
 #else
     av1_build_inter_predictor(
         ref_yv12[!id].buf, ref_yv12[!id].stride, second_pred, pw,
         &frame_mv[refs[!id]].as_mv, &sf, pw, ph, &conv_params, interp_filter,
-        MV_PRECISION_Q3, mi_col * MI_SIZE, mi_row * MI_SIZE);
+#if CONFIG_GLOBAL_MOTION
+        is_global[!id], p_col, p_row, plane, !id,
+#endif  // CONFIG_GLOBAL_MOTION
+        MV_PRECISION_Q3, mi_col * MI_SIZE, mi_row * MI_SIZE, xd);
 #endif  // CONFIG_AOM_HIGHBITDEPTH
 
     // Do compound motion search on the current reference frame.
@@ -5644,7 +5669,6 @@ static void joint_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
       unsigned int sse;
       if (cpi->sf.use_upsampled_references) {
         // Use up-sampled reference frames.
-        struct macroblockd_plane *const pd = &xd->plane[plane];
         struct buf_2d backup_pred = pd->pre[0];
         const YV12_BUFFER_CONFIG *upsampled_ref =
             get_upsampled_ref(cpi, refs[id]);

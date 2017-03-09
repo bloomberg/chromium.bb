@@ -24,6 +24,20 @@
 extern "C" {
 #endif
 
+#if CONFIG_GLOBAL_MOTION
+static INLINE int is_global_mv_block(const MODE_INFO *mi, int block,
+                                     TransformationType type) {
+  PREDICTION_MODE mode = get_y_mode(mi, block);
+#if GLOBAL_SUB8X8_USED
+  const int block_size_allowed = 1;
+#else
+  const BLOCK_SIZE bsize = mi->mbmi.sb_type;
+  const int block_size_allowed = (bsize >= BLOCK_8X8);
+#endif  // GLOBAL_SUB8X8_USED
+  return mode == ZEROMV && type > TRANSLATION && block_size_allowed;
+}
+#endif  // CONFIG_GLOBAL_MOTION
+
 static INLINE void inter_predictor(const uint8_t *src, int src_stride,
                                    uint8_t *dst, int dst_stride,
                                    const int subpel_x, const int subpel_y,
@@ -417,7 +431,7 @@ void av1_build_masked_inter_predictor_complex(
 #endif  // CONFIG_SUPERTX
 
 void av1_build_inter_predictor(const uint8_t *src, int src_stride, uint8_t *dst,
-                               int dst_stride, const MV *mv_q3,
+                               int dst_stride, const MV *src_mv,
                                const struct scale_factors *sf, int w, int h,
                                ConvolveParams *conv_params,
 #if CONFIG_DUAL_FILTER
@@ -425,18 +439,29 @@ void av1_build_inter_predictor(const uint8_t *src, int src_stride, uint8_t *dst,
 #else
                                const InterpFilter interp_filter,
 #endif
-                               enum mv_precision precision, int x, int y);
+#if CONFIG_GLOBAL_MOTION
+                               int is_global, int p_col, int p_row, int plane,
+                               int ref,
+#endif  // CONFIG_GLOBAL_MOTION
+                               enum mv_precision precision, int x, int y,
+                               const MACROBLOCKD *xd);
 
 #if CONFIG_AOM_HIGHBITDEPTH
-void av1_highbd_build_inter_predictor(
-    const uint8_t *src, int src_stride, uint8_t *dst, int dst_stride,
-    const MV *mv_q3, const struct scale_factors *sf, int w, int h, int do_avg,
+void av1_highbd_build_inter_predictor(const uint8_t *src, int src_stride,
+                                      uint8_t *dst, int dst_stride,
+                                      const MV *mv_q3,
+                                      const struct scale_factors *sf, int w,
+                                      int h, int do_avg,
 #if CONFIG_DUAL_FILTER
-    const InterpFilter *interp_filter,
+                                      const InterpFilter *interp_filter,
 #else
-    const InterpFilter interp_filter,
+                                      const InterpFilter interp_filter,
 #endif
-    enum mv_precision precision, int x, int y, int bd);
+#if CONFIG_GLOBAL_MOTION
+                                      int is_global, int p_col, int p_row,
+#endif  // CONFIG_GLOBAL_MOTION
+                                      int plane, enum mv_precision precision,
+                                      int x, int y, const MACROBLOCKD *xd);
 #endif
 
 static INLINE int scaled_buffer_offset(int x_offset, int y_offset, int stride,
