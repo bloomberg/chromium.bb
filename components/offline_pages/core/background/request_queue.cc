@@ -128,11 +128,13 @@ void RequestQueue::PickNextRequest(
     PickRequestTask::RequestNotPickedCallback not_picked_callback,
     PickRequestTask::RequestCountCallback request_count_callback,
     DeviceConditions& conditions,
-    std::set<int64_t>& disabled_requests) {
+    std::set<int64_t>& disabled_requests,
+    std::deque<int64_t>& prioritized_requests) {
   // Using the PickerContext, create a picker task.
-  std::unique_ptr<Task> task(new PickRequestTask(
-      store_.get(), policy, picked_callback, not_picked_callback,
-      request_count_callback, conditions, disabled_requests));
+  std::unique_ptr<Task> task(
+      new PickRequestTask(store_.get(), policy, picked_callback,
+                          not_picked_callback, request_count_callback,
+                          conditions, disabled_requests, prioritized_requests));
 
   // Queue up the picking task, it will call one of the callbacks when it
   // completes.

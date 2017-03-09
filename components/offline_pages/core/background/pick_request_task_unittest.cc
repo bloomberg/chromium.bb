@@ -4,6 +4,7 @@
 
 #include "components/offline_pages/core/background/pick_request_task.h"
 
+#include <deque>
 #include <memory>
 #include <set>
 
@@ -127,6 +128,7 @@ class PickRequestTaskTest : public testing::Test {
   std::unique_ptr<OfflinerPolicy> policy_;
   RequestCoordinatorEventLogger event_logger_;
   std::set<int64_t> disabled_requests_;
+  std::deque<int64_t> prioritized_requests_;
   std::unique_ptr<PickRequestTask> task_;
   bool request_queue_not_picked_called_;
   bool cleanup_needed_;
@@ -215,7 +217,7 @@ void PickRequestTaskTest::MakePickRequestTask() {
                  base::Unretained(this)),
       base::Bind(&PickRequestTaskTest::RequestCountCallback,
                  base::Unretained(this)),
-      conditions, disabled_requests_));
+      conditions, disabled_requests_, prioritized_requests_));
   task_->SetTaskCompletionCallbackForTesting(
       task_runner_.get(),
       base::Bind(&PickRequestTaskTest::TaskCompletionCallback,
@@ -493,4 +495,74 @@ TEST_F(PickRequestTaskTest, ChooseRequestThatIsNotDisabled) {
   EXPECT_TRUE(task_complete_called_);
 }
 
+TEST_F(PickRequestTaskTest, ChoosePrioritizedRequests) {
+  prioritized_requests_.push_back(kRequestId2);
+  MakePickRequestTask();
+
+  base::Time creation_time = base::Time::Now();
+  SavePageRequest request1(kRequestId1, kUrl1, kClientId1, creation_time,
+                           kUserRequested);
+  SavePageRequest request2(kRequestId2, kUrl2, kClientId2, creation_time,
+                           kUserRequested);
+  // Since default policy prefer untried requests, make request1 the favorable
+  // pick if no prioritized requests. But request2 is prioritized so it should
+  // be picked.
+  request2.set_completed_attempt_count(kAttemptCount);
+
+  // Add test requests on the Queue.
+  QueueRequests(request1, request2);
+
+  task()->Run();
+  PumpLoop();
+
+  // Pump the loop again to give the async queue the opportunity to return
+  // results from the Get operation, and for the picker to call the "picked"
+  // callback.
+  PumpLoop();
+
+  EXPECT_EQ(kRequestId2, last_picked_->request_id());
+  EXPECT_FALSE(request_queue_not_picked_called_);
+  EXPECT_EQ(2UL, total_request_count_);
+  EXPECT_EQ(2UL, available_request_count_);
+  EXPECT_TRUE(task_complete_called_);
+  EXPECT_EQ(1UL, prioritized_requests_.size());
+}
+
+TEST_F(PickRequestTaskTest, ChooseFromTwoPrioritizedRequests) {
+  // Make two prioritized requests, the second one should be picked because
+  // higher priority requests are later on the list.
+  prioritized_requests_.push_back(kRequestId1);
+  prioritized_requests_.push_back(kRequestId2);
+  MakePickRequestTask();
+
+  // Making request 1 more attractive to be picked not considering the
+  // prioritizing issues with older creation time, fewer attempt count and it's
+  // earlier in the request queue.
+  base::Time creation_time = base::Time::Now();
+  base::Time older_creation_time =
+      creation_time - base::TimeDelta::FromMinutes(10);
+  SavePageRequest request1(kRequestId1, kUrl1, kClientId1, older_creation_time,
+                           kUserRequested);
+  SavePageRequest request2(kRequestId2, kUrl2, kClientId2, creation_time,
+                           kUserRequested);
+  request2.set_completed_attempt_count(kAttemptCount);
+
+  // Add test requests on the Queue.
+  QueueRequests(request1, request2);
+
+  task()->Run();
+  PumpLoop();
+
+  // Pump the loop again to give the async queue the opportunity to return
+  // results from the Get operation, and for the picker to call the "picked"
+  // callback.
+  PumpLoop();
+
+  EXPECT_EQ(kRequestId2, last_picked_->request_id());
+  EXPECT_FALSE(request_queue_not_picked_called_);
+  EXPECT_EQ(2UL, total_request_count_);
+  EXPECT_EQ(2UL, available_request_count_);
+  EXPECT_TRUE(task_complete_called_);
+  EXPECT_EQ(2UL, prioritized_requests_.size());
+}
 }  // namespace offline_pages

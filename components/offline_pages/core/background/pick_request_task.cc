@@ -4,6 +4,8 @@
 
 #include "components/offline_pages/core/background/pick_request_task.h"
 
+#include <unordered_set>
+
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/time/time.h"
@@ -35,13 +37,15 @@ PickRequestTask::PickRequestTask(RequestQueueStore* store,
                                  RequestNotPickedCallback not_picked_callback,
                                  RequestCountCallback request_count_callback,
                                  DeviceConditions& device_conditions,
-                                 const std::set<int64_t>& disabled_requests)
+                                 const std::set<int64_t>& disabled_requests,
+                                 std::deque<int64_t>& prioritized_requests)
     : store_(store),
       policy_(policy),
       picked_callback_(picked_callback),
       not_picked_callback_(not_picked_callback),
       request_count_callback_(request_count_callback),
       disabled_requests_(disabled_requests),
+      prioritized_requests_(prioritized_requests),
       weak_ptr_factory_(this) {
   device_conditions_.reset(new DeviceConditions(device_conditions));
 }
@@ -85,19 +89,22 @@ void PickRequestTask::Choose(
   bool cleanup_needed = false;
 
   size_t available_request_count = 0;
+  // Request ids which are available for picking.
+  std::unordered_set<int64_t> available_request_ids;
 
-  // Iterate once through the requests, keeping track of best candidate.
-  for (unsigned i = 0; i < requests.size(); ++i) {
+  // Iterate through the requests, filter out unavailable requests and get other
+  // information (if cleanup is needed and number of non-user-requested
+  // requests).
+  for (const auto& request : requests) {
     // If the request is expired or has exceeded the retry count, skip it.
-    if (OfflinerPolicyUtils::CheckRequestExpirationStatus(requests[i].get(),
+    if (OfflinerPolicyUtils::CheckRequestExpirationStatus(request.get(),
                                                           policy_) !=
         OfflinerPolicyUtils::RequestExpirationStatus::VALID) {
       cleanup_needed = true;
       continue;
     }
-
-    // If the  request is on the disabled list, skip it.
-    auto search = disabled_requests_.find(requests[i]->request_id());
+    // If the request is on the disabled list, skip it.
+    auto search = disabled_requests_.find(request->request_id());
     if (search != disabled_requests_.end())
       continue;
 
@@ -106,20 +113,49 @@ void PickRequestTask::Choose(
     // detect if any exist. If we don't find any user-requested tasks, we will
     // inform the "not_picked_callback_" that it needs to schedule a task for
     // non-user-requested items, which have different network and power needs.
-    if (!requests[i]->user_requested())
+    if (!request->user_requested())
       non_user_requested_tasks_remaining = true;
-    if (requests[i]->request_state() ==
-        SavePageRequest::RequestState::AVAILABLE) {
+    if (request->request_state() == SavePageRequest::RequestState::AVAILABLE) {
       available_request_count++;
     }
-    if (!RequestConditionsSatisfied(requests[i].get()))
+    if (!RequestConditionsSatisfied(request.get()))
       continue;
-    if (IsNewRequestBetter(picked_request, requests[i].get(), comparator))
-      picked_request = requests[i].get();
+    available_request_ids.insert(request->request_id());
   }
-
   // Report the request queue counts.
   request_count_callback_.Run(requests.size(), available_request_count);
+
+  // Search for and pick the prioritized request which is available for picking
+  // from |available_request_ids|, the closer to the end means higher priority.
+  // Also if a request in |prioritized_requests_| doesn't exist in |requests|
+  // we're going to remove it.
+  // For every ID in |available_request_ids|, there exists a corresponding
+  // request in |requests|, so this won't be an infinite loop: either we pick a
+  // request, or there's a request being poped from |prioritized_requests_|.
+  while (!picked_request && !prioritized_requests_.empty()) {
+    if (available_request_ids.count(prioritized_requests_.back()) > 0) {
+      for (const auto& request : requests) {
+        if (request->request_id() == prioritized_requests_.back()) {
+          picked_request = request.get();
+          break;
+        }
+      }
+      DCHECK(picked_request);
+    } else {
+      prioritized_requests_.pop_back();
+    }
+  }
+
+  // If no request was found from the priority list, find the best request
+  // according to current policies.
+  if (!picked_request) {
+    for (const auto& request : requests) {
+      if ((available_request_ids.count(request->request_id()) > 0) &&
+          (IsNewRequestBetter(picked_request, request.get(), comparator))) {
+        picked_request = request.get();
+      }
+    }
+  }
 
   // If we have a best request to try next, get the request coodinator to
   // start it.  Otherwise return that we have no candidates.

@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <deque>
 #include <memory>
 #include <set>
 #include <string>
@@ -95,7 +96,8 @@ class RequestQueue {
       PickRequestTask::RequestNotPickedCallback not_picked_callback,
       PickRequestTask::RequestCountCallback request_count_callback,
       DeviceConditions& conditions,
-      std::set<int64_t>& disabled_requests);
+      std::set<int64_t>& disabled_requests,
+      std::deque<int64_t>& prioritized_requests);
 
   // Reconcile any requests that were active the last time chrome exited.
   void ReconcileRequests(const UpdateCallback& callback);

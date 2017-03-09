@@ -310,6 +310,10 @@ class RequestCoordinatorTest : public testing::Test {
     return coordinator()->disabled_requests_;
   }
 
+  const std::deque<int64_t>& prioritized_requests() {
+    return coordinator()->prioritized_requests_;
+  }
+
  private:
   GetRequestsResult last_get_requests_result_;
   MultipleItemStatuses last_remove_results_;
@@ -1457,10 +1461,12 @@ TEST_F(RequestCoordinatorTest,
   coordinator()->ResumeRequests(request_ids);
   PumpLoop();
   EXPECT_FALSE(is_busy());
+  EXPECT_EQ(1UL, prioritized_requests().size());
 
   // Pause the request again.
   coordinator()->PauseRequests(request_ids);
   PumpLoop();
+  EXPECT_EQ(0UL, prioritized_requests().size());
 
   // Now simulate reasonable connection.
   SetNetworkConnected(true);
@@ -1469,6 +1475,7 @@ TEST_F(RequestCoordinatorTest,
   coordinator()->ResumeRequests(request_ids);
   EXPECT_FALSE(is_busy());
   PumpLoop();
+  EXPECT_EQ(1UL, prioritized_requests().size());
 
   EXPECT_TRUE(is_busy());
 }

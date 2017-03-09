@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_OFFLINE_PAGES_CORE_BACKGROUND_PICK_REQUEST_TASK_H_
 #define COMPONENTS_OFFLINE_PAGES_CORE_BACKGROUND_PICK_REQUEST_TASK_H_
 
+#include <deque>
 #include <set>
 
 #include "base/memory/weak_ptr.h"
@@ -43,7 +44,8 @@ class PickRequestTask : public Task {
                   RequestNotPickedCallback not_picked_callback,
                   RequestCountCallback request_count_callback,
                   DeviceConditions& device_conditions,
-                  const std::set<int64_t>& disabled_requests);
+                  const std::set<int64_t>& disabled_requests,
+                  std::deque<int64_t>& prioritized_requests);
 
   ~PickRequestTask() override;
 
@@ -94,6 +96,7 @@ class PickRequestTask : public Task {
   RequestCountCallback request_count_callback_;
   std::unique_ptr<DeviceConditions> device_conditions_;
   const std::set<int64_t>& disabled_requests_;
+  std::deque<int64_t>& prioritized_requests_;
   // Allows us to pass a weak pointer to callbacks.
   base::WeakPtrFactory<PickRequestTask> weak_ptr_factory_;
 };

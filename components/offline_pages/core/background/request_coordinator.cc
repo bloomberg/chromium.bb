@@ -394,6 +394,15 @@ void RequestCoordinator::RemoveRequests(
 void RequestCoordinator::PauseRequests(
     const std::vector<int64_t>& request_ids) {
   bool canceled = CancelActiveRequestIfItMatches(request_ids);
+
+  // Remove the paused requests from prioritized list.
+  for (int64_t id : request_ids) {
+    auto it = std::find(prioritized_requests_.begin(),
+                        prioritized_requests_.end(), id);
+    if (it != prioritized_requests_.end())
+      prioritized_requests_.erase(it);
+  }
+
   queue_->ChangeRequestsState(
       request_ids, SavePageRequest::RequestState::PAUSED,
       base::Bind(&RequestCoordinator::UpdateMultipleRequestsCallback,
@@ -413,6 +422,8 @@ void RequestCoordinator::PauseRequests(
 
 void RequestCoordinator::ResumeRequests(
     const std::vector<int64_t>& request_ids) {
+  prioritized_requests_.insert(prioritized_requests_.end(), request_ids.begin(),
+                               request_ids.end());
   queue_->ChangeRequestsState(
       request_ids, SavePageRequest::RequestState::AVAILABLE,
       base::Bind(&RequestCoordinator::UpdateMultipleRequestsCallback,
@@ -720,16 +731,17 @@ void RequestCoordinator::TryNextRequest(bool is_start_of_processing) {
     return;
   }
 
-  // Ask request queue to make a new PickRequestTask object, then put it on the
-  // task queue.
+  // Ask request queue to make a new PickRequestTask object, then put it on
+  // the task queue.
   queue_->PickNextRequest(
-      policy_.get(), base::Bind(&RequestCoordinator::RequestPicked,
-                                weak_ptr_factory_.GetWeakPtr()),
+      policy_.get(),
+      base::Bind(&RequestCoordinator::RequestPicked,
+                 weak_ptr_factory_.GetWeakPtr()),
       base::Bind(&RequestCoordinator::RequestNotPicked,
                  weak_ptr_factory_.GetWeakPtr()),
       base::Bind(&RequestCoordinator::RequestCounts,
                  weak_ptr_factory_.GetWeakPtr(), is_start_of_processing),
-      *current_conditions_.get(), disabled_requests_);
+      *current_conditions_.get(), disabled_requests_, prioritized_requests_);
   // TODO(petewil): Verify current_conditions has a good value on all calling
   // paths.  It is really more of a "last known conditions" than "current
   // conditions".  Consider having a call to Java to check the current

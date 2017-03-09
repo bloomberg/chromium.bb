@@ -461,6 +461,15 @@ class RequestCoordinator : public KeyedService,
   base::OneShotTimer watchdog_timer_;
   // Used for potential immediate processing when we get network connection.
   std::unique_ptr<ConnectionNotifier> connection_notifier_;
+  // Used to track prioritized requests.
+  // The requests can only be added by RC when they are resumed and there are
+  // two places where deletion from the |prioritized_requests_| would happen:
+  //   1. When request is paused RC will remove it.
+  //   2. When a task is not available to be picked by PickRequestTask (because
+  //   it was completed or cancelled), the task will remove it.
+  // Currently it's used as LIFO.
+  // TODO(romax): see if LIFO is a good idea, or change to FIFO.
+  std::deque<int64_t> prioritized_requests_;
   // Allows us to pass a weak pointer to callbacks.
   base::WeakPtrFactory<RequestCoordinator> weak_ptr_factory_;
 
