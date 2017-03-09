@@ -130,9 +130,6 @@ IPC_STRUCT_TRAITS_BEGIN(PrintMsg_Print_Params)
   // Desired apparent dpi on paper.
   IPC_STRUCT_TRAITS_MEMBER(desired_dpi)
 
-  // Whether to rasterize a PDF for printing
-  IPC_STRUCT_TRAITS_MEMBER(rasterize_pdf)
-
   // Cookie for the document to ensure correctness.
   IPC_STRUCT_TRAITS_MEMBER(document_cookie)
 
@@ -167,6 +164,9 @@ IPC_STRUCT_TRAITS_BEGIN(PrintMsg_Print_Params)
 
   // URL string to be printed as footer if requested by the user.
   IPC_STRUCT_TRAITS_MEMBER(url)
+
+  // Whether to rasterize a PDF for printing
+  IPC_STRUCT_TRAITS_MEMBER(rasterize_pdf)
 
   // True if print backgrounds is requested by the user.
   IPC_STRUCT_TRAITS_MEMBER(should_print_backgrounds)

@@ -1444,7 +1444,10 @@ FPDF_DOCUMENT PDFiumEngine::CreateSinglePageRasterPdf(
   FPDF_PAGEOBJECT temp_img = FPDFPageObj_NewImgeObj(temp_doc);
 
   std::vector<uint8_t> compressed_bitmap_data;
-  int quality = 40;
+  // Use quality = 40 as this does not significantly degrade the printed
+  // document relative to a normal bitmap and provides better compression than
+  // a higher quality setting.
+  const int quality = 40;
   if (!(print_settings.format & PP_PRINTOUTPUTFORMAT_PDF) &&
       (gfx::JPEGCodec::Encode(
           bitmap_data, gfx::JPEGCodec::FORMAT_BGRA, FPDFBitmap_GetWidth(bitmap),

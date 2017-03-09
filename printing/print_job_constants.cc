@@ -172,7 +172,7 @@ const char kSettingPrintWithExtension[] = "printWithExtension";
 // Scaling factor
 const char kSettingScaleFactor[] = "scaleFactor";
 
-// Scaling factor
+// Whether to rasterize the PDF for printing.
 const char kSettingRasterizePdf[] = "rasterizePDF";
 
 // Ticket option. Contains the ticket in CJT format.

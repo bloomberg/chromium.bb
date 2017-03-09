@@ -147,8 +147,7 @@ class PrintPreviewUI : public ConstrainedWebDialogUI {
   void OnSetOptionsFromDocument(
       const PrintHostMsg_SetOptionsFromDocument_Params& params);
 
-  // Allows tests to wait until the print preview dialog is loaded. Optionally
-  // also instructs the dialog to auto-cancel, which is used for testing only.
+  // Allows tests to wait until the print preview dialog is loaded.
   class TestingDelegate {
    public:
     virtual void DidGetPreviewPageCount(int page_count) = 0;
