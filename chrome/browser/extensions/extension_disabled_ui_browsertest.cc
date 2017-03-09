@@ -172,8 +172,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionDisabledGlobalErrorTest, UninstallFromDialog) {
   ASSERT_TRUE(error);
 
   // The "cancel" button is the uninstall button on the browser.
+  extensions::TestExtensionRegistryObserver test_observer(registry_,
+                                                          extension_id);
   error->BubbleViewCancelButtonPressed(browser());
-  content::RunAllBlockingPoolTasksUntilIdle();
+  test_observer.WaitForExtensionUninstalled();
 
   EXPECT_FALSE(registry_->GetExtensionById(extension_id,
                                            ExtensionRegistry::EVERYTHING));
