@@ -526,14 +526,14 @@ static void test_callback(
     BluetoothRemoteGattCharacteristic::ValueCallback callback,
     const TestBluetoothAdapterObserver& callback_observer,
     const std::vector<uint8_t>& value) {
-  EXPECT_EQ(1, callback_observer.gatt_characteristic_value_changed_count());
+  EXPECT_EQ(0, callback_observer.gatt_characteristic_value_changed_count());
   callback.Run(value);
 }
 
-// Tests that ReadRemoteCharacteristic results in a
+// Tests that ReadRemoteCharacteristic doesn't result in a
 // GattCharacteristicValueChanged call.
 TEST_F(BluetoothRemoteGattCharacteristicTest,
-       ReadRemoteCharacteristic_GattCharacteristicValueChanged) {
+       ReadRemoteCharacteristic_GattCharacteristicValueChangedNotCalled) {
   if (!PlatformSupportsLowEnergy()) {
     LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
     return;
@@ -552,12 +552,17 @@ TEST_F(BluetoothRemoteGattCharacteristicTest,
   SimulateGattCharacteristicRead(characteristic1_, test_vector);
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_EQ(1, observer.gatt_characteristic_value_changed_count());
-  EXPECT_EQ(characteristic1_->GetIdentifier(),
-            observer.last_gatt_characteristic_id());
-  EXPECT_EQ(characteristic1_->GetUUID(),
-            observer.last_gatt_characteristic_uuid());
-  EXPECT_EQ(test_vector, observer.last_changed_characteristic_value());
+  EXPECT_EQ(0, observer.gatt_characteristic_value_changed_count());
+// TODO(https://crbug.com/699694): Remove this #if once the bug on Windows is
+// fixed.
+#if defined(OS_WIN)
+  EXPECT_FALSE(observer.last_gatt_characteristic_id().empty());
+  EXPECT_TRUE(observer.last_gatt_characteristic_uuid().IsValid());
+#else
+  EXPECT_TRUE(observer.last_gatt_characteristic_id().empty());
+  EXPECT_FALSE(observer.last_gatt_characteristic_uuid().IsValid());
+#endif  // defined(OS_WIN)
+  EXPECT_TRUE(observer.last_changed_characteristic_value().empty());
 }
 #endif  // defined(OS_ANDROID) || defined(OS_MACOSX) || defined(OS_WIN)
 

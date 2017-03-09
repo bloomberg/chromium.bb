@@ -74,8 +74,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattCharacteristicMac
   // Called by the BluetoothRemoteGattServiceMac instance when the
   // characteristics value has been read.
   void DidUpdateValue(NSError* error);
-  // Updates value_ and notifies the adapter of the new value.
-  void UpdateValueAndNotify();
+  // Updates value_.
+  void UpdateValue();
   // Called by the BluetoothRemoteGattServiceMac instance when the
   // characteristics value has been written.
   void DidWriteValue(NSError* error);

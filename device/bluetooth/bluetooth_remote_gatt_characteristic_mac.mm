@@ -257,10 +257,12 @@ void BluetoothRemoteGattCharacteristicMac::DidUpdateValue(NSError* error) {
       callbacks.second.Run(error_code);
       return;
     }
-    UpdateValueAndNotify();
+    UpdateValue();
     callbacks.first.Run(value_);
   } else if (IsNotifying()) {
-    UpdateValueAndNotify();
+    UpdateValue();
+    gatt_service_->GetMacAdapter()->NotifyGattCharacteristicValueChanged(
+        this, value_);
   } else {
     // In case of buggy device, nothing should be done if receiving extra
     // read confirmation.
@@ -269,12 +271,10 @@ void BluetoothRemoteGattCharacteristicMac::DidUpdateValue(NSError* error) {
   }
 }
 
-void BluetoothRemoteGattCharacteristicMac::UpdateValueAndNotify() {
+void BluetoothRemoteGattCharacteristicMac::UpdateValue() {
   NSData* nsdata_value = cb_characteristic_.get().value;
   const uint8_t* buffer = static_cast<const uint8_t*>(nsdata_value.bytes);
   value_.assign(buffer, buffer + nsdata_value.length);
-  gatt_service_->GetMacAdapter()->NotifyGattCharacteristicValueChanged(this,
-                                                                       value_);
 }
 
 void BluetoothRemoteGattCharacteristicMac::DidWriteValue(NSError* error) {

@@ -397,9 +397,6 @@ void BluetoothRemoteGattCharacteristicWin::
     for (ULONG i = 0; i < value->DataSize; i++)
       characteristic_value_.push_back(value->Data[i]);
 
-    parent_service_->GetWinAdapter()->NotifyGattCharacteristicValueChanged(
-        this, characteristic_value_);
-
     callbacks.first.Run(characteristic_value_);
   }
   characteristic_value_read_or_write_in_progress_ = false;

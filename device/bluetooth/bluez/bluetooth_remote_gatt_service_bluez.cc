@@ -243,9 +243,15 @@ void BluetoothRemoteGattServiceBlueZ::GattCharacteristicPropertyChanged(
 
   if (property_name == properties->flags.name())
     NotifyServiceChanged();
-  else if (property_name == properties->value.name())
-    GetAdapter()->NotifyGattCharacteristicValueChanged(
-        iter->second, properties->value.value());
+  else if (property_name == properties->value.name()) {
+    DCHECK_GE(iter->second->num_of_characteristic_value_read_in_progress_, 0);
+    if (iter->second->num_of_characteristic_value_read_in_progress_ > 0) {
+      --iter->second->num_of_characteristic_value_read_in_progress_;
+    } else {
+      GetAdapter()->NotifyGattCharacteristicValueChanged(
+          iter->second, properties->value.value());
+    }
+  }
 }
 
 }  // namespace bluez

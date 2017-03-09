@@ -107,11 +107,17 @@ class BluetoothRemoteGattCharacteristicBlueZ
                          const std::string& error_name,
                          const std::string& error_message);
 
-  // Called by dbus:: on unsuccessful completion of a request to read or write
+  // Called by dbus:: on unsuccessful completion of a request to read
   // the characteristic value.
-  void OnError(const ErrorCallback& error_callback,
-               const std::string& error_name,
-               const std::string& error_message);
+  void OnReadError(const ErrorCallback& error_callback,
+                   const std::string& error_name,
+                   const std::string& error_message);
+
+  // Called by dbus:: on unsuccessful completion of a request to write
+  // the characteristic value.
+  void OnWriteError(const ErrorCallback& error_callback,
+                    const std::string& error_name,
+                    const std::string& error_message);
 
   // True, if there exists a Bluez notify session.
   bool has_notify_session_;
@@ -129,6 +135,9 @@ class BluetoothRemoteGattCharacteristicBlueZ
 
   // The GATT service this GATT characteristic belongs to.
   BluetoothRemoteGattServiceBlueZ* service_;
+
+  // Number of gatt read requests in progress.
+  int num_of_characteristic_value_read_in_progress_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.

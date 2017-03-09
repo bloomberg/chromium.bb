@@ -202,7 +202,6 @@ void BluetoothRemoteGattCharacteristicAndroid::OnRead(
   if (status == 0  // android.bluetooth.BluetoothGatt.GATT_SUCCESS
       && !read_callback.is_null()) {
     base::android::JavaByteArrayToByteVector(env, value, &value_);
-    adapter_->NotifyGattCharacteristicValueChanged(this, value_);
     read_callback.Run(value_);
   } else if (!read_error_callback.is_null()) {
     read_error_callback.Run(
