@@ -18,6 +18,7 @@ import org.chromium.chrome.browser.compositor.layouts.eventfilter.EventFilter;
 import org.chromium.chrome.browser.compositor.overlays.SceneOverlay;
 import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.widget.ClipDrawableProgressBar.DrawingInfo;
 import org.chromium.chrome.browser.widget.ControlContainer;
 import org.chromium.ui.base.DeviceFormFactor;
@@ -164,8 +165,12 @@ public class ToolbarSceneLayer extends SceneOverlayLayer implements SceneOverlay
     }
 
     @Override
-    public void onSizeChanged(float width, float height, float visibleViewportOffsetY,
-            int orientation) {}
+    public void onSizeChanged(
+            float width, float height, float visibleViewportOffsetY, int orientation) {
+        // If Chrome Home is enabled, a size change means the toolbar is now in a different
+        // location so a render is needed.
+        if (FeatureUtilities.isChromeHomeEnabled()) mRenderHost.requestRender();
+    }
 
     @Override
     public void getVirtualViews(List<VirtualView> views) {}
