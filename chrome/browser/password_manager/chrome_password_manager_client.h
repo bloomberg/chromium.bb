@@ -160,12 +160,6 @@ class ChromePasswordManagerClient
   // without custom sync passphrase.
   static bool ShouldAnnotateNavigationEntries(Profile* profile);
 
-#if defined(SAFE_BROWSING_DB_LOCAL) || defined(SAFE_BROWSING_DB_REMOTE)
-  // Return true if we can set PasswordProtectionService in
-  // |password_reuse_detection_manager_|.
-  static bool CanSetPasswordProtectionService();
-#endif
-
   Profile* const profile_;
 
   password_manager::PasswordManager password_manager_;
