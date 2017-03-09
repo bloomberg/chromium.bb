@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.physicalweb;
 
-import android.content.Context;
+import android.app.Activity;
 
 import com.google.android.gms.nearby.Nearby;
 import com.google.android.gms.nearby.messages.MessageListener;
@@ -25,8 +25,8 @@ class NearbyForegroundSubscription extends NearbySubscription {
     private final MessageListener mMessageListener;
     private boolean mShouldSubscribe;
 
-    NearbyForegroundSubscription(Context context) {
-        super(context);
+    NearbyForegroundSubscription(Activity activity) {
+        super(activity);
         mMessageListener = PhysicalWebBleClient.getInstance().createForegroundMessageListener();
         mShouldSubscribe = false;
     }
