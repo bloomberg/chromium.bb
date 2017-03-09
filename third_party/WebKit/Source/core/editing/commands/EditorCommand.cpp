@@ -32,6 +32,7 @@
 #include "core/CSSValueKeywords.h"
 #include "core/HTMLNames.h"
 #include "core/clipboard/Pasteboard.h"
+#include "core/css/CSSComputedStyleDeclaration.h"
 #include "core/css/CSSIdentifierValue.h"
 #include "core/css/CSSValueList.h"
 #include "core/css/StylePropertySet.h"
@@ -461,15 +462,128 @@ static String valueStyle(LocalFrame& frame, CSSPropertyID propertyID) {
   return frame.editor().selectionStartCSSPropertyValue(propertyID);
 }
 
+static bool isUnicodeBidiNestedOrMultipleEmbeddings(CSSValueID valueID) {
+  return valueID == CSSValueEmbed || valueID == CSSValueBidiOverride ||
+         valueID == CSSValueWebkitIsolate ||
+         valueID == CSSValueWebkitIsolateOverride ||
+         valueID == CSSValueWebkitPlaintext || valueID == CSSValueIsolate ||
+         valueID == CSSValueIsolateOverride || valueID == CSSValuePlaintext;
+}
+
+// TODO(editing-dev): We should make |textDirectionForSelection()| to take
+// |selectionInDOMTree|.
+static WritingDirection textDirectionForSelection(
+    const VisibleSelection& selection,
+    EditingStyle* typingStyle,
+    bool& hasNestedOrMultipleEmbeddings) {
+  hasNestedOrMultipleEmbeddings = true;
+
+  if (selection.isNone())
+    return NaturalWritingDirection;
+
+  Position position = mostForwardCaretPosition(selection.start());
+
+  Node* node = position.anchorNode();
+  if (!node)
+    return NaturalWritingDirection;
+
+  Position end;
+  if (selection.isRange()) {
+    end = mostBackwardCaretPosition(selection.end());
+
+    DCHECK(end.document());
+    const EphemeralRange caretRange(position.parentAnchoredEquivalent(),
+                                    end.parentAnchoredEquivalent());
+    for (Node& n : caretRange.nodes()) {
+      if (!n.isStyledElement())
+        continue;
+
+      CSSComputedStyleDeclaration* style =
+          CSSComputedStyleDeclaration::create(&n);
+      const CSSValue* unicodeBidi =
+          style->getPropertyCSSValue(CSSPropertyUnicodeBidi);
+      if (!unicodeBidi || !unicodeBidi->isIdentifierValue())
+        continue;
+
+      CSSValueID unicodeBidiValue =
+          toCSSIdentifierValue(unicodeBidi)->getValueID();
+      if (isUnicodeBidiNestedOrMultipleEmbeddings(unicodeBidiValue))
+        return NaturalWritingDirection;
+    }
+  }
+
+  if (selection.isCaret()) {
+    WritingDirection direction;
+    if (typingStyle && typingStyle->textDirection(direction)) {
+      hasNestedOrMultipleEmbeddings = false;
+      return direction;
+    }
+    node = selection.visibleStart().deepEquivalent().anchorNode();
+  }
+  DCHECK(node);
+
+  // The selection is either a caret with no typing attributes or a range in
+  // which no embedding is added, so just use the start position to decide.
+  Node* block = enclosingBlock(node);
+  WritingDirection foundDirection = NaturalWritingDirection;
+
+  for (Node& runner : NodeTraversal::inclusiveAncestorsOf(*node)) {
+    if (runner == block)
+      break;
+    if (!runner.isStyledElement())
+      continue;
+
+    Element* element = &toElement(runner);
+    CSSComputedStyleDeclaration* style =
+        CSSComputedStyleDeclaration::create(element);
+    const CSSValue* unicodeBidi =
+        style->getPropertyCSSValue(CSSPropertyUnicodeBidi);
+    if (!unicodeBidi || !unicodeBidi->isIdentifierValue())
+      continue;
+
+    CSSValueID unicodeBidiValue =
+        toCSSIdentifierValue(unicodeBidi)->getValueID();
+    if (unicodeBidiValue == CSSValueNormal)
+      continue;
+
+    if (unicodeBidiValue == CSSValueBidiOverride)
+      return NaturalWritingDirection;
+
+    DCHECK(EditingStyleUtilities::isEmbedOrIsolate(unicodeBidiValue))
+        << unicodeBidiValue;
+    const CSSValue* direction =
+        style->getPropertyCSSValue(CSSPropertyDirection);
+    if (!direction || !direction->isIdentifierValue())
+      continue;
+
+    int directionValue = toCSSIdentifierValue(direction)->getValueID();
+    if (directionValue != CSSValueLtr && directionValue != CSSValueRtl)
+      continue;
+
+    if (foundDirection != NaturalWritingDirection)
+      return NaturalWritingDirection;
+
+    // In the range case, make sure that the embedding element persists until
+    // the end of the range.
+    if (selection.isRange() && !end.anchorNode()->isDescendantOf(element))
+      return NaturalWritingDirection;
+
+    foundDirection = directionValue == CSSValueLtr
+                         ? LeftToRightWritingDirection
+                         : RightToLeftWritingDirection;
+  }
+  hasNestedOrMultipleEmbeddings = false;
+  return foundDirection;
+}
+
 static TriState stateTextWritingDirection(LocalFrame& frame,
                                           WritingDirection direction) {
   frame.document()->updateStyleAndLayoutIgnorePendingStylesheets();
 
   bool hasNestedOrMultipleEmbeddings;
-  WritingDirection selectionDirection =
-      EditingStyleUtilities::textDirectionForSelection(
-          frame.selection().computeVisibleSelectionInDOMTreeDeprecated(),
-          frame.editor().typingStyle(), hasNestedOrMultipleEmbeddings);
+  WritingDirection selectionDirection = textDirectionForSelection(
+      frame.selection().computeVisibleSelectionInDOMTreeDeprecated(),
+      frame.editor().typingStyle(), hasNestedOrMultipleEmbeddings);
   // FXIME: We should be returning MixedTriState when selectionDirection ==
   // direction && hasNestedOrMultipleEmbeddings
   return (selectionDirection == direction && !hasNestedOrMultipleEmbeddings)

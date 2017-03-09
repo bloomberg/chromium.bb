@@ -57,10 +57,6 @@ class EditingStyleUtilities {
       const VisibleSelection&,
       bool shouldUseBackgroundColorInEffect = false,
       MutableStylePropertySet* styleToCheck = nullptr);
-  static WritingDirection textDirectionForSelection(
-      const VisibleSelection&,
-      EditingStyle* typingStyle,
-      bool& hasNestedOrMultipleEmbeddings);
   static bool isEmbedOrIsolate(CSSValueID unicodeBidi) {
     return unicodeBidi == CSSValueIsolate ||
            unicodeBidi == CSSValueWebkitIsolate || unicodeBidi == CSSValueEmbed;
