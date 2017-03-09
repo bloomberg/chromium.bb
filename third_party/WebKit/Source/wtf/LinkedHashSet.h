@@ -241,7 +241,7 @@ class LinkedHashSet {
 
   Value& back();
   const Value& back() const;
-  void removeLast();
+  void pop_back();
 
   iterator find(ValuePeekInType);
   const_iterator find(ValuePeekInType) const;
@@ -730,7 +730,7 @@ inline const T& LinkedHashSet<T, U, V, W>::back() const {
 }
 
 template <typename T, typename U, typename V, typename W>
-inline void LinkedHashSet<T, U, V, W>::removeLast() {
+inline void LinkedHashSet<T, U, V, W>::pop_back() {
   DCHECK(!isEmpty());
   m_impl.remove(static_cast<Node*>(m_anchor.m_prev));
 }

@@ -60,7 +60,7 @@ TYPED_TEST(ListOrLinkedHashSetTest, RemoveFirst) {
   list.removeFirst();
   EXPECT_EQ(0, list.front());
 
-  list.removeLast();
+  list.pop_back();
   EXPECT_EQ(2, list.back());
 
   list.removeFirst();
