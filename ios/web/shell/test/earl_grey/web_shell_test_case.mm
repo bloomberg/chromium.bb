@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/web/shell/test/earl_grey/shell_base_test_case.h"
+#import "ios/web/shell/test/earl_grey/web_shell_test_case.h"
 
 #import <EarlGrey/EarlGrey.h>
 
@@ -16,7 +16,7 @@
 using web::test::HttpServer;
 using web::WebViewContainingText;
 
-@implementation ShellBaseTestCase
+@implementation WebShellTestCase
 
 // Overrides |testInvocations| to skip all tests if a system alert view is
 // shown, since this isn't a case a user would encounter (i.e. they would
