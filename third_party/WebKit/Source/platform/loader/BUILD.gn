@@ -84,3 +84,37 @@ source_set("loader") {
     "//v8",
   ]
 }
+
+source_set("unit_tests") {
+  # This target defines test files for blink_platform_unittests and only the
+  # blink_platform_unittests target should depend on it.
+  visibility = [ "//third_party/WebKit/Source/platform:*" ]
+  testonly = true
+
+  # Source files for blink_platform_unittests.
+  sources = [
+    "LinkHeaderTest.cpp",
+    "fetch/ClientHintsPreferencesTest.cpp",
+    "fetch/CrossOriginAccessControlTest.cpp",
+    "fetch/FetchUtilsTest.cpp",
+    "fetch/MemoryCacheCorrectnessTest.cpp",
+    "fetch/MemoryCacheTest.cpp",
+    "fetch/RawResourceTest.cpp",
+    "fetch/ResourceFetcherTest.cpp",
+    "fetch/ResourceLoaderOptionsTest.cpp",
+    "fetch/ResourceTest.cpp",
+  ]
+
+  defines = [ "INSIDE_BLINK" ]
+
+  configs += [
+    "//third_party/WebKit/Source/wtf:wtf_config",
+    "//third_party/WebKit/Source:config",
+  ]
+
+  deps = [
+    "//testing/gmock",
+    "//testing/gtest",
+    "//third_party/WebKit/Source/platform",
+  ]
+}
