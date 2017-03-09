@@ -4,6 +4,16 @@
 {
   'targets': [
     {
+      'target_name': 'actions',
+      'dependencies': [
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
+        '<(EXTERNS_GYP):chrome_extensions',
+        'util',
+        'types',
+      ],
+      'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi']
+    },
+    {
       'target_name': 'app',
       'dependencies': [
         '<(EXTERNS_GYP):chrome_extensions',
@@ -52,6 +62,7 @@
       'target_name': 'reducers',
       'dependencies': [
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
+        'actions',
         'types',
       ],
       'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi'],
@@ -97,5 +108,14 @@
       'target_name': 'types',
       'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi']
     },
+    {
+      'target_name': 'util',
+      'dependencies': [
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
+        '<(EXTERNS_GYP):chrome_extensions',
+        'types',
+      ],
+      'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi']
+    }
   ]
 }

@@ -12,7 +12,7 @@ cr.define('bookmarks', function() {
   /** @constructor */
   function Store() {
     /** @type {!BookmarksPageState} */
-    this.data_ = {};
+    this.data_ = bookmarks.util.createEmptyState();
     /** @type {boolean} */
     this.initialized_ = false;
     /** @type {!Array<!StoreObserver>} */

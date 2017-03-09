@@ -6,7 +6,36 @@
  * @fileoverview Closure typedefs for MD Bookmarks.
  */
 
-/** @typedef {!Object} */
+/**
+ * A normalized version of chrome.bookmarks.BookmarkTreeNode.
+ * @typedef{{
+ *   id: string,
+ *   parentId: (string|undefined),
+ *   url: (string|undefined),
+ *   title: string,
+ *   dateAdded: (number|undefined),
+ *   dateGroupModified: (number|undefined),
+ *   unmodifiable: (string|undefined),
+ *   children: (!Array<string>|undefined),
+ * }}
+ */
+var BookmarkNode;
+
+/**
+ * @typedef{!Object<string, BookmarkNode>}
+ */
+var NodeList;
+
+/** @typedef {!Object<string, boolean>} */
+var ClosedFolderState;
+
+/**
+ * @typedef{{
+ *   nodes: NodeList,
+ *   selectedFolder: ?string,
+ *   closedFolders: ClosedFolderState,
+ * }}
+ */
 var BookmarksPageState;
 
 /** @typedef {{name: string}} */

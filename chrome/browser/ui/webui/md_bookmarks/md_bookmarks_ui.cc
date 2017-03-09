@@ -66,6 +66,8 @@ content::WebUIDataSource* CreateMdBookmarksUIHTMLSource(Profile* profile) {
   AddLocalizedString(source, "title", IDS_MD_BOOKMARK_MANAGER_TITLE);
 
   // Resources.
+  source->AddResourcePath("actions.html", IDR_MD_BOOKMARKS_ACTIONS_HTML);
+  source->AddResourcePath("actions.js", IDR_MD_BOOKMARKS_ACTIONS_JS);
   source->AddResourcePath("app.html", IDR_MD_BOOKMARKS_APP_HTML);
   source->AddResourcePath("app.js", IDR_MD_BOOKMARKS_APP_JS);
   source->AddResourcePath("bookmarks_store.js",
@@ -96,6 +98,8 @@ content::WebUIDataSource* CreateMdBookmarksUIHTMLSource(Profile* profile) {
   source->AddResourcePath("store_client.js", IDR_MD_BOOKMARKS_STORE_CLIENT_JS);
   source->AddResourcePath("toolbar.html", IDR_MD_BOOKMARKS_TOOLBAR_HTML);
   source->AddResourcePath("toolbar.js", IDR_MD_BOOKMARKS_TOOLBAR_JS);
+  source->AddResourcePath("util.html", IDR_MD_BOOKMARKS_UTIL_HTML);
+  source->AddResourcePath("util.js", IDR_MD_BOOKMARKS_UTIL_JS);
   source->SetDefaultResource(IDR_MD_BOOKMARKS_BOOKMARKS_HTML);
   source->SetJsonPath("strings.js");
 

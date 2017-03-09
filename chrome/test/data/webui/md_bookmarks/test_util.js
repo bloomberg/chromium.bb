@@ -12,6 +12,13 @@ function replaceBody(element) {
 }
 
 /**
+ * Convert a tree of bookmark nodes into a normalized lookup table of nodes.
+ */
+function testTree(root) {
+  return bookmarks.util.normalizeNodes(root);
+}
+
+/**
  * Initialize a tree for UI testing. This performs the same initialization as
  * `setUpStore_` in <bookmarks-store>, but without the need for a store element
  * in the test.

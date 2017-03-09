@@ -255,6 +255,8 @@
 
       <if expr="not is_android and not is_ios">
         <!-- MD Bookmarks. -->
+        <include name="IDR_MD_BOOKMARKS_ACTIONS_HTML" file="resources\md_bookmarks\actions.html" type="BINDATA" />
+        <include name="IDR_MD_BOOKMARKS_ACTIONS_JS" file="resources\md_bookmarks\actions.js" type="BINDATA" />
         <include name="IDR_MD_BOOKMARKS_APP_HTML" file="resources\md_bookmarks\app.html" type="BINDATA" />
         <include name="IDR_MD_BOOKMARKS_APP_JS" file="resources\md_bookmarks\app.js" type="BINDATA" />
         <include name="IDR_MD_BOOKMARKS_BOOKMARKS_HTML" file="resources\md_bookmarks\bookmarks.html" type="BINDATA" />
@@ -280,6 +282,8 @@
         <include name="IDR_MD_BOOKMARKS_STORE_JS" file="resources\md_bookmarks\store.js" type="BINDATA" />
         <include name="IDR_MD_BOOKMARKS_TOOLBAR_HTML" file="resources\md_bookmarks\toolbar.html" type="BINDATA" />
         <include name="IDR_MD_BOOKMARKS_TOOLBAR_JS" file="resources\md_bookmarks\toolbar.js" type="BINDATA" />
+        <include name="IDR_MD_BOOKMARKS_UTIL_HTML" file="resources\md_bookmarks\util.html" type="BINDATA" />
+        <include name="IDR_MD_BOOKMARKS_UTIL_JS" file="resources\md_bookmarks\util.js" type="BINDATA" />
 
         <!-- MD History. -->
         <include name="IDR_MD_HISTORY_CONSTANTS_HTML" file="resources\md_history\constants.html" type="BINDATA" />
