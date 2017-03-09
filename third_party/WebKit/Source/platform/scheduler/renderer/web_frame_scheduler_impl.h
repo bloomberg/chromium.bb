@@ -72,7 +72,7 @@ class WebFrameSchedulerImpl : public WebFrameScheduler {
   };
 
   void DetachFromWebViewScheduler();
-  void RemoveTimerQueueFromBackgroundTimeBudgetPool();
+  void RemoveTimerQueueFromBackgroundCPUTimeBudgetPool();
   void ApplyPolicyToTimerQueue();
   bool ShouldThrottleTimers() const;
   void UpdateTimerThrottling(bool was_throttled);

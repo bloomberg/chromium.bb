@@ -18,6 +18,7 @@
 #include "platform/scheduler/child/scheduler_tqm_delegate_for_test.h"
 #include "platform/scheduler/child/scheduler_tqm_delegate_impl.h"
 #include "platform/scheduler/renderer/auto_advancing_virtual_time_domain.h"
+#include "platform/scheduler/renderer/budget_pool.h"
 #include "platform/scheduler/renderer/web_frame_scheduler_impl.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -3697,8 +3698,8 @@ TEST_F(RendererSchedulerImplTest, Tracing) {
       new WebViewSchedulerImpl(nullptr, nullptr, scheduler_.get(), false));
   scheduler_->AddWebViewScheduler(web_view_scheduler2.get());
 
-  TaskQueueThrottler::TimeBudgetPool* time_budget_pool =
-      scheduler_->task_queue_throttler()->CreateTimeBudgetPool(
+  CPUTimeBudgetPool* time_budget_pool =
+      scheduler_->task_queue_throttler()->CreateCPUTimeBudgetPool(
           "test", base::nullopt, base::nullopt);
 
   time_budget_pool->AddQueue(base::TimeTicks(),

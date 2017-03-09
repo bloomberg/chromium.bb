@@ -27,6 +27,7 @@ namespace blink {
 namespace scheduler {
 
 class RendererSchedulerImpl;
+class CPUTimeBudgetPool;
 class WebFrameSchedulerImpl;
 
 class BLINK_PLATFORM_EXPORT WebViewSchedulerImpl : public WebViewScheduler {
@@ -71,8 +72,8 @@ class BLINK_PLATFORM_EXPORT WebViewSchedulerImpl : public WebViewScheduler {
  private:
   friend class WebFrameSchedulerImpl;
 
-  TaskQueueThrottler::TimeBudgetPool* BackgroundTimeBudgetPool();
-  void MaybeInitializeBackgroundTimeBudgetPool();
+  CPUTimeBudgetPool* BackgroundCPUTimeBudgetPool();
+  void MaybeInitializeBackgroundCPUTimeBudgetPool();
 
   void setAllowVirtualTimeToAdvance(bool allow_virtual_time_to_advance);
   void ApplyVirtualTimePolicy();
@@ -108,8 +109,7 @@ class BLINK_PLATFORM_EXPORT WebViewSchedulerImpl : public WebViewScheduler {
   bool is_audio_playing_;
   bool reported_background_throttling_since_navigation_;
   bool has_active_connection_;
-  TaskQueueThrottler::TimeBudgetPool*
-      background_time_budget_pool_;  // Not owned.
+  CPUTimeBudgetPool* background_time_budget_pool_;  // Not owned.
   CancelableClosureHolder delayed_background_throttling_enabler_;
   WebViewScheduler::WebViewSchedulerSettings* settings_;  // Not owned.
 

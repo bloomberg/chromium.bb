@@ -11,6 +11,7 @@
 #include "platform/scheduler/base/virtual_time_domain.h"
 #include "platform/scheduler/child/scheduler_tqm_delegate.h"
 #include "platform/scheduler/renderer/auto_advancing_virtual_time_domain.h"
+#include "platform/scheduler/renderer/budget_pool.h"
 #include "platform/scheduler/renderer/renderer_scheduler_impl.h"
 #include "platform/scheduler/renderer/web_frame_scheduler_impl.h"
 
@@ -142,7 +143,7 @@ void WebViewSchedulerImpl::setPageVisible(bool page_visible) {
 std::unique_ptr<WebFrameSchedulerImpl>
 WebViewSchedulerImpl::createWebFrameSchedulerImpl(
     base::trace_event::BlameContext* blame_context) {
-  MaybeInitializeBackgroundTimeBudgetPool();
+  MaybeInitializeBackgroundCPUTimeBudgetPool();
   std::unique_ptr<WebFrameSchedulerImpl> frame_scheduler(
       new WebFrameSchedulerImpl(renderer_scheduler_, this, blame_context));
   frame_scheduler->setPageThrottled(should_throttle_frames_);
@@ -298,13 +299,12 @@ void WebViewSchedulerImpl::AsValueInto(
   state->EndDictionary();
 }
 
-TaskQueueThrottler::TimeBudgetPool*
-WebViewSchedulerImpl::BackgroundTimeBudgetPool() {
-  MaybeInitializeBackgroundTimeBudgetPool();
+CPUTimeBudgetPool* WebViewSchedulerImpl::BackgroundCPUTimeBudgetPool() {
+  MaybeInitializeBackgroundCPUTimeBudgetPool();
   return background_time_budget_pool_;
 }
 
-void WebViewSchedulerImpl::MaybeInitializeBackgroundTimeBudgetPool() {
+void WebViewSchedulerImpl::MaybeInitializeBackgroundCPUTimeBudgetPool() {
   if (background_time_budget_pool_)
     return;
 
@@ -312,7 +312,7 @@ void WebViewSchedulerImpl::MaybeInitializeBackgroundTimeBudgetPool() {
     return;
 
   background_time_budget_pool_ =
-      renderer_scheduler_->task_queue_throttler()->CreateTimeBudgetPool(
+      renderer_scheduler_->task_queue_throttler()->CreateCPUTimeBudgetPool(
           "background", GetMaxBudgetLevel(settings_),
           GetMaxThrottlingDelay(settings_));
 

@@ -6,13 +6,14 @@
 
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/blame_context.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/scheduler/base/real_time_domain.h"
 #include "platform/scheduler/base/virtual_time_domain.h"
 #include "platform/scheduler/child/web_task_runner_impl.h"
 #include "platform/scheduler/renderer/auto_advancing_virtual_time_domain.h"
+#include "platform/scheduler/renderer/budget_pool.h"
 #include "platform/scheduler/renderer/renderer_scheduler_impl.h"
 #include "platform/scheduler/renderer/web_view_scheduler_impl.h"
-#include "platform/RuntimeEnabledFeatures.h"
 #include "public/platform/BlameContext.h"
 #include "public/platform/WebString.h"
 
@@ -63,7 +64,7 @@ WebFrameSchedulerImpl::~WebFrameSchedulerImpl() {
   }
 
   if (timer_task_queue_) {
-    RemoveTimerQueueFromBackgroundTimeBudgetPool();
+    RemoveTimerQueueFromBackgroundCPUTimeBudgetPool();
     timer_task_queue_->UnregisterTaskQueue();
     timer_task_queue_->SetBlameContext(nullptr);
   }
@@ -82,20 +83,20 @@ WebFrameSchedulerImpl::~WebFrameSchedulerImpl() {
 }
 
 void WebFrameSchedulerImpl::DetachFromWebViewScheduler() {
-  RemoveTimerQueueFromBackgroundTimeBudgetPool();
+  RemoveTimerQueueFromBackgroundCPUTimeBudgetPool();
 
   parent_web_view_scheduler_ = nullptr;
 }
 
-void WebFrameSchedulerImpl::RemoveTimerQueueFromBackgroundTimeBudgetPool() {
+void WebFrameSchedulerImpl::RemoveTimerQueueFromBackgroundCPUTimeBudgetPool() {
   if (!timer_task_queue_)
     return;
 
   if (!parent_web_view_scheduler_)
     return;
 
-  TaskQueueThrottler::TimeBudgetPool* time_budget_pool =
-      parent_web_view_scheduler_->BackgroundTimeBudgetPool();
+  CPUTimeBudgetPool* time_budget_pool =
+      parent_web_view_scheduler_->BackgroundCPUTimeBudgetPool();
 
   if (!time_budget_pool)
     return;
@@ -145,8 +146,8 @@ RefPtr<blink::WebTaskRunner> WebFrameSchedulerImpl::timerTaskRunner() {
     timer_queue_enabled_voter_ = timer_task_queue_->CreateQueueEnabledVoter();
     timer_queue_enabled_voter_->SetQueueEnabled(!frame_suspended_);
 
-    TaskQueueThrottler::TimeBudgetPool* time_budget_pool =
-        parent_web_view_scheduler_->BackgroundTimeBudgetPool();
+    CPUTimeBudgetPool* time_budget_pool =
+        parent_web_view_scheduler_->BackgroundCPUTimeBudgetPool();
     if (time_budget_pool) {
       time_budget_pool->AddQueue(renderer_scheduler_->tick_clock()->NowTicks(),
                                  timer_task_queue_.get());
