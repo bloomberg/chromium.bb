@@ -260,8 +260,7 @@ void CaretDisplayItemClient::paintCaret(
   drawingRect.moveBy(paintOffset);
 
   IntRect paintRect = pixelSnappedIntRect(drawingRect);
-  DrawingRecorder drawingRecorder(context, *this, DisplayItem::kCaret,
-                                  paintRect);
+  DrawingRecorder drawingRecorder(context, *this, displayItemType, paintRect);
   context.fillRect(paintRect, m_color);
 }
 
