@@ -105,6 +105,7 @@ WebViewSchedulerImpl::WebViewSchedulerImpl(
       should_throttle_frames_(false),
       disable_background_timer_throttling_(disable_background_timer_throttling),
       allow_virtual_time_to_advance_(true),
+      timers_suspended_(false),
       have_seen_loading_task_(false),
       virtual_time_(false),
       is_audio_playing_(false),
@@ -178,10 +179,33 @@ void WebViewSchedulerImpl::enableVirtualTime() {
       allow_virtual_time_to_advance_);
 
   renderer_scheduler_->EnableVirtualTime();
+  ApplyVirtualTimePolicyToTimers();
+}
+
+void WebViewSchedulerImpl::disableVirtualTimeForTesting() {
+  if (!virtual_time_)
+    return;
+  virtual_time_ = false;
+  renderer_scheduler_->DisableVirtualTimeForTesting();
+  ApplyVirtualTimePolicyToTimers();
+}
+
+void WebViewSchedulerImpl::ApplyVirtualTimePolicyToTimers() {
+  if (!virtual_time_ || allow_virtual_time_to_advance_) {
+    if (timers_suspended_) {
+      renderer_scheduler_->ResumeTimerQueue();
+      timers_suspended_ = false;
+    }
+  } else if (!timers_suspended_) {
+    renderer_scheduler_->SuspendTimerQueue();
+    timers_suspended_ = true;
+  }
 }
 
 void WebViewSchedulerImpl::setAllowVirtualTimeToAdvance(
     bool allow_virtual_time_to_advance) {
+  if (allow_virtual_time_to_advance_ == allow_virtual_time_to_advance)
+    return;
   allow_virtual_time_to_advance_ = allow_virtual_time_to_advance;
 
   if (!virtual_time_)
@@ -189,6 +213,7 @@ void WebViewSchedulerImpl::setAllowVirtualTimeToAdvance(
 
   renderer_scheduler_->GetVirtualTimeDomain()->SetCanAdvanceVirtualTime(
       allow_virtual_time_to_advance);
+  ApplyVirtualTimePolicyToTimers();
 }
 
 bool WebViewSchedulerImpl::virtualTimeAllowedToAdvance() const {
@@ -198,23 +223,23 @@ bool WebViewSchedulerImpl::virtualTimeAllowedToAdvance() const {
 void WebViewSchedulerImpl::DidStartLoading(unsigned long identifier) {
   pending_loads_.insert(identifier);
   have_seen_loading_task_ = true;
-  ApplyVirtualTimePolicy();
+  ApplyVirtualTimePolicyForLoading();
 }
 
 void WebViewSchedulerImpl::DidStopLoading(unsigned long identifier) {
   pending_loads_.erase(identifier);
-  ApplyVirtualTimePolicy();
+  ApplyVirtualTimePolicyForLoading();
 }
 
 void WebViewSchedulerImpl::IncrementBackgroundParserCount() {
   background_parser_count_++;
-  ApplyVirtualTimePolicy();
+  ApplyVirtualTimePolicyForLoading();
 }
 
 void WebViewSchedulerImpl::DecrementBackgroundParserCount() {
   background_parser_count_--;
   DCHECK_GE(background_parser_count_, 0);
-  ApplyVirtualTimePolicy();
+  ApplyVirtualTimePolicyForLoading();
 }
 
 void WebViewSchedulerImpl::setVirtualTimePolicy(VirtualTimePolicy policy) {
@@ -230,7 +255,7 @@ void WebViewSchedulerImpl::setVirtualTimePolicy(VirtualTimePolicy policy) {
       break;
 
     case VirtualTimePolicy::DETERMINISTIC_LOADING:
-      ApplyVirtualTimePolicy();
+      ApplyVirtualTimePolicyForLoading();
       break;
   }
 }
@@ -244,7 +269,7 @@ bool WebViewSchedulerImpl::hasActiveConnectionForTest() const {
   return has_active_connection_;
 }
 
-void WebViewSchedulerImpl::ApplyVirtualTimePolicy() {
+void WebViewSchedulerImpl::ApplyVirtualTimePolicyForLoading() {
   if (virtual_time_policy_ != VirtualTimePolicy::DETERMINISTIC_LOADING) {
     return;
   }

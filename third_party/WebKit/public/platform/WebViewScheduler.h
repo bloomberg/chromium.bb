@@ -50,6 +50,10 @@ class BLINK_PLATFORM_EXPORT WebViewScheduler {
   // |-----------------------------> time
   virtual void enableVirtualTime() = 0;
 
+  // Disables virtual time. Note that this is only used for testing, because
+  // there's no reason to do this in production.
+  virtual void disableVirtualTimeForTesting() = 0;
+
   // Returns true if virtual time is currently allowed to advance.
   virtual bool virtualTimeAllowedToAdvance() const = 0;
 

@@ -1204,14 +1204,18 @@ void RendererSchedulerImpl::ApplyTaskQueuePolicy(
   if (old_task_queue_policy.time_domain_type !=
       new_task_queue_policy.time_domain_type) {
     if (old_task_queue_policy.time_domain_type == TimeDomainType::THROTTLED) {
+      task_queue->SetTimeDomain(real_time_domain());
       task_queue_throttler_->DecreaseThrottleRefCount(task_queue);
     } else if (new_task_queue_policy.time_domain_type ==
                TimeDomainType::THROTTLED) {
+      task_queue->SetTimeDomain(real_time_domain());
       task_queue_throttler_->IncreaseThrottleRefCount(task_queue);
     } else if (new_task_queue_policy.time_domain_type ==
                TimeDomainType::VIRTUAL) {
       DCHECK(virtual_time_domain_);
       task_queue->SetTimeDomain(virtual_time_domain_.get());
+    } else {
+      task_queue->SetTimeDomain(real_time_domain());
     }
   }
 }
@@ -1816,6 +1820,17 @@ void RendererSchedulerImpl::EnableVirtualTime() {
 
   // The |unthrottled_task_runners_| are not actively managed by UpdatePolicy().
   AutoAdvancingVirtualTimeDomain* time_domain = GetVirtualTimeDomain();
+  for (const scoped_refptr<TaskQueue>& task_queue : unthrottled_task_runners_)
+    task_queue->SetTimeDomain(time_domain);
+
+  ForceUpdatePolicy();
+}
+
+void RendererSchedulerImpl::DisableVirtualTimeForTesting() {
+  MainThreadOnly().use_virtual_time = false;
+
+  RealTimeDomain* time_domain = real_time_domain();
+  // The |unthrottled_task_runners_| are not actively managed by UpdatePolicy().
   for (const scoped_refptr<TaskQueue>& task_queue : unthrottled_task_runners_)
     task_queue->SetTimeDomain(time_domain);
 

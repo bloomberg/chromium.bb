@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/message_loop/message_loop.h"
+#include "core/dom/TaskRunnerHelper.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebViewScheduler.h"
@@ -46,9 +47,8 @@ class VirtualTimeTest : public SimTest {
   void TearDown() override {
     // The SimTest destructor calls runPendingTasks. This is a problem because
     // if there are any repeating tasks, advancing virtual time will cause the
-    // runloop to busy loop. Pausing virtual time here fixes that.
-    webView().scheduler()->setVirtualTimePolicy(
-        WebViewScheduler::VirtualTimePolicy::PAUSE);
+    // runloop to busy loop. Disabling virtual time here fixes that.
+    webView().scheduler()->disableVirtualTimeForTesting();
   }
 };
 
@@ -196,6 +196,42 @@ TEST_F(VirtualTimeTest,
   // Finished loading, virtual time should be able to advance.
   mainResource.finish();
   EXPECT_TRUE(webView().scheduler()->virtualTimeAllowedToAdvance());
+}
+
+// http://crbug.com/633321
+#if OS(ANDROID)
+#define MAYBE_DOMTimersSuspended DISABLED_DOMTimersSuspended
+#else
+#define MAYBE_DOMTimersSuspended DOMTimersSuspended
+#endif
+TEST_F(VirtualTimeTest, MAYBE_DOMTimersSuspended) {
+  webView().scheduler()->enableVirtualTime();
+
+  // Schedule a normal DOM timer to run at 1s in the future.
+  ExecuteJavaScript(
+      "var run_order = [];"
+      "setTimeout(() => { run_order.push(1); }, 1000);");
+
+  RefPtr<WebTaskRunner> runner =
+      TaskRunnerHelper::get(TaskType::Timer, window().getExecutionContext());
+
+  // Schedule a task to suspend virtual time at the same point in time.
+  runner->postDelayedTask(BLINK_FROM_HERE,
+                          WTF::bind(
+                              [](WebViewScheduler* scheduler) {
+                                scheduler->setVirtualTimePolicy(
+                                    WebViewScheduler::VirtualTimePolicy::PAUSE);
+                              },
+                              WTF::unretained(webView().scheduler())),
+                          1000);
+
+  // ALso schedule a second timer for the same point in time.
+  ExecuteJavaScript("setTimeout(() => { run_order.push(2); }, 1000);");
+
+  // The second DOM timer shouldn't have run because pausing virtual time also
+  // atomically pauses DOM timers.
+  testing::runPendingTasks();
+  EXPECT_EQ("1", ExecuteJavaScript("run_order.join(', ')"));
 }
 
 }  // namespace blink

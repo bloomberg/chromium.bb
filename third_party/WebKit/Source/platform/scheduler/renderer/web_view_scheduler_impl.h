@@ -45,6 +45,7 @@ class BLINK_PLATFORM_EXPORT WebViewSchedulerImpl : public WebViewScheduler {
   std::unique_ptr<WebFrameScheduler> createFrameScheduler(
       BlameContext* blame_context) override;
   void enableVirtualTime() override;
+  void disableVirtualTimeForTesting() override;
   bool virtualTimeAllowedToAdvance() const override;
   void setVirtualTimePolicy(VirtualTimePolicy virtual_time_policy) override;
   void audioStateChanged(bool is_audio_playing) override;
@@ -76,7 +77,8 @@ class BLINK_PLATFORM_EXPORT WebViewSchedulerImpl : public WebViewScheduler {
   void MaybeInitializeBackgroundCPUTimeBudgetPool();
 
   void setAllowVirtualTimeToAdvance(bool allow_virtual_time_to_advance);
-  void ApplyVirtualTimePolicy();
+  void ApplyVirtualTimePolicyForLoading();
+  void ApplyVirtualTimePolicyToTimers();
 
   void OnThrottlingReported(base::TimeDelta throttling_duration);
 
@@ -104,6 +106,7 @@ class BLINK_PLATFORM_EXPORT WebViewSchedulerImpl : public WebViewScheduler {
   bool should_throttle_frames_;
   bool disable_background_timer_throttling_;
   bool allow_virtual_time_to_advance_;
+  bool timers_suspended_;
   bool have_seen_loading_task_;
   bool virtual_time_;
   bool is_audio_playing_;

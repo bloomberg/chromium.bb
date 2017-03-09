@@ -14,6 +14,7 @@
 #include "cc/output/begin_frame_args.h"
 #include "cc/test/ordered_simple_task_runner.h"
 #include "platform/WebTaskRunner.h"
+#include "platform/scheduler/base/real_time_domain.h"
 #include "platform/scheduler/base/test_time_source.h"
 #include "platform/scheduler/child/scheduler_tqm_delegate_for_test.h"
 #include "platform/scheduler/child/scheduler_tqm_delegate_impl.h"
@@ -3680,6 +3681,25 @@ TEST_F(RendererSchedulerImplTest, EnableVirtualTime) {
   EXPECT_EQ(scheduler_->NewUnthrottledTaskRunner(TaskQueue::QueueType::TEST)
                 ->GetTimeDomain(),
             scheduler_->GetVirtualTimeDomain());
+}
+
+TEST_F(RendererSchedulerImplTest, DisableVirtualTimeForTesting) {
+  scheduler_->EnableVirtualTime();
+
+  scoped_refptr<TaskQueue> timer_tq =
+      scheduler_->NewTimerTaskRunner(TaskQueue::QueueType::TEST);
+  scoped_refptr<TaskQueue> unthrottled_tq =
+      scheduler_->NewUnthrottledTaskRunner(TaskQueue::QueueType::TEST);
+
+  scheduler_->DisableVirtualTimeForTesting();
+  EXPECT_EQ(scheduler_->DefaultTaskRunner()->GetTimeDomain(),
+            scheduler_->real_time_domain());
+  EXPECT_EQ(scheduler_->CompositorTaskRunner()->GetTimeDomain(),
+            scheduler_->real_time_domain());
+  EXPECT_EQ(scheduler_->LoadingTaskRunner()->GetTimeDomain(),
+            scheduler_->real_time_domain());
+  EXPECT_EQ(scheduler_->TimerTaskRunner()->GetTimeDomain(),
+            scheduler_->real_time_domain());
 }
 
 TEST_F(RendererSchedulerImplTest, Tracing) {

@@ -158,6 +158,9 @@ class BLINK_PLATFORM_EXPORT RendererSchedulerImpl
   // Tells the scheduler that all TaskQueues should use virtual time.
   void EnableVirtualTime();
 
+  // Migrates all task queues to real time.
+  void DisableVirtualTimeForTesting();
+
   void AddWebViewScheduler(WebViewSchedulerImpl* web_view_scheduler);
   void RemoveWebViewScheduler(WebViewSchedulerImpl* web_view_scheduler);
 

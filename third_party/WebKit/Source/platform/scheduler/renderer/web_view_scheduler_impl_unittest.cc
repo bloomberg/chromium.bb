@@ -390,8 +390,8 @@ TEST_F(WebViewSchedulerImplTest, VirtualTime_NotAllowedToAdvance) {
 
   mock_task_runner_->RunUntilIdle();
 
-  // Immediate tasks are allowed to run even if delayed tasks are not.
-  EXPECT_THAT(run_order, ElementsAre(0));
+  // No timer tasks are allowed to run.
+  EXPECT_THAT(run_order, ElementsAre());
 }
 
 TEST_F(WebViewSchedulerImplTest, VirtualTime_AllowedToAdvance) {
@@ -604,6 +604,27 @@ TEST_F(WebViewSchedulerImplTest, BackgroundParser_DETERMINISTIC_LOADING) {
 
   web_view_scheduler_->DecrementBackgroundParserCount();
   EXPECT_TRUE(web_view_scheduler_->virtualTimeAllowedToAdvance());
+}
+
+TEST_F(WebViewSchedulerImplTest, SuspendTimersWhileVirtualTimeIsPaused) {
+  std::vector<int> run_order;
+
+  std::unique_ptr<WebFrameSchedulerImpl> web_frame_scheduler =
+      web_view_scheduler_->createWebFrameSchedulerImpl(nullptr);
+  web_frame_scheduler->timerTaskRunner()->postDelayedTask(
+      BLINK_FROM_HERE, WTF::bind(&runOrderTask, 1, WTF::unretained(&run_order)),
+      0);
+
+  web_view_scheduler_->setVirtualTimePolicy(VirtualTimePolicy::PAUSE);
+  web_view_scheduler_->enableVirtualTime();
+
+  mock_task_runner_->RunUntilIdle();
+  EXPECT_TRUE(run_order.empty());
+
+  web_view_scheduler_->setVirtualTimePolicy(VirtualTimePolicy::ADVANCE);
+  mock_task_runner_->RunUntilIdle();
+
+  EXPECT_THAT(run_order, ElementsAre(1));
 }
 
 namespace {
