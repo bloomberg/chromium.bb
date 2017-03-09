@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "9.33",
+  "version": "9.34",
   "entries": [
     {
       "id": 1,
@@ -1899,7 +1899,11 @@ LONG_STRING_CONST(
       "description": "glTexStorage* are buggy when base mipmap level is not 0",
       "cr_bugs": [640506],
       "os": {
-        "type": "macosx"
+        "type": "macosx",
+        "version": {
+          "op": "<",
+          "value": "10.12.4"
+        }
       },
       "features": [
         "reset_base_mipmap_level_before_texstorage"
