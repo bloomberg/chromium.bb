@@ -14,13 +14,7 @@
 namespace blink {
 
 SVGTreeScopeResources::SVGTreeScopeResources(TreeScope* treeScope)
-    : m_treeScope(treeScope) {
-  // Whenever an object of SVGTreeScopeResources is created, to keep the code
-  // behave as before,
-  // the document should also have an instance of SVGDocumentExtensions created.
-  // Thus below line is added.
-  treeScope->document().accessSVGExtensions();
-}
+    : m_treeScope(treeScope) {}
 
 SVGTreeScopeResources::~SVGTreeScopeResources() = default;
 
