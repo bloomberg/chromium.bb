@@ -112,9 +112,10 @@ DataFetcherSharedMemoryBase::DataFetcherSharedMemoryBase()
 DataFetcherSharedMemoryBase::~DataFetcherSharedMemoryBase() {
   DCHECK_EQ(0u, started_consumers_);
 
-  // make sure polling thread stops asap.
-  if (polling_thread_)
-    polling_thread_->Stop();
+  // By this point the polling thread should have already been stopped (it's not
+  // safe for it to be running in this class's destructor as tasks are posted to
+  // it that call virtual methods of this class).
+  DCHECK(!polling_thread_ || !polling_thread_->IsRunning());
 }
 
 bool DataFetcherSharedMemoryBase::StartFetchingDeviceData(
@@ -174,6 +175,13 @@ void DataFetcherSharedMemoryBase::Shutdown() {
   StopFetchingDeviceData(CONSUMER_TYPE_ORIENTATION);
   StopFetchingDeviceData(CONSUMER_TYPE_ORIENTATION_ABSOLUTE);
   StopFetchingDeviceData(CONSUMER_TYPE_LIGHT);
+
+  // Ensure that the polling thread stops before entering the destructor of the
+  // subclass, as the stopping of the polling thread causes tasks to execute
+  // that call virtual methods of this class, which can cause crashes if they
+  // execute while (or after) the subclass is being torn down.
+  if (polling_thread_)
+    polling_thread_->Stop();
 }
 
 mojo::ScopedSharedBufferHandle

@@ -53,7 +53,7 @@ class FakeDataFetcher : public DataFetcherSharedMemoryBase {
         motion_buffer_(nullptr),
         orientation_buffer_(nullptr),
         orientation_absolute_buffer_(nullptr) {}
-  ~FakeDataFetcher() override {}
+  ~FakeDataFetcher() override { Shutdown(); }
 
   bool Init(ConsumerType consumer_type, void* buffer) {
     EXPECT_TRUE(buffer);
