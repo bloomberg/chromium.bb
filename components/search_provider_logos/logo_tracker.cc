@@ -17,6 +17,7 @@
 #include "components/search_provider_logos/switches.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_status.h"
@@ -226,7 +227,31 @@ void LogoTracker::FetchLogo() {
         logo_url_, fingerprint, wants_cta_, transparent_);
   }
 
-  fetcher_ = net::URLFetcher::Create(url, net::URLFetcher::GET, this);
+  net::NetworkTrafficAnnotationTag traffic_annotation =
+      net::DefineNetworkTrafficAnnotation("logo_tracker", R"(
+        semantics {
+          sender: "Logo Tracker"
+          description:
+            "Provides the logo image (aka Doodle) if Google is your configured "
+            "search provider."
+          trigger: "Displaying the new tab page on iOS or Android."
+          data:
+            "Logo ID, and the user's Google cookies to show for example "
+            "birthday doodles at appropriate times."
+          destination: OTHER
+        }
+        policy {
+          cookies_allowed: true
+          cookies_store: "user"
+          setting:
+            "Choosing a non-Google search engine in Chromium settings under "
+            "'Search Engine' will disable this feature."
+          policy_exception_justification:
+            "Not implemented, considered not useful as it does not upload any"
+            "data and just downloads a logo image."
+        })");
+  fetcher_ = net::URLFetcher::Create(url, net::URLFetcher::GET, this,
+                                     traffic_annotation);
   fetcher_->SetRequestContext(request_context_getter_.get());
   data_use_measurement::DataUseUserData::AttachToFetcher(
       fetcher_.get(),
