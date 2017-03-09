@@ -187,9 +187,6 @@ syncer::SyncMergeResult TypedUrlSyncableService::MergeDataAndStartSyncing(
     std::string tag = i->first.spec();
     AddTypedUrlToChangeList(i->second.first, i->second.second,
                             visit_vectors[i->first], tag, &new_changes);
-
-    // Add url to cache of sync state, if not already cached
-    synced_typed_urls_.insert(i->first);
   }
 
   // Send history changes to the sync server
@@ -811,14 +808,6 @@ bool TypedUrlSyncableService::CreateOrUpdateSyncNode(
     return false;
   }
 
-  if (std::find_if(visit_vector.begin(), visit_vector.end(),
-                   [](const history::VisitRow& visit) {
-                     return ui::PageTransitionCoreTypeIs(
-                         visit.transition, ui::PAGE_TRANSITION_TYPED);
-                   }) == visit_vector.end())
-    // This URL has no TYPED visits, don't sync it
-    return false;
-
   DCHECK(!visit_vector.empty());
 
   std::string title = url.url().spec();
@@ -828,9 +817,6 @@ bool TypedUrlSyncableService::CreateOrUpdateSyncNode(
   change_type = (synced_typed_urls_.find(url.url()) != synced_typed_urls_.end())
                     ? syncer::SyncChange::ACTION_UPDATE
                     : syncer::SyncChange::ACTION_ADD;
-
-  // Ensure cache of server state is up to date.
-  synced_typed_urls_.insert(url.url());
 
   AddTypedUrlToChangeList(change_type, url, visit_vector, title, changes);
 
@@ -850,7 +836,13 @@ void TypedUrlSyncableService::AddTypedUrlToChangeList(
   if (change_type == syncer::SyncChange::ACTION_DELETE) {
     typed_url->set_url(tag);
   } else {
-    WriteToTypedUrlSpecifics(row, visits, typed_url);
+    if (!WriteToTypedUrlSpecifics(row, visits, typed_url)) {
+      // Cannot write to specifics, ex. no TYPED visits.
+      return;
+    }
+
+    // Ensure cache of server state is up to date.
+    synced_typed_urls_.insert(row.url());
   }
 
   change_list->push_back(syncer::SyncChange(
@@ -858,7 +850,7 @@ void TypedUrlSyncableService::AddTypedUrlToChangeList(
       syncer::SyncData::CreateLocalData(tag, title, entity_specifics)));
 }
 
-void TypedUrlSyncableService::WriteToTypedUrlSpecifics(
+bool TypedUrlSyncableService::WriteToTypedUrlSpecifics(
     const URLRow& url,
     const VisitVector& visits,
     sync_pb::TypedUrlSpecifics* typed_url) {
@@ -875,6 +867,15 @@ void TypedUrlSyncableService::WriteToTypedUrlSpecifics(
 
   bool only_typed = false;
   int skip_count = 0;
+
+  if (std::find_if(visits.begin(), visits.end(),
+                   [](const history::VisitRow& visit) {
+                     return ui::PageTransitionCoreTypeIs(
+                         visit.transition, ui::PAGE_TRANSITION_TYPED);
+                   }) == visits.end()) {
+    // This URL has no TYPED visits, don't sync it
+    return false;
+  }
 
   if (visits.size() > static_cast<size_t>(kMaxTypedUrlVisits)) {
     int typed_count = 0;
@@ -893,6 +894,7 @@ void TypedUrlSyncableService::WriteToTypedUrlSpecifics(
         ++typed_count;
       }
     }
+
     // We should have at least one typed visit. This can sometimes happen if
     // the history DB has an inaccurate count for some reason (there's been
     // bugs in the history code in the past which has left users in the wild
@@ -935,18 +937,11 @@ void TypedUrlSyncableService::WriteToTypedUrlSpecifics(
   }
   DCHECK_EQ(skip_count, 0);
 
-  if (typed_url->visits_size() == 0) {
-    // If we get here, it's because we don't actually have any TYPED visits
-    // even though the visit's typed_count > 0 (corrupted typed_count). So
-    // let's go ahead and add a RELOAD visit at the most recent visit since
-    // it's not legal to have an empty visit array (yet another workaround
-    // for http://crbug.com/84258).
-    typed_url->add_visits(url.last_visit().ToInternalValue());
-    typed_url->add_visit_transitions(ui::PAGE_TRANSITION_RELOAD);
-  }
   CHECK_GT(typed_url->visits_size(), 0);
   CHECK_LE(typed_url->visits_size(), kMaxTypedUrlVisits);
   CHECK_EQ(typed_url->visits_size(), typed_url->visit_transitions_size());
+
+  return true;
 }
 
 // static

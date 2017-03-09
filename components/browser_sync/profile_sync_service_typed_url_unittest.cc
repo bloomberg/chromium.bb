@@ -144,7 +144,7 @@ class TestTypedUrlSyncableService : public TypedUrlSyncableService {
                               const history::VisitVector& visits,
                               syncer::WriteNode* node) {
     sync_pb::TypedUrlSpecifics typed_url;
-    WriteToTypedUrlSpecifics(url, visits, &typed_url);
+    ASSERT_TRUE(WriteToTypedUrlSpecifics(url, visits, &typed_url));
     node->SetTypedUrlSpecifics(typed_url);
   }
 
@@ -393,7 +393,7 @@ void AddTypedUrlEntries(ProfileSyncServiceTypedUrlTest* test,
   for (size_t i = 0; i < entries.size(); ++i) {
     history::VisitVector visits;
     visits.push_back(history::VisitRow(entries[i].id(), entries[i].last_visit(),
-                                       0, ui::PageTransitionFromInt(0), 0));
+                                       0, ui::PageTransitionFromInt(1), 0));
     test->AddTypedUrlSyncNode(entries[i], visits);
   }
 }

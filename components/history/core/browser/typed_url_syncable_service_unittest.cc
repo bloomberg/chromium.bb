@@ -262,7 +262,7 @@ class TypedUrlSyncableServiceTest : public testing::Test {
   void AddObserver();
 
   // Fills |specifics| with the sync data for |url| and |visits|.
-  static void WriteToTypedUrlSpecifics(const URLRow& url,
+  static bool WriteToTypedUrlSpecifics(const URLRow& url,
                                        const VisitVector& visits,
                                        sync_pb::TypedUrlSpecifics* specifics);
 
@@ -389,11 +389,12 @@ void TypedUrlSyncableServiceTest::AddObserver() {
 }
 
 // Static.
-void TypedUrlSyncableServiceTest::WriteToTypedUrlSpecifics(
+bool TypedUrlSyncableServiceTest::WriteToTypedUrlSpecifics(
     const URLRow& url,
     const VisitVector& visits,
     sync_pb::TypedUrlSpecifics* specifics) {
-  TypedUrlSyncableService::WriteToTypedUrlSpecifics(url, visits, specifics);
+  return TypedUrlSyncableService::WriteToTypedUrlSpecifics(url, visits,
+                                                           specifics);
 }
 
 // Static.
@@ -898,6 +899,28 @@ TEST_F(TypedUrlSyncableServiceTest, MergeUrlNoChange) {
   GetSyncedUrls(&sync_state);
   EXPECT_FALSE(sync_state.empty());
   EXPECT_EQ(sync_state.count(row.url()), 1U);
+}
+
+// Add a corupted typed url locally, has typed url count 1, but no real typed
+// url visit. Starting sync should not pick up this url.
+TEST_F(TypedUrlSyncableServiceTest, MergeUrlNoTypedUrl) {
+  // Add a url to backend.
+  VisitVector visits;
+  URLRow row = MakeTypedUrlRow(kURL, kTitle, 0, 3, false, &visits);
+
+  // Mark typed_count to 1 even when there is no typed url visit.
+  row.set_typed_count(1);
+  fake_history_backend_->SetVisitsForUrl(row, visits);
+
+  StartSyncing(syncer::SyncDataList());
+  syncer::SyncChangeList& changes = fake_change_processor_->changes();
+  EXPECT_TRUE(changes.empty());
+
+  // Check that the local cache was is still correct.
+  std::set<GURL> sync_state;
+  GetSyncedUrls(&sync_state);
+  EXPECT_TRUE(sync_state.empty());
+  EXPECT_EQ(sync_state.count(row.url()), 0U);
 }
 
 // Starting sync with no sync data should just push the local url to sync.
@@ -1414,21 +1437,15 @@ TEST_F(TypedUrlSyncableServiceTest, TooManyTypedVisits) {
   }
 }
 
-// Create a typed url without visit, check WriteToTypedUrlSpecifics will create
-// a RELOAD visit for it.
+// Create a typed url without visit, check WriteToTypedUrlSpecifics will return
+// false for it.
 TEST_F(TypedUrlSyncableServiceTest, NoTypedVisits) {
   history::VisitVector visits;
   history::URLRow url(MakeTypedUrlRow(kURL, kTitle, 0, 1000, false, &visits));
   sync_pb::TypedUrlSpecifics typed_url;
-  WriteToTypedUrlSpecifics(url, visits, &typed_url);
-  // URLs with no typed URL visits should be translated to a URL with one
-  // reload visit.
-  EXPECT_EQ(1, typed_url.visits_size());
-  EXPECT_EQ(typed_url.visit_transitions_size(), typed_url.visits_size());
-
-  EXPECT_EQ(1000, typed_url.visits(0));
-  EXPECT_EQ(static_cast<int32_t>(ui::PAGE_TRANSITION_RELOAD),
-            typed_url.visit_transitions(0));
+  EXPECT_FALSE(WriteToTypedUrlSpecifics(url, visits, &typed_url));
+  // URLs with no typed URL visits should not been written to specifics.
+  EXPECT_EQ(0, typed_url.visits_size());
 }
 
 TEST_F(TypedUrlSyncableServiceTest, MergeUrls) {

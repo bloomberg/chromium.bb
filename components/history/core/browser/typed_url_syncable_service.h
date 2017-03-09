@@ -71,11 +71,12 @@ class TypedUrlSyncableService : public syncer::SyncableService,
   // Returns the percentage of DB accesses that have resulted in an error.
   int GetErrorPercentage() const;
 
-  // Converts the passed URL information to a TypedUrlSpecifics structure for
-  // writing to the sync DB.
-  static void WriteToTypedUrlSpecifics(const URLRow& url,
+  // Return true if this function successfully converts the passed URL
+  // information to a TypedUrlSpecifics structure for writing to the sync DB.
+  static bool WriteToTypedUrlSpecifics(const URLRow& url,
                                        const VisitVector& visits,
-                                       sync_pb::TypedUrlSpecifics* specifics);
+                                       sync_pb::TypedUrlSpecifics* specifics)
+      WARN_UNUSED_RESULT;
 
  private:
   friend class TypedUrlSyncableServiceTest;
