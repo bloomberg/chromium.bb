@@ -17,6 +17,7 @@
 
 #include "aom_dsp/aom_dsp_common.h"
 #include "aom_mem/aom_mem.h"
+#include "aom_ports/bitops.h"
 
 #define DST(x, y) dst[(x) + (y)*stride]
 #define AVG3(a, b, c) (((a) + 2 * (b) + (c) + 2) >> 2)
@@ -265,10 +266,15 @@ static INLINE void paeth_predictor(uint8_t *dst, ptrdiff_t stride, int bs,
 static const int sm_weight_log2_scale = 8;
 
 #if CONFIG_TX64X64
-static const uint8_t sm_weight_arrays[6][64] = {
+// max(block_size_wide[BLOCK_LARGEST], block_size_high[BLOCK_LARGEST])
+#define MAX_BLOCK_DIM 64
+#define NUM_BLOCK_DIMS 6  // log2(MAX_BLOCK_DIM)
 #else
-static const uint8_t sm_weight_arrays[5][32] = {
+#define MAX_BLOCK_DIM 32
+#define NUM_BLOCK_DIMS 5
 #endif  // CONFIG_TX64X64
+
+static const uint8_t sm_weight_arrays[NUM_BLOCK_DIMS][MAX_BLOCK_DIM] = {
   // bs = 2
   { 255, 128 },
   // bs = 4
@@ -304,7 +310,9 @@ static INLINE void smooth_predictor(uint8_t *dst, ptrdiff_t stride, int bs,
                                     const uint8_t *above, const uint8_t *left) {
   const uint8_t below_pred = left[bs - 1];   // estimated by bottom-left pixel
   const uint8_t right_pred = above[bs - 1];  // estimated by top-right pixel
-  const int arr_index = (int)lround(log2(bs)) - 1;
+  const int arr_index = get_msb(bs) - 1;
+  assert(arr_index >= 0);
+  assert(arr_index < NUM_BLOCK_DIMS);
   const uint8_t *const sm_weights = sm_weight_arrays[arr_index];
   // scale = 2 * 2^sm_weight_log2_scale
   const int log2_scale = 1 + sm_weight_log2_scale;
@@ -1037,7 +1045,9 @@ static INLINE void highbd_smooth_predictor(uint16_t *dst, ptrdiff_t stride,
                                            const uint16_t *left, int bd) {
   const uint16_t below_pred = left[bs - 1];   // estimated by bottom-left pixel
   const uint16_t right_pred = above[bs - 1];  // estimated by top-right pixel
-  const int arr_index = (int)lround(log2(bs)) - 1;
+  const int arr_index = get_msb(bs) - 1;
+  assert(arr_index >= 0);
+  assert(arr_index < NUM_BLOCK_DIMS);
   const uint8_t *const sm_weights = sm_weight_arrays[arr_index];
   // scale = 2 * 2^sm_weight_log2_scale
   const int log2_scale = 1 + sm_weight_log2_scale;

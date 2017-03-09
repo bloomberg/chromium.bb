@@ -104,7 +104,7 @@ void TestIntraPred4(AvxPredFunc const *pred_funcs) {
     "c0889e2039bcf7bcb5d2f33cdca69adc",
 #if CONFIG_ALT_INTRA
     "828c49a4248993cce4876fa26eab697f",
-    "c106e0dc44de3d33c62b7bc0bc63c550"
+    "718c8cee9011f92ef31f77a9a7560010"
 #else
     "309a618577b27c648f9c5ee45252bc8f",
 #endif  // CONFIG_ALT_INTRA
@@ -129,7 +129,7 @@ void TestIntraPred8(AvxPredFunc const *pred_funcs) {
     "95f7bfc262329a5849eda66d8f7c68ce",
 #if CONFIG_ALT_INTRA
     "f6ade499c626d38eb70661184b79bc57",
-    "f9217748b7188479c2990e42d2dc1da1"
+    "1ad5b106c79b792e514ba25e87139b5e"
 #else
     "815b75c8e0d91cc1ae766dc5d3e445a3",
 #endif  // CONFIG_ALT_INTRA
@@ -154,7 +154,7 @@ void TestIntraPred16(AvxPredFunc const *pred_funcs) {
     "a8fe1c70432f09d0c20c67bdb6432c4d",
 #if CONFIG_ALT_INTRA
     "7adcaaa3554eb71a81fc48cb9043984b",
-    "de44142b9670ab7c85d4c318c47257e5"
+    "c0acea4397c1b4d54a21bbcec5731dff"
 #else
     "b8a41aa968ec108af447af4217cba91b",
 #endif  // CONFIG_ALT_INTRA
@@ -179,7 +179,7 @@ void TestIntraPred32(AvxPredFunc const *pred_funcs) {
     "f162b51ed618d28b936974cff4391da5",
 #if CONFIG_ALT_INTRA
     "297e8fbb5d33c29b12b228fa9d7c40a4",
-    "a08d5b7e104c5fc2b203789ee5f725a7"
+    "31b9296d70dd82238c87173e6d5e65fd"
 #else
     "9e1370c6d42e08d357d9612c93a71cfc",
 #endif  // CONFIG_ALT_INTRA
