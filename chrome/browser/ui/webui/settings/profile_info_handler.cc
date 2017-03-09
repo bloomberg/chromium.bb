@@ -45,7 +45,7 @@ ProfileInfoHandler::ProfileInfoHandler(Profile* profile)
       user_manager_observer_(this),
 #endif
       profile_observer_(this),
-      weak_ptr_factory_(this) {
+      callback_weak_ptr_factory_(this) {
 #if defined(OS_CHROMEOS)
   // Set up the chrome://userimage/ source.
   content::URLDataSource::Add(profile,
@@ -88,6 +88,8 @@ void ProfileInfoHandler::OnJavascriptAllowed() {
 }
 
 void ProfileInfoHandler::OnJavascriptDisallowed() {
+  callback_weak_ptr_factory_.InvalidateWeakPtrs();
+
   profile_observer_.Remove(
       &g_browser_process->profile_manager()->GetProfileAttributesStorage());
 
@@ -134,7 +136,7 @@ void ProfileInfoHandler::HandleGetProfileStats(const base::ListValue* args) {
   // (e.g., |item.success| is false). Therefore, query the actual statistics.
   ProfileStatisticsFactory::GetForProfile(profile_)->GatherStatistics(
       base::Bind(&ProfileInfoHandler::PushProfileStatsCount,
-                 weak_ptr_factory_.GetWeakPtr()));
+                 callback_weak_ptr_factory_.GetWeakPtr()));
 }
 
 void ProfileInfoHandler::PushProfileStatsCount(

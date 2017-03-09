@@ -96,7 +96,8 @@ class ProfileInfoHandler : public SettingsPageUIHandler,
   // Used to listen for changes in the list of managed supervised users.
   PrefChangeRegistrar profile_pref_registrar_;
 
-  base::WeakPtrFactory<ProfileInfoHandler> weak_ptr_factory_;
+  // Used to cancel callbacks when JavaScript becomes disallowed.
+  base::WeakPtrFactory<ProfileInfoHandler> callback_weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileInfoHandler);
 };
