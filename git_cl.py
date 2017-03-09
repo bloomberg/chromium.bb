@@ -811,6 +811,19 @@ class Settings(object):
       self.viewvc_url = self._GetRietveldConfig('viewvc-url', error_ok=True)
     return self.viewvc_url
 
+  def GetBugLineFormat(self):
+    # rietveld.bug-line-format should have a %s where the list of bugs should
+    # go. This is a bit of a quirk, because normal people will always want the
+    # bug list to go right after a prefix like BUG= or Bug:. The %s format
+    # approach is used strictly because there isn't a great way to carry the
+    # desired space after Bug: all the way from codereview.settings to here
+    # without treating : specially or inventing a quoting scheme.
+    bug_line_format = self._GetRietveldConfig('bug-line-format', error_ok=True)
+    if not bug_line_format:
+      # TODO(tandrii): change this to 'Bug: %s' to be a proper Gerrit footer.
+      bug_line_format = 'BUG=%s'
+    return bug_line_format
+
   def GetBugPrefix(self):
     return self._GetRietveldConfig('bug-prefix', error_ok=True)
 
@@ -3121,9 +3134,9 @@ class ChangeDescription(object):
     if not any((regexp.match(line) for line in self._description_lines)):
       prefix = settings.GetBugPrefix()
       values = list(_get_bug_line_values(prefix, bug or '')) or [prefix]
+      bug_line_format = settings.GetBugLineFormat()
       for value in values:
-        # TODO(tandrii): change this to 'Bug: xxx' to be a proper Gerrit footer.
-        self.append_footer('BUG=%s' % value)
+        self.append_footer(bug_line_format % value)
 
     content = gclient_utils.RunEditor(self.description, True,
                                       git_editor=settings.GetGitEditor())
@@ -3295,6 +3308,7 @@ def LoadCodereviewSettingsFromFile(fileobj):
   SetProperty('private', 'PRIVATE', unset_error_ok=True)
   SetProperty('tree-status-url', 'STATUS', unset_error_ok=True)
   SetProperty('viewvc-url', 'VIEW_VC', unset_error_ok=True)
+  SetProperty('bug-line-format', 'BUG_LINE_FORMAT', unset_error_ok=True)
   SetProperty('bug-prefix', 'BUG_PREFIX', unset_error_ok=True)
   SetProperty('cpplint-regex', 'LINT_REGEX', unset_error_ok=True)
   SetProperty('cpplint-ignore-regex', 'LINT_IGNORE_REGEX', unset_error_ok=True)

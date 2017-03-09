@@ -501,14 +501,14 @@ class TestGitCl(TestCase):
           '\nIF YOU SEE THIS, READ BELOW, IT WILL SAVE YOUR TIME!\n'
           'There are un-consumed self.calls after this test has finished.\n'
           'If you don\'t know which test this is, run:\n'
-          '   tests/git_cl_tests.py -v\n'
+          '   tests/git_cl_test.py -v\n'
           '\n'
           'If you are already running just this single test, then **first** '
           'fix the problem whose exception is emitted below by unittest '
           'runner.\n'
           '\n'
           'Else, to be sure what\'s going on, run this test **alone** with \n'
-          '    tests/git_cl_tests.py TestGitCl.<name>\n'
+          '    tests/git_cl_test.py TestGitCl.<name>\n'
           'and follow instructions above.\n' +
           '=' * 80)
     finally:
@@ -557,6 +557,7 @@ class TestGitCl(TestCase):
       ((['git', 'config', '--unset-all', 'rietveld.private'],), CERR1),
       ((['git', 'config', '--unset-all', 'rietveld.tree-status-url'],), CERR1),
       ((['git', 'config', '--unset-all', 'rietveld.viewvc-url'],), CERR1),
+      ((['git', 'config', '--unset-all', 'rietveld.bug-line-format'],), CERR1),
       ((['git', 'config', '--unset-all', 'rietveld.bug-prefix'],), CERR1),
       ((['git', 'config', '--unset-all', 'rietveld.cpplint-regex'],), CERR1),
       ((['git', 'config', '--unset-all', 'rietveld.cpplint-ignore-regex'],),
@@ -640,7 +641,8 @@ class TestGitCl(TestCase):
       ((['git', 'log', '--pretty=format:%s\n\n%b',
          'fake_ancestor_sha..HEAD'],),
        'desc\n'),
-      ((['git', 'config', 'rietveld.bug-prefix'],), ''),
+      ((['git', 'config', 'rietveld.bug-prefix'],), CERR1),
+      ((['git', 'config', 'rietveld.bug-line-format'],), CERR1),
     ]
 
   @classmethod
@@ -2157,6 +2159,7 @@ class TestGitCl(TestCase):
         ((['git', 'config', 'branch.feature.gerritissue'],), '123'),
         ((['git', 'config', 'rietveld.autoupdate'],), CERR1),
         ((['git', 'config', 'rietveld.bug-prefix'],), CERR1),
+        ((['git', 'config', 'rietveld.bug-line-format'],), CERR1),
         ((['git', 'config', 'core.editor'],), 'vi'),
     ]
     self.assertEqual(0, git_cl.main(['description', '--gerrit']))
