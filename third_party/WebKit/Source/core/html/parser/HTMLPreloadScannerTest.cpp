@@ -750,7 +750,7 @@ TEST_F(HTMLPreloadScannerTest, testLinkRelPreload) {
       {"http://example.test",
        "<link rel=preload href=bla as=font type='font/bla'>", nullptr,
        "http://example.test/", Resource::Font, 0},
-      {"http://example.test", "<link rel=preload href=bla as=media>", "bla",
+      {"http://example.test", "<link rel=preload href=bla as=video>", "bla",
        "http://example.test/", Resource::Media, 0},
       {"http://example.test", "<link rel=preload href=bla as=track>", "bla",
        "http://example.test/", Resource::TextTrack, 0},

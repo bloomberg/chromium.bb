@@ -193,8 +193,12 @@ WTF::Optional<Resource::Type> LinkLoader::getResourceTypeFromAsAttribute(
     return Resource::Script;
   } else if (as == "style") {
     return Resource::CSSStyleSheet;
-  } else if (as == "media") {
+  } else if (as == "video") {
     return Resource::Media;
+  } else if (as == "audio") {
+    return Resource::Media;
+  } else if (as == "track") {
+    return Resource::TextTrack;
   } else if (as == "font") {
     return Resource::Font;
   } else if (as == "track") {
