@@ -43,7 +43,7 @@ struct WebLocalizedString {
     AXDayOfMonthFieldText,
     AXHeadingText,  // Deprecated.
     AXHourFieldText,
-    AXImageMapText,  // Deprecated.
+    AXImageMapText,    // Deprecated.
     AXLinkText,        // Deprecated.
     AXListMarkerText,  // Deprecated.
     AXMediaAudioElement,
@@ -155,6 +155,7 @@ struct WebLocalizedString {
     ValidationStepMismatchCloseToLimit,
     ValidationTooLong,
     ValidationTooShort,
+    ValidationTooShortPlural,
     ValidationTypeMismatch,
     ValidationTypeMismatchForEmail,
     ValidationTypeMismatchForEmailEmpty,

@@ -211,7 +211,13 @@ String Locale::validationMessageTooLongText(unsigned valueLength,
 
 String Locale::validationMessageTooShortText(unsigned valueLength,
                                              int minLength) {
-  return queryString(WebLocalizedString::ValidationTooShort,
+  if (valueLength == 1) {
+    return queryString(WebLocalizedString::ValidationTooShort,
+                       convertToLocalizedNumber(String::number(valueLength)),
+                       convertToLocalizedNumber(String::number(minLength)));
+  }
+
+  return queryString(WebLocalizedString::ValidationTooShortPlural,
                      convertToLocalizedNumber(String::number(valueLength)),
                      convertToLocalizedNumber(String::number(minLength)));
 }

@@ -292,6 +292,8 @@ static int ToMessageID(WebLocalizedString::Name name) {
       return IDS_FORM_VALIDATION_TOO_LONG;
     case WebLocalizedString::ValidationTooShort:
       return IDS_FORM_VALIDATION_TOO_SHORT;
+    case WebLocalizedString::ValidationTooShortPlural:
+      return IDS_FORM_VALIDATION_TOO_SHORT_PLURAL;
     case WebLocalizedString::ValidationTypeMismatch:
       return IDS_FORM_VALIDATION_TYPE_MISMATCH;
     case WebLocalizedString::ValidationTypeMismatchForEmail:
