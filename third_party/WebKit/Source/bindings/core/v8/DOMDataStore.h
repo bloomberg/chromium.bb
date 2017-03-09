@@ -40,7 +40,7 @@
 #include "v8/include/v8.h"
 #include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
-#include "wtf/PtrUtil.h"
+#include "wtf/Optional.h"
 #include "wtf/StackUtil.h"
 #include "wtf/StdLibExtras.h"
 
@@ -52,11 +52,11 @@ class DOMDataStore {
 
  public:
   DOMDataStore(v8::Isolate* isolate, bool isMainWorld)
-      : m_isMainWorld(isMainWorld),
-        // We never use |m_wrapperMap| when it's the main world.
-        m_wrapperMap(WTF::wrapUnique(
-            isMainWorld ? nullptr
-                        : new DOMWrapperMap<ScriptWrappable>(isolate))) {}
+      : m_isMainWorld(isMainWorld) {
+    // We never use |m_wrapperMap| when it's the main world.
+    if (!isMainWorld)
+      m_wrapperMap.emplace(isolate);
+  }
 
   static DOMDataStore& current(v8::Isolate* isolate) {
     return DOMWrapperWorld::current(isolate).domDataStore();
@@ -169,7 +169,7 @@ class DOMDataStore {
   }
 
   bool m_isMainWorld;
-  std::unique_ptr<DOMWrapperMap<ScriptWrappable>> m_wrapperMap;
+  WTF::Optional<DOMWrapperMap<ScriptWrappable>> m_wrapperMap;
 };
 
 template <>
