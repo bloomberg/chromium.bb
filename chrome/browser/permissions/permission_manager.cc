@@ -334,17 +334,19 @@ PermissionResult PermissionManager::GetPermissionStatus(
     ContentSettingsType permission,
     const GURL& requesting_origin,
     const GURL& embedding_origin) {
-  if (IsConstantPermission(permission)) {
-    return PermissionResult(GetContentSettingForConstantPermission(permission),
-                            PermissionStatusSource::UNSPECIFIED);
-  }
-  PermissionContextBase* context = GetPermissionContext(permission);
-  PermissionResult result = context->GetPermissionStatus(
-      requesting_origin.GetOrigin(), embedding_origin.GetOrigin());
-  DCHECK(result.content_setting == CONTENT_SETTING_ALLOW ||
-         result.content_setting == CONTENT_SETTING_ASK ||
-         result.content_setting == CONTENT_SETTING_BLOCK);
-  return result;
+  return GetPermissionStatusHelper(permission, nullptr /* render_frame_host */,
+                                   requesting_origin, embedding_origin);
+}
+
+PermissionResult PermissionManager::GetPermissionStatusForFrame(
+    ContentSettingsType permission,
+    content::RenderFrameHost* render_frame_host) {
+  content::WebContents* web_contents =
+      content::WebContents::FromRenderFrameHost(render_frame_host);
+  GURL embedding_origin = web_contents->GetLastCommittedURL().GetOrigin();
+  return GetPermissionStatusHelper(
+      permission, render_frame_host,
+      render_frame_host->GetLastCommittedURL().GetOrigin(), embedding_origin);
 }
 
 int PermissionManager::RequestPermission(
@@ -523,4 +525,23 @@ void PermissionManager::OnContentSettingChanged(
 
   for (const auto& callback : callbacks)
     callback.Run();
+}
+
+PermissionResult PermissionManager::GetPermissionStatusHelper(
+    ContentSettingsType permission,
+    content::RenderFrameHost* render_frame_host,
+    const GURL& requesting_origin,
+    const GURL& embedding_origin) {
+  if (IsConstantPermission(permission)) {
+    return PermissionResult(GetContentSettingForConstantPermission(permission),
+                            PermissionStatusSource::UNSPECIFIED);
+  }
+  PermissionContextBase* context = GetPermissionContext(permission);
+  PermissionResult result = context->GetPermissionStatus(
+      nullptr /* render_frame_host */, requesting_origin.GetOrigin(),
+      embedding_origin.GetOrigin());
+  DCHECK(result.content_setting == CONTENT_SETTING_ALLOW ||
+         result.content_setting == CONTENT_SETTING_ASK ||
+         result.content_setting == CONTENT_SETTING_BLOCK);
+  return result;
 }

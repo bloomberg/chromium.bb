@@ -83,6 +83,7 @@ void ProtectedMediaIdentifierPermissionContext::DecidePermission(
 
 ContentSetting
 ProtectedMediaIdentifierPermissionContext::GetPermissionStatusInternal(
+    content::RenderFrameHost* render_frame_host,
     const GURL& requesting_origin,
     const GURL& embedding_origin) const {
   DVLOG(1) << __func__ << ": (" << requesting_origin.spec() << ", "
@@ -94,8 +95,8 @@ ProtectedMediaIdentifierPermissionContext::GetPermissionStatusInternal(
   }
 
   ContentSetting content_setting =
-      PermissionContextBase::GetPermissionStatusInternal(requesting_origin,
-                                                         embedding_origin);
+      PermissionContextBase::GetPermissionStatusInternal(
+          render_frame_host, requesting_origin, embedding_origin);
   DCHECK(content_setting == CONTENT_SETTING_ALLOW ||
          content_setting == CONTENT_SETTING_BLOCK ||
          content_setting == CONTENT_SETTING_ASK);

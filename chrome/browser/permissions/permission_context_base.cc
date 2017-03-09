@@ -118,8 +118,9 @@ void PermissionContextBase::RequestPermission(
   // Synchronously check the content setting to see if the user has already made
   // a decision, or if the origin is under embargo. If so, respect that
   // decision.
-  PermissionResult result =
-      GetPermissionStatus(requesting_origin, embedding_origin);
+  // TODO(raymes): Pass in the RenderFrameHost of the request here.
+  PermissionResult result = GetPermissionStatus(
+      nullptr /* render_frame_host */, requesting_origin, embedding_origin);
 
   if (result.content_setting == CONTENT_SETTING_ALLOW ||
       result.content_setting == CONTENT_SETTING_BLOCK) {
@@ -189,6 +190,7 @@ void PermissionContextBase::ContinueRequestPermission(
 }
 
 PermissionResult PermissionContextBase::GetPermissionStatus(
+    content::RenderFrameHost* render_frame_host,
     const GURL& requesting_origin,
     const GURL& embedding_origin) const {
   // If the permission has been disabled through Finch, block all requests.
@@ -203,8 +205,8 @@ PermissionResult PermissionContextBase::GetPermissionStatus(
                             PermissionStatusSource::UNSPECIFIED);
   }
 
-  ContentSetting content_setting =
-      GetPermissionStatusInternal(requesting_origin, embedding_origin);
+  ContentSetting content_setting = GetPermissionStatusInternal(
+      render_frame_host, requesting_origin, embedding_origin);
   if (content_setting == CONTENT_SETTING_ASK) {
     PermissionResult result =
         PermissionDecisionAutoBlocker::GetForProfile(profile_)
@@ -255,6 +257,7 @@ bool PermissionContextBase::IsPermissionKillSwitchOn() const {
 }
 
 ContentSetting PermissionContextBase::GetPermissionStatusInternal(
+    content::RenderFrameHost* render_frame_host,
     const GURL& requesting_origin,
     const GURL& embedding_origin) const {
   return HostContentSettingsMapFactory::GetForProfile(profile_)

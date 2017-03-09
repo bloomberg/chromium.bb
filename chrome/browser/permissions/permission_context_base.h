@@ -25,6 +25,7 @@ class PermissionRequestID;
 class Profile;
 
 namespace content {
+class RenderFrameHost;
 class WebContents;
 }
 
@@ -80,10 +81,14 @@ class PermissionContextBase : public KeyedService {
                                  const BrowserPermissionCallback& callback);
 
   // Returns whether the permission has been granted, denied etc.
+  // |render_frame_host| may be nullptr if the call is coming from a context
+  // other than a specific frame.
   // TODO(meredithl): Ensure that the result accurately reflects whether the
   // origin is blacklisted for this permission.
-  PermissionResult GetPermissionStatus(const GURL& requesting_origin,
-                                       const GURL& embedding_origin) const;
+  PermissionResult GetPermissionStatus(
+      content::RenderFrameHost* render_frame_host,
+      const GURL& requesting_origin,
+      const GURL& embedding_origin) const;
 
   // Resets the permission to its default value.
   virtual void ResetPermission(const GURL& requesting_origin,
@@ -101,6 +106,7 @@ class PermissionContextBase : public KeyedService {
 
  protected:
   virtual ContentSetting GetPermissionStatusInternal(
+      content::RenderFrameHost* render_frame_host,
       const GURL& requesting_origin,
       const GURL& embedding_origin) const;
 

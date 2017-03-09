@@ -143,10 +143,14 @@ TEST_F(MidiPermissionContextTests, TestInsecureQueryingUrl) {
                               std::string()));
 
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
-            permission_context.GetPermissionStatus(insecure_url, insecure_url)
+            permission_context
+                .GetPermissionStatus(nullptr /* render_frame_host */,
+                                     insecure_url, insecure_url)
                 .content_setting);
 
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
-            permission_context.GetPermissionStatus(insecure_url, secure_url)
+            permission_context
+                .GetPermissionStatus(nullptr /* render_frame_host */,
+                                     insecure_url, secure_url)
                 .content_setting);
 }

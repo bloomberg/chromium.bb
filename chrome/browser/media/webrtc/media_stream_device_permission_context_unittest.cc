@@ -66,11 +66,15 @@ class MediaStreamDevicePermissionContextTests
                                       content_settings_type, std::string()));
 
     EXPECT_EQ(CONTENT_SETTING_ASK,
-              permission_context.GetPermissionStatus(insecure_url, insecure_url)
+              permission_context
+                  .GetPermissionStatus(nullptr /* render_frame_host */,
+                                       insecure_url, insecure_url)
                   .content_setting);
 
     EXPECT_EQ(CONTENT_SETTING_ASK,
-              permission_context.GetPermissionStatus(insecure_url, secure_url)
+              permission_context
+                  .GetPermissionStatus(nullptr /* render_frame_host */,
+                                       insecure_url, secure_url)
                   .content_setting);
   }
 
@@ -87,7 +91,9 @@ class MediaStreamDevicePermissionContextTests
                                       std::string()));
 
     EXPECT_EQ(CONTENT_SETTING_ASK,
-              permission_context.GetPermissionStatus(secure_url, secure_url)
+              permission_context
+                  .GetPermissionStatus(nullptr /* render_frame_host */,
+                                       secure_url, secure_url)
                   .content_setting);
   }
 

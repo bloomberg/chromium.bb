@@ -55,6 +55,13 @@ class PermissionManager : public KeyedService,
                                        const GURL& requesting_origin,
                                        const GURL& embedding_origin);
 
+  // Returns the permission status for a given frame. This should be preferred
+  // over GetPermissionStatus as additional checks can be performed when we know
+  // the exact context the request is coming from.
+  PermissionResult GetPermissionStatusForFrame(
+      ContentSettingsType permission,
+      content::RenderFrameHost* render_frame_host);
+
   // content::PermissionManager implementation.
   int RequestPermission(
       content::PermissionType permission,
@@ -118,6 +125,12 @@ class PermissionManager : public KeyedService,
                                const ContentSettingsPattern& secondary_pattern,
                                ContentSettingsType content_type,
                                std::string resource_identifier) override;
+
+  PermissionResult GetPermissionStatusHelper(
+      ContentSettingsType permission,
+      content::RenderFrameHost* render_frame_host,
+      const GURL& requesting_origin,
+      const GURL& embedding_origin);
 
   Profile* profile_;
   PendingRequestsMap pending_requests_;
