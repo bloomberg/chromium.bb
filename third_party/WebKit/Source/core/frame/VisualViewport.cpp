@@ -33,7 +33,6 @@
 #include <memory>
 #include "core/dom/DOMNodeIds.h"
 #include "core/dom/TaskRunnerHelper.h"
-#include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameClient.h"
@@ -254,7 +253,7 @@ bool VisualViewport::didSetScaleOrLocation(float scale,
   if (scale != m_scale) {
     m_scale = scale;
     valuesChanged = true;
-    frameHost().page().chromeClient().pageScaleFactorChanged();
+    page().chromeClient().pageScaleFactorChanged();
     enqueueResizeEvent();
   }
 
@@ -266,11 +265,10 @@ bool VisualViewport::didSetScaleOrLocation(float scale,
 
     // SVG runs with accelerated compositing disabled so no
     // ScrollingCoordinator.
-    if (ScrollingCoordinator* coordinator =
-            frameHost().page().scrollingCoordinator())
+    if (ScrollingCoordinator* coordinator = page().scrollingCoordinator())
       coordinator->scrollableAreaScrollLayerDidChange(this);
 
-    if (!frameHost().page().settings().getInertVisualViewport()) {
+    if (!page().settings().getInertVisualViewport()) {
       if (Document* document = mainFrame()->document())
         document->enqueueScrollEventForNode(document);
     }
@@ -295,9 +293,8 @@ bool VisualViewport::didSetScaleOrLocation(float scale,
 bool VisualViewport::magnifyScaleAroundAnchor(float magnifyDelta,
                                               const FloatPoint& anchor) {
   const float oldPageScale = scale();
-  const float newPageScale =
-      frameHost().page().chromeClient().clampPageScaleFactorToLimits(
-          magnifyDelta * oldPageScale);
+  const float newPageScale = page().chromeClient().clampPageScaleFactorToLimits(
+      magnifyDelta * oldPageScale);
   if (newPageScale == oldPageScale)
     return false;
   if (!mainFrame() || !mainFrame()->view())
@@ -336,7 +333,7 @@ void VisualViewport::createLayerTree() {
   m_overlayScrollbarHorizontal = GraphicsLayer::create(this);
   m_overlayScrollbarVertical = GraphicsLayer::create(this);
 
-  ScrollingCoordinator* coordinator = frameHost().page().scrollingCoordinator();
+  ScrollingCoordinator* coordinator = page().scrollingCoordinator();
   DCHECK(coordinator);
   coordinator->setLayerIsContainerForFixedPositionLayers(
       m_innerViewportScrollLayer.get(), true);
@@ -344,7 +341,7 @@ void VisualViewport::createLayerTree() {
   // Set masks to bounds so the compositor doesn't clobber a manually
   // set inner viewport container layer size.
   m_innerViewportContainerLayer->setMasksToBounds(
-      frameHost().page().settings().getMainFrameClipsContent());
+      page().settings().getMainFrameClipsContent());
   m_innerViewportContainerLayer->setSize(FloatSize(m_size));
 
   m_innerViewportScrollLayer->platformLayer()->setScrollClipLayer(
@@ -392,7 +389,7 @@ void VisualViewport::initializeScrollbars() {
     return;
 
   if (visualViewportSuppliesScrollbars() &&
-      !frameHost().page().settings().getHideScrollbars()) {
+      !page().settings().getHideScrollbars()) {
     if (!m_overlayScrollbarHorizontal->parent())
       m_innerViewportContainerLayer->addChild(
           m_overlayScrollbarHorizontal.get());
@@ -429,8 +426,7 @@ void VisualViewport::setupScrollbar(WebScrollbar::Orientation orientation) {
   int scrollbarMargin = theme.scrollbarMargin();
 
   if (!webScrollbarLayer) {
-    ScrollingCoordinator* coordinator =
-        frameHost().page().scrollingCoordinator();
+    ScrollingCoordinator* coordinator = page().scrollingCoordinator();
     ASSERT(coordinator);
     ScrollbarOrientation webcoreOrientation =
         isHorizontal ? HorizontalScrollbar : VerticalScrollbar;
@@ -469,15 +465,15 @@ void VisualViewport::setupScrollbar(WebScrollbar::Orientation orientation) {
 }
 
 bool VisualViewport::visualViewportSuppliesScrollbars() const {
-  return frameHost().page().settings().getViewportEnabled();
+  return page().settings().getViewportEnabled();
 }
 
 bool VisualViewport::scrollAnimatorEnabled() const {
-  return frameHost().page().settings().getScrollAnimatorEnabled();
+  return page().settings().getScrollAnimatorEnabled();
 }
 
 HostWindow* VisualViewport::getHostWindow() const {
-  return &frameHost().page().chromeClient();
+  return &page().chromeClient();
 }
 
 bool VisualViewport::shouldUseIntegerScrollOffset() const {
@@ -528,11 +524,8 @@ ScrollOffset VisualViewport::maximumScrollOffset() const {
   FloatSize frameViewSize(contentsSize());
 
   if (m_browserControlsAdjustment) {
-    float minScale = frameHost()
-                         .page()
-                         .pageScaleConstraintsSet()
-                         .finalConstraints()
-                         .minimumScale;
+    float minScale =
+        page().pageScaleConstraintsSet().finalConstraints().minimumScale;
     frameViewSize.expand(0, m_browserControlsAdjustment / minScale);
   }
 
@@ -653,9 +646,8 @@ void VisualViewport::paintContents(const GraphicsLayer*,
                                    const IntRect&) const {}
 
 LocalFrame* VisualViewport::mainFrame() const {
-  return frameHost().page().mainFrame() &&
-                 frameHost().page().mainFrame()->isLocalFrame()
-             ? frameHost().page().deprecatedLocalMainFrame()
+  return page().mainFrame() && page().mainFrame()->isLocalFrame()
+             ? page().deprecatedLocalMainFrame()
              : 0;
 }
 
@@ -783,7 +775,7 @@ bool VisualViewport::shouldDisableDesktopWorkarounds() const {
   //    the initial viewport width.
   // 2. The author has disabled viewport zoom.
   const PageScaleConstraints& constraints =
-      frameHost().page().pageScaleConstraintsSet().pageDefinedConstraints();
+      page().pageScaleConstraintsSet().pageDefinedConstraints();
 
   return mainFrame()->view()->layoutSize().width() == m_size.width() ||
          (constraints.minimumScale == constraints.maximumScale &&
@@ -791,15 +783,15 @@ bool VisualViewport::shouldDisableDesktopWorkarounds() const {
 }
 
 CompositorAnimationHost* VisualViewport::compositorAnimationHost() const {
-  DCHECK(frameHost().page().mainFrame()->isLocalFrame());
-  ScrollingCoordinator* c = frameHost().page().scrollingCoordinator();
+  DCHECK(page().mainFrame()->isLocalFrame());
+  ScrollingCoordinator* c = page().scrollingCoordinator();
   return c ? c->compositorAnimationHost() : nullptr;
 }
 
 CompositorAnimationTimeline* VisualViewport::compositorAnimationTimeline()
     const {
-  DCHECK(frameHost().page().mainFrame()->isLocalFrame());
-  ScrollingCoordinator* c = frameHost().page().scrollingCoordinator();
+  DCHECK(page().mainFrame()->isLocalFrame());
+  ScrollingCoordinator* c = page().scrollingCoordinator();
   return c ? c->compositorAnimationTimeline() : nullptr;
 }
 

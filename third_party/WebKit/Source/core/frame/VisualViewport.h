@@ -31,8 +31,10 @@
 #ifndef VisualViewport_h
 #define VisualViewport_h
 
+#include <memory>
 #include "core/CoreExport.h"
 #include "core/events/Event.h"
+#include "core/frame/FrameHost.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/geometry/FloatSize.h"
 #include "platform/geometry/IntSize.h"
@@ -40,7 +42,6 @@
 #include "platform/scroll/ScrollableArea.h"
 #include "public/platform/WebScrollbar.h"
 #include "public/platform/WebSize.h"
-#include <memory>
 
 namespace blink {
 class WebScrollbarLayer;
@@ -48,12 +49,12 @@ class WebScrollbarLayer;
 
 namespace blink {
 
-class FrameHost;
 class GraphicsContext;
 class GraphicsLayer;
 class IntRect;
 class IntSize;
 class LocalFrame;
+class Page;
 
 // Represents the visual viewport the user is currently seeing the page through.
 // This class corresponds to the InnerViewport on the compositor. It is a
@@ -261,9 +262,9 @@ class CORE_EXPORT VisualViewport final
 
   LocalFrame* mainFrame() const;
 
-  FrameHost& frameHost() const {
-    ASSERT(m_frameHost);
-    return *m_frameHost;
+  Page& page() const {
+    DCHECK(m_frameHost);
+    return m_frameHost->page();
   }
 
   Member<FrameHost> m_frameHost;
