@@ -9,7 +9,6 @@
 #include <set>
 #include <unordered_map>
 
-#include "base/lazy_instance.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread_checker.h"
 #include "base/trace_event/memory_dump_request_args.h"
@@ -27,9 +26,13 @@ class CoordinatorImpl : public Coordinator, public mojom::Coordinator {
   // Coordinator
   void BindCoordinatorRequest(mojom::CoordinatorRequest) override;
 
+  bool initialize_memory_dump_manager() const {
+    return initialize_memory_dump_manager_;
+  }
+
  private:
-  friend class CoordinatorImplTest;  // For testing
-  friend struct base::LazyInstanceTraitsBase<CoordinatorImpl>;
+  friend std::default_delete<CoordinatorImpl>;  // For testing
+  friend class CoordinatorImplTest;             // For testing
 
   struct QueuedMemoryDumpRequest {
     QueuedMemoryDumpRequest(const base::trace_event::MemoryDumpRequestArgs args,
@@ -39,7 +42,7 @@ class CoordinatorImpl : public Coordinator, public mojom::Coordinator {
     const RequestGlobalMemoryDumpCallback callback;
   };
 
-  CoordinatorImpl();
+  CoordinatorImpl(bool initialize_memory_dump_manager);
   ~CoordinatorImpl() override;
 
   // mojom::Coordinator
@@ -77,6 +80,8 @@ class CoordinatorImpl : public Coordinator, public mojom::Coordinator {
   std::set<mojom::ProcessLocalDumpManager*> pending_process_managers_;
   int failed_memory_dump_count_;
   std::list<QueuedMemoryDumpRequest> queued_memory_dump_requests_;
+
+  const bool initialize_memory_dump_manager_;
 
   base::ThreadChecker thread_checker_;
 

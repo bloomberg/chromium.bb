@@ -103,6 +103,7 @@
 #include "net/socket/client_socket_factory.h"
 #include "net/ssl/ssl_config_service.h"
 #include "ppapi/features/features.h"
+#include "services/resource_coordinator/memory/coordinator/coordinator_impl.h"
 #include "services/service_manager/runner/common/client_util.h"
 #include "skia/ext/event_tracer_impl.h"
 #include "skia/ext/skia_memory_dump_provider.h"
@@ -826,6 +827,10 @@ void BrowserMainLoop::PostMainMessageLoopStart() {
     DOMStorageArea::EnableAggressiveCommitDelay();
     LevelDBWrapperImpl::EnableAggressiveCommitDelay();
   }
+
+  // Create the memory instrumentation service. It will initialize the memory
+  // dump manager, too.
+  memory_instrumentation::CoordinatorImpl::GetInstance();
 
   // Enable memory-infra dump providers.
   InitSkiaEventTracer();

@@ -28,6 +28,7 @@
 #include "gpu/ipc/common/gpu_messages.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/message_filter.h"
+#include "services/resource_coordinator/public/interfaces/memory/constants.mojom.h"
 #include "services/service_manager/runner/common/client_util.h"
 
 namespace content {
@@ -226,7 +227,8 @@ void BrowserGpuChannelHostFactory::Terminate() {
 
 BrowserGpuChannelHostFactory::BrowserGpuChannelHostFactory()
     : gpu_client_id_(ChildProcessHostImpl::GenerateChildProcessUniqueId()),
-      gpu_client_tracing_id_(ChildProcessHost::kBrowserTracingProcessId),
+      gpu_client_tracing_id_(
+          memory_instrumentation::mojom::kServiceTracingProcessId),
       shutdown_event_(new base::WaitableEvent(
           base::WaitableEvent::ResetPolicy::MANUAL,
           base::WaitableEvent::InitialState::NOT_SIGNALED)),

@@ -47,7 +47,6 @@ class CONTENT_EXPORT TraceDataEndpoint
 
 class TracingControllerImpl
     : public TracingController,
-      public base::trace_event::MemoryDumpManagerDelegate,
       public base::trace_event::TracingAgent {
  public:
   // Create an endpoint that may be supplied to any TraceDataSink to
@@ -88,12 +87,6 @@ class TracingControllerImpl
       const std::string& sync_id,
       const RecordClockSyncMarkerCallback& callback) override;
 
-  // base::trace_event::MemoryDumpManagerDelegate implementation.
-  void RequestGlobalMemoryDump(
-      const base::trace_event::MemoryDumpRequestArgs& args,
-      const base::trace_event::MemoryDumpCallback& callback) override;
-  uint64_t GetTracingProcessId() const override;
-
   class TraceMessageFilterObserver {
    public:
     virtual void OnTraceMessageFilterAdded(TraceMessageFilter* filter) = 0;
@@ -105,16 +98,6 @@ class TracingControllerImpl
  private:
   friend struct base::LazyInstanceTraitsBase<TracingControllerImpl>;
   friend class TraceMessageFilter;
-
-  // The arguments and callback for an queued global memory dump request.
-  struct QueuedMemoryDumpRequest {
-    QueuedMemoryDumpRequest(
-        const base::trace_event::MemoryDumpRequestArgs& args,
-        const base::trace_event::MemoryDumpCallback& callback);
-    ~QueuedMemoryDumpRequest();
-    const base::trace_event::MemoryDumpRequestArgs args;
-    const base::trace_event::MemoryDumpCallback callback;
-  };
 
   TracingControllerImpl();
   ~TracingControllerImpl() override;
@@ -138,8 +121,6 @@ class TracingControllerImpl
   bool can_get_trace_buffer_usage() const {
     return pending_trace_buffer_usage_callback_.is_null();
   }
-
-  void PerformNextQueuedGlobalMemoryDump();
 
   // Methods for use by TraceMessageFilter.
   void AddTraceMessageFilter(TraceMessageFilter* trace_message_filter);
@@ -170,14 +151,6 @@ class TracingControllerImpl
 
   void OnTraceLogStatusReply(TraceMessageFilter* trace_message_filter,
                              const base::trace_event::TraceLogStatus& status);
-  void OnProcessMemoryDumpResponse(TraceMessageFilter* trace_message_filter,
-                                   uint64_t dump_guid,
-                                   bool success);
-
-  // Callback of MemoryDumpManager::CreateProcessDump().
-  void OnBrowserProcessMemoryDumpDone(uint64_t dump_guid, bool success);
-
-  void FinalizeGlobalMemoryDumpIfAllProcessesReplied();
 
   void SetEnabledOnFileThread(
       const base::trace_event::TraceConfig& trace_config,
@@ -217,12 +190,6 @@ class TracingControllerImpl
   TraceMessageFilterSet pending_trace_log_status_filters_;
   float maximum_trace_buffer_usage_;
   size_t approximate_event_count_;
-
-  // Pending acks for memory RequestGlobalDumpPoint.
-  int pending_memory_dump_ack_count_;
-  int failed_memory_dump_count_;
-  TraceMessageFilterSet pending_memory_dump_filters_;
-  std::list<QueuedMemoryDumpRequest> queued_memory_dump_requests_;
 
   std::vector<base::trace_event::TracingAgent*> additional_tracing_agents_;
   int pending_clock_sync_ack_count_;
