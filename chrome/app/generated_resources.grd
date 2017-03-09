@@ -5935,7 +5935,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Manual password generation.
       </message>
       <message name="IDS_FLAGS_MANUAL_PASSWORD_GENERATION_DESCRIPTION" desc="Description of the flag for manual password generation.">
-        Allow the user to manually enforce to generate password on a password field.
+        Show a 'Generate Password' option on the context menu for all password fields.
       </message>
       <message name="IDS_FLAGS_SHOW_AUTOFILL_SIGNATURES" desc="Name of the flag to show autofill signatures.">
         Show autofill signatures.
