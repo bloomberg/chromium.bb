@@ -11,7 +11,6 @@
 #include "ui/gfx/x/x11_types.h"
 #include "ui/gl/egl_util.h"
 #include "ui/gl/gl_surface_egl.h"
-#include "ui/gl/gl_surface_osmesa_x11.h"
 #include "ui/ozone/common/egl_util.h"
 #include "ui/ozone/common/gl_ozone_egl.h"
 #include "ui/ozone/common/gl_ozone_osmesa.h"
@@ -124,13 +123,11 @@ GLSurfaceEGLOzoneX11::~GLSurfaceEGLOzoneX11() {
   Destroy();
 }
 
-// GLOzoneEGL implementation that draws to an XWindow.
 class GLOzoneEGLX11 : public GLOzoneEGL {
  public:
   GLOzoneEGLX11() {}
   ~GLOzoneEGLX11() override {}
 
-  // GLOzoneEGL:
   scoped_refptr<gl::GLSurface> CreateViewGLSurface(
       gfx::AcceleratedWidget window) override {
     return gl::InitializeGLSurface(new GLSurfaceEGLOzoneX11(window));
@@ -152,29 +149,12 @@ class GLOzoneEGLX11 : public GLOzoneEGL {
   DISALLOW_COPY_AND_ASSIGN(GLOzoneEGLX11);
 };
 
-// GLOzoneOSMesa implementation that draws to an XWindow.
-class GLOzoneOSMesaX11 : public GLOzoneOSMesa {
- public:
-  GLOzoneOSMesaX11() {}
-  ~GLOzoneOSMesaX11() override {}
-
-  // GLOzoneOSMesa:
-  bool InitializeGLOneOffPlatform() override {
-    return gl::GLSurfaceOSMesaX11::InitializeOneOff();
-  }
-
-  scoped_refptr<gl::GLSurface> CreateViewGLSurface(
-      gfx::AcceleratedWidget window) override {
-    return gl::InitializeGLSurface(new gl::GLSurfaceOSMesaX11(window));
-  }
-};
-
 }  // namespace
 
 X11SurfaceFactory::X11SurfaceFactory()
     : glx_implementation_(base::MakeUnique<GLOzoneGLX>()),
       egl_implementation_(base::MakeUnique<GLOzoneEGLX11>()),
-      osmesa_implementation_(base::MakeUnique<GLOzoneOSMesaX11>()) {}
+      osmesa_implementation_(base::MakeUnique<GLOzoneOSMesa>()) {}
 
 X11SurfaceFactory::~X11SurfaceFactory() {}
 
