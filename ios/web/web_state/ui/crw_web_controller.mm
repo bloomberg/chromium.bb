@@ -43,7 +43,6 @@
 #import "ios/web/interstitials/web_interstitial_impl.h"
 #import "ios/web/navigation/crw_session_certificate_policy_manager.h"
 #import "ios/web/navigation/crw_session_controller.h"
-#import "ios/web/navigation/crw_session_entry.h"
 #import "ios/web/navigation/navigation_item_impl.h"
 #import "ios/web/navigation/navigation_manager_impl.h"
 #include "ios/web/net/cert_host_pair.h"
@@ -465,14 +464,26 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
 // Facade for Mojo API.
 @property(nonatomic, readonly) web::MojoFacade* mojoFacade;
 
-// Updates Desktop User Agent and calls webWillFinishHistoryNavigationFromEntry:
-// on CRWWebDelegate. TODO(crbug.com/684098): Remove this method and inline its
-// content.
-- (void)webWillFinishHistoryNavigationFromEntry:(CRWSessionEntry*)fromEntry;
-// Recreates web view if |entry| and |fromEntry| have different value for
-// IsOverridingUserAgent() flag.
-- (void)updateDesktopUserAgentForEntry:(CRWSessionEntry*)entry
-                             fromEntry:(CRWSessionEntry*)fromEntry;
+// TODO(crbug.com/692871): Remove these functions and replace with more
+// appropriate NavigationItem getters.
+// Returns the navigation item for the current page.
+@property(nonatomic, readonly) web::NavigationItemImpl* currentNavItem;
+// Returns the current transition type.
+@property(nonatomic, readonly) ui::PageTransition currentTransition;
+// Returns the referrer for current navigation item. May be empty.
+@property(nonatomic, readonly) web::Referrer currentNavItemReferrer;
+// The HTTP headers associated with the current navigation item. These are nil
+// unless the request was a POST.
+@property(nonatomic, readonly) NSDictionary* currentHTTPHeaders;
+
+// TODO(crbug.com/684098): Remove these methods and inline their content.
+// Called before finishing a history navigation from |item|.
+- (void)webWillFinishHistoryNavigationFromItem:(web::NavigationItem*)item;
+// Requires page reconstruction if |item| has a non-NONE UserAgentType and it
+// differs from that of |fromItem|.
+- (void)updateDesktopUserAgentForItem:(web::NavigationItem*)item
+                             fromItem:(web::NavigationItem*)fromItem;
+
 // Removes the container view from the hierarchy and resets the ivar.
 - (void)resetContainerView;
 // Called when the web page has changed document and/or URL, and so the page
@@ -499,23 +510,6 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
 - (void)addPlaceholderOverlay;
 // Removes placeholder overlay.
 - (void)removePlaceholderOverlay;
-
-// Returns the current entry from the underlying session controller.
-// TODO(stuartmorgan): Audit all calls to these methods; these are just wrappers
-// around the same logic as GetActiveEntry, so should probably not be used for
-// the same reason that GetActiveEntry is deprecated. (E.g., page operations
-// should generally be dealing with the last commited entry, not a pending
-// entry).
-- (CRWSessionEntry*)currentSessionEntry;
-// Returns the navigation item for the current page.
-- (web::NavigationItem*)currentNavItem;
-// Returns the current transition type.
-- (ui::PageTransition)currentTransition;
-// Returns the referrer for current navigation item. May be empty.
-- (web::Referrer)currentSessionEntryReferrer;
-// The HTTP headers associated with the current navigation item. These are nil
-// unless the request was a POST.
-- (NSDictionary*)currentHTTPHeaders;
 
 // Creates a web view if it's not yet created.
 - (void)ensureWebViewCreated;
@@ -608,9 +602,9 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
 // TODO(crbug.com/661316): Move this method to NavigationManager.
 - (void)goDelta:(int)delta;
 // Loads a new URL if the current entry is not from a pushState() navigation.
-// |fromEntry| is the CRWSessionEntry that was the current entry prior to the
+// |item| is the NavigationItem that was the current entry prior to the
 // navigation.
-- (void)finishHistoryNavigationFromEntry:(CRWSessionEntry*)fromEntry;
+- (void)finishHistoryNavigationFromItem:(web::NavigationItem*)item;
 // Informs the native controller if web usage is allowed or not.
 - (void)setNativeControllerWebUsageEnabled:(BOOL)webUsageEnabled;
 // Called when web controller receives a new message from the web page.
@@ -1279,7 +1273,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
       return [self.nativeController url];
     }
   }
-  web::NavigationItem* item = [self currentNavItem];
+  web::NavigationItem* item = self.currentNavItem;
   return item ? item->GetVirtualURL() : GURL::EmptyGURL();
 }
 
@@ -1307,7 +1301,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   if ([referrerString length] == 0)
     return web::Referrer();
 
-  web::NavigationItem* item = [self currentNavItem];
+  web::NavigationItem* item = self.currentNavItem;
   GURL navigationURL = item ? item->GetVirtualURL() : GURL::EmptyGURL();
   NSString* previousURLString = base::SysUTF8ToNSString(navigationURL.spec());
   // Check if the referrer is equal to the previous URL minus the hash symbol.
@@ -1382,7 +1376,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 }
 
 - (BOOL)isCurrentNavigationBackForward {
-  if (![self currentNavItem])
+  if (!self.currentNavItem)
     return NO;
   WKNavigationType currentNavigationType =
       [self currentBackForwardListItemHolder]->navigation_type();
@@ -1556,8 +1550,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 }
 
 - (void)updateHTML5HistoryState {
-  web::NavigationItemImpl* currentItem =
-      static_cast<web::NavigationItemImpl*>([self currentNavItem]);
+  web::NavigationItemImpl* currentItem = self.currentNavItem;
   if (!currentItem)
     return;
 
@@ -1569,9 +1562,8 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   // WKWebView doesn't send hashchange events for same-document non-BFLI
   // navigations, so one must be dispatched manually for hash change same-
   // document navigations.
-  web::NavigationItem* previousItem =
-      self.sessionController.previousEntry.navigationItem;
   const GURL URL = currentItem->GetURL();
+  web::NavigationItem* previousItem = self.sessionController.previousItem;
   const GURL oldURL = previousItem ? previousItem->GetURL() : GURL();
   BOOL shouldDispatchHashchange = sameDocumentNavigation && previousItem &&
                                   (web::GURLByRemovingRefFromGURL(URL) ==
@@ -1624,8 +1616,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 
 - (void)injectHTML5HistoryScriptWithHashChange:(BOOL)dispatchHashChange
                         sameDocumentNavigation:(BOOL)sameDocumentNavigation {
-  web::NavigationItemImpl* currentItem =
-      static_cast<web::NavigationItemImpl*>([self currentNavItem]);
+  web::NavigationItemImpl* currentItem = self.currentNavItem;
   if (!currentItem)
     return;
 
@@ -1639,8 +1630,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
         appendString:[self javaScriptToDispatchPopStateWithObject:stateObject]];
   }
   if (dispatchHashChange) {
-    web::NavigationItemImpl* previousItem =
-        self.sessionController.previousEntry.navigationItemImpl;
+    web::NavigationItemImpl* previousItem = self.sessionController.previousItem;
     const GURL oldURL = previousItem ? previousItem->GetURL() : GURL();
     [script appendString:[self javaScriptToDispatchHashChangeWithOldURL:oldURL
                                                                  newURL:URL]];
@@ -1661,7 +1651,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   // Clear the set of URLs opened in external applications.
   _openedApplicationURL.reset([[NSMutableSet alloc] init]);
 
-  web::NavigationItem* item = [self currentNavItem];
+  web::NavigationItem* item = self.currentNavItem;
   GURL targetURL = item ? item->GetVirtualURL() : GURL::EmptyGURL();
   // Load the url. The UIWebView delegate callbacks take care of updating the
   // session history and UI.
@@ -1716,12 +1706,12 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 }
 
 - (NSMutableURLRequest*)requestForCurrentNavigationItem {
-  web::NavigationItem* item = [self currentNavItem];
+  web::NavigationItem* item = self.currentNavItem;
   const GURL currentNavigationURL =
       item ? item->GetVirtualURL() : GURL::EmptyGURL();
   NSMutableURLRequest* request = [NSMutableURLRequest
       requestWithURL:net::NSURLWithGURL(currentNavigationURL)];
-  const web::Referrer referrer([self currentSessionEntryReferrer]);
+  const web::Referrer referrer(self.currentNavItemReferrer);
   if (referrer.url.is_valid()) {
     std::string referrerValue =
         web::ReferrerHeaderValueForNavigation(currentNavigationURL, referrer);
@@ -1734,7 +1724,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   // If there are headers in the current session entry add them to |request|.
   // Headers that would overwrite fields already present in |request| are
   // skipped.
-  NSDictionary* headers = [self currentHTTPHeaders];
+  NSDictionary* headers = self.currentHTTPHeaders;
   for (NSString* headerName in headers) {
     if (![request valueForHTTPHeaderField:headerName]) {
       [request setValue:[headers objectForKey:headerName]
@@ -1746,7 +1736,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 }
 
 - (web::WKBackForwardListItemHolder*)currentBackForwardListItemHolder {
-  web::NavigationItem* item = [self currentSessionEntry].navigationItemImpl;
+  web::NavigationItem* item = self.currentNavItem;
   DCHECK(item);
   web::WKBackForwardListItemHolder* holder =
       web::WKBackForwardListItemHolder::FromNavigationItem(item);
@@ -1804,7 +1794,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 
 - (void)loadErrorInNativeView:(NSError*)error {
   [self removeWebViewAllowingCachedReconstruction:NO];
-  web::NavigationItem* item = [self currentNavItem];
+  web::NavigationItem* item = self.currentNavItem;
   const GURL currentURL = item ? item->GetVirtualURL() : GURL::EmptyGURL();
 
   if (web::IsWKWebViewSSLCertError(error)) {
@@ -1832,7 +1822,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   // Free the web view.
   [self removeWebViewAllowingCachedReconstruction:NO];
 
-  web::NavigationItem* item = [self currentNavItem];
+  web::NavigationItem* item = self.currentNavItem;
   const GURL targetURL = item ? item->GetURL() : GURL::EmptyGURL();
   const web::Referrer referrer;
   id<CRWNativeContent> nativeContent =
@@ -1846,7 +1836,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 
   [self registerLoadRequest:targetURL
                    referrer:referrer
-                 transition:[self currentTransition]];
+                 transition:self.currentTransition];
   [self loadNativeViewWithSuccess:YES];
 }
 
@@ -1885,7 +1875,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
     // forward/back transitions?
     [self recordStateInHistory];
 
-    if (!self.currentSessionEntry)
+    if (!self.currentNavItem)
       initialNavigation = YES;
 
     web::NavigationInitiationType navigationInitiationType =
@@ -1895,8 +1885,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
     self.navigationManagerImpl->AddPendingItem(
         navUrl, params.referrer, transition, navigationInitiationType);
 
-    web::NavigationItemImpl* addedItem =
-        [self currentSessionEntry].navigationItemImpl;
+    web::NavigationItemImpl* addedItem = self.currentNavItem;
     DCHECK(addedItem);
     if (params.extra_headers)
       addedItem->AddHttpRequestHeaders(params.extra_headers);
@@ -1932,7 +1921,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   // Remove the transient content view.
   [self clearTransientContentView];
 
-  web::NavigationItem* item = [self currentNavItem];
+  web::NavigationItem* item = self.currentNavItem;
   const GURL currentURL = item ? item->GetURL() : GURL::EmptyGURL();
   // If it's a chrome URL, but not a native one, create the WebUI instance.
   if (web::GetWebClient()->IsAppSpecificURL(currentURL) &&
@@ -2005,7 +1994,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 
     [_containerView addGestureRecognizer:[self touchTrackingRecognizer]];
     // Is |currentUrl| a web scheme or native chrome scheme.
-    web::NavigationItem* item = [self currentNavItem];
+    web::NavigationItem* item = self.currentNavItem;
     const GURL currentNavigationURL =
         item ? item->GetVirtualURL() : GURL::EmptyGURL();
     BOOL isChromeScheme =
@@ -2119,25 +2108,27 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 
 - (void)goToItemAtIndex:(int)index {
   CRWSessionController* sessionController = self.sessionController;
-  NSArray* entries = sessionController.entries;
-  if (index < 0 || index >= static_cast<int>(entries.count)) {
+  web::NavigationItemList items = sessionController.items;
+  if (index < 0 || index >= static_cast<int>(items.size())) {
     NOTREACHED();
     return;
   }
 
   if (!_webStateImpl->IsShowingWebInterstitial())
     [self recordStateInHistory];
-  CRWSessionEntry* fromEntry = sessionController.currentEntry;
-  CRWSessionEntry* toEntry = entries[index];
+  web::NavigationItem* fromItem = sessionController.currentItem;
+  web::NavigationItem* toItem = items[index];
 
   NSUserDefaults* userDefaults = [NSUserDefaults standardUserDefaults];
   if (![userDefaults boolForKey:@"PendingIndexNavigationDisabled"]) {
     [self clearTransientContentView];
-    [self updateDesktopUserAgentForEntry:toEntry fromEntry:fromEntry];
 
-    BOOL sameDocumentNavigation = [sessionController
-        isSameDocumentNavigationBetweenItem:fromEntry.navigationItem
-                                    andItem:toEntry.navigationItem];
+    // Update the user agent before attempting the navigation.
+    [self updateDesktopUserAgentForItem:toItem fromItem:fromItem];
+
+    BOOL sameDocumentNavigation =
+        [sessionController isSameDocumentNavigationBetweenItem:fromItem
+                                                       andItem:toItem];
     if (sameDocumentNavigation) {
       [sessionController goToItemAtIndex:index];
       [self updateHTML5HistoryState];
@@ -2145,8 +2136,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
       [sessionController discardNonCommittedItems];
       [sessionController setPendingItemIndex:index];
 
-      web::NavigationItemImpl* pendingItem =
-          sessionController.pendingEntry.navigationItemImpl;
+      web::NavigationItemImpl* pendingItem = sessionController.pendingItem;
       pendingItem->SetTransitionType(ui::PageTransitionFromInt(
           pendingItem->GetTransitionType() | ui::PAGE_TRANSITION_FORWARD_BACK));
 
@@ -2154,8 +2144,8 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
     }
   } else {
     [sessionController goToItemAtIndex:index];
-    if (fromEntry)
-      [self finishHistoryNavigationFromEntry:fromEntry];
+    if (fromItem)
+      [self finishHistoryNavigationFromItem:fromItem];
   }
 }
 
@@ -2219,7 +2209,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   // NSURLRequest.
   if (_webUIManager) {
     web::NavigationItem* lastNavigationItem =
-        self.sessionController.previousEntry.navigationItem;
+        self.sessionController.previousItem;
     if (lastNavigationItem) {
       web::WKBackForwardListItemHolder* holder =
           web::WKBackForwardListItemHolder::FromNavigationItem(
@@ -2249,19 +2239,17 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   }
 }
 
-- (void)finishHistoryNavigationFromEntry:(CRWSessionEntry*)fromEntry {
-  [self webWillFinishHistoryNavigationFromEntry:fromEntry];
+- (void)finishHistoryNavigationFromItem:(web::NavigationItem*)item {
+  [self webWillFinishHistoryNavigationFromItem:item];
 
   // Only load the new URL if it has a different document than |fromEntry| to
   // prevent extra page loads from NavigationItems created by hash changes or
   // calls to window.history.pushState().
   BOOL shouldLoadURL = ![self.sessionController
-      isSameDocumentNavigationBetweenItem:fromEntry.navigationItem
+      isSameDocumentNavigationBetweenItem:item
                                   andItem:self.currentNavItem];
-  web::NavigationItemImpl* currentItem =
-      self.currentSessionEntry.navigationItemImpl;
-  GURL endURL = [self URLForHistoryNavigationFromItem:fromEntry.navigationItem
-                                               toItem:currentItem];
+  web::NavigationItem* currentItem = self.currentNavItem;
+  GURL endURL = [self URLForHistoryNavigationFromItem:item toItem:currentItem];
   if (shouldLoadURL) {
     ui::PageTransition transition = ui::PageTransitionFromInt(
         ui::PAGE_TRANSITION_RELOAD | ui::PAGE_TRANSITION_FORWARD_BACK);
@@ -2331,7 +2319,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 }
 
 - (BOOL)usesDesktopUserAgent {
-  web::NavigationItem* item = [self currentNavItem];
+  web::NavigationItem* item = self.currentNavItem;
   return item && item->GetUserAgentType() == web::UserAgentType::DESKTOP;
 }
 
@@ -2371,19 +2359,18 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   return _passKitDownloader.get();
 }
 
-- (void)webWillFinishHistoryNavigationFromEntry:(CRWSessionEntry*)fromEntry {
-  DCHECK(fromEntry);
-  [self updateDesktopUserAgentForEntry:self.currentSessionEntry
-                             fromEntry:fromEntry];
-  [_delegate webWillFinishHistoryNavigationFromEntry:fromEntry];
+- (void)webWillFinishHistoryNavigationFromItem:(web::NavigationItem*)item {
+  DCHECK(item);
+  [self updateDesktopUserAgentForItem:self.currentNavItem fromItem:item];
+  [_delegate webWillFinishHistoryNavigation];
 }
 
-- (void)updateDesktopUserAgentForEntry:(CRWSessionEntry*)entry
-                             fromEntry:(CRWSessionEntry*)fromEntry {
-  web::NavigationItemImpl* item = entry.navigationItemImpl;
-  web::NavigationItemImpl* fromItem = fromEntry.navigationItemImpl;
+- (void)updateDesktopUserAgentForItem:(web::NavigationItem*)item
+                             fromItem:(web::NavigationItem*)fromItem {
+  if (!item || !fromItem)
+    return;
   web::UserAgentType itemUserAgentType = item->GetUserAgentType();
-  if (!item || !fromItem || itemUserAgentType == web::UserAgentType::NONE)
+  if (itemUserAgentType == web::UserAgentType::NONE)
     return;
   if (itemUserAgentType != fromItem->GetUserAgentType())
     [self requirePageReconstruction];
@@ -2836,8 +2823,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   if (_dispatchingSameDocumentHashChangeEvent) {
     _dispatchingSameDocumentHashChangeEvent = NO;
   } else {
-    web::NavigationItemImpl* item =
-        static_cast<web::NavigationItemImpl*>([self currentNavItem]);
+    web::NavigationItemImpl* item = self.currentNavItem;
     DCHECK(item);
     item->SetIsCreatedFromHashChange(true);
   }
@@ -2883,7 +2869,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   // previous page, ignore it and allow the previously registered navigation to
   // continue.  This can ocur if a pushState is issued from an anchor tag
   // onClick event, as the click would have already been registered.
-  if ([self sessionController].pendingEntry)
+  if ([self sessionController].pendingItem)
     return NO;
 
   std::string pageURL;
@@ -2900,13 +2886,13 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   pushURL = URLEscapedForHistory(pushURL);
   if (!pushURL.is_valid())
     return YES;
-  web::NavigationItem* navItem = [self currentNavItem];
+  web::NavigationItem* navItem = self.currentNavItem;
   // PushState happened before first navigation entry or called when the
   // navigation entry does not contain a valid URL.
   if (!navItem || !navItem->GetURL().is_valid())
     return YES;
   if (!web::history_state_util::IsHistoryStateChangeValid(
-          [self currentNavItem]->GetURL(), pushURL)) {
+          self.currentNavItem->GetURL(), pushURL)) {
     // If the current session entry URL origin still doesn't match pushURL's
     // origin, ignore the pushState. This can happen if a new URL is loaded
     // just before the pushState.
@@ -2966,14 +2952,14 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   if (!replaceURL.is_valid())
     return YES;
 
-  web::NavigationItem* navItem = [self currentNavItem];
+  web::NavigationItem* navItem = self.currentNavItem;
   // ReplaceState happened before first navigation entry or called right
   // after window.open when the url is empty/not valid.
   if (!navItem || (self.navigationManagerImpl->GetItemCount() <= 1 &&
                    navItem->GetURL().is_empty()))
     return YES;
   if (!web::history_state_util::IsHistoryStateChangeValid(
-          [self currentNavItem]->GetURL(), replaceURL)) {
+          self.currentNavItem->GetURL(), replaceURL)) {
     // If the current session entry URL origin still doesn't match
     // replaceURL's origin, ignore the replaceState. This can happen if a
     // new URL is loaded just before the replaceState.
@@ -3029,7 +3015,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   // If no referrer was known in advance, record it now. (If there was one,
   // keep it since it will have a more accurate URL and policy than what can
   // be extracted from the landing page.)
-  web::NavigationItem* currentItem = [self currentNavItem];
+  web::NavigationItem* currentItem = self.currentNavItem;
   if (!currentItem->GetReferrer().url.is_valid()) {
     currentItem->SetReferrer(referrer);
   }
@@ -3088,18 +3074,17 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 }
 
 - (void)cachePOSTDataForRequest:(NSURLRequest*)request
-                 inSessionEntry:(CRWSessionEntry*)currentSessionEntry {
+               inNavigationItem:(web::NavigationItemImpl*)item {
   NSUInteger maxPOSTDataSizeInBytes = 4096;
   NSString* cookieHeaderName = @"cookie";
 
-  web::NavigationItemImpl* currentItem = currentSessionEntry.navigationItemImpl;
-  DCHECK(currentItem);
+  DCHECK(item);
   const bool shouldUpdateEntry =
-      ui::PageTransitionCoreTypeIs(currentItem->GetTransitionType(),
+      ui::PageTransitionCoreTypeIs(item->GetTransitionType(),
                                    ui::PAGE_TRANSITION_FORM_SUBMIT) &&
       ![request HTTPBodyStream] &&  // Don't cache streams.
-      !currentItem->HasPostData() &&
-      currentItem->GetURL() == net::GURLWithNSURL([request URL]);
+      !item->HasPostData() &&
+      item->GetURL() == net::GURLWithNSURL([request URL]);
   const bool belowSizeCap =
       [[request HTTPBody] length] < maxPOSTDataSizeInBytes;
   DLOG_IF(WARNING, shouldUpdateEntry && !belowSizeCap)
@@ -3107,15 +3092,15 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
       << " bytes), and will not be cached.";
 
   if (shouldUpdateEntry && belowSizeCap) {
-    currentItem->SetPostData([request HTTPBody]);
-    currentItem->ResetHttpRequestHeaders();
-    currentItem->AddHttpRequestHeaders([request allHTTPHeaderFields]);
+    item->SetPostData([request HTTPBody]);
+    item->ResetHttpRequestHeaders();
+    item->AddHttpRequestHeaders([request allHTTPHeaderFields]);
     // Don't cache the "Cookie" header.
     // According to NSURLRequest documentation, |-valueForHTTPHeaderField:| is
     // case insensitive, so it's enough to test the lower case only.
     if ([request valueForHTTPHeaderField:cookieHeaderName]) {
       // Case insensitive search in |headers|.
-      NSSet* cookieKeys = [currentItem->GetHttpRequestHeaders()
+      NSSet* cookieKeys = [item->GetHttpRequestHeaders()
           keysOfEntriesPassingTest:^(id key, id obj, BOOL* stop) {
             NSString* header = (NSString*)key;
             const BOOL found =
@@ -3125,7 +3110,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
             return found;
           }];
       DCHECK_EQ(1u, [cookieKeys count]);
-      currentItem->RemoveHttpRequestHeaderForKey([cookieKeys anyObject]);
+      item->RemoveHttpRequestHeaderForKey([cookieKeys anyObject]);
     }
   }
 }
@@ -3148,9 +3133,9 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   BOOL isOpenInNewTabNavigation = !(self.navigationManagerImpl->GetItemCount());
   BOOL isPossibleLinkClick = [self isLinkNavigation:action.navigationType];
   if (isPossibleLinkClick || isOpenInNewTabNavigation ||
-      PageTransitionCoreTypeIs([self currentTransition],
+      PageTransitionCoreTypeIs(self.currentTransition,
                                ui::PAGE_TRANSITION_AUTO_BOOKMARK)) {
-    web::NavigationItem* item = [self currentNavItem];
+    web::NavigationItem* item = self.currentNavItem;
     const GURL currentNavigationURL =
         item ? item->GetVirtualURL() : GURL::EmptyGURL();
     // Check If the URL is handled by a native app.
@@ -3218,11 +3203,11 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   }
 
   if ([[request HTTPMethod] isEqualToString:@"POST"]) {
-    CRWSessionEntry* currentEntry = [self currentSessionEntry];
+    web::NavigationItemImpl* item = self.currentNavItem;
     // TODO(crbug.com/570699): Remove this check once it's no longer possible to
     // have no current entries.
-    if (currentEntry)
-      [self cachePOSTDataForRequest:request inSessionEntry:currentEntry];
+    if (item)
+      [self cachePOSTDataForRequest:request inNavigationItem:item];
   }
 
   return YES;
@@ -3609,35 +3594,31 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   return _webStateImpl ? &(_webStateImpl->GetNavigationManagerImpl()) : nil;
 }
 
-- (CRWSessionEntry*)currentSessionEntry {
-  return [[self sessionController] currentEntry];
-}
-
-- (web::NavigationItem*)currentNavItem {
+- (web::NavigationItemImpl*)currentNavItem {
   // This goes through the legacy Session* interface rather than Navigation*
   // because it is itself a legacy method that should not exist, and this
   // avoids needing to add a GetActiveItem to NavigationManager. If/when this
   // method chain becomes a blocker to eliminating SessionController, the logic
   // can be moved here, using public NavigationManager getters. That's not
   // done now in order to avoid code duplication.
-  return [[self currentSessionEntry] navigationItem];
+  return [[self sessionController] currentItem];
 }
 
 - (ui::PageTransition)currentTransition {
-  if ([self currentNavItem])
-    return [self currentNavItem]->GetTransitionType();
+  if (self.currentNavItem)
+    return self.currentNavItem->GetTransitionType();
   else
     return ui::PageTransitionFromInt(0);
 }
 
-- (web::Referrer)currentSessionEntryReferrer {
-  web::NavigationItem* currentItem = [self currentNavItem];
+- (web::Referrer)currentNavItemReferrer {
+  web::NavigationItem* currentItem = self.currentNavItem;
   return currentItem ? currentItem->GetReferrer() : web::Referrer();
 }
 
 - (NSDictionary*)currentHTTPHeaders {
-  DCHECK([self currentSessionEntry]);
-  return [self currentSessionEntry].navigationItem->GetHttpRequestHeaders();
+  web::NavigationItem* currentItem = self.currentNavItem;
+  return currentItem ? currentItem->GetHttpRequestHeaders() : nil;
 }
 
 #pragma mark -
@@ -3663,7 +3644,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 
 - (void)webViewScrollViewDidResetContentSize:
     (CRWWebViewScrollViewProxy*)webViewScrollViewProxy {
-  web::NavigationItem* currentItem = [self currentNavItem];
+  web::NavigationItem* currentItem = self.currentNavItem;
   if (webViewScrollViewProxy.isZooming || _applyingPageState || !currentItem)
     return;
   CGSize contentSize = webViewScrollViewProxy.contentSize;
@@ -3708,17 +3689,17 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   // Only record the state if:
   // - the current NavigationItem's URL matches the current URL, and
   // - the user has interacted with the page.
-  CRWSessionEntry* current = [self currentSessionEntry];
-  if (current && [current navigationItem]->GetURL() == [self currentURL] &&
+  web::NavigationItem* item = self.currentNavItem;
+  if (item && item->GetURL() == [self currentURL] &&
       self.userInteractionRegistered) {
-    [current navigationItem]->SetPageDisplayState(self.pageDisplayState);
+    item->SetPageDisplayState(self.pageDisplayState);
   }
 }
 
 - (void)restoreStateFromHistory {
-  CRWSessionEntry* current = [self currentSessionEntry];
-  if ([current navigationItem])
-    self.pageDisplayState = [current navigationItem]->GetPageDisplayState();
+  web::NavigationItem* item = self.currentNavItem;
+  if (item)
+    self.pageDisplayState = item->GetPageDisplayState();
 }
 
 - (web::PageDisplayState)pageDisplayState {
@@ -3759,7 +3740,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 
 - (void)extractViewportTagWithCompletion:(ViewportStateCompletion)completion {
   DCHECK(completion);
-  web::NavigationItem* currentItem = [self currentNavItem];
+  web::NavigationItem* currentItem = self.currentNavItem;
   if (!currentItem) {
     completion(nullptr);
     return;
@@ -3832,7 +3813,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   // Early return if |scrollState| doesn't match the current NavigationItem.
   // This can sometimes occur in tests, as navigation occurs programmatically
   // and |-applyPageScrollState:| is asynchronous.
-  web::NavigationItem* currentItem = [self currentSessionEntry].navigationItem;
+  web::NavigationItem* currentItem = self.currentNavItem;
   if (currentItem && currentItem->GetPageDisplayState() != displayState)
     return;
   DCHECK(displayState.IsValid());
@@ -4245,7 +4226,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 
   _webStateImpl->CancelDialogs();
 
-  web::NavigationItem* item = [self currentNavItem];
+  web::NavigationItem* item = self.currentNavItem;
   if (allowCache && item) {
     _expectedReconstructionURL = item->GetVirtualURL();
   } else {
@@ -4327,7 +4308,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   // observers of the change via |-abortLoad|.
   [[self sessionController] discardNonCommittedItems];
   [self abortLoad];
-  web::NavigationItem* item = [self currentNavItem];
+  web::NavigationItem* item = self.currentNavItem;
   GURL navigationURL = item ? item->GetVirtualURL() : GURL::EmptyGURL();
   // If discarding the non-committed entries results in an app-specific URL,
   // reload it in its native view.
@@ -5052,7 +5033,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 
 - (void)loadRequestForCurrentNavigationItem {
   DCHECK(_webView && !self.nativeController);
-  DCHECK([self currentSessionEntry]);
+  DCHECK(self.currentNavItem);
   // If a load is kicked off on a WKWebView with a frame whose size is {0, 0} or
   // that has a negative dimension for a size, rendering issues occur that
   // manifest in erroneous scrolling and tap handling (crbug.com/574996,
@@ -5066,8 +5047,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
       [holder->http_method() isEqual:@"POST"] &&
       (holder->navigation_type() == WKNavigationTypeFormResubmitted ||
        holder->navigation_type() == WKNavigationTypeFormSubmitted);
-  web::NavigationItemImpl* currentItem =
-      [self currentSessionEntry].navigationItemImpl;
+  web::NavigationItemImpl* currentItem = self.currentNavItem;
   NSData* POSTData = currentItem->GetPostData();
   NSMutableURLRequest* request = [self requestForCurrentNavigationItem];
 
@@ -5076,22 +5056,22 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   if (POSTData.length && !repostedForm) {
     [request setHTTPMethod:@"POST"];
     [request setHTTPBody:POSTData];
-    [request setAllHTTPHeaderFields:[self currentHTTPHeaders]];
+    [request setAllHTTPHeaderFields:self.currentHTTPHeaders];
     GURL navigationURL =
         currentItem ? currentItem->GetURL() : GURL::EmptyGURL();
     [self registerLoadRequest:navigationURL
-                     referrer:[self currentSessionEntryReferrer]
-                   transition:[self currentTransition]];
+                     referrer:self.currentNavItemReferrer
+                   transition:self.currentTransition];
     [self loadPOSTRequest:request];
     return;
   }
 
   ProceduralBlock defaultNavigationBlock = ^{
-    web::NavigationItem* item = [self currentNavItem];
+    web::NavigationItem* item = self.currentNavItem;
     GURL navigationURL = item ? item->GetURL() : GURL::EmptyGURL();
     [self registerLoadRequest:navigationURL
-                     referrer:[self currentSessionEntryReferrer]
-                   transition:[self currentTransition]];
+                     referrer:self.currentNavItemReferrer
+                   transition:self.currentTransition];
     [self loadRequest:request];
   };
 
@@ -5122,11 +5102,11 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
     // page, that means the user requested a reload. |goToBackForwardListItem|
     // will be a no-op when it is passed the current back forward list item,
     // so |reload| must be explicitly called.
-    web::NavigationItem* item = [self currentNavItem];
+    web::NavigationItem* item = self.currentNavItem;
     GURL navigationURL = item ? item->GetURL() : GURL::EmptyGURL();
     [self registerLoadRequest:navigationURL
-                     referrer:[self currentSessionEntryReferrer]
-                   transition:[self currentTransition]];
+                     referrer:self.currentNavItemReferrer
+                   transition:self.currentTransition];
     if (navigationURL == net::GURLWithNSURL([_webView URL])) {
       [_navigationStates setState:web::WKNavigationState::REQUESTED
                     forNavigation:[_webView reload]];

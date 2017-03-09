@@ -13,7 +13,6 @@
 #include "base/strings/sys_string_conversions.h"
 #import "ios/web/interstitials/web_interstitial_impl.h"
 #import "ios/web/navigation/crw_session_controller.h"
-#import "ios/web/navigation/crw_session_entry.h"
 #import "ios/web/navigation/navigation_item_impl.h"
 #import "ios/web/navigation/session_storage_builder.h"
 #include "ios/web/public/browser_state.h"

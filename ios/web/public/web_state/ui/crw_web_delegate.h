@@ -69,9 +69,9 @@ class GURL;
                         wasInitialNavigation:(BOOL)initialNavigation;
 // Called from finishHistoryNavigationFromEntry.
 // TODO(crbug.com/692331): Remove this method and use |DidFinishNavigation|.
-- (void)webWillFinishHistoryNavigationFromEntry:(CRWSessionEntry*)fromEntry;
-// ---------------------------------------------------------------------
+- (void)webWillFinishHistoryNavigation;
 
+// ---------------------------------------------------------------------
 // Called when |webController| wants to open a new window. |URL| is the URL of
 // the new window; |openerURL| is the URL of the page which requested a window
 // to be open; |initiatedByUser| is YES if action was caused by the user.

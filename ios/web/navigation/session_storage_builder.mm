@@ -8,7 +8,6 @@
 #include "base/mac/foundation_util.h"
 #import "ios/web/navigation/crw_session_controller+private_constructors.h"
 #import "ios/web/navigation/crw_session_controller.h"
-#import "ios/web/navigation/crw_session_entry.h"
 #import "ios/web/navigation/navigation_item_impl.h"
 #import "ios/web/navigation/navigation_item_storage_builder.h"
 #include "ios/web/navigation/navigation_manager_impl.h"

@@ -41,6 +41,7 @@ enum LoadPhase {
 class GURL;
 
 namespace web {
+class NavigationItemImpl;
 class WebState;
 class WebStateImpl;
 }
@@ -295,7 +296,7 @@ class WebStateImpl;
 
 // Caches request POST data in the given session entry.  Exposed for testing.
 - (void)cachePOSTDataForRequest:(NSURLRequest*)request
-                 inSessionEntry:(CRWSessionEntry*)currentSessionEntry;
+               inNavigationItem:(web::NavigationItemImpl*)item;
 
 // Acts on a single message from the JS object, parsed from JSON into a
 // DictionaryValue. Returns NO if the format for the message was invalid.

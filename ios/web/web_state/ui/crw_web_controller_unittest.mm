@@ -14,7 +14,6 @@
 #import "base/test/ios/wait_util.h"
 #import "ios/testing/ocmock_complex_type_helper.h"
 #import "ios/web/navigation/crw_session_controller.h"
-#import "ios/web/navigation/crw_session_entry.h"
 #import "ios/web/navigation/navigation_item_impl.h"
 #import "ios/web/navigation/navigation_manager_impl.h"
 #include "ios/web/public/referrer.h"
@@ -657,13 +656,11 @@ TEST_F(CRWWebControllerNavigationTest, GoToEntryWithoutDocumentChange) {
   NavigationManagerImpl& nav_manager =
       web_controller().webStateImpl->GetNavigationManagerImpl();
   CRWSessionController* session_controller = nav_manager.GetSessionController();
-  EXPECT_EQ(2U, session_controller.entries.count);
-  EXPECT_NSEQ(session_controller.entries.lastObject,
-              session_controller.currentEntry);
+  EXPECT_EQ(2U, session_controller.items.size());
+  EXPECT_EQ(session_controller.items.back(), session_controller.currentItem);
 
   [web_controller() goToItemAtIndex:0];
-  EXPECT_NSEQ(session_controller.entries.firstObject,
-              session_controller.currentEntry);
+  EXPECT_EQ(session_controller.items.front(), session_controller.currentItem);
 }
 
 // Tests that didShowPasswordInputOnHTTP updates the SSLStatus to indicate that

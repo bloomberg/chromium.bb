@@ -1377,7 +1377,7 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
   return NO;
 }
 
-- (void)webWillFinishHistoryNavigationFromEntry:(CRWSessionEntry*)fromEntry {
+- (void)webWillFinishHistoryNavigation {
   [parentTabModel_ notifyTabChanged:self];
 }
 
