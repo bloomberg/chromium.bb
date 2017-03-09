@@ -47,6 +47,9 @@ const char kShillManagerClientStubDefaultWifi[] = "/service/wifi1";
 const char kShillManagerClientStubWifi2[] = "/service/wifi2";
 const char kShillManagerClientStubCellular[] = "/service/cellular1";
 
+const char kWifiGuid1[] = "wifi1";
+const char kWifiName1[] = "WiFi 1";
+
 const char kTetherGuid1[] = "tether1";
 const char kTetherGuid2[] = "tether2";
 const char kTetherName1[] = "Device1";
@@ -606,6 +609,97 @@ TEST_F(NetworkStateHandlerTest, TetherNetworkState) {
   ASSERT_FALSE(network_state_handler_->GetNetworkStateFromGuid(kTetherGuid1));
 }
 
+TEST_F(NetworkStateHandlerTest, TetherNetworkStateAssociation) {
+  EXPECT_EQ(0u, test_observer_->network_list_changed_count());
+
+  const std::string profile = "/profile/profile1";
+  const std::string wifi_path = "/service/wifi_with_guid";
+  AddService(wifi_path, kWifiGuid1, kWifiName1, shill::kTypeWifi,
+             shill::kStateOnline);
+  profile_test_->AddProfile(profile, "" /* userhash */);
+  EXPECT_TRUE(profile_test_->AddService(profile, wifi_path));
+  UpdateManagerProperties();
+
+  EXPECT_EQ(1u, test_observer_->network_list_changed_count());
+
+  network_state_handler_->AddTetherNetworkState(kTetherGuid1, kTetherName1);
+
+  EXPECT_EQ(2u, test_observer_->network_list_changed_count());
+
+  EXPECT_TRUE(
+      network_state_handler_->AssociateTetherNetworkStateWithWifiNetwork(
+          kTetherGuid1, kWifiGuid1));
+
+  EXPECT_EQ(3u, test_observer_->network_list_changed_count());
+
+  const NetworkState* wifi_network =
+      network_state_handler_->GetNetworkStateFromGuid(kWifiGuid1);
+  EXPECT_EQ(kTetherGuid1, wifi_network->tether_guid());
+
+  const NetworkState* tether_network =
+      network_state_handler_->GetNetworkStateFromGuid(kTetherGuid1);
+  EXPECT_EQ(kWifiGuid1, tether_network->tether_guid());
+
+  network_state_handler_->RemoveTetherNetworkState(kTetherGuid1);
+
+  EXPECT_EQ(4u, test_observer_->network_list_changed_count());
+
+  wifi_network = network_state_handler_->GetNetworkStateFromGuid(kWifiGuid1);
+  ASSERT_TRUE(wifi_network->tether_guid().empty());
+}
+
+TEST_F(NetworkStateHandlerTest, TetherNetworkStateAssociationWifiRemoved) {
+  const std::string profile = "/profile/profile1";
+  const std::string wifi_path = "/service/wifi_with_guid";
+  AddService(wifi_path, kWifiGuid1, kWifiName1, shill::kTypeWifi,
+             shill::kStateOnline);
+  profile_test_->AddProfile(profile, "" /* userhash */);
+  EXPECT_TRUE(profile_test_->AddService(profile, wifi_path));
+  UpdateManagerProperties();
+
+  network_state_handler_->AddTetherNetworkState(kTetherGuid1, kTetherName1);
+  EXPECT_TRUE(
+      network_state_handler_->AssociateTetherNetworkStateWithWifiNetwork(
+          kTetherGuid1, kWifiGuid1));
+
+  const NetworkState* wifi_network =
+      network_state_handler_->GetNetworkStateFromGuid(kWifiGuid1);
+  EXPECT_EQ(kTetherGuid1, wifi_network->tether_guid());
+
+  const NetworkState* tether_network =
+      network_state_handler_->GetNetworkStateFromGuid(kTetherGuid1);
+  EXPECT_EQ(kWifiGuid1, tether_network->tether_guid());
+
+  service_test_->RemoveService(wifi_path);
+  UpdateManagerProperties();
+
+  tether_network =
+      network_state_handler_->GetNetworkStateFromGuid(kTetherGuid1);
+  ASSERT_TRUE(tether_network->tether_guid().empty());
+}
+
+TEST_F(NetworkStateHandlerTest, TetherNetworkStateAssociation_NoWifiNetwork) {
+  network_state_handler_->AddTetherNetworkState(kTetherGuid1, kTetherName1);
+
+  EXPECT_FALSE(
+      network_state_handler_->AssociateTetherNetworkStateWithWifiNetwork(
+          kTetherGuid1, kWifiGuid1));
+}
+
+TEST_F(NetworkStateHandlerTest, TetherNetworkStateAssociation_NoTetherNetwork) {
+  const std::string profile = "/profile/profile1";
+  const std::string wifi_path = "/service/wifi_with_guid";
+  AddService(wifi_path, kWifiGuid1, kWifiName1, shill::kTypeWifi,
+             shill::kStateOnline);
+  profile_test_->AddProfile(profile, "" /* userhash */);
+  EXPECT_TRUE(profile_test_->AddService(profile, wifi_path));
+  UpdateManagerProperties();
+
+  ASSERT_FALSE(
+      network_state_handler_->AssociateTetherNetworkStateWithWifiNetwork(
+          kTetherGuid1, kWifiGuid1));
+}
+
 TEST_F(NetworkStateHandlerTest, SetTetherNetworkStateConnectionState) {
   network_state_handler_->AddTetherNetworkState(kTetherGuid1, kTetherName1);
 
@@ -776,13 +870,11 @@ TEST_F(NetworkStateHandlerTest, RequestUpdate) {
 TEST_F(NetworkStateHandlerTest, NetworkGuidInProfile) {
   const std::string profile = "/profile/profile1";
   const std::string wifi_path = "/service/wifi_with_guid";
-  const std::string wifi_guid = "wifi_guid";
-  const std::string wifi_name = "WifiWithGuid";
   const bool is_service_configured = true;
 
   // Add a network to the default Profile with a specified GUID.
-  AddService(wifi_path, wifi_guid, wifi_name,
-             shill::kTypeWifi, shill::kStateOnline);
+  AddService(wifi_path, kWifiGuid1, kWifiName1, shill::kTypeWifi,
+             shill::kStateOnline);
   profile_test_->AddProfile(profile, "" /* userhash */);
   EXPECT_TRUE(profile_test_->AddService(profile, wifi_path));
   UpdateManagerProperties();
@@ -792,7 +884,7 @@ TEST_F(NetworkStateHandlerTest, NetworkGuidInProfile) {
       network_state_handler_->GetNetworkStateFromServicePath(
           wifi_path, is_service_configured);
   ASSERT_TRUE(network);
-  EXPECT_EQ(wifi_guid, network->guid());
+  EXPECT_EQ(kWifiGuid1, network->guid());
 
   // Remove the service (simulating a network going out of range).
   service_test_->RemoveService(wifi_path);
@@ -801,23 +893,22 @@ TEST_F(NetworkStateHandlerTest, NetworkGuidInProfile) {
 
   // Add the service (simulating a network coming back in range) and verify that
   // the NetworkState was created with the same GUID.
-  AddService(wifi_path, "" /* guid */, wifi_name,
-             shill::kTypeWifi, shill::kStateOnline);
+  AddService(wifi_path, "" /* guid */, kWifiName1, shill::kTypeWifi,
+             shill::kStateOnline);
   UpdateManagerProperties();
   network = network_state_handler_->GetNetworkStateFromServicePath(
       wifi_path, is_service_configured);
   ASSERT_TRUE(network);
-  EXPECT_EQ(wifi_guid, network->guid());
+  EXPECT_EQ(kWifiGuid1, network->guid());
 }
 
 TEST_F(NetworkStateHandlerTest, NetworkGuidNotInProfile) {
   const std::string wifi_path = "/service/wifi_with_guid";
-  const std::string wifi_name = "WifiWithGuid";
   const bool is_service_configured = false;
 
   // Add a network without specifying a GUID or adding it to a profile.
-  AddService(wifi_path, "" /* guid */, wifi_name,
-             shill::kTypeWifi, shill::kStateOnline);
+  AddService(wifi_path, "" /* guid */, kWifiName1, shill::kTypeWifi,
+             shill::kStateOnline);
   UpdateManagerProperties();
 
   // Verify that a NetworkState exists with an assigned GUID.
@@ -835,8 +926,8 @@ TEST_F(NetworkStateHandlerTest, NetworkGuidNotInProfile) {
 
   // Add the service (simulating a network coming back in range) and verify that
   // the NetworkState was created with the same GUID.
-  AddService(wifi_path, "" /* guid */, wifi_name,
-             shill::kTypeWifi, shill::kStateOnline);
+  AddService(wifi_path, "" /* guid */, kWifiName1, shill::kTypeWifi,
+             shill::kStateOnline);
   UpdateManagerProperties();
   network = network_state_handler_->GetNetworkStateFromServicePath(
       wifi_path, is_service_configured);

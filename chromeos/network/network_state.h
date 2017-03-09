@@ -102,6 +102,9 @@ class CHROMEOS_EXPORT NetworkState : public ManagedState {
     return third_party_vpn_provider_extension_id_;
   }
 
+  const std::string& tether_guid() const { return tether_guid_; }
+  void set_tether_guid(const std::string& guid) { tether_guid_ = guid; }
+
   // Returns true if the network securty is WEP_8021x (Dynamic WEP)
   bool IsDynamicWep() const;
 
@@ -166,6 +169,7 @@ class CHROMEOS_EXPORT NetworkState : public ManagedState {
   std::string eap_key_mgmt_;  // Needed for identifying Dynamic WEP networks
   std::string device_path_;
   std::string guid_;
+  std::string tether_guid_;  // Used to double link a Tether and Wi-Fi network.
   std::string connection_state_;
   std::string last_connection_state_;
   std::string profile_path_;

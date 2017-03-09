@@ -380,11 +380,48 @@ void NetworkStateHandler::RemoveTetherNetworkState(const std::string& guid) {
   for (auto iter = tether_network_list_.begin();
        iter != tether_network_list_.end(); ++iter) {
     if (iter->get()->AsNetworkState()->guid() == guid) {
+      NetworkState* wifi_network = GetModifiableNetworkStateFromGuid(
+          iter->get()->AsNetworkState()->tether_guid());
+      if (wifi_network)
+        wifi_network->set_tether_guid(std::string());
+
       tether_network_list_.erase(iter);
       NotifyNetworkListChanged();
       return;
     }
   }
+}
+
+bool NetworkStateHandler::AssociateTetherNetworkStateWithWifiNetwork(
+    const std::string& tether_network_guid,
+    const std::string& wifi_network_guid) {
+  NetworkState* tether_network =
+      GetModifiableNetworkStateFromGuid(tether_network_guid);
+  if (!tether_network) {
+    NET_LOG(ERROR) << "Tether network does not exist: " << tether_network_guid;
+    return false;
+  }
+  if (!NetworkTypePattern::Tether().MatchesType(tether_network->type())) {
+    NET_LOG(ERROR) << "Network is not a Tether network: "
+                   << tether_network_guid;
+    return false;
+  }
+
+  NetworkState* wifi_network =
+      GetModifiableNetworkStateFromGuid(wifi_network_guid);
+  if (!wifi_network) {
+    NET_LOG(ERROR) << "Wi-Fi Network does not exist: " << wifi_network_guid;
+    return false;
+  }
+  if (!NetworkTypePattern::WiFi().MatchesType(wifi_network->type())) {
+    NET_LOG(ERROR) << "Network is not a W-Fi network: " << wifi_network_guid;
+    return false;
+  }
+
+  tether_network->set_tether_guid(wifi_network_guid);
+  wifi_network->set_tether_guid(tether_network_guid);
+  NotifyNetworkListChanged();
+  return true;
 }
 
 void NetworkStateHandler::SetTetherNetworkStateDisconnected(
@@ -563,10 +600,9 @@ void NetworkStateHandler::UpdateManagedList(ManagedState::ManagedType type,
   managed_list->clear();
   // Updates managed_list and request updates for new entries.
   std::set<std::string> list_entries;
-  for (base::ListValue::const_iterator iter = entries.begin();
-       iter != entries.end(); ++iter) {
+  for (auto& iter : entries) {
     std::string path;
-    (*iter)->GetAsString(&path);
+    iter->GetAsString(&path);
     if (path.empty() || path == shill::kFlimflamServicePath) {
       NET_LOG_ERROR(base::StringPrintf("Bad path in list:%d", type), path);
       continue;
@@ -583,6 +619,21 @@ void NetworkStateHandler::UpdateManagedList(ManagedState::ManagedType type,
       managed_map.erase(found);
     }
     list_entries.insert(path);
+  }
+
+  if (type != ManagedState::ManagedType::MANAGED_TYPE_NETWORK)
+    return;
+
+  // Remove associations Tether NetworkStates had with now removed Wi-Fi
+  // NetworkStates.
+  for (auto& iter : managed_map) {
+    if (!iter.second->Matches(NetworkTypePattern::WiFi()))
+      continue;
+
+    NetworkState* tether_network = GetModifiableNetworkStateFromGuid(
+        iter.second->AsNetworkState()->tether_guid());
+    if (tether_network)
+      tether_network->set_tether_guid(std::string());
   }
 }
 
