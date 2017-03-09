@@ -9,6 +9,9 @@
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
+#if defined(SAFE_BROWSING_DB_LOCAL) || defined(SAFE_BROWSING_DB_REMOTE)
+#include "components/safe_browsing/password_protection/password_protection_service.h"
+#endif
 
 namespace password_manager {
 
@@ -23,6 +26,13 @@ PasswordReuseDetectionManager::PasswordReuseDetectionManager(
 }
 
 PasswordReuseDetectionManager::~PasswordReuseDetectionManager() {}
+
+#if defined(SAFE_BROWSING_DB_LOCAL) || defined(SAFE_BROWSING_DB_REMOTE)
+void PasswordReuseDetectionManager::SetPasswordProtectionService(
+    base::WeakPtr<safe_browsing::PasswordProtectionService> pp_service) {
+  password_protection_service_ = pp_service;
+}
+#endif
 
 void PasswordReuseDetectionManager::DidNavigateMainFrame(
     const GURL& main_frame_url) {
@@ -60,6 +70,10 @@ void PasswordReuseDetectionManager::OnReuseFound(
   metrics_util::LogPasswordReuse(
       password.size(), saved_passwords, number_matches,
       client_->GetPasswordManager()->IsPasswordFieldDetectedOnPage());
+#if defined(SAFE_BROWSING_DB_LOCAL) || defined(SAFE_BROWSING_DB_REMOTE)
+  if (password_protection_service_)
+    password_protection_service_->RecordPasswordReuse(main_frame_url_);
+#endif
 }
 
 }  // namespace password_manager

@@ -10,6 +10,10 @@
 #include "components/password_manager/core/browser/password_reuse_detector_consumer.h"
 #include "url/gurl.h"
 
+namespace safe_browsing {
+class PasswordProtectionService;
+}
+
 namespace password_manager {
 
 class PasswordManagerClient;
@@ -22,6 +26,11 @@ class PasswordReuseDetectionManager : public PasswordReuseDetectorConsumer {
   explicit PasswordReuseDetectionManager(PasswordManagerClient* client);
   ~PasswordReuseDetectionManager() override;
 
+#if defined(SAFE_BROWSING_DB_LOCAL) || defined(SAFE_BROWSING_DB_REMOTE)
+  void SetPasswordProtectionService(
+      base::WeakPtr<safe_browsing::PasswordProtectionService> pp_service);
+#endif
+
   void DidNavigateMainFrame(const GURL& main_frame_url);
   void OnKeyPressed(const base::string16& text);
 
@@ -33,6 +42,10 @@ class PasswordReuseDetectionManager : public PasswordReuseDetectorConsumer {
 
  private:
   PasswordManagerClient* client_;
+#if defined(SAFE_BROWSING_DB_LOCAL) || defined(SAFE_BROWSING_DB_REMOTE)
+  base::WeakPtr<safe_browsing::PasswordProtectionService>
+      password_protection_service_;
+#endif
   base::string16 input_characters_;
   GURL main_frame_url_;
 

@@ -329,13 +329,13 @@ void SafeBrowsingService::Initialize() {
     navigation_observer_manager_ = new SafeBrowsingNavigationObserverManager();
   }
 
+  services_delegate_->Initialize(v4_enabled_);
+  services_delegate_->InitializeCsdService(url_request_context_getter_.get());
+
   // TODO(jialiul): When PasswordProtectionService does more than reporting UMA,
   // we need to add finch trial to gate its functionality.
   password_protection_service_ =
       base::MakeUnique<PasswordProtectionService>(database_manager());
-
-  services_delegate_->Initialize(v4_enabled_);
-  services_delegate_->InitializeCsdService(url_request_context_getter_.get());
 
   // Track the safe browsing preference of existing profiles.
   // The SafeBrowsingService will be started if any existing profile has the
