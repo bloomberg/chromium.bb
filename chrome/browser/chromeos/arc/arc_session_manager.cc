@@ -162,89 +162,23 @@ void ArcSessionManager::OnSessionStopped(ArcStopReason reason,
   if (arc_sign_in_timer_.IsRunning())
     OnProvisioningFinished(ProvisioningResult::ARC_STOPPED);
 
-  if (profile_->GetPrefs()->GetBoolean(prefs::kArcDataRemoveRequested)) {
-    // This should be always true, but just in case as this is looked at
-    // inside RemoveArcData() at first.
-    VLOG(1) << "ARC had previously requested to remove user data.";
-    DCHECK(arc_session_runner_->IsStopped());
-    RemoveArcData();
-  } else {
-    // To support special "Stop and enable ARC" procedure for enterprise,
-    // here call MaybeReenableArc() asyncronously.
-    // TODO(hidehiko): Restructure the code. crbug.com/665316
+  for (auto& observer : observer_list_)
+    observer.OnArcSessionStopped(reason);
+
+  // Transition to the ARC data remove state.
+  if (!profile_->GetPrefs()->GetBoolean(prefs::kArcDataRemoveRequested)) {
+    // TODO(crbug.com/665316): This is the workaround for the bug.
+    // If it is not necessary to remove the data, MaybeStartArcDataRemoval()
+    // synchronously calls MaybeReenableArc(), which causes unexpected
+    // ARC session stop. (Please see the bug for details).
+    SetState(State::REMOVING_DATA_DIR);
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(&ArcSessionManager::MaybeReenableArc,
                               weak_ptr_factory_.GetWeakPtr()));
-  }
-
-  for (auto& observer : observer_list_)
-    observer.OnArcSessionStopped(reason);
-}
-
-void ArcSessionManager::RemoveArcData() {
-  // Ignore redundant data removal request.
-  if (state() == State::REMOVING_DATA_DIR)
-    return;
-
-  // OnArcDataRemoved resets this flag.
-  profile_->GetPrefs()->SetBoolean(prefs::kArcDataRemoveRequested, true);
-
-  if (!arc_session_runner_->IsStopped()) {
-    // Just set a flag. On session stopped, this will be re-called,
-    // then session manager should remove the data.
     return;
   }
 
-  VLOG(1) << "Starting ARC data removal";
-
-  // Remove Play user ID for Active Directory managed devices.
-  profile_->GetPrefs()->SetString(prefs::kArcActiveDirectoryPlayUserId,
-                                  std::string());
-
-  SetState(State::REMOVING_DATA_DIR);
-  chromeos::DBusThreadManager::Get()->GetSessionManagerClient()->RemoveArcData(
-      cryptohome::Identification(
-          multi_user_util::GetAccountIdFromProfile(profile_)),
-      base::Bind(&ArcSessionManager::OnArcDataRemoved,
-                 weak_ptr_factory_.GetWeakPtr()));
-}
-
-void ArcSessionManager::OnArcDataRemoved(bool success) {
-  if (success)
-    VLOG(1) << "ARC data removal successful";
-  else
-    LOG(ERROR) << "Request for ARC user data removal failed.";
-
-  // TODO(khmel): Browser tests may shutdown profile by itself. Update browser
-  // tests and remove this check.
-  if (state() == State::NOT_INITIALIZED)
-    return;
-
-  for (auto& observer : observer_list_)
-    observer.OnArcDataRemoved();
-
-  profile_->GetPrefs()->SetBoolean(prefs::kArcDataRemoveRequested, false);
-  DCHECK_EQ(state(), State::REMOVING_DATA_DIR);
-  SetState(State::STOPPED);
-
-  MaybeReenableArc();
-}
-
-void ArcSessionManager::MaybeReenableArc() {
-  // Here check if |reenable_arc_| is marked or not.
-  // The only case this happens should be in the special case for enterprise
-  // "on managed lost" case. In that case, OnSessionStopped() should trigger
-  // the RemoveArcData(), then this.
-  // TODO(hidehiko): It looks necessary to reset |reenable_arc_| regardless of
-  // |enable_requested_|. Fix it.
-  if (!reenable_arc_ || !enable_requested_)
-    return;
-
-  // Restart ARC anyway. Let the enterprise reporting instance decide whether
-  // the ARC user data wipe is still required or not.
-  reenable_arc_ = false;
-  VLOG(1) << "Reenable ARC";
-  RequestEnableImpl();
+  MaybeStartArcDataRemoval();
 }
 
 void ArcSessionManager::OnProvisioningFinished(ProvisioningResult result) {
@@ -391,7 +325,7 @@ void ArcSessionManager::OnProvisioningFinished(ProvisioningResult result) {
       // Just to be safe, remove data if we don't know the cause.
       result == ProvisioningResult::UNKNOWN_ERROR) {
     VLOG(1) << "ARC provisioning failed permanently. Removing user data";
-    RemoveArcData();
+    RequestArcDataRemoval();
   }
 
   // We'll delay shutting down the ARC instance in this case to allow people
@@ -448,11 +382,8 @@ void ArcSessionManager::SetProfile(Profile* profile) {
   }
 
   // Chrome may be shut down before completing ARC data removal.
-  // In such a case, start removing the data now.
-  if (profile_->GetPrefs()->GetBoolean(prefs::kArcDataRemoveRequested)) {
-    VLOG(1) << "ARC data removal requested in previous session.";
-    RemoveArcData();
-  }
+  // For such a case, start removing the data now, if necessary.
+  MaybeStartArcDataRemoval();
 }
 
 void ArcSessionManager::Shutdown() {
@@ -606,7 +537,7 @@ void ArcSessionManager::RequestEnableImpl() {
     return;
   }
 
-  StartTermsOfServiceNegotiation();
+  MaybeStartTermsOfServiceNegotiation();
 }
 
 void ArcSessionManager::RequestDisable() {
@@ -620,13 +551,39 @@ void ArcSessionManager::RequestDisable() {
   enable_requested_ = false;
 
   // Reset any pending request to re-enable ARC.
-  VLOG(1) << "ARC opt-out. Removing user data.";
   reenable_arc_ = false;
   StopArc();
-  RemoveArcData();
+  VLOG(1) << "ARC opt-out. Removing user data.";
+  RequestArcDataRemoval();
 }
 
-void ArcSessionManager::StartTermsOfServiceNegotiation() {
+void ArcSessionManager::RequestArcDataRemoval() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK(profile_);
+  // TODO(hidehiko): DCHECK the previous state. This is called for three cases;
+  // 1) Supporting managed user initial disabled case (Please see also
+  //    ArcPlayStoreEnabledPreferenceHandler::Start() for details).
+  // 2) Supporting enterprise triggered data removal.
+  // 3) One called in OnProvisioningFinished().
+  // 4) On request disabling.
+  // After the state machine is fixed, 2) should be replaced by
+  // RequestDisable() immediately followed by RequestEnable().
+  // 3) and 4) are internal state transition. So, as for public interface, 1)
+  // should be the only use case, and the |state_| should be limited to
+  // STOPPED, then.
+  // TODO(hidehiko): Think a way to get rid of 1), too.
+
+  // Just remember the request in persistent data. The actual removal
+  // is done via MaybeStartArcDataRemoval(). On completion (in
+  // OnArcDataRemoved()), this flag should be reset.
+  profile_->GetPrefs()->SetBoolean(prefs::kArcDataRemoveRequested, true);
+
+  // To support 1) case above, maybe start data removal.
+  if (state_ == State::STOPPED && arc_session_runner_->IsStopped())
+    MaybeStartArcDataRemoval();
+}
+
+void ArcSessionManager::MaybeStartTermsOfServiceNegotiation() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(profile_);
   DCHECK(!terms_of_service_negotiator_);
@@ -850,6 +807,85 @@ void ArcSessionManager::StopArc() {
     support_host_->Close();
 }
 
+void ArcSessionManager::MaybeStartArcDataRemoval() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK(profile_);
+  // Data removal cannot run in parallel with ARC session.
+  DCHECK(arc_session_runner_->IsStopped());
+
+  // TODO(hidehiko): DCHECK the previous state, when the state machine is
+  // fixed.
+  SetState(State::REMOVING_DATA_DIR);
+
+  // TODO(hidehiko): Extract the implementation of data removal, so that
+  // shutdown can cancel the operation not to call OnArcDataRemoved callback.
+  if (!profile_->GetPrefs()->GetBoolean(prefs::kArcDataRemoveRequested)) {
+    // ARC data removal is not requested. Just move to the next state.
+    MaybeReenableArc();
+    return;
+  }
+
+  VLOG(1) << "Starting ARC data removal";
+
+  // Remove Play user ID for Active Directory managed devices.
+  profile_->GetPrefs()->SetString(prefs::kArcActiveDirectoryPlayUserId,
+                                  std::string());
+
+  chromeos::DBusThreadManager::Get()->GetSessionManagerClient()->RemoveArcData(
+      cryptohome::Identification(
+          multi_user_util::GetAccountIdFromProfile(profile_)),
+      base::Bind(&ArcSessionManager::OnArcDataRemoved,
+                 weak_ptr_factory_.GetWeakPtr()));
+}
+
+void ArcSessionManager::OnArcDataRemoved(bool success) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  // TODO(khmel): Browser tests may shutdown profile by itself. Update browser
+  // tests and remove this check.
+  if (state() == State::NOT_INITIALIZED)
+    return;
+
+  DCHECK_EQ(state_, State::REMOVING_DATA_DIR);
+  DCHECK(profile_);
+  DCHECK(profile_->GetPrefs()->GetBoolean(prefs::kArcDataRemoveRequested));
+  if (success) {
+    VLOG(1) << "ARC data removal successful";
+  } else {
+    LOG(ERROR) << "Request for ARC user data removal failed. "
+               << "See session_manager logs for more details.";
+  }
+  profile_->GetPrefs()->SetBoolean(prefs::kArcDataRemoveRequested, false);
+
+  // Regardless of whether it is successfully done or not, notify observers.
+  for (auto& observer : observer_list_)
+    observer.OnArcDataRemoved();
+
+  MaybeReenableArc();
+}
+
+void ArcSessionManager::MaybeReenableArc() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK_EQ(state_, State::REMOVING_DATA_DIR);
+  SetState(State::STOPPED);
+
+  // Here check if |reenable_arc_| is marked or not.
+  // TODO(hidehiko): Conceptually |reenable_arc_| should be always false
+  // if |enable_requested_| is false. Replace by DCHECK after state machine
+  // fix is done.
+  if (!reenable_arc_ || !enable_requested_) {
+    // Reset the flag, just in case. TODO(hidehiko): Remove this.
+    reenable_arc_ = false;
+    return;
+  }
+
+  // Restart ARC anyway. Let the enterprise reporting instance decide whether
+  // the ARC user data wipe is still required or not.
+  reenable_arc_ = false;
+  VLOG(1) << "Reenable ARC";
+  RequestEnableImpl();
+}
+
 void ArcSessionManager::OnWindowClosed() {
   DCHECK(support_host_);
   if (terms_of_service_negotiator_) {
@@ -878,7 +914,7 @@ void ArcSessionManager::OnRetryClicked() {
     // Currently Terms of service is shown. ArcTermsOfServiceNegotiator should
     // handle this.
   } else if (!profile_->GetPrefs()->GetBoolean(prefs::kArcTermsAccepted)) {
-    StartTermsOfServiceNegotiation();
+    MaybeStartTermsOfServiceNegotiation();
   } else if (support_host_->ui_page() == ArcSupportHost::UIPage::ERROR &&
              !arc_session_runner_->IsStopped()) {
     // ERROR_WITH_FEEDBACK is set in OnSignInFailed(). In the case, stopping

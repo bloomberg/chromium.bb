@@ -17,6 +17,7 @@
 #include "chrome/browser/chromeos/arc/arc_auth_notification.h"
 #include "chrome/browser/chromeos/arc/arc_service_launcher.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
+#include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/arc/test/arc_data_removed_waiter.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
@@ -241,11 +242,7 @@ IN_PROC_BROWSER_TEST_F(ArcSessionManagerTest, ManagedAndroidAccount) {
   token_service()->IssueTokenForAllPendingRequests(kManagedAuthToken,
                                                    base::Time::Max());
   ArcPlayStoreDisabledWaiter().Wait();
-  ASSERT_EQ(ArcSessionManager::State::REMOVING_DATA_DIR,
-            ArcSessionManager::Get()->state());
-  ArcDataRemovedWaiter().Wait();
-  ASSERT_EQ(ArcSessionManager::State::STOPPED,
-            ArcSessionManager::Get()->state());
+  EXPECT_FALSE(IsArcPlayStoreEnabledForProfile(profile()));
 }
 
 }  // namespace arc

@@ -365,7 +365,7 @@ TEST_F(ArcSessionManagerTest, RemoveDataDir) {
   // preference is false for managed user, i.e., data dir is being removed at
   // beginning.
   arc_session_manager()->SetProfile(profile());
-  arc_session_manager()->RemoveArcData();
+  arc_session_manager()->RequestArcDataRemoval();
   EXPECT_TRUE(
       profile()->GetPrefs()->GetBoolean(prefs::kArcDataRemoveRequested));
   EXPECT_EQ(ArcSessionManager::State::REMOVING_DATA_DIR,
@@ -388,7 +388,7 @@ TEST_F(ArcSessionManagerTest, RemoveDataDir) {
   EXPECT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
 
   // Request to remove data and stop session manager.
-  arc_session_manager()->RemoveArcData();
+  arc_session_manager()->RequestArcDataRemoval();
   ASSERT_TRUE(
       profile()->GetPrefs()->GetBoolean(prefs::kArcDataRemoveRequested));
   EXPECT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());

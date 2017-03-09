@@ -173,6 +173,13 @@ class ArcSessionManager : public ArcSessionRunner::Observer,
   // If it is already requested to disable, no-op.
   void RequestDisable();
 
+  // Requests to remove the ARC data.
+  // If ARC is stopped, triggers to remove the data. Otherwise, queues to
+  // remove the data after ARC stops.
+  // A log statement with the removal reason must be added prior to calling
+  // this.
+  void RequestArcDataRemoval();
+
   // Called from the Chrome OS metrics provider to record Arc.State
   // periodically.
   void RecordArcState();
@@ -189,11 +196,6 @@ class ArcSessionManager : public ArcSessionRunner::Observer,
   // This is a special method to support enterprise device lost case.
   // This can be called only when ARC is running.
   void StopAndEnableArc();
-
-  // Removes the data if ARC is stopped. Otherwise, queue to remove the data
-  // on ARC is stopped. A log statement with the removal reason must be added
-  // prior to calling RemoveArcData().
-  void RemoveArcData();
 
   ArcSupportHost* support_host() { return support_host_.get(); }
 
@@ -232,8 +234,9 @@ class ArcSessionManager : public ArcSessionRunner::Observer,
   // twice. This method can be called to bypass that check when restarting.
   void RequestEnableImpl();
 
-  // Negotiates the terms of service to user.
-  void StartTermsOfServiceNegotiation();
+  // Negotiates the terms of service to user, if necessary.
+  // Otherwise, move to StartAndroidManagementCheck().
+  void MaybeStartTermsOfServiceNegotiation();
   void OnTermsOfServiceNegotiated(bool accepted);
 
   // Returns true if Terms of Service negotiation is needed. Otherwise false.
@@ -243,7 +246,6 @@ class ArcSessionManager : public ArcSessionRunner::Observer,
 
   void SetState(State state);
   void ShutdownSession();
-  void OnArcDataRemoved(bool success);
   void OnArcSignInTimeout();
 
   // Starts Android management check. This is for first boot case (= Opt-in
@@ -283,6 +285,13 @@ class ArcSessionManager : public ArcSessionRunner::Observer,
 
   // ArcSessionRunner::Observer:
   void OnSessionStopped(ArcStopReason reason, bool restarting) override;
+
+  // Starts to remove ARC data, if it is requested via RequestArcDataRemoval().
+  // On completion, OnArcDataRemoved() is called.
+  // If not requested, just skipping the data removal, and moves to
+  // MaybeReenableArc() directly.
+  void MaybeStartArcDataRemoval();
+  void OnArcDataRemoved(bool success);
 
   // On ARC session stopped and/or data removal completion, this is called
   // so that, if necessary, ARC session is restarted.

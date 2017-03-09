@@ -72,7 +72,7 @@ void ArcPlayStoreEnabledPreferenceHandler::Start() {
     // launches.
     VLOG(1) << "Google Play Store is initially disabled for managed "
             << "profile. Removing data.";
-    arc_session_manager_->RemoveArcData();
+    arc_session_manager_->RequestArcDataRemoval();
   }
 
   // ArcAuthNotification may need to be shown.

@@ -41,7 +41,7 @@ void ArcEnterpriseReportingService::ReportManagementState(
   if (state == mojom::ManagementState::MANAGED_DO_LOST) {
     DCHECK(ArcServiceManager::Get());
     VLOG(1) << "Management state lost. Removing ARC user data.";
-    ArcSessionManager::Get()->RemoveArcData();
+    ArcSessionManager::Get()->RequestArcDataRemoval();
     ArcSessionManager::Get()->StopAndEnableArc();
   }
 }
