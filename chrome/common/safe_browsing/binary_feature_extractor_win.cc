@@ -12,8 +12,8 @@
 
 #include "base/files/file_path.h"
 #include "base/logging.h"
-#include "chrome/common/safe_browsing/csd.pb.h"
 #include "chrome/common/safe_browsing/pe_image_reader_win.h"
+#include "components/safe_browsing/csd.pb.h"
 
 namespace safe_browsing {
 

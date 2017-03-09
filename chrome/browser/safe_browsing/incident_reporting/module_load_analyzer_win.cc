@@ -22,7 +22,7 @@
 #include "chrome/browser/safe_browsing/incident_reporting/suspicious_module_incident.h"
 #include "chrome/browser/safe_browsing/path_sanitizer.h"
 #include "chrome/common/safe_browsing/binary_feature_extractor.h"
-#include "chrome/common/safe_browsing/csd.pb.h"
+#include "components/safe_browsing/csd.pb.h"
 #include "content/public/browser/browser_thread.h"
 
 #if defined(SAFE_BROWSING_DB_LOCAL)
