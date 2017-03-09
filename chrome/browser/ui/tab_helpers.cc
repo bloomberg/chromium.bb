@@ -22,6 +22,7 @@
 #include "chrome/browser/history/top_sites_factory.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/metrics/desktop_session_duration/desktop_session_duration_observer.h"
+#include "chrome/browser/metrics/renderer_uptime_web_contents_observer.h"
 #include "chrome/browser/net/net_error_tab_helper.h"
 #include "chrome/browser/net/predictor_tab_helper.h"
 #include "chrome/browser/ntp_snippets/bookmark_last_visit_updater.h"
@@ -204,6 +205,8 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   TabSpecificContentSettings::CreateForWebContents(web_contents);
   if (content::IsBrowserSideNavigationEnabled())
     MixedContentSettingsTabHelper::CreateForWebContents(web_contents);
+  metrics::RendererUptimeWebContentsObserver::CreateForWebContents(
+      web_contents);
 
   // --- Platform-specific tab helpers ---
 

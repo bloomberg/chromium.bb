@@ -68,6 +68,7 @@
 #include "chrome/browser/memory/tab_manager.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/metrics/field_trial_synchronizer.h"
+#include "chrome/browser/metrics/renderer_uptime_tracker.h"
 #include "chrome/browser/metrics/thread_watcher.h"
 #include "chrome/browser/nacl_host/nacl_browser_delegate_impl.h"
 #include "chrome/browser/net/crl_set_fetcher.h"
@@ -765,6 +766,7 @@ void ChromeBrowserMainParts::SetupFieldTrials() {
     (defined(OS_LINUX) && !defined(OS_CHROMEOS))
   metrics::DesktopSessionDurationTracker::Initialize();
 #endif
+  metrics::RendererUptimeTracker::Initialize();
 
 #if defined(OS_WIN)
   // Cleanup the PreRead field trial registry key.
