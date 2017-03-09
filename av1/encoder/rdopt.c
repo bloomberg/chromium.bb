@@ -5785,7 +5785,7 @@ static int64_t rd_pick_inter_best_sub8x8_mode(
 
   for (idx = 0; idx < 4; ++idx) bsi->modes[idx] = ZEROMV;
 
-#if CONFIG_REFMV
+#if CONFIG_REF_MV
   for (idx = 0; idx < 4; ++idx) {
     for (k = NEARESTMV; k <= NEWMV; ++k) {
       bsi->rdstat[idx][INTER_OFFSET(k)].pred_mv[0].as_int = INVALID_MV;
@@ -5795,7 +5795,7 @@ static int64_t rd_pick_inter_best_sub8x8_mode(
       bsi->rdstat[idx][INTER_OFFSET(k)].mvs[1].as_int = INVALID_MV;
     }
   }
-#endif  // CONFIG_REFMV
+#endif  // CONFIG_REF_MV
 
   memcpy(t_above, pd->above_context, sizeof(t_above));
   memcpy(t_left, pd->left_context, sizeof(t_left));
