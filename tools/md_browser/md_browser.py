@@ -147,6 +147,7 @@ class Handler(SimpleHTTPServer.SimpleHTTPRequestHandler):
         'markdown.extensions.fenced_code',
         'markdown.extensions.tables',
         'markdown.extensions.toc',
+        'gitiles_autolink',
         'gitiles_ext_blocks',
     ]
     extension_configs = {
