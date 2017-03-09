@@ -861,6 +861,12 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   // Return 0 if no stencil attachment.
   GLenum GetBoundFramebufferStencilFormat(GLenum target);
 
+  gfx::Vector2d GetBoundFramebufferDrawOffset() const {
+    if (GetBoundDrawFramebuffer() || offscreen_target_frame_buffer_.get())
+      return gfx::Vector2d();
+    return surface_->GetDrawOffset();
+  }
+
   void MarkDrawBufferAsCleared(GLenum buffer, GLint drawbuffer_i);
 
   // Wrapper for CompressedTexImage{2|3}D commands.
@@ -1861,6 +1867,9 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
 
   // Wrapper for glViewport
   void DoViewport(GLint x, GLint y, GLsizei width, GLsizei height);
+
+  // Wrapper for glScissor
+  void DoScissor(GLint x, GLint y, GLsizei width, GLsizei height);
 
   // Wrapper for glUseProgram
   void DoUseProgram(GLuint program);
@@ -5651,13 +5660,23 @@ void GLES2DecoderImpl::OnUseFramebuffer() const {
     return;
   state_.fbo_binding_for_scissor_workaround_dirty = false;
 
-  if (workarounds().restore_scissor_on_fbo_change) {
-    // The driver forgets the correct scissor when modifying the FBO binding.
-    glScissor(state_.scissor_x,
-              state_.scissor_y,
-              state_.scissor_width,
-              state_.scissor_height);
+  if (supports_set_draw_rectangle_) {
+    gfx::Vector2d draw_offset = GetBoundFramebufferDrawOffset();
+    glViewport(state_.viewport_x + draw_offset.x(),
+               state_.viewport_y + draw_offset.y(), state_.viewport_width,
+               state_.viewport_height);
+  }
 
+  if (workarounds().restore_scissor_on_fbo_change ||
+      supports_set_draw_rectangle_) {
+    // The driver forgets the correct scissor when modifying the FBO binding.
+    gfx::Vector2d scissor_offset = GetBoundFramebufferDrawOffset();
+    glScissor(state_.scissor_x + scissor_offset.x(),
+              state_.scissor_y + scissor_offset.y(), state_.scissor_width,
+              state_.scissor_height);
+  }
+
+  if (workarounds().restore_scissor_on_fbo_change) {
     // crbug.com/222018 - Also on QualComm, the flush here avoids flicker,
     // it's unclear how this bug works.
     glFlush();
@@ -7660,7 +7679,9 @@ void GLES2DecoderImpl::RestoreClearState() {
   glClearDepth(state_.depth_clear);
   state_.SetDeviceCapabilityState(GL_SCISSOR_TEST,
                                   state_.enable_flags.scissor_test);
-  glScissor(state_.scissor_x, state_.scissor_y, state_.scissor_width,
+  gfx::Vector2d scissor_offset = GetBoundFramebufferDrawOffset();
+  glScissor(state_.scissor_x + scissor_offset.x(),
+            state_.scissor_y + scissor_offset.y(), state_.scissor_width,
             state_.scissor_height);
 }
 
@@ -8723,6 +8744,7 @@ void GLES2DecoderImpl::DoSetDrawRectangleCHROMIUM(GLint x,
     LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glSetDrawRectangleCHROMIUM",
                        "failed on surface");
   }
+  OnFboChanged();
 }
 
 void GLES2DecoderImpl::DoReadBuffer(GLenum src) {
@@ -11177,7 +11199,16 @@ void GLES2DecoderImpl::DoViewport(GLint x, GLint y, GLsizei width,
   state_.viewport_y = y;
   state_.viewport_width = std::min(width, viewport_max_width_);
   state_.viewport_height = std::min(height, viewport_max_height_);
-  glViewport(x, y, width, height);
+  gfx::Vector2d viewport_offset = GetBoundFramebufferDrawOffset();
+  glViewport(x + viewport_offset.x(), y + viewport_offset.y(), width, height);
+}
+
+void GLES2DecoderImpl::DoScissor(GLint x,
+                                 GLint y,
+                                 GLsizei width,
+                                 GLsizei height) {
+  gfx::Vector2d draw_offset = GetBoundFramebufferDrawOffset();
+  glScissor(x + draw_offset.x(), y + draw_offset.y(), width, height);
 }
 
 error::Error GLES2DecoderImpl::HandleVertexAttribDivisorANGLE(
@@ -12466,7 +12497,9 @@ bool GLES2DecoderImpl::ClearLevel(Texture* texture,
     glClearDepth(1.0f);
     state_.SetDeviceDepthMask(GL_TRUE);
     state_.SetDeviceCapabilityState(GL_SCISSOR_TEST, true);
-    glScissor(xoffset, yoffset, width, height);
+    gfx::Vector2d scissor_offset = GetBoundFramebufferDrawOffset();
+    glScissor(xoffset + scissor_offset.x(), yoffset + scissor_offset.y(), width,
+              height);
     glClear(GL_DEPTH_BUFFER_BIT | (have_stencil ? GL_STENCIL_BUFFER_BIT : 0));
 
     RestoreClearState();

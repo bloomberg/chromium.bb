@@ -207,6 +207,7 @@ void GLES2DecoderTestBase::InitDecoderWithCommandLine(
 
   surface_ = new gl::GLSurfaceStub;
   surface_->SetSize(gfx::Size(kBackBufferWidth, kBackBufferHeight));
+  surface_->set_supports_draw_rectangle(surface_supports_draw_rectangle_);
 
   // Context needs to be created before initializing ContextGroup, which will
   // in turn initialize FeatureInfo, which needs a context to determine

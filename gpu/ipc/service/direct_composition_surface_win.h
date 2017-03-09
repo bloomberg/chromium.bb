@@ -50,6 +50,7 @@ class GPU_EXPORT DirectCompositionSurfaceWin : public gl::GLSurfaceEGL {
   bool OnMakeCurrent(gl::GLContext* context) override;
   bool SupportsSetDrawRectangle() const override;
   bool SetDrawRectangle(const gfx::Rect& rect) override;
+  gfx::Vector2d GetDrawOffset() const override;
 
   bool Initialize(std::unique_ptr<gfx::VSyncProvider> vsync_provider);
 
@@ -94,6 +95,8 @@ class GPU_EXPORT DirectCompositionSurfaceWin : public gl::GLSurfaceEGL {
   bool first_swap_ = true;
   std::unique_ptr<gfx::VSyncProvider> vsync_provider_;
   std::vector<Overlay> pending_overlays_;
+
+  gfx::Vector2d draw_offset_;
 
   base::win::ScopedComPtr<ID3D11Device> d3d11_device_;
   base::win::ScopedComPtr<IDCompositionDevice2> dcomp_device_;

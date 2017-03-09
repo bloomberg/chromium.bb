@@ -4005,6 +4005,7 @@ _FUNCTION_INFO = {
   'Scissor': {
     'type': 'StateSet',
     'state': 'Scissor',
+    'decoder_func': 'DoScissor',
   },
   'Viewport': {
     'impl_func': False,

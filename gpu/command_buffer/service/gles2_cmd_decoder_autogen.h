@@ -2618,7 +2618,7 @@ error::Error GLES2DecoderImpl::HandleScissor(uint32_t immediate_data_size,
     state_.scissor_y = y;
     state_.scissor_width = width;
     state_.scissor_height = height;
-    glScissor(x, y, width, height);
+    DoScissor(x, y, width, height);
   }
   return error::kNoError;
 }

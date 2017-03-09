@@ -14,6 +14,7 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/overlay_transform.h"
 #include "ui/gfx/swap_result.h"
@@ -210,6 +211,10 @@ class GL_EXPORT GLSurface : public base::RefCounted<GLSurface> {
   // Set the rectangle that will be drawn into on the surface.
   virtual bool SetDrawRectangle(const gfx::Rect& rect);
 
+  // This is the amount by which the scissor and viewport rectangles should be
+  // offset.
+  virtual gfx::Vector2d GetDrawOffset() const;
+
   static GLSurface* GetCurrent();
 
   // Called when the swap interval for the associated context changes.
@@ -282,6 +287,7 @@ class GL_EXPORT GLSurfaceAdapter : public GLSurface {
   bool BuffersFlipped() const override;
   bool SupportsSetDrawRectangle() const override;
   bool SetDrawRectangle(const gfx::Rect& rect) override;
+  gfx::Vector2d GetDrawOffset() const override;
   void OnSetSwapInterval(int interval) override;
 
   GLSurface* surface() const { return surface_.get(); }

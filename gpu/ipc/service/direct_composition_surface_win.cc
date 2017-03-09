@@ -295,13 +295,14 @@ bool DirectCompositionSurfaceWin::SetDrawRectangle(const gfx::Rect& rectangle) {
   ScopedReleaseCurrent release_current(this);
 
   RECT rect = rectangle.ToRECT();
-  // TODO(jbauman): Use update_offset
   POINT update_offset;
 
   HRESULT hr = dcomp_surface_->BeginDraw(
       &rect, IID_PPV_ARGS(draw_texture_.Receive()), &update_offset);
   CHECK(SUCCEEDED(hr));
   has_been_rendered_to_ = true;
+
+  draw_offset_ = gfx::Point(update_offset) - gfx::Rect(rect).origin();
 
   g_current_surface = dcomp_surface_.get();
 
@@ -321,6 +322,10 @@ bool DirectCompositionSurfaceWin::SetDrawRectangle(const gfx::Rect& rectangle) {
       &pbuffer_attribs[0]);
 
   return true;
+}
+
+gfx::Vector2d DirectCompositionSurfaceWin::GetDrawOffset() const {
+  return draw_offset_;
 }
 
 scoped_refptr<base::TaskRunner>
