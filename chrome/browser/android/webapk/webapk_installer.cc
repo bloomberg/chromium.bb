@@ -57,6 +57,7 @@ const int kDownloadTimeoutMs = 60000;
 const int kWorldReadableFilePermission = base::FILE_PERMISSION_READ_BY_USER |
                                          base::FILE_PERMISSION_READ_BY_GROUP |
                                          base::FILE_PERMISSION_READ_BY_OTHERS;
+const int kDefaultWebApkVersion = 1;
 
 // Returns the WebAPK server URL based on the command line.
 GURL GetServerUrl() {
@@ -349,6 +350,8 @@ WebApkInstaller::WebApkInstaller(content::BrowserContext* browser_context,
       server_url_(GetServerUrl()),
       webapk_download_url_timeout_ms_(kWebApkDownloadUrlTimeoutMs),
       download_timeout_ms_(kDownloadTimeoutMs),
+      relax_updates_(false),
+      webapk_version_(kDefaultWebApkVersion),
       task_type_(UNDEFINED),
       weak_ptr_factory_(this) {
   CreateJavaRef();
@@ -416,9 +419,10 @@ void WebApkInstaller::OnURLFetchComplete(const net::URLFetcher* source) {
   }
 
   GURL signed_download_url(response->signed_download_url());
-  // https://crbug.com/680131. The server sends an empty URL if the server does
-  // not have a newer WebAPK to update to.
   if (task_type_ == UPDATE && signed_download_url.is_empty()) {
+    // https://crbug.com/680131. The server sends an empty URL if the server
+    // does not have a newer WebAPK to update to.
+    relax_updates_ = response->relax_updates();
     OnSuccess();
     return;
   }
@@ -623,11 +627,11 @@ void WebApkInstaller::OnTimeout() {
 }
 
 void WebApkInstaller::OnSuccess() {
-  finish_callback_.Run(true, webapk_package_);
+  finish_callback_.Run(true, relax_updates_, webapk_package_);
   delete this;
 }
 
 void WebApkInstaller::OnFailure() {
-  finish_callback_.Run(false, webapk_package_);
+  finish_callback_.Run(false, relax_updates_, webapk_package_);
   delete this;
 }

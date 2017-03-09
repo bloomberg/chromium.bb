@@ -162,7 +162,9 @@ class WebApkInstallerRunner {
   bool success() { return success_; }
 
  private:
-  void OnCompleted(bool success, const std::string& webapk_package) {
+  void OnCompleted(bool success,
+                   bool relax_updates,
+                   const std::string& webapk_package) {
     success_ = success;
     on_completed_callback_.Run();
   }

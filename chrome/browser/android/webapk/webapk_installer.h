@@ -43,7 +43,9 @@ class WebApkInstaller : public net::URLFetcherDelegate {
   // Parameters:
   // - whether the process succeeds.
   // - the package name of the WebAPK.
-  using FinishCallback = base::Callback<void(bool, const std::string&)>;
+  // - true if Chrome received a "request updates less frequently" directive
+  //   from the WebAPK server.
+  using FinishCallback = base::Callback<void(bool, bool, const std::string&)>;
 
   ~WebApkInstaller() override;
 
@@ -269,6 +271,9 @@ class WebApkInstaller : public net::URLFetcherDelegate {
 
   // WebAPK package name.
   std::string webapk_package_;
+
+  // Whether the server wants the WebAPK to request updates less frequently.
+  bool relax_updates_;
 
   // WebAPK version code.
   int webapk_version_;

@@ -64,7 +64,8 @@ void WebApkInstallService::OnFinishedInstall(
     const GURL& web_manifest_url,
     const FinishCallback& finish_callback,
     bool success,
+    bool relax_updates,
     const std::string& webapk_package_name) {
-  finish_callback.Run(success, webapk_package_name);
+  finish_callback.Run(success, relax_updates, webapk_package_name);
   installs_.erase(web_manifest_url);
 }

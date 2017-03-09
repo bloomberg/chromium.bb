@@ -12,6 +12,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/android/webapk/webapk_installer.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "url/gurl.h"
 
@@ -26,11 +27,7 @@ class SkBitmap;
 // WebAPK on the server, download it, and install it.
 class WebApkInstallService : public KeyedService {
  public:
-  // Called when the creation/updating of a WebAPK is finished or failed.
-  // Parameters:
-  // - whether the process succeeds.
-  // - the package name of the WebAPK.
-  using FinishCallback = base::Callback<void(bool, const std::string&)>;
+  using FinishCallback = WebApkInstaller::FinishCallback;
 
   static WebApkInstallService* Get(content::BrowserContext* browser_context);
 
@@ -64,6 +61,7 @@ class WebApkInstallService : public KeyedService {
   void OnFinishedInstall(const GURL& web_manifest_url,
                          const FinishCallback& finish_callback,
                          bool success,
+                         bool relax_updates,
                          const std::string& webapk_package_name);
 
   content::BrowserContext* browser_context_;

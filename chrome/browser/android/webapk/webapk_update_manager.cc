@@ -30,6 +30,7 @@ bool WebApkUpdateManager::Register(JNIEnv* env) {
 // static
 void WebApkUpdateManager::OnBuiltWebApk(const std::string& id,
                                         bool success,
+                                        bool relax_updates,
                                         const std::string& webapk_package) {
   JNIEnv* env = base::android::AttachCurrentThread();
 
@@ -42,7 +43,8 @@ void WebApkUpdateManager::OnBuiltWebApk(const std::string& id,
 
   base::android::ScopedJavaLocalRef<jstring> java_id =
       base::android::ConvertUTF8ToJavaString(env, id);
-  Java_WebApkUpdateManager_onBuiltWebApk(env, java_id.obj(), success);
+  Java_WebApkUpdateManager_onBuiltWebApk(env, java_id.obj(), success,
+                                         relax_updates);
 }
 
 // static JNI method.
@@ -116,7 +118,8 @@ static void UpdateAsync(
   if (install_service->IsInstallInProgress(info.manifest_url)) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::Bind(&WebApkUpdateManager::OnBuiltWebApk, id, false, ""));
+        base::Bind(&WebApkUpdateManager::OnBuiltWebApk, id, false /* success */,
+                   false /* relax_updates */, "" /* webapk_package */));
     return;
   }
   install_service->UpdateAsync(

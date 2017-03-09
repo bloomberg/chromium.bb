@@ -374,6 +374,7 @@ void AppBannerInfoBarDelegateAndroid::SendBannerAccepted() {
 
 void AppBannerInfoBarDelegateAndroid::OnWebApkInstallFinished(
     bool success,
+    bool relax_updates,
     const std::string& webapk_package_name) {
   if (!success) {
     OnWebApkInstallFailed();

@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.webapps;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import android.content.Context;
@@ -26,6 +27,7 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.test.util.Feature;
 import org.chromium.blink_public.platform.WebDisplayMode;
 import org.chromium.chrome.browser.ShortcutHelper;
+import org.chromium.chrome.browser.webapps.WebappDataStorage.Clock;
 import org.chromium.testing.local.BackgroundShadowAsyncTask;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 
@@ -63,6 +65,10 @@ public class WebappDataStorageTest {
             updateTime(currentTime);
         }
 
+        public void advance(long millis) {
+            mCurrentTime += millis;
+        }
+
         public void updateTime(long currentTime) {
             mCurrentTime = currentTime;
         }
@@ -88,6 +94,7 @@ public class WebappDataStorageTest {
     @After
     public void tearDown() {
         mSharedPreferences.edit().clear().apply();
+        WebappDataStorage.setClockForTests(new Clock());
     }
 
     @Test
@@ -313,6 +320,89 @@ public class WebappDataStorageTest {
                 mSharedPreferences.getLong(WebappDataStorage.KEY_BACKGROUND_COLOR, 0));
         assertEquals(isIconGenerated,
                 mSharedPreferences.getBoolean(WebappDataStorage.KEY_IS_ICON_GENERATED, true));
+    }
+
+    /**
+     * Test that if the WebAPK update failed (e.g. because the WebAPK server is not reachable) that
+     * the is-update-needed check is retried after less time than if the WebAPK update had
+     * succeeded. The is-update-needed check is the first step in retrying to update the WebAPK.
+     */
+    @Test
+    public void testCheckUpdateMoreFrequentlyIfUpdateFails() {
+        assertTrue(WebappDataStorage.UPDATE_INTERVAL > WebappDataStorage.RETRY_UPDATE_DURATION);
+
+        final TestClock clock = new TestClock(System.currentTimeMillis());
+        WebappDataStorage storage = getStorage(clock);
+
+        storage.updateTimeOfLastWebApkUpdateRequestCompletion();
+        storage.updateDidLastWebApkUpdateRequestSucceed(true);
+
+        assertFalse(storage.shouldCheckForUpdate());
+        clock.advance(WebappDataStorage.RETRY_UPDATE_DURATION);
+        assertFalse(storage.shouldCheckForUpdate());
+
+        // Advance all of the time stamps.
+        storage.updateTimeOfLastCheckForUpdatedWebManifest();
+        storage.updateTimeOfLastWebApkUpdateRequestCompletion();
+        storage.updateDidLastWebApkUpdateRequestSucceed(false);
+
+        assertFalse(storage.shouldCheckForUpdate());
+        clock.advance(WebappDataStorage.RETRY_UPDATE_DURATION);
+        assertTrue(storage.shouldCheckForUpdate());
+
+        // Verifies that {@link WebappDataStorage#shouldCheckForUpdate()} returns true because the
+        // previous update failed, no matter whether we want to check update less frequently.
+        storage.setRelaxedUpdates(true);
+        assertTrue(storage.shouldCheckForUpdate());
+    }
+
+    /**
+     * Test that if there was no previous WebAPK update attempt that the is-update-needed check is
+     * done after the usual delay (as opposed to the shorter delay if the previous WebAPK update
+     * failed.)
+     */
+    @Test
+    public void testRegularCheckIntervalIfNoPriorWebApkUpdate() {
+        assertTrue(WebappDataStorage.UPDATE_INTERVAL > WebappDataStorage.RETRY_UPDATE_DURATION);
+
+        final TestClock clock = new TestClock(System.currentTimeMillis());
+        WebappDataStorage storage = getStorage(clock);
+
+        assertFalse(storage.shouldCheckForUpdate());
+        clock.advance(WebappDataStorage.RETRY_UPDATE_DURATION);
+        assertFalse(storage.shouldCheckForUpdate());
+        clock.advance(WebappDataStorage.UPDATE_INTERVAL - WebappDataStorage.RETRY_UPDATE_DURATION);
+        assertTrue(storage.shouldCheckForUpdate());
+    }
+
+    /**
+     * Test that if there was no previous WebAPK update attempt and the relax-update flag is set to
+     * true, the is-update-needed check is done after the relaxed update interval (as opposed to the
+     * usual delay.)
+     */
+    @Test
+    public void testRelaxedUpdates() {
+        assertTrue(WebappDataStorage.RELAXED_UPDATE_INTERVAL > WebappDataStorage.UPDATE_INTERVAL);
+
+        final TestClock clock = new TestClock(System.currentTimeMillis());
+        WebappDataStorage storage = getStorage(clock);
+
+        storage.setRelaxedUpdates(true);
+
+        clock.advance(WebappDataStorage.UPDATE_INTERVAL);
+        assertFalse(storage.shouldCheckForUpdate());
+        clock.advance(
+                WebappDataStorage.RELAXED_UPDATE_INTERVAL - WebappDataStorage.UPDATE_INTERVAL);
+        assertTrue(storage.shouldCheckForUpdate());
+    }
+
+    private WebappDataStorage getStorage(TestClock clock) {
+        WebappDataStorage.setClockForTests(clock);
+        WebappDataStorage storage = WebappDataStorage.open("test");
+
+        // Done when WebAPK is registered in {@link WebApkActivity}.
+        storage.updateTimeOfLastCheckForUpdatedWebManifest();
+        return storage;
     }
 
     // TODO(lalitm) - There seems to be a bug in Robolectric where a Bitmap

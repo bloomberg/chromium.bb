@@ -26,7 +26,15 @@ message WebApkResponse {
   // Unique id identifying session with WebAPK server.
   optional string token = 6;
 
-  reserved 4, 5;
+  // This flag may be used, for example, if the WebAPK server is unable to
+  // fulfill an update request and likely won't be able to fulfill subsequent
+  // update requests from this WebAPK. One case where the server is unable to
+  // fulfill update requests is if the Web Manifest is dynamically generated
+  // based on the user's country etc. Therefore, we want the client to back off
+  // from spamming update requests too often.
+  optional bool relax_updates = 8;
+
+  reserved 4, 5, 7;
 }
 
 // Sent as part of request to create or update a WebAPK.
