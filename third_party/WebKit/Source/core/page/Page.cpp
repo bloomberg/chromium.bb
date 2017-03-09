@@ -32,6 +32,7 @@
 #include "core/events/Event.h"
 #include "core/frame/BrowserControls.h"
 #include "core/frame/DOMTimer.h"
+#include "core/frame/EventHandlerRegistry.h"
 #include "core/frame/FrameConsole.h"
 #include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
@@ -105,6 +106,7 @@ Page::Page(PageClients& pageClients)
       m_pageScaleConstraintsSet(PageScaleConstraintsSet::create()),
       m_pointerLockController(PointerLockController::create(this)),
       m_browserControls(BrowserControls::create(*this)),
+      m_eventHandlerRegistry(new EventHandlerRegistry(*this)),
       m_mainFrame(nullptr),
       m_editorClient(pageClients.editorClient),
       m_spellCheckerClient(pageClients.spellCheckerClient),
@@ -169,6 +171,14 @@ BrowserControls& Page::browserControls() {
 
 const BrowserControls& Page::browserControls() const {
   return *m_browserControls;
+}
+
+EventHandlerRegistry& Page::eventHandlerRegistry() {
+  return *m_eventHandlerRegistry;
+}
+
+const EventHandlerRegistry& Page::eventHandlerRegistry() const {
+  return *m_eventHandlerRegistry;
 }
 
 ClientRectList* Page::nonFastScrollableRects(const LocalFrame* frame) {
@@ -550,6 +560,7 @@ DEFINE_TRACE(Page) {
   visitor->trace(m_pointerLockController);
   visitor->trace(m_scrollingCoordinator);
   visitor->trace(m_browserControls);
+  visitor->trace(m_eventHandlerRegistry);
   visitor->trace(m_mainFrame);
   visitor->trace(m_validationMessageClient);
   visitor->trace(m_useCounter);

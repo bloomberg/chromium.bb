@@ -106,7 +106,6 @@ class CORE_EXPORT FrameHost final
   const Member<Page> m_page;
   const Member<VisualViewport> m_visualViewport;
   const Member<OverscrollController> m_overscrollController;
-  const Member<EventHandlerRegistry> m_eventHandlerRegistry;
   const Member<ConsoleMessageStorage> m_consoleMessageStorage;
   const Member<TopDocumentRootScrollerController>
       m_globalRootScrollerController;

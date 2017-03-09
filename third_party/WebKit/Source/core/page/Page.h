@@ -56,6 +56,7 @@ class Document;
 class DragCaret;
 class DragController;
 class EditorClient;
+class EventHandlerRegistry;
 class FocusController;
 class Frame;
 class FrameHost;
@@ -189,6 +190,9 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
   BrowserControls& browserControls();
   const BrowserControls& browserControls() const;
 
+  EventHandlerRegistry& eventHandlerRegistry();
+  const EventHandlerRegistry& eventHandlerRegistry() const;
+
   void setTabKeyCyclesThroughElements(bool b) {
     m_tabKeyCyclesThroughElements = b;
   }
@@ -275,6 +279,7 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
   const Member<PointerLockController> m_pointerLockController;
   Member<ScrollingCoordinator> m_scrollingCoordinator;
   const Member<BrowserControls> m_browserControls;
+  const Member<EventHandlerRegistry> m_eventHandlerRegistry;
 
   // Typically, the main frame and Page should both be owned by the embedder,
   // which must call Page::willBeDestroyed() prior to destroying Page. This
