@@ -145,9 +145,9 @@ void ResetSettingsHandler::HandleResetProfileSettings(
   DCHECK(brandcode_.empty() || config_fetcher_);
   if (config_fetcher_ && config_fetcher_->IsActive()) {
     // Reset once the prefs are fetched.
-    config_fetcher_->SetCallback(base::Bind(&ResetSettingsHandler::ResetProfile,
-                                            base::Unretained(this), callback_id,
-                                            send_settings, request_origin));
+    config_fetcher_->SetCallback(base::Bind(
+        &ResetSettingsHandler::ResetProfile, weak_ptr_factory_.GetWeakPtr(),
+        callback_id, send_settings, request_origin));
   } else {
     ResetProfile(callback_id, send_settings, request_origin);
   }
