@@ -387,8 +387,10 @@ Resource* ResourceFetcher::resourceForStaticData(
   }
 
   ResourceResponse response(url, mimetype, data->size(), charset);
-  response.setHTTPStatusCode(200);
-  response.setHTTPStatusText("OK");
+  if (!substituteData.isValid() && url.protocolIsData()) {
+    response.setHTTPStatusCode(200);
+    response.setHTTPStatusText("OK");
+  }
 
   Resource* resource = factory.create(request.resourceRequest(),
                                       request.options(), request.charset());
