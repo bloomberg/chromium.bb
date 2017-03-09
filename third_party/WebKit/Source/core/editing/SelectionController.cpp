@@ -395,9 +395,9 @@ void SelectionController::updateSelectionForMouseDrag(
   if (selection().granularity() != CharacterGranularity)
     builder.setGranularity(selection().granularity());
 
-  setNonDirectionalSelectionIfNeeded(
-      createVisibleSelection(builder.build()), selection().granularity(),
-      AdjustEndpointsAtBidiBoundary, HandleVisibility::NotVisible);
+  setNonDirectionalSelectionIfNeeded(builder.build(), selection().granularity(),
+                                     AdjustEndpointsAtBidiBoundary,
+                                     HandleVisibility::NotVisible);
 }
 
 bool SelectionController::updateSelectionForMouseDownDispatchingSelectStart(
@@ -426,7 +426,7 @@ bool SelectionController::updateSelectionForMouseDownDispatchingSelectStart(
     m_selectionState = SelectionState::PlacedCaret;
   }
 
-  setNonDirectionalSelectionIfNeeded(selection, granularity,
+  setNonDirectionalSelectionIfNeeded(selection.asSelection(), granularity,
                                      DoNotAdjustEndpoints, handleVisibility);
 
   return true;
@@ -635,10 +635,10 @@ static void adjustEndpointsAtBidiBoundary(
   }
 }
 
-// TODO(yosin): We should make |setNonDirectionalSelectionIfNeeded()| to take
-// |SelectionInFlatTree| instead of |VisibleSelectionInFlatTree|.
+// TODO(yosin): We should take |granularity| and |handleVisibility| from
+// |newSelection|.
 void SelectionController::setNonDirectionalSelectionIfNeeded(
-    const VisibleSelectionInFlatTree& newSelection,
+    const SelectionInFlatTree& passedSelection,
     TextGranularity granularity,
     EndPointsAdjustmentMode endpointsAdjustmentMode,
     HandleVisibility handleVisibility) {
@@ -646,6 +646,8 @@ void SelectionController::setNonDirectionalSelectionIfNeeded(
   // needs to be audited.  See http://crbug.com/590369 for more details.
   document().updateStyleAndLayoutIgnorePendingStylesheets();
 
+  const VisibleSelectionInFlatTree& newSelection =
+      createVisibleSelection(passedSelection);
   const PositionInFlatTree& basePosition =
       m_originalBaseInFlatTree.deepEquivalent();
   const VisiblePositionInFlatTree& originalBase =

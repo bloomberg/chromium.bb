@@ -110,7 +110,7 @@ class CORE_EXPORT SelectionController final
       const MouseEventWithHitTestResults&);
   void selectClosestWordOrLinkFromMouseEvent(
       const MouseEventWithHitTestResults&);
-  void setNonDirectionalSelectionIfNeeded(const VisibleSelectionInFlatTree&,
+  void setNonDirectionalSelectionIfNeeded(const SelectionInFlatTree&,
                                           TextGranularity,
                                           EndPointsAdjustmentMode,
                                           HandleVisibility);

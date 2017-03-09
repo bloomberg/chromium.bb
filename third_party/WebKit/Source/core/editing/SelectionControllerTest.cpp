@@ -24,7 +24,7 @@ class SelectionControllerTest : public EditingTestBase {
     return selection().selectionInFlatTree();
   }
 
-  void setNonDirectionalSelectionIfNeeded(const VisibleSelectionInFlatTree&,
+  void setNonDirectionalSelectionIfNeeded(const SelectionInFlatTree&,
                                           TextGranularity);
 
  private:
@@ -32,7 +32,7 @@ class SelectionControllerTest : public EditingTestBase {
 };
 
 void SelectionControllerTest::setNonDirectionalSelectionIfNeeded(
-    const VisibleSelectionInFlatTree& newSelection,
+    const SelectionInFlatTree& newSelection,
     TextGranularity granularity) {
   frame()
       .eventHandler()
@@ -53,12 +53,11 @@ TEST_F(SelectionControllerTest, setNonDirectionalSelectionIfNeeded) {
   Node* host = document().getElementById("host");
 
   // top to bottom
-  setNonDirectionalSelectionIfNeeded(
-      createVisibleSelection(SelectionInFlatTree::Builder()
-                                 .collapse(PositionInFlatTree(top, 1))
-                                 .extend(PositionInFlatTree(bottom, 3))
-                                 .build()),
-      CharacterGranularity);
+  setNonDirectionalSelectionIfNeeded(SelectionInFlatTree::Builder()
+                                         .collapse(PositionInFlatTree(top, 1))
+                                         .extend(PositionInFlatTree(bottom, 3))
+                                         .build(),
+                                     CharacterGranularity);
   EXPECT_EQ(Position(top, 1), visibleSelectionInDOMTree().base());
   EXPECT_EQ(Position::beforeNode(host), visibleSelectionInDOMTree().extent());
   EXPECT_EQ(Position(top, 1), visibleSelectionInDOMTree().start());
@@ -72,10 +71,10 @@ TEST_F(SelectionControllerTest, setNonDirectionalSelectionIfNeeded) {
 
   // bottom to top
   setNonDirectionalSelectionIfNeeded(
-      createVisibleSelection(SelectionInFlatTree::Builder()
-                                 .collapse(PositionInFlatTree(bottom, 3))
-                                 .extend(PositionInFlatTree(top, 1))
-                                 .build()),
+      SelectionInFlatTree::Builder()
+          .collapse(PositionInFlatTree(bottom, 3))
+          .extend(PositionInFlatTree(top, 1))
+          .build(),
       CharacterGranularity);
   EXPECT_EQ(Position(bottom, 3), visibleSelectionInDOMTree().base());
   EXPECT_EQ(Position::beforeNode(bottom->parentNode()),
