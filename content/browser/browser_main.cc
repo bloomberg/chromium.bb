@@ -36,6 +36,7 @@ int BrowserMain(const MainFunctionParams& parameters) {
   base::trace_event::TraceLog::GetInstance()->SetProcessName("Browser");
   base::trace_event::TraceLog::GetInstance()->SetProcessSortIndex(
       kTraceEventBrowserProcessSortIndex);
+
   std::unique_ptr<BrowserMainRunner> main_runner(BrowserMainRunner::Create());
 
   int exit_code = main_runner->Initialize(parameters);

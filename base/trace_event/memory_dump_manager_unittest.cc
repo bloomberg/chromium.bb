@@ -119,8 +119,7 @@ void PostTaskAndWait(const tracked_objects::Location& from_here,
 // requests locally to the MemoryDumpManager instead of performing IPC dances.
 class MemoryDumpManagerDelegateForTesting : public MemoryDumpManagerDelegate {
  public:
-  MemoryDumpManagerDelegateForTesting(bool is_coordinator)
-      : is_coordinator_(is_coordinator) {
+  MemoryDumpManagerDelegateForTesting() {
     ON_CALL(*this, RequestGlobalMemoryDump(_, _))
         .WillByDefault(Invoke(
             this, &MemoryDumpManagerDelegateForTesting::CreateProcessDump));
@@ -130,13 +129,13 @@ class MemoryDumpManagerDelegateForTesting : public MemoryDumpManagerDelegate {
                void(const MemoryDumpRequestArgs& args,
                     const MemoryDumpCallback& callback));
 
-  bool IsCoordinator() const override { return is_coordinator_; }
+  uint64_t GetTracingProcessId() const override {
+    NOTREACHED();
+    return MemoryDumpManager::kInvalidTracingProcessId;
+  }
 
   // Promote the CreateProcessDump to public so it can be used by test fixtures.
   using MemoryDumpManagerDelegate::CreateProcessDump;
-
- private:
-  bool is_coordinator_;
 };
 
 class MockMemoryDumpProvider : public MemoryDumpProvider {
@@ -221,12 +220,13 @@ class MemoryDumpManagerTest : public testing::Test {
     mdm_.reset(new MemoryDumpManager());
     MemoryDumpManager::SetInstanceForTesting(mdm_.get());
     ASSERT_EQ(mdm_.get(), MemoryDumpManager::GetInstance());
+    delegate_.reset(new MemoryDumpManagerDelegateForTesting);
   }
 
   void TearDown() override {
     MemoryDumpManager::SetInstanceForTesting(nullptr);
-    delegate_.reset();
     mdm_.reset();
+    delegate_.reset();
     message_loop_.reset();
     TraceLog::DeleteForTesting();
   }
@@ -248,8 +248,7 @@ class MemoryDumpManagerTest : public testing::Test {
  protected:
   void InitializeMemoryDumpManager(bool is_coordinator) {
     mdm_->set_dumper_registrations_ignored_for_testing(true);
-    delegate_.reset(new MemoryDumpManagerDelegateForTesting(is_coordinator));
-    mdm_->Initialize(delegate_.get());
+    mdm_->Initialize(delegate_.get(), is_coordinator);
   }
 
   void RequestGlobalDumpAndWait(MemoryDumpType dump_type,
@@ -898,6 +897,7 @@ TEST_F(MemoryDumpManagerTest, InitializedAfterStartOfTracing) {
   // initialization gets NACK-ed cleanly.
   {
     EXPECT_CALL(mdp, OnMemoryDump(_, _)).Times(0);
+    EXPECT_CALL(*delegate_, RequestGlobalMemoryDump(_, _)).Times(0);
     RequestGlobalDumpAndWait(MemoryDumpType::EXPLICITLY_TRIGGERED,
                              MemoryDumpLevelOfDetail::DETAILED);
     EXPECT_FALSE(last_callback_success_);
@@ -906,9 +906,9 @@ TEST_F(MemoryDumpManagerTest, InitializedAfterStartOfTracing) {
   // Now late-initialize the MemoryDumpManager and check that the
   // RequestGlobalDump completes successfully.
   {
-    InitializeMemoryDumpManager(false /* is_coordinator */);
     EXPECT_CALL(mdp, OnMemoryDump(_, _)).Times(1);
     EXPECT_CALL(*delegate_, RequestGlobalMemoryDump(_, _)).Times(1);
+    InitializeMemoryDumpManager(false /* is_coordinator */);
     RequestGlobalDumpAndWait(MemoryDumpType::EXPLICITLY_TRIGGERED,
                              MemoryDumpLevelOfDetail::DETAILED);
     EXPECT_TRUE(last_callback_success_);

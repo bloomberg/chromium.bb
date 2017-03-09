@@ -4,56 +4,34 @@
 
 #include "services/resource_coordinator/public/cpp/memory/memory_dump_manager_delegate_impl.h"
 
-#include "base/bind.h"
-#include "base/bind_helpers.h"
-#include "base/single_thread_task_runner.h"
-#include "base/synchronization/lock.h"
 #include "base/trace_event/memory_dump_request_args.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "services/resource_coordinator/public/cpp/memory/coordinator.h"
-#include "services/resource_coordinator/public/interfaces/memory/constants.mojom.h"
 #include "services/resource_coordinator/public/interfaces/memory/memory_instrumentation.mojom.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 
 namespace memory_instrumentation {
 
-MemoryDumpManagerDelegateImpl::Config::~Config() {}
-
-// static
-MemoryDumpManagerDelegateImpl* MemoryDumpManagerDelegateImpl::Create(
-    const MemoryDumpManagerDelegateImpl::Config& config) {
-  static MemoryDumpManagerDelegateImpl* instance =
-      new MemoryDumpManagerDelegateImpl(config);
-  DCHECK_EQ(instance->config().interface_provider(),
-            config.interface_provider());
-  DCHECK_EQ(instance->config().coordinator(), config.coordinator());
-  return instance;
+MemoryDumpManagerDelegateImpl::MemoryDumpManagerDelegateImpl(
+    service_manager::InterfaceProvider* interface_provider)
+    : is_coordinator_(false), binding_(this) {
+  interface_provider->GetInterface(mojo::MakeRequest(&coordinator_));
+  coordinator_->RegisterProcessLocalDumpManager(
+      binding_.CreateInterfacePtrAndBind());
 }
 
 MemoryDumpManagerDelegateImpl::MemoryDumpManagerDelegateImpl(
-    const MemoryDumpManagerDelegateImpl::Config& config)
-    : binding_(this),
-      config_(config),
-      task_runner_(nullptr),
-      pending_memory_dump_guid_(0) {
-  if (config.interface_provider() != nullptr) {
-    config.interface_provider()->GetInterface(mojo::MakeRequest(&coordinator_));
-  } else {
-    task_runner_ = base::ThreadTaskRunnerHandle::Get();
-    config.coordinator()->BindCoordinatorRequest(
-        mojo::MakeRequest(&coordinator_));
-    base::trace_event::MemoryDumpManager::GetInstance()->set_tracing_process_id(
-        mojom::kServiceTracingProcessId);
-  }
+    Coordinator* coordinator)
+    : is_coordinator_(true), binding_(this) {
+  coordinator->BindCoordinatorRequest(mojo::MakeRequest(&coordinator_));
   coordinator_->RegisterProcessLocalDumpManager(
       binding_.CreateInterfacePtrAndBind());
-  base::trace_event::MemoryDumpManager::GetInstance()->Initialize(this);
 }
 
 MemoryDumpManagerDelegateImpl::~MemoryDumpManagerDelegateImpl() {}
 
 bool MemoryDumpManagerDelegateImpl::IsCoordinator() const {
-  return task_runner_ != nullptr;
+  return is_coordinator_;
 }
 
 void MemoryDumpManagerDelegateImpl::RequestProcessMemoryDump(
@@ -65,46 +43,7 @@ void MemoryDumpManagerDelegateImpl::RequestProcessMemoryDump(
 void MemoryDumpManagerDelegateImpl::RequestGlobalMemoryDump(
     const base::trace_event::MemoryDumpRequestArgs& args,
     const base::trace_event::MemoryDumpCallback& callback) {
-  // Note: This condition is here to match the old behavior. If the delegate is
-  // in the browser process, we do not drop parallel requests in the delegate
-  // and so they will be queued by the Coordinator service (see
-  // CoordinatorImpl::RequestGlobalMemoryDump). If the delegate is in a child
-  // process, parallel requests will be cancelled.
-  //
-  // TODO(chiniforooshan): Unify the child and browser behavior.
-  if (IsCoordinator()) {
-    task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(&mojom::Coordinator::RequestGlobalMemoryDump,
-                   base::Unretained(coordinator_.get()), args, callback));
-    return;
-  }
-
-  {
-    base::AutoLock lock(pending_memory_dump_guid_lock_);
-    if (pending_memory_dump_guid_) {
-      callback.Run(args.dump_guid, false);
-      return;
-    }
-    pending_memory_dump_guid_ = args.dump_guid;
-  }
-  auto callback_proxy =
-      base::Bind(&MemoryDumpManagerDelegateImpl::MemoryDumpCallbackProxy,
-                 base::Unretained(this), callback);
-  coordinator_->RequestGlobalMemoryDump(args, callback_proxy);
-}
-
-void MemoryDumpManagerDelegateImpl::MemoryDumpCallbackProxy(
-    const base::trace_event::MemoryDumpCallback& callback,
-    uint64_t dump_guid,
-    bool success) {
-  DCHECK_NE(0U, pending_memory_dump_guid_);
-  pending_memory_dump_guid_ = 0;
-  callback.Run(dump_guid, success);
-}
-
-void MemoryDumpManagerDelegateImpl::SetAsNonCoordinatorForTesting() {
-  task_runner_ = nullptr;
+  coordinator_->RequestGlobalMemoryDump(args, callback);
 }
 
 }  // namespace memory_instrumentation

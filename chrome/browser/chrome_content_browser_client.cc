@@ -197,7 +197,6 @@
 #include "printing/features/features.h"
 #include "services/image_decoder/public/interfaces/constants.mojom.h"
 #include "services/preferences/public/interfaces/preferences.mojom.h"
-#include "services/resource_coordinator/memory/coordinator/coordinator_impl.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "services/service_manager/public/cpp/interface_registry.h"
 #include "services/service_manager/public/cpp/service.h"
@@ -3105,13 +3104,6 @@ void ChromeContentBrowserClient::ExposeInterfacesToRenderer(
       base::Bind(&metrics::LeakDetectorRemoteController::Create),
       ui_task_runner);
 #endif
-
-  registry->AddInterface(
-      base::Bind(
-          &memory_instrumentation::CoordinatorImpl::BindCoordinatorRequest,
-          base::Unretained(
-              memory_instrumentation::CoordinatorImpl::GetInstance())),
-      ui_task_runner);
 }
 
 void ChromeContentBrowserClient::ExposeInterfacesToMediaService(
@@ -3209,15 +3201,6 @@ void ChromeContentBrowserClient::ExposeInterfacesToGpuProcess(
   registry->AddInterface(
       base::Bind(&metrics::CallStackProfileCollector::Create,
                  metrics::CallStackProfileParams::GPU_PROCESS));
-
-  auto ui_task_runner = content::BrowserThread::GetTaskRunnerForThread(
-      content::BrowserThread::UI);
-  registry->AddInterface(
-      base::Bind(
-          &memory_instrumentation::CoordinatorImpl::BindCoordinatorRequest,
-          base::Unretained(
-              memory_instrumentation::CoordinatorImpl::GetInstance())),
-      ui_task_runner);
 }
 
 void ChromeContentBrowserClient::RegisterInProcessServices(

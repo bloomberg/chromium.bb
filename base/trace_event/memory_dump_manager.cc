@@ -156,6 +156,7 @@ void MemoryDumpManager::SetInstanceForTesting(MemoryDumpManager* instance) {
 
 MemoryDumpManager::MemoryDumpManager()
     : delegate_(nullptr),
+      is_coordinator_(false),
       memory_tracing_enabled_(0),
       tracing_process_id_(kInvalidTracingProcessId),
       dumper_registrations_ignored_for_testing_(false),
@@ -213,12 +214,14 @@ void MemoryDumpManager::EnableHeapProfilingIfNeeded() {
   heap_profiling_enabled_ = true;
 }
 
-void MemoryDumpManager::Initialize(MemoryDumpManagerDelegate* delegate) {
+void MemoryDumpManager::Initialize(MemoryDumpManagerDelegate* delegate,
+                                   bool is_coordinator) {
   {
     AutoLock lock(lock_);
     DCHECK(delegate);
     DCHECK(!delegate_);
     delegate_ = delegate;
+    is_coordinator_ = is_coordinator;
     EnableHeapProfilingIfNeeded();
   }
 
@@ -457,10 +460,21 @@ void MemoryDumpManager::RequestGlobalDump(
                                     TRACE_ID_MANGLE(guid));
   MemoryDumpCallback wrapped_callback = Bind(&OnGlobalDumpDone, callback);
 
+  // Technically there is no need to grab the |lock_| here as the delegate is
+  // long-lived and can only be set by Initialize(), which is locked and
+  // necessarily happens before memory_tracing_enabled_ == true.
+  // Not taking the |lock_|, though, is lakely make TSan barf and, at this point
+  // (memory-infra is enabled) we're not in the fast-path anymore.
+  MemoryDumpManagerDelegate* delegate;
+  {
+    AutoLock lock(lock_);
+    delegate = delegate_;
+  }
+
   // The delegate will coordinate the IPC broadcast and at some point invoke
   // CreateProcessDump() to get a dump for the current process.
   MemoryDumpRequestArgs args = {guid, dump_type, level_of_detail};
-  delegate_->RequestGlobalMemoryDump(args, wrapped_callback);
+  delegate->RequestGlobalMemoryDump(args, wrapped_callback);
 }
 
 void MemoryDumpManager::RequestGlobalDump(
@@ -848,7 +862,7 @@ void MemoryDumpManager::OnTraceLogEnabled() {
       dump_scheduler_->NotifyPollingSupported();
 
     // Only coordinator process triggers periodic global memory dumps.
-    if (delegate_->IsCoordinator())
+    if (is_coordinator_)
       dump_scheduler_->NotifyPeriodicTriggerSupported();
   }
 
@@ -891,6 +905,10 @@ bool MemoryDumpManager::IsDumpModeAllowed(MemoryDumpLevelOfDetail dump_mode) {
   if (!session_state_)
     return false;
   return session_state_->IsDumpModeAllowed(dump_mode);
+}
+
+uint64_t MemoryDumpManager::GetTracingProcessId() const {
+  return delegate_->GetTracingProcessId();
 }
 
 MemoryDumpManager::MemoryDumpProviderInfo::MemoryDumpProviderInfo(
