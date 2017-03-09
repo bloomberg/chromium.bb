@@ -46,18 +46,6 @@ enum WeakHandlingFlag {
   WeakHandlingInCollections
 };
 
-// Compilers behave differently on __has_trivial_assign(T) if T has a
-// user-deleted copy assignment operator:
-//
-//     * MSVC returns false; but
-//     * The others return true.
-//
-// To workaround that, here we have IsAssignable<T, From> class template, but
-// unfortunately, MSVC 2013 cannot compile it due to the lack of expression
-// SFINAE.
-//
-// Thus, IsAssignable is only defined on non-MSVC compilers.
-#if !COMPILER(MSVC) || COMPILER(CLANG)
 template <typename T, typename From>
 class IsAssignable {
   typedef char YesType;
@@ -88,16 +76,11 @@ struct IsMoveAssignable {
   static_assert(!std::is_reference<T>::value, "T must not be a reference.");
   static const bool value = IsAssignable<T, T&&>::value;
 };
-#endif  // !COMPILER(MSVC) || COMPILER(CLANG)
 
 template <typename T>
 struct IsTriviallyCopyAssignable {
-#if COMPILER(MSVC) && !COMPILER(CLANG)
-  static const bool value = __has_trivial_assign(T);
-#else
   static const bool value =
       __has_trivial_assign(T) && IsCopyAssignable<T>::value;
-#endif
 };
 
 template <typename T>
@@ -114,12 +97,6 @@ struct IsTriviallyMoveAssignable {
   static const bool value = IsTriviallyCopyAssignable<T>::value;
 };
 
-// Same as above, but for __has_trivial_constructor and
-// __has_trivial_destructor. For IsTriviallyDefaultConstructible, we don't have
-// to write IsDefaultConstructible ourselves since we can use
-// std::is_constructible<T>. For IsTriviallyDestructible, though, we can't rely
-// on std::is_destructible<T> right now.
-#if !COMPILER(MSVC) || COMPILER(CLANG)
 template <typename T>
 class IsDestructible {
   typedef char YesType;
@@ -136,26 +113,17 @@ class IsDestructible {
   static const bool value =
       sizeof(checkDestructibility<T>(0)) == sizeof(YesType);
 };
-#endif
 
 template <typename T>
 struct IsTriviallyDefaultConstructible {
-#if COMPILER(MSVC) && !COMPILER(CLANG)
-  static const bool value = __has_trivial_constructor(T);
-#else
   static const bool value =
       __has_trivial_constructor(T) && std::is_constructible<T>::value;
-#endif
 };
 
 template <typename T>
 struct IsTriviallyDestructible {
-#if COMPILER(MSVC) && !COMPILER(CLANG)
-  static const bool value = __has_trivial_destructor(T);
-#else
   static const bool value =
       __has_trivial_destructor(T) && IsDestructible<T>::value;
-#endif
 };
 
 template <typename T, typename U>
