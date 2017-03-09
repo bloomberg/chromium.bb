@@ -4317,31 +4317,20 @@ std::vector<base::string16> BrowserAccessibilityWin::ComputeTextAttributes()
   auto text_style =
       static_cast<ui::AXTextStyle>(GetIntAttribute(ui::AX_ATTR_TEXT_STYLE));
   if (text_style == ui::AX_TEXT_STYLE_NONE) {
-    attributes.push_back(L"font-weight:normal");
     attributes.push_back(L"font-style:normal");
+    attributes.push_back(L"font-weight:normal");
   } else {
+    if (text_style & ui::AX_TEXT_STYLE_ITALIC) {
+      attributes.push_back(L"font-style:italic");
+    } else {
+      attributes.push_back(L"font-style:normal");
+    }
+
     if (text_style & ui::AX_TEXT_STYLE_BOLD) {
       attributes.push_back(L"font-weight:bold");
     } else {
       attributes.push_back(L"font-weight:normal");
     }
-
-    base::string16 font_style;
-    if (text_style & ui::AX_TEXT_STYLE_ITALIC)
-      font_style += L",italic";
-    if (text_style & ui::AX_TEXT_STYLE_UNDERLINE)
-      font_style += L",underline";
-    if (text_style & ui::AX_TEXT_STYLE_LINE_THROUGH)
-      font_style += L",line-through";
-    // TODO(nektar): Support more font style attributes in Blink.
-
-    if (font_style.empty()) {
-      font_style = L"normal";
-    } else {
-      // Remove the leading comma.
-      font_style.erase(0, 1);
-    }
-    attributes.push_back(L"font-style:" + font_style);
   }
 
   auto invalid_state = static_cast<ui::AXInvalidState>(
@@ -4392,17 +4381,33 @@ std::vector<base::string16> BrowserAccessibilityWin::ComputeTextAttributes()
   // TODO(nektar): Add Blink support for the following attributes.
   // Currently set to their default values as dictated by the IA2 Spec.
   attributes.push_back(L"text-line-through-mode:continuous");
-  attributes.push_back(L"text-line-through-style:none");
+  if (text_style & ui::AX_TEXT_STYLE_LINE_THROUGH) {
+    // TODO(nektar): Figure out a more specific value.
+    attributes.push_back(L"text-line-through-style:solid");
+  } else {
+    attributes.push_back(L"text-line-through-style:none");
+  }
   // Default value must be the empty string.
   attributes.push_back(L"text-line-through-text:");
-  attributes.push_back(L"text-line-through-type:none");
+  if (text_style & ui::AX_TEXT_STYLE_LINE_THROUGH) {
+    // TODO(nektar): Figure out a more specific value.
+    attributes.push_back(L"text-line-through-type:single");
+  } else {
+    attributes.push_back(L"text-line-through-type:none");
+  }
   attributes.push_back(L"text-line-through-width:auto");
   attributes.push_back(L"text-outline:false");
   attributes.push_back(L"text-position:baseline");
   attributes.push_back(L"text-shadow:none");
   attributes.push_back(L"text-underline-mode:continuous");
-  attributes.push_back(L"text-underline-style:none");
-  attributes.push_back(L"text-underline-type:none");
+  if (text_style & ui::AX_TEXT_STYLE_UNDERLINE) {
+    // TODO(nektar): Figure out a more specific value.
+    attributes.push_back(L"text-underline-style:solid");
+    attributes.push_back(L"text-underline-type:single");
+  } else {
+    attributes.push_back(L"text-underline-style:none");
+    attributes.push_back(L"text-underline-type:none");
+  }
   attributes.push_back(L"text-underline-width:auto");
 
   auto text_direction = static_cast<ui::AXTextDirection>(

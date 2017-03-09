@@ -3,14 +3,21 @@
 @WIN-ALLOW:font-weight:*
 @WIN-ALLOW:font-style:*
 @WIN-ALLOW:ia2_hypertext=*
+@WIN-ALLOW:offset:*
+@WIN-ALLOW:text-line-through-style:*
+@WIN-ALLOW:text-line-through-type:*
+@WIN-ALLOW:text-underline-style:*
+@WIN-ALLOW:text-underline-type:*
 -->
 <!DOCTYPE html>
 <html>
   <body>
-    <p>Normal <b>bold</b> <i>italic</i></p>
+    <p>The <b>quick</b> <i>brown</i> <u>fox</u> <b><i>jumped</i></b> <i><u>over</u></i> <b><i><u>dog</u></i></b></p>
     <div contentEditable><span>Normal</span>
         <span style="font-weight: bold;">bold</span>
         <span style="font-style: italic;">italic</span>
+        <span style="text-decoration: underline;">underline</span>
+        <span style="text-decoration: line-through;">line-through</span>
     </div>
   </body>
 </html>

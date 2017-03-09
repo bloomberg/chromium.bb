@@ -1,11 +1,19 @@
 rootWebArea
 ++paragraph
-++++staticText name='Normal '
-++++++inlineTextBox name='Normal '
-++++staticText name='bold' textStyle=1
-++++++inlineTextBox name='bold'
-++++staticText name='italic' textStyle=2
-++++++inlineTextBox name='italic'
+++++staticText name='The '
+++++++inlineTextBox name='The '
+++++staticText name='quick' textStyle=1
+++++++inlineTextBox name='quick'
+++++staticText name='brown' textStyle=2
+++++++inlineTextBox name='brown'
+++++staticText name='fox' textStyle=4
+++++++inlineTextBox name='fox'
+++++staticText name='jumped' textStyle=3
+++++++inlineTextBox name='jumped'
+++++staticText name='over' textStyle=6
+++++++inlineTextBox name='over'
+++++staticText name='dog' textStyle=7
+++++++inlineTextBox name='dog'
 ++div
 ++++staticText name='Normal'
 ++++++inlineTextBox name='Normal'
@@ -13,3 +21,7 @@ rootWebArea
 ++++++inlineTextBox name='bold'
 ++++staticText name='italic' textStyle=2
 ++++++inlineTextBox name='italic'
+++++staticText name='underline' textStyle=4
+++++++inlineTextBox name='underline'
+++++staticText name='line-through' textStyle=8
+++++++inlineTextBox name='line-through'
