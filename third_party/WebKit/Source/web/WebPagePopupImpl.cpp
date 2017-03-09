@@ -129,8 +129,7 @@ class PagePopupChromeClient final : public EmptyChromeClient {
     if (LayoutTestSupport::isRunningLayoutTest())
       m_popup->m_webView->mainFrameImpl()->frameWidget()->scheduleAnimation();
 
-    if (m_popup->isAcceleratedCompositingActive()) {
-      DCHECK(m_popup->m_layerTreeView);
+    if (m_popup->m_layerTreeView) {
       m_popup->m_layerTreeView->setNeedsBeginFrame();
       return;
     }
@@ -325,6 +324,8 @@ bool WebPagePopupImpl::initializePage() {
   DCHECK_EQ(m_popupClient->ownerElement().document().existingAXObjectCache(),
             frame->document()->existingAXObjectCache());
 
+  initializeLayerTreeView();
+
   RefPtr<SharedBuffer> data = SharedBuffer::create();
   m_popupClient->writeDocument(data.get());
   frame->setPageZoomFactor(m_popupClient->zoomFactor());
@@ -370,7 +371,7 @@ void WebPagePopupImpl::setRootGraphicsLayer(GraphicsLayer* layer) {
   m_rootGraphicsLayer = layer;
   m_rootLayer = layer ? layer->platformLayer() : 0;
 
-  setIsAcceleratedCompositingActive(layer);
+  m_isAcceleratedCompositingActive = !!layer;
   if (m_layerTreeView) {
     if (m_rootLayer) {
       m_layerTreeView->setRootLayer(*m_rootLayer);
@@ -380,29 +381,16 @@ void WebPagePopupImpl::setRootGraphicsLayer(GraphicsLayer* layer) {
   }
 }
 
-void WebPagePopupImpl::setIsAcceleratedCompositingActive(bool enter) {
-  if (m_isAcceleratedCompositingActive == enter)
-    return;
-
-  if (!enter) {
-    m_isAcceleratedCompositingActive = false;
-  } else if (m_layerTreeView) {
-    m_isAcceleratedCompositingActive = true;
+void WebPagePopupImpl::initializeLayerTreeView() {
+  TRACE_EVENT0("blink", "WebPagePopupImpl::initializeLayerTreeView");
+  m_layerTreeView = m_widgetClient->initializeLayerTreeView();
+  if (m_layerTreeView) {
+    m_layerTreeView->setVisible(true);
+    m_animationHost = WTF::makeUnique<CompositorAnimationHost>(
+        m_layerTreeView->compositorAnimationHost());
+    m_page->layerTreeViewInitialized(*m_layerTreeView, nullptr);
   } else {
-    TRACE_EVENT0("blink",
-                 "WebPagePopupImpl::setIsAcceleratedCompositingActive(true)");
-
-    m_layerTreeView = m_widgetClient->initializeLayerTreeView();
-    if (m_layerTreeView) {
-      m_layerTreeView->setVisible(true);
-      m_isAcceleratedCompositingActive = true;
-      m_animationHost = WTF::makeUnique<CompositorAnimationHost>(
-          m_layerTreeView->compositorAnimationHost());
-      m_page->layerTreeViewInitialized(*m_layerTreeView, nullptr);
-    } else {
-      m_isAcceleratedCompositingActive = false;
-      m_animationHost = nullptr;
-    }
+    m_animationHost = nullptr;
   }
 }
 
@@ -418,7 +406,7 @@ void WebPagePopupImpl::willCloseLayerTreeView() {
   if (m_page && m_layerTreeView)
     m_page->willCloseLayerTreeView(*m_layerTreeView, nullptr);
 
-  setIsAcceleratedCompositingActive(false);
+  m_isAcceleratedCompositingActive = false;
   m_layerTreeView = nullptr;
   m_animationHost = nullptr;
 }

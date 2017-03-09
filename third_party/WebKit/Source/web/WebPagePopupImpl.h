@@ -105,8 +105,8 @@ class WebPagePopupImpl final : public WebPagePopup,
   explicit WebPagePopupImpl(WebWidgetClient*);
   bool initializePage();
   void destroyPage();
+  void initializeLayerTreeView();
   void setRootGraphicsLayer(GraphicsLayer*);
-  void setIsAcceleratedCompositingActive(bool enter);
 
   WebRect windowRectInScreen() const;
 
