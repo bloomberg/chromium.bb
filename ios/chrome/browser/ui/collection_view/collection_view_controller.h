@@ -25,7 +25,7 @@ typedef NS_ENUM(NSInteger, CollectionViewControllerStyle) {
     : MDCCollectionViewController<AppBarPresenting>
 
 // The model of this controller.
-@property(nonatomic, readonly)
+@property(strong, nonatomic, readonly)
     CollectionViewModel<CollectionViewItem*>* collectionViewModel;
 
 // Initializer with the desired style.

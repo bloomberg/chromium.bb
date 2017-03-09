@@ -5,8 +5,11 @@
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
 
 #include "base/logging.h"
-#include "base/mac/scoped_nsobject.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 typedef NSMutableArray<CollectionViewItem*> SectionItems;
@@ -14,24 +17,22 @@ typedef NSMutableArray<CollectionViewItem*> SectionItems;
 
 @implementation CollectionViewModel {
   // Ordered list of section identifiers, one per section in the model.
-  base::scoped_nsobject<NSMutableArray<NSNumber*>> _sectionIdentifiers;
+  NSMutableArray<NSNumber*>* _sectionIdentifiers;
 
   // The lists of section items, one per section.
-  base::scoped_nsobject<NSMutableArray<SectionItems*>> _sections;
+  NSMutableArray<SectionItems*>* _sections;
 
   // Maps from section identifier to header and footer.
-  base::scoped_nsobject<NSMutableDictionary<NSNumber*, CollectionViewItem*>>
-      _headers;
-  base::scoped_nsobject<NSMutableDictionary<NSNumber*, CollectionViewItem*>>
-      _footers;
+  NSMutableDictionary<NSNumber*, CollectionViewItem*>* _headers;
+  NSMutableDictionary<NSNumber*, CollectionViewItem*>* _footers;
 }
 
 - (instancetype)init {
   if ((self = [super init])) {
-    _sectionIdentifiers.reset([[NSMutableArray alloc] init]);
-    _sections.reset([[NSMutableArray alloc] init]);
-    _headers.reset([[NSMutableDictionary alloc] init]);
-    _footers.reset([[NSMutableDictionary alloc] init]);
+    _sectionIdentifiers = [[NSMutableArray alloc] init];
+    _sections = [[NSMutableArray alloc] init];
+    _headers = [[NSMutableDictionary alloc] init];
+    _footers = [[NSMutableDictionary alloc] init];
   }
   return self;
 }
@@ -44,7 +45,7 @@ typedef NSMutableArray<CollectionViewItem*> SectionItems;
             [self internalSectionForIdentifier:sectionIdentifier]);
   [_sectionIdentifiers addObject:@(sectionIdentifier)];
 
-  base::scoped_nsobject<SectionItems> section([[SectionItems alloc] init]);
+  SectionItems* section = [[SectionItems alloc] init];
   [_sections addObject:section];
 }
 
@@ -57,7 +58,7 @@ typedef NSMutableArray<CollectionViewItem*> SectionItems;
 
   [_sectionIdentifiers insertObject:@(sectionIdentifier) atIndex:index];
 
-  base::scoped_nsobject<SectionItems> section([[SectionItems alloc] init]);
+  SectionItems* section = [[SectionItems alloc] init];
   [_sections insertObject:section atIndex:index];
 }
 

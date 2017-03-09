@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 source_set("collection_view") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "collection_view_controller.h",
     "collection_view_controller.mm",

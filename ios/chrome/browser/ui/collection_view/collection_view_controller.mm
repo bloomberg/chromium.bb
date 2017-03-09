@@ -6,28 +6,29 @@
 
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
-#import "base/mac/scoped_nsobject.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
 #import "ios/chrome/browser/ui/material_components/utils.h"
 #import "ios/third_party/material_components_ios/src/components/AppBar/src/MaterialAppBar.h"
 #import "ios/third_party/material_components_ios/src/components/CollectionCells/src/MaterialCollectionCells.h"
 
-@implementation CollectionViewController {
-  // The implementation of this controller follows the guidelines from
-  // https://github.com/material-components/material-components-ios/tree/develop/components/AppBar
-  base::scoped_nsobject<MDCAppBar> _appBar;
-  base::scoped_nsobject<CollectionViewModel> _collectionViewModel;
-}
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
+// The implementation of this controller follows the guidelines from
+// https://github.com/material-components/material-components-ios/tree/develop/components/AppBar
+@implementation CollectionViewController
+@synthesize appBar = _appBar;
+@synthesize collectionViewModel = _collectionViewModel;
 
 - (instancetype)initWithStyle:(CollectionViewControllerStyle)style {
-  UICollectionViewLayout* layout =
-      [[[MDCCollectionViewFlowLayout alloc] init] autorelease];
+  UICollectionViewLayout* layout = [[MDCCollectionViewFlowLayout alloc] init];
   self = [super initWithCollectionViewLayout:layout];
   if (self) {
     if (style == CollectionViewControllerStyleAppBar) {
-      _appBar.reset([[MDCAppBar alloc] init]);
-      [self addChildViewController:_appBar.get().headerViewController];
+      _appBar = [[MDCAppBar alloc] init];
+      [self addChildViewController:_appBar.headerViewController];
     }
   }
   return self;
@@ -56,16 +57,8 @@
   return self.appBar.headerViewController;
 }
 
-- (MDCAppBar*)appBar {
-  return _appBar.get();
-}
-
-- (CollectionViewModel*)collectionViewModel {
-  return _collectionViewModel.get();
-}
-
 - (void)loadModel {
-  _collectionViewModel.reset([[CollectionViewModel alloc] init]);
+  _collectionViewModel = [[CollectionViewModel alloc] init];
 }
 
 - (void)reconfigureCellsForItems:(NSArray*)items
@@ -121,8 +114,8 @@
   DCHECK(![MDCCollectionViewController instancesRespondToSelector:_cmd]);
 
   // Retain the item to be able to move it.
-  base::scoped_nsobject<CollectionViewItem> item(
-      [[self.collectionViewModel itemAtIndexPath:indexPath] retain]);
+  CollectionViewItem* item =
+      [self.collectionViewModel itemAtIndexPath:indexPath];
 
   // Item coordinates.
   NSInteger sectionIdentifier =
