@@ -106,8 +106,8 @@ void BluetoothRemoteGATTCharacteristic::ReadValueCallback(
 
   // If the device is disconnected, reject.
   if (!getGatt()->RemoveFromActiveAlgorithms(resolver)) {
-    resolver->reject(BluetoothError::createDOMException(
-        blink::mojom::WebBluetoothResult::GATT_SERVER_DISCONNECTED));
+    resolver->reject(
+        BluetoothError::createNotConnectedException(BluetoothOperation::GATT));
     return;
   }
 
@@ -127,8 +127,7 @@ ScriptPromise BluetoothRemoteGATTCharacteristic::readValue(
   if (!getGatt()->connected()) {
     return ScriptPromise::rejectWithDOMException(
         scriptState,
-        BluetoothError::createDOMException(
-            blink::mojom::WebBluetoothResult::GATT_SERVER_NOT_CONNECTED));
+        BluetoothError::createNotConnectedException(BluetoothOperation::GATT));
   }
 
   if (!getGatt()->device()->isValidCharacteristic(
@@ -161,8 +160,8 @@ void BluetoothRemoteGATTCharacteristic::WriteValueCallback(
 
   // If the device is disconnected, reject.
   if (!getGatt()->RemoveFromActiveAlgorithms(resolver)) {
-    resolver->reject(BluetoothError::createDOMException(
-        blink::mojom::WebBluetoothResult::GATT_SERVER_DISCONNECTED));
+    resolver->reject(
+        BluetoothError::createNotConnectedException(BluetoothOperation::GATT));
     return;
   }
 
@@ -180,8 +179,7 @@ ScriptPromise BluetoothRemoteGATTCharacteristic::writeValue(
   if (!getGatt()->connected()) {
     return ScriptPromise::rejectWithDOMException(
         scriptState,
-        BluetoothError::createDOMException(
-            blink::mojom::WebBluetoothResult::GATT_SERVER_NOT_CONNECTED));
+        BluetoothError::createNotConnectedException(BluetoothOperation::GATT));
   }
 
   if (!getGatt()->device()->isValidCharacteristic(
@@ -228,8 +226,8 @@ void BluetoothRemoteGATTCharacteristic::NotificationsCallback(
 
   // If the device is disconnected, reject.
   if (!getGatt()->RemoveFromActiveAlgorithms(resolver)) {
-    resolver->reject(BluetoothError::createDOMException(
-        blink::mojom::WebBluetoothResult::GATT_SERVER_DISCONNECTED));
+    resolver->reject(
+        BluetoothError::createNotConnectedException(BluetoothOperation::GATT));
     return;
   }
 
@@ -245,8 +243,7 @@ ScriptPromise BluetoothRemoteGATTCharacteristic::startNotifications(
   if (!getGatt()->connected()) {
     return ScriptPromise::rejectWithDOMException(
         scriptState,
-        BluetoothError::createDOMException(
-            blink::mojom::WebBluetoothResult::GATT_SERVER_NOT_CONNECTED));
+        BluetoothError::createNotConnectedException(BluetoothOperation::GATT));
   }
 
   if (!getGatt()->device()->isValidCharacteristic(
@@ -274,8 +271,7 @@ ScriptPromise BluetoothRemoteGATTCharacteristic::stopNotifications(
   if (!getGatt()->connected()) {
     return ScriptPromise::rejectWithDOMException(
         scriptState,
-        BluetoothError::createDOMException(
-            blink::mojom::WebBluetoothResult::GATT_SERVER_NOT_CONNECTED));
+        BluetoothError::createNotConnectedException(BluetoothOperation::GATT));
   }
 
   if (!getGatt()->device()->isValidCharacteristic(
@@ -340,8 +336,8 @@ ScriptPromise BluetoothRemoteGATTCharacteristic::getDescriptorsImpl(
   if (!getGatt()->connected()) {
     return ScriptPromise::rejectWithDOMException(
         scriptState,
-        BluetoothError::createDOMException(
-            blink::mojom::WebBluetoothResult::GATT_SERVER_NOT_CONNECTED));
+        // TODO(crbug.com/684445): Change to DescriptorsRetrieval.
+        BluetoothError::createNotConnectedException(BluetoothOperation::GATT));
   }
 
   if (!getGatt()->device()->isValidCharacteristic(
@@ -381,8 +377,9 @@ void BluetoothRemoteGATTCharacteristic::GetDescriptorsCallback(
 
   // If the device is disconnected, reject.
   if (!m_service->device()->gatt()->RemoveFromActiveAlgorithms(resolver)) {
-    resolver->reject(BluetoothError::createDOMException(
-        blink::mojom::WebBluetoothResult::GATT_SERVER_DISCONNECTED));
+    // TODO(crbug.com/684445): Change to DescriptorsRetrieval.
+    resolver->reject(
+        BluetoothError::createNotConnectedException(BluetoothOperation::GATT));
     return;
   }
 

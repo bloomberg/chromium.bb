@@ -17,7 +17,8 @@ promise_test(
             promise = assert_promise_rejects_with_message(
                 error_descriptor.CALLS([readValue()|writeValue(val)]),
                 new DOMException(
-                    'GATT Server disconnected while performing a GATT operation.',
+                  'GATT Server is disconnected. Cannot perform GATT operations. ' +
+                    '(Re)connect first with `device.gatt.connect`.',
                     'NetworkError'));
             // Disconnect called to clear attributeInstanceMap and allow the
             // object to get garbage collected.

@@ -11,7 +11,8 @@ promise_test(() => {
       let promise = assert_promise_rejects_with_message(
         characteristic.CALLS([
           readValue()| writeValue(val)| startNotifications()]),
-        new DOMException('GATT Server disconnected while performing a GATT operation.',
+        new DOMException('GATT Server is disconnected. Cannot perform GATT operations. ' +
+                         '(Re)connect first with `device.gatt.connect`.',
                          'NetworkError'));
       return disconnected.then(() => characteristic.service.device.gatt.connect())
         .then(() => promise);

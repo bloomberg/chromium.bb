@@ -21,7 +21,8 @@ promise_test(() => {
                 () => assert_promise_rejects_with_message(
                     user_description.CALLS([readValue()|writeValue(val)]),
                     new DOMException(
-                        'GATT Server is disconnected. Cannot perform GATT operations.',
+                      'GATT Server is disconnected. Cannot perform GATT operations. ' +
+                        '(Re)connect first with `device.gatt.connect`.',
                         'NetworkError')));
       });
 }, 'Device disconnects before FUNCTION_NAME. Reject with NetworkError.');

@@ -368,7 +368,8 @@ function get_request_disconnection(gattServer) {
       return () => assert_promise_rejects_with_message(
         characteristic.writeValue(new Uint8Array([0])),
         new DOMException(
-          'GATT Server disconnected while performing a GATT operation.',
+          'GATT Server is disconnected. Cannot perform GATT operations. ' +
+          '(Re)connect first with `device.gatt.connect`.',
           'NetworkError'));
     });
 }

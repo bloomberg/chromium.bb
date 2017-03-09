@@ -12,10 +12,11 @@
 namespace blink {
 
 // Used when generating DOMExceptions specific to each operation.
-// TODO(crbug.com/684445): Add DescriptorsRetrieval and GATTOperation.
+// TODO(crbug.com/684445): Add DescriptorsRetrieval.
 enum class BluetoothOperation {
   ServicesRetrieval,
   CharacteristicsRetrieval,
+  GATT,
 };
 
 // These error codes requires detailed error messages.

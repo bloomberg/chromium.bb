@@ -18,7 +18,8 @@ promise_test(() => {
         /* 0x0101 doesn't exist in this characteristic */
         characteristic.getDescriptors(0x0101),
         new DOMException(
-          'GATT Server disconnected while performing a GATT operation.',
+          'GATT Server is disconnected. Cannot perform GATT operations. ' +
+          '(Re)connect first with `device.gatt.connect`.',
           'NetworkError'));
       // Disconnect called to clear attributeInstanceMap and allow the
       // object to get garbage collected.

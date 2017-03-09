@@ -25,7 +25,8 @@ promise_test(() => {
               writeValue(val)|
               startNotifications()]),
             new DOMException(
-              'GATT Server disconnected while performing a GATT operation.',
+              'GATT Server is disconnected. Cannot perform GATT operations. ' +
+              '(Re)connect first with `device.gatt.connect`.',
               'NetworkError'));
         });
     });

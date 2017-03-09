@@ -28,6 +28,9 @@ DOMException* BluetoothError::createNotConnectedException(
     case BluetoothOperation::CharacteristicsRetrieval:
       operationString = "retrieve characteristics";
       break;
+    case BluetoothOperation::GATT:
+      operationString = "perform GATT operations";
+      break;
   }
 
   return DOMException::create(
@@ -120,10 +123,6 @@ DOMException* BluetoothError::createDOMException(
                 "GATT operation already in progress.");
       MAP_ERROR(UNTRANSLATED_CONNECT_ERROR_CODE, NetworkError,
                 "Unknown ConnectErrorCode.");
-      MAP_ERROR(GATT_SERVER_NOT_CONNECTED, NetworkError,
-                "GATT Server is disconnected. Cannot perform GATT operations.");
-      MAP_ERROR(GATT_SERVER_DISCONNECTED, NetworkError,
-                "GATT Server disconnected while performing a GATT operation.");
 
       // NotFoundErrors:
       MAP_ERROR(WEB_BLUETOOTH_NOT_SUPPORTED, NotFoundError,

@@ -38,8 +38,8 @@ void BluetoothRemoteGATTDescriptor::ReadValueCallback(
 
   // If the device is disconnected, reject.
   if (!getGatt()->RemoveFromActiveAlgorithms(resolver)) {
-    resolver->reject(BluetoothError::createDOMException(
-        mojom::blink::WebBluetoothResult::GATT_SERVER_DISCONNECTED));
+    resolver->reject(
+        BluetoothError::createNotConnectedException(BluetoothOperation::GATT));
     return;
   }
 
@@ -59,8 +59,7 @@ ScriptPromise BluetoothRemoteGATTDescriptor::readValue(
   if (!getGatt()->connected()) {
     return ScriptPromise::rejectWithDOMException(
         scriptState,
-        BluetoothError::createDOMException(
-            mojom::blink::WebBluetoothResult::GATT_SERVER_NOT_CONNECTED));
+        BluetoothError::createNotConnectedException(BluetoothOperation::GATT));
   }
 
   if (!getGatt()->device()->isValidDescriptor(m_descriptor->instance_id)) {
@@ -91,8 +90,8 @@ void BluetoothRemoteGATTDescriptor::WriteValueCallback(
   // If the resolver is not in the set of ActiveAlgorithms then the frame
   // disconnected so we reject.
   if (!getGatt()->RemoveFromActiveAlgorithms(resolver)) {
-    resolver->reject(BluetoothError::createDOMException(
-        mojom::blink::WebBluetoothResult::GATT_SERVER_DISCONNECTED));
+    resolver->reject(
+        BluetoothError::createNotConnectedException(BluetoothOperation::GATT));
     return;
   }
 
@@ -110,8 +109,7 @@ ScriptPromise BluetoothRemoteGATTDescriptor::writeValue(
   if (!getGatt()->connected()) {
     return ScriptPromise::rejectWithDOMException(
         scriptState,
-        BluetoothError::createDOMException(
-            mojom::blink::WebBluetoothResult::GATT_SERVER_NOT_CONNECTED));
+        BluetoothError::createNotConnectedException(BluetoothOperation::GATT));
   }
 
   if (!getGatt()->device()->isValidDescriptor(m_descriptor->instance_id)) {
