@@ -57,7 +57,6 @@
 #import "third_party/ocmock/OCMock/OCMock.h"
 #import "ui/base/cocoa/nsview_additions.h"
 #include "ui/gfx/animation/slide_animation.h"
-#include "ui/gfx/vector_icons_public.h"
 
 namespace {
 

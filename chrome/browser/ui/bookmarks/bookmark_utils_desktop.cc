@@ -45,7 +45,6 @@
 #if defined(TOOLKIT_VIEWS)
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/paint_vector_icon.h"
-#include "ui/gfx/vector_icons_public.h"
 #endif
 
 #if defined(OS_WIN)

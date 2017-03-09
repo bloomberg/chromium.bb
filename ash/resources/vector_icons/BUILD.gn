@@ -8,6 +8,8 @@ aggregate_vector_icons("ash_vector_icons") {
   icon_directory = "."
 
   icons = [
+    "check_circle.1x.icon",
+    "check_circle.icon",
     "ime_menu_emoticon.1x.icon",
     "ime_menu_emoticon.icon",
     "ime_menu_microphone.1x.icon",

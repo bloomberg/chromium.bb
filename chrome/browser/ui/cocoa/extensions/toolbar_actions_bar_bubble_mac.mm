@@ -197,12 +197,12 @@ CGFloat kMinWidth = 320.0;
       extra_view_info = delegate_->GetExtraViewInfo();
 
   if (extra_view_info) {
-    gfx::VectorIconId resource_id = extra_view_info->resource_id;
     // The extra view icon is optional.
-    if (resource_id != gfx::VectorIconId::VECTOR_ICON_NONE) {
-      NSImage* image = gfx::Image(gfx::CreateVectorIcon(resource_id, 16,
-                                                        gfx::kChromeIconGrey))
-                           .ToNSImage();
+    if (extra_view_info->resource) {
+      NSImage* image =
+          gfx::Image(gfx::CreateVectorIcon(*extra_view_info->resource, 16,
+                                           gfx::kChromeIconGrey))
+              .ToNSImage();
       NSRect frame = NSMakeRect(0, 0, image.size.width, image.size.height);
       iconView_ = [[[NSImageView alloc] initWithFrame:frame] autorelease];
       [iconView_ setImage:image];

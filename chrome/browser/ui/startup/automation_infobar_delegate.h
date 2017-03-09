@@ -9,7 +9,6 @@
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
-#include "ui/gfx/vector_icons_public.h"
 #include "url/gurl.h"
 
 // An infobar to inform users if their browser is being controlled by an

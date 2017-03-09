@@ -31,13 +31,13 @@
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/paint_vector_icon.h"
-#include "ui/gfx/vector_icons_public.h"
 #include "ui/message_center/message_center_style.h"
 #include "ui/message_center/message_center_tray_delegate.h"
 #include "ui/message_center/views/message_bubble_base.h"
 #include "ui/message_center/views/message_center_bubble.h"
 #include "ui/message_center/views/message_popup_collection.h"
 #include "ui/strings/grit/ui_strings.h"
+#include "ui/vector_icons/vector_icons.h"
 #include "ui/views/bubble/tray_bubble_view.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
@@ -306,7 +306,7 @@ WebNotificationTray::WebNotificationTray(WmShelf* shelf,
   } else {
     SetContentsBackground(true);
     gfx::ImageSkia bell_image =
-        CreateVectorIcon(gfx::VectorIconId::NOTIFICATIONS, kNoUnreadIconSize,
+        CreateVectorIcon(ui::kNotificationsIcon, kNoUnreadIconSize,
                          kWebNotificationColorNoUnread);
     const gfx::Size bell_icon_size = kTrayItemInnerBellIconSizeNonMd;
     bell_icon_.reset(new WebNotificationImage(

@@ -27,7 +27,7 @@
 #include "ui/base/models/menu_model_delegate.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/paint_vector_icon.h"
-#include "ui/gfx/vector_icons_public.h"
+#include "ui/vector_icons/vector_icons.h"
 
 // static
 std::unique_ptr<MediaRouterContextualMenu>
@@ -63,7 +63,7 @@ MediaRouterContextualMenu::MediaRouterContextualMenu(Browser* browser,
                                     IDS_MEDIA_ROUTER_SHOWN_BY_POLICY);
     menu_model_.SetIcon(
         menu_model_.GetIndexOfCommandId(IDC_MEDIA_ROUTER_SHOWN_BY_POLICY),
-        gfx::Image(gfx::CreateVectorIcon(gfx::VectorIconId::BUSINESS, 16,
+        gfx::Image(gfx::CreateVectorIcon(ui::kBusinessIcon, 16,
                                          gfx::kChromeIconGrey)));
   } else {
     menu_model_.AddCheckItemWithStringId(

@@ -57,7 +57,7 @@
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/text_elider.h"
 #include "ui/gfx/text_utils.h"
-#include "ui/gfx/vector_icons_public.h"
+#include "ui/vector_icons/vector_icons.h"
 #include "ui/views/animation/flood_fill_ink_drop_ripple.h"
 #include "ui/views/animation/ink_drop_highlight.h"
 #include "ui/views/animation/ink_drop_impl.h"
@@ -988,8 +988,8 @@ gfx::ImageSkia DownloadItemView::GetWarningIcon() {
     case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_HOST:
     case content::DOWNLOAD_DANGER_TYPE_POTENTIALLY_UNWANTED:
     case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE:
-      return gfx::CreateVectorIcon(gfx::VectorIconId::WARNING,
-                                   kWarningIconSize, gfx::kGoogleRed700);
+      return gfx::CreateVectorIcon(ui::kWarningIcon, kWarningIconSize,
+                                   gfx::kGoogleRed700);
 
     case content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS:
     case content::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT:

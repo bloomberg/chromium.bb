@@ -19,7 +19,6 @@ aggregate_vector_icons("omnibox_vector_icons") {
     "extension_app.icon",
     "http.icon",
     "keyword_search.icon",
-    "search.icon",
     "star.1x.icon",
     "star.icon",
   ]
@@ -168,7 +167,10 @@ static_library("browser") {
 
   if (!is_android && !is_ios) {
     sources += get_target_outputs(":omnibox_vector_icons")
-    deps += [ ":omnibox_vector_icons" ]
+    deps += [
+      ":omnibox_vector_icons",
+      "//ui/vector_icons",
+    ]
   }
 
   # TODO(brettw) Fix the include cycle and remove this line.

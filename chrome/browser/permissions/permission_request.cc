@@ -4,7 +4,6 @@
 
 #include "chrome/browser/permissions/permission_request.h"
 
-#include "ui/gfx/vector_icons_public.h"
 
 PermissionRequest::PermissionRequest() : persist_(true) {}
 

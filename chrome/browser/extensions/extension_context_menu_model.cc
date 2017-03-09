@@ -45,7 +45,7 @@
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/paint_vector_icon.h"
-#include "ui/gfx/vector_icons_public.h"
+#include "ui/vector_icons/vector_icons.h"
 
 namespace extensions {
 
@@ -315,7 +315,7 @@ void ExtensionContextMenuModel::InitMenu(const Extension* extension,
     if (is_required_by_policy) {
       int uninstall_index = GetIndexOfCommandId(UNINSTALL);
       SetIcon(uninstall_index,
-              gfx::Image(gfx::CreateVectorIcon(gfx::VectorIconId::BUSINESS, 16,
+              gfx::Image(gfx::CreateVectorIcon(ui::kBusinessIcon, 16,
                                                gfx::kChromeIconGrey)));
     }
   }

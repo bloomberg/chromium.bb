@@ -11,13 +11,13 @@
 #include "ash/common/system/tray/tray_constants.h"
 #include "ash/common/system/tray/view_click_listener.h"
 #include "ash/resources/grit/ash_resources.h"
+#include "ash/resources/vector_icons/vector_icons.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/paint_vector_icon.h"
-#include "ui/gfx/vector_icons_public.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/label.h"
 
@@ -85,8 +85,8 @@ void CommonPaletteTool::OnViewClicked(views::View* sender) {
 views::View* CommonPaletteTool::CreateDefaultView(const base::string16& name) {
   gfx::ImageSkia icon =
       CreateVectorIcon(GetPaletteIcon(), kMenuIconSize, gfx::kChromeIconGrey);
-  gfx::ImageSkia check = CreateVectorIcon(gfx::VectorIconId::CHECK_CIRCLE,
-                                          kMenuIconSize, gfx::kGoogleGreen700);
+  gfx::ImageSkia check =
+      CreateVectorIcon(kCheckCircleIcon, kMenuIconSize, gfx::kGoogleGreen700);
 
   highlight_view_ = new HoverHighlightView(this);
   highlight_view_->SetBorder(views::CreateEmptyBorder(0, 0, 0, 0));

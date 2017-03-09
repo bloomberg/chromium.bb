@@ -33,8 +33,8 @@
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/image/image_skia_util_mac.h"
 #include "ui/gfx/paint_vector_icon.h"
-#include "ui/gfx/vector_icons_public.h"
 #include "ui/native_theme/native_theme.h"
+#include "ui/vector_icons/vector_icons.h"
 
 namespace {
 
@@ -502,10 +502,9 @@ void CardUnmaskPromptViewBridge::PerformClose() {
       initWithArrowLocation:info_bubble::kTopTrailing]);
   [storageTooltip_ setMaxTooltipWidth:2 * autofill::kFieldWidth +
                                       autofill::kHorizontalFieldPadding];
-  [storageTooltip_
-      setImage:gfx::NSImageFromImageSkia(gfx::CreateVectorIcon(
-                   gfx::VectorIconId::INFO_OUTLINE, autofill::kInfoIconSize,
-                   gfx::kChromeIconGrey))];
+  [storageTooltip_ setImage:gfx::NSImageFromImageSkia(gfx::CreateVectorIcon(
+                                ui::kInfoOutlineIcon, autofill::kInfoIconSize,
+                                gfx::kChromeIconGrey))];
   [storageTooltip_
       setMessage:base::SysUTF16ToNSString(l10n_util::GetStringUTF16(
                      IDS_AUTOFILL_CARD_UNMASK_PROMPT_STORAGE_TOOLTIP))];

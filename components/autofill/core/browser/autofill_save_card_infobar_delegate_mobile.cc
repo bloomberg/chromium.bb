@@ -17,7 +17,6 @@
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/window_open_disposition.h"
-#include "ui/gfx/vector_icons_public.h"
 #include "url/gurl.h"
 
 namespace autofill {

@@ -25,7 +25,6 @@
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia_util_mac.h"
 #include "ui/gfx/paint_vector_icon.h"
-#include "ui/gfx/vector_icons_public.h"
 #include "ui/vector_icons/vector_icons.h"
 
 namespace {
@@ -193,11 +192,11 @@ NSButton* CreateTouchBarButton(const gfx::VectorIcon& icon,
   NSImage* image;
   if (isGoogle) {
     image = NSImageFromImageSkiaWithColorSpace(
-        gfx::CreateVectorIcon(gfx::VectorIconId::GOOGLE_SEARCH_MAC_TOUCHBAR,
-                              kTouchBarIconSize, gfx::kPlaceholderColor),
+        gfx::CreateVectorIcon(kGoogleSearchMacTouchbarIcon, kTouchBarIconSize,
+                              gfx::kPlaceholderColor),
         base::mac::GetSRGBColorSpace());
   } else {
-    image = CreateNSImageFromIcon(omnibox::kSearchIcon);
+    image = CreateNSImageFromIcon(ui::kSearchIcon);
   }
 
   NSButton* searchButton =

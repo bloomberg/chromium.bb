@@ -56,7 +56,6 @@
 #include "components/bookmarks/common/bookmark_pref_names.h"
 #include "components/grit/components_scaled_resources.h"
 #import "components/omnibox/browser/omnibox_popup_model.h"
-#include "components/omnibox/browser/vector_icons.h"
 #include "components/prefs/pref_service.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
@@ -78,6 +77,7 @@
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia_util_mac.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/vector_icons/vector_icons.h"
 
 using content::WebContents;
 
@@ -705,7 +705,7 @@ NSImage* LocationBarViewMac::GetKeywordImage(const base::string16& keyword) {
   SkColor icon_color =
       IsLocationBarDark() ? kMaterialDarkVectorIconColor : gfx::kGoogleBlue700;
   return NSImageFromImageSkiaWithColorSpace(
-      gfx::CreateVectorIcon(omnibox::kSearchIcon, kDefaultIconSize, icon_color),
+      gfx::CreateVectorIcon(ui::kSearchIcon, kDefaultIconSize, icon_color),
       base::mac::GetSRGBColorSpace());
 }
 

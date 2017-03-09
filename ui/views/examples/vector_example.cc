@@ -11,7 +11,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "ui/gfx/paint_vector_icon.h"
-#include "ui/gfx/vector_icons_public.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/md_text_button.h"
@@ -39,7 +38,6 @@ class VectorIconGallery : public View,
         file_chooser_(new Textfield()),
         file_go_button_(
             MdTextButton::Create(this, base::ASCIIToUTF16("Render"))),
-        vector_id_(0),
         // 36dp is one of the natural sizes for MD icons, and corresponds
         // roughly to a 32dp usable area.
         size_(36),
@@ -62,7 +60,7 @@ class VectorIconGallery : public View,
     box->SetFlexForView(image_view_container_, 1);
 
     file_chooser_->set_placeholder_text(
-        base::ASCIIToUTF16("Or enter a file to read"));
+        base::ASCIIToUTF16("Enter a file to read"));
     View* file_container = new View();
     BoxLayout* file_box = new BoxLayout(BoxLayout::kHorizontal, 10, 10, 10);
     file_container->SetLayoutManager(file_box);
@@ -75,30 +73,16 @@ class VectorIconGallery : public View,
     size_input_->set_controller(this);
     color_input_->set_placeholder_text(base::ASCIIToUTF16("Color (AARRGGBB)"));
     color_input_->set_controller(this);
-
-    UpdateImage();
   }
 
   ~VectorIconGallery() override {}
-
-  // View implementation.
-  bool OnMousePressed(const ui::MouseEvent& event) override {
-    if (GetEventHandlerForPoint(event.location()) == image_view_container_) {
-      int increment = event.IsOnlyRightMouseButton() ? -1 : 1;
-      int icon_count = static_cast<int>(gfx::VectorIconId::VECTOR_ICON_NONE);
-      vector_id_ = (icon_count + vector_id_ + increment) % icon_count;
-      UpdateImage();
-      return true;
-    }
-    return false;
-  }
 
   // TextfieldController implementation.
   void ContentsChanged(Textfield* sender,
                        const base::string16& new_contents) override {
     if (sender == size_input_) {
       if (base::StringToInt(new_contents, &size_) && (size_ > 0))
-        UpdateImage();
+        Update();
       else
         size_input_->SetText(base::string16());
 
@@ -112,45 +96,45 @@ class VectorIconGallery : public View,
         strtoul(base::UTF16ToASCII(new_contents).c_str(), nullptr, 16);
     if (new_color <= 0xffffffff) {
       color_ = new_color;
-      UpdateImage();
+      Update();
     }
   }
 
   // ButtonListener
   void ButtonPressed(Button* sender, const ui::Event& event) override {
     DCHECK_EQ(file_go_button_, sender);
-    std::string contents;
 #if defined(OS_POSIX)
     base::FilePath path(base::UTF16ToUTF8(file_chooser_->text()));
 #elif defined(OS_WIN)
     base::FilePath path(file_chooser_->text());
 #endif
-    base::ReadFileToString(path, &contents);
+    base::ReadFileToString(path, &contents_);
     // Skip over comments.
-    for (size_t slashes = contents.find("//"); slashes != std::string::npos;
-         slashes = contents.find("//")) {
-      size_t eol = contents.find("\n", slashes);
-      contents.erase(slashes, eol - slashes);
+    for (size_t slashes = contents_.find("//"); slashes != std::string::npos;
+         slashes = contents_.find("//")) {
+      size_t eol = contents_.find("\n", slashes);
+      contents_.erase(slashes, eol - slashes);
     }
-    image_view_->SetImage(
-        gfx::CreateVectorIconFromSource(contents, size_, color_));
-  }
-
-  void UpdateImage() {
-    image_view_->SetImage(gfx::CreateVectorIcon(
-        static_cast<gfx::VectorIconId>(vector_id_), size_, color_));
-    Layout();
+    Update();
   }
 
  private:
+  void Update() {
+    if (!contents_.empty()) {
+      image_view_->SetImage(
+          gfx::CreateVectorIconFromSource(contents_, size_, color_));
+    }
+    Layout();
+  }
+
   ImageView* image_view_;
   View* image_view_container_;
   Textfield* size_input_;
   Textfield* color_input_;
   Textfield* file_chooser_;
   Button* file_go_button_;
+  std::string contents_;
 
-  int vector_id_;
   int size_;
   SkColor color_;
 

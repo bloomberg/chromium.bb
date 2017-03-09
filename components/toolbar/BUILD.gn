@@ -9,9 +9,6 @@ aggregate_vector_icons("toolbar_vector_icons") {
   icon_directory = "vector_icons"
 
   icons = [
-    # TODO(estade): this is the same as ui/gfx/vector_icons/business.icon. Use
-    # that one instead once it's been updated from VectorIconId to VectorIcon.
-    "business.icon",
     "http.1x.icon",
     "http.icon",
     "https_invalid.1x.icon",
@@ -51,7 +48,10 @@ static_library("toolbar") {
 
   if (!is_android && !is_ios) {
     sources += get_target_outputs(":toolbar_vector_icons")
-    deps += [ ":toolbar_vector_icons" ]
+    deps += [
+      ":toolbar_vector_icons",
+      "//ui/vector_icons",
+    ]
   }
 }
 

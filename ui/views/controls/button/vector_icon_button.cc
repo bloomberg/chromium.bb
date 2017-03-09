@@ -7,7 +7,6 @@
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/paint_vector_icon.h"
-#include "ui/gfx/vector_icons_public.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/vector_icon_button_delegate.h"
 #include "ui/views/painter.h"
@@ -22,9 +21,7 @@ const int kButtonExtraTouchSize = 4;
 }  // namespace
 
 VectorIconButton::VectorIconButton(VectorIconButtonDelegate* delegate)
-    : ImageButton(delegate),
-      delegate_(delegate),
-      id_(gfx::VectorIconId::VECTOR_ICON_NONE) {
+    : ImageButton(delegate), delegate_(delegate), icon_(&gfx::kNoneIcon) {
   SetInkDropMode(InkDropMode::ON);
   set_has_ink_drop_action_on_click(true);
   SetImageAlignment(ImageButton::ALIGN_CENTER, ImageButton::ALIGN_MIDDLE);
@@ -33,17 +30,8 @@ VectorIconButton::VectorIconButton(VectorIconButtonDelegate* delegate)
 
 VectorIconButton::~VectorIconButton() {}
 
-void VectorIconButton::SetIcon(gfx::VectorIconId id) {
-  id_ = id;
-  icon_ = nullptr;
-
-  OnSetIcon();
-}
-
 void VectorIconButton::SetIcon(const gfx::VectorIcon& icon) {
-  id_ = gfx::VectorIconId::VECTOR_ICON_NONE;
   icon_ = &icon;
-
   OnSetIcon();
 }
 
@@ -66,17 +54,10 @@ void VectorIconButton::UpdateImagesAndColors() {
   SkColor icon_color =
       color_utils::DeriveDefaultIconColor(delegate_->GetVectorIconBaseColor());
   SkColor disabled_color = SkColorSetA(icon_color, 0xff / 2);
-  if (icon_) {
-    SetImage(CustomButton::STATE_NORMAL,
-             gfx::CreateVectorIcon(*icon_, icon_color));
-    SetImage(CustomButton::STATE_DISABLED,
-             gfx::CreateVectorIcon(*icon_, disabled_color));
-  } else {
-    SetImage(CustomButton::STATE_NORMAL,
-             gfx::CreateVectorIcon(id_, icon_color));
-    SetImage(CustomButton::STATE_DISABLED,
-             gfx::CreateVectorIcon(id_, disabled_color));
-  }
+  SetImage(CustomButton::STATE_NORMAL,
+           gfx::CreateVectorIcon(*icon_, icon_color));
+  SetImage(CustomButton::STATE_DISABLED,
+           gfx::CreateVectorIcon(*icon_, disabled_color));
   set_ink_drop_base_color(icon_color);
 }
 

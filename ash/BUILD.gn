@@ -898,6 +898,7 @@ component("ash") {
     "//ui/platform_window/stub",
     "//ui/resources",
     "//ui/strings",
+    "//ui/vector_icons",
     "//ui/views",
     "//ui/wm",
     "//url",

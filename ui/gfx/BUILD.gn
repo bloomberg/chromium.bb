@@ -357,9 +357,7 @@ component("gfx") {
       "paint_vector_icon.cc",
       "paint_vector_icon.h",
       "vector_icon_types.h",
-      "vector_icons_public.h",
     ]
-    deps += [ "//ui/gfx/vector_icons" ]
   }
 
   # Windows.

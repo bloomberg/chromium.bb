@@ -7,13 +7,13 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/mac/scoped_nsobject.h"
+#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/favicon/favicon_utils.h"
 #include "skia/ext/skia_utils_mac.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia_util_mac.h"
 #include "ui/gfx/paint_vector_icon.h"
-#include "ui/gfx/vector_icons_public.h"
 #include "ui/resources/grit/ui_resources.h"
 
 namespace {
@@ -34,8 +34,8 @@ NSImage* FaviconForWebContents(content::WebContents* contents, SkColor color) {
       return image;
   }
 
-  return NSImageFromImageSkia(gfx::CreateVectorIcon(
-      gfx::VectorIconId::DEFAULT_FAVICON, kVectorIconSize, color));
+  return NSImageFromImageSkia(
+      gfx::CreateVectorIcon(kDefaultFaviconIcon, kVectorIconSize, color));
 }
 
 }  // namespace mac

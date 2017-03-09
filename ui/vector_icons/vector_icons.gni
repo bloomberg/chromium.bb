@@ -31,7 +31,7 @@ template("aggregate_vector_icons") {
   action(target_name) {
     visibility = [ ":*" ]
 
-    script = "//ui/gfx/vector_icons/aggregate_vector_icons.py"
+    script = "//ui/vector_icons/aggregate_vector_icons.py"
 
     output_cc = "$target_gen_dir/vector_icons.cc"
     output_h = "$target_gen_dir/vector_icons.h"

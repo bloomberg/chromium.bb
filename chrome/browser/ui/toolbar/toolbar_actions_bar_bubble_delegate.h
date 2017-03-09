@@ -8,7 +8,10 @@
 #include <string>
 
 #include "base/strings/string16.h"
-#include "ui/gfx/vector_icons_public.h"
+
+namespace gfx {
+struct VectorIcon;
+}
 
 // A delegate for a generic bubble that hangs off the toolbar actions bar.
 class ToolbarActionsBarBubbleDelegate {
@@ -23,13 +26,11 @@ class ToolbarActionsBarBubbleDelegate {
   // Content populating an optional view, containing an image icon and/or
   // (linked) text, in the bubble.
   struct ExtraViewInfo {
-    ExtraViewInfo()
-        : resource_id(gfx::VectorIconId::VECTOR_ICON_NONE),
-          is_text_linked(false) {}
+    ExtraViewInfo() : resource(nullptr), is_text_linked(false) {}
 
-    // The resource id referencing the image icon. If has a value of -1, then no
+    // The resource defining the image icon. If has a value of null, then no
     // image icon will be added.
-    gfx::VectorIconId resource_id;
+    const gfx::VectorIcon* resource;
 
     // Text in the view. If this is an empty string, no text will be added.
     base::string16 text;

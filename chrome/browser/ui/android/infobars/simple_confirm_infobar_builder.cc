@@ -18,7 +18,6 @@
 #include "jni/SimpleConfirmInfoBarBuilder_jni.h"
 #include "ui/gfx/android/java_bitmap.h"
 #include "ui/gfx/image/image.h"
-#include "ui/gfx/vector_icons_public.h"
 
 using base::android::JavaParamRef;
 

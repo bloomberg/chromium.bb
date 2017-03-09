@@ -18,7 +18,6 @@
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/web/public/navigation_item.h"
 #import "ios/web/public/web_state/web_state.h"
-#include "ui/gfx/vector_icons_public.h"
 
 ToolbarModelDelegateIOS::ToolbarModelDelegateIOS(TabModel* tab_model)
     : tab_model_([tab_model retain]) {}

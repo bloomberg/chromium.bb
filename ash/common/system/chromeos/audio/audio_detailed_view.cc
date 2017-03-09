@@ -7,13 +7,13 @@
 #include "ash/common/system/tray/hover_highlight_view.h"
 #include "ash/common/system/tray/tray_popup_utils.h"
 #include "ash/common/system/tray/tri_view.h"
+#include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chromeos/audio/cras_audio_handler.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/paint_vector_icon.h"
-#include "ui/gfx/vector_icons_public.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
@@ -111,8 +111,8 @@ HoverHighlightView* AudioDetailedView::AddScrollListItem(
 
   container->AddLabelRowMd(text);
   if (checked) {
-    gfx::ImageSkia check_mark = gfx::CreateVectorIcon(
-        gfx::VectorIconId::CHECK_CIRCLE, gfx::kGoogleGreen700);
+    gfx::ImageSkia check_mark =
+        gfx::CreateVectorIcon(kCheckCircleIcon, gfx::kGoogleGreen700);
     container->AddRightIcon(check_mark, check_mark.width());
     container->SetRightViewVisible(true);
     container->SetAccessiblityState(

@@ -15,7 +15,6 @@
 #include "components/strings/grit/components_strings.h"
 #include "components/toolbar/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/gfx/vector_icons_public.h"
 
 StarView::StarView(CommandUpdater* command_updater, Browser* browser)
     : BubbleIconView(command_updater, IDC_BOOKMARK_PAGE), browser_(browser) {

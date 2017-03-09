@@ -4,11 +4,12 @@ include_rules = [
   "+components/strings/grit/components_strings.h",
   "+components/user_manager",
   "+extensions/strings/grit/extensions_strings.h",
+  "+ui/base",
+  "+ui/vector_icons",
 
   # For access to testing command line switches.
   "+ppapi/shared_impl",
 
   # For safe_json
   "+components/safe_json",
-  "+ui/base",
 ]

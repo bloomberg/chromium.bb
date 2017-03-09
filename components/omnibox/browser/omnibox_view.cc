@@ -21,7 +21,6 @@
 #include "components/toolbar/toolbar_model.h"
 #include "extensions/common/constants.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/gfx/vector_icons_public.h"
 
 // static
 base::string16 OmniboxView::StripJavascriptSchemas(const base::string16& text) {

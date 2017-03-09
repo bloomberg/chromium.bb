@@ -15,7 +15,6 @@
 #include "components/infobars/core/simple_alert_infobar_delegate.h"
 #include "components/prefs/pref_service.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/gfx/vector_icons_public.h"
 
 ChromeSelectFilePolicy::ChromeSelectFilePolicy(
     content::WebContents* source_contents)

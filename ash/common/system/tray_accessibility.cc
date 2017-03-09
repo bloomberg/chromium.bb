@@ -28,7 +28,6 @@
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/paint_vector_icon.h"
-#include "ui/gfx/vector_icons_public.h"
 #include "ui/views/controls/button/custom_button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
@@ -225,7 +224,7 @@ HoverHighlightView* AccessibilityDetailedView::AddScrollListItem(
 
   if (checked) {
     gfx::ImageSkia check_mark =
-        CreateVectorIcon(gfx::VectorIconId::CHECK_CIRCLE, gfx::kGoogleGreen700);
+        CreateVectorIcon(kCheckCircleIcon, gfx::kGoogleGreen700);
     container->AddRightIcon(check_mark, check_mark.width());
     container->SetRightViewVisible(true);
     container->SetAccessiblityState(

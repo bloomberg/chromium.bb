@@ -38,7 +38,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/skia_util.h"
-#include "ui/gfx/vector_icons_public.h"
+#include "ui/vector_icons/vector_icons.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/textfield/textfield.h"
@@ -295,9 +295,8 @@ void WindowSelector::Init(const WindowList& windows) {
       window_grid->PositionWindows(true);
     }
 
-    search_image_ =
-        gfx::CreateVectorIcon(gfx::VectorIconId::OMNIBOX_SEARCH,
-                              kTextFilterIconSize, kTextFilterIconColor);
+    search_image_ = gfx::CreateVectorIcon(ui::kSearchIcon, kTextFilterIconSize,
+                                          kTextFilterIconColor);
     WmWindow* root_window = shell->GetPrimaryRootWindow();
     text_filter_widget_.reset(CreateTextFilter(this, root_window, search_image_,
                                                &text_filter_bottom_));

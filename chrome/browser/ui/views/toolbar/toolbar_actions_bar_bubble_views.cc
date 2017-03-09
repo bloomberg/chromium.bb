@@ -11,7 +11,6 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/paint_vector_icon.h"
-#include "ui/gfx/vector_icons_public.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
@@ -47,12 +46,11 @@ views::View* ToolbarActionsBarBubbleViews::CreateExtraView() {
   if (!extra_view_info)
     return nullptr;
 
-  gfx::VectorIconId resource_id = extra_view_info->resource_id;
   std::unique_ptr<views::ImageView> icon;
-  if (resource_id != gfx::VectorIconId::VECTOR_ICON_NONE) {
+  if (extra_view_info->resource) {
     icon.reset(new views::ImageView);
-    icon->SetImage(
-        gfx::CreateVectorIcon(resource_id, kIconSize, gfx::kChromeIconGrey));
+    icon->SetImage(gfx::CreateVectorIcon(*extra_view_info->resource, kIconSize,
+                                         gfx::kChromeIconGrey));
   }
 
   std::unique_ptr<views::Label> label;

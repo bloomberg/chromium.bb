@@ -21,7 +21,7 @@
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_unittest_util.h"
 #include "ui/gfx/paint_vector_icon.h"
-#include "ui/gfx/vector_icons_public.h"
+#include "ui/vector_icons/vector_icons.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/link.h"
 #include "ui/views/test/test_widget_observer.h"
@@ -321,7 +321,7 @@ TEST_F(ToolbarActionsBarBubbleViewsTest, TestCreateExtraViewIconOnly) {
   std::unique_ptr<ToolbarActionsBarBubbleDelegate::ExtraViewInfo>
       extra_view_info =
           base::MakeUnique<ToolbarActionsBarBubbleDelegate::ExtraViewInfo>();
-  extra_view_info->resource_id = gfx::VectorIconId::BUSINESS;
+  extra_view_info->resource = &ui::kBusinessIcon;
   delegate.set_extra_view_info(std::move(extra_view_info));
   ShowBubble(&delegate);
   std::unique_ptr<views::View> extra_view(TestCreateExtraView());
@@ -329,7 +329,7 @@ TEST_F(ToolbarActionsBarBubbleViewsTest, TestCreateExtraViewIconOnly) {
   ASSERT_EQ("ImageView", std::string(extra_view->GetClassName()));
   EXPECT_TRUE(gfx::test::AreImagesEqual(
       gfx::Image(static_cast<views::ImageView*>(extra_view.get())->GetImage()),
-      gfx::Image(gfx::CreateVectorIcon(gfx::VectorIconId::BUSINESS, kIconSize,
+      gfx::Image(gfx::CreateVectorIcon(ui::kBusinessIcon, kIconSize,
                                        gfx::kChromeIconGrey))));
   CloseBubble();
 }
@@ -382,7 +382,7 @@ TEST_F(ToolbarActionsBarBubbleViewsTest, TestCreateExtraViewImageAndText) {
   std::unique_ptr<ToolbarActionsBarBubbleDelegate::ExtraViewInfo>
       extra_view_info =
           base::MakeUnique<ToolbarActionsBarBubbleDelegate::ExtraViewInfo>();
-  extra_view_info->resource_id = gfx::VectorIconId::BUSINESS;
+  extra_view_info->resource = &ui::kBusinessIcon;
   extra_view_info->text =
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_INSTALLED_BY_ADMIN);
   extra_view_info->is_text_linked = false;
@@ -405,8 +405,8 @@ TEST_F(ToolbarActionsBarBubbleViewsTest, TestCreateExtraViewImageAndText) {
     } else {
       EXPECT_TRUE(gfx::test::AreImagesEqual(
           gfx::Image(static_cast<const views::ImageView*>(v)->GetImage()),
-          gfx::Image(gfx::CreateVectorIcon(gfx::VectorIconId::BUSINESS,
-                                           kIconSize, gfx::kChromeIconGrey))));
+          gfx::Image(gfx::CreateVectorIcon(ui::kBusinessIcon, kIconSize,
+                                           gfx::kChromeIconGrey))));
     }
   }
 

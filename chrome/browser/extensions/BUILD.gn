@@ -925,6 +925,7 @@ static_library("extensions") {
     "//ui/resources",
     "//ui/shell_dialogs",
     "//ui/strings",
+    "//ui/vector_icons",
     "//url",
   ]
 

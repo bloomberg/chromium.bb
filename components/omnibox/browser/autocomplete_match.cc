@@ -26,6 +26,7 @@
 
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
 #include "components/omnibox/browser/vector_icons.h"  // nogncheck
+#include "ui/vector_icons/vector_icons.h"             // nogncheck
 #endif
 
 namespace {
@@ -198,7 +199,7 @@ const gfx::VectorIcon& AutocompleteMatch::TypeToVectorIcon(Type type) {
     case Type::SEARCH_OTHER_ENGINE:
     case Type::CONTACT_DEPRECATED:
     case Type::VOICE_SUGGEST:
-      return omnibox::kSearchIcon;
+      return ui::kSearchIcon;
 
     case Type::EXTENSION_APP:
       return omnibox::kExtensionAppIcon;

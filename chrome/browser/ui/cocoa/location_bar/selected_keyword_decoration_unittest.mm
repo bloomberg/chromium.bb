@@ -13,7 +13,7 @@
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/gfx/image/image_skia_util_mac.h"
 #include "ui/gfx/paint_vector_icon.h"
-#include "ui/gfx/vector_icons_public.h"
+#include "ui/vector_icons/vector_icons.h"
 
 namespace {
 
@@ -33,7 +33,7 @@ class SelectedKeywordDecorationTest : public CocoaTest {
     // initialize it now.
     const int kDefaultIconSize = 16;
     decoration_.SetImage(NSImageFromImageSkia(gfx::CreateVectorIcon(
-        omnibox::kSearchIcon, kDefaultIconSize, SK_ColorBLACK)));
+        ui::kSearchIcon, kDefaultIconSize, SK_ColorBLACK)));
   }
 
   SelectedKeywordDecoration decoration_;

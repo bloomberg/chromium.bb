@@ -30,6 +30,7 @@ aggregate_vector_icons("chrome_vector_icons") {
     "crashed_tab.icon",
     "credit_card.1x.icon",
     "credit_card.icon",
+    "eol.icon",
     "extension.icon",
     "extension_crashed.icon",
     "file_download.icon",
@@ -94,7 +95,11 @@ aggregate_vector_icons("chrome_vector_icons") {
   ]
 
   if (is_mac) {
-    icons += [ "new_tab_mac_touchbar.icon" ]
+    icons += [
+      "default_favicon.icon",
+      "google_search_mac_touchbar.icon",
+      "new_tab_mac_touchbar.icon",
+    ]
   }
 }
 

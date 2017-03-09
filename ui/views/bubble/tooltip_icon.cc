@@ -7,7 +7,7 @@
 #include "base/timer/timer.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/gfx/paint_vector_icon.h"
-#include "ui/gfx/vector_icons_public.h"
+#include "ui/vector_icons/vector_icons.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/bubble/info_bubble.h"
 #include "ui/views/mouse_watcher_view_host.h"
@@ -68,7 +68,7 @@ void TooltipIcon::MouseMovedOutOfHost() {
 }
 
 void TooltipIcon::SetDrawAsHovered(bool hovered) {
-  SetImage(gfx::CreateVectorIcon(gfx::VectorIconId::INFO_OUTLINE, 18,
+  SetImage(gfx::CreateVectorIcon(ui::kInfoOutlineIcon, 18,
                                  hovered
                                      ? SkColorSetARGB(0xBD, 0, 0, 0)
                                      : SkColorSetARGB(0xBD, 0x44, 0x44, 0x44)));
