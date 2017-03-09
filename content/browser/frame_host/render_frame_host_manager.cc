@@ -2300,6 +2300,13 @@ RenderFrameHostImpl* RenderFrameHostManager::UpdateStateForNavigate(
       dest_url, source_instance, dest_instance, nullptr, transition,
       dest_is_restore, dest_is_view_source_mode, was_server_redirect);
 
+  // Note: Do not add code here to determine whether the subframe should swap
+  // or not. Add it to CanSubframeSwapProcess instead.
+  bool allowed_to_swap_process =
+      frame_tree_node_->IsMainFrame() ||
+      CanSubframeSwapProcess(dest_url, source_instance, dest_instance,
+                             was_server_redirect);
+
   // Inform the transferring NavigationHandle of a transfer to a different
   // SiteInstance.  It is important do so now, in order to mark the request as
   // transferring on the IO thread before attempting to destroy the pending RFH.
@@ -2307,11 +2314,22 @@ RenderFrameHostImpl* RenderFrameHostManager::UpdateStateForNavigate(
   // RFH but will persist until it is picked up by the new RFH.
   if (transfer_navigation_handle_.get() &&
       transfer_navigation_handle_->GetGlobalRequestID() ==
-          transferred_request_id &&
-      new_instance.get() !=
-          transfer_navigation_handle_->GetRenderFrameHost()
-              ->GetSiteInstance()) {
-    transfer_navigation_handle_->Transfer();
+          transferred_request_id) {
+    // The transfer is needed when switching to a new SiteInstance.  One
+    // exception is if the process swap is not allowed and the transfer started
+    // in the current RFH, the navigation will stay in the current RFH (even
+    // when there is a new SiteInstance), so avoid calling Transfer() on it.
+    // This matters for some renderer-initiated data URLs navigations, see
+    // https://crbug.com/697513.
+    RenderFrameHostImpl* transferring_rfh =
+        transfer_navigation_handle_->GetRenderFrameHost();
+    bool transfer_started_from_current_rfh =
+        transferring_rfh == render_frame_host_.get();
+    bool should_transfer =
+        new_instance.get() != transferring_rfh->GetSiteInstance() &&
+        (!transfer_started_from_current_rfh || allowed_to_swap_process);
+    if (should_transfer)
+      transfer_navigation_handle_->Transfer();
   }
 
   // If we are currently navigating cross-process to a pending RFH for a
@@ -2327,13 +2345,6 @@ RenderFrameHostImpl* RenderFrameHostManager::UpdateStateForNavigate(
       CHECK(pending_render_frame_host_->IsRenderFrameLive());
     }
   }
-
-  // Note: Do not add code here to determine whether the subframe should swap
-  // or not. Add it to CanSubframeSwapProcess instead.
-  bool allowed_to_swap_process =
-      frame_tree_node_->IsMainFrame() ||
-      CanSubframeSwapProcess(dest_url, source_instance, dest_instance,
-                             was_server_redirect);
 
   if (new_instance.get() != current_instance && allowed_to_swap_process) {
     TRACE_EVENT_INSTANT2(
