@@ -5,8 +5,8 @@
 
 <if expr="chromeos">
 <link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/neon-animatable.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-toggle-button/paper-toggle-button.html">
 <link rel="import" href="manage_a11y_page.html">
+<link rel="import" href="../controls/settings_toggle_button.html">
 <link rel="import" href="../settings_page/settings_animated_pages.html">
 <link rel="import" href="../settings_page/settings_subpage.html">
 </if>
@@ -22,10 +22,10 @@
           <div id="optionsInMenuLabel" class="start">
             $i18n{optionsInMenuLabel}
           </div>
-          <paper-toggle-button id="optionsInMenuToggle"
-              checked="{{prefs.settings.a11y.enable_menu.value}}"
+          <settings-toggle-button id="optionsInMenuToggle"
+              pref="{{prefs.settings.a11y.enable_menu}}"
               aria-labelledby="optionsInMenuLabel">
-          </paper-toggle-button>
+          </settings-toggle-button>
         </div>
         <template is="dom-if" if="[[!isGuest_]]">
           <div id="subpage-trigger" class="settings-box two-line"
