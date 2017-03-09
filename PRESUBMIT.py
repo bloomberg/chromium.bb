@@ -25,6 +25,7 @@ _EXCLUDED_PATHS = (
     r"^chrome[\\\/]browser[\\\/]resources[\\\/]pdf[\\\/]index.js",
     r".*vulcanized.html$",
     r".*crisper.js$",
+    r"tools[\\\/]md_browser[\\\/].*\.css$",
 )
 
 

@@ -130,8 +130,8 @@ class Handler(SimpleHTTPServer.SimpleHTTPRequestHandler):
 
     if not full_path.startswith(self.server.top_level):
       self._DoUnknown()
-    elif path == '/doc.css':
-      self._DoCSS('doc.css')
+    elif path in ('/base.css', '/doc.css', '/prettify.css'):
+      self._DoCSS(path[1:])
     elif not os.path.exists(full_path):
       self._DoNotFound()
     elif path.lower().endswith('.md'):
