@@ -136,10 +136,10 @@ DOMHighResTimeStamp PerformanceResourceTiming::redirectEnd() const {
 }
 
 DOMHighResTimeStamp PerformanceResourceTiming::fetchStart() const {
+  if (!m_timing)
+    return PerformanceEntry::startTime();
+
   if (m_lastRedirectEndTime) {
-    // FIXME: ASSERT(m_timing) should be in constructor once timeticks of
-    // AppCache is exposed from chrome network stack, crbug/251100
-    ASSERT(m_timing);
     return PerformanceBase::monotonicTimeToDOMHighResTimeStamp(
         m_timeOrigin, m_timing->requestTime());
   }
