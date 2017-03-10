@@ -10,9 +10,11 @@
 
 namespace media {
 
-void InitializeMediaFoundation() {
-  static HRESULT result = MFStartup(MF_VERSION, MFSTARTUP_LITE);
-  DCHECK_EQ(result, S_OK);
+bool InitializeMediaFoundation() {
+  static const bool success = MFStartup(MF_VERSION, MFSTARTUP_LITE) == S_OK;
+  DVLOG_IF(1, !success)
+      << "Media Foundation unavailable or it failed to initialize";
+  return success;
 }
 
 }  // namespace media

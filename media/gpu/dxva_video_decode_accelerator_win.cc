@@ -616,7 +616,9 @@ bool DXVAVideoDecodeAccelerator::Initialize(const Config& config,
                                "Initialize: invalid state: " << state,
                                ILLEGAL_STATE, false);
 
-  InitializeMediaFoundation();
+  RETURN_AND_NOTIFY_ON_FAILURE(InitializeMediaFoundation(),
+                               "Could not initialize Media Foundartion",
+                               PLATFORM_FAILURE, false);
 
   config_ = config;
 

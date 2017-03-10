@@ -79,7 +79,8 @@ static bool LoadMediaFoundationDlls() {
 static bool PrepareVideoCaptureAttributesMediaFoundation(
     IMFAttributes** attributes,
     int count) {
-  InitializeMediaFoundation();
+  if (!InitializeMediaFoundation())
+    return false;
 
   if (FAILED(MFCreateAttributes(attributes, count)))
     return false;

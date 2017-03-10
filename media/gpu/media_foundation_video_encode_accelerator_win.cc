@@ -337,7 +337,8 @@ bool MediaFoundationVideoEncodeAccelerator::CreateHardwareEncoderMFT() {
     }
   }
 
-  InitializeMediaFoundation();
+  if (!InitializeMediaFoundation())
+    return false;
 
   uint32_t flags = MFT_ENUM_FLAG_HARDWARE | MFT_ENUM_FLAG_SORTANDFILTER;
   MFT_REGISTER_TYPE_INFO input_info;
