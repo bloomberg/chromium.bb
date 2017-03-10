@@ -76,6 +76,7 @@
 #include "chrome/browser/ssl/chrome_ssl_host_state_delegate_factory.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_paths_internal.h"
 #include "chrome/common/chrome_switches.h"
@@ -116,6 +117,8 @@
 #include "extensions/features/features.h"
 #include "ppapi/features/features.h"
 #include "printing/features/features.h"
+#include "services/preferences/public/cpp/pref_store_manager_impl.h"
+#include "services/preferences/public/interfaces/preferences.mojom.h"
 #include "services/preferences/public/interfaces/tracked_preference_validation_delegate.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -488,10 +491,15 @@ ProfileImpl::ProfileImpl(
   content::BrowserContext::Initialize(this, path_);
 
   {
+    service_manager::Connector* connector = nullptr;
+    if (base::FeatureList::IsEnabled(features::kPrefService)) {
+      connector = content::BrowserContext::GetConnectorFor(this);
+    }
     prefs_ = chrome_prefs::CreateProfilePrefs(
         path_, sequenced_task_runner, pref_validation_delegate_.get(),
         profile_policy_connector_->policy_service(), supervised_user_settings,
-        CreateExtensionPrefStore(this, false), pref_registry_, async_prefs);
+        CreateExtensionPrefStore(this, false), pref_registry_, async_prefs,
+        connector);
     // Register on BrowserContext.
     user_prefs::UserPrefs::Set(this, prefs_.get());
   }
@@ -1051,6 +1059,18 @@ ProfileImpl::CreateMediaRequestContextForStoragePartition(
     bool in_memory) {
   return io_data_
       .GetIsolatedMediaRequestContextGetter(partition_path, in_memory).get();
+}
+
+void ProfileImpl::RegisterInProcessServices(StaticServiceMap* services) {
+  if (base::FeatureList::IsEnabled(features::kPrefService)) {
+    content::ServiceInfo info;
+    info.factory =
+        base::Bind([]() -> std::unique_ptr<service_manager::Service> {
+          return base::MakeUnique<prefs::PrefStoreManagerImpl>(
+              prefs::PrefStoreManagerImpl::PrefStoreTypes());
+        });
+    services->insert(std::make_pair(prefs::mojom::kPrefStoreServiceName, info));
+  }
 }
 
 bool ProfileImpl::IsSameProfile(Profile* profile) {

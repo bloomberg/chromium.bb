@@ -102,6 +102,7 @@ class ProfileImpl : public Profile {
   net::URLRequestContextGetter* CreateMediaRequestContextForStoragePartition(
       const base::FilePath& partition_path,
       bool in_memory) override;
+  void RegisterInProcessServices(StaticServiceMap* services) override;
 
   // Profile implementation:
   scoped_refptr<base::SequencedTaskRunner> GetIOTaskRunner() override;

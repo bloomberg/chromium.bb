@@ -462,6 +462,12 @@ void BrowserContext::Initialize(
                      BrowserThread::GetTaskRunnerForThread(BrowserThread::DB));
       connection->AddEmbeddedService(file::mojom::kServiceName, info);
     }
+
+    ContentBrowserClient::StaticServiceMap services;
+    browser_context->RegisterInProcessServices(&services);
+    for (const auto& entry : services) {
+      connection->AddEmbeddedService(entry.first, entry.second);
+    }
     connection->Start();
   }
 }

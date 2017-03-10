@@ -503,7 +503,8 @@ std::unique_ptr<sync_preferences::PrefServiceSyncable> CreateProfilePrefs(
     SupervisedUserSettingsService* supervised_user_settings,
     const scoped_refptr<PrefStore>& extension_prefs,
     const scoped_refptr<user_prefs::PrefRegistrySyncable>& pref_registry,
-    bool async) {
+    bool async,
+    service_manager::Connector* connector) {
   TRACE_EVENT0("browser", "chrome_prefs::CreateProfilePrefs");
   SCOPED_UMA_HISTOGRAM_TIMER("PrefService.CreateProfilePrefsTime");
 
@@ -527,7 +528,7 @@ std::unique_ptr<sync_preferences::PrefServiceSyncable> CreateProfilePrefs(
                  supervised_user_settings, user_pref_store, extension_prefs,
                  async);
   std::unique_ptr<sync_preferences::PrefServiceSyncable> pref_service =
-      factory.CreateSyncable(pref_registry.get());
+      factory.CreateSyncable(pref_registry.get(), connector);
 
   return pref_service;
 }

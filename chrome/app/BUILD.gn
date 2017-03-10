@@ -390,6 +390,7 @@ service_manifest("chrome_content_packaged_services_manifest_overlay") {
 
 service_manifest("chrome_content_browser_manifest_overlay") {
   source = "//chrome/browser/chrome_content_browser_manifest_overlay.json"
+  packaged_services = [ "//services/preferences:manifest" ]
 }
 
 service_manifest("chrome_content_gpu_manifest_overlay") {

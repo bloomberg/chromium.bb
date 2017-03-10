@@ -15,6 +15,10 @@ class BrowserPolicyConnector;
 class PolicyService;
 }
 
+namespace service_manager {
+class Connector;
+}
+
 namespace user_prefs {
 class PrefRegistrySyncable;
 }
@@ -42,8 +46,11 @@ class PrefServiceSyncableFactory : public PrefServiceFactory {
   void SetPrefModelAssociatorClient(
       PrefModelAssociatorClient* pref_model_associator_client);
 
+  // |connector| might be null during test or if we're not using the Mojo pref
+  // |service.
   std::unique_ptr<PrefServiceSyncable> CreateSyncable(
-      user_prefs::PrefRegistrySyncable* registry);
+      user_prefs::PrefRegistrySyncable* registry,
+      service_manager::Connector* connector = nullptr);
 
  private:
   PrefModelAssociatorClient* pref_model_associator_client_;

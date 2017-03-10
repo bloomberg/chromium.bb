@@ -1575,6 +1575,7 @@ split_static_library("browser") {
     "//printing/features",
     "//rlz/features",
     "//services/image_decoder/public/cpp",
+    "//services/preferences/public/cpp/",
     "//services/preferences/public/interfaces/",
     "//services/service_manager/public/cpp",
     "//services/shape_detection/public/interfaces",

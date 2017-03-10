@@ -20,6 +20,7 @@
 #include "content/public/browser/zoom_level_delegate.h"
 #include "content/public/common/push_event_payload.h"
 #include "content/public/common/push_messaging_status.h"
+#include "content/public/common/service_info.h"
 #include "net/url_request/url_request_interceptor.h"
 #include "net/url_request/url_request_job_factory.h"
 
@@ -244,6 +245,12 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
       CreateMediaRequestContextForStoragePartition(
           const base::FilePath& partition_path,
           bool in_memory) = 0;
+
+  using StaticServiceMap = std::map<std::string, ServiceInfo>;
+
+  // Registers per-browser-context services to be loaded in the browser process
+  // by the Service Manager.
+  virtual void RegisterInProcessServices(StaticServiceMap* services) {}
 };
 
 }  // namespace content

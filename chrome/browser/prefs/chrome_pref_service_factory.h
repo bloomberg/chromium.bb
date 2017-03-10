@@ -26,6 +26,10 @@ class TrackedPreferenceValidationDelegate;
 }
 }
 
+namespace service_manager {
+class Connector;
+}
+
 namespace sync_preferences {
 class PrefServiceSyncable;
 }
@@ -40,6 +44,7 @@ class PrefService;
 class PrefStore;
 class Profile;
 class SupervisedUserSettingsService;
+class TrackedPreferenceValidationDelegate;
 
 namespace chrome_prefs {
 
@@ -83,7 +88,8 @@ std::unique_ptr<sync_preferences::PrefServiceSyncable> CreateProfilePrefs(
     SupervisedUserSettingsService* supervised_user_settings,
     const scoped_refptr<PrefStore>& extension_prefs,
     const scoped_refptr<user_prefs::PrefRegistrySyncable>& pref_registry,
-    bool async);
+    bool async,
+    service_manager::Connector* connector);
 
 // Call before startup tasks kick in to ignore the presence of a domain when
 // determining the active SettingsEnforcement group. For testing only.

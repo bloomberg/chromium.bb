@@ -2,9 +2,16 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//services/service_manager/public/service_manifest.gni")
+
 group("tests") {
   testonly = true
   deps = [
     "//services/preferences/public/cpp/tests",
   ]
+}
+
+service_manifest("manifest") {
+  name = "preferences2"
+  source = "manifest.json"
 }
