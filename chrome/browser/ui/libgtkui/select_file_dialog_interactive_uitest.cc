@@ -68,7 +68,8 @@ class FilePicker : public ui::SelectFileDialog::Listener {
 }  // namespace libgtkui
 
 // Leaks in GtkFileChooserDialog. http://crbug.com/537468
-#if defined(ADDRESS_SANITIZER)
+// Flaky on Linux. http://crbug.com/700134
+#if defined(ADDRESS_SANITIZER) || defined(OS_LINUX)
 #define MAYBE_ModalTest DISABLED_ModalTest
 #else
 #define MAYBE_ModalTest ModalTest
