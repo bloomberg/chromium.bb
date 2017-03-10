@@ -1019,12 +1019,6 @@ bool SpellChecker::selectionStartHasMarkerFor(
   return false;
 }
 
-// TODO(editing-dev): No one uses this function. Remove it.
-bool SpellChecker::selectionStartHasSpellingMarkerFor(int from,
-                                                      int length) const {
-  return selectionStartHasMarkerFor(DocumentMarker::Spelling, from, length);
-}
-
 void SpellChecker::removeMarkers(const EphemeralRange& range,
                                  DocumentMarker::MarkerTypes markerTypes) {
   DCHECK(!frame().document()->needsLayoutTreeUpdate());
