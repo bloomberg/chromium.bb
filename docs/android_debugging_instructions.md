@@ -92,6 +92,7 @@ private int mSuperNiftyDrawingProperty;
 
 ## Debugging Java
 
+### Eclipse
 *   In Eclipse, make a debug configuration of type "Remote Java Application".
     Choose a "Name" and set "Port" to `8700`.
 
@@ -108,6 +109,12 @@ private int mSuperNiftyDrawingProperty;
     should now mention 8700 or xxxx/8700).
 
 *   Run your debug configuration, and switch to the Debug perspective.
+
+### Android Studio
+*   Build and install the desired target
+
+*   Click the "Attach debugger to Android process" (see
+[here](https://developer.android.com/studio/debug/index.html) for more)
 
 ## Waiting for Java Debugger on Early Startup
 

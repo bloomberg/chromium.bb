@@ -125,6 +125,8 @@ resources, native libraries, etc.
 * Instrumentation tests included as androidTest.
 * Symlinks to existing .so files in jniLibs (doesn't generate them).
 * Editing resource xml files.
+* Java debugging (see
+[here](/docs/android_debugging_instructions.md#Android-Studio))
 
 ### What doesn't work (yet) ([crbug](https://bugs.chromium.org/p/chromium/issues/detail?id=620034))
 
