@@ -496,7 +496,7 @@ void ObjectPaintInvalidatorWithContext::invalidatePaintRectangleWithContext(
   // on the same backing, skip the invalidation.
   if (parentFullyInvalidatedOnSameBacking() &&
       (m_context.parentContext->oldVisualRect.contains(rect) ||
-       m_context.parentContext->newVisualRect.contains(rect)))
+       m_object.parent()->visualRect().contains(rect)))
     return;
 
   invalidatePaintUsingContainer(*m_context.paintInvalidationContainer, rect,
@@ -523,7 +523,7 @@ ObjectPaintInvalidatorWithContext::computePaintInvalidationReason() {
   if (m_object.shouldDoFullPaintInvalidation())
     return m_object.fullPaintInvalidationReason();
 
-  if (m_context.oldVisualRect.isEmpty() && m_context.newVisualRect.isEmpty())
+  if (m_context.oldVisualRect.isEmpty() && m_object.visualRect().isEmpty())
     return PaintInvalidationNone;
 
   if (backgroundObscurationChanged)
@@ -545,14 +545,14 @@ ObjectPaintInvalidatorWithContext::computePaintInvalidationReason() {
   // to do a full invalidation of either old bounds or new bounds.
   if (m_context.oldVisualRect.isEmpty())
     return PaintInvalidationBecameVisible;
-  if (m_context.newVisualRect.isEmpty())
+  if (m_object.visualRect().isEmpty())
     return PaintInvalidationBecameInvisible;
 
   // If we shifted, we don't know the exact reason so we are conservative and
   // trigger a full invalidation. Shifting could be caused by some layout
   // property (left / top) or some in-flow layoutObject inserted / removed
   // before us in the tree.
-  if (m_context.newVisualRect.location() != m_context.oldVisualRect.location())
+  if (m_object.visualRect().location() != m_context.oldVisualRect.location())
     return PaintInvalidationBoundsChange;
 
   if (m_context.newLocation != m_context.oldLocation)
@@ -566,7 +566,7 @@ ObjectPaintInvalidatorWithContext::computePaintInvalidationReason() {
   if (m_object.isBox())
     return PaintInvalidationIncremental;
 
-  if (m_context.oldVisualRect != m_context.newVisualRect)
+  if (m_context.oldVisualRect != m_object.visualRect())
     return PaintInvalidationBoundsChange;
 
   return PaintInvalidationNone;
@@ -643,7 +643,7 @@ ObjectPaintInvalidatorWithContext::invalidatePaintIfNeededWithComputedReason(
     default:
       DCHECK(isImmediateFullPaintInvalidationReason(reason));
       fullyInvalidatePaint(reason, m_context.oldVisualRect,
-                           m_context.newVisualRect);
+                           m_object.visualRect());
   }
 
   m_context.paintingLayer->setNeedsRepaint();

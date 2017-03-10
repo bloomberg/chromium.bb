@@ -105,7 +105,7 @@ PaintInvalidationReason BoxPaintInvalidator::computePaintInvalidationReason() {
   LayoutSize oldBorderBoxSize = m_box.previousSize();
   LayoutSize newBorderBoxSize = m_box.size();
   bool borderBoxChanged = oldBorderBoxSize != newBorderBoxSize;
-  if (!borderBoxChanged && m_context.oldVisualRect == m_context.newVisualRect)
+  if (!borderBoxChanged && m_context.oldVisualRect == m_box.visualRect())
     return PaintInvalidationNone;
 
   // If either border box changed or bounds changed, and old or new border box
@@ -116,7 +116,7 @@ PaintInvalidationReason BoxPaintInvalidator::computePaintInvalidationReason() {
   // - visual overflows.
   if (m_context.oldVisualRect !=
           LayoutRect(m_context.oldLocation, oldBorderBoxSize) ||
-      m_context.newVisualRect !=
+      m_box.visualRect() !=
           LayoutRect(m_context.newLocation, newBorderBoxSize)) {
     return borderBoxChanged ? PaintInvalidationBorderBoxChange
                             : PaintInvalidationBoundsChange;
@@ -254,7 +254,7 @@ PaintInvalidationReason BoxPaintInvalidator::invalidatePaintIfNeeded() {
     if (m_box.isLayoutView() &&
         !RuntimeEnabledFeatures::rootLayerScrollingEnabled()) {
       invalidated = incrementallyInvalidatePaint(
-          reason, m_context.oldVisualRect, m_context.newVisualRect);
+          reason, m_context.oldVisualRect, m_box.visualRect());
     } else {
       invalidated = incrementallyInvalidatePaint(
           reason, LayoutRect(m_context.oldLocation, m_box.previousSize()),
@@ -292,7 +292,7 @@ bool BoxPaintInvalidator::
     needsToSavePreviousContentBoxSizeOrLayoutOverflowRect() {
   // Don't save old box geometries if the paint rect is empty because we'll
   // fully invalidate once the paint rect becomes non-empty.
-  if (m_context.newVisualRect.isEmpty())
+  if (m_box.visualRect().isEmpty())
     return false;
 
   if (m_box.paintedOutputOfObjectHasNoEffectRegardlessOfSize())

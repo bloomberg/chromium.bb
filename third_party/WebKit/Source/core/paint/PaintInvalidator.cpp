@@ -367,13 +367,13 @@ void PaintInvalidator::updateVisualRect(const LayoutObject& object,
 
   IntSize adjustment = object.scrollAdjustmentForPaintInvalidation(
       *context.paintInvalidationContainer);
-  context.newVisualRect = computeVisualRectInBacking(object, context);
-  context.newVisualRect.move(adjustment);
+  LayoutRect newVisualRect = computeVisualRectInBacking(object, context);
+  newVisualRect.move(adjustment);
 
   if (object.isText()) {
     // Use visual rect location for LayoutTexts because it suffices to check
     // whether a visual rect changes for layout caused invalidation.
-    context.newLocation = context.newVisualRect.location();
+    context.newLocation = newVisualRect.location();
   } else {
     context.newLocation = computeLocationInBacking(object, context);
     context.newLocation.move(adjustment);
@@ -381,11 +381,11 @@ void PaintInvalidator::updateVisualRect(const LayoutObject& object,
     // Location of empty visual rect doesn't affect paint invalidation. Set it
     // to newLocation to avoid saving the previous location separately in
     // ObjectPaintInvalidator.
-    if (context.newVisualRect.isEmpty())
-      context.newVisualRect.setLocation(context.newLocation);
+    if (newVisualRect.isEmpty())
+      newVisualRect.setLocation(context.newLocation);
   }
 
-  object.getMutableForPainting().setVisualRect(context.newVisualRect);
+  object.getMutableForPainting().setVisualRect(newVisualRect);
   objectPaintInvalidator.setLocationInBacking(context.newLocation);
 }
 

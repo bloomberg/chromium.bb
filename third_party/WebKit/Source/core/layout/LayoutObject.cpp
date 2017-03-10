@@ -1198,18 +1198,19 @@ PaintInvalidationReason LayoutObject::invalidatePaintIfNeeded(
   ObjectPaintInvalidator paintInvalidator(*this);
   context.oldVisualRect = visualRect();
   context.oldLocation = paintInvalidator.locationInBacking();
-  context.newVisualRect = paintInvalidationState.computeVisualRectInBacking();
-  context.newLocation = paintInvalidationState.computeLocationInBacking(
-      context.newVisualRect.location());
+  LayoutRect newVisualRect =
+      paintInvalidationState.computeVisualRectInBacking();
+  context.newLocation =
+      paintInvalidationState.computeLocationInBacking(newVisualRect.location());
 
   IntSize adjustment =
       scrollAdjustmentForPaintInvalidation(paintInvalidationContainer);
   context.newLocation.move(adjustment);
-  context.newVisualRect.move(adjustment);
+  newVisualRect.move(adjustment);
 
-  adjustVisualRectForRasterEffects(context.newVisualRect);
+  adjustVisualRectForRasterEffects(newVisualRect);
 
-  setVisualRect(context.newVisualRect);
+  setVisualRect(newVisualRect);
   paintInvalidator.setLocationInBacking(context.newLocation);
 
   if (!shouldCheckForPaintInvalidationRegardlessOfPaintInvalidationState() &&

@@ -71,11 +71,11 @@ struct PaintInvalidatorContext {
 
   PaintLayer* paintingLayer = nullptr;
 
-  // Store the old and new visual rects in the paint invalidation backing's
-  // coordinates. The rects do *not* account for composited scrolling.
+  // Store the old visual rect in the paint invalidation backing's coordinates.
+  // It does *not* account for composited scrolling.
   // See LayoutObject::adjustVisualRectForCompositedScrolling().
   LayoutRect oldVisualRect;
-  LayoutRect newVisualRect;
+  // Use LayoutObject::visualRect() to get the new visual rect.
 
   // Store the origin of the object's local coordinates in the paint
   // invalidation backing's coordinates. They are used to detect layoutObject

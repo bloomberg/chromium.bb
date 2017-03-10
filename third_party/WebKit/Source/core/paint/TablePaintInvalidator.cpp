@@ -26,7 +26,7 @@ PaintInvalidationReason TablePaintInvalidator::invalidatePaintIfNeeded() {
   // If any col changed background, we'll check all cells for background
   // changes.
   bool hasColChangedBackground = false;
-  bool visualRectChanged = m_context.oldVisualRect != m_context.newVisualRect;
+  bool visualRectChanged = m_context.oldVisualRect != m_table.visualRect();
   for (LayoutTableCol* col = m_table.firstColumn(); col;
        col = col->nextColumn()) {
     // LayoutTableCol uses the table's localVisualRect(). Should check column
