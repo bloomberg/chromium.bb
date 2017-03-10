@@ -11,6 +11,7 @@
 #import "ios/third_party/material_components_ios/src/components/CollectionCells/src/MaterialCollectionCells.h"
 
 class GURL;
+@protocol ReadingListCollectionViewItemAccessibilityDelegate;
 
 // Collection view item for representing a ReadingListEntry.
 @interface ReadingListCollectionViewItem : CollectionViewItem
@@ -26,6 +27,10 @@ class GURL;
 // Status of the offline version.
 @property(nonatomic, assign)
     ReadingListEntry::DistillationState distillationState;
+// Delegate for the accessibility actions.
+@property(nonatomic, weak)
+    id<ReadingListCollectionViewItemAccessibilityDelegate>
+        accessibilityDelegate;
 
 // Designated initializer. The |provider| will be used for loading favicon
 // attributes. The |delegate| is used to inform about changes to this item. The
