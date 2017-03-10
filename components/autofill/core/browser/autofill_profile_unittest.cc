@@ -39,39 +39,6 @@ base::string16 GetLabel(AutofillProfile* profile) {
   return labels[0];
 }
 
-// Holds the autofill profile |first|, |middle| and |last| names.
-struct NameParts {
-  NameParts(const std::string& first,
-            const std::string& middle,
-            const std::string& last)
-      : first(first), middle(middle), last(last) {}
-
-  std::string first;
-  std::string middle;
-  std::string last;
-};
-
-// Test case to be executed to validate OverwriteOrAppendNames.
-struct TestCase {
-  TestCase(const NameParts& starting_name,
-           const NameParts& additional_name,
-           const NameParts& expected_result)
-      : starting_names(std::vector<NameParts>(1, starting_name)),
-        additional_names(std::vector<NameParts>(1, additional_name)),
-        expected_result(std::vector<NameParts>(1, expected_result)) {}
-
-  TestCase(const std::vector<NameParts>& starting_names,
-           const std::vector<NameParts>& additional_names,
-           const std::vector<NameParts>& expected_result)
-      : starting_names(starting_names),
-        additional_names(additional_names),
-        expected_result(expected_result) {}
-
-  std::vector<NameParts> starting_names;
-  std::vector<NameParts> additional_names;
-  std::vector<NameParts> expected_result;
-};
-
 void SetupTestProfile(AutofillProfile& profile) {
   profile.set_guid(base::GenerateGUID());
   profile.set_origin(kSettingsOrigin);
