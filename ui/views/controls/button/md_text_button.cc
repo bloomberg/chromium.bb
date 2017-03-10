@@ -193,8 +193,8 @@ MdTextButton::MdTextButton(ButtonListener* listener)
   set_has_ink_drop_action_on_click(true);
   SetHorizontalAlignment(gfx::ALIGN_CENTER);
   SetFocusForPlatform();
-  const int minimum_width =
-      ViewsDelegate::GetInstance()->GetButtonMinimumWidth();
+  const int minimum_width = ViewsDelegate::GetInstance()->GetDistanceMetric(
+      DistanceMetric::DIALOG_BUTTON_MINIMUM_WIDTH);
   SetMinSize(gfx::Size(minimum_width, 0));
   SetFocusPainter(nullptr);
   label()->SetAutoColorReadabilityEnabled(false);
@@ -241,7 +241,8 @@ void MdTextButton::UpdatePadding() {
   // TODO(estade): can we get rid of the platform style border hoopla if
   // we apply the MD treatment to all buttons, even GTK buttons?
   const int horizontal_padding =
-      ViewsDelegate::GetInstance()->GetButtonHorizontalPadding();
+      ViewsDelegate::GetInstance()->GetDistanceMetric(
+          DistanceMetric::BUTTON_HORIZONTAL_PADDING);
   SetBorder(CreateEmptyBorder(top_padding, horizontal_padding, bottom_padding,
                               horizontal_padding));
 }

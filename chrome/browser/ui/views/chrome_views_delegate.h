@@ -20,6 +20,8 @@ class ChromeViewsDelegate : public views::ViewsDelegate {
   ChromeViewsDelegate();
   ~ChromeViewsDelegate() override;
 
+  static ChromeViewsDelegate* GetInstance();
+
   // views::ViewsDelegate:
   void SaveWindowPlacement(const views::Widget* window,
                            const std::string& window_name,
@@ -58,15 +60,10 @@ class ChromeViewsDelegate : public views::ViewsDelegate {
   std::string GetApplicationName() override;
   scoped_refptr<base::TaskRunner> GetBlockingPoolTaskRunner() override;
 
-  gfx::Insets GetDialogButtonInsets() const override;
-  int GetDialogCloseButtonMargin() const override;
-  int GetDialogRelatedButtonHorizontalSpacing() const override;
-  int GetDialogRelatedControlVerticalSpacing() const override;
-  gfx::Insets GetDialogFrameViewInsets() const override;
-  gfx::Insets GetBubbleDialogMargins() const override;
-  int GetButtonMinimumWidth() const override;
-  int GetDialogButtonMinimumWidth() const override;
-  int GetButtonHorizontalPadding() const override;
+  gfx::Insets GetInsetsMetric(views::InsetsMetric metric) const override;
+  int GetDistanceMetric(views::DistanceMetric metric) const override;
+
+  int GetDefaultDistanceMetric(views::DistanceMetric metric) const;
 
  private:
 #if defined(OS_WIN)

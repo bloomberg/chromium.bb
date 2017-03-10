@@ -71,7 +71,7 @@ constexpr int kButtonVEdgeMarginNew = 20;
 constexpr int kButtonHEdgeMarginNew = 20;
 
 // Spacing between the edge of the window and the edge of the close button.
-const int kCloseButtonMargin = 7;
+constexpr int kCloseButtonMargin = 7;
 
 // Horizontal spacing between buttons that are logically related.
 constexpr int kRelatedButtonHSpacing = 6;
@@ -90,7 +90,7 @@ const int kButtonHorizontalPadding = 16;
 const int kMinimumButtonWidth = 48;
 
 // Minimum width of dialog buttons.
-const int kDialogMinimumButtonWidth = 75;
+constexpr int kDialogMinimumButtonWidth = 75;
 
 }  // namespace views
 

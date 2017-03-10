@@ -13,6 +13,7 @@
 #include "components/storage_monitor/storage_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/views/controls/button/checkbox.h"
+#include "ui/views/test/test_views_delegate.h"
 
 using ::testing::_;
 using ::testing::AnyNumber;
@@ -60,6 +61,7 @@ class MediaGalleriesDialogTest : public testing::Test {
  private:
   // TODO(gbillock): Get rid of this mock; make something specialized.
   NiceMock<MediaGalleriesDialogControllerMock> controller_;
+  views::TestViewsDelegate views_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaGalleriesDialogTest);
 };

@@ -17,6 +17,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/controls/tree/tree_view.h"
+#include "ui/views/test/test_views_delegate.h"
 
 using base::ASCIIToUTF16;
 using base::UTF8ToUTF16;
@@ -112,6 +113,7 @@ class BookmarkEditorViewTest : public testing::Test {
   content::TestBrowserThreadBundle thread_bundle_;
 
   BookmarkModel* model_;
+  views::TestViewsDelegate views_delegate_;
   std::unique_ptr<TestingProfile> profile_;
 
  private:

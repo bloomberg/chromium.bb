@@ -106,9 +106,6 @@ int GetAppbarAutohideEdgesOnWorkerThread(HMONITOR monitor) {
 
 }  // namespace
 
-ChromeViewsDelegate::ChromeViewsDelegate()
-    : in_autohide_edges_callback_(false), weak_factory_(this) {}
-
 HICON ChromeViewsDelegate::GetDefaultWindowIcon() const {
   return GetAppIcon();
 }

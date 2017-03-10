@@ -126,42 +126,38 @@ scoped_refptr<base::TaskRunner> ViewsDelegate::GetBlockingPoolTaskRunner() {
   return nullptr;
 }
 
-gfx::Insets ViewsDelegate::GetDialogButtonInsets() const {
-  return gfx::Insets(0, kButtonHEdgeMarginNew, kButtonVEdgeMarginNew,
-                     kButtonHEdgeMarginNew);
+gfx::Insets ViewsDelegate::GetInsetsMetric(InsetsMetric metric) const {
+  switch (metric) {
+    case InsetsMetric::DIALOG_BUTTON:
+      return gfx::Insets(0, kButtonHEdgeMarginNew, kButtonVEdgeMarginNew,
+                         kButtonHEdgeMarginNew);
+    case InsetsMetric::DIALOG_FRAME_VIEW:
+      return gfx::Insets(kPanelVertMargin, kButtonHEdgeMarginNew, 0,
+                         kButtonHEdgeMarginNew);
+    case InsetsMetric::BUBBLE_DIALOG:
+      return gfx::Insets(kPanelVertMargin, kPanelHorizMargin);
+  }
+  NOTREACHED();
+  return gfx::Insets();
 }
 
-int ViewsDelegate::GetDialogCloseButtonMargin() const {
-  return kCloseButtonMargin;
-}
-
-int ViewsDelegate::GetDialogRelatedButtonHorizontalSpacing() const {
-  return kRelatedButtonHSpacing;
-}
-
-int ViewsDelegate::GetDialogRelatedControlVerticalSpacing() const {
-  return kRelatedControlVerticalSpacing;
-}
-
-gfx::Insets ViewsDelegate::GetDialogFrameViewInsets() const {
-  return gfx::Insets(kPanelVertMargin, kButtonHEdgeMarginNew, 0,
-                     kButtonHEdgeMarginNew);
-}
-
-gfx::Insets ViewsDelegate::GetBubbleDialogMargins() const {
-  return gfx::Insets(kPanelVertMargin, kPanelHorizMargin);
-}
-
-int ViewsDelegate::GetButtonMinimumWidth() const {
-  return kMinimumButtonWidth;
-}
-
-int ViewsDelegate::GetDialogButtonMinimumWidth() const {
-  return kDialogMinimumButtonWidth;
-}
-
-int ViewsDelegate::GetButtonHorizontalPadding() const {
-  return kButtonHorizontalPadding;
+int ViewsDelegate::GetDistanceMetric(DistanceMetric metric) const {
+  switch (metric) {
+    case DistanceMetric::CLOSE_BUTTON_MARGIN:
+      return kCloseButtonMargin;
+    case DistanceMetric::RELATED_BUTTON_HORIZONTAL:
+      return kRelatedButtonHSpacing;
+    case DistanceMetric::RELATED_CONTROL_HORIZONTAL:
+      return kRelatedControlHorizontalSpacing;
+    case DistanceMetric::RELATED_CONTROL_VERTICAL:
+      return kRelatedControlVerticalSpacing;
+    case DistanceMetric::DIALOG_BUTTON_MINIMUM_WIDTH:
+      return kDialogMinimumButtonWidth;
+    case DistanceMetric::BUTTON_HORIZONTAL_PADDING:
+      return kButtonHorizontalPadding;
+  }
+  NOTREACHED();
+  return 0;
 }
 
 ViewsDelegate::ViewsDelegate()

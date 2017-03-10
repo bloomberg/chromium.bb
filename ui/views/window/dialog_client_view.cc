@@ -75,8 +75,8 @@ class DialogClientView::ButtonRowContainer : public View {
 
 DialogClientView::DialogClientView(Widget* owner, View* contents_view)
     : ClientView(owner, contents_view),
-      button_row_insets_(
-          ViewsDelegate::GetInstance()->GetDialogButtonInsets()) {
+      button_row_insets_(ViewsDelegate::GetInstance()->GetInsetsMetric(
+          InsetsMetric::DIALOG_BUTTON)) {
   // Doing this now ensures this accelerator will have lower priority than
   // one set by the contents view.
   AddAccelerator(ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE));
@@ -281,8 +281,8 @@ void DialogClientView::UpdateDialogButton(LabelButton** member,
       button = MdTextButton::CreateSecondaryUiButton(this, title);
     }
 
-    const int minimum_width =
-        ViewsDelegate::GetInstance()->GetDialogButtonMinimumWidth();
+    const int minimum_width = ViewsDelegate::GetInstance()->GetDistanceMetric(
+        views::DistanceMetric::DIALOG_BUTTON_MINIMUM_WIDTH);
     button->SetMinSize(gfx::Size(minimum_width, 0));
 
     button->SetGroup(kButtonGroup);
@@ -301,8 +301,8 @@ int DialogClientView::GetExtraViewSpacing() const {
   if (GetDialogDelegate()->GetExtraViewPadding(&extra_view_padding))
     return extra_view_padding;
 
-  return ViewsDelegate::GetInstance()
-      ->GetDialogRelatedButtonHorizontalSpacing();
+  return ViewsDelegate::GetInstance()->GetDistanceMetric(
+      views::DistanceMetric::RELATED_BUTTON_HORIZONTAL);
 }
 
 std::array<View*, DialogClientView::kNumButtons>
@@ -341,8 +341,8 @@ void DialogClientView::SetupLayout() {
   // They expect GetDialogRelatedControlVerticalSpacing() in this case.
   // TODO(tapted): Remove this under Harmony.
   if (insets.top() == 0) {
-    const int top =
-        ViewsDelegate::GetInstance()->GetDialogRelatedControlVerticalSpacing();
+    const int top = ViewsDelegate::GetInstance()->GetDistanceMetric(
+        views::DistanceMetric::RELATED_CONTROL_VERTICAL);
     insets.Set(top, insets.left(), insets.bottom(), insets.right());
   }
 
@@ -356,8 +356,8 @@ void DialogClientView::SetupLayout() {
   // GetExtraViewSpacing() handles <pad+stretchy>.
   const int button_spacing =
       (ok_button_ && cancel_button_)
-          ? ViewsDelegate::GetInstance()
-                ->GetDialogRelatedButtonHorizontalSpacing()
+          ? ViewsDelegate::GetInstance()->GetDistanceMetric(
+                views::DistanceMetric::RELATED_BUTTON_HORIZONTAL)
           : 0;
 
   constexpr int kButtonRowId = 0;

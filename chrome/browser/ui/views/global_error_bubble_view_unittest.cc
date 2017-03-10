@@ -16,6 +16,7 @@
 #include "ui/gfx/image/image_unittest_util.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/label_button.h"
+#include "ui/views/test/test_views_delegate.h"
 
 using ::testing::_;
 using ::testing::Return;
@@ -87,6 +88,7 @@ class GlobalErrorBubbleViewTest : public testing::Test {
             mock_global_error_with_standard_bubble_->AsWeakPtr())) {}
 
  protected:
+  views::TestViewsDelegate views_delegate_;
   std::unique_ptr<StrictMock<MockGlobalErrorWithStandardBubble>>
       mock_global_error_with_standard_bubble_;
   views::View arg_view_;

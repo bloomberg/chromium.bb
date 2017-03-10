@@ -132,7 +132,8 @@ void DialogExample::CreateExampleView(View* container) {
   const float kStretchy = 1.f;
 
   const int horizontal_spacing =
-      ViewsDelegate::GetInstance()->GetDialogRelatedButtonHorizontalSpacing();
+      ViewsDelegate::GetInstance()->GetDistanceMetric(
+          views::DistanceMetric::RELATED_BUTTON_HORIZONTAL);
   GridLayout* layout = GridLayout::CreatePanel(container);
   container->SetLayoutManager(layout);
   ColumnSet* column_set = layout->AddColumnSet(kFieldsColumnId);
@@ -187,7 +188,8 @@ void DialogExample::StartRowWithLabel(GridLayout* layout, const char* label) {
   const float kFixedVerticalResize = 0.f;
   layout->StartRowWithPadding(
       kFixedVerticalResize, kFieldsColumnId, kFixedVerticalResize,
-      ViewsDelegate::GetInstance()->GetDialogRelatedControlVerticalSpacing());
+      ViewsDelegate::GetInstance()->GetDistanceMetric(
+          views::DistanceMetric::RELATED_CONTROL_VERTICAL));
   layout->AddView(new Label(base::ASCIIToUTF16(label)));
 }
 
