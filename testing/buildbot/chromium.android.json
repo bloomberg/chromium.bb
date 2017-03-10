@@ -1206,6 +1206,18 @@
       }
     ]
   },
+  "Android arm Builder (dbg)": {
+    "additional_compile_targets": [
+      "dump_syms",
+      "microdump_stackwalk"
+    ]
+  },
+  "Android arm64 Builder (dbg)": {
+    "additional_compile_targets": [
+      "dump_syms",
+      "microdump_stackwalk"
+    ]
+  },
   "KitKat Tablet Tester": {
     "gtest_tests": [
       {
