@@ -1043,7 +1043,8 @@ void SpellChecker::cancelCheck() {
 }
 
 void SpellChecker::documentAttached(Document* document) {
-  m_idleSpellCheckCallback->documentAttached(document);
+  if (RuntimeEnabledFeatures::idleTimeSpellCheckingEnabled())
+    m_idleSpellCheckCallback->documentAttached(document);
 }
 
 DEFINE_TRACE(SpellChecker) {
