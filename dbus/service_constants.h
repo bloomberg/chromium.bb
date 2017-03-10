@@ -92,6 +92,8 @@ const char kLibCrosServicePath[] = "/org/chromium/LibCrosService";
 const char kLibCrosServiceInterface[] = "org.chromium.LibCrosServiceInterface";
 // Methods
 const char kResolveNetworkProxy[] = "ResolveNetworkProxy";
+// TODO(teravest): Remove this once CheckLiveness is removed from
+// LibCrosService.
 const char kCheckLiveness[] = "CheckLiveness";
 const char kGetKioskAppRequiredPlatforVersion[] =
     "GetKioskAppRequiredPlatformVersion";
@@ -107,6 +109,14 @@ enum DisplayPowerState {
   DISPLAY_POWER_INTERNAL_OFF_EXTERNAL_ON = 2,
   DISPLAY_POWER_INTERNAL_ON_EXTERNAL_OFF = 3,
 };
+
+const char kLivenessServiceName[] = "org.chromium.LivenessService";
+const char kLivenessServicePath[] = "/org/chromium/LivenessService";
+const char kLivenessServiceInterface[] =
+    "org.chromium.LivenessServiceInterface";
+// Methods
+const char kLivenessServiceCheckLivenessMethod[] = "CheckLiveness";
+
 }  // namespace chromeos
 
 namespace cromo {
