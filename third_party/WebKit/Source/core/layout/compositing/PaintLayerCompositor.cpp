@@ -353,6 +353,16 @@ static void forceRecomputeVisualRectsIncludingNonCompositingDescendants(
   }
 }
 
+GraphicsLayer* PaintLayerCompositor::parentForContentLayers() const {
+  if (m_rootContentLayer)
+    return m_rootContentLayer.get();
+
+  DCHECK(RuntimeEnabledFeatures::rootLayerScrollingEnabled());
+  // Iframe content layers will be connected by the parent frame using
+  // attachFrameContentLayersToIframeLayer.
+  return isMainFrame() ? visualViewport().scrollLayer() : nullptr;
+}
+
 void PaintLayerCompositor::updateIfNeeded() {
   CompositingUpdateType updateType = m_pendingUpdateType;
   m_pendingUpdateType = CompositingUpdateNone;
@@ -444,8 +454,9 @@ void PaintLayerCompositor::updateIfNeeded() {
     }
 
     if (!childList.isEmpty()) {
-      CHECK(m_rootContentLayer && m_compositing);
-      m_rootContentLayer->setChildren(childList);
+      CHECK(m_compositing);
+      if (GraphicsLayer* contentParent = parentForContentLayers())
+        contentParent->setChildren(childList);
     }
 
     applyOverlayFullscreenVideoAdjustmentIfNeeded();
@@ -691,7 +702,7 @@ void PaintLayerCompositor::frameViewScrollbarsExistenceDidChange() {
 }
 
 void PaintLayerCompositor::rootFixedBackgroundsChanged() {
-  if (!supportsFixedRootBackgroundCompositing())
+  if (!supportsFixedRootBackgroundCompositing() || !m_containerLayer)
     return;
 
   // To avoid having to make the fixed root background layer fixed positioned to
@@ -723,13 +734,16 @@ std::unique_ptr<JSONObject> PaintLayerCompositor::layerTreeAsJSON(
   ASSERT(lifecycle().state() >= DocumentLifecycle::PaintInvalidationClean ||
          m_layoutView.frameView()->shouldThrottleRendering());
 
-  if (!m_rootContentLayer)
-    return nullptr;
-
   // We skip dumping the scroll and clip layers to keep layerTreeAsText output
   // similar between platforms (unless we explicitly request dumping from the
   // root.
   GraphicsLayer* rootLayer = m_rootContentLayer.get();
+  if (!rootLayer)
+    rootLayer = rootGraphicsLayer();
+
+  if (!rootLayer)
+    return nullptr;
+
   if (flags & LayerTreeIncludesRootLayer) {
     if (isMainFrame()) {
       while (rootLayer->parent())
@@ -767,6 +781,7 @@ bool PaintLayerCompositor::attachFrameContentLayersToIframeLayer(
   if (!layer->hasCompositedLayerMapping())
     return false;
 
+  DisableCompositingQueryAsserts disabler;
   layer->compositedLayerMapping()->setSublayers(
       GraphicsLayerVector(1, innerCompositor->rootGraphicsLayer()));
   return true;
@@ -795,11 +810,11 @@ PaintLayer* PaintLayerCompositor::rootLayer() const {
 }
 
 GraphicsLayer* PaintLayerCompositor::rootGraphicsLayer() const {
-  return m_overflowControlsHostLayer.get();
-}
-
-GraphicsLayer* PaintLayerCompositor::frameScrollLayer() const {
-  return m_scrollLayer.get();
+  if (m_overflowControlsHostLayer)
+    return m_overflowControlsHostLayer.get();
+  if (CompositedLayerMapping* clm = rootLayer()->compositedLayerMapping())
+    return clm->childForSuperlayers();
+  return nullptr;
 }
 
 GraphicsLayer* PaintLayerCompositor::scrollLayer() const {
@@ -807,14 +822,6 @@ GraphicsLayer* PaintLayerCompositor::scrollLayer() const {
           m_layoutView.frameView()->getScrollableArea())
     return scrollableArea->layerForScrolling();
   return nullptr;
-}
-
-GraphicsLayer* PaintLayerCompositor::containerLayer() const {
-  return m_containerLayer.get();
-}
-
-GraphicsLayer* PaintLayerCompositor::rootContentLayer() const {
-  return m_rootContentLayer.get();
 }
 
 void PaintLayerCompositor::setIsInWindow(bool isInWindow) {
@@ -1121,7 +1128,11 @@ void PaintLayerCompositor::ensureRootLayer() {
   if (isMainFrame())
     visualViewport().createLayerTree();
 
-  if (!m_rootContentLayer) {
+  // When RLS is enabled, none of the PLC GraphicsLayers exist.
+  bool shouldCreateOwnLayers =
+      !RuntimeEnabledFeatures::rootLayerScrollingEnabled();
+
+  if (shouldCreateOwnLayers && !m_rootContentLayer) {
     m_rootContentLayer = GraphicsLayer::create(this);
     IntRect overflowRect = m_layoutView.pixelSnappedLayoutOverflowRect();
     m_rootContentLayer->setSize(
@@ -1131,7 +1142,7 @@ void PaintLayerCompositor::ensureRootLayer() {
         DOMNodeIds::idForNode(m_layoutView.node()));
   }
 
-  if (!m_overflowControlsHostLayer) {
+  if (shouldCreateOwnLayers && !m_overflowControlsHostLayer) {
     ASSERT(!m_scrollLayer);
     ASSERT(!m_containerLayer);
 
@@ -1140,9 +1151,6 @@ void PaintLayerCompositor::ensureRootLayer() {
     // in updateClippingOnCompositorLayers.
     m_overflowControlsHostLayer = GraphicsLayer::create(this);
     m_containerLayer = GraphicsLayer::create(this);
-
-    // TODO(skobes): When root layer scrolling is enabled, we should not even
-    // create m_scrollLayer or most of the layers in PLC.
     m_scrollLayer = GraphicsLayer::create(this);
     if (ScrollingCoordinator* scrollingCoordinator =
             this->scrollingCoordinator())
@@ -1170,9 +1178,6 @@ void PaintLayerCompositor::ensureRootLayer() {
 }
 
 void PaintLayerCompositor::destroyRootLayer() {
-  if (!m_rootContentLayer)
-    return;
-
   detachRootLayer();
 
   if (m_layerForHorizontalScrollbar) {
@@ -1212,9 +1217,6 @@ void PaintLayerCompositor::destroyRootLayer() {
 }
 
 void PaintLayerCompositor::attachRootLayer() {
-  if (!m_rootContentLayer)
-    return;
-
   // In Slimming Paint v2, PaintArtifactCompositor is responsible for the root
   // layer.
   if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
@@ -1234,7 +1236,7 @@ void PaintLayerCompositor::attachRootLayer() {
 }
 
 void PaintLayerCompositor::detachRootLayer() {
-  if (!m_rootContentLayer || m_rootLayerAttachment == RootLayerUnattached)
+  if (m_rootLayerAttachment == RootLayerUnattached)
     return;
 
   switch (m_rootLayerAttachment) {
@@ -1244,8 +1246,6 @@ void PaintLayerCompositor::detachRootLayer() {
       // frame's layoutObject in the parent document.
       if (m_overflowControlsHostLayer)
         m_overflowControlsHostLayer->removeFromParent();
-      else
-        m_rootContentLayer->removeFromParent();
 
       if (HTMLFrameOwnerElement* ownerElement =
               m_layoutView.document().localOwner())

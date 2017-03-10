@@ -434,8 +434,6 @@ TEST_P(VisualViewportTest, TestResizeAfterHorizontalScroll) {
 TEST_P(VisualViewportTest, TestWebViewResizedBeforeAttachment) {
   initializeWithDesktopSettings();
   FrameView& frameView = *webViewImpl()->mainFrameImpl()->frameView();
-  GraphicsLayer* rootGraphicsLayer =
-      frameView.layoutViewItem().compositor()->rootGraphicsLayer();
 
   // Make sure that a resize that comes in while there's no root layer is
   // honoured when we attach to the layer tree.
@@ -443,10 +441,11 @@ TEST_P(VisualViewportTest, TestWebViewResizedBeforeAttachment) {
       webViewImpl()->mainFrameImpl()->frameWidget();
   mainFrameWidget->setRootGraphicsLayer(nullptr);
   webViewImpl()->resize(IntSize(320, 240));
-  mainFrameWidget->setRootGraphicsLayer(rootGraphicsLayer);
 
   navigateTo("about:blank");
   webViewImpl()->updateAllLifecyclePhases();
+  mainFrameWidget->setRootGraphicsLayer(
+      frameView.layoutViewItem().compositor()->rootGraphicsLayer());
 
   VisualViewport& visualViewport =
       frame()->page()->frameHost().visualViewport();

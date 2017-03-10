@@ -542,7 +542,10 @@ TEST_P(FrameThrottlingTest, ScrollingCoordinatorShouldSkipThrottledFrame) {
             frameElement->contentDocument()->lifecycle().state());
   // The fixed background in the throttled sub frame should not cause main
   // thread scrolling.
-  EXPECT_FALSE(document().view()->shouldScrollOnMainThread());
+  EXPECT_FALSE(document()
+                   .view()
+                   ->layoutViewportScrollableArea()
+                   ->shouldScrollOnMainThread());
 
   // Make the frame visible by changing its transform. This doesn't cause a
   // layout, but should still unthrottle the frame.
@@ -550,9 +553,14 @@ TEST_P(FrameThrottlingTest, ScrollingCoordinatorShouldSkipThrottledFrame) {
   compositeFrame();
   EXPECT_FALSE(frameElement->contentDocument()->view()->canThrottleRendering());
   // The fixed background in the throttled sub frame should be considered.
-  EXPECT_TRUE(
-      frameElement->contentDocument()->view()->shouldScrollOnMainThread());
-  EXPECT_FALSE(document().view()->shouldScrollOnMainThread());
+  EXPECT_TRUE(frameElement->contentDocument()
+                  ->view()
+                  ->layoutViewportScrollableArea()
+                  ->shouldScrollOnMainThread());
+  EXPECT_FALSE(document()
+                   .view()
+                   ->layoutViewportScrollableArea()
+                   ->shouldScrollOnMainThread());
 }
 
 TEST_P(FrameThrottlingTest, ScrollingCoordinatorShouldSkipThrottledLayer) {

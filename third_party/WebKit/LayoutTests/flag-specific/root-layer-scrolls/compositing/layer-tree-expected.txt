@@ -1,0 +1,73 @@
+{
+  "name": "Root Transform Layer",
+  "children": [
+    {
+      "name": "Inner Viewport Container Layer",
+      "bounds": [800, 600],
+      "children": [
+        {
+          "name": "Overscroll Elasticity Layer",
+          "children": [
+            {
+              "name": "Page Scale Layer",
+              "children": [
+                {
+                  "name": "Inner Viewport Scroll Layer",
+                  "bounds": [800, 600],
+                  "children": [
+                    {
+                      "name": "LayoutView #document",
+                      "bounds": [800, 600],
+                      "shouldFlattenTransform": false,
+                      "drawsContent": true,
+                      "children": [
+                        {
+                          "name": "Scrolling Layer",
+                          "bounds": [780, 580],
+                          "shouldFlattenTransform": false,
+                          "children": [
+                            {
+                              "name": "Scrolling Contents Layer",
+                              "bounds": [1200, 900],
+                              "contentsOpaque": true,
+                              "drawsContent": true
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Overflow Controls Host Layer",
+          "bounds": [800, 600],
+          "children": [
+            {
+              "name": "Horizontal Scrollbar Layer",
+              "position": [0, 580],
+              "bounds": [780, 20],
+              "drawsContent": true
+            },
+            {
+              "name": "Vertical Scrollbar Layer",
+              "position": [780, 0],
+              "bounds": [20, 580],
+              "drawsContent": true
+            },
+            {
+              "name": "Scroll Corner Layer",
+              "position": [780, 580],
+              "bounds": [20, 20],
+              "drawsContent": true
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+

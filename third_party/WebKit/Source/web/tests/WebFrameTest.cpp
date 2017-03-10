@@ -1756,7 +1756,13 @@ TEST_P(ParameterizedWebFrameTest,
   webViewHelper.initializeAndLoad(m_baseURL + "0-by-0.html", true, nullptr,
                                   &client, nullptr, configureAndroid);
   webViewHelper.webView()->settings()->setForceZeroLayoutHeight(true);
+  webViewHelper.webView()->updateAllLifecyclePhases();
+
   PaintLayerCompositor* compositor = webViewHelper.webView()->compositor();
+  GraphicsLayer* scrollContainer = compositor->containerLayer();
+  if (!scrollContainer)
+    scrollContainer = compositor->rootGraphicsLayer();
+
   EXPECT_EQ(0, webViewHelper.webView()
                    ->mainFrameImpl()
                    ->frameView()
@@ -1767,8 +1773,8 @@ TEST_P(ParameterizedWebFrameTest,
                    ->frameView()
                    ->layoutSize()
                    .height());
-  EXPECT_EQ(0.0, compositor->containerLayer()->size().width());
-  EXPECT_EQ(0.0, compositor->containerLayer()->size().height());
+  EXPECT_EQ(0.0, scrollContainer->size().width());
+  EXPECT_EQ(0.0, scrollContainer->size().height());
 
   webViewHelper.resize(WebSize(viewportWidth, 0));
   EXPECT_EQ(viewportWidth, webViewHelper.webView()
@@ -1781,8 +1787,8 @@ TEST_P(ParameterizedWebFrameTest,
                    ->frameView()
                    ->layoutSize()
                    .height());
-  EXPECT_EQ(viewportWidth, compositor->containerLayer()->size().width());
-  EXPECT_EQ(0.0, compositor->containerLayer()->size().height());
+  EXPECT_EQ(viewportWidth, scrollContainer->size().width());
+  EXPECT_EQ(0.0, scrollContainer->size().height());
 
   // The flag ForceZeroLayoutHeight will cause the following resize of viewport
   // height to be ignored by the outer viewport (the container layer of
@@ -1801,15 +1807,15 @@ TEST_P(ParameterizedWebFrameTest,
                    ->frameView()
                    ->layoutSize()
                    .height());
-  EXPECT_EQ(viewportWidth, compositor->containerLayer()->size().width());
-  EXPECT_EQ(viewportHeight, compositor->containerLayer()->size().height());
+  EXPECT_EQ(viewportWidth, scrollContainer->size().width());
+  EXPECT_EQ(viewportHeight, scrollContainer->size().height());
 
   LocalFrame* frame = webViewHelper.webView()->mainFrameImpl()->frame();
   VisualViewport& visualViewport = frame->page()->frameHost().visualViewport();
   EXPECT_EQ(viewportHeight, visualViewport.containerLayer()->size().height());
   EXPECT_TRUE(
       visualViewport.containerLayer()->platformLayer()->masksToBounds());
-  EXPECT_FALSE(compositor->containerLayer()->platformLayer()->masksToBounds());
+  EXPECT_FALSE(scrollContainer->platformLayer()->masksToBounds());
 }
 
 TEST_P(ParameterizedWebFrameTest, SetForceZeroLayoutHeight) {

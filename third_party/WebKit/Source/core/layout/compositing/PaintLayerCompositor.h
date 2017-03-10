@@ -123,11 +123,27 @@ class CORE_EXPORT PaintLayerCompositor final : public GraphicsLayerClient {
   void fullyInvalidatePaint();
 
   PaintLayer* rootLayer() const;
+
+  GraphicsLayer* containerLayer() const { return m_containerLayer.get(); }
+  GraphicsLayer* frameScrollLayer() const { return m_scrollLayer.get(); }
+  GraphicsLayer* rootContentLayer() const { return m_rootContentLayer.get(); }
+  GraphicsLayer* layerForHorizontalScrollbar() const {
+    return m_layerForHorizontalScrollbar.get();
+  }
+  GraphicsLayer* layerForVerticalScrollbar() const {
+    return m_layerForVerticalScrollbar.get();
+  }
+  GraphicsLayer* layerForScrollCorner() const {
+    return m_layerForScrollCorner.get();
+  }
+
+  // In root layer scrolling mode, returns the LayoutView's main GraphicsLayer.
+  // In non-RLS mode, returns the outermost PaintLayerCompositor layer.
   GraphicsLayer* rootGraphicsLayer() const;
-  GraphicsLayer* frameScrollLayer() const;
+
+  // In root layer scrolling mode, this is the LayoutView's scroll layer.
+  // In non-RLS mode, this is the same as frameScrollLayer().
   GraphicsLayer* scrollLayer() const;
-  GraphicsLayer* containerLayer() const;
-  GraphicsLayer* rootContentLayer() const;
 
   void updateRootLayerPosition();
 
@@ -154,16 +170,6 @@ class CORE_EXPORT PaintLayerCompositor final : public GraphicsLayerClient {
   bool scrollingLayerDidChange(PaintLayer*);
 
   std::unique_ptr<JSONObject> layerTreeAsJSON(LayerTreeFlags) const;
-
-  GraphicsLayer* layerForHorizontalScrollbar() const {
-    return m_layerForHorizontalScrollbar.get();
-  }
-  GraphicsLayer* layerForVerticalScrollbar() const {
-    return m_layerForVerticalScrollbar.get();
-  }
-  GraphicsLayer* layerForScrollCorner() const {
-    return m_layerForScrollCorner.get();
-  }
 
   void setTracksRasterInvalidations(bool);
 
@@ -237,9 +243,9 @@ class CORE_EXPORT PaintLayerCompositor final : public GraphicsLayerClient {
 
   bool isMainFrame() const;
   VisualViewport& visualViewport() const;
+  GraphicsLayer* parentForContentLayers() const;
 
   LayoutView& m_layoutView;
-  std::unique_ptr<GraphicsLayer> m_rootContentLayer;
 
   CompositingReasonFinder m_compositingReasonFinder;
 
@@ -268,12 +274,17 @@ class CORE_EXPORT PaintLayerCompositor final : public GraphicsLayerClient {
   };
   RootLayerAttachment m_rootLayerAttachment;
 
-  // Enclosing container layer, which clips for iframe content
+  // Outermost layer, holds overflow controls and the container layer
+  std::unique_ptr<GraphicsLayer> m_overflowControlsHostLayer;
+
+  // Clips for iframe content
   std::unique_ptr<GraphicsLayer> m_containerLayer;
+
+  // Scrolls with the FrameView
   std::unique_ptr<GraphicsLayer> m_scrollLayer;
 
-  // Enclosing layer for overflow controls and the clipping layer
-  std::unique_ptr<GraphicsLayer> m_overflowControlsHostLayer;
+  // Innermost layer, parent of LayoutView main GraphicsLayer
+  std::unique_ptr<GraphicsLayer> m_rootContentLayer;
 
   // Layers for overflow controls
   std::unique_ptr<GraphicsLayer> m_layerForHorizontalScrollbar;

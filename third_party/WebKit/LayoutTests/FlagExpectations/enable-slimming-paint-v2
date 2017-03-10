@@ -302,6 +302,7 @@ Bug(none) compositing/layer-creation/stacking-context-overlap-nested.html [ Fail
 Bug(none) compositing/layer-creation/stacking-context-overlap.html [ Failure ]
 Bug(none) compositing/layer-creation/translatez-added.html [ Failure ]
 Bug(none) compositing/layer-creation/translatez-overlap.html [ Failure ]
+Bug(none) compositing/layer-tree.html [ Failure ]
 Bug(none) compositing/layers-inside-overflow-scroll.html [ Failure ]
 Bug(none) compositing/layout-width-change.html [ Failure ]
 Bug(none) compositing/masks/mask-with-added-filters.html [ Failure ]

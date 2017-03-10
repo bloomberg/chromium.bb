@@ -5043,8 +5043,6 @@ void FrameView::updateSubFrameScrollOnMainReason(
   FrameView& frameView = *toLocalFrame(frame).view();
   if (frameView.shouldThrottleRendering())
     return;
-  if (!frameView.layerForScrolling())
-    return;
 
   reasons |= frameView.mainThreadScrollingReasonsPerFrame();
   if (GraphicsLayer* layerForScrolling = toLocalFrame(frame)
