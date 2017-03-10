@@ -33,14 +33,9 @@ GvrDeviceProvider::~GvrDeviceProvider() {
 }
 
 void GvrDeviceProvider::GetDevices(std::vector<VRDevice*>* devices) {
-  devices->push_back(vr_device_.get());
-}
-
-device::GvrDelegateProvider* GvrDeviceProvider::GetDelegateProvider() {
-  device::GvrDelegateProvider* provider =
-      device::GvrDelegateProvider::GetInstance();
-  Initialize(provider);
-  return provider;
+  Initialize();
+  if (initialized_)
+    devices->push_back(vr_device_.get());
 }
 
 void GvrDeviceProvider::Initialize() {
@@ -48,36 +43,41 @@ void GvrDeviceProvider::Initialize() {
   // GvrDeviceProvider so we don't have to call this function multiple times.
   // Ideally the DelegateProvider would always be available, and GetInstance()
   // would create it.
-  Initialize(device::GvrDelegateProvider::GetInstance());
-}
-
-void GvrDeviceProvider::Initialize(device::GvrDelegateProvider* provider) {
-  if (!provider)
+  if (initialized_)
     return;
-  provider->SetDeviceProvider(this);
+  device::GvrDelegateProvider* delegate_provider =
+      device::GvrDelegateProvider::GetInstance();
+  if (!delegate_provider)
+    return;
+  delegate_provider->SetDeviceProvider(this);
+  initialized_ = true;
 }
 
 void GvrDeviceProvider::RequestPresent(
-    mojom::VRSubmitFrameClientPtr submit_client,
     const base::Callback<void(bool)>& callback) {
-  device::GvrDelegateProvider* delegate_provider = GetDelegateProvider();
+  Initialize();
+  device::GvrDelegateProvider* delegate_provider =
+      device::GvrDelegateProvider::GetInstance();
   if (!delegate_provider)
     return callback.Run(false);
 
   // RequestWebVRPresent is async as we may trigger a DON flow that pauses
   // Chrome.
-  delegate_provider->RequestWebVRPresent(std::move(submit_client), callback);
+  delegate_provider->RequestWebVRPresent(callback);
 }
 
 // VR presentation exit requested by the API.
 void GvrDeviceProvider::ExitPresent() {
-  device::GvrDelegateProvider* delegate_provider = GetDelegateProvider();
+  Initialize();
+  GvrDelegateProvider* delegate_provider = GvrDelegateProvider::GetInstance();
   if (delegate_provider)
     delegate_provider->ExitWebVRPresent();
 }
 
 void GvrDeviceProvider::SetListeningForActivate(bool listening) {
-  device::GvrDelegateProvider* delegate_provider = GetDelegateProvider();
+  Initialize();
+  device::GvrDelegateProvider* delegate_provider =
+      device::GvrDelegateProvider::GetInstance();
   if (!delegate_provider)
     return;
 

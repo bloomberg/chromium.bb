@@ -32,17 +32,13 @@ class VRDisplayImpl : public mojom::VRDisplay {
   void ResetPose() override;
 
   void RequestPresent(bool secure_origin,
-                      mojom::VRSubmitFrameClientPtr submit_client,
                       const RequestPresentCallback& callback) override;
   void ExitPresent() override;
-  void SubmitFrame(int16_t frame_index,
-                   const gpu::MailboxHolder& mailbox) override;
+  void SubmitFrame(mojom::VRPosePtr pose) override;
 
   void UpdateLayerBounds(int16_t frame_index,
                          mojom::VRLayerBoundsPtr left_bounds,
-                         mojom::VRLayerBoundsPtr right_bounds,
-                         int16_t source_width,
-                         int16_t source_height) override;
+                         mojom::VRLayerBoundsPtr right_bounds) override;
   void GetVRVSyncProvider(mojom::VRVSyncProviderRequest request) override;
 
   void RequestPresentResult(const RequestPresentCallback& callback,

@@ -5,8 +5,6 @@
 module device.mojom;
 
 import "mojo/common/time.mojom";
-import "gpu/ipc/common/mailbox_holder.mojom";
-import "gpu/ipc/common/sync_token.mojom";
 
 // A field of view, given by 4 degrees describing the view from a center point.
 struct VRFieldOfView {
@@ -86,25 +84,19 @@ interface VRServiceClient {
                      VRDisplayInfo displayInfo);
 };
 
-interface VRSubmitFrameClient {
-  OnSubmitFrameTransferred();
-  OnSubmitFrameRendered();
-};
-
 interface VRDisplay {
   ResetPose();
 
-  RequestPresent(bool secureOrigin, VRSubmitFrameClient client) => (bool success);
+  RequestPresent(bool secureOrigin) => (bool success);
   ExitPresent();
-  SubmitFrame(int16 frameId, gpu.mojom.MailboxHolder mailboxHolder);
+  SubmitFrame(VRPose? pose);
   UpdateLayerBounds(int16 frameId, VRLayerBounds leftBounds,
-                    VRLayerBounds rightBounds, int16 sourceWidth,
-                    int16 sourceHeight);
+                    VRLayerBounds rightBounds);
   GetVRVSyncProvider(VRVSyncProvider& request);
 };
 
 interface VRVSyncProvider {
-  enum Status { SUCCESS, CLOSING };
+  enum Status { SUCCESS, RETRY };
 
   // The frameId maps a VSync to a frame arriving from the compositor. IDs will
   // be reused after the frame arrives from the compositor. Negative IDs imply

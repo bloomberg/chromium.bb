@@ -8,8 +8,4 @@ traits_headers = [ "//gpu/ipc/common/mailbox_holder_struct_traits.h" ]
 deps = [
   "//gpu/ipc/common:struct_traits",
 ]
-public_deps = [
-  "//gpu/command_buffer/common",
-  "//mojo/public/cpp/bindings",
-]
 type_mappings = [ "gpu.mojom.MailboxHolder=::gpu::MailboxHolder" ]

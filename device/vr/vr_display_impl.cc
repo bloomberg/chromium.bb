@@ -41,17 +41,15 @@ void VRDisplayImpl::ResetPose() {
 }
 
 void VRDisplayImpl::RequestPresent(bool secure_origin,
-                                   mojom::VRSubmitFrameClientPtr submit_client,
                                    const RequestPresentCallback& callback) {
   if (!device_->IsAccessAllowed(this)) {
     callback.Run(false);
     return;
   }
 
-  device_->RequestPresent(
-      std::move(submit_client),
-      base::Bind(&VRDisplayImpl::RequestPresentResult,
-                 weak_ptr_factory_.GetWeakPtr(), callback, secure_origin));
+  device_->RequestPresent(base::Bind(&VRDisplayImpl::RequestPresentResult,
+                                     weak_ptr_factory_.GetWeakPtr(), callback,
+                                     secure_origin));
 }
 
 void VRDisplayImpl::RequestPresentResult(const RequestPresentCallback& callback,
@@ -69,24 +67,20 @@ void VRDisplayImpl::ExitPresent() {
     device_->ExitPresent();
 }
 
-void VRDisplayImpl::SubmitFrame(int16_t frame_index,
-                                const gpu::MailboxHolder& mailbox) {
+void VRDisplayImpl::SubmitFrame(mojom::VRPosePtr pose) {
   if (!device_->CheckPresentingDisplay(this))
     return;
-  device_->SubmitFrame(frame_index, mailbox);
+  device_->SubmitFrame(std::move(pose));
 }
 
 void VRDisplayImpl::UpdateLayerBounds(int16_t frame_index,
                                       mojom::VRLayerBoundsPtr left_bounds,
-                                      mojom::VRLayerBoundsPtr right_bounds,
-                                      int16_t source_width,
-                                      int16_t source_height) {
+                                      mojom::VRLayerBoundsPtr right_bounds) {
   if (!device_->IsAccessAllowed(this))
     return;
 
   device_->UpdateLayerBounds(frame_index, std::move(left_bounds),
-                             std::move(right_bounds), source_width,
-                             source_height);
+                             std::move(right_bounds));
 }
 
 void VRDisplayImpl::GetVRVSyncProvider(mojom::VRVSyncProviderRequest request) {

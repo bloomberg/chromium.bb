@@ -36,7 +36,6 @@
 #include "content/public/common/referrer.h"
 #include "device/vr/android/gvr/gvr_device.h"
 #include "device/vr/android/gvr/gvr_device_provider.h"
-#include "gpu/command_buffer/common/mailbox.h"
 #include "jni/VrShellImpl_jni.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
 #include "ui/android/view_android.h"
@@ -56,13 +55,6 @@ namespace {
 vr_shell::VrShell* g_instance;
 
 static const char kVrShellUIURL[] = "chrome://vr-shell-ui";
-
-// Default downscale factor for computing the recommended WebVR
-// renderWidth/Height from the 1:1 pixel mapped size. Using a rather
-// aggressive downscale due to the high overhead of copying pixels
-// twice before handing off to GVR. For comparison, the polyfill
-// uses approximately 0.55 on a Pixel XL.
-static constexpr float kWebVrRecommendedResolutionScale = 0.5;
 
 void SetIsInVR(content::WebContents* contents, bool is_in_vr) {
   if (contents && contents->GetRenderWidgetHostView())
@@ -178,7 +170,6 @@ bool RegisterVrShell(JNIEnv* env) {
 }
 
 VrShell::~VrShell() {
-  delegate_provider_->RemoveDelegate();
   {
     // The GvrLayout is, and must always be, used only on the UI thread, and the
     // GvrApi used for rendering should only be used from the GL thread as it's
@@ -194,6 +185,7 @@ VrShell::~VrShell() {
     base::ThreadRestrictions::ScopedAllowIO allow_io;
     gl_thread_.reset();
   }
+  delegate_provider_->RemoveDelegate();
   g_instance = nullptr;
 }
 
@@ -279,7 +271,6 @@ void VrShell::SetWebVrMode(JNIEnv* env,
     metrics_helper_->SetWebVREnabled(enabled);
   PostToGlThreadWhenReady(base::Bind(&VrShellGl::SetWebVrMode,
                                      gl_thread_->GetVrShellGl(), enabled));
-
   html_interface_->SetMode(enabled ? UiInterface::Mode::WEB_VR
                                    : UiInterface::Mode::STANDARD);
 }
@@ -333,22 +324,14 @@ void VrShell::SetWebVRSecureOrigin(bool secure_origin) {
   html_interface_->SetWebVRSecureOrigin(secure_origin);
 }
 
-void VrShell::SubmitWebVRFrame(int16_t frame_index,
-                               const gpu::MailboxHolder& mailbox) {
-  TRACE_EVENT1("gpu", "SubmitWebVRFrame", "frame", frame_index);
-
-  PostToGlThreadWhenReady(base::Bind(&VrShellGl::SubmitWebVRFrame,
-                                     gl_thread_->GetVrShellGl(), frame_index,
-                                     mailbox));
-}
+void VrShell::SubmitWebVRFrame() {}
 
 void VrShell::UpdateWebVRTextureBounds(int16_t frame_index,
                                        const gvr::Rectf& left_bounds,
-                                       const gvr::Rectf& right_bounds,
-                                       const gvr::Sizei& source_size) {
+                                       const gvr::Rectf& right_bounds) {
   PostToGlThreadWhenReady(base::Bind(&VrShellGl::UpdateWebVRTextureBounds,
                                      gl_thread_->GetVrShellGl(), frame_index,
-                                     left_bounds, right_bounds, source_size));
+                                     left_bounds, right_bounds));
 }
 
 bool VrShell::SupportsPresentation() {
@@ -402,10 +385,6 @@ void VrShell::ContentSurfaceChanged(jobject surface) {
 }
 
 void VrShell::GvrDelegateReady() {
-  PostToGlThreadWhenReady(base::Bind(
-      &VrShellGl::SetSubmitClient, gl_thread_->GetVrShellGl(),
-      base::Passed(
-          delegate_provider_->TakeSubmitFrameClient().PassInterface())));
   delegate_provider_->SetDelegate(this, gvr_api_);
 }
 
@@ -620,7 +599,6 @@ void VrShell::ProcessContentGesture(
   }
 }
 
-/* static */
 device::mojom::VRPosePtr VrShell::VRPosePtrFromGvrPose(gvr::Mat4f head_mat) {
   device::mojom::VRPosePtr pose = device::mojom::VRPose::New();
 
@@ -651,37 +629,9 @@ device::mojom::VRPosePtr VrShell::VRPosePtrFromGvrPose(gvr::Mat4f head_mat) {
   return pose;
 }
 
-/* static */
-gvr::Sizei VrShell::GetRecommendedWebVrSize(gvr::GvrApi* gvr_api) {
-  // Pick a reasonable default size for the WebVR transfer surface
-  // based on a downscaled 1:1 render resolution. This size will also
-  // be reported to the client via CreateVRDisplayInfo as the
-  // client-recommended renderWidth/renderHeight and for the GVR
-  // framebuffer. If the client chooses a different size or resizes it
-  // while presenting, we'll resize the transfer surface and GVR
-  // framebuffer to match.
-  gvr::Sizei render_target_size =
-      gvr_api->GetMaximumEffectiveRenderTargetSize();
-  gvr::Sizei webvr_size = {static_cast<int>(render_target_size.width *
-                                            kWebVrRecommendedResolutionScale),
-                           static_cast<int>(render_target_size.height *
-                                            kWebVrRecommendedResolutionScale)};
-  // Ensure that the width is an even number so that the eyes each
-  // get the same size, the recommended renderWidth is per eye
-  // and the client will use the sum of the left and right width.
-  //
-  // TODO(klausw,crbug.com/699350): should we round the recommended
-  // size to a multiple of 2^N pixels to be friendlier to the GPU? The
-  // exact size doesn't matter, and it might be more efficient.
-  webvr_size.width &= ~1;
-
-  return webvr_size;
-}
-
-/* static */
 device::mojom::VRDisplayInfoPtr VrShell::CreateVRDisplayInfo(
     gvr::GvrApi* gvr_api,
-    gvr::Sizei recommended_size,
+    gvr::Sizei compositor_size,
     uint32_t device_id) {
   TRACE_EVENT0("input", "GvrDevice::GetVRDevice");
 
@@ -710,8 +660,8 @@ device::mojom::VRDisplayInfoPtr VrShell::CreateVRDisplayInfo(
         (eye == GVR_LEFT_EYE) ? device->leftEye : device->rightEye;
     eye_params->fieldOfView = device::mojom::VRFieldOfView::New();
     eye_params->offset.resize(3);
-    eye_params->renderWidth = recommended_size.width / 2;
-    eye_params->renderHeight = recommended_size.height;
+    eye_params->renderWidth = compositor_size.width / 2;
+    eye_params->renderHeight = compositor_size.height;
 
     gvr::BufferViewport eye_viewport = gvr_api->CreateBufferViewport();
     gvr_buffer_viewports.GetBufferViewport(eye, &eye_viewport);

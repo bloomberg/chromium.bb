@@ -8,17 +8,13 @@
 #include "core/dom/DOMException.h"
 #include "core/dom/DocumentUserGestureToken.h"
 #include "core/dom/FrameRequestCallback.h"
+#include "core/dom/Fullscreen.h"
 #include "core/dom/ScriptedAnimationController.h"
 #include "core/dom/TaskRunnerHelper.h"
-#include "core/frame/FrameView.h"
-#include "core/frame/ImageBitmap.h"
 #include "core/frame/UseCounter.h"
 #include "core/inspector/ConsoleMessage.h"
-#include "core/layout/LayoutView.h"
-#include "core/layout/compositing/PaintLayerCompositor.h"
 #include "core/loader/DocumentLoader.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
-#include "gpu/command_buffer/common/mailbox_holder.h"
 #include "modules/EventTargetModules.h"
 #include "modules/vr/NavigatorVR.h"
 #include "modules/vr/VRController.h"
@@ -31,7 +27,6 @@
 #include "modules/webgl/WebGLRenderingContextBase.h"
 #include "platform/Histogram.h"
 #include "platform/UserGestureIndicator.h"
-#include "platform/instrumentation/tracing/TraceEvent.h"
 #include "public/platform/Platform.h"
 #include "wtf/AutoReset.h"
 #include "wtf/Time.h"
@@ -41,6 +36,10 @@
 namespace blink {
 
 namespace {
+
+// Magic numbers used to mark valid pose index values encoded in frame
+// data. Must match the magic numbers used in vr_shell.cc.
+static constexpr std::array<uint8_t, 2> kWebVrPosePixelMagicNumbers{{42, 142}};
 
 VREye stringToVREye(const String& whichEye) {
   if (whichEye == "left")
@@ -60,8 +59,12 @@ VRDisplay::VRDisplay(NavigatorVR* navigatorVR,
       m_capabilities(new VRDisplayCapabilities()),
       m_eyeParametersLeft(new VREyeParameters()),
       m_eyeParametersRight(new VREyeParameters()),
+      m_fullscreenCheckTimer(
+          TaskRunnerHelper::get(TaskType::UnspecedTimer,
+                                navigatorVR->document()->frame()),
+          this,
+          &VRDisplay::onFullscreenCheck),
       m_display(std::move(display)),
-      m_submit_frame_client_binding(this),
       m_displayClientBinding(this, std::move(request)) {}
 
 VRDisplay::~VRDisplay() {}
@@ -236,6 +239,17 @@ ScriptPromise VRDisplay::requestPresent(ScriptState* scriptState,
     return promise;
   }
 
+  // TODO(mthiesse): Remove fullscreen requirement for presentation. See
+  // crbug.com/687369
+  Document* doc = this->document();
+  if (!doc || !Fullscreen::fullscreenEnabled(*doc)) {
+    DOMException* exception =
+        DOMException::create(InvalidStateError, "Fullscreen is not enabled.");
+    resolver->reject(exception);
+    ReportPresentationResult(PresentationResult::FullscreenNotEnabled);
+    return promise;
+  }
+
   // A valid number of layers must be provided in order to present.
   if (layers.size() == 0 || layers.size() > m_capabilities->maxLayers()) {
     forceExitPresent();
@@ -310,12 +324,9 @@ ScriptPromise VRDisplay::requestPresent(ScriptState* scriptState,
     }
 
     m_pendingPresentResolvers.append(resolver);
-    m_submit_frame_client_binding.Close();
-    m_display->RequestPresent(
-        secureContext,
-        m_submit_frame_client_binding.CreateInterfacePtrAndBind(),
-        convertToBaseCallback(
-            WTF::bind(&VRDisplay::onPresentComplete, wrapPersistent(this))));
+    m_display->RequestPresent(secureContext, convertToBaseCallback(WTF::bind(
+                                                 &VRDisplay::onPresentComplete,
+                                                 wrapPersistent(this))));
   } else {
     updateLayerBounds();
     resolver->resolve();
@@ -384,9 +395,50 @@ void VRDisplay::beginPresent() {
     return;
   } else {
     if (m_layer.source().isHTMLCanvasElement()) {
-      // TODO(klausw,crbug.com/698923): suppress compositor updates
-      // since they aren't needed, they do a fair amount of extra
-      // work.
+      HTMLCanvasElement* canvas = m_layer.source().getAsHTMLCanvasElement();
+      // TODO(klausw,crbug.com/655722): Need a proper VR compositor, but
+      // for the moment on mobile we'll just make the canvas fullscreen
+      // so that VrShell can pick it up through the standard (high
+      // latency) compositing path.      auto canvas =
+      // m_layer.source().getAsHTMLCanvasElement();
+      auto inlineStyle = canvas->inlineStyle();
+      if (inlineStyle) {
+        // THREE.js's VREffect sets explicit style.width/height on its rendering
+        // canvas based on the non-fullscreen window dimensions, and it keeps
+        // those unchanged when presenting. Unfortunately it appears that a
+        // fullscreened canvas just gets centered if it has explicitly set a
+        // size smaller than the fullscreen dimensions. Manually set size to
+        // 100% in this case and restore it when exiting fullscreen. This is a
+        // stopgap measure since THREE.js's usage appears legal according to the
+        // WebVR API spec. This will no longer be necessary once we can get rid
+        // of this fullscreen hack.
+        m_fullscreenOrigWidth = inlineStyle->getPropertyValue(CSSPropertyWidth);
+        if (!m_fullscreenOrigWidth.isNull()) {
+          canvas->setInlineStyleProperty(CSSPropertyWidth, "100%");
+        }
+        m_fullscreenOrigHeight =
+            inlineStyle->getPropertyValue(CSSPropertyHeight);
+        if (!m_fullscreenOrigHeight.isNull()) {
+          canvas->setInlineStyleProperty(CSSPropertyHeight, "100%");
+        }
+      } else {
+        m_fullscreenOrigWidth = String();
+        m_fullscreenOrigHeight = String();
+      }
+
+      if (doc) {
+        // Since the callback for requestPresent is asynchronous, we've lost our
+        // UserGestureToken, and need to create a new one to enter fullscreen.
+        gestureIndicator = WTF::wrapUnique(
+            new UserGestureIndicator(DocumentUserGestureToken::create(
+                doc, UserGestureToken::Status::PossiblyExistingGesture)));
+      }
+      Fullscreen::requestFullscreen(*canvas);
+
+      // Check to see if the canvas is still the current fullscreen
+      // element once every 2 seconds.
+      m_fullscreenCheckTimer.startRepeating(2.0, BLINK_FROM_HERE);
+      m_reenteredFullscreen = false;
     } else {
       DCHECK(m_layer.source().isOffscreenCanvas());
       // TODO(junov, crbug.com/695497): Implement OffscreenCanvas presentation
@@ -467,8 +519,7 @@ void VRDisplay::updateLayerBounds() {
   }
 
   m_display->UpdateLayerBounds(m_vrFrameId, std::move(leftBounds),
-                               std::move(rightBounds), m_sourceWidth,
-                               m_sourceHeight);
+                               std::move(rightBounds));
 }
 
 HeapVector<VRLayer> VRDisplay::getLayers() {
@@ -484,7 +535,6 @@ HeapVector<VRLayer> VRDisplay::getLayers() {
 void VRDisplay::submitFrame() {
   if (!m_display)
     return;
-  TRACE_EVENT1("gpu", "submitFrame", "frame", m_vrFrameId);
 
   Document* doc = this->document();
   if (!m_isPresenting) {
@@ -513,109 +563,42 @@ void VRDisplay::submitFrame() {
 
   // No frame Id to write before submitting the frame.
   if (m_vrFrameId < 0) {
-    // TODO(klausw): There used to be a submitFrame here, but we can't
-    // submit without a frameId and associated pose data. Just drop it.
+    m_display->SubmitFrame(m_framePose.Clone());
     return;
   }
 
-  m_contextGL->Flush();
+  // Write the frame number for the pose used into a bottom left pixel block.
+  // It is read by chrome/browser/android/vr_shell/vr_shell.cc to associate
+  // the correct corresponding pose for submission.
+  auto gl = m_contextGL;
 
-  // Check if the canvas got resized, if yes send a bounds update.
-  int currentWidth = m_renderingContext->drawingBufferWidth();
-  int currentHeight = m_renderingContext->drawingBufferHeight();
-  if ((currentWidth != m_sourceWidth || currentHeight != m_sourceHeight) &&
-      currentWidth != 0 && currentHeight != 0) {
-    m_sourceWidth = currentWidth;
-    m_sourceHeight = currentHeight;
-    updateLayerBounds();
-  }
+  // We must ensure that the WebGL app's GL state is preserved. We do this by
+  // calling low-level GL commands directly so that the rendering context's
+  // saved parameters don't get overwritten.
 
-  // There's two types of synchronization needed for submitting frames:
-  //
-  // - Before submitting, need to wait for the previous frame to be
-  //   pulled off the transfer surface to avoid lost frames. This
-  //   is currently a compile-time option, normally we always want
-  //   to defer this wait to increase parallelism.
-  //
-  // - After submitting, need to wait for the mailbox to be consumed,
-  //   and must remain inside the execution context while waiting.
-  //   The waitForPreviousTransferToFinish option defers this wait
-  //   until the next frame. That's more efficient, but seems to
-  //   cause wobbly framerates.
-  bool waitForPreviousTransferToFinish =
-      RuntimeEnabledFeatures::webVRExperimentalRenderingEnabled();
+  gl->Enable(GL_SCISSOR_TEST);
+  // Use a few pixels to ensure we get a clean color. The resolution for the
+  // WebGL buffer may not match the final rendered destination size, and
+  // texture filtering could interfere for single pixels. This isn't visible
+  // since the final rendering hides the edges via a vignette effect.
+  gl->Scissor(0, 0, 4, 4);
+  gl->ColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+  // Careful with the arithmetic here. Float color 1.f is equivalent to int 255.
+  // Use the low byte of the index as the red component, and store an arbitrary
+  // magic number in green/blue. This number must match the reading code in
+  // vr_shell.cc. Avoid all-black/all-white.
+  gl->ClearColor((m_vrFrameId & 255) / 255.0f,
+                 kWebVrPosePixelMagicNumbers[0] / 255.0f,
+                 kWebVrPosePixelMagicNumbers[1] / 255.0f, 1.0f);
+  gl->Clear(GL_COLOR_BUFFER_BIT);
 
-  if (waitForPreviousTransferToFinish) {
-    TRACE_EVENT0("gpu", "VRDisplay::waitForPreviousTransferToFinish");
-    while (m_pendingSubmitFrame) {
-      if (!m_submit_frame_client_binding.WaitForIncomingMethodCall()) {
-        DLOG(ERROR) << "Failed to receive SubmitFrame response";
-        break;
-      }
-    }
-  }
+  // Set the GL state back to what was set by the WebVR application.
+  m_renderingContext->restoreScissorEnabled();
+  m_renderingContext->restoreScissorBox();
+  m_renderingContext->restoreColorMask();
+  m_renderingContext->restoreClearColor();
 
-  RefPtr<Image> imageRef = m_renderingContext->getImage(
-      PreferAcceleration, SnapshotReasonCreateImageBitmap);
-
-  // Hardware-accelerated rendering should always be texture backed.
-  // I hope nobody is trying to do WebVR with software rendering.
-  DCHECK(imageRef->isTextureBacked());
-
-  // The AcceleratedStaticBitmapImage must be kept alive until the
-  // mailbox is used via createAndConsumeTextureCHROMIUM, the mailbox
-  // itself does not keep it alive. We must keep a reference to the
-  // image until the mailbox was consumed.
-  StaticBitmapImage* staticImage =
-      static_cast<StaticBitmapImage*>(imageRef.get());
-  staticImage->ensureMailbox();
-
-  if (waitForPreviousTransferToFinish) {
-    // Save a reference to the image to keep it alive until next frame,
-    // where we'll wait for the transfer to finish before overwriting
-    // it.
-    m_previousImage = std::move(imageRef);
-  }
-
-  // Wait for the previous render to finish, to avoid losing frames in the
-  // Android Surface / GLConsumer pair. TODO(klausw): make this tunable?
-  // Other devices may have different preferences.
-  {
-    TRACE_EVENT0("gpu", "waitForPreviousRenderToFinish");
-    while (m_pendingPreviousFrameRender) {
-      if (!m_submit_frame_client_binding.WaitForIncomingMethodCall()) {
-        DLOG(ERROR) << "Failed to receive SubmitFrame response";
-        break;
-      }
-    }
-  }
-
-  m_pendingPreviousFrameRender = true;
-  m_pendingSubmitFrame = true;
-  m_display->SubmitFrame(
-      m_vrFrameId, gpu::MailboxHolder(staticImage->mailbox(),
-                                      staticImage->syncToken(), GL_TEXTURE_2D));
-
-  // If we're not deferring the wait for transferring the mailbox,
-  // we need to wait for it now to prevent the image going out of
-  // scope before its mailbox is retrieved.
-  if (!waitForPreviousTransferToFinish) {
-    TRACE_EVENT0("gpu", "waitForCurrentTransferToFinish");
-    while (m_pendingSubmitFrame) {
-      if (!m_submit_frame_client_binding.WaitForIncomingMethodCall()) {
-        DLOG(ERROR) << "Failed to receive SubmitFrame response";
-        break;
-      }
-    }
-  }
-}
-
-void VRDisplay::OnSubmitFrameTransferred() {
-  m_pendingSubmitFrame = false;
-}
-
-void VRDisplay::OnSubmitFrameRendered() {
-  m_pendingPreviousFrameRender = false;
+  m_display->SubmitFrame(m_framePose.Clone());
 }
 
 Document* VRDisplay::document() {
@@ -624,7 +607,7 @@ Document* VRDisplay::document() {
 
 void VRDisplay::OnPresentChange() {
   if (m_isPresenting && !m_isValidDeviceForPresenting) {
-    DVLOG(1) << __FUNCTION__ << ": device not valid, not sending event";
+    VLOG(1) << __FUNCTION__ << ": device not valid, not sending event";
     return;
   }
   m_navigatorVR->enqueueVREvent(VRDisplayEvent::create(
@@ -653,8 +636,19 @@ void VRDisplay::stopPresenting() {
   if (m_isPresenting) {
     if (!m_capabilities->hasExternalDisplay()) {
       if (m_layer.source().isHTMLCanvasElement()) {
-        // TODO(klausw,crbug.com/698923): If compositor updates are
-        // suppressed, restore them here.
+        auto canvas = m_layer.source().getAsHTMLCanvasElement();
+        Fullscreen::fullyExitFullscreen(canvas->document());
+        m_fullscreenCheckTimer.stop();
+        if (!m_fullscreenOrigWidth.isNull()) {
+          canvas->setInlineStyleProperty(CSSPropertyWidth,
+                                         m_fullscreenOrigWidth);
+          m_fullscreenOrigWidth = String();
+        }
+        if (!m_fullscreenOrigHeight.isNull()) {
+          canvas->setInlineStyleProperty(CSSPropertyWidth,
+                                         m_fullscreenOrigHeight);
+          m_fullscreenOrigHeight = String();
+        }
       } else {
         // TODO(junov, crbug.com/695497): Implement for OffscreenCanvas
       }
@@ -667,8 +661,6 @@ void VRDisplay::stopPresenting() {
 
   m_renderingContext = nullptr;
   m_contextGL = nullptr;
-  m_pendingSubmitFrame = false;
-  m_pendingPreviousFrameRender = false;
 }
 
 void VRDisplay::OnActivate(device::mojom::blink::VRDisplayEventReason reason) {
@@ -691,12 +683,18 @@ void VRDisplay::OnVSync(device::mojom::blink::VRPosePtr pose,
   switch (error) {
     case device::mojom::blink::VRVSyncProvider::Status::SUCCESS:
       break;
-    case device::mojom::blink::VRVSyncProvider::Status::CLOSING:
+    case device::mojom::blink::VRVSyncProvider::Status::RETRY:
+      m_vrVSyncProvider->GetVSync(convertToBaseCallback(
+          WTF::bind(&VRDisplay::OnVSync, wrapWeakPersistent(this))));
       return;
   }
   m_pendingVsync = false;
+  if (m_displayBlurred)
+    return;
+  if (!m_scriptedAnimationController)
+    return;
   Document* doc = this->document();
-  if (!doc || m_displayBlurred || !m_scriptedAnimationController)
+  if (!doc)
     return;
 
   WTF::TimeDelta timeDelta =
@@ -718,8 +716,6 @@ void VRDisplay::ConnectVSyncProvider() {
   if (!m_navigatorVR->isFocused() || m_vrVSyncProvider.is_bound())
     return;
   m_display->GetVRVSyncProvider(mojo::MakeRequest(&m_vrVSyncProvider));
-  m_vrVSyncProvider.set_connection_error_handler(convertToBaseCallback(
-      WTF::bind(&VRDisplay::OnVSyncConnectionError, wrapWeakPersistent(this))));
   if (m_pendingRaf && !m_displayBlurred) {
     m_pendingVsync = true;
     m_vrVSyncProvider->GetVSync(convertToBaseCallback(
@@ -727,9 +723,42 @@ void VRDisplay::ConnectVSyncProvider() {
   }
 }
 
-void VRDisplay::OnVSyncConnectionError() {
-  m_vrVSyncProvider.reset();
-  ConnectVSyncProvider();
+void VRDisplay::onFullscreenCheck(TimerBase*) {
+  DCHECK(m_layer.source().isHTMLCanvasElement());
+  if (!m_isPresenting) {
+    m_fullscreenCheckTimer.stop();
+    return;
+  }
+  // TODO: This is a temporary measure to track if fullscreen mode has been
+  // exited by the UA. If so we need to end VR presentation. Soon we won't
+  // depend on the Fullscreen API to fake VR presentation, so this will
+  // become unnessecary. Until that point, though, this seems preferable to
+  // adding a bunch of notification plumbing to Fullscreen.
+  if (!Fullscreen::isCurrentFullScreenElement(
+          *m_layer.source().getAsHTMLCanvasElement())) {
+    // TODO(mthiesse): Due to asynchronous resizing, we might get kicked out of
+    // fullscreen when changing display parameters upon entering WebVR. So one
+    // time only, we reenter fullscreen after having left it; otherwise we exit
+    // presentation.
+    if (m_reenteredFullscreen) {
+      m_isPresenting = false;
+      OnPresentChange();
+      m_fullscreenCheckTimer.stop();
+      if (m_display)
+        m_display->ExitPresent();
+      return;
+    }
+    m_reenteredFullscreen = true;
+    auto canvas = m_layer.source().getAsHTMLCanvasElement();
+    Document* doc = this->document();
+    std::unique_ptr<UserGestureIndicator> gestureIndicator;
+    if (doc) {
+      gestureIndicator = WTF::wrapUnique(
+          new UserGestureIndicator(DocumentUserGestureToken::create(
+              doc, UserGestureToken::Status::PossiblyExistingGesture)));
+    }
+    Fullscreen::requestFullscreen(*canvas);
+  }
 }
 
 ScriptedAnimationController& VRDisplay::ensureScriptedAnimationController(

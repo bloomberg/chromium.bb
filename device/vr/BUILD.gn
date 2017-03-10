@@ -42,7 +42,6 @@ component("vr") {
 
     deps += [
       "//base",
-      "//gpu/ipc/common:interfaces",
       "//mojo/public/cpp/bindings",
       "//ui/gfx",
     ]
@@ -100,7 +99,6 @@ mojom("mojo_bindings") {
   ]
 
   public_deps = [
-    "//gpu/ipc/common:interfaces",
     "//mojo/common:common_custom_types",
   ]
 

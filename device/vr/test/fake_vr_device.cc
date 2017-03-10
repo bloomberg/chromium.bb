@@ -62,8 +62,7 @@ void FakeVRDevice::GetVRDevice(
 
 void FakeVRDevice::ResetPose() {}
 
-void FakeVRDevice::RequestPresent(mojom::VRSubmitFrameClientPtr submit_client,
-                                  const base::Callback<void(bool)>& callback) {
+void FakeVRDevice::RequestPresent(const base::Callback<void(bool)>& callback) {
   callback.Run(true);
 }
 
@@ -73,14 +72,11 @@ void FakeVRDevice::ExitPresent() {
   OnExitPresent();
 }
 
-void FakeVRDevice::SubmitFrame(int16_t frame_index,
-                               const gpu::MailboxHolder& mailbox) {}
+void FakeVRDevice::SubmitFrame(mojom::VRPosePtr pose) {}
 
 void FakeVRDevice::UpdateLayerBounds(int16_t frame_index,
                                      mojom::VRLayerBoundsPtr leftBounds,
-                                     mojom::VRLayerBoundsPtr rightBounds,
-                                     int16_t source_width,
-                                     int16_t source_height) {}
+                                     mojom::VRLayerBoundsPtr rightBounds) {}
 
 void FakeVRDevice::GetVRVSyncProvider(mojom::VRVSyncProviderRequest request) {}
 
