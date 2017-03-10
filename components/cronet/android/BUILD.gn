@@ -255,7 +255,11 @@ cronet_static_tmpl("cronet_static") {
   }
 }
 
+_cronet_shared_lib_name = "cronet.$chrome_version_full"
+_cronet_shared_lib_file_name = "lib" + _cronet_shared_lib_name + ".so"
+
 shared_library("cronet") {
+  output_name = _cronet_shared_lib_name
   sources = [
     "cronet_jni.cc",
   ]
@@ -1284,10 +1288,10 @@ action("cronet_combine_proguard_flags") {
 
 copy("cronet_package_copy_native_lib") {
   sources = [
-    "$root_out_dir/libcronet.so",
+    "$root_out_dir/" + _cronet_shared_lib_file_name,
   ]
   outputs = [
-    "$_package_dir/libs/${android_app_abi}/libcronet.so",
+    "$_package_dir/libs/${android_app_abi}/" + _cronet_shared_lib_file_name,
   ]
   deps = [
     ":cronet",
@@ -1296,10 +1300,10 @@ copy("cronet_package_copy_native_lib") {
 
 copy("cronet_package_copy_native_lib_unstripped") {
   sources = [
-    "$root_out_dir/lib.unstripped/libcronet.so",
+    "$root_out_dir/lib.unstripped/" + _cronet_shared_lib_file_name,
   ]
   outputs = [
-    "$_package_dir/symbols/${android_app_abi}/libcronet.so",
+    "$_package_dir/symbols/${android_app_abi}/" + _cronet_shared_lib_file_name,
   ]
   deps = [
     ":cronet",
