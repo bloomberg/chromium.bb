@@ -58,6 +58,11 @@ public interface WebContents extends Parcelable {
     NavigationController getNavigationController();
 
     /**
+     * @return  The main frame associated with this WebContents.
+     */
+    RenderFrameHost getMainFrame();
+
+    /**
      * @return The title for the current visible page.
      */
     String getTitle();

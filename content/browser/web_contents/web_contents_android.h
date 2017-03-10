@@ -42,6 +42,9 @@ class CONTENT_EXPORT WebContentsAndroid
   base::android::ScopedJavaLocalRef<jobject> GetTopLevelNativeWindow(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);
+  base::android::ScopedJavaLocalRef<jobject> GetMainFrame(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj) const;
   base::android::ScopedJavaLocalRef<jstring> GetTitle(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj) const;

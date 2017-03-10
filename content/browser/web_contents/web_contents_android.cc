@@ -294,6 +294,12 @@ WebContentsAndroid::GetTopLevelNativeWindow(JNIEnv* env,
   return window_android->GetJavaObject();
 }
 
+ScopedJavaLocalRef<jobject> WebContentsAndroid::GetMainFrame(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) const {
+  return web_contents_->GetMainFrame()->GetJavaRenderFrameHost();
+}
+
 ScopedJavaLocalRef<jstring> WebContentsAndroid::GetTitle(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) const {

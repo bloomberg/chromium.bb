@@ -20,6 +20,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
+#include "base/supports_user_data.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
@@ -111,6 +112,7 @@ class CreateNewWindowParams;
 
 class CONTENT_EXPORT RenderFrameHostImpl
     : public RenderFrameHost,
+      public base::SupportsUserData,
       NON_EXPORTED_BASE(public mojom::FrameHost),
       public BrowserAccessibilityDelegate,
       public SiteInstanceImpl::Observer,
@@ -614,6 +616,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
   bool has_focused_editable_element() const {
     return has_focused_editable_element_;
   }
+
+#if defined(OS_ANDROID)
+  base::android::ScopedJavaLocalRef<jobject> GetJavaRenderFrameHost();
+#endif
 
  protected:
   friend class RenderFrameHostFactory;
