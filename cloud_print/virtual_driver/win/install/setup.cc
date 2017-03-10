@@ -21,9 +21,9 @@
 #include "base/win/windows_version.h"
 #include "cloud_print/common/win/cloud_print_utils.h"
 #include "cloud_print/common/win/install_utils.h"
+#include "cloud_print/virtual_driver/win/install/grit/virtual_driver_setup_resources.h"
 #include "cloud_print/virtual_driver/win/virtual_driver_consts.h"
 #include "cloud_print/virtual_driver/win/virtual_driver_helpers.h"
-#include "virtual_driver_setup_resources/grit/virtual_driver_setup_resources.h"
 
 #include <strsafe.h>  // Must be after base headers to avoid deprecation
                       // warnings.
