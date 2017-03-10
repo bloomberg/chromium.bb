@@ -28,8 +28,7 @@ class MockResourceFactory final : public ResourceFactory {
 // static
 MockResource* MockResource::fetch(FetchRequest& request,
                                   ResourceFetcher* fetcher) {
-  request.mutableResourceRequest().setRequestContext(
-      WebURLRequest::RequestContextSubresource);
+  request.setRequestContext(WebURLRequest::RequestContextSubresource);
   Resource* resource = fetcher->requestResource(request, MockResourceFactory());
   return static_cast<MockResource*>(resource);
 }

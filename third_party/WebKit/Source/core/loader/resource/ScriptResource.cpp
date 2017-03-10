@@ -41,8 +41,7 @@ ScriptResource* ScriptResource::fetch(FetchRequest& request,
                                       ResourceFetcher* fetcher) {
   DCHECK_EQ(request.resourceRequest().frameType(),
             WebURLRequest::FrameTypeNone);
-  request.mutableResourceRequest().setRequestContext(
-      WebURLRequest::RequestContextScript);
+  request.setRequestContext(WebURLRequest::RequestContextScript);
   ScriptResource* resource = toScriptResource(
       fetcher->requestResource(request, ScriptResourceFactory()));
   if (resource && !request.integrityMetadata().isEmpty())

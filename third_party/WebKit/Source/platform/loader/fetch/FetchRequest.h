@@ -81,6 +81,10 @@ class PLATFORM_EXPORT FetchRequest {
   const ResourceRequest& resourceRequest() const { return m_resourceRequest; }
   const KURL& url() const { return m_resourceRequest.url(); }
 
+  void setRequestContext(WebURLRequest::RequestContext context) {
+    m_resourceRequest.setRequestContext(context);
+  }
+
   const String& charset() const { return m_charset; }
   void setCharset(const String& charset) { m_charset = charset; }
 

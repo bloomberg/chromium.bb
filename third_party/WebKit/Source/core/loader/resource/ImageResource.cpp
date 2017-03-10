@@ -151,8 +151,7 @@ ImageResource* ImageResource::fetch(FetchRequest& request,
                                     ResourceFetcher* fetcher) {
   if (request.resourceRequest().requestContext() ==
       WebURLRequest::RequestContextUnspecified) {
-    request.mutableResourceRequest().setRequestContext(
-        WebURLRequest::RequestContextImage);
+    request.setRequestContext(WebURLRequest::RequestContextImage);
   }
   if (fetcher->context().pageDismissalEventBeingDispatched()) {
     KURL requestURL = request.resourceRequest().url();

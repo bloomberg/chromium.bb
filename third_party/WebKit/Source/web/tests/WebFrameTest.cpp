@@ -8246,8 +8246,7 @@ TEST_P(ParameterizedWebFrameTest, NotifyManifestChange) {
 static Resource* fetchManifest(Document* document, const KURL& url) {
   FetchRequest fetchRequest =
       FetchRequest(ResourceRequest(url), FetchInitiatorInfo());
-  fetchRequest.mutableResourceRequest().setRequestContext(
-      WebURLRequest::RequestContextManifest);
+  fetchRequest.setRequestContext(WebURLRequest::RequestContextManifest);
 
   return RawResource::fetchSynchronously(fetchRequest, document->fetcher());
 }

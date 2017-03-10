@@ -41,8 +41,7 @@ CSSStyleSheetResource* CSSStyleSheetResource::fetch(FetchRequest& request,
                                                     ResourceFetcher* fetcher) {
   DCHECK_EQ(request.resourceRequest().frameType(),
             WebURLRequest::FrameTypeNone);
-  request.mutableResourceRequest().setRequestContext(
-      WebURLRequest::RequestContextStyle);
+  request.setRequestContext(WebURLRequest::RequestContextStyle);
   CSSStyleSheetResource* resource = toCSSStyleSheetResource(
       fetcher->requestResource(request, CSSStyleSheetResourceFactory()));
   // TODO(kouhei): Dedupe this logic w/ ScriptResource::fetch

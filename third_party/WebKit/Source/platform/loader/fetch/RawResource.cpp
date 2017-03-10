@@ -46,8 +46,7 @@ RawResource* RawResource::fetchImport(FetchRequest& request,
                                       ResourceFetcher* fetcher) {
   DCHECK_EQ(request.resourceRequest().frameType(),
             WebURLRequest::FrameTypeNone);
-  request.mutableResourceRequest().setRequestContext(
-      WebURLRequest::RequestContextImport);
+  request.setRequestContext(WebURLRequest::RequestContextImport);
   return toRawResource(fetcher->requestResource(
       request, RawResourceFactory(Resource::ImportResource)));
 }
@@ -101,8 +100,7 @@ RawResource* RawResource::fetchTextTrack(FetchRequest& request,
                                          ResourceFetcher* fetcher) {
   DCHECK_EQ(request.resourceRequest().frameType(),
             WebURLRequest::FrameTypeNone);
-  request.mutableResourceRequest().setRequestContext(
-      WebURLRequest::RequestContextTrack);
+  request.setRequestContext(WebURLRequest::RequestContextTrack);
   return toRawResource(fetcher->requestResource(
       request, RawResourceFactory(Resource::TextTrack)));
 }

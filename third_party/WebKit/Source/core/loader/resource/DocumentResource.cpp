@@ -34,8 +34,7 @@ DocumentResource* DocumentResource::fetchSVGDocument(FetchRequest& request,
                                                      ResourceFetcher* fetcher) {
   DCHECK_EQ(request.resourceRequest().frameType(),
             WebURLRequest::FrameTypeNone);
-  request.mutableResourceRequest().setRequestContext(
-      WebURLRequest::RequestContextImage);
+  request.setRequestContext(WebURLRequest::RequestContextImage);
   return toDocumentResource(
       fetcher->requestResource(request, SVGDocumentResourceFactory()));
 }

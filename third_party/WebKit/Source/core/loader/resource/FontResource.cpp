@@ -77,8 +77,7 @@ FontResource* FontResource::fetch(FetchRequest& request,
                                   ResourceFetcher* fetcher) {
   DCHECK_EQ(request.resourceRequest().frameType(),
             WebURLRequest::FrameTypeNone);
-  request.mutableResourceRequest().setRequestContext(
-      WebURLRequest::RequestContextFont);
+  request.setRequestContext(WebURLRequest::RequestContextFont);
   return toFontResource(
       fetcher->requestResource(request, FontResourceFactory()));
 }
