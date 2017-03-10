@@ -29,8 +29,10 @@ PageTimingMetricsSender::PageTimingMetricsSender(
       timer_(std::move(timer)),
       last_timing_(initial_timing),
       metadata_(PageLoadMetadata()) {
-  // Send an initial IPC relatively early to help track aborts.
-  EnsureSendTimer(kInitialTimerDelayMillis);
+  if (!initial_timing.IsEmpty()) {
+    // Send an initial IPC relatively early to help track aborts.
+    EnsureSendTimer(kInitialTimerDelayMillis);
+  }
 }
 
 // On destruction, we want to send any data we have if we have a timer

@@ -519,17 +519,14 @@ void ChromeContentRendererClient::RenderFrameCreated(
 
   new NetErrorHelper(render_frame);
 
-  if (render_frame->IsMainFrame()) {
-    // Only attach MetricsRenderFrameObserver to the main frame, since
-    // we only want to log page load metrics for the main frame.
-    new page_load_metrics::MetricsRenderFrameObserver(render_frame);
-  } else {
+  new page_load_metrics::MetricsRenderFrameObserver(render_frame);
+
+  if (!render_frame->IsMainFrame() &&
+      prerender::PrerenderHelper::IsPrerendering(
+          render_frame->GetRenderView()->GetMainRenderFrame())) {
     // Avoid any race conditions from having the browser tell subframes that
     // they're prerendering.
-    if (prerender::PrerenderHelper::IsPrerendering(
-            render_frame->GetRenderView()->GetMainRenderFrame())) {
-      new prerender::PrerenderHelper(render_frame);
-    }
+    new prerender::PrerenderHelper(render_frame);
   }
 
   // Set up a mojo service to test if this page is a distiller page.

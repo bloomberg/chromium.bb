@@ -15,6 +15,14 @@ class CssScanningMetricsObserver
   ~CssScanningMetricsObserver() override;
 
   // page_load_metrics::PageLoadMetricsObserver:
+  ObservePolicy OnStart(content::NavigationHandle* navigation_handle,
+                        const GURL& currently_committed_url,
+                        bool started_in_foreground) override;
+  ObservePolicy OnHidden(
+      const page_load_metrics::PageLoadTiming& timing,
+      const page_load_metrics::PageLoadExtraInfo& info) override;
+  void OnLoadingBehaviorObserved(
+      const page_load_metrics::PageLoadExtraInfo& info) override;
   void OnFirstContentfulPaint(
       const page_load_metrics::PageLoadTiming& timing,
       const page_load_metrics::PageLoadExtraInfo& info) override;
@@ -23,6 +31,8 @@ class CssScanningMetricsObserver
       const page_load_metrics::PageLoadExtraInfo& info) override;
 
  private:
+  bool css_preload_found_ = false;
+
   DISALLOW_COPY_AND_ASSIGN(CssScanningMetricsObserver);
 };
 

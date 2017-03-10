@@ -255,7 +255,8 @@ void DispatchObserverTimingCallbacks(PageLoadMetricsObserver* observer,
                                      const PageLoadTiming& new_timing,
                                      const PageLoadMetadata& last_metadata,
                                      const PageLoadExtraInfo& extra_info) {
-  if (extra_info.metadata.behavior_flags != last_metadata.behavior_flags)
+  if (extra_info.main_frame_metadata.behavior_flags !=
+      last_metadata.behavior_flags)
     observer->OnLoadingBehaviorObserved(extra_info);
   if (last_timing != new_timing)
     observer->OnTimingUpdate(new_timing, extra_info);
@@ -506,6 +507,22 @@ void PageLoadTracker::NotifyClientRedirectTo(
   }
 }
 
+void PageLoadTracker::UpdateChildFrameMetadata(
+    const PageLoadMetadata& child_metadata) {
+  // Merge the child loading behavior flags with any we've already observed,
+  // possibly from other child frames.
+  const int last_child_loading_behavior_flags =
+      child_frame_metadata_.behavior_flags;
+  child_frame_metadata_.behavior_flags |= child_metadata.behavior_flags;
+  if (last_child_loading_behavior_flags == child_frame_metadata_.behavior_flags)
+    return;
+
+  PageLoadExtraInfo extra_info(ComputePageLoadExtraInfo());
+  for (const auto& observer : observers_) {
+    observer->OnLoadingBehaviorObserved(extra_info);
+  }
+}
+
 bool PageLoadTracker::UpdateTiming(const PageLoadTiming& new_timing,
                                    const PageLoadMetadata& new_metadata) {
   // Throw away IPCs that are not relevant to the current navigation.
@@ -517,22 +534,23 @@ bool PageLoadTracker::UpdateTiming(const PageLoadTiming& new_timing,
       timing_.navigation_start == new_timing.navigation_start;
   // Ensure flags sent previously are still present in the new metadata fields.
   bool valid_behavior_descendent =
-      (metadata_.behavior_flags & new_metadata.behavior_flags) ==
-      metadata_.behavior_flags;
+      (main_frame_metadata_.behavior_flags & new_metadata.behavior_flags) ==
+      main_frame_metadata_.behavior_flags;
   if (IsValidPageLoadTiming(new_timing) && valid_timing_descendent &&
       valid_behavior_descendent) {
     DCHECK(did_commit_);  // OnCommit() must be called first.
     // There are some subtle ordering constraints here. GetPageLoadMetricsInfo()
     // must be called before DispatchObserverTimingCallbacks, but its
-    // implementation depends on the state of metadata_, so we need to update
-    // metadata_ before calling GetPageLoadMetricsInfo. Thus, we make a copy of
-    // timing here, update timing_ and metadata_, and then proceed to dispatch
-    // the observer timing callbacks.
+    // implementation depends on the state of main_frame_metadata_, so we need
+    // to update main_frame_metadata_ before calling GetPageLoadMetricsInfo.
+    // Thus, we make a copy of timing here, update timing_ and
+    // main_frame_metadata_, and then proceed to dispatch the observer timing
+    // callbacks.
     const PageLoadTiming last_timing = timing_;
     timing_ = new_timing;
 
-    const PageLoadMetadata last_metadata = metadata_;
-    metadata_ = new_metadata;
+    const PageLoadMetadata last_metadata = main_frame_metadata_;
+    main_frame_metadata_ = new_metadata;
     const PageLoadExtraInfo info = ComputePageLoadExtraInfo();
     for (const auto& observer : observers_) {
       DispatchObserverTimingCallbacks(observer.get(), last_timing, new_timing,
@@ -615,11 +633,11 @@ PageLoadExtraInfo PageLoadTracker::ComputePageLoadExtraInfo() {
          (!page_end_user_initiated_info_.browser_initiated &&
           !page_end_user_initiated_info_.user_gesture &&
           !page_end_user_initiated_info_.user_input_event));
-  return PageLoadExtraInfo(navigation_start_, first_background_time,
-                           first_foreground_time, started_in_foreground_,
-                           user_initiated_info_, url(), start_url_, did_commit_,
-                           page_end_reason_, page_end_user_initiated_info_,
-                           page_end_time, metadata_);
+  return PageLoadExtraInfo(
+      navigation_start_, first_background_time, first_foreground_time,
+      started_in_foreground_, user_initiated_info_, url(), start_url_,
+      did_commit_, page_end_reason_, page_end_user_initiated_info_,
+      page_end_time, main_frame_metadata_, child_frame_metadata_);
 }
 
 bool PageLoadTracker::HasMatchingNavigationRequestID(

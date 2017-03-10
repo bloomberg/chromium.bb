@@ -9,6 +9,7 @@
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_observer.h"
+#include "third_party/WebKit/public/platform/WebLoadingBehaviorFlag.h"
 
 // Up to 10 minutes, with 100 buckets.
 #define PAGE_LOAD_HISTOGRAM(name, sample)                           \
@@ -123,6 +124,12 @@ base::Optional<base::TimeDelta> GetInitialForegroundDuration(
 base::Optional<base::TimeDelta> OptionalMin(
     const base::Optional<base::TimeDelta>& a,
     const base::Optional<base::TimeDelta>& b);
+
+// Whether the given loading behavior was observed in any frame (either the main
+// frame or a child frame).
+bool DidObserveLoadingBehaviorInAnyFrame(
+    const page_load_metrics::PageLoadExtraInfo& info,
+    blink::WebLoadingBehaviorFlag behavior);
 
 }  // namespace page_load_metrics
 

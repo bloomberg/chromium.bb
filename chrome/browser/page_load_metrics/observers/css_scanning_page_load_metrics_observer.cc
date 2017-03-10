@@ -11,30 +11,50 @@ CssScanningMetricsObserver::CssScanningMetricsObserver() {}
 
 CssScanningMetricsObserver::~CssScanningMetricsObserver() {}
 
+void CssScanningMetricsObserver::OnLoadingBehaviorObserved(
+    const page_load_metrics::PageLoadExtraInfo& info) {
+  if (css_preload_found_)
+    return;
+
+  css_preload_found_ = page_load_metrics::DidObserveLoadingBehaviorInAnyFrame(
+      info, blink::WebLoadingBehaviorFlag::WebLoadingBehaviorCSSPreloadFound);
+}
+
+page_load_metrics::PageLoadMetricsObserver::ObservePolicy
+CssScanningMetricsObserver::OnStart(
+    content::NavigationHandle* navigation_handle,
+    const GURL& currently_committed_url,
+    bool started_in_foreground) {
+  return started_in_foreground ? CONTINUE_OBSERVING : STOP_OBSERVING;
+}
+
+page_load_metrics::PageLoadMetricsObserver::ObservePolicy
+CssScanningMetricsObserver::OnHidden(
+    const page_load_metrics::PageLoadTiming&,
+    const page_load_metrics::PageLoadExtraInfo&) {
+  return STOP_OBSERVING;
+}
+
 void CssScanningMetricsObserver::OnFirstContentfulPaint(
     const page_load_metrics::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
-  if (info.metadata.behavior_flags &
-          blink::WebLoadingBehaviorFlag::WebLoadingBehaviorCSSPreloadFound &&
-      WasStartedInForegroundOptionalEventInForeground(
-          timing.first_contentful_paint, info)) {
-    PAGE_LOAD_HISTOGRAM(
-        "PageLoad.Clients.CssScanner.PaintTiming."
-        "ParseStartToFirstContentfulPaint",
-        timing.first_contentful_paint.value() - timing.parse_start.value());
-  }
+  if (!css_preload_found_)
+    return;
+
+  PAGE_LOAD_HISTOGRAM(
+      "PageLoad.Clients.CssScanner.PaintTiming."
+      "ParseStartToFirstContentfulPaint",
+      timing.first_contentful_paint.value() - timing.parse_start.value());
 }
 
 void CssScanningMetricsObserver::OnFirstMeaningfulPaint(
     const page_load_metrics::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
-  if (info.metadata.behavior_flags &
-          blink::WebLoadingBehaviorFlag::WebLoadingBehaviorCSSPreloadFound &&
-      WasStartedInForegroundOptionalEventInForeground(
-          timing.first_meaningful_paint, info)) {
-    PAGE_LOAD_HISTOGRAM(
-        "PageLoad.Clients.CssScanner.Experimental.PaintTiming."
-        "ParseStartToFirstMeaningfulPaint",
-        timing.first_meaningful_paint.value() - timing.parse_start.value());
-  }
+  if (!css_preload_found_)
+    return;
+
+  PAGE_LOAD_HISTOGRAM(
+      "PageLoad.Clients.CssScanner.Experimental.PaintTiming."
+      "ParseStartToFirstMeaningfulPaint",
+      timing.first_meaningful_paint.value() - timing.parse_start.value());
 }

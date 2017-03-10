@@ -790,9 +790,12 @@ void ExpectHistogramsAreRecordedForTestFrameSet(
 }  // namespace
 
 IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
-                       ExpectHistogramsAreRecorded) {
+                       ExpectHistogramsAreRecordedForFilteredChildFrames) {
   ASSERT_NO_FATAL_FAILURE(
       SetRulesetToDisallowURLsWithPathSuffix("included_script.js"));
+
+  // Navigate to a URL which doesn't include any filtered resources in the
+  // top-level document, but which includes filtered resources in child frames.
   const GURL url = GetTestUrl(kTestFrameSetPath);
   ConfigureAsPhishingURL(url);
 
@@ -801,6 +804,14 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
 
   ExpectHistogramsAreRecordedForTestFrameSet(
       tester, false /* expect_performance_measurements */);
+
+  // Force a navigation to another page, which flushes page load metrics for the
+  // previous page load.
+  ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
+
+  // Make sure that pages that have subresource filtered in child frames are
+  // also counted.
+  tester.ExpectTotalCount(internal::kHistogramSubresourceFilterCount, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(SubresourceFilterWithPerformanceMeasurementBrowserTest,

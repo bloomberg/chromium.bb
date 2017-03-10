@@ -48,7 +48,7 @@ namespace {
 
 bool IsServiceWorkerControlled(
     const page_load_metrics::PageLoadExtraInfo& info) {
-  return (info.metadata.behavior_flags &
+  return (info.main_frame_metadata.behavior_flags &
           blink::WebLoadingBehaviorFlag::
               WebLoadingBehaviorServiceWorkerControlled) != 0;
 }

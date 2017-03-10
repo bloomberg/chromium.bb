@@ -512,7 +512,9 @@ void MetricsWebContentsObserver::OnTimingUpdated(
     const PageLoadMetadata& metadata) {
   // We may receive notifications from frames that have been navigated away
   // from. We simply ignore them.
-  if (render_frame_host != web_contents()->GetMainFrame()) {
+  if (!render_frame_host->GetRenderViewHost() ||
+      render_frame_host->GetRenderViewHost()->GetMainFrame() !=
+          web_contents()->GetMainFrame()) {
     RecordInternalError(ERR_IPC_FROM_WRONG_FRAME);
     return;
   }
@@ -534,6 +536,15 @@ void MetricsWebContentsObserver::OnTimingUpdated(
 
   if (error)
     return;
+
+  if (render_frame_host->GetParent() != nullptr) {
+    // Child frames may send PageLoadMetadata updates, but not PageLoadTiming
+    // updates.
+    if (!timing.IsEmpty())
+      RecordInternalError(ERR_TIMING_IPC_FROM_SUBFRAME);
+    committed_load_->UpdateChildFrameMetadata(metadata);
+    return;
+  }
 
   if (!committed_load_->UpdateTiming(timing, metadata)) {
     // If the page load tracker cannot update its timing, something is wrong

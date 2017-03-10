@@ -20,8 +20,11 @@ namespace page_load_metrics {
 
 class PageTimingMetricsSender;
 
-// MetricsRenderFrameObserver observes RenderFrame notifications, and
-// sends page load timing information to the browser process over IPC.
+// MetricsRenderFrameObserver observes RenderFrame notifications, and sends page
+// load timing information to the browser process over IPC. A
+// MetricsRenderFrameObserver is instantiated for each frame (main frames and
+// child frames). MetricsRenderFrameObserver dispatches timing and metadata
+// updates for main frames, but only metadata updates for child frames.
 class MetricsRenderFrameObserver : public content::RenderFrameObserver {
  public:
   explicit MetricsRenderFrameObserver(content::RenderFrame* render_frame);
@@ -35,6 +38,10 @@ class MetricsRenderFrameObserver : public content::RenderFrameObserver {
                                 bool is_same_page_navigation) override;
   void OnDestruct() override;
 
+  // Invoked when a frame is going away. This is our last chance to send IPCs
+  // before being destroyed.
+  void FrameDetached() override;
+
  private:
   // Will be null when we're not actively sending metrics.
   std::unique_ptr<PageTimingMetricsSender> page_timing_metrics_sender_;
@@ -44,6 +51,7 @@ class MetricsRenderFrameObserver : public content::RenderFrameObserver {
   virtual PageLoadTiming GetTiming() const;
   virtual std::unique_ptr<base::Timer> CreateTimer() const;
   virtual bool HasNoRenderFrame() const;
+  virtual bool IsMainFrame() const;
 
   DISALLOW_COPY_AND_ASSIGN(MetricsRenderFrameObserver);
 };

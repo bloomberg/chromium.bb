@@ -245,14 +245,14 @@ void DocumentLoader::dispatchLinkHeaderPreloads(
 }
 
 void DocumentLoader::didChangePerformanceTiming() {
-  if (m_frame && m_frame->isMainFrame() && m_state >= Committed) {
+  if (m_frame && m_state >= Committed) {
     localFrameClient().didChangePerformanceTiming();
   }
 }
 
 void DocumentLoader::didObserveLoadingBehavior(
     WebLoadingBehaviorFlag behavior) {
-  if (m_frame && m_frame->isMainFrame()) {
+  if (m_frame) {
     DCHECK_GE(m_state, Committed);
     localFrameClient().didObserveLoadingBehavior(behavior);
   }

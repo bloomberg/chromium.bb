@@ -107,6 +107,9 @@ enum InternalErrorLoadEvent {
   // No page load end time was recorded for this page load.
   ERR_NO_PAGE_LOAD_END_TIME,
 
+  // Received a timing update from a subframe.
+  ERR_TIMING_IPC_FROM_SUBFRAME,
+
   // Add values before this final count.
   ERR_LAST_ENTRY,
 };
@@ -159,6 +162,11 @@ class PageLoadTracker {
   // Returns true if the timing was successfully updated.
   bool UpdateTiming(const PageLoadTiming& timing,
                     const PageLoadMetadata& metadata);
+
+  // Update metadata for child frames. Updates for child frames arrive
+  // separately from updates for the main frame, so aren't included in
+  // UpdateTiming.
+  void UpdateChildFrameMetadata(const PageLoadMetadata& child_metadata);
 
   void OnLoadedResource(const ExtraRequestInfo& extra_request_info);
 
@@ -294,7 +302,8 @@ class PageLoadTracker {
   bool started_in_foreground_;
 
   PageLoadTiming timing_;
-  PageLoadMetadata metadata_;
+  PageLoadMetadata main_frame_metadata_;
+  PageLoadMetadata child_frame_metadata_;
 
   ui::PageTransition page_transition_;
 

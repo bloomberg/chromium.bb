@@ -38,13 +38,19 @@ MetricsRenderFrameObserver::MetricsRenderFrameObserver(
 MetricsRenderFrameObserver::~MetricsRenderFrameObserver() {}
 
 void MetricsRenderFrameObserver::DidChangePerformanceTiming() {
-  SendMetrics();
+  // Only track timing metrics for main frames.
+  if (IsMainFrame())
+    SendMetrics();
 }
 
 void MetricsRenderFrameObserver::DidObserveLoadingBehavior(
     blink::WebLoadingBehaviorFlag behavior) {
   if (page_timing_metrics_sender_)
     page_timing_metrics_sender_->DidObserveLoadingBehavior(behavior);
+}
+
+void MetricsRenderFrameObserver::FrameDetached() {
+  page_timing_metrics_sender_.reset();
 }
 
 void MetricsRenderFrameObserver::DidCommitProvisionalLoad(
@@ -66,8 +72,12 @@ void MetricsRenderFrameObserver::DidCommitProvisionalLoad(
   // non-null, we will send metrics for the current page at some later time, as
   // those metrics become available.
   if (ShouldSendMetrics()) {
-    PageLoadTiming timing(GetTiming());
-    DCHECK(!timing.navigation_start.is_null());
+    PageLoadTiming timing;
+    if (IsMainFrame()) {
+      // Only populate PageLoadTiming for the main frame.
+      timing = GetTiming();
+      DCHECK(!timing.navigation_start.is_null());
+    }
     page_timing_metrics_sender_.reset(
         new PageTimingMetricsSender(this, routing_id(), CreateTimer(), timing));
   }
@@ -86,10 +96,6 @@ bool MetricsRenderFrameObserver::ShouldSendMetrics() const {
   if (HasNoRenderFrame())
     return false;
   const blink::WebLocalFrame* frame = render_frame()->GetWebFrame();
-  // We only track metrics for main frames.
-  if (frame->parent())
-    return false;
-
   const blink::WebDocument& document = frame->document();
   return RendererPageTrackDecider(&document, frame->dataSource()).ShouldTrack();
 }
@@ -169,6 +175,10 @@ bool MetricsRenderFrameObserver::HasNoRenderFrame() const {
 
 void MetricsRenderFrameObserver::OnDestruct() {
   delete this;
+}
+
+bool MetricsRenderFrameObserver::IsMainFrame() const {
+  return render_frame()->IsMainFrame();
 }
 
 }  // namespace page_load_metrics

@@ -118,7 +118,8 @@ struct PageLoadExtraInfo {
       PageEndReason page_end_reason,
       UserInitiatedInfo page_end_user_initiated_info,
       const base::Optional<base::TimeDelta>& page_end_time,
-      const PageLoadMetadata& metadata);
+      const PageLoadMetadata& main_frame_metadata,
+      const PageLoadMetadata& child_frame_metadata);
 
   // Simplified version of the constructor, intended for use in tests.
   static PageLoadExtraInfo CreateForTesting(const GURL& url,
@@ -186,8 +187,11 @@ struct PageLoadExtraInfo {
   const base::Optional<base::TimeDelta> page_end_time;
 
   // Extra information supplied to the page load metrics system from the
-  // renderer.
-  const PageLoadMetadata metadata;
+  // renderer for the main frame.
+  const PageLoadMetadata main_frame_metadata;
+
+  // PageLoadMetadata for child frames of the current page load.
+  const PageLoadMetadata child_frame_metadata;
 };
 
 // Container for various information about a request within a page load.
@@ -314,7 +318,8 @@ class PageLoadMetricsObserver {
   virtual void OnParseStop(const PageLoadTiming& timing,
                            const PageLoadExtraInfo& extra_info) {}
 
-  // Invoked when there is a change in PageLoadMetadata's behavior_flags.
+  // Invoked when there is a change in either the main_frame_metadata or the
+  // child_frame_metadata's loading behavior_flags.
   virtual void OnLoadingBehaviorObserved(
       const page_load_metrics::PageLoadExtraInfo& extra_info) {}
 

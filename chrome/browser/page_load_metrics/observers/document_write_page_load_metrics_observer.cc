@@ -79,11 +79,11 @@ const char kHistogramDocWriteBlockLoadingBehavior[] =
 void DocumentWritePageLoadMetricsObserver::OnFirstContentfulPaint(
     const page_load_metrics::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
-  if (info.metadata.behavior_flags &
+  if (info.main_frame_metadata.behavior_flags &
       blink::WebLoadingBehaviorFlag::WebLoadingBehaviorDocumentWriteEvaluator) {
     LogDocumentWriteEvaluatorFirstContentfulPaint(timing, info);
   }
-  if (info.metadata.behavior_flags &
+  if (info.main_frame_metadata.behavior_flags &
       blink::WebLoadingBehaviorFlag::WebLoadingBehaviorDocumentWriteBlock) {
     LogDocumentWriteBlockFirstContentfulPaint(timing, info);
   }
@@ -92,11 +92,11 @@ void DocumentWritePageLoadMetricsObserver::OnFirstContentfulPaint(
 void DocumentWritePageLoadMetricsObserver::OnFirstMeaningfulPaint(
     const page_load_metrics::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
-  if (info.metadata.behavior_flags &
+  if (info.main_frame_metadata.behavior_flags &
       blink::WebLoadingBehaviorFlag::WebLoadingBehaviorDocumentWriteEvaluator) {
     LogDocumentWriteEvaluatorFirstMeaningfulPaint(timing, info);
   }
-  if (info.metadata.behavior_flags &
+  if (info.main_frame_metadata.behavior_flags &
       blink::WebLoadingBehaviorFlag::WebLoadingBehaviorDocumentWriteBlock) {
     LogDocumentWriteBlockFirstMeaningfulPaint(timing, info);
   }
@@ -105,11 +105,11 @@ void DocumentWritePageLoadMetricsObserver::OnFirstMeaningfulPaint(
 void DocumentWritePageLoadMetricsObserver::OnParseStop(
     const page_load_metrics::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
-  if (info.metadata.behavior_flags &
+  if (info.main_frame_metadata.behavior_flags &
       blink::WebLoadingBehaviorFlag::WebLoadingBehaviorDocumentWriteEvaluator) {
     LogDocumentWriteEvaluatorParseStop(timing, info);
   }
-  if (info.metadata.behavior_flags &
+  if (info.main_frame_metadata.behavior_flags &
       blink::WebLoadingBehaviorFlag::WebLoadingBehaviorDocumentWriteBlock) {
     LogDocumentWriteBlockParseStop(timing, info);
   }
@@ -124,25 +124,25 @@ void LogLoadingBehaviorMetrics(
 
 void DocumentWritePageLoadMetricsObserver::OnLoadingBehaviorObserved(
     const page_load_metrics::PageLoadExtraInfo& info) {
-  if ((info.metadata.behavior_flags &
+  if ((info.main_frame_metadata.behavior_flags &
        blink::WebLoadingBehaviorFlag::
            WebLoadingBehaviorDocumentWriteBlockReload) &&
       !doc_write_block_reload_observed_) {
     DCHECK(
-        !(info.metadata.behavior_flags &
+        !(info.main_frame_metadata.behavior_flags &
           blink::WebLoadingBehaviorFlag::WebLoadingBehaviorDocumentWriteBlock));
     UMA_HISTOGRAM_COUNTS(internal::kHistogramDocWriteBlockReloadCount, 1);
     LogLoadingBehaviorMetrics(LOADING_BEHAVIOR_RELOAD);
     doc_write_block_reload_observed_ = true;
   }
-  if ((info.metadata.behavior_flags &
+  if ((info.main_frame_metadata.behavior_flags &
        blink::WebLoadingBehaviorFlag::WebLoadingBehaviorDocumentWriteBlock) &&
       !doc_write_block_observed_) {
     UMA_HISTOGRAM_BOOLEAN(internal::kHistogramDocWriteBlockCount, true);
     LogLoadingBehaviorMetrics(LOADING_BEHAVIOR_BLOCK);
     doc_write_block_observed_ = true;
   }
-  if ((info.metadata.behavior_flags &
+  if ((info.main_frame_metadata.behavior_flags &
        blink::WebLoadingBehaviorFlag::
            WebLoadingBehaviorDocumentWriteBlockDifferentScheme) &&
       !doc_write_same_site_diff_scheme_) {

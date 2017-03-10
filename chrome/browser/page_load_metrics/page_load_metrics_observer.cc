@@ -18,7 +18,8 @@ PageLoadExtraInfo::PageLoadExtraInfo(
     PageEndReason page_end_reason,
     UserInitiatedInfo page_end_user_initiated_info,
     const base::Optional<base::TimeDelta>& page_end_time,
-    const PageLoadMetadata& metadata)
+    const PageLoadMetadata& main_frame_metadata,
+    const PageLoadMetadata& child_frame_metadata)
     : navigation_start(navigation_start),
       first_background_time(first_background_time),
       first_foreground_time(first_foreground_time),
@@ -30,7 +31,8 @@ PageLoadExtraInfo::PageLoadExtraInfo(
       page_end_reason(page_end_reason),
       page_end_user_initiated_info(page_end_user_initiated_info),
       page_end_time(page_end_time),
-      metadata(metadata) {}
+      main_frame_metadata(main_frame_metadata),
+      child_frame_metadata(child_frame_metadata) {}
 
 PageLoadExtraInfo::PageLoadExtraInfo(const PageLoadExtraInfo& other) = default;
 
@@ -48,7 +50,8 @@ PageLoadExtraInfo PageLoadExtraInfo::CreateForTesting(
       UserInitiatedInfo::BrowserInitiated(), url, url, true /* did_commit */,
       page_load_metrics::END_NONE,
       page_load_metrics::UserInitiatedInfo::NotUserInitiated(),
-      base::TimeDelta(), page_load_metrics::PageLoadMetadata());
+      base::TimeDelta(), page_load_metrics::PageLoadMetadata(),
+      page_load_metrics::PageLoadMetadata());
 }
 
 ExtraRequestInfo::ExtraRequestInfo(bool was_cached,
