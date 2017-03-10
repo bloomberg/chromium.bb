@@ -28,18 +28,16 @@
         min-height: var(--settings-row-min-height);
       }
 
-      paper-toggle-button,
+      #labelWrapper,
+      ::content .more-actions,
       cr-policy-pref-indicator {
         -webkit-margin-start: var(--settings-control-spacing);
       }
-
-      ::content .more-actions {
-        -webkit-margin-end: 10px;
-      }
     </style>
     <div id="outerRow" noSubLabel$="[[!subLabel]]">
-      <div class="flex" on-tap="onLabelWrapperTap_"
-          actionable$="[[!controlDisabled_(disabled, pref.*)]]">
+      <div class="flex" id="labelWrapper" on-tap="onLabelWrapperTap_"
+          actionable$="[[!controlDisabled_(disabled, pref.*)]]"
+          hidden="[[!label]]">
         <div id="label" class="label">[[label]]</div>
         <div class="secondary label">[[subLabel]]</div>
       </div>
