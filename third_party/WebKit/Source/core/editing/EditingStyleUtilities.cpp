@@ -101,7 +101,12 @@ EditingStyle* EditingStyleUtilities::createStyleAtSelectionStart(
   DocumentLifecycle::DisallowTransitionScope disallowTransition(
       document.lifecycle());
 
-  Position position = adjustedSelectionStartForStyleComputation(selection);
+  // TODO(editing-dev): We should make |position| to |const Position&| by
+  // integrating this expression and if-statement below.
+  Position position =
+      selection.isCaret()
+          ? createVisiblePosition(selection.start()).deepEquivalent()
+          : adjustedSelectionStartForStyleComputation(selection.start());
 
   // If the pos is at the end of a text node, then this node is not fully
   // selected. Move it to the next deep equivalent position to avoid removing

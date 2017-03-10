@@ -384,7 +384,9 @@ bool canMergeLists(Element* firstList, Element* secondList);
 // Functions returning VisibleSelection
 VisibleSelection selectionForParagraphIteration(const VisibleSelection&);
 
-Position adjustedSelectionStartForStyleComputation(const VisibleSelection&);
+// TODO(editing-dev): We should move "adjustedSelectionStartForStyleComputation"
+// to "EditingStyleUtilitie.cpp" as local function since it used only there.
+Position adjustedSelectionStartForStyleComputation(const Position&);
 
 // Miscellaneous functions on Text
 inline bool isWhitespace(UChar c) {

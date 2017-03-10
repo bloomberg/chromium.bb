@@ -2048,22 +2048,16 @@ bool isBlockFlowElement(const Node& node) {
          layoutObject->isLayoutBlockFlow();
 }
 
-Position adjustedSelectionStartForStyleComputation(
-    const VisibleSelection& selection) {
+Position adjustedSelectionStartForStyleComputation(const Position& position) {
   // This function is used by range style computations to avoid bugs like:
   // <rdar://problem/4017641> REGRESSION (Mail): you can only bold/unbold a
   // selection starting from end of line once
   // It is important to skip certain irrelevant content at the start of the
   // selection, so we do not wind up with a spurious "mixed" style.
 
-  VisiblePosition visiblePosition = createVisiblePosition(selection.start());
+  VisiblePosition visiblePosition = createVisiblePosition(position);
   if (visiblePosition.isNull())
     return Position();
-
-  // if the selection is a caret, just return the position, since the style
-  // behind us is relevant
-  if (selection.isCaret())
-    return visiblePosition.deepEquivalent();
 
   // if the selection starts just before a paragraph break, skip over it
   if (isEndOfParagraph(visiblePosition))
