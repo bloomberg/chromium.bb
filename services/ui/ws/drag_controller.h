@@ -111,6 +111,8 @@ class DragController : public ServerWindowObserver {
   // ServerWindowObserver:
   void OnWindowDestroying(ServerWindow* window) override;
 
+  static std::string ToString(OperationType type);
+
   // Our owner.
   DragSource* source_;
 

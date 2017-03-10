@@ -826,9 +826,10 @@ void WindowTreeClient::RemoveTestObserver(
   test_observers_.RemoveObserver(observer);
 }
 
-void WindowTreeClient::SetCanAcceptDrops(Id window_id, bool can_accept_drops) {
+void WindowTreeClient::SetCanAcceptDrops(WindowMus* window,
+                                         bool can_accept_drops) {
   DCHECK(tree_);
-  tree_->SetCanAcceptDrops(window_id, can_accept_drops);
+  tree_->SetCanAcceptDrops(window->server_id(), can_accept_drops);
 }
 
 void WindowTreeClient::SetEventTargetingPolicy(
@@ -1268,10 +1269,9 @@ void WindowTreeClient::OnCompleteDrop(Id window_id,
 void WindowTreeClient::OnPerformDragDropCompleted(uint32_t change_id,
                                                   bool success,
                                                   uint32_t action_taken) {
-  if (drag_drop_controller_->DoesChangeIdMatchDragChangeId(change_id)) {
-    OnChangeCompleted(change_id, success);
+  OnChangeCompleted(change_id, success);
+  if (drag_drop_controller_->DoesChangeIdMatchDragChangeId(change_id))
     drag_drop_controller_->OnPerformDragDropCompleted(action_taken);
-  }
 }
 
 void WindowTreeClient::OnChangeCompleted(uint32_t change_id, bool success) {

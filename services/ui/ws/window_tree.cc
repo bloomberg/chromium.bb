@@ -1765,7 +1765,8 @@ void WindowTree::PerformDragDrop(
     // We need to fail this move loop change, otherwise the client will just be
     // waiting for |change_id|.
     DVLOG(1) << "PerformDragDrop failed (access denied).";
-    OnChangeCompleted(change_id, false);
+    client()->OnPerformDragDropCompleted(change_id, false,
+                                         mojom::kDropEffectNone);
     return;
   }
 
@@ -1773,7 +1774,8 @@ void WindowTree::PerformDragDrop(
   if (!display_root) {
     // The window isn't parented. There's nothing to do.
     DVLOG(1) << "PerformDragDrop failed (window unparented).";
-    OnChangeCompleted(change_id, false);
+    client()->OnPerformDragDropCompleted(change_id, false,
+                                         mojom::kDropEffectNone);
     return;
   }
 
@@ -1781,7 +1783,8 @@ void WindowTree::PerformDragDrop(
     // Either the window manager is servicing a window drag or we're servicing
     // a drag and drop operation. We can't start a second drag.
     DVLOG(1) << "PerformDragDrop failed (already performing a drag).";
-    OnChangeCompleted(change_id, false);
+    client()->OnPerformDragDropCompleted(change_id, false,
+                                         mojom::kDropEffectNone);
     return;
   }
 

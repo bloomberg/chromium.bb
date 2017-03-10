@@ -307,6 +307,8 @@ void DesktopWindowTreeHostMus::Init(aura::Window* content_window,
   if (!params.accept_events) {
     aura::WindowPortMus::Get(window())->SetEventTargetingPolicy(
         ui::mojom::EventTargetingPolicy::NONE);
+  } else {
+    aura::WindowPortMus::Get(content_window)->SetCanAcceptDrops(true);
   }
 }
 

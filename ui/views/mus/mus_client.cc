@@ -18,7 +18,6 @@
 #include "ui/aura/env.h"
 #include "ui/aura/mus/capture_synchronizer.h"
 #include "ui/aura/mus/mus_context_factory.h"
-#include "ui/aura/mus/os_exchange_data_provider_mus.h"
 #include "ui/aura/mus/property_converter.h"
 #include "ui/aura/mus/window_tree_client.h"
 #include "ui/aura/mus/window_tree_host_mus.h"
@@ -111,8 +110,6 @@ MusClient::MusClient(service_manager::Connector* connector,
   std::unique_ptr<ClipboardMus> clipboard = base::MakeUnique<ClipboardMus>();
   clipboard->Init(connector);
   ui::Clipboard::SetClipboardForCurrentThread(std::move(clipboard));
-
-  ui::OSExchangeDataProviderFactory::SetFactory(this);
 
   ViewsDelegate::GetInstance()->set_native_widget_factory(
       base::Bind(&MusClient::CreateNativeWidget, base::Unretained(this)));
@@ -295,10 +292,6 @@ aura::Window* MusClient::GetWindowAtScreenPoint(const gfx::Point& point) {
       return root->GetTopWindowContainingPoint(relative_point);
   }
   return nullptr;
-}
-
-std::unique_ptr<OSExchangeData::Provider> MusClient::BuildProvider() {
-  return base::MakeUnique<aura::OSExchangeDataProviderMus>();
 }
 
 }  // namespace views

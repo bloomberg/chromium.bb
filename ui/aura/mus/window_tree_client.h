@@ -110,7 +110,7 @@ class AURA_EXPORT WindowTreeClient
   ClientSpecificId client_id() const { return client_id_; }
 
   void SetCanFocus(Window* window, bool can_focus);
-  void SetCanAcceptDrops(Id window_id, bool can_accept_drops);
+  void SetCanAcceptDrops(WindowMus* window, bool can_accept_drops);
   void SetEventTargetingPolicy(WindowMus* window,
                                ui::mojom::EventTargetingPolicy policy);
   void SetPredefinedCursor(WindowMus* window,

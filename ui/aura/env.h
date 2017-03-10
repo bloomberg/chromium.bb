@@ -11,6 +11,7 @@
 #include "base/observer_list.h"
 #include "base/supports_user_data.h"
 #include "ui/aura/aura_export.h"
+#include "ui/base/dragdrop/os_exchange_data_provider_factory.h"
 #include "ui/events/event_handler.h"
 #include "ui/events/event_target.h"
 #include "ui/gfx/geometry/point.h"
@@ -39,7 +40,9 @@ class WindowTreeClient;
 class WindowTreeHost;
 
 // A singleton object that tracks general state within Aura.
-class AURA_EXPORT Env : public ui::EventTarget, public base::SupportsUserData {
+class AURA_EXPORT Env : public ui::EventTarget,
+                        public ui::OSExchangeDataProviderFactory::Factory,
+                        public base::SupportsUserData {
  public:
   enum class Mode {
     // Classic aura.
@@ -137,6 +140,9 @@ class AURA_EXPORT Env : public ui::EventTarget, public base::SupportsUserData {
   ui::EventTarget* GetParentTarget() override;
   std::unique_ptr<ui::EventTargetIterator> GetChildIterator() const override;
   ui::EventTargeter* GetEventTargeter() override;
+
+  // Overridden from ui::OSExchangeDataProviderFactory::Factory:
+  std::unique_ptr<ui::OSExchangeData::Provider> BuildProvider() override;
 
   // This is not const for tests, which may share Env across tests and so needs
   // to reset the value.

@@ -59,6 +59,9 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
   // Sets the EventTargetingPolicy, default is TARGET_AND_DESCENDANTS.
   void SetEventTargetingPolicy(ui::mojom::EventTargetingPolicy policy);
 
+  // Sets whether this window can accept drops, defaults to false.
+  void SetCanAcceptDrops(bool can_accept_drops);
+
   // Embeds a new client in this Window. See WindowTreeClient::Embed() for
   // details on arguments.
   void Embed(ui::mojom::WindowTreeClientPtr client,

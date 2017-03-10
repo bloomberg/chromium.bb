@@ -71,6 +71,10 @@ void WindowPortMus::SetEventTargetingPolicy(
   window_tree_client_->SetEventTargetingPolicy(this, policy);
 }
 
+void WindowPortMus::SetCanAcceptDrops(bool can_accept_drops) {
+  window_tree_client_->SetCanAcceptDrops(this, can_accept_drops);
+}
+
 void WindowPortMus::Embed(
     ui::mojom::WindowTreeClientPtr client,
     uint32_t flags,

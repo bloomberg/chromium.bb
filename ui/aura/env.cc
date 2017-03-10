@@ -13,6 +13,7 @@
 #include "ui/aura/env_observer.h"
 #include "ui/aura/input_state_lookup.h"
 #include "ui/aura/mus/mus_types.h"
+#include "ui/aura/mus/os_exchange_data_provider_mus.h"
 #include "ui/aura/mus/window_port_mus.h"
 #include "ui/aura/mus/window_tree_client.h"
 #include "ui/aura/window.h"
@@ -75,6 +76,9 @@ class Env::ActiveFocusClientWindowObserver : public WindowObserver {
 // Env, public:
 
 Env::~Env() {
+  if (RunningInsideMus())
+    ui::OSExchangeDataProviderFactory::SetFactory(nullptr);
+
   for (EnvObserver& observer : observers_)
     observer.OnWillDestroyEnv();
   DCHECK_EQ(this, lazy_tls_ptr.Pointer()->Get());
@@ -192,8 +196,11 @@ Env::Env(Mode mode)
 }
 
 void Env::Init() {
-  if (RunningInsideMus())
+  if (RunningInsideMus()) {
+    ui::OSExchangeDataProviderFactory::SetFactory(this);
     return;
+  }
+
 #if defined(USE_OZONE)
   // The ozone platform can provide its own event source. So initialize the
   // platform before creating the default event source. If running inside mus
@@ -241,6 +248,10 @@ std::unique_ptr<ui::EventTargetIterator> Env::GetChildIterator() const {
 ui::EventTargeter* Env::GetEventTargeter() {
   NOTREACHED();
   return NULL;
+}
+
+std::unique_ptr<ui::OSExchangeData::Provider> Env::BuildProvider() {
+  return base::MakeUnique<aura::OSExchangeDataProviderMus>();
 }
 
 }  // namespace aura

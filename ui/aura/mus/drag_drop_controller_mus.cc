@@ -137,23 +137,25 @@ int DragDropControllerMus::StartDragAndDrop(
   // we start showing an image representation of the drag under he cursor.
 
   base::RunLoop run_loop;
-  WindowMus* source_window_mus = WindowMus::Get(source_window);
+  WindowMus* root_window_mus = WindowMus::Get(root_window);
   const uint32_t change_id =
-      drag_drop_controller_host_->CreateChangeIdForDrag(source_window_mus);
-  CurrentDragState current_drag_state = {source_window_mus->server_id(),
+      drag_drop_controller_host_->CreateChangeIdForDrag(root_window_mus);
+  CurrentDragState current_drag_state = {root_window_mus->server_id(),
                                          change_id, ui::mojom::kDropEffectNone,
                                          data, run_loop.QuitClosure()};
   base::AutoReset<CurrentDragState*> resetter(&current_drag_state_,
                                               &current_drag_state);
-  std::map<std::string, std::vector<uint8_t>> drag_data =
-      static_cast<const aura::OSExchangeDataProviderMus&>(data.provider())
-          .GetData();
-  window_tree_->PerformDragDrop(change_id, source_window_mus->server_id(),
-                                mojo::MapToUnorderedMap(drag_data),
-                                drag_operations);
 
   base::MessageLoop* loop = base::MessageLoop::current();
   base::MessageLoop::ScopedNestableTaskAllower allow_nested(loop);
+
+  std::map<std::string, std::vector<uint8_t>> drag_data =
+      static_cast<const aura::OSExchangeDataProviderMus&>(data.provider())
+          .GetData();
+  window_tree_->PerformDragDrop(change_id, root_window_mus->server_id(),
+                                mojo::MapToUnorderedMap(drag_data),
+                                drag_operations);
+
   run_loop.Run();
 
   return current_drag_state.completed_action;
