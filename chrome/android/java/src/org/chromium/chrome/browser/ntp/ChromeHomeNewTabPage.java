@@ -188,7 +188,7 @@ public class ChromeHomeNewTabPage implements NativePage, TemplateUrlServiceObser
         // OverviewModeBehavior, we have no good signal to show the BottomSheet when an NTP is
         // selected in the tab switcher. Eventually this won't matter because we will not allow
         // NTPs to remain open after the user leaves them.
-        if (getLayoutManager().overviewVisible()) return;
+        if (getLayoutManager() != null && getLayoutManager().overviewVisible()) return;
 
         mBottomSheet.setSheetState(BottomSheet.SHEET_STATE_HALF, true);
     }
@@ -218,7 +218,9 @@ public class ChromeHomeNewTabPage implements NativePage, TemplateUrlServiceObser
             @Override
             public void onClick(View v) {
                 mBottomSheet.setSheetState(BottomSheet.SHEET_STATE_PEEK, true);
-                if (mShowOverviewOnClose) getLayoutManager().showOverview(false);
+                if (mShowOverviewOnClose && getLayoutManager() != null) {
+                    getLayoutManager().showOverview(false);
+                }
 
                 // Close the tab after showing the overview mode so the bottom sheet doesn't open
                 // if another NTP is selected when this one is closed.
