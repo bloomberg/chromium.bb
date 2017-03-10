@@ -167,6 +167,7 @@ class V8MobileBrowsingBenchmark(_V8MobileBrowsingBenchmark):
   TEST_SUFFIX = ''
 
 
+@benchmark.Disabled('reference')  # http://crbug.com/700390
 class V8DesktopTurboBrowsingBenchmark(_V8DesktopBrowsingBenchmark):
   PLATFORM = 'desktop'
   TEST_SUFFIX = '_turbo'
@@ -197,6 +198,7 @@ class V8RuntimeStatsDesktopBrowsingBenchmark(
     return possible_browser.platform.GetDeviceTypeName() != 'Desktop'
 
 
+@benchmark.Disabled('reference')  # http://crbug.com/700390
 class V8RuntimeStatsDesktopTurboBrowsingBenchmark(
     _V8RuntimeStatsBrowsingBenchmark):
   PLATFORM = 'desktop'
