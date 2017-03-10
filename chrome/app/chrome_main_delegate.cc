@@ -62,12 +62,13 @@
 #if defined(OS_WIN)
 #include <atlbase.h>
 #include <malloc.h>
+
 #include <algorithm>
+
 #include "base/debug/close_handle_hook_win.h"
 #include "chrome/browser/downgrade/user_data_downgrade.h"
 #include "chrome/child/v8_breakpad_support_win.h"
 #include "chrome/common/child_process_logging.h"
-#include "components/crash/content/app/crashpad.h"
 #include "sandbox/win/src/sandbox.h"
 #include "ui/base/resource/resource_bundle_win.h"
 #endif
@@ -78,7 +79,6 @@
 #include "chrome/browser/mac/relauncher.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/common/mac/cfbundle_blocker.h"
-#include "components/crash/content/app/crashpad.h"
 #include "components/crash/core/common/objc_zombie.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #endif
@@ -127,6 +127,7 @@
 
 #if defined(OS_MACOSX) || defined(OS_WIN)
 #include "chrome/browser/policy/policy_path_parser.h"
+#include "components/crash/content/app/crashpad.h"
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -222,7 +223,7 @@ bool UseHooks() {
 #endif  // defined(OS_WIN)
 
 #if defined(OS_LINUX)
-static void AdjustLinuxOOMScore(const std::string& process_type) {
+void AdjustLinuxOOMScore(const std::string& process_type) {
   // Browsers and zygotes should still be killable, but killed last.
   const int kZygoteScore = 0;
   // The minimum amount to bump a score by.  This is large enough that
@@ -271,6 +272,9 @@ static void AdjustLinuxOOMScore(const std::string& process_type) {
   } else {
     NOTREACHED() << "Unknown process type";
   }
+  // In the case of a 0 score, still try to adjust it. Most likely the score is
+  // 0 already, but it may not be if this process inherited a higher score from
+  // its parent process.
   if (score > -1)
     base::AdjustOOMScore(base::GetCurrentProcId(), score);
 }

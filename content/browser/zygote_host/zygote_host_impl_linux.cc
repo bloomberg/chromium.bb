@@ -244,38 +244,40 @@ void ZygoteHostImpl::AdjustRendererOOMScore(base::ProcessHandle pid,
     base::FileEnumerator en(kSelinuxPath, false, base::FileEnumerator::FILES);
     bool has_selinux_files = !en.Next().empty();
 
-    selinux = access(kSelinuxPath.value().c_str(), X_OK) == 0 &&
-              has_selinux_files;
+    selinux =
+        has_selinux_files && access(kSelinuxPath.value().c_str(), X_OK) == 0;
     selinux_valid = true;
   }
 
-  if (use_suid_sandbox_for_adj_oom_score_ && !selinux) {
-    // If heap profiling is running, these processes are not exiting, at least
-    // on ChromeOS. The easiest thing to do is not launch them when profiling.
-    // TODO(stevenjb): Investigate further and fix.
-    if (base::allocator::IsHeapProfilerRunning())
-      return;
-
-    std::vector<std::string> adj_oom_score_cmdline;
-    adj_oom_score_cmdline.push_back(sandbox_binary_);
-    adj_oom_score_cmdline.push_back(sandbox::kAdjustOOMScoreSwitch);
-    adj_oom_score_cmdline.push_back(base::Int64ToString(pid));
-    adj_oom_score_cmdline.push_back(base::IntToString(score));
-
-    base::Process sandbox_helper_process;
-    base::LaunchOptions options;
-
-    // sandbox_helper_process is a setuid binary.
-    options.allow_new_privs = true;
-
-    sandbox_helper_process =
-        base::LaunchProcess(adj_oom_score_cmdline, options);
-    if (sandbox_helper_process.IsValid())
-      base::EnsureProcessGetsReaped(sandbox_helper_process.Pid());
-  } else if (!use_suid_sandbox_for_adj_oom_score_) {
+  if (!use_suid_sandbox_for_adj_oom_score_) {
     if (!base::AdjustOOMScore(pid, score))
       PLOG(ERROR) << "Failed to adjust OOM score of renderer with pid " << pid;
+    return;
   }
+
+  if (selinux)
+    return;
+
+  // If heap profiling is running, these processes are not exiting, at least
+  // on ChromeOS. The easiest thing to do is not launch them when profiling.
+  // TODO(stevenjb): Investigate further and fix.
+  if (base::allocator::IsHeapProfilerRunning())
+    return;
+
+  std::vector<std::string> adj_oom_score_cmdline;
+  adj_oom_score_cmdline.push_back(sandbox_binary_);
+  adj_oom_score_cmdline.push_back(sandbox::kAdjustOOMScoreSwitch);
+  adj_oom_score_cmdline.push_back(base::Int64ToString(pid));
+  adj_oom_score_cmdline.push_back(base::IntToString(score));
+
+  // sandbox_helper_process is a setuid binary.
+  base::LaunchOptions options;
+  options.allow_new_privs = true;
+
+  base::Process sandbox_helper_process =
+      base::LaunchProcess(adj_oom_score_cmdline, options);
+  if (sandbox_helper_process.IsValid())
+    base::EnsureProcessGetsReaped(sandbox_helper_process.Pid());
 }
 #endif
 
