@@ -68,6 +68,8 @@ void MemoryCoordinator::onMemoryStateChange(MemoryState state) {
 }
 
 void MemoryCoordinator::onPurgeMemory() {
+  for (auto& client : m_clients)
+    client->onPurgeMemory();
   // Don't call clearMemory() because font cache invalidation always causes full
   // layout. This increases tab switching cost significantly (e.g.
   // en.wikipedia.org/wiki/Wikipedia). So we should not invalidate the font
