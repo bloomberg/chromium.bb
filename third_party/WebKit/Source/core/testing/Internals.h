@@ -499,6 +499,7 @@ class Internals final : public GarbageCollected<Internals>,
   // |feature| must be one of the values from the UseCounter::Feature enum.
   bool isUseCounted(Document*, uint32_t feature);
   bool isCSSPropertyUseCounted(Document*, const String&);
+  bool isAnimatedCSSPropertyUseCounted(Document*, const String&);
 
   // Observes changes on Document's UseCounter. Returns a promise that is
   // resolved when |feature| is counted. When |feature| was already counted,

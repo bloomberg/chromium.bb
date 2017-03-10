@@ -3113,6 +3113,11 @@ bool Internals::isCSSPropertyUseCounted(Document* document,
   return UseCounter::isCounted(*document, propertyName);
 }
 
+bool Internals::isAnimatedCSSPropertyUseCounted(Document* document,
+                                                const String& propertyName) {
+  return UseCounter::isCountedAnimatedCSS(*document, propertyName);
+}
+
 ScriptPromise Internals::observeUseCounter(ScriptState* scriptState,
                                            Document* document,
                                            uint32_t feature) {

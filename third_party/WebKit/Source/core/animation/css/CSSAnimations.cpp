@@ -134,6 +134,9 @@ static StringKeyframeEffectModel* createKeyframeEffectModel(
                       ("WebCore.Animation.CSSProperties"));
   for (CSSPropertyID property : specifiedPropertiesForUseCounter) {
     DCHECK(isValidCSSPropertyID(property));
+    UseCounter::countAnimatedCSS(elementForScoping->document(), property);
+
+    // TODO(crbug.com/458925): Remove legacy histogram and counts
     propertyHistogram.sample(
         UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(property));
   }
@@ -602,7 +605,9 @@ void CSSAnimations::maybeApplyPendingUpdate(Element* element) {
     runningTransition.animation = animation;
     m_transitions.set(property, runningTransition);
     DCHECK(isValidCSSPropertyID(property.cssProperty()));
+    UseCounter::countAnimatedCSS(element->document(), property.cssProperty());
 
+    // TODO(crbug.com/458925): Remove legacy histogram and counts
     DEFINE_STATIC_LOCAL(SparseHistogram, propertyHistogram,
                         ("WebCore.Animation.CSSProperties"));
     propertyHistogram.sample(

@@ -1512,6 +1512,9 @@ class CORE_EXPORT UseCounter {
   void count(CSSParserMode, CSSPropertyID);
   void count(Feature);
 
+  static void countAnimatedCSS(const Document&, CSSPropertyID);
+  void countAnimatedCSS(CSSPropertyID);
+
   // Count only features if they're being used in an iframe which does not
   // have script access into the top level document.
   static void countCrossOriginIframe(const Document&, Feature);
@@ -1523,6 +1526,11 @@ class CORE_EXPORT UseCounter {
   // NOTE: only for use in testing.
   static bool isCounted(Document&, const String&);
   bool isCounted(CSSPropertyID unresolvedProperty);
+
+  // Return whether the CSSPropertyID was previously counted for this document.
+  // NOTE: only for use in testing.
+  static bool isCountedAnimatedCSS(Document&, const String&);
+  bool isCountedAnimatedCSS(CSSPropertyID unresolvedProperty);
 
   // Retains a reference to the observer to notify of UseCounter changes.
   void addObserver(Observer*);
@@ -1553,6 +1561,7 @@ class CORE_EXPORT UseCounter {
 
   EnumerationHistogram& featuresHistogram() const;
   EnumerationHistogram& cssHistogram() const;
+  EnumerationHistogram& animatedCSSHistogram() const;
 
   // If non-zero, ignore all 'count' calls completely.
   unsigned m_muteCount;
@@ -1567,6 +1576,7 @@ class CORE_EXPORT UseCounter {
   // histograms.
   BitVector m_featuresRecorded;
   BitVector m_CSSRecorded;
+  BitVector m_animatedCSSRecorded;
 
   HeapHashSet<Member<Observer>> m_observers;
 

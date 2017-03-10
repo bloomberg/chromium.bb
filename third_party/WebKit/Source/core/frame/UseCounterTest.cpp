@@ -12,13 +12,18 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
-// Note that the new histogram names will change once the semantics stabilize;
 const char* const kFeaturesHistogramName = "Blink.UseCounter.Features";
 const char* const kCSSHistogramName = "Blink.UseCounter.CSSProperties";
+const char* const kAnimatedCSSHistogramName =
+    "Blink.UseCounter.AnimatedCSSProperties";
+
 const char* const kSVGFeaturesHistogramName =
     "Blink.UseCounter.SVGImage.Features";
 const char* const kSVGCSSHistogramName =
     "Blink.UseCounter.SVGImage.CSSProperties";
+const char* const kSVGAnimatedCSSHistogramName =
+    "Blink.UseCounter.SVGImage.AnimatedCSSProperties";
+
 const char* const kLegacyFeaturesHistogramName = "WebCore.FeatureObserver";
 const char* const kLegacyCSSHistogramName =
     "WebCore.FeatureObserver.CSSProperties";
@@ -45,12 +50,16 @@ void histogramBasicTest(const std::string& histogram,
   count(item);
   EXPECT_TRUE(counted(item));
   histogramTester.expectUniqueSample(histogram, histogramMap(item), 1);
-  histogramTester.expectTotalCount(legacyHistogram, 0);
+  if (!legacyHistogram.empty()) {
+    histogramTester.expectTotalCount(legacyHistogram, 0);
+  }
 
   // Test that repeated measurements have no effect
   count(item);
   histogramTester.expectUniqueSample(histogram, histogramMap(item), 1);
-  histogramTester.expectTotalCount(legacyHistogram, 0);
+  if (!legacyHistogram.empty()) {
+    histogramTester.expectTotalCount(legacyHistogram, 0);
+  }
 
   // Test recording a different sample
   EXPECT_FALSE(counted(secondItem));
@@ -59,7 +68,9 @@ void histogramBasicTest(const std::string& histogram,
   histogramTester.expectBucketCount(histogram, histogramMap(item), 1);
   histogramTester.expectBucketCount(histogram, histogramMap(secondItem), 1);
   histogramTester.expectTotalCount(histogram, 2);
-  histogramTester.expectTotalCount(legacyHistogram, 0);
+  if (!legacyHistogram.empty()) {
+    histogramTester.expectTotalCount(legacyHistogram, 0);
+  }
 
   // After a page load, the histograms will be updated, even when the URL
   // scheme is internal
@@ -70,11 +81,13 @@ void histogramBasicTest(const std::string& histogram,
   histogramTester.expectTotalCount(histogram, 3);
 
   // And verify the legacy histogram now looks the same
-  histogramTester.expectBucketCount(legacyHistogram, histogramMap(item), 1);
-  histogramTester.expectBucketCount(legacyHistogram, histogramMap(secondItem),
-                                    1);
-  histogramTester.expectBucketCount(legacyHistogram, pageVisitBucket, 1);
-  histogramTester.expectTotalCount(legacyHistogram, 3);
+  if (!legacyHistogram.empty()) {
+    histogramTester.expectBucketCount(legacyHistogram, histogramMap(item), 1);
+    histogramTester.expectBucketCount(legacyHistogram, histogramMap(secondItem),
+                                      1);
+    histogramTester.expectBucketCount(legacyHistogram, pageVisitBucket, 1);
+    histogramTester.expectTotalCount(legacyHistogram, 3);
+  }
 
   // Now a repeat measurement should get recorded again, exactly once
   EXPECT_FALSE(counted(item));
@@ -86,11 +99,13 @@ void histogramBasicTest(const std::string& histogram,
 
   // And on the next page load, the legacy histogram will again be updated
   didCommitLoad(URLTestHelpers::toKURL(url));
-  histogramTester.expectBucketCount(legacyHistogram, histogramMap(item), 2);
-  histogramTester.expectBucketCount(legacyHistogram, histogramMap(secondItem),
-                                    1);
-  histogramTester.expectBucketCount(legacyHistogram, pageVisitBucket, 2);
-  histogramTester.expectTotalCount(legacyHistogram, 5);
+  if (!legacyHistogram.empty()) {
+    histogramTester.expectBucketCount(legacyHistogram, histogramMap(item), 2);
+    histogramTester.expectBucketCount(legacyHistogram, histogramMap(secondItem),
+                                      1);
+    histogramTester.expectBucketCount(legacyHistogram, pageVisitBucket, 2);
+    histogramTester.expectTotalCount(legacyHistogram, 5);
+  }
 
   for (size_t i = 0; i < unaffectedHistograms.size(); ++i) {
     histogramTester.expectTotalCount(unaffectedHistograms[i], 0);
@@ -107,8 +122,9 @@ TEST(UseCounterTest, MAYBE_RecordingFeatures) {
   UseCounter useCounter;
   histogramBasicTest<UseCounter::Feature>(
       kFeaturesHistogramName, kLegacyFeaturesHistogramName,
-      {kSVGFeaturesHistogramName, kSVGCSSHistogramName}, UseCounter::Fetch,
-      UseCounter::FetchBodyStream,
+      {kSVGFeaturesHistogramName, kSVGCSSHistogramName,
+       kSVGAnimatedCSSHistogramName},
+      UseCounter::Fetch, UseCounter::FetchBodyStream,
       [&](UseCounter::Feature feature) -> bool {
         return useCounter.hasRecordedMeasurement(feature);
       },
@@ -124,14 +140,32 @@ TEST(UseCounterTest, RecordingCSSProperties) {
   UseCounter useCounter;
   histogramBasicTest<CSSPropertyID>(
       kCSSHistogramName, kLegacyCSSHistogramName,
-      {kSVGFeaturesHistogramName, kSVGCSSHistogramName}, CSSPropertyFont,
-      CSSPropertyZoom,
+      {kSVGFeaturesHistogramName, kSVGCSSHistogramName,
+       kSVGAnimatedCSSHistogramName},
+      CSSPropertyFont, CSSPropertyZoom,
       [&](CSSPropertyID property) -> bool {
         return useCounter.isCounted(property);
       },
       [&](CSSPropertyID property) {
         useCounter.count(HTMLStandardMode, property);
       },
+      [](CSSPropertyID property) -> int {
+        return UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(property);
+      },
+      [&](KURL kurl) { useCounter.didCommitLoad(kurl); },
+      "https://dummysite.com/", 1 /* page visit bucket */);
+}
+
+TEST(UseCounterTest, RecordingAnimatedCSSProperties) {
+  UseCounter useCounter;
+  histogramBasicTest<CSSPropertyID>(
+      kAnimatedCSSHistogramName, "",
+      {kSVGCSSHistogramName, kSVGAnimatedCSSHistogramName}, CSSPropertyOpacity,
+      CSSPropertyVariable,
+      [&](CSSPropertyID property) -> bool {
+        return useCounter.isCountedAnimatedCSS(property);
+      },
+      [&](CSSPropertyID property) { useCounter.countAnimatedCSS(property); },
       [](CSSPropertyID property) -> int {
         return UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(property);
       },
@@ -149,7 +183,7 @@ TEST(UseCounterTest, MAYBE_SVGImageContextFeatures) {
   UseCounter useCounter(UseCounter::SVGImageContext);
   histogramBasicTest<UseCounter::Feature>(
       kSVGFeaturesHistogramName, kLegacyFeaturesHistogramName,
-      {kFeaturesHistogramName, kCSSHistogramName},
+      {kFeaturesHistogramName, kCSSHistogramName, kAnimatedCSSHistogramName},
       UseCounter::SVGSMILAdditiveAnimation,
       UseCounter::SVGSMILAnimationElementTiming,
       [&](UseCounter::Feature feature) -> bool {
@@ -168,14 +202,32 @@ TEST(UseCounterTest, SVGImageContextCSSProperties) {
   UseCounter useCounter(UseCounter::SVGImageContext);
   histogramBasicTest<CSSPropertyID>(
       kSVGCSSHistogramName, kLegacyCSSHistogramName,
-      {kFeaturesHistogramName, kCSSHistogramName}, CSSPropertyFont,
-      CSSPropertyZoom,
+      {kFeaturesHistogramName, kCSSHistogramName, kAnimatedCSSHistogramName},
+      CSSPropertyFont, CSSPropertyZoom,
       [&](CSSPropertyID property) -> bool {
         return useCounter.isCounted(property);
       },
       [&](CSSPropertyID property) {
         useCounter.count(HTMLStandardMode, property);
       },
+      [](CSSPropertyID property) -> int {
+        return UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(property);
+      },
+      [&](KURL kurl) { useCounter.didCommitLoad(kurl); }, "about:blank",
+      // In practice SVGs always appear to be loaded with an about:blank URL
+      1 /* page visit bucket */);
+}
+
+TEST(UseCounterTest, SVGImageContextAnimatedCSSProperties) {
+  UseCounter useCounter(UseCounter::SVGImageContext);
+  histogramBasicTest<CSSPropertyID>(
+      kSVGAnimatedCSSHistogramName, "",
+      {kCSSHistogramName, kAnimatedCSSHistogramName}, CSSPropertyOpacity,
+      CSSPropertyVariable,
+      [&](CSSPropertyID property) -> bool {
+        return useCounter.isCountedAnimatedCSS(property);
+      },
+      [&](CSSPropertyID property) { useCounter.countAnimatedCSS(property); },
       [](CSSPropertyID property) -> int {
         return UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(property);
       },

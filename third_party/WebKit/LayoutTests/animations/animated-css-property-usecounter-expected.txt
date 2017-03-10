@@ -1,0 +1,5 @@
+This is a testharness.js-based test.
+PASS Animating properties via CSS causes UseCounter to be incremented. 
+FAIL Animating custom CSS properties causes UseCounter to be incremented. assert_true: Usage of custom property --x in style causes it to be counted in normal CSS property UseCounter expected true got false
+Harness: the test ran to completion.
+

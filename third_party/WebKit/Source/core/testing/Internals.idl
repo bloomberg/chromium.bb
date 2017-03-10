@@ -337,6 +337,7 @@
 
     boolean isUseCounted(Document document, unsigned long feature);
     boolean isCSSPropertyUseCounted(Document document, DOMString propertyName);
+    boolean isAnimatedCSSPropertyUseCounted(Document document, DOMString propertyName);
 
     // Returns a promise that is resolved when |feature| is counted on
     // |document|'s UseCounter. When |feature| was already counted, it's
