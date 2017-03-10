@@ -129,8 +129,9 @@ TEST_F(HTMLMediaElementEventListenersTest,
   EXPECT_EQ(controls(), video()->mediaControls());
 }
 
+// crbug.com/700207
 TEST_F(HTMLMediaElementEventListenersTest,
-       FullscreenDetectorTimerCancelledOnContextDestroy) {
+       DISABLED_FullscreenDetectorTimerCancelledOnContextDestroy) {
   EXPECT_EQ(video(), nullptr);
   document().body()->setInnerHTML("<body><video></video</body>");
   video()->setSrc("http://example.com");
