@@ -51,20 +51,25 @@ Range* EphemeralRangeTest::getBodyRange() const {
 // Tests that |EphemeralRange::nodes()| will traverse the whole range exactly as
 // |for (Node* n = firstNode(); n != pastLastNode(); n = Traversal::next(*n))|
 // does.
-TEST_F(EphemeralRangeTest, rangeTraversal) {
+TEST_F(EphemeralRangeTest, rangeTraversalDOM) {
   const char* bodyContent =
-      "<p id='host'><b id='one'></b><b id='two'>22</b></p>";
+      "<p id='host'>"
+      "<b id='zero'>0</b>"
+      "<b id='one'>1</b>"
+      "<b id='two'>22</b>"
+      "<span id='three'>333</span>"
+      "</p>";
   setBodyContent(bodyContent);
 
   const std::string expectedNodes(
-      "[BODY][P id=\"host\"][B id=\"one\"][B id=\"two\"][#text \"22\"]");
+      "[BODY][P id=\"host\"][B id=\"zero\"][#text \"0\"][B id=\"one\"][#text "
+      "\"1\"][B id=\"two\"][#text \"22\"][SPAN id=\"three\"][#text \"333\"]");
 
   // Check two ways to traverse.
   EXPECT_EQ(expectedNodes, traverseRange<>(getBodyRange()));
   EXPECT_EQ(traverseRange<>(getBodyRange()),
             traverseRange(EphemeralRange(getBodyRange())));
 
-  // The same with FlatTree traversing.
   EXPECT_EQ(expectedNodes, traverseRange<FlatTreeTraversal>(getBodyRange()));
   EXPECT_EQ(traverseRange<FlatTreeTraversal>(getBodyRange()),
             traverseRange(EphemeralRangeInFlatTree(getBodyRange())));
@@ -73,65 +78,96 @@ TEST_F(EphemeralRangeTest, rangeTraversal) {
 // Tests that |inRange| helper will traverse the whole range with shadow DOM.
 TEST_F(EphemeralRangeTest, rangeShadowTraversal) {
   const char* bodyContent =
-      "<p id='host'><b id='one'></b><input type='text' value='some'></p>";
+      "<b id='zero'>0</b>"
+      "<p id='host'>"
+      "<b id='one'>1</b>"
+      "<b id='two'>22</b>"
+      "<b id='three'>333</b>"
+      "</p>"
+      "<b id='four'>4444</b>";
+  const char* shadowContent =
+      "<p id='five'>55555</p>"
+      "<content select=#two></content>"
+      "<content select=#one></content>"
+      "<span id='six'>666666</span>"
+      "<p id='seven'>7777777</p>";
   setBodyContent(bodyContent);
+  setShadowContent(shadowContent, "host");
 
-  EXPECT_EQ("[BODY][P id=\"host\"][B id=\"one\"][INPUT]",
-            traverseRange<>(getBodyRange()));
-  EXPECT_EQ(traverseRange<>(getBodyRange()),
-            traverseRange(EphemeralRange(getBodyRange())));
+  const std::string expectedNodes(
+      "[BODY][B id=\"zero\"][#text \"0\"][P id=\"host\"][P id=\"five\"][#text "
+      "\"55555\"][B id=\"two\"][#text \"22\"][B id=\"one\"][#text \"1\"][SPAN "
+      "id=\"six\"][#text \"666666\"][P id=\"seven\"][#text \"7777777\"][B "
+      "id=\"four\"][#text \"4444\"]");
 
-  // In this case FlatTree traverse should differs from DOM tree traverse.
-  EXPECT_EQ(
-      "[BODY][P id=\"host\"][B id=\"one\"][INPUT][DIV id=\"inner-editor\" "
-      "(editable)][#text \"some\"]",
-      traverseRange<FlatTreeTraversal>(getBodyRange()));
+  EXPECT_EQ(expectedNodes, traverseRange<FlatTreeTraversal>(getBodyRange()));
   EXPECT_EQ(traverseRange<FlatTreeTraversal>(getBodyRange()),
             traverseRange(EphemeralRangeInFlatTree(getBodyRange())));
+  // Node 'three' should not appear in FlatTreeTraversal.
+  EXPECT_EQ(expectedNodes.find("three") == std::string::npos, true);
 }
 
 // Limit a range and check that it will be traversed correctly.
-TEST_F(EphemeralRangeTest, rangeTraversalLimited) {
+TEST_F(EphemeralRangeTest, rangeTraversalLimitedDOM) {
   const char* bodyContent =
-      "<p id='host'><b id='one'></b><input type='text' value='some'><span "
-      "id='two'></p>";
+      "<p id='host'>"
+      "<b id='zero'>0</b>"
+      "<b id='one'>1</b>"
+      "<b id='two'>22</b>"
+      "<span id='three'>333</span>"
+      "</p>";
   setBodyContent(bodyContent);
 
-  // Get a limited range from <body> to <b> nodes.
   Range* untilB = getBodyRange();
   untilB->setEnd(document().getElementById("one"), 0,
                  IGNORE_EXCEPTION_FOR_TESTING);
-  EXPECT_EQ("[BODY][P id=\"host\"][B id=\"one\"]", traverseRange<>(untilB));
-
+  EXPECT_EQ("[BODY][P id=\"host\"][B id=\"zero\"][#text \"0\"][B id=\"one\"]",
+            traverseRange<>(untilB));
   EXPECT_EQ(traverseRange<>(untilB), traverseRange(EphemeralRange(untilB)));
 
-  EXPECT_EQ("[BODY][P id=\"host\"][B id=\"one\"]",
-            traverseRange<FlatTreeTraversal>(untilB));
-  EXPECT_EQ(traverseRange<FlatTreeTraversal>(untilB),
-            traverseRange(EphemeralRangeInFlatTree(untilB)));
-
-  // Get a limited range from <b> to <span> nodes.
   Range* fromBToSpan = getBodyRange();
   fromBToSpan->setStart(document().getElementById("one"), 0,
                         IGNORE_EXCEPTION_FOR_TESTING);
-  fromBToSpan->setEnd(document().getElementById("two"), 0,
+  fromBToSpan->setEnd(document().getElementById("three"), 0,
                       IGNORE_EXCEPTION_FOR_TESTING);
-
-  EXPECT_EQ("[B id=\"one\"][INPUT][SPAN id=\"two\"]",
+  EXPECT_EQ("[#text \"1\"][B id=\"two\"][#text \"22\"][SPAN id=\"three\"]",
             traverseRange<>(fromBToSpan));
   EXPECT_EQ(traverseRange<>(fromBToSpan),
             traverseRange(EphemeralRange(fromBToSpan)));
+}
 
-  EXPECT_EQ(
-      "[B id=\"one\"][INPUT][DIV id=\"inner-editor\" (editable)][#text "
-      "\"some\"][SPAN id=\"two\"]",
-      traverseRange<FlatTreeTraversal>(fromBToSpan));
-  EXPECT_EQ(traverseRange<FlatTreeTraversal>(fromBToSpan),
-            traverseRange(EphemeralRangeInFlatTree(fromBToSpan)));
+TEST_F(EphemeralRangeTest, rangeTraversalLimitedFlatTree) {
+  const char* bodyContent =
+      "<b id='zero'>0</b>"
+      "<p id='host'>"
+      "<b id='one'>1</b>"
+      "<b id='two'>22</b>"
+      "</p>"
+      "<b id='three'>333</b>";
+  const char* shadowContent =
+      "<p id='four'>4444</p>"
+      "<content select=#two></content>"
+      "<content select=#one></content>"
+      "<span id='five'>55555</span>"
+      "<p id='six'>666666</p>";
+  setBodyContent(bodyContent);
+  ShadowRoot* shadowRoot = setShadowContent(shadowContent, "host");
+
+  const PositionInFlatTree startPosition(document().getElementById("one"), 0);
+  const PositionInFlatTree limitPosition(shadowRoot->getElementById("five"), 0);
+  const PositionInFlatTree endPosition(shadowRoot->getElementById("six"), 0);
+  const EphemeralRangeInFlatTree fromBToSpan(startPosition, limitPosition);
+  EXPECT_EQ("[#text \"1\"][SPAN id=\"five\"]", traverseRange(fromBToSpan));
+
+  const EphemeralRangeInFlatTree fromSpanToEnd(limitPosition, endPosition);
+  EXPECT_EQ("[#text \"55555\"][P id=\"six\"]", traverseRange(fromSpanToEnd));
 }
 
 TEST_F(EphemeralRangeTest, traversalEmptyRanges) {
-  const char* bodyContent = "<p id='host'><b id='one'></b></p>";
+  const char* bodyContent =
+      "<p id='host'>"
+      "<b id='one'>1</b>"
+      "</p>";
   setBodyContent(bodyContent);
 
   // Expect no iterations in loop for an empty EphemeralRange.
