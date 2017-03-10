@@ -90,6 +90,14 @@ class PermissionContextBase : public KeyedService {
       const GURL& requesting_origin,
       const GURL& embedding_origin) const;
 
+  // Update |result| with any modifications based on the device state. For
+  // example, if |result| is ALLOW but Chrome does not have the relevant
+  // permission at the device level, but will prompt the user, return ASK.
+  virtual PermissionResult UpdatePermissionStatusWithDeviceStatus(
+      PermissionResult result,
+      const GURL& requesting_origin,
+      const GURL& embedding_origin) const;
+
   // Resets the permission to its default value.
   virtual void ResetPermission(const GURL& requesting_origin,
                                const GURL& embedding_origin);

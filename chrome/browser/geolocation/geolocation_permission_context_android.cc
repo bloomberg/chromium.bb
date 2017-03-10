@@ -157,6 +157,40 @@ void GeolocationPermissionContextAndroid::NotifyPermissionSet(
                             persist, content_setting);
 }
 
+PermissionResult
+GeolocationPermissionContextAndroid::UpdatePermissionStatusWithDeviceStatus(
+    PermissionResult result,
+    const GURL& requesting_origin,
+    const GURL& embedding_origin) const {
+  if (base::FeatureList::IsEnabled(features::kLsdPermissionPrompt) &&
+      result.content_setting != CONTENT_SETTING_BLOCK) {
+    if (!location_settings_->IsSystemLocationSettingEnabled()) {
+      // As this is returning the status for possible future permission
+      // requests, whose gesture status is unknown, pretend there is a user
+      // gesture here. If there is a possibility of PROMPT (i.e. if there is a
+      // user gesture attached to the later request) that should be returned,
+      // not BLOCK.
+      if (CanShowLocationSettingsDialog(requesting_origin,
+                                        true /* user_gesture */)) {
+        result.content_setting = CONTENT_SETTING_ASK;
+      } else {
+        result.content_setting = CONTENT_SETTING_BLOCK;
+      }
+      result.source = PermissionStatusSource::UNSPECIFIED;
+    }
+
+    if (result.content_setting != CONTENT_SETTING_BLOCK &&
+        !location_settings_->HasAndroidLocationPermission()) {
+      // TODO(benwells): plumb through the RFH and use the associated
+      // WebContents to check that the android location can be prompted for.
+      result.content_setting = CONTENT_SETTING_ASK;
+      result.source = PermissionStatusSource::UNSPECIFIED;
+    }
+  }
+
+  return result;
+}
+
 bool GeolocationPermissionContextAndroid::IsLocationAccessPossible(
     content::WebContents* web_contents,
     const GURL& requesting_origin,
@@ -170,7 +204,7 @@ bool GeolocationPermissionContextAndroid::IsLocationAccessPossible(
 
 LocationSettingsDialogContext
 GeolocationPermissionContextAndroid::GetLocationSettingsDialogContext(
-    const GURL& requesting_origin) {
+    const GURL& requesting_origin) const {
   bool is_dse_origin = false;
   TemplateURLService* template_url_service =
       TemplateURLServiceFactory::GetForProfile(profile());
@@ -205,7 +239,7 @@ void GeolocationPermissionContextAndroid::HandleUpdateAndroidPermissions(
 
 bool GeolocationPermissionContextAndroid::CanShowLocationSettingsDialog(
     const GURL& requesting_origin,
-    bool user_gesture) {
+    bool user_gesture) const {
   if (!base::FeatureList::IsEnabled(features::kLsdPermissionPrompt))
     return false;
 

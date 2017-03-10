@@ -71,13 +71,17 @@ class GeolocationPermissionContextAndroid
                            const BrowserPermissionCallback& callback,
                            bool persist,
                            ContentSetting content_setting) override;
+  PermissionResult UpdatePermissionStatusWithDeviceStatus(
+      PermissionResult result,
+      const GURL& requesting_origin,
+      const GURL& embedding_origin) const override;
 
   bool IsLocationAccessPossible(content::WebContents* web_contents,
                                 const GURL& requesting_origin,
                                 bool user_gesture);
 
   LocationSettingsDialogContext GetLocationSettingsDialogContext(
-      const GURL& requesting_origin);
+      const GURL& requesting_origin) const;
 
   void HandleUpdateAndroidPermissions(const PermissionRequestID& id,
                                       const GURL& requesting_frame_origin,
@@ -90,7 +94,7 @@ class GeolocationPermissionContextAndroid
   // be shown, any gesture requirements for the origin are met, and the dialog
   // is not being suppressed for backoff.
   bool CanShowLocationSettingsDialog(const GURL& requesting_origin,
-                                     bool user_gesture);
+                                     bool user_gesture) const;
 
   void OnLocationSettingsDialogShown(
       const PermissionRequestID& id,

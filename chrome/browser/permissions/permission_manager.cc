@@ -440,10 +440,20 @@ PermissionStatus PermissionManager::GetPermissionStatus(
     const GURL& requesting_origin,
     const GURL& embedding_origin) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  return ContentSettingToPermissionStatus(
+  PermissionResult result =
       GetPermissionStatus(PermissionTypeToContentSetting(permission),
-                          requesting_origin, embedding_origin)
-          .content_setting);
+                          requesting_origin, embedding_origin);
+
+  // TODO(benwells): split this into two functions, GetPermissionStatus and
+  // GetPermissionStatusForPermissionsAPI.
+  PermissionContextBase* context =
+      GetPermissionContext(PermissionTypeToContentSetting(permission));
+  if (context) {
+    result = context->UpdatePermissionStatusWithDeviceStatus(
+        result, requesting_origin, embedding_origin);
+  }
+
+  return ContentSettingToPermissionStatus(result.content_setting);
 }
 
 int PermissionManager::SubscribePermissionStatusChange(

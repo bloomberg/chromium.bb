@@ -219,6 +219,13 @@ PermissionResult PermissionContextBase::GetPermissionStatus(
   return PermissionResult(content_setting, PermissionStatusSource::UNSPECIFIED);
 }
 
+PermissionResult PermissionContextBase::UpdatePermissionStatusWithDeviceStatus(
+    PermissionResult result,
+    const GURL& requesting_origin,
+    const GURL& embedding_origin) const {
+  return result;
+}
+
 void PermissionContextBase::ResetPermission(const GURL& requesting_origin,
                                             const GURL& embedding_origin) {
   HostContentSettingsMapFactory::GetForProfile(profile_)
