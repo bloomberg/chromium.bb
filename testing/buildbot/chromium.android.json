@@ -2787,6 +2787,41 @@
         "test": "components_browsertests"
       },
       {
+        "args": [
+          "--test-arguments=--enable-browser-side-navigation"
+        ],
+        "name": "browser_side_navigation_components_browsertests",
+        "override_isolate_target": "components_browsertests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "cipd_packages": [
+            {
+              "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
+              "location": "bin",
+              "revision": "git_revision:dec8cc6fd715753846d0aca1693dc63844ea55d6"
+            }
+          ],
+          "dimension_sets": [
+            {
+              "device_os": "MMB29Q",
+              "device_type": "bullhead"
+            }
+          ],
+          "hard_timeout": 960,
+          "output_links": [
+            {
+              "link": [
+                "https://luci-logdog.appspot.com/v/?s",
+                "=android%2Fswarming%2Flogcats%2F",
+                "${TASK_ID}%2F%2B%2Funified_logcats"
+              ],
+              "name": "shard #${SHARD_INDEX} logcats"
+            }
+          ]
+        },
+        "test": "components_browsertests"
+      },
+      {
         "override_isolate_target": "components_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -2818,6 +2853,76 @@
         "test": "components_unittests"
       },
       {
+        "args": [
+          "--test-arguments=--enable-browser-side-navigation"
+        ],
+        "name": "browser_side_navigation_components_unittests",
+        "override_isolate_target": "components_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "cipd_packages": [
+            {
+              "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
+              "location": "bin",
+              "revision": "git_revision:dec8cc6fd715753846d0aca1693dc63844ea55d6"
+            }
+          ],
+          "dimension_sets": [
+            {
+              "device_os": "MMB29Q",
+              "device_type": "bullhead"
+            }
+          ],
+          "hard_timeout": 960,
+          "output_links": [
+            {
+              "link": [
+                "https://luci-logdog.appspot.com/v/?s",
+                "=android%2Fswarming%2Flogcats%2F",
+                "${TASK_ID}%2F%2B%2Funified_logcats"
+              ],
+              "name": "shard #${SHARD_INDEX} logcats"
+            }
+          ]
+        },
+        "test": "components_unittests"
+      },
+      {
+        "override_isolate_target": "content_browsertests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "cipd_packages": [
+            {
+              "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
+              "location": "bin",
+              "revision": "git_revision:dec8cc6fd715753846d0aca1693dc63844ea55d6"
+            }
+          ],
+          "dimension_sets": [
+            {
+              "device_os": "MMB29Q",
+              "device_type": "bullhead"
+            }
+          ],
+          "hard_timeout": 960,
+          "output_links": [
+            {
+              "link": [
+                "https://luci-logdog.appspot.com/v/?s",
+                "=android%2Fswarming%2Flogcats%2F",
+                "${TASK_ID}%2F%2B%2Funified_logcats"
+              ],
+              "name": "shard #${SHARD_INDEX} logcats"
+            }
+          ]
+        },
+        "test": "content_browsertests"
+      },
+      {
+        "args": [
+          "--test-arguments=--enable-browser-side-navigation"
+        ],
+        "name": "browser_side_navigation_content_browsertests",
         "override_isolate_target": "content_browsertests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -2883,6 +2988,41 @@
         "test": "content_shell_test_apk"
       },
       {
+        "override_isolate_target": "content_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "cipd_packages": [
+            {
+              "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
+              "location": "bin",
+              "revision": "git_revision:dec8cc6fd715753846d0aca1693dc63844ea55d6"
+            }
+          ],
+          "dimension_sets": [
+            {
+              "device_os": "MMB29Q",
+              "device_type": "bullhead"
+            }
+          ],
+          "hard_timeout": 960,
+          "output_links": [
+            {
+              "link": [
+                "https://luci-logdog.appspot.com/v/?s",
+                "=android%2Fswarming%2Flogcats%2F",
+                "${TASK_ID}%2F%2B%2Funified_logcats"
+              ],
+              "name": "shard #${SHARD_INDEX} logcats"
+            }
+          ]
+        },
+        "test": "content_unittests"
+      },
+      {
+        "args": [
+          "--test-arguments=--enable-browser-side-navigation"
+        ],
+        "name": "browser_side_navigation_content_unittests",
         "override_isolate_target": "content_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -3413,6 +3553,41 @@
         "test": "ui_touch_selection_unittests"
       },
       {
+        "override_isolate_target": "unit_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "cipd_packages": [
+            {
+              "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
+              "location": "bin",
+              "revision": "git_revision:dec8cc6fd715753846d0aca1693dc63844ea55d6"
+            }
+          ],
+          "dimension_sets": [
+            {
+              "device_os": "MMB29Q",
+              "device_type": "bullhead"
+            }
+          ],
+          "hard_timeout": 960,
+          "output_links": [
+            {
+              "link": [
+                "https://luci-logdog.appspot.com/v/?s",
+                "=android%2Fswarming%2Flogcats%2F",
+                "${TASK_ID}%2F%2B%2Funified_logcats"
+              ],
+              "name": "shard #${SHARD_INDEX} logcats"
+            }
+          ]
+        },
+        "test": "unit_tests"
+      },
+      {
+        "args": [
+          "--test-arguments=--enable-browser-side-navigation"
+        ],
+        "name": "browser_side_navigation_unit_tests",
         "override_isolate_target": "unit_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
