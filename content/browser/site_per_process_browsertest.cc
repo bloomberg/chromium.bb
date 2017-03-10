@@ -5464,12 +5464,156 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, OpenerSetLocation) {
   EXPECT_EQ(shell()->web_contents()->GetLastCommittedURL(), cross_url);
 }
 
+#if defined(USE_AURA)
+// Browser process hit testing is not implemented on Android, and these tests
+// require Aura for RenderWidgetHostViewAura::OnTouchEvent().
+// https://crbug.com/491334
+
+// Ensure that scroll events can be cancelled with a wheel handler.
+// https://crbug.com/698195
+
+class SitePerProcessMouseWheelBrowserTest : public SitePerProcessBrowserTest {
+ public:
+  SitePerProcessMouseWheelBrowserTest() : rwhv_root_(nullptr) {}
+
+  void SetupWheelAndScrollHandlers(content::RenderFrameHostImpl* rfh) {
+    // Set up event handlers. The wheel event handler calls prevent default on
+    // alternate events, so only every other wheel generates a scroll. The fact
+    // that any scroll events fire is dependent on the event going to the main
+    // thread, which requires the nonFastScrollableRegion be set correctly
+    // on the compositor.
+    std::string script =
+        "wheel_count = 0;"
+        "function wheel_handler(e) {"
+        "  wheel_count++;"
+        "  if (wheel_count % 2 == 0)"
+        "    e.preventDefault();\n"
+        "  domAutomationController.setAutomationId(0);"
+        "  domAutomationController.send('wheel: ' + wheel_count);"
+        "}"
+        "function scroll_handler(e) {"
+        "  domAutomationController.setAutomationId(0);"
+        "  domAutomationController.send('scroll: ' + wheel_count);"
+        "}"
+        "scroll_div = document.getElementById('scrollable_div');"
+        "scroll_div.addEventListener('wheel', wheel_handler);"
+        "scroll_div.addEventListener('scroll', scroll_handler);"
+        "domAutomationController.setAutomationId(0);"
+        "domAutomationController.send('wheel handler installed');"
+        "document.body.style.background = 'black';";
+
+    content::DOMMessageQueue msg_queue;
+    std::string reply;
+    EXPECT_TRUE(ExecuteScript(rfh, script));
+
+    // Wait until renderer's compositor thread is synced. Otherwise the event
+    // handler won't be installed when the event arrives.
+    {
+      MainThreadFrameObserver observer(rfh->GetRenderWidgetHost());
+      observer.Wait();
+    }
+  }
+
+  void SendMouseWheel(gfx::Point location) {
+    DCHECK(rwhv_root_);
+    ui::ScrollEvent scroll_event(ui::ET_SCROLL, location, ui::EventTimeForNow(),
+                                 0, 0, -ui::MouseWheelEvent::kWheelDelta, 0,
+                                 ui::MouseWheelEvent::kWheelDelta,
+                                 2);  // This must be '2' or it gets silently
+                                      // dropped.
+    rwhv_root_->OnScrollEvent(&scroll_event);
+  }
+
+  void set_rwhv_root(RenderWidgetHostViewAura* rwhv_root) {
+    rwhv_root_ = rwhv_root;
+  }
+
+  void RunTest(gfx::Point pos) {
+    content::DOMMessageQueue msg_queue;
+    std::string reply;
+
+    auto* rwhv_root = static_cast<RenderWidgetHostViewAura*>(
+        web_contents()->GetRenderWidgetHostView());
+    set_rwhv_root(rwhv_root);
+
+    SendMouseWheel(pos);
+
+    // Expect both wheel and scroll handlers to fire.
+    EXPECT_TRUE(msg_queue.WaitForMessage(&reply));
+    EXPECT_EQ("\"wheel: 1\"", reply);
+    EXPECT_TRUE(msg_queue.WaitForMessage(&reply));
+    EXPECT_EQ("\"scroll: 1\"", reply);
+
+    SendMouseWheel(pos);
+
+    // This time only the wheel handler fires, since it prevent defaults on
+    // even numbered scrolls.
+    EXPECT_TRUE(msg_queue.WaitForMessage(&reply));
+    EXPECT_EQ("\"wheel: 2\"", reply);
+
+    SendMouseWheel(pos);
+
+    // Odd number of wheels, expect both wheel and scroll handlers to fire
+    // again.
+    EXPECT_TRUE(msg_queue.WaitForMessage(&reply));
+    EXPECT_EQ("\"wheel: 3\"", reply);
+    EXPECT_TRUE(msg_queue.WaitForMessage(&reply));
+    EXPECT_EQ("\"scroll: 3\"", reply);
+  }
+
+ private:
+  RenderWidgetHostViewAura* rwhv_root_;
+};
+
+IN_PROC_BROWSER_TEST_F(SitePerProcessMouseWheelBrowserTest,
+                       SubframeWheelEventsOnMainThread) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "/frame_tree/page_with_positioned_nested_frames.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+  ASSERT_EQ(1U, root->child_count());
+
+  GURL frame_url(embedded_test_server()->GetURL(
+      "b.com", "/page_with_scrollable_div.html"));
+  NavigateFrameToURL(root->child_at(0), frame_url);
+
+  // Synchronize with the child and parent renderers to guarantee that the
+  // surface information required for event hit testing is ready.
+  RenderWidgetHostViewBase* child_rwhv = static_cast<RenderWidgetHostViewBase*>(
+      root->child_at(0)->current_frame_host()->GetView());
+  SurfaceHitTestReadyNotifier notifier(
+      static_cast<RenderWidgetHostViewChildFrame*>(child_rwhv));
+  notifier.WaitForSurfaceReady();
+
+  content::RenderFrameHostImpl* child = root->child_at(0)->current_frame_host();
+  SetupWheelAndScrollHandlers(child);
+
+  gfx::Rect bounds = child_rwhv->GetViewBounds();
+  gfx::Point pos(bounds.x() + 10, bounds.y() + 10);
+
+  RunTest(pos);
+}
+
+// Verifies that test in SubframeWheelEventsOnMainThread also makes sense for
+// the same page loaded in the mainframe.
+IN_PROC_BROWSER_TEST_F(SitePerProcessMouseWheelBrowserTest,
+                       MainframeWheelEventsOnMainThread) {
+  GURL main_url(
+      embedded_test_server()->GetURL("/page_with_scrollable_div.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+  content::RenderFrameHostImpl* rfhi = root->current_frame_host();
+  SetupWheelAndScrollHandlers(rfhi);
+
+  gfx::Point pos(10, 10);
+
+  RunTest(pos);
+}
+
 // Ensure that a cross-process subframe with a touch-handler can receive touch
 // events.
-#if defined(USE_AURA)
-// Browser process hit testing is not implemented on Android, and this test
-// requires Aura for RenderWidgetHostViewAura::OnTouchEvent().
-// https://crbug.com/491334
 IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
                        SubframeTouchEventRouting) {
   GURL main_url(embedded_test_server()->GetURL(

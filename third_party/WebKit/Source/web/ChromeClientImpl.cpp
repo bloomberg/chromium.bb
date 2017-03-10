@@ -983,12 +983,12 @@ void ChromeClientImpl::setEventListenerProperties(
   }
 }
 
-void ChromeClientImpl::updateTouchRectsForSubframeIfNecessary(
+void ChromeClientImpl::updateEventRectsForSubframeIfNecessary(
     LocalFrame* frame) {
   WebLocalFrameImpl* webFrame = WebLocalFrameImpl::fromFrame(frame);
   WebFrameWidgetBase* widget = webFrame->localRoot()->frameWidget();
   if (WebLayerTreeView* treeView = widget->getLayerTreeView())
-    treeView->updateTouchRectsForSubframeIfNecessary();
+    treeView->updateEventRectsForSubframeIfNecessary();
 }
 
 void ChromeClientImpl::beginLifecycleUpdates() {

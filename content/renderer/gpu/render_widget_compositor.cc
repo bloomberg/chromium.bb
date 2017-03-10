@@ -829,7 +829,7 @@ void RenderWidgetCompositor::setEventListenerProperties(
       static_cast<cc::EventListenerProperties>(properties));
 }
 
-void RenderWidgetCompositor::updateTouchRectsForSubframeIfNecessary() {
+void RenderWidgetCompositor::updateEventRectsForSubframeIfNecessary() {
   if (!is_for_oopif_)
     return;
 
@@ -841,9 +841,9 @@ void RenderWidgetCompositor::updateTouchRectsForSubframeIfNecessary() {
   using blink::WebEventListenerProperties;
   using blink::WebEventListenerClass;
 
-  blink::WebEventListenerProperties touch_start_properties =
+  WebEventListenerProperties touch_start_properties =
       eventListenerProperties(WebEventListenerClass::TouchStartOrMove);
-  blink::WebEventListenerProperties touch_end_cancel_properties =
+  WebEventListenerProperties touch_end_cancel_properties =
       eventListenerProperties(WebEventListenerClass::TouchEndOrCancel);
   bool has_touch_handlers =
       touch_start_properties == WebEventListenerProperties::Blocking ||
@@ -853,11 +853,22 @@ void RenderWidgetCompositor::updateTouchRectsForSubframeIfNecessary() {
       touch_end_cancel_properties ==
           WebEventListenerProperties::BlockingAndPassive;
 
+  WebEventListenerProperties wheel_event_properties =
+      eventListenerProperties(WebEventListenerClass::MouseWheel);
+  bool has_wheel_handlers =
+      wheel_event_properties == WebEventListenerProperties::Blocking ||
+      wheel_event_properties == WebEventListenerProperties::BlockingAndPassive;
+
   cc::Layer* root_layer = layer_tree_host_->root_layer();
   cc::Region touch_handler_region;
   if (has_touch_handlers)
     touch_handler_region = gfx::Rect(gfx::Point(), root_layer->bounds());
   root_layer->SetTouchEventHandlerRegion(touch_handler_region);
+
+  cc::Region wheel_handler_region;
+  if (has_wheel_handlers)
+    wheel_handler_region = gfx::Rect(gfx::Point(), root_layer->bounds());
+  root_layer->SetNonFastScrollableRegion(wheel_handler_region);
 }
 
 blink::WebEventListenerProperties

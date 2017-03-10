@@ -3083,7 +3083,7 @@ void FrameView::updateLifecyclePhasesInternal(
           // send rects for oopif sub-frames.
           // TODO(wjmaclean): Remove this pathway when ScrollingCoordinator
           // operates on a per-frame basis. https://crbug.com/680606
-          frame().page()->chromeClient().updateTouchRectsForSubframeIfNecessary(
+          frame().page()->chromeClient().updateEventRectsForSubframeIfNecessary(
               localFrame);
         }
         updateCompositedSelectionIfNeeded();

@@ -159,7 +159,7 @@ class CONTENT_EXPORT RenderWidgetCompositor
   void setEventListenerProperties(
       blink::WebEventListenerClass eventClass,
       blink::WebEventListenerProperties properties) override;
-  void updateTouchRectsForSubframeIfNecessary() override;
+  void updateEventRectsForSubframeIfNecessary() override;
   blink::WebEventListenerProperties eventListenerProperties(
       blink::WebEventListenerClass eventClass) const override;
   void setHaveScrollEventHandlers(bool) override;

@@ -161,7 +161,7 @@ class WebLayerTreeView {
   // Input properties ---------------------------------------------------
   virtual void setEventListenerProperties(WebEventListenerClass,
                                           WebEventListenerProperties) {}
-  virtual void updateTouchRectsForSubframeIfNecessary() {}
+  virtual void updateEventRectsForSubframeIfNecessary() {}
   virtual void setHaveScrollEventHandlers(bool) {}
 
   // Returns the FrameSinkId of the widget associated with this layer tree view.

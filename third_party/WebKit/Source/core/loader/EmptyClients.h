@@ -210,7 +210,7 @@ class CORE_EXPORT EmptyChromeClient : public ChromeClient {
       WebEventListenerClass eventClass) const override {
     return WebEventListenerProperties::Nothing;
   }
-  void updateTouchRectsForSubframeIfNecessary(LocalFrame* frame) override {}
+  void updateEventRectsForSubframeIfNecessary(LocalFrame* frame) override {}
   void setHasScrollEventHandlers(LocalFrame*, bool) override {}
 
   void setTouchAction(LocalFrame*, TouchAction) override {}
