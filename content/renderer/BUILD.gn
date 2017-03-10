@@ -540,6 +540,8 @@ target(link_target_type, "renderer") {
   if (enable_webrtc) {
     # WebRTC plugin-related stuff goes in a different section below.
     sources += [
+      "image_capture/image_capture_frame_grabber.cc",
+      "image_capture/image_capture_frame_grabber.h",
       "media/aec_dump_message_filter.cc",
       "media/aec_dump_message_filter.h",
       "media/audio_repetition_detector.cc",
@@ -554,8 +556,6 @@ target(link_target_type, "renderer") {
       "media/gpu/rtc_video_encoder.h",
       "media/gpu/rtc_video_encoder_factory.cc",
       "media/gpu/rtc_video_encoder_factory.h",
-      "media/image_capture_frame_grabber.cc",
-      "media/image_capture_frame_grabber.h",
       "media/local_media_stream_audio_source.cc",
       "media/local_media_stream_audio_source.h",
       "media/media_devices_event_dispatcher.cc",

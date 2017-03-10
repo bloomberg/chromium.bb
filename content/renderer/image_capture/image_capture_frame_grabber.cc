@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media/image_capture_frame_grabber.h"
+#include "content/renderer/image_capture/image_capture_frame_grabber.h"
 
 #include "cc/paint/paint_canvas.h"
 #include "cc/paint/paint_surface.h"
