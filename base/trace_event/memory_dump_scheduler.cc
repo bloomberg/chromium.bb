@@ -4,6 +4,7 @@
 
 #include "base/trace_event/memory_dump_scheduler.h"
 
+#include "base/process/process_metrics.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/memory_dump_manager.h"
@@ -15,7 +16,7 @@ namespace trace_event {
 namespace {
 // Threshold on increase in memory from last dump beyond which a new dump must
 // be triggered.
-int64_t kMemoryIncreaseThreshold = 50 * 1024 * 1024;  // 50MiB
+int64_t kDefaultMemoryIncreaseThreshold = 50 * 1024 * 1024;  // 50MiB
 const uint32_t kMemoryTotalsPollingInterval = 25;
 uint32_t g_polling_interval_ms_for_testing = 0;
 }  // namespace
@@ -85,8 +86,24 @@ void MemoryDumpScheduler::NotifyPollingSupported() {
   if (!polling_state_.is_configured || polling_state_.is_polling_enabled)
     return;
   polling_state_.is_polling_enabled = true;
+  for (uint32_t i = 0; i < PollingTriggerState::kMaxNumMemorySamples; ++i)
+    polling_state_.last_memory_totals_kb[i] = 0;
+  polling_state_.last_memory_totals_kb_index = 0;
   polling_state_.num_polls_from_last_dump = 0;
   polling_state_.last_dump_memory_total = 0;
+
+  if (!polling_state_.memory_increase_threshold) {
+    polling_state_.memory_increase_threshold = kDefaultMemoryIncreaseThreshold;
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) || \
+    defined(OS_ANDROID)
+    // Set threshold to 1% of total system memory.
+    SystemMemoryInfoKB meminfo;
+    bool res = GetSystemMemoryInfo(&meminfo);
+    if (res)
+      polling_state_.memory_increase_threshold = (meminfo.total / 100) * 1024;
+#endif
+  }
+
   polling_state_.polling_task_runner->PostTask(
       FROM_HERE,
       Bind(&MemoryDumpScheduler::PollMemoryOnPollingThread, Unretained(this)));
@@ -180,12 +197,57 @@ bool MemoryDumpScheduler::ShouldTriggerDump(uint64_t current_memory_total) {
 
   int64_t increase_from_last_dump =
       current_memory_total - polling_state_.last_dump_memory_total;
-  should_dump |= increase_from_last_dump > kMemoryIncreaseThreshold;
+  should_dump |=
+      increase_from_last_dump > polling_state_.memory_increase_threshold;
+  should_dump |= IsCurrentSamplePeak(current_memory_total);
   if (should_dump) {
     polling_state_.last_dump_memory_total = current_memory_total;
     polling_state_.num_polls_from_last_dump = 0;
+    for (uint32_t i = 0; i < PollingTriggerState::kMaxNumMemorySamples; ++i)
+      polling_state_.last_memory_totals_kb[i] = 0;
+    polling_state_.last_memory_totals_kb_index = 0;
   }
   return should_dump;
+}
+
+bool MemoryDumpScheduler::IsCurrentSamplePeak(
+    uint64_t current_memory_total_bytes) {
+  uint64_t current_memory_total_kb = current_memory_total_bytes / 1024;
+  polling_state_.last_memory_totals_kb_index =
+      (polling_state_.last_memory_totals_kb_index + 1) %
+      PollingTriggerState::kMaxNumMemorySamples;
+  uint64_t mean = 0;
+  for (uint32_t i = 0; i < PollingTriggerState::kMaxNumMemorySamples; ++i) {
+    if (polling_state_.last_memory_totals_kb[i] == 0) {
+      // Not enough samples to detect peaks.
+      polling_state_
+          .last_memory_totals_kb[polling_state_.last_memory_totals_kb_index] =
+          current_memory_total_kb;
+      return false;
+    }
+    mean += polling_state_.last_memory_totals_kb[i];
+  }
+  mean = mean / PollingTriggerState::kMaxNumMemorySamples;
+  uint64_t variance = 0;
+  for (uint32_t i = 0; i < PollingTriggerState::kMaxNumMemorySamples; ++i) {
+    variance += (polling_state_.last_memory_totals_kb[i] - mean) *
+                (polling_state_.last_memory_totals_kb[i] - mean);
+  }
+  variance = variance / PollingTriggerState::kMaxNumMemorySamples;
+
+  polling_state_
+      .last_memory_totals_kb[polling_state_.last_memory_totals_kb_index] =
+      current_memory_total_kb;
+
+  // If stddev is less than 0.2% then we consider that the process is inactive.
+  bool is_stddev_low = variance < mean / 500 * mean / 500;
+  if (is_stddev_low)
+    return false;
+
+  // (mean + 3.69 * stddev) corresponds to a value that is higher than current
+  // sample with 99.99% probability.
+  return (current_memory_total_kb - mean) * (current_memory_total_kb - mean) >
+         (3.69 * 3.69 * variance);
 }
 
 MemoryDumpScheduler::PeriodicTriggerState::PeriodicTriggerState()
@@ -212,7 +274,9 @@ MemoryDumpScheduler::PollingTriggerState::PollingTriggerState(
                               : kMemoryTotalsPollingInterval),
       min_polls_between_dumps(0),
       num_polls_from_last_dump(0),
-      last_dump_memory_total(0) {}
+      last_dump_memory_total(0),
+      memory_increase_threshold(0),
+      last_memory_totals_kb_index(0) {}
 
 MemoryDumpScheduler::PollingTriggerState::~PollingTriggerState() {
   DCHECK(!polling_task_runner);
