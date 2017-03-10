@@ -325,7 +325,8 @@ by a child template that "extends" this file.
             android:exported="false"
             android:windowSoftInputMode="adjustResize"
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize"
-            android:hardwareAccelerated="false">
+            android:hardwareAccelerated="false"
+            {{ self.supports_video_persistence() }} >
         </activity>
         <activity android:name="org.chromium.chrome.browser.customtabs.SeparateTaskCustomTabActivity"
             android:theme="@style/MainTheme"
@@ -335,7 +336,8 @@ by a child template that "extends" this file.
             android:persistableMode="persistNever"
             android:autoRemoveFromRecents="false"
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize"
-            android:hardwareAccelerated="false">
+            android:hardwareAccelerated="false"
+            {{ self.supports_video_persistence() }} >
         </activity>
         {% for i in range(10) %}
         <activity android:name="org.chromium.chrome.browser.customtabs.SeparateTaskCustomTabActivity{{ i }}"
@@ -347,7 +349,8 @@ by a child template that "extends" this file.
             android:persistableMode="persistNever"
             android:taskAffinity=""
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize"
-            android:hardwareAccelerated="false">
+            android:hardwareAccelerated="false"
+            {{ self.supports_video_persistence() }} >
         </activity>
         {% endfor %}
 
@@ -359,6 +362,8 @@ by a child template that "extends" this file.
             android:launchMode="singleTask"
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize"
             android:hardwareAccelerated="false"
+            {# We can only use blocks once in Jinja, for future substitutions we use
+            self.supports_video_persistence(). #}
             {% block supports_video_persistence %}
             {% endblock %}
             >
@@ -404,7 +409,9 @@ by a child template that "extends" this file.
              android:taskAffinity="{{ manifest_package }}.ChromeTabbedActivity2"
              android:launchMode="singleTask"
              android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize"
-             android:hardwareAccelerated="false">
+             android:hardwareAccelerated="false"
+             {{ self.supports_video_persistence() }}
+             >
         </activity>
         <activity android:name="org.chromium.chrome.browser.multiwindow.MultiInstanceChromeTabbedActivity"
             android:theme="@style/TabbedModeTheme"
@@ -525,11 +532,13 @@ by a child template that "extends" this file.
             android:windowSoftInputMode="adjustResize"
             android:persistableMode="persistNever"
             android:hardwareAccelerated="false"
-            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize">
+            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize"
+            {{ self.supports_video_persistence() }} >
         </activity>
         <activity-alias android:name="com.google.android.apps.chrome.webapps.WebappActivity"
             android:targetActivity="org.chromium.chrome.browser.webapps.WebappActivity"
-            android:label="@string/webapp_activity_title">
+            android:label="@string/webapp_activity_title"
+            {{ self.supports_video_persistence() }} >
         </activity-alias>
         {% for i in range(10) %}
         <activity android:name="org.chromium.chrome.browser.webapps.WebappActivity{{ i }}"
@@ -541,7 +550,8 @@ by a child template that "extends" this file.
             android:persistableMode="persistNever"
             android:hardwareAccelerated="false"
             android:taskAffinity="{{ manifest_package }}.webapps.WebappActivity{{ i }}"
-            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize">
+            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize"
+            {{ self.supports_video_persistence() }} >
         </activity>
         <activity-alias android:name="com.google.android.apps.chrome.webapps.WebappActivity{{ i }}"
             android:targetActivity="org.chromium.chrome.browser.webapps.WebappActivity{{ i }}"
@@ -558,7 +568,8 @@ by a child template that "extends" this file.
             android:windowSoftInputMode="adjustResize"
             android:persistableMode="persistNever"
             android:hardwareAccelerated="false"
-            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize">
+            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize"
+            {{ self.supports_video_persistence() }} >
         </activity>
         {% for i in range(10) %}
         <activity android:name="org.chromium.chrome.browser.webapps.WebApkActivity{{ i }}"
@@ -570,7 +581,8 @@ by a child template that "extends" this file.
             android:persistableMode="persistNever"
             android:hardwareAccelerated="false"
             android:taskAffinity="{{ manifest_package }}.webapps.WebApkActivity{{ i }}"
-            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize">
+            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize"
+            {{ self.supports_video_persistence() }} >
         </activity>
         {% endfor %}
 
