@@ -19,7 +19,30 @@ using content::BrowserThread;
 namespace component_updater {
 
 #if defined(OS_CHROMEOS)
-void LogRegistrationResult(chromeos::DBusMethodCallStatus call_status,
+void LogLoadResult(chromeos::DBusMethodCallStatus call_status,
+                   const std::string& result) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  if (call_status != chromeos::DBUS_METHOD_CALL_SUCCESS) {
+    DVLOG(1) << "Call to imageloader service failed.";
+    return;
+  }
+  if (result.empty()) {
+    DVLOG(1) << "Component load failed";
+    return;
+  }
+}
+void ImageLoaderLoad(const std::string& name) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  chromeos::ImageLoaderClient* loader =
+      chromeos::DBusThreadManager::Get()->GetImageLoaderClient();
+  if (loader) {
+    loader->LoadComponent(name, base::Bind(&LogLoadResult));
+  } else {
+    DVLOG(1) << "Failed to get ImageLoaderClient object.";
+  }
+}
+void LogRegistrationResult(const std::string& name,
+                           chromeos::DBusMethodCallStatus call_status,
                            bool result) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (call_status != chromeos::DBUS_METHOD_CALL_SUCCESS) {
@@ -30,6 +53,7 @@ void LogRegistrationResult(chromeos::DBusMethodCallStatus call_status,
     DVLOG(1) << "Component registration failed";
     return;
   }
+  ImageLoaderLoad(name);
 }
 void ImageLoaderRegistration(const std::string& version,
                              const base::FilePath& install_dir,
@@ -40,7 +64,7 @@ void ImageLoaderRegistration(const std::string& version,
 
   if (loader) {
     loader->RegisterComponent(name, version, install_dir.value(),
-                              base::Bind(&LogRegistrationResult));
+                              base::Bind(&LogRegistrationResult, name));
   } else {
     DVLOG(1) << "Failed to get ImageLoaderClient object.";
   }
