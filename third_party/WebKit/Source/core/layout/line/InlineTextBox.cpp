@@ -379,9 +379,10 @@ LayoutUnit InlineTextBox::placeEllipsisBox(bool flowIsLTR,
                             : logicalRight() - visibleBoxWidth;
     }
 
-    // The box's width includes partial glyphs, so respect that when placing
-    // the ellipsis.
-    int offset = offsetForPosition(ellipsisX);
+    // We measure the text using the second half of the previous character and
+    // the first half of the current one when the text is rtl. This gives a
+    // more accurate position in rtl text.
+    int offset = offsetForPosition(ellipsisX, !ltr);
     // Full truncation is only necessary when we're flowing left-to-right.
     if (flowIsLTR && offset == 0 && ltr == flowIsLTR) {
       // No characters should be laid out.  Set ourselves to full truncation and
@@ -390,6 +391,13 @@ LayoutUnit InlineTextBox::placeEllipsisBox(bool flowIsLTR,
       truncatedWidth += ellipsisWidth;
       return std::min(ellipsisX, logicalLeft());
     }
+
+    // When the text's direction doesn't match the flow's direction we can
+    // choose an offset that starts outside the visible box: compensate for that
+    // if necessary.
+    if (flowIsLTR != ltr && logicalLeft() < 0 && offset >= m_start &&
+        positionForOffset(offset) < logicalLeft().abs())
+      offset++;
 
     // Set the truncation index on the text run.
     setTruncation(offset);

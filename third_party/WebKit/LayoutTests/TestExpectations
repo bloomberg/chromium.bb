@@ -2373,6 +2373,18 @@ crbug.com/664844 media/track/track-cue-rendering-tree-is-removed-properly.html [
 crbug.com/664844 media/track/track-default-attribute.html [ Pass Failure ]
 crbug.com/664844 media/track/track-kind-user-preference.html [ Pass Failure ]
 
+crbug.com/697448 fast/css/text-overflow-ellipsis-strict.html [ NeedsRebaseline ]
+crbug.com/697448 fast/css/text-overflow-ellipsis.html [ NeedsRebaseline ]
+crbug.com/697448 fast/css/text-overflow-input.html [ NeedsRebaseline ]
+crbug.com/697448 fast/overflow/line-clamp.html [ NeedsRebaseline ]
+crbug.com/697448 fast/text/ellipsis-ltr-text-in-ltr-flow-underline.html [ NeedsRebaseline ]
+crbug.com/697448 fast/text/ellipsis-ltr-text-in-ltr-flow.html [ NeedsRebaseline ]
+crbug.com/697448 fast/text/ellipsis-ltr-text-in-rtl-flow-underline.html [ NeedsRebaseline ]
+crbug.com/697448 fast/text/ellipsis-ltr-text-in-rtl-flow.html [ NeedsRebaseline ]
+crbug.com/697448 fast/text/ellipsis-platform-font-change.html [ NeedsRebaseline ]
+crbug.com/697448 fast/text/emphasis-ellipsis-complextext.html [ NeedsRebaseline ]
+crbug.com/697448 paint/spellmarkers/inline_spelling_markers.html [ NeedsRebaseline ]
+
 crbug.com/688670 media/track/track-cue-rendering-after-controls-removed.html [ Pass Failure ]
 
 # Possible duplicate of crbug.com/665577
