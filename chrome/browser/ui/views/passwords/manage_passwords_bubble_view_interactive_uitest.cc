@@ -26,6 +26,7 @@
 #include "content/public/common/content_features.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "ui/views/test/widget_test.h"
 
 using testing::Eq;
 using testing::Field;
@@ -332,7 +333,12 @@ IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleViewTest, AutoSigninNoFocus) {
   ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(focused_window));
   content::RunAllPendingInMessageLoop();
 
-  EXPECT_FALSE(browser()->window()->IsActive());
+  gfx::NativeWindow window = browser()->window()->GetNativeWindow();
+  views::Widget* widget = views::Widget::GetWidgetForNativeWindow(window);
+  ASSERT_NE(nullptr, widget);
+
+  views::test::WidgetActivationWaiter inactive_waiter(widget, false);
+  inactive_waiter.Wait();
   ManagePasswordsBubbleView::set_auto_signin_toast_timeout(0);
   SetupAutoSignin(std::move(local_credentials));
   content::RunAllPendingInMessageLoop();
@@ -342,6 +348,7 @@ IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleViewTest, AutoSigninNoFocus) {
   focused_window->window()->Close();
   browser()->window()->Activate();
   content::RunAllPendingInMessageLoop();
-  EXPECT_TRUE(browser()->window()->IsActive());
+  views::test::WidgetActivationWaiter active_waiter(widget, true);
+  active_waiter.Wait();
   EXPECT_FALSE(IsBubbleShowing());
 }

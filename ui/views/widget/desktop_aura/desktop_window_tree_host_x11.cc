@@ -187,8 +187,8 @@ DesktopWindowTreeHostX11::DesktopWindowTreeHostX11(
       xwindow_(0),
       x_root_window_(DefaultRootWindow(xdisplay_)),
       atom_cache_(xdisplay_, kAtomsToCache),
-      window_mapped_(false),
-      wait_for_unmap_(false),
+      window_mapped_in_server_(false),
+      window_mapped_in_client_(false),
       is_fullscreen_(false),
       is_always_on_top_(false),
       use_native_frame_(false),
@@ -593,7 +593,7 @@ void DesktopWindowTreeHostX11::ShowMaximizedWithBounds(
 }
 
 bool DesktopWindowTreeHostX11::IsVisible() const {
-  return window_mapped_ && !wait_for_unmap_;
+  return window_mapped_in_client_;
 }
 
 void DesktopWindowTreeHostX11::SetSize(const gfx::Size& requested_size) {
@@ -831,9 +831,9 @@ bool DesktopWindowTreeHostX11::IsActive() const {
   bool is_active =
       (has_window_focus_ || has_pointer_focus_) && !ignore_keyboard_input_;
 
-  // is_active => window_mapped_
-  // !window_mapped_ => !is_active
-  DCHECK(!is_active || window_mapped_);
+  // is_active => window_mapped_in_server_
+  // !window_mapped_in_server_ => !is_active
+  DCHECK(!is_active || window_mapped_in_server_);
 
   // |has_window_focus_| and |has_pointer_focus_| are mutually exclusive.
   DCHECK(!has_window_focus_ || !has_pointer_focus_);
@@ -1224,7 +1224,7 @@ void DesktopWindowTreeHostX11::ShowImpl() {
 void DesktopWindowTreeHostX11::HideImpl() {
   if (IsVisible()) {
     XWithdrawWindow(xdisplay_, xwindow_, 0);
-    wait_for_unmap_ = true;
+    window_mapped_in_client_ = false;
   }
   native_widget_delegate_->OnNativeWidgetVisibilityChanged(false);
 }
@@ -1242,9 +1242,12 @@ void DesktopWindowTreeHostX11::SetBoundsInPixels(
   XWindowChanges changes = {0};
   unsigned value_mask = 0;
 
-  delayed_resize_task_.Cancel();
 
   if (size_changed) {
+    // Only cancel the delayed resize task if we're already about to call
+    // OnHostResized in this function.
+    delayed_resize_task_.Cancel();
+
     // Update the minimum and maximum sizes in case they have changed.
     UpdateMinAndMaxSize();
 
@@ -1664,9 +1667,6 @@ void DesktopWindowTreeHostX11::OnFrameExtentsUpdated() {
 }
 
 void DesktopWindowTreeHostX11::UpdateMinAndMaxSize() {
-  if (!IsVisible())
-    return;
-
   gfx::Size minimum_in_pixels =
       ToPixelRect(gfx::Rect(native_widget_delegate_->GetMinimumSize())).size();
   gfx::Size maximum_in_pixels =
@@ -1937,19 +1937,10 @@ void DesktopWindowTreeHostX11::MapWindow(ui::WindowShowState show_state) {
   ui::X11EventSource* event_source = ui::X11EventSource::GetInstance();
   DCHECK(event_source);
 
-  if (wait_for_unmap_) {
-    // Block until our window is unmapped. This avoids a race condition when
-    // remapping an unmapped window.
-    event_source->BlockUntilWindowUnmapped(xwindow_);
-    DCHECK(!wait_for_unmap_);
-  }
+  UpdateMinAndMaxSize();
 
   XMapWindow(xdisplay_, xwindow_);
-
-  // We now block until our window is mapped. Some X11 APIs will crash and
-  // burn if passed |xwindow_| before the window is mapped, and XMapWindow is
-  // asynchronous.
-  event_source->BlockUntilWindowMapped(xwindow_);
+  window_mapped_in_client_ = true;
 }
 
 void DesktopWindowTreeHostX11::SetWindowTransparency() {
@@ -2172,12 +2163,10 @@ uint32_t DesktopWindowTreeHostX11::DispatchEvent(
       break;
     }
     case MapNotify: {
-      window_mapped_ = true;
+      window_mapped_in_server_ = true;
 
       for (DesktopWindowTreeHostObserverX11& observer : observer_list_)
         observer.OnWindowMapped(xwindow_);
-
-      UpdateMinAndMaxSize();
 
       // Some WMs only respect maximize hints after the window has been mapped.
       // Check whether we need to re-do a maximization.
@@ -2189,8 +2178,7 @@ uint32_t DesktopWindowTreeHostX11::DispatchEvent(
       break;
     }
     case UnmapNotify: {
-      window_mapped_ = false;
-      wait_for_unmap_ = false;
+      window_mapped_in_server_ = false;
       has_pointer_ = false;
       has_pointer_grab_ = false;
       has_pointer_focus_ = false;

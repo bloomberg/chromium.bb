@@ -291,13 +291,11 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11
 
   ui::X11AtomCache atom_cache_;
 
-  // Is the window mapped to the screen?
-  bool window_mapped_;
+  // Whether the window is mapped with respect to the X server.
+  bool window_mapped_in_server_;
 
-  // Should we wait for an UnmapNotify before trying to remap the window?
-  // If |wait_for_unmap_| is true, we have sent an XUnmapWindow request to the
-  // server and have yet to receive an UnmapNotify.
-  bool wait_for_unmap_;
+  // Whether the window is visible with respect to Aura.
+  bool window_mapped_in_client_;
 
   // The bounds of |xwindow_|.
   gfx::Rect bounds_in_pixels_;

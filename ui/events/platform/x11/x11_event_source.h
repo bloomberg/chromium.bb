@@ -73,8 +73,6 @@ class EVENTS_EXPORT X11EventSource {
   // functions which require a mapped window.
   void BlockUntilWindowMapped(XID window);
 
-  void BlockUntilWindowUnmapped(XID window);
-
   XDisplay* display() { return display_; }
 
   // Returns the timestamp of the event currently being dispatched.  Falls back

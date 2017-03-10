@@ -149,10 +149,6 @@ void X11EventSource::BlockUntilWindowMapped(XID window) {
   BlockOnWindowStructureEvent(window, MapNotify);
 }
 
-void X11EventSource::BlockUntilWindowUnmapped(XID window) {
-  BlockOnWindowStructureEvent(window, UnmapNotify);
-}
-
 Time X11EventSource::GetCurrentServerTime() {
   DCHECK(display_);
 

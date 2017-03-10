@@ -17,9 +17,11 @@
 #include <X11/Xlib.h>
 #include <X11/extensions/XTest.h>
 #include <X11/keysym.h>
-
+#include "ui/aura/window.h"
 #include "ui/events/keycodes/keyboard_code_conversion_x.h"
 #include "ui/gfx/x/x11_types.h"
+#include "ui/views/widget/desktop_aura/desktop_window_tree_host_observer_x11.h"
+#include "ui/views/widget/desktop_aura/desktop_window_tree_host_x11.h"
 #endif
 
 #if defined(OS_MACOSX)
@@ -155,16 +157,33 @@ IN_PROC_BROWSER_TEST_F(GlobalCommandsApiTest, MAYBE_GlobalCommand) {
       incognito_browser, ui::VKEY_8, true, true, false, false));
 #elif defined(OS_LINUX) && defined(USE_X11)
   // Create an incognito browser to capture the focus.
-  CreateIncognitoBrowser();
+  Browser* incognito_browser = CreateIncognitoBrowser();
 
-  // On Linux, our infrastructure for sending keys just synthesize keyboard
-  // event and send them directly to the specified window, without notifying the
-  // X root window. It didn't work while testing global shortcut because the
-  // stuff of global shortcut on Linux need to be notified when KeyPress event
-  // is happening on X root window. So we simulate the keyboard input here.
-  SendNativeKeyEventToXDisplay(ui::VKEY_1, true, true, false);
-  SendNativeKeyEventToXDisplay(ui::VKEY_A, true, true, false);
-  SendNativeKeyEventToXDisplay(ui::VKEY_8, true, true, false);
+  views::DesktopWindowTreeHostX11* host =
+      static_cast<views::DesktopWindowTreeHostX11*>(
+          incognito_browser->window()->GetNativeWindow()->GetHost());
+
+  class GlobalCommandTreeHostObserver
+      : public views::DesktopWindowTreeHostObserverX11 {
+   public:
+    void OnWindowMapped(unsigned long xid) override {
+      // On Linux, our infrastructure for sending keys just synthesize keyboard
+      // event and send them directly to the specified window, without notifying
+      // the X root window. It didn't work while testing global shortcut because
+      // the stuff of global shortcut on Linux need to be notified when KeyPress
+      // event is happening on X root window. So we simulate the keyboard input
+      // here.
+      SendNativeKeyEventToXDisplay(ui::VKEY_1, true, true, false);
+      SendNativeKeyEventToXDisplay(ui::VKEY_A, true, true, false);
+      SendNativeKeyEventToXDisplay(ui::VKEY_8, true, true, false);
+    }
+
+    void OnWindowUnmapped(unsigned long xid) override {}
+  } observer;
+
+  // The observer sends the commands after window mapping
+  host->AddObserver(&observer);
+
 #elif defined(OS_MACOSX)
   // Create an incognito browser to capture the focus.
   CreateIncognitoBrowser();
@@ -179,6 +198,9 @@ IN_PROC_BROWSER_TEST_F(GlobalCommandsApiTest, MAYBE_GlobalCommand) {
   // but it might also be because the non-global shortcuts unexpectedly
   // worked.
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(USE_X11)
+  host->RemoveObserver(&observer);
+#endif
 }
 
 #if defined(OS_WIN)

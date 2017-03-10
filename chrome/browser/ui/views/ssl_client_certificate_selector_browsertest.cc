@@ -9,6 +9,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/ssl_client_auth_requestor_mock.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/ssl_client_certificate_selector.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -27,6 +28,7 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/views/test/widget_test.h"
 
 #if defined(USE_NSS_CERTS)
 #include "crypto/scoped_test_nss_db.h"
@@ -260,6 +262,12 @@ class SSLClientCertificateSelectorMultiProfileTest
         auth_requestor_1_->CreateDelegate());
     selector_1_->Init();
     selector_1_->Show();
+
+    gfx::NativeWindow window = browser_1_->window()->GetNativeWindow();
+    views::Widget* widget = views::Widget::GetWidgetForNativeWindow(window);
+    ASSERT_NE(nullptr, widget);
+    views::test::WidgetActivationWaiter waiter(widget, true);
+    waiter.Wait();
 
     EXPECT_EQ(client_cert_1_.get(), selector_1_->GetSelectedCert());
   }
