@@ -180,6 +180,9 @@ class SyncTest : public InProcessBrowserTest {
   // Initializes sync clients and profiles if required and syncs each of them.
   virtual bool SetupSync() WARN_UNUSED_RESULT;
 
+  // Initialize, and clear data for given client.
+  bool SetupAndClearClient(size_t index);
+
   // Sets whether or not the sync clients in this test should respond to
   // notifications of their own commits.  Real sync clients do not do this, but
   // many test assertions require this behavior.
@@ -375,6 +378,9 @@ class SyncTest : public InProcessBrowserTest {
   // Sets up the client-side invalidations infrastructure depending on the
   // value of |server_type_|.
   void InitializeInvalidations(int index);
+
+  // Clear server data, and restart sync.
+  bool ClearServerData(ProfileSyncServiceHarness* harness);
 
   // Python sync test server, started on demand.
   syncer::LocalSyncTestServer sync_server_;

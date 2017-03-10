@@ -620,9 +620,21 @@ bool SyncTest::SetupSync() {
     }
   }
 
+  int clientIndex = 0;
+  // If we're using external servers, clear server data so the account starts
+  // with a clean slate.
+  if (UsingExternalServers()) {
+    if (!SetupAndClearClient(clientIndex++)) {
+      LOG(FATAL) << "Setting up and clearing data for client "
+                 << clientIndex - 1 << " failed";
+      return false;
+    }
+  }
+
   // Sync each of the profiles.
-  for (int i = 0; i < num_clients_; ++i) {
-    if (!GetClient(i)->SetupSync()) {
+  for (; clientIndex < num_clients_; clientIndex++) {
+    DVLOG(1) << "Setting up " << clientIndex << " client";
+    if (!GetClient(clientIndex)->SetupSync()) {
       LOG(FATAL) << "SetupSync() failed.";
       return false;
     }
@@ -666,6 +678,23 @@ bool SyncTest::SetupSync() {
     }
   }
 
+  return true;
+}
+
+bool SyncTest::SetupAndClearClient(size_t index) {
+  // Setup the first client so the sync engine is initialized, which is
+  // required to clear server data.
+  DVLOG(1) << "Setting up first client for clear.";
+  if (!GetClient(index)->SetupSyncForClearingServerData()) {
+    LOG(FATAL) << "SetupSync() failed.";
+    return false;
+  }
+
+  DVLOG(1) << "Done setting up first client for clear.";
+  if (!ClearServerData(GetClient(index++))) {
+    LOG(FATAL) << "ClearServerData failed.";
+    return false;
+  }
   return true;
 }
 
@@ -1147,4 +1176,15 @@ void SyncTest::TriggerSyncForModelTypes(int index,
 void SyncTest::SetPreexistingPreferencesFileContents(
     const std::string& contents) {
   preexisting_preferences_file_contents_ = contents;
+}
+
+bool SyncTest::ClearServerData(ProfileSyncServiceHarness* harness) {
+  // At this point our birthday is good.
+  base::RunLoop run_loop;
+  harness->service()->ClearServerDataForTest(run_loop.QuitClosure());
+  run_loop.Run();
+
+  // Our birthday is invalidated on the server here so restart sync to get
+  // the new birthday from the server.
+  return harness->RestartSyncService();
 }

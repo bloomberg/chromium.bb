@@ -19,6 +19,8 @@
 #include "chrome/browser/sync/test/integration/single_client_status_change_checker.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/webui/signin/login_ui_service.h"
+#include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 #include "chrome/browser/ui/webui/signin/login_ui_test_utils.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_switches.h"
@@ -130,19 +132,30 @@ void ProfileSyncServiceHarness::SetCredentials(const std::string& username,
 }
 
 bool ProfileSyncServiceHarness::SetupSync() {
-  bool result = SetupSync(syncer::UserSelectableTypes());
-  if (result == false) {
-    std::string status = GetServiceStatus();
-    LOG(ERROR) << profile_debug_name_
-               << ": SetupSync failed. Syncer status:\n" << status;
+  bool result = SetupSync(syncer::UserSelectableTypes(), false);
+  if (!result) {
+    LOG(ERROR) << profile_debug_name_ << ": SetupSync failed. Syncer status:\n"
+               << GetServiceStatus();
   } else {
     DVLOG(1) << profile_debug_name_ << ": SetupSync successful.";
   }
   return result;
 }
 
-bool ProfileSyncServiceHarness::SetupSync(
-    syncer::ModelTypeSet synced_datatypes) {
+bool ProfileSyncServiceHarness::SetupSyncForClearingServerData() {
+  bool result = SetupSync(syncer::UserSelectableTypes(), true);
+  if (!result) {
+    LOG(ERROR) << profile_debug_name_
+               << ": SetupSyncForClear failed. Syncer status:\n"
+               << GetServiceStatus();
+  } else {
+    DVLOG(1) << profile_debug_name_ << ": SetupSyncForClear successful.";
+  }
+  return result;
+}
+
+bool ProfileSyncServiceHarness::SetupSync(syncer::ModelTypeSet synced_datatypes,
+                                          bool skip_passphrase_verification) {
   DCHECK(!profile_->IsLegacySupervised())
       << "SetupSync should not be used for legacy supervised users.";
 
@@ -179,17 +192,20 @@ bool ProfileSyncServiceHarness::SetupSync(
   // Now that auth is completed, request that sync actually start.
   service()->RequestStart();
 
-  if (!AwaitEngineInitialization()) {
+  if (!AwaitEngineInitialization(skip_passphrase_verification)) {
     return false;
   }
-
   // Choose the datatypes to be synced. If all datatypes are to be synced,
   // set sync_everything to true; otherwise, set it to false.
   bool sync_everything = (synced_datatypes == syncer::UserSelectableTypes());
   service()->OnUserChoseDatatypes(sync_everything, synced_datatypes);
 
   // Notify ProfileSyncService that we are done with configuration.
-  FinishSyncSetup();
+  if (skip_passphrase_verification) {
+    sync_blocker_.reset();
+  } else {
+    FinishSyncSetup();
+  }
 
   if ((signin_type_ == SigninType::UI_SIGNIN) &&
       !login_ui_test_utils::DismissSyncConfirmationDialog(
@@ -197,6 +213,20 @@ bool ProfileSyncServiceHarness::SetupSync(
           base::TimeDelta::FromSeconds(30))) {
     LOG(ERROR) << "Failed to dismiss sync confirmation dialog.";
     return false;
+  }
+
+  // OneClickSigninSyncStarter observer is created with a real user sign in.
+  // It is deleted on certain conditions which are not satisfied by our tests,
+  // and this causes the SigninTracker observer to stay hanging at shutdown.
+  // Calling LoginUIService::SyncConfirmationUIClosed forces the observer to
+  // be removed. http://crbug.com/484388
+  if (signin_type_ == SigninType::UI_SIGNIN) {
+    LoginUIServiceFactory::GetForProfile(profile_)->SyncConfirmationUIClosed(
+        LoginUIService::SYNC_WITH_DEFAULT_SETTINGS);
+  }
+
+  if (skip_passphrase_verification) {
+    return true;
   }
 
   // Set an implicit passphrase for encryption if an explicit one hasn't already
@@ -212,7 +242,43 @@ bool ProfileSyncServiceHarness::SetupSync(
 
   // Wait for initial sync cycle to be completed.
   if (!AwaitSyncSetupCompletion()) {
-    LOG(ERROR) << "Initial sync cycle timed out.";
+    return false;
+  }
+
+  return true;
+}
+
+bool ProfileSyncServiceHarness::RestartSyncService() {
+  DVLOG(1) << "Requesting stop for service.";
+  service()->RequestStop(ProfileSyncService::CLEAR_DATA);
+
+  std::unique_ptr<syncer::SyncSetupInProgressHandle> blocker =
+      service()->GetSetupInProgressHandle();
+  DVLOG(1) << "Requesting start for service";
+  service()->RequestStart();
+
+  if (!AwaitEngineInitialization()) {
+    LOG(ERROR) << "AwaitEngineInitialization failed.";
+    return false;
+  }
+  DVLOG(1) << "Engine Initialized successfully.";
+
+  // This passphrase should be implicit because ClearServerData should be called
+  // prior.
+  if (!service()->IsUsingSecondaryPassphrase()) {
+    service()->SetEncryptionPassphrase(password_, ProfileSyncService::IMPLICIT);
+  } else {
+    LOG(ERROR) << "A passphrase is required for decryption. Sync cannot proceed"
+                  " until SetDecryptionPassphrase is called.";
+    return false;
+  }
+  DVLOG(1) << "Passphrase decryption success.";
+
+  blocker.reset();
+  service()->SetFirstSetupComplete();
+
+  if (!AwaitSyncSetupCompletion()) {
+    LOG(FATAL) << "AwaitSyncSetupCompletion failed.";
     return false;
   }
 
@@ -246,7 +312,8 @@ bool ProfileSyncServiceHarness::AwaitQuiescence(
   return QuiesceStatusChangeChecker(services).Wait();
 }
 
-bool ProfileSyncServiceHarness::AwaitEngineInitialization() {
+bool ProfileSyncServiceHarness::AwaitEngineInitialization(
+    bool skip_passphrase_verification) {
   if (!EngineInitializeChecker(service()).Wait()) {
     LOG(ERROR) << "EngineInitializeChecker timed out.";
     return false;
@@ -258,7 +325,8 @@ bool ProfileSyncServiceHarness::AwaitEngineInitialization() {
   }
 
   // Make sure that initial sync wasn't blocked by a missing passphrase.
-  if (service()->passphrase_required_reason() == syncer::REASON_DECRYPTION) {
+  if (!skip_passphrase_verification &&
+      service()->passphrase_required_reason() == syncer::REASON_DECRYPTION) {
     LOG(ERROR) << "A passphrase is required for decryption. Sync cannot proceed"
                   " until SetDecryptionPassphrase is called.";
     return false;

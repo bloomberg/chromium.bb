@@ -1197,6 +1197,14 @@ void ProfileSyncService::OnClearServerDataDone() {
                             syncer::CLEAR_SERVER_DATA_MAX);
 }
 
+void ProfileSyncService::ClearServerDataForTest(const base::Closure& callback) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  // Sync has a restriction that the engine must be in configuration mode
+  // in order to run clear server data.
+  engine_->StartConfiguration();
+  engine_->ClearServerData(callback);
+}
+
 void ProfileSyncService::OnConfigureDone(
     const DataTypeManager::ConfigureResult& result) {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -1384,6 +1392,7 @@ bool ProfileSyncService::IsFirstSetupInProgress() const {
 std::unique_ptr<syncer::SyncSetupInProgressHandle>
 ProfileSyncService::GetSetupInProgressHandle() {
   DCHECK(thread_checker_.CalledOnValidThread());
+
   if (++outstanding_setup_in_progress_handles_ == 1) {
     DCHECK(!startup_controller_->IsSetupInProgress());
     startup_controller_->SetSetupInProgress(true);
@@ -2434,5 +2443,4 @@ void ProfileSyncService::OnSetupInProgressHandleDestroyed() {
     ReconfigureDatatypeManager();
   NotifyObservers();
 }
-
 }  // namespace browser_sync

@@ -55,9 +55,21 @@ class ProfileSyncServiceHarness {
   // changes.
   bool SetupSync();
 
+  // Setup sync without the authenticating through the passphrase encryption.
+  // Use this method when you need to setup a client that you're going to call
+  // RestartSyncService() directly after.
+  bool SetupSyncForClearingServerData();
+
+  // Both SetupSync and SetupSyncForClear call into this method.
   // Same as the above method, but enables sync only for the datatypes contained
   // in |synced_datatypes|.
-  bool SetupSync(syncer::ModelTypeSet synced_datatypes);
+  bool SetupSync(syncer::ModelTypeSet synced_datatypes,
+                 bool skip_passphrase_verification = false);
+
+  // Restart sync service to simulate a sign-in/sign-out. This is useful
+  // to recover from a lost birthday. Use directly after a clear server data
+  // command to start from clean slate.
+  bool RestartSyncService();
 
   // Calling this acts as a barrier and blocks the caller until |this| and
   // |partner| have both completed a sync cycle.  When calling this method,
@@ -86,7 +98,7 @@ class ProfileSyncServiceHarness {
   // (e.g., auth error) is reached. Returns true if and only if the engine
   // initialized successfully. See ProfileSyncService's IsEngineInitialized()
   // method for the definition of engine initialization.
-  bool AwaitEngineInitialization();
+  bool AwaitEngineInitialization(bool skip_passphrase_verification = false);
 
   // Blocks the caller until sync setup is complete. Returns true if and only
   // if sync setup completed successfully. See syncer::SyncService's
