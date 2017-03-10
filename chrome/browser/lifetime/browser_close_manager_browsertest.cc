@@ -744,8 +744,14 @@ IN_PROC_BROWSER_TEST_P(BrowserCloseManagerBrowserTest,
   EXPECT_TRUE(BrowserList::GetInstance()->empty());
 }
 
+#if defined(OS_MACOSX)
+// Flaky on Mac OSX. See http://crbug.com/700271.
+#define MAYBE_AddBeforeUnloadDuringClosing DISABLED_AddBeforeUnloadDuringClosing
+#else
+#define MAYBE_AddBeforeUnloadDuringClosing AddBeforeUnloadDuringClosing
+#endif
 IN_PROC_BROWSER_TEST_P(BrowserCloseManagerBrowserTest,
-                       AddBeforeUnloadDuringClosing) {
+                       MAYBE_AddBeforeUnloadDuringClosing) {
   // TODO(crbug.com/250305): Currently FastUnloadController is broken.
   // And it is difficult to fix this issue without fixing that one.
   if (GetParam())
