@@ -15,6 +15,7 @@
 #include "base/run_loop.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "components/subresource_filter/content/browser/async_document_subresource_filter_test_utils.h"
 #include "components/subresource_filter/core/common/proto/rules.pb.h"
 #include "components/subresource_filter/core/common/test_ruleset_creator.h"
 #include "components/subresource_filter/core/common/test_ruleset_utils.h"
@@ -84,36 +85,14 @@ class AsyncDocumentSubresourceFilterTest : public ::testing::Test {
 
 namespace {
 
-class TestActivationStateCallbackReceiver {
- public:
-  TestActivationStateCallbackReceiver() = default;
-
-  base::Callback<void(ActivationState)> callback() {
-    return base::Bind(&TestActivationStateCallbackReceiver::Callback,
-                      base::Unretained(this));
-  }
-  void ExpectReceivedOnce(ActivationState expected_state) const {
-    ASSERT_EQ(1, callback_count_);
-    EXPECT_EQ(expected_state, last_activation_state_);
-  }
-
- private:
-  void Callback(ActivationState activation_state) {
-    ++callback_count_;
-    last_activation_state_ = activation_state;
-  }
-
-  ActivationState last_activation_state_;
-  int callback_count_ = 0;
-
-  DISALLOW_COPY_AND_ASSIGN(TestActivationStateCallbackReceiver);
-};
-
+// TODO(csharrison): If more consumers need to test these callbacks at this
+// granularity, consider moving these classes into
+// async_document_subresource_filter_test_utils.
 class TestCallbackReceiver {
  public:
   TestCallbackReceiver() = default;
 
-  base::Closure closure() {
+  base::Closure GetClosure() {
     return base::Bind(&TestCallbackReceiver::Callback, base::Unretained(this));
   }
   int callback_count() const { return callback_count_; }
@@ -130,7 +109,7 @@ class LoadPolicyCallbackReceiver {
  public:
   LoadPolicyCallbackReceiver() = default;
 
-  AsyncDocumentSubresourceFilter::LoadPolicyCallback callback() {
+  AsyncDocumentSubresourceFilter::LoadPolicyCallback GetCallback() {
     return base::Bind(&LoadPolicyCallbackReceiver::Callback,
                       base::Unretained(this));
   }
@@ -160,9 +139,9 @@ TEST_F(AsyncDocumentSubresourceFilterTest, ActivationStateIsReported) {
   AsyncDocumentSubresourceFilter::InitializationParams params(
       GURL("http://example.com"), ActivationLevel::ENABLED, false);
 
-  TestActivationStateCallbackReceiver activation_state;
+  testing::TestActivationStateCallbackReceiver activation_state;
   auto filter = base::MakeUnique<AsyncDocumentSubresourceFilter>(
-      ruleset_handle.get(), std::move(params), activation_state.callback(),
+      ruleset_handle.get(), std::move(params), activation_state.GetCallback(),
       base::OnceClosure());
 
   RunUntilIdle();
@@ -178,9 +157,9 @@ TEST_F(AsyncDocumentSubresourceFilterTest, ActivationStateIsComputedCorrectly) {
       GURL("http://whitelisted.subframe.com"), ActivationLevel::ENABLED, false);
   params.parent_document_origin = url::Origin(GURL("http://example.com"));
 
-  TestActivationStateCallbackReceiver activation_state;
+  testing::TestActivationStateCallbackReceiver activation_state;
   auto filter = base::MakeUnique<AsyncDocumentSubresourceFilter>(
-      ruleset_handle.get(), std::move(params), activation_state.callback(),
+      ruleset_handle.get(), std::move(params), activation_state.GetCallback(),
       base::OnceClosure());
 
   RunUntilIdle();
@@ -199,9 +178,9 @@ TEST_F(AsyncDocumentSubresourceFilterTest, DisabledForCorruptRuleset) {
   AsyncDocumentSubresourceFilter::InitializationParams params(
       GURL("http://example.com"), ActivationLevel::ENABLED, false);
 
-  TestActivationStateCallbackReceiver activation_state;
+  testing::TestActivationStateCallbackReceiver activation_state;
   auto filter = base::MakeUnique<AsyncDocumentSubresourceFilter>(
-      ruleset_handle.get(), std::move(params), activation_state.callback(),
+      ruleset_handle.get(), std::move(params), activation_state.GetCallback(),
       base::OnceClosure());
 
   RunUntilIdle();
@@ -216,17 +195,17 @@ TEST_F(AsyncDocumentSubresourceFilterTest, GetLoadPolicyForSubdocument) {
   AsyncDocumentSubresourceFilter::InitializationParams params(
       GURL("http://example.com"), ActivationLevel::ENABLED, false);
 
-  TestActivationStateCallbackReceiver activation_state;
+  testing::TestActivationStateCallbackReceiver activation_state;
   auto filter = base::MakeUnique<AsyncDocumentSubresourceFilter>(
-      ruleset_handle.get(), std::move(params), activation_state.callback(),
+      ruleset_handle.get(), std::move(params), activation_state.GetCallback(),
       base::OnceClosure());
 
   LoadPolicyCallbackReceiver load_policy_1;
   LoadPolicyCallbackReceiver load_policy_2;
   filter->GetLoadPolicyForSubdocument(GURL("http://example.com/allowed.html"),
-                                      load_policy_1.callback());
+                                      load_policy_1.GetCallback());
   filter->GetLoadPolicyForSubdocument(
-      GURL("http://example.com/disallowed.html"), load_policy_2.callback());
+      GURL("http://example.com/disallowed.html"), load_policy_2.GetCallback());
 
   RunUntilIdle();
   load_policy_1.ExpectReceivedOnce(LoadPolicy::ALLOW);
@@ -241,21 +220,21 @@ TEST_F(AsyncDocumentSubresourceFilterTest, FirstDisallowedLoadIsReported) {
   AsyncDocumentSubresourceFilter::InitializationParams params(
       GURL("http://example.com"), ActivationLevel::ENABLED, false);
 
-  TestActivationStateCallbackReceiver activation_state;
+  testing::TestActivationStateCallbackReceiver activation_state;
   auto filter = base::MakeUnique<AsyncDocumentSubresourceFilter>(
-      ruleset_handle.get(), std::move(params), activation_state.callback(),
-      first_disallowed_load_receiver.closure());
+      ruleset_handle.get(), std::move(params), activation_state.GetCallback(),
+      first_disallowed_load_receiver.GetClosure());
 
   LoadPolicyCallbackReceiver load_policy_1;
   filter->GetLoadPolicyForSubdocument(GURL("http://example.com/allowed.html"),
-                                      load_policy_1.callback());
+                                      load_policy_1.GetCallback());
   RunUntilIdle();
   load_policy_1.ExpectReceivedOnce(LoadPolicy::ALLOW);
   EXPECT_EQ(0, first_disallowed_load_receiver.callback_count());
 
   LoadPolicyCallbackReceiver load_policy_2;
   filter->GetLoadPolicyForSubdocument(
-      GURL("http://example.com/disallowed.html"), load_policy_2.callback());
+      GURL("http://example.com/disallowed.html"), load_policy_2.GetCallback());
   RunUntilIdle();
   load_policy_2.ExpectReceivedOnce(LoadPolicy::DISALLOW);
   EXPECT_EQ(0, first_disallowed_load_receiver.callback_count());

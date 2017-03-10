@@ -12,6 +12,7 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "components/subresource_filter/content/browser/async_document_subresource_filter.h"
+#include "components/subresource_filter/content/browser/async_document_subresource_filter_test_utils.h"
 #include "components/subresource_filter/core/common/activation_level.h"
 #include "components/subresource_filter/core/common/activation_state.h"
 #include "components/subresource_filter/core/common/test_ruleset_creator.h"
@@ -72,16 +73,16 @@ class SubframeNavigationFilteringThrottleTest
     ruleset_handle_ =
         base::MakeUnique<VerifiedRuleset::Handle>(dealer_handle_.get());
 
+    testing::TestActivationStateCallbackReceiver activation_state;
     parent_filter_ = base::MakeUnique<AsyncDocumentSubresourceFilter>(
         ruleset_handle_.get(),
         AsyncDocumentSubresourceFilter::InitializationParams(
             document_url, ActivationLevel::ENABLED,
             false /* measure_performance */),
-        base::Bind([](ActivationState state) {
-          EXPECT_EQ(ActivationLevel::ENABLED, state.activation_level);
-        }),
-        base::OnceClosure());
+        activation_state.GetCallback(), base::OnceClosure());
     RunUntilIdle();
+    activation_state.ExpectReceivedOnce(
+        ActivationState(ActivationLevel::ENABLED));
   }
 
   void RunUntilIdle() { base::RunLoop().RunUntilIdle(); }
