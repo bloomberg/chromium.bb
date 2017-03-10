@@ -93,6 +93,7 @@ static const CGFloat kTextFieldTrailingPadding = 5;
     [noItemTextfield_ setFont:smallSystemFont];
     [noItemTextfield_
         setStringValue:l10n_util::GetNSString(IDS_BOOKMARKS_NO_ITEMS)];
+    [noItemTextfield_ setEditable:NO];
 
     [noItemTextfield_ setBordered:NO];
     [[noItemTextfield_ cell] setLineBreakMode:NSLineBreakByTruncatingTail];
