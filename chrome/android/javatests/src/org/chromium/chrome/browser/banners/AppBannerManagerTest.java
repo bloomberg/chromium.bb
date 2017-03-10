@@ -214,7 +214,7 @@ public class AppBannerManagerTest extends ChromeTabbedActivityTestBase {
             @Override
             public void run() {
                 SiteEngagementService.getForProfile(Profile.getLastUsedProfile())
-                        .resetScoreForUrl(url, engagement);
+                        .resetBaseScoreForUrl(url, engagement);
             }
         });
     }

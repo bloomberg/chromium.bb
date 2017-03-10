@@ -92,12 +92,12 @@ TEST_F(AppBannerSettingsHelperTest, ShouldShowFromEngagement) {
       AppBannerSettingsHelper::HasSufficientEngagement(service->GetScore(url)));
 
   // Add 1 engagement, it still should not be shown.
-  service->ResetScoreForURL(url, 1);
+  service->ResetBaseScoreForURL(url, 1);
   EXPECT_FALSE(
       AppBannerSettingsHelper::HasSufficientEngagement(service->GetScore(url)));
 
   // Add 1 more engagement; now it should be shown.
-  service->ResetScoreForURL(url, 2);
+  service->ResetBaseScoreForURL(url, 2);
   EXPECT_TRUE(
       AppBannerSettingsHelper::HasSufficientEngagement(service->GetScore(url)));
 }
@@ -116,7 +116,7 @@ TEST_F(AppBannerSettingsHelperTest, ShouldNotShowAfterBlocking) {
       AppBannerSettingsHelper::HasSufficientEngagement(service->GetScore(url)));
 
   // Add engagement such that the banner should show.
-  service->ResetScoreForURL(url, 4);
+  service->ResetBaseScoreForURL(url, 4);
   EXPECT_TRUE(
       AppBannerSettingsHelper::HasSufficientEngagement(service->GetScore(url)));
   EXPECT_EQ(NO_ERROR_DETECTED,
@@ -161,7 +161,7 @@ TEST_F(AppBannerSettingsHelperTest, ShouldNotShowAfterShowing) {
       AppBannerSettingsHelper::HasSufficientEngagement(service->GetScore(url)));
 
   // Add engagement such that the banner should show.
-  service->ResetScoreForURL(url, 4);
+  service->ResetBaseScoreForURL(url, 4);
   EXPECT_TRUE(
       AppBannerSettingsHelper::HasSufficientEngagement(service->GetScore(url)));
   EXPECT_EQ(NO_ERROR_DETECTED,
@@ -204,7 +204,7 @@ TEST_F(AppBannerSettingsHelperTest, ShouldNotShowAfterAdding) {
       AppBannerSettingsHelper::HasSufficientEngagement(service->GetScore(url)));
 
   // Add engagement such that the banner should show.
-  service->ResetScoreForURL(url, 4);
+  service->ResetBaseScoreForURL(url, 4);
   EXPECT_TRUE(
       AppBannerSettingsHelper::HasSufficientEngagement(service->GetScore(url)));
   EXPECT_EQ(NO_ERROR_DETECTED,
@@ -230,7 +230,7 @@ TEST_F(AppBannerSettingsHelperTest, OperatesOnOrigins) {
       AppBannerSettingsHelper::HasSufficientEngagement(service->GetScore(url)));
 
   // Add engagement such that the banner should show.
-  service->ResetScoreForURL(url, 4);
+  service->ResetBaseScoreForURL(url, 4);
   EXPECT_TRUE(
       AppBannerSettingsHelper::HasSufficientEngagement(service->GetScore(url)));
 
@@ -255,23 +255,23 @@ TEST_F(AppBannerSettingsHelperTest, ShouldShowWithHigherTotal) {
       AppBannerSettingsHelper::HasSufficientEngagement(service->GetScore(url)));
 
   // Add engagement such that the banner should show.
-  service->ResetScoreForURL(url, 2);
+  service->ResetBaseScoreForURL(url, 2);
   EXPECT_FALSE(
       AppBannerSettingsHelper::HasSufficientEngagement(service->GetScore(url)));
 
-  service->ResetScoreForURL(url, 4);
+  service->ResetBaseScoreForURL(url, 4);
   EXPECT_FALSE(
       AppBannerSettingsHelper::HasSufficientEngagement(service->GetScore(url)));
 
-  service->ResetScoreForURL(url, 6);
+  service->ResetBaseScoreForURL(url, 6);
   EXPECT_FALSE(
       AppBannerSettingsHelper::HasSufficientEngagement(service->GetScore(url)));
 
-  service->ResetScoreForURL(url, 8);
+  service->ResetBaseScoreForURL(url, 8);
   EXPECT_FALSE(
       AppBannerSettingsHelper::HasSufficientEngagement(service->GetScore(url)));
 
-  service->ResetScoreForURL(url, 10);
+  service->ResetBaseScoreForURL(url, 10);
   EXPECT_TRUE(
       AppBannerSettingsHelper::HasSufficientEngagement(service->GetScore(url)));
 

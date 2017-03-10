@@ -1686,7 +1686,7 @@ TEST_F(SiteEngagementServiceTest, CleanupMovesScoreBackToRebase) {
   clock->SetNow(current_day);
 
   GURL origin("http://www.google.com/");
-  service->ResetScoreForURL(origin, 5);
+  service->ResetBaseScoreForURL(origin, 5);
   service->AddPoints(origin, 5);
   EXPECT_EQ(10, service->GetScore(origin));
   EXPECT_EQ(current_day, service->GetLastEngagementTime());

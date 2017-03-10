@@ -281,7 +281,7 @@ class PushMessagingBrowserTest : public InProcessBrowserTest {
     // granted, so we assert that the final score is as expected.
     SiteEngagementService* service =
         SiteEngagementService::Get(GetBrowser()->profile());
-    service->ResetScoreForURL(url, score);
+    service->ResetBaseScoreForURL(url, score);
     EXPECT_EQ(expected_score, service->GetScore(url));
   }
 

@@ -120,8 +120,10 @@ class SiteEngagementService : public KeyedService,
   bool IsEngagementAtLeast(const GURL& url,
                            blink::mojom::EngagementLevel level) const;
 
-  // Resets the engagement score |url| to |score|, clearing daily limits.
-  void ResetScoreForURL(const GURL& url, double score);
+  // Resets the base engagement for |url| to |score|, clearing daily limits. Any
+  // bonus engagement that |url| has acquired is not affected by this method, so
+  // the result of GetScore(|url|) may not be the same as |score|.
+  void ResetBaseScoreForURL(const GURL& url, double score);
 
   // Update the last time |url| was opened from an installed shortcut to be
   // clock_->Now().

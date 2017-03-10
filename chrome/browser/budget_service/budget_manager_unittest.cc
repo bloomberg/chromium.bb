@@ -38,7 +38,7 @@ class BudgetManagerTest : public testing::Test {
 
   void SetSiteEngagementScore(double score) {
     SiteEngagementService* service = SiteEngagementService::Get(&profile_);
-    service->ResetScoreForURL(GURL(origin().Serialize()), score);
+    service->ResetBaseScoreForURL(GURL(origin().Serialize()), score);
   }
 
   Profile* profile() { return &profile_; }

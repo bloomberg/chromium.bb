@@ -60,7 +60,7 @@ class BudgetManagerBrowserTest : public InProcessBrowserTest {
   void SetSiteEngagementScore(double score) {
     SiteEngagementService* service =
         SiteEngagementService::Get(browser()->profile());
-    service->ResetScoreForURL(https_server_->GetURL(kTestURL), score);
+    service->ResetBaseScoreForURL(https_server_->GetURL(kTestURL), score);
   }
 
   bool RunScript(const std::string& script, std::string* result) {

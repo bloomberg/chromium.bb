@@ -92,7 +92,7 @@ class BudgetDatabaseTest : public ::testing::Test {
 
   void SetSiteEngagementScore(double score) {
     SiteEngagementService* service = SiteEngagementService::Get(&profile_);
-    service->ResetScoreForURL(GURL(kTestOrigin), score);
+    service->ResetBaseScoreForURL(GURL(kTestOrigin), score);
   }
 
  protected:

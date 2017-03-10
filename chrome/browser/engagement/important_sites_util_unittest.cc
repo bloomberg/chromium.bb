@@ -154,13 +154,13 @@ TEST_F(ImportantSitesUtilTest, SourceOrdering) {
   GURL url6("https://youtube.com/");
   GURL url7("https://foo.bar/");
 
-  service->ResetScoreForURL(url1, 5);
-  service->ResetScoreForURL(url2, 2);  // Below medium engagement (5).
-  service->ResetScoreForURL(url3, 7);
-  service->ResetScoreForURL(url4, 8);
-  service->ResetScoreForURL(url5, 9);
-  service->ResetScoreForURL(url6, 1);  // Below the medium engagement (5).
-  service->ResetScoreForURL(url7, 11);
+  service->ResetBaseScoreForURL(url1, 5);
+  service->ResetBaseScoreForURL(url2, 2);  // Below medium engagement (5).
+  service->ResetBaseScoreForURL(url3, 7);
+  service->ResetBaseScoreForURL(url4, 8);
+  service->ResetBaseScoreForURL(url5, 9);
+  service->ResetBaseScoreForURL(url6, 1);  // Below the medium engagement (5).
+  service->ResetBaseScoreForURL(url7, 11);
 
   // Here we should have:
   // 1: removed domains below minimum engagement,
@@ -239,9 +239,9 @@ TEST_F(ImportantSitesUtilTest, TooManyBookmarks) {
 
   // If we add some site engagement, they should show up (even though the site
   // engagement score is too low for a signal by itself).
-  service->ResetScoreForURL(url1, 2);
-  service->ResetScoreForURL(url4, 3);
-  service->ResetScoreForURL(url7, 0);
+  service->ResetBaseScoreForURL(url1, 2);
+  service->ResetBaseScoreForURL(url4, 3);
+  service->ResetBaseScoreForURL(url7, 0);
 
   important_sites = ImportantSitesUtil::GetImportantRegisterableDomains(
       profile(), kNumImportantSites);
@@ -261,7 +261,7 @@ TEST_F(ImportantSitesUtilTest, Blacklisting) {
   GURL url2("http://www.gmail.com/");
 
   // Set a bunch of positive signals.
-  service->ResetScoreForURL(url1, 5);
+  service->ResetBaseScoreForURL(url1, 5);
   AddBookmark(url2);
   AddContentSetting(CONTENT_SETTINGS_TYPE_NOTIFICATIONS, CONTENT_SETTING_ALLOW,
                     url1);
@@ -316,7 +316,7 @@ TEST_F(ImportantSitesUtilTest, BlacklistingReset) {
   GURL url2("http://www.gmail.com/");
 
   // Set a bunch of positive signals.
-  service->ResetScoreForURL(url1, 5);
+  service->ResetBaseScoreForURL(url1, 5);
   AddBookmark(url2);
   AddContentSetting(CONTENT_SETTINGS_TYPE_NOTIFICATIONS, CONTENT_SETTING_ALLOW,
                     url1);
@@ -385,7 +385,7 @@ TEST_F(ImportantSitesUtilTest, Metrics) {
   base::HistogramTester histogram_tester;
 
   GURL url1("http://www.google.com/");
-  service->ResetScoreForURL(url1, 5);
+  service->ResetBaseScoreForURL(url1, 5);
   AddContentSetting(CONTENT_SETTINGS_TYPE_NOTIFICATIONS, CONTENT_SETTING_ALLOW,
                     url1);
 
@@ -430,7 +430,7 @@ TEST_F(ImportantSitesUtilTest, DialogBlacklisting) {
   GURL url2("http://www.yahoo.com/");
 
   // Set a bunch of positive signals.
-  service->ResetScoreForURL(url2, 5);
+  service->ResetBaseScoreForURL(url2, 5);
   AddBookmark(url1);
   AddContentSetting(CONTENT_SETTINGS_TYPE_NOTIFICATIONS, CONTENT_SETTING_ALLOW,
                     url1);

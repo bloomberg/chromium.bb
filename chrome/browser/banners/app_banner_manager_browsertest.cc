@@ -143,7 +143,7 @@ class AppBannerManagerBrowserTest : public InProcessBrowserTest {
         histograms.ExpectTotalCount(banners::kInstallableStatusCodeHistogram,
                                     0);
       }
-      service->ResetScoreForURL(test_url, engagement);
+      service->ResetBaseScoreForURL(test_url, engagement);
       ++iterations;
     }
 

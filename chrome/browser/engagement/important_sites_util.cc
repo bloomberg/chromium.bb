@@ -483,7 +483,7 @@ void ImportantSitesUtil::MarkOriginAsImportantForTesting(Profile* profile,
   // First get data from site engagement.
   SiteEngagementService* site_engagement_service =
       SiteEngagementService::Get(profile);
-  site_engagement_service->ResetScoreForURL(
+  site_engagement_service->ResetBaseScoreForURL(
       origin, SiteEngagementScore::GetMediumEngagementBoundary());
   DCHECK(site_engagement_service->IsEngagementAtLeast(
       origin, blink::mojom::EngagementLevel::MEDIUM));

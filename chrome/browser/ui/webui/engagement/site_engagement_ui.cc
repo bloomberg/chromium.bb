@@ -62,7 +62,7 @@ class SiteEngagementUIHandlerImpl : public mojom::SiteEngagementUIHandler {
     }
 
     SiteEngagementService* service = SiteEngagementService::Get(profile_);
-    service->ResetScoreForURL(origin, score);
+    service->ResetBaseScoreForURL(origin, score);
   }
 
  private:

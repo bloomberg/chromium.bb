@@ -33,10 +33,10 @@ public class SiteEngagementServiceTest extends ChromeActivityTestCaseBase<Chrome
                 getActivity().getActivityTab().getProfile());
 
         assertEquals(0.0, service.getScore(url));
-        service.resetScoreForUrl(url, 5.0);
+        service.resetBaseScoreForUrl(url, 5.0);
         assertEquals(5.0, service.getScore(url));
 
-        service.resetScoreForUrl(url, 2.0);
+        service.resetBaseScoreForUrl(url, 2.0);
         assertEquals(2.0, service.getScore(url));
     }
 
@@ -51,10 +51,10 @@ public class SiteEngagementServiceTest extends ChromeActivityTestCaseBase<Chrome
         Profile profile = getActivity().getActivityTab().getProfile();
 
         assertEquals(0.0, SiteEngagementService.getForProfile(profile).getScore(url));
-        SiteEngagementService.getForProfile(profile).resetScoreForUrl(url, 5.0);
+        SiteEngagementService.getForProfile(profile).resetBaseScoreForUrl(url, 5.0);
         assertEquals(5.0, SiteEngagementService.getForProfile(profile).getScore(url));
 
-        SiteEngagementService.getForProfile(profile).resetScoreForUrl(url, 2.0);
+        SiteEngagementService.getForProfile(profile).resetBaseScoreForUrl(url, 2.0);
         assertEquals(2.0, SiteEngagementService.getForProfile(profile).getScore(url));
     }
 

@@ -192,7 +192,8 @@ void SiteEngagementService::RemoveObserver(SiteEngagementObserver* observer) {
   observer_list_.RemoveObserver(observer);
 }
 
-void SiteEngagementService::ResetScoreForURL(const GURL& url, double score) {
+void SiteEngagementService::ResetBaseScoreForURL(const GURL& url,
+                                                 double score) {
   SiteEngagementScore engagement_score = CreateEngagementScore(url);
   engagement_score.Reset(score, clock_->Now());
   engagement_score.Commit();
