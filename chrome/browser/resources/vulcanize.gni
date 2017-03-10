@@ -98,3 +98,26 @@ template("polymer_css_build") {
            ] + invoker.input_files + [ "--output_files" ] + invoker.output_files
   }
 }
+
+template("unpak") {
+  action(target_name) {
+    script = "//chrome/browser/resources/unpack_pak.py"
+
+    inputs = [
+      "//chrome/browser/resources/unpack_pak.py",
+    ]
+
+    outputs = [
+      "$target_gen_dir/${invoker.out_folder}",
+    ]
+
+    deps = invoker.deps
+
+    args = [
+      "--out_folder",
+      rebase_path("$target_gen_dir/${invoker.out_folder}", root_build_dir),
+      "--pak_file",
+      rebase_path("$target_gen_dir/${invoker.pak_file}", root_build_dir),
+    ]
+  }
+}

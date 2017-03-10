@@ -3,6 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import argparse
 import os
 import re
 import sys
@@ -51,3 +52,16 @@ def unpack(pak_path, out_path):
       os.makedirs(dirname)
     with open(os.path.join(out_path, filename), 'w') as file:
       file.write(text)
+
+
+def main():
+  parser = argparse.ArgumentParser()
+  parser.add_argument('--pak_file')
+  parser.add_argument('--out_folder')
+  args = parser.parse_args()
+
+  unpack(args.pak_file, args.out_folder)
+
+
+if __name__ == '__main__':
+  main()

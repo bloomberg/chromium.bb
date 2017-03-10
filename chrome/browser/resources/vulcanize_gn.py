@@ -70,9 +70,6 @@ _VULCANIZE_REDIRECT_ARGS = list(itertools.chain.from_iterable(map(
     lambda m: ['--redirect', '"%s|%s"' % (m[0], m[1])], _URL_MAPPINGS)))
 
 
-_PAK_UNPACK_FOLDER = 'flattened'
-
-
 def _undo_mapping(mappings, url):
   for (redirect_url, file_path) in mappings:
     if url.startswith(redirect_url):
@@ -117,10 +114,10 @@ def _update_dep_file(in_folder, args):
   deps = [_undo_mapping(url_mappings, u) for u in request_list]
   deps = map(os.path.normpath, deps)
 
-  # If the input was a .pak file, the generated depfile should not list files
-  # already in the .pak file.
-  if args.input.endswith('.pak'):
-    filter_url = os.path.join(args.out_folder, _PAK_UNPACK_FOLDER)
+  # If the input was a folder holding an unpacked .pak file, the generated
+  # depfile should not list files already in the .pak file.
+  if args.input.endswith('.unpak'):
+    filter_url = args.input
     deps = [d for d in deps if not d.startswith(filter_url)]
 
   with open(os.path.join(_CWD, args.depfile), 'w') as f:
@@ -198,19 +195,8 @@ def main(argv):
   args.input = os.path.normpath(args.input)
   args.out_folder = os.path.normpath(args.out_folder)
 
-  vulcanize_input_folder = args.input
-
-  # If a .pak file was specified, unpack that file first and pass the output to
-  # vulcanize.
-  if args.input.endswith('.pak'):
-    import unpack_pak
-    output_folder = os.path.join(args.out_folder, _PAK_UNPACK_FOLDER)
-    unpack_pak.unpack(args.input, output_folder)
-    vulcanize_input_folder = output_folder
-
-  _vulcanize(vulcanize_input_folder, args)
-
-  _update_dep_file(vulcanize_input_folder, args)
+  _vulcanize(args.input, args)
+  _update_dep_file(args.input, args)
 
 
 if __name__ == '__main__':
