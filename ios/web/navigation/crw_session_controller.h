@@ -8,11 +8,10 @@
 #import <Foundation/Foundation.h>
 #include <vector>
 
-#include "ios/web/public/navigation_item_list.h"
+#import "ios/web/navigation/navigation_item_impl_list.h"
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
 
-@class CRWSessionEntry;
 @class CRWSessionCertificatePolicyManager;
 
 namespace web {
@@ -42,10 +41,9 @@ struct Referrer;
 @property(nonatomic, readonly, strong)
     CRWSessionCertificatePolicyManager* sessionCertificatePolicyManager;
 
-// The list of CRWSessionEntries in |_entries|'s NavigationItemImpls.
-@property(nonatomic, readonly) web::NavigationItemList items;
-// The number of elements in |self.items|.
-@property(nonatomic, readonly) NSUInteger itemCount;
+// The ScopedNavigationItemImplList used to store the NavigationItemImpls for
+// this session.
+@property(nonatomic, readonly) const web::ScopedNavigationItemImplList& items;
 // The current NavigationItem.  During a pending navigation, returns the
 // NavigationItem for that navigation.  If a transient NavigationItem exists,
 // this NavigationItem will be returned.
@@ -55,8 +53,9 @@ struct Referrer;
 // Returns the NavigationItem corresponding to a load for which no data has yet
 // been received.
 @property(nonatomic, readonly) web::NavigationItemImpl* pendingItem;
-// Returns the NavigationItem corresponding with a transient navigation (i.e.
-// SSL interstitials).
+// Returns the transient NavigationItem, if any.  The transient item will be
+// discarded on any navigation, and is used to represent interstitials in the
+// session history.
 @property(nonatomic, readonly) web::NavigationItemImpl* transientItem;
 // Returns the NavigationItem corresponding with the last committed load.
 @property(nonatomic, readonly) web::NavigationItemImpl* lastCommittedItem;
@@ -71,19 +70,6 @@ struct Referrer;
 // Returns a list of all non-redirected NavigationItems whose index follow
 // |currentNavigationIndex|.
 @property(nonatomic, readonly) web::NavigationItemList forwardItems;
-
-// DEPRECATED: Don't add new usage of these properties.  Instead, use the
-// NavigationItem versions of these properties above.
-@property(nonatomic, readonly, strong) NSArray* entries;
-@property(nonatomic, readonly, strong) CRWSessionEntry* currentEntry;
-@property(nonatomic, readonly, strong) CRWSessionEntry* visibleEntry;
-@property(nonatomic, readonly, strong) CRWSessionEntry* pendingEntry;
-@property(nonatomic, readonly, strong) CRWSessionEntry* transientEntry;
-@property(nonatomic, readonly, strong) CRWSessionEntry* lastCommittedEntry;
-@property(nonatomic, readonly, strong) CRWSessionEntry* previousEntry;
-@property(nonatomic, readonly, strong) CRWSessionEntry* lastUserEntry;
-@property(nonatomic, readonly, weak) NSArray* backwardEntries;
-@property(nonatomic, readonly, weak) NSArray* forwardEntries;
 
 // CRWSessionController doesn't have public constructors. New
 // CRWSessionControllers are created by deserialization, or via a
@@ -118,9 +104,9 @@ struct Referrer;
 // be made from outside and then handed in.
 - (void)addTransientItemWithURL:(const GURL&)URL;
 
-// Creates a new CRWSessionEntry with the given URL and state object. A state
+// Creates a new NavigationItem with the given URL and state object. A state
 // object is a serialized generic JavaScript object that contains details of the
-// UI's state for a given CRWSessionEntry/URL. The current item's URL is the
+// UI's state for a given NavigationItem/URL. The current item's URL is the
 // new item's referrer.
 - (void)pushNewItemWithURL:(const GURL&)URL
                stateObject:(NSString*)stateObject
@@ -134,8 +120,7 @@ struct Referrer;
 - (void)discardNonCommittedItems;
 
 // Inserts history state from |otherController| to the front of |items|.  This
-// function transfers ownership of |otherController|'s NavigationItems to the
-// receiver.
+// function will create copies of |otherController|'s NavigationItems.
 - (void)insertStateFromSessionController:(CRWSessionController*)otherController;
 
 // Sets |currentNavigationIndex_| to the |index| if it's in the entries bounds.

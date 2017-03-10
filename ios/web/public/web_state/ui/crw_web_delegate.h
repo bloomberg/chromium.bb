@@ -18,7 +18,6 @@
 #include "ui/base/page_transition_types.h"
 
 class GURL;
-@class CRWSessionEntry;
 @class CRWWebController;
 
 // Methods implemented by the delegate of the CRWWebController.

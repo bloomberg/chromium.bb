@@ -12,6 +12,7 @@
 #import "ios/chrome/browser/ui/history/tab_history_view_controller.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #include "ios/web/public/navigation_item.h"
+#include "ios/web/public/navigation_item_list.h"
 #include "ios/web/public/referrer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
@@ -30,7 +31,9 @@ static const CGFloat kTabHistoryMaxWidthLandscapePhone = 350.0;
 
 class TabHistoryPopupControllerTest : public PlatformTest {
  protected:
-  void SetUp() override {
+  TabHistoryPopupControllerTest() : PlatformTest() {
+    parent_.reset([[UIView alloc] initWithFrame:[UIScreen mainScreen].bounds]);
+    // Create test items and populate |items_|.
     web::Referrer referrer(GURL("http://www.example.com"),
                            web::ReferrerPolicyDefault);
     items_.push_back(web::NavigationItem::Create());
@@ -40,10 +43,10 @@ class TabHistoryPopupControllerTest : public PlatformTest {
     items_.back()->SetURL(GURL("http://www.example.com/1"));
     items_.back()->SetReferrer(referrer);
     items_.push_back(web::NavigationItem::Create());
-    items_.back()->SetURL(GURL("http://www.example.com/0"));
+    items_.back()->SetURL(GURL("http://www.example.com/2"));
     items_.back()->SetReferrer(referrer);
-
-    parent_.reset([[UIView alloc] initWithFrame:[UIScreen mainScreen].bounds]);
+    // Create the popup controller using CRWSessionEntries created from the
+    // NavigationItems in |items_|.
     popup_.reset([[TabHistoryPopupController alloc]
         initWithOrigin:CGPointZero
             parentView:parent_

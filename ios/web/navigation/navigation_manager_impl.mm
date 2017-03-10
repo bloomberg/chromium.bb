@@ -12,6 +12,7 @@
 #import "ios/web/navigation/crw_session_controller+private_constructors.h"
 #import "ios/web/navigation/crw_session_controller.h"
 #import "ios/web/navigation/navigation_item_impl.h"
+#import "ios/web/navigation/navigation_item_impl_list.h"
 #import "ios/web/navigation/navigation_manager_delegate.h"
 #include "ios/web/navigation/navigation_manager_facade_delegate.h"
 #include "ios/web/public/load_committed_details.h"
@@ -220,7 +221,7 @@ NavigationItem* NavigationManagerImpl::GetLastUserItem() const {
 }
 
 NavigationItemList NavigationManagerImpl::GetItems() const {
-  return [session_controller_ items];
+  return CreateNavigationItemList([session_controller_ items]);
 }
 
 BrowserState* NavigationManagerImpl::GetBrowserState() const {
@@ -271,7 +272,7 @@ void NavigationManagerImpl::AddTransientURLRewriter(
 }
 
 int NavigationManagerImpl::GetItemCount() const {
-  return [session_controller_ itemCount];
+  return [session_controller_ items].size();
 }
 
 NavigationItem* NavigationManagerImpl::GetItemAtIndex(size_t index) const {
@@ -446,9 +447,9 @@ NavigationItem* NavigationManagerImpl::GetLastCommittedNonAppSpecificItem()
   if (index == -1)
     return nullptr;
   WebClient* client = GetWebClient();
-  NavigationItemList items = [session_controller_ items];
+  const ScopedNavigationItemImplList& items = [session_controller_ items];
   while (index >= 0) {
-    NavigationItem* item = items[index--];
+    NavigationItem* item = items[index--].get();
     if (!client->IsAppSpecificURL(item->GetVirtualURL()))
       return item;
   }

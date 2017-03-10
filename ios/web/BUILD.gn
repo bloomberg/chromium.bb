@@ -56,8 +56,6 @@ source_set("web_arc") {
     "navigation/crw_session_controller+private_constructors.h",
     "navigation/crw_session_controller.h",
     "navigation/crw_session_controller.mm",
-    "navigation/crw_session_entry.h",
-    "navigation/crw_session_entry.mm",
     "navigation/navigation_item_facade_delegate.h",
     "navigation/navigation_item_impl.h",
     "navigation/navigation_item_impl.mm",

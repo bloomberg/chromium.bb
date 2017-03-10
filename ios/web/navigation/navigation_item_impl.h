@@ -74,7 +74,7 @@ class NavigationItemImpl : public web::NavigationItem {
   // Serialized representation of the state object that was used in conjunction
   // with a JavaScript window.history.pushState() or
   // window.history.replaceState() call that created or modified this
-  // CRWSessionEntry. Intended to be used for JavaScript history operations and
+  // NavigationItem. Intended to be used for JavaScript history operations and
   // will be nil in most cases.
   void SetSerializedStateObject(NSString* serialized_state_object);
   NSString* GetSerializedStateObject() const;

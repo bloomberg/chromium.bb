@@ -30,9 +30,8 @@
 
 @implementation CRWSessionController (Testing)
 - (const GURL&)URLForItemAtIndex:(size_t)index {
-  web::NavigationItemList items = self.items;
-  if (index < items.size())
-    return items[index]->GetURL();
+  if (index < self.items.size())
+    return self.items[index]->GetURL();
   return GURL::EmptyGURL();
 }
 
@@ -78,7 +77,7 @@ TEST_F(CRWSessionControllerTest, SetPendingIndex) {
   EXPECT_EQ(-1, [session_controller_ pendingItemIndex]);
   [session_controller_ setPendingItemIndex:0];
   EXPECT_EQ(0, [session_controller_ pendingItemIndex]);
-  EXPECT_EQ([session_controller_ items].back(),
+  EXPECT_EQ([session_controller_ items].back().get(),
             [session_controller_ pendingItem]);
 }
 
@@ -178,7 +177,7 @@ TEST_F(CRWSessionControllerTest, addPendingItemAndCommit) {
   EXPECT_EQ(1U, [session_controller_ items].size());
   EXPECT_EQ(GURL("http://www.url.com/"),
             [session_controller_ URLForItemAtIndex:0U]);
-  EXPECT_EQ([session_controller_ items].front(),
+  EXPECT_EQ([session_controller_ items].front().get(),
             [session_controller_ currentItem]);
 }
 
@@ -198,7 +197,7 @@ TEST_F(CRWSessionControllerTest, addPendingItemOverridingAndCommit) {
   EXPECT_EQ(1U, [session_controller_ items].size());
   EXPECT_EQ(GURL("http://www.another.url.com/"),
             [session_controller_ URLForItemAtIndex:0U]);
-  EXPECT_EQ([session_controller_ items].front(),
+  EXPECT_EQ([session_controller_ items].front().get(),
             [session_controller_ currentItem]);
 }
 
@@ -222,7 +221,8 @@ TEST_F(CRWSessionControllerTest, addPendingItemAndCommitMultiple) {
             [session_controller_ URLForItemAtIndex:0U]);
   EXPECT_EQ(GURL("http://www.another.url.com/"),
             [session_controller_ URLForItemAtIndex:1U]);
-  EXPECT_EQ([session_controller_ items][1U], [session_controller_ currentItem]);
+  EXPECT_EQ([session_controller_ items][1U].get(),
+            [session_controller_ currentItem]);
 }
 
 TEST_F(CRWSessionControllerTest, addPendingItemAndDiscard) {
@@ -273,7 +273,7 @@ TEST_F(CRWSessionControllerTest, addPendingItemAndDiscardAndAddAndCommit) {
   EXPECT_EQ(1U, [session_controller_ items].size());
   EXPECT_EQ(GURL("http://www.another.url.com/"),
             [session_controller_ URLForItemAtIndex:0U]);
-  EXPECT_EQ([session_controller_ items].front(),
+  EXPECT_EQ([session_controller_ items].front().get(),
             [session_controller_ currentItem]);
 }
 
@@ -295,7 +295,7 @@ TEST_F(CRWSessionControllerTest, addPendingItemAndCommitAndAddAndDiscard) {
   EXPECT_EQ(1U, [session_controller_ items].size());
   EXPECT_EQ(GURL("http://www.url.com/"),
             [session_controller_ URLForItemAtIndex:0U]);
-  EXPECT_EQ([session_controller_ items].front(),
+  EXPECT_EQ([session_controller_ items].front().get(),
             [session_controller_ currentItem]);
 }
 
@@ -311,8 +311,8 @@ TEST_F(CRWSessionControllerTest,
        commitPendingItemWithoutPendingItemWithCommittedItem) {
   // Setup committed item.
   [session_controller_
-      addPendingItem:GURL("http://www.url.com")
-            referrer:MakeReferrer("http://www.referer.com")
+      addPendingItem:GURL("http://www.url.com/")
+            referrer:MakeReferrer("http://www.referrer.com/")
           transition:ui::PAGE_TRANSITION_TYPED
       initiationType:web::NavigationInitiationType::USER_INITIATED];
   [session_controller_ commitPendingItem];
@@ -321,13 +321,13 @@ TEST_F(CRWSessionControllerTest,
   [session_controller_ commitPendingItem];
 
   EXPECT_EQ(1U, [session_controller_ items].size());
-  EXPECT_EQ([session_controller_ items].front(),
+  EXPECT_EQ([session_controller_ items].front().get(),
             [session_controller_ currentItem]);
 }
 
-// Tests that forward entries are discarded after navigation item is committed.
+// Tests that forward items are discarded after navigation item is committed.
 TEST_F(CRWSessionControllerTest, commitPendingItemWithExistingForwardItems) {
-  // Make 3 entries.
+  // Make 3 items.
   [session_controller_
       addPendingItem:GURL("http://www.example.com/0")
             referrer:MakeReferrer("http://www.example.com/a")
@@ -358,7 +358,7 @@ TEST_F(CRWSessionControllerTest, commitPendingItemWithExistingForwardItems) {
       initiationType:web::NavigationInitiationType::RENDERER_INITIATED];
   [session_controller_ commitPendingItem];
 
-  // All forward entries should go away.
+  // All forward items should go away.
   EXPECT_EQ(2U, [session_controller_ items].size());
   EXPECT_EQ(0U, [session_controller_ forwardItems].size());
   ASSERT_EQ(1, [session_controller_ currentNavigationIndex]);
@@ -391,15 +391,15 @@ TEST_F(CRWSessionControllerTest, commitPendingItemIndex) {
   [session_controller_ goToItemAtIndex:1];
   [session_controller_ setPendingItemIndex:0];
   ASSERT_EQ(0, [session_controller_ pendingItemIndex]);
-  web::NavigationItem* pendingItem = [session_controller_ pendingItem];
-  ASSERT_TRUE(pendingItem);
+  web::NavigationItem* pending_item = [session_controller_ pendingItem];
+  ASSERT_TRUE(pending_item);
   ASSERT_EQ(1, [session_controller_ currentNavigationIndex]);
   EXPECT_EQ(2, [session_controller_ previousNavigationIndex]);
   [session_controller_ commitPendingItem];
 
   // Verify that pending item has been committed and current and previous item
   // indices updated.
-  EXPECT_EQ([session_controller_ lastCommittedItem], pendingItem);
+  EXPECT_EQ(pending_item, [session_controller_ lastCommittedItem]);
   EXPECT_EQ(-1, [session_controller_ pendingItemIndex]);
   EXPECT_FALSE([session_controller_ pendingItem]);
   EXPECT_EQ(0, [session_controller_ currentNavigationIndex]);
@@ -425,11 +425,11 @@ TEST_F(CRWSessionControllerTest,
       initiationType:web::NavigationInitiationType::USER_INITIATED];
   [session_controller_ commitPendingItem];
 
-  // Discard noncommitted entries when there is no such one
+  // Discard noncommitted items when there is no such one
   [session_controller_ discardNonCommittedItems];
 
   EXPECT_EQ(1U, [session_controller_ items].size());
-  EXPECT_EQ([session_controller_ items].front(),
+  EXPECT_EQ([session_controller_ items].front().get(),
             [session_controller_ currentItem]);
 }
 
@@ -468,7 +468,7 @@ TEST_F(CRWSessionControllerTest,
   EXPECT_EQ(1U, [session_controller_ items].size());
   EXPECT_EQ(GURL("http://www.url.com/"),
             [session_controller_ URLForItemAtIndex:0U]);
-  EXPECT_EQ([session_controller_ items].front(),
+  EXPECT_EQ([session_controller_ items].front().get(),
             [session_controller_ currentItem]);
 }
 
@@ -522,7 +522,7 @@ TEST_F(CRWSessionControllerTest, InsertState) {
 
 // Tests inserting session controller state from empty session controller.
 TEST_F(CRWSessionControllerTest, InsertStateFromEmptySessionController) {
-  // Add 2 committed entries to target controller.
+  // Add 2 committed items to target controller.
   [session_controller_
       addPendingItem:GURL("http://www.url.com/0")
             referrer:web::Referrer()
@@ -557,7 +557,7 @@ TEST_F(CRWSessionControllerTest, InsertStateFromEmptySessionController) {
 
 // Tests inserting session controller state to empty session controller.
 TEST_F(CRWSessionControllerTest, InsertStateToEmptySessionController) {
-  // Create source session controller with 2 committed entries and one
+  // Create source session controller with 2 committed items and one
   // pending item.
   base::scoped_nsobject<CRWSessionController> other_session_controller(
       [[CRWSessionController alloc] initWithBrowserState:&browser_state_
@@ -599,7 +599,7 @@ TEST_F(CRWSessionControllerTest, InsertStateToEmptySessionController) {
 // remains valid.
 TEST_F(CRWSessionControllerTest,
        InsertStateWithPendingItemIndexInTargetController) {
-  // Add 2 committed entries and make the first item pending.
+  // Add 2 committed items and make the first item pending.
   [session_controller_
       addPendingItem:GURL("http://www.url.com/2")
             referrer:web::Referrer()
@@ -652,7 +652,7 @@ TEST_F(CRWSessionControllerTest, EmptyController) {
 }
 
 // Helper to create a NavigationItem.
-std::unique_ptr<web::NavigationItemImpl> CreateNavigationItem(
+std::unique_ptr<web::NavigationItem> CreateNavigationItem(
     const std::string& url,
     const std::string& referrer,
     NSString* title) {
@@ -665,7 +665,11 @@ std::unique_ptr<web::NavigationItemImpl> CreateNavigationItem(
   navigation_item->SetTitle(base::SysNSStringToUTF16(title));
   navigation_item->SetTransitionType(ui::PAGE_TRANSITION_TYPED);
 
-  return navigation_item;
+  // XCode clang doesn't correctly handle implicit unique_ptr casting for
+  // returned values, so manually cast here.
+  std::unique_ptr<web::NavigationItem> item(
+      static_cast<web::NavigationItem*>(navigation_item.release()));
+  return item;
 }
 
 TEST_F(CRWSessionControllerTest, CreateWithEmptyNavigations) {
@@ -696,10 +700,9 @@ TEST_F(CRWSessionControllerTest, CreateWithNavList) {
   EXPECT_EQ(controller.get().items.size(), 3U);
   EXPECT_EQ(controller.get().currentNavigationIndex, 1);
   EXPECT_EQ(controller.get().previousNavigationIndex, -1);
-  // Sanity check the current item, the CRWSessionItem unit test will ensure
+  // Sanity check the current item, the NavigationItem unit test will ensure
   // the entire object is created properly.
-  EXPECT_EQ(controller.get().currentItem->GetURL(),
-            GURL("http://www.yahoo.com"));
+  EXPECT_EQ([controller currentItem]->GetURL(), GURL("http://www.yahoo.com"));
 }
 
 // Tests index of previous navigation item.
@@ -802,18 +805,12 @@ TEST_F(CRWSessionControllerTest, IsSameDocumentNavigation) {
       [[CRWSessionController alloc] initWithBrowserState:&browser_state_
                                          navigationItems:std::move(items)
                                             currentIndex:0]);
-  web::NavigationItemImpl* item0 =
-      static_cast<web::NavigationItemImpl*>([controller items][0]);
-  web::NavigationItemImpl* item1 =
-      static_cast<web::NavigationItemImpl*>([controller items][1]);
-  web::NavigationItemImpl* item2 =
-      static_cast<web::NavigationItemImpl*>([controller items][2]);
-  web::NavigationItemImpl* item3 =
-      static_cast<web::NavigationItemImpl*>([controller items][3]);
-  web::NavigationItemImpl* item4 =
-      static_cast<web::NavigationItemImpl*>([controller items][4]);
-  web::NavigationItemImpl* item5 =
-      static_cast<web::NavigationItemImpl*>([controller items][5]);
+  web::NavigationItemImpl* item0 = [controller items][0].get();
+  web::NavigationItemImpl* item1 = [controller items][1].get();
+  web::NavigationItemImpl* item2 = [controller items][2].get();
+  web::NavigationItemImpl* item3 = [controller items][3].get();
+  web::NavigationItemImpl* item4 = [controller items][4].get();
+  web::NavigationItemImpl* item5 = [controller items][5].get();
   item1->SetIsCreatedFromPushState(true);
   item4->SetIsCreatedFromHashChange(true);
   item5->SetIsCreatedFromPushState(true);
@@ -916,7 +913,7 @@ TEST_F(CRWSessionControllerTest, TestBackwardForwardItems) {
   EXPECT_EQ("http://www.example.com/2", forwardItems[1]->GetURL().spec());
 }
 
-// Tests going to entries with existing and non-existing indices.
+// Tests going to items with existing and non-existing indices.
 TEST_F(CRWSessionControllerTest, GoToItemAtIndex) {
   [session_controller_
       addPendingItem:GURL("http://www.example.com/0")
@@ -953,20 +950,20 @@ TEST_F(CRWSessionControllerTest, GoToItemAtIndex) {
   EXPECT_TRUE([session_controller_ pendingItem]);
   EXPECT_TRUE([session_controller_ transientItem]);
 
-  // Going back should discard transient and pending entries.
+  // Going back should discard transient and pending items.
   [session_controller_ goToItemAtIndex:1];
   EXPECT_EQ(1, session_controller_.get().currentNavigationIndex);
   EXPECT_EQ(3, session_controller_.get().previousNavigationIndex);
-  EXPECT_FALSE([session_controller_ pendingItem]);
-  EXPECT_FALSE([session_controller_ transientItem]);
+  EXPECT_FALSE(session_controller_.get().pendingItem);
+  EXPECT_FALSE(session_controller_.get().transientItem);
 
   // Going forward should discard transient item.
   [session_controller_ addTransientItemWithURL:GURL("http://www.example.com")];
-  EXPECT_TRUE([session_controller_ transientItem]);
+  EXPECT_TRUE(session_controller_.get().transientItem);
   [session_controller_ goToItemAtIndex:2];
   EXPECT_EQ(2, session_controller_.get().currentNavigationIndex);
   EXPECT_EQ(1, session_controller_.get().previousNavigationIndex);
-  EXPECT_FALSE([session_controller_ transientItem]);
+  EXPECT_FALSE(session_controller_.get().transientItem);
 
   // Out of bounds navigations should be no-op.
   [session_controller_ goToItemAtIndex:-1];
@@ -983,7 +980,7 @@ TEST_F(CRWSessionControllerTest, GoToItemAtIndex) {
 }
 
 // Tests that visible URL is the same as transient URL if there are no committed
-// entries.
+// items.
 TEST_F(CRWSessionControllerTest, VisibleItemWithSingleTransientItem) {
   [session_controller_ addTransientItemWithURL:GURL("http://www.example.com")];
   web::NavigationItem* visible_item = [session_controller_ visibleItem];
@@ -1095,7 +1092,7 @@ TEST_F(CRWSessionControllerTest, VisibleItemWithPendingNavigationIndex) {
   EXPECT_EQ("http://www.example.com/0", visible_item->GetURL().spec());
 }
 
-// Tests that |-backwardItems| is empty if all preceding entries are
+// Tests that |-backwardItems| is empty if all preceding items are
 // redirects.
 TEST_F(CRWSessionControllerTest, BackwardItemsForAllRedirects) {
   [session_controller_

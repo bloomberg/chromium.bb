@@ -612,17 +612,19 @@ TEST_F(CRWWebControllerPageScrollStateTest, DISABLED_AtTop) {
 typedef web::WebTestWithWebController CRWWebControllerNavigationTest;
 
 // Tests navigation between 2 URLs which differ only by fragment.
-TEST_F(CRWWebControllerNavigationTest, GoToEntryWithoutDocumentChange) {
+TEST_F(CRWWebControllerNavigationTest, GoToItemWithoutDocumentChange) {
   LoadHtml(@"<html><body></body></html>", GURL("https://chromium.test"));
   LoadHtml(@"<html><body></body></html>", GURL("https://chromium.test#hash"));
   NavigationManagerImpl& nav_manager =
       web_controller().webStateImpl->GetNavigationManagerImpl();
   CRWSessionController* session_controller = nav_manager.GetSessionController();
   EXPECT_EQ(2U, session_controller.items.size());
-  EXPECT_EQ(session_controller.items.back(), session_controller.currentItem);
+  EXPECT_EQ(session_controller.items.back().get(),
+            session_controller.currentItem);
 
   [web_controller() goToItemAtIndex:0];
-  EXPECT_EQ(session_controller.items.front(), session_controller.currentItem);
+  EXPECT_EQ(session_controller.items.front().get(),
+            session_controller.currentItem);
 }
 
 // Tests that didShowPasswordInputOnHTTP updates the SSLStatus to indicate that

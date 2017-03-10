@@ -683,15 +683,15 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
     (const web::PageScrollState&)scrollState;
 // Returns the referrer for the current page.
 - (web::Referrer)currentReferrer;
-// Adds a new CRWSessionEntry with the given URL and state object to the history
+// Adds a new NavigationItem with the given URL and state object to the history
 // stack. A state object is a serialized generic JavaScript object that contains
-// details of the UI's state for a given CRWSessionEntry/URL.
+// details of the UI's state for a given NavigationItem/URL.
 // TODO(stuartmorgan): Move the pushState/replaceState logic into
 // NavigationManager.
 - (void)pushStateWithPageURL:(const GURL&)pageURL
                  stateObject:(NSString*)stateObject
                   transition:(ui::PageTransition)transition;
-// Assigns the given URL and state object to the current CRWSessionEntry.
+// Assigns the given URL and state object to the current NavigationItem.
 - (void)replaceStateWithPageURL:(const GURL&)pageUrl
                     stateObject:(NSString*)stateObject;
 // Sets _documentURL to newURL, and updates any relevant state information.
@@ -2108,7 +2108,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 
 - (void)goToItemAtIndex:(int)index {
   CRWSessionController* sessionController = self.sessionController;
-  web::NavigationItemList items = sessionController.items;
+  const web::ScopedNavigationItemImplList& items = sessionController.items;
   if (index < 0 || index >= static_cast<int>(items.size())) {
     NOTREACHED();
     return;
@@ -2117,7 +2117,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   if (!_webStateImpl->IsShowingWebInterstitial())
     [self recordStateInHistory];
   web::NavigationItem* fromItem = sessionController.currentItem;
-  web::NavigationItem* toItem = items[index];
+  web::NavigationItem* toItem = items[index].get();
 
   NSUserDefaults* userDefaults = [NSUserDefaults standardUserDefaults];
   if (![userDefaults boolForKey:@"PendingIndexNavigationDisabled"]) {
