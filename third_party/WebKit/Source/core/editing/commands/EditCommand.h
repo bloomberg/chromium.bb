@@ -27,7 +27,6 @@
 #define EditCommand_h
 
 #include "core/CoreExport.h"
-#include "core/editing/VisibleSelection.h"
 #include "core/events/InputEvent.h"
 #include "platform/heap/Handle.h"
 
