@@ -9,9 +9,11 @@
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/common/password_form_generation_data.h"
+#include "components/password_manager/core/browser/browser_save_password_progress_logger.h"
 #include "components/password_manager/core/browser/password_manager.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/browser/password_manager_driver.h"
+#include "components/password_manager/core/browser/password_manager_util.h"
 
 using autofill::AutofillField;
 using autofill::FieldSignature;
@@ -19,6 +21,10 @@ using autofill::FormSignature;
 using autofill::FormStructure;
 
 namespace password_manager {
+
+namespace {
+using Logger = autofill::SavePasswordProgressLogger;
+}
 
 PasswordGenerationManager::PasswordGenerationManager(
     PasswordManagerClient* client,
@@ -36,17 +42,15 @@ void PasswordGenerationManager::DetectFormsEligibleForGeneration(
 
   std::vector<autofill::PasswordFormGenerationData>
       forms_eligible_for_generation;
-  for (auto form_it = forms.begin(); form_it != forms.end(); ++form_it) {
-    FormStructure* form = *form_it;
-    AutofillField* generation_field = nullptr;
-    AutofillField* confirmation_field = nullptr;
-    for (auto field_it = form->begin(); field_it != form->end(); ++field_it) {
-      AutofillField* field = field_it->get();
+  for (const FormStructure* form : forms) {
+    const AutofillField* generation_field = nullptr;
+    const AutofillField* confirmation_field = nullptr;
+    for (const std::unique_ptr<AutofillField>& field : *form) {
       if (field->server_type() == autofill::ACCOUNT_CREATION_PASSWORD ||
           field->server_type() == autofill::NEW_PASSWORD) {
-        generation_field = field;
+        generation_field = field.get();
       } else if (field->server_type() == autofill::CONFIRMATION_PASSWORD) {
-        confirmation_field = field;
+        confirmation_field = field.get();
       }
     }
     if (generation_field) {
@@ -67,16 +71,29 @@ void PasswordGenerationManager::DetectFormsEligibleForGeneration(
 // (1) Password sync is enabled, and
 // (2) Password saving is enabled.
 bool PasswordGenerationManager::IsGenerationEnabled() const {
+  std::unique_ptr<Logger> logger;
+  if (password_manager_util::IsLoggingActive(client_)) {
+    logger.reset(
+        new BrowserSavePasswordProgressLogger(client_->GetLogManager()));
+  }
+
   if (!client_->IsSavingAndFillingEnabledForCurrentPage()) {
-    VLOG(2) << "Generation disabled because password saving is disabled";
+    if (logger)
+      logger->LogMessage(Logger::STRING_GENERATION_DISABLED_SAVING_DISABLED);
     return false;
   }
 
   // Don't consider sync enabled if the user has a custom passphrase. See
   // http://crbug.com/358998 for more details.
   if (client_->GetPasswordSyncState() != SYNCING_NORMAL_ENCRYPTION) {
-    VLOG(2) << "Generation disabled because passwords are not being synced or"
-             << " custom passphrase is used.";
+    if (logger) {
+      if (client_->GetPasswordSyncState() == NOT_SYNCING_PASSWORDS)
+        logger->LogMessage(Logger::STRING_GENERATION_DISABLED_NO_SYNC);
+      else if (client_->GetPasswordSyncState() ==
+               SYNCING_WITH_CUSTOM_PASSPHRASE)
+        logger->LogMessage(
+            Logger::STRING_GENERATION_DISABLED_CUSTOM_PASSPHRASE);
+    }
     return false;
   }
 

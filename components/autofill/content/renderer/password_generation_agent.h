@@ -16,6 +16,7 @@
 #include "base/memory/linked_ptr.h"
 #include "components/autofill/content/common/autofill_agent.mojom.h"
 #include "components/autofill/content/common/autofill_driver.mojom.h"
+#include "components/autofill/content/renderer/renderer_save_password_progress_logger.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "third_party/WebKit/public/web/WebInputElement.h"
@@ -66,7 +67,7 @@ class PasswordGenerationAgent : public content::RenderFrameObserver,
  protected:
   // Returns true if the document for |render_frame()| is one that we should
   // consider analyzing. Virtual so that it can be overriden during testing.
-  virtual bool ShouldAnalyzeDocument() const;
+  virtual bool ShouldAnalyzeDocument();
 
   // Use to force enable during testing.
   void set_enabled(bool enabled) { enabled_ = enabled; }
@@ -117,6 +118,12 @@ class PasswordGenerationAgent : public content::RenderFrameObserver,
   // classifier is ready.
   void RunFormClassifierAndSaveVote(const blink::WebFormElement& web_form,
                                     const PasswordForm& form);
+
+  void LogMessage(autofill::SavePasswordProgressLogger::StringID message_id);
+  void LogBoolean(autofill::SavePasswordProgressLogger::StringID message_id,
+                  bool truth_value);
+  void LogNumber(autofill::SavePasswordProgressLogger::StringID message_id,
+                 int number);
 
   // Creates a password form to presave a generated password. It copies behavior
   // of CreatePasswordFormFromWebForm/FromUnownedInputElements, but takes

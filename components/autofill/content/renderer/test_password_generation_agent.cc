@@ -15,7 +15,7 @@ TestPasswordGenerationAgent::TestPasswordGenerationAgent(
 
 TestPasswordGenerationAgent::~TestPasswordGenerationAgent() {}
 
-bool TestPasswordGenerationAgent::ShouldAnalyzeDocument() const {
+bool TestPasswordGenerationAgent::ShouldAnalyzeDocument() {
   return true;
 }
 
