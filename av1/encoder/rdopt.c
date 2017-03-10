@@ -7906,7 +7906,7 @@ static int64_t handle_newmv(const AV1_COMP *const cpi, MACROBLOCK *const x,
                             int_mv (*const mode_mv)[TOTAL_REFS_PER_FRAME],
                             const int mi_row, const int mi_col,
                             int *const rate_mv, int_mv *const single_newmv,
-                            HandleInterModeArgs *const opt_args) {
+                            HandleInterModeArgs *const args) {
   const MACROBLOCKD *const xd = &x->e_mbd;
   const MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
   const MB_MODE_INFO_EXT *const mbmi_ext = x->mbmi_ext;
@@ -7921,13 +7921,13 @@ static int64_t handle_newmv(const AV1_COMP *const cpi, MACROBLOCK *const x,
                         mbmi->ref_frame[1] < 0 ? 0 : mbmi->ref_frame[1] };
   int i;
 
-  (void)opt_args;
+  (void)args;
 
   if (is_comp_pred) {
 #if CONFIG_EXT_INTER
     for (i = 0; i < 2; ++i) {
       single_newmv[refs[i]].as_int =
-          opt_args->single_newmvs[mv_idx][refs[i]].as_int;
+          args->single_newmvs[mv_idx][refs[i]].as_int;
     }
 
     if (this_mode == NEW_NEWMV) {
@@ -7982,12 +7982,12 @@ static int64_t handle_newmv(const AV1_COMP *const cpi, MACROBLOCK *const x,
   } else {
 #if CONFIG_EXT_INTER
     if (is_comp_interintra_pred) {
-      x->best_mv = opt_args->single_newmvs[mv_idx][refs[0]];
-      *rate_mv = opt_args->single_newmvs_rate[mv_idx][refs[0]];
+      x->best_mv = args->single_newmvs[mv_idx][refs[0]];
+      *rate_mv = args->single_newmvs_rate[mv_idx][refs[0]];
     } else {
       single_motion_search(cpi, x, bsize, mi_row, mi_col, 0, mv_idx, rate_mv);
-      opt_args->single_newmvs[mv_idx][refs[0]] = x->best_mv;
-      opt_args->single_newmvs_rate[mv_idx][refs[0]] = *rate_mv;
+      args->single_newmvs[mv_idx][refs[0]] = x->best_mv;
+      args->single_newmvs_rate[mv_idx][refs[0]] = *rate_mv;
     }
 #else
     single_motion_search(cpi, x, bsize, mi_row, mi_col, rate_mv);
@@ -8138,7 +8138,7 @@ static int64_t handle_inter_mode(
     const AV1_COMP *const cpi, MACROBLOCK *x, BLOCK_SIZE bsize,
     RD_STATS *rd_stats, RD_STATS *rd_stats_y, RD_STATS *rd_stats_uv,
     int *disable_skip, int_mv (*mode_mv)[TOTAL_REFS_PER_FRAME], int mi_row,
-    int mi_col, HandleInterModeArgs *opt_args, const int64_t ref_best_rd) {
+    int mi_col, HandleInterModeArgs *args, const int64_t ref_best_rd) {
   const AV1_COMMON *cm = &cpi->common;
   MACROBLOCKD *xd = &x->e_mbd;
   MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
@@ -8163,7 +8163,7 @@ static int64_t handle_inter_mode(
   uint8_t ref_frame_type = av1_ref_frame_type(mbmi->ref_frame);
 #endif  // CONFIG_REF_MV
 #else
-  int_mv *const single_newmv = opt_args->single_newmv;
+  int_mv *const single_newmv = args->single_newmv;
 #endif  // CONFIG_EXT_INTER
 #if CONFIG_AOM_HIGHBITDEPTH
   DECLARE_ALIGNED(16, uint8_t, tmp_buf_[2 * MAX_MB_PLANE * MAX_SB_SQUARE]);
@@ -8204,9 +8204,9 @@ static int64_t handle_inter_mode(
 #endif  // CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
 
 #if CONFIG_EXT_INTER
-  *opt_args->compmode_interintra_cost = 0;
+  *args->compmode_interintra_cost = 0;
   mbmi->use_wedge_interintra = 0;
-  *opt_args->compmode_interinter_cost = 0;
+  *args->compmode_interinter_cost = 0;
   mbmi->interinter_compound_data.type = COMPOUND_AVERAGE;
 
   // is_comp_interintra_pred implies !is_comp_pred
@@ -8251,7 +8251,7 @@ static int64_t handle_inter_mode(
   mbmi->motion_mode = SIMPLE_TRANSLATION;
   if (have_newmv_in_inter_mode(this_mode)) {
     const int64_t ret_val = handle_newmv(cpi, x, bsize, mode_mv, mi_row, mi_col,
-                                         &rate_mv, single_newmv, opt_args);
+                                         &rate_mv, single_newmv, args);
     if (ret_val != 0)
       return ret_val;
     else
@@ -8402,8 +8402,8 @@ static int64_t handle_inter_mode(
     return INT64_MAX;
 
   int64_t ret_val = interpolation_filter_search(
-      x, cpi, bsize, mi_row, mi_col, &tmp_dst, &orig_dst,
-      opt_args->single_filter, &rd, &rs, &skip_txfm_sb, &skip_sse_sb);
+      x, cpi, bsize, mi_row, mi_col, &tmp_dst, &orig_dst, args->single_filter,
+      &rd, &rs, &skip_txfm_sb, &skip_sse_sb);
   if (ret_val != 0) return ret_val;
 
 #if CONFIG_EXT_INTER
@@ -8532,7 +8532,7 @@ static int64_t handle_inter_mode(
 
     pred_exists = 0;
 
-    *opt_args->compmode_interinter_cost =
+    *args->compmode_interinter_cost =
         compound_type_cost[mbmi->interinter_compound_data.type] +
         av1_cost_literal(get_interinter_compound_type_bits(
             bsize, mbmi->interinter_compound_data.type));
@@ -8671,20 +8671,20 @@ static int64_t handle_inter_mode(
     }
 
     pred_exists = 0;
-    *opt_args->compmode_interintra_cost =
+    *args->compmode_interintra_cost =
         av1_cost_bit(cm->fc->interintra_prob[size_group_lookup[bsize]], 1);
-    *opt_args->compmode_interintra_cost +=
+    *args->compmode_interintra_cost +=
         interintra_mode_cost[mbmi->interintra_mode];
     if (is_interintra_wedge_used(bsize)) {
-      *opt_args->compmode_interintra_cost += av1_cost_bit(
+      *args->compmode_interintra_cost += av1_cost_bit(
           cm->fc->wedge_interintra_prob[bsize], mbmi->use_wedge_interintra);
       if (mbmi->use_wedge_interintra) {
-        *opt_args->compmode_interintra_cost +=
+        *args->compmode_interintra_cost +=
             av1_cost_literal(get_interintra_wedge_bits(bsize));
       }
     }
   } else if (is_interintra_allowed(mbmi)) {
-    *opt_args->compmode_interintra_cost =
+    *args->compmode_interintra_cost =
         av1_cost_bit(cm->fc->interintra_prob[size_group_lookup[bsize]], 0);
   }
 
@@ -8700,24 +8700,24 @@ static int64_t handle_inter_mode(
 
   if (!is_comp_pred)
 #if CONFIG_DUAL_FILTER
-    opt_args->single_filter[this_mode][refs[0]] = mbmi->interp_filter[0];
+    args->single_filter[this_mode][refs[0]] = mbmi->interp_filter[0];
 #else
-    opt_args->single_filter[this_mode][refs[0]] = mbmi->interp_filter;
+    args->single_filter[this_mode][refs[0]] = mbmi->interp_filter;
 #endif  // CONFIG_DUAL_FILTER
 
 #if CONFIG_EXT_INTER
-  if (opt_args->modelled_rd != NULL) {
+  if (args->modelled_rd != NULL) {
     if (is_comp_pred) {
       const int mode0 = compound_ref0_mode(this_mode);
       const int mode1 = compound_ref1_mode(this_mode);
-      const int64_t mrd = AOMMIN(opt_args->modelled_rd[mode0][refs[0]],
-                                 opt_args->modelled_rd[mode1][refs[1]]);
+      const int64_t mrd = AOMMIN(args->modelled_rd[mode0][refs[0]],
+                                 args->modelled_rd[mode1][refs[1]]);
       if (rd / 4 * 3 > mrd && ref_best_rd < INT64_MAX) {
         restore_dst_buf(xd, orig_dst);
         return INT64_MAX;
       }
     } else if (!is_comp_interintra_pred) {
-      opt_args->modelled_rd[this_mode][refs[0]] = rd;
+      args->modelled_rd[this_mode][refs[0]] = rd;
     }
   }
 #endif  // CONFIG_EXT_INTER
@@ -8798,9 +8798,8 @@ static int64_t handle_inter_mode(
 #endif  // CONFIG_EXT_INTER
       }
       av1_build_obmc_inter_prediction(
-          cm, xd, mi_row, mi_col, opt_args->above_pred_buf,
-          opt_args->above_pred_stride, opt_args->left_pred_buf,
-          opt_args->left_pred_stride);
+          cm, xd, mi_row, mi_col, args->above_pred_buf, args->above_pred_stride,
+          args->left_pred_buf, args->left_pred_stride);
       model_rd_for_sb(cpi, bsize, x, xd, 0, MAX_MB_PLANE - 1, &tmp_rate,
                       &tmp_dist, &skip_txfm_sb, &skip_sse_sb);
     }
@@ -9511,7 +9510,7 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
   od_rollback_buffer pre_buf;
 #endif  // CONFIG_PVQ
 
-  HandleInterModeArgs opt_args = {
+  HandleInterModeArgs args = {
 #if CONFIG_MOTION_VAR
     { NULL },
     { MAX_SB_SIZE, MAX_SB_SIZE, MAX_SB_SIZE },
@@ -9557,24 +9556,22 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
 #if CONFIG_AOM_HIGHBITDEPTH
   if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
     int len = sizeof(uint16_t);
-    opt_args.above_pred_buf[0] = CONVERT_TO_BYTEPTR(tmp_buf1);
-    opt_args.above_pred_buf[1] =
-        CONVERT_TO_BYTEPTR(tmp_buf1 + MAX_SB_SQUARE * len);
-    opt_args.above_pred_buf[2] =
+    args.above_pred_buf[0] = CONVERT_TO_BYTEPTR(tmp_buf1);
+    args.above_pred_buf[1] = CONVERT_TO_BYTEPTR(tmp_buf1 + MAX_SB_SQUARE * len);
+    args.above_pred_buf[2] =
         CONVERT_TO_BYTEPTR(tmp_buf1 + 2 * MAX_SB_SQUARE * len);
-    opt_args.left_pred_buf[0] = CONVERT_TO_BYTEPTR(tmp_buf2);
-    opt_args.left_pred_buf[1] =
-        CONVERT_TO_BYTEPTR(tmp_buf2 + MAX_SB_SQUARE * len);
-    opt_args.left_pred_buf[2] =
+    args.left_pred_buf[0] = CONVERT_TO_BYTEPTR(tmp_buf2);
+    args.left_pred_buf[1] = CONVERT_TO_BYTEPTR(tmp_buf2 + MAX_SB_SQUARE * len);
+    args.left_pred_buf[2] =
         CONVERT_TO_BYTEPTR(tmp_buf2 + 2 * MAX_SB_SQUARE * len);
   } else {
 #endif  // CONFIG_AOM_HIGHBITDEPTH
-    opt_args.above_pred_buf[0] = tmp_buf1;
-    opt_args.above_pred_buf[1] = tmp_buf1 + MAX_SB_SQUARE;
-    opt_args.above_pred_buf[2] = tmp_buf1 + 2 * MAX_SB_SQUARE;
-    opt_args.left_pred_buf[0] = tmp_buf2;
-    opt_args.left_pred_buf[1] = tmp_buf2 + MAX_SB_SQUARE;
-    opt_args.left_pred_buf[2] = tmp_buf2 + 2 * MAX_SB_SQUARE;
+    args.above_pred_buf[0] = tmp_buf1;
+    args.above_pred_buf[1] = tmp_buf1 + MAX_SB_SQUARE;
+    args.above_pred_buf[2] = tmp_buf1 + 2 * MAX_SB_SQUARE;
+    args.left_pred_buf[0] = tmp_buf2;
+    args.left_pred_buf[1] = tmp_buf2 + MAX_SB_SQUARE;
+    args.left_pred_buf[2] = tmp_buf2 + 2 * MAX_SB_SQUARE;
 #if CONFIG_AOM_HIGHBITDEPTH
   }
 #endif  // CONFIG_AOM_HIGHBITDEPTH
@@ -9605,7 +9602,7 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
   for (i = 0; i < TOTAL_REFS_PER_FRAME; ++i) x->pred_sse[i] = INT_MAX;
   for (i = 0; i < MB_MODE_COUNT; ++i) {
     for (k = 0; k < TOTAL_REFS_PER_FRAME; ++k) {
-      opt_args.single_filter[i][k] = SWITCHABLE;
+      args.single_filter[i][k] = SWITCHABLE;
     }
   }
 
@@ -9680,19 +9677,18 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
 #if CONFIG_MOTION_VAR
   av1_count_overlappable_neighbors(cm, xd, mi_row, mi_col);
   if (check_num_overlappable_neighbors(mbmi)) {
-    av1_build_prediction_by_above_preds(
-        cm, xd, mi_row, mi_col, opt_args.above_pred_buf, dst_width1,
-        dst_height1, opt_args.above_pred_stride);
+    av1_build_prediction_by_above_preds(cm, xd, mi_row, mi_col,
+                                        args.above_pred_buf, dst_width1,
+                                        dst_height1, args.above_pred_stride);
     av1_build_prediction_by_left_preds(cm, xd, mi_row, mi_col,
-                                       opt_args.left_pred_buf, dst_width2,
-                                       dst_height2, opt_args.left_pred_stride);
+                                       args.left_pred_buf, dst_width2,
+                                       dst_height2, args.left_pred_stride);
     av1_setup_dst_planes(xd->plane, get_frame_new_buffer(cm), mi_row, mi_col);
     x->mask_buf = mask2d_buf;
     x->wsrc_buf = weighted_src_buf;
-    calc_target_weighted_pred(
-        cm, x, xd, mi_row, mi_col, opt_args.above_pred_buf[0],
-        opt_args.above_pred_stride[0], opt_args.left_pred_buf[0],
-        opt_args.left_pred_stride[0]);
+    calc_target_weighted_pred(cm, x, xd, mi_row, mi_col, args.above_pred_buf[0],
+                              args.above_pred_stride[0], args.left_pred_buf[0],
+                              args.left_pred_stride[0]);
   }
 #endif  // CONFIG_MOTION_VAR
 
@@ -10254,21 +10250,21 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
 
 // Point to variables that are maintained between loop iterations
 #if CONFIG_EXT_INTER
-        opt_args.single_newmvs = single_newmvs;
-        opt_args.single_newmvs_rate = single_newmvs_rate;
-        opt_args.compmode_interintra_cost = &compmode_interintra_cost;
-        opt_args.compmode_interinter_cost = &compmode_interinter_cost;
-        opt_args.modelled_rd = modelled_rd;
+        args.single_newmvs = single_newmvs;
+        args.single_newmvs_rate = single_newmvs_rate;
+        args.compmode_interintra_cost = &compmode_interintra_cost;
+        args.compmode_interinter_cost = &compmode_interinter_cost;
+        args.modelled_rd = modelled_rd;
 #else
-        opt_args.single_newmv = single_newmv;
+        args.single_newmv = single_newmv;
 #endif  // CONFIG_EXT_INTER
         this_rd = handle_inter_mode(cpi, x, bsize, &rd_stats, &rd_stats_y,
                                     &rd_stats_uv, &disable_skip, frame_mv,
-                                    mi_row, mi_col, &opt_args, best_rd);
+                                    mi_row, mi_col, &args, best_rd);
 // Prevent pointers from escaping local scope
 #if CONFIG_EXT_INTER
-        opt_args.compmode_interintra_cost = NULL;
-        opt_args.compmode_interinter_cost = NULL;
+        args.compmode_interintra_cost = NULL;
+        args.compmode_interinter_cost = NULL;
 #endif  // CONFIG_EXT_INTER
 
         rate2 = rd_stats.rate;
@@ -10384,26 +10380,25 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
 
 // Point to variables that are not maintained between iterations
 #if CONFIG_EXT_INTER
-            opt_args.single_newmvs = dummy_single_newmvs;
-            opt_args.single_newmvs_rate = dummy_single_newmvs_rate;
-            opt_args.compmode_interintra_cost = &tmp_compmode_interintra_cost;
-            opt_args.compmode_interinter_cost = &tmp_compmode_interinter_cost;
-            opt_args.modelled_rd = NULL;
+            args.single_newmvs = dummy_single_newmvs;
+            args.single_newmvs_rate = dummy_single_newmvs_rate;
+            args.compmode_interintra_cost = &tmp_compmode_interintra_cost;
+            args.compmode_interinter_cost = &tmp_compmode_interinter_cost;
+            args.modelled_rd = NULL;
 #else
-            opt_args.single_newmv = dummy_single_newmv;
+            args.single_newmv = dummy_single_newmv;
 #endif  // CONFIG_EXT_INTER
-            tmp_alt_rd =
-                handle_inter_mode(cpi, x, bsize, &tmp_rd_stats, &tmp_rd_stats_y,
-                                  &tmp_rd_stats_uv, &dummy_disable_skip,
-                                  frame_mv, mi_row, mi_col, &opt_args, best_rd);
+            tmp_alt_rd = handle_inter_mode(
+                cpi, x, bsize, &tmp_rd_stats, &tmp_rd_stats_y, &tmp_rd_stats_uv,
+                &dummy_disable_skip, frame_mv, mi_row, mi_col, &args, best_rd);
 // Prevent pointers from escaping local scope
 #if CONFIG_EXT_INTER
-            opt_args.single_newmvs = NULL;
-            opt_args.single_newmvs_rate = NULL;
-            opt_args.compmode_interintra_cost = NULL;
-            opt_args.compmode_interinter_cost = NULL;
+            args.single_newmvs = NULL;
+            args.single_newmvs_rate = NULL;
+            args.compmode_interintra_cost = NULL;
+            args.compmode_interinter_cost = NULL;
 #else
-            opt_args.single_newmv = NULL;
+            args.single_newmv = NULL;
 #endif  // CONFIG_EXT_INTER
           }
 
@@ -10729,9 +10724,8 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
 #if CONFIG_MOTION_VAR
       if (mbmi->motion_mode == OBMC_CAUSAL)
         av1_build_obmc_inter_prediction(
-            cm, xd, mi_row, mi_col, opt_args.above_pred_buf,
-            opt_args.above_pred_stride, opt_args.left_pred_buf,
-            opt_args.left_pred_stride);
+            cm, xd, mi_row, mi_col, args.above_pred_buf, args.above_pred_stride,
+            args.left_pred_buf, args.left_pred_stride);
 #endif  // CONFIG_MOTION_VAR
       av1_subtract_plane(x, bsize, 0);
 #if CONFIG_VAR_TX
