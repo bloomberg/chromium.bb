@@ -178,9 +178,7 @@ class CONTENT_EXPORT DelegatedFrameHost
     return cc::SurfaceId(frame_sink_id_, local_surface_id_);
   }
 
-  const cc::LocalSurfaceId& LocalSurfaceIdForTesting() const {
-    return local_surface_id_;
-  }
+  bool HasFrameForTesting() const { return has_frame_; }
 
   void OnCompositingDidCommitForTesting(ui::Compositor* compositor) {
     OnCompositingDidCommit(compositor);
@@ -338,6 +336,8 @@ class CONTENT_EXPORT DelegatedFrameHost
   std::unique_ptr<cc::ExternalBeginFrameSource> begin_frame_source_;
 
   bool needs_begin_frame_ = false;
+
+  bool has_frame_ = false;
 
   std::unique_ptr<DelegatedFrameEvictor> delegated_frame_evictor_;
 };

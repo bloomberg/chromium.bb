@@ -421,11 +421,9 @@ class FakeRenderWidgetHostViewAura : public RenderWidgetHostViewAura {
     return GetDelegatedFrameHost()->SurfaceIdForTesting();
   }
 
-  const cc::LocalSurfaceId& GetLocalSurfaceId() const {
-    return GetDelegatedFrameHost()->LocalSurfaceIdForTesting();
+  bool HasFrameData() const {
+    return GetDelegatedFrameHost()->HasFrameForTesting();
   }
-
-  bool HasFrameData() const { return GetLocalSurfaceId().is_valid(); }
 
   bool released_front_lock_active() const {
     return GetDelegatedFrameHost()->ReleasedFrontLockActiveForTesting();
