@@ -2338,6 +2338,8 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   }
 
   // Comparison operators
+  // TODO(shend): Replace callers of operator== wth a named method instead, e.g.
+  // inheritedEquals().
   bool operator==(const ComputedStyle& other) const;
   bool operator!=(const ComputedStyle& other) const {
     return !(*this == other);
