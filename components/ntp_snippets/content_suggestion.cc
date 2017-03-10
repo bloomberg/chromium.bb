@@ -10,6 +10,9 @@ namespace ntp_snippets {
 
 DownloadSuggestionExtra::DownloadSuggestionExtra() = default;
 
+DownloadSuggestionExtra::DownloadSuggestionExtra(
+    const DownloadSuggestionExtra& other) = default;
+
 DownloadSuggestionExtra::~DownloadSuggestionExtra() = default;
 
 bool ContentSuggestion::ID::operator==(const ID& rhs) const {

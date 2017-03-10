@@ -271,8 +271,8 @@ public class SnippetsBridge
 
     @CalledByNative
     private static void setAssetDownloadDataForSuggestion(
-            SnippetArticle suggestion, String filePath, String mimeType) {
-        suggestion.setAssetDownloadData(filePath, mimeType);
+            SnippetArticle suggestion, String downloadGuid, String filePath, String mimeType) {
+        suggestion.setAssetDownloadData(downloadGuid, filePath, mimeType);
     }
 
     @CalledByNative

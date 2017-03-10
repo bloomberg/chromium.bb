@@ -74,7 +74,7 @@ public class DuplicateDownloadInfoBar extends ConfirmInfoBar {
         return getMessageText(template, filename, new ClickableSpan() {
             @Override
             public void onClick(View view) {
-                DownloadUtils.openFile(file, mimeType, mIsIncognito);
+                DownloadUtils.openFile(file, mimeType, null, mIsIncognito);
             }
         });
     }

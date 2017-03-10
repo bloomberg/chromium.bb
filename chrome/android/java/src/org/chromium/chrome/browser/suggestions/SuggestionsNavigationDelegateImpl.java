@@ -97,8 +97,8 @@ public class SuggestionsNavigationDelegateImpl implements SuggestionsNavigationD
             assert windowOpenDisposition == WindowOpenDisposition.CURRENT_TAB
                     || windowOpenDisposition == WindowOpenDisposition.NEW_WINDOW
                     || windowOpenDisposition == WindowOpenDisposition.NEW_BACKGROUND_TAB;
-            DownloadUtils.openFile(
-                    article.getAssetDownloadFile(), article.getAssetDownloadMimeType(), false);
+            DownloadUtils.openFile(article.getAssetDownloadFile(),
+                    article.getAssetDownloadMimeType(), article.getAssetDownloadGuid(), false);
             return;
         }
 

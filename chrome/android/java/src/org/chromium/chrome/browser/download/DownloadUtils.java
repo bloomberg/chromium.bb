@@ -469,12 +469,13 @@ public class DownloadUtils {
      * Opens a file in Chrome or in another app if appropriate.
      * @param file path to the file to open.
      * @param mimeType mime type of the file.
+     * @param downloadGuid The associated download GUID.
      * @param isOffTheRecord whether we are in an off the record context.
      * @return whether the file could successfully be opened.
      */
-    public static boolean openFile(File file, String mimeType, boolean isOffTheRecord) {
+    public static boolean openFile(
+            File file, String mimeType, String downloadGuid, boolean isOffTheRecord) {
         Context context = ContextUtils.getApplicationContext();
-        Intent viewIntent = createViewIntentForDownloadItem(getUriForItem(file), mimeType);
         DownloadManagerService service = DownloadManagerService.getDownloadManagerService(context);
 
         // Check if Chrome should open the file itself.
@@ -488,12 +489,15 @@ public class DownloadUtils {
             Intent intent =
                     getMediaViewerIntentForDownloadItem(fileUri, contentUri, normalizedMimeType);
             IntentHandler.startActivityForTrustedIntent(intent);
+            service.updateLastAccessTime(downloadGuid, isOffTheRecord);
             return true;
         }
 
         // Check if any apps can open the file.
         try {
+            Intent viewIntent = createViewIntentForDownloadItem(getUriForItem(file), mimeType);
             context.startActivity(viewIntent);
+            service.updateLastAccessTime(downloadGuid, isOffTheRecord);
             return true;
         } catch (ActivityNotFoundException e) {
             // Can't launch the Intent.

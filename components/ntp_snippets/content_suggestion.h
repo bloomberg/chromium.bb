@@ -21,8 +21,11 @@ namespace ntp_snippets {
 // download suggestions.
 struct DownloadSuggestionExtra {
   DownloadSuggestionExtra();
+  DownloadSuggestionExtra(const DownloadSuggestionExtra&);
   ~DownloadSuggestionExtra();
 
+  // The GUID for the downloaded file.
+  std::string download_guid;
   // The file path of the downloaded file once download completes.
   base::FilePath target_file_path;
   // The effective MIME type of downloaded content.

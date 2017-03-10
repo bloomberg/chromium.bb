@@ -876,9 +876,9 @@ public class DownloadNotificationService extends Service {
      *         user click on the snackbar.
      */
     @VisibleForTesting
-    public int notifyDownloadSuccessful(
-            String downloadGuid, String filePath, String fileName, long systemDownloadId,
-            boolean isOfflinePage, boolean isSupportedMimeType) {
+    public int notifyDownloadSuccessful(String downloadGuid, String filePath, String fileName,
+            long systemDownloadId, boolean isOffTheRecord, boolean isOfflinePage,
+            boolean isSupportedMimeType) {
         int notificationId = getNotificationId(downloadGuid);
         ChromeNotificationBuilder builder = buildNotification(R.drawable.offline_pin, fileName,
                 mContext.getResources().getString(R.string.download_notification_completed));
@@ -893,6 +893,8 @@ public class DownloadNotificationService extends Service {
             intent.putExtra(DownloadManager.EXTRA_NOTIFICATION_CLICK_DOWNLOAD_IDS, idArray);
             intent.putExtra(EXTRA_DOWNLOAD_FILE_PATH, filePath);
             intent.putExtra(EXTRA_IS_SUPPORTED_MIME_TYPE, isSupportedMimeType);
+            intent.putExtra(EXTRA_IS_OFF_THE_RECORD, isOffTheRecord);
+            intent.putExtra(EXTRA_DOWNLOAD_GUID, downloadGuid);
         }
         intent.setComponent(component);
         builder.setContentIntent(PendingIntent.getBroadcast(

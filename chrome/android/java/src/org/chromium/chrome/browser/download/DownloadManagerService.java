@@ -1065,13 +1065,11 @@ public class DownloadManagerService extends BroadcastReceiver implements
                 ? false : ExternalNavigationDelegateImpl.resolveIntent(intent, true);
     }
 
-    /** See {@link #openDownloadedContent(Context, String, boolean, long)}. */
+    /** See {@link #openDownloadedContent(Context, String, boolean, boolean, String, long)}. */
     protected void openDownloadedContent(final DownloadInfo downloadInfo, final long downloadId) {
-        // TODO(shaktisahu): Move this to the broader openDownloadedContent() or a better place if
-        // possible.
-        updateLastAccessTime(downloadInfo.getDownloadGuid(), downloadInfo.isOffTheRecord());
         openDownloadedContent(mContext, downloadInfo.getFilePath(),
-                isSupportedMimeType(downloadInfo.getMimeType()), downloadId);
+                isSupportedMimeType(downloadInfo.getMimeType()), downloadInfo.isOffTheRecord(),
+                downloadInfo.getDownloadGuid(), downloadId);
     }
 
     /**
@@ -1081,10 +1079,13 @@ public class DownloadManagerService extends BroadcastReceiver implements
      * @param context             Context to use.
      * @param filePath            Path to the downloaded item.
      * @param isSupportedMimeType MIME type of the downloaded item.
+     * @param isOffTheRecord      Whether the download was for a off the record profile.
+     * @param downloadGuid        GUID of the download item in DownloadManager.
      * @param downloadId          ID of the download item in DownloadManager.
      */
     protected static void openDownloadedContent(final Context context, final String filePath,
-            final boolean isSupportedMimeType, final long downloadId) {
+            final boolean isSupportedMimeType, final boolean isOffTheRecord,
+            final String downloadGuid, final long downloadId) {
         new AsyncTask<Void, Void, Intent>() {
             @Override
             public Intent doInBackground(Void... params) {
@@ -1098,6 +1099,10 @@ public class DownloadManagerService extends BroadcastReceiver implements
                         || !ExternalNavigationDelegateImpl.resolveIntent(intent, true)
                         || !DownloadUtils.fireOpenIntentForDownload(context, intent)) {
                     openDownloadsPage(context);
+                } else {
+                    DownloadManagerService service =
+                            DownloadManagerService.getDownloadManagerService(context);
+                    service.updateLastAccessTime(downloadGuid, isOffTheRecord);
                 }
             }
         }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
@@ -1786,6 +1791,8 @@ public class DownloadManagerService extends BroadcastReceiver implements
      */
     @Override
     public void updateLastAccessTime(String downloadGuid, boolean isOffTheRecord) {
+        if (TextUtils.isEmpty(downloadGuid)) return;
+
         nativeUpdateLastAccessTime(getNativeDownloadManagerService(), downloadGuid, isOffTheRecord);
     }
 

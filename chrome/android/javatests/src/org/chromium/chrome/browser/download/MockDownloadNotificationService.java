@@ -93,15 +93,14 @@ public class MockDownloadNotificationService extends DownloadNotificationService
     }
 
     @Override
-    public int notifyDownloadSuccessful(
-            final String downloadGuid, final String filePath, final String fileName,
-            final long systemDownloadId, final boolean isOfflinePage,
-            final boolean isSupportedMimeType) {
+    public int notifyDownloadSuccessful(final String downloadGuid, final String filePath,
+            final String fileName, final long systemDownloadId, final boolean isOffTheRecord,
+            final boolean isOfflinePage, final boolean isSupportedMimeType) {
         return ThreadUtils.runOnUiThreadBlockingNoException(new Callable<Integer>() {
             @Override
             public Integer call() throws Exception {
-                return MockDownloadNotificationService.super.notifyDownloadSuccessful(
-                        downloadGuid, filePath, fileName, systemDownloadId, isOfflinePage,
+                return MockDownloadNotificationService.super.notifyDownloadSuccessful(downloadGuid,
+                        filePath, fileName, systemDownloadId, isOffTheRecord, isOfflinePage,
                         isSupportedMimeType);
             }
         });

@@ -39,6 +39,9 @@ class FakeDownloadItem : public content::DownloadItem {
   void SetId(uint32_t id);
   uint32_t GetId() const override;
 
+  void SetGuid(const std::string& guid);
+  const std::string& GetGuid() const override;
+
   void SetURL(const GURL& url);
   const GURL& GetURL() const override;
 
@@ -73,7 +76,6 @@ class FakeDownloadItem : public content::DownloadItem {
   void Remove() override;
   void OpenDownload() override;
   void ShowDownloadInShell() override;
-  const std::string& GetGuid() const override;
   content::DownloadInterruptReason GetLastReason() const override;
   bool IsPaused() const override;
   bool IsTemporary() const override;
@@ -129,6 +131,7 @@ class FakeDownloadItem : public content::DownloadItem {
  private:
   base::ObserverList<Observer> observers_;
   uint32_t id_;
+  std::string guid_;
   GURL url_;
   base::FilePath file_path_;
   bool is_file_externally_removed_;

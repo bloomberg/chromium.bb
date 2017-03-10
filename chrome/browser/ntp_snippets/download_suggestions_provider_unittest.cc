@@ -150,6 +150,7 @@ std::unique_ptr<FakeDownloadItem> CreateDummyAssetDownload(int id) {
   std::unique_ptr<FakeDownloadItem> item = base::MakeUnique<FakeDownloadItem>();
   item->SetId(id);
   std::string id_string = base::IntToString(id);
+  item->SetGuid("XYZ-100032-EFZBDF-13323-PXZ" + id_string);
   item->SetTargetFilePath(
       base::FilePath::FromUTF8Unsafe("folder/file" + id_string + ".mhtml"));
   item->SetURL(GURL("http://download.com/redirected" + id_string));

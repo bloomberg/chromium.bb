@@ -62,8 +62,12 @@ public class DownloadBroadcastReceiver extends BroadcastReceiver {
                 intent, DownloadNotificationService.EXTRA_DOWNLOAD_FILE_PATH);
         boolean isSupportedMimeType =  IntentUtils.safeGetBooleanExtra(
                 intent, DownloadNotificationService.EXTRA_IS_SUPPORTED_MIME_TYPE, false);
+        boolean isOffTheRecord = IntentUtils.safeGetBooleanExtra(
+                intent, DownloadNotificationService.EXTRA_IS_OFF_THE_RECORD, false);
+        String downloadGuid = IntentUtils.safeGetStringExtra(
+                intent, DownloadNotificationService.EXTRA_DOWNLOAD_GUID);
         DownloadManagerService.openDownloadedContent(
-                context, downloadFilename, isSupportedMimeType, id);
+                context, downloadFilename, isSupportedMimeType, isOffTheRecord, downloadGuid, id);
     }
 
     /**

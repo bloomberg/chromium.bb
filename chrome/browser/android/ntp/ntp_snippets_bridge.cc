@@ -71,6 +71,8 @@ ScopedJavaLocalRef<jobject> ToJavaSuggestionList(
       if (suggestion.download_suggestion_extra()->is_download_asset) {
         Java_SnippetsBridge_setAssetDownloadDataForSuggestion(
             env, java_suggestion,
+            ConvertUTF8ToJavaString(
+                env, suggestion.download_suggestion_extra()->download_guid),
             ConvertUTF8ToJavaString(env, suggestion.download_suggestion_extra()
                                              ->target_file_path.value()),
             ConvertUTF8ToJavaString(

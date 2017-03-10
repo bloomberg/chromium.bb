@@ -55,6 +55,14 @@ uint32_t FakeDownloadItem::GetId() const {
   return id_;
 }
 
+void FakeDownloadItem::SetGuid(const std::string& guid) {
+  guid_ = guid;
+}
+
+const std::string& FakeDownloadItem::GetGuid() const {
+  return guid_;
+}
+
 void FakeDownloadItem::SetURL(const GURL& url) {
   url_ = url;
 }
@@ -154,11 +162,6 @@ void FakeDownloadItem::OpenDownload() {
 
 void FakeDownloadItem::ShowDownloadInShell() {
   NOTREACHED();
-}
-
-const std::string& FakeDownloadItem::GetGuid() const {
-  NOTREACHED();
-  return dummy_string;
 }
 
 content::DownloadInterruptReason FakeDownloadItem::GetLastReason() const {
