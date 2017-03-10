@@ -9,6 +9,8 @@
 #include "chrome/app/chrome_command_ids.h"
 #import "chrome/browser/ui/cocoa/browser_window_touch_bar.h"
 #include "chrome/browser/ui/cocoa/test/cocoa_profile_test.h"
+#include "chrome/common/pref_names.h"
+#include "components/prefs/pref_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class BrowserWindowTouchBarUnitTest : public CocoaProfileTest {
@@ -16,8 +18,9 @@ class BrowserWindowTouchBarUnitTest : public CocoaProfileTest {
   void SetUp() override {
     CocoaProfileTest::SetUp();
     ASSERT_TRUE(browser());
-    browserWindowTouchBar_.reset(
-        [[BrowserWindowTouchBar alloc] initWithBrowser:browser()]);
+    browserWindowTouchBar_.reset([[BrowserWindowTouchBar alloc]
+                initWithBrowser:browser()
+        browserWindowController:nil]);
   }
 
   void TearDown() override { CocoaProfileTest::TearDown(); }
@@ -29,10 +32,24 @@ TEST_F(BrowserWindowTouchBarUnitTest, TouchBarItems) {
   if (!base::mac::IsAtLeastOS10_12())
     return;
 
-  NSTouchBar* touchBar = [browserWindowTouchBar_ makeTouchBar];
-  NSArray* touchBarItemIds = [touchBar itemIdentifiers];
+  PrefService* prefs = profile()->GetPrefs();
+  DCHECK(prefs);
+  prefs->SetBoolean(prefs::kShowHomeButton, true);
+
+  NSArray* touchBarItemIds =
+      [[browserWindowTouchBar_ makeTouchBar] itemIdentifiers];
   EXPECT_TRUE([touchBarItemIds containsObject:@"BackForwardTouchId"]);
   EXPECT_TRUE([touchBarItemIds containsObject:@"ReloadOrStopTouchId"]);
+  EXPECT_TRUE([touchBarItemIds containsObject:@"HomeTouchId"]);
+  EXPECT_TRUE([touchBarItemIds containsObject:@"SearchTouchId"]);
+  EXPECT_TRUE([touchBarItemIds containsObject:@"NewTabTouchId"]);
+  EXPECT_TRUE([touchBarItemIds containsObject:@"StarTouchId"]);
+
+  prefs->SetBoolean(prefs::kShowHomeButton, false);
+  touchBarItemIds = [[browserWindowTouchBar_ makeTouchBar] itemIdentifiers];
+  EXPECT_TRUE([touchBarItemIds containsObject:@"BackForwardTouchId"]);
+  EXPECT_TRUE([touchBarItemIds containsObject:@"ReloadOrStopTouchId"]);
+  EXPECT_FALSE([touchBarItemIds containsObject:@"HomeTouchId"]);
   EXPECT_TRUE([touchBarItemIds containsObject:@"SearchTouchId"]);
   EXPECT_TRUE([touchBarItemIds containsObject:@"NewTabTouchId"]);
   EXPECT_TRUE([touchBarItemIds containsObject:@"StarTouchId"]);

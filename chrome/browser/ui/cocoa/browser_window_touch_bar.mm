@@ -4,6 +4,8 @@
 
 #import "chrome/browser/ui/cocoa/browser_window_touch_bar.h"
 
+#include <memory>
+
 #include "base/mac/mac_util.h"
 #import "base/mac/scoped_nsobject.h"
 #import "base/mac/sdk_forward_declarations.h"
@@ -11,12 +13,16 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/command_updater.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_command_controller.h"
+#import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #include "chrome/common/chrome_features.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/omnibox/browser/vector_icons.h"
+#include "components/prefs/pref_member.h"
 #include "components/search_engines/util.h"
 #include "components/toolbar/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -36,6 +42,7 @@ const NSTouchBarCustomizationIdentifier kBrowserWindowTouchBarId =
 // Touch bar items identifiers.
 const NSTouchBarItemIdentifier kBackForwardTouchId = @"BackForwardTouchId";
 const NSTouchBarItemIdentifier kReloadOrStopTouchId = @"ReloadOrStopTouchId";
+const NSTouchBarItemIdentifier kHomeTouchId = @"HomeTouchId";
 const NSTouchBarItemIdentifier kSearchTouchId = @"SearchTouchId";
 const NSTouchBarItemIdentifier kStarTouchId = @"StarTouchId";
 const NSTouchBarItemIdentifier kNewTabTouchId = @"NewTabTouchId";
@@ -52,7 +59,8 @@ const SkColor kTouchBarStarActiveColor = gfx::kGoogleBlue500;
 const int kTouchBarIconSize = 16;
 
 // The width of the search button in the touch bar.
-const int kTouchBarSearchButtonWidth = 280;
+const int kSearchBtnWidthWithHomeBtn = 205;
+const int kSearchBtnWidthWithoutHomeBtn = 280;
 
 // Creates an NSImage from the given VectorIcon.
 NSImage* CreateNSImageFromIcon(const gfx::VectorIcon& icon,
@@ -75,6 +83,23 @@ NSButton* CreateTouchBarButton(const gfx::VectorIcon& icon,
   return button;
 }
 
+// A class registered for C++ notifications. This is used to detect changes in
+// the home button preferences and update the Touch Bar.
+class HomePrefNotificationBridge {
+ public:
+  explicit HomePrefNotificationBridge(BrowserWindowController* bwc)
+      : bwc_(bwc) {}
+
+  ~HomePrefNotificationBridge() {}
+
+  void UpdateTouchBar() { [bwc_ invalidateTouchBar]; }
+
+ private:
+  BrowserWindowController* bwc_;  // Weak.
+
+  DISALLOW_COPY_AND_ASSIGN(HomePrefNotificationBridge);
+};
+
 }  // namespace
 
 @interface BrowserWindowTouchBar () {
@@ -83,6 +108,14 @@ NSButton* CreateTouchBarButton(const gfx::VectorIcon& icon,
 
   // The browser associated with the touch bar.
   Browser* browser_;  // Weak.
+
+  BrowserWindowController* bwc_;  // Weak, own us.
+
+  // Used to monitor the optional home button pref.
+  BooleanPrefMember showHomeButton_;
+
+  // Used to receive and handle notifications for the home button pref.
+  std::unique_ptr<HomePrefNotificationBridge> notificationBridge_;
 }
 
 // Creates and return the back and forward segmented buttons.
@@ -97,11 +130,20 @@ NSButton* CreateTouchBarButton(const gfx::VectorIcon& icon,
 @synthesize isPageLoading = isPageLoading_;
 @synthesize isStarred = isStarred_;
 
-- (instancetype)initWithBrowser:(Browser*)browser {
+- (instancetype)initWithBrowser:(Browser*)browser
+        browserWindowController:(BrowserWindowController*)bwc {
   if ((self = [self init])) {
     DCHECK(browser);
     commandUpdater_ = browser->command_controller()->command_updater();
     browser_ = browser;
+    bwc_ = bwc;
+
+    notificationBridge_.reset(new HomePrefNotificationBridge(bwc_));
+    PrefService* prefs = browser->profile()->GetPrefs();
+    showHomeButton_.Init(
+        prefs::kShowHomeButton, prefs,
+        base::Bind(&HomePrefNotificationBridge::UpdateTouchBar,
+                   base::Unretained(notificationBridge_.get())));
   }
 
   return self;
@@ -113,10 +155,19 @@ NSButton* CreateTouchBarButton(const gfx::VectorIcon& icon,
 
   base::scoped_nsobject<NSTouchBar> touchBar(
       [[NSClassFromString(@"NSTouchBar") alloc] init]);
-  NSArray* touchBarItemIdentifiers = @[
-    kBackForwardTouchId, kReloadOrStopTouchId, kSearchTouchId, kStarTouchId,
-    kNewTabTouchId
-  ];
+  NSArray* touchBarItemIdentifiers;
+  if (showHomeButton_.GetValue()) {
+    touchBarItemIdentifiers = @[
+      kBackForwardTouchId, kReloadOrStopTouchId, kHomeTouchId, kSearchTouchId,
+      kStarTouchId, kNewTabTouchId
+    ];
+  } else {
+    touchBarItemIdentifiers = @[
+      kBackForwardTouchId, kReloadOrStopTouchId, kSearchTouchId, kStarTouchId,
+      kNewTabTouchId
+    ];
+  }
+
   [touchBar setCustomizationIdentifier:kBrowserWindowTouchBarId];
   [touchBar setDefaultItemIdentifiers:touchBarItemIdentifiers];
   [touchBar setCustomizationAllowedItemIdentifiers:touchBarItemIdentifiers];
@@ -139,6 +190,9 @@ NSButton* CreateTouchBarButton(const gfx::VectorIcon& icon,
         isPageLoading_ ? kNavigateStopIcon : kNavigateReloadIcon;
     int command_id = isPageLoading_ ? IDC_STOP : IDC_RELOAD;
     [touchBarItem setView:CreateTouchBarButton(icon, self, command_id)];
+  } else if ([identifier isEqualTo:kHomeTouchId]) {
+    [touchBarItem
+        setView:CreateTouchBarButton(kNavigateHomeIcon, self, IDC_HOME)];
   } else if ([identifier isEqualTo:kNewTabTouchId]) {
     [touchBarItem setView:CreateTouchBarButton(kNewTabMacTouchbarIcon, self,
                                                IDC_NEW_TAB)];
@@ -206,9 +260,9 @@ NSButton* CreateTouchBarButton(const gfx::VectorIcon& icon,
                          action:@selector(executeCommand:)];
   searchButton.imageHugsTitle = YES;
   searchButton.tag = IDC_FOCUS_LOCATION;
-  [searchButton.widthAnchor
-      constraintEqualToConstant:kTouchBarSearchButtonWidth]
-      .active = YES;
+  int width = showHomeButton_.GetValue() ? kSearchBtnWidthWithHomeBtn
+                                         : kSearchBtnWidthWithoutHomeBtn;
+  [searchButton.widthAnchor constraintEqualToConstant:width].active = YES;
   return searchButton;
 }
 

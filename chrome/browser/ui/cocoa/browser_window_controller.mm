@@ -1009,8 +1009,7 @@ bool IsTabDetachingInFullscreenEnabled() {
   [toolbarController_ setStarredState:isStarred];
 
   [touchBar_ setIsStarred:isStarred];
-  if ([[self window] respondsToSelector:@selector(setTouchBar:)])
-    [[self window] performSelector:@selector(setTouchBar:) withObject:nil];
+  [self invalidateTouchBar];
 }
 
 - (void)setCurrentPageIsTranslated:(BOOL)on {
@@ -1149,8 +1148,7 @@ bool IsTabDetachingInFullscreenEnabled() {
 - (void)setIsLoading:(BOOL)isLoading force:(BOOL)force {
   [toolbarController_ setIsLoading:isLoading force:force];
   [touchBar_ setIsPageLoading:isLoading];
-  if ([[self window] respondsToSelector:@selector(setTouchBar:)])
-    [[self window] performSelector:@selector(setTouchBar:) withObject:nil];
+  [self invalidateTouchBar];
 }
 
 // Make the location bar the first responder, if possible.
@@ -1853,11 +1851,17 @@ willAnimateFromState:(BookmarkBar::State)oldState
 
 - (BrowserWindowTouchBar*)browserWindowTouchBar {
   if (!touchBar_) {
-    touchBar_.reset(
-        [[BrowserWindowTouchBar alloc] initWithBrowser:browser_.get()]);
+    touchBar_.reset([[BrowserWindowTouchBar alloc]
+                initWithBrowser:browser_.get()
+        browserWindowController:self]);
   }
 
   return touchBar_.get();
+}
+
+- (void)invalidateTouchBar {
+  if ([[self window] respondsToSelector:@selector(setTouchBar:)])
+    [[self window] performSelector:@selector(setTouchBar:) withObject:nil];
 }
 
 @end  // @implementation BrowserWindowController

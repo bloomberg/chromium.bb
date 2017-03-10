@@ -10,6 +10,7 @@
 #import "ui/base/cocoa/touch_bar_forward_declarations.h"
 
 class Browser;
+@class BrowserWindowController;
 
 // Provides a touch bar for the browser window. This class implements the
 // NSTouchBarDelegate and handles the items in the touch bar.
@@ -22,7 +23,8 @@ class Browser;
 @property(nonatomic, assign) BOOL isStarred;
 
 // Designated initializer.
-- (instancetype)initWithBrowser:(Browser*)browser;
+- (instancetype)initWithBrowser:(Browser*)browser
+        browserWindowController:(BrowserWindowController*)bwc;
 
 // Creates and returns a touch bar for the browser window.
 - (NSTouchBar*)makeTouchBar;

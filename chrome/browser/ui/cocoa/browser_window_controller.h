@@ -390,6 +390,9 @@ class Command;
 // Returns the BrowserWindowTouchBar object associated with the window.
 - (BrowserWindowTouchBar*)browserWindowTouchBar;
 
+// Invalidates the browser's touch bar.
+- (void)invalidateTouchBar;
+
 @end  // @interface BrowserWindowController
 
 
