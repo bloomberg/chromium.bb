@@ -1912,9 +1912,6 @@ const CSSValue* CSSPropertyParser::parseSingleValue(
       return CSSPropertyFontUtils::consumeFontFamily(m_range);
     case CSSPropertyFontWeight:
       return CSSPropertyFontUtils::consumeFontWeight(m_range);
-    case CSSPropertyLineHeight:
-      return CSSPropertyFontUtils::consumeLineHeight(m_range,
-                                                     m_context->mode());
     case CSSPropertyWebkitBorderHorizontalSpacing:
     case CSSPropertyWebkitBorderVerticalSpacing:
       return consumeLength(m_range, m_context->mode(), ValueRangeNonNegative);

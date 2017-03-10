@@ -536,6 +536,7 @@ css_properties("make_core_generated_css_property_apis") {
     "$blink_core_output_dir/css/properties/CSSPropertyAPIGridAutoLine.h",
     "$blink_core_output_dir/css/properties/CSSPropertyAPIOffsetAnchor.h",
     "$blink_core_output_dir/css/properties/CSSPropertyAPIFontSize.h",
+    "$blink_core_output_dir/css/properties/CSSPropertyAPILineHeight.h",
   ]
 }
 

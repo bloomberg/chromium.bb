@@ -388,6 +388,7 @@ blink_core_sources("css") {
     "properties/CSSPropertyAPIImageOrientation.cpp",
     "properties/CSSPropertyAPIJustifyItems.cpp",
     "properties/CSSPropertyAPILetterAndWordSpacing.cpp",
+    "properties/CSSPropertyAPILineHeight.cpp",
     "properties/CSSPropertyAPILineHeightStep.cpp",
     "properties/CSSPropertyAPIMargin.cpp",
     "properties/CSSPropertyAPIMarker.cpp",
