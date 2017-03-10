@@ -805,12 +805,32 @@ static IntRect clipBox(LayoutBox& layoutObject) {
 
 static LayoutPoint computeOffsetFromCompositedAncestor(
     const PaintLayer* layer,
-    const PaintLayer* compositedAncestor) {
-  LayoutPoint offset = layer->visualOffsetFromAncestor(compositedAncestor);
+    const PaintLayer* compositedAncestor,
+    const LayoutPoint& localRepresentativePointForFragmentation) {
+  // Add in the offset of the composited bounds from the coordinate space of
+  // the PaintLayer, since visualOffsetFromAncestor() requires the pre-offset
+  // input to be in the space of the PaintLayer. We also need to add in this
+  // offset before computation of visualOffsetFromAncestor(), because it affects
+  // fragmentation offset if compositedAncestor crosses a pagination boundary.
+  //
+  // Currently, visual fragmentation for composited layers is not implemented.
+  // For fragmented contents, we paint in the logical coordinates of the flow
+  // thread, then split the result by fragment boundary and paste each part
+  // into each fragment's physical position.
+  // Since composited layers don't support visual fragmentation, we have to
+  // choose a "representative" fragment to position the painted contents. This
+  // is where localRepresentativePointForFragmentation comes into play.
+  // The fragment that the representative point resides in will be chosen as
+  // the representative fragment for layer position purpose.
+  // For layers that are not fragmented, the point doesn't affect behavior as
+  // there is one and only one fragment.
+  LayoutPoint offset = layer->visualOffsetFromAncestor(
+      compositedAncestor, localRepresentativePointForFragmentation);
   if (compositedAncestor)
     offset.move(compositedAncestor->compositedLayerMapping()
                     ->owningLayer()
                     .subpixelAccumulation());
+  offset.moveBy(-localRepresentativePointForFragmentation);
   return offset;
 }
 
@@ -821,8 +841,8 @@ void CompositedLayerMapping::computeBoundsOfOwningLayer(
     LayoutPoint& offsetFromCompositedAncestor,
     IntPoint& snappedOffsetFromCompositedAncestor) {
   LayoutRect localRawCompositingBounds = compositedBounds();
-  offsetFromCompositedAncestor =
-      computeOffsetFromCompositedAncestor(&m_owningLayer, compositedAncestor);
+  offsetFromCompositedAncestor = computeOffsetFromCompositedAncestor(
+      &m_owningLayer, compositedAncestor, localRawCompositingBounds.location());
   snappedOffsetFromCompositedAncestor =
       IntPoint(offsetFromCompositedAncestor.x().round(),
                offsetFromCompositedAncestor.y().round());

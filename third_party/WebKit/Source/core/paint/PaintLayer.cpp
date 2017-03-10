@@ -1469,8 +1469,8 @@ void PaintLayer::convertToLayerCoords(const PaintLayer* ancestorLayer,
 }
 
 LayoutPoint PaintLayer::visualOffsetFromAncestor(
-    const PaintLayer* ancestorLayer) const {
-  LayoutPoint offset;
+    const PaintLayer* ancestorLayer,
+    LayoutPoint offset) const {
   if (ancestorLayer == this)
     return offset;
   PaintLayer* paginationLayer = enclosingPaginationLayer();

@@ -378,7 +378,9 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   // layer starts in and adds in the offset. See
   // http://www.chromium.org/developers/design-documents/multi-column-layout for
   // more info.
-  LayoutPoint visualOffsetFromAncestor(const PaintLayer* ancestorLayer) const;
+  LayoutPoint visualOffsetFromAncestor(
+      const PaintLayer* ancestorLayer,
+      LayoutPoint offset = LayoutPoint()) const;
 
   // Convert a bounding box from flow thread coordinates, relative to |this|, to
   // visual coordinates, relative to |ancestorLayer|.
