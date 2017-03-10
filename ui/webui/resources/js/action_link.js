@@ -75,8 +75,10 @@ var ActionLink = document.registerElement('action-link', {
           this.classList.add('no-outline');
       });
 
-      this.addEventListener('blur', function() {
-        this.classList.remove('no-outline');
+      this.addEventListener('blur', function(e) {
+        // This check helps us exclude external events like application switch.
+        if (e.sourceCapabilities)
+          this.classList.remove('no-outline');
       });
     },
 
