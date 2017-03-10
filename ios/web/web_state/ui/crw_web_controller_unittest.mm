@@ -50,8 +50,8 @@ using web::NavigationManagerImpl;
 
 @interface CRWWebController (PrivateAPI)
 @property(nonatomic, readwrite) web::PageDisplayState pageDisplayState;
-- (GURL)URLForHistoryNavigationFromItem:(web::NavigationItem*)fromItem
-                                 toItem:(web::NavigationItem*)toItem;
+- (GURL)URLForHistoryNavigationToItem:(web::NavigationItem*)toItem
+                          previousURL:(const GURL&)previousURL;
 @end
 
 // Used to mock CRWWebDelegate methods with C++ params.
@@ -238,27 +238,28 @@ TEST_F(CRWWebControllerTest, UrlForHistoryNavigation) {
       [urlsWithFragments addObject:[url stringByAppendingString:fragment]];
     }
   }
-  web::NavigationItemImpl fromItem;
+
+  GURL previous_url;
   web::NavigationItemImpl toItem;
 
   // No start fragment: the end url is never changed.
   for (NSString* start in urlsNoFragments) {
     for (NSString* end in urlsWithFragments) {
-      fromItem.SetURL(MAKE_URL(start));
+      previous_url = MAKE_URL(start);
       toItem.SetURL(MAKE_URL(end));
       EXPECT_EQ(MAKE_URL(end),
-                [web_controller() URLForHistoryNavigationFromItem:&fromItem
-                                                           toItem:&toItem]);
+                [web_controller() URLForHistoryNavigationToItem:&toItem
+                                                    previousURL:previous_url]);
     }
   }
   // Both contain fragments: the end url is never changed.
   for (NSString* start in urlsWithFragments) {
     for (NSString* end in urlsWithFragments) {
-      fromItem.SetURL(MAKE_URL(start));
+      previous_url = MAKE_URL(start);
       toItem.SetURL(MAKE_URL(end));
       EXPECT_EQ(MAKE_URL(end),
-                [web_controller() URLForHistoryNavigationFromItem:&fromItem
-                                                           toItem:&toItem]);
+                [web_controller() URLForHistoryNavigationToItem:&toItem
+                                                    previousURL:previous_url]);
     }
   }
   for (unsigned start_index = 0; start_index < [urlsWithFragments count];
@@ -267,21 +268,22 @@ TEST_F(CRWWebControllerTest, UrlForHistoryNavigation) {
     for (unsigned end_index = 0; end_index < [urlsNoFragments count];
          ++end_index) {
       NSString* end = urlsNoFragments[end_index];
+      previous_url = MAKE_URL(start);
       if (start_index / 2 != end_index) {
         // The URLs have nothing in common, they are left untouched.
-        fromItem.SetURL(MAKE_URL(start));
         toItem.SetURL(MAKE_URL(end));
-        EXPECT_EQ(MAKE_URL(end),
-                  [web_controller() URLForHistoryNavigationFromItem:&fromItem
-                                                             toItem:&toItem]);
+        EXPECT_EQ(
+            MAKE_URL(end),
+            [web_controller() URLForHistoryNavigationToItem:&toItem
+                                                previousURL:previous_url]);
       } else {
         // Start contains a fragment and matches end: An empty fragment is
         // added.
-        fromItem.SetURL(MAKE_URL(start));
         toItem.SetURL(MAKE_URL(end));
-        EXPECT_EQ(MAKE_URL([end stringByAppendingString:@"#"]),
-                  [web_controller() URLForHistoryNavigationFromItem:&fromItem
-                                                             toItem:&toItem]);
+        EXPECT_EQ(
+            MAKE_URL([end stringByAppendingString:@"#"]),
+            [web_controller() URLForHistoryNavigationToItem:&toItem
+                                                previousURL:previous_url]);
       }
     }
   }

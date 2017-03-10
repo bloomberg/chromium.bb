@@ -477,12 +477,14 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
 @property(nonatomic, readonly) NSDictionary* currentHTTPHeaders;
 
 // TODO(crbug.com/684098): Remove these methods and inline their content.
-// Called before finishing a history navigation from |item|.
-- (void)webWillFinishHistoryNavigationFromItem:(web::NavigationItem*)item;
+// Called before finishing a history navigation from a page with the given
+// UserAgentType.
+- (void)webWillFinishHistoryNavigationWithPreviousUserAgentType:
+    (web::UserAgentType)userAgentType;
 // Requires page reconstruction if |item| has a non-NONE UserAgentType and it
 // differs from that of |fromItem|.
 - (void)updateDesktopUserAgentForItem:(web::NavigationItem*)item
-                             fromItem:(web::NavigationItem*)fromItem;
+                previousUserAgentType:(web::UserAgentType)userAgentType;
 
 // Removes the container view from the hierarchy and resets the ivar.
 - (void)resetContainerView;
@@ -602,9 +604,12 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
 // TODO(crbug.com/661316): Move this method to NavigationManager.
 - (void)goDelta:(int)delta;
 // Loads a new URL if the current entry is not from a pushState() navigation.
-// |item| is the NavigationItem that was the current entry prior to the
-// navigation.
-- (void)finishHistoryNavigationFromItem:(web::NavigationItem*)item;
+// |fromURL| is the URL of the previous NavigationItem, |fromUserAgentType| is
+// that item's UserAgentType, and |sameDocument| is YES if the navigation is
+// between two pages with the same document.
+- (void)finishHistoryNavigationFromURL:(const GURL&)fromURL
+                         userAgentType:(web::UserAgentType)fromUserAgentType
+                          sameDocument:(BOOL)sameDocument;
 // Informs the native controller if web usage is allowed or not.
 - (void)setNativeControllerWebUsageEnabled:(BOOL)webUsageEnabled;
 // Called when web controller receives a new message from the web page.
@@ -716,9 +721,8 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 // Compares the two URLs being navigated between during a history navigation to
 // determine if a # needs to be appended to the URL of |toItem| to trigger a
 // hashchange event. If so, also saves the modified URL into |toItem|.
-- (GURL)URLForHistoryNavigationFromItem:(web::NavigationItem*)fromItem
-                                 toItem:(web::NavigationItem*)toItem;
-
+- (GURL)URLForHistoryNavigationToItem:(web::NavigationItem*)toItem
+                          previousURL:(const GURL&)previousURL;
 // Finds all the scrollviews in the view hierarchy and makes sure they do not
 // interfere with scroll to top when tapping the statusbar.
 - (void)optOutScrollsToTopForSubviews;
@@ -1405,8 +1409,8 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
          [list.backList indexOfObject:item] != NSNotFound;
 }
 
-- (GURL)URLForHistoryNavigationFromItem:(web::NavigationItem*)fromItem
-                                 toItem:(web::NavigationItem*)toItem {
+- (GURL)URLForHistoryNavigationToItem:(web::NavigationItem*)toItem
+                          previousURL:(const GURL&)previousURL {
   // If navigating with native API, i.e. using a back forward list item,
   // hashchange events will be triggered automatically, so no URL tampering is
   // required.
@@ -1416,26 +1420,25 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
     return toItem->GetURL();
   }
 
-  const GURL& startURL = fromItem->GetURL();
-  const GURL& endURL = toItem->GetURL();
+  const GURL& URL = toItem->GetURL();
 
   // Check the state of the fragments on both URLs (aka, is there a '#' in the
   // url or not).
-  if (!startURL.has_ref() || endURL.has_ref()) {
-    return endURL;
+  if (!previousURL.has_ref() || URL.has_ref()) {
+    return URL;
   }
 
   // startURL contains a fragment and endURL doesn't. Remove the fragment from
   // startURL and compare the resulting string to endURL. If they are equal, add
   // # to endURL to cause a hashchange event.
-  GURL hashless = web::GURLByRemovingRefFromGURL(startURL);
+  GURL hashless = web::GURLByRemovingRefFromGURL(previousURL);
 
-  if (hashless != endURL)
-    return endURL;
+  if (hashless != URL)
+    return URL;
 
   url::StringPieceReplacements<std::string> emptyRef;
   emptyRef.SetRefStr("");
-  GURL newEndURL = endURL.ReplaceComponents(emptyRef);
+  GURL newEndURL = URL.ReplaceComponents(emptyRef);
   toItem->SetURL(newEndURL);
   return newEndURL;
 }
@@ -2116,19 +2119,25 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 
   if (!_webStateImpl->IsShowingWebInterstitial())
     [self recordStateInHistory];
-  web::NavigationItem* fromItem = sessionController.currentItem;
+
+  web::NavigationItem* previousItem = sessionController.currentItem;
+  GURL previousURL = previousItem ? previousItem->GetURL() : GURL::EmptyGURL();
+  web::UserAgentType previousUserAgentType =
+      previousItem ? previousItem->GetUserAgentType()
+                   : web::UserAgentType::NONE;
   web::NavigationItem* toItem = items[index].get();
+  BOOL sameDocumentNavigation =
+      [sessionController isSameDocumentNavigationBetweenItem:previousItem
+                                                     andItem:toItem];
 
   NSUserDefaults* userDefaults = [NSUserDefaults standardUserDefaults];
   if (![userDefaults boolForKey:@"PendingIndexNavigationDisabled"]) {
     [self clearTransientContentView];
 
     // Update the user agent before attempting the navigation.
-    [self updateDesktopUserAgentForItem:toItem fromItem:fromItem];
+    [self updateDesktopUserAgentForItem:toItem
+                  previousUserAgentType:previousUserAgentType];
 
-    BOOL sameDocumentNavigation =
-        [sessionController isSameDocumentNavigationBetweenItem:fromItem
-                                                       andItem:toItem];
     if (sameDocumentNavigation) {
       [sessionController goToItemAtIndex:index];
       [self updateHTML5HistoryState];
@@ -2144,8 +2153,11 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
     }
   } else {
     [sessionController goToItemAtIndex:index];
-    if (fromItem)
-      [self finishHistoryNavigationFromItem:fromItem];
+    if (previousURL.is_valid()) {
+      [self finishHistoryNavigationFromURL:previousURL
+                             userAgentType:previousUserAgentType
+                              sameDocument:sameDocumentNavigation];
+    }
   }
 }
 
@@ -2239,18 +2251,19 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   }
 }
 
-- (void)finishHistoryNavigationFromItem:(web::NavigationItem*)item {
-  [self webWillFinishHistoryNavigationFromItem:item];
+- (void)finishHistoryNavigationFromURL:(const GURL&)fromURL
+                         userAgentType:(web::UserAgentType)fromUserAgentType
+                          sameDocument:(BOOL)sameDocument {
+  [self webWillFinishHistoryNavigationWithPreviousUserAgentType:
+            fromUserAgentType];
 
   // Only load the new URL if it has a different document than |fromEntry| to
   // prevent extra page loads from NavigationItems created by hash changes or
   // calls to window.history.pushState().
-  BOOL shouldLoadURL = ![self.sessionController
-      isSameDocumentNavigationBetweenItem:item
-                                  andItem:self.currentNavItem];
   web::NavigationItem* currentItem = self.currentNavItem;
-  GURL endURL = [self URLForHistoryNavigationFromItem:item toItem:currentItem];
-  if (shouldLoadURL) {
+  GURL endURL =
+      [self URLForHistoryNavigationToItem:currentItem previousURL:fromURL];
+  if (!sameDocument) {
     ui::PageTransition transition = ui::PageTransitionFromInt(
         ui::PAGE_TRANSITION_RELOAD | ui::PAGE_TRANSITION_FORWARD_BACK);
 
@@ -2266,7 +2279,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   // updated after the navigation is committed, as attempting to replace the URL
   // here will result in a JavaScript SecurityError due to the URLs having
   // different origins.
-  if (!shouldLoadURL)
+  if (sameDocument)
     [self updateHTML5HistoryState];
 }
 
@@ -2359,20 +2372,21 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   return _passKitDownloader.get();
 }
 
-- (void)webWillFinishHistoryNavigationFromItem:(web::NavigationItem*)item {
-  DCHECK(item);
-  [self updateDesktopUserAgentForItem:self.currentNavItem fromItem:item];
+- (void)webWillFinishHistoryNavigationWithPreviousUserAgentType:
+    (web::UserAgentType)userAgentType {
+  [self updateDesktopUserAgentForItem:self.currentNavItem
+                previousUserAgentType:userAgentType];
   [_delegate webWillFinishHistoryNavigation];
 }
 
 - (void)updateDesktopUserAgentForItem:(web::NavigationItem*)item
-                             fromItem:(web::NavigationItem*)fromItem {
-  if (!item || !fromItem)
+                previousUserAgentType:(web::UserAgentType)userAgentType {
+  if (!item)
     return;
   web::UserAgentType itemUserAgentType = item->GetUserAgentType();
   if (itemUserAgentType == web::UserAgentType::NONE)
     return;
-  if (itemUserAgentType != fromItem->GetUserAgentType())
+  if (itemUserAgentType != userAgentType)
     [self requirePageReconstruction];
 }
 
