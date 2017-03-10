@@ -1,0 +1,50 @@
+<html>
+<head>
+<script src='../inspector-test.js'></script>
+<script src='../debugger-test.js'></script>
+<script src='../isolated-filesystem-test.js'></script>
+<script src='./persistence-test.js'></script>
+<script src='./resources/foo.js'></script>
+<script>
+
+async function test()
+{
+    var fs = new InspectorTest.TestFileSystem('file:///var/www');
+    var fsEntry = InspectorTest.addFooJSFile(fs);
+    fs.root.addFile('bar.js', "window.bar = ()=>'bar';");
+    await fs.reportCreatedPromise();
+
+    var fsSourceCode = await InspectorTest.waitForUISourceCode('foo.js', Workspace.projectTypes.FileSystem);
+    var networkSourceCode = await InspectorTest.waitForUISourceCode('foo.js', Workspace.projectTypes.Network);
+    var barSourceCode = await InspectorTest.waitForUISourceCode('bar.js');
+    UI.panels.sources.showUISourceCode(barSourceCode, 0, 0);
+    UI.panels.sources.showUISourceCode(networkSourceCode, 0, 0);
+    // Open and select file system tab. Selection should stay here.
+    UI.panels.sources.showUISourceCode(fsSourceCode, 0, 0);
+
+    dumpTabs('Opened tabs before persistence binding:');
+    Workspace.fileSystemMapping.addFileMapping(fs.fileSystemPath, 'http://127.0.0.1:8000', '/');
+    await InspectorTest.waitForBinding('foo.js');
+    dumpTabs('\nOpened tabs after persistence binding:');
+    InspectorTest.completeTest();
+
+    function dumpTabs(title)
+    {
+        var tabbedPane = UI.panels.sources._sourcesView._editorContainer._tabbedPane;
+        var tabs = tabbedPane._tabs;
+        InspectorTest.addResult(title);
+        for (var i = 0; i < tabs.length; ++i) {
+            var text = (i + 1) + ': ';
+            text += tabs[i].title;
+            if (tabs[i] === tabbedPane._currentTab)
+                text += ' [selected]';
+            InspectorTest.addResult('    '  + text);
+        }
+    }
+};
+</script>
+</head>
+<body onload='runTest()'>
+<p>Verify that tab keeps selected as the persistence binding comes in.</p>
+</body>
+</html>

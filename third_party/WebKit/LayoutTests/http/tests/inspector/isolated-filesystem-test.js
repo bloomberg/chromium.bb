@@ -28,6 +28,10 @@ InspectorTest.TestFileSystem.prototype = {
         }
     },
 
+    reportCreatedPromise: function() {
+        return new Promise(fulfill => this.reportCreated(fulfill));
+    },
+
     reportCreated: function(callback)
     {
         var fileSystemPath = this.fileSystemPath;

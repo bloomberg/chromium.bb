@@ -44,6 +44,8 @@ function test()
             function onFileSystemTab(sourceFrame)
             {
                 fileSystemSourceFrame = sourceFrame;
+                fileSystemSourceFrame.setSelection(new Common.TextRange(1, 0, 2, 5));
+                fileSystemSourceFrame.scrollToLine(1);
                 dumpSourceFrame(fileSystemSourceFrame);
                 dumpEditorTabs();
                 next();

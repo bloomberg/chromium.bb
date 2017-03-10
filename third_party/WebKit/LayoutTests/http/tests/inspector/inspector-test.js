@@ -409,7 +409,7 @@ InspectorTest.dumpNavigatorViewInMode = function(view, mode)
     InspectorTest.dumpNavigatorView(view);
 }
 
-InspectorTest.waitForUISourceCode = function(url, projectType)
+InspectorTest.waitForUISourceCode = function(urlSuffix, projectType)
 {
     function matches(uiSourceCode)
     {
@@ -417,13 +417,13 @@ InspectorTest.waitForUISourceCode = function(url, projectType)
             return false;
         if (!projectType && uiSourceCode.project().type() === Workspace.projectTypes.Service)
             return false;
-        if (url && !uiSourceCode.url().endsWith(url))
+        if (urlSuffix && !uiSourceCode.url().endsWith(urlSuffix))
             return false;
         return true;
     }
 
     for (var uiSourceCode of Workspace.workspace.uiSourceCodes()) {
-        if (url && matches(uiSourceCode))
+        if (urlSuffix && matches(uiSourceCode))
             return Promise.resolve(uiSourceCode);
     }
 
