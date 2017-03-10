@@ -2161,7 +2161,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   ])
 
   _paladin_hwtest_boards = frozenset([
-      'daisy_skate',
       'elm',
       'kevin',
       'kip',
@@ -2460,7 +2459,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   # bvt-cq takes longer, so it usually makes sense to give it the faster board.
   ShardHWTestsBetweenBuilders('x86-zgb-paladin', 'x86-alex-paladin')
   ShardHWTestsBetweenBuilders('wolf-paladin', 'peppy-paladin')
-  ShardHWTestsBetweenBuilders('daisy_skate-paladin', 'peach_pit-paladin')
+  ShardHWTestsBetweenBuilders('peach_pit-paladin', None)
   ShardHWTestsBetweenBuilders('veyron_mighty-paladin', 'veyron_speedy-paladin')
   ShardHWTestsBetweenBuilders('lumpy-paladin', 'stumpy-paladin')
   ShardHWTestsBetweenBuilders('nyan_big-paladin', 'nyan_kitty-paladin')
