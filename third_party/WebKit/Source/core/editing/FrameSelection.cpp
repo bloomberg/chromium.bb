@@ -173,8 +173,7 @@ void FrameSelection::moveCaretSelection(const IntPoint& point) {
   const VisiblePosition position =
       visiblePositionForContentsPoint(point, frame());
   SelectionInDOMTree::Builder builder;
-  builder.setIsDirectional(
-      computeVisibleSelectionInDOMTreeDeprecated().isDirectional());
+  builder.setIsDirectional(selectionInDOMTree().isDirectional());
   builder.setIsHandleVisible(true);
   if (position.isNotNull())
     builder.collapse(position.toPositionWithAffinity());
