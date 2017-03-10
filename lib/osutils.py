@@ -406,13 +406,14 @@ def EmptyDir(path, ignore_missing=False, sudo=False, exclude=()):
         SafeUnlink(subpath, sudo)
 
 
-def Which(binary, path=None, mode=os.X_OK):
+def Which(binary, path=None, mode=os.X_OK, root=None):
   """Return the absolute path to the specified binary.
 
   Args:
     binary: The binary to look for.
     path: Search path. Defaults to os.environ['PATH'].
     mode: File mode to check on the binary.
+    root: Path to automatically prefix to every element of |path|.
 
   Returns:
     The full path to |binary| if found (with the right mode). Otherwise, None.
@@ -420,6 +421,10 @@ def Which(binary, path=None, mode=os.X_OK):
   if path is None:
     path = os.environ.get('PATH', '')
   for p in path.split(os.pathsep):
+    if root and p.startswith('/'):
+      # Don't prefix relative paths.  We might want to support this at some
+      # point, but it's not worth the coding hassle currently.
+      p = os.path.join(root, p.lstrip('/'))
     p = os.path.join(p, binary)
     if os.path.isfile(p) and os.access(p, mode):
       return p

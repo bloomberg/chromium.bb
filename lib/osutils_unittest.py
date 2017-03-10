@@ -986,3 +986,40 @@ class CopyDirContentsTestCase(cros_test_lib.TempDirTestCase):
     osutils.SafeMakedirsNonRoot(os.path.join(out_dir, 'blah'))
     with self.assertRaises(osutils.BadPathsException):
       osutils.CopyDirContents(in_dir, out_dir)
+
+
+class WhichTests(cros_test_lib.TempDirTestCase):
+  """Test Which."""
+
+  def setUp(self):
+    self.prog_path = os.path.join(self.tempdir, 'prog')
+    osutils.Touch(self.prog_path, mode=0o755)
+    self.text_path = os.path.join(self.tempdir, 'text')
+    osutils.Touch(self.text_path, mode=0o644)
+
+    # A random path for us to validate.
+    os.environ['PATH'] = '/:%s' % (self.tempdir,)
+
+  def testPath(self):
+    """Check $PATH/path handling."""
+    self.assertEqual(self.prog_path, osutils.Which('prog'))
+
+    os.environ['PATH'] = ''
+    self.assertEqual(None, osutils.Which('prog'))
+
+    self.assertEqual(self.prog_path, osutils.Which('prog', path=self.tempdir))
+
+  def testMode(self):
+    """Check mode handling."""
+    self.assertEqual(self.prog_path, osutils.Which('prog'))
+    self.assertEqual(self.prog_path, osutils.Which('prog', mode=os.X_OK))
+    self.assertEqual(self.prog_path, osutils.Which('prog', mode=os.R_OK))
+    self.assertEqual(None, osutils.Which('text'))
+    self.assertEqual(None, osutils.Which('text', mode=os.X_OK))
+    self.assertEqual(self.text_path, osutils.Which('text', mode=os.F_OK))
+
+  def testRoot(self):
+    """Check root handling."""
+    self.assertEqual(None, osutils.Which('prog', root='/.........'))
+    self.assertEqual(self.prog_path, osutils.Which('prog', path='/',
+                                                   root=self.tempdir))
