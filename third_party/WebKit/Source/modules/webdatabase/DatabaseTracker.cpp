@@ -32,13 +32,13 @@
 
 #include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"
-#include "core/dom/ExecutionContextTask.h"
 #include "core/dom/TaskRunnerHelper.h"
 #include "modules/webdatabase/Database.h"
 #include "modules/webdatabase/DatabaseClient.h"
 #include "modules/webdatabase/DatabaseContext.h"
 #include "modules/webdatabase/QuotaTracker.h"
 #include "modules/webdatabase/sqlite/SQLiteFileSystem.h"
+#include "platform/CrossThreadFunctional.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "platform/weborigin/SecurityOriginHash.h"
 #include "public/platform/Platform.h"
@@ -187,12 +187,12 @@ void DatabaseTracker::closeDatabasesImmediately(SecurityOrigin* origin,
 
   // We have to call closeImmediately() on the context thread.
   for (DatabaseSet::iterator it = databaseSet->begin();
-       it != databaseSet->end(); ++it)
-    (*it)->getDatabaseContext()->getExecutionContext()->postTask(
-        TaskType::DatabaseAccess, BLINK_FROM_HERE,
-        createCrossThreadTask(&DatabaseTracker::closeOneDatabaseImmediately,
-                              crossThreadUnretained(this), originString, name,
-                              *it));
+       it != databaseSet->end(); ++it) {
+    (*it)->getDatabaseTaskRunner()->postTask(
+        BLINK_FROM_HERE,
+        crossThreadBind(&DatabaseTracker::closeOneDatabaseImmediately,
+                        crossThreadUnretained(this), originString, name, *it));
+  }
 }
 
 void DatabaseTracker::forEachOpenDatabaseInPage(

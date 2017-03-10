@@ -25,9 +25,9 @@
 
 #include "modules/webdatabase/Database.h"
 
+#include <memory>
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
-#include "core/dom/ExecutionContextTask.h"
 #include "core/dom/TaskRunnerHelper.h"
 #include "core/html/VoidCallback.h"
 #include "core/inspector/ConsoleMessage.h"
@@ -49,6 +49,7 @@
 #include "modules/webdatabase/StorageLog.h"
 #include "modules/webdatabase/sqlite/SQLiteStatement.h"
 #include "modules/webdatabase/sqlite/SQLiteTransaction.h"
+#include "platform/CrossThreadFunctional.h"
 #include "platform/WaitableEvent.h"
 #include "platform/heap/SafePoint.h"
 #include "public/platform/Platform.h"
@@ -56,7 +57,6 @@
 #include "public/platform/WebSecurityOrigin.h"
 #include "wtf/Atomics.h"
 #include "wtf/CurrentTime.h"
-#include <memory>
 
 // Registering "opened" databases with the DatabaseTracker
 // =======================================================
@@ -248,6 +248,8 @@ Database::Database(DatabaseContext* databaseContext,
       m_contextThreadSecurityOrigin->isolatedCopy();
   ASSERT(m_databaseContext->databaseThread());
   ASSERT(m_databaseContext->isContextThread());
+  m_databaseTaskRunner =
+      TaskRunnerHelper::get(TaskType::DatabaseAccess, getExecutionContext());
 }
 
 Database::~Database() {
@@ -873,10 +875,10 @@ void Database::runTransaction(SQLTransactionCallback* callback,
     if (callback) {
       std::unique_ptr<SQLErrorData> error = SQLErrorData::create(
           SQLError::kUnknownErr, "database has been closed");
-      TaskRunnerHelper::get(TaskType::DatabaseAccess, getExecutionContext())
-          ->postTask(BLINK_FROM_HERE, WTF::bind(&callTransactionErrorCallback,
-                                                wrapPersistent(callback),
-                                                WTF::passed(std::move(error))));
+      getDatabaseTaskRunner()->postTask(
+          BLINK_FROM_HERE,
+          WTF::bind(&callTransactionErrorCallback, wrapPersistent(callback),
+                    WTF::passed(std::move(error))));
     }
   }
 }
@@ -884,10 +886,9 @@ void Database::runTransaction(SQLTransactionCallback* callback,
 void Database::scheduleTransactionCallback(SQLTransaction* transaction) {
   // The task is constructed in a database thread, and destructed in the
   // context thread.
-  getExecutionContext()->postTask(
-      TaskType::DatabaseAccess, BLINK_FROM_HERE,
-      createCrossThreadTask(&SQLTransaction::performPendingCallback,
-                            wrapCrossThreadPersistent(transaction)));
+  getDatabaseTaskRunner()->postTask(
+      BLINK_FROM_HERE, crossThreadBind(&SQLTransaction::performPendingCallback,
+                                       wrapCrossThreadPersistent(transaction)));
 }
 
 Vector<String> Database::performGetTableNames() {
@@ -949,6 +950,10 @@ SecurityOrigin* Database::getSecurityOrigin() const {
 
 bool Database::opened() {
   return static_cast<bool>(acquireLoad(&m_opened));
+}
+
+WebTaskRunner* Database::getDatabaseTaskRunner() const {
+  return m_databaseTaskRunner.get();
 }
 
 }  // namespace blink

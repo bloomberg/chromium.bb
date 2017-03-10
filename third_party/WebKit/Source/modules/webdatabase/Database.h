@@ -115,6 +115,7 @@ class Database final : public GarbageCollectedFinalized<Database>,
     return m_databaseContext.get();
   }
   ExecutionContext* getExecutionContext() const;
+  WebTaskRunner* getDatabaseTaskRunner() const;
 
  private:
   class DatabaseOpenTask;
@@ -176,6 +177,10 @@ class Database final : public GarbageCollectedFinalized<Database>,
   RefPtr<SecurityOrigin> m_databaseThreadSecurityOrigin;
   Member<DatabaseContext>
       m_databaseContext;  // Associated with m_executionContext.
+  // TaskRunnerHelper::get is not thread-safe, so we save WebTaskRunner for
+  // TaskType::DatabaseAccess for later use as the constructor runs in the main
+  // thread.
+  RefPtr<WebTaskRunner> m_databaseTaskRunner;
 
   String m_name;
   String m_expectedVersion;
