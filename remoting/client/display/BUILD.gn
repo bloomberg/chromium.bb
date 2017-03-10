@@ -30,7 +30,7 @@ source_set("display") {
   deps = [
     "//remoting/proto",
     "//third_party/libyuv",
-    "//third_party/webrtc/base:rtc_base",
+    "//third_party/webrtc/base:rtc_base_approved",
   ]
 
   public_configs = [ "//third_party/khronos:khronos_headers" ]
@@ -85,7 +85,7 @@ if (is_win) {
       "//remoting/proto",
       "//testing/gmock",
       "//testing/gtest",
-      "//third_party/webrtc/base:rtc_base",
+      "//third_party/webrtc/base:rtc_base_approved",
     ]
   }
 }

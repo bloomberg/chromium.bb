@@ -92,7 +92,7 @@ rtc_static_library("rtc_xmpp") {
 
   deps = [
     ":rtc_xmllite",
-    "//third_party/webrtc/base:rtc_base",
+    "//third_party/webrtc/base:rtc_base_approved",
   ]
   public_deps = [
     ":rtc_task_runner",

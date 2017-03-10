@@ -332,7 +332,7 @@ static_library("test_support") {
     deps += [
       "//third_party/webrtc/api:libjingle_peerconnection",
       "//third_party/webrtc/api:rtc_stats_api",
-      "//third_party/webrtc/base:rtc_base",
+      "//third_party/webrtc/base:rtc_base_approved",
       "//third_party/webrtc/media:rtc_media_base",
       "//third_party/webrtc/modules/video_capture",
       "//third_party/webrtc/stats:rtc_stats",

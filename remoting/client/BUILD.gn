@@ -109,6 +109,6 @@ source_set("unit_tests") {
     "//remoting/proto",
     "//testing/gmock",
     "//testing/gtest",
-    "//third_party/webrtc/base:rtc_base",
+    "//third_party/webrtc/base:rtc_base_approved",
   ]
 }
