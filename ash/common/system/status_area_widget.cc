@@ -82,6 +82,10 @@ void StatusAreaWidget::Shutdown() {
   // Destroy the trays early, causing them to be removed from the view
   // hierarchy. Do not used scoped pointers since we don't want to destroy them
   // in the destructor if Shutdown() is not called (e.g. in tests).
+  // Failure to remove the tray views causes layout crashes during shutdown,
+  // for example http://crbug.com/700122.
+  // TODO(jamescook): Find a better way to avoid the layout problems, fix the
+  // tests and switch to std::unique_ptr. http://crbug.com/700255
   delete web_notification_tray_;
   web_notification_tray_ = nullptr;
   // Must be destroyed after |web_notification_tray_|.
@@ -91,10 +95,14 @@ void StatusAreaWidget::Shutdown() {
   ime_menu_tray_ = nullptr;
   delete virtual_keyboard_tray_;
   virtual_keyboard_tray_ = nullptr;
+  delete palette_tray_;
+  palette_tray_ = nullptr;
   delete logout_button_tray_;
   logout_button_tray_ = nullptr;
   delete overview_button_tray_;
   overview_button_tray_ = nullptr;
+  // All child tray views have been removed.
+  DCHECK_EQ(0, GetContentsView()->child_count());
 }
 
 void StatusAreaWidget::SetShelfAlignment(ShelfAlignment alignment) {

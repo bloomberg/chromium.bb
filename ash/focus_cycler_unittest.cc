@@ -13,7 +13,6 @@
 #include "ash/common/system/tray/system_tray.h"
 #include "ash/common/wm_shell.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/test/status_area_widget_test_helper.h"
 #include "ash/wm/window_util.h"
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/window.h"
@@ -79,12 +78,8 @@ class FocusCyclerTest : public AshTestBase {
   }
 
  protected:
-  // Setup the system tray using StatusAreaWidgetTestHelper and focus_cycler.
+  // Setup the system tray focus cycler.
   void SetUpTrayFocusCycle() {
-    StatusAreaWidget* widget =
-        StatusAreaWidgetTestHelper::GetStatusAreaWidget();
-    widget->CreateTrayViews();
-    widget->Show();
     views::Widget* system_tray_widget = GetPrimarySystemTray()->GetWidget();
     ASSERT_TRUE(system_tray_widget);
     focus_cycler_->AddWidget(system_tray_widget);
