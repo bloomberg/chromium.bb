@@ -231,6 +231,8 @@ inline v8::Local<v8::Value> ToV8(const HeapVector<T, inlineCapacity>& value,
   return toV8SequenceInternal(value, creationContext, isolate);
 }
 
+// The following two overloads are also used to convert record<K,V> IDL types
+// back into ECMAScript Objects.
 template <typename T>
 inline v8::Local<v8::Value> ToV8(const Vector<std::pair<String, T>>& value,
                                  v8::Local<v8::Object> creationContext,

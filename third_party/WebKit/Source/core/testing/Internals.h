@@ -68,6 +68,7 @@ class Node;
 class OriginTrialsTest;
 class Page;
 class Range;
+class RecordTest;
 class SerializedScriptValue;
 class ShadowRoot;
 class TypeConversions;
@@ -380,6 +381,7 @@ class Internals final : public GarbageCollected<Internals>,
       const String& scheme);
 
   TypeConversions* typeConversions() const;
+  RecordTest* recordTest() const;
   DictionaryTest* dictionaryTest() const;
   UnionTypesTest* unionTypesTest() const;
   OriginTrialsTest* originTrialsTest() const;

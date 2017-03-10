@@ -156,6 +156,17 @@ EventTarget* TestDictionary::eventTargetMember() const {
 void TestDictionary::setEventTargetMember(EventTarget* value) {
   m_eventTargetMember = value;
 }
+bool TestDictionary::hasGarbageCollectedRecordMember() const {
+  return m_hasGarbageCollectedRecordMember;
+}
+const HeapVector<std::pair<String, Member<TestObject>>>& TestDictionary::garbageCollectedRecordMember() const {
+  DCHECK(m_hasGarbageCollectedRecordMember);
+  return m_garbageCollectedRecordMember;
+}
+void TestDictionary::setGarbageCollectedRecordMember(const HeapVector<std::pair<String, Member<TestObject>>>& value) {
+  m_garbageCollectedRecordMember = value;
+  m_hasGarbageCollectedRecordMember = true;
+}
 bool TestDictionary::hasInternalDictionarySequenceMember() const {
   return m_hasInternalDictionarySequenceMember;
 }
@@ -216,6 +227,17 @@ ScriptValue TestDictionary::getPrefixGetMember() const {
 }
 void TestDictionary::setPrefixGetMember(ScriptValue value) {
   m_prefixGetMember = value;
+}
+bool TestDictionary::hasRecordMember() const {
+  return m_hasRecordMember;
+}
+const Vector<std::pair<String, int8_t>>& TestDictionary::recordMember() const {
+  DCHECK(m_hasRecordMember);
+  return m_recordMember;
+}
+void TestDictionary::setRecordMember(const Vector<std::pair<String, int8_t>>& value) {
+  m_recordMember = value;
+  m_hasRecordMember = true;
 }
 bool TestDictionary::hasRestrictedDoubleMember() const {
   return m_hasRestrictedDoubleMember;
@@ -392,6 +414,7 @@ DEFINE_TRACE(TestDictionary) {
   visitor->trace(m_doubleOrStringSequenceMember);
   visitor->trace(m_elementOrNullMember);
   visitor->trace(m_eventTargetMember);
+  visitor->trace(m_garbageCollectedRecordMember);
   visitor->trace(m_internalDictionarySequenceMember);
   visitor->trace(m_otherDoubleOrStringMember);
   visitor->trace(m_testInterface2OrUint8ArrayMember);

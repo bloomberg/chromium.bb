@@ -37,4 +37,6 @@ dictionary TestDictionary {
     Dictionary dictionaryMember;
     [RuntimeEnabled=runtimeFeature] boolean runtimeMember;
     [PrefixGet] object prefixGetMember;
+    record<ByteString, byte> recordMember;
+    record<USVString, TestObject> garbageCollectedRecordMember;
 };

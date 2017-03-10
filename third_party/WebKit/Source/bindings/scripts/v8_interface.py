@@ -1101,7 +1101,8 @@ def resolution_tests_methods(effective_overloads):
             # Array in overloaded method: http://crbug.com/262383
             yield '%s->IsArray()' % cpp_value, method
     for idl_type, method in idl_types_methods:
-        if idl_type.is_dictionary or idl_type.name == 'Dictionary' or idl_type.is_callback_interface:
+        if idl_type.is_dictionary or idl_type.name == 'Dictionary' or \
+           idl_type.is_callback_interface or idl_type.is_record_type:
             # FIXME: should be '{1}->IsObject() && !{1}->IsRegExp()'.format(cpp_value)
             # FIXME: the IsRegExp checks can be skipped if we've
             # already generated tests for them.

@@ -319,6 +319,7 @@
     unsigned long canvasFontCacheMaxFonts();
 
     DictionaryTest dictionaryTest();
+    RecordTest recordTest();
     UnionTypesTest unionTypesTest();
     CallbackFunctionTest callbackFunctionTest();
     [RaisesException] void setScrollChain(ScrollState scrollState, sequence<Element> elements);

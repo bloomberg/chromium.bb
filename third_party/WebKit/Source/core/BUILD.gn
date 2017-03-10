@@ -266,6 +266,8 @@ source_set("testing") {
     "testing/OriginTrialsTest.cpp",
     "testing/OriginTrialsTest.h",
     "testing/OriginTrialsTestPartial.h",
+    "testing/RecordTest.cpp",
+    "testing/RecordTest.h",
     "testing/TypeConversions.h",
     "testing/UnionTypesTest.cpp",
     "testing/UnionTypesTest.h",

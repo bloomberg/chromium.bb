@@ -244,6 +244,20 @@ void V8TestDictionary::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
     impl.setEventTargetMember(eventTargetMember);
   }
 
+  v8::Local<v8::Value> garbageCollectedRecordMemberValue;
+  if (!v8Object->Get(isolate->GetCurrentContext(), v8AtomicString(isolate, "garbageCollectedRecordMember")).ToLocal(&garbageCollectedRecordMemberValue)) {
+    exceptionState.rethrowV8Exception(block.Exception());
+    return;
+  }
+  if (garbageCollectedRecordMemberValue.IsEmpty() || garbageCollectedRecordMemberValue->IsUndefined()) {
+    // Do nothing.
+  } else {
+    HeapVector<std::pair<String, Member<TestObject>>> garbageCollectedRecordMember = NativeValueTraits<IDLRecord<IDLUSVString, TestObject>>::nativeValue(isolate, garbageCollectedRecordMemberValue, exceptionState);
+    if (exceptionState.hadException())
+      return;
+    impl.setGarbageCollectedRecordMember(garbageCollectedRecordMember);
+  }
+
   v8::Local<v8::Value> internalDictionarySequenceMemberValue;
   if (!v8Object->Get(isolate->GetCurrentContext(), v8AtomicString(isolate, "internalDictionarySequenceMember")).ToLocal(&internalDictionarySequenceMemberValue)) {
     exceptionState.rethrowV8Exception(block.Exception());
@@ -335,6 +349,20 @@ void V8TestDictionary::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
       return;
     }
     impl.setPrefixGetMember(prefixGetMember);
+  }
+
+  v8::Local<v8::Value> recordMemberValue;
+  if (!v8Object->Get(isolate->GetCurrentContext(), v8AtomicString(isolate, "recordMember")).ToLocal(&recordMemberValue)) {
+    exceptionState.rethrowV8Exception(block.Exception());
+    return;
+  }
+  if (recordMemberValue.IsEmpty() || recordMemberValue->IsUndefined()) {
+    // Do nothing.
+  } else {
+    Vector<std::pair<String, int8_t>> recordMember = NativeValueTraits<IDLRecord<IDLByteString, IDLByte>>::nativeValue(isolate, recordMemberValue, exceptionState);
+    if (exceptionState.hadException())
+      return;
+    impl.setRecordMember(recordMember);
   }
 
   v8::Local<v8::Value> restrictedDoubleMemberValue;
@@ -665,6 +693,11 @@ bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
       return false;
   }
 
+  if (impl.hasGarbageCollectedRecordMember()) {
+    if (!v8CallBoolean(dictionary->CreateDataProperty(isolate->GetCurrentContext(), v8AtomicString(isolate, "garbageCollectedRecordMember"), ToV8(impl.garbageCollectedRecordMember(), creationContext, isolate))))
+      return false;
+  }
+
   if (impl.hasInternalDictionarySequenceMember()) {
     if (!v8CallBoolean(dictionary->CreateDataProperty(isolate->GetCurrentContext(), v8AtomicString(isolate, "internalDictionarySequenceMember"), ToV8(impl.internalDictionarySequenceMember(), creationContext, isolate))))
       return false;
@@ -704,6 +737,11 @@ bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
   if (impl.hasPrefixGetMember()) {
     DCHECK(impl.getPrefixGetMember().isObject());
     if (!v8CallBoolean(dictionary->CreateDataProperty(isolate->GetCurrentContext(), v8AtomicString(isolate, "prefixGetMember"), impl.getPrefixGetMember().v8Value())))
+      return false;
+  }
+
+  if (impl.hasRecordMember()) {
+    if (!v8CallBoolean(dictionary->CreateDataProperty(isolate->GetCurrentContext(), v8AtomicString(isolate, "recordMember"), ToV8(impl.recordMember(), creationContext, isolate))))
       return false;
   }
 

@@ -11,6 +11,7 @@
 // clang-format off
 #include "V8TestTypedefs.h"
 
+#include "bindings/core/v8/ByteStringSequenceSequenceOrByteStringByteStringRecord.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/IDLTypes.h"
 #include "bindings/core/v8/NativeValueTraitsImpl.h"
@@ -21,6 +22,7 @@
 #include "bindings/core/v8/V8TestCallbackInterface.h"
 #include "bindings/core/v8/V8TestInterface.h"
 #include "bindings/core/v8/V8TestInterfaceEmpty.h"
+#include "bindings/core/v8/V8TestObject.h"
 #include "core/dom/Document.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "wtf/GetPtr.h"
@@ -242,6 +244,66 @@ static void stringArrayMethodStringArrayArgMethod(const v8::FunctionCallbackInfo
   v8SetReturnValue(info, ToV8(impl->stringArrayMethodStringArrayArg(stringArrayArg), info.Holder(), info.GetIsolate()));
 }
 
+static void methodTakingRecordMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestTypedefs", "methodTakingRecord");
+
+  TestTypedefs* impl = V8TestTypedefs::toImpl(info.Holder());
+
+  if (UNLIKELY(info.Length() < 1)) {
+    exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
+    return;
+  }
+
+  Vector<std::pair<String, int32_t>> arg;
+  arg = NativeValueTraits<IDLRecord<IDLByteString, IDLLong>>::nativeValue(info.GetIsolate(), info[0], exceptionState);
+  if (exceptionState.hadException())
+    return;
+
+  impl->methodTakingRecord(arg);
+}
+
+static void methodTakingOilpanValueRecordMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestTypedefs", "methodTakingOilpanValueRecord");
+
+  TestTypedefs* impl = V8TestTypedefs::toImpl(info.Holder());
+
+  if (UNLIKELY(info.Length() < 1)) {
+    exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
+    return;
+  }
+
+  HeapVector<std::pair<String, Member<TestObject>>> arg;
+  arg = NativeValueTraits<IDLRecord<IDLUSVString, TestObject>>::nativeValue(info.GetIsolate(), info[0], exceptionState);
+  if (exceptionState.hadException())
+    return;
+
+  impl->methodTakingOilpanValueRecord(arg);
+}
+
+static void unionWithRecordMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestTypedefs", "unionWithRecordMethod");
+
+  TestTypedefs* impl = V8TestTypedefs::toImpl(info.Holder());
+
+  if (UNLIKELY(info.Length() < 1)) {
+    exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
+    return;
+  }
+
+  ByteStringSequenceSequenceOrByteStringByteStringRecord arg;
+  V8ByteStringSequenceSequenceOrByteStringByteStringRecord::toImpl(info.GetIsolate(), info[0], arg, UnionTypeConversionMode::NotNullable, exceptionState);
+  if (exceptionState.hadException())
+    return;
+
+  v8SetReturnValue(info, impl->unionWithRecordMethod(arg));
+}
+
+static void methodThatReturnsRecordMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestTypedefs* impl = V8TestTypedefs::toImpl(info.Holder());
+
+  v8SetReturnValue(info, ToV8(impl->methodThatReturnsRecord(), info.Holder(), info.GetIsolate()));
+}
+
 static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info) {
   if (UNLIKELY(info.Length() < 1)) {
     V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToConstruct("TestTypedefs", ExceptionMessages::notEnoughArguments(1, info.Length())));
@@ -313,6 +375,22 @@ void V8TestTypedefs::stringArrayMethodStringArrayArgMethodCallback(const v8::Fun
   TestTypedefsV8Internal::stringArrayMethodStringArrayArgMethod(info);
 }
 
+void V8TestTypedefs::methodTakingRecordMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestTypedefsV8Internal::methodTakingRecordMethod(info);
+}
+
+void V8TestTypedefs::methodTakingOilpanValueRecordMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestTypedefsV8Internal::methodTakingOilpanValueRecordMethod(info);
+}
+
+void V8TestTypedefs::unionWithRecordMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestTypedefsV8Internal::unionWithRecordMethodMethod(info);
+}
+
+void V8TestTypedefs::methodThatReturnsRecordMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestTypedefsV8Internal::methodThatReturnsRecordMethod(info);
+}
+
 // Suppress warning: global constructors, because AttributeConfiguration is trivial
 // and does not depend on another global objects.
 #if defined(COMPONENT_BUILD) && defined(WIN32) && COMPILER(CLANG)
@@ -340,6 +418,10 @@ const V8DOMConfiguration::MethodConfiguration V8TestTypedefsMethods[] = {
     {"domStringOrDoubleMethod", V8TestTypedefs::domStringOrDoubleMethodMethodCallback, nullptr, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder, V8DOMConfiguration::DoNotCheckAccess},
     {"arrayOfStringsMethodArrayOfStringsArg", V8TestTypedefs::arrayOfStringsMethodArrayOfStringsArgMethodCallback, nullptr, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder, V8DOMConfiguration::DoNotCheckAccess},
     {"stringArrayMethodStringArrayArg", V8TestTypedefs::stringArrayMethodStringArrayArgMethodCallback, nullptr, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder, V8DOMConfiguration::DoNotCheckAccess},
+    {"methodTakingRecord", V8TestTypedefs::methodTakingRecordMethodCallback, nullptr, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder, V8DOMConfiguration::DoNotCheckAccess},
+    {"methodTakingOilpanValueRecord", V8TestTypedefs::methodTakingOilpanValueRecordMethodCallback, nullptr, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder, V8DOMConfiguration::DoNotCheckAccess},
+    {"unionWithRecordMethod", V8TestTypedefs::unionWithRecordMethodMethodCallback, nullptr, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder, V8DOMConfiguration::DoNotCheckAccess},
+    {"methodThatReturnsRecord", V8TestTypedefs::methodThatReturnsRecordMethodCallback, nullptr, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder, V8DOMConfiguration::DoNotCheckAccess},
 };
 
 void V8TestTypedefs::constructorCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {

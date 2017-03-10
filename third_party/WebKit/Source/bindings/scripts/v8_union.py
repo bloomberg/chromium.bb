@@ -52,6 +52,7 @@ def container_context(union_type, interfaces_info):
     interface_types = []
     numeric_type = None
     object_type = None
+    record_type = None
     string_type = None
     for member in union_type.member_types:
         context = member_context(member, interfaces_info)
@@ -74,9 +75,13 @@ def container_context(union_type, interfaces_info):
             array_or_sequence_type = context
         # "Dictionary" is an object, rather than an IDL dictionary.
         elif member.base_type == 'Dictionary':
-            if object_type:
+            if object_type or record_type:
                 raise Exception('%s is ambiguous.' % union_type.name)
             object_type = context
+        elif member.is_record_type:
+            if object_type or record_type:
+                raise Exception('%s is ambiguous.' % union_type.name)
+            record_type = context
         elif member.is_interface_type:
             interface_types.append(context)
         elif member is union_type.boolean_member_type:
@@ -111,6 +116,7 @@ def container_context(union_type, interfaces_info):
         'members': members,
         'numeric_type': numeric_type,
         'object_type': object_type,
+        'record_type': record_type,
         'string_type': string_type,
         'type_string': str(union_type),
         'v8_class': v8_types.v8_type(cpp_class),
@@ -128,7 +134,12 @@ def _update_includes_and_forward_decls(member, interface_info):
             cpp_includes.update(member.includes_for_type())
             header_forward_decls.add(member.implemented_as)
     else:
-        cpp_includes.update(member.includes_for_type())
+        if member.is_record_type:
+            # The headers for both T and U must be present when
+            # Vector<std::pair<T, U>> is declared.
+            header_includes.update(member.includes_for_type())
+        else:
+            cpp_includes.update(member.includes_for_type())
 
 
 def member_context(member, interfaces_info):

@@ -122,6 +122,7 @@
 #include "core/testing/LayerRectList.h"
 #include "core/testing/MockHyphenation.h"
 #include "core/testing/OriginTrialsTest.h"
+#include "core/testing/RecordTest.h"
 #include "core/testing/TypeConversions.h"
 #include "core/testing/UnionTypesTest.h"
 #include "core/workers/WorkerThread.h"
@@ -2363,6 +2364,10 @@ TypeConversions* Internals::typeConversions() const {
 
 DictionaryTest* Internals::dictionaryTest() const {
   return DictionaryTest::create();
+}
+
+RecordTest* Internals::recordTest() const {
+  return RecordTest::create();
 }
 
 UnionTypesTest* Internals::unionTypesTest() const {

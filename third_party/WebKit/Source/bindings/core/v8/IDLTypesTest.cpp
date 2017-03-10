@@ -117,6 +117,28 @@ static_assert(
                  HeapVector<DictionarySequenceOrDictionary>>::value,
     "IDLSequence<union type> produces a HeapVector");
 
+static_assert(std::is_base_of<IDLBase, IDLRecord<IDLString, IDLShort>>::value,
+              "IDLRecord inherits from IDLBase");
+static_assert(std::is_base_of<IDLBase, IDLRecord<IDLString, Element>>::value,
+              "IDLRecord inherits from IDLBase");
+static_assert(std::is_same<IDLRecord<IDLByteString, IDLLong>::ImplType,
+                           Vector<std::pair<String, int32_t>>>::value,
+              "IDLRecord<IDLByteString, IDLLong> produces a Vector");
+static_assert(
+    std::is_same<IDLRecord<IDLByteString, Element>::ImplType,
+                 HeapVector<std::pair<String, Member<Element>>>>::value,
+    "IDLRecord<IDLByteString, GC-type>> produces a HeapVector with Member<>");
+static_assert(
+    std::is_same<IDLRecord<IDLUSVString, InternalDictionary>::ImplType,
+                 HeapVector<std::pair<String, InternalDictionary>>>::value,
+    "IDLRecord<IDLUSVString, dictionary type> produces a HeapVector with no "
+    "Member<>");
+static_assert(
+    std::is_same<
+        IDLRecord<IDLString, DictionarySequenceOrDictionary>::ImplType,
+        HeapVector<std::pair<String, DictionarySequenceOrDictionary>>>::value,
+    "IDLRecord<IDLString, union type> produces a HeapVector with no Member<>");
+
 }  // namespace
 
 }  // namespace blink

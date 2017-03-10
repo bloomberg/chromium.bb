@@ -98,7 +98,7 @@ void {{v8_class}}::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, {{
 
   {% endif %}
   {% if array_or_sequence_type %}
-  {# 12.1, 12.2. Arrays and Sequences #}
+  {# 11.1, 11.2. Arrays and Sequences #}
   {# FIXME: This should also check "object but not RegExp". Add checks
      when we implement conversions for Date and RegExp. #}
   {# TODO(bashi): Should check @@iterator symbol instead. #}
@@ -110,7 +110,7 @@ void {{v8_class}}::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, {{
 
   {% endif %}
   {% if dictionary_type %}
-  {# 12.3. Dictionaries #}
+  {# 11.3. Dictionaries #}
   if (v8Value->IsObject()) {
     {{v8_value_to_local_cpp_value(dictionary_type) | indent}}
     impl.set{{dictionary_type.type_name}}(cppValue);
@@ -118,8 +118,17 @@ void {{v8_class}}::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, {{
   }
 
   {% endif %}
-  {# TODO(bashi): Support 12.4 Callback interface when we need it #}
-  {# 12.5. Objects #}
+  {# 11.4. Records #}
+  {% if record_type %}
+  if (v8Value->IsObject()) {
+    {{v8_value_to_local_cpp_value(record_type) | indent}}
+    impl.set{{record_type.type_name}}(cppValue);
+    return;
+  }
+
+  {% endif %}
+  {# TODO(bashi): Support 11.5 Callback interface when we need it #}
+  {# 11.6. Objects #}
   {% if object_type %}
   if (isUndefinedOrNull(v8Value) || v8Value->IsObject()) {
     {{v8_value_to_local_cpp_value(object_type) | indent}}
@@ -131,7 +140,7 @@ void {{v8_class}}::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, {{
   {# FIXME: In some cases, we can omit boolean and numeric type checks because
      we have fallback conversions. (step 16 and 17) #}
   {% if boolean_type %}
-  {# 13. Boolean #}
+  {# 12. Boolean #}
   if (v8Value->IsBoolean()) {
     impl.setBoolean(v8Value.As<v8::Boolean>()->Value());
     return;
@@ -139,7 +148,7 @@ void {{v8_class}}::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, {{
 
   {% endif %}
   {% if numeric_type %}
-  {# 14. Number #}
+  {# 13. Number #}
   if (v8Value->IsNumber()) {
     {{v8_value_to_local_cpp_value(numeric_type) | indent}}
     impl.set{{numeric_type.type_name}}(cppValue);
@@ -148,7 +157,7 @@ void {{v8_class}}::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, {{
 
   {% endif %}
   {% if string_type %}
-  {# 15. String #}
+  {# 14. String #}
   {
     {{v8_value_to_local_cpp_value(string_type) | indent}}
     {% if string_type.enum_values %}
@@ -160,7 +169,7 @@ void {{v8_class}}::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, {{
     return;
   }
 
-  {# 16. Number (fallback) #}
+  {# 15. Number (fallback) #}
   {% elif numeric_type %}
   {
     {{v8_value_to_local_cpp_value(numeric_type) | indent}}
@@ -168,7 +177,7 @@ void {{v8_class}}::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, {{
     return;
   }
 
-  {# 17. Boolean (fallback) #}
+  {# 16. Boolean (fallback) #}
   {% elif boolean_type %}
   {
     impl.setBoolean(v8Value->BooleanValue());
@@ -176,7 +185,7 @@ void {{v8_class}}::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, {{
   }
 
   {% else %}
-  {# 18. TypeError #}
+  {# 17. TypeError #}
   exceptionState.throwTypeError("The provided value is not of type '{{type_string}}'");
   {% endif %}
 }

@@ -605,6 +605,7 @@ webcore_testing_idl_files =
                     "testing/LayerRect.idl",
                     "testing/LayerRectList.idl",
                     "testing/OriginTrialsTest.idl",
+                    "testing/RecordTest.idl",
                     "testing/TypeConversions.idl",
                     "testing/UnionTypesTest.idl",
                   ],

@@ -233,6 +233,7 @@ bindings_unittest_files =
     get_path_info([
                     "core/v8/DocumentWriteEvaluatorTest.cpp",
                     "core/v8/IDLTypesTest.cpp",
+                    "core/v8/NativeValueTraitsImplTest.cpp",
                     "core/v8/NativeValueTraitsTest.cpp",
                     "core/v8/ScriptPromisePropertyTest.cpp",
                     "core/v8/ScriptPromiseResolverTest.cpp",

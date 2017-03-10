@@ -41,7 +41,12 @@ Design doc: http://www.chromium.org/developers/design-documents/idl-compiler
 
 import posixpath
 
-from idl_types import IdlTypeBase, IdlType, IdlUnionType, IdlArrayOrSequenceType, IdlNullableType
+from idl_types import IdlArrayOrSequenceType
+from idl_types import IdlNullableType
+from idl_types import IdlRecordType
+from idl_types import IdlType
+from idl_types import IdlTypeBase
+from idl_types import IdlUnionType
 import v8_attributes  # for IdlType.constructor_type_name
 from v8_globals import includes
 from v8_utilities import extended_attribute_value_contains
@@ -140,7 +145,7 @@ def cpp_type(idl_type, extended_attributes=None, raw_type=False, used_as_rvalue_
             bool, True if the C++ type is used as a variadic argument of a method.
         used_in_cpp_sequence:
             bool, True if the C++ type is used as an element of a container.
-            Containers can be an array, a sequence or a dictionary.
+            Containers can be an array, a sequence, a dictionary or a record.
     """
     def string_mode():
         if idl_type.is_nullable:
@@ -162,6 +167,16 @@ def cpp_type(idl_type, extended_attributes=None, raw_type=False, used_as_rvalue_
     if native_array_element_type:
         vector_type = cpp_ptr_type('Vector', 'HeapVector', native_array_element_type.is_gc_type)
         vector_template_type = cpp_template_type(vector_type, native_array_element_type.cpp_type_args(used_in_cpp_sequence=True))
+        if used_as_rvalue_type:
+            return 'const %s&' % vector_template_type
+        return vector_template_type
+
+    # Record types.
+    if idl_type.is_record_type:
+        vector_type = cpp_ptr_type('Vector', 'HeapVector', idl_type.value_type.is_gc_type)
+        value_type = idl_type.value_type.cpp_type_args(used_in_cpp_sequence=True)
+        vector_template_type = cpp_template_type(vector_type,
+                                                 'std::pair<String, %s>' % value_type)
         if used_as_rvalue_type:
             return 'const %s&' % vector_template_type
         return vector_template_type
@@ -317,6 +332,8 @@ IdlTypeBase.is_traceable = property(is_traceable)
 IdlUnionType.is_traceable = property(lambda self: True)
 IdlArrayOrSequenceType.is_traceable = property(
     lambda self: self.element_type.is_traceable)
+IdlRecordType.is_traceable = property(
+    lambda self: self.value_type.is_traceable)
 
 
 ################################################################################
@@ -401,6 +418,13 @@ def includes_for_array_or_sequence_type(idl_type, extended_attributes=None):
     return idl_type.element_type.includes_for_type(extended_attributes)
 
 IdlArrayOrSequenceType.includes_for_type = includes_for_array_or_sequence_type
+
+
+def includes_for_record_type(idl_type, extended_attributes=None):
+    return set.union(idl_type.key_type.includes_for_type(extended_attributes),
+                     idl_type.value_type.includes_for_type(extended_attributes))
+
+IdlRecordType.includes_for_type = includes_for_record_type
 
 
 def add_includes_for_type(idl_type, extended_attributes=None):
@@ -499,6 +523,7 @@ def v8_conversion_needs_exception_state(idl_type):
 
 IdlType.v8_conversion_needs_exception_state = property(v8_conversion_needs_exception_state)
 IdlArrayOrSequenceType.v8_conversion_needs_exception_state = True
+IdlRecordType.v8_conversion_needs_exception_state = True
 IdlUnionType.v8_conversion_needs_exception_state = True
 
 
@@ -520,6 +545,24 @@ def v8_conversion_is_trivial(idl_type):
             idl_type.is_wrapper_type)
 
 IdlType.v8_conversion_is_trivial = property(v8_conversion_is_trivial)
+
+
+def native_value_traits_type_name(idl_type):
+    if idl_type.is_nullable:
+        idl_type = idl_type.inner_type
+
+    if idl_type.native_array_element_type:
+        name = 'IDLSequence<%s>' % native_value_traits_type_name(idl_type.native_array_element_type)
+    elif idl_type.is_record_type:
+        name = 'IDLRecord<%s, %s>' % (native_value_traits_type_name(idl_type.key_type),
+                                      native_value_traits_type_name(idl_type.value_type))
+    elif idl_type.is_basic_type or idl_type.name == 'Promise':
+        name = 'IDL%s' % idl_type.name
+    elif idl_type.implemented_as is not None:
+        name = idl_type.implemented_as
+    else:
+        name = idl_type.name
+    return name
 
 
 def v8_value_to_cpp_value(idl_type, extended_attributes, v8_value, variable_name, index, isolate):
@@ -569,14 +612,9 @@ def v8_value_to_cpp_value(idl_type, extended_attributes, v8_value, variable_name
     elif idl_type.v8_conversion_needs_exception_state:
         # Effectively, this if branch means everything with v8_conversion_needs_exception_state == True
         # except for unions, sequences and dictionary interfaces.
-        if idl_type.is_nullable:
-            idl_type = idl_type.inner_type
-        if idl_type.is_primitive_type or idl_type.name in ('ByteString', 'Date', 'Promise', 'USVString'):
-            trait_type = 'IDL%s' % idl_type.name
-        else:
-            trait_type = idl_type.name
+        base_idl_type = native_value_traits_type_name(idl_type)
         cpp_expression_format = (
-            'NativeValueTraits<%s>::nativeValue({isolate}, {arguments})' % trait_type)
+            'NativeValueTraits<{idl_type}>::nativeValue({isolate}, {arguments})')
     else:
         cpp_expression_format = (
             'V8{idl_type}::toImplWithTypeCheck({isolate}, {v8_value})')
@@ -748,6 +786,10 @@ def v8_conversion_type(idl_type, extended_attributes):
     if native_array_element_type:
         return 'FrozenArray' if idl_type.is_frozen_array else 'array'
 
+    # Record types.
+    if idl_type.is_record_type:
+        return 'Record'
+
     # Simple types
     base_idl_type = idl_type.base_type
     # Basic types, without additional includes
@@ -802,6 +844,8 @@ V8_SET_RETURN_VALUE = {
     'EventHandler': 'v8SetReturnValue(info, {cpp_value})',
     'ScriptValue': 'v8SetReturnValue(info, {cpp_value})',
     'SerializedScriptValue': 'v8SetReturnValue(info, {cpp_value})',
+    # Records.
+    'Record': 'v8SetReturnValue(info, ToV8({cpp_value}, info.Holder(), info.GetIsolate()))',
     # DOMWrapper
     'DOMWrapperForMainWorld': 'v8SetReturnValueForMainWorld(info, {cpp_value})',
     'DOMWrapperFast': 'v8SetReturnValueFast(info, {cpp_value}, {script_wrappable})',
@@ -903,6 +947,7 @@ CPP_VALUE_TO_V8_VALUE = {
         'V8AbstractEventListener::cast({cpp_value})->getListenerOrNull(' +
         '{isolate}, impl->getExecutionContext()) : ' +
         'v8::Null({isolate}).As<v8::Value>()'),
+    'Record': 'ToV8({cpp_value}, {creation_context}, {isolate})',
     'ScriptValue': '{cpp_value}.v8Value()',
     'SerializedScriptValue': 'v8Deserialize({isolate}, {cpp_value})',
     # General
