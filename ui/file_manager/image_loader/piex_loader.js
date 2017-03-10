@@ -194,6 +194,10 @@ PiexLoader.prototype.loadNaclModule_ = function() {
       listenerContainer.style.height = '0px';
       this.containerElement_ = listenerContainer;
       document.body.appendChild(listenerContainer);
+
+      // Force a relayout. Workaround for load event not being called on <embed>
+      // for a NaCl module. crbug.com/699930
+      /** @suppress {suspiciousCode} */ this.naclModule_.offsetTop;
     }.bind(this));
   }.bind(this)).catch(function (error) {
     console.error(error);
