@@ -37,8 +37,7 @@ function testSurroundContents(description, targetPath, newParent) {
         assert_throws("HierarchyRequestError", function () {
             range.surroundContents(newParent);
         });
-        var targetAfter = getNodeInComposedTree(targetPath);
-        assert_equals(targetAfter, target, "DOM should not change after HierarchyRequestError");
+        assert_equals(newParent.firstChild, null, newParent.id + " should not have children after surroundContents()");
     }, description);
 }
 

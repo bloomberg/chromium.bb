@@ -1319,6 +1319,7 @@ bool Range::selectNodeContents(Node* refNode, Position& start, Position& end) {
   return true;
 }
 
+// https://dom.spec.whatwg.org/#dom-range-surroundcontents
 void Range::surroundContents(Node* newParent, ExceptionState& exceptionState) {
   if (!newParent) {
     // FIXME: Generated bindings code never calls with null, and neither should
@@ -1327,7 +1328,8 @@ void Range::surroundContents(Node* newParent, ExceptionState& exceptionState) {
     return;
   }
 
-  // InvalidStateError: Raised if the Range partially selects a non-Text node.
+  // 1. If a non-Text node is partially contained in the context object, then
+  // throw an InvalidStateError.
   Node* startNonTextContainer = m_start.container();
   if (startNonTextContainer->getNodeType() == Node::kTextNode)
     startNonTextContainer = startNonTextContainer->parentNode();
@@ -1340,9 +1342,8 @@ void Range::surroundContents(Node* newParent, ExceptionState& exceptionState) {
     return;
   }
 
-  // InvalidNodeTypeError: Raised if node is an Attr, Entity, DocumentType,
-  // Notation,
-  // Document, or DocumentFragment node.
+  // 2. If newParent is a Document, DocumentType, or DocumentFragment node, then
+  // throw an InvalidNodeTypeError.
   switch (newParent->getNodeType()) {
     case Node::kAttributeNode:
     case Node::kDocumentFragmentNode:
@@ -1387,31 +1388,29 @@ void Range::surroundContents(Node* newParent, ExceptionState& exceptionState) {
     return;
   }
 
-  if (newParent->isShadowIncludingInclusiveAncestorOf(m_start.container())) {
-    exceptionState.throwDOMException(HierarchyRequestError,
-                                     "The node provided contains the insertion "
-                                     "point; it may not be inserted into "
-                                     "itself.");
-    return;
-  }
-
-  // FIXME: Do we need a check if the node would end up with a child node of a
-  // type not allowed by the type of node?
-
+  // 4. If newParent has children, replace all with null within newParent.
   while (Node* n = newParent->firstChild()) {
     toContainerNode(newParent)->removeChild(n, exceptionState);
     if (exceptionState.hadException())
       return;
   }
+
+  // 3. Let fragment be the result of extracting context object.
   DocumentFragment* fragment = extractContents(exceptionState);
   if (exceptionState.hadException())
     return;
+
+  // 5. If newParent has children, replace all with null within newParent.
   insertNode(newParent, exceptionState);
   if (exceptionState.hadException())
     return;
+
+  // 6. Append fragment to newParent.
   newParent->appendChild(fragment, exceptionState);
   if (exceptionState.hadException())
     return;
+
+  // 7. Select newParent within context object.
   selectNode(newParent, exceptionState);
 }
 

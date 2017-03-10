@@ -1,11 +1,7 @@
 This is a testharness.js-based test.
-Found 1672 tests; 1412 PASS, 260 FAIL, 0 TIMEOUT, 0 NOTRUN.
-FAIL 0,0: resulting DOM for range [paras[0].firstChild, 0, paras[0].firstChild, 0], node paras[0] assert_true: First differing node: expected Element node <p id="b" style="display:none">Ijklmnop
-</p>, got Text node "Äb̈c̈d̈ëf̈g̈ḧ
-" [Actual and expected mismatch for range's tree root.  ] expected true got false
-FAIL 0,0: resulting range position for range [paras[0].firstChild, 0, paras[0].firstChild, 0], node paras[0] assert_true: First differing node: expected Element node <p id="b" style="display:none">Ijklmnop
-</p>, got Text node "Äb̈c̈d̈ëf̈g̈ḧ
-" [Actual and expected mismatch for range's tree root.  ] expected true got false
+Found 1672 tests; 1456 PASS, 216 FAIL, 0 TIMEOUT, 0 NOTRUN.
+PASS 0,0: resulting DOM for range [paras[0].firstChild, 0, paras[0].firstChild, 0], node paras[0] 
+PASS 0,0: resulting range position for range [paras[0].firstChild, 0, paras[0].firstChild, 0], node paras[0] 
 PASS 0,1: resulting DOM for range [paras[0].firstChild, 0, paras[0].firstChild, 0], node paras[0].firstChild 
 PASS 0,1: resulting range position for range [paras[0].firstChild, 0, paras[0].firstChild, 0], node paras[0].firstChild 
 PASS 0,2: resulting DOM for range [paras[0].firstChild, 0, paras[0].firstChild, 0], node paras[1].firstChild 
@@ -48,18 +44,10 @@ PASS 0,20: resulting DOM for range [paras[0].firstChild, 0, paras[0].firstChild,
 PASS 0,20: resulting range position for range [paras[0].firstChild, 0, paras[0].firstChild, 0], node doctype 
 PASS 0,21: resulting DOM for range [paras[0].firstChild, 0, paras[0].firstChild, 0], node foreignDoctype 
 PASS 0,21: resulting range position for range [paras[0].firstChild, 0, paras[0].firstChild, 0], node foreignDoctype 
-FAIL 1,0: resulting DOM for range [paras[0].firstChild, 0, paras[0].firstChild, 1], node paras[0] assert_true: First differing node: expected Element node <p id="b" style="display:none">Ijklmnop
-</p>, got Text node "Äb̈c̈d̈ëf̈g̈ḧ
-" [Actual and expected mismatch for range's tree root.  ] expected true got false
-FAIL 1,0: resulting range position for range [paras[0].firstChild, 0, paras[0].firstChild, 1], node paras[0] assert_true: First differing node: expected Element node <p id="b" style="display:none">Ijklmnop
-</p>, got Text node "Äb̈c̈d̈ëf̈g̈ḧ
-" [Actual and expected mismatch for range's tree root.  ] expected true got false
-FAIL 1,1: resulting DOM for range [paras[0].firstChild, 0, paras[0].firstChild, 1], node paras[0].firstChild assert_true: First differing node: expected Text node "̈b̈c̈d̈ëf̈g̈ḧ
-", got Text node "Äb̈c̈d̈ëf̈g̈ḧ
-" [Actual and expected mismatch for range's tree root.  ] expected true got false
-FAIL 1,1: resulting range position for range [paras[0].firstChild, 0, paras[0].firstChild, 1], node paras[0].firstChild assert_true: First differing node: expected Text node "̈b̈c̈d̈ëf̈g̈ḧ
-", got Text node "Äb̈c̈d̈ëf̈g̈ḧ
-" [Actual and expected mismatch for range's tree root.  ] expected true got false
+PASS 1,0: resulting DOM for range [paras[0].firstChild, 0, paras[0].firstChild, 1], node paras[0] 
+PASS 1,0: resulting range position for range [paras[0].firstChild, 0, paras[0].firstChild, 1], node paras[0] 
+PASS 1,1: resulting DOM for range [paras[0].firstChild, 0, paras[0].firstChild, 1], node paras[0].firstChild 
+PASS 1,1: resulting range position for range [paras[0].firstChild, 0, paras[0].firstChild, 1], node paras[0].firstChild 
 PASS 1,2: resulting DOM for range [paras[0].firstChild, 0, paras[0].firstChild, 1], node paras[1].firstChild 
 PASS 1,2: resulting range position for range [paras[0].firstChild, 0, paras[0].firstChild, 1], node paras[1].firstChild 
 PASS 1,3: resulting DOM for range [paras[0].firstChild, 0, paras[0].firstChild, 1], node foreignPara1 
@@ -100,18 +88,10 @@ PASS 1,20: resulting DOM for range [paras[0].firstChild, 0, paras[0].firstChild,
 PASS 1,20: resulting range position for range [paras[0].firstChild, 0, paras[0].firstChild, 1], node doctype 
 PASS 1,21: resulting DOM for range [paras[0].firstChild, 0, paras[0].firstChild, 1], node foreignDoctype 
 PASS 1,21: resulting range position for range [paras[0].firstChild, 0, paras[0].firstChild, 1], node foreignDoctype 
-FAIL 2,0: resulting DOM for range [paras[0].firstChild, 2, paras[0].firstChild, 8], node paras[0] assert_true: First differing node: expected Element node <p id="b" style="display:none">Ijklmnop
-</p>, got Text node "Äb̈c̈d̈ëf̈g̈ḧ
-" [Actual and expected mismatch for range's tree root.  ] expected true got false
-FAIL 2,0: resulting range position for range [paras[0].firstChild, 2, paras[0].firstChild, 8], node paras[0] assert_true: First differing node: expected Element node <p id="b" style="display:none">Ijklmnop
-</p>, got Text node "Äb̈c̈d̈ëf̈g̈ḧ
-" [Actual and expected mismatch for range's tree root.  ] expected true got false
-FAIL 2,1: resulting DOM for range [paras[0].firstChild, 2, paras[0].firstChild, 8], node paras[0].firstChild assert_true: First differing node: expected Text node "Äëf̈g̈ḧ
-", got Text node "Äb̈c̈d̈ëf̈g̈ḧ
-" [Actual and expected mismatch for range's tree root.  ] expected true got false
-FAIL 2,1: resulting range position for range [paras[0].firstChild, 2, paras[0].firstChild, 8], node paras[0].firstChild assert_true: First differing node: expected Text node "Äëf̈g̈ḧ
-", got Text node "Äb̈c̈d̈ëf̈g̈ḧ
-" [Actual and expected mismatch for range's tree root.  ] expected true got false
+PASS 2,0: resulting DOM for range [paras[0].firstChild, 2, paras[0].firstChild, 8], node paras[0] 
+PASS 2,0: resulting range position for range [paras[0].firstChild, 2, paras[0].firstChild, 8], node paras[0] 
+PASS 2,1: resulting DOM for range [paras[0].firstChild, 2, paras[0].firstChild, 8], node paras[0].firstChild 
+PASS 2,1: resulting range position for range [paras[0].firstChild, 2, paras[0].firstChild, 8], node paras[0].firstChild 
 PASS 2,2: resulting DOM for range [paras[0].firstChild, 2, paras[0].firstChild, 8], node paras[1].firstChild 
 PASS 2,2: resulting range position for range [paras[0].firstChild, 2, paras[0].firstChild, 8], node paras[1].firstChild 
 PASS 2,3: resulting DOM for range [paras[0].firstChild, 2, paras[0].firstChild, 8], node foreignPara1 
@@ -152,18 +132,10 @@ PASS 2,20: resulting DOM for range [paras[0].firstChild, 2, paras[0].firstChild,
 PASS 2,20: resulting range position for range [paras[0].firstChild, 2, paras[0].firstChild, 8], node doctype 
 PASS 2,21: resulting DOM for range [paras[0].firstChild, 2, paras[0].firstChild, 8], node foreignDoctype 
 PASS 2,21: resulting range position for range [paras[0].firstChild, 2, paras[0].firstChild, 8], node foreignDoctype 
-FAIL 3,0: resulting DOM for range [paras[0].firstChild, 2, paras[0].firstChild, 9], node paras[0] assert_true: First differing node: expected Element node <p id="b" style="display:none">Ijklmnop
-</p>, got Text node "Äb̈c̈d̈ëf̈g̈ḧ
-" [Actual and expected mismatch for range's tree root.  ] expected true got false
-FAIL 3,0: resulting range position for range [paras[0].firstChild, 2, paras[0].firstChild, 9], node paras[0] assert_true: First differing node: expected Element node <p id="b" style="display:none">Ijklmnop
-</p>, got Text node "Äb̈c̈d̈ëf̈g̈ḧ
-" [Actual and expected mismatch for range's tree root.  ] expected true got false
-FAIL 3,1: resulting DOM for range [paras[0].firstChild, 2, paras[0].firstChild, 9], node paras[0].firstChild assert_true: First differing node: expected Text node "Ä̈f̈g̈ḧ
-", got Text node "Äb̈c̈d̈ëf̈g̈ḧ
-" [Actual and expected mismatch for range's tree root.  ] expected true got false
-FAIL 3,1: resulting range position for range [paras[0].firstChild, 2, paras[0].firstChild, 9], node paras[0].firstChild assert_true: First differing node: expected Text node "Ä̈f̈g̈ḧ
-", got Text node "Äb̈c̈d̈ëf̈g̈ḧ
-" [Actual and expected mismatch for range's tree root.  ] expected true got false
+PASS 3,0: resulting DOM for range [paras[0].firstChild, 2, paras[0].firstChild, 9], node paras[0] 
+PASS 3,0: resulting range position for range [paras[0].firstChild, 2, paras[0].firstChild, 9], node paras[0] 
+PASS 3,1: resulting DOM for range [paras[0].firstChild, 2, paras[0].firstChild, 9], node paras[0].firstChild 
+PASS 3,1: resulting range position for range [paras[0].firstChild, 2, paras[0].firstChild, 9], node paras[0].firstChild 
 PASS 3,2: resulting DOM for range [paras[0].firstChild, 2, paras[0].firstChild, 9], node paras[1].firstChild 
 PASS 3,2: resulting range position for range [paras[0].firstChild, 2, paras[0].firstChild, 9], node paras[1].firstChild 
 PASS 3,3: resulting DOM for range [paras[0].firstChild, 2, paras[0].firstChild, 9], node foreignPara1 
@@ -252,10 +224,8 @@ PASS 5,0: resulting DOM for range [paras[1].firstChild, 2, paras[1].firstChild, 
 PASS 5,0: resulting range position for range [paras[1].firstChild, 2, paras[1].firstChild, 9], node paras[0] 
 PASS 5,1: resulting DOM for range [paras[1].firstChild, 2, paras[1].firstChild, 9], node paras[0].firstChild 
 PASS 5,1: resulting range position for range [paras[1].firstChild, 2, paras[1].firstChild, 9], node paras[0].firstChild 
-FAIL 5,2: resulting DOM for range [paras[1].firstChild, 2, paras[1].firstChild, 9], node paras[1].firstChild assert_true: First differing node: expected Text node "Ij", got Text node "Ijklmnop
-" [Actual and expected mismatch for range's tree root.  ] expected true got false
-FAIL 5,2: resulting range position for range [paras[1].firstChild, 2, paras[1].firstChild, 9], node paras[1].firstChild assert_true: First differing node: expected Text node "Ij", got Text node "Ijklmnop
-" [Actual and expected mismatch for range's tree root.  ] expected true got false
+PASS 5,2: resulting DOM for range [paras[1].firstChild, 2, paras[1].firstChild, 9], node paras[1].firstChild 
+PASS 5,2: resulting range position for range [paras[1].firstChild, 2, paras[1].firstChild, 9], node paras[1].firstChild 
 PASS 5,3: resulting DOM for range [paras[1].firstChild, 2, paras[1].firstChild, 9], node foreignPara1 
 PASS 5,3: resulting range position for range [paras[1].firstChild, 2, paras[1].firstChild, 9], node foreignPara1 
 PASS 5,4: resulting DOM for range [paras[1].firstChild, 2, paras[1].firstChild, 9], node foreignPara1.firstChild 
@@ -304,14 +274,14 @@ PASS 6,3: resulting DOM for range [detachedPara1.firstChild, 0, detachedPara1.fi
 PASS 6,3: resulting range position for range [detachedPara1.firstChild, 0, detachedPara1.firstChild, 0], node foreignPara1 
 PASS 6,4: resulting DOM for range [detachedPara1.firstChild, 0, detachedPara1.firstChild, 0], node foreignPara1.firstChild 
 PASS 6,4: resulting range position for range [detachedPara1.firstChild, 0, detachedPara1.firstChild, 0], node foreignPara1.firstChild 
-FAIL 6,5: resulting DOM for range [detachedPara1.firstChild, 0, detachedPara1.firstChild, 0], node detachedPara1 assert_true: First differing node: expected Element node <p>Wxyzabcd</p>, got Text node "Opqrstuv" [Actual and expected mismatch for range's tree root.  ] expected true got false
-FAIL 6,5: resulting range position for range [detachedPara1.firstChild, 0, detachedPara1.firstChild, 0], node detachedPara1 assert_true: First differing node: expected Element node <p>Wxyzabcd</p>, got Text node "Opqrstuv" [Actual and expected mismatch for range's tree root.  ] expected true got false
+PASS 6,5: resulting DOM for range [detachedPara1.firstChild, 0, detachedPara1.firstChild, 0], node detachedPara1 
+PASS 6,5: resulting range position for range [detachedPara1.firstChild, 0, detachedPara1.firstChild, 0], node detachedPara1 
 PASS 6,6: resulting DOM for range [detachedPara1.firstChild, 0, detachedPara1.firstChild, 0], node detachedPara1.firstChild 
 PASS 6,6: resulting range position for range [detachedPara1.firstChild, 0, detachedPara1.firstChild, 0], node detachedPara1.firstChild 
 PASS 6,7: resulting DOM for range [detachedPara1.firstChild, 0, detachedPara1.firstChild, 0], node document 
 PASS 6,7: resulting range position for range [detachedPara1.firstChild, 0, detachedPara1.firstChild, 0], node document 
-FAIL 6,8: resulting DOM for range [detachedPara1.firstChild, 0, detachedPara1.firstChild, 0], node detachedDiv assert_unreached: DOMs were not equal but we couldn't figure out why Reached unreachable code
-FAIL 6,8: resulting range position for range [detachedPara1.firstChild, 0, detachedPara1.firstChild, 0], node detachedDiv assert_unreached: DOMs were not equal but we couldn't figure out why Reached unreachable code
+PASS 6,8: resulting DOM for range [detachedPara1.firstChild, 0, detachedPara1.firstChild, 0], node detachedDiv 
+PASS 6,8: resulting range position for range [detachedPara1.firstChild, 0, detachedPara1.firstChild, 0], node detachedDiv 
 PASS 6,9: resulting DOM for range [detachedPara1.firstChild, 0, detachedPara1.firstChild, 0], node foreignDoc 
 PASS 6,9: resulting range position for range [detachedPara1.firstChild, 0, detachedPara1.firstChild, 0], node foreignDoc 
 PASS 6,10: resulting DOM for range [detachedPara1.firstChild, 0, detachedPara1.firstChild, 0], node foreignPara2 
@@ -348,14 +318,14 @@ PASS 7,3: resulting DOM for range [detachedPara1.firstChild, 2, detachedPara1.fi
 PASS 7,3: resulting range position for range [detachedPara1.firstChild, 2, detachedPara1.firstChild, 8], node foreignPara1 
 PASS 7,4: resulting DOM for range [detachedPara1.firstChild, 2, detachedPara1.firstChild, 8], node foreignPara1.firstChild 
 PASS 7,4: resulting range position for range [detachedPara1.firstChild, 2, detachedPara1.firstChild, 8], node foreignPara1.firstChild 
-FAIL 7,5: resulting DOM for range [detachedPara1.firstChild, 2, detachedPara1.firstChild, 8], node detachedPara1 assert_true: First differing node: expected Element node <p>Wxyzabcd</p>, got Text node "Opqrstuv" [Actual and expected mismatch for range's tree root.  ] expected true got false
-FAIL 7,5: resulting range position for range [detachedPara1.firstChild, 2, detachedPara1.firstChild, 8], node detachedPara1 assert_true: First differing node: expected Element node <p>Wxyzabcd</p>, got Text node "Opqrstuv" [Actual and expected mismatch for range's tree root.  ] expected true got false
-FAIL 7,6: resulting DOM for range [detachedPara1.firstChild, 2, detachedPara1.firstChild, 8], node detachedPara1.firstChild assert_true: First differing node: expected Text node "Op", got Text node "Opqrstuv" [Actual and expected mismatch for range's tree root.  ] expected true got false
-FAIL 7,6: resulting range position for range [detachedPara1.firstChild, 2, detachedPara1.firstChild, 8], node detachedPara1.firstChild assert_true: First differing node: expected Text node "Op", got Text node "Opqrstuv" [Actual and expected mismatch for range's tree root.  ] expected true got false
+PASS 7,5: resulting DOM for range [detachedPara1.firstChild, 2, detachedPara1.firstChild, 8], node detachedPara1 
+PASS 7,5: resulting range position for range [detachedPara1.firstChild, 2, detachedPara1.firstChild, 8], node detachedPara1 
+PASS 7,6: resulting DOM for range [detachedPara1.firstChild, 2, detachedPara1.firstChild, 8], node detachedPara1.firstChild 
+PASS 7,6: resulting range position for range [detachedPara1.firstChild, 2, detachedPara1.firstChild, 8], node detachedPara1.firstChild 
 PASS 7,7: resulting DOM for range [detachedPara1.firstChild, 2, detachedPara1.firstChild, 8], node document 
 PASS 7,7: resulting range position for range [detachedPara1.firstChild, 2, detachedPara1.firstChild, 8], node document 
-FAIL 7,8: resulting DOM for range [detachedPara1.firstChild, 2, detachedPara1.firstChild, 8], node detachedDiv assert_unreached: DOMs were not equal but we couldn't figure out why Reached unreachable code
-FAIL 7,8: resulting range position for range [detachedPara1.firstChild, 2, detachedPara1.firstChild, 8], node detachedDiv assert_unreached: DOMs were not equal but we couldn't figure out why Reached unreachable code
+PASS 7,8: resulting DOM for range [detachedPara1.firstChild, 2, detachedPara1.firstChild, 8], node detachedDiv 
+PASS 7,8: resulting range position for range [detachedPara1.firstChild, 2, detachedPara1.firstChild, 8], node detachedDiv 
 PASS 7,9: resulting DOM for range [detachedPara1.firstChild, 2, detachedPara1.firstChild, 8], node foreignDoc 
 PASS 7,9: resulting range position for range [detachedPara1.firstChild, 2, detachedPara1.firstChild, 8], node foreignDoc 
 PASS 7,10: resulting DOM for range [detachedPara1.firstChild, 2, detachedPara1.firstChild, 8], node foreignPara2 
@@ -388,8 +358,8 @@ PASS 8,1: resulting DOM for range [foreignPara1.firstChild, 0, foreignPara1.firs
 PASS 8,1: resulting range position for range [foreignPara1.firstChild, 0, foreignPara1.firstChild, 0], node paras[0].firstChild 
 PASS 8,2: resulting DOM for range [foreignPara1.firstChild, 0, foreignPara1.firstChild, 0], node paras[1].firstChild 
 PASS 8,2: resulting range position for range [foreignPara1.firstChild, 0, foreignPara1.firstChild, 0], node paras[1].firstChild 
-FAIL 8,3: resulting DOM for range [foreignPara1.firstChild, 0, foreignPara1.firstChild, 0], node foreignPara1 assert_true: First differing node: expected Element node <p>Mnopqrst</p>, got Text node "Efghijkl" [Actual and expected mismatch for range's tree root.  ] expected true got false
-FAIL 8,3: resulting range position for range [foreignPara1.firstChild, 0, foreignPara1.firstChild, 0], node foreignPara1 assert_true: First differing node: expected Element node <p>Mnopqrst</p>, got Text node "Efghijkl" [Actual and expected mismatch for range's tree root.  ] expected true got false
+PASS 8,3: resulting DOM for range [foreignPara1.firstChild, 0, foreignPara1.firstChild, 0], node foreignPara1 
+PASS 8,3: resulting range position for range [foreignPara1.firstChild, 0, foreignPara1.firstChild, 0], node foreignPara1 
 PASS 8,4: resulting DOM for range [foreignPara1.firstChild, 0, foreignPara1.firstChild, 0], node foreignPara1.firstChild 
 PASS 8,4: resulting range position for range [foreignPara1.firstChild, 0, foreignPara1.firstChild, 0], node foreignPara1.firstChild 
 PASS 8,5: resulting DOM for range [foreignPara1.firstChild, 0, foreignPara1.firstChild, 0], node detachedPara1 
@@ -432,10 +402,10 @@ PASS 9,1: resulting DOM for range [foreignPara1.firstChild, 2, foreignPara1.firs
 PASS 9,1: resulting range position for range [foreignPara1.firstChild, 2, foreignPara1.firstChild, 8], node paras[0].firstChild 
 PASS 9,2: resulting DOM for range [foreignPara1.firstChild, 2, foreignPara1.firstChild, 8], node paras[1].firstChild 
 PASS 9,2: resulting range position for range [foreignPara1.firstChild, 2, foreignPara1.firstChild, 8], node paras[1].firstChild 
-FAIL 9,3: resulting DOM for range [foreignPara1.firstChild, 2, foreignPara1.firstChild, 8], node foreignPara1 assert_true: First differing node: expected Element node <p>Mnopqrst</p>, got Text node "Efghijkl" [Actual and expected mismatch for range's tree root.  ] expected true got false
-FAIL 9,3: resulting range position for range [foreignPara1.firstChild, 2, foreignPara1.firstChild, 8], node foreignPara1 assert_true: First differing node: expected Element node <p>Mnopqrst</p>, got Text node "Efghijkl" [Actual and expected mismatch for range's tree root.  ] expected true got false
-FAIL 9,4: resulting DOM for range [foreignPara1.firstChild, 2, foreignPara1.firstChild, 8], node foreignPara1.firstChild assert_true: First differing node: expected Text node "Ef", got Text node "Efghijkl" [Actual and expected mismatch for range's tree root.  ] expected true got false
-FAIL 9,4: resulting range position for range [foreignPara1.firstChild, 2, foreignPara1.firstChild, 8], node foreignPara1.firstChild assert_true: First differing node: expected Text node "Ef", got Text node "Efghijkl" [Actual and expected mismatch for range's tree root.  ] expected true got false
+PASS 9,3: resulting DOM for range [foreignPara1.firstChild, 2, foreignPara1.firstChild, 8], node foreignPara1 
+PASS 9,3: resulting range position for range [foreignPara1.firstChild, 2, foreignPara1.firstChild, 8], node foreignPara1 
+PASS 9,4: resulting DOM for range [foreignPara1.firstChild, 2, foreignPara1.firstChild, 8], node foreignPara1.firstChild 
+PASS 9,4: resulting range position for range [foreignPara1.firstChild, 2, foreignPara1.firstChild, 8], node foreignPara1.firstChild 
 PASS 9,5: resulting DOM for range [foreignPara1.firstChild, 2, foreignPara1.firstChild, 8], node detachedPara1 
 PASS 9,5: resulting range position for range [foreignPara1.firstChild, 2, foreignPara1.firstChild, 8], node detachedPara1 
 PASS 9,6: resulting DOM for range [foreignPara1.firstChild, 2, foreignPara1.firstChild, 8], node detachedPara1.firstChild 
@@ -734,12 +704,8 @@ PASS 15,20: resulting DOM for range [foreignDoc.documentElement, 0, foreignDoc.d
 PASS 15,20: resulting range position for range [foreignDoc.documentElement, 0, foreignDoc.documentElement, 1], node doctype 
 PASS 15,21: resulting DOM for range [foreignDoc.documentElement, 0, foreignDoc.documentElement, 1], node foreignDoctype 
 PASS 15,21: resulting range position for range [foreignDoc.documentElement, 0, foreignDoc.documentElement, 1], node foreignDoctype 
-FAIL 16,0: resulting DOM for range [paras[0], 0, paras[0], 1], node paras[0] assert_true: First differing node: expected Element node <p id="b" style="display:none">Ijklmnop
-</p>, got Text node "Äb̈c̈d̈ëf̈g̈ḧ
-" [Actual and expected mismatch for range's tree root.  ] expected true got false
-FAIL 16,0: resulting range position for range [paras[0], 0, paras[0], 1], node paras[0] assert_true: First differing node: expected Element node <p id="b" style="display:none">Ijklmnop
-</p>, got Text node "Äb̈c̈d̈ëf̈g̈ḧ
-" [Actual and expected mismatch for range's tree root.  ] expected true got false
+PASS 16,0: resulting DOM for range [paras[0], 0, paras[0], 1], node paras[0] 
+PASS 16,0: resulting range position for range [paras[0], 0, paras[0], 1], node paras[0] 
 PASS 16,1: resulting DOM for range [paras[0], 0, paras[0], 1], node paras[0].firstChild 
 PASS 16,1: resulting range position for range [paras[0], 0, paras[0], 1], node paras[0].firstChild 
 PASS 16,2: resulting DOM for range [paras[0], 0, paras[0], 1], node paras[1].firstChild 
@@ -792,14 +758,14 @@ PASS 17,3: resulting DOM for range [detachedPara1, 0, detachedPara1, 1], node fo
 PASS 17,3: resulting range position for range [detachedPara1, 0, detachedPara1, 1], node foreignPara1 
 PASS 17,4: resulting DOM for range [detachedPara1, 0, detachedPara1, 1], node foreignPara1.firstChild 
 PASS 17,4: resulting range position for range [detachedPara1, 0, detachedPara1, 1], node foreignPara1.firstChild 
-FAIL 17,5: resulting DOM for range [detachedPara1, 0, detachedPara1, 1], node detachedPara1 assert_true: First differing node: expected Element node <p>Wxyzabcd</p>, got Text node "Opqrstuv" [Actual and expected mismatch for range's tree root.  ] expected true got false
-FAIL 17,5: resulting range position for range [detachedPara1, 0, detachedPara1, 1], node detachedPara1 assert_true: First differing node: expected Element node <p>Wxyzabcd</p>, got Text node "Opqrstuv" [Actual and expected mismatch for range's tree root.  ] expected true got false
+PASS 17,5: resulting DOM for range [detachedPara1, 0, detachedPara1, 1], node detachedPara1 
+PASS 17,5: resulting range position for range [detachedPara1, 0, detachedPara1, 1], node detachedPara1 
 PASS 17,6: resulting DOM for range [detachedPara1, 0, detachedPara1, 1], node detachedPara1.firstChild 
 PASS 17,6: resulting range position for range [detachedPara1, 0, detachedPara1, 1], node detachedPara1.firstChild 
 PASS 17,7: resulting DOM for range [detachedPara1, 0, detachedPara1, 1], node document 
 PASS 17,7: resulting range position for range [detachedPara1, 0, detachedPara1, 1], node document 
-FAIL 17,8: resulting DOM for range [detachedPara1, 0, detachedPara1, 1], node detachedDiv assert_unreached: DOMs were not equal but we couldn't figure out why Reached unreachable code
-FAIL 17,8: resulting range position for range [detachedPara1, 0, detachedPara1, 1], node detachedDiv assert_unreached: DOMs were not equal but we couldn't figure out why Reached unreachable code
+PASS 17,8: resulting DOM for range [detachedPara1, 0, detachedPara1, 1], node detachedDiv 
+PASS 17,8: resulting range position for range [detachedPara1, 0, detachedPara1, 1], node detachedDiv 
 PASS 17,9: resulting DOM for range [detachedPara1, 0, detachedPara1, 1], node foreignDoc 
 PASS 17,9: resulting range position for range [detachedPara1, 0, detachedPara1, 1], node foreignDoc 
 PASS 17,10: resulting DOM for range [detachedPara1, 0, detachedPara1, 1], node foreignPara2 
@@ -958,12 +924,8 @@ PASS 20,20: resulting DOM for range [paras[0].firstChild, 3, paras[3], 1], node 
 PASS 20,20: resulting range position for range [paras[0].firstChild, 3, paras[3], 1], node doctype 
 PASS 20,21: resulting DOM for range [paras[0].firstChild, 3, paras[3], 1], node foreignDoctype 
 PASS 20,21: resulting range position for range [paras[0].firstChild, 3, paras[3], 1], node foreignDoctype 
-FAIL 21,0: resulting DOM for range [paras[0], 0, paras[0].firstChild, 7], node paras[0] assert_true: First differing node: expected Element node <p id="b" style="display:none">Ijklmnop
-</p>, got Text node "Äb̈c̈d̈ëf̈g̈ḧ
-" [Actual and expected mismatch for range's tree root.  ] expected true got false
-FAIL 21,0: resulting range position for range [paras[0], 0, paras[0].firstChild, 7], node paras[0] assert_true: First differing node: expected Element node <p id="b" style="display:none">Ijklmnop
-</p>, got Text node "Äb̈c̈d̈ëf̈g̈ḧ
-" [Actual and expected mismatch for range's tree root.  ] expected true got false
+PASS 21,0: resulting DOM for range [paras[0], 0, paras[0].firstChild, 7], node paras[0] 
+PASS 21,0: resulting range position for range [paras[0], 0, paras[0].firstChild, 7], node paras[0] 
 PASS 21,1: resulting DOM for range [paras[0], 0, paras[0].firstChild, 7], node paras[0].firstChild 
 PASS 21,1: resulting range position for range [paras[0], 0, paras[0].firstChild, 7], node paras[0].firstChild 
 PASS 21,2: resulting DOM for range [paras[0], 0, paras[0].firstChild, 7], node paras[1].firstChild 
@@ -1172,8 +1134,8 @@ PASS 25,15: resulting DOM for range [comment, 2, comment, 3], node processingIns
 PASS 25,15: resulting range position for range [comment, 2, comment, 3], node processingInstruction 
 PASS 25,16: resulting DOM for range [comment, 2, comment, 3], node detachedProcessingInstruction 
 PASS 25,16: resulting range position for range [comment, 2, comment, 3], node detachedProcessingInstruction 
-FAIL 25,17: resulting DOM for range [comment, 2, comment, 3], node comment assert_true: First differing node: expected Comment node <!--Alhabet soup?-->, got Comment node <!--Alphabet soup?--> [Actual and expected mismatch for range's tree root.  ] expected true got false
-FAIL 25,17: resulting range position for range [comment, 2, comment, 3], node comment assert_true: First differing node: expected Comment node <!--Alhabet soup?-->, got Comment node <!--Alphabet soup?--> [Actual and expected mismatch for range's tree root.  ] expected true got false
+PASS 25,17: resulting DOM for range [comment, 2, comment, 3], node comment 
+PASS 25,17: resulting range position for range [comment, 2, comment, 3], node comment 
 PASS 25,18: resulting DOM for range [comment, 2, comment, 3], node detachedComment 
 PASS 25,18: resulting range position for range [comment, 2, comment, 3], node detachedComment 
 PASS 25,19: resulting DOM for range [comment, 2, comment, 3], node docfrag 
@@ -1696,8 +1658,8 @@ FAIL 37,13: resulting DOM for range [processingInstruction, 0, processingInstruc
 FAIL 37,13: resulting range position for range [processingInstruction, 0, processingInstruction, 4], node detachedTextNode assert_true: First differing node: expected ProcessingInstruction node with target "somePI" and data "you know that \":syn sync fromstart\" is very useful when u...", got ProcessingInstruction node with target "somePI" and data "Did you know that \":syn sync fromstart\" is very useful wh..." [Actual and expected mismatch for range's tree root.  ] expected true got false
 FAIL 37,14: resulting DOM for range [processingInstruction, 0, processingInstruction, 4], node foreignTextNode assert_true: First differing node: expected ProcessingInstruction node with target "somePI" and data "you know that \":syn sync fromstart\" is very useful when u...", got ProcessingInstruction node with target "somePI" and data "Did you know that \":syn sync fromstart\" is very useful wh..." [Actual and expected mismatch for range's tree root.  ] expected true got false
 FAIL 37,14: resulting range position for range [processingInstruction, 0, processingInstruction, 4], node foreignTextNode assert_true: First differing node: expected ProcessingInstruction node with target "somePI" and data "you know that \":syn sync fromstart\" is very useful when u...", got ProcessingInstruction node with target "somePI" and data "Did you know that \":syn sync fromstart\" is very useful wh..." [Actual and expected mismatch for range's tree root.  ] expected true got false
-FAIL 37,15: resulting DOM for range [processingInstruction, 0, processingInstruction, 4], node processingInstruction assert_true: First differing node: expected ProcessingInstruction node with target "somePI" and data "you know that \":syn sync fromstart\" is very useful when u...", got ProcessingInstruction node with target "somePI" and data "Did you know that \":syn sync fromstart\" is very useful wh..." [Actual and expected mismatch for range's tree root.  ] expected true got false
-FAIL 37,15: resulting range position for range [processingInstruction, 0, processingInstruction, 4], node processingInstruction assert_true: First differing node: expected ProcessingInstruction node with target "somePI" and data "you know that \":syn sync fromstart\" is very useful when u...", got ProcessingInstruction node with target "somePI" and data "Did you know that \":syn sync fromstart\" is very useful wh..." [Actual and expected mismatch for range's tree root.  ] expected true got false
+PASS 37,15: resulting DOM for range [processingInstruction, 0, processingInstruction, 4], node processingInstruction 
+PASS 37,15: resulting range position for range [processingInstruction, 0, processingInstruction, 4], node processingInstruction 
 PASS 37,16: resulting DOM for range [processingInstruction, 0, processingInstruction, 4], node detachedProcessingInstruction 
 PASS 37,16: resulting range position for range [processingInstruction, 0, processingInstruction, 4], node detachedProcessingInstruction 
 PASS 37,17: resulting DOM for range [processingInstruction, 0, processingInstruction, 4], node comment 
