@@ -9,6 +9,7 @@ import android.accounts.AuthenticatorDescription;
 import android.app.Activity;
 import android.content.Context;
 import android.os.AsyncTask;
+import android.support.annotation.Nullable;
 
 import org.chromium.base.Callback;
 import org.chromium.base.Log;
@@ -354,7 +355,8 @@ public class AccountManagerHelper {
      * Asks the user to enter a new password for an account, updating the saved credentials for the
      * account.
      */
-    public void updateCredentials(Account account, Activity activity, Callback<Boolean> callback) {
+    public void updateCredentials(
+            Account account, Activity activity, @Nullable Callback<Boolean> callback) {
         mAccountManager.updateCredentials(account, activity, callback);
     }
 

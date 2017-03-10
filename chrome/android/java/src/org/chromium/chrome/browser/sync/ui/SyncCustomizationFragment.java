@@ -31,7 +31,6 @@ import android.view.ViewGroup;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.BuildInfo;
-import org.chromium.base.Callback;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
@@ -712,10 +711,7 @@ public class SyncCustomizationFragment extends PreferenceFragment
         if (mCurrentSyncError == SYNC_AUTH_ERROR) {
             AccountManagerHelper.get(getActivity())
                     .updateCredentials(ChromeSigninController.get(getActivity()).getSignedInUser(),
-                            getActivity(), new Callback<Boolean>() {
-                                @Override
-                                public void onResult(Boolean result) {}
-                            });
+                            getActivity(), null);
             return;
         }
 

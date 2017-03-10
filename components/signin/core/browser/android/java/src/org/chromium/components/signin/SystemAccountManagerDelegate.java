@@ -171,28 +171,26 @@ public class SystemAccountManagerDelegate implements AccountManagerDelegate {
             return;
         }
 
-        mAccountManager.updateCredentials(
-                account, "android", null, activity, new AccountManagerCallback<Bundle>() {
-                    @Override
-                    public void run(AccountManagerFuture<Bundle> future) {
-                        assert future.isDone();
-                        Bundle bundle = null;
-                        try {
-                            bundle = future.getResult();
-                        } catch (AuthenticatorException | IOException e) {
-                            Log.e(TAG, "Error while update credentials: ", e);
-                        } catch (OperationCanceledException e) {
-                            Log.w(TAG, "Updating credentials was cancelled.");
-                        }
-                        if (bundle != null
-                                && bundle.getString(AccountManager.KEY_ACCOUNT_NAME) != null
-                                && bundle.getString(AccountManager.KEY_ACCOUNT_TYPE) != null) {
-                            callback.onResult(true);
-                        } else {
-                            callback.onResult(false);
-                        }
-                    }
-                }, null /* handler */);
+        AccountManagerCallback<Bundle> realCallback = new AccountManagerCallback<Bundle>() {
+            @Override
+            public void run(AccountManagerFuture<Bundle> future) {
+                Bundle bundle = null;
+                try {
+                    bundle = future.getResult();
+                } catch (AuthenticatorException | IOException e) {
+                    Log.e(TAG, "Error while update credentials: ", e);
+                } catch (OperationCanceledException e) {
+                    Log.w(TAG, "Updating credentials was cancelled.");
+                }
+                boolean success = bundle != null
+                        && bundle.getString(AccountManager.KEY_ACCOUNT_NAME) != null
+                        && bundle.getString(AccountManager.KEY_ACCOUNT_TYPE) != null;
+                if (callback != null) {
+                    callback.onResult(success);
+                }
+            }
+        };
+        mAccountManager.updateCredentials(account, "android", null, activity, realCallback, null);
     }
 
     protected boolean hasGetAccountsPermission() {

@@ -8,6 +8,7 @@ import android.accounts.Account;
 import android.accounts.AuthenticatorDescription;
 import android.app.Activity;
 import android.support.annotation.AnyThread;
+import android.support.annotation.Nullable;
 import android.support.annotation.WorkerThread;
 
 import org.chromium.base.Callback;
@@ -80,5 +81,6 @@ public interface AccountManagerDelegate {
      * @param callback The callback to indicate whether update is succeed or not.
      */
     @AnyThread
-    void updateCredentials(Account account, Activity activity, Callback<Boolean> callback);
+    void updateCredentials(
+            Account account, Activity activity, @Nullable Callback<Boolean> callback);
 }

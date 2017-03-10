@@ -184,6 +184,10 @@ public class MockAccountManager implements AccountManagerDelegate {
     public void updateCredentials(
             Account account, Activity activity, final Callback<Boolean> callback) {
         ThreadUtils.assertOnUiThread();
+        if (callback == null) {
+            return;
+        }
+
         ThreadUtils.postOnUiThread(new Runnable() {
             @Override
             public void run() {
