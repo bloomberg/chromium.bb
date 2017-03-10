@@ -12,12 +12,15 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
+#include "base/test/histogram_tester.h"
 #include "base/trace_event/memory_allocator_dump.h"
 #include "base/trace_event/process_memory_dump.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "net/dns/host_cache.h"
 #include "net/http/http_network_session.h"
 #include "net/log/net_log_with_source.h"
+#include "net/log/test_net_log.h"
+#include "net/log/test_net_log_entry.h"
 #include "net/socket/client_socket_handle.h"
 #include "net/socket/transport_client_socket_pool.h"
 #include "net/spdy/spdy_session.h"
@@ -507,6 +510,85 @@ TEST_F(SpdySessionPoolTest, IPPoolingCloseCurrentSessions) {
 
 TEST_F(SpdySessionPoolTest, IPPoolingCloseIdleSessions) {
   RunIPPoolingTest(SPDY_POOL_CLOSE_IDLE_SESSIONS);
+}
+
+// Regression test for https://crbug.com/643025.
+TEST_F(SpdySessionPoolTest, IPPoolingNetLog) {
+  // Define two hosts with identical IP address.
+  const int kTestPort = 443;
+  struct TestHosts {
+    std::string name;
+    std::string iplist;
+    SpdySessionKey key;
+    AddressList addresses;
+    std::unique_ptr<HostResolver::Request> request;
+  } test_hosts[] = {
+      {"www.example.org", "192.168.0.1"}, {"mail.example.org", "192.168.0.1"},
+  };
+
+  // Populate the HostResolver cache.
+  session_deps_.host_resolver->set_synchronous_mode(true);
+  for (size_t i = 0; i < arraysize(test_hosts); i++) {
+    session_deps_.host_resolver->rules()->AddIPLiteralRule(
+        test_hosts[i].name, test_hosts[i].iplist, std::string());
+
+    HostResolver::RequestInfo info(HostPortPair(test_hosts[i].name, kTestPort));
+    session_deps_.host_resolver->Resolve(
+        info, DEFAULT_PRIORITY, &test_hosts[i].addresses, CompletionCallback(),
+        &test_hosts[i].request, NetLogWithSource());
+
+    test_hosts[i].key =
+        SpdySessionKey(HostPortPair(test_hosts[i].name, kTestPort),
+                       ProxyServer::Direct(), PRIVACY_MODE_DISABLED);
+  }
+
+  MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING)};
+  StaticSocketDataProvider data(reads, arraysize(reads), nullptr, 0);
+  MockConnect connect_data(SYNCHRONOUS, OK);
+  data.set_connect_data(connect_data);
+
+  session_deps_.socket_factory->AddSocketDataProvider(&data);
+  AddSSLSocketData();
+
+  CreateNetworkSession();
+
+  // Open SpdySession to the first host.
+  base::WeakPtr<SpdySession> session0 = CreateSecureSpdySession(
+      http_session_.get(), test_hosts[0].key, NetLogWithSource());
+
+  // A request to the second host should pool to the existing connection.
+  BoundTestNetLog net_log;
+  base::HistogramTester histogram_tester;
+  base::WeakPtr<SpdySession> session1 =
+      spdy_session_pool_->FindAvailableSession(test_hosts[1].key, GURL(),
+                                               net_log.bound());
+  EXPECT_EQ(session0.get(), session1.get());
+
+  ASSERT_EQ(1u, net_log.GetSize());
+  histogram_tester.ExpectTotalCount("Net.SpdySessionGet", 1);
+
+  // A request to the second host should still pool to the existing connection.
+  session1 = spdy_session_pool_->FindAvailableSession(test_hosts[1].key, GURL(),
+                                                      net_log.bound());
+  EXPECT_EQ(session0.get(), session1.get());
+
+  ASSERT_EQ(2u, net_log.GetSize());
+  histogram_tester.ExpectTotalCount("Net.SpdySessionGet", 2);
+
+  // Both FindAvailableSession() calls should log netlog events
+  // indicating IP pooling.
+  TestNetLogEntry::List entry_list;
+  net_log.GetEntries(&entry_list);
+  EXPECT_EQ(
+      NetLogEventType::HTTP2_SESSION_POOL_FOUND_EXISTING_SESSION_FROM_IP_POOL,
+      entry_list[0].type);
+  EXPECT_EQ(
+      NetLogEventType::HTTP2_SESSION_POOL_FOUND_EXISTING_SESSION_FROM_IP_POOL,
+      entry_list[1].type);
+
+  // Both FindAvailableSession() calls should log histogram entries
+  // indicating IP pooling.
+  histogram_tester.ExpectUniqueSample("Net.SpdySessionGet", 2, 2);
 }
 
 // Construct a Pool with SpdySessions in various availability states. Simulate
