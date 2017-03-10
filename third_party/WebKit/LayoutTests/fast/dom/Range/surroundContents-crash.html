@@ -6,7 +6,7 @@
 </head>
 <body>
 <script>
-description('Range::didSplitTextNode() should not yield an invalid Range object nor cause a crash inside surroundContents().');
+description('DOM mutation events should not be dispatched during DOM mutations in surroundContents().');
 
 window.jsTestIsAsync = true;
 
@@ -27,28 +27,16 @@ function run()
     surroundParent.appendChild(textToBeRemoved);
     document.body.appendChild(surroundParent);
 
-    // Range.surroundContents(newParent) removes newParent's children during its preprocess phase, thus
-    // the following event handler is called in the middle of surroundContents() method.
+    // Range.surroundContents(newParent) removes newParent's children during its
+    // preprocess phase, however the following event handler is called after
+    // finishing all DOM mutation in surroundContents() method.
     textToBeRemoved.addEventListener('DOMNodeRemoved', function (event) {
-        shouldEvaluateTo('textContainer.childNodes.length', 1);
-        shouldBeTrue('range.startContainer === textToBeSplit');
-        shouldEvaluateTo('range.startOffset', textToBeSplit.length);
+        // |surroundParent| is moved into |textContainer|, and is selected.
+        shouldEvaluateTo('textContainer.childNodes.length', 2);
+        shouldBeTrue('range.startContainer === textContainer');
+        shouldEvaluateTo('range.startOffset', 1);
         shouldBeTrue('range.endContainer === textContainer');
-        shouldEvaluateTo('range.endOffset', 1);
-
-        // A bug in Range::didSplitTextNode() yielded an invalid Range object (m_start is located *after* m_end).
-        // This leads to a crash if this happens within surroundContents().
-        textToBeSplit.splitText(textToBeSplit.length - 1);
-        newTextNode = textToBeSplit.nextSibling;
-
-        // To reproduce a crash, there must be something in between split text nodes.
-        textContainer.insertBefore(document.createElement('span'), newTextNode);
-
-        shouldEvaluateTo('textContainer.childNodes.length', 3);
-        shouldBeTrue('range.startContainer === newTextNode');
-        shouldEvaluateTo('range.startOffset', newTextNode.length);
-        shouldBeTrue('range.endContainer === textContainer');
-        shouldEvaluateTo('range.endOffset', 3);
+        shouldEvaluateTo('range.endOffset', 2);
     });
 
     range = new Range();

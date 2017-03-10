@@ -1388,6 +1388,8 @@ void Range::surroundContents(Node* newParent, ExceptionState& exceptionState) {
     return;
   }
 
+  EventQueueScope scope;
+
   // 4. If newParent has children, replace all with null within newParent.
   while (Node* n = newParent->firstChild()) {
     toContainerNode(newParent)->removeChild(n, exceptionState);
