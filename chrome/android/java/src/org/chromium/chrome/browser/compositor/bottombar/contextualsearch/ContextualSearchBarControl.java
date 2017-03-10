@@ -221,15 +221,15 @@ public class ContextualSearchBarControl
     }
 
     /**
-     * Sets the search context to display in the control.
+     * Sets the details of the context to display in the control.
      * @param selection The portion of the context that represents the user's selection.
      * @param end The portion of the context after the selection.
      */
-    public void setSearchContext(String selection, String end) {
+    public void setContextDetails(String selection, String end) {
         cancelSearchTermResolutionAnimation();
         hideCaption();
         mQuickActionControl.reset();
-        mContextControl.setSearchContext(selection, end);
+        mContextControl.setContextDetails(selection, end);
         resetSearchBarContextOpacity();
         animateDividerLine(false);
     }

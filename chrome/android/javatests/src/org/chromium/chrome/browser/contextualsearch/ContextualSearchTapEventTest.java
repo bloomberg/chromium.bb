@@ -114,8 +114,7 @@ public class ContextualSearchTapEventTest extends ChromeActivityTestCaseBase<Chr
 
         @Override
         protected void nativeGatherSurroundingText(long nativeContextualSearchManager,
-                String selection, String homeCountry, WebContents webContents,
-                boolean maySendBasePageUrl) {}
+                ContextualSearchContext contextualSearchContext, WebContents baseWebContents) {}
 
         /**
          * @return A stubbed ContentViewCore for mocking text selection.
@@ -140,7 +139,7 @@ public class ContextualSearchTapEventTest extends ChromeActivityTestCaseBase<Chr
         }
 
         @Override
-        public StubbedContentViewCore getBaseContentView() {
+        StubbedContentViewCore getBaseContentView() {
             return mContentViewCore;
         }
     }

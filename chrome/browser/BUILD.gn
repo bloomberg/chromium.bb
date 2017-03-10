@@ -3985,6 +3985,7 @@ if (is_android) {
       "../android/java/src/org/chromium/chrome/browser/compositor/scene_layer/ToolbarSceneLayer.java",
       "../android/java/src/org/chromium/chrome/browser/contextmenu/ContextMenuHelper.java",
       "../android/java/src/org/chromium/chrome/browser/contextmenu/ContextMenuParams.java",
+      "../android/java/src/org/chromium/chrome/browser/contextualsearch/ContextualSearchContext.java",
       "../android/java/src/org/chromium/chrome/browser/contextualsearch/ContextualSearchManager.java",
       "../android/java/src/org/chromium/chrome/browser/contextualsearch/ContextualSearchTabHelper.java",
       "../android/java/src/org/chromium/chrome/browser/contextualsearch/CtrSuppression.java",

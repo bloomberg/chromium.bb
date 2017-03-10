@@ -546,14 +546,16 @@ public class ContextualSearchPanel extends OverlayPanel {
     }
 
     /**
-     * Sets the search context to display in the SearchBar.
+     * Sets the search context details to display in the SearchBar.
      * @param selection The portion of the context that represents the user's selection.
      * @param end The portion of the context from the selection to its end.
      */
-    public void setSearchContext(String selection, String end) {
+    public void setContextDetails(String selection, String end) {
         getImageControl().hideStaticImage(true);
-        getSearchBarControl().setSearchContext(selection, end);
+        getSearchBarControl().setContextDetails(selection, end);
         mPanelMetrics.onSearchRequestStarted();
+        // Make sure the new Context draws.
+        requestUpdate();
     }
 
     /**

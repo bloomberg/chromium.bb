@@ -31,6 +31,7 @@
 #include "chrome/browser/android/compositor/scene_layer/tab_strip_scene_layer.h"
 #include "chrome/browser/android/compositor/scene_layer/toolbar_scene_layer.h"
 #include "chrome/browser/android/compositor/tab_content_manager.h"
+#include "chrome/browser/android/contextualsearch/contextual_search_context.h"
 #include "chrome/browser/android/contextualsearch/contextual_search_manager.h"
 #include "chrome/browser/android/contextualsearch/contextual_search_tab_helper.h"
 #include "chrome/browser/android/contextualsearch/ctr_suppression.h"
@@ -267,6 +268,7 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     {"ContentSuggestionsNotificationHelper",
      ntp_snippets::ContentSuggestionsNotificationHelper::Register},
     {"ContextMenuHelper", RegisterContextMenuHelper},
+    {"ContextualSearchContext", RegisterContextualSearchContext},
     {"ContextualSearchManager", RegisterContextualSearchManager},
     {"ContextualSearchSceneLayer", RegisterContextualSearchSceneLayer},
     {"ContextualSearchTabHelper", RegisterContextualSearchTabHelper},

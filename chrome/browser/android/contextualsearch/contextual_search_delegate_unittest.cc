@@ -95,10 +95,9 @@ class ContextualSearchDelegateTest : public testing::Test {
     // ContextualSearchDelegate class takes ownership of the context.
     delegate_->set_context_for_testing(test_context_);
 
-    test_context_->start_offset = start_offset;
-    test_context_->end_offset = end_offset;
-    test_context_->surrounding_text = surrounding_text;
-    delegate_->ContinueSearchTermResolutionRequest();
+    test_context_->SetSelectionSurroundings(start_offset, end_offset,
+                                            surrounding_text);
+    delegate_->ResolveSearchTermFromContext();
     fetcher_ = test_factory_.GetFetcherByID(
         ContextualSearchDelegate::kContextualSearchURLFetcherID);
     ASSERT_TRUE(fetcher_);
@@ -147,9 +146,8 @@ class ContextualSearchDelegateTest : public testing::Test {
                              int end_offset) {
     test_context_ = new ContextualSearchContext(
         "Bogus", std::string(), GURL(kSomeSpecificBasePage), "utf-8");
-    test_context_->surrounding_text = surrounding_text;
-    test_context_->start_offset = start_offset;
-    test_context_->end_offset = end_offset;
+    test_context_->SetSelectionSurroundings(start_offset, end_offset,
+                                            surrounding_text);
     // ContextualSearchDelegate class takes ownership of the context.
     delegate_->set_context_for_testing(test_context_);
   }

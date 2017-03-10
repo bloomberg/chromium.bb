@@ -65,40 +65,32 @@ void ContextualSearchManager::Destroy(JNIEnv* env,
 void ContextualSearchManager::StartSearchTermResolutionRequest(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
-    const JavaParamRef<jstring>& j_selection,
-    const JavaParamRef<jstring>& j_home_country,
-    const JavaParamRef<jobject>& j_base_web_contents,
-    jboolean j_may_send_base_page_url) {
+    const base::android::JavaParamRef<jobject>& j_contextual_search_context,
+    const JavaParamRef<jobject>& j_base_web_contents) {
   WebContents* base_web_contents =
       WebContents::FromJavaWebContents(j_base_web_contents);
   DCHECK(base_web_contents);
-  std::string selection(
-      base::android::ConvertJavaStringToUTF8(env, j_selection));
-  std::string home_country(
-      base::android::ConvertJavaStringToUTF8(env, j_home_country));
-  bool may_send_base_page_url = j_may_send_base_page_url;
+  ContextualSearchContext* contextual_search_context =
+      ContextualSearchContext::FromJavaContextualSearchContext(
+          j_contextual_search_context);
   // Calls back to OnSearchTermResolutionResponse.
-  delegate_->StartSearchTermResolutionRequest(
-      selection, home_country, base_web_contents, may_send_base_page_url);
+  delegate_->StartSearchTermResolutionRequest(contextual_search_context,
+                                              base_web_contents);
 }
 
 void ContextualSearchManager::GatherSurroundingText(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
-    const JavaParamRef<jstring>& j_selection,
-    const JavaParamRef<jstring>& j_home_country,
-    const JavaParamRef<jobject>& j_base_web_contents,
-    jboolean j_may_send_base_page_url) {
+    const base::android::JavaParamRef<jobject>& j_contextual_search_context,
+    const JavaParamRef<jobject>& j_base_web_contents) {
   WebContents* base_web_contents =
       WebContents::FromJavaWebContents(j_base_web_contents);
   DCHECK(base_web_contents);
-  std::string selection(
-      base::android::ConvertJavaStringToUTF8(env, j_selection));
-  std::string home_country(
-      base::android::ConvertJavaStringToUTF8(env, j_home_country));
-  bool may_send_base_page_url = j_may_send_base_page_url;
-  delegate_->GatherAndSaveSurroundingText(
-      selection, home_country, base_web_contents, may_send_base_page_url);
+  ContextualSearchContext* contextual_search_context =
+      ContextualSearchContext::FromJavaContextualSearchContext(
+          j_contextual_search_context);
+  delegate_->GatherAndSaveSurroundingText(contextual_search_context,
+                                          base_web_contents);
 }
 
 base::android::ScopedJavaLocalRef<jstring>
