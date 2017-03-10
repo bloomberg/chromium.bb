@@ -289,11 +289,11 @@ static void applyClipsBetweenStates(const PropertyTreeState& localState,
   }
 #endif
 
-  FloatRect combinedClip =
-      geometryMapper.localToAncestorClipRect(localState, ancestorState).rect();
+  const FloatClipRect& combinedClip =
+      geometryMapper.localToAncestorClipRect(localState, ancestorState);
 
   ccList.CreateAndAppendPairedBeginItem<cc::FloatClipDisplayItem>(
-      gfx::RectF(combinedClip));
+      gfx::RectF(combinedClip.rect()));
   endDisplayItems.push_back(EndClip);
 }
 
@@ -604,19 +604,15 @@ bool PaintArtifactCompositor::mightOverlap(
                                           ClipPaintPropertyNode::root(),
                                           EffectPaintPropertyNode::root());
 
-  FloatRect paintChunkScreenVisualRect =
-      geometryMapper
-          .localToAncestorVisualRect(paintChunk.bounds,
-                                     paintChunk.properties.propertyTreeState,
-                                     rootPropertyTreeState)
-          .rect();
+  FloatRect paintChunkScreenVisualRect = paintChunk.bounds;
+  geometryMapper.localToAncestorVisualRect(
+      paintChunk.properties.propertyTreeState, rootPropertyTreeState,
+      paintChunkScreenVisualRect);
 
-  FloatRect pendingLayerScreenVisualRect =
-      geometryMapper
-          .localToAncestorVisualRect(candidatePendingLayer.bounds,
-                                     candidatePendingLayer.propertyTreeState,
-                                     rootPropertyTreeState)
-          .rect();
+  FloatRect pendingLayerScreenVisualRect = candidatePendingLayer.bounds;
+  geometryMapper.localToAncestorVisualRect(
+      candidatePendingLayer.propertyTreeState, rootPropertyTreeState,
+      pendingLayerScreenVisualRect);
 
   return paintChunkScreenVisualRect.intersects(pendingLayerScreenVisualRect);
 }
@@ -637,9 +633,9 @@ void PaintArtifactCompositor::PendingLayer::add(
   paintChunks.push_back(&paintChunk);
   FloatRect mappedBounds = paintChunk.bounds;
   if (geometryMapper) {
-    mappedBounds = geometryMapper->localToAncestorRect(
-        mappedBounds, paintChunk.properties.propertyTreeState.transform(),
-        propertyTreeState.transform());
+    geometryMapper->localToAncestorRect(
+        paintChunk.properties.propertyTreeState.transform(),
+        propertyTreeState.transform(), mappedBounds);
   }
   bounds.unite(mappedBounds);
   if (bounds.size() != paintChunks[0]->bounds.size()) {

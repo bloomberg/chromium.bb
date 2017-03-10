@@ -43,7 +43,12 @@ class ClipRect {
   ClipRect(const LayoutRect& rect) : m_rect(rect), m_hasRadius(false) {}
 
   ClipRect(const FloatClipRect& rect)
-      : m_rect(LayoutRect(rect.rect())), m_hasRadius(rect.hasRadius()) {}
+      : m_rect(rect.rect()), m_hasRadius(rect.hasRadius()) {}
+
+  void setRect(const FloatClipRect& rect) {
+    m_rect = LayoutRect(rect.rect());
+    m_hasRadius = rect.hasRadius();
+  }
 
   const LayoutRect& rect() const { return m_rect; }
 

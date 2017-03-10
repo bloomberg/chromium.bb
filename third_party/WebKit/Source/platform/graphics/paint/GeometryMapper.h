@@ -20,6 +20,10 @@ namespace blink {
 // change. If any mutation occurs, a new GeometryMapper object must be allocated
 // corresponding to the new state.
 //
+// ** WARNING** Callers to the methods below may not assume that any const
+// references returned remain const across multiple calls into GeometryMapper.
+// If needed, callers must store local copies of the return values.
+//
 // Design document: http://bit.ly/28P4FDA
 //
 // TODO(chrishtr): take effect tree into account.
@@ -44,17 +48,20 @@ class PLATFORM_EXPORT GeometryMapper {
   //
   // DCHECK fails if the clip of |destinationState| is not an ancestor of the
   // clip of |sourceState|, or the inverse transform is not invertible.
-  FloatClipRect sourceToDestinationVisualRect(
-      const FloatRect&,
-      const PropertyTreeState& sourceState,
-      const PropertyTreeState& destinationState);
+  //
+  // |mappingRect| is both input and output.
+  void sourceToDestinationVisualRect(const PropertyTreeState& sourceState,
+                                     const PropertyTreeState& destinationState,
+                                     FloatRect& mappingRect);
 
   // Same as sourceToDestinationVisualRect() except that only transforms are
   // applied.
-  FloatRect sourceToDestinationRect(
-      const FloatRect&,
+  //
+  // |mappingRect| is both input and output.
+  void sourceToDestinationRect(
       const TransformPaintPropertyNode* sourceTransformNode,
-      const TransformPaintPropertyNode* destinationTransformNode);
+      const TransformPaintPropertyNode* destinationTransformNode,
+      FloatRect& mappingRect);
 
   // Maps from a rect in |localTransformSpace| to its visual rect in
   // |ancestorState|. This is computed by multiplying the rect by its combined
@@ -68,10 +75,11 @@ class PLATFORM_EXPORT GeometryMapper {
   // DCHECK fails if any of the paint property tree nodes in
   // |localTransformState| are not equal to or a descendant of that in
   // |ancestorState|.
-  FloatClipRect localToAncestorVisualRect(
-      const FloatRect&,
-      const PropertyTreeState& localTransformState,
-      const PropertyTreeState& ancestorState);
+  //
+  // |mappingRect| is both input and output.
+  void localToAncestorVisualRect(const PropertyTreeState& localTransformState,
+                                 const PropertyTreeState& ancestorState,
+                                 FloatRect& mappingRect);
 
   // Maps from a rect in |localTransformNode| space to its transformed rect in
   // |ancestorTransformNode| space. This is computed by multiplying the rect by
@@ -80,10 +88,12 @@ class PLATFORM_EXPORT GeometryMapper {
   //
   // DCHECK fails if |localTransformNode| is not equal to or a descendant of
   // |ancestorTransformNode|.
-  FloatRect localToAncestorRect(
-      const FloatRect&,
+  //
+  //|mappingRect| is both input and output.
+  void localToAncestorRect(
       const TransformPaintPropertyNode* localTransformNode,
-      const TransformPaintPropertyNode* ancestorTransformNode);
+      const TransformPaintPropertyNode* ancestorTransformNode,
+      FloatRect& mappingRect);
 
   // Maps from a rect in |ancestorTransformNode| space to its transformed rect
   // in |localTransformNode| space. This is computed by multiplying the rect by
@@ -93,10 +103,12 @@ class PLATFORM_EXPORT GeometryMapper {
   // DCHECK fails if the combined transform is not invertible, or
   // |localTransformNode| is not equal to or a descendant of
   // |ancestorTransformNode|.
-  FloatRect ancestorToLocalRect(
-      const FloatRect&,
+  //
+  // |mappingRect| is both input and output.
+  void ancestorToLocalRect(
       const TransformPaintPropertyNode* ancestorTransformNode,
-      const TransformPaintPropertyNode* localTransformNode);
+      const TransformPaintPropertyNode* localTransformNode,
+      FloatRect& mappingRect);
 
   // Returns the matrix used in |LocalToAncestorRect|. DCHECK fails iff
   // |localTransformNode| is not equal to or a descendant of
@@ -113,7 +125,7 @@ class PLATFORM_EXPORT GeometryMapper {
 
   // Like localToAncestorClipRect, except it can handle destination transform
   // spaces which are not direct ancestors of the source transform space.
-  FloatClipRect sourceToDestinationClipRect(
+  const FloatClipRect& sourceToDestinationClipRect(
       const PropertyTreeState& sourceState,
       const PropertyTreeState& destinationState);
 
@@ -133,22 +145,22 @@ class PLATFORM_EXPORT GeometryMapper {
   // successful on return. See comments of the public functions for failure
   // conditions.
 
-  FloatClipRect sourceToDestinationVisualRectInternal(
-      const FloatRect&,
+  void sourceToDestinationVisualRectInternal(
       const PropertyTreeState& sourceState,
       const PropertyTreeState& destinationState,
+      FloatRect& mappingRect,
       bool& success);
 
-  FloatClipRect localToAncestorVisualRectInternal(
-      const FloatRect&,
+  void localToAncestorVisualRectInternal(
       const PropertyTreeState& localTransformState,
       const PropertyTreeState& ancestorState,
+      FloatRect& mappingRect,
       bool& success);
 
-  FloatRect localToAncestorRectInternal(
-      const FloatRect&,
+  void localToAncestorRectInternal(
       const TransformPaintPropertyNode* localTransformNode,
       const TransformPaintPropertyNode* ancestorTransformNode,
+      FloatRect&,
       bool& success);
 
   const TransformationMatrix& localToAncestorMatrixInternal(
@@ -162,22 +174,25 @@ class PLATFORM_EXPORT GeometryMapper {
       const TransformPaintPropertyNode* ancestorTransform,
       bool& success);
 
-  FloatClipRect sourceToDestinationClipRectInternal(
+  const FloatClipRect& sourceToDestinationClipRectInternal(
       const PropertyTreeState& sourceState,
       const PropertyTreeState& destinationState,
       bool& success);
 
-  FloatClipRect slowLocalToAncestorVisualRectWithEffects(
-      const FloatRect&,
+  void slowLocalToAncestorVisualRectWithEffects(
       const PropertyTreeState& localState,
       const PropertyTreeState& ancestorState,
+      FloatRect& mappingRect,
       bool& success);
 
   friend class GeometryMapperTest;
   friend class PaintLayerClipperTest;
 
+  // These are used to represent various return values of the above
+  // methods.
   const TransformationMatrix m_identity;
   const FloatClipRect m_infiniteClip;
+  FloatClipRect m_tempRect;
 
   DISALLOW_COPY_AND_ASSIGN(GeometryMapper);
 };
