@@ -452,7 +452,7 @@ TEST_F(MemoryCoordinatorImplTest, UpdateCondition) {
 TEST_F(MemoryCoordinatorImplTest, SetMemoryStateForTesting) {
   MockMemoryCoordinatorClient client;
   base::MemoryCoordinatorClientRegistry::GetInstance()->Register(&client);
-  EXPECT_EQ(base::MemoryState::NORMAL, coordinator_->GetBrowserMemoryState());
+  EXPECT_EQ(base::MemoryState::NORMAL, coordinator_->GetCurrentMemoryState());
   EXPECT_EQ(base::MemoryState::NORMAL,
             base::MemoryCoordinatorProxy::GetInstance()->
                 GetCurrentMemoryState());
@@ -461,7 +461,7 @@ TEST_F(MemoryCoordinatorImplTest, SetMemoryStateForTesting) {
   base::MemoryCoordinatorProxy::GetInstance()->SetCurrentMemoryStateForTesting(
       base::MemoryState::THROTTLED);
   EXPECT_EQ(base::MemoryState::THROTTLED,
-            coordinator_->GetBrowserMemoryState());
+            coordinator_->GetCurrentMemoryState());
   EXPECT_EQ(base::MemoryState::THROTTLED,
             base::MemoryCoordinatorProxy::GetInstance()->
             GetCurrentMemoryState());

@@ -78,9 +78,6 @@ class CONTENT_EXPORT MemoryCoordinatorImpl : public base::MemoryCoordinator,
   void RecordMemoryPressure(
       base::MemoryPressureMonitor::MemoryPressureLevel level);
 
-  // Returns the browser's current memory state.
-  MemoryState GetBrowserMemoryState() const;
-
   // base::MemoryCoordinator implementations:
   MemoryState GetCurrentMemoryState() const override;
   // Temporarily sets memory state of the browser process for testing.

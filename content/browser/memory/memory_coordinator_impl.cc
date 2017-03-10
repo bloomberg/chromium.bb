@@ -228,12 +228,8 @@ void MemoryCoordinatorImpl::RecordMemoryPressure(
   // TODO(bashi): Record memory pressure level.
 }
 
-MemoryState MemoryCoordinatorImpl::GetBrowserMemoryState() const {
-  return browser_memory_state_;
-}
-
 MemoryState MemoryCoordinatorImpl::GetCurrentMemoryState() const {
-  return GetBrowserMemoryState();
+  return browser_memory_state_;
 }
 
 void MemoryCoordinatorImpl::SetCurrentMemoryStateForTesting(
