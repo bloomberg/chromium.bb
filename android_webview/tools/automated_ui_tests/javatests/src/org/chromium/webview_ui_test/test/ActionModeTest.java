@@ -94,7 +94,7 @@ public class ActionModeTest {
     private static final String MORE_OPTIONS_ACTION = "More options";
     private static final String PASTE_ACTION = "Paste";
     private static final String SHARE_ACTION = "Share";
-    private static final String SELECT_ALL_ACTION = "Select All";
+    private static final String SELECT_ALL_ACTION = "Select all";
     private static final String WEB_SEARCH_ACTION = "Web search";
 
     private static final String QUICK_SEARCH_BOX_PKG = "com.google.android.googlequicksearchbox";
@@ -147,7 +147,7 @@ public class ActionModeTest {
     @UseLayout("edittext_webview")
     public void testSelectAll() {
         longClickOnLastWord(R.id.webview);
-        clickPopupAction("Select all");
+        clickPopupAction(SELECT_ALL_ACTION);
         clickPopupAction(COPY_ACTION);
         longClickOnLastWord(R.id.edittext);
         clickPopupAction(PASTE_ACTION);
@@ -246,6 +246,14 @@ public class ActionModeTest {
                     .perform(click());
             onData(new MenuItemMatcher(equalTo(name))).inRoot(rootMatcher).perform(click());
         }
+
+        /**
+         * After select all action is clicked, the PopUp Menu may disappear
+         * briefly due to selection change, wait for the menu to reappear
+         */
+        if (name.equals(SELECT_ALL_ACTION)) {
+            mActionBarIdlingResource.start();
+        }
     }
 
     /**
@@ -285,11 +293,6 @@ public class ActionModeTest {
     private class ActionBarIdlingResource implements IdlingResource {
         private boolean mActionStarting;
         private ResourceCallback mResourceCallback;
-
-        ActionBarIdlingResource() {
-            mActionStarting = false;
-            mResourceCallback = null;
-        }
 
         @Override
         public String getName() {
