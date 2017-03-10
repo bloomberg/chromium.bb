@@ -120,17 +120,13 @@
         </template>
 
         <!-- Manage search engines -->
-        <div id="subpage-trigger" class="settings-box two-line"
+        <div id="subpage-trigger" class="settings-box"
             on-tap="onManageSearchEnginesTap_" actionable>
           <div class="start">
             $i18n{searchEnginesManage}
-            <div class="secondary" id="manageSearchEnginesSecondary">
-              $i18n{searchEnginesManageDescription}
-            </div>
           </div>
           <button class="subpage-arrow" is="paper-icon-button-light"
-              aria-label="$i18n{searchEnginesManage}"
-              aria-describedby="manageSearchEnginesSecondary"></button>
+              aria-label="$i18n{searchEnginesManage}"></button>
         </div>
       </neon-animatable>
       <template is="dom-if" route-path="/searchEngines">

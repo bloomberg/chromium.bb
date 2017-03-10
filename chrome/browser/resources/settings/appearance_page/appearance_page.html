@@ -154,15 +154,13 @@
               menu-options="[[fontSizeOptions_]]">
           </settings-dropdown-menu>
         </div>
-        <div id="customize-fonts-subpage-trigger" class="settings-box two-line"
+        <div id="customize-fonts-subpage-trigger" class="settings-box"
             on-tap="onCustomizeFontsTap_" actionable>
           <div class="start">
             $i18n{customizeFonts}
-            <div class="secondary" id="fontsSecondary">$i18n{chooseFonts}</div>
           </div>
           <button class="subpage-arrow" is="paper-icon-button-light"
-              aria-label="$i18n{customizeFonts}"
-              aria-describedby="fontsSecondary"></button>
+              aria-label="$i18n{customizeFonts}"></button>
         </div>
         <div class="settings-box"
             hidden="[[!pageVisibility.pageZoom]]">
