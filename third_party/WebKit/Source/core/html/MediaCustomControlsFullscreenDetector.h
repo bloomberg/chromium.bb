@@ -6,7 +6,6 @@
 #define MediaCustomControlsFullscreenDetector_h
 
 #include "core/CoreExport.h"
-#include "core/dom/ContextLifecycleObserver.h"
 #include "core/events/EventListener.h"
 #include "platform/Timer.h"
 
@@ -17,9 +16,7 @@ class IntRect;
 class TimerBase;
 
 class CORE_EXPORT MediaCustomControlsFullscreenDetector final
-    : public EventListener,
-      public ContextLifecycleObserver {
-  USING_GARBAGE_COLLECTED_MIXIN(MediaCustomControlsFullscreenDetector);
+    : public EventListener {
   WTF_MAKE_NONCOPYABLE(MediaCustomControlsFullscreenDetector);
 
  public:
@@ -28,8 +25,7 @@ class CORE_EXPORT MediaCustomControlsFullscreenDetector final
   // EventListener implementation.
   bool operator==(const EventListener&) const override;
 
-  // ContextLifecycleObserver implemnetation.
-  void contextDestroyed(ExecutionContext*);
+  void contextDestroyed();
 
   DECLARE_VIRTUAL_TRACE();
 

@@ -363,7 +363,7 @@ class CORE_EXPORT HTMLMediaElement
   bool isInteractiveContent() const final;
 
   // SuspendableObject functions.
-  void contextDestroyed(ExecutionContext*) final;
+  void contextDestroyed(ExecutionContext*) override;
 
   virtual void updateDisplayState() {}
 
@@ -740,6 +740,7 @@ class CORE_EXPORT HTMLMediaElement
   friend class MediaControlsTest;
   friend class HTMLMediaElementTest;
   friend class HTMLMediaElementEventListenersTest;
+  friend class HTMLVideoElement;
   friend class HTMLVideoElementTest;
   friend class MediaControlsOrientationLockDelegateTest;
 

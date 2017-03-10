@@ -76,6 +76,11 @@ DEFINE_TRACE(HTMLVideoElement) {
   HTMLMediaElement::trace(visitor);
 }
 
+void HTMLVideoElement::contextDestroyed(ExecutionContext* context) {
+  m_customControlsFullscreenDetector->contextDestroyed();
+  HTMLMediaElement::contextDestroyed(context);
+}
+
 bool HTMLVideoElement::layoutObjectIsNeeded(const ComputedStyle& style) {
   return HTMLElement::layoutObjectIsNeeded(style);
 }

@@ -127,6 +127,9 @@ class CORE_EXPORT HTMLVideoElement final : public HTMLMediaElement,
 
   HTMLVideoElement(Document&);
 
+  // SuspendableObject functions.
+  void contextDestroyed(ExecutionContext*) final;
+
   bool layoutObjectIsNeeded(const ComputedStyle&) override;
   LayoutObject* createLayoutObject(const ComputedStyle&) override;
   void attachLayoutTree(const AttachContext& = AttachContext()) override;
