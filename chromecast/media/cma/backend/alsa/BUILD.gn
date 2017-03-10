@@ -67,7 +67,7 @@ source_set("alsa_cma_backend") {
     "//media:shared_memory_support",
   ]
 
-  if (chromecast_branding == "public") {
+  if (chromecast_branding != "google") {
     deps += [ ":audio_filter_null" ]
   } else {
     deps += [ "//chromecast/internal/media/cma/backend/alsa:filter" ]
