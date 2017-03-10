@@ -1090,6 +1090,7 @@ static int DecodeImageData(VP8LDecoder* const dec, uint32_t* const data,
     VP8LFillBitWindow(br);
     if (htree_group->use_packed_table) {
       code = ReadPackedSymbols(htree_group, br, src);
+      if (br->eos_) break;
       if (code == PACKED_NON_LITERAL_CODE) goto AdvanceByOne;
     } else {
       code = ReadSymbol(htree_group->htrees[GREEN], br);
