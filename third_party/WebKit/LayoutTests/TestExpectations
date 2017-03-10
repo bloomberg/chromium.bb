@@ -2485,4 +2485,4 @@ crbug.com/698521 external/wpt/preload/preload-with-type.html [ Failure Pass ]
 crbug.com/402805 [ Mac10.10 Mac10.11 ] inspector-protocol/input/emulateTouchFromMouseEvent.html [ Timeout ]
 crbug.com/700374 [ Win ] virtual/mojo-loading/http/tests/inspector/workers-on-navigation.html [ Failure Pass ]
 crbug.com/700374 [ Win ] http/tests/inspector/workers-on-navigation.html [ Failure Pass ]
-
+crbug.com/700387 [ Win7 ] external/wpt/fullscreen/api/document-exit-fullscreen-nested-in-iframe-manual.html [ Timeout Pass ]
