@@ -21,6 +21,7 @@ test("ios_clean_chrome_unittests") {
     # Add unit_tests target here.
     "//ios/clean/chrome/browser:unit_tests",
     "//ios/clean/chrome/browser/model:unit_tests",
+    "//ios/clean/chrome/browser/ui/commands:unit_tests",
     "//ios/clean/chrome/browser/ui/web_contents:unit_tests",
   ]
 }

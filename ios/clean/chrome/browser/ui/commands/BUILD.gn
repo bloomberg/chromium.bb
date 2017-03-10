@@ -4,10 +4,29 @@
 
 source_set("commands") {
   sources = [
+    "command_dispatcher.h",
+    "command_dispatcher.mm",
     "settings_commands.h",
     "tab_commands.h",
     "tab_grid_commands.h",
     "toolbar_commands.h",
+  ]
+  deps = [
+    "//base",
+  ]
+
+  configs += [ "//build/config/compiler:enable_arc" ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "command_dispatcher_unittest.mm",
+  ]
+  deps = [
+    ":commands",
+    "//base",
+    "//testing/gtest",
   ]
 
   configs += [ "//build/config/compiler:enable_arc" ]
