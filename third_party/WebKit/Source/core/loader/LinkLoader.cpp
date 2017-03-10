@@ -354,13 +354,13 @@ static Resource* prefetchIfNeeded(Document& document,
   if (relAttribute.isLinkPrefetch() && href.isValid() && document.frame()) {
     UseCounter::count(document, UseCounter::LinkRelPrefetch);
 
-    FetchRequest linkRequest(ResourceRequest(document.completeURL(href)),
-                             FetchInitiatorTypeNames::link);
+    ResourceRequest resourceRequest(document.completeURL(href));
     if (referrerPolicy != ReferrerPolicyDefault) {
-      linkRequest.mutableResourceRequest().setHTTPReferrer(
-          SecurityPolicy::generateReferrer(referrerPolicy, href,
-                                           document.outgoingReferrer()));
+      resourceRequest.setHTTPReferrer(SecurityPolicy::generateReferrer(
+          referrerPolicy, href, document.outgoingReferrer()));
     }
+
+    FetchRequest linkRequest(resourceRequest, FetchInitiatorTypeNames::link);
     if (crossOrigin != CrossOriginAttributeNotSet) {
       linkRequest.setCrossOriginAccessControl(document.getSecurityOrigin(),
                                               crossOrigin);

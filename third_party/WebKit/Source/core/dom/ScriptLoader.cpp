@@ -523,9 +523,17 @@ bool ScriptLoader::fetchScript(const String& sourceUrl,
   // 21. "If the element has a src content attribute, run these substeps:"
   if (!stripLeadingAndTrailingHTMLSpaces(sourceUrl).isEmpty()) {
     // 21.4. "Parse src relative to the element's node document."
-    FetchRequest request(
-        ResourceRequest(elementDocument->completeURL(sourceUrl)),
-        m_element->localName());
+    ResourceRequest resourceRequest(elementDocument->completeURL(sourceUrl));
+
+    // [Intervention]
+    if (m_documentWriteIntervention ==
+        DocumentWriteIntervention::FetchDocWrittenScriptDeferIdle) {
+      resourceRequest.setHTTPHeaderField(
+          "Intervention",
+          "<https://www.chromestatus.com/feature/5718547946799104>");
+    }
+
+    FetchRequest request(resourceRequest, m_element->localName());
 
     // 15. "Let CORS setting be the current state of the element's
     //      crossorigin content attribute."
@@ -568,14 +576,6 @@ bool ScriptLoader::fetchScript(const String& sourceUrl,
       SubresourceIntegrity::parseIntegrityAttribute(integrityAttr, metadataSet,
                                                     elementDocument);
       request.setIntegrityMetadata(metadataSet);
-    }
-
-    // [Intervention]
-    if (m_documentWriteIntervention ==
-        DocumentWriteIntervention::FetchDocWrittenScriptDeferIdle) {
-      request.mutableResourceRequest().setHTTPHeaderField(
-          "Intervention",
-          "<https://www.chromestatus.com/feature/5718547946799104>");
     }
 
     // 21.6. "Switch on the script's type:"

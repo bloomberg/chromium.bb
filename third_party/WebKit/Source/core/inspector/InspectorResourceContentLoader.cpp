@@ -141,10 +141,9 @@ void InspectorResourceContentLoader::start() {
       if (url.isEmpty() || urlsToFetch.contains(url))
         continue;
       urlsToFetch.insert(url);
-      FetchRequest request(ResourceRequest(url),
-                           FetchInitiatorTypeNames::internal);
-      request.mutableResourceRequest().setRequestContext(
-          WebURLRequest::RequestContextInternal);
+      ResourceRequest resourceRequest(url);
+      resourceRequest.setRequestContext(WebURLRequest::RequestContextInternal);
+      FetchRequest request(resourceRequest, FetchInitiatorTypeNames::internal);
       Resource* resource =
           CSSStyleSheetResource::fetch(request, document->fetcher());
       if (!resource)

@@ -89,16 +89,15 @@ static void setCrossOriginAccessControl(FetchRequest& request,
 
 FontResource* CSSFontFaceSrcValue::fetch(Document* document) const {
   if (!m_fetched) {
-    FetchRequest request(ResourceRequest(m_absoluteResource),
-                         FetchInitiatorTypeNames::css);
+    ResourceRequest resourceRequest(m_absoluteResource);
+    resourceRequest.setHTTPReferrer(SecurityPolicy::generateReferrer(
+        m_referrer.referrerPolicy, resourceRequest.url(), m_referrer.referrer));
+    FetchRequest request(resourceRequest, FetchInitiatorTypeNames::css);
     if (RuntimeEnabledFeatures::webFontsCacheAwareTimeoutAdaptationEnabled())
       request.setCacheAwareLoadingEnabled(IsCacheAwareLoadingEnabled);
     request.setContentSecurityCheck(m_shouldCheckContentSecurityPolicy);
     SecurityOrigin* securityOrigin = document->getSecurityOrigin();
     setCrossOriginAccessControl(request, securityOrigin);
-    request.mutableResourceRequest().setHTTPReferrer(
-        SecurityPolicy::generateReferrer(m_referrer.referrerPolicy,
-                                         request.url(), m_referrer.referrer));
     FontResource* resource = FontResource::fetch(request, document->fetcher());
     if (!resource)
       return nullptr;

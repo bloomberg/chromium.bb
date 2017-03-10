@@ -110,9 +110,9 @@ StyleImage* CSSImageSetValue::cacheImage(
     // Page::pageScaleFactor(), LocalFrame::pageZoomFactor(), and any CSS
     // transforms. https://bugs.webkit.org/show_bug.cgi?id=81698
     ImageWithScale image = bestImageForScaleFactor(deviceScaleFactor);
-    FetchRequest request(ResourceRequest(document.completeURL(image.imageURL)),
-                         FetchInitiatorTypeNames::css);
-    request.mutableResourceRequest().setHTTPReferrer(image.referrer);
+    ResourceRequest resourceRequest(document.completeURL(image.imageURL));
+    resourceRequest.setHTTPReferrer(image.referrer);
+    FetchRequest request(resourceRequest, FetchInitiatorTypeNames::css);
 
     if (crossOrigin != CrossOriginAttributeNotSet)
       request.setCrossOriginAccessControl(document.getSecurityOrigin(),

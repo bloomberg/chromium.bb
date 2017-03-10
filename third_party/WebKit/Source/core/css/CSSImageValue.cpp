@@ -55,13 +55,12 @@ StyleImage* CSSImageValue::cacheImage(const Document& document,
   if (!m_cachedImage) {
     if (m_absoluteURL.isEmpty())
       reResolveURL(document);
-    FetchRequest request(ResourceRequest(m_absoluteURL),
-                         m_initiatorName.isEmpty()
-                             ? FetchInitiatorTypeNames::css
-                             : m_initiatorName);
-    request.mutableResourceRequest().setHTTPReferrer(
-        SecurityPolicy::generateReferrer(m_referrer.referrerPolicy,
-                                         request.url(), m_referrer.referrer));
+    ResourceRequest resourceRequest(m_absoluteURL);
+    resourceRequest.setHTTPReferrer(SecurityPolicy::generateReferrer(
+        m_referrer.referrerPolicy, resourceRequest.url(), m_referrer.referrer));
+    FetchRequest request(resourceRequest, m_initiatorName.isEmpty()
+                                              ? FetchInitiatorTypeNames::css
+                                              : m_initiatorName);
 
     if (crossOrigin != CrossOriginAttributeNotSet)
       request.setCrossOriginAccessControl(document.getSecurityOrigin(),

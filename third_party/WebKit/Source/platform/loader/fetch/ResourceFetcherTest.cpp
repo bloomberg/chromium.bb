@@ -267,9 +267,9 @@ class RequestSameResourceOnComplete
     MockFetchContext* context =
         MockFetchContext::create(MockFetchContext::kShouldLoadNewResource);
     ResourceFetcher* fetcher2 = ResourceFetcher::create(context);
-    FetchRequest fetchRequest2(m_resource->url(), FetchInitiatorInfo());
-    fetchRequest2.mutableResourceRequest().setCachePolicy(
-        WebCachePolicy::ValidatingCacheData);
+    ResourceRequest resourceRequest2(m_resource->url());
+    resourceRequest2.setCachePolicy(WebCachePolicy::ValidatingCacheData);
+    FetchRequest fetchRequest2(resourceRequest2, FetchInitiatorInfo());
     Resource* resource2 = MockResource::fetch(fetchRequest2, fetcher2);
     EXPECT_EQ(m_resource, resource2);
     m_notifyFinishedCalled = true;
