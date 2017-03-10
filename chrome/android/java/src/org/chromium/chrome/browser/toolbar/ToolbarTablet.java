@@ -333,8 +333,11 @@ public class ToolbarTablet extends ToolbarLayout implements OnClickListener {
         super.onTabOrModelChanged();
         boolean incognito = isIncognito();
         if (mUseLightColorAssets == null || mUseLightColorAssets != incognito) {
-            setBackgroundResource(incognito
-                    ? R.color.incognito_primary_color : R.color.default_primary_color);
+            int colorResource =
+                    incognito ? R.color.incognito_primary_color : R.color.default_primary_color;
+            setBackgroundResource(colorResource);
+            getProgressBar().setThemeColor(
+                    ApiCompatibilityUtils.getColor(getResources(), colorResource), isIncognito());
 
             mMenuButton.setTint(incognito ? mLightModeTint : mDarkModeTint);
             mHomeButton.setTint(incognito ? mLightModeTint : mDarkModeTint);
