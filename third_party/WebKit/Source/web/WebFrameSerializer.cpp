@@ -437,14 +437,6 @@ WebThreadSafeData WebFrameSerializer::generateMHTMLParts(
   return output.release();
 }
 
-WebThreadSafeData WebFrameSerializer::generateMHTMLFooter(
-    const WebString& boundary) {
-  TRACE_EVENT0("page-serialization", "WebFrameSerializer::generateMHTMLFooter");
-  RefPtr<RawData> buffer = RawData::create();
-  MHTMLArchive::generateMHTMLFooter(boundary, *buffer->mutableData());
-  return buffer.release();
-}
-
 bool WebFrameSerializer::serialize(
     WebLocalFrame* frame,
     WebFrameSerializerClient* client,

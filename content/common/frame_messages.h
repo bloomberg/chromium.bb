@@ -515,9 +515,6 @@ IPC_STRUCT_BEGIN(FrameMsg_SerializeAsMHTML_Params)
 
   // Salt used for |digests_of_uris_to_skip|.
   IPC_STRUCT_MEMBER(std::string, salt)
-
-  // If |is_last_frame| is true, then an MHTML footer will be generated.
-  IPC_STRUCT_MEMBER(bool, is_last_frame)
 IPC_STRUCT_END()
 
 // This message is used to send hittesting data from the renderer in order

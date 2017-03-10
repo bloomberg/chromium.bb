@@ -76,7 +76,9 @@ class MHTMLGenerationManager {
   void JobFinished(Job* job, MhtmlSaveStatus save_status);
 
   // Called on the UI thread after the file got finalized and we have its size.
-  void OnFileClosed(int job_id, MhtmlSaveStatus save_status, int64_t file_size);
+  void OnFileClosed(
+      int job_id,
+      const std::tuple<MhtmlSaveStatus, int64_t>& save_status_size);
 
   // Creates and registers a new job.
   Job* NewJob(WebContents* web_contents,

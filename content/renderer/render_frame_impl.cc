@@ -5566,14 +5566,8 @@ void RenderFrameImpl::OnSerializeAsMHTML(
     has_some_data |= !mhtml_contents.back().isEmpty();
   }
 
-  // Generate MHTML footer if needed.
-  if (save_status == MhtmlSaveStatus::SUCCESS && params.is_last_frame) {
-    TRACE_EVENT0("page-serialization",
-                 "RenderFrameImpl::OnSerializeAsMHTML footer");
-    mhtml_contents.emplace_back(
-        WebFrameSerializer::generateMHTMLFooter(mhtml_boundary));
-    has_some_data |= !mhtml_contents.back().isEmpty();
-  }
+  // Note: the MHTML footer is written by the browser process, after the last
+  // frame is serialized by a renderer process.
 
   // Note: we assume RenderFrameImpl::OnWriteMHTMLToDiskComplete and the rest of
   // this function will be fast enough to not need to be accounted for in this

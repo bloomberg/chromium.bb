@@ -159,7 +159,8 @@ class MHTMLTest : public ::testing::Test {
       MHTMLArchive::generateMHTMLPart(boundary, String(), encodingPolicy,
                                       resource, *mhtmlData->mutableData());
     }
-    MHTMLArchive::generateMHTMLFooter(boundary, *mhtmlData->mutableData());
+    MHTMLArchive::generateMHTMLFooterForTesting(boundary,
+                                                *mhtmlData->mutableData());
     return mhtmlData.release();
   }
 
