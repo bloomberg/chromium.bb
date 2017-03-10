@@ -786,8 +786,8 @@ if (aom_config("CONFIG_LOOP_RESTORATION") eq "yes") {
   add_proto qw/void av1_selfguided_restoration/, "uint8_t *dgd, int width, int height, int stride, int32_t *dst, int dst_stride, int r, int eps, int32_t *tmpbuf";
   specialize qw/av1_selfguided_restoration sse4_1/;
 
-  add_proto qw/void av1_highpass_filter/, "uint8_t *dgd, int width, int height, int stride, int32_t *dst, int dst_stride, int r, int eps, int32_t *tmpbuf";
-  specialize qw/av1_highpass_filter/;
+  add_proto qw/void av1_highpass_filter/, "uint8_t *dgd, int width, int height, int stride, int32_t *dst, int dst_stride, int r, int eps";
+  specialize qw/av1_highpass_filter sse4_1/;
 
   if (aom_config("CONFIG_AOM_HIGHBITDEPTH") eq "yes") {
     add_proto qw/void apply_selfguided_restoration_highbd/, "uint16_t *dat, int width, int height, int stride, int bit_depth, int eps, int *xqd, uint16_t *dst, int dst_stride, int32_t *tmpbuf";
@@ -796,8 +796,8 @@ if (aom_config("CONFIG_LOOP_RESTORATION") eq "yes") {
     add_proto qw/void av1_selfguided_restoration_highbd/, "uint16_t *dgd, int width, int height, int stride, int32_t *dst, int dst_stride, int bit_depth, int r, int eps, int32_t *tmpbuf";
     specialize qw/av1_selfguided_restoration_highbd sse4_1/;
 
-    add_proto qw/void av1_highpass_filter_highbd/, "uint16_t *dgd, int width, int height, int stride, int32_t *dst, int dst_stride, int r, int eps, int32_t *tmpbuf";
-    specialize qw/av1_highpass_filter_highbd/;
+    add_proto qw/void av1_highpass_filter_highbd/, "uint16_t *dgd, int width, int height, int stride, int32_t *dst, int dst_stride, int r, int eps";
+    specialize qw/av1_highpass_filter_highbd sse4_1/;
   }
 }
 

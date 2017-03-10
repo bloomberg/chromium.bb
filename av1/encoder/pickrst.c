@@ -295,8 +295,7 @@ static void search_selfguided_restoration(uint8_t *dat8, int width, int height,
       uint16_t *dat = CONVERT_TO_SHORTPTR(dat8);
 #if USE_HIGHPASS_IN_SGRPROJ
       av1_highpass_filter_highbd(dat, width, height, dat_stride, flt1, width,
-                                 sgr_params[ep].corner, sgr_params[ep].edge,
-                                 tmpbuf2);
+                                 sgr_params[ep].corner, sgr_params[ep].edge);
 #else
       av1_selfguided_restoration_highbd(dat, width, height, dat_stride, flt1,
                                         width, bit_depth, sgr_params[ep].r1,
@@ -309,7 +308,7 @@ static void search_selfguided_restoration(uint8_t *dat8, int width, int height,
 #endif
 #if USE_HIGHPASS_IN_SGRPROJ
       av1_highpass_filter(dat8, width, height, dat_stride, flt1, width,
-                          sgr_params[ep].corner, sgr_params[ep].edge, tmpbuf2);
+                          sgr_params[ep].corner, sgr_params[ep].edge);
 #else
     av1_selfguided_restoration(dat8, width, height, dat_stride, flt1, width,
                                sgr_params[ep].r1, sgr_params[ep].e1, tmpbuf2);
