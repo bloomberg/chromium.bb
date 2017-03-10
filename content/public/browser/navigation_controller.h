@@ -356,6 +356,7 @@ class NavigationController {
   // cases pass in true in production code, but would do false for testing, or
   // in cases where no user interface is available for prompting.  If a
   // transient entry is showing, initiates a new navigation to its URL.
+  // NOTE: |reload_type| should never be NONE.
   virtual void Reload(ReloadType reload_type, bool check_for_repost) = 0;
 
   // Removing of entries -------------------------------------------------------

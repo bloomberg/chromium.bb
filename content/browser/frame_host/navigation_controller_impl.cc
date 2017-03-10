@@ -297,6 +297,8 @@ void NavigationControllerImpl::Restore(
 
 void NavigationControllerImpl::Reload(ReloadType reload_type,
                                       bool check_for_repost) {
+  DCHECK_NE(ReloadType::NONE, reload_type);
+
   if (transient_entry_index_ != -1) {
     // If an interstitial is showing, treat a reload as a navigation to the
     // transient entry's URL.
