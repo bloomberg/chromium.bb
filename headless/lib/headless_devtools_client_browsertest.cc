@@ -837,10 +837,10 @@ class HeadlessDevToolsNetworkBlockedUrlTest
     base::MessageLoop::ScopedNestableTaskAllower nest_loop(
         base::MessageLoop::current());
     run_loop.Run();
-    devtools_client_->GetNetwork()->GetExperimental()->AddBlockedURL(
-        network::AddBlockedURLParams::Builder()
-            .SetUrl("dom_tree_test.css")
-            .Build());
+    std::vector<std::string> blockedUrls;
+    blockedUrls.push_back("dom_tree_test.css");
+    devtools_client_->GetNetwork()->GetExperimental()->SetBlockedURLs(
+        network::SetBlockedURLsParams::Builder().SetUrls(blockedUrls).Build());
     devtools_client_->GetPage()->Navigate(
         embedded_test_server()->GetURL("/dom_tree_test.html").spec());
   }

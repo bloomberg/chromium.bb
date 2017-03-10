@@ -1197,18 +1197,10 @@
                 ]
             },
             {
-                "name": "addBlockedURL",
+                "name": "setBlockedURLs",
                 "description": "Blocks specific URL from loading.",
                 "parameters": [
-                    { "name": "url", "type": "string", "description": "URL to block." }
-                ],
-                "experimental": true
-            },
-            {
-                "name": "removeBlockedURL",
-                "description": "Cancels blocking of a specific URL from loading.",
-                "parameters": [
-                    { "name": "url", "type": "string", "description": "URL to stop blocking." }
+                    { "name": "urls", "type": "array", "items": { "type": "string" }, "description": "URLs to block." }
                 ],
                 "experimental": true
             },

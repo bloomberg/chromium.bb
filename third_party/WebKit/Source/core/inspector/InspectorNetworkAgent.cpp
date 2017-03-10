@@ -1334,24 +1334,13 @@ void InspectorNetworkAgent::getResponseBody(
       Response::Error("No data found for resource with given identifier"));
 }
 
-Response InspectorNetworkAgent::addBlockedURL(const String& url) {
-  protocol::DictionaryValue* blockedURLs =
-      m_state->getObject(NetworkAgentState::blockedURLs);
-  if (!blockedURLs) {
-    std::unique_ptr<protocol::DictionaryValue> newList =
-        protocol::DictionaryValue::create();
-    blockedURLs = newList.get();
-    m_state->setObject(NetworkAgentState::blockedURLs, std::move(newList));
-  }
-  blockedURLs->setBoolean(url, true);
-  return Response::OK();
-}
-
-Response InspectorNetworkAgent::removeBlockedURL(const String& url) {
-  protocol::DictionaryValue* blockedURLs =
-      m_state->getObject(NetworkAgentState::blockedURLs);
-  if (blockedURLs)
-    blockedURLs->remove(url);
+Response InspectorNetworkAgent::setBlockedURLs(
+    std::unique_ptr<protocol::Array<String>> urls) {
+  std::unique_ptr<protocol::DictionaryValue> newList =
+      protocol::DictionaryValue::create();
+  for (size_t i = 0; i < urls->length(); i++)
+    newList->setBoolean(urls->get(i), true);
+  m_state->setObject(NetworkAgentState::blockedURLs, std::move(newList));
   return Response::OK();
 }
 

@@ -201,8 +201,8 @@ class CORE_EXPORT InspectorNetworkAgent final
       std::unique_ptr<protocol::Network::Headers>) override;
   void getResponseBody(const String& requestId,
                        std::unique_ptr<GetResponseBodyCallback>) override;
-  protocol::Response addBlockedURL(const String& url) override;
-  protocol::Response removeBlockedURL(const String& url) override;
+  protocol::Response setBlockedURLs(
+      std::unique_ptr<protocol::Array<String>> urls) override;
   protocol::Response replayXHR(const String& requestId) override;
   protocol::Response setMonitoringXHREnabled(bool) override;
   protocol::Response canClearBrowserCache(bool* result) override;

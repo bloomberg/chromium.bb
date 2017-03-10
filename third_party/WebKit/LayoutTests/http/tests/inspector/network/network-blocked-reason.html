@@ -22,6 +22,7 @@ function test()
 {
     var requestName;
     var nextStep;
+    Common.moduleSetting('requestBlockingEnabled').set(true);
     var blockedSetting = Common.settingForTest("networkBlockedURLs");
 
     function onRequest(event)
