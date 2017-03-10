@@ -247,7 +247,9 @@ void DisplayItemList::GenerateDiscardableImagesMetadata() {
   gfx::Rect bounds = rtree_.GetBounds();
   DiscardableImageMap::ScopedMetadataGenerator generator(
       &image_map_, gfx::Size(bounds.right(), bounds.bottom()));
-  Raster(generator.canvas(), nullptr, gfx::Rect(), 1.f);
+  auto* canvas = generator.canvas();
+  for (const auto& item : inputs_.items)
+    item.Raster(canvas, nullptr);
 }
 
 void DisplayItemList::GetDiscardableImagesInRect(
