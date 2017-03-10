@@ -42,7 +42,8 @@ void SignalImmediately(base::WaitableEvent* event) {
 }
 }
 
-class MockClient : public AVDACodecAllocatorClient {
+class MockClient : public AVDACodecAllocatorClient,
+                   public AVDASurfaceAllocatorClient {
  public:
   MOCK_METHOD1(OnSurfaceAvailable, void(bool success));
   MOCK_METHOD0(OnSurfaceDestroyed, void());

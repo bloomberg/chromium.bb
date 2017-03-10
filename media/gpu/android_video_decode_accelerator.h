@@ -76,8 +76,6 @@ class MEDIA_GPU_EXPORT AndroidVideoDecodeAccelerator
   void NotifyError(Error error) override;
 
   // AVDACodecAllocatorClient implementation:
-  void OnSurfaceAvailable(bool success) override;
-  void OnSurfaceDestroyed() override;
   void OnCodecConfigured(
       std::unique_ptr<MediaCodecBridge> media_codec) override;
 
@@ -112,14 +110,23 @@ class MEDIA_GPU_EXPORT AndroidVideoDecodeAccelerator
   // Entry point for configuring / reconfiguring a codec with a new surface.
   // Start surface creation by trying to allocate the surface id.  Will either
   // InitializePictureBufferManager if the surface is available immediately, or
-  // will wait for OnSurfaceAvailable to do it.  This will transition |state_|
+  // will wait for OnOverlayReady to do it.  This will transition |state_|
   // to WAITING_FOR_SURFACE or WAITING_FOR_CODEC, as needed (or NO_ERROR if it
   // gets the surface and the codec without waiting).
   // Note that this requires that you create a new |incoming_bundle_| with the
   // appropriate surface id.
   void StartSurfaceCreation();
 
-  // Initialize of the picture buffer manager to use the current surface, once
+  // Called by AndroidOverlay when a surface becomes available.
+  void OnOverlayReady();
+
+  // Called by AndroidOverlay when the overlay will not call OnOverlayReady.
+  void OnOverlayFailed();
+
+  // Called by AndroidOverlay when a surface is lost.
+  void OnSurfaceDestroyed();
+
+  // Initializes the picture buffer manager to use the current surface, once
   // it is available.  This is not normally called directly, but rather via
   // StartSurfaceCreation.  If we have a media codec already, then this will
   // attempt to setSurface the new surface.  Otherwise, it will start codec
@@ -147,11 +154,6 @@ class MEDIA_GPU_EXPORT AndroidVideoDecodeAccelerator
   // on failure.  Since all configuration is done synchronously, there is no
   // concern with modifying |codec_config_| after this returns.
   void ConfigureMediaCodecSynchronously();
-
-  // Instantiate a media codec using |codec_config|.
-  // This may be called on any thread.
-  static std::unique_ptr<MediaCodecBridge> ConfigureMediaCodecOnAnyThread(
-      scoped_refptr<CodecConfig> codec_config);
 
   // Sends the decoded frame specified by |codec_buffer_index| to the client.
   void SendDecodedFrameToClient(int32_t codec_buffer_index,

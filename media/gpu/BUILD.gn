@@ -189,6 +189,8 @@ component("gpu") {
       "avda_state_provider.h",
       "avda_surface_bundle.cc",
       "avda_surface_bundle.h",
+      "content_video_view_overlay.cc",
+      "content_video_view_overlay.h",
       "surface_texture_gl_owner.cc",
       "surface_texture_gl_owner.h",
     ]

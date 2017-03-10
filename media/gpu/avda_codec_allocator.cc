@@ -142,7 +142,7 @@ scoped_refptr<base::SingleThreadTaskRunner> AVDACodecAllocator::TaskRunnerFor(
   return threads_[task_type]->thread.task_runner();
 }
 
-bool AVDACodecAllocator::AllocateSurface(AVDACodecAllocatorClient* client,
+bool AVDACodecAllocator::AllocateSurface(AVDASurfaceAllocatorClient* client,
                                          int surface_id) {
   DVLOG(1) << __func__ << ": " << surface_id;
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -165,7 +165,7 @@ bool AVDACodecAllocator::AllocateSurface(AVDACodecAllocatorClient* client,
   return false;
 }
 
-void AVDACodecAllocator::DeallocateSurface(AVDACodecAllocatorClient* client,
+void AVDACodecAllocator::DeallocateSurface(AVDASurfaceAllocatorClient* client,
                                            int surface_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (surface_id == SurfaceManager::kNoSurfaceID ||
@@ -254,7 +254,7 @@ std::unique_ptr<MediaCodecBridge> AVDACodecAllocator::CreateMediaCodecSync(
       MediaCodecBridgeImpl::CreateVideoDecoder(
           codec_config->codec, codec_config->needs_protected_surface,
           codec_config->initial_expected_coded_size,
-          codec_config->surface_bundle->surface.j_surface().obj(), media_crypto,
+          codec_config->surface_bundle->j_surface().obj(), media_crypto,
           codec_config->csd0, codec_config->csd1, true,
           require_software_codec));
 

@@ -19,6 +19,7 @@
 #include "base/threading/thread_checker.h"
 #include "base/time/tick_clock.h"
 #include "base/trace_event/trace_event.h"
+#include "media/base/android/android_overlay.h"
 #include "media/base/android/media_codec_bridge_impl.h"
 #include "media/base/android/media_drm_bridge_cdm_context.h"
 #include "media/base/media.h"
@@ -80,7 +81,7 @@ class CodecConfig : public base::RefCountedThreadSafe<CodecConfig> {
   DISALLOW_COPY_AND_ASSIGN(CodecConfig);
 };
 
-class AVDACodecAllocatorClient {
+class AVDASurfaceAllocatorClient {
  public:
   // Called when the requested SurfaceView becomes available after a call to
   // AllocateSurface()
@@ -92,6 +93,12 @@ class AVDACodecAllocatorClient {
   // need to call DeallocateSurface();
   virtual void OnSurfaceDestroyed() = 0;
 
+ protected:
+  ~AVDASurfaceAllocatorClient() {}
+};
+
+class AVDACodecAllocatorClient {
+ public:
   // Called on the main thread when a new MediaCodec is configured.
   // |media_codec| will be null if configuration failed.
   virtual void OnCodecConfigured(
@@ -122,13 +129,13 @@ class MEDIA_GPU_EXPORT AVDACodecAllocator {
   // Returns true if the caller now owns the surface, or false if someone else
   // owns the surface. |client| will be notified when the surface is available
   // via OnSurfaceAvailable().
-  bool AllocateSurface(AVDACodecAllocatorClient* client, int surface_id);
+  bool AllocateSurface(AVDASurfaceAllocatorClient* client, int surface_id);
 
   // Relinquish ownership of the surface or stop waiting for it to be available.
   // The caller must guarantee that when calling this the surface is either no
   // longer attached to a MediaCodec, or the MediaCodec it was attached to is
   // was released with ReleaseMediaCodec().
-  void DeallocateSurface(AVDACodecAllocatorClient* client, int surface_id);
+  void DeallocateSurface(AVDASurfaceAllocatorClient* client, int surface_id);
 
   // Create and configure a MediaCodec synchronously.
   std::unique_ptr<MediaCodecBridge> CreateMediaCodecSync(
@@ -190,8 +197,8 @@ class MEDIA_GPU_EXPORT AVDACodecAllocator {
   friend class AVDACodecAllocatorTest;
 
   struct OwnerRecord {
-    AVDACodecAllocatorClient* owner = nullptr;
-    AVDACodecAllocatorClient* waiter = nullptr;
+    AVDASurfaceAllocatorClient* owner = nullptr;
+    AVDASurfaceAllocatorClient* waiter = nullptr;
   };
 
   class HangDetector : public base::MessageLoop::TaskObserver {

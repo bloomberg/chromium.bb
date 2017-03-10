@@ -16,11 +16,11 @@
 #include "gpu/command_buffer/service/gl_stream_texture_image.h"
 #include "gpu/command_buffer/service/gles2_cmd_copy_texture_chromium.h"
 #include "gpu/command_buffer/service/texture_manager.h"
-#include "gpu/ipc/common/gpu_surface_lookup.h"
 #include "gpu/ipc/service/gpu_channel.h"
 #include "media/base/android/media_codec_bridge_impl.h"
 #include "media/gpu/avda_codec_image.h"
 #include "media/gpu/avda_shared_state.h"
+#include "ui/gl/android/scoped_java_surface.h"
 #include "ui/gl/android/surface_texture.h"
 #include "ui/gl/egl_util.h"
 #include "ui/gl/gl_bindings.h"
@@ -47,7 +47,8 @@ scoped_refptr<SurfaceTextureGLOwner> CreateAttachedSurfaceTexture(
     base::WeakPtr<gpu::gles2::GLES2Decoder> gl_decoder) {
   scoped_refptr<SurfaceTextureGLOwner> surface_texture =
       SurfaceTextureGLOwner::Create();
-  DCHECK(surface_texture);
+  if (!surface_texture)
+    return nullptr;
 
   glActiveTexture(GL_TEXTURE0);
   glBindTexture(GL_TEXTURE_EXTERNAL_OES, surface_texture->texture_id());
@@ -71,17 +72,21 @@ AVDAPictureBufferManager::AVDAPictureBufferManager(
 
 AVDAPictureBufferManager::~AVDAPictureBufferManager() {}
 
-gl::ScopedJavaSurface AVDAPictureBufferManager::Initialize(int surface_id) {
+void AVDAPictureBufferManager::InitializeForOverlay() {
+  shared_state_ = new AVDASharedState();
+  surface_texture_ = nullptr;
+}
+
+gl::ScopedJavaSurface AVDAPictureBufferManager::InitializeForSurfaceTexture() {
   shared_state_ = new AVDASharedState();
   surface_texture_ = nullptr;
 
-  // Acquire the SurfaceView surface if given a valid id.
-  if (surface_id != SurfaceManager::kNoSurfaceID)
-    return gpu::GpuSurfaceLookup::GetInstance()->AcquireJavaSurface(surface_id);
-
-  // Otherwise create a SurfaceTexture.
+  // Create a SurfaceTexture.
   surface_texture_ =
       CreateAttachedSurfaceTexture(state_provider_->GetGlDecoder());
+  if (!surface_texture_)
+    return gl::ScopedJavaSurface();
+
   shared_state_->SetSurfaceTexture(surface_texture_);
   return gl::ScopedJavaSurface(surface_texture_.get());
 }
