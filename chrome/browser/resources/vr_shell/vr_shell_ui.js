@@ -39,6 +39,8 @@ var vrShellUi = (function() {
       /** @const */ this.MENU_MODE_SCREEN_HEIGHT = 0.8;
       /** @const */ this.MENU_MODE_SCREEN_ELEVATION = 0.2;
       /** @const */ this.BACKGROUND_DISTANCE_MULTIPLIER = 1.414;
+      /** @const */ this.DOM_INTERCEPTOR_SELECTOR = '#content-interceptor';
+      /** @const */ this.DOM_INTERCEPTOR_ELEVATION = 0.01;
 
       this.menuMode = false;
       this.fullscreen = false;
@@ -60,6 +62,24 @@ var vrShellUi = (function() {
       backPlane.setParentId(this.elementId);
       backPlane.setFill(new api.NoFill());
       ui.addElement(backPlane);
+
+      // Place invisible plane on top of content quad, to intercept the clicks
+      // while on menu mode.
+      this.interceptor = new DomUiElement(this.DOM_INTERCEPTOR_SELECTOR);
+      let update = new api.UiElementUpdate();
+      update.setTranslation(0, 0, this.DOM_INTERCEPTOR_ELEVATION);
+      update.setVisible(false);
+      update.setParentId(this.elementId);
+      update.setSize(
+          this.MENU_MODE_SCREEN_HEIGHT * this.SCREEN_RATIO,
+          this.MENU_MODE_SCREEN_HEIGHT);
+      ui.updateElement(this.interceptor.id, update);
+      let interceptorButton =
+          document.querySelector(this.DOM_INTERCEPTOR_SELECTOR);
+      interceptorButton.addEventListener('click', function() {
+        uiManager.exitMenuMode();
+        ui.flush();
+      });
 
       this.updateState();
     }
@@ -105,6 +125,10 @@ var vrShellUi = (function() {
       } else if (this.fullscreen) {
         distance = this.FULLSCREEN_DISTANCE;
       }
+
+      let update = new api.UiElementUpdate();
+      update.setVisible(this.menuMode);
+      ui.updateElement(this.interceptor.id, update);
 
       let anim;
       anim = new api.Animation(this.elementId, ANIM_DURATION);
@@ -997,6 +1021,13 @@ var vrShellUi = (function() {
       /** No need to call updateState to adjust button properties. */
       this.controls.setBackButtonEnabled(this.canGoBack || this.fullscreen);
       this.controls.setForwardButtonEnabled(this.canGoForward);
+    }
+
+    exitMenuMode() {
+      if (this.menuMode) {
+        this.menuMode = false;
+        this.updateState();
+      }
     }
 
     updateState() {

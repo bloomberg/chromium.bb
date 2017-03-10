@@ -145,6 +145,12 @@ html {
   background-color: pink;
 }
 
+#content-interceptor {
+  height: 1px;
+  opacity: 0;
+  width: 1px;
+}
+
 .tab {
   background-color: #eee;
   border-radius: 6px;
