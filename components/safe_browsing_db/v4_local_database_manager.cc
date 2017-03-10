@@ -111,12 +111,14 @@ V4LocalDatabaseManager::PendingCheck::PendingCheck(
     const std::vector<GURL>& urls)
     : client(client),
       client_callback_type(client_callback_type),
-      result_threat_type(SB_THREAT_TYPE_SAFE),
+      most_severe_threat_type(SB_THREAT_TYPE_SAFE),
       stores_to_check(stores_to_check),
       urls(urls) {
   for (const auto& url : urls) {
     V4ProtocolManagerUtil::UrlToFullHashes(url, &full_hashes);
   }
+  DCHECK(full_hashes.size());
+  full_hash_threat_types.assign(full_hashes.size(), SB_THREAT_TYPE_SAFE);
 }
 
 V4LocalDatabaseManager::PendingCheck::PendingCheck(
@@ -126,9 +128,11 @@ V4LocalDatabaseManager::PendingCheck::PendingCheck(
     const std::set<FullHash>& full_hashes_set)
     : client(client),
       client_callback_type(client_callback_type),
-      result_threat_type(SB_THREAT_TYPE_SAFE),
+      most_severe_threat_type(SB_THREAT_TYPE_SAFE),
       stores_to_check(stores_to_check) {
   full_hashes.assign(full_hashes_set.begin(), full_hashes_set.end());
+  DCHECK(full_hashes.size());
+  full_hash_threat_types.assign(full_hashes.size(), SB_THREAT_TYPE_SAFE);
 }
 
 V4LocalDatabaseManager::PendingCheck::~PendingCheck() {}
@@ -503,20 +507,25 @@ bool V4LocalDatabaseManager::GetPrefixMatches(
 }
 
 void V4LocalDatabaseManager::GetSeverestThreatTypeAndMetadata(
-    SBThreatType* result_threat_type,
+    const std::vector<FullHashInfo>& full_hash_infos,
+    const std::vector<FullHash>& full_hashes,
+    std::vector<SBThreatType>* full_hash_threat_types,
+    SBThreatType* most_severe_threat_type,
     ThreatMetadata* metadata,
-    FullHash* matching_full_hash,
-    const std::vector<FullHashInfo>& full_hash_infos) {
-  DCHECK(result_threat_type);
-  DCHECK(metadata);
-  DCHECK(matching_full_hash);
-
+    FullHash* matching_full_hash) {
   ThreatSeverity most_severe_yet = kLeastSeverity;
   for (const FullHashInfo& fhi : full_hash_infos) {
     ThreatSeverity severity = GetThreatSeverity(fhi.list_id);
+    SBThreatType threat_type = GetSBThreatTypeForList(fhi.list_id);
+
+    const auto& it =
+        std::find(full_hashes.begin(), full_hashes.end(), fhi.full_hash);
+    DCHECK(it != full_hashes.end());
+    (*full_hash_threat_types)[it - full_hashes.begin()] = threat_type;
+
     if (severity < most_severe_yet) {
       most_severe_yet = severity;
-      *result_threat_type = GetSBThreatTypeForList(fhi.list_id);
+      *most_severe_threat_type = threat_type;
       *metadata = fhi.metadata;
       *matching_full_hash = fhi.full_hash;
     }
@@ -612,9 +621,10 @@ void V4LocalDatabaseManager::OnFullHashResponse(
   }
 
   // Find out the most severe threat, if any, to report to the client.
-  GetSeverestThreatTypeAndMetadata(&check->result_threat_type,
-                                   &check->url_metadata,
-                                   &check->matching_full_hash, full_hash_infos);
+  GetSeverestThreatTypeAndMetadata(
+      full_hash_infos, check->full_hashes, &check->full_hash_threat_types,
+      &check->most_severe_threat_type, &check->url_metadata,
+      &check->matching_full_hash);
   pending_checks_.erase(it);
   RespondToClient(std::move(check));
 }
@@ -673,24 +683,31 @@ void V4LocalDatabaseManager::RespondToClient(
     case ClientCallbackType::CHECK_URL_FOR_SUBRESOURCE_FILTER:
       DCHECK_EQ(1u, check->urls.size());
       check->client->OnCheckBrowseUrlResult(
-          check->urls[0], check->result_threat_type, check->url_metadata);
+          check->urls[0], check->most_severe_threat_type, check->url_metadata);
       break;
 
     case ClientCallbackType::CHECK_DOWNLOAD_URLS:
       check->client->OnCheckDownloadUrlResult(check->urls,
-                                              check->result_threat_type);
+                                              check->most_severe_threat_type);
       break;
 
     case ClientCallbackType::CHECK_RESOURCE_URL:
       DCHECK_EQ(1u, check->urls.size());
-      check->client->OnCheckResourceUrlResult(
-          check->urls[0], check->result_threat_type, check->matching_full_hash);
+      check->client->OnCheckResourceUrlResult(check->urls[0],
+                                              check->most_severe_threat_type,
+                                              check->matching_full_hash);
       break;
 
     case ClientCallbackType::CHECK_EXTENSION_IDS: {
-      const std::set<FullHash> extension_ids(check->full_hashes.begin(),
-                                             check->full_hashes.end());
-      check->client->OnCheckExtensionsResult(extension_ids);
+      DCHECK_EQ(check->full_hash_threat_types.size(),
+                check->full_hashes.size());
+      std::set<FullHash> unsafe_extension_ids;
+      for (size_t i = 0; i < check->full_hash_threat_types.size(); i++) {
+        if (check->full_hash_threat_types[i] == SB_THREAT_TYPE_EXTENSION) {
+          unsafe_extension_ids.insert(check->full_hashes[i]);
+        }
+      }
+      check->client->OnCheckExtensionsResult(unsafe_extension_ids);
       break;
     }
     case ClientCallbackType::CHECK_OTHER:

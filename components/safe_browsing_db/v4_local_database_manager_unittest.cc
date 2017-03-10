@@ -191,6 +191,21 @@ class TestClient : public SafeBrowsingDatabaseManager::Client {
   V4LocalDatabaseManager* manager_to_cancel_;
 };
 
+class TestExtensionClient : public SafeBrowsingDatabaseManager::Client {
+ public:
+  TestExtensionClient(const std::set<FullHash>& expected_bad_crxs)
+      : expected_bad_crxs(expected_bad_crxs),
+        on_check_extensions_result_called_(false) {}
+
+  void OnCheckExtensionsResult(const std::set<FullHash>& bad_crxs) override {
+    EXPECT_EQ(expected_bad_crxs, bad_crxs);
+    on_check_extensions_result_called_ = true;
+  }
+
+  const std::set<FullHash> expected_bad_crxs;
+  bool on_check_extensions_result_called_;
+};
+
 class FakeV4LocalDatabaseManager : public V4LocalDatabaseManager {
  public:
   void PerformFullHashCheck(std::unique_ptr<PendingCheck> check,
@@ -404,32 +419,48 @@ TEST_F(V4LocalDatabaseManagerTest,
 TEST_F(V4LocalDatabaseManagerTest, TestGetSeverestThreatTypeAndMetadata) {
   WaitForTasksOnTaskRunner();
 
-  FullHash full_hash("Malware");
-  FullHashInfo fhi_malware(full_hash, GetUrlMalwareId(), base::Time::Now());
+  FullHash fh_malware("Malware");
+  FullHashInfo fhi_malware(fh_malware, GetUrlMalwareId(), base::Time::Now());
   fhi_malware.metadata.population_id = "malware_popid";
 
-  FullHashInfo fhi_api(FullHash("api"), GetChromeUrlApiId(), base::Time::Now());
+  FullHash fh_api("api");
+  FullHashInfo fhi_api(fh_api, GetChromeUrlApiId(), base::Time::Now());
   fhi_api.metadata.population_id = "api_popid";
 
+  FullHash fh_example("example");
   std::vector<FullHashInfo> fhis({fhi_malware, fhi_api});
+  std::vector<FullHash> full_hashes({fh_malware, fh_example, fh_api});
 
+  std::vector<SBThreatType> full_hash_threat_types(full_hashes.size(),
+                                                   SB_THREAT_TYPE_SAFE);
   SBThreatType result_threat_type;
   ThreatMetadata metadata;
   FullHash matching_full_hash;
 
+  const std::vector<SBThreatType> expected_full_hash_threat_types(
+      {SB_THREAT_TYPE_URL_MALWARE, SB_THREAT_TYPE_SAFE,
+       SB_THREAT_TYPE_API_ABUSE});
+
   v4_local_database_manager_->GetSeverestThreatTypeAndMetadata(
-      &result_threat_type, &metadata, &matching_full_hash, fhis);
+      fhis, full_hashes, &full_hash_threat_types, &result_threat_type,
+      &metadata, &matching_full_hash);
+  EXPECT_EQ(expected_full_hash_threat_types, full_hash_threat_types);
+
   EXPECT_EQ(SB_THREAT_TYPE_URL_MALWARE, result_threat_type);
   EXPECT_EQ("malware_popid", metadata.population_id);
-  EXPECT_EQ(full_hash, matching_full_hash);
+  EXPECT_EQ(fh_malware, matching_full_hash);
 
   // Reversing the list has no effect.
   std::reverse(std::begin(fhis), std::end(fhis));
+  full_hash_threat_types.assign(full_hashes.size(), SB_THREAT_TYPE_SAFE);
+
   v4_local_database_manager_->GetSeverestThreatTypeAndMetadata(
-      &result_threat_type, &metadata, &matching_full_hash, fhis);
+      fhis, full_hashes, &full_hash_threat_types, &result_threat_type,
+      &metadata, &matching_full_hash);
+  EXPECT_EQ(expected_full_hash_threat_types, full_hash_threat_types);
   EXPECT_EQ(SB_THREAT_TYPE_URL_MALWARE, result_threat_type);
   EXPECT_EQ("malware_popid", metadata.population_id);
-  EXPECT_EQ(full_hash, matching_full_hash);
+  EXPECT_EQ(fh_malware, matching_full_hash);
 }
 
 TEST_F(V4LocalDatabaseManagerTest, TestChecksAreQueued) {
@@ -801,8 +832,64 @@ TEST_F(V4LocalDatabaseManagerTest, TestCheckResourceUrlReturnsBad) {
   EXPECT_TRUE(client.on_check_resource_url_result_called_);
 }
 
-// TODO(nparker): Add tests for
+TEST_F(V4LocalDatabaseManagerTest, TestCheckExtensionIDsNothingBlacklisted) {
+  // Setup to receive full-hash misses.
+  ScopedFakeGetHashProtocolManagerFactory pin(FullHashInfos({}));
+
+  // Reset the database manager so it picks up the replacement protocol manager.
+  ResetLocalDatabaseManager();
+  WaitForTasksOnTaskRunner();
+
+  // bad_extension_id is in the local DB but the full hash won't match.
+  const FullHash bad_extension_id("aaaabbbbccccdddd"),
+      good_extension_id("ddddccccbbbbaaaa");
+
+  // Put a match in the db that will cause a protocol-manager request.
+  StoreAndHashPrefixes store_and_hash_prefixes;
+  store_and_hash_prefixes.emplace_back(GetChromeExtMalwareId(),
+                                       bad_extension_id);
+  ReplaceV4Database(store_and_hash_prefixes, true /* stores_available */);
+
+  const std::set<FullHash> expected_bad_crxs({});
+  const std::set<FullHash> extension_ids({good_extension_id, bad_extension_id});
+  TestExtensionClient client(expected_bad_crxs);
+  EXPECT_FALSE(
+      v4_local_database_manager_->CheckExtensionIDs(extension_ids, &client));
+  EXPECT_FALSE(client.on_check_extensions_result_called_);
+  WaitForTasksOnTaskRunner();
+  EXPECT_TRUE(client.on_check_extensions_result_called_);
+}
+
+TEST_F(V4LocalDatabaseManagerTest, TestCheckExtensionIDsOneIsBlacklisted) {
+  // bad_extension_id is in the local DB and the full hash will match.
+  const FullHash bad_extension_id("aaaabbbbccccdddd"),
+      good_extension_id("ddddccccbbbbaaaa");
+  FullHashInfo fhi(bad_extension_id, GetChromeExtMalwareId(), base::Time());
+
+  // Setup to receive full-hash hit.
+  ScopedFakeGetHashProtocolManagerFactory pin(FullHashInfos({fhi}));
+
+  // Reset the database manager so it picks up the replacement protocol manager.
+  ResetLocalDatabaseManager();
+  WaitForTasksOnTaskRunner();
+
+  // Put a match in the db that will cause a protocol-manager request.
+  StoreAndHashPrefixes store_and_hash_prefixes;
+  store_and_hash_prefixes.emplace_back(GetChromeExtMalwareId(),
+                                       bad_extension_id);
+  ReplaceV4Database(store_and_hash_prefixes, true /* stores_available */);
+
+  const std::set<FullHash> expected_bad_crxs({bad_extension_id});
+  const std::set<FullHash> extension_ids({good_extension_id, bad_extension_id});
+  TestExtensionClient client(expected_bad_crxs);
+  EXPECT_FALSE(
+      v4_local_database_manager_->CheckExtensionIDs(extension_ids, &client));
+  EXPECT_FALSE(client.on_check_extensions_result_called_);
+  WaitForTasksOnTaskRunner();
+  EXPECT_TRUE(client.on_check_extensions_result_called_);
+}
+
+// TODO(vakh): By 03/15/2017: Add tests for
 //   CheckDownloadUrl()
-//   CheckExtensionIDs()
 
 }  // namespace safe_browsing
