@@ -319,9 +319,10 @@ void SpellChecker::showSpellingGuessPanel() {
 }
 
 void SpellChecker::clearMisspellingsForMovingParagraphs(
-    const VisibleSelection& movingSelection) {
-  removeMarkers(movingSelection.toNormalizedEphemeralRange(),
-                DocumentMarker::MisspellingMarkers());
+    const SelectionInDOMTree& movingSelection) {
+  removeMarkers(
+      createVisibleSelection(movingSelection).toNormalizedEphemeralRange(),
+      DocumentMarker::MisspellingMarkers());
 }
 
 void SpellChecker::markMisspellingsForMovingParagraphs(
