@@ -13,6 +13,7 @@
 #include "base/debug/crash_logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/process/memory.h"
+#include "base/process/process_metrics.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
 
@@ -91,10 +92,20 @@ ClientNativePixmapDmaBuf::ClientNativePixmapDmaBuf(
         "(addr=nullptr, length=%zu, prot=(PROT_READ | PROT_WRITE), "
         "flags=MAP_SHARED, fd=%d[valid=%d], offset=0)",
         map_size, dmabuf_fd_.get(), fd_valid);
+    std::string errno_str = logging::SystemErrorCodeToString(mmap_error);
+    std::unique_ptr<base::ProcessMetrics> process_metrics(
+        base::ProcessMetrics::CreateCurrentProcessMetrics());
+    std::string number_of_fds =
+        base::StringPrintf("%d", process_metrics->GetOpenFdCount());
     base::debug::ScopedCrashKey params_crash_key("mmap_params", mmap_params);
     base::debug::ScopedCrashKey size_crash_key("buffer_size", size.ToString());
-    base::debug::ScopedCrashKey errno_crash_key(
-        "errno", logging::SystemErrorCodeToString(mmap_error));
+    base::debug::ScopedCrashKey errno_crash_key("errno", errno_str);
+    base::debug::ScopedCrashKey number_of_fds_crash_key("number_of_fds",
+                                                        number_of_fds);
+    LOG(ERROR) << "Failed to mmap dmabuf; mmap_params: " << mmap_params
+               << ", buffer_size: (" << size.ToString()
+               << "),  errno: " << errno_str
+               << " , number_of_fds: " << number_of_fds;
     if (mmap_error == ENOMEM)
       base::TerminateBecauseOutOfMemory(map_size);
     CHECK(false) << "Failed to mmap dmabuf.";

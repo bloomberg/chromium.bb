@@ -159,6 +159,7 @@ size_t RegisterChromeCrashKeys() {
     {"mmap_params", kSmallSize},
     {"buffer_size", kSmallSize},
     {"errno", kSmallSize},
+    {"number_of_fds", kSmallSize},
 #endif
 #if defined(OS_MACOSX)
     {mac::kFirstNSException, kMediumSize},
