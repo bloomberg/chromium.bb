@@ -1,4 +1,4 @@
-README - 23 March 2015
+README - 9 March 2017
 
 Welcome to the AV1 Codec SDK!
 
@@ -125,6 +125,27 @@ AV1 TEST VECTORS:
 
   $ ./configure --enable-unit-tests
   $ LIBAOM_TEST_DATA_PATH=../-test-data make testdata
+
+UNIT TESTS:
+  The unit tests (consisting mainly of the test_libaom binary) can be run using
+  make. This will download the test data if necessary.
+
+  $ ../libaom/configure --enable-unit-tests
+  $ make test
+
+  Test may be run in parallel using make -j which supports up to 10 shards by
+  default.
+  $ make -j10 test
+
+  If you have additional cores you can scale the tests to match:
+  $ shards=$(nproc); \
+    make -j$shards test \
+    NUM_SHARDS=$shards SHARDS="$(seq -s' ' 0 $(( shards - 1 )))" \
+    && echo "success"
+
+  The GTEST_FILTER environment variable (equivalent to --gtest_filter) can be
+  used to control which tests are run while sharding:
+  $ GTEST_FILTER='SSE2*' make -j10 test
 
 CODE STYLE:
   The coding style used by this project is enforced with clang-format using the
