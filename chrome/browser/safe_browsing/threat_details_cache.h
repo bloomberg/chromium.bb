@@ -15,7 +15,7 @@
 #include "base/containers/hash_tables.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
-#include "chrome/common/safe_browsing/csd.pb.h"
+#include "components/safe_browsing/csd.pb.h"
 #include "net/base/completion_callback.h"
 #include "net/url_request/url_fetcher_delegate.h"
 

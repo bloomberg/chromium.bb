@@ -36,7 +36,6 @@ message ChromeUserPopulation {
   optional UserPopulation user_population = 1;
 }
 
-
 message ClientPhishingRequest {
   // URL that the client visited.  The CGI parameters are stripped by the
   // client.
@@ -471,7 +470,7 @@ message ClientDownloadRequest {
   // True if the .zip or DMG, etc, was 100% successfully unpacked.
   optional bool archive_valid = 26;
 
-    // True if this ClientDownloadRequest is from a whitelisted domain.
+  // True if this ClientDownloadRequest is from a whitelisted domain.
   optional bool skipped_url_whitelist = 28;
 
   // True if this ClientDownloadRequest contains a whitelisted certificate.
@@ -578,9 +577,7 @@ message ClientDownloadResponse {
 message ClientDownloadReport {
   // The information of user who provided the feedback.
   // This is going to be useful for handling appeals.
-  message UserInformation {
-    optional string email = 1;
-  }
+  message UserInformation { optional string email = 1; }
 
   enum Reason {
     SHARE = 0;

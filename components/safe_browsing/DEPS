@@ -11,4 +11,5 @@ include_rules = [
   "+net/log",
   "+net/url_request",
   "+testing/gtest",
+  "+third_party/protobuf",
 ]

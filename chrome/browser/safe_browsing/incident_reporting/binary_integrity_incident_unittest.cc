@@ -11,7 +11,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "chrome/common/safe_browsing/csd.pb.h"
+#include "components/safe_browsing/csd.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace safe_browsing {

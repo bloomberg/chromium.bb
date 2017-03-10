@@ -21,7 +21,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/pe_image.h"
 #include "chrome/browser/safe_browsing/incident_reporting/module_integrity_unittest_util_win.h"
-#include "chrome/common/safe_browsing/csd.pb.h"
+#include "components/safe_browsing/csd.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace safe_browsing {

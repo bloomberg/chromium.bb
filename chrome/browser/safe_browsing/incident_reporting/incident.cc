@@ -8,7 +8,7 @@
 
 #include "base/logging.h"
 #include "base/time/time.h"
-#include "chrome/common/safe_browsing/csd.pb.h"
+#include "components/safe_browsing/csd.pb.h"
 
 namespace safe_browsing {
 

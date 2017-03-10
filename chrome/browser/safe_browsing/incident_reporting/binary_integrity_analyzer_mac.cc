@@ -14,7 +14,7 @@
 #include "chrome/browser/safe_browsing/incident_reporting/binary_integrity_incident.h"
 #include "chrome/browser/safe_browsing/incident_reporting/incident_receiver.h"
 #include "chrome/browser/safe_browsing/signature_evaluator_mac.h"
-#include "chrome/common/safe_browsing/csd.pb.h"
+#include "components/safe_browsing/csd.pb.h"
 
 #define DEVELOPER_ID_APPLICATION_OID "field.1.2.840.113635.100.6.1.13"
 #define DEVELOPER_ID_INTERMEDIATE_OID "field.1.2.840.113635.100.6.2.6"

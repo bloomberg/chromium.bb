@@ -16,7 +16,7 @@ source_set("mac") {
     ":dmg_common",
     "//base",
     "//chrome/common",
-    "//chrome/common/safe_browsing:proto",
+    "//components/safe_browsing:csd_proto",
   ]
 }
 

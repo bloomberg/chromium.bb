@@ -7,8 +7,8 @@
 #include <utility>
 
 #include "base/metrics/histogram_macros.h"
-#include "chrome/common/safe_browsing/csd.pb.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
+#include "components/safe_browsing/csd.pb.h"
 #include "google_apis/google_api_keys.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
