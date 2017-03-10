@@ -37,6 +37,7 @@
 #include "core/dom/DocumentUserGestureToken.h"
 #include "core/dom/Element.h"
 #include "core/dom/Fullscreen.h"
+#include "core/dom/NodeComputedStyle.h"
 #include "core/editing/FrameSelection.h"
 #include "core/editing/InputMethodController.h"
 #include "core/editing/markers/DocumentMarkerController.h"
@@ -258,6 +259,7 @@ class WebViewTest
                      const std::string& htmlFile);
   bool tapElement(WebInputEvent::Type, Element*);
   bool tapElementById(WebInputEvent::Type, const WebString& id);
+  IntSize printICBSizeFromPageSize(const FloatSize& pageSize);
 
   std::string m_baseURL;
   FrameTestHelpers::WebViewHelper m_webViewHelper;
@@ -1990,6 +1992,20 @@ bool WebViewTest::tapElementById(WebInputEvent::Type type,
   Element* element = static_cast<Element*>(
       m_webViewHelper.webView()->mainFrame()->document().getElementById(id));
   return tapElement(type, element);
+}
+
+IntSize WebViewTest::printICBSizeFromPageSize(const FloatSize& pageSize) {
+  // This needs to match printingMinimumShrinkFactor in PrintContext.cpp. The
+  // layout is scaled by this factor for printing.
+  constexpr float minimumShrinkFactor = 1.333f;
+
+  // The expected layout size comes from the calculation done in
+  // resizePageRectsKeepingRatio which is used from PrintContext::begin to
+  // scale the page size.
+  const float ratio = pageSize.height() / (float)pageSize.width();
+  const int icbWidth = floor(pageSize.width() * minimumShrinkFactor);
+  const int icbHeight = floor(icbWidth * ratio);
+  return IntSize(icbWidth, icbHeight);
 }
 
 TEST_P(WebViewTest, DetectContentAroundPosition) {
@@ -4261,31 +4277,96 @@ TEST_P(WebViewTest, ResizeForPrintingViewportUnits) {
   printParams.printContentArea.width = pageSize.width();
   printParams.printContentArea.height = pageSize.height();
 
-  // This needs to match printingMinimumShrinkFactor in PrintContext.cpp. The
-  // layout is scaled by this factor for printing.
-  constexpr float minimumShrinkFactor = 1.333f;
-
-  // The expected layout size comes from the calculation done in
-  // resizePageRectsKeepingRatio which is used from PrintContext::begin to
-  // scale the page size.
-  const float ratio = pageSize.height() / (float)pageSize.width();
-  const int expectedWidth = floor(pageSize.width() * minimumShrinkFactor);
-  const int expectedHeight = floor(expectedWidth * ratio);
+  IntSize expectedSize = printICBSizeFromPageSize(pageSize);
 
   frame->printBegin(printParams, WebNode());
 
-  EXPECT_EQ(expectedWidth, vwElement->offsetWidth());
-  EXPECT_EQ(expectedHeight, vwElement->offsetHeight());
+  EXPECT_EQ(expectedSize.width(), vwElement->offsetWidth());
+  EXPECT_EQ(expectedSize.height(), vwElement->offsetHeight());
 
   webView->resize(flooredIntSize(pageSize));
 
-  EXPECT_EQ(expectedWidth, vwElement->offsetWidth());
-  EXPECT_EQ(expectedHeight, vwElement->offsetHeight());
+  EXPECT_EQ(expectedSize.width(), vwElement->offsetWidth());
+  EXPECT_EQ(expectedSize.height(), vwElement->offsetHeight());
 
   webView->resize(WebSize(800, 600));
   frame->printEnd();
 
   EXPECT_EQ(800, vwElement->offsetWidth());
+}
+
+TEST_P(WebViewTest, WidthMediaQueryWithPageZoomAfterPrinting) {
+  WebViewImpl* webView = m_webViewHelper.initialize();
+  webView->resize(WebSize(800, 600));
+  webView->setZoomLevel(WebView::zoomFactorToZoomLevel(2.0));
+
+  WebURL baseURL = URLTestHelpers::toKURL("http://example.com/");
+  FrameTestHelpers::loadHTMLString(webView->mainFrame(),
+                                   "<style>"
+                                   "  @media (max-width: 600px) {"
+                                   "    div { color: green }"
+                                   "  }"
+                                   "</style>"
+                                   "<div id=d></div>",
+                                   baseURL);
+
+  WebLocalFrameImpl* frame = webView->mainFrameImpl();
+  Document* document = frame->frame()->document();
+  Element* div = document->getElementById("d");
+
+  EXPECT_EQ(makeRGB(0, 128, 0),
+            div->computedStyle()->visitedDependentColor(CSSPropertyColor));
+
+  FloatSize pageSize(300, 360);
+
+  WebPrintParams printParams;
+  printParams.printContentArea.width = pageSize.width();
+  printParams.printContentArea.height = pageSize.height();
+
+  frame->printBegin(printParams, WebNode());
+  frame->printEnd();
+
+  EXPECT_EQ(makeRGB(0, 128, 0),
+            div->computedStyle()->visitedDependentColor(CSSPropertyColor));
+}
+
+TEST_P(WebViewTest, ViewportUnitsPrintingWithPageZoom) {
+  WebViewImpl* webView = m_webViewHelper.initialize();
+  webView->resize(WebSize(800, 600));
+  webView->setZoomLevel(WebView::zoomFactorToZoomLevel(2.0));
+
+  WebURL baseURL = URLTestHelpers::toKURL("http://example.com/");
+  FrameTestHelpers::loadHTMLString(webView->mainFrame(),
+                                   "<style>"
+                                   "  body { margin: 0 }"
+                                   "  #t1 { width: 100% }"
+                                   "  #t2 { width: 100vw }"
+                                   "</style>"
+                                   "<div id=t1></div>"
+                                   "<div id=t2></div>",
+                                   baseURL);
+
+  WebLocalFrameImpl* frame = webView->mainFrameImpl();
+  Document* document = frame->frame()->document();
+  Element* t1 = document->getElementById("t1");
+  Element* t2 = document->getElementById("t2");
+
+  EXPECT_EQ(400, t1->offsetWidth());
+  EXPECT_EQ(400, t2->offsetWidth());
+
+  FloatSize pageSize(600, 720);
+  int expectedWidth = printICBSizeFromPageSize(pageSize).width();
+
+  WebPrintParams printParams;
+  printParams.printContentArea.width = pageSize.width();
+  printParams.printContentArea.height = pageSize.height();
+
+  frame->printBegin(printParams, WebNode());
+
+  EXPECT_EQ(expectedWidth, t1->offsetWidth());
+  EXPECT_EQ(expectedWidth, t2->offsetWidth());
+
+  frame->printEnd();
 }
 
 TEST_P(WebViewTest, DeviceEmulationResetScrollbars) {

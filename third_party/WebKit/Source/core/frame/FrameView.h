@@ -760,7 +760,13 @@ class CORE_EXPORT FrameView final
   IntRect computeVisibleArea();
 
   // Viewport size that should be used for viewport units (i.e. 'vh'/'vw').
+  // May include the size of browser controls. See implementation for further
+  // documentation.
   FloatSize viewportSizeForViewportUnits() const;
+
+  // Initial containing block size for evaluating viewport-dependent media
+  // queries.
+  FloatSize viewportSizeForMediaQueries() const;
 
   ScrollAnchor* scrollAnchor() override { return &m_scrollAnchor; }
   void clearScrollAnchor();

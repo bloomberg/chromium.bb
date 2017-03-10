@@ -1405,7 +1405,9 @@ IntRect FrameView::computeVisibleArea() {
 }
 
 FloatSize FrameView::viewportSizeForViewportUnits() const {
-  float zoom = frame().pageZoomFactor();
+  float zoom = 1;
+  if (!m_frame->document() || !m_frame->document()->printing())
+    zoom = frame().pageZoomFactor();
 
   LayoutViewItem layoutViewItem = this->layoutViewItem();
   if (layoutViewItem.isNull())
@@ -1433,6 +1435,13 @@ FloatSize FrameView::viewportSizeForViewportUnits() const {
   }
 
   return layoutSize;
+}
+
+FloatSize FrameView::viewportSizeForMediaQueries() const {
+  FloatSize viewportSize(layoutSize(IncludeScrollbars));
+  if (!m_frame->document() || !m_frame->document()->printing())
+    viewportSize.scale(1 / frame().pageZoomFactor());
+  return viewportSize;
 }
 
 DocumentLifecycle& FrameView::lifecycle() const {
