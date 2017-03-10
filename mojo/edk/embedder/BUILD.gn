@@ -7,6 +7,7 @@ import("//build/config/nacl/config.gni")
 source_set("headers") {
   sources = [
     "configuration.h",
+    "connection_params.h",
     "embedder.h",
     "embedder_internal.h",
     "named_platform_channel_pair.h",
@@ -35,6 +36,8 @@ source_set("embedder") {
 
   sources = [
     "configuration.h",
+    "connection_params.cc",
+    "connection_params.h",
     "embedder.cc",
     "embedder.h",
     "embedder_internal.h",

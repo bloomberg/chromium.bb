@@ -350,9 +350,10 @@ class ChannelWin : public Channel,
 // static
 scoped_refptr<Channel> Channel::Create(
     Delegate* delegate,
-    ScopedPlatformHandle platform_handle,
+    ConnectionParams connection_params,
     scoped_refptr<base::TaskRunner> io_task_runner) {
-  return new ChannelWin(delegate, std::move(platform_handle), io_task_runner);
+  return new ChannelWin(delegate, connection_params.TakeChannelHandle(),
+                        io_task_runner);
 }
 
 }  // namespace edk

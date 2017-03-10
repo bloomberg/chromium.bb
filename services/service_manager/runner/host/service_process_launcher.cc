@@ -196,8 +196,9 @@ void ServiceProcessLauncher::DoLaunch(
 
     if (mojo_ipc_channel_.get()) {
       mojo_ipc_channel_->ChildProcessLaunched();
-      process_connection_.Connect(child_process_.Handle(),
-                                  mojo_ipc_channel_->PassServerHandle());
+      process_connection_.Connect(
+          child_process_.Handle(),
+          mojo::edk::ConnectionParams(mojo_ipc_channel_->PassServerHandle()));
     }
   }
   start_child_process_event_.Signal();

@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/process/process_handle.h"
+#include "mojo/edk/embedder/connection_params.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
 #include "mojo/edk/system/system_impl_export.h"
 #include "mojo/public/cpp/system/message_pipe.h"
@@ -88,9 +89,9 @@ class MOJO_SYSTEM_IMPL_EXPORT PendingProcessConnection {
   // Connects to the process. This must be called at most once, with the process
   // handle in |process|.
   //
-  // |channel| is the platform handle of an OS pipe which can be used to
-  // communicate with the connected process. The other end of that pipe must
-  // ultimately be passed to mojo::edk::SetParentPipeHandle in the remote
+  // |connection_param| contains the platform handle of an OS pipe which can be
+  // used to communicate with the connected process. The other end of that pipe
+  // must ultimately be passed to mojo::edk::SetParentPipeHandle in the remote
   // process, and getting that end of the pipe into the other process is the
   // embedder's responsibility.
   //
@@ -101,7 +102,7 @@ class MOJO_SYSTEM_IMPL_EXPORT PendingProcessConnection {
   // created by CreateMessagePipe above) will be cleaned up at that time.
   void Connect(
       base::ProcessHandle process,
-      ScopedPlatformHandle channel,
+      ConnectionParams connection_params,
       const ProcessErrorCallback& error_callback = ProcessErrorCallback());
 
  private:

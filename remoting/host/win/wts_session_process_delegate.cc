@@ -555,7 +555,9 @@ void WtsSessionProcessDelegate::Core::ReportProcessLaunched(
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
   DCHECK(!worker_process_.IsValid());
 
-  process_connection_->Connect(worker_process.Get(), std::move(server_handle));
+  process_connection_->Connect(
+      worker_process.Get(),
+      mojo::edk::ConnectionParams(std::move(server_handle)));
   process_connection_.reset();
   worker_process_ = std::move(worker_process);
 

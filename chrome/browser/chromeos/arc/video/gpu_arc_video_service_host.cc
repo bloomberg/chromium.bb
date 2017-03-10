@@ -76,7 +76,8 @@ void GpuArcVideoServiceHost::OnBootstrapVideoAcceleratorFactory(
       base::kNullProcessHandle;
   mojo::edk::PendingProcessConnection process;
   mojo::edk::PlatformChannelPair channel_pair;
-  process.Connect(kUnusedChildProcessHandle, channel_pair.PassServerHandle());
+  process.Connect(kUnusedChildProcessHandle,
+                  mojo::edk::ConnectionParams(channel_pair.PassServerHandle()));
 
   MojoHandle wrapped_handle;
   MojoResult wrap_result = mojo::edk::CreatePlatformHandleWrapper(

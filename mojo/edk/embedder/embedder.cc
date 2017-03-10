@@ -44,7 +44,7 @@ void SetMaxMessageSize(size_t bytes) {
 
 void SetParentPipeHandle(ScopedPlatformHandle pipe) {
   CHECK(internal::g_core);
-  internal::g_core->InitChild(std::move(pipe));
+  internal::g_core->InitChild(ConnectionParams(std::move(pipe)));
 }
 
 void SetParentPipeHandleFromCommandLine() {

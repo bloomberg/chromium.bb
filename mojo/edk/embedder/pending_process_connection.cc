@@ -33,7 +33,7 @@ ScopedMessagePipeHandle PendingProcessConnection::CreateMessagePipe(
 
 void PendingProcessConnection::Connect(
     base::ProcessHandle process,
-    ScopedPlatformHandle channel,
+    ConnectionParams connection_params,
     const ProcessErrorCallback& error_callback) {
   // It's now safe to avoid cleanup in the destructor, as the lifetime of any
   // associated resources is effectively bound to the |channel| passed to
@@ -42,8 +42,8 @@ void PendingProcessConnection::Connect(
   connected_ = true;
 
   DCHECK(internal::g_core);
-  internal::g_core->AddChild(process, std::move(channel), process_token_,
-                             error_callback);
+  internal::g_core->AddChild(process, std::move(connection_params),
+                             process_token_, error_callback);
 }
 
 }  // namespace edk

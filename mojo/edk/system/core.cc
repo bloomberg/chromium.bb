@@ -172,12 +172,11 @@ void Core::SetDefaultProcessErrorCallback(
 }
 
 void Core::AddChild(base::ProcessHandle process_handle,
-                    ScopedPlatformHandle platform_handle,
+                    ConnectionParams connection_params,
                     const std::string& child_token,
                     const ProcessErrorCallback& process_error_callback) {
   GetNodeController()->ConnectToChild(process_handle,
-                                      std::move(platform_handle),
-                                      child_token,
+                                      std::move(connection_params), child_token,
                                       process_error_callback);
 }
 
@@ -194,7 +193,9 @@ ScopedMessagePipeHandle Core::ConnectToPeerProcess(
   GetNodeController()->node()->CreatePortPair(&port0, &port1);
   MojoHandle handle = AddDispatcher(new MessagePipeDispatcher(
       GetNodeController(), port0, kUnknownPipeIdForDebug, 0));
-  GetNodeController()->ConnectToPeer(std::move(pipe_handle), port1, peer_token);
+  ConnectionParams connection_params(std::move(pipe_handle));
+  GetNodeController()->ConnectToPeer(std::move(connection_params), port1,
+                                     peer_token);
   return ScopedMessagePipeHandle(MessagePipeHandle(handle));
 }
 
@@ -202,8 +203,8 @@ void Core::ClosePeerConnection(const std::string& peer_token) {
   GetNodeController()->ClosePeerConnection(peer_token);
 }
 
-void Core::InitChild(ScopedPlatformHandle platform_handle) {
-  GetNodeController()->ConnectToParent(std::move(platform_handle));
+void Core::InitChild(ConnectionParams connection_params) {
+  GetNodeController()->ConnectToParent(std::move(connection_params));
 }
 
 void Core::SetMachPortProvider(base::PortProvider* port_provider) {

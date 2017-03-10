@@ -89,8 +89,9 @@ std::unique_ptr<Connection> LaunchAndConnectToProcess(
   *process = base::LaunchProcess(child_command_line, options);
   DCHECK(process->IsValid());
   receiver->SetPID(process->Pid());
-  pending_process.Connect(process->Handle(),
-                          platform_channel_pair.PassServerHandle());
+  pending_process.Connect(
+      process->Handle(),
+      mojo::edk::ConnectionParams(platform_channel_pair.PassServerHandle()));
   return connection;
 }
 

@@ -149,8 +149,9 @@ void NaClBrokerListener::OnLaunchLoaderThroughBroker(
         this, cmd_line, handles, &loader_process);
 
     if (result == sandbox::SBOX_ALL_OK) {
-      pending_process.Connect(loader_process.Handle(),
-                              std::move(parent_handle));
+      pending_process.Connect(
+          loader_process.Handle(),
+          mojo::edk::ConnectionParams(std::move(parent_handle)));
 
       // Note: PROCESS_DUP_HANDLE is necessary here, because:
       // 1) The current process is the broker, which is the loader's parent.

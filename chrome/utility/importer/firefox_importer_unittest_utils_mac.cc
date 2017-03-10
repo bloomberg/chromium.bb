@@ -159,7 +159,9 @@ bool FFUnitTestDecryptorProxy::Setup(const base::FilePath& nss_path) {
   child_process_ = LaunchNSSDecrypterChildProcess(
       nss_path, channel_pair.PassClientHandle(), token);
   if (child_process_.IsValid())
-    process.Connect(child_process_.Handle(), channel_pair.PassServerHandle());
+    process.Connect(
+        child_process_.Handle(),
+        mojo::edk::ConnectionParams(channel_pair.PassServerHandle()));
   return child_process_.IsValid();
 }
 

@@ -311,7 +311,8 @@ void UnprivilegedProcessDelegate::LaunchProcess(
     ReportFatalError();
     return;
   }
-  process.Connect(worker_process.Get(), mojo_channel.PassServerHandle());
+  process.Connect(worker_process.Get(),
+                  mojo::edk::ConnectionParams(mojo_channel.PassServerHandle()));
 
   channel_ = std::move(server);
 

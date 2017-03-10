@@ -16,6 +16,7 @@
 #include "base/synchronization/lock.h"
 #include "base/task_runner.h"
 #include "build/build_config.h"
+#include "mojo/edk/embedder/connection_params.h"
 #include "mojo/edk/embedder/embedder.h"
 #include "mojo/edk/embedder/platform_handle_vector.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
@@ -90,7 +91,7 @@ class NodeChannel : public base::RefCountedThreadSafe<NodeChannel>,
 
   static scoped_refptr<NodeChannel> Create(
       Delegate* delegate,
-      ScopedPlatformHandle platform_handle,
+      ConnectionParams connection_params,
       scoped_refptr<base::TaskRunner> io_task_runner,
       const ProcessErrorCallback& process_error_callback);
 
@@ -167,7 +168,7 @@ class NodeChannel : public base::RefCountedThreadSafe<NodeChannel>,
       std::queue<std::pair<ports::NodeName, Channel::MessagePtr>>;
 
   NodeChannel(Delegate* delegate,
-              ScopedPlatformHandle platform_handle,
+              ConnectionParams connection_params,
               scoped_refptr<base::TaskRunner> io_task_runner,
               const ProcessErrorCallback& process_error_callback);
   ~NodeChannel() override;

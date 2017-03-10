@@ -56,7 +56,7 @@ class MOJO_SYSTEM_IMPL_EXPORT Core {
 
   // Called in the parent process any time a new child is launched.
   void AddChild(base::ProcessHandle process_handle,
-                ScopedPlatformHandle platform_handle,
+                ConnectionParams connection_params,
                 const std::string& child_token,
                 const ProcessErrorCallback& process_error_callback);
 
@@ -72,7 +72,7 @@ class MOJO_SYSTEM_IMPL_EXPORT Core {
   void ClosePeerConnection(const std::string& peer_token);
 
   // Called in a child process exactly once during early initialization.
-  void InitChild(ScopedPlatformHandle platform_handle);
+  void InitChild(ConnectionParams connection_params);
 
   // Creates a message pipe endpoint associated with |token|, which a child
   // holding the token can later locate and connect to.

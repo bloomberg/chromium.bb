@@ -442,7 +442,8 @@ mojo::ScopedMessagePipeHandle ArcSessionImpl::ConnectMojo(
   const base::ProcessHandle kUnusedChildProcessHandle = 0;
   mojo::edk::PlatformChannelPair channel_pair;
   mojo::edk::PendingProcessConnection process;
-  process.Connect(kUnusedChildProcessHandle, channel_pair.PassServerHandle());
+  process.Connect(kUnusedChildProcessHandle,
+                  mojo::edk::ConnectionParams(channel_pair.PassServerHandle()));
 
   mojo::edk::ScopedPlatformHandleVectorPtr handles(
       new mojo::edk::PlatformHandleVector{

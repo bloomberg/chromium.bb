@@ -88,17 +88,18 @@ class ChannelPosix : public Channel,
                      public base::MessageLoopForIO::Watcher {
  public:
   ChannelPosix(Delegate* delegate,
-               ScopedPlatformHandle handle,
+               ConnectionParams connection_params,
                scoped_refptr<base::TaskRunner> io_task_runner)
       : Channel(delegate),
         self_(this),
-        handle_(std::move(handle)),
+        handle_(connection_params.TakeChannelHandle()),
         io_task_runner_(io_task_runner)
 #if defined(OS_MACOSX)
         ,
         handles_to_close_(new PlatformHandleVector)
 #endif
   {
+    CHECK(handle_.is_valid());
   }
 
   void Start() override {
@@ -561,9 +562,10 @@ class ChannelPosix : public Channel,
 // static
 scoped_refptr<Channel> Channel::Create(
     Delegate* delegate,
-    ScopedPlatformHandle platform_handle,
+    ConnectionParams connection_params,
     scoped_refptr<base::TaskRunner> io_task_runner) {
-  return new ChannelPosix(delegate, std::move(platform_handle), io_task_runner);
+  return new ChannelPosix(delegate, std::move(connection_params),
+                          io_task_runner);
 }
 
 }  // namespace edk

@@ -87,7 +87,9 @@ class MojoTestState : public content::TestState {
   void ChildProcessLaunched(base::ProcessHandle handle,
                             base::ProcessId pid) override {
     platform_channel_->ChildProcessLaunched();
-    process_connection_.Connect(handle, platform_channel_->PassServerHandle());
+    process_connection_.Connect(
+        handle,
+        mojo::edk::ConnectionParams(platform_channel_->PassServerHandle()));
 
     main_task_runner_->PostTask(
         FROM_HERE,

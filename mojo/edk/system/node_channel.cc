@@ -160,14 +160,14 @@ bool GetMessagePayload(const void* bytes,
 // static
 scoped_refptr<NodeChannel> NodeChannel::Create(
     Delegate* delegate,
-    ScopedPlatformHandle platform_handle,
+    ConnectionParams connection_params,
     scoped_refptr<base::TaskRunner> io_task_runner,
     const ProcessErrorCallback& process_error_callback) {
 #if defined(OS_NACL_SFI)
   LOG(FATAL) << "Multi-process not yet supported on NaCl-SFI";
   return nullptr;
 #else
-  return new NodeChannel(delegate, std::move(platform_handle), io_task_runner,
+  return new NodeChannel(delegate, std::move(connection_params), io_task_runner,
                          process_error_callback);
 #endif
 }
@@ -454,17 +454,18 @@ void NodeChannel::PortsMessageFromRelay(const ports::NodeName& source,
 #endif  // defined(OS_WIN) || (defined(OS_MACOSX) && !defined(OS_IOS))
 
 NodeChannel::NodeChannel(Delegate* delegate,
-                         ScopedPlatformHandle platform_handle,
+                         ConnectionParams connection_params,
                          scoped_refptr<base::TaskRunner> io_task_runner,
                          const ProcessErrorCallback& process_error_callback)
     : delegate_(delegate),
       io_task_runner_(io_task_runner),
       process_error_callback_(process_error_callback)
 #if !defined(OS_NACL_SFI)
-      , channel_(
-          Channel::Create(this, std::move(platform_handle), io_task_runner_))
+      ,
+      channel_(
+          Channel::Create(this, std::move(connection_params), io_task_runner_))
 #endif
-      {
+{
 }
 
 NodeChannel::~NodeChannel() {

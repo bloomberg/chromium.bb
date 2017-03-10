@@ -210,7 +210,8 @@ TEST_F(EmbedderTest, PipeSetup_LaunchDeath) {
   PendingProcessConnection process;
   std::string pipe_token;
   ScopedMessagePipeHandle parent_mp = process.CreateMessagePipe(&pipe_token);
-  process.Connect(base::GetCurrentProcessHandle(), pair.PassServerHandle());
+  process.Connect(base::GetCurrentProcessHandle(),
+                  ConnectionParams(pair.PassServerHandle()));
 
   // Close the remote end, simulating child death before the child connects to
   // the reserved port.

@@ -168,7 +168,8 @@ ScopedMessagePipeHandle MultiprocessTestHelper::StartChildWithExtraSwitch(
   if (launch_type == LaunchType::CHILD ||
       launch_type == LaunchType::NAMED_CHILD) {
     DCHECK(server_handle.is_valid());
-    process.Connect(test_child_.Handle(), std::move(server_handle),
+    process.Connect(test_child_.Handle(),
+                    ConnectionParams(std::move(server_handle)),
                     process_error_callback_);
   }
 

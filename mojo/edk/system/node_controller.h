@@ -73,7 +73,7 @@ class NodeController : public ports::NodeDelegate,
 
   // Connects this node to a child node. This node will initiate a handshake.
   void ConnectToChild(base::ProcessHandle process_handle,
-                      ScopedPlatformHandle platform_handle,
+                      ConnectionParams connection_params,
                       const std::string& child_token,
                       const ProcessErrorCallback& process_error_callback);
 
@@ -86,11 +86,11 @@ class NodeController : public ports::NodeDelegate,
 
   // Connects this node to a parent node. The parent node will initiate a
   // handshake.
-  void ConnectToParent(ScopedPlatformHandle platform_handle);
+  void ConnectToParent(ConnectionParams connection_params);
 
   // Connects this node to a peer node. On success, |port| will be merged with
   // the corresponding port in the peer node.
-  void ConnectToPeer(ScopedPlatformHandle handle,
+  void ConnectToPeer(ConnectionParams connection_params,
                      const ports::PortRef& port,
                      const std::string& peer_token);
 
@@ -168,12 +168,12 @@ class NodeController : public ports::NodeDelegate,
 
   void ConnectToChildOnIOThread(
       base::ProcessHandle process_handle,
-      ScopedPlatformHandle platform_handle,
+      ConnectionParams connection_params,
       ports::NodeName token,
       const ProcessErrorCallback& process_error_callback);
-  void ConnectToParentOnIOThread(ScopedPlatformHandle platform_handle);
+  void ConnectToParentOnIOThread(ConnectionParams connection_params);
 
-  void ConnectToPeerOnIOThread(ScopedPlatformHandle handle,
+  void ConnectToPeerOnIOThread(ConnectionParams connection_params,
                                ports::NodeName token,
                                ports::PortRef port,
                                const std::string& peer_token);
