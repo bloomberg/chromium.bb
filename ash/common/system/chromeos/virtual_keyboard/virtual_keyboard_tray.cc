@@ -25,11 +25,10 @@
 namespace ash {
 
 VirtualKeyboardTray::VirtualKeyboardTray(WmShelf* wm_shelf)
-    : TrayBackgroundView(wm_shelf),
+    : TrayBackgroundView(wm_shelf, true),
       icon_(new views::ImageView),
       wm_shelf_(wm_shelf) {
   SetInkDropMode(InkDropMode::ON);
-  SetContentsBackground(false);
 
   icon_->SetImage(gfx::CreateVectorIcon(kShelfKeyboardIcon, kShelfIconColor));
   SetIconBorderForShelfAlignment();

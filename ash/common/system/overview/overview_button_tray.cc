@@ -22,9 +22,8 @@
 namespace ash {
 
 OverviewButtonTray::OverviewButtonTray(WmShelf* wm_shelf)
-    : TrayBackgroundView(wm_shelf), icon_(new views::ImageView()) {
+    : TrayBackgroundView(wm_shelf, true), icon_(new views::ImageView()) {
   SetInkDropMode(InkDropMode::ON);
-  SetContentsBackground(false);
 
   icon_->SetImage(CreateVectorIcon(kShelfOverviewIcon, kShelfIconColor));
   SetIconBorderForShelfAlignment();

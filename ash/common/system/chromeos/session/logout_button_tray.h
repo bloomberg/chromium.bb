@@ -21,6 +21,8 @@ namespace ash {
 
 // Adds a logout button to the launcher's status area if enabled by the
 // kShowLogoutButtonInTray pref.
+// TODO(mohsen): This is not using much of the TrayBackgroundView functionality.
+// Consider making this a regular View. See https://crbug.com/698134.
 class ASH_EXPORT LogoutButtonTray : public TrayBackgroundView,
                                     public LogoutButtonObserver {
  public:

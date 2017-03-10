@@ -36,24 +36,6 @@
       <structure type="chrome_scaled_image" name="IDR_AURA_RESIZE_SHADOW_TOP" file="common/resize_shadow_top.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_RESIZE_SHADOW_TOP_LEFT" file="common/resize_shadow_top_left.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_RESIZE_SHADOW_TOP_RIGHT" file="common/resize_shadow_top_right.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_TRAY_BG_HORIZ_CENTER" file="common/shelf/status_tray_normal_center.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_TRAY_BG_HORIZ_LEFT" file="common/shelf/status_tray_normal_left.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_TRAY_BG_HORIZ_ONBLACK_CENTER" file="common/shelf/status_tray_normal_onblack_center.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_TRAY_BG_HORIZ_ONBLACK_LEFT" file="common/shelf/status_tray_normal_onblack_left.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_TRAY_BG_HORIZ_ONBLACK_RIGHT" file="common/shelf/status_tray_normal_onblack_right.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_TRAY_BG_HORIZ_PRESSED_CENTER" file="common/shelf/status_tray_pressed_center.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_TRAY_BG_HORIZ_PRESSED_LEFT" file="common/shelf/status_tray_pressed_left.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_TRAY_BG_HORIZ_PRESSED_RIGHT" file="common/shelf/status_tray_pressed_right.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_TRAY_BG_HORIZ_RIGHT" file="common/shelf/status_tray_normal_right.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_TRAY_BG_VERTICAL_BOTTOM" file="common/shelf/status_tray_vertical_normal_bottom.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_TRAY_BG_VERTICAL_CENTER" file="common/shelf/status_tray_vertical_normal_center.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_TRAY_BG_VERTICAL_ONBLACK_BOTTOM" file="common/shelf/status_tray_vertical_normal_onblack_bottom.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_TRAY_BG_VERTICAL_ONBLACK_CENTER" file="common/shelf/status_tray_vertical_normal_onblack_center.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_TRAY_BG_VERTICAL_ONBLACK_TOP" file="common/shelf/status_tray_vertical_normal_onblack_top.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_TRAY_BG_VERTICAL_PRESSED_BOTTOM" file="common/shelf/status_tray_vertical_pressed_bottom.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_TRAY_BG_VERTICAL_PRESSED_CENTER" file="common/shelf/status_tray_vertical_pressed_center.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_TRAY_BG_VERTICAL_PRESSED_TOP" file="common/shelf/status_tray_vertical_pressed_top.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_TRAY_BG_VERTICAL_TOP" file="common/shelf/status_tray_vertical_normal_top.png" />
 
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_ACCESSIBILITY_DARK" file="cros/status/status_accessibility_dark.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_CAST" file="cros/status/status_cast.png" />

@@ -204,7 +204,7 @@ class SystemTray::ActivationObserver
 // SystemTray
 
 SystemTray::SystemTray(WmShelf* wm_shelf)
-    : TrayBackgroundView(wm_shelf),
+    : TrayBackgroundView(wm_shelf, true),
       web_notification_tray_(nullptr),
       detailed_item_(nullptr),
       default_bubble_height_(0),
@@ -221,14 +221,11 @@ SystemTray::SystemTray(WmShelf* wm_shelf)
       screen_share_tray_item_(nullptr) {
   if (MaterialDesignController::IsShelfMaterial()) {
     SetInkDropMode(InkDropMode::ON);
-    SetContentsBackground(false);
 
     // Since user avatar is on the right hand side of System tray of a
     // horizontal shelf and that is sufficient to indicate separation, no
     // separator is required.
     set_separator_visibility(false);
-  } else {
-    SetContentsBackground(true);
   }
 }
 

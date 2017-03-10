@@ -349,19 +349,15 @@ class ImeMenuListView : public ImeListView {
 }  // namespace
 
 ImeMenuTray::ImeMenuTray(WmShelf* wm_shelf)
-    : TrayBackgroundView(wm_shelf),
+    : TrayBackgroundView(wm_shelf, true),
       label_(new ImeMenuLabel()),
       show_keyboard_(false),
       force_show_keyboard_(false),
       should_block_shelf_auto_hide_(false),
       keyboard_suppressed_(false),
       show_bubble_after_keyboard_hidden_(false) {
-  if (MaterialDesignController::IsShelfMaterial()) {
+  if (MaterialDesignController::IsShelfMaterial())
     SetInkDropMode(InkDropMode::ON);
-    SetContentsBackground(false);
-  } else {
-    SetContentsBackground(true);
-  }
   SetupLabelForTray(label_);
   tray_container()->AddChildView(label_);
   SystemTrayNotifier* tray_notifier = WmShell::Get()->system_tray_notifier();

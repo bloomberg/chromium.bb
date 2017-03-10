@@ -150,17 +150,13 @@ class TitleView : public views::View, public views::ButtonListener {
 }  // namespace
 
 PaletteTray::PaletteTray(WmShelf* wm_shelf)
-    : TrayBackgroundView(wm_shelf),
+    : TrayBackgroundView(wm_shelf, true),
       palette_tool_manager_(new PaletteToolManager(this)),
       weak_factory_(this) {
   PaletteTool::RegisterToolInstances(palette_tool_manager_.get());
 
-  if (MaterialDesignController::IsShelfMaterial()) {
+  if (MaterialDesignController::IsShelfMaterial())
     SetInkDropMode(InkDropMode::ON);
-    SetContentsBackground(false);
-  } else {
-    SetContentsBackground(true);
-  }
 
   SetLayoutManager(new views::FillLayout());
   icon_ = new views::ImageView();

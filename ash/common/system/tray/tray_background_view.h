@@ -60,7 +60,10 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
     DISALLOW_COPY_AND_ASSIGN(TrayContainer);
   };
 
-  explicit TrayBackgroundView(WmShelf* wm_shelf);
+  // TODO(mohsen): Remove |draws_background| paramter when LogoutButtonTray, as
+  // the only reason for existence of this parameter, is no longer a
+  // TrayBackgroundView. See https://crbug.com/698134.
+  TrayBackgroundView(WmShelf* wm_shelf, bool draws_background);
   ~TrayBackgroundView() override;
 
   // Called after the tray has been added to the widget containing it.
@@ -81,7 +84,6 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
   std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override;
   std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
       const override;
-  void OnGestureEvent(ui::GestureEvent* event) override;
 
   // Called whenever the shelf alignment changes.
   virtual void SetShelfAlignment(ShelfAlignment alignment);
@@ -102,14 +104,6 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
   // Called by the bubble wrapper when a click event occurs outside the bubble.
   // May close the bubble.
   virtual void ClickedOutsideBubble() = 0;
-
-  // Sets |contents| as a child.
-  void SetContents(views::View* contents);
-
-  // Creates and sets contents background to |background_|. |draws_active|
-  // determines if the view's background should be drawn as active when the view
-  // is in the active state.
-  void SetContentsBackground(bool draws_active);
 
   // Returns the bubble anchor alignment based on |shelf_alignment_|.
   views::TrayBubbleView::AnchorAlignment GetAnchorAlignment() const;
@@ -178,8 +172,8 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
   // Owned by the view passed to SetContents().
   TrayBackground* background_;
 
-  // Determines if the view is active. This changes how the background is drawn
-  // in non-MD version and how the ink drop ripples behave in MD version.
+  // Determines if the view is active. This changes how  the ink drop ripples
+  // behave.
   bool is_active_;
 
   // Visibility of this tray's separator which is a line of 1x32px and 4px to

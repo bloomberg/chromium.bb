@@ -34,7 +34,7 @@
 namespace ash {
 
 LogoutButtonTray::LogoutButtonTray(WmShelf* wm_shelf)
-    : TrayBackgroundView(wm_shelf),
+    : TrayBackgroundView(wm_shelf, false),
       button_(nullptr),
       login_status_(LoginStatus::NOT_LOGGED_IN),
       show_logout_button_in_tray_(false) {

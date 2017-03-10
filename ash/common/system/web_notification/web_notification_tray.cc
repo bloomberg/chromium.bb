@@ -285,7 +285,7 @@ class WebNotificationLabel : public WebNotificationItem {
 WebNotificationTray::WebNotificationTray(WmShelf* shelf,
                                          WmWindow* status_area_window,
                                          SystemTray* system_tray)
-    : TrayBackgroundView(shelf),
+    : TrayBackgroundView(shelf, true),
       status_area_window_(status_area_window),
       system_tray_(system_tray),
       show_message_center_on_unlock_(false),
@@ -297,14 +297,12 @@ WebNotificationTray::WebNotificationTray(WmShelf* shelf,
 
   if (MaterialDesignController::IsShelfMaterial()) {
     SetInkDropMode(InkDropMode::ON);
-    SetContentsBackground(false);
     gfx::ImageSkia bell_image =
         CreateVectorIcon(kShelfNotificationsIcon, kShelfIconColor);
     const gfx::Size bell_icon_size = kTrayItemInnerIconSize;
     bell_icon_.reset(new WebNotificationImage(
         bell_image, bell_icon_size, animation_container_.get(), this));
   } else {
-    SetContentsBackground(true);
     gfx::ImageSkia bell_image =
         CreateVectorIcon(ui::kNotificationsIcon, kNoUnreadIconSize,
                          kWebNotificationColorNoUnread);

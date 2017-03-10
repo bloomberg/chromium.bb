@@ -122,8 +122,6 @@ class VIEWS_EXPORT InkDropHostView : public View, public InkDropHost {
   // of CreateInkDrop() delegates to this function.
   std::unique_ptr<InkDropImpl> CreateDefaultInkDropImpl();
 
-  InkDropMode ink_drop_mode() const { return ink_drop_mode_; }
-
  private:
   class InkDropGestureHandler;
   friend class InkDropGestureHandler;
