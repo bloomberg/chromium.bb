@@ -36,6 +36,7 @@ namespace cc {
 class BeginFrameSource;
 class CompositorFrame;
 class Surface;
+class SurfaceFactory;
 class SurfaceFactoryClient;
 
 namespace test {
@@ -65,11 +66,12 @@ class CC_SURFACES_EXPORT SurfaceManager {
 
   void RequestSurfaceResolution(Surface* pending_surface);
 
-  void RegisterSurface(Surface* surface);
-  void DeregisterSurface(const SurfaceId& surface_id);
+  std::unique_ptr<Surface> CreateSurface(
+      base::WeakPtr<SurfaceFactory> surface_factory,
+      const LocalSurfaceId& local_surface_id);
 
   // Destroy the Surface once a set of sequence numbers has been satisfied.
-  void Destroy(std::unique_ptr<Surface> surface);
+  void DestroySurface(std::unique_ptr<Surface> surface);
 
   Surface* GetSurfaceForId(const SurfaceId& surface_id);
 
@@ -215,6 +217,10 @@ class CC_SURFACES_EXPORT SurfaceManager {
   // all temporary references to surfaces with the same FrameSinkId as
   // |surface_id| that were added before |surface_id| will also be removed.
   void RemoveTemporaryReference(const SurfaceId& surface_id, bool remove_range);
+
+  // Called when a surface is destroyed and it needs to be removed from the
+  // surface map.
+  void UnregisterSurface(const SurfaceId& surface_id);
 
 #if DCHECK_IS_ON()
   // Recursively prints surface references starting at |surface_id| to |str|.

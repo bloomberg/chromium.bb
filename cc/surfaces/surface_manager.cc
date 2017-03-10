@@ -56,7 +56,7 @@ SurfaceManager::~SurfaceManager() {
   for (SurfaceDestroyList::iterator it = surfaces_to_destroy_.begin();
        it != surfaces_to_destroy_.end();
        ++it) {
-    DeregisterSurface((*it)->surface_id());
+    UnregisterSurface((*it)->surface_id());
   }
   surfaces_to_destroy_.clear();
 
@@ -88,22 +88,45 @@ void SurfaceManager::RequestSurfaceResolution(Surface* pending_surface) {
     dependency_tracker_->RequestSurfaceResolution(pending_surface);
 }
 
-void SurfaceManager::RegisterSurface(Surface* surface) {
+std::unique_ptr<Surface> SurfaceManager::CreateSurface(
+    base::WeakPtr<SurfaceFactory> surface_factory,
+    const LocalSurfaceId& local_surface_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(surface);
-  DCHECK(!surface_map_.count(surface->surface_id()));
-  surface_map_[surface->surface_id()] = surface;
+  DCHECK(local_surface_id.is_valid() && surface_factory);
+
+  SurfaceId surface_id(surface_factory->frame_sink_id(), local_surface_id);
+
+  // If no surface with this SurfaceId exists, simply create the surface and
+  // return.
+  auto surface_iter = surface_map_.find(surface_id);
+  if (surface_iter == surface_map_.end()) {
+    auto surface = base::MakeUnique<Surface>(surface_id, surface_factory);
+    surface_map_[surface->surface_id()] = surface.get();
+    return surface;
+  }
+
+  // If a surface with this SurfaceId exists and it's not marked as destroyed,
+  // we should not receive a request to create a new surface with the same
+  // SurfaceId.
+  DCHECK(surface_iter->second->destroyed());
+
+  // If a surface with this SurfaceId exists and it's marked as destroyed,
+  // it means it's in the garbage collector's queue. We simply take it out of
+  // the queue and reuse it.
+  auto it =
+      std::find_if(surfaces_to_destroy_.begin(), surfaces_to_destroy_.end(),
+                   [&surface_id](const std::unique_ptr<Surface>& surface) {
+                     return surface->surface_id() == surface_id;
+                   });
+  DCHECK(it != surfaces_to_destroy_.end());
+  std::unique_ptr<Surface> surface = std::move(*it);
+  surfaces_to_destroy_.erase(it);
+  surface->set_destroyed(false);
+  DCHECK_EQ(surface_factory.get(), surface->factory().get());
+  return surface;
 }
 
-void SurfaceManager::DeregisterSurface(const SurfaceId& surface_id) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  SurfaceMap::iterator it = surface_map_.find(surface_id);
-  DCHECK(it != surface_map_.end());
-  surface_map_.erase(it);
-  RemoveAllSurfaceReferences(surface_id);
-}
-
-void SurfaceManager::Destroy(std::unique_ptr<Surface> surface) {
+void SurfaceManager::DestroySurface(std::unique_ptr<Surface> surface) {
   DCHECK(thread_checker_.CalledOnValidThread());
   surface->set_destroyed(true);
   surfaces_to_destroy_.push_back(std::move(surface));
@@ -211,7 +234,7 @@ void SurfaceManager::GarbageCollectSurfaces() {
        iter != surfaces_to_destroy_.end();) {
     SurfaceId surface_id = (*iter)->surface_id();
     if (reachable_surfaces.count(surface_id) == 0) {
-      DeregisterSurface(surface_id);
+      UnregisterSurface(surface_id);
       surfaces_to_delete.push_back(std::move(*iter));
       iter = surfaces_to_destroy_.erase(iter);
     } else {
@@ -614,6 +637,14 @@ void SurfaceManager::SurfaceCreated(const SurfaceInfo& surface_info) {
 
   for (auto& observer : observer_list_)
     observer.OnSurfaceCreated(surface_info);
+}
+
+void SurfaceManager::UnregisterSurface(const SurfaceId& surface_id) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  SurfaceMap::iterator it = surface_map_.find(surface_id);
+  DCHECK(it != surface_map_.end());
+  surface_map_.erase(it);
+  RemoveAllSurfaceReferences(surface_id);
 }
 
 #if DCHECK_IS_ON()

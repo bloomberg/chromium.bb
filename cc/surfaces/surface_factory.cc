@@ -150,17 +150,16 @@ void SurfaceFactory::OnSurfaceDiscarded(Surface* surface) {}
 
 std::unique_ptr<Surface> SurfaceFactory::Create(
     const LocalSurfaceId& local_surface_id) {
-  auto surface = base::MakeUnique<Surface>(
-      SurfaceId(frame_sink_id_, local_surface_id), weak_factory_.GetWeakPtr());
   seen_first_frame_activation_ = false;
-  manager_->RegisterSurface(surface.get());
+  std::unique_ptr<Surface> surface =
+      manager_->CreateSurface(weak_factory_.GetWeakPtr(), local_surface_id);
   surface->AddObserver(this);
   return surface;
 }
 
 void SurfaceFactory::Destroy(std::unique_ptr<Surface> surface) {
   surface->RemoveObserver(this);
-  manager_->Destroy(std::move(surface));
+  manager_->DestroySurface(std::move(surface));
 }
 
 }  // namespace cc

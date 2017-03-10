@@ -984,5 +984,73 @@ TEST_F(CompositorFrameSinkSupportTest, ReturnResourcesBeforeAck) {
                                          CompositorFrame());
 }
 
+// Verifies that if a surface is marked destroyed and a new frame arrives for
+// it, it will be recovered.
+TEST_F(CompositorFrameSinkSupportTest, SurfaceResurrection) {
+  const SurfaceId parent_id = MakeSurfaceId(kParentFrameSink, 1);
+  const SurfaceId child_id = MakeSurfaceId(kChildFrameSink1, 3);
+
+  // Add a reference from the parent to the child.
+  parent_support().SubmitCompositorFrame(parent_id.local_surface_id(),
+                                         MakeCompositorFrame({child_id}));
+
+  // Create the child surface by submitting a frame to it.
+  EXPECT_EQ(nullptr, surface_manager().GetSurfaceForId(child_id));
+  child_support1().SubmitCompositorFrame(child_id.local_surface_id(),
+                                         CompositorFrame());
+
+  // Verify that the child surface is created.
+  Surface* surface = surface_manager().GetSurfaceForId(child_id);
+  EXPECT_NE(nullptr, surface);
+
+  // Attempt to destroy the child surface. The surface must still exist since
+  // the parent needs it but it will be marked as destroyed.
+  child_support1().EvictFrame();
+  surface = surface_manager().GetSurfaceForId(child_id);
+  EXPECT_NE(nullptr, surface);
+  EXPECT_TRUE(surface->destroyed());
+
+  // Child submits another frame to the same local surface id that is marked
+  // destroyed.
+  child_support1().SubmitCompositorFrame(child_id.local_surface_id(),
+                                         CompositorFrame());
+
+  // Verify that the surface that was marked destroyed is recovered and is being
+  // used again.
+  Surface* surface2 = surface_manager().GetSurfaceForId(child_id);
+  EXPECT_EQ(surface, surface2);
+  EXPECT_FALSE(surface2->destroyed());
+}
+
+// Verifies that if a LocalSurfaceId belonged to a surface that doesn't exist
+// anymore, it can still be reused for new surfaces.
+TEST_F(CompositorFrameSinkSupportTest, LocalSurfaceIdIsReusable) {
+  const SurfaceId parent_id = MakeSurfaceId(kParentFrameSink, 1);
+  const SurfaceId child_id = MakeSurfaceId(kChildFrameSink1, 3);
+
+  // Add a reference from parent.
+  parent_support().SubmitCompositorFrame(parent_id.local_surface_id(),
+                                         MakeCompositorFrame({child_id}));
+
+  // Submit the first frame. Creates the surface.
+  child_support1().SubmitCompositorFrame(child_id.local_surface_id(),
+                                         CompositorFrame());
+  EXPECT_NE(nullptr, surface_manager().GetSurfaceForId(child_id));
+
+  // Remove the reference from parant. This allows us to destroy the surface.
+  parent_support().SubmitCompositorFrame(parent_id.local_surface_id(),
+                                         CompositorFrame());
+
+  // Destroy the surface.
+  child_support1().EvictFrame();
+  EXPECT_EQ(nullptr, surface_manager().GetSurfaceForId(child_id));
+
+  // Submit another frame with the same local surface id. This should work fine
+  // and a new surface must be created.
+  child_support1().SubmitCompositorFrame(child_id.local_surface_id(),
+                                         CompositorFrame());
+  EXPECT_NE(nullptr, surface_manager().GetSurfaceForId(child_id));
+}
+
 }  // namespace test
 }  // namespace cc
