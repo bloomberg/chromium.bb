@@ -64,9 +64,9 @@ void ContentLayer::SetProperties(int id,
                                  float saturation,
                                  bool should_clip,
                                  const gfx::Rect& clip) {
-  scoped_refptr<cc::Layer> live_layer;
-  if (can_use_live_layer)
-    live_layer = tab_content_manager_->GetLiveLayer(id);
+  scoped_refptr<cc::Layer> live_layer = tab_content_manager_->GetLiveLayer(id);
+  if (live_layer)
+    live_layer->SetHideLayerAndSubtree(!can_use_live_layer);
   bool live_layer_draws = GetDrawsContentLeaf(live_layer);
 
   scoped_refptr<ThumbnailLayer> static_layer =
