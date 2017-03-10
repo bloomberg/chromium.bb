@@ -8,6 +8,8 @@
 
 #import "ios/web_view/public/cwv.h"
 #import "ios/web_view/public/cwv_html_element.h"
+#import "ios/web_view/public/cwv_navigation_delegate.h"
+#import "ios/web_view/public/cwv_ui_delegate.h"
 #import "ios/web_view/public/cwv_web_view.h"
 #import "ios/web_view/shell/translate_controller.h"
 

@@ -7,9 +7,6 @@
 
 #import <UIKit/UIKit.h>
 
-#import "ios/web_view/public/cwv_navigation_delegate.h"
-#import "ios/web_view/public/cwv_ui_delegate.h"
-
 // Accessibility label added to the back button.
 extern NSString* const kWebViewShellBackButtonAccessibilityLabel;
 // Accessibility label added to the forward button.
