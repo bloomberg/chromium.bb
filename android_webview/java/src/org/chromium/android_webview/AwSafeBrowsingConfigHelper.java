@@ -12,7 +12,6 @@ import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 import android.provider.Settings;
 
-import org.chromium.base.BuildInfo;
 import org.chromium.base.CommandLine;
 import org.chromium.base.Log;
 import org.chromium.base.annotations.JNINamespace;
@@ -43,11 +42,10 @@ public class AwSafeBrowsingConfigHelper {
 
     private static boolean shouldEnableSafeBrowsingSupport(Context appContext) {
         return CommandLine.getInstance().hasSwitch(AwSwitches.WEBVIEW_ENABLE_SAFEBROWSING_SUPPORT)
-                || (BuildInfo.isAtLeastO()
-                           && !appHasMetadataKeyValue(appContext, OPT_IN_META_DATA_STR, false));
+                || appHasOptedIn(appContext);
     }
 
-    private static boolean appHasMetadataKeyValue(Context appContext, String key, boolean value) {
+    private static boolean appHasOptedIn(Context appContext) {
         try {
             ApplicationInfo info = appContext.getPackageManager().getApplicationInfo(
                     appContext.getPackageName(), PackageManager.GET_META_DATA);
@@ -55,7 +53,9 @@ public class AwSafeBrowsingConfigHelper {
                 // null means no such tag was found.
                 return false;
             }
-            return info.metaData.containsKey(key) ? info.metaData.getBoolean(key) == value : false;
+            return info.metaData.containsKey(OPT_IN_META_DATA_STR)
+                    ? info.metaData.getBoolean(OPT_IN_META_DATA_STR)
+                    : false;
         } catch (PackageManager.NameNotFoundException e) {
             // This should never happen.
             Log.e(TAG, "App could not find itself by package name!");
