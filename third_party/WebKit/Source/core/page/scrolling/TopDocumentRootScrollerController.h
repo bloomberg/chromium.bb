@@ -106,7 +106,7 @@ class CORE_EXPORT TopDocumentRootScrollerController
   // Element.
   WeakMember<Element> m_globalRootScroller;
 
-  WeakMember<Page> m_page;
+  Member<Page> m_page;
 };
 
 }  // namespace blink
