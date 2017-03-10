@@ -28,7 +28,6 @@
 #include "chrome/browser/ui/chrome_web_modal_dialog_manager_delegate.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_manager.h"
 #include "chrome/browser/ui/profile_chooser_constants.h"
-#include "chrome/browser/ui/search/search_tab_helper_delegate.h"
 #include "chrome/browser/ui/signin_view_controller.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper_delegate.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
@@ -106,7 +105,6 @@ class WebContentsModalDialogHost;
 class Browser : public TabStripModelObserver,
                 public content::WebContentsDelegate,
                 public CoreTabHelperDelegate,
-                public SearchTabHelperDelegate,
                 public ChromeWebModalDialogManagerDelegate,
                 public BookmarkTabHelperDelegate,
                 public zoom::ZoomObserver,
@@ -718,9 +716,6 @@ class Browser : public TabStripModelObserver,
                        bool did_finish_load) override;
   bool CanReloadContents(content::WebContents* web_contents) const override;
   bool CanSaveContents(content::WebContents* web_contents) const override;
-
-  // Overridden from SearchTabHelperDelegate:
-  OmniboxView* GetOmniboxView() override;
 
   // Overridden from WebContentsModalDialogManagerDelegate:
   void SetWebContentsBlocked(content::WebContents* web_contents,

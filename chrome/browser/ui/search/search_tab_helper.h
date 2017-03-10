@@ -27,13 +27,13 @@ class WebContents;
 struct LoadCommittedDetails;
 }
 
+class BrowserWindow;
 class GURL;
 class InstantService;
 class InstantTabTest;
 class OmniboxView;
 class Profile;
 class SearchIPCRouterTest;
-class SearchTabHelperDelegate;
 
 // Per-tab search "helper".  Acts as the owner and controller of the tab's
 // search UI model.
@@ -75,13 +75,15 @@ class SearchTabHelper : public content::WebContentsObserver,
   void Submit(const base::string16& text,
               const EmbeddedSearchRequestParams& params);
 
+  // Called when the tab corresponding to |this| instance is attached to a
+  // browser window.
+  void OnTabAttachedToWindow(BrowserWindow* window);
+
   // Called when the tab corresponding to |this| instance is activated.
   void OnTabActivated();
 
   // Called when the tab corresponding to |this| instance is deactivated.
   void OnTabDeactivated();
-
-  void set_delegate(SearchTabHelperDelegate* delegate) { delegate_ = delegate; }
 
   SearchIPCRouter& ipc_router_for_testing() { return ipc_router_; }
 
@@ -176,9 +178,6 @@ class SearchTabHelper : public content::WebContentsObserver,
   // active tab is in mode SEARCH_SUGGESTIONS.
   bool IsInputInProgress() const;
 
-  // Returns the OmniboxView for |web_contents_| or NULL if not available.
-  OmniboxView* GetOmniboxView() const;
-
   const bool is_search_enabled_;
 
   // Model object for UI that cares about search state.
@@ -190,10 +189,7 @@ class SearchTabHelper : public content::WebContentsObserver,
 
   InstantService* instant_service_;
 
-  // Delegate for notifying our owner about the SearchTabHelper state. Not owned
-  // by us.
-  // NULL on iOS and Android because they don't use the Instant framework.
-  SearchTabHelperDelegate* delegate_;
+  OmniboxView* omnibox_view_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchTabHelper);
 };

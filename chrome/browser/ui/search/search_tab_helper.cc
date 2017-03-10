@@ -23,7 +23,6 @@
 #include "chrome/browser/ui/omnibox/clipboard_utils.h"
 #include "chrome/browser/ui/search/instant_tab.h"
 #include "chrome/browser/ui/search/search_ipc_router_policy_impl.h"
-#include "chrome/browser/ui/search/search_tab_helper_delegate.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
 #include "chrome/browser/ui/webui/ntp/ntp_user_data_logger.h"
 #include "chrome/common/url_constants.h"
@@ -141,8 +140,8 @@ SearchTabHelper::SearchTabHelper(content::WebContents* web_contents)
           web_contents,
           this,
           base::WrapUnique(new SearchIPCRouterPolicyImpl(web_contents))),
-      instant_service_(NULL),
-      delegate_(NULL) {
+      instant_service_(nullptr),
+      omnibox_view_(nullptr) {
   if (!is_search_enabled_)
     return;
 
@@ -177,7 +176,7 @@ void SearchTabHelper::OmniboxFocusChanged(OmniboxFocusState state,
   // Don't send oninputstart/oninputend updates in response to focus changes
   // if there's a navigation in progress. This prevents Chrome from sending
   // a spurious oninputend when the user accepts a match in the omnibox.
-  if (web_contents_->GetController().GetPendingEntry() == NULL)
+  if (web_contents_->GetController().GetPendingEntry() == nullptr)
     ipc_router_.SetInputInProgress(IsInputInProgress());
 }
 
@@ -196,6 +195,10 @@ void SearchTabHelper::SetSuggestionToPrefetch(
 void SearchTabHelper::Submit(const base::string16& text,
                              const EmbeddedSearchRequestParams& params) {
   ipc_router_.Submit(text, params);
+}
+
+void SearchTabHelper::OnTabAttachedToWindow(BrowserWindow* window) {
+  omnibox_view_ = window->GetLocationBar()->GetOmniboxView();
 }
 
 void SearchTabHelper::OnTabActivated() {
@@ -341,8 +344,7 @@ void SearchTabHelper::MostVisitedItemsChanged(
 void SearchTabHelper::FocusOmnibox(OmniboxFocusState state) {
 // TODO(kmadhusu): Move platform specific code from here and get rid of #ifdef.
 #if !defined(OS_ANDROID)
-  OmniboxView* omnibox = GetOmniboxView();
-  if (!omnibox)
+  if (!omnibox_view_)
     return;
 
   // Do not add a default case in the switch block for the following reasons:
@@ -354,25 +356,25 @@ void SearchTabHelper::FocusOmnibox(OmniboxFocusState state) {
   // doing nothing instead of crashing the browser process (intentional no-op).
   switch (state) {
     case OMNIBOX_FOCUS_VISIBLE:
-      omnibox->SetFocus();
-      omnibox->model()->SetCaretVisibility(true);
+      omnibox_view_->SetFocus();
+      omnibox_view_->model()->SetCaretVisibility(true);
       break;
     case OMNIBOX_FOCUS_INVISIBLE:
-      omnibox->SetFocus();
-      omnibox->model()->SetCaretVisibility(false);
+      omnibox_view_->SetFocus();
+      omnibox_view_->model()->SetCaretVisibility(false);
       // If the user clicked on the fakebox, any text already in the omnibox
       // should get cleared when they start typing. Selecting all the existing
       // text is a convenient way to accomplish this. It also gives a slight
       // visual cue to users who really understand selection state about what
       // will happen if they start typing.
-      omnibox->SelectAll(false);
-      omnibox->ShowImeIfNeeded();
+      omnibox_view_->SelectAll(false);
+      omnibox_view_->ShowImeIfNeeded();
       break;
     case OMNIBOX_FOCUS_NONE:
       // Remove focus only if the popup is closed. This will prevent someone
       // from changing the omnibox value and closing the popup without user
       // interaction.
-      if (!omnibox->model()->popup_model()->IsOpen())
+      if (!omnibox_view_->model()->popup_model()->IsOpen())
         web_contents()->Focus();
       break;
   }
@@ -428,26 +430,26 @@ void SearchTabHelper::OnLogMostVisitedNavigation(
 void SearchTabHelper::PasteIntoOmnibox(const base::string16& text) {
 // TODO(kmadhusu): Move platform specific code from here and get rid of #ifdef.
 #if !defined(OS_ANDROID)
-  OmniboxView* omnibox = GetOmniboxView();
-  if (!omnibox)
+  if (!omnibox_view_)
     return;
   // The first case is for right click to paste, where the text is retrieved
   // from the clipboard already sanitized. The second case is needed to handle
   // drag-and-drop value and it has to be sanitazed before setting it into the
   // omnibox.
   base::string16 text_to_paste =
-      text.empty() ? GetClipboardText() : omnibox->SanitizeTextForPaste(text);
+      text.empty() ? GetClipboardText()
+                   : omnibox_view_->SanitizeTextForPaste(text);
 
   if (text_to_paste.empty())
     return;
 
-  if (!omnibox->model()->has_focus())
-    omnibox->SetFocus();
+  if (!omnibox_view_->model()->has_focus())
+    omnibox_view_->SetFocus();
 
-  omnibox->OnBeforePossibleChange();
-  omnibox->model()->OnPaste();
-  omnibox->SetUserText(text_to_paste);
-  omnibox->OnAfterPossibleChange(true);
+  omnibox_view_->OnBeforePossibleChange();
+  omnibox_view_->model()->OnPaste();
+  omnibox_view_->SetUserText(text_to_paste);
+  omnibox_view_->OnAfterPossibleChange(true);
 #endif
 }
 
@@ -487,8 +489,7 @@ void SearchTabHelper::UpdateMode(bool update_origin) {
   if (!update_origin)
     origin = model_.mode().origin;
 
-  OmniboxView* omnibox = GetOmniboxView();
-  if (omnibox && omnibox->model()->user_input_in_progress())
+  if (omnibox_view_ && omnibox_view_->model()->user_input_in_progress())
     type = SearchMode::MODE_SEARCH_SUGGESTIONS;
 
   SearchMode old_mode(model_.mode());
@@ -518,11 +519,6 @@ Profile* SearchTabHelper::profile() const {
 }
 
 bool SearchTabHelper::IsInputInProgress() const {
-  OmniboxView* omnibox = GetOmniboxView();
-  return !model_.mode().is_ntp() && omnibox &&
-      omnibox->model()->focus_state() == OMNIBOX_FOCUS_VISIBLE;
-}
-
-OmniboxView* SearchTabHelper::GetOmniboxView() const {
-  return delegate_ ? delegate_->GetOmniboxView() : NULL;
+  return !model_.mode().is_ntp() && omnibox_view_ &&
+         omnibox_view_->model()->focus_state() == OMNIBOX_FOCUS_VISIBLE;
 }

@@ -962,9 +962,9 @@ void Browser::TabInsertedAt(TabStripModel* tab_strip_model,
                             bool foreground) {
   SetAsDelegate(contents, true);
 
-  SessionTabHelper* session_tab_helper =
-      SessionTabHelper::FromWebContents(contents);
-  session_tab_helper->SetWindowID(session_id());
+  SessionTabHelper::FromWebContents(contents)->SetWindowID(session_id());
+
+  SearchTabHelper::FromWebContents(contents)->OnTabAttachedToWindow(window_);
 
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_TAB_PARENTED,
@@ -1983,13 +1983,6 @@ bool Browser::CanSaveContents(content::WebContents* web_contents) const {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// Browser, SearchTabHelperDelegate implementation:
-
-OmniboxView* Browser::GetOmniboxView() {
-  return window_->GetLocationBar()->GetOmniboxView();
-}
-
-///////////////////////////////////////////////////////////////////////////////
 // Browser, web_modal::WebContentsModalDialogManagerDelegate implementation:
 
 void Browser::SetWebContentsBlocked(content::WebContents* web_contents,
@@ -2429,7 +2422,6 @@ void Browser::SetAsDelegate(WebContents* web_contents, bool set_delegate) {
   WebContentsModalDialogManager::FromWebContents(web_contents)->
       SetDelegate(delegate);
   CoreTabHelper::FromWebContents(web_contents)->set_delegate(delegate);
-  SearchTabHelper::FromWebContents(web_contents)->set_delegate(delegate);
   translate::ContentTranslateDriver& content_translate_driver =
       ChromeTranslateClient::FromWebContents(web_contents)->translate_driver();
   if (delegate) {

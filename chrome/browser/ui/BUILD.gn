@@ -149,8 +149,6 @@ split_static_library("ui") {
     "search/search_model_observer.h",
     "search/search_tab_helper.cc",
     "search/search_tab_helper.h",
-    "search/search_tab_helper_delegate.cc",
-    "search/search_tab_helper_delegate.h",
     "search_engines/edit_search_engine_controller.cc",
     "search_engines/edit_search_engine_controller.h",
     "search_engines/keyword_editor_controller.cc",
