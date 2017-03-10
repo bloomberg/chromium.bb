@@ -464,7 +464,8 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tagName,
       m_autoplayUmaHelper(AutoplayUmaHelper::create(this)),
       m_remotePlaybackClient(nullptr),
       m_autoplayVisibilityObserver(nullptr),
-      m_mediaControls(nullptr) {
+      m_mediaControls(nullptr),
+      m_controlsList(HTMLMediaElementControlsList::create(this)) {
   BLINK_MEDIA_LOG << "HTMLMediaElement(" << (void*)this << ")";
 
   m_lockedPendingUserGesture = computeLockedPendingUserGesture(document);
@@ -598,6 +599,14 @@ void HTMLMediaElement::parseAttribute(
     UseCounter::count(document(),
                       UseCounter::HTMLMediaElementControlsAttribute);
     updateControlsVisibility();
+  } else if (name == controlslistAttr) {
+    UseCounter::count(document(),
+                      UseCounter::HTMLMediaElementControlsListAttribute);
+    if (params.oldValue != params.newValue) {
+      m_controlsList->setValue(params.newValue);
+      if (mediaControls())
+        mediaControls()->onControlsListUpdated();
+    }
   } else if (name == preloadAttr) {
     setPlayerPreload();
   } else if (name == disableremoteplaybackAttr) {
@@ -2437,6 +2446,19 @@ bool HTMLMediaElement::shouldShowControls(
   return false;
 }
 
+HTMLMediaElementControlsList* HTMLMediaElement::controlsList() const {
+  return m_controlsList.get();
+}
+
+void HTMLMediaElement::controlsListValueWasSet() {
+  if (fastGetAttribute(controlslistAttr) == m_controlsList->value())
+    return;
+
+  setSynchronizedLazyAttribute(controlslistAttr, m_controlsList->value());
+  if (mediaControls())
+    mediaControls()->onControlsListUpdated();
+}
+
 double HTMLMediaElement::volume() const {
   return m_volume;
 }
@@ -3823,6 +3845,7 @@ DEFINE_TRACE(HTMLMediaElement) {
   visitor->trace(m_srcObject);
   visitor->trace(m_autoplayVisibilityObserver);
   visitor->trace(m_mediaControls);
+  visitor->trace(m_controlsList);
   visitor->template registerWeakMembers<HTMLMediaElement,
                                         &HTMLMediaElement::clearWeakMembers>(
       this);

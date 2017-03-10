@@ -111,6 +111,8 @@ blink_core_sources("html") {
     "HTMLMarqueeElement.cpp",
     "HTMLMarqueeElement.h",
     "HTMLMediaElement.cpp",
+    "HTMLMediaElementControlsList.cpp",
+    "HTMLMediaElementControlsList.h",
     "HTMLMediaSource.cpp",
     "HTMLMediaSource.h",
     "HTMLMenuElement.cpp",

@@ -2339,6 +2339,7 @@ interface HTMLMediaElement : HTMLElement
     getter autoplay
     getter buffered
     getter controls
+    getter controlsList
     getter crossOrigin
     getter currentSrc
     getter currentTime
@@ -2379,6 +2380,7 @@ interface HTMLMediaElement : HTMLElement
     method setSinkId
     setter autoplay
     setter controls
+    setter controlsList
     setter crossOrigin
     setter currentTime
     setter defaultMuted

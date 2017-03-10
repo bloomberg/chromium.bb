@@ -304,6 +304,7 @@ html element audio
     property buffered
     property canPlayType
     property controls
+    property controlsList
     property crossOrigin
     property currentSrc
     property currentTime
@@ -1019,6 +1020,7 @@ html element video
     property buffered
     property canPlayType
     property controls
+    property controlsList
     property crossOrigin
     property currentSrc
     property currentTime

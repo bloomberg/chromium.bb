@@ -106,6 +106,7 @@
     "contenteditable",
     "contextmenu",
     "controls",
+    "controlslist",
     "coords",
     "crossorigin",
     "csp",

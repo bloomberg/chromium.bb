@@ -32,6 +32,7 @@
 #include "core/dom/TaskRunnerHelper.h"
 #include "core/events/MouseEvent.h"
 #include "core/frame/Settings.h"
+#include "core/frame/UseCounter.h"
 #include "core/html/HTMLMediaElement.h"
 #include "core/html/HTMLVideoElement.h"
 #include "core/html/shadow/MediaControlsMediaEventListener.h"
@@ -67,6 +68,12 @@ static bool shouldShowFullscreenButton(const HTMLMediaElement& mediaElement) {
   if (!Fullscreen::fullscreenEnabled(mediaElement.document()))
     return false;
 
+  if (mediaElement.controlsList()->shouldHideFullscreen()) {
+    UseCounter::count(mediaElement.document(),
+                      UseCounter::HTMLMediaElementControlsListNoFullscreen);
+    return false;
+  }
+
   return true;
 }
 
@@ -79,6 +86,13 @@ static bool shouldShowCastButton(HTMLMediaElement& mediaElement) {
   Document& document = mediaElement.document();
   if (document.settings() && !document.settings()->getMediaControlsEnabled())
     return false;
+
+  // The page disabled the button via the attribute.
+  if (mediaElement.controlsList()->shouldHideRemotePlayback()) {
+    UseCounter::count(mediaElement.document(),
+                      UseCounter::HTMLMediaElementControlsListNoRemotePlayback);
+    return false;
+  }
 
   return mediaElement.hasRemoteRoutes();
 }
@@ -396,6 +410,12 @@ void MediaControls::reset() {
 
   onVolumeChange();
   onTextTracksAddedOrRemoved();
+
+  onControlsListUpdated();
+}
+
+void MediaControls::onControlsListUpdated() {
+  BatchedControlUpdate batch(this);
 
   m_fullscreenButton->setIsWanted(shouldShowFullscreenButton(mediaElement()));
 

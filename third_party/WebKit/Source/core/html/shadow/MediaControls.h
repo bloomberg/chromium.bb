@@ -49,6 +49,7 @@ class CORE_EXPORT MediaControls final : public HTMLDivElement {
   void removedFrom(ContainerNode*) override;
 
   void reset();
+  void onControlsListUpdated();
 
   void show();
   void hide();

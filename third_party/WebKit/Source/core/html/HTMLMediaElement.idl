@@ -76,6 +76,8 @@ enum CanPlayTypeResult { "" /* empty string */, "maybe", "probably" };
 
     // controls
     [CEReactions, Reflect] attribute boolean controls;
+    // Spec: https://wicg.github.io/controls-list/html-output/multipage/embedded-content.html#attr-media-controlslist
+    [SameObject, PutForwards=value] readonly attribute DOMTokenList controlsList;
     [RaisesException=Setter] attribute double volume;
     attribute boolean muted;
     [CEReactions, Reflect=muted] attribute boolean defaultMuted;

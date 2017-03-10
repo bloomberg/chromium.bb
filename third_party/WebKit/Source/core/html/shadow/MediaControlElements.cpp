@@ -38,6 +38,7 @@
 #include "core/events/MouseEvent.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
+#include "core/frame/UseCounter.h"
 #include "core/html/HTMLAnchorElement.h"
 #include "core/html/HTMLLabelElement.h"
 #include "core/html/HTMLMediaSource.h"
@@ -705,6 +706,13 @@ bool MediaControlDownloadButtonElement::shouldDisplayDownloadButton() {
   // (would require adding UI to prompt for the duration to download).
   if (mediaElement().duration() == std::numeric_limits<double>::infinity())
     return false;
+
+  // The attribute disables the download button.
+  if (mediaElement().controlsList()->shouldHideDownload()) {
+    UseCounter::count(mediaElement().document(),
+                      UseCounter::HTMLMediaElementControlsListNoDownload);
+    return false;
+  }
 
   return true;
 }
