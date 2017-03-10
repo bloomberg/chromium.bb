@@ -45,10 +45,6 @@ void RunTest(std::string test, bool run_until_idle) {
 }
 
 // TODO(abarth): Should we autogenerate these stubs from GYP?
-TEST(JSTest, Binding) {
-  RunTest("binding_unittest.js", false);
-}
-
 TEST(JSTest, Codec) {
   RunTest("codec_unittest.js", true);
 }
