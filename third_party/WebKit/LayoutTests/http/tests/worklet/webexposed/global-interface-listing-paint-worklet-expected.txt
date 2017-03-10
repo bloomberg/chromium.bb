@@ -247,10 +247,13 @@ CONSOLE MESSAGE: line 138:     method getReader
 CONSOLE MESSAGE: line 138:     method pipeThrough
 CONSOLE MESSAGE: line 138:     method pipeTo
 CONSOLE MESSAGE: line 138:     method tee
-CONSOLE MESSAGE: line 138: interface StylePropertyMap
+CONSOLE MESSAGE: line 138: interface StylePropertyMap : StylePropertyMapReadonly
 CONSOLE MESSAGE: line 138:     method append
 CONSOLE MESSAGE: line 138:     method constructor
 CONSOLE MESSAGE: line 138:     method delete
+CONSOLE MESSAGE: line 138:     method set
+CONSOLE MESSAGE: line 138: interface StylePropertyMapReadonly
+CONSOLE MESSAGE: line 138:     method constructor
 CONSOLE MESSAGE: line 138:     method entries
 CONSOLE MESSAGE: line 138:     method forEach
 CONSOLE MESSAGE: line 138:     method get
@@ -258,7 +261,6 @@ CONSOLE MESSAGE: line 138:     method getAll
 CONSOLE MESSAGE: line 138:     method getProperties
 CONSOLE MESSAGE: line 138:     method has
 CONSOLE MESSAGE: line 138:     method keys
-CONSOLE MESSAGE: line 138:     method set
 CONSOLE MESSAGE: line 138:     method values
 CONSOLE MESSAGE: line 138: interface WorkletGlobalScope
 CONSOLE MESSAGE: line 138:     method constructor

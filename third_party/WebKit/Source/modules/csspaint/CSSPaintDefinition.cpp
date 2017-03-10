@@ -95,7 +95,7 @@ PassRefPtr<Image> CSSPaintDefinition::paint(
                                           m_hasAlpha ? NonOpaque : Opaque))),
       m_hasAlpha, zoom);
   PaintSize* paintSize = PaintSize::create(specifiedSize);
-  StylePropertyMap* styleMap = FilteredComputedStylePropertyMap::create(
+  StylePropertyMapReadonly* styleMap = FilteredComputedStylePropertyMap::create(
       CSSComputedStyleDeclaration::create(layoutObject.node()),
       m_nativeInvalidationProperties, m_customInvalidationProperties,
       layoutObject.node());

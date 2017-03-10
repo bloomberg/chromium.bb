@@ -14,9 +14,10 @@ class WindowGetComputedStyle {
   STATIC_ONLY(WindowGetComputedStyle);
 
  public:
-  static StylePropertyMap* getComputedStyleMap(const LocalDOMWindow&,
-                                               Element* element,
-                                               const String& pseudoElement) {
+  static StylePropertyMapReadonly* getComputedStyleMap(
+      const LocalDOMWindow&,
+      Element* element,
+      const String& pseudoElement) {
     DCHECK(element);
     return ComputedStylePropertyMap::create(element, pseudoElement);
   }

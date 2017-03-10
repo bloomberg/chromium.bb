@@ -6554,12 +6554,16 @@ interface StorageManager
     method estimate
     method persist
     method persisted
-interface StylePropertyMap
+interface StylePropertyMap : StylePropertyMapReadonly
     attribute @@toStringTag
-    method @@iterator
     method append
     method constructor
     method delete
+    method set
+interface StylePropertyMapReadonly
+    attribute @@toStringTag
+    method @@iterator
+    method constructor
     method entries
     method forEach
     method get
@@ -6567,7 +6571,6 @@ interface StylePropertyMap
     method getProperties
     method has
     method keys
-    method set
     method values
 interface StyleSheet
     attribute @@toStringTag
