@@ -1237,8 +1237,7 @@ void UseCounter::countCrossOriginIframe(const Document& document,
 }
 
 void UseCounter::count(CSSParserMode cssParserMode, CSSPropertyID property) {
-  // FIXME(suzyh): Count custom properties as well as named properties
-  DCHECK(isCSSPropertyIDWithName(property));
+  DCHECK(isCSSPropertyIDWithName(property) || property == CSSPropertyVariable);
 
   if (!isUseCounterEnabledForMode(cssParserMode) || m_muteCount)
     return;

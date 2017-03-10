@@ -948,9 +948,11 @@ void CSSParserImpl::consumeVariableValue(CSSParserTokenRange range,
                                          bool isAnimationTainted) {
   if (CSSCustomPropertyDeclaration* value =
           CSSVariableParser::parseDeclarationValue(variableName, range,
-                                                   isAnimationTainted))
+                                                   isAnimationTainted)) {
     m_parsedProperties.push_back(
         CSSProperty(CSSPropertyVariable, *value, important));
+    m_context->count(m_context->mode(), CSSPropertyVariable);
+  }
 }
 
 void CSSParserImpl::consumeDeclarationValue(CSSParserTokenRange range,
