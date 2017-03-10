@@ -30,6 +30,30 @@ class COMPONENTS_PREFS_EXPORT PrefValueStore {
  public:
   typedef base::Callback<void(const std::string&)> PrefChangedCallback;
 
+  // PrefStores must be listed here in order from highest to lowest priority.
+  //   MANAGED contains all managed preference values that are provided by
+  //      mandatory policies (e.g. Windows Group Policy or cloud policy).
+  //   SUPERVISED_USER contains preferences that are valid for supervised users.
+  //   EXTENSION contains preference values set by extensions.
+  //   COMMAND_LINE contains preference values set by command-line switches.
+  //   USER contains all user-set preference values.
+  //   RECOMMENDED contains all preferences that are provided by recommended
+  //      policies.
+  //   DEFAULT contains all application default preference values.
+  enum PrefStoreType {
+    // INVALID_STORE is not associated with an actual PrefStore but used as
+    // an invalid marker, e.g. as a return value.
+    INVALID_STORE = -1,
+    MANAGED_STORE = 0,
+    SUPERVISED_USER_STORE,
+    EXTENSION_STORE,
+    COMMAND_LINE_STORE,
+    USER_STORE,
+    RECOMMENDED_STORE,
+    DEFAULT_STORE,
+    PREF_STORE_TYPE_MAX = DEFAULT_STORE
+  };
+
   // In decreasing order of precedence:
   //   |managed_prefs| contains all preferences from mandatory policies.
   //   |supervised_user_prefs| contains all preferences from supervised user
@@ -118,30 +142,6 @@ class COMPONENTS_PREFS_EXPORT PrefValueStore {
   void UpdateCommandLinePrefStore(PrefStore* command_line_prefs);
 
  private:
-  // PrefStores must be listed here in order from highest to lowest priority.
-  //   MANAGED contains all managed preference values that are provided by
-  //      mandatory policies (e.g. Windows Group Policy or cloud policy).
-  //   SUPERVISED_USER contains preferences that are valid for supervised users.
-  //   EXTENSION contains preference values set by extensions.
-  //   COMMAND_LINE contains preference values set by command-line switches.
-  //   USER contains all user-set preference values.
-  //   RECOMMENDED contains all preferences that are provided by recommended
-  //      policies.
-  //   DEFAULT contains all application default preference values.
-  enum PrefStoreType {
-    // INVALID_STORE is not associated with an actual PrefStore but used as
-    // an invalid marker, e.g. as a return value.
-    INVALID_STORE = -1,
-    MANAGED_STORE = 0,
-    SUPERVISED_USER_STORE,
-    EXTENSION_STORE,
-    COMMAND_LINE_STORE,
-    USER_STORE,
-    RECOMMENDED_STORE,
-    DEFAULT_STORE,
-    PREF_STORE_TYPE_MAX = DEFAULT_STORE
-  };
-
   // Keeps a PrefStore reference on behalf of the PrefValueStore and monitors
   // the PrefStore for changes, forwarding notifications to PrefValueStore. This
   // indirection is here for the sake of disambiguating notifications from the
@@ -256,5 +256,17 @@ class COMPONENTS_PREFS_EXPORT PrefValueStore {
 
   DISALLOW_COPY_AND_ASSIGN(PrefValueStore);
 };
+
+namespace std {
+
+template <>
+struct hash<PrefValueStore::PrefStoreType> {
+  size_t operator()(PrefValueStore::PrefStoreType type) const {
+    return std::hash<
+        base::underlying_type<PrefValueStore::PrefStoreType>::type>()(type);
+  }
+};
+
+}  // namespace std
 
 #endif  // COMPONENTS_PREFS_PREF_VALUE_STORE_H_

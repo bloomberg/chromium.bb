@@ -27,3 +27,67 @@ interface PreferencesService {
   SetPreferences(mojo.common.mojom.DictionaryValue preferences);
   Subscribe(array<string> preferences);
 };
+
+const string kPrefStoreServiceName = "preferences2";
+
+// The know pref store types.
+//
+// Should be kept in sync with PrefValueStore::PrefStoreType.
+enum PrefStoreType {
+  MANAGED,
+  SUPERVISED_USER,
+  EXTENSION,
+  COMMAND_LINE,
+  USER,
+  RECOMMENDED,
+  DEFAULT,
+};
+
+// Allows observing changes to prefs stored in a |PrefStore|.
+interface PrefStoreObserver {
+  // The preference with the given |key| has changed. If |value| is null then
+  // the preference was deleted.
+  OnPrefChanged(string key, mojo.common.mojom.Value? value);
+
+  // The PrefStore has been initialized (asynchronously).
+  OnInitializationCompleted(bool succeeded);
+};
+
+// Captures the connections to a PrefStore by supplying the initial state of the
+// store and a handle to receive notifications on.
+struct PrefStoreConnection {
+  // Handle to receive updates on.
+  PrefStoreObserver& observer;
+
+  // Initial values of the PrefStore. These will not be communicated through
+  // OnPrefChanged.
+  mojo.common.mojom.DictionaryValue initial_prefs;
+
+  // Is the PrefStore initialized? If not it should not be used before
+  // OnInitializationCompleted has been called.
+  bool is_initialized;
+};
+
+// Manages actual read of preference data. Accepts observers who subscribe to
+// preferences, notifying them of changes.
+interface PrefStore {
+  // Add an observer of changes. This current values of all prefs will not be
+  // communicated through a call to |observer| but instead be returned in
+  // |initial_prefs|.
+  AddObserver() => (PrefStoreConnection connection);
+};
+
+// Manages a registry of all pref stores. Registered pref stores can be
+// connected to through the |PrefStoreConnector| interface.
+interface PrefStoreRegistry {
+  // Register a pref store.
+  Register(PrefStoreType type, PrefStore pref_store);
+};
+
+// Allows connections to pref stores registered with |PrefStoreRegistry|.
+interface PrefStoreConnector {
+  // Connect to all registered pref stores, retrieving the current values of all
+  // prefs in each store and an |observer| interfaces through which updates can
+  // be received.
+  Connect() => (map<PrefStoreType, PrefStoreConnection> connections);
+};

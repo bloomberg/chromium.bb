@@ -15,6 +15,7 @@ group("tests") {
 test("preferences_unittests") {
   sources = [
     "pref_client_store_unittest.cc",
+    "pref_store_client_unittest.cc",
   ]
   deps = [
     "//base",
@@ -24,6 +25,7 @@ test("preferences_unittests") {
     "//mojo/public/cpp/bindings:bindings",
     "//services/preferences/public/cpp",
     "//services/preferences/public/interfaces",
+    "//testing/gmock",
     "//testing/gtest",
   ]
 }

@@ -2,4 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-typemaps = [ "//services/preferences/public/cpp/tracked_preference_validation_delegate.typemap" ]
+typemaps = [
+  "//services/preferences/public/cpp/tracked_preference_validation_delegate.typemap",
+  "//services/preferences/public/cpp/preferences.typemap",
+]
