@@ -27,6 +27,8 @@ namespace extensions {
 
 namespace {
 
+constexpr int kMainWorldId = 0;
+
 base::LazyInstance<std::set<const ExtensionFrameHelper*>>::DestructorAtExit
     g_frame_helpers = LAZY_INSTANCE_INITIALIZER;
 
@@ -198,16 +200,15 @@ void ExtensionFrameHelper::DidStartProvisionalLoad(
       render_frame()->GetWebFrame()->mainWorldScriptContext();
   v8::Context::Scope context_scope(context);
   extension_dispatcher_->DidCreateScriptContext(render_frame()->GetWebFrame(),
-                                                context, 0);
+                                                context, kMainWorldId);
   // TODO(devlin): Add constants for main world id, no extension group.
 }
 
 void ExtensionFrameHelper::DidCreateScriptContext(
     v8::Local<v8::Context> context,
     int world_id) {
-  if (context == render_frame()->GetWebFrame()->mainWorldScriptContext() &&
+  if (world_id == kMainWorldId &&
       render_frame()->IsBrowserSideNavigationPending()) {
-    DCHECK_EQ(0, world_id);
     DCHECK(!delayed_main_world_script_initialization_);
     // Defer initializing the extensions script context now because it depends
     // on having the URL of the provisional load which isn't available at this
