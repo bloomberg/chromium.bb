@@ -9,8 +9,11 @@
 #include <map>
 #include <memory>
 
+#include "base/ios/weak_nsobject.h"
 #include "base/mac/bind_objc_block.h"
 #include "base/mac/foundation_util.h"
+#include "base/mac/objc_property_releaser.h"
+#include "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_model_observer.h"
@@ -30,10 +33,6 @@
 #include "ios/chrome/grit/ios_strings.h"
 #include "skia/ext/skia_utils_ios.h"
 #include "ui/base/l10n/l10n_util_mac.h"
-
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
 
 using bookmarks::BookmarkNode;
 
@@ -63,6 +62,8 @@ const NSTimeInterval kShowEmptyBookmarksBackgroundRefreshDelay = 1.0;
   std::unique_ptr<bookmarks::BookmarkModelBridge> _modelBridge;
   ios::ChromeBrowserState* _browserState;
 
+  base::mac::ObjCPropertyReleaser _propertyReleaser_BookmarkCollectionView;
+
   // Map of favicon load tasks for each index path. Used to keep track of
   // pending favicon load operations so that they can be cancelled upon cell
   // reuse. Keys are (section, item) pairs of cell index paths.
@@ -74,16 +75,16 @@ const NSTimeInterval kShowEmptyBookmarksBackgroundRefreshDelay = 1.0;
 // Redefined to be readwrite.
 @property(nonatomic, assign) bookmarks::BookmarkModel* bookmarkModel;
 // Redefined to be readwrite.
-@property(nonatomic, strong) UICollectionView* collectionView;
+@property(nonatomic, retain) UICollectionView* collectionView;
 // Redefined to be readwrite.
 @property(nonatomic, assign) BOOL editing;
 // Detects a long press on a cell.
-@property(nonatomic, strong) UILongPressGestureRecognizer* longPressRecognizer;
+@property(nonatomic, retain) UILongPressGestureRecognizer* longPressRecognizer;
 // Background view of the collection view shown when there is no items.
-@property(nonatomic, strong)
+@property(nonatomic, retain)
     BookmarkCollectionViewBackground* emptyCollectionBackgroundView;
 // Shadow to display over the content.
-@property(nonatomic, strong) UIView* shadow;
+@property(nonatomic, retain) UIView* shadow;
 
 // Updates the editing state for the cell.
 - (void)updateEditingStateOfCell:(BookmarkCell*)cell
@@ -136,6 +137,9 @@ const NSTimeInterval kShowEmptyBookmarksBackgroundRefreshDelay = 1.0;
                                frame:(CGRect)frame {
   self = [super initWithFrame:frame];
   if (self) {
+    _propertyReleaser_BookmarkCollectionView.Init(
+        self, [BookmarkCollectionView class]);
+
     _browserState = browserState;
 
     // Set up connection to the BookmarkModel.
@@ -166,16 +170,17 @@ const NSTimeInterval kShowEmptyBookmarksBackgroundRefreshDelay = 1.0;
     [moi self];
   });
   _faviconTaskTracker.TryCancelAll();
+  [super dealloc];
 }
 
 - (void)setupViews {
   self.backgroundColor = bookmark_utils_ios::mainBackgroundColor();
-  UICollectionViewFlowLayout* layout =
-      [[UICollectionViewFlowLayout alloc] init];
+  base::scoped_nsobject<UICollectionViewFlowLayout> layout(
+      [[UICollectionViewFlowLayout alloc] init]);
 
-  UICollectionView* collectionView =
+  base::scoped_nsobject<UICollectionView> collectionView(
       [[UICollectionView alloc] initWithFrame:self.bounds
-                         collectionViewLayout:layout];
+                         collectionViewLayout:layout]);
   self.collectionView = collectionView;
   self.collectionView.backgroundColor = [UIColor clearColor];
   self.collectionView.autoresizingMask =
@@ -200,8 +205,9 @@ const NSTimeInterval kShowEmptyBookmarksBackgroundRefreshDelay = 1.0;
   [self addSubview:self.collectionView];
 
   // Set up the background view shown when the collection is empty.
-  BookmarkCollectionViewBackground* emptyCollectionBackgroundView =
-      [[BookmarkCollectionViewBackground alloc] initWithFrame:CGRectZero];
+  base::scoped_nsobject<BookmarkCollectionViewBackground>
+      emptyCollectionBackgroundView(
+          [[BookmarkCollectionViewBackground alloc] initWithFrame:CGRectZero]);
   self.emptyCollectionBackgroundView = emptyCollectionBackgroundView;
   self.emptyCollectionBackgroundView.autoresizingMask =
       UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
@@ -213,9 +219,11 @@ const NSTimeInterval kShowEmptyBookmarksBackgroundRefreshDelay = 1.0;
 
   [self updateShadow];
 
-  self.longPressRecognizer = [[UILongPressGestureRecognizer alloc]
-      initWithTarget:self
-              action:@selector(longPress:)];
+  self.longPressRecognizer =
+      base::scoped_nsobject<UILongPressGestureRecognizer>(
+          [[UILongPressGestureRecognizer alloc]
+              initWithTarget:self
+                      action:@selector(longPress:)]);
   self.longPressRecognizer.delegate = self;
   [self.collectionView addGestureRecognizer:self.longPressRecognizer];
 }
@@ -232,9 +240,10 @@ const NSTimeInterval kShowEmptyBookmarksBackgroundRefreshDelay = 1.0;
     self.shadow =
         bookmark_utils_ios::dropShadowWithWidth(CGRectGetWidth(self.bounds));
   } else {
-    self.shadow = [[UIView alloc]
+    self.shadow = [[[UIView alloc]
         initWithFrame:CGRectMake(0, 0, CGRectGetWidth(self.bounds),
-                                 1 / [[UIScreen mainScreen] scale])];
+                                 1 / [[UIScreen mainScreen] scale])]
+        autorelease];
     self.shadow.backgroundColor = [UIColor colorWithWhite:0.0 alpha:.12];
   }
 
@@ -477,12 +486,12 @@ const NSTimeInterval kShowEmptyBookmarksBackgroundRefreshDelay = 1.0;
   [self cancelLoadingFaviconAtIndexPath:indexPath];
 
   // Start loading a favicon.
-  __weak BookmarkCollectionView* weakSelf = self;
+  base::WeakNSObject<BookmarkCollectionView> weakSelf(self);
   const bookmarks::BookmarkNode* node = [self nodeAtIndexPath:indexPath];
   GURL blockURL(node->url());
   void (^faviconBlock)(const favicon_base::LargeIconResult&) = ^(
       const favicon_base::LargeIconResult& result) {
-    BookmarkCollectionView* strongSelf = weakSelf;
+    base::scoped_nsobject<BookmarkCollectionView> strongSelf([weakSelf retain]);
     if (!strongSelf)
       return;
     UIImage* favIcon = nil;
@@ -490,7 +499,8 @@ const NSTimeInterval kShowEmptyBookmarksBackgroundRefreshDelay = 1.0;
     UIColor* textColor = nil;
     NSString* fallbackText = nil;
     if (result.bitmap.is_valid()) {
-      scoped_refptr<base::RefCountedMemory> data = result.bitmap.bitmap_data;
+      scoped_refptr<base::RefCountedMemory> data =
+          result.bitmap.bitmap_data.get();
       favIcon = [UIImage imageWithData:[NSData dataWithBytes:data->front()
                                                       length:data->size()]];
     } else if (result.fallback_icon_style) {
@@ -517,7 +527,7 @@ const NSTimeInterval kShowEmptyBookmarksBackgroundRefreshDelay = 1.0;
   base::CancelableTaskTracker::TaskId taskId =
       IOSChromeLargeIconServiceFactory::GetForBrowserState(self.browserState)
           ->GetLargeIconOrFallbackStyle(node->url(), minSize, preferredSize,
-                                        base::BindBlockArc(faviconBlock),
+                                        base::BindBlock(faviconBlock),
                                         &_faviconTaskTracker);
   _faviconLoadTasks[IntegerPair(indexPath.section, indexPath.item)] = taskId;
 }
@@ -691,7 +701,8 @@ const NSTimeInterval kShowEmptyBookmarksBackgroundRefreshDelay = 1.0;
     UICollectionViewCell* cell =
         [self.collectionView cellForItemAtIndexPath:indexPath];
     if (!cell) {
-      cell = [[BookmarkPromoCell alloc] initWithFrame:estimatedFrame];
+      cell = [[[BookmarkPromoCell alloc] initWithFrame:estimatedFrame]
+          autorelease];
     }
     cell.frame = estimatedFrame;
     [cell layoutIfNeeded];

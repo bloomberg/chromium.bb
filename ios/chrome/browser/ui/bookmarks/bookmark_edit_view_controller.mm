@@ -9,11 +9,13 @@
 
 #include "base/auto_reset.h"
 #include "base/ios/block_types.h"
+#include "base/ios/weak_nsobject.h"
 #include "base/logging.h"
 #include "base/mac/bind_objc_block.h"
 #import "base/mac/foundation_util.h"
-
+#include "base/mac/objc_property_releaser.h"
 #include "base/mac/scoped_cftyperef.h"
+#include "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/url_formatter/url_fixer.h"
@@ -42,10 +44,6 @@
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/gfx/image/image.h"
 #include "url/gurl.h"
-
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
 
 using bookmarks::BookmarkModel;
 using bookmarks::BookmarkNode;
@@ -80,6 +78,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
   BOOL _ignoresBookmarkModelChanges;
 
   std::unique_ptr<bookmarks::BookmarkModelBridge> _modelBridge;
+
+  base::mac::ObjCPropertyReleaser _propertyReleaser_BookmarkEditViewController;
 }
 
 // The bookmark this controller displays or edits.
@@ -97,20 +97,20 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 // The folder picker view controller.
 // Redefined to be readwrite.
-@property(nonatomic, strong) BookmarkFolderViewController* folderViewController;
+@property(nonatomic, retain) BookmarkFolderViewController* folderViewController;
 
 @property(nonatomic, assign) ios::ChromeBrowserState* browserState;
 
 // Cancel button item in navigation bar.
-@property(nonatomic, strong) UIBarButtonItem* cancelItem;
+@property(nonatomic, retain) UIBarButtonItem* cancelItem;
 
 // Done button item in navigation bar.
-@property(nonatomic, strong) UIBarButtonItem* doneItem;
+@property(nonatomic, retain) UIBarButtonItem* doneItem;
 
 // CollectionViewItem-s from the collection.
-@property(nonatomic, strong) BookmarkTextFieldItem* nameItem;
-@property(nonatomic, strong) BookmarkParentFolderItem* folderItem;
-@property(nonatomic, strong) BookmarkTextFieldItem* URLItem;
+@property(nonatomic, retain) BookmarkTextFieldItem* nameItem;
+@property(nonatomic, retain) BookmarkParentFolderItem* folderItem;
+@property(nonatomic, retain) BookmarkTextFieldItem* URLItem;
 
 // Reports the changes to the delegate, that has the responsibility to save the
 // bookmark.
@@ -168,6 +168,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
   DCHECK(browserState);
   self = [super initWithStyle:CollectionViewControllerStyleAppBar];
   if (self) {
+    _propertyReleaser_BookmarkEditViewController.Init(
+        self, [BookmarkEditViewController class]);
     DCHECK(!bookmark->is_folder());
     DCHECK(!browserState->IsOffTheRecord());
     _bookmark = bookmark;
@@ -187,6 +189,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 - (void)dealloc {
   _folderViewController.delegate = nil;
+  [super dealloc];
 }
 
 #pragma mark View lifecycle
@@ -208,34 +211,36 @@ typedef NS_ENUM(NSInteger, ItemType) {
   self.navigationItem.leftBarButtonItem = cancelItem;
   self.cancelItem = cancelItem;
 
-  UIBarButtonItem* doneItem = [[UIBarButtonItem alloc]
+  base::scoped_nsobject<UIBarButtonItem> doneItem([[UIBarButtonItem alloc]
       initWithTitle:l10n_util::GetNSString(IDS_IOS_BOOKMARK_DONE_BUTTON)
               style:UIBarButtonItemStylePlain
              target:self
-             action:@selector(save)];
-  doneItem.accessibilityIdentifier = @"Done";
+             action:@selector(save)]);
+  doneItem.get().accessibilityIdentifier = @"Done";
   self.navigationItem.rightBarButtonItem = doneItem;
   self.doneItem = doneItem;
 
-  BookmarksElevatedToolbar* buttonBar = [[BookmarksElevatedToolbar alloc] init];
-  UIBarButtonItem* deleteItem = [[UIBarButtonItem alloc]
+  base::scoped_nsobject<BookmarksElevatedToolbar> buttonBar(
+      [[BookmarksElevatedToolbar alloc] init]);
+  base::scoped_nsobject<UIBarButtonItem> deleteItem([[UIBarButtonItem alloc]
       initWithTitle:l10n_util::GetNSString(IDS_IOS_BOOKMARK_DELETE)
               style:UIBarButtonItemStylePlain
              target:self
-             action:@selector(deleteBookmark)];
-  deleteItem.accessibilityIdentifier = @"Delete_action";
+             action:@selector(deleteBookmark)]);
+  deleteItem.get().accessibilityIdentifier = @"Delete_action";
   [deleteItem setTitleTextAttributes:@{
     NSForegroundColorAttributeName : [UIColor blackColor]
   }
                             forState:UIControlStateNormal];
-  [buttonBar.layer addSublayer:[[MDCShadowLayer alloc] init]];
-  buttonBar.shadowElevation = MDCShadowElevationSearchBarResting;
-  buttonBar.backgroundColor = [UIColor whiteColor];
-  buttonBar.items = @[ deleteItem ];
+  [buttonBar.get().layer
+      addSublayer:[[[MDCShadowLayer alloc] init] autorelease]];
+  buttonBar.get().shadowElevation = MDCShadowElevationSearchBarResting;
+  buttonBar.get().backgroundColor = [UIColor whiteColor];
+  buttonBar.get().items = @[ deleteItem ];
   [self.view addSubview:buttonBar];
 
   // Constraint |buttonBar| to be in bottom
-  buttonBar.translatesAutoresizingMaskIntoConstraints = NO;
+  buttonBar.get().translatesAutoresizingMaskIntoConstraints = NO;
   [self.view addConstraints:
                  [NSLayoutConstraint
                      constraintsWithVisualFormat:@"H:|[buttonBar]|"
@@ -343,7 +348,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
   [model addSectionWithIdentifier:SectionIdentifierInfo];
 
-  self.nameItem = [[BookmarkTextFieldItem alloc] initWithType:ItemTypeName];
+  self.nameItem =
+      [[[BookmarkTextFieldItem alloc] initWithType:ItemTypeName] autorelease];
   self.nameItem.accessibilityIdentifier = @"Title Field";
   self.nameItem.placeholder =
       l10n_util::GetNSString(IDS_IOS_BOOKMARK_NAME_FIELD_HEADER);
@@ -351,12 +357,13 @@ typedef NS_ENUM(NSInteger, ItemType) {
   self.nameItem.delegate = self;
   [model addItem:self.nameItem toSectionWithIdentifier:SectionIdentifierInfo];
 
-  self.folderItem =
-      [[BookmarkParentFolderItem alloc] initWithType:ItemTypeFolder];
+  self.folderItem = [[[BookmarkParentFolderItem alloc]
+      initWithType:ItemTypeFolder] autorelease];
   self.folderItem.title = bookmark_utils_ios::TitleForBookmarkNode(self.folder);
   [model addItem:self.folderItem toSectionWithIdentifier:SectionIdentifierInfo];
 
-  self.URLItem = [[BookmarkTextFieldItem alloc] initWithType:ItemTypeURL];
+  self.URLItem =
+      [[[BookmarkTextFieldItem alloc] initWithType:ItemTypeURL] autorelease];
   self.URLItem.accessibilityIdentifier = @"URL Field";
   self.URLItem.placeholder =
       l10n_util::GetNSString(IDS_IOS_BOOKMARK_URL_FIELD_HEADER);
@@ -403,14 +410,14 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
   std::set<const BookmarkNode*> editedNodes;
   editedNodes.insert(self.bookmark);
-  BookmarkFolderViewController* folderViewController =
+  base::scoped_nsobject<BookmarkFolderViewController> folderViewController(
       [[BookmarkFolderViewController alloc]
           initWithBookmarkModel:self.bookmarkModel
                allowsNewFolders:YES
                     editedNodes:editedNodes
                    allowsCancel:NO
-                 selectedFolder:self.folder];
-  folderViewController.delegate = self;
+                 selectedFolder:self.folder]);
+  folderViewController.get().delegate = self;
   self.folderViewController = folderViewController;
 
   [self.navigationController pushViewController:self.folderViewController
@@ -576,7 +583,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 #pragma mark - UIResponder
 
 - (NSArray*)keyCommands {
-  __weak BookmarkEditViewController* weakSelf = self;
+  base::WeakNSObject<BookmarkEditViewController> weakSelf(self);
   return @[ [UIKeyCommand cr_keyCommandWithInput:UIKeyInputEscape
                                    modifierFlags:Cr_UIKeyModifierNone
                                            title:nil

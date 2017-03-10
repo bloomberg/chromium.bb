@@ -8,9 +8,11 @@
 
 #include "base/auto_reset.h"
 #include "base/i18n/rtl.h"
+#import "base/ios/weak_nsobject.h"
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
-
+#include "base/mac/objc_property_releaser.h"
+#include "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_node.h"
@@ -33,10 +35,6 @@
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 #include "ui/base/l10n/l10n_util.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 using bookmarks::BookmarkNode;
 
 namespace {
@@ -57,7 +55,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
     BookmarkModelBridgeObserver,
     BookmarkTextFieldItemDelegate> {
   std::unique_ptr<bookmarks::BookmarkModelBridge> _modelBridge;
-
+  base::mac::ObjCPropertyReleaser
+      _propertyReleaser_BookmarkFolderEditorViewController;
   // Flag to ignore bookmark model Move notifications when the move is performed
   // by this class.
   BOOL _ignoresOwnMove;
@@ -66,14 +65,14 @@ typedef NS_ENUM(NSInteger, ItemType) {
 @property(nonatomic, assign) bookmarks::BookmarkModel* bookmarkModel;
 @property(nonatomic, assign) ios::ChromeBrowserState* browserState;
 @property(nonatomic, assign) const BookmarkNode* folder;
-@property(nonatomic, strong) BookmarkFolderViewController* folderViewController;
+@property(nonatomic, retain) BookmarkFolderViewController* folderViewController;
 @property(nonatomic, assign) const BookmarkNode* parentFolder;
-@property(nonatomic, weak) UIBarButtonItem* doneItem;
-@property(nonatomic, strong) BookmarkTextFieldItem* titleItem;
-@property(nonatomic, strong) BookmarkParentFolderItem* parentFolderItem;
+@property(nonatomic, assign) UIBarButtonItem* doneItem;
+@property(nonatomic, retain) BookmarkTextFieldItem* titleItem;
+@property(nonatomic, retain) BookmarkParentFolderItem* parentFolderItem;
 // Bottom toolbar with DELETE button that only appears when the edited folder
 // allows deletion.
-@property(nonatomic, weak) BookmarksElevatedToolbar* toolbar;
+@property(nonatomic, assign) BookmarksElevatedToolbar* toolbar;
 
 // |bookmarkModel| must not be NULL and must be loaded.
 - (instancetype)initWithBookmarkModel:(bookmarks::BookmarkModel*)bookmarkModel
@@ -114,12 +113,12 @@ typedef NS_ENUM(NSInteger, ItemType) {
 + (instancetype)
 folderCreatorWithBookmarkModel:(bookmarks::BookmarkModel*)bookmarkModel
                   parentFolder:(const BookmarkNode*)parentFolder {
-  BookmarkFolderEditorViewController* folderCreator =
-      [[self alloc] initWithBookmarkModel:bookmarkModel];
-  folderCreator.parentFolder = parentFolder;
-  folderCreator.folder = NULL;
-  folderCreator.editingExistingFolder = NO;
-  return folderCreator = nil;
+  base::scoped_nsobject<BookmarkFolderEditorViewController> folderCreator(
+      [[self alloc] initWithBookmarkModel:bookmarkModel]);
+  folderCreator.get().parentFolder = parentFolder;
+  folderCreator.get().folder = NULL;
+  folderCreator.get().editingExistingFolder = NO;
+  return folderCreator.autorelease();
 }
 
 + (instancetype)
@@ -129,13 +128,13 @@ folderEditorWithBookmarkModel:(bookmarks::BookmarkModel*)bookmarkModel
   DCHECK(folder);
   DCHECK(!bookmarkModel->is_permanent_node(folder));
   DCHECK(browserState);
-  BookmarkFolderEditorViewController* folderEditor =
-      [[self alloc] initWithBookmarkModel:bookmarkModel];
-  folderEditor.parentFolder = folder->parent();
-  folderEditor.folder = folder;
-  folderEditor.browserState = browserState;
-  folderEditor.editingExistingFolder = YES;
-  return folderEditor = nil;
+  base::scoped_nsobject<BookmarkFolderEditorViewController> folderEditor(
+      [[self alloc] initWithBookmarkModel:bookmarkModel]);
+  folderEditor.get().parentFolder = folder->parent();
+  folderEditor.get().folder = folder;
+  folderEditor.get().browserState = browserState;
+  folderEditor.get().editingExistingFolder = YES;
+  return folderEditor.autorelease();
 }
 
 #pragma mark - Initialization
@@ -145,6 +144,8 @@ folderEditorWithBookmarkModel:(bookmarks::BookmarkModel*)bookmarkModel
   DCHECK(bookmarkModel->loaded());
   self = [super initWithStyle:CollectionViewControllerStyleAppBar];
   if (self) {
+    _propertyReleaser_BookmarkFolderEditorViewController.Init(
+        self, [BookmarkFolderEditorViewController class]);
     _bookmarkModel = bookmarkModel;
 
     // Set up the bookmark model oberver.
@@ -162,6 +163,7 @@ folderEditorWithBookmarkModel:(bookmarks::BookmarkModel*)bookmarkModel
 - (void)dealloc {
   _titleItem.delegate = nil;
   _folderViewController.delegate = nil;
+  [super dealloc];
 }
 
 #pragma mark - UIViewController
@@ -171,13 +173,13 @@ folderEditorWithBookmarkModel:(bookmarks::BookmarkModel*)bookmarkModel
   self.collectionView.backgroundColor = [UIColor whiteColor];
 
   // Add Done button.
-  UIBarButtonItem* doneItem = [[UIBarButtonItem alloc]
+  base::scoped_nsobject<UIBarButtonItem> doneItem([[UIBarButtonItem alloc]
       initWithTitle:l10n_util::GetNSString(
                         IDS_IOS_BOOKMARK_EDIT_MODE_EXIT_MOBILE)
               style:UIBarButtonItemStylePlain
              target:self
-             action:@selector(saveFolder)];
-  doneItem.accessibilityIdentifier = @"Save";
+             action:@selector(saveFolder)]);
+  doneItem.get().accessibilityIdentifier = @"Save";
   self.navigationItem.rightBarButtonItem = doneItem;
   self.doneItem = doneItem;
 
@@ -271,14 +273,14 @@ folderEditorWithBookmarkModel:(bookmarks::BookmarkModel*)bookmarkModel
   std::set<const BookmarkNode*> editedNodes;
   if (self.folder)
     editedNodes.insert(self.folder);
-  BookmarkFolderViewController* folderViewController =
+  base::scoped_nsobject<BookmarkFolderViewController> folderViewController(
       [[BookmarkFolderViewController alloc]
           initWithBookmarkModel:self.bookmarkModel
                allowsNewFolders:NO
                     editedNodes:editedNodes
                    allowsCancel:NO
-                 selectedFolder:self.parentFolder];
-  folderViewController.delegate = self;
+                 selectedFolder:self.parentFolder]);
+  folderViewController.get().delegate = self;
   self.folderViewController = folderViewController;
 
   [self.navigationController pushViewController:folderViewController
@@ -440,23 +442,23 @@ folderEditorWithBookmarkModel:(bookmarks::BookmarkModel*)bookmarkModel
 
   [self.collectionViewModel addSectionWithIdentifier:SectionIdentifierInfo];
 
-  BookmarkTextFieldItem* titleItem =
-      [[BookmarkTextFieldItem alloc] initWithType:ItemTypeFolderTitle];
-  titleItem.text =
+  base::scoped_nsobject<BookmarkTextFieldItem> titleItem(
+      [[BookmarkTextFieldItem alloc] initWithType:ItemTypeFolderTitle]);
+  titleItem.get().text =
       (self.folder)
           ? bookmark_utils_ios::TitleForBookmarkNode(self.folder)
           : l10n_util::GetNSString(IDS_IOS_BOOKMARK_NEW_GROUP_DEFAULT_NAME);
-  titleItem.placeholder =
+  titleItem.get().placeholder =
       l10n_util::GetNSString(IDS_IOS_BOOKMARK_NEW_EDITOR_NAME_LABEL);
-  titleItem.accessibilityIdentifier = @"Title";
+  titleItem.get().accessibilityIdentifier = @"Title";
   [self.collectionViewModel addItem:titleItem
             toSectionWithIdentifier:SectionIdentifierInfo];
-  titleItem.delegate = self;
+  titleItem.get().delegate = self;
   self.titleItem = titleItem;
 
-  BookmarkParentFolderItem* parentFolderItem =
-      [[BookmarkParentFolderItem alloc] initWithType:ItemTypeParentFolder];
-  parentFolderItem.title =
+  base::scoped_nsobject<BookmarkParentFolderItem> parentFolderItem(
+      [[BookmarkParentFolderItem alloc] initWithType:ItemTypeParentFolder]);
+  parentFolderItem.get().title =
       bookmark_utils_ios::TitleForBookmarkNode(self.parentFolder);
   [self.collectionViewModel addItem:parentFolderItem
             toSectionWithIdentifier:SectionIdentifierInfo];
@@ -465,24 +467,26 @@ folderEditorWithBookmarkModel:(bookmarks::BookmarkModel*)bookmarkModel
 
 - (void)addToolbar {
   // Add bottom toolbar with Delete button.
-  BookmarksElevatedToolbar* buttonBar = [[BookmarksElevatedToolbar alloc] init];
-  UIBarButtonItem* deleteItem = [[UIBarButtonItem alloc]
+  base::scoped_nsobject<BookmarksElevatedToolbar> buttonBar(
+      [[BookmarksElevatedToolbar alloc] init]);
+  base::scoped_nsobject<UIBarButtonItem> deleteItem([[UIBarButtonItem alloc]
       initWithTitle:l10n_util::GetNSString(IDS_IOS_BOOKMARK_GROUP_DELETE)
               style:UIBarButtonItemStylePlain
              target:self
-             action:@selector(deleteFolder)];
-  deleteItem.accessibilityIdentifier = @"Delete Folder";
+             action:@selector(deleteFolder)]);
+  deleteItem.get().accessibilityIdentifier = @"Delete Folder";
   [deleteItem setTitleTextAttributes:@{
     NSForegroundColorAttributeName : [UIColor blackColor]
   }
                             forState:UIControlStateNormal];
-  [buttonBar.layer addSublayer:[[MDCShadowLayer alloc] init]];
-  buttonBar.shadowElevation = MDCShadowElevationSearchBarResting;
-  buttonBar.items = @[ deleteItem ];
+  [buttonBar.get().layer
+      addSublayer:[[[MDCShadowLayer alloc] init] autorelease]];
+  buttonBar.get().shadowElevation = MDCShadowElevationSearchBarResting;
+  buttonBar.get().items = @[ deleteItem ];
   [self.view addSubview:buttonBar];
 
   // Constraint |buttonBar| to be in bottom.
-  buttonBar.translatesAutoresizingMaskIntoConstraints = NO;
+  buttonBar.get().translatesAutoresizingMaskIntoConstraints = NO;
   [self.view addConstraints:
                  [NSLayoutConstraint
                      constraintsWithVisualFormat:@"H:|[buttonBar]|"
