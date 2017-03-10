@@ -1908,8 +1908,6 @@ const CSSValue* CSSPropertyParser::parseSingleValue(
   switch (property) {
     case CSSPropertyFontFeatureSettings:
       return CSSPropertyFontUtils::consumeFontFeatureSettings(m_range);
-    case CSSPropertyFontFamily:
-      return CSSPropertyFontUtils::consumeFontFamily(m_range);
     case CSSPropertyFontWeight:
       return CSSPropertyFontUtils::consumeFontWeight(m_range);
     case CSSPropertyWebkitBorderHorizontalSpacing:

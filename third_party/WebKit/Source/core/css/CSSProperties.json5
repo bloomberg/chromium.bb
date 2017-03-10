@@ -336,6 +336,8 @@
     },
     {
       name: "font-family",
+      api_class: true,
+      api_methods: ["parseSingleValue"],
       converter: "convertFontFamily",
       font: true,
       inherited: true,
