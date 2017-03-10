@@ -78,16 +78,16 @@ bool ModalWindowController::IsWindowBlockedBy(
 
 bool ModalWindowController::IsWindowBlocked(const ServerWindow* window) const {
   DCHECK(window);
-  return GetActiveSystemModalWindow() || GetModalChildForWindowAncestor(window);
+  return GetTargetForWindow(window) != window;
 }
 
 const ServerWindow* ModalWindowController::GetTargetForWindow(
     const ServerWindow* window) const {
-  // TODO(moshayedi): crbug.com/697127. Handle windows which are modal to
-  // children of their transient parent.
+  // TODO(moshayedi): crbug.com/697127. Handle MODAL_TYPE_CHILD.
   ServerWindow* system_modal_window = GetActiveSystemModalWindow();
   if (system_modal_window)
-    return system_modal_window;
+    return system_modal_window->Contains(window) ? window : system_modal_window;
+
   return window ? GetWindowModalTargetForWindow(window) : nullptr;
 }
 

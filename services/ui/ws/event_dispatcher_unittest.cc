@@ -1563,6 +1563,55 @@ TEST_F(EventDispatcherTest, ModalWindowEventOutsideSystemModal) {
   EXPECT_EQ(gfx::Point(35, 5), dispatched_event->location());
 }
 
+// Tests events on a sub-window of system modal window target the window itself.
+TEST_F(EventDispatcherTest, ModalWindowEventSubWindowSystemModal) {
+  std::unique_ptr<ServerWindow> w1 = CreateChildWindow(WindowId(1, 3));
+  w1->SetModalType(MODAL_TYPE_SYSTEM);
+  event_dispatcher()->AddSystemModalWindow(w1.get());
+
+  std::unique_ptr<ServerWindow> w2 =
+      CreateChildWindowWithParent(WindowId(1, 4), w1.get());
+  std::unique_ptr<ServerWindow> w3 = CreateChildWindow(WindowId(1, 5));
+
+  root_window()->SetBounds(gfx::Rect(0, 0, 100, 100));
+  w1->SetBounds(gfx::Rect(10, 10, 30, 30));
+  w2->SetBounds(gfx::Rect(10, 10, 10, 10));
+  w3->SetBounds(gfx::Rect(50, 10, 10, 10));
+
+  struct {
+    gfx::Point location;
+    ServerWindow* expected_target;
+  } kTouchData[] = {
+      // Touch on |w1| should go to |w1|.
+      {gfx::Point(11, 11), w1.get()},
+      // Touch on |w2| should go to |w2|.
+      {gfx::Point(25, 25), w2.get()},
+      // Touch on |w3| should go to |w1|.
+      {gfx::Point(11, 31), w1.get()},
+  };
+
+  for (size_t i = 0; i < arraysize(kTouchData); i++) {
+    // Send touch press and check that the expected target receives it.
+    event_dispatcher()->ProcessEvent(
+        ui::PointerEvent(ui::TouchEvent(ui::ET_TOUCH_PRESSED,
+                                        kTouchData[i].location, 0,
+                                        base::TimeTicks())),
+        EventDispatcher::AcceleratorMatchPhase::ANY);
+    std::unique_ptr<DispatchedEventDetails> details =
+        test_event_dispatcher_delegate()->GetAndAdvanceDispatchedEventDetails();
+    ASSERT_TRUE(details) << " details is nullptr " << i;
+    EXPECT_EQ(kTouchData[i].expected_target, details->window);
+
+    // Release touch.
+    event_dispatcher()->ProcessEvent(
+        ui::PointerEvent(ui::TouchEvent(ui::ET_TOUCH_RELEASED,
+                                        kTouchData[i].location, 0,
+                                        base::TimeTicks())),
+        EventDispatcher::AcceleratorMatchPhase::ANY);
+    test_event_dispatcher_delegate()->GetAndAdvanceDispatchedEventDetails();
+  }
+}
+
 // Tests that setting capture to a descendant of a modal parent fails.
 TEST_F(EventDispatcherTest, ModalWindowSetCaptureDescendantOfModalParent) {
   std::unique_ptr<ServerWindow> w1 = CreateChildWindow(WindowId(1, 3));
