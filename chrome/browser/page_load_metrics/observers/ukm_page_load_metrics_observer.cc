@@ -4,9 +4,13 @@
 
 #include "chrome/browser/page_load_metrics/observers/ukm_page_load_metrics_observer.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/net/nqe/ui_network_quality_estimator_service.h"
+#include "chrome/browser/net/nqe/ui_network_quality_estimator_service_factory.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_util.h"
+#include "chrome/browser/profiles/profile.h"
 #include "components/ukm/ukm_entry_builder.h"
 #include "components/ukm/ukm_service.h"
+#include "content/public/browser/web_contents.h"
 
 namespace internal {
 
@@ -20,21 +24,39 @@ const char kUkmFirstContentfulPaintName[] =
 const char kUkmFirstMeaningfulPaintName[] =
     "Experimental.PaintTiming.NavigationToFirstMeaningfulPaint";
 const char kUkmForegroundDurationName[] = "PageTiming.ForegroundDuration";
+const char kUkmEffectiveConnectionType[] =
+    "Net.EffectiveConnectionType.OnNavigationStart";
 
 }  // namespace internal
 
+namespace {
+
+UINetworkQualityEstimatorService* GetNQEService(
+    content::WebContents* web_contents) {
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+  if (!profile)
+    return nullptr;
+  return UINetworkQualityEstimatorServiceFactory::GetForProfile(profile);
+}
+
+}  // namespace
+
 // static
 std::unique_ptr<page_load_metrics::PageLoadMetricsObserver>
-UkmPageLoadMetricsObserver::CreateIfNeeded() {
+UkmPageLoadMetricsObserver::CreateIfNeeded(content::WebContents* web_contents) {
   if (!g_browser_process->ukm_service()) {
     return nullptr;
   }
-
-  return base::MakeUnique<UkmPageLoadMetricsObserver>();
+  return base::MakeUnique<UkmPageLoadMetricsObserver>(
+      GetNQEService(web_contents));
 }
 
-UkmPageLoadMetricsObserver::UkmPageLoadMetricsObserver()
-    : source_id_(ukm::UkmService::GetNewSourceID()) {}
+UkmPageLoadMetricsObserver::UkmPageLoadMetricsObserver(
+    net::NetworkQualityEstimator::NetworkQualityProvider*
+        network_quality_provider)
+    : network_quality_provider_(network_quality_provider),
+      source_id_(ukm::UkmService::GetNewSourceID()) {}
 
 UkmPageLoadMetricsObserver::~UkmPageLoadMetricsObserver() = default;
 
@@ -45,8 +67,17 @@ UkmPageLoadMetricsObserver::ObservePolicy UkmPageLoadMetricsObserver::OnStart(
   if (!started_in_foreground)
     return STOP_OBSERVING;
 
-  ukm::UkmService* ukm_service = g_browser_process->ukm_service();
-  ukm_service->UpdateSourceURL(source_id_, navigation_handle->GetURL());
+  // When OnStart is invoked, we don't yet know whether we're observing a web
+  // page load, vs another kind of load (e.g. a download or a PDF). Thus,
+  // metrics and source information should not be recorded here. Instead, we
+  // store data we might want to persist in member variables below, and later
+  // record UKM metrics for that data once we've confirmed that we're observing
+  // a web page load.
+
+  if (network_quality_provider_) {
+    effective_connection_type_ =
+        network_quality_provider_->GetEffectiveConnectionType();
+  }
   return CONTINUE_OBSERVING;
 }
 
@@ -54,17 +85,17 @@ UkmPageLoadMetricsObserver::ObservePolicy
 UkmPageLoadMetricsObserver::FlushMetricsOnAppEnterBackground(
     const page_load_metrics::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
-  RecordTimingMetrics(timing);
   RecordPageLoadExtraInfoMetrics(info, base::TimeTicks::Now());
+  RecordTimingMetrics(timing);
   return STOP_OBSERVING;
 }
 
 UkmPageLoadMetricsObserver::ObservePolicy UkmPageLoadMetricsObserver::OnHidden(
     const page_load_metrics::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
-  RecordTimingMetrics(timing);
   RecordPageLoadExtraInfoMetrics(
       info, base::TimeTicks() /* no app_background_time */);
+  RecordTimingMetrics(timing);
   return STOP_OBSERVING;
 }
 
@@ -78,9 +109,9 @@ void UkmPageLoadMetricsObserver::OnFailedProvisionalLoad(
 void UkmPageLoadMetricsObserver::OnComplete(
     const page_load_metrics::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
-  RecordTimingMetrics(timing);
   RecordPageLoadExtraInfoMetrics(
       info, base::TimeTicks() /* no app_background_time */);
+  RecordTimingMetrics(timing);
 }
 
 void UkmPageLoadMetricsObserver::RecordTimingMetrics(
@@ -115,16 +146,20 @@ void UkmPageLoadMetricsObserver::RecordPageLoadExtraInfoMetrics(
     const page_load_metrics::PageLoadExtraInfo& info,
     base::TimeTicks app_background_time) {
   ukm::UkmService* ukm_service = g_browser_process->ukm_service();
+  ukm_service->UpdateSourceURL(source_id_, info.start_url);
   ukm_service->UpdateSourceURL(source_id_, info.url);
 
+  std::unique_ptr<ukm::UkmEntryBuilder> builder =
+      ukm_service->GetEntryBuilder(source_id_, internal::kUkmPageLoadEventName);
   base::Optional<base::TimeDelta> foreground_duration =
       page_load_metrics::GetInitialForegroundDuration(info,
                                                       app_background_time);
   if (foreground_duration) {
-    std::unique_ptr<ukm::UkmEntryBuilder> builder =
-        ukm_service->GetEntryBuilder(source_id_,
-                                     internal::kUkmPageLoadEventName);
     builder->AddMetric(internal::kUkmForegroundDurationName,
                        foreground_duration.value().InMilliseconds());
+  }
+  if (effective_connection_type_ != net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN) {
+    builder->AddMetric(internal::kUkmEffectiveConnectionType,
+                       static_cast<int64_t>(effective_connection_type_));
   }
 }

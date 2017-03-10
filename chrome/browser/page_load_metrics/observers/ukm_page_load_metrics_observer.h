@@ -7,6 +7,11 @@
 
 #include "base/macros.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_observer.h"
+#include "net/nqe/network_quality_estimator.h"
+
+namespace content {
+class WebContents;
+}
 
 namespace internal {
 
@@ -18,6 +23,7 @@ extern const char kUkmLoadEventName[];
 extern const char kUkmFirstContentfulPaintName[];
 extern const char kUkmFirstMeaningfulPaintName[];
 extern const char kUkmForegroundDurationName[];
+extern const char kUkmEffectiveConnectionType[];
 
 }  // namespace internal
 
@@ -28,9 +34,11 @@ class UkmPageLoadMetricsObserver
  public:
   // Returns a UkmPageLoadMetricsObserver, or nullptr if it is not needed.
   static std::unique_ptr<page_load_metrics::PageLoadMetricsObserver>
-  CreateIfNeeded();
+  CreateIfNeeded(content::WebContents* web_contents);
 
-  UkmPageLoadMetricsObserver();
+  explicit UkmPageLoadMetricsObserver(
+      net::NetworkQualityEstimator::NetworkQualityProvider*
+          network_quality_provider);
   ~UkmPageLoadMetricsObserver() override;
 
   // page_load_metrics::PageLoadMetricsObserver implementation:
@@ -65,8 +73,14 @@ class UkmPageLoadMetricsObserver
       const page_load_metrics::PageLoadExtraInfo& info,
       base::TimeTicks app_background_time);
 
+  net::NetworkQualityEstimator::NetworkQualityProvider* const
+      network_quality_provider_;
+
   // Unique UKM identifier for the page load we are recording metrics for.
   const int32_t source_id_;
+
+  net::EffectiveConnectionType effective_connection_type_ =
+      net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN;
 
   DISALLOW_COPY_AND_ASSIGN(UkmPageLoadMetricsObserver);
 };

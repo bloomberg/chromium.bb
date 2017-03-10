@@ -12,11 +12,29 @@
 #include "components/ukm/test_ukm_service.h"
 #include "components/ukm/ukm_entry.h"
 #include "components/ukm/ukm_source.h"
+#include "testing/gmock/include/gmock/gmock.h"
+
+using testing::AnyNumber;
+using testing::Mock;
+using testing::Return;
 
 namespace {
 
 const char kTestUrl1[] = "https://www.google.com/";
 const char kTestUrl2[] = "https://www.example.com/";
+
+class MockNetworkQualityProvider
+    : public net::NetworkQualityEstimator::NetworkQualityProvider {
+ public:
+  MOCK_CONST_METHOD0(GetEffectiveConnectionType,
+                     net::EffectiveConnectionType());
+  MOCK_METHOD1(
+      AddEffectiveConnectionTypeObserver,
+      void(net::NetworkQualityEstimator::EffectiveConnectionTypeObserver*));
+  MOCK_METHOD1(
+      RemoveEffectiveConnectionTypeObserver,
+      void(net::NetworkQualityEstimator::EffectiveConnectionTypeObserver*));
+};
 
 }  // namespace
 
@@ -24,11 +42,16 @@ class UkmPageLoadMetricsObserverTest
     : public page_load_metrics::PageLoadMetricsObserverTestHarness {
  protected:
   void RegisterObservers(page_load_metrics::PageLoadTracker* tracker) override {
-    tracker->AddObserver(base::MakeUnique<UkmPageLoadMetricsObserver>());
+    tracker->AddObserver(base::MakeUnique<UkmPageLoadMetricsObserver>(
+        &mock_network_quality_provider_));
   }
 
   void SetUp() override {
     page_load_metrics::PageLoadMetricsObserverTestHarness::SetUp();
+
+    EXPECT_CALL(mock_network_quality_provider_, GetEffectiveConnectionType())
+        .Times(AnyNumber())
+        .WillRepeatedly(Return(net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN));
 
     TestingBrowserProcess::GetGlobal()->SetUkmService(
         ukm_service_test_harness_.test_ukm_service());
@@ -40,6 +63,10 @@ class UkmPageLoadMetricsObserverTest
 
   size_t ukm_entry_count() {
     return ukm_service_test_harness_.test_ukm_service()->entries_count();
+  }
+
+  MockNetworkQualityProvider& mock_network_quality_provider() {
+    return mock_network_quality_provider_;
   }
 
   const ukm::UkmSource* GetUkmSource(size_t source_index) {
@@ -118,6 +145,7 @@ class UkmPageLoadMetricsObserverTest
   }
 
  private:
+  MockNetworkQualityProvider mock_network_quality_provider_;
   ukm::UkmServiceTestingHarness ukm_service_test_harness_;
 };
 
@@ -249,4 +277,27 @@ TEST_F(UkmPageLoadMetricsObserverTest, MultiplePageLoads) {
                          entry2_proto.metrics()));
   EXPECT_TRUE(
       HasMetric(internal::kUkmForegroundDurationName, entry2_proto.metrics()));
+}
+
+TEST_F(UkmPageLoadMetricsObserverTest, EffectiveConnectionType) {
+  EXPECT_CALL(mock_network_quality_provider(), GetEffectiveConnectionType())
+      .WillRepeatedly(Return(net::EFFECTIVE_CONNECTION_TYPE_3G));
+
+  NavigateAndCommit(GURL(kTestUrl1));
+
+  // Simulate closing the tab.
+  DeleteContents();
+
+  EXPECT_EQ(1ul, ukm_source_count());
+  const ukm::UkmSource* source = GetUkmSource(0);
+  EXPECT_EQ(GURL(kTestUrl1), source->url());
+
+  EXPECT_GE(ukm_entry_count(), 1ul);
+  ukm::Entry entry_proto = GetMergedEntryProtoForSourceID(source->id());
+  EXPECT_EQ(entry_proto.source_id(), source->id());
+  EXPECT_EQ(entry_proto.event_hash(),
+            base::HashMetricName(internal::kUkmPageLoadEventName));
+  EXPECT_FALSE(entry_proto.metrics().empty());
+  ExpectMetric(internal::kUkmEffectiveConnectionType,
+               net::EFFECTIVE_CONNECTION_TYPE_3G, entry_proto.metrics());
 }

@@ -92,7 +92,7 @@ void PageLoadMetricsEmbedder::RegisterObservers(
     tracker->AddObserver(base::MakeUnique<TabRestorePageLoadMetricsObserver>());
 
     std::unique_ptr<page_load_metrics::PageLoadMetricsObserver> ukm_observer =
-        UkmPageLoadMetricsObserver::CreateIfNeeded();
+        UkmPageLoadMetricsObserver::CreateIfNeeded(web_contents_);
     if (ukm_observer)
       tracker->AddObserver(std::move(ukm_observer));
 
