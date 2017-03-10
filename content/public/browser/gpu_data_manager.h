@@ -100,9 +100,6 @@ class GpuDataManager {
   // Turn off all hardware acceleration.
   virtual void DisableHardwareAcceleration() = 0;
 
-  // Whether a GPU is in use (as opposed to a software renderer).
-  virtual bool HardwareAccelerationEnabled() const = 0;
-
   // Whether the browser compositor can be used.
   virtual bool CanUseGpuBrowserCompositor() const = 0;
 
