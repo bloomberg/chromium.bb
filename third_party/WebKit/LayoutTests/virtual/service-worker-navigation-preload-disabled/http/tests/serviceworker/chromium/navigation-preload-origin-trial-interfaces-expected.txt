@@ -8,6 +8,7 @@ interface NavigationPreloadManager
  method setHeaderValue
 interface ServiceWorkerRegistration
  getter active
+ getter backgroundFetch
  getter installing
  getter navigationPreload
  getter onupdatefound
@@ -31,6 +32,7 @@ interface FetchEvent
  method respondWith
 interface ServiceWorkerRegistration
  getter active
+ getter backgroundFetch
  getter installing
  getter onupdatefound
  getter paymentAppManager
@@ -60,6 +62,7 @@ interface NavigationPreloadManager
  method setHeaderValue
 interface ServiceWorkerRegistration
  getter active
+ getter backgroundFetch
  getter installing
  getter navigationPreload
  getter onupdatefound

@@ -41,6 +41,7 @@ modules_idl_files =
     get_path_info([
                     "app_banner/AppBannerPromptResult.idl",
                     "app_banner/BeforeInstallPromptEvent.idl",
+                    "background_fetch/BackgroundFetchManager.idl",
                     "background_sync/SyncEvent.idl",
                     "background_sync/SyncManager.idl",
                     "battery/BatteryManager.idl",
@@ -555,6 +556,7 @@ modules_dependency_idl_files =
     get_path_info(
         [
           "audio_output_devices/HTMLMediaElementAudioOutputDevice.idl",
+          "background_fetch/ServiceWorkerRegistrationBackgroundFetch.idl",
           "background_sync/ServiceWorkerGlobalScopeSync.idl",
           "background_sync/ServiceWorkerRegistrationSync.idl",
           "battery/NavigatorBattery.idl",

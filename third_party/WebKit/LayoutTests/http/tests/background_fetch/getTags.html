@@ -1,0 +1,41 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Background Fetch: BackgroundFetchManager.getTags() behaviour.</title>
+    <script src="../resources/testharness.js"></script>
+    <script src="../resources/testharnessreport.js"></script>
+    <script src="../serviceworker/resources/test-helpers.js"></script>
+  </head>
+  <body>
+    <script>
+      // TODO(peter): Remove this test when the IDL harness test has landed as
+      // part of web platform tests.
+      test(function() {
+         assert_own_property(self, 'BackgroundFetchManager', 'BackgroundFetchManager needs to be exposed as a global.');
+         // TODO(peter): Test for the `fetch` method.
+         // TODO(peter): Test for the `get` method.
+
+         assert_own_property(BackgroundFetchManager.prototype, 'getTags');
+
+      }, 'BackgroundFetchManager should be exposed and have the expected interface in a Document.');
+
+      // TODO(peter): Move this to a WPT test when the getTags() function is able
+      // to reflect in-progress background fetches.
+      promise_test(async function(test) {
+        const workerUrl = 'resources/empty-worker.js';
+        const scope = 'resources/scope/' + location.pathname;
+
+        const registration = await service_worker_unregister_and_register(test, workerUrl, scope);
+        await wait_for_state(test, registration.installing, 'activated');
+
+        try {
+          await registration.backgroundFetch.getTags();
+          assert_unreached('getTags() is expected to throw.');
+        } catch (exception) {
+          assert_equals(exception.name, 'NotSupportedError');
+          assert_equals(exception.message, 'Not implemented yet.');
+        }
+      }, 'Change-detector test for the getTags() function.');
+    </script>
+  </body>
+</html>

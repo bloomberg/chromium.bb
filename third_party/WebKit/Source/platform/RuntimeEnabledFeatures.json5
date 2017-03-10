@@ -86,6 +86,10 @@
       status: "stable",
     },
     {
+      name: "BackgroundFetch",
+      status: "test",
+    },
+    {
       name: "BackgroundSync",
       status: "stable",
     },

@@ -8,6 +8,7 @@ interface NavigationPreloadManager
  method setHeaderValue
 interface ServiceWorkerRegistration
  getter active
+ getter backgroundFetch
  getter installing
  getter navigationPreload
  getter onupdatefound
@@ -38,6 +39,7 @@ interface NavigationPreloadManager
  method setHeaderValue
 interface ServiceWorkerRegistration
  getter active
+ getter backgroundFetch
  getter installing
  getter navigationPreload
  getter onupdatefound
@@ -68,6 +70,7 @@ interface NavigationPreloadManager
  method setHeaderValue
 interface ServiceWorkerRegistration
  getter active
+ getter backgroundFetch
  getter installing
  getter navigationPreload
  getter onupdatefound

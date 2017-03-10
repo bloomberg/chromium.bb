@@ -93,6 +93,7 @@ target(modules_target_type, "modules") {
     "//third_party/WebKit/Source/modules/accessibility",
     "//third_party/WebKit/Source/modules/app_banner",
     "//third_party/WebKit/Source/modules/audio_output_devices",
+    "//third_party/WebKit/Source/modules/background_fetch",
     "//third_party/WebKit/Source/modules/background_sync",
     "//third_party/WebKit/Source/modules/battery",
     "//third_party/WebKit/Source/modules/beacon",

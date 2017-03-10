@@ -1,3 +1,6 @@
+interface BackgroundFetchManager
+    method constructor
+    method getTags
 interface BarcodeDetector
     method constructor
     method detect
@@ -827,6 +830,7 @@ interface ServiceWorkerGlobalScope : WorkerGlobalScope
     method constructor
 interface ServiceWorkerRegistration : EventTarget
     getter active
+    getter backgroundFetch
     getter installing
     getter navigationPreload
     getter onupdatefound

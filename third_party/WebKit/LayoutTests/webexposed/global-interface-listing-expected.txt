@@ -258,6 +258,10 @@ interface AuthenticationAssertion
     getter credential
     getter signature
     method constructor
+interface BackgroundFetchManager
+    attribute @@toStringTag
+    method constructor
+    method getTags
 interface BarProp
     attribute @@toStringTag
     getter visible
@@ -6395,6 +6399,7 @@ interface ServiceWorkerContainer : EventTarget
 interface ServiceWorkerRegistration : EventTarget
     attribute @@toStringTag
     getter active
+    getter backgroundFetch
     getter installing
     getter onupdatefound
     getter paymentAppManager
