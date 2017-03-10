@@ -328,6 +328,11 @@ NotificationDatabase::ReadAllNotificationDataInternal(
       continue;
     }
 
+    // Silently ignore the notification if it doesn't have an ID assigned.
+    // TODO(peter): Remove this clause when Chrome 55 has branched.
+    if (notification_database_data.notification_id.empty())
+      continue;
+
     notification_data_vector->push_back(notification_database_data);
   }
 

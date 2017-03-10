@@ -167,8 +167,6 @@ static_library("test_support") {
     "mock_leveldb_database.h",
     "mock_permission_manager.cc",
     "mock_permission_manager.h",
-    "mock_platform_notification_service.cc",
-    "mock_platform_notification_service.h",
     "mock_render_process.cc",
     "mock_render_process.h",
     "mock_ssl_host_state_delegate.cc",

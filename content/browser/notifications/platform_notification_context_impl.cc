@@ -252,10 +252,10 @@ void PlatformNotificationContextImpl::
   UMA_HISTOGRAM_ENUMERATION("Notifications.Database.ReadForServiceWorkerResult",
                             status, NotificationDatabase::STATUS_COUNT);
 
-  std::vector<std::string> obsolete_notifications;
-
   if (status == NotificationDatabase::STATUS_OK) {
     if (synchronization_supported) {
+      // Filter out notifications that are not actually on display anymore.
+      // TODO(miguelg) synchronize the database if there are inconsistencies.
       for (auto it = notification_datas.begin();
            it != notification_datas.end();) {
         // The database is only used for persistent notifications.
@@ -264,7 +264,6 @@ void PlatformNotificationContextImpl::
         if (displayed_notifications->count(it->notification_id)) {
           ++it;
         } else {
-          obsolete_notifications.push_back(it->notification_id);
           it = notification_datas.erase(it);
         }
       }
@@ -273,10 +272,6 @@ void PlatformNotificationContextImpl::
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::Bind(callback, true /* success */, notification_datas));
-
-    // Remove notifications that are not actually on display anymore.
-    for (const auto& it : obsolete_notifications)
-      database_->DeleteNotificationData(it, origin);
     return;
   }
 
