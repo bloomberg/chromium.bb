@@ -47,7 +47,7 @@ void HitTestCache::addCachedResult(const HitTestResult& result,
 
   // If the result was a hit test on an LayoutPart and the request allowed
   // querying of the layout part; then the part hasn't been loaded yet.
-  if (result.isOverWidget() &&
+  if (result.isOverFrameViewBase() &&
       result.hitTestRequest().allowsChildFrameContent())
     return;
 

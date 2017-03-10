@@ -33,7 +33,7 @@ ScrollManager::ScrollManager(LocalFrame& frame) : m_frame(frame) {
 }
 
 void ScrollManager::clear() {
-  m_lastGestureScrollOverWidget = false;
+  m_lastGestureScrollOverFrameViewBase = false;
   m_scrollbarHandlingScrollGesture = nullptr;
   m_resizeScrollableArea = nullptr;
   m_offsetFromResizeCorner = LayoutSize();
@@ -219,8 +219,8 @@ WebInputEventResult ScrollManager::handleGestureScrollBegin(
       !m_scrollGestureHandlingNode->layoutObject())
     return WebInputEventResult::NotHandled;
 
-  passScrollGestureEventToWidget(gestureEvent,
-                                 m_scrollGestureHandlingNode->layoutObject());
+  passScrollGestureEvent(gestureEvent,
+                         m_scrollGestureHandlingNode->layoutObject());
 
   m_currentScrollChain.clear();
   std::unique_ptr<ScrollStateData> scrollStateData =
@@ -263,7 +263,7 @@ WebInputEventResult ScrollManager::handleGestureScrollUpdate(
 
   // Try to send the event to the correct view.
   WebInputEventResult result =
-      passScrollGestureEventToWidget(gestureEvent, layoutObject);
+      passScrollGestureEvent(gestureEvent, layoutObject);
   if (result != WebInputEventResult::NotHandled) {
     // FIXME: we should allow simultaneous scrolling of nested
     // iframes along perpendicular axes. See crbug.com/466991.
@@ -326,7 +326,7 @@ WebInputEventResult ScrollManager::handleGestureScrollEnd(
   Node* node = m_scrollGestureHandlingNode;
 
   if (node && node->layoutObject()) {
-    passScrollGestureEventToWidget(gestureEvent, node->layoutObject());
+    passScrollGestureEvent(gestureEvent, node->layoutObject());
     std::unique_ptr<ScrollStateData> scrollStateData =
         WTF::makeUnique<ScrollStateData>();
     scrollStateData->is_ending = true;
@@ -352,12 +352,12 @@ FrameHost* ScrollManager::frameHost() const {
   return &m_frame->page()->frameHost();
 }
 
-WebInputEventResult ScrollManager::passScrollGestureEventToWidget(
+WebInputEventResult ScrollManager::passScrollGestureEvent(
     const WebGestureEvent& gestureEvent,
     LayoutObject* layoutObject) {
   DCHECK(gestureEvent.isScrollEvent());
 
-  if (!m_lastGestureScrollOverWidget || !layoutObject ||
+  if (!m_lastGestureScrollOverFrameViewBase || !layoutObject ||
       !layoutObject->isLayoutPart())
     return WebInputEventResult::NotHandled;
 
@@ -410,7 +410,7 @@ WebInputEventResult ScrollManager::handleGestureScrollEvent(
 
     eventTarget = result.innerNode();
 
-    m_lastGestureScrollOverWidget = result.isOverWidget();
+    m_lastGestureScrollOverFrameViewBase = result.isOverFrameViewBase();
     m_scrollGestureHandlingNode = eventTarget;
     m_previousGestureScrolledElement = nullptr;
     m_deltaConsumedForScrollSequence = false;

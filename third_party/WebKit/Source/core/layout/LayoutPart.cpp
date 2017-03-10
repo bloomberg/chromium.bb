@@ -136,7 +136,7 @@ bool LayoutPart::needsPreferredWidthsRecalculation() const {
   return embeddedReplacedContent();
 }
 
-bool LayoutPart::nodeAtPointOverWidget(
+bool LayoutPart::nodeAtPointOverFrameViewBase(
     HitTestResult& result,
     const HitTestLocation& locationInContainer,
     const LayoutPoint& accumulatedOffset,
@@ -148,8 +148,10 @@ bool LayoutPart::nodeAtPointOverWidget(
   // Check to see if we are really over the FrameViewBase itself (and not just
   // in the border/padding area).
   if ((inside || result.isRectBasedTest()) && !hadResult &&
-      result.innerNode() == node())
-    result.setIsOverWidget(contentBoxRect().contains(result.localPoint()));
+      result.innerNode() == node()) {
+    result.setIsOverFrameViewBase(
+        contentBoxRect().contains(result.localPoint()));
+  }
   return inside;
 }
 
@@ -158,15 +160,17 @@ bool LayoutPart::nodeAtPoint(HitTestResult& result,
                              const LayoutPoint& accumulatedOffset,
                              HitTestAction action) {
   if (!frameViewBase() || !frameViewBase()->isFrameView() ||
-      !result.hitTestRequest().allowsChildFrameContent())
-    return nodeAtPointOverWidget(result, locationInContainer, accumulatedOffset,
-                                 action);
+      !result.hitTestRequest().allowsChildFrameContent()) {
+    return nodeAtPointOverFrameViewBase(result, locationInContainer,
+                                        accumulatedOffset, action);
+  }
 
   // A hit test can never hit an off-screen element; only off-screen iframes are
   // throttled; therefore, hit tests can skip descending into throttled iframes.
-  if (toFrameView(frameViewBase())->shouldThrottleRendering())
-    return nodeAtPointOverWidget(result, locationInContainer, accumulatedOffset,
-                                 action);
+  if (toFrameView(frameViewBase())->shouldThrottleRendering()) {
+    return nodeAtPointOverFrameViewBase(result, locationInContainer,
+                                        accumulatedOffset, action);
+  }
 
   ASSERT(document().lifecycle().state() >= DocumentLifecycle::CompositingClean);
 
@@ -202,27 +206,27 @@ bool LayoutPart::nodeAtPoint(HitTestResult& result,
 
       // Don't trust |isInsideChildFrame|. For rect-based hit-test, returns
       // true only when the hit test rect is totally within the iframe,
-      // i.e. nodeAtPointOverWidget() also returns true.
+      // i.e. nodeAtPointOverFrameViewBase() also returns true.
       // Use a temporary HitTestResult because we don't want to collect the
       // iframe element itself if the hit-test rect is totally within the
       // iframe.
       if (isInsideChildFrame) {
         if (!locationInContainer.isRectBasedTest())
           return true;
-        HitTestResult pointOverWidgetResult = result;
-        bool pointOverWidget =
-            nodeAtPointOverWidget(pointOverWidgetResult, locationInContainer,
-                                  accumulatedOffset, action);
-        if (pointOverWidget)
+        HitTestResult pointOverFrameViewBaseResult = result;
+        bool pointOverFrameViewBase = nodeAtPointOverFrameViewBase(
+            pointOverFrameViewBaseResult, locationInContainer,
+            accumulatedOffset, action);
+        if (pointOverFrameViewBase)
           return true;
-        result = pointOverWidgetResult;
+        result = pointOverFrameViewBaseResult;
         return false;
       }
     }
   }
 
-  return nodeAtPointOverWidget(result, locationInContainer, accumulatedOffset,
-                               action);
+  return nodeAtPointOverFrameViewBase(result, locationInContainer,
+                                      accumulatedOffset, action);
 }
 
 CompositingReasons LayoutPart::additionalCompositingReasons() const {

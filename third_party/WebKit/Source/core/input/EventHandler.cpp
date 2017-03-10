@@ -328,7 +328,7 @@ static LocalFrame* subframeForTargetNode(Node* node) {
 
 static LocalFrame* subframeForHitTestResult(
     const MouseEventWithHitTestResults& hitTestResult) {
-  if (!hitTestResult.isOverWidget())
+  if (!hitTestResult.isOverFrameViewBase())
     return nullptr;
   return subframeForTargetNode(hitTestResult.innerNode());
 }

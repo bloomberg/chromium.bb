@@ -79,10 +79,10 @@ class CORE_EXPORT LayoutPart : public LayoutReplaced {
   void willBeDestroyed() final;
   void destroy() final;
 
-  bool nodeAtPointOverWidget(HitTestResult&,
-                             const HitTestLocation& locationInContainer,
-                             const LayoutPoint& accumulatedOffset,
-                             HitTestAction);
+  bool nodeAtPointOverFrameViewBase(HitTestResult&,
+                                    const HitTestLocation& locationInContainer,
+                                    const LayoutPoint& accumulatedOffset,
+                                    HitTestAction);
 
   int m_refCount;
 };

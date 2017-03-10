@@ -43,7 +43,9 @@ class EventWithHitTestResults {
   LayoutPoint localPoint() const { return m_hitTestResult.localPoint(); }
   Scrollbar* scrollbar() const { return m_hitTestResult.scrollbar(); }
   bool isOverLink() const { return m_hitTestResult.isOverLink(); }
-  bool isOverWidget() const { return m_hitTestResult.isOverWidget(); }
+  bool isOverFrameViewBase() const {
+    return m_hitTestResult.isOverFrameViewBase();
+  }
   Node* innerNode() const { return m_hitTestResult.innerNode(); }
   const String& canvasRegionId() const {
     return m_hitTestResult.canvasRegionId();

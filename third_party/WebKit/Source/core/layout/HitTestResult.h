@@ -98,7 +98,7 @@ class CORE_EXPORT HitTestResult {
 
   Element* URLElement() const { return m_innerURLElement.get(); }
   Scrollbar* scrollbar() const { return m_scrollbar.get(); }
-  bool isOverWidget() const { return m_isOverWidget; }
+  bool isOverFrameViewBase() const { return m_isOverFrameViewBase; }
 
   // Forwarded from HitTestLocation
   bool isRectBasedTest() const { return m_hitTestLocation.isRectBasedTest(); }
@@ -140,7 +140,7 @@ class CORE_EXPORT HitTestResult {
   HTMLAreaElement* imageAreaForImage() const;
   void setURLElement(Element*);
   void setScrollbar(Scrollbar*);
-  void setIsOverWidget(bool b) { m_isOverWidget = b; }
+  void setIsOverFrameViewBase(bool b) { m_isOverFrameViewBase = b; }
 
   bool isSelected() const;
   String title(TextDirection&) const;
@@ -207,8 +207,9 @@ class CORE_EXPORT HitTestResult {
                              // layoutObject we hit on subsequent operations.
   Member<Element> m_innerURLElement;
   Member<Scrollbar> m_scrollbar;
-  bool m_isOverWidget;  // Returns true if we are over a widget (and not in the
-                        // border/padding area of a LayoutPart for example).
+  bool m_isOverFrameViewBase;  // Returns true if we are over a FrameViewBase
+                               // (and not in the border/padding area of a
+                               // LayoutPart for example).
 
   mutable Member<NodeSet> m_listBasedTestResult;
   String m_canvasRegionId;
