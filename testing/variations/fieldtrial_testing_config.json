@@ -881,7 +881,7 @@
                         "cpu_budget": "0.01",
                         "initial_budget": "1.0",
                         "max_budget": "3.0",
-                        "max_delay": "30.0"
+                        "max_delay": "-1"
                     },
                     "enable_features": [
                         "ExpensiveBackgroundTimerThrottling"
