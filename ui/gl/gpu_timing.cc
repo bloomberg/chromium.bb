@@ -22,7 +22,7 @@ int64_t NanoToMicro(uint64_t nano_seconds) {
 }
 
 int32_t QueryTimestampBits() {
-  GLint timestamp_bits;
+  GLint timestamp_bits = 0;
   glGetQueryiv(GL_TIMESTAMP, GL_QUERY_COUNTER_BITS, &timestamp_bits);
   return static_cast<int32_t>(timestamp_bits);
 }
