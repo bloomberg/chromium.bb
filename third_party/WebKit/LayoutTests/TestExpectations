@@ -2480,3 +2480,6 @@ crbug.com/697342 virtual/mojo-loading/http/tests/push_messaging/permission-state
 
 crbug.com/698520 external/wpt/preload/fetch-destination.https.html [ Failure Pass ]
 crbug.com/698521 external/wpt/preload/preload-with-type.html [ Failure Pass ]
+
+# Sheriff failures 2017-03-10
+crbug.com/402805 [ Mac10.11 ] inspector-protocol/input/emulateTouchFromMouseEvent.html [ Timeout ]
