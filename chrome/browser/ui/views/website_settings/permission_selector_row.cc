@@ -26,11 +26,6 @@
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
-namespace {
-// Minimum distance between the label and its corresponding menu.
-const int kMinSeparationBetweenLabelAndMenu = 16;
-}  // namespace
-
 namespace internal {
 
 // The |PermissionMenuButton| provides a menu for selecting a setting a
@@ -74,6 +69,12 @@ PermissionMenuButton::PermissionMenuButton(const base::string16& text,
                                            PermissionMenuModel* model,
                                            bool show_menu_marker)
     : MenuButton(text, this, show_menu_marker), menu_model_(model) {
+  // Since PermissionMenuButtons are added to a GridLayout, they are not always
+  // sized to their preferred size. Disclosure arrows are always right-aligned,
+  // so if the text is not right-aligned, awkward space appears between the text
+  // and the arrow.
+  SetHorizontalAlignment(gfx::ALIGN_RIGHT);
+
   // Update the themed border before the NativeTheme is applied. Usually this
   // happens in a call to LabelButton::OnNativeThemeChanged(). However, if
   // PermissionMenuButton called that from its override, the NativeTheme would
@@ -232,39 +233,19 @@ void PermissionCombobox::OnPerformAction(Combobox* combobox) {
 PermissionSelectorRow::PermissionSelectorRow(
     Profile* profile,
     const GURL& url,
-    const WebsiteSettingsUI::PermissionInfo& permission)
+    const WebsiteSettingsUI::PermissionInfo& permission,
+    views::GridLayout* layout)
     : profile_(profile), icon_(NULL), menu_button_(NULL), combobox_(NULL) {
-  views::GridLayout* layout = new views::GridLayout(this);
-  SetLayoutManager(layout);
-  const int column_set_id = 0;
-  views::ColumnSet* column_set = layout->AddColumnSet(column_set_id);
-  column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 0,
-                        views::GridLayout::FIXED, kPermissionIconColumnWidth,
-                        0);
-  column_set->AddPaddingColumn(0, kPermissionIconMarginLeft);
-  column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 0,
-                        views::GridLayout::USE_PREF, 0, 0);
-  column_set->AddPaddingColumn(1, kMinSeparationBetweenLabelAndMenu);
-  column_set->AddColumn(views::GridLayout::TRAILING, views::GridLayout::FILL, 0,
-                        views::GridLayout::USE_PREF, 0, 0);
-
-  layout->StartRow(1, column_set_id);
   // Create the permission icon.
   icon_ = new NonAccessibleImageView();
   const gfx::Image& image = WebsiteSettingsUI::GetPermissionIcon(permission);
   icon_->SetImage(image.ToImageSkia());
-  layout->AddView(icon_,
-                  1,
-                  1,
-                  views::GridLayout::CENTER,
+  layout->AddView(icon_, 1, 1, views::GridLayout::CENTER,
                   views::GridLayout::CENTER);
   // Create the label that displays the permission type.
-  views::Label* label = new views::Label(
+  label_ = new views::Label(
       WebsiteSettingsUI::PermissionTypeToUIString(permission.type));
-  layout->AddView(label,
-                  1,
-                  1,
-                  views::GridLayout::LEADING,
+  layout->AddView(label_, 1, 1, views::GridLayout::LEADING,
                   views::GridLayout::CENTER);
   // Create the menu model.
   menu_model_.reset(new PermissionMenuModel(
@@ -290,10 +271,6 @@ void PermissionSelectorRow::AddObserver(
   observer_list_.AddObserver(observer);
 }
 
-void PermissionSelectorRow::ChildPreferredSizeChanged(View* child) {
-  Layout();
-}
-
 PermissionSelectorRow::~PermissionSelectorRow() {
   // Gross. On paper the Combobox and the ComboboxModelAdapter are both owned by
   // this class, but actually, the Combobox is owned by View and will be
@@ -306,7 +283,7 @@ PermissionSelectorRow::~PermissionSelectorRow() {
   // Technically, the MenuButton has the same problem, but MenuButton doesn't
   // use its model in its destructor.
   if (combobox_)
-    RemoveChildView(combobox_);
+    combobox_->parent()->RemoveChildView(combobox_);
 }
 
 void PermissionSelectorRow::InitializeMenuButtonView(
@@ -352,6 +329,10 @@ void PermissionSelectorRow::PermissionChanged(
         profile_, permission.type, permission.setting,
         permission.default_setting, content_settings::SETTING_SOURCE_USER));
     menu_button_->SizeToPreferredSize();
+    // Re-layout will be done at the |WebsiteSettingsPopupView| level, since
+    // that view may need to resize itself to accomodate the new sizes of its
+    // contents.
+    menu_button_->InvalidateLayout();
   } else if (combobox_) {
     bool use_default = permission.setting == CONTENT_SETTING_DEFAULT;
     combobox_->UpdateSelectedIndex(use_default);
@@ -359,4 +340,12 @@ void PermissionSelectorRow::PermissionChanged(
 
   for (PermissionSelectorRowObserver& observer : observer_list_)
     observer.OnPermissionChanged(permission);
+}
+
+views::View* PermissionSelectorRow::button() {
+  // These casts are required because the two arms of a ?: cannot have different
+  // types T1 and T2, even if the resulting value of the ?: is about to be a T
+  // and T1 and T2 are both subtypes of T.
+  return menu_button_ ? static_cast<views::View*>(menu_button_)
+                      : static_cast<views::View*>(combobox_);
 }

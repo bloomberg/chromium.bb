@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/views/website_settings/chosen_object_row_observer.h"
+#include "chrome/browser/ui/views/website_settings/permission_selector_row.h"
 #include "chrome/browser/ui/views/website_settings/permission_selector_row_observer.h"
 #include "chrome/browser/ui/website_settings/website_settings_ui.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -171,6 +172,11 @@ class WebsiteSettingsPopupView : public content::WebContentsObserver,
 
   // The certificate provided by the site, if one exists.
   scoped_refptr<net::X509Certificate> certificate_;
+
+  // These rows bundle together all the |View|s involved in a single row of the
+  // permissions section, and keep those views updated when the underlying
+  // |Permission| changes.
+  std::vector<std::unique_ptr<PermissionSelectorRow>> selector_rows_;
 
   base::WeakPtrFactory<WebsiteSettingsPopupView> weak_factory_;
 

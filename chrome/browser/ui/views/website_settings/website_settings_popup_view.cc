@@ -97,6 +97,9 @@ const int kPermissionImageSpacing = 6;
 // Spacing between rows in the site settings section
 const int kPermissionsVerticalSpacing = 12;
 
+// Spacing between the label and the menu.
+const int kPermissionMenuSpacing = 16;
+
 // Button/styled label/link IDs ------------------------------------------------
 const int BUTTON_CLOSE = 1337;
 const int STYLED_LABEL_SECURITY_DETAILS = 1338;
@@ -464,7 +467,8 @@ void WebsiteSettingsPopupView::OnPermissionChanged(
     const WebsiteSettingsUI::PermissionInfo& permission) {
   presenter_->OnSitePermissionChanged(permission.type, permission.setting);
   // The menu buttons for the permissions might have longer strings now, so we
-  // need to size the whole bubble.
+  // need to layout and size the whole bubble.
+  Layout();
   SizeToContents();
 }
 
@@ -627,16 +631,29 @@ void WebsiteSettingsPopupView::SetPermissionInfo(
                         views::GridLayout::USE_PREF,
                         0,
                         0);
+  const int permissions_column = 1;
+  views::ColumnSet* permissions_set = layout->AddColumnSet(permissions_column);
+  permissions_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL,
+                             0, views::GridLayout::FIXED,
+                             kPermissionIconColumnWidth, 0);
+  permissions_set->AddPaddingColumn(0, kPermissionIconMarginLeft);
+  permissions_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL,
+                             0, views::GridLayout::USE_PREF, 0, 0);
+  permissions_set->AddPaddingColumn(1, kPermissionMenuSpacing);
+  permissions_set->AddColumn(views::GridLayout::TRAILING,
+                             views::GridLayout::FILL, 0,
+                             views::GridLayout::USE_PREF, 0, 0);
   for (const auto& permission : permission_info_list) {
-    layout->StartRow(1, content_column);
-    PermissionSelectorRow* selector = new PermissionSelectorRow(
-        profile_,
-        web_contents() ? web_contents()->GetVisibleURL() : GURL::EmptyGURL(),
-        permission);
+    layout->StartRow(1, permissions_column);
+    std::unique_ptr<PermissionSelectorRow> selector =
+        base::MakeUnique<PermissionSelectorRow>(
+            profile_,
+            web_contents() ? web_contents()->GetVisibleURL()
+                           : GURL::EmptyGURL(),
+            permission, layout);
     selector->AddObserver(this);
-    layout->AddView(selector, 1, 1, views::GridLayout::FILL,
-                    views::GridLayout::CENTER);
     layout->AddPaddingRow(1, kPermissionsVerticalSpacing);
+    selector_rows_.push_back(std::move(selector));
   }
 
   for (auto& object : chosen_object_info_list) {

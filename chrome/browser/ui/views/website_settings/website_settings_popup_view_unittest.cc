@@ -56,13 +56,21 @@ class WebsiteSettingsPopupViewTestApi {
   views::View* permissions_view() { return view_->permissions_view_; }
 
   PermissionSelectorRow* GetPermissionSelectorAt(int index) {
-    return static_cast<PermissionSelectorRow*>(
-        permissions_view()->child_at(index));
+    return view_->selector_rows_[index].get();
+  }
+
+  // Returns the permission label text of the |index|th permission selector row.
+  // This function returns an empty string if the permission selector row's
+  // |label_| element isn't actually a |views::Label|.
+  base::string16 GetPermissionLabelTextAt(int index) {
+    views::View* view = GetPermissionSelectorAt(index)->label_;
+    if (view->GetClassName() == views::Label::kViewClassName)
+      return static_cast<views::Label*>(view)->text();
+    return base::string16();
   }
 
   base::string16 GetPermissionButtonTextAt(int index) {
-    const int kButtonIndex = 2;  // Button should be the third child.
-    views::View* view = GetPermissionSelectorAt(index)->child_at(kButtonIndex);
+    views::View* view = GetPermissionSelectorAt(index)->button();
     if (view->GetClassName() == views::MenuButton::kViewClassName) {
       return static_cast<views::MenuButton*>(view)->GetText();
     } else if (view->GetClassName() == views::Combobox::kViewClassName) {
@@ -165,6 +173,9 @@ class WebsiteSettingsPopupViewTest : public testing::Test {
 #define MAYBE_SetPermissionInfo SetPermissionInfo
 #endif
 
+// Each permission selector row is like this: [icon] [label] [selector]
+constexpr int kViewsPerPermissionRow = 3;
+
 // Test UI construction and reconstruction via
 // WebsiteSettingsPopupView::SetPermissionInfo().
 TEST_F(WebsiteSettingsPopupViewTest, MAYBE_SetPermissionInfo) {
@@ -175,7 +186,8 @@ TEST_F(WebsiteSettingsPopupViewTest, MAYBE_SetPermissionInfo) {
   list.back().setting = CONTENT_SETTING_DEFAULT;
 
   const int kExpectedChildren =
-      ExclusiveAccessManager::IsSimplifiedFullscreenUIEnabled() ? 11 : 13;
+      kViewsPerPermissionRow *
+      (ExclusiveAccessManager::IsSimplifiedFullscreenUIEnabled() ? 11 : 13);
   EXPECT_EQ(kExpectedChildren, api_->permissions_view()->child_count());
 
   list.back().setting = CONTENT_SETTING_ALLOW;
@@ -183,15 +195,10 @@ TEST_F(WebsiteSettingsPopupViewTest, MAYBE_SetPermissionInfo) {
   EXPECT_EQ(kExpectedChildren, api_->permissions_view()->child_count());
 
   PermissionSelectorRow* selector = api_->GetPermissionSelectorAt(0);
-  EXPECT_EQ(3, selector->child_count());
+  EXPECT_TRUE(selector);
 
   // Verify labels match the settings on the PermissionInfoList.
-  const int kLabelIndex = 1;
-  EXPECT_EQ(views::Label::kViewClassName,
-            selector->child_at(kLabelIndex)->GetClassName());
-  views::Label* label =
-      static_cast<views::Label*>(selector->child_at(kLabelIndex));
-  EXPECT_EQ(base::ASCIIToUTF16("Location"), label->text());
+  EXPECT_EQ(base::ASCIIToUTF16("Location"), api_->GetPermissionLabelTextAt(0));
   EXPECT_EQ(base::ASCIIToUTF16("Allow"), api_->GetPermissionButtonTextAt(0));
 
   // Verify calling SetPermisisonInfo() directly updates the UI.
@@ -221,7 +228,8 @@ TEST_F(WebsiteSettingsPopupViewTest, MAYBE_SetPermissionInfo) {
 // Test UI construction and reconstruction with USB devices.
 TEST_F(WebsiteSettingsPopupViewTest, SetPermissionInfoWithUsbDevice) {
   const int kExpectedChildren =
-      ExclusiveAccessManager::IsSimplifiedFullscreenUIEnabled() ? 11 : 13;
+      kViewsPerPermissionRow *
+      (ExclusiveAccessManager::IsSimplifiedFullscreenUIEnabled() ? 11 : 13);
   EXPECT_EQ(kExpectedChildren, api_->permissions_view()->child_count());
 
   const GURL origin = GURL(kUrl).GetOrigin();
