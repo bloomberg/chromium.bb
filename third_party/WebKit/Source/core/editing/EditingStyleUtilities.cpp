@@ -148,9 +148,7 @@ EditingStyle* EditingStyleUtilities::createStyleAtSelectionStart(
       (selection.isRange() || hasTransparentBackgroundColor(style->style()))) {
     const EphemeralRange range(selection.toNormalizedEphemeralRange());
     if (const CSSValue* value =
-            backgroundColorValueInEffect(Range::commonAncestorContainer(
-                range.startPosition().computeContainerNode(),
-                range.endPosition().computeContainerNode())))
+            backgroundColorValueInEffect(range.commonAncestorContainer()))
       style->setProperty(CSSPropertyBackgroundColor, value->cssText());
   }
 
