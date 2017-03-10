@@ -23,6 +23,14 @@ extern const char kSafeBrowsingScoutReportingEnabled[];
 // affects which of SafeBrowsingExtendedReporting or SafeBrowsingScoutReporting
 // is used.
 extern const char kSafeBrowsingScoutGroupSelected[];
+
+// Boolean indicating whether the user has ever seen a security interstitial
+// containing the legacy Extended Reporting opt-in.
+extern const char kSafeBrowsingSawInterstitialExtendedReporting[];
+
+// Boolean indicating whether the user has ever seen a security interstitial
+// containing the new Scout opt-in.
+extern const char kSafeBrowsingSawInterstitialScoutReporting[];
 }
 
 namespace safe_browsing {

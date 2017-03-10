@@ -100,6 +100,10 @@ void Profile::RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterBooleanPref(prefs::kSafeBrowsingScoutReportingEnabled,
                                 false);
   registry->RegisterBooleanPref(prefs::kSafeBrowsingScoutGroupSelected, false);
+  registry->RegisterBooleanPref(
+      prefs::kSafeBrowsingSawInterstitialExtendedReporting, false);
+  registry->RegisterBooleanPref(
+      prefs::kSafeBrowsingSawInterstitialScoutReporting, false);
   registry->RegisterBooleanPref(prefs::kSafeBrowsingProceedAnywayDisabled,
                                 false);
   registry->RegisterBooleanPref(prefs::kSSLErrorOverrideAllowed, true);

@@ -24,6 +24,10 @@ class SafeBrowsingPrefsTest : public ::testing::Test {
         prefs::kSafeBrowsingScoutReportingEnabled, false);
     prefs_.registry()->RegisterBooleanPref(
         prefs::kSafeBrowsingScoutGroupSelected, false);
+    prefs_.registry()->RegisterBooleanPref(
+        prefs::kSafeBrowsingSawInterstitialExtendedReporting, false);
+    prefs_.registry()->RegisterBooleanPref(
+        prefs::kSafeBrowsingSawInterstitialScoutReporting, false);
 
     ResetExperiments(/*can_show_scout=*/false, /*only_show_scout=*/false);
   }

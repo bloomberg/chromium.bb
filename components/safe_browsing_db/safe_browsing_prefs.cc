@@ -57,6 +57,25 @@ enum ActiveExtendedReportingPref {
   MAX_SBER_PREF
 };
 
+// A histogram for tracking a nullable boolean, which can be false, true or
+// null. These values are written to logs. New enum values can be added, but
+// existing enums must never be renumbered or deleted and reused.
+enum NullableBoolean {
+  NULLABLE_BOOLEAN_FALSE = 0,
+  NULLABLE_BOOLEAN_TRUE = 1,
+  NULLABLE_BOOLEAN_NULL = 2,
+  MAX_NULLABLE_BOOLEAN
+};
+
+NullableBoolean GetPrefValueOrNull(const PrefService& prefs,
+                                   const std::string& pref_name) {
+  if (!prefs.HasPrefPath(pref_name)) {
+    return NULLABLE_BOOLEAN_NULL;
+  }
+  return prefs.GetBoolean(pref_name) ? NULLABLE_BOOLEAN_TRUE
+                                     : NULLABLE_BOOLEAN_FALSE;
+}
+
 // Update the correct UMA metric based on which pref was changed and which UI
 // the change was made on.
 void RecordExtendedReportingPrefChanged(
@@ -125,6 +144,10 @@ const char kSafeBrowsingScoutReportingEnabled[] =
     "safebrowsing.scout_reporting_enabled";
 const char kSafeBrowsingScoutGroupSelected[] =
     "safebrowsing.scout_group_selected";
+const char kSafeBrowsingSawInterstitialExtendedReporting[] =
+    "safebrowsing.saw_interstitial_sber1";
+const char kSafeBrowsingSawInterstitialScoutReporting[] =
+    "safebrowsing.saw_interstitial_sber2";
 }  // namespace prefs
 
 namespace safe_browsing {
@@ -224,12 +247,14 @@ void InitializeSafeBrowsingPrefs(PrefService* prefs) {
     // group (above) that was reverted. We want to restore the user to a
     // reasonable state based on the ScoutGroup and ScoutReporting preferences.
     UMA_HISTOGRAM_ENUMERATION(kScoutTransitionMetricName, CONTROL, MAX_REASONS);
+    bool transitioned = false;
     if (prefs->GetBoolean(prefs::kSafeBrowsingScoutReportingEnabled)) {
       // User opted-in to Scout which is broader than legacy Extended Reporting.
       // Opt them in to Extended Reporting.
       prefs->SetBoolean(prefs::kSafeBrowsingExtendedReportingEnabled, true);
       UMA_HISTOGRAM_ENUMERATION(kScoutTransitionMetricName,
                                 ROLLBACK_SBER2_IMPLIES_SBER1, MAX_REASONS);
+      transitioned = true;
     } else if (prefs->GetBoolean(prefs::kSafeBrowsingScoutGroupSelected)) {
       // User was in the Scout Group (ie: seeing the Scout opt-in text) but did
       // NOT opt-in to Scout. Assume this was a conscious choice and remove
@@ -251,12 +276,20 @@ void InitializeSafeBrowsingPrefs(PrefService* prefs) {
         UMA_HISTOGRAM_ENUMERATION(kScoutTransitionMetricName,
                                   ROLLBACK_NO_SBER2_CLEAR_SBER1, MAX_REASONS);
       }
+      transitioned = true;
     }
 
     // Also clear both the Scout settings to start over from a clean state and
     // avoid the above logic from triggering on next restart.
     prefs->ClearPref(prefs::kSafeBrowsingScoutGroupSelected);
     prefs->ClearPref(prefs::kSafeBrowsingScoutReportingEnabled);
+
+    // Also forget that the user has seen any interstitials if they're
+    // reverting back to a clean state.
+    if (transitioned) {
+      prefs->ClearPref(prefs::kSafeBrowsingSawInterstitialExtendedReporting);
+      prefs->ClearPref(prefs::kSafeBrowsingSawInterstitialScoutReporting);
+    }
   }
 }
 
@@ -276,26 +309,38 @@ void RecordExtendedReportingMetrics(const PrefService& prefs) {
   UMA_HISTOGRAM_BOOLEAN("SafeBrowsing.Pref.Extended",
                         IsExtendedReportingEnabled(prefs));
 
+  // Track whether this user has ever seen a security interstitial.
+  UMA_HISTOGRAM_BOOLEAN(
+      "SafeBrowsing.Pref.SawInterstitial.SBER1Pref",
+      prefs.GetBoolean(prefs::kSafeBrowsingSawInterstitialExtendedReporting));
+  UMA_HISTOGRAM_BOOLEAN(
+      "SafeBrowsing.Pref.SawInterstitial.SBER2Pref",
+      prefs.GetBoolean(prefs::kSafeBrowsingSawInterstitialScoutReporting));
+
   // These metrics track the Scout transition.
   if (prefs.GetBoolean(prefs::kSafeBrowsingScoutGroupSelected)) {
     // Users in the Scout group: currently seeing the Scout opt-in.
-    UMA_HISTOGRAM_BOOLEAN(
+    UMA_HISTOGRAM_ENUMERATION(
         "SafeBrowsing.Pref.Scout.ScoutGroup.SBER1Pref",
-        prefs.GetBoolean(prefs::kSafeBrowsingExtendedReportingEnabled));
-    UMA_HISTOGRAM_BOOLEAN(
+        GetPrefValueOrNull(prefs, prefs::kSafeBrowsingExtendedReportingEnabled),
+        MAX_NULLABLE_BOOLEAN);
+    UMA_HISTOGRAM_ENUMERATION(
         "SafeBrowsing.Pref.Scout.ScoutGroup.SBER2Pref",
-        prefs.GetBoolean(prefs::kSafeBrowsingScoutReportingEnabled));
+        GetPrefValueOrNull(prefs, prefs::kSafeBrowsingScoutReportingEnabled),
+        MAX_NULLABLE_BOOLEAN);
   } else {
     // Users not in the Scout group: currently seeing the SBER opt-in.
-    UMA_HISTOGRAM_BOOLEAN(
+    UMA_HISTOGRAM_ENUMERATION(
         "SafeBrowsing.Pref.Scout.NoScoutGroup.SBER1Pref",
-        prefs.GetBoolean(prefs::kSafeBrowsingExtendedReportingEnabled));
+        GetPrefValueOrNull(prefs, prefs::kSafeBrowsingExtendedReportingEnabled),
+        MAX_NULLABLE_BOOLEAN);
     // The following metric is a corner case. User was previously in the
     // Scout group and was able to opt-in to the Scout pref, but was since
     // removed from the Scout group (eg: by rolling back a Scout experiment).
-    UMA_HISTOGRAM_BOOLEAN(
+    UMA_HISTOGRAM_ENUMERATION(
         "SafeBrowsing.Pref.Scout.NoScoutGroup.SBER2Pref",
-        prefs.GetBoolean(prefs::kSafeBrowsingScoutReportingEnabled));
+        GetPrefValueOrNull(prefs, prefs::kSafeBrowsingScoutReportingEnabled),
+        MAX_NULLABLE_BOOLEAN);
   }
 }
 
@@ -384,6 +429,12 @@ void UpdatePrefsBeforeSecurityInterstitial(PrefService* prefs) {
                               CAN_SHOW_SCOUT_OPT_IN_SAW_FIRST_INTERSTITIAL,
                               MAX_REASONS);
   }
+
+  // Remember that this user saw an interstitial with the current opt-in text.
+  prefs->SetBoolean(IsScout(*prefs)
+                        ? prefs::kSafeBrowsingSawInterstitialScoutReporting
+                        : prefs::kSafeBrowsingSawInterstitialExtendedReporting,
+                    true);
 }
 
 }  // namespace safe_browsing
