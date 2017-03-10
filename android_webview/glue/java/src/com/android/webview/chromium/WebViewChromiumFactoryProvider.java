@@ -335,10 +335,7 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
                     new AwNetworkChangeNotifierRegistrationPolicy());
         }
 
-        int targetSdkVersion = applicationContext.getApplicationInfo().targetSdkVersion;
-        // TODO(sgurun) We need to change this to > N_MR1 when we roll N_MR1 sdk or
-        //  >= O when we roll O SDK to upstream. crbug/688556
-        AwContentsStatics.setCheckClearTextPermitted(targetSdkVersion > 25);
+        AwContentsStatics.setCheckClearTextPermitted(BuildInfo.targetsAtLeastO(applicationContext));
     }
 
     private void ensureChromiumStartedLocked(boolean onMainThread) {
