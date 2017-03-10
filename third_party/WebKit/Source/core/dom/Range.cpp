@@ -1380,15 +1380,12 @@ void Range::surroundContents(Node* newParent, ExceptionState& exceptionState) {
     return;
   }
 
-  if (!parentOfNewParent->childTypeAllowed(newParent->getNodeType())) {
-    exceptionState.throwDOMException(HierarchyRequestError,
-                                     "The node provided is of type '" +
-                                         newParent->nodeName() +
-                                         "', which may not be inserted here.");
-    return;
-  }
-
   EventQueueScope scope;
+
+  // 3. Let fragment be the result of extracting context object.
+  DocumentFragment* fragment = extractContents(exceptionState);
+  if (exceptionState.hadException())
+    return;
 
   // 4. If newParent has children, replace all with null within newParent.
   while (Node* n = newParent->firstChild()) {
@@ -1396,11 +1393,6 @@ void Range::surroundContents(Node* newParent, ExceptionState& exceptionState) {
     if (exceptionState.hadException())
       return;
   }
-
-  // 3. Let fragment be the result of extracting context object.
-  DocumentFragment* fragment = extractContents(exceptionState);
-  if (exceptionState.hadException())
-    return;
 
   // 5. If newParent has children, replace all with null within newParent.
   insertNode(newParent, exceptionState);
