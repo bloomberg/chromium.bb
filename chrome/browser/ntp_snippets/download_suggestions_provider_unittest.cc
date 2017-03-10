@@ -76,9 +76,6 @@ std::ostream& operator<<(std::ostream& os, const CategoryStatus& value) {
     case CategoryStatus::CATEGORY_EXPLICITLY_DISABLED:
       os << "CATEGORY_EXPLICITLY_DISABLED";
       break;
-    case CategoryStatus::SIGNED_OUT:
-      os << "SIGNED_OUT";
-      break;
     case CategoryStatus::LOADING_ERROR:
       os << "LOADING_ERROR";
       break;

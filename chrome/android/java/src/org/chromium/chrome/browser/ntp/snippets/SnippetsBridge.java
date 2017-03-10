@@ -42,7 +42,6 @@ public class SnippetsBridge
             case CategoryStatus.INITIALIZING:
             case CategoryStatus.AVAILABLE:
             case CategoryStatus.AVAILABLE_LOADING:
-            case CategoryStatus.SIGNED_OUT:
                 return true;
         }
         return false;

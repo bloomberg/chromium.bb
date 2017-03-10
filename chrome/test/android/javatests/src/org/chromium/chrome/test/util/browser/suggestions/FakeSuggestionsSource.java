@@ -91,6 +91,13 @@ public class FakeSuggestionsSource implements SuggestionsSource {
     }
 
     /**
+     * Notifies the observer that a full refresh is required.
+     */
+    public void fireFullRefreshRequired() {
+        mObserver.onFullRefreshRequired();
+    }
+
+    /**
      * Removes a category from the fake source without notifying anyone.
      */
     public void silentlyRemoveCategory(int category) {

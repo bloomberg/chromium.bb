@@ -164,10 +164,6 @@ public class SectionList
                 removeSection(mSections.get(category));
                 return;
 
-            case CategoryStatus.SIGNED_OUT:
-                resetSection(category, status, /* alwaysAllowEmptySections = */ false);
-                return;
-
             default:
                 mSections.get(category).setStatus(status);
                 return;

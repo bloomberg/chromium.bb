@@ -152,19 +152,9 @@ class ContentSuggestionsNotifierService::NotifyingObserver
     if (!category.IsKnownCategory(KnownCategories::ARTICLES)) {
       return;
     }
-    switch (new_status) {
-      case CategoryStatus::AVAILABLE:
-      case CategoryStatus::AVAILABLE_LOADING:
-        break;  // nothing to do
-      case CategoryStatus::INITIALIZING:
-      case CategoryStatus::ALL_SUGGESTIONS_EXPLICITLY_DISABLED:
-      case CategoryStatus::CATEGORY_EXPLICITLY_DISABLED:
-      case CategoryStatus::LOADING_ERROR:
-      case CategoryStatus::NOT_PROVIDED:
-      case CategoryStatus::SIGNED_OUT:
-        ContentSuggestionsNotificationHelper::HideAllNotifications(
-            CONTENT_SUGGESTIONS_HIDE_DISABLED);
-        break;
+    if (!ntp_snippets::IsCategoryStatusAvailable(new_status)) {
+      ContentSuggestionsNotificationHelper::HideAllNotifications(
+          CONTENT_SUGGESTIONS_HIDE_DISABLED);
     }
   }
 

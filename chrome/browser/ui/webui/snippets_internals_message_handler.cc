@@ -75,8 +75,6 @@ std::string GetCategoryStatusName(CategoryStatus status) {
       return "ALL_SUGGESTIONS_EXPLICITLY_DISABLED";
     case CategoryStatus::CATEGORY_EXPLICITLY_DISABLED:
       return "CATEGORY_EXPLICITLY_DISABLED";
-    case CategoryStatus::SIGNED_OUT:
-      return "SIGNED_OUT";
     case CategoryStatus::LOADING_ERROR:
       return "LOADING_ERROR";
   }

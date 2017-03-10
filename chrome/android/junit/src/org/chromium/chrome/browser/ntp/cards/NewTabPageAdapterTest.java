@@ -277,15 +277,18 @@ public class NewTabPageAdapterTest {
         mSource.setStatusForCategory(TEST_CATEGORY, CategoryStatus.AVAILABLE);
         assertItemsFor(section(4));
 
-        // When the category is disabled, the suggestions are cleared and we should go back to
-        // the situation with the status card.
-        mSource.setStatusForCategory(TEST_CATEGORY, CategoryStatus.SIGNED_OUT);
-        assertItemsFor(sectionWithStatusCard());
+        // When the category is disabled, the section should go away completely.
+        mSource.setStatusForCategory(TEST_CATEGORY, CategoryStatus.CATEGORY_EXPLICITLY_DISABLED);
+        assertItemsFor();
 
-        // The adapter should now be waiting for new suggestions.
+        // Now we're in the "all dismissed" state. No suggestions should be accepted.
         suggestions = createDummySuggestions(6, TEST_CATEGORY);
         mSource.setStatusForCategory(TEST_CATEGORY, CategoryStatus.AVAILABLE);
         mSource.setSuggestionsForCategory(TEST_CATEGORY, suggestions);
+        assertItemsFor();
+
+        // After a full refresh, the adapter should accept suggestions again.
+        mSource.fireFullRefreshRequired();
         assertItemsFor(section(6));
     }
 
@@ -306,20 +309,26 @@ public class NewTabPageAdapterTest {
         suggestions.add(new SnippetArticle(TEST_CATEGORY, "https://site.com/url1", "title1", "pub1",
                 "txt1", "https://site.com/url1", 0, 0, 0));
 
-        // When suggestion are disabled, we should not be able to load them.
-        mSource.setStatusForCategory(TEST_CATEGORY, CategoryStatus.SIGNED_OUT);
+        // When the provider is removed, we should not be able to load suggestions. The UI should
+        // stay the same though.
+        mSource.setStatusForCategory(TEST_CATEGORY, CategoryStatus.NOT_PROVIDED);
         mSource.setSuggestionsForCategory(TEST_CATEGORY, suggestions);
-        assertItemsFor(sectionWithStatusCard());
+        assertItemsFor(section(3));
 
-        // INITIALIZING lets us load suggestion still.
+        // INITIALIZING lets us load suggestions still.
         mSource.setStatusForCategory(TEST_CATEGORY, CategoryStatus.INITIALIZING);
         mSource.setSuggestionsForCategory(TEST_CATEGORY, suggestions);
         assertItemsFor(sectionWithStatusCard().withProgress());
 
-        // The adapter should now be waiting for new suggestion and the fourth one should appear.
+        // The adapter should now be waiting for new suggestions and the fourth one should appear.
         mSource.setStatusForCategory(TEST_CATEGORY, CategoryStatus.AVAILABLE);
         mSource.setSuggestionsForCategory(TEST_CATEGORY, suggestions);
         assertItemsFor(section(4));
+
+        // When the category gets disabled, the section should go away and not load any suggestions.
+        mSource.setStatusForCategory(TEST_CATEGORY, CategoryStatus.CATEGORY_EXPLICITLY_DISABLED);
+        mSource.setSuggestionsForCategory(TEST_CATEGORY, suggestions);
+        assertItemsFor();
     }
 
     /**
@@ -341,8 +350,10 @@ public class NewTabPageAdapterTest {
         mSource.setStatusForCategory(TEST_CATEGORY, CategoryStatus.AVAILABLE_LOADING);
         assertTrue(progress.isVisible());
 
-        mSource.setStatusForCategory(TEST_CATEGORY, CategoryStatus.SIGNED_OUT);
-        assertFalse(progress.isVisible());
+        // After the section gets disabled, it should gone completely, so checking the progress
+        // indicator doesn't make sense anymore.
+        mSource.setStatusForCategory(TEST_CATEGORY, CategoryStatus.CATEGORY_EXPLICITLY_DISABLED);
+        assertEquals(mAdapter.getSectionListForTesting().getSectionForTesting(TEST_CATEGORY), null);
     }
 
     /**
@@ -733,11 +744,12 @@ public class NewTabPageAdapterTest {
         suggestionsSource.setSuggestionsForCategory(
                 TEST_CATEGORY, createDummySuggestions(0, TEST_CATEGORY));
         mAdapter.getSectionListForTesting().onCategoryStatusChanged(
-                TEST_CATEGORY, CategoryStatus.SIGNED_OUT);
-        verify(dataObserver).onItemRangeRemoved(2, newSuggestionCount);
-        verify(dataObserver).onItemRangeChanged(4, 1, null); // Spacer refresh
-        verify(dataObserver).onItemRangeInserted(2, 1); // Status card added
-        verify(dataObserver).onItemRangeChanged(5, 1, null); // Spacer refresh
+                TEST_CATEGORY, CategoryStatus.CATEGORY_EXPLICITLY_DISABLED);
+        // All suggestions as well as the header and the action should be gone.
+        verify(dataObserver).onItemRangeRemoved(1, newSuggestionCount + 2);
+        // The spacer gets refreshed twice: Once when the section is removed, and then again when
+        // the "all dismissed" item gets added.
+        verify(dataObserver, times(2)).onItemRangeChanged(2, 1, null);
     }
 
     @Test

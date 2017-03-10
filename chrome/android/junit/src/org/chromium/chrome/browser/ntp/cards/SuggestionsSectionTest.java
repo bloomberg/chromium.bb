@@ -183,7 +183,7 @@ public class SuggestionsSectionTest {
         verifyNoMoreInteractions(mParent);
 
         // We clear existing suggestions when the status is not AVAILABLE, and show the status card.
-        section.setStatus(CategoryStatus.SIGNED_OUT);
+        section.setStatus(CategoryStatus.CATEGORY_EXPLICITLY_DISABLED);
         verify(mParent).onItemRangeRemoved(section, 1, suggestionCount);
         verify(mParent).onItemRangeInserted(section, 1, 1);
 

@@ -31,9 +31,6 @@ enum class CategoryStatus {
   // the service configuration.
   CATEGORY_EXPLICITLY_DISABLED,
 
-  // Content suggestions are not available because the user is not signed in.
-  SIGNED_OUT,
-
   // Content suggestions are not available because an error occurred when
   // loading or updating them.
   LOADING_ERROR
