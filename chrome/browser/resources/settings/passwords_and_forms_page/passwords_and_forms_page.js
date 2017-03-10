@@ -46,5 +46,18 @@ Polymer({
       settings.navigateTo(settings.Route.MANAGE_PASSWORDS);
     }
   },
+
+  /**
+   * Return "secondary-action" to be used as the dom-class name if the toggle
+   * is on.
+   * @private
+   * @param {boolean} isToggleOn whether or not the associated toggle is on.
+   */
+  secondaryActionClass_: function(isToggleOn) {
+    // TODO(scottchen): Having to do this is kind of annoying, but it'll be a
+    // temporary patch. As we have plans to move the toggle completely into the
+    // subpages themselves, this code *should* be eliminated soon.
+    return isToggleOn ? 'secondary-action' : '';
+  },
 });
 })();

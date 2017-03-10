@@ -44,7 +44,7 @@
         <div class="secondary label">[[subLabel]]</div>
       </div>
       <content select=".more-actions"></content>
-      <template is="dom-if" if="[[pref.controlledBy]]" restamp>
+      <template is="dom-if" if="[[hasPrefPolicyIndicator(pref.*)]]">
         <cr-policy-pref-indicator pref="[[pref]]" icon-aria-label="[[label]]">
         </cr-policy-pref-indicator>
       </template>
