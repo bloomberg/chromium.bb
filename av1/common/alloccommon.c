@@ -98,7 +98,7 @@ void av1_alloc_restoration_buffers(AV1_COMMON *cm) {
         ROUND_POWER_OF_TWO(cm->height, cm->subsampling_y));
   aom_free(cm->rst_internal.tmpbuf);
   CHECK_MEM_ERROR(cm, cm->rst_internal.tmpbuf,
-                  (int32_t *)aom_malloc(RESTORATION_TMPBUF_SIZE));
+                  (int32_t *)aom_memalign(16, RESTORATION_TMPBUF_SIZE));
 }
 
 void av1_free_restoration_buffers(AV1_COMMON *cm) {
