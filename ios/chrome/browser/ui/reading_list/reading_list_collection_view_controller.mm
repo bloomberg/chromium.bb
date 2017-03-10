@@ -25,10 +25,12 @@
 #import "ios/chrome/browser/ui/favicon_view.h"
 #import "ios/chrome/browser/ui/material_components/utils.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_collection_view_item.h"
+#import "ios/chrome/browser/ui/reading_list/reading_list_collection_view_item_accessibility_delegate.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_empty_collection_background.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_toolbar.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #include "ios/chrome/browser/ui/url_loader.h"
+#import "ios/chrome/browser/ui/util/pasteboard_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/third_party/material_components_ios/src/components/AppBar/src/MaterialAppBar.h"
 #import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
@@ -65,7 +67,8 @@ using ItemsMapByDate = std::multimap<int64_t, ReadingListCollectionViewItem*>;
 }
 
 @interface ReadingListCollectionViewController ()<
-    ReadingListModelBridgeObserver> {
+    ReadingListModelBridgeObserver,
+    ReadingListCollectionViewItemAccessibilityDelegate> {
   // Toolbar with the actions.
   ReadingListToolbar* _toolbar;
   // Action sheet presenting the subactions of the toolbar.
@@ -116,6 +119,10 @@ using ItemsMapByDate = std::multimap<int64_t, ReadingListCollectionViewItem*>;
 - (void)handleLongPress:(UILongPressGestureRecognizer*)gestureRecognizer;
 // Stops observing the ReadingListModel.
 - (void)stopObservingReadingListModel;
+// Returns the ReadingListEntry associated with the |item|. If there is not such
+// an entry, returns nullptr and reloads the UI.
+- (const ReadingListEntry*)readingListEntryForItem:
+    (ReadingListCollectionViewItem*)item;
 // Updates the toolbar state according to the selected items.
 - (void)updateToolbarState;
 // Displays an action sheet to let the user choose to mark all the elements as
@@ -134,7 +141,7 @@ using ItemsMapByDate = std::multimap<int64_t, ReadingListCollectionViewItem*>;
 - (void)markItemsUnreadAtIndexPath:(NSArray*)indexPaths;
 // Deletes all the read items.
 - (void)deleteAllReadItems;
-// Deletes all the items at |indexPaths|.
+// Deletes all the items at |indexPath|.
 - (void)deleteItemsAtIndexPaths:(NSArray*)indexPaths;
 // Initializes |_actionSheet| with |self| as base view controller, and the
 // toolbar's mark button as anchor point.
@@ -392,6 +399,100 @@ using ItemsMapByDate = std::multimap<int64_t, ReadingListCollectionViewItem*>;
   [_actionSheet stop];
 }
 
+#pragma mark - ReadingListCollectionViewItemAccessibilityDelegate
+
+- (BOOL)isEntryRead:(ReadingListCollectionViewItem*)entry {
+  const ReadingListEntry* readingListEntry =
+      [self readingListEntryForItem:entry];
+
+  if (!readingListEntry) {
+    return NO;
+  }
+
+  return readingListEntry->IsRead();
+}
+
+- (void)deleteEntry:(ReadingListCollectionViewItem*)entry {
+  const ReadingListEntry* readingListEntry =
+      [self readingListEntryForItem:entry];
+
+  if (!readingListEntry) {
+    return;
+  }
+
+  SectionIdentifier sectionIdentifier = SectionIdentifierUnread;
+  if (readingListEntry->IsRead()) {
+    sectionIdentifier = SectionIdentifierRead;
+  }
+  if (![self.collectionViewModel hasItem:entry
+                 inSectionWithIdentifier:sectionIdentifier]) {
+    return;
+  }
+
+  [self
+      deleteItemsAtIndexPaths:@[ [self.collectionViewModel
+                                         indexPathForItem:entry
+                                  inSectionWithIdentifier:sectionIdentifier] ]];
+}
+
+- (void)openEntryInNewTab:(ReadingListCollectionViewItem*)entry {
+  [self.delegate readingListCollectionViewController:self
+                                   openNewTabWithURL:entry.url
+                                           incognito:NO];
+}
+
+- (void)openEntryInNewIncognitoTab:(ReadingListCollectionViewItem*)entry {
+  [self.delegate readingListCollectionViewController:self
+                                   openNewTabWithURL:entry.url
+                                           incognito:YES];
+}
+
+- (void)copyEntryURL:(ReadingListCollectionViewItem*)entry {
+  StoreURLInPasteboard(entry.url);
+}
+
+- (void)openEntryOffline:(ReadingListCollectionViewItem*)entry {
+  const ReadingListEntry* readingListEntry =
+      [self readingListEntryForItem:entry];
+
+  if (!readingListEntry) {
+    return;
+  }
+
+  if (readingListEntry->DistilledState() == ReadingListEntry::PROCESSED) {
+    const GURL entryURL = readingListEntry->URL();
+    GURL offlineURL = reading_list::OfflineURLForPath(
+        readingListEntry->DistilledPath(), entryURL,
+        readingListEntry->DistilledURL());
+
+    [self.delegate readingListCollectionViewController:self
+                                        openOfflineURL:offlineURL
+                                 correspondingEntryURL:entryURL];
+  }
+}
+
+- (void)markEntryRead:(ReadingListCollectionViewItem*)entry {
+  if (![self.collectionViewModel hasItem:entry
+                 inSectionWithIdentifier:SectionIdentifierUnread]) {
+    return;
+  }
+  [self markItemsReadAtIndexPath:@[
+    [self.collectionViewModel indexPathForItem:entry
+                       inSectionWithIdentifier:SectionIdentifierUnread]
+  ]];
+}
+
+- (void)markEntryUnread:(ReadingListCollectionViewItem*)entry {
+  if (![self.collectionViewModel hasItem:entry
+                 inSectionWithIdentifier:SectionIdentifierRead]) {
+    return;
+  }
+  [self markItemsUnreadAtIndexPath:@[
+    [self.collectionViewModel indexPathForItem:entry
+                       inSectionWithIdentifier:SectionIdentifierRead]
+  ]];
+}
+
 #pragma mark - Private methods
 
 - (void)donePressed {
@@ -451,6 +552,7 @@ using ItemsMapByDate = std::multimap<int64_t, ReadingListCollectionViewItem*>;
     const ReadingListEntry* entry = self.readingListModel->GetEntryByURL(url);
     ReadingListCollectionViewItem* item =
         [self cellItemForReadingListEntry:*entry];
+    item.accessibilityDelegate = self;
     if (entry->IsRead()) {
       read_map.insert(std::make_pair(entry->UpdateTime(), item));
     } else {
@@ -586,6 +688,20 @@ using ItemsMapByDate = std::multimap<int64_t, ReadingListCollectionViewItem*>;
 
 - (void)stopObservingReadingListModel {
   _modelBridge.reset();
+}
+
+- (const ReadingListEntry*)readingListEntryForItem:
+    (ReadingListCollectionViewItem*)item {
+  const ReadingListEntry* readingListEntry =
+      self.readingListModel->GetEntryByURL(item.url);
+
+  if (!readingListEntry) {
+    // The entry has been removed from the model, reload all data to synchronize
+    // the UI with the model.
+    [self reloadData];
+  }
+
+  return readingListEntry;
 }
 
 #pragma mark - ReadingListToolbarDelegate
