@@ -9,24 +9,16 @@
 #include "base/memory/ptr_util.h"
 #include "components/exo/notification_surface.h"
 #include "components/exo/surface.h"
-#include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/compositor/layer_animation_observer.h"
-#include "ui/display/screen.h"
 #include "ui/events/event_handler.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/transform.h"
 #include "ui/message_center/message_center_style.h"
 #include "ui/message_center/views/custom_notification_view.h"
-#include "ui/message_center/views/padded_button.h"
 #include "ui/message_center/views/toast_contents_view.h"
-#include "ui/resources/grit/ui_resources.h"
 #include "ui/strings/grit/ui_strings.h"
-#include "ui/views/background.h"
-#include "ui/views/border.h"
-#include "ui/views/controls/button/image_button.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/painter.h"
@@ -158,30 +150,6 @@ class ArcCustomNotificationView::SlideHelper
   DISALLOW_COPY_AND_ASSIGN(SlideHelper);
 };
 
-class ArcCustomNotificationView::ControlButton
-    : public message_center::PaddedButton {
- public:
-  explicit ControlButton(ArcCustomNotificationView* owner)
-      : message_center::PaddedButton(owner), owner_(owner) {}
-
-  void OnFocus() override {
-    message_center::PaddedButton::OnFocus();
-    owner_->UpdateControlButtonsVisibility();
-  }
-
-  void OnBlur() override {
-    message_center::PaddedButton::OnBlur();
-    owner_->UpdateControlButtonsVisibility();
-  }
-
-  void HideInkDrop() { AnimateInkDrop(views::InkDropState::HIDDEN, nullptr); }
-
- private:
-  ArcCustomNotificationView* const owner_;
-
-  DISALLOW_COPY_AND_ASSIGN(ControlButton);
-};
-
 class ArcCustomNotificationView::ContentViewDelegate
     : public message_center::CustomNotificationContentViewDelegate {
  public:
@@ -189,7 +157,7 @@ class ArcCustomNotificationView::ContentViewDelegate
       : owner_(owner) {}
 
   bool IsCloseButtonFocused() const override {
-    if (owner_->close_button_ == nullptr)
+    if (!owner_->close_button_)
       return false;
     return owner_->close_button_->HasFocus();
   }
@@ -213,6 +181,20 @@ class ArcCustomNotificationView::ContentViewDelegate
 
   DISALLOW_COPY_AND_ASSIGN(ContentViewDelegate);
 };
+
+ArcCustomNotificationView::ControlButton::ControlButton(
+    ArcCustomNotificationView* owner)
+    : message_center::PaddedButton(owner), owner_(owner) {}
+
+void ArcCustomNotificationView::ControlButton::OnFocus() {
+  message_center::PaddedButton::OnFocus();
+  owner_->UpdateControlButtonsVisibility();
+}
+
+void ArcCustomNotificationView::ControlButton::OnBlur() {
+  message_center::PaddedButton::OnBlur();
+  owner_->UpdateControlButtonsVisibility();
+}
 
 ArcCustomNotificationView::ArcCustomNotificationView(
     ArcCustomNotificationItem* item)
@@ -251,6 +233,20 @@ ArcCustomNotificationView::CreateContentViewDelegate() {
   return base::MakeUnique<ArcCustomNotificationView::ContentViewDelegate>(this);
 }
 
+void ArcCustomNotificationView::CreateCloseButton() {
+  DCHECK(control_buttons_view_);
+
+  close_button_ = base::MakeUnique<ControlButton>(this);
+  close_button_->SetImage(views::CustomButton::STATE_NORMAL,
+                          message_center::GetCloseIcon());
+  close_button_->SetAccessibleName(l10n_util::GetStringUTF16(
+      IDS_MESSAGE_CENTER_CLOSE_NOTIFICATION_BUTTON_ACCESSIBLE_NAME));
+  close_button_->SetTooltipText(l10n_util::GetStringUTF16(
+      IDS_MESSAGE_CENTER_CLOSE_NOTIFICATION_BUTTON_TOOLTIP));
+  close_button_->set_owned_by_client();
+  control_buttons_view_->AddChildView(close_button_.get());
+}
+
 void ArcCustomNotificationView::CreateFloatingControlButtons() {
   // Floating close button is a transient child of |surface_| and also part
   // of the hosting widget's focus chain. It could only be created when both
@@ -273,14 +269,7 @@ void ArcCustomNotificationView::CreateFloatingControlButtons() {
       IDS_MESSAGE_NOTIFICATION_SETTINGS_BUTTON_ACCESSIBLE_NAME));
   control_buttons_view_->AddChildView(settings_button_);
 
-  close_button_ = new ControlButton(this);
-  close_button_->SetImage(views::CustomButton::STATE_NORMAL,
-                          message_center::GetCloseIcon());
-  close_button_->SetAccessibleName(l10n_util::GetStringUTF16(
-      IDS_MESSAGE_CENTER_CLOSE_NOTIFICATION_BUTTON_ACCESSIBLE_NAME));
-  close_button_->SetTooltipText(l10n_util::GetStringUTF16(
-      IDS_MESSAGE_CENTER_CLOSE_NOTIFICATION_BUTTON_TOOLTIP));
-  control_buttons_view_->AddChildView(close_button_);
+  CreateCloseButton();
 
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_CONTROL);
   params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
@@ -305,6 +294,9 @@ void ArcCustomNotificationView::SetSurface(exo::NotificationSurface* surface) {
 
   // Reset |floating_control_buttons_widget_| when |surface_| is changed.
   floating_control_buttons_widget_.reset();
+  control_buttons_view_ = nullptr;
+  settings_button_ = nullptr;
+  close_button_.reset();
 
   if (surface_ && surface_->window()) {
     surface_->window()->RemoveObserver(this);
@@ -316,6 +308,8 @@ void ArcCustomNotificationView::SetSurface(exo::NotificationSurface* surface) {
   if (surface_ && surface_->window()) {
     surface_->window()->AddObserver(this);
     surface_->window()->AddPreTargetHandler(event_forwarder_.get());
+
+    CreateFloatingControlButtons();
 
     if (GetWidget())
       AttachSurface();
@@ -343,10 +337,9 @@ void ArcCustomNotificationView::UpdateControlButtonsVisibility() {
   if (!surface_ || !floating_control_buttons_widget_)
     return;
 
-  const bool target_visiblity =
-      surface_->window()->GetBoundsInScreen().Contains(
-          display::Screen::GetScreen()->GetCursorScreenPoint()) ||
-      close_button_->HasFocus() || settings_button_->HasFocus();
+  const bool target_visiblity = IsMouseHovered() ||
+                                (close_button_ && close_button_->HasFocus()) ||
+                                settings_button_->HasFocus();
   if (target_visiblity == floating_control_buttons_widget_->IsVisible())
     return;
 
@@ -359,10 +352,13 @@ void ArcCustomNotificationView::UpdateControlButtonsVisibility() {
 void ArcCustomNotificationView::UpdatePinnedState() {
   DCHECK(item_);
 
-  if (item_->pinned() && floating_control_buttons_widget_) {
-    floating_control_buttons_widget_.reset();
-  } else if (!item_->pinned() && !floating_control_buttons_widget_) {
-    CreateFloatingControlButtons();
+  if (item_->pinned() && close_button_) {
+    control_buttons_view_->RemoveChildView(close_button_.get());
+    close_button_.reset();
+    Layout();
+  } else if (!item_->pinned() && !close_button_) {
+    CreateCloseButton();
+    Layout();
   }
 }
 
@@ -452,13 +448,17 @@ void ArcCustomNotificationView::Layout() {
     return;
 
   gfx::Rect control_buttons_bounds(contents_bounds);
-  const int buttons_width = close_button_->GetPreferredSize().width() +
-                            settings_button_->GetPreferredSize().width();
+  int buttons_width = 0;
+  if (close_button_)
+    buttons_width += close_button_->GetPreferredSize().width();
+  if (settings_button_)
+    buttons_width += settings_button_->GetPreferredSize().width();
   control_buttons_bounds.set_x(control_buttons_bounds.right() - buttons_width -
                                message_center::kControlButtonPadding);
   control_buttons_bounds.set_y(control_buttons_bounds.y() +
                                message_center::kControlButtonPadding);
-  control_buttons_bounds.set_height(close_button_->GetPreferredSize().height());
+  control_buttons_bounds.set_height(
+      settings_button_->GetPreferredSize().height());
   control_buttons_bounds.set_width(buttons_width);
   floating_control_buttons_widget_->SetBounds(control_buttons_bounds);
 
@@ -537,14 +537,13 @@ views::FocusTraversable* ArcCustomNotificationView::GetFocusTraversable() {
 
 void ArcCustomNotificationView::ButtonPressed(views::Button* sender,
                                               const ui::Event& event) {
-  if (item_ && !item_->pinned() && sender == close_button_) {
+  if (item_ && !item_->pinned() && sender == close_button_.get()) {
     CHECK_EQ(message_center::CustomNotificationView::kViewClassName,
              parent()->GetClassName());
     static_cast<message_center::CustomNotificationView*>(parent())
         ->OnCloseButtonPressed();
   }
   if (item_ && settings_button_ && sender == settings_button_) {
-    settings_button_->HideInkDrop();
     item_->OpenSettings();
   }
 }

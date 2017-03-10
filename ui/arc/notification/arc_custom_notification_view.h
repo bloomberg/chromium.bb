@@ -13,6 +13,7 @@
 #include "ui/arc/notification/arc_notification_surface_manager.h"
 #include "ui/aura/window_observer.h"
 #include "ui/message_center/views/custom_notification_content_view_delegate.h"
+#include "ui/message_center/views/padded_button.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/native/native_view_host.h"
 
@@ -42,11 +43,26 @@ class ArcCustomNotificationView
 
  private:
   class ContentViewDelegate;
-  class ControlButton;
   class EventForwarder;
   class SettingsButton;
   class SlideHelper;
 
+  // A image button class used for the settings button and the close button.
+  // We can't use forward declaration for this class due to std::unique_ptr<>
+  // requires size of this class.
+  class ControlButton : public message_center::PaddedButton {
+   public:
+    explicit ControlButton(ArcCustomNotificationView* owner);
+    void OnFocus() override;
+    void OnBlur() override;
+
+   private:
+    ArcCustomNotificationView* const owner_;
+
+    DISALLOW_COPY_AND_ASSIGN(ControlButton);
+  };
+
+  void CreateCloseButton();
   void CreateFloatingControlButtons();
   void SetSurface(exo::NotificationSurface* surface);
   void UpdatePreferredSize();
@@ -109,7 +125,7 @@ class ArcCustomNotificationView
   std::unique_ptr<views::Widget> floating_control_buttons_widget_;
 
   views::View* control_buttons_view_ = nullptr;
-  ControlButton* close_button_ = nullptr;
+  std::unique_ptr<ControlButton> close_button_;
   ControlButton* settings_button_ = nullptr;
 
   // Protects from call loops between Layout and OnWindowBoundsChanged.
