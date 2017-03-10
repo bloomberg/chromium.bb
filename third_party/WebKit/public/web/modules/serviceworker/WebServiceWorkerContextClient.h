@@ -45,7 +45,6 @@
 namespace blink {
 
 struct WebServiceWorkerClientQueryOptions;
-class WebDataSource;
 class WebServiceWorkerContextProxy;
 class WebServiceWorkerNetworkProvider;
 class WebServiceWorkerProvider;
@@ -203,8 +202,8 @@ class WebServiceWorkerContextClient {
 
   // Ownership of the returned object is transferred to the caller.
   // This is called on the main thread.
-  virtual WebServiceWorkerNetworkProvider* createServiceWorkerNetworkProvider(
-      WebDataSource*) {
+  virtual WebServiceWorkerNetworkProvider*
+  createServiceWorkerNetworkProvider() {
     return nullptr;
   }
 

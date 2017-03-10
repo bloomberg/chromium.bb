@@ -199,8 +199,6 @@ class LocalFrameClientImpl final : public LocalFrameClient {
 
   std::unique_ptr<WebServiceWorkerProvider> createServiceWorkerProvider()
       override;
-  bool isControlledByServiceWorker(DocumentLoader&) override;
-  int64_t serviceWorkerID(DocumentLoader&) override;
   SharedWorkerRepositoryClient* sharedWorkerRepositoryClient() override;
 
   std::unique_ptr<WebApplicationCacheHost> createApplicationCacheHost(

@@ -299,10 +299,6 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
   virtual std::unique_ptr<WebServiceWorkerProvider>
   createServiceWorkerProvider() = 0;
 
-  virtual bool isControlledByServiceWorker(DocumentLoader&) = 0;
-
-  virtual int64_t serviceWorkerID(DocumentLoader&) = 0;
-
   virtual SharedWorkerRepositoryClient* sharedWorkerRepositoryClient() {
     return 0;
   }

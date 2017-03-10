@@ -59,12 +59,12 @@
 #include "public/platform/WebString.h"
 #include "public/platform/WebURL.h"
 #include "public/platform/WebURLRequest.h"
+#include "public/platform/modules/serviceworker/WebServiceWorkerNetworkProvider.h"
 #include "public/web/WebDevToolsAgent.h"
 #include "public/web/WebFrame.h"
 #include "public/web/WebSettings.h"
 #include "public/web/WebView.h"
 #include "public/web/WebWorkerContentSettingsClientProxy.h"
-#include "public/web/modules/serviceworker/WebServiceWorkerNetworkProvider.h"
 #include "web/IndexedDBClientImpl.h"
 #include "web/LocalFileSystemClient.h"
 #include "web/WebDataSourceImpl.h"
@@ -170,17 +170,18 @@ void WebSharedWorkerImpl::loadShadowPage() {
 
 void WebSharedWorkerImpl::willSendRequest(WebLocalFrame* frame,
                                           WebURLRequest& request) {
-  DCHECK(isMainThread());
-  if (m_networkProvider)
-    m_networkProvider->willSendRequest(frame->dataSource(), request);
+  auto* networkProvider =
+      frame->dataSource()->getServiceWorkerNetworkProvider();
+  if (networkProvider)
+    networkProvider->willSendRequest(request);
 }
 
 void WebSharedWorkerImpl::didFinishDocumentLoad(WebLocalFrame* frame) {
   DCHECK(isMainThread());
   DCHECK(!m_loadingDocument);
   DCHECK(!m_mainScriptLoader);
-  m_networkProvider = WTF::wrapUnique(
-      m_client->createServiceWorkerNetworkProvider(frame->dataSource()));
+  frame->dataSource()->setServiceWorkerNetworkProvider(
+      WTF::wrapUnique(m_client->createServiceWorkerNetworkProvider()));
   m_mainScriptLoader = WorkerScriptLoader::create();
   m_mainScriptLoader->setRequestContext(
       WebURLRequest::RequestContextSharedWorker);
@@ -199,20 +200,6 @@ void WebSharedWorkerImpl::didFinishDocumentLoad(WebLocalFrame* frame) {
            WTF::unretained(this)));
   // Do nothing here since onScriptLoaderFinished() might have been already
   // invoked and |this| might have been deleted at this point.
-}
-
-bool WebSharedWorkerImpl::isControlledByServiceWorker(
-    WebDataSource& dataSource) {
-  DCHECK(isMainThread());
-  return m_networkProvider &&
-         m_networkProvider->isControlledByServiceWorker(dataSource);
-}
-
-int64_t WebSharedWorkerImpl::serviceWorkerID(WebDataSource& dataSource) {
-  DCHECK(isMainThread());
-  if (!m_networkProvider)
-    return -1;
-  return m_networkProvider->serviceWorkerID(dataSource);
 }
 
 void WebSharedWorkerImpl::sendProtocolMessage(int sessionId,

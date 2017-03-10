@@ -18,12 +18,13 @@
 
 namespace blink {
 class WebLocalFrame;
+class WebServiceWorkerNetworkProvider;
 }  // namespace blink
 
 namespace content {
 
-class ServiceWorkerProviderContext;
 struct RequestNavigationParams;
+class ServiceWorkerProviderContext;
 
 // A unique provider_id is generated for each instance.
 // Instantiated prior to the main resource load being started and remains
@@ -35,22 +36,20 @@ struct RequestNavigationParams;
 //
 // Basically, it's a scoped integer that sends an ipc upon construction
 // and destruction.
-class CONTENT_EXPORT ServiceWorkerNetworkProvider
-    : public base::SupportsUserData::Data {
+class CONTENT_EXPORT ServiceWorkerNetworkProvider {
  public:
-  // Ownership is transferred to the DocumentState.
-  static void AttachToDocumentState(
-      base::SupportsUserData* document_state,
-      std::unique_ptr<ServiceWorkerNetworkProvider> network_provider);
+  // Creates a ServiceWorkerNetworkProvider for navigation and wraps it
+  // with WebServiceWorkerNetworkProvider to be owned by Blink.
+  static std::unique_ptr<blink::WebServiceWorkerNetworkProvider>
+  CreateForNavigation(int route_id,
+                      const RequestNavigationParams& request_params,
+                      blink::WebLocalFrame* frame,
+                      bool content_initiated);
 
-  static ServiceWorkerNetworkProvider* FromDocumentState(
-      base::SupportsUserData* document_state);
-
-  static std::unique_ptr<ServiceWorkerNetworkProvider> CreateForNavigation(
-      int route_id,
-      const RequestNavigationParams& request_params,
-      blink::WebLocalFrame* frame,
-      bool content_initiated);
+  // Valid only for WebServiceWorkerNetworkProvider created by
+  // CreateForNavigation.
+  static ServiceWorkerNetworkProvider* FromWebServiceWorkerNetworkProvider(
+      blink::WebServiceWorkerNetworkProvider*);
 
   // PlzNavigate
   // The |browser_provider_id| is initialized by the browser for navigations.
@@ -61,8 +60,9 @@ class CONTENT_EXPORT ServiceWorkerNetworkProvider
   ServiceWorkerNetworkProvider(int route_id,
                                ServiceWorkerProviderType type,
                                bool is_parent_frame_secure);
+
   ServiceWorkerNetworkProvider();
-  ~ServiceWorkerNetworkProvider() override;
+  ~ServiceWorkerNetworkProvider();
 
   int provider_id() const { return provider_id_; }
   ServiceWorkerProviderContext* context() const { return context_.get(); }

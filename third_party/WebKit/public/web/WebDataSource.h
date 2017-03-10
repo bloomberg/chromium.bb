@@ -31,6 +31,8 @@
 #ifndef WebDataSource_h
 #define WebDataSource_h
 
+#include <memory>
+
 #include "../platform/WebCommon.h"
 #include "WebNavigationType.h"
 #include "WebTextDirection.h"
@@ -38,6 +40,7 @@
 namespace blink {
 
 class WebDocumentSubresourceFilter;
+class WebServiceWorkerNetworkProvider;
 class WebURL;
 class WebURLRequest;
 class WebURLResponse;
@@ -119,6 +122,14 @@ class WebDataSource {
   // or not to allow the load. The passed-in filter object is deleted when the
   // datasource is destroyed or when a new filter is set.
   virtual void setSubresourceFilter(WebDocumentSubresourceFilter*) = 0;
+
+  // Allows the embedder to set and return the service worker provider
+  // associated with the data source. The provider may provide the service
+  // worker that controls the resource loading from this data source.
+  virtual void setServiceWorkerNetworkProvider(
+      std::unique_ptr<WebServiceWorkerNetworkProvider>) = 0;
+  virtual WebServiceWorkerNetworkProvider*
+  getServiceWorkerNetworkProvider() = 0;
 
  protected:
   ~WebDataSource() {}

@@ -100,6 +100,7 @@
 #include "public/platform/WebCachePolicy.h"
 #include "public/platform/WebFeaturePolicy.h"
 #include "public/platform/WebURLRequest.h"
+#include "public/platform/modules/serviceworker/WebServiceWorkerNetworkProvider.h"
 #include "wtf/AutoReset.h"
 #include "wtf/text/CString.h"
 #include "wtf/text/WTFString.h"
@@ -486,7 +487,9 @@ void FrameLoader::receivedFirstData() {
 
   // didObserveLoadingBehavior() must be called after dispatchDidCommitLoad() is
   // called for the metrics tracking logic to handle it properly.
-  if (client()->isControlledByServiceWorker(*m_documentLoader)) {
+  if (m_documentLoader->getServiceWorkerNetworkProvider() &&
+      m_documentLoader->getServiceWorkerNetworkProvider()
+          ->isControlledByServiceWorker()) {
     client()->didObserveLoadingBehavior(
         WebLoadingBehaviorServiceWorkerControlled);
   }

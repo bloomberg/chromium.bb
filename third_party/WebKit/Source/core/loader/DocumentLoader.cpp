@@ -73,6 +73,7 @@
 #include "platform/weborigin/SchemeRegistry.h"
 #include "platform/weborigin/SecurityPolicy.h"
 #include "public/platform/Platform.h"
+#include "public/platform/modules/serviceworker/WebServiceWorkerNetworkProvider.h"
 #include "wtf/Assertions.h"
 #include "wtf/AutoReset.h"
 #include "wtf/text/WTFString.h"
@@ -227,6 +228,11 @@ Resource* DocumentLoader::startPreload(Resource::Type type,
   if (resource && !resource->resourceError().isAccessCheck())
     fetcher()->preloadStarted(resource);
   return resource;
+}
+
+void DocumentLoader::setServiceWorkerNetworkProvider(
+    std::unique_ptr<WebServiceWorkerNetworkProvider> provider) {
+  m_serviceWorkerNetworkProvider = std::move(provider);
 }
 
 void DocumentLoader::dispatchLinkHeaderPreloads(
@@ -652,6 +658,7 @@ void DocumentLoader::detachFromFrame() {
   m_fetcher->clearContext();
   m_applicationCacheHost->detachFromDocumentLoader();
   m_applicationCacheHost.clear();
+  m_serviceWorkerNetworkProvider = nullptr;
   WeakIdentifierMap<DocumentLoader>::notifyObjectDestroyed(this);
   clearMainResourceHandle();
   m_frame = nullptr;

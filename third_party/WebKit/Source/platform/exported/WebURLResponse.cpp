@@ -369,7 +369,8 @@ WebURLResponse::ExtraData* WebURLResponse::getExtraData() const {
 }
 
 void WebURLResponse::setExtraData(WebURLResponse::ExtraData* extraData) {
-  m_resourceResponse->setExtraData(ExtraDataContainer::create(extraData));
+  if (extraData != getExtraData())
+    m_resourceResponse->setExtraData(ExtraDataContainer::create(extraData));
 }
 
 void WebURLResponse::appendRedirectResponse(const WebURLResponse& response) {

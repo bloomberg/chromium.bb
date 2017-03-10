@@ -361,8 +361,6 @@ class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {
 
   std::unique_ptr<WebServiceWorkerProvider> createServiceWorkerProvider()
       override;
-  bool isControlledByServiceWorker(DocumentLoader&) override { return false; }
-  int64_t serviceWorkerID(DocumentLoader&) override { return -1; }
   std::unique_ptr<WebApplicationCacheHost> createApplicationCacheHost(
       WebApplicationCacheHostClient*) override;
 

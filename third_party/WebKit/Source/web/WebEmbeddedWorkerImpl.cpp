@@ -59,6 +59,7 @@
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebURLRequest.h"
+#include "public/platform/modules/serviceworker/WebServiceWorkerNetworkProvider.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerProvider.h"
 #include "public/web/WebConsoleMessage.h"
 #include "public/web/WebDevToolsAgent.h"
@@ -66,7 +67,6 @@
 #include "public/web/WebView.h"
 #include "public/web/WebWorkerContentSettingsClientProxy.h"
 #include "public/web/modules/serviceworker/WebServiceWorkerContextClient.h"
-#include "public/web/modules/serviceworker/WebServiceWorkerNetworkProvider.h"
 #include "web/IndexedDBClientImpl.h"
 #include "web/ServiceWorkerGlobalScopeClientImpl.h"
 #include "web/ServiceWorkerGlobalScopeProxy.h"
@@ -333,21 +333,21 @@ void WebEmbeddedWorkerImpl::loadShadowPage() {
 
 void WebEmbeddedWorkerImpl::willSendRequest(WebLocalFrame* frame,
                                             WebURLRequest& request) {
-  if (m_networkProvider)
-    m_networkProvider->willSendRequest(frame->dataSource(), request);
+  auto* networkProvider =
+      frame->dataSource()->getServiceWorkerNetworkProvider();
+  if (networkProvider)
+    networkProvider->willSendRequest(request);
 }
 
 void WebEmbeddedWorkerImpl::didFinishDocumentLoad(WebLocalFrame* frame) {
   DCHECK(!m_mainScriptLoader);
-  DCHECK(!m_networkProvider);
   DCHECK(m_mainFrame);
   DCHECK(m_workerContextClient);
   DCHECK(m_loadingShadowPage);
   DCHECK(!m_askedToTerminate);
   m_loadingShadowPage = false;
-  m_networkProvider =
-      WTF::wrapUnique(m_workerContextClient->createServiceWorkerNetworkProvider(
-          frame->dataSource()));
+  frame->dataSource()->setServiceWorkerNetworkProvider(WTF::wrapUnique(
+      m_workerContextClient->createServiceWorkerNetworkProvider()));
   m_mainScriptLoader = WorkerScriptLoader::create();
   m_mainScriptLoader->setRequestContext(
       WebURLRequest::RequestContextServiceWorker);

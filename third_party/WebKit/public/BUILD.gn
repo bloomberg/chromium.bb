@@ -384,6 +384,7 @@ source_set("blink_headers") {
     "platform/modules/serviceworker/WebServiceWorkerClientsInfo.h",
     "platform/modules/serviceworker/WebServiceWorkerError.h",
     "platform/modules/serviceworker/WebServiceWorkerEventResult.h",
+    "platform/modules/serviceworker/WebServiceWorkerNetworkProvider.h",
     "platform/modules/serviceworker/WebServiceWorkerProvider.h",
     "platform/modules/serviceworker/WebServiceWorkerProviderClient.h",
     "platform/modules/serviceworker/WebServiceWorkerProxy.h",
@@ -572,7 +573,6 @@ source_set("blink_headers") {
     "web/mac/WebSubstringUtil.h",
     "web/modules/serviceworker/WebServiceWorkerContextClient.h",
     "web/modules/serviceworker/WebServiceWorkerContextProxy.h",
-    "web/modules/serviceworker/WebServiceWorkerNetworkProvider.h",
     "web/win/WebFontRendering.h",
   ]
 

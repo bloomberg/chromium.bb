@@ -38,7 +38,6 @@ namespace blink {
 
 class WebApplicationCacheHost;
 class WebApplicationCacheHostClient;
-class WebDataSource;
 class WebNotificationPresenter;
 class WebSecurityOrigin;
 class WebServiceWorkerNetworkProvider;
@@ -81,8 +80,8 @@ class WebSharedWorkerClient {
 
   // Called on the main thread during initialization.
   // Ownership of the returned object is transferred to the caller.
-  virtual WebServiceWorkerNetworkProvider* createServiceWorkerNetworkProvider(
-      WebDataSource*) {
+  virtual WebServiceWorkerNetworkProvider*
+  createServiceWorkerNetworkProvider() {
     return nullptr;
   }
 

@@ -73,6 +73,9 @@ class WebDataSourceImpl final : public DocumentLoader, public WebDataSource {
                         double fetchStartTime,
                         bool hasRedirect) override;
   void setSubresourceFilter(WebDocumentSubresourceFilter*) override;
+  void setServiceWorkerNetworkProvider(
+      std::unique_ptr<WebServiceWorkerNetworkProvider>) override;
+  WebServiceWorkerNetworkProvider* getServiceWorkerNetworkProvider() override;
 
   static WebNavigationType toWebNavigationType(NavigationType);
 

@@ -47,7 +47,6 @@ class ThreadableLoadingContext;
 class ParentFrameTaskRunners;
 class ServiceWorkerGlobalScopeProxy;
 class WebLocalFrameImpl;
-class WebServiceWorkerNetworkProvider;
 class WebView;
 class WorkerInspectorProxy;
 class WorkerScriptLoader;
@@ -116,10 +115,6 @@ class WebEmbeddedWorkerImpl final : public WebEmbeddedWorker,
   // This is kept until startWorkerContext is called, and then passed on
   // to WorkerContext.
   std::unique_ptr<WebWorkerContentSettingsClientProxy> m_contentSettingsClient;
-
-  // We retain ownership of this one which is for use on the
-  // main thread only.
-  std::unique_ptr<WebServiceWorkerNetworkProvider> m_networkProvider;
 
   // Kept around only while main script loading is ongoing.
   RefPtr<WorkerScriptLoader> m_mainScriptLoader;

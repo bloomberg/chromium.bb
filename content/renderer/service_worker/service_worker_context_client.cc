@@ -61,12 +61,11 @@
 #include "third_party/WebKit/public/platform/modules/payments/WebPaymentAppRequest.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerClientQueryOptions.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerError.h"
+#include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerNetworkProvider.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerRequest.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerResponse.h"
-#include "third_party/WebKit/public/web/WebDataSource.h"
 #include "third_party/WebKit/public/web/modules/serviceworker/WebServiceWorkerContextClient.h"
 #include "third_party/WebKit/public/web/modules/serviceworker/WebServiceWorkerContextProxy.h"
-#include "third_party/WebKit/public/web/modules/serviceworker/WebServiceWorkerNetworkProvider.h"
 
 namespace content {
 
@@ -84,36 +83,28 @@ void CallWorkerContextDestroyedOnMainThread(int embedded_worker_id) {
       WorkerContextDestroyed(embedded_worker_id);
 }
 
-// We store an instance of this class in the "extra data" of the WebDataSource
-// and attach a ServiceWorkerNetworkProvider to it as base::UserData.
-// (see createServiceWorkerNetworkProvider).
-class DataSourceExtraData
-    : public blink::WebDataSource::ExtraData,
-      public base::SupportsUserData {
- public:
-  DataSourceExtraData() {}
-  ~DataSourceExtraData() override {}
-};
-
 // Called on the main thread only and blink owns it.
 class WebServiceWorkerNetworkProviderImpl
     : public blink::WebServiceWorkerNetworkProvider {
  public:
+  explicit WebServiceWorkerNetworkProviderImpl(
+      std::unique_ptr<ServiceWorkerNetworkProvider> provider)
+      : provider_(std::move(provider)) {}
+
   // Blink calls this method for each request starting with the main script,
   // we tag them with the provider id.
-  void willSendRequest(blink::WebDataSource* data_source,
-                       blink::WebURLRequest& request) override {
-    ServiceWorkerNetworkProvider* provider =
-        ServiceWorkerNetworkProvider::FromDocumentState(
-            static_cast<DataSourceExtraData*>(data_source->getExtraData()));
+  void willSendRequest(blink::WebURLRequest& request) override {
     std::unique_ptr<RequestExtraData> extra_data(new RequestExtraData);
-    extra_data->set_service_worker_provider_id(provider->provider_id());
+    extra_data->set_service_worker_provider_id(provider_->provider_id());
     extra_data->set_originated_from_service_worker(true);
     // Service workers are only available in secure contexts, so all requests
     // are initiated in a secure context.
     extra_data->set_initiated_in_secure_context(true);
     request.setExtraData(extra_data.release());
   }
+
+ private:
+  std::unique_ptr<ServiceWorkerNetworkProvider> provider_;
 };
 
 ServiceWorkerStatusCode EventResultToStatus(
@@ -795,8 +786,7 @@ void ServiceWorkerContextClient::didHandlePaymentRequestEvent(
 }
 
 blink::WebServiceWorkerNetworkProvider*
-ServiceWorkerContextClient::createServiceWorkerNetworkProvider(
-    blink::WebDataSource* data_source) {
+ServiceWorkerContextClient::createServiceWorkerNetworkProvider() {
   DCHECK(main_thread_task_runner_->RunsTasksOnCurrentThread());
 
   // Create a content::ServiceWorkerNetworkProvider for this data source so
@@ -811,15 +801,8 @@ ServiceWorkerContextClient::createServiceWorkerNetworkProvider(
   provider->SetServiceWorkerVersionId(service_worker_version_id_,
                                       embedded_worker_id_);
 
-  // The provider is kept around for the lifetime of the DataSource
-  // and ownership is transferred to the DataSource.
-  DataSourceExtraData* extra_data = new DataSourceExtraData();
-  data_source->setExtraData(extra_data);
-  ServiceWorkerNetworkProvider::AttachToDocumentState(extra_data,
-                                                      std::move(provider));
-
   // Blink is responsible for deleting the returned object.
-  return new WebServiceWorkerNetworkProviderImpl();
+  return new WebServiceWorkerNetworkProviderImpl(std::move(provider));
 }
 
 blink::WebServiceWorkerProvider*

@@ -37,6 +37,7 @@
 #include "public/platform/WebURL.h"
 #include "public/platform/WebURLError.h"
 #include "public/platform/WebVector.h"
+#include "public/platform/modules/serviceworker/WebServiceWorkerNetworkProvider.h"
 #include "wtf/PtrUtil.h"
 
 namespace blink {
@@ -159,6 +160,16 @@ void WebDataSourceImpl::setSubresourceFilter(
     WebDocumentSubresourceFilter* subresourceFilter) {
   DocumentLoader::setSubresourceFilter(
       SubresourceFilter::create(this, WTF::wrapUnique(subresourceFilter)));
+}
+
+void WebDataSourceImpl::setServiceWorkerNetworkProvider(
+    std::unique_ptr<WebServiceWorkerNetworkProvider> provider) {
+  DocumentLoader::setServiceWorkerNetworkProvider(std::move(provider));
+}
+
+WebServiceWorkerNetworkProvider*
+WebDataSourceImpl::getServiceWorkerNetworkProvider() {
+  return DocumentLoader::getServiceWorkerNetworkProvider();
 }
 
 DEFINE_TRACE(WebDataSourceImpl) {

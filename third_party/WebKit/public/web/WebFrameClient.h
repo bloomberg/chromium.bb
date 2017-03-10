@@ -679,16 +679,6 @@ class BLINK_EXPORT WebFrameClient {
       const WebAXObject& endObject,
       int endOffset) {}
 
-  // ServiceWorker -------------------------------------------------------
-
-  // Whether the document associated with WebDataSource is controlled by the
-  // ServiceWorker.
-  virtual bool isControlledByServiceWorker(WebDataSource&) { return false; }
-
-  // Returns an identifier of the service worker controlling the document
-  // associated with the WebDataSource.
-  virtual int64_t serviceWorkerID(WebDataSource&) { return -1; }
-
   // Fullscreen ----------------------------------------------------------
 
   // Called to enter/exit fullscreen mode.

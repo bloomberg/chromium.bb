@@ -6,6 +6,8 @@
 
 #include "base/atomic_sequence_num.h"
 #include "content/child/child_thread_impl.h"
+#include "content/child/request_extra_data.h"
+#include "content/child/service_worker/service_worker_handle_reference.h"
 #include "content/child/service_worker/service_worker_provider_context.h"
 #include "content/common/navigation_params.h"
 #include "content/common/service_worker/service_worker_messages.h"
@@ -14,14 +16,13 @@
 #include "content/public/common/browser_side_navigation_policy.h"
 #include "ipc/ipc_sync_channel.h"
 #include "third_party/WebKit/public/platform/WebSecurityOrigin.h"
+#include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerNetworkProvider.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebSandboxFlags.h"
 
 namespace content {
 
 namespace {
-
-const char kUserDataKey[] = "SWProviderKey";
 
 // Must be unique in the child process.
 int GetNextProviderId() {
@@ -42,22 +43,44 @@ bool IsFrameSecure(blink::WebFrame* frame) {
   return true;
 }
 
+// An WebServiceWorkerNetworkProvider for frame. This wraps
+// ServiceWorkerNetworkProvider implementation and is owned by blink.
+class WebServiceWorkerNetworkProviderForFrame
+    : public blink::WebServiceWorkerNetworkProvider {
+ public:
+  WebServiceWorkerNetworkProviderForFrame(
+      std::unique_ptr<ServiceWorkerNetworkProvider> provider)
+      : provider_(std::move(provider)) {}
+
+  void willSendRequest(blink::WebURLRequest& request) override {
+    RequestExtraData* extra_data =
+        static_cast<RequestExtraData*>(request.getExtraData());
+    if (!extra_data)
+      extra_data = new RequestExtraData();
+    extra_data->set_service_worker_provider_id(provider_->provider_id());
+    request.setExtraData(extra_data);
+  }
+
+  bool isControlledByServiceWorker() override {
+    return provider_->IsControlledByServiceWorker();
+  }
+
+  int64_t serviceWorkerID() override {
+    if (provider_->context() && provider_->context()->controller())
+      return provider_->context()->controller()->version_id();
+    return kInvalidServiceWorkerVersionId;
+  }
+
+  ServiceWorkerNetworkProvider* provider() { return provider_.get(); }
+
+ private:
+  std::unique_ptr<ServiceWorkerNetworkProvider> provider_;
+};
+
 }  // namespace
 
-void ServiceWorkerNetworkProvider::AttachToDocumentState(
-    base::SupportsUserData* datasource_userdata,
-    std::unique_ptr<ServiceWorkerNetworkProvider> network_provider) {
-  datasource_userdata->SetUserData(&kUserDataKey, network_provider.release());
-}
-
-ServiceWorkerNetworkProvider* ServiceWorkerNetworkProvider::FromDocumentState(
-    base::SupportsUserData* datasource_userdata) {
-  return static_cast<ServiceWorkerNetworkProvider*>(
-      datasource_userdata->GetUserData(&kUserDataKey));
-}
-
 // static
-std::unique_ptr<ServiceWorkerNetworkProvider>
+std::unique_ptr<blink::WebServiceWorkerNetworkProvider>
 ServiceWorkerNetworkProvider::CreateForNavigation(
     int route_id,
     const RequestNavigationParams& request_params,
@@ -114,7 +137,16 @@ ServiceWorkerNetworkProvider::CreateForNavigation(
     network_provider = std::unique_ptr<ServiceWorkerNetworkProvider>(
         new ServiceWorkerNetworkProvider());
   }
-  return network_provider;
+  return base::MakeUnique<WebServiceWorkerNetworkProviderForFrame>(
+      std::move(network_provider));
+}
+
+// static
+ServiceWorkerNetworkProvider*
+ServiceWorkerNetworkProvider::FromWebServiceWorkerNetworkProvider(
+    blink::WebServiceWorkerNetworkProvider* provider) {
+  return static_cast<WebServiceWorkerNetworkProviderForFrame*>(provider)
+      ->provider();
 }
 
 ServiceWorkerNetworkProvider::ServiceWorkerNetworkProvider(

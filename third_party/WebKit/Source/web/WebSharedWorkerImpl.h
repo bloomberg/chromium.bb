@@ -75,8 +75,6 @@ class WebSharedWorkerImpl final : public WebFrameClient,
       WebApplicationCacheHostClient*) override;
   void willSendRequest(WebLocalFrame*, WebURLRequest&) override;
   void didFinishDocumentLoad(WebLocalFrame*) override;
-  bool isControlledByServiceWorker(WebDataSource&) override;
-  int64_t serviceWorkerID(WebDataSource&) override;
 
   // WebDevToolsAgentClient overrides.
   void sendProtocolMessage(int sessionId,

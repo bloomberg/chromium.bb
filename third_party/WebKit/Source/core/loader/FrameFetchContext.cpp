@@ -82,6 +82,7 @@
 #include "public/platform/WebCachePolicy.h"
 #include "public/platform/WebInsecureRequestPolicy.h"
 #include "public/platform/WebViewScheduler.h"
+#include "public/platform/modules/serviceworker/WebServiceWorkerNetworkProvider.h"
 #include "wtf/Vector.h"
 
 namespace blink {
@@ -823,13 +824,18 @@ bool FrameFetchContext::isControlledByServiceWorker() const {
   if (getSecurityOrigin() && getSecurityOrigin()->hasSuborigin())
     return false;
 
-  return localFrameClient()->isControlledByServiceWorker(
-      *masterDocumentLoader());
+  auto* service_worker_network_provider =
+      masterDocumentLoader()->getServiceWorkerNetworkProvider();
+  return service_worker_network_provider &&
+         service_worker_network_provider->isControlledByServiceWorker();
 }
 
 int64_t FrameFetchContext::serviceWorkerID() const {
   DCHECK(masterDocumentLoader());
-  return localFrameClient()->serviceWorkerID(*masterDocumentLoader());
+  auto* service_worker_network_provider =
+      masterDocumentLoader()->getServiceWorkerNetworkProvider();
+  return service_worker_network_provider &&
+         service_worker_network_provider->serviceWorkerID();
 }
 
 bool FrameFetchContext::isMainFrame() const {

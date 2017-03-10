@@ -66,6 +66,7 @@
 #include "third_party/WebKit/public/platform/WebHTTPBody.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
+#include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerNetworkProvider.h"
 #include "third_party/WebKit/public/web/WebDataSource.h"
 #include "third_party/WebKit/public/web/WebDeviceEmulationParams.h"
 #include "third_party/WebKit/public/web/WebFrameContentDumper.h"
@@ -1956,34 +1957,37 @@ TEST_F(RenderViewImplTest, FocusElementCallsFocusedNodeChanged) {
 }
 
 TEST_F(RenderViewImplTest, ServiceWorkerNetworkProviderSetup) {
-  ServiceWorkerNetworkProvider* provider = NULL;
-  RequestExtraData* extra_data = NULL;
+  blink::WebServiceWorkerNetworkProvider* webprovider = nullptr;
+  ServiceWorkerNetworkProvider* provider = nullptr;
+  RequestExtraData* extra_data = nullptr;
 
   // Make sure each new document has a new provider and
   // that the main request is tagged with the provider's id.
   LoadHTML("<b>A Document</b>");
   ASSERT_TRUE(GetMainFrame()->dataSource());
-  provider = ServiceWorkerNetworkProvider::FromDocumentState(
-      DocumentState::FromDataSource(GetMainFrame()->dataSource()));
-  ASSERT_TRUE(provider);
+  webprovider = GetMainFrame()->dataSource()->getServiceWorkerNetworkProvider();
+  ASSERT_TRUE(webprovider);
   extra_data = static_cast<RequestExtraData*>(
       GetMainFrame()->dataSource()->getRequest().getExtraData());
   ASSERT_TRUE(extra_data);
-  EXPECT_EQ(extra_data->service_worker_provider_id(),
-            provider->provider_id());
+  provider = ServiceWorkerNetworkProvider::FromWebServiceWorkerNetworkProvider(
+      webprovider);
+  ASSERT_TRUE(provider);
+  EXPECT_EQ(extra_data->service_worker_provider_id(), provider->provider_id());
   int provider1_id = provider->provider_id();
 
   LoadHTML("<b>New Document B Goes Here</b>");
   ASSERT_TRUE(GetMainFrame()->dataSource());
-  provider = ServiceWorkerNetworkProvider::FromDocumentState(
-      DocumentState::FromDataSource(GetMainFrame()->dataSource()));
+  webprovider = GetMainFrame()->dataSource()->getServiceWorkerNetworkProvider();
+  ASSERT_TRUE(provider);
+  provider = ServiceWorkerNetworkProvider::FromWebServiceWorkerNetworkProvider(
+      webprovider);
   ASSERT_TRUE(provider);
   EXPECT_NE(provider1_id, provider->provider_id());
   extra_data = static_cast<RequestExtraData*>(
       GetMainFrame()->dataSource()->getRequest().getExtraData());
   ASSERT_TRUE(extra_data);
-  EXPECT_EQ(extra_data->service_worker_provider_id(),
-            provider->provider_id());
+  EXPECT_EQ(extra_data->service_worker_provider_id(), provider->provider_id());
 
   // See that subresource requests are also tagged with the provider's id.
   EXPECT_EQ(frame(), RenderFrameImpl::FromWebFrame(GetMainFrame()));
@@ -1993,8 +1997,7 @@ TEST_F(RenderViewImplTest, ServiceWorkerNetworkProviderSetup) {
   frame()->willSendRequest(GetMainFrame(), request);
   extra_data = static_cast<RequestExtraData*>(request.getExtraData());
   ASSERT_TRUE(extra_data);
-  EXPECT_EQ(extra_data->service_worker_provider_id(),
-            provider->provider_id());
+  EXPECT_EQ(extra_data->service_worker_provider_id(), provider->provider_id());
 }
 
 TEST_F(RenderViewImplTest, OnSetAccessibilityMode) {

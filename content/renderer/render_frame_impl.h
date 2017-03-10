@@ -649,8 +649,6 @@ class CONTENT_EXPORT RenderFrameImpl
   blink::WebString doNotTrackValue() override;
   bool allowWebGL(bool default_value) override;
   blink::WebScreenOrientationClient* webScreenOrientationClient() override;
-  bool isControlledByServiceWorker(blink::WebDataSource& data_source) override;
-  int64_t serviceWorkerID(blink::WebDataSource& data_source) override;
   void postAccessibilityEvent(const blink::WebAXObject& obj,
                               blink::WebAXEvent event) override;
   void handleAccessibilityFindInPageResult(

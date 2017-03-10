@@ -364,7 +364,8 @@ WebURLRequest::ExtraData* WebURLRequest::getExtraData() const {
 }
 
 void WebURLRequest::setExtraData(WebURLRequest::ExtraData* extraData) {
-  m_resourceRequest->setExtraData(ExtraDataContainer::create(extraData));
+  if (extraData != getExtraData())
+    m_resourceRequest->setExtraData(ExtraDataContainer::create(extraData));
 }
 
 ResourceRequest& WebURLRequest::toMutableResourceRequest() {

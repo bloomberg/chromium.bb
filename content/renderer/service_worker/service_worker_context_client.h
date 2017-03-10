@@ -40,7 +40,6 @@ class TaskRunner;
 
 namespace blink {
 class WebDataConsumerHandle;
-class WebDataSource;
 struct WebServiceWorkerClientQueryOptions;
 class WebServiceWorkerContextProxy;
 class WebServiceWorkerProvider;
@@ -176,8 +175,8 @@ class ServiceWorkerContextClient : public blink::WebServiceWorkerContextClient,
                                     double dispatch_event_time) override;
 
   // Called on the main thread.
-  blink::WebServiceWorkerNetworkProvider* createServiceWorkerNetworkProvider(
-      blink::WebDataSource* data_source) override;
+  blink::WebServiceWorkerNetworkProvider* createServiceWorkerNetworkProvider()
+      override;
   blink::WebServiceWorkerProvider* createServiceWorkerProvider() override;
 
   void postMessageToClient(const blink::WebString& uuid,

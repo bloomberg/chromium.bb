@@ -64,6 +64,7 @@ class LocalFrame;
 class LocalFrameClient;
 class FrameLoader;
 class ResourceTimingInfo;
+class WebServiceWorkerNetworkProvider;
 struct ViewportDescriptionWrapper;
 
 class CORE_EXPORT DocumentLoader
@@ -189,6 +190,16 @@ class CORE_EXPORT DocumentLoader
 
   Resource* startPreload(Resource::Type, FetchRequest&);
 
+  void setServiceWorkerNetworkProvider(
+      std::unique_ptr<WebServiceWorkerNetworkProvider>);
+
+  // May return null before the first HTML tag is inserted by the
+  // parser (before didCreateDataSource is called), after the document
+  // is detached from frame, or in tests.
+  WebServiceWorkerNetworkProvider* getServiceWorkerNetworkProvider() {
+    return m_serviceWorkerNetworkProvider.get();
+  }
+
   DECLARE_VIRTUAL_TRACE();
 
  protected:
@@ -282,6 +293,9 @@ class CORE_EXPORT DocumentLoader
   double m_timeOfLastDataReceived;
 
   Member<ApplicationCacheHost> m_applicationCacheHost;
+
+  std::unique_ptr<WebServiceWorkerNetworkProvider>
+      m_serviceWorkerNetworkProvider;
 
   Member<ContentSecurityPolicy> m_contentSecurityPolicy;
   ClientHintsPreferences m_clientHintsPreferences;

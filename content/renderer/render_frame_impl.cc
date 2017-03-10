@@ -187,6 +187,7 @@
 #include "third_party/WebKit/public/platform/WebURLError.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
+#include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerNetworkProvider.h"
 #include "third_party/WebKit/public/platform/scheduler/renderer/renderer_scheduler.h"
 #include "third_party/WebKit/public/web/WebColorSuggestion.h"
 #include "third_party/WebKit/public/web/WebConsoleMessage.h"
@@ -2987,16 +2988,14 @@ RenderFrameImpl::createServiceWorkerProvider() {
   if (!ChildThreadImpl::current())
     return nullptr;  // May be null in some tests.
   ServiceWorkerNetworkProvider* provider =
-      ServiceWorkerNetworkProvider::FromDocumentState(
-          DocumentState::FromDataSource(frame_->dataSource()));
-  DCHECK(provider);
+      ServiceWorkerNetworkProvider::FromWebServiceWorkerNetworkProvider(
+          frame_->dataSource()->getServiceWorkerNetworkProvider());
   if (!provider->context()) {
     // The context can be null when the frame is sandboxed.
     return nullptr;
   }
   return new WebServiceWorkerProviderImpl(
-      ChildThreadImpl::current()->thread_safe_sender(),
-      provider->context());
+      ChildThreadImpl::current()->thread_safe_sender(), provider->context());
 }
 
 void RenderFrameImpl::didAccessInitialDocument() {
@@ -3418,12 +3417,10 @@ void RenderFrameImpl::didCreateDataSource(blink::WebLocalFrame* frame,
   // Create the serviceworker's per-document network observing object if it
   // does not exist (When navigation happens within a page, the provider already
   // exists).
-  if (ServiceWorkerNetworkProvider::FromDocumentState(
-          DocumentState::FromDataSource(datasource)))
+  if (datasource->getServiceWorkerNetworkProvider())
     return;
 
-  ServiceWorkerNetworkProvider::AttachToDocumentState(
-      DocumentState::FromDataSource(datasource),
+  datasource->setServiceWorkerNetworkProvider(
       ServiceWorkerNetworkProvider::CreateForNavigation(
           routing_id_, navigation_state->request_params(), frame,
           content_initiated));
@@ -4280,31 +4277,30 @@ void RenderFrameImpl::willSendRequest(blink::WebLocalFrame* frame,
   // when it is re-created in the new process.
   bool should_replace_current_entry = data_source->replacesCurrentHistoryItem();
 
-  int provider_id = kInvalidServiceWorkerProviderId;
+  // Initializes service worker related request info.
   if (request.getFrameType() == blink::WebURLRequest::FrameTypeTopLevel ||
       request.getFrameType() == blink::WebURLRequest::FrameTypeNested) {
     // |provisionalDataSource| may be null in some content::ResourceFetcher
     // use cases, we don't hook those requests.
     if (frame->provisionalDataSource()) {
-      ServiceWorkerNetworkProvider* provider =
-          ServiceWorkerNetworkProvider::FromDocumentState(
-              DocumentState::FromDataSource(frame->provisionalDataSource()));
+      blink::WebServiceWorkerNetworkProvider* provider =
+          frame->provisionalDataSource()->getServiceWorkerNetworkProvider();
       DCHECK(provider);
-      provider_id = provider->provider_id();
+      provider->willSendRequest(request);
     }
   } else if (frame->dataSource()) {
-    ServiceWorkerNetworkProvider* provider =
-        ServiceWorkerNetworkProvider::FromDocumentState(
-            DocumentState::FromDataSource(frame->dataSource()));
+    blink::WebServiceWorkerNetworkProvider* provider =
+        frame->dataSource()->getServiceWorkerNetworkProvider();
     DCHECK(provider);
-    provider_id = provider->provider_id();
+    provider->willSendRequest(request);
+
     // If the provider does not have a controller at this point, the renderer
     // expects the request to never be handled by a controlling service worker,
     // so set the ServiceWorkerMode to skip local workers here. Otherwise, a
     // service worker that is in the process of becoming the controller (i.e.,
     // via claim()) on the browser-side could handle the request and break
     // the assumptions of the renderer.
-    if (!provider->IsControlledByServiceWorker() &&
+    if (!provider->isControlledByServiceWorker() &&
         request.getServiceWorkerMode() !=
             blink::WebURLRequest::ServiceWorkerMode::None) {
       request.setServiceWorkerMode(
@@ -4315,7 +4311,10 @@ void RenderFrameImpl::willSendRequest(blink::WebLocalFrame* frame,
   WebFrame* parent = frame->parent();
   int parent_routing_id = parent ? GetRoutingIdForFrameOrProxy(parent) : -1;
 
-  RequestExtraData* extra_data = new RequestExtraData();
+  RequestExtraData* extra_data =
+      static_cast<RequestExtraData*>(request.getExtraData());
+  if (!extra_data)
+    extra_data = new RequestExtraData();
   extra_data->set_visibility_state(visibilityState());
   extra_data->set_custom_user_agent(custom_user_agent);
   extra_data->set_requested_with(requested_with);
@@ -4329,7 +4328,6 @@ void RenderFrameImpl::willSendRequest(blink::WebLocalFrame* frame,
       navigation_state->common_params().allow_download);
   extra_data->set_transition_type(transition_type);
   extra_data->set_should_replace_current_entry(should_replace_current_entry);
-  extra_data->set_service_worker_provider_id(provider_id);
   extra_data->set_stream_override(std::move(stream_override));
   bool is_prefetch =
       GetContentClient()->renderer()->IsPrefetchOnly(this, request);
@@ -4659,22 +4657,6 @@ blink::WebScreenOrientationClient*
   if (!screen_orientation_dispatcher_)
     screen_orientation_dispatcher_ = new ScreenOrientationDispatcher(this);
   return screen_orientation_dispatcher_;
-}
-
-bool RenderFrameImpl::isControlledByServiceWorker(WebDataSource& data_source) {
-  ServiceWorkerNetworkProvider* provider =
-      ServiceWorkerNetworkProvider::FromDocumentState(
-          DocumentState::FromDataSource(&data_source));
-  return provider->IsControlledByServiceWorker();
-}
-
-int64_t RenderFrameImpl::serviceWorkerID(WebDataSource& data_source) {
-  ServiceWorkerNetworkProvider* provider =
-      ServiceWorkerNetworkProvider::FromDocumentState(
-          DocumentState::FromDataSource(&data_source));
-  if (provider->context() && provider->context()->controller())
-    return provider->context()->controller()->version_id();
-  return kInvalidServiceWorkerVersionId;
 }
 
 void RenderFrameImpl::postAccessibilityEvent(const blink::WebAXObject& obj,
