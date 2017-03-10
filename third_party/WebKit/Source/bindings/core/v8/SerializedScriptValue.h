@@ -129,12 +129,20 @@ class CORE_EXPORT SerializedScriptValue
       const ImageBitmapArray&,
       ExceptionState&);
 
-  // Informs the V8 about external memory allocated and owned by this object.
+  // Informs V8 about external memory allocated and owned by this object.
   // Large values should contribute to GC counters to eventually trigger a GC,
   // otherwise flood of postMessage() can cause OOM.
   // Ok to invoke multiple times (only adds memory once).
   // The memory registration is revoked automatically in destructor.
   void registerMemoryAllocatedWithCurrentScriptContext();
+
+  // Upon passing a serialized value from one context to another (via a
+  // postMessage()), the allocation amounts it has registered with the
+  // 'origining' context must be discharged, as the 'target' context will assume
+  // ownership of value. This method takes care of the first part of the
+  // external allocation bookkeeping, the above registration method the other
+  // half.
+  void unregisterMemoryAllocatedByCurrentScriptContext();
 
   const uint8_t* data() const { return m_dataBuffer.get(); }
   size_t dataLengthInBytes() const { return m_dataBufferSize; }
@@ -180,7 +188,8 @@ class CORE_EXPORT SerializedScriptValue
   std::unique_ptr<ArrayBufferContentsArray> m_arrayBufferContentsArray;
   std::unique_ptr<ImageBitmapContentsArray> m_imageBitmapContentsArray;
   BlobDataHandleMap m_blobDataHandles;
-  intptr_t m_externallyAllocatedMemory;
+  size_t m_externallyAllocatedMemory;
+  bool m_adjustTransferableExternalAllocationOnContextTransfer;
 };
 
 template <>

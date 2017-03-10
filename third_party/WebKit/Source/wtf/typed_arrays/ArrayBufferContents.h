@@ -102,6 +102,29 @@ class WTF_EXPORT ArrayBufferContents {
     s_adjustAmountOfExternalAllocatedMemoryFunction = function;
   }
 
+  enum LeaveOrEnter {
+    Leave,
+    Enter,
+  };
+
+  // Externally allocated memory is kept track of per context (isolate),
+  // hence when moving ArrayBufferContents to another context, its
+  // externally allocated memory needs to be registered with its
+  // destination context.
+  //
+  // Expose |adjustExternalAllocatedMemoryUponContextTransfer| in order to do
+  // so, which postMessage() implementations make use of when transferring
+  // array buffers.
+  void adjustExternalAllocatedMemoryUponContextTransfer(
+      LeaveOrEnter direction) {
+    int64_t diff = static_cast<int64_t>(sizeInBytes());
+    if (!diff)
+      return;
+    if (direction == Leave)
+      diff = -diff;
+    m_holder->adjustAmountOfExternalAllocatedMemory(diff);
+  }
+
  private:
   static void* allocateMemoryWithFlags(size_t, InitializationPolicy, int);
 
@@ -126,11 +149,12 @@ class WTF_EXPORT ArrayBufferContents {
     unsigned sizeInBytes() const { return m_sizeInBytes; }
     bool isShared() const { return m_isShared == Shared; }
 
-   private:
     void adjustAmountOfExternalAllocatedMemory(int64_t diff) {
       checkIfAdjustAmountOfExternalAllocatedMemoryIsConsistent();
       s_adjustAmountOfExternalAllocatedMemoryFunction(diff);
     }
+
+   private:
     void adjustAmountOfExternalAllocatedMemory(unsigned diff) {
       adjustAmountOfExternalAllocatedMemory(static_cast<int64_t>(diff));
     }

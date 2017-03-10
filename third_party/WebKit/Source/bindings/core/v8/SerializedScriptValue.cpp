@@ -109,10 +109,12 @@ PassRefPtr<SerializedScriptValue> SerializedScriptValue::create(
 }
 
 SerializedScriptValue::SerializedScriptValue()
-    : m_externallyAllocatedMemory(0) {}
+    : m_externallyAllocatedMemory(0),
+      m_adjustTransferableExternalAllocationOnContextTransfer(false) {}
 
 SerializedScriptValue::SerializedScriptValue(const String& wireData)
-    : m_externallyAllocatedMemory(0) {
+    : m_externallyAllocatedMemory(0),
+      m_adjustTransferableExternalAllocationOnContextTransfer(false) {
   size_t byteLength = wireData.length() * 2;
   m_dataBuffer.reset(static_cast<uint8_t*>(WTF::Partitions::bufferMalloc(
       byteLength, "SerializedScriptValue buffer")));
@@ -128,7 +130,7 @@ SerializedScriptValue::~SerializedScriptValue() {
   if (m_externallyAllocatedMemory) {
     ASSERT(v8::Isolate::GetCurrent());
     v8::Isolate::GetCurrent()->AdjustAmountOfExternalAllocatedMemory(
-        -m_externallyAllocatedMemory);
+        -static_cast<int64_t>(m_externallyAllocatedMemory));
   }
 }
 
@@ -444,13 +446,48 @@ SerializedScriptValue::transferArrayBufferContents(
   return contents;
 }
 
+void SerializedScriptValue::unregisterMemoryAllocatedByCurrentScriptContext() {
+  // If the caller is the only one holding a reference then this serialized
+  // value hasn't transferred ownership & no unregistration of allocation
+  // costs wanted.
+  if (hasOneRef() || m_adjustTransferableExternalAllocationOnContextTransfer)
+    return;
+  if (m_externallyAllocatedMemory) {
+    v8::Isolate::GetCurrent()->AdjustAmountOfExternalAllocatedMemory(
+        -static_cast<int64_t>(m_externallyAllocatedMemory));
+    m_externallyAllocatedMemory = 0;
+  }
+  // TODO: if other transferables start accounting for their external
+  // allocations with V8, extend this with corresponding cases.
+  if (m_arrayBufferContentsArray) {
+    for (auto& buffer : *m_arrayBufferContentsArray) {
+      buffer.adjustExternalAllocatedMemoryUponContextTransfer(
+          WTF::ArrayBufferContents::Leave);
+    }
+    // Mark value as needing re-registration of external allocation
+    // costs in its target context, as handled by
+    // |registerMemoryAllocatedWithCurrentScriptContext()|.
+    m_adjustTransferableExternalAllocationOnContextTransfer = true;
+  }
+}
+
 void SerializedScriptValue::registerMemoryAllocatedWithCurrentScriptContext() {
   if (m_externallyAllocatedMemory)
     return;
 
-  m_externallyAllocatedMemory = static_cast<intptr_t>(dataLengthInBytes());
-  v8::Isolate::GetCurrent()->AdjustAmountOfExternalAllocatedMemory(
-      m_externallyAllocatedMemory);
+  m_externallyAllocatedMemory = dataLengthInBytes();
+  int64_t diff = static_cast<int64_t>(m_externallyAllocatedMemory);
+  DCHECK_GE(diff, 0);
+  v8::Isolate::GetCurrent()->AdjustAmountOfExternalAllocatedMemory(diff);
+  if (m_adjustTransferableExternalAllocationOnContextTransfer) {
+    DCHECK(m_arrayBufferContentsArray);
+    for (size_t i = 0; i < m_arrayBufferContentsArray->size(); ++i) {
+      WTF::ArrayBufferContents& buffer = m_arrayBufferContentsArray->at(i);
+      buffer.adjustExternalAllocatedMemoryUponContextTransfer(
+          WTF::ArrayBufferContents::Enter);
+    }
+    m_adjustTransferableExternalAllocationOnContextTransfer = false;
+  }
 }
 
 }  // namespace blink
