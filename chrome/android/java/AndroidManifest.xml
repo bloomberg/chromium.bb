@@ -121,7 +121,7 @@ by a child template that "extends" this file.
         {% else %}
         android:allowBackup="false"
         {% endif %}
-        {% if target_sdk_version|int >= 24 %}
+        {% if target_sdk_version|int >= 24 or target_sdk_version == 'O' %}
         android:networkSecurityConfig="@xml/network_security_config"
         {% endif %}
         {% block extra_application_attributes %}{% endblock %}>
