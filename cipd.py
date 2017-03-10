@@ -29,6 +29,20 @@ import isolateserver
 EXECUTABLE_SUFFIX = '.exe' if sys.platform == 'win32' else ''
 
 
+if sys.platform == 'win32':
+  def _ensure_batfile(client_path):
+    base, _ = os.path.splitext(client_path)
+    with open(base+".bat", 'w') as f:
+      f.write('\n'.join([  # python turns \n into CRLF
+        '@set CIPD="%~dp0cipd.exe"',
+        '@shift',
+        '@%CIPD% %*'
+      ]))
+else:
+  def _ensure_batfile(_client_path):
+    pass
+
+
 class Error(Exception):
   """Raised on CIPD errors."""
 
@@ -446,6 +460,8 @@ def get_client(service_url, package_name, version, cache_dir, timeout=None):
 
     with instance_cache.getfileobj(instance_id) as f:
       isolateserver.putfile(f, binary_path, 0511)  # -r-x--x--x
+
+    _ensure_batfile(binary_path)
 
     yield CipdClient(
         binary_path,
