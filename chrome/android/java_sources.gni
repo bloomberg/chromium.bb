@@ -331,6 +331,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/download/ui/DownloadHistoryItemViewHolder.java",
   "java/src/org/chromium/chrome/browser/download/ui/DownloadHistoryItemWrapper.java",
   "java/src/org/chromium/chrome/browser/download/ui/DownloadItemGroup.java",
+  "java/src/org/chromium/chrome/browser/download/ui/DownloadItemSelectionDelegate.java",
   "java/src/org/chromium/chrome/browser/download/ui/DownloadItemView.java",
   "java/src/org/chromium/chrome/browser/download/ui/DownloadManagerUi.java",
   "java/src/org/chromium/chrome/browser/download/ui/DownloadManagerToolbar.java",

@@ -183,7 +183,7 @@ public class StubbedProvider implements BackendProvider {
         mHandler = new Handler(Looper.getMainLooper());
         mDownloadDelegate = new StubbedDownloadDelegate();
         mOfflineDelegate = new StubbedOfflinePageDelegate();
-        mSelectionDelegate = new SelectionDelegate<>();
+        mSelectionDelegate = new DownloadItemSelectionDelegate();
         mStubbedThumbnailProvider = new StubbedThumbnailProvider();
     }
 

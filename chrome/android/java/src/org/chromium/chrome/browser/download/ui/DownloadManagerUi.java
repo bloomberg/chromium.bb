@@ -83,7 +83,7 @@ public class DownloadManagerUi implements OnMenuItemClickListener, SearchDelegat
 
             mOfflinePageBridge = new OfflinePageDownloadBridge(
                     Profile.getLastUsedProfile().getOriginalProfile());
-            mSelectionDelegate = new SelectionDelegate<DownloadHistoryItemWrapper>();
+            mSelectionDelegate = new DownloadItemSelectionDelegate();
             mThumbnailProvider = new ThumbnailProviderImpl(iconSize);
         }
 
