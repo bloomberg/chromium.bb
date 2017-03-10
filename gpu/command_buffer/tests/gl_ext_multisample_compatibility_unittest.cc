@@ -195,6 +195,15 @@ TEST_F(EXTMultisampleCompatibilityTest, DrawAlphaOneAndResolve) {
     return;
   }
 
+#if defined(OS_ANDROID)
+  // TODO: Figure out why this fails on NVIDIA Shield. crbug.com/700060.
+  std::string renderer(reinterpret_cast<const char*>(glGetString(GL_RENDERER)));
+  std::string version(reinterpret_cast<const char*>(glGetString(GL_VERSION)));
+  if (renderer.find("NVIDIA Tegra") != std::string::npos &&
+      version.find("OpenGL ES 3.2 NVIDIA 361.00") != std::string::npos)
+    return;
+#endif
+
   // SAMPLE_ALPHA_TO_ONE is specified to transform alpha values of
   // covered samples to 1.0. In order to detect it, we use non-1.0
   // alpha.
