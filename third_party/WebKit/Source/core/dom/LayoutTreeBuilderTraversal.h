@@ -61,6 +61,14 @@ class CORE_EXPORT LayoutTreeBuilderTraversal {
   static ContainerNode* layoutParent(const Node&, ParentDetails* = nullptr);
   static Node* firstChild(const Node&);
   static Node* nextSibling(const Node&);
+  static Node* nextLayoutSibling(const Node& node) {
+    int32_t limit = kTraverseAllSiblings;
+    return nextLayoutSibling(node, limit);
+  }
+  static Node* previousLayoutSibling(const Node& node) {
+    int32_t limit = kTraverseAllSiblings;
+    return previousLayoutSibling(node, limit);
+  }
   static Node* previousSibling(const Node&);
   static Node* previous(const Node&, const Node* stayWithin);
   static Node* next(const Node&, const Node* stayWithin);
@@ -78,6 +86,10 @@ class CORE_EXPORT LayoutTreeBuilderTraversal {
     ContainerNode* found = parent(node);
     return found && found->isElementNode() ? toElement(found) : 0;
   }
+
+ private:
+  static Node* nextLayoutSibling(const Node&, int32_t& limit);
+  static Node* previousLayoutSibling(const Node&, int32_t& limit);
 };
 
 }  // namespace blink
