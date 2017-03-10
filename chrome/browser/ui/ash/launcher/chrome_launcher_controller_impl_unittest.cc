@@ -158,8 +158,9 @@ class TestShelfModelObserver : public ash::ShelfModelObserver {
     last_index_ = target_index;
   }
 
-  void OnSetShelfItemDelegate(ash::ShelfID id,
-                              ash::ShelfItemDelegate* item_delegate) override {}
+  void OnSetShelfItemDelegate(
+      ash::ShelfID id,
+      ash::mojom::ShelfItemDelegate* item_delegate) override {}
 
   void clear_counts() {
     added_ = 0;
@@ -262,21 +263,13 @@ class TestV2AppLauncherItemController : public LauncherItemController {
   ~TestV2AppLauncherItemController() override {}
 
   // Override for LauncherItemController:
-  ash::ShelfAction ItemSelected(ui::EventType event_type,
-                                int event_flags,
-                                int64_t display_id,
-                                ash::ShelfLaunchSource source) override {
-    return ash::SHELF_ACTION_WINDOW_ACTIVATED;
+  void ItemSelected(std::unique_ptr<ui::Event> event,
+                    int64_t display_id,
+                    ash::ShelfLaunchSource source,
+                    const ItemSelectedCallback& callback) override {
+    callback.Run(ash::SHELF_ACTION_WINDOW_ACTIVATED, base::nullopt);
   }
-  ash::ShelfAppMenuItemList GetAppMenuItems(int event_flags) override {
-    ash::ShelfAppMenuItemList items;
-    items.push_back(
-        base::MakeUnique<ash::ShelfApplicationMenuItem>(0, base::string16()));
-    items.push_back(
-        base::MakeUnique<ash::ShelfApplicationMenuItem>(1, base::string16()));
-    return items;
-  }
-  void ExecuteCommand(uint32_t command_id, int event_flags) override {}
+  void ExecuteCommand(uint32_t command_id, int32_t event_flags) override {}
   void Close() override {}
 
  private:
@@ -2851,10 +2844,10 @@ void CheckAppMenu(ChromeLauncherControllerImpl* controller,
                   const ash::ShelfItem& item,
                   size_t expected_item_count,
                   base::string16 expected_item_titles[]) {
-  ash::ShelfAppMenuItemList items = controller->GetAppMenuItemsForTesting(item);
+  MenuItemList items = controller->GetAppMenuItemsForTesting(item);
   ASSERT_EQ(expected_item_count, items.size());
   for (size_t i = 0; i < expected_item_count; i++)
-    EXPECT_EQ(expected_item_titles[i], items[i]->title());
+    EXPECT_EQ(expected_item_titles[i], items[i]->label);
 }
 
 // Check that browsers get reflected correctly in the launcher menu.
@@ -2897,8 +2890,7 @@ TEST_F(ChromeLauncherControllerImplTest, BrowserMenuGeneration) {
   chrome::CloseTab(browser2.get());
 }
 
-// Check the multi profile case where only user related browsers should show
-// up.
+// Check the multi profile case where only user related browsers should show up.
 TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerImplTest,
        BrowserMenuGenerationTwoUsers) {
   // Create a browser item in the LauncherController.
@@ -3358,17 +3350,17 @@ TEST_F(ChromeLauncherControllerImplTest, V1AppMenuDeletionExecution) {
   int tabs = browser()->tab_strip_model()->count();
   // Activate the proper tab through the menu item.
   {
-    ash::ShelfAppMenuItemList items =
+    MenuItemList items =
         launcher_controller_->GetAppMenuItemsForTesting(item_gmail);
-    item_controller->ExecuteCommand(items[1]->command_id(), ui::EF_NONE);
+    item_controller->ExecuteCommand(items[1]->command_id, ui::EF_NONE);
     EXPECT_EQ(tabs, browser()->tab_strip_model()->count());
   }
 
   // Delete one tab through the menu item.
   {
-    ash::ShelfAppMenuItemList items =
+    MenuItemList items =
         launcher_controller_->GetAppMenuItemsForTesting(item_gmail);
-    item_controller->ExecuteCommand(items[1]->command_id(), ui::EF_SHIFT_DOWN);
+    item_controller->ExecuteCommand(items[1]->command_id, ui::EF_SHIFT_DOWN);
     EXPECT_EQ(--tabs, browser()->tab_strip_model()->count());
   }
 }

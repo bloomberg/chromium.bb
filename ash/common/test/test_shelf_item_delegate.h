@@ -5,7 +5,7 @@
 #ifndef ASH_COMMON_TEST_TEST_SHELF_ITEM_DELEGATE_H_
 #define ASH_COMMON_TEST_TEST_SHELF_ITEM_DELEGATE_H_
 
-#include "ash/common/shelf/shelf_item_delegate.h"
+#include "ash/public/interfaces/shelf.mojom.h"
 #include "base/macros.h"
 
 namespace ash {
@@ -15,18 +15,17 @@ class WmWindow;
 namespace test {
 
 // Test implementation of ShelfItemDelegate.
-class TestShelfItemDelegate : public ShelfItemDelegate {
+class TestShelfItemDelegate : public mojom::ShelfItemDelegate {
  public:
   explicit TestShelfItemDelegate(WmWindow* window);
   ~TestShelfItemDelegate() override;
 
-  // ShelfItemDelegate:
-  ShelfAction ItemSelected(ui::EventType event_type,
-                           int event_flags,
-                           int64_t display_id,
-                           ShelfLaunchSource source) override;
-  ShelfAppMenuItemList GetAppMenuItems(int event_flags) override;
-  void ExecuteCommand(uint32_t command_id, int event_flags) override;
+  // mojom::ShelfItemDelegate:
+  void ItemSelected(std::unique_ptr<ui::Event> event,
+                    int64_t display_id,
+                    ShelfLaunchSource source,
+                    const ItemSelectedCallback& callback) override;
+  void ExecuteCommand(uint32_t command_id, int32_t event_flags) override;
   void Close() override;
 
  private:

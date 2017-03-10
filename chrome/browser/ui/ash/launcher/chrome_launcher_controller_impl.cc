@@ -84,6 +84,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/window_open_disposition.h"
+#include "ui/display/types/display_constants.h"
 #include "ui/keyboard/keyboard_util.h"
 #include "ui/resources/grit/ui_resources.h"
 #include "ui/wm/core/window_animations.h"
@@ -99,6 +100,16 @@ int64_t GetDisplayIDForShelf(ash::WmShelf* shelf) {
       shelf->GetWindow()->GetRootWindow()->GetDisplayNearestWindow();
   DCHECK(display.is_valid());
   return display.id();
+}
+
+// A callback that does nothing after shelf item selection handling.
+void NoopCallback(ash::ShelfAction, base::Optional<MenuItemList>) {}
+
+// Calls ItemSelected with |source|, default arguments, and no callback.
+void SelectItemWithSource(ash::mojom::ShelfItemDelegate* delegate,
+                          ash::ShelfLaunchSource source) {
+  delegate->ItemSelected(nullptr, display::kInvalidDisplayId, source,
+                         base::Bind(&NoopCallback));
 }
 
 }  // namespace
@@ -420,7 +431,7 @@ void ChromeLauncherControllerImpl::Launch(ash::ShelfID id, int event_flags) {
 }
 
 void ChromeLauncherControllerImpl::Close(ash::ShelfID id) {
-  ash::ShelfItemDelegate* delegate = model_->GetShelfItemDelegate(id);
+  ash::mojom::ShelfItemDelegate* delegate = model_->GetShelfItemDelegate(id);
   if (!delegate)
     return;  // May happen if menu closed.
   delegate->Close();
@@ -448,7 +459,7 @@ void ChromeLauncherControllerImpl::ActivateApp(const std::string& app_id,
   // If there is an existing non-shortcut controller for this app, open it.
   ash::ShelfID id = GetShelfIDForAppID(app_id);
   if (id) {
-    model_->GetShelfItemDelegate(id)->ItemSelectedBySource(source);
+    SelectItemWithSource(model_->GetShelfItemDelegate(id), source);
     return;
   }
 
@@ -457,7 +468,7 @@ void ChromeLauncherControllerImpl::ActivateApp(const std::string& app_id,
   std::unique_ptr<AppShortcutLauncherItemController> controller(
       AppShortcutLauncherItemController::Create(app_id, std::string(), this));
   if (!controller->GetRunningApplications().empty())
-    controller->ItemSelectedBySource(source);
+    SelectItemWithSource(controller.get(), source);
   else
     LaunchApp(ash::AppLauncherId(app_id), source, event_flags);
 }
@@ -570,7 +581,7 @@ ash::ShelfAction ChromeLauncherControllerImpl::ActivateWindowOrMinimizeIfActive(
 
   if (window->IsActive() && allow_minimize) {
     window->Minimize();
-    return ash::SHELF_ACTION_NONE;
+    return ash::SHELF_ACTION_WINDOW_MINIMIZED;
   }
 
   window->Show();
@@ -615,12 +626,10 @@ void ChromeLauncherControllerImpl::AdditionalUserAddedToSession(
     controller->AdditionalUserAddedToSession(profile);
 }
 
-ash::ShelfAppMenuItemList
-ChromeLauncherControllerImpl::GetAppMenuItemsForTesting(
+MenuItemList ChromeLauncherControllerImpl::GetAppMenuItemsForTesting(
     const ash::ShelfItem& item) {
   LauncherItemController* controller = GetLauncherItemController(item.id);
-  return controller ? controller->GetAppMenuItems(ui::EF_NONE)
-                    : ash::ShelfAppMenuItemList();
+  return controller ? controller->GetAppMenuItems(ui::EF_NONE) : MenuItemList();
 }
 
 std::vector<content::WebContents*>
@@ -1376,11 +1385,11 @@ void ChromeLauncherControllerImpl::CloseWindowedAppsFromRemovedExtension(
 
 void ChromeLauncherControllerImpl::SetShelfItemDelegate(
     ash::ShelfID id,
-    ash::ShelfItemDelegate* item_delegate) {
+    ash::mojom::ShelfItemDelegate* item_delegate) {
   DCHECK_GT(id, 0);
   DCHECK(item_delegate);
   model_->SetShelfItemDelegate(
-      id, std::unique_ptr<ash::ShelfItemDelegate>(item_delegate));
+      id, base::WrapUnique<ash::mojom::ShelfItemDelegate>(item_delegate));
 }
 
 void ChromeLauncherControllerImpl::ReleaseProfile() {
@@ -1434,7 +1443,7 @@ void ChromeLauncherControllerImpl::ShelfItemChanged(
 
 void ChromeLauncherControllerImpl::OnSetShelfItemDelegate(
     ash::ShelfID id,
-    ash::ShelfItemDelegate* item_delegate) {
+    ash::mojom::ShelfItemDelegate* item_delegate) {
   // TODO(skuhne): This fixes crbug.com/429870, but it does not answer why we
   // get into this state in the first place.
   IDToItemControllerMap::iterator iter = id_to_item_controller_map_.find(id);

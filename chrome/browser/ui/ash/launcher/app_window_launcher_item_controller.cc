@@ -74,34 +74,33 @@ AppWindowLauncherItemController::AsAppWindowLauncherItemController() {
   return this;
 }
 
-ash::ShelfAction AppWindowLauncherItemController::ItemSelected(
-    ui::EventType event_type,
-    int event_flags,
+void AppWindowLauncherItemController::ItemSelected(
+    std::unique_ptr<ui::Event> event,
     int64_t display_id,
-    ash::ShelfLaunchSource source) {
-  if (windows_.empty())
-    return ash::SHELF_ACTION_NONE;
+    ash::ShelfLaunchSource source,
+    const ItemSelectedCallback& callback) {
+  if (windows_.empty()) {
+    callback.Run(ash::SHELF_ACTION_NONE, base::nullopt);
+    return;
+  }
 
   ui::BaseWindow* window_to_show =
       last_active_window_ ? last_active_window_ : windows_.front();
   // If the event was triggered by a keystroke, we try to advance to the next
   // item if the window we are trying to activate is already active.
-  if (windows_.size() >= 1 && window_to_show->IsActive() &&
-      event_type == ui::ET_KEY_RELEASED) {
-    return ActivateOrAdvanceToNextAppWindow(window_to_show);
+  ash::ShelfAction action = ash::SHELF_ACTION_NONE;
+  if (windows_.size() >= 1 && window_to_show->IsActive() && event &&
+      event->type() == ui::ET_KEY_RELEASED) {
+    action = ActivateOrAdvanceToNextAppWindow(window_to_show);
+  } else {
+    action = ShowAndActivateOrMinimize(window_to_show);
   }
 
-  return ShowAndActivateOrMinimize(window_to_show);
-}
-
-ash::ShelfAppMenuItemList AppWindowLauncherItemController::GetAppMenuItems(
-    int event_flags) {
-  // Return an empty item list to avoid showing an application menu.
-  return ash::ShelfAppMenuItemList();
+  callback.Run(action, GetAppMenuItems(event ? event->flags() : ui::EF_NONE));
 }
 
 void AppWindowLauncherItemController::ExecuteCommand(uint32_t command_id,
-                                                     int event_flags) {
+                                                     int32_t event_flags) {
   // This delegate does not support showing an application menu.
   NOTIMPLEMENTED();
 }
@@ -142,7 +141,7 @@ ash::ShelfAction AppWindowLauncherItemController::ShowAndActivateOrMinimize(
     ui::BaseWindow* app_window) {
   // Either show or minimize windows when shown from the launcher.
   return launcher_controller()->ActivateWindowOrMinimizeIfActive(
-      app_window, GetAppMenuItems(0).size() == 1);
+      app_window, GetAppMenuItems(ui::EF_NONE).size() == 1);
 }
 
 ash::ShelfAction

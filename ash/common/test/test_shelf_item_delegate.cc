@@ -15,27 +15,23 @@ TestShelfItemDelegate::TestShelfItemDelegate(WmWindow* window)
 
 TestShelfItemDelegate::~TestShelfItemDelegate() {}
 
-ShelfAction TestShelfItemDelegate::ItemSelected(ui::EventType event_type,
-                                                int event_flags,
-                                                int64_t display_id,
-                                                ShelfLaunchSource source) {
+void TestShelfItemDelegate::ItemSelected(std::unique_ptr<ui::Event> event,
+                                         int64_t display_id,
+                                         ShelfLaunchSource source,
+                                         const ItemSelectedCallback& callback) {
   if (window_) {
     if (window_->GetType() == ui::wm::WINDOW_TYPE_PANEL)
       wm::MoveWindowToDisplay(window_->aura_window(), display_id);
     window_->Show();
     window_->Activate();
-    return SHELF_ACTION_WINDOW_ACTIVATED;
+    callback.Run(SHELF_ACTION_WINDOW_ACTIVATED, base::nullopt);
+    return;
   }
-  return SHELF_ACTION_NONE;
-}
-
-ShelfAppMenuItemList TestShelfItemDelegate::GetAppMenuItems(int event_flags) {
-  // Return an empty item list to avoid showing an application menu.
-  return ShelfAppMenuItemList();
+  callback.Run(SHELF_ACTION_NONE, base::nullopt);
 }
 
 void TestShelfItemDelegate::ExecuteCommand(uint32_t command_id,
-                                           int event_flags) {
+                                           int32_t event_flags) {
   // This delegate does not support showing an application menu.
   NOTIMPLEMENTED();
 }

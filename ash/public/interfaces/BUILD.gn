@@ -32,7 +32,9 @@ mojom("interfaces_internal") {
 
   public_deps = [
     "//components/signin/public/interfaces",
+    "//mojo/common:common_custom_types",
     "//skia/public/interfaces",
+    "//ui/events/mojo:interfaces",
   ]
 
   export_class_attribute = "ASH_PUBLIC_EXPORT"

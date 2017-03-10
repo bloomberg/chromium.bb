@@ -162,8 +162,6 @@ component("ash") {
     "common/shelf/shelf_controller.cc",
     "common/shelf/shelf_controller.h",
     "common/shelf/shelf_delegate.h",
-    "common/shelf/shelf_item_delegate.cc",
-    "common/shelf/shelf_item_delegate.h",
     "common/shelf/shelf_item_types.cc",
     "common/shelf/shelf_item_types.h",
     "common/shelf/shelf_layout_manager.cc",

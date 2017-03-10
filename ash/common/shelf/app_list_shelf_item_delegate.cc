@@ -32,22 +32,17 @@ AppListShelfItemDelegate::AppListShelfItemDelegate() {}
 
 AppListShelfItemDelegate::~AppListShelfItemDelegate() {}
 
-ShelfAction AppListShelfItemDelegate::ItemSelected(ui::EventType event_type,
-                                                   int event_flags,
-                                                   int64_t display_id,
-                                                   ShelfLaunchSource source) {
+void AppListShelfItemDelegate::ItemSelected(
+    std::unique_ptr<ui::Event> event,
+    int64_t display_id,
+    ShelfLaunchSource source,
+    const ItemSelectedCallback& callback) {
   WmShell::Get()->ToggleAppList();
-  return SHELF_ACTION_APP_LIST_SHOWN;
-}
-
-ShelfAppMenuItemList AppListShelfItemDelegate::GetAppMenuItems(
-    int event_flags) {
-  // Return an empty item list to avoid showing an application menu.
-  return ShelfAppMenuItemList();
+  callback.Run(SHELF_ACTION_APP_LIST_SHOWN, base::nullopt);
 }
 
 void AppListShelfItemDelegate::ExecuteCommand(uint32_t command_id,
-                                              int event_flags) {
+                                              int32_t event_flags) {
   // This delegate does not support showing an application menu.
   NOTIMPLEMENTED();
 }

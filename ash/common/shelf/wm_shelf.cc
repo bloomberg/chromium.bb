@@ -6,7 +6,6 @@
 
 #include "ash/common/shelf/shelf_controller.h"
 #include "ash/common/shelf/shelf_delegate.h"
-#include "ash/common/shelf/shelf_item_delegate.h"
 #include "ash/common/shelf/shelf_layout_manager.h"
 #include "ash/common/shelf/shelf_locking_manager.h"
 #include "ash/common/shelf/shelf_model.h"
@@ -16,6 +15,7 @@
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/public/interfaces/shelf.mojom.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf_bezel_event_handler.h"
 #include "ash/shell.h"
@@ -26,6 +26,14 @@
 #include "ui/gfx/geometry/rect.h"
 
 namespace ash {
+
+namespace {
+
+// A callback that does nothing after shelf item selection handling.
+void NoopCallback(ShelfAction,
+                  base::Optional<std::vector<mojom::MenuItemPtr>>) {}
+
+}  // namespace
 
 // WmShelf::AutoHideEventHandler -----------------------------------------------
 
@@ -292,9 +300,12 @@ void WmShelf::LaunchShelfItem(int item_index) {
 void WmShelf::ActivateShelfItem(int item_index) {
   ShelfModel* shelf_model = WmShell::Get()->shelf_model();
   const ShelfItem& item = shelf_model->items()[item_index];
-  ShelfItemDelegate* item_delegate = shelf_model->GetShelfItemDelegate(item.id);
-  item_delegate->ItemSelected(ui::ET_KEY_RELEASED, ui::EF_NONE,
-                              display::kInvalidDisplayId, LAUNCH_FROM_UNKNOWN);
+  mojom::ShelfItemDelegate* item_delegate =
+      shelf_model->GetShelfItemDelegate(item.id);
+  std::unique_ptr<ui::Event> event = base::MakeUnique<ui::KeyEvent>(
+      ui::ET_KEY_RELEASED, ui::VKEY_UNKNOWN, ui::EF_NONE);
+  item_delegate->ItemSelected(std::move(event), display::kInvalidDisplayId,
+                              LAUNCH_FROM_UNKNOWN, base::Bind(&NoopCallback));
 }
 
 bool WmShelf::ProcessGestureEvent(const ui::GestureEvent& event) {

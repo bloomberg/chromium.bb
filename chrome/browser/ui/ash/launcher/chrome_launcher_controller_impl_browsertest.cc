@@ -78,6 +78,7 @@
 #include "ui/aura/window.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/display/test/display_manager_test_api.h"
+#include "ui/events/base_event_utils.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/test/event_generator.h"
@@ -94,12 +95,35 @@ ChromeLauncherControllerImpl* GetChromeLauncherControllerImpl() {
       ChromeLauncherController::instance());
 }
 
+// A callback that records the action taken when a shelf item is selected.
+void SelectItemCallback(ash::ShelfAction* action_taken,
+                        base::RunLoop* run_loop,
+                        ash::ShelfAction action,
+                        base::Optional<MenuItemList>) {
+  *action_taken = action;
+  run_loop->Quit();
+}
+
 // Calls ShelfItemDelegate::SelectItem with an event type and default arguments.
-ash::ShelfAction SelectItem(ash::ShelfItemDelegate* delegate,
+ash::ShelfAction SelectItem(ash::mojom::ShelfItemDelegate* delegate,
                             ui::EventType event_type) {
-  return delegate->ItemSelected(event_type, ui::EF_NONE,
-                                display::kInvalidDisplayId,
-                                ash::LAUNCH_FROM_UNKNOWN);
+  std::unique_ptr<ui::Event> event;
+  if (event_type == ui::ET_MOUSE_PRESSED) {
+    event =
+        base::MakeUnique<ui::MouseEvent>(event_type, gfx::Point(), gfx::Point(),
+                                         ui::EventTimeForNow(), ui::EF_NONE, 0);
+  } else if (event_type == ui::ET_KEY_RELEASED) {
+    event = base::MakeUnique<ui::KeyEvent>(event_type, ui::VKEY_UNKNOWN,
+                                           ui::EF_NONE);
+  }
+
+  base::RunLoop run_loop;
+  ash::ShelfAction action = ash::SHELF_ACTION_NONE;
+  delegate->ItemSelected(std::move(event), display::kInvalidDisplayId,
+                         ash::LAUNCH_FROM_UNKNOWN,
+                         base::Bind(&SelectItemCallback, &action, &run_loop));
+  run_loop.Run();
+  return action;
 }
 
 class TestEvent : public ui::Event {
@@ -772,7 +796,7 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, AppPanel) {
   EXPECT_EQ(ash::TYPE_APP_PANEL, item1.type);
   EXPECT_EQ(ash::STATUS_RUNNING, item1.status);
   EXPECT_EQ(nullptr, GetItemController(item1.id));
-  ash::ShelfItemDelegate* item1_delegate =
+  ash::mojom::ShelfItemDelegate* item1_delegate =
       shelf_model()->GetShelfItemDelegate(item1.id);
   EXPECT_EQ(ash::TYPE_APP_PANEL,
             panel->GetNativeWindow()->GetProperty(ash::kShelfItemTypeKey));
@@ -812,7 +836,7 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, AppPanelClickBehavior) {
   EXPECT_EQ(ash::TYPE_APP_PANEL, item1.type);
   EXPECT_EQ(ash::STATUS_RUNNING, item1.status);
   EXPECT_EQ(nullptr, GetItemController(item1.id));
-  ash::ShelfItemDelegate* item1_delegate =
+  ash::mojom::ShelfItemDelegate* item1_delegate =
       shelf_model()->GetShelfItemDelegate(item1.id);
   EXPECT_EQ(ash::TYPE_APP_PANEL,
             panel->GetNativeWindow()->GetProperty(ash::kShelfItemTypeKey));
@@ -1520,7 +1544,7 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, WindowAttentionStatus) {
   const ash::ShelfItem& item = GetLastLauncherPanelItem();
   // Panels are handled by ShelfWindowWatcher, not ChromeLauncherController.
   EXPECT_EQ(nullptr, GetItemController(item.id));
-  ash::ShelfItemDelegate* shelf_item_delegate =
+  ash::mojom::ShelfItemDelegate* shelf_item_delegate =
       shelf_model()->GetShelfItemDelegate(item.id);
   EXPECT_NE(nullptr, shelf_item_delegate);
   EXPECT_EQ(ash::TYPE_APP_PANEL, item.type);

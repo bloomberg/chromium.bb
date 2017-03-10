@@ -44,12 +44,11 @@ class AppWindowLauncherItemController : public LauncherItemController,
 
   // LauncherItemController overrides:
   AppWindowLauncherItemController* AsAppWindowLauncherItemController() override;
-  ash::ShelfAction ItemSelected(ui::EventType event_type,
-                                int event_flags,
-                                int64_t display_id,
-                                ash::ShelfLaunchSource source) override;
-  ash::ShelfAppMenuItemList GetAppMenuItems(int event_flags) override;
-  void ExecuteCommand(uint32_t command_id, int event_flags) override;
+  void ItemSelected(std::unique_ptr<ui::Event> event,
+                    int64_t display_id,
+                    ash::ShelfLaunchSource source,
+                    const ItemSelectedCallback& callback) override;
+  void ExecuteCommand(uint32_t command_id, int32_t event_flags) override;
   void Close() override;
 
   // aura::WindowObserver overrides:

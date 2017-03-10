@@ -9,22 +9,21 @@
 #include <vector>
 
 #include "ash/ash_export.h"
-#include "ash/public/cpp/shelf_application_menu_item.h"
+#include "ash/public/interfaces/shelf.mojom.h"
 #include "base/macros.h"
 #include "ui/base/models/simple_menu_model.h"
 
 namespace ash {
 
 class ShelfApplicationMenuModelTestAPI;
-class ShelfItemDelegate;
 
 // A menu model listing open applications associated with a shelf item. Layout:
 // +---------------------------+
 // |                           |
-// |        App Title          |
+// |         Shelf Item Title  |
 // |                           |
-// | [Icon] Item Title         |
-// | [Icon] Item Title         |
+// |  [Icon] Menu Item Label   |
+// |  [Icon] Menu Item Label   |
 // |                           |
 // +---------------------------+
 class ASH_EXPORT ShelfApplicationMenuModel
@@ -34,8 +33,8 @@ class ASH_EXPORT ShelfApplicationMenuModel
   // Makes a menu with a |title|, separators, and |items| for |delegate|.
   // |delegate| may be null in unit tests that do not execute commands.
   ShelfApplicationMenuModel(const base::string16& title,
-                            ShelfAppMenuItemList items,
-                            ShelfItemDelegate* delegate);
+                            std::vector<mojom::MenuItemPtr> items,
+                            mojom::ShelfItemDelegate* delegate);
   ~ShelfApplicationMenuModel() override;
 
   // ui::SimpleMenuModel::Delegate:
@@ -51,10 +50,10 @@ class ASH_EXPORT ShelfApplicationMenuModel
                                      int num_menu_items_enabled);
 
   // The list of menu items as returned from the shelf item's controller.
-  ShelfAppMenuItemList items_;
+  std::vector<mojom::MenuItemPtr> items_;
 
   // The shelf item delegate that created the menu and executes its commands.
-  ShelfItemDelegate* delegate_;
+  mojom::ShelfItemDelegate* delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(ShelfApplicationMenuModel);
 };

@@ -12,10 +12,11 @@
 
 #include "ash/common/shelf/ink_drop_button_listener.h"
 #include "ash/common/shelf/shelf_button_pressed_metric_tracker.h"
-#include "ash/common/shelf/shelf_item_delegate.h"
 #include "ash/common/shelf/shelf_model_observer.h"
 #include "ash/common/shelf/shelf_tooltip_manager.h"
+#include "ash/public/interfaces/shelf.mojom.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/app_list/views/app_list_drag_and_drop_host.h"
 #include "ui/views/animation/bounds_animator_observer.h"
@@ -290,7 +291,17 @@ class ASH_EXPORT ShelfView : public views::View,
   void ShelfItemChanged(int model_index, const ShelfItem& old_item) override;
   void ShelfItemMoved(int start_index, int target_index) override;
   void OnSetShelfItemDelegate(ShelfID id,
-                              ShelfItemDelegate* item_delegate) override;
+                              mojom::ShelfItemDelegate* item_delegate) override;
+
+  // Handles the result of an item selection, records the |action| taken and
+  // optionally shows an application menu with the given |menu_items|.
+  void AfterItemSelected(
+      const ShelfItem& item,
+      views::Button* sender,
+      std::unique_ptr<ui::Event> event,
+      views::InkDrop* ink_drop,
+      ShelfAction action,
+      base::Optional<std::vector<mojom::MenuItemPtr>> menu_items);
 
   // Show a list of all running items for this shelf |item|; it only shows a
   // menu if there are multiple running items. |source| specifies the view
@@ -461,6 +472,8 @@ class ASH_EXPORT ShelfView : public views::View,
 
   // Tracks UMA metrics based on shelf button press actions.
   ShelfButtonPressedMetricTracker shelf_button_pressed_metric_tracker_;
+
+  base::WeakPtrFactory<ShelfView> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ShelfView);
 };

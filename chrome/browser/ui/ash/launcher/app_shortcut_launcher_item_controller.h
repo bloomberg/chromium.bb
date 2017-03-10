@@ -41,12 +41,12 @@ class AppShortcutLauncherItemController : public LauncherItemController {
   std::vector<content::WebContents*> GetRunningApplications();
 
   // LauncherItemController overrides:
-  ash::ShelfAction ItemSelected(ui::EventType event_type,
-                                int event_flags,
-                                int64_t display_id,
-                                ash::ShelfLaunchSource source) override;
-  ash::ShelfAppMenuItemList GetAppMenuItems(int event_flags) override;
-  void ExecuteCommand(uint32_t command_id, int event_flags) override;
+  void ItemSelected(std::unique_ptr<ui::Event> event,
+                    int64_t display_id,
+                    ash::ShelfLaunchSource source,
+                    const ItemSelectedCallback& callback) override;
+  MenuItemList GetAppMenuItems(int event_flags) override;
+  void ExecuteCommand(uint32_t command_id, int32_t event_flags) override;
   void Close() override;
 
   // Get the refocus url pattern, which can be used to identify this application

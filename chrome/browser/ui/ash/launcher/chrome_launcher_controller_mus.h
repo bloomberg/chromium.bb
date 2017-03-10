@@ -5,14 +5,10 @@
 #ifndef CHROME_BROWSER_UI_ASH_LAUNCHER_CHROME_LAUNCHER_CONTROLLER_MUS_H_
 #define CHROME_BROWSER_UI_ASH_LAUNCHER_CHROME_LAUNCHER_CONTROLLER_MUS_H_
 
-#include <map>
-#include <memory>
 #include <string>
 
 #include "base/macros.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
-
-class ChromeShelfItemDelegate;
 
 class ChromeLauncherControllerMus : public ChromeLauncherController {
  public:
@@ -54,8 +50,7 @@ class ChromeLauncherControllerMus : public ChromeLauncherController {
       bool allow_minimize) override;
   void ActiveUserChanged(const std::string& user_email) override;
   void AdditionalUserAddedToSession(Profile* profile) override;
-  ash::ShelfAppMenuItemList GetAppMenuItemsForTesting(
-      const ash::ShelfItem& item) override;
+  MenuItemList GetAppMenuItemsForTesting(const ash::ShelfItem& item) override;
   std::vector<content::WebContents*> GetV1ApplicationsFromAppId(
       const std::string& app_id) override;
   void ActivateShellApp(const std::string& app_id, int window_index) override;
@@ -88,9 +83,6 @@ class ChromeLauncherControllerMus : public ChromeLauncherController {
  private:
   // Pin the items set in the current profile's preferences.
   void PinAppsFromPrefs();
-
-  std::map<std::string, std::unique_ptr<ChromeShelfItemDelegate>>
-      app_id_to_item_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeLauncherControllerMus);
 };

@@ -156,9 +156,9 @@ void ShelfWindowWatcher::AddShelfItem(aura::Window* window) {
   ShelfID id = model_->next_id();
   UpdateShelfItemForWindow(&item, window);
   window->SetProperty(kShelfIDKey, id);
-  std::unique_ptr<ShelfItemDelegate> item_delegate(
-      new ShelfWindowWatcherItemDelegate(id, WmWindow::Get(window)));
-  model_->SetShelfItemDelegate(id, std::move(item_delegate));
+  model_->SetShelfItemDelegate(id,
+                               base::MakeUnique<ShelfWindowWatcherItemDelegate>(
+                                   id, WmWindow::Get(window)));
   // Panels are inserted on the left so as not to push all existing panels over.
   model_->AddAt(item.type == TYPE_APP_PANEL ? 0 : model_->item_count(), item);
 }

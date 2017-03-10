@@ -23,11 +23,11 @@ class ArcAppWindowLauncherItemController
   ~ArcAppWindowLauncherItemController() override;
 
   // LauncherItemController overrides:
-  ash::ShelfAction ItemSelected(ui::EventType event_type,
-                                int event_flags,
-                                int64_t display_id,
-                                ash::ShelfLaunchSource source) override;
-  ash::ShelfAppMenuItemList GetAppMenuItems(int event_flags) override;
+  void ItemSelected(std::unique_ptr<ui::Event> event,
+                    int64_t display_id,
+                    ash::ShelfLaunchSource source,
+                    const ItemSelectedCallback& callback) override;
+  MenuItemList GetAppMenuItems(int event_flags) override;
 
   void AddTaskId(int task_id);
   void RemoveTaskId(int task_id);

@@ -155,18 +155,18 @@ class ShelfItemSelectionTracker : public TestShelfItemDelegate {
   bool WasSelected() { return selected_; }
 
   // TestShelfItemDelegate:
-  ShelfAction ItemSelected(ui::EventType event_type,
-                           int event_flags,
-                           int64_t display_id,
-                           ShelfLaunchSource source) override {
+  void ItemSelected(std::unique_ptr<ui::Event> event,
+                    int64_t display_id,
+                    ShelfLaunchSource source,
+                    const ItemSelectedCallback& callback) override {
     selected_ = true;
-    return item_selected_action_;
+    callback.Run(item_selected_action_, base::nullopt);
   }
 
  private:
   bool selected_;
 
-  // The action returned from ItemSelected(const ui::Event&).
+  // The action reported by ItemSelected.
   ShelfAction item_selected_action_;
 
   DISALLOW_COPY_AND_ASSIGN(ShelfItemSelectionTracker);
@@ -326,9 +326,8 @@ class ShelfViewTest : public AshTestBase {
 
  protected:
   void CreateAndSetShelfItemDelegateForID(ShelfID id) {
-    std::unique_ptr<ShelfItemDelegate> delegate(
-        new TestShelfItemDelegate(NULL));
-    model_->SetShelfItemDelegate(id, std::move(delegate));
+    model_->SetShelfItemDelegate(
+        id, base::MakeUnique<TestShelfItemDelegate>(nullptr));
   }
 
   ShelfID AddBrowserShortcut() {
@@ -1230,7 +1229,8 @@ TEST_F(ShelfViewTest, ClickingTwiceActivatesOnce) {
   ShelfID browser_shelf_id = model_->items()[browser_index_].id;
   ShelfItemSelectionTracker* selection_tracker = new ShelfItemSelectionTracker;
   model_->SetShelfItemDelegate(
-      browser_shelf_id, std::unique_ptr<ShelfItemDelegate>(selection_tracker));
+      browser_shelf_id,
+      base::WrapUnique<ShelfItemSelectionTracker>(selection_tracker));
 
   // A single click selects the item.
   SimulateClick(browser_index_);
@@ -1255,7 +1255,7 @@ TEST_F(ShelfViewTest, ClickAndMoveSlightly) {
   // the shelf item gets selected.
   ShelfItemSelectionTracker* selection_tracker = new ShelfItemSelectionTracker;
   model_->SetShelfItemDelegate(
-      shelf_id, std::unique_ptr<ShelfItemDelegate>(selection_tracker));
+      shelf_id, base::WrapUnique<ShelfItemSelectionTracker>(selection_tracker));
 
   gfx::Vector2d press_offset(5, 30);
   gfx::Point press_location = gfx::Point() + press_offset;
@@ -1829,7 +1829,8 @@ TEST_F(ShelfViewTest,
   ShelfID browser_shelf_id = model_->items()[browser_index_].id;
   ShelfItemSelectionTracker* selection_tracker = new ShelfItemSelectionTracker;
   model_->SetShelfItemDelegate(
-      browser_shelf_id, std::unique_ptr<ShelfItemDelegate>(selection_tracker));
+      browser_shelf_id,
+      base::WrapUnique<ShelfItemSelectionTracker>(selection_tracker));
 
   SimulateClick(browser_index_);
   EXPECT_EQ(1,
@@ -1849,7 +1850,8 @@ TEST_F(ShelfViewTest, Launcher_TaskUserActionsRecordedWhenItemSelected) {
   ShelfItemSelectionTracker* selection_tracker = new ShelfItemSelectionTracker;
   selection_tracker->set_item_selected_action(SHELF_ACTION_NEW_WINDOW_CREATED);
   model_->SetShelfItemDelegate(
-      browser_shelf_id, std::unique_ptr<ShelfItemDelegate>(selection_tracker));
+      browser_shelf_id,
+      base::WrapUnique<ShelfItemSelectionTracker>(selection_tracker));
 
   SimulateClick(browser_index_);
   EXPECT_EQ(1, user_action_tester.GetActionCount("Launcher_LaunchTask"));
@@ -1864,7 +1866,8 @@ TEST_F(ShelfViewTest,
   ShelfID browser_shelf_id = model_->items()[browser_index_].id;
   ShelfItemSelectionTracker* selection_tracker = new ShelfItemSelectionTracker;
   model_->SetShelfItemDelegate(
-      browser_shelf_id, std::unique_ptr<ShelfItemDelegate>(selection_tracker));
+      browser_shelf_id,
+      base::WrapUnique<ShelfItemSelectionTracker>(selection_tracker));
 
   selection_tracker->set_item_selected_action(SHELF_ACTION_WINDOW_MINIMIZED);
   SimulateClick(browser_index_);
@@ -1979,12 +1982,15 @@ class ListMenuShelfItemDelegate : public TestShelfItemDelegate {
 
  private:
   // TestShelfItemDelegate:
-  ShelfAppMenuItemList GetAppMenuItems(int event_flags) override {
-    ShelfAppMenuItemList items;
-    base::string16 title = base::ASCIIToUTF16("title");
-    items.push_back(base::MakeUnique<ShelfApplicationMenuItem>(0, title));
-    items.push_back(base::MakeUnique<ShelfApplicationMenuItem>(1, title));
-    return items;
+  void ItemSelected(std::unique_ptr<ui::Event> event,
+                    int64_t display_id,
+                    ShelfLaunchSource source,
+                    const ItemSelectedCallback& callback) override {
+    // Two items are needed to show a menu; the data in the items is not tested.
+    std::vector<mojom::MenuItemPtr> items;
+    items.push_back(ash::mojom::MenuItem::New());
+    items.push_back(ash::mojom::MenuItem::New());
+    callback.Run(ash::SHELF_ACTION_NONE, std::move(items));
   }
 
   DISALLOW_COPY_AND_ASSIGN(ListMenuShelfItemDelegate);
@@ -2426,9 +2432,8 @@ TEST_F(ShelfViewInkDropTest, ShelfButtonWithMenuPressRelease) {
 
   // Set a delegate for the shelf item that returns an app list menu.
   ShelfID browser_shelf_id = model_->items()[browser_index_].id;
-  ListMenuShelfItemDelegate* list_menu_delegate = new ListMenuShelfItemDelegate;
   model_->SetShelfItemDelegate(browser_shelf_id,
-                               base::WrapUnique(list_menu_delegate));
+                               base::MakeUnique<ListMenuShelfItemDelegate>());
 
   views::CustomButton* button = browser_button_;
   gfx::Point mouse_location = button->GetLocalBounds().CenterPoint();

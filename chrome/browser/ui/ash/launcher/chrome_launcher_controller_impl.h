@@ -95,8 +95,7 @@ class ChromeLauncherControllerImpl
       bool allow_minimize) override;
   void ActiveUserChanged(const std::string& user_email) override;
   void AdditionalUserAddedToSession(Profile* profile) override;
-  ash::ShelfAppMenuItemList GetAppMenuItemsForTesting(
-      const ash::ShelfItem& item) override;
+  MenuItemList GetAppMenuItemsForTesting(const ash::ShelfItem& item) override;
   std::vector<content::WebContents*> GetV1ApplicationsFromAppId(
       const std::string& app_id) override;
   void ActivateShellApp(const std::string& app_id, int window_index) override;
@@ -244,7 +243,7 @@ class ChromeLauncherControllerImpl
   // Set ShelfItemDelegate |item_delegate| for |id| and take an ownership.
   // TODO(simon.hong81): Make this take a scoped_ptr of |item_delegate|.
   void SetShelfItemDelegate(ash::ShelfID id,
-                            ash::ShelfItemDelegate* item_delegate);
+                            ash::mojom::ShelfItemDelegate* item_delegate);
 
   // Forget the current profile to allow attaching to a new one.
   void ReleaseProfile();
@@ -254,8 +253,9 @@ class ChromeLauncherControllerImpl
   void ShelfItemRemoved(int index, ash::ShelfID id) override;
   void ShelfItemMoved(int start_index, int target_index) override;
   void ShelfItemChanged(int index, const ash::ShelfItem& old_item) override;
-  void OnSetShelfItemDelegate(ash::ShelfID id,
-                              ash::ShelfItemDelegate* item_delegate) override;
+  void OnSetShelfItemDelegate(
+      ash::ShelfID id,
+      ash::mojom::ShelfItemDelegate* item_delegate) override;
 
   // ash::WindowTreeHostManager::Observer:
   void OnDisplayConfigurationChanged() override;

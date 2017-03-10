@@ -9,14 +9,13 @@
 #include <string>
 #include <vector>
 
-#include "ash/common/shelf/shelf_item_delegate.h"
 #include "ash/common/shelf/shelf_item_types.h"
-#include "ash/public/cpp/shelf_application_menu_item.h"
 #include "ash/public/interfaces/shelf.mojom.h"
 #include "chrome/browser/ui/app_icon_loader.h"
 #include "chrome/browser/ui/app_icon_loader_delegate.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/ash/app_launcher_id.h"
+#include "chrome/browser/ui/ash/launcher/launcher_item_controller.h"
 #include "chrome/browser/ui/ash/launcher/settings_window_observer.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 
@@ -25,7 +24,6 @@ class ArcAppDeferredLauncherController;
 class BrowserShortcutLauncherItemController;
 class GURL;
 class LauncherControllerHelper;
-class LauncherItemController;
 
 namespace ash {
 class WmShelf;
@@ -180,7 +178,7 @@ class ChromeLauncherController : public ash::mojom::ShelfObserver,
   virtual void AdditionalUserAddedToSession(Profile* profile) = 0;
 
   // Get the list of all running incarnations of this item.
-  virtual ash::ShelfAppMenuItemList GetAppMenuItemsForTesting(
+  virtual MenuItemList GetAppMenuItemsForTesting(
       const ash::ShelfItem& item) = 0;
 
   // Get the list of all tabs which belong to a certain application type.

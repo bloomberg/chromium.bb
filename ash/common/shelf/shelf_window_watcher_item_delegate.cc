@@ -35,42 +35,36 @@ ShelfWindowWatcherItemDelegate::ShelfWindowWatcherItemDelegate(ShelfID id,
 
 ShelfWindowWatcherItemDelegate::~ShelfWindowWatcherItemDelegate() {}
 
-ShelfAction ShelfWindowWatcherItemDelegate::ItemSelected(
-    ui::EventType event_type,
-    int event_flags,
+void ShelfWindowWatcherItemDelegate::ItemSelected(
+    std::unique_ptr<ui::Event> event,
     int64_t display_id,
-    ShelfLaunchSource source) {
+    ShelfLaunchSource source,
+    const ItemSelectedCallback& callback) {
   // Move panels attached on another display to the current display.
   if (GetShelfItemType(id_) == TYPE_APP_PANEL &&
       window_->aura_window()->GetProperty(kPanelAttachedKey) &&
       wm::MoveWindowToDisplay(window_->aura_window(), display_id)) {
     window_->Activate();
-    return SHELF_ACTION_WINDOW_ACTIVATED;
+    callback.Run(SHELF_ACTION_WINDOW_ACTIVATED, base::nullopt);
+    return;
   }
 
   if (window_->IsActive()) {
-    if (event_type == ui::ET_KEY_RELEASED) {
+    if (event && event->type() == ui::ET_KEY_RELEASED) {
       window_->Animate(::wm::WINDOW_ANIMATION_TYPE_BOUNCE);
-      return SHELF_ACTION_NONE;
+      callback.Run(SHELF_ACTION_NONE, base::nullopt);
+      return;
     }
     window_->Minimize();
-    return SHELF_ACTION_WINDOW_MINIMIZED;
+    callback.Run(SHELF_ACTION_WINDOW_MINIMIZED, base::nullopt);
+    return;
   }
   window_->Activate();
-  return SHELF_ACTION_WINDOW_ACTIVATED;
-}
-
-ShelfAppMenuItemList ShelfWindowWatcherItemDelegate::GetAppMenuItems(
-    int event_flags) {
-  // Return an empty item list to avoid showing an application menu.
-  return ShelfAppMenuItemList();
+  callback.Run(SHELF_ACTION_WINDOW_ACTIVATED, base::nullopt);
 }
 
 void ShelfWindowWatcherItemDelegate::ExecuteCommand(uint32_t command_id,
-                                                    int event_flags) {
-  // This delegate does not support showing an application menu.
-  NOTIMPLEMENTED();
-}
+                                                    int32_t event_flags) {}
 
 void ShelfWindowWatcherItemDelegate::Close() {
   window_->CloseWidget();

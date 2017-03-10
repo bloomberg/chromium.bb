@@ -30,8 +30,8 @@ class ExtensionAppWindowLauncherItemController
   void AddAppWindow(extensions::AppWindow* app_window);
 
   // AppWindowLauncherItemController:
-  ash::ShelfAppMenuItemList GetAppMenuItems(int event_flags) override;
-  void ExecuteCommand(uint32_t command_id, int event_flags) override;
+  MenuItemList GetAppMenuItems(int event_flags) override;
+  void ExecuteCommand(uint32_t command_id, int32_t event_flags) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ExtensionAppWindowLauncherItemController);

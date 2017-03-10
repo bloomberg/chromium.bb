@@ -72,10 +72,9 @@ TEST_F(ShelfTest, CheckHoverAfterMenu) {
   item.status = STATUS_RUNNING;
   int index = shelf_model()->Add(item);
 
-  std::unique_ptr<ShelfItemDelegate> delegate(
-      new test::TestShelfItemDelegate(NULL));
-  shelf_model()->SetShelfItemDelegate(shelf_model()->items()[index].id,
-                                      std::move(delegate));
+  shelf_model()->SetShelfItemDelegate(
+      shelf_model()->items()[index].id,
+      base::MakeUnique<test::TestShelfItemDelegate>(nullptr));
 
   ASSERT_EQ(++button_count, test_api()->GetButtonCount());
   ShelfButton* button = test_api()->GetButton(index);

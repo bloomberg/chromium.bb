@@ -114,9 +114,8 @@ void WindowWatcher::OnWindowAdded(aura::Window* new_window) {
 
   model->Add(item);
 
-  std::unique_ptr<ShelfItemDelegate> delegate(
-      new WindowWatcherShelfItemDelegate(id, this));
-  model->SetShelfItemDelegate(id, std::move(delegate));
+  model->SetShelfItemDelegate(
+      id, base::MakeUnique<WindowWatcherShelfItemDelegate>(id, this));
   new_window->SetProperty(kShelfIDKey, id);
 }
 

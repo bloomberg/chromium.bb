@@ -11,7 +11,6 @@
 #include "ash/common/shelf/shelf_model.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
-#include "ash/public/cpp/shelf_application_menu_item.h"
 #include "ash/resources/grit/ash_resources.h"
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_util.h"
@@ -183,39 +182,47 @@ void BrowserShortcutLauncherItemController::SetShelfIDForBrowserWindowContents(
       launcher_controller()->GetShelfIDForWebContents(web_contents));
 }
 
-ash::ShelfAction BrowserShortcutLauncherItemController::ItemSelected(
-    ui::EventType event_type,
-    int event_flags,
+void BrowserShortcutLauncherItemController::ItemSelected(
+    std::unique_ptr<ui::Event> event,
     int64_t display_id,
-    ash::ShelfLaunchSource source) {
-  if (event_flags & ui::EF_CONTROL_DOWN) {
+    ash::ShelfLaunchSource source,
+    const ItemSelectedCallback& callback) {
+  if (event && (event->flags() & ui::EF_CONTROL_DOWN)) {
     chrome::NewEmptyWindow(launcher_controller()->profile());
-    return ash::SHELF_ACTION_NEW_WINDOW_CREATED;
+    callback.Run(ash::SHELF_ACTION_NEW_WINDOW_CREATED, base::nullopt);
+    return;
   }
+
+  MenuItemList items = GetAppMenuItems(event ? event->flags() : ui::EF_NONE);
 
   // In case of a keyboard event, we were called by a hotkey. In that case we
   // activate the next item in line if an item of our list is already active.
-  if (event_type == ui::ET_KEY_RELEASED)
-    return ActivateOrAdvanceToNextBrowser();
+  if (event && event->type() == ui::ET_KEY_RELEASED) {
+    callback.Run(ActivateOrAdvanceToNextBrowser(), std::move(items));
+    return;
+  }
 
   Browser* last_browser =
       chrome::FindTabbedBrowser(launcher_controller()->profile(), true);
 
   if (!last_browser) {
     chrome::NewEmptyWindow(launcher_controller()->profile());
-    return ash::SHELF_ACTION_NEW_WINDOW_CREATED;
+    callback.Run(ash::SHELF_ACTION_NEW_WINDOW_CREATED, base::nullopt);
+    return;
   }
 
-  return launcher_controller()->ActivateWindowOrMinimizeIfActive(
-      last_browser->window(), GetAppMenuItems(0).size() == 1);
+  ash::ShelfAction action =
+      launcher_controller()->ActivateWindowOrMinimizeIfActive(
+          last_browser->window(), items.size() == 1);
+  callback.Run(action, std::move(items));
 }
 
-ash::ShelfAppMenuItemList
-BrowserShortcutLauncherItemController::GetAppMenuItems(int event_flags) {
+MenuItemList BrowserShortcutLauncherItemController::GetAppMenuItems(
+    int event_flags) {
   browser_menu_items_.clear();
   registrar_.RemoveAll();
 
-  ash::ShelfAppMenuItemList items;
+  MenuItemList items;
   bool found_tabbed_browser = false;
   for (auto* browser : GetListOfActiveBrowsers()) {
     if (browser_menu_items_.size() >= kMaxItems)
@@ -228,17 +235,19 @@ BrowserShortcutLauncherItemController::GetAppMenuItems(int event_flags) {
       found_tabbed_browser = true;
     if (!(event_flags & ui::EF_SHIFT_DOWN)) {
       content::WebContents* tab = tab_strip->GetWebContentsAt(tab_index);
-      gfx::Image icon = GetBrowserListIcon(tab);
-      base::string16 title = GetBrowserListTitle(tab);
-      items.push_back(base::MakeUnique<ash::ShelfApplicationMenuItem>(
-          GetCommandId(browser_menu_items_.size(), kNoTab), title, &icon));
+      ash::mojom::MenuItemPtr item(ash::mojom::MenuItem::New());
+      item->command_id = GetCommandId(browser_menu_items_.size(), kNoTab);
+      item->label = GetBrowserListTitle(tab);
+      item->image = *GetBrowserListIcon(tab).ToSkBitmap();
+      items.push_back(std::move(item));
     } else {
       for (uint16_t i = 0; i < tab_strip->count() && i < kMaxItems; ++i) {
         content::WebContents* tab = tab_strip->GetWebContentsAt(i);
-        gfx::Image icon = launcher_controller()->GetAppListIcon(tab);
-        base::string16 title = launcher_controller()->GetAppListTitle(tab);
-        items.push_back(base::MakeUnique<ash::ShelfApplicationMenuItem>(
-            GetCommandId(browser_menu_items_.size(), i), title, &icon));
+        ash::mojom::MenuItemPtr item(ash::mojom::MenuItem::New());
+        item->command_id = GetCommandId(browser_menu_items_.size(), i);
+        item->label = launcher_controller()->GetAppListTitle(tab);
+        item->image = *launcher_controller()->GetAppListIcon(tab).ToSkBitmap();
+        items.push_back(std::move(item));
       }
     }
     browser_menu_items_.push_back(browser);
@@ -255,8 +264,9 @@ BrowserShortcutLauncherItemController::GetAppMenuItems(int event_flags) {
   return items;
 }
 
-void BrowserShortcutLauncherItemController::ExecuteCommand(uint32_t command_id,
-                                                           int event_flags) {
+void BrowserShortcutLauncherItemController::ExecuteCommand(
+    uint32_t command_id,
+    int32_t event_flags) {
   const uint16_t browser_index = GetBrowserIndex(command_id);
   // Check that the index is valid and the browser has not been closed.
   if (browser_index < browser_menu_items_.size() &&

@@ -39,9 +39,9 @@ void ExtensionAppWindowLauncherItemController::AddAppWindow(
   AddWindow(app_window->GetBaseWindow());
 }
 
-ash::ShelfAppMenuItemList
-ExtensionAppWindowLauncherItemController::GetAppMenuItems(int event_flags) {
-  ash::ShelfAppMenuItemList items;
+MenuItemList ExtensionAppWindowLauncherItemController::GetAppMenuItems(
+    int event_flags) {
+  MenuItemList items;
   extensions::AppWindowRegistry* app_window_registry =
       extensions::AppWindowRegistry::Get(launcher_controller()->profile());
 
@@ -52,6 +52,10 @@ ExtensionAppWindowLauncherItemController::GetAppMenuItems(int event_flags) {
             window->GetNativeWindow());
     DCHECK(app_window);
 
+    ash::mojom::MenuItemPtr item(ash::mojom::MenuItem::New());
+    item->command_id = window_index;
+    item->label = app_window->GetTitle();
+
     // Use the app's web contents favicon, or the app window's icon.
     favicon::FaviconDriver* favicon_driver =
         favicon::ContentFaviconDriver::FromWebContents(
@@ -59,9 +63,9 @@ ExtensionAppWindowLauncherItemController::GetAppMenuItems(int event_flags) {
     gfx::Image icon = favicon_driver->GetFavicon();
     if (icon.IsEmpty())
       icon = app_window->app_icon();
-
-    items.push_back(base::MakeUnique<ash::ShelfApplicationMenuItem>(
-        window_index, app_window->GetTitle(), &icon));
+    if (!icon.IsEmpty())
+      item->image = *icon.ToSkBitmap();
+    items.push_back(std::move(item));
     ++window_index;
   }
   return items;
@@ -69,6 +73,6 @@ ExtensionAppWindowLauncherItemController::GetAppMenuItems(int event_flags) {
 
 void ExtensionAppWindowLauncherItemController::ExecuteCommand(
     uint32_t command_id,
-    int event_flags) {
+    int32_t event_flags) {
   launcher_controller()->ActivateShellApp(app_id(), command_id);
 }

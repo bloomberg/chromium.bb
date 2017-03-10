@@ -6,7 +6,6 @@
 
 #include <stddef.h>
 
-#include "ash/public/cpp/shelf_application_menu_item.h"
 #include "ash/wm/window_util.h"
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/chromeos/arc/arc_support_host.h"
@@ -93,15 +92,17 @@ AppShortcutLauncherItemController::AppShortcutLauncherItemController(
 
 AppShortcutLauncherItemController::~AppShortcutLauncherItemController() {}
 
-ash::ShelfAction AppShortcutLauncherItemController::ItemSelected(
-    ui::EventType event_type,
-    int event_flags,
+void AppShortcutLauncherItemController::ItemSelected(
+    std::unique_ptr<ui::Event> event,
     int64_t display_id,
-    ash::ShelfLaunchSource source) {
+    ash::ShelfLaunchSource source,
+    const ItemSelectedCallback& callback) {
   // In case of a keyboard event, we were called by a hotkey. In that case we
   // activate the next item in line if an item of our list is already active.
-  if (event_type == ui::ET_KEY_RELEASED && AdvanceToNextApp())
-    return ash::SHELF_ACTION_WINDOW_ACTIVATED;
+  if (event && event->type() == ui::ET_KEY_RELEASED && AdvanceToNextApp()) {
+    callback.Run(ash::SHELF_ACTION_WINDOW_ACTIVATED, base::nullopt);
+    return;
+  }
 
   content::WebContents* content = GetLRUApplication();
   if (!content) {
@@ -110,34 +111,41 @@ ash::ShelfAction AppShortcutLauncherItemController::ItemSelected(
     // which take a lot of time for pre-processing (like the files app) before
     // they open a window. Since there is currently no other way to detect if an
     // app was started we suppress any further clicks within a special time out.
-    if (IsV2App() && !AllowNextLaunchAttempt())
-      return ash::SHELF_ACTION_NONE;
+    if (IsV2App() && !AllowNextLaunchAttempt()) {
+      callback.Run(ash::SHELF_ACTION_NONE,
+                   GetAppMenuItems(event ? event->flags() : ui::EF_NONE));
+      return;
+    }
 
     // Launching some items replaces this item controller instance, which
     // destroys the app and launch id strings; making copies avoid crashes.
     launcher_controller()->LaunchApp(ash::AppLauncherId(app_id(), launch_id()),
                                      source, ui::EF_NONE);
-    return ash::SHELF_ACTION_NEW_WINDOW_CREATED;
+    callback.Run(ash::SHELF_ACTION_NEW_WINDOW_CREATED, base::nullopt);
+    return;
   }
-  return ActivateContent(content);
+
+  const ash::ShelfAction action = ActivateContent(content);
+  callback.Run(action, GetAppMenuItems(event ? event->flags() : ui::EF_NONE));
 }
 
-ash::ShelfAppMenuItemList AppShortcutLauncherItemController::GetAppMenuItems(
+MenuItemList AppShortcutLauncherItemController::GetAppMenuItems(
     int event_flags) {
-  ash::ShelfAppMenuItemList items;
+  MenuItemList items;
   app_menu_items_ = GetRunningApplications();
   for (size_t i = 0; i < app_menu_items_.size(); i++) {
-    content::WebContents* web_contents = app_menu_items_[i];
-    gfx::Image icon = launcher_controller()->GetAppListIcon(web_contents);
-    base::string16 title = launcher_controller()->GetAppListTitle(web_contents);
-    items.push_back(base::MakeUnique<ash::ShelfApplicationMenuItem>(
-        base::checked_cast<uint32_t>(i), title, &icon));
+    content::WebContents* tab = app_menu_items_[i];
+    ash::mojom::MenuItemPtr item(ash::mojom::MenuItem::New());
+    item->command_id = base::checked_cast<uint32_t>(i);
+    item->label = launcher_controller()->GetAppListTitle(tab);
+    item->image = *launcher_controller()->GetAppListIcon(tab).ToSkBitmap();
+    items.push_back(std::move(item));
   }
   return items;
 }
 
 void AppShortcutLauncherItemController::ExecuteCommand(uint32_t command_id,
-                                                       int event_flags) {
+                                                       int32_t event_flags) {
   if (static_cast<size_t>(command_id) >= app_menu_items_.size()) {
     app_menu_items_.clear();
     return;

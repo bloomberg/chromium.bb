@@ -23,11 +23,11 @@ ArcPlaystoreShortcutLauncherItemController::
 ArcPlaystoreShortcutLauncherItemController::
     ~ArcPlaystoreShortcutLauncherItemController() {}
 
-ash::ShelfAction ArcPlaystoreShortcutLauncherItemController::ItemSelected(
-    ui::EventType event_type,
-    int event_flags,
+void ArcPlaystoreShortcutLauncherItemController::ItemSelected(
+    std::unique_ptr<ui::Event> event,
     int64_t display_id,
-    ash::ShelfLaunchSource source) {
+    ash::ShelfLaunchSource source,
+    const ItemSelectedCallback& callback) {
   Profile* profile = controller()->profile();
   ArcAppListPrefs* arc_app_prefs = ArcAppListPrefs::Get(profile);
   DCHECK(arc_app_prefs);
@@ -47,5 +47,6 @@ ash::ShelfAction ArcPlaystoreShortcutLauncherItemController::ItemSelected(
         base::MakeUnique<ArcAppLauncher>(profile, arc::kPlayStoreAppId, true);
   }
 
-  return ash::SHELF_ACTION_NONE;
+  callback.Run(ash::SHELF_ACTION_NONE,
+               GetAppMenuItems(event ? event->flags() : ui::EF_NONE));
 }

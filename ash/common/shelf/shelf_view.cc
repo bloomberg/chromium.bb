@@ -275,7 +275,8 @@ ShelfView::ShelfView(ShelfModel* model,
       main_shelf_(nullptr),
       dragged_off_from_overflow_to_shelf_(false),
       is_repost_event_on_same_item_(false),
-      last_pressed_index_(-1) {
+      last_pressed_index_(-1),
+      weak_factory_(this) {
   DCHECK(model_);
   DCHECK(delegate_);
   DCHECK(wm_shelf_);
@@ -483,26 +484,14 @@ void ShelfView::ButtonPressed(views::Button* sender,
   }
 
   const int64_t display_id = window->GetDisplayNearestWindow().id();
-  ShelfAction performed_action =
-      model_->GetShelfItemDelegate(model_->items()[last_pressed_index_].id)
-          ->ItemSelected(event.type(), event.flags(), display_id,
-                         LAUNCH_FROM_UNKNOWN);
 
-  shelf_button_pressed_metric_tracker_.ButtonPressed(event, sender,
-                                                     performed_action);
-
-  // For the app list menu no TRIGGERED ink drop effect is needed and it
-  // handles its own ACTIVATED/DEACTIVATED states.
-  if (performed_action == SHELF_ACTION_NEW_WINDOW_CREATED ||
-      (performed_action != SHELF_ACTION_APP_LIST_SHOWN &&
-       !ShowListMenuForView(model_->items()[last_pressed_index_], sender, event,
-                            ink_drop))) {
-    ink_drop->AnimateToState(views::InkDropState::ACTION_TRIGGERED);
-  }
-  // Allow the menu to clear |scoped_root_window_for_new_windows_| during
-  // OnMenuClosed.
-  if (!IsShowingMenu())
-    scoped_root_window_for_new_windows_.reset();
+  // Notify the item of its selection; handle the result in AfterItemSelected.
+  const ShelfItem& item = model_->items()[last_pressed_index_];
+  model_->GetShelfItemDelegate(item.id)->ItemSelected(
+      ui::Event::Clone(event), display_id, LAUNCH_FROM_UNKNOWN,
+      base::Bind(&ShelfView::AfterItemSelected, weak_factory_.GetWeakPtr(),
+                 item, sender, base::Passed(ui::Event::Clone(event)),
+                 ink_drop));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1604,29 +1593,38 @@ void ShelfView::ShelfItemMoved(int start_index, int target_index) {
     AnimateToIdealBounds();
 }
 
-void ShelfView::OnSetShelfItemDelegate(ShelfID id,
-                                       ShelfItemDelegate* item_delegate) {}
+void ShelfView::OnSetShelfItemDelegate(
+    ShelfID id,
+    mojom::ShelfItemDelegate* item_delegate) {}
 
-bool ShelfView::ShowListMenuForView(const ShelfItem& item,
-                                    views::View* source,
-                                    const ui::Event& event,
-                                    views::InkDrop* ink_drop) {
-  ShelfItemDelegate* item_delegate = model_->GetShelfItemDelegate(item.id);
-  ShelfAppMenuItemList items = item_delegate->GetAppMenuItems(event.flags());
+void ShelfView::AfterItemSelected(
+    const ShelfItem& item,
+    views::Button* sender,
+    std::unique_ptr<ui::Event> event,
+    views::InkDrop* ink_drop,
+    ShelfAction action,
+    base::Optional<std::vector<mojom::MenuItemPtr>> menu_items) {
+  shelf_button_pressed_metric_tracker_.ButtonPressed(*event, sender, action);
 
-  // The application list menu should only show for two or more items; return
-  // false here to ensure that other behavior is triggered (eg. activating or
-  // minimizing a single associated window, or launching a pinned shelf item).
-  if (items.size() < 2)
-    return false;
-
-  ink_drop->AnimateToState(views::InkDropState::ACTIVATED);
-  context_menu_id_ = item.id;
-  ShowMenu(base::MakeUnique<ShelfApplicationMenuModel>(
-               item.title, std::move(items), item_delegate),
-           source, gfx::Point(), false, ui::GetMenuSourceTypeForEvent(event),
-           ink_drop);
-  return true;
+  // The app list handles its own ink drop effect state changes.
+  if (action != SHELF_ACTION_APP_LIST_SHOWN) {
+    if (action != SHELF_ACTION_NEW_WINDOW_CREATED && menu_items &&
+        menu_items->size() > 1) {
+      // Show the app menu if there are 2 or more items and no window was shown.
+      ink_drop->AnimateToState(views::InkDropState::ACTIVATED);
+      context_menu_id_ = item.id;
+      ShowMenu(base::MakeUnique<ShelfApplicationMenuModel>(
+                   item.title, std::move(*menu_items),
+                   model_->GetShelfItemDelegate(item.id)),
+               sender, gfx::Point(), false,
+               ui::GetMenuSourceTypeForEvent(*event), ink_drop);
+    } else {
+      ink_drop->AnimateToState(views::InkDropState::ACTION_TRIGGERED);
+    }
+  }
+  // The menu clears |scoped_root_window_for_new_windows_| in OnMenuClosed.
+  if (!IsShowingMenu())
+    scoped_root_window_for_new_windows_.reset();
 }
 
 void ShelfView::ShowContextMenuForView(views::View* source,

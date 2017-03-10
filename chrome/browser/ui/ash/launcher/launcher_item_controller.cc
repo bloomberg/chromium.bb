@@ -20,6 +20,10 @@ LauncherItemController::LauncherItemController(
 
 LauncherItemController::~LauncherItemController() {}
 
+MenuItemList LauncherItemController::GetAppMenuItems(int event_flags) {
+  return MenuItemList();
+}
+
 AppWindowLauncherItemController*
 LauncherItemController::AsAppWindowLauncherItemController() {
   return nullptr;
