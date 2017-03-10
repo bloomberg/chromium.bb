@@ -102,7 +102,11 @@ void TextInputManager::UpdateTextInputState(
     // already synthesized the loss of TextInputState for the |view| before (see
     // below). So we can forget about this method ever being called (no observer
     // calls necessary).
+    // NOTE: Android requires state to be returned even when the current state
+    // is/becomes NONE. Otherwise IME may become irresponsive.
+#if !defined(OS_ANDROID)
     return;
+#endif
   }
 
   // Since |view| is registered, we already have a previous value for its
