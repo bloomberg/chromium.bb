@@ -200,7 +200,7 @@ void StyleResolver::addToStyleSharingList(Element& element) {
                                 1);
   StyleSharingList& list = styleSharingList();
   if (list.size() >= styleSharingListSize)
-    list.removeLast();
+    list.pop_back();
   list.prepend(&element);
 }
 

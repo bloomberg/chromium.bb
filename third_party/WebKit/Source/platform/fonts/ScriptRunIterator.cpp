@@ -200,7 +200,7 @@ void ScriptRunIterator::closeBracket(UChar32 ch) {
         int numPopped = std::distance(m_brackets.rbegin(), it);
         // TODO: No resize operation in WTF::Deque?
         for (int i = 0; i < numPopped; ++i)
-          m_brackets.removeLast();
+          m_brackets.pop_back();
         m_bracketsFixupDepth =
             std::max(static_cast<size_t>(0), m_bracketsFixupDepth - numPopped);
         return;

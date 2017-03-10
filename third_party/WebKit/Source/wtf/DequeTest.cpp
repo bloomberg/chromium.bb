@@ -527,7 +527,7 @@ TEST(DequeTest, UniquePtr) {
 
   EXPECT_EQ(2u, deque.size());
   deque.removeFirst();
-  deque.removeLast();
+  deque.pop_back();
   EXPECT_EQ(0u, deque.size());
 
   deque.append(Pointer(new int(42)));
