@@ -1,27 +1,26 @@
 <!doctype html>
 <html i18n-values="dir:textdirection;lang:language">
 <head>
-<meta name="viewport" content="width=device-width">
 <meta charset="utf-8">
+<meta name="viewport"
+    content="initial-scale=1, minimum-scale=1, width=device-width">
 <title i18n-content="blockPageTitle"></title>
-<link rel="stylesheet" href="../../../ui/webui/resources/css/widgets.css">
 <link rel="stylesheet" href="supervised_user_block_interstitial.css">
 <script src="../../../ui/webui/resources/js/cr.js"></script>
 <script src="../../../ui/webui/resources/js/util.js"></script>
 <script src="supervised_user_block_interstitial.js"></script>
 </head>
-
 <body>
-<div id="main-frame-blocked">
+<div class="main-frame-blocked">
   <div id="information-container">
-    <h1>
-      <div id="block-page-header" i18n-content="blockPageHeader"></div>
-      <div id="block-page-message" i18n-content="blockPageMessage"></div>
-      <div id="request-failed-message" i18n-content="requestFailedMessage"
-          hidden></div>
-      <div id="request-sent-message" i18n-content="requestSentMessage" hidden>
-      </div>
-    </h1>
+    <div class="icon" id="icon"></div>
+    <div id="main-message">
+      <h1 id="block-page-header" i18n-content="blockPageHeader"></h1>
+      <p id="block-page-message" i18n-content="blockPageMessage"></p>
+      <h1 id="request-failed-message" i18n-content="requestFailedMessage"
+          hidden></h1>
+      <h1 id="request-sent-message" i18n-content="requestSentMessage" hidden></h1>
+    </div>
     <div id="custodians-information" hidden>
       <div id="custodian-information" class="custodian-information">
         <img id="custodian-avatar-img" class="avatar-img">
@@ -39,19 +38,14 @@
       </div>
     </div>
   </div>
-  <div id="button-container">
+  <div class="button-container">
+    <button id="request-access-button" class="primary-button" i18n-content="requestAccessButton">
+    </button>
     <div id="details-button-container">
-      <a id="show-details-link" i18n-content="showDetailsLink"
-          hidden class="button">
-      </a>
-      <a id="hide-details-link" i18n-content="hideDetailsLink"
-          hidden class="button"></a>
-      <a id="back-button" i18n-content="backButton"
-          hidden class="button"></a>
+      <button id="show-details-link" class="details-button small-link" i18n-content="showDetailsLink" hidden></button>
+      <button id="hide-details-link" class="details-button small-link" i18n-content="hideDetailsLink" hidden></button>
+      <button id="back-button" class="details-button small-link" i18n-content="backButton" hidden></button>
     </div>
-    <div id="request-access-button" class="button"
-        i18n-content="requestAccessButton">
-    </div> 
   </div>
   <div id="details" hidden>
     <p id="details-header" i18n-content="blockReasonHeader"></p>

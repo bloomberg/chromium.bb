@@ -40,8 +40,7 @@ BlockMessageIDTestParameter block_message_id_test_params[] = {
     {DEFAULT, false, true, IDS_SUPERVISED_USER_BLOCK_MESSAGE_DEFAULT},
     {DEFAULT, true, true, IDS_CHILD_BLOCK_MESSAGE_DEFAULT_SINGLE_PARENT},
     {DEFAULT, true, false, IDS_CHILD_BLOCK_MESSAGE_DEFAULT_MULTI_PARENT},
-    {ASYNC_CHECKER, false, false, IDS_SUPERVISED_USER_BLOCK_MESSAGE_SAFE_SITES},
-    {ASYNC_CHECKER, false, true, IDS_SUPERVISED_USER_BLOCK_MESSAGE_SAFE_SITES},
+    // SafeSites is not enabled for supervised users.
     {ASYNC_CHECKER, true, true, IDS_SUPERVISED_USER_BLOCK_MESSAGE_SAFE_SITES},
     {ASYNC_CHECKER, true, false, IDS_SUPERVISED_USER_BLOCK_MESSAGE_SAFE_SITES},
     {MANUAL, false, false, IDS_SUPERVISED_USER_BLOCK_MESSAGE_MANUAL},
@@ -93,13 +92,12 @@ TEST_P(SupervisedUserErrorPageTest_BuildHtml, BuildHtml) {
     EXPECT_THAT(result, testing::HasSubstr(param.second_custodian));
     EXPECT_THAT(result, testing::HasSubstr(param.second_custodian_email));
   }
-#if defined(GOOGLE_CHROME_BUILD)
-  if (param.is_child_account &&
-      (param.reason == ASYNC_CHECKER || param.reason == BLACKLIST))
+  if (param.reason == ASYNC_CHECKER || param.reason == BLACKLIST) {
     EXPECT_THAT(result, testing::HasSubstr("\"showFeedbackLink\":true"));
-  else
-#endif
+  } else {
     EXPECT_THAT(result, testing::HasSubstr("\"showFeedbackLink\":false"));
+  }
+
   // Messages containing parameters aren't tested since they get modified before
   // they are added to the result.
   if (param.allow_access_requests) {
@@ -201,7 +199,7 @@ BuildHtmlTestParameter build_html_test_parameter[] = {
     {true, "url1", "url2", "custodian", "custodian_email", "custodian2",
      "custodian2_email", false, DEFAULT, true},
     {true, "url1", "url2", "custodian", "custodian_email", "custodian2",
-     "custodian2_email", false, ASYNC_CHECKER, true},
+     "custodian2_email", true, ASYNC_CHECKER, true},
 };
 
 INSTANTIATE_TEST_CASE_P(GetBlockMessageIDParameterized,

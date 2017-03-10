@@ -23,11 +23,9 @@ namespace {
 static const int kAvatarSize1x = 45;
 static const int kAvatarSize2x = 90;
 
-#if defined(GOOGLE_CHROME_BUILD)
 bool ReasonIsAutomatic(FilteringBehaviorReason reason) {
   return reason == ASYNC_CHECKER || reason == BLACKLIST;
 }
-#endif
 
 std::string BuildAvatarImageUrl(const std::string& url, int size) {
   std::string result = url;
@@ -124,10 +122,9 @@ std::string BuildHtml(bool allow_access_requests,
                         reason, is_child_account, second_custodian.empty())));
   strings.SetString("blockReasonHeader", l10n_util::GetStringUTF16(
                                              IDS_SUPERVISED_USER_BLOCK_HEADER));
-  bool show_feedback = false;
-#if defined(GOOGLE_CHROME_BUILD)
-  show_feedback = is_child_account && ReasonIsAutomatic(reason);
-#endif
+  bool show_feedback = ReasonIsAutomatic(reason);
+  DCHECK(is_child_account || !show_feedback);
+
   strings.SetBoolean("showFeedbackLink", show_feedback);
   strings.SetString("feedbackLink", l10n_util::GetStringUTF16(
                                         IDS_BLOCK_INTERSTITIAL_SEND_FEEDBACK));

@@ -15,10 +15,12 @@
 #include "chrome/browser/safe_browsing/ui_manager.h"
 #include "chrome/browser/ssl/bad_clock_blocking_page.h"
 #include "chrome/browser/ssl/ssl_blocking_page.h"
+#include "chrome/browser/supervised_user/supervised_user_interstitial.h"
 #include "chrome/common/features.h"
 #include "chrome/common/url_constants.h"
 #include "components/grit/components_resources.h"
 #include "components/security_interstitials/core/ssl_error_ui.h"
+#include "components/supervised_user_error_page/supervised_user_error_page.h"
 #include "content/public/browser/interstitial_page_delegate.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -65,7 +67,7 @@ scoped_refptr<net::X509Certificate> CreateFakeCert() {
 // not used in displaying any real interstitials.
 class InterstitialHTMLSource : public content::URLDataSource {
  public:
-  InterstitialHTMLSource() {}
+  explicit InterstitialHTMLSource(Profile* profile) : profile_(profile) {}
   ~InterstitialHTMLSource() override {}
 
   // content::URLDataSource:
@@ -80,6 +82,8 @@ class InterstitialHTMLSource : public content::URLDataSource {
       const content::URLDataSource::GotDataCallback& callback) override;
 
  private:
+  Profile* profile_;
+
   DISALLOW_COPY_AND_ASSIGN(InterstitialHTMLSource);
 };
 
@@ -308,7 +312,7 @@ CaptivePortalBlockingPage* CreateCaptivePortalBlockingPage(
 InterstitialUI::InterstitialUI(content::WebUI* web_ui)
     : WebUIController(web_ui) {
   Profile* profile = Profile::FromWebUI(web_ui);
-  content::URLDataSource::Add(profile, new InterstitialHTMLSource());
+  content::URLDataSource::Add(profile, new InterstitialHTMLSource(profile));
 }
 
 InterstitialUI::~InterstitialUI() {
@@ -365,7 +369,12 @@ void InterstitialHTMLSource::StartDataRequest(
   }
 #endif
   std::string html;
-  if (interstitial_delegate.get()) {
+  if (base::StartsWith(path, "supervised_user", base::CompareCase::SENSITIVE)) {
+    html = SupervisedUserInterstitial::GetHTMLContents(
+        profile_, profile_->IsChild()
+                      ? supervised_user_error_page::ASYNC_CHECKER
+                      : supervised_user_error_page::MANUAL);
+  } else if (interstitial_delegate.get()) {
     html = interstitial_delegate.get()->GetHTMLContents();
   } else {
     html = ResourceBundle::GetSharedInstance()

@@ -267,6 +267,7 @@ void SupervisedUserInterstitial::CommandReceived(const std::string& command) {
     std::string message = l10n_util::GetStringFUTF8(
         IDS_BLOCK_INTERSTITIAL_DEFAULT_FEEDBACK_TEXT, reason);
 #if defined(OS_ANDROID)
+    DCHECK(profile_->IsChild());
     ReportChildAccountFeedback(web_contents_, message, url_);
 #else
     chrome::ShowFeedbackPage(chrome::FindBrowserWithWebContents(web_contents_),
