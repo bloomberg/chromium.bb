@@ -1,16 +1,13 @@
 Name: Snappy: A fast compressor/decompressor
 Short Name: snappy
 URL: http://google.github.io/snappy/
-Version: 1.1.0-updates
+Version: 1.1.4-head
 License: New BSD
 License File: src/COPYING
 Security Critical: yes
 
 Description:
 Compression library used by LevelDB.
-
-Local Changes:
-* #ifndef DISALLOW_COPY_AND_ASSIGN - https://github.com/google/snappy/pull/21
 
 Local Additions:
 * gyp file for building in chromium

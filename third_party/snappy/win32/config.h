@@ -5,16 +5,16 @@
 /* #undef AC_APPLE_UNIVERSAL_BUILD */
 
 /* Define to 1 if the compiler supports __builtin_ctz and friends. */
-#define HAVE_BUILTIN_CTZ 1
+/* #undef HAVE_BUILTIN_CTZ */
 
 /* Define to 1 if the compiler supports __builtin_expect. */
-#define HAVE_BUILTIN_EXPECT 1
+/* #undef HAVE_BUILTIN_EXPECT */
 
 /* Define to 1 if you have the <byteswap.h> header file. */
-#define HAVE_BYTESWAP_H 1
+/* #undef HAVE_BYTESWAP_H */
 
 /* Define to 1 if you have the <dlfcn.h> header file. */
-#define HAVE_DLFCN_H 1
+/* #undef HAVE_DLFCN_H */
 
 /* Use the gflags package for command-line parsing. */
 /* #undef HAVE_GFLAGS */
@@ -65,10 +65,10 @@
 /* #undef HAVE_SYS_ENDIAN_H */
 
 /* Define to 1 if you have the <sys/mman.h> header file. */
-#define HAVE_SYS_MMAN_H 1
+/* #undef HAVE_SYS_MMAN_H */
 
 /* Define to 1 if you have the <sys/resource.h> header file. */
-#define HAVE_SYS_RESOURCE_H 1
+/* #undef HAVE_SYS_RESOURCE_H */
 
 /* Define to 1 if you have the <sys/stat.h> header file. */
 #define HAVE_SYS_STAT_H 1
@@ -83,10 +83,12 @@
 #define HAVE_UNISTD_H 1
 
 /* Define to 1 if you have the <windows.h> header file. */
-/* #undef HAVE_WINDOWS_H */
+#define HAVE_WINDOWS_H 1
 
-/* Define to the sub-directory in which libtool stores uninstalled libraries.
-   */
+/* Define if running the test suite so that test #27 works on MinGW. */
+/* #undef LT_MINGW_STATIC_TESTSUITE_HACK */
+
+/* Define to the sub-directory where libtool stores uninstalled libraries. */
 #define LT_OBJDIR ".libs/"
 
 /* Name of package */
@@ -119,17 +121,20 @@
 /* Define WORDS_BIGENDIAN to 1 if your processor stores words with the most
    significant byte first (like Motorola and SPARC, unlike Intel). */
 #if defined AC_APPLE_UNIVERSAL_BUILD
-# if defined __BIG_ENDIAN__
-#  define WORDS_BIGENDIAN 1
-# endif
+#if defined __BIG_ENDIAN__
+#define WORDS_BIGENDIAN 1
+#endif
 #else
-# ifndef WORDS_BIGENDIAN
+#ifndef WORDS_BIGENDIAN
 /* #  undef WORDS_BIGENDIAN */
-# endif
+#endif
 #endif
 
 /* Define to `unsigned int' if <sys/types.h> does not define. */
 /* #undef size_t */
 
 /* Define to `int' if <sys/types.h> does not define. */
-/* #undef ssize_t */
+#include <Windows.h>
+
+#include <BaseTsd.h>
+typedef SSIZE_T ssize_t;

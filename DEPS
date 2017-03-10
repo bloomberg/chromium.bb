@@ -163,7 +163,7 @@ deps = {
     Var('chromium_git') + '/external/leveldb.git' + '@' + 'a53934a3ae1244679f812d998a4f16f2c7f309a6',
 
   'src/third_party/snappy/src':
-    Var('chromium_git') + '/external/snappy.git' + '@' + 'f6a298d7c7ddcfdae824649a61408bcf6b334d92',
+    Var('chromium_git') + '/external/github.com/google/snappy.git' + '@' + '1cd3ab02e9dcbc1b76781530fb4981e4eac61b50',
 
   'src/tools/gyp':
     Var('chromium_git') + '/external/gyp.git' + '@' + 'e7079f0e0e14108ab0dba58728ff219637458563',

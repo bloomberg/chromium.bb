@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//testing/test.gni")
+
 config("snappy_config") {
   include_dirs = [ "src" ]
 
@@ -17,10 +19,16 @@ config("snappy_config") {
 }
 
 config("snappy_warnings") {
+  cflags = []
+
   if (is_clang) {
     # ComputeTable is unused,
     # https://code.google.com/p/snappy/issues/detail?id=96
-    cflags = [ "-Wno-unused-function" ]
+    cflags += [ "-Wno-unused-function" ]
+  }
+
+  if (is_win) {
+    cflags += [ "/wd4018" ]  # Signed/unsigned mismatch in comparison.
   }
 }
 
@@ -44,9 +52,9 @@ static_library("snappy") {
   ]
   public_configs = [ ":snappy_config" ]
 
-  if (is_win) {
-    cflags = [ "/wd4018" ]  # Signed/unsigned mismatch in comparison.
-  }
+  # Chromium doesn't use automake, but we generated config.h offline for all the
+  # platforms that we build for.
+  defines = [ "HAVE_CONFIG_H" ]
 
   if (is_clang) {
     # snappy-stubs-internal.h unapologetically has: using namespace std
