@@ -767,6 +767,9 @@ message DeviceStatusReportRequest {
   // Set only when there is an auto launched with zero delay kiosk app
   // and it is currently running. Otherwise, this field is empty.
   optional AppStatus running_kiosk_app = 18;
+
+  // Sound output volume level in range [0,100].
+  optional int32 sound_volume = 19;
 }
 
 message OsUpdateStatus {

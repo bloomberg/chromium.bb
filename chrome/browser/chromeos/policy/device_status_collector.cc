@@ -43,6 +43,7 @@
 #include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/update_engine_client.h"
 #include "chromeos/disks/disk_mount_manager.h"
@@ -989,6 +990,11 @@ bool DeviceStatusCollector::GetHardwareStatus(
     status->add_cpu_utilization_pct(usage.cpu_usage_percent);
     status->add_system_ram_free(usage.bytes_of_ram_free);
   }
+
+  // Get the current device sound volume level.
+  chromeos::CrasAudioHandler* audio_handler = chromeos::CrasAudioHandler::Get();
+  status->set_sound_volume(audio_handler->GetOutputVolumePercent());
+
   return true;
 }
 

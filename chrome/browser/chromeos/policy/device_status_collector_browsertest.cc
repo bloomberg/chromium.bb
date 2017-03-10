@@ -39,6 +39,7 @@
 #include "chrome/test/base/chrome_unit_test_suite.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
+#include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/dbus/cros_disks_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_update_engine_client.h"
@@ -345,6 +346,8 @@ class DeviceStatusCollectorTest : public testing::Test {
         chromeos::DBusThreadManager::GetSetterForTesting();
     dbus_setter->SetUpdateEngineClient(
         base::WrapUnique<chromeos::UpdateEngineClient>(update_engine_client_));
+
+    chromeos::CrasAudioHandler::InitializeForTesting();
   }
 
   void AddMountPoint(const std::string& mount_point) {
@@ -356,6 +359,7 @@ class DeviceStatusCollectorTest : public testing::Test {
   }
 
   ~DeviceStatusCollectorTest() override {
+    chromeos::CrasAudioHandler::Shutdown();
     chromeos::KioskAppManager::Shutdown();
     TestingBrowserProcess::GetGlobal()->SetLocalState(nullptr);
 
@@ -1293,6 +1297,26 @@ TEST_F(DeviceStatusCollectorTest, ReportRunningKioskApp) {
   EXPECT_EQ("1235", app.required_platform_version());
   EXPECT_FALSE(app.has_status());
   EXPECT_FALSE(app.has_error());
+}
+
+TEST_F(DeviceStatusCollectorTest, TestSoundVolume) {
+  // Expect the sound volume to be reported by default (default sound volume
+  // used in testing is 75).
+  GetStatus();
+  EXPECT_EQ(75, device_status_.sound_volume());
+
+  // When the pref to collect this data is not enabled, expect that the field
+  // isn't present in the protobuf.
+  settings_helper_.SetBoolean(chromeos::kReportDeviceHardwareStatus, false);
+  GetStatus();
+  EXPECT_FALSE(device_status_.has_sound_volume());
+
+  // Try setting a custom volume value and check that it matches.
+  const int kCustomVolume = 42;
+  settings_helper_.SetBoolean(chromeos::kReportDeviceHardwareStatus, true);
+  chromeos::CrasAudioHandler::Get()->SetOutputVolumePercent(kCustomVolume);
+  GetStatus();
+  EXPECT_EQ(kCustomVolume, device_status_.sound_volume());
 }
 
 // Fake device state.
