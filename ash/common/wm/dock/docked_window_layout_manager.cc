@@ -25,6 +25,7 @@
 #include "base/auto_reset.h"
 #include "base/metrics/histogram_macros.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/aura/window.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/display/display.h"
@@ -181,11 +182,11 @@ bool IsWindowDocked(const WmWindow* window) {
 
 void UndockWindow(WmWindow* window) {
   gfx::Rect previous_bounds = window->GetBounds();
-  WmWindow* old_parent = window->GetParent();
+  aura::Window* old_parent = window->aura_window()->parent();
   window->SetParentUsingContext(window, gfx::Rect());
-  if (window->GetParent() != old_parent) {
-    wm::ReparentTransientChildrenOfChild(window, old_parent,
-                                         window->GetParent());
+  if (window->aura_window()->parent() != old_parent) {
+    wm::ReparentTransientChildrenOfChild(window->aura_window(), old_parent,
+                                         window->aura_window()->parent());
   }
   // Start maximize or fullscreen (affecting packaged apps) animation from
   // previous window bounds.

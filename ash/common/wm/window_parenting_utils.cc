@@ -4,23 +4,26 @@
 
 #include "ash/common/wm/window_parenting_utils.h"
 
-#include "ash/common/wm_window.h"
+#include "ui/aura/window.h"
+#include "ui/wm/core/window_util.h"
+
+using aura::Window;
 
 namespace ash {
 namespace wm {
 
-void ReparentChildWithTransientChildren(WmWindow* child,
-                                        WmWindow* old_parent,
-                                        WmWindow* new_parent) {
-  if (child->GetParent() == old_parent)
+void ReparentChildWithTransientChildren(Window* child,
+                                        Window* old_parent,
+                                        Window* new_parent) {
+  if (child->parent() == old_parent)
     new_parent->AddChild(child);
   ReparentTransientChildrenOfChild(child, old_parent, new_parent);
 }
 
-void ReparentTransientChildrenOfChild(WmWindow* child,
-                                      WmWindow* old_parent,
-                                      WmWindow* new_parent) {
-  for (WmWindow* transient_child : child->GetTransientChildren())
+void ReparentTransientChildrenOfChild(Window* child,
+                                      Window* old_parent,
+                                      Window* new_parent) {
+  for (Window* transient_child : ::wm::GetTransientChildren(child))
     ReparentChildWithTransientChildren(transient_child, old_parent, new_parent);
 }
 

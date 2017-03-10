@@ -348,10 +348,11 @@ void PanelLayoutManager::OnWindowAddedToLayout(WmWindow* child) {
     // back to appropriate container and ignore it.
     // TODO(varkha): Updating bounds during a drag can cause problems and a more
     // general solution is needed. See http://crbug.com/251813 .
-    WmWindow* old_parent = child->GetParent();
+    aura::Window* old_parent = child->aura_window()->parent();
     child->SetParentUsingContext(child,
                                  child->GetRootWindow()->GetBoundsInScreen());
-    wm::ReparentTransientChildrenOfChild(child, old_parent, child->GetParent());
+    wm::ReparentTransientChildrenOfChild(child->aura_window(), old_parent,
+                                         child->aura_window()->parent());
     DCHECK(child->GetParent()->GetShellWindowId() !=
            kShellWindowId_PanelContainer);
     return;
