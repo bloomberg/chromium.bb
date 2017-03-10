@@ -22,7 +22,6 @@
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/aura/window.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/views/focus/focus_manager.h"
 
 using content::DesktopMediaID;
 
@@ -158,7 +157,7 @@ bool DesktopMediaListView::OnKeyPressed(const ui::KeyEvent& event) {
   }
 
   if (new_selected)
-    GetFocusManager()->SetFocusedView(new_selected);
+    new_selected->RequestFocus();
   return true;
 }
 

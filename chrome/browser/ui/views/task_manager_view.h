@@ -54,6 +54,7 @@ class TaskManagerView : public TableViewDelegate,
   bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
 
   // views::DialogDelegateView:
+  views::View* GetInitiallyFocusedView() override;
   bool CanResize() const override;
   bool CanMaximize() const override;
   bool CanMinimize() const override;

@@ -103,8 +103,7 @@ void FirstRunBubbleTest::CreateAndCloseBubbleOnEventTest(ui::Event* event) {
       FirstRunBubble::ShowBubble(NULL, anchor_widget->GetContentsView());
   EXPECT_TRUE(delegate != NULL);
 
-  anchor_widget->GetFocusManager()->SetFocusedView(
-      anchor_widget->GetContentsView());
+  anchor_widget->GetContentsView()->RequestFocus();
 
   std::unique_ptr<WidgetClosingObserver> widget_observer(
       new WidgetClosingObserver(delegate->GetWidget()));

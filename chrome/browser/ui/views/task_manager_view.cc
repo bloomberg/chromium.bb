@@ -101,11 +101,6 @@ task_manager::TaskManagerTableModel* TaskManagerView::Show(Browser* browser) {
   g_task_manager_view->SelectTaskOfActiveTab(browser);
   g_task_manager_view->GetWidget()->Show();
 
-  // Set the initial focus to the list of tasks.
-  views::FocusManager* focus_manager = g_task_manager_view->GetFocusManager();
-  if (focus_manager)
-    focus_manager->SetFocusedView(g_task_manager_view->tab_table_);
-
 #if defined(USE_ASH)
   aura::Window* window = g_task_manager_view->GetWidget()->GetNativeWindow();
   window->SetProperty<int>(ash::kShelfItemTypeKey, ash::TYPE_DIALOG);
@@ -164,6 +159,10 @@ bool TaskManagerView::AcceleratorPressed(const ui::Accelerator& accelerator) {
   DCHECK_EQ(ui::EF_CONTROL_DOWN, accelerator.modifiers());
   GetWidget()->Close();
   return true;
+}
+
+views::View* TaskManagerView::GetInitiallyFocusedView() {
+  return tab_table_;
 }
 
 bool TaskManagerView::CanResize() const {

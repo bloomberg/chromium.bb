@@ -271,8 +271,7 @@ void WebView::RenderViewDeleted(content::RenderViewHost* render_view_host) {
 
 void WebView::RenderViewHostChanged(content::RenderViewHost* old_host,
                                     content::RenderViewHost* new_host) {
-  FocusManager* const focus_manager = GetFocusManager();
-  if (focus_manager && focus_manager->GetFocusedView() == this)
+  if (HasFocus())
     OnFocus();
   NotifyAccessibilityWebContentsChanged();
 }
@@ -310,9 +309,7 @@ void WebView::DidDetachInterstitialPage() {
 }
 
 void WebView::OnWebContentsFocused() {
-  FocusManager* focus_manager = GetFocusManager();
-  if (focus_manager)
-    focus_manager->SetFocusedView(this);
+  RequestFocus();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -333,11 +330,9 @@ void WebView::AttachWebContents() {
 
   holder_->Attach(view_to_attach);
 
-  // The view will not be focused automatically when it is attached, so we need
-  // to pass on focus to it if the FocusManager thinks the view is focused. Note
-  // that not every Widget has a focus manager.
-  FocusManager* const focus_manager = GetFocusManager();
-  if (focus_manager && focus_manager->GetFocusedView() == this)
+  // The WebContents is not focused automatically when attached, so we need to
+  // tell the WebContents it has focus if this has focus.
+  if (HasFocus())
     OnFocus();
 
   OnWebContentsAttached();

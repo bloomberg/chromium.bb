@@ -45,8 +45,7 @@ class TextInputView : public views::WidgetDelegateView {
     return gfx::Size(kTextInputWindowWidth, kTextInputWindowHeight);
   }
 
-  // Overridden from views::WidgetDelegate:
-  void FocusOnTextInput() { GetFocusManager()->SetFocusedView(text_field_); }
+  void FocusOnTextInput() { text_field_->RequestFocus(); }
 
  private:
   views::Textfield* text_field_;  // owned by views hierarchy
