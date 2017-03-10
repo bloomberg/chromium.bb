@@ -1361,25 +1361,6 @@ void Range::surroundContents(Node* newParent, ExceptionState& exceptionState) {
       break;
   }
 
-  // Raise a HierarchyRequestError if m_start.container() doesn't accept
-  // children like newParent.
-  Node* parentOfNewParent = m_start.container();
-
-  // If m_start.container() is a character data node, it will be split and it
-  // will be its parent that will need to accept newParent (or in the case of a
-  // comment, it logically "would" be inserted into the parent, although this
-  // will fail below for another reason).
-  if (parentOfNewParent->isCharacterDataNode())
-    parentOfNewParent = parentOfNewParent->parentNode();
-
-  if (!parentOfNewParent) {
-    exceptionState.throwDOMException(HierarchyRequestError,
-                                     "The container node is a detached "
-                                     "character data node; no parent node is "
-                                     "available for insertion.");
-    return;
-  }
-
   EventQueueScope scope;
 
   // 3. Let fragment be the result of extracting context object.
