@@ -1395,7 +1395,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
         assertLoadedLowPriorityUrl();
         scrollBasePage();
         assertPanelClosedOrUndefined();
-        assertNull(mSelectionController.getSelectedText());
+        assertTrue(TextUtils.isEmpty(mSelectionController.getSelectedText()));
     }
 
     /**

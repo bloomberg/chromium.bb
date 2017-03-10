@@ -1589,10 +1589,10 @@ TEST_F(RenderViewImplTest, SetEditableSelectionAndComposition) {
   EXPECT_EQ(8, info.selectionEnd);
   EXPECT_EQ(7, info.compositionStart);
   EXPECT_EQ(10, info.compositionEnd);
-  frame()->Unselect();
+  frame()->CollapseSelection();
   info = controller->textInputInfo();
-  EXPECT_EQ(0, info.selectionStart);
-  EXPECT_EQ(0, info.selectionEnd);
+  EXPECT_EQ(8, info.selectionStart);
+  EXPECT_EQ(8, info.selectionEnd);
 }
 
 TEST_F(RenderViewImplTest, OnExtendSelectionAndDelete) {

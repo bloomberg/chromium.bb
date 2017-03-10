@@ -8,6 +8,7 @@ import static org.chromium.base.test.util.Restriction.RESTRICTION_TYPE_NON_LOW_E
 
 import android.content.DialogInterface;
 import android.content.pm.ActivityInfo;
+import android.graphics.Point;
 import android.os.Debug;
 import android.os.SystemClock;
 import android.support.test.filters.LargeTest;
@@ -350,6 +351,62 @@ public class TabsTest extends ChromeTabbedActivityTestBase {
         assertEquals("Failed to click button.", true,
                 DOMUtils.clickNode(getActivity().getActivityTab().getContentViewCore(), "button"));
         assertWaitForKeyboardStatus(false);
+    }
+
+    private void assertWaitForSelectedText(final String text) throws InterruptedException {
+        CriteriaHelper.pollUiThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                final String actualText =
+                        getActivity().getActivityTab().getContentViewCore().getSelectedText();
+                updateFailureReason(
+                        "expected selected text: [" + text + "], but got: [" + actualText + "]");
+                return text.equals(actualText);
+            }
+        });
+    }
+
+    /**
+     * Generate a fling sequence from the given start/end X,Y percentages, for the given steps.
+     * Works in either landscape or portrait orientation.
+     */
+    private void fling(float startX, float startY, float endX, float endY, int stepCount) {
+        Point size = new Point();
+        getActivity().getWindowManager().getDefaultDisplay().getSize(size);
+        float dragStartX = size.x * startX;
+        float dragEndX = size.x * endX;
+        float dragStartY = size.y * startY;
+        float dragEndY = size.y * endY;
+        long downTime = SystemClock.uptimeMillis();
+        dragStart(dragStartX, dragStartY, downTime);
+        dragTo(dragStartX, dragEndX, dragStartY, dragEndY, stepCount, downTime);
+        dragEnd(dragEndX, dragEndY, downTime);
+    }
+
+    private void scrollDown() {
+        fling(0.f, 0.5f, 0.f, 0.75f, 100);
+    }
+
+    /**
+     * Verify that the selection is collapsed when switching to the tab-switcher mode then switching
+     * back. https://crbug.com/697756
+     */
+    @MediumTest
+    @Restriction(ChromeRestriction.RESTRICTION_TYPE_PHONE)
+    @Feature({"Android-TabSwitcher"})
+    @RetryOnFailure
+    public void testTabSwitcherCollapseSelection() throws Exception {
+        mTestServer = EmbeddedTestServer.createAndStartServer(getInstrumentation().getContext());
+        ChromeTabUtils.fullyLoadUrlInNewTab(
+                getInstrumentation(), getActivity(), mTestServer.getURL(TEST_FILE_PATH), false);
+        DOMUtils.longPressNode(getActivity().getActivityTab().getContentViewCore(), "textarea");
+        assertWaitForSelectedText("helloworld");
+
+        // Switch to tab-switcher mode, switch back, and scroll page.
+        showOverviewAndWaitForAnimation();
+        hideOverviewAndWaitForAnimation();
+        scrollDown();
+        assertWaitForSelectedText("");
     }
 
     /**

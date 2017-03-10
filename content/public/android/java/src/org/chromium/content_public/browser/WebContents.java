@@ -109,10 +109,9 @@ public interface WebContents extends Parcelable {
     void selectAll();
 
     /**
-     * Clear the selection. This includes the cursor which is a zero-sized selection, and keyboard
-     * will be hidden as a result.
+     * Collapse the selection to the end of selection range.
      */
-    void unselect();
+    void collapseSelection();
 
     /**
      * To be called when the ContentView is hidden.

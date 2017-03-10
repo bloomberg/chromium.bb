@@ -373,9 +373,7 @@ public class ImeAdapter {
             restartInput();  // resets mInputConnection
             // crbug.com/666982: Restart input may not happen if view is detached from window, but
             // we need to unblock in any case. We want to call this after restartInput() to
-            // ensure that there is no additional IME operation in the queue, except for
-            // moveCursorToSelectionEnd(), which block the IME thread unnecessarily and need
-            // refactoring anyways. (crbug.com/662908)
+            // ensure that there is no additional IME operation in the queue.
             inputConnection.unblockOnUiThread();
         }
     }
@@ -444,16 +442,6 @@ public class ImeAdapter {
         if (!gainFocus && hideKeyboardOnBlur) resetAndHideKeyboard();
         if (mInputConnectionFactory != null) {
             mInputConnectionFactory.onViewFocusChanged(gainFocus);
-        }
-    }
-
-    /**
-     * Move cursor to the end of the current selection.
-     */
-    public void moveCursorToSelectionEnd() {
-        if (DEBUG_LOGS) Log.w(TAG, "movecursorToEnd");
-        if (mInputConnection != null) {
-            mInputConnection.moveCursorToSelectionEndOnUiThread();
         }
     }
 

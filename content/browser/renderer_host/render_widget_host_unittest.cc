@@ -1484,7 +1484,7 @@ TEST_InputRouterRoutes_NOARGS_FromRFH(InputMsg_Paste);
 TEST_InputRouterRoutes_NOARGS_FromRFH(InputMsg_PasteAndMatchStyle);
 TEST_InputRouterRoutes_NOARGS_FromRFH(InputMsg_Delete);
 TEST_InputRouterRoutes_NOARGS_FromRFH(InputMsg_SelectAll);
-TEST_InputRouterRoutes_NOARGS_FromRFH(InputMsg_Unselect);
+TEST_InputRouterRoutes_NOARGS_FromRFH(InputMsg_CollapseSelection);
 
 #undef TEST_InputRouterRoutes_NOARGS_FromRFH
 

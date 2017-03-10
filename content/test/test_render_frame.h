@@ -39,7 +39,7 @@ class TestRenderFrame : public RenderFrameImpl {
   void ExtendSelectionAndDelete(int before, int after);
   void DeleteSurroundingText(int before, int after);
   void DeleteSurroundingTextInCodePoints(int before, int after);
-  void Unselect();
+  void CollapseSelection();
   void SetAccessibilityMode(AccessibilityMode new_mode);
   void SetCompositionFromExistingText(
       int start,

@@ -464,7 +464,7 @@ class WebContents : public PageNavigator,
   virtual void PasteAndMatchStyle() = 0;
   virtual void Delete() = 0;
   virtual void SelectAll() = 0;
-  virtual void Unselect() = 0;
+  virtual void CollapseSelection() = 0;
 
   // Adjust the selection starting and ending points in the focused frame by
   // the given amounts. A negative amount moves the selection towards the

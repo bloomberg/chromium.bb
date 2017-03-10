@@ -2793,13 +2793,13 @@ void WebContentsImpl::SelectAll() {
   RecordAction(base::UserMetricsAction("SelectAll"));
 }
 
-void WebContentsImpl::Unselect() {
+void WebContentsImpl::CollapseSelection() {
   RenderFrameHost* focused_frame = GetFocusedFrame();
   if (!focused_frame)
     return;
 
-  focused_frame->Send(new InputMsg_Unselect(focused_frame->GetRoutingID()));
-  RecordAction(base::UserMetricsAction("Unselect"));
+  focused_frame->Send(
+      new InputMsg_CollapseSelection(focused_frame->GetRoutingID()));
 }
 
 void WebContentsImpl::Replace(const base::string16& word) {

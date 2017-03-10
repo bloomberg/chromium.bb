@@ -60,8 +60,8 @@ void TestRenderFrame::DeleteSurroundingTextInCodePoints(int before, int after) {
   OnDeleteSurroundingTextInCodePoints(before, after);
 }
 
-void TestRenderFrame::Unselect() {
-  OnUnselect();
+void TestRenderFrame::CollapseSelection() {
+  OnCollapseSelection();
 }
 
 void TestRenderFrame::SetAccessibilityMode(AccessibilityMode new_mode) {

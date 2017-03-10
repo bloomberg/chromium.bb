@@ -346,9 +346,9 @@ void WebContentsAndroid::SelectAll(JNIEnv* env,
   web_contents_->SelectAll();
 }
 
-void WebContentsAndroid::Unselect(JNIEnv* env,
-                                  const JavaParamRef<jobject>& obj) {
-  web_contents_->Unselect();
+void WebContentsAndroid::CollapseSelection(JNIEnv* env,
+                                           const JavaParamRef<jobject>& obj) {
+  web_contents_->CollapseSelection();
 }
 
 RenderWidgetHostViewAndroid*

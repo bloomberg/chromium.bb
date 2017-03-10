@@ -258,7 +258,7 @@ IPC_MESSAGE_ROUTED1(InputMsg_ReplaceMisspelling,
 IPC_MESSAGE_ROUTED0(InputMsg_Delete)
 IPC_MESSAGE_ROUTED0(InputMsg_SelectAll)
 
-IPC_MESSAGE_ROUTED0(InputMsg_Unselect)
+IPC_MESSAGE_ROUTED0(InputMsg_CollapseSelection)
 
 // Requests the renderer to select the region between two points.
 // Expects a SelectRange_ACK message when finished.

@@ -346,7 +346,7 @@ class CONTENT_EXPORT WebContentsImpl
   void PasteAndMatchStyle() override;
   void Delete() override;
   void SelectAll() override;
-  void Unselect() override;
+  void CollapseSelection() override;
   void Replace(const base::string16& word) override;
   void ReplaceMisspelling(const base::string16& word) override;
   void NotifyContextMenuClosed(

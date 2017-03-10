@@ -69,11 +69,6 @@ public interface ChromiumBaseInputConnection extends InputConnection {
     Handler getHandler();
 
     /**
-     * Move cursor to the end of the current selection.
-     */
-    void moveCursorToSelectionEndOnUiThread();
-
-    /**
      * Unblock thread function if needed, e.g. we found that we will
      * never get state update.
      */

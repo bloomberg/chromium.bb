@@ -848,12 +848,8 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
      * end if applicable.
      */
     void clearSelection() {
-        if (isEmpty()) return;
-        if (isSelectionEditable()) {
-            mImeAdapter.moveCursorToSelectionEnd();
-        } else {
-            if (mWebContents != null) mWebContents.unselect();
-        }
+        if (mWebContents == null || isEmpty()) return;
+        mWebContents.collapseSelection();
     }
 
     void onSelectionChanged(String text) {

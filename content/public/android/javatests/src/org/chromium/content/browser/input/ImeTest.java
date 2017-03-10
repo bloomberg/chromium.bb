@@ -873,16 +873,15 @@ public class ImeTest extends ContentShellTestBase {
 
     @SmallTest
     @Feature({"TextInput"})
-    public void testImeSelectAndUnSelectAll() throws Exception {
+    public void testImeSelectAndCollapseSelection() throws Exception {
         commitText("hello", 1);
         waitAndVerifyUpdateSelection(0, 5, 5, -1, -1);
 
         selectAll();
         waitAndVerifyUpdateSelection(1, 0, 5, -1, -1);
 
-        unselect();
-
-        assertWaitForKeyboardStatus(false);
+        collapseSelection();
+        waitAndVerifyUpdateSelection(2, 5, 5, -1, -1);
     }
 
     @SmallTest
@@ -1730,12 +1729,12 @@ public class ImeTest extends ContentShellTestBase {
         });
     }
 
-    private void unselect() {
+    private void collapseSelection() {
         final WebContents webContents = mWebContents;
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                webContents.unselect();
+                webContents.collapseSelection();
             }
         });
     }

@@ -57,16 +57,6 @@ class ThreadedInputConnection extends BaseInputConnection implements ChromiumBas
         }
     };
 
-    private final Runnable mMoveCursorSelectionEndRunnable = new Runnable() {
-        @Override
-        public void run() {
-            TextInputState textInputState = requestAndWaitForTextInputState();
-            if (textInputState == null) return;
-            Range selection = textInputState.selection();
-            setSelection(selection.end(), selection.end());
-        }
-    };
-
     private final Runnable mRequestTextInputStateUpdate = new Runnable() {
         @Override
         public void run() {
@@ -156,14 +146,6 @@ class ThreadedInputConnection extends BaseInputConnection implements ChromiumBas
             }
         });
         return true;
-    }
-
-    /**
-     * @see ChromiumBaseInputConnection#moveCursorToSelectionEndOnUiThread()
-     */
-    @Override
-    public void moveCursorToSelectionEndOnUiThread() {
-        mHandler.post(mMoveCursorSelectionEndRunnable);
     }
 
     @Override

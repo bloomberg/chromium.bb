@@ -63,7 +63,8 @@ class CONTENT_EXPORT WebContentsAndroid
                const base::android::JavaParamRef<jobject>& obj,
                const base::android::JavaParamRef<jstring>& jstr);
   void SelectAll(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
-  void Unselect(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
+  void CollapseSelection(JNIEnv* env,
+                         const base::android::JavaParamRef<jobject>& obj);
   jint GetBackgroundColor(JNIEnv* env,
                           const base::android::JavaParamRef<jobject>& obj);
   base::android::ScopedJavaLocalRef<jstring> GetURL(

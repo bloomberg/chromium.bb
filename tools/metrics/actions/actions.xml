@@ -15920,6 +15920,7 @@ should be able to be added at any place in this file.
 <action name="Unselect">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>Deprecated 03/2017 in issue 697756.</obsolete>
 </action>
 
 <action name="UpdateChrome">

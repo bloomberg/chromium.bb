@@ -333,7 +333,7 @@ TEST_F(InputEventFilterTest, PreserveRelativeOrder) {
                                                      base::string16()));
   messages.push_back(InputMsg_Delete(kTestRoutingID));
   messages.push_back(InputMsg_SelectAll(kTestRoutingID));
-  messages.push_back(InputMsg_Unselect(kTestRoutingID));
+  messages.push_back(InputMsg_CollapseSelection(kTestRoutingID));
   messages.push_back(InputMsg_SelectRange(kTestRoutingID,
                                          gfx::Point(), gfx::Point()));
   messages.push_back(InputMsg_MoveCaret(kTestRoutingID, gfx::Point()));

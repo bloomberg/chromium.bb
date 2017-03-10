@@ -225,12 +225,12 @@ import java.util.UUID;
     }
 
     @Override
-    public void unselect() {
-        // Unselect may get triggered when certain selection-related widgets
+    public void collapseSelection() {
+        // collapseSelection may get triggered when certain selection-related widgets
         // are destroyed. As the timing for such destruction is unpredictable,
         // safely guard against this case.
         if (isDestroyed()) return;
-        nativeUnselect(mNativeWebContentsAndroid);
+        nativeCollapseSelection(mNativeWebContentsAndroid);
     }
 
     @Override
@@ -584,7 +584,7 @@ import java.util.UUID;
     private native void nativePaste(long nativeWebContentsAndroid);
     private native void nativeReplace(long nativeWebContentsAndroid, String word);
     private native void nativeSelectAll(long nativeWebContentsAndroid);
-    private native void nativeUnselect(long nativeWebContentsAndroid);
+    private native void nativeCollapseSelection(long nativeWebContentsAndroid);
     private native void nativeOnHide(long nativeWebContentsAndroid);
     private native void nativeOnShow(long nativeWebContentsAndroid);
     private native void nativeSuspendAllMediaPlayers(long nativeWebContentsAndroid);

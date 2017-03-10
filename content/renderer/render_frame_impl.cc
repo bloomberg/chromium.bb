@@ -1524,7 +1524,7 @@ bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(InputMsg_SelectRange, OnSelectRange)
     IPC_MESSAGE_HANDLER(InputMsg_AdjustSelectionByCharacterOffset,
                         OnAdjustSelectionByCharacterOffset)
-    IPC_MESSAGE_HANDLER(InputMsg_Unselect, OnUnselect)
+    IPC_MESSAGE_HANDLER(InputMsg_CollapseSelection, OnCollapseSelection)
     IPC_MESSAGE_HANDLER(InputMsg_MoveRangeSelectionExtent,
                         OnMoveRangeSelectionExtent)
     IPC_MESSAGE_HANDLER(InputMsg_Replace, OnReplace)
@@ -1899,9 +1899,14 @@ void RenderFrameImpl::OnAdjustSelectionByCharacterOffset(int start_adjust,
                                range.length() + end_adjust - start_adjust));
 }
 
-void RenderFrameImpl::OnUnselect() {
+void RenderFrameImpl::OnCollapseSelection() {
+  const WebRange& range =
+      GetRenderWidget()->GetWebWidget()->caretOrSelectionRange();
+  if (range.isNull())
+    return;
+
   base::AutoReset<bool> handling_select_range(&handling_select_range_, true);
-  frame_->executeCommand(WebString::fromUTF8("Unselect"));
+  frame_->selectRange(WebRange(range.endOffset(), 0));
 }
 
 void RenderFrameImpl::OnMoveRangeSelectionExtent(const gfx::Point& point) {
@@ -5636,7 +5641,7 @@ void RenderFrameImpl::OnFind(int request_id,
 }
 
 void RenderFrameImpl::OnClearActiveFindMatch() {
-  frame_->executeCommand(WebString::fromUTF8("Unselect"));
+  frame_->executeCommand(WebString::fromUTF8("CollapseSelection"));
   frame_->clearActiveFindMatch();
 }
 
