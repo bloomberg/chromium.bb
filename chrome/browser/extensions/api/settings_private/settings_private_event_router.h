@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/extensions/api/settings_private/prefs_util.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -55,6 +56,9 @@ class SettingsPrivateEventRouter : public KeyedService,
 
   void OnPreferenceChanged(const std::string& pref_name);
 
+  // Sends a pref change to any listeners (if they exist; no-ops otherwise).
+  void SendPrefChange(const std::string& pref_name);
+
   PrefChangeRegistrar* FindRegistrarForPref(const std::string& pref_name);
 
   using SubscriptionMap =
@@ -66,6 +70,8 @@ class SettingsPrivateEventRouter : public KeyedService,
   bool listening_;
 
   std::unique_ptr<PrefsUtil> prefs_util_;
+
+  base::WeakPtrFactory<SettingsPrivateEventRouter> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SettingsPrivateEventRouter);
 };

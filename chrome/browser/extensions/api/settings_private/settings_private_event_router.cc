@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
@@ -20,7 +21,7 @@ namespace extensions {
 
 SettingsPrivateEventRouter::SettingsPrivateEventRouter(
     content::BrowserContext* context)
-    : context_(context), listening_(false) {
+    : context_(context), listening_(false), weak_ptr_factory_(this) {
   // Register with the event router so we know when renderers are listening to
   // our events. We first check and see if there *is* an event router, because
   // some unit tests try to create all context services, but don't initialize
@@ -123,6 +124,15 @@ void SettingsPrivateEventRouter::StartOrStopListeningForPrefsChanges() {
 
 void SettingsPrivateEventRouter::OnPreferenceChanged(
     const std::string& pref_name) {
+  // This posts an asynchronous task to ensure that all pref stores are updated,
+  // as |prefs_util_->GetPref()| relies on this information to determine if a
+  // preference is controlled by e.g. extensions.
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&SettingsPrivateEventRouter::SendPrefChange,
+                            weak_ptr_factory_.GetWeakPtr(), pref_name));
+}
+
+void SettingsPrivateEventRouter::SendPrefChange(const std::string& pref_name) {
   EventRouter* event_router = EventRouter::Get(context_);
   if (!event_router->HasEventListener(
           api::settings_private::OnPrefsChanged::kEventName)) {
