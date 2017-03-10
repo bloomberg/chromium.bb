@@ -1,0 +1,15 @@
+{% macro decl_methods(field) -%}
+inline static {{field.type_name}} {{field.initial_method_name}}() {
+  return {{field.default_value}};
+}
+{{field.type_name}} {{field.getter_method_name}}() const {
+  return static_cast<{{field.type_name}}>({{field.name}});
+}
+void {{field.setter_method_name}}({{field.type_name}} v) {
+  {{field.name}} = static_cast<unsigned>(v);
+}
+inline void {{field.resetter_method_name}}() {
+  {{field.name}} = static_cast<unsigned>({{field.default_value}});
+}
+{%- endmacro %}
+

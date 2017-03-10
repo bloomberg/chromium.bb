@@ -10,11 +10,13 @@
 #include "{{path}}"
 {% endfor %}
 
-{# Returns the default value for the field, converted to fit in the storage container. #}
-{% macro default_value(field) -%}
-{# We only support enum fields for now. #}
-static_cast<unsigned>({{field.default_value}})
-{%- endmacro %}
+{# Each field template has macros that we can call to generate specific
+   aspects of the field (e.g. getters, setters).
+#}
+{% import 'fields/keyword.tmpl' as keyword %}
+{% import 'fields/flag.tmpl' as flag %}
+{% import 'fields/monotonic_flag.tmpl' as monotonic_flag %}
+{% set field_templates = { 'keyword': keyword, 'flag': flag, 'monotonic_flag': monotonic_flag } %}
 
 namespace blink {
 
@@ -24,7 +26,7 @@ class CORE_EXPORT ComputedStyleBase {
  public:
   ALWAYS_INLINE ComputedStyleBase() :
   {% for field in fields %}
-      {{field.name}}({{default_value(field)}}){{print_if(not loop.last, ',')}}
+      {{field.name}}(static_cast<unsigned>({{field.default_value}})){{print_if(not loop.last, ',')}}
   {% endfor %}
   {}
   ~ComputedStyleBase() {}
@@ -87,24 +89,7 @@ class CORE_EXPORT ComputedStyleBase {
 
   {% for field in fields %}
   // {{field.property_name}}
-  inline static {{field.type_name}} {{field.initial_method_name}}() {
-    return {{field.default_value}};
-  }
-  {{field.type_name}} {{field.getter_method_name}}() const {
-    return static_cast<{{field.type_name}}>({{field.name}});
-  }
-  {% if field.is_nonproperty %}
-  void {{field.setter_method_name}}() {
-    {{field.name}} = static_cast<unsigned>(true);
-  }
-  {% else %}
-  void {{field.setter_method_name}}({{field.type_name}} v) {
-    {{field.name}} = static_cast<unsigned>(v);
-  }
-  {% endif %}
-  inline void {{field.resetter_method_name}}() {
-    {{field.name}} = {{default_value(field)}};
-  }
+  {{field_templates[field.field_template].decl_methods(field)|indent(2)}}
 
   {% endfor %}
  protected:

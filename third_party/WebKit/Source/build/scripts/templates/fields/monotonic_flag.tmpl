@@ -1,0 +1,8 @@
+{% macro decl_methods(field) %}
+bool {{field.getter_method_name}}() const {
+  return {{field.name}};
+}
+void {{field.setter_method_name}}() {
+  {{field.name}} = static_cast<unsigned>(true);
+}
+{% endmacro %}

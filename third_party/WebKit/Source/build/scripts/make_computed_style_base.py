@@ -58,7 +58,7 @@ class Field(object):
         'property_name',
         # Name of the type (e.g. EClear, int)
         'type_name',
-        # Affects how the field is generated (keyword, flag)
+        # Affects how the field is generated (keyword, flag, monotonic_flag)
         'field_template',
         # Bits needed for storage
         'size',
@@ -212,7 +212,7 @@ def _create_nonproperty_field(field_name):
         name=member_name,
         property_name=field_name,
         type_name='bool',
-        field_template='flag',
+        field_template='monotonic_flag',
         size=1,
         default_value='false',
         getter_method_name=field_name,

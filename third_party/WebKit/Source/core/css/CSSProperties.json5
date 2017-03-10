@@ -66,6 +66,9 @@
         // Field is stored a packed boolean flag and has a initial/getter/setter/resetter.
         // TODO(shend): generalise this to "primitive"
         "flag",
+        // Field is stored as a bool, whose default value is false
+        // and can only be set to true. Has a initial/getter/setter.
+        "monotonic_flag"
       ],
     },
 

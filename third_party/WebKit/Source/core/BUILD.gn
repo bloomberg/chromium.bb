@@ -405,6 +405,10 @@ action("generated_testing_idls_internal_runtime_flags") {
 css_properties("make_core_generated_computed_style_base") {
   script = "../build/scripts/make_computed_style_base.py"
   other_inputs = [
+    "../build/scripts/templates/fields/base.tmpl",
+    "../build/scripts/templates/fields/keyword.tmpl",
+    "../build/scripts/templates/fields/flag.tmpl",
+    "../build/scripts/templates/fields/monotonic_flag.tmpl",
     "../build/scripts/templates/ComputedStyleBase.cpp.tmpl",
     "../build/scripts/templates/ComputedStyleBase.h.tmpl",
     "../build/scripts/templates/ComputedStyleBaseConstants.h.tmpl",
