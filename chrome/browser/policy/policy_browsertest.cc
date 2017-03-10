@@ -1206,7 +1206,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ForceGoogleSafeSearch) {
 
 IN_PROC_BROWSER_TEST_F(PolicyTest, Disable3DAPIs) {
   // This test assumes Gpu access.
-  if (!content::GpuDataManager::GetInstance()->GpuAccessAllowed(NULL))
+  if (!content::GpuDataManager::GetInstance()->HardwareAccelerationEnabled())
     return;
 
   ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
@@ -4137,7 +4137,7 @@ IN_PROC_BROWSER_TEST_F(HardwareAccelerationModePolicyTest,
                        HardwareAccelerationDisabled) {
   // Verifies that hardware acceleration can be disabled with policy.
   EXPECT_FALSE(
-      content::GpuDataManager::GetInstance()->GpuAccessAllowed(nullptr));
+      content::GpuDataManager::GetInstance()->HardwareAccelerationEnabled());
 }
 #endif  // !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
 
