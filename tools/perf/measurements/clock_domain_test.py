@@ -4,8 +4,9 @@
 
 from telemetry import benchmark
 from telemetry.testing import tab_test_case
-from telemetry.timeline import trace_data
 from telemetry.timeline import tracing_config
+from tracing.trace_data import trace_data
+
 
 def GetSyncEvents(trace_part):
   return [x for x in trace_part if x['ph'] == 'c']
@@ -15,9 +16,7 @@ class ClockDomainTest(tab_test_case.TabTestCase):
   # Don't run this test on Android; it's not supposed to work on Android
   # (since when doing Android tracing there are two different devices,
   # so the clock domains will be different)
-  # TODO(rnephew): Revert change from android to all once
-  # https://codereview.chromium.org/2741533003/ lands.
-  @benchmark.Disabled('all')
+  @benchmark.Disabled('android')
   def testTelemetryUsesChromeClockDomain(self):
 
     tracing_controller = self._browser.platform.tracing_controller
