@@ -444,8 +444,12 @@ void av1_rc_update_rate_correction_factors(AV1_COMP *cpi) {
 
   // More heavily damped adjustment used if we have been oscillating either side
   // of target.
-  adjustment_limit =
-      0.25 + 0.5 * AOMMIN(1, fabs(log10(0.01 * correction_factor)));
+  if (correction_factor > 0) {
+    adjustment_limit =
+        0.25 + 0.5 * AOMMIN(1, fabs(log10(0.01 * correction_factor)));
+  } else {
+    adjustment_limit = 0.75;
+  }
 
   cpi->rc.q_2_frame = cpi->rc.q_1_frame;
   cpi->rc.q_1_frame = cm->base_qindex;
