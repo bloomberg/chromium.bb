@@ -28,6 +28,7 @@ extern const base::Feature kAutofillCreditCardAssist;
 extern const base::Feature kAutofillScanCardholderName;
 extern const base::Feature kAutofillCreditCardPopupLayout;
 extern const base::Feature kAutofillCreditCardLastUsedDateDisplay;
+extern const base::Feature kAutofillUkmLogging;
 extern const char kCreditCardSigninPromoImpressionLimitParamKey[];
 extern const char kAutofillCreditCardPopupSettingsSuggestionValueKey[];
 extern const char kAutofillCreditCardLastUsedDateShowExpirationDateKey[];
@@ -99,6 +100,9 @@ void ModifyAutofillCreditCardSuggestion(struct Suggestion* suggestion);
 // if the margin isn't configured in an experiment to tweak autofill popup
 // layout.
 unsigned int GetPopupMargin();
+
+// Returns whether the feature to log UKMs is enabled.
+bool IsUkmLoggingEnabled();
 
 }  // namespace autofill
 

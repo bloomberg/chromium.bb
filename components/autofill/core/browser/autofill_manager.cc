@@ -1039,6 +1039,7 @@ void AutofillManager::OnDidGetUploadDetails(
                                      weak_ptr_factory_.GetWeakPtr()));
     AutofillMetrics::LogCardUploadDecisionMetric(
         AutofillMetrics::UPLOAD_OFFERED);
+    LogCardUploadDecisionUkm(AutofillMetrics::UPLOAD_OFFERED);
   } else {
     // If the upload details request failed, fall back to a local save. The
     // reasoning here is as follows:
@@ -1058,7 +1059,10 @@ void AutofillManager::OnDidGetUploadDetails(
             base::Unretained(personal_data_), upload_request_.card));
     AutofillMetrics::LogCardUploadDecisionMetric(
         AutofillMetrics::UPLOAD_NOT_OFFERED_GET_UPLOAD_DETAILS_FAILED);
+    LogCardUploadDecisionUkm(
+        AutofillMetrics::UPLOAD_NOT_OFFERED_GET_UPLOAD_DETAILS_FAILED);
   }
+  pending_upload_request_url_ = GURL();
 }
 
 void AutofillManager::OnDidUploadCard(
@@ -1218,11 +1222,15 @@ void AutofillManager::ImportFormData(const FormStructure& submitted_form) {
                                        &get_profiles_decision_metric,
                                        &rappor_metric_name);
 
+    pending_upload_request_url_ = GURL(submitted_form.source_url());
+
     // Both the CVC and address checks are done.  Conform to the legacy order of
     // reporting on CVC then address.
     if (upload_request_.cvc.empty()) {
       AutofillMetrics::LogCardUploadDecisionMetric(
           AutofillMetrics::UPLOAD_NOT_OFFERED_NO_CVC);
+      LogCardUploadDecisionUkm(AutofillMetrics::UPLOAD_NOT_OFFERED_NO_CVC);
+      pending_upload_request_url_ = GURL();
       CollectRapportSample(submitted_form.source_url(),
                            "Autofill.CardUploadNotOfferedNoCvc");
       return;
@@ -1231,6 +1239,8 @@ void AutofillManager::ImportFormData(const FormStructure& submitted_form) {
       DCHECK(get_profiles_decision_metric != AutofillMetrics::UPLOAD_OFFERED);
       AutofillMetrics::LogCardUploadDecisionMetric(
           get_profiles_decision_metric);
+      LogCardUploadDecisionUkm(get_profiles_decision_metric);
+      pending_upload_request_url_ = GURL();
       if (!rappor_metric_name.empty()) {
         CollectRapportSample(submitted_form.source_url(), rappor_metric_name);
       }
@@ -2196,5 +2206,11 @@ void AutofillManager::DumpAutofillData(bool imported_cc) const {
   fclose(file);
 }
 #endif  // ENABLE_FORM_DEBUG_DUMP
+
+void AutofillManager::LogCardUploadDecisionUkm(
+    AutofillMetrics::CardUploadDecisionMetric upload_decision) {
+  AutofillMetrics::LogCardUploadDecisionUkm(
+      client_->GetUkmService(), pending_upload_request_url_, upload_decision);
+}
 
 }  // namespace autofill

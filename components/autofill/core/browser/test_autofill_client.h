@@ -16,6 +16,7 @@
 #include "components/autofill/core/browser/autofill_client.h"
 #include "components/prefs/pref_service.h"
 #include "components/rappor/test_rappor_service.h"
+#include "components/ukm/test_ukm_service.h"
 #include "google_apis/gaia/fake_identity_provider.h"
 #include "google_apis/gaia/fake_oauth2_token_service.h"
 
@@ -34,6 +35,7 @@ class TestAutofillClient : public AutofillClient {
   syncer::SyncService* GetSyncService() override;
   IdentityProvider* GetIdentityProvider() override;
   rappor::RapporServiceImpl* GetRapporServiceImpl() override;
+  ukm::UkmService* GetUkmService() override;
   void ShowAutofillSettings() override;
   void ShowUnmaskPrompt(const CreditCard& card,
                         UnmaskCardReason reason,
@@ -85,12 +87,17 @@ class TestAutofillClient : public AutofillClient {
 
   void set_form_origin(const GURL& url) { form_origin_ = url; }
 
+  ukm::TestUkmService* GetTestUkmService() {
+    return ukm_service_test_harness_.test_ukm_service();
+  }
+
  private:
   // NULL by default.
   std::unique_ptr<PrefService> prefs_;
   std::unique_ptr<FakeOAuth2TokenService> token_service_;
   std::unique_ptr<FakeIdentityProvider> identity_provider_;
   std::unique_ptr<rappor::TestRapporServiceImpl> rappor_service_;
+  ukm::UkmServiceTestingHarness ukm_service_test_harness_;
   GURL form_origin_;
 
   DISALLOW_COPY_AND_ASSIGN(TestAutofillClient);

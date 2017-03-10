@@ -36,6 +36,10 @@ namespace syncer {
 class SyncService;
 }
 
+namespace ukm {
+class UkmService;
+}
+
 namespace autofill {
 
 class AutofillPopupDelegate;
@@ -104,6 +108,9 @@ class AutofillClient {
 
   // Gets the RapporServiceImpl associated with the client (for metrics).
   virtual rappor::RapporServiceImpl* GetRapporServiceImpl() = 0;
+
+  // Gets the UKM service assiciated with this client (for metrics).
+  virtual ukm::UkmService* GetUkmService() = 0;
 
   // Causes the Autofill settings UI to be shown.
   virtual void ShowAutofillSettings() = 0;

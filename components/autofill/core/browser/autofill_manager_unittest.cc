@@ -18,6 +18,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_vector.h"
 #include "base/metrics/field_trial.h"
+#include "base/metrics/metrics_hashes.h"
 #include "base/run_loop.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
@@ -47,10 +48,14 @@
 #include "components/autofill/core/common/autofill_util.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_field_data.h"
+#include "components/metrics/proto/ukm/entry.pb.h"
 #include "components/prefs/pref_service.h"
 #include "components/rappor/test_rappor_service.h"
 #include "components/security_state/core/security_state.h"
 #include "components/strings/grit/components_strings.h"
+#include "components/ukm/test_ukm_service.h"
+#include "components/ukm/ukm_entry.h"
+#include "components/ukm/ukm_source.h"
 #include "components/variations/variations_associated_data.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -774,6 +779,17 @@ class TestAutofillExternalDelegate : public AutofillExternalDelegate {
   DISALLOW_COPY_AND_ASSIGN(TestAutofillExternalDelegate);
 };
 
+// Finds the specified UKM metric by |name| in the specified UKM |metrics|.
+const ukm::Entry_Metric* FindMetric(
+    const char* name,
+    const google::protobuf::RepeatedPtrField<ukm::Entry_Metric>& metrics) {
+  for (const auto& metric : metrics) {
+    if (metric.metric_hash() == base::HashMetricName(name))
+      return &metric;
+  }
+  return nullptr;
+}
+
 }  // namespace
 
 class AutofillManagerTest : public testing::Test {
@@ -996,6 +1012,39 @@ class AutofillManagerTest : public testing::Test {
   void SetHttpWarningEnabled() {
     scoped_feature_list_.InitAndEnableFeature(
         security_state::kHttpFormWarningFeature);
+  }
+
+  void EnableUkmLogging() {
+    scoped_feature_list_.InitAndEnableFeature(kAutofillUkmLogging);
+  }
+
+  void ExpectUniqueCardUploadDecisionUkm(
+      AutofillMetrics::CardUploadDecisionMetric upload_decision) {
+    ukm::TestUkmService* ukm_service = autofill_client_.GetTestUkmService();
+
+    // Check that one source is logged.
+    ASSERT_EQ(1U, ukm_service->sources_count());
+    const ukm::UkmSource* source = ukm_service->GetSource(0);
+
+    // Check that one entry is logged.
+    EXPECT_EQ(1U, ukm_service->entries_count());
+    const ukm::UkmEntry* entry = ukm_service->GetEntry(0);
+    EXPECT_EQ(source->id(), entry->source_id());
+
+    ukm::Entry entry_proto;
+    entry->PopulateProto(&entry_proto);
+    EXPECT_EQ(source->id(), entry_proto.source_id());
+
+    // Check if there is an entry for card upload decisions.
+    EXPECT_EQ(base::HashMetricName(internal::kUKMCardUploadDecisionEntryName),
+              entry_proto.event_hash());
+    EXPECT_EQ(1, entry_proto.metrics_size());
+
+    // Check that the expected upload decision is logged.
+    const ukm::Entry_Metric* metric = FindMetric(
+        internal::kUKMCardUploadDecisionMetricName, entry_proto.metrics());
+    ASSERT_NE(nullptr, metric);
+    EXPECT_EQ(static_cast<int>(upload_decision), metric->value());
   }
 
  protected:
@@ -4468,6 +4517,7 @@ TEST_F(AutofillManagerTest, FillInUpdatedExpirationDate) {
 #define MAYBE_UploadCreditCard UploadCreditCard
 #endif
 TEST_F(AutofillManagerTest, MAYBE_UploadCreditCard) {
+  EnableUkmLogging();
   personal_data_.ClearAutofillProfiles();
   autofill_manager_->set_credit_card_upload_enabled(true);
 
@@ -4499,6 +4549,8 @@ TEST_F(AutofillManagerTest, MAYBE_UploadCreditCard) {
   // Verify that the correct histogram entry (and only that) was logged.
   histogram_tester.ExpectUniqueSample("Autofill.CardUploadDecisionExpanded",
                                       AutofillMetrics::UPLOAD_OFFERED, 1);
+  // Verify that the correct UKM was logged.
+  ExpectUniqueCardUploadDecisionUkm(AutofillMetrics::UPLOAD_OFFERED);
 }
 
 // TODO(crbug.com/666704): Flaky on android_n5x_swarming_rel bot.
@@ -4549,6 +4601,7 @@ TEST_F(AutofillManagerTest, MAYBE_UploadCreditCard_FeatureNotEnabled) {
 #define MAYBE_UploadCreditCard_CvcUnavailable UploadCreditCard_CvcUnavailable
 #endif
 TEST_F(AutofillManagerTest, MAYBE_UploadCreditCard_CvcUnavailable) {
+  EnableUkmLogging();
   personal_data_.ClearAutofillProfiles();
   autofill_manager_->set_credit_card_upload_enabled(true);
 
@@ -4583,6 +4636,8 @@ TEST_F(AutofillManagerTest, MAYBE_UploadCreditCard_CvcUnavailable) {
   histogram_tester.ExpectUniqueSample(
       "Autofill.CardUploadDecisionExpanded",
       AutofillMetrics::UPLOAD_NOT_OFFERED_NO_CVC, 1);
+  // Verify that the correct UKM was logged.
+  ExpectUniqueCardUploadDecisionUkm(AutofillMetrics::UPLOAD_NOT_OFFERED_NO_CVC);
 
   rappor::TestRapporServiceImpl* rappor_service =
       autofill_client_.test_rappor_service();
@@ -4602,6 +4657,7 @@ TEST_F(AutofillManagerTest, MAYBE_UploadCreditCard_CvcUnavailable) {
 #define MAYBE_UploadCreditCard_CvcInvalidLength UploadCreditCard_CvcInvalidLength
 #endif
 TEST_F(AutofillManagerTest, MAYBE_UploadCreditCard_CvcInvalidLength) {
+  EnableUkmLogging();
   personal_data_.ClearAutofillProfiles();
   autofill_manager_->set_credit_card_upload_enabled(true);
 
@@ -4636,6 +4692,8 @@ TEST_F(AutofillManagerTest, MAYBE_UploadCreditCard_CvcInvalidLength) {
   histogram_tester.ExpectUniqueSample(
       "Autofill.CardUploadDecisionExpanded",
       AutofillMetrics::UPLOAD_NOT_OFFERED_NO_CVC, 1);
+  // Verify that the correct UKM was logged.
+  ExpectUniqueCardUploadDecisionUkm(AutofillMetrics::UPLOAD_NOT_OFFERED_NO_CVC);
 
   rappor::TestRapporServiceImpl* rappor_service =
       autofill_client_.test_rappor_service();
@@ -4655,6 +4713,7 @@ TEST_F(AutofillManagerTest, MAYBE_UploadCreditCard_CvcInvalidLength) {
 #define MAYBE_UploadCreditCard_MultipleCvcFields UploadCreditCard_MultipleCvcFields
 #endif
 TEST_F(AutofillManagerTest, MAYBE_UploadCreditCard_MultipleCvcFields) {
+  EnableUkmLogging();
   autofill_manager_->set_credit_card_upload_enabled(true);
 
   // Remove the profiles that were created in the TestPersonalDataManager
@@ -4711,6 +4770,8 @@ TEST_F(AutofillManagerTest, MAYBE_UploadCreditCard_MultipleCvcFields) {
   histogram_tester.ExpectUniqueSample(
       "Autofill.CardUploadDecisionExpanded",
       AutofillMetrics::UPLOAD_OFFERED, 1);
+  // Verify that the correct UKM was logged.
+  ExpectUniqueCardUploadDecisionUkm(AutofillMetrics::UPLOAD_OFFERED);
 }
 
 // TODO(crbug.com/666704): Flaky on android_n5x_swarming_rel bot.
@@ -4720,6 +4781,7 @@ TEST_F(AutofillManagerTest, MAYBE_UploadCreditCard_MultipleCvcFields) {
 #define MAYBE_UploadCreditCard_NoProfileAvailable UploadCreditCard_NoProfileAvailable
 #endif
 TEST_F(AutofillManagerTest, MAYBE_UploadCreditCard_NoProfileAvailable) {
+  EnableUkmLogging();
   personal_data_.ClearAutofillProfiles();
   autofill_manager_->set_credit_card_upload_enabled(true);
 
@@ -4748,6 +4810,9 @@ TEST_F(AutofillManagerTest, MAYBE_UploadCreditCard_NoProfileAvailable) {
   histogram_tester.ExpectUniqueSample(
       "Autofill.CardUploadDecisionExpanded",
       AutofillMetrics::UPLOAD_NOT_OFFERED_NO_ADDRESS, 1);
+  // Verify that the correct UKM was logged.
+  ExpectUniqueCardUploadDecisionUkm(
+      AutofillMetrics::UPLOAD_NOT_OFFERED_NO_ADDRESS);
 
   rappor::TestRapporServiceImpl* rappor_service =
       autofill_client_.test_rappor_service();
@@ -4768,6 +4833,7 @@ TEST_F(AutofillManagerTest, MAYBE_UploadCreditCard_NoProfileAvailable) {
 #endif
 TEST_F(AutofillManagerTest,
        MAYBE_UploadCreditCard_CvcUnavailableAndNoProfileAvailable) {
+  EnableUkmLogging();
   personal_data_.ClearAutofillProfiles();
   autofill_manager_->set_credit_card_upload_enabled(true);
 
@@ -4798,6 +4864,8 @@ TEST_F(AutofillManagerTest,
   histogram_tester.ExpectUniqueSample(
       "Autofill.CardUploadDecisionExpanded",
       AutofillMetrics::UPLOAD_NOT_OFFERED_NO_CVC, 1);
+  // Verify that the correct UKM was logged.
+  ExpectUniqueCardUploadDecisionUkm(AutofillMetrics::UPLOAD_NOT_OFFERED_NO_CVC);
 
   rappor::TestRapporServiceImpl* rappor_service =
       autofill_client_.test_rappor_service();
@@ -4817,6 +4885,7 @@ TEST_F(AutofillManagerTest,
 #define MAYBE_UploadCreditCard_NoNameAvailable UploadCreditCard_NoNameAvailable
 #endif
 TEST_F(AutofillManagerTest, MAYBE_UploadCreditCard_NoNameAvailable) {
+  EnableUkmLogging();
   personal_data_.ClearAutofillProfiles();
   autofill_manager_->set_credit_card_upload_enabled(true);
 
@@ -4851,6 +4920,9 @@ TEST_F(AutofillManagerTest, MAYBE_UploadCreditCard_NoNameAvailable) {
   histogram_tester.ExpectUniqueSample(
       "Autofill.CardUploadDecisionExpanded",
       AutofillMetrics::UPLOAD_NOT_OFFERED_NO_NAME, 1);
+  // Verify that the correct UKM was logged.
+  ExpectUniqueCardUploadDecisionUkm(
+      AutofillMetrics::UPLOAD_NOT_OFFERED_NO_NAME);
 
   rappor::TestRapporServiceImpl* rappor_service =
       autofill_client_.test_rappor_service();
@@ -4870,6 +4942,7 @@ TEST_F(AutofillManagerTest, MAYBE_UploadCreditCard_NoNameAvailable) {
 #define MAYBE_UploadCreditCard_ZipCodesConflict UploadCreditCard_ZipCodesConflict
 #endif
 TEST_F(AutofillManagerTest, MAYBE_UploadCreditCard_ZipCodesConflict) {
+  EnableUkmLogging();
   personal_data_.ClearAutofillProfiles();
   autofill_manager_->set_credit_card_upload_enabled(true);
 
@@ -4912,6 +4985,9 @@ TEST_F(AutofillManagerTest, MAYBE_UploadCreditCard_ZipCodesConflict) {
   histogram_tester.ExpectUniqueSample(
       "Autofill.CardUploadDecisionExpanded",
       AutofillMetrics::UPLOAD_NOT_OFFERED_CONFLICTING_ZIPS, 1);
+  // Verify that the correct UKM was logged.
+  ExpectUniqueCardUploadDecisionUkm(
+      AutofillMetrics::UPLOAD_NOT_OFFERED_CONFLICTING_ZIPS);
 }
 
 // TODO(crbug.com/666704): Flaky on android_n5x_swarming_rel bot.
@@ -4921,6 +4997,7 @@ TEST_F(AutofillManagerTest, MAYBE_UploadCreditCard_ZipCodesConflict) {
 #define MAYBE_UploadCreditCard_ZipCodesHavePrefixMatch UploadCreditCard_ZipCodesHavePrefixMatch
 #endif
 TEST_F(AutofillManagerTest, MAYBE_UploadCreditCard_ZipCodesHavePrefixMatch) {
+  EnableUkmLogging();
   personal_data_.ClearAutofillProfiles();
   autofill_manager_->set_credit_card_upload_enabled(true);
 
@@ -4963,6 +5040,8 @@ TEST_F(AutofillManagerTest, MAYBE_UploadCreditCard_ZipCodesHavePrefixMatch) {
   histogram_tester.ExpectUniqueSample(
       "Autofill.CardUploadDecisionExpanded",
       AutofillMetrics::UPLOAD_OFFERED, 1);
+  // Verify that the correct UKM was logged.
+  ExpectUniqueCardUploadDecisionUkm(AutofillMetrics::UPLOAD_OFFERED);
 }
 
 // TODO(crbug.com/666704): Flaky on android_n5x_swarming_rel bot.
@@ -4972,6 +5051,7 @@ TEST_F(AutofillManagerTest, MAYBE_UploadCreditCard_ZipCodesHavePrefixMatch) {
 #define MAYBE_UploadCreditCard_NoZipCodeAvailable UploadCreditCard_NoZipCodeAvailable
 #endif
 TEST_F(AutofillManagerTest, MAYBE_UploadCreditCard_NoZipCodeAvailable) {
+  EnableUkmLogging();
   personal_data_.ClearAutofillProfiles();
   autofill_manager_->set_credit_card_upload_enabled(true);
 
@@ -5013,6 +5093,9 @@ TEST_F(AutofillManagerTest, MAYBE_UploadCreditCard_NoZipCodeAvailable) {
   histogram_tester.ExpectUniqueSample(
       "Autofill.CardUploadDecisionExpanded",
       AutofillMetrics::UPLOAD_NOT_OFFERED_NO_ZIP_CODE, 1);
+  // Verify that the correct UKM was logged.
+  ExpectUniqueCardUploadDecisionUkm(
+      AutofillMetrics::UPLOAD_NOT_OFFERED_NO_ZIP_CODE);
 }
 
 // TODO(crbug.com/666704): Flaky on android_n5x_swarming_rel bot.
@@ -5022,6 +5105,7 @@ TEST_F(AutofillManagerTest, MAYBE_UploadCreditCard_NoZipCodeAvailable) {
 #define MAYBE_UploadCreditCard_NamesMatchLoosely UploadCreditCard_NamesMatchLoosely
 #endif
 TEST_F(AutofillManagerTest, MAYBE_UploadCreditCard_NamesMatchLoosely) {
+  EnableUkmLogging();
   personal_data_.ClearAutofillProfiles();
   autofill_manager_->set_credit_card_upload_enabled(true);
 
@@ -5067,6 +5151,8 @@ TEST_F(AutofillManagerTest, MAYBE_UploadCreditCard_NamesMatchLoosely) {
   histogram_tester.ExpectUniqueSample(
       "Autofill.CardUploadDecisionExpanded",
       AutofillMetrics::UPLOAD_OFFERED, 1);
+  // Verify that the correct UKM was logged.
+  ExpectUniqueCardUploadDecisionUkm(AutofillMetrics::UPLOAD_OFFERED);
 }
 
 // TODO(crbug.com/666704): Flaky on android_n5x_swarming_rel bot.
@@ -5076,6 +5162,7 @@ TEST_F(AutofillManagerTest, MAYBE_UploadCreditCard_NamesMatchLoosely) {
 #define MAYBE_UploadCreditCard_NamesHaveToMatch UploadCreditCard_NamesHaveToMatch
 #endif
 TEST_F(AutofillManagerTest, MAYBE_UploadCreditCard_NamesHaveToMatch) {
+  EnableUkmLogging();
   personal_data_.ClearAutofillProfiles();
   autofill_manager_->set_credit_card_upload_enabled(true);
 
@@ -5118,6 +5205,9 @@ TEST_F(AutofillManagerTest, MAYBE_UploadCreditCard_NamesHaveToMatch) {
   histogram_tester.ExpectUniqueSample(
       "Autofill.CardUploadDecisionExpanded",
       AutofillMetrics::UPLOAD_NOT_OFFERED_CONFLICTING_NAMES, 1);
+  // Verify that the correct UKM was logged.
+  ExpectUniqueCardUploadDecisionUkm(
+      AutofillMetrics::UPLOAD_NOT_OFFERED_CONFLICTING_NAMES);
 
   rappor::TestRapporServiceImpl* rappor_service =
       autofill_client_.test_rappor_service();
@@ -5137,6 +5227,7 @@ TEST_F(AutofillManagerTest, MAYBE_UploadCreditCard_NamesHaveToMatch) {
 #define MAYBE_UploadCreditCard_UploadDetailsFails UploadCreditCard_UploadDetailsFails
 #endif
 TEST_F(AutofillManagerTest, MAYBE_UploadCreditCard_UploadDetailsFails) {
+  EnableUkmLogging();
   personal_data_.ClearAutofillProfiles();
   autofill_manager_->set_credit_card_upload_enabled(true);
 
@@ -5175,6 +5266,9 @@ TEST_F(AutofillManagerTest, MAYBE_UploadCreditCard_UploadDetailsFails) {
   histogram_tester.ExpectUniqueSample(
       "Autofill.CardUploadDecisionExpanded",
       AutofillMetrics::UPLOAD_NOT_OFFERED_GET_UPLOAD_DETAILS_FAILED, 1);
+  // Verify that the correct UKM was logged.
+  ExpectUniqueCardUploadDecisionUkm(
+      AutofillMetrics::UPLOAD_NOT_OFFERED_GET_UPLOAD_DETAILS_FAILED);
 }
 
 // Verify that typing "gmail" will match "theking@gmail.com" and

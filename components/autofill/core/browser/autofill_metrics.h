@@ -17,7 +17,17 @@
 
 namespace base {
 class TimeDelta;
-}
+}  // namespace base
+
+namespace ukm {
+class UkmService;
+}  // namespace ukm
+
+namespace internal {
+// Name constants are exposed here so they can be referenced from tests.
+extern const char kUKMCardUploadDecisionEntryName[];
+extern const char kUKMCardUploadDecisionMetricName[];
+}  // namespace internal
 
 namespace autofill {
 
@@ -679,6 +689,20 @@ class AutofillMetrics {
   // This should be called when the user selects the Form-Not-Secure warning
   // suggestion to show an explanation of the warning.
   static void LogShowedHttpNotSecureExplanation();
+
+  // Logs the card upload decision ukm based on the specified |url| and
+  // |upload_decision|.
+  static void LogCardUploadDecisionUkm(
+      ukm::UkmService* ukm_service,
+      const GURL& url,
+      AutofillMetrics::CardUploadDecisionMetric upload_decision);
+
+  // Logs the the |ukm_entry_name| with the specified |url| and the specified
+  // |metrics|. Returns whether the ukm was sucessfully logged.
+  static bool LogUkm(ukm::UkmService* ukm_service,
+                     const GURL& url,
+                     const std::string& ukm_entry_name,
+                     const std::map<std::string, int>& metrics);
 
   // Utility to autofill form events in the relevant histograms depending on
   // the presence of server and/or local data.

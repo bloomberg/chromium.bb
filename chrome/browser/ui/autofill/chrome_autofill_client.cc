@@ -148,6 +148,10 @@ rappor::RapporServiceImpl* ChromeAutofillClient::GetRapporServiceImpl() {
   return g_browser_process->rappor_service();
 }
 
+ukm::UkmService* ChromeAutofillClient::GetUkmService() {
+  return g_browser_process->ukm_service();
+}
+
 void ChromeAutofillClient::ShowAutofillSettings() {
 #if defined(OS_ANDROID)
   chrome::android::ChromeApplication::ShowAutofillSettings();

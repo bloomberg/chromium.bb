@@ -41,6 +41,10 @@ rappor::RapporServiceImpl* TestAutofillClient::GetRapporServiceImpl() {
   return rappor_service_.get();
 }
 
+ukm::UkmService* TestAutofillClient::GetUkmService() {
+  return ukm_service_test_harness_.test_ukm_service();
+}
+
 void TestAutofillClient::ShowAutofillSettings() {
 }
 

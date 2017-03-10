@@ -11,9 +11,16 @@
 #include "base/metrics/sparse_histogram.h"
 #include "base/metrics/user_metrics.h"
 #include "base/time/time.h"
+#include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/common/form_data.h"
+#include "components/ukm/ukm_entry_builder.h"
+
+namespace internal {
+const char kUKMCardUploadDecisionEntryName[] = "Autofill.CardUploadDecision";
+const char kUKMCardUploadDecisionMetricName[] = "UploadDecision";
+}  // namespace internal
 
 namespace autofill {
 
@@ -687,6 +694,43 @@ void AutofillMetrics::LogWalletAddressConversionType(
 void AutofillMetrics::LogShowedHttpNotSecureExplanation() {
   base::RecordAction(
       base::UserMetricsAction("Autofill_ShowedHttpNotSecureExplanation"));
+}
+
+// static
+void AutofillMetrics::LogCardUploadDecisionUkm(
+    ukm::UkmService* ukm_service,
+    const GURL& url,
+    AutofillMetrics::CardUploadDecisionMetric upload_decision) {
+  if (upload_decision >= AutofillMetrics::NUM_CARD_UPLOAD_DECISION_METRICS)
+    return;
+
+  // Set up as a map because the follow-up CL will add more metrics.
+  std::map<std::string, int> metrics = {
+      {internal::kUKMCardUploadDecisionMetricName,
+       static_cast<int>(upload_decision)}};
+  LogUkm(ukm_service, url, internal::kUKMCardUploadDecisionEntryName, metrics);
+}
+
+// static
+bool AutofillMetrics::LogUkm(ukm::UkmService* ukm_service,
+                             const GURL& url,
+                             const std::string& ukm_entry_name,
+                             const std::map<std::string, int>& metrics) {
+  if (!IsUkmLoggingEnabled() || !ukm_service || !url.is_valid() ||
+      metrics.empty()) {
+    return false;
+  }
+
+  int32_t source_id = ukm_service->GetNewSourceID();
+  ukm_service->UpdateSourceURL(source_id, url);
+  std::unique_ptr<ukm::UkmEntryBuilder> builder =
+      ukm_service->GetEntryBuilder(source_id, ukm_entry_name.c_str());
+
+  for (auto it = metrics.begin(); it != metrics.end(); ++it) {
+    builder->AddMetric(it->first.c_str(), it->second);
+  }
+
+  return true;
 }
 
 AutofillMetrics::FormEventLogger::FormEventLogger(bool is_for_credit_card)

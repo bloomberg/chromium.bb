@@ -24,6 +24,10 @@ class PrefRegistrySimple;
 class PrefService;
 class UkmPageLoadMetricsObserver;
 
+namespace autofill {
+class AutofillMetrics;
+}  // namespace autofill
+
 namespace metrics {
 class MetricsLogUploader;
 class MetricsServiceClient;
@@ -105,6 +109,7 @@ class UkmService : public base::SupportsWeakPtr<UkmService> {
 
  private:
   friend UkmPageLoadMetricsObserver;
+  friend autofill::AutofillMetrics;
   FRIEND_TEST_ALL_PREFIXES(UkmServiceTest, AddEntryOnlyWithNonEmptyMetrics);
   FRIEND_TEST_ALL_PREFIXES(UkmServiceTest, EntryBuilderAndSerialization);
   FRIEND_TEST_ALL_PREFIXES(UkmServiceTest,

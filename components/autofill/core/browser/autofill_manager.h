@@ -43,6 +43,8 @@
 #define ENABLE_FORM_DEBUG_DUMP
 #endif
 
+class GURL;
+
 namespace gfx {
 class RectF;
 }
@@ -475,6 +477,10 @@ class AutofillManager : public AutofillDownloadManager::Observer,
   void DumpAutofillData(bool imported_cc) const;
 #endif
 
+  // Logs the card upload decision UKM.
+  void LogCardUploadDecisionUkm(
+      AutofillMetrics::CardUploadDecisionMetric upload_decision);
+
   // Provides driver-level context to the shared code of the component. Must
   // outlive this object.
   AutofillDriver* driver_;
@@ -545,6 +551,7 @@ class AutofillManager : public AutofillDownloadManager::Observer,
   // Collected information about a pending upload request.
   payments::PaymentsClient::UploadRequestDetails upload_request_;
   bool user_did_accept_upload_prompt_;
+  GURL pending_upload_request_url_;
 
 #ifdef ENABLE_FORM_DEBUG_DUMP
   // The last few autofilled forms (key/value pairs) submitted, for debugging.

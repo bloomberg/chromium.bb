@@ -80,6 +80,10 @@ rappor::RapporServiceImpl* AutofillClientIOS::GetRapporServiceImpl() {
   return GetApplicationContext()->GetRapporServiceImpl();
 }
 
+ukm::UkmService* AutofillClientIOS::GetUkmService() {
+  return GetApplicationContext()->GetUkmService();
+}
+
 void AutofillClientIOS::ShowAutofillSettings() {
   NOTREACHED();
 }

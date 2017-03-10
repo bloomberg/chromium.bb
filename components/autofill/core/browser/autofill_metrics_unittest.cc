@@ -6,17 +6,22 @@
 
 #include <stddef.h>
 
+#include <map>
 #include <memory>
 #include <vector>
 
+#include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/metrics_hashes.h"
 #include "base/run_loop.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/user_action_tester.h"
 #include "base/time/time.h"
+#include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/browser/autofill_external_delegate.h"
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
@@ -28,12 +33,16 @@
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_field_data.h"
+#include "components/metrics/proto/ukm/entry.pb.h"
 #include "components/prefs/pref_service.h"
 #include "components/rappor/test_rappor_service.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/fake_signin_manager.h"
 #include "components/signin/core/browser/test_signin_client.h"
 #include "components/signin/core/common/signin_pref_names.h"
+#include "components/ukm/test_ukm_service.h"
+#include "components/ukm/ukm_entry.h"
+#include "components/ukm/ukm_source.h"
 #include "components/webdata/common/web_data_results.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -296,6 +305,17 @@ class TestAutofillManager : public AutofillManager {
   DISALLOW_COPY_AND_ASSIGN(TestAutofillManager);
 };
 
+// Finds the specified UKM metric by |name| in the specified UKM |metrics|.
+const ukm::Entry_Metric* FindMetric(
+    const char* name,
+    const google::protobuf::RepeatedPtrField<ukm::Entry_Metric>& metrics) {
+  for (const auto& metric : metrics) {
+    if (metric.metric_hash() == base::HashMetricName(name))
+      return &metric;
+  }
+  return nullptr;
+}
+
 }  // namespace
 
 // This is defined in the autofill_metrics.cc implementation file.
@@ -311,6 +331,7 @@ class AutofillMetricsTest : public testing::Test {
 
  protected:
   void EnableWalletSync();
+  void EnableUkmLogging();
 
   base::MessageLoop message_loop_;
   TestAutofillClient autofill_client_;
@@ -321,6 +342,7 @@ class AutofillMetricsTest : public testing::Test {
   std::unique_ptr<TestAutofillManager> autofill_manager_;
   std::unique_ptr<TestPersonalDataManager> personal_data_;
   std::unique_ptr<AutofillExternalDelegate> external_delegate_;
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 AutofillMetricsTest::~AutofillMetricsTest() {
@@ -375,6 +397,10 @@ void AutofillMetricsTest::TearDown() {
 
 void AutofillMetricsTest::EnableWalletSync() {
   signin_manager_->SetAuthenticatedAccountInfo("12345", "syncuser@example.com");
+}
+
+void AutofillMetricsTest::EnableUkmLogging() {
+  scoped_feature_list_.InitAndEnableFeature(kAutofillUkmLogging);
 }
 
 // Test that we log quality metrics appropriately.
@@ -4338,6 +4364,96 @@ TEST_F(AutofillMetricsTest,
         0, histograms.GetTotalCountsForPrefix("Autofill.FormEvents.CreditCard")
                ["Autofill.FormEvents.CreditCard.OnNonsecurePage"]);
   }
+}
+
+// Tests that logging a UKM works as expected.
+TEST_F(AutofillMetricsTest, RecordCardUploadDecisionMetric) {
+  EnableUkmLogging();
+  ukm::UkmServiceTestingHarness ukm_service_test_harness;
+  GURL url("https://www.google.com");
+  int upload_decision = 1;
+  std::map<std::string, int> metrics;
+  metrics.insert(std::make_pair(internal::kUKMCardUploadDecisionMetricName,
+                                upload_decision));
+
+  EXPECT_TRUE(AutofillMetrics::LogUkm(
+      ukm_service_test_harness.test_ukm_service(), url,
+      internal::kUKMCardUploadDecisionEntryName, metrics));
+
+  // Make sure that the UKM was logged correctly.
+  ukm::TestUkmService* ukm_service =
+      ukm_service_test_harness.test_ukm_service();
+
+  ASSERT_EQ(1U, ukm_service->sources_count());
+  const ukm::UkmSource* source = ukm_service->GetSource(0);
+  EXPECT_EQ(url.spec(), source->url().spec());
+
+  EXPECT_EQ(1U, ukm_service->entries_count());
+  const ukm::UkmEntry* entry = ukm_service->GetEntry(0);
+  EXPECT_EQ(source->id(), entry->source_id());
+
+  // Make sure that an card upload decision entry was logged.
+  ukm::Entry entry_proto;
+  entry->PopulateProto(&entry_proto);
+  EXPECT_EQ(source->id(), entry_proto.source_id());
+  EXPECT_EQ(base::HashMetricName(internal::kUKMCardUploadDecisionEntryName),
+            entry_proto.event_hash());
+  EXPECT_EQ(1, entry_proto.metrics_size());
+
+  // Make sure that the correct upload decision was logged.
+  const ukm::Entry_Metric* metric = FindMetric(
+      internal::kUKMCardUploadDecisionMetricName, entry_proto.metrics());
+  ASSERT_NE(nullptr, metric);
+  EXPECT_EQ(upload_decision, metric->value());
+}
+
+// Tests that no UKM is logged when the URL is not valid.
+TEST_F(AutofillMetricsTest, RecordCardUploadDecisionMetric_InvalidUrl) {
+  EnableUkmLogging();
+  ukm::UkmServiceTestingHarness ukm_service_test_harness;
+  GURL url("");
+  std::map<std::string, int> metrics;
+  metrics.insert(std::make_pair("metric", 1));
+
+  EXPECT_FALSE(AutofillMetrics::LogUkm(
+      ukm_service_test_harness.test_ukm_service(), url, "test_ukm", metrics));
+  EXPECT_EQ(0U, ukm_service_test_harness.test_ukm_service()->sources_count());
+}
+
+// Tests that no UKM is logged when the metrics map is empty.
+TEST_F(AutofillMetricsTest, RecordCardUploadDecisionMetric_NoMetrics) {
+  EnableUkmLogging();
+  ukm::UkmServiceTestingHarness ukm_service_test_harness;
+  GURL url("https://www.google.com");
+  std::map<std::string, int> metrics;
+
+  EXPECT_FALSE(AutofillMetrics::LogUkm(
+      ukm_service_test_harness.test_ukm_service(), url, "test_ukm", metrics));
+  EXPECT_EQ(0U, ukm_service_test_harness.test_ukm_service()->sources_count());
+}
+
+// Tests that no UKM is logged when the ukm service is null.
+TEST_F(AutofillMetricsTest, RecordCardUploadDecisionMetric_NoUkmService) {
+  EnableUkmLogging();
+  ukm::UkmServiceTestingHarness ukm_service_test_harness;
+  GURL url("https://www.google.com");
+  std::map<std::string, int> metrics;
+  metrics.insert(std::make_pair("metric", 1));
+
+  EXPECT_FALSE(AutofillMetrics::LogUkm(nullptr, url, "test_ukm", metrics));
+  ASSERT_EQ(0U, ukm_service_test_harness.test_ukm_service()->sources_count());
+}
+
+// Tests that no UKM is logged when the ukm logging feature is disabled.
+TEST_F(AutofillMetricsTest, RecordCardUploadDecisionMetric_FeatureDisabled) {
+  ukm::UkmServiceTestingHarness ukm_service_test_harness;
+  GURL url("https://www.google.com");
+  std::map<std::string, int> metrics;
+  metrics.insert(std::make_pair("metric", 1));
+
+  EXPECT_FALSE(AutofillMetrics::LogUkm(
+      ukm_service_test_harness.test_ukm_service(), url, "test_ukm", metrics));
+  EXPECT_EQ(0U, ukm_service_test_harness.test_ukm_service()->sources_count());
 }
 
 }  // namespace autofill
