@@ -20,7 +20,7 @@ class PLATFORM_EXPORT FloatClipRect {
         m_hasRadius(false),
         m_isInfinite(true) {}
 
-  FloatClipRect(const FloatRect& rect)
+  explicit FloatClipRect(const FloatRect& rect)
       : m_rect(rect), m_hasRadius(false), m_isInfinite(false) {}
 
   const FloatRect& rect() const { return m_rect; }

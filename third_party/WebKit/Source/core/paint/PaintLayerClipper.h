@@ -183,7 +183,8 @@ class CORE_EXPORT PaintLayerClipper {
 
   // Computes the same thing as backgroundRect in calculateRects(), but skips
   // applying CSS clip and the visualOverflowRect() of |m_layer|.
-  ClipRect backgroundClipRect(const ClipRectsContext&) const;
+  void calculateBackgroundClipRect(const ClipRectsContext&,
+                                   ClipRect& output) const;
 
   // This method figures out our layerBounds in coordinates relative to
   // |rootLayer|. It also computes our background and foreground clip rects
@@ -214,9 +215,10 @@ class CORE_EXPORT PaintLayerClipper {
   bool shouldClipOverflow(const ClipRectsContext&) const;
   bool shouldRespectOverflowClip(const ClipRectsContext&) const;
 
-  // Returned clip rect is in the space of the context's rootLayer.
-  ClipRect clipRectWithGeometryMapper(const ClipRectsContext&,
-                                      bool isForeground) const;
+  // Returned clip rect in |output| is in the space of the context's rootLayer.
+  void calculateClipRectWithGeometryMapper(const ClipRectsContext&,
+                                           bool isForeground,
+                                           ClipRect& output) const;
   // Mutates the given rect into a rect in the space of the context's
   // rootLayer.
   void mapLocalToRootWithGeometryMapper(const ClipRectsContext&,

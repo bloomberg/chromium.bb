@@ -750,8 +750,9 @@ PaintResult PaintLayerPainter::paintLayerWithTransform(
       if (shouldRespectOverflowClip(paintFlags, m_paintLayer.layoutObject()) ==
           IgnoreOverflowClip)
         clipRectsContext.setIgnoreOverflowClip();
-      ancestorBackgroundClipRect = m_paintLayer.clipper(geometryMapperOption)
-                                       .backgroundClipRect(clipRectsContext);
+      m_paintLayer.clipper(geometryMapperOption)
+          .calculateBackgroundClipRect(clipRectsContext,
+                                       ancestorBackgroundClipRect);
     }
   }
 

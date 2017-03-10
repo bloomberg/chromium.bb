@@ -1646,9 +1646,10 @@ void PaintLayer::collectFragments(
                                       overlayScrollbarClipBehavior);
     if (respectOverflowClip == IgnoreOverflowClip)
       clipRectsContext.setIgnoreOverflowClip();
-    ancestorClipRect = enclosingPaginationLayer()
-                           ->clipper(geometryMapperOption)
-                           .backgroundClipRect(clipRectsContext);
+
+    enclosingPaginationLayer()
+        ->clipper(geometryMapperOption)
+        .calculateBackgroundClipRect(clipRectsContext, ancestorClipRect);
     if (rootLayerIsInsidePaginationLayer)
       ancestorClipRect.moveBy(
           -rootLayer->visualOffsetFromAncestor(ancestorLayer));
@@ -1899,10 +1900,12 @@ PaintLayer* PaintLayer::hitTestLayer(
 
     // Make sure the parent's clip rects have been calculated.
     if (parent()) {
-      ClipRect clipRect = clipper(PaintLayer::DoNotUseGeometryMapper)
-                              .backgroundClipRect(ClipRectsContext(
-                                  rootLayer, clipRectsCacheSlot,
-                                  ExcludeOverlayScrollbarSizeForHitTesting));
+      ClipRect clipRect;
+      clipper(PaintLayer::DoNotUseGeometryMapper)
+          .calculateBackgroundClipRect(
+              ClipRectsContext(rootLayer, clipRectsCacheSlot,
+                               ExcludeOverlayScrollbarSizeForHitTesting),
+              clipRect);
       // Go ahead and test the enclosing clip now.
       if (!clipRect.intersects(hitTestLocation))
         return nullptr;
@@ -2141,15 +2144,17 @@ PaintLayer* PaintLayer::hitTestTransformedLayerInFragments(
     if (parent() != enclosingPaginationLayer()) {
       enclosingPaginationLayer()->convertToLayerCoords(
           rootLayer, offsetOfPaginationLayerFromRoot);
-      LayoutRect parentClipRect =
-          clipper(PaintLayer::DoNotUseGeometryMapper)
-              .backgroundClipRect(ClipRectsContext(
-                  enclosingPaginationLayer(), clipRectsCacheSlot,
-                  ExcludeOverlayScrollbarSizeForHitTesting))
-              .rect();
+
+      ClipRect parentClipRect;
+      clipper(PaintLayer::DoNotUseGeometryMapper)
+          .calculateBackgroundClipRect(
+              ClipRectsContext(enclosingPaginationLayer(), clipRectsCacheSlot,
+                               ExcludeOverlayScrollbarSizeForHitTesting),
+              parentClipRect);
+
       parentClipRect.moveBy(fragment.paginationOffset +
                             offsetOfPaginationLayerFromRoot);
-      clipRect.intersect(parentClipRect);
+      clipRect.intersect(parentClipRect.rect());
     }
 
     if (!hitTestLocation.intersects(clipRect))

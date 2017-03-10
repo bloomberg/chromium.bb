@@ -127,11 +127,11 @@ static LayoutRect mapLocalRectToPaintInvalidationBacking(
       PropertyTreeState currentTreeState(
           context.treeBuilderContext.current.transform,
           context.treeBuilderContext.current.clip, nullptr);
-      result = LayoutRect(
-          geometryMapper
-              .sourceToDestinationVisualRect(FloatRect(rect), currentTreeState,
-                                             *containerContentsProperties)
-              .rect());
+
+      FloatRect floatRect(rect);
+      geometryMapper.sourceToDestinationVisualRect(
+          currentTreeState, *containerContentsProperties, floatRect);
+      result = LayoutRect(floatRect);
     }
 
     // Convert the result to the container's contents space.
@@ -182,12 +182,11 @@ LayoutPoint PaintInvalidator::computeLocationInBacking(
             ->contentsProperties()
             ->transform();
     if (context.treeBuilderContext.current.transform != containerTransform) {
-      point = LayoutPoint(m_geometryMapper
-                              .sourceToDestinationRect(
-                                  FloatRect(FloatPoint(point), FloatSize()),
-                                  context.treeBuilderContext.current.transform,
-                                  containerTransform)
-                              .location());
+      FloatRect rect = FloatRect(FloatPoint(point), FloatSize());
+      m_geometryMapper.sourceToDestinationRect(
+          context.treeBuilderContext.current.transform, containerTransform,
+          rect);
+      point = LayoutPoint(rect.location());
     }
 
     // Convert the result to the container's contents space.
