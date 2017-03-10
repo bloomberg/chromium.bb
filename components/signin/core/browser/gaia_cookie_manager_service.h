@@ -163,8 +163,6 @@ class GaiaCookieManagerService : public KeyedService,
     ResultMap results_;
     base::Time m_external_cc_result_start_time_;
 
-    base::OneShotTimer gaia_auth_fetcher_timer_;
-
     DISALLOW_COPY_AND_ASSIGN(ExternalCcResultFetcher);
   };
 

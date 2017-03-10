@@ -58,6 +58,7 @@ const net::BackoffEntry::Policy kBackoffPolicy = {
     false,
 };
 
+// The maximum number of retries for a fetcher used in this class.
 const int kMaxFetcherRetries = 8;
 
 // Name of the GAIA cookie that is being observed to detect when available
@@ -131,6 +132,7 @@ GaiaCookieManagerService::ExternalCcResultFetcher::GetExternalCcResult() {
 }
 
 void GaiaCookieManagerService::ExternalCcResultFetcher::Start() {
+  DCHECK(!helper_->external_cc_result_fetched_);
   m_external_cc_result_start_time_ = base::Time::Now();
 
   CleanupTransientState();
@@ -151,7 +153,8 @@ void GaiaCookieManagerService::ExternalCcResultFetcher::Start() {
 }
 
 bool GaiaCookieManagerService::ExternalCcResultFetcher::IsRunning() {
-  return helper_->gaia_auth_fetcher_ || fetchers_.size() > 0u;
+  return helper_->gaia_auth_fetcher_ || fetchers_.size() > 0u ||
+         timer_.IsRunning();
 }
 
 void GaiaCookieManagerService::ExternalCcResultFetcher::TimeoutForTests() {
@@ -160,8 +163,6 @@ void GaiaCookieManagerService::ExternalCcResultFetcher::TimeoutForTests() {
 
 void GaiaCookieManagerService::ExternalCcResultFetcher::
     OnGetCheckConnectionInfoSuccess(const std::string& data) {
-  helper_->fetcher_backoff_.InformOfRequest(true);
-  gaia_auth_fetcher_timer_.Stop();
   std::unique_ptr<base::Value> value = base::JSONReader::Read(data);
   const base::ListValue* list;
   if (!value || !value->GetAsList(&list)) {
@@ -196,15 +197,17 @@ void GaiaCookieManagerService::ExternalCcResultFetcher::
 
 void GaiaCookieManagerService::ExternalCcResultFetcher::
     OnGetCheckConnectionInfoError(const GoogleServiceAuthError& error) {
-  if (++helper_->fetcher_retries_ < kMaxFetcherRetries &&
-      error.IsTransientError()) {
-    helper_->fetcher_backoff_.InformOfRequest(false);
-    gaia_auth_fetcher_timer_.Start(
-        FROM_HERE, helper_->fetcher_backoff_.GetTimeUntilRelease(),
-        this, &GaiaCookieManagerService::ExternalCcResultFetcher::Start);
-    return;
-  }
+  VLOG(1) << "GaiaCookieManagerService::ExternalCcResultFetcher::"
+          << "OnGetCheckConnectionInfoError " << error.ToString();
 
+  // Chrome does not have any retry logic for fetching ExternalCcResult. The
+  // ExternalCcResult is only used to inform Gaia that Chrome has already
+  // checked the connection to other sites.
+  //
+  // In case fetching the ExternalCcResult fails:
+  // * The result of merging accounts to Gaia cookies will not be affected.
+  // * Gaia will need make its own call about whether to check them itself,
+  //   of make some other assumptions.
   CleanupTransientState();
   GetCheckConnectionInfoCompleted(false);
 }
@@ -257,6 +260,7 @@ void GaiaCookieManagerService::ExternalCcResultFetcher::OnURLFetchComplete(
 }
 
 void GaiaCookieManagerService::ExternalCcResultFetcher::Timeout() {
+  VLOG(1) << " GaiaCookieManagerService::ExternalCcResultFetcher::Timeout";
   CleanupTransientState();
   GetCheckConnectionInfoCompleted(false);
 }
