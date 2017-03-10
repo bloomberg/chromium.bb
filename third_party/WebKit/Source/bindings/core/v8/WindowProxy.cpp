@@ -92,6 +92,7 @@ v8::Local<v8::Object> WindowProxy::releaseGlobal() {
 }
 
 void WindowProxy::setGlobal(v8::Local<v8::Object> global) {
+  CHECK(m_globalProxy.isEmpty());
   m_globalProxy.set(m_isolate, global);
 
   // Initialize the window proxy now, to re-establish the connection between

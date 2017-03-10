@@ -60,12 +60,10 @@ void RemoteWindowProxy::disposeContext(GlobalDetachmentBehavior behavior) {
     v8::Local<v8::Context> context = m_scriptState->context();
     // Clean up state on the global proxy, which will be reused.
     if (!m_globalProxy.isEmpty()) {
-      // TODO(yukishiino): This DCHECK failed on Canary (M57) and Dev (M56).
-      // We need to figure out why m_globalProxy != context->Global().
-      DCHECK(m_globalProxy == context->Global());
-      DCHECK_EQ(toScriptWrappable(context->Global()),
-                toScriptWrappable(
-                    context->Global()->GetPrototype().As<v8::Object>()));
+      CHECK(m_globalProxy == context->Global());
+      CHECK_EQ(toScriptWrappable(context->Global()),
+               toScriptWrappable(
+                   context->Global()->GetPrototype().As<v8::Object>()));
       m_globalProxy.get().SetWrapperClassId(0);
     }
     V8DOMWrapper::clearNativeInfo(isolate(), context->Global());
