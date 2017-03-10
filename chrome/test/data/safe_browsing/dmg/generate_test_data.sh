@@ -4,6 +4,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+set -eu
+
 THIS_DIR=$(dirname "$0")
 
 OUT_DIR="$1"
@@ -22,6 +24,10 @@ if [[ ! -d "$1" ]]; then
 fi
 
 generate_test_data() {
+  # `hdiutil convert` cannot overwrite files, so remove items in the output
+  # directory.
+  rm -f "${OUT_DIR}"/*
+
   # HFS Raw Images #############################################################
 
   MAKE_HFS="${THIS_DIR}/make_hfs.sh"
@@ -34,7 +40,7 @@ generate_test_data() {
   echo "This is a test DMG file. It has been generated from " \
       "chrome/test/data/safe_browsing/dmg/generate_test_data.sh" \
           > "${DMG_SOURCE}/README.txt"
-  dd if=/dev/urandom of="${DMG_SOURCE}/random" bs=512 count=4
+  dd if=/dev/urandom of="${DMG_SOURCE}/random" bs=512 count=4 &> /dev/null
 
   DMG_TEMPLATE_FORMAT="UDRO"
   DMG_FORMATS="UDRW UDCO UDZO UDBZ UFBI UDTO UDSP"
@@ -46,7 +52,7 @@ generate_test_data() {
     hdiutil create -srcfolder "${DMG_SOURCE}" \
       -format "${DMG_TEMPLATE_FORMAT}" -layout "${layout}" \
       -volname "${DMG_NAME}" \
-      -ov "${OUT_DIR}/${DMG_NAME}"
+      "${OUT_DIR}/${DMG_NAME}"
   done
 
   # Convert each template into the different compression format.
@@ -80,5 +86,5 @@ generate_test_data() {
   rm -rf "${DMG_SOURCE}"
 }
 
-# Silence any log output.
-generate_test_data &> /dev/null
+# Silence any stdout, but keep stderr.
+generate_test_data > /dev/null

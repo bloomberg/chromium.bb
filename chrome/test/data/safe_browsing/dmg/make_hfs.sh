@@ -7,7 +7,7 @@
 # This script is used to generate an HFS file system with several types of
 # files of different sizes.
 
-set -e
+set -eu
 
 FILESYSTEM_TYPE="$1"
 RAMDISK_SIZE="$2"
@@ -46,7 +46,7 @@ pushd third
 pushd fourth
 pushd fifth
 
-dd if=/dev/random of=random bs=1 count=768
+dd if=/dev/random of=random bs=1 count=768 &> /dev/null
 
 popd   # fourth
 
@@ -75,5 +75,5 @@ popd  # Original PWD
 
 # Unmount the volume, copy the raw device to a file, and then destroy it.
 diskutil unmount ${RAMDISK_VOLUME}
-dd if=${RAMDISK_VOLUME} of="${OUT_FILE}"
+dd if=${RAMDISK_VOLUME} of="${OUT_FILE}" &> /dev/null
 diskutil eject ${RAMDISK_VOLUME}
