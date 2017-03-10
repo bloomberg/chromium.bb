@@ -11,7 +11,6 @@
 goog.provide('cvox.ChromeHost');
 
 goog.require('cvox.AbstractHost');
-goog.require('cvox.ApiImplementation');
 goog.require('cvox.BrailleOverlayWidget');
 goog.require('cvox.ChromeVox');
 goog.require('cvox.ChromeVoxEventWatcher');
@@ -91,20 +90,6 @@ cvox.ChromeHost.prototype.init = function() {
         cvox.ChromeVox.modKeyStr = prefs['cvoxKey'];
       }
 
-      var apiPrefsChanged = (
-          prefs['siteSpecificScriptLoader'] !=
-              cvox.ApiImplementation.siteSpecificScriptLoader ||
-                  prefs['siteSpecificScriptBase'] !=
-                      cvox.ApiImplementation.siteSpecificScriptBase);
-      cvox.ApiImplementation.siteSpecificScriptLoader =
-          prefs['siteSpecificScriptLoader'];
-      cvox.ApiImplementation.siteSpecificScriptBase =
-          prefs['siteSpecificScriptBase'];
-      if (apiPrefsChanged) {
-        var searchInit = prefs['siteSpecificEnhancements'] === 'true' ?
-            cvox.SearchLoader.init : undefined;
-        cvox.ApiImplementation.init(searchInit);
-      }
       cvox.BrailleOverlayWidget.getInstance().setActive(
           prefs['brailleCaptions'] == 'true');
     }

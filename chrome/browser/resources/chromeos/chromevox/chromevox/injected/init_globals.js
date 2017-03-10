@@ -9,7 +9,6 @@
 
 goog.provide('cvox.InitGlobals');
 
-goog.require('cvox.ApiImplementation');
 goog.require('cvox.ChromeVox');
 goog.require('cvox.ChromeVoxEventWatcher');
 goog.require('cvox.CompositeTts');
@@ -48,8 +47,8 @@ cvox.InitGlobals.initGlobals = function() {
   cvox.ChromeVox.isActive = true;
   cvox.ChromeVox.navigationManager = new cvox.NavigationManager();
   cvox.ChromeVox.navigationManager.updateIndicator();
-  cvox.ChromeVox.syncToNode = cvox.ApiImplementation.syncToNode;
-  cvox.ChromeVox.speakNode = cvox.ApiImplementation.speakNode;
+  cvox.ChromeVox.syncToNode = cvox.ChromeVox.navigationManager.syncToNode.bind(
+      cvox.ChromeVox.navigationManager);
 
   cvox.ChromeVox.serializer = new cvox.Serializer();
 

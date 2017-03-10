@@ -31,7 +31,8 @@ cvox.SearchResults.speakResultBySelectTexts = function(result, selectTexts) {
     if (selectText.select) {
       var elems = result.querySelectorAll(selectText.select);
       for (var i = 0; i < elems.length; i++) {
-        cvox.ChromeVox.speakNode(elems.item(i), cvox.QueueMode.QUEUE);
+        cvox.ChromeVox.tts.speak(cvox.DomUtil.getName(elems.item(i)),
+                                 cvox.QueueMode.QUEUE);
       }
     }
     if (selectText.text) {
@@ -96,8 +97,10 @@ cvox.NormalResult.prototype.speak = function(result) {
   var discussTitles = result.querySelectorAll(DISCUSS_TITLE_SELECT);
   var discussDates = result.querySelectorAll(DISCUSS_DATE_SELECT);
   for (var i = 0; i < discussTitles.length; i++) {
-    cvox.ChromeVox.speakNode(discussTitles.item(i), cvox.QueueMode.QUEUE);
-    cvox.ChromeVox.speakNode(discussDates.item(i), cvox.QueueMode.QUEUE);
+    cvox.ChromeVox.tts.speak(
+        cvox.DomUtil.getName(discussTitles.item(i)), cvox.QueueMode.QUEUE);
+    cvox.ChromeVox.tts.speak(
+        cvox.DomUtil.getName(discussDates.item(i)), cvox.QueueMode.QUEUE);
   }
   return true;
 };
@@ -214,7 +217,9 @@ cvox.KnowResult.prototype.isType = function(result) {
  * @override
  */
 cvox.KnowResult.prototype.speak = function(result) {
-  cvox.ChromeVox.speakNode(result, cvox.QueueMode.QUEUE);
+
+  cvox.ChromeVox.tts.speak(
+      cvox.DomUtil.getName(result), cvox.QueueMode.QUEUE);
   return true;
 };
 
@@ -375,7 +380,9 @@ cvox.CategoryResult.prototype.speak = function(result) {
   }
   var LABEL_SELECT = '.rg_bb_label';
   var label = result.querySelector(LABEL_SELECT);
-  cvox.ChromeVox.speakNode(label, cvox.QueueMode.QUEUE);
+
+  cvox.ChromeVox.tts.speak(
+      cvox.DomUtil.getName(label), cvox.QueueMode.QUEUE);
   return true;
 };
 

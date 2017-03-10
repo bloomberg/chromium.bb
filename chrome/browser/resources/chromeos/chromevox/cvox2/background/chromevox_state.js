@@ -21,7 +21,6 @@ ChromeVoxMode = {
   CLASSIC: 'classic',
   CLASSIC_COMPAT: 'classic_compat',
   NEXT: 'next',
-  NEXT_COMPAT: 'next_compat',
   FORCE_NEXT: 'force_next'
 };
 

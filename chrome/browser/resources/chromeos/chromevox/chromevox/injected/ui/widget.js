@@ -114,7 +114,7 @@ cvox.Widget.prototype.hide = function(opt_noSync) {
   if (!opt_noSync) {
     this.initialNode = this.initialNode.nodeType == 1 ?
         this.initialNode : this.initialNode.parentNode;
-    cvox.ApiImplementation.syncToNode(this.initialNode,
+    cvox.ChromeVox.navigationManager.syncToNode(this.initialNode,
                                       true,
                                       cvox.QueueMode.QUEUE);
   }

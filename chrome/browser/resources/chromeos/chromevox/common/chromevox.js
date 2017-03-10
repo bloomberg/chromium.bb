@@ -206,14 +206,6 @@ cvox.ChromeVox.syncToNode = function(
     targetNode, speakNode, opt_queueMode) {};
 
 /**
- * Speaks the given node.
- * @param {Node} targetNode The node that ChromeVox should be synced to.
- * @param {number=} queueMode The queue mode to use for speaking.
- * @param {Object=} properties Speech properties to use for this utterance.
- */
-cvox.ChromeVox.speakNode = function(targetNode, queueMode, properties) {};
-
-/**
  * Provide a way for modules that can't depend on cvox.ChromeVoxUserCommands
  * to execute commands.
  *

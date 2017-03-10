@@ -2,14 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+goog.require('cvox.ApiImplementation');
 goog.require('KeyboardHandler');
 
 /**
  * Initializes minimal content script.
  */
 function initMin() {
-  if (cvox.ChromeVox.isChromeOS)
+  if (cvox.ChromeVox.isChromeOS) {
+    cvox.ApiImplementation.init();
     return;
+  }
 
   if (cvox.ChromeVox.isClassicEnabled_ === undefined) {
     window.setTimeout(function() {

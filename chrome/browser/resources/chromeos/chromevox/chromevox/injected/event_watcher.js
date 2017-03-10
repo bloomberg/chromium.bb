@@ -11,7 +11,6 @@ goog.provide('cvox.ChromeVoxEventWatcher');
 goog.provide('cvox.ChromeVoxEventWatcherUtil');
 
 goog.require('cvox.ActiveIndicator');
-goog.require('cvox.ApiImplementation');
 goog.require('cvox.AriaUtil');
 goog.require('cvox.ChromeVox');
 goog.require('cvox.ChromeVoxEditableTextBase');
@@ -593,8 +592,9 @@ cvox.ChromeVoxEventWatcher.mouseOverEventWatcher = function(evt) {
           cvox.ChromeVox.navigationManager.stopReading(true);
           var target = /** @type {Node} */(evt.target);
           cvox.Focuser.setFocus(target);
-          cvox.ApiImplementation.syncToNode(
+          cvox.ChromeVox.navigationManager.syncToNode(
               target, true, cvox.ChromeVoxEventWatcher.queueMode_());
+
           cvox.ChromeVoxEventWatcher.announcedMouseOverNode = target;
         });
       }, mouseoverDelayMs);
@@ -688,7 +688,7 @@ cvox.ChromeVoxEventWatcher.focusHandler = function(evt) {
 
     // Navigate to this control so that it will be the same for focus as for
     // regular navigation.
-    cvox.ApiImplementation.syncToNode(
+    cvox.ChromeVox.navigationManager.syncToNode(
         target, !document.webkitHidden, queueMode);
 
     if ((evt.target.constructor == HTMLVideoElement) ||
@@ -1138,9 +1138,10 @@ cvox.ChromeVoxEventWatcher.handleControlChanged = function(control) {
       parentControl != control &&
       document.activeElement == control)) {
     // Sync ChromeVox to the newly selected control.
-    cvox.ApiImplementation.syncToNode(
+    cvox.ChromeVox.navigationManager.syncToNode(
         activeDescendant || control, true,
         cvox.ChromeVoxEventWatcher.queueMode_());
+
     announceChange = false;
   } else if (activeDescendant) {
     cvox.ChromeVox.navigationManager.updateSelToArbitraryNode(
@@ -1436,7 +1437,8 @@ cvox.ChromeVoxEventWatcher.handleEvent_ = function(evt) {
       cvox.ChromeVoxEventWatcher.setUpTextHandler();
       break;
     case 'click':
-      cvox.ApiImplementation.syncToNode(/** @type {Node} */(evt.target), true);
+      cvox.ChromeVox.navigationManager.syncToNode(
+          /** @type {Node} */(evt.target), true);
       break;
     case 'focus':
       cvox.ChromeVoxEventWatcher.focusHandler(evt);

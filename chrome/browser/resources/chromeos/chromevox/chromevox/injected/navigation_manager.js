@@ -15,6 +15,7 @@
 goog.provide('cvox.NavigationManager');
 
 goog.require('cvox.ActiveIndicator');
+goog.require('cvox.AriaUtil');
 goog.require('cvox.ChromeVox');
 goog.require('cvox.ChromeVoxEventSuspender');
 goog.require('cvox.CursorSelection');
@@ -379,6 +380,52 @@ cvox.NavigationManager.prototype.syncAll = function(opt_skipText) {
   this.sync();
   this.setFocus(opt_skipText);
   this.updateIndicator();
+};
+
+
+/**
+ * Synchronizes ChromeVox's internal cursor to the targetNode.
+ * Note that this will NOT trigger reading unless given the optional argument;
+ * it is for setting the internal ChromeVox cursor so that when the user resumes
+ * reading, they will be starting from a reasonable position.
+ *
+ * @param {Node} targetNode The node that ChromeVox should be synced to.
+ * @param {boolean=} opt_speakNode If true, speaks out the node.
+ * @param {number=} opt_queueMode The queue mode to use for speaking.
+ */
+cvox.NavigationManager.prototype.syncToNode = function(
+    targetNode, opt_speakNode, opt_queueMode) {
+  if (!cvox.ChromeVox.isActive) {
+    return;
+  }
+
+  if (opt_queueMode == undefined) {
+    opt_queueMode = cvox.QueueMode.CATEGORY_FLUSH;
+  }
+
+  this.updateSelToArbitraryNode(targetNode, true);
+  this.updateIndicator();
+
+  if (opt_speakNode == undefined) {
+    opt_speakNode = false;
+  }
+
+  // Don't speak anything if the node is hidden or invisible.
+  if (cvox.AriaUtil.isHiddenRecursive(targetNode)) {
+    opt_speakNode = false;
+  }
+
+  if (opt_speakNode) {
+    this.speakDescriptionArray(this.getDescription(),
+                               /** @type {cvox.QueueMode} */ (opt_queueMode),
+                               null,
+                               null,
+                               cvox.TtsCategory.NAV);
+  }
+
+  cvox.ChromeVox.braille.write(this.getBraille());
+
+  this.updatePosition(targetNode);
 };
 
 

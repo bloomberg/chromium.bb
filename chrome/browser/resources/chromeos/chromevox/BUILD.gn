@@ -43,7 +43,6 @@ chromevox_modules = [
   "chromevox/background/tabs_api_handler.js",
   "chromevox/injected/active_indicator.js",
   "chromevox/injected/api_implementation.js",
-  "chromevox/injected/api_util.js",
   "chromevox/injected/console_tts.js",
   "chromevox/injected/event_suspender.js",
   "chromevox/injected/event_watcher.js",
@@ -349,9 +348,7 @@ run_jsbundler("chromevox_copied_files") {
     "images/options-hover-19.png",
     "images/triangle-6.png",
   ]
-  if (chromevox_compress_js) {
-    sources += [ "chromevox/injected/api_util.js" ]
-  } else {
+  if (!chromevox_compress_js) {
     sources += chromevox_modules
     sources += [
       "closure/closure_preinit.js",

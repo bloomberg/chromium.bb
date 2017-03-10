@@ -10,7 +10,6 @@
 
 goog.provide('cvox.ScriptInstaller');
 
-goog.require('cvox.DomUtil');
 
 /**
  * URL pattern where we do not allow script installation.
@@ -93,7 +92,8 @@ cvox.ScriptInstaller.installScriptHelper_ = function(srcs, uid, opt_onload,
         apiScript.setAttribute('chromevoxScriptBase',
                                opt_chromevoxScriptBase);
       }
-      cvox.DomUtil.addNodeToHead(apiScript);
+      var scriptOwner = document.head || document.body;
+      scriptOwner.appendChild(apiScript);
       next();
     }
   };

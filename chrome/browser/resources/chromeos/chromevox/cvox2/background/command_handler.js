@@ -201,8 +201,7 @@ CommandHandler.onCommand = function(command) {
     return true;
 
   // Next/classic compat commands hereafter.
-  if (ChromeVoxState.instance.mode == ChromeVoxMode.CLASSIC ||
-      ChromeVoxState.instance.mode == ChromeVoxMode.NEXT_COMPAT)
+  if (ChromeVoxState.instance.mode == ChromeVoxMode.CLASSIC)
     return true;
 
   var current = ChromeVoxState.instance.currentRange_;

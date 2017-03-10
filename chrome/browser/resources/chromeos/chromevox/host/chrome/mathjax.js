@@ -10,7 +10,6 @@
 goog.provide('cvox.ChromeMathJax');
 
 goog.require('cvox.AbstractMathJax');
-goog.require('cvox.ApiImplementation');
 goog.require('cvox.ChromeVox');
 goog.require('cvox.HostFactory');
 goog.require('cvox.ScriptInstaller');
@@ -97,14 +96,6 @@ cvox.ChromeMathJax.prototype.retrieveCallback_ = function(idStr) {
  */
 cvox.ChromeMathJax.prototype.init = function() {
   window.addEventListener('message', goog.bind(this.portSetup, this), true);
-  var scripts = new Array();
-  scripts.push(cvox.ChromeVox.host.getFileSrc(
-      'chromevox/injected/mathjax_external_util.js'));
-  scripts.push(cvox.ChromeVox.host.getFileSrc('chromevox/injected/mathjax.js'));
-  scripts.push(cvox.ApiImplementation.siteSpecificScriptLoader);
-  this.initialized_ = cvox.ScriptInstaller.installScript(
-      scripts, 'mathjax', undefined,
-      cvox.ApiImplementation.siteSpecificScriptBase);
 };
 
 
