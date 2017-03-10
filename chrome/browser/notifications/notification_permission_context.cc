@@ -4,13 +4,13 @@
 
 #include "chrome/browser/notifications/notification_permission_context.h"
 
-#include <algorithm>
 #include <deque>
 
 #include "base/callback.h"
 #include "base/location.h"
 #include "base/rand_util.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/notifications/desktop_notification_profile_util.h"
@@ -122,10 +122,7 @@ void VisibilityTimerTabHelper::PostTaskAfterVisibleDelay(
 void VisibilityTimerTabHelper::CancelTask(const PermissionRequestID& id) {
   bool deleting_front = task_queue_.front().id == id;
 
-  task_queue_.erase(
-      std::remove_if(task_queue_.begin(), task_queue_.end(),
-                     [id](const Task& task) { return task.id == id; }),
-      task_queue_.end());
+  base::EraseIf(task_queue_, [id](const Task& task) { return task.id == id; });
 
   if (!task_queue_.empty() && is_visible_ && deleting_front)
     task_queue_.front().timer->Reset();

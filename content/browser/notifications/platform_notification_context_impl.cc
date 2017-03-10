@@ -8,6 +8,7 @@
 #include "base/files/file_util.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/stl_util.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "content/browser/notifications/blink_notification_service_impl.h"
 #include "content/browser/notifications/notification_database.h"
@@ -131,13 +132,11 @@ void PlatformNotificationContextImpl::CreateServiceOnIO(
 void PlatformNotificationContextImpl::RemoveService(
     BlinkNotificationServiceImpl* service) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  auto services_to_remove = std::remove_if(
-      services_.begin(), services_.end(),
+  base::EraseIf(
+      services_,
       [service](const std::unique_ptr<BlinkNotificationServiceImpl>& ptr) {
         return ptr.get() == service;
       });
-
-  services_.erase(services_to_remove, services_.end());
 }
 
 void PlatformNotificationContextImpl::ReadNotificationData(
