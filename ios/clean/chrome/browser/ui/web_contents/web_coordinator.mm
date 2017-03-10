@@ -50,9 +50,11 @@
   [self.context.baseViewController presentViewController:self.viewController
                                                 animated:self.context.animated
                                               completion:nil];
+  [super start];
 }
 
 - (void)stop {
+  [super stop];
   // PLACEHOLDER: This is how the webUsageEnabled is set to false. Find a
   // better way in the future.
   self.mediator.webState = nullptr;

@@ -71,9 +71,6 @@ const BOOL kUseBottomToolbar = NO;
   toolbarCoordinator.context.baseViewController = nil;
   [toolbarCoordinator start];
 
-  self.viewController.toolbarViewController = toolbarCoordinator.viewController;
-  self.viewController.contentViewController = webCoordinator.viewController;
-
   // PLACEHOLDER: Replace this placeholder with an actual tab strip view
   // controller.
   UIButton* button = [UIButton buttonWithType:UIButtonTypeCustom];
@@ -91,13 +88,23 @@ const BOOL kUseBottomToolbar = NO;
   [self.context.baseViewController presentViewController:self.viewController
                                                 animated:self.context.animated
                                               completion:nil];
+  [super start];
 }
 
 - (void)stop {
+  [super stop];
   [self.viewController.presentingViewController
       dismissViewControllerAnimated:self.context.animated
                          completion:nil];
   _webStateObserver.reset();
+}
+
+- (void)childCoordinatorDidStart:(BrowserCoordinator*)coordinator {
+  if ([coordinator isKindOfClass:[ToolbarCoordinator class]]) {
+    self.viewController.toolbarViewController = coordinator.viewController;
+  } else if ([coordinator isKindOfClass:[WebCoordinator class]]) {
+    self.viewController.contentViewController = coordinator.viewController;
+  }
 }
 
 - (BOOL)canAddOverlayCoordinator:(BrowserCoordinator*)overlayCoordinator {

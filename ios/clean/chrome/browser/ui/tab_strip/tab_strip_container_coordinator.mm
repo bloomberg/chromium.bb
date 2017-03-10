@@ -64,9 +64,11 @@
   [self.context.baseViewController presentViewController:self.viewController
                                                 animated:self.context.animated
                                               completion:nil];
+  [super start];
 }
 
 - (void)stop {
+  [super stop];
   [self.viewController.presentingViewController
       dismissViewControllerAnimated:self.context.animated
                          completion:nil];

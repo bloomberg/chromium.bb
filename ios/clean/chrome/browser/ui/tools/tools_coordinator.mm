@@ -35,9 +35,11 @@
   [self.context.baseViewController presentViewController:self.menuViewController
                                                 animated:self.context.animated
                                               completion:nil];
+  [super start];
 }
 
 - (void)stop {
+  [super stop];
   [self.menuViewController.presentingViewController
       dismissViewControllerAnimated:self.context.animated
                          completion:nil];

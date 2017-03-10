@@ -31,6 +31,7 @@
 }
 
 - (void)stop {
+  [super stop];
   if (self.stopHandler)
     self.stopHandler();
 }

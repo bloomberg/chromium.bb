@@ -43,11 +43,11 @@
 #pragma mark - Public API
 
 - (void)start {
-  // Default implementation is a no-op.
+  [self.parentCoordinator childCoordinatorDidStart:self];
 }
 
 - (void)stop {
-  // Default implementation is a no-op.
+  [self.parentCoordinator childCoordinatorWillStop:self];
 }
 
 @end
@@ -120,6 +120,14 @@
     return;
   [self.childCoordinators removeObject:coordinator];
   coordinator.parentCoordinator = nil;
+}
+
+- (void)childCoordinatorDidStart:(BrowserCoordinator*)childCoordinator {
+  // Default implementation is a no-op.
+}
+
+- (void)childCoordinatorWillStop:(BrowserCoordinator*)childCoordinator {
+  // Default implementation is a no-op.
 }
 
 @end

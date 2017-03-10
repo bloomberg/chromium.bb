@@ -51,6 +51,7 @@
   [self.context.baseViewController presentViewController:self.viewController
                                                 animated:self.context.animated
                                               completion:nil];
+  [super start];
 }
 
 #pragma mark - ToolbarCommands
