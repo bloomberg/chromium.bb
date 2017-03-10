@@ -25,18 +25,17 @@ namespace blink {
 
 // static
 TopDocumentRootScrollerController* TopDocumentRootScrollerController::create(
-    FrameHost& host) {
-  return new TopDocumentRootScrollerController(host);
+    Page& page) {
+  return new TopDocumentRootScrollerController(page);
 }
 
-TopDocumentRootScrollerController::TopDocumentRootScrollerController(
-    FrameHost& host)
-    : m_frameHost(&host) {}
+TopDocumentRootScrollerController::TopDocumentRootScrollerController(Page& page)
+    : m_page(&page) {}
 
 DEFINE_TRACE(TopDocumentRootScrollerController) {
   visitor->trace(m_viewportApplyScroll);
   visitor->trace(m_globalRootScroller);
-  visitor->trace(m_frameHost);
+  visitor->trace(m_page);
 }
 
 void TopDocumentRootScrollerController::didChangeRootScroller() {
@@ -70,12 +69,10 @@ IntSize TopDocumentRootScrollerController::rootScrollerVisibleArea() const {
   if (!topDocument() || !topDocument()->view())
     return IntSize();
 
-  float minimumPageScale = m_frameHost->page()
-                               .pageScaleConstraintsSet()
-                               .finalConstraints()
-                               .minimumScale;
+  float minimumPageScale =
+      m_page->pageScaleConstraintsSet().finalConstraints().minimumScale;
   int browserControlsAdjustment =
-      ceilf(m_frameHost->visualViewport().browserControlsAdjustment() /
+      ceilf(m_page->frameHost().visualViewport().browserControlsAdjustment() /
             minimumPageScale);
 
   return topDocument()->view()->visibleContentSize(ExcludeScrollbars) +
@@ -168,14 +165,10 @@ void TopDocumentRootScrollerController::recomputeGlobalRootScroller() {
 }
 
 Document* TopDocumentRootScrollerController::topDocument() const {
-  if (!m_frameHost)
+  if (!m_page || !m_page->mainFrame() || !m_page->mainFrame()->isLocalFrame())
     return nullptr;
 
-  if (!m_frameHost->page().mainFrame() ||
-      !m_frameHost->page().mainFrame()->isLocalFrame())
-    return nullptr;
-
-  return toLocalFrame(m_frameHost->page().mainFrame())->document();
+  return toLocalFrame(m_page->mainFrame())->document();
 }
 
 void TopDocumentRootScrollerController::
@@ -196,11 +189,11 @@ void TopDocumentRootScrollerController::
 }
 
 void TopDocumentRootScrollerController::didUpdateCompositing() {
-  if (!m_frameHost)
+  if (!m_page)
     return;
 
   // Let the compositor-side counterpart know about this change.
-  m_frameHost->page().chromeClient().registerViewportLayers();
+  m_page->chromeClient().registerViewportLayers();
 }
 
 void TopDocumentRootScrollerController::didDisposeScrollableArea(
@@ -225,10 +218,10 @@ void TopDocumentRootScrollerController::didDisposeScrollableArea(
 
 void TopDocumentRootScrollerController::initializeViewportScrollCallback(
     RootFrameViewport& rootFrameViewport) {
-  DCHECK(m_frameHost);
+  DCHECK(m_page);
   m_viewportApplyScroll = ViewportScrollCallback::create(
-      &m_frameHost->page().browserControls(),
-      &m_frameHost->overscrollController(), rootFrameViewport);
+      &m_page->browserControls(), &m_page->frameHost().overscrollController(),
+      rootFrameViewport);
 
   recomputeGlobalRootScroller();
 }

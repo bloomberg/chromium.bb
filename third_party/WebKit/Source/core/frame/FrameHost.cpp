@@ -53,7 +53,7 @@ FrameHost::FrameHost(Page& page)
                                        m_page->chromeClient())),
       m_consoleMessageStorage(new ConsoleMessageStorage()),
       m_globalRootScrollerController(
-          TopDocumentRootScrollerController::create(*this)),
+          TopDocumentRootScrollerController::create(page)),
       m_subframeCount(0) {}
 
 // Explicitly in the .cpp to avoid default constructor in .h

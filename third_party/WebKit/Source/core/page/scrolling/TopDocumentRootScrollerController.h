@@ -13,7 +13,7 @@
 namespace blink {
 
 class Element;
-class FrameHost;
+class Page;
 class GraphicsLayer;
 class PaintLayer;
 class RootFrameViewport;
@@ -30,7 +30,7 @@ class ViewportScrollCallback;
 class CORE_EXPORT TopDocumentRootScrollerController
     : public GarbageCollected<TopDocumentRootScrollerController> {
  public:
-  static TopDocumentRootScrollerController* create(FrameHost&);
+  static TopDocumentRootScrollerController* create(Page&);
 
   DECLARE_TRACE();
 
@@ -78,7 +78,7 @@ class CORE_EXPORT TopDocumentRootScrollerController
   IntSize rootScrollerVisibleArea() const;
 
  private:
-  TopDocumentRootScrollerController(FrameHost&);
+  TopDocumentRootScrollerController(Page&);
 
   // Calculates the Element that should be the globalRootScroller. On a
   // simple page, this will simply the root frame's effectiveRootScroller but
@@ -106,7 +106,7 @@ class CORE_EXPORT TopDocumentRootScrollerController
   // Element.
   WeakMember<Element> m_globalRootScroller;
 
-  WeakMember<FrameHost> m_frameHost;
+  WeakMember<Page> m_page;
 };
 
 }  // namespace blink
