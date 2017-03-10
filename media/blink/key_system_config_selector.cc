@@ -652,6 +652,8 @@ KeySystemConfigSelector::GetSupportedConfiguration(
   //     configuration are both empty, return NotSupported.
   if (candidate.videoCapabilities.isEmpty() &&
       candidate.audioCapabilities.isEmpty()) {
+    DVLOG(2) << "Rejecting requested configuration because "
+             << "neither audioCapabilities nor videoCapabilities is specified";
     return CONFIGURATION_NOT_SUPPORTED;
   }
 
