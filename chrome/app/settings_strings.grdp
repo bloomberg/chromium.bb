@@ -1644,7 +1644,7 @@
     Search engine
   </message>
   <message name="IDS_SETTINGS_SEARCH_EXPLANATION" desc="Explanation for the search engine dropdown setting.">
-    Search engine used when searching from the <ph name="BEGIN_LINK">&lt;a target="_blank" href="$1"&gt;</ph>address bar<ph name="END_LINK">&lt;/a&gt;</ph>
+    Search engine used in the <ph name="BEGIN_LINK">&lt;a target="_blank" href="$1"&gt;</ph>address bar<ph name="END_LINK">&lt;/a&gt;</ph>
   </message>
   <message name="IDS_SETTINGS_SEARCH_MANAGE_SEARCH_ENGINES" desc="Label for the Manage Search Engines button.">
     Manage search engines
@@ -2376,7 +2376,7 @@
     Please wait...
   </message>
   <message name="IDS_SETTINGS_SYNC_TIMEOUT" desc="Text explaining what to do if sync times out.">
-    Please make sure your network connection is working and if the problem persists, please sign out and sign in again to refresh your credentials.
+    Check your internet connection. If the problem continues, try signing out and signing in again.
   </message>
   <message name="IDS_SETTINGS_SYNC_EVERYTHING_CHECKBOX_LABEL" desc="Label for the checkbox which causes all properties to be synced.">
     Sync everything
@@ -2421,7 +2421,7 @@
     Encryption options
   </message>
   <message name="IDS_SETTINGS_ENCRYPT_WITH_GOOGLE_CREDENTIALS_LABEL" desc="Label for the radio button which, when selected, causes synced settings to be encrypted with the Google login for the current browser profile.">
-    Encrypt synced passwords with your Google credentials
+    Encrypt synced passwords with your Google username and password
   </message>
   <message name="IDS_SETTINGS_ENCRYPT_WITH_SYNC_PASSPHRASE_LABEL" desc="Label for the radio button which, when selected, causes synced settings to be encrypted with a user-provided password.">
     Encrypt synced data with your own <ph name="BEGIN_LINK">&lt;a href="$1" target=&quot;_blank&quot;&gt;<ex>&lt;a href="$1" target=&quot;_blank&quot;&gt;</ex></ph>sync passphrase<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
