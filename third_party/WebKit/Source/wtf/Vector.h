@@ -1113,6 +1113,10 @@ class Vector
   void push_back(U&&);
   template <typename... Args>
   T& emplace_back(Args&&...);
+  ALWAYS_INLINE T& emplace_back() {
+    grow(m_size + 1);
+    return back();
+  }
   template <typename U>
   void append(const U*, size_t);
   template <typename U, size_t otherCapacity, typename V>
@@ -1667,9 +1671,6 @@ template <typename T, size_t inlineCapacity, typename Allocator>
 template <typename... Args>
 ALWAYS_INLINE T& Vector<T, inlineCapacity, Allocator>::emplace_back(
     Args&&... args) {
-  static_assert(sizeof...(Args), "grow() must be called instead");
-  static_assert(sizeof...(Args) != 1, "append() must be called instead");
-
   DCHECK(Allocator::isAllocationAllowed());
   if (UNLIKELY(size() == capacity()))
     expandCapacity(size() + 1);

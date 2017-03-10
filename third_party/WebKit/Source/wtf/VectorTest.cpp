@@ -674,6 +674,8 @@ TEST(VectorTest, Optional) {
 
 TEST(VectorTest, emplace_back) {
   struct Item {
+    Item() = default;
+    explicit Item(int value1) : value1(value1), value2() {}
     Item(int value1, int value2) : value1(value1), value2(value2) {}
     int value1;
     int value2;
@@ -682,12 +684,27 @@ TEST(VectorTest, emplace_back) {
   Vector<Item> vector;
   vector.emplace_back(1, 2);
   vector.emplace_back(3, 4);
+  vector.emplace_back(5);
+  vector.emplace_back();
 
-  EXPECT_EQ(2u, vector.size());
+  EXPECT_EQ(4u, vector.size());
+
   EXPECT_EQ(1, vector[0].value1);
   EXPECT_EQ(2, vector[0].value2);
+
   EXPECT_EQ(3, vector[1].value1);
   EXPECT_EQ(4, vector[1].value2);
+
+  EXPECT_EQ(5, vector[2].value1);
+  EXPECT_EQ(0, vector[2].value2);
+
+  EXPECT_EQ(0, vector[3].value1);
+  EXPECT_EQ(0, vector[3].value2);
+
+  // Test returned value.
+  Item& item = vector.emplace_back(6, 7);
+  EXPECT_EQ(6, item.value1);
+  EXPECT_EQ(7, item.value2);
 }
 
 static_assert(VectorTraits<int>::canCopyWithMemcpy,
