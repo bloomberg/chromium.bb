@@ -137,7 +137,7 @@ class MediaLoadedEventListener final : public EventListener {
         static_cast<HTMLVideoElement*>(event->target()->toNode());
     UserGestureIndicator gesture(
         DocumentUserGestureToken::create(&media->document()));
-    media->webkitEnterFullscreen();
+    // TODO(shaktisahu): Enable fullscreen after https://crbug/698353 is fixed.
     media->play();
   }
 };
