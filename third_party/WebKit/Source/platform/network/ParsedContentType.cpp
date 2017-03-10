@@ -264,11 +264,15 @@ bool ParsedContentType::parse(const String& contentType) {
                << ", for '" << key.toString() << "').";
       return false;
     }
-    String keyString = key.toString();
     // As |key| is parsed as a token, it consists of ascii characters
     // and hence we don't need to care about non-ascii lowercasing.
-    DCHECK(keyString.containsOnlyASCII());
-    map.set(keyString.lower(), value);
+    DCHECK(key.toString().containsOnlyASCII());
+    String keyString = key.toString().lower();
+    if (m_mode == Mode::Strict && map.find(keyString) != map.end()) {
+      DVLOG(1) << "Parameter " << keyString << " is defined multiple times.";
+      return false;
+    }
+    map.set(keyString, value);
   }
   m_parameters = std::move(map);
   return true;

@@ -314,6 +314,11 @@
                 videoCapabilities: [{contentType: 'video/webm; foo="bar"; codecs="vp8"'}],
             }], 'NotSupportedError', 'Unrecognized foo with codecs');
 
+            // Multiple parameters with the same name are not allowed (RFC6838).
+            expect_error('org.w3.clearkey', [{
+                videoCapabilities: [{contentType: 'video/webm; codecs=vp8; codecs=vp9'}],
+            }], 'NotSupportedError', 'Multiple codecs');
+
             // Invalid contentTypes.
             expect_error('org.w3.clearkey', [{
                 videoCapabilities: [{contentType: 'fake'}],

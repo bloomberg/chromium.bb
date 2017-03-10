@@ -51,7 +51,7 @@ static WebVector<WebMediaKeySystemMediaCapability> convertCapabilities(
   for (size_t i = 0; i < capabilities.size(); ++i) {
     const WebString& contentType = capabilities[i].contentType();
     result[i].contentType = contentType;
-    ParsedContentType type(contentType);
+    ParsedContentType type(contentType, ParsedContentType::Mode::Strict);
     if (type.isValid()) {
       // From
       // http://w3c.github.io/encrypted-media/#get-supported-capabilities-for-audio-video-type

@@ -49,9 +49,13 @@ class PLATFORM_EXPORT ParsedContentType final {
   // When |Relaxed| is specified, the parser parses parameter values in a sloppy
   // manner, i.e., only ';' and '"' are treated as special characters.
   // See https://chromiumcodereview.appspot.com/23043002.
+  // When |Strict| is specified, the parser does not allow multiple values
+  // for the same parameter. Some RFCs based on RFC2045 (e.g. RFC6838) note that
+  // "It is an error for a specific parameter to be specified more than once."
   enum class Mode {
     Normal,
     Relaxed,
+    Strict,
   };
   explicit ParsedContentType(const String&, Mode = Mode::Normal);
 

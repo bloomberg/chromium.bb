@@ -133,6 +133,13 @@ TEST(ParsedContentTypeTest, RelaxedParameterName) {
   EXPECT_EQ("u", t.parameterValueForName("y"));
 }
 
+TEST(ParsedContentTypeTest, StrictParameterName) {
+  EXPECT_TRUE(isValid("text/plain", Mode::Strict));
+  EXPECT_TRUE(isValid("text/plain; p1=a", Mode::Strict));
+  EXPECT_FALSE(isValid("text/plain; p1=a; p1=b", Mode::Strict));
+  EXPECT_TRUE(isValid("text/plain; p1=a; p2=b", Mode::Strict));
+}
+
 }  // namespace
 
 }  // namespace blink
