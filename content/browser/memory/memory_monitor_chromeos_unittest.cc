@@ -20,12 +20,14 @@ class TestMemoryMonitorChromeOSDelegate : public TestMemoryMonitorDelegate {
                        int swap_kb,
                        int active_kb,
                        int inactive_kb,
-                       int dirty_kb) {
+                       int dirty_kb,
+                       int available_kb) {
     mem_info_.free = free_kb;
     mem_info_.swap_free = swap_kb;
     mem_info_.active_file = active_kb;
     mem_info_.inactive_file = inactive_kb;
     mem_info_.dirty = dirty_kb;
+    mem_info_.available = available_kb;
   }
 
  private:
@@ -56,10 +58,17 @@ TEST_F(MemoryMonitorChromeOSTest, GetFreeMemoryUntilCriticalMB) {
   monitor_.reset(new MemoryMonitorChromeOS(&delegate_));
   EXPECT_EQ(0u, delegate_.calls());
 
-  delegate_.SetFreeMemoryKB(256 * kKBperMB, 128 * kKBperMB, 64 * kKBperMB,
-                            32 * kKBperMB, 16 * kKBperMB);
-  EXPECT_EQ(318, monitor_->GetFreeMemoryUntilCriticalMB());
+  // |available| is supported.
+  delegate_.SetFreeMemoryKB(1 * kKBperMB, 1 * kKBperMB, 1 * kKBperMB,
+                            1 * kKBperMB, 1 * kKBperMB, 286 * kKBperMB);
+  EXPECT_EQ(286, monitor_->GetFreeMemoryUntilCriticalMB());
   EXPECT_EQ(1U, delegate_.calls());
+
+  // |available| is not supported.
+  delegate_.SetFreeMemoryKB(256 * kKBperMB, 128 * kKBperMB, 64 * kKBperMB,
+                            32 * kKBperMB, 16 * kKBperMB, 0 * kKBperMB);
+  EXPECT_EQ(286, monitor_->GetFreeMemoryUntilCriticalMB());
+  EXPECT_EQ(2U, delegate_.calls());
 }
 
 }  // namespace content

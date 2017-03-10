@@ -25,11 +25,9 @@ int MemoryMonitorChromeOS::GetFreeMemoryUntilCriticalMB() {
   base::SystemMemoryInfoKB mem_info = {};
   delegate_->GetSystemMemoryInfo(&mem_info);
 
-  // The available memory consists of "real" and virtual (z)ram memory.
-  // Since swappable memory uses a non pre-deterministic compression and
-  // the compression creates its own "dynamic" in the system, it gets
-  // de-emphasized by the |kSwapWeight| factor.
-  const int kSwapWeight = 4;
+  // Use available free memory provided by the OS if the OS supports it.
+  if (mem_info.available > 0)
+    return mem_info.available >> kShiftKiBtoMiB;
 
   // The kernel internally uses 50MB.
   const int kMinFileMemory = 50 * 1024;
@@ -39,9 +37,8 @@ int MemoryMonitorChromeOS::GetFreeMemoryUntilCriticalMB() {
   // unless it is dirty or it's a minimal portion which is required.
   file_memory -= mem_info.dirty + kMinFileMemory;
 
-  // Available memory is the sum of free, swap and easy reclaimable memory.
-  return (mem_info.free + mem_info.swap_free / kSwapWeight + file_memory) >>
-         kShiftKiBtoMiB;
+  // Available memory is the sum of free and easy reclaimable memory.
+  return (mem_info.free + file_memory) >> kShiftKiBtoMiB;
 }
 
 // static
