@@ -343,7 +343,8 @@
     },
 
     'chromium.swarm': {
-      'Android Swarm': 'android_without_codecs_release_bot_minimal_symbols',
+      'Android N5 Swarm': 'android_release_bot_minimal_symbols',
+      'Android N5X Swarm': 'android_release_bot_minimal_symbols_arm64',
       'Linux Swarm': 'release_bot',
       'Mac Swarm': 'release_bot_mac_strip',
       'Windows Swarm': 'release_bot_x86',
