@@ -91,6 +91,7 @@
         "shared_user_password": null,
         "sign_types": null,
         "signer_tests": false,
+        "slave_configs": null,
         "sync_chrome": null,
         "trybot_list": false,
         "unittest_blacklist": [],
@@ -16158,6 +16159,17 @@
         "health_threshold": 1,
         "important": true,
         "master": true,
+        "slave_configs": [
+            "amd64-gcc-toolchain",
+            "amd64-llvm-toolchain",
+            "amd64-llvm-next-toolchain",
+            "arm-gcc-toolchain",
+            "arm-llvm-toolchain",
+            "arm-llvm-next-toolchain",
+            "arm64-gcc-toolchain",
+            "arm64-llvm-toolchain",
+            "arm64-llvm-next-toolchain"
+        ],
         "sync_chrome": true
     },
     "mccloud-chrome-pfq": {

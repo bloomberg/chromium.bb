@@ -251,6 +251,34 @@ class CBuildBotTest(ChromeosConfigTestBase):
     for build_name, config in self.site_config.iteritems():
       self.assertTrue(build_name == config['name'])
 
+  def testMasterSlaveConfigsExist(self):
+    """Configs listing slave configs, must list valid configs."""
+    for config in self.site_config.itervalues():
+      if config.slave_configs is not None:
+
+        # Any builder with slaves must set both of these.
+        self.assertTrue(config.master)
+        self.assertTrue(config.manifest_version)
+
+        # If a builder lists slave config names, ensure they are all valid, and
+        # have an assigned waterfall.
+        for slave_name in config.slave_configs:
+          self.assertIn(slave_name, self.site_config)
+          self.assertTrue(self.site_config[slave_name].active_waterfall)
+
+  def testExplicitImplicitSlavesMatch(self):
+    """Make sure the explicit slave list matches implicit."""
+    # TODO(dgarrett): Delete this test, when we remove the heuristic from
+    # config_lib.GetSlaveConfigMapForMaster.
+
+    for config in self.site_config.itervalues():
+      if config.slave_configs is not None:
+        master_config = config.deepcopy()
+        master_config.slave_configs = None
+        slaves = self.site_config.GetSlaveConfigMapForMaster(master_config)
+
+        self.assertItemsEqual(config.slave_configs, slaves.keys())
+
   def testConfigUseflags(self):
     """Useflags must be lists.
 

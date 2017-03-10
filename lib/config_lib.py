@@ -474,6 +474,10 @@ def DefaultSettings():
       # This bot pushes changes to the overlays.
       master=False,
 
+      # If this bot triggers slave builds, this will contain a list of
+      # slave config names.
+      slave_configs=None,
+
       # If False, this flag indicates that the CQ should not check whether
       # this bot passed or failed. Set this to False if you are setting up a
       # new bot. Once the bot is on the waterfall and is consistently green,
@@ -1141,23 +1145,17 @@ class SiteConfig(dict):
     return both[0]
 
   def GetSlaveConfigMapForMaster(self, master_config, options=None,
-                                 important_only=True, active_only=True):
-    """Gets the slave builds corresponding to this master.
+                                 important_only=True):
+    """Gets the slave builds triggered by a master config.
 
-    A slave config is one that matches the master config in build_type,
-    chrome_rev, branch. For the full requirements see the logic in code below.
-
-    The master itself is eligible to be a slave (of itself) if it has boards.
-
-    TODO(dgarrett): Replace this with explicit master/slave defitions to make
-    the concept less Chrome OS specific. crbug.com/492382.
+    If a master builder also performs a build, it can (incorrectly) return
+    itself.
 
     Args:
       master_config: A build config for a master builder.
-      options: The options passed on the commandline. This argument is optional,
-               and only makes sense when called from cbuildbot.
+      options: The options passed on the commandline. This argument is required
+      for normal operation, but we accept None to assist with testing.
       important_only: If True, only get the important slaves.
-      active_only: If True, only get the slaves having active_waterfall.
 
     Returns:
       A slave_name to slave_config map, corresponding to the slaves for the
@@ -1167,32 +1165,46 @@ class SiteConfig(dict):
       AssertionError if the given config is not a master config or it does
         not have a manifest_version.
     """
-    assert master_config['manifest_version']
-    assert master_config['master']
+    assert master_config.manifest_version
+    assert master_config.master
 
     slave_name_config_map = {}
     if options is not None and options.remote_trybot:
-      return slave_name_config_map
+      return {}
 
-    # TODO(davidjames): In CIDB the master isn't considered a slave of itself,
-    # so we probably shouldn't consider it a slave here either.
-    for build_config_name, build_config in self.iteritems():
-      if important_only and not build_config['important']:
-        continue
-      if active_only and not build_config['active_waterfall']:
-        continue
+    if master_config.slave_configs is not None:
+      # Look up the build configs for all slaves named by the master.
+      slave_name_config_map = {
+          name: self[name] for name in master_config.slave_configs
+      }
 
-      if (build_config['manifest_version'] and
-          (not build_config['master'] or build_config['boards']) and
-          build_config['build_type'] == master_config['build_type'] and
-          build_config['chrome_rev'] == master_config['chrome_rev'] and
-          build_config['branch'] == master_config['branch']):
-        slave_name_config_map[build_config_name] = build_config
+    else:
+      # TODO(dgarrett): Delete the following heuristic, after all master/slave
+      # groups are updated to be explicit.
+
+      # TODO(davidjames): In CIDB the master isn't considered a slave of itself,
+      # so we probably shouldn't consider it a slave here either.
+      for build_config_name, build_config in self.iteritems():
+        if not build_config.active_waterfall:
+          continue
+
+        if (build_config['manifest_version'] and
+            (not build_config['master'] or build_config['boards']) and
+            build_config['build_type'] == master_config['build_type'] and
+            build_config['chrome_rev'] == master_config['chrome_rev'] and
+            build_config['branch'] == master_config['branch']):
+          slave_name_config_map[build_config_name] = build_config
+
+    if important_only:
+      # Remove unimportant configs from the result.
+      slave_name_config_map = {
+          k: v for k, v in slave_name_config_map.iteritems() if v.important
+      }
 
     return slave_name_config_map
 
   def GetSlavesForMaster(self, master_config, options=None,
-                         important_only=True, active_only=True):
+                         important_only=True):
     """Get a list of qualified build slave configs given the master_config.
 
     Args:
@@ -1200,11 +1212,9 @@ class SiteConfig(dict):
       options: The options passed on the commandline. This argument is optional,
                and only makes sense when called from cbuildbot.
       important_only: If True, only get the important slaves.
-      active_only: If True, only get the slaves having active_waterfall.
     """
     slave_map = self.GetSlaveConfigMapForMaster(
-        master_config, options=options, important_only=important_only,
-        active_only=active_only)
+        master_config, options=options, important_only=important_only)
     return slave_map.values()
 
   #

@@ -1712,6 +1712,17 @@ def ToolchainBuilders(site_config, boards_dict, ge_build_config):
       important=True,
       active_waterfall=constants.WATERFALL_INTERNAL,
       buildslave_type=constants.GCE_WIMPY_BUILD_SLAVE_TYPE,
+      slave_configs=[
+          'amd64-gcc-toolchain',
+          'amd64-llvm-toolchain',
+          'amd64-llvm-next-toolchain',
+          'arm-gcc-toolchain',
+          'arm-llvm-toolchain',
+          'arm-llvm-next-toolchain',
+          'arm64-gcc-toolchain',
+          'arm64-llvm-toolchain',
+          'arm64-llvm-next-toolchain',
+      ],
   )
 
   def toolchainSlaveHelper(name, board, *args, **kwargs):
