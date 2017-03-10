@@ -26,11 +26,15 @@ public class PhysicalWebShareActivity extends ShareActivity {
     /**
      * Returns whether we should show this sharing option in the share sheet.
      * Pre-conditions for Physical Web Sharing to be enabled:
+     *      Device has hardware BLE advertising capabilities.
+     *      Device had Bluetooth on.
      *      Device is Marshmallow or above.
      *      Device has sharing feature enabled.
      * @return {@code true} if the feature should be enabled.
      */
     public static boolean featureIsAvailable() {
-        return PhysicalWeb.sharingIsEnabled() && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M;
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) return false;
+        return PhysicalWeb.hasBleAdvertiseCapability() && PhysicalWeb.bluetoothIsEnabled()
+                && PhysicalWeb.sharingIsEnabled();
     }
 }

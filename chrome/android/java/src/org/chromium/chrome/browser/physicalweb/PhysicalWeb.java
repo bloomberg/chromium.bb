@@ -4,6 +4,10 @@
 
 package org.chromium.chrome.browser.physicalweb;
 
+import android.annotation.TargetApi;
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothManager;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
@@ -152,5 +156,29 @@ public class PhysicalWeb {
         IntentHandler.startChromeLauncherActivityForTrustedIntent(
                 new Intent(Intent.ACTION_VIEW, Uri.parse(UrlConstants.PHYSICAL_WEB_URL))
                         .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+    }
+
+    /**
+     * Check if bluetooth is on and enabled.
+     */
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+    public static boolean bluetoothIsEnabled() {
+        Context context = ContextUtils.getApplicationContext();
+        BluetoothManager bluetoothManager =
+                (BluetoothManager) context.getSystemService(Context.BLUETOOTH_SERVICE);
+        BluetoothAdapter bluetoothAdapter = bluetoothManager.getAdapter();
+        return bluetoothAdapter != null && bluetoothAdapter.isEnabled();
+    }
+
+    /**
+     * Check if the device bluetooth hardware supports BLE advertisements.
+     */
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+    public static boolean hasBleAdvertiseCapability() {
+        Context context = ContextUtils.getApplicationContext();
+        BluetoothManager bluetoothManager =
+                (BluetoothManager) context.getSystemService(Context.BLUETOOTH_SERVICE);
+        BluetoothAdapter bluetoothAdapter = bluetoothManager.getAdapter();
+        return bluetoothAdapter != null && bluetoothAdapter.getBluetoothLeAdvertiser() != null;
     }
 }
