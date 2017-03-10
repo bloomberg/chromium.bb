@@ -44,12 +44,7 @@ LayoutTextFragment::LayoutTextFragment(Node* node,
       m_firstLetterPseudoElement(nullptr) {}
 
 LayoutTextFragment::LayoutTextFragment(Node* node, StringImpl* str)
-    : LayoutText(node, str),
-      m_start(0),
-      m_fragmentLength(str ? str->length() : 0),
-      m_isRemainingTextLayoutObject(false),
-      m_contentString(str),
-      m_firstLetterPseudoElement(nullptr) {}
+    : LayoutTextFragment(node, str, 0, str ? str->length() : 0) {}
 
 LayoutTextFragment::~LayoutTextFragment() {
   ASSERT(!m_firstLetterPseudoElement);
