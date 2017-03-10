@@ -498,8 +498,13 @@ void FrameTreeNode::DidChangeLoadProgress(double load_progress) {
 }
 
 bool FrameTreeNode::StopLoading() {
-  if (IsBrowserSideNavigationEnabled())
+  if (IsBrowserSideNavigationEnabled()) {
+    if (navigation_request_) {
+      navigation_request_->navigation_handle()->set_net_error_code(
+          net::ERR_ABORTED);
+    }
     ResetNavigationRequest(false);
+  }
 
   // TODO(nasko): see if child frames should send IPCs in site-per-process
   // mode.
