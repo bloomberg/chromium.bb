@@ -275,6 +275,8 @@ static void GLibLogHandler(const gchar* log_domain,
     LOG(ERROR) << message << " (http://crbug.com/431005)";
   } else if (strstr(message, "deprecated")) {
     LOG(ERROR) << message;
+  } else if (strstr(message, "Could not obtain desktop path or name")) {
+    LOG(ERROR) << message;
   } else {
     LOG(DFATAL) << log_domain << ": " << message;
   }
