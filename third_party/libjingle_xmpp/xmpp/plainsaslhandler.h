@@ -14,13 +14,12 @@
 #include <algorithm>
 #include "third_party/libjingle_xmpp/xmpp/saslhandler.h"
 #include "third_party/libjingle_xmpp/xmpp/saslplainmechanism.h"
-#include "third_party/webrtc/base/cryptstring.h"
 
 namespace buzz {
 
 class PlainSaslHandler : public SaslHandler {
 public:
-  PlainSaslHandler(const Jid & jid, const rtc::CryptString & password,
+  PlainSaslHandler(const Jid & jid, const std::string & password,
       bool allow_plain) : jid_(jid), password_(password),
                           allow_plain_(allow_plain) {}
 
@@ -54,7 +53,7 @@ public:
 
 private:
   Jid jid_;
-  rtc::CryptString password_;
+  std::string password_;
   bool allow_plain_;
 };
 

@@ -50,7 +50,7 @@ public:
   std::unique_ptr<AsyncSocket> socket_;
   std::unique_ptr<XmppEngine> engine_;
   std::unique_ptr<PreXmppAuth> pre_auth_;
-  rtc::CryptString pass_;
+  std::string pass_;
   std::string auth_mechanism_;
   std::string auth_token_;
   rtc::SocketAddress server_;
@@ -208,13 +208,13 @@ int XmppClient::ProcessStart() {
     d_->pre_auth_->StartPreXmppAuth(
         d_->engine_->GetUser(), d_->server_, d_->pass_,
         d_->auth_mechanism_, d_->auth_token_);
-    d_->pass_.Clear(); // done with this;
+    d_->pass_.clear(); // done with this;
     return STATE_PRE_XMPP_LOGIN;
   }
   else {
     d_->engine_->SetSaslHandler(new PlainSaslHandler(
               d_->engine_->GetUser(), d_->pass_, d_->allow_plain_));
-    d_->pass_.Clear(); // done with this;
+    d_->pass_.clear(); // done with this;
     return STATE_START_XMPP_LOGIN;
   }
 }

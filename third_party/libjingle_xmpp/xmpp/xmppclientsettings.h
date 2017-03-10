@@ -13,7 +13,6 @@
 
 #include "third_party/webrtc/p2p/base/port.h"
 #include "third_party/libjingle_xmpp/xmpp/xmppengine.h"
-#include "third_party/webrtc/base/cryptstring.h"
 
 namespace buzz {
 
@@ -26,7 +25,7 @@ class XmppUserSettings {
 
   void set_user(const std::string& user) { user_ = user; }
   void set_host(const std::string& host) { host_ = host; }
-  void set_pass(const rtc::CryptString& pass) { pass_ = pass; }
+  void set_pass(const std::string& pass) { pass_ = pass; }
   void set_auth_token(const std::string& mechanism,
                       const std::string& token) {
     auth_mechanism_ = mechanism;
@@ -44,7 +43,7 @@ class XmppUserSettings {
 
   const std::string& user() const { return user_; }
   const std::string& host() const { return host_; }
-  const rtc::CryptString& pass() const { return pass_; }
+  const std::string& pass() const { return pass_; }
   const std::string& auth_mechanism() const { return auth_mechanism_; }
   const std::string& auth_token() const { return auth_token_; }
   const std::string& resource() const { return resource_; }
@@ -56,7 +55,7 @@ class XmppUserSettings {
  private:
   std::string user_;
   std::string host_;
-  rtc::CryptString pass_;
+  std::string pass_;
   std::string auth_mechanism_;
   std::string auth_token_;
   std::string resource_;
@@ -84,7 +83,7 @@ class XmppClientSettings : public XmppUserSettings {
   void set_proxy_port(int port) { proxy_port_ = port; };
   void set_use_proxy_auth(bool f) { use_proxy_auth_ = f; }
   void set_proxy_user(const std::string& user) { proxy_user_ = user; }
-  void set_proxy_pass(const rtc::CryptString& pass) { proxy_pass_ = pass; }
+  void set_proxy_pass(const std::string& pass) { proxy_pass_ = pass; }
 
   const rtc::SocketAddress& server() const { return server_; }
   cricket::ProtocolType protocol() const { return protocol_; }
@@ -93,7 +92,7 @@ class XmppClientSettings : public XmppUserSettings {
   int proxy_port() const { return proxy_port_; }
   bool use_proxy_auth() const { return use_proxy_auth_; }
   const std::string& proxy_user() const { return proxy_user_; }
-  const rtc::CryptString& proxy_pass() const { return proxy_pass_; }
+  const std::string& proxy_pass() const { return proxy_pass_; }
 
  private:
   rtc::SocketAddress server_;
@@ -103,7 +102,7 @@ class XmppClientSettings : public XmppUserSettings {
   int proxy_port_;
   bool use_proxy_auth_;
   std::string proxy_user_;
-  rtc::CryptString proxy_pass_;
+  std::string proxy_pass_;
 };
 
 }

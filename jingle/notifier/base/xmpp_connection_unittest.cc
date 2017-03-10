@@ -30,7 +30,6 @@ class Jid;
 }  // namespace buzz
 
 namespace rtc {
-class CryptString;
 class SocketAddress;
 class Task;
 }  // namespace rtc
@@ -52,7 +51,7 @@ class MockPreXmppAuth : public buzz::PreXmppAuth {
   MOCK_METHOD5(StartPreXmppAuth,
                void(const buzz::Jid&,
                     const rtc::SocketAddress&,
-                    const rtc::CryptString&,
+                    const std::string&,
                     const std::string&,
                     const std::string&));
   MOCK_CONST_METHOD0(IsAuthDone, bool());

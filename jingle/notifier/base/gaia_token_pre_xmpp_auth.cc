@@ -65,7 +65,7 @@ GaiaTokenPreXmppAuth::~GaiaTokenPreXmppAuth() { }
 void GaiaTokenPreXmppAuth::StartPreXmppAuth(
     const buzz::Jid& jid,
     const rtc::SocketAddress& server,
-    const rtc::CryptString& pass,
+    const std::string& pass,
     const std::string& auth_mechanism,
     const std::string& auth_token) {
   SignalAuthDone();

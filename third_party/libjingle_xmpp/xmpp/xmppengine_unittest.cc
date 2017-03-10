@@ -62,14 +62,13 @@ class XmppEngineTest : public testing::Test {
     handler_.reset(new XmppTestHandler(engine_.get()));
 
     Jid jid("david@my-server");
-    rtc::InsecureCryptStringImpl pass;
-    pass.password() = "david";
+    std::string pass("david");
     engine_->SetSessionHandler(handler_.get());
     engine_->SetOutputHandler(handler_.get());
     engine_->AddStanzaHandler(handler_.get());
     engine_->SetUser(jid);
     engine_->SetSaslHandler(
-        new buzz::PlainSaslHandler(jid, rtc::CryptString(pass), true));
+        new buzz::PlainSaslHandler(jid, pass, true));
   }
   virtual void TearDown() {
     handler_.reset();

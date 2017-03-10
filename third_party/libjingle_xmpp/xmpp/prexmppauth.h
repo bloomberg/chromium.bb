@@ -12,7 +12,6 @@
 #define WEBRTC_LIBJINGLE_XMPP_PREXMPPAUTH_H_
 
 #include "third_party/libjingle_xmpp/xmpp/saslhandler.h"
-#include "third_party/webrtc/base/cryptstring.h"
 #include "third_party/webrtc/base/sigslot.h"
 
 namespace rtc {
@@ -51,7 +50,7 @@ public:
   virtual void StartPreXmppAuth(
     const Jid& jid,
     const rtc::SocketAddress& server,
-    const rtc::CryptString& pass,
+    const std::string& pass,
     const std::string& auth_mechanism,
     const std::string& auth_token) = 0;
 

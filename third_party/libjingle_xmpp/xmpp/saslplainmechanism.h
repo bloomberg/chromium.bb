@@ -12,14 +12,13 @@
 #define WEBRTC_LIBJINGLE_XMPP_SASLPLAINMECHANISM_H_
 
 #include "third_party/libjingle_xmpp/xmpp/saslmechanism.h"
-#include "third_party/webrtc/base/cryptstring.h"
 
 namespace buzz {
 
 class SaslPlainMechanism : public SaslMechanism {
 
 public:
-  SaslPlainMechanism(const buzz::Jid user_jid, const rtc::CryptString & password) :
+  SaslPlainMechanism(const buzz::Jid user_jid, const std::string & password) :
     user_jid_(user_jid), password_(password) {}
 
   virtual std::string GetMechanismName() { return "PLAIN"; }
@@ -29,18 +28,18 @@ public:
     XmlElement * el = new XmlElement(QN_SASL_AUTH, true);
     el->AddAttr(QN_MECHANISM, "PLAIN");
 
-    rtc::FormatCryptString credential;
-    credential.Append("\0", 1);
-    credential.Append(user_jid_.node());
-    credential.Append("\0", 1);
-    credential.Append(&password_);
-    el->AddText(Base64EncodeFromArray(credential.GetData(), credential.GetLength()));
+    std::stringstream ss;
+    ss.write("\0", 1);
+    ss << user_jid_.node();
+    ss.write("\0", 1);
+    ss << password_;
+    el->AddText(Base64EncodeFromArray(ss.str().data(), ss.str().length()));
     return el;
   }
 
 private:
   Jid user_jid_;
-  rtc::CryptString password_;
+  std::string password_;
 };
 
 }
