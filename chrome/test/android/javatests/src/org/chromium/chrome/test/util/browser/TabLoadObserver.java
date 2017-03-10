@@ -44,7 +44,7 @@ public class TabLoadObserver extends EmptyTabObserver {
     }
 
     @Override
-    public void onLoadStarted(Tab tab, boolean toDifferentDocument) {
+    public void onPageLoadStarted(Tab tab, String url) {
         mTabLoadStartedCallback.notifyCalled();
     }
 
