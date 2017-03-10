@@ -17,6 +17,3 @@ use_clang_static_analyzer = true
 The next time you rebuild, you should see static analysis warnings appear inline
 with the usual Clang build warnings and errors.
 
-## Future plans/potential issues
-* Support for running under GOMA is untested, but will be added shortly if
-  feasible.
