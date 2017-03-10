@@ -145,6 +145,7 @@ class PaymentRequest : public mojom::PaymentRequest,
   }
 
   payments::mojom::PaymentDetails* details() { return details_.get(); }
+  payments::mojom::PaymentOptions* options() { return options_.get(); }
   const std::vector<std::string>& supported_card_networks() {
     return supported_card_networks_;
   }

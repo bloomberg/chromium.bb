@@ -414,7 +414,7 @@ PaymentSheetViewController::CreateShippingSectionContent() {
 std::unique_ptr<views::Button> PaymentSheetViewController::CreateShippingRow() {
   std::unique_ptr<views::Button> section = CreatePaymentSheetRow(
       this,
-      l10n_util::GetStringUTF16(IDS_PAYMENT_REQUEST_SHIPPING_SECTION_NAME),
+      GetShippingAddressSectionString(request()->options()->shipping_type),
       CreateShippingSectionContent(), std::unique_ptr<views::View>(nullptr),
       widest_name_column_view_width_);
   section->set_tag(
@@ -528,10 +528,8 @@ PaymentSheetViewController::CreateShippingOptionContent() {
 
 std::unique_ptr<views::Button>
 PaymentSheetViewController::CreateShippingOptionRow() {
-  // TODO(anthonyvd): Use the correct IDS_PAYMENTS_*_OPTION_LABEL string based
-  // on the data passed by the website.
   std::unique_ptr<views::Button> section = CreatePaymentSheetRow(
-      this, l10n_util::GetStringUTF16(IDS_PAYMENTS_SHIPPING_OPTION_LABEL),
+      this, GetShippingOptionSectionString(request()->options()->shipping_type),
       CreateShippingOptionContent(), std::unique_ptr<views::View>(nullptr),
       widest_name_column_view_width_);
   section->set_tag(static_cast<int>(

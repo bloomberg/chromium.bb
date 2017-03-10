@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/strings/string16.h"
+#include "components/payments/content/payment_request.mojom.h"
 
 namespace autofill {
 class AutofillProfile;
@@ -87,6 +88,11 @@ std::unique_ptr<views::Border> CreatePaymentRequestRowBorder();
 
 // Creates a label with a bold font.
 std::unique_ptr<views::Label> CreateBoldLabel(const base::string16& text);
+
+base::string16 GetShippingAddressSectionString(
+    payments::mojom::PaymentShippingType shipping_type);
+base::string16 GetShippingOptionSectionString(
+    payments::mojom::PaymentShippingType shipping_type);
 
 }  // namespace payments
 

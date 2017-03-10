@@ -15,7 +15,9 @@
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/field_types.h"
+#include "components/strings/grit/components_strings.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font_list.h"
@@ -244,6 +246,36 @@ std::unique_ptr<views::Label> CreateBoldLabel(const base::string16& text) {
       label->font_list().DeriveWithWeight(gfx::Font::Weight::BOLD));
 
   return label;
+}
+
+base::string16 GetShippingAddressSectionString(
+    payments::mojom::PaymentShippingType shipping_type) {
+  switch (shipping_type) {
+    case payments::mojom::PaymentShippingType::DELIVERY:
+      return l10n_util::GetStringUTF16(IDS_PAYMENTS_DELIVERY_ADDRESS_LABEL);
+    case payments::mojom::PaymentShippingType::PICKUP:
+      return l10n_util::GetStringUTF16(IDS_PAYMENTS_PICKUP_ADDRESS_LABEL);
+    case payments::mojom::PaymentShippingType::SHIPPING:
+      return l10n_util::GetStringUTF16(IDS_PAYMENTS_SHIPPING_ADDRESS_LABEL);
+  }
+  // MSVC doesn't compile with only the above switch statement because it can't
+  // see that all control paths return a value.
+  return l10n_util::GetStringUTF16(IDS_PAYMENTS_SHIPPING_ADDRESS_LABEL);
+}
+
+base::string16 GetShippingOptionSectionString(
+    payments::mojom::PaymentShippingType shipping_type) {
+  switch (shipping_type) {
+    case payments::mojom::PaymentShippingType::DELIVERY:
+      return l10n_util::GetStringUTF16(IDS_PAYMENTS_DELIVERY_OPTION_LABEL);
+    case payments::mojom::PaymentShippingType::PICKUP:
+      return l10n_util::GetStringUTF16(IDS_PAYMENTS_PICKUP_OPTION_LABEL);
+    case payments::mojom::PaymentShippingType::SHIPPING:
+      return l10n_util::GetStringUTF16(IDS_PAYMENTS_SHIPPING_OPTION_LABEL);
+  }
+  // MSVC doesn't compile with only the above switch statement because it can't
+  // see that all control paths return a value.
+  return l10n_util::GetStringUTF16(IDS_PAYMENTS_SHIPPING_OPTION_LABEL);
 }
 
 }  // namespace payments
