@@ -8,8 +8,92 @@
 #include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/metrics/metrics_log_uploader.h"
 #include "net/base/load_flags.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_fetcher.h"
 #include "url/gurl.h"
+
+namespace {
+
+net::NetworkTrafficAnnotationTag GetNetworkTrafficAnnotation(
+    const metrics::MetricsLogUploader::MetricServiceType& service_type) {
+  // The code in this function should remain so that we won't need a default
+  // case that does not have meaningful annotation.
+  if (service_type == metrics::MetricsLogUploader::UMA) {
+    return net::DefineNetworkTrafficAnnotation("metrics_report_uma", R"(
+        semantics {
+          sender: "Metrics UMA Log Uploader"
+          description:
+            "Report of usage statistics and crash-related data about Chromium. "
+            "Usage statistics contain information such as preferences, button "
+            "clicks, and memory usage and do not include web page URLs or "
+            "personal information. See more at "
+            "https://www.google.com/chrome/browser/privacy/ under 'Usage "
+            "statistics and crash reports'. Usage statistics are tied to a "
+            "pseudonymous machine identifier and not to your email address."
+          trigger:
+            "Reports are automatically generated on startup and at intervals "
+            "while Chromium is running."
+          data:
+            "A protocol buffer with usage statistics and crash related data."
+          destination: GOOGLE_OWNED_SERVICE
+        }
+        policy {
+          cookies_allowed: false
+          setting:
+            "Users can enable or disable this feature by disabling "
+            "'Automatically send usage statistics and crash reports to Google' "
+            "in Chromium's settings under Advanced Settings, Privacy. The "
+            "feature is enabled by default."
+          chrome_policy {
+            MetricsReportingEnabled {
+              policy_options {mode: MANDATORY}
+              MetricsReportingEnabled: false
+            }
+          }
+        })");
+  } else {
+    DCHECK_EQ(service_type, metrics::MetricsLogUploader::UKM);
+    return net::DefineNetworkTrafficAnnotation("metrics_report_ukm", R"(
+        semantics {
+          sender: "Metrics UKM Log Uploader"
+          description:
+            "Report of usage statistics that are keyed by URLs to Chromium, "
+            "sent only if the profile has History Sync. This includes "
+            "information about the web pages you visit and your usage of them, "
+            "such as page load speed. This will also include URLs and "
+            "statistics related to downloaded files. If Extension Sync is "
+            "enabled, these statistics will also include information about "
+            "the extensions that have been installed from Chrome Web Store. "
+            "Google only stores usage statistics associated with published "
+            "extensions, and URLs that are known by Google’s search index. "
+            "Usage statistics are tied to a pseudonymous machine identifier "
+            "and not to your email address."
+          trigger:
+            "Reports are automatically generated on startup and at intervals "
+            "while Chromium is running with Sync enabled."
+          data:
+            "A protocol buffer with usage statistics and associated URLs."
+          destination: GOOGLE_OWNED_SERVICE
+        }
+        policy {
+          cookies_allowed: false
+          setting:
+            "Users can enable or disable this feature by disabling "
+            "'Automatically send usage statistics and crash reports to Google' "
+            "in Chromium's settings under Advanced Settings, Privacy. This is "
+            "only enabled if all active profiles have History/Extension Sync "
+            "enabled without a Sync passphrase."
+          chrome_policy {
+            MetricsReportingEnabled {
+              policy_options {mode: MANDATORY}
+              MetricsReportingEnabled: false
+            }
+          }
+        })");
+  }
+}
+
+}  // namespace
 
 namespace metrics {
 
@@ -31,7 +115,8 @@ NetMetricsLogUploader::~NetMetricsLogUploader() {
 void NetMetricsLogUploader::UploadLog(const std::string& compressed_log_data,
                                       const std::string& log_hash) {
   current_fetch_ =
-      net::URLFetcher::Create(GURL(server_url_), net::URLFetcher::POST, this);
+      net::URLFetcher::Create(GURL(server_url_), net::URLFetcher::POST, this,
+                              GetNetworkTrafficAnnotation(service_type_));
 
   auto service = data_use_measurement::DataUseUserData::UMA;
 
