@@ -20,7 +20,6 @@ import android.util.AttributeSet;
 import android.util.Pair;
 import android.view.DragEvent;
 import android.view.MotionEvent;
-import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.accessibility.AccessibilityEvent;
@@ -418,9 +417,9 @@ public class CompositorViewHolder extends FrameLayout
     }
 
     /**
-     * @return The SurfaceView used by the Compositor.
+     * @return The SurfaceView proxy used by the Compositor.
      */
-    public SurfaceView getSurfaceView() {
+    public View getCompositorView() {
         return mCompositorView;
     }
 
@@ -976,7 +975,7 @@ public class CompositorViewHolder extends FrameLayout
         mTabModelSelector = null;
         mLayerTitleCache.setTabModelSelector(null);
         setTab(null);
-        getSurfaceView().setVisibility(View.INVISIBLE);
+        getCompositorView().setVisibility(View.INVISIBLE);
         return selector;
     }
 
@@ -986,7 +985,7 @@ public class CompositorViewHolder extends FrameLayout
      * @param tabModelSelector
      */
     public void onExitVR(TabModelSelector tabModelSelector) {
-        getSurfaceView().setVisibility(View.VISIBLE);
+        getCompositorView().setVisibility(View.VISIBLE);
         attachToTabModelSelector(tabModelSelector);
     }
 
