@@ -625,7 +625,6 @@ weston_desktop_xdg_toplevel_committed(struct weston_desktop_xdg_toplevel *toplev
 {
 	struct weston_surface *wsurface =
 		weston_desktop_surface_get_surface(toplevel->base.desktop_surface);
-	bool reconfigure = false;
 
 	if (!wsurface->buffer_ref.buffer && !toplevel->added) {
 		weston_desktop_xdg_toplevel_ensure_added(toplevel);
@@ -634,22 +633,27 @@ weston_desktop_xdg_toplevel_committed(struct weston_desktop_xdg_toplevel *toplev
 	if (!wsurface->buffer_ref.buffer)
 		return;
 
-	if (toplevel->next_state.maximized || toplevel->next_state.fullscreen)
-		reconfigure =
-			( ( toplevel->requested_size.width != wsurface->width ) ||
-			  ( toplevel->requested_size.height != wsurface->height ) );
+	if ((toplevel->next_state.maximized || toplevel->next_state.fullscreen) &&
+	    (toplevel->requested_size.width != wsurface->width ||
+	     toplevel->requested_size.height != wsurface->height)) {
+		struct weston_desktop_client *client =
+			weston_desktop_surface_get_client(toplevel->base.desktop_surface);
+		struct wl_resource *client_resource =
+			weston_desktop_client_get_resource(client);
 
-	if (reconfigure) {
-		weston_desktop_xdg_surface_schedule_configure(&toplevel->base);
-	} else {
-		toplevel->state = toplevel->next_state;
-		toplevel->min_size = toplevel->next_min_size;
-		toplevel->max_size = toplevel->next_max_size;
-
-		weston_desktop_api_committed(toplevel->base.desktop,
-					     toplevel->base.desktop_surface,
-					     sx, sy);
+		wl_resource_post_error(client_resource,
+				       ZXDG_SHELL_V6_ERROR_INVALID_SURFACE_STATE,
+				       "xdg_surface buffer does not match the configured state");
+		return;
 	}
+
+	toplevel->state = toplevel->next_state;
+	toplevel->min_size = toplevel->next_min_size;
+	toplevel->max_size = toplevel->next_max_size;
+
+	weston_desktop_api_committed(toplevel->base.desktop,
+				     toplevel->base.desktop_surface,
+				     sx, sy);
 }
 
 static void
