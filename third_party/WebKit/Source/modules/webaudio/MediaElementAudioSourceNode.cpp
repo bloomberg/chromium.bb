@@ -25,13 +25,13 @@
 
 #include "modules/webaudio/MediaElementAudioSourceNode.h"
 
-#include "core/dom/ExecutionContextTask.h"
 #include "core/dom/TaskRunnerHelper.h"
 #include "core/html/HTMLMediaElement.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "modules/webaudio/AudioNodeOutput.h"
 #include "modules/webaudio/BaseAudioContext.h"
 #include "modules/webaudio/MediaElementAudioSourceOptions.h"
+#include "platform/CrossThreadFunctional.h"
 #include "platform/audio/AudioUtilities.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "wtf/Locker.h"
@@ -196,12 +196,12 @@ void MediaElementAudioSourceHandler::process(size_t numberOfFrames) {
         // media element source, and only if we have a document to print to.
         m_maybePrintCORSMessage = false;
         if (context()->getExecutionContext()) {
-          context()->getExecutionContext()->postTask(
-              TaskType::MediaElementEvent, BLINK_FROM_HERE,
-              createCrossThreadTask(
-                  &MediaElementAudioSourceHandler::printCORSMessage,
-                  PassRefPtr<MediaElementAudioSourceHandler>(this),
-                  m_currentSrcString));
+          TaskRunnerHelper::get(TaskType::MediaElementEvent,
+                                context()->getExecutionContext())
+              ->postTask(BLINK_FROM_HERE,
+                         crossThreadBind(
+                             &MediaElementAudioSourceHandler::printCORSMessage,
+                             wrapPassRefPtr(this), m_currentSrcString));
         }
       }
       outputBus->zero();

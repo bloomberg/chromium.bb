@@ -24,15 +24,16 @@
  */
 
 #include "modules/webaudio/AudioScheduledSourceNode.h"
+
+#include <algorithm>
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/dom/ExecutionContextTask.h"
 #include "core/dom/TaskRunnerHelper.h"
 #include "modules/EventModules.h"
 #include "modules/webaudio/BaseAudioContext.h"
+#include "platform/CrossThreadFunctional.h"
 #include "platform/audio/AudioUtilities.h"
 #include "wtf/MathExtras.h"
-#include <algorithm>
 
 namespace blink {
 
@@ -226,10 +227,11 @@ void AudioScheduledSourceHandler::finish() {
   finishWithoutOnEnded();
 
   if (context()->getExecutionContext()) {
-    context()->getExecutionContext()->postTask(
-        TaskType::MediaElementEvent, BLINK_FROM_HERE,
-        createCrossThreadTask(&AudioScheduledSourceHandler::notifyEnded,
-                              PassRefPtr<AudioScheduledSourceHandler>(this)));
+    TaskRunnerHelper::get(TaskType::MediaElementEvent,
+                          context()->getExecutionContext())
+        ->postTask(BLINK_FROM_HERE,
+                   crossThreadBind(&AudioScheduledSourceHandler::notifyEnded,
+                                   wrapPassRefPtr(this)));
   }
 }
 

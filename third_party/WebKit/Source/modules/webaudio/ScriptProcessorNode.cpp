@@ -27,13 +27,13 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
-#include "core/dom/ExecutionContextTask.h"
 #include "core/dom/TaskRunnerHelper.h"
 #include "modules/webaudio/AudioBuffer.h"
 #include "modules/webaudio/AudioNodeInput.h"
 #include "modules/webaudio/AudioNodeOutput.h"
 #include "modules/webaudio/AudioProcessingEvent.h"
 #include "modules/webaudio/BaseAudioContext.h"
+#include "platform/CrossThreadFunctional.h"
 #include "platform/WaitableEvent.h"
 #include "public/platform/Platform.h"
 
@@ -206,23 +206,26 @@ void ScriptProcessorHandler::process(size_t framesToProcess) {
       if (context()->hasRealtimeConstraint()) {
         // Fire the event on the main thread with the appropriate buffer
         // index.
-        context()->getExecutionContext()->postTask(
-            TaskType::MediaElementEvent, BLINK_FROM_HERE,
-            createCrossThreadTask(&ScriptProcessorHandler::fireProcessEvent,
-                                  crossThreadUnretained(this),
-                                  m_doubleBufferIndex));
+        TaskRunnerHelper::get(TaskType::MediaElementEvent,
+                              context()->getExecutionContext())
+            ->postTask(BLINK_FROM_HERE,
+                       crossThreadBind(
+                           &ScriptProcessorHandler::fireProcessEvent,
+                           crossThreadUnretained(this), m_doubleBufferIndex));
       } else {
         // If this node is in the offline audio context, use the
         // waitable event to synchronize to the offline rendering thread.
         std::unique_ptr<WaitableEvent> waitableEvent =
             WTF::makeUnique<WaitableEvent>();
 
-        context()->getExecutionContext()->postTask(
-            TaskType::MediaElementEvent, BLINK_FROM_HERE,
-            createCrossThreadTask(
-                &ScriptProcessorHandler::fireProcessEventForOfflineAudioContext,
-                crossThreadUnretained(this), m_doubleBufferIndex,
-                crossThreadUnretained(waitableEvent.get())));
+        TaskRunnerHelper::get(TaskType::MediaElementEvent,
+                              context()->getExecutionContext())
+            ->postTask(BLINK_FROM_HERE,
+                       crossThreadBind(
+                           &ScriptProcessorHandler::
+                               fireProcessEventForOfflineAudioContext,
+                           crossThreadUnretained(this), m_doubleBufferIndex,
+                           crossThreadUnretained(waitableEvent.get())));
 
         // Okay to block the offline audio rendering thread since it is
         // not the actual audio device thread.

@@ -25,19 +25,19 @@
 
 #include "modules/webaudio/OfflineAudioDestinationNode.h"
 
-#include "core/dom/ExecutionContextTask.h"
+#include <algorithm>
 #include "core/dom/TaskRunnerHelper.h"
 #include "modules/webaudio/AudioNodeInput.h"
 #include "modules/webaudio/AudioNodeOutput.h"
 #include "modules/webaudio/BaseAudioContext.h"
 #include "modules/webaudio/OfflineAudioContext.h"
+#include "platform/CrossThreadFunctional.h"
 #include "platform/audio/AudioBus.h"
 #include "platform/audio/AudioUtilities.h"
 #include "platform/audio/DenormalDisabler.h"
 #include "platform/audio/HRTFDatabaseLoader.h"
 #include "public/platform/Platform.h"
 #include "wtf/PtrUtil.h"
-#include <algorithm>
 
 namespace blink {
 
@@ -221,11 +221,12 @@ void OfflineAudioDestinationHandler::suspendOfflineRendering() {
 
   // The actual rendering has been suspended. Notify the context.
   if (context()->getExecutionContext()) {
-    context()->getExecutionContext()->postTask(
-        TaskType::MediaElementEvent, BLINK_FROM_HERE,
-        createCrossThreadTask(&OfflineAudioDestinationHandler::notifySuspend,
-                              PassRefPtr<OfflineAudioDestinationHandler>(this),
-                              context()->currentSampleFrame()));
+    TaskRunnerHelper::get(TaskType::MediaElementEvent,
+                          context()->getExecutionContext())
+        ->postTask(BLINK_FROM_HERE,
+                   crossThreadBind(
+                       &OfflineAudioDestinationHandler::notifySuspend,
+                       wrapPassRefPtr(this), context()->currentSampleFrame()));
   }
 }
 
@@ -234,10 +235,12 @@ void OfflineAudioDestinationHandler::finishOfflineRendering() {
 
   // The actual rendering has been completed. Notify the context.
   if (context()->getExecutionContext()) {
-    context()->getExecutionContext()->postTask(
-        TaskType::MediaElementEvent, BLINK_FROM_HERE,
-        createCrossThreadTask(&OfflineAudioDestinationHandler::notifyComplete,
-                              wrapPassRefPtr(this)));
+    TaskRunnerHelper::get(TaskType::MediaElementEvent,
+                          context()->getExecutionContext())
+        ->postTask(
+            BLINK_FROM_HERE,
+            crossThreadBind(&OfflineAudioDestinationHandler::notifyComplete,
+                            wrapPassRefPtr(this)));
   }
 }
 
