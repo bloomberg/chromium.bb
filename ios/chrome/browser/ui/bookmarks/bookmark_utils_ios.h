@@ -185,7 +185,7 @@ void CachePosition(CGFloat position, BookmarkMenuItem* item);
 // |model| must be loaded.
 // |item| and |position| are out variables, only populated if the return is YES.
 BOOL GetPositionCache(bookmarks::BookmarkModel* model,
-                      BookmarkMenuItem** item,
+                      BookmarkMenuItem* __autoreleasing* item,
                       CGFloat* position);
 // Method exists for testing.
 void ClearPositionCache();

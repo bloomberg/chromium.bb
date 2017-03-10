@@ -6,10 +6,7 @@
 
 #include <memory>
 
-#import "base/ios/weak_nsobject.h"
 #include "base/logging.h"
-#include "base/mac/objc_property_releaser.h"
-#include "base/mac/scoped_nsobject.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/sys_string_conversions.h"
@@ -42,6 +39,10 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 using bookmarks::BookmarkNode;
 
 namespace {
@@ -59,56 +60,54 @@ const CGFloat kBookmarkMenuWidth = 264;
     BookmarkPromoControllerDelegate> {
   // Bridge to register for bookmark changes.
   std::unique_ptr<bookmarks::BookmarkModelBridge> _bridge;
-  base::mac::ObjCPropertyReleaser
-      _propertyReleaser_BookmarkHomeHandsetViewController;
 }
 
 // This views holds the primary content of this view controller. At any point in
 // time, it contains exactly one of the BookmarkCollectionView subclasses.
-@property(nonatomic, retain) UIView* contentView;
+@property(nonatomic, strong) UIView* contentView;
 // The possible views that can be shown from the menu.
-@property(nonatomic, retain) BookmarkFolderCollectionView* folderView;
+@property(nonatomic, strong) BookmarkFolderCollectionView* folderView;
 // This view is created and used if the model is not fully loaded yet by the
 // time this controller starts.
-@property(nonatomic, retain) BookmarkHomeWaitingView* waitForModelView;
+@property(nonatomic, strong) BookmarkHomeWaitingView* waitForModelView;
 
 // The menu with all the folders and special entries.
-@property(nonatomic, retain) BookmarkMenuView* menuView;
+@property(nonatomic, strong) BookmarkMenuView* menuView;
 // At any point in time, there is exactly one collection view whose view is part
 // of the view hierarchy. This property determine which collection view is
 // visible. Not by accident, this property also reflects the selected menu item
 // in the BookmarkMenuView.
-@property(nonatomic, retain) BookmarkMenuItem* primaryMenuItem;
+@property(nonatomic, strong) BookmarkMenuItem* primaryMenuItem;
 // When the view is first shown on the screen, this property represents the
 // cached value of the y of the content offset of the primary view. This
 // property is set to nil after it is used.
-@property(nonatomic, retain) NSNumber* cachedContentPosition;
+@property(nonatomic, strong) NSNumber* cachedContentPosition;
 
 // The navigation bar sits on top of the main content.
-@property(nonatomic, retain) BookmarkNavigationBar* navigationBar;
+@property(nonatomic, strong) BookmarkNavigationBar* navigationBar;
 // The layout code in this class relies on the assumption that the editingBar
 // has the same frame as the navigationBar.
-@property(nonatomic, retain) BookmarkEditingBar* editingBar;
+@property(nonatomic, strong) BookmarkEditingBar* editingBar;
 
 // The action sheet coordinator used when trying to edit a single bookmark.
-@property(nonatomic, retain) ActionSheetCoordinator* actionSheetCoordinator;
+@property(nonatomic, strong) ActionSheetCoordinator* actionSheetCoordinator;
 // The view controller used to view and edit a single bookmark.
-@property(nonatomic, retain) BookmarkEditViewController* editViewController;
+@property(nonatomic, strong) BookmarkEditViewController* editViewController;
 // The view controller used to pick a folder in which to move the selected
 // bookmarks.
-@property(nonatomic, retain) BookmarkFolderViewController* folderSelector;
+@property(nonatomic, strong) BookmarkFolderViewController* folderSelector;
 // The view controller to present when editing the current folder.
-@property(nonatomic, retain) BookmarkFolderEditorViewController* folderEditor;
+@property(nonatomic, strong) BookmarkFolderEditorViewController* folderEditor;
 #pragma mark Specific to this class.
 
 // The panel view slides on top of the content to display the menu.
-@property(nonatomic, retain) BookmarkPanelView* panelView;
+@property(nonatomic, strong) BookmarkPanelView* panelView;
 
 // Either the menu or the primaryView can scrollToTop.
 @property(nonatomic, assign) BOOL scrollingMenuToTop;
 // The controller managing the display of the promo cell and the promo view
 // controller.
-@property(nonatomic, retain) BookmarkPromoController* bookmarkPromoController;
+@property(nonatomic, strong) BookmarkPromoController* bookmarkPromoController;
 
 #pragma mark View loading and switching
 // This method is called if the view needs to be loaded and the model is not
@@ -239,9 +238,6 @@ const CGFloat kBookmarkMenuWidth = 264;
                   browserState:(ios::ChromeBrowserState*)browserState {
   self = [super initWithLoader:loader browserState:browserState];
   if (self) {
-    _propertyReleaser_BookmarkHomeHandsetViewController.Init(
-        self, [BookmarkHomeHandsetViewController class]);
-
     _bridge.reset(new bookmarks::BookmarkModelBridge(self, self.bookmarks));
     // It is important to initialize the promo controller with the browser state
     // passed in, as it could be incognito.
@@ -261,7 +257,6 @@ const CGFloat kBookmarkMenuWidth = 264;
   _folderSelector.delegate = nil;
 
   _panelView.delegate = nil;
-  [super dealloc];
 }
 
 - (void)removeEditNode:(const BookmarkNode*)node
@@ -278,8 +273,8 @@ const CGFloat kBookmarkMenuWidth = 264;
 - (void)viewDidLoad {
   [super viewDidLoad];
 
-  base::scoped_nsobject<BookmarkNavigationBar> bar(
-      [[BookmarkNavigationBar alloc] initWithFrame:[self navigationBarFrame]]);
+  BookmarkNavigationBar* bar =
+      [[BookmarkNavigationBar alloc] initWithFrame:[self navigationBarFrame]];
   self.navigationBar = bar;
   [self.navigationBar setEditTarget:self
                              action:@selector(navigationBarWantsEditing:)];
@@ -316,8 +311,8 @@ const CGFloat kBookmarkMenuWidth = 264;
   DCHECK([self isViewLoaded]);
 
   // Present a waiting view.
-  base::scoped_nsobject<BookmarkHomeWaitingView> waitingView(
-      [[BookmarkHomeWaitingView alloc] initWithFrame:self.view.bounds]);
+  BookmarkHomeWaitingView* waitingView =
+      [[BookmarkHomeWaitingView alloc] initWithFrame:self.view.bounds];
   self.waitForModelView = waitingView;
   [self.view addSubview:self.waitForModelView];
   [self.waitForModelView startWaiting];
@@ -327,15 +322,15 @@ const CGFloat kBookmarkMenuWidth = 264;
   DCHECK(self.bookmarks->loaded());
   DCHECK([self isViewLoaded]);
 
-  self.panelView = base::scoped_nsobject<BookmarkPanelView>(
+  self.panelView =
       [[BookmarkPanelView alloc] initWithFrame:[self frameForPrimaryView]
-                                 menuViewWidth:kBookmarkMenuWidth]);
+                                 menuViewWidth:kBookmarkMenuWidth];
   self.panelView.autoresizingMask =
       UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
   self.panelView.delegate = self;
   [self.view insertSubview:self.panelView atIndex:0];
 
-  self.contentView = base::scoped_nsobject<UIView>([[UIView alloc] init]);
+  self.contentView = [[UIView alloc] init];
   self.contentView.frame = self.panelView.contentView.bounds;
   self.contentView.autoresizingMask =
       UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
@@ -343,10 +338,9 @@ const CGFloat kBookmarkMenuWidth = 264;
 
   // The user can swipe the BookmarkPanelView to show the menuView.
   // Therefore, it must be created here.
-  self.menuView =
-      base::scoped_nsobject<BookmarkMenuView>([[BookmarkMenuView alloc]
-          initWithBrowserState:self.browserState
-                         frame:self.panelView.menuView.bounds]);
+  self.menuView = [[BookmarkMenuView alloc]
+      initWithBrowserState:self.browserState
+                     frame:self.panelView.menuView.bounds];
   self.menuView.delegate = self;
   [self.panelView.menuView addSubview:self.menuView];
   self.menuView.autoresizingMask =
@@ -379,10 +373,9 @@ const CGFloat kBookmarkMenuWidth = 264;
   if (self.folderView)
     return;
 
-  base::scoped_nsobject<BookmarkFolderCollectionView> view(
-      [[BookmarkFolderCollectionView alloc]
-          initWithBrowserState:self.browserState
-                         frame:[self frameForPrimaryView]]);
+  BookmarkFolderCollectionView* view = [[BookmarkFolderCollectionView alloc]
+      initWithBrowserState:self.browserState
+                     frame:[self frameForPrimaryView]];
   self.folderView = view;
   self.folderView.delegate = self;
   [self.folderView setEditing:self.editing animated:NO];
@@ -438,8 +431,8 @@ const CGFloat kBookmarkMenuWidth = 264;
   }
 
   if (!self.editingBar) {
-    self.editingBar = base::scoped_nsobject<BookmarkEditingBar>(
-        [[BookmarkEditingBar alloc] initWithFrame:self.navigationBar.frame]);
+    self.editingBar =
+        [[BookmarkEditingBar alloc] initWithFrame:self.navigationBar.frame];
     [self.editingBar setCancelTarget:self action:@selector(editingBarCancel)];
     [self.editingBar setDeleteTarget:self action:@selector(editingBarDelete)];
     [self.editingBar setMoveTarget:self action:@selector(editingBarMove)];
@@ -602,20 +595,20 @@ const CGFloat kBookmarkMenuWidth = 264;
                        forCell:(BookmarkItemCell*)cell {
   DCHECK(!self.editViewController);
   DCHECK(!self.actionSheetCoordinator);
-  self.actionSheetCoordinator = [[[ActionSheetCoordinator alloc]
-      initWithBaseViewController:self
-                           title:nil
-                         message:nil
-                            rect:CGRectZero
-                            view:nil] autorelease];
-  base::WeakNSObject<BookmarkHomeHandsetViewController> weakSelf(self);
+  self.actionSheetCoordinator =
+      [[ActionSheetCoordinator alloc] initWithBaseViewController:self
+                                                           title:nil
+                                                         message:nil
+                                                            rect:CGRectZero
+                                                            view:nil];
+  __weak BookmarkHomeHandsetViewController* weakSelf = self;
 
   // Select action.
   [self.actionSheetCoordinator
       addItemWithTitle:l10n_util::GetNSString(IDS_IOS_BOOKMARK_ACTION_SELECT)
                 action:^{
                   [weakSelf selectFirstNode:node withCell:cell];
-                  weakSelf.get().actionSheetCoordinator = nil;
+                  weakSelf.actionSheetCoordinator = nil;
                 }
                  style:UIAlertActionStyleDefault];
 
@@ -624,7 +617,7 @@ const CGFloat kBookmarkMenuWidth = 264;
       addItemWithTitle:l10n_util::GetNSString(IDS_IOS_BOOKMARK_ACTION_EDIT)
                 action:^{
                   [weakSelf editNode:node];
-                  weakSelf.get().actionSheetCoordinator = nil;
+                  weakSelf.actionSheetCoordinator = nil;
                 }
                  style:UIAlertActionStyleDefault];
 
@@ -635,7 +628,7 @@ const CGFloat kBookmarkMenuWidth = 264;
                   std::set<const BookmarkNode*> nodes;
                   nodes.insert(node);
                   [weakSelf moveNodes:nodes];
-                  weakSelf.get().actionSheetCoordinator = nil;
+                  weakSelf.actionSheetCoordinator = nil;
                 }
                  style:UIAlertActionStyleDefault];
 
@@ -646,7 +639,7 @@ const CGFloat kBookmarkMenuWidth = 264;
                   std::set<const BookmarkNode*> nodes;
                   nodes.insert(node);
                   [weakSelf deleteNodes:nodes];
-                  weakSelf.get().actionSheetCoordinator = nil;
+                  weakSelf.actionSheetCoordinator = nil;
                 }
                  style:UIAlertActionStyleDestructive];
 
@@ -654,7 +647,7 @@ const CGFloat kBookmarkMenuWidth = 264;
   [self.actionSheetCoordinator
       addItemWithTitle:l10n_util::GetNSString(IDS_CANCEL)
                 action:^{
-                  weakSelf.get().actionSheetCoordinator = nil;
+                  weakSelf.actionSheetCoordinator = nil;
                 }
                  style:UIAlertActionStyleCancel];
 
@@ -703,17 +696,16 @@ const CGFloat kBookmarkMenuWidth = 264;
     self.folderEditor = folderEditor;
     editorController = folderEditor;
   } else {
-    base::scoped_nsobject<BookmarkEditViewController> controller([
-        [BookmarkEditViewController alloc] initWithBookmark:node
-                                               browserState:self.browserState]);
+    BookmarkEditViewController* controller =
+        [[BookmarkEditViewController alloc] initWithBookmark:node
+                                                browserState:self.browserState];
     self.editViewController = controller;
     self.editViewController.delegate = self;
     editorController = self.editViewController;
   }
   DCHECK(editorController);
-  base::scoped_nsobject<UINavigationController> navController(
-      [[BookmarkNavigationController alloc]
-          initWithRootViewController:editorController]);
+  UINavigationController* navController = [[BookmarkNavigationController alloc]
+      initWithRootViewController:editorController];
   [navController setModalPresentationStyle:UIModalPresentationFormSheet];
   [self presentViewController:navController animated:YES completion:NULL];
 }
@@ -723,17 +715,15 @@ const CGFloat kBookmarkMenuWidth = 264;
   DCHECK(nodes.size() > 0);
   const BookmarkNode* editedNode = *(nodes.begin());
   const BookmarkNode* selectedFolder = editedNode->parent();
-  self.folderSelector = base::scoped_nsobject<BookmarkFolderViewController>(
-      [[BookmarkFolderViewController alloc]
-          initWithBookmarkModel:self.bookmarks
-               allowsNewFolders:YES
-                    editedNodes:nodes
-                   allowsCancel:YES
-                 selectedFolder:selectedFolder]);
+  self.folderSelector = [[BookmarkFolderViewController alloc]
+      initWithBookmarkModel:self.bookmarks
+           allowsNewFolders:YES
+                editedNodes:nodes
+               allowsCancel:YES
+             selectedFolder:selectedFolder];
   self.folderSelector.delegate = self;
-  base::scoped_nsobject<UINavigationController> navController(
-      [[BookmarkNavigationController alloc]
-          initWithRootViewController:self.folderSelector]);
+  UINavigationController* navController = [[BookmarkNavigationController alloc]
+      initWithRootViewController:self.folderSelector];
   [navController setModalPresentationStyle:UIModalPresentationFormSheet];
   [self presentViewController:navController animated:YES completion:NULL];
 }
@@ -898,9 +888,9 @@ const CGFloat kBookmarkMenuWidth = 264;
   folderEditor.delegate = self;
   self.folderEditor = folderEditor;
 
-  base::scoped_nsobject<BookmarkNavigationController> navController(
+  BookmarkNavigationController* navController =
       [[BookmarkNavigationController alloc]
-          initWithRootViewController:self.folderEditor]);
+          initWithRootViewController:self.folderEditor];
   [navController setModalPresentationStyle:UIModalPresentationFormSheet];
   [self presentViewController:navController animated:YES completion:NULL];
 }
@@ -1016,20 +1006,19 @@ const CGFloat kBookmarkMenuWidth = 264;
     return;
 
   DCHECK(self.waitForModelView);
-  base::WeakNSObject<BookmarkHomeHandsetViewController> weakSelf(self);
+  __weak BookmarkHomeHandsetViewController* weakSelf = self;
   [self.waitForModelView stopWaitingWithCompletion:^{
-    base::scoped_nsobject<BookmarkHomeHandsetViewController> strongSelf(
-        [weakSelf retain]);
+    BookmarkHomeHandsetViewController* strongSelf = weakSelf;
     // Early return if the controller has been deallocated.
     if (!strongSelf)
       return;
     [UIView animateWithDuration:0.2
         animations:^{
-          strongSelf.get().waitForModelView.alpha = 0.0;
+          strongSelf.waitForModelView.alpha = 0.0;
         }
         completion:^(BOOL finished) {
-          [strongSelf.get().waitForModelView removeFromSuperview];
-          strongSelf.get().waitForModelView = nil;
+          [strongSelf.waitForModelView removeFromSuperview];
+          strongSelf.waitForModelView = nil;
         }];
     [strongSelf loadBookmarkViews];
   }];

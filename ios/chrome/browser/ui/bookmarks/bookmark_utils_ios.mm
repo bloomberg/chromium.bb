@@ -12,8 +12,6 @@
 #include "base/hash.h"
 #include "base/i18n/string_compare.h"
 #include "base/mac/bind_objc_block.h"
-#include "base/mac/scoped_nsautorelease_pool.h"
-#include "base/mac/scoped_nsobject.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/sys_string_conversions.h"
@@ -35,6 +33,10 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/base/models/tree_node_iterator.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 using bookmarks::BookmarkNode;
 
@@ -187,8 +189,7 @@ BOOL bookmarkMenuIsInSlideInPanel() {
 
 UIView* dropShadowWithWidth(CGFloat width) {
   UIImage* shadowImage = [UIImage imageNamed:@"bookmark_bar_shadow"];
-  UIImageView* shadow =
-      [[[UIImageView alloc] initWithImage:shadowImage] autorelease];
+  UIImageView* shadow = [[UIImageView alloc] initWithImage:shadowImage];
   CGRect shadowFrame = CGRectMake(0, 0, width, 4);
   shadow.frame = shadowFrame;
   shadow.autoresizingMask =
@@ -225,8 +226,8 @@ void CreateOrUpdateBookmarkWithUndoToast(
   }
 
   // Secondly, create an Undo group for all undoable actions.
-  base::scoped_nsobject<UndoManagerWrapper> wrapper(
-      [[UndoManagerWrapper alloc] initWithBrowserState:browser_state]);
+  UndoManagerWrapper* wrapper =
+      [[UndoManagerWrapper alloc] initWithBrowserState:browser_state];
 
   // Create or update the bookmark.
   [wrapper startGroupingActions];
@@ -260,8 +261,7 @@ void CreateOrUpdateBookmarkWithUndoToast(
 
 void PresentUndoToastWithWrapper(UndoManagerWrapper* wrapper, NSString* text) {
   // Create the block that will be executed if the user taps the undo button.
-  MDCSnackbarMessageAction* action =
-      [[[MDCSnackbarMessageAction alloc] init] autorelease];
+  MDCSnackbarMessageAction* action = [[MDCSnackbarMessageAction alloc] init];
   action.handler = ^{
     if (![wrapper hasUndoManagerChanged])
       [wrapper undo];
@@ -302,8 +302,8 @@ void DeleteBookmarksWithUndoToast(const std::set<const BookmarkNode*>& nodes,
   size_t nodeCount = nodes.size();
   DCHECK_GT(nodeCount, 0u);
 
-  base::scoped_nsobject<UndoManagerWrapper> wrapper(
-      [[UndoManagerWrapper alloc] initWithBrowserState:browser_state]);
+  UndoManagerWrapper* wrapper =
+      [[UndoManagerWrapper alloc] initWithBrowserState:browser_state];
 
   // Delete the selected bookmarks.
   [wrapper startGroupingActions];
@@ -354,8 +354,8 @@ void MoveBookmarksWithUndoToast(const std::set<const BookmarkNode*>& nodes,
   size_t nodeCount = nodes.size();
   DCHECK_GT(nodeCount, 0u);
 
-  base::scoped_nsobject<UndoManagerWrapper> wrapper(
-      [[UndoManagerWrapper alloc] initWithBrowserState:browser_state]);
+  UndoManagerWrapper* wrapper =
+      [[UndoManagerWrapper alloc] initWithBrowserState:browser_state];
 
   // Move the selected bookmarks.
   [wrapper startGroupingActions];
@@ -404,38 +404,39 @@ void segregateNodes(
   nodesSectionVector.clear();
 
   // Make a localized date formatter.
-  base::scoped_nsobject<NSDateFormatter> formatter(
-      [[NSDateFormatter alloc] init]);
+  NSDateFormatter* formatter = [[NSDateFormatter alloc] init];
   [formatter setDateFormat:@"MMMM yyyy"];
   // Segregate nodes by creation date.
   // Nodes that were created in the same month are grouped together.
   for (auto* node : vector) {
-    base::mac::ScopedNSAutoreleasePool pool;
-    base::Time dateAdded = node->date_added();
-    base::TimeDelta delta = dateAdded - base::Time::UnixEpoch();
-    base::scoped_nsobject<NSDate> date(
-        [[NSDate alloc] initWithTimeIntervalSince1970:delta.InSeconds()]);
-    NSString* dateString = [formatter stringFromDate:date];
-    const std::string timeRepresentation = base::SysNSStringToUTF8(dateString);
+    @autoreleasepool {
+      base::Time dateAdded = node->date_added();
+      base::TimeDelta delta = dateAdded - base::Time::UnixEpoch();
+      NSDate* date =
+          [[NSDate alloc] initWithTimeIntervalSince1970:delta.InSeconds()];
+      NSString* dateString = [formatter stringFromDate:date];
+      const std::string timeRepresentation =
+          base::SysNSStringToUTF8(dateString);
 
-    BOOL found = NO;
-    for (const auto& nodesSection : nodesSectionVector) {
-      if (nodesSection->timeRepresentation == timeRepresentation) {
-        nodesSection->vector.push_back(node);
-        found = YES;
-        break;
+      BOOL found = NO;
+      for (const auto& nodesSection : nodesSectionVector) {
+        if (nodesSection->timeRepresentation == timeRepresentation) {
+          nodesSection->vector.push_back(node);
+          found = YES;
+          break;
+        }
       }
+
+      if (found)
+        continue;
+
+      // No NodesSection found.
+      auto nodesSection = base::MakeUnique<NodesSection>();
+      nodesSection->time = dateAdded;
+      nodesSection->timeRepresentation = timeRepresentation;
+      nodesSection->vector.push_back(node);
+      nodesSectionVector.push_back(std::move(nodesSection));
     }
-
-    if (found)
-      continue;
-
-    // No NodesSection found.
-    auto nodesSection = base::MakeUnique<NodesSection>();
-    nodesSection->time = dateAdded;
-    nodesSection->timeRepresentation = timeRepresentation;
-    nodesSection->vector.push_back(node);
-    nodesSectionVector.push_back(std::move(nodesSection));
   }
 
   // Sort the NodesSections.
