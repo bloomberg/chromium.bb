@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 61 tests; 50 PASS, 11 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 61 tests; 54 PASS, 7 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Blob interface object 
 PASS Blob constructor with no arguments 
 PASS Blob constructor with no arguments, without 'new' 
@@ -52,13 +52,13 @@ PASS Blob with type "a"
 PASS Blob with type "A" 
 PASS Blob with type "text/html" 
 PASS Blob with type "TEXT/HTML" 
-FAIL Blob with type "å" Failed to construct 'Blob': The 'type' property must consist of ASCII characters.
-FAIL Blob with type "𐑾" Failed to construct 'Blob': The 'type' property must consist of ASCII characters.
+PASS Blob with type "å" 
+PASS Blob with type "𐑾" 
 PASS Blob with type " image/gif " 
 PASS Blob with type "\timage/gif\t" 
 PASS Blob with type "image/gif;" 
-FAIL Blob with type "İmage/gif" Failed to construct 'Blob': The 'type' property must consist of ASCII characters.
-FAIL Blob with type "ımage/gif" Failed to construct 'Blob': The 'type' property must consist of ASCII characters.
+PASS Blob with type "İmage/gif" 
+PASS Blob with type "ımage/gif" 
 PASS Blob with type "image/gif\0" 
 PASS Blob with type "unknown/unknown" 
 PASS Blob with type "text/plain" 

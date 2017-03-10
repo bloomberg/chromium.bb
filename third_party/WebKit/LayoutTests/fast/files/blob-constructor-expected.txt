@@ -33,10 +33,14 @@ PASS (new Blob([], {unknownKey:'value'})) instanceof window.Blob is true
 PASS new Blob([], {endings:'illegalValue'}) threw exception TypeError: Failed to construct 'Blob': The provided value 'illegalValue' is not a valid enum value of type NormalizeLineEndings..
 PASS new Blob([], {endings:throwingObj}) threw exception Error.
 PASS new Blob([], {type:throwingObj}) threw exception Error.
-PASS new Blob([], {type:'helloî'}) threw exception SyntaxError: Failed to construct 'Blob': The 'type' property must consist of ASCII characters..
 PASS new Blob([], {endings:throwingObj1, type:throwingObj2}) threw exception Error 1.
 PASS new Blob([], {type:throwingObj2, endings:throwingObj1}) threw exception Error 1.
 PASS new Blob([], {type:throwingObj2, endings:'illegal'}) threw exception TypeError: Failed to construct 'Blob': The provided value 'illegal' is not a valid enum value of type NormalizeLineEndings..
+PASS new Blob([], {type:'hello\u00EE'}).type is ""
+PASS new Blob([], {type:'hello\u001F'}).type is ""
+PASS new Blob([], {type:'hello\u007F'}).type is ""
+PASS new Blob([], {type:'ABC/abc'}).type is "abc/abc"
+PASS new Blob([], {type:'123ABCabc'}).type is "123abcabc"
 PASS (new Blob([], null)) instanceof window.Blob is true
 PASS (new Blob([], undefined)) instanceof window.Blob is true
 PASS (new Blob([], 123)) instanceof window.Blob threw exception TypeError: Failed to construct 'Blob': parameter 2 ('options') is not an object..

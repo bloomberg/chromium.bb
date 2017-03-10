@@ -69,7 +69,19 @@ shouldBeTrue("(new File([], 'world.html', {unknownKey:'value'})) instanceof wind
 shouldThrow("new File([], 'world.html', {endings:'illegalValue'})", "'TypeError: Failed to construct \\'File\\': The provided value \\'illegalValue\\' is not a valid enum value of type NormalizeLineEndings.'");
 shouldThrow("new File([], 'world.html', {endings:throwingObj})", "'Error'");
 shouldThrow("new File([], 'world.html', {type:throwingObj})", "'Error'");
-shouldThrow("new File([], 'world.html', {type:'hello\u00EE'})", "'SyntaxError: Failed to construct \\'File\\': The \\'type\\' property must consist of ASCII characters.'");
+
+// Test non-ASCII type handling
+shouldBeEqualToString("new File([], 'world.html', {type:'hello\\u00EE'}).type", "");
+
+// Test non-printable-ASCII type handling
+shouldBeEqualToString("new File([], 'world.html', {type:'hello\\u001F'}).type", "");
+shouldBeEqualToString("new File([], 'world.html', {type:'hello\\u007F'}).type", "");
+
+// Test lowercasing of type
+shouldBeEqualToString("new File([], 'world.html', {type:'ABC/abc'}).type", "abc/abc");
+
+// Test non-parsable type
+shouldBeEqualToString("new File([], 'world.html', {type:'123ABCabc'}).type", "123abcabc");
 
 // Test various non-object literals being used as property bags.
 shouldBeTrue("(new File([], 'world.html', null)) instanceof window.File");

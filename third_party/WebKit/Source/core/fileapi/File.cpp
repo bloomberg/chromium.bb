@@ -112,11 +112,6 @@ File* File::create(
     const FilePropertyBag& options,
     ExceptionState& exceptionState) {
   ASSERT(options.hasType());
-  if (!options.type().containsOnlyASCII()) {
-    exceptionState.throwDOMException(
-        SyntaxError, "The 'type' property must consist of ASCII characters.");
-    return nullptr;
-  }
 
   double lastModified;
   if (options.hasLastModified())
@@ -129,7 +124,7 @@ File* File::create(
     UseCounter::count(context, UseCounter::FileAPINativeLineEndings);
 
   std::unique_ptr<BlobData> blobData = BlobData::create();
-  blobData->setContentType(options.type().lower());
+  blobData->setContentType(normalizeType(options.type()));
   populateBlobData(blobData.get(), fileBits, normalizeLineEndingsToNative);
 
   long long fileSize = blobData->length();
@@ -315,7 +310,7 @@ Blob* File::slice(long long start,
 
   long long length = end - start;
   std::unique_ptr<BlobData> blobData = BlobData::create();
-  blobData->setContentType(contentType);
+  blobData->setContentType(normalizeType(contentType));
   if (!m_fileSystemURL.isEmpty()) {
     blobData->appendFileSystemURL(m_fileSystemURL, start, length,
                                   modificationTimeMS / msPerSecond);

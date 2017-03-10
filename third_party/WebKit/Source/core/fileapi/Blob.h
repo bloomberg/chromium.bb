@@ -132,6 +132,11 @@ class CORE_EXPORT Blob : public GarbageCollectedFinalized<Blob>,
                                 long long& start,
                                 long long& end);
 
+  // Called by the Blob and File constructors when processing the 'type'
+  // option per the FileAPI standard. Returns "" if |type| contains any
+  // character outside U+0020...U+007E, or |type| ASCII-lowercased otherwise.
+  static String normalizeType(const String& type);
+
  private:
   Blob();
 

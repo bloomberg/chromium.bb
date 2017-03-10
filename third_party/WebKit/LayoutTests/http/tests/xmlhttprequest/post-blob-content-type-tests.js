@@ -37,7 +37,6 @@ var xhrBlobTestCases = [{
 }, {
     mime: '\u0422\u0435\u0441\u0442',
     expectedMime: '',
-    shouldThrow: true
 }, {
     mime: 'text/plain;charset=utf-8',
     expectedMime: 'text/plain;charset=utf-8',
@@ -68,7 +67,6 @@ var xhrBlobTestCases = [{
 }, {
     mime: '\u0422\u0435\u0441\u0442',
     expectedMime: '',
-    shouldThrow: true,
     file: 'hello.txt'
 }, {
     mime: '',

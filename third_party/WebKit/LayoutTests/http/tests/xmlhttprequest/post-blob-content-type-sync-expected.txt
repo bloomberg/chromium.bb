@@ -16,14 +16,14 @@ PASS postedMimeType === undefined is true
 PASS postedMimeType is "multipart/mixed;boundary=\"--blob-boundary\""
 PASS postedMimeType === undefined is true
 PASS postedMimeType === undefined is true
-PASS Exception should be thrown.
+PASS postedMimeType === undefined is true
 PASS Exception should be thrown.
 PASS postedMimeType is "text/plain;charset=utf-8"
 PASS postedMimeType is "text/plain;charset=utf-8"
 PASS postedMimeType === undefined is true
 PASS postedMimeType === undefined is true
 PASS postedMimeType is "multipart/mixed;boundary=\"--blob-boundary\""
-PASS Exception should be thrown.
+PASS postedMimeType === undefined is true
 PASS postedMimeType === undefined is true
 PASS successfullyParsed is true
 

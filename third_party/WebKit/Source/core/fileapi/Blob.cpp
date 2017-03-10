@@ -93,11 +93,6 @@ Blob* Blob::create(
     const BlobPropertyBag& options,
     ExceptionState& exceptionState) {
   ASSERT(options.hasType());
-  if (!options.type().containsOnlyASCII()) {
-    exceptionState.throwDOMException(
-        SyntaxError, "The 'type' property must consist of ASCII characters.");
-    return nullptr;
-  }
 
   ASSERT(options.hasEndings());
   bool normalizeLineEndingsToNative = options.endings() == "native";
@@ -105,7 +100,7 @@ Blob* Blob::create(
     UseCounter::count(context, UseCounter::FileAPINativeLineEndings);
 
   std::unique_ptr<BlobData> blobData = BlobData::create();
-  blobData->setContentType(options.type().lower());
+  blobData->setContentType(normalizeType(options.type()));
 
   populateBlobData(blobData.get(), blobParts, normalizeLineEndingsToNative);
 
@@ -189,7 +184,7 @@ Blob* Blob::slice(long long start,
 
   long long length = end - start;
   std::unique_ptr<BlobData> blobData = BlobData::create();
-  blobData->setContentType(contentType);
+  blobData->setContentType(normalizeType(contentType));
   blobData->appendBlob(m_blobDataHandle, start, length);
   return Blob::create(BlobDataHandle::create(std::move(blobData), length));
 }
@@ -222,6 +217,27 @@ void Blob::appendTo(BlobData& blobData) const {
 
 URLRegistry& Blob::registry() const {
   return BlobURLRegistry::registry();
+}
+
+// static
+String Blob::normalizeType(const String& type) {
+  if (type.isNull())
+    return emptyString;
+  const size_t length = type.length();
+  if (type.is8Bit()) {
+    const LChar* chars = type.characters8();
+    for (size_t i = 0; i < length; ++i) {
+      if (chars[i] < 0x20 || chars[i] > 0x7e)
+        return emptyString;
+    }
+  } else {
+    const UChar* chars = type.characters16();
+    for (size_t i = 0; i < length; ++i) {
+      if (chars[i] < 0x0020 || chars[i] > 0x007e)
+        return emptyString;
+    }
+  }
+  return type.lower();
 }
 
 }  // namespace blink

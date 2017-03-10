@@ -12,6 +12,15 @@ test(function() {
 }, 'Blob.slice() with type argument as undefined.');
 
 test(function() {
+  assert_equals(new Blob().slice(0, 0, 'hello\u0100').type, "");
+}, 'Blob.slice() with non-ASCII type.');
+
+test(function() {
+  assert_equals(new Blob().slice(0, 0, 'hello\u001F').type, "");
+  assert_equals(new Blob().slice(0, 0, 'hello\u00FF').type, "");
+}, 'Blob.slice() with non-printable-ASCII type.');
+
+test(function() {
   assert_equals(new Blob().slice(0, 0).type, "");
 }, 'Blob.slice() with no type argument passed.');
 </script>
