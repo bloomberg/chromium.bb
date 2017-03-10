@@ -1,0 +1,36 @@
+<html>
+<head>
+<script src="../inspector-test.js"></script>
+<script src="./bindings-test.js"></script>
+
+<script>
+
+async function test()
+{
+    var sourcesNavigator = new Sources.SourcesNavigatorView();
+    sourcesNavigator.show(UI.inspectorView.element);
+
+    InspectorTest.markStep('dumpInitialNavigator');
+    InspectorTest.dumpNavigatorView(sourcesNavigator, false);
+
+    InspectorTest.markStep('attachFrame');
+    await InspectorTest.attachFrame('frame', './resources/dynamic-frame.html');
+    InspectorTest.dumpNavigatorView(sourcesNavigator, false);
+
+    InspectorTest.markStep('detachFrame');
+    await InspectorTest.detachFrame('frame');
+    InspectorTest.dumpNavigatorView(sourcesNavigator, false);
+
+    InspectorTest.completeTest();
+}
+
+</script>
+
+</head>
+<body onload="runTest()">
+<p>
+Verify that navigator is rendered properly when frame with dynamic script and
+style is added and removed.
+</p>
+</body>
+</html>

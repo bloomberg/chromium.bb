@@ -11,11 +11,11 @@ async function test()
     var snapshot = InspectorTest.dumpWorkspace();
 
     InspectorTest.markStep('attachFrame');
-    await InspectorTest.attachFrame('frame', './resources/magic-frame.html', '_test_attachFrame.js');
+    await InspectorTest.attachFrame('frame', './resources/dynamic-frame.html', '_test_attachFrame.js');
     snapshot = InspectorTest.dumpWorkspace(snapshot);
 
-    InspectorTest.markStep('navigateFrame');
-    await InspectorTest.navigateFrame('frame', './resources/empty-frame.html', '_test_navigateFrame');
+    InspectorTest.markStep('detachFrame');
+    await InspectorTest.detachFrame('frame', '_test_detachFrame.js');
     snapshot = InspectorTest.dumpWorkspace(snapshot);
 
     InspectorTest.completeTest();
@@ -26,7 +26,8 @@ async function test()
 </head>
 <body onload="runTest()">
 <p>
-Verify that UISourceCodes are removed as the frame gets navigated.
+Verify that UISourceCodes are added and removed as iframe with dynamic script
+and stylesheet is added and removed.
 </p>
 </body>
 </html>

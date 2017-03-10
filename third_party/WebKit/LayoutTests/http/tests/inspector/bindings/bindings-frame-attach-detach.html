@@ -8,15 +8,15 @@
 async function test()
 {
     InspectorTest.markStep('dumpInitialWorkspace');
-    InspectorTest.dumpWorkspace();
+    var snapshot = InspectorTest.dumpWorkspace();
 
     InspectorTest.markStep('attachFrame');
     await InspectorTest.attachFrame('frame', './resources/magic-frame.html', '_test_attachFrame.js');
-    InspectorTest.dumpWorkspace();
+    snapshot = InspectorTest.dumpWorkspace(snapshot);
 
     InspectorTest.markStep('detachFrame');
     await InspectorTest.detachFrame('frame', '_test_detachFrame.js');
-    InspectorTest.dumpWorkspace();
+    snapshot = InspectorTest.dumpWorkspace(snapshot);
 
     InspectorTest.completeTest();
 }

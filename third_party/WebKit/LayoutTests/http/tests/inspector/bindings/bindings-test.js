@@ -2,7 +2,7 @@ var initialize_BindingsTest = function() {
 
 InspectorTest.preloadModule("sources");
 
-InspectorTest.dumpWorkspace = function() {
+InspectorTest.dumpWorkspace = function(previousSnapshot) {
     var uiSourceCodes = Workspace.workspace.uiSourceCodes().slice();
     var urls = uiSourceCodes.map(code => code.url());
     urls = urls.map(url => {
@@ -12,10 +12,37 @@ InspectorTest.dumpWorkspace = function() {
     });
 
     urls.sort(String.caseInsensetiveComparator);
-    InspectorTest.addResult(`Workspace: ${urls.length} uiSourceCodes.`);
-    for (var url of urls) {
-        InspectorTest.addResult('    ' + url);
+    var isAdded = new Array(urls.length).fill(false);
+    var removedLines = [];
+    if (previousSnapshot) {
+        var diff = Diff.Diff.lineDiff(previousSnapshot, urls);
+        var removedEntries = diff.filter(entry => entry[0] === Diff.Diff.Operation.Delete).map(entry => entry[1]);
+        removedLines = [].concat.apply([], removedEntries);
+        var index = 0;
+        for (var entry of diff) {
+            if (entry[0] === Diff.Diff.Operation.Delete)
+                continue;
+            if (entry[0] === Diff.Diff.Operation.Equal) {
+                index += entry[1].length;
+                continue;
+            }
+            for (var line of entry[1])
+                isAdded[index++] = true;
+        }
+        var addedEntries = diff.filter(entry => entry[0] === Diff.Diff.Operation.Insert).map(entry => entry[1]);
+        addedLines = [].concat.apply([], addedEntries);
     }
+
+    InspectorTest.addResult(`Removed: ${removedLines.length} uiSourceCodes`);
+    for (var url of removedLines)
+        InspectorTest.addResult('[-] ' + url);
+    InspectorTest.addResult(`Workspace: ${urls.length} uiSourceCodes.`);
+    for (var i = 0; i < urls.length; ++i) {
+        var url = urls[i];
+        var prefix = isAdded[i] ? '[+] ' : '    ';
+        InspectorTest.addResult(prefix + url);
+    }
+    return urls;
 }
 
 InspectorTest.attachFrame = function(frameId, url, evalSourceURL) {

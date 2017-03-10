@@ -2,6 +2,7 @@ Verify that SourceMap bindings are generating UISourceCodes properly.
 
 
 Running: initialWorkspace
+Removed: 0 uiSourceCodes
 Workspace: 7 uiSourceCodes.
     debugger:///VM[XXX] bindings-test.js
     debugger:///VM[XXX] inspector-test.js
@@ -12,31 +13,36 @@ Workspace: 7 uiSourceCodes.
     http://127.0.0.1:8000/inspector/inspector-test.js
 
 Running: createIframesAndWaitForSourceMaps
+Removed: 0 uiSourceCodes
 Workspace: 22 uiSourceCodes.
     debugger:///VM[XXX] bindings-test.js
     debugger:///VM[XXX] inspector-test.js
     debugger:///VM[XXX] sourcemap-bindings-multiple-frames.html
     debugger:///VM[XXX] sourcemap-bindings-multiple-frames.html
-    debugger:///VM[XXX] sourcemap-script.js
-    debugger:///VM[XXX] sourcemap-script.js
-    debugger:///VM[XXX] _test_create-iframe1.js
-    debugger:///VM[XXX] _test_create-iframe2.js
+[+] debugger:///VM[XXX] sourcemap-script.js
+[+] debugger:///VM[XXX] sourcemap-script.js
+[+] debugger:///VM[XXX] _test_create-iframe1.js
+[+] debugger:///VM[XXX] _test_create-iframe2.js
     http://127.0.0.1:8000/inspector/bindings/bindings-test.js
-    http://127.0.0.1:8000/inspector/bindings/resources/sourcemap-frame.html
-    http://127.0.0.1:8000/inspector/bindings/resources/sourcemap-frame.html
-    http://127.0.0.1:8000/inspector/bindings/resources/sourcemap-sass.scss
-    http://127.0.0.1:8000/inspector/bindings/resources/sourcemap-sass.scss
-    http://127.0.0.1:8000/inspector/bindings/resources/sourcemap-script.js
-    http://127.0.0.1:8000/inspector/bindings/resources/sourcemap-script.js
-    http://127.0.0.1:8000/inspector/bindings/resources/sourcemap-style.css
-    http://127.0.0.1:8000/inspector/bindings/resources/sourcemap-style.css
-    http://127.0.0.1:8000/inspector/bindings/resources/sourcemap-typescript.ts
+[+] http://127.0.0.1:8000/inspector/bindings/resources/sourcemap-frame.html
+[+] http://127.0.0.1:8000/inspector/bindings/resources/sourcemap-frame.html
+[+] http://127.0.0.1:8000/inspector/bindings/resources/sourcemap-sass.scss
+[+] http://127.0.0.1:8000/inspector/bindings/resources/sourcemap-sass.scss
+[+] http://127.0.0.1:8000/inspector/bindings/resources/sourcemap-script.js
+[+] http://127.0.0.1:8000/inspector/bindings/resources/sourcemap-script.js
+[+] http://127.0.0.1:8000/inspector/bindings/resources/sourcemap-style.css
+[+] http://127.0.0.1:8000/inspector/bindings/resources/sourcemap-style.css
+[+] http://127.0.0.1:8000/inspector/bindings/resources/sourcemap-typescript.ts
     http://127.0.0.1:8000/inspector/bindings/sourcemap-bindings-multiple-frames.html
     http://127.0.0.1:8000/inspector/inspector-test.js
-    _test_create-iframe1.js
-    _test_create-iframe2.js
+[+] _test_create-iframe1.js
+[+] _test_create-iframe2.js
 
 Running: detachFrame1
+Removed: 3 uiSourceCodes
+[-] http://127.0.0.1:8000/inspector/bindings/resources/sourcemap-frame.html
+[-] http://127.0.0.1:8000/inspector/bindings/resources/sourcemap-script.js
+[-] http://127.0.0.1:8000/inspector/bindings/resources/sourcemap-style.css
 Workspace: 21 uiSourceCodes.
     debugger:///VM[XXX] bindings-test.js
     debugger:///VM[XXX] inspector-test.js
@@ -46,7 +52,7 @@ Workspace: 21 uiSourceCodes.
     debugger:///VM[XXX] sourcemap-script.js
     debugger:///VM[XXX] _test_create-iframe1.js
     debugger:///VM[XXX] _test_create-iframe2.js
-    debugger:///VM[XXX] _test_detachFrame1.js
+[+] debugger:///VM[XXX] _test_detachFrame1.js
     http://127.0.0.1:8000/inspector/bindings/bindings-test.js
     http://127.0.0.1:8000/inspector/bindings/resources/sourcemap-frame.html
     http://127.0.0.1:8000/inspector/bindings/resources/sourcemap-sass.scss
@@ -58,9 +64,13 @@ Workspace: 21 uiSourceCodes.
     http://127.0.0.1:8000/inspector/inspector-test.js
     _test_create-iframe1.js
     _test_create-iframe2.js
-    _test_detachFrame1.js
+[+] _test_detachFrame1.js
 
 Running: detachFrame2
+Removed: 3 uiSourceCodes
+[-] http://127.0.0.1:8000/inspector/bindings/resources/sourcemap-frame.html
+[-] http://127.0.0.1:8000/inspector/bindings/resources/sourcemap-script.js
+[-] http://127.0.0.1:8000/inspector/bindings/resources/sourcemap-style.css
 Workspace: 20 uiSourceCodes.
     debugger:///VM[XXX] bindings-test.js
     debugger:///VM[XXX] inspector-test.js
@@ -71,7 +81,7 @@ Workspace: 20 uiSourceCodes.
     debugger:///VM[XXX] _test_create-iframe1.js
     debugger:///VM[XXX] _test_create-iframe2.js
     debugger:///VM[XXX] _test_detachFrame1.js
-    debugger:///VM[XXX] _test_detachFrame2.js
+[+] debugger:///VM[XXX] _test_detachFrame2.js
     http://127.0.0.1:8000/inspector/bindings/bindings-test.js
     http://127.0.0.1:8000/inspector/bindings/resources/sourcemap-sass.scss
     http://127.0.0.1:8000/inspector/bindings/resources/sourcemap-sass.scss
@@ -81,5 +91,5 @@ Workspace: 20 uiSourceCodes.
     _test_create-iframe1.js
     _test_create-iframe2.js
     _test_detachFrame1.js
-    _test_detachFrame2.js
+[+] _test_detachFrame2.js
 

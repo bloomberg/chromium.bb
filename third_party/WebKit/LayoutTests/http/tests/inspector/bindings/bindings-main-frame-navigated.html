@@ -8,7 +8,7 @@
 async function test()
 {
     InspectorTest.markStep('dumpInitialWorkspace');
-    InspectorTest.dumpWorkspace();
+    var snapshot = InspectorTest.dumpWorkspace();
 
     InspectorTest.markStep('attachFrame');
     await Promise.all([
@@ -16,12 +16,12 @@ async function test()
         InspectorTest.waitForSourceMap('sourcemap-script.js.map'),
         InspectorTest.waitForSourceMap('sourcemap-style.css.map'),
     ]);
-    InspectorTest.dumpWorkspace();
+    snapshot = InspectorTest.dumpWorkspace(snapshot);
 
     InspectorTest.markStep('navigateMainFrame');
     var url = "http://127.0.0.1:8000/inspector/bindings/resources/empty-page.html";
     await InspectorTest.navigatePromise(url);
-    InspectorTest.dumpWorkspace();
+    snapshot = InspectorTest.dumpWorkspace(snapshot);
 
     InspectorTest.markStep('navigateBack');
     var originalUrl = "http://127.0.0.1:8000/inspector/bindings/bindings-main-frame-navigated.html";

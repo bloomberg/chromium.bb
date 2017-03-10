@@ -3,19 +3,17 @@
 <script src="./bindings-test.js"></script>
 
 <script>
-
 async function test()
 {
     InspectorTest.markStep('initialWorkspace');
     var snapshot = InspectorTest.dumpWorkspace();
 
-    InspectorTest.markStep('createIframesAndWaitForSourceMaps');
-    await Promise.all([
-        InspectorTest.attachFrame('frame1', './resources/sourcemap-frame.html', '_test_create-iframe1.js'),
-        InspectorTest.attachFrame('frame2', './resources/sourcemap-frame.html', '_test_create-iframe2.js'),
-        InspectorTest.waitForSourceMap('sourcemap-script.js.map'),
-        InspectorTest.waitForSourceMap('sourcemap-style.css.map')
-    ]);
+    InspectorTest.markStep('attachFrame1');
+    await InspectorTest.attachFrame('frame1', './resources/contentscript-frame.html', '_test_attachFrame1.js');
+    snapshot = InspectorTest.dumpWorkspace(snapshot);
+
+    InspectorTest.markStep('attachFrame2');
+    await InspectorTest.attachFrame('frame2', './resources/contentscript-frame.html', '_test_attachFrame2.js');
     snapshot = InspectorTest.dumpWorkspace(snapshot);
 
     InspectorTest.markStep('detachFrame1');

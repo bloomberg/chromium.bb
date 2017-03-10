@@ -7,22 +7,22 @@
 async function test()
 {
     InspectorTest.markStep('initialWorkspace');
-    InspectorTest.dumpWorkspace();
+    var snapshot = InspectorTest.dumpWorkspace();
 
     InspectorTest.markStep('createIframes');
     await Promise.all([
         InspectorTest.attachFrame('frame1', './resources/magic-frame.html', '_test_create-iframe1.js'),
         InspectorTest.attachFrame('frame2', './resources/magic-frame.html', '_test_create-iframe2.js'),
     ]);
-    InspectorTest.dumpWorkspace();
+    snapshot = InspectorTest.dumpWorkspace(snapshot);
 
     InspectorTest.markStep('detachFrame1');
     await InspectorTest.detachFrame('frame1', '_test_detachFrame1.js');
-    InspectorTest.dumpWorkspace();
+    snapshot = InspectorTest.dumpWorkspace(snapshot);
 
     InspectorTest.markStep('detachFrame2');
     await InspectorTest.detachFrame('frame2', '_test_detachFrame2.js');
-    InspectorTest.dumpWorkspace();
+    snapshot = InspectorTest.dumpWorkspace(snapshot);
 
     InspectorTest.completeTest();
 }
