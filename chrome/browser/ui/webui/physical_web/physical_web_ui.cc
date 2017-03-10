@@ -25,6 +25,8 @@ content::WebUIDataSource* CreatePhysicalWebHTMLSource() {
 
   source->AddLocalizedString(physical_web_ui::kTitle,
                              IDS_PHYSICAL_WEB_UI_TITLE);
+  source->AddLocalizedString(physical_web_ui::kEmptyMessage,
+                             IDS_PHYSICAL_WEB_UI_EMPTY_MESSAGE);
   source->SetJsonPath("strings.js");
   source->AddResourcePath(physical_web_ui::kPhysicalWebJS,
                           IDR_PHYSICAL_WEB_UI_JS);

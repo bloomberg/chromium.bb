@@ -24,8 +24,12 @@ function physicalWebItemClicked(index) {
 function returnNearbyURLs(nearbyUrlsData) {
   var bodyContainer = $('body-container');
   renderTemplate(nearbyUrlsData);
+  bodyContainer.hidden = false;
 
-  bodyContainer.style.visibility = 'visible';
+  if (nearbyUrlsData['metadata'].length == 0) {
+    var emptyMessage = $('empty-list-container');
+    emptyMessage.hidden = false;
+  }
 }
 
 document.addEventListener('DOMContentLoaded', requestNearbyURLs);

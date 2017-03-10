@@ -16,6 +16,7 @@ const char kPhysicalWebItemClicked[] = "physicalWebItemClicked";
 
 // Strings.
 const char kTitle[] = "title";
+const char kEmptyMessage[] = "emptyMessage";
 const char kPageInfoDescription[] = "pageInfoDescription";
 const char kPageInfoIcon[] = "pageInfoIcon";
 const char kPageInfoTitle[] = "pageInfoTitle";

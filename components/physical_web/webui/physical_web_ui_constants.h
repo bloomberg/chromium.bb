@@ -20,6 +20,7 @@ extern const char kPhysicalWebItemClicked[];
 // Strings.
 // Must match the constants used in the resource files.
 extern const char kTitle[];
+extern const char kEmptyMessage[];
 extern const char kPageInfoDescription[];
 extern const char kPageInfoIcon[];
 extern const char kPageInfoTitle[];

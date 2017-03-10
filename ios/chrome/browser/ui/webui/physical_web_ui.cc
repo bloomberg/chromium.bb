@@ -28,7 +28,8 @@ web::WebUIIOSDataSource* CreatePhysicalWebUIDataSource() {
   // Localized and data strings.
   html_source->AddLocalizedString(physical_web_ui::kTitle,
                                   IDS_PHYSICAL_WEB_UI_TITLE);
-
+  html_source->AddLocalizedString(physical_web_ui::kEmptyMessage,
+                                  IDS_PHYSICAL_WEB_UI_EMPTY_MESSAGE);
   html_source->SetJsonPath("strings.js");
   html_source->AddResourcePath(physical_web_ui::kPhysicalWebJS,
                                IDR_PHYSICAL_WEB_UI_JS);
