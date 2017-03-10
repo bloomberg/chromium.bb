@@ -226,6 +226,36 @@ public class LocationBarLayout extends FrameLayout
 
     private Runnable mShowSuggestions;
 
+    private boolean mShowCachedZeroSuggestResults;
+
+    private DeferredOnSelectionRunnable mDeferredOnSelection;
+
+    private abstract class DeferredOnSelectionRunnable implements Runnable {
+        protected final OmniboxSuggestion mSuggestion;
+        protected final int mPosition;
+        protected boolean mShouldLog;
+
+        public DeferredOnSelectionRunnable(OmniboxSuggestion suggestion, int position) {
+            this.mSuggestion = suggestion;
+            this.mPosition = position;
+        }
+
+        /**
+         * Set whether the selection matches with native results for logging to make sense.
+         * @param log Whether the selection should be logged in native code.
+         */
+        public void setShouldLog(boolean log) {
+            mShouldLog = log;
+        }
+
+        /**
+         * @return Whether the selection should be logged in native code.
+         */
+        public boolean shouldLog() {
+            return mShouldLog;
+        }
+    }
+
     /**
      * Listener for receiving the messages related with interacting with the omnibox during startup.
      */
@@ -761,6 +791,29 @@ public class LocationBarLayout extends FrameLayout
         // If the user focused the omnibox prior to the native libraries being initialized,
         // autocomplete will not always be enabled, so we force it enabled in that case.
         mUrlBar.setIgnoreTextChangesForAutocomplete(false);
+        mAutocomplete = new AutocompleteController(this);
+    }
+
+    /**
+     * Sets to show cached zero suggest results. This will start both caching zero suggest results
+     * in shared preferences and also attempt to show them when appropriate without needing native
+     * initialization. See {@link LocationBarLayout#showCachedZeroSuggestResultsIfAvailable()} for
+     * showing the loaded results before native initialization.
+     * @param showCachedZeroSuggestResults Whether cached zero suggest should be shown.
+     */
+    public void setShowCachedZeroSuggestResults(boolean showCachedZeroSuggestResults) {
+        mShowCachedZeroSuggestResults = showCachedZeroSuggestResults;
+        if (mShowCachedZeroSuggestResults) mAutocomplete.startCachedZeroSuggest();
+    }
+
+    /**
+     * Signals the omnibox to shows the cached zero suggest results if they have been loaded from
+     * cache successfully.
+     */
+    public void showCachedZeroSuggestResultsIfAvailable() {
+        if (!mShowCachedZeroSuggestResults || mSuggestionList == null) return;
+        setSuggestionsListVisibility(true);
+        mSuggestionList.updateLayoutParams();
     }
 
     /**
@@ -793,8 +846,6 @@ public class LocationBarLayout extends FrameLayout
         updateMicButtonState();
         mDeleteButton.setOnClickListener(this);
         mMicButton.setOnClickListener(this);
-
-        mAutocomplete = new AutocompleteController(this);
 
         mOmniboxPrerender = new OmniboxPrerender();
 
@@ -1548,6 +1599,15 @@ public class LocationBarLayout extends FrameLayout
             @Override
             public void onSelection(OmniboxSuggestion suggestion, int position) {
                 mSuggestionSelectionInProgress = true;
+                if (mShowCachedZeroSuggestResults && !mNativeInitialized) {
+                    mDeferredOnSelection = new DeferredOnSelectionRunnable(suggestion, position) {
+                        @Override
+                        public void run() {
+                            onSelection(this.mSuggestion, this.mPosition);
+                        }
+                    };
+                    return;
+                }
                 String suggestionMatchUrl = updateSuggestionUrlIfNeeded(
                         suggestion, position, false);
                 loadUrlFromOmniboxMatch(suggestionMatchUrl, suggestion.getTransition(), position,
@@ -1720,7 +1780,7 @@ public class LocationBarLayout extends FrameLayout
      */
     @Override
     public void hideSuggestions() {
-        if (mAutocomplete == null) return;
+        if (mAutocomplete == null || !mNativeInitialized) return;
 
         if (mShowSuggestions != null) removeCallbacks(mShowSuggestions);
 
@@ -1861,12 +1921,13 @@ public class LocationBarLayout extends FrameLayout
         // so can only be called once the native side is set up.
         assert mNativeInitialized : "Suggestions received before native side intialialized";
 
-        if (getCurrentTab() == null) {
-            // If the current tab is not available, drop the suggestions and hide the autocomplete.
-            hideSuggestions();
-            return;
+        if (mDeferredOnSelection != null) {
+            mDeferredOnSelection.setShouldLog(newSuggestions.size() > mDeferredOnSelection.mPosition
+                    && mDeferredOnSelection.mSuggestion.equals(
+                            newSuggestions.get(mDeferredOnSelection.mPosition)));
+            mDeferredOnSelection.run();
+            mDeferredOnSelection = null;
         }
-
         String userText = mUrlBar.getTextWithoutAutocomplete();
         mUrlTextAfterSuggestionsReceived = userText + inlineAutocompleteText;
 
@@ -1945,7 +2006,8 @@ public class LocationBarLayout extends FrameLayout
         // Update the navigation button to show the default suggestion's icon.
         updateNavigationButton();
 
-        if (!CommandLine.getInstance().hasSwitch(ChromeSwitches.DISABLE_INSTANT)
+        if (mNativeInitialized
+                && !CommandLine.getInstance().hasSwitch(ChromeSwitches.DISABLE_INSTANT)
                 && PrivacyPreferencesManager.getInstance().shouldPrerender()) {
             mOmniboxPrerender.prerenderMaybe(
                     userText,
@@ -2092,9 +2154,15 @@ public class LocationBarLayout extends FrameLayout
         WebContents webContents = currentTab != null ? currentTab.getWebContents() : null;
         long elapsedTimeSinceModified = mNewOmniboxEditSessionTimestamp > 0
                 ? (SystemClock.elapsedRealtime() - mNewOmniboxEditSessionTimestamp) : -1;
-        mAutocomplete.onSuggestionSelected(matchPosition, type, currentPageUrl,
-                mUrlFocusedFromFakebox, elapsedTimeSinceModified, mUrlBar.getAutocompleteLength(),
-                webContents);
+        boolean shouldSkipNativeLog = mShowCachedZeroSuggestResults
+                && (mDeferredOnSelection != null)
+                && !mDeferredOnSelection.shouldLog();
+        if (!shouldSkipNativeLog) {
+            mAutocomplete.onSuggestionSelected(matchPosition, type, currentPageUrl,
+                    mUrlFocusedFromFakebox, elapsedTimeSinceModified,
+                    mUrlBar.getAutocompleteLength(),
+                    webContents);
+        }
         loadUrl(url, transition);
     }
 
