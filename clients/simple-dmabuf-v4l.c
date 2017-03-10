@@ -457,8 +457,6 @@ dequeue(struct display *display)
 		return -1;
 	}
 
-	assert(buf.flags & V4L2_BUF_FLAG_DONE);
-
 	return buf.index;
 }
 
