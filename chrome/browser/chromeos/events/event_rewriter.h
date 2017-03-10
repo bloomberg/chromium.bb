@@ -19,10 +19,6 @@
 
 class PrefService;
 
-namespace ash {
-class StickyKeysController;
-}
-
 namespace ui {
 enum class DomCode;
 };
@@ -62,7 +58,7 @@ class EventRewriter : public ui::EventRewriter {
   // Does not take ownership of the |sticky_keys_controller|, which may also
   // be NULL (for testing without ash), in which case sticky key operations
   // don't happen.
-  explicit EventRewriter(ash::StickyKeysController* sticky_keys_controller);
+  explicit EventRewriter(ui::EventRewriter* sticky_keys_controller);
   ~EventRewriter() override;
 
   // Calls KeyboardDeviceAddedInternal.
@@ -179,7 +175,7 @@ class EventRewriter : public ui::EventRewriter {
 
   // The sticky keys controller is not owned here;
   // at time of writing it is a singleton in ash::Shell.
-  ash::StickyKeysController* sticky_keys_controller_;
+  ui::EventRewriter* const sticky_keys_controller_;
 
   // Some keyboard layouts have 'latching' keys, which either apply
   // a modifier while held down (like normal modifiers), or, if no

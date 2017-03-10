@@ -59,10 +59,10 @@ class StickyKeysHandler;
 // modifiers. Each handling or state is performed independently.
 //
 // StickyKeysController is disabled by default.
-class ASH_EXPORT StickyKeysController {
+class ASH_EXPORT StickyKeysController : public ui::EventRewriter {
  public:
   StickyKeysController();
-  virtual ~StickyKeysController();
+  ~StickyKeysController() override;
 
   // Activate sticky keys to intercept and modify incoming events.
   void Enable(bool enabled);
@@ -73,61 +73,29 @@ class ASH_EXPORT StickyKeysController {
   // passed.
   StickyKeysOverlay* GetOverlayForTest();
 
-  // Handles keyboard event. Returns an |EventRewriteStatus|, and may
-  // modify |flags|:
-  // - Returns ui::EVENT_REWRITE_DISCARD, and leaves |flags| untouched,
-  //   if the event is consumed (i.e. a sticky modifier press or release);
-  // - Returns ui::EVENT_REWRITE_REWRITTEN if the event needs to be modified
-  //   according to the returned |flags| (i.e. a sticky-modified key);
-  // - Returns ui::EVENT_REWRITE_DISPATCH_ANOTHER if the event needs to be
-  //   modified according to the returned |flags|, and there are delayed
-  //   modifier-up   events now to be retrieved using |NextDispatchEvent()|
-  //   (i.e. a sticky-modified key that ends a sticky state);
-  // - Otherwise returns ui::EVENT_REWRITE_CONTINUE and leaves |flags|
-  //   unchanged.
-  ui::EventRewriteStatus RewriteKeyEvent(const ui::KeyEvent& event,
-                                         ui::KeyboardCode key_code,
-                                         int* flags);
-
-  // Handles mouse event.
-  ui::EventRewriteStatus RewriteMouseEvent(const ui::MouseEvent& event,
-                                           int* flags);
-
-  // Handles scroll event.
-  ui::EventRewriteStatus RewriteScrollEvent(const ui::ScrollEvent& event,
-                                            int* flags);
-
-  // Obtains a pending modifier-up event. If the immediately previous
-  // call to |Rewrite...Event()| or |NextDispatchEvent()| returned
-  // ui::EVENT_REWRITE_DISPATCH_ANOTHER, this sets |new_event| and returns:
-  // - ui::EVENT_REWRITE_DISPATCH_ANOTHER if there is at least one more
-  //   pending modifier-up event;
-  // - ui::EVENT_REWRITE_REWRITE if this is the last or only modifier-up event;
-  // Otherwise, there is no pending modifier-up event, and this function
-  // returns ui::EVENT_REWRITE_CONTINUE and sets |new_event| to NULL.
+  // ui::EventRewriter:
+  ui::EventRewriteStatus RewriteEvent(
+      const ui::Event& event,
+      std::unique_ptr<ui::Event>* rewritten_event) override;
   ui::EventRewriteStatus NextDispatchEvent(
-      std::unique_ptr<ui::Event>* new_event);
+      const ui::Event& last_event,
+      std::unique_ptr<ui::Event>* new_event) override;
 
  private:
-  // Handles keyboard event. Returns true if Sticky key consumes keyboard event.
-  // Adds to |mod_down_flags| any flag to be added to the key event.
-  // Sets |released| if any modifier is to be released after the key event.
-  bool HandleKeyEvent(const ui::KeyEvent& event,
-                      ui::KeyboardCode key_code,
-                      int* mod_down_flags,
-                      bool* released);
+  // Rewrite keyboard event.
+  ui::EventRewriteStatus RewriteKeyEvent(
+      const ui::KeyEvent& event,
+      std::unique_ptr<ui::Event>* rewritten_event);
 
-  // Handles mouse event. Returns true if Sticky key consumes keyboard event.
-  // Sets |released| if any modifier is to be released after the key event.
-  bool HandleMouseEvent(const ui::MouseEvent& event,
-                        int* mod_down_flags,
-                        bool* released);
+  // Rewrite mouse event.
+  ui::EventRewriteStatus RewriteMouseEvent(
+      const ui::MouseEvent& event,
+      std::unique_ptr<ui::Event>* rewritten_event);
 
-  // Handles scroll event. Returns true if Sticky key consumes keyboard event.
-  // Sets |released| if any modifier is to be released after the key event.
-  bool HandleScrollEvent(const ui::ScrollEvent& event,
-                         int* mod_down_flags,
-                         bool* released);
+  // Rewrite scroll event.
+  ui::EventRewriteStatus RewriteScrollEvent(
+      const ui::ScrollEvent& event,
+      std::unique_ptr<ui::Event>* rewritten_event);
 
   // Updates the overlay UI with the current state of the sticky keys.
   void UpdateOverlay();
@@ -192,7 +160,6 @@ class ASH_EXPORT StickyKeysHandler {
   // Sets its own modifier flag in |mod_down_flags| if it is active and needs
   // to be added to the event, and sets |released| if releasing it.
   bool HandleKeyEvent(const ui::KeyEvent& event,
-                      ui::KeyboardCode key_code,
                       int* mod_down_flags,
                       bool* released);
 
@@ -234,20 +201,17 @@ class ASH_EXPORT StickyKeysHandler {
 
   // Handles key event in DISABLED state. Returns true if sticky keys
   // consumes the keyboard event.
-  bool HandleDisabledState(const ui::KeyEvent& event,
-                           ui::KeyboardCode key_code);
+  bool HandleDisabledState(const ui::KeyEvent& event);
 
   // Handles key event in ENABLED state. Returns true if sticky keys
   // consumes the keyboard event.
   bool HandleEnabledState(const ui::KeyEvent& event,
-                          ui::KeyboardCode key_code,
                           int* mod_down_flags,
                           bool* released);
 
   // Handles key event in LOCKED state. Returns true if sticky keys
   // consumes the keyboard event.
   bool HandleLockedState(const ui::KeyEvent& event,
-                         ui::KeyboardCode key_code,
                          int* mod_down_flags,
                          bool* released);
 

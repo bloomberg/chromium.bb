@@ -8,9 +8,6 @@
 
 #include <vector>
 
-#include "ash/common/wm/window_state.h"
-#include "ash/sticky_keys/sticky_keys_controller.h"
-#include "ash/wm/window_util.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -35,7 +32,6 @@
 #include "ui/events/keycodes/dom/dom_key.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
 #include "ui/events/keycodes/keyboard_code_conversion.h"
-#include "ui/wm/core/window_util.h"
 
 #if defined(USE_X11)
 #include <X11/extensions/XInput2.h>
@@ -306,7 +302,7 @@ ui::DomCode RelocateModifier(ui::DomCode code, ui::DomKeyLocation location) {
 
 }  // namespace
 
-EventRewriter::EventRewriter(ash::StickyKeysController* sticky_keys_controller)
+EventRewriter::EventRewriter(ui::EventRewriter* sticky_keys_controller)
     : last_keyboard_device_id_(ui::ED_UNKNOWN_DEVICE),
       ime_keyboard_for_testing_(NULL),
       pref_service_for_testing_(NULL),
@@ -370,7 +366,7 @@ ui::EventRewriteStatus EventRewriter::NextDispatchEvent(
     // know that they don't have to be passed through the post-sticky key
     // rewriting phases, |RewriteExtendedKeys()| and |RewriteFunctionKeys()|,
     // because those phases do nothing with modifier key releases.
-    return sticky_keys_controller_->NextDispatchEvent(new_event);
+    return sticky_keys_controller_->NextDispatchEvent(last_event, new_event);
   }
   NOTREACHED();
   return ui::EVENT_REWRITE_CONTINUE;
@@ -523,8 +519,14 @@ ui::EventRewriteStatus EventRewriter::RewriteKeyEvent(
   ui::EventRewriteStatus status = ui::EVENT_REWRITE_CONTINUE;
   bool is_sticky_key_extension_command = false;
   if (sticky_keys_controller_) {
-    status = sticky_keys_controller_->RewriteKeyEvent(key_event, state.key_code,
-                                                      &state.flags);
+    auto tmp_event = key_event;
+    tmp_event.set_key_code(state.key_code);
+    tmp_event.set_flags(state.flags);
+    std::unique_ptr<ui::Event> output_event;
+    status = sticky_keys_controller_->RewriteEvent(tmp_event, &output_event);
+    if (status == ui::EVENT_REWRITE_REWRITTEN ||
+        status == ui::EVENT_REWRITE_DISPATCH_ANOTHER)
+      state.flags = output_event->flags();
     if (status == ui::EVENT_REWRITE_DISCARD)
       return ui::EVENT_REWRITE_DISCARD;
     is_sticky_key_extension_command =
@@ -573,8 +575,15 @@ ui::EventRewriteStatus EventRewriter::RewriteMouseButtonEvent(
   int flags = mouse_event.flags();
   RewriteLocatedEvent(mouse_event, &flags);
   ui::EventRewriteStatus status = ui::EVENT_REWRITE_CONTINUE;
-  if (sticky_keys_controller_)
-    status = sticky_keys_controller_->RewriteMouseEvent(mouse_event, &flags);
+  if (sticky_keys_controller_) {
+    auto tmp_event = mouse_event;
+    tmp_event.set_flags(flags);
+    std::unique_ptr<ui::Event> output_event;
+    status = sticky_keys_controller_->RewriteEvent(tmp_event, &output_event);
+    if (status == ui::EVENT_REWRITE_REWRITTEN ||
+        status == ui::EVENT_REWRITE_DISPATCH_ANOTHER)
+      flags = output_event->flags();
+  }
   int changed_button = ui::EF_NONE;
   if ((mouse_event.type() == ui::ET_MOUSE_PRESSED) ||
       (mouse_event.type() == ui::ET_MOUSE_RELEASED)) {
@@ -608,21 +617,34 @@ ui::EventRewriteStatus EventRewriter::RewriteMouseWheelEvent(
     return ui::EVENT_REWRITE_CONTINUE;
   int flags = wheel_event.flags();
   RewriteLocatedEvent(wheel_event, &flags);
+  auto tmp_event = wheel_event;
+  tmp_event.set_flags(flags);
   ui::EventRewriteStatus status =
-      sticky_keys_controller_->RewriteMouseEvent(wheel_event, &flags);
-  if ((wheel_event.flags() == flags) &&
-      (status == ui::EVENT_REWRITE_CONTINUE)) {
-    return ui::EVENT_REWRITE_CONTINUE;
-  }
-  if (status == ui::EVENT_REWRITE_CONTINUE)
-    status = ui::EVENT_REWRITE_REWRITTEN;
-  ui::MouseWheelEvent* rewritten_wheel_event =
-      new ui::MouseWheelEvent(wheel_event);
-  rewritten_event->reset(rewritten_wheel_event);
-  rewritten_wheel_event->set_flags(flags);
+      sticky_keys_controller_->RewriteEvent(tmp_event, rewritten_event);
+
+  switch (status) {
+    case ui::EVENT_REWRITE_REWRITTEN:
+    case ui::EVENT_REWRITE_DISPATCH_ANOTHER:
+    // whell event has been rewritten and stored in |rewritten_event|.
 #if defined(USE_X11)
-  ui::UpdateX11EventForFlags(rewritten_wheel_event);
+      ui::UpdateX11EventForFlags(rewritten_event->get());
 #endif
+      break;
+    case ui::EVENT_REWRITE_CONTINUE:
+      if (flags != wheel_event.flags()) {
+        *rewritten_event = base::MakeUnique<ui::MouseWheelEvent>(wheel_event);
+        (*rewritten_event)->set_flags(flags);
+        status = ui::EVENT_REWRITE_REWRITTEN;
+#if defined(USE_X11)
+        ui::UpdateX11EventForFlags(rewritten_event->get());
+#endif
+      }
+      break;
+    case ui::EVENT_REWRITE_DISCARD:
+      NOTREACHED();
+      break;
+  }
+
   return status;
 }
 
@@ -645,17 +667,15 @@ ui::EventRewriteStatus EventRewriter::RewriteTouchEvent(
 ui::EventRewriteStatus EventRewriter::RewriteScrollEvent(
     const ui::ScrollEvent& scroll_event,
     std::unique_ptr<ui::Event>* rewritten_event) {
-  int flags = scroll_event.flags();
-  ui::EventRewriteStatus status = ui::EVENT_REWRITE_CONTINUE;
-  if (sticky_keys_controller_)
-    status = sticky_keys_controller_->RewriteScrollEvent(scroll_event, &flags);
-  if (status == ui::EVENT_REWRITE_CONTINUE)
-    return status;
-  ui::ScrollEvent* rewritten_scroll_event = new ui::ScrollEvent(scroll_event);
-  rewritten_event->reset(rewritten_scroll_event);
-  rewritten_scroll_event->set_flags(flags);
+  if (!sticky_keys_controller_)
+    return ui::EVENT_REWRITE_CONTINUE;
+  ui::EventRewriteStatus status =
+      sticky_keys_controller_->RewriteEvent(scroll_event, rewritten_event);
+  // Scroll event shouldn't be discarded.
+  DCHECK_NE(status, ui::EVENT_REWRITE_DISCARD);
 #if defined(USE_X11)
-  ui::UpdateX11EventForFlags(rewritten_scroll_event);
+  if (status != ui::EVENT_REWRITE_CONTINUE)
+    ui::UpdateX11EventForFlags(rewritten_event->get());
 #endif
   return status;
 }
