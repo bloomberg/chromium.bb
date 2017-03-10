@@ -8,6 +8,8 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/shadow.html">
 <link rel="import" href="chrome://bookmarks/item.html">
 <link rel="import" href="chrome://bookmarks/shared_style.html">
+<link rel="import" href="chrome://bookmarks/store_client.html">
+<link rel="import" href="chrome://bookmarks/util.html">
 
 <dom-module id="bookmarks-list">
   <template>
@@ -71,9 +73,8 @@
       </div>
     </dialog>
     <div id="bookmarksCard" hidden$="[[isEmptyList_(displayedList.length)]]">
-      <template is="dom-repeat" items="[[displayedList]]" as="item">
-        <bookmarks-item item="[[item]]"
-            is-selected-item="[[item.isSelectedItem]]">
+      <template is="dom-repeat" items="[[displayedList]]" as="id">
+        <bookmarks-item item-id="[[id]]">
         </bookmarks-item>
       </template>
     </div>

@@ -3,7 +3,9 @@
 <link rel="import" href="chrome://resources/html/icon.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
+<link rel="import" href="chrome://bookmarks/actions.html">
 <link rel="import" href="chrome://bookmarks/shared_style.html">
+<link rel="import" href="chrome://bookmarks/store_client.html">
 
 <dom-module id="bookmarks-item">
   <template>
@@ -17,7 +19,7 @@
         height: 40px;
       }
 
-      :host([is-selected-item]) {
+      :host([is-selected-item_]) {
         background-color: rgb(225, 235, 253);
       }
 
@@ -60,7 +62,7 @@
       <div id="icon" hidden$="[[isFolder_]]"></div>
     </div>
     <div id="website-title">
-      [[item.title]]
+      [[item_.title]]
     </div>
     <button is="paper-icon-button-light" class="more-vert-button"
         on-click="onMenuButtonOpenClick_">

@@ -14,10 +14,22 @@
       'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi']
     },
     {
+      'target_name': 'api_listener',
+      'dependencies': [
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
+        '<(EXTERNS_GYP):chrome_extensions',
+        'actions',
+        'bookmarks_store',
+        'util',
+      ],
+      'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi'],
+    },
+    {
       'target_name': 'app',
       'dependencies': [
         '<(EXTERNS_GYP):chrome_extensions',
-        'store',
+        'api_listener',
+        'store_client',
       ],
       'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
@@ -36,7 +48,8 @@
       'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi'],
       'dependencies': [
         '<(EXTERNS_GYP):chrome_extensions',
-        'store',
+        'actions',
+        'store_client',
       ],
     },
     {
@@ -44,6 +57,8 @@
       'dependencies': [
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:icon',
         '<(EXTERNS_GYP):chrome_extensions',
+        'actions',
+        'store_client',
       ],
       'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
@@ -54,7 +69,9 @@
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:load_time_data',
         '<(EXTERNS_GYP):bookmark_manager_private',
         '<(EXTERNS_GYP):chrome_extensions',
+        'actions',
         'item',
+        'store_client',
       ],
       'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
@@ -74,7 +91,7 @@
     {
       'target_name': 'sidebar',
       'dependencies': [
-        'folder_node',
+        'store_client',
       ],
       'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi'],
     },

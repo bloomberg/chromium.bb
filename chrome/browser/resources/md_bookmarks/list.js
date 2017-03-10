@@ -5,18 +5,36 @@
 Polymer({
   is: 'bookmarks-list',
 
+  behaviors: [
+    bookmarks.StoreClient,
+  ],
+
   properties: {
-    /** @type {BookmarkTreeNode} */
+    /** @type {BookmarkNode} */
     menuItem_: Object,
 
-    /** @type {Array<BookmarkTreeNode>} */
-    displayedList: Array,
+    /** @type {Array<string>} */
+    displayedList: {
+      type: Array,
+      value: function() {
+        // Use an empty list during initialization so that the databinding to
+        // hide #bookmarksCard takes effect.
+        return [];
+      },
+    },
 
     searchTerm: String,
   },
 
   listeners: {
     'open-item-menu': 'onOpenItemMenu_',
+  },
+
+  attached: function() {
+    this.watch('displayedList', function(state) {
+      return bookmarks.util.getDisplayedList(state);
+    });
+    this.updateFromStore();
   },
 
   /**

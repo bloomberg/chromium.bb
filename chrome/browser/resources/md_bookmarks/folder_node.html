@@ -3,8 +3,10 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/color.html">
+<link rel="import" href="chrome://bookmarks/actions.html">
 <link rel="import" href="chrome://bookmarks/icons.html">
 <link rel="import" href="chrome://bookmarks/shared_style.html">
+<link rel="import" href="chrome://bookmarks/store_client.html">
 
 <dom-module id="bookmarks-folder-node">
   <template>
@@ -43,8 +45,8 @@
         overflow: hidden;
       }
 
-      :host([is-selected-folder]) .menu-label,
-      :host([is-selected-folder]) #folder-label {
+      :host([is-selected-folder_]) .menu-label,
+      :host([is-selected-folder_]) #folder-label {
         color: var(--folder-active-color);
       }
 
@@ -65,19 +67,20 @@
 
     <div id="container" class="v-centered">
       <div id="folder-label" class="v-centered" on-tap="selectFolder_">
-        <iron-icon icon="[[getFolderIcon_(isSelectedFolder)]]"></iron-icon>
-        <div class="menu-label">[[item.title]]</div>
+        <iron-icon icon="[[getFolderIcon_(isSelectedFolder_)]]"></iron-icon>
+        <div class="menu-label">[[item_.title]]</div>
       </div>
-      <template is="dom-if" if="[[hasChildFolder_(item.children)]]">
-        <paper-icon-button icon="[[getArrowIcon_(item.isOpen)]]"
+      <template is="dom-if" if="[[hasChildFolder_(item_.children)]]">
+        <paper-icon-button icon="[[getArrowIcon_(isClosed_)]]"
             on-tap="toggleFolder_"></paper-icon-button>
       </template>
     </div>
-    <div id="descendants" hidden$="[[!item.isOpen]]">
-      <template is="dom-repeat" items="[[item.children]]"
-          filter="isFolder_" observe="url" as="child">
-        <bookmarks-folder-node item="[[child]]"
-            is-selected-folder="[[child.isSelectedFolder]]">
+    <div id="descendants" hidden$="[[isClosed_]]">
+      <template is="dom-repeat"
+          items="[[item_.children]]"
+          as="child"
+          filter="isFolder_">
+        <bookmarks-folder-node item-id="[[child]]">
         </bookmarks-folder-node>
       </template>
     </div>

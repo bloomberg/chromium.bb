@@ -5,28 +5,47 @@
 Polymer({
   is: 'bookmarks-item',
 
+  behaviors: [
+    bookmarks.StoreClient,
+  ],
+
   properties: {
-    /** @type {BookmarkTreeNode} */
-    item: {
+    itemId: {
+      type: String,
+      observer: 'updateFromStore',
+    },
+
+    /** @private {BookmarkNode} */
+    item_: {
       type: Object,
       observer: 'onItemChanged_',
     },
 
-    isFolder_: Boolean,
-
-    isSelectedItem: {
+    /** @private */
+    isSelectedItem_: {
       type: Boolean,
       reflectToAttribute: true,
     },
+
+    /** @private */
+    isFolder_: Boolean,
   },
 
   observers: [
-    'updateFavicon_(item.url)',
+    'updateFavicon_(item_.url)',
   ],
 
   listeners: {
     'click': 'onClick_',
     'dblclick': 'onDblClick_',
+  },
+
+  attached: function() {
+    this.watch('item_', function(store) {
+      return store.nodes[this.itemId];
+    }.bind(this));
+
+    this.updateFromStore();
   },
 
   /**
@@ -37,13 +56,13 @@ Polymer({
     e.stopPropagation();
     this.fire('open-item-menu', {
       target: e.target,
-      item: this.item,
+      item: this.item_,
     });
   },
 
   /** @private */
   onItemChanged_: function() {
-    this.isFolder_ = !(this.item.url);
+    this.isFolder_ = !(this.item_.url);
   },
 
   /**
@@ -52,7 +71,7 @@ Polymer({
    */
   onClick_: function(e) {
     this.fire('select-item', {
-      item: this.item,
+      item: this.item_,
       range: e.shiftKey,
       add: e.ctrlKey,
     });
@@ -63,10 +82,10 @@ Polymer({
    * @private
    */
   onDblClick_: function(e) {
-    if (!this.item.url)
-      this.fire('selected-folder-changed', this.item.id);
+    if (!this.item_.url)
+      this.dispatch(bookmarks.actions.selectFolder(this.item_.id));
     else
-      chrome.tabs.create({url: this.item.url});
+      chrome.tabs.create({url: this.item_.url});
   },
 
   /**

@@ -4,39 +4,33 @@
 
 suite('<bookmarks-sidebar>', function() {
   var sidebar;
-  var TEST_TREE;
+  var store;
 
   setup(function() {
-    TEST_TREE = createFolder('0', [
-      createFolder(
-          '1',
-          [
-            createFolder(
-                '2',
-                [
-                  createFolder('3', []),
-                  createFolder('4', []),
-                ]),
-            createItem('5'),
-            createItem('6'),
-          ]),
-      createFolder('7', []),
-      createFolder('8', []),
-    ]);
+    store = new bookmarks.TestStore({
+      nodes: testTree(createFolder('0', [
+        createFolder(
+            '1',
+            [
+              createFolder(
+                  '2',
+                  [
+                    createFolder('3', []),
+                    createFolder('4', []),
+                  ]),
+              createItem('5'),
+            ]),
+        createFolder('7', []),
+      ])),
+    });
+    bookmarks.Store.instance_ = store;
 
-    setupTreeForUITests(TEST_TREE);
     sidebar = document.createElement('bookmarks-sidebar');
     replaceBody(sidebar);
-    sidebar.rootFolders = TEST_TREE.children;
+    Polymer.dom.flush();
   });
 
-  test('selecting and deselecting folders fires event', function() {
-    var firedId;
-    document.addEventListener('selected-folder-changed', function(e) {
-      firedId = /** @type {string} */ (e.detail);
-    });
-
-    Polymer.dom.flush();
+  test('selecting and deselecting folders dispatches action', function() {
     var rootFolders = sidebar.$['folder-tree'].children;
     var firstGen = rootFolders[0].$['descendants'].querySelectorAll(
         'bookmarks-folder-node');
@@ -46,11 +40,13 @@ suite('<bookmarks-sidebar>', function() {
     // Select nested folder.
     firedId = '';
     MockInteractions.tap(secondGen[0].$['folder-label']);
-    assertEquals(secondGen[0].item.id, firedId);
+    assertEquals('select-folder', store.lastAction.name);
+    assertEquals(secondGen[0].itemId, store.lastAction.id);
 
     // Select folder in a separate subtree.
     firedId = '';
     MockInteractions.tap(rootFolders[1].$['folder-label']);
-    assertEquals(rootFolders[1].item.id, firedId);
+    assertEquals('select-folder', store.lastAction.name);
+    assertEquals(rootFolders[1].itemId, store.lastAction.id);
   });
 });

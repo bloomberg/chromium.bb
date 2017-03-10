@@ -5,21 +5,20 @@
 Polymer({
   is: 'bookmarks-app',
 
-  properties: {
-    selectedId: String,
-
-    /** @type {BookmarkTreeNode} */
-    rootNode: Object,
-
-    searchTerm: String,
-
-    /** @type {Array<BookmarkTreeNode>} */
-    displayedList: Array,
-  },
+  behaviors: [
+    bookmarks.StoreClient,
+  ],
 
   /** @override */
   attached: function() {
-    /** @type {BookmarksStore} */ (this.$$('bookmarks-store'))
-        .initializeStore();
+    chrome.bookmarks.getTree(function(results) {
+      var nodeList = bookmarks.util.normalizeNodes(results[0]);
+      var initialState = bookmarks.util.createEmptyState();
+      initialState.nodes = nodeList;
+      initialState.selectedFolder = nodeList['0'].children[0];
+
+      bookmarks.Store.getInstance().init(initialState);
+      bookmarks.ApiListener.init();
+    }.bind(this));
   },
 });

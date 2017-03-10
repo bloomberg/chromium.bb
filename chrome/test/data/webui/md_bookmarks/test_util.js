@@ -19,20 +19,6 @@ function testTree(root) {
 }
 
 /**
- * Initialize a tree for UI testing. This performs the same initialization as
- * `setUpStore_` in <bookmarks-store>, but without the need for a store element
- * in the test.
- * @param {BookmarkTreeNode} rootNode
- */
-function setupTreeForUITests(rootNode){
-  if (!rootNode.path)
-    rootNode.path = 'rootNode';
-
-  BookmarksStore.generatePaths(rootNode, 0);
-  BookmarksStore.initNodes(rootNode);
-}
-
-/**
  * Creates a folder with given properties.
  * @param {string} id
  * @param {Array<BookmarkTreeNode>} children

@@ -5,15 +5,46 @@
 Polymer({
   is: 'bookmarks-folder-node',
 
-  properties: {
-    /** @type {BookmarkTreeNode} */
-    item: Object,
+  behaviors: [
+    bookmarks.StoreClient,
+  ],
 
-    isSelectedFolder: {
+  properties: {
+    itemId: {
+      type: String,
+      observer: 'updateFromStore',
+    },
+
+    /** @type {BookmarkNode} */
+    item_: Object,
+
+    /** @private */
+    isClosed_: Boolean,
+
+    /** @private */
+    selectedFolder_: String,
+
+    /** @private */
+    isSelectedFolder_: {
       type: Boolean,
       value: false,
       reflectToAttribute: true,
+      computed: 'computeIsSelected_(itemId, selectedFolder_)'
     },
+  },
+
+  attached: function() {
+    this.watch('item_', function(state) {
+      return state.nodes[this.itemId];
+    }.bind(this));
+    this.watch('isClosed_', function(state) {
+      return !!state.closedFolders[this.itemId];
+    }.bind(this));
+    this.watch('selectedFolder_', function(state) {
+      return state.selectedFolder;
+    });
+
+    this.updateFromStore();
   },
 
   /**
@@ -21,7 +52,7 @@ Polymer({
    * @return {string}
    */
   getFolderIcon_: function() {
-    return this.isSelectedFolder ? 'bookmarks:folder-open' : 'cr:folder';
+    return this.isSelectedFolder_ ? 'bookmarks:folder-open' : 'cr:folder';
   },
 
   /**
@@ -29,12 +60,12 @@ Polymer({
    * @return {string}
    */
   getArrowIcon_: function() {
-    return this.item.isOpen ? 'cr:arrow-drop-up' : 'cr:arrow-drop-down';
+    return this.isClosed_ ? 'cr:arrow-drop-down' : 'cr:arrow-drop-up';
   },
 
   /** @private */
   selectFolder_: function() {
-    this.fire('selected-folder-changed', this.item.id);
+    this.dispatch(bookmarks.actions.selectFolder(this.item_.id));
   },
 
   /**
@@ -42,10 +73,18 @@ Polymer({
    * @private
    */
   toggleFolder_: function() {
-    this.fire('folder-open-changed', {
-      id: this.item.id,
-      open: !this.item.isOpen,
-    });
+    this.dispatch(
+        bookmarks.actions.changeFolderOpen(this.item_.id, this.isClosed_));
+  },
+
+  /**
+   * @param {string} itemId
+   * @param {string} selectedFolder
+   * @return {boolean}
+   * @private
+   */
+  computeIsSelected_: function(itemId, selectedFolder) {
+    return itemId == selectedFolder;
   },
 
   /**
@@ -53,19 +92,19 @@ Polymer({
    * @return {boolean}
    */
   hasChildFolder_: function() {
-    for (var i = 0; i < this.item.children.length; i++) {
-      if (!this.item.children[i].url)
+    for (var i = 0; i < this.item_.children.length; i++) {
+      if (this.isFolder_(this.item_.children[i]))
         return true;
     }
     return false;
   },
 
   /**
-   * @param {BookmarkTreeNode} item
+   * @param {string} itemId
    * @private
    * @return {boolean}
    */
-  isFolder_: function(item) {
-    return !item.url;
+  isFolder_: function(itemId) {
+    return !this.getState().nodes[itemId].url;
   }
 });

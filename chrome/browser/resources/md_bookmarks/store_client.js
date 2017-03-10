@@ -40,6 +40,10 @@ cr.define('bookmarks', function() {
      * Note that object identity is used to determine if the value has changed
      * before updating the UI, rather than Polymer-style deep equality.
      *
+     * Typechecking is supressed because this conflicts with
+     * Object.prototype.watch, which is a Gecko-only method that is recognized
+     * by Closure.
+     * @suppress {checkTypes}
      * @param {string} localProperty
      * @param {function(!BookmarksPageState)} valueGetter
      */
@@ -87,5 +91,7 @@ cr.define('bookmarks', function() {
     },
   };
 
-  return {StoreClient: StoreClient};
+  return {
+    StoreClient: StoreClient,
+  };
 });
