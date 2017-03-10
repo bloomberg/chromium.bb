@@ -1165,45 +1165,19 @@ bool Node::isEqualNode(Node* other) const {
 
 bool Node::isDefaultNamespace(
     const AtomicString& namespaceURIMaybeEmpty) const {
+  // https://dom.spec.whatwg.org/#dom-node-isdefaultnamespace
+
+  // 1. If namespace is the empty string, then set it to null.
   const AtomicString& namespaceURI =
       namespaceURIMaybeEmpty.isEmpty() ? nullAtom : namespaceURIMaybeEmpty;
 
-  switch (getNodeType()) {
-    case kElementNode: {
-      const Element& element = toElement(*this);
+  // 2. Let defaultNamespace be the result of running locate a namespace for
+  // context object using null.
+  const AtomicString& defaultNamespace = lookupNamespaceURI(String());
 
-      if (element.prefix().isNull())
-        return element.namespaceURI() == namespaceURI;
-
-      AttributeCollection attributes = element.attributes();
-      for (const Attribute& attr : attributes) {
-        if (attr.localName() == xmlnsAtom)
-          return attr.value() == namespaceURI;
-      }
-
-      if (Element* parent = parentElement())
-        return parent->isDefaultNamespace(namespaceURI);
-
-      return false;
-    }
-    case kDocumentNode:
-      if (Element* de = toDocument(this)->documentElement())
-        return de->isDefaultNamespace(namespaceURI);
-      return false;
-    case kDocumentTypeNode:
-    case kDocumentFragmentNode:
-      return false;
-    case kAttributeNode: {
-      const Attr* attr = toAttr(this);
-      if (attr->ownerElement())
-        return attr->ownerElement()->isDefaultNamespace(namespaceURI);
-      return false;
-    }
-    default:
-      if (Element* parent = parentElement())
-        return parent->isDefaultNamespace(namespaceURI);
-      return false;
-  }
+  // 3. Return true if defaultNamespace is the same as namespace, and false
+  // otherwise.
+  return namespaceURI == defaultNamespace;
 }
 
 const AtomicString& Node::lookupPrefix(const AtomicString& namespaceURI) const {
