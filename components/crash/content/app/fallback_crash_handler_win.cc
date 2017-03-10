@@ -479,6 +479,7 @@ bool FallbackCrashHandler::GenerateCrashDump(const std::string& product,
 
   uint32_t minidump_type = MiniDumpWithUnloadedModules |
                            MiniDumpWithProcessThreadData |
+                           MiniDumpWithFullMemoryInfo |
                            MiniDumpWithThreadInfo;
 
   // Capture more detail for canary and dev channels. The prefix search caters
