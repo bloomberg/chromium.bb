@@ -626,11 +626,6 @@ bool QuicDispatcher::OnBlockedFrame(const QuicBlockedFrame& frame) {
   return false;
 }
 
-bool QuicDispatcher::OnPathCloseFrame(const QuicPathCloseFrame& frame) {
-  DCHECK(false);
-  return false;
-}
-
 void QuicDispatcher::OnPacketComplete() {
   DCHECK(false);
 }
