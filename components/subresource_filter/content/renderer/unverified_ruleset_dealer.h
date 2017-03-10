@@ -24,7 +24,7 @@ class MemoryMappedRuleset;
 // sure that the file is valid.
 //
 // See RulesetDealerBase for details on the lifetime of MemoryMappedRuleset, and
-// the distribution pipeline diagram in content_ruleset_service_delegate.h.
+// the distribution pipeline diagram in content_ruleset_service.h.
 class UnverifiedRulesetDealer : public RulesetDealer,
                                 public content::RenderThreadObserver {
  public:

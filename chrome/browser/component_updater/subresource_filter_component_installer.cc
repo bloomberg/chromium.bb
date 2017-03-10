@@ -12,6 +12,7 @@
 #include "base/version.h"
 #include "chrome/browser/browser_process.h"
 #include "components/component_updater/component_updater_paths.h"
+#include "components/subresource_filter/content/browser/content_ruleset_service.h"
 #include "components/subresource_filter/core/browser/ruleset_service.h"
 #include "components/subresource_filter/core/browser/subresource_filter_constants.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features.h"
@@ -79,10 +80,12 @@ void SubresourceFilterComponentInstallerTraits::ComponentReady(
       install_dir.Append(subresource_filter::kUnindexedRulesetDataFileName);
   ruleset_info.license_path =
       install_dir.Append(subresource_filter::kUnindexedRulesetLicenseFileName);
-  subresource_filter::RulesetService* ruleset_service =
+  subresource_filter::ContentRulesetService* content_ruleset_service =
       g_browser_process->subresource_filter_ruleset_service();
-  if (ruleset_service)
-    ruleset_service->IndexAndStoreAndPublishRulesetIfNeeded(ruleset_info);
+  if (content_ruleset_service) {
+    content_ruleset_service->IndexAndStoreAndPublishRulesetIfNeeded(
+        ruleset_info);
+  }
 }
 
 // Called during startup and installation before ComponentReady().

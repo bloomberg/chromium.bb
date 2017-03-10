@@ -104,7 +104,7 @@
 #include "components/rappor/rappor_service_impl.h"
 #include "components/safe_json/safe_json_parser.h"
 #include "components/signin/core/common/profile_management_switches.h"
-#include "components/subresource_filter/content/browser/content_ruleset_service_delegate.h"
+#include "components/subresource_filter/content/browser/content_ruleset_service.h"
 #include "components/subresource_filter/core/browser/ruleset_service.h"
 #include "components/subresource_filter/core/browser/subresource_filter_constants.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features.h"
@@ -903,7 +903,7 @@ safe_browsing::ClientSideDetectionService*
   return NULL;
 }
 
-subresource_filter::RulesetService*
+subresource_filter::ContentRulesetService*
 BrowserProcessImpl::subresource_filter_ruleset_service() {
   DCHECK(CalledOnValidThread());
   if (!created_subresource_filter_ruleset_service_)
@@ -1224,11 +1224,12 @@ void BrowserProcessImpl::CreateSubresourceFilterRulesetService() {
   base::FilePath indexed_ruleset_base_dir =
       user_data_dir.Append(subresource_filter::kTopLevelDirectoryName)
           .Append(subresource_filter::kIndexedRulesetBaseDirectoryName);
-  subresource_filter_ruleset_service_.reset(
-      new subresource_filter::RulesetService(
+  subresource_filter_ruleset_service_ =
+      base::MakeUnique<subresource_filter::ContentRulesetService>();
+  subresource_filter_ruleset_service_->set_ruleset_service(
+      base::MakeUnique<subresource_filter::RulesetService>(
           local_state(), blocking_task_runner,
-          base::MakeUnique<subresource_filter::ContentRulesetServiceDelegate>(),
-          indexed_ruleset_base_dir));
+          subresource_filter_ruleset_service_.get(), indexed_ruleset_base_dir));
 }
 
 void BrowserProcessImpl::CreateGCMDriver() {

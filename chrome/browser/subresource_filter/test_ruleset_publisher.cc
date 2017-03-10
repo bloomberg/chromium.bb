@@ -8,7 +8,7 @@
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/browser_process.h"
-#include "components/subresource_filter/content/browser/content_ruleset_service_delegate.h"
+#include "components/subresource_filter/content/browser/content_ruleset_service.h"
 #include "components/subresource_filter/core/browser/ruleset_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -20,20 +20,20 @@ namespace {
 class RulesetDistributionListener {
  public:
   RulesetDistributionListener()
-      : delegate_(static_cast<ContentRulesetServiceDelegate*>(
-            g_browser_process->subresource_filter_ruleset_service()
-                ->delegate())) {
-    delegate_->SetRulesetPublishedCallbackForTesting(run_loop_.QuitClosure());
+      : content_service_(
+            g_browser_process->subresource_filter_ruleset_service()) {
+    content_service_->SetRulesetPublishedCallbackForTesting(
+        run_loop_.QuitClosure());
   }
 
   ~RulesetDistributionListener() {
-    delegate_->SetRulesetPublishedCallbackForTesting(base::Closure());
+    content_service_->SetRulesetPublishedCallbackForTesting(base::Closure());
   }
 
   void AwaitDistribution() { run_loop_.Run(); }
 
  private:
-  ContentRulesetServiceDelegate* delegate_;
+  ContentRulesetService* content_service_;
   base::RunLoop run_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(RulesetDistributionListener);

@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/subresource_filter/content/browser/content_ruleset_service_delegate.h"
+#include "components/subresource_filter/content/browser/content_ruleset_service.h"
 
 #include <utility>
 
 #include "base/logging.h"
 #include "base/macros.h"
 #include "components/subresource_filter/content/common/subresource_filter_messages.h"
+#include "components/subresource_filter/core/browser/ruleset_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
@@ -42,7 +43,7 @@ void CloseFileOnFileThread(base::File* file) {
 
 }  // namespace
 
-ContentRulesetServiceDelegate::ContentRulesetServiceDelegate() {
+ContentRulesetService::ContentRulesetService() {
   // Must rely on notifications as RenderProcessHostObserver::RenderProcessReady
   // would only be called after queued IPC messages (potentially triggering a
   // navigation) had already been sent to the new renderer.
@@ -51,24 +52,24 @@ ContentRulesetServiceDelegate::ContentRulesetServiceDelegate() {
       content::NotificationService::AllBrowserContextsAndSources());
 }
 
-ContentRulesetServiceDelegate::~ContentRulesetServiceDelegate() {
+ContentRulesetService::~ContentRulesetService() {
   CloseFileOnFileThread(&ruleset_data_);
 }
 
-void ContentRulesetServiceDelegate::SetRulesetPublishedCallbackForTesting(
+void ContentRulesetService::SetRulesetPublishedCallbackForTesting(
     base::Closure callback) {
   ruleset_published_callback_ = callback;
 }
 
-void ContentRulesetServiceDelegate::PostAfterStartupTask(base::Closure task) {
+void ContentRulesetService::PostAfterStartupTask(base::Closure task) {
   content::BrowserThread::PostAfterStartupTask(
-      FROM_HERE, content::BrowserThread::GetTaskRunnerForThread(
-                     content::BrowserThread::UI),
+      FROM_HERE,
+      content::BrowserThread::GetTaskRunnerForThread(
+          content::BrowserThread::UI),
       task);
 }
 
-void ContentRulesetServiceDelegate::PublishNewRulesetVersion(
-    base::File ruleset_data) {
+void ContentRulesetService::PublishNewRulesetVersion(base::File ruleset_data) {
   DCHECK(ruleset_data.IsValid());
   CloseFileOnFileThread(&ruleset_data_);
   ruleset_data_ = std::move(ruleset_data);
@@ -81,7 +82,19 @@ void ContentRulesetServiceDelegate::PublishNewRulesetVersion(
     ruleset_published_callback_.Run();
 }
 
-void ContentRulesetServiceDelegate::Observe(
+void ContentRulesetService::set_ruleset_service(
+    std::unique_ptr<RulesetService> ruleset_service) {
+  ruleset_service_ = std::move(ruleset_service);
+}
+
+void ContentRulesetService::IndexAndStoreAndPublishRulesetIfNeeded(
+    const UnindexedRulesetInfo& unindexed_ruleset_info) {
+  DCHECK(ruleset_service_);
+  ruleset_service_->IndexAndStoreAndPublishRulesetIfNeeded(
+      unindexed_ruleset_info);
+}
+
+void ContentRulesetService::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {

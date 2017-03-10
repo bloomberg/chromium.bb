@@ -85,8 +85,8 @@ class TestingBrowserProcess : public BrowserProcess {
   safe_browsing::SafeBrowsingService* safe_browsing_service() override;
   safe_browsing::ClientSideDetectionService* safe_browsing_detection_service()
       override;
-  subresource_filter::RulesetService* subresource_filter_ruleset_service()
-      override;
+  subresource_filter::ContentRulesetService*
+  subresource_filter_ruleset_service() override;
   net::URLRequestContextGetter* system_request_context() override;
   BrowserProcessPlatformPart* platform_part() override;
 
@@ -141,7 +141,8 @@ class TestingBrowserProcess : public BrowserProcess {
   void SetIOThread(IOThread* io_thread);
   void SetSafeBrowsingService(safe_browsing::SafeBrowsingService* sb_service);
   void SetRulesetService(
-      std::unique_ptr<subresource_filter::RulesetService> ruleset_service);
+      std::unique_ptr<subresource_filter::ContentRulesetService>
+          ruleset_service);
   void SetSystemRequestContext(net::URLRequestContextGetter* context_getter);
   void SetNotificationUIManager(
       std::unique_ptr<NotificationUIManager> notification_ui_manager);
@@ -179,7 +180,7 @@ class TestingBrowserProcess : public BrowserProcess {
 #endif
 
   scoped_refptr<safe_browsing::SafeBrowsingService> sb_service_;
-  std::unique_ptr<subresource_filter::RulesetService>
+  std::unique_ptr<subresource_filter::ContentRulesetService>
       subresource_filter_ruleset_service_;
 
   std::unique_ptr<network_time::NetworkTimeTracker> network_time_tracker_;

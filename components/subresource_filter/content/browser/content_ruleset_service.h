@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SUBRESOURCE_FILTER_CONTENT_BROWSER_CONTENT_RULESET_SERVICE_DELEGATE_H_
-#define COMPONENTS_SUBRESOURCE_FILTER_CONTENT_BROWSER_CONTENT_RULESET_SERVICE_DELEGATE_H_
+#ifndef COMPONENTS_SUBRESOURCE_FILTER_CONTENT_BROWSER_CONTENT_RULESET_SERVICE_H_
+#define COMPONENTS_SUBRESOURCE_FILTER_CONTENT_BROWSER_CONTENT_RULESET_SERVICE_H_
 
 #include "base/callback.h"
 #include "base/files/file.h"
@@ -14,7 +14,11 @@
 
 namespace subresource_filter {
 
-// The content-layer specific implementation of RulesetServiceDelegate.
+class RulesetService;
+struct UnindexedRulesetInfo;
+
+// The content-layer specific implementation of RulesetServiceDelegate. Owns the
+// underlying RulesetService.
 //
 // Its main responsibility is receiving new versions of subresource filtering
 // rules from the RulesetService, and distributing them to renderer processes,
@@ -42,17 +46,23 @@ namespace subresource_filter {
 //
 // Note: UnverifiedRulesetDealer is shortened to *RulesetDealer above. There is
 // also a VerifiedRulesetDealer which is used similarly on the browser side.
-class ContentRulesetServiceDelegate : public RulesetServiceDelegate,
-                                      content::NotificationObserver {
+class ContentRulesetService : public RulesetServiceDelegate,
+                              content::NotificationObserver {
  public:
-  ContentRulesetServiceDelegate();
-  ~ContentRulesetServiceDelegate() override;
+  ContentRulesetService();
+  ~ContentRulesetService() override;
 
   void SetRulesetPublishedCallbackForTesting(base::Closure callback);
 
   // RulesetServiceDelegate:
   void PostAfterStartupTask(base::Closure task) override;
   void PublishNewRulesetVersion(base::File ruleset_data) override;
+
+  void set_ruleset_service(std::unique_ptr<RulesetService> ruleset_service);
+
+  // Forwards calls to the underlying ruleset_service_.
+  void IndexAndStoreAndPublishRulesetIfNeeded(
+      const UnindexedRulesetInfo& unindex_ruleset_info);
 
  private:
   // content::NotificationObserver:
@@ -64,9 +74,11 @@ class ContentRulesetServiceDelegate : public RulesetServiceDelegate,
   base::File ruleset_data_;
   base::Closure ruleset_published_callback_;
 
-  DISALLOW_COPY_AND_ASSIGN(ContentRulesetServiceDelegate);
+  std::unique_ptr<RulesetService> ruleset_service_;
+
+  DISALLOW_COPY_AND_ASSIGN(ContentRulesetService);
 };
 
 }  // namespace subresource_filter
 
-#endif  // COMPONENTS_SUBRESOURCE_FILTER_CONTENT_BROWSER_CONTENT_RULESET_SERVICE_DELEGATE_H_
+#endif  // COMPONENTS_SUBRESOURCE_FILTER_CONTENT_BROWSER_CONTENT_RULESET_SERVICE_H_

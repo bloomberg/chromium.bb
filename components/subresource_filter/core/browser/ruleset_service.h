@@ -170,7 +170,7 @@ class RulesetService : public base::SupportsWeakPtr<RulesetService> {
   // See class comments for details of arguments.
   RulesetService(PrefService* local_state,
                  scoped_refptr<base::SequencedTaskRunner> blocking_task_runner,
-                 std::unique_ptr<RulesetServiceDelegate> delegate,
+                 RulesetServiceDelegate* delegate,
                  const base::FilePath& indexed_ruleset_base_dir);
   virtual ~RulesetService();
 
@@ -186,9 +186,6 @@ class RulesetService : public base::SupportsWeakPtr<RulesetService> {
   // Virtual so that it can be mocked out in tests.
   virtual void IndexAndStoreAndPublishRulesetIfNeeded(
       const UnindexedRulesetInfo& unindexed_ruleset_info);
-
-  // Exposed for browser tests.
-  RulesetServiceDelegate* delegate() { return delegate_.get(); }
 
  private:
   friend class SubresourceFilteringRulesetServiceTest;
@@ -252,7 +249,9 @@ class RulesetService : public base::SupportsWeakPtr<RulesetService> {
 
   PrefService* const local_state_;
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
-  std::unique_ptr<RulesetServiceDelegate> delegate_;
+
+  // Must outlive |this| object.
+  RulesetServiceDelegate* delegate_;
 
   UnindexedRulesetInfo queued_unindexed_ruleset_info_;
   bool is_after_startup_;

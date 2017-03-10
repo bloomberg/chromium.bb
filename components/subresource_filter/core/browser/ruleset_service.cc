@@ -215,11 +215,11 @@ decltype(&base::ReplaceFile) RulesetService::g_replace_file_func =
 RulesetService::RulesetService(
     PrefService* local_state,
     scoped_refptr<base::SequencedTaskRunner> blocking_task_runner,
-    std::unique_ptr<RulesetServiceDelegate> delegate,
+    RulesetServiceDelegate* delegate,
     const base::FilePath& indexed_ruleset_base_dir)
     : local_state_(local_state),
       blocking_task_runner_(blocking_task_runner),
-      delegate_(std::move(delegate)),
+      delegate_(delegate),
       is_after_startup_(false),
       indexed_ruleset_base_dir_(indexed_ruleset_base_dir) {
   DCHECK(delegate_);

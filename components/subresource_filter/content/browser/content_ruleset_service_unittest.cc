@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/subresource_filter/content/browser/content_ruleset_service_delegate.h"
+#include "components/subresource_filter/content/browser/content_ruleset_service.h"
 
 #include <stddef.h>
 
@@ -94,10 +94,9 @@ base::File ExtractRulesetFromMessage(const IPC::Message* message) {
 
 }  // namespace
 
-class SubresourceFilterContentRulesetServiceDelegateTest
-    : public ::testing::Test {
+class SubresourceFilterContentRulesetServiceTest : public ::testing::Test {
  public:
-  SubresourceFilterContentRulesetServiceDelegateTest()
+  SubresourceFilterContentRulesetServiceTest()
       : old_browser_client_(nullptr), existing_renderer_(&browser_context_) {}
 
  protected:
@@ -134,20 +133,19 @@ class SubresourceFilterContentRulesetServiceDelegateTest
   content::TestBrowserContext browser_context_;
   NotifyingMockRenderProcessHost existing_renderer_;
 
-  DISALLOW_COPY_AND_ASSIGN(SubresourceFilterContentRulesetServiceDelegateTest);
+  DISALLOW_COPY_AND_ASSIGN(SubresourceFilterContentRulesetServiceTest);
 };
 
-TEST_F(SubresourceFilterContentRulesetServiceDelegateTest,
-       NoRuleset_NoIPCMessages) {
+TEST_F(SubresourceFilterContentRulesetServiceTest, NoRuleset_NoIPCMessages) {
   NotifyingMockRenderProcessHost existing_renderer(browser_context());
-  ContentRulesetServiceDelegate delegate;
+  ContentRulesetService service;
   NotifyingMockRenderProcessHost new_renderer(browser_context());
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(0u, existing_renderer.sink().message_count());
   EXPECT_EQ(0u, new_renderer.sink().message_count());
 }
 
-TEST_F(SubresourceFilterContentRulesetServiceDelegateTest,
+TEST_F(SubresourceFilterContentRulesetServiceTest,
        PublishedRuleset_IsDistributedToExistingAndNewRenderers) {
   const char kTestFileContents[] = "foobar";
   base::WriteFile(scoped_temp_file(), kTestFileContents,
@@ -158,12 +156,12 @@ TEST_F(SubresourceFilterContentRulesetServiceDelegateTest,
                   base::File::FLAG_OPEN | base::File::FLAG_READ);
 
   NotifyingMockRenderProcessHost existing_renderer(browser_context());
-  ContentRulesetServiceDelegate delegate;
+  ContentRulesetService service;
   MockClosureTarget publish_callback_target;
-  delegate.SetRulesetPublishedCallbackForTesting(base::Bind(
+  service.SetRulesetPublishedCallbackForTesting(base::Bind(
       &MockClosureTarget::Call, base::Unretained(&publish_callback_target)));
   EXPECT_CALL(publish_callback_target, Call()).Times(1);
-  delegate.PublishNewRulesetVersion(std::move(file));
+  service.PublishNewRulesetVersion(std::move(file));
   base::RunLoop().RunUntilIdle();
   ::testing::Mock::VerifyAndClearExpectations(&publish_callback_target);
 
@@ -179,12 +177,11 @@ TEST_F(SubresourceFilterContentRulesetServiceDelegateTest,
       second_renderer.sink().GetMessageAt(0), kTestFileContents));
 }
 
-TEST_F(SubresourceFilterContentRulesetServiceDelegateTest,
-       PostAfterStartupTask) {
-  ContentRulesetServiceDelegate delegate;
+TEST_F(SubresourceFilterContentRulesetServiceTest, PostAfterStartupTask) {
+  ContentRulesetService service;
 
   MockClosureTarget mock_closure_target;
-  delegate.PostAfterStartupTask(base::Bind(
+  service.PostAfterStartupTask(base::Bind(
       &MockClosureTarget::Call, base::Unretained(&mock_closure_target)));
 
   EXPECT_CALL(mock_closure_target, Call()).Times(1);
