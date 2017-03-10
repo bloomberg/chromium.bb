@@ -132,29 +132,13 @@
             ],
             "experiments": [
                 {
-                    "name": "LastUsedDateAndExpDate_Experiment",
+                    "name": "LastUsedDateAndExpDate_IncreaseDropdownItemHeight_Experiment",
                     "params": {
+                        "dropdown_item_height": "56",
                         "show_expiration_date": "true"
                     },
                     "enable_features": [
-                        "AutofillCreditCardLastUsedDateDisplay"
-                    ]
-                }
-            ]
-        }
-    ],
-    "AutofillCreditCardPopup": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "IncreaseDropdownItemHeight",
-                    "params": {
-                        "dropdown_item_height": "56"
-                    },
-                    "enable_features": [
+                        "AutofillCreditCardLastUsedDateDisplay",
                         "AutofillCreditCardPopupLayout"
                     ]
                 }
