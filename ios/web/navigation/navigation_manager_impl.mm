@@ -359,11 +359,6 @@ void NavigationManagerImpl::RemoveTransientURLRewriters() {
   transient_url_rewriters_.reset();
 }
 
-void NavigationManagerImpl::CopyState(
-    NavigationManagerImpl* navigation_manager) {
-  SetSessionController([navigation_manager->GetSessionController() copy]);
-}
-
 int NavigationManagerImpl::GetIndexForOffset(int offset) const {
   int result = [session_controller_ pendingItemIndex] == -1
                    ? GetCurrentItemIndex()

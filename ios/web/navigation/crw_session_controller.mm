@@ -274,25 +274,6 @@ initiationType:(web::NavigationInitiationType)initiationType;
                                     transientItemDescription];
 }
 
-#pragma mark - NSCopying
-
-- (id)copyWithZone:(NSZone*)zone {
-  CRWSessionController* copy = [[[self class] alloc] init];
-  copy->_openedByDOM = _openedByDOM;
-  copy->_currentNavigationIndex = _currentNavigationIndex;
-  copy->_previousNavigationIndex = _previousNavigationIndex;
-  copy->_pendingItemIndex = _pendingItemIndex;
-  copy->_sessionCertificatePolicyManager =
-      [_sessionCertificatePolicyManager copy];
-  web::ScopedNavigationItemImplList itemCopies(self.items.size());
-  for (size_t index = 0; index < self.items.size(); ++index) {
-    itemCopies[index] =
-        base::MakeUnique<web::NavigationItemImpl>(*self.items[index]);
-  }
-  std::swap(copy->_items, itemCopies);
-  return copy;
-}
-
 #pragma mark - Public
 
 - (void)setNavigationManager:(web::NavigationManagerImpl*)navigationManager {

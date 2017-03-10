@@ -153,10 +153,6 @@ class NavigationManagerImpl : public NavigationManager {
   // Called to reset the transient url rewriter list.
   void RemoveTransientURLRewriters();
 
-  // Copy state from |navigation_manager|, including a copy of that object's
-  // CRWSessionController.
-  void CopyState(NavigationManagerImpl* navigation_manager);
-
   // Returns the navigation index that differs from the current item (or pending
   // item if it exists) by the specified |offset|, skipping redirect navigation
   // items. The index returned is not guaranteed to be valid.
