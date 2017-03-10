@@ -434,10 +434,9 @@ void SliderContainerElement::updateTouchEventHandlerRegistry() {
   if (m_hasTouchEventHandler) {
     return;
   }
-  if (document().frameHost() &&
+  if (document().page() &&
       document().lifecycle().state() < DocumentLifecycle::Stopping) {
-    EventHandlerRegistry& registry =
-        document().frameHost()->eventHandlerRegistry();
+    EventHandlerRegistry& registry = document().page()->eventHandlerRegistry();
     registry.didAddEventHandler(
         *this, EventHandlerRegistry::TouchStartOrMoveEventPassive);
     m_hasTouchEventHandler = true;

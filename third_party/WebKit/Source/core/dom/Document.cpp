@@ -2547,7 +2547,7 @@ void Document::shutdown() {
 
   styleEngine().didDetach();
 
-  frameHost()->eventHandlerRegistry().documentDetached(*this);
+  page()->eventHandlerRegistry().documentDetached(*this);
 
   // Signal destruction to mutation observers.
   SynchronousMutationNotifier::notifyContextDestroyed();

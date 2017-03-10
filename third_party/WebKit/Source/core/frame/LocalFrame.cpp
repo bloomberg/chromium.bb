@@ -440,7 +440,7 @@ void LocalFrame::detach(FrameDetachType type) {
   script().clearForClose();
   setView(nullptr);
 
-  m_host->eventHandlerRegistry().didRemoveAllEventHandlers(*domWindow());
+  m_host->page().eventHandlerRegistry().didRemoveAllEventHandlers(*domWindow());
 
   domWindow()->frameDestroyed();
 

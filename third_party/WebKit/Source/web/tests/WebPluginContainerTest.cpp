@@ -786,9 +786,8 @@ TEST_F(WebPluginContainerTest, NeedsWheelEvents) {
   pluginContainerOneElement.pluginContainer()->setWantsWheelEvents(true);
 
   runPendingTasks();
-  EXPECT_TRUE(
-      webView->page()->frameHost().eventHandlerRegistry().hasEventHandlers(
-          EventHandlerRegistry::WheelEventBlocking));
+  EXPECT_TRUE(webView->page()->eventHandlerRegistry().hasEventHandlers(
+      EventHandlerRegistry::WheelEventBlocking));
 }
 
 }  // namespace blink

@@ -3311,8 +3311,7 @@ TEST_P(WebViewTest, HasTouchEventHandlers) {
 
   // Adding the first document handler results in a has-handlers call.
   Document* document = webViewImpl->mainFrameImpl()->frame()->document();
-  EventHandlerRegistry* registry =
-      &document->frameHost()->eventHandlerRegistry();
+  EventHandlerRegistry* registry = &document->page()->eventHandlerRegistry();
   registry->didAddEventHandler(*document, touchEvent);
   EXPECT_EQ(0, client.getAndResetHasTouchEventHandlerCallCount(false));
   EXPECT_EQ(1, client.getAndResetHasTouchEventHandlerCallCount(true));
@@ -3427,8 +3426,7 @@ TEST_P(WebViewTest, DeleteElementWithRegisteredHandler) {
   Persistent<Document> document =
       webViewImpl->mainFrameImpl()->frame()->document();
   Element* div = document->getElementById("div");
-  EventHandlerRegistry& registry =
-      document->frameHost()->eventHandlerRegistry();
+  EventHandlerRegistry& registry = document->page()->eventHandlerRegistry();
 
   registry.didAddEventHandler(*div, EventHandlerRegistry::ScrollEvent);
   EXPECT_TRUE(registry.hasEventHandlers(EventHandlerRegistry::ScrollEvent));

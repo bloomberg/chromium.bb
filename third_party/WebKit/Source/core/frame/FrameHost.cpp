@@ -91,14 +91,6 @@ const VisualViewport& FrameHost::visualViewport() const {
   return *m_visualViewport;
 }
 
-EventHandlerRegistry& FrameHost::eventHandlerRegistry() {
-  return page().eventHandlerRegistry();
-}
-
-const EventHandlerRegistry& FrameHost::eventHandlerRegistry() const {
-  return page().eventHandlerRegistry();
-}
-
 ConsoleMessageStorage& FrameHost::consoleMessageStorage() {
   return *m_consoleMessageStorage;
 }

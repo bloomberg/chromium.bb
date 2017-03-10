@@ -1814,8 +1814,7 @@ void LayoutObject::styleWillChange(StyleDifference diff,
   if (node() && !node()->isTextNode() &&
       (oldTouchAction == TouchActionAuto) !=
           (newStyle.getTouchAction() == TouchActionAuto)) {
-    EventHandlerRegistry& registry =
-        document().frameHost()->eventHandlerRegistry();
+    EventHandlerRegistry& registry = document().page()->eventHandlerRegistry();
     if (newStyle.getTouchAction() != TouchActionAuto)
       registry.didAddEventHandler(
           *node(), EventHandlerRegistry::TouchStartOrMoveEventBlocking);
@@ -2629,8 +2628,7 @@ void LayoutObject::willBeDestroyed() {
   // previously may have already been removed by the Document independently.
   if (node() && !node()->isTextNode() && m_style &&
       m_style->getTouchAction() != TouchActionAuto) {
-    EventHandlerRegistry& registry =
-        document().frameHost()->eventHandlerRegistry();
+    EventHandlerRegistry& registry = document().page()->eventHandlerRegistry();
     if (registry
             .eventHandlerTargets(
                 EventHandlerRegistry::TouchStartOrMoveEventBlocking)

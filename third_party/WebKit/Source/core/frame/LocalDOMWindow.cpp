@@ -1414,8 +1414,8 @@ void LocalDOMWindow::addedEventListener(
     const AtomicString& eventType,
     RegisteredEventListener& registeredListener) {
   DOMWindow::addedEventListener(eventType, registeredListener);
-  if (frame() && frame()->host())
-    frame()->host()->eventHandlerRegistry().didAddEventHandler(
+  if (frame() && frame()->page())
+    frame()->page()->eventHandlerRegistry().didAddEventHandler(
         *this, eventType, registeredListener.options());
 
   if (Document* document = this->document())
@@ -1447,8 +1447,8 @@ void LocalDOMWindow::removedEventListener(
     const AtomicString& eventType,
     const RegisteredEventListener& registeredListener) {
   DOMWindow::removedEventListener(eventType, registeredListener);
-  if (frame() && frame()->host())
-    frame()->host()->eventHandlerRegistry().didRemoveEventHandler(
+  if (frame() && frame()->page())
+    frame()->page()->eventHandlerRegistry().didRemoveEventHandler(
         *this, eventType, registeredListener.options());
 
   for (auto& it : m_eventListenerObservers) {
@@ -1544,8 +1544,8 @@ void LocalDOMWindow::removeAllEventListeners() {
     it->didRemoveAllEventListeners(this);
   }
 
-  if (frame() && frame()->host())
-    frame()->host()->eventHandlerRegistry().didRemoveAllEventHandlers(*this);
+  if (frame() && frame()->page())
+    frame()->page()->eventHandlerRegistry().didRemoveAllEventHandlers(*this);
 
   removeAllUnloadEventListeners(this);
   removeAllBeforeUnloadEventListeners(this);

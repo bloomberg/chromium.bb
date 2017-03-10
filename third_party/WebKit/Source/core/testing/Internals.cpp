@@ -1565,8 +1565,7 @@ static unsigned eventHandlerCount(
     EventHandlerRegistry::EventHandlerClass handlerClass) {
   if (!document.frameHost())
     return 0;
-  EventHandlerRegistry* registry =
-      &document.frameHost()->eventHandlerRegistry();
+  EventHandlerRegistry* registry = &document.page()->eventHandlerRegistry();
   unsigned count = 0;
   const EventTargetSet* targets = registry->eventHandlerTargets(handlerClass);
   if (targets) {

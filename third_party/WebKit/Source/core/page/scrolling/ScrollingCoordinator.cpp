@@ -1026,7 +1026,7 @@ static void accumulateDocumentTouchEventTargetRects(LayerHitTestRects& rects,
                                                     const Document* document) {
   DCHECK(document);
   const EventTargetSet* targets =
-      document->frameHost()->eventHandlerRegistry().eventHandlerTargets(
+      document->page()->eventHandlerRegistry().eventHandlerTargets(
           EventHandlerRegistry::TouchStartOrMoveEventBlocking);
   if (!targets)
     return;

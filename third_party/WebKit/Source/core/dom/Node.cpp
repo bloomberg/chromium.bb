@@ -1845,11 +1845,10 @@ ExecutionContext* Node::getExecutionContext() const {
 }
 
 void Node::willMoveToNewDocument(Document& oldDocument, Document& newDocument) {
-  if (!oldDocument.frameHost() ||
-      oldDocument.frameHost() == newDocument.frameHost())
+  if (!oldDocument.page() || oldDocument.page() == newDocument.page())
     return;
 
-  oldDocument.frameHost()->eventHandlerRegistry().didMoveOutOfPage(*this);
+  oldDocument.page()->eventHandlerRegistry().didMoveOutOfPage(*this);
 }
 
 void Node::didMoveToNewDocument(Document& oldDocument) {
@@ -1864,9 +1863,8 @@ void Node::didMoveToNewDocument(Document& oldDocument) {
   }
 
   oldDocument.markers().removeMarkers(this);
-  if (document().frameHost() &&
-      document().frameHost() != oldDocument.frameHost()) {
-    document().frameHost()->eventHandlerRegistry().didMoveIntoPage(*this);
+  if (document().page() && document().page() != oldDocument.page()) {
+    document().page()->eventHandlerRegistry().didMoveIntoPage(*this);
   }
 
   if (const HeapVector<TraceWrapperMember<MutationObserverRegistration>>*
@@ -1887,8 +1885,8 @@ void Node::addedEventListener(const AtomicString& eventType,
                               RegisteredEventListener& registeredListener) {
   EventTarget::addedEventListener(eventType, registeredListener);
   document().addListenerTypeIfNeeded(eventType);
-  if (FrameHost* frameHost = document().frameHost())
-    frameHost->eventHandlerRegistry().didAddEventHandler(
+  if (Page* page = document().page())
+    page->eventHandlerRegistry().didAddEventHandler(
         *this, eventType, registeredListener.options());
 }
 
@@ -1899,15 +1897,14 @@ void Node::removedEventListener(
   // FIXME: Notify Document that the listener has vanished. We need to keep
   // track of a number of listeners for each type, not just a bool - see
   // https://bugs.webkit.org/show_bug.cgi?id=33861
-  if (FrameHost* frameHost = document().frameHost())
-    frameHost->eventHandlerRegistry().didRemoveEventHandler(
+  if (Page* page = document().page())
+    page->eventHandlerRegistry().didRemoveEventHandler(
         *this, eventType, registeredListener.options());
 }
 
 void Node::removeAllEventListeners() {
-  if (hasEventListeners() && document().frameHost())
-    document().frameHost()->eventHandlerRegistry().didRemoveAllEventHandlers(
-        *this);
+  if (hasEventListeners() && document().page())
+    document().page()->eventHandlerRegistry().didRemoveAllEventHandlers(*this);
   EventTarget::removeAllEventListeners();
 }
 

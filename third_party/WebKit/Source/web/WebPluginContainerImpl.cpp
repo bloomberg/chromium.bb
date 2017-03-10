@@ -541,8 +541,8 @@ void WebPluginContainerImpl::requestTouchEventType(
   if (m_touchEventRequestType == requestType || !m_element)
     return;
 
-  if (FrameHost* frameHost = m_element->document().frameHost()) {
-    EventHandlerRegistry& registry = frameHost->eventHandlerRegistry();
+  if (Page* page = m_element->document().page()) {
+    EventHandlerRegistry& registry = page->eventHandlerRegistry();
     if (requestType != TouchEventRequestTypeNone &&
         m_touchEventRequestType == TouchEventRequestTypeNone)
       registry.didAddEventHandler(
@@ -558,8 +558,8 @@ void WebPluginContainerImpl::requestTouchEventType(
 void WebPluginContainerImpl::setWantsWheelEvents(bool wantsWheelEvents) {
   if (m_wantsWheelEvents == wantsWheelEvents)
     return;
-  if (FrameHost* frameHost = m_element->document().frameHost()) {
-    EventHandlerRegistry& registry = frameHost->eventHandlerRegistry();
+  if (Page* page = m_element->document().page()) {
+    EventHandlerRegistry& registry = page->eventHandlerRegistry();
     if (wantsWheelEvents)
       registry.didAddEventHandler(*m_element,
                                   EventHandlerRegistry::WheelEventBlocking);

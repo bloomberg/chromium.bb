@@ -4861,8 +4861,8 @@ void FrameView::updateRenderThrottlingStatus(
     setSubtreeNeedsPaintPropertyUpdate();
   }
 
-  bool hasHandlers = m_frame->host() &&
-                     m_frame->host()->eventHandlerRegistry().hasEventHandlers(
+  bool hasHandlers = m_frame->page() &&
+                     m_frame->page()->eventHandlerRegistry().hasEventHandlers(
                          EventHandlerRegistry::TouchStartOrMoveEventBlocking);
   if (wasThrottled != canThrottleRendering() && scrollingCoordinator &&
       hasHandlers)

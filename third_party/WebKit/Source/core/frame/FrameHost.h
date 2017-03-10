@@ -42,7 +42,6 @@ namespace blink {
 
 class BrowserControls;
 class ConsoleMessageStorage;
-class EventHandlerRegistry;
 class OverscrollController;
 class Page;
 class TopDocumentRootScrollerController;
@@ -77,9 +76,6 @@ class CORE_EXPORT FrameHost final
 
   VisualViewport& visualViewport();
   const VisualViewport& visualViewport() const;
-
-  EventHandlerRegistry& eventHandlerRegistry();
-  const EventHandlerRegistry& eventHandlerRegistry() const;
 
   ConsoleMessageStorage& consoleMessageStorage();
   const ConsoleMessageStorage& consoleMessageStorage() const;
