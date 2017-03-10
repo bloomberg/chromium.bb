@@ -82,13 +82,16 @@ class AV1SelfguidedFilterTest
   }
 
   void RunCorrectnessTest() {
-    const int w = 256, h = 256, stride = 672, out_stride = 672;
+    // Set the maximum width/height to test here. We actually test a small
+    // range of sizes *up to* this size, so that we can check, eg.,
+    // the behaviour on tiles which are not a multiple of 4 wide.
+    const int max_w = 260, max_h = 260, stride = 672, out_stride = 672;
     const int NUM_ITERS = 81;
     int i, j, k;
 
-    uint8_t *input = new uint8_t[stride * (h + 16)];
-    uint8_t *output = new uint8_t[out_stride * (h + 16)];
-    uint8_t *output2 = new uint8_t[out_stride * (h + 16)];
+    uint8_t *input = new uint8_t[stride * max_h];
+    uint8_t *output = new uint8_t[out_stride * max_h];
+    uint8_t *output2 = new uint8_t[out_stride * max_h];
     int32_t *tmpbuf = (int32_t *)aom_malloc(RESTORATION_TMPBUF_SIZE);
     memset(tmpbuf, 0, RESTORATION_TMPBUF_SIZE);
 
@@ -97,8 +100,8 @@ class AV1SelfguidedFilterTest
     av1_loop_restoration_precal();
 
     for (i = 0; i < NUM_ITERS; ++i) {
-      for (j = 0; j < h; ++j)
-        for (k = 0; k < w; ++k) input[j * stride + k] = rnd.Rand16() & 0xFF;
+      for (j = 0; j < max_h; ++j)
+        for (k = 0; k < max_w; ++k) input[j * stride + k] = rnd.Rand16() & 0xFF;
 
       int xqd[2] = {
         SGRPROJ_PRJ_MIN0 +
@@ -109,8 +112,8 @@ class AV1SelfguidedFilterTest
       int eps = rnd.PseudoUniform(1 << SGRPROJ_PARAMS_BITS);
 
       // Test various tile sizes around 256x256
-      int test_w = w + 4 - (i / 9);
-      int test_h = h + 4 - (i % 9);
+      int test_w = max_w - (i / 9);
+      int test_h = max_h - (i % 9);
 
       apply_selfguided_restoration(input, test_w, test_h, stride, eps, xqd,
                                    output, out_stride, tmpbuf);
@@ -197,15 +200,18 @@ class AV1HighbdSelfguidedFilterTest
   }
 
   void RunCorrectnessTest() {
-    const int w = 256, h = 256, stride = 672, out_stride = 672;
+    // Set the maximum width/height to test here. We actually test a small
+    // range of sizes *up to* this size, so that we can check, eg.,
+    // the behaviour on tiles which are not a multiple of 4 wide.
+    const int max_w = 260, max_h = 260, stride = 672, out_stride = 672;
     const int NUM_ITERS = 81;
     int i, j, k;
     int bit_depth = GET_PARAM(0);
     int mask = (1 << bit_depth) - 1;
 
-    uint16_t *input = new uint16_t[stride * (h + 16)];
-    uint16_t *output = new uint16_t[out_stride * (h + 16)];
-    uint16_t *output2 = new uint16_t[out_stride * (h + 16)];
+    uint16_t *input = new uint16_t[stride * max_h];
+    uint16_t *output = new uint16_t[out_stride * max_h];
+    uint16_t *output2 = new uint16_t[out_stride * max_h];
     int32_t *tmpbuf = (int32_t *)aom_malloc(RESTORATION_TMPBUF_SIZE);
     memset(tmpbuf, 0, RESTORATION_TMPBUF_SIZE);
 
@@ -214,8 +220,8 @@ class AV1HighbdSelfguidedFilterTest
     av1_loop_restoration_precal();
 
     for (i = 0; i < NUM_ITERS; ++i) {
-      for (j = 0; j < h; ++j)
-        for (k = 0; k < w; ++k) input[j * stride + k] = rnd.Rand16() & mask;
+      for (j = 0; j < max_h; ++j)
+        for (k = 0; k < max_w; ++k) input[j * stride + k] = rnd.Rand16() & mask;
 
       int xqd[2] = {
         SGRPROJ_PRJ_MIN0 +
@@ -226,8 +232,8 @@ class AV1HighbdSelfguidedFilterTest
       int eps = rnd.PseudoUniform(1 << SGRPROJ_PARAMS_BITS);
 
       // Test various tile sizes around 256x256
-      int test_w = w + 4 - (i / 9);
-      int test_h = h + 4 - (i % 9);
+      int test_w = max_w - (i / 9);
+      int test_h = max_h - (i % 9);
 
       apply_selfguided_restoration_highbd(input, test_w, test_h, stride,
                                           bit_depth, eps, xqd, output,
