@@ -515,6 +515,8 @@ void LocalFrame::documentAttached() {
   selection().documentAttached(document());
   inputMethodController().documentAttached(document());
   spellChecker().documentAttached(document());
+  if (isMainFrame())
+    m_hasReceivedUserGesture = false;
 }
 
 LocalDOMWindow* LocalFrame::domWindow() const {
