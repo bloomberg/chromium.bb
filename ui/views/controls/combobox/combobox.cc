@@ -131,8 +131,11 @@ class TransparentButton : public CustomButton {
   ~TransparentButton() override {}
 
   bool OnMousePressed(const ui::MouseEvent& mouse_event) override {
-    if (!UseMd())
-      parent()->RequestFocus();
+#if !defined(OS_MACOSX)
+    // On Mac, comboboxes do not take focus on mouse click, but on other
+    // platforms they do.
+    parent()->RequestFocus();
+#endif
     return CustomButton::OnMousePressed(mouse_event);
   }
 
