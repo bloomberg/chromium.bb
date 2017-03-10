@@ -162,6 +162,16 @@ IoThreadClientThrottle::GetIoThreadClient() const {
   if (content::ResourceRequestInfo::OriginatedFromServiceWorker(request_))
     return AwContentsIoThreadClient::GetServiceWorkerIoThreadClient();
 
+  if (render_process_id_ == -1 || render_frame_id_ == -1) {
+    const content::ResourceRequestInfo* resourceRequestInfo =
+        content::ResourceRequestInfo::ForRequest(request_);
+    if (resourceRequestInfo == nullptr) {
+      return nullptr;
+    }
+    return AwContentsIoThreadClient::FromID(
+        resourceRequestInfo->GetFrameTreeNodeId());
+  }
+
   return AwContentsIoThreadClient::FromID(render_process_id_, render_frame_id_);
 }
 
