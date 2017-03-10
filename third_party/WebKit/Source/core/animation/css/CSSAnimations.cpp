@@ -641,8 +641,7 @@ void CSSAnimations::calculateTransitionUpdateForProperty(
         state.activeTransitions->find(property);
     if (activeTransitionIter != state.activeTransitions->end()) {
       const RunningTransition* runningTransition = &activeTransitionIter->value;
-      to = CSSAnimatableValueFactory::create(property.cssProperty(),
-                                             state.style);
+      to = CSSAnimatableValueFactory::create(property, state.style);
       const AnimatableValue* activeTo = runningTransition->to.get();
       if (to->equals(activeTo))
         return;
@@ -663,9 +662,9 @@ void CSSAnimations::calculateTransitionUpdateForProperty(
   }
 
   if (!to)
-    to = CSSAnimatableValueFactory::create(property.cssProperty(), state.style);
+    to = CSSAnimatableValueFactory::create(property, state.style);
   RefPtr<AnimatableValue> from =
-      CSSAnimatableValueFactory::create(property.cssProperty(), state.oldStyle);
+      CSSAnimatableValueFactory::create(property, state.oldStyle);
 
   // TODO(alancutter): Support transitions on registered custom properties and
   // give the map a PropertyRegistry.

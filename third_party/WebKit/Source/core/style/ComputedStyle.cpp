@@ -1859,6 +1859,17 @@ const CSSValue* ComputedStyle::getRegisteredVariable(
              : nullptr;
 }
 
+const CSSValue* ComputedStyle::getRegisteredVariable(
+    const AtomicString& name) const {
+  // Registered custom properties are by default non-inheriting so check there
+  // first.
+  const CSSValue* result = getRegisteredVariable(name, false);
+  if (result) {
+    return result;
+  }
+  return getRegisteredVariable(name, true);
+}
+
 float ComputedStyle::wordSpacing() const {
   return getFontDescription().wordSpacing();
 }

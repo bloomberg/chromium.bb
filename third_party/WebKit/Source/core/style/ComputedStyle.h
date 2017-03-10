@@ -2399,6 +2399,8 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   const CSSValue* getRegisteredVariable(const AtomicString&,
                                         bool isInheritedProperty) const;
 
+  const CSSValue* getRegisteredVariable(const AtomicString&) const;
+
   // Animations.
   CSSAnimationData& accessAnimations();
   const CSSAnimationData* animations() const {

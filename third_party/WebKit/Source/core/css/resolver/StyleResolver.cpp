@@ -806,7 +806,8 @@ PassRefPtr<AnimatableValue> StyleResolver::createAnimatableValueSnapshot(
     state.fontBuilder().createFont(
         state.document().styleEngine().fontSelector(), state.mutableStyleRef());
   }
-  return CSSAnimatableValueFactory::create(property, *state.style());
+  return CSSAnimatableValueFactory::create(PropertyHandle(property),
+                                           *state.style());
 }
 
 PseudoElement* StyleResolver::createPseudoElement(Element* parent,
