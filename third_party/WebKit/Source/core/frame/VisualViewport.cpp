@@ -60,8 +60,8 @@
 
 namespace blink {
 
-VisualViewport::VisualViewport(FrameHost& owner)
-    : m_frameHost(&owner),
+VisualViewport::VisualViewport(Page& owner)
+    : m_page(&owner),
       m_scale(1),
       m_browserControlsAdjustment(0),
       m_maxPageScale(-1),
@@ -74,7 +74,7 @@ VisualViewport::~VisualViewport() {
 }
 
 DEFINE_TRACE(VisualViewport) {
-  visitor->trace(m_frameHost);
+  visitor->trace(m_page);
   ScrollableArea::trace(visitor);
 }
 

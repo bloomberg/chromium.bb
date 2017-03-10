@@ -47,7 +47,7 @@ FrameHost* FrameHost::create(Page& page) {
 
 FrameHost::FrameHost(Page& page)
     : m_page(&page),
-      m_visualViewport(VisualViewport::create(*this)),
+      m_visualViewport(VisualViewport::create(page)),
       m_overscrollController(
           OverscrollController::create(*m_visualViewport,
                                        m_page->chromeClient())),

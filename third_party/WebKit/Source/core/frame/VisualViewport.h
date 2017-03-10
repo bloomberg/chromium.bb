@@ -34,7 +34,6 @@
 #include <memory>
 #include "core/CoreExport.h"
 #include "core/events/Event.h"
-#include "core/frame/FrameHost.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/geometry/FloatSize.h"
 #include "platform/geometry/IntSize.h"
@@ -89,9 +88,7 @@ class CORE_EXPORT VisualViewport final
   USING_GARBAGE_COLLECTED_MIXIN(VisualViewport);
 
  public:
-  static VisualViewport* create(FrameHost& host) {
-    return new VisualViewport(host);
-  }
+  static VisualViewport* create(Page& host) { return new VisualViewport(host); }
   ~VisualViewport() override;
 
   DECLARE_VIRTUAL_TRACE();
@@ -236,7 +233,7 @@ class CORE_EXPORT VisualViewport final
   bool shouldDisableDesktopWorkarounds() const;
 
  private:
-  explicit VisualViewport(FrameHost&);
+  explicit VisualViewport(Page&);
 
   bool didSetScaleOrLocation(float scale, const FloatPoint& location);
 
@@ -266,11 +263,11 @@ class CORE_EXPORT VisualViewport final
   LocalFrame* mainFrame() const;
 
   Page& page() const {
-    DCHECK(m_frameHost);
-    return m_frameHost->page();
+    DCHECK(m_page);
+    return *m_page;
   }
 
-  Member<FrameHost> m_frameHost;
+  Member<Page> m_page;
   std::unique_ptr<GraphicsLayer> m_rootTransformLayer;
   std::unique_ptr<GraphicsLayer> m_innerViewportContainerLayer;
   std::unique_ptr<GraphicsLayer> m_overscrollElasticityLayer;
