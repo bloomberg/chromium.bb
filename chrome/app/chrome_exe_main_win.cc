@@ -230,6 +230,7 @@ int main() {
   HINSTANCE instance = GetModuleHandle(nullptr);
 #endif
   install_static::InitializeFromPrimaryModule();
+  SignalInitializeCrashReporting();
 
   // Initialize the CommandLine singleton from the environment.
   base::CommandLine::Init(0, nullptr);

@@ -116,15 +116,9 @@ base::FilePath PlatformCrashpadInitialization(bool initial_client,
       exe_file = exe_dir.Append(FILE_PATH_LITERAL("crashpad_handler.exe"));
     }
 
-    if (!g_crashpad_client.Get().StartHandler(
-            exe_file, database_path, metrics_path, url, process_annotations,
-            arguments, false, true)) {
-      // This means that CreateThread() failed, so this process is very messed
-      // up. This should be effectively unreachable. It is unlikely that there
-      // is any utility to ever making this non-fatal, however, if this is done,
-      // calls to BlockUntilHandlerStarted() will have to be amended.
-      LOG(FATAL) << "synchronous part of handler startup failed";
-    }
+    g_crashpad_client.Get().StartHandler(exe_file, database_path, metrics_path,
+                                         url, process_annotations, arguments,
+                                         false, false);
 
     // If we're the browser, push the pipe name into the environment so child
     // processes can connect to it. If we inherited another crashpad_handler's
@@ -212,16 +206,6 @@ MSVC_ENABLE_OPTIMIZE()
 }  // namespace
 
 }  // namespace internal
-
-void BlockUntilHandlerStarted() {
-  // We know that the StartHandler() at least started asynchronous startup if
-  // we're here, as if it doesn't, we abort.
-  const unsigned int kTimeoutMS = 5000;
-  if (!internal::g_crashpad_client.Get().WaitForHandlerStart(kTimeoutMS)) {
-    LOG(ERROR) << "Crashpad handler failed to start, crash reporting disabled";
-  }
-}
-
 }  // namespace crash_reporter
 
 extern "C" {
