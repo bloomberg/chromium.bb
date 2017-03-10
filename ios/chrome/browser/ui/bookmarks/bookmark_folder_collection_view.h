@@ -31,7 +31,7 @@ class BookmarkNode;
 // Called when something outside the view causes the promo state to change.
 - (void)promoStateChangedAnimated:(BOOL)animate;
 
-@property(nonatomic, assign) id<BookmarkFolderCollectionViewDelegate> delegate;
+@property(nonatomic, weak) id<BookmarkFolderCollectionViewDelegate> delegate;
 @property(nonatomic, assign, readonly) const bookmarks::BookmarkNode* folder;
 
 @end

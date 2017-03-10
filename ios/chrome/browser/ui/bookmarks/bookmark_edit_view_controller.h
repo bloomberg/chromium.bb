@@ -43,7 +43,7 @@ class ChromeBrowserState;
 // changes underneath it.
 @interface BookmarkEditViewController : CollectionViewController
 
-@property(nonatomic, assign) id<BookmarkEditViewControllerDelegate> delegate;
+@property(nonatomic, weak) id<BookmarkEditViewControllerDelegate> delegate;
 
 // Designated initializer.
 // |bookmark|: mustn't be NULL at initialization time. It also mustn't be a

@@ -31,7 +31,7 @@ class BookmarkNode;
 // The bookmark model is assumed to be loaded, thus also not to be NULL.
 @interface BookmarkFolderViewController : UIViewController
 
-@property(nonatomic, assign) id<BookmarkFolderViewControllerDelegate> delegate;
+@property(nonatomic, weak) id<BookmarkFolderViewControllerDelegate> delegate;
 
 // The current nodes (bookmarks or folders) that are considered for a move.
 @property(nonatomic, assign, readonly)

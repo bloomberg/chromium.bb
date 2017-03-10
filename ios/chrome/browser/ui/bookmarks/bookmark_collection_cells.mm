@@ -7,8 +7,7 @@
 #import <QuartzCore/QuartzCore.h>
 
 #include "base/logging.h"
-#include "base/mac/objc_property_releaser.h"
-#include "base/mac/scoped_nsobject.h"
+
 #import "ios/chrome/browser/ui/bookmarks/bookmark_extended_button.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_home_view_controller.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_utils_ios.h"
@@ -22,38 +21,37 @@
 #import "ui/gfx/ios/NSString+CrStringDrawing.h"
 #include "url/gurl.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace {
 const CGFloat kBookmarkItemCellDefaultImageSize = 40.0;
 const CGFloat kBookmarkFolderCellDefaultImageSize = 24.0;
 }  // namespace
 
-@interface BookmarkCell () {
- @protected
-  // Subclasses should set these in the constructor with the wanted values.
-  CGFloat _imageSize;
-
- @private
-  base::mac::ObjCPropertyReleaser _propertyReleaser_BookmarkCell;
-}
+@interface BookmarkCell ()
 // Redefined to be read-write.
-@property(nonatomic, retain) UILabel* titleLabel;
+@property(nonatomic, strong) UILabel* titleLabel;
 // Redefined to readwrite.
-@property(nonatomic, retain) UIImageView* imageView;
+@property(nonatomic, strong) UIImageView* imageView;
 // Label to show placeholder text when there is no image displayed.
-@property(nonatomic, retain) UILabel* placeholderLabel;
+@property(nonatomic, strong) UILabel* placeholderLabel;
 // When the cell is selected for editing, a cover is shown with a blue color.
 // Subclasses should insert new views below this view.
-@property(nonatomic, retain) UIView* highlightCover;
+@property(nonatomic, strong) UIView* highlightCover;
 // Lists the accessibility elements that are to be seen by UIAccessibility.
 @property(nonatomic, readonly) NSMutableArray* accessibilityElements;
 // Location of the last touch on the cell.
 @property(nonatomic, assign) CGPoint touchLocation;
 // The view doing the highlight animation. Only set while the cell is
 // highlighted.
-@property(nonatomic, retain) MDCInkView* touchFeedbackView;
-@property(nonatomic, retain) BookmarkExtendedButton* button;
+@property(nonatomic, strong) MDCInkView* touchFeedbackView;
+@property(nonatomic, strong) BookmarkExtendedButton* button;
 @property(nonatomic, assign) SEL buttonAction;
-@property(nonatomic, assign) id buttonTarget;
+@property(nonatomic, weak) id buttonTarget;
+// Side of a square image. Subclasses should set this to desired size.
+@property(nonatomic, assign) CGFloat imageSize;
 @end
 
 @implementation BookmarkCell
@@ -68,6 +66,7 @@ const CGFloat kBookmarkFolderCellDefaultImageSize = 24.0;
 @synthesize buttonAction = _buttonAction;
 @synthesize buttonTarget = _buttonTarget;
 @synthesize placeholderLabel = _placeholderLabel;
+@synthesize imageSize = _imageSize;
 
 + (NSString*)reuseIdentifier {
   NOTREACHED();
@@ -77,7 +76,6 @@ const CGFloat kBookmarkFolderCellDefaultImageSize = 24.0;
 - (instancetype)initWithFrame:(CGRect)frame {
   self = [super initWithFrame:frame];
   if (self) {
-    _propertyReleaser_BookmarkCell.Init(self, [BookmarkCell class]);
     self.exclusiveTouch = YES;
     self.backgroundColor = [UIColor whiteColor];
 
@@ -102,8 +100,7 @@ const CGFloat kBookmarkFolderCellDefaultImageSize = 24.0;
     _highlightCover.translatesAutoresizingMaskIntoConstraints = NO;
     [self.contentView addSubview:_highlightCover];
 
-    self.button = base::scoped_nsobject<BookmarkExtendedButton>(
-        [[BookmarkExtendedButton alloc] init]);
+    self.button = [[BookmarkExtendedButton alloc] init];
     self.button.contentMode = UIViewContentModeCenter;
     self.button.backgroundColor = [UIColor clearColor];
     [self.button addTarget:self
@@ -127,7 +124,7 @@ const CGFloat kBookmarkFolderCellDefaultImageSize = 24.0;
 }
 
 - (void)updateConstraints {
-  if (_imageSize) {
+  if (self.imageSize) {
     // Create constraints.
 
     // Align all the views on the same horizontal line.
@@ -152,10 +149,10 @@ const CGFloat kBookmarkFolderCellDefaultImageSize = 24.0;
           @"highlight" : self.highlightCover
         },
         @{
-          @"buttonSize" : [NSNumber numberWithFloat:32.0],
-          @"leadingImageMargin" : [NSNumber numberWithFloat:16.0],
-          @"leadingMargin" : [NSNumber numberWithFloat:64.0],
-          @"imageSize" : [NSNumber numberWithFloat:_imageSize],
+          @"buttonSize" :@32.0,
+          @"leadingImageMargin" : @16.0,
+          @"leadingMargin" : @64.0,
+          @"imageSize" : @(self.imageSize),
         },
         self.contentView);
     // clang-format on
@@ -247,8 +244,8 @@ const CGFloat kBookmarkFolderCellDefaultImageSize = 24.0;
 
   if (highlighted) {
     // Creates an ink feedback and animates it.
-    base::scoped_nsobject<MDCInkView> touchFeedbackView(
-        [[MDCInkView alloc] initWithFrame:self.bounds]);
+    MDCInkView* touchFeedbackView =
+        [[MDCInkView alloc] initWithFrame:self.bounds];
     [self addSubview:touchFeedbackView];
     self.touchFeedbackView = touchFeedbackView;
     [self.touchFeedbackView startTouchBeganAnimationAtPoint:self.touchLocation
@@ -272,9 +269,12 @@ const CGFloat kBookmarkFolderCellDefaultImageSize = 24.0;
 }
 
 - (void)buttonTapped:(id)target {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Warc-performSelector-leaks"
   [self.buttonTarget performSelector:self.buttonAction
                           withObject:self
                           withObject:target];
+#pragma clang diagnostic pop
 }
 
 - (void)showButtonOfType:(bookmark_cell::ButtonType)buttonType
@@ -355,11 +355,6 @@ const CGFloat kBookmarkFolderCellDefaultImageSize = 24.0;
 
 #pragma mark - BookmarkItemCell
 
-@interface BookmarkItemCell () {
-  base::mac::ObjCPropertyReleaser _propertyReleaser_BookmarkItemCell;
-}
-@end
-
 @implementation BookmarkItemCell
 
 + (NSString*)reuseIdentifier {
@@ -373,15 +368,13 @@ const CGFloat kBookmarkFolderCellDefaultImageSize = 24.0;
 - (instancetype)initWithFrame:(CGRect)frame {
   self = [super initWithFrame:frame];
   if (self) {
-    _propertyReleaser_BookmarkItemCell.Init(self, [BookmarkItemCell class]);
-
     // Set the non-layout properties of the titles.
     UIFont* font = [MDCTypography subheadFont];
     self.titleLabel.font = font;
     self.titleLabel.backgroundColor = [UIColor clearColor];
     self.titleLabel.numberOfLines = 1;
 
-    _imageSize = kBookmarkItemCellDefaultImageSize;
+    self.imageSize = kBookmarkItemCellDefaultImageSize;
   }
   return self;
 }
@@ -406,13 +399,6 @@ const CGFloat kBookmarkFolderCellDefaultImageSize = 24.0;
 @end
 
 #pragma mark - BookmarkFolderCell
-
-@interface BookmarkFolderCell () {
-  base::mac::ObjCPropertyReleaser _propertyReleaser_BookmarkFolderCell;
-}
-
-@end
-
 @implementation BookmarkFolderCell
 
 + (NSString*)reuseIdentifier {
@@ -422,12 +408,10 @@ const CGFloat kBookmarkFolderCellDefaultImageSize = 24.0;
 - (instancetype)initWithFrame:(CGRect)frame {
   self = [super initWithFrame:frame];
   if (self) {
-    _propertyReleaser_BookmarkFolderCell.Init(self, [BookmarkFolderCell class]);
-
     self.imageView.image = [UIImage imageNamed:@"bookmark_gray_folder"];
     self.titleLabel.font = [MDCTypography subheadFont];
 
-    _imageSize = kBookmarkFolderCellDefaultImageSize;
+    self.imageSize = kBookmarkFolderCellDefaultImageSize;
   }
   return self;
 }
@@ -448,14 +432,13 @@ const CGFloat kBookmarkFolderCellDefaultImageSize = 24.0;
 
 #pragma mark - BookmarkHeaderView
 
-@interface BookmarkHeaderView () {
-  base::mac::ObjCPropertyReleaser _propertyReleaser_BookmarkHeaderView;
-}
-@property(nonatomic, retain) UILabel* titleLabel;
+@interface BookmarkHeaderView ()
+@property(nonatomic, strong) UILabel* titleLabel;
 @end
 
 @implementation BookmarkHeaderView
 @synthesize titleLabel = _titleLabel;
+
 + (NSString*)reuseIdentifier {
   return @"BookmarkHeaderView";
 }
@@ -467,9 +450,7 @@ const CGFloat kBookmarkFolderCellDefaultImageSize = 24.0;
 - (instancetype)initWithFrame:(CGRect)frame {
   self = [super initWithFrame:frame];
   if (self) {
-    _propertyReleaser_BookmarkHeaderView.Init(self, [BookmarkHeaderView class]);
-    base::scoped_nsobject<UILabel> titleLabel(
-        [[UILabel alloc] initWithFrame:CGRectZero]);
+    UILabel* titleLabel = [[UILabel alloc] initWithFrame:CGRectZero];
     self.titleLabel = titleLabel;
     UIFont* font = [MDCTypography body2Font];
     self.titleLabel.font = font;
@@ -507,11 +488,9 @@ const CGFloat kBookmarkFolderCellDefaultImageSize = 24.0;
 
 #pragma mark - BookmarkHeaderSeparatorView
 
-@interface BookmarkHeaderSeparatorView () {
-  base::mac::ObjCPropertyReleaser _propertyReleaser_BookmarkHeaderSeparatorView;
-}
+@interface BookmarkHeaderSeparatorView ()
 // The bottom separator line.
-@property(nonatomic, retain) UIView* lineView;
+@property(nonatomic, strong) UIView* lineView;
 @end
 
 @implementation BookmarkHeaderSeparatorView
@@ -529,8 +508,6 @@ const CGFloat kBookmarkFolderCellDefaultImageSize = 24.0;
 - (instancetype)initWithFrame:(CGRect)frame {
   self = [super initWithFrame:frame];
   if (self) {
-    _propertyReleaser_BookmarkHeaderSeparatorView.Init(
-        self, [BookmarkHeaderSeparatorView class]);
     _lineView = [[UIView alloc] init];
     _lineView.backgroundColor = bookmark_utils_ios::separatorColor();
     [self addSubview:_lineView];

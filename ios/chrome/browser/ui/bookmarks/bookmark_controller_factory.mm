@@ -8,23 +8,26 @@
 #import "ios/chrome/browser/ui/bookmarks/bookmark_home_handset_view_controller.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_home_tablet_ntp_controller.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 @implementation BookmarkControllerFactory
 
 - (BookmarkHomeViewController*)
 bookmarkControllerWithBrowserState:(ios::ChromeBrowserState*)browserState
                             loader:(id<UrlLoader>)loader {
-  return [[[BookmarkHomeHandsetViewController alloc]
-      initWithLoader:loader
-        browserState:browserState] autorelease];
+  return
+      [[BookmarkHomeHandsetViewController alloc] initWithLoader:loader
+                                                   browserState:browserState];
 }
 
 - (id<NewTabPagePanelProtocol>)
 bookmarkPanelControllerForBrowserState:(ios::ChromeBrowserState*)browserState
                                 loader:(id<UrlLoader>)loader
                             colorCache:(NSMutableDictionary*)cache {
-  return [[[BookmarkHomeTabletNTPController alloc] initWithLoader:loader
-                                                     browserState:browserState]
-      autorelease];
+  return [[BookmarkHomeTabletNTPController alloc] initWithLoader:loader
+                                                    browserState:browserState];
 }
 
 @end

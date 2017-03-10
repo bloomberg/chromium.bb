@@ -7,10 +7,7 @@
 #include <memory>
 #include <vector>
 
-#import "base/ios/weak_nsobject.h"
 #include "base/logging.h"
-#include "base/mac/objc_property_releaser.h"
-#include "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_folder_editor_view_controller.h"
@@ -23,6 +20,10 @@
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/third_party/material_components_ios/src/components/AppBar/src/MaterialAppBar.h"
 #include "ui/base/l10n/l10n_util_mac.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 using bookmarks::BookmarkNode;
 
@@ -54,9 +55,7 @@ const NSInteger BookmarkFolderSectionCount = 2;
   std::set<const BookmarkNode*> _editedNodes;
   std::vector<const BookmarkNode*> _folders;
   std::unique_ptr<bookmarks::BookmarkModelBridge> _modelBridge;
-  base::scoped_nsobject<MDCAppBar> _appBar;
-  base::mac::ObjCPropertyReleaser
-      _propertyReleaser_BookmarkFolderViewController;
+  MDCAppBar* _appBar;
 }
 
 // Should the controller setup Cancel and Done buttons instead of a back button.
@@ -72,7 +71,7 @@ const NSInteger BookmarkFolderSectionCount = 2;
 @property(nonatomic, readonly) const BookmarkNode* selectedFolder;
 
 // The view controller to present when creating a new folder.
-@property(nonatomic, retain)
+@property(nonatomic, strong)
     BookmarkFolderEditorViewController* folderAddController;
 
 // A linear list of folders.
@@ -80,7 +79,7 @@ const NSInteger BookmarkFolderSectionCount = 2;
     const std::vector<const BookmarkNode*>& folders;
 
 // The table view that displays the options and folders.
-@property(nonatomic, retain) UITableView* tableView;
+@property(nonatomic, strong) UITableView* tableView;
 
 // Returns the cell for the default section and the given |row|.
 - (BookmarkFolderTableViewCell*)defaultSectionCellForRow:(NSInteger)row;
@@ -126,8 +125,6 @@ const NSInteger BookmarkFolderSectionCount = 2;
   DCHECK(selectedFolder == NULL || selectedFolder->is_folder());
   self = [super initWithNibName:nil bundle:nil];
   if (self) {
-    _propertyReleaser_BookmarkFolderViewController.Init(
-        self, [BookmarkFolderViewController class]);
     _allowsCancel = allowsCancel;
     _allowsNewFolders = allowsNewFolders;
     _bookmarkModel = bookmarkModel;
@@ -138,7 +135,7 @@ const NSInteger BookmarkFolderSectionCount = 2;
     _modelBridge.reset(
         new bookmarks::BookmarkModelBridge(self, _bookmarkModel));
 
-    _appBar.reset([[MDCAppBar alloc] init]);
+    _appBar = [[MDCAppBar alloc] init];
     [self addChildViewController:[_appBar headerViewController]];
   }
   return self;
@@ -155,7 +152,6 @@ const NSInteger BookmarkFolderSectionCount = 2;
   _tableView.dataSource = nil;
   _tableView.delegate = nil;
   _folderAddController.delegate = nil;
-  [super dealloc];
 }
 
 - (UIStatusBarStyle)preferredStatusBarStyle {
@@ -174,13 +170,13 @@ const NSInteger BookmarkFolderSectionCount = 2;
 
   self.title = l10n_util::GetNSString(IDS_IOS_BOOKMARK_CHOOSE_GROUP_BUTTON);
 
-  base::scoped_nsobject<UIBarButtonItem> doneItem([[UIBarButtonItem alloc]
+  UIBarButtonItem* doneItem = [[UIBarButtonItem alloc]
       initWithTitle:l10n_util::GetNSString(
                         IDS_IOS_BOOKMARK_EDIT_MODE_EXIT_MOBILE)
               style:UIBarButtonItemStylePlain
              target:self
-             action:@selector(done:)]);
-  doneItem.get().accessibilityIdentifier = @"Done";
+             action:@selector(done:)];
+  doneItem.accessibilityIdentifier = @"Done";
   self.navigationItem.rightBarButtonItem = doneItem;
 
   if (self.allowsCancel) {
@@ -204,14 +200,14 @@ const NSInteger BookmarkFolderSectionCount = 2;
   }
 
   // The table view.
-  base::scoped_nsobject<UITableView> tableView([[UITableView alloc]
-      initWithFrame:self.view.bounds
-              style:UITableViewStylePlain]);
-  tableView.get().dataSource = self;
-  tableView.get().delegate = self;
-  tableView.get().autoresizingMask =
+  UITableView* tableView =
+      [[UITableView alloc] initWithFrame:self.view.bounds
+                                   style:UITableViewStylePlain];
+  tableView.dataSource = self;
+  tableView.delegate = self;
+  tableView.autoresizingMask =
       UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-  tableView.get().separatorStyle = UITableViewCellSeparatorStyleNone;
+  tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
   [self.view addSubview:tableView];
   [self.view sendSubviewToBack:tableView];
   self.tableView = tableView;
@@ -337,18 +333,16 @@ const NSInteger BookmarkFolderSectionCount = 2;
   CGRect headerViewFrame =
       CGRectMake(0, 0, CGRectGetWidth(tableView.frame),
                  [self tableView:tableView heightForHeaderInSection:section]);
-  UIView* headerView =
-      [[[UIView alloc] initWithFrame:headerViewFrame] autorelease];
+  UIView* headerView = [[UIView alloc] initWithFrame:headerViewFrame];
   if (section == BookmarkFolderSectionFolders &&
       [self shouldShowDefaultSection]) {
     CGRect separatorFrame =
         CGRectMake(0, 0, CGRectGetWidth(headerView.bounds),
                    1.0 / [[UIScreen mainScreen] scale]);  // 1-pixel divider.
-    base::scoped_nsobject<UIView> separator(
-        [[UIView alloc] initWithFrame:separatorFrame]);
-    separator.get().autoresizingMask = UIViewAutoresizingFlexibleBottomMargin |
-                                       UIViewAutoresizingFlexibleWidth;
-    separator.get().backgroundColor = bookmark_utils_ios::separatorColor();
+    UIView* separator = [[UIView alloc] initWithFrame:separatorFrame];
+    separator.autoresizingMask = UIViewAutoresizingFlexibleBottomMargin |
+                                 UIViewAutoresizingFlexibleWidth;
+    separator.backgroundColor = bookmark_utils_ios::separatorColor();
     [headerView addSubview:separator];
   }
   return headerView;
@@ -369,7 +363,7 @@ const NSInteger BookmarkFolderSectionCount = 2;
 
 - (UIView*)tableView:(UITableView*)tableView
     viewForFooterInSection:(NSInteger)section {
-  return [[[UIView alloc] init] autorelease];
+  return [[UIView alloc] init];
 }
 
 - (void)tableView:(UITableView*)tableView
@@ -538,16 +532,15 @@ const NSInteger BookmarkFolderSectionCount = 2;
 
 - (void)delayedNotifyDelegateOfSelection {
   self.view.userInteractionEnabled = NO;
-  base::WeakNSObject<BookmarkFolderViewController> weakSelf(self);
+  __weak BookmarkFolderViewController* weakSelf = self;
   dispatch_after(
       dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.3 * NSEC_PER_SEC)),
       dispatch_get_main_queue(), ^{
-        base::scoped_nsobject<BookmarkFolderViewController> strongSelf(
-            [weakSelf retain]);
+        BookmarkFolderViewController* strongSelf = weakSelf;
         // Early return if the controller has been deallocated.
         if (!strongSelf)
           return;
-        strongSelf.get().view.userInteractionEnabled = YES;
+        strongSelf.view.userInteractionEnabled = YES;
         [strongSelf done:nil];
       });
 }

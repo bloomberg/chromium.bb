@@ -4,26 +4,15 @@
 
 #import "ios/chrome/browser/ui/bookmarks/bookmark_elevated_toolbar.h"
 
-#include "base/mac/objc_property_releaser.h"
 #import "ios/third_party/material_components_ios/src/components/ShadowElevations/src/MaterialShadowElevations.h"
 #import "ios/third_party/material_components_ios/src/components/ShadowLayer/src/MaterialShadowLayer.h"
 
-@implementation BookmarksElevatedToolbar {
-  base::mac::ObjCPropertyReleaser _propertyReleaser_BookmarksElevatedToolbar;
-}
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
+@implementation BookmarksElevatedToolbar
 @synthesize shadowLayer = _shadowLayer;
-
-#pragma mark - Lifecycle
-
-- (instancetype)init {
-  self = [super init];
-  if (self) {
-    _propertyReleaser_BookmarksElevatedToolbar.Init(
-        self, [BookmarksElevatedToolbar class]);
-  }
-  return self;
-}
 
 #pragma mark - Properties
 

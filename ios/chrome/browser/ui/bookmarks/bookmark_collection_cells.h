@@ -43,7 +43,7 @@ typedef enum {
 // There is also an image and an optional menu button.
 @interface BookmarkCell : UICollectionViewCell<BookmarkImageableView>
 
-@property(nonatomic, retain, readonly) UILabel* titleLabel;
+@property(nonatomic, strong, readonly) UILabel* titleLabel;
 
 + (NSString*)reuseIdentifier;
 

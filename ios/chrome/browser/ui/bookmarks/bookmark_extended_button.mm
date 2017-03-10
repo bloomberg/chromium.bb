@@ -6,6 +6,10 @@
 
 #include "base/logging.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace {
 // Apple's guidelines indicate that buttons should have a minimum touch area of
 // 44pt x 44pt.
