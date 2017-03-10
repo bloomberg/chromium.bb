@@ -11,6 +11,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
 #include "components/bookmarks/browser/bookmark_model.h"
@@ -29,9 +30,8 @@ struct RecentBookmark {
   base::Time last_visited;
 };
 
-const char* kBookmarksURLBlacklist[] = {"chrome://newtab/",
-                                        "chrome-native://newtab/",
-                                        "chrome://bookmarks/"};
+const char* kBookmarksURLBlacklist[] = {
+    "chrome://newtab/", "chrome-native://newtab/", "chrome://bookmarks/"};
 
 const char kBookmarkLastVisitDateOnMobileKey[] = "last_visited";
 const char kBookmarkLastVisitDateOnDesktopKey[] = "last_visited_desktop";
@@ -106,10 +106,11 @@ void UpdateBookmarkOnURLVisitedInMainFrame(BookmarkModel* bookmark_model,
   // If there are bookmarks for |url|, set their last visit date to now.
   std::string now = FormatLastVisitDate(base::Time::Now());
   for (const BookmarkNode* node : bookmarks_for_url) {
-    bookmark_model->SetNodeMetaInfo(
-        node, is_mobile_platform ? kBookmarkLastVisitDateOnMobileKey
-                                 : kBookmarkLastVisitDateOnDesktopKey,
-        now);
+    bookmark_model->SetNodeMetaInfo(node,
+                                    is_mobile_platform
+                                        ? kBookmarkLastVisitDateOnMobileKey
+                                        : kBookmarkLastVisitDateOnDesktopKey,
+                                    now);
     // If the bookmark has been dismissed from NTP before, a new visit overrides
     // such a dismissal.
     bookmark_model->DeleteNodeMetaInfo(node, kBookmarkDismissedFromNTP);
@@ -243,22 +244,19 @@ std::vector<const BookmarkNode*> GetDismissedBookmarksForDebugging(
   bookmark_model->GetBookmarks(&bookmarks);
 
   // Remove the bookmark URLs which have at least one non-dismissed bookmark.
-  bookmarks.erase(
-      std::remove_if(
-          bookmarks.begin(), bookmarks.end(),
-          [&bookmark_model](const BookmarkModel::URLAndTitle& bookmark) {
-            std::vector<const BookmarkNode*> bookmarks_for_url;
-            bookmark_model->GetNodesByURL(bookmark.url, &bookmarks_for_url);
-            DCHECK(!bookmarks_for_url.empty());
+  base::EraseIf(
+      bookmarks, [&bookmark_model](const BookmarkModel::URLAndTitle& bookmark) {
+        std::vector<const BookmarkNode*> bookmarks_for_url;
+        bookmark_model->GetNodesByURL(bookmark.url, &bookmarks_for_url);
+        DCHECK(!bookmarks_for_url.empty());
 
-            for (const BookmarkNode* node : bookmarks_for_url) {
-              if (!IsDismissedFromNTPForBookmark(*node)) {
-                return true;
-              }
-            }
-            return false;
-          }),
-      bookmarks.end());
+        for (const BookmarkNode* node : bookmarks_for_url) {
+          if (!IsDismissedFromNTPForBookmark(*node)) {
+            return true;
+          }
+        }
+        return false;
+      });
 
   // Insert into |result|.
   std::vector<const BookmarkNode*> result;
@@ -306,7 +304,7 @@ void RemoveLastVisitedDatesBetween(const base::Time& begin,
       ClearLastVisitedMetadataIfBetween(bookmark_model, *bookmark, begin, end,
                                         kBookmarkLastVisitDateOnMobileKey);
       ClearLastVisitedMetadataIfBetween(bookmark_model, *bookmark, begin, end,
-                                kBookmarkLastVisitDateOnDesktopKey);
+                                        kBookmarkLastVisitDateOnDesktopKey);
     }
   }
 }

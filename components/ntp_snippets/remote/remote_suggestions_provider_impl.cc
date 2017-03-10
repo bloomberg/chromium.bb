@@ -74,13 +74,11 @@ bool HasIntersection(const std::vector<std::string>& a,
 void EraseByPrimaryID(RemoteSuggestion::PtrVector* suggestions,
                       const std::vector<std::string>& ids) {
   std::set<std::string> ids_lookup(ids.begin(), ids.end());
-  suggestions->erase(
-      std::remove_if(
-          suggestions->begin(), suggestions->end(),
-          [&ids_lookup](const std::unique_ptr<RemoteSuggestion>& suggestion) {
-            return base::ContainsValue(ids_lookup, suggestion->id());
-          }),
-      suggestions->end());
+  base::EraseIf(
+      *suggestions,
+      [&ids_lookup](const std::unique_ptr<RemoteSuggestion>& suggestion) {
+        return base::ContainsValue(ids_lookup, suggestion->id());
+      });
 }
 
 void EraseMatchingSuggestions(
@@ -91,23 +89,18 @@ void EraseMatchingSuggestions(
     const std::vector<std::string>& suggestion_ids = suggestion->GetAllIDs();
     compare_against_ids.insert(suggestion_ids.begin(), suggestion_ids.end());
   }
-  suggestions->erase(
-      std::remove_if(suggestions->begin(), suggestions->end(),
-                     [&compare_against_ids](
-                         const std::unique_ptr<RemoteSuggestion>& suggestion) {
-                       return HasIntersection(suggestion->GetAllIDs(),
-                                              compare_against_ids);
-                     }),
-      suggestions->end());
+  base::EraseIf(
+      *suggestions, [&compare_against_ids](
+                        const std::unique_ptr<RemoteSuggestion>& suggestion) {
+        return HasIntersection(suggestion->GetAllIDs(), compare_against_ids);
+      });
 }
 
 void RemoveNullPointers(RemoteSuggestion::PtrVector* suggestions) {
-  suggestions->erase(
-      std::remove_if(suggestions->begin(), suggestions->end(),
-                     [](const std::unique_ptr<RemoteSuggestion>& suggestion) {
-                       return !suggestion;
-                     }),
-      suggestions->end());
+  base::EraseIf(*suggestions,
+                [](const std::unique_ptr<RemoteSuggestion>& suggestion) {
+                  return !suggestion;
+                });
 }
 
 void RemoveIncompleteSuggestions(RemoteSuggestion::PtrVector* suggestions) {
@@ -118,12 +111,10 @@ void RemoveIncompleteSuggestions(RemoteSuggestion::PtrVector* suggestions) {
   int num_suggestions = suggestions->size();
   // Remove suggestions that do not have all the info we need to display it to
   // the user.
-  suggestions->erase(
-      std::remove_if(suggestions->begin(), suggestions->end(),
-                     [](const std::unique_ptr<RemoteSuggestion>& suggestion) {
-                       return !suggestion->is_complete();
-                     }),
-      suggestions->end());
+  base::EraseIf(*suggestions,
+                [](const std::unique_ptr<RemoteSuggestion>& suggestion) {
+                  return !suggestion->is_complete();
+                });
   int num_suggestions_removed = num_suggestions - suggestions->size();
   UMA_HISTOGRAM_BOOLEAN("NewTabPage.Snippets.IncompleteSnippetsAfterFetch",
                         num_suggestions_removed > 0);
@@ -244,9 +235,8 @@ void CachedImageFetcher::FetchImageFromNetwork(
     const ContentSuggestion::ID& suggestion_id,
     const GURL& url,
     const ImageFetchedCallback& callback) {
-  if (url.is_empty() ||
-      !thumbnail_requests_throttler_.DemandQuotaForRequest(
-          /*interactive_request=*/true)) {
+  if (url.is_empty() || !thumbnail_requests_throttler_.DemandQuotaForRequest(
+                            /*interactive_request=*/true)) {
     // Return an empty image. Directly, this is never synchronous with the
     // original FetchSuggestionImage() call - an asynchronous database query has
     // happened in the meantime.
@@ -278,9 +268,7 @@ RemoteSuggestionsProviderImpl::RemoteSuggestionsProviderImpl(
       category_ranker_(category_ranker),
       suggestions_fetcher_(std::move(suggestions_fetcher)),
       database_(std::move(database)),
-      image_fetcher_(std::move(image_fetcher),
-                     pref_service,
-                     database_.get()),
+      image_fetcher_(std::move(image_fetcher), pref_service, database_.get()),
       status_service_(std::move(status_service)),
       fetch_when_ready_(false),
       fetch_when_ready_interactive_(false),
