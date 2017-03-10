@@ -107,7 +107,8 @@ _REVISION_NEGATIVE_FILTER['58'] = (
     _REVISION_NEGATIVE_FILTER['HEAD'] + [
         # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1674
         'WindowSwitchingTest.testShouldBeAbleToIterateOverAllOpenWindows',
-]
+    ]
+)
 _REVISION_NEGATIVE_FILTER['57'] = (
     _REVISION_NEGATIVE_FILTER['HEAD'] + [
         # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1625
