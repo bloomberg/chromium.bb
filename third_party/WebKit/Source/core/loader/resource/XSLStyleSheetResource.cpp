@@ -35,7 +35,7 @@
 
 namespace blink {
 
-static void applyXSLRequestProperties(ResourceRequest& request) {
+static void applyXSLRequestProperties(FetchRequest& request) {
   request.setRequestContext(WebURLRequest::RequestContextXSLT);
   // TODO(japhet): Accept: headers can be set manually on XHRs from script, in
   // the browser process, and... here. The browser process can't tell the
@@ -45,13 +45,13 @@ static void applyXSLRequestProperties(ResourceRequest& request) {
   DEFINE_STATIC_LOCAL(const AtomicString, acceptXSLT,
                       ("text/xml, application/xml, application/xhtml+xml, "
                        "text/xsl, application/rss+xml, application/atom+xml"));
-  request.setHTTPAccept(acceptXSLT);
+  request.mutableResourceRequest().setHTTPAccept(acceptXSLT);
 }
 
 XSLStyleSheetResource* XSLStyleSheetResource::fetchSynchronously(
     FetchRequest& request,
     ResourceFetcher* fetcher) {
-  applyXSLRequestProperties(request.mutableResourceRequest());
+  applyXSLRequestProperties(request);
   request.makeSynchronous();
   XSLStyleSheetResource* resource = toXSLStyleSheetResource(
       fetcher->requestResource(request, XSLStyleSheetResourceFactory()));
@@ -63,7 +63,7 @@ XSLStyleSheetResource* XSLStyleSheetResource::fetchSynchronously(
 XSLStyleSheetResource* XSLStyleSheetResource::fetch(FetchRequest& request,
                                                     ResourceFetcher* fetcher) {
   DCHECK(RuntimeEnabledFeatures::xsltEnabled());
-  applyXSLRequestProperties(request.mutableResourceRequest());
+  applyXSLRequestProperties(request);
   return toXSLStyleSheetResource(
       fetcher->requestResource(request, XSLStyleSheetResourceFactory()));
 }
