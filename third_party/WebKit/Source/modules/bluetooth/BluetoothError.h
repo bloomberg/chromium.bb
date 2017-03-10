@@ -16,6 +16,7 @@ namespace blink {
 enum class BluetoothOperation {
   ServicesRetrieval,
   CharacteristicsRetrieval,
+  DescriptorsRetrieval,
   GATT,
 };
 

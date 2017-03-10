@@ -28,6 +28,9 @@ DOMException* BluetoothError::createNotConnectedException(
     case BluetoothOperation::CharacteristicsRetrieval:
       operationString = "retrieve characteristics";
       break;
+    case BluetoothOperation::DescriptorsRetrieval:
+      operationString = "retrieve descriptors";
+      break;
     case BluetoothOperation::GATT:
       operationString = "perform GATT operations";
       break;

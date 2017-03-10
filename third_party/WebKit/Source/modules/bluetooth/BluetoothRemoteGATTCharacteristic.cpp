@@ -335,9 +335,8 @@ ScriptPromise BluetoothRemoteGATTCharacteristic::getDescriptorsImpl(
     const String& descriptorsUUID) {
   if (!getGatt()->connected()) {
     return ScriptPromise::rejectWithDOMException(
-        scriptState,
-        // TODO(crbug.com/684445): Change to DescriptorsRetrieval.
-        BluetoothError::createNotConnectedException(BluetoothOperation::GATT));
+        scriptState, BluetoothError::createNotConnectedException(
+                         BluetoothOperation::DescriptorsRetrieval));
   }
 
   if (!getGatt()->device()->isValidCharacteristic(
@@ -377,9 +376,8 @@ void BluetoothRemoteGATTCharacteristic::GetDescriptorsCallback(
 
   // If the device is disconnected, reject.
   if (!m_service->device()->gatt()->RemoveFromActiveAlgorithms(resolver)) {
-    // TODO(crbug.com/684445): Change to DescriptorsRetrieval.
-    resolver->reject(
-        BluetoothError::createNotConnectedException(BluetoothOperation::GATT));
+    resolver->reject(BluetoothError::createNotConnectedException(
+        BluetoothOperation::DescriptorsRetrieval));
     return;
   }
 
