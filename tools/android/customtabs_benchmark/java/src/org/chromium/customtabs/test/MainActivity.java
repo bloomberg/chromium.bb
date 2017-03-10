@@ -357,7 +357,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
         if (delayToMayLaunchUrl != NONE) {
             mHandler.postDelayed(mayLaunchRunnable, delayToMayLaunchUrl);
         } else {
-            launchRunnable.run();
+            mHandler.postDelayed(launchRunnable, delayToLaunchUrl);
         }
     }
 
