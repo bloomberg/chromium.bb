@@ -114,25 +114,27 @@ static bool isAncestorOfOrEqualTo(const ClipPaintPropertyNode* a,
   return b == a;
 }
 
-void PrePaintTreeWalk::computeClipRectForContext(
+FloatClipRect PrePaintTreeWalk::clipRectForContext(
     const PaintPropertyTreeBuilderContext::ContainingBlockContext& context,
     const EffectPaintPropertyNode* effect,
     const PropertyTreeState& ancestorState,
     const LayoutPoint& ancestorPaintOffset,
-    bool& hasClip,
-    FloatClipRect& clipRect) {
+    bool& hasClip) {
   // Only return a non-infinite clip if clips differ, or the "ancestor" state is
   // actually an ancestor clip. This ensures no accuracy issues due to
   // transforms applied to infinite rects.
   if (isAncestorOfOrEqualTo(context.clip, ancestorState.clip()))
-    clipRect = FloatClipRect();
+    return FloatClipRect();
 
   hasClip = true;
+
   PropertyTreeState localState(context.transform, context.clip, effect);
 
-  clipRect =
-      m_geometryMapper.sourceToDestinationClipRect(localState, ancestorState);
-  clipRect.moveBy(-FloatPoint(ancestorPaintOffset));
+  FloatClipRect rect(
+      m_geometryMapper.sourceToDestinationClipRect(localState, ancestorState));
+
+  rect.moveBy(-FloatPoint(ancestorPaintOffset));
+  return rect;
 }
 
 void PrePaintTreeWalk::invalidatePaintLayerOptimizationsIfNeeded(
@@ -178,31 +180,26 @@ void PrePaintTreeWalk::invalidatePaintLayerOptimizationsIfNeeded(
   RefPtr<ClipRects> clipRects = ClipRects::create();
   const LayoutPoint& ancestorPaintOffset =
       context.ancestorTransformedOrRootPaintLayer->layoutObject().paintOffset();
-
-  FloatClipRect clipRect;
-  computeClipRectForContext(context.treeBuilderContext.current, effect,
-                            ancestorState, ancestorPaintOffset, hasClip,
-                            clipRect);
-  clipRects->setOverflowClipRect(clipRect);
+  clipRects->setOverflowClipRect(
+      clipRectForContext(context.treeBuilderContext.current, effect,
+                         ancestorState, ancestorPaintOffset, hasClip));
 #ifdef CHECK_CLIP_RECTS
   CHECK(!hasClip ||
         clipRects->overflowClipRect() == oldClipRects.overflowClipRect())
       << "rect= " << clipRects->overflowClipRect().toString();
 #endif
 
-  computeClipRectForContext(context.treeBuilderContext.fixedPosition, effect,
-                            ancestorState, ancestorPaintOffset, hasClip,
-                            clipRect);
-  clipRects->setFixedClipRect(clipRect);
+  clipRects->setFixedClipRect(
+      clipRectForContext(context.treeBuilderContext.fixedPosition, effect,
+                         ancestorState, ancestorPaintOffset, hasClip));
 #ifdef CHECK_CLIP_RECTS
   CHECK(hasClip || clipRects->fixedClipRect() == oldClipRects.fixedClipRect())
       << " fixed=" << clipRects->fixedClipRect().toString();
 #endif
 
-  computeClipRectForContext(context.treeBuilderContext.absolutePosition, effect,
-                            ancestorState, ancestorPaintOffset, hasClip,
-                            clipRect);
-  clipRects->setPosClipRect(clipRect);
+  clipRects->setPosClipRect(
+      clipRectForContext(context.treeBuilderContext.absolutePosition, effect,
+                         ancestorState, ancestorPaintOffset, hasClip));
 #ifdef CHECK_CLIP_RECTS
   CHECK(!hasClip || clipRects->posClipRect() == oldClipRects.posClipRect())
       << " abs=" << clipRects->posClipRect().toString();

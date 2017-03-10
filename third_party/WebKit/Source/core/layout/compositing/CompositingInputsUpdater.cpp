@@ -161,14 +161,14 @@ void CompositingInputsUpdater::updateRecursive(PaintLayer* layer,
         if (properties.unclippedAbsoluteBoundingBox.isEmpty())
           properties.unclippedAbsoluteBoundingBox.setSize(IntSize(1, 1));
 
-        ClipRect clipRect;
-        layer->clipper(PaintLayer::DoNotUseGeometryMapper)
-            .calculateBackgroundClipRect(
-                ClipRectsContext(m_rootLayer, AbsoluteClipRects), clipRect);
-        IntRect snappedClipRect = pixelSnappedIntRect(clipRect.rect());
+        IntRect clipRect = pixelSnappedIntRect(
+            layer->clipper(PaintLayer::DoNotUseGeometryMapper)
+                .backgroundClipRect(
+                    ClipRectsContext(m_rootLayer, AbsoluteClipRects))
+                .rect());
         properties.clippedAbsoluteBoundingBox =
             properties.unclippedAbsoluteBoundingBox;
-        properties.clippedAbsoluteBoundingBox.intersect(snappedClipRect);
+        properties.clippedAbsoluteBoundingBox.intersect(clipRect);
       }
 
       const PaintLayer* parent = layer->parent();

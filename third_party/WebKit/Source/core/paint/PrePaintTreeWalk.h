@@ -34,16 +34,15 @@ class PrePaintTreeWalk {
   void invalidatePaintLayerOptimizationsIfNeeded(const LayoutObject&,
                                                  PrePaintTreeWalkContext&);
 
-  // Returns in |clipRect| the clip applied to children for the given
+  // Returns the clip applied to children for the given
   // contaiing block context + effect, in the space of ancestorState adjusted
   // by ancestorPaintOffset. Sets hasClip to true if a clip was applied.
-  void computeClipRectForContext(
+  FloatClipRect clipRectForContext(
       const PaintPropertyTreeBuilderContext::ContainingBlockContext&,
       const EffectPaintPropertyNode*,
       const PropertyTreeState& ancestorState,
       const LayoutPoint& ancestorPaintOffset,
-      bool& hasClip,
-      FloatClipRect&);
+      bool& hasClip);
 
   // Returns true if the tree walk should stop before processing this object.
   bool shouldEndWalkBefore(const LayoutObject&, const PrePaintTreeWalkContext&);

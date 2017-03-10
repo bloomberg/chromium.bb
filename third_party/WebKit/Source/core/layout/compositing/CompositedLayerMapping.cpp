@@ -555,11 +555,11 @@ void CompositedLayerMapping::
   ClipRectsContext clipRectsContext(compositingAncestor, UncachedClipRects,
                                     IgnoreOverlayScrollbarSize);
   clipRectsContext.setIgnoreOverflowClip();
-
-  ClipRect clipRect;
-  m_owningLayer.clipper(PaintLayer::DoNotUseGeometryMapper)
-      .calculateBackgroundClipRect(clipRectsContext, clipRect);
-  IntRect parentClipRect = pixelSnappedIntRect(clipRect.rect());
+  LayoutRect unsnappedParentClipRect =
+      m_owningLayer.clipper(PaintLayer::DoNotUseGeometryMapper)
+          .backgroundClipRect(clipRectsContext)
+          .rect();
+  IntRect parentClipRect = pixelSnappedIntRect(unsnappedParentClipRect);
   owningLayerIsClipped = parentClipRect != LayoutRect::infiniteIntRect();
 
   // TODO(schenney): CSS clips are not applied to composited children, and
@@ -1172,23 +1172,20 @@ void CompositedLayerMapping::updateAncestorClippingLayerGeometry(
   ClipRectsContext clipRectsContext(compositingContainer,
                                     PaintingClipRectsIgnoringOverflowClip,
                                     IgnoreOverlayScrollbarSize);
-
-  ClipRect parentClipRect;
-  m_owningLayer.clipper(PaintLayer::DoNotUseGeometryMapper)
-      .calculateBackgroundClipRect(clipRectsContext, parentClipRect);
-
-  IntRect snappedParentClipRect(pixelSnappedIntRect(parentClipRect.rect()));
-
-  DCHECK(snappedParentClipRect != LayoutRect::infiniteIntRect());
-  m_ancestorClippingLayer->setPosition(FloatPoint(
-      snappedParentClipRect.location() - graphicsLayerParentLocation));
-  m_ancestorClippingLayer->setSize(FloatSize(snappedParentClipRect.size()));
+  IntRect parentClipRect = pixelSnappedIntRect(
+      m_owningLayer.clipper(PaintLayer::DoNotUseGeometryMapper)
+          .backgroundClipRect(clipRectsContext)
+          .rect());
+  ASSERT(parentClipRect != LayoutRect::infiniteIntRect());
+  m_ancestorClippingLayer->setPosition(
+      FloatPoint(parentClipRect.location() - graphicsLayerParentLocation));
+  m_ancestorClippingLayer->setSize(FloatSize(parentClipRect.size()));
 
   // backgroundRect is relative to compositingContainer, so subtract
   // snappedOffsetFromCompositedAncestor.X/snappedOffsetFromCompositedAncestor.Y
   // to get back to local coords.
   m_ancestorClippingLayer->setOffsetFromLayoutObject(
-      snappedParentClipRect.location() - snappedOffsetFromCompositedAncestor);
+      parentClipRect.location() - snappedOffsetFromCompositedAncestor);
 
   if (m_ancestorClippingMaskLayer) {
     m_ancestorClippingMaskLayer->setOffsetFromLayoutObject(
@@ -1199,7 +1196,7 @@ void CompositedLayerMapping::updateAncestorClippingLayerGeometry(
 
   // The primary layer is then parented in, and positioned relative to this
   // clipping layer.
-  graphicsLayerParentLocation = snappedParentClipRect.location();
+  graphicsLayerParentLocation = parentClipRect.location();
 }
 
 void CompositedLayerMapping::updateOverflowControlsHostLayerGeometry(
@@ -2899,18 +2896,17 @@ IntRect CompositedLayerMapping::localClipRectForSquashedLayer(
   // these clip rects or otherwise optimizing.
   ClipRectsContext clipRectsContext(ancestorPaintInfo->paintLayer,
                                     UncachedClipRects);
-  ClipRect parentClipRect;
-  paintInfo.paintLayer->clipper(PaintLayer::DoNotUseGeometryMapper)
-      .calculateBackgroundClipRect(clipRectsContext, parentClipRect);
-
-  IntRect snappedParentClipRect(pixelSnappedIntRect(parentClipRect.rect()));
-  DCHECK(snappedParentClipRect != LayoutRect::infiniteIntRect());
+  IntRect parentClipRect = pixelSnappedIntRect(
+      paintInfo.paintLayer->clipper(PaintLayer::DoNotUseGeometryMapper)
+          .backgroundClipRect(clipRectsContext)
+          .rect());
+  ASSERT(parentClipRect != LayoutRect::infiniteIntRect());
 
   // Convert from ancestor to local coordinates.
   IntSize ancestorToLocalOffset = paintInfo.offsetFromLayoutObject -
                                   ancestorPaintInfo->offsetFromLayoutObject;
-  snappedParentClipRect.move(ancestorToLocalOffset);
-  return snappedParentClipRect;
+  parentClipRect.move(ancestorToLocalOffset);
+  return parentClipRect;
 }
 
 void CompositedLayerMapping::doPaintTask(
