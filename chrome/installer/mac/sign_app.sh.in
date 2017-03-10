@@ -47,9 +47,12 @@ helper_app="${versioned_dir}/@MAC_PRODUCT_NAME@ Helper.app"
 
 requirement_string="\
 designated => \
-(identifier \"com.google.Chrome\" or identifier \"com.google.Chrome.canary\") \
+(identifier \"com.google.Chrome\" or \
+identifier \"com.google.Chrome.beta\" or \
+identifier \"com.google.Chrome.dev\" or \
+identifier \"com.google.Chrome.canary\") \
 and (certificate leaf = H\"85cee8254216185620ddc8851c7a9fc4dfe120ef\" or \
-certificate leaf = H\"34f0bdf7f87d4f3a955862c351472e52250e4c2b\") \
+certificate leaf = H\"c9a99324ca3fcb23dbcc36bd5fd4f9753305130a\") \
 "
 
 enforcement_flags="restrict"
