@@ -7,6 +7,7 @@
 #include "core/paint/PaintTiming.h"
 #include "core/testing/DummyPageHolder.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "wtf/text/StringBuilder.h"
 
 namespace blink {
 

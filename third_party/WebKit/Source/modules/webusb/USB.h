@@ -17,6 +17,7 @@
 namespace blink {
 
 class LocalFrame;
+class ScriptPromiseResolver;
 class ScriptState;
 class USBDevice;
 class USBDeviceRequestOptions;

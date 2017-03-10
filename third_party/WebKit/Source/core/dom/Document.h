@@ -379,12 +379,8 @@ class CORE_EXPORT Document : public ContainerNode,
     m_hasXMLDeclaration = hasXMLDeclaration ? 1 : 0;
   }
 
-  String origin() const { return getSecurityOrigin()->toString(); }
-  String suborigin() const {
-    return getSecurityOrigin()->hasSuborigin()
-               ? getSecurityOrigin()->suborigin()->name()
-               : String();
-  }
+  String origin() const;
+  String suborigin() const;
 
   String visibilityState() const;
   PageVisibilityState pageVisibilityState() const;

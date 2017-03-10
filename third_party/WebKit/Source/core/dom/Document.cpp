@@ -5711,6 +5711,16 @@ void Document::updateSecurityOrigin(PassRefPtr<SecurityOrigin> origin) {
   didUpdateSecurityOrigin();
 }
 
+String Document::origin() const {
+  return getSecurityOrigin()->toString();
+}
+
+String Document::suborigin() const {
+  return getSecurityOrigin()->hasSuborigin()
+             ? getSecurityOrigin()->suborigin()->name()
+             : String();
+}
+
 void Document::didUpdateSecurityOrigin() {
   if (!m_frame)
     return;

@@ -24,6 +24,7 @@
 
 #include "core/html/TextControlElement.h"
 
+#include "bindings/core/v8/ExceptionMessages.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/HTMLNames.h"
 #include "core/dom/AXObjectCache.h"

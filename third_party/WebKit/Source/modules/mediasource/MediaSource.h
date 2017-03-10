@@ -31,8 +31,10 @@
 #ifndef MediaSource_h
 #define MediaSource_h
 
+#include <memory>
 #include "bindings/core/v8/ActiveScriptWrappable.h"
 #include "core/dom/ContextLifecycleObserver.h"
+#include "core/dom/ExceptionCode.h"
 #include "core/html/HTMLMediaSource.h"
 #include "core/html/TimeRanges.h"
 #include "core/html/URLRegistry.h"
@@ -41,7 +43,6 @@
 #include "modules/mediasource/SourceBufferList.h"
 #include "public/platform/WebMediaSource.h"
 #include "wtf/Vector.h"
-#include <memory>
 
 namespace blink {
 

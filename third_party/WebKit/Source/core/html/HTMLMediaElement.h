@@ -29,6 +29,7 @@
 
 #include <memory>
 #include "bindings/core/v8/ActiveScriptWrappable.h"
+#include "bindings/core/v8/Nullable.h"
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/TraceWrapperMember.h"
 #include "core/CoreExport.h"

@@ -45,6 +45,7 @@ class Float64Array;
 class Int8Array;
 class Int16Array;
 class Int32Array;
+class OrdinalNumber;
 class String;
 class StringBuilder;
 class StringImpl;

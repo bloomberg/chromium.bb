@@ -19,6 +19,7 @@
 
 namespace blink {
 
+class DOMException;
 class ExceptionState;
 class ExecutionContext;
 class SensorReading;

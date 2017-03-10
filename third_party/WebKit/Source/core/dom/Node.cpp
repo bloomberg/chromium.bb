@@ -29,6 +29,7 @@
 #include "bindings/core/v8/DOMDataStore.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/Microtask.h"
+#include "bindings/core/v8/NodeOrString.h"
 #include "bindings/core/v8/ScriptWrappableVisitor.h"
 #include "bindings/core/v8/V8DOMWrapper.h"
 #include "core/HTMLNames.h"

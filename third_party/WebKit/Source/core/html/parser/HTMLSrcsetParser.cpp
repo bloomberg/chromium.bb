@@ -31,6 +31,7 @@
 
 #include "core/html/parser/HTMLSrcsetParser.h"
 
+#include <algorithm>
 #include "core/dom/Document.h"
 #include "core/frame/FrameConsole.h"
 #include "core/frame/LocalFrame.h"
@@ -41,8 +42,8 @@
 #include "platform/loader/fetch/MemoryCache.h"
 #include "platform/loader/fetch/ResourceFetcher.h"
 #include "wtf/text/ParsingUtilities.h"
+#include "wtf/text/StringBuilder.h"
 #include "wtf/text/StringToNumber.h"
-#include <algorithm>
 
 namespace blink {
 

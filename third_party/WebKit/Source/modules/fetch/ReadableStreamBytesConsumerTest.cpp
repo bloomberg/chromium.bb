@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "bindings/core/v8/ScriptState.h"
+#include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8BindingMacros.h"
 #include "bindings/core/v8/V8GCController.h"
 #include "core/dom/Document.h"

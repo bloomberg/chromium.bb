@@ -20,6 +20,7 @@ namespace blink {
 class ExceptionState;
 class MediaStreamTrack;
 class PhotoSettings;
+class ScriptPromiseResolver;
 class WebImageCaptureFrameGrabber;
 
 // TODO(mcasas): Consideradding a LayoutTest checking that this class is not

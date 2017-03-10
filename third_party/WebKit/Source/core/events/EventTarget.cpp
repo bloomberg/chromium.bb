@@ -31,6 +31,9 @@
 
 #include "core/events/EventTarget.h"
 
+#include <memory>
+#include "bindings/core/v8/AddEventListenerOptionsOrBoolean.h"
+#include "bindings/core/v8/EventListenerOptionsOrBoolean.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptEventListener.h"
 #include "bindings/core/v8/SourceLocation.h"
@@ -52,7 +55,6 @@
 #include "wtf/StdLibExtras.h"
 #include "wtf/Threading.h"
 #include "wtf/Vector.h"
-#include <memory>
 
 using namespace WTF;
 

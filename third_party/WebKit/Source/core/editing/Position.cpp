@@ -25,12 +25,13 @@
 
 #include "core/editing/Position.h"
 
+#include <stdio.h>
+#include <ostream>  // NOLINT
 #include "core/dom/shadow/ElementShadow.h"
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/TextAffinity.h"
 #include "wtf/text/CString.h"
-#include <stdio.h>
-#include <ostream>  // NOLINT
+#include "wtf/text/StringBuilder.h"
 
 namespace blink {
 

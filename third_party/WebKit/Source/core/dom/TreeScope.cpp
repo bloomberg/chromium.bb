@@ -50,6 +50,7 @@
 #include "core/page/FocusController.h"
 #include "core/page/Page.h"
 #include "core/svg/SVGTreeScopeResources.h"
+#include "platform/ScriptForbiddenScope.h"
 #include "wtf/Vector.h"
 
 namespace blink {

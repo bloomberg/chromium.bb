@@ -20,6 +20,7 @@
 #include "core/xml/DOMParser.h"
 
 #include "core/dom/DOMImplementation.h"
+#include "platform/weborigin/SecurityOrigin.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {

@@ -43,6 +43,7 @@ class ExceptionState;
 class MediaTrackConstraints;
 class MediaStream;
 class MediaTrackSettings;
+class ScriptState;
 
 class MODULES_EXPORT MediaStreamTrack
     : public EventTargetWithInlineData,

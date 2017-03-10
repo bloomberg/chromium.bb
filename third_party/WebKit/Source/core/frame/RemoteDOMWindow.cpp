@@ -6,6 +6,7 @@
 
 #include "core/dom/Document.h"
 #include "core/frame/RemoteFrameClient.h"
+#include "platform/weborigin/SecurityOrigin.h"
 
 namespace blink {
 

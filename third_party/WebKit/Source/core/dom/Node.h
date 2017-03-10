@@ -27,7 +27,6 @@
 #define Node_h
 
 #include "bindings/core/v8/ExceptionState.h"
-#include "bindings/core/v8/NodeOrString.h"
 #include "bindings/core/v8/TraceWrapperMember.h"
 #include "core/CoreExport.h"
 #include "core/dom/MutationObserver.h"
@@ -56,6 +55,7 @@ class IntRect;
 class EventDispatchHandlingState;
 class NodeList;
 class NodeListsNodeData;
+class NodeOrString;
 class NodeRareData;
 class QualifiedName;
 class RegisteredEventListener;

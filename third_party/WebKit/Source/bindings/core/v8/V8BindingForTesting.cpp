@@ -4,6 +4,7 @@
 
 #include "bindings/core/v8/V8BindingForTesting.h"
 
+#include "bindings/core/v8/V8Binding.h"
 #include "core/frame/Settings.h"
 #include "core/testing/DummyPageHolder.h"
 

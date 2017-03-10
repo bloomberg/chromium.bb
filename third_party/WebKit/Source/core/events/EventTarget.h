@@ -32,8 +32,6 @@
 #ifndef EventTarget_h
 #define EventTarget_h
 
-#include "bindings/core/v8/AddEventListenerOptionsOrBoolean.h"
-#include "bindings/core/v8/EventListenerOptionsOrBoolean.h"
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/CoreExport.h"
 #include "core/EventNames.h"
@@ -50,10 +48,12 @@
 
 namespace blink {
 
+class AddEventListenerOptionsOrBoolean;
 class DOMWindow;
 class Event;
-class LocalDOMWindow;
+class EventListenerOptionsOrBoolean;
 class ExceptionState;
+class LocalDOMWindow;
 class MessagePort;
 class Node;
 class ServiceWorker;

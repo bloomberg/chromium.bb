@@ -17,6 +17,7 @@
 #include "core/paint/PaintLayer.h"
 #include "core/paint/PaintLayerScrollableArea.h"
 #include "core/paint/PaintPropertyTreeBuilder.h"
+#include "wtf/Optional.h"
 
 namespace blink {
 

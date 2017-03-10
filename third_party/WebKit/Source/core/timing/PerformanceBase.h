@@ -54,6 +54,7 @@ class PerformanceObserver;
 class PerformanceTiming;
 class ResourceResponse;
 class ResourceTimingInfo;
+class SecurityOrigin;
 class UserTiming;
 
 using PerformanceEntryVector = HeapVector<Member<PerformanceEntry>>;

@@ -4,6 +4,8 @@
 
 #include "bindings/core/v8/SourceLocation.h"
 
+#include <memory>
+#include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8BindingMacros.h"
 #include "bindings/core/v8/V8PerIsolateData.h"
 #include "core/dom/Document.h"
@@ -15,7 +17,6 @@
 #include "platform/ScriptForbiddenScope.h"
 #include "platform/instrumentation/tracing/TracedValue.h"
 #include "wtf/PtrUtil.h"
-#include <memory>
 
 namespace blink {
 

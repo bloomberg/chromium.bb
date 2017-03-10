@@ -14,6 +14,8 @@
 
 namespace blink {
 
+class ScriptValue;
+
 class BroadcastChannel final : public EventTargetWithInlineData,
                                public ActiveScriptWrappable<BroadcastChannel>,
                                public ContextLifecycleObserver,

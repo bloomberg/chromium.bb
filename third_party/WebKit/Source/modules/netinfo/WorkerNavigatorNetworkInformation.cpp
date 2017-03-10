@@ -4,6 +4,7 @@
 
 #include "modules/netinfo/WorkerNavigatorNetworkInformation.h"
 
+#include "bindings/core/v8/ScriptState.h"
 #include "core/workers/WorkerNavigator.h"
 #include "modules/netinfo/NetworkInformation.h"
 

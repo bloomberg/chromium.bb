@@ -25,7 +25,9 @@
 
 #include "modules/indexeddb/IDBIndex.h"
 
+#include <memory>
 #include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/ToV8.h"
 #include "bindings/modules/v8/ToV8ForModules.h"
 #include "bindings/modules/v8/V8BindingForModules.h"
 #include "core/dom/ExceptionCode.h"
@@ -36,7 +38,6 @@
 #include "modules/indexeddb/IDBTracing.h"
 #include "modules/indexeddb/IDBTransaction.h"
 #include "public/platform/modules/indexeddb/WebIDBKeyRange.h"
-#include <memory>
 
 using blink::WebIDBCallbacks;
 using blink::WebIDBCursor;

@@ -4,8 +4,10 @@
 
 #include "web/SuspendableScriptExecutor.h"
 
+#include <memory>
 #include "bindings/core/v8/ScriptController.h"
 #include "bindings/core/v8/ScriptSourceCode.h"
+#include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8PersistentValueVector.h"
 #include "bindings/core/v8/WindowProxy.h"
 #include "core/dom/Document.h"
@@ -17,7 +19,6 @@
 #include "public/web/WebScriptExecutionCallback.h"
 #include "wtf/PtrUtil.h"
 #include "wtf/Vector.h"
-#include <memory>
 
 namespace blink {
 

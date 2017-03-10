@@ -6,6 +6,7 @@
 
 #include "core/dom/Document.h"
 #include "modules/mediastream/MediaDevices.h"
+#include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/WebSecurityOrigin.h"
 
 namespace blink {
