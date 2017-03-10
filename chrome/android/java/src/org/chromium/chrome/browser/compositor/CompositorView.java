@@ -23,6 +23,7 @@ import org.chromium.base.Log;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.annotations.UsedByReflection;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.compositor.layouts.Layout;
 import org.chromium.chrome.browser.compositor.layouts.LayoutProvider;
@@ -39,11 +40,14 @@ import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.resources.AndroidResourceType;
 import org.chromium.ui.resources.ResourceManager;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * The is the {@link View} displaying the ui compositor results; including webpages and tabswitcher.
  */
 @JNINamespace("android")
-public class CompositorView extends SurfaceView implements SurfaceHolder.Callback {
+public class CompositorView extends SurfaceView implements SurfaceHolder.Callback2 {
     private static final String TAG = "CompositorView";
     private static final long NANOSECONDS_PER_MILLISECOND = 1000000;
 
@@ -72,6 +76,7 @@ public class CompositorView extends SurfaceView implements SurfaceHolder.Callbac
     private int mSurfaceWidth;
     private int mSurfaceHeight;
     private boolean mPreloadedResources;
+    private List<Runnable> mDrawingFinishedCallbacks;
 
     // The current SurfaceView pixel format. Defaults to OPAQUE.
     private int mCurrentPixelFormat = PixelFormat.OPAQUE;
@@ -199,6 +204,9 @@ public class CompositorView extends SurfaceView implements SurfaceHolder.Callbac
 
         // Grab the Resource Manager
         mResourceManager = nativeGetResourceManager(mNativeCompositorView);
+
+        // Redraw in case there are callbacks pending |mDrawingFinishedCallbacks|.
+        nativeSetNeedsComposite(mNativeCompositorView);
     }
 
     @Override
@@ -214,6 +222,19 @@ public class CompositorView extends SurfaceView implements SurfaceHolder.Callbac
         mCurrentPixelFormat = enabled ? PixelFormat.TRANSLUCENT : PixelFormat.OPAQUE;
         getHolder().setFormat(mCurrentPixelFormat);
         nativeSetOverlayVideoMode(mNativeCompositorView, enabled);
+    }
+
+    @Override
+    public void surfaceRedrawNeeded(SurfaceHolder holder) {
+        // Intentionally not implemented.
+    }
+
+    // TODO(boliu): Mark this override instead.
+    @UsedByReflection("Android")
+    public void surfaceRedrawNeededAsync(SurfaceHolder holder, Runnable drawingFinished) {
+        if (mDrawingFinishedCallbacks == null) mDrawingFinishedCallbacks = new ArrayList<>();
+        mDrawingFinishedCallbacks.add(drawingFinished);
+        if (mNativeCompositorView != 0) nativeSetNeedsComposite(mNativeCompositorView);
     }
 
     @Override
@@ -308,6 +329,16 @@ public class CompositorView extends SurfaceView implements SurfaceHolder.Callbac
         }
 
         mRenderHost.didSwapFrame(pendingFrameCount);
+    }
+
+    @CalledByNative
+    private void didSwapBuffers() {
+        List<Runnable> runnables = mDrawingFinishedCallbacks;
+        mDrawingFinishedCallbacks = null;
+        if (runnables == null) return;
+        for (Runnable r : runnables) {
+            r.run();
+        }
     }
 
     /**

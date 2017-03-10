@@ -208,9 +208,11 @@ void CreateContextProviderAfterGpuChannelEstablished(
 
 class AndroidOutputSurface : public cc::OutputSurface {
  public:
-  explicit AndroidOutputSurface(
-      scoped_refptr<ui::ContextProviderCommandBuffer> context_provider)
+  AndroidOutputSurface(
+      scoped_refptr<ui::ContextProviderCommandBuffer> context_provider,
+      base::Closure swap_buffers_callback)
       : cc::OutputSurface(std::move(context_provider)),
+        swap_buffers_callback_(std::move(swap_buffers_callback)),
         overlay_candidate_validator_(
             new display_compositor::
                 CompositorOverlayCandidateValidatorAndroid()),
@@ -292,10 +294,12 @@ class AndroidOutputSurface : public cc::OutputSurface {
       const gpu::GpuProcessHostedCALayerTreeParamsMac* params_mac) {
     RenderWidgetHostImpl::CompositorFrameDrawn(latency_info);
     client_->DidReceiveSwapBuffersAck();
+    swap_buffers_callback_.Run();
   }
 
  private:
   cc::OutputSurfaceClient* client_ = nullptr;
+  base::Closure swap_buffers_callback_;
   std::unique_ptr<cc::OverlayCandidateValidator> overlay_candidate_validator_;
   base::WeakPtrFactory<AndroidOutputSurface> weak_ptr_factory_;
 };
@@ -718,8 +722,10 @@ void CompositorImpl::OnGpuChannelEstablished(
     HandlePendingCompositorFrameSinkRequest();
   }
 
-  auto display_output_surface =
-      base::MakeUnique<AndroidOutputSurface>(context_provider);
+  // Unretained is safe this owns cc::Display which owns OutputSurface.
+  auto display_output_surface = base::MakeUnique<AndroidOutputSurface>(
+      context_provider,
+      base::Bind(&CompositorImpl::DidSwapBuffers, base::Unretained(this)));
   InitializeDisplay(std::move(display_output_surface), nullptr,
                     std::move(context_provider));
 }
@@ -765,6 +771,10 @@ void CompositorImpl::InitializeDisplay(
   display_->SetVisible(true);
   display_->Resize(size_);
   host_->SetCompositorFrameSink(std::move(compositor_frame_sink));
+}
+
+void CompositorImpl::DidSwapBuffers() {
+  client_->DidSwapBuffers();
 }
 
 cc::UIResourceId CompositorImpl::CreateUIResource(
