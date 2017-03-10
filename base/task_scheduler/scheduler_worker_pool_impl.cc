@@ -141,6 +141,7 @@ bool ContainsWorker(const std::vector<scoped_refptr<SchedulerWorker>>& workers,
 
 }  // namespace
 
+// TODO(http://crbug.com/694823): Remove this and supporting framework.
 // A task runner that runs tasks with the SINGLE_THREADED ExecutionMode.
 class SchedulerWorkerPoolImpl::SchedulerSingleThreadTaskRunner :
     public SingleThreadTaskRunner {
