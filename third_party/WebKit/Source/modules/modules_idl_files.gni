@@ -42,6 +42,7 @@ modules_idl_files =
                     "app_banner/AppBannerPromptResult.idl",
                     "app_banner/BeforeInstallPromptEvent.idl",
                     "background_fetch/BackgroundFetchManager.idl",
+                    "background_fetch/BackgroundFetchRegistration.idl",
                     "background_sync/SyncEvent.idl",
                     "background_sync/SyncManager.idl",
                     "battery/BatteryManager.idl",
@@ -392,6 +393,8 @@ modules_idl_files =
 modules_dictionary_idl_files =
     get_path_info([
                     "app_banner/BeforeInstallPromptEventInit.idl",
+                    "background_fetch/BackgroundFetchOptions.idl",
+                    "background_fetch/IconDefinition.idl",
                     "background_sync/SyncEventInit.idl",
                     "bluetooth/BluetoothScanFilterInit.idl",
                     "bluetooth/RequestDeviceOptions.idl",
@@ -684,6 +687,10 @@ generated_modules_dictionary_files = [
   # from the .idl file list(s).
   "$blink_modules_output_dir/app_banner/BeforeInstallPromptEventInit.cpp",
   "$blink_modules_output_dir/app_banner/BeforeInstallPromptEventInit.h",
+  "$blink_modules_output_dir/background_fetch/BackgroundFetchOptions.cpp",
+  "$blink_modules_output_dir/background_fetch/BackgroundFetchOptions.h",
+  "$blink_modules_output_dir/background_fetch/IconDefinition.cpp",
+  "$blink_modules_output_dir/background_fetch/IconDefinition.h",
   "$blink_modules_output_dir/background_sync/SyncEventInit.cpp",
   "$blink_modules_output_dir/background_sync/SyncEventInit.h",
   "$blink_modules_output_dir/bluetooth/BluetoothScanFilterInit.cpp",

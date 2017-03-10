@@ -8,6 +8,8 @@ blink_modules_sources("background_fetch") {
   sources = [
     "BackgroundFetchManager.cpp",
     "BackgroundFetchManager.h",
+    "BackgroundFetchRegistration.cpp",
+    "BackgroundFetchRegistration.h",
     "ServiceWorkerRegistrationBackgroundFetch.cpp",
     "ServiceWorkerRegistrationBackgroundFetch.h",
   ]

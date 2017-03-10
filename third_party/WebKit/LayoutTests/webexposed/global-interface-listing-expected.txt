@@ -261,7 +261,17 @@ interface AuthenticationAssertion
 interface BackgroundFetchManager
     attribute @@toStringTag
     method constructor
+    method fetch
+    method get
     method getTags
+interface BackgroundFetchRegistration
+    attribute @@toStringTag
+    getter icons
+    getter tag
+    getter title
+    getter totalDownloadSize
+    method abort
+    method constructor
 interface BarProp
     attribute @@toStringTag
     getter visible

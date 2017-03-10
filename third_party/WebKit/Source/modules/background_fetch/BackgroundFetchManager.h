@@ -12,6 +12,8 @@
 
 namespace blink {
 
+class BackgroundFetchOptions;
+class RequestOrUSVString;
 class ScriptState;
 class ServiceWorkerRegistration;
 
@@ -28,6 +30,12 @@ class BackgroundFetchManager final
     return new BackgroundFetchManager(registration);
   }
 
+  // Web Exposed methods defined in the IDL file.
+  ScriptPromise fetch(ScriptState*,
+                      String tag,
+                      HeapVector<RequestOrUSVString> requests,
+                      const BackgroundFetchOptions&);
+  ScriptPromise get(ScriptState*, String tag);
   ScriptPromise getTags(ScriptState*);
 
   DECLARE_TRACE();

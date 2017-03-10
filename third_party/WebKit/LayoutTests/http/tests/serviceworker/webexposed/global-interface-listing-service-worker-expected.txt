@@ -1,6 +1,15 @@
 interface BackgroundFetchManager
     method constructor
+    method fetch
+    method get
     method getTags
+interface BackgroundFetchRegistration
+    getter icons
+    getter tag
+    getter title
+    getter totalDownloadSize
+    method abort
+    method constructor
 interface BarcodeDetector
     method constructor
     method detect
