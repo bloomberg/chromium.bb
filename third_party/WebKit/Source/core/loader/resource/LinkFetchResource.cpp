@@ -15,7 +15,7 @@ Resource* LinkFetchResource::fetch(Resource::Type type,
   DCHECK_EQ(type, LinkPrefetch);
   DCHECK_EQ(request.resourceRequest().frameType(),
             WebURLRequest::FrameTypeNone);
-  fetcher->determineRequestContext(request.mutableResourceRequest(), type);
+  request.setRequestContext(fetcher->determineRequestContext(type));
   return fetcher->requestResource(request, LinkResourceFactory(type));
 }
 

@@ -321,8 +321,8 @@ static Resource* preloadIfNeeded(const LinkRelAttribute& relAttribute,
     return nullptr;
   }
   ResourceRequest resourceRequest(document.completeURL(href));
-  ResourceFetcher::determineRequestContext(resourceRequest,
-                                           resourceType.value(), false);
+  resourceRequest.setRequestContext(
+      ResourceFetcher::determineRequestContext(resourceType.value(), false));
 
   if (referrerPolicy != ReferrerPolicyDefault) {
     resourceRequest.setHTTPReferrer(SecurityPolicy::generateReferrer(

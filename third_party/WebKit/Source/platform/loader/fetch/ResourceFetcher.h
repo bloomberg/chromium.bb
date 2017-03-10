@@ -131,10 +131,10 @@ class PLATFORM_EXPORT ResourceFetcher
 
   String getCacheIdentifier() const;
 
-  static void determineRequestContext(ResourceRequest&,
-                                      Resource::Type,
-                                      bool isMainFrame);
-  void determineRequestContext(ResourceRequest&, Resource::Type);
+  WARN_UNUSED_RESULT static WebURLRequest::RequestContext
+  determineRequestContext(Resource::Type, bool isMainFrame);
+  WARN_UNUSED_RESULT WebURLRequest::RequestContext determineRequestContext(
+      Resource::Type) const;
 
   void updateAllImageResourcePriorities();
 

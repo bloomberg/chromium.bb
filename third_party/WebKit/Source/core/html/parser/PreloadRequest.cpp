@@ -41,8 +41,8 @@ Resource* PreloadRequest::start(Document* document) {
   ResourceRequest resourceRequest(url);
   resourceRequest.setHTTPReferrer(SecurityPolicy::generateReferrer(
       m_referrerPolicy, url, document->outgoingReferrer()));
-  ResourceFetcher::determineRequestContext(resourceRequest, m_resourceType,
-                                           false);
+  resourceRequest.setRequestContext(
+      ResourceFetcher::determineRequestContext(m_resourceType, false));
 
   FetchRequest request(resourceRequest, initiatorInfo);
 

@@ -208,9 +208,9 @@ static void populateTimingInfo(ResourceTimingInfo* info, Resource* resource) {
   info->setFinalResponse(resource->response());
 }
 
-static WebURLRequest::RequestContext requestContextFromType(
-    bool isMainFrame,
-    Resource::Type type) {
+WebURLRequest::RequestContext ResourceFetcher::determineRequestContext(
+    Resource::Type type,
+    bool isMainFrame) {
   switch (type) {
     case Resource::MainResource:
       if (!isMainFrame)
@@ -639,17 +639,9 @@ void ResourceFetcher::resourceTimingReportTimerFired(TimerBase* timer) {
     context().addResourceTiming(*timingInfo);
 }
 
-void ResourceFetcher::determineRequestContext(ResourceRequest& request,
-                                              Resource::Type type,
-                                              bool isMainFrame) {
-  WebURLRequest::RequestContext requestContext =
-      requestContextFromType(isMainFrame, type);
-  request.setRequestContext(requestContext);
-}
-
-void ResourceFetcher::determineRequestContext(ResourceRequest& request,
-                                              Resource::Type type) {
-  determineRequestContext(request, type, context().isMainFrame());
+WebURLRequest::RequestContext ResourceFetcher::determineRequestContext(
+    Resource::Type type) const {
+  return determineRequestContext(type, context().isMainFrame());
 }
 
 void ResourceFetcher::initializeResourceRequest(
@@ -661,7 +653,7 @@ void ResourceFetcher::initializeResourceRequest(
         context().resourceRequestCachePolicy(request, type, defer));
   }
   if (request.requestContext() == WebURLRequest::RequestContextUnspecified)
-    determineRequestContext(request, type);
+    request.setRequestContext(determineRequestContext(type));
   if (type == Resource::LinkPrefetch)
     request.setHTTPHeaderField(HTTPNames::Purpose, "prefetch");
 
