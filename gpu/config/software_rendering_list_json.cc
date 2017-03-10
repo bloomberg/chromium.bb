@@ -18,7 +18,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "12.20",
+  "version": "12.21",
   "entries": [
     {
       "id": 1,
@@ -1508,6 +1508,16 @@ LONG_STRING_CONST(
       ],
       "exceptions": [
         { "vendor_id": "0x8086" }
+      ]
+    },
+    {
+      "id": 138,
+      "description": "Accelerated video encode is unavailable on Linux",
+      "os": {
+        "type": "linux"
+      },
+      "features": [
+        "accelerated_video_encode"
       ]
     }
   ]
