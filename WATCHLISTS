@@ -1284,6 +1284,11 @@
     'blink_html': {
       'filepath': 'third_party/WebKit/Source/core/html/'
     },
+    'blink_image_capture': {
+      'filepath': 'third_party/WebKit/Source/modules/imagecapture' \
+                  '|third_party/WebKit/LayoutTests/fast/imagecapture/' \
+                  '|third_party/WebKit/LayoutTests/imagecapture/'
+    },
     'blink_loader': {
       'filepath': 'third_party/WebKit/Source/core/loader', \
       'filepath': 'third_party/WebKit/Source/platform/loader'
@@ -1662,7 +1667,8 @@
                       'nhiroki@chromium.org',
                       'tzik@chromium.org'],
     'blink_frames': ['blink-reviews-frames@chromium.org'],
-    'blink_geolocation': ['mlamouri+watch-blink@chromium.org',
+    'blink_geolocation': ['mcasas+geolocation@chromium.org',
+                          'mlamouri+watch-blink@chromium.org',
                           'mvanouwerkerk+watch@chromium.org',
                           'timvolodine@chromium.org'],
     'blink_heap': ['ager@chromium.org',
@@ -1673,6 +1679,7 @@
                    'dglazkov+blink@chromium.org'],
     'blink_htmlparser': ['kinuko+watch@chromium.org',
                          'loading-reviews+parser@chromium.org'],
+    'blink_image_capture': ['mcasas+imagecapture@chromium.org'],
     'blink_indexed_db': ['cmumford@chromium.org',
                          'jsbell+idb@chromium.org'],
     'blink_input': ['dtapuska+blinkwatch@chromium.org',
@@ -1700,8 +1707,7 @@
                     'srirama.m@samsung.com'],
     'blink_media_queries': ['kenneth.christiansen@gmail.com',
                             'yoav@yoav.ws'],
-    'blink_mediastream': ['mcasas+watch+mediastream@chromium.org',
-                          'tommyw+watchlist@chromium.org'],
+    'blink_mediastream': ['tommyw+watchlist@chromium.org'],
     'blink_modules': ['haraken@chromium.org'],
     'blink_navigator_content_utils': ['gyuyoung.kim@chromium.org'],
     'blink_notifications': ['awdf+watch@chromium.org',
@@ -1913,7 +1919,8 @@
     'generic_sensor': ['alexander.shalamov@intel.com',
                        'mikhail.pozdnyakov@intel.com',
                        'wanming.lin@intel.com'],
-    'geolocation': ['mlamouri+watch-geolocation@chromium.org',
+    'geolocation': ['mcasas+geolocation@chromium.org',
+                    'mlamouri+watch-geolocation@chromium.org',
                     'mvanouwerkerk@chromium.org'],
     'gfx_geometry': ['cc-bugs@chromium.org'],
     'gfx_image': ['rsesek+watch@chromium.org'],
@@ -1981,12 +1988,12 @@
                     'stevenjb+watch-md-settings@chromium.org'],
     'media': ['feature-media-reviews@chromium.org'],
     'media_capture_from_element': ['emircan+watch+capturefromdom@chromium.org',
-                                   'mcasas+watch+capturefromdom@chromium.org'],
+                                   'mcasas+capturefromelement@chromium.org'],
     'media_galleries': ['thestig@chromium.org',
                         'tommycli@chromium.org'],
     'media_mojo': ['alokp+watch@chromium.org'],
     'media_recorder': ['emircan+watch+mediarecorder@chromium.org',
-                       'mcasas+watch+mediarecorder@chromium.org'],
+                       'mcasas+mediarecorder@chromium.org'],
     'media_remoting': ['apacible+watch@chromium.org',
                        'erickung+watch@chromium.org',
                        'miu+watch@chromium.org',
@@ -2153,8 +2160,7 @@
     'version_assembly': ['caitkp+watch@chromium.org',
                          'gab+watch@chromium.org'],
     'video': ['posciak+watch@chromium.org'],
-    'video_capture': ['mcasas+watch+vc@chromium.org',
-                      'chfremer+watch@chromium.org'],
+    'video_capture': ['chfremer+watch@chromium.org'],
     'views': ['tfarina@chromium.org'],
     'virtual_keyboard': ['dfaden+virtualkb@google.com',
                          'groby+virtualkb@chromium.org',
