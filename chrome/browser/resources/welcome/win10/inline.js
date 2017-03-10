@@ -47,11 +47,13 @@ Polymer({
   },
 
   onToggle: function() {
-    if (this.isCombined) {
-      var sections = this.shadowRoot.querySelectorAll('.section.expandable');
-      sections.forEach(function(section) {
-        section.classList.toggle('expanded');
-      });
-    }
+    if (!this.isCombined)
+      return;
+    var sections = this.shadowRoot.querySelectorAll('.section.expandable');
+    sections.forEach(function(section) {
+      var isExpanded = section.classList.toggle('expanded');
+      section.querySelector('[role~="button"]').setAttribute(
+          'aria-expanded', isExpanded);
+    });
   }
 });

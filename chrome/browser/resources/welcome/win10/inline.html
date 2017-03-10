@@ -270,35 +270,41 @@
           }
         }
       </style>
-      <div class="header-logo"></div>
+      <div class="header-logo" role="presentation"></div>
       <div class="heading">$i18n{headerText}</div>
       <div class="sections">
         <div class$="[[computeClasses(isCombined)]]">
           <template is="dom-if" if="[[isCombined]]">
-            <a is="action-link" class="section-heading" on-tap="onToggle">
-              <div class="section-heading-text">
-                $i18n{defaultBrowserSubheaderText}
-              </div>
-              <iron-icon class="section-heading-expand" icon="cr:expand-more">
-              </iron-icon>
-            </a>
+            <div role="heading" aria-level="2">
+              <a id="tab1" is="action-link" class="section-heading"
+                  on-tap="onToggle" role="button" aria-controls="panel1"
+                  aria-expanded="true">
+                <div class="section-heading-text" role="presentation">
+                  $i18n{defaultBrowserSubheaderText}
+                </div>
+                <iron-icon class="section-heading-expand" icon="cr:expand-more"
+                    role="presentation">
+                </iron-icon>
+              </a>
+            </div>
           </template>
           <template is="dom-if" if="[[!isCombined]]">
-            <div class="section-heading">
-              <div class="section-heading-text">
+            <div class="section-heading" role="text">
+              <div class="section-heading-text" role="presentation">
                 $i18n{defaultBrowserSubheaderText}
               </div>
             </div>
           </template>
-          <ol class="section-steps">
+          <ol id="panel1" class="section-steps" aria-labelledby="tab1">
             <li>
-              <a is="action-link" on-tap="onOpenSettings">
+              <a is="action-link" on-tap="onOpenSettings" role="link">
                 $i18n{openSettingsText}
               </a>
             </li>
             <li>
-              <div>$i18nRaw{clickEdgeText}</div>
-              <div class="screenshot-image" id="default-image">
+              <div role="presentation">$i18nRaw{clickEdgeText}</div>
+              <div class="screenshot-image" id="default-image"
+                  role="presentation">
                 <div class="screenshot-overlay" id="browser-overlay">
                   <div aria-hidden="true">$i18n{webBrowserLabel}</div>
                 </div>
@@ -307,21 +313,31 @@
                 </div>
               </div>
             </li>
-            <li>$i18nRaw{clickSelectChrome}</li>
+            <li>
+              <div role="presentation">$i18nRaw{clickSelectChrome}</div>
+            </li>
           </ol>
         </div>
         <template is="dom-if" if="[[isCombined]]">
           <div class="section expandable">
-            <a is="action-link" class="section-heading" on-tap="onToggle">
-              <div class="section-heading-text">$i18n{pinSubheaderText}</div>
-              <iron-icon class="section-heading-expand" icon="cr:expand-more">
-              </iron-icon>
-            </a>
-            <ol class="section-steps">
+            <div role="heading" aria-level="2">
+              <a id="tab2" is="action-link" class="section-heading"
+                  on-tap="onToggle" role="button" aria-controls="panel2"
+                  aria-expanded="false">
+                <div class="section-heading-text" role="presentation">
+                  $i18n{pinSubheaderText}
+                </div>
+                <iron-icon class="section-heading-expand" icon="cr:expand-more"
+                    role="presentation">
+                </iron-icon>
+              </a>
+            </div>
+            <ol id="panel2" class="section-steps" aria-labelledby="tab2">
               <li>$i18nRaw{rightClickText}</li>
               <li>
-                <div>$i18nRaw{pinInstructionText}</div>
-                <div class="screenshot-image" id="taskbar-image">
+                <div role="presentation">$i18nRaw{pinInstructionText}</div>
+                <div class="screenshot-image" id="taskbar-image"
+                    role="presentation">
                   <div class="screenshot-overlay" id="taskbar-overlay">
                     <div aria-hidden="true">$i18n{pinToTaskbarLabel}</div>
                   </div>
