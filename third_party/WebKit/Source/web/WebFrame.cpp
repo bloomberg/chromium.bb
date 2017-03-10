@@ -74,7 +74,7 @@ bool WebFrame::swap(WebFrame* frame) {
   FrameOwner* owner = oldFrame->owner();
 
   v8::HandleScope handleScope(v8::Isolate::GetCurrent());
-  HashMap<DOMWrapperWorld*, v8::Local<v8::Object>> globals;
+  WindowProxyManagerBase::GlobalsVector globals;
   oldFrame->getWindowProxyManager()->clearForNavigation();
   oldFrame->getWindowProxyManager()->releaseGlobals(globals);
 

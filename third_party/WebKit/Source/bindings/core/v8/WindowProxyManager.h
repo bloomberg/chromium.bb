@@ -30,10 +30,13 @@ class WindowProxyManagerBase : public GarbageCollected<WindowProxyManagerBase> {
   void clearForClose();
   void CORE_EXPORT clearForNavigation();
 
-  void CORE_EXPORT
-  releaseGlobals(HashMap<DOMWrapperWorld*, v8::Local<v8::Object>>&);
-  void CORE_EXPORT
-  setGlobals(const HashMap<DOMWrapperWorld*, v8::Local<v8::Object>>&);
+  // Globals are passed in a vector to maintain their order: global object for
+  // the main world is always first. This is needed to prevent bugs like
+  // https://crbug.com/700077.
+  using GlobalsVector =
+      Vector<std::pair<DOMWrapperWorld*, v8::Local<v8::Object>>>;
+  void CORE_EXPORT releaseGlobals(GlobalsVector&);
+  void CORE_EXPORT setGlobals(const GlobalsVector&);
 
  protected:
   using IsolatedWorldMap = HeapHashMap<int, Member<WindowProxy>>;

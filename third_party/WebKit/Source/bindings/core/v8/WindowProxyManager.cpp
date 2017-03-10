@@ -57,18 +57,18 @@ void WindowProxyManagerBase::clearForNavigation() {
     entry.value->clearForNavigation();
 }
 
-void WindowProxyManagerBase::releaseGlobals(
-    HashMap<DOMWrapperWorld*, v8::Local<v8::Object>>& map) {
-  map.insert(&m_windowProxy->world(), m_windowProxy->releaseGlobal());
-  for (auto& entry : m_isolatedWorlds)
-    map.insert(&entry.value->world(),
-               windowProxy(entry.value->world())->releaseGlobal());
+void WindowProxyManagerBase::releaseGlobals(GlobalsVector& globals) {
+  globals.reserveInitialCapacity(1 + m_isolatedWorlds.size());
+  globals.emplace_back(&m_windowProxy->world(), m_windowProxy->releaseGlobal());
+  for (auto& entry : m_isolatedWorlds) {
+    globals.emplace_back(&entry.value->world(),
+                         windowProxy(entry.value->world())->releaseGlobal());
+  }
 }
 
-void WindowProxyManagerBase::setGlobals(
-    const HashMap<DOMWrapperWorld*, v8::Local<v8::Object>>& map) {
-  for (auto& entry : map)
-    windowProxy(*entry.key)->setGlobal(entry.value);
+void WindowProxyManagerBase::setGlobals(const GlobalsVector& globals) {
+  for (const auto& entry : globals)
+    windowProxy(*entry.first)->setGlobal(entry.second);
 }
 
 WindowProxyManagerBase::WindowProxyManagerBase(Frame& frame)
