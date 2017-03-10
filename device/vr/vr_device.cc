@@ -19,12 +19,6 @@ VRDevice::VRDevice()
 
 VRDevice::~VRDevice() {}
 
-void VRDevice::RequestPresent(const base::Callback<void(bool)>& callback) {
-  callback.Run(true);
-}
-
-void VRDevice::SetSecureOrigin(bool secure_origin) {}
-
 void VRDevice::AddDisplay(VRDisplayImpl* display) {
   displays_.insert(display);
 }

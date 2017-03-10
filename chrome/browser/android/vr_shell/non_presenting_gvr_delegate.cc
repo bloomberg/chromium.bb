@@ -20,7 +20,11 @@ NonPresentingGvrDelegate::NonPresentingGvrDelegate(gvr_context* context)
     : task_runner_(base::ThreadTaskRunnerHandle::Get()),
       binding_(this),
       weak_ptr_factory_(this) {
-  gvr_api_ = gvr::GvrApi::WrapNonOwned(context);
+  // Context may be null, see VrShellDelegate#createNonPresentingNativeContext
+  // for possible reasons a context could fail to be created. For example,
+  // the user might uninstall apps or clear data after VR support was detected.
+  if (context)
+    gvr_api_ = gvr::GvrApi::WrapNonOwned(context);
 }
 
 NonPresentingGvrDelegate::~NonPresentingGvrDelegate() {
@@ -40,7 +44,8 @@ void NonPresentingGvrDelegate::OnVRVsyncProviderRequest(
 void NonPresentingGvrDelegate::Pause() {
   vsync_task_.Cancel();
   vsync_paused_ = true;
-  gvr_api_->PauseTracking();
+  if (gvr_api_)
+    gvr_api_->PauseTracking();
 }
 
 void NonPresentingGvrDelegate::Resume() {
@@ -60,12 +65,14 @@ NonPresentingGvrDelegate::OnSwitchToPresentingDelegate() {
 
 void NonPresentingGvrDelegate::StopVSyncLoop() {
   vsync_task_.Cancel();
+  binding_.Close();
   if (!callback_.is_null()) {
     base::ResetAndReturn(&callback_)
         .Run(nullptr, base::TimeDelta(), -1,
-             device::mojom::VRVSyncProvider::Status::RETRY);
+             device::mojom::VRVSyncProvider::Status::CLOSING);
   }
-  gvr_api_->PauseTracking();
+  if (gvr_api_)
+    gvr_api_->PauseTracking();
   // If the loop is stopped, it's not considered to be paused.
   vsync_paused_ = false;
 }
@@ -73,8 +80,10 @@ void NonPresentingGvrDelegate::StopVSyncLoop() {
 void NonPresentingGvrDelegate::StartVSyncLoop() {
   vsync_task_.Reset(
       base::Bind(&NonPresentingGvrDelegate::OnVSync, base::Unretained(this)));
-  gvr_api_->RefreshViewerProfile();
-  gvr_api_->ResumeTracking();
+  if (gvr_api_) {
+    gvr_api_->RefreshViewerProfile();
+    gvr_api_->ResumeTracking();
+  }
   OnVSync();
 }
 
@@ -136,6 +145,12 @@ void NonPresentingGvrDelegate::SendVSync(base::TimeDelta time,
   gvr::ClockTimePoint target_time = gvr::GvrApi::GetTimePointNow();
   target_time.monotonic_system_time_nanos += kPredictionTimeWithoutVsyncNanos;
 
+  if (!gvr_api_) {
+    callback.Run(device::mojom::VRPosePtr(nullptr), time, -1,
+                 device::mojom::VRVSyncProvider::Status::SUCCESS);
+    return;
+  }
+
   gvr::Mat4f head_mat = gvr_api_->ApplyNeckModel(
       gvr_api_->GetHeadSpaceFromStartSpaceRotation(target_time), 1.0f);
   callback.Run(VrShell::VRPosePtrFromGvrPose(head_mat), time, -1,
@@ -156,8 +171,16 @@ void NonPresentingGvrDelegate::ResetPose() {
 void NonPresentingGvrDelegate::CreateVRDisplayInfo(
     const base::Callback<void(device::mojom::VRDisplayInfoPtr)>& callback,
     uint32_t device_id) {
-  callback.Run(VrShell::CreateVRDisplayInfo(
-      gvr_api_.get(), device::kInvalidRenderTargetSize, device_id));
+  if (!gvr_api_) {
+    callback.Run(device::mojom::VRDisplayInfoPtr(nullptr));
+    return;
+  }
+
+  gvr::Sizei webvr_size = VrShell::GetRecommendedWebVrSize(gvr_api_.get());
+  DVLOG(1) << __FUNCTION__ << ": resize recommended to " << webvr_size.width
+           << "x" << webvr_size.height;
+  callback.Run(
+      VrShell::CreateVRDisplayInfo(gvr_api_.get(), webvr_size, device_id));
 }
 
 }  // namespace vr_shell

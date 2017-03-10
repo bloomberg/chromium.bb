@@ -1,4 +1,5 @@
 include_rules = [
+  "+gpu/command_buffer/common/mailbox_holder.h",
   "+jni",
   "+third_party/WebKit/public/platform/WebGamepads.h",
   "+third_party/WebKit/public/platform/modules/vr/vr_service.mojom.h",
