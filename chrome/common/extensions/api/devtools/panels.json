@@ -298,6 +298,10 @@
       "sources": {
         "$ref": "SourcesPanel",
         "description": "Sources panel."
+      },
+      "themeName": {
+        "type": "string",
+        "description": "The name of the color theme set in user's DevTools settings. Possible values: <code>default</code> (the default) and <code>dark</code>."
       }
     },
     "functions": [
