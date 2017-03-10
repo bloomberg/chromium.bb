@@ -95,6 +95,7 @@ class CONTENT_EXPORT GpuDataManagerImpl
                     std::string* gl_renderer,
                     std::string* gl_version) override;
   void DisableHardwareAcceleration() override;
+  bool HardwareAccelerationEnabled() const override;
   bool CanUseGpuBrowserCompositor() const override;
   void GetDisabledExtensions(std::string* disabled_extensions) const override;
   void SetGpuInfo(const gpu::GPUInfo& gpu_info) override;

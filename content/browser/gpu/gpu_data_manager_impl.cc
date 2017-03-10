@@ -123,6 +123,12 @@ void GpuDataManagerImpl::DisableHardwareAcceleration() {
   private_->DisableHardwareAcceleration();
 }
 
+bool GpuDataManagerImpl::HardwareAccelerationEnabled() const {
+  base::AutoLock auto_lock(lock_);
+  return !private_->ShouldUseSwiftShader() &&
+         private_->GpuAccessAllowed(nullptr);
+}
+
 bool GpuDataManagerImpl::CanUseGpuBrowserCompositor() const {
   base::AutoLock auto_lock(lock_);
   return private_->CanUseGpuBrowserCompositor();
