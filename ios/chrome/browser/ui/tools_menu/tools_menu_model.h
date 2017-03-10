@@ -7,36 +7,7 @@
 
 #import <Foundation/Foundation.h>
 
-// New Tab item accessibility Identifier.
-extern NSString* const kToolsMenuNewTabId;
-// New incognito Tab item accessibility Identifier.
-extern NSString* const kToolsMenuNewIncognitoTabId;
-// Close all Tabs item accessibility Identifier.
-extern NSString* const kToolsMenuCloseAllTabsId;
-// Close all incognito Tabs item accessibility Identifier.
-extern NSString* const kToolsMenuCloseAllIncognitoTabsId;
-// Bookmarks item accessibility Identifier.
-extern NSString* const kToolsMenuBookmarksId;
-// Reading List item accessibility Identifier.
-extern NSString* const kToolsMenuReadingListId;
-// Other Devices item accessibility Identifier.
-extern NSString* const kToolsMenuOtherDevicesId;
-// History item accessibility Identifier.
-extern NSString* const kToolsMenuHistoryId;
-// Report an issue item accessibility Identifier.
-extern NSString* const kToolsMenuReportAnIssueId;
-// Find in Page item accessibility Identifier.
-extern NSString* const kToolsMenuFindInPageId;
-// Reader Mode item accessibility Identifier.
-extern NSString* const kToolsMenuReaderMode;
-// Request desktop item accessibility Identifier.
-extern NSString* const kToolsMenuRequestDesktopId;
-// Settings item accessibility Identifier.
-extern NSString* const kToolsMenuSettingsId;
-// Help item accessibility Identifier.
-extern NSString* const kToolsMenuHelpId;
-// Suggestions item accessibility Identifier.
-extern NSString* const kToolsMenuSuggestionsId;
+#import "ios/chrome/browser/ui/tools_menu/tools_menu_configuration.h"
 
 // Total number of possible menu items.
 const int kToolsMenuNumberOfItems = 15;
@@ -75,9 +46,9 @@ typedef NS_OPTIONS(NSUInteger, ToolbarType) {
 extern const MenuItemInfo itemInfoList[kToolsMenuNumberOfItems];
 
 // Returns true if a given item should be visible based on the Toolbar type
-// and if incognito mode or not.
+// and configuration.
 bool ToolsMenuItemShouldBeVisible(const MenuItemInfo& item,
-                                  bool incognito,
-                                  ToolbarType toolbarType);
+                                  ToolbarType toolbarType,
+                                  ToolsMenuConfiguration* configuration);
 
 #endif  // IOS_CHROME_BROWSER_UI_TOOLS_MENU_TOOLS_MENU_MODEL_H_

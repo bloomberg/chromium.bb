@@ -22,6 +22,8 @@
 #import "ios/chrome/browser/ui/reading_list/reading_list_menu_notifier.h"
 #import "ios/chrome/browser/ui/tools_menu/reading_list_menu_view_item.h"
 #import "ios/chrome/browser/ui/tools_menu/tools_menu_configuration.h"
+#import "ios/chrome/browser/ui/tools_menu/tools_menu_constants.h"
+#import "ios/chrome/browser/ui/tools_menu/tools_menu_model.h"
 #import "ios/chrome/browser/ui/tools_menu/tools_menu_view_item.h"
 #import "ios/chrome/browser/ui/tools_menu/tools_menu_view_tools_cell.h"
 #import "ios/chrome/browser/ui/tools_menu/tools_popup_controller.h"
@@ -42,24 +44,6 @@
 
 using ios::material::TimingFunction;
 
-NSString* const kToolsMenuNewTabId = @"kToolsMenuNewTabId";
-NSString* const kToolsMenuNewIncognitoTabId = @"kToolsMenuNewIncognitoTabId";
-NSString* const kToolsMenuCloseAllTabsId = @"kToolsMenuCloseAllTabsId";
-NSString* const kToolsMenuCloseAllIncognitoTabsId =
-    @"kToolsMenuCloseAllIncognitoTabsId";
-NSString* const kToolsMenuBookmarksId = @"kToolsMenuBookmarksId";
-NSString* const kToolsMenuReadingListId = @"kToolsMenuReadingListId";
-NSString* const kToolsMenuOtherDevicesId = @"kToolsMenuOtherDevicesId";
-NSString* const kToolsMenuHistoryId = @"kToolsMenuHistoryId";
-NSString* const kToolsMenuReportAnIssueId = @"kToolsMenuReportAnIssueId";
-NSString* const kToolsMenuFindInPageId = @"kToolsMenuFindInPageId";
-NSString* const kToolsMenuReaderMode = @"kToolsMenuReaderMode";
-NSString* const kToolsMenuRequestDesktopId = @"kToolsMenuRequestDesktopId";
-NSString* const kToolsMenuRequestMobileId = @"kToolsMenuRequestMobileId";
-NSString* const kToolsMenuSettingsId = @"kToolsMenuSettingsId";
-NSString* const kToolsMenuHelpId = @"kToolsMenuHelpId";
-NSString* const kToolsMenuSuggestionsId = @"kToolsMenuSuggestionsId";
-
 namespace {
 
 // Time for ink to fade into view.
@@ -69,168 +53,6 @@ static const CGFloat kMenuItemHeight = 48;
 
 static NSString* const kToolsItemCellID = @"ToolsItemCellID";
 
-// Menu items can be marked as visible or not when Incognito is enabled.
-// The following bits are used for |visibility| field in |MenuItemInfo|.
-const NSInteger kVisibleIncognitoOnly = 1 << 0;
-const NSInteger kVisibleNotIncognitoOnly = 1 << 1;
-
-// Initialization table for all possible commands to initialize the
-// tools menu at run time. Data initialized into this structure is not mutable.
-struct MenuItemInfo {
-  int title_id;
-  NSString* accessibility_id;
-  int command_id;
-  int toolbar_types;
-  // |visibility| is applied if a menu item is included for a given
-  // |toolbar_types|. A value of 0 means the menu item is always visible for
-  // the given |toolbar_types|.
-  int visibility;
-  // Custom class, if any, for the menu item, or |nil|.
-  Class item_class;
-};
-
-// Flags for different toolbar types
-typedef NS_OPTIONS(NSUInteger, kToolbarType) {
-  // clang-format off
-    kToolbarTypeNone            = 0,
-    kToolbarTypeWebiPhone       = 1 << 0,
-    kToolbarTypeWebiPad         = 1 << 1,
-    kToolbarTypeNoTabsiPad      = 1 << 2,
-    kToolbarTypeSwitcheriPhone  = 1 << 3,
-    kToolbarTypeWebAll          = kToolbarTypeWebiPhone | kToolbarTypeWebiPad,
-    kToolbarTypeAll             = kToolbarTypeWebAll |
-                                  kToolbarTypeSwitcheriPhone |
-                                  kToolbarTypeNoTabsiPad,
-  // clang-format on
-};
-
-// Declares all the possible items.
-static MenuItemInfo itemInfoList[] = {
-    // clang-format off
-  { IDS_IOS_TOOLS_MENU_NEW_TAB,           kToolsMenuNewTabId,
-    IDC_NEW_TAB,                          kToolbarTypeAll,
-    0,                                    nil },
-  { IDS_IOS_TOOLS_MENU_NEW_INCOGNITO_TAB, kToolsMenuNewIncognitoTabId,
-    IDC_NEW_INCOGNITO_TAB,                kToolbarTypeAll,
-    0,                                    nil },
-  { IDS_IOS_TOOLS_MENU_CLOSE_ALL_TABS,    kToolsMenuCloseAllTabsId,
-    IDC_CLOSE_ALL_TABS,                   kToolbarTypeSwitcheriPhone,
-    kVisibleNotIncognitoOnly,             nil },
-  { IDS_IOS_TOOLS_MENU_CLOSE_ALL_INCOGNITO_TABS,
-    kToolsMenuCloseAllIncognitoTabsId,
-    IDC_CLOSE_ALL_INCOGNITO_TABS,         kToolbarTypeSwitcheriPhone,
-    kVisibleIncognitoOnly,                nil },
-  { IDS_IOS_TOOLS_MENU_BOOKMARKS,         kToolsMenuBookmarksId,
-    IDC_SHOW_BOOKMARK_MANAGER,            kToolbarTypeWebAll,
-    0,                                    nil },
-  { IDS_IOS_TOOLS_MENU_READING_LIST,      kToolsMenuReadingListId,
-    IDC_SHOW_READING_LIST,                kToolbarTypeWebAll,
-    0,                                    [ReadingListMenuViewItem class] },
-  { IDS_IOS_TOOLS_MENU_SUGGESTIONS,       kToolsMenuSuggestionsId,
-    IDC_SHOW_SUGGESTIONS,                 kToolbarTypeWebAll,
-    0,                                    nil },
-  { IDS_IOS_TOOLS_MENU_RECENT_TABS,       kToolsMenuOtherDevicesId,
-    IDC_SHOW_OTHER_DEVICES,               kToolbarTypeWebAll,
-    kVisibleNotIncognitoOnly,             nil },
-  { IDS_HISTORY_SHOW_HISTORY,             kToolsMenuHistoryId,
-    IDC_SHOW_HISTORY,                     kToolbarTypeWebAll,
-    0,                                    nil },
-  { IDS_IOS_OPTIONS_REPORT_AN_ISSUE,      kToolsMenuReportAnIssueId,
-    IDC_REPORT_AN_ISSUE,                  kToolbarTypeAll,
-    0,                                    nil },
-  { IDS_IOS_TOOLS_MENU_FIND_IN_PAGE,      kToolsMenuFindInPageId,
-    IDC_FIND,                             kToolbarTypeWebAll,
-    0,                                    nil },
-  { IDS_IOS_TOOLS_MENU_REQUEST_DESKTOP_SITE, kToolsMenuRequestDesktopId,
-    IDC_REQUEST_DESKTOP_SITE,             kToolbarTypeWebAll,
-    0,                                    nil },
-  { IDS_IOS_TOOLS_MENU_REQUEST_MOBILE_SITE, kToolsMenuRequestMobileId,
-    IDC_REQUEST_MOBILE_SITE,             kToolbarTypeWebAll,
-    0,                                    nil },
-  { IDS_IOS_TOOLS_MENU_READER_MODE,       kToolsMenuReaderMode,
-    IDC_READER_MODE,                      kToolbarTypeWebAll,
-    0,                                    nil },
-  { IDS_IOS_TOOLS_MENU_SETTINGS,          kToolsMenuSettingsId,
-    IDC_OPTIONS,                          kToolbarTypeAll,
-    0,                                    nil },
-  { IDS_IOS_TOOLS_MENU_HELP_MOBILE,           kToolsMenuHelpId,
-    IDC_HELP_PAGE_VIA_MENU,               kToolbarTypeWebAll,
-    0,                                    nil },
-    // clang-format on
-};
-
-NS_INLINE BOOL ItemShouldBeVisible(const MenuItemInfo& item,
-                                   kToolbarType toolbarType,
-                                   ToolsMenuConfiguration* configuration) {
-  if (!(item.toolbar_types & toolbarType))
-    return NO;
-
-  if (configuration.inIncognito && (item.visibility & kVisibleNotIncognitoOnly))
-    return NO;
-
-  if (!configuration.inIncognito && (item.visibility & kVisibleIncognitoOnly))
-    return NO;
-
-  if (item.title_id == IDS_IOS_TOOLBAR_SHOW_TABS) {
-    if (!IsIPadIdiom()) {
-      return NO;
-    }
-  }
-
-  if (item.title_id == IDS_IOS_TOOLS_MENU_READER_MODE) {
-    if (!experimental_flags::IsReaderModeEnabled()) {
-      return NO;
-    }
-  }
-
-  if (item.title_id == IDS_IOS_TOOLS_MENU_READING_LIST) {
-    if (!reading_list::switches::IsReadingListEnabled()) {
-      return NO;
-    }
-  }
-
-  if (item.title_id == IDS_IOS_TOOLS_MENU_SUGGESTIONS) {
-    if (!experimental_flags::IsSuggestionsUIEnabled()) {
-      return NO;
-    }
-  }
-
-  if (item.title_id == IDS_IOS_OPTIONS_REPORT_AN_ISSUE) {
-    if (!ios::GetChromeBrowserProvider()
-             ->GetUserFeedbackProvider()
-             ->IsUserFeedbackEnabled()) {
-      return NO;
-    }
-  }
-
-  // TODO(crbug.com/696676): Talk to UI/UX people to decide the correct behavior
-  // of "Requestion Desktop/Mobile Site" (e.g. Whether user agent flag should
-  // stick when going backward and which cell should be visible when navigating
-  // to native pages).
-  if (item.title_id == IDS_IOS_TOOLS_MENU_REQUEST_DESKTOP_SITE) {
-// TODO(crbug.com/678047) Remove this switch when request mobile site
-// functionality is implemented.
-#ifdef HIDE_REQUEST_MOBILE_SITE_CELL
-    return YES;
-#else
-    if (configuration.userAgentType == web::UserAgentType::DESKTOP)
-      return NO;
-#endif
-  }
-
-  if (item.title_id == IDS_IOS_TOOLS_MENU_REQUEST_MOBILE_SITE) {
-// TODO(crbug.com/678047) Remove this switch when request mobile site
-// functionality is implemented.
-#ifdef HIDE_REQUEST_MOBILE_SITE_CELL
-    return NO;
-#else
-    if (configuration.userAgentType != web::UserAgentType::DESKTOP)
-      return NO;
-#endif
-  }
-
-  return YES;
-}
 
 NS_INLINE void AnimateInViews(NSArray* views,
                               CGFloat initialX,
@@ -296,7 +118,7 @@ NS_INLINE void AnimateInViews(NSArray* views,
 }
 @property(nonatomic, retain) ToolsMenuCollectionView* menuView;
 @property(nonatomic, retain) MDCInkView* touchFeedbackView;
-@property(nonatomic, assign) kToolbarType toolbarType;
+@property(nonatomic, assign) ToolbarType toolbarType;
 
 // Returns the reading list cell.
 - (ReadingListMenuViewCell*)readingListCell;
@@ -316,7 +138,7 @@ NS_INLINE void AnimateInViews(NSArray* views,
 
 - (CGFloat)optimalHeight:(CGFloat)suggestedHeight {
   NSInteger numberOfItems = [self.menuItems count];
-  if (_toolbarType == kToolbarTypeWebiPhone) {
+  if (_toolbarType == ToolbarTypeWebiPhone) {
     // Account for the height of the first row, not included in |menuItems|.
     numberOfItems++;
   }
@@ -398,16 +220,16 @@ NS_INLINE void AnimateInViews(NSArray* views,
   }
 
   if (IsIPadIdiom()) {
-    _toolbarType = configuration.hasNoOpenedTabs
-                       ? kToolbarTypeNoTabsiPad
-                       : (!IsCompactTablet() ? kToolbarTypeWebiPad
-                                             : kToolbarTypeWebiPhone);
+    _toolbarType =
+        configuration.hasNoOpenedTabs
+            ? ToolbarTypeNoTabsiPad
+            : (!IsCompactTablet() ? ToolbarTypeWebiPad : ToolbarTypeWebiPhone);
   } else {
     // kOptionInTabSwitcher option must be enabled on iPhone with
     // no opened tabs.
     DCHECK(!configuration.hasNoOpenedTabs || configuration.isInTabSwitcher);
-    _toolbarType = configuration.isInTabSwitcher ? kToolbarTypeSwitcheriPhone
-                                                 : kToolbarTypeWebiPhone;
+    _toolbarType = configuration.isInTabSwitcher ? ToolbarTypeSwitcheriPhone
+                                                 : ToolbarTypeWebiPhone;
   }
 
   // Build the menu, adding all relevant items.
@@ -415,7 +237,7 @@ NS_INLINE void AnimateInViews(NSArray* views,
 
   for (size_t i = 0; i < arraysize(itemInfoList); ++i) {
     const MenuItemInfo& item = itemInfoList[i];
-    if (!ItemShouldBeVisible(item, _toolbarType, configuration))
+    if (!ToolsMenuItemShouldBeVisible(item, _toolbarType, configuration))
       continue;
 
     NSString* title = l10n_util::GetNSStringWithFixup(item.title_id);
@@ -432,7 +254,7 @@ NS_INLINE void AnimateInViews(NSArray* views,
 
 #if !defined(NDEBUG)
   NSUserDefaults* standardDefaults = [NSUserDefaults standardUserDefaults];
-  if ((_toolbarType & kToolbarTypeWebAll) &&
+  if ((_toolbarType & ToolbarTypeWebAll) &&
       [standardDefaults boolForKey:@"DevViewSource"]) {
     // Debug menu, not localized, only visible if turned on by a default.
     [menu addObject:[self createViewSourceItem]];
@@ -499,7 +321,7 @@ NS_INLINE void AnimateInViews(NSArray* views,
 - (NSInteger)dataIndexForIndexPath:(NSIndexPath*)path {
   NSInteger item = [path item];
 
-  if (_toolbarType == kToolbarTypeWebiPhone)
+  if (_toolbarType == ToolbarTypeWebiPhone)
     --item;
 
   return item;
@@ -609,7 +431,7 @@ NS_INLINE void AnimateInViews(NSArray* views,
       }];
 
   ToolsMenuViewToolsCell* toolsCell = nil;
-  if (_toolbarType == kToolbarTypeWebiPhone) {
+  if (_toolbarType == ToolbarTypeWebiPhone) {
     toolsCell = [visibleCells firstObject];
     if ([toolsCell isKindOfClass:[ToolsMenuViewToolsCell class]]) {
       visibleCells = [visibleCells
@@ -749,7 +571,7 @@ NS_INLINE void AnimateInViews(NSArray* views,
 - (NSInteger)collectionView:(UICollectionView*)view
      numberOfItemsInSection:(NSInteger)section {
   NSInteger numberOfItems = [_menuItems count];
-  if (_toolbarType == kToolbarTypeWebiPhone)
+  if (_toolbarType == ToolbarTypeWebiPhone)
     ++numberOfItems;
 
   return numberOfItems;
