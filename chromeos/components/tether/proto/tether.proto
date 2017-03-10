@@ -85,6 +85,7 @@ message ConnectTetheringResponse {
     UNKNOWN_ERROR = 0;
     SUCCESS = 1;
     PROVISIONING_FAILED = 2;
+    TETHERING_TIMEOUT = 3;
   }
 
   optional ResponseCode response_code = 1;
