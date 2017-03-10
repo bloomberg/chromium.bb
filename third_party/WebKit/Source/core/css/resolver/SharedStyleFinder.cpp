@@ -61,10 +61,9 @@ using namespace HTMLNames;
 
 inline ComputedStyle* getElementStyle(Element& element) {
   if (element.needsReattachLayoutTree()) {
-    StyleReattachData styleReattachData =
-        element.document().getStyleReattachData(element);
-    if (styleReattachData.computedStyle)
-      return styleReattachData.computedStyle.get();
+    if (ComputedStyle* computedStyle =
+            element.document().getNonAttachedStyle(element))
+      return computedStyle;
   }
   return element.mutableComputedStyle();
 }

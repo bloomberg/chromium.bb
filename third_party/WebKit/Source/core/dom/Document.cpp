@@ -1417,14 +1417,14 @@ Element* Document::scrollingElementNoLayout() {
 // We use HashMap::set over HashMap::add here as we want to
 // replace the ComputedStyle but not the Node if the Node is
 // already present.
-void Document::addStyleReattachData(const Node& node,
-                                    StyleReattachData& styleReattachData) {
+void Document::addNonAttachedStyle(const Node& node,
+                                   RefPtr<ComputedStyle> computedStyle) {
   DCHECK(node.isElementNode() || node.isTextNode());
-  m_styleReattachDataMap.set(&node, styleReattachData);
+  m_nonAttachedStyle.set(&node, computedStyle);
 }
 
-StyleReattachData Document::getStyleReattachData(const Node& node) const {
-  return m_styleReattachDataMap.at(&node);
+ComputedStyle* Document::getNonAttachedStyle(const Node& node) const {
+  return m_nonAttachedStyle.at(&node);
 }
 
 /*
@@ -2107,7 +2107,7 @@ void Document::updateStyle() {
 
   // Only retain the HashMap for the duration of StyleRecalc and
   // LayoutTreeConstruction.
-  m_styleReattachDataMap.clear();
+  m_nonAttachedStyle.clear();
   clearChildNeedsStyleRecalc();
   clearChildNeedsReattachLayoutTree();
 
@@ -2119,7 +2119,7 @@ void Document::updateStyle() {
   DCHECK(!childNeedsReattachLayoutTree());
   DCHECK(inStyleRecalc());
   DCHECK_EQ(styleResolver(), &resolver);
-  DCHECK(m_styleReattachDataMap.isEmpty());
+  DCHECK(m_nonAttachedStyle.isEmpty());
   m_lifecycle.advanceTo(DocumentLifecycle::StyleClean);
   if (shouldRecordStats) {
     TRACE_EVENT_END2("blink,blink_style", "Document::updateStyle",
@@ -6620,7 +6620,7 @@ DEFINE_TRACE(Document) {
   visitor->trace(m_snapCoordinator);
   visitor->trace(m_resizeObserverController);
   visitor->trace(m_propertyRegistry);
-  visitor->trace(m_styleReattachDataMap);
+  visitor->trace(m_nonAttachedStyle);
   visitor->trace(m_networkStateObserver);
   Supplementable<Document>::trace(visitor);
   TreeScope::trace(visitor);

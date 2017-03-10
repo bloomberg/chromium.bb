@@ -1848,7 +1848,7 @@ PassRefPtr<ComputedStyle> Element::originalStyleForLayoutObject() {
   return document().ensureStyleResolver().styleForElement(this);
 }
 
-void Element::recalcStyle(StyleRecalcChange change, Text* nextTextSibling) {
+void Element::recalcStyle(StyleRecalcChange change) {
   DCHECK(document().inStyleRecalc());
   DCHECK(!document().lifecycle().inDetach());
   DCHECK(!parentOrShadowHostNode()->needsStyleRecalc());
@@ -1889,7 +1889,7 @@ void Element::recalcStyle(StyleRecalcChange change, Text* nextTextSibling) {
       }
     }
     if (parentComputedStyle())
-      change = recalcOwnStyle(change, nextTextSibling);
+      change = recalcOwnStyle(change);
     // Needed because the rebuildLayoutTree code needs to see what the
     // styleChangeType() was on reattach roots. See Node::reattachLayoutTree()
     // for an example.
@@ -1954,8 +1954,7 @@ PassRefPtr<ComputedStyle> Element::propagateInheritedProperties(
   return newStyle;
 }
 
-StyleRecalcChange Element::recalcOwnStyle(StyleRecalcChange change,
-                                          Text* nextTextSibling) {
+StyleRecalcChange Element::recalcOwnStyle(StyleRecalcChange change) {
   DCHECK(document().inStyleRecalc());
   DCHECK(!parentOrShadowHostNode()->needsStyleRecalc());
   DCHECK(change >= IndependentInherit || needsStyleRecalc());
@@ -1980,10 +1979,7 @@ StyleRecalcChange Element::recalcOwnStyle(StyleRecalcChange change,
   }
 
   if (localChange == Reattach) {
-    StyleReattachData styleReattachData;
-    styleReattachData.computedStyle = std::move(newStyle);
-    styleReattachData.nextTextSibling = nextTextSibling;
-    document().addStyleReattachData(*this, styleReattachData);
+    document().addNonAttachedStyle(*this, std::move(newStyle));
     setNeedsReattachLayoutTree();
     return Reattach;
   }
@@ -2028,24 +2024,17 @@ StyleRecalcChange Element::recalcOwnStyle(StyleRecalcChange change,
   return localChange;
 }
 
-void Element::rebuildLayoutTree() {
+void Element::rebuildLayoutTree(Text* nextTextSibling) {
   DCHECK(inActiveDocument());
   DCHECK(parentNode());
 
   if (needsReattachLayoutTree()) {
-    StyleReattachData styleReattachData =
-        document().getStyleReattachData(*this);
     AttachContext reattachContext;
-    reattachContext.resolvedStyle = styleReattachData.computedStyle.get();
+    reattachContext.resolvedStyle = document().getNonAttachedStyle(*this);
     bool layoutObjectWillChange = needsAttach() || layoutObject();
     reattachLayoutTree(reattachContext);
-    if (layoutObjectWillChange || layoutObject()) {
-      // nextTextSibling is passed on to recalcStyle from recalcDescendantStyles
-      // we can either traverse the current subtree from this node onwards
-      // or store it.
-      // The choice is between increased time and increased memory complexity.
-      reattachWhitespaceSiblingsIfNeeded(styleReattachData.nextTextSibling);
-    }
+    if (layoutObjectWillChange || layoutObject())
+      reattachWhitespaceSiblingsIfNeeded(nextTextSibling);
   } else if (childNeedsReattachLayoutTree()) {
     DCHECK(!needsReattachLayoutTree());
     SelectorFilterParentScope filterScope(*this);

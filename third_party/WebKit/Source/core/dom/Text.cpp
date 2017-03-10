@@ -392,7 +392,7 @@ void Text::reattachLayoutTreeIfNeeded(const AttachContext& context) {
   CharacterData::attachLayoutTree(reattachContext);
 }
 
-void Text::recalcTextStyle(StyleRecalcChange change, Text* nextTextSibling) {
+void Text::recalcTextStyle(StyleRecalcChange change) {
   if (LayoutTextItem layoutItem = LayoutTextItem(this->layoutObject())) {
     if (change != NoChange || needsStyleRecalc())
       layoutItem.setStyle(document().ensureStyleResolver().styleForText(this));
@@ -400,23 +400,18 @@ void Text::recalcTextStyle(StyleRecalcChange change, Text* nextTextSibling) {
       layoutItem.setText(dataImpl());
     clearNeedsStyleRecalc();
   } else if (needsStyleRecalc() || needsWhitespaceLayoutObject()) {
-    StyleReattachData styleReattachData;
-    styleReattachData.nextTextSibling = nextTextSibling;
-    document().addStyleReattachData(*this, styleReattachData);
     setNeedsReattachLayoutTree();
   }
 }
 
-void Text::rebuildTextLayoutTree() {
+void Text::rebuildTextLayoutTree(Text* nextTextSibling) {
   DCHECK(!childNeedsStyleRecalc());
   DCHECK(needsReattachLayoutTree());
   DCHECK(parentNode());
 
   reattachLayoutTree();
-  if (layoutObject()) {
-    reattachWhitespaceSiblingsIfNeeded(
-        document().getStyleReattachData(*this).nextTextSibling);
-  }
+  if (layoutObject())
+    reattachWhitespaceSiblingsIfNeeded(nextTextSibling);
   clearNeedsReattachLayoutTree();
 }
 

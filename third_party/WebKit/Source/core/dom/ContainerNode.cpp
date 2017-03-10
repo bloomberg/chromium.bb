@@ -1289,25 +1289,16 @@ void ContainerNode::recalcDescendantStyles(StyleRecalcChange change) {
   DCHECK(change >= UpdatePseudoElements || childNeedsStyleRecalc());
   DCHECK(!needsStyleRecalc());
 
-  // This loop is deliberately backwards because we use insertBefore in the
-  // layout tree, and want to avoid a potentially n^2 loop to find the insertion
-  // point while resolving style.  Having us start from the last child and work
-  // our way back means in the common case, we'll find the insertion point in
-  // O(1) time.  See crbug.com/288225
   StyleResolver& styleResolver = document().ensureStyleResolver();
-  Text* lastTextNode = nullptr;
   for (Node* child = lastChild(); child; child = child->previousSibling()) {
     if (child->isTextNode()) {
-      toText(child)->recalcTextStyle(change, lastTextNode);
-      lastTextNode = toText(child);
+      toText(child)->recalcTextStyle(change);
     } else if (child->isElementNode()) {
       Element* element = toElement(child);
       if (element->shouldCallRecalcStyle(change))
-        element->recalcStyle(change, lastTextNode);
+        element->recalcStyle(change);
       else if (element->supportsStyleSharing())
         styleResolver.addToStyleSharingList(*element);
-      if (element->layoutObject())
-        lastTextNode = nullptr;
     }
   }
 }
@@ -1315,13 +1306,26 @@ void ContainerNode::recalcDescendantStyles(StyleRecalcChange change) {
 void ContainerNode::rebuildChildrenLayoutTrees() {
   DCHECK(!needsReattachLayoutTree());
 
+  // This loop is deliberately backwards because we use insertBefore in the
+  // layout tree, and want to avoid a potentially n^2 loop to find the insertion
+  // point while building the layout tree.  Having us start from the last child
+  // and work our way back means in the common case, we'll find the insertion
+  // point in O(1) time.  See crbug.com/288225
+  Text* lastTextNode = nullptr;
   for (Node* child = lastChild(); child; child = child->previousSibling()) {
-    if (child->needsReattachLayoutTree() ||
-        child->childNeedsReattachLayoutTree()) {
-      if (child->isTextNode())
-        toText(child)->rebuildTextLayoutTree();
-      else if (child->isElementNode())
-        toElement(child)->rebuildLayoutTree();
+    bool rebuildChild = child->needsReattachLayoutTree() ||
+                        child->childNeedsReattachLayoutTree();
+    if (child->isTextNode()) {
+      Text* textNode = toText(child);
+      if (rebuildChild)
+        textNode->rebuildTextLayoutTree(lastTextNode);
+      lastTextNode = textNode;
+    } else if (child->isElementNode()) {
+      Element* element = toElement(child);
+      if (rebuildChild)
+        element->rebuildLayoutTree(lastTextNode);
+      if (element->layoutObject())
+        lastTextNode = nullptr;
     }
   }
   // This is done in ContainerNode::attachLayoutTree but will never be cleared

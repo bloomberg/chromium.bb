@@ -41,7 +41,6 @@
 #include "core/dom/DocumentTiming.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/MutationObserver.h"
-#include "core/dom/StyleReattachData.h"
 #include "core/dom/SynchronousMutationNotifier.h"
 #include "core/dom/SynchronousMutationObserver.h"
 #include "core/dom/Text.h"
@@ -343,8 +342,8 @@ class CORE_EXPORT Document : public ContainerNode,
   // just for the web IDL implementation.
   Element* scrollingElementNoLayout();
 
-  void addStyleReattachData(const Node&, StyleReattachData&);
-  StyleReattachData getStyleReattachData(const Node&) const;
+  void addNonAttachedStyle(const Node&, RefPtr<ComputedStyle>);
+  ComputedStyle* getNonAttachedStyle(const Node&) const;
 
   String readyState() const;
 
@@ -1438,10 +1437,9 @@ class CORE_EXPORT Document : public ContainerNode,
   Member<DocumentParser> m_parser;
   Member<ContextFeatures> m_contextFeatures;
 
-  // This HashMap is used to stash information (ComputedStyle, nextTextSibling)
-  // generated in the Style Resolution phase that is required in the
-  // Layout Tree construction phase.
-  HeapHashMap<Member<const Node>, StyleReattachData> m_styleReattachDataMap;
+  // This HashMap is used to temporaily store the ComputedStyle generated in the
+  // Style Resolution phase which is used in the Layout Tree construction phase.
+  HeapHashMap<Member<const Node>, RefPtr<ComputedStyle>> m_nonAttachedStyle;
 
   bool m_wellFormed;
 
