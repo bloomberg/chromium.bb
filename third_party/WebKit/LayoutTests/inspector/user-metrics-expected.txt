@@ -4,6 +4,7 @@ recordActionTaken:
 {
     AnimationsPlaybackRateChanged : 11
     AuditsStarted : 7
+    ChangeInspectedNodeInElementsPanel : 26
     CommandEvaluatedInConsolePanel : 15
     ConnectToNodeJSDirectly : 20
     ConnectToNodeJSFromFrontend : 19
@@ -22,6 +23,7 @@ recordActionTaken:
     ScriptsBreakpointSet : 3
     SelectCommandFromCommandMenu : 25
     SelectFileFromFilePicker : 24
+    StyleRuleCopied : 27
     StyleRuleEdited : 14
     TimelinePageReloadStarted : 18
     TimelineStarted : 4
