@@ -3158,7 +3158,7 @@ public class AwContents implements SmartClipProvider {
             }
 
             mScrollOffsetManager.setProcessingTouchEvent(true);
-            boolean rv = mContentViewCore.onTouchEvent(event);
+            boolean rv = mWebContents.getEventForwarder().onTouchEvent(event);
             mScrollOffsetManager.setProcessingTouchEvent(false);
 
             if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {

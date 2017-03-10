@@ -21,6 +21,8 @@ component("android") {
     "edge_effect_base.h",
     "edge_effect_l.cc",
     "edge_effect_l.h",
+    "event_forwarder.cc",
+    "event_forwarder.h",
     "overscroll_glow.cc",
     "overscroll_glow.h",
     "overscroll_refresh.cc",
@@ -40,6 +42,8 @@ component("android") {
     "ui_android_jni_registrar.h",
     "view_android.cc",
     "view_android.h",
+    "view_client.cc",
+    "view_client.h",
     "window_android.cc",
     "window_android.h",
     "window_android_compositor.h",
@@ -56,7 +60,9 @@ component("android") {
     "//cc/surfaces",
     "//cc/surfaces:surface_id",
     "//skia",
+    "//ui/base",
     "//ui/display",
+    "//ui/events",
     "//ui/gfx",
     "//ui/gfx/geometry",
     "//url",
@@ -79,6 +85,7 @@ static_library("test_support") {
 generate_jni("ui_android_jni_headers") {
   sources = [
     "java/src/org/chromium/ui/OverscrollRefreshHandler.java",
+    "java/src/org/chromium/ui/base/EventForwarder.java",
     "java/src/org/chromium/ui/base/ViewAndroidDelegate.java",
     "java/src/org/chromium/ui/base/WindowAndroid.java",
     "java/src/org/chromium/ui/display/DisplayAndroidManager.java",
@@ -170,9 +177,11 @@ android_library("ui_java") {
     "java/src/org/chromium/ui/base/AndroidPermissionDelegate.java",
     "java/src/org/chromium/ui/base/Clipboard.java",
     "java/src/org/chromium/ui/base/DeviceFormFactor.java",
+    "java/src/org/chromium/ui/base/EventForwarder.java",
     "java/src/org/chromium/ui/base/LocalizationUtils.java",
     "java/src/org/chromium/ui/base/ResourceBundle.java",
     "java/src/org/chromium/ui/base/SelectFileDialog.java",
+    "java/src/org/chromium/ui/base/SPenSupport.java",
     "java/src/org/chromium/ui/base/TouchDevice.java",
     "java/src/org/chromium/ui/base/ViewAndroidDelegate.java",
     "java/src/org/chromium/ui/base/WindowAndroid.java",
@@ -245,6 +254,7 @@ test("ui_android_unittests") {
     "overscroll_refresh_unittest.cc",
     "resources/resource_manager_impl_unittest.cc",
     "run_all_unittests.cc",
+    "view_android_unittests.cc",
   ]
   deps = [
     ":android",
@@ -258,6 +268,7 @@ test("ui_android_unittests") {
     "//testing/gmock",
     "//testing/gtest",
     "//ui/base",
+    "//ui/events",
     "//ui/gfx",
     "//ui/resources:ui_test_pak",
   ]

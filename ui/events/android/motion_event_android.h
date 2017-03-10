@@ -54,6 +54,7 @@ class EVENTS_EXPORT MotionEventAndroid : public MotionEvent {
                      jint pointer_count,
                      jint history_size,
                      jint action_index,
+                     jint android_action_button,
                      jint android_button_state,
                      jint meta_state,
                      jfloat raw_offset_x_pixels,
@@ -61,6 +62,8 @@ class EVENTS_EXPORT MotionEventAndroid : public MotionEvent {
                      const Pointer* const pointer0,
                      const Pointer* const pointer1);
   ~MotionEventAndroid() override;
+
+  std::unique_ptr<MotionEventAndroid> Offset(float x, float y) const;
 
   // ui::MotionEvent methods.
   uint32_t GetUniqueEventId() const override;
@@ -91,11 +94,17 @@ class EVENTS_EXPORT MotionEventAndroid : public MotionEvent {
   int GetButtonState() const override;
   int GetFlags() const override;
 
+  int GetActionButton() const;
+  base::android::ScopedJavaLocalRef<jobject> GetJavaObject() const;
+
  private:
   struct CachedPointer;
 
   float ToDips(float pixels) const;
   CachedPointer FromAndroidPointer(const Pointer& pointer) const;
+  CachedPointer OffsetCachedPointer(const CachedPointer& pointer,
+                                    float x,
+                                    float y) const;
 
   // Cache pointer coords, id's and major lengths for the most common
   // touch-related scenarios, i.e., scrolling and pinching.  This prevents
@@ -114,6 +123,7 @@ class EVENTS_EXPORT MotionEventAndroid : public MotionEvent {
   const size_t cached_pointer_count_;
   const size_t cached_history_size_;
   const int cached_action_index_;
+  const int cached_action_button_;
   const int cached_button_state_;
   const int cached_flags_;
   const gfx::Vector2dF cached_raw_position_offset_;
@@ -131,7 +141,9 @@ class EVENTS_EXPORT MotionEventAndroid : public MotionEvent {
   // A unique identifier for the Android motion event.
   const uint32_t unique_event_id_;
 
-  DISALLOW_COPY_AND_ASSIGN(MotionEventAndroid);
+  // Disallow copy/assign.
+  MotionEventAndroid(const MotionEventAndroid& e);  // private ctor
+  void operator=(const MotionEventAndroid&) = delete;
 };
 
 }  // namespace content

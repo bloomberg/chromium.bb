@@ -34,8 +34,8 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/android/delegated_frame_host_android.h"
 #include "ui/android/view_android.h"
+#include "ui/android/view_client.h"
 #include "ui/android/window_android_observer.h"
-#include "ui/events/android/motion_event_android.h"
 #include "ui/events/gesture_detection/filtered_gesture_provider.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/geometry/vector2d_f.h"
@@ -45,6 +45,7 @@
 class GURL;
 
 namespace ui {
+class MotionEventAndroid;
 struct DidOverscrollParams;
 }
 
@@ -63,6 +64,7 @@ struct NativeWebKeyboardEvent;
 class CONTENT_EXPORT RenderWidgetHostViewAndroid
     : public RenderWidgetHostViewBase,
       public ui::GestureProviderClient,
+      public ui::ViewClient,
       public ui::WindowAndroidObserver,
       public DelegatedFrameEvictorClient,
       public StylusTextSelectorClient,
@@ -160,6 +162,11 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
       const gfx::Point& point,
       RenderWidgetHostViewBase* target_view,
       gfx::Point* transformed_point) override;
+
+  // ui::ViewClient implementation.
+  bool OnTouchEvent(const ui::MotionEventAndroid& m,
+                    bool for_touch_handle) override;
+  bool OnMouseEvent(const ui::MotionEventAndroid& m) override;
 
   // ui::GestureProviderClient implementation.
   void OnGestureEvent(const ui::GestureEventData& gesture) override;

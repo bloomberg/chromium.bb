@@ -199,6 +199,10 @@ class CONTENT_EXPORT WebContentsAndroid
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);
 
+  base::android::ScopedJavaLocalRef<jobject> GetOrCreateEventForwarder(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
+
   void SetMediaSession(
       const base::android::ScopedJavaLocalRef<jobject>& j_media_session);
 

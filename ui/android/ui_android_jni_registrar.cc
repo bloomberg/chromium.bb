@@ -7,6 +7,7 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_registrar.h"
 #include "base/macros.h"
+#include "ui/android/event_forwarder.h"
 #include "ui/android/resources/resource_manager_impl.h"
 #include "ui/android/screen_android.h"
 #include "ui/android/view_android.h"
@@ -16,6 +17,7 @@ namespace ui {
 
 static base::android::RegistrationMethod kAndroidRegisteredMethods[] = {
     {"DisplayAndroidManager", ui::RegisterScreenAndroid},
+    {"EventForwarder", ui::RegisterEventForwarder},
     {"ResourceManager", ui::ResourceManagerImpl::RegisterResourceManager},
     {"WindowAndroid", WindowAndroid::RegisterWindowAndroid},
 };

@@ -32,6 +32,7 @@ import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsObserver;
 import org.chromium.ui.OverscrollRefreshHandler;
 import org.chromium.ui.accessibility.AXTextStyle;
+import org.chromium.ui.base.EventForwarder;
 import org.chromium.ui.base.WindowAndroid;
 
 import java.util.ArrayList;
@@ -103,6 +104,8 @@ import java.util.UUID;
     private MediaSessionImpl mMediaSession;
 
     private SmartClipCallback mSmartClipCallback;
+
+    private EventForwarder mEventForwarder;
 
     private WebContentsImpl(
             long nativeWebContentsAndroid, NavigationController navigationController) {
@@ -470,6 +473,15 @@ import java.util.UUID;
     }
 
     @Override
+    public EventForwarder getEventForwarder() {
+        assert mNativeWebContentsAndroid != 0;
+        if (mEventForwarder == null) {
+            mEventForwarder = nativeGetOrCreateEventForwarder(mNativeWebContentsAndroid);
+        }
+        return mEventForwarder;
+    }
+
+    @Override
     public void addObserver(WebContentsObserver observer) {
         assert mNativeWebContentsAndroid != 0;
         if (mObserverProxy == null) mObserverProxy = new WebContentsObserverProxy(this);
@@ -620,4 +632,5 @@ import java.util.UUID;
     private native void nativeDismissTextHandles(long nativeWebContentsAndroid);
     private native void nativeSetHasPersistentVideo(long nativeWebContentsAndroid, boolean value);
     private native boolean nativeHasActiveEffectivelyFullscreenVideo(long nativeWebContentsAndroid);
+    private native EventForwarder nativeGetOrCreateEventForwarder(long nativeWebContentsAndroid);
 }

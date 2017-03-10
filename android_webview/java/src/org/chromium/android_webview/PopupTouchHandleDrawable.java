@@ -249,7 +249,9 @@ public class PopupTouchHandleDrawable extends View implements DisplayAndroidObse
         final float offsetY = event.getRawY() - event.getY() - mTempScreenCoords[1];
         final MotionEvent offsetEvent = MotionEvent.obtainNoHistory(event);
         offsetEvent.offsetLocation(offsetX, offsetY);
-        final boolean handled = mContentViewCore.onTouchHandleEvent(offsetEvent);
+        final boolean handled =
+                mContentViewCore.getWebContents().getEventForwarder().onTouchHandleEvent(
+                        offsetEvent);
         offsetEvent.recycle();
         return handled;
     }

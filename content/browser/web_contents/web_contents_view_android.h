@@ -15,6 +15,7 @@
 #include "content/public/common/drop_data.h"
 #include "ui/android/overscroll_refresh.h"
 #include "ui/android/view_android.h"
+#include "ui/android/view_client.h"
 #include "ui/gfx/geometry/rect_f.h"
 
 namespace content {
@@ -24,7 +25,8 @@ class WebContentsImpl;
 
 // Android-specific implementation of the WebContentsView.
 class WebContentsViewAndroid : public WebContentsView,
-                               public RenderViewHostDelegateView {
+                               public RenderViewHostDelegateView,
+                               public ui::ViewClient {
  public:
   WebContentsViewAndroid(WebContentsImpl* web_contents,
                          WebContentsViewDelegate* delegate);
@@ -104,6 +106,10 @@ class WebContentsViewAndroid : public WebContentsView,
                      const gfx::Point& location,
                      const gfx::Point& screen_location);
   void OnDragEnded();
+
+  // ui::ViewClient implementation.
+  bool OnTouchEvent(const ui::MotionEventAndroid& event,
+                    bool for_touch_handle) override;
 
  private:
   // The WebContents whose contents we display.

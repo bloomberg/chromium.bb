@@ -715,6 +715,13 @@ bool WebContentsAndroid::HasActiveEffectivelyFullscreenVideo(
   return web_contents_->HasActiveEffectivelyFullscreenVideo();
 }
 
+ScopedJavaLocalRef<jobject> WebContentsAndroid::GetOrCreateEventForwarder(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj) {
+  gfx::NativeView native_view = web_contents_->GetView()->GetNativeView();
+  return native_view->GetEventForwarder();
+}
+
 void WebContentsAndroid::OnFinishGetContentBitmap(
     const JavaRef<jobject>& obj,
     const JavaRef<jobject>& callback,

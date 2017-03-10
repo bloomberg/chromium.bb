@@ -1,19 +1,20 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.content.browser;
+package org.chromium.ui.base;
 
 import android.content.Context;
 import android.content.pm.FeatureInfo;
 import android.os.Build;
 import android.view.MotionEvent;
 
+import org.chromium.base.ContextUtils;
+
 /**
  * Support S-Pen event detection and conversion.
  */
 public final class SPenSupport {
-
     // These values are obtained from Samsung.
     private static final int SPEN_ACTION_DOWN = 211;
     private static final int SPEN_ACTION_UP = 212;
@@ -22,27 +23,26 @@ public final class SPenSupport {
     private static Boolean sIsSPenSupported;
 
     /**
-     * @return Whether SPen is supported on the device.
+     * Initialize SPen support. This is done lazily at the first invocation of
+     * {@link #convertSPenEventAction(int)}.
      */
-    public static boolean isSPenSupported(Context context) {
-        if (sIsSPenSupported == null) {
-            sIsSPenSupported = detectSPenSupport(context);
-        }
-        return sIsSPenSupported.booleanValue();
-    }
+    private static void initialize() {
+        if (sIsSPenSupported != null) return;
 
-    private static boolean detectSPenSupport(Context context) {
         if (!"SAMSUNG".equalsIgnoreCase(Build.MANUFACTURER)) {
-            return false;
+            sIsSPenSupported = false;
+            return;
         }
 
+        Context context = ContextUtils.getApplicationContext();
         final FeatureInfo[] infos = context.getPackageManager().getSystemAvailableFeatures();
         for (FeatureInfo info : infos) {
             if ("com.sec.feature.spen_usp".equalsIgnoreCase(info.name)) {
-                return true;
+                sIsSPenSupported = true;
+                return;
             }
         }
-        return false;
+        sIsSPenSupported = false;
     }
 
     /**
@@ -53,6 +53,9 @@ public final class SPenSupport {
      * @return Event action after the conversion.
      */
     public static int convertSPenEventAction(int eventActionMasked) {
+        if (sIsSPenSupported == null) initialize();
+        if (!sIsSPenSupported.booleanValue()) return eventActionMasked;
+
         // S-Pen support: convert to normal stylus event handling
         switch (eventActionMasked) {
             case SPEN_ACTION_DOWN:

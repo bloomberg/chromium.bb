@@ -84,14 +84,12 @@
 #include "ui/android/window_android.h"
 #include "ui/android/window_android_compositor.h"
 #include "ui/base/layout.h"
-#include "ui/display/display.h"
-#include "ui/display/screen.h"
+#include "ui/events/android/motion_event_android.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/blink/blink_event_util.h"
 #include "ui/events/blink/did_overscroll_params.h"
 #include "ui/events/blink/web_input_event_traits.h"
 #include "ui/events/gesture_detection/gesture_provider_config_helper.h"
-#include "ui/events/gesture_detection/motion_event.h"
 #include "ui/gfx/android/java_bitmap.h"
 #include "ui/gfx/android/view_configuration.h"
 #include "ui/gfx/geometry/dip_util.h"
@@ -403,6 +401,17 @@ void PrepareTextureCopyOutputResult(
       display_compositor::GLHelper::SCALER_QUALITY_GOOD);
 }
 
+void RecordToolTypeForActionDown(const ui::MotionEventAndroid& event) {
+  ui::MotionEventAndroid::Action action = event.GetAction();
+  if (action == ui::MotionEventAndroid::ACTION_DOWN ||
+      action == ui::MotionEventAndroid::ACTION_POINTER_DOWN ||
+      action == ui::MotionEventAndroid::ACTION_BUTTON_PRESS) {
+    UMA_HISTOGRAM_ENUMERATION("Event.AndroidActionDown.ToolType",
+                              event.GetToolType(0),
+                              ui::MotionEventAndroid::TOOL_TYPE_LAST + 1);
+  }
+}
+
 bool FloatEquals(float a, float b) {
   return std::abs(a - b) < FLT_EPSILON;
 }
@@ -441,6 +450,7 @@ RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
       content_view_core_(nullptr),
       ime_adapter_android_(this),
       cached_background_color_(SK_ColorWHITE),
+      view_(this),
       last_compositor_frame_sink_id_(kUndefinedCompositorFrameSinkId),
       gesture_provider_(ui::GetGestureProviderConfig(
                             ui::GestureProviderConfigType::CURRENT_PLATFORM),
@@ -456,6 +466,8 @@ RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
   // Set the layer which will hold the content layer for this view. The content
   // layer is managed by the DelegatedFrameHost.
   view_.SetLayer(cc::Layer::Create());
+  view_.SetLayout(ui::ViewAndroid::LayoutParams::MatchParent());
+
   if (using_browser_compositor_) {
     cc::FrameSinkId frame_sink_id =
         host_->AllocateFrameSinkId(false /* is_guest_view_hack */);
@@ -796,8 +808,7 @@ cc::FrameSinkId RenderWidgetHostViewAndroid::FrameSinkIdAtPoint(
   if (!delegated_frame_host_)
     return cc::FrameSinkId();
 
-  float scale_factor =
-      display::Screen::GetScreen()->GetPrimaryDisplay().device_scale_factor();
+  float scale_factor = view_.GetDipScale();
   DCHECK_GT(scale_factor, 0);
   // The surface hittest happens in device pixels, so we need to convert the
   // |point| from DIPs to pixels before hittesting.
@@ -854,8 +865,7 @@ bool RenderWidgetHostViewAndroid::TransformPointToLocalCoordSpace(
   if (!delegated_frame_host_)
     return false;
 
-  float scale_factor =
-      display::Screen::GetScreen()->GetPrimaryDisplay().device_scale_factor();
+  float scale_factor = view_.GetDipScale();
   DCHECK_GT(scale_factor, 0);
   // Transformations use physical pixels rather than DIP, so conversion
   // is necessary.
@@ -1043,9 +1053,7 @@ void RenderWidgetHostViewAndroid::CopyFromSurface(
   }
 
   base::TimeTicks start_time = base::TimeTicks::Now();
-  const display::Display& display =
-      display::Screen::GetScreen()->GetDisplayNearestWindow(GetNativeView());
-  float device_scale_factor = display.device_scale_factor();
+  float device_scale_factor = view_.GetDipScale();
   gfx::Size dst_size_in_pixel =
       gfx::ConvertRectToPixel(device_scale_factor, gfx::Rect(dst_size)).size();
   // Note: When |src_subrect| is empty, a conversion from the view size must be
@@ -1890,6 +1898,22 @@ void RenderWidgetHostViewAndroid::RunAckCallbacks() {
     ack_callbacks_.front().Run();
     ack_callbacks_.pop();
   }
+}
+
+bool RenderWidgetHostViewAndroid::OnTouchEvent(
+    const ui::MotionEventAndroid& event,
+    bool for_touch_handle) {
+  RecordToolTypeForActionDown(event);
+
+  // TODO(jinsukkim): Remove this distinction.
+  return for_touch_handle ? OnTouchHandleEvent(event) : OnTouchEvent(event);
+}
+
+bool RenderWidgetHostViewAndroid::OnMouseEvent(
+    const ui::MotionEventAndroid& event) {
+  RecordToolTypeForActionDown(event);
+  SendMouseEvent(event, event.GetActionButton());
+  return true;
 }
 
 void RenderWidgetHostViewAndroid::OnGestureEvent(

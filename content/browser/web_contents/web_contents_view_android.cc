@@ -10,15 +10,16 @@
 #include "cc/layers/layer.h"
 #include "content/browser/android/content_view_core_impl.h"
 #include "content/browser/frame_host/interstitial_page_impl.h"
-#include "content/browser/renderer_host/render_widget_host_view_android.h"
 #include "content/browser/renderer_host/render_view_host_factory.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
+#include "content/browser/renderer_host/render_widget_host_view_android.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/drop_data.h"
 #include "ui/android/overscroll_refresh_handler.h"
 #include "ui/display/screen.h"
+#include "ui/events/android/motion_event_android.h"
 #include "ui/gfx/android/java_bitmap.h"
 #include "ui/gfx/image/image_skia.h"
 
@@ -82,8 +83,8 @@ WebContentsViewAndroid::WebContentsViewAndroid(
     : web_contents_(web_contents),
       content_view_core_(NULL),
       delegate_(delegate),
-      synchronous_compositor_client_(nullptr) {
-}
+      view_(this),
+      synchronous_compositor_client_(nullptr) {}
 
 WebContentsViewAndroid::~WebContentsViewAndroid() {
   if (view_.GetLayer())
@@ -393,6 +394,13 @@ void WebContentsViewAndroid::TakeFocus(bool reverse) {
       web_contents_->GetDelegate()->TakeFocus(web_contents_, reverse))
     return;
   web_contents_->GetRenderWidgetHostView()->Focus();
+}
+
+bool WebContentsViewAndroid::OnTouchEvent(const ui::MotionEventAndroid& event,
+                                          bool for_touch_handle) {
+  if (event.GetAction() == ui::MotionEventAndroid::ACTION_DOWN)
+    content_view_core_->OnTouchDown(event.GetJavaObject());
+  return false;  // let the children handle the actual event.
 }
 
 } // namespace content

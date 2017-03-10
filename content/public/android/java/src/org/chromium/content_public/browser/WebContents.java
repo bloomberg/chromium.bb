@@ -9,6 +9,7 @@ import android.os.Parcelable;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.ui.OverscrollRefreshHandler;
+import org.chromium.ui.base.EventForwarder;
 import org.chromium.ui.base.WindowAndroid;
 
 /**
@@ -320,6 +321,12 @@ public interface WebContents extends Parcelable {
      *                 cannot be null.
      */
     void requestAccessibilitySnapshot(AccessibilitySnapshotCallback callback);
+
+    /**
+     * Returns {@link EventForwarder} which is used to forward input/view events
+     * to native content layer.
+     */
+    EventForwarder getEventForwarder();
 
     /**
      * Add an observer to the WebContents

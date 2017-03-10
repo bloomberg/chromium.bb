@@ -33,7 +33,7 @@ import org.chromium.chrome.browser.fullscreen.FullscreenManager;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
-import org.chromium.content.browser.SPenSupport;
+import org.chromium.ui.base.SPenSupport;
 import org.chromium.ui.resources.ResourceManager;
 import org.chromium.ui.resources.dynamics.DynamicResourceLoader;
 
@@ -159,10 +159,7 @@ public abstract class LayoutManager implements LayoutUpdateHost, LayoutProvider,
     }
 
     private PointF getMotionOffsets(MotionEvent e) {
-        int actionMasked = e.getActionMasked();
-        if (SPenSupport.isSPenSupported(mHost.getContext())) {
-            actionMasked = SPenSupport.convertSPenEventAction(actionMasked);
-        }
+        int actionMasked = SPenSupport.convertSPenEventAction(e.getActionMasked());
 
         if (actionMasked == MotionEvent.ACTION_DOWN
                 || actionMasked == MotionEvent.ACTION_HOVER_ENTER) {

@@ -55,9 +55,9 @@ import org.chromium.chrome.browser.widget.ClipDrawableProgressBar.DrawingInfo;
 import org.chromium.chrome.browser.widget.ControlContainer;
 import org.chromium.content.browser.ContentView;
 import org.chromium.content.browser.ContentViewCore;
-import org.chromium.content.browser.SPenSupport;
 import org.chromium.ui.UiUtils;
 import org.chromium.ui.base.DeviceFormFactor;
+import org.chromium.ui.base.SPenSupport;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.resources.ResourceManager;
 import org.chromium.ui.resources.dynamics.DynamicResourceLoader;
@@ -497,11 +497,7 @@ public class CompositorViewHolder extends FrameLayout
         ContentViewCore contentViewCore = mTabVisible.getContentViewCore();
         if (contentViewCore == null) return;
 
-        int actionMasked = e.getActionMasked();
-
-        if (SPenSupport.isSPenSupported(getContext())) {
-            actionMasked = SPenSupport.convertSPenEventAction(actionMasked);
-        }
+        int actionMasked = SPenSupport.convertSPenEventAction(e.getActionMasked());
 
         if (actionMasked == MotionEvent.ACTION_DOWN
                 || actionMasked == MotionEvent.ACTION_HOVER_ENTER) {
