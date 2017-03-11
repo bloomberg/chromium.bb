@@ -16,8 +16,8 @@ layer at (0,0) size 800x600
         LayoutTextControl {INPUT} at (50.81,0) size 119x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
         LayoutText {#text} at (169,0) size 5x18
           text run at (169,0) width 5: " "
-        LayoutMenuList {SELECT} at (173.81,1) size 75x18 [bgcolor=#F8F8F8]
-          LayoutBlockFlow (anonymous) at (0,0) size 75x18
+        LayoutMenuList {SELECT} at (173.81,1) size 76x18 [bgcolor=#F8F8F8]
+          LayoutBlockFlow (anonymous) at (0,0) size 76x18
             LayoutText (anonymous) at (8,2) size 32x13
               text run at (8,2) width 32: "Excite"
         LayoutText {#text} at (0,0) size 0x0

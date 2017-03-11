@@ -184,10 +184,10 @@ layer at (0,0) size 785x2582 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutBlockFlow {P} at (0,0) size 769x38
           LayoutText {#text} at (0,0) size 267x18
             text run at (0,0) width 267: "How does your browser fare on this test? "
-          LayoutMenuList {SELECT} at (266.59,1) size 458x18 [bgcolor=#F8F8F8]
-            LayoutBlockFlow (anonymous) at (0,0) size 458x18
-              LayoutText (anonymous) at (8,2) size 427x13
-                text run at (8,2) width 427: "The tests all render identically, and this browser may or may not grok CSS2 tables."
+          LayoutMenuList {SELECT} at (266.59,1) size 460x18 [bgcolor=#F8F8F8]
+            LayoutBlockFlow (anonymous) at (0,0) size 460x18
+              LayoutText (anonymous) at (8,2) size 429x13
+                text run at (8,2) width 429: "The tests all render identically, and this browser may or may not grok CSS2 tables."
           LayoutText {#text} at (0,0) size 0x0
           LayoutInline {LABEL} at (0,0) size 203x18
             LayoutText {#text} at (0,19) size 72x18

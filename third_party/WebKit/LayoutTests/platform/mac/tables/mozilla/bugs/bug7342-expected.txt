@@ -58,8 +58,8 @@ layer at (0,0) size 800x600
                             LayoutText {#text} at (0,0) size 0x0
                           LayoutText {#text} at (0,0) size 0x0
                         LayoutTableCell {TD} at (349,4) size 102x28 [border: (1px inset #808080)] [r=0 c=3 rs=1 cs=1]
-                          LayoutButton {INPUT} at (5,5) size 52.08x18 [bgcolor=#C0C0C0]
-                            LayoutBlockFlow (anonymous) at (8,2) size 36.08x13
+                          LayoutButton {INPUT} at (5,5) size 52.25x18 [bgcolor=#C0C0C0]
+                            LayoutBlockFlow (anonymous) at (8,2) size 36.25x13
                               LayoutText {#text} at (0,0) size 37x13
                                 text run at (0,0) width 37: "Search"
                           LayoutText {#text} at (0,0) size 0x0

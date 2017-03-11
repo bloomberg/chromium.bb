@@ -56,5 +56,5 @@ layer at (0,0) size 800x600
                                                 LayoutText {#text} at (0,0) size 0x0
 layer at (241,97) size 125x13 scrollWidth 189
   LayoutBlockFlow {DIV} at (3,3) size 125x13
-    LayoutText {#text} at (0,0) size 188x13
-      text run at (0,0) width 188: "simon.king@pipinghotnetworks.com"
+    LayoutText {#text} at (0,0) size 189x13
+      text run at (0,0) width 189: "simon.king@pipinghotnetworks.com"

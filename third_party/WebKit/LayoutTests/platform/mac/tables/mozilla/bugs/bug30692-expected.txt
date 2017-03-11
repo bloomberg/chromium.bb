@@ -47,8 +47,8 @@ layer at (0,0) size 800x600
 layer at (11,92) size 622x75 clip at (12,93) size 620x73
   LayoutTextControl {TEXTAREA} at (1,1) size 622.39x75.19 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
     LayoutBlockFlow {DIV} at (3,3) size 616.39x13
-      LayoutText {#text} at (0,0) size 219x13
-        text run at (0,0) width 219: "BUG: the height of the textarea is not 80%"
+      LayoutText {#text} at (0,0) size 220x13
+        text run at (0,0) width 220: "BUG: the height of the textarea is not 80%"
 layer at (11,208) size 622x80 clip at (12,209) size 620x78
   LayoutTextControl {TEXTAREA} at (1,1) size 622.39x80 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
     LayoutBlockFlow {DIV} at (3,3) size 616.39x13

@@ -4,12 +4,12 @@ layer at (0,0) size 800x114
   LayoutBlockFlow {HTML} at (0,0) size 800x114
     LayoutBlockFlow {BODY} at (8,8) size 784x98
       LayoutBlockFlow {FORM} at (0,0) size 784x36
-        LayoutButton {INPUT} at (0,0) size 176.41x18 [bgcolor=#C0C0C0]
-          LayoutBlockFlow (anonymous) at (8,2) size 160.41x13
+        LayoutButton {INPUT} at (0,0) size 176.83x18 [bgcolor=#C0C0C0]
+          LayoutBlockFlow (anonymous) at (8,2) size 160.83x13
             LayoutText {#text} at (0,0) size 161x13
               text run at (0,0) width 161: "[Step 1] Set cell height to 60px"
-        LayoutButton {INPUT} at (0,18) size 177.55x18 [bgcolor=#C0C0C0]
-          LayoutBlockFlow (anonymous) at (8,2) size 161.55x13
+        LayoutButton {INPUT} at (0,18) size 177.98x18 [bgcolor=#C0C0C0]
+          LayoutBlockFlow (anonymous) at (8,2) size 161.98x13
             LayoutText {#text} at (0,0) size 162x13
               text run at (0,0) width 162: "[Step 2] Set cell height to 20px"
       LayoutTable {TABLE} at (0,36) size 42x62

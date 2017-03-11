@@ -103,8 +103,8 @@ layer at (0,0) size 800x553
                   text run at (0,0) width 40: "Submit!"
             LayoutText {#text} at (55,6) size 7x19
               text run at (55,6) width 7: " "
-            LayoutButton {INPUT} at (61.52,9) size 72.97x18 [bgcolor=#C0C0C0]
-              LayoutBlockFlow (anonymous) at (8,2) size 56.97x13
+            LayoutButton {INPUT} at (61.52,9) size 72.86x18 [bgcolor=#C0C0C0]
+              LayoutBlockFlow (anonymous) at (8,2) size 56.86x13
                 LayoutText {#text} at (0,0) size 57x13
                   text run at (0,0) width 57: "Clear Form"
             LayoutText {#text} at (0,0) size 0x0
