@@ -6,7 +6,14 @@ package org.chromium.content.browser;
 
 import android.support.test.filters.SmallTest;
 
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import org.chromium.base.annotations.SuppressFBWarnings;
+import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content.browser.JavaBridgeTestCommon.Controller;
 
@@ -21,7 +28,11 @@ import org.chromium.content.browser.JavaBridgeTestCommon.Controller;
  * FIXME: Consider making our implementation more compliant, if it will not
  * break backwards-compatibility. See b/4408210.
  */
-public class JavaBridgeReturnValuesTest extends JavaBridgeTestBase {
+@RunWith(BaseJUnit4ClassRunner.class)
+public class JavaBridgeReturnValuesTest {
+    @Rule
+    public JavaBridgeActivityTestRule mActivityTestRule = new JavaBridgeActivityTestRule();
+
     // An instance of this class is injected into the page to test returning
     // Java values to JavaScript.
     @SuppressFBWarnings("CHROMIUM_SYNCHRONIZED_METHOD")
@@ -105,88 +116,93 @@ public class JavaBridgeReturnValuesTest extends JavaBridgeTestBase {
 
     TestObject mTestObject;
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
+    @Before
+    public void setUp() throws Exception {
         mTestObject = new TestObject();
-        injectObjectAndReload(mTestObject, "testObject");
+        mActivityTestRule.injectObjectAndReload(mTestObject, "testObject");
     }
 
     // Note that this requires that we can pass a JavaScript string to Java.
     protected String executeJavaScriptAndGetStringResult(String script) throws Throwable {
-        executeJavaScript("testObject.setStringResult(" + script + ");");
+        mActivityTestRule.executeJavaScript("testObject.setStringResult(" + script + ");");
         return mTestObject.waitForStringResult();
     }
 
     // Note that this requires that we can pass a JavaScript boolean to Java.
     private boolean executeJavaScriptAndGetBooleanResult(String script) throws Throwable {
-        executeJavaScript("testObject.setBooleanResult(" + script + ");");
+        mActivityTestRule.executeJavaScript("testObject.setBooleanResult(" + script + ");");
         return mTestObject.waitForBooleanResult();
     }
 
+    @Test
     @SmallTest
     @Feature({"AndroidWebView", "Android-JavaBridge"})
     public void testMethodReturnTypes() throws Throwable {
-        assertEquals("boolean",
+        Assert.assertEquals("boolean",
                 executeJavaScriptAndGetStringResult("typeof testObject.getBooleanValue()"));
-        assertEquals("number",
-                executeJavaScriptAndGetStringResult("typeof testObject.getByteValue()"));
+        Assert.assertEquals(
+                "number", executeJavaScriptAndGetStringResult("typeof testObject.getByteValue()"));
         // char values are returned to JavaScript as numbers.
-        assertEquals("number",
-                executeJavaScriptAndGetStringResult("typeof testObject.getCharValue()"));
-        assertEquals("number",
-                executeJavaScriptAndGetStringResult("typeof testObject.getShortValue()"));
-        assertEquals("number",
-                executeJavaScriptAndGetStringResult("typeof testObject.getIntValue()"));
-        assertEquals("number",
-                executeJavaScriptAndGetStringResult("typeof testObject.getLongValue()"));
-        assertEquals("number",
-                executeJavaScriptAndGetStringResult("typeof testObject.getFloatValue()"));
-        assertEquals("number",
+        Assert.assertEquals(
+                "number", executeJavaScriptAndGetStringResult("typeof testObject.getCharValue()"));
+        Assert.assertEquals(
+                "number", executeJavaScriptAndGetStringResult("typeof testObject.getShortValue()"));
+        Assert.assertEquals(
+                "number", executeJavaScriptAndGetStringResult("typeof testObject.getIntValue()"));
+        Assert.assertEquals(
+                "number", executeJavaScriptAndGetStringResult("typeof testObject.getLongValue()"));
+        Assert.assertEquals(
+                "number", executeJavaScriptAndGetStringResult("typeof testObject.getFloatValue()"));
+        Assert.assertEquals("number",
                 executeJavaScriptAndGetStringResult("typeof testObject.getFloatValueNoDecimal()"));
-        assertEquals("number",
+        Assert.assertEquals("number",
                 executeJavaScriptAndGetStringResult("typeof testObject.getDoubleValue()"));
-        assertEquals("number",
+        Assert.assertEquals("number",
                 executeJavaScriptAndGetStringResult("typeof testObject.getDoubleValueNoDecimal()"));
-        assertEquals("string",
+        Assert.assertEquals("string",
                 executeJavaScriptAndGetStringResult("typeof testObject.getStringValue()"));
-        assertEquals("string",
+        Assert.assertEquals("string",
                 executeJavaScriptAndGetStringResult("typeof testObject.getEmptyStringValue()"));
         // LIVECONNECT_COMPLIANCE: This should have type object.
-        assertEquals("undefined",
+        Assert.assertEquals("undefined",
                 executeJavaScriptAndGetStringResult("typeof testObject.getNullStringValue()"));
-        assertEquals("object",
+        Assert.assertEquals("object",
                 executeJavaScriptAndGetStringResult("typeof testObject.getObjectValue()"));
-        assertEquals("object",
+        Assert.assertEquals("object",
                 executeJavaScriptAndGetStringResult("typeof testObject.getNullObjectValue()"));
-        assertEquals("object",
+        Assert.assertEquals("object",
                 executeJavaScriptAndGetStringResult("typeof testObject.getCustomTypeValue()"));
-        assertEquals("undefined",
+        Assert.assertEquals("undefined",
                 executeJavaScriptAndGetStringResult("typeof testObject.getVoidValue()"));
     }
 
+    @Test
     @SmallTest
     @Feature({"AndroidWebView", "Android-JavaBridge"})
     public void testMethodReturnValues() throws Throwable {
         // We do the string comparison in JavaScript, to avoid relying on the
         // coercion algorithm from JavaScript to Java.
-        assertTrue(executeJavaScriptAndGetBooleanResult("testObject.getBooleanValue()"));
-        assertTrue(executeJavaScriptAndGetBooleanResult("42 === testObject.getByteValue()"));
+        Assert.assertTrue(executeJavaScriptAndGetBooleanResult("testObject.getBooleanValue()"));
+        Assert.assertTrue(executeJavaScriptAndGetBooleanResult("42 === testObject.getByteValue()"));
         // char values are returned to JavaScript as numbers.
-        assertTrue(executeJavaScriptAndGetBooleanResult("42 === testObject.getCharValue()"));
-        assertTrue(executeJavaScriptAndGetBooleanResult("42 === testObject.getShortValue()"));
-        assertTrue(executeJavaScriptAndGetBooleanResult("42 === testObject.getIntValue()"));
-        assertTrue(executeJavaScriptAndGetBooleanResult("42 === testObject.getLongValue()"));
-        assertTrue(executeJavaScriptAndGetBooleanResult(
+        Assert.assertTrue(executeJavaScriptAndGetBooleanResult("42 === testObject.getCharValue()"));
+        Assert.assertTrue(
+                executeJavaScriptAndGetBooleanResult("42 === testObject.getShortValue()"));
+        Assert.assertTrue(executeJavaScriptAndGetBooleanResult("42 === testObject.getIntValue()"));
+        Assert.assertTrue(executeJavaScriptAndGetBooleanResult("42 === testObject.getLongValue()"));
+        Assert.assertTrue(executeJavaScriptAndGetBooleanResult(
                 "Math.abs(42.1 - testObject.getFloatValue()) < 0.001"));
-        assertTrue(executeJavaScriptAndGetBooleanResult(
+        Assert.assertTrue(executeJavaScriptAndGetBooleanResult(
                 "42.0 === testObject.getFloatValueNoDecimal()"));
-        assertTrue(executeJavaScriptAndGetBooleanResult(
+        Assert.assertTrue(executeJavaScriptAndGetBooleanResult(
                 "Math.abs(42.1 - testObject.getDoubleValue()) < 0.001"));
-        assertTrue(executeJavaScriptAndGetBooleanResult(
+        Assert.assertTrue(executeJavaScriptAndGetBooleanResult(
                 "42.0 === testObject.getDoubleValueNoDecimal()"));
-        assertEquals("foo", executeJavaScriptAndGetStringResult("testObject.getStringValue()"));
-        assertEquals("", executeJavaScriptAndGetStringResult("testObject.getEmptyStringValue()"));
-        assertTrue(executeJavaScriptAndGetBooleanResult("undefined === testObject.getVoidValue()"));
+        Assert.assertEquals(
+                "foo", executeJavaScriptAndGetStringResult("testObject.getStringValue()"));
+        Assert.assertEquals(
+                "", executeJavaScriptAndGetStringResult("testObject.getEmptyStringValue()"));
+        Assert.assertTrue(
+                executeJavaScriptAndGetBooleanResult("undefined === testObject.getVoidValue()"));
     }
 }

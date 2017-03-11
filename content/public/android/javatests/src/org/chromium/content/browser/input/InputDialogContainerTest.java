@@ -5,9 +5,15 @@
 package org.chromium.content.browser.input;
 
 import android.content.Context;
+import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
-import android.test.AndroidTestCase;
 
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content.browser.picker.InputDialogContainer;
 import org.chromium.ui.base.ime.TextInputType;
@@ -15,7 +21,8 @@ import org.chromium.ui.base.ime.TextInputType;
 /**
  * Unittests for the {@link org.chromium.content.browser.picker.InputDialogContainer} class.
  */
-public class InputDialogContainerTest extends AndroidTestCase {
+@RunWith(BaseJUnit4ClassRunner.class)
+public class InputDialogContainerTest {
     // Defined in third_party/WebKit/Source/platform/DateComponents.h
     private static final double DATE_DIALOG_DEFAULT_MIN = -62135596800000.0;
     private static final double DATE_DIALOG_DEFAULT_MAX = 8640000000000000.0;
@@ -28,17 +35,19 @@ public class InputDialogContainerTest extends AndroidTestCase {
     private static final double WEEK_DIALOG_DEFAULT_MIN = -62135596800000.0;
     private static final double WEEK_DIALOG_DEFAULT_MAX = 8639999568000000.0;
 
+    private static final double ASSERTION_DELTA = 0;
+
     InputActionDelegateForTests mInputActionDelegate;
     InputDialogContainerForTests mInputDialogContainer;
 
-    @Override
+    @Before
     public void setUp() throws Exception {
-        super.setUp();
         mInputActionDelegate = new InputActionDelegateForTests();
-        mInputDialogContainer = new InputDialogContainerForTests(getContext(),
-                                                                 mInputActionDelegate);
+        mInputDialogContainer = new InputDialogContainerForTests(
+                InstrumentationRegistry.getContext(), mInputActionDelegate);
     }
 
+    @Test
     @SmallTest
     @Feature({"DateTimeDialog"})
     public void testDateValueParsing() {
@@ -71,6 +80,7 @@ public class InputDialogContainerTest extends AndroidTestCase {
                 DATE_DIALOG_DEFAULT_MIN, DATE_DIALOG_DEFAULT_MAX, 1.0);
     }
 
+    @Test
     @SmallTest
     @Feature({"DateTimeDialog"})
     public void testDatetimelocalValueParsing() {
@@ -103,6 +113,7 @@ public class InputDialogContainerTest extends AndroidTestCase {
                 DATETIMELOCAL_DIALOG_DEFAULT_MIN, DATETIMELOCAL_DIALOG_DEFAULT_MAX, 0.001);
     }
 
+    @Test
     @SmallTest
     @Feature({"DateTimeDialog"})
     public void testMonthValueParsing() {
@@ -135,6 +146,7 @@ public class InputDialogContainerTest extends AndroidTestCase {
                 MONTH_DIALOG_DEFAULT_MIN, MONTH_DIALOG_DEFAULT_MAX, 1.0);
     }
 
+    @Test
     @SmallTest
     @Feature({"DateTimeDialog"})
     public void testTimeValueParsing() {
@@ -161,6 +173,7 @@ public class InputDialogContainerTest extends AndroidTestCase {
                 TIME_DIALOG_DEFAULT_MIN, TIME_DIALOG_DEFAULT_MAX, 1.0);
     }
 
+    @Test
     @SmallTest
     @Feature({"DateTimeDialog"})
     public void testWeekValueParsing() {
@@ -193,6 +206,7 @@ public class InputDialogContainerTest extends AndroidTestCase {
                 WEEK_DIALOG_DEFAULT_MIN, WEEK_DIALOG_DEFAULT_MAX, 1.0);
     }
 
+    @Test
     @SmallTest
     @Feature({"DateTimeDialog"})
     public void testDateValueGenerating() {
@@ -217,6 +231,7 @@ public class InputDialogContainerTest extends AndroidTestCase {
                 0, 0, 0, 0, 0);
     }
 
+    @Test
     @SmallTest
     @Feature({"DateTimeDialog"})
     public void testDatetimelocalValueGenerating() {
@@ -241,6 +256,7 @@ public class InputDialogContainerTest extends AndroidTestCase {
                 1, 1, 2, 196, 0);
     }
 
+    @Test
     @SmallTest
     @Feature({"DateTimeDialog"})
     public void testMonthValueGenerating() {
@@ -265,6 +281,7 @@ public class InputDialogContainerTest extends AndroidTestCase {
                 0, 0, 0, 0, 0);
     }
 
+    @Test
     @SmallTest
     @Feature({"DateTimeDialog"})
     public void testTimeValueGenerating() {
@@ -284,6 +301,7 @@ public class InputDialogContainerTest extends AndroidTestCase {
                 3, 23, 45, 678, 0);
     }
 
+    @Test
     @SmallTest
     @Feature({"DateTimeDialog"})
     public void testWeekValueGenerating() {
@@ -318,7 +336,7 @@ public class InputDialogContainerTest extends AndroidTestCase {
 
         @Override
         public void replaceDateTime(double dialogValue) {
-            assertEquals(mExpectedDialogValue, dialogValue);
+            Assert.assertEquals(mExpectedDialogValue, dialogValue, ASSERTION_DELTA);
         }
 
         @Override
@@ -375,18 +393,18 @@ public class InputDialogContainerTest extends AndroidTestCase {
                 int year, int month, int monthDay,
                 int hourOfDay, int minute, int second, int millis, int week,
                 double min, double max, double step) {
-            assertEquals(mExpectedDialogType, dialogType);
-            assertEquals(mExpectedYear, year);
-            assertEquals(mExpectedMonth, month);
-            assertEquals(mExpectedMonthDay, monthDay);
-            assertEquals(mExpectedHourOfDay, hourOfDay);
-            assertEquals(mExpectedMinute, minute);
-            assertEquals(mExpectedSecond, second);
-            assertEquals(mExpectedMillis, millis);
-            assertEquals(mExpectedWeek, week);
-            assertEquals(mExpectedMin, min);
-            assertEquals(mExpectedMax, max);
-            assertEquals(mExpectedStep, step);
+            Assert.assertEquals(mExpectedDialogType, dialogType);
+            Assert.assertEquals(mExpectedYear, year);
+            Assert.assertEquals(mExpectedMonth, month);
+            Assert.assertEquals(mExpectedMonthDay, monthDay);
+            Assert.assertEquals(mExpectedHourOfDay, hourOfDay);
+            Assert.assertEquals(mExpectedMinute, minute);
+            Assert.assertEquals(mExpectedSecond, second);
+            Assert.assertEquals(mExpectedMillis, millis);
+            Assert.assertEquals(mExpectedWeek, week);
+            Assert.assertEquals(mExpectedMin, min, ASSERTION_DELTA);
+            Assert.assertEquals(mExpectedMax, max, ASSERTION_DELTA);
+            Assert.assertEquals(mExpectedStep, step, ASSERTION_DELTA);
         }
 
         @Override

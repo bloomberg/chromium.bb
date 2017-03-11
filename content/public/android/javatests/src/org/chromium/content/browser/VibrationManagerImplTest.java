@@ -7,18 +7,29 @@ package org.chromium.content.browser;
 import android.os.Vibrator;
 import android.support.test.filters.MediumTest;
 
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
-import org.chromium.content_shell_apk.ContentShellTestBase;
+import org.chromium.content_shell_apk.ContentShellActivityTestRule;
 import org.chromium.device.vibration.VibrationManagerImpl;
 
 /**
  * Tests java implementation of VibrationManager mojo service on android.
  */
-public class VibrationManagerImplTest extends ContentShellTestBase {
+@RunWith(BaseJUnit4ClassRunner.class)
+public class VibrationManagerImplTest {
+    @Rule
+    public ContentShellActivityTestRule mActivityTestRule = new ContentShellActivityTestRule();
+
     private static final String URL_VIBRATOR_VIBRATE = UrlUtils.encodeHtmlDataUri("<html><body>"
             + "  <script type=\"text/javascript\">"
             + "    navigator.vibrate(3000);"
@@ -57,16 +68,15 @@ public class VibrationManagerImplTest extends ContentShellTestBase {
         }
     }
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        launchContentShellWithUrl("about:blank");
-        waitForActiveShellToBeDoneLoading();
+    @Before
+    public void setUp() throws Exception {
+        mActivityTestRule.launchContentShellWithUrl("about:blank");
+        mActivityTestRule.waitForActiveShellToBeDoneLoading();
 
         mFakeWrapper = new FakeAndroidVibratorWrapper();
         VibrationManagerImpl.setVibratorWrapperForTesting(mFakeWrapper);
-        assertEquals(-1, mFakeWrapper.mMilliSeconds);
-        assertFalse(mFakeWrapper.mCancelled);
+        Assert.assertEquals(-1, mFakeWrapper.mMilliSeconds);
+        Assert.assertFalse(mFakeWrapper.mCancelled);
     }
 
     /**
@@ -77,9 +87,10 @@ public class VibrationManagerImplTest extends ContentShellTestBase {
      */
     // @MediumTest
     // @Feature({"Vibration"})
+    @Test
     @DisabledTest
     public void testVibrate() throws Throwable {
-        loadNewShell(URL_VIBRATOR_VIBRATE);
+        mActivityTestRule.loadNewShell(URL_VIBRATOR_VIBRATE);
 
         // Waits until VibrationManagerImpl.Vibrate() got called.
         CriteriaHelper.pollUiThread(new Criteria() {
@@ -89,7 +100,7 @@ public class VibrationManagerImplTest extends ContentShellTestBase {
             }
         });
 
-        assertEquals(
+        Assert.assertEquals(
                 "Did not get vibrate mMilliSeconds correctly", 3000, mFakeWrapper.mMilliSeconds);
     }
 
@@ -98,10 +109,11 @@ public class VibrationManagerImplTest extends ContentShellTestBase {
      * load the webpage which will request vibrate and then request cancel,
      * the fake wrapper cancel() should be called.
      */
+    @Test
     @MediumTest
     @Feature({"Vibration"})
     public void testCancel() throws Throwable {
-        loadNewShell(URL_VIBRATOR_CANCEL);
+        mActivityTestRule.loadNewShell(URL_VIBRATOR_CANCEL);
 
         // Waits until VibrationManagerImpl.Cancel() got called.
         CriteriaHelper.pollUiThread(new Criteria() {
@@ -111,6 +123,6 @@ public class VibrationManagerImplTest extends ContentShellTestBase {
             }
         });
 
-        assertTrue("Did not get cancelled", mFakeWrapper.mCancelled);
+        Assert.assertTrue("Did not get cancelled", mFakeWrapper.mCancelled);
     }
 }

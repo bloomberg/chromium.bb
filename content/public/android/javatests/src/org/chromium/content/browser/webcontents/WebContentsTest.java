@@ -10,13 +10,19 @@ import android.os.Bundle;
 import android.os.Parcel;
 import android.support.test.filters.SmallTest;
 
+import org.junit.Assert;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.content_public.browser.RenderFrameHost;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_shell.Shell;
 import org.chromium.content_shell_apk.ContentShellActivity;
-import org.chromium.content_shell_apk.ContentShellTestBase;
+import org.chromium.content_shell_apk.ContentShellActivityTestRule;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -25,7 +31,11 @@ import java.util.concurrent.ExecutionException;
  * Test various Java WebContents specific features.
  * TODO(dtrainor): Add more testing for the WebContents methods.
  */
-public class WebContentsTest extends ContentShellTestBase {
+@RunWith(BaseJUnit4ClassRunner.class)
+public class WebContentsTest {
+    @Rule
+    public ContentShellActivityTestRule mActivityTestRule = new ContentShellActivityTestRule();
+
     private static final String TEST_URL_1 = "about://blank";
     private static final String TEST_URL_2 = UrlUtils.encodeHtmlDataUri("<html>1</html>");
     private static final String WEB_CONTENTS_KEY = "WEBCONTENTSKEY";
@@ -39,21 +49,23 @@ public class WebContentsTest extends ContentShellTestBase {
      * @throws InterruptedException
      * @throws ExecutionException
      */
+    @Test
     @SmallTest
     public void testWebContentsIsDestroyedMethod() throws InterruptedException, ExecutionException {
-        final ContentShellActivity activity = launchContentShellWithUrl(TEST_URL_1);
-        waitForActiveShellToBeDoneLoading();
+        final ContentShellActivity activity =
+                mActivityTestRule.launchContentShellWithUrl(TEST_URL_1);
+        mActivityTestRule.waitForActiveShellToBeDoneLoading();
         WebContents webContents = activity.getActiveWebContents();
 
-        assertFalse("WebContents incorrectly marked as destroyed",
-                isWebContentsDestroyed(webContents));
+        Assert.assertFalse(
+                "WebContents incorrectly marked as destroyed", isWebContentsDestroyed(webContents));
 
         // Launch a new shell.
         Shell originalShell = activity.getActiveShell();
-        loadNewShell(TEST_URL_1);
-        assertNotSame("New shell not created", activity.getActiveShell(), originalShell);
+        mActivityTestRule.loadNewShell(TEST_URL_1);
+        Assert.assertNotSame("New shell not created", activity.getActiveShell(), originalShell);
 
-        assertTrue("WebContents incorrectly marked as not destroyed",
+        Assert.assertTrue("WebContents incorrectly marked as not destroyed",
                 isWebContentsDestroyed(webContents));
     }
 
@@ -62,11 +74,12 @@ public class WebContentsTest extends ContentShellTestBase {
      *
      * @throws InterruptedException
      */
+    @Test
     @SmallTest
     public void testWebContentsSerializeDeserializeInParcel() throws InterruptedException {
-        launchContentShellWithUrl(TEST_URL_1);
-        waitForActiveShellToBeDoneLoading();
-        WebContents webContents = getWebContents();
+        mActivityTestRule.launchContentShellWithUrl(TEST_URL_1);
+        mActivityTestRule.waitForActiveShellToBeDoneLoading();
+        WebContents webContents = mActivityTestRule.getWebContents();
 
         Parcel parcel = Parcel.obtain();
 
@@ -80,8 +93,8 @@ public class WebContentsTest extends ContentShellTestBase {
                     WebContents.class.getClassLoader());
 
             // Make sure they're equal.
-            assertEquals("Deserialized object does not match",
-                    webContents, deserializedWebContents);
+            Assert.assertEquals(
+                    "Deserialized object does not match", webContents, deserializedWebContents);
         } finally {
             parcel.recycle();
         }
@@ -91,13 +104,14 @@ public class WebContentsTest extends ContentShellTestBase {
      * Check that it is possible to serialize and deserialize a WebContents object through Bundles.
      * @throws InterruptedException
      */
+    @Test
     @SmallTest
     // TODO(crbug.com/635567): Fix this properly.
     @SuppressLint("ParcelClassLoader")
     public void testWebContentsSerializeDeserializeInBundle() throws InterruptedException {
-        launchContentShellWithUrl(TEST_URL_1);
-        waitForActiveShellToBeDoneLoading();
-        WebContents webContents = getWebContents();
+        mActivityTestRule.launchContentShellWithUrl(TEST_URL_1);
+        mActivityTestRule.waitForActiveShellToBeDoneLoading();
+        WebContents webContents = mActivityTestRule.getWebContents();
 
         // Use a parcel to force the Bundle to actually serialize and deserialize, otherwise it can
         // cache the WebContents object.
@@ -121,8 +135,8 @@ public class WebContentsTest extends ContentShellTestBase {
                     deserializedBundle.getParcelable(WEB_CONTENTS_KEY);
 
             // Make sure they're equal.
-            assertEquals("Deserialized object does not match",
-                    webContents, deserializedWebContents);
+            Assert.assertEquals(
+                    "Deserialized object does not match", webContents, deserializedWebContents);
         } finally {
             parcel.recycle();
         }
@@ -132,13 +146,14 @@ public class WebContentsTest extends ContentShellTestBase {
      * Check that it is possible to serialize and deserialize a WebContents object through Intents.
      * @throws InterruptedException
      */
+    @Test
     @SmallTest
     // TODO(crbug.com/635567): Fix this properly.
     @SuppressLint("ParcelClassLoader")
     public void testWebContentsSerializeDeserializeInIntent() throws InterruptedException {
-        launchContentShellWithUrl(TEST_URL_1);
-        waitForActiveShellToBeDoneLoading();
-        WebContents webContents = getWebContents();
+        mActivityTestRule.launchContentShellWithUrl(TEST_URL_1);
+        mActivityTestRule.waitForActiveShellToBeDoneLoading();
+        WebContents webContents = mActivityTestRule.getWebContents();
 
         // Use a parcel to force the Intent to actually serialize and deserialize, otherwise it can
         // cache the WebContents object.
@@ -162,8 +177,8 @@ public class WebContentsTest extends ContentShellTestBase {
                     (WebContents) deserializedIntent.getParcelableExtra(WEB_CONTENTS_KEY);
 
             // Make sure they're equal.
-            assertEquals("Deserialized object does not match",
-                    webContents, deserializedWebContents);
+            Assert.assertEquals(
+                    "Deserialized object does not match", webContents, deserializedWebContents);
         } finally {
             parcel.recycle();
         }
@@ -174,12 +189,13 @@ public class WebContentsTest extends ContentShellTestBase {
      * instance fails.
      * @throws InterruptedException
      */
+    @Test
     @SmallTest
     public void testWebContentsFailDeserializationAcrossProcessBoundary()
             throws InterruptedException {
-        launchContentShellWithUrl(TEST_URL_1);
-        waitForActiveShellToBeDoneLoading();
-        WebContents webContents = getWebContents();
+        mActivityTestRule.launchContentShellWithUrl(TEST_URL_1);
+        mActivityTestRule.waitForActiveShellToBeDoneLoading();
+        WebContents webContents = mActivityTestRule.getWebContents();
 
         Parcel parcel = Parcel.obtain();
 
@@ -196,7 +212,7 @@ public class WebContentsTest extends ContentShellTestBase {
                     WebContents.class.getClassLoader());
 
             // Make sure we weren't able to deserialize the WebContents.
-            assertNull("Unexpectedly deserialized a WebContents", deserializedWebContents);
+            Assert.assertNull("Unexpectedly deserialized a WebContents", deserializedWebContents);
         } finally {
             parcel.recycle();
         }
@@ -208,15 +224,16 @@ public class WebContentsTest extends ContentShellTestBase {
      * @throws InterruptedException
      * @throws ExecutionException
      */
+    @Test
     @SmallTest
     public void testSerializingADestroyedWebContentsDoesNotDeserialize()
             throws InterruptedException, ExecutionException {
-        ContentShellActivity activity = launchContentShellWithUrl(TEST_URL_1);
-        waitForActiveShellToBeDoneLoading();
+        ContentShellActivity activity = mActivityTestRule.launchContentShellWithUrl(TEST_URL_1);
+        mActivityTestRule.waitForActiveShellToBeDoneLoading();
         WebContents webContents = activity.getActiveWebContents();
-        loadNewShell(TEST_URL_1);
+        mActivityTestRule.loadNewShell(TEST_URL_1);
 
-        assertTrue("WebContents not destroyed", isWebContentsDestroyed(webContents));
+        Assert.assertTrue("WebContents not destroyed", isWebContentsDestroyed(webContents));
 
         Parcel parcel = Parcel.obtain();
 
@@ -230,8 +247,8 @@ public class WebContentsTest extends ContentShellTestBase {
                     WebContents.class.getClassLoader());
 
             // Make sure we weren't able to deserialize the WebContents.
-            assertNull("Unexpectedly deserialized a destroyed WebContents",
-                    deserializedWebContents);
+            Assert.assertNull(
+                    "Unexpectedly deserialized a destroyed WebContents", deserializedWebContents);
         } finally {
             parcel.recycle();
         }
@@ -243,11 +260,12 @@ public class WebContentsTest extends ContentShellTestBase {
      * @throws InterruptedException
      * @throws ExecutionException
      */
+    @Test
     @SmallTest
     public void testDestroyingAWebContentsAfterSerializingDoesNotDeserialize()
             throws InterruptedException, ExecutionException {
-        ContentShellActivity activity = launchContentShellWithUrl(TEST_URL_1);
-        waitForActiveShellToBeDoneLoading();
+        ContentShellActivity activity = mActivityTestRule.launchContentShellWithUrl(TEST_URL_1);
+        mActivityTestRule.waitForActiveShellToBeDoneLoading();
         WebContents webContents = activity.getActiveWebContents();
 
         Parcel parcel = Parcel.obtain();
@@ -257,8 +275,8 @@ public class WebContentsTest extends ContentShellTestBase {
             parcel.writeParcelable(webContents, 0);
 
             // Destroy the WebContents.
-            loadNewShell(TEST_URL_1);
-            assertTrue("WebContents not destroyed", isWebContentsDestroyed(webContents));
+            mActivityTestRule.loadNewShell(TEST_URL_1);
+            Assert.assertTrue("WebContents not destroyed", isWebContentsDestroyed(webContents));
 
             // Try to read back the WebContents.
             parcel.setDataPosition(0);
@@ -266,8 +284,8 @@ public class WebContentsTest extends ContentShellTestBase {
                     WebContents.class.getClassLoader());
 
             // Make sure we weren't able to deserialize the WebContents.
-            assertNull("Unexpectedly deserialized a destroyed WebContents",
-                    deserializedWebContents);
+            Assert.assertNull(
+                    "Unexpectedly deserialized a destroyed WebContents", deserializedWebContents);
         } finally {
             parcel.recycle();
         }
@@ -278,12 +296,12 @@ public class WebContentsTest extends ContentShellTestBase {
      * Parcel.
      * @throws InterruptedException
      */
+    @Test
     @SmallTest
-    public void testFailedDeserializationDoesntCorruptParcel()
-            throws InterruptedException {
-        launchContentShellWithUrl(TEST_URL_1);
-        waitForActiveShellToBeDoneLoading();
-        WebContents webContents = getWebContents();
+    public void testFailedDeserializationDoesntCorruptParcel() throws InterruptedException {
+        mActivityTestRule.launchContentShellWithUrl(TEST_URL_1);
+        mActivityTestRule.waitForActiveShellToBeDoneLoading();
+        WebContents webContents = mActivityTestRule.getWebContents();
 
         Parcel parcel = Parcel.obtain();
 
@@ -303,10 +321,10 @@ public class WebContentsTest extends ContentShellTestBase {
                     WebContents.class.getClassLoader());
 
             // Make sure we weren't able to deserialize the WebContents.
-            assertNull("Unexpectedly deserialized a WebContents", deserializedWebContents);
+            Assert.assertNull("Unexpectedly deserialized a WebContents", deserializedWebContents);
 
             // Make sure we can properly deserialize the String after the WebContents.
-            assertEquals("Failing to read the WebContents corrupted the parcel",
+            Assert.assertEquals("Failing to read the WebContents corrupted the parcel",
                     PARCEL_STRING_TEST_DATA, parcel.readString());
         } finally {
             parcel.recycle();
@@ -319,10 +337,12 @@ public class WebContentsTest extends ContentShellTestBase {
      *
      * @throws InterruptedException
      */
+    @Test
     @SmallTest
     public void testWebContentsMainFrame() throws InterruptedException {
-        final ContentShellActivity activity = launchContentShellWithUrl(TEST_URL_2);
-        waitForActiveShellToBeDoneLoading();
+        final ContentShellActivity activity =
+                mActivityTestRule.launchContentShellWithUrl(TEST_URL_2);
+        mActivityTestRule.waitForActiveShellToBeDoneLoading();
         final WebContents webContents = activity.getActiveWebContents();
 
         ThreadUtils.postOnUiThread(new Runnable() {
@@ -330,14 +350,14 @@ public class WebContentsTest extends ContentShellTestBase {
             public void run() {
                 RenderFrameHost frameHost = webContents.getMainFrame();
 
-                assertNotNull(frameHost);
+                Assert.assertNotNull(frameHost);
 
-                assertEquals("RenderFrameHost has incorrect last committed URL", TEST_URL_2,
+                Assert.assertEquals("RenderFrameHost has incorrect last committed URL", TEST_URL_2,
                         frameHost.getLastCommittedURL());
 
                 WebContents associatedWebContents = WebContentsImpl.fromRenderFrameHost(frameHost);
-                assertEquals("RenderFrameHost associated with different WebContents", webContents,
-                        associatedWebContents);
+                Assert.assertEquals("RenderFrameHost associated with different WebContents",
+                        webContents, associatedWebContents);
             }
         });
     }

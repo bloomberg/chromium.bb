@@ -9,42 +9,52 @@ import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 import android.os.SystemClock;
 import android.support.test.filters.MediumTest;
 
+import org.junit.Assert;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content_shell_apk.ContentShellActivity;
-import org.chromium.content_shell_apk.ContentShellTestBase;
+import org.chromium.content_shell_apk.ContentShellActivityTestRule;
 
 import java.io.File;
 
 /**
  * Test suite for TracingControllerAndroid.
  */
-public class TracingControllerAndroidTest extends ContentShellTestBase {
+@RunWith(BaseJUnit4ClassRunner.class)
+public class TracingControllerAndroidTest {
+    @Rule
+    public ContentShellActivityTestRule mActivityTestRule = new ContentShellActivityTestRule();
 
     private static final long TIMEOUT_MILLIS = scaleTimeout(30 * 1000);
 
+    @Test
     @MediumTest
     @Feature({"GPU"})
     @DisabledTest(message = "crbug.com/621956")
     public void testTraceFileCreation() throws Exception {
-        ContentShellActivity activity = launchContentShellWithUrl("about:blank");
-        waitForActiveShellToBeDoneLoading();
+        ContentShellActivity activity = mActivityTestRule.launchContentShellWithUrl("about:blank");
+        mActivityTestRule.waitForActiveShellToBeDoneLoading();
 
         final TracingControllerAndroid tracingController = new TracingControllerAndroid(activity);
-        assertFalse(tracingController.isTracing());
-        assertNull(tracingController.getOutputPath());
+        Assert.assertFalse(tracingController.isTracing());
+        Assert.assertNull(tracingController.getOutputPath());
 
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                assertTrue(tracingController.startTracing(true, "*", "record-until-full"));
+                Assert.assertTrue(tracingController.startTracing(true, "*", "record-until-full"));
             }
         });
 
-        assertTrue(tracingController.isTracing());
+        Assert.assertTrue(tracingController.isTracing());
         File file = new File(tracingController.getOutputPath());
-        assertTrue(file.getName().startsWith("chrome-profile-results"));
+        Assert.assertTrue(file.getName().startsWith("chrome-profile-results"));
 
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
@@ -58,14 +68,14 @@ public class TracingControllerAndroidTest extends ContentShellTestBase {
         long startTime = SystemClock.uptimeMillis();
         while (tracingController.isTracing()) {
             if (SystemClock.uptimeMillis() > startTime + TIMEOUT_MILLIS) {
-                fail("Timed out waiting for tracing to stop.");
+                Assert.fail("Timed out waiting for tracing to stop.");
             }
             Thread.sleep(1000);
         }
 
         // It says it stopped, so it should have written the output file.
-        assertTrue(file.exists());
-        assertTrue(file.delete());
+        Assert.assertTrue(file.exists());
+        Assert.assertTrue(file.delete());
         tracingController.destroy();
     }
 }

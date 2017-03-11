@@ -4,15 +4,24 @@
 
 package org.chromium.content.browser;
 
+import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
 
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer.OnEvaluateJavaScriptResultHelper;
 import org.chromium.content_public.browser.LoadUrlParams;
-import org.chromium.content_shell_apk.ContentShellTestBase;
+import org.chromium.content_shell_apk.ContentShellActivityTestRule;
 import org.chromium.device.geolocation.LocationProviderFactory;
 import org.chromium.device.geolocation.MockLocationProvider;
 
@@ -23,44 +32,48 @@ import java.util.concurrent.Callable;
  * with ContentView APIs - e.g. that it's started and stopped as the
  * ContentView is hidden or shown.
  */
-public class ContentViewLocationTest extends ContentShellTestBase {
+@RunWith(BaseJUnit4ClassRunner.class)
+public class ContentViewLocationTest {
+    @Rule
+    public ContentShellActivityTestRule mActivityTestRule = new ContentShellActivityTestRule();
 
     private TestCallbackHelperContainer mTestCallbackHelperContainer;
     private TestCallbackHelperContainer.OnEvaluateJavaScriptResultHelper mJavascriptHelper;
     private MockLocationProvider mMockLocationProvider;
 
     private void hideContentViewOnUiThread() {
-        getInstrumentation().runOnMainSync(new Runnable() {
-                @Override
-                public void run() {
-                    getContentViewCore().onHide();
-                }
+        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
+            @Override
+            public void run() {
+                mActivityTestRule.getContentViewCore().onHide();
+            }
         });
     }
 
     private void showContentViewOnUiThread() {
-        getInstrumentation().runOnMainSync(new Runnable() {
-                @Override
-                public void run() {
-                    getContentViewCore().onShow();
-                }
+        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
+            @Override
+            public void run() {
+                mActivityTestRule.getContentViewCore().onShow();
+            }
         });
     }
 
     private void pollForPositionCallback() throws Throwable {
-        mJavascriptHelper.evaluateJavaScriptForTests(getWebContents(),
-                "positionCount = 0");
+        mJavascriptHelper.evaluateJavaScriptForTests(
+                mActivityTestRule.getWebContents(), "positionCount = 0");
         mJavascriptHelper.waitUntilHasValue();
-        assertEquals(0, Integer.parseInt(mJavascriptHelper.getJsonResultAndClear()));
+        Assert.assertEquals(0, Integer.parseInt(mJavascriptHelper.getJsonResultAndClear()));
 
         CriteriaHelper.pollInstrumentationThread(new Criteria() {
                 @Override
                 public boolean isSatisfied() {
-                    mJavascriptHelper.evaluateJavaScriptForTests(getWebContents(), "positionCount");
+                    mJavascriptHelper.evaluateJavaScriptForTests(
+                            mActivityTestRule.getWebContents(), "positionCount");
                     try {
                         mJavascriptHelper.waitUntilHasValue();
                     } catch (Exception e) {
-                        fail();
+                        Assert.fail();
                     }
                     return Integer.parseInt(mJavascriptHelper.getJsonResultAndClear()) > 0;
                 }
@@ -68,8 +81,8 @@ public class ContentViewLocationTest extends ContentShellTestBase {
     }
 
     private void startGeolocationWatchPosition() throws Throwable {
-        mJavascriptHelper.evaluateJavaScriptForTests(getWebContents(),
-                "initiate_watchPosition();");
+        mJavascriptHelper.evaluateJavaScriptForTests(
+                mActivityTestRule.getWebContents(), "initiate_watchPosition();");
         mJavascriptHelper.waitUntilHasValue();
     }
 
@@ -82,35 +95,34 @@ public class ContentViewLocationTest extends ContentShellTestBase {
         }));
     }
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-
+    @Before
+    public void setUp() throws Exception {
         mMockLocationProvider = new MockLocationProvider();
         LocationProviderFactory.setLocationProviderImpl(mMockLocationProvider);
 
         try {
-            startActivityWithTestUrl("content/test/data/android/geolocation.html");
+            mActivityTestRule.launchContentShellWithUrlSync(
+                    "content/test/data/android/geolocation.html");
         } catch (Throwable t) {
-            fail();
+            Assert.fail();
         }
 
-        mTestCallbackHelperContainer = new TestCallbackHelperContainer(getContentViewCore());
+        mTestCallbackHelperContainer =
+                new TestCallbackHelperContainer(mActivityTestRule.getContentViewCore());
         mJavascriptHelper = new OnEvaluateJavaScriptResultHelper();
 
         ensureGeolocationRunning(false);
     }
 
-    @Override
-    protected void tearDown() throws Exception {
+    @After
+    public void tearDown() throws Exception {
         mMockLocationProvider.stopUpdates();
-        super.tearDown();
     }
 
+    @Test
     @MediumTest
     @Feature({"Location"})
     public void testWatchHideShowStop() throws Throwable {
-
         startGeolocationWatchPosition();
         pollForPositionCallback();
         ensureGeolocationRunning(true);
@@ -119,8 +131,8 @@ public class ContentViewLocationTest extends ContentShellTestBase {
         hideContentViewOnUiThread();
         ensureGeolocationRunning(false);
 
-        mJavascriptHelper.evaluateJavaScriptForTests(getWebContents(),
-                "positionCount = 0");
+        mJavascriptHelper.evaluateJavaScriptForTests(
+                mActivityTestRule.getWebContents(), "positionCount = 0");
         mJavascriptHelper.waitUntilHasValue();
 
         // Show the ContentView again and ensure that geolocation starts again.
@@ -129,11 +141,13 @@ public class ContentViewLocationTest extends ContentShellTestBase {
         ensureGeolocationRunning(true);
 
         // Navigate away and ensure that geolocation stops.
-        loadUrl(getContentViewCore().getWebContents().getNavigationController(),
+        mActivityTestRule.loadUrl(
+                mActivityTestRule.getContentViewCore().getWebContents().getNavigationController(),
                 mTestCallbackHelperContainer, new LoadUrlParams("about:blank"));
         ensureGeolocationRunning(false);
     }
 
+    @Test
     @MediumTest
     @Feature({"Location"})
     public void testHideWatchResume() throws Throwable {
@@ -146,6 +160,7 @@ public class ContentViewLocationTest extends ContentShellTestBase {
         ensureGeolocationRunning(true);
     }
 
+    @Test
     @MediumTest
     @Feature({"Location"})
     public void testWatchHideNewWatchShow() throws Throwable {
@@ -165,6 +180,7 @@ public class ContentViewLocationTest extends ContentShellTestBase {
         ensureGeolocationRunning(true);
     }
 
+    @Test
     @MediumTest
     @Feature({"Location"})
     public void testHideWatchStopShow() throws Throwable {
@@ -172,7 +188,8 @@ public class ContentViewLocationTest extends ContentShellTestBase {
         startGeolocationWatchPosition();
         ensureGeolocationRunning(false);
 
-        loadUrl(getContentViewCore().getWebContents().getNavigationController(),
+        mActivityTestRule.loadUrl(
+                mActivityTestRule.getContentViewCore().getWebContents().getNavigationController(),
                 mTestCallbackHelperContainer, new LoadUrlParams("about:blank"));
         showContentViewOnUiThread();
         ensureGeolocationRunning(false);

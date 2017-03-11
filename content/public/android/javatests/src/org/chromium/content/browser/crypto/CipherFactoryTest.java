@@ -6,9 +6,14 @@ package org.chromium.content.browser.crypto;
 
 import android.os.Bundle;
 import android.support.test.filters.MediumTest;
-import android.test.InstrumentationTestCase;
+
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.content.browser.crypto.CipherFactory.CipherDataObserver;
 
 import java.io.IOException;
@@ -24,7 +29,8 @@ import javax.crypto.Cipher;
  * Tests that confirm that the class is thread-safe would require putting potentially flaky hooks
  * throughout the class to simulate artificial blockages.
  */
-public class CipherFactoryTest extends InstrumentationTestCase {
+@RunWith(BaseJUnit4ClassRunner.class)
+public class CipherFactoryTest {
     private static final byte[] INPUT_DATA = {1, 16, 84};
 
     /** Generates non-random byte[] for testing. */
@@ -77,9 +83,8 @@ public class CipherFactoryTest extends InstrumentationTestCase {
      * Overrides the {@link ByteArrayGenerator} used by the {@link CipherFactory} to ensure
      * deterministic results.
      */
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
+    @Before
+    public void setUp() throws Exception {
         mNumberProvider = new DeterministicParameterGenerator();
         CipherFactory.getInstance().setRandomNumberProviderForTests(mNumberProvider);
     }
@@ -87,6 +92,7 @@ public class CipherFactoryTest extends InstrumentationTestCase {
     /**
      * {@link Cipher} instances initialized using the same parameters work in exactly the same way.
      */
+    @Test
     @MediumTest
     public void testCipherUse() throws Exception {
         // Check encryption.
@@ -98,13 +104,14 @@ public class CipherFactoryTest extends InstrumentationTestCase {
         Cipher aDecrypt = CipherFactory.getInstance().getCipher(Cipher.DECRYPT_MODE);
         Cipher bDecrypt = CipherFactory.getInstance().getCipher(Cipher.DECRYPT_MODE);
         byte[] decrypted = sameOutputDifferentCiphers(output, aDecrypt, bDecrypt);
-        assertTrue(Arrays.equals(decrypted, INPUT_DATA));
+        Assert.assertTrue(Arrays.equals(decrypted, INPUT_DATA));
     }
 
     /**
      * Restoring a {@link Bundle} containing the same parameters already in use by the
      * {@link CipherFactory} should keep the same keys.
      */
+    @Test
     @MediumTest
     public void testSameBundleRestoration() throws Exception {
         // Create two bundles with the same saved state.
@@ -120,9 +127,9 @@ public class CipherFactoryTest extends InstrumentationTestCase {
         bBundle.putByteArray(CipherFactory.BUNDLE_KEY, sameKey);
 
         // Restore using the first bundle, then the second. Both should succeed.
-        assertTrue(CipherFactory.getInstance().restoreFromBundle(aBundle));
+        Assert.assertTrue(CipherFactory.getInstance().restoreFromBundle(aBundle));
         Cipher aCipher = CipherFactory.getInstance().getCipher(Cipher.ENCRYPT_MODE);
-        assertTrue(CipherFactory.getInstance().restoreFromBundle(bBundle));
+        Assert.assertTrue(CipherFactory.getInstance().restoreFromBundle(bBundle));
         Cipher bCipher = CipherFactory.getInstance().getCipher(Cipher.ENCRYPT_MODE);
 
         // Make sure the CipherFactory instances are using the same key.
@@ -134,6 +141,7 @@ public class CipherFactoryTest extends InstrumentationTestCase {
      * by the {@link CipherFactory} should fail. Any Ciphers created after the failed restoration
      * attempt should use the already-existing keys.
      */
+    @Test
     @MediumTest
     public void testDifferentBundleRestoration() throws Exception {
         // Restore one set of parameters.
@@ -142,7 +150,7 @@ public class CipherFactoryTest extends InstrumentationTestCase {
         byte[] aKey = mNumberProvider.getBytes(CipherFactory.NUM_BYTES, (byte) 100);
         aBundle.putByteArray(CipherFactory.BUNDLE_IV, aIv);
         aBundle.putByteArray(CipherFactory.BUNDLE_KEY, aKey);
-        assertTrue(CipherFactory.getInstance().restoreFromBundle(aBundle));
+        Assert.assertTrue(CipherFactory.getInstance().restoreFromBundle(aBundle));
         Cipher aCipher = CipherFactory.getInstance().getCipher(Cipher.ENCRYPT_MODE);
 
         // Restore using a different set of parameters.
@@ -151,7 +159,7 @@ public class CipherFactoryTest extends InstrumentationTestCase {
         byte[] bKey = mNumberProvider.getBytes(CipherFactory.NUM_BYTES, (byte) 200);
         bBundle.putByteArray(CipherFactory.BUNDLE_IV, bIv);
         bBundle.putByteArray(CipherFactory.BUNDLE_KEY, bKey);
-        assertFalse(CipherFactory.getInstance().restoreFromBundle(bBundle));
+        Assert.assertFalse(CipherFactory.getInstance().restoreFromBundle(bBundle));
         Cipher bCipher = CipherFactory.getInstance().getCipher(Cipher.ENCRYPT_MODE);
 
         // Make sure they're using the same (original) key by encrypting the same data.
@@ -161,22 +169,23 @@ public class CipherFactoryTest extends InstrumentationTestCase {
     /**
      * Restoration from a {@link Bundle} missing data should fail.
      */
+    @Test
     @MediumTest
     public void testIncompleteBundleRestoration() throws Exception {
         // Make sure we handle the null case.
-        assertFalse(CipherFactory.getInstance().restoreFromBundle(null));
+        Assert.assertFalse(CipherFactory.getInstance().restoreFromBundle(null));
 
         // Try restoring without the key.
         Bundle aBundle = new Bundle();
         byte[] iv = mNumberProvider.getBytes(CipherFactory.NUM_BYTES, (byte) 50);
         aBundle.putByteArray(CipherFactory.BUNDLE_IV, iv);
-        assertFalse(CipherFactory.getInstance().restoreFromBundle(aBundle));
+        Assert.assertFalse(CipherFactory.getInstance().restoreFromBundle(aBundle));
 
         // Try restoring without the initialization vector.
         Bundle bBundle = new Bundle();
         byte[] key = mNumberProvider.getBytes(CipherFactory.NUM_BYTES, (byte) 100);
         bBundle.putByteArray(CipherFactory.BUNDLE_KEY, key);
-        assertFalse(CipherFactory.getInstance().restoreFromBundle(bBundle));
+        Assert.assertFalse(CipherFactory.getInstance().restoreFromBundle(bBundle));
     }
 
     /**
@@ -184,6 +193,7 @@ public class CipherFactoryTest extends InstrumentationTestCase {
      * parameters from a {@link Bundle} before this point should result in {@link Cipher}s using the
      * restored parameters instead of any generated ones.
      */
+    @Test
     @MediumTest
     public void testRestorationSucceedsBeforeCipherCreated() throws Exception {
         byte[] iv = mNumberProvider.getBytes(CipherFactory.NUM_BYTES, (byte) 50);
@@ -193,15 +203,16 @@ public class CipherFactoryTest extends InstrumentationTestCase {
         bundle.putByteArray(CipherFactory.BUNDLE_KEY, key);
 
         // The keys should be initialized only after restoration.
-        assertNull(CipherFactory.getInstance().getCipherData(false));
-        assertTrue(CipherFactory.getInstance().restoreFromBundle(bundle));
-        assertNotNull(CipherFactory.getInstance().getCipherData(false));
+        Assert.assertNull(CipherFactory.getInstance().getCipherData(false));
+        Assert.assertTrue(CipherFactory.getInstance().restoreFromBundle(bundle));
+        Assert.assertNotNull(CipherFactory.getInstance().getCipherData(false));
     }
 
     /**
      * If the {@link CipherFactory} has already generated parameters, restorations of different data
      * should fail. All {@link Cipher}s should use the generated parameters.
      */
+    @Test
     @MediumTest
     public void testRestorationDiscardsAfterOtherCipherAlreadyCreated() throws Exception {
         byte[] iv = mNumberProvider.getBytes(CipherFactory.NUM_BYTES, (byte) 50);
@@ -212,7 +223,7 @@ public class CipherFactoryTest extends InstrumentationTestCase {
 
         // The keys should be initialized after creating the cipher, so the keys shouldn't match.
         Cipher aCipher = CipherFactory.getInstance().getCipher(Cipher.ENCRYPT_MODE);
-        assertFalse(CipherFactory.getInstance().restoreFromBundle(bundle));
+        Assert.assertFalse(CipherFactory.getInstance().restoreFromBundle(bundle));
         Cipher bCipher = CipherFactory.getInstance().getCipher(Cipher.ENCRYPT_MODE);
 
         // B's cipher should use the keys generated for A.
@@ -222,42 +233,44 @@ public class CipherFactoryTest extends InstrumentationTestCase {
     /**
      * Data saved out to the {@link Bundle} should match what is held by the {@link CipherFactory}.
      */
+    @Test
     @MediumTest
     public void testSavingToBundle() throws Exception {
         // Nothing should get saved out before Cipher data exists.
         Bundle initialBundle = new Bundle();
         CipherFactory.getInstance().saveToBundle(initialBundle);
-        assertFalse(initialBundle.containsKey(CipherFactory.BUNDLE_IV));
-        assertFalse(initialBundle.containsKey(CipherFactory.BUNDLE_KEY));
+        Assert.assertFalse(initialBundle.containsKey(CipherFactory.BUNDLE_IV));
+        Assert.assertFalse(initialBundle.containsKey(CipherFactory.BUNDLE_KEY));
 
         // Check that Cipher data gets saved if it exists.
         CipherFactory.getInstance().getCipher(Cipher.ENCRYPT_MODE);
         Bundle afterBundle = new Bundle();
         CipherFactory.getInstance().saveToBundle(afterBundle);
-        assertTrue(afterBundle.containsKey(CipherFactory.BUNDLE_IV));
-        assertTrue(afterBundle.containsKey(CipherFactory.BUNDLE_KEY));
+        Assert.assertTrue(afterBundle.containsKey(CipherFactory.BUNDLE_IV));
+        Assert.assertTrue(afterBundle.containsKey(CipherFactory.BUNDLE_KEY));
 
         // Confirm the saved keys match by restoring it.
-        assertTrue(CipherFactory.getInstance().restoreFromBundle(afterBundle));
+        Assert.assertTrue(CipherFactory.getInstance().restoreFromBundle(afterBundle));
     }
 
     /**
      * Checks that an observer is notified when cipher data is created.
      */
+    @Test
     @MediumTest
     public void testCipherFactoryObserver() throws Exception {
         TestCipherDataObserver observer = new TestCipherDataObserver();
         CipherFactory.getInstance().addCipherDataObserver(observer);
-        assertEquals(0, observer.getTimesNotified());
+        Assert.assertEquals(0, observer.getTimesNotified());
         CipherFactory.getInstance().getCipher(Cipher.DECRYPT_MODE);
         ThreadUtils.runOnUiThreadBlocking(mEmptyRunnable);
-        assertEquals(1, observer.getTimesNotified());
+        Assert.assertEquals(1, observer.getTimesNotified());
         CipherFactory.getInstance().getCipher(Cipher.DECRYPT_MODE);
         ThreadUtils.runOnUiThreadBlocking(mEmptyRunnable);
-        assertEquals(1, observer.getTimesNotified());
+        Assert.assertEquals(1, observer.getTimesNotified());
         CipherFactory.getInstance().getCipher(Cipher.ENCRYPT_MODE);
         ThreadUtils.runOnUiThreadBlocking(mEmptyRunnable);
-        assertEquals(1, observer.getTimesNotified());
+        Assert.assertEquals(1, observer.getTimesNotified());
         CipherFactory.getInstance().removeCipherDataObserver(observer);
     }
 
@@ -265,6 +278,7 @@ public class CipherFactoryTest extends InstrumentationTestCase {
      * Verifies that if the observer is attached after cipher data has already been
      * created the observer doesn't fire.
      */
+    @Test
     @MediumTest
     public void testCipherFactoryObserverTooLate() throws Exception {
         CipherFactory.getInstance().getCipher(Cipher.DECRYPT_MODE);
@@ -273,10 +287,10 @@ public class CipherFactoryTest extends InstrumentationTestCase {
         TestCipherDataObserver observer = new TestCipherDataObserver();
         CipherFactory.getInstance().addCipherDataObserver(observer);
         ThreadUtils.runOnUiThreadBlocking(mEmptyRunnable);
-        assertEquals(0, observer.getTimesNotified());
+        Assert.assertEquals(0, observer.getTimesNotified());
         CipherFactory.getInstance().getCipher(Cipher.DECRYPT_MODE);
         ThreadUtils.runOnUiThreadBlocking(mEmptyRunnable);
-        assertEquals(0, observer.getTimesNotified());
+        Assert.assertEquals(0, observer.getTimesNotified());
     }
 
     /**
@@ -285,16 +299,16 @@ public class CipherFactoryTest extends InstrumentationTestCase {
      */
     private byte[] sameOutputDifferentCiphers(byte[] input, Cipher aCipher, Cipher bCipher)
             throws Exception {
-        assertNotNull(aCipher);
-        assertNotNull(bCipher);
-        assertNotSame(aCipher, bCipher);
+        Assert.assertNotNull(aCipher);
+        Assert.assertNotNull(bCipher);
+        Assert.assertNotSame(aCipher, bCipher);
 
         byte[] aOutput = aCipher.doFinal(input);
         byte[] bOutput = bCipher.doFinal(input);
 
-        assertNotNull(aOutput);
-        assertNotNull(bOutput);
-        assertTrue(Arrays.equals(aOutput, bOutput));
+        Assert.assertNotNull(aOutput);
+        Assert.assertNotNull(bOutput);
+        Assert.assertTrue(Arrays.equals(aOutput, bOutput));
 
         return aOutput;
     }

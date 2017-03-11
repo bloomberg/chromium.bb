@@ -9,16 +9,26 @@ import android.support.test.filters.SmallTest;
 import android.view.InputDevice;
 import android.view.MotionEvent;
 
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.content.browser.input.AnimationIntervalProvider;
 import org.chromium.content.browser.input.JoystickZoomProvider;
-import org.chromium.content_shell_apk.ContentShellTestBase;
+import org.chromium.content_shell_apk.ContentShellActivityTestRule;
 
 /**
  * Tests that ContentView running inside ContentShell can be zoomed using gamepad joystick.
  */
-public class ContentViewZoomingTest extends ContentShellTestBase {
+@RunWith(BaseJUnit4ClassRunner.class)
+public class ContentViewZoomingTest {
+    @Rule
+    public ContentShellActivityTestRule mActivityTestRule = new ContentShellActivityTestRule();
+
     private static final String LARGE_PAGE = UrlUtils.encodeHtmlDataUri("<html><head>"
             + "<meta name=\"viewport\" content=\"width=device-width, "
             + "initial-scale=2.0, minimum-scale=2.0, maximum-scale=5.0\" />"
@@ -48,7 +58,7 @@ public class ContentViewZoomingTest extends ContentShellTestBase {
 
         public void animateZoomTest(final MotionEvent joystickZoomEvent, final long animationTicks)
                 throws Throwable {
-            runTestOnUiThread(new Runnable() {
+            mActivityTestRule.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
                     onMotion(joystickZoomEvent);
@@ -77,67 +87,68 @@ public class ContentViewZoomingTest extends ContentShellTestBase {
         return joystickMotionEvent;
     }
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        launchContentShellWithUrl(LARGE_PAGE);
-        waitForActiveShellToBeDoneLoading();
-        assertWaitForPageScaleFactorMatch(2.0f);
+    @Before
+    public void setUp() throws Exception {
+        mActivityTestRule.launchContentShellWithUrl(LARGE_PAGE);
+        mActivityTestRule.waitForActiveShellToBeDoneLoading();
+        mActivityTestRule.assertWaitForPageScaleFactorMatch(2.0f);
     }
 
+    @Test
     @SmallTest
     @Feature({"JoystickZoom"})
     public void testJoystickZoomIn() throws Throwable {
         MotionEvent rTriggerEvent;
         AnimationIntervalProvider intervalProvider = new TestAnimationIntervalProvider();
-        TestJoystickZoomProvider rtJoystickZoomProvider =
-                new TestJoystickZoomProvider(getContentViewCore(), intervalProvider);
+        TestJoystickZoomProvider rtJoystickZoomProvider = new TestJoystickZoomProvider(
+                mActivityTestRule.getContentViewCore(), intervalProvider);
         // Verify page does not zoom-in if trigger motion falls in deadzone.
         rTriggerEvent = simulateJoystickEvent(0.1f, true);
         rtJoystickZoomProvider.animateZoomTest(rTriggerEvent, 20);
-        assertWaitForPageScaleFactorMatch(2.0f);
+        mActivityTestRule.assertWaitForPageScaleFactorMatch(2.0f);
 
         rTriggerEvent = simulateJoystickEvent(0.3f, true);
         rtJoystickZoomProvider.animateZoomTest(rTriggerEvent, 20);
-        assertWaitForPageScaleFactorMatch(2.2018466f);
+        mActivityTestRule.assertWaitForPageScaleFactorMatch(2.2018466f);
 
         rTriggerEvent = simulateJoystickEvent(0.5f, true);
         rtJoystickZoomProvider.animateZoomTest(rTriggerEvent, 40);
-        assertWaitForPageScaleFactorMatch(3.033731f);
+        mActivityTestRule.assertWaitForPageScaleFactorMatch(3.033731f);
 
         rTriggerEvent = simulateJoystickEvent(0.75f, true);
         rtJoystickZoomProvider.animateZoomTest(rTriggerEvent, 50);
-        assertWaitForPageScaleFactorMatch(5.0f);
+        mActivityTestRule.assertWaitForPageScaleFactorMatch(5.0f);
     }
 
+    @Test
     @SmallTest
     @Feature({"JoystickZoom"})
     public void testJoystickZoomOut() throws Throwable {
         MotionEvent lTriggerEvent;
         AnimationIntervalProvider intervalProvider = new TestAnimationIntervalProvider();
-        TestJoystickZoomProvider ltJoystickZoomProvider =
-                new TestJoystickZoomProvider(getContentViewCore(), intervalProvider);
+        TestJoystickZoomProvider ltJoystickZoomProvider = new TestJoystickZoomProvider(
+                mActivityTestRule.getContentViewCore(), intervalProvider);
 
         // Zoom page to max size.
         lTriggerEvent = simulateJoystickEvent(1.0f, true);
         ltJoystickZoomProvider.animateZoomTest(lTriggerEvent, 60);
-        assertWaitForPageScaleFactorMatch(5.0f);
+        mActivityTestRule.assertWaitForPageScaleFactorMatch(5.0f);
 
         // Verify page does not zoom-out if trigger motion falls in deadzone.
         lTriggerEvent = simulateJoystickEvent(0.1f, false);
         ltJoystickZoomProvider.animateZoomTest(lTriggerEvent, 20);
-        assertWaitForPageScaleFactorMatch(5.0f);
+        mActivityTestRule.assertWaitForPageScaleFactorMatch(5.0f);
 
         lTriggerEvent = simulateJoystickEvent(0.3f, false);
         ltJoystickZoomProvider.animateZoomTest(lTriggerEvent, 40);
-        assertWaitForPageScaleFactorMatch(4.125306f);
+        mActivityTestRule.assertWaitForPageScaleFactorMatch(4.125306f);
 
         lTriggerEvent = simulateJoystickEvent(0.5f, false);
         ltJoystickZoomProvider.animateZoomTest(lTriggerEvent, 50);
-        assertWaitForPageScaleFactorMatch(2.7635581f);
+        mActivityTestRule.assertWaitForPageScaleFactorMatch(2.7635581f);
 
         lTriggerEvent = simulateJoystickEvent(0.75f, false);
         ltJoystickZoomProvider.animateZoomTest(lTriggerEvent, 60);
-        assertWaitForPageScaleFactorMatch(2.0f);
+        mActivityTestRule.assertWaitForPageScaleFactorMatch(2.0f);
     }
 }

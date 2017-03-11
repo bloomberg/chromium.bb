@@ -6,16 +6,26 @@ package org.chromium.content.browser;
 
 import android.support.test.filters.LargeTest;
 
+import org.junit.Assert;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.content.browser.test.util.DOMUtils;
 import org.chromium.content_public.browser.WebContents;
-import org.chromium.content_shell_apk.ContentShellTestBase;
+import org.chromium.content_shell_apk.ContentShellActivityTestRule;
 
 /**
  * Integration tests for JavaScript execution.
  */
-public class TestsJavaScriptEvalTest extends ContentShellTestBase {
+@RunWith(BaseJUnit4ClassRunner.class)
+public class TestsJavaScriptEvalTest {
+    @Rule
+    public ContentShellActivityTestRule mActivityTestRule = new ContentShellActivityTestRule();
+
     private static final String JSTEST_URL = UrlUtils.encodeHtmlDataUri("<html><head><script>"
             + "  function foobar() { return 'foobar'; }"
             + "</script></head>"
@@ -28,22 +38,23 @@ public class TestsJavaScriptEvalTest extends ContentShellTestBase {
      * Tests that evaluation of JavaScript for test purposes (using JavaScriptUtils, DOMUtils etc)
      * works even in presence of "background" (non-test-initiated) JavaScript evaluation activity.
      */
+    @Test
     @LargeTest
     @Feature({"Browser"})
     public void testJavaScriptEvalIsCorrectlyOrdered()
             throws InterruptedException, Exception, Throwable {
-        launchContentShellWithUrl(JSTEST_URL);
-        waitForActiveShellToBeDoneLoading();
+        mActivityTestRule.launchContentShellWithUrl(JSTEST_URL);
+        mActivityTestRule.waitForActiveShellToBeDoneLoading();
 
-        final WebContents webContents = getWebContents();
+        final WebContents webContents = mActivityTestRule.getWebContents();
         for (int i = 0; i < 30; ++i) {
             for (int j = 0; j < 10; ++j) {
                 // Start evaluation of a JavaScript script -- we don't need a result.
                 webContents.evaluateJavaScriptForTests("foobar();", null);
             }
             // DOMUtils does need to evaluate a JavaScript and get its result to get DOM bounds.
-            assertNotNull("Failed to get bounds",
-                    DOMUtils.getNodeBounds(webContents, "test"));
+            Assert.assertNotNull(
+                    "Failed to get bounds", DOMUtils.getNodeBounds(webContents, "test"));
         }
     }
 }

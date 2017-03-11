@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,10 +11,15 @@ import android.media.MediaMetadataRetriever;
 import android.net.ConnectivityManager;
 import android.net.Uri;
 import android.support.test.filters.SmallTest;
-import android.test.InstrumentationTestCase;
 import android.test.mock.MockContext;
 import android.util.SparseArray;
 
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.content.browser.MediaResourceGetter.MediaMetadata;
 
 import java.io.File;
@@ -25,8 +30,9 @@ import java.util.Map;
 /**
  * Tests for MediaResourceGetter.
  */
+@RunWith(BaseJUnit4ClassRunner.class)
 @SuppressLint("SdCardPath")
-public class MediaResourceGetterTest extends InstrumentationTestCase {
+public class MediaResourceGetterTest {
     private static final String TEST_HTTP_URL = "http://example.com";
     private static final String TEST_USER_AGENT = // Anything, really
             "Mozilla/5.0 (Windows NT 6.2; Win64; x64) AppleWebKit/537.36 "
@@ -207,8 +213,7 @@ public class MediaResourceGetterTest extends InstrumentationTestCase {
         boolean mAllowPermission = false;
         @Override
         public int checkCallingOrSelfPermission(String permission) {
-            assertEquals(android.Manifest.permission.ACCESS_NETWORK_STATE,
-                    permission);
+            Assert.assertEquals(android.Manifest.permission.ACCESS_NETWORK_STATE, permission);
             return mAllowPermission ? PackageManager.PERMISSION_GRANTED :
                 PackageManager.PERMISSION_DENIED;
         }
@@ -223,153 +228,166 @@ public class MediaResourceGetterTest extends InstrumentationTestCase {
     private FakeMediaResourceGetter mFakeMRG;
     private InternalMockContext mMockContext;
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
+    @Before
+    public void setUp() throws Exception {
         mFakeMRG = new FakeMediaResourceGetter();
         mMockContext = new InternalMockContext();
     }
 
+    @Test
     @SmallTest
     public void testMediaMetadataEquals() {
-        assertEquals(sEmptyMetadata, sEmptyMetadata);
-        assertEquals(sEmptyMetadata, new MediaMetadata(0, 0, 0, false));
-        assertFalse(sEmptyMetadata.equals(null));
-        assertFalse(sEmptyMetadata.equals("test"));
-        assertFalse(sEmptyMetadata.equals(new MediaMetadata(1, 0, 0, false)));
-        assertFalse(sEmptyMetadata.equals(new MediaMetadata(0, 1, 0, false)));
-        assertFalse(sEmptyMetadata.equals(new MediaMetadata(0, 0, 1, false)));
-        assertFalse(sEmptyMetadata.equals(new MediaMetadata(0, 0, 0, true)));
+        Assert.assertEquals(sEmptyMetadata, sEmptyMetadata);
+        Assert.assertEquals(sEmptyMetadata, new MediaMetadata(0, 0, 0, false));
+        Assert.assertFalse(sEmptyMetadata.equals(null));
+        Assert.assertFalse(sEmptyMetadata.equals("test"));
+        Assert.assertFalse(sEmptyMetadata.equals(new MediaMetadata(1, 0, 0, false)));
+        Assert.assertFalse(sEmptyMetadata.equals(new MediaMetadata(0, 1, 0, false)));
+        Assert.assertFalse(sEmptyMetadata.equals(new MediaMetadata(0, 0, 1, false)));
+        Assert.assertFalse(sEmptyMetadata.equals(new MediaMetadata(0, 0, 0, true)));
     }
 
+    @Test
     @SmallTest
     public void testMediaMetadataHashCode() {
-        assertEquals(sEmptyMetadata.hashCode(), sEmptyMetadata.hashCode());
-        assertEquals(sEmptyMetadata.hashCode(), new MediaMetadata(0, 0, 0, false).hashCode());
-        assertFalse(sEmptyMetadata.hashCode() == new MediaMetadata(1, 0, 0, false).hashCode());
-        assertFalse(sEmptyMetadata.hashCode() == new MediaMetadata(0, 1, 0, false).hashCode());
-        assertFalse(sEmptyMetadata.hashCode() == new MediaMetadata(0, 0, 1, false).hashCode());
-        assertFalse(sEmptyMetadata.hashCode() == new MediaMetadata(0, 0, 0, true).hashCode());
+        Assert.assertEquals(sEmptyMetadata.hashCode(), sEmptyMetadata.hashCode());
+        Assert.assertEquals(
+                sEmptyMetadata.hashCode(), new MediaMetadata(0, 0, 0, false).hashCode());
+        Assert.assertFalse(
+                sEmptyMetadata.hashCode() == new MediaMetadata(1, 0, 0, false).hashCode());
+        Assert.assertFalse(
+                sEmptyMetadata.hashCode() == new MediaMetadata(0, 1, 0, false).hashCode());
+        Assert.assertFalse(
+                sEmptyMetadata.hashCode() == new MediaMetadata(0, 0, 1, false).hashCode());
+        Assert.assertFalse(
+                sEmptyMetadata.hashCode() == new MediaMetadata(0, 0, 0, true).hashCode());
     }
 
+    @Test
     @SmallTest
     public void testMediaMetadataGetters() {
         MediaMetadata data = new MediaMetadata(1, 2, 3, true);
-        assertEquals(1, data.getDurationInMilliseconds());
-        assertEquals(2, data.getWidth());
-        assertEquals(3, data.getHeight());
-        assertTrue(data.isSuccess());
+        Assert.assertEquals(1, data.getDurationInMilliseconds());
+        Assert.assertEquals(2, data.getWidth());
+        Assert.assertEquals(3, data.getHeight());
+        Assert.assertTrue(data.isSuccess());
 
         // Validate no overlap of test values with defaults
         data = new MediaMetadata(4, 5, 6, false);
-        assertEquals(4, data.getDurationInMilliseconds());
-        assertEquals(5, data.getWidth());
-        assertEquals(6, data.getHeight());
-        assertFalse(data.isSuccess());
+        Assert.assertEquals(4, data.getDurationInMilliseconds());
+        Assert.assertEquals(5, data.getWidth());
+        Assert.assertEquals(6, data.getHeight());
+        Assert.assertFalse(data.isSuccess());
     }
 
+    @Test
     @SmallTest
     public void testConfigure_Net_NoPermissions() {
         mMockContext.mAllowPermission = false;
-        assertFalse(mFakeMRG.configure(mMockContext, TEST_HTTP_URL,
-                                       TEST_COOKIES, TEST_USER_AGENT));
+        Assert.assertFalse(
+                mFakeMRG.configure(mMockContext, TEST_HTTP_URL, TEST_COOKIES, TEST_USER_AGENT));
     }
 
+    @Test
     @SmallTest
     public void testConfigure_Net_NoActiveNetwork() {
         mMockContext.mAllowPermission = true;
         mFakeMRG.mNetworkType = null;
-        assertFalse(mFakeMRG.configure(mMockContext, TEST_HTTP_URL,
-                                       TEST_COOKIES, TEST_USER_AGENT));
+        Assert.assertFalse(
+                mFakeMRG.configure(mMockContext, TEST_HTTP_URL, TEST_COOKIES, TEST_USER_AGENT));
     }
 
+    @Test
     @SmallTest
     public void testConfigure_Net_Disallowed_Mobile() {
         mMockContext.mAllowPermission = true;
         mFakeMRG.mNetworkType = ConnectivityManager.TYPE_MOBILE;
-        assertFalse(mFakeMRG.configure(mMockContext, TEST_HTTP_URL,
-                                       TEST_COOKIES, TEST_USER_AGENT));
+        Assert.assertFalse(
+                mFakeMRG.configure(mMockContext, TEST_HTTP_URL, TEST_COOKIES, TEST_USER_AGENT));
     }
 
+    @Test
     @SmallTest
     public void testConfigure_Net_Disallowed_Wimax() {
         mMockContext.mAllowPermission = true;
         mFakeMRG.mNetworkType = ConnectivityManager.TYPE_WIMAX;
-        assertFalse(mFakeMRG.configure(mMockContext, TEST_HTTP_URL,
-                                       TEST_COOKIES, TEST_USER_AGENT));
+        Assert.assertFalse(
+                mFakeMRG.configure(mMockContext, TEST_HTTP_URL, TEST_COOKIES, TEST_USER_AGENT));
     }
 
+    @Test
     @SmallTest
     public void testConfigure_Net_Allowed_Ethernet_Cookies_NoUA() {
         mMockContext.mAllowPermission = true;
         mFakeMRG.mNetworkType = ConnectivityManager.TYPE_ETHERNET;
-        assertTrue(mFakeMRG.configure(mMockContext, TEST_HTTP_URL,
-                                      TEST_COOKIES, null));
-        assertEquals(TEST_HTTP_URL, mFakeMRG.mUri);
-        assertEquals(sHeadersCookieOnly, mFakeMRG.mHeaders);
-        assertNull(mFakeMRG.mPath);
-        assertNull(mFakeMRG.mContentUri);
+        Assert.assertTrue(mFakeMRG.configure(mMockContext, TEST_HTTP_URL, TEST_COOKIES, null));
+        Assert.assertEquals(TEST_HTTP_URL, mFakeMRG.mUri);
+        Assert.assertEquals(sHeadersCookieOnly, mFakeMRG.mHeaders);
+        Assert.assertNull(mFakeMRG.mPath);
+        Assert.assertNull(mFakeMRG.mContentUri);
     }
 
+    @Test
     @SmallTest
     public void testConfigure_Net_Allowed_Wifi_Cookies_NoUA() {
         mMockContext.mAllowPermission = true;
         mFakeMRG.mNetworkType = ConnectivityManager.TYPE_WIFI;
-        assertTrue(mFakeMRG.configure(mMockContext, TEST_HTTP_URL,
-                                      TEST_COOKIES, null));
-        assertEquals(TEST_HTTP_URL, mFakeMRG.mUri);
-        assertEquals(sHeadersCookieOnly, mFakeMRG.mHeaders);
-        assertNull(mFakeMRG.mPath);
-        assertNull(mFakeMRG.mContentUri);
+        Assert.assertTrue(mFakeMRG.configure(mMockContext, TEST_HTTP_URL, TEST_COOKIES, null));
+        Assert.assertEquals(TEST_HTTP_URL, mFakeMRG.mUri);
+        Assert.assertEquals(sHeadersCookieOnly, mFakeMRG.mHeaders);
+        Assert.assertNull(mFakeMRG.mPath);
+        Assert.assertNull(mFakeMRG.mContentUri);
     }
 
+    @Test
     @SmallTest
     public void testConfigure_Net_Allowed_Ethernet_NoCookies_NoUA() {
         mMockContext.mAllowPermission = true;
         mFakeMRG.mNetworkType = ConnectivityManager.TYPE_ETHERNET;
-        assertTrue(mFakeMRG.configure(mMockContext, TEST_HTTP_URL,
-                                      "", null));
-        assertEquals(TEST_HTTP_URL, mFakeMRG.mUri);
-        assertEquals(Collections.emptyMap(), mFakeMRG.mHeaders);
-        assertNull(mFakeMRG.mPath);
-        assertNull(mFakeMRG.mContentUri);
+        Assert.assertTrue(mFakeMRG.configure(mMockContext, TEST_HTTP_URL, "", null));
+        Assert.assertEquals(TEST_HTTP_URL, mFakeMRG.mUri);
+        Assert.assertEquals(Collections.emptyMap(), mFakeMRG.mHeaders);
+        Assert.assertNull(mFakeMRG.mPath);
+        Assert.assertNull(mFakeMRG.mContentUri);
     }
 
+    @Test
     @SmallTest
     public void testConfigure_Net_Allowed_Ethernet_Cookies_WithUA() {
         mMockContext.mAllowPermission = true;
         mFakeMRG.mNetworkType = ConnectivityManager.TYPE_ETHERNET;
-        assertTrue(mFakeMRG.configure(mMockContext, TEST_HTTP_URL,
-                                      TEST_COOKIES, TEST_USER_AGENT));
-        assertEquals(TEST_HTTP_URL, mFakeMRG.mUri);
-        assertEquals(sHeadersCookieAndUA, mFakeMRG.mHeaders);
-        assertNull(mFakeMRG.mPath);
-        assertNull(mFakeMRG.mContentUri);
+        Assert.assertTrue(
+                mFakeMRG.configure(mMockContext, TEST_HTTP_URL, TEST_COOKIES, TEST_USER_AGENT));
+        Assert.assertEquals(TEST_HTTP_URL, mFakeMRG.mUri);
+        Assert.assertEquals(sHeadersCookieAndUA, mFakeMRG.mHeaders);
+        Assert.assertNull(mFakeMRG.mPath);
+        Assert.assertNull(mFakeMRG.mContentUri);
     }
 
+    @Test
     @SmallTest
     public void testConfigure_Net_Allowed_Ethernet_NoCookies_WithUA() {
         mMockContext.mAllowPermission = true;
         mFakeMRG.mNetworkType = ConnectivityManager.TYPE_ETHERNET;
-        assertTrue(mFakeMRG.configure(mMockContext, TEST_HTTP_URL,
-                                      "", TEST_USER_AGENT));
-        assertEquals(TEST_HTTP_URL, mFakeMRG.mUri);
-        assertEquals(sHeadersUAOnly, mFakeMRG.mHeaders);
-        assertNull(mFakeMRG.mPath);
-        assertNull(mFakeMRG.mContentUri);
+        Assert.assertTrue(mFakeMRG.configure(mMockContext, TEST_HTTP_URL, "", TEST_USER_AGENT));
+        Assert.assertEquals(TEST_HTTP_URL, mFakeMRG.mUri);
+        Assert.assertEquals(sHeadersUAOnly, mFakeMRG.mHeaders);
+        Assert.assertNull(mFakeMRG.mPath);
+        Assert.assertNull(mFakeMRG.mContentUri);
     }
 
+    @Test
     @SmallTest
     public void testConfigure_Net_Allowed_Ethernet_Exception() {
         mMockContext.mAllowPermission = true;
         mFakeMRG.mThrowExceptionInConfigure = true;
         mFakeMRG.mNetworkType = ConnectivityManager.TYPE_ETHERNET;
-        assertFalse(mFakeMRG.configure(mMockContext, TEST_HTTP_URL,
-                                       "", TEST_USER_AGENT));
-        assertNull(mFakeMRG.mUri);
-        assertNull(mFakeMRG.mHeaders);
+        Assert.assertFalse(mFakeMRG.configure(mMockContext, TEST_HTTP_URL, "", TEST_USER_AGENT));
+        Assert.assertNull(mFakeMRG.mUri);
+        Assert.assertNull(mFakeMRG.mHeaders);
     }
 
+    @Test
     @SmallTest
     public void testConfigure_Net_Allowed_LocalHost_WithNoNetwork() {
         String[] localHostUrls = {
@@ -382,195 +400,219 @@ public class MediaResourceGetterTest extends InstrumentationTestCase {
         mMockContext.mAllowPermission = true;
         mFakeMRG.mNetworkType = null;
         for (String localHostUrl : localHostUrls) {
-            assertTrue(mFakeMRG.configure(mMockContext, localHostUrl,
-                                          TEST_COOKIES, TEST_USER_AGENT));
-            assertEquals(localHostUrl, mFakeMRG.mUri);
-            assertEquals(sHeadersCookieAndUA, mFakeMRG.mHeaders);
-            assertNull(mFakeMRG.mPath);
-            assertNull(mFakeMRG.mContentUri);
+            Assert.assertTrue(
+                    mFakeMRG.configure(mMockContext, localHostUrl, TEST_COOKIES, TEST_USER_AGENT));
+            Assert.assertEquals(localHostUrl, mFakeMRG.mUri);
+            Assert.assertEquals(sHeadersCookieAndUA, mFakeMRG.mHeaders);
+            Assert.assertNull(mFakeMRG.mPath);
+            Assert.assertNull(mFakeMRG.mContentUri);
         }
     }
 
+    @Test
     @SmallTest
     public void testConfigure_File_Allowed_MntSdcard() {
         final String path = "/mnt/sdcard/test";
         final String url = "file://" + path;
         mFakeMRG.mFileExists = true;
-        assertTrue(mFakeMRG.configure(mMockContext, url, "", null));
-        assertEquals(path, mFakeMRG.mPath);
-        assertNull(mFakeMRG.mUri);
-        assertNull(mFakeMRG.mContentUri);
-        assertNull(mFakeMRG.mHeaders);
+        Assert.assertTrue(mFakeMRG.configure(mMockContext, url, "", null));
+        Assert.assertEquals(path, mFakeMRG.mPath);
+        Assert.assertNull(mFakeMRG.mUri);
+        Assert.assertNull(mFakeMRG.mContentUri);
+        Assert.assertNull(mFakeMRG.mHeaders);
     }
 
+    @Test
     @SmallTest
     public void testConfigure_File_Allowed_Sdcard() {
         final String path = "/sdcard/test";
         final String url = "file://" + path;
         mFakeMRG.mFileExists = true;
-        assertTrue(mFakeMRG.configure(mMockContext, url, "", null));
-        assertEquals(path, mFakeMRG.mPath);
-        assertNull(mFakeMRG.mUri);
-        assertNull(mFakeMRG.mContentUri);
-        assertNull(mFakeMRG.mHeaders);
+        Assert.assertTrue(mFakeMRG.configure(mMockContext, url, "", null));
+        Assert.assertEquals(path, mFakeMRG.mPath);
+        Assert.assertNull(mFakeMRG.mUri);
+        Assert.assertNull(mFakeMRG.mContentUri);
+        Assert.assertNull(mFakeMRG.mHeaders);
     }
 
+    @Test
     @SmallTest
     public void testConfigure_File_Allowed_Sdcard_DoesntExist() {
         final String path = "/sdcard/test";
         final String url = "file://" + path;
         mFakeMRG.mFileExists = false;
-        assertFalse(mFakeMRG.configure(mMockContext, url, "", null));
-        assertNull(mFakeMRG.mPath);
+        Assert.assertFalse(mFakeMRG.configure(mMockContext, url, "", null));
+        Assert.assertNull(mFakeMRG.mPath);
     }
 
+    @Test
     @SmallTest
     public void testConfigure_File_Allowed_ExternalStorage() {
         final String path = sExternalStorageDirectory + "/test";
         final String url = "file://" + path;
         mFakeMRG.mFileExists = true;
-        assertTrue(mFakeMRG.configure(mMockContext, url, "", null));
-        assertEquals(path, mFakeMRG.mPath);
-        assertNull(mFakeMRG.mUri);
-        assertNull(mFakeMRG.mContentUri);
-        assertNull(mFakeMRG.mHeaders);
+        Assert.assertTrue(mFakeMRG.configure(mMockContext, url, "", null));
+        Assert.assertEquals(path, mFakeMRG.mPath);
+        Assert.assertNull(mFakeMRG.mUri);
+        Assert.assertNull(mFakeMRG.mContentUri);
+        Assert.assertNull(mFakeMRG.mHeaders);
     }
 
+    @Test
     @SmallTest
     public void testConfigure_File_Disallowed_Innocent() {
         final String path = "/malicious/path";
         final String url = "file://" + path;
         mFakeMRG.mFileExists = true;
-        assertFalse(mFakeMRG.configure(mMockContext, url, "", null));
-        assertNull(mFakeMRG.mPath);
+        Assert.assertFalse(mFakeMRG.configure(mMockContext, url, "", null));
+        Assert.assertNull(mFakeMRG.mPath);
     }
 
+    @Test
     @SmallTest
     public void testConfigure_File_Disallowed_Malicious() {
         final String path = "/mnt/sdcard/../../data";
         final String url = "file://" + path;
         mFakeMRG.mFileExists = true;
-        assertFalse(mFakeMRG.configure(mMockContext, url, "", null));
-        assertNull(mFakeMRG.mPath);
+        Assert.assertFalse(mFakeMRG.configure(mMockContext, url, "", null));
+        Assert.assertNull(mFakeMRG.mPath);
     }
 
+    @Test
     @SmallTest
     public void testConfigure_File_Allowed_Exception() {
         final String path = "/mnt/sdcard/test";
         final String url = "file://" + path;
         mFakeMRG.mFileExists = true;
         mFakeMRG.mThrowExceptionInConfigure = true;
-        assertFalse(mFakeMRG.configure(mMockContext, url, "", null));
-        assertNull(mFakeMRG.mPath);
+        Assert.assertFalse(mFakeMRG.configure(mMockContext, url, "", null));
+        Assert.assertNull(mFakeMRG.mPath);
     }
 
+    @Test
     @SmallTest
     public void testConfigure_Blob_Disallow_Null_Cache() {
         final String path = "/data/data/" + null + "/cache/";
         final String url = path;
         mFakeMRG.mFileExists = true;
         mFakeMRG.mThrowExceptionInConfigure = true;
-        assertFalse(mFakeMRG.configure(mMockContext, url, "", null));
-        assertNull(mFakeMRG.mPath);
+        Assert.assertFalse(mFakeMRG.configure(mMockContext, url, "", null));
+        Assert.assertNull(mFakeMRG.mPath);
     }
 
+    @Test
     @SmallTest
     public void testConfigure_Blob_Disallowed_Incomplete_Path() {
         final String path = "/data/data/";
         final String url = path;
         mFakeMRG.mFileExists = true;
         mFakeMRG.mThrowExceptionInConfigure = true;
-        assertFalse(mFakeMRG.configure(mMockContext, url, "", null));
-        assertNull(mFakeMRG.mPath);
+        Assert.assertFalse(mFakeMRG.configure(mMockContext, url, "", null));
+        Assert.assertNull(mFakeMRG.mPath);
     }
 
+    @Test
     @SmallTest
     public void testConfigure_Blob_Disallowed_Unknown_Path() {
         final String path = "/unknown/path/";
         final String url = path;
         mFakeMRG.mFileExists = true;
         mFakeMRG.mThrowExceptionInConfigure = true;
-        assertFalse(mFakeMRG.configure(mMockContext, url, "", null));
-        assertNull(mFakeMRG.mPath);
+        Assert.assertFalse(mFakeMRG.configure(mMockContext, url, "", null));
+        Assert.assertNull(mFakeMRG.mPath);
     }
 
+    @Test
     @SmallTest
     public void testConfigure_Blob_Disallowed_Other_Application() {
         final String path = "/data/data/org.some.other.app/cache/";
         final String url = path;
         mFakeMRG.mFileExists = true;
         mFakeMRG.mThrowExceptionInConfigure = true;
-        assertFalse(mFakeMRG.configure(mMockContext, url, "", null));
-        assertNull(mFakeMRG.mPath);
+        Assert.assertFalse(mFakeMRG.configure(mMockContext, url, "", null));
+        Assert.assertNull(mFakeMRG.mPath);
     }
 
+    @Test
     @SmallTest
     public void testConfigure_Content_Uri_Allowed() {
-        assertTrue(mFakeMRG.configure(mMockContext, TEST_CONTENT_URI, "", null));
-        assertNull(mFakeMRG.mPath);
-        assertNull(mFakeMRG.mUri);
-        assertEquals(TEST_CONTENT_URI, mFakeMRG.mContentUri);
+        Assert.assertTrue(mFakeMRG.configure(mMockContext, TEST_CONTENT_URI, "", null));
+        Assert.assertNull(mFakeMRG.mPath);
+        Assert.assertNull(mFakeMRG.mUri);
+        Assert.assertEquals(TEST_CONTENT_URI, mFakeMRG.mContentUri);
     }
 
+    @Test
     @SmallTest
     public void testConfigure_Content_Uri_Disallowed() {
         mFakeMRG.mThrowExceptionInConfigure = true;
-        assertFalse(mFakeMRG.configure(mMockContext, TEST_CONTENT_URI, "", null));
-        assertNull(mFakeMRG.mPath);
-        assertNull(mFakeMRG.mUri);
-        assertNull(mFakeMRG.mContentUri);
+        Assert.assertFalse(mFakeMRG.configure(mMockContext, TEST_CONTENT_URI, "", null));
+        Assert.assertNull(mFakeMRG.mPath);
+        Assert.assertNull(mFakeMRG.mUri);
+        Assert.assertNull(mFakeMRG.mContentUri);
     }
 
+    @Test
     @SmallTest
     public void testExtract_NoMetadata() {
         mFakeMRG.mFileExists = true;
-        assertEquals(sEmptyMetadata, mFakeMRG.extract(
-                mMockContext, TEST_FILE_URL, null, null));
-        assertEquals("configured successfully when we shouldn't have",
-                     TEST_FILE_PATH, mFakeMRG.mPath); // tricky
+        Assert.assertEquals(
+                sEmptyMetadata, mFakeMRG.extract(mMockContext, TEST_FILE_URL, null, null));
+        Assert.assertEquals("configured successfully when we shouldn't have", TEST_FILE_PATH,
+                mFakeMRG.mPath); // tricky
     }
 
+    @Test
     @SmallTest
     public void testExtract_WithMetadata_ValidDuration() {
         mFakeMRG.mFileExists = true;
         mFakeMRG.bind(MediaMetadataRetriever.METADATA_KEY_DURATION, "1");
         final MediaMetadata expected = new MediaMetadata(1, 0, 0, true);
-        assertEquals(expected, mFakeMRG.extract(mMockContext, TEST_FILE_URL, null, null));
+        Assert.assertEquals(expected, mFakeMRG.extract(mMockContext, TEST_FILE_URL, null, null));
     }
 
+    @Test
     @SmallTest
     public void testExtract_WithMetadata_InvalidDuration() {
         mFakeMRG.mFileExists = true;
         mFakeMRG.bind(MediaMetadataRetriever.METADATA_KEY_DURATION, "i am not an integer");
-        assertEquals(sEmptyMetadata, mFakeMRG.extract(mMockContext, TEST_FILE_URL, null, null));
+        Assert.assertEquals(
+                sEmptyMetadata, mFakeMRG.extract(mMockContext, TEST_FILE_URL, null, null));
     }
 
+    @Test
     @SmallTest
     public void testExtract_WithMetadata_ValidDuration_HasVideo_NoWidth_NoHeight() {
         mFakeMRG.mFileExists = true;
         mFakeMRG.bind(MediaMetadataRetriever.METADATA_KEY_DURATION, "1");
         mFakeMRG.bind(MediaMetadataRetriever.METADATA_KEY_HAS_VIDEO, "yes");
-        assertEquals(sEmptyMetadata, mFakeMRG.extract(mMockContext, TEST_FILE_URL, null, null));
+        Assert.assertEquals(
+                sEmptyMetadata, mFakeMRG.extract(mMockContext, TEST_FILE_URL, null, null));
     }
 
+    @Test
     @SmallTest
     public void testExtract_WithMetadata_ValidDuration_HasVideo_ValidWidth_NoHeight() {
         mFakeMRG.mFileExists = true;
         mFakeMRG.bind(MediaMetadataRetriever.METADATA_KEY_DURATION, "1");
         mFakeMRG.bind(MediaMetadataRetriever.METADATA_KEY_HAS_VIDEO, "yes");
         mFakeMRG.bind(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH, "1");
-        assertEquals(sEmptyMetadata, mFakeMRG.extract(mMockContext, TEST_FILE_URL, null, null));
+        Assert.assertEquals(
+                sEmptyMetadata, mFakeMRG.extract(mMockContext, TEST_FILE_URL, null, null));
     }
 
+    @Test
     @SmallTest
     public void testExtract_WithMetadata_ValidDuration_HasVideo_InvalidWidth_NoHeight() {
         mFakeMRG.mFileExists = true;
         mFakeMRG.bind(MediaMetadataRetriever.METADATA_KEY_DURATION, "1");
         mFakeMRG.bind(MediaMetadataRetriever.METADATA_KEY_HAS_VIDEO, "yes");
         mFakeMRG.bind(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH, "i am not an integer");
-        assertEquals(sEmptyMetadata, mFakeMRG.extract(mMockContext, TEST_FILE_URL, null, null));
+        Assert.assertEquals(
+                sEmptyMetadata, mFakeMRG.extract(mMockContext, TEST_FILE_URL, null, null));
     }
 
+    @Test
     @SmallTest
     public void testExtract_WithMetadata_ValidDuration_HasVideo_ValidWidth_ValidHeight() {
         mFakeMRG.mFileExists = true;
@@ -579,9 +621,10 @@ public class MediaResourceGetterTest extends InstrumentationTestCase {
         mFakeMRG.bind(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH, "2");
         mFakeMRG.bind(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT, "3");
         final MediaMetadata expected = new MediaMetadata(1, 2, 3, true);
-        assertEquals(expected, mFakeMRG.extract(mMockContext, TEST_FILE_URL, null, null));
+        Assert.assertEquals(expected, mFakeMRG.extract(mMockContext, TEST_FILE_URL, null, null));
     }
 
+    @Test
     @SmallTest
     public void testExtract_WithMetadata_ValidDuration_HasVideo_ValidWidth_InvalidHeight() {
         mFakeMRG.mFileExists = true;
@@ -589,17 +632,21 @@ public class MediaResourceGetterTest extends InstrumentationTestCase {
         mFakeMRG.bind(MediaMetadataRetriever.METADATA_KEY_HAS_VIDEO, "yes");
         mFakeMRG.bind(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH, "1");
         mFakeMRG.bind(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT, "i am not an integer");
-        assertEquals(sEmptyMetadata, mFakeMRG.extract(mMockContext, TEST_FILE_URL, null, null));
+        Assert.assertEquals(
+                sEmptyMetadata, mFakeMRG.extract(mMockContext, TEST_FILE_URL, null, null));
     }
 
+    @Test
     @SmallTest
     public void testExtract_WithMetadata_ValidDuration_ExceptionInExtract() {
         mFakeMRG.mFileExists = true;
         mFakeMRG.mThrowExceptionInExtract = true;
         mFakeMRG.bind(MediaMetadataRetriever.METADATA_KEY_DURATION, "1");
-        assertEquals(sEmptyMetadata, mFakeMRG.extract(mMockContext, TEST_FILE_URL, null, null));
+        Assert.assertEquals(
+                sEmptyMetadata, mFakeMRG.extract(mMockContext, TEST_FILE_URL, null, null));
     }
 
+    @Test
     @SmallTest
     public void testExtractFromFileDescriptor_ValidMetadata() {
         mFakeMRG.bind(MediaMetadataRetriever.METADATA_KEY_DURATION, "1");
@@ -610,9 +657,9 @@ public class MediaResourceGetterTest extends InstrumentationTestCase {
         int fd = 1234;
         long offset = 1000;
         long length = 9000;
-        assertEquals(expected, mFakeMRG.extract(fd, offset, length));
-        assertEquals(fd, mFakeMRG.mFd);
-        assertEquals(offset, mFakeMRG.mOffset);
-        assertEquals(length, mFakeMRG.mLength);
+        Assert.assertEquals(expected, mFakeMRG.extract(fd, offset, length));
+        Assert.assertEquals(fd, mFakeMRG.mFd);
+        Assert.assertEquals(offset, mFakeMRG.mOffset);
+        Assert.assertEquals(length, mFakeMRG.mLength);
     }
 }

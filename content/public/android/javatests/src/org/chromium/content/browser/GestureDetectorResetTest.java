@@ -6,10 +6,16 @@ package org.chromium.content.browser;
 
 import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 
+import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.LargeTest;
 
 import junit.framework.Assert;
 
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.base.test.util.UrlUtils;
@@ -19,7 +25,7 @@ import org.chromium.content.browser.test.util.DOMUtils;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer.OnPageFinishedHelper;
 import org.chromium.content_public.browser.LoadUrlParams;
-import org.chromium.content_shell_apk.ContentShellTestBase;
+import org.chromium.content_shell_apk.ContentShellActivityTestRule;
 
 import java.util.concurrent.TimeUnit;
 
@@ -27,7 +33,11 @@ import java.util.concurrent.TimeUnit;
  * Provides test environment for Gesture Detector Reset for Content Shell.
  * This is a helper class for Content Shell tests.
 */
-public class GestureDetectorResetTest extends ContentShellTestBase {
+@RunWith(BaseJUnit4ClassRunner.class)
+public class GestureDetectorResetTest {
+    @Rule
+    public ContentShellActivityTestRule mActivityTestRule = new ContentShellActivityTestRule();
+
     private static final long WAIT_TIMEOUT_SECONDS = scaleTimeout(2);
     private static final String CLICK_TEST_URL = UrlUtils.encodeHtmlDataUri("<html><body>"
             + "<button id=\"button\" "
@@ -90,16 +100,17 @@ public class GestureDetectorResetTest extends ContentShellTestBase {
      * Tests that showing a select popup and having the page reload while the popup is showing does
      * not assert.
      */
+    @Test
     @LargeTest
     @Feature({"Browser"})
     @RetryOnFailure
     public void testSeparateClicksAreRegisteredOnReload()
             throws InterruptedException, Exception, Throwable {
         // Load the test page.
-        launchContentShellWithUrl(CLICK_TEST_URL);
-        waitForActiveShellToBeDoneLoading();
+        mActivityTestRule.launchContentShellWithUrl(CLICK_TEST_URL);
+        mActivityTestRule.waitForActiveShellToBeDoneLoading();
 
-        final ContentViewCore viewCore = getContentViewCore();
+        final ContentViewCore viewCore = mActivityTestRule.getContentViewCore();
         final TestCallbackHelperContainer viewClient =
                 new TestCallbackHelperContainer(viewCore);
         final OnPageFinishedHelper onPageFinishedHelper =
@@ -110,10 +121,10 @@ public class GestureDetectorResetTest extends ContentShellTestBase {
 
         // Reload the test page.
         int currentCallCount = onPageFinishedHelper.getCallCount();
-        getInstrumentation().runOnMainSync(new Runnable() {
+        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
-                getActivity().getActiveShell().loadUrl(CLICK_TEST_URL);
+                mActivityTestRule.getActivity().getActiveShell().loadUrl(CLICK_TEST_URL);
             }
         });
         onPageFinishedHelper.waitForCallback(currentCallCount, 1,
@@ -124,12 +135,15 @@ public class GestureDetectorResetTest extends ContentShellTestBase {
 
         // Directly navigate to the test page.
         currentCallCount = onPageFinishedHelper.getCallCount();
-        getInstrumentation().runOnMainSync(new Runnable() {
+        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
-                getActivity().getActiveShell().getContentViewCore().getWebContents()
-                        .getNavigationController().loadUrl(
-                                new LoadUrlParams(CLICK_TEST_URL));
+                mActivityTestRule.getActivity()
+                        .getActiveShell()
+                        .getContentViewCore()
+                        .getWebContents()
+                        .getNavigationController()
+                        .loadUrl(new LoadUrlParams(CLICK_TEST_URL));
             }
         });
         onPageFinishedHelper.waitForCallback(currentCallCount, 1,

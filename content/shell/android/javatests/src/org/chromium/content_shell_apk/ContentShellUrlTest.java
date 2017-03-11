@@ -6,24 +6,36 @@ package org.chromium.content_shell_apk;
 
 import android.support.test.filters.SmallTest;
 
+import org.junit.Assert;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
 
 /**
  * Example test that just starts the content shell.
  */
-public class ContentShellUrlTest extends ContentShellTestBase {
+@RunWith(BaseJUnit4ClassRunner.class)
+public class ContentShellUrlTest {
+    @Rule
+    public ContentShellActivityTestRule mActivityTestRule = new ContentShellActivityTestRule();
+
     // URL used for base tests.
     private static final String URL = "data:text";
 
+    @Test
     @SmallTest
     @Feature({"Main"})
     public void testBaseStartup() throws Exception {
-        ContentShellActivity activity = launchContentShellWithUrl(URL);
+        ContentShellActivity activity = mActivityTestRule.launchContentShellWithUrl(URL);
 
         // Make sure the activity was created as expected.
-        assertNotNull(activity);
+        Assert.assertNotNull(activity);
 
         // Make sure that the URL is set as expected.
-        assertEquals(URL, activity.getActiveShell().getContentViewCore().getWebContents().getUrl());
+        Assert.assertEquals(
+                URL, activity.getActiveShell().getContentViewCore().getWebContents().getUrl());
     }
 }

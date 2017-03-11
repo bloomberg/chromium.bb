@@ -6,7 +6,14 @@ package org.chromium.content.browser;
 
 import android.support.test.filters.SmallTest;
 
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import org.chromium.base.annotations.SuppressFBWarnings;
+import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content.browser.JavaBridgeTestCommon.Controller;
 
@@ -14,7 +21,11 @@ import org.chromium.content.browser.JavaBridgeTestCommon.Controller;
  * Part of the test suite for the Java Bridge. This test tests the
  * use of fields.
  */
-public class JavaBridgeFieldsTest extends JavaBridgeTestBase {
+@RunWith(BaseJUnit4ClassRunner.class)
+public class JavaBridgeFieldsTest {
+    @Rule
+    public JavaBridgeActivityTestRule mActivityTestRule = new JavaBridgeActivityTestRule();
+
     @SuppressFBWarnings({"CHROMIUM_SYNCHRONIZED_METHOD", "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
     private static class TestObject extends Controller {
         private String mStringValue;
@@ -48,45 +59,45 @@ public class JavaBridgeFieldsTest extends JavaBridgeTestBase {
 
     TestObject mTestObject;
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
+    @Before
+    public void setUp() throws Exception {
         mTestObject = new TestObject();
-        injectObjectAndReload(mTestObject, "testObject");
+        mActivityTestRule.injectObjectAndReload(mTestObject, "testObject");
     }
 
     // Note that this requires that we can pass a JavaScript string to Java.
     protected String executeJavaScriptAndGetStringResult(String script) throws Throwable {
-        executeJavaScript("testObject.setStringValue(" + script + ");");
+        mActivityTestRule.executeJavaScript("testObject.setStringValue(" + script + ");");
         return mTestObject.waitForStringValue();
     }
 
     // The Java bridge does not provide access to fields.
     // FIXME: Consider providing support for this. See See b/4408210.
+    @Test
     @SmallTest
     @Feature({"AndroidWebView", "Android-JavaBridge"})
     public void testFieldTypes() throws Throwable {
-        assertEquals("undefined",
-                executeJavaScriptAndGetStringResult("typeof testObject.booleanField"));
-        assertEquals("undefined",
-                executeJavaScriptAndGetStringResult("typeof testObject.byteField"));
-        assertEquals("undefined",
-                executeJavaScriptAndGetStringResult("typeof testObject.charField"));
-        assertEquals("undefined",
-                executeJavaScriptAndGetStringResult("typeof testObject.shortField"));
-        assertEquals("undefined",
-                executeJavaScriptAndGetStringResult("typeof testObject.intField"));
-        assertEquals("undefined",
-                executeJavaScriptAndGetStringResult("typeof testObject.longField"));
-        assertEquals("undefined",
-                executeJavaScriptAndGetStringResult("typeof testObject.floatField"));
-        assertEquals("undefined",
-                executeJavaScriptAndGetStringResult("typeof testObject.doubleField"));
-        assertEquals("undefined",
-                executeJavaScriptAndGetStringResult("typeof testObject.objectField"));
-        assertEquals("undefined",
-                executeJavaScriptAndGetStringResult("typeof testObject.stringField"));
-        assertEquals("undefined",
+        Assert.assertEquals(
+                "undefined", executeJavaScriptAndGetStringResult("typeof testObject.booleanField"));
+        Assert.assertEquals(
+                "undefined", executeJavaScriptAndGetStringResult("typeof testObject.byteField"));
+        Assert.assertEquals(
+                "undefined", executeJavaScriptAndGetStringResult("typeof testObject.charField"));
+        Assert.assertEquals(
+                "undefined", executeJavaScriptAndGetStringResult("typeof testObject.shortField"));
+        Assert.assertEquals(
+                "undefined", executeJavaScriptAndGetStringResult("typeof testObject.intField"));
+        Assert.assertEquals(
+                "undefined", executeJavaScriptAndGetStringResult("typeof testObject.longField"));
+        Assert.assertEquals(
+                "undefined", executeJavaScriptAndGetStringResult("typeof testObject.floatField"));
+        Assert.assertEquals(
+                "undefined", executeJavaScriptAndGetStringResult("typeof testObject.doubleField"));
+        Assert.assertEquals(
+                "undefined", executeJavaScriptAndGetStringResult("typeof testObject.objectField"));
+        Assert.assertEquals(
+                "undefined", executeJavaScriptAndGetStringResult("typeof testObject.stringField"));
+        Assert.assertEquals("undefined",
                 executeJavaScriptAndGetStringResult("typeof testObject.customTypeField"));
     }
 }

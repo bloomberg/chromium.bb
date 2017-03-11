@@ -8,7 +8,14 @@ import android.support.test.filters.SmallTest;
 
 import dalvik.system.DexClassLoader;
 
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import org.chromium.base.annotations.SuppressFBWarnings;
+import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.content.browser.JavaBridgeTestCommon.Controller;
@@ -27,7 +34,13 @@ import java.io.File;
  * FIXME: Consider making our implementation more compliant, if it will not
  * break backwards-compatibility. See b/4408210.
  */
-public class JavaBridgeCoercionTest extends JavaBridgeTestBase {
+@RunWith(BaseJUnit4ClassRunner.class)
+public class JavaBridgeCoercionTest {
+    private static final double ASSERTION_DELTA = 0;
+
+    @Rule
+    public JavaBridgeActivityTestRule mActivityTestRule = new JavaBridgeActivityTestRule();
+
     @SuppressFBWarnings("CHROMIUM_SYNCHRONIZED_METHOD")
     private static class TestObject extends Controller {
         private Object mObjectInstance;
@@ -179,451 +192,487 @@ public class JavaBridgeCoercionTest extends JavaBridgeTestBase {
 
     // Note that this requires that we can pass a JavaScript boolean to Java.
     private void assertRaisesException(String script) throws Throwable {
-        executeJavaScript("try {"
-                + script + ";"
+        mActivityTestRule.executeJavaScript("try {" + script + ";"
                 + "  testController.setBooleanValue(false);"
                 + "} catch (exception) {"
                 + "  testController.setBooleanValue(true);"
                 + "}");
-        assertTrue(mTestController.waitForBooleanValue());
+        Assert.assertTrue(mTestController.waitForBooleanValue());
     }
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
+    @Before
+    public void setUp() throws Exception {
         mTestObject = new TestObject();
         mTestController = new TestController();
-        injectObjectsAndReload(mTestObject, "testObject", mTestController, "testController", null);
+        mActivityTestRule.injectObjectsAndReload(
+                mTestObject, "testObject", mTestController, "testController", null);
     }
 
     // Test passing a 32-bit integer JavaScript number to a method of an
     // injected object. Note that JavaScript may choose to represent these
     // values as either 32-bit integers or doubles, though this should not
     // affect the result.
+    @Test
     @SmallTest
     @Feature({"AndroidWebView", "Android-JavaBridge"})
     public void testPassNumberInt32() throws Throwable {
-        executeJavaScript("testObject.setByteValue(42);");
-        assertEquals(42, mTestObject.waitForByteValue());
-        executeJavaScript("testObject.setByteValue(" + Byte.MAX_VALUE + " + 42);");
-        assertEquals(Byte.MIN_VALUE + 42 - 1, mTestObject.waitForByteValue());
+        mActivityTestRule.executeJavaScript("testObject.setByteValue(42);");
+        Assert.assertEquals(42, mTestObject.waitForByteValue());
+        mActivityTestRule.executeJavaScript(
+                "testObject.setByteValue(" + Byte.MAX_VALUE + " + 42);");
+        Assert.assertEquals(Byte.MIN_VALUE + 42 - 1, mTestObject.waitForByteValue());
 
-        executeJavaScript("testObject.setCharValue(42);");
-        assertEquals(42, mTestObject.waitForCharValue());
+        mActivityTestRule.executeJavaScript("testObject.setCharValue(42);");
+        Assert.assertEquals(42, mTestObject.waitForCharValue());
 
-        executeJavaScript("testObject.setShortValue(42);");
-        assertEquals(42, mTestObject.waitForShortValue());
-        executeJavaScript("testObject.setShortValue(" + Short.MAX_VALUE + " + 42);");
-        assertEquals(Short.MIN_VALUE + 42 - 1, mTestObject.waitForShortValue());
+        mActivityTestRule.executeJavaScript("testObject.setShortValue(42);");
+        Assert.assertEquals(42, mTestObject.waitForShortValue());
+        mActivityTestRule.executeJavaScript(
+                "testObject.setShortValue(" + Short.MAX_VALUE + " + 42);");
+        Assert.assertEquals(Short.MIN_VALUE + 42 - 1, mTestObject.waitForShortValue());
 
-        executeJavaScript("testObject.setIntValue(42);");
-        assertEquals(42, mTestObject.waitForIntValue());
+        mActivityTestRule.executeJavaScript("testObject.setIntValue(42);");
+        Assert.assertEquals(42, mTestObject.waitForIntValue());
 
-        executeJavaScript("testObject.setLongValue(42);");
-        assertEquals(42L, mTestObject.waitForLongValue());
+        mActivityTestRule.executeJavaScript("testObject.setLongValue(42);");
+        Assert.assertEquals(42L, mTestObject.waitForLongValue());
 
-        executeJavaScript("testObject.setFloatValue(42);");
-        assertEquals(42.0f, mTestObject.waitForFloatValue());
+        mActivityTestRule.executeJavaScript("testObject.setFloatValue(42);");
+        Assert.assertEquals(42.0f, mTestObject.waitForFloatValue(), ASSERTION_DELTA);
 
-        executeJavaScript("testObject.setDoubleValue(42);");
-        assertEquals(42.0, mTestObject.waitForDoubleValue());
+        mActivityTestRule.executeJavaScript("testObject.setDoubleValue(42);");
+        Assert.assertEquals(42.0, mTestObject.waitForDoubleValue(), ASSERTION_DELTA);
 
         // LIVECONNECT_COMPLIANCE: Should create an instance of java.lang.Number.
-        executeJavaScript("testObject.setObjectValue(42);");
-        assertNull(mTestObject.waitForObjectValue());
+        mActivityTestRule.executeJavaScript("testObject.setObjectValue(42);");
+        Assert.assertNull(mTestObject.waitForObjectValue());
 
         // The spec allows the JS engine flexibility in how to format the number.
-        executeJavaScript("testObject.setStringValue(42);");
+        mActivityTestRule.executeJavaScript("testObject.setStringValue(42);");
         String str = mTestObject.waitForStringValue();
-        assertTrue("42".equals(str) || "42.0".equals(str));
+        Assert.assertTrue("42".equals(str) || "42.0".equals(str));
 
-        executeJavaScript("testObject.setBooleanValue(0);");
-        assertFalse(mTestObject.waitForBooleanValue());
+        mActivityTestRule.executeJavaScript("testObject.setBooleanValue(0);");
+        Assert.assertFalse(mTestObject.waitForBooleanValue());
         // LIVECONNECT_COMPLIANCE: Should be true;
-        executeJavaScript("testObject.setBooleanValue(42);");
-        assertFalse(mTestObject.waitForBooleanValue());
+        mActivityTestRule.executeJavaScript("testObject.setBooleanValue(42);");
+        Assert.assertFalse(mTestObject.waitForBooleanValue());
 
         // LIVECONNECT_COMPLIANCE: Should raise a JavaScript exception.
-        executeJavaScript("testObject.setCustomTypeValue(42);");
-        assertNull(mTestObject.waitForCustomTypeValue());
+        mActivityTestRule.executeJavaScript("testObject.setCustomTypeValue(42);");
+        Assert.assertNull(mTestObject.waitForCustomTypeValue());
     }
 
     // Test passing a floating-point JavaScript number to a method of an
     // injected object. JavaScript represents these values as doubles.
+    @Test
     @SmallTest
     @Feature({"AndroidWebView", "Android-JavaBridge"})
     public void testPassNumberDouble() throws Throwable {
-        executeJavaScript("testObject.setByteValue(42.1);");
-        assertEquals(42, mTestObject.waitForByteValue());
-        executeJavaScript("testObject.setByteValue(" + Byte.MAX_VALUE + " + 42.1);");
-        assertEquals(Byte.MIN_VALUE + 42 - 1, mTestObject.waitForByteValue());
-        executeJavaScript("testObject.setByteValue(" + Byte.MIN_VALUE + " - 42.1);");
-        assertEquals(Byte.MAX_VALUE - 42 + 1, mTestObject.waitForByteValue());
-        executeJavaScript("testObject.setByteValue(" + Integer.MAX_VALUE + " + 42.1);");
-        assertEquals(-1, mTestObject.waitForByteValue());
-        executeJavaScript("testObject.setByteValue(" + Integer.MIN_VALUE + " - 42.1);");
-        assertEquals(0, mTestObject.waitForByteValue());
+        mActivityTestRule.executeJavaScript("testObject.setByteValue(42.1);");
+        Assert.assertEquals(42, mTestObject.waitForByteValue());
+        mActivityTestRule.executeJavaScript(
+                "testObject.setByteValue(" + Byte.MAX_VALUE + " + 42.1);");
+        Assert.assertEquals(Byte.MIN_VALUE + 42 - 1, mTestObject.waitForByteValue());
+        mActivityTestRule.executeJavaScript(
+                "testObject.setByteValue(" + Byte.MIN_VALUE + " - 42.1);");
+        Assert.assertEquals(Byte.MAX_VALUE - 42 + 1, mTestObject.waitForByteValue());
+        mActivityTestRule.executeJavaScript(
+                "testObject.setByteValue(" + Integer.MAX_VALUE + " + 42.1);");
+        Assert.assertEquals(-1, mTestObject.waitForByteValue());
+        mActivityTestRule.executeJavaScript(
+                "testObject.setByteValue(" + Integer.MIN_VALUE + " - 42.1);");
+        Assert.assertEquals(0, mTestObject.waitForByteValue());
 
         // LIVECONNECT_COMPLIANCE: Should convert to numeric char value.
-        executeJavaScript("testObject.setCharValue(42.1);");
-        assertEquals('\u0000', mTestObject.waitForCharValue());
+        mActivityTestRule.executeJavaScript("testObject.setCharValue(42.1);");
+        Assert.assertEquals('\u0000', mTestObject.waitForCharValue());
 
-        executeJavaScript("testObject.setShortValue(42.1);");
-        assertEquals(42, mTestObject.waitForShortValue());
-        executeJavaScript("testObject.setShortValue(" + Short.MAX_VALUE + " + 42.1);");
-        assertEquals(Short.MIN_VALUE + 42 - 1, mTestObject.waitForShortValue());
-        executeJavaScript("testObject.setShortValue(" + Short.MIN_VALUE + " - 42.1);");
-        assertEquals(Short.MAX_VALUE - 42 + 1, mTestObject.waitForShortValue());
-        executeJavaScript("testObject.setShortValue(" + Integer.MAX_VALUE + " + 42.1);");
-        assertEquals(-1, mTestObject.waitForShortValue());
-        executeJavaScript("testObject.setShortValue(" + Integer.MIN_VALUE + " - 42.1);");
-        assertEquals(0, mTestObject.waitForShortValue());
+        mActivityTestRule.executeJavaScript("testObject.setShortValue(42.1);");
+        Assert.assertEquals(42, mTestObject.waitForShortValue());
+        mActivityTestRule.executeJavaScript(
+                "testObject.setShortValue(" + Short.MAX_VALUE + " + 42.1);");
+        Assert.assertEquals(Short.MIN_VALUE + 42 - 1, mTestObject.waitForShortValue());
+        mActivityTestRule.executeJavaScript(
+                "testObject.setShortValue(" + Short.MIN_VALUE + " - 42.1);");
+        Assert.assertEquals(Short.MAX_VALUE - 42 + 1, mTestObject.waitForShortValue());
+        mActivityTestRule.executeJavaScript(
+                "testObject.setShortValue(" + Integer.MAX_VALUE + " + 42.1);");
+        Assert.assertEquals(-1, mTestObject.waitForShortValue());
+        mActivityTestRule.executeJavaScript(
+                "testObject.setShortValue(" + Integer.MIN_VALUE + " - 42.1);");
+        Assert.assertEquals(0, mTestObject.waitForShortValue());
 
-        executeJavaScript("testObject.setIntValue(42.1);");
-        assertEquals(42, mTestObject.waitForIntValue());
-        executeJavaScript("testObject.setIntValue(" + Integer.MAX_VALUE + " + 42.1);");
-        assertEquals(Integer.MAX_VALUE, mTestObject.waitForIntValue());
-        executeJavaScript("testObject.setIntValue(" + Integer.MIN_VALUE + " - 42.1);");
-        assertEquals(Integer.MIN_VALUE, mTestObject.waitForIntValue());
+        mActivityTestRule.executeJavaScript("testObject.setIntValue(42.1);");
+        Assert.assertEquals(42, mTestObject.waitForIntValue());
+        mActivityTestRule.executeJavaScript(
+                "testObject.setIntValue(" + Integer.MAX_VALUE + " + 42.1);");
+        Assert.assertEquals(Integer.MAX_VALUE, mTestObject.waitForIntValue());
+        mActivityTestRule.executeJavaScript(
+                "testObject.setIntValue(" + Integer.MIN_VALUE + " - 42.1);");
+        Assert.assertEquals(Integer.MIN_VALUE, mTestObject.waitForIntValue());
 
-        executeJavaScript("testObject.setLongValue(42.1);");
-        assertEquals(42L, mTestObject.waitForLongValue());
-        executeJavaScript("testObject.setLongValue(" + Long.MAX_VALUE + " + 42.1);");
-        assertEquals(Long.MAX_VALUE, mTestObject.waitForLongValue());
-        executeJavaScript("testObject.setLongValue(" + Long.MIN_VALUE + " - 42.1);");
-        assertEquals(Long.MIN_VALUE, mTestObject.waitForLongValue());
+        mActivityTestRule.executeJavaScript("testObject.setLongValue(42.1);");
+        Assert.assertEquals(42L, mTestObject.waitForLongValue());
+        mActivityTestRule.executeJavaScript(
+                "testObject.setLongValue(" + Long.MAX_VALUE + " + 42.1);");
+        Assert.assertEquals(Long.MAX_VALUE, mTestObject.waitForLongValue());
+        mActivityTestRule.executeJavaScript(
+                "testObject.setLongValue(" + Long.MIN_VALUE + " - 42.1);");
+        Assert.assertEquals(Long.MIN_VALUE, mTestObject.waitForLongValue());
 
-        executeJavaScript("testObject.setFloatValue(42.1);");
-        assertEquals(42.1f, mTestObject.waitForFloatValue());
+        mActivityTestRule.executeJavaScript("testObject.setFloatValue(42.1);");
+        Assert.assertEquals(42.1f, mTestObject.waitForFloatValue(), ASSERTION_DELTA);
 
-        executeJavaScript("testObject.setDoubleValue(42.1);");
-        assertEquals(42.1, mTestObject.waitForDoubleValue());
+        mActivityTestRule.executeJavaScript("testObject.setDoubleValue(42.1);");
+        Assert.assertEquals(42.1, mTestObject.waitForDoubleValue(), ASSERTION_DELTA);
 
         // LIVECONNECT_COMPLIANCE: Should create an instance of java.lang.Number.
-        executeJavaScript("testObject.setObjectValue(42.1);");
-        assertNull(mTestObject.waitForObjectValue());
+        mActivityTestRule.executeJavaScript("testObject.setObjectValue(42.1);");
+        Assert.assertNull(mTestObject.waitForObjectValue());
 
-        executeJavaScript("testObject.setStringValue(42.1);");
-        assertEquals("42.1", mTestObject.waitForStringValue());
+        mActivityTestRule.executeJavaScript("testObject.setStringValue(42.1);");
+        Assert.assertEquals("42.1", mTestObject.waitForStringValue());
 
-        executeJavaScript("testObject.setBooleanValue(0.0);");
-        assertFalse(mTestObject.waitForBooleanValue());
+        mActivityTestRule.executeJavaScript("testObject.setBooleanValue(0.0);");
+        Assert.assertFalse(mTestObject.waitForBooleanValue());
         // LIVECONNECT_COMPLIANCE: Should be true.
-        executeJavaScript("testObject.setBooleanValue(42.1);");
-        assertFalse(mTestObject.waitForBooleanValue());
+        mActivityTestRule.executeJavaScript("testObject.setBooleanValue(42.1);");
+        Assert.assertFalse(mTestObject.waitForBooleanValue());
 
         // LIVECONNECT_COMPLIANCE: Should raise a JavaScript exception.
-        executeJavaScript("testObject.setCustomTypeValue(42.1);");
-        assertNull(mTestObject.waitForCustomTypeValue());
+        mActivityTestRule.executeJavaScript("testObject.setCustomTypeValue(42.1);");
+        Assert.assertNull(mTestObject.waitForCustomTypeValue());
     }
 
     // Test passing JavaScript NaN to a method of an injected object.
+    @Test
     @SmallTest
     @Feature({"AndroidWebView", "Android-JavaBridge"})
     public void testPassNumberNaN() throws Throwable {
-        executeJavaScript("testObject.setByteValue(Number.NaN);");
-        assertEquals(0, mTestObject.waitForByteValue());
+        mActivityTestRule.executeJavaScript("testObject.setByteValue(Number.NaN);");
+        Assert.assertEquals(0, mTestObject.waitForByteValue());
 
-        executeJavaScript("testObject.setCharValue(Number.NaN);");
-        assertEquals('\u0000', mTestObject.waitForCharValue());
+        mActivityTestRule.executeJavaScript("testObject.setCharValue(Number.NaN);");
+        Assert.assertEquals('\u0000', mTestObject.waitForCharValue());
 
-        executeJavaScript("testObject.setShortValue(Number.NaN);");
-        assertEquals(0, mTestObject.waitForShortValue());
+        mActivityTestRule.executeJavaScript("testObject.setShortValue(Number.NaN);");
+        Assert.assertEquals(0, mTestObject.waitForShortValue());
 
-        executeJavaScript("testObject.setIntValue(Number.NaN);");
-        assertEquals(0, mTestObject.waitForIntValue());
+        mActivityTestRule.executeJavaScript("testObject.setIntValue(Number.NaN);");
+        Assert.assertEquals(0, mTestObject.waitForIntValue());
 
-        executeJavaScript("testObject.setLongValue(Number.NaN);");
-        assertEquals(0L, mTestObject.waitForLongValue());
+        mActivityTestRule.executeJavaScript("testObject.setLongValue(Number.NaN);");
+        Assert.assertEquals(0L, mTestObject.waitForLongValue());
 
-        executeJavaScript("testObject.setFloatValue(Number.NaN);");
-        assertEquals(Float.NaN, mTestObject.waitForFloatValue());
+        mActivityTestRule.executeJavaScript("testObject.setFloatValue(Number.NaN);");
+        Assert.assertEquals(Float.NaN, mTestObject.waitForFloatValue(), ASSERTION_DELTA);
 
-        executeJavaScript("testObject.setDoubleValue(Number.NaN);");
-        assertEquals(Double.NaN, mTestObject.waitForDoubleValue());
+        mActivityTestRule.executeJavaScript("testObject.setDoubleValue(Number.NaN);");
+        Assert.assertEquals(Double.NaN, mTestObject.waitForDoubleValue(), ASSERTION_DELTA);
 
         // LIVECONNECT_COMPLIANCE: Should create an instance of java.lang.Number.
-        executeJavaScript("testObject.setObjectValue(Number.NaN);");
-        assertNull(mTestObject.waitForObjectValue());
+        mActivityTestRule.executeJavaScript("testObject.setObjectValue(Number.NaN);");
+        Assert.assertNull(mTestObject.waitForObjectValue());
 
-        executeJavaScript("testObject.setStringValue(Number.NaN);");
-        assertTrue("nan".equalsIgnoreCase(mTestObject.waitForStringValue()));
+        mActivityTestRule.executeJavaScript("testObject.setStringValue(Number.NaN);");
+        Assert.assertTrue("nan".equalsIgnoreCase(mTestObject.waitForStringValue()));
 
-        executeJavaScript("testObject.setBooleanValue(Number.NaN);");
-        assertFalse(mTestObject.waitForBooleanValue());
+        mActivityTestRule.executeJavaScript("testObject.setBooleanValue(Number.NaN);");
+        Assert.assertFalse(mTestObject.waitForBooleanValue());
 
         // LIVECONNECT_COMPLIANCE: Should raise a JavaScript exception.
-        executeJavaScript("testObject.setCustomTypeValue(Number.NaN);");
-        assertNull(mTestObject.waitForCustomTypeValue());
+        mActivityTestRule.executeJavaScript("testObject.setCustomTypeValue(Number.NaN);");
+        Assert.assertNull(mTestObject.waitForCustomTypeValue());
     }
 
     // Test passing JavaScript infinity to a method of an injected object.
+    @Test
     @SmallTest
     @Feature({"AndroidWebView", "Android-JavaBridge"})
     public void testPassNumberInfinity() throws Throwable {
-        executeJavaScript("testObject.setByteValue(Infinity);");
-        assertEquals(-1, mTestObject.waitForByteValue());
+        mActivityTestRule.executeJavaScript("testObject.setByteValue(Infinity);");
+        Assert.assertEquals(-1, mTestObject.waitForByteValue());
 
         // LIVECONNECT_COMPLIANCE: Should convert to maximum numeric char value.
-        executeJavaScript("testObject.setCharValue(Infinity);");
-        assertEquals('\u0000', mTestObject.waitForCharValue());
+        mActivityTestRule.executeJavaScript("testObject.setCharValue(Infinity);");
+        Assert.assertEquals('\u0000', mTestObject.waitForCharValue());
 
-        executeJavaScript("testObject.setShortValue(Infinity);");
-        assertEquals(-1, mTestObject.waitForShortValue());
+        mActivityTestRule.executeJavaScript("testObject.setShortValue(Infinity);");
+        Assert.assertEquals(-1, mTestObject.waitForShortValue());
 
-        executeJavaScript("testObject.setIntValue(Infinity);");
-        assertEquals(Integer.MAX_VALUE, mTestObject.waitForIntValue());
+        mActivityTestRule.executeJavaScript("testObject.setIntValue(Infinity);");
+        Assert.assertEquals(Integer.MAX_VALUE, mTestObject.waitForIntValue());
 
-        executeJavaScript("testObject.setLongValue(Infinity);");
-        assertEquals(Long.MAX_VALUE, mTestObject.waitForLongValue());
+        mActivityTestRule.executeJavaScript("testObject.setLongValue(Infinity);");
+        Assert.assertEquals(Long.MAX_VALUE, mTestObject.waitForLongValue());
 
-        executeJavaScript("testObject.setFloatValue(Infinity);");
-        assertEquals(Float.POSITIVE_INFINITY, mTestObject.waitForFloatValue());
+        mActivityTestRule.executeJavaScript("testObject.setFloatValue(Infinity);");
+        Assert.assertEquals(
+                Float.POSITIVE_INFINITY, mTestObject.waitForFloatValue(), ASSERTION_DELTA);
 
-        executeJavaScript("testObject.setDoubleValue(Infinity);");
-        assertEquals(Double.POSITIVE_INFINITY, mTestObject.waitForDoubleValue());
+        mActivityTestRule.executeJavaScript("testObject.setDoubleValue(Infinity);");
+        Assert.assertEquals(
+                Double.POSITIVE_INFINITY, mTestObject.waitForDoubleValue(), ASSERTION_DELTA);
 
         // LIVECONNECT_COMPLIANCE: Should create an instance of java.lang.Number.
-        executeJavaScript("testObject.setObjectValue(Infinity);");
-        assertNull(mTestObject.waitForObjectValue());
+        mActivityTestRule.executeJavaScript("testObject.setObjectValue(Infinity);");
+        Assert.assertNull(mTestObject.waitForObjectValue());
 
-        executeJavaScript("testObject.setStringValue(Infinity);");
-        assertTrue("inf".equalsIgnoreCase(mTestObject.waitForStringValue()));
+        mActivityTestRule.executeJavaScript("testObject.setStringValue(Infinity);");
+        Assert.assertTrue("inf".equalsIgnoreCase(mTestObject.waitForStringValue()));
 
-        executeJavaScript("testObject.setBooleanValue(Infinity);");
-        assertFalse(mTestObject.waitForBooleanValue());
+        mActivityTestRule.executeJavaScript("testObject.setBooleanValue(Infinity);");
+        Assert.assertFalse(mTestObject.waitForBooleanValue());
 
         // LIVECONNECT_COMPLIANCE: Should raise a JavaScript exception.
-        executeJavaScript("testObject.setCustomTypeValue(Infinity);");
-        assertNull(mTestObject.waitForCustomTypeValue());
+        mActivityTestRule.executeJavaScript("testObject.setCustomTypeValue(Infinity);");
+        Assert.assertNull(mTestObject.waitForCustomTypeValue());
     }
 
     // Test passing a JavaScript boolean to a method of an injected object.
+    @Test
     @SmallTest
     @Feature({"AndroidWebView", "Android-JavaBridge"})
     public void testPassBoolean() throws Throwable {
-        executeJavaScript("testObject.setBooleanValue(true);");
-        assertTrue(mTestObject.waitForBooleanValue());
-        executeJavaScript("testObject.setBooleanValue(false);");
-        assertFalse(mTestObject.waitForBooleanValue());
+        mActivityTestRule.executeJavaScript("testObject.setBooleanValue(true);");
+        Assert.assertTrue(mTestObject.waitForBooleanValue());
+        mActivityTestRule.executeJavaScript("testObject.setBooleanValue(false);");
+        Assert.assertFalse(mTestObject.waitForBooleanValue());
 
         // LIVECONNECT_COMPLIANCE: Should create an instance of java.lang.Boolean.
-        executeJavaScript("testObject.setObjectValue(true);");
-        assertNull(mTestObject.waitForObjectValue());
+        mActivityTestRule.executeJavaScript("testObject.setObjectValue(true);");
+        Assert.assertNull(mTestObject.waitForObjectValue());
 
-        executeJavaScript("testObject.setStringValue(false);");
-        assertEquals("false", mTestObject.waitForStringValue());
-        executeJavaScript("testObject.setStringValue(true);");
-        assertEquals("true", mTestObject.waitForStringValue());
+        mActivityTestRule.executeJavaScript("testObject.setStringValue(false);");
+        Assert.assertEquals("false", mTestObject.waitForStringValue());
+        mActivityTestRule.executeJavaScript("testObject.setStringValue(true);");
+        Assert.assertEquals("true", mTestObject.waitForStringValue());
 
         // LIVECONNECT_COMPLIANCE: Should be 1.
-        executeJavaScript("testObject.setByteValue(true);");
-        assertEquals(0, mTestObject.waitForByteValue());
-        executeJavaScript("testObject.setByteValue(false);");
-        assertEquals(0, mTestObject.waitForByteValue());
+        mActivityTestRule.executeJavaScript("testObject.setByteValue(true);");
+        Assert.assertEquals(0, mTestObject.waitForByteValue());
+        mActivityTestRule.executeJavaScript("testObject.setByteValue(false);");
+        Assert.assertEquals(0, mTestObject.waitForByteValue());
 
         // LIVECONNECT_COMPLIANCE: Should convert to numeric char value 1.
-        executeJavaScript("testObject.setCharValue(true);");
-        assertEquals('\u0000', mTestObject.waitForCharValue());
-        executeJavaScript("testObject.setCharValue(false);");
-        assertEquals('\u0000', mTestObject.waitForCharValue());
+        mActivityTestRule.executeJavaScript("testObject.setCharValue(true);");
+        Assert.assertEquals('\u0000', mTestObject.waitForCharValue());
+        mActivityTestRule.executeJavaScript("testObject.setCharValue(false);");
+        Assert.assertEquals('\u0000', mTestObject.waitForCharValue());
 
         // LIVECONNECT_COMPLIANCE: Should be 1.
-        executeJavaScript("testObject.setShortValue(true);");
-        assertEquals(0, mTestObject.waitForShortValue());
-        executeJavaScript("testObject.setShortValue(false);");
-        assertEquals(0, mTestObject.waitForShortValue());
+        mActivityTestRule.executeJavaScript("testObject.setShortValue(true);");
+        Assert.assertEquals(0, mTestObject.waitForShortValue());
+        mActivityTestRule.executeJavaScript("testObject.setShortValue(false);");
+        Assert.assertEquals(0, mTestObject.waitForShortValue());
 
         // LIVECONNECT_COMPLIANCE: Should be 1.
-        executeJavaScript("testObject.setIntValue(true);");
-        assertEquals(0, mTestObject.waitForIntValue());
-        executeJavaScript("testObject.setIntValue(false);");
-        assertEquals(0, mTestObject.waitForIntValue());
+        mActivityTestRule.executeJavaScript("testObject.setIntValue(true);");
+        Assert.assertEquals(0, mTestObject.waitForIntValue());
+        mActivityTestRule.executeJavaScript("testObject.setIntValue(false);");
+        Assert.assertEquals(0, mTestObject.waitForIntValue());
 
         // LIVECONNECT_COMPLIANCE: Should be 1.
-        executeJavaScript("testObject.setLongValue(true);");
-        assertEquals(0L, mTestObject.waitForLongValue());
-        executeJavaScript("testObject.setLongValue(false);");
-        assertEquals(0L, mTestObject.waitForLongValue());
+        mActivityTestRule.executeJavaScript("testObject.setLongValue(true);");
+        Assert.assertEquals(0L, mTestObject.waitForLongValue());
+        mActivityTestRule.executeJavaScript("testObject.setLongValue(false);");
+        Assert.assertEquals(0L, mTestObject.waitForLongValue());
 
         // LIVECONNECT_COMPLIANCE: Should be 1.0.
-        executeJavaScript("testObject.setFloatValue(true);");
-        assertEquals(0.0f, mTestObject.waitForFloatValue());
-        executeJavaScript("testObject.setFloatValue(false);");
-        assertEquals(0.0f, mTestObject.waitForFloatValue());
+        mActivityTestRule.executeJavaScript("testObject.setFloatValue(true);");
+        Assert.assertEquals(0.0f, mTestObject.waitForFloatValue(), ASSERTION_DELTA);
+        mActivityTestRule.executeJavaScript("testObject.setFloatValue(false);");
+        Assert.assertEquals(0.0f, mTestObject.waitForFloatValue(), ASSERTION_DELTA);
 
         // LIVECONNECT_COMPLIANCE: Should be 1.0.
-        executeJavaScript("testObject.setDoubleValue(true);");
-        assertEquals(0.0, mTestObject.waitForDoubleValue());
-        executeJavaScript("testObject.setDoubleValue(false);");
-        assertEquals(0.0, mTestObject.waitForDoubleValue());
+        mActivityTestRule.executeJavaScript("testObject.setDoubleValue(true);");
+        Assert.assertEquals(0.0, mTestObject.waitForDoubleValue(), ASSERTION_DELTA);
+        mActivityTestRule.executeJavaScript("testObject.setDoubleValue(false);");
+        Assert.assertEquals(0.0, mTestObject.waitForDoubleValue(), ASSERTION_DELTA);
 
         // LIVECONNECT_COMPLIANCE: Should raise a JavaScript exception.
-        executeJavaScript("testObject.setCustomTypeValue(true);");
-        assertNull(mTestObject.waitForCustomTypeValue());
+        mActivityTestRule.executeJavaScript("testObject.setCustomTypeValue(true);");
+        Assert.assertNull(mTestObject.waitForCustomTypeValue());
     }
 
     // Test passing a JavaScript string to a method of an injected object.
+    @Test
     @SmallTest
     @Feature({"AndroidWebView", "Android-JavaBridge"})
     public void testPassString() throws Throwable {
-        executeJavaScript("testObject.setStringValue(\"+042.10\");");
-        assertEquals("+042.10", mTestObject.waitForStringValue());
+        mActivityTestRule.executeJavaScript("testObject.setStringValue(\"+042.10\");");
+        Assert.assertEquals("+042.10", mTestObject.waitForStringValue());
 
         // Make sure that we distinguish between the empty string and NULL.
-        executeJavaScript("testObject.setStringValue(\"\");");
-        assertEquals("", mTestObject.waitForStringValue());
+        mActivityTestRule.executeJavaScript("testObject.setStringValue(\"\");");
+        Assert.assertEquals("", mTestObject.waitForStringValue());
 
         // LIVECONNECT_COMPLIANCE: Should create an instance of java.lang.String.
-        executeJavaScript("testObject.setObjectValue(\"+042.10\");");
-        assertNull(mTestObject.waitForObjectValue());
+        mActivityTestRule.executeJavaScript("testObject.setObjectValue(\"+042.10\");");
+        Assert.assertNull(mTestObject.waitForObjectValue());
 
         // LIVECONNECT_COMPLIANCE: Should use valueOf() of appropriate type.
-        executeJavaScript("testObject.setByteValue(\"+042.10\");");
-        assertEquals(0, mTestObject.waitForByteValue());
+        mActivityTestRule.executeJavaScript("testObject.setByteValue(\"+042.10\");");
+        Assert.assertEquals(0, mTestObject.waitForByteValue());
 
         // LIVECONNECT_COMPLIANCE: Should use valueOf() of appropriate type.
-        executeJavaScript("testObject.setShortValue(\"+042.10\");");
-        assertEquals(0, mTestObject.waitForShortValue());
+        mActivityTestRule.executeJavaScript("testObject.setShortValue(\"+042.10\");");
+        Assert.assertEquals(0, mTestObject.waitForShortValue());
 
         // LIVECONNECT_COMPLIANCE: Should use valueOf() of appropriate type.
-        executeJavaScript("testObject.setIntValue(\"+042.10\");");
-        assertEquals(0, mTestObject.waitForIntValue());
+        mActivityTestRule.executeJavaScript("testObject.setIntValue(\"+042.10\");");
+        Assert.assertEquals(0, mTestObject.waitForIntValue());
 
         // LIVECONNECT_COMPLIANCE: Should use valueOf() of appropriate type.
-        executeJavaScript("testObject.setLongValue(\"+042.10\");");
-        assertEquals(0L, mTestObject.waitForLongValue());
+        mActivityTestRule.executeJavaScript("testObject.setLongValue(\"+042.10\");");
+        Assert.assertEquals(0L, mTestObject.waitForLongValue());
 
         // LIVECONNECT_COMPLIANCE: Should use valueOf() of appropriate type.
-        executeJavaScript("testObject.setFloatValue(\"+042.10\");");
-        assertEquals(0.0f, mTestObject.waitForFloatValue());
+        mActivityTestRule.executeJavaScript("testObject.setFloatValue(\"+042.10\");");
+        Assert.assertEquals(0.0f, mTestObject.waitForFloatValue(), ASSERTION_DELTA);
 
         // LIVECONNECT_COMPLIANCE: Should use valueOf() of appropriate type.
-        executeJavaScript("testObject.setDoubleValue(\"+042.10\");");
-        assertEquals(0.0, mTestObject.waitForDoubleValue());
+        mActivityTestRule.executeJavaScript("testObject.setDoubleValue(\"+042.10\");");
+        Assert.assertEquals(0.0, mTestObject.waitForDoubleValue(), ASSERTION_DELTA);
 
         // LIVECONNECT_COMPLIANCE: Should decode and convert to numeric char value.
-        executeJavaScript("testObject.setCharValue(\"+042.10\");");
-        assertEquals('\u0000', mTestObject.waitForCharValue());
+        mActivityTestRule.executeJavaScript("testObject.setCharValue(\"+042.10\");");
+        Assert.assertEquals('\u0000', mTestObject.waitForCharValue());
 
         // LIVECONNECT_COMPLIANCE: Non-empty string should convert to true.
-        executeJavaScript("testObject.setBooleanValue(\"+042.10\");");
-        assertFalse(mTestObject.waitForBooleanValue());
+        mActivityTestRule.executeJavaScript("testObject.setBooleanValue(\"+042.10\");");
+        Assert.assertFalse(mTestObject.waitForBooleanValue());
 
         // LIVECONNECT_COMPLIANCE: Should raise a JavaScript exception.
-        executeJavaScript("testObject.setCustomTypeValue(\"+042.10\");");
-        assertNull(mTestObject.waitForCustomTypeValue());
+        mActivityTestRule.executeJavaScript("testObject.setCustomTypeValue(\"+042.10\");");
+        Assert.assertNull(mTestObject.waitForCustomTypeValue());
     }
 
     // Test passing a JavaScript object to a method of an injected object.
+    @Test
     @SmallTest
     @Feature({"AndroidWebView", "Android-JavaBridge"})
     public void testPassJavaScriptObject() throws Throwable {
         // LIVECONNECT_COMPLIANCE: Should raise a JavaScript exception.
-        executeJavaScript("testObject.setObjectValue({foo: 42});");
-        assertNull(mTestObject.waitForObjectValue());
+        mActivityTestRule.executeJavaScript("testObject.setObjectValue({foo: 42});");
+        Assert.assertNull(mTestObject.waitForObjectValue());
 
         // LIVECONNECT_COMPLIANCE: Should raise a JavaScript exception.
-        executeJavaScript("testObject.setCustomTypeValue({foo: 42});");
-        assertNull(mTestObject.waitForCustomTypeValue());
+        mActivityTestRule.executeJavaScript("testObject.setCustomTypeValue({foo: 42});");
+        Assert.assertNull(mTestObject.waitForCustomTypeValue());
 
         // LIVECONNECT_COMPLIANCE: Should call toString() on object.
-        executeJavaScript("testObject.setStringValue({foo: 42});");
-        assertEquals("undefined", mTestObject.waitForStringValue());
+        mActivityTestRule.executeJavaScript("testObject.setStringValue({foo: 42});");
+        Assert.assertEquals("undefined", mTestObject.waitForStringValue());
 
         // LIVECONNECT_COMPLIANCE: Should raise a JavaScript exception.
-        executeJavaScript("testObject.setByteValue({foo: 42});");
-        assertEquals(0, mTestObject.waitForByteValue());
+        mActivityTestRule.executeJavaScript("testObject.setByteValue({foo: 42});");
+        Assert.assertEquals(0, mTestObject.waitForByteValue());
 
         // LIVECONNECT_COMPLIANCE: Should raise a JavaScript exception.
-        executeJavaScript("testObject.setCharValue({foo: 42});");
-        assertEquals('\u0000', mTestObject.waitForCharValue());
+        mActivityTestRule.executeJavaScript("testObject.setCharValue({foo: 42});");
+        Assert.assertEquals('\u0000', mTestObject.waitForCharValue());
 
         // LIVECONNECT_COMPLIANCE: Should raise a JavaScript exception.
-        executeJavaScript("testObject.setShortValue({foo: 42});");
-        assertEquals(0, mTestObject.waitForShortValue());
+        mActivityTestRule.executeJavaScript("testObject.setShortValue({foo: 42});");
+        Assert.assertEquals(0, mTestObject.waitForShortValue());
 
         // LIVECONNECT_COMPLIANCE: Should raise a JavaScript exception.
-        executeJavaScript("testObject.setIntValue({foo: 42});");
-        assertEquals(0, mTestObject.waitForIntValue());
+        mActivityTestRule.executeJavaScript("testObject.setIntValue({foo: 42});");
+        Assert.assertEquals(0, mTestObject.waitForIntValue());
 
         // LIVECONNECT_COMPLIANCE: Should raise a JavaScript exception.
-        executeJavaScript("testObject.setLongValue({foo: 42});");
-        assertEquals(0L, mTestObject.waitForLongValue());
+        mActivityTestRule.executeJavaScript("testObject.setLongValue({foo: 42});");
+        Assert.assertEquals(0L, mTestObject.waitForLongValue());
 
         // LIVECONNECT_COMPLIANCE: Should raise a JavaScript exception.
-        executeJavaScript("testObject.setFloatValue({foo: 42});");
-        assertEquals(0.0f, mTestObject.waitForFloatValue());
+        mActivityTestRule.executeJavaScript("testObject.setFloatValue({foo: 42});");
+        Assert.assertEquals(0.0f, mTestObject.waitForFloatValue(), ASSERTION_DELTA);
 
         // LIVECONNECT_COMPLIANCE: Should raise a JavaScript exception.
-        executeJavaScript("testObject.setDoubleValue({foo: 42});");
-        assertEquals(0.0, mTestObject.waitForDoubleValue());
+        mActivityTestRule.executeJavaScript("testObject.setDoubleValue({foo: 42});");
+        Assert.assertEquals(0.0, mTestObject.waitForDoubleValue(), ASSERTION_DELTA);
 
         // LIVECONNECT_COMPLIANCE: Should raise a JavaScript exception.
-        executeJavaScript("testObject.setBooleanValue({foo: 42});");
-        assertFalse(mTestObject.waitForBooleanValue());
+        mActivityTestRule.executeJavaScript("testObject.setBooleanValue({foo: 42});");
+        Assert.assertFalse(mTestObject.waitForBooleanValue());
     }
 
     // Test passing a Java object to a method of an injected object. Note that
     // this test requires being able to return objects from the methods of
     // injected objects. This is tested elsewhere.
+    @Test
     @SmallTest
     @Feature({"AndroidWebView", "Android-JavaBridge"})
     public void testPassJavaObject() throws Throwable {
-        executeJavaScript("testObject.setObjectValue(testObject.getObjectInstance());");
-        assertTrue(mTestObject.getObjectInstance() == mTestObject.waitForObjectValue());
-        executeJavaScript("testObject.setObjectValue(testObject.getCustomTypeInstance());");
-        assertTrue(mTestObject.getCustomTypeInstance() == mTestObject.waitForObjectValue());
+        mActivityTestRule.executeJavaScript(
+                "testObject.setObjectValue(testObject.getObjectInstance());");
+        Assert.assertTrue(mTestObject.getObjectInstance() == mTestObject.waitForObjectValue());
+        mActivityTestRule.executeJavaScript(
+                "testObject.setObjectValue(testObject.getCustomTypeInstance());");
+        Assert.assertTrue(mTestObject.getCustomTypeInstance() == mTestObject.waitForObjectValue());
 
         assertRaisesException("testObject.setCustomTypeValue(testObject.getObjectInstance());");
-        executeJavaScript("testObject.setCustomTypeValue(testObject.getCustomTypeInstance());");
-        assertTrue(mTestObject.getCustomTypeInstance() == mTestObject.waitForCustomTypeValue());
+        mActivityTestRule.executeJavaScript(
+                "testObject.setCustomTypeValue(testObject.getCustomTypeInstance());");
+        Assert.assertTrue(
+                mTestObject.getCustomTypeInstance() == mTestObject.waitForCustomTypeValue());
         assertRaisesException(
                 "testObject.setCustomTypeValue(testObject.getCustomType2Instance());");
 
         // LIVECONNECT_COMPLIANCE: Should call toString() on object.
-        executeJavaScript("testObject.setStringValue(testObject.getObjectInstance());");
-        assertEquals("undefined", mTestObject.waitForStringValue());
+        mActivityTestRule.executeJavaScript(
+                "testObject.setStringValue(testObject.getObjectInstance());");
+        Assert.assertEquals("undefined", mTestObject.waitForStringValue());
 
         // LIVECONNECT_COMPLIANCE: Should raise a JavaScript exception.
-        executeJavaScript("testObject.setByteValue(testObject.getObjectInstance());");
-        assertEquals(0, mTestObject.waitForByteValue());
+        mActivityTestRule.executeJavaScript(
+                "testObject.setByteValue(testObject.getObjectInstance());");
+        Assert.assertEquals(0, mTestObject.waitForByteValue());
 
         // LIVECONNECT_COMPLIANCE: Should raise a JavaScript exception.
-        executeJavaScript("testObject.setCharValue(testObject.getObjectInstance());");
-        assertEquals('\u0000', mTestObject.waitForCharValue());
+        mActivityTestRule.executeJavaScript(
+                "testObject.setCharValue(testObject.getObjectInstance());");
+        Assert.assertEquals('\u0000', mTestObject.waitForCharValue());
 
         // LIVECONNECT_COMPLIANCE: Should raise a JavaScript exception.
-        executeJavaScript("testObject.setShortValue(testObject.getObjectInstance());");
-        assertEquals(0, mTestObject.waitForShortValue());
+        mActivityTestRule.executeJavaScript(
+                "testObject.setShortValue(testObject.getObjectInstance());");
+        Assert.assertEquals(0, mTestObject.waitForShortValue());
 
         // LIVECONNECT_COMPLIANCE: Should raise a JavaScript exception.
-        executeJavaScript("testObject.setIntValue(testObject.getObjectInstance());");
-        assertEquals(0, mTestObject.waitForIntValue());
+        mActivityTestRule.executeJavaScript(
+                "testObject.setIntValue(testObject.getObjectInstance());");
+        Assert.assertEquals(0, mTestObject.waitForIntValue());
 
         // LIVECONNECT_COMPLIANCE: Should raise a JavaScript exception.
-        executeJavaScript("testObject.setLongValue(testObject.getObjectInstance());");
-        assertEquals(0L, mTestObject.waitForLongValue());
+        mActivityTestRule.executeJavaScript(
+                "testObject.setLongValue(testObject.getObjectInstance());");
+        Assert.assertEquals(0L, mTestObject.waitForLongValue());
 
         // LIVECONNECT_COMPLIANCE: Should raise a JavaScript exception.
-        executeJavaScript("testObject.setFloatValue(testObject.getObjectInstance());");
-        assertEquals(0.0f, mTestObject.waitForFloatValue());
+        mActivityTestRule.executeJavaScript(
+                "testObject.setFloatValue(testObject.getObjectInstance());");
+        Assert.assertEquals(0.0f, mTestObject.waitForFloatValue(), ASSERTION_DELTA);
 
         // LIVECONNECT_COMPLIANCE: Should raise a JavaScript exception.
-        executeJavaScript("testObject.setDoubleValue(testObject.getObjectInstance());");
-        assertEquals(0.0, mTestObject.waitForDoubleValue());
+        mActivityTestRule.executeJavaScript(
+                "testObject.setDoubleValue(testObject.getObjectInstance());");
+        Assert.assertEquals(0.0, mTestObject.waitForDoubleValue(), ASSERTION_DELTA);
 
         // LIVECONNECT_COMPLIANCE: Should raise a JavaScript exception.
-        executeJavaScript("testObject.setBooleanValue(testObject.getObjectInstance());");
-        assertFalse(mTestObject.waitForBooleanValue());
+        mActivityTestRule.executeJavaScript(
+                "testObject.setBooleanValue(testObject.getObjectInstance());");
+        Assert.assertFalse(mTestObject.waitForBooleanValue());
     }
 
     static void assertFileIsReadable(String filePath) {
         File file = new File(filePath);
         try {
-            assertTrue("Test file \"" + filePath + "\" is not readable.", file.canRead());
+            Assert.assertTrue("Test file \"" + filePath + "\" is not readable.", file.canRead());
         } catch (SecurityException e) {
-            fail("Got a SecurityException for \"" + filePath + "\": " + e.toString());
+            Assert.fail("Got a SecurityException for \"" + filePath + "\": " + e.toString());
         }
     }
 
@@ -632,6 +681,7 @@ public class JavaBridgeCoercionTest extends JavaBridgeTestBase {
     // WebView and the app use different class loaders, thus we need to make
     // sure that WebView code doesn't attempt to find an app's class using
     // its own class loader. See crbug.com/491800.
+    @Test
     @SmallTest
     @Feature({"AndroidWebView", "Android-JavaBridge"})
     public void testPassJavaObjectFromCustomClassLoader() throws Throwable {
@@ -649,167 +699,174 @@ public class JavaBridgeCoercionTest extends JavaBridgeTestBase {
         final String dexFileName = "content/test/data/android/SelfConsumingObject.dex";
         assertFileIsReadable(UrlUtils.getIsolatedTestFilePath(dexFileName));
         final File optimizedDir = File.createTempFile("optimized", "");
-        assertTrue(optimizedDir.delete());
-        assertTrue(optimizedDir.mkdirs());
+        Assert.assertTrue(optimizedDir.delete());
+        Assert.assertTrue(optimizedDir.mkdirs());
         DexClassLoader loader = new DexClassLoader(UrlUtils.getIsolatedTestFilePath(dexFileName),
                 optimizedDir.getAbsolutePath(), null, ClassLoader.getSystemClassLoader());
         final Object selfConsuming = loader.loadClass(
                 "org.example.SelfConsumingObject").newInstance();
-        runTestOnUiThread(new Runnable() {
+        mActivityTestRule.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                getContentViewCore().addPossiblyUnsafeJavascriptInterface(
+                mActivityTestRule.getContentViewCore().addPossiblyUnsafeJavascriptInterface(
                         selfConsuming, "selfConsuming", null);
             }
         });
-        synchronousPageReload();
-        executeJavaScript("testObject.setBooleanValue("
+        mActivityTestRule.synchronousPageReload();
+        mActivityTestRule.executeJavaScript("testObject.setBooleanValue("
                 + "selfConsuming.verifySelf(selfConsuming.getSelf()));");
-        assertTrue(mTestObject.waitForBooleanValue());
+        Assert.assertTrue(mTestObject.waitForBooleanValue());
     }
 
     // Test passing JavaScript null to a method of an injected object.
+    @Test
     @SmallTest
     @Feature({"AndroidWebView", "Android-JavaBridge"})
     public void testPassNull() throws Throwable {
-        executeJavaScript("testObject.setObjectValue(null);");
-        assertNull(mTestObject.waitForObjectValue());
+        mActivityTestRule.executeJavaScript("testObject.setObjectValue(null);");
+        Assert.assertNull(mTestObject.waitForObjectValue());
 
-        executeJavaScript("testObject.setCustomTypeValue(null);");
-        assertNull(mTestObject.waitForCustomTypeValue());
+        mActivityTestRule.executeJavaScript("testObject.setCustomTypeValue(null);");
+        Assert.assertNull(mTestObject.waitForCustomTypeValue());
 
-        executeJavaScript("testObject.setStringValue(null);");
-        assertNull(mTestObject.waitForStringValue());
+        mActivityTestRule.executeJavaScript("testObject.setStringValue(null);");
+        Assert.assertNull(mTestObject.waitForStringValue());
 
-        executeJavaScript("testObject.setByteValue(null);");
-        assertEquals(0, mTestObject.waitForByteValue());
+        mActivityTestRule.executeJavaScript("testObject.setByteValue(null);");
+        Assert.assertEquals(0, mTestObject.waitForByteValue());
 
-        executeJavaScript("testObject.setCharValue(null);");
-        assertEquals('\u0000', mTestObject.waitForCharValue());
+        mActivityTestRule.executeJavaScript("testObject.setCharValue(null);");
+        Assert.assertEquals('\u0000', mTestObject.waitForCharValue());
 
-        executeJavaScript("testObject.setShortValue(null);");
-        assertEquals(0, mTestObject.waitForShortValue());
+        mActivityTestRule.executeJavaScript("testObject.setShortValue(null);");
+        Assert.assertEquals(0, mTestObject.waitForShortValue());
 
-        executeJavaScript("testObject.setIntValue(null);");
-        assertEquals(0, mTestObject.waitForIntValue());
+        mActivityTestRule.executeJavaScript("testObject.setIntValue(null);");
+        Assert.assertEquals(0, mTestObject.waitForIntValue());
 
-        executeJavaScript("testObject.setLongValue(null);");
-        assertEquals(0L, mTestObject.waitForLongValue());
+        mActivityTestRule.executeJavaScript("testObject.setLongValue(null);");
+        Assert.assertEquals(0L, mTestObject.waitForLongValue());
 
-        executeJavaScript("testObject.setFloatValue(null);");
-        assertEquals(0.0f, mTestObject.waitForFloatValue());
+        mActivityTestRule.executeJavaScript("testObject.setFloatValue(null);");
+        Assert.assertEquals(0.0f, mTestObject.waitForFloatValue(), ASSERTION_DELTA);
 
-        executeJavaScript("testObject.setDoubleValue(null);");
-        assertEquals(0.0, mTestObject.waitForDoubleValue());
+        mActivityTestRule.executeJavaScript("testObject.setDoubleValue(null);");
+        Assert.assertEquals(0.0, mTestObject.waitForDoubleValue(), ASSERTION_DELTA);
 
-        executeJavaScript("testObject.setBooleanValue(null);");
-        assertFalse(mTestObject.waitForBooleanValue());
+        mActivityTestRule.executeJavaScript("testObject.setBooleanValue(null);");
+        Assert.assertFalse(mTestObject.waitForBooleanValue());
     }
 
     // Test passing JavaScript undefined to a method of an injected object.
+    @Test
     @SmallTest
     @Feature({"AndroidWebView", "Android-JavaBridge"})
     public void testPassUndefined() throws Throwable {
-        executeJavaScript("testObject.setObjectValue(undefined);");
-        assertNull(mTestObject.waitForObjectValue());
+        mActivityTestRule.executeJavaScript("testObject.setObjectValue(undefined);");
+        Assert.assertNull(mTestObject.waitForObjectValue());
 
-        executeJavaScript("testObject.setCustomTypeValue(undefined);");
-        assertNull(mTestObject.waitForCustomTypeValue());
+        mActivityTestRule.executeJavaScript("testObject.setCustomTypeValue(undefined);");
+        Assert.assertNull(mTestObject.waitForCustomTypeValue());
 
         // LIVECONNECT_COMPLIANCE: Should be NULL.
-        executeJavaScript("testObject.setStringValue(undefined);");
-        assertEquals("undefined", mTestObject.waitForStringValue());
+        mActivityTestRule.executeJavaScript("testObject.setStringValue(undefined);");
+        Assert.assertEquals("undefined", mTestObject.waitForStringValue());
 
-        executeJavaScript("testObject.setByteValue(undefined);");
-        assertEquals(0, mTestObject.waitForByteValue());
+        mActivityTestRule.executeJavaScript("testObject.setByteValue(undefined);");
+        Assert.assertEquals(0, mTestObject.waitForByteValue());
 
-        executeJavaScript("testObject.setCharValue(undefined);");
-        assertEquals('\u0000', mTestObject.waitForCharValue());
+        mActivityTestRule.executeJavaScript("testObject.setCharValue(undefined);");
+        Assert.assertEquals('\u0000', mTestObject.waitForCharValue());
 
-        executeJavaScript("testObject.setShortValue(undefined);");
-        assertEquals(0, mTestObject.waitForShortValue());
+        mActivityTestRule.executeJavaScript("testObject.setShortValue(undefined);");
+        Assert.assertEquals(0, mTestObject.waitForShortValue());
 
-        executeJavaScript("testObject.setIntValue(undefined);");
-        assertEquals(0, mTestObject.waitForIntValue());
+        mActivityTestRule.executeJavaScript("testObject.setIntValue(undefined);");
+        Assert.assertEquals(0, mTestObject.waitForIntValue());
 
-        executeJavaScript("testObject.setLongValue(undefined);");
-        assertEquals(0L, mTestObject.waitForLongValue());
+        mActivityTestRule.executeJavaScript("testObject.setLongValue(undefined);");
+        Assert.assertEquals(0L, mTestObject.waitForLongValue());
 
-        executeJavaScript("testObject.setFloatValue(undefined);");
-        assertEquals(0.0f, mTestObject.waitForFloatValue());
+        mActivityTestRule.executeJavaScript("testObject.setFloatValue(undefined);");
+        Assert.assertEquals(0.0f, mTestObject.waitForFloatValue(), ASSERTION_DELTA);
 
-        executeJavaScript("testObject.setDoubleValue(undefined);");
-        assertEquals(0.0, mTestObject.waitForDoubleValue());
+        mActivityTestRule.executeJavaScript("testObject.setDoubleValue(undefined);");
+        Assert.assertEquals(0.0, mTestObject.waitForDoubleValue(), ASSERTION_DELTA);
 
-        executeJavaScript("testObject.setBooleanValue(undefined);");
-        assertFalse(mTestObject.waitForBooleanValue());
+        mActivityTestRule.executeJavaScript("testObject.setBooleanValue(undefined);");
+        Assert.assertFalse(mTestObject.waitForBooleanValue());
     }
 
     // Verify that ArrayBuffers are not converted into objects or strings when passed
     // to Java. Basically, ArrayBuffers are treated as generic JavaScript objects.
+    @Test
     @SmallTest
     @Feature({"AndroidWebView", "Android-JavaBridge"})
     public void testPassArrayBuffer() throws Throwable {
-        executeJavaScript("buffer = new ArrayBuffer(16);");
+        mActivityTestRule.executeJavaScript("buffer = new ArrayBuffer(16);");
 
-        executeJavaScript("testObject.setObjectValue(buffer);");
-        assertNull(mTestObject.waitForObjectValue());
+        mActivityTestRule.executeJavaScript("testObject.setObjectValue(buffer);");
+        Assert.assertNull(mTestObject.waitForObjectValue());
 
-        executeJavaScript("testObject.setStringValue(buffer);");
-        assertEquals("undefined", mTestObject.waitForStringValue());
+        mActivityTestRule.executeJavaScript("testObject.setStringValue(buffer);");
+        Assert.assertEquals("undefined", mTestObject.waitForStringValue());
     }
 
     // Verify that ArrayBufferViewss are not converted into objects or strings when passed
     // to Java. Basically, ArrayBufferViews are treated as generic JavaScript objects.
     // Here, a DataView is used as an ArrayBufferView instance (since the latter is
     // an interface and can't be instantiated directly).
+    @Test
     @SmallTest
     @Feature({"AndroidWebView", "Android-JavaBridge"})
     public void testPassDataView() throws Throwable {
-        executeJavaScript("buffer = new ArrayBuffer(16);");
+        mActivityTestRule.executeJavaScript("buffer = new ArrayBuffer(16);");
 
-        executeJavaScript("testObject.setObjectValue(new DataView(buffer));");
-        assertNull(mTestObject.waitForObjectValue());
+        mActivityTestRule.executeJavaScript("testObject.setObjectValue(new DataView(buffer));");
+        Assert.assertNull(mTestObject.waitForObjectValue());
 
-        executeJavaScript("testObject.setStringValue(new DataView(buffer));");
-        assertEquals("undefined", mTestObject.waitForStringValue());
+        mActivityTestRule.executeJavaScript("testObject.setStringValue(new DataView(buffer));");
+        Assert.assertEquals("undefined", mTestObject.waitForStringValue());
     }
 
     // Verify that Date objects are not converted into double values, strings or objects.
+    @Test
     @SmallTest
     @Feature({"AndroidWebView", "Android-JavaBridge"})
     public void testPassDateObject() throws Throwable {
-        executeJavaScript("testObject.setDoubleValue(new Date(2000, 0, 1));");
-        assertEquals(0.0, mTestObject.waitForDoubleValue());
+        mActivityTestRule.executeJavaScript("testObject.setDoubleValue(new Date(2000, 0, 1));");
+        Assert.assertEquals(0.0, mTestObject.waitForDoubleValue(), ASSERTION_DELTA);
 
-        executeJavaScript("testObject.setStringValue(new Date(2000, 0, 1));");
-        assertEquals("undefined", mTestObject.waitForStringValue());
+        mActivityTestRule.executeJavaScript("testObject.setStringValue(new Date(2000, 0, 1));");
+        Assert.assertEquals("undefined", mTestObject.waitForStringValue());
 
-        executeJavaScript("testObject.setObjectValue(new Date(2000, 0, 1));");
-        assertNull(mTestObject.waitForObjectValue());
+        mActivityTestRule.executeJavaScript("testObject.setObjectValue(new Date(2000, 0, 1));");
+        Assert.assertNull(mTestObject.waitForObjectValue());
     }
 
     // Verify that RegExp objects are not converted into strings or objects.
+    @Test
     @SmallTest
     @Feature({"AndroidWebView", "Android-JavaBridge"})
     public void testPassRegExpObject() throws Throwable {
-        executeJavaScript("testObject.setStringValue(/abc/);");
-        assertEquals("undefined", mTestObject.waitForStringValue());
+        mActivityTestRule.executeJavaScript("testObject.setStringValue(/abc/);");
+        Assert.assertEquals("undefined", mTestObject.waitForStringValue());
 
-        executeJavaScript("testObject.setObjectValue(/abc/);");
-        assertNull(mTestObject.waitForObjectValue());
+        mActivityTestRule.executeJavaScript("testObject.setObjectValue(/abc/);");
+        Assert.assertNull(mTestObject.waitForObjectValue());
     }
 
     // Verify that Function objects are not converted into strings or objects.
+    @Test
     @SmallTest
     @Feature({"AndroidWebView", "Android-JavaBridge"})
     public void testPassFunctionObject() throws Throwable {
-        executeJavaScript("func = new Function('a', 'b', 'return a + b');");
+        mActivityTestRule.executeJavaScript("func = new Function('a', 'b', 'return a + b');");
 
-        executeJavaScript("testObject.setStringValue(func);");
-        assertEquals("undefined", mTestObject.waitForStringValue());
+        mActivityTestRule.executeJavaScript("testObject.setStringValue(func);");
+        Assert.assertEquals("undefined", mTestObject.waitForStringValue());
 
-        executeJavaScript("testObject.setObjectValue(func);");
-        assertNull(mTestObject.waitForObjectValue());
+        mActivityTestRule.executeJavaScript("testObject.setObjectValue(func);");
+        Assert.assertNull(mTestObject.waitForObjectValue());
     }
 }

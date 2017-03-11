@@ -6,16 +6,27 @@ package org.chromium.content.browser;
 
 import android.support.test.filters.MediumTest;
 
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import org.chromium.base.CommandLine;
 import org.chromium.base.annotations.SuppressFBWarnings;
+import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
-import org.chromium.content.browser.test.NativeLibraryTestBase;
+import org.chromium.content.browser.test.NativeLibraryTestRule;
 import org.chromium.content_shell_apk.ContentShellApplication;
 
 /**
  * Test class for command lines.
  */
-public class ContentCommandLineTest extends NativeLibraryTestBase {
+@RunWith(BaseJUnit4ClassRunner.class)
+public class ContentCommandLineTest {
+    @Rule
+    public NativeLibraryTestRule mActivityTestRule = new NativeLibraryTestRule();
+
     // A reference command line. Note that switch2 is [brea\d], switch3 is [and "butter"],
     // and switch4 is [a "quoted" 'food'!]
     static final String INIT_SWITCHES[] = { "init_command", "--switch", "Arg",
@@ -33,65 +44,65 @@ public class ContentCommandLineTest extends NativeLibraryTestBase {
     static final String CL_ADDED_SWITCH_2 = "username";
     static final String CL_ADDED_VALUE_2 = "bozo";
 
-    @Override
+    @Before
     public void setUp() throws Exception {
-        super.setUp();
         CommandLine.reset();
     }
 
     void loadJni() {
-        assertFalse(CommandLine.getInstance().isNativeImplementation());
-        loadNativeLibraryNoBrowserProcess();
-        assertTrue(CommandLine.getInstance().isNativeImplementation());
+        Assert.assertFalse(CommandLine.getInstance().isNativeImplementation());
+        mActivityTestRule.loadNativeLibraryNoBrowserProcess();
+        Assert.assertTrue(CommandLine.getInstance().isNativeImplementation());
     }
 
     void checkInitSwitches() {
         CommandLine cl = CommandLine.getInstance();
-        assertFalse(cl.hasSwitch("init_command"));
-        assertTrue(cl.hasSwitch("switch"));
-        assertFalse(cl.hasSwitch("--switch"));
-        assertFalse(cl.hasSwitch("arg"));
-        assertFalse(cl.hasSwitch("actually_an_arg"));
-        assertEquals("brea\\d", cl.getSwitchValue("switch2"));
-        assertEquals("and \"butter\"", cl.getSwitchValue("switch3"));
-        assertEquals("a \"quoted\" 'food'!", cl.getSwitchValue("switch4"));
-        assertNull(cl.getSwitchValue("switch"));
-        assertNull(cl.getSwitchValue("non-existant"));
+        Assert.assertFalse(cl.hasSwitch("init_command"));
+        Assert.assertTrue(cl.hasSwitch("switch"));
+        Assert.assertFalse(cl.hasSwitch("--switch"));
+        Assert.assertFalse(cl.hasSwitch("arg"));
+        Assert.assertFalse(cl.hasSwitch("actually_an_arg"));
+        Assert.assertEquals("brea\\d", cl.getSwitchValue("switch2"));
+        Assert.assertEquals("and \"butter\"", cl.getSwitchValue("switch3"));
+        Assert.assertEquals("a \"quoted\" 'food'!", cl.getSwitchValue("switch4"));
+        Assert.assertNull(cl.getSwitchValue("switch"));
+        Assert.assertNull(cl.getSwitchValue("non-existant"));
     }
 
     void checkSettingThenGetting() {
         CommandLine cl = CommandLine.getInstance();
 
         // Add a plain switch.
-        assertFalse(cl.hasSwitch(CL_ADDED_SWITCH));
+        Assert.assertFalse(cl.hasSwitch(CL_ADDED_SWITCH));
         cl.appendSwitch(CL_ADDED_SWITCH);
-        assertTrue(cl.hasSwitch(CL_ADDED_SWITCH));
+        Assert.assertTrue(cl.hasSwitch(CL_ADDED_SWITCH));
 
         // Add a switch paired with a value.
-        assertFalse(cl.hasSwitch(CL_ADDED_SWITCH_2));
-        assertNull(cl.getSwitchValue(CL_ADDED_SWITCH_2));
+        Assert.assertFalse(cl.hasSwitch(CL_ADDED_SWITCH_2));
+        Assert.assertNull(cl.getSwitchValue(CL_ADDED_SWITCH_2));
         cl.appendSwitchWithValue(CL_ADDED_SWITCH_2, CL_ADDED_VALUE_2);
-        assertTrue(CL_ADDED_VALUE_2.equals(cl.getSwitchValue(CL_ADDED_SWITCH_2)));
+        Assert.assertTrue(CL_ADDED_VALUE_2.equals(cl.getSwitchValue(CL_ADDED_SWITCH_2)));
 
         // Append a few new things.
         final String switchesAndArgs[] = { "dummy", "--superfast", "--speed=turbo" };
-        assertFalse(cl.hasSwitch("dummy"));
-        assertFalse(cl.hasSwitch("superfast"));
-        assertNull(cl.getSwitchValue("speed"));
+        Assert.assertFalse(cl.hasSwitch("dummy"));
+        Assert.assertFalse(cl.hasSwitch("superfast"));
+        Assert.assertNull(cl.getSwitchValue("speed"));
         cl.appendSwitchesAndArguments(switchesAndArgs);
-        assertFalse(cl.hasSwitch("dummy"));
-        assertFalse(cl.hasSwitch("command"));
-        assertTrue(cl.hasSwitch("superfast"));
-        assertTrue("turbo".equals(cl.getSwitchValue("speed")));
+        Assert.assertFalse(cl.hasSwitch("dummy"));
+        Assert.assertFalse(cl.hasSwitch("command"));
+        Assert.assertTrue(cl.hasSwitch("superfast"));
+        Assert.assertTrue("turbo".equals(cl.getSwitchValue("speed")));
     }
 
     void checkAppendedSwitchesPassedThrough() {
         CommandLine cl = CommandLine.getInstance();
-        assertTrue(cl.hasSwitch(CL_ADDED_SWITCH));
-        assertTrue(cl.hasSwitch(CL_ADDED_SWITCH_2));
-        assertTrue(CL_ADDED_VALUE_2.equals(cl.getSwitchValue(CL_ADDED_SWITCH_2)));
+        Assert.assertTrue(cl.hasSwitch(CL_ADDED_SWITCH));
+        Assert.assertTrue(cl.hasSwitch(CL_ADDED_SWITCH_2));
+        Assert.assertTrue(CL_ADDED_VALUE_2.equals(cl.getSwitchValue(CL_ADDED_SWITCH_2)));
     }
 
+    @Test
     @MediumTest
     @Feature({"Android-AppBase"})
     public void testJavaNativeTransition() {
@@ -102,6 +113,7 @@ public class ContentCommandLineTest extends NativeLibraryTestBase {
         checkSettingThenGetting();
     }
 
+    @Test
     @MediumTest
     @Feature({"Android-AppBase"})
     public void testJavaNativeTransitionAfterAppends() {
@@ -113,6 +125,7 @@ public class ContentCommandLineTest extends NativeLibraryTestBase {
         checkAppendedSwitchesPassedThrough();
     }
 
+    @Test
     @MediumTest
     @Feature({"Android-AppBase"})
     public void testNativeInitialization() {
@@ -126,6 +139,7 @@ public class ContentCommandLineTest extends NativeLibraryTestBase {
         checkSettingThenGetting();
     }
 
+    @Test
     @SuppressFBWarnings("DMI_HARDCODED_ABSOLUTE_FILENAME")
     @MediumTest
     @Feature({"Android-AppBase"})

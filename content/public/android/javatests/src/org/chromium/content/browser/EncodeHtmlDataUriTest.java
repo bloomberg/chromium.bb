@@ -5,19 +5,24 @@
 package org.chromium.content.browser;
 
 import android.support.test.filters.SmallTest;
-import android.test.InstrumentationTestCase;
 
+import org.junit.Assert;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.UrlUtils;
 
 import java.net.URI;
 import java.net.URLDecoder;
 
-public class EncodeHtmlDataUriTest extends InstrumentationTestCase {
+@RunWith(BaseJUnit4ClassRunner.class)
+public class EncodeHtmlDataUriTest {
     private static final String DATA_URI_PREFIX = "data:text/html;utf-8,";
 
     private String getData(String dataUri) {
-        assertNotNull("Data URI is null", dataUri);
-        assertTrue("Incorrect HTML Data URI prefix", dataUri.startsWith(DATA_URI_PREFIX));
+        Assert.assertNotNull("Data URI is null", dataUri);
+        Assert.assertTrue("Incorrect HTML Data URI prefix", dataUri.startsWith(DATA_URI_PREFIX));
         return dataUri.substring(DATA_URI_PREFIX.length());
     }
 
@@ -26,30 +31,35 @@ public class EncodeHtmlDataUriTest extends InstrumentationTestCase {
         return URLDecoder.decode(data, "UTF-8");
     }
 
+    @Test
     @SmallTest
     public void testDelimitersEncoding() throws java.io.UnsupportedEncodingException {
         String testString = "><#%\"'";
         String encodedUri = UrlUtils.encodeHtmlDataUri(testString);
         String decodedUri = decode(encodedUri);
-        assertEquals("Delimiters are not properly encoded", decodedUri, testString);
+        Assert.assertEquals("Delimiters are not properly encoded", decodedUri, testString);
     }
 
+    @Test
     @SmallTest
     public void testUnwiseCharactersEncoding() throws java.io.UnsupportedEncodingException {
         String testString = "{}|\\^[]`";
         String encodedUri = UrlUtils.encodeHtmlDataUri(testString);
         String decodedUri = decode(encodedUri);
-        assertEquals("Unwise characters are not properly encoded", decodedUri, testString);
+        Assert.assertEquals("Unwise characters are not properly encoded", decodedUri, testString);
     }
 
+    @Test
     @SmallTest
     public void testWhitespaceEncoding() throws java.io.UnsupportedEncodingException {
         String testString = " \n\t";
         String encodedUri = UrlUtils.encodeHtmlDataUri(testString);
         String decodedUri = decode(encodedUri);
-        assertEquals("Whitespace characters are not properly encoded", decodedUri, testString);
+        Assert.assertEquals(
+                "Whitespace characters are not properly encoded", decodedUri, testString);
     }
 
+    @Test
     @SmallTest
     public void testReturnsValidUri()
             throws java.net.URISyntaxException, java.io.UnsupportedEncodingException {
@@ -59,6 +69,6 @@ public class EncodeHtmlDataUriTest extends InstrumentationTestCase {
         // Verify that the encoded URI is valid.
         new URI(encodedUri);
         // Verify that something sensible was encoded.
-        assertEquals("Simple HTML is not properly encoded", decodedUri, testString);
+        Assert.assertEquals("Simple HTML is not properly encoded", decodedUri, testString);
     }
 }

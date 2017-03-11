@@ -8,11 +8,19 @@ import android.content.pm.ActivityInfo;
 import android.support.test.filters.MediumTest;
 import android.view.Surface;
 
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content_public.common.ScreenOrientationValues;
-import org.chromium.content_shell_apk.ContentShellTestBase;
+import org.chromium.content_shell_apk.ContentShellActivityTestRule;
 import org.chromium.ui.display.DisplayAndroid;
 import org.chromium.ui.display.DisplayAndroid.DisplayAndroidObserver;
 
@@ -26,7 +34,11 @@ import java.util.concurrent.Callable;
  * orientation: ActivityInfo.SCREEN_ORIENTATION_*
  * orientation value: ScreenOrientationValues.*
  */
-public class ScreenOrientationListenerTest extends ContentShellTestBase {
+@RunWith(BaseJUnit4ClassRunner.class)
+public class ScreenOrientationListenerTest {
+    @Rule
+    public ContentShellActivityTestRule mActivityTestRule = new ContentShellActivityTestRule();
+
     private static class OrientationChangeCallbackHelper
             extends CallbackHelper implements DisplayAndroidObserver {
         private int mLastOrientation;
@@ -49,16 +61,15 @@ public class ScreenOrientationListenerTest extends ContentShellTestBase {
     private DisplayAndroid mDisplayAndroid;
     private int mNaturalOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
 
-    @Override
+    @Before
     public void setUp() throws Exception {
-        super.setUp();
-
-        launchContentShellWithUrl("about:blank");
+        mActivityTestRule.launchContentShellWithUrl("about:blank");
         mCallbackHelper = new OrientationChangeCallbackHelper();
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                mDisplayAndroid = getContentViewCore().getWindowAndroid().getDisplay();
+                mDisplayAndroid =
+                        mActivityTestRule.getContentViewCore().getWindowAndroid().getDisplay();
                 mDisplayAndroid.addObserver(mCallbackHelper);
                 DisplayAndroid.startAccurateListening();
             }
@@ -72,20 +83,20 @@ public class ScreenOrientationListenerTest extends ContentShellTestBase {
         lockOrientationAndWait(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
     }
 
-    @Override
+    @After
     public void tearDown() throws Exception {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
                 mDisplayAndroid.removeObserver(mCallbackHelper);
                 mDisplayAndroid = null;
-                getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
+                mActivityTestRule.getActivity().setRequestedOrientation(
+                        ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
                 DisplayAndroid.stopAccurateListening();
             }
         });
 
         mCallbackHelper = null;
-        super.tearDown();
     }
 
     private static int getNaturalOrientation(DisplayAndroid display) {
@@ -115,7 +126,7 @@ public class ScreenOrientationListenerTest extends ContentShellTestBase {
                 case ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE:
                     return Surface.ROTATION_270;
                 default:
-                    fail("Should not be there!");
+                    Assert.fail("Should not be there!");
                     return Surface.ROTATION_0;
             }
         } else { // mNaturalOrientation == ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
@@ -129,7 +140,7 @@ public class ScreenOrientationListenerTest extends ContentShellTestBase {
                 case ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE:
                     return Surface.ROTATION_180;
                 default:
-                    fail("Should not be there!");
+                    Assert.fail("Should not be there!");
                     return Surface.ROTATION_0;
             }
         }
@@ -154,24 +165,27 @@ public class ScreenOrientationListenerTest extends ContentShellTestBase {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                getActivity().setRequestedOrientation(orientation);
+                mActivityTestRule.getActivity().setRequestedOrientation(orientation);
             }
         });
         mCallbackHelper.waitForCallback(callCount);
         return mCallbackHelper.getLastRotation();
     }
 
+    @Test
     @MediumTest
     @Feature({"ScreenOrientation"})
     public void testOrientationChanges() throws Exception {
         int rotation = lockOrientationAndWait(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
-        assertEquals(orientationToRotation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE), rotation);
+        Assert.assertEquals(
+                orientationToRotation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE), rotation);
 
         rotation = lockOrientationAndWait(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-        assertEquals(orientationToRotation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT), rotation);
+        Assert.assertEquals(
+                orientationToRotation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT), rotation);
 
         rotation = lockOrientationAndWait(ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE);
-        assertEquals(
+        Assert.assertEquals(
                 orientationToRotation(ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE), rotation);
 
         // Note: REVERSE_PORTRAIT does not work when device orientation is locked by user (eg from
@@ -195,7 +209,7 @@ public class ScreenOrientationListenerTest extends ContentShellTestBase {
                 case ScreenOrientationValues.PORTRAIT_SECONDARY:
                     return Surface.ROTATION_180;
                 default:
-                    fail("Can't requiest this orientation value " + orientationValue);
+                    Assert.fail("Can't requiest this orientation value " + orientationValue);
                     return 0;
             }
         } else { // mNaturalOrientation == ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
@@ -213,7 +227,7 @@ public class ScreenOrientationListenerTest extends ContentShellTestBase {
                 case ScreenOrientationValues.PORTRAIT_SECONDARY:
                     return Surface.ROTATION_90;
                 default:
-                    fail("Can't requiest this orientation value " + orientationValue);
+                    Assert.fail("Can't requiest this orientation value " + orientationValue);
                     return 0;
             }
         }
@@ -230,26 +244,28 @@ public class ScreenOrientationListenerTest extends ContentShellTestBase {
             @Override
             public void run() {
                 ScreenOrientationProvider.lockOrientation(
-                        getContentViewCore().getWindowAndroid(), (byte) orientationValue);
+                        mActivityTestRule.getContentViewCore().getWindowAndroid(),
+                        (byte) orientationValue);
             }
         });
         mCallbackHelper.waitForCallback(callCount);
         return mCallbackHelper.getLastRotation();
     }
 
+    @Test
     @MediumTest
     @Feature({"ScreenOrientation"})
     public void testBasicValues() throws Exception {
         int rotation = lockOrientationValueAndWait(ScreenOrientationValues.LANDSCAPE_PRIMARY);
-        assertEquals(
+        Assert.assertEquals(
                 orientationValueToRotation(ScreenOrientationValues.LANDSCAPE_PRIMARY), rotation);
 
         rotation = lockOrientationValueAndWait(ScreenOrientationValues.PORTRAIT_PRIMARY);
-        assertEquals(
+        Assert.assertEquals(
                 orientationValueToRotation(ScreenOrientationValues.PORTRAIT_PRIMARY), rotation);
 
         rotation = lockOrientationValueAndWait(ScreenOrientationValues.LANDSCAPE_SECONDARY);
-        assertEquals(
+        Assert.assertEquals(
                 orientationValueToRotation(ScreenOrientationValues.LANDSCAPE_SECONDARY), rotation);
 
         // The note in testOrientationChanges about REVERSE_PORTRAIT applies to PORTRAIT_SECONDARY.

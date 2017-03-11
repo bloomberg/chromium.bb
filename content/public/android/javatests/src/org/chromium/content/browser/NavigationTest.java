@@ -6,6 +6,12 @@ package org.chromium.content.browser;
 
 import android.support.test.filters.MediumTest;
 
+import org.junit.Assert;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.UrlUtils;
@@ -15,12 +21,15 @@ import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.NavigationHistory;
 import org.chromium.content_shell_apk.ContentShellActivity;
-import org.chromium.content_shell_apk.ContentShellTestBase;
+import org.chromium.content_shell_apk.ContentShellActivityTestRule;
 
 /**
  * Tests for various aspects of navigation.
  */
-public class NavigationTest extends ContentShellTestBase {
+@RunWith(BaseJUnit4ClassRunner.class)
+public class NavigationTest {
+    @Rule
+    public ContentShellActivityTestRule mActivityTestRule = new ContentShellActivityTestRule();
 
     private static final String URL_1 = UrlUtils.encodeHtmlDataUri("<html>1</html>");
     private static final String URL_2 = UrlUtils.encodeHtmlDataUri("<html>2</html>");
@@ -32,9 +41,8 @@ public class NavigationTest extends ContentShellTestBase {
 
     private void goBack(final NavigationController navigationController,
             TestCallbackHelperContainer testCallbackHelperContainer) throws Throwable {
-        handleBlockingCallbackAction(
-                testCallbackHelperContainer.getOnPageFinishedHelper(),
-                new Runnable() {
+        mActivityTestRule.handleBlockingCallbackAction(
+                testCallbackHelperContainer.getOnPageFinishedHelper(), new Runnable() {
                     @Override
                     public void run() {
                         navigationController.goBack();
@@ -44,9 +52,8 @@ public class NavigationTest extends ContentShellTestBase {
 
     private void reload(final NavigationController navigationController,
             TestCallbackHelperContainer testCallbackHelperContainer) throws Throwable {
-        handleBlockingCallbackAction(
-                testCallbackHelperContainer.getOnPageFinishedHelper(),
-                new Runnable() {
+        mActivityTestRule.handleBlockingCallbackAction(
+                testCallbackHelperContainer.getOnPageFinishedHelper(), new Runnable() {
                     @Override
                     public void run() {
                         navigationController.reload(true);
@@ -54,49 +61,56 @@ public class NavigationTest extends ContentShellTestBase {
                 });
     }
 
+    @Test
     @MediumTest
     @Feature({"Navigation"})
     @FlakyTest
     public void testDirectedNavigationHistory() throws Throwable {
-        ContentShellActivity activity = launchContentShellWithUrl(URL_1);
-        waitForActiveShellToBeDoneLoading();
+        ContentShellActivity activity = mActivityTestRule.launchContentShellWithUrl(URL_1);
+        mActivityTestRule.waitForActiveShellToBeDoneLoading();
         ContentViewCore contentViewCore = activity.getActiveContentViewCore();
         NavigationController navigationController = contentViewCore.getWebContents()
                 .getNavigationController();
         TestCallbackHelperContainer testCallbackHelperContainer =
                 new TestCallbackHelperContainer(contentViewCore);
 
-        loadUrl(navigationController, testCallbackHelperContainer, new LoadUrlParams(URL_2));
-        loadUrl(navigationController, testCallbackHelperContainer, new LoadUrlParams(URL_3));
-        loadUrl(navigationController, testCallbackHelperContainer, new LoadUrlParams(URL_4));
-        loadUrl(navigationController, testCallbackHelperContainer, new LoadUrlParams(URL_5));
-        loadUrl(navigationController, testCallbackHelperContainer, new LoadUrlParams(URL_6));
-        loadUrl(navigationController, testCallbackHelperContainer, new LoadUrlParams(URL_7));
+        mActivityTestRule.loadUrl(
+                navigationController, testCallbackHelperContainer, new LoadUrlParams(URL_2));
+        mActivityTestRule.loadUrl(
+                navigationController, testCallbackHelperContainer, new LoadUrlParams(URL_3));
+        mActivityTestRule.loadUrl(
+                navigationController, testCallbackHelperContainer, new LoadUrlParams(URL_4));
+        mActivityTestRule.loadUrl(
+                navigationController, testCallbackHelperContainer, new LoadUrlParams(URL_5));
+        mActivityTestRule.loadUrl(
+                navigationController, testCallbackHelperContainer, new LoadUrlParams(URL_6));
+        mActivityTestRule.loadUrl(
+                navigationController, testCallbackHelperContainer, new LoadUrlParams(URL_7));
 
         NavigationHistory history = navigationController.getDirectedNavigationHistory(false, 3);
-        assertEquals(3, history.getEntryCount());
-        assertEquals(URL_6, history.getEntryAtIndex(0).getUrl());
-        assertEquals(URL_5, history.getEntryAtIndex(1).getUrl());
-        assertEquals(URL_4, history.getEntryAtIndex(2).getUrl());
+        Assert.assertEquals(3, history.getEntryCount());
+        Assert.assertEquals(URL_6, history.getEntryAtIndex(0).getUrl());
+        Assert.assertEquals(URL_5, history.getEntryAtIndex(1).getUrl());
+        Assert.assertEquals(URL_4, history.getEntryAtIndex(2).getUrl());
 
         history = navigationController.getDirectedNavigationHistory(true, 3);
-        assertEquals(history.getEntryCount(), 0);
+        Assert.assertEquals(history.getEntryCount(), 0);
 
         goBack(navigationController, testCallbackHelperContainer);
         goBack(navigationController, testCallbackHelperContainer);
         goBack(navigationController, testCallbackHelperContainer);
 
         history = navigationController.getDirectedNavigationHistory(false, 4);
-        assertEquals(3, history.getEntryCount());
-        assertEquals(URL_3, history.getEntryAtIndex(0).getUrl());
-        assertEquals(URL_2, history.getEntryAtIndex(1).getUrl());
-        assertEquals(URL_1, history.getEntryAtIndex(2).getUrl());
+        Assert.assertEquals(3, history.getEntryCount());
+        Assert.assertEquals(URL_3, history.getEntryAtIndex(0).getUrl());
+        Assert.assertEquals(URL_2, history.getEntryAtIndex(1).getUrl());
+        Assert.assertEquals(URL_1, history.getEntryAtIndex(2).getUrl());
 
         history = navigationController.getDirectedNavigationHistory(true, 4);
-        assertEquals(3, history.getEntryCount());
-        assertEquals(URL_5, history.getEntryAtIndex(0).getUrl());
-        assertEquals(URL_6, history.getEntryAtIndex(1).getUrl());
-        assertEquals(URL_7, history.getEntryAtIndex(2).getUrl());
+        Assert.assertEquals(3, history.getEntryCount());
+        Assert.assertEquals(URL_5, history.getEntryAtIndex(0).getUrl());
+        Assert.assertEquals(URL_6, history.getEntryAtIndex(1).getUrl());
+        Assert.assertEquals(URL_7, history.getEntryAtIndex(2).getUrl());
     }
 
     /**
@@ -104,6 +118,7 @@ public class NavigationTest extends ContentShellTestBase {
      * Checks to make sure that OnPageFinished events were fired and that the timestamps of when
      * the page loaded are different after the reload.
      */
+    @Test
     @MediumTest
     @Feature({"Navigation"})
     public void testPageReload() throws Throwable {
@@ -112,8 +127,8 @@ public class NavigationTest extends ContentShellTestBase {
                 + "function getLoadtime() { return loadTimestamp; }</script></head></html>";
         final String urlLoadTime = UrlUtils.encodeHtmlDataUri(htmlLoadTime);
 
-        ContentShellActivity activity = launchContentShellWithUrl(urlLoadTime);
-        waitForActiveShellToBeDoneLoading();
+        ContentShellActivity activity = mActivityTestRule.launchContentShellWithUrl(urlLoadTime);
+        mActivityTestRule.waitForActiveShellToBeDoneLoading();
         ContentViewCore contentViewCore = activity.getActiveContentViewCore();
         TestCallbackHelperContainer testCallbackHelperContainer =
                 new TestCallbackHelperContainer(contentViewCore);
@@ -124,7 +139,7 @@ public class NavigationTest extends ContentShellTestBase {
                 contentViewCore.getWebContents(), "getLoadtime();");
         javascriptHelper.waitUntilHasValue();
         String firstTimestamp = javascriptHelper.getJsonResultAndClear();
-        assertNotNull("Timestamp was null.", firstTimestamp);
+        Assert.assertNotNull("Timestamp was null.", firstTimestamp);
 
         // Grab the timestamp after a reload and make sure they don't match.
         reload(contentViewCore.getWebContents().getNavigationController(),
@@ -133,7 +148,7 @@ public class NavigationTest extends ContentShellTestBase {
                 contentViewCore.getWebContents(), "getLoadtime();");
         javascriptHelper.waitUntilHasValue();
         String secondTimestamp = javascriptHelper.getJsonResultAndClear();
-        assertNotNull("Timestamp was null.", secondTimestamp);
-        assertFalse("Timestamps matched.", firstTimestamp.equals(secondTimestamp));
+        Assert.assertNotNull("Timestamp was null.", secondTimestamp);
+        Assert.assertFalse("Timestamps matched.", firstTimestamp.equals(secondTimestamp));
     }
 }
