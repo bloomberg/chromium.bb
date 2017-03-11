@@ -94,7 +94,7 @@ class BookmarkNodeFinder {
   // Maps bookmark node titles to instances, duplicates allowed.
   // Titles are converted to the sync internal format before
   // being used as keys for the map.
-  using BookmarkNodeMap = base::hash_multimap<std::string, const BookmarkNode*>;
+  using BookmarkNodeMap = std::multimap<std::string, const BookmarkNode*>;
   using BookmarkNodeRange =
       std::pair<BookmarkNodeMap::iterator, BookmarkNodeMap::iterator>;
 
