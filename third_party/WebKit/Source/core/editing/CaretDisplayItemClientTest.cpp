@@ -19,6 +19,7 @@ class CaretDisplayItemClientTest : public RenderingTest {
   void SetUp() override {
     RenderingTest::SetUp();
     enableCompositing();
+    selection().setCaretBlinkingSuspended(true);
   }
 
   const RasterInvalidationTracking* getRasterInvalidationTracking() const {
@@ -219,6 +220,54 @@ TEST_F(CaretDisplayItemClientTest, CaretMovesBetweenBlocks) {
   objectInvalidations =
       document().view()->trackedObjectPaintInvalidationsAsJSON();
   ASSERT_EQ(2u, objectInvalidations->size());
+  document().view()->setTracksPaintInvalidations(false);
+}
+
+TEST_F(CaretDisplayItemClientTest, CaretHideMoveAndShow) {
+  document().body()->setContentEditable("true", ASSERT_NO_EXCEPTION);
+  document().page()->focusController().setActive(true);
+  document().page()->focusController().setFocused(true);
+
+  Text* text = appendTextNode("Hello, World!");
+  document().body()->focus();
+  updateAllLifecyclePhases();
+  const auto* block = toLayoutBlock(document().body()->layoutObject());
+
+  LayoutRect caretVisualRect = caretDisplayItemClient().visualRect();
+  EXPECT_EQ(1, caretVisualRect.width());
+  EXPECT_EQ(block->location(), caretVisualRect.location());
+
+  // Simulate that the blinking cursor becomes invisible.
+  selection().setCaretVisible(false);
+  // Move the caret to the end of the text.
+  document().view()->setTracksPaintInvalidations(true);
+  selection().setSelection(
+      SelectionInDOMTree::Builder().collapse(Position(text, 5)).build());
+  // Simulate that the cursor blinking is restarted.
+  selection().setCaretVisible(true);
+  updateAllLifecyclePhases();
+
+  LayoutRect newCaretVisualRect = caretDisplayItemClient().visualRect();
+  EXPECT_EQ(caretVisualRect.size(), newCaretVisualRect.size());
+  EXPECT_EQ(caretVisualRect.y(), newCaretVisualRect.y());
+  EXPECT_LT(caretVisualRect.x(), newCaretVisualRect.x());
+
+  const auto& rasterInvalidations =
+      getRasterInvalidationTracking()->trackedRasterInvalidations;
+  ASSERT_EQ(2u, rasterInvalidations.size());
+  EXPECT_EQ(enclosingIntRect(caretVisualRect), rasterInvalidations[0].rect);
+  EXPECT_EQ(block, rasterInvalidations[0].client);
+  EXPECT_EQ(PaintInvalidationCaret, rasterInvalidations[0].reason);
+  EXPECT_EQ(enclosingIntRect(newCaretVisualRect), rasterInvalidations[1].rect);
+  EXPECT_EQ(block, rasterInvalidations[1].client);
+  EXPECT_EQ(PaintInvalidationCaret, rasterInvalidations[1].reason);
+
+  auto objectInvalidations =
+      document().view()->trackedObjectPaintInvalidationsAsJSON();
+  ASSERT_EQ(1u, objectInvalidations->size());
+  String s;
+  JSONObject::cast(objectInvalidations->at(0))->get("object")->asString(&s);
+  EXPECT_EQ("Caret", s);
   document().view()->setTracksPaintInvalidations(false);
 }
 

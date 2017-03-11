@@ -133,9 +133,17 @@ void CaretDisplayItemClient::updateStyleAndLayoutIfNeeded(
     if (m_layoutBlock)
       m_layoutBlock->setMayNeedPaintInvalidation();
     m_layoutBlock = newLayoutBlock;
-    if (newLayoutBlock)
-      m_needsPaintInvalidation = true;
     m_visualRect = LayoutRect();
+    if (newLayoutBlock) {
+      m_needsPaintInvalidation = true;
+      if (newLayoutBlock == m_previousLayoutBlock) {
+        // The caret has disappeared and is reappearing in the same block,
+        // since the last paint invalidation. Set m_visualRect as if the caret
+        // has always been there as paint invalidation doesn't care about the
+        // intermediate changes.
+        m_visualRect = m_visualRectInPreviousLayoutBlock;
+      }
+    }
   }
 
   if (!newLayoutBlock) {
