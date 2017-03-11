@@ -16,7 +16,6 @@
 #include <memory>
 
 namespace cc {
-class DisplayItemList;
 class Layer;
 }
 
@@ -134,13 +133,6 @@ class PLATFORM_EXPORT PaintArtifactCompositor {
   std::unique_ptr<ContentLayerClientImpl> clientForPaintChunk(
       const PaintChunk&,
       const PaintArtifact&);
-
-  // This method is an implementation of Algorithm step 4 from goo.gl/6xP8Oe.
-  static scoped_refptr<cc::DisplayItemList> recordPendingLayer(
-      const PaintArtifact&,
-      const PendingLayer&,
-      const gfx::Rect& combinedBounds,
-      GeometryMapper&);
 
   static bool canMergeInto(const PaintArtifact&,
                            const PaintChunk& newChunk,
