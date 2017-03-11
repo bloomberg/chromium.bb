@@ -18,6 +18,7 @@
 namespace ui {
 
 class ImageCursors;
+class LocatedEvent;
 class PlatformWindow;
 
 namespace ws {

@@ -7,6 +7,7 @@
 #include "base/memory/ptr_util.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
 #include "services/ui/display/screen_manager.h"
+#include "services/ui/ws/display_client_compositor_frame_sink.h"
 #include "services/ui/ws/platform_display_init_params.h"
 #include "services/ui/ws/server_window.h"
 #include "ui/base/cursor/image_cursors.h"
@@ -248,8 +249,26 @@ void PlatformDisplayDefault::OnAcceleratedWidgetAvailable(
   DCHECK_EQ(gfx::kNullAcceleratedWidget, widget_);
   widget_ = widget;
   delegate_->OnAcceleratedWidgetAvailable();
-  frame_generator_ =
-      base::MakeUnique<FrameGenerator>(this, root_window_, widget_);
+
+  cc::mojom::MojoCompositorFrameSinkAssociatedPtr compositor_frame_sink;
+  cc::mojom::DisplayPrivateAssociatedPtr display_private;
+  cc::mojom::MojoCompositorFrameSinkClientPtr compositor_frame_sink_client;
+  cc::mojom::MojoCompositorFrameSinkClientRequest
+      compositor_frame_sink_client_request =
+          mojo::MakeRequest(&compositor_frame_sink_client);
+
+  root_window_->CreateRootCompositorFrameSink(
+      widget_, mojo::MakeRequest(&compositor_frame_sink),
+      std::move(compositor_frame_sink_client),
+      mojo::MakeRequest(&display_private));
+
+  auto display_client_compositor_frame_sink =
+      base::MakeUnique<DisplayClientCompositorFrameSink>(
+          root_window_->frame_sink_id(), std::move(compositor_frame_sink),
+          std::move(display_private),
+          std::move(compositor_frame_sink_client_request));
+  frame_generator_ = base::MakeUnique<FrameGenerator>(
+      this, root_window_, std::move(display_client_compositor_frame_sink));
   frame_generator_->SetDeviceScaleFactor(init_device_scale_factor_);
 }
 

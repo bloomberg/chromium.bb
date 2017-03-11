@@ -29,6 +29,8 @@ static_library("lib") {
     "display.h",
     "display_binding.cc",
     "display_binding.h",
+    "display_client_compositor_frame_sink.cc",
+    "display_client_compositor_frame_sink.h",
     "display_manager.cc",
     "display_manager.h",
     "drag_controller.cc",
