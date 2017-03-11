@@ -39,6 +39,7 @@
 #include "core/inspector/InspectorNetworkAgent.h"
 #include "core/inspector/InspectorPageAgent.h"
 #include "core/inspector/InspectorSession.h"
+#include "core/inspector/InspectorTraceEvents.h"
 #include "core/inspector/MainThreadDebugger.h"
 #include "core/inspector/ThreadDebugger.h"
 #include "core/inspector/WorkerInspectorController.h"
@@ -46,6 +47,7 @@
 #include "core/workers/MainThreadWorkletGlobalScope.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerThread.h"
+#include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/loader/fetch/FetchInitiatorInfo.h"
 
 namespace blink {
@@ -75,6 +77,7 @@ AsyncTask::AsyncTask(ExecutionContext* context, void* task)
 AsyncTask::AsyncTask(ExecutionContext* context, void* task, bool enabled)
     : m_debugger(enabled ? ThreadDebugger::from(toIsolate(context)) : nullptr),
       m_task(task) {
+  TRACE_EVENT_FLOW_END0("devtools.timeline.async", "AsyncTask", task);
   if (m_debugger)
     m_debugger->asyncTaskStarted(m_task);
 }
@@ -88,6 +91,8 @@ void asyncTaskScheduled(ExecutionContext* context,
                         const String& name,
                         void* task,
                         bool recurring) {
+  TRACE_EVENT_FLOW_BEGIN1("devtools.timeline.async", "AsyncTask", task, "data",
+                          InspectorAsyncTask::data(name));
   if (ThreadDebugger* debugger = ThreadDebugger::from(toIsolate(context)))
     debugger->asyncTaskScheduled(name, task, recurring);
 }

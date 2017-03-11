@@ -59,10 +59,6 @@ int DOMTimer::install(ExecutionContext* context,
                       bool singleShot) {
   int timeoutID = context->timers()->installNewTimeout(context, action, timeout,
                                                        singleShot);
-  TRACE_EVENT_INSTANT1("devtools.timeline", "TimerInstall",
-                       TRACE_EVENT_SCOPE_THREAD, "data",
-                       InspectorTimerInstallEvent::data(context, timeoutID,
-                                                        timeout, singleShot));
   return timeoutID;
 }
 
@@ -103,6 +99,10 @@ DOMTimer::DOMTimer(ExecutionContext* context,
     startRepeating(intervalMilliseconds, BLINK_FROM_HERE);
 
   suspendIfNeeded();
+  TRACE_EVENT_INSTANT1("devtools.timeline", "TimerInstall",
+                       TRACE_EVENT_SCOPE_THREAD, "data",
+                       InspectorTimerInstallEvent::data(context, timeoutID,
+                                                        interval, singleShot));
   probe::asyncTaskScheduledBreakable(
       context, singleShot ? "setTimeout" : "setInterval", this, !singleShot);
 }

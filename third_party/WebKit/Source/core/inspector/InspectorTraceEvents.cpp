@@ -1192,4 +1192,10 @@ std::unique_ptr<TracedValue> InspectorHitTestEvent::endData(
   return value;
 }
 
+std::unique_ptr<TracedValue> InspectorAsyncTask::data(const String& name) {
+  std::unique_ptr<TracedValue> value = TracedValue::create();
+  value->setString("name", name);
+  return value;
+}
+
 }  // namespace blink
