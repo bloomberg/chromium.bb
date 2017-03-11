@@ -42,6 +42,7 @@ buildflag_header("features") {
     "ENABLE_SERVICE_DISCOVERY=$enable_service_discovery",
     "ENABLE_SESSION_SERVICE=$enable_session_service",
     "ENABLE_SUPERVISED_USERS=$enable_supervised_users",
+    "ENABLE_WAYLAND_SERVER=$enable_wayland_server",
     "ENABLE_XPC_NOTIFICATIONS=$enable_xpc_notifications",
     "PGO_BUILD=$pgo_build",
     "USE_VULCANIZE=$use_vulcanize",

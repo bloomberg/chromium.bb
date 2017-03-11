@@ -59,6 +59,9 @@ declare_args() {
   # Enables vr shell UI development on local or remote page.
   enable_vr_shell_ui_dev = false
 
+  # Indicates if Wayland display server support is enabled.
+  enable_wayland_server = is_chromeos
+
   # Enable native notifications via XPC services (mac only).
   # TODO(miguelg): remove this.
   enable_xpc_notifications = true

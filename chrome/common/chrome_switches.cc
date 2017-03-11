@@ -1129,7 +1129,7 @@ const char kAllowNaClFileHandleAPI[]        = "allow-nacl-file-handle-api";
 const char kAllowNaClSocketAPI[]            = "allow-nacl-socket-api";
 #endif
 
-#if defined(ENABLE_WAYLAND_SERVER)
+#if BUILDFLAG(ENABLE_WAYLAND_SERVER)
 // Enables Wayland display server support.
 const char kEnableWaylandServer[] = "enable-wayland-server";
 #endif

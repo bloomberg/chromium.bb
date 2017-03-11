@@ -36,9 +36,6 @@ declare_args() {
   # Whether we should use glib, a low level C utility library.
   use_glib = is_linux
 
-  # Indicates if Wayland display server support is enabled.
-  enable_wayland_server = is_chromeos
-
   # Enable experimental vulkan backend.
   enable_vulkan = false
 }

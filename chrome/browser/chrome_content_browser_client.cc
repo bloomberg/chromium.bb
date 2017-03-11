@@ -373,8 +373,7 @@
 #include "chrome/browser/media/cast_remoting_connector.h"
 #endif
 
-
-#if defined(ENABLE_WAYLAND_SERVER)
+#if BUILDFLAG(ENABLE_WAYLAND_SERVER)
 #include "chrome/browser/chrome_browser_main_extra_parts_exo.h"
 #endif
 
@@ -1049,7 +1048,7 @@ content::BrowserMainParts* ChromeContentBrowserClient::CreateBrowserMainParts(
   main_parts->AddParts(new ChromeBrowserMainExtraPartsX11());
 #endif
 
-#if defined(ENABLE_WAYLAND_SERVER)
+#if BUILDFLAG(ENABLE_WAYLAND_SERVER)
   main_parts->AddParts(new ChromeBrowserMainExtraPartsExo());
 #endif
 
