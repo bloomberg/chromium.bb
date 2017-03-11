@@ -7,146 +7,96 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/command_line.h"
 #include "base/files/file_util.h"
-#include "base/location.h"
-#include "base/logging.h"
 #include "base/task_scheduler/post_task.h"
-#include "base/threading/sequenced_worker_pool.h"
-#include "chrome/common/chrome_utility_messages.h"
 #include "chrome/common/safe_browsing/zip_analyzer_results.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/child_process_data.h"
-#include "content/public/browser/render_process_host.h"
-#include "content/public/common/content_switches.h"
-#include "ipc/ipc_message_macros.h"
-#include "ipc/ipc_platform_file.h"
 #include "ui/base/l10n/l10n_util.h"
-
-using content::BrowserThread;
 
 namespace safe_browsing {
 
-SandboxedZipAnalyzer::SandboxedZipAnalyzer(
-    const base::FilePath& zip_file,
-    const ResultCallback& result_callback)
-    : zip_file_name_(zip_file),
-      callback_(result_callback),
-      callback_called_(false) {
+SandboxedZipAnalyzer::SandboxedZipAnalyzer(const base::FilePath& zip_file,
+                                           const ResultCallback& callback)
+    : file_path_(zip_file), callback_(callback) {
+  DCHECK(callback);
 }
 
 void SandboxedZipAnalyzer::Start() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  // Starting the analyzer will block on opening the zip file, so run this
-  // on a worker thread.  The task does not need to block shutdown.
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
   base::PostTaskWithTraits(
-      FROM_HERE, base::TaskTraits()
-                     .MayBlock()
-                     .WithPriority(base::TaskPriority::BACKGROUND)
-                     .WithShutdownBehavior(
-                         base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN),
-      base::Bind(&SandboxedZipAnalyzer::AnalyzeInSandbox, this));
+      FROM_HERE,
+      base::TaskTraits()
+          .MayBlock()
+          .WithPriority(base::TaskPriority::BACKGROUND)
+          .WithShutdownBehavior(
+              base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN),
+      base::Bind(&SandboxedZipAnalyzer::PrepareFileToAnalyze, this));
 }
 
-SandboxedZipAnalyzer::~SandboxedZipAnalyzer() {
-  // If we're using UtilityProcessHost, we may not be destroyed on
-  // the UI or IO thread.
-  CloseTemporaryFile();
-}
+SandboxedZipAnalyzer::~SandboxedZipAnalyzer() = default;
 
-void SandboxedZipAnalyzer::CloseTemporaryFile() {
-  if (!temp_file_.IsValid())
-    return;
-  // Close the temporary file in the blocking pool since doing so will delete
-  // the file.
-  base::PostTaskWithTraits(
-      FROM_HERE, base::TaskTraits()
-                     .MayBlock()
-                     .WithPriority(base::TaskPriority::BACKGROUND)
-                     .WithShutdownBehavior(
-                         base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN),
-      base::Bind(&base::File::Close,
-                 base::Owned(new base::File(std::move(temp_file_)))));
-}
+void SandboxedZipAnalyzer::PrepareFileToAnalyze() {
+  base::File file(file_path_, base::File::FLAG_OPEN | base::File::FLAG_READ);
 
-void SandboxedZipAnalyzer::AnalyzeInSandbox() {
-  // This zip file will be closed on the IO thread once it has been handed
-  // off to the child process.
-  zip_file_.Initialize(zip_file_name_,
-                       base::File::FLAG_OPEN | base::File::FLAG_READ);
-  if (!zip_file_.IsValid()) {
-    DVLOG(1) << "Could not open zip file: " << zip_file_name_.value();
-    if (!BrowserThread::PostTask(
-            BrowserThread::IO, FROM_HERE,
-            base::Bind(&SandboxedZipAnalyzer::OnAnalyzeZipFileFinished, this,
-                       zip_analyzer::Results()))) {
-      NOTREACHED();
-    }
+  if (!file.IsValid()) {
+    DLOG(ERROR) << "Could not open file: " << file_path_.value();
+    ReportFileFailure();
     return;
   }
 
-  // This temp file will be closed in the blocking pool when results from the
-  // analyzer return.
   base::FilePath temp_path;
+  base::File temp_file;
   if (base::CreateTemporaryFile(&temp_path)) {
-    temp_file_.Initialize(temp_path, (base::File::FLAG_CREATE_ALWAYS |
-                                      base::File::FLAG_READ |
-                                      base::File::FLAG_WRITE |
-                                      base::File::FLAG_TEMPORARY |
-                                      base::File::FLAG_DELETE_ON_CLOSE));
+    temp_file.Initialize(
+        temp_path, (base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_READ |
+                    base::File::FLAG_WRITE | base::File::FLAG_TEMPORARY |
+                    base::File::FLAG_DELETE_ON_CLOSE));
   }
-  DVLOG_IF(1, !temp_file_.IsValid())
-      << "Could not open temporary output file: " << temp_path.value();
 
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::Bind(&SandboxedZipAnalyzer::StartProcessOnIOThread, this));
-}
-
-void SandboxedZipAnalyzer::OnProcessCrashed(int exit_code) {
-  OnAnalyzeZipFileFinished(zip_analyzer::Results());
-}
-
-void SandboxedZipAnalyzer::OnProcessLaunchFailed(int error_code) {
-  OnAnalyzeZipFileFinished(zip_analyzer::Results());
-}
-
-bool SandboxedZipAnalyzer::OnMessageReceived(const IPC::Message& message) {
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(SandboxedZipAnalyzer, message)
-    IPC_MESSAGE_HANDLER(
-        ChromeUtilityHostMsg_AnalyzeZipFileForDownloadProtection_Finished,
-        OnAnalyzeZipFileFinished)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-  return handled;
-}
-
-void SandboxedZipAnalyzer::StartProcessOnIOThread() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  utility_process_host_ =
-      content::UtilityProcessHost::Create(
-          this, BrowserThread::GetTaskRunnerForThread(BrowserThread::IO).get())
-          ->AsWeakPtr();
-  utility_process_host_->SetName(l10n_util::GetStringUTF16(
-      IDS_UTILITY_PROCESS_SAFE_BROWSING_ZIP_FILE_ANALYZER_NAME));
-  utility_process_host_->Send(
-      new ChromeUtilityMsg_AnalyzeZipFileForDownloadProtection(
-          IPC::TakePlatformFileForTransit(std::move(zip_file_)),
-          IPC::GetPlatformFileForTransit(temp_file_.GetPlatformFile(),
-                                         false /* !close_source_handle */)));
-}
-
-void SandboxedZipAnalyzer::OnAnalyzeZipFileFinished(
-    const zip_analyzer::Results& results) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (callback_called_)
+  if (!temp_file.IsValid()) {
+    DLOG(ERROR) << "Could not open temp file: " << temp_path.value();
+    ReportFileFailure();
     return;
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::Bind(callback_, results));
-  callback_called_ = true;
-  CloseTemporaryFile();
+  }
+
+  content::BrowserThread::PostTask(
+      content::BrowserThread::UI, FROM_HERE,
+      base::Bind(&SandboxedZipAnalyzer::AnalyzeFile, this, base::Passed(&file),
+                 base::Passed(&temp_file)));
+}
+
+void SandboxedZipAnalyzer::ReportFileFailure() {
+  DCHECK(!utility_process_mojo_client_);
+
+  content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
+                                   base::Bind(callback_, Results()));
+}
+
+void SandboxedZipAnalyzer::AnalyzeFile(base::File file, base::File temp_file) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK(!utility_process_mojo_client_);
+
+  utility_process_mojo_client_ = base::MakeUnique<
+      content::UtilityProcessMojoClient<chrome::mojom::SafeArchiveAnalyzer>>(
+      l10n_util::GetStringUTF16(
+          IDS_UTILITY_PROCESS_SAFE_BROWSING_ZIP_FILE_ANALYZER_NAME));
+  utility_process_mojo_client_->set_error_callback(
+      base::Bind(&SandboxedZipAnalyzer::AnalyzeFileDone, this, Results()));
+
+  utility_process_mojo_client_->Start();
+
+  utility_process_mojo_client_->service()->AnalyzeZipFile(
+      std::move(file), std::move(temp_file),
+      base::Bind(&SandboxedZipAnalyzer::AnalyzeFileDone, this));
+}
+
+void SandboxedZipAnalyzer::AnalyzeFileDone(const Results& results) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  utility_process_mojo_client_.reset();
+  callback_.Run(results);
 }
 
 }  // namespace safe_browsing

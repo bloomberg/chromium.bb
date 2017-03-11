@@ -517,6 +517,10 @@ static_library("common") {
         "safe_browsing/zip_analyzer_results.cc",
         "safe_browsing/zip_analyzer_results.h",
       ]
+
+      # safe_archive_analyzer.mojom has a [Native] trait that depends on
+      # the protobuf headers in the sources list above.
+      allow_circular_includes_from = [ ":mojo_bindings" ]
     }
   }
 
@@ -700,6 +704,10 @@ mojom("mojo_bindings") {
 
   if (is_chromeos) {
     sources += [ "zip_file_creator.mojom" ]
+  }
+
+  if (safe_browsing_mode == 1) {
+    sources += [ "safe_archive_analyzer.mojom" ]
   }
 
   public_deps = [

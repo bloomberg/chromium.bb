@@ -1,12 +1,6 @@
 // Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-//
-// Browser-side interface to analyze zip files for SafeBrowsing download
-// protection.  The actual zip decoding is performed in a sandboxed utility
-// process.
-//
-// This class lives on the UI thread.
 
 #ifndef CHROME_BROWSER_SAFE_BROWSING_SANDBOXED_ZIP_ANALYZER_H_
 #define CHROME_BROWSER_SAFE_BROWSING_SANDBOXED_ZIP_ANALYZER_H_
@@ -15,66 +9,55 @@
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/weak_ptr.h"
-#include "content/public/browser/utility_process_host.h"
-#include "content/public/browser/utility_process_host_client.h"
-
-namespace IPC {
-class Message;
-}
+#include "base/memory/ref_counted.h"
+#include "chrome/common/safe_archive_analyzer.mojom.h"
+#include "content/public/browser/utility_process_mojo_client.h"
 
 namespace safe_browsing {
-namespace zip_analyzer {
-struct Results;
-}
 
-class SandboxedZipAnalyzer : public content::UtilityProcessHostClient {
+// This class is used to analyze zip files in a sandboxed utility process
+// for file download protection. This class lives on the UI thread, which
+// is where the result callback will be invoked.
+class SandboxedZipAnalyzer
+    : public base::RefCountedThreadSafe<SandboxedZipAnalyzer> {
  public:
-  // Callback that is invoked when the analysis results are ready.
-  typedef base::Callback<void(const zip_analyzer::Results&)> ResultCallback;
+  using Results = zip_analyzer::Results;
+
+  using ResultCallback = base::Callback<void(const Results&)>;
 
   SandboxedZipAnalyzer(const base::FilePath& zip_file,
-                       const ResultCallback& result_callback);
+                       const ResultCallback& callback);
 
-  // Posts a task to start the zip analysis in the utility process.
+  // Starts the analysis. Must be called on the UI thread.
   void Start();
 
  private:
-  ~SandboxedZipAnalyzer() override;
+  friend class base::RefCountedThreadSafe<SandboxedZipAnalyzer>;
 
-  // Posts a fire-and-forget task to close the temporary file in the blocking
-  // pool.
-  void CloseTemporaryFile();
+  ~SandboxedZipAnalyzer();
 
-  // Creates the sandboxed utility process and tells it to start analysis.
-  // Runs on a worker thread.
-  void AnalyzeInSandbox();
+  // Prepare the file for analysis.
+  void PrepareFileToAnalyze();
 
-  // content::UtilityProcessHostClient implementation.
-  // These notifications run on the IO thread.
-  void OnProcessCrashed(int exit_code) override;
-  void OnProcessLaunchFailed(int error_code) override;
-  bool OnMessageReceived(const IPC::Message& message) override;
+  // If file preparation failed, analysis has failed: report failure.
+  void ReportFileFailure();
 
-  // Launches the utility process.  Must run on the IO thread.
-  void StartProcessOnIOThread();
+  // Starts the utility process and sends it a file analyze request.
+  void AnalyzeFile(base::File file, base::File temp);
 
-  // Notification from the utility process that the zip file has been analyzed,
-  // with the given results.  Runs on the IO thread.
-  void OnAnalyzeZipFileFinished(const zip_analyzer::Results& results);
+  // The response containing the file analyze results.
+  void AnalyzeFileDone(const Results& results);
 
-  const base::FilePath zip_file_name_;
-  // Once we have opened the file, we store the handle so that we can use it
-  // once the utility process has launched.
-  base::File zip_file_;
+  // The file path of the file to analyze.
+  const base::FilePath file_path_;
 
-  // A temporary file to be used by the utility process for extracting files
-  // from the archive.
-  base::File temp_file_;
-  base::WeakPtr<content::UtilityProcessHost> utility_process_host_;
+  // Utility client used to send analyze tasks to the utility process.
+  std::unique_ptr<
+      content::UtilityProcessMojoClient<chrome::mojom::SafeArchiveAnalyzer>>
+      utility_process_mojo_client_;
+
+  // Callback invoked on the UI thread with the file analyze results.
   const ResultCallback callback_;
-  // Initialized on the UI thread, but only accessed on the IO thread.
-  bool callback_called_;
 
   DISALLOW_COPY_AND_ASSIGN(SandboxedZipAnalyzer);
 };

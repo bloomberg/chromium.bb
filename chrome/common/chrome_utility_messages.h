@@ -17,9 +17,6 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "ipc/ipc_message_macros.h"
-#include "ipc/ipc_platform_file.h"
-#include "ui/gfx/ipc/gfx_param_traits.h"
-#include "ui/gfx/ipc/skia/gfx_skia_param_traits.h"
 
 #if defined(FULL_SAFE_BROWSING)
 #include "chrome/common/safe_browsing/ipc_protobuf_message_macros.h"
@@ -140,22 +137,6 @@ IPC_STRUCT_END()
 // Utility process messages:
 // These are messages from the browser to the utility process.
 
-#if defined(FULL_SAFE_BROWSING)
-// Tells the utility process to analyze a zip file for malicious download
-// protection, providing a file that can be used temporarily to analyze binaries
-// contained therein.
-IPC_MESSAGE_CONTROL2(ChromeUtilityMsg_AnalyzeZipFileForDownloadProtection,
-                     IPC::PlatformFileForTransit /* zip_file */,
-                     IPC::PlatformFileForTransit /* temp_file */)
-
-#if defined(OS_MACOSX)
-// Tells the utility process to analyze a DMG file for malicious download
-// protection.
-IPC_MESSAGE_CONTROL1(ChromeUtilityMsg_AnalyzeDmgFileForDownloadProtection,
-                     IPC::PlatformFileForTransit /* dmg_file */)
-#endif  // defined(OS_MACOSX)
-#endif  // defined(FULL_SAFE_BROWSING)
-
 #if defined(OS_WIN)
 // Instructs the utility process to invoke GetOpenFileName. |owner| is the
 // parent of the modal dialog, |flags| are OFN_* flags. |filter| constrains the
@@ -184,20 +165,6 @@ IPC_MESSAGE_CONTROL1(ChromeUtilityMsg_GetSaveFileName,
 // went wrong.
 IPC_MESSAGE_CONTROL1(ChromeUtilityHostMsg_UnpackWebResource_Failed,
                      std::string /* error_message, if any */)
-
-#if defined(FULL_SAFE_BROWSING)
-// Reply when a zip file has been analyzed for malicious download protection.
-IPC_MESSAGE_CONTROL1(
-    ChromeUtilityHostMsg_AnalyzeZipFileForDownloadProtection_Finished,
-    safe_browsing::zip_analyzer::Results)
-
-#if defined(OS_MACOSX)
-// Reply when a DMG file has been analyzed for malicious download protection.
-IPC_MESSAGE_CONTROL1(
-    ChromeUtilityHostMsg_AnalyzeDmgFileForDownloadProtection_Finished,
-    safe_browsing::zip_analyzer::Results)
-#endif  // defined(OS_MACOSX)
-#endif  // defined(FULL_SAFE_BROWSING)
 
 #if defined(OS_WIN)
 IPC_MESSAGE_CONTROL0(ChromeUtilityHostMsg_GetOpenFileName_Failed)

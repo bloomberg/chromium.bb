@@ -47,15 +47,15 @@ class SandboxedDMGAnalyzerTest : public testing::Test {
   }
 
  private:
-  // A helper class to store the results from the ResultsCallback and run
-  // another closure.
+  // A helper that provides a SandboxedDMGAnalyzer::ResultCallback that will
+  // store a copy of an analyzer's results and then run a closure.
   class ResultsGetter {
    public:
     ResultsGetter(const base::Closure& next_closure,
                   zip_analyzer::Results* results)
         : next_closure_(next_closure), results_(results) {}
 
-    SandboxedDMGAnalyzer::ResultsCallback GetCallback() {
+    SandboxedDMGAnalyzer::ResultCallback GetCallback() {
       return base::Bind(&ResultsGetter::ResultsCallback,
                         base::Unretained(this));
     }

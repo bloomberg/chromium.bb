@@ -13,11 +13,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
-#include "build/build_config.h"
-#include "chrome/common/chrome_utility_messages.h"
 #include "chrome/common/file_patcher.mojom.h"
-#include "chrome/common/safe_browsing/zip_analyzer.h"
-#include "chrome/common/safe_browsing/zip_analyzer_results.h"
 #include "chrome/utility/utility_message_handler.h"
 #include "components/safe_json/utility/safe_json_parser_mojo_impl.h"
 #include "content/public/child/image_decoder_utils.h"
@@ -27,14 +23,12 @@
 #include "courgette/courgette.h"
 #include "courgette/third_party/bsdiff/bsdiff.h"
 #include "extensions/features/features.h"
-#include "ipc/ipc_channel.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "printing/features/features.h"
 #include "services/image_decoder/image_decoder_service.h"
 #include "services/image_decoder/public/interfaces/constants.mojom.h"
 #include "services/service_manager/public/cpp/interface_registry.h"
 #include "third_party/zlib/google/zip.h"
-#include "ui/gfx/geometry/size.h"
 
 #if !defined(OS_ANDROID)
 #include "chrome/common/resource_usage_reporter.mojom.h"
@@ -62,8 +56,13 @@
 #include "chrome/utility/printing_handler.h"
 #endif
 
-#if defined(OS_MACOSX) && defined(FULL_SAFE_BROWSING)
+#if defined(FULL_SAFE_BROWSING)
+#include "chrome/common/safe_archive_analyzer.mojom.h"
+#include "chrome/common/safe_browsing/zip_analyzer.h"
+#include "chrome/common/safe_browsing/zip_analyzer_results.h"
+#if defined(OS_MACOSX)
 #include "chrome/utility/safe_browsing/mac/dmg_analyzer.h"
+#endif
 #endif
 
 namespace {
@@ -134,6 +133,47 @@ class ZipFileCreatorImpl : public chrome::mojom::ZipFileCreator {
   DISALLOW_COPY_AND_ASSIGN(ZipFileCreatorImpl);
 };
 #endif  // defined(OS_CHROMEOS)
+
+#if defined(FULL_SAFE_BROWSING)
+class SafeArchiveAnalyzerImpl : public chrome::mojom::SafeArchiveAnalyzer {
+ public:
+  SafeArchiveAnalyzerImpl() = default;
+  ~SafeArchiveAnalyzerImpl() override = default;
+
+  static void Create(chrome::mojom::SafeArchiveAnalyzerRequest request) {
+    mojo::MakeStrongBinding(base::MakeUnique<SafeArchiveAnalyzerImpl>(),
+                            std::move(request));
+  }
+
+ private:
+  // chrome::mojom::SafeArchiveAnalyzer:
+  void AnalyzeZipFile(base::File zip_file,
+                      base::File temporary_file,
+                      const AnalyzeZipFileCallback& callback) override {
+    DCHECK(temporary_file.IsValid());
+    DCHECK(zip_file.IsValid());
+
+    safe_browsing::zip_analyzer::Results results;
+    safe_browsing::zip_analyzer::AnalyzeZipFile(
+        std::move(zip_file), std::move(temporary_file), &results);
+    callback.Run(results);
+  }
+
+  void AnalyzeDmgFile(base::File dmg_file,
+                      const AnalyzeDmgFileCallback& callback) override {
+#if defined(OS_MACOSX)
+    DCHECK(dmg_file.IsValid());
+    safe_browsing::zip_analyzer::Results results;
+    safe_browsing::dmg::AnalyzeDMGFile(std::move(dmg_file), &results);
+    callback.Run(results);
+#else
+    NOTREACHED();
+#endif
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(SafeArchiveAnalyzerImpl);
+};
+#endif  // defined(FULL_SAFE_BROWSING)
 
 #if !defined(OS_ANDROID)
 void CreateProxyResolverFactory(
@@ -210,22 +250,6 @@ bool ChromeContentUtilityClient::OnMessageReceived(
   if (utility_process_running_elevated_)
     return false;
 
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(ChromeContentUtilityClient, message)
-#if defined(FULL_SAFE_BROWSING)
-    IPC_MESSAGE_HANDLER(ChromeUtilityMsg_AnalyzeZipFileForDownloadProtection,
-                        OnAnalyzeZipFileForDownloadProtection)
-#if defined(OS_MACOSX)
-    IPC_MESSAGE_HANDLER(ChromeUtilityMsg_AnalyzeDmgFileForDownloadProtection,
-                        OnAnalyzeDmgFileForDownloadProtection)
-#endif  // defined(OS_MACOSX)
-#endif  // defined(FULL_SAFE_BROWSING)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-
-  if (handled)
-    return true;
-
   for (auto* handler : handlers_) {
     if (handler->OnMessageReceived(message))
       return true;
@@ -260,6 +284,9 @@ void ChromeContentUtilityClient::ExposeInterfacesToBrowser(
 #if defined(OS_CHROMEOS)
   registry->AddInterface(base::Bind(&ZipFileCreatorImpl::Create));
 #endif
+#if defined(FULL_SAFE_BROWSING)
+  registry->AddInterface(base::Bind(&SafeArchiveAnalyzerImpl::Create));
+#endif
 }
 
 void ChromeContentUtilityClient::RegisterServices(StaticServiceMap* services) {
@@ -275,32 +302,3 @@ void ChromeContentUtilityClient::PreSandboxStartup() {
   extensions::ExtensionsHandler::PreSandboxStartup();
 #endif
 }
-
-#if defined(FULL_SAFE_BROWSING)
-void ChromeContentUtilityClient::OnAnalyzeZipFileForDownloadProtection(
-    const IPC::PlatformFileForTransit& zip_file,
-    const IPC::PlatformFileForTransit& temp_file) {
-  safe_browsing::zip_analyzer::Results results;
-  safe_browsing::zip_analyzer::AnalyzeZipFile(
-      IPC::PlatformFileForTransitToFile(zip_file),
-      IPC::PlatformFileForTransitToFile(temp_file), &results);
-  content::UtilityThread::Get()->Send(
-      new ChromeUtilityHostMsg_AnalyzeZipFileForDownloadProtection_Finished(
-          results));
-  content::UtilityThread::Get()->ReleaseProcessIfNeeded();
-}
-
-#if defined(OS_MACOSX)
-void ChromeContentUtilityClient::OnAnalyzeDmgFileForDownloadProtection(
-    const IPC::PlatformFileForTransit& dmg_file) {
-  safe_browsing::zip_analyzer::Results results;
-  safe_browsing::dmg::AnalyzeDMGFile(
-      IPC::PlatformFileForTransitToFile(dmg_file), &results);
-  content::UtilityThread::Get()->Send(
-      new ChromeUtilityHostMsg_AnalyzeDmgFileForDownloadProtection_Finished(
-          results));
-  content::UtilityThread::Get()->ReleaseProcessIfNeeded();
-}
-#endif  // defined(OS_MACOSX)
-
-#endif  // defined(FULL_SAFE_BROWSING)

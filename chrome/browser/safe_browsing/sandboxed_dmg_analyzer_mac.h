@@ -9,54 +9,55 @@
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/weak_ptr.h"
-#include "content/public/browser/utility_process_host.h"
-#include "content/public/browser/utility_process_host_client.h"
+#include "base/memory/ref_counted.h"
+#include "chrome/common/safe_archive_analyzer.mojom.h"
+#include "content/public/browser/utility_process_mojo_client.h"
 
 namespace safe_browsing {
 
-namespace zip_analyzer {
-struct Results;
-}
-
-// This class is used to analyze DMG files in a sandboxed utility process for
-// file download protection. This class must be created on the UI thread, and
-// which is where the result callback will be invoked.
-class SandboxedDMGAnalyzer : public content::UtilityProcessHostClient {
+// This class is used to analyze DMG files in a sandboxed utility process
+// for file download protection. This class lives on the UI thread, which
+// is where the result callback will be invoked.
+class SandboxedDMGAnalyzer
+    : public base::RefCountedThreadSafe<SandboxedDMGAnalyzer> {
  public:
-  // Callback that is invoked when the analysis results are ready.
-  using ResultsCallback = base::Callback<void(const zip_analyzer::Results&)>;
+  using Results = zip_analyzer::Results;
+
+  using ResultCallback = base::Callback<void(const Results&)>;
 
   SandboxedDMGAnalyzer(const base::FilePath& dmg_file,
-                       const ResultsCallback& callback);
+                       const ResultCallback& callback);
 
-  // Begins the analysis. This must be called on the UI thread.
+  // Starts the analysis. Must be called on the UI thread.
   void Start();
 
  private:
-  ~SandboxedDMGAnalyzer() override;
+  friend class base::RefCountedThreadSafe<SandboxedDMGAnalyzer>;
 
-  // Called on the blocking pool, this opens the DMG file, in preparation for
-  // sending the FD to the utility process.
-  void OpenDMGFile();
+  ~SandboxedDMGAnalyzer();
 
-  // Called on the IO thread, this starts the utility process.
-  void StartAnalysis();
+  // Prepare the file for analysis.
+  void PrepareFileToAnalyze();
 
-  // content::UtilityProcessHostClient:
-  void OnProcessCrashed(int exit_code) override;
-  void OnProcessLaunchFailed(int error_code) override;
-  bool OnMessageReceived(const IPC::Message& message) override;
+  // If file preparation failed, analysis has failed: report failure.
+  void ReportFileFailure();
 
-  // Message handler to receive the results of the analysis. Invokes the
-  // |callback_|.
-  void OnAnalysisFinished(const zip_analyzer::Results& results);
+  // Starts the utility process and sends it a file analyze request.
+  void AnalyzeFile(base::File file);
 
-  const base::FilePath file_path_;  // The path of the DMG file.
-  base::File file_;  // The opened file handle for |file_path_|.
+  // The response containing the file analyze results.
+  void AnalyzeFileDone(const Results& results);
 
-  const ResultsCallback callback_;  // Result callback.
-  bool callback_called_;  // Whether |callback_| has already been invoked.
+  // The file path of the file to analyze.
+  const base::FilePath file_path_;
+
+  // Utility client used to send analyze tasks to the utility process.
+  std::unique_ptr<
+      content::UtilityProcessMojoClient<chrome::mojom::SafeArchiveAnalyzer>>
+      utility_process_mojo_client_;
+
+  // Callback invoked on the UI thread with the file analyze results.
+  const ResultCallback callback_;
 
   DISALLOW_COPY_AND_ASSIGN(SandboxedDMGAnalyzer);
 };
