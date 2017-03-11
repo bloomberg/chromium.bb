@@ -113,6 +113,10 @@ class PLATFORM_EXPORT GeometryMapper {
   // Returns the matrix used in |LocalToAncestorRect|. DCHECK fails iff
   // |localTransformNode| is not equal to or a descendant of
   // |ancestorTransformNode|.
+  // This matrix may not be flattened. Since GeometryMapper only supports
+  // flattened ancestor spaces, the returned matrix must be flattened to have
+  // the correct semantics (calling mapRect() on it implicitly applies
+  // flattening to the input; flattenTo2d() does it explicitly to tme matrix).
   const TransformationMatrix& localToAncestorMatrix(
       const TransformPaintPropertyNode* localTransformNode,
       const TransformPaintPropertyNode* ancestorTransformNode);

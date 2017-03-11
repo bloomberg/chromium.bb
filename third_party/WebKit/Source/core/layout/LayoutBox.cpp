@@ -2401,7 +2401,7 @@ bool LayoutBox::mapToVisualRectInAncestorSpaceInternal(
     containerOffset.move(layer()->offsetForInFlowPosition());
   }
 
-  bool preserve3D = container->style()->preserves3D() || style()->preserves3D();
+  bool preserve3D = container->style()->preserves3D();
 
   TransformState::TransformAccumulation accumulation =
       preserve3D ? TransformState::AccumulateTransform
