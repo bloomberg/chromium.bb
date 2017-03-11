@@ -12063,6 +12063,205 @@
             "chrome_internal"
         ]
     },
+    "kahlee-chrome-pfq": {
+        "_template": "chrome_pfq",
+        "boards": [
+            "kahlee"
+        ],
+        "important": false,
+        "manifest": "official.xml",
+        "vm_tests": []
+    },
+    "kahlee-chromium-pfq": {
+        "_template": "chromium_pfq",
+        "boards": [
+            "kahlee"
+        ],
+        "important": false,
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "vm_tests": []
+    },
+    "kahlee-compile-only-pre-cq": {
+        "_template": "compile_only_pre_cq",
+        "boards": [
+            "kahlee"
+        ],
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "useflags": [
+            "chrome_internal"
+        ]
+    },
+    "kahlee-full": {
+        "_template": "full",
+        "boards": [
+            "kahlee"
+        ],
+        "prebuilts": "public",
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "vm_tests": []
+    },
+    "kahlee-no-vmtest-pre-cq": {
+        "_template": "no_vmtest_pre_cq",
+        "boards": [
+            "kahlee"
+        ],
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "useflags": [
+            "chrome_internal"
+        ]
+    },
+    "kahlee-paladin": {
+        "_template": "paladin",
+        "boards": [
+            "kahlee"
+        ],
+        "description": "Commit Queue (internal)",
+        "important": false,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "prebuilts": "private",
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": [],
+        "vm_tests_override": null
+    },
+    "kahlee-payloads": {
+        "_template": "payloads",
+        "boards": [
+            "kahlee"
+        ]
+    },
+    "kahlee-pre-cq": {
+        "_template": "pre_cq",
+        "boards": [
+            "kahlee"
+        ],
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": []
+    },
+    "kahlee-release": {
+        "_template": "release",
+        "boards": [
+            "kahlee"
+        ],
+        "vm_tests": [],
+        "vm_tests_override": null
+    },
+    "kahlee-release-afdo": {
+        "_template": "release_afdo_generate",
+        "boards": [
+            "kahlee"
+        ],
+        "child_configs": [
+            {
+                "_template": "release_afdo_generate",
+                "boards": [
+                    "kahlee"
+                ],
+                "grouped": true,
+                "name": "kahlee-release-afdo-generate",
+                "vm_tests": [],
+                "vm_tests_override": null
+            },
+            {
+                "_template": "release_afdo_use",
+                "boards": [
+                    "kahlee"
+                ],
+                "grouped": true,
+                "name": "kahlee-release-afdo-use",
+                "vm_tests": [],
+                "vm_tests_override": null
+            }
+        ],
+        "vm_tests": [],
+        "vm_tests_override": null
+    },
+    "kahlee-release-afdo-generate": {
+        "_template": "release_afdo_generate",
+        "boards": [
+            "kahlee"
+        ],
+        "vm_tests": [],
+        "vm_tests_override": null
+    },
+    "kahlee-release-afdo-use": {
+        "_template": "release_afdo_use",
+        "boards": [
+            "kahlee"
+        ],
+        "vm_tests": [],
+        "vm_tests_override": null
+    },
+    "kahlee-tot-chrome-pfq-informational": {
+        "_template": "chrome_pfq_informational",
+        "boards": [
+            "kahlee"
+        ],
+        "manifest": "official.xml",
+        "vm_tests": []
+    },
+    "kahlee-tot-chrome-pfq-informational-gn": {
+        "_template": "chrome_pfq_informational_gn",
+        "boards": [
+            "kahlee"
+        ],
+        "manifest": "official.xml",
+        "vm_tests": []
+    },
+    "kahlee-tot-chromium-pfq-informational": {
+        "_template": "chromium_pfq_informational",
+        "boards": [
+            "kahlee"
+        ],
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "vm_tests": []
+    },
+    "kahlee-tot-chromium-pfq-informational-gn": {
+        "_template": "chromium_pfq_informational_gn",
+        "boards": [
+            "kahlee"
+        ],
+        "useflags": [
+            "-chrome_internal",
+            "gn"
+        ],
+        "vm_tests": []
+    },
+    "kahlee-unittest-stress": {
+        "_template": "unittest_stress",
+        "boards": [
+            "kahlee"
+        ],
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "useflags": [
+            "chrome_internal"
+        ]
+    },
     "kefka-chrome-pfq": {
         "_template": "chrome_pfq",
         "boards": [
