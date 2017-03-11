@@ -788,7 +788,7 @@ static void set_ref(AV1_COMMON *const cm, MACROBLOCKD *const xd, int idx,
                        "Invalid scale factors");
   av1_setup_pre_planes(xd, idx, ref_buffer->buf, mi_row, mi_col,
                        &ref_buffer->sf);
-  xd->corrupted |= ref_buffer->buf->corrupted;
+  aom_merge_corrupted_flag(&xd->corrupted, ref_buffer->buf->corrupted);
 }
 
 static void dec_predict_b_extend(
@@ -1486,7 +1486,8 @@ static void decode_mbmi_block(AV1Decoder *const pbi, MACROBLOCKD *const xd,
   xd->mi[0]->mbmi.segment_id_supertx = MAX_SEGMENTS;
 #endif  // CONFIG_SUPERTX
 
-  xd->corrupted |= aom_reader_has_error(r);
+  int reader_corrupted_flag = aom_reader_has_error(r);
+  aom_merge_corrupted_flag(&xd->corrupted, reader_corrupted_flag);
 }
 
 static void decode_token_and_recon_block(AV1Decoder *const pbi,
@@ -1787,7 +1788,8 @@ static void decode_token_and_recon_block(AV1Decoder *const pbi,
   }
 #endif
 
-  xd->corrupted |= aom_reader_has_error(r);
+  int reader_corrupted_flag = aom_reader_has_error(r);
+  aom_merge_corrupted_flag(&xd->corrupted, reader_corrupted_flag);
 }
 
 #if CONFIG_NCOBMC && CONFIG_MOTION_VAR
@@ -3601,7 +3603,7 @@ static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
                                cm->sb_size);
 #endif
         }
-        pbi->mb.corrupted |= td->xd.corrupted;
+        aom_merge_corrupted_flag(&pbi->mb.corrupted, td->xd.corrupted);
         if (pbi->mb.corrupted)
           aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
                              "Failed to decode tile data");
@@ -3718,7 +3720,7 @@ static int tile_worker_hook(TileWorkerData *const tile_data,
 
   if (setjmp(tile_data->error_info.jmp)) {
     tile_data->error_info.setjmp = 0;
-    tile_data->xd.corrupted = 1;
+    aom_merge_corrupted_flag(&tile_data->xd.corrupted, 1);
     return 0;
   }
 

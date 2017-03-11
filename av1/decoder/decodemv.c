@@ -1884,7 +1884,7 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
 #endif  // CONFIG_EXT_INTER
                        nearest_sub8x8, near_sub8x8, mi_row, mi_col, is_compound,
                        allow_hp, r)) {
-          xd->corrupted |= 1;
+          aom_merge_corrupted_flag(&xd->corrupted, 1);
           break;
         };
 
@@ -1925,7 +1925,7 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
       nearestmv[ref] = ref_mv[ref];
     }
 
-    xd->corrupted |=
+    int mv_corrupted_flag =
         !assign_mv(cm, xd, mbmi->mode, mbmi->ref_frame, 0, mbmi->mv,
 #if CONFIG_EXT_INTER
                    mbmi->mode == NEWFROMNEARMV ? nearmv : nearestmv,
@@ -1933,6 +1933,7 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
                    ref_mv,
 #endif  // CONFIG_EXT_INTER
                    nearestmv, nearmv, mi_row, mi_col, is_compound, allow_hp, r);
+    aom_merge_corrupted_flag(&xd->corrupted, mv_corrupted_flag);
   }
 
 #if CONFIG_EXT_INTER

@@ -132,3 +132,7 @@ void aom_internal_error(struct aom_internal_error_info *info,
 
   if (info->setjmp) longjmp(info->jmp, info->error_code);
 }
+
+void aom_merge_corrupted_flag(int *corrupted, int value) {
+  *corrupted |= value;
+}

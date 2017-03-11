@@ -440,6 +440,8 @@ void aom_internal_error(struct aom_internal_error_info *info,
                         aom_codec_err_t error, const char *fmt,
                         ...) CLANG_ANALYZER_NORETURN;
 
+void aom_merge_corrupted_flag(int *corrupted, int value);
+
 #if CONFIG_DEBUG
 #define AOM_CHECK_MEM_ERROR(error_info, lval, expr)                         \
   do {                                                                      \
