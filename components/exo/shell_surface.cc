@@ -496,9 +496,22 @@ void ShellSurface::SetSystemModal(bool system_modal) {
         << "Only a window in SystemModalContainer can change the modality";
     return;
   }
+
+  if (system_modal == system_modal_)
+    return;
+
+  system_modal_ = system_modal;
+
+  if (widget_)
+    UpdateSystemModal();
+}
+
+void ShellSurface::UpdateSystemModal() {
+  DCHECK(widget_);
+  DCHECK_EQ(container_, ash::kShellWindowId_SystemModalContainer);
   widget_->GetNativeWindow()->SetProperty(
       aura::client::kModalKey,
-      system_modal ? ui::MODAL_TYPE_SYSTEM : ui::MODAL_TYPE_NONE);
+      system_modal_ ? ui::MODAL_TYPE_SYSTEM : ui::MODAL_TYPE_NONE);
 }
 
 // static
@@ -766,6 +779,8 @@ void ShellSurface::OnSurfaceCommit() {
       DCHECK(!widget_->IsVisible());
       pending_show_widget_ = false;
       widget_->Show();
+      if (container_ == ash::kShellWindowId_SystemModalContainer)
+        UpdateSystemModal();
     }
   }
 }

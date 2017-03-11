@@ -471,6 +471,34 @@ TEST_F(ShellSurfaceTest, ModalWindow) {
   EXPECT_FALSE(ash::WmShell::Get()->IsSystemModalWindowOpen());
 }
 
+TEST_F(ShellSurfaceTest, ModalWindowSetSystemModalBeforeCommit) {
+  std::unique_ptr<Surface> surface(new Surface);
+  std::unique_ptr<ShellSurface> shell_surface(new ShellSurface(
+      surface.get(), nullptr, ShellSurface::BoundsMode::SHELL, gfx::Point(),
+      true, false, ash::kShellWindowId_SystemModalContainer));
+  gfx::Size desktop_size(640, 480);
+  std::unique_ptr<Buffer> desktop_buffer(
+      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(desktop_size)));
+  surface->Attach(desktop_buffer.get());
+  surface->SetInputRegion(SkRegion());
+
+  // Set SetSystemModal before any commit happens. Widget is not created at
+  // this time.
+  EXPECT_FALSE(shell_surface->GetWidget());
+  shell_surface->SetSystemModal(true);
+
+  surface->Commit();
+
+  // It is expected that modal window is shown.
+  EXPECT_TRUE(shell_surface->GetWidget());
+  EXPECT_TRUE(ash::WmShell::Get()->IsSystemModalWindowOpen());
+
+  // Now widget is created and setting modal state should be applied
+  // immediately.
+  shell_surface->SetSystemModal(false);
+  EXPECT_FALSE(ash::WmShell::Get()->IsSystemModalWindowOpen());
+}
+
 TEST_F(ShellSurfaceTest, PopupWindow) {
   Surface parent_surface;
   ShellSurface parent(&parent_surface);

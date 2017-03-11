@@ -307,6 +307,9 @@ class ShellSurface : public SurfaceDelegate,
   // |pending_shadow_content_bounds_|.
   void UpdateShadow();
 
+  // Applies |system_modal_| to |widget_|.
+  void UpdateSystemModal();
+
   views::Widget* widget_ = nullptr;
   Surface* surface_;
   aura::Window* parent_;
@@ -347,6 +350,7 @@ class ShellSurface : public SurfaceDelegate,
   int top_inset_height_ = 0;
   int pending_top_inset_height_ = 0;
   bool shadow_underlay_in_surface_ = true;
+  bool system_modal_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(ShellSurface);
 };
