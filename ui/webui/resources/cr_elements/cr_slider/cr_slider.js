@@ -14,21 +14,14 @@
 Polymer({
   is: 'cr-slider',
 
+  behaviors: [CrPolicyPrefBehavior],
+
   properties: {
-    /** The value the slider represents and controls. */
-    value: {
-      type: Number,
-      notify: true,
-    },
+    /** @type {!chrome.settingsPrivate.PrefObject} */
+    pref: Object,
 
     /** @type {!Array<number>} Values corresponding to each tick. */
     tickValues: {type: Array, value: []},
-
-    disabled: {
-      type: Boolean,
-      value: false,
-      reflectToAttribute: true,
-    },
 
     min: Number,
 
@@ -37,33 +30,48 @@ Polymer({
     labelMin: String,
 
     labelMax: String,
+
+    /** @private */
+    disableSlider_: {
+      computed: 'computeDisableSlider_(pref.*)',
+      type: Boolean,
+    },
   },
 
   observers: [
-    'valueChanged_(value, tickValues.*)',
+    'valueChanged_(pref.*, tickValues.*)',
   ],
 
   /**
-   * Sets the |value| property to the value corresponding to the knob position
-   * after a user action.
+   * Sets the |pref.value| property to the value corresponding to the knob
+   * position after a user action.
    * @private
    */
   onSliderChanged_: function() {
+    var newValue;
     if (this.tickValues && this.tickValues.length > 0)
-      this.value = this.tickValues[this.$.slider.immediateValue];
+      newValue = this.tickValues[this.$.slider.immediateValue];
     else
-      this.value = this.$.slider.immediateValue;
+      newValue = this.$.slider.immediateValue;
+
+    this.set('pref.value', newValue);
+  },
+
+  /** @private */
+  computeDisableSlider_: function() {
+    return this.hasAttribute('disabled') || this.isPrefEnforced();
   },
 
   /**
-   * Updates the knob position when |value| changes. If the knob is still being
-   * dragged, this instead forces |value| back to the current position.
+   * Updates the knob position when |pref.value| changes. If the knob is still
+   * being dragged, this instead forces |pref.value| back to the current
+   * position.
    * @private
    */
   valueChanged_: function() {
     // If |tickValues| is empty, simply set current value to the slider.
     if (this.tickValues.length == 0) {
-      this.$.slider.value = this.value;
+      this.$.slider.value = this.pref.value;
       return;
     }
 
@@ -76,23 +84,27 @@ Polymer({
     this.$.slider.maxMarkers = numTicks < MAX_TICKS ? numTicks : 0;
 
     if (this.$.slider.dragging && this.tickValues.length > 0 &&
-        this.value != this.tickValues[this.$.slider.immediateValue]) {
+        this.pref.value != this.tickValues[this.$.slider.immediateValue]) {
       // The value changed outside cr-slider but we're still holding the knob,
       // so set the value back to where the knob was.
       // Async so we don't confuse Polymer's data binding.
       this.async(function() {
-        this.value = this.tickValues[this.$.slider.immediateValue];
+        var newValue = this.tickValues[this.$.slider.immediateValue];
+        this.set('pref.value', newValue);
       });
       return;
     }
 
     // Convert from the public |value| to the slider index (where the knob
     // should be positioned on the slider).
-    var sliderIndex =
-        this.tickValues.length > 0 ? this.tickValues.indexOf(this.value) : 0;
+    var sliderIndex = this.tickValues.length > 0 ?
+        this.tickValues.indexOf(/** @type {number} */ (this.pref.value)) :
+        0;
     if (sliderIndex == -1) {
       // No exact match.
-      sliderIndex = this.findNearestIndex_(this.tickValues, this.value);
+      sliderIndex = this.findNearestIndex_(
+          this.tickValues,
+          /** @type {number} */ (this.pref.value));
     }
     this.$.slider.value = sliderIndex;
   },

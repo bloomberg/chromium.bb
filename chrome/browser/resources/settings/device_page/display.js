@@ -24,6 +24,21 @@ Polymer({
 
   properties: {
     /**
+     * @type {!chrome.settingsPrivate.PrefObject}
+     * @private
+     */
+    selectedModePref_: {
+      type: Object,
+      value: function() {
+        return {
+          key: 'fakeDisplaySliderPref',
+          type: chrome.settingsPrivate.PrefType.NUMBER,
+          value: 0,
+        };
+      },
+    },
+
+    /**
      * Array of displays.
      * @type {!Array<!chrome.system.display.DisplayUnitInfo>}
      */
@@ -55,9 +70,6 @@ Polymer({
 
     /** @private {!Array<number>} Mode index values for slider. */
     modeValues_: Array,
-
-    /** @private Selected mode index value for slider. */
-    selectedModeIndex_: Number,
   },
 
   /** @private {number} Selected mode index received from chrome. */
@@ -151,18 +163,20 @@ Polymer({
 
   /** @private */
   selectedDisplayChanged_: function() {
-    // Set |modeValues_| before |selectedModeIndex_| so that the slider updates
-    // correctly.
+    // Set |modeValues_| before |selectedModePref_.value| so that the slider
+    // updates correctly.
     var numModes = this.selectedDisplay.modes.length;
     if (numModes == 0) {
       this.modeValues_ = [];
-      this.selectedModeIndex_ = 0;
+      this.set('selectedModePref_.value', 0);
       this.currentSelectedModeIndex_ = 0;
       return;
     }
     this.modeValues_ = Array.from(Array(numModes).keys());
-    this.selectedModeIndex_ = this.getSelectedModeIndex_(this.selectedDisplay);
-    this.currentSelectedModeIndex_ = this.selectedModeIndex_;
+    this.set('selectedModePref_.value', this.getSelectedModeIndex_(
+        this.selectedDisplay));
+    this.currentSelectedModeIndex_ =
+        /** @type {number} */ (this.selectedModePref_.value);
   },
 
   /**
@@ -204,7 +218,7 @@ Polymer({
    * primary or extended.
    * @param {!chrome.system.display.DisplayUnitInfo} selectedDisplay
    * @param {string} primaryDisplayId
-   * @return {number} Retruns 0 if the display is primary else returns 1.
+   * @return {number} Returns 0 if the display is primary else returns 1.
    * @private
    */
   getDisplaySelectMenuIndex_: function(selectedDisplay, primaryDisplayId) {
@@ -269,12 +283,13 @@ Polymer({
     if (this.selectedDisplay.modes.length == 0 ||
         this.currentSelectedModeIndex_ == -1) {
       // If currentSelectedModeIndex_ == -1, selectedDisplay and
-      // selectedModeIndex_ are not in sync.
+      // |selectedModePref_.value| are not in sync.
       return this.i18n(
           'displayResolutionText', this.selectedDisplay.bounds.width.toString(),
           this.selectedDisplay.bounds.height.toString());
     }
-    var mode = this.selectedDisplay.modes[this.selectedModeIndex_];
+    var mode = this.selectedDisplay.modes[
+        /** @type {number} */(this.selectedModePref_.value)];
     var best =
         this.selectedDisplay.isInternal ? mode.uiScale == 1.0 : mode.isNative;
     var widthStr = mode.width.toString();
@@ -298,8 +313,8 @@ Polymer({
         continue;
       if (this.selectedDisplay != display) {
         // Set currentSelectedModeIndex_ to -1 so that getResolutionText_ does
-        // not flicker. selectedDisplayChanged will update selectedModeIndex_
-        // and currentSelectedModeIndex_ correctly.
+        // not flicker. selectedDisplayChanged will update
+        // |selectedModePref_.value| and currentSelectedModeIndex_ correctly.
         this.currentSelectedModeIndex_ = -1;
         this.selectedDisplay = display;
       }
@@ -355,13 +370,14 @@ Polymer({
    */
   onSelectedModeChange_: function() {
     if (this.currentSelectedModeIndex_ == -1 ||
-        this.currentSelectedModeIndex_ == this.selectedModeIndex_) {
+        this.currentSelectedModeIndex_ == this.selectedModePref_.value) {
       // Don't change the selected display mode until we have received an update
       // from Chrome and the mode differs from the current mode.
       return;
     }
     /** @type {!chrome.system.display.DisplayProperties} */ var properties = {
-      displayMode: this.selectedDisplay.modes[this.selectedModeIndex_]
+      displayMode: this.selectedDisplay.modes[
+          /** @type {number} */(this.selectedModePref_.value)]
     };
     settings.display.systemDisplayApi.setDisplayProperties(
         this.selectedDisplay.id, properties,

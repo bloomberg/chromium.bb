@@ -1,10 +1,24 @@
-<link rel="import" href="chrome://resources/html/assert.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
+<link rel="import" href="chrome://resources/cr_elements/policy/cr_policy_pref_behavior.html">
+<link rel="import" href="chrome://resources/html/assert.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-slider/paper-slider.html">
 
 <dom-module id="cr-slider">
   <template>
     <style>
+      :host {
+        display: inline-flex;
+      }
+
+      cr-policy-pref-indicator {
+        -webkit-margin-start: var(--checkbox-spacing);
+        align-self: center;
+      }
+
+      #labels[disabled] {
+        color: var(--paper-grey-400);
+      }
+
       div.outer {
         align-items: stretch;
         display: flex;
@@ -41,12 +55,16 @@
         width: 100%;
       }
     </style>
+    <template is="dom-if" if="[[pref.controlledBy]]" restamp>
+      <cr-policy-pref-indicator pref="[[pref]]"></cr-policy-pref-indicator>
+    </template>
     <div class="outer">
-      <paper-slider id="slider" disabled="[[disabled]]" snaps
+      <paper-slider id="slider"
+          disabled$="[[disableSlider_]]" snaps
           on-immediate-value-changed="onSliderChanged_" max="[[max]]"
           min="[[min]]">
       </paper-slider>
-      <div id="labels">
+      <div id="labels" disabled$="[[disableSlider_]]">
         <div id="label-begin">[[labelMin]]</div>
         <div id="label-end">[[labelMax]]</div>
       </div>

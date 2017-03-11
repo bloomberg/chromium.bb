@@ -127,6 +127,7 @@ CrElementsSliderTest.prototype = {
 
   /** @override */
   extraLibraries: CrElementsBrowserTest.prototype.extraLibraries.concat([
+    'settings_private_test_constants.js',
     'cr_slider_tests.js',
   ]),
 };
@@ -218,6 +219,7 @@ CrElementsPolicyPrefIndicatorTest.prototype = {
 
   /** @override */
   extraLibraries: CrElementsBrowserTest.prototype.extraLibraries.concat([
+    'settings_private_test_constants.js',
     'cr_policy_strings.js',
     'cr_policy_pref_indicator_tests.js',
   ]),

@@ -20,55 +20,75 @@ cr.define('cr_slider', function() {
       setup(function() {
         PolymerTest.clearBody();
         slider = document.createElement('cr-slider');
+        slider.pref = {
+          type: chrome.settingsPrivate.PrefType.NUMBER,
+          value: 16,
+        };
         document.body.appendChild(slider);
         paperSlider = slider.$$('paper-slider');
       });
 
+      test('enforce value', function() {
+        // Test that the indicator is not present until after the pref is
+        // enforced.
+        indicator = slider.$$('cr-policy-pref-indicator');
+        assertFalse(!!indicator);
+        slider.pref = {
+          controlledBy: chrome.settingsPrivate.ControlledBy.DEVICE_POLICY,
+          enforcement: chrome.settingsPrivate.Enforcement.ENFORCED,
+          type: chrome.settingsPrivate.PrefType.NUMBER,
+          value: 16,
+        };
+        Polymer.dom.flush();
+        indicator = slider.$$('cr-policy-pref-indicator');
+        assertTrue(!!indicator);
+      });
+
       test('set value', function() {
         slider.tickValues = tickValues;
-        slider.value = 16;
+        slider.set('pref.value', 16);
         expectEquals(6, paperSlider.max);
         expectEquals(3, paperSlider.value);
         expectEquals(3, paperSlider.immediateValue);
 
         // cr-slider only supports snapping to a range of tick values. Setting
         // to an in-between value should snap to an indexed value.
-        slider.value = 70;
+        slider.set('pref.value', 70);
         expectEquals(5, paperSlider.value);
         expectEquals(5, paperSlider.immediateValue);
-        expectEquals(64, slider.value);
+        expectEquals(64, slider.pref.value);
 
         // Setting the value out-of-range should clamp the slider.
-        slider.value = -100;
+        slider.set('pref.value', -100);
         expectEquals(0, paperSlider.value);
         expectEquals(0, paperSlider.immediateValue);
-        expectEquals(2, slider.value);
+        expectEquals(2, slider.pref.value);
       });
 
       test('move slider', function() {
         slider.tickValues = tickValues;
-        slider.value = 30;
+        slider.set('pref.value', 30);
         expectEquals(4, paperSlider.value);
 
         MockInteractions.pressAndReleaseKeyOn(
             paperSlider, 39 /* right */);
         expectEquals(5, paperSlider.value);
-        expectEquals(64, slider.value);
+        expectEquals(64, slider.pref.value);
 
         MockInteractions.pressAndReleaseKeyOn(
             paperSlider, 39 /* right */);
         expectEquals(6, paperSlider.value);
-        expectEquals(128, slider.value);
+        expectEquals(128, slider.pref.value);
 
         MockInteractions.pressAndReleaseKeyOn(
             paperSlider, 39 /* right */);
         expectEquals(6, paperSlider.value);
-        expectEquals(128, slider.value);
+        expectEquals(128, slider.pref.value);
 
         MockInteractions.pressAndReleaseKeyOn(
             paperSlider, 37 /* left */);
         expectEquals(5, paperSlider.value);
-        expectEquals(64, slider.value);
+        expectEquals(64, slider.pref.value);
       });
 
       test('findNearestIndex_', function() {

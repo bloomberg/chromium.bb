@@ -36,7 +36,7 @@
       </div>
       <div class="settings-box">
         <div class="start" id="mouseSpeedLabel">$i18n{mouseSpeed}</div>
-        <cr-slider value="{{prefs.settings.mouse.sensitivity2.value}}"
+        <cr-slider pref="{{prefs.settings.mouse.sensitivity2}}"
             tick-values="[[sensitivityValues_]]"
             aria-labelledby="mouseSpeedLabel"
             label-min="$i18n{pointerSlow}"
@@ -61,7 +61,7 @@
       <div class="settings-box">
         <div class="start" id="touchpadSpeedLabel">$i18n{touchpadSpeed}</div>
           <cr-slider id="touchpadSensitivity"
-              value="{{prefs.settings.touchpad.sensitivity2.value}}"
+              pref="{{prefs.settings.touchpad.sensitivity2}}"
               tick-values="[[sensitivityValues_]]"
               aria-labelledby="touchpadSpeedLabel"
               label-min="$i18n{pointerSlow}"

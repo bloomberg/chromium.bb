@@ -314,12 +314,12 @@ cr.define('device_page_tests', function() {
         expectFalse(pointersPage.$$('#mouse settings-toggle-button').checked);
 
         var slider = assert(pointersPage.$$('#mouse cr-slider'));
-        expectEquals(4, slider.value);
+        expectEquals(4, slider.pref.value);
         MockInteractions.pressAndReleaseKeyOn(slider.$.slider, 37 /* left */);
         expectEquals(3, devicePage.prefs.settings.mouse.sensitivity2.value);
 
         pointersPage.set('prefs.settings.mouse.sensitivity2.value', 5);
-        expectEquals(5, slider.value);
+        expectEquals(5, slider.pref.value);
       });
 
       test('touchpad', function() {
@@ -329,13 +329,12 @@ cr.define('device_page_tests', function() {
         expectFalse(pointersPage.$$('#touchpad #enableTapDragging').checked);
 
         var slider = assert(pointersPage.$$('#touchpad cr-slider'));
-        expectEquals(3, slider.value);
-        MockInteractions.pressAndReleaseKeyOn(
-            slider.$.slider, 39 /* right */);
+        expectEquals(3, slider.pref.value);
+        MockInteractions.pressAndReleaseKeyOn(slider.$.slider, 39 /* right */);
         expectEquals(4, devicePage.prefs.settings.touchpad.sensitivity2.value);
 
         pointersPage.set('prefs.settings.touchpad.sensitivity2.value', 2);
-        expectEquals(2, slider.value);
+        expectEquals(2, slider.pref.value);
       });
 
       test('link doesn\'t activate control', function(done) {
@@ -401,37 +400,34 @@ cr.define('device_page_tests', function() {
         assertTrue(!!collapse);
         expectTrue(collapse.opened);
 
-        expectEquals(500, keyboardPage.$.delaySlider.value);
-        expectEquals(500, keyboardPage.$.repeatRateSlider.value);
+        expectEquals(500, keyboardPage.$.delaySlider.pref.value);
+        expectEquals(500, keyboardPage.$.repeatRateSlider.pref.value);
 
         // Test interaction with the cr-slider's underlying paper-slider.
         MockInteractions.pressAndReleaseKeyOn(
             keyboardPage.$.delaySlider.$.slider, 37 /* left */);
         MockInteractions.pressAndReleaseKeyOn(
             keyboardPage.$.repeatRateSlider.$.slider, 39 /* right */);
-        expectEquals(1000,
-            devicePage.prefs.settings.language.xkb_auto_repeat_delay_r2.value);
-        expectEquals(
-            300,
-            devicePage.prefs.settings.language.xkb_auto_repeat_interval_r2.value
-        );
+        var language = devicePage.prefs.settings.language;
+        expectEquals(1000, language.xkb_auto_repeat_delay_r2.value);
+        expectEquals(300, language.xkb_auto_repeat_interval_r2.value);
 
         // Test sliders change when prefs change.
         devicePage.set(
             'prefs.settings.language.xkb_auto_repeat_delay_r2.value', 1500);
-        expectEquals(1500, keyboardPage.$.delaySlider.value);
+        expectEquals(1500, keyboardPage.$.delaySlider.pref.value);
         devicePage.set(
             'prefs.settings.language.xkb_auto_repeat_interval_r2.value',
             2000);
-        expectEquals(2000, keyboardPage.$.repeatRateSlider.value);
+        expectEquals(2000, keyboardPage.$.repeatRateSlider.pref.value);
 
         // Test sliders round to nearest value when prefs change.
         devicePage.set(
             'prefs.settings.language.xkb_auto_repeat_delay_r2.value', 600);
-        expectEquals(500, keyboardPage.$.delaySlider.value);
+        expectEquals(500, keyboardPage.$.delaySlider.pref.value);
         devicePage.set(
             'prefs.settings.language.xkb_auto_repeat_interval_r2.value', 45);
-        expectEquals(50, keyboardPage.$.repeatRateSlider.value);
+        expectEquals(50, keyboardPage.$.repeatRateSlider.pref.value);
 
         devicePage.set(
             'prefs.settings.language.xkb_auto_repeat_enabled_r2.value',

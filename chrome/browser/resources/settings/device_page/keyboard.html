@@ -83,7 +83,7 @@
       <div class="settings-box continuation settings-checkbox-spacer">
         <div class="start" id="repeatDelayLabel">$i18n{keyRepeatDelay}</div>
         <cr-slider id="delaySlider"
-            value="{{prefs.settings.language.xkb_auto_repeat_delay_r2.value}}"
+            pref="{{prefs.settings.language.xkb_auto_repeat_delay_r2}}"
             tick-values="[[autoRepeatDelays_]]"
             disabled="[[
                 !prefs.settings.language.xkb_auto_repeat_enabled_r2.value]]"
@@ -95,8 +95,8 @@
       <div class="settings-box continuation settings-checkbox-spacer">
         <div class="start" id="repeatRateLabel">$i18n{keyRepeatRate}</div>
         <cr-slider id="repeatRateSlider"
-            value="{{
-                prefs.settings.language.xkb_auto_repeat_interval_r2.value}}"
+            pref="{{
+                prefs.settings.language.xkb_auto_repeat_interval_r2}}"
             tick-values="[[autoRepeatIntervals_]]"
             disabled="[[
                 !prefs.settings.language.xkb_auto_repeat_enabled_r2.value]]"

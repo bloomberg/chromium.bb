@@ -14,7 +14,7 @@
     <div class="settings-box first">
       <div class="start">$i18n{fontSize}</div>
       <cr-slider id="sizeSlider"
-          value="{{prefs.webkit.webprefs.default_font_size.value}}"
+          pref="{{prefs.webkit.webprefs.default_font_size}}"
           tick-values="[[fontSizeRange_]]"
           label-min="$i18n{tiny}" label-max="$i18n{huge}">
       </cr-slider>
@@ -29,7 +29,7 @@
         : $i18n{quickBrownFox}
       </div>
       <cr-slider id="minimumSizeSlider"
-          value="{{prefs.webkit.webprefs.minimum_font_size.value}}"
+          pref="{{prefs.webkit.webprefs.minimum_font_size}}"
           tick-values="[[minimumFontSizeRange_]]"
           label-min="$i18n{tiny}" label-max="$i18n{huge}">
       </cr-slider>
