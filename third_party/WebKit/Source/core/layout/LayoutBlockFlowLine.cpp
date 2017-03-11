@@ -548,9 +548,11 @@ static inline void setLogicalWidthForTextRun(
   // FIXME: Having any font feature settings enabled can lead to selection gaps
   // on Chromium-mac. https://bugs.webkit.org/show_bug.cgi?id=113418
   bool canUseCachedWordMeasurements =
-      font.canShapeWordByWord() && !font.getFontDescription().featureSettings();
+      font.canShapeWordByWord() &&
+      !font.getFontDescription().featureSettings() && layoutText.is8Bit();
 #else
-  bool canUseCachedWordMeasurements = font.canShapeWordByWord();
+  bool canUseCachedWordMeasurements =
+      font.canShapeWordByWord() && layoutText.is8Bit();
 #endif
 
   if (canUseCachedWordMeasurements) {

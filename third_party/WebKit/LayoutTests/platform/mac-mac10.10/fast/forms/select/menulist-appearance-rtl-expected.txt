@@ -64,8 +64,8 @@ layer at (0,0) size 800x549
         LayoutBlockFlow (anonymous) at (0,36) size 784x19
           LayoutMenuList {SELECT} at (0,1) size 115x18 [bgcolor=#F8F8F8]
             LayoutBlockFlow (anonymous) at (0,0) size 115x21
-              LayoutText (anonymous) at (8,2) size 76x13
-                text run at (8,2) width 76 RTL: "\x{627}\x{644}\x{627}\x{642}\x{62A}\x{631}\x{627}\x{62D}\x{627}\x{62A} / \x{627}\x{644}\x{634}\x{643}\x{627}\x{648}\x{64A}"
+              LayoutText (anonymous) at (8,2) size 84x13
+                text run at (8,2) width 84 RTL: "\x{627}\x{644}\x{627}\x{642}\x{62A}\x{631}\x{627}\x{62D}\x{627}\x{62A} / \x{627}\x{644}\x{634}\x{643}\x{627}\x{648}\x{64A}"
           LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow {HR} at (0,309) size 784x2 [border: (1px inset #EEEEEE)]
       LayoutBlockFlow {P} at (0,327) size 784x18

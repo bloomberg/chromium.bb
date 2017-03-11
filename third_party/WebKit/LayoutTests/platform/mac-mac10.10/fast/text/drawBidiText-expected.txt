@@ -32,8 +32,8 @@ layer at (8,42) size 334x227 clip at (9,43) size 321x225
       LayoutText {#text} at (2,0) size 112x21
         text run at (2,0) width 112 RTL: "\x{5DE}\x{5E9}\x{5D4}\x{5D5} \x{5E2}\x{5DD} \x{5E0}\x{5B4}\x{5E7}\x{5BC}\x{5D5}\x{5BC}\x{5D3}"
     LayoutBlockFlow {OPTION} at (1,113.97) size 321.19x25
-      LayoutText {#text} at (2,0) size 77x21
-        text run at (2,0) width 77 RTL: "\x{627}\x{644}\x{644}\x{63A}\x{629} \x{627}\x{644}\x{639}\x{631}\x{628}\x{64A}\x{629}"
+      LayoutText {#text} at (2,0) size 74x21
+        text run at (2,0) width 74 RTL: "\x{627}\x{644}\x{644}\x{63A}\x{629} \x{627}\x{644}\x{639}\x{631}\x{628}\x{64A}\x{629}"
     LayoutBlockFlow {OPTION} at (1,138.97) size 321.19x22.59
       LayoutText {#text} at (2,0) size 125x21
         text run at (2,0) width 125: "Et volia\x{300}: ATSUI!"
