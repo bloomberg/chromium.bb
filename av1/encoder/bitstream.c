@@ -4571,8 +4571,11 @@ static void write_uncompressed_header(AV1_COMP *cpi,
 
 #if CONFIG_GLOBAL_MOTION
 static void write_global_motion_params(WarpedMotionParams *params,
-                                       aom_prob *probs, aom_writer *w) {
+                                       aom_prob *probs, aom_writer *w,
+                                       int allow_hp) {
   TransformationType type = params->wmtype;
+  int trans_bits;
+  int trans_prec_diff;
   av1_write_token(w, av1_global_motion_types_tree, probs,
                   &global_motion_types_encodings[type]);
   switch (type) {
@@ -4608,10 +4611,15 @@ static void write_global_motion_params(WarpedMotionParams *params,
       }
     // fallthrough intended
     case TRANSLATION:
-      aom_write_primitive_symmetric(w, (params->wmmat[0] >> GM_TRANS_PREC_DIFF),
-                                    GM_ABS_TRANS_BITS);
-      aom_write_primitive_symmetric(w, (params->wmmat[1] >> GM_TRANS_PREC_DIFF),
-                                    GM_ABS_TRANS_BITS);
+      trans_bits = (type == TRANSLATION) ? GM_ABS_TRANS_ONLY_BITS - !allow_hp
+                                         : GM_ABS_TRANS_BITS;
+      trans_prec_diff = (type == TRANSLATION)
+                            ? GM_TRANS_ONLY_PREC_DIFF + !allow_hp
+                            : GM_TRANS_PREC_DIFF;
+      aom_write_primitive_symmetric(w, (params->wmmat[0] >> trans_prec_diff),
+                                    trans_bits);
+      aom_write_primitive_symmetric(w, (params->wmmat[1] >> trans_prec_diff),
+                                    trans_bits);
       break;
     case IDENTITY: break;
     default: assert(0);
@@ -4631,7 +4639,8 @@ static void write_global_motion(AV1_COMP *cpi, aom_writer *w) {
     }
 #endif
     write_global_motion_params(&cm->global_motion[frame],
-                               cm->fc->global_motion_types_prob, w);
+                               cm->fc->global_motion_types_prob, w,
+                               cm->allow_high_precision_mv);
     /*
     printf("Frame %d/%d: Enc Ref %d (used %d): %d %d %d %d\n",
            cm->current_video_frame, cm->show_frame, frame,

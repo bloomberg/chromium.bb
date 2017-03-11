@@ -4395,9 +4395,12 @@ static void read_supertx_probs(FRAME_CONTEXT *fc, aom_reader *r) {
 
 #if CONFIG_GLOBAL_MOTION
 static void read_global_motion_params(WarpedMotionParams *params,
-                                      aom_prob *probs, aom_reader *r) {
+                                      aom_prob *probs, aom_reader *r,
+                                      int allow_hp) {
   TransformationType type =
       aom_read_tree(r, av1_global_motion_types_tree, probs, ACCT_STR);
+  int trans_bits;
+  int trans_dec_factor;
   set_default_gmparams(params);
   params->wmtype = type;
   switch (type) {
@@ -4434,10 +4437,15 @@ static void read_global_motion_params(WarpedMotionParams *params,
       }
     // fallthrough intended
     case TRANSLATION:
-      params->wmmat[0] = aom_read_primitive_symmetric(r, GM_ABS_TRANS_BITS) *
-                         GM_TRANS_DECODE_FACTOR;
-      params->wmmat[1] = aom_read_primitive_symmetric(r, GM_ABS_TRANS_BITS) *
-                         GM_TRANS_DECODE_FACTOR;
+      trans_bits = (type == TRANSLATION) ? GM_ABS_TRANS_ONLY_BITS - !allow_hp
+                                         : GM_ABS_TRANS_BITS;
+      trans_dec_factor = (type == TRANSLATION)
+                             ? GM_TRANS_ONLY_DECODE_FACTOR * (1 << !allow_hp)
+                             : GM_TRANS_DECODE_FACTOR;
+      params->wmmat[0] =
+          aom_read_primitive_symmetric(r, trans_bits) * trans_dec_factor;
+      params->wmmat[1] =
+          aom_read_primitive_symmetric(r, trans_bits) * trans_dec_factor;
       break;
     case IDENTITY: break;
     default: assert(0);
@@ -4450,7 +4458,8 @@ static void read_global_motion(AV1_COMMON *cm, aom_reader *r) {
   int frame;
   for (frame = LAST_FRAME; frame <= ALTREF_FRAME; ++frame) {
     read_global_motion_params(&cm->global_motion[frame],
-                              cm->fc->global_motion_types_prob, r);
+                              cm->fc->global_motion_types_prob, r,
+                              cm->allow_high_precision_mv);
     /*
     printf("Dec Ref %d [%d/%d]: %d %d %d %d\n",
            frame, cm->current_video_frame, cm->show_frame,

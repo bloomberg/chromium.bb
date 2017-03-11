@@ -123,8 +123,11 @@ typedef struct {
 
 #define GM_TRANS_PREC_BITS 6
 #define GM_ABS_TRANS_BITS 12
+#define GM_ABS_TRANS_ONLY_BITS (GM_ABS_TRANS_BITS - GM_TRANS_PREC_BITS + 3)
 #define GM_TRANS_PREC_DIFF (WARPEDMODEL_PREC_BITS - GM_TRANS_PREC_BITS)
+#define GM_TRANS_ONLY_PREC_DIFF (WARPEDMODEL_PREC_BITS - 3)
 #define GM_TRANS_DECODE_FACTOR (1 << GM_TRANS_PREC_DIFF)
+#define GM_TRANS_ONLY_DECODE_FACTOR (1 << GM_TRANS_ONLY_PREC_DIFF)
 
 #define GM_ALPHA_PREC_BITS 15
 #define GM_ABS_ALPHA_BITS 12
@@ -158,6 +161,13 @@ static INLINE int block_center_y(int mi_row, BLOCK_SIZE bs) {
   return mi_row * MI_SIZE + bh / 2 - 1;
 }
 
+static INLINE int convert_to_trans_prec(int allow_hp, int coor) {
+  const int shift =
+      allow_hp ? WARPEDMODEL_PREC_BITS - 3 : WARPEDMODEL_PREC_BITS - 2;
+  const int scale = allow_hp ? 0 : 1;
+  return (ROUND_POWER_OF_TWO_SIGNED(coor, shift) << scale);
+}
+
 // Convert a global motion translation vector (which may have more bits than a
 // regular motion vector) into a motion vector
 static INLINE int_mv gm_get_motion_vector(const WarpedMotionParams *gm,
@@ -168,6 +178,13 @@ static INLINE int_mv gm_get_motion_vector(const WarpedMotionParams *gm,
   int_mv res;
   const int32_t *mat = gm->wmmat;
   int xc, yc, x, y;
+
+  if (gm->wmtype == TRANSLATION) {
+    res.as_mv.row = gm->wmmat[0] >> GM_TRANS_ONLY_PREC_DIFF;
+    res.as_mv.col = gm->wmmat[1] >> GM_TRANS_ONLY_PREC_DIFF;
+    return res;
+  }
+
   if (bsize >= BLOCK_8X8 || unify_bsize) {
     x = block_center_x(mi_col, bsize);
     y = block_center_y(mi_row, bsize);
@@ -177,8 +194,6 @@ static INLINE int_mv gm_get_motion_vector(const WarpedMotionParams *gm,
     x += (block_idx & 1) * MI_SIZE / 2;
     y += (block_idx & 2) * MI_SIZE / 4;
   }
-  int shift = allow_hp ? WARPEDMODEL_PREC_BITS - 3 : WARPEDMODEL_PREC_BITS - 2;
-  int scale = allow_hp ? 0 : 1;
 
   if (gm->wmtype == ROTZOOM) {
     assert(gm->wmmat[5] == gm->wmmat[2]);
@@ -196,8 +211,8 @@ static INLINE int_mv gm_get_motion_vector(const WarpedMotionParams *gm,
     yc = yc > 0 ? (yc + Z / 2) / Z : (yc - Z / 2) / Z;
   }
 
-  int tx = (ROUND_POWER_OF_TWO_SIGNED(xc, shift) << scale) - (x << 3);
-  int ty = (ROUND_POWER_OF_TWO_SIGNED(yc, shift) << scale) - (y << 3);
+  int tx = convert_to_trans_prec(allow_hp, xc) - (x << 3);
+  int ty = convert_to_trans_prec(allow_hp, yc) - (y << 3);
 
   res.as_mv.row = ty;
   res.as_mv.col = tx;

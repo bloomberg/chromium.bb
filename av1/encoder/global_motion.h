@@ -24,8 +24,6 @@ extern "C" {
 
 extern const double gm_advantage_thresh[TRANS_TYPES];
 
-void convert_to_params(const double *params, int32_t *model);
-
 void convert_model_to_params(const double *params, WarpedMotionParams *model);
 
 // Adds some offset to a global motion parameter and handles
