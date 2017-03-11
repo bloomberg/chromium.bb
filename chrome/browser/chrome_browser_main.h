@@ -16,7 +16,6 @@
 #include "chrome/browser/chrome_browser_field_trials.h"
 #include "chrome/browser/chrome_process_singleton.h"
 #include "chrome/browser/first_run/first_run.h"
-#include "chrome/browser/power_usage_monitor/power_usage_monitor.h"
 #include "chrome/browser/process_singleton.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "chrome/common/stack_sampling_configuration.h"
@@ -170,10 +169,6 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
   // Android doesn't support multiple browser processes, so it doesn't implement
   // ProcessSingleton.
   std::unique_ptr<ChromeProcessSingleton> process_singleton_;
-
-#if !defined(OS_LINUX) || defined(OS_CHROMEOS)  // http://crbug.com/426393
-  std::unique_ptr<PowerUsageMonitor> power_usage_monitor_;
-#endif  // !defined(OS_LINUX) || defined(OS_CHROMEOS)
 
   // Android's first run is done in Java instead of native.
   std::unique_ptr<first_run::MasterPrefs> master_prefs_;

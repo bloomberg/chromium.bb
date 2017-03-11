@@ -1914,14 +1914,6 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   }
   run_message_loop_ = started;
   browser_creator_.reset();
-
-#if !defined(OS_LINUX) || defined(OS_CHROMEOS)
-  // Collects power-related UMA stats for Windows, Mac, and ChromeOS.
-  // Linux is not supported (crbug.com/426393).
-  power_usage_monitor_.reset(new PowerUsageMonitor());
-  power_usage_monitor_->Start();
-#endif  // !defined(OS_LINUX) || defined(OS_CHROMEOS)
-
 #endif  // !defined(OS_ANDROID)
 
   PostBrowserStart();
