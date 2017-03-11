@@ -83,6 +83,12 @@
                type="chrome_html"
                preprocess="true" />
   </if>
+  <structure name="IDR_CR_ELEMENTS_CR_POLICY_INDICATOR_HTML"
+             file="../../webui/resources/cr_elements/policy/cr_policy_indicator.html"
+             type="chrome_html" />
+  <structure name="IDR_CR_ELEMENTS_CR_POLICY_INDICATOR_JS"
+             file="../../webui/resources/cr_elements/policy/cr_policy_indicator.js"
+             type="chrome_html" />
   <structure name="IDR_CR_ELEMENTS_CR_POLICY_INDICATOR_BEHAVIOR_HTML"
              file="../../webui/resources/cr_elements/policy/cr_policy_indicator_behavior.html"
              type="chrome_html" />

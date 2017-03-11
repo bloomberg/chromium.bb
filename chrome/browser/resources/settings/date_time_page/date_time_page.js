@@ -63,12 +63,6 @@ Polymer({
     },
 
     /**
-     * A fake preference to provide cr-policy-pref-indicator with policy info.
-     * @private {!chrome.settingsPrivate.PrefObject|undefined}
-     */
-    fakeTimeZonePolicyPref_: Object,
-
-    /**
      * Initialized with the current time zone so the menu displays the
      * correct value. The full option list is fetched lazily if necessary by
      * maybeGetTimeZoneList_.
@@ -118,24 +112,12 @@ Polymer({
    * @private
    */
   onTimeZoneAutoDetectPolicyChanged_: function(managed, valueFromPolicy) {
-    if (!managed) {
+    if (managed) {
+      this.timeZoneAutoDetectPolicy_ = valueFromPolicy ?
+          settings.TimeZoneAutoDetectPolicy.FORCED_ON :
+          settings.TimeZoneAutoDetectPolicy.FORCED_OFF;
+    } else {
       this.timeZoneAutoDetectPolicy_ = settings.TimeZoneAutoDetectPolicy.NONE;
-      this.fakeTimeZonePolicyPref_ = undefined;
-      return;
-    }
-
-    this.timeZoneAutoDetectPolicy_ = valueFromPolicy ?
-        settings.TimeZoneAutoDetectPolicy.FORCED_ON :
-        settings.TimeZoneAutoDetectPolicy.FORCED_OFF;
-
-    if (!this.fakeTimeZonePolicyPref_) {
-      this.fakeTimeZonePolicyPref_ = {
-        key: 'fakeTimeZonePref',
-        type: chrome.settingsPrivate.PrefType.NUMBER,
-        value: 0,
-        controlledBy: chrome.settingsPrivate.ControlledBy.DEVICE_POLICY,
-        enforcement: chrome.settingsPrivate.Enforcement.ENFORCED,
-      };
     }
   },
 

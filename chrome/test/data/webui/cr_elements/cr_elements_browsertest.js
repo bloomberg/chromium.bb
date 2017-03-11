@@ -184,6 +184,30 @@ TEST_F('CrElementsScrollableBehaviorTest', 'All', function() {
  * @constructor
  * @extends {CrElementsBrowserTest}
  */
+function CrElementsPolicyIndicatorTest() {}
+
+CrElementsPolicyIndicatorTest.prototype = {
+  __proto__: CrElementsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload:
+      'chrome://resources/cr_elements/policy/cr_policy_indicator.html',
+
+  /** @override */
+  extraLibraries: CrElementsBrowserTest.prototype.extraLibraries.concat([
+    'cr_policy_strings.js',
+    'cr_policy_indicator_tests.js',
+  ]),
+};
+
+TEST_F('CrElementsPolicyIndicatorTest', 'All', function() {
+  mocha.run();
+});
+
+/**
+ * @constructor
+ * @extends {CrElementsBrowserTest}
+ */
 function CrElementsPolicyIndicatorBehaviorTest() {}
 
 CrElementsPolicyIndicatorBehaviorTest.prototype = {

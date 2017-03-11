@@ -19,10 +19,10 @@ is set; see [settings_ui.js] for an example from MD Settings.
 
 ## Using an indicator
 
-Elements like `<cr-policy-pref-indicator>` and `<cr-policy-network-indicator>`
-are provided to be reused in WebUI pages:
+Elements like `<cr-policy-indicator>` and `<cr-policy-pref-indicator>` are
+provided to be reused in WebUI pages:
 
-    <cr-policy-pref-indicator pref="[[pref]]"></cr-policy-pref-indicator>
+    <cr-policy-indicator indicator-type="userPolicy"></cr-policy-indicator>
 
 Example: [settings-checkbox].
 

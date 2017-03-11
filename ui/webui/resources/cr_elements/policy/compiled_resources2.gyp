@@ -4,6 +4,14 @@
 {
   'targets': [
     {
+      'target_name': 'cr_policy_indicator',
+      'dependencies': [
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:assert',
+        'cr_policy_indicator_behavior',
+      ],
+      'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
+    },
+    {
       'target_name': 'cr_policy_indicator_behavior',
       'dependencies': [
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:assert',
