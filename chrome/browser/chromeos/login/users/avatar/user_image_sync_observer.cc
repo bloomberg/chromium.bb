@@ -189,7 +189,8 @@ bool UserImageSyncObserver::GetSyncedImageIndex(int* index) {
 bool UserImageSyncObserver::CanUpdateLocalImageNow() {
   if (WizardController* wizard_controller =
           WizardController::default_controller()) {
-    UserImageScreen* screen = UserImageScreen::Get(wizard_controller);
+    UserImageScreen* screen =
+        UserImageScreen::Get(wizard_controller->screen_manager());
     if (wizard_controller->current_screen() == screen) {
       if (screen->user_selected_image())
         return false;

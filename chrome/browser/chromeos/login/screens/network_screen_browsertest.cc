@@ -71,8 +71,8 @@ class NetworkScreenTest : public WizardInProcessBrowserTest {
     WizardInProcessBrowserTest::SetUpOnMainThread();
     mock_base_screen_delegate_.reset(new MockBaseScreenDelegate());
     ASSERT_TRUE(WizardController::default_controller() != nullptr);
-    network_screen_ =
-        NetworkScreen::Get(WizardController::default_controller());
+    network_screen_ = NetworkScreen::Get(
+        WizardController::default_controller()->screen_manager());
     ASSERT_TRUE(network_screen_ != nullptr);
     ASSERT_EQ(WizardController::default_controller()->current_screen(),
               network_screen_);

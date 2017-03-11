@@ -51,7 +51,6 @@ struct TimeZoneResponseData;
 // Class that manages control flow between wizard screens. Wizard controller
 // interacts with screen controllers to move the user between screens.
 class WizardController : public BaseScreenDelegate,
-                         public ScreenManager,
                          public EulaScreen::Delegate,
                          public ControllerPairingScreen::Delegate,
                          public HostPairingScreen::Delegate,
@@ -113,12 +112,18 @@ class WizardController : public BaseScreenDelegate,
   // Returns true if the current wizard instance has reached the login screen.
   bool login_screen_started() const { return login_screen_started_; }
 
-  // ScreenManager implementation.
-  BaseScreen* GetScreen(OobeScreen screen) override;
-  BaseScreen* CreateScreen(OobeScreen screen) override;
+  // Returns a given screen. Creates it lazily.
+  BaseScreen* GetScreen(OobeScreen screen);
+
+  // Returns the current ScreenManager instance.
+  ScreenManager* screen_manager() { return &screen_manager_; }
 
   // Volume percent at which spoken feedback is still audible.
   static const int kMinAudibleOutputVolumePercent;
+
+  // Allocate a given BaseScreen for the given |Screen|. Used by
+  // |screen_manager_|.
+  BaseScreen* CreateScreen(OobeScreen screen);
 
  private:
   // Show specific screen.
@@ -299,6 +304,8 @@ class WizardController : public BaseScreenDelegate,
   // Gaia credentials. If it is false, the screen may return after trying
   // attestation-based enrollment if appropriate.
   void StartEnrollmentScreen(bool force_interactive);
+
+  ScreenManager screen_manager_;
 
   // Whether to skip any screens that may normally be shown after login
   // (registration, Terms of Service, user image selection).

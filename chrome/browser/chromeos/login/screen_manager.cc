@@ -4,22 +4,24 @@
 
 #include "chrome/browser/chromeos/login/screen_manager.h"
 
+#include "base/memory/ptr_util.h"
+#include "chrome/browser/chromeos/login/wizard_controller.h"
+
 namespace chromeos {
 
-ScreenManager::ScreenManager() {
-}
+ScreenManager::ScreenManager(WizardController* wizard_controller)
+    : wizard_controller_(wizard_controller) {}
 
-ScreenManager::~ScreenManager() {
-}
+ScreenManager::~ScreenManager() {}
 
 BaseScreen* ScreenManager::GetScreen(OobeScreen screen) {
   auto iter = screens_.find(screen);
   if (iter != screens_.end())
     return iter->second.get();
 
-  BaseScreen* result = CreateScreen(screen);
+  BaseScreen* result = wizard_controller_->CreateScreen(screen);
   DCHECK(result) << "Can not create screen named " << GetOobeScreenName(screen);
-  screens_[screen] = make_linked_ptr(result);
+  screens_[screen] = base::WrapUnique(result);
   return result;
 }
 

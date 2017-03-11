@@ -222,20 +222,22 @@ class MockOutShowHide : public T {
   std::unique_ptr<H> view_;
 };
 
-#define MOCK(mock_var, screen_name, mocked_class, view_class)     \
-  mock_var = new MockOutShowHide<mocked_class, view_class>(       \
-      WizardController::default_controller(), new view_class);    \
-  WizardController::default_controller()->screens_[screen_name] = \
-      make_linked_ptr(mock_var);                                  \
-  EXPECT_CALL(*mock_var, Show()).Times(0);                        \
+#define MOCK(mock_var, screen_name, mocked_class, view_class)  \
+  mock_var = new MockOutShowHide<mocked_class, view_class>(    \
+      WizardController::default_controller(), new view_class); \
+  WizardController::default_controller()                       \
+      ->screen_manager()                                       \
+      ->screens_[screen_name] = base::WrapUnique(mock_var);    \
+  EXPECT_CALL(*mock_var, Show()).Times(0);                     \
   EXPECT_CALL(*mock_var, Hide()).Times(0);
 
 #define MOCK_WITH_DELEGATE(mock_var, screen_name, mocked_class, view_class) \
   mock_var = new MockOutShowHide<mocked_class, view_class>(                 \
       WizardController::default_controller(),                               \
       WizardController::default_controller(), new view_class);              \
-  WizardController::default_controller()->screens_[screen_name] =           \
-      make_linked_ptr(mock_var);                                            \
+  WizardController::default_controller()                                    \
+      ->screen_manager()                                                    \
+      ->screens_[screen_name] = base::WrapUnique(mock_var);                 \
   EXPECT_CALL(*mock_var, Show()).Times(0);                                  \
   EXPECT_CALL(*mock_var, Hide()).Times(0);
 
@@ -419,11 +421,13 @@ class WizardControllerFlowTest : public WizardControllerTest {
     NetworkHandler::Get()->network_state_handler()->SetCheckPortalList("");
 
     // Set up the mocks for all screens.
-    mock_network_screen_.reset(new MockNetworkScreen(
+    mock_network_screen_ = new MockNetworkScreen(
         WizardController::default_controller(),
-        WizardController::default_controller(), GetOobeUI()->GetNetworkView()));
+        WizardController::default_controller(), GetOobeUI()->GetNetworkView());
     WizardController::default_controller()
-        ->screens_[OobeScreen::SCREEN_OOBE_NETWORK] = mock_network_screen_;
+        ->screen_manager()
+        ->screens_[OobeScreen::SCREEN_OOBE_NETWORK]
+        .reset(mock_network_screen_);
     EXPECT_CALL(*mock_network_screen_, Show()).Times(0);
     EXPECT_CALL(*mock_network_screen_, Hide()).Times(0);
 
@@ -442,9 +446,10 @@ class WizardControllerFlowTest : public WizardControllerTest {
          OobeScreen::SCREEN_OOBE_ENABLE_DEBUGGING, MockEnableDebuggingScreen,
          MockEnableDebuggingScreenView);
     device_disabled_screen_view_.reset(new MockDeviceDisabledScreenView);
-    wizard_controller->screens_[OobeScreen::SCREEN_DEVICE_DISABLED] =
-        make_linked_ptr(new DeviceDisabledScreen(
-            wizard_controller, device_disabled_screen_view_.get()));
+    wizard_controller->screen_manager()
+        ->screens_[OobeScreen::SCREEN_DEVICE_DISABLED] =
+        base::MakeUnique<DeviceDisabledScreen>(
+            wizard_controller, device_disabled_screen_view_.get());
     EXPECT_CALL(*device_disabled_screen_view_, Show()).Times(0);
 
     // Switch to the initial screen.
@@ -454,7 +459,7 @@ class WizardControllerFlowTest : public WizardControllerTest {
   }
 
   void TearDownOnMainThread() override {
-    mock_network_screen_.reset();
+    mock_network_screen_ = nullptr;
     device_disabled_screen_view_.reset();
     WizardControllerTest::TearDownOnMainThread();
   }
@@ -512,7 +517,7 @@ class WizardControllerFlowTest : public WizardControllerTest {
   }
 
   void ResetAutoEnrollmentCheckScreen() {
-    WizardController::default_controller()->screens_.erase(
+    WizardController::default_controller()->screen_manager()->screens_.erase(
         OobeScreen::SCREEN_AUTO_ENROLLMENT_CHECK);
   }
 
@@ -567,7 +572,7 @@ class WizardControllerFlowTest : public WizardControllerTest {
                               ->GetCurrentTimezoneID()));
   }
 
-  linked_ptr<MockNetworkScreen> mock_network_screen_;
+  MockNetworkScreen* mock_network_screen_;  // Unowned ptr.
   MockOutShowHide<MockUpdateScreen, MockUpdateView>* mock_update_screen_;
   MockOutShowHide<MockEulaScreen, MockEulaView>* mock_eula_screen_;
   MockOutShowHide<MockEnrollmentScreen, MockEnrollmentScreenView>*

@@ -201,7 +201,8 @@ class EnterpriseEnrollmentTest : public LoginManagerTest {
 
   // Helper method to return the current EnrollmentScreen instance.
   EnrollmentScreen* enrollment_screen() {
-    return EnrollmentScreen::Get(WizardController::default_controller());
+    return EnrollmentScreen::Get(
+        WizardController::default_controller()->screen_manager());
   }
 
  private:

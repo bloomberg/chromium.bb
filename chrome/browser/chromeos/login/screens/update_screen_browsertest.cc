@@ -83,9 +83,10 @@ class UpdateScreenTest : public WizardInProcessBrowserTest {
 
     WizardInProcessBrowserTest::SetUpOnMainThread();
 
-    ASSERT_TRUE(WizardController::default_controller() != NULL);
-    update_screen_ = UpdateScreen::Get(WizardController::default_controller());
-    ASSERT_TRUE(update_screen_ != NULL);
+    ASSERT_TRUE(WizardController::default_controller() != nullptr);
+    update_screen_ = UpdateScreen::Get(
+        WizardController::default_controller()->screen_manager());
+    ASSERT_TRUE(update_screen_ != nullptr);
     ASSERT_EQ(WizardController::default_controller()->current_screen(),
               update_screen_);
     update_screen_->base_screen_delegate_ = mock_base_screen_delegate_.get();

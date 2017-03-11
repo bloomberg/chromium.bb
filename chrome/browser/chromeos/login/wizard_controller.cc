@@ -251,7 +251,10 @@ bool WizardController::zero_delay_enabled_ = false;
 PrefService* WizardController::local_state_for_testing_ = nullptr;
 
 WizardController::WizardController(LoginDisplayHost* host, OobeUI* oobe_ui)
-    : host_(host), oobe_ui_(oobe_ui), weak_factory_(this) {
+    : screen_manager_(this),
+      host_(host),
+      oobe_ui_(oobe_ui),
+      weak_factory_(this) {
   DCHECK(default_controller_ == nullptr);
   default_controller_ = this;
   if (!ash_util::IsRunningInMash()) {
@@ -358,7 +361,7 @@ ErrorScreen* WizardController::GetErrorScreen() {
 BaseScreen* WizardController::GetScreen(OobeScreen screen) {
   if (screen == OobeScreen::SCREEN_ERROR_MESSAGE)
     return GetErrorScreen();
-  return ScreenManager::GetScreen(screen);
+  return screen_manager_.GetScreen(screen);
 }
 
 BaseScreen* WizardController::CreateScreen(OobeScreen screen) {
@@ -430,7 +433,8 @@ void WizardController::ShowNetworkScreen() {
   VLOG(1) << "Showing network screen.";
   // Hide the status area initially; it only appears after OOBE first animates
   // in. Keep it visible if the user goes back to the existing network screen.
-  SetStatusAreaVisible(HasScreen(OobeScreen::SCREEN_OOBE_NETWORK));
+  SetStatusAreaVisible(
+      screen_manager_.HasScreen(OobeScreen::SCREEN_OOBE_NETWORK));
   SetCurrentScreen(GetScreen(OobeScreen::SCREEN_OOBE_NETWORK));
 
   // There are two possible screens where we listen to the incoming Bluetooth
@@ -582,7 +586,8 @@ void WizardController::ShowWrongHWIDScreen() {
 void WizardController::ShowAutoEnrollmentCheckScreen() {
   VLOG(1) << "Showing Auto-enrollment check screen.";
   SetStatusAreaVisible(true);
-  AutoEnrollmentCheckScreen* screen = AutoEnrollmentCheckScreen::Get(this);
+  AutoEnrollmentCheckScreen* screen =
+      AutoEnrollmentCheckScreen::Get(screen_manager());
   if (retry_auto_enrollment_check_)
     screen->ClearState();
   screen->set_auto_enrollment_controller(host_->GetAutoEnrollmentController());
@@ -893,7 +898,7 @@ void WizardController::InitiateOOBEUpdate() {
 void WizardController::StartOOBEUpdate() {
   VLOG(1) << "StartOOBEUpdate";
   SetCurrentScreenSmooth(GetScreen(OobeScreen::SCREEN_OOBE_UPDATE), true);
-  UpdateScreen::Get(this)->StartNetworkCheck();
+  UpdateScreen::Get(screen_manager())->StartNetworkCheck();
 }
 
 void WizardController::StartTimezoneResolve() {
@@ -1195,7 +1200,7 @@ bool WizardController::GetUsageStatisticsReporting() const {
 void WizardController::SetHostNetwork() {
   if (!shark_controller_)
     return;
-  NetworkScreen* network_screen = NetworkScreen::Get(this);
+  NetworkScreen* network_screen = NetworkScreen::Get(screen_manager());
   std::string onc_spec;
   network_screen->GetConnectedWifiNetwork(&onc_spec);
   if (!onc_spec.empty())
@@ -1205,7 +1210,7 @@ void WizardController::SetHostNetwork() {
 void WizardController::SetHostConfiguration() {
   if (!shark_controller_)
     return;
-  NetworkScreen* network_screen = NetworkScreen::Get(this);
+  NetworkScreen* network_screen = NetworkScreen::Get(screen_manager());
   shark_controller_->SetHostConfiguration(
       true,  // Eula must be accepted before we get this far.
       network_screen->GetApplicationLocale(), network_screen->GetTimezone(),
@@ -1224,7 +1229,7 @@ void WizardController::ConfigureHostRequested(
     StartupUtils::MarkEulaAccepted();
   SetUsageStatisticsReporting(send_reports);
 
-  NetworkScreen* network_screen = NetworkScreen::Get(this);
+  NetworkScreen* network_screen = NetworkScreen::Get(screen_manager());
   network_screen->SetApplicationLocaleAndInputMethod(lang, keyboard_layout);
   network_screen->SetTimezone(timezone);
 
@@ -1241,7 +1246,7 @@ void WizardController::AddNetworkRequested(const std::string& onc_spec) {
   remora_controller_->OnNetworkConnectivityChanged(
       pairing_chromeos::HostPairingController::CONNECTIVITY_CONNECTING);
 
-  NetworkScreen* network_screen = NetworkScreen::Get(this);
+  NetworkScreen* network_screen = NetworkScreen::Get(screen_manager());
   const chromeos::NetworkState* network_state = chromeos::NetworkHandler::Get()
                                                     ->network_state_handler()
                                                     ->DefaultNetwork();
@@ -1506,7 +1511,7 @@ void WizardController::StartEnrollmentScreen(bool force_interactive) {
             : policy::EnrollmentConfig::MODE_MANUAL_REENROLLMENT;
   }
 
-  EnrollmentScreen* screen = EnrollmentScreen::Get(this);
+  EnrollmentScreen* screen = EnrollmentScreen::Get(screen_manager());
   screen->SetParameters(effective_config, shark_controller_.get());
   SetStatusAreaVisible(true);
   SetCurrentScreen(screen);

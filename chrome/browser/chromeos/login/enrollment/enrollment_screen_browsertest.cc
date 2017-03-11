@@ -41,8 +41,8 @@ class EnrollmentScreenTest : public WizardInProcessBrowserTest {
 IN_PROC_BROWSER_TEST_F(EnrollmentScreenTest, TestCancel) {
   ASSERT_TRUE(WizardController::default_controller());
 
-  EnrollmentScreen* enrollment_screen =
-      EnrollmentScreen::Get(WizardController::default_controller());
+  EnrollmentScreen* enrollment_screen = EnrollmentScreen::Get(
+      WizardController::default_controller()->screen_manager());
   ASSERT_TRUE(enrollment_screen);
 
   base::RunLoop run_loop;
@@ -69,8 +69,8 @@ IN_PROC_BROWSER_TEST_F(EnrollmentScreenTest, DISABLED_TestSuccess) {
   ASSERT_TRUE(WizardController::default_controller());
   EXPECT_FALSE(StartupUtils::IsOobeCompleted());
 
-  EnrollmentScreen* enrollment_screen =
-      EnrollmentScreen::Get(WizardController::default_controller());
+  EnrollmentScreen* enrollment_screen = EnrollmentScreen::Get(
+      WizardController::default_controller()->screen_manager());
   ASSERT_TRUE(enrollment_screen);
 
   base::RunLoop run_loop;
@@ -105,8 +105,8 @@ class AttestationAuthEnrollmentScreenTest : public EnrollmentScreenTest {
 IN_PROC_BROWSER_TEST_F(AttestationAuthEnrollmentScreenTest, TestCancel) {
   ASSERT_TRUE(WizardController::default_controller());
 
-  EnrollmentScreen* enrollment_screen =
-      EnrollmentScreen::Get(WizardController::default_controller());
+  EnrollmentScreen* enrollment_screen = EnrollmentScreen::Get(
+      WizardController::default_controller()->screen_manager());
   ASSERT_TRUE(enrollment_screen);
 
   base::RunLoop run_loop;
@@ -133,7 +133,8 @@ IN_PROC_BROWSER_TEST_F(EnrollmentScreenTest, EnrollmentSpinner) {
   WizardController* wcontroller = WizardController::default_controller();
   ASSERT_TRUE(wcontroller);
 
-  EnrollmentScreen* enrollment_screen = EnrollmentScreen::Get(wcontroller);
+  EnrollmentScreen* enrollment_screen =
+      EnrollmentScreen::Get(wcontroller->screen_manager());
   ASSERT_TRUE(enrollment_screen);
 
   EnrollmentScreenView* view = enrollment_screen->GetView();
@@ -177,8 +178,8 @@ class ForcedAttestationAuthEnrollmentScreenTest : public EnrollmentScreenTest {
 IN_PROC_BROWSER_TEST_F(ForcedAttestationAuthEnrollmentScreenTest, TestCancel) {
   ASSERT_TRUE(WizardController::default_controller());
 
-  EnrollmentScreen* enrollment_screen =
-      EnrollmentScreen::Get(WizardController::default_controller());
+  EnrollmentScreen* enrollment_screen = EnrollmentScreen::Get(
+      WizardController::default_controller()->screen_manager());
   ASSERT_TRUE(enrollment_screen);
 
   base::RunLoop run_loop;
@@ -224,8 +225,8 @@ class MultiAuthEnrollmentScreenTest : public EnrollmentScreenTest {
 IN_PROC_BROWSER_TEST_F(MultiAuthEnrollmentScreenTest, TestCancel) {
   ASSERT_TRUE(WizardController::default_controller());
 
-  EnrollmentScreen* enrollment_screen =
-      EnrollmentScreen::Get(WizardController::default_controller());
+  EnrollmentScreen* enrollment_screen = EnrollmentScreen::Get(
+      WizardController::default_controller()->screen_manager());
   ASSERT_TRUE(enrollment_screen);
 
   base::RunLoop run_loop;
@@ -269,8 +270,8 @@ class ProvisionedEnrollmentScreenTest : public EnrollmentScreenTest {
 IN_PROC_BROWSER_TEST_F(ProvisionedEnrollmentScreenTest, TestBackButton) {
   ASSERT_TRUE(WizardController::default_controller());
 
-  EnrollmentScreen* enrollment_screen =
-      EnrollmentScreen::Get(WizardController::default_controller());
+  EnrollmentScreen* enrollment_screen = EnrollmentScreen::Get(
+      WizardController::default_controller()->screen_manager());
   ASSERT_TRUE(enrollment_screen);
 
   base::RunLoop run_loop;

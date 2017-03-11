@@ -18,8 +18,8 @@ namespace {
 SupervisedUserCreationScreen* GetScreen(LoginDisplayHost* host) {
   DCHECK(host);
   DCHECK(host->GetWizardController());
-  SupervisedUserCreationScreen* result =
-      SupervisedUserCreationScreen::Get(host->GetWizardController());
+  SupervisedUserCreationScreen* result = SupervisedUserCreationScreen::Get(
+      host->GetWizardController()->screen_manager());
   DCHECK(result);
   return result;
 }
