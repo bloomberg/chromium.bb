@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 mojom = "//ui/display/mojo/display_snapshot_mojo.mojom"
-public_headers = [ "//ui/display/display_snapshot_mojo.h" ]
+public_headers = [ "//ui/display/types/display_snapshot_mojo.h" ]
 traits_headers = [ "//ui/display/mojo/display_snapshot_mojo_struct_traits.h" ]
 sources = [
   "//ui/display/mojo/display_snapshot_mojo_struct_traits.cc",

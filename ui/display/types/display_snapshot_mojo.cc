@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/display/display_snapshot_mojo.h"
+#include "ui/display/types/display_snapshot_mojo.h"
 
 #include "base/memory/ptr_util.h"
 #include "ui/display/types/display_constants.h"

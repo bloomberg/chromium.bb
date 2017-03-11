@@ -10,6 +10,8 @@ component("types") {
     "display_mode.h",
     "display_snapshot.cc",
     "display_snapshot.h",
+    "display_snapshot_mojo.cc",
+    "display_snapshot_mojo.h",
     "display_types_export.h",
     "fake_display_controller.h",
     "gamma_ramp_rgb_entry.h",

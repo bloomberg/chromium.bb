@@ -5,9 +5,9 @@
 #ifndef UI_DISPLAY_MOJO_DISPLAY_SNAPSHOT_MOJO_STRUCT_TRAITS_H_
 #define UI_DISPLAY_MOJO_DISPLAY_SNAPSHOT_MOJO_STRUCT_TRAITS_H_
 
-#include "ui/display/display_snapshot_mojo.h"
 #include "ui/display/mojo/display_snapshot_mojo.mojom.h"
 #include "ui/display/types/display_mode.h"
+#include "ui/display/types/display_snapshot_mojo.h"
 
 namespace mojo {
 

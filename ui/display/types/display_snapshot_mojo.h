@@ -8,13 +8,13 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "ui/display/display_export.h"
 #include "ui/display/types/display_snapshot.h"
+#include "ui/display/types/display_types_export.h"
 
 namespace display {
 
 // DisplaySnapshot implementation that can be used with Mojo IPC.
-class DISPLAY_EXPORT DisplaySnapshotMojo : public DisplaySnapshot {
+class DISPLAY_TYPES_EXPORT DisplaySnapshotMojo : public DisplaySnapshot {
  public:
   DisplaySnapshotMojo(int64_t display_id,
                       const gfx::Point& origin,
