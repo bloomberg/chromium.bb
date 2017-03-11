@@ -12580,6 +12580,21 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
           <message name="IDS_PIN_KEYBOARD_DELETE_ACCESSIBLE_NAME" desc="Text to be spoken when the focus is set to the delete button of the PIN keyboard.">
             Delete
           </message>
+          <message name="IDS_FINGERPRINT_HINT_TEXT" desc="Text to display in the password field for user pod when user moves his mouse over the fingerprint icon.">
+            Touch to sign in
+          </message>
+          <message name="IDS_FINGERPRINT_LOGIN_TEXT" desc="Text to display in the password field for user pod when user is trying to login with fingerprint.">
+            Signing in...
+          </message>
+          <message name="IDS_FINGERPRINT_LOGIN_FAILED_TEXT" desc="Text to display in the password field for user pod when user failed to login with fingerprint.">
+            Not recognized
+          </message>
+          <message name="IDS_FINGERPRINT_ICON_MESSAGE" desc="Message to display when user moves his mouse over the fingerprint icon in the user pod.">
+            Place your finger on the fingerprint sensor to unlock the device.
+          </message>
+          <message name="IDS_LOGIN_ERROR_FINGERPRINT_MAX_ATTEMPT" desc="Couldn't sign in because fingerprint unlock has reached maximum attempt">
+            Sorry, your fingerprint is still not recognized. Please enter your password.
+          </message>
         </if>
         <message name="IDS_LOGIN_ERROR_AUTHENTICATING" desc="Couldn't sign in because password is invalid">
           Sorry, your password could not be verified. Please try again.

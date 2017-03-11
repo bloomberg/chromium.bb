@@ -125,6 +125,32 @@ cr.define('login', function() {
     5: 'forceOfflinePassword'
   };
 
+  /**
+   * Supported fingerprint unlock states.
+   * @enum {number}
+   * @const
+   */
+  var FINGERPRINT_STATES = {
+    HIDDEN: 0,
+    DEFAULT: 1,
+    SIGNIN: 2,
+    FAILED: 3,
+  };
+
+  /**
+   * The fingerprint states to classes mapping.
+   * {@code state} properties indicate current fingerprint unlock state.
+   * {@code class} properties are CSS classes used to set the icons' background
+   * and password placeholder color.
+   * @const {Array<{type: !number, class: !string}>}
+   */
+  var FINGERPRINT_STATES_MAPPING = [
+    {state: FINGERPRINT_STATES.HIDDEN, class: 'hidden'},
+    {state: FINGERPRINT_STATES.DEFAULT, class: 'default'},
+    {state: FINGERPRINT_STATES.SIGNIN, class: 'signin'},
+    {state: FINGERPRINT_STATES.FAILED, class: 'failed'}
+  ];
+
   // Focus and tab order are organized as follows:
   //
   // (1) all user pods have tab index 1 so they are traversed first;
@@ -711,6 +737,13 @@ cr.define('login', function() {
      */
     userClickAuthAllowed_: false,
 
+    /**
+     * Whether the user has recently authenticated with fingerprint.
+     * @type {boolean}
+     * @private
+     */
+    fingerprintAuthenticated_: false,
+
     /** @override */
     decorate: function() {
       this.tabIndex = UserPodTabOrder.POD_INPUT;
@@ -749,6 +782,15 @@ cr.define('login', function() {
           this.handleRemoveUserConfirmationClick_.bind(this));
       this.actionBoxRemoveUserWarningButtonElement.addEventListener('keydown',
           this.handleRemoveUserConfirmationKeyDown_.bind(this));
+
+      if (this.fingerprintIconElement) {
+        this.fingerprintIconElement.addEventListener(
+            'mouseover', this.handleFingerprintIconMouseOver_.bind(this));
+        this.fingerprintIconElement.addEventListener(
+            'mouseout', this.handleFingerprintIconMouseOut_.bind(this));
+        this.fingerprintIconElement.addEventListener(
+            'mousedown', stopEventPropagation);
+      }
 
       var customIcon = this.customIconElement;
       customIcon.parentNode.replaceChild(new UserPodCustomIcon(), customIcon);
@@ -1096,6 +1138,14 @@ cr.define('login', function() {
     },
 
     /**
+     * Gets the fingerprint icon area.
+     * @type {!HTMLDivElement}
+     */
+    get fingerprintIconElement() {
+      return this.querySelector('.fingerprint-icon-container');
+    },
+
+    /**
      * Updates the user pod element.
      */
     update: function() {
@@ -1214,6 +1264,10 @@ cr.define('login', function() {
     setUserPodIconType: function(userTypeClass) {
       this.userTypeIconAreaElement.classList.add(userTypeClass);
       this.userTypeIconAreaElement.hidden = false;
+    },
+
+    isFingerprintIconShown: function() {
+      return this.fingerprintIconElement && !this.fingerprintIconElement.hidden;
     },
 
     /**
@@ -1412,6 +1466,10 @@ cr.define('login', function() {
         this.classList.toggle('signing-in', true);
         chrome.send('attemptUnlock', [this.user.username]);
       } else if (this.isAuthTypePassword) {
+        if (this.fingerprintAuthenticated_) {
+          this.fingerprintAuthenticated_ = false;
+          return true;
+        }
         var pinValue = this.pinKeyboard ? this.pinKeyboard.value : '';
         var password = this.passwordElement.value || pinValue;
         if (!password)
@@ -1822,6 +1880,50 @@ cr.define('login', function() {
     },
 
     /**
+     * Handles mouseover event on fingerprint icon.
+     * @param {Event} e MouseOver event.
+     */
+    handleFingerprintIconMouseOver_: function(e) {
+      var bubbleContent = document.createElement('div');
+      bubbleContent.textContent =
+          loadTimeData.getString('fingerprintIconMessage');
+      this.passwordElement.placeholder =
+          loadTimeData.getString('fingerprintHint');
+
+      /** @const */ var BUBBLE_OFFSET = 25;
+      /** @const */ var BUBBLE_PADDING = -8;
+      var attachment = this.isPinShown() ? cr.ui.Bubble.Attachment.RIGHT :
+                                           cr.ui.Bubble.Attachment.BOTTOM;
+      var bubbleAnchor = this.getBubbleAnchorForFingerprintIcon_();
+      $('bubble').showContentForElement(
+          bubbleAnchor, attachment, bubbleContent, BUBBLE_OFFSET,
+          BUBBLE_PADDING, true);
+    },
+
+    /**
+     * Handles mouseout event on fingerprint icon.
+     * @param {Event} e MouseOut event.
+     */
+    handleFingerprintIconMouseOut_: function(e) {
+      var bubbleAnchor = this.getBubbleAnchorForFingerprintIcon_();
+      $('bubble').hideForElement(bubbleAnchor);
+      this.passwordElement.placeholder = loadTimeData.getString(
+          this.isPinShown() ? 'pinKeyboardPlaceholderPinPassword' :
+                              'passwordHint');
+    },
+
+    /**
+     * Returns bubble anchor of the fingerprint icon.
+     * @return {!HTMLElement} Anchor element of the bubble.
+     */
+    getBubbleAnchorForFingerprintIcon_: function() {
+      var bubbleAnchor = this;
+      if (this.isPinShown())
+        bubbleAnchor = (this.getElementsByClassName('auth-container'))[0];
+      return bubbleAnchor;
+    },
+
+    /**
      * Handles a keydown event on remove user confirmation button.
      * @param {Event} e KeyDown event.
      */
@@ -1899,8 +2001,14 @@ cr.define('login', function() {
      * button color and state and hides the error popup bubble.
      */
     updateInput_: function() {
-      if (this.submitButton)
-        this.submitButton.disabled = this.passwordElement.value.length <= 0;
+      if (this.submitButton) {
+        this.submitButton.disabled = this.passwordElement.value.length == 0;
+        if (this.isFingerprintIconShown()) {
+          this.submitButton.hidden = this.passwordElement.value.length == 0;
+        } else {
+          this.submitButton.hidden = false;
+        }
+      }
       this.showError = false;
       $('bubble').hide();
     },
@@ -3001,6 +3109,9 @@ cr.define('login', function() {
       // immediatelly.
       pod.customIconElement.setTooltip(
           icon.tooltip || {text: '', autoshow: false});
+
+      // Hide fingerprint icon when custom icon is shown.
+      this.setUserPodFingerprintIcon(username, FINGERPRINT_STATES.HIDDEN);
     },
 
     /**
@@ -3037,6 +3148,100 @@ cr.define('login', function() {
 
       // TODO(tengs): Allow option for a fading transition.
       pod.customIconElement.hide();
+
+      // Show fingerprint icon if applicable.
+      this.setUserPodFingerprintIcon(username, FINGERPRINT_STATES.DEFAULT);
+    },
+
+    /**
+     * Set a fingerprint icon in the user pod of |username|.
+     * @param {string} username Username of the selected user
+     * @param {number} state Fingerprint unlock state
+     */
+    setUserPodFingerprintIcon: function(username, state) {
+      var pod = this.getPodWithUsername_(username);
+      if (pod == null) {
+        console.error(
+            'Unable to set user pod fingerprint icon: user pod not found.');
+        return;
+      }
+      pod.fingerprintAuthenticated_ = false;
+      if (!pod.fingerprintIconElement)
+        return;
+      if (!pod.user.allowFingerprint || state == FINGERPRINT_STATES.HIDDEN ||
+          !pod.customIconElement.hidden) {
+        pod.fingerprintIconElement.hidden = true;
+        pod.submitButton.hidden = false;
+        return;
+      }
+
+      FINGERPRINT_STATES_MAPPING.forEach(function(icon) {
+          pod.fingerprintIconElement.classList.toggle(
+              icon.class, state == icon.state);
+      });
+      pod.fingerprintIconElement.hidden = false;
+      pod.submitButton.hidden = pod.passwordElement.value.length == 0;
+      this.updatePasswordField_(pod, state);
+      if (state == FINGERPRINT_STATES.DEFAULT)
+        return;
+
+      pod.fingerprintAuthenticated_ = true;
+      this.setActivatedPod(pod);
+      if (state == FINGERPRINT_STATES.FAILED) {
+        /** @const */ var RESET_ICON_TIMEOUT_MS = 500;
+        setTimeout(
+            this.resetIconAndPasswordField_.bind(this, pod),
+            RESET_ICON_TIMEOUT_MS);
+      }
+    },
+
+    /**
+     * Reset the fingerprint icon and password field.
+     * @param {UserPod} pod Pod to reset.
+     */
+    resetIconAndPasswordField_: function(pod) {
+      if (!pod.fingerprintIconElement)
+        return;
+      this.setUserPodFingerprintIcon(
+          pod.user.username, FINGERPRINT_STATES.DEFAULT);
+    },
+
+    /**
+     * Remove the fingerprint icon in the user pod.
+     * @param {string} username Username of the selected user
+     */
+    removeUserPodFingerprintIcon: function(username) {
+      var pod = this.getPodWithUsername_(username);
+      if (pod == null) {
+        console.error('No user pod found (when removing fingerprint icon).');
+        return;
+      }
+      this.resetIconAndPasswordField_(pod);
+      if (pod.fingerprintIconElement) {
+        pod.fingerprintIconElement.parentNode.removeChild(
+            pod.fingerprintIconElement);
+      }
+      pod.submitButton.hidden = false;
+    },
+
+    /**
+     * Updates the password field in the user pod.
+     * @param {UserPod} pod Pod to update.
+     * @param {number} state Fingerprint unlock state
+     */
+    updatePasswordField_: function(pod, state) {
+      FINGERPRINT_STATES_MAPPING.forEach(function(item) {
+        pod.passwordElement.classList.toggle(item.class, state == item.state);
+      });
+      var placeholderStr = loadTimeData.getString(
+          pod.isPinShown() ? 'pinKeyboardPlaceholderPinPassword' :
+                             'passwordHint');
+      if (state == FINGERPRINT_STATES.SIGNIN) {
+        placeholderStr = loadTimeData.getString('fingerprintSigningin');
+      } else if (state == FINGERPRINT_STATES.FAILED) {
+        placeholderStr = loadTimeData.getString('fingerprintSigninFailed');
+      }
+      pod.passwordElement.placeholder = placeholderStr;
     },
 
     /**
@@ -3308,6 +3513,8 @@ cr.define('login', function() {
           pod.isActionBoxMenuHovered = false;
           pod.classList.remove('focused');
           pod.setPinVisibility(false);
+          this.setUserPodFingerprintIcon(
+              pod.user.username, FINGERPRINT_STATES.HIDDEN);
           // On Desktop, the faded style is not set correctly, so we should
           // manually fade out non-focused pods if there is a focused pod.
           if (pod.user.isDesktopUser && podToFocus)
@@ -3347,6 +3554,8 @@ cr.define('login', function() {
         this.firstShown_ = false;
         this.lastFocusedPod_ = podToFocus;
         this.scrollFocusedPodIntoView();
+        this.setUserPodFingerprintIcon(
+            podToFocus.user.username, FINGERPRINT_STATES.DEFAULT);
       } else {
         chrome.send('noPodFocused');
       }

@@ -427,6 +427,10 @@ void SigninScreenHandler::DeclareLocalizedValues(
                IDS_PIN_KEYBOARD_HINT_TEXT_PIN_PASSWORD);
   builder->Add("pinKeyboardDeleteAccessibleName",
                IDS_PIN_KEYBOARD_DELETE_ACCESSIBLE_NAME);
+  builder->Add("fingerprintHint", IDS_FINGERPRINT_HINT_TEXT);
+  builder->Add("fingerprintIconMessage", IDS_FINGERPRINT_ICON_MESSAGE);
+  builder->Add("fingerprintSigningin", IDS_FINGERPRINT_LOGIN_TEXT);
+  builder->Add("fingerprintSigninFailed", IDS_FINGERPRINT_LOGIN_FAILED_TEXT);
   builder->Add("signingIn", IDS_LOGIN_POD_SIGNING_IN);
   builder->Add("podMenuButtonAccessibleName",
                IDS_LOGIN_POD_MENU_BUTTON_ACCESSIBLE_NAME);

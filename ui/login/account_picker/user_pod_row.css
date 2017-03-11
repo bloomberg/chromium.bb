@@ -415,6 +415,7 @@ html[dir=rtl] .main-pane {
   display: none;
 }
 
+.fingerprint-icon-container,
 .custom-icon-container {
   display: flex;
   flex: none;
@@ -552,6 +553,42 @@ html[dir=rtl] .user-type-icon-area {
 
 .user-type-icon-area.app .user-type-icon-image {
   background-image: url(chrome://theme/IDR_KIOSK_APP_USER_POD_ICON);
+}
+
+.fingerprint-icon-container.hidden {
+  display: none;
+}
+
+.fingerprint-icon-container.default .fingerprint-icon-image {
+  background-image: url(../../webui/resources/images/fingerprint_default.svg);
+}
+
+.fingerprint-icon-container.default:hover .fingerprint-icon-image {
+  background-image: url(../../webui/resources/images/fingerprint_signin.svg);
+}
+
+.fingerprint-icon-container.signin .fingerprint-icon-image {
+  background-image: url(../../webui/resources/images/fingerprint_signin.svg);
+}
+
+.fingerprint-icon-container.failed .fingerprint-icon-image {
+  background-image: url(../../webui/resources/images/fingerprint_failed.svg);
+}
+
+.pod input[type='password'].hidden::-webkit-input-placeholder {
+  color: grey;
+}
+
+.pod input[type='password'].default::-webkit-input-placeholder {
+  color: grey;
+}
+
+.pod input[type='password'].signin::-webkit-input-placeholder {
+  color: var(--google-blue-500);
+}
+
+.pod input[type='password'].failed::-webkit-input-placeholder {
+  color: var(--google-red-500);
 }
 
 .action-box-menu {

@@ -46,6 +46,12 @@
     <div class="auth-container">
       <!-- Password Authentication -->
       <div class="custom-icon-container" hidden></div>
+<if expr="chromeos">
+      <div class="fingerprint-icon-container" hidden
+           i18n-values="aria-label:fingerprintIconMessage">
+        <div class="custom-icon fingerprint-icon-image"></div>
+      </div>
+</if>
       <div class="password-entry-container">
         <div class="password-container">
           <input type="password" class="password"
