@@ -34,6 +34,12 @@ class MockNetworkQualityProvider
   MOCK_METHOD1(
       RemoveEffectiveConnectionTypeObserver,
       void(net::NetworkQualityEstimator::EffectiveConnectionTypeObserver*));
+  MOCK_METHOD1(
+      AddRTTAndThroughputEstimatesObserver,
+      void(net::NetworkQualityEstimator::RTTAndThroughputEstimatesObserver*));
+  MOCK_METHOD1(
+      RemoveRTTAndThroughputEstimatesObserver,
+      void(net::NetworkQualityEstimator::RTTAndThroughputEstimatesObserver*));
 };
 
 }  // namespace

@@ -28,6 +28,16 @@ void OverrideEffectiveConnectionTypeOnIO(net::EffectiveConnectionType type,
   network_quality_estimator->ReportEffectiveConnectionTypeForTesting(type);
 }
 
+void OverrideRTTsAndWaitOnIO(base::TimeDelta rtt, IOThread* io_thread) {
+  if (!io_thread->globals()->network_quality_estimator)
+    return;
+  net::NetworkQualityEstimator* network_quality_estimator =
+      io_thread->globals()->network_quality_estimator.get();
+  if (!network_quality_estimator)
+    return;
+  network_quality_estimator->ReportRTTsAndThroughputForTesting(rtt, rtt, -1);
+}
+
 }  // namespace
 
 void OverrideEffectiveConnectionTypeAndWait(net::EffectiveConnectionType type) {
@@ -39,6 +49,18 @@ void OverrideEffectiveConnectionTypeAndWait(net::EffectiveConnectionType type) {
       content::BrowserThread::IO, FROM_HERE,
       base::Bind(&OverrideEffectiveConnectionTypeOnIO, type,
                  g_browser_process->io_thread()),
+      run_loop.QuitClosure());
+  run_loop.Run();
+}
+
+void OverrideRTTsAndWait(base::TimeDelta rtt) {
+  // Block |run_loop| until OverrideRTTsAndWaitOnIO has completed.
+  // Any UI tasks posted by calling OverrideRTTsAndWaitOnIO will complete before
+  // the reply unblocks |run_loop|.
+  base::RunLoop run_loop;
+  content::BrowserThread::PostTaskAndReply(
+      content::BrowserThread::IO, FROM_HERE,
+      base::Bind(&OverrideRTTsAndWaitOnIO, rtt, g_browser_process->io_thread()),
       run_loop.QuitClosure());
   run_loop.Run();
 }

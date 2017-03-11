@@ -35,6 +35,14 @@ class NetworkQualityProviderStub
       net::NetworkQualityEstimator::EffectiveConnectionTypeObserver* observer)
       override;
 
+  void AddRTTAndThroughputEstimatesObserver(
+      net::NetworkQualityEstimator::RTTAndThroughputEstimatesObserver* observer)
+      override;
+
+  void RemoveRTTAndThroughputEstimatesObserver(
+      net::NetworkQualityEstimator::RTTAndThroughputEstimatesObserver* observer)
+      override;
+
   void SetEffectiveConnectionTypeForTest(net::EffectiveConnectionType type) {
     connection_type_ = type;
   }
