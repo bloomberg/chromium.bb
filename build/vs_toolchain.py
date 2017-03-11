@@ -238,8 +238,8 @@ def _CopyRuntime(target_dir, source_dir, target_cpu, debug):
   """Copy the VS runtime DLLs, only if the target doesn't exist, but the target
   directory does exist. Handles VS 2013, VS 2015, and VS 2017."""
   suffix = "d.dll" if debug else ".dll"
-  if GetVisualStudioVersion() == '2015' or GetVisualStudioVersion() == '2017':
-    # VS 2017 RC uses the same CRT DLLs as VS 2015.
+  if GetVisualStudioVersion() in ['2015', '2017']:
+    # VS 2017 uses the same CRT DLLs as VS 2015.
     _CopyUCRTRuntime(target_dir, source_dir, '%s140' + suffix, suffix)
   else:
     _CopyRuntime2013(target_dir, source_dir, 'msvc%s120' + suffix)
@@ -343,8 +343,10 @@ def _GetDesiredVsToolchainHashes():
   if GetVisualStudioVersion() == '2015':
     # Update 3 final with patches with 10.0.14393.0 SDK.
     return ['d3cb0e37bdd120ad0ac4650b674b09e81be45616']
-  else:
+  elif GetVisualStudioVersion() == '2013':
     return ['03a4e939cd325d6bc5216af41b92d02dda1366a6']
+  else:
+    raise Exception('Unsupported VS version %s' % GetVisualStudioVersion())
 
 
 def ShouldUpdateToolchain():
