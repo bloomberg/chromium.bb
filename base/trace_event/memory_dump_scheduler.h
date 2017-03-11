@@ -41,6 +41,10 @@ class BASE_EXPORT MemoryDumpScheduler {
   // Starts polling memory total.
   void NotifyPollingSupported();
 
+  // Resets time for triggering dump to account for minimum time between the
+  // dumps.
+  void NotifyDumpTriggered();
+
   // Disables all triggers.
   void DisableAllTriggers();
 
@@ -68,14 +72,22 @@ class BASE_EXPORT MemoryDumpScheduler {
   };
 
   struct PollingTriggerState {
+    enum State {
+      CONFIGURED,  // Polling trigger was added.
+      ENABLED,     // Polling is running.
+      DISABLED     // Polling is disabled.
+    };
+
     static const uint32_t kMaxNumMemorySamples = 50;
 
     explicit PollingTriggerState(
         scoped_refptr<SingleThreadTaskRunner> polling_task_runner);
     ~PollingTriggerState();
 
-    bool is_configured;
-    bool is_polling_enabled;
+    // Helper to clear the tracked memory totals and poll count from last dump.
+    void ResetTotals();
+
+    State current_state;
     MemoryDumpLevelOfDetail level_of_detail;
 
     scoped_refptr<SingleThreadTaskRunner> polling_task_runner;

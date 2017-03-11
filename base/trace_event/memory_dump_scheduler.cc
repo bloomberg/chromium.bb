@@ -33,16 +33,16 @@ void MemoryDumpScheduler::AddTrigger(MemoryDumpType trigger_type,
                                      uint32_t min_time_between_dumps_ms) {
   if (trigger_type == MemoryDumpType::PEAK_MEMORY_USAGE) {
     DCHECK(!periodic_state_.is_configured);
-    DCHECK(!polling_state_.is_configured);
+    DCHECK_EQ(PollingTriggerState::DISABLED, polling_state_.current_state);
     DCHECK_NE(0u, min_time_between_dumps_ms);
 
     polling_state_.level_of_detail = level_of_detail;
     polling_state_.min_polls_between_dumps =
         (min_time_between_dumps_ms + polling_state_.polling_interval_ms - 1) /
         polling_state_.polling_interval_ms;
-    polling_state_.is_configured = true;
+    polling_state_.current_state = PollingTriggerState::CONFIGURED;
   } else if (trigger_type == MemoryDumpType::PERIODIC_INTERVAL) {
-    DCHECK(!polling_state_.is_configured);
+    DCHECK_EQ(PollingTriggerState::DISABLED, polling_state_.current_state);
     periodic_state_.is_configured = true;
     DCHECK_NE(0u, min_time_between_dumps_ms);
     switch (level_of_detail) {
@@ -83,30 +83,29 @@ void MemoryDumpScheduler::NotifyPeriodicTriggerSupported() {
 }
 
 void MemoryDumpScheduler::NotifyPollingSupported() {
-  if (!polling_state_.is_configured || polling_state_.is_polling_enabled)
+  if (polling_state_.current_state != PollingTriggerState::CONFIGURED)
     return;
-  polling_state_.is_polling_enabled = true;
-  for (uint32_t i = 0; i < PollingTriggerState::kMaxNumMemorySamples; ++i)
-    polling_state_.last_memory_totals_kb[i] = 0;
-  polling_state_.last_memory_totals_kb_index = 0;
-  polling_state_.num_polls_from_last_dump = 0;
-  polling_state_.last_dump_memory_total = 0;
 
-  if (!polling_state_.memory_increase_threshold) {
-    polling_state_.memory_increase_threshold = kDefaultMemoryIncreaseThreshold;
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) || \
-    defined(OS_ANDROID)
-    // Set threshold to 1% of total system memory.
-    SystemMemoryInfoKB meminfo;
-    bool res = GetSystemMemoryInfo(&meminfo);
-    if (res)
-      polling_state_.memory_increase_threshold = (meminfo.total / 100) * 1024;
-#endif
-  }
+  polling_state_.current_state = PollingTriggerState::ENABLED;
+  polling_state_.ResetTotals();
 
   polling_state_.polling_task_runner->PostTask(
       FROM_HERE,
       Bind(&MemoryDumpScheduler::PollMemoryOnPollingThread, Unretained(this)));
+}
+
+void MemoryDumpScheduler::NotifyDumpTriggered() {
+  if (polling_state_.polling_task_runner &&
+      polling_state_.polling_task_runner->RunsTasksOnCurrentThread()) {
+    polling_state_.polling_task_runner->PostTask(
+        FROM_HERE,
+        Bind(&MemoryDumpScheduler::NotifyDumpTriggered, Unretained(this)));
+    return;
+  }
+  if (polling_state_.current_state != PollingTriggerState::ENABLED)
+    return;
+
+  polling_state_.ResetTotals();
 }
 
 void MemoryDumpScheduler::DisableAllTriggers() {
@@ -116,14 +115,13 @@ void MemoryDumpScheduler::DisableAllTriggers() {
 }
 
 void MemoryDumpScheduler::DisablePolling() {
-  if (ThreadTaskRunnerHandle::Get() != polling_state_.polling_task_runner) {
+  if (polling_state_.polling_task_runner->RunsTasksOnCurrentThread()) {
     if (polling_state_.polling_task_runner->PostTask(
             FROM_HERE,
             Bind(&MemoryDumpScheduler::DisablePolling, Unretained(this))))
       return;
   }
-  polling_state_.is_polling_enabled = false;
-  polling_state_.is_configured = false;
+  polling_state_.current_state = PollingTriggerState::DISABLED;
   polling_state_.polling_task_runner = nullptr;
 }
 
@@ -150,7 +148,7 @@ void MemoryDumpScheduler::RequestPeriodicGlobalDump() {
 }
 
 void MemoryDumpScheduler::PollMemoryOnPollingThread() {
-  if (!polling_state_.is_configured)
+  if (polling_state_.current_state != PollingTriggerState::ENABLED)
     return;
 
   uint64_t polled_memory = 0;
@@ -200,13 +198,8 @@ bool MemoryDumpScheduler::ShouldTriggerDump(uint64_t current_memory_total) {
   should_dump |=
       increase_from_last_dump > polling_state_.memory_increase_threshold;
   should_dump |= IsCurrentSamplePeak(current_memory_total);
-  if (should_dump) {
-    polling_state_.last_dump_memory_total = current_memory_total;
-    polling_state_.num_polls_from_last_dump = 0;
-    for (uint32_t i = 0; i < PollingTriggerState::kMaxNumMemorySamples; ++i)
-      polling_state_.last_memory_totals_kb[i] = 0;
-    polling_state_.last_memory_totals_kb_index = 0;
-  }
+  if (should_dump)
+    polling_state_.ResetTotals();
   return should_dump;
 }
 
@@ -265,21 +258,46 @@ MemoryDumpScheduler::PeriodicTriggerState::~PeriodicTriggerState() {
 
 MemoryDumpScheduler::PollingTriggerState::PollingTriggerState(
     scoped_refptr<SingleThreadTaskRunner> polling_task_runner)
-    : is_configured(false),
-      is_polling_enabled(false),
+    : current_state(DISABLED),
       level_of_detail(MemoryDumpLevelOfDetail::FIRST),
       polling_task_runner(polling_task_runner),
       polling_interval_ms(g_polling_interval_ms_for_testing
                               ? g_polling_interval_ms_for_testing
                               : kMemoryTotalsPollingInterval),
       min_polls_between_dumps(0),
-      num_polls_from_last_dump(0),
+      num_polls_from_last_dump(-1),
       last_dump_memory_total(0),
       memory_increase_threshold(0),
       last_memory_totals_kb_index(0) {}
 
 MemoryDumpScheduler::PollingTriggerState::~PollingTriggerState() {
   DCHECK(!polling_task_runner);
+}
+
+void MemoryDumpScheduler::PollingTriggerState::ResetTotals() {
+  if (!memory_increase_threshold) {
+    memory_increase_threshold = kDefaultMemoryIncreaseThreshold;
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) || \
+    defined(OS_ANDROID)
+    // Set threshold to 1% of total system memory.
+    SystemMemoryInfoKB meminfo;
+    bool res = GetSystemMemoryInfo(&meminfo);
+    if (res)
+      memory_increase_threshold = (meminfo.total / 100) * 1024;
+#endif
+  }
+
+  // Update the |last_dump_memory_total|'s value from the totals if it's not
+  // first poll.
+  if (num_polls_from_last_dump >= 0 &&
+      last_memory_totals_kb[last_memory_totals_kb_index]) {
+    last_dump_memory_total =
+        last_memory_totals_kb[last_memory_totals_kb_index] * 1024;
+  }
+  num_polls_from_last_dump = 0;
+  for (uint32_t i = 0; i < kMaxNumMemorySamples; ++i)
+    last_memory_totals_kb[i] = 0;
+  last_memory_totals_kb_index = 0;
 }
 
 }  // namespace trace_event

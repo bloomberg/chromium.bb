@@ -55,11 +55,12 @@ void CoordinatorImpl::RequestGlobalMemoryDump(
 
   bool another_dump_already_in_progress = !queued_memory_dump_requests_.empty();
 
-  // If this is a periodic memory dump request and there already is another
-  // request in the queue with the same level of detail, there's no point in
-  // enqueuing this request.
+  // If this is a periodic or peak memory dump request and there already is
+  // another request in the queue with the same level of detail, there's no
+  // point in enqueuing this request.
   if (another_dump_already_in_progress &&
-      args.dump_type == base::trace_event::MemoryDumpType::PERIODIC_INTERVAL) {
+      args.dump_type !=
+          base::trace_event::MemoryDumpType::EXPLICITLY_TRIGGERED) {
     for (const auto& request : queued_memory_dump_requests_) {
       if (request.args.level_of_detail == args.level_of_detail) {
         VLOG(1) << base::trace_event::MemoryDumpManager::kLogPrefix << " ("
