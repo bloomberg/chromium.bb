@@ -504,9 +504,7 @@ void SpellChecker::chunkAndMarkAllMisspellings(
   // Check the full paragraph instead if the paragraph is short, which saves
   // the cost on sentence boundary finding.
   if (fullParagraphToCheck.rangeLength() <= kChunkSize) {
-    SpellCheckRequest* request = SpellCheckRequest::create(paragraphRange, 0);
-    if (request)
-      m_spellCheckRequester->requestCheckingFor(request);
+    m_spellCheckRequester->requestCheckingFor(paragraphRange);
     return;
   }
 
@@ -522,10 +520,7 @@ void SpellChecker::chunkAndMarkAllMisspellings(
                                     ? expandEndToSentenceBoundary(chunkRange)
                                     : expandRangeToSentenceBoundary(chunkRange);
 
-    SpellCheckRequest* request =
-        SpellCheckRequest::create(checkRange, requestNum);
-    if (request)
-      m_spellCheckRequester->requestCheckingFor(request);
+    m_spellCheckRequester->requestCheckingFor(checkRange, requestNum);
 
     if (!checkRangeIterator.atEnd()) {
       checkRangeIterator.advance(1);

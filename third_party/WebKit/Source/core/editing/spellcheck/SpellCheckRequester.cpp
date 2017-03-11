@@ -143,7 +143,13 @@ void SpellCheckRequester::timerFiredToProcessQueuedRequest(TimerBase*) {
   invokeRequest(m_requestQueue.takeFirst());
 }
 
-void SpellCheckRequester::requestCheckingFor(SpellCheckRequest* request) {
+void SpellCheckRequester::requestCheckingFor(const EphemeralRange& range) {
+  requestCheckingFor(range, 0);
+}
+
+void SpellCheckRequester::requestCheckingFor(const EphemeralRange& range,
+                                             int requestNum) {
+  SpellCheckRequest* request = SpellCheckRequest::create(range, requestNum);
   if (!request)
     return;
 

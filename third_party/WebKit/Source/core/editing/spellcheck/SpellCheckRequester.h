@@ -43,10 +43,11 @@ class LocalFrame;
 class SpellCheckRequester;
 class TextCheckerClient;
 
+// TODO(xiaochengh): Move this class to dedicated files.
 class SpellCheckRequest final : public TextCheckingRequest {
  public:
   static SpellCheckRequest* create(const EphemeralRange& checkingRange,
-                                   int requestNumber = 0);
+                                   int requestNumber);
 
   ~SpellCheckRequest() override;
   void dispose();
@@ -87,7 +88,8 @@ class SpellCheckRequester final
   ~SpellCheckRequester();
   DECLARE_TRACE();
 
-  void requestCheckingFor(SpellCheckRequest*);
+  void requestCheckingFor(const EphemeralRange&);
+  void requestCheckingFor(const EphemeralRange&, int requestNum);
   void cancelCheck();
 
   int lastRequestSequence() const { return m_lastRequestSequence; }

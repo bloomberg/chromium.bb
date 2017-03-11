@@ -102,9 +102,9 @@ void HotModeSpellCheckRequester::checkSpellingAt(const Position& position) {
   if (!shouldCheckRootEditableInHotMode(*rootEditable, position))
     return;
 
-  SpellCheckRequest* request = SpellCheckRequest::create(
-      calculateHotModeCheckingRange(*rootEditable, position));
-  m_requester->requestCheckingFor(request);
+  const EphemeralRange& checkingRange =
+      calculateHotModeCheckingRange(*rootEditable, position);
+  m_requester->requestCheckingFor(checkingRange);
 }
 
 }  // namespace blink

@@ -173,8 +173,7 @@ void IdleSpellCheckCallback::chunkAndRequestFullCheckingFor(
 
   // Check the full content if it is short.
   if (fullLength <= kColdModeChunkSize) {
-    SpellCheckRequest* fullRequest = SpellCheckRequest::create(fullRange);
-    spellCheckRequester().requestCheckingFor(fullRequest);
+    spellCheckRequester().requestCheckingFor(fullRange);
     return;
   }
 
@@ -195,9 +194,7 @@ void IdleSpellCheckCallback::chunkAndRequestFullCheckingFor(
         chunkIndex >= 1 ? expandEndToSentenceBoundary(chunkRange)
                         : expandRangeToSentenceBoundary(chunkRange);
 
-    SpellCheckRequest* chunkRequest =
-        SpellCheckRequest::create(checkRange, chunkIndex);
-    spellCheckRequester().requestCheckingFor(chunkRequest);
+    spellCheckRequester().requestCheckingFor(checkRange, chunkIndex);
 
     chunkStart = checkRange.endPosition();
   }
