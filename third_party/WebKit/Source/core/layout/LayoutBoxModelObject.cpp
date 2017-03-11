@@ -262,12 +262,14 @@ void LayoutBoxModelObject::willBeDestroyed() {
 
 void LayoutBoxModelObject::styleWillChange(StyleDifference diff,
                                            const ComputedStyle& newStyle) {
-  // This object's layer may cease to be a stacking context, in which case the
-  // paint invalidation container of the children may change. Thus we need to
-  // invalidate paint eagerly for all such children.
-  if (hasLayer() && enclosingLayer()->stackingNode() &&
-      enclosingLayer()->stackingNode()->isStackingContext() &&
-      !newStyle.isStackingContext()) {
+  // This object's layer may begin or cease to be a stacking context, in which
+  // case the paint invalidation container of this object and descendants may
+  // change. Thus we need to invalidate paint eagerly for all such children.
+  // PaintLayerCompositor::paintInvalidationOnCompositingChange() doesn't work
+  // for the case because we can only see the new paintInvalidationContainer
+  // during compositing update.
+  if (style() &&
+      (style()->isStackingContext() != newStyle.isStackingContext())) {
     // The following disablers are valid because we need to invalidate based on
     // the current status.
     DisableCompositingQueryAsserts compositingDisabler;

@@ -1,0 +1,86 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true
+    },
+    {
+      "name": "LayoutBlockFlow DIV",
+      "position": [8, 8],
+      "bounds": [100, 100],
+      "shouldFlattenTransform": false,
+      "drawsContent": true
+    },
+    {
+      "name": "Scrolling Layer",
+      "bounds": [100, 100],
+      "shouldFlattenTransform": false
+    },
+    {
+      "name": "Scrolling Contents Layer",
+      "bounds": [200, 200],
+      "drawsContent": true,
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow DIV id='target'",
+          "rect": [0, 0, 200, 200],
+          "reason": "subtree"
+        }
+      ]
+    },
+    {
+      "name": "Overflow Controls Host Layer",
+      "bounds": [100, 100]
+    },
+    {
+      "name": "Horizontal Scrollbar Layer",
+      "position": [0, 100],
+      "bounds": [100, 0],
+      "drawsContent": true
+    },
+    {
+      "name": "Vertical Scrollbar Layer",
+      "position": [100, 0],
+      "bounds": [0, 100],
+      "drawsContent": true
+    },
+    {
+      "name": "LayoutBlockFlow DIV id='target'",
+      "position": [8, 8],
+      "bounds": [200, 200],
+      "opacity": 0.5,
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "backgroundColor": "#008000",
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow DIV id='target'",
+          "rect": [0, 0, 200, 200],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='target'",
+          "rect": [0, 0, 200, 200],
+          "reason": "subtree"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow DIV id='target'",
+      "reason": "subtree"
+    },
+    {
+      "object": "LayoutBlockFlow DIV id='target'",
+      "reason": "subtree"
+    },
+    {
+      "object": "LayoutBlockFlow DIV id='target'",
+      "reason": "subtree"
+    }
+  ]
+}
+

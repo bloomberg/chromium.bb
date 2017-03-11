@@ -60,6 +60,10 @@
     {
       "object": "LayoutBlockFlow (positioned) DIV id='target'",
       "reason": "subtree"
+    },
+    {
+      "object": "LayoutBlockFlow (positioned) DIV id='target'",
+      "reason": "subtree"
     }
   ]
 }

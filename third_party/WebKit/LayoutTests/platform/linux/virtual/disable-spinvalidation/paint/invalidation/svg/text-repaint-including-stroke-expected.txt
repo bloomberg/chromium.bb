@@ -45,6 +45,22 @@
     {
       "object": "InlineTextBox 'Repaint me!'",
       "reason": "subtree"
+    },
+    {
+      "object": "LayoutSVGText text id='bounce'",
+      "reason": "subtree"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "subtree"
+    },
+    {
+      "object": "LayoutSVGInlineText #text",
+      "reason": "subtree"
+    },
+    {
+      "object": "InlineTextBox 'Repaint me!'",
+      "reason": "subtree"
     }
   ]
 }

@@ -22,6 +22,16 @@
       "backgroundColor": "#0000FF",
       "paintInvalidations": [
         {
+          "object": "LayoutBlockFlow (positioned) DIV id='container'",
+          "rect": [0, 0, 100, 100],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV id='container'",
+          "rect": [0, 0, 100, 100],
+          "reason": "subtree"
+        },
+        {
           "object": "LayoutBlockFlow (positioned) DIV class='fixed'",
           "rect": [50, 50, 75, 75],
           "reason": "style change"
@@ -33,6 +43,18 @@
     {
       "object": "LayoutBlockFlow (positioned) DIV class='fixed'",
       "reason": "subtree"
+    },
+    {
+      "object": "LayoutBlockFlow (positioned) DIV id='container'",
+      "reason": "subtree"
+    },
+    {
+      "object": "LayoutBlockFlow (positioned) DIV class='fixed'",
+      "reason": "subtree"
+    },
+    {
+      "object": "LayoutBlockFlow (positioned) DIV id='container'",
+      "reason": "style change"
     },
     {
       "object": "LayoutBlockFlow (positioned) DIV class='fixed'",

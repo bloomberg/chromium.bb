@@ -12,6 +12,16 @@
           "reason": "subtree"
         },
         {
+          "object": "LayoutBlockFlow (positioned) DIV class='absolute green'",
+          "rect": [108, 308, 100, 100],
+          "reason": "subtree"
+        },
+        {
+          "object": "LayoutBlockFlow (relative positioned) DIV id='container' class='relative blue'",
+          "rect": [8, 208, 100, 100],
+          "reason": "subtree"
+        },
+        {
           "object": "LayoutBlockFlow (relative positioned) DIV id='container' class='relative blue'",
           "rect": [8, 208, 100, 100],
           "reason": "subtree"
@@ -20,6 +30,14 @@
     }
   ],
   "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow (relative positioned) DIV id='container' class='relative blue'",
+      "reason": "subtree"
+    },
+    {
+      "object": "LayoutBlockFlow (positioned) DIV class='absolute green'",
+      "reason": "subtree"
+    },
     {
       "object": "LayoutBlockFlow (relative positioned) DIV id='container' class='relative blue'",
       "reason": "subtree"

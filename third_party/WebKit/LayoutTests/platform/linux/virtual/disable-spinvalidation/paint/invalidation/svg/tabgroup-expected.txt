@@ -834,6 +834,126 @@
       "reason": "layoutObject removal"
     },
     {
+      "object": "LayoutSVGText text",
+      "reason": "subtree"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "subtree"
+    },
+    {
+      "object": "LayoutSVGTSpan tspan",
+      "reason": "subtree"
+    },
+    {
+      "object": "InlineFlowBox",
+      "reason": "subtree"
+    },
+    {
+      "object": "LayoutSVGInlineText #text",
+      "reason": "subtree"
+    },
+    {
+      "object": "InlineTextBox 'Geodata'",
+      "reason": "subtree"
+    },
+    {
+      "object": "LayoutSVGTSpan tspan",
+      "reason": "subtree"
+    },
+    {
+      "object": "InlineFlowBox",
+      "reason": "subtree"
+    },
+    {
+      "object": "LayoutSVGInlineText #text",
+      "reason": "subtree"
+    },
+    {
+      "object": "InlineTextBox 'Browser'",
+      "reason": "subtree"
+    },
+    {
+      "object": "LayoutSVGText text",
+      "reason": "subtree"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "subtree"
+    },
+    {
+      "object": "LayoutSVGTSpan tspan",
+      "reason": "subtree"
+    },
+    {
+      "object": "InlineFlowBox",
+      "reason": "subtree"
+    },
+    {
+      "object": "LayoutSVGInlineText #text",
+      "reason": "subtree"
+    },
+    {
+      "object": "InlineTextBox 'Download'",
+      "reason": "subtree"
+    },
+    {
+      "object": "LayoutSVGTSpan tspan",
+      "reason": "subtree"
+    },
+    {
+      "object": "InlineFlowBox",
+      "reason": "subtree"
+    },
+    {
+      "object": "LayoutSVGInlineText #text",
+      "reason": "subtree"
+    },
+    {
+      "object": "InlineTextBox 'Folder'",
+      "reason": "subtree"
+    },
+    {
+      "object": "LayoutSVGText text",
+      "reason": "subtree"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "subtree"
+    },
+    {
+      "object": "LayoutSVGTSpan tspan",
+      "reason": "subtree"
+    },
+    {
+      "object": "InlineFlowBox",
+      "reason": "subtree"
+    },
+    {
+      "object": "LayoutSVGInlineText #text",
+      "reason": "subtree"
+    },
+    {
+      "object": "InlineTextBox 'Your'",
+      "reason": "subtree"
+    },
+    {
+      "object": "LayoutSVGTSpan tspan",
+      "reason": "subtree"
+    },
+    {
+      "object": "InlineFlowBox",
+      "reason": "subtree"
+    },
+    {
+      "object": "LayoutSVGInlineText #text",
+      "reason": "subtree"
+    },
+    {
+      "object": "InlineTextBox 'Account'",
+      "reason": "subtree"
+    },
+    {
       "object": "LayoutSVGPath path",
       "reason": "layoutObject removal"
     },
@@ -868,6 +988,46 @@
     {
       "object": "LayoutSVGContainer g",
       "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutSVGText text",
+      "reason": "subtree"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "subtree"
+    },
+    {
+      "object": "LayoutSVGTSpan tspan",
+      "reason": "subtree"
+    },
+    {
+      "object": "InlineFlowBox",
+      "reason": "subtree"
+    },
+    {
+      "object": "LayoutSVGInlineText #text",
+      "reason": "subtree"
+    },
+    {
+      "object": "InlineTextBox 'Help'",
+      "reason": "subtree"
+    },
+    {
+      "object": "LayoutSVGTSpan tspan",
+      "reason": "subtree"
+    },
+    {
+      "object": "InlineFlowBox",
+      "reason": "subtree"
+    },
+    {
+      "object": "LayoutSVGInlineText #text",
+      "reason": "subtree"
+    },
+    {
+      "object": "InlineTextBox '& Info'",
+      "reason": "subtree"
     },
     {
       "object": "LayoutSVGPath path",

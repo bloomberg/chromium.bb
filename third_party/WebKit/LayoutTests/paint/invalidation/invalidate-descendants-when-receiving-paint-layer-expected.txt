@@ -76,6 +76,14 @@
     {
       "object": "LayoutBlockFlow DIV id='child'",
       "reason": "subtree"
+    },
+    {
+      "object": "LayoutBlockFlow DIV id='target'",
+      "reason": "subtree"
+    },
+    {
+      "object": "LayoutBlockFlow DIV id='child'",
+      "reason": "subtree"
     }
   ]
 }

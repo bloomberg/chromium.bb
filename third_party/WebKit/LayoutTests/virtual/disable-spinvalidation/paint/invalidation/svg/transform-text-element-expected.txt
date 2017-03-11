@@ -45,6 +45,22 @@
     {
       "object": "InlineTextBox 'Test'",
       "reason": "subtree"
+    },
+    {
+      "object": "LayoutSVGText text",
+      "reason": "subtree"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "subtree"
+    },
+    {
+      "object": "LayoutSVGInlineText #text",
+      "reason": "subtree"
+    },
+    {
+      "object": "InlineTextBox 'Test'",
+      "reason": "subtree"
     }
   ]
 }

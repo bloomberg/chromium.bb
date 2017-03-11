@@ -22,6 +22,10 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutBlockFlow (positioned) DIV id='t' class='green absolute'",
+      "reason": "subtree"
+    },
+    {
+      "object": "LayoutBlockFlow (positioned) DIV id='t' class='green absolute'",
       "reason": "style change"
     },
     {
