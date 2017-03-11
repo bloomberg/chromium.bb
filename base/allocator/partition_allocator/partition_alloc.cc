@@ -1310,11 +1310,23 @@ void PartitionDumpStatsGeneric(PartitionRootGeneric* partition,
                                const char* partition_name,
                                bool is_light_dump,
                                PartitionStatsDumper* dumper) {
-  PartitionBucketMemoryStats bucket_stats[kGenericNumBuckets];
-  static const size_t kMaxReportableDirectMaps = 4096;
-  uint32_t direct_map_lengths[kMaxReportableDirectMaps];
-  size_t num_direct_mapped_allocations = 0;
+  PartitionMemoryStats stats = {0};
+  stats.total_mmapped_bytes = partition->total_size_of_super_pages +
+                              partition->total_size_of_direct_mapped_pages;
+  stats.total_committed_bytes = partition->total_size_of_committed_pages;
 
+  size_t direct_mapped_allocations_total_size = 0;
+
+  static const size_t kMaxReportableDirectMaps = 4096;
+
+  // A heap allocation rather than on the stack to avoid stack overflows
+  // skirmishes (on Windows, in particular.)
+  uint32_t* direct_map_lengths = nullptr;
+  if (!is_light_dump)
+    direct_map_lengths = new uint32_t[kMaxReportableDirectMaps];
+
+  PartitionBucketMemoryStats bucket_stats[kGenericNumBuckets];
+  size_t num_direct_mapped_allocations = 0;
   {
     subtle::SpinLock::Guard guard(partition->lock);
 
@@ -1327,55 +1339,53 @@ void PartitionDumpStatsGeneric(PartitionRootGeneric* partition,
         bucket_stats[i].is_valid = false;
       else
         PartitionDumpBucketStats(&bucket_stats[i], bucket);
+      if (bucket_stats[i].is_valid) {
+        stats.total_resident_bytes += bucket_stats[i].resident_bytes;
+        stats.total_active_bytes += bucket_stats[i].active_bytes;
+        stats.total_decommittable_bytes += bucket_stats[i].decommittable_bytes;
+        stats.total_discardable_bytes += bucket_stats[i].discardable_bytes;
+      }
     }
 
-    for (PartitionDirectMapExtent* extent = partition->direct_map_list; extent;
-         extent = extent->next_extent) {
+    for (PartitionDirectMapExtent *extent = partition->direct_map_list;
+         extent && num_direct_mapped_allocations < kMaxReportableDirectMaps;
+         extent = extent->next_extent, ++num_direct_mapped_allocations) {
       DCHECK(!extent->next_extent ||
              extent->next_extent->prev_extent == extent);
-      direct_map_lengths[num_direct_mapped_allocations] =
-          extent->bucket->slot_size;
-      ++num_direct_mapped_allocations;
-      if (num_direct_mapped_allocations == kMaxReportableDirectMaps)
-        break;
+      size_t slot_size = extent->bucket->slot_size;
+      direct_mapped_allocations_total_size += slot_size;
+      if (is_light_dump)
+        continue;
+      direct_map_lengths[num_direct_mapped_allocations] = slot_size;
     }
   }
 
-  // Call |PartitionsDumpBucketStats| after collecting stats because it can try
-  // to allocate using |PartitionAllocGeneric| and it can't obtain the lock.
-  PartitionMemoryStats stats = {0};
-  stats.total_mmapped_bytes = partition->total_size_of_super_pages +
-                              partition->total_size_of_direct_mapped_pages;
-  stats.total_committed_bytes = partition->total_size_of_committed_pages;
-  for (size_t i = 0; i < kGenericNumBuckets; ++i) {
-    if (bucket_stats[i].is_valid) {
-      stats.total_resident_bytes += bucket_stats[i].resident_bytes;
-      stats.total_active_bytes += bucket_stats[i].active_bytes;
-      stats.total_decommittable_bytes += bucket_stats[i].decommittable_bytes;
-      stats.total_discardable_bytes += bucket_stats[i].discardable_bytes;
-      if (!is_light_dump)
+  if (!is_light_dump) {
+    // Call |PartitionsDumpBucketStats| after collecting stats because it can
+    // try to allocate using |PartitionAllocGeneric| and it can't obtain the
+    // lock.
+    for (size_t i = 0; i < kGenericNumBuckets; ++i) {
+      if (bucket_stats[i].is_valid)
         dumper->PartitionsDumpBucketStats(partition_name, &bucket_stats[i]);
     }
+
+    for (size_t i = 0; i < num_direct_mapped_allocations; ++i) {
+      uint32_t size = direct_map_lengths[i];
+
+      PartitionBucketMemoryStats stats;
+      memset(&stats, '\0', sizeof(stats));
+      stats.is_valid = true;
+      stats.is_direct_map = true;
+      stats.num_full_pages = 1;
+      stats.allocated_page_size = size;
+      stats.bucket_slot_size = size;
+      stats.active_bytes = size;
+      stats.resident_bytes = size;
+      dumper->PartitionsDumpBucketStats(partition_name, &stats);
+    }
+    delete[] direct_map_lengths;
   }
 
-  size_t direct_mapped_allocations_total_size = 0;
-  for (size_t i = 0; i < num_direct_mapped_allocations; ++i) {
-    uint32_t size = direct_map_lengths[i];
-    direct_mapped_allocations_total_size += size;
-    if (is_light_dump)
-      continue;
-
-    PartitionBucketMemoryStats stats;
-    memset(&stats, '\0', sizeof(stats));
-    stats.is_valid = true;
-    stats.is_direct_map = true;
-    stats.num_full_pages = 1;
-    stats.allocated_page_size = size;
-    stats.bucket_slot_size = size;
-    stats.active_bytes = size;
-    stats.resident_bytes = size;
-    dumper->PartitionsDumpBucketStats(partition_name, &stats);
-  }
   stats.total_resident_bytes += direct_mapped_allocations_total_size;
   stats.total_active_bytes += direct_mapped_allocations_total_size;
   dumper->PartitionDumpTotals(partition_name, &stats);
