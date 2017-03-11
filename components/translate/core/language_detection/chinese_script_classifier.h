@@ -7,14 +7,14 @@
 
 #include <memory>
 #include <string>
-#include "third_party/icu/source/i18n/unicode/translit.h"
+#include "third_party/icu/source/common/unicode/uniset.h"
 
 namespace translate {
 
 class ChineseScriptClassifier {
  public:
-  // Initializes both the Hant-to-Hans ICU transliterator and the
-  // Hans-to-Hant ICU transliterator.
+  // Initializes both the zh-Hans and zh-Hant UnicodeSets used for
+  // lookup when Classify is called.
   ChineseScriptClassifier();
   ~ChineseScriptClassifier();
 
@@ -31,11 +31,11 @@ class ChineseScriptClassifier {
   bool IsInitialized() const;
 
  private:
-  // ICU Transliterator that does Hans to Hant conversion.
-  std::unique_ptr<icu::Transliterator> hans2hant_;
+  // Set of chars generally unique to zh-Hans.
+  std::unique_ptr<icu::UnicodeSet> hans_set_;
 
-  // ICU Transliterator that does Hant to Hans conversion.
-  std::unique_ptr<icu::Transliterator> hant2hans_;
+  // Set of chars generally unique to zh-Hant.
+  std::unique_ptr<icu::UnicodeSet> hant_set_;
 };
 
 }  // namespace translate
