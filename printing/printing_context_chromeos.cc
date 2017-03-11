@@ -46,6 +46,7 @@ const char* GetColorModelForMode(int color_mode) {
     case RGB16:
     case RGBA:
     case COLORMODE_COLOR:
+    case BROTHER_COLOR_COLOR:
     case HP_COLOR_COLOR:
     case PRINTOUTMODE_NORMAL:
     case PROCESSCOLORMODEL_CMYK:
@@ -56,6 +57,7 @@ const char* GetColorModelForMode(int color_mode) {
     case BLACK:
     case GRAYSCALE:
     case COLORMODE_MONOCHROME:
+    case BROTHER_COLOR_BLACK:
     case HP_COLOR_BLACK:
     case PRINTOUTMODE_NORMAL_GRAY:
     case PROCESSCOLORMODEL_GREYSCALE:

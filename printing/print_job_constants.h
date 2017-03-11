@@ -132,15 +132,17 @@ enum ColorModel {
   RGB,
   RGB16,
   RGBA,
-  COLORMODE_COLOR,  // Used in samsung printer ppds.
-  COLORMODE_MONOCHROME,  // Used in samsung printer ppds.
-  HP_COLOR_COLOR,  // Used in HP color printer ppds.
-  HP_COLOR_BLACK,  // Used in HP color printer ppds.
-  PRINTOUTMODE_NORMAL,  // Used in foomatic ppds.
-  PRINTOUTMODE_NORMAL_GRAY,  // Used in foomatic ppds.
-  PROCESSCOLORMODEL_CMYK,  // Used in canon printer ppds.
-  PROCESSCOLORMODEL_GREYSCALE,  // Used in canon printer ppds.
-  PROCESSCOLORMODEL_RGB,  // Used in canon printer ppds
+  COLORMODE_COLOR,              // Used in Samsung printer PPDs.
+  COLORMODE_MONOCHROME,         // Used in Samsung printer PPDs.
+  HP_COLOR_COLOR,               // Used in HP color printer PPDs.
+  HP_COLOR_BLACK,               // Used in HP color printer PPDs.
+  PRINTOUTMODE_NORMAL,          // Used in Foomatic PPDs.
+  PRINTOUTMODE_NORMAL_GRAY,     // Used in Foomatic PPDs.
+  PROCESSCOLORMODEL_CMYK,       // Used in Canon printer PPDs.
+  PROCESSCOLORMODEL_GREYSCALE,  // Used in Canon printer PPDs.
+  PROCESSCOLORMODEL_RGB,        // Used in Canon printer PPDs
+  BROTHER_COLOR_COLOR,          // Used in Brother color printer PPDs.
+  BROTHER_COLOR_BLACK,          // Used in Brother color printer PPDs.
 };
 
 // What kind of margins to use.

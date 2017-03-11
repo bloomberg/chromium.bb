@@ -102,6 +102,12 @@ void GetColorModelForMode(
       color_setting_name->assign(kCUPSProcessColorModel);
       color_value->assign(kRGB);
       break;
+    case BROTHER_COLOR_COLOR:
+      color_value->assign(kColor);
+      break;
+    case BROTHER_COLOR_BLACK:
+      color_value->assign(kBlack);
+      break;
     default:
       color_value->assign(kGrayscale);
       break;
@@ -110,12 +116,11 @@ void GetColorModelForMode(
 #endif  // defined(USE_CUPS)
 
 bool IsColorModelSelected(int color_mode) {
-  return (color_mode != GRAY &&
-          color_mode != BLACK &&
+  return (color_mode != GRAY && color_mode != BLACK &&
           color_mode != PRINTOUTMODE_NORMAL_GRAY &&
           color_mode != COLORMODE_MONOCHROME &&
           color_mode != PROCESSCOLORMODEL_GREYSCALE &&
-          color_mode != HP_COLOR_BLACK);
+          color_mode != BROTHER_COLOR_BLACK && color_mode != HP_COLOR_BLACK);
 }
 
 // Global SequenceNumber used for generating unique cookie values.
