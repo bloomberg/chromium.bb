@@ -19,6 +19,20 @@ namespace tether {
 
 namespace {
 
+class TestObserver : public KeepAliveOperation::Observer {
+ public:
+  TestObserver() : has_run_callback_(false) {}
+
+  virtual ~TestObserver() {}
+
+  bool has_run_callback() { return has_run_callback_; }
+
+  void OnOperationFinished() override { has_run_callback_ = true; }
+
+ private:
+  bool has_run_callback_;
+};
+
 std::string CreateKeepAliveTickleString() {
   KeepAliveTickle tickle;
   return MessageWrapper(tickle).ToRawMessage();
@@ -37,6 +51,10 @@ class KeepAliveOperationTest : public testing::Test {
 
     operation_ = base::WrapUnique(new KeepAliveOperation(
         test_device_, fake_ble_connection_manager_.get()));
+
+    test_observer_ = base::WrapUnique(new TestObserver());
+    operation_->AddObserver(test_observer_.get());
+
     operation_->Initialize();
   }
 
@@ -55,6 +73,8 @@ class KeepAliveOperationTest : public testing::Test {
   const cryptauth::RemoteDevice test_device_;
 
   std::unique_ptr<FakeBleConnectionManager> fake_ble_connection_manager_;
+  std::unique_ptr<TestObserver> test_observer_;
+
   std::unique_ptr<KeepAliveOperation> operation_;
 
  private:
@@ -62,7 +82,9 @@ class KeepAliveOperationTest : public testing::Test {
 };
 
 TEST_F(KeepAliveOperationTest, TestSendsKeepAliveTickle) {
+  EXPECT_FALSE(test_observer_->has_run_callback());
   SimulateDeviceAuthenticationAndVerifyMessageSent();
+  EXPECT_TRUE(test_observer_->has_run_callback());
 }
 
 }  // namespace tether

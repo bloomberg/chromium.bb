@@ -40,6 +40,24 @@ struct GetActiveHostResult {
   }
 };
 
+class TestObserver : public ActiveHost::Observer {
+ public:
+  void OnActiveHostChanged(
+      ActiveHost::ActiveHostStatus active_host_status,
+      std::unique_ptr<cryptauth::RemoteDevice> active_host_device,
+      const std::string& wifi_network_id) override {
+    host_changed_updates_.push_back(GetActiveHostResult{
+        active_host_status, std::move(active_host_device), wifi_network_id});
+  }
+
+  std::vector<GetActiveHostResult>& host_changed_updates() {
+    return host_changed_updates_;
+  }
+
+ private:
+  std::vector<GetActiveHostResult> host_changed_updates_;
+};
+
 }  // namespace
 
 class ActiveHostTest : public testing::Test {
@@ -56,6 +74,9 @@ class ActiveHostTest : public testing::Test {
     ActiveHost::RegisterPrefs(test_pref_service_->registry());
     active_host_ = base::MakeUnique<ActiveHost>(fake_tether_host_fetcher_.get(),
                                                 test_pref_service_.get());
+
+    test_observer_ = base::WrapUnique(new TestObserver);
+    active_host_->AddObserver(test_observer_.get());
   }
 
   void OnActiveHostFetched(ActiveHost::ActiveHostStatus active_host_status,
@@ -84,6 +105,7 @@ class ActiveHostTest : public testing::Test {
 
   std::unique_ptr<TestingPrefServiceSimple> test_pref_service_;
   std::unique_ptr<FakeTetherHostFetcher> fake_tether_host_fetcher_;
+  std::unique_ptr<TestObserver> test_observer_;
 
   std::vector<GetActiveHostResult> get_active_host_results_;
 
@@ -170,6 +192,48 @@ TEST_F(ActiveHostTest, TestActiveHostChangesDuringFetch) {
   EXPECT_EQ((GetActiveHostResult{ActiveHost::ActiveHostStatus::DISCONNECTED,
                                  nullptr, ""}),
             get_active_host_results_[0]);
+}
+
+TEST_F(ActiveHostTest, TestObserverCalls) {
+  // Start as DISCONNECTED.
+  EXPECT_FALSE(test_observer_->host_changed_updates().size());
+
+  // Go to DISCONNECTED again. This should not cause an observer callback to be
+  // invoked.
+  active_host_->SetActiveHostDisconnected();
+  fake_tether_host_fetcher_->InvokePendingCallbacks();
+  EXPECT_FALSE(test_observer_->host_changed_updates().size());
+
+  // Transition to CONNECTING.
+  active_host_->SetActiveHostConnecting(test_devices_[0].GetDeviceId());
+  fake_tether_host_fetcher_->InvokePendingCallbacks();
+  EXPECT_EQ(1u, test_observer_->host_changed_updates().size());
+  EXPECT_EQ(
+      (GetActiveHostResult{ActiveHost::ActiveHostStatus::CONNECTING,
+                           std::shared_ptr<cryptauth::RemoteDevice>(
+                               new cryptauth::RemoteDevice(test_devices_[0])),
+                           ""}),
+      test_observer_->host_changed_updates()[0]);
+
+  // Transition to CONNECTED.
+  active_host_->SetActiveHostConnected(test_devices_[0].GetDeviceId(),
+                                       "wifiNetworkId");
+  fake_tether_host_fetcher_->InvokePendingCallbacks();
+  EXPECT_EQ(2u, test_observer_->host_changed_updates().size());
+  EXPECT_EQ(
+      (GetActiveHostResult{ActiveHost::ActiveHostStatus::CONNECTED,
+                           std::shared_ptr<cryptauth::RemoteDevice>(
+                               new cryptauth::RemoteDevice(test_devices_[0])),
+                           "wifiNetworkId"}),
+      test_observer_->host_changed_updates()[1]);
+
+  // Transition to DISCONNECTED.
+  active_host_->SetActiveHostDisconnected();
+  fake_tether_host_fetcher_->InvokePendingCallbacks();
+  EXPECT_EQ(3u, test_observer_->host_changed_updates().size());
+  EXPECT_EQ((GetActiveHostResult{ActiveHost::ActiveHostStatus::DISCONNECTED,
+                                 nullptr, ""}),
+            test_observer_->host_changed_updates()[2]);
 }
 
 }  // namespace tether

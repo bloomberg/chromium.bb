@@ -5,6 +5,7 @@
 #include "chromeos/components/tether/active_host.h"
 
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "chromeos/components/tether/pref_names.h"
 #include "chromeos/components/tether/tether_host_fetcher.h"
@@ -80,22 +81,43 @@ ActiveHost::ActiveHostStatus ActiveHost::GetActiveHostStatus() const {
       pref_service_->GetInteger(prefs::kActiveHostStatus));
 }
 
-const std::string ActiveHost::GetActiveHostDeviceId() const {
+std::string ActiveHost::GetActiveHostDeviceId() const {
   return pref_service_->GetString(prefs::kActiveHostDeviceId);
 }
 
-const std::string ActiveHost::GetWifiNetworkId() const {
+std::string ActiveHost::GetWifiNetworkId() const {
   return pref_service_->GetString(prefs::kWifiNetworkId);
+}
+
+void ActiveHost::AddObserver(Observer* observer) {
+  observer_list_.AddObserver(observer);
+}
+
+void ActiveHost::RemoveObserver(Observer* observer) {
+  observer_list_.RemoveObserver(observer);
 }
 
 void ActiveHost::SetActiveHost(ActiveHostStatus active_host_status,
                                const std::string& active_host_device_id,
                                const std::string& wifi_network_id) {
+  bool status_changed = GetActiveHostStatus() != active_host_status;
+  bool device_changed = GetActiveHostDeviceId() != active_host_device_id;
+  bool network_id_changed = GetWifiNetworkId() != wifi_network_id;
+
+  if (!status_changed && !device_changed && !network_id_changed) {
+    // If nothing has changed, return early.
+    return;
+  }
+
   pref_service_->Set(prefs::kActiveHostStatus,
                      base::Value(static_cast<int>(active_host_status)));
   pref_service_->Set(prefs::kActiveHostDeviceId,
                      base::Value(active_host_device_id));
   pref_service_->Set(prefs::kWifiNetworkId, base::Value(wifi_network_id));
+
+  // Now, send an active host changed update.
+  GetActiveHost(base::Bind(&ActiveHost::SendActiveHostChangedUpdate,
+                           weak_ptr_factory_.GetWeakPtr()));
 }
 
 void ActiveHost::OnTetherHostFetched(
@@ -132,6 +154,19 @@ void ActiveHost::OnTetherHostFetched(
   DCHECK(!GetWifiNetworkId().empty());
   active_host_callback.Run(ActiveHostStatus::CONNECTED,
                            std::move(remote_device), GetWifiNetworkId());
+}
+
+void ActiveHost::SendActiveHostChangedUpdate(
+    ActiveHostStatus active_host_status,
+    std::unique_ptr<cryptauth::RemoteDevice> active_host,
+    const std::string& wifi_network_id) {
+  for (auto& observer : observer_list_) {
+    std::unique_ptr<cryptauth::RemoteDevice> unique_remote_device =
+        active_host ? base::MakeUnique<cryptauth::RemoteDevice>(*active_host)
+                    : nullptr;
+    observer.OnActiveHostChanged(
+        active_host_status, std::move(unique_remote_device), wifi_network_id);
+  }
 }
 
 }  // namespace tether

@@ -48,12 +48,27 @@ KeepAliveOperation::KeepAliveOperation(
 
 KeepAliveOperation::~KeepAliveOperation() {}
 
+void KeepAliveOperation::AddObserver(Observer* observer) {
+  observer_list_.AddObserver(observer);
+}
+
+void KeepAliveOperation::RemoveObserver(Observer* observer) {
+  observer_list_.RemoveObserver(observer);
+}
+
 void KeepAliveOperation::OnDeviceAuthenticated(
     const cryptauth::RemoteDevice& remote_device) {
   DCHECK(remote_devices().size() == 1u && remote_devices()[0] == remote_device);
 
   SendMessageToDevice(remote_device,
                       base::MakeUnique<MessageWrapper>(KeepAliveTickle()));
+  UnregisterDevice(remote_device);
+}
+
+void KeepAliveOperation::OnOperationFinished() {
+  for (auto& observer : observer_list_) {
+    observer.OnOperationFinished();
+  }
 }
 
 MessageType KeepAliveOperation::GetMessageTypeForConnection() {

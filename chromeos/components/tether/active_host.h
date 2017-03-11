@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
 
 class PrefRegistrySimple;
 class PrefService;
@@ -36,6 +37,14 @@ class ActiveHost {
     CONNECTED = 2
   };
 
+  class Observer {
+   public:
+    virtual void OnActiveHostChanged(
+        ActiveHostStatus active_host_status,
+        std::unique_ptr<cryptauth::RemoteDevice> active_host_device,
+        const std::string& wifi_network_id) = 0;
+  };
+
   ActiveHost(TetherHostFetcher* tether_host_fetcher, PrefService* pref_service);
   virtual ~ActiveHost();
 
@@ -44,18 +53,19 @@ class ActiveHost {
 
   // Sets the active host to be no host at all (i.e., the local device is not
   // connecting or connected to a tether host).
-  void SetActiveHostDisconnected();
+  virtual void SetActiveHostDisconnected();
 
   // Sets the active host to be the device with ID |active_host_device_id| and
   // records that the there is an active attempt to connect to that host (i.e.,
   // the host is not yet connected but it is in the process of connecting).
-  void SetActiveHostConnecting(const std::string& active_host_device_id);
+  virtual void SetActiveHostConnecting(
+      const std::string& active_host_device_id);
 
   // Sets the active host to be the device with ID |active_host_device_id| and
   // that the local device is connected to that device on the mobile hotspot
   // with Wi-Fi network ID |wifi_network_id|.
-  void SetActiveHostConnected(const std::string& active_host_device_id,
-                              const std::string& wifi_network_id);
+  virtual void SetActiveHostConnected(const std::string& active_host_device_id,
+                                      const std::string& wifi_network_id);
 
   // Gets the active host and associated metadata asynchronously. If
   // the active host status is...
@@ -67,12 +77,21 @@ class ActiveHost {
       base::Callback<void(ActiveHostStatus active_host_status,
                           std::unique_ptr<cryptauth::RemoteDevice> active_host,
                           const std::string& wifi_network_id)>;
-  void GetActiveHost(const ActiveHostCallback& active_host_callback);
+  virtual void GetActiveHost(const ActiveHostCallback& active_host_callback);
 
   // Synchronous getter methods which do not return a full RemoteDevice object.
-  ActiveHostStatus GetActiveHostStatus() const;
-  const std::string GetActiveHostDeviceId() const;
-  const std::string GetWifiNetworkId() const;
+  virtual ActiveHostStatus GetActiveHostStatus() const;
+  virtual std::string GetActiveHostDeviceId() const;
+  virtual std::string GetWifiNetworkId() const;
+
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
+
+ protected:
+  void SendActiveHostChangedUpdate(
+      ActiveHostStatus active_host_status,
+      std::unique_ptr<cryptauth::RemoteDevice> active_host,
+      const std::string& wifi_network_id);
 
  private:
   void SetActiveHost(ActiveHostStatus active_host_status,
@@ -85,6 +104,8 @@ class ActiveHost {
 
   TetherHostFetcher* tether_host_fetcher_;
   PrefService* pref_service_;
+
+  base::ObserverList<Observer> observer_list_;
 
   base::WeakPtrFactory<ActiveHost> weak_ptr_factory_;
 
