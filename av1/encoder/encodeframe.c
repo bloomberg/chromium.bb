@@ -2143,6 +2143,11 @@ static void update_stats(const AV1_COMMON *const cm, ThreadData *td, int mi_row,
 #endif  // CONFIG_EXT_INTER
 
 #if CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
+        const MOTION_MODE motion_allowed = motion_mode_allowed(
+#if CONFIG_GLOBAL_MOTION && SEPARATE_GLOBAL_MOTION
+            0, xd->global_motion,
+#endif  // CONFIG_GLOBAL_MOTION && SEPARATE_GLOBAL_MOTION
+            mi);
 #if CONFIG_SUPERTX
         if (!supertx_enabled)
 #endif  // CONFIG_SUPERTX
@@ -2151,13 +2156,13 @@ static void update_stats(const AV1_COMMON *const cm, ThreadData *td, int mi_row,
 #endif  // CONFIG_EXT_INTER
 #if CONFIG_MOTION_VAR && CONFIG_WARPED_MOTION
           {
-            if (motion_mode_allowed(mbmi) == WARPED_CAUSAL)
+            if (motion_allowed == WARPED_CAUSAL)
               counts->motion_mode[mbmi->sb_type][mbmi->motion_mode]++;
-            else if (motion_mode_allowed(mbmi) == OBMC_CAUSAL)
+            else if (motion_allowed == OBMC_CAUSAL)
               counts->obmc[mbmi->sb_type][mbmi->motion_mode == OBMC_CAUSAL]++;
           }
 #else
-        if (motion_mode_allowed(mbmi) > SIMPLE_TRANSLATION)
+        if (motion_allowed > SIMPLE_TRANSLATION)
           counts->motion_mode[mbmi->sb_type][mbmi->motion_mode]++;
 #endif  // CONFIG_MOTION_VAR && CONFIG_WARPED_MOTION
 #endif  // CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
@@ -2402,8 +2407,12 @@ static void encode_b(const AV1_COMP *const cpi, const TileInfo *const tile,
   update_state(cpi, td, ctx, mi_row, mi_col, bsize, dry_run);
 #if CONFIG_MOTION_VAR && CONFIG_NCOBMC
   mbmi = &xd->mi[0]->mbmi;
-  check_ncobmc =
-      is_inter_block(mbmi) && motion_mode_allowed(mbmi) >= OBMC_CAUSAL;
+  const MOTION_MODE motion_allowed = motion_mode_allowed(
+#if CONFIG_GLOBAL_MOTION && SEPARATE_GLOBAL_MOTION
+      0, xd->global_motion,
+#endif  // CONFIG_GLOBAL_MOTION && SEPARATE_GLOBAL_MOTION
+      mi);
+  check_ncobmc = is_inter_block(mbmi) && motion_allowed >= OBMC_CAUSAL;
   if (!dry_run && check_ncobmc) {
     av1_check_ncobmc_rd(cpi, x, mi_row, mi_col);
     av1_setup_dst_planes(x->e_mbd.plane, get_frame_new_buffer(&cpi->common),
@@ -5712,9 +5721,13 @@ static void encode_superblock(const AV1_COMP *const cpi, ThreadData *td,
 #if CONFIG_WARPED_MOTION
     if (mbmi->motion_mode == WARPED_CAUSAL) {
       int i;
+      assert_motion_mode_valid(WARPED_CAUSAL,
+#if CONFIG_GLOBAL_MOTION && SEPARATE_GLOBAL_MOTION
+                               0, cm->global_motion,
+#endif  // CONFIG_GLOBAL_MOTION && SEPARATE_GLOBAL_MOTION
+                               mi);
       for (i = 0; i < 3; ++i) {
         const struct macroblockd_plane *pd = &xd->plane[i];
-
         av1_warp_plane(&mbmi->wm_params[0],
 #if CONFIG_AOM_HIGHBITDEPTH
                        xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH, xd->bd,
@@ -5740,6 +5753,11 @@ static void encode_superblock(const AV1_COMP *const cpi, ThreadData *td,
 
 #if CONFIG_MOTION_VAR
     if (mbmi->motion_mode == OBMC_CAUSAL) {
+      assert_motion_mode_valid(OBMC_CAUSAL,
+#if CONFIG_GLOBAL_MOTION && SEPARATE_GLOBAL_MOTION
+                               0, cm->global_motion,
+#endif  // CONFIG_GLOBAL_MOTION && SEPARATE_GLOBAL_MOTION
+                               mi);
 #if CONFIG_NCOBMC
       if (dry_run == OUTPUT_ENABLED)
         av1_build_ncobmc_inter_predictors_sb(cm, xd, mi_row, mi_col);

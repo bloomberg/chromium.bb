@@ -293,8 +293,13 @@ static void read_drl_idx(const AV1_COMMON *cm, MACROBLOCKD *xd,
 
 #if CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
 static MOTION_MODE read_motion_mode(AV1_COMMON *cm, MACROBLOCKD *xd,
-                                    MB_MODE_INFO *mbmi, aom_reader *r) {
-  MOTION_MODE last_motion_mode_allowed = motion_mode_allowed(mbmi);
+                                    MODE_INFO *mi, aom_reader *r) {
+  MB_MODE_INFO *mbmi = &mi->mbmi;
+  const MOTION_MODE last_motion_mode_allowed = motion_mode_allowed(
+#if CONFIG_GLOBAL_MOTION && SEPARATE_GLOBAL_MOTION
+      0, xd->global_motion,
+#endif  // CONFIG_GLOBAL_MOTION && SEPARATE_GLOBAL_MOTION
+      mi);
   int motion_mode;
   FRAME_COUNTS *counts = xd->counts;
 
@@ -1991,7 +1996,13 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
 #if CONFIG_EXT_INTER
     if (mbmi->ref_frame[1] != INTRA_FRAME)
 #endif  // CONFIG_EXT_INTER
-      mbmi->motion_mode = read_motion_mode(cm, xd, mbmi, r);
+      mbmi->motion_mode = read_motion_mode(cm, xd, mi, r);
+    assert_motion_mode_valid(mbmi->motion_mode,
+#if CONFIG_GLOBAL_MOTION && SEPARATE_GLOBAL_MOTION
+                             0, xd->global_motion,
+#endif  // CONFIG_GLOBAL_MOTION && SEPARATE_GLOBAL_MOTION
+                             xd->mi[0]);
+
 #if CONFIG_WARPED_MOTION
     if (mbmi->motion_mode == WARPED_CAUSAL) {
       mbmi->wm_params[0].wmtype = DEFAULT_WMTYPE;

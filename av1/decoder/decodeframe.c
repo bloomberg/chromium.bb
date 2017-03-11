@@ -1701,6 +1701,11 @@ static void decode_token_and_recon_block(AV1Decoder *const pbi,
 #if CONFIG_WARPED_MOTION
     if (mbmi->motion_mode == WARPED_CAUSAL) {
       int i;
+      assert_motion_mode_valid(WARPED_CAUSAL,
+#if CONFIG_GLOBAL_MOTION && SEPARATE_GLOBAL_MOTION
+                               0, cm->global_motion,
+#endif  // CONFIG_GLOBAL_MOTION && SEPARATE_GLOBAL_MOTION
+                               xd->mi[0]);
       for (i = 0; i < 3; ++i) {
         const struct macroblockd_plane *pd = &xd->plane[i];
 
@@ -1730,6 +1735,11 @@ static void decode_token_and_recon_block(AV1Decoder *const pbi,
 #endif  // CONFIG_WARPED_MOTION
 #if CONFIG_MOTION_VAR
     if (mbmi->motion_mode == OBMC_CAUSAL) {
+      assert_motion_mode_valid(OBMC_CAUSAL,
+#if CONFIG_GLOBAL_MOTION && SEPARATE_GLOBAL_MOTION
+                               0, cm->global_motion,
+#endif  // CONFIG_GLOBAL_MOTION && SEPARATE_GLOBAL_MOTION
+                               xd->mi[0]);
 #if CONFIG_NCOBMC
       av1_build_ncobmc_inter_predictors_sb(cm, xd, mi_row, mi_col);
 #else

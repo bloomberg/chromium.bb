@@ -415,6 +415,25 @@ PREDICTION_MODE av1_left_block_mode(const MODE_INFO *cur_mi,
 PREDICTION_MODE av1_above_block_mode(const MODE_INFO *cur_mi,
                                      const MODE_INFO *above_mi, int b);
 
+#if CONFIG_GLOBAL_MOTION
+static INLINE int is_global_mv_block(const MODE_INFO *mi, int block,
+                                     TransformationType type) {
+  PREDICTION_MODE mode = get_y_mode(mi, block);
+#if GLOBAL_SUB8X8_USED
+  const int block_size_allowed = 1;
+#else
+  const BLOCK_SIZE bsize = mi->mbmi.sb_type;
+  const int block_size_allowed = (bsize >= BLOCK_8X8);
+#endif  // GLOBAL_SUB8X8_USED
+#if CONFIG_EXT_INTER
+  return (mode == ZEROMV || mode == ZERO_ZEROMV) && type > TRANSLATION &&
+         block_size_allowed;
+#else
+  return mode == ZEROMV && type > TRANSLATION && block_size_allowed;
+#endif  // CONFIG_EXT_INTER
+}
+#endif  // CONFIG_GLOBAL_MOTION
+
 enum mv_precision { MV_PRECISION_Q3, MV_PRECISION_Q4 };
 
 struct buf_2d {
@@ -1061,7 +1080,16 @@ static INLINE int check_num_overlappable_neighbors(const MB_MODE_INFO *mbmi) {
 }
 #endif
 
-static INLINE MOTION_MODE motion_mode_allowed(const MB_MODE_INFO *mbmi) {
+static INLINE MOTION_MODE motion_mode_allowed(
+#if CONFIG_GLOBAL_MOTION && SEPARATE_GLOBAL_MOTION
+    int block, const WarpedMotionParams *gm_params,
+#endif  // CONFIG_GLOBAL_MOTION && SEPARATE_GLOBAL_MOTION
+    const MODE_INFO *mi) {
+  const MB_MODE_INFO *mbmi = &mi->mbmi;
+#if CONFIG_GLOBAL_MOTION && SEPARATE_GLOBAL_MOTION
+  const TransformationType gm_type = gm_params[mbmi->ref_frame[0]].wmtype;
+  if (is_global_mv_block(mi, block, gm_type)) return SIMPLE_TRANSLATION;
+#endif  // CONFIG_GLOBAL_MOTION && SEPARATE_GLOBAL_MOTION
 #if CONFIG_EXT_INTER
   if (is_motion_variation_allowed_bsize(mbmi->sb_type) &&
       is_inter_mode(mbmi->mode) && mbmi->ref_frame[1] != INTRA_FRAME) {
@@ -1085,6 +1113,22 @@ static INLINE MOTION_MODE motion_mode_allowed(const MB_MODE_INFO *mbmi) {
   } else {
     return SIMPLE_TRANSLATION;
   }
+}
+
+static INLINE void assert_motion_mode_valid(MOTION_MODE mode,
+#if CONFIG_GLOBAL_MOTION && SEPARATE_GLOBAL_MOTION
+                                            int block,
+                                            const WarpedMotionParams *gm_params,
+#endif  // CONFIG_GLOBAL_MOTION && SEPARATE_GLOBAL_MOTION
+                                            const MODE_INFO *mi) {
+  const MOTION_MODE last_motion_mode_allowed = motion_mode_allowed(
+#if CONFIG_GLOBAL_MOTION && SEPARATE_GLOBAL_MOTION
+      block, gm_params,
+#endif  // CONFIG_GLOBAL_MOTION && SEPARATE_GLOBAL_MOTION
+      mi);
+  // Check that the input mode is not illegal
+  if (last_motion_mode_allowed < mode)
+    assert(0 && "Illegal motion mode selected");
 }
 
 #if CONFIG_MOTION_VAR
