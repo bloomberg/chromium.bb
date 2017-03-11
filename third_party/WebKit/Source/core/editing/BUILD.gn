@@ -226,7 +226,6 @@ blink_core_sources("editing") {
 source_set("unit_tests") {
   testonly = true
   sources = [
-    "ClipboardEventFlowTest.cpp",
     "CompositionUnderlineTest.cpp",
     "EditingCommandTest.cpp",
     "EditingStrategyTest.cpp",

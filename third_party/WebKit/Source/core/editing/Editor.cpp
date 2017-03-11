@@ -772,9 +772,7 @@ void Editor::registerCommandGroup(CompositeEditCommand* commandGroupWrapper) {
 }
 
 Element* Editor::findEventTargetFrom(const VisibleSelection& selection) const {
-  Element* target = selection.hasEditableStyle()
-                        ? associatedElementOf(selection.start())
-                        : frame().document()->activeElement();
+  Element* target = associatedElementOf(selection.start());
   if (!target)
     target = frame().document()->body();
 
