@@ -1803,6 +1803,9 @@
   <message name="IDS_SETTINGS_SITE_SETTINGS_USB_DEVICES" desc="Label for the USB devices in site settings.">
     USB devices
   </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_REMOVE_ZOOM_LEVEL" desc="Title tooltip and accessibility text for the button to remove zoom levels in site settings">
+    Remove zoom level
+  </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_ZOOM_LEVELS" desc="Label for the Zoom levels category in site settings.">
     Zoom levels
   </message>
