@@ -24,35 +24,8 @@ using base::trace_event::MemoryAllocatorDump;
 using base::trace_event::MemoryDumpLevelOfDetail;
 
 namespace cc {
-namespace {
-bool ResourceMeetsSizeRequirements(const gfx::Size& requested_size,
-                                   const gfx::Size& actual_size) {
-  const float kReuseThreshold = 2.0f;
-
-  // Allocating new resources is expensive, and we'd like to re-use our
-  // existing ones within reason. Allow a larger resource to be used for a
-  // smaller request.
-  if (actual_size.width() < requested_size.width() ||
-      actual_size.height() < requested_size.height())
-    return false;
-
-  // GetArea will crash on overflow, however all sizes in use are tile sizes.
-  // These are capped at ResourceProvider::max_texture_size(), and will not
-  // overflow.
-  float actual_area = actual_size.GetArea();
-  float requested_area = requested_size.GetArea();
-  // Don't use a resource that is more than |kReuseThreshold| times the
-  // requested pixel area, as we want to free unnecessarily large resources.
-  if (actual_area / requested_area > kReuseThreshold)
-    return false;
-
-  return true;
-}
-
-}  // namespace
-
 base::TimeDelta ResourcePool::kDefaultExpirationDelay =
-    base::TimeDelta::FromSeconds(5);
+    base::TimeDelta::FromSeconds(1);
 
 void ResourcePool::PoolResource::OnMemoryDump(
     base::trace_event::ProcessMemoryDump* pmd,
@@ -146,7 +119,7 @@ Resource* ResourcePool::ReuseResource(const gfx::Size& size,
 
     if (resource->format() != format)
       continue;
-    if (!ResourceMeetsSizeRequirements(size, resource->size()))
+    if (resource->size() != size)
       continue;
     if (resource->color_space() != color_space)
       continue;

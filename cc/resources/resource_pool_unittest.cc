@@ -33,12 +33,6 @@ class ResourcePoolTest : public testing::Test {
   }
 
  protected:
-  void CheckAndReturnResource(Resource* resource) {
-    EXPECT_NE(nullptr, resource);
-    resource_pool_->ReleaseResource(resource);
-    resource_pool_->CheckBusyResources();
-  }
-
   scoped_refptr<TestContextProvider> context_provider_;
   std::unique_ptr<SharedBitmapManager> shared_bitmap_manager_;
   std::unique_ptr<ResourceProvider> resource_provider_;
@@ -111,28 +105,32 @@ TEST_F(ResourcePoolTest, SimpleResourceReuse) {
   gfx::ColorSpace color_space1;
   gfx::ColorSpace color_space2 = gfx::ColorSpace::CreateSRGB();
 
-  CheckAndReturnResource(
-      resource_pool_->AcquireResource(size, format, color_space1));
+  Resource* resource =
+      resource_pool_->AcquireResource(size, format, color_space1);
+  resource_pool_->ReleaseResource(resource);
+  resource_pool_->CheckBusyResources();
   EXPECT_EQ(1u, resource_provider_->num_resources());
 
   // Same size/format should re-use resource.
-  Resource* resource =
-      resource_pool_->AcquireResource(size, format, color_space1);
+  resource = resource_pool_->AcquireResource(size, format, color_space1);
   EXPECT_EQ(1u, resource_provider_->num_resources());
-  CheckAndReturnResource(resource);
+  resource_pool_->ReleaseResource(resource);
+  resource_pool_->CheckBusyResources();
   EXPECT_EQ(1u, resource_provider_->num_resources());
 
   // Different size/format should allocate new resource.
   resource = resource_pool_->AcquireResource(gfx::Size(50, 50), LUMINANCE_8,
                                              color_space1);
   EXPECT_EQ(2u, resource_provider_->num_resources());
-  CheckAndReturnResource(resource);
+  resource_pool_->ReleaseResource(resource);
+  resource_pool_->CheckBusyResources();
   EXPECT_EQ(2u, resource_provider_->num_resources());
 
   // Different color space should allocate new resource.
   resource = resource_pool_->AcquireResource(size, format, color_space2);
   EXPECT_EQ(3u, resource_provider_->num_resources());
-  CheckAndReturnResource(resource);
+  resource_pool_->ReleaseResource(resource);
+  resource_pool_->CheckBusyResources();
   EXPECT_EQ(3u, resource_provider_->num_resources());
 }
 
@@ -319,47 +317,25 @@ TEST_F(ResourcePoolTest, ReuseResource) {
   ResourceFormat format = RGBA_8888;
   gfx::ColorSpace color_space = gfx::ColorSpace::CreateSRGB();
 
-  // Create unused resource with size 100x100.
-  CheckAndReturnResource(
-      resource_pool_->CreateResource(gfx::Size(100, 100), format, color_space));
+  // Create unused resources with sizes close to 100, 100.
+  resource_pool_->ReleaseResource(
+      resource_pool_->CreateResource(gfx::Size(99, 100), format, color_space));
+  resource_pool_->ReleaseResource(
+      resource_pool_->CreateResource(gfx::Size(99, 99), format, color_space));
+  resource_pool_->ReleaseResource(
+      resource_pool_->CreateResource(gfx::Size(100, 99), format, color_space));
+  resource_pool_->ReleaseResource(
+      resource_pool_->CreateResource(gfx::Size(101, 101), format, color_space));
+  resource_pool_->CheckBusyResources();
 
-  // Try some cases that are too large, none should succeed.
-  EXPECT_EQ(nullptr, resource_pool_->ReuseResource(gfx::Size(101, 100), format,
-                                                   color_space));
-  EXPECT_EQ(nullptr, resource_pool_->ReuseResource(gfx::Size(100, 101), format,
-                                                   color_space));
-  EXPECT_EQ(nullptr, resource_pool_->ReuseResource(gfx::Size(90, 120), format,
-                                                   color_space));
-  EXPECT_EQ(nullptr, resource_pool_->ReuseResource(gfx::Size(120, 120), format,
-                                                   color_space));
-
-  // Try some cases that are more than 2x smaller than 100x100 in area and
-  // won't be re-used.
-  EXPECT_EQ(nullptr, resource_pool_->ReuseResource(gfx::Size(49, 100), format,
-                                                   color_space));
-  EXPECT_EQ(nullptr, resource_pool_->ReuseResource(gfx::Size(100, 49), format,
-                                                   color_space));
-  EXPECT_EQ(nullptr, resource_pool_->ReuseResource(gfx::Size(50, 50), format,
-                                                   color_space));
-  EXPECT_EQ(nullptr, resource_pool_->ReuseResource(gfx::Size(70, 70), format,
-                                                   color_space));
-
-  // Try some cases that are smaller than 100x100, but within 2x area. Reuse
-  // should succeed.
-  CheckAndReturnResource(
-      resource_pool_->ReuseResource(gfx::Size(50, 100), format, color_space));
-  CheckAndReturnResource(
-      resource_pool_->ReuseResource(gfx::Size(100, 50), format, color_space));
-  CheckAndReturnResource(
-      resource_pool_->ReuseResource(gfx::Size(71, 71), format, color_space));
-
-  // 100x100 is an exact match and should succeed. A subsequent request for
-  // the same size should fail (the resource is already in use).
-  Resource* resource =
-      resource_pool_->ReuseResource(gfx::Size(100, 100), format, color_space);
-  EXPECT_EQ(nullptr, resource_pool_->ReuseResource(gfx::Size(100, 100), format,
-                                                   color_space));
-  CheckAndReturnResource(resource);
+  gfx::Size size(100, 100);
+  Resource* resource = resource_pool_->ReuseResource(size, format, color_space);
+  EXPECT_EQ(nullptr, resource);
+  size = gfx::Size(100, 99);
+  resource = resource_pool_->ReuseResource(size, format, color_space);
+  EXPECT_NE(nullptr, resource);
+  ASSERT_EQ(nullptr, resource_pool_->ReuseResource(size, format, color_space));
+  resource_pool_->ReleaseResource(resource);
 }
 
 TEST_F(ResourcePoolTest, MemoryStateSuspended) {
