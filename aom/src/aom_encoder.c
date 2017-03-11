@@ -13,15 +13,9 @@
  * \brief Provides the high level interface to wrap encoder algorithms.
  *
  */
-#include "./aom_config.h"
-
-#if HAVE_FEXCEPT
-#define _GNU_SOURCE
-#include <fenv.h>
-#endif
-
 #include <limits.h>
 #include <string.h>
+#include "aom_config.h"
 #include "aom/internal/aom_codec_internal.h"
 
 #define SAVE_STATUS(ctx, var) (ctx ? (ctx->err = var) : var)
@@ -174,42 +168,23 @@ aom_codec_err_t aom_codec_enc_config_default(aom_codec_iface_t *iface,
   return res;
 }
 
-/* clang-format off */
-#define FLOATING_POINT_BEGIN_SCOPE do {
-#define FLOATING_POINT_END_SCOPE } while (0);
-/* clang-format on */
-
 #if ARCH_X86 || ARCH_X86_64
 /* On X86, disable the x87 unit's internal 80 bit precision for better
  * consistency with the SSE unit's 64 bit precision.
  */
 #include "aom_ports/x86.h"
-#define FLOATING_POINT_SET_PRECISION \
-  unsigned short x87_orig_mode = x87_set_double_precision();
-#define FLOATING_POINT_RESTORE_PRECISION x87_set_control_word(x87_orig_mode);
+#define FLOATING_POINT_INIT() \
+  do {                        \
+    unsigned short x87_orig_mode = x87_set_double_precision();
+#define FLOATING_POINT_RESTORE()       \
+  x87_set_control_word(x87_orig_mode); \
+  }                                    \
+  while (0)
+
 #else
-#define FLOATING_POINT_SET_PRECISION
-#define FLOATING_POINT_RESTORE_PRECISION
-#endif  // ARCH_X86 || ARCH_X86_64
-
-#if HAVE_FEXCEPT && CONFIG_DEBUG
-#define FLOATING_POINT_SET_EXCEPTIONS \
-  const int float_excepts = feenableexcept(FE_DIVBYZERO);
-#define FLOATING_POINT_RESTORE_EXCEPTIONS feenableexcept(float_excepts);
-#else
-#define FLOATING_POINT_SET_EXCEPTIONS
-#define FLOATING_POINT_RESTORE_EXCEPTIONS
-#endif  // HAVE_FEXCEPT && CONFIG_DEBUG
-
-#define FLOATING_POINT_INIT    \
-  FLOATING_POINT_BEGIN_SCOPE   \
-  FLOATING_POINT_SET_PRECISION \
-  FLOATING_POINT_SET_EXCEPTIONS
-
-#define FLOATING_POINT_RESTORE      \
-  FLOATING_POINT_RESTORE_EXCEPTIONS \
-  FLOATING_POINT_RESTORE_PRECISION  \
-  FLOATING_POINT_END_SCOPE
+static void FLOATING_POINT_INIT() {}
+static void FLOATING_POINT_RESTORE() {}
+#endif
 
 aom_codec_err_t aom_codec_encode(aom_codec_ctx_t *ctx, const aom_image_t *img,
                                  aom_codec_pts_t pts, unsigned long duration,
@@ -229,7 +204,7 @@ aom_codec_err_t aom_codec_encode(aom_codec_ctx_t *ctx, const aom_image_t *img,
     /* Execute in a normalized floating point environment, if the platform
      * requires it.
      */
-    FLOATING_POINT_INIT
+    FLOATING_POINT_INIT();
 
     if (num_enc == 1)
       res = ctx->iface->enc.encode(get_alg_priv(ctx), img, pts, duration, flags,
@@ -256,7 +231,7 @@ aom_codec_err_t aom_codec_encode(aom_codec_ctx_t *ctx, const aom_image_t *img,
       ctx++;
     }
 
-    FLOATING_POINT_RESTORE
+    FLOATING_POINT_RESTORE();
   }
 
   return SAVE_STATUS(ctx, res);

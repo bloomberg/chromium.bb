@@ -21,16 +21,6 @@ set(AOM_C_FAILED_TESTS)
 set(AOM_CXX_PASSED_TESTS)
 set(AOM_CXX_FAILED_TESTS)
 
-function(aom_push_var var new_value)
-  set(SAVED_${var} ${var} PARENT_SCOPE)
-  set(${var} ${new_value} PARENT_SCOPE)
-endfunction ()
-
-function(aom_pop_var var)
-  set(var ${SAVED_${var}} PARENT_SCOPE)
-  unset(SAVED_${var} PARENT_SCOPE)
-endfunction ()
-
 # Confirms $test_source compiles and stores $test_name in one of
 # $AOM_C_PASSED_TESTS or $AOM_C_FAILED_TESTS depending on out come. When the
 # test passes $result_var is set to 1. When it fails $result_var is unset.

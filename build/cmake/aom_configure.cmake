@@ -158,17 +158,6 @@ if (CONFIG_ANS AND CONFIG_DAALA_EC)
           "CONFIG_ANS and CONFIG_DAALA_EC cannot be enabled together.")
 endif ()
 
-if (NOT MSVC)
-  aom_push_var(CMAKE_REQUIRED_LIBRARIES "m")
-  aom_check_c_compiles("fenv_check"
-                       "#define _GNU_SOURCE
-                        #include <fenv.h>
-                        void unused(void) {
-                          (void)feenableexcept(FE_DIVBYZERO | FE_INVALID);
-                        }" HAVE_FEXCEPT)
-  aom_pop_var(CMAKE_REQUIRED_LIBRARIES)
-endif()
-
 # TODO(tomfinegan): consume trailing whitespace after configure_file() when
 # target platform check produces empty INLINE and RESTRICT values (aka empty
 # values require special casing).
