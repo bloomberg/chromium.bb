@@ -34,7 +34,7 @@
           "actions": {
             "type": "array",
             "items": {"type": "any"},
-            "description": "List of actions that are triggered if one of the condtions is fulfilled."
+            "description": "List of actions that are triggered if one of the conditions is fulfilled."
           },
           "priority": {
             "type": "integer",
