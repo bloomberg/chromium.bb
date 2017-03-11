@@ -54,4 +54,11 @@ bool BackgroundFetchJobData::HasRequestsRemaining() const {
   return next_request_info_ != request_infos_.size();
 }
 
+void BackgroundFetchJobData::SetRequestDownloadGuid(
+    const std::string& request_guid,
+    const std::string& download_guid) {
+  auto index_iter = request_info_index_.find(request_guid);
+  DCHECK(index_iter != request_info_index_.end());
+  request_infos_[index_iter->second].set_download_guid(download_guid);
+}
 }  // namespace content

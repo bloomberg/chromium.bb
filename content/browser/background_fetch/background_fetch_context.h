@@ -53,7 +53,7 @@ class CONTENT_EXPORT BackgroundFetchContext
   friend class base::RefCountedThreadSafe<BackgroundFetchContext,
                                           BrowserThread::DeleteOnUIThread>;
 
-  virtual ~BackgroundFetchContext();
+  ~BackgroundFetchContext();
 
   void CreateRequest(const BackgroundFetchJobInfo& job_info,
                      std::vector<BackgroundFetchRequestInfo>& request_infos);

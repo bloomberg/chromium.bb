@@ -29,11 +29,17 @@ class CONTENT_EXPORT BackgroundFetchRequestInfo {
   bool complete() const { return complete_; }
   void set_complete(bool complete) { complete_ = complete; }
 
+  const std::string& download_guid() const { return download_guid_; }
+  void set_download_guid(const std::string& download_guid) {
+    download_guid_ = download_guid;
+  }
+
  private:
   std::string guid_;
   GURL url_;
   std::string tag_;
   bool complete_ = false;
+  std::string download_guid_;
 };
 
 using BackgroundFetchRequestInfos = std::vector<BackgroundFetchRequestInfo>;

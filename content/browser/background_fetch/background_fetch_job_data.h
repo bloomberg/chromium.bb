@@ -38,6 +38,11 @@ class CONTENT_EXPORT BackgroundFetchJobData {
   // Indicates whether all requests have been handed out and completed.
   bool IsComplete() const;
 
+  // Inform the JobData of the GUID the DownloadManager assigned to this
+  // request.
+  void SetRequestDownloadGuid(const std::string& request_guid,
+                              const std::string& download_guid);
+
  private:
   BackgroundFetchRequestInfos& request_infos_;
 

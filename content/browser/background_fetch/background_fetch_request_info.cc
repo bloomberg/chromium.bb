@@ -19,7 +19,11 @@ BackgroundFetchRequestInfo::BackgroundFetchRequestInfo(const GURL& url,
 
 BackgroundFetchRequestInfo::BackgroundFetchRequestInfo(
     const BackgroundFetchRequestInfo& request)
-    : guid_(request.guid_), url_(request.url_), tag_(request.tag_) {}
+    : guid_(request.guid_),
+      url_(request.url_),
+      tag_(request.tag_),
+      complete_(request.complete_),
+      download_guid_(request.download_guid_) {}
 
 BackgroundFetchRequestInfo::~BackgroundFetchRequestInfo() = default;
 

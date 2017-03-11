@@ -33,8 +33,6 @@ BackgroundFetchContext::~BackgroundFetchContext() {
 
 void BackgroundFetchContext::Init() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  // TODO(harkness): Create the Download observer.
 }
 
 void BackgroundFetchContext::Shutdown() {
