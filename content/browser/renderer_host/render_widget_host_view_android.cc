@@ -417,7 +417,8 @@ bool FloatEquals(float a, float b) {
 }
 
 void WakeUpGpu(GpuProcessHost* host) {
-  DCHECK(host);
+  if (!host)
+    return;
   GpuDataManagerImpl* gpu_data = GpuDataManagerImpl::GetInstance();
   if (gpu_data &&
       gpu_data->IsDriverBugWorkaroundActive(gpu::WAKE_UP_GPU_BEFORE_DRAWING))

@@ -246,7 +246,6 @@ bool GpuChildThread::Send(IPC::Message* msg) {
 bool GpuChildThread::OnControlMessageReceived(const IPC::Message& msg) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(GpuChildThread, msg)
-    IPC_MESSAGE_HANDLER(GpuMsg_Finalize, OnFinalize)
     IPC_MESSAGE_HANDLER(GpuMsg_CollectGraphicsInfo, OnCollectGraphicsInfo)
     IPC_MESSAGE_HANDLER(GpuMsg_GpuSwitched, OnGpuSwitched)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -345,11 +344,6 @@ void GpuChildThread::CreateDisplayCompositor(
     cc::mojom::DisplayCompositorRequest request,
     cc::mojom::DisplayCompositorClientPtr client) {
   NOTREACHED();
-}
-
-void GpuChildThread::OnFinalize() {
-  // Quit the GPU process
-  base::MessageLoop::current()->QuitWhenIdle();
 }
 
 void GpuChildThread::OnCollectGraphicsInfo() {

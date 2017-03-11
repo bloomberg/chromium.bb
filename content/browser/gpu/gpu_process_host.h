@@ -101,8 +101,9 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
                                       IPC::Message* message);
 
   // Helper function to run a callback on the IO thread. The callback receives
-  // the appropriate GpuProcessHost instance. If |force_create| is false, and no
-  // GpuProcessHost instance exists, then the callback is never called.
+  // the appropriate GpuProcessHost instance. Note that the callback can be
+  // called with a null host (e.g. when |force_create| is false, and no
+  // GpuProcessHost instance exists).
   CONTENT_EXPORT static void CallOnIO(
       GpuProcessKind kind,
       bool force_create,
@@ -156,9 +157,6 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
 
   // Forcefully terminates the GPU process.
   void ForceShutdown();
-
-  // Asks the GPU process to stop by itself.
-  void StopGpuProcess();
 
   void LoadedShader(const std::string& key, const std::string& data);
 

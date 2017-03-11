@@ -110,7 +110,6 @@ class GpuChildThread : public ChildThreadImpl,
                                   const std::string& group_name) override;
 
   // Message handlers.
-  void OnFinalize();
   void OnCollectGraphicsInfo();
   void OnSetVideoMemoryWindowCount(uint32_t window_count);
 

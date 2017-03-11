@@ -10,6 +10,7 @@
 #include "content/browser/gpu/browser_gpu_channel_host_factory.h"
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/public/browser/gpu_data_manager.h"
+#include "content/public/browser/gpu_utils.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/content_browser_test.h"
 #include "services/ui/gpu/interfaces/gpu_service.mojom.h"
@@ -284,15 +285,28 @@ IN_PROC_BROWSER_TEST_F(BrowserGpuChannelHostFactoryTest,
       base::Bind(&BrowserGpuChannelHostFactoryTest::OnContextLost,
                  base::Unretained(this), run_loop.QuitClosure(), &counter));
   EXPECT_TRUE(provider->BindToCurrentThread());
-  GpuProcessHost::CallOnIO(
-      GpuProcessHost::GPU_PROCESS_KIND_SANDBOXED, false /* force_create */,
-      base::Bind([](GpuProcessHost* host) { host->gpu_service()->Crash(); }));
+  GpuProcessHost::CallOnIO(GpuProcessHost::GPU_PROCESS_KIND_SANDBOXED,
+                           false /* force_create */,
+                           base::Bind([](GpuProcessHost* host) {
+                             if (host)
+                               host->gpu_service()->Crash();
+                           }));
   run_loop.Run();
 
   EXPECT_EQ(1, counter);
   EXPECT_FALSE(IsChannelEstablished());
   EstablishAndWait();
   EXPECT_TRUE(IsChannelEstablished());
+}
+
+using GpuProcessHostBrowserTest = BrowserGpuChannelHostFactoryTest;
+
+IN_PROC_BROWSER_TEST_F(GpuProcessHostBrowserTest, Shutdown) {
+  DCHECK(!IsChannelEstablished());
+  EstablishAndWait();
+  base::RunLoop run_loop;
+  StopGpuProcess(run_loop.QuitClosure());
+  run_loop.Run();
 }
 
 }  // namespace content

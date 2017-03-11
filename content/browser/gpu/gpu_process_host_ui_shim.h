@@ -51,9 +51,6 @@ class GpuProcessHostUIShim : public IPC::Listener,
 
   CONTENT_EXPORT static GpuProcessHostUIShim* FromID(int host_id);
 
-  // Stops the GPU process.
-  CONTENT_EXPORT void StopGpuProcess(const base::Closure& callback);
-
   // IPC::Listener implementation.
   // The GpuProcessHost causes this to be called on the UI thread to
   // dispatch the incoming messages from the GPU process, which are
@@ -72,7 +69,6 @@ class GpuProcessHostUIShim : public IPC::Listener,
 
   // The serial number of the GpuProcessHost / GpuProcessHostUIShim pair.
   int host_id_;
-  base::Closure close_callback_;
 };
 
 }  // namespace content

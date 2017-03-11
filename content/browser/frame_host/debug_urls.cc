@@ -170,15 +170,19 @@ bool HandleDebugURL(const GURL& url, ui::PageTransition transition) {
     GpuProcessHost::CallOnIO(GpuProcessHost::GPU_PROCESS_KIND_SANDBOXED,
                              false /* force_create */,
                              base::Bind([](GpuProcessHost* host) {
-                               host->gpu_service()->DestroyAllChannels();
+                               if (host)
+                                 host->gpu_service()->DestroyAllChannels();
                              }));
     return true;
   }
 
   if (url == kChromeUIGpuCrashURL) {
-    GpuProcessHost::CallOnIO(
-        GpuProcessHost::GPU_PROCESS_KIND_SANDBOXED, false /* force_create */,
-        base::Bind([](GpuProcessHost* host) { host->gpu_service()->Crash(); }));
+    GpuProcessHost::CallOnIO(GpuProcessHost::GPU_PROCESS_KIND_SANDBOXED,
+                             false /* force_create */,
+                             base::Bind([](GpuProcessHost* host) {
+                               if (host)
+                                 host->gpu_service()->Crash();
+                             }));
     return true;
   }
 
@@ -187,16 +191,20 @@ bool HandleDebugURL(const GURL& url, ui::PageTransition transition) {
     GpuProcessHost::CallOnIO(GpuProcessHost::GPU_PROCESS_KIND_SANDBOXED,
                              false /* force_create */,
                              base::Bind([](GpuProcessHost* host) {
-                               host->gpu_service()->ThrowJavaException();
+                               if (host)
+                                 host->gpu_service()->ThrowJavaException();
                              }));
     return true;
   }
 #endif
 
   if (url == kChromeUIGpuHangURL) {
-    GpuProcessHost::CallOnIO(
-        GpuProcessHost::GPU_PROCESS_KIND_SANDBOXED, false /* force_create */,
-        base::Bind([](GpuProcessHost* host) { host->gpu_service()->Hang(); }));
+    GpuProcessHost::CallOnIO(GpuProcessHost::GPU_PROCESS_KIND_SANDBOXED,
+                             false /* force_create */,
+                             base::Bind([](GpuProcessHost* host) {
+                               if (host)
+                                 host->gpu_service()->Hang();
+                             }));
     return true;
   }
 

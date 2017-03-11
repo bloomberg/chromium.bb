@@ -134,6 +134,7 @@ class GpuService : public gpu::GpuChannelManagerDelegate,
   void Crash() override;
   void Hang() override;
   void ThrowJavaException() override;
+  void Stop(const StopCallback& callback) override;
 
   scoped_refptr<base::SingleThreadTaskRunner> io_runner_;
 

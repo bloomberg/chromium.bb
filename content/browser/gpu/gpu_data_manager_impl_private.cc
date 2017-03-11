@@ -276,6 +276,8 @@ void OnVideoMemoryUsageStats(const gpu::VideoMemoryUsageStats& stats) {
 }
 
 void RequestVideoMemoryUsageStats(GpuProcessHost* host) {
+  if (!host)
+    return;
   host->gpu_service()->GetVideoMemoryUsageStats(
       base::Bind(&OnVideoMemoryUsageStats));
 }

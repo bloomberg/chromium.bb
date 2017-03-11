@@ -43,12 +43,6 @@ namespace {
 base::LazyInstance<IDMap<GpuProcessHostUIShim*>>::DestructorAtExit
     g_hosts_by_id = LAZY_INSTANCE_INITIALIZER;
 
-void StopGpuProcessOnIO(int host_id) {
-  GpuProcessHost* host = GpuProcessHost::FromID(host_id);
-  if (host)
-    host->StopGpuProcess();
-}
-
 }  // namespace
 
 void RouteToGpuProcessHostUIShimTask(int host_id, const IPC::Message& msg) {
@@ -121,17 +115,8 @@ bool GpuProcessHostUIShim::OnMessageReceived(const IPC::Message& message) {
   return OnControlMessageReceived(message);
 }
 
-void GpuProcessHostUIShim::StopGpuProcess(const base::Closure& callback) {
-  close_callback_ = callback;
-
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE, base::Bind(&StopGpuProcessOnIO, host_id_));
-}
-
 GpuProcessHostUIShim::~GpuProcessHostUIShim() {
   DCHECK(CalledOnValidThread());
-  if (!close_callback_.is_null())
-    base::ResetAndReturn(&close_callback_).Run();
   g_hosts_by_id.Pointer()->Remove(host_id_);
 }
 

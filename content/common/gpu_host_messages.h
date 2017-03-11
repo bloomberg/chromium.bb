@@ -89,9 +89,6 @@ IPC_STRUCT_TRAITS_END()
 // GPU Messages
 // These are messages from the browser to the GPU process.
 
-// Tells the GPU process to shutdown itself.
-IPC_MESSAGE_CONTROL0(GpuMsg_Finalize)
-
 // Tells the GPU process to create a new gpu memory buffer.
 IPC_MESSAGE_CONTROL1(GpuMsg_CreateGpuMemoryBuffer,
                      GpuMsg_CreateGpuMemoryBuffer_Params)

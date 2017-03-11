@@ -200,8 +200,7 @@ void RunCallbackOnIO(GpuProcessHost::GpuProcessKind kind,
                      bool force_create,
                      const base::Callback<void(GpuProcessHost*)>& callback) {
   GpuProcessHost* host = GpuProcessHost::Get(kind, force_create);
-  if (host)
-    callback.Run(host);
+  callback.Run(host);
 }
 
 #if defined(USE_OZONE)
@@ -986,10 +985,6 @@ void GpuProcessHost::ForceShutdown() {
     g_gpu_process_hosts[kind_] = NULL;
 
   process_->ForceShutdown();
-}
-
-void GpuProcessHost::StopGpuProcess() {
-  Send(new GpuMsg_Finalize());
 }
 
 bool GpuProcessHost::LaunchGpuProcess(gpu::GpuPreferences* gpu_preferences) {

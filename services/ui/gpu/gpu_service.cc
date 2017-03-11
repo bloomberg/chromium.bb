@@ -265,4 +265,9 @@ void GpuService::ThrowJavaException() {
 #endif
 }
 
+void GpuService::Stop(const StopCallback& callback) {
+  base::MessageLoop::current()->QuitWhenIdle();
+  callback.Run();
+}
+
 }  // namespace ui
