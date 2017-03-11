@@ -39,7 +39,7 @@
           actionable$="[[!controlDisabled_(disabled, pref.*)]]"
           hidden="[[!label]]">
         <div id="label" class="label">[[label]]</div>
-        <div class="secondary label">[[subLabel]]</div>
+        <div id="subLabel" class="secondary label">[[subLabel]]</div>
       </div>
       <content select=".more-actions"></content>
       <template is="dom-if" if="[[hasPrefPolicyIndicator(pref.*)]]">
@@ -48,6 +48,7 @@
       </template>
       <paper-toggle-button id="control" checked="{{checked}}"
           on-change="notifyChangedByUserInteraction" aria-labelledby="label"
+          aria-describedby="subLabel"
           disabled="[[controlDisabled_(disabled, pref)]]">
       </paper-toggle-button>
     </div>
