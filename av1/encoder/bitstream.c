@@ -4997,15 +4997,15 @@ void av1_pack_bitstream(AV1_COMP *const cpi, uint8_t *dst, size_t *size) {
   unsigned int max_tile_size;
   unsigned int max_tile_col_size;
 
+#if CONFIG_BITSTREAM_DEBUG
+  bitstream_queue_reset_write();
+#endif
+
 #if !CONFIG_TILE_GROUPS
   int tile_size_bytes;
   int tile_col_size_bytes;
   AV1_COMMON *const cm = &cpi->common;
   const int have_tiles = cm->tile_cols * cm->tile_rows > 1;
-
-#if CONFIG_BITSTREAM_DEBUG
-  bitstream_queue_reset_write();
-#endif
 
   // Write the uncompressed header
   write_uncompressed_header(cpi, &wb);
