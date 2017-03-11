@@ -1241,7 +1241,7 @@ NSString* const NSAccessibilityRequiredAttribute = @"AXRequired";
         browserAccessibility_->manager()->GetRootManager()
             ->ToBrowserAccessibilityManagerMac();
     if (manager)
-      return manager->parent_view();
+      return manager->GetParentView();
     return nil;
   }
 }
@@ -1979,10 +1979,10 @@ NSString* const NSAccessibilityRequiredAttribute = @"AXRequired";
   BrowserAccessibilityManagerMac* manager =
       browserAccessibility_->manager()->GetRootManager()
           ->ToBrowserAccessibilityManagerMac();
-  if (!manager || !manager->parent_view())
+  if (!manager || !manager->GetParentView())
     return nil;
 
-  return [manager->parent_view() window];
+  return [manager->GetParentView() window];
 }
 
 - (NSString*)methodNameForAttribute:(NSString*)attribute {

@@ -53,7 +53,6 @@ class BrowserAccessibilityTest : public ui::CocoaTest {
 
     manager_.reset(
         new BrowserAccessibilityManagerMac(
-            nil,
             MakeAXTreeUpdate(root, child1, child2),
             NULL));
     accessibility_.reset([ToBrowserAccessibilityCocoa(manager_->GetRoot())

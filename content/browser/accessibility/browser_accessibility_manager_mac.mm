@@ -111,8 +111,7 @@ BrowserAccessibilityManager* BrowserAccessibilityManager::Create(
     const ui::AXTreeUpdate& initial_tree,
     BrowserAccessibilityDelegate* delegate,
     BrowserAccessibilityFactory* factory) {
-  return new BrowserAccessibilityManagerMac(
-      NULL, initial_tree, delegate, factory);
+  return new BrowserAccessibilityManagerMac(initial_tree, delegate, factory);
 }
 
 BrowserAccessibilityManagerMac*
@@ -121,12 +120,10 @@ BrowserAccessibilityManager::ToBrowserAccessibilityManagerMac() {
 }
 
 BrowserAccessibilityManagerMac::BrowserAccessibilityManagerMac(
-    NSView* parent_view,
     const ui::AXTreeUpdate& initial_tree,
     BrowserAccessibilityDelegate* delegate,
     BrowserAccessibilityFactory* factory)
-    : BrowserAccessibilityManager(delegate, factory),
-      parent_view_(parent_view) {
+    : BrowserAccessibilityManager(delegate, factory) {
   Initialize(initial_tree);
 }
 
@@ -471,6 +468,10 @@ BrowserAccessibilityManagerMac::GetUserInfoForValueChangedNotification(
     NSAccessibilityTextChangeValues : changes,
     NSAccessibilityTextChangeElement : native_node
   };
+}
+
+NSView* BrowserAccessibilityManagerMac::GetParentView() {
+  return delegate() ? delegate()->AccessibilityGetAcceleratedWidget() : nullptr;
 }
 
 }  // namespace content
