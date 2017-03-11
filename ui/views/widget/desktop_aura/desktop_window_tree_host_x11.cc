@@ -1679,6 +1679,7 @@ void DesktopWindowTreeHostX11::UpdateMinAndMaxSize() {
   max_size_in_pixels_ = maximum_in_pixels;
 
   XSizeHints hints;
+  hints.flags = 0;
   long supplied_return;
   XGetWMNormalHints(xdisplay_, xwindow_, &hints, &supplied_return);
 
