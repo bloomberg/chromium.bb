@@ -239,7 +239,9 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       max_keyframe_distance_to_disable_background_video_(
           params.max_keyframe_distance_to_disable_background_video()),
       enable_instant_source_buffer_gc_(
-          params.enable_instant_source_buffer_gc()) {
+          params.enable_instant_source_buffer_gc()),
+      embedded_media_experience_enabled_(
+          params.embedded_media_experience_enabled()) {
   DVLOG(1) << __func__;
   DCHECK(!adjust_allocated_memory_cb_.is_null());
   DCHECK(renderer_factory_);
@@ -2124,10 +2126,11 @@ void WebMediaPlayerImpl::ScheduleIdlePauseTimer() {
 
 void WebMediaPlayerImpl::CreateWatchTimeReporter() {
   // Create the watch time reporter and synchronize its initial state.
-  watch_time_reporter_.reset(new WatchTimeReporter(
-      hasAudio(), hasVideo(), !!chunk_demuxer_, is_encrypted_, media_log_,
-      pipeline_metadata_.natural_size,
-      base::Bind(&GetCurrentTimeInternal, this)));
+  watch_time_reporter_.reset(
+      new WatchTimeReporter(hasAudio(), hasVideo(), !!chunk_demuxer_,
+                            is_encrypted_, embedded_media_experience_enabled_,
+                            media_log_, pipeline_metadata_.natural_size,
+                            base::Bind(&GetCurrentTimeInternal, this)));
   watch_time_reporter_->OnVolumeChange(volume_);
   if (delegate_->IsFrameHidden())
     watch_time_reporter_->OnHidden();

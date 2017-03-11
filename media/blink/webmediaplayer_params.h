@@ -61,7 +61,8 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerParams {
       base::WeakPtr<MediaObserver> media_observer,
       base::TimeDelta max_keyframe_distance_to_disable_background_video,
       bool enable_instant_source_buffer_gc,
-      bool allow_suspend);
+      bool allow_suspend,
+      bool embedded_media_experience_enabled);
 
   ~WebMediaPlayerParams();
 
@@ -115,6 +116,10 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerParams {
 
   bool allow_suspend() const { return allow_suspend_; }
 
+  bool embedded_media_experience_enabled() const {
+    return embedded_media_experience_enabled_;
+  }
+
  private:
   DeferLoadCB defer_load_cb_;
   scoped_refptr<SwitchableAudioRendererSink> audio_renderer_sink_;
@@ -131,6 +136,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerParams {
   base::TimeDelta max_keyframe_distance_to_disable_background_video_;
   bool enable_instant_source_buffer_gc_;
   const bool allow_suspend_;
+  const bool embedded_media_experience_enabled_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(WebMediaPlayerParams);
 };

@@ -297,6 +297,7 @@ class MediaInternals::MediaInternalsUMAHandler {
     base::TimeDelta src_watch_time = media::kNoTimestamp;
     base::TimeDelta ac_watch_time = media::kNoTimestamp;
     base::TimeDelta battery_watch_time = media::kNoTimestamp;
+    base::TimeDelta embedded_experience_watch_time = media::kNoTimestamp;
   };
 
   struct PipelineInfo {
@@ -358,6 +359,8 @@ class MediaInternals::MediaInternalsUMAHandler {
         MAYBE_RECORD_WATCH_TIME(kWatchTimeAudioVideoMse, mse_watch_time);
         MAYBE_RECORD_WATCH_TIME(kWatchTimeAudioVideoEme, eme_watch_time);
         MAYBE_RECORD_WATCH_TIME(kWatchTimeAudioVideoSrc, src_watch_time);
+        MAYBE_RECORD_WATCH_TIME(kWatchTimeAudioVideoEmbeddedExperience,
+                                embedded_experience_watch_time);
       } else {
         DCHECK_EQ(finalize_type, FinalizeType::POWER_ONLY);
       }
@@ -369,6 +372,8 @@ class MediaInternals::MediaInternalsUMAHandler {
         MAYBE_RECORD_WATCH_TIME(kWatchTimeAudioMse, mse_watch_time);
         MAYBE_RECORD_WATCH_TIME(kWatchTimeAudioEme, eme_watch_time);
         MAYBE_RECORD_WATCH_TIME(kWatchTimeAudioSrc, src_watch_time);
+        MAYBE_RECORD_WATCH_TIME(kWatchTimeAudioEmbeddedExperience,
+                                embedded_experience_watch_time);
       } else {
         DCHECK_EQ(finalize_type, FinalizeType::POWER_ONLY);
       }
@@ -467,6 +472,9 @@ void MediaInternals::MediaInternalsUMAHandler::SavePlayerState(
                          &wti.battery_watch_time);
       MaybeSaveWatchTime(event, media::MediaLog::kWatchTimeAudioAc,
                          &wti.ac_watch_time);
+      MaybeSaveWatchTime(event,
+                         media::MediaLog::kWatchTimeAudioEmbeddedExperience,
+                         &wti.embedded_experience_watch_time);
 
       // Save audio+video watch time information.
       MaybeSaveWatchTime(event, media::MediaLog::kWatchTimeAudioVideoAll,
@@ -481,6 +489,9 @@ void MediaInternals::MediaInternalsUMAHandler::SavePlayerState(
                          &wti.battery_watch_time);
       MaybeSaveWatchTime(event, media::MediaLog::kWatchTimeAudioVideoAc,
                          &wti.ac_watch_time);
+      MaybeSaveWatchTime(
+          event, media::MediaLog::kWatchTimeAudioVideoEmbeddedExperience,
+          &wti.embedded_experience_watch_time);
 
       if (event.params.HasKey(media::MediaLog::kWatchTimeFinalize)) {
         bool should_finalize;

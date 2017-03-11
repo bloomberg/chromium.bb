@@ -193,7 +193,8 @@ void MediaDocumentParser::createDocumentStructure() {
   div->appendChild(content);
 
   if (document()->settings() &&
-      document()->settings()->getEmbeddedMediaExperienceEnabled()) {
+      document()->settings()->getEmbeddedMediaExperienceEnabled() &&
+      source->type().startsWith("video/", TextCaseASCIIInsensitive)) {
     EventListener* listener = MediaLoadedEventListener::create();
     AddEventListenerOptions options;
     options.setOnce(true);

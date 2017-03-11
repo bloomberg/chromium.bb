@@ -96,12 +96,14 @@ class MEDIA_EXPORT MediaLog : public base::RefCountedThreadSafe<MediaLog> {
   static const char kWatchTimeAudioSrc[];
   static const char kWatchTimeAudioBattery[];
   static const char kWatchTimeAudioAc[];
+  static const char kWatchTimeAudioEmbeddedExperience[];
   static const char kWatchTimeAudioVideoAll[];
   static const char kWatchTimeAudioVideoMse[];
   static const char kWatchTimeAudioVideoEme[];
   static const char kWatchTimeAudioVideoSrc[];
   static const char kWatchTimeAudioVideoBattery[];
   static const char kWatchTimeAudioVideoAc[];
+  static const char kWatchTimeAudioVideoEmbeddedExperience[];
 
   // Markers which signify the watch time should be finalized immediately.
   static const char kWatchTimeFinalize[];

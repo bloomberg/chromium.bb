@@ -707,6 +707,9 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   // the background. Affects the value of ShouldPauseVideoWhenHidden().
   bool video_locked_when_paused_when_hidden_ = false;
 
+  // Whether embedded media experience is currently enabled.
+  bool embedded_media_experience_enabled_ = false;
+
   DISALLOW_COPY_AND_ASSIGN(WebMediaPlayerImpl);
 };
 

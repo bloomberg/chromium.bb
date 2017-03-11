@@ -936,13 +936,24 @@ MediaControlFullscreenButtonElement::create(MediaControls& mediaControls) {
 
 void MediaControlFullscreenButtonElement::defaultEventHandler(Event* event) {
   if (event->type() == EventTypeNames::click) {
+    bool isEmbeddedExperienceEnabled =
+        document().settings() &&
+        document().settings()->getEmbeddedMediaExperienceEnabled();
     if (mediaElement().isFullscreen()) {
       Platform::current()->recordAction(
           UserMetricsAction("Media.Controls.ExitFullscreen"));
+      if (isEmbeddedExperienceEnabled) {
+        Platform::current()->recordAction(UserMetricsAction(
+            "Media.Controls.ExitFullscreen.EmbeddedExperience"));
+      }
       mediaControls().exitFullscreen();
     } else {
       Platform::current()->recordAction(
           UserMetricsAction("Media.Controls.EnterFullscreen"));
+      if (isEmbeddedExperienceEnabled) {
+        Platform::current()->recordAction(UserMetricsAction(
+            "Media.Controls.EnterFullscreen.EmbeddedExperience"));
+      }
       mediaControls().enterFullscreen();
     }
     event->setDefaultHandled();

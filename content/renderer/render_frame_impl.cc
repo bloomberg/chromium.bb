@@ -2810,9 +2810,12 @@ blink::WebMediaPlayer* RenderFrameImpl::createMediaPlayer(
   scoped_refptr<media::MediaLog> media_log(
       new RenderMediaLog(url::Origin(frame_->getSecurityOrigin()).GetURL()));
 
+  bool embedded_media_experience_enabled = false;
 #if defined(OS_ANDROID)
   if (!UseMediaPlayerRenderer(url) && !media_surface_manager_)
     media_surface_manager_ = new RendererSurfaceViewManager(this);
+  embedded_media_experience_enabled =
+      GetWebkitPreferences().embedded_media_experience_enabled;
 #endif  // defined(OS_ANDROID)
 
 #if BUILDFLAG(ENABLE_MEDIA_REMOTING)
@@ -2846,7 +2849,8 @@ blink::WebMediaPlayer* RenderFrameImpl::createMediaPlayer(
       // in the renderer process. See https://crbug.com/681160.
       GetWebkitPreferences().max_keyframe_distance_to_disable_background_video,
       GetWebkitPreferences().enable_instant_source_buffer_gc,
-      GetContentClient()->renderer()->AllowMediaSuspend());
+      GetContentClient()->renderer()->AllowMediaSuspend(),
+      embedded_media_experience_enabled);
 
   bool use_fallback_path = false;
 #if defined(OS_ANDROID)

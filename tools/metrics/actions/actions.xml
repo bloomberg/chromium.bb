@@ -8994,9 +8994,27 @@ should be able to be added at any place in this file.
   <description>The user entered fullscreen mode from the controls.</description>
 </action>
 
+<action name="Media.Controls.EnterFullscreen.EmbeddedExperience">
+  <owner>shaktisahu@chromium.org</owner>
+  <description>
+    The user has entered fullscreen mode from the controls. Recorded only for
+    downloaded media on Android and is a subset of
+    Media.Controls.EnterFullscreen.
+  </description>
+</action>
+
 <action name="Media.Controls.ExitFullscreen">
   <owner>mlamouri@chromium.org</owner>
   <description>The user left fullscreen mode from the controls.</description>
+</action>
+
+<action name="Media.Controls.ExitFullscreen.EmbeddedExperience">
+  <owner>shaktisahu@chromium.org</owner>
+  <description>
+    The user has left fullscreen mode from the controls. Recorded only for
+    downloaded media on Android and is a subset of
+    Media.Controls.ExitFullscreen.
+  </description>
 </action>
 
 <action name="Media.Controls.Mute">

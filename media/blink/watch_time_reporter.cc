@@ -26,6 +26,7 @@ WatchTimeReporter::WatchTimeReporter(bool has_audio,
                                      bool has_video,
                                      bool is_mse,
                                      bool is_encrypted,
+                                     bool is_embedded_media_experience_enabled,
                                      scoped_refptr<MediaLog> media_log,
                                      const gfx::Size& initial_video_size,
                                      const GetMediaTimeCB& get_media_time_cb)
@@ -33,6 +34,8 @@ WatchTimeReporter::WatchTimeReporter(bool has_audio,
       has_video_(has_video),
       is_mse_(is_mse),
       is_encrypted_(is_encrypted),
+      is_embedded_media_experience_enabled_(
+          is_embedded_media_experience_enabled),
       media_log_(std::move(media_log)),
       initial_video_size_(initial_video_size),
       get_media_time_cb_(get_media_time_cb) {
@@ -224,6 +227,13 @@ void WatchTimeReporter::UpdateWatchTime() {
       log_event->params.SetDoubleWithoutPathExpansion(
           has_video_ ? MediaLog::kWatchTimeAudioVideoEme
                      : MediaLog::kWatchTimeAudioEme,
+          elapsed.InSecondsF());
+    }
+
+    if (is_embedded_media_experience_enabled_) {
+      log_event->params.SetDoubleWithoutPathExpansion(
+          has_video_ ? MediaLog::kWatchTimeAudioVideoEmbeddedExperience
+                     : MediaLog::kWatchTimeAudioEmbeddedExperience,
           elapsed.InSecondsF());
     }
 

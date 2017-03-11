@@ -213,7 +213,7 @@ class WebMediaPlayerImplTest : public testing::Test {
             media_thread_.task_runner(), message_loop_.task_runner(),
             message_loop_.task_runner(), WebMediaPlayerParams::Context3DCB(),
             base::Bind(&OnAdjustAllocatedMemory), nullptr, nullptr, nullptr,
-            base::TimeDelta::FromSeconds(10), false, allow_suspend));
+            base::TimeDelta::FromSeconds(10), false, allow_suspend, false));
   }
 
   ~WebMediaPlayerImplTest() override {

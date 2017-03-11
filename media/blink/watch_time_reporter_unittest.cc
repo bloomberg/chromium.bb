@@ -81,7 +81,7 @@ class WatchTimeReporterTest : public testing::TestWithParam<bool> {
                   bool is_encrypted,
                   const gfx::Size& initial_video_size) {
     wtr_.reset(new WatchTimeReporter(
-        has_audio, has_video_, is_mse, is_encrypted, media_log_,
+        has_audio, has_video_, is_mse, is_encrypted, false, media_log_,
         initial_video_size,
         base::Bind(&WatchTimeReporterTest::GetCurrentMediaTime,
                    base::Unretained(this))));
