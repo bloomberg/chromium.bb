@@ -10,18 +10,14 @@
 #include "helpers.h"
 #include "util.h"
 
-static const uint32_t supported_formats[] = {
-	DRM_FORMAT_ARGB8888, DRM_FORMAT_XRGB8888
-};
+static const uint32_t supported_formats[] = { DRM_FORMAT_ARGB8888, DRM_FORMAT_XRGB8888 };
 
 static int marvell_init(struct driver *drv)
 {
-	return drv_add_linear_combinations(drv, supported_formats,
-					   ARRAY_SIZE(supported_formats));
+	return drv_add_linear_combinations(drv, supported_formats, ARRAY_SIZE(supported_formats));
 }
 
-struct backend backend_marvell =
-{
+struct backend backend_marvell = {
 	.name = "marvell",
 	.init = marvell_init,
 	.bo_create = drv_dumb_bo_create,

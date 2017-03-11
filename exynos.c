@@ -6,29 +6,29 @@
 
 #ifdef DRV_EXYNOS
 
+// clang-format off
 #include <assert.h>
 #include <errno.h>
 #include <stdio.h>
 #include <string.h>
 #include <xf86drm.h>
 #include <exynos_drm.h>
+// clang-format on
 
 #include "drv_priv.h"
 #include "helpers.h"
 #include "util.h"
 
-static const uint32_t supported_formats[] = {
-	DRM_FORMAT_ARGB8888, DRM_FORMAT_NV12, DRM_FORMAT_XRGB8888
-};
+static const uint32_t supported_formats[] = { DRM_FORMAT_ARGB8888, DRM_FORMAT_NV12,
+					      DRM_FORMAT_XRGB8888 };
 
 static int exynos_init(struct driver *drv)
 {
-	return drv_add_linear_combinations(drv, supported_formats,
-					   ARRAY_SIZE(supported_formats));
+	return drv_add_linear_combinations(drv, supported_formats, ARRAY_SIZE(supported_formats));
 }
 
-static int exynos_bo_create(struct bo *bo, uint32_t width, uint32_t height,
-			    uint32_t format, uint32_t flags)
+static int exynos_bo_create(struct bo *bo, uint32_t width, uint32_t height, uint32_t format,
+			    uint32_t flags)
 {
 	size_t plane;
 
@@ -66,7 +66,8 @@ static int exynos_bo_create(struct bo *bo, uint32_t width, uint32_t height,
 		ret = drmIoctl(bo->drv->fd, DRM_IOCTL_EXYNOS_GEM_CREATE, &gem_create);
 		if (ret) {
 			fprintf(stderr, "drv: DRM_IOCTL_EXYNOS_GEM_CREATE failed "
-					"(size=%zu)\n", size);
+					"(size=%zu)\n",
+				size);
 			goto cleanup_planes;
 		}
 
@@ -76,16 +77,13 @@ static int exynos_bo_create(struct bo *bo, uint32_t width, uint32_t height,
 	return 0;
 
 cleanup_planes:
-	for ( ; plane != 0; plane--) {
+	for (; plane != 0; plane--) {
 		struct drm_gem_close gem_close;
 		memset(&gem_close, 0, sizeof(gem_close));
 		gem_close.handle = bo->handles[plane - 1].u32;
-		int gem_close_ret = drmIoctl(bo->drv->fd, DRM_IOCTL_GEM_CLOSE,
-					     &gem_close);
+		int gem_close_ret = drmIoctl(bo->drv->fd, DRM_IOCTL_GEM_CLOSE, &gem_close);
 		if (gem_close_ret) {
-			fprintf(stderr,
-				"drv: DRM_IOCTL_GEM_CLOSE failed: %d\n",
-				gem_close_ret);
+			fprintf(stderr, "drv: DRM_IOCTL_GEM_CLOSE failed: %d\n", gem_close_ret);
 		}
 	}
 
@@ -96,8 +94,7 @@ cleanup_planes:
  * Use dumb mapping with exynos even though a GEM buffer is created.
  * libdrm does the same thing in exynos_drm.c
  */
-struct backend backend_exynos =
-{
+struct backend backend_exynos = {
 	.name = "exynos",
 	.init = exynos_init,
 	.bo_create = exynos_bo_create,

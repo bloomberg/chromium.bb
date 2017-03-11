@@ -6,30 +6,30 @@
 
 #ifdef DRV_MEDIATEK
 
+// clang-format off
 #include <stdio.h>
 #include <string.h>
 #include <sys/mman.h>
 #include <xf86drm.h>
 #include <mediatek_drm.h>
+// clang-format on
 
 #include "drv_priv.h"
 #include "helpers.h"
 #include "util.h"
 
-static const uint32_t supported_formats[] = {
-	DRM_FORMAT_ABGR8888, DRM_FORMAT_ARGB8888, DRM_FORMAT_RGB565,
-	DRM_FORMAT_XBGR8888, DRM_FORMAT_XRGB8888, DRM_FORMAT_YVU420,
-	DRM_FORMAT_YVU420_ANDROID
-};
+static const uint32_t supported_formats[] = { DRM_FORMAT_ABGR8888,      DRM_FORMAT_ARGB8888,
+					      DRM_FORMAT_RGB565,	DRM_FORMAT_XBGR8888,
+					      DRM_FORMAT_XRGB8888,      DRM_FORMAT_YVU420,
+					      DRM_FORMAT_YVU420_ANDROID };
 
 static int mediatek_init(struct driver *drv)
 {
-	return drv_add_linear_combinations(drv, supported_formats,
-					   ARRAY_SIZE(supported_formats));
+	return drv_add_linear_combinations(drv, supported_formats, ARRAY_SIZE(supported_formats));
 }
 
-static int mediatek_bo_create(struct bo *bo, uint32_t width, uint32_t height,
-			      uint32_t format, uint32_t flags)
+static int mediatek_bo_create(struct bo *bo, uint32_t width, uint32_t height, uint32_t format,
+			      uint32_t flags)
 {
 	int ret;
 	size_t plane;
@@ -50,7 +50,8 @@ static int mediatek_bo_create(struct bo *bo, uint32_t width, uint32_t height,
 	ret = drmIoctl(bo->drv->fd, DRM_IOCTL_MTK_GEM_CREATE, &gem_create);
 	if (ret) {
 		fprintf(stderr, "drv: DRM_IOCTL_MTK_GEM_CREATE failed "
-				"(size=%llu)\n", gem_create.size);
+				"(size=%llu)\n",
+			gem_create.size);
 		return ret;
 	}
 
@@ -70,14 +71,14 @@ static void *mediatek_bo_map(struct bo *bo, struct map_info *data, size_t plane)
 
 	ret = drmIoctl(bo->drv->fd, DRM_IOCTL_MTK_GEM_MAP_OFFSET, &gem_map);
 	if (ret) {
-		fprintf(stderr,"drv: DRM_IOCTL_MTK_GEM_MAP_OFFSET failed\n");
+		fprintf(stderr, "drv: DRM_IOCTL_MTK_GEM_MAP_OFFSET failed\n");
 		return MAP_FAILED;
 	}
 
 	data->length = bo->total_size;
 
-	return mmap(0, bo->total_size, PROT_READ | PROT_WRITE, MAP_SHARED,
-		    bo->drv->fd, gem_map.offset);
+	return mmap(0, bo->total_size, PROT_READ | PROT_WRITE, MAP_SHARED, bo->drv->fd,
+		    gem_map.offset);
 }
 
 static uint32_t mediatek_resolve_format(uint32_t format)
@@ -93,8 +94,7 @@ static uint32_t mediatek_resolve_format(uint32_t format)
 	}
 }
 
-struct backend backend_mediatek =
-{
+struct backend backend_mediatek = {
 	.name = "mediatek",
 	.init = mediatek_init,
 	.bo_create = mediatek_bo_create,

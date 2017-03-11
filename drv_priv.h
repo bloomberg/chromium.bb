@@ -14,8 +14,7 @@
 
 #include "drv.h"
 
-struct bo
-{
+struct bo {
 	struct driver *drv;
 	uint32_t width;
 	uint32_t height;
@@ -64,21 +63,17 @@ struct combinations {
 	uint32_t allocations;
 };
 
-struct backend
-{
+struct backend {
 	char *name;
 	int (*init)(struct driver *drv);
 	void (*close)(struct driver *drv);
-	int (*bo_create)(struct bo *bo, uint32_t width, uint32_t height,
-			 uint32_t format, uint32_t flags);
-	int (*bo_create_with_modifiers)(struct bo *bo,
-					uint32_t width, uint32_t height,
-					uint32_t format,
-					const uint64_t *modifiers,
-					uint32_t count);
+	int (*bo_create)(struct bo *bo, uint32_t width, uint32_t height, uint32_t format,
+			 uint32_t flags);
+	int (*bo_create_with_modifiers)(struct bo *bo, uint32_t width, uint32_t height,
+					uint32_t format, const uint64_t *modifiers, uint32_t count);
 	int (*bo_destroy)(struct bo *bo);
 	int (*bo_import)(struct bo *bo, struct drv_import_fd_data *data);
-	void* (*bo_map)(struct bo *bo, struct map_info *data, size_t plane);
+	void *(*bo_map)(struct bo *bo, struct map_info *data, size_t plane);
 	int (*bo_unmap)(struct bo *bo, struct map_info *data);
 	uint32_t (*resolve_format)(uint32_t format);
 	struct combinations combos;

@@ -6,8 +6,7 @@
 
 #include "cros_gralloc.h"
 
-static struct cros_gralloc_bo *cros_gralloc_bo_create(struct driver *drv,
-						      int width, int height,
+static struct cros_gralloc_bo *cros_gralloc_bo_create(struct driver *drv, int width, int height,
 						      int format, int usage)
 {
 	uint64_t drv_usage;
@@ -29,9 +28,8 @@ static struct cros_gralloc_bo *cros_gralloc_bo_create(struct driver *drv,
 	if (!combo) {
 		cros_gralloc_error("Unsupported combination -- HAL format: %u, "
 				   "HAL flags: %u, drv_format: %4.4s, "
-				   "drv_flags: %llu", format, usage,
-				    reinterpret_cast<char*>(&drv_format),
-				    drv_usage);
+				   "drv_flags: %llu",
+				   format, usage, reinterpret_cast<char *>(&drv_format), drv_usage);
 		return NULL;
 	}
 
@@ -85,7 +83,7 @@ static struct cros_gralloc_handle *cros_gralloc_handle_from_bo(struct bo *bo)
 
 		mod = drv_bo_get_plane_format_modifier(bo, p);
 		hnd->format_modifiers[p] = static_cast<uint32_t>(mod >> 32);
-		hnd->format_modifiers[p+1] = static_cast<uint32_t>(mod);
+		hnd->format_modifiers[p + 1] = static_cast<uint32_t>(mod);
 	}
 
 	hnd->width = drv_bo_get_width(bo);
@@ -98,10 +96,10 @@ static struct cros_gralloc_handle *cros_gralloc_handle_from_bo(struct bo *bo)
 	return hnd;
 }
 
-static int cros_gralloc_alloc(alloc_device_t *dev, int w, int h, int format,
-			      int usage, buffer_handle_t *handle, int *stride)
+static int cros_gralloc_alloc(alloc_device_t *dev, int w, int h, int format, int usage,
+			      buffer_handle_t *handle, int *stride)
 {
-	auto mod = (struct cros_gralloc_module *) dev->common.module;
+	auto mod = (struct cros_gralloc_module *)dev->common.module;
 	std::lock_guard<std::mutex> lock(mod->mutex);
 
 	auto bo = cros_gralloc_bo_create(mod->drv, w, h, format, usage);
@@ -127,8 +125,8 @@ static int cros_gralloc_alloc(alloc_device_t *dev, int w, int h, int format,
 static int cros_gralloc_free(alloc_device_t *dev, buffer_handle_t handle)
 {
 	struct cros_gralloc_bo *bo;
-	auto hnd = (struct cros_gralloc_handle *) handle;
-	auto mod = (struct cros_gralloc_module *) dev->common.module;
+	auto hnd = (struct cros_gralloc_handle *)handle;
+	auto mod = (struct cros_gralloc_module *)dev->common.module;
 	std::lock_guard<std::mutex> lock(mod->mutex);
 
 	if (cros_gralloc_validate_handle(hnd)) {
@@ -151,8 +149,8 @@ static int cros_gralloc_free(alloc_device_t *dev, buffer_handle_t handle)
 
 static int cros_gralloc_close(struct hw_device_t *dev)
 {
-	auto mod = (struct cros_gralloc_module *) dev->module;
-	auto alloc = (struct alloc_device_t *) dev;
+	auto mod = (struct cros_gralloc_module *)dev->module;
+	auto alloc = (struct alloc_device_t *)dev;
 	std::lock_guard<std::mutex> lock(mod->mutex);
 
 	if (mod->drv) {
@@ -168,10 +166,9 @@ static int cros_gralloc_close(struct hw_device_t *dev)
 	return CROS_GRALLOC_ERROR_NONE;
 }
 
-int cros_gralloc_open(const struct hw_module_t *mod, const char *name,
-		      struct hw_device_t **dev)
+int cros_gralloc_open(const struct hw_module_t *mod, const char *name, struct hw_device_t **dev)
 {
-	auto module = (struct cros_gralloc_module *) mod;
+	auto module = (struct cros_gralloc_module *)mod;
 	std::lock_guard<std::mutex> lock(module->mutex);
 
 	if (module->drv)
@@ -194,7 +191,7 @@ int cros_gralloc_open(const struct hw_module_t *mod, const char *name,
 	alloc->free = cros_gralloc_free;
 	alloc->common.tag = HARDWARE_DEVICE_TAG;
 	alloc->common.version = 0;
-	alloc->common.module = (hw_module_t*) mod;
+	alloc->common.module = (hw_module_t *)mod;
 	alloc->common.close = cros_gralloc_close;
 
 	*dev = &alloc->common;

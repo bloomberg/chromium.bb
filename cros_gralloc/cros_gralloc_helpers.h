@@ -33,12 +33,14 @@ typedef enum {
  * reserved for cases where no alternative to get same information (such as
  * querying ANativeWindow) exists.
  */
+// clang-format off
 enum {
 	GRALLOC_DRM_GET_STRIDE,
 	GRALLOC_DRM_GET_FORMAT,
 	GRALLOC_DRM_GET_DIMENSIONS,
 	GRALLOC_DRM_GET_BACKING_STORE,
 };
+// clang-format on
 
 constexpr uint32_t cros_gralloc_magic(void)
 {
@@ -74,14 +76,12 @@ int32_t cros_gralloc_rendernode_open(struct driver **drv);
 int32_t cros_gralloc_validate_handle(struct cros_gralloc_handle *hnd);
 
 /* Logging code adapted from bsdrm */
-__attribute__((format(printf, 4, 5)))
-void cros_gralloc_log(const char *prefix, const char *file, int line,
-		      const char *format, ...);
+__attribute__((format(printf, 4, 5))) void cros_gralloc_log(const char *prefix, const char *file,
+							    int line, const char *format, ...);
 
-#define cros_gralloc_error(...)                                     \
-	do {                                                        \
-		cros_gralloc_log("CROS_GRALLOC_ERROR", __FILE__,    \
-				 __LINE__, __VA_ARGS__);            \
+#define cros_gralloc_error(...)                                                                    \
+	do {                                                                                       \
+		cros_gralloc_log("CROS_GRALLOC_ERROR", __FILE__, __LINE__, __VA_ARGS__);           \
 	} while (0)
 
 #endif

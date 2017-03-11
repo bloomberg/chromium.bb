@@ -8,23 +8,20 @@
 #define GBM_PRIV_H
 
 #include <stdint.h>
-#include <sys/types.h>
 #include <stdlib.h>
+#include <sys/types.h>
 
 #include "drv.h"
 #include "gbm.h"
 
-struct gbm_device
-{
+struct gbm_device {
 	struct driver *drv;
 };
 
-struct gbm_surface
-{
+struct gbm_surface {
 };
 
-struct gbm_bo
-{
+struct gbm_bo {
 	struct gbm_device *gbm;
 	struct bo *bo;
 	uint32_t gbm_format;

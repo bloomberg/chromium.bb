@@ -8,18 +8,14 @@
 #include "helpers.h"
 #include "util.h"
 
-static const uint32_t supported_formats[] = {
-	DRM_FORMAT_ARGB8888, DRM_FORMAT_XRGB8888
-};
+static const uint32_t supported_formats[] = { DRM_FORMAT_ARGB8888, DRM_FORMAT_XRGB8888 };
 
 static int evdi_init(struct driver *drv)
 {
-	return drv_add_linear_combinations(drv, supported_formats,
-					   ARRAY_SIZE(supported_formats));
+	return drv_add_linear_combinations(drv, supported_formats, ARRAY_SIZE(supported_formats));
 }
 
-struct backend backend_evdi =
-{
+struct backend backend_evdi = {
 	.name = "evdi",
 	.init = evdi_init,
 	.bo_create = drv_dumb_bo_create,
@@ -27,4 +23,3 @@ struct backend backend_evdi =
 	.bo_import = drv_prime_bo_import,
 	.bo_map = drv_dumb_bo_map,
 };
-

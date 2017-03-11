@@ -8,18 +8,14 @@
 #include "helpers.h"
 #include "util.h"
 
-static const uint32_t supported_formats[] = {
-	DRM_FORMAT_RGBX8888
-};
+static const uint32_t supported_formats[] = { DRM_FORMAT_RGBX8888 };
 
 static int gma500_init(struct driver *drv)
 {
-	return drv_add_linear_combinations(drv, supported_formats,
-					   ARRAY_SIZE(supported_formats));
+	return drv_add_linear_combinations(drv, supported_formats, ARRAY_SIZE(supported_formats));
 }
 
-struct backend backend_gma500 =
-{
+struct backend backend_gma500 = {
 	.name = "gma500",
 	.init = gma500_init,
 	.bo_create = drv_dumb_bo_create,

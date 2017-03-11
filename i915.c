@@ -17,35 +17,31 @@
 #include "helpers.h"
 #include "util.h"
 
-static const uint32_t tileable_formats[] = {
-	DRM_FORMAT_ARGB1555, DRM_FORMAT_ABGR8888, DRM_FORMAT_ARGB8888,
-	DRM_FORMAT_RGB565, DRM_FORMAT_XBGR8888, DRM_FORMAT_XRGB1555,
-	DRM_FORMAT_XRGB8888, DRM_FORMAT_UYVY, DRM_FORMAT_YUYV
-};
+static const uint32_t tileable_formats[] = { DRM_FORMAT_ARGB1555, DRM_FORMAT_ABGR8888,
+					     DRM_FORMAT_ARGB8888, DRM_FORMAT_RGB565,
+					     DRM_FORMAT_XBGR8888, DRM_FORMAT_XRGB1555,
+					     DRM_FORMAT_XRGB8888, DRM_FORMAT_UYVY,
+					     DRM_FORMAT_YUYV };
 
-static const uint32_t linear_only_formats[] = {
-	DRM_FORMAT_GR88, DRM_FORMAT_R8, DRM_FORMAT_YVU420,
-	DRM_FORMAT_YVU420_ANDROID
-};
+static const uint32_t linear_only_formats[] = { DRM_FORMAT_GR88, DRM_FORMAT_R8, DRM_FORMAT_YVU420,
+						DRM_FORMAT_YVU420_ANDROID };
 
-struct i915_device
-{
+struct i915_device {
 	int gen;
 	drm_intel_bufmgr *mgr;
 	uint32_t count;
 };
 
-struct i915_bo
-{
+struct i915_bo {
 	drm_intel_bo *ibos[DRV_MAX_PLANES];
 };
 
 static int get_gen(int device_id)
 {
-	const uint16_t gen3_ids[] = {0x2582, 0x2592, 0x2772, 0x27A2, 0x27AE,
-				     0x29C2, 0x29B2, 0x29D2, 0xA001, 0xA011};
+	const uint16_t gen3_ids[] = { 0x2582, 0x2592, 0x2772, 0x27A2, 0x27AE,
+				      0x29C2, 0x29B2, 0x29D2, 0xA001, 0xA011 };
 	unsigned i;
-	for(i = 0; i < ARRAY_SIZE(gen3_ids); i++)
+	for (i = 0; i < ARRAY_SIZE(gen3_ids); i++)
 		if (gen3_ids[i] == device_id)
 			return 3;
 
@@ -65,9 +61,9 @@ static int i915_add_kms_item(struct driver *drv, const struct kms_item *item)
 		combo = &drv->backend->combos.data[i];
 		if (combo->format == item->format) {
 			if ((combo->metadata.tiling == I915_TILING_Y &&
-			    item->modifier == I915_FORMAT_MOD_Y_TILED) ||
+			     item->modifier == I915_FORMAT_MOD_Y_TILED) ||
 			    (combo->metadata.tiling == I915_TILING_X &&
-			    item->modifier == I915_FORMAT_MOD_X_TILED)) {
+			     item->modifier == I915_FORMAT_MOD_X_TILED)) {
 				combo->metadata.modifier = item->modifier;
 				combo->usage |= item->usage;
 			} else if (combo->metadata.tiling != I915_TILING_Y) {
@@ -91,22 +87,18 @@ static int i915_add_combinations(struct driver *drv)
 	metadata.priority = 1;
 	metadata.modifier = DRM_FORMAT_MOD_NONE;
 
-	ret = drv_add_combinations(drv, linear_only_formats,
-				   ARRAY_SIZE(linear_only_formats), &metadata,
+	ret = drv_add_combinations(drv, linear_only_formats, ARRAY_SIZE(linear_only_formats),
+				   &metadata, flags);
+	if (ret)
+		return ret;
+
+	ret = drv_add_combinations(drv, tileable_formats, ARRAY_SIZE(tileable_formats), &metadata,
 				   flags);
 	if (ret)
 		return ret;
 
-	ret = drv_add_combinations(drv, tileable_formats,
-				   ARRAY_SIZE(tileable_formats), &metadata,
-				   flags);
-	if (ret)
-		return ret;
-
-	drv_modify_combination(drv, DRM_FORMAT_XRGB8888, &metadata,
-			       BO_USE_CURSOR | BO_USE_SCANOUT);
-	drv_modify_combination(drv, DRM_FORMAT_ARGB8888, &metadata,
-			       BO_USE_CURSOR | BO_USE_SCANOUT);
+	drv_modify_combination(drv, DRM_FORMAT_XRGB8888, &metadata, BO_USE_CURSOR | BO_USE_SCANOUT);
+	drv_modify_combination(drv, DRM_FORMAT_ARGB8888, &metadata, BO_USE_CURSOR | BO_USE_SCANOUT);
 
 	flags &= ~BO_USE_SW_WRITE_OFTEN;
 	flags &= ~BO_USE_SW_READ_OFTEN;
@@ -115,8 +107,7 @@ static int i915_add_combinations(struct driver *drv)
 	metadata.tiling = I915_TILING_X;
 	metadata.priority = 2;
 
-	ret = drv_add_combinations(drv, tileable_formats,
-				   ARRAY_SIZE(tileable_formats), &metadata,
+	ret = drv_add_combinations(drv, tileable_formats, ARRAY_SIZE(tileable_formats), &metadata,
 				   flags);
 	if (ret)
 		return ret;
@@ -124,9 +115,8 @@ static int i915_add_combinations(struct driver *drv)
 	metadata.tiling = I915_TILING_Y;
 	metadata.priority = 3;
 
-	ret = drv_add_combinations(drv, tileable_formats,
-				   ARRAY_SIZE(tileable_formats), &metadata,
-			           flags);
+	ret = drv_add_combinations(drv, tileable_formats, ARRAY_SIZE(tileable_formats), &metadata,
+				   flags);
 	if (ret)
 		return ret;
 
@@ -146,8 +136,8 @@ static int i915_add_combinations(struct driver *drv)
 	return 0;
 }
 
-static int i915_align_dimensions(struct bo *bo, uint32_t tiling,
-				 uint32_t *stride, uint32_t *aligned_height)
+static int i915_align_dimensions(struct bo *bo, uint32_t tiling, uint32_t *stride,
+				 uint32_t *aligned_height)
 {
 	struct i915_device *i915 = bo->drv->priv;
 	uint32_t horizontal_alignment = 4;
@@ -168,7 +158,7 @@ static int i915_align_dimensions(struct bo *bo, uint32_t tiling,
 		if (i915->gen == 3) {
 			horizontal_alignment = 512;
 			vertical_alignment = 8;
-		} else  {
+		} else {
 			horizontal_alignment = 128;
 			vertical_alignment = 32;
 		}
@@ -235,8 +225,8 @@ static void i915_close(struct driver *drv)
 	drv->priv = NULL;
 }
 
-static int i915_bo_create(struct bo *bo, uint32_t width, uint32_t height,
-			  uint32_t format, uint32_t flags)
+static int i915_bo_create(struct bo *bo, uint32_t width, uint32_t height, uint32_t format,
+			  uint32_t flags)
 {
 	int ret;
 	size_t plane;
@@ -248,8 +238,7 @@ static int i915_bo_create(struct bo *bo, uint32_t width, uint32_t height,
 	stride = drv_stride_from_format(format, width, 0);
 	struct i915_device *i915_dev = (struct i915_device *)bo->drv->priv;
 
-	if (flags & (BO_USE_CURSOR | BO_USE_LINEAR |
-		     BO_USE_SW_READ_OFTEN | BO_USE_SW_WRITE_OFTEN))
+	if (flags & (BO_USE_CURSOR | BO_USE_LINEAR | BO_USE_SW_READ_OFTEN | BO_USE_SW_WRITE_OFTEN))
 		tiling_mode = I915_TILING_NONE;
 	else if (flags & BO_USE_SCANOUT)
 		tiling_mode = I915_TILING_X;
@@ -260,8 +249,7 @@ static int i915_bo_create(struct bo *bo, uint32_t width, uint32_t height,
 	 * Align the Y plane to 128 bytes so the chroma planes would be aligned
 	 * to 64 byte boundaries. This is an Intel HW requirement.
 	 */
-	if (format == DRM_FORMAT_YVU420 ||
-	    format == DRM_FORMAT_YVU420_ANDROID) {
+	if (format == DRM_FORMAT_YVU420 || format == DRM_FORMAT_YVU420_ANDROID) {
 		stride = ALIGN(stride, 128);
 		tiling_mode = I915_TILING_NONE;
 	}
@@ -281,8 +269,7 @@ static int i915_bo_create(struct bo *bo, uint32_t width, uint32_t height,
 
 	bo->priv = i915_bo;
 
-	i915_bo->ibos[0] = drm_intel_bo_alloc(i915_dev->mgr, name,
-					      bo->total_size, 0);
+	i915_bo->ibos[0] = drm_intel_bo_alloc(i915_dev->mgr, name, bo->total_size, 0);
 	if (!i915_bo->ibos[0]) {
 		fprintf(stderr, "drv: drm_intel_bo_alloc failed");
 		free(i915_bo);
@@ -300,12 +287,12 @@ static int i915_bo_create(struct bo *bo, uint32_t width, uint32_t height,
 
 	bo->tiling = tiling_mode;
 
-	ret = drm_intel_bo_set_tiling(i915_bo->ibos[0], &bo->tiling,
-				      bo->strides[0]);
+	ret = drm_intel_bo_set_tiling(i915_bo->ibos[0], &bo->tiling, bo->strides[0]);
 
 	if (ret || bo->tiling != tiling_mode) {
 		fprintf(stderr, "drv: drm_intel_gem_bo_set_tiling failed "
-			"errno=%x, stride=%x\n", errno, bo->strides[0]);
+				"errno=%x, stride=%x\n",
+			errno, bo->strides[0]);
 		/* Calls i915 bo destroy. */
 		bo->drv->backend->bo_destroy(bo);
 		return -errno;
@@ -350,8 +337,8 @@ static int i915_bo_import(struct bo *bo, struct drv_import_fd_data *data)
 	 */
 	for (plane = 0; plane < bo->num_planes; plane++) {
 
-		i915_bo->ibos[plane] = drm_intel_bo_gem_create_from_prime(i915_dev->mgr,
-				 data->fds[plane], data->sizes[plane]);
+		i915_bo->ibos[plane] = drm_intel_bo_gem_create_from_prime(
+		    i915_dev->mgr, data->fds[plane], data->sizes[plane]);
 
 		if (!i915_bo->ibos[plane]) {
 			/*
@@ -369,8 +356,7 @@ static int i915_bo_import(struct bo *bo, struct drv_import_fd_data *data)
 		bo->handles[plane].u32 = i915_bo->ibos[plane]->handle;
 	}
 
-	if (drm_intel_bo_get_tiling(i915_bo->ibos[0], &bo->tiling,
-				    &swizzling)) {
+	if (drm_intel_bo_get_tiling(i915_bo->ibos[0], &bo->tiling, &swizzling)) {
 		fprintf(stderr, "drv: drm_intel_bo_get_tiling failed");
 		i915_bo_destroy(bo);
 		return -EINVAL;
@@ -426,8 +412,7 @@ static uint32_t i915_resolve_format(uint32_t format)
 	}
 }
 
-struct backend backend_i915 =
-{
+struct backend backend_i915 = {
 	.name = "i915",
 	.init = i915_init,
 	.close = i915_close,

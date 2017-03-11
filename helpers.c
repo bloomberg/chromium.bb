@@ -18,8 +18,8 @@
 #include "helpers.h"
 #include "util.h"
 
-static uint32_t subsample_stride(uint32_t stride, uint32_t format,
-				 size_t plane) {
+static uint32_t subsample_stride(uint32_t stride, uint32_t format, size_t plane)
+{
 
 	if (plane != 0) {
 		switch (format) {
@@ -105,8 +105,7 @@ static uint32_t bpp_from_format(uint32_t format, size_t plane)
 
 uint32_t drv_bo_get_stride_in_pixels(struct bo *bo)
 {
-	uint32_t bytes_per_pixel = DIV_ROUND_UP(bpp_from_format(bo->format, 0),
-						8);
+	uint32_t bytes_per_pixel = DIV_ROUND_UP(bpp_from_format(bo->format, 0), 8);
 	return DIV_ROUND_UP(bo->strides[0], bytes_per_pixel);
 }
 
@@ -115,15 +114,14 @@ uint32_t drv_bo_get_stride_in_pixels(struct bo *bo)
  */
 uint32_t drv_stride_from_format(uint32_t format, uint32_t width, size_t plane)
 {
-	uint32_t stride = DIV_ROUND_UP(width * bpp_from_format(format, plane),
-				       8);
+	uint32_t stride = DIV_ROUND_UP(width * bpp_from_format(format, plane), 8);
 
 	/*
 	 * The stride of Android YV12 buffers is required to be aligned to 16 bytes
 	 * (see <system/graphics.h>).
 	 */
 	if (format == DRM_FORMAT_YVU420_ANDROID)
-		stride = (plane == 0) ? ALIGN(stride, 32): ALIGN(stride, 16);
+		stride = (plane == 0) ? ALIGN(stride, 32) : ALIGN(stride, 16);
 
 	return stride;
 }
@@ -133,8 +131,7 @@ uint32_t drv_stride_from_format(uint32_t format, uint32_t width, size_t plane)
  * the first plane, height and a format. This function assumes there is just
  * one kernel buffer per buffer object.
  */
-int drv_bo_from_format(struct bo *bo, uint32_t stride,
-		       uint32_t aligned_height, uint32_t format)
+int drv_bo_from_format(struct bo *bo, uint32_t stride, uint32_t aligned_height, uint32_t format)
 {
 
 	size_t p, num_planes;
@@ -146,19 +143,17 @@ int drv_bo_from_format(struct bo *bo, uint32_t stride,
 
 	for (p = 0; p < num_planes; p++) {
 		bo->strides[p] = subsample_stride(stride, format, p);
-		bo->sizes[p] = drv_size_from_format(format, bo->strides[p],
-						    bo->height, p);
+		bo->sizes[p] = drv_size_from_format(format, bo->strides[p], bo->height, p);
 		bo->offsets[p] = offset;
 		offset += bo->sizes[p];
-		bo->total_size += drv_size_from_format(format, bo->strides[p],
-				                       aligned_height, p);
+		bo->total_size += drv_size_from_format(format, bo->strides[p], aligned_height, p);
 	}
 
 	return 0;
 }
 
-int drv_dumb_bo_create(struct bo *bo, uint32_t width, uint32_t height,
-		       uint32_t format, uint32_t flags)
+int drv_dumb_bo_create(struct bo *bo, uint32_t width, uint32_t height, uint32_t format,
+		       uint32_t flags)
 {
 	int ret;
 	size_t plane;
@@ -208,7 +203,8 @@ int drv_dumb_bo_destroy(struct bo *bo)
 	ret = drmIoctl(bo->drv->fd, DRM_IOCTL_MODE_DESTROY_DUMB, &destroy_dumb);
 	if (ret) {
 		fprintf(stderr, "drv: DRM_IOCTL_MODE_DESTROY_DUMB failed "
-				"(handle=%x)\n", bo->handles[0].u32);
+				"(handle=%x)\n",
+			bo->handles[0].u32);
 		return ret;
 	}
 
@@ -236,7 +232,7 @@ int drv_gem_bo_destroy(struct bo *bo)
 		if (ret) {
 			fprintf(stderr, "drv: DRM_IOCTL_GEM_CLOSE failed "
 					"(handle=%x) error %d\n",
-					bo->handles[plane].u32, ret);
+				bo->handles[plane].u32, ret);
 			error = ret;
 		}
 	}
@@ -254,12 +250,12 @@ int drv_prime_bo_import(struct bo *bo, struct drv_import_fd_data *data)
 		memset(&prime_handle, 0, sizeof(prime_handle));
 		prime_handle.fd = data->fds[plane];
 
-		ret = drmIoctl(bo->drv->fd, DRM_IOCTL_PRIME_FD_TO_HANDLE,
-			       &prime_handle);
+		ret = drmIoctl(bo->drv->fd, DRM_IOCTL_PRIME_FD_TO_HANDLE, &prime_handle);
 
 		if (ret) {
 			fprintf(stderr, "drv: DRM_IOCTL_PRIME_FD_TO_HANDLE "
-				"failed (fd=%u)\n", prime_handle.fd);
+					"failed (fd=%u)\n",
+				prime_handle.fd);
 
 			/*
 			 * Need to call GEM close on planes that were opened,
@@ -303,43 +299,38 @@ void *drv_dumb_bo_map(struct bo *bo, struct map_info *data, size_t plane)
 		if (bo->handles[i].u32 == bo->handles[plane].u32)
 			data->length += bo->sizes[i];
 
-	return mmap(0, data->length, PROT_READ | PROT_WRITE, MAP_SHARED,
-		    bo->drv->fd, map_dumb.offset);
+	return mmap(0, data->length, PROT_READ | PROT_WRITE, MAP_SHARED, bo->drv->fd,
+		    map_dumb.offset);
 }
 
-uintptr_t drv_get_reference_count(struct driver *drv, struct bo *bo,
-				  size_t plane)
+uintptr_t drv_get_reference_count(struct driver *drv, struct bo *bo, size_t plane)
 {
 	void *count;
 	uintptr_t num = 0;
 
 	if (!drmHashLookup(drv->buffer_table, bo->handles[plane].u32, &count))
-		num = (uintptr_t) (count);
+		num = (uintptr_t)(count);
 
 	return num;
 }
 
-void drv_increment_reference_count(struct driver *drv, struct bo *bo,
-				   size_t plane)
+void drv_increment_reference_count(struct driver *drv, struct bo *bo, size_t plane)
 {
 	uintptr_t num = drv_get_reference_count(drv, bo, plane);
 
 	/* If a value isn't in the table, drmHashDelete is a no-op */
 	drmHashDelete(drv->buffer_table, bo->handles[plane].u32);
-	drmHashInsert(drv->buffer_table, bo->handles[plane].u32,
-		      (void *) (num + 1));
+	drmHashInsert(drv->buffer_table, bo->handles[plane].u32, (void *)(num + 1));
 }
 
-void drv_decrement_reference_count(struct driver *drv, struct bo *bo,
-				   size_t plane)
+void drv_decrement_reference_count(struct driver *drv, struct bo *bo, size_t plane)
 {
 	uintptr_t num = drv_get_reference_count(drv, bo, plane);
 
 	drmHashDelete(drv->buffer_table, bo->handles[plane].u32);
 
 	if (num > 0)
-		drmHashInsert(drv->buffer_table, bo->handles[plane].u32,
-			      (void *) (num - 1));
+		drmHashInsert(drv->buffer_table, bo->handles[plane].u32, (void *)(num - 1));
 }
 
 uint32_t drv_log_base2(uint32_t value)
@@ -352,15 +343,14 @@ uint32_t drv_log_base2(uint32_t value)
 	return ret;
 }
 
-int drv_add_combination(struct driver *drv, uint32_t format,
-			struct format_metadata *metadata, uint64_t usage)
+int drv_add_combination(struct driver *drv, uint32_t format, struct format_metadata *metadata,
+			uint64_t usage)
 {
 	struct combinations *combos = &drv->backend->combos;
 	if (combos->size >= combos->allocations) {
 		struct combination *new_data;
 		combos->allocations *= 2;
-		new_data = realloc(combos->data, combos->allocations
-				   * sizeof(*combos->data));
+		new_data = realloc(combos->data, combos->allocations * sizeof(*combos->data));
 		if (!new_data)
 			return -ENOMEM;
 
@@ -376,9 +366,8 @@ int drv_add_combination(struct driver *drv, uint32_t format,
 	return 0;
 }
 
-int drv_add_combinations(struct driver *drv, const uint32_t *formats,
-			 uint32_t num_formats, struct format_metadata *metadata,
-			 uint64_t usage)
+int drv_add_combinations(struct driver *drv, const uint32_t *formats, uint32_t num_formats,
+			 struct format_metadata *metadata, uint64_t usage)
 {
 	int ret;
 	uint32_t i;
@@ -391,16 +380,15 @@ int drv_add_combinations(struct driver *drv, const uint32_t *formats,
 	return 0;
 }
 
-void drv_modify_combination(struct driver *drv, uint32_t format,
-			    struct format_metadata *metadata, uint64_t usage)
+void drv_modify_combination(struct driver *drv, uint32_t format, struct format_metadata *metadata,
+			    uint64_t usage)
 {
 	uint32_t i;
 	struct combination *combo;
 	/* Attempts to add the specified usage to an existing combination. */
 	for (i = 0; i < drv->backend->combos.size; i++) {
 		combo = &drv->backend->combos.data[i];
-		if (combo->format == format &&
-		    combo->metadata.tiling == metadata->tiling &&
+		if (combo->format == format && combo->metadata.tiling == metadata->tiling &&
 		    combo->metadata.modifier == metadata->modifier)
 			combo->usage |= usage;
 	}
@@ -443,8 +431,7 @@ struct kms_item *drv_query_kms(struct driver *drv, uint32_t *num_items)
 		if (!plane)
 			goto out;
 
-		props = drmModeObjectGetProperties(drv->fd, plane->plane_id,
-						   DRM_MODE_OBJECT_PLANE);
+		props = drmModeObjectGetProperties(drv->fd, plane->plane_id, DRM_MODE_OBJECT_PLANE);
 		if (!props)
 			goto out;
 
@@ -485,8 +472,7 @@ struct kms_item *drv_query_kms(struct driver *drv, uint32_t *num_items)
 			if (!found && item_size >= allocations) {
 				struct kms_item *new_data = NULL;
 				allocations *= 2;
-				new_data = realloc(items, allocations *
-					            sizeof(*items));
+				new_data = realloc(items, allocations * sizeof(*items));
 				if (!new_data) {
 					item_size = 0;
 					goto out;
@@ -505,7 +491,6 @@ struct kms_item *drv_query_kms(struct driver *drv, uint32_t *num_items)
 
 		drmModeFreeObjectProperties(props);
 		drmModeFreePlane(plane);
-
 	}
 
 	drmModeFreePlaneResources(resources);
@@ -519,8 +504,7 @@ out:
 	return items;
 }
 
-int drv_add_linear_combinations(struct driver *drv, const uint32_t *formats,
-				uint32_t num_formats)
+int drv_add_linear_combinations(struct driver *drv, const uint32_t *formats, uint32_t num_formats)
 {
 	int ret;
 	uint32_t i, j, num_items;
@@ -532,8 +516,7 @@ int drv_add_linear_combinations(struct driver *drv, const uint32_t *formats,
 	metadata.priority = 1;
 	metadata.modifier = DRM_FORMAT_MOD_NONE;
 
-	ret = drv_add_combinations(drv, formats, num_formats, &metadata,
-			           BO_COMMON_USE_MASK);
+	ret = drv_add_combinations(drv, formats, num_formats, &metadata, BO_COMMON_USE_MASK);
 	if (ret)
 		return ret;
 	/*
@@ -543,10 +526,8 @@ int drv_add_linear_combinations(struct driver *drv, const uint32_t *formats,
 	 * kernel disregards the alpha component of ARGB unless it's an overlay
 	 * plane.
 	 */
-	drv_modify_combination(drv, DRM_FORMAT_XRGB8888, &metadata,
-			       BO_USE_CURSOR | BO_USE_SCANOUT);
-	drv_modify_combination(drv, DRM_FORMAT_ARGB8888, &metadata,
-			       BO_USE_CURSOR | BO_USE_SCANOUT);
+	drv_modify_combination(drv, DRM_FORMAT_XRGB8888, &metadata, BO_USE_CURSOR | BO_USE_SCANOUT);
+	drv_modify_combination(drv, DRM_FORMAT_ARGB8888, &metadata, BO_USE_CURSOR | BO_USE_SCANOUT);
 
 	items = drv_query_kms(drv, &num_items);
 	if (!items || !num_items)
@@ -557,8 +538,6 @@ int drv_add_linear_combinations(struct driver *drv, const uint32_t *formats,
 			combo = &drv->backend->combos.data[j];
 			if (items[i].format == combo->format)
 				combo->usage |= BO_USE_SCANOUT;
-
-
 		}
 	}
 

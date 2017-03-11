@@ -8,18 +8,14 @@
 #include "helpers.h"
 #include "util.h"
 
-static const uint32_t supported_formats[] = {
-	DRM_FORMAT_ARGB8888, DRM_FORMAT_XRGB8888
-};
+static const uint32_t supported_formats[] = { DRM_FORMAT_ARGB8888, DRM_FORMAT_XRGB8888 };
 
 static int udl_init(struct driver *drv)
 {
-	return drv_add_linear_combinations(drv, supported_formats,
-					   ARRAY_SIZE(supported_formats));
+	return drv_add_linear_combinations(drv, supported_formats, ARRAY_SIZE(supported_formats));
 }
 
-struct backend backend_udl =
-{
+struct backend backend_udl = {
 	.name = "udl",
 	.init = udl_init,
 	.bo_create = drv_dumb_bo_create,

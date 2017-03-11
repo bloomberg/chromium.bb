@@ -16,6 +16,7 @@ extern "C" {
 
 #define DRV_MAX_PLANES 4
 
+// clang-format off
 /* Use flags */
 #define BO_USE_NONE			0
 #define BO_USE_SCANOUT			(1ull << 0)
@@ -52,6 +53,7 @@ extern "C" {
 			   BO_USE_SW_READ_OFTEN | BO_USE_SW_WRITE_OFTEN | \
 			   BO_USE_SW_READ_RARELY | BO_USE_SW_WRITE_RARELY | \
 			   BO_USE_TEXTURE
+// clang-format on
 struct driver;
 struct bo;
 struct combination;
@@ -83,97 +85,64 @@ struct map_info {
 	void *priv;
 };
 
-struct driver *
-drv_create(int fd);
+struct driver *drv_create(int fd);
 
-void
-drv_destroy(struct driver *drv);
+void drv_destroy(struct driver *drv);
 
-int
-drv_get_fd(struct driver *drv);
+int drv_get_fd(struct driver *drv);
 
-const char *
-drv_get_name(struct driver *drv);
+const char *drv_get_name(struct driver *drv);
 
-struct combination *
-drv_get_combination(struct driver *drv, uint32_t format, uint64_t usage);
+struct combination *drv_get_combination(struct driver *drv, uint32_t format, uint64_t usage);
 
-struct bo *
-drv_bo_new(struct driver *drv, uint32_t width, uint32_t height,
-	   uint32_t format);
+struct bo *drv_bo_new(struct driver *drv, uint32_t width, uint32_t height, uint32_t format);
 
-struct bo *
-drv_bo_create(struct driver *drv, uint32_t width, uint32_t height,
-	      uint32_t format, uint64_t flags);
+struct bo *drv_bo_create(struct driver *drv, uint32_t width, uint32_t height, uint32_t format,
+			 uint64_t flags);
 
-struct bo *
-drv_bo_create_with_modifiers(struct driver *drv,
-			     uint32_t width, uint32_t height,
-			     uint32_t format,
-			     const uint64_t *modifiers, uint32_t count);
+struct bo *drv_bo_create_with_modifiers(struct driver *drv, uint32_t width, uint32_t height,
+					uint32_t format, const uint64_t *modifiers, uint32_t count);
 
-void
-drv_bo_destroy(struct bo *bo);
+void drv_bo_destroy(struct bo *bo);
 
-struct bo *
-drv_bo_import(struct driver *drv, struct drv_import_fd_data *data);
+struct bo *drv_bo_import(struct driver *drv, struct drv_import_fd_data *data);
 
-void *
-drv_bo_map(struct bo *bo, uint32_t x, uint32_t y, uint32_t width,
-	   uint32_t height, uint32_t flags, struct map_info **map_data,
-	   size_t plane);
+void *drv_bo_map(struct bo *bo, uint32_t x, uint32_t y, uint32_t width, uint32_t height,
+		 uint32_t flags, struct map_info **map_data, size_t plane);
 
-int
-drv_bo_unmap(struct bo *bo, struct map_info *map_data);
+int drv_bo_unmap(struct bo *bo, struct map_info *map_data);
 
-uint32_t
-drv_bo_get_width(struct bo *bo);
+uint32_t drv_bo_get_width(struct bo *bo);
 
-uint32_t
-drv_bo_get_height(struct bo *bo);
+uint32_t drv_bo_get_height(struct bo *bo);
 
-uint32_t
-drv_bo_get_stride_or_tiling(struct bo *bo);
+uint32_t drv_bo_get_stride_or_tiling(struct bo *bo);
 
-size_t
-drv_bo_get_num_planes(struct bo *bo);
+size_t drv_bo_get_num_planes(struct bo *bo);
 
-union bo_handle
-drv_bo_get_plane_handle(struct bo *bo, size_t plane);
+union bo_handle drv_bo_get_plane_handle(struct bo *bo, size_t plane);
 
-int
-drv_bo_get_plane_fd(struct bo *bo, size_t plane);
+int drv_bo_get_plane_fd(struct bo *bo, size_t plane);
 
-uint32_t
-drv_bo_get_plane_offset(struct bo *bo, size_t plane);
+uint32_t drv_bo_get_plane_offset(struct bo *bo, size_t plane);
 
-uint32_t
-drv_bo_get_plane_size(struct bo *bo, size_t plane);
+uint32_t drv_bo_get_plane_size(struct bo *bo, size_t plane);
 
-uint32_t
-drv_bo_get_plane_stride(struct bo *bo, size_t plane);
+uint32_t drv_bo_get_plane_stride(struct bo *bo, size_t plane);
 
-uint64_t
-drv_bo_get_plane_format_modifier(struct bo *bo, size_t plane);
+uint64_t drv_bo_get_plane_format_modifier(struct bo *bo, size_t plane);
 
-uint32_t
-drv_bo_get_format(struct bo *bo);
+uint32_t drv_bo_get_format(struct bo *bo);
 
-uint32_t
-drv_bo_get_stride_in_pixels(struct bo *bo);
+uint32_t drv_bo_get_stride_in_pixels(struct bo *bo);
 
-uint32_t
-drv_resolve_format(struct driver *drv, uint32_t format);
+uint32_t drv_resolve_format(struct driver *drv, uint32_t format);
 
-size_t
-drv_num_planes_from_format(uint32_t format);
+size_t drv_num_planes_from_format(uint32_t format);
 
-uint32_t
-drv_size_from_format(uint32_t format, uint32_t stride, uint32_t height,
-		     size_t plane);
+uint32_t drv_size_from_format(uint32_t format, uint32_t stride, uint32_t height, size_t plane);
 
-uint32_t
-drv_num_buffers_per_bo(struct bo *bo);
+uint32_t drv_num_buffers_per_bo(struct bo *bo);
 
 #ifdef __cplusplus
 }

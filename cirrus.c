@@ -8,18 +8,15 @@
 #include "helpers.h"
 #include "util.h"
 
-const static uint32_t supported_formats[] = {
-	DRM_FORMAT_ARGB8888, DRM_FORMAT_RGB888, DRM_FORMAT_XRGB8888
-};
+const static uint32_t supported_formats[] = { DRM_FORMAT_ARGB8888, DRM_FORMAT_RGB888,
+					      DRM_FORMAT_XRGB8888 };
 
 static int cirrus_init(struct driver *drv)
 {
-	return drv_add_linear_combinations(drv, supported_formats,
-					   ARRAY_SIZE(supported_formats));
+	return drv_add_linear_combinations(drv, supported_formats, ARRAY_SIZE(supported_formats));
 }
 
-struct backend backend_cirrus =
-{
+struct backend backend_cirrus = {
 	.name = "cirrus",
 	.init = cirrus_init,
 	.bo_create = drv_dumb_bo_create,

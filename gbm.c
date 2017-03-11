@@ -13,31 +13,26 @@
 #include <xf86drm.h>
 
 #include "drv.h"
-#include "gbm_priv.h"
 #include "gbm_helpers.h"
+#include "gbm_priv.h"
 #include "util.h"
 
-PUBLIC int
-gbm_device_get_fd(struct gbm_device *gbm)
+PUBLIC int gbm_device_get_fd(struct gbm_device *gbm)
 {
 
 	return drv_get_fd(gbm->drv);
 }
 
-PUBLIC const char *
-gbm_device_get_backend_name(struct gbm_device *gbm)
+PUBLIC const char *gbm_device_get_backend_name(struct gbm_device *gbm)
 {
 	return drv_get_name(gbm->drv);
 }
 
-PUBLIC int
-gbm_device_is_format_supported(struct gbm_device *gbm,
-			       uint32_t format, uint32_t usage)
+PUBLIC int gbm_device_is_format_supported(struct gbm_device *gbm, uint32_t format, uint32_t usage)
 {
 	uint64_t drv_usage;
 
-	if (usage & GBM_BO_USE_CURSOR &&
-		usage & GBM_BO_USE_RENDERING)
+	if (usage & GBM_BO_USE_CURSOR && usage & GBM_BO_USE_RENDERING)
 		return 0;
 
 	drv_usage = gbm_convert_flags(usage);
@@ -49,7 +44,7 @@ PUBLIC struct gbm_device *gbm_create_device(int fd)
 {
 	struct gbm_device *gbm;
 
-	gbm = (struct gbm_device*) malloc(sizeof(*gbm));
+	gbm = (struct gbm_device *)malloc(sizeof(*gbm));
 
 	if (!gbm)
 		return NULL;
@@ -69,12 +64,10 @@ PUBLIC void gbm_device_destroy(struct gbm_device *gbm)
 	free(gbm);
 }
 
-PUBLIC struct gbm_surface *gbm_surface_create(struct gbm_device *gbm,
-					      uint32_t width, uint32_t height,
-					      uint32_t format, uint32_t flags)
+PUBLIC struct gbm_surface *gbm_surface_create(struct gbm_device *gbm, uint32_t width,
+					      uint32_t height, uint32_t format, uint32_t flags)
 {
-	struct gbm_surface *surface =
-		(struct gbm_surface*) malloc(sizeof(*surface));
+	struct gbm_surface *surface = (struct gbm_surface *)malloc(sizeof(*surface));
 
 	if (!surface)
 		return NULL;
@@ -92,8 +85,7 @@ PUBLIC struct gbm_bo *gbm_surface_lock_front_buffer(struct gbm_surface *surface)
 	return NULL;
 }
 
-PUBLIC void gbm_surface_release_buffer(struct gbm_surface *surface,
-				       struct gbm_bo *bo)
+PUBLIC void gbm_surface_release_buffer(struct gbm_surface *surface, struct gbm_bo *bo)
 {
 }
 
@@ -101,7 +93,7 @@ static struct gbm_bo *gbm_bo_new(struct gbm_device *gbm, uint32_t format)
 {
 	struct gbm_bo *bo;
 
-	bo = (struct gbm_bo*) calloc(1, sizeof(*bo));
+	bo = (struct gbm_bo *)calloc(1, sizeof(*bo));
 	if (!bo)
 		return NULL;
 
@@ -111,9 +103,8 @@ static struct gbm_bo *gbm_bo_new(struct gbm_device *gbm, uint32_t format)
 	return bo;
 }
 
-PUBLIC struct gbm_bo *gbm_bo_create(struct gbm_device *gbm, uint32_t width,
-				    uint32_t height, uint32_t format,
-				    uint32_t flags)
+PUBLIC struct gbm_bo *gbm_bo_create(struct gbm_device *gbm, uint32_t width, uint32_t height,
+				    uint32_t format, uint32_t flags)
 {
 	struct gbm_bo *bo;
 
@@ -125,8 +116,7 @@ PUBLIC struct gbm_bo *gbm_bo_create(struct gbm_device *gbm, uint32_t width,
 	if (!bo)
 		return NULL;
 
-	bo->bo = drv_bo_create(gbm->drv, width, height, format,
-			       gbm_convert_flags(flags));
+	bo->bo = drv_bo_create(gbm->drv, width, height, format, gbm_convert_flags(flags));
 
 	if (!bo->bo) {
 		free(bo);
@@ -136,12 +126,9 @@ PUBLIC struct gbm_bo *gbm_bo_create(struct gbm_device *gbm, uint32_t width,
 	return bo;
 }
 
-PUBLIC struct gbm_bo *gbm_bo_create_with_modifiers(struct gbm_device *gbm,
-						   uint32_t width,
-						   uint32_t height,
-						   uint32_t format,
-						   const uint64_t *modifiers,
-						   uint32_t count)
+PUBLIC struct gbm_bo *gbm_bo_create_with_modifiers(struct gbm_device *gbm, uint32_t width,
+						   uint32_t height, uint32_t format,
+						   const uint64_t *modifiers, uint32_t count)
 {
 	struct gbm_bo *bo;
 
@@ -150,9 +137,7 @@ PUBLIC struct gbm_bo *gbm_bo_create_with_modifiers(struct gbm_device *gbm,
 	if (!bo)
 		return NULL;
 
-	bo->bo = drv_bo_create_with_modifiers(gbm->drv,
-					      width, height, format,
-					      modifiers, count);
+	bo->bo = drv_bo_create_with_modifiers(gbm->drv, width, height, format, modifiers, count);
 
 	if (!bo->bo) {
 		free(bo);
@@ -174,9 +159,8 @@ PUBLIC void gbm_bo_destroy(struct gbm_bo *bo)
 	free(bo);
 }
 
-PUBLIC struct gbm_bo *
-gbm_bo_import(struct gbm_device *gbm, uint32_t type,
-              void *buffer, uint32_t usage)
+PUBLIC struct gbm_bo *gbm_bo_import(struct gbm_device *gbm, uint32_t type, void *buffer,
+				    uint32_t usage)
 {
 	struct gbm_bo *bo;
 	struct drv_import_fd_data drv_data;
@@ -210,14 +194,10 @@ gbm_bo_import(struct gbm_device *gbm, uint32_t type,
 			drv_data.fds[i] = fd_planar_data->fds[i];
 			drv_data.offsets[i] = fd_planar_data->offsets[i];
 			drv_data.strides[i] = fd_planar_data->strides[i];
-			drv_data.format_modifiers[i] =
-				fd_planar_data->format_modifiers[i];
+			drv_data.format_modifiers[i] = fd_planar_data->format_modifiers[i];
 
 			drv_data.sizes[i] = drv_size_from_format(
-						drv_data.format,
-						drv_data.strides[i],
-						drv_data.height,
-						i);
+			    drv_data.format, drv_data.strides[i], drv_data.height, i);
 		}
 
 		for (i = num_planes; i < GBM_MAX_PLANES; i++)
@@ -246,132 +226,110 @@ gbm_bo_import(struct gbm_device *gbm, uint32_t type,
 	return bo;
 }
 
-PUBLIC void *
-gbm_bo_map(struct gbm_bo *bo, uint32_t x, uint32_t y, uint32_t width,
-	   uint32_t height, uint32_t flags, uint32_t *stride, void **map_data,
-	   size_t plane)
+PUBLIC void *gbm_bo_map(struct gbm_bo *bo, uint32_t x, uint32_t y, uint32_t width, uint32_t height,
+			uint32_t flags, uint32_t *stride, void **map_data, size_t plane)
 {
 	if (!bo || width == 0 || height == 0 || !stride || !map_data)
 		return NULL;
 
 	*stride = gbm_bo_get_plane_stride(bo, plane);
-	return drv_bo_map(bo->bo, x, y, width, height, 0,
-			  (struct map_info**)map_data, plane);
+	return drv_bo_map(bo->bo, x, y, width, height, 0, (struct map_info **)map_data, plane);
 }
 
-PUBLIC void
-gbm_bo_unmap(struct gbm_bo *bo, void *map_data)
+PUBLIC void gbm_bo_unmap(struct gbm_bo *bo, void *map_data)
 {
 	assert(bo);
 	drv_bo_unmap(bo->bo, map_data);
 }
 
-PUBLIC uint32_t
-gbm_bo_get_width(struct gbm_bo *bo)
+PUBLIC uint32_t gbm_bo_get_width(struct gbm_bo *bo)
 {
 	return drv_bo_get_width(bo->bo);
 }
 
-PUBLIC uint32_t
-gbm_bo_get_height(struct gbm_bo *bo)
+PUBLIC uint32_t gbm_bo_get_height(struct gbm_bo *bo)
 {
 	return drv_bo_get_height(bo->bo);
 }
 
-PUBLIC uint32_t
-gbm_bo_get_stride(struct gbm_bo *bo)
+PUBLIC uint32_t gbm_bo_get_stride(struct gbm_bo *bo)
 {
 	return gbm_bo_get_plane_stride(bo, 0);
 }
 
-PUBLIC uint32_t
-gbm_bo_get_stride_or_tiling(struct gbm_bo *bo)
+PUBLIC uint32_t gbm_bo_get_stride_or_tiling(struct gbm_bo *bo)
 {
 	return drv_bo_get_stride_or_tiling(bo->bo);
 }
 
-PUBLIC uint32_t
-gbm_bo_get_format(struct gbm_bo *bo)
+PUBLIC uint32_t gbm_bo_get_format(struct gbm_bo *bo)
 {
 	return bo->gbm_format;
 }
 
-PUBLIC uint64_t
-gbm_bo_get_format_modifier(struct gbm_bo *bo)
+PUBLIC uint64_t gbm_bo_get_format_modifier(struct gbm_bo *bo)
 {
 	return gbm_bo_get_plane_format_modifier(bo, 0);
 }
 
-PUBLIC struct gbm_device *
-gbm_bo_get_device(struct gbm_bo *bo)
+PUBLIC struct gbm_device *gbm_bo_get_device(struct gbm_bo *bo)
 {
 	return bo->gbm;
 }
 
-PUBLIC union gbm_bo_handle
-gbm_bo_get_handle(struct gbm_bo *bo)
+PUBLIC union gbm_bo_handle gbm_bo_get_handle(struct gbm_bo *bo)
 {
 	return gbm_bo_get_plane_handle(bo, 0);
 }
 
-PUBLIC int
-gbm_bo_get_fd(struct gbm_bo *bo)
+PUBLIC int gbm_bo_get_fd(struct gbm_bo *bo)
 {
 	return gbm_bo_get_plane_fd(bo, 0);
 }
 
-PUBLIC size_t
-gbm_bo_get_num_planes(struct gbm_bo *bo)
+PUBLIC size_t gbm_bo_get_num_planes(struct gbm_bo *bo)
 {
 	return drv_bo_get_num_planes(bo->bo);
 }
 
-PUBLIC union gbm_bo_handle
-gbm_bo_get_plane_handle(struct gbm_bo *bo, size_t plane)
+PUBLIC union gbm_bo_handle gbm_bo_get_plane_handle(struct gbm_bo *bo, size_t plane)
 {
-	return (union gbm_bo_handle) drv_bo_get_plane_handle(bo->bo, plane).u64;
+	return (union gbm_bo_handle)drv_bo_get_plane_handle(bo->bo, plane).u64;
 }
 
-PUBLIC int
-gbm_bo_get_plane_fd(struct gbm_bo *bo, size_t plane)
+PUBLIC int gbm_bo_get_plane_fd(struct gbm_bo *bo, size_t plane)
 {
 	return drv_bo_get_plane_fd(bo->bo, plane);
 }
 
-PUBLIC uint32_t
-gbm_bo_get_plane_offset(struct gbm_bo *bo, size_t plane)
+PUBLIC uint32_t gbm_bo_get_plane_offset(struct gbm_bo *bo, size_t plane)
 {
 	return drv_bo_get_plane_offset(bo->bo, plane);
 }
 
-PUBLIC uint32_t
-gbm_bo_get_plane_size(struct gbm_bo *bo, size_t plane)
+PUBLIC uint32_t gbm_bo_get_plane_size(struct gbm_bo *bo, size_t plane)
 {
 	return drv_bo_get_plane_size(bo->bo, plane);
 }
 
-PUBLIC uint32_t
-gbm_bo_get_plane_stride(struct gbm_bo *bo, size_t plane)
+PUBLIC uint32_t gbm_bo_get_plane_stride(struct gbm_bo *bo, size_t plane)
 {
 	return drv_bo_get_plane_stride(bo->bo, plane);
 }
 
-PUBLIC uint64_t
-gbm_bo_get_plane_format_modifier(struct gbm_bo *bo, size_t plane)
+PUBLIC uint64_t gbm_bo_get_plane_format_modifier(struct gbm_bo *bo, size_t plane)
 {
 	return drv_bo_get_plane_format_modifier(bo->bo, plane);
 }
 
-PUBLIC void
-gbm_bo_set_user_data(struct gbm_bo *bo, void *data,
-		     void (*destroy_user_data)(struct gbm_bo *, void *))
+PUBLIC void gbm_bo_set_user_data(struct gbm_bo *bo, void *data,
+				 void (*destroy_user_data)(struct gbm_bo *, void *))
 {
 	bo->user_data = data;
 	bo->destroy_user_data = destroy_user_data;
 }
 
-PUBLIC void *
-gbm_bo_get_user_data(struct gbm_bo *bo)
+PUBLIC void *gbm_bo_get_user_data(struct gbm_bo *bo)
 {
 	return bo->user_data;
 }

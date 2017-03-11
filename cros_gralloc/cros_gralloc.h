@@ -10,8 +10,8 @@
 #include "cros_gralloc_helpers.h"
 
 #include <mutex>
-#include <unordered_set>
 #include <unordered_map>
+#include <unordered_set>
 
 struct cros_gralloc_bo {
 	struct bo *bo;
@@ -30,16 +30,14 @@ struct cros_gralloc_module {
 	gralloc_module_t base;
 	struct driver *drv;
 	std::mutex mutex;
-	std::unordered_map<cros_gralloc_handle*, handle_info> handles;
-	std::unordered_map<uint32_t, cros_gralloc_bo*> buffers;
+	std::unordered_map<cros_gralloc_handle *, handle_info> handles;
+	std::unordered_map<uint32_t, cros_gralloc_bo *> buffers;
 };
 
-int cros_gralloc_open(const struct hw_module_t *mod, const char *name,
-		      struct hw_device_t **dev);
+int cros_gralloc_open(const struct hw_module_t *mod, const char *name, struct hw_device_t **dev);
 
 int cros_gralloc_validate_reference(struct cros_gralloc_module *mod,
-				    struct cros_gralloc_handle *hnd,
-				    struct cros_gralloc_bo **obj);
+				    struct cros_gralloc_handle *hnd, struct cros_gralloc_bo **obj);
 
 int cros_gralloc_decrement_reference_count(struct cros_gralloc_module *mod,
 					   struct cros_gralloc_bo *obj);

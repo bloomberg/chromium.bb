@@ -32,12 +32,12 @@ uint64_t cros_gralloc_convert_flags(int flags)
 	if (flags & GRALLOC_USAGE_HW_2D)
 		usage |= BO_USE_RENDERING;
 	if (flags & GRALLOC_USAGE_HW_COMPOSER)
-	/* HWC wants to use display hardware, but can defer to OpenGL. */
+		/* HWC wants to use display hardware, but can defer to OpenGL. */
 		usage |= BO_USE_SCANOUT | BO_USE_RENDERING;
 	if (flags & GRALLOC_USAGE_HW_FB)
 		usage |= BO_USE_NONE;
 	if (flags & GRALLOC_USAGE_EXTERNAL_DISP)
-	/* We're ignoring this flag until we decide what to with display link */
+		/* We're ignoring this flag until we decide what to with display link */
 		usage |= BO_USE_NONE;
 	if (flags & GRALLOC_USAGE_PROTECTED)
 		usage |= BO_USE_PROTECTED;
@@ -86,8 +86,7 @@ uint32_t cros_gralloc_convert_format(int format)
 	return DRM_FORMAT_NONE;
 }
 
-static int32_t cros_gralloc_query_rendernode(struct driver **drv,
-					     const char *undesired)
+static int32_t cros_gralloc_query_rendernode(struct driver **drv, const char *undesired)
 {
 	/*
 	 * Create a driver from rendernode while filtering out
@@ -154,8 +153,7 @@ int32_t cros_gralloc_validate_handle(struct cros_gralloc_handle *hnd)
 	return CROS_GRALLOC_ERROR_NONE;
 }
 
-void cros_gralloc_log(const char *prefix, const char *file, int line,
-		      const char *format, ...)
+void cros_gralloc_log(const char *prefix, const char *file, int line, const char *format, ...)
 {
 	char buf[50];
 	snprintf(buf, sizeof(buf), "[%s:%s(%d)]", prefix, basename(file), line);

@@ -10,8 +10,7 @@
 #include <xf86drm.h>
 
 int cros_gralloc_validate_reference(struct cros_gralloc_module *mod,
-				    struct cros_gralloc_handle *hnd,
-				    struct cros_gralloc_bo **bo)
+				    struct cros_gralloc_handle *hnd, struct cros_gralloc_bo **bo)
 {
 	if (!mod->handles.count(hnd))
 		return CROS_GRALLOC_ERROR_BAD_HANDLE;
@@ -44,13 +43,13 @@ int cros_gralloc_decrement_reference_count(struct cros_gralloc_module *mod,
 	return CROS_GRALLOC_ERROR_NONE;
 }
 
-static int cros_gralloc_register_buffer(struct gralloc_module_t const* module,
-				        buffer_handle_t handle)
+static int cros_gralloc_register_buffer(struct gralloc_module_t const *module,
+					buffer_handle_t handle)
 {
 	uint32_t id;
 	struct cros_gralloc_bo *bo;
-	auto hnd = (struct cros_gralloc_handle *) handle;
-	auto mod = (struct cros_gralloc_module *) module;
+	auto hnd = (struct cros_gralloc_handle *)handle;
+	auto mod = (struct cros_gralloc_module *)module;
 	std::lock_guard<std::mutex> lock(mod->mutex);
 
 	if (cros_gralloc_validate_handle(hnd)) {
@@ -91,9 +90,9 @@ static int cros_gralloc_register_buffer(struct gralloc_module_t const* module,
 			data.strides[p] = hnd->strides[p];
 			data.offsets[p] = hnd->offsets[p];
 			data.sizes[p] = hnd->sizes[p];
-			data.format_modifiers[p] = static_cast<uint64_t>
-				(hnd->format_modifiers[p]) << 32;
-			data.format_modifiers[p] |= hnd->format_modifiers[p+1];
+			data.format_modifiers[p] = static_cast<uint64_t>(hnd->format_modifiers[p])
+						   << 32;
+			data.format_modifiers[p] |= hnd->format_modifiers[p + 1];
 		}
 
 		bo = new cros_gralloc_bo();
@@ -116,12 +115,12 @@ static int cros_gralloc_register_buffer(struct gralloc_module_t const* module,
 	return CROS_GRALLOC_ERROR_NONE;
 }
 
-static int cros_gralloc_unregister_buffer(struct gralloc_module_t const* module,
+static int cros_gralloc_unregister_buffer(struct gralloc_module_t const *module,
 					  buffer_handle_t handle)
 {
 	struct cros_gralloc_bo *bo;
-	auto hnd = (struct cros_gralloc_handle *) handle;
-	auto mod = (struct cros_gralloc_module *) module;
+	auto hnd = (struct cros_gralloc_handle *)handle;
+	auto mod = (struct cros_gralloc_module *)module;
 	std::lock_guard<std::mutex> lock(mod->mutex);
 
 	if (cros_gralloc_validate_handle(hnd)) {
@@ -147,13 +146,12 @@ static int cros_gralloc_unregister_buffer(struct gralloc_module_t const* module,
 	return cros_gralloc_decrement_reference_count(mod, bo);
 }
 
-static int cros_gralloc_lock(struct gralloc_module_t const* module,
-			     buffer_handle_t handle, int usage, int l, int t,
-			     int w, int h, void** vaddr)
+static int cros_gralloc_lock(struct gralloc_module_t const *module, buffer_handle_t handle,
+			     int usage, int l, int t, int w, int h, void **vaddr)
 {
 	struct cros_gralloc_bo *bo;
-	auto mod = (struct cros_gralloc_module *) module;
-	auto hnd = (struct cros_gralloc_handle *) handle;
+	auto mod = (struct cros_gralloc_module *)module;
+	auto hnd = (struct cros_gralloc_handle *)handle;
 	std::lock_guard<std::mutex> lock(mod->mutex);
 
 	if (cros_gralloc_validate_handle(hnd)) {
@@ -177,8 +175,7 @@ static int cros_gralloc_lock(struct gralloc_module_t const* module,
 			*vaddr = bo->map_data->addr;
 		} else {
 			*vaddr = drv_bo_map(bo->bo, 0, 0, drv_bo_get_width(bo->bo),
-					   drv_bo_get_height(bo->bo), 0,
-					   &bo->map_data, 0);
+					    drv_bo_get_height(bo->bo), 0, &bo->map_data, 0);
 		}
 
 		if (*vaddr == MAP_FAILED) {
@@ -192,12 +189,11 @@ static int cros_gralloc_lock(struct gralloc_module_t const* module,
 	return CROS_GRALLOC_ERROR_NONE;
 }
 
-static int cros_gralloc_unlock(struct gralloc_module_t const* module,
-			       buffer_handle_t handle)
+static int cros_gralloc_unlock(struct gralloc_module_t const *module, buffer_handle_t handle)
 {
 	struct cros_gralloc_bo *bo;
-	auto hnd = (struct cros_gralloc_handle *) handle;
-	auto mod = (struct cros_gralloc_module *) module;
+	auto hnd = (struct cros_gralloc_handle *)handle;
+	auto mod = (struct cros_gralloc_module *)module;
 	std::lock_guard<std::mutex> lock(mod->mutex);
 
 	if (cros_gralloc_validate_handle(hnd)) {
@@ -218,8 +214,7 @@ static int cros_gralloc_unlock(struct gralloc_module_t const* module,
 	return CROS_GRALLOC_ERROR_NONE;
 }
 
-static int cros_gralloc_perform(struct gralloc_module_t const* module,
-				int op, ... )
+static int cros_gralloc_perform(struct gralloc_module_t const *module, int op, ...)
 {
 	va_list args;
 	struct cros_gralloc_bo *bo;
@@ -227,7 +222,7 @@ static int cros_gralloc_perform(struct gralloc_module_t const* module,
 	uint64_t *out_store;
 	buffer_handle_t handle;
 	uint32_t *out_width, *out_height, *out_stride;
-	auto mod = (struct cros_gralloc_module *) module;
+	auto mod = (struct cros_gralloc_module *)module;
 	std::lock_guard<std::mutex> lock(mod->mutex);
 
 	switch (op) {
@@ -242,7 +237,7 @@ static int cros_gralloc_perform(struct gralloc_module_t const* module,
 
 	va_start(args, op);
 	handle = va_arg(args, buffer_handle_t);
-	auto hnd = (struct cros_gralloc_handle *) handle;
+	auto hnd = (struct cros_gralloc_handle *)handle;
 
 	if (cros_gralloc_validate_handle(hnd)) {
 		cros_gralloc_error("Invalid handle.");
@@ -282,16 +277,15 @@ static int cros_gralloc_perform(struct gralloc_module_t const* module,
 	return CROS_GRALLOC_ERROR_NONE;
 }
 
-static int cros_gralloc_lock_ycbcr(struct gralloc_module_t const* module,
-				   buffer_handle_t handle, int usage, int l,
-				   int t, int w, int h,
+static int cros_gralloc_lock_ycbcr(struct gralloc_module_t const *module, buffer_handle_t handle,
+				   int usage, int l, int t, int w, int h,
 				   struct android_ycbcr *ycbcr)
 {
 	uint8_t *addr = NULL;
 	size_t offsets[DRV_MAX_PLANES];
 	struct cros_gralloc_bo *bo;
-	auto hnd = (struct cros_gralloc_handle *) handle;
-	auto mod = (struct cros_gralloc_module *) module;
+	auto hnd = (struct cros_gralloc_handle *)handle;
+	auto mod = (struct cros_gralloc_module *)module;
 	std::lock_guard<std::mutex> lock(mod->mutex);
 
 	if (cros_gralloc_validate_handle(hnd)) {
@@ -316,8 +310,7 @@ static int cros_gralloc_lock_ycbcr(struct gralloc_module_t const* module,
 			vaddr = bo->map_data->addr;
 		} else {
 			vaddr = drv_bo_map(bo->bo, 0, 0, drv_bo_get_width(bo->bo),
-					   drv_bo_get_height(bo->bo), 0,
-					   &bo->map_data, 0);
+					   drv_bo_get_height(bo->bo), 0, &bo->map_data, 0);
 		}
 
 		if (vaddr == MAP_FAILED) {
@@ -325,7 +318,7 @@ static int cros_gralloc_lock_ycbcr(struct gralloc_module_t const* module,
 			return CROS_GRALLOC_ERROR_UNSUPPORTED;
 		}
 
-		addr = static_cast<uint8_t*>(vaddr);
+		addr = static_cast<uint8_t *>(vaddr);
 	}
 
 	for (size_t p = 0; p < drv_bo_get_num_planes(bo->bo); p++)
@@ -365,13 +358,13 @@ static int cros_gralloc_lock_ycbcr(struct gralloc_module_t const* module,
 	return CROS_GRALLOC_ERROR_NONE;
 }
 
-static struct hw_module_methods_t cros_gralloc_module_methods = {
-	.open = cros_gralloc_open
-};
+static struct hw_module_methods_t cros_gralloc_module_methods = {.open = cros_gralloc_open };
 
 struct cros_gralloc_module HAL_MODULE_INFO_SYM = {
-	.base = {
-		.common = {
+	.base =
+	    {
+		.common =
+		    {
 			.tag = HARDWARE_MODULE_TAG,
 			.module_api_version = GRALLOC_MODULE_API_VERSION_0_2,
 			.hal_api_version = 0,
@@ -379,14 +372,14 @@ struct cros_gralloc_module HAL_MODULE_INFO_SYM = {
 			.name = "CrOS Gralloc",
 			.author = "Chrome OS",
 			.methods = &cros_gralloc_module_methods,
-		},
+		    },
 		.registerBuffer = cros_gralloc_register_buffer,
 		.unregisterBuffer = cros_gralloc_unregister_buffer,
 		.lock = cros_gralloc_lock,
 		.unlock = cros_gralloc_unlock,
 		.perform = cros_gralloc_perform,
 		.lock_ycbcr = cros_gralloc_lock_ycbcr,
-	},
+	    },
 
 	.drv = NULL,
 };

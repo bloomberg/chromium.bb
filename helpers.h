@@ -10,29 +10,23 @@
 #include "drv.h"
 
 uint32_t drv_stride_from_format(uint32_t format, uint32_t width, size_t plane);
-int drv_bo_from_format(struct bo *bo, uint32_t stride,
-		       uint32_t aligned_height, uint32_t format);
-int drv_dumb_bo_create(struct bo *bo, uint32_t width, uint32_t height,
-		       uint32_t format, uint32_t flags);
+int drv_bo_from_format(struct bo *bo, uint32_t stride, uint32_t aligned_height, uint32_t format);
+int drv_dumb_bo_create(struct bo *bo, uint32_t width, uint32_t height, uint32_t format,
+		       uint32_t flags);
 int drv_dumb_bo_destroy(struct bo *bo);
 int drv_gem_bo_destroy(struct bo *bo);
 int drv_prime_bo_import(struct bo *bo, struct drv_import_fd_data *data);
 void *drv_dumb_bo_map(struct bo *bo, struct map_info *data, size_t plane);
-uintptr_t drv_get_reference_count(struct driver *drv, struct bo *bo,
-				  size_t plane);
-void drv_increment_reference_count(struct driver *drv, struct bo *bo,
-				   size_t plane);
-void drv_decrement_reference_count(struct driver *drv, struct bo *bo,
-				   size_t plane);
+uintptr_t drv_get_reference_count(struct driver *drv, struct bo *bo, size_t plane);
+void drv_increment_reference_count(struct driver *drv, struct bo *bo, size_t plane);
+void drv_decrement_reference_count(struct driver *drv, struct bo *bo, size_t plane);
 uint32_t drv_log_base2(uint32_t value);
-int drv_add_combination(struct driver *drv, uint32_t format,
-			struct format_metadata *metadata, uint64_t usage);
-int drv_add_combinations(struct driver *drv, const uint32_t *formats,
-			 uint32_t num_formats, struct format_metadata *metadata,
-			 uint64_t usage);
-void drv_modify_combination(struct driver *drv, uint32_t format,
-			    struct format_metadata *metadata, uint64_t usage);
+int drv_add_combination(struct driver *drv, uint32_t format, struct format_metadata *metadata,
+			uint64_t usage);
+int drv_add_combinations(struct driver *drv, const uint32_t *formats, uint32_t num_formats,
+			 struct format_metadata *metadata, uint64_t usage);
+void drv_modify_combination(struct driver *drv, uint32_t format, struct format_metadata *metadata,
+			    uint64_t usage);
 struct kms_item *drv_query_kms(struct driver *drv, uint32_t *num_items);
-int drv_add_linear_combinations(struct driver *drv, const uint32_t *formats,
-				uint32_t num_formats);
+int drv_add_linear_combinations(struct driver *drv, const uint32_t *formats, uint32_t num_formats);
 #endif
