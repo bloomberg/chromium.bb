@@ -344,6 +344,9 @@ function initialize() {
       });
 
       chrome.feedbackPrivate.getUserEmail(function(email) {
+        // Never add an empty option.
+        if (!email)
+          return;
         var optionElement = document.createElement('option');
         optionElement.value = email;
         optionElement.text = email;
