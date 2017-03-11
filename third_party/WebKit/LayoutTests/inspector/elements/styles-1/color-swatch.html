@@ -59,7 +59,7 @@ function test() {
 
     function popoverVisible()
     {
-        return UI.Popover._popover ? UI.Popover._popover.contentElement.isSelfOrDescendant(document.body) : false;
+        return !!document.body.querySelector('* /deep/ .spectrum-color');
     }
 }
 </script>
