@@ -174,9 +174,13 @@ cr.define('options', function() {
             '.controlled-setting-bubble-extension-manage-link');
         var extensionId = this.extensionId;
         manageLink.onclick = function() {
-          uber.invokeMethodOnWindow(
-              window.top, 'showPage',
-              {pageId: 'extensions', path: '?id=' + extensionId});
+          if (window != window.top) {
+            uber.invokeMethodOnWindow(
+                window.top, 'showPage',
+                {pageId: 'extensions', path: '?id=' + extensionId});
+          } else {
+            window.open('chrome://extensions/?id=' + extensionId);
+          }
         };
 
         var disableButton = extensionContainer.querySelector(
