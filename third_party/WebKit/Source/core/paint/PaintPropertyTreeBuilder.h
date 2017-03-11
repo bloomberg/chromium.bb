@@ -95,7 +95,7 @@ struct PaintPropertyTreeBuilderContext {
 // InPrePaint phase.
 class PaintPropertyTreeBuilder {
  public:
-  PaintPropertyTreeBuilderContext setupInitialContext();
+  void setupInitialContext(PaintPropertyTreeBuilderContext&);
   // Update the paint properties for a frame and ensure the context is up to
   // date.
   void updateProperties(FrameView&, PaintPropertyTreeBuilderContext&);

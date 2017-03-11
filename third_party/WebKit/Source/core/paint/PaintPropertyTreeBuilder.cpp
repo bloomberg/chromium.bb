@@ -26,9 +26,8 @@
 
 namespace blink {
 
-PaintPropertyTreeBuilderContext
-PaintPropertyTreeBuilder::setupInitialContext() {
-  PaintPropertyTreeBuilderContext context;
+void PaintPropertyTreeBuilder::setupInitialContext(
+    PaintPropertyTreeBuilderContext& context) {
   context.current.clip = context.absolutePosition.clip =
       context.fixedPosition.clip = ClipPaintPropertyNode::root();
   context.currentEffect = EffectPaintPropertyNode::root();
@@ -37,7 +36,6 @@ PaintPropertyTreeBuilder::setupInitialContext() {
       context.fixedPosition.transform = TransformPaintPropertyNode::root();
   context.current.scroll = context.absolutePosition.scroll =
       context.fixedPosition.scroll = ScrollPaintPropertyNode::root();
-  return context;
 }
 
 // True if a new property was created, false if an existing one was updated.
