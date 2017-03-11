@@ -175,17 +175,17 @@ IN_PROC_BROWSER_TEST_F(MediaSessionServiceImplBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(MediaSessionServiceImplBrowserTest,
-                       DontResetServiceForSamePageNavigation) {
+                       DontResetServiceForSameDocumentNavigation) {
   NavigateToURL(shell(), GetTestUrl(".", "title1.html"));
   EnsurePlayer();
 
   EXPECT_TRUE(ExecuteScriptToSetUpMediaSessionSync());
 
-  // Start a same-page navigation and check the playback state, metadata,
+  // Start a fragment navigation and check the playback state, metadata,
   // actions are not reset.
-  GURL same_page_url = GetTestUrl(".", "title1.html");
-  same_page_url = GURL(same_page_url.spec() + "#some-anchor");
-  NavigateToURLAndWaitForFinish(shell(), same_page_url);
+  GURL fragment_change_url = GetTestUrl(".", "title1.html");
+  fragment_change_url = GURL(fragment_change_url.spec() + "#some-anchor");
+  NavigateToURLAndWaitForFinish(shell(), fragment_change_url);
 
   EXPECT_EQ(blink::mojom::MediaSessionPlaybackState::PLAYING,
             GetService()->playback_state());
