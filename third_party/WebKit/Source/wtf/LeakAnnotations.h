@@ -36,14 +36,14 @@
 // and allocations to be registered as exempted from LSan consideration.
 
 #include "wtf/Noncopyable.h"
-#if USE(LEAK_SANITIZER)
+#if defined(LEAK_SANITIZER)
 #include "wtf/AddressSanitizer.h"
 #include "wtf/TypeTraits.h"
 #endif
 
 namespace WTF {
 
-#if USE(LEAK_SANITIZER)
+#if defined(LEAK_SANITIZER)
 class LeakSanitizerDisabler {
   WTF_MAKE_NONCOPYABLE(LeakSanitizerDisabler);
 
@@ -135,7 +135,7 @@ class RegisterStaticLocalReference<T, true> {
 #define WTF_INTERNAL_LEAK_SANITIZER_DISABLED_SCOPE
 #define LEAK_SANITIZER_IGNORE_OBJECT(X) ((void)0)
 #define LEAK_SANITIZER_REGISTER_STATIC_LOCAL(Type, Object) Object
-#endif  // USE(LEAK_SANITIZER)
+#endif  // defined(LEAK_SANITIZER)
 
 }  // namespace WTF
 
