@@ -761,7 +761,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
             return false;
         }
 
-        getTabCreator(false).launchUrl(UrlConstants.NTP_URL, TabLaunchType.FROM_CHROME_UI);
+        getTabCreator(false).launchUrl(UrlConstants.NTP_URL, TabLaunchType.FROM_EXTERNAL_APP);
         return true;
     }
 
