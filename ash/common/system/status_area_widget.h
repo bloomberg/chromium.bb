@@ -81,6 +81,14 @@ class ASH_EXPORT StatusAreaWidget : public views::Widget,
   // ShelfBackgroundAnimatorObserver:
   void UpdateShelfItemBackground(SkColor color) override;
 
+  LogoutButtonTray* logout_button_tray_for_testing() {
+    return logout_button_tray_;
+  }
+
+  VirtualKeyboardTray* virtual_keyboard_tray_for_testing() {
+    return virtual_keyboard_tray_;
+  }
+
  private:
   void AddSystemTray();
   void AddWebNotificationTray();
