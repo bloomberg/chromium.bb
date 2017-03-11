@@ -23,6 +23,11 @@ class Profile;
 
 namespace chromeos {
 
+struct QueryResult {
+  bool success;
+  std::vector<::printing::QueueStatus> queues;
+};
+
 class CupsPrintJobManagerImpl : public CupsPrintJobManager,
                                 public content::NotificationObserver {
  public:
@@ -52,11 +57,15 @@ class CupsPrintJobManagerImpl : public CupsPrintJobManager,
   // Schedule a query of CUPS for print job status with a delay of |delay|.
   void ScheduleQuery(const base::TimeDelta& delay);
 
-  // Query CUPS for print job status.
-  void QueryCups();
+  // Schedule the CUPS query off the UI thread. Posts results back to UI thread
+  // to UpdateJobs.
+  void PostQuery();
 
   // Process jobs from CUPS and perform notifications.
-  void UpdateJobs(const std::vector<::printing::CupsJob>& jobs);
+  void UpdateJobs(const QueryResult& results);
+
+  // Mark remaining jobs as errors and remove active jobs.
+  void PurgeJobs();
 
   // Updates the state and performs the appropriate notifications.
   void JobStateUpdated(CupsPrintJob* job, CupsPrintJob::State new_state);
@@ -66,6 +75,9 @@ class CupsPrintJobManagerImpl : public CupsPrintJobManager,
 
   // Prevents multiple queries from being scheduled simultaneously.
   bool in_query_ = false;
+
+  // Records the number of consecutive times the GetJobs query has failed.
+  int retry_count_ = 0;
 
   ::printing::CupsConnection cups_connection_;
   content::NotificationRegistrar registrar_;

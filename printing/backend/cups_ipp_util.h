@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// Methods for parsing IPP Printer attributes.
+
 #ifndef PRINTING_BACKEND_CUPS_IPP_UTIL_H_
 #define PRINTING_BACKEND_CUPS_IPP_UTIL_H_
 

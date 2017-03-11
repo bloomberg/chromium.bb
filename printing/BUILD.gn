@@ -189,6 +189,8 @@ component("printing") {
         "backend/cups_deleters.h",
         "backend/cups_ipp_util.cc",
         "backend/cups_ipp_util.h",
+        "backend/cups_jobs.cc",
+        "backend/cups_jobs.h",
         "backend/cups_printer.cc",
         "backend/cups_printer.h",
         "backend/print_backend_cups_ipp.cc",

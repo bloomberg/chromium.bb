@@ -4,18 +4,31 @@
 
 #include "printing/backend/cups_connection.h"
 
+#include <map>
+#include <set>
 #include <string>
 #include <utility>
 
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
+#include "printing/backend/cups_jobs.h"
 
 namespace printing {
 
 namespace {
 
-const int kTimeoutMs = 3000;
+constexpr int kTimeoutMs = 3000;
+
+// The number of jobs we'll retrieve for a queue.  We expect a user to queue at
+// most 10 jobs per printer.  If they queue more, they won't receive updates for
+// the 11th job until one finishes.
+constexpr int kProcessingJobsLimit = 10;
+
+// The number of completed jobs that are retrieved.  We only need one update for
+// a completed job to confirm its final status.  We could retrieve one but we
+// retrieve the last 3 in case that many finished between queries.
+constexpr int kCompletedJobsLimit = 3;
 
 class DestinationEnumerator {
  public:
@@ -43,42 +56,6 @@ class DestinationEnumerator {
 
   DISALLOW_COPY_AND_ASSIGN(DestinationEnumerator);
 };
-
-CupsJob createCupsJob(int job_id,
-                      base::StringPiece job_title,
-                      base::StringPiece printer_id,
-                      ipp_jstate_t state) {
-  CupsJob::JobState converted_state = CupsJob::UNKNOWN;
-  switch (state) {
-    case IPP_JOB_ABORTED:
-      converted_state = CupsJob::ABORTED;
-      break;
-    case IPP_JOB_CANCELLED:
-      converted_state = CupsJob::CANCELED;
-      break;
-    case IPP_JOB_COMPLETED:
-      converted_state = CupsJob::COMPLETED;
-      break;
-    case IPP_JOB_HELD:
-      converted_state = CupsJob::HELD;
-      break;
-    case IPP_JOB_PENDING:
-      converted_state = CupsJob::PENDING;
-      break;
-    case IPP_JOB_PROCESSING:
-      converted_state = CupsJob::PROCESSING;
-      break;
-    case IPP_JOB_STOPPED:
-      converted_state = CupsJob::STOPPED;
-      break;
-    default:
-      NOTREACHED();
-      break;
-  }
-
-  return {job_id, job_title.as_string(), printer_id.as_string(),
-          converted_state};
-}
 
 }  // namespace
 
@@ -162,24 +139,41 @@ std::unique_ptr<CupsPrinter> CupsConnection::GetPrinter(
       std::unique_ptr<cups_dinfo_t, DestInfoDeleter>(info));
 }
 
-std::vector<CupsJob> CupsConnection::GetJobs() {
-  cups_job_t* jobs;
-  int num_jobs = cupsGetJobs2(cups_http_.get(),  // http connection
-                              &jobs,             // out param
-                              nullptr,           // all printers
-                              0,                 // all users
-                              CUPS_WHICHJOBS_ALL);
-
-  const JobsDeleter deleter(num_jobs);
-  std::unique_ptr<cups_job_t, const JobsDeleter&> scoped_jobs(jobs, deleter);
-
-  std::vector<CupsJob> job_copies;
-  for (int i = 0; i < num_jobs; i++) {
-    job_copies.push_back(
-        createCupsJob(jobs[i].id, jobs[i].title, jobs[i].dest, jobs[i].state));
+bool CupsConnection::GetJobs(const std::vector<std::string>& printer_ids,
+                             std::vector<QueueStatus>* queues) {
+  DCHECK(queues);
+  if (!Connect()) {
+    LOG(ERROR) << "Could not establish connection to CUPS";
+    return false;
   }
 
-  return job_copies;
+  std::vector<QueueStatus> temp_queues;
+
+  for (const std::string& id : printer_ids) {
+    temp_queues.emplace_back();
+    QueueStatus* queue_status = &temp_queues.back();
+
+    if (!GetPrinterStatus(cups_http_.get(), id,
+                          &queue_status->printer_status)) {
+      LOG(WARNING) << "Could not retrieve printer status for " << id;
+      return false;
+    }
+
+    if (!GetCupsJobs(cups_http_.get(), id, kCompletedJobsLimit, COMPLETED,
+                     &queue_status->jobs)) {
+      LOG(WARNING) << "Could not get completed jobs for " << id;
+      return false;
+    }
+
+    if (!GetCupsJobs(cups_http_.get(), id, kProcessingJobsLimit, PROCESSING,
+                     &queue_status->jobs)) {
+      LOG(WARNING) << "Could not get in progress jobs for " << id;
+      return false;
+    }
+  }
+  queues->insert(queues->end(), temp_queues.begin(), temp_queues.end());
+
+  return true;
 }
 
 std::string CupsConnection::server_name() const {
