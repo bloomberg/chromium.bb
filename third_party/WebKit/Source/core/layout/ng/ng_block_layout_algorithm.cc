@@ -458,7 +458,10 @@ RefPtr<NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
         CreateConstraintSpaceForChild(child);
 
     if (child->Type() == NGLayoutInputNode::kLegacyInline) {
-      LayoutInlineChildren(toNGInlineNode(child), child_space.get());
+      LayoutInlineChild(toNGInlineNode(child), child_space.get());
+      // TODO(kojii): We need to get NGInlineNode::NextSibiling() and continue,
+      // but currently it always return nullptr. This needs to change when it
+      // supports inline/block mixed children.
       break;
     }
 
@@ -519,23 +522,17 @@ RefPtr<NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
   return builder_.ToBoxFragment();
 }
 
-void NGBlockLayoutAlgorithm::LayoutInlineChildren(
-    NGInlineNode* inline_child,
-    NGConstraintSpace* child_space) {
+void NGBlockLayoutAlgorithm::LayoutInlineChild(NGInlineNode* inline_child,
+                                               NGConstraintSpace* child_space) {
   // TODO(kojii): This logic does not handle when children are mix of
   // inline/block. We need to detect the case and setup appropriately; e.g.,
   // constraint space, margin collapsing, next siblings, etc.
-  NGLineBuilder line_builder(inline_child, child_space);
+  NGLineBuilder line_builder(inline_child, child_space, &builder_);
   // TODO(kojii): Need to determine when to invalidate PrepareLayout() more
   // efficiently than "everytime".
   inline_child->InvalidatePrepareLayout();
   inline_child->LayoutInline(child_space, &line_builder);
-  // TODO(kojii): The wrapper fragment should not be needed.
-  NGFragmentBuilder wrapper_fragment_builder(NGPhysicalFragment::kFragmentBox,
-                                             inline_child);
-  line_builder.CreateFragments(&wrapper_fragment_builder);
-  RefPtr<NGLayoutResult> child_result =
-      wrapper_fragment_builder.ToBoxFragment();
+  RefPtr<NGLayoutResult> child_result = line_builder.CreateFragments();
   line_builder.CopyFragmentDataToLayoutBlockFlow();
   FinishChildLayout(inline_child, child_space, child_result);
 }

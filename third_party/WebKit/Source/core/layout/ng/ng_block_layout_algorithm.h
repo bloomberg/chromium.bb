@@ -47,8 +47,8 @@ class CORE_EXPORT NGBlockLayoutAlgorithm : public NGLayoutAlgorithm {
                          NGConstraintSpace*,
                          RefPtr<NGLayoutResult>);
 
-  // Layout inline children.
-  void LayoutInlineChildren(NGInlineNode*, NGConstraintSpace*);
+  // Layout inline child.
+  void LayoutInlineChild(NGInlineNode*, NGConstraintSpace*);
 
   // Final adjustments before fragment creation. We need to prevent the
   // fragment from crossing fragmentainer boundaries, and rather create a break

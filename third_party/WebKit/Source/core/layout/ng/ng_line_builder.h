@@ -31,7 +31,7 @@ class CORE_EXPORT NGLineBuilder final {
   STACK_ALLOCATED();
 
  public:
-  NGLineBuilder(NGInlineNode*, NGConstraintSpace*);
+  NGLineBuilder(NGInlineNode*, NGConstraintSpace*, NGFragmentBuilder*);
 
   const NGConstraintSpace& ConstraintSpace() const {
     return *constraint_space_;
@@ -81,7 +81,7 @@ class CORE_EXPORT NGLineBuilder final {
   void SetStartOfHangables(unsigned offset);
 
   // Create fragments for all lines created so far.
-  void CreateFragments(NGFragmentBuilder*);
+  RefPtr<NGLayoutResult> CreateFragments();
 
   // Copy fragment data of all lines created by this NGLineBuilder to
   // LayoutBlockFlow.
@@ -145,6 +145,7 @@ class CORE_EXPORT NGLineBuilder final {
 
   Persistent<NGInlineNode> inline_box_;
   NGConstraintSpace* constraint_space_;  // Not owned as STACK_ALLOCATED.
+  NGFragmentBuilder* containing_block_builder_;
   Vector<RefPtr<NGPhysicalFragment>, 32> fragments_;
   Vector<NGLogicalOffset, 32> offsets_;
   Vector<LineBoxData, 32> line_box_data_list_;

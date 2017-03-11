@@ -20,9 +20,11 @@
 namespace blink {
 
 NGLineBuilder::NGLineBuilder(NGInlineNode* inline_box,
-                             NGConstraintSpace* constraint_space)
+                             NGConstraintSpace* constraint_space,
+                             NGFragmentBuilder* containing_block_builder)
     : inline_box_(inline_box),
       constraint_space_(constraint_space),
+      containing_block_builder_(containing_block_builder),
       baseline_type_(constraint_space->WritingMode() ==
                              NGWritingMode::kHorizontalTopBottom
                          ? FontBaseline::AlphabeticBaseline
@@ -214,11 +216,7 @@ void NGLineBuilder::PlaceItems(
 
     LayoutUnit top, height;
     const ComputedStyle* style = item.Style();
-    if (!style) {
-      // TODO(kojii): Implement atomic inline.
-      style = item.GetLayoutObject()->style();
-      top = content_size_;
-    } else {
+    if (style) {
       // |InlineTextBoxPainter| sets the baseline at |top +
       // ascent-of-primary-font|. Compute |top| to match.
       InlineItemMetrics metrics(*style, baseline_type_);
@@ -229,6 +227,25 @@ void NGLineBuilder::PlaceItems(
       // Take all used fonts into account if 'line-height: normal'.
       if (style->lineHeight().isNegative())
         AccumulateUsedFonts(item, line_item_chunk, &line_box_data);
+    } else {
+      LayoutObject* layout_object = item.GetLayoutObject();
+      if (layout_object->isOutOfFlowPositioned()) {
+        if (containing_block_builder_) {
+          // Absolute positioning blockifies the box's display type.
+          // https://drafts.csswg.org/css-display/#transformations
+          containing_block_builder_->AddOutOfFlowChildCandidate(
+              new NGBlockNode(layout_object),
+              NGLogicalOffset(line_box_data.inline_size, content_size_));
+        }
+        continue;
+      } else if (layout_object->isFloating()) {
+        // TODO(kojii): Implement float.
+        continue;
+      }
+      DCHECK(layout_object->isAtomicInlineLevel());
+      // TODO(kojii): Implement atomic inline.
+      style = layout_object->style();
+      top = content_size_;
     }
 
     // The direction of a fragment is the CSS direction to resolve logical
@@ -337,21 +354,27 @@ void NGLineBuilder::FindNextLayoutOpportunity() {
     current_opportunity_ = opportunity;
 }
 
-void NGLineBuilder::CreateFragments(NGFragmentBuilder* container_builder) {
+RefPtr<NGLayoutResult> NGLineBuilder::CreateFragments() {
   DCHECK(!HasItems()) << "Must call CreateLine()";
   DCHECK_EQ(fragments_.size(), offsets_.size());
+
+  NGFragmentBuilder container_builder(NGPhysicalFragment::kFragmentBox,
+                                      inline_box_);
 
   for (unsigned i = 0; i < fragments_.size(); i++) {
     // TODO(layout-dev): This should really be a std::move but
     // CopyFragmentDataToLayoutBlockFlow also uses the fragments.
-    container_builder->AddChild(fragments_[i].get(), offsets_[i]);
+    container_builder.AddChild(fragments_[i].get(), offsets_[i]);
   }
 
   // TODO(kojii): Check if the line box width should be content or available.
-  container_builder->SetInlineSize(max_inline_size_)
+  // TODO(kojii): Need to take constraint_space into account.
+  container_builder.SetInlineSize(max_inline_size_)
       .SetInlineOverflow(max_inline_size_)
       .SetBlockSize(content_size_)
       .SetBlockOverflow(content_size_);
+
+  return container_builder.ToBoxFragment();
 }
 
 void NGLineBuilder::CopyFragmentDataToLayoutBlockFlow() {

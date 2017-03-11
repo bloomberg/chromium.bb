@@ -82,14 +82,12 @@ class NGInlineNodeTest : public RenderingTest {
     RefPtr<NGConstraintSpace> constraint_space =
         NGConstraintSpaceBuilder(kHorizontalTopBottom)
             .ToConstraintSpace(kHorizontalTopBottom);
-    NGLineBuilder line_builder(node, constraint_space.get());
+    NGLineBuilder line_builder(node, constraint_space.get(), nullptr);
 
     NGTextLayoutAlgorithm algorithm(node, constraint_space.get());
     algorithm.LayoutInline(&line_builder);
 
-    NGFragmentBuilder fragment_builder(NGPhysicalFragment::kFragmentBox, node);
-    line_builder.CreateFragments(&fragment_builder);
-    RefPtr<NGLayoutResult> result = fragment_builder.ToBoxFragment();
+    RefPtr<NGLayoutResult> result = line_builder.CreateFragments();
     for (const auto& child :
          toNGPhysicalBoxFragment(result->PhysicalFragment().get())
              ->Children()) {

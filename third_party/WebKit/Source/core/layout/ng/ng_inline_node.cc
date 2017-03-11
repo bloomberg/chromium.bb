@@ -92,7 +92,10 @@ void NGInlineNode::CollectInlines(LayoutObject* start,
       builder->SetIsSVGText(node->isSVGInlineText());
       builder->Append(toLayoutText(node)->text(), node->style(), node);
     } else if (node->isFloating() || node->isOutOfFlowPositioned()) {
-      // Skip positioned objects.
+      // Add floats and positioned objects in the same way as atomic inlines.
+      // Because these objects need positions, they will be handled in
+      // NGLineBuilder.
+      builder->Append(objectReplacementCharacter, nullptr, node);
     } else if (!node->isInline()) {
       // TODO(kojii): Implement when inline has block children.
     } else {
@@ -273,7 +276,7 @@ MinMaxContentSize NGInlineNode::ComputeMinMaxContentSize() {
           .SetTextDirection(BlockStyle()->direction())
           .SetAvailableSize({LayoutUnit(), NGSizeIndefinite})
           .ToConstraintSpace(writing_mode);
-  NGLineBuilder line_builder(this, constraint_space.get());
+  NGLineBuilder line_builder(this, constraint_space.get(), nullptr);
   LayoutInline(constraint_space.get(), &line_builder);
   MinMaxContentSize sizes;
   sizes.min_content = line_builder.MaxInlineSize();
