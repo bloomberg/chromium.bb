@@ -23,16 +23,16 @@ layer at (8,8) size 215x245
           LayoutText {#text} at (1,2) size 69x17
             text run at (1,2) width 69: "\x{6F22}efg\x{6DF7}\x{690D}"
       LayoutBR {BR} at (71,3) size 1x17
-      LayoutBlockFlow {DIV} at (1,22) size 70.44x21 [border: (1px solid #00FF00)]
-        LayoutInline {U} at (0,0) size 69x17
-          LayoutText {#text} at (1,2) size 69x17
-            text run at (1,2) width 69: "\x{6F22}efg\x{6DF7}\x{690D}"
-      LayoutBR {BR} at (71,24) size 1x17
-      LayoutBlockFlow {DIV} at (1,43) size 70.44x21 [border: (1px solid #00FF00)]
-        LayoutInline {U} at (0,0) size 69x17
-          LayoutText {#text} at (1,2) size 69x17
-            text run at (1,2) width 69: "\x{6F22}efg\x{6DF7}\x{690D}"
-      LayoutBR {BR} at (71,45) size 1x17
+      LayoutBlockFlow {DIV} at (1,22) size 74x21 [border: (1px solid #00FF00)]
+        LayoutInline {U} at (0,0) size 72x16
+          LayoutText {#text} at (1,2) size 72x16
+            text run at (1,2) width 72: "\x{6F22}efg\x{6DF7}\x{690D}"
+      LayoutBR {BR} at (75,24) size 0x17
+      LayoutBlockFlow {DIV} at (1,43) size 74.31x21 [border: (1px solid #00FF00)]
+        LayoutInline {U} at (0,0) size 73x24
+          LayoutText {#text} at (1,-2) size 73x24
+            text run at (1,-2) width 73: "\x{6F22}efg\x{6DF7}\x{690D}"
+      LayoutBR {BR} at (75,44) size 1x17
       LayoutBlockFlow {DIV} at (1,64) size 70.44x21 [border: (1px solid #00FF00)]
         LayoutInline {U} at (0,0) size 69x17
           LayoutText {#text} at (1,2) size 69x17
@@ -55,10 +55,10 @@ layer at (8,8) size 215x245
           text run at (2,1) width 69: "\x{6F22}efg\x{6DF7}\x{690D}"
     LayoutText {#text} at (24,224) size 4x17
       text run at (24,224) width 4: " "
-    LayoutBlockFlow {DIV} at (28,168) size 21x70.44 [border: (1px solid #00FF00)]
-      LayoutInline {U} at (0,0) size 17x69
-        LayoutText {#text} at (2,1) size 17x69
-          text run at (2,1) width 69: "\x{6F22}efg\x{6DF7}\x{690D}"
+    LayoutBlockFlow {DIV} at (28,164) size 21x74.31 [border: (1px solid #00FF00)]
+      LayoutInline {U} at (0,0) size 24x73
+        LayoutText {#text} at (-2,1) size 24x73
+          text run at (-2,1) width 73: "\x{6F22}efg\x{6DF7}\x{690D}"
     LayoutText {#text} at (49,224) size 4x17
       text run at (49,224) width 4: " "
     LayoutBlockFlow {DIV} at (53,168) size 21x70.44 [border: (1px solid #00FF00)]
@@ -67,16 +67,16 @@ layer at (8,8) size 215x245
           text run at (2,1) width 69: "\x{6F22}efg\x{6DF7}\x{690D}"
     LayoutText {#text} at (74,224) size 4x17
       text run at (74,224) width 4: " "
-    LayoutBlockFlow {DIV} at (78,151) size 21x86.84 [border: (1px solid #00FF00)]
-      LayoutInline {U} at (0,0) size 17x85
-        LayoutText {#text} at (2,1) size 17x85
-          text run at (2,1) width 85: "\x{182E}\x{1823}\x{1828}\x{182D}\x{182D}\x{1823}\x{182F} \x{182C}\x{1821}\x{182F}\x{1821} efg\x{6F22}"
+    LayoutBlockFlow {DIV} at (78,152) size 21x85.75 [border: (1px solid #00FF00)]
+      LayoutInline {U} at (0,0) size 17x84
+        LayoutText {#text} at (2,1) size 17x84
+          text run at (2,1) width 84: "\x{182E}\x{1823}\x{1828}\x{182D}\x{182D}\x{1823}\x{182F} \x{182C}\x{1821}\x{182F}\x{1821} efg\x{6F22}"
     LayoutText {#text} at (99,224) size 4x17
       text run at (99,224) width 4: " "
-    LayoutBlockFlow {DIV} at (103,151) size 21x86.84 [border: (1px solid #00FF00)]
-      LayoutInline {U} at (0,0) size 17x85
-        LayoutText {#text} at (2,1) size 17x85
-          text run at (2,1) width 85: "\x{182E}\x{1823}\x{1828}\x{182D}\x{182D}\x{1823}\x{182F} \x{182C}\x{1821}\x{182F}\x{1821} efg\x{6F22}"
+    LayoutBlockFlow {DIV} at (103,152) size 21x85.75 [border: (1px solid #00FF00)]
+      LayoutInline {U} at (0,0) size 17x84
+        LayoutText {#text} at (2,1) size 17x84
+          text run at (2,1) width 84: "\x{182E}\x{1823}\x{1828}\x{182D}\x{182D}\x{1823}\x{182F} \x{182C}\x{1821}\x{182F}\x{1821} efg\x{6F22}"
     LayoutText {#text} at (124,224) size 4x17
       text run at (124,224) width 4: " "
     LayoutBlockFlow {DIV} at (128,129) size 40x108.66 [border: (1px solid #00FF00)]
@@ -112,16 +112,16 @@ layer at (227,8) size 215x245
           LayoutText {#text} at (1,2) size 69x17
             text run at (1,2) width 69: "\x{6F22}efg\x{6DF7}\x{690D}"
       LayoutBR {BR} at (71,3) size 1x17
-      LayoutBlockFlow {DIV} at (1,22) size 70.44x21 [border: (1px solid #00FF00)]
-        LayoutInline {U} at (0,0) size 69x17
-          LayoutText {#text} at (1,2) size 69x17
-            text run at (1,2) width 69: "\x{6F22}efg\x{6DF7}\x{690D}"
-      LayoutBR {BR} at (71,24) size 1x17
-      LayoutBlockFlow {DIV} at (1,43) size 70.44x21 [border: (1px solid #00FF00)]
-        LayoutInline {U} at (0,0) size 69x17
-          LayoutText {#text} at (1,2) size 69x17
-            text run at (1,2) width 69: "\x{6F22}efg\x{6DF7}\x{690D}"
-      LayoutBR {BR} at (71,45) size 1x17
+      LayoutBlockFlow {DIV} at (1,22) size 74x21 [border: (1px solid #00FF00)]
+        LayoutInline {U} at (0,0) size 72x16
+          LayoutText {#text} at (1,2) size 72x16
+            text run at (1,2) width 72: "\x{6F22}efg\x{6DF7}\x{690D}"
+      LayoutBR {BR} at (75,24) size 0x17
+      LayoutBlockFlow {DIV} at (1,43) size 74.31x21 [border: (1px solid #00FF00)]
+        LayoutInline {U} at (0,0) size 73x24
+          LayoutText {#text} at (1,-2) size 73x24
+            text run at (1,-2) width 73: "\x{6F22}efg\x{6DF7}\x{690D}"
+      LayoutBR {BR} at (75,44) size 1x17
       LayoutBlockFlow {DIV} at (1,64) size 70.44x21 [border: (1px solid #00FF00)]
         LayoutInline {U} at (0,0) size 69x17
           LayoutText {#text} at (1,2) size 69x17
@@ -144,10 +144,10 @@ layer at (227,8) size 215x245
           text run at (2,1) width 69: "\x{6F22}efg\x{6DF7}\x{690D}"
     LayoutText {#text} at (24,224) size 4x17
       text run at (24,224) width 4: " "
-    LayoutBlockFlow {DIV} at (28,168) size 21x70.44 [border: (1px solid #00FF00)]
-      LayoutInline {U} at (0,0) size 17x69
-        LayoutText {#text} at (2,1) size 17x69
-          text run at (2,1) width 69: "\x{6F22}efg\x{6DF7}\x{690D}"
+    LayoutBlockFlow {DIV} at (28,164) size 21x74.31 [border: (1px solid #00FF00)]
+      LayoutInline {U} at (0,0) size 24x73
+        LayoutText {#text} at (-2,1) size 24x73
+          text run at (-2,1) width 73: "\x{6F22}efg\x{6DF7}\x{690D}"
     LayoutText {#text} at (49,224) size 4x17
       text run at (49,224) width 4: " "
     LayoutBlockFlow {DIV} at (53,168) size 21x70.44 [border: (1px solid #00FF00)]
@@ -156,16 +156,16 @@ layer at (227,8) size 215x245
           text run at (2,1) width 69: "\x{6F22}efg\x{6DF7}\x{690D}"
     LayoutText {#text} at (74,224) size 4x17
       text run at (74,224) width 4: " "
-    LayoutBlockFlow {DIV} at (78,151) size 21x86.84 [border: (1px solid #00FF00)]
-      LayoutInline {U} at (0,0) size 17x85
-        LayoutText {#text} at (2,1) size 17x85
-          text run at (2,1) width 85: "\x{182E}\x{1823}\x{1828}\x{182D}\x{182D}\x{1823}\x{182F} \x{182C}\x{1821}\x{182F}\x{1821} efg\x{6F22}"
+    LayoutBlockFlow {DIV} at (78,152) size 21x85.75 [border: (1px solid #00FF00)]
+      LayoutInline {U} at (0,0) size 17x84
+        LayoutText {#text} at (2,1) size 17x84
+          text run at (2,1) width 84: "\x{182E}\x{1823}\x{1828}\x{182D}\x{182D}\x{1823}\x{182F} \x{182C}\x{1821}\x{182F}\x{1821} efg\x{6F22}"
     LayoutText {#text} at (99,224) size 4x17
       text run at (99,224) width 4: " "
-    LayoutBlockFlow {DIV} at (103,151) size 21x86.84 [border: (1px solid #00FF00)]
-      LayoutInline {U} at (0,0) size 17x85
-        LayoutText {#text} at (2,1) size 17x85
-          text run at (2,1) width 85: "\x{182E}\x{1823}\x{1828}\x{182D}\x{182D}\x{1823}\x{182F} \x{182C}\x{1821}\x{182F}\x{1821} efg\x{6F22}"
+    LayoutBlockFlow {DIV} at (103,152) size 21x85.75 [border: (1px solid #00FF00)]
+      LayoutInline {U} at (0,0) size 17x84
+        LayoutText {#text} at (2,1) size 17x84
+          text run at (2,1) width 84: "\x{182E}\x{1823}\x{1828}\x{182D}\x{182D}\x{1823}\x{182F} \x{182C}\x{1821}\x{182F}\x{1821} efg\x{6F22}"
     LayoutText {#text} at (124,224) size 4x17
       text run at (124,224) width 4: " "
     LayoutBlockFlow {DIV} at (128,129) size 40x108.66 [border: (1px solid #00FF00)]
@@ -201,16 +201,16 @@ layer at (446,8) size 215x245
           LayoutText {#text} at (1,2) size 69x17
             text run at (1,2) width 69: "\x{6F22}efg\x{6DF7}\x{690D}"
       LayoutBR {BR} at (71,3) size 1x17
-      LayoutBlockFlow {DIV} at (1,22) size 70.44x21 [border: (1px solid #00FF00)]
-        LayoutInline {U} at (0,0) size 69x17
-          LayoutText {#text} at (1,2) size 69x17
-            text run at (1,2) width 69: "\x{6F22}efg\x{6DF7}\x{690D}"
-      LayoutBR {BR} at (71,24) size 1x17
-      LayoutBlockFlow {DIV} at (1,43) size 70.44x21 [border: (1px solid #00FF00)]
-        LayoutInline {U} at (0,0) size 69x17
-          LayoutText {#text} at (1,2) size 69x17
-            text run at (1,2) width 69: "\x{6F22}efg\x{6DF7}\x{690D}"
-      LayoutBR {BR} at (71,45) size 1x17
+      LayoutBlockFlow {DIV} at (1,22) size 74x21 [border: (1px solid #00FF00)]
+        LayoutInline {U} at (0,0) size 72x16
+          LayoutText {#text} at (1,2) size 72x16
+            text run at (1,2) width 72: "\x{6F22}efg\x{6DF7}\x{690D}"
+      LayoutBR {BR} at (75,24) size 0x17
+      LayoutBlockFlow {DIV} at (1,43) size 74.31x21 [border: (1px solid #00FF00)]
+        LayoutInline {U} at (0,0) size 73x24
+          LayoutText {#text} at (1,-2) size 73x24
+            text run at (1,-2) width 73: "\x{6F22}efg\x{6DF7}\x{690D}"
+      LayoutBR {BR} at (75,44) size 1x17
       LayoutBlockFlow {DIV} at (1,64) size 70.44x21 [border: (1px solid #00FF00)]
         LayoutInline {U} at (0,0) size 69x17
           LayoutText {#text} at (1,2) size 69x17
@@ -233,10 +233,10 @@ layer at (446,8) size 215x245
           text run at (2,1) width 69: "\x{6F22}efg\x{6DF7}\x{690D}"
     LayoutText {#text} at (24,224) size 4x17
       text run at (24,224) width 4: " "
-    LayoutBlockFlow {DIV} at (28,168) size 21x70.44 [border: (1px solid #00FF00)]
-      LayoutInline {U} at (0,0) size 17x69
-        LayoutText {#text} at (2,1) size 17x69
-          text run at (2,1) width 69: "\x{6F22}efg\x{6DF7}\x{690D}"
+    LayoutBlockFlow {DIV} at (28,164) size 21x74.31 [border: (1px solid #00FF00)]
+      LayoutInline {U} at (0,0) size 24x73
+        LayoutText {#text} at (-2,1) size 24x73
+          text run at (-2,1) width 73: "\x{6F22}efg\x{6DF7}\x{690D}"
     LayoutText {#text} at (49,224) size 4x17
       text run at (49,224) width 4: " "
     LayoutBlockFlow {DIV} at (53,168) size 21x70.44 [border: (1px solid #00FF00)]
@@ -245,16 +245,16 @@ layer at (446,8) size 215x245
           text run at (2,1) width 69: "\x{6F22}efg\x{6DF7}\x{690D}"
     LayoutText {#text} at (74,224) size 4x17
       text run at (74,224) width 4: " "
-    LayoutBlockFlow {DIV} at (78,151) size 21x86.84 [border: (1px solid #00FF00)]
-      LayoutInline {U} at (0,0) size 17x85
-        LayoutText {#text} at (2,1) size 17x85
-          text run at (2,1) width 85: "\x{182E}\x{1823}\x{1828}\x{182D}\x{182D}\x{1823}\x{182F} \x{182C}\x{1821}\x{182F}\x{1821} efg\x{6F22}"
+    LayoutBlockFlow {DIV} at (78,152) size 21x85.75 [border: (1px solid #00FF00)]
+      LayoutInline {U} at (0,0) size 17x84
+        LayoutText {#text} at (2,1) size 17x84
+          text run at (2,1) width 84: "\x{182E}\x{1823}\x{1828}\x{182D}\x{182D}\x{1823}\x{182F} \x{182C}\x{1821}\x{182F}\x{1821} efg\x{6F22}"
     LayoutText {#text} at (99,224) size 4x17
       text run at (99,224) width 4: " "
-    LayoutBlockFlow {DIV} at (103,151) size 21x86.84 [border: (1px solid #00FF00)]
-      LayoutInline {U} at (0,0) size 17x85
-        LayoutText {#text} at (2,1) size 17x85
-          text run at (2,1) width 85: "\x{182E}\x{1823}\x{1828}\x{182D}\x{182D}\x{1823}\x{182F} \x{182C}\x{1821}\x{182F}\x{1821} efg\x{6F22}"
+    LayoutBlockFlow {DIV} at (103,152) size 21x85.75 [border: (1px solid #00FF00)]
+      LayoutInline {U} at (0,0) size 17x84
+        LayoutText {#text} at (2,1) size 17x84
+          text run at (2,1) width 84: "\x{182E}\x{1823}\x{1828}\x{182D}\x{182D}\x{1823}\x{182F} \x{182C}\x{1821}\x{182F}\x{1821} efg\x{6F22}"
     LayoutText {#text} at (124,224) size 4x17
       text run at (124,224) width 4: " "
     LayoutBlockFlow {DIV} at (128,129) size 40x108.66 [border: (1px solid #00FF00)]
@@ -290,16 +290,16 @@ layer at (8,253) size 215x245
           LayoutText {#text} at (1,2) size 69x17
             text run at (1,2) width 69: "\x{6F22}efg\x{6DF7}\x{690D}"
       LayoutBR {BR} at (71,3) size 1x17
-      LayoutBlockFlow {DIV} at (1,22) size 70.44x21 [border: (1px solid #00FF00)]
-        LayoutInline {U} at (0,0) size 69x17
-          LayoutText {#text} at (1,2) size 69x17
-            text run at (1,2) width 69: "\x{6F22}efg\x{6DF7}\x{690D}"
-      LayoutBR {BR} at (71,24) size 1x17
-      LayoutBlockFlow {DIV} at (1,43) size 70.44x21 [border: (1px solid #00FF00)]
-        LayoutInline {U} at (0,0) size 69x17
-          LayoutText {#text} at (1,2) size 69x17
-            text run at (1,2) width 69: "\x{6F22}efg\x{6DF7}\x{690D}"
-      LayoutBR {BR} at (71,45) size 1x17
+      LayoutBlockFlow {DIV} at (1,22) size 74x21 [border: (1px solid #00FF00)]
+        LayoutInline {U} at (0,0) size 72x16
+          LayoutText {#text} at (1,2) size 72x16
+            text run at (1,2) width 72: "\x{6F22}efg\x{6DF7}\x{690D}"
+      LayoutBR {BR} at (75,24) size 0x17
+      LayoutBlockFlow {DIV} at (1,43) size 74.31x21 [border: (1px solid #00FF00)]
+        LayoutInline {U} at (0,0) size 73x24
+          LayoutText {#text} at (1,-2) size 73x24
+            text run at (1,-2) width 73: "\x{6F22}efg\x{6DF7}\x{690D}"
+      LayoutBR {BR} at (75,44) size 1x17
       LayoutBlockFlow {DIV} at (1,64) size 70.44x21 [border: (1px solid #00FF00)]
         LayoutInline {U} at (0,0) size 69x17
           LayoutText {#text} at (1,2) size 69x17
@@ -322,10 +322,10 @@ layer at (8,253) size 215x245
           text run at (2,1) width 69: "\x{6F22}efg\x{6DF7}\x{690D}"
     LayoutText {#text} at (24,224) size 4x17
       text run at (24,224) width 4: " "
-    LayoutBlockFlow {DIV} at (28,168) size 21x70.44 [border: (1px solid #00FF00)]
-      LayoutInline {U} at (0,0) size 17x69
-        LayoutText {#text} at (2,1) size 17x69
-          text run at (2,1) width 69: "\x{6F22}efg\x{6DF7}\x{690D}"
+    LayoutBlockFlow {DIV} at (28,164) size 21x74.31 [border: (1px solid #00FF00)]
+      LayoutInline {U} at (0,0) size 24x73
+        LayoutText {#text} at (-2,1) size 24x73
+          text run at (-2,1) width 73: "\x{6F22}efg\x{6DF7}\x{690D}"
     LayoutText {#text} at (49,224) size 4x17
       text run at (49,224) width 4: " "
     LayoutBlockFlow {DIV} at (53,168) size 21x70.44 [border: (1px solid #00FF00)]
@@ -334,16 +334,16 @@ layer at (8,253) size 215x245
           text run at (2,1) width 69: "\x{6F22}efg\x{6DF7}\x{690D}"
     LayoutText {#text} at (74,224) size 4x17
       text run at (74,224) width 4: " "
-    LayoutBlockFlow {DIV} at (78,151) size 21x86.84 [border: (1px solid #00FF00)]
-      LayoutInline {U} at (0,0) size 17x85
-        LayoutText {#text} at (2,1) size 17x85
-          text run at (2,1) width 85: "\x{182E}\x{1823}\x{1828}\x{182D}\x{182D}\x{1823}\x{182F} \x{182C}\x{1821}\x{182F}\x{1821} efg\x{6F22}"
+    LayoutBlockFlow {DIV} at (78,152) size 21x85.75 [border: (1px solid #00FF00)]
+      LayoutInline {U} at (0,0) size 17x84
+        LayoutText {#text} at (2,1) size 17x84
+          text run at (2,1) width 84: "\x{182E}\x{1823}\x{1828}\x{182D}\x{182D}\x{1823}\x{182F} \x{182C}\x{1821}\x{182F}\x{1821} efg\x{6F22}"
     LayoutText {#text} at (99,224) size 4x17
       text run at (99,224) width 4: " "
-    LayoutBlockFlow {DIV} at (103,151) size 21x86.84 [border: (1px solid #00FF00)]
-      LayoutInline {U} at (0,0) size 17x85
-        LayoutText {#text} at (2,1) size 17x85
-          text run at (2,1) width 85: "\x{182E}\x{1823}\x{1828}\x{182D}\x{182D}\x{1823}\x{182F} \x{182C}\x{1821}\x{182F}\x{1821} efg\x{6F22}"
+    LayoutBlockFlow {DIV} at (103,152) size 21x85.75 [border: (1px solid #00FF00)]
+      LayoutInline {U} at (0,0) size 17x84
+        LayoutText {#text} at (2,1) size 17x84
+          text run at (2,1) width 84: "\x{182E}\x{1823}\x{1828}\x{182D}\x{182D}\x{1823}\x{182F} \x{182C}\x{1821}\x{182F}\x{1821} efg\x{6F22}"
     LayoutText {#text} at (124,224) size 4x17
       text run at (124,224) width 4: " "
     LayoutBlockFlow {DIV} at (128,129) size 40x108.66 [border: (1px solid #00FF00)]
@@ -379,16 +379,16 @@ layer at (227,253) size 215x245
           LayoutText {#text} at (1,2) size 69x17
             text run at (1,2) width 69: "\x{6F22}efg\x{6DF7}\x{690D}"
       LayoutBR {BR} at (71,3) size 1x17
-      LayoutBlockFlow {DIV} at (1,22) size 70.44x21 [border: (1px solid #00FF00)]
-        LayoutInline {U} at (0,0) size 69x17
-          LayoutText {#text} at (1,2) size 69x17
-            text run at (1,2) width 69: "\x{6F22}efg\x{6DF7}\x{690D}"
-      LayoutBR {BR} at (71,24) size 1x17
-      LayoutBlockFlow {DIV} at (1,43) size 70.44x21 [border: (1px solid #00FF00)]
-        LayoutInline {U} at (0,0) size 69x17
-          LayoutText {#text} at (1,2) size 69x17
-            text run at (1,2) width 69: "\x{6F22}efg\x{6DF7}\x{690D}"
-      LayoutBR {BR} at (71,45) size 1x17
+      LayoutBlockFlow {DIV} at (1,22) size 74x21 [border: (1px solid #00FF00)]
+        LayoutInline {U} at (0,0) size 72x16
+          LayoutText {#text} at (1,2) size 72x16
+            text run at (1,2) width 72: "\x{6F22}efg\x{6DF7}\x{690D}"
+      LayoutBR {BR} at (75,24) size 0x17
+      LayoutBlockFlow {DIV} at (1,43) size 74.31x21 [border: (1px solid #00FF00)]
+        LayoutInline {U} at (0,0) size 73x24
+          LayoutText {#text} at (1,-2) size 73x24
+            text run at (1,-2) width 73: "\x{6F22}efg\x{6DF7}\x{690D}"
+      LayoutBR {BR} at (75,44) size 1x17
       LayoutBlockFlow {DIV} at (1,64) size 70.44x21 [border: (1px solid #00FF00)]
         LayoutInline {U} at (0,0) size 69x17
           LayoutText {#text} at (1,2) size 69x17
@@ -411,10 +411,10 @@ layer at (227,253) size 215x245
           text run at (2,1) width 69: "\x{6F22}efg\x{6DF7}\x{690D}"
     LayoutText {#text} at (24,224) size 4x17
       text run at (24,224) width 4: " "
-    LayoutBlockFlow {DIV} at (28,168) size 21x70.44 [border: (1px solid #00FF00)]
-      LayoutInline {U} at (0,0) size 17x69
-        LayoutText {#text} at (2,1) size 17x69
-          text run at (2,1) width 69: "\x{6F22}efg\x{6DF7}\x{690D}"
+    LayoutBlockFlow {DIV} at (28,164) size 21x74.31 [border: (1px solid #00FF00)]
+      LayoutInline {U} at (0,0) size 24x73
+        LayoutText {#text} at (-2,1) size 24x73
+          text run at (-2,1) width 73: "\x{6F22}efg\x{6DF7}\x{690D}"
     LayoutText {#text} at (49,224) size 4x17
       text run at (49,224) width 4: " "
     LayoutBlockFlow {DIV} at (53,168) size 21x70.44 [border: (1px solid #00FF00)]
@@ -423,16 +423,16 @@ layer at (227,253) size 215x245
           text run at (2,1) width 69: "\x{6F22}efg\x{6DF7}\x{690D}"
     LayoutText {#text} at (74,224) size 4x17
       text run at (74,224) width 4: " "
-    LayoutBlockFlow {DIV} at (78,151) size 21x86.84 [border: (1px solid #00FF00)]
-      LayoutInline {U} at (0,0) size 17x85
-        LayoutText {#text} at (2,1) size 17x85
-          text run at (2,1) width 85: "\x{182E}\x{1823}\x{1828}\x{182D}\x{182D}\x{1823}\x{182F} \x{182C}\x{1821}\x{182F}\x{1821} efg\x{6F22}"
+    LayoutBlockFlow {DIV} at (78,152) size 21x85.75 [border: (1px solid #00FF00)]
+      LayoutInline {U} at (0,0) size 17x84
+        LayoutText {#text} at (2,1) size 17x84
+          text run at (2,1) width 84: "\x{182E}\x{1823}\x{1828}\x{182D}\x{182D}\x{1823}\x{182F} \x{182C}\x{1821}\x{182F}\x{1821} efg\x{6F22}"
     LayoutText {#text} at (99,224) size 4x17
       text run at (99,224) width 4: " "
-    LayoutBlockFlow {DIV} at (103,151) size 21x86.84 [border: (1px solid #00FF00)]
-      LayoutInline {U} at (0,0) size 17x85
-        LayoutText {#text} at (2,1) size 17x85
-          text run at (2,1) width 85: "\x{182E}\x{1823}\x{1828}\x{182D}\x{182D}\x{1823}\x{182F} \x{182C}\x{1821}\x{182F}\x{1821} efg\x{6F22}"
+    LayoutBlockFlow {DIV} at (103,152) size 21x85.75 [border: (1px solid #00FF00)]
+      LayoutInline {U} at (0,0) size 17x84
+        LayoutText {#text} at (2,1) size 17x84
+          text run at (2,1) width 84: "\x{182E}\x{1823}\x{1828}\x{182D}\x{182D}\x{1823}\x{182F} \x{182C}\x{1821}\x{182F}\x{1821} efg\x{6F22}"
     LayoutText {#text} at (124,224) size 4x17
       text run at (124,224) width 4: " "
     LayoutBlockFlow {DIV} at (128,129) size 40x108.66 [border: (1px solid #00FF00)]
@@ -468,16 +468,16 @@ layer at (446,253) size 215x245
           LayoutText {#text} at (1,2) size 69x17
             text run at (1,2) width 69: "\x{6F22}efg\x{6DF7}\x{690D}"
       LayoutBR {BR} at (71,3) size 1x17
-      LayoutBlockFlow {DIV} at (1,22) size 70.44x21 [border: (1px solid #00FF00)]
-        LayoutInline {U} at (0,0) size 69x17
-          LayoutText {#text} at (1,2) size 69x17
-            text run at (1,2) width 69: "\x{6F22}efg\x{6DF7}\x{690D}"
-      LayoutBR {BR} at (71,24) size 1x17
-      LayoutBlockFlow {DIV} at (1,43) size 70.44x21 [border: (1px solid #00FF00)]
-        LayoutInline {U} at (0,0) size 69x17
-          LayoutText {#text} at (1,2) size 69x17
-            text run at (1,2) width 69: "\x{6F22}efg\x{6DF7}\x{690D}"
-      LayoutBR {BR} at (71,45) size 1x17
+      LayoutBlockFlow {DIV} at (1,22) size 74x21 [border: (1px solid #00FF00)]
+        LayoutInline {U} at (0,0) size 72x16
+          LayoutText {#text} at (1,2) size 72x16
+            text run at (1,2) width 72: "\x{6F22}efg\x{6DF7}\x{690D}"
+      LayoutBR {BR} at (75,24) size 0x17
+      LayoutBlockFlow {DIV} at (1,43) size 74.31x21 [border: (1px solid #00FF00)]
+        LayoutInline {U} at (0,0) size 73x24
+          LayoutText {#text} at (1,-2) size 73x24
+            text run at (1,-2) width 73: "\x{6F22}efg\x{6DF7}\x{690D}"
+      LayoutBR {BR} at (75,44) size 1x17
       LayoutBlockFlow {DIV} at (1,64) size 70.44x21 [border: (1px solid #00FF00)]
         LayoutInline {U} at (0,0) size 69x17
           LayoutText {#text} at (1,2) size 69x17
@@ -500,10 +500,10 @@ layer at (446,253) size 215x245
           text run at (2,1) width 69: "\x{6F22}efg\x{6DF7}\x{690D}"
     LayoutText {#text} at (24,224) size 4x17
       text run at (24,224) width 4: " "
-    LayoutBlockFlow {DIV} at (28,168) size 21x70.44 [border: (1px solid #00FF00)]
-      LayoutInline {U} at (0,0) size 17x69
-        LayoutText {#text} at (2,1) size 17x69
-          text run at (2,1) width 69: "\x{6F22}efg\x{6DF7}\x{690D}"
+    LayoutBlockFlow {DIV} at (28,164) size 21x74.31 [border: (1px solid #00FF00)]
+      LayoutInline {U} at (0,0) size 24x73
+        LayoutText {#text} at (-2,1) size 24x73
+          text run at (-2,1) width 73: "\x{6F22}efg\x{6DF7}\x{690D}"
     LayoutText {#text} at (49,224) size 4x17
       text run at (49,224) width 4: " "
     LayoutBlockFlow {DIV} at (53,168) size 21x70.44 [border: (1px solid #00FF00)]
@@ -512,16 +512,16 @@ layer at (446,253) size 215x245
           text run at (2,1) width 69: "\x{6F22}efg\x{6DF7}\x{690D}"
     LayoutText {#text} at (74,224) size 4x17
       text run at (74,224) width 4: " "
-    LayoutBlockFlow {DIV} at (78,151) size 21x86.84 [border: (1px solid #00FF00)]
-      LayoutInline {U} at (0,0) size 17x85
-        LayoutText {#text} at (2,1) size 17x85
-          text run at (2,1) width 85: "\x{182E}\x{1823}\x{1828}\x{182D}\x{182D}\x{1823}\x{182F} \x{182C}\x{1821}\x{182F}\x{1821} efg\x{6F22}"
+    LayoutBlockFlow {DIV} at (78,152) size 21x85.75 [border: (1px solid #00FF00)]
+      LayoutInline {U} at (0,0) size 17x84
+        LayoutText {#text} at (2,1) size 17x84
+          text run at (2,1) width 84: "\x{182E}\x{1823}\x{1828}\x{182D}\x{182D}\x{1823}\x{182F} \x{182C}\x{1821}\x{182F}\x{1821} efg\x{6F22}"
     LayoutText {#text} at (99,224) size 4x17
       text run at (99,224) width 4: " "
-    LayoutBlockFlow {DIV} at (103,151) size 21x86.84 [border: (1px solid #00FF00)]
-      LayoutInline {U} at (0,0) size 17x85
-        LayoutText {#text} at (2,1) size 17x85
-          text run at (2,1) width 85: "\x{182E}\x{1823}\x{1828}\x{182D}\x{182D}\x{1823}\x{182F} \x{182C}\x{1821}\x{182F}\x{1821} efg\x{6F22}"
+    LayoutBlockFlow {DIV} at (103,152) size 21x85.75 [border: (1px solid #00FF00)]
+      LayoutInline {U} at (0,0) size 17x84
+        LayoutText {#text} at (2,1) size 17x84
+          text run at (2,1) width 84: "\x{182E}\x{1823}\x{1828}\x{182D}\x{182D}\x{1823}\x{182F} \x{182C}\x{1821}\x{182F}\x{1821} efg\x{6F22}"
     LayoutText {#text} at (124,224) size 4x17
       text run at (124,224) width 4: " "
     LayoutBlockFlow {DIV} at (128,129) size 40x108.66 [border: (1px solid #00FF00)]

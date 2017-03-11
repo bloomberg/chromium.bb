@@ -38,7 +38,9 @@
 .msgothic { font-family: 'MS Gothic'; }
 .meiryo { font-family: Meiryo; }
 .noto { font-family: 'Noto Sans CJK JP'; }
-.yugothic { font-family: 'Yu Gothic', YuGothic; }
+/* Originally "Yu Gothic" was also included,
+   but the test had inconsistent results on Windows.
+   See: http://crbug.com/690486 */
 .large { font-size: 200%; }
 .under {
   text-underline-position: under;
@@ -65,7 +67,6 @@
       <div><u>漢efg混植</u></div><br>
       <div class="msgothic"><u>漢efg混植</u></div><br>
       <div class="meiryo"><u>漢efg混植</u></div><br>
-      <div class="yugothic"><u>漢efg混植</u></div><br>
       <div class="noto"><u>漢efg混植</u></div><br>
       <div><u>漢<span class="large">efg</span>混植</u></div><br>
     </div><br>
@@ -82,7 +83,6 @@
       <div><u>漢efg混植</u></div><br>
       <div class="msgothic"><u>漢efg混植</u></div><br>
       <div class="meiryo"><u>漢efg混植</u></div><br>
-      <div class="yugothic"><u>漢efg混植</u></div><br>
       <div class="noto"><u>漢efg混植</u></div><br>
       <div><u>漢<span class="large">efg</span>混植</u></div><br>
     </div><br>
@@ -99,7 +99,6 @@
       <div><u>漢efg混植</u></div><br>
       <div class="msgothic"><u>漢efg混植</u></div><br>
       <div class="meiryo"><u>漢efg混植</u></div><br>
-      <div class="yugothic"><u>漢efg混植</u></div><br>
       <div class="noto"><u>漢efg混植</u></div><br>
       <div><u>漢<span class="large">efg</span>混植</u></div><br>
     </div><br>
@@ -117,7 +116,6 @@
         <div><u>漢efg混植</u></div><br>
         <div class="msgothic"><u>漢efg混植</u></div><br>
         <div class="meiryo"><u>漢efg混植</u></div><br>
-        <div class="yugothic"><u>漢efg混植</u></div><br>
         <div class="noto"><u>漢efg混植</u></div><br>
         <div><u>漢<span class="large">efg</span>混植</u></div><br>
       </div><br>
@@ -134,7 +132,6 @@
         <div><u>漢efg混植</u></div><br>
         <div class="msgothic"><u>漢efg混植</u></div><br>
         <div class="meiryo"><u>漢efg混植</u></div><br>
-        <div class="yugothic"><u>漢efg混植</u></div><br>
         <div class="noto"><u>漢efg混植</u></div><br>
         <div><u>漢<span class="large">efg</span>混植</u></div><br>
       </div><br>
@@ -151,7 +148,6 @@
         <div><u>漢efg混植</u></div><br>
         <div class="msgothic"><u>漢efg混植</u></div><br>
         <div class="meiryo"><u>漢efg混植</u></div><br>
-        <div class="yugothic"><u>漢efg混植</u></div><br>
         <div class="noto"><u>漢efg混植</u></div><br>
         <div><u>漢<span class="large">efg</span>混植</u></div><br>
       </div><br>
