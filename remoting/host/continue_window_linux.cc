@@ -102,7 +102,9 @@ void ContinueWindowGtk::CreateWindow() {
       gtk_label_new(l10n_util::GetStringUTF8(IDS_CONTINUE_PROMPT).c_str());
   gtk_label_set_line_wrap(GTK_LABEL(text_label), TRUE);
   // TODO(lambroslambrou): Fix magic numbers, as in disconnect_window_gtk.cc.
+  G_GNUC_BEGIN_IGNORE_DEPRECATIONS;
   gtk_misc_set_padding(GTK_MISC(text_label), 12, 12);
+  G_GNUC_END_IGNORE_DEPRECATIONS;
   gtk_container_add(GTK_CONTAINER(content_area), text_label);
 
   gtk_widget_show_all(content_area);

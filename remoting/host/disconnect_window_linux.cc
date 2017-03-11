@@ -202,8 +202,10 @@ void DisconnectWindowGtk::Start(
   // The alignment sets narrow margins at the top and bottom, compared with
   // left and right.  The left margin is made larger to accommodate the
   // window movement gripper.
+  G_GNUC_BEGIN_IGNORE_DEPRECATIONS;
   GtkWidget* align = gtk_alignment_new(0, 0, 1, 1);
   gtk_alignment_set_padding(GTK_ALIGNMENT(align), 8, 8, 24, 12);
+  G_GNUC_END_IGNORE_DEPRECATIONS;
   gtk_container_add(GTK_CONTAINER(window), align);
 
 #if GTK_MAJOR_VERSION == 2
