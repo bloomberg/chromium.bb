@@ -247,6 +247,7 @@ TEST_F(ExceptionHandlerTest, InvalidParameterMiniDumpTest) {
   EXPECT_EXIT(DoCrashInvalidParameter(), ::testing::ExitedWithCode(0), "");
   ASSERT_TRUE(!dump_file.empty() && !full_dump_file.empty());
   ASSERT_TRUE(DoesPathExist(dump_file.c_str()));
+  ASSERT_TRUE(DoesPathExist(full_dump_file.c_str()));
 
   // Verify the dump for infos.
   DumpAnalysis mini(dump_file);
@@ -318,6 +319,7 @@ TEST_F(ExceptionHandlerTest, PureVirtualCallMiniDumpTest) {
   EXPECT_EXIT(DoCrashPureVirtualCall(), ::testing::ExitedWithCode(0), "");
   ASSERT_TRUE(!dump_file.empty() && !full_dump_file.empty());
   ASSERT_TRUE(DoesPathExist(dump_file.c_str()));
+  ASSERT_TRUE(DoesPathExist(full_dump_file.c_str()));
 
   // Verify the dump for infos.
   DumpAnalysis mini(dump_file);
