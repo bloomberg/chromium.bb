@@ -274,9 +274,9 @@ static void selfguided_restoration_2_v(uint8_t *src, int width, int height,
       _mm_store_si128((__m128i *)&A[i * buf_stride + j], sum_sq);
 
       x = _mm_cvtepu8_epi32(
-          _mm_loadl_epi64((__m128i *)&src[(i - 2) * src_stride + j]));
+          _mm_cvtsi32_si128(*((int *)&src[(i - 2) * src_stride + j])));
       y = _mm_cvtepu8_epi32(
-          _mm_loadl_epi64((__m128i *)&src[(i + 3) * src_stride + j]));
+          _mm_cvtsi32_si128(*((int *)&src[(i + 3) * src_stride + j])));
 
       sum = _mm_add_epi32(sum, _mm_sub_epi32(y, x));
 
@@ -484,9 +484,9 @@ static void selfguided_restoration_3_v(uint8_t *src, int width, int height,
       _mm_store_si128((__m128i *)&A[i * buf_stride + j], sum_sq);
 
       x = _mm_cvtepu8_epi32(
-          _mm_loadl_epi64((__m128i *)&src[(i - 3) * src_stride + j]));
+          _mm_cvtsi32_si128(*((int *)&src[(i - 3) * src_stride + j])));
       y = _mm_cvtepu8_epi32(
-          _mm_loadl_epi64((__m128i *)&src[(i + 4) * src_stride + j]));
+          _mm_cvtsi32_si128(*((int *)&src[(i + 4) * src_stride + j])));
 
       sum = _mm_add_epi32(sum, _mm_sub_epi32(y, x));
 
