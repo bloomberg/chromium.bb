@@ -9,6 +9,7 @@
 #include "core/layout/ng/ng_constraint_space.h"
 #include "core/layout/ng/ng_fragment_builder.h"
 #include "core/layout/ng/ng_inline_node.h"
+#include "core/layout/ng/ng_layout_opportunity_iterator.h"
 #include "core/layout/ng/ng_line_builder.h"
 #include "core/layout/ng/ng_text_fragment.h"
 #include "core/style/ComputedStyle.h"
@@ -72,6 +73,8 @@ void NGTextLayoutAlgorithm::LayoutInline(NGLineBuilder* line_builder) {
 
     // If there are more available spaces, mark the break opportunity and fetch
     // more text.
+    // TODO(layout-ng): check if the height of the linebox can fit within
+    // the current opportunity.
     if (line_builder->CanFitOnLine()) {
       line_builder->SetBreakOpportunity();
       continue;

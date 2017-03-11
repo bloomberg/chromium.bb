@@ -108,7 +108,11 @@ class CORE_EXPORT NGConstraintSpace final
   // blockSize if possible.
   NGFragmentationType BlockFragmentationType() const;
 
-  NGLayoutOpportunityIterator* LayoutOpportunityIterator();
+  // Returns a pointer to already existing Layout Opportunity iterator
+  // associated with this constraint space and {@code iter_offset} or creates a
+  // new one.
+  NGLayoutOpportunityIterator* LayoutOpportunityIterator(
+      const NGLogicalOffset& iter_offset);
 
   // Return true if this contraint space participates in a fragmentation
   // context.

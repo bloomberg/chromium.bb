@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "core/layout/ng/ng_layout_opportunity_iterator.h"
-
 #include "core/layout/ng/ng_constraint_space.h"
 #include "core/layout/ng/ng_exclusion.h"
 #include "wtf/NonCopyingSort.h"
@@ -277,25 +276,23 @@ NGExclusion ToLeaderExclusion(const NGLogicalOffset& origin_point,
 
 NGLayoutOpportunityIterator::NGLayoutOpportunityIterator(
     const NGConstraintSpace* space,
-    const WTF::Optional<NGLogicalOffset>& opt_origin_point,
+    const WTF::Optional<NGLogicalOffset>& opt_offset,
     const WTF::Optional<NGLogicalOffset>& opt_leader_point)
-    : constraint_space_(space) {
+    : constraint_space_(space),
+      offset_(opt_offset ? opt_offset.value() : space->BfcOffset()) {
   // TODO(chrome-layout-team): Combine exclusions that shadow each other.
   auto& exclusions = constraint_space_->Exclusions();
   DCHECK(std::is_sorted(exclusions->storage.begin(), exclusions->storage.end(),
                         &CompareNGExclusionsByTopAsc))
       << "Exclusions are expected to be sorted by TOP";
 
-  NGLogicalOffset origin_point =
-      opt_origin_point ? opt_origin_point.value() : NGLogicalOffset();
   NGLayoutOpportunity initial_opportunity =
-      CreateLayoutOpportunityFromConstraintSpace(*constraint_space_,
-                                                 origin_point);
+      CreateLayoutOpportunityFromConstraintSpace(*constraint_space_, Offset());
   opportunity_tree_root_ = new NGLayoutOpportunityTreeNode(initial_opportunity);
 
   if (opt_leader_point) {
     const NGExclusion leader_exclusion =
-        ToLeaderExclusion(origin_point, opt_leader_point.value());
+        ToLeaderExclusion(Offset(), opt_leader_point.value());
     InsertExclusion(MutableOpportunityTreeRoot(), &leader_exclusion,
                     opportunities_);
   }

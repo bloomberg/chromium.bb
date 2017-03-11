@@ -7,6 +7,7 @@
 
 #include "core/CoreExport.h"
 #include "core/layout/ng/geometry/ng_logical_offset.h"
+#include "core/layout/ng/ng_layout_opportunity_iterator.h"
 #include "core/layout/ng/ng_physical_fragment.h"
 #include "platform/fonts/FontBaseline.h"
 #include "platform/heap/Handle.h"
@@ -30,7 +31,7 @@ class CORE_EXPORT NGLineBuilder final {
   STACK_ALLOCATED();
 
  public:
-  NGLineBuilder(NGInlineNode*, const NGConstraintSpace*);
+  NGLineBuilder(NGInlineNode*, NGConstraintSpace*);
 
   const NGConstraintSpace& ConstraintSpace() const {
     return *constraint_space_;
@@ -139,8 +140,11 @@ class CORE_EXPORT NGLineBuilder final {
                            const LineItemChunk&,
                            LineBoxData*);
 
+  // Finds the next layout opportunity for the next text fragment.
+  void FindNextLayoutOpportunity();
+
   Persistent<NGInlineNode> inline_box_;
-  const NGConstraintSpace* constraint_space_;  // Not owned as STACK_ALLOCATED.
+  NGConstraintSpace* constraint_space_;  // Not owned as STACK_ALLOCATED.
   Vector<RefPtr<NGPhysicalFragment>, 32> fragments_;
   Vector<NGLogicalOffset, 32> offsets_;
   Vector<LineBoxData, 32> line_box_data_list_;
@@ -155,6 +159,9 @@ class CORE_EXPORT NGLineBuilder final {
   LayoutUnit content_size_;
   LayoutUnit max_inline_size_;
   FontBaseline baseline_type_;
+
+  NGLogicalOffset bfc_offset_;
+  NGLogicalRect current_opportunity_;
 
 #if DCHECK_IS_ON()
   unsigned is_bidi_reordered_ : 1;

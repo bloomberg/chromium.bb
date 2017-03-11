@@ -38,6 +38,7 @@ struct CORE_EXPORT NGLogicalOffset {
                                      NGPhysicalSize inner_size) const;
 
   bool operator==(const NGLogicalOffset& other) const;
+  bool operator!=(const NGLogicalOffset& other) const;
 
   NGLogicalOffset operator+(const NGLogicalOffset& other) const;
   NGLogicalOffset& operator+=(const NGLogicalOffset& other);

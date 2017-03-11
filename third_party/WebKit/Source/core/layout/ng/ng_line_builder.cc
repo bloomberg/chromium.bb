@@ -20,7 +20,7 @@
 namespace blink {
 
 NGLineBuilder::NGLineBuilder(NGInlineNode* inline_box,
-                             const NGConstraintSpace* constraint_space)
+                             NGConstraintSpace* constraint_space)
     : inline_box_(inline_box),
       constraint_space_(constraint_space),
       baseline_type_(constraint_space->WritingMode() ==
@@ -35,7 +35,7 @@ NGLineBuilder::NGLineBuilder(NGInlineNode* inline_box,
 }
 
 bool NGLineBuilder::CanFitOnLine() const {
-  LayoutUnit available_size = constraint_space_->AvailableSize().inline_size;
+  LayoutUnit available_size = current_opportunity_.InlineSize();
   if (available_size == NGSizeIndefinite)
     return true;
   return end_position_ <= available_size;
@@ -59,6 +59,8 @@ void NGLineBuilder::SetStart(unsigned index, unsigned offset) {
   start_index_ = last_index_ = last_break_opportunity_index_ = index;
   start_offset_ = end_offset_ = last_break_opportunity_offset_ = offset;
   end_position_ = last_break_opportunity_position_ = LayoutUnit();
+
+  FindNextLayoutOpportunity();
 }
 
 void NGLineBuilder::SetEnd(unsigned end_offset) {
@@ -146,6 +148,8 @@ void NGLineBuilder::CreateLineUpToLastBreakOpportunity() {
 #if DCHECK_IS_ON()
   is_bidi_reordered_ = false;
 #endif
+
+  FindNextLayoutOpportunity();
 }
 
 void NGLineBuilder::BidiReorder(Vector<LineItemChunk, 32>* line_item_chunks) {
@@ -189,7 +193,7 @@ void NGLineBuilder::PlaceItems(
 
   NGFragmentBuilder text_builder(NGPhysicalFragment::kFragmentText,
                                  inline_box_);
-  text_builder.SetWritingMode(constraint_space_->WritingMode());
+  text_builder.SetWritingMode(ConstraintSpace().WritingMode());
   line_box_data_list_.grow(line_box_data_list_.size() + 1);
   LineBoxData& line_box_data = line_box_data_list_.back();
 
@@ -238,7 +242,12 @@ void NGLineBuilder::PlaceItems(
         line_item_chunk.index, line_item_chunk.start_offset,
         line_item_chunk.end_offset);
     fragments_.push_back(std::move(text_fragment));
-    offsets_.push_back(NGLogicalOffset(line_box_data.inline_size, top));
+
+    NGLogicalOffset logical_offset(
+        line_box_data.inline_size + current_opportunity_.InlineStartOffset() -
+            ConstraintSpace().BfcOffset().inline_offset,
+        top);
+    offsets_.push_back(logical_offset);
     line_box_data.inline_size += line_item_chunk.inline_size;
   }
   DCHECK_EQ(fragments_.size(), offsets_.size());
@@ -319,6 +328,15 @@ void NGLineBuilder::AccumulateUsedFonts(const NGLayoutInlineItem& item,
   }
 }
 
+void NGLineBuilder::FindNextLayoutOpportunity() {
+  NGLogicalOffset iter_offset = constraint_space_->BfcOffset();
+  iter_offset.block_offset += content_size_;
+  auto* iter = constraint_space_->LayoutOpportunityIterator(iter_offset);
+  NGLayoutOpportunity opportunity = iter->Next();
+  if (!opportunity.IsEmpty())
+    current_opportunity_ = opportunity;
+}
+
 void NGLineBuilder::CreateFragments(NGFragmentBuilder* container_builder) {
   DCHECK(!HasItems()) << "Must call CreateLine()";
   DCHECK_EQ(fragments_.size(), offsets_.size());
@@ -330,7 +348,6 @@ void NGLineBuilder::CreateFragments(NGFragmentBuilder* container_builder) {
   }
 
   // TODO(kojii): Check if the line box width should be content or available.
-  // TODO(kojii): Need to take constraint_space into account.
   container_builder->SetInlineSize(max_inline_size_)
       .SetInlineOverflow(max_inline_size_)
       .SetBlockSize(content_size_)
@@ -387,7 +404,7 @@ void NGLineBuilder::CopyFragmentDataToLayoutBlockFlow() {
     BidiRun* run = bidi_runs.firstRun();
     for (auto* physical_fragment : fragments_for_bidi_runs) {
       DCHECK(run);
-      NGTextFragment fragment(constraint_space_->WritingMode(),
+      NGTextFragment fragment(ConstraintSpace().WritingMode(),
                               toNGPhysicalTextFragment(physical_fragment));
       InlineBox* inline_box = run->m_box;
       inline_box->setLogicalWidth(fragment.InlineSize());
@@ -412,5 +429,4 @@ void NGLineBuilder::CopyFragmentDataToLayoutBlockFlow() {
     fragments_for_bidi_runs.clear();
   }
 }
-
 }  // namespace blink

@@ -8,6 +8,7 @@
 #include "core/dom/TagCollection.h"
 #include "core/layout/LayoutTestHelper.h"
 #include "core/layout/ng/layout_ng_block_flow.h"
+#include "core/layout/ng/ng_base_layout_algorithm_test.h"
 #include "core/layout/ng/ng_block_break_token.h"
 #include "core/layout/ng/ng_block_node.h"
 #include "core/layout/ng/ng_constraint_space.h"
@@ -18,7 +19,6 @@
 #include "core/layout/ng/ng_physical_fragment.h"
 #include "core/style/ComputedStyle.h"
 #include "testing/gmock/include/gmock/gmock.h"
-#include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
 namespace {
@@ -48,25 +48,11 @@ RefPtr<NGConstraintSpace> ConstructConstraintSpace(
       .ToConstraintSpace(writing_mode);
 }
 
-typedef bool TestParamLayoutNG;
-class NGBlockLayoutAlgorithmTest
-    : public ::testing::WithParamInterface<TestParamLayoutNG>,
-      public RenderingTest {
- public:
-  NGBlockLayoutAlgorithmTest() {
-    RuntimeEnabledFeatures::setLayoutNGEnabled(true);
-    RuntimeEnabledFeatures::setLayoutNGInlineEnabled(true);
-  }
-  ~NGBlockLayoutAlgorithmTest() {
-    RuntimeEnabledFeatures::setLayoutNGEnabled(false);
-    RuntimeEnabledFeatures::setLayoutNGInlineEnabled(false);
-  }
-
+class NGBlockLayoutAlgorithmTest : public NGBaseLayoutAlgorithmTest {
  protected:
   void SetUp() override {
+    NGBaseLayoutAlgorithmTest::SetUp();
     style_ = ComputedStyle::create();
-    RenderingTest::SetUp();
-    enableCompositing();
   }
 
   RefPtr<NGPhysicalBoxFragment> RunBlockLayoutAlgorithm(
@@ -76,20 +62,6 @@ class NGBlockLayoutAlgorithmTest
         NGBlockLayoutAlgorithm(node, space).Layout();
 
     return toNGPhysicalBoxFragment(result->PhysicalFragment().get());
-  }
-
-  std::pair<RefPtr<NGPhysicalBoxFragment>, RefPtr<NGConstraintSpace>>
-  RunBlockLayoutAlgorithmForElement(Element* element) {
-    LayoutNGBlockFlow* block_flow =
-        toLayoutNGBlockFlow(element->layoutObject());
-    NGBlockNode* node = new NGBlockNode(block_flow);
-    RefPtr<NGConstraintSpace> space =
-        NGConstraintSpace::CreateFromLayoutObject(*block_flow);
-
-    RefPtr<NGLayoutResult> result =
-        NGBlockLayoutAlgorithm(node, space.get()).Layout();
-    return std::make_pair(
-        toNGPhysicalBoxFragment(result->PhysicalFragment().get()), space);
   }
 
   MinMaxContentSize RunComputeMinAndMax(NGBlockNode* node) {

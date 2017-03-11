@@ -135,10 +135,14 @@ NGFragmentationType NGConstraintSpace::BlockFragmentationType() const {
   return static_cast<NGFragmentationType>(block_direction_fragmentation_type_);
 }
 
-NGLayoutOpportunityIterator* NGConstraintSpace::LayoutOpportunityIterator() {
+NGLayoutOpportunityIterator* NGConstraintSpace::LayoutOpportunityIterator(
+    const NGLogicalOffset& iter_offset) {
+  if (layout_opp_iter_ && layout_opp_iter_->Offset() != iter_offset)
+    layout_opp_iter_.reset();
+
   if (!layout_opp_iter_) {
     layout_opp_iter_ =
-        WTF::makeUnique<NGLayoutOpportunityIterator>(this, this->bfc_offset_);
+        WTF::makeUnique<NGLayoutOpportunityIterator>(this, iter_offset);
   }
   return layout_opp_iter_.get();
 }

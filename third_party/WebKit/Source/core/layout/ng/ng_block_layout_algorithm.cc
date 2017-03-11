@@ -697,6 +697,7 @@ RefPtr<NGConstraintSpace> NGBlockLayoutAlgorithm::CreateConstraintSpaceForChild(
     PositionPendingFloats(curr_bfc_offset_.block_offset,
                           MutableConstraintSpace(), &builder_);
     curr_margin_strut_ = {};
+    space_builder_.SetBfcOffset(curr_bfc_offset_);
 
     return space_builder_.ToConstraintSpace(
         FromPlatformWritingMode(Style().getWritingMode()));

@@ -56,6 +56,10 @@ bool NGLogicalOffset::operator==(const NGLogicalOffset& other) const {
          std::tie(inline_offset, block_offset);
 }
 
+bool NGLogicalOffset::operator!=(const NGLogicalOffset& other) const {
+  return !operator==(other);
+}
+
 NGLogicalOffset NGLogicalOffset::operator+(const NGLogicalOffset& other) const {
   NGLogicalOffset result;
   result.inline_offset = this->inline_offset + other.inline_offset;
