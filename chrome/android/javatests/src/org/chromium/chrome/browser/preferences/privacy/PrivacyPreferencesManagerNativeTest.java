@@ -12,6 +12,7 @@ import android.test.UiThreadTest;
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.test.util.AdvancedMockContext;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.content.browser.test.NativeLibraryTestBase;
@@ -29,7 +30,7 @@ public class PrivacyPreferencesManagerNativeTest extends NativeLibraryTestBase {
     @SmallTest
     @Feature({"Android-AppBase"})
     @UiThreadTest
-    public void testSyncUsageAndCrashReporting {
+    public void testSyncUsageAndCrashReporting() {
         CommandLine.init(null);
         PermissionContext context = new PermissionContext(getInstrumentation().getTargetContext());
         PrefServiceBridge prefBridge = PrefServiceBridge.getInstance();
@@ -47,6 +48,7 @@ public class PrivacyPreferencesManagerNativeTest extends NativeLibraryTestBase {
     @SmallTest
     @Feature({"Android-AppBase"})
     @UiThreadTest
+    @DisabledTest(message = "crbug.com/700500")
     public void testSetUsageAndCrashReporting() {
         CommandLine.init(null);
         PermissionContext context = new PermissionContext(getInstrumentation().getTargetContext());
