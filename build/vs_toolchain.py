@@ -21,9 +21,6 @@ sys.path.insert(0, os.path.join(chrome_src, 'tools', 'gyp', 'pylib'))
 json_data_file = os.path.join(script_dir, 'win_toolchain.json')
 
 
-import gyp
-
-
 # Use MSVS2015 as the default toolchain.
 CURRENT_DEFAULT_TOOLCHAIN_VERSION = '2015'
 
@@ -60,6 +57,12 @@ def SetEnvironmentAndGetRuntimeDllDirs():
 
     os.environ['GYP_MSVS_OVERRIDE_PATH'] = toolchain
     os.environ['GYP_MSVS_VERSION'] = version
+
+    # Limit the scope of the gyp import to only where it is used. This
+    # potentially lets build configs that never execute this block to drop
+    # their GYP checkout.
+    import gyp
+
     # We need to make sure windows_sdk_path is set to the automated
     # toolchain values in GYP_DEFINES, but don't want to override any
     # otheroptions.express
@@ -68,6 +71,7 @@ def SetEnvironmentAndGetRuntimeDllDirs():
     gyp_defines_dict['windows_sdk_path'] = win_sdk
     os.environ['GYP_DEFINES'] = ' '.join('%s=%s' % (k, pipes.quote(str(v)))
         for k, v in gyp_defines_dict.iteritems())
+
     os.environ['WINDOWSSDKDIR'] = win_sdk
     os.environ['WDK_DIR'] = wdk
     # Include the VS runtime in the PATH in case it's not machine-installed.
@@ -171,12 +175,11 @@ def _VersionNumber():
   vs_version = GetVisualStudioVersion()
   if vs_version == '2013':
     return '120'
-  elif vs_version == '2015':
+  if vs_version == '2015':
     return '140'
-  elif vs_version == '2017':
+  if vs_version == '2017':
     return '150'
-  else:
-    raise ValueError('Unexpected GYP_MSVS_VERSION')
+  raise ValueError('Unexpected GYP_MSVS_VERSION')
 
 
 def _CopyRuntimeImpl(target, source, verbose=True):
@@ -340,13 +343,13 @@ def _CopyDebugger(target_dir, target_cpu):
 def _GetDesiredVsToolchainHashes():
   """Load a list of SHA1s corresponding to the toolchains that we want installed
   to build with."""
-  if GetVisualStudioVersion() == '2015':
+  env_version = GetVisualStudioVersion()
+  if env_version == '2013':
+    return ['03a4e939cd325d6bc5216af41b92d02dda1366a6']
+  if env_version == '2015':
     # Update 3 final with patches with 10.0.14393.0 SDK.
     return ['d3cb0e37bdd120ad0ac4650b674b09e81be45616']
-  elif GetVisualStudioVersion() == '2013':
-    return ['03a4e939cd325d6bc5216af41b92d02dda1366a6']
-  else:
-    raise Exception('Unsupported VS version %s' % GetVisualStudioVersion())
+  raise Exception('Unsupported VS version %s' % env_version)
 
 
 def ShouldUpdateToolchain():
