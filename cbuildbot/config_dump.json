@@ -12160,6 +12160,7 @@
     },
     "kahlee-release": {
         "_template": "release",
+        "active_waterfall": "chromeos",
         "boards": [
             "kahlee"
         ],
