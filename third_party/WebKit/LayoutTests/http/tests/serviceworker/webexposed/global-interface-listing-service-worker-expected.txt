@@ -1,3 +1,11 @@
+interface BackgroundFetchClickEvent : BackgroundFetchEvent
+    getter state
+    method constructor
+interface BackgroundFetchEvent : ExtendableEvent
+    getter tag
+    method constructor
+interface BackgroundFetchFailEvent : BackgroundFetchEvent
+    method constructor
 interface BackgroundFetchManager
     method constructor
     method fetch
@@ -10,6 +18,9 @@ interface BackgroundFetchRegistration
     getter totalDownloadSize
     method abort
     method constructor
+interface BackgroundFetchedEvent : BackgroundFetchEvent
+    method constructor
+    method updateUI
 interface BarcodeDetector
     method constructor
     method detect
@@ -2245,6 +2256,10 @@ global object
     attribute internals
     getter clients
     getter onactivate
+    getter onbackgroundfetchabort
+    getter onbackgroundfetchclick
+    getter onbackgroundfetched
+    getter onbackgroundfetchfail
     getter onfetch
     getter onforeignfetch
     getter oninstall
@@ -2259,6 +2274,10 @@ global object
     method gc
     method skipWaiting
     setter onactivate
+    setter onbackgroundfetchabort
+    setter onbackgroundfetchclick
+    setter onbackgroundfetched
+    setter onbackgroundfetchfail
     setter onfetch
     setter onforeignfetch
     setter oninstall

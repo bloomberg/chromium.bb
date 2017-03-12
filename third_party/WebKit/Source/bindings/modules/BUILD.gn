@@ -19,6 +19,10 @@ group("bindings_modules_generated") {
 generate_event_interfaces("modules_bindings_generated_event_interfaces") {
   sources = [
     "//third_party/WebKit/Source/modules/app_banner/BeforeInstallPromptEvent.idl",
+    "//third_party/WebKit/Source/modules/background_fetch/BackgroundFetchClickEvent.idl",
+    "//third_party/WebKit/Source/modules/background_fetch/BackgroundFetchEvent.idl",
+    "//third_party/WebKit/Source/modules/background_fetch/BackgroundFetchFailEvent.idl",
+    "//third_party/WebKit/Source/modules/background_fetch/BackgroundFetchedEvent.idl",
     "//third_party/WebKit/Source/modules/background_sync/SyncEvent.idl",
     "//third_party/WebKit/Source/modules/device_light/DeviceLightEvent.idl",
     "//third_party/WebKit/Source/modules/device_orientation/DeviceMotionEvent.idl",

@@ -41,8 +41,12 @@ modules_idl_files =
     get_path_info([
                     "app_banner/AppBannerPromptResult.idl",
                     "app_banner/BeforeInstallPromptEvent.idl",
+                    "background_fetch/BackgroundFetchClickEvent.idl",
+                    "background_fetch/BackgroundFetchEvent.idl",
+                    "background_fetch/BackgroundFetchFailEvent.idl",
                     "background_fetch/BackgroundFetchManager.idl",
                     "background_fetch/BackgroundFetchRegistration.idl",
+                    "background_fetch/BackgroundFetchedEvent.idl",
                     "background_sync/SyncEvent.idl",
                     "background_sync/SyncManager.idl",
                     "battery/BatteryManager.idl",
@@ -393,7 +397,11 @@ modules_idl_files =
 modules_dictionary_idl_files =
     get_path_info([
                     "app_banner/BeforeInstallPromptEventInit.idl",
+                    "background_fetch/BackgroundFetchClickEventInit.idl",
+                    "background_fetch/BackgroundFetchEventInit.idl",
+                    "background_fetch/BackgroundFetchFailEventInit.idl",
                     "background_fetch/BackgroundFetchOptions.idl",
+                    "background_fetch/BackgroundFetchedEventInit.idl",
                     "background_fetch/IconDefinition.idl",
                     "background_sync/SyncEventInit.idl",
                     "bluetooth/BluetoothScanFilterInit.idl",
@@ -559,6 +567,7 @@ modules_dependency_idl_files =
     get_path_info(
         [
           "audio_output_devices/HTMLMediaElementAudioOutputDevice.idl",
+          "background_fetch/ServiceWorkerGlobalScopeBackgroundFetch.idl",
           "background_fetch/ServiceWorkerRegistrationBackgroundFetch.idl",
           "background_sync/ServiceWorkerGlobalScopeSync.idl",
           "background_sync/ServiceWorkerRegistrationSync.idl",
@@ -687,8 +696,16 @@ generated_modules_dictionary_files = [
   # from the .idl file list(s).
   "$blink_modules_output_dir/app_banner/BeforeInstallPromptEventInit.cpp",
   "$blink_modules_output_dir/app_banner/BeforeInstallPromptEventInit.h",
+  "$blink_modules_output_dir/background_fetch/BackgroundFetchClickEventInit.cpp",
+  "$blink_modules_output_dir/background_fetch/BackgroundFetchClickEventInit.h",
+  "$blink_modules_output_dir/background_fetch/BackgroundFetchEventInit.cpp",
+  "$blink_modules_output_dir/background_fetch/BackgroundFetchEventInit.h",
+  "$blink_modules_output_dir/background_fetch/BackgroundFetchFailEventInit.cpp",
+  "$blink_modules_output_dir/background_fetch/BackgroundFetchFailEventInit.h",
   "$blink_modules_output_dir/background_fetch/BackgroundFetchOptions.cpp",
   "$blink_modules_output_dir/background_fetch/BackgroundFetchOptions.h",
+  "$blink_modules_output_dir/background_fetch/BackgroundFetchedEventInit.cpp",
+  "$blink_modules_output_dir/background_fetch/BackgroundFetchedEventInit.h",
   "$blink_modules_output_dir/background_fetch/IconDefinition.cpp",
   "$blink_modules_output_dir/background_fetch/IconDefinition.h",
   "$blink_modules_output_dir/background_sync/SyncEventInit.cpp",

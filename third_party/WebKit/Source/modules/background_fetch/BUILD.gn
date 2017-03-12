@@ -6,10 +6,19 @@ import("//third_party/WebKit/Source/modules/modules.gni")
 
 blink_modules_sources("background_fetch") {
   sources = [
+    "BackgroundFetchClickEvent.cpp",
+    "BackgroundFetchClickEvent.h",
+    "BackgroundFetchEvent.cpp",
+    "BackgroundFetchEvent.h",
+    "BackgroundFetchFailEvent.cpp",
+    "BackgroundFetchFailEvent.h",
     "BackgroundFetchManager.cpp",
     "BackgroundFetchManager.h",
     "BackgroundFetchRegistration.cpp",
     "BackgroundFetchRegistration.h",
+    "BackgroundFetchedEvent.cpp",
+    "BackgroundFetchedEvent.h",
+    "ServiceWorkerGlobalScopeBackgroundFetch.h",
     "ServiceWorkerRegistrationBackgroundFetch.cpp",
     "ServiceWorkerRegistrationBackgroundFetch.h",
   ]
