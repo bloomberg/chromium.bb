@@ -123,8 +123,8 @@ layer at (160,70) size 113x13
       text run at (0,0) width 17: "foo"
 layer at (22,103) size 115x13
   LayoutBlockFlow {DIV} at (0,0) size 115x13
-    LayoutText {#text} at (0,0) size 59x13
-      text run at (0,0) width 59: "default text"
+    LayoutText {#text} at (0,0) size 60x13
+      text run at (0,0) width 60: "default text"
 layer at (15,143) size 113x13
   LayoutBlockFlow {DIV} at (0,0) size 113x13
     LayoutText {#text} at (0,0) size 17x13
@@ -135,16 +135,16 @@ layer at (15,170) size 113x13
       text run at (0,0) width 17: "foo"
 layer at (17,197) size 131x16
   LayoutBlockFlow {DIV} at (0,0) size 131x16
-    LayoutText {#text} at (0,0) size 20x16
-      text run at (0,0) width 20: "foo"
+    LayoutText {#text} at (0,0) size 21x16
+      text run at (0,0) width 21: "foo"
 layer at (185,197) size 131x16
   LayoutBlockFlow {DIV} at (0,0) size 131x16
-    LayoutText {#text} at (0,0) size 20x16
-      text run at (0,0) width 20: "foo"
+    LayoutText {#text} at (0,0) size 21x16
+      text run at (0,0) width 21: "foo"
 layer at (353,197) size 131x16
   LayoutBlockFlow {DIV} at (0,0) size 131x16
-    LayoutText {#text} at (0,0) size 20x16
-      text run at (0,0) width 20: "foo"
+    LayoutText {#text} at (0,0) size 21x16
+      text run at (0,0) width 21: "foo"
 layer at (19,240) size 170x19 backgroundClip at (19,240) size 169x19 clip at (19,240) size 169x19
   LayoutBlockFlow {DIV} at (0,0) size 169.50x19
     LayoutText {#text} at (0,0) size 26x19

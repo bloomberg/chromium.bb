@@ -62,8 +62,8 @@ layer at (12,212) size 181x42 clip at (13,213) size 179x40
 layer at (205,202) size 221x52 clip at (206,203) size 219x50
   LayoutTextControl {TEXTAREA} at (197,194) size 221x52 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
     LayoutBlockFlow {DIV} at (3,3) size 215x23
-      LayoutText {#text} at (0,0) size 28x23
-        text run at (0,0) width 28: "foo"
+      LayoutText {#text} at (0,0) size 29x23
+        text run at (0,0) width 29: "foo"
 layer at (438,192) size 261x62 clip at (439,193) size 259x60
   LayoutTextControl {TEXTAREA} at (430,184) size 261x62 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
     LayoutBlockFlow {DIV} at (3,3) size 255x28

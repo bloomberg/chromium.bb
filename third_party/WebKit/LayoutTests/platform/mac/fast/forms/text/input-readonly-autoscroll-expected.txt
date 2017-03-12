@@ -19,9 +19,9 @@ layer at (0,0) size 800x600
         LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow {DIV} at (0,87) size 784x18
         LayoutText {#text} at (0,0) size 90x18
-          text run at (0,0) width 90: "ScrollLeft: 26"
+          text run at (0,0) width 90: "ScrollLeft: 27"
         LayoutBR {BR} at (89,14) size 1x0
-layer at (11,79) size 125x13 scrollX 26.00 scrollWidth 151
+layer at (11,79) size 125x13 scrollX 27.00 scrollWidth 152
   LayoutBlockFlow {DIV} at (3,3) size 125x13
     LayoutText {#text} at (0,0) size 152x13
       text run at (0,0) width 152: "abcdefghijklmnopqrstuvwxyz"

@@ -65,8 +65,8 @@ layer at (15,133) size 167x18
       text run at (0,0) width 25: "foo"
 layer at (200,129) size 209x23
   LayoutBlockFlow {DIV} at (3,3) size 209x23
-    LayoutText {#text} at (0,0) size 28x23
-      text run at (0,0) width 28: "foo"
+    LayoutText {#text} at (0,0) size 29x23
+      text run at (0,0) width 29: "foo"
 layer at (427,125) size 251x28
   LayoutBlockFlow {DIV} at (3,3) size 251x28
     LayoutText {#text} at (0,0) size 34x28

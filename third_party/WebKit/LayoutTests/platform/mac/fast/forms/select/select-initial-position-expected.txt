@@ -52,116 +52,116 @@ layer at (0,0) size 800x600
             text run at (8,2) width 121: "this should be selected"
       LayoutText {#text} at (0,0) size 0x0
 layer at (8,26) size 137x59 clip at (9,27) size 124x57 scrollY 99.00 scrollHeight 199
-  LayoutListBox {SELECT} at (0,18.25) size 137.41x58.75 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
-    LayoutBlockFlow {OPTION} at (1,1) size 124.41x14.19
+  LayoutListBox {SELECT} at (0,18.25) size 137.39x58.75 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
+    LayoutBlockFlow {OPTION} at (1,1) size 124.39x14.19
       LayoutText {#text} at (2,0) size 18x13
         text run at (2,0) width 18: "opt"
-    LayoutBlockFlow {OPTION} at (1,15.19) size 124.41x14.19
+    LayoutBlockFlow {OPTION} at (1,15.19) size 124.39x14.19
       LayoutText {#text} at (2,0) size 18x13
         text run at (2,0) width 18: "opt"
-    LayoutBlockFlow {OPTION} at (1,29.38) size 124.41x14.19
+    LayoutBlockFlow {OPTION} at (1,29.38) size 124.39x14.19
       LayoutText {#text} at (2,0) size 18x13
         text run at (2,0) width 18: "opt"
-    LayoutBlockFlow {OPTION} at (1,43.56) size 124.41x14.19
+    LayoutBlockFlow {OPTION} at (1,43.56) size 124.39x14.19
       LayoutText {#text} at (2,0) size 18x13
         text run at (2,0) width 18: "opt"
-    LayoutBlockFlow {OPTION} at (1,57.75) size 124.41x14.19
+    LayoutBlockFlow {OPTION} at (1,57.75) size 124.39x14.19
       LayoutText {#text} at (2,0) size 18x13
         text run at (2,0) width 18: "opt"
-    LayoutBlockFlow {OPTION} at (1,71.94) size 124.41x14.19
+    LayoutBlockFlow {OPTION} at (1,71.94) size 124.39x14.19
       LayoutText {#text} at (2,0) size 18x13
         text run at (2,0) width 18: "opt"
-    LayoutBlockFlow {OPTION} at (1,86.13) size 124.41x14.19
+    LayoutBlockFlow {OPTION} at (1,86.13) size 124.39x14.19
       LayoutText {#text} at (2,0) size 18x13
         text run at (2,0) width 18: "opt"
-    LayoutBlockFlow {OPTION} at (1,100.31) size 124.41x14.19
+    LayoutBlockFlow {OPTION} at (1,100.31) size 124.39x14.19
       LayoutText {#text} at (2,0) size 18x13
         text run at (2,0) width 18: "opt"
-    LayoutBlockFlow {OPTION} at (1,114.50) size 124.41x14.19
+    LayoutBlockFlow {OPTION} at (1,114.50) size 124.39x14.19
       LayoutText {#text} at (2,0) size 18x13
         text run at (2,0) width 18: "opt"
-    LayoutBlockFlow {OPTION} at (1,128.69) size 124.41x14.19
+    LayoutBlockFlow {OPTION} at (1,128.69) size 124.39x14.19
       LayoutText {#text} at (2,0) size 18x13
         text run at (2,0) width 18: "opt"
-    LayoutBlockFlow {OPTION} at (1,142.88) size 124.41x14.19 [bgcolor=#D4D4D4]
+    LayoutBlockFlow {OPTION} at (1,142.88) size 124.39x14.19 [bgcolor=#D4D4D4]
       LayoutText {#text} at (2,0) size 121x13
         text run at (2,0) width 121: "this should be selected"
-    LayoutBlockFlow {OPTION} at (1,157.06) size 124.41x14.19
+    LayoutBlockFlow {OPTION} at (1,157.06) size 124.39x14.19
       LayoutText {#text} at (2,0) size 18x13
         text run at (2,0) width 18: "opt"
-    LayoutBlockFlow {OPTION} at (1,171.25) size 124.41x14.19
+    LayoutBlockFlow {OPTION} at (1,171.25) size 124.39x14.19
       LayoutText {#text} at (2,0) size 18x13
         text run at (2,0) width 18: "opt"
-    LayoutBlockFlow {OPTION} at (1,185.44) size 124.41x14.19
+    LayoutBlockFlow {OPTION} at (1,185.44) size 124.39x14.19
       LayoutText {#text} at (2,0) size 18x13
         text run at (2,0) width 18: "opt"
 layer at (8,103) size 137x59 clip at (9,104) size 124x57 scrollY 99.00 scrollHeight 199
-  LayoutListBox {SELECT} at (0,95.25) size 137.41x58.75 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
-    LayoutBlockFlow {OPTION} at (1,1) size 124.41x14.19
+  LayoutListBox {SELECT} at (0,95.25) size 137.39x58.75 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
+    LayoutBlockFlow {OPTION} at (1,1) size 124.39x14.19
       LayoutText {#text} at (2,0) size 18x13
         text run at (2,0) width 18: "opt"
-    LayoutBlockFlow {OPTION} at (1,15.19) size 124.41x14.19
+    LayoutBlockFlow {OPTION} at (1,15.19) size 124.39x14.19
       LayoutText {#text} at (2,0) size 18x13
         text run at (2,0) width 18: "opt"
-    LayoutBlockFlow {OPTION} at (1,29.38) size 124.41x14.19
+    LayoutBlockFlow {OPTION} at (1,29.38) size 124.39x14.19
       LayoutText {#text} at (2,0) size 18x13
         text run at (2,0) width 18: "opt"
-    LayoutBlockFlow {OPTION} at (1,43.56) size 124.41x14.19
+    LayoutBlockFlow {OPTION} at (1,43.56) size 124.39x14.19
       LayoutText {#text} at (2,0) size 18x13
         text run at (2,0) width 18: "opt"
-    LayoutBlockFlow {OPTION} at (1,57.75) size 124.41x14.19
+    LayoutBlockFlow {OPTION} at (1,57.75) size 124.39x14.19
       LayoutText {#text} at (2,0) size 18x13
         text run at (2,0) width 18: "opt"
-    LayoutBlockFlow {OPTION} at (1,71.94) size 124.41x14.19
+    LayoutBlockFlow {OPTION} at (1,71.94) size 124.39x14.19
       LayoutText {#text} at (2,0) size 18x13
         text run at (2,0) width 18: "opt"
-    LayoutBlockFlow {OPTION} at (1,86.13) size 124.41x14.19
+    LayoutBlockFlow {OPTION} at (1,86.13) size 124.39x14.19
       LayoutText {#text} at (2,0) size 18x13
         text run at (2,0) width 18: "opt"
-    LayoutBlockFlow {OPTION} at (1,100.31) size 124.41x14.19
+    LayoutBlockFlow {OPTION} at (1,100.31) size 124.39x14.19
       LayoutText {#text} at (2,0) size 18x13
         text run at (2,0) width 18: "opt"
-    LayoutBlockFlow {OPTION} at (1,114.50) size 124.41x14.19
+    LayoutBlockFlow {OPTION} at (1,114.50) size 124.39x14.19
       LayoutText {#text} at (2,0) size 18x13
         text run at (2,0) width 18: "opt"
-    LayoutBlockFlow {OPTION} at (1,128.69) size 124.41x14.19
+    LayoutBlockFlow {OPTION} at (1,128.69) size 124.39x14.19
       LayoutText {#text} at (2,0) size 18x13
         text run at (2,0) width 18: "opt"
-    LayoutBlockFlow {OPTION} at (1,142.88) size 124.41x14.19 [bgcolor=#D4D4D4]
+    LayoutBlockFlow {OPTION} at (1,142.88) size 124.39x14.19 [bgcolor=#D4D4D4]
       LayoutText {#text} at (2,0) size 121x13
         text run at (2,0) width 121: "this should be selected"
-    LayoutBlockFlow {OPTION} at (1,157.06) size 124.41x14.19
+    LayoutBlockFlow {OPTION} at (1,157.06) size 124.39x14.19
       LayoutText {#text} at (2,0) size 18x13
         text run at (2,0) width 18: "opt"
-    LayoutBlockFlow {OPTION} at (1,171.25) size 124.41x14.19
+    LayoutBlockFlow {OPTION} at (1,171.25) size 124.39x14.19
       LayoutText {#text} at (2,0) size 18x13
         text run at (2,0) width 18: "opt"
-    LayoutBlockFlow {OPTION} at (1,185.44) size 124.41x14.19
+    LayoutBlockFlow {OPTION} at (1,185.44) size 124.39x14.19
       LayoutText {#text} at (2,0) size 18x13
         text run at (2,0) width 18: "opt"
 layer at (8,180) size 137x59 clip at (9,181) size 124x57 scrollY 43.00 scrollHeight 114
-  LayoutListBox {SELECT} at (0,172.25) size 137.41x58.75 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
-    LayoutBlockFlow {OPTION} at (1,1) size 124.41x14.19
+  LayoutListBox {SELECT} at (0,172.25) size 137.39x58.75 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
+    LayoutBlockFlow {OPTION} at (1,1) size 124.39x14.19
       LayoutText {#text} at (2,0) size 18x13
         text run at (2,0) width 18: "opt"
-    LayoutBlockFlow {OPTION} at (1,15.19) size 124.41x14.19
+    LayoutBlockFlow {OPTION} at (1,15.19) size 124.39x14.19
       LayoutText {#text} at (2,0) size 18x13
         text run at (2,0) width 18: "opt"
-    LayoutBlockFlow {OPTION} at (1,29.38) size 124.41x14.19
+    LayoutBlockFlow {OPTION} at (1,29.38) size 124.39x14.19
       LayoutText {#text} at (2,0) size 18x13
         text run at (2,0) width 18: "opt"
-    LayoutBlockFlow {OPTION} at (1,43.56) size 124.41x14.19
+    LayoutBlockFlow {OPTION} at (1,43.56) size 124.39x14.19
       LayoutText {#text} at (2,0) size 18x13
         text run at (2,0) width 18: "opt"
-    LayoutBlockFlow {OPTION} at (1,57.75) size 124.41x14.19
+    LayoutBlockFlow {OPTION} at (1,57.75) size 124.39x14.19
       LayoutText {#text} at (2,0) size 18x13
         text run at (2,0) width 18: "opt"
-    LayoutBlockFlow {OPTION} at (1,71.94) size 124.41x14.19
+    LayoutBlockFlow {OPTION} at (1,71.94) size 124.39x14.19
       LayoutText {#text} at (2,0) size 18x13
         text run at (2,0) width 18: "opt"
-    LayoutBlockFlow {OPTION} at (1,86.13) size 124.41x14.19 [bgcolor=#D4D4D4]
+    LayoutBlockFlow {OPTION} at (1,86.13) size 124.39x14.19 [bgcolor=#D4D4D4]
       LayoutText {#text} at (2,0) size 121x13
         text run at (2,0) width 121: "this should be selected"
-    LayoutBlockFlow {OPTION} at (1,100.31) size 124.41x14.19
+    LayoutBlockFlow {OPTION} at (1,100.31) size 124.39x14.19
       LayoutText {#text} at (2,0) size 18x13
         text run at (2,0) width 18: "opt"

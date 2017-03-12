@@ -68,8 +68,8 @@ layer at (0,0) size 800x600
           text run at (80,1) width 9: "b"
 layer at (29,328) size 125x13 scrollWidth 159
   LayoutBlockFlow {DIV} at (3,3) size 125x13
-    LayoutText {#text} at (0,0) size 158x13
-      text run at (0,0) width 158: "foobarbazfoobarbazfoobarbaz"
+    LayoutText {#text} at (0,0) size 159x13
+      text run at (0,0) width 159: "foobarbazfoobarbazfoobarbaz"
 layer at (188,328) size 125x13
   LayoutBlockFlow {DIV} at (3,3) size 125x13
     LayoutText {#text} at (0,0) size 17x13
