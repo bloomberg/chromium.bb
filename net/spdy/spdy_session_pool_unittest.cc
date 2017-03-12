@@ -168,7 +168,7 @@ TEST_F(SpdySessionPoolTest, CloseCurrentIdleSessions) {
   CreateNetworkSession();
 
   // Set up session 1
-  const std::string kTestHost1("http://www.example.org");
+  const std::string kTestHost1("www.example.org");
   HostPortPair test_host_port_pair1(kTestHost1, 80);
   SpdySessionKey key1(test_host_port_pair1, ProxyServer::Direct(),
                       PRIVACY_MODE_DISABLED);
@@ -183,7 +183,7 @@ TEST_F(SpdySessionPoolTest, CloseCurrentIdleSessions) {
   StaticSocketDataProvider data2(reads, arraysize(reads), nullptr, 0);
   data2.set_connect_data(connect_data);
   session_deps_.socket_factory->AddSocketDataProvider(&data2);
-  const std::string kTestHost2("http://mail.example.org");
+  const std::string kTestHost2("mail.example.org");
   HostPortPair test_host_port_pair2(kTestHost2, 80);
   SpdySessionKey key2(test_host_port_pair2, ProxyServer::Direct(),
                       PRIVACY_MODE_DISABLED);
@@ -198,7 +198,7 @@ TEST_F(SpdySessionPoolTest, CloseCurrentIdleSessions) {
   StaticSocketDataProvider data3(reads, arraysize(reads), nullptr, 0);
   data3.set_connect_data(connect_data);
   session_deps_.socket_factory->AddSocketDataProvider(&data3);
-  const std::string kTestHost3("http://mail.example.com");
+  const std::string kTestHost3("mail.example.com");
   HostPortPair test_host_port_pair3(kTestHost3, 80);
   SpdySessionKey key3(test_host_port_pair3, ProxyServer::Direct(),
                       PRIVACY_MODE_DISABLED);
@@ -621,14 +621,14 @@ TEST_F(SpdySessionPoolTest, IPAddressChanged) {
   CreateNetworkSession();
 
   // Set up session A: Going away, but with an active stream.
-  const std::string kTestHostA("http://www.example.org");
+  const std::string kTestHostA("www.example.org");
   HostPortPair test_host_port_pairA(kTestHostA, 80);
   SpdySessionKey keyA(
       test_host_port_pairA, ProxyServer::Direct(), PRIVACY_MODE_DISABLED);
   base::WeakPtr<SpdySession> sessionA =
       CreateSecureSpdySession(http_session_.get(), keyA, NetLogWithSource());
 
-  GURL urlA(kTestHostA);
+  GURL urlA("http://www.example.org");
   base::WeakPtr<SpdyStream> spdy_streamA = CreateStreamSynchronously(
       SPDY_BIDIRECTIONAL_STREAM, sessionA, urlA, MEDIUM, NetLogWithSource());
   test::StreamDelegateDoNothing delegateA(spdy_streamA);
@@ -652,7 +652,7 @@ TEST_F(SpdySessionPoolTest, IPAddressChanged) {
 
   AddSSLSocketData();
 
-  const std::string kTestHostB("http://mail.example.org");
+  const std::string kTestHostB("mail.example.org");
   HostPortPair test_host_port_pairB(kTestHostB, 80);
   SpdySessionKey keyB(
       test_host_port_pairB, ProxyServer::Direct(), PRIVACY_MODE_DISABLED);
@@ -660,7 +660,7 @@ TEST_F(SpdySessionPoolTest, IPAddressChanged) {
       CreateSecureSpdySession(http_session_.get(), keyB, NetLogWithSource());
   EXPECT_TRUE(sessionB->IsAvailable());
 
-  GURL urlB(kTestHostB);
+  GURL urlB("http://mail.example.org");
   base::WeakPtr<SpdyStream> spdy_streamB = CreateStreamSynchronously(
       SPDY_BIDIRECTIONAL_STREAM, sessionB, urlB, MEDIUM, NetLogWithSource());
   test::StreamDelegateDoNothing delegateB(spdy_streamB);
@@ -674,7 +674,7 @@ TEST_F(SpdySessionPoolTest, IPAddressChanged) {
 
   AddSSLSocketData();
 
-  const std::string kTestHostC("http://mail.example.com");
+  const std::string kTestHostC("mail.example.com");
   HostPortPair test_host_port_pairC(kTestHostC, 80);
   SpdySessionKey keyC(
       test_host_port_pairC, ProxyServer::Direct(), PRIVACY_MODE_DISABLED);
