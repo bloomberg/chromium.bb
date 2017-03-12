@@ -3396,9 +3396,6 @@ static void encode_restoration_mode(AV1_COMMON *cm,
       cm->rst_info[1].frame_restoration_type != RESTORE_NONE ||
       cm->rst_info[2].frame_restoration_type != RESTORE_NONE) {
     rsi = &cm->rst_info[0];
-    if (rsi->restoration_tilesize == RESTORATION_TILESIZE_MAX) {
-      aom_wb_write_bit(wb, 0);
-    }
     aom_wb_write_bit(wb, rsi->restoration_tilesize != RESTORATION_TILESIZE_MAX);
     if (rsi->restoration_tilesize != RESTORATION_TILESIZE_MAX) {
       aom_wb_write_bit(
