@@ -259,9 +259,6 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 
 #define SK_DISABLE_TILE_IMAGE_FILTER_OPTIMIZATION
 
-// Updating to a correct SkPMColor lerp will require layout test rebaselines.
-#define SK_SUPPORT_LEGACY_BROKEN_LERP
-
 // ===== End Chrome-specific definitions =====
 
 #endif
