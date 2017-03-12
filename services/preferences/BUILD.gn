@@ -25,6 +25,8 @@ source_set("preferences") {
     "//components/prefs",
   ]
   sources = [
+    "persistent_pref_store_factory.cc",
+    "persistent_pref_store_factory.h",
     "persistent_pref_store_impl.cc",
     "persistent_pref_store_impl.h",
   ]

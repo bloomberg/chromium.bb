@@ -1067,7 +1067,8 @@ void ProfileImpl::RegisterInProcessServices(StaticServiceMap* services) {
     info.factory =
         base::Bind([]() -> std::unique_ptr<service_manager::Service> {
           return base::MakeUnique<prefs::PrefStoreManagerImpl>(
-              prefs::PrefStoreManagerImpl::PrefStoreTypes());
+              prefs::PrefStoreManagerImpl::PrefStoreTypes(),
+              content::BrowserThread::GetBlockingPool());
         });
     services->insert(std::make_pair(prefs::mojom::kPrefStoreServiceName, info));
   }

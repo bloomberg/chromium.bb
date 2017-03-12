@@ -29,5 +29,6 @@ source_set("cpp") {
 
   deps = [
     "//mojo/public/cpp/bindings:bindings",
+    "//services/preferences",
   ]
 }

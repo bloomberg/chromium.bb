@@ -5,6 +5,7 @@
 module prefs.mojom;
 
 import "mojo/common/values.mojom";
+import "services/preferences/public/interfaces/preferences_configuration.mojom";
 
 const string kServiceName = "preferences";
 
@@ -131,4 +132,10 @@ interface PersistentPrefStoreConnector {
       mojo.common.mojom.DictionaryValue? preferences,
       PersistentPrefStore? pref_store,
       PrefStoreObserver&? observer);
+};
+
+interface PrefServiceControl {
+  // Initializes the pref service. This must be called before the service can
+  // be used.
+  Init(PersistentPrefStoreConfiguration configuration);
 };
