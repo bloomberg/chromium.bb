@@ -1569,6 +1569,7 @@ crbug.com/696216 svg/W3C-SVG-1.1/animate-elem-02-t.svg [ NeedsRebaseline ]
 crbug.com/696216 svg/W3C-SVG-1.1/fonts-elem-07-b.svg [ NeedsRebaseline ]
 crbug.com/696216 svg/W3C-SVG-1.1-SE/coords-dom-02-f.svg [ NeedsRebaseline ]
 crbug.com/696216 virtual/mojo-loading/http/tests/webfont/popup-menu-load-webfont-after-open.html [ NeedsRebaseline ]
+crbug.com/696216 fast/forms/select/menulist-appearance-rtl.html [ NeedsRebaseline ]
 
 crbug.com/353746 virtual/android/fullscreen/video-specified-size.html [ Failure Pass ]
 
@@ -2680,7 +2681,8 @@ crbug.com/610835 virtual/mojo-loading/http/tests/security/XFrameOptions/x-frame-
 crbug.com/673539 [ Linux Win ] css3/filters/effect-contrast-hw.html [ Pass Failure ]
 
 # Added 2016-12-15
-crbug.com/674466 [ Win10 ] fast/forms/select/menulist-appearance-rtl.html [ Pass Failure ]
+# TODO(fmalita): reenable if needed
+#crbug.com/674466 [ Win10 ] fast/forms/select/menulist-appearance-rtl.html [ Pass Failure ]
 
 # Added 2016-12-16
 crbug.com/674858 [ Linux ] virtual/threaded/printing/offscreencanvas-2d-printing.html [ Pass Failure Crash ]
