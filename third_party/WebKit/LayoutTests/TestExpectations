@@ -1559,6 +1559,17 @@ crbug.com/618082 [ Win10 ] virtual/threaded/printing/thead-repeats-at-top-of-eac
 
 crbug.com/474759 fast/writing-mode/vertical-rl-replaced-selection.html [ Failure ]
 
+# Cleanup after http://crrev.com/2731393002
+crbug.com/696216 fast/table/backgr_border-table-row-group.html [ NeedsRebaseline ]
+crbug.com/696216 fast/table/backgr_position-table-row-group.html [ NeedsRebaseline ]
+crbug.com/696216 fast/table/backgr_simple-table.html [ NeedsRebaseline ]
+crbug.com/696216 svg/batik/text/textAnchor3.svg [ NeedsRebaseline ]
+crbug.com/696216 svg/wicd/test-scalable-background-image2.xhtml [ NeedsRebaseline ]
+crbug.com/696216 svg/W3C-SVG-1.1/animate-elem-02-t.svg [ NeedsRebaseline ]
+crbug.com/696216 svg/W3C-SVG-1.1/fonts-elem-07-b.svg [ NeedsRebaseline ]
+crbug.com/696216 svg/W3C-SVG-1.1-SE/coords-dom-02-f.svg [ NeedsRebaseline ]
+crbug.com/696216 virtual/mojo-loading/http/tests/webfont/popup-menu-load-webfont-after-open.html [ NeedsRebaseline ]
+
 crbug.com/353746 virtual/android/fullscreen/video-specified-size.html [ Failure Pass ]
 
 crbug.com/527270 accessibility/name-calc-img.html [ Failure Pass Timeout ]
@@ -2400,7 +2411,8 @@ crbug.com/697971 [ Mac10.12 ] fast/table/backgr_border-table-quirks-collapsed-bo
 crbug.com/697971 [ Mac10.12 ] fast/table/backgr_border-table-quirks.html [ Failure ]
 crbug.com/697971 [ Mac10.12 ] fast/table/backgr_border-table-row-collapsed-border.html [ Failure ]
 crbug.com/697971 [ Mac10.12 ] fast/table/backgr_border-table-row-group-collapsed-border.html [ Failure ]
-crbug.com/697971 [ Mac10.12 ] fast/table/backgr_border-table-row-group.html [ Failure ]
+# TODO(fmalita): reenable if needed
+# crbug.com/697971 [ Mac10.12 ] fast/table/backgr_border-table-row-group.html [ Failure ]
 crbug.com/697971 [ Mac10.12 ] fast/table/backgr_border-table-row.html [ Failure ]
 crbug.com/697971 [ Mac10.12 ] fast/table/backgr_border-table.html [ Failure ]
 crbug.com/697971 [ Mac10.12 ] fast/table/backgr_layers-hide-collapsed-border.html [ Failure ]
@@ -2414,7 +2426,8 @@ crbug.com/697971 [ Mac10.12 ] fast/table/backgr_position-table-column-group.html
 crbug.com/697971 [ Mac10.12 ] fast/table/backgr_position-table-column.html [ Failure ]
 crbug.com/697971 [ Mac10.12 ] fast/table/backgr_position-table-row-collapsed-border.html [ Failure ]
 crbug.com/697971 [ Mac10.12 ] fast/table/backgr_position-table-row-group-collapsed-border.html [ Failure ]
-crbug.com/697971 [ Mac10.12 ] fast/table/backgr_position-table-row-group.html [ Failure ]
+# TODO(fmalita): reenable if needed
+# crbug.com/697971 [ Mac10.12 ] fast/table/backgr_position-table-row-group.html [ Failure ]
 crbug.com/697971 [ Mac10.12 ] fast/table/backgr_position-table-row.html [ Failure ]
 crbug.com/697971 [ Mac10.12 ] fast/table/backgr_position-table.html [ Failure ]
 crbug.com/697971 [ Mac10.12 ] fast/table/backgr_simple-table-cell-collapsed-border.html [ Failure ]
@@ -2428,7 +2441,8 @@ crbug.com/697971 [ Mac10.12 ] fast/table/backgr_simple-table-row-collapsed-borde
 crbug.com/697971 [ Mac10.12 ] fast/table/backgr_simple-table-row-group-collapsed-border.html [ Failure ]
 crbug.com/697971 [ Mac10.12 ] fast/table/backgr_simple-table-row-group.html [ Failure ]
 crbug.com/697971 [ Mac10.12 ] fast/table/backgr_simple-table-row.html [ Failure ]
-crbug.com/697971 [ Mac10.12 ] fast/table/backgr_simple-table.html [ Failure ]
+# TODO(fmalita): reenable if needed
+# crbug.com/697971 [ Mac10.12 ] fast/table/backgr_simple-table.html [ Failure ]
 crbug.com/697971 [ Mac10.12 ] fast/table/remove-td-display-none.html [ Failure ]
 crbug.com/697971 [ Mac10.12 ] fast/table/spanOverlapRepaint.html [ Failure ]
 crbug.com/697971 [ Mac10.12 ] fast/table/text-field-baseline.html [ Failure ]
@@ -2545,7 +2559,8 @@ crbug.com/697971 [ Mac10.12 ] virtual/mojo-loading/http/tests/media/video-buffer
 crbug.com/697971 [ Mac10.12 ] virtual/mojo-loading/http/tests/misc/acid2-pixel.html [ Failure ]
 crbug.com/697971 [ Mac10.12 ] virtual/mojo-loading/http/tests/misc/bad-charset-alias.html [ Failure ]
 crbug.com/697971 [ Mac10.12 ] virtual/mojo-loading/http/tests/streams/readable-streams/count-queuing-strategy-integration.html [ Failure ]
-crbug.com/697971 [ Mac10.12 ] virtual/mojo-loading/http/tests/webfont/popup-menu-load-webfont-after-open.html [ Failure ]
+# TODO(fmalita): reenable if needed
+# crbug.com/697971 [ Mac10.12 ] virtual/mojo-loading/http/tests/webfont/popup-menu-load-webfont-after-open.html [ Failure ]
 crbug.com/697971 [ Mac10.12 ] virtual/prefer_compositing_to_lcd_text/compositing/overflow/border-radius-styles-with-composited-child.html [ Failure ]
 crbug.com/697971 [ Mac10.12 ] virtual/prefer_compositing_to_lcd_text/compositing/overflow/do-not-paint-outline-into-composited-scrolling-contents.html [ Failure ]
 crbug.com/697971 [ Mac10.12 ] virtual/prefer_compositing_to_lcd_text/compositing/overflow/theme-affects-visual-overflow.html [ Failure ]
