@@ -663,7 +663,8 @@ bool ArcSessionManager::IsArcTermsOfServiceNegotiationNeeded() const {
   // Skip to show UI asking users to set up ARC OptIn preferences, if all of
   // them are managed by the admin policy. Note that the ToS agreement is anyway
   // not shown in the case of the managed ARC.
-  if (AreArcAllOptInPreferencesManagedForProfile(profile_)) {
+  if (IsArcPlayStoreEnabledPreferenceManagedForProfile(profile_) &&
+      AreArcAllOptInPreferencesManagedForProfile(profile_)) {
     VLOG(1) << "All opt-in preferences are under managed. "
             << "Skip ARC Terms of Service negotiation.";
     return false;

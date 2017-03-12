@@ -476,14 +476,17 @@ TEST_F(ArcSessionManagerArcAlwaysStartTest, BaseWorkflow) {
 
 class ArcSessionManagerPolicyTest
     : public ArcSessionManagerTest,
-      public testing::WithParamInterface<std::tuple<base::Value, base::Value>> {
+      public testing::WithParamInterface<
+          std::tuple<bool, base::Value, base::Value>> {
  public:
+  bool arc_enabled_pref_managed() const { return std::get<0>(GetParam()); }
+
   const base::Value& backup_restore_pref_value() const {
-    return std::get<0>(GetParam());
+    return std::get<1>(GetParam());
   }
 
   const base::Value& location_service_pref_value() const {
-    return std::get<1>(GetParam());
+    return std::get<2>(GetParam());
   }
 };
 
@@ -495,8 +498,12 @@ TEST_P(ArcSessionManagerPolicyTest, SkippingTerms) {
   EXPECT_FALSE(prefs->GetBoolean(prefs::kArcSignedIn));
   EXPECT_FALSE(prefs->GetBoolean(prefs::kArcTermsAccepted));
 
-  // Set ARC to be managed.
-  prefs->SetManagedPref(prefs::kArcEnabled, new base::Value(true));
+  // Enable ARC through user pref or by policy, according to the test parameter.
+  if (arc_enabled_pref_managed())
+    prefs->SetManagedPref(prefs::kArcEnabled, new base::Value(true));
+  else
+    prefs->SetBoolean(prefs::kArcEnabled, true);
+  EXPECT_TRUE(IsArcPlayStoreEnabledForProfile(profile()));
 
   // Assign test values to the prefs.
   if (backup_restore_pref_value().is_bool()) {
@@ -507,15 +514,14 @@ TEST_P(ArcSessionManagerPolicyTest, SkippingTerms) {
     prefs->SetManagedPref(prefs::kArcLocationServiceEnabled,
                           location_service_pref_value().DeepCopy());
   }
-  EXPECT_TRUE(arc::IsArcPlayStoreEnabledForProfile(profile()));
-  EXPECT_TRUE(arc::IsArcPlayStoreEnabledPreferenceManagedForProfile(profile()));
 
   arc_session_manager()->SetProfile(profile());
   arc_session_manager()->RequestEnable();
 
-  // Terms of Service are skipped if both ArcBackupRestoreEnabled and
-  // ArcLocationServiceEnabled are managed.
-  const bool expected_terms_skipping = backup_restore_pref_value().is_bool() &&
+  // Terms of Service are skipped iff ARC is enabled by policy and both
+  // ArcBackupRestoreEnabled and ArcLocationServiceEnabled are managed.
+  const bool expected_terms_skipping = arc_enabled_pref_managed() &&
+                                       backup_restore_pref_value().is_bool() &&
                                        location_service_pref_value().is_bool();
   EXPECT_EQ(expected_terms_skipping
                 ? ArcSessionManager::State::ACTIVE
@@ -553,8 +559,13 @@ INSTANTIATE_TEST_CASE_P(
     ArcSessionManagerPolicyTest,
     ArcSessionManagerPolicyTest,
     testing::Combine(
-        testing::Values(base::Value(), base::Value(false), base::Value(true)),
-        testing::Values(base::Value(), base::Value(false), base::Value(true))));
+        testing::Values(false, true) /* arc_enabled_pref_managed */,
+        testing::Values(base::Value(),
+                        base::Value(false),
+                        base::Value(true)) /* backup_restore_pref_value */,
+        testing::Values(base::Value(),
+                        base::Value(false),
+                        base::Value(true)) /* location_service_pref_value */));
 
 class ArcSessionManagerKioskTest : public ArcSessionManagerTestBase {
  public:
