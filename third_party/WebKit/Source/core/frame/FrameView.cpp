@@ -2181,8 +2181,9 @@ static inline void removeFloatingObjectsForSubtreeRoot(LayoutObject& root) {
   // FloatingObjects.
   if (LayoutBlock* cb = root.containingBlock()) {
     if ((cb->normalChildNeedsLayout() || cb->selfNeedsLayout()) &&
-        cb->isLayoutBlockFlow())
-      toLayoutBlockFlow(cb)->removeFloatingObjects();
+        cb->isLayoutBlockFlow()) {
+      toLayoutBlockFlow(cb)->removeFloatingObjectsFromDescendants();
+    }
   }
 }
 
