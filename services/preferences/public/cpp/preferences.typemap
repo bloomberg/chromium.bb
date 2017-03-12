@@ -3,7 +3,10 @@
 # found in the LICENSE file.
 
 mojom = "//services/preferences/public/interfaces/preferences.mojom"
-public_headers = [ "//components/prefs/pref_value_store.h" ]
+public_headers = [
+  "//components/prefs/persistent_pref_store.h",
+  "//components/prefs/pref_value_store.h",
+]
 traits_headers =
     [ "//services/preferences/public/cpp/preferences_struct_traits.h" ]
 sources = [
@@ -12,4 +15,8 @@ sources = [
 deps = [
   "//components/prefs",
 ]
-type_mappings = [ "prefs.mojom.PrefStoreType=::PrefValueStore::PrefStoreType" ]
+
+type_mappings = [
+  "prefs.mojom.PersistentPrefStoreConnector.ReadError=::PersistentPrefStore::PrefReadError",
+  "prefs.mojom.PrefStoreType=::PrefValueStore::PrefStoreType",
+]

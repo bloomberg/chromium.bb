@@ -91,3 +91,44 @@ interface PrefStoreConnector {
   // be received.
   Connect() => (map<PrefStoreType, PrefStoreConnection> connections);
 };
+
+// An interface providing mutation access to a PersistentPrefStore.
+interface PersistentPrefStore {
+  // Sets the value for |key|. A null |value| indicates a delete. |flags| is a
+  // bitmask of WritablePrefStore::PrefWriteFlags.
+  SetValue(string key, mojo.common.mojom.Value? value, uint32 flags);
+
+  // These mirror the C++ PersistentPrefStore methods.
+  CommitPendingWrite();
+  SchedulePendingLossyWrites();
+  ClearMutableValues();
+};
+
+// A connector that provides a way to connect to a PersistentPrefStore.
+interface PersistentPrefStoreConnector {
+  enum ReadError {
+    NONE = 0,
+    JSON_PARSE = 1,
+    JSON_TYPE = 2,
+    ACCESS_DENIED = 3,
+    FILE_OTHER = 4,
+    FILE_LOCKED = 5,
+    NO_FILE = 6,
+    JSON_REPEAT = 7,
+    // OTHER = 8,  // Deprecated.
+    FILE_NOT_SPECIFIED = 9,
+    ASYNCHRONOUS_TASK_INCOMPLETE = 10,
+  };
+
+  // Connects to the PersistentPrefStore.
+  // A null |preferences| indicates that the pref service failed to load prefs.
+  // |pref_store| provides write access; |observer| is used to observe writes
+  // instigated by other clients.
+  [Sync]
+  Connect() => (
+      ReadError read_error,
+      bool read_only,
+      mojo.common.mojom.DictionaryValue? preferences,
+      PersistentPrefStore? pref_store,
+      PrefStoreObserver&? observer);
+};

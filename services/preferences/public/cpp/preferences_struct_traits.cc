@@ -61,4 +61,76 @@ bool EnumTraits<PrefStoreType, PrefValueStore::PrefStoreType>::FromMojom(
   return false;
 }
 
+using MojomReadError = prefs::mojom::PersistentPrefStoreConnector_ReadError;
+
+MojomReadError
+EnumTraits<MojomReadError, PersistentPrefStore::PrefReadError>::ToMojom(
+    PersistentPrefStore::PrefReadError input) {
+  switch (input) {
+    case PersistentPrefStore::PREF_READ_ERROR_NONE:
+      return MojomReadError::NONE;
+    case PersistentPrefStore::PREF_READ_ERROR_JSON_PARSE:
+      return MojomReadError::JSON_PARSE;
+    case PersistentPrefStore::PREF_READ_ERROR_JSON_TYPE:
+      return MojomReadError::JSON_TYPE;
+    case PersistentPrefStore::PREF_READ_ERROR_ACCESS_DENIED:
+      return MojomReadError::ACCESS_DENIED;
+    case PersistentPrefStore::PREF_READ_ERROR_FILE_OTHER:
+      return MojomReadError::FILE_OTHER;
+    case PersistentPrefStore::PREF_READ_ERROR_FILE_LOCKED:
+      return MojomReadError::FILE_LOCKED;
+    case PersistentPrefStore::PREF_READ_ERROR_NO_FILE:
+      return MojomReadError::NO_FILE;
+    case PersistentPrefStore::PREF_READ_ERROR_JSON_REPEAT:
+      return MojomReadError::JSON_REPEAT;
+    case PersistentPrefStore::PREF_READ_ERROR_FILE_NOT_SPECIFIED:
+      return MojomReadError::FILE_NOT_SPECIFIED;
+    case PersistentPrefStore::PREF_READ_ERROR_ASYNCHRONOUS_TASK_INCOMPLETE:
+      return MojomReadError::ASYNCHRONOUS_TASK_INCOMPLETE;
+    case PersistentPrefStore::PREF_READ_ERROR_MAX_ENUM:
+      break;
+  }
+  NOTREACHED();
+  return {};
+}
+
+bool EnumTraits<MojomReadError, PersistentPrefStore::PrefReadError>::FromMojom(
+    MojomReadError input,
+    PersistentPrefStore::PrefReadError* output) {
+  switch (input) {
+    case MojomReadError::NONE:
+      *output = PersistentPrefStore::PREF_READ_ERROR_NONE;
+      return true;
+    case MojomReadError::JSON_PARSE:
+      *output = PersistentPrefStore::PREF_READ_ERROR_JSON_PARSE;
+      return true;
+    case MojomReadError::JSON_TYPE:
+      *output = PersistentPrefStore::PREF_READ_ERROR_JSON_TYPE;
+      return true;
+    case MojomReadError::ACCESS_DENIED:
+      *output = PersistentPrefStore::PREF_READ_ERROR_ACCESS_DENIED;
+      return true;
+    case MojomReadError::FILE_OTHER:
+      *output = PersistentPrefStore::PREF_READ_ERROR_FILE_OTHER;
+      return true;
+    case MojomReadError::FILE_LOCKED:
+      *output = PersistentPrefStore::PREF_READ_ERROR_FILE_LOCKED;
+      return true;
+    case MojomReadError::NO_FILE:
+      *output = PersistentPrefStore::PREF_READ_ERROR_NO_FILE;
+      return true;
+    case MojomReadError::JSON_REPEAT:
+      *output = PersistentPrefStore::PREF_READ_ERROR_JSON_REPEAT;
+      return true;
+    case MojomReadError::FILE_NOT_SPECIFIED:
+      *output = PersistentPrefStore::PREF_READ_ERROR_FILE_NOT_SPECIFIED;
+      return true;
+    case MojomReadError::ASYNCHRONOUS_TASK_INCOMPLETE:
+      *output =
+          PersistentPrefStore::PREF_READ_ERROR_ASYNCHRONOUS_TASK_INCOMPLETE;
+      return true;
+  }
+  return false;
+}
+
 }  // namespace mojo

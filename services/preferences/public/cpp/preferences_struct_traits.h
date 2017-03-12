@@ -5,6 +5,7 @@
 #ifndef SERVICES_PREFERENCES_PUBLIC_CPP_PREFERENCES_STRUCT_TRAITS_H_
 #define SERVICES_PREFERENCES_PUBLIC_CPP_PREFERENCES_STRUCT_TRAITS_H_
 
+#include "components/prefs/persistent_pref_store.h"
 #include "components/prefs/pref_value_store.h"
 #include "mojo/public/cpp/bindings/enum_traits.h"
 #include "services/preferences/public/interfaces/preferences.mojom-shared.h"
@@ -19,6 +20,17 @@ struct EnumTraits<::prefs::mojom::PrefStoreType,
 
   static bool FromMojom(prefs::mojom::PrefStoreType input,
                         PrefValueStore::PrefStoreType* output);
+};
+
+template <>
+struct EnumTraits<::prefs::mojom::PersistentPrefStoreConnector_ReadError,
+                  ::PersistentPrefStore::PrefReadError> {
+  static prefs::mojom::PersistentPrefStoreConnector_ReadError ToMojom(
+      PersistentPrefStore::PrefReadError input);
+
+  static bool FromMojom(
+      prefs::mojom::PersistentPrefStoreConnector_ReadError input,
+      PersistentPrefStore::PrefReadError* output);
 };
 
 }  // namespace mojo

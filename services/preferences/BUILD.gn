@@ -3,15 +3,48 @@
 # found in the LICENSE file.
 
 import("//services/service_manager/public/service_manifest.gni")
+import("//testing/test.gni")
 
 group("tests") {
   testonly = true
   deps = [
-    "//services/preferences/public/cpp/tests",
+    ":preferences_unittests",
   ]
 }
 
 service_manifest("manifest") {
   name = "preferences2"
   source = "manifest.json"
+}
+
+source_set("preferences") {
+  public_deps = [
+    "//services/preferences/public/interfaces",
+  ]
+  deps = [
+    "//components/prefs",
+  ]
+  sources = [
+    "persistent_pref_store_impl.cc",
+    "persistent_pref_store_impl.h",
+  ]
+}
+
+test("preferences_unittests") {
+  deps = [
+    ":preferences",
+    "//base",
+    "//base/test:test_support",
+    "//components/prefs:test_support",
+    "//mojo/edk/test:run_all_unittests",
+    "//mojo/public/cpp/bindings:bindings",
+    "//services/preferences/public/cpp",
+    "//services/preferences/public/cpp/tests",
+    "//services/preferences/public/interfaces",
+    "//testing/gmock",
+    "//testing/gtest",
+  ]
+  sources = [
+    "persistent_pref_store_impl_unittest.cc",
+  ]
 }

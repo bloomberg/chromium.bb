@@ -4,12 +4,16 @@
 
 source_set("cpp") {
   sources = [
+    "persistent_pref_store_client.cc",
+    "persistent_pref_store_client.h",
     "pref_client_store.cc",
     "pref_client_store.h",
     "pref_store_adapter.cc",
     "pref_store_adapter.h",
     "pref_store_client.cc",
     "pref_store_client.h",
+    "pref_store_client_mixin.cc",
+    "pref_store_client_mixin.h",
     "pref_store_impl.cc",
     "pref_store_impl.h",
     "pref_store_manager_impl.cc",

@@ -43,7 +43,7 @@ class PrefStoreClientTest : public testing::Test {
   PrefStoreObserverMock& observer() { return observer_; }
   PrefStoreClient* store() { return store_.get(); }
 
-  bool initialized() { return store_->initialized_; }
+  bool initialized() { return store_->IsInitializationComplete(); }
   void OnPrefChanged(const std::string& key, const base::Value& value) {
     observer_ptr_->OnPrefChanged(key, value.CreateDeepCopy());
   }
