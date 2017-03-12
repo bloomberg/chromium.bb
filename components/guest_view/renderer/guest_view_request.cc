@@ -97,8 +97,7 @@ void GuestViewAttachRequest::HandleResponse(const IPC::Message& message) {
   if (frame->isWebLocalFrame()) {
     window = frame->mainWorldScriptContext()->Global();
   } else {
-    window =
-        frame->toWebRemoteFrame()->deprecatedMainWorldScriptContext()->Global();
+    window = frame->toWebRemoteFrame()->globalProxy();
   }
 
   const int argc = 1;

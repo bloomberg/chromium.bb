@@ -34,6 +34,7 @@
 #include "bindings/core/v8/DOMWrapperWorld.h"
 #include "bindings/core/v8/ScopedPersistent.h"
 #include "bindings/core/v8/ScriptState.h"
+#include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
 #include "v8/include/v8.h"
 #include "wtf/RefPtr.h"
@@ -136,7 +137,7 @@ class WindowProxy : public GarbageCollectedFinalized<WindowProxy> {
   void clearForClose();
   void clearForNavigation();
 
-  v8::Local<v8::Object> globalIfNotDetached();
+  CORE_EXPORT v8::Local<v8::Object> globalIfNotDetached();
   v8::Local<v8::Object> releaseGlobal();
   void setGlobal(v8::Local<v8::Object>);
 

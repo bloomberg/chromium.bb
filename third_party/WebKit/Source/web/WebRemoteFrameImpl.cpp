@@ -4,6 +4,8 @@
 
 #include "web/WebRemoteFrameImpl.h"
 
+#include "bindings/core/v8/DOMWrapperWorld.h"
+#include "bindings/core/v8/WindowProxy.h"
 #include "core/dom/Fullscreen.h"
 #include "core/dom/RemoteSecurityContext.h"
 #include "core/dom/SecurityContext.h"
@@ -22,10 +24,10 @@
 #include "public/web/WebPerformance.h"
 #include "public/web/WebRange.h"
 #include "public/web/WebTreeScopeType.h"
+#include "v8/include/v8.h"
 #include "web/RemoteFrameOwner.h"
 #include "web/WebLocalFrameImpl.h"
 #include "web/WebViewImpl.h"
-#include <v8/include/v8.h>
 
 namespace blink {
 
@@ -211,11 +213,6 @@ v8::Local<v8::Value> WebRemoteFrameImpl::callFunctionEvenIfScriptDisabled(
 v8::Local<v8::Context> WebRemoteFrameImpl::mainWorldScriptContext() const {
   NOTREACHED();
   return v8::Local<v8::Context>();
-}
-
-v8::Local<v8::Context> WebRemoteFrameImpl::deprecatedMainWorldScriptContext()
-    const {
-  return toV8Context(frame(), DOMWrapperWorld::mainWorld());
 }
 
 void WebRemoteFrameImpl::reload(WebFrameLoadType) {
@@ -525,6 +522,12 @@ void WebRemoteFrameImpl::willEnterFullscreen() {
 
 void WebRemoteFrameImpl::setHasReceivedUserGesture() {
   frame()->setDocumentHasReceivedUserGesture();
+}
+
+v8::Local<v8::Object> WebRemoteFrameImpl::globalProxy() const {
+  return frame()
+      ->windowProxy(DOMWrapperWorld::mainWorld())
+      ->globalIfNotDetached();
 }
 
 WebRemoteFrameImpl::WebRemoteFrameImpl(WebTreeScopeType scope,

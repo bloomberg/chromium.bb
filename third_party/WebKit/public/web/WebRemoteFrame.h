@@ -10,6 +10,7 @@
 #include "public/platform/WebInsecureRequestPolicy.h"
 #include "public/web/WebFrame.h"
 #include "public/web/WebSandboxFlags.h"
+#include "v8/include/v8.h"
 
 namespace blink {
 
@@ -101,10 +102,7 @@ class WebRemoteFrame : public WebFrame {
 
   virtual void setHasReceivedUserGesture() = 0;
 
-  // Temporary method to allow embedders to get the script context of a
-  // remote frame. This should only be used by legacy code that has not yet
-  // migrated over to the new OOPI infrastructure.
-  virtual v8::Local<v8::Context> deprecatedMainWorldScriptContext() const = 0;
+  virtual v8::Local<v8::Object> globalProxy() const = 0;
 
  protected:
   explicit WebRemoteFrame(WebTreeScopeType scope) : WebFrame(scope) {}

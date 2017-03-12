@@ -240,12 +240,9 @@ void MimeHandlerViewContainer::PostMessage(v8::Isolate* isolate,
   // on top of out-of-process iframes. Remove it once the code is converted.
   v8::Local<v8::Object> guest_proxy_window;
   if (guest_proxy_frame->isWebLocalFrame()) {
-    guest_proxy_window =
-        guest_proxy_frame->mainWorldScriptContext()->Global();
+    guest_proxy_window = guest_proxy_frame->mainWorldScriptContext()->Global();
   } else {
-    guest_proxy_window = guest_proxy_frame->toWebRemoteFrame()
-                             ->deprecatedMainWorldScriptContext()
-                             ->Global();
+    guest_proxy_window = guest_proxy_frame->toWebRemoteFrame()->globalProxy();
   }
   gin::Dictionary window_object(isolate, guest_proxy_window);
   v8::Local<v8::Function> post_message;
