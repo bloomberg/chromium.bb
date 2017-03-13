@@ -346,6 +346,11 @@
     "args": ["--enable-blink-features=LayoutNG, LayoutNGInline"]
   },
   {
+    "prefix": "layout_ng",
+    "base": "external/csswg-test/css21/linebox",
+    "args": ["--enable-blink-features=LayoutNG, LayoutNGInline"]
+  },
+  {
     "prefix": "feature-policy",
     "base": "http/tests/feature-policy",
     "args": ["--enable-blink-features=FeaturePolicy"]
