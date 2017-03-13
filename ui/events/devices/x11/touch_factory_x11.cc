@@ -98,43 +98,41 @@ void TouchFactory::UpdateDeviceList(XDisplay* display) {
       DeviceListCacheX11::GetInstance()->GetXI2DeviceList(display);
   for (int i = 0; i < xi_dev_list.count; i++) {
     const XIDeviceInfo& devinfo = xi_dev_list[i];
-    if (devinfo.use == XIFloatingSlave || devinfo.use == XIMasterPointer) {
+    if (devinfo.use == XIFloatingSlave || devinfo.use == XIMasterPointer ||
+        devinfo.use == XISlavePointer) {
       for (int k = 0; k < devinfo.num_classes; ++k) {
         XIAnyClassInfo* xiclassinfo = devinfo.classes[k];
-        if (xiclassinfo->type == XITouchClass) {
-          XITouchClassInfo* tci =
-              reinterpret_cast<XITouchClassInfo*>(xiclassinfo);
-          // Only care direct touch device (such as touch screen) right now
-          if (tci->mode == XIDirectTouch) {
-            touch_device_lookup_[devinfo.deviceid] = true;
-            touch_device_list_[devinfo.deviceid] = true;
-          }
+        if (xiclassinfo->type != XITouchClass)
+          continue;
+
+        XITouchClassInfo* tci =
+            reinterpret_cast<XITouchClassInfo*>(xiclassinfo);
+        // Only care direct touch device (such as touch screen) right now
+        if (tci->mode != XIDirectTouch)
+          continue;
+
+        int master_id = devinfo.use == XISlavePointer ? devinfo.attachment
+                                                      : devinfo.deviceid;
+
+        if (!IsValidDevice(master_id))
+          continue;
+
+        touch_device_lookup_[master_id] = true;
+        touch_device_list_[master_id] = true;
+
+        if (devinfo.use != XIMasterPointer)
+          CacheTouchscreenIds(devinfo.deviceid);
+
+        if (devinfo.use == XISlavePointer) {
+          device_master_id_list_[devinfo.deviceid] = master_id;
+          touch_device_lookup_[devinfo.deviceid] = true;
+          touch_device_list_[devinfo.deviceid] = false;
         }
       }
-      pointer_device_lookup_[devinfo.deviceid] = true;
+      pointer_device_lookup_[devinfo.deviceid] =
+          (devinfo.use != XISlavePointer);
     } else if (devinfo.use == XIMasterKeyboard) {
       virtual_core_keyboard_device_ = devinfo.deviceid;
-    }
-
-    if (devinfo.use == XIFloatingSlave || devinfo.use == XISlavePointer) {
-      for (int k = 0; k < devinfo.num_classes; ++k) {
-        XIAnyClassInfo* xiclassinfo = devinfo.classes[k];
-        if (xiclassinfo->type == XITouchClass) {
-          XITouchClassInfo* tci =
-              reinterpret_cast<XITouchClassInfo*>(xiclassinfo);
-          // Only care direct touch device (such as touch screen) right now
-          if (tci->mode == XIDirectTouch) {
-            CacheTouchscreenIds(devinfo.deviceid);
-            if (devinfo.use == XISlavePointer) {
-              device_master_id_list_[devinfo.deviceid] = devinfo.attachment;
-              // If the slave device is direct touch device, we also set its
-              // master device to be touch device.
-              touch_device_lookup_[devinfo.attachment] = true;
-              touch_device_list_[devinfo.attachment] = true;
-            }
-          }
-        }
-      }
     }
   }
 }
