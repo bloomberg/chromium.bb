@@ -775,7 +775,9 @@ void DecoderStream<StreamType>::OnDecoderReset() {
 
   if (state_ != STATE_FLUSHING_DECODER) {
     state_ = STATE_NORMAL;
-    base::ResetAndReturn(&reset_cb_).Run();
+    // Pending read, on failure, could have fired the reset callback already.
+    if (!reset_cb_.is_null())
+      base::ResetAndReturn(&reset_cb_).Run();
     return;
   }
 
