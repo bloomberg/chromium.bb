@@ -29,13 +29,11 @@
       <structure type="chrome_scaled_image" name="IDR_ALLOWED_BACKGROUND_SYNC" file="common/allowed_background_sync.png" />
       <structure type="chrome_scaled_image" name="IDR_ALLOWED_CAMERA" file="common/allowed_camera.png" />
       <structure type="chrome_scaled_image" name="IDR_ALLOWED_DOWNLOADS" file="common/allowed_downloads.png" />
-      <structure type="chrome_scaled_image" name="IDR_ALLOWED_FULLSCREEN" file="common/allowed_fullscreen.png" />
       <structure type="chrome_scaled_image" name="IDR_ALLOWED_IMAGES" file="common/allowed_images.png" />
       <structure type="chrome_scaled_image" name="IDR_ALLOWED_JAVASCRIPT" file="common/allowed_script.png" />
       <structure type="chrome_scaled_image" name="IDR_ALLOWED_LOCATION" file="common/allowed_location.png" />
       <structure type="chrome_scaled_image" name="IDR_ALLOWED_MIC" file="common/allowed_mic.png" />
       <structure type="chrome_scaled_image" name="IDR_ALLOWED_MIDI_SYSEX" file="common/allowed_midi.png" />
-      <structure type="chrome_scaled_image" name="IDR_ALLOWED_MOUSE_CURSOR" file="common/allowed_mouse_cursor.png" />
       <structure type="chrome_scaled_image" name="IDR_ALLOWED_NOTIFICATION" file="common/allowed_notifications.png" />
       <if expr="enable_plugins">
         <structure type="chrome_scaled_image" name="IDR_ALLOWED_PLUGINS" file="common/allowed_plugins.png" />
@@ -85,7 +83,6 @@
       <structure type="chrome_scaled_image" name="IDR_BLOCKED_LOCATION" file="common/blocked_location.png" />
       <structure type="chrome_scaled_image" name="IDR_BLOCKED_MIC" file="common/blocked_mic.png" />
       <structure type="chrome_scaled_image" name="IDR_BLOCKED_MIDI_SYSEX" file="common/blocked_midi.png" />
-      <structure type="chrome_scaled_image" name="IDR_BLOCKED_MOUSE_CURSOR" file="common/blocked_mouse_cursor.png" />
       <structure type="chrome_scaled_image" name="IDR_BLOCKED_NOTIFICATION" file="common/blocked_notifications.png" />
       <if expr="enable_plugins">
         <structure type="chrome_scaled_image" name="IDR_BLOCKED_PLUGINS" file="common/blocked_plugins.png" />
@@ -104,7 +101,6 @@
         <structure type="chrome_scaled_image" name="IDR_BOOKMARK_BAR_FOLDER_SUPERVISED" file="mac/bookmark_bar_folder_supervised.png" />
       </if>
       <if expr="is_macosx">
-        <structure type="chrome_scaled_image" name="IDR_BOOKMARK_BAR_CHEVRONS" file="legacy/chevron.png" />
         <structure type="chrome_scaled_image" name="IDR_BOOKMARK_BAR_FOLDER_WHITE" file="mac/bookmark_bar_folder_white.png" />
         <structure type="chrome_scaled_image" name="IDR_BOOKMARK_BAR_FOLDER_MANAGED_WHITE" file="mac/bookmark_bar_folder_managed_white.png" />
         <structure type="chrome_scaled_image" name="IDR_BOOKMARK_BAR_FOLDER_SUPERVISED_WHITE" file="mac/bookmark_bar_folder_supervised_white.png" />
@@ -210,12 +206,8 @@
         <structure type="chrome_scaled_image" name="IDR_ICON_PROFILES_EDIT_CAMERA" file="legacy/edit_camera.png" />
         <structure type="chrome_scaled_image" name="IDR_ICON_PROFILES_EDIT_HOVER" file="legacy/edit_button_hover.png" />
         <structure type="chrome_scaled_image" name="IDR_ICON_PROFILES_EDIT_PRESSED" file="legacy/edit_button_pressed.png" />
-        <structure type="chrome_scaled_image" name="IDR_ICON_PROFILES_LEGACY_SUPERVISED" file="legacy/icon_legacy_supervised.png" />
         <structure type="chrome_scaled_image" name="IDR_ICON_PROFILES_MENU_AVATAR" file="legacy/avatar_menu_profile.png" />
-        <structure type="chrome_scaled_image" name="IDR_ICON_PROFILES_MENU_CHILD" file="legacy/avatar_menu_child.png" />
         <structure type="chrome_scaled_image" name="IDR_ICON_PROFILES_MENU_DISCONNECT" file="legacy/avatar_menu_disconnect.png" />
-        <structure type="chrome_scaled_image" name="IDR_ICON_PROFILES_MENU_LEGACY_SUPERVISED" file="legacy/avatar_menu_legacy_supervised.png" />
-        <structure type="chrome_scaled_image" name="IDR_ICON_PROFILES_MENU_LOCK" file="legacy/avatar_menu_lock.png" />
       </if>
       <if expr="not is_android and not is_ios and not chromeos">
         <!-- User Manager tutorial -->
@@ -237,7 +229,6 @@
       <structure type="chrome_scaled_image" name="IDR_INPUT_ALERT" file="common/input_alert.png" />
       <structure type="chrome_scaled_image" name="IDR_INPUT_ALERT_MENU" file="common/input_alert_menu.png" />
       <if expr="is_macosx">
-        <structure type="chrome_scaled_image" name="IDR_KEYWORD_SEARCH_MAGNIFIER" file="legacy/keyword_search_magnifier.png" />
         <structure type="chrome_scaled_image" name="IDR_LAPTOP_FAVICON" file="legacy/favicon_laptop.png" />
         <structure type="chrome_scaled_image" name="IDR_PHONE_FAVICON" file="legacy/favicon_phone.png" />
         <structure type="chrome_scaled_image" name="IDR_TABLET_FAVICON" file="legacy/favicon_tablet.png" />
@@ -248,17 +239,7 @@
       <if expr="chromeos">
         <structure type="chrome_scaled_image" name="IDR_LOGIN_PASSWORD_CAPS_LOCK" file="cros/login_password_capslock.png" />
         <structure type="chrome_scaled_image" name="IDR_KIOSK_APP_USER_POD_ICON" file="cros/kiosk_app_user_pod_icon.png" />
-        <structure type="chrome_scaled_image" name="IDR_LEGACY_SUPERVISED_USER_ICON" file="cros/limited_user.png" />
       </if>
-      <structure type="chrome_scaled_image" name="IDR_SUPERVISED_USER_LABEL_BOTTOM" file="common/supervised_user_theme/label_bg_bottom.png" />
-      <structure type="chrome_scaled_image" name="IDR_SUPERVISED_USER_LABEL_BOTTOM_LEFT" file="common/supervised_user_theme/label_bg_bottom_left.png" />
-      <structure type="chrome_scaled_image" name="IDR_SUPERVISED_USER_LABEL_BOTTOM_RIGHT" file="common/supervised_user_theme/label_bg_bottom_right.png" />
-      <structure type="chrome_scaled_image" name="IDR_SUPERVISED_USER_LABEL_CENTER" file="common/supervised_user_theme/label_bg_center.png" />
-      <structure type="chrome_scaled_image" name="IDR_SUPERVISED_USER_LABEL_LEFT" file="common/supervised_user_theme/label_bg_left.png" />
-      <structure type="chrome_scaled_image" name="IDR_SUPERVISED_USER_LABEL_RIGHT" file="common/supervised_user_theme/label_bg_right.png" />
-      <structure type="chrome_scaled_image" name="IDR_SUPERVISED_USER_LABEL_TOP" file="common/supervised_user_theme/label_bg_top.png" />
-      <structure type="chrome_scaled_image" name="IDR_SUPERVISED_USER_LABEL_TOP_LEFT" file="common/supervised_user_theme/label_bg_top_left.png" />
-      <structure type="chrome_scaled_image" name="IDR_SUPERVISED_USER_LABEL_TOP_RIGHT" file="common/supervised_user_theme/label_bg_top_right.png" />
       <structure type="chrome_scaled_image" name="IDR_SUPERVISED_USER_THEME_FRAME" file="common/supervised_user_theme/theme_frame_supervised.png" />
       <structure type="chrome_scaled_image" name="IDR_SUPERVISED_USER_THEME_FRAME_INACTIVE" file="common/supervised_user_theme/theme_frame_supervised_inactive.png" />
       <structure type="chrome_scaled_image" name="IDR_SUPERVISED_USER_THEME_TAB_BACKGROUND" file="common/supervised_user_theme/theme_tab_background_supervised.png" />
@@ -484,19 +465,11 @@
         <structure type="chrome_scaled_image" name="IDR_SWIPE_FORWARD" file="mac/forward_large.png" />
       </if>
       <!-- Note: Tab close buttons are not traditional buttons.  Tab close buttons
-           fill a background with a color from the theme, tile IDR_CLOSE_1 over it,
-           then apply IDR_CLOSE_1_MASK.  See chrome/browser/ui/views/tabs/tab.cc -->
+           fill a background with a color from the theme and tile IDR_CLOSE_1 over it.
+           See chrome/browser/ui/views/tabs/tab.cc -->
       <structure type="chrome_scaled_image" name="IDR_CLOSE_1" file="common/close_1.png" />
       <structure type="chrome_scaled_image" name="IDR_CLOSE_1_H" file="common/close_1_hover.png" />
-      <structure type="chrome_scaled_image" name="IDR_CLOSE_1_MASK" file="common/close_1_mask.png" />
       <structure type="chrome_scaled_image" name="IDR_CLOSE_1_P" file="common/close_1_pressed.png" />
-      <if expr="is_macosx">
-        <structure type="chrome_scaled_image" name="IDR_TAB_AUDIO_INDICATOR" file="legacy/tab_audio_indicator.png" />
-        <structure type="chrome_scaled_image" name="IDR_TAB_AUDIO_MUTING_INDICATOR" file="legacy/tab_audio_muting_indicator.png" />
-        <structure type="chrome_scaled_image" name="IDR_TAB_CAPTURE_INDICATOR" file="legacy/tab_capture_indicator.png" />
-        <structure type="chrome_scaled_image" name="IDR_TAB_BLUETOOTH_INDICATOR" file="legacy/tab_bluetooth_indicator.png" />
-        <structure type="chrome_scaled_image" name="IDR_TAB_USB_INDICATOR" file="legacy/tab_usb_indicator.png" />
-      </if>
       <!-- Used by Mac OSX, and Chrome OS login pages. -->
       <structure type="chrome_scaled_image" name="IDR_TAB_RECORDING_INDICATOR" file="legacy/tab_recording_indicator.png" />
 
@@ -545,10 +518,8 @@
       <if expr="is_macosx or is_ios">
         <structure type="chrome_scaled_image" name="IDR_TOOLBAR_SHADE_TOP" file="mac/toolbar_shade_top.png" />
       </if>
-
       <if expr="is_macosx">
         <structure type="chrome_scaled_image" name="IDR_TRANSLATE" file="legacy/translate.png" />
-        <structure type="chrome_scaled_image" name="IDR_TRANSLATE_ACTIVE" file="legacy/translate_active.png" />
       </if>
       <structure type="chrome_scaled_image" name="IDR_USB_NOTIFICATION_ICON" file="common/notification_usb_icon.png" />
       <if expr="chromeos">
@@ -567,11 +538,6 @@
         <structure type="chrome_scaled_image" name="IDR_WEBSTORE_ICON_16" file="google_chrome/webstore_icon_16.png" />
         <structure type="chrome_scaled_image" name="IDR_WEBSTORE_ICON_24" file="google_chrome/webstore_icon_24.png" />
         <structure type="chrome_scaled_image" name="IDR_WEBSTORE_ICON_32" file="google_chrome/webstore_icon_32.png" />
-      </if>
-      <if expr="is_macosx">
-        <structure type="chrome_scaled_image" name="IDR_ZOOM_MINUS" file="legacy/zoom_minus.png" />
-        <structure type="chrome_scaled_image" name="IDR_ZOOM_PLUS" file="legacy/zoom_plus.png" />
-        <structure type="chrome_scaled_image" name="IDR_ZOOM_NORMAL" file="legacy/zoom_reset.png" />
       </if>
     </structures>
   </release>
