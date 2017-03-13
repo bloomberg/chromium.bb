@@ -496,6 +496,7 @@ void av1_xform_quant(const AV1_COMMON *cm, MACROBLOCK *x, int plane, int block,
                      TX_SIZE tx_size, int ctx,
                      AV1_XFORM_QUANT xform_quant_idx) {
   MACROBLOCKD *const xd = &x->e_mbd;
+  MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
 #if !(CONFIG_PVQ || CONFIG_DAALA_DIST)
   const struct macroblock_plane *const p = &x->plane[plane];
   const struct macroblockd_plane *const pd = &xd->plane[plane];
@@ -506,7 +507,7 @@ void av1_xform_quant(const AV1_COMMON *cm, MACROBLOCK *x, int plane, int block,
   PLANE_TYPE plane_type = get_plane_type(plane);
   const int block_raster_idx = av1_block_index_to_raster_order(tx_size, block);
   TX_TYPE tx_type = get_tx_type(plane_type, xd, block_raster_idx, tx_size);
-  const int is_inter = is_inter_block(&xd->mi[0]->mbmi);
+  const int is_inter = is_inter_block(mbmi);
   const SCAN_ORDER *const scan_order = get_scan(cm, tx_size, tx_type, is_inter);
   tran_low_t *const coeff = BLOCK_OFFSET(p->coeff, block);
   tran_low_t *const qcoeff = BLOCK_OFFSET(p->qcoeff, block);
@@ -514,7 +515,7 @@ void av1_xform_quant(const AV1_COMMON *cm, MACROBLOCK *x, int plane, int block,
   uint16_t *const eob = &p->eobs[block];
   const int diff_stride = block_size_wide[plane_bsize];
 #if CONFIG_AOM_QM
-  int seg_id = xd->mi[0]->mbmi.segment_id;
+  int seg_id = mbmi->segment_id;
   const qm_val_t *qmatrix = pd->seg_qmatrix[seg_id][!is_inter][tx_size];
   const qm_val_t *iqmatrix = pd->seg_iqmatrix[seg_id][!is_inter][tx_size];
 #endif
@@ -546,7 +547,6 @@ void av1_xform_quant(const AV1_COMMON *cm, MACROBLOCK *x, int plane, int block,
   qparam.iqmatrix = iqmatrix;
 #endif  // CONFIG_AOM_QM
 #else
-  MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
   tran_low_t *ref_coeff = BLOCK_OFFSET(pd->pvq_ref_coeff, block);
   int skip = 1;
   PVQ_INFO *pvq_info = NULL;
@@ -592,7 +592,7 @@ void av1_xform_quant(const AV1_COMMON *cm, MACROBLOCK *x, int plane, int block,
 
   fwd_txfm_param.tx_type = tx_type;
   fwd_txfm_param.tx_size = tx_size;
-  fwd_txfm_param.lossless = xd->lossless[xd->mi[0]->mbmi.segment_id];
+  fwd_txfm_param.lossless = xd->lossless[mbmi->segment_id];
 
 #if CONFIG_AOM_HIGHBITDEPTH
   fwd_txfm_param.bd = xd->bd;
