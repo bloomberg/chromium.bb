@@ -209,4 +209,7 @@ java_library("junit") {
     "src/src/main/java/org/junit/validator/TestClassValidator.java",
     "src/src/main/java/org/junit/validator/ValidateWith.java",
   ]
+
+  # Work-around for combined android projects not having java.lang.management.
+  gradle_treat_as_prebuilt = true
 }
