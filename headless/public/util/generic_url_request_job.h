@@ -61,12 +61,7 @@ class GenericURLRequestJob : public ManagedDispatchURLRequestJob,
                                        const std::string& devtools_id,
                                        const std::string& method,
                                        const std::string& referrer,
-                                       RewriteCallback callback);
-    // TODO(alexclarke): Make the above pure virtual and remove this.
-    virtual bool BlockOrRewriteRequest(const GURL& url,
-                                       const std::string& method,
-                                       const std::string& referrer,
-                                       RewriteCallback callback);
+                                       RewriteCallback callback) = 0;
 
     // Allows the delegate to synchronously fulfill a request with a reply.
     // Called on an arbitrary thread.
@@ -74,22 +69,13 @@ class GenericURLRequestJob : public ManagedDispatchURLRequestJob,
         const GURL& url,
         const std::string& devtools_id,
         const std::string& method,
-        const net::HttpRequestHeaders& request_headers);
-    // TODO(alexclarke): Make the above pure virtual and remove this.
-    virtual const HttpResponse* MaybeMatchResource(
-        const GURL& url,
-        const std::string& method,
-        const net::HttpRequestHeaders& request_headers);
+        const net::HttpRequestHeaders& request_headers) = 0;
 
     // Signals that a resource load has finished. Called on an arbitrary thread.
     virtual void OnResourceLoadComplete(const GURL& final_url,
                                         const std::string& devtools_id,
                                         const std::string& mime_type,
-                                        int http_response_code);
-    // TODO(alexclarke): Make the above pure virtual and remove this.
-    virtual void OnResourceLoadComplete(const GURL& final_url,
-                                        const std::string& mime_type,
-                                        int http_response_code) {}
+                                        int http_response_code) = 0;
 
    protected:
     virtual ~Delegate() {}

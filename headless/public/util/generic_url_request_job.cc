@@ -203,46 +203,4 @@ void GenericURLRequestJob::GetLoadTimingInfo(
   load_timing_info->receive_headers_end = response_time_;
 }
 
-bool GenericURLRequestJob::Delegate::BlockOrRewriteRequest(
-    const GURL& url,
-    const std::string& devtools_id,
-    const std::string& method,
-    const std::string& referrer,
-    RewriteCallback callback) {
-  return BlockOrRewriteRequest(url, method, referrer, callback);
-}
-
-bool GenericURLRequestJob::Delegate::BlockOrRewriteRequest(
-    const GURL& url,
-    const std::string& method,
-    const std::string& referrer,
-    RewriteCallback callback) {
-  return false;
-}
-
-const GenericURLRequestJob::HttpResponse*
-GenericURLRequestJob::Delegate::MaybeMatchResource(
-    const GURL& url,
-    const std::string& devtools_id,
-    const std::string& method,
-    const net::HttpRequestHeaders& request_headers) {
-  return MaybeMatchResource(url, method, request_headers);
-}
-
-const GenericURLRequestJob::HttpResponse*
-GenericURLRequestJob::Delegate::MaybeMatchResource(
-    const GURL& url,
-    const std::string& method,
-    const net::HttpRequestHeaders& request_headers) {
-  return nullptr;
-}
-
-void GenericURLRequestJob::Delegate::OnResourceLoadComplete(
-    const GURL& final_url,
-    const std::string& devtools_id,
-    const std::string& mime_type,
-    int http_response_code) {
-  OnResourceLoadComplete(final_url, mime_type, http_response_code);
-}
-
 }  // namespace headless
