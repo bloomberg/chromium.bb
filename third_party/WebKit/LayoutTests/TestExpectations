@@ -79,8 +79,6 @@ crbug.com/619103 paint/invalidation/background-resize-width.html [ Failure ]
 crbug.com/619103 virtual/disable-spinvalidation/paint/invalidation/background-resize-width.html [ Failure ]
 crbug.com/619103 paint/selection/text-selection-newline-mixed-ltr-rtl.html [ Failure ]
 
-# TODO(fmalita): re-enable
-# crbug.com/624709 [ Win ] virtual/gpu-rasterization/images/png-with-color-profile.html [ Failure ]
 crbug.com/624709 [ Win ] virtual/gpu-rasterization/images/webp-color-profile-lossy.html [ Failure ]
 crbug.com/587737 [ Mac ] virtual/gpu-rasterization/images/color-profile-filter.html [ Timeout Failure ]
 crbug.com/624233 virtual/gpu-rasterization/images/color-profile-background-clip-text.html [ Pass Failure Crash ]
@@ -2535,8 +2533,6 @@ crbug.com/697971 [ Mac10.12 ] fast/table/backgr_border-table-quirks-collapsed-bo
 crbug.com/697971 [ Mac10.12 ] fast/table/backgr_border-table-quirks.html [ Failure ]
 crbug.com/697971 [ Mac10.12 ] fast/table/backgr_border-table-row-collapsed-border.html [ Failure ]
 crbug.com/697971 [ Mac10.12 ] fast/table/backgr_border-table-row-group-collapsed-border.html [ Failure ]
-# TODO(fmalita): reenable if needed
-# crbug.com/697971 [ Mac10.12 ] fast/table/backgr_border-table-row-group.html [ Failure ]
 crbug.com/697971 [ Mac10.12 ] fast/table/backgr_border-table-row.html [ Failure ]
 crbug.com/697971 [ Mac10.12 ] fast/table/backgr_border-table.html [ Failure ]
 crbug.com/697971 [ Mac10.12 ] fast/table/backgr_layers-hide-collapsed-border.html [ Failure ]
@@ -2550,8 +2546,6 @@ crbug.com/697971 [ Mac10.12 ] fast/table/backgr_position-table-column-group.html
 crbug.com/697971 [ Mac10.12 ] fast/table/backgr_position-table-column.html [ Failure ]
 crbug.com/697971 [ Mac10.12 ] fast/table/backgr_position-table-row-collapsed-border.html [ Failure ]
 crbug.com/697971 [ Mac10.12 ] fast/table/backgr_position-table-row-group-collapsed-border.html [ Failure ]
-# TODO(fmalita): reenable if needed
-# crbug.com/697971 [ Mac10.12 ] fast/table/backgr_position-table-row-group.html [ Failure ]
 crbug.com/697971 [ Mac10.12 ] fast/table/backgr_position-table-row.html [ Failure ]
 crbug.com/697971 [ Mac10.12 ] fast/table/backgr_position-table.html [ Failure ]
 crbug.com/697971 [ Mac10.12 ] fast/table/backgr_simple-table-cell-collapsed-border.html [ Failure ]
@@ -2565,8 +2559,6 @@ crbug.com/697971 [ Mac10.12 ] fast/table/backgr_simple-table-row-collapsed-borde
 crbug.com/697971 [ Mac10.12 ] fast/table/backgr_simple-table-row-group-collapsed-border.html [ Failure ]
 crbug.com/697971 [ Mac10.12 ] fast/table/backgr_simple-table-row-group.html [ Failure ]
 crbug.com/697971 [ Mac10.12 ] fast/table/backgr_simple-table-row.html [ Failure ]
-# TODO(fmalita): reenable if needed
-# crbug.com/697971 [ Mac10.12 ] fast/table/backgr_simple-table.html [ Failure ]
 crbug.com/697971 [ Mac10.12 ] fast/table/remove-td-display-none.html [ Failure ]
 crbug.com/697971 [ Mac10.12 ] fast/table/spanOverlapRepaint.html [ Failure ]
 crbug.com/697971 [ Mac10.12 ] fast/table/text-field-baseline.html [ Failure ]
@@ -2683,8 +2675,7 @@ crbug.com/697971 [ Mac10.12 ] virtual/mojo-loading/http/tests/media/video-buffer
 crbug.com/697971 [ Mac10.12 ] virtual/mojo-loading/http/tests/misc/acid2-pixel.html [ Failure ]
 crbug.com/697971 [ Mac10.12 ] virtual/mojo-loading/http/tests/misc/bad-charset-alias.html [ Failure ]
 crbug.com/697971 [ Mac10.12 ] virtual/mojo-loading/http/tests/streams/readable-streams/count-queuing-strategy-integration.html [ Failure ]
-# TODO(fmalita): reenable if needed
-# crbug.com/697971 [ Mac10.12 ] virtual/mojo-loading/http/tests/webfont/popup-menu-load-webfont-after-open.html [ Failure ]
+crbug.com/697971 [ Mac ] virtual/mojo-loading/http/tests/webfont/popup-menu-load-webfont-after-open.html [ Pass Failure ]
 crbug.com/697971 [ Mac10.12 ] virtual/prefer_compositing_to_lcd_text/compositing/overflow/border-radius-styles-with-composited-child.html [ Failure ]
 crbug.com/697971 [ Mac10.12 ] virtual/prefer_compositing_to_lcd_text/compositing/overflow/do-not-paint-outline-into-composited-scrolling-contents.html [ Failure ]
 crbug.com/697971 [ Mac10.12 ] virtual/prefer_compositing_to_lcd_text/compositing/overflow/theme-affects-visual-overflow.html [ Failure ]
@@ -2804,8 +2795,7 @@ crbug.com/610835 virtual/mojo-loading/http/tests/security/XFrameOptions/x-frame-
 crbug.com/673539 [ Linux Win ] css3/filters/effect-contrast-hw.html [ Pass Failure ]
 
 # Added 2016-12-15
-# TODO(fmalita): reenable if needed
-#crbug.com/674466 [ Win10 ] fast/forms/select/menulist-appearance-rtl.html [ Pass Failure ]
+crbug.com/674466 [ Win10 ] fast/forms/select/menulist-appearance-rtl.html [ Pass Failure ]
 
 # Added 2016-12-16
 crbug.com/674858 [ Linux ] virtual/threaded/printing/offscreencanvas-2d-printing.html [ Pass Failure Crash ]
