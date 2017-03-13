@@ -1225,7 +1225,9 @@
         "buildslave_type": "baremetal",
         "chroot_replace": false,
         "description": "Build with Address Sanitizer (Clang)",
+        "disk_layout": "4gb-rootfs",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Continuous",
+        "hw_tests_override": [],
         "trybot_list": true,
         "uprev": false
     },
@@ -1236,7 +1238,7 @@
         ],
         "buildslave_type": "baremetal",
         "description": "Paladin build with Address Sanitizer (Clang)",
-        "disk_layout": "2gb-rootfs",
+        "disk_layout": "4gb-rootfs",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-ASAN",
         "hw_tests_override": [
             "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 3,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",

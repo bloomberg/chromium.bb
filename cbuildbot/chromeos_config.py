@@ -2431,9 +2431,12 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   site_config.Add(
       'amd64-generic-asan-paladin',
       site_config.templates.paladin,
+      site_config.templates.no_hwtest_builder,
       board_configs['amd64-generic'],
       site_config.templates.asan,
       description='Paladin build with Address Sanitizer (Clang)',
+      # THESE IMAGES CAN DAMAGE THE LAB and cannot be used for hardware testing.
+      disk_layout='4gb-rootfs',
       important=False,
   )
 
@@ -2693,8 +2696,11 @@ def InformationalBuilders(site_config, boards_dict, ge_build_config):
       'amd64-generic-asan',
       site_config.templates.asan,
       site_config.templates.incremental,
+      site_config.templates.no_hwtest_builder,
       boards=['amd64-generic'],
       description='Build with Address Sanitizer (Clang)',
+      # THESE IMAGES CAN DAMAGE THE LAB and cannot be used for hardware testing.
+      disk_layout='4gb-rootfs',
       trybot_list=True,
   )
 
