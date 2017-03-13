@@ -33,6 +33,7 @@
 #include <unistd.h>
 #include <signal.h>
 #include <sys/stat.h>
+#include <sys/sysmacros.h>
 #include <sys/ioctl.h>
 #include <linux/vt.h>
 #include <linux/kd.h>

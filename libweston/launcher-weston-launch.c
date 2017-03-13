@@ -34,6 +34,7 @@
 #include <errno.h>
 #include <signal.h>
 #include <sys/socket.h>
+#include <sys/sysmacros.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/uio.h>
