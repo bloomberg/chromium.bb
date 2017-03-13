@@ -370,11 +370,14 @@ class VIEWS_EXPORT Textfield : public View,
   // Does necessary updates when the text and/or cursor position changes.
   void UpdateAfterChange(bool text_changed, bool cursor_changed);
 
+  // Updates cursor visibility and blinks the cursor if needed.
+  void ShowCursor();
+
   // A callback function to periodically update the cursor node_data.
-  void UpdateCursor();
+  void UpdateCursorVisibility();
 
   // Update the cursor position in the text field.
-  void UpdateCursorView();
+  void UpdateCursorViewPosition();
 
   void PaintTextAndCursor(gfx::Canvas* canvas);
 

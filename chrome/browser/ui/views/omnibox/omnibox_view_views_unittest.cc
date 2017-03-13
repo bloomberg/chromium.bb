@@ -183,6 +183,10 @@ class OmniboxViewViewsTest : public testing::Test {
   // (i.e. it's been navigated to).
   void SetAndEmphasizeText(const std::string& new_text, bool accept_input);
 
+  bool IsCursorEnabled() const {
+    return test_api_->GetRenderText()->cursor_enabled();
+  }
+
  private:
   // testing::Test:
   void SetUp() override;
@@ -264,6 +268,17 @@ TEST_F(OmniboxViewViewsTest, UpdatePopupCall) {
   omnibox_textfield()->OnKeyEvent(&pressed);
   omnibox_view()->CheckUpdatePopupCallInfo(3, base::ASCIIToUTF16("a"),
                                            Range(1));
+}
+
+// Test that text cursor is shown in the omnibox after entering any single
+// character in NTP 'Search box'. Test for crbug.com/698172.
+TEST_F(OmniboxViewViewsTest, EditTextfield) {
+  omnibox_textfield()->SetCursorEnabled(false);
+  ui::KeyEvent char_event(ui::ET_KEY_PRESSED, ui::VKEY_A, ui::DomCode::US_A, 0,
+                          ui::DomKey::FromCharacter('a'),
+                          ui::EventTimeForNow());
+  omnibox_textfield()->InsertChar(char_event);
+  EXPECT_TRUE(IsCursorEnabled());
 }
 
 // Test that the scheduled text edit command is cleared when Textfield receives

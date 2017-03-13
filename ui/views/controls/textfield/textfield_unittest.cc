@@ -252,7 +252,7 @@ void MockInputMethod::ClearComposition() {
   result_text_.clear();
 }
 
-// A Textfield wrapper to intercept OnKey[Pressed|Released]() ressults.
+// A Textfield wrapper to intercept OnKey[Pressed|Released]() results.
 class TestTextfield : public views::Textfield {
  public:
   TestTextfield()
@@ -3112,20 +3112,14 @@ TEST_F(TextfieldTest, AccessiblePasswordTest) {
   EXPECT_TRUE(node_data_protected.HasStateFlag(ui::AX_STATE_PROTECTED));
 }
 
-// Test if the cursor visibility is controlled by |cursor_enabled_| in
-// RenderText.
+// Verify that cursor visibility is controlled by SetCursorEnabled.
 TEST_F(TextfieldTest, CursorVisibility) {
   InitTextfield();
-  gfx::RenderText* render_text = test_api_->GetRenderText();
 
-  render_text->SetCursorEnabled(false);
-  textfield_->OnBlur();
-  textfield_->OnFocus();
+  textfield_->SetCursorEnabled(false);
   EXPECT_FALSE(test_api_->IsCursorVisible());
 
-  render_text->SetCursorEnabled(true);
-  textfield_->OnBlur();
-  textfield_->OnFocus();
+  textfield_->SetCursorEnabled(true);
   EXPECT_TRUE(test_api_->IsCursorVisible());
 }
 
