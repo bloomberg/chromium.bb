@@ -7081,32 +7081,41 @@ class LayerTreeHostTestBeginFrameSequenceNumbers : public LayerTreeHostTest {
     return draw_result;
   }
 
-  void DrawLayersOnThread(LayerTreeHostImpl* impl) override {
-    EXPECT_TRUE(frame_data_);
-    EXPECT_EQ(
-        BeginFrameAck(current_begin_frame_args_.source_id,
-                      current_begin_frame_args_.sequence_number,
-                      current_begin_main_frame_args_on_impl_.sequence_number, 0,
-                      true),
-        frame_data_->begin_frame_ack);
-  }
-
   void DisplayReceivedCompositorFrameOnThread(
       const CompositorFrame& frame) override {
+    if (compositor_frame_submitted_)
+      return;
     compositor_frame_submitted_ = true;
+
     EXPECT_EQ(
         BeginFrameAck(current_begin_frame_args_.source_id,
                       current_begin_frame_args_.sequence_number,
                       current_begin_main_frame_args_on_impl_.sequence_number, 0,
                       true),
         frame.metadata.begin_frame_ack);
+  }
+
+  void DrawLayersOnThread(LayerTreeHostImpl* impl) override {
+    if (layers_drawn_)
+      return;
+    layers_drawn_ = true;
+
+    EXPECT_TRUE(frame_data_);
+    EXPECT_TRUE(compositor_frame_submitted_);
+    EXPECT_EQ(
+        BeginFrameAck(current_begin_frame_args_.source_id,
+                      current_begin_frame_args_.sequence_number,
+                      current_begin_main_frame_args_on_impl_.sequence_number, 0,
+                      true),
+        frame_data_->begin_frame_ack);
     EndTest();
   }
 
-  void AfterTest() override { EXPECT_TRUE(compositor_frame_submitted_); }
+  void AfterTest() override { EXPECT_TRUE(layers_drawn_); }
 
  private:
-  bool compositor_frame_submitted_;
+  bool compositor_frame_submitted_ = false;
+  bool layers_drawn_ = false;
   BeginFrameArgs current_begin_frame_args_;
   BeginFrameArgs current_begin_main_frame_args_;
   BeginFrameArgs current_begin_main_frame_args_on_impl_;
