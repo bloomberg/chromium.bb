@@ -240,15 +240,6 @@ _OS_NEGATIVE_FILTER['android:chromium'] = (
         'CorrectEventFiringTest.testShouldFireMouseDownEventWhenClicking',
         # https://bugs.chromium.org/p/chromedriver/issues/detail?id=998
         'ImplicitWaitTest.testShouldImplicitlyWaitForASingleElement',
-        # https://bugs.chromium.org/p/chromedriver/issues/detail?id=922
-        'ClickTest.testCanClickOnAnElementWithTopSetToANegativeNumber',
-        'CorrectEventFiringTest.testClickEventsShouldBubble',
-        'VisibilityTest.testShouldModifyTheVisibilityOfAnElementDynamically',
-        'CorrectEventFiringTest.testSendingKeysToAFocusedElementShouldNotBlurThatElement',
-        'JavascriptEnabledDriverTest.testShouldBeAbleToClickOnSubmitButtons',
-        'JavascriptEnabledDriverTest.testIssue80ClickShouldGenerateClickEvent',
-        'CorrectEventFiringTest.testShouldFireMouseUpEventWhenClicking',
-        'TypingTest.testShiftSelectionDeletes',
     ]
 )
 _OS_NEGATIVE_FILTER['android:chrome_beta'] = (
