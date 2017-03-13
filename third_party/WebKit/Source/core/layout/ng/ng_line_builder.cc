@@ -199,14 +199,18 @@ void NGLineBuilder::PlaceItems(
   line_box_data_list_.grow(line_box_data_list_.size() + 1);
   LineBoxData& line_box_data = line_box_data_list_.back();
 
+  // Accumulate a "strut"; a zero-width inline box with the element's font and
+  // line height properties. https://drafts.csswg.org/css2/visudet.html#strut
+  const ComputedStyle* block_style = inline_box_->BlockStyle();
+  InlineItemMetrics block_metrics(*block_style, baseline_type_);
+  line_box_data.UpdateMaxAscentAndDescent(block_metrics);
+
   // Use the block style to compute the estimated baseline position because the
   // baseline position is not known until we know the maximum ascent and leading
   // of the line. Items are placed on this baseline, then adjusted later if the
   // estimation turned out to be different.
-  const ComputedStyle* block_style = inline_box_->BlockStyle();
-  InlineItemMetrics estimated_metrics(*block_style, baseline_type_);
   LayoutUnit estimated_baseline =
-      content_size_ + LayoutUnit(estimated_metrics.ascent_and_leading);
+      content_size_ + LayoutUnit(block_metrics.ascent_and_leading);
 
   for (const auto& line_item_chunk : line_item_chunks) {
     const NGLayoutInlineItem& item = items[line_item_chunk.index];
@@ -277,10 +281,10 @@ void NGLineBuilder::PlaceItems(
 
   // If the estimated baseline position was not the actual position, move all
   // fragments in the block direction.
-  if (estimated_metrics.ascent_and_leading !=
+  if (block_metrics.ascent_and_leading !=
       line_box_data.max_ascent_and_leading) {
     LayoutUnit adjust_top(line_box_data.max_ascent_and_leading -
-                          estimated_metrics.ascent_and_leading);
+                          block_metrics.ascent_and_leading);
     for (unsigned i = fragment_start_index; i < offsets_.size(); i++)
       offsets_[i].block_offset += adjust_top;
   }
