@@ -3261,6 +3261,9 @@ void av1_setup_past_independence(AV1_COMMON *cm) {
   av1_default_coef_probs(cm);
   init_mode_probs(cm->fc);
   av1_init_mv_probs(cm);
+#if CONFIG_PVQ
+  av1_default_pvq_probs(cm);
+#endif  // CONFIG_PVQ
 #if CONFIG_ADAPT_SCAN
   av1_init_scan_order(cm);
 #endif

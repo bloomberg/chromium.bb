@@ -4970,7 +4970,11 @@ void av1_decode_frame(AV1Decoder *pbi, const uint8_t *data,
                                  cm->tile_rows * cm->tile_cols);
       av1_average_tile_intra_cdfs(pbi->common.fc, tile_ctxs, cdf_ptrs,
                                   cm->tile_rows * cm->tile_cols);
-#endif
+#if CONFIG_PVQ
+      av1_average_tile_pvq_cdfs(pbi->common.fc, tile_ctxs,
+                                cm->tile_rows * cm->tile_cols);
+#endif  // CONFIG_PVQ
+#endif  // CONFIG_EC_ADAPT
 #if CONFIG_ADAPT_SCAN
       av1_adapt_scan_order(cm);
 #endif  // CONFIG_ADAPT_SCAN

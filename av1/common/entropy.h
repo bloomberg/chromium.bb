@@ -415,7 +415,13 @@ void av1_average_tile_inter_cdfs(struct AV1Common *cm,
                                  struct frame_contexts *fc,
                                  struct frame_contexts *ec_ctxs[],
                                  aom_cdf_prob *cdf_ptrs[], const int num_tiles);
-#endif
+#if CONFIG_PVQ
+void av1_default_pvq_probs(struct AV1Common *cm);
+void av1_average_tile_pvq_cdfs(struct frame_contexts *fc,
+                               struct frame_contexts *ec_ctxs[],
+                               const int num_tiles);
+#endif  // CONFIG_PVQ
+#endif  // CONFIG_EC_ADAPT
 #ifdef __cplusplus
 }  // extern "C"
 #endif
