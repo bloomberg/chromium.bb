@@ -400,7 +400,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
  private:
   ObjectPaintProperties& ensurePaintProperties();
 
- private:
   //////////////////////////////////////////
   // Helper functions. Dangerous to use!
   void setPreviousSibling(LayoutObject* previous) { m_previous = previous; }
