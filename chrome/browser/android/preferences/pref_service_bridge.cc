@@ -218,9 +218,16 @@ static jboolean GetAcceptCookiesEnabled(JNIEnv* env,
   return GetBooleanForContentSetting(CONTENT_SETTINGS_TYPE_COOKIES);
 }
 
-static jboolean GetAcceptCookiesManaged(JNIEnv* env,
-                                        const JavaParamRef<jobject>& obj) {
-  return IsContentSettingManaged(CONTENT_SETTINGS_TYPE_COOKIES);
+static jboolean GetAcceptCookiesUserModifiable(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
+  return IsContentSettingUserModifiable(CONTENT_SETTINGS_TYPE_COOKIES);
+}
+
+static jboolean GetAcceptCookiesManagedByCustodian(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
+  return IsContentSettingManagedByCustodian(CONTENT_SETTINGS_TYPE_COOKIES);
 }
 
 static jboolean GetAutoplayEnabled(JNIEnv* env,

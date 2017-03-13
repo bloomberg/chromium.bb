@@ -281,10 +281,18 @@ public final class PrefServiceBridge {
     }
 
     /**
-     * @return Whether cookies acceptance is configured by policy
+     * @return Whether cookies acceptance is modifiable by the user
      */
-    public boolean isAcceptCookiesManaged() {
-        return nativeGetAcceptCookiesManaged();
+    public boolean isAcceptCookiesUserModifiable() {
+        return nativeGetAcceptCookiesUserModifiable();
+    }
+
+    /**
+     * @return Whether cookies acceptance is configured by the user's custodian
+     * (for supervised users).
+     */
+    public boolean isAcceptCookiesManagedByCustodian() {
+        return nativeGetAcceptCookiesManagedByCustodian();
     }
 
     public boolean isBlockThirdPartyCookiesEnabled() {
@@ -1093,7 +1101,8 @@ public final class PrefServiceBridge {
     }
 
     private native boolean nativeGetAcceptCookiesEnabled();
-    private native boolean nativeGetAcceptCookiesManaged();
+    private native boolean nativeGetAcceptCookiesUserModifiable();
+    private native boolean nativeGetAcceptCookiesManagedByCustodian();
     private native boolean nativeGetAutoplayEnabled();
     private native boolean nativeGetBackgroundSyncEnabled();
     private native boolean nativeGetBlockThirdPartyCookiesEnabled();

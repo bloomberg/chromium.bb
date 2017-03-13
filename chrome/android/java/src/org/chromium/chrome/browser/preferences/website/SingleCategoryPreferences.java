@@ -465,7 +465,7 @@ public class SingleCategoryPreferences extends PreferenceFragment
     @Override
     public boolean onPreferenceChange(Preference preference, Object newValue) {
         if (READ_WRITE_TOGGLE_KEY.equals(preference.getKey())) {
-            if (mCategory.isManaged()) return false;
+            assert !mCategory.isManaged();
 
             if (mCategory.showAutoplaySites()) {
                 PrefServiceBridge.getInstance().setAutoplayEnabled((boolean) newValue);
@@ -678,9 +678,19 @@ public class SingleCategoryPreferences extends PreferenceFragment
                 }
                 globalToggle.setSummaryOff(
                         ContentSettingsResources.getDisabledSummary(contentType));
-                if (mCategory.isManaged() && !mCategory.isManagedByCustodian()) {
-                    globalToggle.setIcon(R.drawable.controlled_setting_mandatory);
-                }
+                globalToggle.setManagedPreferenceDelegate(new ManagedPreferenceDelegate() {
+                    @Override
+                    public boolean isPreferenceControlledByPolicy(Preference preference) {
+                        // TODO(bauerb): Align the ManagedPreferenceDelegate and
+                        // SiteSettingsCategory interfaces better to avoid this indirection.
+                        return mCategory.isManaged() && !mCategory.isManagedByCustodian();
+                    }
+
+                    @Override
+                    public boolean isPreferenceControlledByCustodian(Preference preference) {
+                        return mCategory.isManagedByCustodian();
+                    }
+                });
                 if (mCategory.showAutoplaySites()) {
                     globalToggle.setChecked(
                             PrefServiceBridge.getInstance().isAutoplayEnabled());

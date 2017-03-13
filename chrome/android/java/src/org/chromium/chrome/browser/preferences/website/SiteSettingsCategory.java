@@ -288,12 +288,12 @@ public class SiteSettingsCategory {
     public boolean isManaged() {
         PrefServiceBridge prefs = PrefServiceBridge.getInstance();
         if (showBackgroundSyncSites()) return prefs.isBackgroundSyncManaged();
-        if (showCameraSites()) return !prefs.isCameraUserModifiable();
-        if (showCookiesSites()) return prefs.isAcceptCookiesManaged();
+        if (showCookiesSites()) return !prefs.isAcceptCookiesUserModifiable();
         if (showGeolocationSites()) {
             return !prefs.isAllowLocationUserModifiable();
         }
         if (showJavaScriptSites()) return prefs.javaScriptManaged();
+        if (showCameraSites()) return !prefs.isCameraUserModifiable();
         if (showMicrophoneSites()) return !prefs.isMicUserModifiable();
         if (showPopupSites()) return prefs.isPopupsManaged();
         return false;
@@ -305,6 +305,7 @@ public class SiteSettingsCategory {
      */
     public boolean isManagedByCustodian() {
         PrefServiceBridge prefs = PrefServiceBridge.getInstance();
+        if (showCookiesSites()) return prefs.isAcceptCookiesManagedByCustodian();
         if (showGeolocationSites()) {
             return prefs.isAllowLocationManagedByCustodian();
         }
