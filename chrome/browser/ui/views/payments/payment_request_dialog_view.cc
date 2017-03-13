@@ -8,12 +8,11 @@
 
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "chrome/browser/ui/views/payments/contact_info_view_controller.h"
 #include "chrome/browser/ui/views/payments/credit_card_editor_view_controller.h"
 #include "chrome/browser/ui/views/payments/order_summary_view_controller.h"
 #include "chrome/browser/ui/views/payments/payment_method_view_controller.h"
 #include "chrome/browser/ui/views/payments/payment_sheet_view_controller.h"
-#include "chrome/browser/ui/views/payments/shipping_list_view_controller.h"
+#include "chrome/browser/ui/views/payments/profile_list_view_controller.h"
 #include "components/constrained_window/constrained_window_views.h"
 #include "components/payments/content/payment_request.h"
 #include "content/public/browser/browser_thread.h"
@@ -101,10 +100,11 @@ void PaymentRequestDialogView::GoBack() {
     observer_for_testing_->OnBackNavigation();
 }
 
-void PaymentRequestDialogView::ShowContactInfoSheet() {
+void PaymentRequestDialogView::ShowContactProfileSheet() {
   view_stack_.Push(
       CreateViewAndInstallController(
-          base::MakeUnique<ContactInfoViewController>(request_, this),
+          ProfileListViewController::GetContactProfileViewController(request_,
+                                                                     this),
           &controller_map_),
       /* animate */ true);
   if (observer_for_testing_)
@@ -131,10 +131,11 @@ void PaymentRequestDialogView::ShowPaymentMethodSheet() {
     observer_for_testing_->OnPaymentMethodOpened();
 }
 
-void PaymentRequestDialogView::ShowShippingListSheet() {
+void PaymentRequestDialogView::ShowShippingProfileSheet() {
   view_stack_.Push(
       CreateViewAndInstallController(
-          base::MakeUnique<ShippingListViewController>(request_, this),
+          ProfileListViewController::GetShippingProfileViewController(request_,
+                                                                      this),
           &controller_map_),
       /* animate = */ true);
 }

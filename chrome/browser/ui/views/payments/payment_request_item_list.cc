@@ -47,6 +47,7 @@ std::unique_ptr<views::ImageView> PaymentRequestItemList::Item::CreateCheckmark(
       base::MakeUnique<views::ImageView>();
   checkmark->set_id(static_cast<int>(DialogViewID::CHECKMARK_VIEW));
   checkmark->set_can_process_events_within_subtree(false);
+  checkmark->set_owned_by_client();
   checkmark->SetImage(
       gfx::CreateVectorIcon(views::kMenuCheckIcon, kCheckmarkColor));
   checkmark->SetVisible(selected);

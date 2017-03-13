@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "ui/views/controls/button/button.h"
 
 namespace views {
 class ImageView;
@@ -27,12 +28,12 @@ class PaymentRequest;
 class PaymentRequestItemList {
  public:
   // Represents an item in the item list.
-  class Item {
+  class Item : public views::ButtonListener {
    public:
     // Creates an item that will be owned by |list| with the initial state set
     // to |selected|.
     Item(PaymentRequest* request, PaymentRequestItemList* list, bool selected);
-    virtual ~Item();
+    ~Item() override;
 
     // Gets the view associated with this item. It's owned by this object so
     // that it can listen to any changes to the underlying model and update the
@@ -66,6 +67,10 @@ class PaymentRequestItemList {
     std::unique_ptr<views::ImageView> CreateCheckmark(bool selected);
 
    private:
+    // views::ButtonListener:
+    void ButtonPressed(views::Button* sender, const ui::Event& event) override {
+    }
+
     std::unique_ptr<views::View> item_view_;
     PaymentRequest* request_;
     PaymentRequestItemList* list_;
@@ -75,7 +80,7 @@ class PaymentRequestItemList {
   };
 
   PaymentRequestItemList();
-  ~PaymentRequestItemList();
+  virtual ~PaymentRequestItemList();
 
   // Adds an item to this list. |item->list()| should return this object.
   void AddItem(std::unique_ptr<Item> item);

@@ -37,6 +37,8 @@
 #include "ui/views/painter.h"
 #include "ui/views/view.h"
 
+namespace payments {
+
 namespace {
 
 // TODO(tmartino): Consider combining this with the Android equivalent in
@@ -54,6 +56,41 @@ base::string16 GetAddressFromProfile(const autofill::AutofillProfile& profile,
   fields.push_back(autofill::ADDRESS_HOME_SORTING_CODE);
 
   return profile.ConstructInferredLabel(fields, fields.size(), locale);
+}
+
+std::unique_ptr<views::View> GetThreeLineLabel(AddressStyleType type,
+                                               const base::string16& s1,
+                                               const base::string16& s2,
+                                               const base::string16& s3) {
+  std::unique_ptr<views::View> container = base::MakeUnique<views::View>();
+  std::unique_ptr<views::BoxLayout> layout =
+      base::MakeUnique<views::BoxLayout>(views::BoxLayout::kVertical, 0, 0, 0);
+  layout->set_cross_axis_alignment(
+      views::BoxLayout::CROSS_AXIS_ALIGNMENT_START);
+  container->SetLayoutManager(layout.release());
+
+  if (!s1.empty()) {
+    std::unique_ptr<views::Label> label = base::MakeUnique<views::Label>(s1);
+    if (type == AddressStyleType::DETAILED) {
+      const gfx::FontList& font_list = label->font_list();
+      label->SetFontList(font_list.DeriveWithWeight(gfx::Font::Weight::BOLD));
+    }
+    container->AddChildView(label.release());
+  }
+
+  if (!s2.empty()) {
+    std::unique_ptr<views::Label> label = base::MakeUnique<views::Label>(s2);
+    container->AddChildView(label.release());
+  }
+
+  if (!s3.empty()) {
+    std::unique_ptr<views::Label> label = base::MakeUnique<views::Label>(s3);
+    container->AddChildView(label.release());
+  }
+
+  // TODO(anthonyvd): add the error label
+
+  return container;
 }
 
 // Paints the gray horizontal line that doesn't span the entire width of the
@@ -82,8 +119,6 @@ class PaymentRequestRowBorderPainter : public views::Painter {
 };
 
 }  // namespace
-
-namespace payments {
 
 std::unique_ptr<views::View> CreateSheetHeaderView(
     bool show_back_arrow,
@@ -157,26 +192,15 @@ std::unique_ptr<views::View> GetShippingAddressLabel(
     AddressStyleType type,
     const std::string& locale,
     const autofill::AutofillProfile& profile) {
-  base::string16 name_value =
+  base::string16 name =
       profile.GetInfo(autofill::AutofillType(autofill::NAME_FULL), locale);
 
-  // TODO(tmartino): Add bold styling for name in DETAILED style.
+  base::string16 address = GetAddressFromProfile(profile, locale);
 
-  base::string16 address_value = GetAddressFromProfile(profile, locale);
-
-  base::string16 phone_value = profile.GetInfo(
+  base::string16 phone = profile.GetInfo(
       autofill::AutofillType(autofill::PHONE_HOME_WHOLE_NUMBER), locale);
 
-  std::vector<base::string16> values;
-  if (!name_value.empty())
-    values.push_back(name_value);
-  if (!address_value.empty())
-    values.push_back(address_value);
-  if (!phone_value.empty())
-    values.push_back(phone_value);
-
-  return base::MakeUnique<views::StyledLabel>(
-      base::JoinString(values, base::ASCIIToUTF16("\n")), nullptr);
+  return GetThreeLineLabel(type, name, address, phone);
 }
 
 // TODO(anthonyvd): unit test the label layout.
@@ -185,52 +209,27 @@ std::unique_ptr<views::View> GetContactInfoLabel(
     const std::string& locale,
     const autofill::AutofillProfile& profile,
     bool show_payer_name,
-    bool show_payer_email,
-    bool show_payer_phone) {
-  std::unique_ptr<views::View> container = base::MakeUnique<views::View>();
-  std::unique_ptr<views::BoxLayout> layout =
-      base::MakeUnique<views::BoxLayout>(views::BoxLayout::kVertical, 0, 0, 0);
-  layout->set_cross_axis_alignment(
-      views::BoxLayout::CROSS_AXIS_ALIGNMENT_START);
-  container->SetLayoutManager(layout.release());
+    bool show_payer_phone,
+    bool show_payer_email) {
+  base::string16 name =
+      show_payer_name
+          ? profile.GetInfo(autofill::AutofillType(autofill::NAME_FULL), locale)
+          : base::string16();
 
-  if (show_payer_name) {
-    base::string16 name =
-        profile.GetInfo(autofill::AutofillType(autofill::NAME_FULL), locale);
-    if (!name.empty()) {
-      std::unique_ptr<views::Label> label =
-          base::MakeUnique<views::Label>(name);
-      if (type == AddressStyleType::DETAILED) {
-        const gfx::FontList& font_list = label->font_list();
-        label->SetFontList(font_list.DeriveWithWeight(gfx::Font::Weight::BOLD));
-      }
-      container->AddChildView(label.release());
-    }
-  }
+  base::string16 phone =
+      show_payer_phone
+          ? profile.GetInfo(
+                autofill::AutofillType(autofill::PHONE_HOME_WHOLE_NUMBER),
+                locale)
+          : base::string16();
 
-  if (show_payer_phone) {
-    base::string16 phone = profile.GetInfo(
-        autofill::AutofillType(autofill::PHONE_HOME_WHOLE_NUMBER), locale);
-    if (!phone.empty()) {
-      std::unique_ptr<views::Label> label =
-          base::MakeUnique<views::Label>(phone);
-      container->AddChildView(label.release());
-    }
-  }
+  base::string16 email =
+      show_payer_email
+          ? profile.GetInfo(autofill::AutofillType(autofill::EMAIL_ADDRESS),
+                            locale)
+          : base::string16();
 
-  if (show_payer_email) {
-    base::string16 email = profile.GetInfo(
-        autofill::AutofillType(autofill::EMAIL_ADDRESS), locale);
-    if (!email.empty()) {
-      std::unique_ptr<views::Label> label =
-          base::MakeUnique<views::Label>(email);
-      container->AddChildView(label.release());
-    }
-  }
-
-  // TODO(anthonyvd): add the error label
-
-  return container;
+  return GetThreeLineLabel(type, name, phone, email);
 }
 
 std::unique_ptr<views::Border> CreatePaymentRequestRowBorder() {

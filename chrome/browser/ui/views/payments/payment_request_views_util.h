@@ -79,8 +79,8 @@ std::unique_ptr<views::View> GetContactInfoLabel(
     const std::string& locale,
     const autofill::AutofillProfile& profile,
     bool show_payer_name,
-    bool show_payer_email,
-    bool show_payer_phone);
+    bool show_payer_phone,
+    bool show_payer_email);
 
 // Creates a views::Border object that can paint the gray horizontal ruler used
 // as a separator between items in the Payment Request dialog.

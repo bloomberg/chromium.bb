@@ -288,7 +288,7 @@ void PaymentSheetViewController::ButtonPressed(
       break;
 
     case static_cast<int>(PaymentSheetViewControllerTags::SHOW_SHIPPING_BUTTON):
-      dialog()->ShowShippingListSheet();
+      dialog()->ShowShippingProfileSheet();
       break;
 
     case static_cast<int>(
@@ -298,7 +298,7 @@ void PaymentSheetViewController::ButtonPressed(
 
     case static_cast<int>(
         PaymentSheetViewControllerTags::SHOW_CONTACT_INFO_BUTTON):
-      dialog()->ShowContactInfoSheet();
+      dialog()->ShowContactProfileSheet();
       break;
 
     default:
@@ -397,10 +397,8 @@ std::unique_ptr<views::View>
 PaymentSheetViewController::CreateShippingSectionContent() {
   auto* profile = request()->selected_shipping_profile();
 
-  // TODO(tmartino): Empty string param is app locale; this should be passed
-  // at construct-time and stored as a member in a future CL.
-  return profile ? payments::GetShippingAddressLabel(AddressStyleType::SUMMARY,
-                                                     std::string(), *profile)
+  return profile ? payments::GetShippingAddressLabel(
+                       AddressStyleType::SUMMARY, request()->locale(), *profile)
                  : base::MakeUnique<views::Label>(base::string16());
 }
 
@@ -475,10 +473,12 @@ PaymentSheetViewController::CreatePaymentMethodRow() {
 std::unique_ptr<views::View>
 PaymentSheetViewController::CreateContactInfoSectionContent() {
   auto* profile = request()->selected_contact_profile();
-  // TODO(tmartino): Replace empty string with app locale.
-  return profile ? payments::GetContactInfoLabel(AddressStyleType::SUMMARY,
-                                                 std::string(), *profile, true,
-                                                 true, true)
+
+  return profile ? payments::GetContactInfoLabel(
+                       AddressStyleType::SUMMARY, request()->locale(), *profile,
+                       request()->request_payer_name(),
+                       request()->request_payer_phone(),
+                       request()->request_payer_email())
                  : base::MakeUnique<views::Label>(base::string16());
 }
 

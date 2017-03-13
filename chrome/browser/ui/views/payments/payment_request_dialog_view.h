@@ -65,9 +65,9 @@ class PaymentRequestDialogView : public views::DialogDelegateView,
   void CloseDialog() override;
 
   void GoBack();
-  void ShowContactInfoSheet();
+  void ShowContactProfileSheet();
   void ShowOrderSummary();
-  void ShowShippingListSheet();
+  void ShowShippingProfileSheet();
   void ShowPaymentMethodSheet();
   void ShowCreditCardEditor();
 

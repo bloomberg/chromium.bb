@@ -40,8 +40,7 @@ enum class PaymentMethodViewControllerTags : int {
   ADD_CREDIT_CARD_BUTTON = kFirstTagValue,
 };
 
-class PaymentMethodListItem : public payments::PaymentRequestItemList::Item,
-                              public views::ButtonListener {
+class PaymentMethodListItem : public payments::PaymentRequestItemList::Item {
  public:
   // Does not take ownership of |card|, which  should not be null and should
   // outlive this object. |list| is the PaymentRequestItemList object that will

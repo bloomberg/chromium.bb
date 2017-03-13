@@ -143,6 +143,7 @@ class PaymentRequest : public mojom::PaymentRequest,
   autofill::PersonalDataManager* personal_data_manager() {
     return delegate_->GetPersonalDataManager();
   }
+  const std::string& locale() { return delegate_->GetApplicationLocale(); }
 
   payments::mojom::PaymentDetails* details() { return details_.get(); }
   payments::mojom::PaymentOptions* options() { return options_.get(); }
