@@ -108,7 +108,7 @@ IDBTransaction::IDBTransaction(ExecutionContext* executionContext,
                                int64_t id,
                                const HashSet<String>& scope,
                                IDBDatabase* db)
-    : ContextClient(executionContext),
+    : ContextLifecycleObserver(executionContext),
       m_id(id),
       m_database(db),
       m_mode(WebIDBTransactionModeReadOnly),
@@ -125,7 +125,7 @@ IDBTransaction::IDBTransaction(ScriptState* scriptState,
                                const HashSet<String>& scope,
                                WebIDBTransactionMode mode,
                                IDBDatabase* db)
-    : ContextClient(scriptState->getExecutionContext()),
+    : ContextLifecycleObserver(scriptState->getExecutionContext()),
       m_id(id),
       m_database(db),
       m_mode(mode),
@@ -149,7 +149,7 @@ IDBTransaction::IDBTransaction(ExecutionContext* executionContext,
                                IDBDatabase* db,
                                IDBOpenDBRequest* openDBRequest,
                                const IDBDatabaseMetadata& oldMetadata)
-    : ContextClient(executionContext),
+    : ContextLifecycleObserver(executionContext),
       m_id(id),
       m_database(db),
       m_openDBRequest(openDBRequest),
@@ -164,6 +164,9 @@ IDBTransaction::IDBTransaction(ExecutionContext* executionContext,
 }
 
 IDBTransaction::~IDBTransaction() {
+  // Note: IDBTransaction is a ContextLifecycleObserver (rather than
+  // ContextClient) only in order to be able call upon getExecutionContext()
+  // during this destructor.
   DCHECK(m_state == Finished || !getExecutionContext());
   DCHECK(m_requestList.isEmpty() || !getExecutionContext());
 }
@@ -177,7 +180,7 @@ DEFINE_TRACE(IDBTransaction) {
   visitor->trace(m_oldStoreMetadata);
   visitor->trace(m_deletedIndexes);
   EventTargetWithInlineData::trace(visitor);
-  ContextClient::trace(visitor);
+  ContextLifecycleObserver::trace(visitor);
 }
 
 void IDBTransaction::setError(DOMException* error) {
@@ -479,7 +482,7 @@ const AtomicString& IDBTransaction::interfaceName() const {
 }
 
 ExecutionContext* IDBTransaction::getExecutionContext() const {
-  return ContextClient::getExecutionContext();
+  return ContextLifecycleObserver::getExecutionContext();
 }
 
 DispatchEventResult IDBTransaction::dispatchEventInternal(Event* event) {

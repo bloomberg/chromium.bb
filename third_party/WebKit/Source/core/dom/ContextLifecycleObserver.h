@@ -42,6 +42,9 @@ class LocalFrame;
 // - getExecutionContext() returns null after the context is detached.
 // - frame() is a syntax sugar for getExecutionContext()->frame(). It returns
 //   null after the context is detached or the context is not a Document.
+//
+// Both can safely be used up until destruction; i.e., unsafe to
+// call upon in a destructor.
 class CORE_EXPORT ContextClient : public GarbageCollectedMixin {
  public:
   ExecutionContext* getExecutionContext() const;
@@ -89,6 +92,9 @@ class CORE_EXPORT ContextLifecycleObserver
 // - domWindow() returns null after the window is detached.
 // - frame() is a syntax sugar for domWindow()->frame(). It returns
 //   null after the window is detached.
+//
+// Both can safely be used up until destruction; i.e., unsafe to
+// call upon in a destructor.
 //
 // If the object is a per-ExecutionContext thing, use ContextClient/
 // ContextLifecycleObserver. If the object is a per-DOMWindow thing, use

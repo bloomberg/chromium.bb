@@ -56,7 +56,7 @@ class ScriptState;
 class MODULES_EXPORT IDBTransaction final
     : public EventTargetWithInlineData,
       public ActiveScriptWrappable<IDBTransaction>,
-      public ContextClient {
+      public ContextLifecycleObserver {
   USING_GARBAGE_COLLECTED_MIXIN(IDBTransaction);
   DEFINE_WRAPPERTYPEINFO();
 
