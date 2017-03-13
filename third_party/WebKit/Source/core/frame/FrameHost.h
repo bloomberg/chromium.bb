@@ -84,16 +84,8 @@ class CORE_EXPORT FrameHost final
 
   DECLARE_TRACE();
 
-  // Don't allow more than a certain number of frames in a page.
-  // This seems like a reasonable upper bound, and otherwise mutually
-  // recursive frameset pages can quickly bring the program to its knees
-  // with exponential growth in the number of frames.
-  static const int maxNumberOfFrames = 1000;
-  void incrementSubframeCount() { ++m_subframeCount; }
-  void decrementSubframeCount() {
-    ASSERT(m_subframeCount);
-    --m_subframeCount;
-  }
+  void incrementSubframeCount();
+  void decrementSubframeCount();
   int subframeCount() const;
 
  private:
@@ -105,8 +97,6 @@ class CORE_EXPORT FrameHost final
   const Member<ConsoleMessageStorage> m_consoleMessageStorage;
   const Member<TopDocumentRootScrollerController>
       m_globalRootScrollerController;
-
-  int m_subframeCount;
 };
 
 }  // namespace blink

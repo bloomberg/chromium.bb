@@ -33,7 +33,7 @@
 #include "bindings/core/v8/ScriptWrappableVisitor.h"
 #include "core/dom/Element.h"
 #include "core/dom/ElementRareData.h"
-#include "core/frame/FrameHost.h"
+#include "core/page/Page.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
@@ -85,12 +85,12 @@ void NodeRareData::finalizeGarbageCollectedObject() {
 }
 
 void NodeRareData::incrementConnectedSubframeCount() {
-  SECURITY_CHECK((m_connectedFrameCount + 1) <= FrameHost::maxNumberOfFrames);
+  SECURITY_CHECK((m_connectedFrameCount + 1) <= Page::maxNumberOfFrames);
   ++m_connectedFrameCount;
 }
 
 // Ensure the 10 bits reserved for the m_connectedFrameCount cannot overflow
-static_assert(FrameHost::maxNumberOfFrames <
+static_assert(Page::maxNumberOfFrames <
                   (1 << NodeRareData::ConnectedFrameCountBits),
               "Frame limit should fit in rare data count");
 
