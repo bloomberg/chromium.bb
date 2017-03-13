@@ -40,7 +40,7 @@ public class CrashReceiverService extends Service {
     // Back-off policy for upload-job.
     private static final int JOB_BACKOFF_POLICY = JobInfo.BACKOFF_POLICY_EXPONENTIAL;
 
-    private Object mCopyingLock = new Object();
+    private final Object mCopyingLock = new Object();
     private boolean mIsCopying = false;
 
     @Override
@@ -188,7 +188,9 @@ public class CrashReceiverService extends Service {
     @VisibleForTesting
     public static File createWebViewCrashDir(Context context) {
         File dir = getWebViewCrashDir(context);
-        if (dir.isDirectory() || dir.mkdirs()) {
+        // Call mkdir before isDirectory to ensure that if another thread created the directory
+        // just before the call to mkdir, the current thread fails mkdir, but passes isDirectory.
+        if (dir.mkdir() || dir.isDirectory()) {
             return dir;
         }
         return null;

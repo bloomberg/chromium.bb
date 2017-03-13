@@ -269,8 +269,9 @@ public class CrashFileManager {
      */
     public boolean ensureCrashDirExists() {
         File crashDir = getCrashDirectory();
-        if (crashDir.exists()) return true;
-        return crashDir.mkdir();
+        // Call mkdir before isDirectory to ensure that if another thread created the directory
+        // just before the call to mkdir, the current thread fails mkdir, but passes isDirectory.
+        return crashDir.mkdir() || crashDir.isDirectory();
     }
 
     /**
@@ -488,13 +489,19 @@ public class CrashFileManager {
      */
     public File copyMinidumpFromFD(FileDescriptor fd, File tmpDir, int uid) throws IOException {
         File crashDirectory = getCrashDirectory();
-        if (!crashDirectory.isDirectory() && !crashDirectory.mkdir()) {
-            throw new RuntimeException("Couldn't create " + crashDirectory.getAbsolutePath());
+        if (!ensureCrashDirExists()) {
+            Log.e(TAG, "Crash directory doesn't exist");
+            return null;
         }
+        // Only threads copying minidumps will be touching this tmp-directory. Since these threads
+        // are synchronized to avoid copying several minidumps simultaneously we don't need
+        // synchronization explicitly for creating this tmp-directory.
         if (!tmpDir.isDirectory() && !tmpDir.mkdir()) {
-            throw new RuntimeException("Couldn't create " + tmpDir.getAbsolutePath());
+            Log.e(TAG, "Couldn't create " + tmpDir.getAbsolutePath());
+            return null;
         }
         if (tmpDir.getCanonicalPath().equals(crashDirectory.getCanonicalPath())) {
+            // Cause a hard failure since this should never happen in the wild.
             throw new RuntimeException("The tmp-dir and the crash dir can't have the same paths.");
         }
 
