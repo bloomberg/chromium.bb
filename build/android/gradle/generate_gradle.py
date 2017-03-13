@@ -297,7 +297,8 @@ class _ProjectContextGenerator(object):
   def _Srcjars(self, entry):
     srcjars = _RebasePath(entry.Gradle().get('bundled_srcjars', []))
     if not self.use_gradle_process_resources:
-      srcjars += _RebasePath(entry.BuildConfig()['javac']['srcjars'])
+      srcjars += _RebasePath(entry.Javac()['srcjars'])
+      srcjars += _RebasePath(entry.Gradle().get('srcjars'))
     return srcjars
 
   def _GetEntries(self, entry):
