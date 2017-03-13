@@ -1000,6 +1000,11 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance2/rendering/uniform-block-buffer-size.html',
         ['linux', 'amd'], bug=658844)
 
+    # Linux AMD R7 240
+    self.Fail('conformance2/textures/image_bitmap_from_video/' +
+        'tex-2d-rgba16f-rgba-half_float.html',
+        ['linux', ('amd', 0x6613)], bug=701138)
+
     # Conflicting expectations to test that the
     # "Expectations have no collisions" unittest works.
     # page_name = 'conformance/glsl/constructors/glsl-construct-ivec4.html'
