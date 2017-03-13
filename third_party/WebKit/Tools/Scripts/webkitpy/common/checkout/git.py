@@ -175,12 +175,6 @@ class Git(object):
             unstaged_changes[path] = line[1]
         return unstaged_changes
 
-    def add_all(self, pathspec=None):
-        command = ['add', '--all']
-        if pathspec:
-            command.append(pathspec)
-        return self._run_git(command)
-
     def add_list(self, paths, return_exit_code=False):
         return self._run_git(['add'] + paths, return_exit_code=return_exit_code)
 

@@ -57,22 +57,8 @@ class GitTestWithRealFilesystemAndExecutive(unittest.TestCase):
     def _run(self, *args, **kwargs):
         return self.executive.run_command(*args, **kwargs)
 
-    def _run_silent(self, args, **kwargs):
-        self.executive.run_command(args, **kwargs)
-
     def _write_text_file(self, path, contents):
         self.filesystem.write_text_file(path, contents)
-
-    def _write_binary_file(self, path, contents):
-        self.filesystem.write_binary_file(path, contents)
-
-    def _make_diff(self, command, *args):
-        # We use this wrapper to disable output decoding. diffs should be treated as
-        # binary files since they may include text files of multiple different encodings.
-        return self._run([command, 'diff'] + list(args), decode_output=False)
-
-    def _git_diff(self, *args):
-        return self._make_diff('git', *args)
 
     def test_add_list(self):
         self._chdir(self.untracking_checkout_path)

@@ -21,12 +21,6 @@ class MockGit(object):
         self._executive = executive or MockExecutive()
         self._local_commits = []
 
-    def add_all(self, pathspec=None):
-        if not pathspec:
-            pathspec = self.checkout_root
-        for path in self._filesystem.glob(pathspec):
-            self.add_list(self._filesystem.files_under(path))
-
     def add(self, destination_path, return_exit_code=False):
         self.add_list([destination_path], return_exit_code)
 
