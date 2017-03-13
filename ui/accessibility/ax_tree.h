@@ -49,6 +49,41 @@ class AX_EXPORT AXTreeDelegate {
                                     const AXNodeData& old_node_data,
                                     const AXNodeData& new_node_data) = 0;
 
+  // Individual callbacks for every attribute of AXNodeData that can change.
+  virtual void OnRoleChanged(AXTree* tree,
+                             AXNode* node,
+                             AXRole old_role,
+                             AXRole new_role) {}
+  virtual void OnStateChanged(AXTree* tree,
+                              AXNode* node,
+                              AXState state,
+                              bool new_value) {}
+  virtual void OnStringAttributeChanged(AXTree* tree,
+                                        AXNode* node,
+                                        AXStringAttribute attr,
+                                        const std::string& old_value,
+                                        const std::string& new_value) {}
+  virtual void OnIntAttributeChanged(AXTree* tree,
+                                     AXNode* node,
+                                     AXIntAttribute attr,
+                                     int32_t old_value,
+                                     int32_t new_value) {}
+  virtual void OnFloatAttributeChanged(AXTree* tree,
+                                       AXNode* node,
+                                       AXFloatAttribute attr,
+                                       float old_value,
+                                       float new_value) {}
+  virtual void OnBoolAttributeChanged(AXTree* tree,
+                                      AXNode* node,
+                                      AXBoolAttribute attr,
+                                      bool new_value) {}
+  virtual void OnIntListAttributeChanged(
+      AXTree* tree,
+      AXNode* node,
+      AXIntListAttribute attr,
+      const std::vector<int32_t>& old_value,
+      const std::vector<int32_t>& new_value) {}
+
   // Called when tree data changes.
   virtual void OnTreeDataChanged(AXTree* tree) = 0;
 
@@ -155,6 +190,8 @@ class AX_EXPORT AXTree {
   bool UpdateNode(const AXNodeData& src,
                   bool is_new_root,
                   AXTreeUpdateState* update_state);
+
+  void CallNodeChangeCallbacks(AXNode* node, const AXNodeData& new_data);
 
   void OnRootChanged();
 

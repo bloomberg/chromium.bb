@@ -10,14 +10,29 @@
 #include <memory>
 
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/stringprintf.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/accessibility/ax_node.h"
 #include "ui/accessibility/ax_serializable_tree.h"
 #include "ui/accessibility/ax_tree_serializer.h"
 
+using base::DoubleToString;
+using base::IntToString;
+using base::StringPrintf;
+
 namespace ui {
 
 namespace {
+
+std::string IntVectorToString(const std::vector<int>& items) {
+  std::string str;
+  for (size_t i = 0; i < items.size(); ++i) {
+    if (i > 0)
+      str += ",";
+    str += IntToString(items[i]);
+  }
+  return str;
+}
 
 class FakeAXTreeDelegate : public AXTreeDelegate {
  public:
@@ -81,6 +96,75 @@ class FakeAXTreeDelegate : public AXTreeDelegate {
     }
   }
 
+  void OnRoleChanged(AXTree* tree,
+                     AXNode* node,
+                     AXRole old_role,
+                     AXRole new_role) override {
+    attribute_change_log_.push_back(StringPrintf("Role changed from %s to %s",
+                                                 ToString(old_role).c_str(),
+                                                 ToString(new_role).c_str()));
+  }
+
+  void OnStateChanged(AXTree* tree,
+                      AXNode* node,
+                      AXState state,
+                      bool new_value) override {
+    attribute_change_log_.push_back(StringPrintf("%s changed to %s",
+                                                 ToString(state).c_str(),
+                                                 new_value ? "true" : "false"));
+  }
+
+  void OnStringAttributeChanged(AXTree* tree,
+                                AXNode* node,
+                                AXStringAttribute attr,
+                                const std::string& old_value,
+                                const std::string& new_value) override {
+    attribute_change_log_.push_back(
+        StringPrintf("%s changed from %s to %s", ToString(attr).c_str(),
+                     old_value.c_str(), new_value.c_str()));
+  }
+
+  void OnIntAttributeChanged(AXTree* tree,
+                             AXNode* node,
+                             AXIntAttribute attr,
+                             int32_t old_value,
+                             int32_t new_value) override {
+    attribute_change_log_.push_back(StringPrintf("%s changed from %d to %d",
+                                                 ToString(attr).c_str(),
+                                                 old_value, new_value));
+  }
+
+  void OnFloatAttributeChanged(AXTree* tree,
+                               AXNode* node,
+                               AXFloatAttribute attr,
+                               float old_value,
+                               float new_value) override {
+    attribute_change_log_.push_back(StringPrintf(
+        "%s changed from %s to %s", ToString(attr).c_str(),
+        DoubleToString(old_value).c_str(), DoubleToString(new_value).c_str()));
+  }
+
+  void OnBoolAttributeChanged(AXTree* tree,
+                              AXNode* node,
+                              AXBoolAttribute attr,
+                              bool new_value) override {
+    attribute_change_log_.push_back(StringPrintf("%s changed to %s",
+                                                 ToString(attr).c_str(),
+                                                 new_value ? "true" : "false"));
+  }
+
+  void OnIntListAttributeChanged(
+      AXTree* tree,
+      AXNode* node,
+      AXIntListAttribute attr,
+      const std::vector<int32_t>& old_value,
+      const std::vector<int32_t>& new_value) override {
+    attribute_change_log_.push_back(
+        StringPrintf("%s changed from %s to %s", ToString(attr).c_str(),
+                     IntVectorToString(old_value).c_str(),
+                     IntVectorToString(new_value).c_str()));
+  }
+
   bool tree_data_changed() const { return tree_data_changed_; }
   bool root_changed() const { return root_changed_; }
   const std::vector<int32_t>& deleted_ids() { return deleted_ids_; }
@@ -103,6 +187,9 @@ class FakeAXTreeDelegate : public AXTreeDelegate {
   const std::vector<int32_t>& change_finished_ids() {
     return change_finished_ids_;
   }
+  const std::vector<std::string>& attribute_change_log() {
+    return attribute_change_log_;
+  }
 
  private:
   bool tree_data_changed_;
@@ -116,6 +203,7 @@ class FakeAXTreeDelegate : public AXTreeDelegate {
   std::vector<int32_t> node_reparented_finished_ids_;
   std::vector<int32_t> subtree_reparented_finished_ids_;
   std::vector<int32_t> change_finished_ids_;
+  std::vector<std::string> attribute_change_log_;
 };
 
 }  // namespace
@@ -530,6 +618,179 @@ TEST(AXTreeTest, BogusAXTree3) {
 
   ui::AXTree tree;
   tree.Unserialize(initial_state);
+}
+
+TEST(AXTreeTest, RoleAndStateChangeCallbacks) {
+  AXTreeUpdate initial_state;
+  initial_state.root_id = 1;
+  initial_state.nodes.resize(1);
+  initial_state.nodes[0].id = 1;
+  initial_state.nodes[0].role = AX_ROLE_BUTTON;
+  initial_state.nodes[0].state = 0;
+  initial_state.nodes[0].AddStateFlag(AX_STATE_CHECKED);
+  initial_state.nodes[0].AddStateFlag(AX_STATE_FOCUSABLE);
+  AXTree tree(initial_state);
+
+  FakeAXTreeDelegate fake_delegate;
+  tree.SetDelegate(&fake_delegate);
+
+  // Change the role and state.
+  AXTreeUpdate update;
+  update.root_id = 1;
+  update.nodes.resize(1);
+  update.nodes[0].id = 1;
+  update.nodes[0].role = AX_ROLE_CHECK_BOX;
+  update.nodes[0].state = 0;
+  update.nodes[0].AddStateFlag(AX_STATE_FOCUSABLE);
+  update.nodes[0].AddStateFlag(AX_STATE_VISITED);
+  EXPECT_TRUE(tree.Unserialize(update));
+
+  const std::vector<std::string>& change_log =
+      fake_delegate.attribute_change_log();
+  ASSERT_EQ(3U, change_log.size());
+  EXPECT_EQ("Role changed from button to checkBox", change_log[0]);
+  EXPECT_EQ("checked changed to false", change_log[1]);
+  EXPECT_EQ("visited changed to true", change_log[2]);
+
+  tree.SetDelegate(NULL);
+}
+
+TEST(AXTreeTest, AttributeChangeCallbacks) {
+  AXTreeUpdate initial_state;
+  initial_state.root_id = 1;
+  initial_state.nodes.resize(1);
+  initial_state.nodes[0].id = 1;
+  initial_state.nodes[0].AddStringAttribute(AX_ATTR_NAME, "N1");
+  initial_state.nodes[0].AddStringAttribute(AX_ATTR_DESCRIPTION, "D1");
+  initial_state.nodes[0].AddBoolAttribute(AX_ATTR_LIVE_ATOMIC, true);
+  initial_state.nodes[0].AddBoolAttribute(AX_ATTR_LIVE_BUSY, false);
+  initial_state.nodes[0].AddFloatAttribute(AX_ATTR_MIN_VALUE_FOR_RANGE, 1.0);
+  initial_state.nodes[0].AddFloatAttribute(AX_ATTR_MAX_VALUE_FOR_RANGE, 10.0);
+  initial_state.nodes[0].AddIntAttribute(AX_ATTR_SCROLL_X, 5);
+  initial_state.nodes[0].AddIntAttribute(AX_ATTR_SCROLL_X_MIN, 1);
+  AXTree tree(initial_state);
+
+  FakeAXTreeDelegate fake_delegate;
+  tree.SetDelegate(&fake_delegate);
+
+  // Change existing attributes.
+  AXTreeUpdate update0;
+  update0.root_id = 1;
+  update0.nodes.resize(1);
+  update0.nodes[0].id = 1;
+  update0.nodes[0].AddStringAttribute(AX_ATTR_NAME, "N2");
+  update0.nodes[0].AddStringAttribute(AX_ATTR_DESCRIPTION, "D2");
+  update0.nodes[0].AddBoolAttribute(AX_ATTR_LIVE_ATOMIC, false);
+  update0.nodes[0].AddBoolAttribute(AX_ATTR_LIVE_BUSY, true);
+  update0.nodes[0].AddFloatAttribute(AX_ATTR_MIN_VALUE_FOR_RANGE, 2.0);
+  update0.nodes[0].AddFloatAttribute(AX_ATTR_MAX_VALUE_FOR_RANGE, 9.0);
+  update0.nodes[0].AddIntAttribute(AX_ATTR_SCROLL_X, 6);
+  update0.nodes[0].AddIntAttribute(AX_ATTR_SCROLL_X_MIN, 2);
+  EXPECT_TRUE(tree.Unserialize(update0));
+
+  const std::vector<std::string>& change_log =
+      fake_delegate.attribute_change_log();
+  ASSERT_EQ(8U, change_log.size());
+  EXPECT_EQ("name changed from N1 to N2", change_log[0]);
+  EXPECT_EQ("description changed from D1 to D2", change_log[1]);
+  EXPECT_EQ("liveAtomic changed to false", change_log[2]);
+  EXPECT_EQ("liveBusy changed to true", change_log[3]);
+  EXPECT_EQ("minValueForRange changed from 1 to 2", change_log[4]);
+  EXPECT_EQ("maxValueForRange changed from 10 to 9", change_log[5]);
+  EXPECT_EQ("scrollX changed from 5 to 6", change_log[6]);
+  EXPECT_EQ("scrollXMin changed from 1 to 2", change_log[7]);
+
+  FakeAXTreeDelegate fake_delegate2;
+  tree.SetDelegate(&fake_delegate2);
+
+  // Add and remove attributes.
+  AXTreeUpdate update1;
+  update1.root_id = 1;
+  update1.nodes.resize(1);
+  update1.nodes[0].id = 1;
+  update1.nodes[0].AddStringAttribute(AX_ATTR_DESCRIPTION, "D3");
+  update1.nodes[0].AddStringAttribute(AX_ATTR_VALUE, "V3");
+  update1.nodes[0].AddBoolAttribute(AX_ATTR_MODAL, true);
+  update1.nodes[0].AddFloatAttribute(AX_ATTR_VALUE_FOR_RANGE, 5.0);
+  update1.nodes[0].AddFloatAttribute(AX_ATTR_MAX_VALUE_FOR_RANGE, 9.0);
+  update1.nodes[0].AddIntAttribute(AX_ATTR_SCROLL_X, 7);
+  update1.nodes[0].AddIntAttribute(AX_ATTR_SCROLL_X_MAX, 10);
+  EXPECT_TRUE(tree.Unserialize(update1));
+
+  const std::vector<std::string>& change_log2 =
+      fake_delegate2.attribute_change_log();
+  ASSERT_EQ(10U, change_log2.size());
+  EXPECT_EQ("name changed from N2 to ", change_log2[0]);
+  EXPECT_EQ("description changed from D2 to D3", change_log2[1]);
+  EXPECT_EQ("value changed from  to V3", change_log2[2]);
+  EXPECT_EQ("liveBusy changed to false", change_log2[3]);
+  EXPECT_EQ("modal changed to true", change_log2[4]);
+  EXPECT_EQ("minValueForRange changed from 2 to 0", change_log2[5]);
+  EXPECT_EQ("valueForRange changed from 0 to 5", change_log2[6]);
+  EXPECT_EQ("scrollXMin changed from 2 to 0", change_log2[7]);
+  EXPECT_EQ("scrollX changed from 6 to 7", change_log2[8]);
+  EXPECT_EQ("scrollXMax changed from 0 to 10", change_log2[9]);
+
+  tree.SetDelegate(NULL);
+}
+
+TEST(AXTreeTest, IntListChangeCallbacks) {
+  std::vector<int32_t> one;
+  one.push_back(1);
+
+  std::vector<int32_t> two;
+  two.push_back(2);
+  two.push_back(2);
+
+  std::vector<int32_t> three;
+  three.push_back(3);
+
+  AXTreeUpdate initial_state;
+  initial_state.root_id = 1;
+  initial_state.nodes.resize(1);
+  initial_state.nodes[0].id = 1;
+  initial_state.nodes[0].AddIntListAttribute(AX_ATTR_CONTROLS_IDS, one);
+  initial_state.nodes[0].AddIntListAttribute(AX_ATTR_DETAILS_IDS, two);
+  AXTree tree(initial_state);
+
+  FakeAXTreeDelegate fake_delegate;
+  tree.SetDelegate(&fake_delegate);
+
+  // Change existing attributes.
+  AXTreeUpdate update0;
+  update0.root_id = 1;
+  update0.nodes.resize(1);
+  update0.nodes[0].id = 1;
+  update0.nodes[0].AddIntListAttribute(AX_ATTR_CONTROLS_IDS, two);
+  update0.nodes[0].AddIntListAttribute(AX_ATTR_DETAILS_IDS, three);
+  EXPECT_TRUE(tree.Unserialize(update0));
+
+  const std::vector<std::string>& change_log =
+      fake_delegate.attribute_change_log();
+  ASSERT_EQ(2U, change_log.size());
+  EXPECT_EQ("controlsIds changed from 1 to 2,2", change_log[0]);
+  EXPECT_EQ("detailsIds changed from 2,2 to 3", change_log[1]);
+
+  FakeAXTreeDelegate fake_delegate2;
+  tree.SetDelegate(&fake_delegate2);
+
+  // Add and remove attributes.
+  AXTreeUpdate update1;
+  update1.root_id = 1;
+  update1.nodes.resize(1);
+  update1.nodes[0].id = 1;
+  update1.nodes[0].AddIntListAttribute(AX_ATTR_DETAILS_IDS, two);
+  update1.nodes[0].AddIntListAttribute(AX_ATTR_FLOWTO_IDS, three);
+  EXPECT_TRUE(tree.Unserialize(update1));
+
+  const std::vector<std::string>& change_log2 =
+      fake_delegate2.attribute_change_log();
+  ASSERT_EQ(3U, change_log2.size());
+  EXPECT_EQ("controlsIds changed from 2,2 to ", change_log2[0]);
+  EXPECT_EQ("detailsIds changed from 3 to 2,2", change_log2[1]);
+  EXPECT_EQ("flowtoIds changed from  to 3", change_log2[2]);
+
+  tree.SetDelegate(NULL);
 }
 
 }  // namespace ui
