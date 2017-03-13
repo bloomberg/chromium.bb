@@ -27,6 +27,7 @@ endforeach()
 string(STRIP "${AOM_CMAKE_CONFIG}" AOM_CMAKE_CONFIG)
 
 include("${AOM_ROOT}/build/cmake/aom_config_defaults.cmake")
+include("${AOM_ROOT}/build/cmake/aom_optimization.cmake")
 include("${AOM_ROOT}/build/cmake/compiler_flags.cmake")
 include("${AOM_ROOT}/build/cmake/compiler_tests.cmake")
 
@@ -80,11 +81,16 @@ if (NOT EXISTS "${AOM_ROOT}/build/cmake/targets/${AOM_TARGET_CPU}.cmake")
 endif ()
 
 if ("${AOM_TARGET_CPU}" STREQUAL "x86" OR "${AOM_TARGET_CPU}" STREQUAL "x86_64")
-  find_program(YASM_EXECUTABLE yasm $ENV{YASM_PATH})
-  if (NOT YASM_EXECUTABLE)
-    message(WARNING "Unable to find yasm, using generic as target CPU.")
-    set(AOM_TARGET_CPU "generic")
+  # TODO(tomfinegan): Support nasm at least as well as the existing build
+  # system.
+  find_program(AS_EXECUTABLE yasm $ENV{YASM_PATH})
+  if (NOT AS_EXECUTABLE)
+    message(FATAL_ERROR "Unable to find yasm. To build without optimizations, "
+            "add -DAOM_TARGET_CPU=generic to your cmake command line.")
   endif ()
+  get_asm_obj_format("objformat")
+  set(AOM_AS_FLAGS -f ${objformat} ${AOM_AS_FLAGS})
+  string(STRIP "${AOM_AS_FLAGS}" AOM_AS_FLAGS)
 endif ()
 
 include("${AOM_ROOT}/build/cmake/targets/${AOM_TARGET_CPU}.cmake")
