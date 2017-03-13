@@ -39,7 +39,6 @@ namespace arc {
 
 namespace {
 
-constexpr char kArcGlobalAppRestrictions[] = "globalAppRestrictions";
 constexpr char kArcCaCerts[] = "caCerts";
 constexpr char kPolicyCompliantJson[] = "{ \"policyCompliant\": true }";
 
@@ -103,24 +102,6 @@ void MapObjectToPresenceBool(const std::string& arc_policy_name,
       return;
   }
   filtered_policies->SetBoolean(arc_policy_name, true);
-}
-
-void AddGlobalAppRestriction(const std::string& arc_app_restriction_name,
-                             const std::string& policy_name,
-                             const policy::PolicyMap& policy_map,
-                             base::DictionaryValue* filtered_policies) {
-  const base::Value* const policy_value = policy_map.GetValue(policy_name);
-  if (policy_value) {
-    base::DictionaryValue* global_app_restrictions = nullptr;
-    if (!filtered_policies->GetDictionary(kArcGlobalAppRestrictions,
-                                          &global_app_restrictions)) {
-      global_app_restrictions = new base::DictionaryValue();
-      filtered_policies->Set(kArcGlobalAppRestrictions,
-                             global_app_restrictions);
-    }
-    global_app_restrictions->SetWithoutPathExpansion(
-        arc_app_restriction_name, policy_value->CreateDeepCopy());
-  }
 }
 
 void AddOncCaCertsToPolicies(const policy::PolicyMap& policy_map,
@@ -252,14 +233,6 @@ std::string GetFilteredJSONPolicies(const policy::PolicyMap& policy_map) {
                 &filtered_policies);
   MapObjectToPresenceBool("setWallpaperDisabled", policy::key::kWallpaperImage,
                           policy_map, &filtered_policies, {"url", "hash"});
-
-  // Add global app restrictions.
-  AddGlobalAppRestriction("com.android.browser:URLBlacklist",
-                          policy::key::kURLBlacklist, policy_map,
-                          &filtered_policies);
-  AddGlobalAppRestriction("com.android.browser:URLWhitelist",
-                          policy::key::kURLWhitelist, policy_map,
-                          &filtered_policies);
 
   // Add CA certificates.
   AddOncCaCertsToPolicies(policy_map, &filtered_policies);

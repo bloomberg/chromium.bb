@@ -294,36 +294,6 @@ TEST_F(ArcPolicyBridgeTest, WallpaperImageSet_NotCompletePolicyTest) {
   policy_bridge()->GetPolicies(PolicyStringCallback("{}"));
 }
 
-TEST_F(ArcPolicyBridgeTest, URLBlacklistTest) {
-  base::ListValue blacklist;
-  blacklist.AppendString("www.blacklist1.com");
-  blacklist.AppendString("www.blacklist2.com");
-  policy_map().Set(policy::key::kURLBlacklist, policy::POLICY_LEVEL_MANDATORY,
-                   policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
-                   blacklist.CreateDeepCopy(), nullptr);
-  policy_bridge()->GetPolicies(
-      PolicyStringCallback("{\"globalAppRestrictions\":"
-                           "{\"com.android.browser:URLBlacklist\":"
-                           "[\"www.blacklist1.com\","
-                           "\"www.blacklist2.com\""
-                           "]}}"));
-}
-
-TEST_F(ArcPolicyBridgeTest, URLWhitelistTest) {
-  base::ListValue whitelist;
-  whitelist.AppendString("www.whitelist1.com");
-  whitelist.AppendString("www.whitelist2.com");
-  policy_map().Set(policy::key::kURLWhitelist, policy::POLICY_LEVEL_MANDATORY,
-                   policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
-                   whitelist.CreateDeepCopy(), nullptr);
-  policy_bridge()->GetPolicies(
-      PolicyStringCallback("{\"globalAppRestrictions\":"
-                           "{\"com.android.browser:URLWhitelist\":"
-                           "[\"www.whitelist1.com\","
-                           "\"www.whitelist2.com\""
-                           "]}}"));
-}
-
 TEST_F(ArcPolicyBridgeTest, CaCertificateTest) {
   // Enable CA certificates sync.
   policy_map().Set(
