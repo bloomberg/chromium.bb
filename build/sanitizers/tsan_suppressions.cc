@@ -29,11 +29,6 @@ char kTSanDefaultSuppressions[] =
 // Races in libevent, http://crbug.com/23244.
 "race:libevent/event.c\n"
 
-// http://crbug.com/46840.
-"race:base::HistogramSamples::IncreaseSum\n"
-"race:base::Histogram::Add\n"
-"race:base::HistogramSamples::Add\n"
-
 // http://crbug.com/84094.
 "race:sqlite3StatusSet\n"
 "race:pcache1EnforceMaxPage\n"
