@@ -16,6 +16,7 @@
 #include "base/feature_list.h"
 #include "base/files/file_util.h"
 #include "base/metrics/field_trial.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
 #include "base/time/time.h"
@@ -187,10 +188,11 @@ void SetupStabilityDebugging() {
     // metadata nor does it wait for the changes to be flushed to disk before
     // returning. This is an expensive operation. Run as an experiment to
     // measure the effect on performance and collection.
-    if (base::FeatureList::IsEnabled(
-            browser_watcher::kStabilityDebuggingFlushFeature)) {
+    const bool should_flush = base::GetFieldTrialParamByFeatureAsBool(
+        browser_watcher::kStabilityDebuggingFeature,
+        browser_watcher::kInitFlushParam, false);
+    if (should_flush)
       ::FlushViewOfFile(global_tracker->allocator()->data(), 0U);
-    }
   }
 }
 #endif  // defined(OS_WIN)
