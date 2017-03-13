@@ -243,26 +243,30 @@ void LayerTreeImpl::UpdateScrollbars(int scroll_layer_id, int clip_layer_id) {
   }
 
   bool scrollbar_needs_animation = false;
+  bool clip_layer_size_did_change = false;
   bool scroll_layer_size_did_change = false;
   bool y_offset_did_change = false;
   for (ScrollbarLayerImplBase* scrollbar : ScrollbarsFor(scroll_layer_id)) {
     if (scrollbar->orientation() == HORIZONTAL) {
       scrollbar_needs_animation |= scrollbar->SetCurrentPos(current_offset.x());
-      scrollbar_needs_animation |=
+      clip_layer_size_did_change |=
           scrollbar->SetClipLayerLength(clip_size.width());
-      scrollbar_needs_animation |= scroll_layer_size_did_change |=
+      scroll_layer_size_did_change |=
           scrollbar->SetScrollLayerLength(scroll_size.width());
     } else {
       scrollbar_needs_animation |= y_offset_did_change |=
           scrollbar->SetCurrentPos(current_offset.y());
-      scrollbar_needs_animation |=
+      clip_layer_size_did_change |=
           scrollbar->SetClipLayerLength(clip_size.height());
-      scrollbar_needs_animation |= scroll_layer_size_did_change |=
+      scroll_layer_size_did_change |=
           scrollbar->SetScrollLayerLength(scroll_size.height());
     }
     scrollbar_needs_animation |=
         scrollbar->SetVerticalAdjust(clip_layer->bounds_delta().y());
   }
+
+  scrollbar_needs_animation |=
+      (clip_layer_size_did_change || scroll_layer_size_did_change);
 
   if (y_offset_did_change && IsViewportLayerId(scroll_layer_id))
     TRACE_COUNTER_ID1("cc", "scroll_offset_y", scroll_layer->id(),
@@ -272,8 +276,14 @@ void LayerTreeImpl::UpdateScrollbars(int scroll_layer_id, int clip_layer_id) {
     ScrollbarAnimationController* controller =
         layer_tree_host_impl_->ScrollbarAnimationControllerForId(
             scroll_layer_id);
-    if (controller)
-      controller->DidScrollUpdate(scroll_layer_size_did_change);
+    if (!controller)
+      return;
+
+    if (clip_layer_size_did_change || scroll_layer_size_did_change) {
+      controller->DidResize();
+    } else {
+      controller->DidScrollUpdate();
+    }
   }
 }
 
