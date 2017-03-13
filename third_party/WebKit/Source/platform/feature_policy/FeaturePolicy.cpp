@@ -46,9 +46,9 @@ WebFeaturePolicyFeature getWebFeaturePolicyFeature(const String& feature) {
   return WebFeaturePolicyFeature::NotFound;
 }
 
-WebParsedFeaturePolicyHeader parseFeaturePolicy(const String& policy,
-                                                RefPtr<SecurityOrigin> origin,
-                                                Vector<String>* messages) {
+WebParsedFeaturePolicy parseFeaturePolicy(const String& policy,
+                                          RefPtr<SecurityOrigin> origin,
+                                          Vector<String>* messages) {
   Vector<WebParsedFeaturePolicyDeclaration> whitelists;
 
   // Use a reasonable parse depth limit; the actual maximum depth is only going

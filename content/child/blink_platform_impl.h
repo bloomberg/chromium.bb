@@ -123,8 +123,8 @@ class CONTENT_EXPORT BlinkPlatformImpl
 
   blink::WebFeaturePolicy* createFeaturePolicy(
       const blink::WebFeaturePolicy* parentPolicy,
-      const blink::WebParsedFeaturePolicyHeader& containerPolicy,
-      const blink::WebParsedFeaturePolicyHeader& policyHeader,
+      const blink::WebParsedFeaturePolicy& containerPolicy,
+      const blink::WebParsedFeaturePolicy& policyHeader,
       const blink::WebSecurityOrigin& origin) override;
   blink::WebFeaturePolicy* duplicateFeaturePolicyWithOrigin(
       const blink::WebFeaturePolicy& policy,

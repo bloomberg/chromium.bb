@@ -11,10 +11,10 @@
 namespace content {
 
 // Conversions between ParsedFeaturePolicyHeader and
-// WebParsedFeaturePolicyHeader
+// WebParsedFeaturePolicy
 ParsedFeaturePolicyHeader FeaturePolicyHeaderFromWeb(
-    const blink::WebParsedFeaturePolicyHeader& web_feature_policy_header);
-blink::WebParsedFeaturePolicyHeader FeaturePolicyHeaderToWeb(
+    const blink::WebParsedFeaturePolicy& web_feature_policy_header);
+blink::WebParsedFeaturePolicy FeaturePolicyHeaderToWeb(
     const ParsedFeaturePolicyHeader& feature_policy_header);
 
 }  // namespace content

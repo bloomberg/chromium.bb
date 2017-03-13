@@ -855,8 +855,8 @@ int BlinkPlatformImpl::domKeyEnumFromString(const WebString& key_string) {
 
 blink::WebFeaturePolicy* BlinkPlatformImpl::createFeaturePolicy(
     const blink::WebFeaturePolicy* parent_policy,
-    const blink::WebParsedFeaturePolicyHeader& container_policy,
-    const blink::WebParsedFeaturePolicyHeader& policy_header,
+    const blink::WebParsedFeaturePolicy& container_policy,
+    const blink::WebParsedFeaturePolicy& policy_header,
     const blink::WebSecurityOrigin& origin) {
   std::unique_ptr<FeaturePolicy> policy = FeaturePolicy::CreateFromParentPolicy(
       static_cast<const FeaturePolicy*>(parent_policy),

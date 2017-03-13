@@ -93,7 +93,7 @@ class CORE_EXPORT SecurityContext : public GarbageCollectedMixin {
   void enforceSuborigin(const Suborigin&);
 
   WebFeaturePolicy* getFeaturePolicy() const { return m_featurePolicy.get(); }
-  void initializeFeaturePolicy(const WebParsedFeaturePolicyHeader& parsedHeader,
+  void initializeFeaturePolicy(const WebParsedFeaturePolicy& parsedHeader,
                                const WebFeaturePolicy* parentFeaturePolicy);
   void updateFeaturePolicyOrigin();
 

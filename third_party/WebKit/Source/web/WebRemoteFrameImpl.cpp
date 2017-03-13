@@ -424,7 +424,7 @@ void WebRemoteFrameImpl::setReplicatedName(const WebString& name,
 }
 
 void WebRemoteFrameImpl::setReplicatedFeaturePolicyHeader(
-    const WebParsedFeaturePolicyHeader& parsedHeader) const {
+    const WebParsedFeaturePolicy& parsedHeader) const {
   if (RuntimeEnabledFeatures::featurePolicyEnabled()) {
     WebFeaturePolicy* parentFeaturePolicy = nullptr;
     if (parent()) {

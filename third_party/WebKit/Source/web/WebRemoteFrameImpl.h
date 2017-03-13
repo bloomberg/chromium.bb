@@ -145,7 +145,7 @@ class WEB_EXPORT WebRemoteFrameImpl final
   void setReplicatedName(const WebString& name,
                          const WebString& uniqueName) const override;
   void setReplicatedFeaturePolicyHeader(
-      const WebParsedFeaturePolicyHeader& parsedHeader) const override;
+      const WebParsedFeaturePolicy& parsedHeader) const override;
   void addReplicatedContentSecurityPolicyHeader(
       const WebString& headerValue,
       WebContentSecurityPolicyType,

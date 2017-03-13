@@ -691,8 +691,8 @@ class BLINK_PLATFORM_EXPORT Platform {
   // document's origin.
   virtual WebFeaturePolicy* createFeaturePolicy(
       const WebFeaturePolicy* parentPolicy,
-      const WebParsedFeaturePolicyHeader& containerPolicy,
-      const WebParsedFeaturePolicyHeader& policyHeader,
+      const WebParsedFeaturePolicy& containerPolicy,
+      const WebParsedFeaturePolicy& policyHeader,
       const WebSecurityOrigin&) {
     return nullptr;
   }

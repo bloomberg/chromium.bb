@@ -182,7 +182,7 @@ class LocalFrameClientImpl final : public LocalFrameClient {
   void didUpdateToUniqueOrigin() override;
   void didChangeSandboxFlags(Frame* childFrame, SandboxFlags) override;
   void didSetFeaturePolicyHeader(
-      const WebParsedFeaturePolicyHeader& parsedHeader) override;
+      const WebParsedFeaturePolicy& parsedHeader) override;
   void didAddContentSecurityPolicy(
       const String& headerValue,
       ContentSecurityPolicyHeaderType,

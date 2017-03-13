@@ -26,7 +26,7 @@ getWebFeaturePolicyFeature(const String& feature);
 // but will be filtered out when the policy is constructed. If |messages| is
 // not null, then any errors in the input will cause an error message to be
 // appended to it.
-PLATFORM_EXPORT WebParsedFeaturePolicyHeader
+PLATFORM_EXPORT WebParsedFeaturePolicy
 parseFeaturePolicy(const String& policy,
                    RefPtr<SecurityOrigin>,
                    Vector<String>* messages);

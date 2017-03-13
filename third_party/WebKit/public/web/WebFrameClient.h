@@ -228,7 +228,7 @@ class BLINK_EXPORT WebFrameClient {
   // Called when a Feature-Policy HTTP header is encountered while loading the
   // frame's document.
   virtual void didSetFeaturePolicyHeader(
-      const WebParsedFeaturePolicyHeader& parsedHeader) {}
+      const WebParsedFeaturePolicy& parsedHeader) {}
 
   // Called when a new Content Security Policy is added to the frame's
   // document.  This can be triggered by handling of HTTP headers, handling

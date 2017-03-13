@@ -3200,7 +3200,7 @@ void RenderFrameImpl::didChangeSandboxFlags(blink::WebFrame* child_frame,
 }
 
 void RenderFrameImpl::didSetFeaturePolicyHeader(
-    const blink::WebParsedFeaturePolicyHeader& parsed_header) {
+    const blink::WebParsedFeaturePolicy& parsed_header) {
   Send(new FrameHostMsg_DidSetFeaturePolicyHeader(
       routing_id_, FeaturePolicyHeaderFromWeb(parsed_header)));
 }

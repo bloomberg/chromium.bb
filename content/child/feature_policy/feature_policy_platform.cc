@@ -7,7 +7,7 @@
 namespace content {
 
 ParsedFeaturePolicyHeader FeaturePolicyHeaderFromWeb(
-    const blink::WebParsedFeaturePolicyHeader& web_feature_policy_header) {
+    const blink::WebParsedFeaturePolicy& web_feature_policy_header) {
   ParsedFeaturePolicyHeader result;
   for (const blink::WebParsedFeaturePolicyDeclaration& web_declaration :
        web_feature_policy_header) {
@@ -21,7 +21,7 @@ ParsedFeaturePolicyHeader FeaturePolicyHeaderFromWeb(
   return result;
 }
 
-blink::WebParsedFeaturePolicyHeader FeaturePolicyHeaderToWeb(
+blink::WebParsedFeaturePolicy FeaturePolicyHeaderToWeb(
     const ParsedFeaturePolicyHeader& feature_policy_header) {
   std::vector<blink::WebParsedFeaturePolicyDeclaration> result;
   for (const ParsedFeaturePolicyDeclaration& declaration :

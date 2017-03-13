@@ -70,7 +70,7 @@ TEST_F(FeaturePolicyTest, PolicyParsedCorrectly) {
   Vector<String> messages;
 
   // Empty policy.
-  WebParsedFeaturePolicyHeader parsedPolicy =
+  WebParsedFeaturePolicy parsedPolicy =
       parseFeaturePolicy("{}", m_originA.get(), &messages);
   EXPECT_EQ(0UL, parsedPolicy.size());
 

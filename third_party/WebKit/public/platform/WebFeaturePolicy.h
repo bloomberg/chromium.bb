@@ -57,8 +57,7 @@ struct BLINK_PLATFORM_EXPORT WebParsedFeaturePolicyDeclaration {
 
 // Used in Blink code to represent parsed headers. Used for IPC between renderer
 // and browser.
-using WebParsedFeaturePolicyHeader =
-    WebVector<WebParsedFeaturePolicyDeclaration>;
+using WebParsedFeaturePolicy = WebVector<WebParsedFeaturePolicyDeclaration>;
 
 // Composed full policy for a document. Stored in SecurityContext for each
 // document. This is essentially an opaque handle to an object in the embedder.

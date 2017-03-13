@@ -889,7 +889,7 @@ void LocalFrameClientImpl::didChangeSandboxFlags(Frame* childFrame,
 }
 
 void LocalFrameClientImpl::didSetFeaturePolicyHeader(
-    const WebParsedFeaturePolicyHeader& parsedHeader) {
+    const WebParsedFeaturePolicy& parsedHeader) {
   if (m_webFrame->client())
     m_webFrame->client()->didSetFeaturePolicyHeader(parsedHeader);
 }
