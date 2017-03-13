@@ -212,7 +212,7 @@ def _CopyRuntime2013(target_dir, source_dir, dll_pattern):
     _CopyRuntimeImpl(target, source)
 
 
-def _CopyUCRTRuntime(target_dir, source_dir, dll_pattern, suffix):
+def _CopyUCRTRuntime(target_dir, source_dir, target_cpu, dll_pattern, suffix):
   """Copy both the msvcp and vccorlib runtime DLLs, only if the target doesn't
   exist, but the target directory does exist."""
   for file_part in ('msvcp', 'vccorlib', 'vcruntime'):
@@ -220,14 +220,16 @@ def _CopyUCRTRuntime(target_dir, source_dir, dll_pattern, suffix):
     target = os.path.join(target_dir, dll)
     source = os.path.join(source_dir, dll)
     _CopyRuntimeImpl(target, source)
-  # OS installs of Visual Studio (and all installs of Windows 10) put the
-  # universal CRT files in c:\Windows\System32\downlevel - look for them there
-  # to support DEPOT_TOOLS_WIN_TOOLCHAIN=0.
-  if os.path.exists(os.path.join(source_dir, 'downlevel')):
-    ucrt_src_glob = os.path.join(source_dir, 'downlevel', 'api-ms-win-*.dll')
-  else:
-    ucrt_src_glob = os.path.join(source_dir, 'api-ms-win-*.dll')
-  ucrt_files = glob.glob(ucrt_src_glob)
+  # Copy the UCRT files needed by VS 2015 from the Windows SDK. This location
+  # includes the api-ms-win-crt-*.dll files that are not found in the Windows
+  # directory. These files are needed for component builds.
+  # If WINDOWSSDKDIR is not set use the default SDK path. This will be the case
+  # when DEPOT_TOOLS_WIN_TOOLCHAIN=0 and vcvarsall.bat has not been run.
+  win_sdk_dir = os.path.normpath(
+      os.environ.get('WINDOWSSDKDIR',
+                     'C:\\Program Files (x86)\\Windows Kits\\10'))
+  ucrt_dll_dirs = os.path.join(win_sdk_dir, r'Redist\ucrt\DLLs', target_cpu)
+  ucrt_files = glob.glob(os.path.join(ucrt_dll_dirs, 'api-ms-win-*.dll'))
   assert len(ucrt_files) > 0
   for ucrt_src_file in ucrt_files:
     file_part = os.path.basename(ucrt_src_file)
@@ -243,7 +245,8 @@ def _CopyRuntime(target_dir, source_dir, target_cpu, debug):
   suffix = "d.dll" if debug else ".dll"
   if GetVisualStudioVersion() in ['2015', '2017']:
     # VS 2017 uses the same CRT DLLs as VS 2015.
-    _CopyUCRTRuntime(target_dir, source_dir, '%s140' + suffix, suffix)
+    _CopyUCRTRuntime(target_dir, source_dir, target_cpu, '%s140' + suffix,
+                     suffix)
   else:
     _CopyRuntime2013(target_dir, source_dir, 'msvc%s120' + suffix)
 
