@@ -277,6 +277,11 @@ MemoryState MemoryCoordinatorImpl::GetStateForProcess(
 void MemoryCoordinatorImpl::UpdateConditionIfNeeded(
     MemoryCondition next_condition) {
   DCHECK(CalledOnValidThread());
+
+  // Discard one tab when the system is under high memory pressure.
+  if (next_condition == MemoryCondition::CRITICAL)
+    DiscardTab();
+
   if (memory_condition_ == next_condition)
     return;
 
@@ -309,7 +314,6 @@ void MemoryCoordinatorImpl::UpdateConditionIfNeeded(
     // Set THROTTLED state to all clients/processes.
     UpdateBrowserStateAndNotifyStateToClients(MemoryState::THROTTLED);
     NotifyStateToChildren(MemoryState::THROTTLED);
-    // Idea: Start discarding tabs.
   }
 }
 

@@ -101,12 +101,12 @@ class TestMemoryCoordinatorDelegate : public MemoryCoordinatorDelegate {
     return true;
   }
 
-  void DiscardTab() override { discard_tab_called_ = true; }
+  void DiscardTab() override { ++discard_tab_count_; }
 
-  bool discard_tab_called() const { return discard_tab_called_; }
+  int discard_tab_count() const { return discard_tab_count_; }
 
  private:
-  bool discard_tab_called_ = false;
+  int discard_tab_count_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(TestMemoryCoordinatorDelegate);
 };
@@ -515,7 +515,49 @@ TEST_F(MemoryCoordinatorImplTest, ForceSetMemoryCondition) {
 
 TEST_F(MemoryCoordinatorImplTest, DiscardTab) {
   coordinator_->DiscardTab();
-  EXPECT_TRUE(coordinator_->GetDelegate()->discard_tab_called());
+  EXPECT_EQ(1, coordinator_->GetDelegate()->discard_tab_count());
+}
+
+TEST_F(MemoryCoordinatorImplTest, DiscardTabUnderCritical) {
+  auto* condition_observer = coordinator_->condition_observer_.get();
+  condition_observer->expected_renderer_size_ = 10;
+  condition_observer->new_renderers_until_warning_ = 4;
+  condition_observer->new_renderers_until_critical_ = 2;
+  condition_observer->new_renderers_back_to_normal_ = 5;
+  condition_observer->new_renderers_back_to_warning_ = 3;
+  DCHECK(condition_observer->ValidateParameters());
+  GetMockMemoryMonitor()->SetFreeMemoryUntilCriticalMB(50);
+
+  base::TimeDelta interval = base::TimeDelta::FromSeconds(5);
+  condition_observer->monitoring_interval_ = interval;
+
+  auto* delegate = coordinator_->GetDelegate();
+
+  coordinator_->Start();
+  task_runner_->RunUntilIdle();
+  EXPECT_EQ(MemoryCondition::NORMAL, coordinator_->GetMemoryCondition());
+  EXPECT_EQ(0, delegate->discard_tab_count());
+
+  // Enter WARNING condition. No tab discarding should happen.
+  GetMockMemoryMonitor()->SetFreeMemoryUntilCriticalMB(40);
+  task_runner_->FastForwardBy(interval + base::TimeDelta::FromSeconds(1));
+  EXPECT_EQ(0, delegate->discard_tab_count());
+  task_runner_->FastForwardBy(interval);
+  EXPECT_EQ(0, delegate->discard_tab_count());
+
+  // Enter CRITICAL condition. Tab discarding should start.
+  GetMockMemoryMonitor()->SetFreeMemoryUntilCriticalMB(20);
+  task_runner_->FastForwardBy(interval);
+  EXPECT_EQ(1, delegate->discard_tab_count());
+  task_runner_->FastForwardBy(interval);
+  EXPECT_EQ(2, delegate->discard_tab_count());
+
+  // Back to NORMAL. Tab discarding should stop.
+  GetMockMemoryMonitor()->SetFreeMemoryUntilCriticalMB(50);
+  task_runner_->FastForwardBy(interval);
+  EXPECT_EQ(2, delegate->discard_tab_count());
+  task_runner_->FastForwardBy(interval);
+  EXPECT_EQ(2, delegate->discard_tab_count());
 }
 
 #if defined(OS_ANDROID)
