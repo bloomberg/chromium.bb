@@ -26,11 +26,10 @@
 
 #include "core/workers/WorkerEventQueue.h"
 
-#include "core/dom/ExecutionContextTask.h"
-#include "core/dom/TaskRunnerHelper.h"
 #include "core/events/Event.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/workers/WorkerGlobalScope.h"
+#include "core/workers/WorkerThread.h"
 
 namespace blink {
 
@@ -58,10 +57,10 @@ bool WorkerEventQueue::enqueueEvent(Event* event) {
   probe::asyncTaskScheduled(event->target()->getExecutionContext(),
                             event->type(), event);
   m_pendingEvents.insert(event);
-  m_workerGlobalScope->postTask(
-      TaskType::UnspecedTimer, BLINK_FROM_HERE,
-      createSameThreadTask(&WorkerEventQueue::dispatchEvent,
-                           wrapPersistent(this), wrapWeakPersistent(event)));
+  m_workerGlobalScope->thread()->postTask(
+      BLINK_FROM_HERE,
+      WTF::bind(&WorkerEventQueue::dispatchEvent, wrapPersistent(this),
+                wrapWeakPersistent(event)));
   return true;
 }
 

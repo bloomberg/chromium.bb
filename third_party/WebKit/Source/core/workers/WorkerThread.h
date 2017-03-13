@@ -137,6 +137,7 @@ class CORE_EXPORT WorkerThread : public WebThread::TaskObserver {
     return m_workerReportingProxy;
   }
 
+  void postTask(const WebTraceLocation&, std::unique_ptr<WTF::Closure>);
   void postTask(const WebTraceLocation&,
                 std::unique_ptr<WTF::CrossThreadClosure>);
   void appendDebuggerTask(std::unique_ptr<CrossThreadClosure>);
@@ -251,7 +252,9 @@ class CORE_EXPORT WorkerThread : public WebThread::TaskObserver {
   void initializeOnWorkerThread(std::unique_ptr<WorkerThreadStartupData>);
   void prepareForShutdownOnWorkerThread();
   void performShutdownOnWorkerThread();
-  void performTaskOnWorkerThread(std::unique_ptr<CrossThreadClosure>);
+  template <WTF::FunctionThreadAffinity threadAffinity>
+  void performTaskOnWorkerThread(
+      std::unique_ptr<Function<void(), threadAffinity>> task);
   void performDebuggerTaskOnWorkerThread(std::unique_ptr<CrossThreadClosure>);
   void performDebuggerTaskDontWaitOnWorkerThread();
 

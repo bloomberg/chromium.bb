@@ -26,6 +26,8 @@
 
 #include "core/workers/WorkerThread.h"
 
+#include <limits.h>
+#include <memory>
 #include "bindings/core/v8/Microtask.h"
 #include "bindings/core/v8/ScriptSourceCode.h"
 #include "bindings/core/v8/WorkerOrWorkletScriptController.h"
@@ -53,8 +55,6 @@
 #include "wtf/PtrUtil.h"
 #include "wtf/Threading.h"
 #include "wtf/text/WTFString.h"
-#include <limits.h>
-#include <memory>
 
 namespace blink {
 
@@ -191,13 +191,26 @@ bool WorkerThread::isCurrentThread() {
 }
 
 void WorkerThread::postTask(const WebTraceLocation& location,
+                            std::unique_ptr<WTF::Closure> task) {
+  DCHECK(isCurrentThread());
+  if (isInShutdown())
+    return;
+  workerBackingThread().backingThread().postTask(
+      location,
+      WTF::bind(
+          &WorkerThread::performTaskOnWorkerThread<WTF::SameThreadAffinity>,
+          WTF::unretained(this), WTF::passed(std::move(task))));
+}
+
+void WorkerThread::postTask(const WebTraceLocation& location,
                             std::unique_ptr<WTF::CrossThreadClosure> task) {
   if (isInShutdown())
     return;
   workerBackingThread().backingThread().postTask(
-      location, crossThreadBind(&WorkerThread::performTaskOnWorkerThread,
-                                crossThreadUnretained(this),
-                                WTF::passed(std::move(task))));
+      location,
+      crossThreadBind(
+          &WorkerThread::performTaskOnWorkerThread<WTF::CrossThreadAffinity>,
+          crossThreadUnretained(this), WTF::passed(std::move(task))));
 }
 
 void WorkerThread::appendDebuggerTask(
@@ -550,8 +563,9 @@ void WorkerThread::performShutdownOnWorkerThread() {
   m_shutdownEvent->signal();
 }
 
+template <WTF::FunctionThreadAffinity threadAffinity>
 void WorkerThread::performTaskOnWorkerThread(
-    std::unique_ptr<WTF::CrossThreadClosure> task) {
+    std::unique_ptr<Function<void(), threadAffinity>> task) {
   DCHECK(isCurrentThread());
   if (m_threadState != ThreadState::Running)
     return;
