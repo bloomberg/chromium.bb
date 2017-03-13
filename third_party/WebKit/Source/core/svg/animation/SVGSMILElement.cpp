@@ -25,21 +25,21 @@
 
 #include "core/svg/animation/SVGSMILElement.h"
 
+#include <algorithm>
 #include "bindings/core/v8/ScriptEventListener.h"
 #include "core/XLinkNames.h"
 #include "core/dom/Document.h"
+#include "core/dom/IdTargetObserver.h"
 #include "core/dom/TaskRunnerHelper.h"
 #include "core/events/Event.h"
 #include "core/events/EventListener.h"
 #include "core/svg/SVGSVGElement.h"
-#include "core/svg/SVGTreeScopeResources.h"
 #include "core/svg/SVGURIReference.h"
 #include "core/svg/animation/SMILTimeContainer.h"
 #include "platform/heap/Handle.h"
 #include "wtf/MathExtras.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/Vector.h"
-#include <algorithm>
 
 namespace blink {
 
@@ -145,6 +145,7 @@ SVGSMILElement::Condition::~Condition() = default;
 
 DEFINE_TRACE(SVGSMILElement::Condition) {
   visitor->trace(m_baseElement);
+  visitor->trace(m_baseIdObserver);
   visitor->trace(m_eventListener);
 }
 
@@ -169,32 +170,23 @@ void SVGSMILElement::Condition::disconnectSyncBase(
   m_baseElement = nullptr;
 }
 
-SVGElement* SVGSMILElement::Condition::lookupEventBase(
-    SVGSMILElement& timedElement) const {
-  Element* eventBase = m_baseID.isEmpty()
-                           ? timedElement.targetElement()
-                           : timedElement.treeScope().getElementById(m_baseID);
-  if (!eventBase || !eventBase->isSVGElement())
-    return nullptr;
-  return toSVGElement(eventBase);
-}
-
 void SVGSMILElement::Condition::connectEventBase(SVGSMILElement& timedElement) {
   DCHECK_EQ(m_type, EventBase);
   DCHECK(!m_baseElement);
-  SVGElement* eventBase = lookupEventBase(timedElement);
-  if (!eventBase) {
-    if (m_baseID.isEmpty())
-      return;
-    SVGTreeScopeResources& treeScopeResources =
-        timedElement.treeScope().ensureSVGTreeScopedResources();
-    if (!treeScopeResources.isElementPendingResource(timedElement, m_baseID))
-      treeScopeResources.addPendingResource(m_baseID, timedElement);
-    return;
+  Element* target;
+  if (m_baseID.isEmpty()) {
+    target = timedElement.targetElement();
+  } else {
+    target = SVGURIReference::observeTarget(
+        m_baseIdObserver, timedElement.treeScope(), m_baseID,
+        WTF::bind(&SVGSMILElement::buildPendingResource,
+                  wrapWeakPersistent(&timedElement)));
   }
+  if (!target || !target->isSVGElement())
+    return;
   DCHECK(!m_eventListener);
   m_eventListener = ConditionEventListener::create(&timedElement, this);
-  m_baseElement = eventBase;
+  m_baseElement = toSVGElement(target);
   m_baseElement->addEventListener(m_name, m_eventListener, false);
   timedElement.addReferenceTo(m_baseElement);
 }
@@ -202,6 +194,7 @@ void SVGSMILElement::Condition::connectEventBase(SVGSMILElement& timedElement) {
 void SVGSMILElement::Condition::disconnectEventBase(
     SVGSMILElement& timedElement) {
   DCHECK_EQ(m_type, EventBase);
+  SVGURIReference::unobserveTarget(m_baseIdObserver);
   if (!m_eventListener)
     return;
   m_baseElement->removeEventListener(m_name, m_eventListener, false);
@@ -237,6 +230,7 @@ SVGSMILElement::SVGSMILElement(const QualifiedName& tagName, Document& doc)
 SVGSMILElement::~SVGSMILElement() {}
 
 void SVGSMILElement::clearResourceAndEventBaseReferences() {
+  SVGURIReference::unobserveTarget(m_targetIdObserver);
   removeAllOutgoingReferences();
 }
 
@@ -248,6 +242,7 @@ void SVGSMILElement::clearConditions() {
 
 void SVGSMILElement::buildPendingResource() {
   clearResourceAndEventBaseReferences();
+  disconnectEventBaseConditions();
 
   if (!isConnected()) {
     // Reset the target element if we are no longer in the document.
@@ -255,16 +250,13 @@ void SVGSMILElement::buildPendingResource() {
     return;
   }
 
-  AtomicString id;
   const AtomicString& href = SVGURIReference::legacyHrefString(*this);
   Element* target;
-  if (href.isEmpty())
-    target = parentNode() && parentNode()->isElementNode()
-                 ? toElement(parentNode())
-                 : nullptr;
-  else
-    target =
-        SVGURIReference::targetElementFromIRIString(href, treeScope(), &id);
+  if (href.isEmpty()) {
+    target = parentElement();
+  } else {
+    target = SVGURIReference::observeTarget(m_targetIdObserver, *this, href);
+  }
   SVGElement* svgTarget =
       target && target->isSVGElement() ? toSVGElement(target) : nullptr;
 
@@ -274,16 +266,7 @@ void SVGSMILElement::buildPendingResource() {
   if (svgTarget != targetElement())
     setTargetElement(svgTarget);
 
-  if (!svgTarget) {
-    // Do not register as pending if we are already pending this resource.
-    if (treeScope().ensureSVGTreeScopedResources().isElementPendingResource(
-            *this, id))
-      return;
-    if (!id.isEmpty()) {
-      treeScope().ensureSVGTreeScopedResources().addPendingResource(id, *this);
-      DCHECK(hasPendingResources());
-    }
-  } else {
+  if (svgTarget) {
     // Register us with the target in the dependencies map. Any change of
     // hrefElement that leads to relayout/repainting now informs us, so we can
     // react to it.
@@ -1289,6 +1272,7 @@ void SVGSMILElement::unscheduleIfScheduled() {
 
 DEFINE_TRACE(SVGSMILElement) {
   visitor->trace(m_targetElement);
+  visitor->trace(m_targetIdObserver);
   visitor->trace(m_timeContainer);
   visitor->trace(m_conditions);
   visitor->trace(m_syncBaseDependents);

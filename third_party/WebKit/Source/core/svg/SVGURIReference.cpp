@@ -118,8 +118,14 @@ Element* SVGURIReference::targetElementFromIRIString(
 
 Element* SVGURIReference::observeTarget(Member<IdTargetObserver>& observer,
                                         SVGElement& contextElement) {
+  return observeTarget(observer, contextElement, hrefString());
+}
+
+Element* SVGURIReference::observeTarget(Member<IdTargetObserver>& observer,
+                                        SVGElement& contextElement,
+                                        const String& hrefString) {
   TreeScope& treeScope = contextElement.treeScope();
-  AtomicString id = fragmentIdentifierFromIRIString(hrefString(), treeScope);
+  AtomicString id = fragmentIdentifierFromIRIString(hrefString, treeScope);
   return observeTarget(observer, treeScope, id,
                        WTF::bind(&SVGElement::buildPendingResource,
                                  wrapWeakPersistent(&contextElement)));

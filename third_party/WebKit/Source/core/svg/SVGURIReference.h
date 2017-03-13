@@ -61,6 +61,11 @@ class CORE_EXPORT SVGURIReference : public GarbageCollectedMixin {
   // |contextElement|.) Will call buildPendingResource() on |contextElement|
   // when changes to the 'id' are noticed.
   Element* observeTarget(Member<IdTargetObserver>&, SVGElement&);
+  // Create an 'id' observer for any id denoted by |hrefString|, calling
+  // buildPendingResource() on |contextElement| on changes.
+  static Element* observeTarget(Member<IdTargetObserver>&,
+                                SVGElement&,
+                                const String& hrefString);
   // Create an 'id' observer for |id| in the specified TreeScope. On changes,
   // the passed Closure will be called.
   static Element* observeTarget(Member<IdTargetObserver>&,

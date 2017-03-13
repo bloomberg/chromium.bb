@@ -38,6 +38,7 @@ namespace blink {
 
 class ConditionEventListener;
 class SMILTimeContainer;
+class IdTargetObserver;
 class SVGSMILElement;
 
 // This class implements SMIL interval timing model as needed for SVG animation.
@@ -216,8 +217,6 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
               SMILTime offset,
               int repeat);
 
-    SVGElement* lookupEventBase(SVGSMILElement&) const;
-
     Type m_type;
     BeginOrEnd m_beginOrEnd;
     AtomicString m_baseID;
@@ -225,6 +224,7 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
     SMILTime m_offset;
     int m_repeat;
     Member<SVGElement> m_baseElement;
+    Member<IdTargetObserver> m_baseIdObserver;
     Member<ConditionEventListener> m_eventListener;
   };
   bool parseCondition(const String&, BeginOrEnd beginOrEnd);
@@ -246,6 +246,7 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
   SMILTime calculateNextProgressTime(double elapsed) const;
 
   Member<SVGElement> m_targetElement;
+  Member<IdTargetObserver> m_targetIdObserver;
 
   HeapVector<Member<Condition>> m_conditions;
   bool m_syncBaseConditionsConnected;
