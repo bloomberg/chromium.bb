@@ -1,0 +1,67 @@
+This is a testharness.js-based test.
+Found 63 tests; 57 PASS, 6 FAIL, 0 TIMEOUT, 0 NOTRUN.
+PASS VTTCue interface: existence and properties of interface object 
+PASS VTTCue interface object length 
+PASS VTTCue interface object name 
+FAIL VTTCue interface: existence and properties of interface prototype object assert_equals: class string of VTTCue.prototype expected "[object VTTCuePrototype]" but got "[object VTTCue]"
+PASS VTTCue interface: existence and properties of interface prototype object's "constructor" property 
+PASS VTTCue interface: attribute region 
+PASS VTTCue interface: attribute vertical 
+PASS VTTCue interface: attribute snapToLines 
+PASS VTTCue interface: attribute line 
+FAIL VTTCue interface: attribute lineAlign assert_true: The prototype object must have a property "lineAlign" expected true got false
+PASS VTTCue interface: attribute position 
+FAIL VTTCue interface: attribute positionAlign assert_true: The prototype object must have a property "positionAlign" expected true got false
+PASS VTTCue interface: attribute size 
+PASS VTTCue interface: attribute align 
+PASS VTTCue interface: attribute text 
+PASS VTTCue interface: operation getCueAsHTML() 
+PASS VTTCue must be primary interface of new VTTCue(0, 0, "") 
+PASS Stringification of new VTTCue(0, 0, "") 
+PASS VTTCue interface: new VTTCue(0, 0, "") must inherit property "region" with the proper type (0) 
+PASS VTTCue interface: new VTTCue(0, 0, "") must inherit property "vertical" with the proper type (1) 
+PASS VTTCue interface: new VTTCue(0, 0, "") must inherit property "snapToLines" with the proper type (2) 
+PASS VTTCue interface: new VTTCue(0, 0, "") must inherit property "line" with the proper type (3) 
+FAIL VTTCue interface: new VTTCue(0, 0, "") must inherit property "lineAlign" with the proper type (4) assert_inherits: property "lineAlign" not found in prototype chain
+PASS VTTCue interface: new VTTCue(0, 0, "") must inherit property "position" with the proper type (5) 
+FAIL VTTCue interface: new VTTCue(0, 0, "") must inherit property "positionAlign" with the proper type (6) assert_inherits: property "positionAlign" not found in prototype chain
+PASS VTTCue interface: new VTTCue(0, 0, "") must inherit property "size" with the proper type (7) 
+PASS VTTCue interface: new VTTCue(0, 0, "") must inherit property "align" with the proper type (8) 
+PASS VTTCue interface: new VTTCue(0, 0, "") must inherit property "text" with the proper type (9) 
+PASS VTTCue interface: new VTTCue(0, 0, "") must inherit property "getCueAsHTML" with the proper type (10) 
+PASS TextTrackCue interface: new VTTCue(0, 0, "") must inherit property "track" with the proper type (0) 
+PASS TextTrackCue interface: new VTTCue(0, 0, "") must inherit property "id" with the proper type (1) 
+PASS TextTrackCue interface: new VTTCue(0, 0, "") must inherit property "startTime" with the proper type (2) 
+PASS TextTrackCue interface: new VTTCue(0, 0, "") must inherit property "endTime" with the proper type (3) 
+PASS TextTrackCue interface: new VTTCue(0, 0, "") must inherit property "pauseOnExit" with the proper type (4) 
+PASS TextTrackCue interface: new VTTCue(0, 0, "") must inherit property "onenter" with the proper type (5) 
+PASS TextTrackCue interface: new VTTCue(0, 0, "") must inherit property "onexit" with the proper type (6) 
+PASS EventTarget interface: new VTTCue(0, 0, "") must inherit property "addEventListener" with the proper type (0) 
+PASS EventTarget interface: calling addEventListener(DOMString,EventListener,[object Object],[object Object]) on new VTTCue(0, 0, "") with too few arguments must throw TypeError 
+PASS EventTarget interface: new VTTCue(0, 0, "") must inherit property "removeEventListener" with the proper type (1) 
+PASS EventTarget interface: calling removeEventListener(DOMString,EventListener,[object Object],[object Object]) on new VTTCue(0, 0, "") with too few arguments must throw TypeError 
+PASS EventTarget interface: new VTTCue(0, 0, "") must inherit property "dispatchEvent" with the proper type (2) 
+PASS EventTarget interface: calling dispatchEvent(Event) on new VTTCue(0, 0, "") with too few arguments must throw TypeError 
+PASS VTTRegion interface: existence and properties of interface object 
+PASS VTTRegion interface object length 
+PASS VTTRegion interface object name 
+FAIL VTTRegion interface: existence and properties of interface prototype object assert_equals: class string of VTTRegion.prototype expected "[object VTTRegionPrototype]" but got "[object VTTRegion]"
+PASS VTTRegion interface: existence and properties of interface prototype object's "constructor" property 
+PASS VTTRegion interface: attribute width 
+PASS VTTRegion interface: attribute lines 
+PASS VTTRegion interface: attribute regionAnchorX 
+PASS VTTRegion interface: attribute regionAnchorY 
+PASS VTTRegion interface: attribute viewportAnchorX 
+PASS VTTRegion interface: attribute viewportAnchorY 
+PASS VTTRegion interface: attribute scroll 
+PASS VTTRegion must be primary interface of new VTTRegion() 
+PASS Stringification of new VTTRegion() 
+PASS VTTRegion interface: new VTTRegion() must inherit property "width" with the proper type (0) 
+PASS VTTRegion interface: new VTTRegion() must inherit property "lines" with the proper type (1) 
+PASS VTTRegion interface: new VTTRegion() must inherit property "regionAnchorX" with the proper type (2) 
+PASS VTTRegion interface: new VTTRegion() must inherit property "regionAnchorY" with the proper type (3) 
+PASS VTTRegion interface: new VTTRegion() must inherit property "viewportAnchorX" with the proper type (4) 
+PASS VTTRegion interface: new VTTRegion() must inherit property "viewportAnchorY" with the proper type (5) 
+PASS VTTRegion interface: new VTTRegion() must inherit property "scroll" with the proper type (6) 
+Harness: the test ran to completion.
+
