@@ -16,13 +16,13 @@ class CORE_EXPORT CSSPropertyMetadata {
   STATIC_ONLY(CSSPropertyMetadata);
 
  public:
-  static bool isEnabledProperty(CSSPropertyID);
-  static bool isInterpolableProperty(CSSPropertyID);
-  static bool isInheritedProperty(CSSPropertyID);
-  static bool propertySupportsPercentage(CSSPropertyID);
-  static bool propertyIsRepeated(CSSPropertyID);
-  static char repetitionSeparator(CSSPropertyID);
-  static bool isDescriptorOnly(CSSPropertyID);
+  static bool isEnabledProperty(CSSPropertyID unresolvedProperty);
+  static bool isInterpolableProperty(CSSPropertyID unresolvedProperty);
+  static bool isInheritedProperty(CSSPropertyID unresolvedProperty);
+  static bool propertySupportsPercentage(CSSPropertyID unresolvedProperty);
+  static bool propertyIsRepeated(CSSPropertyID unresolvedProperty);
+  static char repetitionSeparator(CSSPropertyID unresolvedProperty);
+  static bool isDescriptorOnly(CSSPropertyID unresolvedProperty);
 
   static void filterEnabledCSSPropertiesIntoVector(const CSSPropertyID*,
                                                    size_t length,

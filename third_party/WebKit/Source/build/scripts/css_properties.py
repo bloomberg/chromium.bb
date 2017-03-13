@@ -51,13 +51,24 @@ class CSSProperties(json5_generator.Writer):
         self._properties_including_aliases = properties
         self._properties = {property['property_id']: property for property in properties}
 
-        # The generated code will only work with at most one alias per property
+        # The generated code will only work with at most one alias per property.
         assert len({property['alias_for'] for property in self._aliases}) == len(self._aliases)
 
-        for property in self._aliases:
-            property['property_id'] = name_utilities.enum_for_css_property_alias(property['name'])
-            aliased_property = self._properties[name_utilities.enum_for_css_property(property['alias_for'])]
-            property['enum_value'] = aliased_property['enum_value'] + 512
+        # Update property aliases to include the fields of the property being aliased.
+        for i, alias in enumerate(self._aliases):
+            aliased_property = self._properties[
+                name_utilities.enum_for_css_property(alias['alias_for'])]
+            updated_alias = aliased_property.copy()
+            updated_alias['name'] = alias['name']
+            updated_alias['alias_for'] = alias['alias_for']
+            updated_alias['property_id'] = \
+                name_utilities.enum_for_css_property_alias(alias['name'])
+            updated_alias['enum_value'] = aliased_property['enum_value'] + 512
+            updated_alias['upper_camel_name'] = \
+                name_utilities.camel_case(alias['name'])
+            updated_alias['lower_camel_name'] = \
+                name_utilities.lower_first(updated_alias['upper_camel_name'])
+            self._aliases[i] = updated_alias
         self._properties_including_aliases += self._aliases
 
     def properties(self):

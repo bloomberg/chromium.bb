@@ -9,13 +9,13 @@
 namespace blink {
 {% for flag, function_name in switches %}
 
-bool CSSPropertyMetadata::{{function_name}}(CSSPropertyID property) {
-  switch (property) {
+bool CSSPropertyMetadata::{{function_name}}(CSSPropertyID unresolvedProperty) {
+  switch (unresolvedProperty) {
     case CSSPropertyInvalid:
       NOTREACHED();
       return false;
-    {% for property_id, property in properties.items() if property[flag] %}
-    case {{property_id}}:
+    {% for property in properties_including_aliases if property[flag] %}
+    case {{property.property_id}}:
     {% endfor %}
     {% if function_name == "isInheritedProperty" %}
     case CSSPropertyVariable:
@@ -27,10 +27,10 @@ bool CSSPropertyMetadata::{{function_name}}(CSSPropertyID property) {
 }
 {% endfor %}
 
-char CSSPropertyMetadata::repetitionSeparator(CSSPropertyID property) {
-  switch (property) {
-  {% for property_id, property in properties.items() if property.separator %}
-  case {{property_id}}:
+char CSSPropertyMetadata::repetitionSeparator(CSSPropertyID unresolvedProperty) {
+  switch (unresolvedProperty) {
+  {% for property in properties_including_aliases if property.separator %}
+  case {{property.property_id}}:
     return '{{property.separator}}';
   {% endfor %}
   default:
@@ -38,8 +38,8 @@ char CSSPropertyMetadata::repetitionSeparator(CSSPropertyID property) {
   }
 }
 
-bool CSSPropertyMetadata::propertyIsRepeated(CSSPropertyID property) {
-  return repetitionSeparator(property) != 0;
+bool CSSPropertyMetadata::propertyIsRepeated(CSSPropertyID unresolvedProperty) {
+  return repetitionSeparator(unresolvedProperty) != 0;
 }
 
 bool CSSPropertyMetadata::isEnabledProperty(CSSPropertyID unresolvedProperty) {
@@ -48,12 +48,12 @@ bool CSSPropertyMetadata::isEnabledProperty(CSSPropertyID unresolvedProperty) {
   if (!enabledProperties) {
     enabledProperties = new std::bitset<numCSSProperties>();
     enabledProperties->set(); // All bits sets to 1.
-    {% for property_id, property in properties.items() if property.runtime_flag %}
+    {% for property in properties_including_aliases if property.runtime_flag %}
     if (!RuntimeEnabledFeatures::{{property.runtime_flag|lower_first}}Enabled())
-      enabledProperties->reset({{property_id}} - {{first_enum_value}});
+      enabledProperties->reset({{property.property_id}} - {{first_enum_value}});
     {% endfor %}
-    {% for property_id, property in properties.items() if property.is_internal %}
-    enabledProperties->reset({{property_id}} - {{first_enum_value}});
+    {% for property in properties_including_aliases if property.is_internal %}
+    enabledProperties->reset({{property.property_id}} - {{first_enum_value}});
     {% endfor %}
   }
 
