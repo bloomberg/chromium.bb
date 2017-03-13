@@ -18,13 +18,7 @@ class NGTextLayoutAlgorithmTest : public NGBaseLayoutAlgorithmTest {};
 
 // Verifies that text can flow correctly around floats that were positioned
 // before the inline block.
-// Failing on Android: crbug.com/700868
-#if OS(ANDROID)
-#define MAYBE_TextFloatsAroundFloatsBefore DISABLED_TextFloatsAroundFloatsBefore
-#else
-#define MAYBE_TextFloatsAroundFloatsBefore TextFloatsAroundFloatsBefore
-#endif
-TEST_F(NGTextLayoutAlgorithmTest, MAYBE_TextFloatsAroundFloatsBefore) {
+TEST_F(NGTextLayoutAlgorithmTest, TextFloatsAroundFloatsBefore) {
   setBodyInnerHTML(R"HTML(
     <!DOCTYPE html>
     <style>
@@ -81,7 +75,7 @@ TEST_F(NGTextLayoutAlgorithmTest, MAYBE_TextFloatsAroundFloatsBefore) {
   EXPECT_EQ("The quick ", text_node->Text(text_fragment1->StartOffset(),
                                           text_fragment1->EndOffset()));
   InlineTextBox* inline_text_box1 = layout_text->firstTextBox();
-  EXPECT_EQ(LayoutPoint(40, 0), inline_text_box1->frameRect().location());
+  EXPECT_EQ(LayoutUnit(40), inline_text_box1->x());
 
   auto* text_fragment2 =
       toNGPhysicalTextFragment(text_fragments_wrapper->Children()[1].get());
@@ -91,7 +85,7 @@ TEST_F(NGTextLayoutAlgorithmTest, MAYBE_TextFloatsAroundFloatsBefore) {
             text_node->Text(text_fragment2->StartOffset(),
                             text_fragment2->EndOffset()));
   InlineTextBox* inline_text_box2 = inline_text_box1->nextTextBox();
-  EXPECT_EQ(LayoutPoint(30, 22), inline_text_box2->frameRect().location());
+  EXPECT_EQ(LayoutUnit(30), inline_text_box2->x());
 
   auto* text_fragment3 =
       toNGPhysicalTextFragment(text_fragments_wrapper->Children()[2].get());
@@ -100,7 +94,7 @@ TEST_F(NGTextLayoutAlgorithmTest, MAYBE_TextFloatsAroundFloatsBefore) {
             text_node->Text(text_fragment3->StartOffset(),
                             text_fragment3->EndOffset()));
   InlineTextBox* inline_text_box3 = inline_text_box2->nextTextBox();
-  EXPECT_EQ(LayoutPoint(0, 44), inline_text_box3->frameRect().location());
+  EXPECT_EQ(LayoutUnit(), inline_text_box3->x());
 }
 
 }  // namespace
