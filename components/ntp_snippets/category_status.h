@@ -28,11 +28,13 @@ enum class CategoryStatus {
   // of the service configuration.
   ALL_SUGGESTIONS_EXPLICITLY_DISABLED,
   // Content suggestions from a specific category have been disabled as part of
-  // the service configuration.
+  // the service configuration. Any suggestions from this category should be
+  // removed from the UI immediately.
   CATEGORY_EXPLICITLY_DISABLED,
 
   // Content suggestions are not available because an error occurred when
-  // loading or updating them.
+  // loading or updating them. Any suggestions from this category should be
+  // removed from the UI immediately.
   LOADING_ERROR
 };
 

@@ -50,11 +50,10 @@ class ContentSuggestionsService : public KeyedService,
     // data is then available through |GetSuggestionsForCategory(category)|.
     virtual void OnNewSuggestions(Category category) = 0;
 
-    // Fired when the status of a suggestions category changed. When the status
-    // changes to an unavailable status, the suggestions of the respective
-    // category have been invalidated, which means that they must no longer be
-    // displayed to the user. The UI must immediately clear any suggestions of
-    // that category.
+    // Fired when the status of a suggestions category changed. Note that for
+    // some status changes, the UI must update immediately (e.g. to remove
+    // invalidated suggestions). See comments on the individual CategoryStatus
+    // values for details.
     virtual void OnCategoryStatusChanged(Category category,
                                          CategoryStatus new_status) = 0;
 
