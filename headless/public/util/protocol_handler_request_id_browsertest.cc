@@ -69,6 +69,7 @@ class RequestIdCorrelationProtocolHandler
     void StartFetch(const GURL& url,
                     const std::string& method,
                     const net::HttpRequestHeaders& request_headers,
+                    const std::string& devtools_request_id,
                     ResultListener* result_listener) override {
       const Response* response = protocol_handler_->GetResponse(url.spec());
       if (!response)

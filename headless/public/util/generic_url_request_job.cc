@@ -135,7 +135,7 @@ void GenericURLRequestJob::OnCookiesAvailable(
         matched_resource->response_data, matched_resource->response_data_size);
   } else {
     url_fetcher_->StartFetch(rewritten_url, method, extra_request_headers_,
-                             this);
+                             devtools_request_id_, this);
   }
 }
 

@@ -184,6 +184,7 @@ HttpURLFetcher::~HttpURLFetcher() {}
 void HttpURLFetcher::StartFetch(const GURL& rewritten_url,
                                 const std::string& method,
                                 const net::HttpRequestHeaders& request_headers,
+                                const std::string& devtools_request_id,
                                 ResultListener* result_listener) {
   delegate_.reset(new Delegate(rewritten_url, method, request_headers,
                                url_request_context_, result_listener));

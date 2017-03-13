@@ -55,6 +55,7 @@ class MockFetcher : public URLFetcher {
   void StartFetch(const GURL& url,
                   const std::string& method,
                   const net::HttpRequestHeaders& request_headers,
+                  const std::string& devtools_request_id,
                   ResultListener* result_listener) override {
     // Record the request.
     fetch_request_->SetString("url", url.spec());

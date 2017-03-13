@@ -63,7 +63,13 @@ class URLFetcher {
   virtual void StartFetch(const GURL& rewritten_url,
                           const std::string& method,
                           const net::HttpRequestHeaders& request_headers,
-                          ResultListener* result_listener) = 0;
+                          const std::string& devtools_request_id,
+                          ResultListener* result_listener);
+  //  TODO(alexclarke): Make the above pure virtual and remove this.
+  virtual void StartFetch(const GURL& rewritten_url,
+                          const std::string& method,
+                          const net::HttpRequestHeaders& request_headers,
+                          ResultListener* result_listener);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(URLFetcher);
