@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -103,7 +104,7 @@ KioskSessionPluginHandler::KioskSessionPluginHandler(
 KioskSessionPluginHandler::~KioskSessionPluginHandler() {}
 
 void KioskSessionPluginHandler::Observe(content::WebContents* contents) {
-  watchers_.push_back(new Observer(contents, this));
+  watchers_.push_back(base::MakeUnique<Observer>(contents, this));
 }
 
 void KioskSessionPluginHandler::OnPluginCrashed(
@@ -117,14 +118,18 @@ void KioskSessionPluginHandler::OnPluginHung(
 }
 
 void KioskSessionPluginHandler::OnWebContentsDestroyed(Observer* observer) {
-  auto it = std::find(watchers_.begin(), watchers_.end(), observer);
-  if (it == watchers_.end())
-    return;
+  for (auto it = watchers_.begin(); it != watchers_.end(); ++it) {
+    if (it->get() == observer) {
+      it->release();
+      watchers_.erase(it);
 
-  watchers_.weak_erase(it);
+      // Schedule the delete later after |observer|'s WebContentsDestroyed
+      // finishes.
+      base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, observer);
 
-  // Schedule the delete later after |observer|'s WebContentsDestroyed finishes.
-  base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, observer);
+      return;
+    }
+  }
 }
 
 }  // namespace chromeos

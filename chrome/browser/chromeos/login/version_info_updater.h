@@ -5,10 +5,11 @@
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_VERSION_INFO_UPDATER_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_VERSION_INFO_UPDATER_H_
 
+#include <memory>
 #include <string>
+#include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chromeos/system/version_loader.h"
@@ -73,7 +74,8 @@ class VersionInfoUpdater : public policy::CloudPolicyStore::Observer {
   // Full text for the OS version label.
   std::string os_version_label_text_;
 
-  ScopedVector<CrosSettings::ObserverSubscription> subscriptions_;
+  std::vector<std::unique_ptr<CrosSettings::ObserverSubscription>>
+      subscriptions_;
 
   chromeos::CrosSettings* cros_settings_;
 

@@ -66,7 +66,7 @@ TEST_F(FileSystemProviderOperationsCopyEntryTest, Execute) {
   EXPECT_TRUE(copy_entry.Execute(kRequestId));
 
   ASSERT_EQ(1u, dispatcher.events().size());
-  extensions::Event* event = dispatcher.events()[0];
+  extensions::Event* event = dispatcher.events()[0].get();
   EXPECT_EQ(
       extensions::api::file_system_provider::OnCopyEntryRequested::kEventName,
       event->event_name);

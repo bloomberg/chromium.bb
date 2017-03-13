@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 #include "ui/aura/env_observer.h"
 #include "ui/events/event_rewriter.h"
 
@@ -40,13 +39,10 @@ class EventRewriterController : public aura::EnvObserver {
   void OnHostInitialized(aura::WindowTreeHost* host) override;
 
  private:
-  typedef std::list<ui::EventSource*> EventSourceList;
-  typedef ScopedVector<ui::EventRewriter> EventRewriters;
-
   void AddToEventSource(ui::EventSource* source);
 
   // The |EventRewriter|s managed by this controller.
-  EventRewriters rewriters_;
+  std::vector<std::unique_ptr<ui::EventRewriter>> rewriters_;
 
   // Whether the owned event rewriters have been added to existing
   // root windows; after this no more rewriters can be added.

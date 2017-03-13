@@ -10,7 +10,6 @@
 
 #include "base/files/file.h"
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 
 namespace extensions {
 struct Event;
@@ -32,10 +31,10 @@ class LoggingDispatchEventImpl {
   bool OnDispatchEventImpl(std::unique_ptr<extensions::Event> event);
 
   // Returns events sent to providing extensions.
-  ScopedVector<extensions::Event>& events() { return events_; }
+  std::vector<std::unique_ptr<extensions::Event>>& events() { return events_; }
 
  private:
-  ScopedVector<extensions::Event> events_;
+  std::vector<std::unique_ptr<extensions::Event>> events_;
   bool dispatch_reply_;
 
   DISALLOW_COPY_AND_ASSIGN(LoggingDispatchEventImpl);

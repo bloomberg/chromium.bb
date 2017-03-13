@@ -64,7 +64,7 @@ TEST_F(FileSystemProviderOperationsDeleteEntryTest, Execute) {
   EXPECT_TRUE(delete_entry.Execute(kRequestId));
 
   ASSERT_EQ(1u, dispatcher.events().size());
-  extensions::Event* event = dispatcher.events()[0];
+  extensions::Event* event = dispatcher.events()[0].get();
   EXPECT_EQ(
       extensions::api::file_system_provider::OnDeleteEntryRequested::kEventName,
       event->event_name);

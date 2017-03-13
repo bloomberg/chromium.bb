@@ -5,12 +5,14 @@
 #include "chrome/browser/chromeos/drive/drive_file_stream_reader.h"
 
 #include <stddef.h>
+
 #include <algorithm>
 #include <cstring>
 #include <utility>
 
 #include "base/callback_helpers.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/sequenced_task_runner.h"
 #include "components/drive/chromeos/file_system_interface.h"
 #include "components/drive/drive.pb.h"
@@ -66,8 +68,9 @@ namespace {
 // Copies the content in |pending_data| into |buffer| at most
 // |buffer_length| bytes, and erases the copied data from
 // |pending_data|. Returns the number of copied bytes.
-int ReadInternal(ScopedVector<std::string>* pending_data,
-                 net::IOBuffer* buffer, int buffer_length) {
+int ReadInternal(std::vector<std::unique_ptr<std::string>>* pending_data,
+                 net::IOBuffer* buffer,
+                 int buffer_length) {
   size_t index = 0;
   int offset = 0;
   for (; index < pending_data->size() && offset < buffer_length; ++index) {
@@ -234,7 +237,7 @@ void NetworkReaderProxy::OnGetContent(std::unique_ptr<std::string> data) {
     remaining_offset_ = 0;
   }
 
-  pending_data_.push_back(data.release());
+  pending_data_.push_back(std::move(data));
   if (!buffer_.get()) {
     // No pending Read operation.
     return;

@@ -63,7 +63,7 @@ TEST_F(FileSystemProviderOperationsAbortTest, Execute) {
   EXPECT_TRUE(abort.Execute(kRequestId));
 
   ASSERT_EQ(1u, dispatcher.events().size());
-  extensions::Event* event = dispatcher.events()[0];
+  extensions::Event* event = dispatcher.events()[0].get();
   EXPECT_EQ(extensions::api::file_system_provider::OnAbortRequested::kEventName,
             event->event_name);
   base::ListValue* event_args = event->event_args.get();

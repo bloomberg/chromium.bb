@@ -8,10 +8,10 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_vector.h"
 #include "base/threading/thread_checker.h"
 #include "chrome/browser/chromeos/policy/upload_job.h"
 #include "google_apis/gaia/oauth2_token_service.h"
@@ -167,7 +167,7 @@ class UploadJobImpl : public UploadJob,
   std::unique_ptr<net::URLFetcher> upload_fetcher_;
 
   // The data chunks to be uploaded.
-  ScopedVector<DataSegment> data_segments_;
+  std::vector<std::unique_ptr<DataSegment>> data_segments_;
 
   // TaskRunner used for scheduling retry attempts.
   const scoped_refptr<base::SequencedTaskRunner> task_runner_;

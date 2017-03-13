@@ -70,7 +70,7 @@ TEST_F(FileSystemProviderOperationsExecuteActionTest, Execute) {
   EXPECT_TRUE(execute_action.Execute(kRequestId));
 
   ASSERT_EQ(1u, dispatcher.events().size());
-  extensions::Event* event = dispatcher.events()[0];
+  extensions::Event* event = dispatcher.events()[0].get();
   EXPECT_EQ(extensions::api::file_system_provider::OnExecuteActionRequested::
                 kEventName,
             event->event_name);

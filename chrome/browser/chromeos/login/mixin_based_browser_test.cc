@@ -4,6 +4,10 @@
 
 #include "chrome/browser/chromeos/login/mixin_based_browser_test.h"
 
+#include <utility>
+
+#include "base/containers/adapters.h"
+
 namespace chromeos {
 
 MixinBasedBrowserTest::MixinBasedBrowserTest() : setup_was_launched_(false) {
@@ -14,52 +18,43 @@ MixinBasedBrowserTest::~MixinBasedBrowserTest() {
 
 void MixinBasedBrowserTest::SetUpCommandLine(base::CommandLine* command_line) {
   setup_was_launched_ = true;
-  for (ScopedVector<Mixin>::iterator it = mixins_.begin(); it != mixins_.end();
-       ++it) {
-    (*it)->SetUpCommandLine(command_line);
-  }
+  for (const auto& mixin : mixins_)
+    mixin->SetUpCommandLine(command_line);
+
   InProcessBrowserTest::SetUpCommandLine(command_line);
 }
 
 void MixinBasedBrowserTest::SetUpInProcessBrowserTestFixture() {
   setup_was_launched_ = true;
-  for (ScopedVector<Mixin>::iterator it = mixins_.begin(); it != mixins_.end();
-       ++it) {
-    (*it)->SetUpInProcessBrowserTestFixture();
-  }
+  for (const auto& mixin : mixins_)
+    mixin->SetUpInProcessBrowserTestFixture();
+
   InProcessBrowserTest::SetUpInProcessBrowserTestFixture();
 }
 
 void MixinBasedBrowserTest::SetUpOnMainThread() {
   setup_was_launched_ = true;
-  for (ScopedVector<Mixin>::iterator it = mixins_.begin(); it != mixins_.end();
-       ++it) {
-    (*it)->SetUpOnMainThread();
-  }
+  for (const auto& mixin : mixins_)
+    mixin->SetUpOnMainThread();
+
   InProcessBrowserTest::SetUpOnMainThread();
 }
 
 void MixinBasedBrowserTest::TearDownOnMainThread() {
   InProcessBrowserTest::TearDownOnMainThread();
-  for (ScopedVector<Mixin>::reverse_iterator it = mixins_.rbegin();
-       it != mixins_.rend();
-       ++it) {
-    (*it)->TearDownInProcessBrowserTestFixture();
-  }
+  for (const auto& mixin : base::Reversed(mixins_))
+    mixin->TearDownInProcessBrowserTestFixture();
 }
 void MixinBasedBrowserTest::TearDownInProcessBrowserTestFixture() {
   InProcessBrowserTest::TearDownInProcessBrowserTestFixture();
-  for (ScopedVector<Mixin>::reverse_iterator it = mixins_.rbegin();
-       it != mixins_.rend();
-       ++it) {
-    (*it)->TearDownInProcessBrowserTestFixture();
-  }
+  for (const auto& mixin : base::Reversed(mixins_))
+    mixin->TearDownInProcessBrowserTestFixture();
 }
 
-void MixinBasedBrowserTest::AddMixin(MixinBasedBrowserTest::Mixin* mixin) {
+void MixinBasedBrowserTest::AddMixin(std::unique_ptr<Mixin> mixin) {
   CHECK(!setup_was_launched_)
       << "You are trying to add a mixin after setting up has already started.";
-  mixins_.push_back(mixin);
+  mixins_.push_back(std::move(mixin));
 }
 
 }  // namespace chromeos

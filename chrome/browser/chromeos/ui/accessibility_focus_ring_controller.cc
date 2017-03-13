@@ -9,6 +9,7 @@
 #include <algorithm>
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/chromeos/ui/focus_ring_layer.h"
 
 namespace chromeos {
@@ -103,7 +104,7 @@ void AccessibilityFocusRingController::UpdateFocusRingsFromFocusRects() {
 
   for (size_t i = 0; i < focus_rings_.size(); ++i) {
     if (!focus_layers_[i])
-      focus_layers_[i] = new AccessibilityFocusRingLayer(this);
+      focus_layers_[i] = base::MakeUnique<AccessibilityFocusRingLayer>(this);
   }
 
   if (focus_ring_behavior_ == PERSIST_FOCUS_RING &&

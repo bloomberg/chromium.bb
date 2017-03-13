@@ -67,7 +67,7 @@ TEST_F(FileSystemProviderOperationsTruncateTest, Execute) {
   EXPECT_TRUE(truncate.Execute(kRequestId));
 
   ASSERT_EQ(1u, dispatcher.events().size());
-  extensions::Event* event = dispatcher.events()[0];
+  extensions::Event* event = dispatcher.events()[0].get();
   EXPECT_EQ(
       extensions::api::file_system_provider::OnTruncateRequested::kEventName,
       event->event_name);

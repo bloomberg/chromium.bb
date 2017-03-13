@@ -59,7 +59,7 @@ TEST_F(FileSystemProviderOperationsConfigureTest, Execute) {
   EXPECT_TRUE(configure.Execute(kRequestId));
 
   ASSERT_EQ(1u, dispatcher.events().size());
-  extensions::Event* event = dispatcher.events()[0];
+  extensions::Event* event = dispatcher.events()[0].get();
   EXPECT_EQ(
       extensions::api::file_system_provider::OnConfigureRequested::kEventName,
       event->event_name);

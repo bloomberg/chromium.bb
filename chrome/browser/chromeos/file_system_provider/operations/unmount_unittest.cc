@@ -60,7 +60,7 @@ TEST_F(FileSystemProviderOperationsUnmountTest, Execute) {
   EXPECT_TRUE(unmount.Execute(kRequestId));
 
   ASSERT_EQ(1u, dispatcher.events().size());
-  extensions::Event* event = dispatcher.events()[0];
+  extensions::Event* event = dispatcher.events()[0].get();
   EXPECT_EQ(
       extensions::api::file_system_provider::OnUnmountRequested::kEventName,
       event->event_name);

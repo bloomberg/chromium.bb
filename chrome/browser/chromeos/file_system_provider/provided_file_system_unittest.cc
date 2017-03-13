@@ -13,7 +13,6 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_vector.h"
 #include "base/run_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
@@ -143,7 +142,8 @@ class Observer : public ProvidedFileSystemObserver {
                         const ProvidedFileSystemObserver::Changes& changes,
                         const base::Closure& callback) override {
     EXPECT_EQ(kFileSystemId, file_system_info.file_system_id());
-    change_events_.push_back(new ChangeEvent(change_type, changes));
+    change_events_.push_back(
+        base::MakeUnique<ChangeEvent>(change_type, changes));
     complete_callback_ = callback;
   }
 
@@ -168,13 +168,13 @@ class Observer : public ProvidedFileSystemObserver {
   }
 
   int list_changed_counter() const { return list_changed_counter_; }
-  const ScopedVector<ChangeEvent>& change_events() const {
+  const std::vector<std::unique_ptr<ChangeEvent>>& change_events() const {
     return change_events_;
   }
   int tag_updated_counter() const { return tag_updated_counter_; }
 
  private:
-  ScopedVector<ChangeEvent> change_events_;
+  std::vector<std::unique_ptr<ChangeEvent>> change_events_;
   int list_changed_counter_;
   int tag_updated_counter_;
   base::Closure complete_callback_;
@@ -763,7 +763,7 @@ TEST_F(FileSystemProviderProvidedFileSystemTest, Notify) {
     // Verify the observer event.
     ASSERT_EQ(1u, observer.change_events().size());
     const Observer::ChangeEvent* const change_event =
-        observer.change_events()[0];
+        observer.change_events()[0].get();
     EXPECT_EQ(change_type, change_event->change_type());
     EXPECT_EQ(0u, change_event->changes().size());
 
@@ -816,7 +816,7 @@ TEST_F(FileSystemProviderProvidedFileSystemTest, Notify) {
     // Verify the observer event.
     ASSERT_EQ(2u, observer.change_events().size());
     const Observer::ChangeEvent* const change_event =
-        observer.change_events()[1];
+        observer.change_events()[1].get();
     EXPECT_EQ(change_type, change_event->change_type());
     EXPECT_EQ(0u, change_event->changes().size());
   }

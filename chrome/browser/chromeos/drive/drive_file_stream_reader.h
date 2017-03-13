@@ -9,11 +9,11 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_vector.h"
 #include "base/threading/thread_checker.h"
 #include "components/drive/file_errors.h"
 #include "google_apis/drive/drive_api_error_codes.h"
@@ -111,7 +111,7 @@ class NetworkReaderProxy : public ReaderProxy {
 
  private:
   // The data received from the server, but not yet read.
-  ScopedVector<std::string> pending_data_;
+  std::vector<std::unique_ptr<std::string>> pending_data_;
 
   // The number of bytes to be skipped.
   int64_t remaining_offset_;

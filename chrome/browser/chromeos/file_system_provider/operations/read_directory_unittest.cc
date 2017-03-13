@@ -7,12 +7,13 @@
 #include <memory>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/json/json_reader.h"
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
+#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/file_system_provider/operations/get_metadata.h"
 #include "chrome/browser/chromeos/file_system_provider/operations/test_util.h"
@@ -65,13 +66,13 @@ class CallbackLogger {
   void OnReadDirectory(base::File::Error result,
                        const storage::AsyncFileUtil::EntryList& entry_list,
                        bool has_more) {
-    events_.push_back(new Event(result, entry_list, has_more));
+    events_.push_back(base::MakeUnique<Event>(result, entry_list, has_more));
   }
 
-  ScopedVector<Event>& events() { return events_; }
+  std::vector<std::unique_ptr<Event>>& events() { return events_; }
 
  private:
-  ScopedVector<Event> events_;
+  std::vector<std::unique_ptr<Event>> events_;
 
   DISALLOW_COPY_AND_ASSIGN(CallbackLogger);
 };
@@ -130,7 +131,7 @@ TEST_F(FileSystemProviderOperationsReadDirectoryTest, Execute) {
   EXPECT_TRUE(read_directory.Execute(kRequestId));
 
   ASSERT_EQ(1u, dispatcher.events().size());
-  extensions::Event* event = dispatcher.events()[0];
+  extensions::Event* event = dispatcher.events()[0].get();
   EXPECT_EQ(extensions::api::file_system_provider::OnReadDirectoryRequested::
                 kEventName,
             event->event_name);
@@ -200,7 +201,7 @@ TEST_F(FileSystemProviderOperationsReadDirectoryTest, OnSuccess) {
   read_directory.OnSuccess(kRequestId, std::move(request_value), has_more);
 
   ASSERT_EQ(1u, callback_logger.events().size());
-  CallbackLogger::Event* event = callback_logger.events()[0];
+  CallbackLogger::Event* event = callback_logger.events()[0].get();
   EXPECT_EQ(base::File::FILE_OK, event->result());
 
   ASSERT_EQ(1u, event->entry_list().size());
@@ -247,7 +248,7 @@ TEST_F(FileSystemProviderOperationsReadDirectoryTest,
   read_directory.OnSuccess(kRequestId, std::move(request_value), has_more);
 
   ASSERT_EQ(1u, callback_logger.events().size());
-  CallbackLogger::Event* event = callback_logger.events()[0];
+  CallbackLogger::Event* event = callback_logger.events()[0].get();
   EXPECT_EQ(base::File::FILE_ERROR_IO, event->result());
 
   EXPECT_EQ(0u, event->entry_list().size());
@@ -272,7 +273,7 @@ TEST_F(FileSystemProviderOperationsReadDirectoryTest, OnError) {
                          base::File::FILE_ERROR_TOO_MANY_OPENED);
 
   ASSERT_EQ(1u, callback_logger.events().size());
-  CallbackLogger::Event* event = callback_logger.events()[0];
+  CallbackLogger::Event* event = callback_logger.events()[0].get();
   EXPECT_EQ(base::File::FILE_ERROR_TOO_MANY_OPENED, event->result());
   ASSERT_EQ(0u, event->entry_list().size());
 }

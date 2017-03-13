@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part_chromeos.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -167,7 +168,8 @@ void AffiliatedInvalidationServiceProviderImpl::Observe(
   invalidation::InvalidationService* invalidation_service =
       invalidation_provider->GetInvalidationService();
   profile_invalidation_service_observers_.push_back(
-      new InvalidationServiceObserver(this, invalidation_service));
+      base::MakeUnique<InvalidationServiceObserver>(this,
+                                                    invalidation_service));
 
   if (profile_invalidation_service_observers_.back()->IsServiceConnected()) {
     // If the invalidation service is connected, check whether to switch to it.
@@ -288,14 +290,12 @@ AffiliatedInvalidationServiceProviderImpl::FindConnectedInvalidationService() {
   DCHECK(consumer_count_);
   DCHECK(!is_shut_down_);
 
-  for (ScopedVector<InvalidationServiceObserver>::const_iterator it =
-           profile_invalidation_service_observers_.begin();
-           it != profile_invalidation_service_observers_.end(); ++it) {
-    if ((*it)->IsServiceConnected()) {
+  for (const auto& observer : profile_invalidation_service_observers_) {
+    if (observer->IsServiceConnected()) {
       // If a connected invalidation service belonging to an affiliated
       // logged-in user is found, make it available to consumers.
       DestroyDeviceInvalidationService();
-      SetInvalidationService((*it)->GetInvalidationService());
+      SetInvalidationService(observer->GetInvalidationService());
       return;
     }
   }

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/login_manager_test.h"
@@ -36,7 +37,7 @@ class LoginUITest : public chromeos::LoginManagerTest {
     screenshot_testing_->IgnoreArea(areas::kClockArea);
     screenshot_testing_->IgnoreArea(areas::kFirstUserpod);
     screenshot_testing_->IgnoreArea(areas::kSecondUserpod);
-    AddMixin(screenshot_testing_);
+    AddMixin(base::WrapUnique(screenshot_testing_));
   }
   ~LoginUITest() override {}
 

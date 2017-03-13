@@ -4,7 +4,10 @@
 
 #include "chrome/browser/chromeos/events/event_rewriter_controller.h"
 
+#include <utility>
+
 #include "ash/shell.h"
+#include "base/memory/ptr_util.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/events/event_source.h"
@@ -19,15 +22,10 @@ EventRewriterController::EventRewriterController() : initialized_(false) {
 EventRewriterController::~EventRewriterController() {
   aura::Env::GetInstance()->RemoveObserver(this);
   // Remove the rewriters from every root window EventSource and destroy them.
-  for (EventRewriters::iterator rewriter_iter = rewriters_.begin();
-       rewriter_iter != rewriters_.end();
-       ++rewriter_iter) {
+  for (const auto& rewriter : rewriters_) {
     aura::Window::Windows windows = ash::Shell::GetAllRootWindows();
-    for (aura::Window::Windows::iterator window_iter = windows.begin();
-         window_iter != windows.end();
-         ++window_iter) {
-      (*window_iter)->GetHost()->GetEventSource()->RemoveEventRewriter(
-          *rewriter_iter);
+    for (auto* window : windows) {
+      window->GetHost()->GetEventSource()->RemoveEventRewriter(rewriter.get());
     }
   }
   rewriters_.clear();
@@ -36,7 +34,7 @@ EventRewriterController::~EventRewriterController() {
 void EventRewriterController::AddEventRewriter(
     std::unique_ptr<ui::EventRewriter> rewriter) {
   DCHECK(!initialized_);
-  rewriters_.push_back(rewriter.release());
+  rewriters_.push_back(std::move(rewriter));
 }
 
 void EventRewriterController::Init() {
@@ -44,10 +42,8 @@ void EventRewriterController::Init() {
   initialized_ = true;
   // Add the rewriters to each existing root window EventSource.
   aura::Window::Windows windows = ash::Shell::GetAllRootWindows();
-  for (aura::Window::Windows::iterator it = windows.begin();
-       it != windows.end();
-       ++it) {
-    AddToEventSource((*it)->GetHost()->GetEventSource());
+  for (auto* window : windows) {
+    AddToEventSource(window->GetHost()->GetEventSource());
   }
 }
 
@@ -58,9 +54,8 @@ void EventRewriterController::OnHostInitialized(aura::WindowTreeHost* host) {
 
 void EventRewriterController::AddToEventSource(ui::EventSource* source) {
   DCHECK(source);
-  for (EventRewriters::iterator it = rewriters_.begin(); it != rewriters_.end();
-       ++it) {
-    source->AddEventRewriter(*it);
+  for (const auto& rewriter : rewriters_) {
+    source->AddEventRewriter(rewriter.get());
   }
 }
 

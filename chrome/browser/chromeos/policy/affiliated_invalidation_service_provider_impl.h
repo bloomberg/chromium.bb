@@ -6,9 +6,9 @@
 #define CHROME_BROWSER_CHROMEOS_POLICY_AFFILIATED_INVALIDATION_SERVICE_PROVIDER_IMPL_H_
 
 #include <memory>
+#include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 #include "base/observer_list.h"
 #include "chrome/browser/chromeos/policy/affiliated_invalidation_service_provider.h"
 #include "content/public/browser/notification_observer.h"
@@ -79,7 +79,7 @@ class AffiliatedInvalidationServiceProviderImpl
       device_invalidation_service_observer_;
 
   // State observers for logged-in users' invalidation services.
-  ScopedVector<InvalidationServiceObserver>
+  std::vector<std::unique_ptr<InvalidationServiceObserver>>
       profile_invalidation_service_observers_;
 
   // The invalidation service currently used by consumers. nullptr if there are

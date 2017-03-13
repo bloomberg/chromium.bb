@@ -3,6 +3,9 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/chromeos/file_system_provider/operations/test_util.h"
+
+#include <utility>
+
 #include "extensions/browser/event_router.h"
 
 namespace chromeos {
@@ -19,7 +22,7 @@ LoggingDispatchEventImpl::~LoggingDispatchEventImpl() {
 
 bool LoggingDispatchEventImpl::OnDispatchEventImpl(
     std::unique_ptr<extensions::Event> event) {
-  events_.push_back(event->DeepCopy());
+  events_.push_back(std::move(event));
   return dispatch_reply_;
 }
 

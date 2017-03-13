@@ -11,7 +11,7 @@
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/chromeos/file_system_provider/operations/test_util.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_interface.h"
 #include "chrome/common/extensions/api/file_system_provider.h"
@@ -55,13 +55,13 @@ class CallbackLogger {
   virtual ~CallbackLogger() {}
 
   void OnOpenFile(int file_handle, base::File::Error result) {
-    events_.push_back(new Event(file_handle, result));
+    events_.push_back(base::MakeUnique<Event>(file_handle, result));
   }
 
-  ScopedVector<Event>& events() { return events_; }
+  std::vector<std::unique_ptr<Event>>& events() { return events_; }
 
  private:
-  ScopedVector<Event> events_;
+  std::vector<std::unique_ptr<Event>> events_;
 
   DISALLOW_COPY_AND_ASSIGN(CallbackLogger);
 };
@@ -100,7 +100,7 @@ TEST_F(FileSystemProviderOperationsOpenFileTest, Execute) {
   EXPECT_TRUE(open_file.Execute(kRequestId));
 
   ASSERT_EQ(1u, dispatcher.events().size());
-  extensions::Event* event = dispatcher.events()[0];
+  extensions::Event* event = dispatcher.events()[0].get();
   EXPECT_EQ(
       extensions::api::file_system_provider::OnOpenFileRequested::kEventName,
       event->event_name);
@@ -188,7 +188,7 @@ TEST_F(FileSystemProviderOperationsOpenFileTest, OnSuccess) {
                       std::unique_ptr<RequestValue>(new RequestValue()),
                       false /* has_more */);
   ASSERT_EQ(1u, callback_logger.events().size());
-  CallbackLogger::Event* event = callback_logger.events()[0];
+  CallbackLogger::Event* event = callback_logger.events()[0].get();
   EXPECT_EQ(base::File::FILE_OK, event->result());
   EXPECT_LT(0, event->file_handle());
 }
@@ -211,7 +211,7 @@ TEST_F(FileSystemProviderOperationsOpenFileTest, OnError) {
                     std::unique_ptr<RequestValue>(new RequestValue()),
                     base::File::FILE_ERROR_TOO_MANY_OPENED);
   ASSERT_EQ(1u, callback_logger.events().size());
-  CallbackLogger::Event* event = callback_logger.events()[0];
+  CallbackLogger::Event* event = callback_logger.events()[0].get();
   EXPECT_EQ(base::File::FILE_ERROR_TOO_MANY_OPENED, event->result());
   ASSERT_EQ(0, event->file_handle());
 }

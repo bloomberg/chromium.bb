@@ -5,7 +5,9 @@
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_MIXIN_BASED_BROWSER_TEST_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_MIXIN_BASED_BROWSER_TEST_H_
 
-#include "base/memory/scoped_vector.h"
+#include <memory>
+#include <vector>
+
 #include "chrome/test/base/in_process_browser_test.h"
 
 namespace chromeos {
@@ -69,11 +71,11 @@ class MixinBasedBrowserTest : public InProcessBrowserTest {
   // for it to MixinBasedBrowserTest.
   // Should be called in constructor of the test (should be already completed
   // before running set ups).
-  void AddMixin(Mixin* mixin);
+  void AddMixin(std::unique_ptr<Mixin> mixin);
 
  private:
   // Keeps all the mixins for this test,
-  ScopedVector<Mixin> mixins_;
+  std::vector<std::unique_ptr<Mixin>> mixins_;
 
   // Is false initially, becomes true when any of SetUp* methods is called.
   // Required to check that AddMixin is always called before setting up.

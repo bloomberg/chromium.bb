@@ -5,10 +5,11 @@
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_USERS_MULTI_PROFILE_USER_CONTROLLER_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_USERS_MULTI_PROFILE_USER_CONTROLLER_H_
 
+#include <memory>
 #include <string>
+#include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 
 class PrefChangeRegistrar;
 class PrefRegistrySimple;
@@ -101,7 +102,7 @@ class MultiProfileUserController {
 
   MultiProfileUserControllerDelegate* delegate_;  // Not owned.
   PrefService* local_state_;  // Not owned.
-  ScopedVector<PrefChangeRegistrar> pref_watchers_;
+  std::vector<std::unique_ptr<PrefChangeRegistrar>> pref_watchers_;
 
   DISALLOW_COPY_AND_ASSIGN(MultiProfileUserController);
 };

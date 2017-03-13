@@ -4,9 +4,13 @@
 
 #include "chrome/browser/chromeos/accessibility/spoken_feedback_event_rewriter.h"
 
+#include <memory>
+#include <vector>
+
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/events/event.h"
@@ -24,13 +28,15 @@ class EventCapturer : public ui::EventHandler {
 
   void OnEvent(ui::Event* event) override {
     if (event->IsKeyEvent())
-      events_.push_back(new ui::KeyEvent(*event->AsKeyEvent()));
+      events_.push_back(base::MakeUnique<ui::KeyEvent>(*event->AsKeyEvent()));
   }
 
-  const ScopedVector<ui::KeyEvent>& captured_events() const { return events_; }
+  const std::vector<std::unique_ptr<ui::KeyEvent>>& captured_events() const {
+    return events_;
+  }
 
  private:
-  ScopedVector<ui::KeyEvent> events_;
+  std::vector<std::unique_ptr<ui::KeyEvent>> events_;
 
   DISALLOW_COPY_AND_ASSIGN(EventCapturer);
 };

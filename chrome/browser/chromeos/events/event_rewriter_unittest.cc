@@ -14,6 +14,7 @@
 #include "ash/wm/window_state_aura.h"
 #include "base/command_line.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/chromeos/input_method/input_method_configuration.h"
 #include "chrome/browser/chromeos/input_method/mock_input_method_manager_impl.h"
@@ -1950,7 +1951,7 @@ class EventBuffer : public ui::test::TestEventProcessor {
   EventBuffer() {}
   ~EventBuffer() override {}
 
-  void PopEvents(ScopedVector<ui::Event>* events) {
+  void PopEvents(std::vector<std::unique_ptr<ui::Event>>* events) {
     events->clear();
     events->swap(events_);
   }
@@ -1962,7 +1963,7 @@ class EventBuffer : public ui::test::TestEventProcessor {
     return ui::EventDispatchDetails();
   }
 
-  ScopedVector<ui::Event> events_;
+  std::vector<std::unique_ptr<ui::Event>> events_;
 
   DISALLOW_COPY_AND_ASSIGN(EventBuffer);
 };
@@ -2019,7 +2020,9 @@ class EventRewriterAshTest : public ash::test::AshTestBase {
  protected:
   sync_preferences::TestingPrefServiceSyncable* prefs() { return &prefs_; }
 
-  void PopEvents(ScopedVector<ui::Event>* events) { buffer_.PopEvents(events); }
+  void PopEvents(std::vector<std::unique_ptr<ui::Event>>* events) {
+    buffer_.PopEvents(events);
+  }
 
   void SetUp() override {
     AshTestBase::SetUp();
@@ -2060,7 +2063,7 @@ TEST_F(EventRewriterAshTest, TopRowKeysAreFunctionKeys) {
   std::unique_ptr<aura::Window> window(CreateTestWindowInShellWithId(1));
   ash::wm::WindowState* window_state = ash::wm::GetWindowState(window.get());
   window_state->Activate();
-  ScopedVector<ui::Event> events;
+  std::vector<std::unique_ptr<ui::Event>> events;
 
   // Create a simulated keypress of F1 targetted at the window.
   ui::KeyEvent press_f1(ui::ET_KEY_PRESSED, ui::VKEY_F1, ui::DomCode::F1,
@@ -2078,7 +2081,7 @@ TEST_F(EventRewriterAshTest, TopRowKeysAreFunctionKeys) {
   EXPECT_EQ(
       GetExpectedResultAsString(ui::ET_KEY_PRESSED, ui::VKEY_F1,
                                 ui::DomCode::F1, ui::EF_NONE, ui::DomKey::F1),
-      GetKeyEventAsString(*static_cast<ui::KeyEvent*>(events[0])));
+      GetKeyEventAsString(*static_cast<ui::KeyEvent*>(events[0].get())));
 
   // If the pref isn't set when an event is sent to a regular window, F1 is
   // rewritten to the back key.
@@ -2090,7 +2093,7 @@ TEST_F(EventRewriterAshTest, TopRowKeysAreFunctionKeys) {
   EXPECT_EQ(GetExpectedResultAsString(ui::ET_KEY_PRESSED, ui::VKEY_BROWSER_BACK,
                                       ui::DomCode::BROWSER_BACK, ui::EF_NONE,
                                       ui::DomKey::BROWSER_BACK),
-            GetKeyEventAsString(*static_cast<ui::KeyEvent*>(events[0])));
+            GetKeyEventAsString(*static_cast<ui::KeyEvent*>(events[0].get())));
 }
 
 TEST_F(EventRewriterTest, TestRewrittenModifierClick) {
@@ -2337,7 +2340,7 @@ TEST_F(EventRewriterTest, DontRewriteIfNotRewritten) {
 
 TEST_F(EventRewriterAshTest, StickyKeyEventDispatchImpl) {
   // Test the actual key event dispatch implementation.
-  ScopedVector<ui::Event> events;
+  std::vector<std::unique_ptr<ui::Event>> events;
 
   SendActivateStickyKeyPattern(ui::VKEY_CONTROL, ui::DomCode::CONTROL_LEFT,
                                ui::DomKey::CONTROL);
@@ -2345,7 +2348,7 @@ TEST_F(EventRewriterAshTest, StickyKeyEventDispatchImpl) {
   EXPECT_EQ(1u, events.size());
   EXPECT_EQ(ui::ET_KEY_PRESSED, events[0]->type());
   EXPECT_EQ(ui::VKEY_CONTROL,
-            static_cast<ui::KeyEvent*>(events[0])->key_code());
+            static_cast<ui::KeyEvent*>(events[0].get())->key_code());
 
   // Test key press event is correctly modified and modifier release
   // event is sent.
@@ -2356,11 +2359,12 @@ TEST_F(EventRewriterAshTest, StickyKeyEventDispatchImpl) {
   PopEvents(&events);
   EXPECT_EQ(2u, events.size());
   EXPECT_EQ(ui::ET_KEY_PRESSED, events[0]->type());
-  EXPECT_EQ(ui::VKEY_C, static_cast<ui::KeyEvent*>(events[0])->key_code());
+  EXPECT_EQ(ui::VKEY_C,
+            static_cast<ui::KeyEvent*>(events[0].get())->key_code());
   EXPECT_TRUE(events[0]->flags() & ui::EF_CONTROL_DOWN);
   EXPECT_EQ(ui::ET_KEY_RELEASED, events[1]->type());
   EXPECT_EQ(ui::VKEY_CONTROL,
-            static_cast<ui::KeyEvent*>(events[1])->key_code());
+            static_cast<ui::KeyEvent*>(events[1].get())->key_code());
 
   // Test key release event is not modified.
   ui::KeyEvent release(ui::ET_KEY_RELEASED, ui::VKEY_C, ui::DomCode::US_C,
@@ -2371,12 +2375,13 @@ TEST_F(EventRewriterAshTest, StickyKeyEventDispatchImpl) {
   PopEvents(&events);
   EXPECT_EQ(1u, events.size());
   EXPECT_EQ(ui::ET_KEY_RELEASED, events[0]->type());
-  EXPECT_EQ(ui::VKEY_C, static_cast<ui::KeyEvent*>(events[0])->key_code());
+  EXPECT_EQ(ui::VKEY_C,
+            static_cast<ui::KeyEvent*>(events[0].get())->key_code());
   EXPECT_FALSE(events[0]->flags() & ui::EF_CONTROL_DOWN);
 }
 
 TEST_F(EventRewriterAshTest, MouseEventDispatchImpl) {
-  ScopedVector<ui::Event> events;
+  std::vector<std::unique_ptr<ui::Event>> events;
 
   SendActivateStickyKeyPattern(ui::VKEY_CONTROL, ui::DomCode::CONTROL_LEFT,
                                ui::DomKey::CONTROL);
@@ -2407,11 +2412,11 @@ TEST_F(EventRewriterAshTest, MouseEventDispatchImpl) {
   EXPECT_TRUE(events[0]->flags() & ui::EF_CONTROL_DOWN);
   EXPECT_EQ(ui::ET_KEY_RELEASED, events[1]->type());
   EXPECT_EQ(ui::VKEY_CONTROL,
-            static_cast<ui::KeyEvent*>(events[1])->key_code());
+            static_cast<ui::KeyEvent*>(events[1].get())->key_code());
 }
 
 TEST_F(EventRewriterAshTest, MouseWheelEventDispatchImpl) {
-  ScopedVector<ui::Event> events;
+  std::vector<std::unique_ptr<ui::Event>> events;
 
   // Test positive mouse wheel event is correctly modified and modifier release
   // event is sent.
@@ -2431,7 +2436,7 @@ TEST_F(EventRewriterAshTest, MouseWheelEventDispatchImpl) {
   EXPECT_TRUE(events[0]->flags() & ui::EF_CONTROL_DOWN);
   EXPECT_EQ(ui::ET_KEY_RELEASED, events[1]->type());
   EXPECT_EQ(ui::VKEY_CONTROL,
-            static_cast<ui::KeyEvent*>(events[1])->key_code());
+            static_cast<ui::KeyEvent*>(events[1].get())->key_code());
 
   // Test negative mouse wheel event is correctly modified and modifier release
   // event is sent.
@@ -2450,7 +2455,7 @@ TEST_F(EventRewriterAshTest, MouseWheelEventDispatchImpl) {
   EXPECT_TRUE(events[0]->flags() & ui::EF_CONTROL_DOWN);
   EXPECT_EQ(ui::ET_KEY_RELEASED, events[1]->type());
   EXPECT_EQ(ui::VKEY_CONTROL,
-            static_cast<ui::KeyEvent*>(events[1])->key_code());
+            static_cast<ui::KeyEvent*>(events[1].get())->key_code());
 }
 
 // Tests that if modifier keys are remapped, the flags of a mouse wheel event
@@ -2463,7 +2468,7 @@ TEST_F(EventRewriterAshTest, MouseWheelEventModifiersRewritten) {
 
   // Generate a mouse wheel event that has a CONTROL_DOWN modifier flag and
   // expect that it will be rewritten to ALT_DOWN.
-  ScopedVector<ui::Event> events;
+  std::vector<std::unique_ptr<ui::Event>> events;
   gfx::Point location(0, 0);
   ui::MouseWheelEvent positive(
       gfx::Vector2d(0, ui::MouseWheelEvent::kWheelDelta), location, location,

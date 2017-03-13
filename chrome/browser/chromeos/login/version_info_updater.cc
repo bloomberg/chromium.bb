@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/sys_info.h"
@@ -89,8 +90,7 @@ void VersionInfoUpdater::StartUpdate(bool is_official_build) {
                  base::Unretained(this));
   for (unsigned int i = 0; i < arraysize(kReportingFlags); ++i) {
     subscriptions_.push_back(
-        cros_settings_->AddSettingsObserver(kReportingFlags[i],
-                                            callback).release());
+        cros_settings_->AddSettingsObserver(kReportingFlags[i], callback));
   }
 }
 

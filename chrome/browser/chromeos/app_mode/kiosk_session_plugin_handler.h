@@ -5,10 +5,11 @@
 #ifndef CHROME_BROWSER_CHROMEOS_APP_MODE_KIOSK_SESSION_PLUGIN_HANDLER_H_
 #define CHROME_BROWSER_CHROMEOS_APP_MODE_KIOSK_SESSION_PLUGIN_HANDLER_H_
 
+#include <memory>
 #include <set>
+#include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 
 namespace base {
 class FilePath;
@@ -41,7 +42,7 @@ class KioskSessionPluginHandler {
   void OnWebContentsDestroyed(Observer* observer);
 
   KioskSessionPluginHandlerDelegate* const delegate_;
-  ScopedVector<Observer> watchers_;
+  std::vector<std::unique_ptr<Observer>> watchers_;
 
   DISALLOW_COPY_AND_ASSIGN(KioskSessionPluginHandler);
 };

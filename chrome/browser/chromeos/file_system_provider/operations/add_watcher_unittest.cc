@@ -63,7 +63,7 @@ TEST_F(FileSystemProviderOperationsAddWatcherTest, Execute) {
   EXPECT_TRUE(add_watcher.Execute(kRequestId));
 
   ASSERT_EQ(1u, dispatcher.events().size());
-  extensions::Event* event = dispatcher.events()[0];
+  extensions::Event* event = dispatcher.events()[0].get();
   EXPECT_EQ(
       extensions::api::file_system_provider::OnAddWatcherRequested::kEventName,
       event->event_name);
