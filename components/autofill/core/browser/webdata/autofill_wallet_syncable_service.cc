@@ -291,7 +291,7 @@ void AutofillWalletSyncableService::PopulateWalletCardsAndAddresses(
 }
 
 // static
-void AutofillWalletSyncableService::CopyRelevantBillingAddressesFromDisk(
+void AutofillWalletSyncableService::CopyRelevantMetadataFromDisk(
     const AutofillTable& table,
     std::vector<CreditCard>* cards_from_server) {
   std::vector<std::unique_ptr<CreditCard>> cards_on_disk;
@@ -301,6 +301,11 @@ void AutofillWalletSyncableService::CopyRelevantBillingAddressesFromDisk(
   for (const auto& saved_card : cards_on_disk) {
     for (CreditCard& server_card : *cards_from_server) {
       if (saved_card->server_id() == server_card.server_id()) {
+        // The wallet data doesn't have the use stats. Use the ones present on
+        // disk to not overwrite them with bad data.
+        server_card.set_use_count(saved_card->use_count());
+        server_card.set_use_date(saved_card->use_date());
+
         // Keep the billing address id of the saved cards only if it points to
         // a local address.
         if (saved_card->billing_address_id().length() == kLocalGuidSize) {
@@ -320,11 +325,11 @@ syncer::SyncMergeResult AutofillWalletSyncableService::SetSyncData(
 
   // Users can set billing address of the server credit card locally, but that
   // information does not propagate to either Chrome Sync or Google Payments
-  // server. To preserve user's preferred billing address, copy the billing
-  // addresses from disk into |wallet_cards|.
+  // server. To preserve user's preferred billing address and most recent use
+  // stats, copy them from disk into |wallet_cards|.
   AutofillTable* table =
       AutofillTable::FromWebDatabase(webdata_backend_->GetDatabase());
-  CopyRelevantBillingAddressesFromDisk(*table, &wallet_cards);
+  CopyRelevantMetadataFromDisk(*table, &wallet_cards);
 
   // In the common case, the database won't have changed. Committing an update
   // to the database will require at least one DB page write and will schedule

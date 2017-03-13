@@ -61,15 +61,17 @@ class AutofillWalletSyncableService
       const std::string& app_locale);
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(AutofillWalletSyncableServiceTest,
+                           CopyRelevantMetadataFromDisk_KeepLocalAddresses);
   FRIEND_TEST_ALL_PREFIXES(
       AutofillWalletSyncableServiceTest,
-      CopyRelevantBillingAddressesFromDisk_KeepLocalAddresses);
-  FRIEND_TEST_ALL_PREFIXES(
-      AutofillWalletSyncableServiceTest,
-      CopyRelevantBillingAddressesFromDisk_OverwriteOtherAddresses);
+      CopyRelevantMetadataFromDisk_OverwriteOtherAddresses);
   FRIEND_TEST_ALL_PREFIXES(
       AutofillWalletSyncableServiceTest,
       PopulateWalletCardsAndAddresses_BillingAddressIdTransfer);
+  FRIEND_TEST_ALL_PREFIXES(AutofillWalletSyncableServiceTest,
+                           CopyRelevantMetadataFromDisk_KeepUseStats);
+  FRIEND_TEST_ALL_PREFIXES(AutofillWalletSyncableServiceTest, NewWalletCard);
 
   syncer::SyncMergeResult SetSyncData(const syncer::SyncDataList& data_list);
 
@@ -81,10 +83,10 @@ class AutofillWalletSyncableService
       std::vector<AutofillProfile>* wallet_addresses);
 
   // Finds the copies of the same credit card from the server and on disk and
-  // overwrites the server version with the billing id saved on disk if it
-  // refers to a local autofill profile. The credit card's IDs do not change
-  // over time.
-  static void CopyRelevantBillingAddressesFromDisk(
+  // overwrites the server version with the use stats saved on disk, and the
+  // billing id if it refers to a local autofill profile. The credit card's IDs
+  // do not change over time.
+  static void CopyRelevantMetadataFromDisk(
       const AutofillTable& table,
       std::vector<CreditCard>* cards_from_server);
 

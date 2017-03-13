@@ -9,6 +9,7 @@
 #include "base/memory/ptr_util.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/credit_card.h"
+#include "components/autofill/core/browser/test_autofill_clock.h"
 #include "components/autofill/core/browser/webdata/autofill_table.h"
 #include "components/sync/protocol/autofill_specifics.pb.h"
 #include "components/sync/protocol/sync.pb.h"
@@ -99,7 +100,7 @@ TEST(AutofillWalletSyncableServiceTest,
 // Verify that the billing address id from the card saved on disk is kept if it
 // is a local profile guid.
 TEST(AutofillWalletSyncableServiceTest,
-     CopyRelevantBillingAddressesFromDisk_KeepLocalAddresses) {
+     CopyRelevantMetadataFromDisk_KeepLocalAddresses) {
   std::vector<CreditCard> cards_on_disk;
   std::vector<CreditCard> wallet_cards;
 
@@ -119,8 +120,8 @@ TEST(AutofillWalletSyncableServiceTest,
   // Setup the TestAutofillTable with the cards_on_disk.
   TestAutofillTable table(cards_on_disk);
 
-  AutofillWalletSyncableService::CopyRelevantBillingAddressesFromDisk(
-      table, &wallet_cards);
+  AutofillWalletSyncableService::CopyRelevantMetadataFromDisk(table,
+                                                              &wallet_cards);
 
   ASSERT_EQ(1U, wallet_cards.size());
 
@@ -133,7 +134,7 @@ TEST(AutofillWalletSyncableServiceTest,
 // Verify that the billing address id from the card saved on disk is overwritten
 // if it does not refer to a local profile.
 TEST(AutofillWalletSyncableServiceTest,
-     CopyRelevantBillingAddressesFromDisk_OverwriteOtherAddresses) {
+     CopyRelevantMetadataFromDisk_OverwriteOtherAddresses) {
   std::string old_billing_id = "1234";
   std::string new_billing_id = "9876";
   std::vector<CreditCard> cards_on_disk;
@@ -152,14 +153,73 @@ TEST(AutofillWalletSyncableServiceTest,
   // Setup the TestAutofillTable with the cards_on_disk.
   TestAutofillTable table(cards_on_disk);
 
-  AutofillWalletSyncableService::CopyRelevantBillingAddressesFromDisk(
-      table, &wallet_cards);
+  AutofillWalletSyncableService::CopyRelevantMetadataFromDisk(table,
+                                                              &wallet_cards);
 
   ASSERT_EQ(1U, wallet_cards.size());
 
   // Make sure the local address billing id that was saved on disk did not
   // replace the new one.
   EXPECT_EQ(new_billing_id, wallet_cards.back().billing_address_id());
+}
+
+// Verify that the use stats on disk are kept when server cards are synced.
+TEST(AutofillWalletSyncableServiceTest,
+     CopyRelevantMetadataFromDisk_KeepUseStats) {
+  TestAutofillClock test_clock;
+  base::Time arbitrary_time = base::Time::FromDoubleT(25);
+  base::Time disk_time = base::Time::FromDoubleT(10);
+  test_clock.SetNow(arbitrary_time);
+
+  std::vector<CreditCard> cards_on_disk;
+  std::vector<CreditCard> wallet_cards;
+
+  // Create a card on disk with specific use stats.
+  cards_on_disk.push_back(CreditCard());
+  cards_on_disk.back().set_use_count(3U);
+  cards_on_disk.back().set_use_date(disk_time);
+
+  // Create a card pulled from wallet with the same id, but a different billing
+  // address id.
+  wallet_cards.push_back(CreditCard());
+  wallet_cards.back().set_use_count(10U);
+
+  // Setup the TestAutofillTable with the cards_on_disk.
+  TestAutofillTable table(cards_on_disk);
+
+  AutofillWalletSyncableService::CopyRelevantMetadataFromDisk(table,
+                                                              &wallet_cards);
+
+  ASSERT_EQ(1U, wallet_cards.size());
+
+  // Make sure the use stats from disk were kept
+  EXPECT_EQ(3U, wallet_cards.back().use_count());
+  EXPECT_EQ(disk_time, wallet_cards.back().use_date());
+}
+
+// Verify that the use stats of a new Wallet card are as expected.
+TEST(AutofillWalletSyncableServiceTest, NewWalletCard) {
+  TestAutofillClock test_clock;
+  base::Time arbitrary_time = base::Time::FromDoubleT(25);
+  test_clock.SetNow(arbitrary_time);
+
+  std::vector<AutofillProfile> wallet_addresses;
+  std::vector<CreditCard> wallet_cards;
+  syncer::SyncDataList data_list;
+
+  // Create a Sync data for a card and its billing address.
+  data_list.push_back(CreateSyncDataForWalletAddress("1" /* id */));
+  data_list.push_back(CreateSyncDataForWalletCreditCard(
+      "card1" /* id */, "1" /* billing_address_id */));
+
+  AutofillWalletSyncableService::PopulateWalletCardsAndAddresses(
+      data_list, &wallet_cards, &wallet_addresses);
+
+  ASSERT_EQ(1U, wallet_cards.size());
+
+  // The use_count should be 1 and the use_date should be the current time.
+  EXPECT_EQ(1U, wallet_cards.back().use_count());
+  EXPECT_EQ(arbitrary_time, wallet_cards.back().use_date());
 }
 
 }  // namespace autofill

@@ -167,20 +167,40 @@ void MergeCommonMetadata(
     bool* is_local_modified) {
   size_t remote_use_count =
       base::checked_cast<size_t>(remote_metadata.use_count());
-  if (local_model->use_count() < remote_use_count) {
-    local_model->set_use_count(remote_use_count);
-    *is_local_modified = true;
-  } else if (local_model->use_count() > remote_use_count) {
-    *is_remote_outdated = true;
-  }
-
   base::Time remote_use_date =
       base::Time::FromInternalValue(remote_metadata.use_date());
-  if (local_model->use_date() < remote_use_date) {
+
+  // If the two models have the same metadata, do nothing.
+  if (local_model->use_count() == remote_use_count &&
+      local_model->use_date() == remote_use_date) {
+    return;
+  }
+
+  // Special case for local models with a use_count of one. This means the local
+  // model was only created, never used. The remote model should always be
+  // preferred.
+  // This situation can happen for new Chromium instances where there is no data
+  // yet on disk, making the use_date artifically high. Once the metadata sync
+  // kicks in, we should use that value.
+  if (local_model->use_count() == 1) {
     local_model->set_use_date(remote_use_date);
+    local_model->set_use_count(remote_use_count);
     *is_local_modified = true;
-  } else if (local_model->use_date() > remote_use_date) {
-    *is_remote_outdated = true;
+  } else {
+    // Otherwise, just keep the most recent use date and biggest use count.
+    if (local_model->use_date() < remote_use_date) {
+      local_model->set_use_date(remote_use_date);
+      *is_local_modified = true;
+    } else if (local_model->use_date() > remote_use_date) {
+      *is_remote_outdated = true;
+    }
+
+    if (local_model->use_count() < remote_use_count) {
+      local_model->set_use_count(remote_use_count);
+      *is_local_modified = true;
+    } else if (local_model->use_count() > remote_use_count) {
+      *is_remote_outdated = true;
+    }
   }
 }
 
