@@ -58,7 +58,7 @@ class CORE_EXPORT NGPhysicalFragment : public RefCounted<NGPhysicalFragment> {
   LayoutUnit WidthOverflow() const { return overflow_.width; }
   LayoutUnit HeightOverflow() const { return overflow_.height; }
 
-  // Returns the offset relative to the parent fragement's content-box.
+  // Returns the offset relative to the parent fragment's content-box.
   LayoutUnit LeftOffset() const {
     DCHECK(is_placed_);
     return offset_.left;
@@ -74,7 +74,7 @@ class CORE_EXPORT NGPhysicalFragment : public RefCounted<NGPhysicalFragment> {
     return offset_;
   }
 
-  // Should only be used by the parent fragement's layout.
+  // Should only be used by the parent fragment's layout.
   void SetOffset(NGPhysicalOffset offset) {
     DCHECK(!is_placed_);
     offset_ = offset;

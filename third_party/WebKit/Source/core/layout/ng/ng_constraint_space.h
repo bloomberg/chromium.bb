@@ -95,7 +95,7 @@ class CORE_EXPORT NGConstraintSpace final
   // fragment that satisfies a fixed constraint in the inline and block
   // direction respectively.
   // If these flags are true, the AvailableSize() is interpreted as the fixed
-  // border-box size of this box in the resepective dimension.
+  // border-box size of this box in the respective dimension.
   bool IsFixedSizeInline() const { return is_fixed_size_inline_; }
 
   bool IsFixedSizeBlock() const { return is_fixed_size_block_; }

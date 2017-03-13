@@ -32,7 +32,7 @@ class CORE_EXPORT NGPhysicalBoxFragment final : public NGPhysicalFragment {
     return children_;
   }
 
-  // List of positioned float that need to be copied to the old layout tree.
+  // List of positioned floats that need to be copied to the old layout tree.
   // TODO(layout-ng): remove this once we change painting code to handle floats
   // differently.
   const Vector<Persistent<NGFloatingObject>>& PositionedFloats() const {

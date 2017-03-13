@@ -35,18 +35,18 @@ class NGBidiParagraph {
   // called.
   bool SetParagraph(const String&, const ComputedStyle*);
 
-  // Returns whether the paragrpah is LTR, RTL, or MIXED.
+  // Returns whether the paragraph is LTR, RTL, or MIXED.
   UBiDiDirection Direction() const { return ubidi_getDirection(ubidi_); }
 
   // Returns the end offset of a logical run that starts from the |start|
   // offset.
   unsigned GetLogicalRun(unsigned start, UBiDiLevel*) const;
 
-  // Create a list of indicies in the visual order.
+  // Create a list of indices in the visual order.
   // A wrapper for ICU |ubidi_reorderVisual()|.
-  static void IndiciesInVisualOrder(
+  static void IndicesInVisualOrder(
       const Vector<UBiDiLevel, 32>& levels,
-      Vector<int32_t, 32>* indicies_in_visual_order_out);
+      Vector<int32_t, 32>* indices_in_visual_order_out);
 
  private:
   UBiDi* ubidi_ = nullptr;

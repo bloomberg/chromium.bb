@@ -23,7 +23,7 @@ class CORE_EXPORT NGLayoutAlgorithm {
  public:
   virtual ~NGLayoutAlgorithm() {}
 
-  // Actual layout function. Lays out the children and descendents within the
+  // Actual layout function. Lays out the children and descendants within the
   // constraints given by the NGConstraintSpace. Returns a layout result with
   // the resulting layout information.
   // TODO(layout-dev): attempt to make this function const.

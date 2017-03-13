@@ -165,7 +165,7 @@ void NGLineBuilder::BidiReorder(Vector<LineItemChunk, 32>* line_item_chunks) {
   // http://unicode.org/reports/tr9/#L1
   // BidiResolver does not support L1 crbug.com/316409.
 
-  // Create a list of chunk indicies in the visual order.
+  // Create a list of chunk indices in the visual order.
   // ICU |ubidi_getVisualMap()| works for a run of characters. Since we can
   // handle the direction of each run, we use |ubidi_reorderVisual()| to reorder
   // runs instead of characters.
@@ -173,15 +173,15 @@ void NGLineBuilder::BidiReorder(Vector<LineItemChunk, 32>* line_item_chunks) {
   levels.reserveInitialCapacity(line_item_chunks->size());
   for (const auto& chunk : *line_item_chunks)
     levels.push_back(inline_box_->Items()[chunk.index].BidiLevel());
-  Vector<int32_t, 32> indicies_in_visual_order(line_item_chunks->size());
-  NGBidiParagraph::IndiciesInVisualOrder(levels, &indicies_in_visual_order);
+  Vector<int32_t, 32> indices_in_visual_order(line_item_chunks->size());
+  NGBidiParagraph::IndicesInVisualOrder(levels, &indices_in_visual_order);
 
   // Reorder |line_item_chunks| in visual order.
   Vector<LineItemChunk, 32> line_item_chunks_in_visual_order(
       line_item_chunks->size());
-  for (unsigned visual_index = 0;
-       visual_index < indicies_in_visual_order.size(); visual_index++) {
-    unsigned logical_index = indicies_in_visual_order[visual_index];
+  for (unsigned visual_index = 0; visual_index < indices_in_visual_order.size();
+       visual_index++) {
+    unsigned logical_index = indices_in_visual_order[visual_index];
     line_item_chunks_in_visual_order[visual_index] =
         (*line_item_chunks)[logical_index];
   }
