@@ -115,6 +115,14 @@ public class WebApkInstaller {
             return;
         }
 
+        // Check whether the WebAPK package is already installed. The WebAPK may have been installed
+        // by another Chrome version (e.g. Chrome Dev). We have to do this check because the Play
+        // install API fails silently if the package is already installed.
+        if (isWebApkInstalled(packageName)) {
+            notify(true);
+            return;
+        }
+
         Callback<Boolean> callback = new Callback<Boolean>() {
             @Override
             public void onResult(Boolean success) {
