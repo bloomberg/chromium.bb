@@ -345,12 +345,14 @@ get_output_work_area(struct desktop_shell *shell,
 	case WESTON_DESKTOP_SHELL_PANEL_POSITION_TOP:
 	default:
 		area->y += panel_height;
+		/* fallthrough */
 	case WESTON_DESKTOP_SHELL_PANEL_POSITION_BOTTOM:
 		area->width = output->width;
 		area->height = output->height - panel_height;
 		break;
 	case WESTON_DESKTOP_SHELL_PANEL_POSITION_LEFT:
 		area->x += panel_width;
+		/* fallthrough */
 	case WESTON_DESKTOP_SHELL_PANEL_POSITION_RIGHT:
 		area->width = output->width - panel_width;
 		area->height = output->height;
