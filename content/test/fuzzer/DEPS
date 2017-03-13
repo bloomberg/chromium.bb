@@ -1,4 +1,0 @@
-include_rules = [
-  "+third_party/libprotobuf-mutator/src/src",
-]
-
