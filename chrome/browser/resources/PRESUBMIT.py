@@ -92,7 +92,8 @@ def IsBoolean(new_content_lines, metric_name, input_api):
 
 
 def CheckHtml(input_api, output_api):
-  return input_api.canned_checks.CheckLongLines(input_api, output_api, 80)
+  return input_api.canned_checks.CheckLongLines(
+      input_api, output_api, 80, lambda x: x.LocalPath().endswith('.html'))
 
 
 def RunVulcanizeTests(input_api, output_api):
