@@ -90,9 +90,6 @@ void AcceleratedStaticBitmapImage::copyToTexture(
 }
 
 sk_sp<SkImage> AcceleratedStaticBitmapImage::imageForCurrentFrame() {
-  // TODO(xlai): Refactor so that sync tokens are only used when
-  // |m_textureHolder| is MailboxTextureHolder.
-  // https://crbug.com/693229
   checkThread();
   if (!isValid())
     return nullptr;

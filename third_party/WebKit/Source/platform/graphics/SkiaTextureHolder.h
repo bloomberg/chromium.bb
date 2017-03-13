@@ -15,8 +15,6 @@ class PLATFORM_EXPORT SkiaTextureHolder final : public TextureHolder {
   ~SkiaTextureHolder() override;
 
   // Methods overriding TextureHolder
-  void updateSyncToken(gpu::SyncToken) override {}
-
   bool isSkiaTextureHolder() final { return true; }
   bool isMailboxTextureHolder() final { return false; }
   unsigned sharedContextId() final;
@@ -26,7 +24,6 @@ class PLATFORM_EXPORT SkiaTextureHolder final : public TextureHolder {
   bool currentFrameKnownToBeOpaque(Image::MetadataMode) final {
     return m_image->isOpaque();
   }
-
   sk_sp<SkImage> skImage() final { return m_image; }
   void setSharedContextId(unsigned contextId) final {
     m_sharedContextId = contextId;
