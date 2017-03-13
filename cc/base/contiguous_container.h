@@ -50,20 +50,14 @@ class CC_EXPORT ContiguousContainerBase {
 
   // These do not invoke constructors or destructors.
   void* Allocate(size_t object_size);
-  void Clear();
-  void RemoveLast();
-  void Swap(ContiguousContainerBase& other);
 
   std::vector<void*> elements_;
 
  private:
+  const size_t max_object_size_;
+
   class Buffer;
-
-  Buffer* AllocateNewBufferForNextAllocation(size_t buffer_size);
-
-  std::vector<std::unique_ptr<Buffer>> buffers_;
-  size_t end_index_;
-  size_t max_object_size_;
+  std::vector<Buffer> buffers_;
 
   DISALLOW_COPY_AND_ASSIGN(ContiguousContainerBase);
 };
@@ -173,35 +167,6 @@ class ContiguousContainer : public ContiguousContainerBase {
                   "Derived type requires stronger alignment.");
     return *new (AlignedAllocate(sizeof(DerivedElementType)))
         DerivedElementType(std::forward<Args>(args)...);
-  }
-
-  void RemoveLast() {
-    DCHECK(!empty());
-    last().~BaseElementType();
-    ContiguousContainerBase::RemoveLast();
-  }
-
-  void Clear() {
-    for (auto& element : *this) {
-      // MSVC incorrectly reports this variable as unused.
-      (void)element;
-      element.~BaseElementType();
-    }
-    ContiguousContainerBase::Clear();
-  }
-
-  void Swap(ContiguousContainer& other) {
-    ContiguousContainerBase::Swap(other);
-  }
-
-  // Appends a new element using memcpy, then default-constructs a base
-  // element in its place. Use with care.
-  BaseElementType& AppendByMoving(BaseElementType* item, size_t size) {
-    DCHECK_GE(size, sizeof(BaseElementType));
-    void* new_item = AlignedAllocate(size);
-    memcpy(new_item, static_cast<void*>(item), size);
-    new (item) BaseElementType;
-    return *static_cast<BaseElementType*>(new_item);
   }
 
  private:
