@@ -9,6 +9,7 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/iron-icons.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/communication-icons.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout-classes.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/shadow.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-toggle-button/paper-toggle-button.html">
 
@@ -169,6 +170,13 @@
         color: var(--google-blue-500);
       }
 
+      #dev-reload-button {
+        -webkit-margin-end: 20px;
+        height: 20px;
+        padding: 0;
+        width: 20px;
+      }
+
       #warnings {
         color: var(--google-red-700);
       }
@@ -236,7 +244,7 @@
           </template>
         </div>
       </div>
-      <div id="button-strip" class="layout horizontal">
+      <div id="button-strip" class="layout horizontal center">
         <div class="layout flex horizontal center">
           <paper-button id="details-button" on-tap="onDetailsTap_">
             $i18n{itemDetails}
@@ -249,12 +257,17 @@
             $i18n{itemErrors}
           </paper-button>
         </div>
+        <template is="dom-if" if="[[!computeDevReloadButtonHidden_(data.*)]]">
+          <paper-icon-button id="dev-reload-button"
+              on-tap="onReloadTap_" icon="refresh">
+          </paper-icon-button>
+        </template>
         <paper-button id="repair-button" class="action-button"
             on-tap="onRepairTap_"
             hidden$="[[!data.disableReasons.corruptInstall]]">
           $i18n{itemRepair}
         </paper-button>
-        <paper-button id="reload-button" on-tap="onReloadTap_"
+        <paper-button id="terminated-reload-button" on-tap="onReloadTap_"
             class="action-button"
             hidden$="[[!isTerminated_(data.state)]]">
           $i18n{itemReload}

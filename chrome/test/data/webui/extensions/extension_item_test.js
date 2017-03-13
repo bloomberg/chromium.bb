@@ -112,6 +112,11 @@ cr.define('extension_item_tests', function() {
 
         testNormalElementsAreVisible(item);
         testDeveloperElementsAreVisible(item);
+
+        extension_test_util.testVisible(item, '#dev-reload-button', false);
+        item.set('data.location', chrome.developerPrivate.Location.UNPACKED);
+        Polymer.dom.flush();
+        extension_test_util.testVisible(item, '#dev-reload-button', true);
       });
 
       /** Tests that the delegate methods are correctly called. */
@@ -147,7 +152,12 @@ cr.define('extension_item_tests', function() {
         item.set('data.disableReasons.corruptInstall', false);
         Polymer.dom.flush();
         mockDelegate.testClickingCalls(
-            item.$$('#reload-button'), 'reloadItem', [item.data.id]);
+            item.$$('#terminated-reload-button'), 'reloadItem', [item.data.id]);
+
+        item.set('data.location', chrome.developerPrivate.Location.UNPACKED);
+        Polymer.dom.flush();
+        mockDelegate.testClickingCalls(
+            item.$$('#dev-reload-button'), 'reloadItem', [item.data.id]);
       });
 
       test(assert(TestNames.Warnings), function() {
