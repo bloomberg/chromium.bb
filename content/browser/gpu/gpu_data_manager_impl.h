@@ -70,6 +70,7 @@ class CONTENT_EXPORT GpuDataManagerImpl
                             const gpu::GPUInfo& gpu_info) override;
   bool IsFeatureBlacklisted(int feature) const override;
   bool IsFeatureEnabled(int feature) const override;
+  bool IsWebGLEnabled() const override;
   gpu::GPUInfo GetGPUInfo() const override;
   void GetGpuProcessHandles(
       const GetGpuProcessHandlesCallback& callback) const override;

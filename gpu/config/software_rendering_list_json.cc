@@ -31,7 +31,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
       "device_id": ["0x7249"],
       "multi_gpu_category": "any",
       "features": [
-        "webgl",
+        "accelerated_webgl",
         "flash_3d",
         "flash_stage3d",
         "gpu_rasterization"
@@ -59,7 +59,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
       "vendor_id": "0x8086",
       "device_id": ["0x27AE", "0x27A2"],
       "features": [
-        "webgl",
+        "accelerated_webgl",
         "flash_3d",
         "flash_stage3d",
         "accelerated_2d_canvas"
@@ -121,7 +121,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
       "device_id": ["0x0393"],
       "multi_gpu_category": "any",
       "features": [
-        "webgl",
+        "accelerated_webgl",
         "flash_3d",
         "flash_stage3d",
         "gpu_rasterization"
@@ -593,7 +593,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
       "vendor_id": "0x10de",
       "device_id": ["0x0163"],
       "features": [
-        "webgl"
+        "accelerated_webgl"
       ]
     },
     {
@@ -636,7 +636,7 @@ LONG_STRING_CONST(
         }
       ],
       "features": [
-        "webgl"
+        "accelerated_webgl"
       ]
     },
     {
@@ -691,7 +691,7 @@ LONG_STRING_CONST(
       "vendor_id": "0x8086",
       "device_id": ["0xa011"],
       "features": [
-        "webgl"
+        "accelerated_webgl"
       ]
     },
     {
@@ -1024,7 +1024,7 @@ LONG_STRING_CONST(
       "features": [
         "all",
         {"exceptions": [
-          "webgl"
+          "accelerated_webgl"
         ]}
       ]
     },
@@ -1177,7 +1177,7 @@ LONG_STRING_CONST(
       "gl_vendor": "Vivante.*",
       "gl_renderer": ".*PXA.*",
       "features": [
-        "webgl",
+        "accelerated_webgl",
         "accelerated_2d_canvas"
       ]
     },

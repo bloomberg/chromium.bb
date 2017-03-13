@@ -50,7 +50,7 @@ void ChromeRequirementsChecker::Check(
   if (requirements.webgl) {
     ++pending_requirement_checks_;
     webgl_checker_ = content::GpuFeatureChecker::Create(
-        gpu::GPU_FEATURE_TYPE_WEBGL,
+        gpu::GPU_FEATURE_TYPE_ACCELERATED_WEBGL,
         base::Bind(&ChromeRequirementsChecker::SetWebGLAvailability,
                    weak_ptr_factory_.GetWeakPtr()));
   }

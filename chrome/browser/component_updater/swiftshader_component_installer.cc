@@ -217,7 +217,8 @@ void UpdateChecker::OnGpuInfoUpdate() {
   GpuDataManager* gpu_data_manager = GpuDataManager::GetInstance();
 
   if (!gpu_data_manager->GpuAccessAllowed(NULL) ||
-      gpu_data_manager->IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_WEBGL) ||
+      gpu_data_manager->IsFeatureBlacklisted(
+          gpu::GPU_FEATURE_TYPE_ACCELERATED_WEBGL) ||
       gpu_data_manager->ShouldUseSwiftShader()) {
     gpu_data_manager->RemoveObserver(this);
     DCHECK_CURRENTLY_ON(BrowserThread::FILE);

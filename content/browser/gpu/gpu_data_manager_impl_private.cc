@@ -167,8 +167,7 @@ void UpdateStats(const gpu::GPUInfo& gpu_info,
       gpu::GPU_FEATURE_TYPE_ACCELERATED_2D_CANVAS,
       gpu::GPU_FEATURE_TYPE_GPU_COMPOSITING,
       gpu::GPU_FEATURE_TYPE_GPU_RASTERIZATION,
-      gpu::GPU_FEATURE_TYPE_WEBGL,
-      gpu::GPU_FEATURE_TYPE_WEBGL2};
+      gpu::GPU_FEATURE_TYPE_ACCELERATED_WEBGL, gpu::GPU_FEATURE_TYPE_WEBGL2};
   const std::string kGpuBlacklistFeatureHistogramNames[] = {
       "GPU.BlacklistFeatureTestResults.Accelerated2dCanvas",
       "GPU.BlacklistFeatureTestResults.GpuCompositing",
@@ -304,15 +303,9 @@ bool GpuDataManagerImplPrivate::IsFeatureBlacklisted(int feature) const {
     return true;
   }
 #endif  // OS_CHROMEOS
-  if (use_swiftshader_) {
-    // Skia's software rendering is probably more efficient than going through
-    // software emulation of the GPU, so use that.
-    if (feature == gpu::GPU_FEATURE_TYPE_ACCELERATED_2D_CANVAS)
-      return true;
-    return false;
-  }
 
-  return (blacklisted_features_.count(feature) == 1);
+  // SwiftShader blacklists all features
+  return use_swiftshader_ || (blacklisted_features_.count(feature) == 1);
 }
 
 bool GpuDataManagerImplPrivate::IsFeatureEnabled(int feature) const {
@@ -322,14 +315,19 @@ bool GpuDataManagerImplPrivate::IsFeatureEnabled(int feature) const {
          gpu::kGpuFeatureStatusEnabled;
 }
 
+bool GpuDataManagerImplPrivate::IsWebGLEnabled() const {
+  return use_swiftshader_ ||
+         !blacklisted_features_.count(gpu::GPU_FEATURE_TYPE_ACCELERATED_WEBGL);
+}
+
 bool GpuDataManagerImplPrivate::IsDriverBugWorkaroundActive(int feature) const {
   return (gpu_driver_bugs_.count(feature) == 1);
 }
 
 size_t GpuDataManagerImplPrivate::GetBlacklistedFeatureCount() const {
-  if (use_swiftshader_)
-    return 1;
-  return blacklisted_features_.size();
+  // SwiftShader blacklists all features
+  return use_swiftshader_ ? gpu::NUMBER_OF_GPU_FEATURE_TYPES
+                          : blacklisted_features_.size();
 }
 
 gpu::GPUInfo GpuDataManagerImplPrivate::GetGPUInfo() const {
@@ -382,7 +380,7 @@ bool GpuDataManagerImplPrivate::GpuAccessAllowed(
                         std::inserter(feature_diffs, feature_diffs.begin()));
     if (feature_diffs.size()) {
       // TODO(zmo): Other features might also be OK to ignore here.
-      feature_diffs.erase(gpu::GPU_FEATURE_TYPE_WEBGL);
+      feature_diffs.erase(gpu::GPU_FEATURE_TYPE_ACCELERATED_WEBGL);
       feature_diffs.erase(gpu::GPU_FEATURE_TYPE_WEBGL2);
     }
     if (feature_diffs.size()) {
@@ -752,7 +750,7 @@ void GpuDataManagerImplPrivate::AppendGpuCommandLine(
   if (use_swiftshader_) {
     command_line->AppendSwitchASCII(
         switches::kUseGL, gl::kGLImplementationSwiftShaderForWebGLName);
-  } else if ((IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_WEBGL) ||
+  } else if ((IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_ACCELERATED_WEBGL) ||
               IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_GPU_COMPOSITING) ||
               IsFeatureBlacklisted(
                   gpu::GPU_FEATURE_TYPE_ACCELERATED_2D_CANVAS)) &&
@@ -892,7 +890,7 @@ void GpuDataManagerImplPrivate::UpdateRendererWebPrefs(
     WebPreferences* prefs) const {
   DCHECK(prefs);
 
-  if (IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_WEBGL)) {
+  if (!IsWebGLEnabled()) {
     prefs->experimental_webgl_enabled = false;
     prefs->pepper_3d_enabled = false;
   }
@@ -1230,7 +1228,8 @@ void GpuDataManagerImplPrivate::UpdateBlacklistedFeatures(
   // otherwise be allowed.
   if (card_blacklisted_) {
     blacklisted_features_.insert(gpu::GPU_FEATURE_TYPE_GPU_COMPOSITING);
-    blacklisted_features_.insert(gpu::GPU_FEATURE_TYPE_WEBGL);
+    blacklisted_features_.insert(gpu::GPU_FEATURE_TYPE_ACCELERATED_WEBGL);
+    blacklisted_features_.insert(gpu::GPU_FEATURE_TYPE_WEBGL2);
   }
 
   EnableSwiftShaderIfNecessary();
@@ -1260,7 +1259,7 @@ void GpuDataManagerImplPrivate::NotifyGpuInfoUpdate() {
 
 void GpuDataManagerImplPrivate::EnableSwiftShaderIfNecessary() {
   if (!GpuAccessAllowed(NULL) ||
-      blacklisted_features_.count(gpu::GPU_FEATURE_TYPE_WEBGL)) {
+      blacklisted_features_.count(gpu::GPU_FEATURE_TYPE_ACCELERATED_WEBGL)) {
     if (!swiftshader_path_.empty() &&
         !base::CommandLine::ForCurrentProcess()->HasSwitch(
              switches::kDisableSoftwareRasterizer))

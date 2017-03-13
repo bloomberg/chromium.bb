@@ -35,6 +35,11 @@ bool GpuDataManagerImpl::IsFeatureEnabled(int feature) const {
   return private_->IsFeatureEnabled(feature);
 }
 
+bool GpuDataManagerImpl::IsWebGLEnabled() const {
+  base::AutoLock auto_lock(lock_);
+  return private_->IsWebGLEnabled();
+}
+
 bool GpuDataManagerImpl::IsDriverBugWorkaroundActive(int feature) const {
   base::AutoLock auto_lock(lock_);
   return private_->IsDriverBugWorkaroundActive(feature);

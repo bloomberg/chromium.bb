@@ -545,7 +545,7 @@ ExtensionFunction::ResponseAction WebstorePrivateSetStoreLoginFunction::Run() {
 
 WebstorePrivateGetWebGLStatusFunction::WebstorePrivateGetWebGLStatusFunction()
     : feature_checker_(content::GpuFeatureChecker::Create(
-          gpu::GPU_FEATURE_TYPE_WEBGL,
+          gpu::GPU_FEATURE_TYPE_ACCELERATED_WEBGL,
           base::Bind(&WebstorePrivateGetWebGLStatusFunction::OnFeatureCheck,
                      base::Unretained(this)))) {}
 

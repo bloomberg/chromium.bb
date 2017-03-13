@@ -86,8 +86,7 @@ const GpuFeatureInfo GetGpuFeatureInfo(size_t index, bool* eof) {
      " or the command line. The browser will fall back to software compositing"
      " and hardware acceleration will be unavailable.",
      true},
-    {kWebGLFeatureName,
-     manager->IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_WEBGL),
+    {kWebGLFeatureName, !manager->IsWebGLEnabled(),
      command_line.HasSwitch(switches::kDisableExperimentalWebGL),
      "WebGL has been disabled via blacklist or the command line.", false},
     {"flash_3d", manager->IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_FLASH3D),
@@ -109,15 +108,17 @@ const GpuFeatureInfo GetGpuFeatureInfo(size_t index, bool* eof) {
      "Using Stage3d Baseline profile in Flash has been disabled, either"
      " via blacklist, about:flags or the command line.",
      true},
-    {"video_decode", manager->IsFeatureBlacklisted(
-                         gpu::GPU_FEATURE_TYPE_ACCELERATED_VIDEO_DECODE),
+    {"video_decode",
+     manager->IsFeatureBlacklisted(
+         gpu::GPU_FEATURE_TYPE_ACCELERATED_VIDEO_DECODE),
      command_line.HasSwitch(switches::kDisableAcceleratedVideoDecode),
      "Accelerated video decode has been disabled, either via blacklist,"
      " about:flags or the command line.",
      true},
 #if BUILDFLAG(ENABLE_WEBRTC)
-    {"video_encode", manager->IsFeatureBlacklisted(
-                         gpu::GPU_FEATURE_TYPE_ACCELERATED_VIDEO_ENCODE),
+    {"video_encode",
+     manager->IsFeatureBlacklisted(
+         gpu::GPU_FEATURE_TYPE_ACCELERATED_VIDEO_ENCODE),
      command_line.HasSwitch(switches::kDisableWebRtcHWEncoding),
      "Accelerated video encode has been disabled, either via blacklist,"
      " about:flags or the command line.",
@@ -147,10 +148,11 @@ const GpuFeatureInfo GetGpuFeatureInfo(size_t index, bool* eof) {
      "Native GpuMemoryBuffers have been disabled, either via about:flags"
      " or command line.",
      true},
-    {"vpx_decode", manager->IsFeatureBlacklisted(
-                       gpu::GPU_FEATURE_TYPE_ACCELERATED_VPX_DECODE) ||
-                       manager->IsFeatureBlacklisted(
-                           gpu::GPU_FEATURE_TYPE_ACCELERATED_VIDEO_DECODE),
+    {"vpx_decode",
+     manager->IsFeatureBlacklisted(
+         gpu::GPU_FEATURE_TYPE_ACCELERATED_VPX_DECODE) ||
+         manager->IsFeatureBlacklisted(
+             gpu::GPU_FEATURE_TYPE_ACCELERATED_VIDEO_DECODE),
      accelerated_vpx_disabled,
      "Accelerated VPx video decode has been disabled, either via blacklist"
      " or the command line.",

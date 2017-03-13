@@ -131,7 +131,7 @@ IN_PROC_BROWSER_TEST_F(RequirementsCheckerBrowserTest, DisallowWebGL) {
 
   // Backlist webgl
   std::vector<std::string> blacklisted_features;
-  blacklisted_features.push_back("webgl");
+  blacklisted_features.push_back("accelerated_webgl");
   BlackListGPUFeatures(blacklisted_features);
   content::RunAllBlockingPoolTasksUntilIdle();
 

@@ -102,8 +102,8 @@ GPU_BLACKLIST_FEATURE_TEST(GpuCompositing,
                            GPU_FEATURE_TYPE_GPU_COMPOSITING)
 
 GPU_BLACKLIST_FEATURE_TEST(WebGL,
-                           "webgl",
-                           GPU_FEATURE_TYPE_WEBGL)
+                           "accelerated_webgl",
+                           GPU_FEATURE_TYPE_ACCELERATED_WEBGL)
 
 GPU_BLACKLIST_FEATURE_TEST(Flash3D,
                            "flash_3d",

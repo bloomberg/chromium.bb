@@ -640,16 +640,16 @@ class ExtensionServiceTest
 
   void BlackListWebGL() {
     static const std::string json_blacklist =
-      "{\n"
-      "  \"name\": \"gpu blacklist\",\n"
-      "  \"version\": \"1.0\",\n"
-      "  \"entries\": [\n"
-      "    {\n"
-      "      \"id\": 1,\n"
-      "      \"features\": [\"webgl\"]\n"
-      "    }\n"
-      "  ]\n"
-      "}";
+        "{\n"
+        "  \"name\": \"gpu blacklist\",\n"
+        "  \"version\": \"1.0\",\n"
+        "  \"entries\": [\n"
+        "    {\n"
+        "      \"id\": 1,\n"
+        "      \"features\": [\"accelerated_webgl\"]\n"
+        "    }\n"
+        "  ]\n"
+        "}";
     gpu::GPUInfo gpu_info;
     content::GpuDataManager::GetInstance()->InitializeForTesting(
         json_blacklist, gpu_info);

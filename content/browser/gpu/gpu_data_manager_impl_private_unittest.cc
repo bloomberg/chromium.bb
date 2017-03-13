@@ -158,7 +158,7 @@ TEST_F(GpuDataManagerImplPrivateTest, GpuSideBlacklisting) {
           {
             "id": 1,
             "features": [
-              "webgl"
+              "accelerated_webgl"
             ]
           },
           {
@@ -180,7 +180,8 @@ TEST_F(GpuDataManagerImplPrivateTest, GpuSideBlacklisting) {
   EXPECT_TRUE(manager->GpuAccessAllowed(&reason));
   EXPECT_TRUE(reason.empty());
   EXPECT_EQ(1u, manager->GetBlacklistedFeatureCount());
-  EXPECT_TRUE(manager->IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_WEBGL));
+  EXPECT_TRUE(
+      manager->IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_ACCELERATED_WEBGL));
 
   gpu_info.gl_vendor = "NVIDIA";
   gpu_info.gl_renderer = "NVIDIA GeForce GT 120";
@@ -188,7 +189,8 @@ TEST_F(GpuDataManagerImplPrivateTest, GpuSideBlacklisting) {
   EXPECT_FALSE(manager->GpuAccessAllowed(&reason));
   EXPECT_FALSE(reason.empty());
   EXPECT_EQ(2u, manager->GetBlacklistedFeatureCount());
-  EXPECT_TRUE(manager->IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_WEBGL));
+  EXPECT_TRUE(
+      manager->IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_ACCELERATED_WEBGL));
   EXPECT_TRUE(manager->IsFeatureBlacklisted(
       gpu::GPU_FEATURE_TYPE_ACCELERATED_2D_CANVAS));
 }
@@ -219,7 +221,7 @@ TEST_F(GpuDataManagerImplPrivateTest, GpuSideBlacklistingWebGL) {
             "id": 2,
             "gl_renderer": ".*GeForce.*",
             "features": [
-              "webgl",
+              "accelerated_webgl",
               "webgl2"
             ]
           }
@@ -246,7 +248,8 @@ TEST_F(GpuDataManagerImplPrivateTest, GpuSideBlacklistingWebGL) {
   EXPECT_EQ(3u, manager->GetBlacklistedFeatureCount());
   EXPECT_TRUE(manager->IsFeatureBlacklisted(
       gpu::GPU_FEATURE_TYPE_ACCELERATED_2D_CANVAS));
-  EXPECT_TRUE(manager->IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_WEBGL));
+  EXPECT_TRUE(
+      manager->IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_ACCELERATED_WEBGL));
   EXPECT_TRUE(manager->IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_WEBGL2));
 }
 
@@ -268,7 +271,7 @@ TEST_F(GpuDataManagerImplPrivateTest, GpuSideExceptions) {
               }
             ],
             "features": [
-              "webgl"
+              "accelerated_webgl"
             ]
           }
         ]
@@ -322,7 +325,8 @@ TEST_F(GpuDataManagerImplPrivateTest, SwiftShaderRendering) {
   manager->RegisterSwiftShaderPath(test_path);
   EXPECT_TRUE(manager->ShouldUseSwiftShader());
   EXPECT_TRUE(manager->GpuAccessAllowed(NULL));
-  EXPECT_EQ(1u, manager->GetBlacklistedFeatureCount());
+  EXPECT_EQ(static_cast<size_t>(gpu::NUMBER_OF_GPU_FEATURE_TYPES),
+            manager->GetBlacklistedFeatureCount());
   EXPECT_TRUE(manager->IsFeatureBlacklisted(
       gpu::GPU_FEATURE_TYPE_ACCELERATED_2D_CANVAS));
 }
@@ -344,7 +348,8 @@ TEST_F(GpuDataManagerImplPrivateTest, SwiftShaderRendering2) {
   manager->DisableHardwareAcceleration();
   EXPECT_TRUE(manager->GpuAccessAllowed(NULL));
   EXPECT_TRUE(manager->ShouldUseSwiftShader());
-  EXPECT_EQ(1u, manager->GetBlacklistedFeatureCount());
+  EXPECT_EQ(static_cast<size_t>(gpu::NUMBER_OF_GPU_FEATURE_TYPES),
+            manager->GetBlacklistedFeatureCount());
   EXPECT_TRUE(manager->IsFeatureBlacklisted(
       gpu::GPU_FEATURE_TYPE_ACCELERATED_2D_CANVAS));
 }
@@ -573,7 +578,7 @@ TEST_F(GpuDataManagerImplPrivateTest, SetGLStrings) {
               }
             ],
             "features": [
-              "webgl"
+              "accelerated_webgl"
             ]
           }
         ]
@@ -595,7 +600,8 @@ TEST_F(GpuDataManagerImplPrivateTest, SetGLStrings) {
   manager->SetGLStrings(kGLVendorMesa, kGLRendererMesa, kGLVersionMesa801);
   EXPECT_TRUE(manager->GpuAccessAllowed(NULL));
   EXPECT_EQ(1u, manager->GetBlacklistedFeatureCount());
-  EXPECT_TRUE(manager->IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_WEBGL));
+  EXPECT_TRUE(
+      manager->IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_ACCELERATED_WEBGL));
 }
 
 TEST_F(GpuDataManagerImplPrivateTest, SetGLStringsNoEffects) {
@@ -626,7 +632,7 @@ TEST_F(GpuDataManagerImplPrivateTest, SetGLStringsNoEffects) {
               }
             ],
             "features": [
-              "webgl"
+              "accelerated_webgl"
             ]
           }
         ]
@@ -645,7 +651,8 @@ TEST_F(GpuDataManagerImplPrivateTest, SetGLStringsNoEffects) {
   // Full GPUInfo, the entry applies.
   EXPECT_TRUE(manager->GpuAccessAllowed(NULL));
   EXPECT_EQ(1u, manager->GetBlacklistedFeatureCount());
-  EXPECT_TRUE(manager->IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_WEBGL));
+  EXPECT_TRUE(
+      manager->IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_ACCELERATED_WEBGL));
 
   // Now assume browser gets GL strings from local state.
   // SetGLStrings() has no effects because GPUInfo already got these strings.
@@ -653,7 +660,8 @@ TEST_F(GpuDataManagerImplPrivateTest, SetGLStringsNoEffects) {
   manager->SetGLStrings(kGLVendorMesa, kGLRendererMesa, kGLVersionMesa802);
   EXPECT_TRUE(manager->GpuAccessAllowed(NULL));
   EXPECT_EQ(1u, manager->GetBlacklistedFeatureCount());
-  EXPECT_TRUE(manager->IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_WEBGL));
+  EXPECT_TRUE(
+      manager->IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_ACCELERATED_WEBGL));
 }
 
 TEST_F(GpuDataManagerImplPrivateTest, SetGLStringsDefered) {
@@ -674,7 +682,7 @@ TEST_F(GpuDataManagerImplPrivateTest, SetGLStringsDefered) {
       "device_id" : ["0x0042"],
       "driver_vendor" : "Mesa",
       "driver_version" : {"op" : ">=", "value" : "8.0.0"},
-      "features" : ["webgl"]
+      "features" : ["accelerated_webgl"]
     } ]
   });
 
@@ -690,7 +698,8 @@ TEST_F(GpuDataManagerImplPrivateTest, SetGLStringsDefered) {
 
   EXPECT_TRUE(manager->GpuAccessAllowed(NULL));
   EXPECT_EQ(1u, manager->GetBlacklistedFeatureCount());
-  EXPECT_TRUE(manager->IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_WEBGL));
+  EXPECT_TRUE(
+      manager->IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_ACCELERATED_WEBGL));
 }
 #endif  // OS_LINUX
 
@@ -774,7 +783,7 @@ TEST_F(GpuDataManagerImplPrivateTest, UpdateActiveGpu) {
             "vendor_id": "0x8086",
             "multi_gpu_category": "active",
             "features": [
-              "webgl"
+              "accelerated_webgl"
             ]
           }
         ]
