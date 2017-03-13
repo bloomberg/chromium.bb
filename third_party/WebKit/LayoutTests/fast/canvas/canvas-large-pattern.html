@@ -19,7 +19,8 @@ test(function(t) {
     // canvases more than 32k pixels wide. For now, this test serves the
     // purpose of verifying that this use case does not crash the browser.
     // Crasher bug: crbug.com/281504.
-    assert_array_equals(dstContext.getImageData(0, 0, 1, 1).data, [0, 255, 0, 255]);
+    // The result, if Skia handled large canvases, would be [0, 255, 0, 255]
+    assert_array_equals(dstContext.getImageData(0, 0, 1, 1).data, [0, 0, 0, 0]);
     
     assert_array_equals(dstContext.getImageData(1, 0, 1, 1).data, [0, 0, 0, 0]);
     assert_array_equals(dstContext.getImageData(0, 1, 1, 1).data, [0, 0, 0, 0]);
