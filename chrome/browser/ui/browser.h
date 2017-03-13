@@ -677,10 +677,6 @@ class Browser : public TabStripModelObserver,
                                  const std::string& protocol,
                                  const GURL& url,
                                  bool user_gesture) override;
-  void UpdatePreferredSize(content::WebContents* source,
-                           const gfx::Size& pref_size) override;
-  void ResizeDueToAutoResize(content::WebContents* source,
-                             const gfx::Size& new_size) override;
   void FindReply(content::WebContents* web_contents,
                  int request_id,
                  int number_of_matches,

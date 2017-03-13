@@ -1854,16 +1854,6 @@ void Browser::UnregisterProtocolHandler(WebContents* web_contents,
   registry->RemoveHandler(handler);
 }
 
-void Browser::UpdatePreferredSize(WebContents* source,
-                                  const gfx::Size& pref_size) {
-  window_->UpdatePreferredSize(source, pref_size);
-}
-
-void Browser::ResizeDueToAutoResize(WebContents* source,
-                                    const gfx::Size& new_size) {
-  window_->ResizeDueToAutoResize(source, new_size);
-}
-
 void Browser::FindReply(WebContents* web_contents,
                         int request_id,
                         int number_of_matches,

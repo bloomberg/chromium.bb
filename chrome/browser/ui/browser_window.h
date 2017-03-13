@@ -336,17 +336,6 @@ class BrowserWindow : public ui::BaseWindow {
   virtual web_modal::WebContentsModalDialogHost*
       GetWebContentsModalDialogHost() = 0;
 
-  // Invoked when the preferred size of the contents in current tab has been
-  // changed. We might choose to update the window size to accomodate this
-  // change.
-  // Note that this won't be fired if we change tabs.
-  virtual void UpdatePreferredSize(content::WebContents* web_contents,
-                                   const gfx::Size& pref_size) {}
-
-  // Invoked when the contents auto-resized and the container should match it.
-  virtual void ResizeDueToAutoResize(content::WebContents* web_contents,
-                                     const gfx::Size& new_size) {}
-
   // Construct a BrowserWindow implementation for the specified |browser|.
   static BrowserWindow* CreateBrowserWindow(Browser* browser,
                                             bool user_gesture);
