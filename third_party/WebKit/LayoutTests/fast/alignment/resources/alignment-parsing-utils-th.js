@@ -2,7 +2,7 @@ function checkValues(element, property, propertyID, value, computedValue)
 {
     window.element = element;
     var elementID = element.id || "element";
-    assert_equals(eval('element.style.' + property), value, property + ' specified value is not what it should..');
+    assert_equals(eval('element.style.' + property), value, property + ' specified value is not what it should.');
     assert_equals(eval("window.getComputedStyle(" + elementID + ", '').getPropertyValue('" + propertyID + "')"), computedValue, property + " is not what is should.");
 }
 

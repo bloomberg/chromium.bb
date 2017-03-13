@@ -533,6 +533,8 @@
     // flex-end
     // center
     // baseline
+    // last baseline,
+    // first baseline,
     // stretch
 
     // justify-content
@@ -982,6 +984,8 @@
     // stretch
     // baseline
     "last-baseline",
+    "first",
+    "last",
     // center
     // start
     // end

@@ -21,15 +21,36 @@ CSSIdentifierValue* consumeSelfPositionKeyword(CSSParserTokenRange& range) {
   return nullptr;
 }
 
+CSSValue* consumeBaselineKeyword(CSSParserTokenRange& range) {
+  CSSValueID id = range.peek().id();
+  if (CSSPropertyParserHelpers::identMatches<CSSValueBaseline>(id))
+    return CSSPropertyParserHelpers::consumeIdent(range);
+
+  if (CSSIdentifierValue* preference =
+          CSSPropertyParserHelpers::consumeIdent<CSSValueFirst, CSSValueLast>(
+              range)) {
+    if (range.peek().id() == CSSValueBaseline) {
+      return CSSValuePair::create(preference,
+                                  CSSPropertyParserHelpers::consumeIdent(range),
+                                  CSSValuePair::DropIdenticalValues);
+    }
+  }
+  return nullptr;
+}
+
 }  // namespace
 
 CSSValue* CSSPropertyAlignmentUtils::consumeSelfPositionOverflowPosition(
     CSSParserTokenRange& range) {
   if (CSSPropertyParserHelpers::identMatches<CSSValueAuto, CSSValueNormal,
-                                             CSSValueStretch, CSSValueBaseline,
-                                             CSSValueLastBaseline>(
+                                             CSSValueStretch>(
           range.peek().id()))
     return CSSPropertyParserHelpers::consumeIdent(range);
+
+  if (CSSPropertyParserHelpers::identMatches<CSSValueFirst, CSSValueLast,
+                                             CSSValueBaseline>(
+          range.peek().id()))
+    return consumeBaselineKeyword(range);
 
   CSSIdentifierValue* overflowPosition =
       CSSPropertyParserHelpers::consumeIdent<CSSValueUnsafe, CSSValueSafe>(

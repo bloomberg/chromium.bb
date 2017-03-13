@@ -509,6 +509,12 @@ StyleSelfAlignmentData StyleBuilderConverter::convertSelfOrDefaultAlignmentData(
       alignmentData.setPositionType(LegacyPosition);
       alignmentData.setPosition(
           toCSSIdentifierValue(pair.second()).convertTo<ItemPosition>());
+    } else if (toCSSIdentifierValue(pair.first()).getValueID() ==
+               CSSValueFirst) {
+      alignmentData.setPosition(ItemPositionBaseline);
+    } else if (toCSSIdentifierValue(pair.first()).getValueID() ==
+               CSSValueLast) {
+      alignmentData.setPosition(ItemPositionLastBaseline);
     } else {
       alignmentData.setPosition(
           toCSSIdentifierValue(pair.first()).convertTo<ItemPosition>());
