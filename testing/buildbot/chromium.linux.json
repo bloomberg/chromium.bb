@@ -3770,6 +3770,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "gin_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "gn_unittests"
       },
       {
@@ -3811,6 +3817,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "headless_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "input_device_unittests"
       },
       {
         "swarming": {
@@ -3858,6 +3870,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "media_service_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "media_unittests"
       },
       {
@@ -3871,6 +3889,24 @@
           "can_use_on_swarming_builders": true
         },
         "test": "mojo_common_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "mojo_js_integration_tests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "mojo_js_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "mojo_public_application_unittests"
       },
       {
         "swarming": {
@@ -3912,6 +3948,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "mus_public_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "mus_ws_unittests"
       },
       {
@@ -3925,6 +3967,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "native_theme_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "navigation_unittests"
       },
       {
         "swarming": {
@@ -3969,6 +4017,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "service_manager_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "service_unittests"
       },
       {
@@ -4006,6 +4060,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "ui_base_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "ui_struct_traits_unittests"
       },
       {
         "swarming": {
