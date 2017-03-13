@@ -85,7 +85,6 @@ RefPtr<NGLayoutResult> NGBlockNode::Layout(NGConstraintSpace* constraint_space,
                                            NGBreakToken* break_token) {
   // Use the old layout code and synthesize a fragment.
   if (!CanUseNewLayout()) {
-    DCHECK(layout_box_);
     return RunOldLayout(*constraint_space);
   }
 
@@ -101,7 +100,6 @@ RefPtr<NGLayoutResult> NGBlockNode::Layout(NGConstraintSpace* constraint_space,
 MinMaxContentSize NGBlockNode::ComputeMinMaxContentSize() {
   MinMaxContentSize sizes;
   if (!CanUseNewLayout()) {
-    DCHECK(layout_box_);
     // TODO(layout-ng): This could be somewhat optimized by directly calling
     // computeIntrinsicLogicalWidths, but that function is currently private.
     // Consider doing that if this becomes a performance issue.
@@ -156,14 +154,12 @@ MinMaxContentSize NGBlockNode::ComputeMinMaxContentSize() {
 }
 
 const ComputedStyle& NGBlockNode::Style() const {
-  DCHECK(layout_box_);
   return layout_box_->styleRef();
 }
 
 NGLayoutInputNode* NGBlockNode::NextSibling() {
   if (!next_sibling_) {
-    LayoutObject* next_sibling =
-        layout_box_ ? layout_box_->nextSibling() : nullptr;
+    LayoutObject* next_sibling = layout_box_->nextSibling();
     if (next_sibling) {
       if (next_sibling->isInline())
         next_sibling_ = new NGInlineNode(next_sibling, &Style());
@@ -180,7 +176,7 @@ LayoutObject* NGBlockNode::GetLayoutObject() {
 
 NGLayoutInputNode* NGBlockNode::FirstChild() {
   if (!first_child_) {
-    LayoutObject* child = layout_box_ ? layout_box_->slowFirstChild() : nullptr;
+    LayoutObject* child = layout_box_->slowFirstChild();
     if (child) {
       if (child->isInline()) {
         first_child_ = new NGInlineNode(child, &Style());
@@ -199,8 +195,6 @@ DEFINE_TRACE(NGBlockNode) {
 }
 
 bool NGBlockNode::CanUseNewLayout() {
-  if (!layout_box_)
-    return true;
   if (!layout_box_->isLayoutBlockFlow())
     return false;
   return RuntimeEnabledFeatures::layoutNGInlineEnabled() ||
@@ -208,7 +202,7 @@ bool NGBlockNode::CanUseNewLayout() {
 }
 
 bool NGBlockNode::HasInlineChildren() {
-  if (!layout_box_ || !layout_box_->isLayoutBlockFlow())
+  if (!layout_box_->isLayoutBlockFlow())
     return false;
 
   const LayoutBlockFlow* block_flow = toLayoutBlockFlow(layout_box_);
@@ -227,10 +221,6 @@ bool NGBlockNode::HasInlineChildren() {
 void NGBlockNode::CopyFragmentDataToLayoutBox(
     const NGConstraintSpace& constraint_space,
     NGLayoutResult* layout_result) {
-  // We may not have a layout_box_ during unit tests.
-  if (!layout_box_)
-    return;
-
   NGPhysicalBoxFragment* fragment =
       toNGPhysicalBoxFragment(layout_result->PhysicalFragment().get());
 
@@ -342,14 +332,12 @@ RefPtr<NGLayoutResult> NGBlockNode::RunOldLayout(
 }
 
 void NGBlockNode::UseOldOutOfFlowPositioning() {
-  DCHECK(layout_box_);
   DCHECK(layout_box_->isOutOfFlowPositioned());
   layout_box_->containingBlock()->insertPositionedObject(layout_box_);
 }
 
 // Save static position for legacy AbsPos layout.
 void NGBlockNode::SaveStaticOffsetForLegacy(const NGLogicalOffset& offset) {
-  DCHECK(layout_box_);
   DCHECK(layout_box_->isOutOfFlowPositioned());
   DCHECK(layout_box_->layer());
   layout_box_->layer()->setStaticBlockPosition(offset.block_offset);
