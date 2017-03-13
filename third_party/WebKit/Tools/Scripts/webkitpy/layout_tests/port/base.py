@@ -176,7 +176,7 @@ class Port(object):
         self._dump_reader = None
 
         # FIXME: prettypatch.py knows this path; it should not be copied here.
-        self._pretty_patch_path = self.path_from_webkit_base("Tools", "Scripts", "webkitruby", "PrettyPatch", "prettify.rb")
+        self._pretty_patch_path = self.path_from_webkit_base('Tools', 'Scripts', 'webkitruby', 'PrettyPatch', 'prettify.rb')
         self._pretty_patch_available = None
 
         if not hasattr(options, 'configuration') or not options.configuration:
@@ -189,7 +189,7 @@ class Port(object):
         self._virtual_test_suites = None
 
     def __str__(self):
-        return "Port{name=%s, version=%s, architecture=%s, test_configuration=%s}" % (
+        return 'Port{name=%s, version=%s, architecture=%s, test_configuration=%s}' % (
             self._name, self._version, self._architecture, self._test_configuration)
 
     def additional_driver_flag(self):
@@ -334,7 +334,7 @@ class Port(object):
     def _check_driver(self):
         driver_path = self._path_to_driver()
         if not self._filesystem.exists(driver_path):
-            _log.error("%s was not found at %s", self.driver_name(), driver_path)
+            _log.error('%s was not found at %s', self.driver_name(), driver_path)
             return False
         return True
 
@@ -372,7 +372,7 @@ class Port(object):
         """Checks whether image_diff binary exists."""
         image_diff_path = self._path_to_image_diff()
         if not self._filesystem.exists(image_diff_path):
-            _log.error("image_diff was not found at %s", image_diff_path)
+            _log.error('image_diff was not found at %s', image_diff_path)
             return False
         return True
 
@@ -400,13 +400,13 @@ class Port(object):
         if httpd_path:
             try:
                 env = self.setup_environ_for_server()
-                if self._executive.run_command([httpd_path, "-v"], env=env, return_exit_code=True) != 0:
-                    _log.error("httpd seems broken. Cannot run http tests.")
+                if self._executive.run_command([httpd_path, '-v'], env=env, return_exit_code=True) != 0:
+                    _log.error('httpd seems broken. Cannot run http tests.')
                     return False
                 return True
             except OSError:
                 pass
-        _log.error("No httpd found. Cannot run http tests.")
+        _log.error('No httpd found. Cannot run http tests.')
         return False
 
     def do_text_results_differ(self, expected_text, actual_text):
@@ -431,13 +431,13 @@ class Port(object):
 
         tempdir = self._filesystem.mkdtemp()
 
-        expected_filename = self._filesystem.join(str(tempdir), "expected.png")
+        expected_filename = self._filesystem.join(str(tempdir), 'expected.png')
         self._filesystem.write_binary_file(expected_filename, expected_contents)
 
-        actual_filename = self._filesystem.join(str(tempdir), "actual.png")
+        actual_filename = self._filesystem.join(str(tempdir), 'actual.png')
         self._filesystem.write_binary_file(actual_filename, actual_contents)
 
-        diff_filename = self._filesystem.join(str(tempdir), "diff.png")
+        diff_filename = self._filesystem.join(str(tempdir), 'diff.png')
 
         # image_diff needs native win paths as arguments, so we need to convert them if running under cygwin.
         native_expected_filename = self._convert_path(expected_filename)
@@ -458,7 +458,7 @@ class Port(object):
             elif exit_code == 1:
                 result = self._filesystem.read_binary_file(native_diff_filename)
             else:
-                err_str = "Image diff returned an exit code of %s. See http://crbug.com/278596" % exit_code
+                err_str = 'Image diff returned an exit code of %s. See http://crbug.com/278596' % exit_code
         except OSError as error:
             err_str = 'error running image diff: %s' % error
         finally:
@@ -617,7 +617,7 @@ class Port(object):
         if not self._filesystem.exists(baseline_path):
             return None
         text = self._filesystem.read_binary_file(baseline_path)
-        return text.replace("\r\n", "\n")
+        return text.replace('\r\n', '\n')
 
     def _get_reftest_list(self, test_name):
         dirname = self._filesystem.join(self.layout_tests_dir(), self._filesystem.dirname(test_name))
@@ -934,11 +934,11 @@ class Port(object):
         # TODO(qyearsley): Remove this if there are no more "Skipped" files.
         tests_to_skip = []
         for search_path in skipped_file_paths:
-            filename = self._filesystem.join(self._absolute_baseline_path(search_path), "Skipped")
+            filename = self._filesystem.join(self._absolute_baseline_path(search_path), 'Skipped')
             if not self._filesystem.exists(filename):
-                _log.debug("Skipped does not exist: %s", filename)
+                _log.debug('Skipped does not exist: %s', filename)
                 continue
-            _log.debug("Using Skipped file: %s", filename)
+            _log.debug('Using Skipped file: %s', filename)
             skipped_file_contents = self._filesystem.read_text_file(filename)
             tests_to_skip.extend(self._tests_from_skipped_file_contents(skipped_file_contents))
         return tests_to_skip
@@ -1040,7 +1040,7 @@ class Port(object):
         # Delete the disk cache if any to ensure a clean test run.
         dump_render_tree_binary_path = self._path_to_driver()
         cachedir = self._filesystem.dirname(dump_render_tree_binary_path)
-        cachedir = self._filesystem.join(cachedir, "cache")
+        cachedir = self._filesystem.join(cachedir, 'cache')
         if self._filesystem.exists(cachedir):
             self._filesystem.rmtree(cachedir)
 
@@ -1151,7 +1151,7 @@ class Port(object):
     @staticmethod
     def is_wptserve_test(test):
         """Whether wptserve should be used for a given test if enabled."""
-        return test.startswith("external/wpt/")
+        return test.startswith('external/wpt/')
 
     def should_use_wptserve(self, test):
         return self.is_wptserve_test(test)
@@ -1328,14 +1328,14 @@ class Port(object):
         return self.path_from_chromium_base('build')
 
     # This is a class variable so we can test error output easily.
-    _pretty_patch_error_html = "Failed to run PrettyPatch, see error log."
+    _pretty_patch_error_html = 'Failed to run PrettyPatch, see error log.'
 
     def pretty_patch_text(self, diff_path):
         if self._pretty_patch_available is None:
             self._pretty_patch_available = self.check_pretty_patch(more_logging=False)
         if not self._pretty_patch_available:
             return self._pretty_patch_error_html
-        command = ("ruby", "-I", self._filesystem.dirname(self._pretty_patch_path),
+        command = ('ruby', '-I', self._filesystem.dirname(self._pretty_patch_path),
                    self._pretty_patch_path, diff_path)
         try:
             # Diffs are treated as binary (we pass decode_output=False) as they
@@ -1344,13 +1344,13 @@ class Port(object):
         except OSError as error:
             # If the system is missing ruby log the error and stop trying.
             self._pretty_patch_available = False
-            _log.error("Failed to run PrettyPatch (%s): %s", command, error)
+            _log.error('Failed to run PrettyPatch (%s): %s', command, error)
             return self._pretty_patch_error_html
         except ScriptError as error:
             # If ruby failed to run for some reason, log the command
             # output and stop trying.
             self._pretty_patch_available = False
-            _log.error("Failed to run PrettyPatch (%s):\n%s", command, error.message_with_output())
+            _log.error('Failed to run PrettyPatch (%s):\n%s', command, error.message_with_output())
             return self._pretty_patch_error_html
 
     def default_configuration(self):
@@ -1397,7 +1397,7 @@ class Port(object):
 
             custom_configuration_distributions = ['arch', 'debian', 'redhat']
             if distribution in custom_configuration_distributions:
-                return "%s-httpd-%s.conf" % (distribution, self._apache_version())
+                return '%s-httpd-%s.conf' % (distribution, self._apache_version())
 
         return 'apache2-httpd-' + self._apache_version() + '.conf'
 
@@ -1482,7 +1482,7 @@ class Port(object):
         return [
             # For example, to turn on force-compositing-mode in the svg/ directory:
             # PhysicalTestSuite('svg', ['--force-compositing-mode']),
-            PhysicalTestSuite('fast/text', ["--enable-direct-write", "--enable-font-antialiasing"]),
+            PhysicalTestSuite('fast/text', ['--enable-direct-write', '--enable-font-antialiasing']),
         ]
 
     def virtual_test_suites(self):
@@ -1493,7 +1493,7 @@ class Port(object):
                 test_suite_json = json.loads(self._filesystem.read_text_file(path_to_virtual_test_suites))
                 self._virtual_test_suites = [VirtualTestSuite(**d) for d in test_suite_json]
             except ValueError as error:
-                raise ValueError("LayoutTests/VirtualTestSuites is not a valid JSON file: %s" % error)
+                raise ValueError('LayoutTests/VirtualTestSuites is not a valid JSON file: %s' % error)
         return self._virtual_test_suites
 
     def _all_virtual_tests(self, suites):

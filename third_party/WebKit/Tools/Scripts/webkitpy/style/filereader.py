@@ -107,7 +107,7 @@ class TextFileReader(object):
         """
         self.file_count += 1
 
-        if not self.filesystem.exists(file_path) and file_path != "-":
+        if not self.filesystem.exists(file_path) and file_path != '-':
             _log.error("File does not exist: '%s'", file_path)
             sys.exit(1)  # FIXME: This should throw or return instead of exiting directly.
 

@@ -61,7 +61,7 @@ class BuilderList(object):
         return sorted(b for b in self._builders if not self._builders[b].get('is_try_builder'))
 
     def all_port_names(self):
-        return sorted({b["port_name"] for b in self._builders.values()})
+        return sorted({b['port_name'] for b in self._builders.values()})
 
     def port_name_for_builder_name(self, builder_name):
         return self._builders[builder_name]['port_name']

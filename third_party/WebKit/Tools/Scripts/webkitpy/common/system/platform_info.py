@@ -84,7 +84,7 @@ class PlatformInfo(object):
     def display_name(self):
         # platform.platform() returns Darwin information for Mac, which is just confusing.
         if self.is_mac():
-            return "Mac OS X %s" % self._platform_module.mac_ver()[0]
+            return 'Mac OS X %s' % self._platform_module.mac_ver()[0]
 
         # Returns strings like:
         # Linux-2.6.18-194.3.1.el5-i686-with-redhat-5.5-Final
@@ -93,7 +93,7 @@ class PlatformInfo(object):
 
     def total_bytes_memory(self):
         if self.is_mac():
-            return long(self._executive.run_command(["sysctl", "-n", "hw.memsize"]))
+            return long(self._executive.run_command(['sysctl', '-n', 'hw.memsize']))
         return None
 
     def terminal_width(self):
@@ -106,7 +106,7 @@ class PlatformInfo(object):
                 console_screen_buffer_info = create_string_buffer(22)  # 22 == sizeof(console_screen_buffer_info)
                 if windll.kernel32.GetConsoleScreenBufferInfo(handle, console_screen_buffer_info):
                     import struct
-                    _, _, _, _, _, left, _, right, _, _, _ = struct.unpack("hhhhHhhhhhh", console_screen_buffer_info.raw)
+                    _, _, _, _, _, left, _, right, _, _, _ = struct.unpack('hhhhHhhhhhh', console_screen_buffer_info.raw)
                     # Note that we return 1 less than the width since writing into the rightmost column
                     # automatically performs a line feed.
                     return right - left

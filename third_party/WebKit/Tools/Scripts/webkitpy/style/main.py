@@ -94,7 +94,7 @@ def change_directory(filesystem, checkout_root, paths):
         # If we got here, the conversion was successful.
         paths = rel_paths
 
-    _log.debug("Changing to checkout root: " + checkout_root)
+    _log.debug('Changing to checkout root: ' + checkout_root)
     filesystem.chdir(checkout_root)
 
     return paths
@@ -112,7 +112,7 @@ class CheckWebKitStyle(object):
         # Setting an "encoding" attribute on the stream is necessary to
         # prevent the logging module from raising an error.  See
         # the checker.configure_logging() function for more information.
-        stderr.encoding = "UTF-8"
+        stderr.encoding = 'UTF-8'
 
         # FIXME: Change webkitpy.style so that we do not need to overwrite
         #        the global sys.stderr.  This involves updating the code to
@@ -130,10 +130,10 @@ class CheckWebKitStyle(object):
 
         # Checking for the verbose flag before calling check_webkit_style_parser()
         # lets us enable verbose logging earlier.
-        is_verbose = "-v" in args or "--verbose" in args
+        is_verbose = '-v' in args or '--verbose' in args
 
         checker.configure_logging(stream=stderr, is_verbose=is_verbose)
-        _log.debug("Verbose logging enabled.")
+        _log.debug('Verbose logging enabled.')
 
         parser = checker.check_webkit_style_parser()
         (paths, options) = parser.parse(args)
@@ -157,6 +157,6 @@ class CheckWebKitStyle(object):
         file_count = file_reader.file_count
         delete_only_file_count = file_reader.delete_only_file_count
 
-        _log.info("Total errors found: %d in %d files", error_count, file_count)
+        _log.info('Total errors found: %d in %d files', error_count, file_count)
         # We fail when style errors are found or there are no checked files.
         return error_count > 0 or (file_count == 0 and delete_only_file_count == 0)

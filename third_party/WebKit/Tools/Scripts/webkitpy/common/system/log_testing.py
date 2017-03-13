@@ -38,6 +38,7 @@ import unittest
 # TODO(qyearsley): Change these names to use lowercase-only, for consistency
 # with other unit test helper methods.
 
+
 class TestLogStream(object):
     """Represents a file-like object for unit-testing logging.
 
@@ -139,7 +140,7 @@ class LogTesting(object):
         stream = TestLogStream(test_case)
         handler = logging.StreamHandler(stream)
         handler.setLevel(logging_level)
-        formatter = logging.Formatter("%(levelname)s: %(message)s")
+        formatter = logging.Formatter('%(levelname)s: %(message)s')
         handler.setFormatter(formatter)
 
         # Notice that we only change the root logger by adding a handler

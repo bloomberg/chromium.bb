@@ -59,9 +59,9 @@ class ProcessJsonData(object):
         row = []
         length = len(self._old_failing_results_list)
         for index in range(0, length):
-            result = self._recurse_json_object(self._old_failing_results_list[index]["tests"], key_list)
+            result = self._recurse_json_object(self._old_failing_results_list[index]['tests'], key_list)
             if result == 'NOTFOUND':
-                result = self._recurse_json_object(self._old_full_results_list[index]["tests"], key_list)
+                result = self._recurse_json_object(self._old_full_results_list[index]['tests'], key_list)
             row.append(result)
         return row
 
@@ -80,8 +80,8 @@ class ProcessJsonData(object):
                 return
 
     def generate_archived_result(self):
-        for key in self._current_result_json_dict["tests"]:
-            self._process_json_object(self._current_result_json_dict["tests"][key], [key])
+        for key in self._current_result_json_dict['tests']:
+            self._process_json_object(self._current_result_json_dict['tests'][key], [key])
         return self._current_result_json_dict
 
 

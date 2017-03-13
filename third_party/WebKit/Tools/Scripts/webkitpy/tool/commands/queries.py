@@ -40,12 +40,12 @@ from webkitpy.layout_tests.port.factory import platform_options
 
 
 class CrashLog(Command):
-    name = "crash-log"
-    help_text = "Print the newest crash log for the given process"
+    name = 'crash-log'
+    help_text = 'Print the newest crash log for the given process'
     show_in_main_help = True
     long_help = """Finds the newest crash log matching the given process name
 and PID and prints it to stdout."""
-    argument_names = "PROCESS_NAME [PID]"
+    argument_names = 'PROCESS_NAME [PID]'
 
     def execute(self, options, args, tool):
         crash_logs = CrashLogs(tool)
@@ -84,7 +84,7 @@ class PrintExpectations(Command):
 
     def execute(self, options, args, tool):
         if not options.paths and not args and not options.all:
-            print "You must either specify one or more test paths or --all."
+            print 'You must either specify one or more test paths or --all.'
             return
 
         if options.platform:
@@ -137,13 +137,13 @@ class PrintExpectations(Command):
         output = []
         if options.csv:
             for line in lines:
-                output.append("%s,%s" % (port_name, line.to_csv()))
+                output.append('%s,%s' % (port_name, line.to_csv()))
         elif lines:
             include_modifiers = options.full
             include_expectations = options.full or len(options.include_keyword) != 1 or len(options.exclude_keyword)
-            output.append("// For %s" % port_name)
+            output.append('// For %s' % port_name)
             for line in lines:
-                output.append("%s" % line.to_string(None, include_modifiers, include_expectations, include_comment=False))
+                output.append('%s' % line.to_string(None, include_modifiers, include_expectations, include_comment=False))
         return output
 
 
@@ -167,7 +167,7 @@ class PrintBaselines(Command):
 
     def execute(self, options, args, tool):
         if not args and not options.all:
-            print "You must either specify one or more test paths or --all."
+            print 'You must either specify one or more test paths or --all.'
             return
 
         default_port = tool.port_factory.get()
@@ -187,7 +187,7 @@ class PrintBaselines(Command):
             if port_name != port_names[0]:
                 print
             if not options.csv:
-                print "// For %s" % port_name
+                print '// For %s' % port_name
             port = tool.port_factory.get(port_name)
             for test_name in tests:
                 self._print_baselines(options, port_name, test_name, port.expected_baselines_by_extension(test_name))
@@ -197,7 +197,7 @@ class PrintBaselines(Command):
             baseline_location = baselines[extension]
             if baseline_location:
                 if options.csv:
-                    print "%s,%s,%s,%s,%s,%s" % (port_name, test_name, self._platform_for_path(test_name),
+                    print '%s,%s,%s,%s,%s,%s' % (port_name, test_name, self._platform_for_path(test_name),
                                                  extension[1:], baseline_location, self._platform_for_path(baseline_location))
                 else:
                     print baseline_location

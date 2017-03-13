@@ -32,7 +32,7 @@ from webkitpy.tool.servers.reflection_handler import ReflectionHandler
 
 
 class TestReflectionHandler(ReflectionHandler):
-    STATIC_FILE_DIRECTORY = "/"
+    STATIC_FILE_DIRECTORY = '/'
 
     def __init__(self):  # pylint: disable=super-init-not-called
         self.static_files_served = set()
@@ -47,10 +47,10 @@ class TestReflectionHandler(ReflectionHandler):
         self.errors_sent.add(code)
 
     def function_one(self):
-        self.functions_run.add("function_one")
+        self.functions_run.add('function_one')
 
     def some_html(self):
-        self.functions_run.add("some_html")
+        self.functions_run.add('some_html')
 
 
 class WriteConvertingLogger(object):
@@ -90,12 +90,12 @@ class ReflectionHandlerTest(unittest.TestCase):
         self.assertEqual(handler.functions_run, expected_functions)
 
     def test_static_content_or_function_switch(self):
-        self.assert_handler_response(["/test.js"], set(["test.js"]), set(), set())
-        self.assert_handler_response(["/test.js", "/test.css", "/test.html"],
-                                     set(["test.js", "test.html", "test.css"]), set(), set())
-        self.assert_handler_response(["/test.js", "/test.exe", "/testhtml"], set(["test.js"]), set([404]), set())
-        self.assert_handler_response(["/test.html", "/function.one"], set(["test.html"]), set(), set(['function_one']))
-        self.assert_handler_response(["/some.html"], set(["some.html"]), set(), set())
+        self.assert_handler_response(['/test.js'], set(['test.js']), set(), set())
+        self.assert_handler_response(['/test.js', '/test.css', '/test.html'],
+                                     set(['test.js', 'test.html', 'test.css']), set(), set())
+        self.assert_handler_response(['/test.js', '/test.exe', '/testhtml'], set(['test.js']), set([404]), set())
+        self.assert_handler_response(['/test.html', '/function.one'], set(['test.html']), set(), set(['function_one']))
+        self.assert_handler_response(['/some.html'], set(['some.html']), set(), set())
 
     def test_svn_log_non_ascii(self):
         xml_change_log = (u'<?xml version="1.0"?>\n<log>\n<logentry revision="1">\n'

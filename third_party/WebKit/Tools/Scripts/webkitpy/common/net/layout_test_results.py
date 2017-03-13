@@ -108,22 +108,22 @@ class LayoutTestResults(object):
         self._chromium_revision = chromium_revision
 
     def run_was_interrupted(self):
-        return self._results["interrupted"]
+        return self._results['interrupted']
 
     def builder_name(self):
-        return self._results["builder_name"]
+        return self._results['builder_name']
 
     @memoized
     def chromium_revision(self, git=None):
         """Returns the revision of the results in commit position number format."""
-        revision = self._chromium_revision or self._results["chromium_revision"]
+        revision = self._chromium_revision or self._results['chromium_revision']
         if not revision.isdigit():
-            assert git, "git is required if the original revision is a git hash."
+            assert git, 'git is required if the original revision is a git hash.'
             revision = git.commit_position_from_git_commit(revision)
         return int(revision)
 
     def result_for_test(self, test):
-        parts = test.split("/")
+        parts = test.split('/')
         tree = self._test_result_tree()
         for part in parts:
             if part not in tree:

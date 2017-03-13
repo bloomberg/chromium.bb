@@ -55,17 +55,17 @@ class ScriptError(Exception):
                  output_limit=500):
         shortened_output = output
         if output and output_limit and len(output) > output_limit:
-            shortened_output = "Last %s characters of output:\n%s" % (output_limit, output[-output_limit:])
+            shortened_output = 'Last %s characters of output:\n%s' % (output_limit, output[-output_limit:])
 
         if not message:
             message = 'Failed to run "%s"' % repr(script_args)
             if exit_code:
-                message += " exit_code: %d" % exit_code
+                message += ' exit_code: %d' % exit_code
             if cwd:
-                message += " cwd: %s" % cwd
+                message += ' cwd: %s' % cwd
 
         if shortened_output:
-            message += "\n\noutput: %s" % shortened_output
+            message += '\n\noutput: %s' % shortened_output
 
         Exception.__init__(self, message)
         self.script_args = script_args  # 'args' is already used by Exception
@@ -103,11 +103,11 @@ class Executive(object):
         """Attempts to kill the given pid.
         Will fail silently if pid does not exist or insufficient permissions.
         """
-        if sys.platform == "win32":
+        if sys.platform == 'win32':
             # We only use taskkill.exe on windows (not cygwin) because subprocess.pid
             # is a CYGWIN pid and taskkill.exe expects a windows pid.
             # Thankfully os.kill on CYGWIN handles either pid type.
-            command = ["taskkill.exe", "/f", "/t", "/pid", pid]
+            command = ['taskkill.exe', '/f', '/t', '/pid', pid]
             # taskkill will exit 128 if the process is not found.  We should log.
             self.run_command(command, error_handler=self.ignore_error)
             return
@@ -115,7 +115,7 @@ class Executive(object):
         # According to http://docs.python.org/library/os.html
         # os.kill isn't available on Windows. python 2.5.5 os.kill appears
         # to work in cygwin, however it occasionally raises EAGAIN.
-        retries_left = 10 if sys.platform == "cygwin" else 1
+        retries_left = 10 if sys.platform == 'cygwin' else 1
         while retries_left > 0:
             try:
                 retries_left -= 1
@@ -124,7 +124,7 @@ class Executive(object):
             except OSError as error:
                 if error.errno == errno.EAGAIN:
                     if retries_left <= 0:
-                        _log.warning("Failed to kill pid %s.  Too many EAGAIN errors.", pid)
+                        _log.warning('Failed to kill pid %s.  Too many EAGAIN errors.', pid)
                     continue
                 if error.errno == errno.ESRCH:  # The process does not exist.
                     return
@@ -145,16 +145,16 @@ class Executive(object):
         import ctypes
 
         class PROCESSENTRY32(ctypes.Structure):
-            _fields_ = [("dwSize", ctypes.c_ulong),
-                        ("cntUsage", ctypes.c_ulong),
-                        ("th32ProcessID", ctypes.c_ulong),
-                        ("th32DefaultHeapID", ctypes.POINTER(ctypes.c_ulong)),
-                        ("th32ModuleID", ctypes.c_ulong),
-                        ("cntThreads", ctypes.c_ulong),
-                        ("th32ParentProcessID", ctypes.c_ulong),
-                        ("pcPriClassBase", ctypes.c_ulong),
-                        ("dwFlags", ctypes.c_ulong),
-                        ("szExeFile", ctypes.c_char * 260)]
+            _fields_ = [('dwSize', ctypes.c_ulong),
+                        ('cntUsage', ctypes.c_ulong),
+                        ('th32ProcessID', ctypes.c_ulong),
+                        ('th32DefaultHeapID', ctypes.POINTER(ctypes.c_ulong)),
+                        ('th32ModuleID', ctypes.c_ulong),
+                        ('cntThreads', ctypes.c_ulong),
+                        ('th32ParentProcessID', ctypes.c_ulong),
+                        ('pcPriClassBase', ctypes.c_ulong),
+                        ('dwFlags', ctypes.c_ulong),
+                        ('szExeFile', ctypes.c_char * 260)]
 
         CreateToolhelp32Snapshot = ctypes.windll.kernel32.CreateToolhelp32Snapshot
         Process32First = ctypes.windll.kernel32.Process32First
@@ -166,7 +166,7 @@ class Executive(object):
         pe32.dwSize = ctypes.sizeof(PROCESSENTRY32)
         result = False
         if not Process32First(hProcessSnap, ctypes.byref(pe32)):
-            _log.debug("Failed getting first process.")
+            _log.debug('Failed getting first process.')
             CloseHandle(hProcessSnap)
             return result
         while True:
@@ -192,7 +192,7 @@ class Executive(object):
 
     def _running_processes(self):
         processes = []
-        if sys.platform in ("win32", "cygwin"):
+        if sys.platform in ('win32', 'cygwin'):
             tasklist_process = self.popen(['tasklist', '/fo', 'csv'],
                                           stdout=self.PIPE, stderr=self.PIPE)
             stdout, _ = tasklist_process.communicate()
@@ -228,7 +228,7 @@ class Executive(object):
 
     def process_dump(self):
         ps_process = None
-        if sys.platform in ("win32", "cygwin"):
+        if sys.platform in ('win32', 'cygwin'):
             ps_process = self.popen(
                 ['wmic', 'process', 'get',
                  'ProcessId,ParentProcessId,CommandLine'],
@@ -288,7 +288,7 @@ class Executive(object):
         # child processes from getting input from the user.
         if not input:
             return (None, None)
-        if hasattr(input, "read"):  # Check if the input is a file.
+        if hasattr(input, 'read'):  # Check if the input is a file.
             return (input, None)  # Assume the file is in the right encoding.
 
         # Popen in Python 2.5 and before does not automatically encode unicode objects.
@@ -309,10 +309,10 @@ class Executive(object):
         for arg in args:
             if isinstance(arg, unicode):
                 # Escape any non-ascii characters for easy copy/paste
-                arg = arg.encode("unicode_escape")
+                arg = arg.encode('unicode_escape')
             # FIXME: Do we need to fix quotes here?
             escaped_args.append(arg)
-        return " ".join(escaped_args)
+        return ' '.join(escaped_args)
 
     def run_command(self,
                     args,
@@ -347,7 +347,7 @@ class Executive(object):
 
         # run_command automatically decodes to unicode() unless explicitly told not to.
         if decode_output:
-            output = output.decode(self._child_process_encoding(), errors="replace")
+            output = output.decode(self._child_process_encoding(), errors='replace')
 
         # wait() is not threadsafe and can throw OSError due to:
         # http://bugs.python.org/issue1731717

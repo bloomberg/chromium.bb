@@ -98,7 +98,7 @@ class Bisector(object):
         for bucket in self.buckets:
             tests += bucket.tests
         extra_args = ' --debug' if self.is_debug else ''
-        print 'run-webkit-tests%s --child-processes=1 --order=none %s' % (extra_args, " ".join(tests))
+        print 'run-webkit-tests%s --child-processes=1 --order=none %s' % (extra_args, ' '.join(tests))
 
     def is_done(self):
         for bucket in self.buckets:

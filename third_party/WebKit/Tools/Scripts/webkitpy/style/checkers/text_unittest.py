@@ -80,6 +80,6 @@ class TextCheckerTest(unittest.TestCase):
 
     def test_init(self):
         """Test __init__ constructor."""
-        checker = TextChecker("foo.txt", self.mock_handle_style_error)
-        self.assertEqual(checker.file_path, "foo.txt")
+        checker = TextChecker('foo.txt', self.mock_handle_style_error)
+        self.assertEqual(checker.file_path, 'foo.txt')
         self.assertEqual(checker.handle_style_error, self.mock_handle_style_error)

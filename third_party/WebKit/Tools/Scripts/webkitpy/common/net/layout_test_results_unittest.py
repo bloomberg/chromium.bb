@@ -98,7 +98,7 @@ class LayoutTestResultsTest(unittest.TestCase):
 
     def test_results_from_string(self):
         self.assertIsNone(LayoutTestResults.results_from_string(None))
-        self.assertIsNone(LayoutTestResults.results_from_string(""))
+        self.assertIsNone(LayoutTestResults.results_from_string(''))
 
     def test_was_interrupted(self):
         self.assertTrue(LayoutTestResults.results_from_string(
@@ -111,9 +111,9 @@ class LayoutTestResultsTest(unittest.TestCase):
 
     def test_actual_results(self):
         results = LayoutTestResults.results_from_string(self.example_full_results_json)
-        self.assertEqual(results.result_for_test("fast/dom/prototype-banana.html").actual_results(), "PASS")
-        self.assertEqual(results.result_for_test("fast/dom/prototype-taco.html").actual_results(), "PASS TEXT")
-        self.assertFalse(results.result_for_test("nonexistant.html"))
+        self.assertEqual(results.result_for_test('fast/dom/prototype-banana.html').actual_results(), 'PASS')
+        self.assertEqual(results.result_for_test('fast/dom/prototype-taco.html').actual_results(), 'PASS TEXT')
+        self.assertFalse(results.result_for_test('nonexistant.html'))
 
     def test_didnt_run_as_expected_results(self):
         results = LayoutTestResults.results_from_string(self.example_full_results_json)
@@ -131,18 +131,18 @@ class LayoutTestResultsTest(unittest.TestCase):
 
     def test_didnt_run_as_expected_slow_test(self):
         results = LayoutTestResults({
-            "tests": {
-                "fast": {
-                    "dom": {
-                        "prototype-fast.html": {
-                            "expected": "PASS",
-                            "actual": "TEXT",
-                            "is_unexpected": True,
+            'tests': {
+                'fast': {
+                    'dom': {
+                        'prototype-fast.html': {
+                            'expected': 'PASS',
+                            'actual': 'TEXT',
+                            'is_unexpected': True,
                         },
-                        "prototype-slow.html": {
-                            "expected": "SLOW",
-                            "actual": "TEXT",
-                            "is_unexpected": True,
+                        'prototype-slow.html': {
+                            'expected': 'SLOW',
+                            'actual': 'TEXT',
+                            'is_unexpected': True,
                         }
                     }
                 }

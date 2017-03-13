@@ -145,7 +145,7 @@ def get_test_results(args, host=None, port_obj=None):
 
 
 def parse_full_results(full_results_text):
-    json_to_eval = full_results_text.replace("ADD_RESULTS(", "").replace(");", "")
+    json_to_eval = full_results_text.replace('ADD_RESULTS(', '').replace(');', '')
     compressed_results = json.loads(json_to_eval)
     return compressed_results
 
@@ -210,7 +210,7 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
 
         # Ensure the results were written out and displayed.
         failing_results_text = host.filesystem.read_text_file('/tmp/layout-test-results/failing_results.json')
-        json_to_eval = failing_results_text.replace("ADD_RESULTS(", "").replace(");", "")
+        json_to_eval = failing_results_text.replace('ADD_RESULTS(', '').replace(');', '')
         self.assertEqual(json.loads(json_to_eval), details.summarized_failing_results)
 
         json_test_results = host.filesystem.read_text_file('/tmp/json_test_results.json')
@@ -811,9 +811,9 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
             host.filesystem.exists('/tmp/layout-test-results/retry_3/failures/unexpected/text-image-checksum-actual.png'))
         json_string = host.filesystem.read_text_file('/tmp/layout-test-results/full_results.json')
         results = parse_full_results(json_string)
-        self.assertEqual(results["tests"]["failures"]["unexpected"]["text-image-checksum.html"],
-                         {"expected": "PASS", "actual": "TEXT IMAGE+TEXT IMAGE+TEXT IMAGE+TEXT", "is_unexpected": True})
-        self.assertFalse(results["pixel_tests_enabled"])
+        self.assertEqual(results['tests']['failures']['unexpected']['text-image-checksum.html'],
+                         {'expected': 'PASS', 'actual': 'TEXT IMAGE+TEXT IMAGE+TEXT IMAGE+TEXT', 'is_unexpected': True})
+        self.assertFalse(results['pixel_tests_enabled'])
         self.assertTrue(details.enabled_pixel_tests_in_retry)
 
     def test_retrying_uses_retry_directories(self):
@@ -867,9 +867,9 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         host = MockHost()
         logging_run(['--no-show-results', 'reftests/foo/'], tests_included=True, host=host)
         results = parse_full_results(host.filesystem.read_text_file('/tmp/layout-test-results/full_results.json'))
-        self.assertEqual(results["tests"]["reftests"]["foo"]["unlistedtest.html"]["actual"], "MISSING")
-        self.assertEqual(results["num_regressions"], 5)
-        self.assertEqual(results["num_flaky"], 0)
+        self.assertEqual(results['tests']['reftests']['foo']['unlistedtest.html']['actual'], 'MISSING')
+        self.assertEqual(results['num_regressions'], 5)
+        self.assertEqual(results['num_flaky'], 0)
 
     def test_reftest_crash(self):
         test_results = get_test_results(['failures/unexpected/crash-reftest.html'])
@@ -1052,24 +1052,24 @@ class EndToEndTest(unittest.TestCase):
 
         json_string = host.filesystem.read_text_file('/tmp/layout-test-results/failing_results.json')
         results = parse_full_results(json_string)
-        self.assertTrue("multiple-match-success.html" not in results["tests"]["reftests"]["foo"])
-        self.assertTrue("multiple-mismatch-success.html" not in results["tests"]["reftests"]["foo"])
-        self.assertTrue("multiple-both-success.html" not in results["tests"]["reftests"]["foo"])
+        self.assertTrue('multiple-match-success.html' not in results['tests']['reftests']['foo'])
+        self.assertTrue('multiple-mismatch-success.html' not in results['tests']['reftests']['foo'])
+        self.assertTrue('multiple-both-success.html' not in results['tests']['reftests']['foo'])
 
-        self.assertEqual(results["tests"]["reftests"]["foo"]["multiple-match-failure.html"],
-                         {"expected": "PASS", "actual": "IMAGE", "reftest_type": ["=="], "is_unexpected": True})
-        self.assertEqual(results["tests"]["reftests"]["foo"]["multiple-mismatch-failure.html"],
-                         {"expected": "PASS", "actual": "IMAGE", "reftest_type": ["!="], "is_unexpected": True})
-        self.assertEqual(results["tests"]["reftests"]["foo"]["multiple-both-failure.html"],
-                         {"expected": "PASS", "actual": "IMAGE", "reftest_type": ["==", "!="], "is_unexpected": True})
+        self.assertEqual(results['tests']['reftests']['foo']['multiple-match-failure.html'],
+                         {'expected': 'PASS', 'actual': 'IMAGE', 'reftest_type': ['=='], 'is_unexpected': True})
+        self.assertEqual(results['tests']['reftests']['foo']['multiple-mismatch-failure.html'],
+                         {'expected': 'PASS', 'actual': 'IMAGE', 'reftest_type': ['!='], 'is_unexpected': True})
+        self.assertEqual(results['tests']['reftests']['foo']['multiple-both-failure.html'],
+                         {'expected': 'PASS', 'actual': 'IMAGE', 'reftest_type': ['==', '!='], 'is_unexpected': True})
 
 
 class RebaselineTest(unittest.TestCase, StreamTestingMixin):
 
     def assert_baselines(self, file_list, file_base, extensions, err):
-        "assert that the file_list contains the baselines."""
+        'assert that the file_list contains the baselines.'''
         for ext in extensions:
-            baseline = file_base + "-expected" + ext
+            baseline = file_base + '-expected' + ext
             baseline_msg = 'Writing new expected result "%s"\n' % baseline
             self.assertTrue(any(baseline in f for f in file_list))
             self.assert_contains(err, baseline_msg)
@@ -1087,7 +1087,7 @@ class RebaselineTest(unittest.TestCase, StreamTestingMixin):
         file_list = host.filesystem.written_files.keys()
         self.assertEqual(details.exit_code, 0)
         self.assertEqual(len(file_list), 8)
-        self.assert_baselines(file_list, "passes/image", [".txt", ".png"], err)
+        self.assert_baselines(file_list, 'passes/image', ['.txt', '.png'], err)
 
     def test_missing_results(self):
         # Test that we update expectations in place. If the expectation
@@ -1101,9 +1101,9 @@ class RebaselineTest(unittest.TestCase, StreamTestingMixin):
         file_list = host.filesystem.written_files.keys()
         self.assertEqual(details.exit_code, 3)
         self.assertEqual(len(file_list), 12)
-        self.assert_baselines(file_list, "failures/unexpected/missing_text", [".txt"], err)
-        self.assert_baselines(file_list, "platform/test/failures/unexpected/missing_image", [".png"], err)
-        self.assert_baselines(file_list, "platform/test/failures/unexpected/missing_render_tree_dump", [".txt"], err)
+        self.assert_baselines(file_list, 'failures/unexpected/missing_text', ['.txt'], err)
+        self.assert_baselines(file_list, 'platform/test/failures/unexpected/missing_image', ['.png'], err)
+        self.assert_baselines(file_list, 'platform/test/failures/unexpected/missing_render_tree_dump', ['.txt'], err)
 
     def test_new_baseline(self):
         # Test that we update the platform expectations in the version-specific directories
@@ -1116,7 +1116,7 @@ class RebaselineTest(unittest.TestCase, StreamTestingMixin):
         self.assertEqual(details.exit_code, 0)
         self.assertEqual(len(file_list), 8)
         self.assert_baselines(file_list,
-                             "platform/test-mac-mac10.10/passes/image", [".txt", ".png"], err)
+                              'platform/test-mac-mac10.10/passes/image', ['.txt', '.png'], err)
 
     def test_reftest_reset_results(self):
         # Test rebaseline of reftests.

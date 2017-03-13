@@ -46,11 +46,11 @@ class DriverTest(unittest.TestCase):
 
     def test_command_wrapper(self):
         self._assert_wrapper(None, [])
-        self._assert_wrapper("valgrind", ["valgrind"])
+        self._assert_wrapper('valgrind', ['valgrind'])
 
         # Validate that shlex works as expected.
-        command_with_spaces = "valgrind --smc-check=\"check with spaces!\" --foo"
-        expected_parse = ["valgrind", "--smc-check=check with spaces!", "--foo"]
+        command_with_spaces = 'valgrind --smc-check=\'check with spaces!\' --foo'
+        expected_parse = ['valgrind', '--smc-check=check with spaces!', '--foo']
         self._assert_wrapper(command_with_spaces, expected_parse)
 
     def test_test_to_uri(self):
@@ -77,7 +77,7 @@ class DriverTest(unittest.TestCase):
             'ActualHash: foobar',
             'Content-Type: my_type',
             'Content-Transfer-Encoding: none',
-            "#EOF",
+            '#EOF',
         ])
         content_block = driver._read_block(0)
         self.assertEqual(content_block.content, '')
@@ -94,8 +94,8 @@ class DriverTest(unittest.TestCase):
             'ExpectedHash: expected',
             'Content-Type: image/png',
             'Content-Length: 9',
-            "12345678",
-            "#EOF",
+            '12345678',
+            '#EOF',
         ])
         content_block = driver._read_block(0)
         self.assertEqual(content_block.content_type, 'image/png')

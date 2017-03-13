@@ -163,7 +163,7 @@ class LayoutTestRunner(object):
         # so that existing buildbot grep rules work.
         def interrupt_if_at_failure_limit(limit, failure_count, run_results, message):
             if limit and failure_count >= limit:
-                message += " %d tests run." % (run_results.expected + run_results.unexpected)
+                message += ' %d tests run.' % (run_results.expected + run_results.unexpected)
                 self._mark_interrupted_tests_as_skipped(run_results)
                 raise TestRunInterruptedException(message)
 
@@ -171,13 +171,13 @@ class LayoutTestRunner(object):
             self._options.exit_after_n_failures,
             run_results.unexpected_failures,
             run_results,
-            "Exiting early after %d failures." % run_results.unexpected_failures)
+            'Exiting early after %d failures.' % run_results.unexpected_failures)
         interrupt_if_at_failure_limit(
             self._options.exit_after_n_crashes_or_timeouts,
             run_results.unexpected_crashes + run_results.unexpected_timeouts,
             run_results,
             # This differs from ORWT because it does not include WebProcess crashes.
-            "Exiting early after %d crashes and %d timeouts." % (run_results.unexpected_crashes, run_results.unexpected_timeouts))
+            'Exiting early after %d crashes and %d timeouts.' % (run_results.unexpected_crashes, run_results.unexpected_timeouts))
 
     def _update_summary_with_result(self, run_results, result):
         expected = self._expectations.matches_an_expected_result(
@@ -186,7 +186,7 @@ class LayoutTestRunner(object):
         got_str = self._expectations.expectation_to_string(result.type)
 
         if result.device_failed:
-            self._printer.print_finished_test(result, False, exp_str, "Aborted")
+            self._printer.print_finished_test(result, False, exp_str, 'Aborted')
             return
 
         run_results.add(result, expected, self._test_is_slow(result.test_name))
@@ -210,7 +210,7 @@ class LayoutTestRunner(object):
         self._update_summary_with_result(self._current_run_results, result)
 
     def _handle_device_failed(self, worker_name, list_name, remaining_tests):
-        _log.warning("%s has failed", worker_name)
+        _log.warning('%s has failed', worker_name)
         if remaining_tests:
             self._shards_to_redo.append(TestShard(list_name, remaining_tests))
 
@@ -304,15 +304,15 @@ class Worker(object):
         return result.device_failed
 
     def stop(self):
-        _log.debug("%s cleaning up", self._name)
-        self._kill_driver(self._primary_driver, "primary")
-        self._kill_driver(self._secondary_driver, "secondary")
+        _log.debug('%s cleaning up', self._name)
+        self._kill_driver(self._primary_driver, 'primary')
+        self._kill_driver(self._secondary_driver, 'secondary')
 
     def _kill_driver(self, driver, label):
         # Be careful about how and when we kill the driver; if driver.stop()
         # raises an exception, this routine may get re-entered via __del__.
         if driver:
-            _log.debug("%s killing %s driver", self._name, label)
+            _log.debug('%s killing %s driver', self._name, label)
             driver.stop()
 
     def _clean_up_after_test(self, test_input, result):
@@ -324,20 +324,20 @@ class Worker(object):
                 # FIXME: Need more information in failure reporting so
                 # we know which driver needs to be restarted. For now
                 # we kill both drivers.
-                self._kill_driver(self._primary_driver, "primary")
-                self._kill_driver(self._secondary_driver, "secondary")
+                self._kill_driver(self._primary_driver, 'primary')
+                self._kill_driver(self._secondary_driver, 'secondary')
 
                 # Reset the batch count since the shell just bounced.
                 self._batch_count = 0
 
             # Print the error message(s).
-            _log.debug("%s %s failed:", self._name, test_name)
+            _log.debug('%s %s failed:', self._name, test_name)
             for f in result.failures:
-                _log.debug("%s  %s", self._name, f.message())
+                _log.debug('%s  %s', self._name, f.message())
         elif result.type == test_expectations.SKIP:
-            _log.debug("%s %s skipped", self._name, test_name)
+            _log.debug('%s %s skipped', self._name, test_name)
         else:
-            _log.debug("%s %s passed", self._name, test_name)
+            _log.debug('%s %s passed', self._name, test_name)
 
 
 class TestShard(object):

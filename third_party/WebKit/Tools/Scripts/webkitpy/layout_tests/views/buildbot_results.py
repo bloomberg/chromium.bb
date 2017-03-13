@@ -58,22 +58,22 @@ class BuildBotPrinter(object):
         if total > 0:
             percent_passed = float(passed) * 100 / total
 
-        self._print("=> Results: %d/%d tests passed (%.1f%%)" % (passed, total, percent_passed))
-        self._print("")
-        self._print_run_results_entry(run_results, test_expectations.NOW, "Tests to be fixed")
+        self._print('=> Results: %d/%d tests passed (%.1f%%)' % (passed, total, percent_passed))
+        self._print('')
+        self._print_run_results_entry(run_results, test_expectations.NOW, 'Tests to be fixed')
 
-        self._print("")
+        self._print('')
         # FIXME: We should be skipping anything marked WONTFIX, so we shouldn't bother logging these stats.
         self._print_run_results_entry(run_results, test_expectations.WONTFIX,
-                                      "Tests that will only be fixed if they crash (WONTFIX)")
-        self._print("")
+                                      'Tests that will only be fixed if they crash (WONTFIX)')
+        self._print('')
 
     def _print_run_results_entry(self, run_results, timeline, heading):
         total = len(run_results.tests_by_timeline[timeline])
         not_passing = (total -
                        len(run_results.tests_by_expectation[test_expectations.PASS] &
                            run_results.tests_by_timeline[timeline]))
-        self._print("=> %s (%d):" % (heading, not_passing))
+        self._print('=> %s (%d):' % (heading, not_passing))
 
         for result in TestExpectations.EXPECTATION_DESCRIPTIONS.keys():
             if result in (test_expectations.PASS, test_expectations.SKIP):
@@ -82,7 +82,7 @@ class BuildBotPrinter(object):
             desc = TestExpectations.EXPECTATION_DESCRIPTIONS[result]
             if not_passing and len(results):
                 pct = len(results) * 100.0 / not_passing
-                self._print("  %5d %-24s (%4.1f%%)" % (len(results), desc, pct))
+                self._print('  %5d %-24s (%4.1f%%)' % (len(results), desc, pct))
 
     def print_unexpected_results(self, summarized_results, enabled_pixel_tests_in_retry=False):
         passes = {}
@@ -94,8 +94,8 @@ class BuildBotPrinter(object):
 
         def add_result(result):
             test = result.test_name()
-            actual = result.actual_results().split(" ")
-            expected = result.expected_results().split(" ")
+            actual = result.actual_results().split(' ')
+            expected = result.expected_results().split(' ')
 
             if result.did_run_as_expected():
                 # Don't print anything for tests that ran as expected.
@@ -120,47 +120,47 @@ class BuildBotPrinter(object):
         test_results.for_each_test(add_result)
 
         if len(passes) or len(flaky) or len(regressions):
-            self._print("")
+            self._print('')
         if len(passes):
             for key, tests in passes.iteritems():
-                self._print("%s: (%d)" % (key, len(tests)))
+                self._print('%s: (%d)' % (key, len(tests)))
                 tests.sort()
                 for test in tests:
-                    self._print("  %s" % test)
-                self._print("")
-            self._print("")
+                    self._print('  %s' % test)
+                self._print('')
+            self._print('')
 
         if len(flaky):
             descriptions = TestExpectations.EXPECTATION_DESCRIPTIONS
             for key, tests in flaky.iteritems():
                 result_type = TestExpectations.EXPECTATIONS[key.lower()]
-                self._print("Unexpected flakiness: %s (%d)" % (descriptions[result_type], len(tests)))
+                self._print('Unexpected flakiness: %s (%d)' % (descriptions[result_type], len(tests)))
                 tests.sort()
 
                 for test in tests:
                     result = test_results.result_for_test(test)
-                    actual = result.actual_results().split(" ")
-                    expected = result.expected_results().split(" ")
+                    actual = result.actual_results().split(' ')
+                    expected = result.expected_results().split(' ')
                     # FIXME: clean this up once the old syntax is gone
                     new_expectations_list = [TestExpectationLine.inverted_expectation_tokens[exp]
                                              for exp in list(set(actual) | set(expected))]
-                    self._print("  %s [ %s ]" % (test, " ".join(new_expectations_list)))
-                self._print("")
-            self._print("")
+                    self._print('  %s [ %s ]' % (test, ' '.join(new_expectations_list)))
+                self._print('')
+            self._print('')
 
         if len(regressions):
             descriptions = TestExpectations.EXPECTATION_DESCRIPTIONS
             for key, tests in regressions.iteritems():
                 result_type = TestExpectations.EXPECTATIONS[key.lower()]
-                self._print("Regressions: Unexpected %s (%d)" % (descriptions[result_type], len(tests)))
+                self._print('Regressions: Unexpected %s (%d)' % (descriptions[result_type], len(tests)))
                 tests.sort()
                 for test in tests:
                     result = test_results.result_for_test(test)
-                    actual = result.actual_results().split(" ")
-                    expected = result.expected_results().split(" ")
+                    actual = result.actual_results().split(' ')
+                    expected = result.expected_results().split(' ')
                     new_expectations_list = [TestExpectationLine.inverted_expectation_tokens[exp] for exp in actual]
-                    self._print("  %s [ %s ]" % (test, " ".join(new_expectations_list)))
-                self._print("")
+                    self._print('  %s [ %s ]' % (test, ' '.join(new_expectations_list)))
+                self._print('')
 
         if len(summarized_results['tests']) and self.debug_logging:
-            self._print("%s" % ("-" * 78))
+            self._print('%s' % ('-' * 78))

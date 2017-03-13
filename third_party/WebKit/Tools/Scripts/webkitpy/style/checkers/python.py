@@ -58,7 +58,7 @@ class PythonChecker(object):
             pep8_code = text[:4]
             pep8_message = text[5:]
 
-            category = "pep8/" + pep8_code
+            category = 'pep8/' + pep8_code
 
             self._handle_style_error(line_number, category, 5, pep8_message)
 

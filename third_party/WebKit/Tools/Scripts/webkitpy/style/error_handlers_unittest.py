@@ -37,10 +37,10 @@ class DefaultStyleErrorHandlerTest(unittest.TestCase):
         self._error_messages = []
         self._error_count = 0
 
-    _category = "whitespace/tab"
+    _category = 'whitespace/tab'
     """The category name for the tests in this class."""
 
-    _file_path = "foo.h"
+    _file_path = 'foo.h'
     """The file path for the tests in this class."""
 
     def _mock_increment_error_count(self):
@@ -51,14 +51,14 @@ class DefaultStyleErrorHandlerTest(unittest.TestCase):
 
     def _style_checker_configuration(self):
         """Return a StyleProcessorConfiguration instance for testing."""
-        base_rules = ["-whitespace", "+whitespace/tab"]
+        base_rules = ['-whitespace', '+whitespace/tab']
         filter_configuration = FilterConfiguration(base_rules=base_rules)
 
         return StyleProcessorConfiguration(
             filter_configuration=filter_configuration,
-            max_reports_per_category={"whitespace/tab": 2},
+            max_reports_per_category={'whitespace/tab': 2},
             min_confidence=3,
-            output_format="vs7",
+            output_format='vs7',
             stderr_write=self._mock_stderr_write)
 
     def _error_handler(self, configuration, line_numbers=None):
@@ -77,7 +77,7 @@ class DefaultStyleErrorHandlerTest(unittest.TestCase):
         handle_error(line_number=line_number,
                      category=self._category,
                      confidence=confidence,
-                     message="message")
+                     message='message')
 
     def test_eq__true_return_value(self):
         """Test the __eq__() method for the return value of True."""
@@ -148,7 +148,7 @@ class DefaultStyleErrorHandlerTest(unittest.TestCase):
         self.assertEqual(1, self._error_count)
         self.assertEqual(1, len(self._error_messages))
         self.assertEqual(self._error_messages,
-                         ["foo.h(100):  message  [whitespace/tab] [5]\n"])
+                         ['foo.h(100):  message  [whitespace/tab] [5]\n'])
 
         # Second call: suppression message reported.
         self._call_error_handler(error_handler, confidence)
@@ -157,10 +157,10 @@ class DefaultStyleErrorHandlerTest(unittest.TestCase):
         self.assertEqual(2, self._error_count)
         self.assertEqual(3, len(self._error_messages))
         self.assertEqual(self._error_messages[-2],
-                         "foo.h(100):  message  [whitespace/tab] [5]\n")
+                         'foo.h(100):  message  [whitespace/tab] [5]\n')
         self.assertEqual(self._error_messages[-1],
-                         "Suppressing further [whitespace/tab] reports "
-                         "for this file.\n")
+                         'Suppressing further [whitespace/tab] reports '
+                         'for this file.\n')
 
         # Third call: no report.
         self._call_error_handler(error_handler, confidence)
@@ -184,7 +184,7 @@ class DefaultStyleErrorHandlerTest(unittest.TestCase):
         self._call_error_handler(error_handler, confidence, line_number=50)
         self.assertEqual(1, self._error_count)
         self.assertEqual(self._error_messages,
-                         ["foo.h(50):  message  [whitespace/tab] [5]\n"])
+                         ['foo.h(50):  message  [whitespace/tab] [5]\n'])
 
         # Error on non-modified line after turning off line filtering: error.
         error_handler.turn_off_line_filtering()

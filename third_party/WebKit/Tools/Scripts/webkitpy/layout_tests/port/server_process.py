@@ -124,14 +124,14 @@ class ServerProcess(object):
 
     def _start(self):
         if self._proc:
-            raise ValueError("%s already running" % self._name)
+            raise ValueError('%s already running' % self._name)
         self._reset()
         # close_fds is a workaround for http://bugs.python.org/issue2320
         close_fds = not self._host.platform.is_win()
         if self._logging:
             env_str = ''
             if self._env:
-                env_str += '\n'.join("%s=%s" % (k, v) for k, v in self._env.items()) + '\n'
+                env_str += '\n'.join('%s=%s' % (k, v) for k, v in self._env.items()) + '\n'
             _log.info('CMD: \n%s%s\n', env_str, _quote_cmd(self._cmd))
         self._proc = self._host.executive.popen(self._cmd, stdin=self._host.executive.PIPE,
                                                 stdout=self._host.executive.PIPE,

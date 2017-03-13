@@ -50,7 +50,7 @@ class TestConfiguration(object):
         return self.__dict__.keys()
 
     def __str__(self):
-        return ("<%(version)s, %(architecture)s, %(build_type)s>" %
+        return ('<%(version)s, %(architecture)s, %(build_type)s>' %
                 self.__dict__)
 
     def __repr__(self):

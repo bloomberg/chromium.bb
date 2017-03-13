@@ -79,12 +79,12 @@ class ExecutiveTest(unittest.TestCase):
 
     def test_run_command_with_bad_command(self):
         def run_bad_command():
-            Executive().run_command(["foo_bar_command_blah"], error_handler=Executive.ignore_error, return_exit_code=True)
+            Executive().run_command(['foo_bar_command_blah'], error_handler=Executive.ignore_error, return_exit_code=True)
         self.assertRaises(OSError, run_bad_command)
 
     def test_run_command_args_type(self):
         executive = Executive()
-        self.assertRaises(AssertionError, executive.run_command, "echo")
+        self.assertRaises(AssertionError, executive.run_command, 'echo')
         self.assertRaises(AssertionError, executive.run_command, u"echo")
         executive.run_command(command_line('echo', 'foo'))
         executive.run_command(tuple(command_line('echo', 'foo')))

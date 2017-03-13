@@ -18,9 +18,9 @@ class FakeBotTestExpectations(object):
 
 
 class FakeBotTestExpectationsFactory(object):
-    FAILURE_MAP = {"A": "AUDIO", "C": "CRASH", "F": "TEXT", "I": "IMAGE", "O": "MISSING",
-                   "N": "NO DATA", "P": "PASS", "T": "TIMEOUT", "Y": "NOTRUN", "X": "SKIP",
-                   "Z": "IMAGE+TEXT", "K": "LEAK"}
+    FAILURE_MAP = {'A': 'AUDIO', 'C': 'CRASH', 'F': 'TEXT', 'I': 'IMAGE', 'O': 'MISSING',
+                   'N': 'NO DATA', 'P': 'PASS', 'T': 'TIMEOUT', 'Y': 'NOTRUN', 'X': 'SKIP',
+                   'Z': 'IMAGE+TEXT', 'K': 'LEAK'}
 
     def __init__(self, builders):
         self.builders = builders
@@ -57,8 +57,8 @@ class FlakyTestsTest(CommandsTest):
     @staticmethod
     def fake_builders_list():
         return BuilderList({
-            "foo-builder": {"port_name": "dummy-port", "specifiers": ['Linux', 'Release']},
-            "bar-builder": {"port_name": "dummy-port", "specifiers": ['Mac', 'Debug']},
+            'foo-builder': {'port_name': 'dummy-port', 'specifiers': ['Linux', 'Release']},
+            'bar-builder': {'port_name': 'dummy-port', 'specifiers': ['Mac', 'Debug']},
         })
 
     def test_merge_lines(self):

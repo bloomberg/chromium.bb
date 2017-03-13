@@ -58,7 +58,7 @@ class ServerBase(object):
         if self._platform.is_mac() or self._platform.is_linux():
             tmpdir = '/tmp'
 
-        self._runtime_path = self._filesystem.join(tmpdir, "WebKit")
+        self._runtime_path = self._filesystem.join(tmpdir, 'WebKit')
         self._filesystem.maybe_make_directory(self._runtime_path)
 
         # Subclasses must override these fields.
@@ -102,7 +102,7 @@ class ServerBase(object):
         self._pid = self._spawn_process()
 
         if self._wait_for_action(self._is_server_running_on_all_ports):
-            _log.debug("%s successfully started (pid = %d)", self._name, self._pid)
+            _log.debug('%s successfully started (pid = %d)', self._name, self._pid)
         else:
             self._log_errors_from_subprocess()
             self._stop_running_server()
@@ -135,9 +135,9 @@ class ServerBase(object):
                 self._pid = None
                 return
 
-            _log.debug("Attempting to shut down %s server at pid %d", self._name, self._pid)
+            _log.debug('Attempting to shut down %s server at pid %d', self._name, self._pid)
             self._stop_running_server()
-            _log.debug("%s server at pid %d stopped", self._name, self._pid)
+            _log.debug('%s server at pid %d stopped', self._name, self._pid)
             self._pid = None
         finally:
             # Make sure we delete the pid file no matter what happens.
@@ -234,7 +234,7 @@ class ServerBase(object):
         while self._port_obj.host.time() - start_time < wait_secs:
             if action():
                 return True
-            _log.debug("Waiting for action: %s", action)
+            _log.debug('Waiting for action: %s', action)
             self._port_obj.host.sleep(sleep_secs)
 
         return False
@@ -246,18 +246,18 @@ class ServerBase(object):
         if not self._platform.is_win() and not self._executive.check_running_pid(self._pid):
             _log.debug("Server isn't running at all")
             self._log_errors_from_subprocess()
-            raise ServerError("Server exited")
+            raise ServerError('Server exited')
 
         for mapping in self._mappings:
             s = socket.socket()
             port = mapping['port']
             try:
                 s.connect(('localhost', port))
-                _log.debug("Server running on %d", port)
+                _log.debug('Server running on %d', port)
             except IOError as error:
                 if error.errno not in (errno.ECONNREFUSED, errno.ECONNRESET):
                     raise
-                _log.debug("Server NOT running on %d: %s", port, error)
+                _log.debug('Server NOT running on %d: %s', port, error)
                 return False
             finally:
                 s.close()

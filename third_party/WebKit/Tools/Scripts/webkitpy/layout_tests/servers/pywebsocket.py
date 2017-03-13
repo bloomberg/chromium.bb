@@ -54,7 +54,7 @@ class PyWebSocket(server_base.ServerBase):
         self._web_socket_tests = self._filesystem.join(self._layout_tests, 'http', 'tests', 'websocket')
         time_str = time.strftime('%d%b%Y-%H%M%S')
         log_file_name = _WS_LOG_PREFIX + time_str
-        self._error_log = self._filesystem.join(self._output_dir, log_file_name + "-err.txt")
+        self._error_log = self._filesystem.join(self._output_dir, log_file_name + '-err.txt')
         pywebsocket_base = self._port_obj.path_from_webkit_base('Tools', 'Scripts', 'webkitpy', 'thirdparty')
         pywebsocket_script = self._filesystem.join(pywebsocket_base, 'mod_pywebsocket', 'standalone.py')
 

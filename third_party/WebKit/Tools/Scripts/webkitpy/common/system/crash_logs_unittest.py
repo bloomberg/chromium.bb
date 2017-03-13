@@ -92,15 +92,15 @@ class CrashLogsTest(unittest.TestCase):
         }
         filesystem = MockFileSystem(files)
         crash_logs = CrashLogs(MockSystemHost(filesystem=filesystem))
-        log = crash_logs.find_newest_log("DumpRenderTree")
+        log = crash_logs.find_newest_log('DumpRenderTree')
         self.assertMultiLineEqual(log, newer_mock_crash_report)
-        log = crash_logs.find_newest_log("DumpRenderTree", 28529)
+        log = crash_logs.find_newest_log('DumpRenderTree', 28529)
         self.assertMultiLineEqual(log, newer_mock_crash_report)
-        log = crash_logs.find_newest_log("DumpRenderTree", 28530)
+        log = crash_logs.find_newest_log('DumpRenderTree', 28530)
         self.assertMultiLineEqual(log, mock_crash_report)
-        log = crash_logs.find_newest_log("DumpRenderTree", 28531)
+        log = crash_logs.find_newest_log('DumpRenderTree', 28531)
         self.assertIsNone(log)
-        log = crash_logs.find_newest_log("DumpRenderTree", newer_than=1.0)
+        log = crash_logs.find_newest_log('DumpRenderTree', newer_than=1.0)
         self.assertIsNone(log)
 
         def bad_read(_):
@@ -110,11 +110,11 @@ class CrashLogsTest(unittest.TestCase):
             raise OSError('OSError: No such file or directory')
 
         filesystem.read_text_file = bad_read
-        log = crash_logs.find_newest_log("DumpRenderTree", 28531, include_errors=True)
+        log = crash_logs.find_newest_log('DumpRenderTree', 28531, include_errors=True)
         self.assertIn('IOError: No such file or directory', log)
 
         filesystem = MockFileSystem(files)
         crash_logs = CrashLogs(MockSystemHost(filesystem=filesystem))
         filesystem.mtime = bad_mtime
-        log = crash_logs.find_newest_log("DumpRenderTree", newer_than=1.0, include_errors=True)
+        log = crash_logs.find_newest_log('DumpRenderTree', newer_than=1.0, include_errors=True)
         self.assertIn('OSError: No such file or directory', log)

@@ -33,7 +33,7 @@ class CommitAnnouncerTest(unittest.TestCase):
 
     def test_format_commit(self):
         tool = MockWebKitPatch()
-        bot = CommitAnnouncer(tool, "test/directory", "test_password")
+        bot = CommitAnnouncer(tool, 'test/directory', 'test_password')
         self.assertEqual(
             'https://crrev.com/456789 authorABC@chromium.org committed "Commit test subject line"',
             bot._format_commit_detail("""\
@@ -200,6 +200,6 @@ Cr-Commit-Position: refs/heads/master@{#456789}
 """))
 
     def test_sanitize_string(self):
-        bot = CommitAnnouncer(MockWebKitPatch(), "test/directory", "test_password")
+        bot = CommitAnnouncer(MockWebKitPatch(), 'test/directory', 'test_password')
         self.assertEqual('normal ascii', bot._sanitize_string('normal ascii'))
         self.assertEqual('uni\\u0441ode!', bot._sanitize_string(u'uni\u0441ode!'))

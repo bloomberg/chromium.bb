@@ -43,7 +43,7 @@ def main(host, bot_test_expectations_factory, argv):
                         help='Open results dashboard for all removed lines')
     args = parser.parse_args(argv)
 
-    logging.basicConfig(level=logging.DEBUG if args.verbose else logging.INFO, format="%(levelname)s: %(message)s")
+    logging.basicConfig(level=logging.DEBUG if args.verbose else logging.INFO, format='%(levelname)s: %(message)s')
 
     port = host.port_factory.get()
     expectations_file = port.path_to_generic_test_expectations_file()

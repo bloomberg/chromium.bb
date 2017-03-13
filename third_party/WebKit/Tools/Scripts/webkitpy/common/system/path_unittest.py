@@ -46,7 +46,7 @@ class AbspathTest(unittest.TestCase):
                          'file:///C:/foo/bar.html')
 
     def test_abspath_to_uri_unixy(self):
-        self.assertEqual(path.abspath_to_uri(MockPlatformInfo(), "/foo/bar.html"),
+        self.assertEqual(path.abspath_to_uri(MockPlatformInfo(), '/foo/bar.html'),
                          'file:///foo/bar.html')
 
     def test_abspath_to_uri_win(self):
@@ -71,7 +71,7 @@ class AbspathTest(unittest.TestCase):
             return
 
         # Call cygpath to ensure the subprocess is running.
-        path.cygpath("/cygdrive/c/foo.txt")
+        path.cygpath('/cygdrive/c/foo.txt')
         self.assertTrue(path._CygPath._singleton.is_running())
 
         # Stop it.

@@ -39,4 +39,4 @@ class MockWeb(object):
         self.urls_fetched.append(url)
         if url in self.urls:
             return self.urls[url]
-        return "MOCK Web result, convert 404 to None=%s" % return_none_on_404
+        return 'MOCK Web result, convert 404 to None=%s' % return_none_on_404

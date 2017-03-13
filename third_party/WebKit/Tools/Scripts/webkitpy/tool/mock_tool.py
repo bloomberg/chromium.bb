@@ -35,4 +35,4 @@ class MockWebKitPatch(MockHost):
         MockHost.__init__(self, *args, **kwargs)
 
     def path(self):
-        return "echo"
+        return 'echo'

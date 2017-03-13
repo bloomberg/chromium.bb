@@ -79,13 +79,13 @@ class ArgumentParserTest(LoggingTestCase):
     def _create_defaults(self):
         """Return a DefaultCommandOptionValues instance for testing."""
         return DefaultCommandOptionValues(min_confidence=3,
-                                          output_format="vs7")
+                                          output_format='vs7')
 
     def _create_parser(self):
         """Return an ArgumentParser instance for testing."""
         default_options = self._create_defaults()
 
-        all_categories = ["build", "whitespace"]
+        all_categories = ['build', 'whitespace']
 
         mock_stderr = self._MockStdErr()
 
@@ -93,7 +93,7 @@ class ArgumentParserTest(LoggingTestCase):
                               base_filter_rules=[],
                               default_options=default_options,
                               mock_stderr=mock_stderr,
-                              usage="test usage")
+                              usage='test usage')
 
     def test_parse_documentation(self):
         parse = self._parse
@@ -172,12 +172,12 @@ class ArgumentParserTest(LoggingTestCase):
         # Pass user_rules.
         _, options = parse(['--filter=+build,-whitespace'])
         self.assertEqual(options.filter_rules,
-                         ["+build", "-whitespace"])
+                         ['+build', '-whitespace'])
 
         # Pass spurious white space in user rules.
         _, options = parse(['--filter=+build, -whitespace'])
         self.assertEqual(options.filter_rules,
-                         ["+build", "-whitespace"])
+                         ['+build', '-whitespace'])
 
     def test_parse_files(self):
         parse = self._parse
@@ -202,28 +202,28 @@ class CommandOptionValuesTest(unittest.TestCase):
         self.assertIsNone(options.git_commit)
         self.assertFalse(options.is_verbose)
         self.assertEqual(options.min_confidence, 1)
-        self.assertEqual(options.output_format, "emacs")
+        self.assertEqual(options.output_format, 'emacs')
 
         # Check argument validation.
-        self.assertRaises(ValueError, ProcessorOptions, output_format="bad")
-        ProcessorOptions(output_format="emacs")  # No ValueError: works
-        ProcessorOptions(output_format="vs7")  # works
+        self.assertRaises(ValueError, ProcessorOptions, output_format='bad')
+        ProcessorOptions(output_format='emacs')  # No ValueError: works
+        ProcessorOptions(output_format='vs7')  # works
         self.assertRaises(ValueError, ProcessorOptions, min_confidence=0)
         self.assertRaises(ValueError, ProcessorOptions, min_confidence=6)
         ProcessorOptions(min_confidence=1)  # works
         ProcessorOptions(min_confidence=5)  # works
 
         # Check attributes.
-        options = ProcessorOptions(filter_rules=["+"],
-                                   git_commit="commit",
+        options = ProcessorOptions(filter_rules=['+'],
+                                   git_commit='commit',
                                    is_verbose=True,
                                    min_confidence=3,
-                                   output_format="vs7")
-        self.assertEqual(options.filter_rules, ["+"])
-        self.assertEqual(options.git_commit, "commit")
+                                   output_format='vs7')
+        self.assertEqual(options.filter_rules, ['+'])
+        self.assertEqual(options.git_commit, 'commit')
         self.assertTrue(options.is_verbose)
         self.assertEqual(options.min_confidence, 3)
-        self.assertEqual(options.output_format, "vs7")
+        self.assertEqual(options.output_format, 'vs7')
 
     def test_eq(self):
         """Test __eq__ equality function."""
@@ -238,15 +238,15 @@ class CommandOptionValuesTest(unittest.TestCase):
                                    git_commit=None,
                                    is_verbose=False,
                                    min_confidence=1,
-                                   output_format="emacs")
+                                   output_format='emacs')
         # Verify that we created options correctly.
         self.assertTrue(options.__eq__(ProcessorOptions()))
 
-        self.assertFalse(options.__eq__(ProcessorOptions(filter_rules=["+"])))
-        self.assertFalse(options.__eq__(ProcessorOptions(git_commit="commit")))
+        self.assertFalse(options.__eq__(ProcessorOptions(filter_rules=['+'])))
+        self.assertFalse(options.__eq__(ProcessorOptions(git_commit='commit')))
         self.assertFalse(options.__eq__(ProcessorOptions(is_verbose=True)))
         self.assertFalse(options.__eq__(ProcessorOptions(min_confidence=2)))
-        self.assertFalse(options.__eq__(ProcessorOptions(output_format="vs7")))
+        self.assertFalse(options.__eq__(ProcessorOptions(output_format='vs7')))
 
     def test_ne(self):
         """Test __ne__ inequality function."""

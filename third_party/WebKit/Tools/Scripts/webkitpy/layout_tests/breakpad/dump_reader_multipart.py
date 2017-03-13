@@ -67,7 +67,7 @@ class DumpReaderMultipart(DumpReader):
 
         self._generate_breakpad_symbols_if_necessary()
         f, temp_name = self._host.filesystem.open_binary_tempfile('dmp')
-        f.write("\r\n".join(dump['upload_file_minidump']))
+        f.write('\r\n'.join(dump['upload_file_minidump']))
         f.close()
 
         cmd = [self._path_to_minidump_stackwalk(), temp_name, self._symbols_dir()]
@@ -116,11 +116,11 @@ class DumpReaderMultipart(DumpReader):
         return self._breakpad_tools_available
 
     def _path_to_minidump_stackwalk(self):
-        return self._host.filesystem.join(self._build_dir, "minidump_stackwalk")
+        return self._host.filesystem.join(self._build_dir, 'minidump_stackwalk')
 
     def _path_to_generate_breakpad_symbols(self):
         return self._webkit_finder.path_from_chromium_base(
-            "components", "crash", "content", "tools", "generate_breakpad_symbols.py")
+            'components', 'crash', 'content', 'tools', 'generate_breakpad_symbols.py')
 
     def _symbols_dir(self):
         return self._host.filesystem.join(self._build_dir, 'content_shell.syms')
@@ -130,7 +130,7 @@ class DumpReaderMultipart(DumpReader):
             return
         self._generated_symbols = True
 
-        _log.debug("Generating breakpad symbols")
+        _log.debug('Generating breakpad symbols')
         queue = Queue.Queue()
         thread = threading.Thread(target=_symbolize_keepalive, args=(queue,))
         thread.start()
@@ -151,7 +151,7 @@ class DumpReaderMultipart(DumpReader):
         finally:
             queue.put(None)
             thread.join()
-        _log.debug("Done generating breakpad symbols")
+        _log.debug('Done generating breakpad symbols')
 
     def _binaries_to_symbolize(self):
         """This routine must be implemented by subclasses.
@@ -163,7 +163,7 @@ class DumpReaderMultipart(DumpReader):
 
 def _symbolize_keepalive(queue):
     while True:
-        _log.debug("waiting for symbolize to complete")
+        _log.debug('waiting for symbolize to complete')
         try:
             queue.get(block=True, timeout=60)
             return

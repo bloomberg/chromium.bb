@@ -276,7 +276,7 @@ def summarize_results(port_obj, expectations, initial_results,
             test_dict.update(reftest_type=list(result.reftest_type))
 
         test_dict['expected'] = expected
-        test_dict['actual'] = " ".join(actual)
+        test_dict['actual'] = ' '.join(actual)
 
         def is_expected(actual_result):
             return expectations.matches_an_expected_result(test_name, actual_result,

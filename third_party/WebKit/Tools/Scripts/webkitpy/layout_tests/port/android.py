@@ -107,7 +107,7 @@ DEVICE_SOURCE_ROOT_DIR = '/data/local/tmp/'
 DEVICE_WEBKIT_BASE_DIR = DEVICE_SOURCE_ROOT_DIR + 'third_party/WebKit/'
 DEVICE_LAYOUT_TESTS_DIR = DEVICE_WEBKIT_BASE_DIR + 'LayoutTests/'
 
-KPTR_RESTRICT_PATH = "/proc/sys/kernel/kptr_restrict"
+KPTR_RESTRICT_PATH = '/proc/sys/kernel/kptr_restrict'
 
 # All the test cases are still served to the test runner through file protocol,
 # but we use a file-to-http feature to bridge the file request to host's http
@@ -356,7 +356,7 @@ class AndroidPort(base.Port):
         usable_devices = self._devices.usable_devices(self._executive)
         if not usable_devices:
             raise test_run_results.TestRunException(test_run_results.NO_DEVICES_EXIT_STATUS,
-                                                    "Unable to find any attached Android devices.")
+                                                    'Unable to find any attached Android devices.')
         return len(usable_devices)
 
     def max_drivers_per_process(self):
@@ -389,15 +389,15 @@ class AndroidPort(base.Port):
                 else:
                     callback = printer.write_update
                 with lock:
-                    callback("[%s] %s" % (serial, msg))
+                    callback('[%s] %s' % (serial, msg))
 
-            log_safely("preparing device", throttled=False)
+            log_safely('preparing device', throttled=False)
             try:
                 d._setup_test(log_safely)
-                log_safely("device prepared", throttled=False)
+                log_safely('device prepared', throttled=False)
             except (ScriptError, driver.DeviceFailure) as error:
                 with lock:
-                    _log.warning("[%s] failed to prepare_device: %s", serial, error)
+                    _log.warning('[%s] failed to prepare_device: %s', serial, error)
             except KeyboardInterrupt:
                 if pool:
                     pool.terminate()
@@ -515,7 +515,7 @@ class AndroidPerf(SingleFileOutputProfiler):
     _have_searched_for_perf_host = False
 
     def __init__(self, host, executable_path, output_dir, device, symfs_path, kallsyms_path, identifier=None):
-        super(AndroidPerf, self).__init__(host, executable_path, output_dir, "data", identifier)
+        super(AndroidPerf, self).__init__(host, executable_path, output_dir, 'data', identifier)
         self._device = device
         self._perf_process = None
         self._symfs_path = symfs_path
@@ -524,12 +524,12 @@ class AndroidPerf(SingleFileOutputProfiler):
     def check_configuration(self):
         # Check that perf is installed
         if not self._device.PathExists('/system/bin/perf'):
-            _log.error("Cannot find /system/bin/perf on device %s", self._device.serial)
+            _log.error('Cannot find /system/bin/perf on device %s', self._device.serial)
             return False
 
         # Check that the device is a userdebug build (or at least has the necessary libraries).
         if self._device.build_type != 'userdebug':
-            _log.error("Device %s is not flashed with a userdebug build of Android", self._device.serial)
+            _log.error('Device %s is not flashed with a userdebug build of Android', self._device.serial)
             return False
 
         # FIXME: Check that the binary actually is perf-able (has stackframe pointers)?
@@ -626,7 +626,7 @@ http://crbug.com/165250 discusses making these pre-built binaries externally ava
 """)
 
         perfhost_display_patch = perfhost_path if perfhost_path else 'perfhost_linux'
-        _log.debug("To view the full profile, run:")
+        _log.debug('To view the full profile, run:')
         _log.debug(' '.join([perfhost_display_patch] + perfhost_report_command))
 
 
@@ -648,7 +648,7 @@ class ChromiumAndroidDriver(driver.Driver):
 
         # FIXME: If we taught ProfileFactory about "target" devices we could
         # just use the logic in Driver instead of duplicating it here.
-        if self._port.get_option("profile"):
+        if self._port.get_option('profile'):
             # FIXME: This should be done once, instead of per-driver!
             symfs_path = self._find_or_create_symfs()
             kallsyms_path = self._update_kallsyms_cache(symfs_path)
@@ -670,7 +670,7 @@ class ChromiumAndroidDriver(driver.Driver):
         super(ChromiumAndroidDriver, self).__del__()
 
     def _update_kallsyms_cache(self, output_dir):
-        kallsyms_name = "%s-kallsyms" % self._device.serial
+        kallsyms_name = '%s-kallsyms' % self._device.serial
         kallsyms_cache_path = self._port.host.filesystem.join(output_dir, kallsyms_name)
 
         self._device.EnableRoot()
@@ -678,7 +678,7 @@ class ChromiumAndroidDriver(driver.Driver):
         saved_kptr_restrict = self._device.ReadFile(KPTR_RESTRICT_PATH).strip()
         self._device.WriteFile(KPTR_RESTRICT_PATH, '0')
 
-        _log.debug("Updating kallsyms file (%s) from device", kallsyms_cache_path)
+        _log.debug('Updating kallsyms file (%s) from device', kallsyms_cache_path)
         self._device.PullFile('/proc/kallsysm', kallsyms_cache_path)
         self._device.WriteFile(KPTR_RESTRICT_PATH, saved_kptr_restrict)
 
@@ -692,18 +692,18 @@ class ChromiumAndroidDriver(driver.Driver):
             symfs_path = env['ANDROID_SYMFS']
         else:
             symfs_path = fs.join(self._port.results_directory(), 'symfs')
-            _log.debug("ANDROID_SYMFS not set, using %s", symfs_path)
+            _log.debug('ANDROID_SYMFS not set, using %s', symfs_path)
 
         # find the installed path, and the path of the symboled built library
         # FIXME: We should get the install path from the device!
-        symfs_library_path = fs.join(symfs_path, "data/app-lib/%s-1/%s" %
+        symfs_library_path = fs.join(symfs_path, 'data/app-lib/%s-1/%s' %
                                      (self._driver_details.package_name(), self._driver_details.library_name()))
         built_library_path = self._port._build_path('lib', self._driver_details.library_name())
         assert fs.exists(built_library_path)
 
         # FIXME: Ideally we'd check the sha1's first and make a soft-link instead
         # of copying (since we probably never care about windows).
-        _log.debug("Updating symfs library (%s) from built copy (%s)", symfs_library_path, built_library_path)
+        _log.debug('Updating symfs library (%s) from built copy (%s)', symfs_library_path, built_library_path)
         fs.maybe_make_directory(fs.dirname(symfs_library_path))
         fs.copyfile(built_library_path, symfs_library_path)
 
@@ -774,7 +774,7 @@ class ChromiumAndroidDriver(driver.Driver):
 
     def _push_file_if_needed(self, host_file, device_file, log_callback):
         basename = self._port.host.filesystem.basename(host_file)
-        log_callback("checking %s" % basename)
+        log_callback('checking %s' % basename)
         self._device.PushChangedFiles([(host_file, device_file)])
 
     def _push_executable(self, log_callback):
@@ -789,7 +789,7 @@ class ChromiumAndroidDriver(driver.Driver):
 
         try:
             driver_host_path = self._port._path_to_driver()  # pylint: disable=protected-access
-            log_callback("installing apk if necessary")
+            log_callback('installing apk if necessary')
             self._device.Install(driver_host_path)
         except (device_errors.CommandFailedError,
                 device_errors.CommandTimeoutError) as exc:
@@ -911,7 +911,7 @@ class ChromiumAndroidDriver(driver.Driver):
 
     def _start(self, pixel_tests, per_test_args):
         if not self._android_devices.is_device_prepared(self._device.serial):
-            raise driver.DeviceFailure("%s is not prepared in _start()" % self._device.serial)
+            raise driver.DeviceFailure('%s is not prepared in _start()' % self._device.serial)
 
         for retries in range(3):
             try:
@@ -1005,7 +1005,7 @@ class ChromiumAndroidDriver(driver.Driver):
         if not self._wait_for_server_process_output(self._server_process, deadline, '#READY'):
             return False
 
-        self._log_debug("content_shell is ready")
+        self._log_debug('content_shell is ready')
         return True
 
     def _create_device_crash_dumps_directory(self):

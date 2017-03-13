@@ -101,7 +101,7 @@ class FileUploader(object):
             # FIXME: Setting a timeout, either globally using socket.setdefaulttimeout()
             # or in urlopen(), doesn't appear to work on Mac 10.5 with Python 2.7.
             # For now we will ignore the timeout value and hope for the best.
-            request = urllib2.Request(self._url, data, {"Content-Type": content_type})
+            request = urllib2.Request(self._url, data, {'Content-Type': content_type})
             return urllib2.urlopen(request)
 
         return NetworkTransaction(timeout_seconds=self._timeout_seconds).run(callback)

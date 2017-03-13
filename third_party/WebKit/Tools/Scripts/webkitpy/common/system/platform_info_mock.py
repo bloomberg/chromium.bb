@@ -54,7 +54,7 @@ class MockPlatformInfo(object):
         return self.os_name == 'freebsd'
 
     def display_name(self):
-        return "MockPlatform 1.0"
+        return 'MockPlatform 1.0'
 
     def linux_distribution(self):
         return self._linux_distribution if self.is_linux() else None

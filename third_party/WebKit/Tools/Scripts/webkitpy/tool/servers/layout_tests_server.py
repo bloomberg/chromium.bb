@@ -41,7 +41,7 @@ from webkitpy.tool.servers.reflection_handler import ReflectionHandler
 class LayoutTestsHTTPServer(BaseHTTPServer.HTTPServer):
 
     def __init__(self, httpd_port, _):
-        server_address = ("", httpd_port)
+        server_address = ('', httpd_port)
         BaseHTTPServer.HTTPServer.__init__(self, server_address, LayoutTestsServerHTTPRequestHandler)
 
 
@@ -56,13 +56,13 @@ class LayoutTestsServerHTTPRequestHandler(ReflectionHandler):
         filesystem = FileSystem()
         webkit_finder = WebKitFinder(filesystem)
         script_dir = webkit_finder.path_from_webkit_base('Tools', 'Scripts')
-        executable_path = script_dir + "/run-webkit-tests"
-        cmd = "python " + executable_path + " --no-show-results "
+        executable_path = script_dir + '/run-webkit-tests'
+        cmd = 'python ' + executable_path + ' --no-show-results '
         cmd += test_list
         process = subprocess.Popen(cmd, shell=True, cwd=script_dir, env=None, stdout=subprocess.PIPE, stderr=STDOUT)
         self.send_response(200)
         self.send_header('Access-Control-Allow-Origin', '*')
-        self.send_header("Content-type", "text/html")
+        self.send_header('Content-type', 'text/html')
         self.end_headers()
         while process.poll() is None:
             html_output = '<br>' + str(process.stdout.readline())
@@ -72,7 +72,7 @@ class LayoutTestsServerHTTPRequestHandler(ReflectionHandler):
         process.wait()
 
     def do_OPTIONS(self):
-        self.send_response(200, "ok")
+        self.send_response(200, 'ok')
         self.send_header('Access-Control-Allow-Origin', '*')
         self.send_header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
-        self.send_header("Access-Control-Allow-Headers", "Content-type")
+        self.send_header('Access-Control-Allow-Headers', 'Content-type')

@@ -13,10 +13,10 @@ _log = logging.getLogger(__name__)
 
 
 class OptimizeBaselines(AbstractRebaseliningCommand):
-    name = "optimize-baselines"
-    help_text = "Reshuffles the baselines for the given tests to use as litte space on disk as possible."
+    name = 'optimize-baselines'
+    help_text = 'Reshuffles the baselines for the given tests to use as litte space on disk as possible.'
     show_in_main_help = True
-    argument_names = "TEST_NAMES"
+    argument_names = 'TEST_NAMES'
 
     def __init__(self):
         super(OptimizeBaselines, self).__init__(options=[
@@ -30,7 +30,7 @@ class OptimizeBaselines(AbstractRebaseliningCommand):
             name = baseline_name(self._tool.filesystem, test_name, suffix)
             succeeded = optimizer.optimize(name)
             if not succeeded:
-                _log.error("Heuristics failed to optimize %s", name)
+                _log.error('Heuristics failed to optimize %s', name)
         return files_to_delete, files_to_add
 
     def execute(self, options, args, tool):

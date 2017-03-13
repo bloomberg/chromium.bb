@@ -26,8 +26,8 @@ from webkitpy.style.main import change_directory
 
 
 class ChangeDirectoryTest(LoggingTestCase):
-    _original_directory = "/original"
-    _checkout_root = "/chromium/src"
+    _original_directory = '/original'
+    _checkout_root = '/chromium/src'
 
     def setUp(self):
         super(ChangeDirectoryTest, self).setUp()
@@ -47,12 +47,12 @@ class ChangeDirectoryTest(LoggingTestCase):
         self._assert_result(paths, None, [], self._checkout_root)
 
     def test_paths_convertible(self):
-        paths = ["/chromium/src/foo1.txt", "/chromium/src/foo2.txt"]
+        paths = ['/chromium/src/foo1.txt', '/chromium/src/foo2.txt']
         paths = self._change_directory(checkout_root=self._checkout_root, paths=paths)
-        self._assert_result(paths, ["foo1.txt", "foo2.txt"], [], self._checkout_root)
+        self._assert_result(paths, ['foo1.txt', 'foo2.txt'], [], self._checkout_root)
 
     def test_with_git_paths_unconvertible(self):
-        paths = ["/chromium/src/foo1.txt", "/outside/foo2.txt"]
+        paths = ['/chromium/src/foo1.txt', '/outside/foo2.txt']
         paths = self._change_directory(checkout_root=self._checkout_root, paths=paths)
         log_messages = [
             """WARNING: Path-dependent style checks may not work correctly:

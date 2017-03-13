@@ -54,10 +54,10 @@ class WPTGitHub(object):
 
         path = '/repos/w3c/web-platform-tests/pulls'
         body = {
-            "title": desc_title,
-            "body": body,
-            "head": remote_branch_name,
-            "base": 'master',
+            'title': desc_title,
+            'body': body,
+            'head': remote_branch_name,
+            'base': 'master',
         }
         data, status_code = self.request(path, method='POST', body=body)
 

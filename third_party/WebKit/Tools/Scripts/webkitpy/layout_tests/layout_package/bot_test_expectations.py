@@ -170,7 +170,7 @@ class BotTestExpectations(object):
         line.filename = test_path
         line.path = test_path  # FIXME: Should this be normpath?
         line.matching_tests = [test_path]
-        line.bugs = ["crbug.com/FILE_A_BUG_BEFORE_COMMITTING_THIS"]
+        line.bugs = ['crbug.com/FILE_A_BUG_BEFORE_COMMITTING_THIS']
         line.expectations = sorted(flaky_types)
         line.specifiers = self.specifiers
         return line

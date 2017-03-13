@@ -538,9 +538,9 @@ class IntegrationTest(unittest.TestCase):
         return logs
 
     _event_target_wrapper_and_inspector_results = {
-        "Bindings": {
-            "url": "https://chromium.googlesource.com/chromium/src/+/master/third_party/WebKit/PerformanceTests/Bindings",
-            "tests": {"event-target-wrapper": EventTargetWrapperTestData.results}
+        'Bindings': {
+            'url': 'https://chromium.googlesource.com/chromium/src/+/master/third_party/WebKit/PerformanceTests/Bindings',
+            'tests': {'event-target-wrapper': EventTargetWrapperTestData.results}
         }
     }
 
@@ -549,8 +549,8 @@ class IntegrationTest(unittest.TestCase):
                                                                            '--test-results-server=some.host'])
         self._test_run_with_json_output(runner, port.host.filesystem, upload_succeeds=True)
         self.assertEqual(self._load_output_json(runner), [{
-            "buildTime": "2013-02-08T15:19:37.460000", "tests": self._event_target_wrapper_and_inspector_results,
-            "revisions": {"chromium": {"timestamp": "2013-02-01 08:48:05 +0000", "revision": "5678"}}}])
+            'buildTime': '2013-02-08T15:19:37.460000', 'tests': self._event_target_wrapper_and_inspector_results,
+            'revisions': {'chromium': {'timestamp': '2013-02-01 08:48:05 +0000', 'revision': '5678'}}}])
 
         filesystem = port.host.filesystem
         self.assertTrue(filesystem.isfile(runner._output_json_path()))
@@ -562,9 +562,9 @@ class IntegrationTest(unittest.TestCase):
                   '--test-results-server=some.host', '--description', 'some description'])
         self._test_run_with_json_output(runner, port.host.filesystem, upload_succeeds=True)
         self.assertEqual(self._load_output_json(runner), [{
-            "buildTime": "2013-02-08T15:19:37.460000", "description": "some description",
-            "tests": self._event_target_wrapper_and_inspector_results,
-            "revisions": {"chromium": {"timestamp": "2013-02-01 08:48:05 +0000", "revision": "5678"}}}])
+            'buildTime': '2013-02-08T15:19:37.460000', 'description': 'some description',
+            'tests': self._event_target_wrapper_and_inspector_results,
+            'revisions': {'chromium': {'timestamp': '2013-02-01 08:48:05 +0000', 'revision': '5678'}}}])
 
     def create_runner_and_setup_results_template(self, args=None):
         args = args or []
@@ -598,9 +598,9 @@ class IntegrationTest(unittest.TestCase):
             self._load_output_json(runner),
             [
                 {
-                    "buildTime": "2013-02-08T15:19:37.460000",
-                    "tests": self._event_target_wrapper_and_inspector_results,
-                    "revisions": {"chromium": {"timestamp": "2013-02-01 08:48:05 +0000", "revision": "5678"}}
+                    'buildTime': '2013-02-08T15:19:37.460000',
+                    'tests': self._event_target_wrapper_and_inspector_results,
+                    'revisions': {'chromium': {'timestamp': '2013-02-01 08:48:05 +0000', 'revision': '5678'}}
                 }
             ])
 
@@ -616,13 +616,13 @@ class IntegrationTest(unittest.TestCase):
 
         self._test_run_with_json_output(runner, port.host.filesystem)
 
-        self.assertEqual(self._load_output_json(runner), [{"previous": "results"}, {
-            "buildTime": "2013-02-08T15:19:37.460000", "tests": self._event_target_wrapper_and_inspector_results,
-            "revisions": {"chromium": {"timestamp": "2013-02-01 08:48:05 +0000", "revision": "5678"}}}])
+        self.assertEqual(self._load_output_json(runner), [{'previous': 'results'}, {
+            'buildTime': '2013-02-08T15:19:37.460000', 'tests': self._event_target_wrapper_and_inspector_results,
+            'revisions': {'chromium': {'timestamp': '2013-02-01 08:48:05 +0000', 'revision': '5678'}}}])
         self.assertTrue(filesystem.isfile(filesystem.splitext(output_json_path)[0] + '.html'))
 
     def test_run_respects_reset_results(self):
-        runner, port = self.create_runner_and_setup_results_template(args=["--reset-results"])
+        runner, port = self.create_runner_and_setup_results_template(args=['--reset-results'])
         filesystem = port.host.filesystem
         output_json_path = runner._output_json_path()
 
@@ -631,8 +631,8 @@ class IntegrationTest(unittest.TestCase):
         self._test_run_with_json_output(runner, port.host.filesystem)
 
         self.assertEqual(self._load_output_json(runner), [{
-            "buildTime": "2013-02-08T15:19:37.460000", "tests": self._event_target_wrapper_and_inspector_results,
-            "revisions": {"chromium": {"timestamp": "2013-02-01 08:48:05 +0000", "revision": "5678"}}}])
+            'buildTime': '2013-02-08T15:19:37.460000', 'tests': self._event_target_wrapper_and_inspector_results,
+            'revisions': {'chromium': {'timestamp': '2013-02-01 08:48:05 +0000', 'revision': '5678'}}}])
         self.assertTrue(filesystem.isfile(filesystem.splitext(output_json_path)[0] + '.html'))
 
     def test_run_generates_and_show_results_page(self):
@@ -642,9 +642,9 @@ class IntegrationTest(unittest.TestCase):
         filesystem = port.host.filesystem
         self._test_run_with_json_output(runner, filesystem, results_shown=False)
 
-        expected_entry = {"buildTime": "2013-02-08T15:19:37.460000",
-                          "tests": self._event_target_wrapper_and_inspector_results,
-                          "revisions": {"chromium": {"timestamp": "2013-02-01 08:48:05 +0000", "revision": "5678"}}}
+        expected_entry = {'buildTime': '2013-02-08T15:19:37.460000',
+                          'tests': self._event_target_wrapper_and_inspector_results,
+                          'revisions': {'chromium': {'timestamp': '2013-02-01 08:48:05 +0000', 'revision': '5678'}}}
 
         self.maxDiff = None
         self.assertEqual(runner._output_json_path(), '/mock-checkout/output.json')
@@ -692,8 +692,8 @@ class IntegrationTest(unittest.TestCase):
         port.host.filesystem.write_text_file('/mock-checkout/slave-config.json', '{"key": "value"}')
         self._test_run_with_json_output(runner, port.host.filesystem, upload_succeeds=True)
         self.assertEqual(self._load_output_json(runner), [{
-            "buildTime": "2013-02-08T15:19:37.460000", "tests": self._event_target_wrapper_and_inspector_results,
-            "revisions": {"chromium": {"timestamp": "2013-02-01 08:48:05 +0000", "revision": "5678"}}, "builderKey": "value"}])
+            'buildTime': '2013-02-08T15:19:37.460000', 'tests': self._event_target_wrapper_and_inspector_results,
+            'revisions': {'chromium': {'timestamp': '2013-02-01 08:48:05 +0000', 'revision': '5678'}}, 'builderKey': 'value'}])
 
     def test_run_with_bad_slave_config_json(self):
         runner, port = self.create_runner_and_setup_results_template(
@@ -714,8 +714,8 @@ class IntegrationTest(unittest.TestCase):
         port.repository_path = lambda: '/mock-checkout'
         self._test_run_with_json_output(runner, port.host.filesystem, upload_succeeds=True)
         self.assertEqual(self._load_output_json(runner), [{
-            "buildTime": "2013-02-08T15:19:37.460000", "tests": self._event_target_wrapper_and_inspector_results,
-            "revisions": {"chromium": {"timestamp": "2013-02-01 08:48:05 +0000", "revision": "5678"}}}])
+            'buildTime': '2013-02-08T15:19:37.460000', 'tests': self._event_target_wrapper_and_inspector_results,
+            'revisions': {'chromium': {'timestamp': '2013-02-01 08:48:05 +0000', 'revision': '5678'}}}])
 
     def test_run_with_upload_json(self):
         runner, port = self.create_runner_and_setup_results_template(args=[
@@ -776,21 +776,21 @@ class IntegrationTest(unittest.TestCase):
                                                                            '--test-results-server=some.host', '--repeat', '5'])
         self._test_run_with_json_output(runner, port.host.filesystem, upload_succeeds=True, repeat=5)
         self.assertEqual(self._load_output_json(runner), [
-            {"buildTime": "2013-02-08T15:19:37.460000",
-             "tests": self._event_target_wrapper_and_inspector_results,
-             "revisions": {"chromium": {"timestamp": "2013-02-01 08:48:05 +0000", "revision": "5678"}}},
-            {"buildTime": "2013-02-08T15:19:37.460000",
-             "tests": self._event_target_wrapper_and_inspector_results,
-             "revisions": {"chromium": {"timestamp": "2013-02-01 08:48:05 +0000", "revision": "5678"}}},
-            {"buildTime": "2013-02-08T15:19:37.460000",
-             "tests": self._event_target_wrapper_and_inspector_results,
-             "revisions": {"chromium": {"timestamp": "2013-02-01 08:48:05 +0000", "revision": "5678"}}},
-            {"buildTime": "2013-02-08T15:19:37.460000",
-             "tests": self._event_target_wrapper_and_inspector_results,
-             "revisions": {"chromium": {"timestamp": "2013-02-01 08:48:05 +0000", "revision": "5678"}}},
-            {"buildTime": "2013-02-08T15:19:37.460000",
-             "tests": self._event_target_wrapper_and_inspector_results,
-             "revisions": {"chromium": {"timestamp": "2013-02-01 08:48:05 +0000", "revision": "5678"}}}])
+            {'buildTime': '2013-02-08T15:19:37.460000',
+             'tests': self._event_target_wrapper_and_inspector_results,
+             'revisions': {'chromium': {'timestamp': '2013-02-01 08:48:05 +0000', 'revision': '5678'}}},
+            {'buildTime': '2013-02-08T15:19:37.460000',
+             'tests': self._event_target_wrapper_and_inspector_results,
+             'revisions': {'chromium': {'timestamp': '2013-02-01 08:48:05 +0000', 'revision': '5678'}}},
+            {'buildTime': '2013-02-08T15:19:37.460000',
+             'tests': self._event_target_wrapper_and_inspector_results,
+             'revisions': {'chromium': {'timestamp': '2013-02-01 08:48:05 +0000', 'revision': '5678'}}},
+            {'buildTime': '2013-02-08T15:19:37.460000',
+             'tests': self._event_target_wrapper_and_inspector_results,
+             'revisions': {'chromium': {'timestamp': '2013-02-01 08:48:05 +0000', 'revision': '5678'}}},
+            {'buildTime': '2013-02-08T15:19:37.460000',
+             'tests': self._event_target_wrapper_and_inspector_results,
+             'revisions': {'chromium': {'timestamp': '2013-02-01 08:48:05 +0000', 'revision': '5678'}}}])
 
     def test_run_with_test_runner_count(self):
         runner, port = self.create_runner_and_setup_results_template(args=['--output-json-path=/mock-checkout/output.json',

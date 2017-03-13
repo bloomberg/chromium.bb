@@ -125,24 +125,24 @@ _PATH_RULES_SPECIFIER = [
     #   No trailing white space: since this is easy to correct.
     #   No carriage-return line endings: since this is easy to correct.
     #
-    (["webkitpy/thirdparty/"],
-     ["-",
-      "+pep8/W191",  # Tabs
-      "+pep8/W291",  # Trailing white space
-      "+whitespace/carriage_return"]),
+    (['webkitpy/thirdparty/'],
+     ['-',
+      '+pep8/W191',  # Tabs
+      '+pep8/W291',  # Trailing white space
+      '+whitespace/carriage_return']),
 
     ([  # Jinja templates: files have .cpp or .h extensions, but contain
         # template code, which can't be handled, so disable tests.
-        "Source/bindings/templates",
-        "Source/build/scripts/templates"],
-     ["-"]),
+        'Source/bindings/templates',
+        'Source/build/scripts/templates'],
+     ['-']),
 
     ([  # IDL compiler reference output
         # Conforming to style significantly increases the complexity of the code
         # generator and decreases *its* readability, which is of more concern
         # than style of the machine-generated code itself.
-        "Source/bindings/tests/results"],
-     ["-"]),
+        'Source/bindings/tests/results'],
+     ['-']),
 ]
 
 
@@ -192,7 +192,7 @@ _PNG_FILE_EXTENSION = 'png'
 # WebKit maintains some files in Mozilla style on purpose to ease
 # future merges.
 _SKIPPED_FILES_WITH_WARNING = [
-    "Source/WebKit/gtk/tests/",
+    'Source/WebKit/gtk/tests/',
     # All WebKit*.h files in Source/WebKit2/UIProcess/API/gtk,
     # except those ending in ...Private.h are GTK+ API headers,
     # which differ greatly from WebKit coding style.
@@ -206,10 +206,10 @@ _SKIPPED_FILES_WITH_WARNING = [
 # This list should be in addition to files with FileType.NONE.  Files
 # with FileType.NONE are automatically skipped without warning.
 _SKIPPED_FILES_WITHOUT_WARNING = [
-    "LayoutTests" + os.path.sep,
-    "Source/ThirdParty/leveldb" + os.path.sep,
+    'LayoutTests' + os.path.sep,
+    'Source/ThirdParty/leveldb' + os.path.sep,
     # Prevents this being recognized as a text file.
-    "Source/WebCore/GNUmakefile.features.am.in",
+    'Source/WebCore/GNUmakefile.features.am.in',
 ]
 
 # Extensions of files which are allowed to contain carriage returns.
@@ -222,7 +222,7 @@ _CARRIAGE_RETURN_ALLOWED_FILE_EXTENSIONS = [
 # The maximum number of errors to report per file, per category.
 # If a category is not a key, then it has no maximum.
 _MAX_REPORTS_PER_CATEGORY = {
-    "whitespace/carriage_return": 1
+    'whitespace/carriage_return': 1
 }
 
 
@@ -239,7 +239,7 @@ def _all_categories():
     #        now we add only the categories needed for the unit tests
     #        (which validate the consistency of the configuration
     #        settings against the known categories, etc).
-    categories = categories.union(["pep8/W191", "pep8/W291", "pep8/E501"])
+    categories = categories.union(['pep8/W191', 'pep8/W291', 'pep8/E501'])
 
     return categories
 
@@ -289,7 +289,7 @@ def _create_log_handlers(stream):
     # Handles logging.WARNING and above.
     error_handler = logging.StreamHandler(stream)
     error_handler.setLevel(logging.WARNING)
-    formatter = logging.Formatter("%(levelname)s: %(message)s")
+    formatter = logging.Formatter('%(levelname)s: %(message)s')
     error_handler.setFormatter(formatter)
 
     # Create a logging.Filter instance that only accepts messages
@@ -300,7 +300,7 @@ def _create_log_handlers(stream):
 
     non_error_handler = logging.StreamHandler(stream)
     non_error_handler.addFilter(non_error_filter)
-    formatter = logging.Formatter("%(message)s")
+    formatter = logging.Formatter('%(message)s')
     non_error_handler.setFormatter(formatter)
 
     return [error_handler, non_error_handler]
@@ -313,7 +313,7 @@ def _create_debug_log_handlers(stream):
       stream: See the configure_logging() docstring.
     """
     handler = logging.StreamHandler(stream)
-    formatter = logging.Formatter("%(name)s: %(levelname)-8s %(message)s")
+    formatter = logging.Formatter('%(name)s: %(levelname)-8s %(message)s')
     handler.setFormatter(formatter)
 
     return [handler]
@@ -384,7 +384,7 @@ class CheckerDispatcher(object):
 
     def _file_extension(self, file_path):
         """Return the file extension without the leading dot."""
-        return os.path.splitext(file_path)[1].lstrip(".")
+        return os.path.splitext(file_path)[1].lstrip('.')
 
     def _should_skip_file_path(self, file_path, skip_array_entry):
         match = re.search(r"\s*png$", file_path)
@@ -446,7 +446,7 @@ class CheckerDispatcher(object):
             return FileType.XCODEPROJ
         elif file_extension == _PNG_FILE_EXTENSION:
             return FileType.PNG
-        elif ((not file_extension and os.path.join("Tools", "Scripts") in file_path) or
+        elif ((not file_extension and os.path.join('Tools', 'Scripts') in file_path) or
               file_extension in _TEXT_FILE_EXTENSIONS or os.path.basename(file_path) == 'TestExpectations'):
             return FileType.TEXT
         else:
@@ -479,11 +479,11 @@ class CheckerDispatcher(object):
                 checker = TextChecker(file_path, handle_style_error)
         else:
             raise ValueError('Invalid file type "%(file_type)s": the only valid file types '
-                             "are %(NONE)s, %(CPP)s, and %(TEXT)s."
-                             % {"file_type": file_type,
-                                "NONE": FileType.NONE,
-                                "CPP": FileType.CPP,
-                                "TEXT": FileType.TEXT})
+                             'are %(NONE)s, %(CPP)s, and %(TEXT)s.'
+                             % {'file_type': file_type,
+                                'NONE': FileType.NONE,
+                                'CPP': FileType.CPP,
+                                'TEXT': FileType.TEXT})
 
         return checker
 
@@ -576,9 +576,9 @@ class StyleProcessorConfiguration(object):
                           message):
         """Write a style error to the configured stderr."""
         if self._output_format == 'vs7':
-            format_string = "%s(%s):  %s  [%s] [%d]\n"
+            format_string = '%s(%s):  %s  [%s] [%d]\n'
         else:
-            format_string = "%s:%s:  %s  [%s] [%d]\n"
+            format_string = '%s:%s:  %s  [%s] [%d]\n'
 
         self.stderr_write(format_string % (file_path,
                                            line_number,
@@ -693,7 +693,7 @@ class StyleProcessor(ProcessorBase):
                         list normally contains the line numbers corresponding
                         to the modified lines of a patch.
         """
-        _log.debug("Checking style: " + file_path)
+        _log.debug('Checking style: ' + file_path)
 
         style_error_handler = DefaultStyleErrorHandler(
             configuration=self._configuration,
@@ -715,6 +715,6 @@ class StyleProcessor(ProcessorBase):
         if checker is None:
             raise AssertionError("File should not be checked: '%s'" % file_path)
 
-        _log.debug("Using class: " + checker.__class__.__name__)
+        _log.debug('Using class: ' + checker.__class__.__name__)
 
         checker.check(lines)

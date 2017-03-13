@@ -175,9 +175,9 @@ Should not be ignored
 [ERROR:main.cc] The sky has fallen""")
         test._filter_output(output_with_lines_to_ignore)
         self.assertEqual(output_with_lines_to_ignore.error,
-                         "Should not be ignored\n"
-                         "[WARNING:chrome.cc] Something went wrong\n"
-                         "[ERROR:main.cc] The sky has fallen")
+                         'Should not be ignored\n'
+                         '[WARNING:chrome.cc] Something went wrong\n'
+                         '[ERROR:main.cc] The sky has fallen')
 
     def test_parse_output_with_subtests(self):
         output = DriverOutput("""

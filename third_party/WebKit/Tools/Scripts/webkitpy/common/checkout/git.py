@@ -109,14 +109,14 @@ class Git(object):
         try:
             executive = executive or Executive()
             return executive.run_command([cls.executable_name, 'rev-parse', '--is-inside-work-tree'],
-                                         cwd=path, error_handler=Executive.ignore_error).rstrip() == "true"
+                                         cwd=path, error_handler=Executive.ignore_error).rstrip() == 'true'
         except OSError:
             # The Windows bots seem to through a WindowsError when git isn't installed.
             return False
 
     def find_checkout_root(self, path):
         # "git rev-parse --show-cdup" would be another way to get to the root
-        checkout_root = self._run_git(['rev-parse', '--show-toplevel'], cwd=(path or "./")).strip()
+        checkout_root = self._run_git(['rev-parse', '--show-toplevel'], cwd=(path or './')).strip()
         if not self._filesystem.isabs(checkout_root):  # Sometimes git returns relative paths
             checkout_root = self._filesystem.join(path, checkout_root)
         return checkout_root
@@ -129,7 +129,7 @@ class Git(object):
         # FIXME: This should use an Executive.
         executive = executive or Executive()
         return executive.run_command(
-            [cls.executable_name, "config", "--get-all", key], error_handler=Executive.ignore_error, cwd=cwd).rstrip('\n')
+            [cls.executable_name, 'config', '--get-all', key], error_handler=Executive.ignore_error, cwd=cwd).rstrip('\n')
 
     def _discard_local_commits(self):
         self._run_git(['reset', '--hard', self._remote_branch_ref()])
@@ -182,16 +182,16 @@ class Git(object):
         return self._run_git(command)
 
     def add_list(self, paths, return_exit_code=False):
-        return self._run_git(["add"] + paths, return_exit_code=return_exit_code)
+        return self._run_git(['add'] + paths, return_exit_code=return_exit_code)
 
     def delete_list(self, paths):
-        return self._run_git(["rm", "-f"] + paths)
+        return self._run_git(['rm', '-f'] + paths)
 
     def move(self, origin, destination):
-        return self._run_git(["mv", "-f", origin, destination])
+        return self._run_git(['mv', '-f', origin, destination])
 
     def exists(self, path):
-        return_code = self._run_git(["show", "HEAD:%s" % path], return_exit_code=True, decode_output=False)
+        return_code = self._run_git(['show', 'HEAD:%s' % path], return_exit_code=True, decode_output=False)
         return return_code != self.ERROR_FILE_IS_MISSING
 
     def _branch_from_ref(self, ref):
@@ -232,7 +232,7 @@ class Git(object):
                 return git_commit[:-4]
 
             if '..' not in git_commit:
-                git_commit = git_commit + "^.." + git_commit
+                git_commit = git_commit + '^..' + git_commit
             return git_commit
 
         return self._remote_merge_base()
@@ -240,13 +240,13 @@ class Git(object):
     def changed_files(self, git_commit=None, diff_filter='ADM'):
         # FIXME: --diff-filter could be used to avoid the "extract_filenames" step.
         status_command = ['diff', '-r', '--name-status',
-                          "--no-renames", "--no-ext-diff", "--full-index", self._merge_base(git_commit)]
+                          '--no-renames', '--no-ext-diff', '--full-index', self._merge_base(git_commit)]
         # FIXME: I'm not sure we're returning the same set of files that SVN.changed_files is.
         # Added (A), Copied (C), Deleted (D), Modified (M), Renamed (R)
         return self._run_status_and_extract_filenames(status_command, self._status_regexp(diff_filter))
 
     def added_files(self):
-        return self._run_status_and_extract_filenames(self.status_command(), self._status_regexp("A"))
+        return self._run_status_and_extract_filenames(self.status_command(), self._status_regexp('A'))
 
     def _run_status_and_extract_filenames(self, status_command, status_regexp):
         filenames = []
@@ -263,7 +263,7 @@ class Git(object):
     def status_command(self):
         # git status returns non-zero when there are changes, so we use git diff name --name-status HEAD instead.
         # No file contents printed, thus utf-8 autodecoding in self.run is fine.
-        return ["diff", "--name-status", "--no-renames", "HEAD"]
+        return ['diff', '--name-status', '--no-renames', 'HEAD']
 
     def _status_regexp(self, expected_types):
         return '^(?P<status>[%s])\t(?P<filename>.+)$' % expected_types
@@ -273,7 +273,7 @@ class Git(object):
         return True
 
     def display_name(self):
-        return "git"
+        return 'git'
 
     def most_recent_log_matching(self, grep_str, path):
         # We use '--grep=' + foo rather than '--grep', foo because
@@ -283,7 +283,7 @@ class Git(object):
     def _commit_position_from_git_log(self, git_log):
         match = re.search(r"^\s*Cr-Commit-Position:.*@\{#(?P<commit_position>\d+)\}", git_log, re.MULTILINE)
         if not match:
-            return ""
+            return ''
         return int(match.group('commit_position'))
 
     def commit_position(self, path):
@@ -298,7 +298,7 @@ class Git(object):
         git_log = self.most_recent_log_matching(self._commit_position_regex_for_timestamp() % revision, path)
         match = re.search(r"^Date:\s*(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2}) ([+-])(\d{2})(\d{2})$", git_log, re.MULTILINE)
         if not match:
-            return ""
+            return ''
 
         # Manually modify the timezone since Git doesn't have an option to show it in UTC.
         # Git also truncates milliseconds but we're going to ignore that for now.
@@ -320,16 +320,16 @@ class Git(object):
             'diff',
             '--binary',
             '--no-color',
-            "--no-ext-diff",
-            "--full-index",
-            "--no-renames",
-            "--src-prefix=a/",
-            "--dst-prefix=b/",
+            '--no-ext-diff',
+            '--full-index',
+            '--no-renames',
+            '--src-prefix=a/',
+            '--dst-prefix=b/',
 
         ]
         if order:
             command.append(order)
-        command += [self._merge_base(git_commit), "--"]
+        command += [self._merge_base(git_commit), '--']
         if changed_files:
             command += changed_files
         return self._run_git(command, decode_output=False, cwd=self.checkout_root)
@@ -340,8 +340,8 @@ class Git(object):
         config_path = self._filesystem.dirname(self._filesystem.path_to_module('webkitpy.common.config'))
         order_file = self._filesystem.join(config_path, 'orderfile')
         if self._filesystem.exists(order_file):
-            return "-O%s" % order_file
-        return ""
+            return '-O%s' % order_file
+        return ''
 
     @memoized
     def commit_position_from_git_commit(self, git_commit):
@@ -402,8 +402,8 @@ class Git(object):
         origin_info = self._run_git(['remote', 'show', 'origin', '-n'])
         match = re.search(r"^\s*(?P<branch_name>\S+)\s+merges with remote master$", origin_info, re.MULTILINE)
         if not match:
-            raise ScriptError(message="Unable to find local branch tracking origin/master.")
-        branch = str(match.group("branch_name"))
+            raise ScriptError(message='Unable to find local branch tracking origin/master.')
+        branch = str(match.group('branch_name'))
         return self._branch_from_ref(self._run_git(['rev-parse', '--symbolic-full-name', branch]).strip())
 
     def is_cleanly_tracking_remote_master(self):

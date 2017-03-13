@@ -37,7 +37,7 @@ class BotTestExpectationsFactoryTest(unittest.TestCase):
 
     def fake_builder_list(self):
         return BuilderList({
-            "Dummy builder name": {"port_name": "dummy-port", "specifiers": []},
+            'Dummy builder name': {'port_name': 'dummy-port', 'specifiers': []},
         })
 
     def fake_results_json_for_builder(self, builder):
@@ -58,8 +58,8 @@ class BotTestExpectationsFactoryTest(unittest.TestCase):
 
 class BotTestExpectationsTest(unittest.TestCase):
     # FIXME: Find a way to import this map from Tools/TestResultServer/model/jsonresults.py.
-    FAILURE_MAP = {"A": "AUDIO", "C": "CRASH", "F": "TEXT", "I": "IMAGE", "O": "MISSING",
-                   "N": "NO DATA", "P": "PASS", "T": "TIMEOUT", "Y": "NOTRUN", "X": "SKIP", "Z": "IMAGE+TEXT", "K": "LEAK"}
+    FAILURE_MAP = {'A': 'AUDIO', 'C': 'CRASH', 'F': 'TEXT', 'I': 'IMAGE', 'O': 'MISSING',
+                   'N': 'NO DATA', 'P': 'PASS', 'T': 'TIMEOUT', 'Y': 'NOTRUN', 'X': 'SKIP', 'Z': 'IMAGE+TEXT', 'K': 'LEAK'}
 
     # All result_string's in this file represent retries from a single run.
     # The left-most entry is the first try, the right-most is the last.
@@ -162,13 +162,13 @@ class BotTestExpectationsTest(unittest.TestCase):
             }
         }
         self._assert_expectations(test_data, {
-            'foo/veryflaky.html': sorted(["TEXT", "PASS"]),
+            'foo/veryflaky.html': sorted(['TEXT', 'PASS']),
         }, only_ignore_very_flaky=True)
 
         self._assert_expectations(test_data, {
-            'foo/veryflaky.html': sorted(["TEXT", "PASS"]),
+            'foo/veryflaky.html': sorted(['TEXT', 'PASS']),
             'foo/notverflakynoexpected.html': ['TEXT', 'TIMEOUT'],
-            'foo/maybeflaky.html': sorted(["TEXT", "PASS"]),
+            'foo/maybeflaky.html': sorted(['TEXT', 'PASS']),
         }, only_ignore_very_flaky=False)
 
     def test_unexpected_results_no_unexpected(self):
@@ -202,12 +202,12 @@ class BotTestExpectationsTest(unittest.TestCase):
         }
         self.maxDiff = None
         self._assert_unexpected_results(test_data, {
-            'foo/pass1.html': sorted(["FAIL", "PASS"]),
-            'foo/pass2.html': sorted(["IMAGE", "PASS"]),
-            'foo/fail.html': sorted(["TEXT", "PASS"]),
-            'foo/f_p.html': sorted(["TEXT", "PASS"]),
-            'foo/crash.html': sorted(["WONTFIX", "CRASH", "TEXT"]),
-            'foo/image.html': sorted(["CRASH", "TEXT", "IMAGE"]),
-            'foo/i_f.html': sorted(["PASS", "IMAGE", "TEXT"]),
-            'foo/all.html': sorted(["TEXT", "PASS", "IMAGE+TEXT", "TIMEOUT", "CRASH", "IMAGE", "MISSING", "LEAK"]),
+            'foo/pass1.html': sorted(['FAIL', 'PASS']),
+            'foo/pass2.html': sorted(['IMAGE', 'PASS']),
+            'foo/fail.html': sorted(['TEXT', 'PASS']),
+            'foo/f_p.html': sorted(['TEXT', 'PASS']),
+            'foo/crash.html': sorted(['WONTFIX', 'CRASH', 'TEXT']),
+            'foo/image.html': sorted(['CRASH', 'TEXT', 'IMAGE']),
+            'foo/i_f.html': sorted(['PASS', 'IMAGE', 'TEXT']),
+            'foo/all.html': sorted(['TEXT', 'PASS', 'IMAGE+TEXT', 'TIMEOUT', 'CRASH', 'IMAGE', 'MISSING', 'LEAK']),
         })

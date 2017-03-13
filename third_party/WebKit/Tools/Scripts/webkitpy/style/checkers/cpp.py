@@ -308,7 +308,7 @@ class _IncludeState(dict):
         _OTHER_HEADER: 'other header',
     }
     _SECTION_NAMES = {
-        _INITIAL_SECTION: "... nothing.",
+        _INITIAL_SECTION: '... nothing.',
         _PRIMARY_SECTION: 'a header this file implements.',
         _OTHER_SECTION: 'other header.',
     }
@@ -643,13 +643,13 @@ class FileInfo:
         if os.path.exists(fullname):
             project_dir = os.path.dirname(fullname)
 
-            if os.path.exists(os.path.join(project_dir, ".svn")):
+            if os.path.exists(os.path.join(project_dir, '.svn')):
                 # If there's a .svn file in the current directory, we
                 # recursively look up the directory tree for the top
                 # of the SVN checkout
                 root_dir = project_dir
                 one_up_dir = os.path.dirname(root_dir)
-                while os.path.exists(os.path.join(one_up_dir, ".svn")):
+                while os.path.exists(os.path.join(one_up_dir, '.svn')):
                     root_dir = os.path.dirname(root_dir)
                     one_up_dir = os.path.dirname(one_up_dir)
 
@@ -660,9 +660,9 @@ class FileInfo:
             # searching up from the current path.
             root_dir = os.path.dirname(fullname)
             while (root_dir != os.path.dirname(root_dir)
-                   and not os.path.exists(os.path.join(root_dir, ".git"))):
+                   and not os.path.exists(os.path.join(root_dir, '.git'))):
                 root_dir = os.path.dirname(root_dir)
-                if os.path.exists(os.path.join(root_dir, ".git")):
+                if os.path.exists(os.path.join(root_dir, '.git')):
                     prefix = os.path.commonprefix([root_dir, project_dir])
                     return fullname[len(prefix) + 1:]
 
@@ -939,7 +939,7 @@ def get_legacy_header_guard_cpp_variable(filename):
 
     # Files under WTF typically have header guards that start with WTF_.
     if '/wtf/' in filename:
-        special_name = "WTF_" + standard_name
+        special_name = 'WTF_' + standard_name
     else:
         special_name = standard_name
     return (special_name, standard_name)
@@ -1229,7 +1229,7 @@ class _FileState(object):
             for line in self._clean_lines.elided:
                 # Starting with @ or #import seem like the best indications
                 # that we have an Objective C file.
-                if line.startswith("@") or line.startswith("#import"):
+                if line.startswith('@') or line.startswith('#import'):
                     self._is_objective_c = True
                     break
             else:
@@ -1670,7 +1670,7 @@ def check_function_definition(filename, file_extension, clean_lines, line_number
                 1 and filename.find('chromium/platform') == -1:
             error(function_state.function_name_start_position.row, 'readability/webkit_export', 5,
                   'WEBKIT_EXPORT should only appear in the chromium public (or tests) directory.')
-        elif not file_extension == "h":
+        elif not file_extension == 'h':
             error(function_state.function_name_start_position.row, 'readability/webkit_export', 5,
                   'WEBKIT_EXPORT should only be used in header files.')
         elif not function_state.is_declaration or search(r'\binline\b', modifiers_and_return_type):
@@ -2232,7 +2232,7 @@ def check_conditional_and_loop_bodies_for_brace_violations(clean_lines, line_num
     expect_conditional_expression = True
     know_whether_using_braces = False
     using_braces = False
-    search_for_else_clause = control_match.group(1) == "if"
+    search_for_else_clause = control_match.group(1) == 'if'
     current_pos = Position(line_number, control_match.end() - 1)
 
     while True:
@@ -2300,7 +2300,7 @@ def check_conditional_and_loop_bodies_for_brace_violations(clean_lines, line_num
         if not next_conditional:
             # Done processing this 'if' and all arms.
             return
-        if next_conditional.group(1) == "else if":
+        if next_conditional.group(1) == 'else if':
             current_pos = _find_in_lines(r'\(', lines, current_pos, None)
         else:
             current_pos.column += 4  # skip 'else'
@@ -2526,7 +2526,7 @@ def _does_primary_header_exist(filename):
     fileinfo = FileInfo(filename)
     if not fileinfo.is_source():
         return False
-    primary_header = fileinfo.no_extension() + ".h"
+    primary_header = fileinfo.no_extension() + '.h'
     return os.path.isfile(primary_header)
 
 
@@ -2596,7 +2596,7 @@ def check_include_line(filename, file_extension, clean_lines, line_number, inclu
     # The include_state object keeps track of the last type seen
     # and complains if the header types are out of order or missing.
     error_message = include_state.check_next_include_order(header_type,
-                                                           file_extension == "h",
+                                                           file_extension == 'h',
                                                            primary_header_exists)
 
     # Check to make sure we have a blank line after primary header.
@@ -2953,9 +2953,9 @@ def check_identifier_name_in_declaration(filename, line_number, line, file_state
                     and not modified_identifier.startswith('cti_')
                     and not modified_identifier.find('::qt_') >= 0
                     and not modified_identifier.find('::_q_') >= 0
-                    and not modified_identifier == "const_iterator"
-                    and not modified_identifier == "vm_throw"
-                    and not modified_identifier == "DFG_OPERATION"):
+                    and not modified_identifier == 'const_iterator'
+                    and not modified_identifier == 'vm_throw'
+                    and not modified_identifier == 'DFG_OPERATION'):
                 error(line_number, 'readability/naming/underscores', 4, identifier +
                       " is incorrectly named. Don't use underscores in your identifier names.")
 
@@ -3011,7 +3011,7 @@ def check_for_toFoo_definition(filename, pattern, error):
                     detect_functions(lines, line_number, function_state, error)
                     # Exclude the match of dummy conversion function. Dummy function is just to
                     # catch invalid conversions and shouldn't be part of possible alternatives.
-                    result = re.search(r'%s(\s+)%s' % ("void", pattern), line)
+                    result = re.search(r'%s(\s+)%s' % ('void', pattern), line)
                     if not result:
                         matches.append([line, function_state.body_start_position.row, function_state.end_position.row + 1])
                         function_state = None

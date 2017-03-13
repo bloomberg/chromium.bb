@@ -196,6 +196,7 @@ class IdlCompilerOptions(object):
         self.impl_output_directory = impl_output_directory
         self.target_component = target_component
 
+
 def bindings_tests(output_directory, verbose):
     executive = Executive()
 

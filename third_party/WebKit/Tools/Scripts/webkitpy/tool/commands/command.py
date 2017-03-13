@@ -74,13 +74,13 @@ class Command(object):
         required_args = []
         if not argument_names:
             return required_args
-        split_args = argument_names.split(" ")
+        split_args = argument_names.split(' ')
         for argument in split_args:
             if argument[0] == '[':
                 # For now our parser is rather dumb.  Do some minimal validation that
                 # we haven't confused it.
                 if argument[-1] != ']':
-                    raise Exception("Failure to parse argument string %s.  Argument %s is missing ending ]" %
+                    raise Exception('Failure to parse argument string %s.  Argument %s is missing ending ]' %
                                     (argument_names, argument))
             else:
                 required_args.append(argument)
@@ -89,9 +89,9 @@ class Command(object):
     def name_with_arguments(self):
         usage_string = self.name
         if self.options:
-            usage_string += " [options]"
+            usage_string += ' [options]'
         if self.argument_names:
-            usage_string += " " + self.argument_names
+            usage_string += ' ' + self.argument_names
         return usage_string
 
     def parse_args(self, args):
@@ -100,24 +100,24 @@ class Command(object):
     def check_arguments_and_execute(self, options, args, tool=None):
         if len(args) < len(self.required_arguments):
             _log.error("%s required, %s provided.  Provided: %s  Required: %s\nSee '%s help %s' for usage.",
-                       pluralize("argument", len(self.required_arguments)),
-                       pluralize("argument", len(args)),
-                       "'%s'" % " ".join(args),
-                       " ".join(self.required_arguments),
+                       pluralize('argument', len(self.required_arguments)),
+                       pluralize('argument', len(args)),
+                       "'%s'" % ' '.join(args),
+                       ' '.join(self.required_arguments),
                        tool.name(),
                        self.name)
             return 1
         return self.execute(options, args, tool) or 0
 
     def standalone_help(self):
-        help_text = self.name_with_arguments().ljust(len(self.name_with_arguments()) + 3) + self.help_text + "\n\n"
+        help_text = self.name_with_arguments().ljust(len(self.name_with_arguments()) + 3) + self.help_text + '\n\n'
         if self.long_help:
-            help_text += "%s\n\n" % self.long_help
+            help_text += '%s\n\n' % self.long_help
         help_text += self.option_parser.format_option_help(optparse.IndentedHelpFormatter())
         return help_text
 
     def execute(self, options, args, tool):
-        raise NotImplementedError("subclasses must implement")
+        raise NotImplementedError('subclasses must implement')
 
     # main() exists so that Commands can be turned into stand-alone scripts.
     # Other parts of the code will likely require modification to work stand-alone.
@@ -135,14 +135,14 @@ class HelpPrintingOptionParser(optparse.OptionParser):
 
     def error(self, msg):
         self.print_usage(sys.stderr)
-        error_message = "%s: error: %s\n" % (self.get_prog_name(), msg)
+        error_message = '%s: error: %s\n' % (self.get_prog_name(), msg)
         # This method is overridden to add this one line to the output:
-        error_message += "\nType \"%s --help\" to see usage.\n" % self.get_prog_name()
+        error_message += '\nType \'%s --help\' to see usage.\n' % self.get_prog_name()
         self.exit(1, error_message)
 
     # We override format_epilog to avoid the default formatting which would paragraph-wrap the epilog
     # and also to allow us to compute the epilog lazily instead of in the constructor (allowing it to be context sensitive).
     def format_epilog(self, epilog):  # pylint: disable=unused-argument
         if self.epilog_method:
-            return "\n%s\n" % self.epilog_method()
-        return ""
+            return '\n%s\n' % self.epilog_method()
+        return ''

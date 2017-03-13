@@ -199,7 +199,7 @@ def get_test_baselines(test_file, test_config):
 class RebaselineHTTPServer(BaseHTTPServer.HTTPServer):
 
     def __init__(self, httpd_port, config):
-        server_name = ""
+        server_name = ''
         BaseHTTPServer.HTTPServer.__init__(self, (server_name, httpd_port), RebaselineHTTPRequestHandler)
         self.test_config = config['test_config']
         self.results_json = config['results_json']
@@ -208,15 +208,15 @@ class RebaselineHTTPServer(BaseHTTPServer.HTTPServer):
 
 class RebaselineHTTPRequestHandler(ReflectionHandler):
     STATIC_FILE_NAMES = frozenset([
-        "index.html",
-        "loupe.js",
-        "main.js",
-        "main.css",
-        "queue.js",
-        "util.js",
+        'index.html',
+        'loupe.js',
+        'main.js',
+        'main.css',
+        'queue.js',
+        'util.js',
     ])
 
-    STATIC_FILE_DIRECTORY = os.path.join(os.path.dirname(__file__), "data", "rebaseline_server")
+    STATIC_FILE_DIRECTORY = os.path.join(os.path.dirname(__file__), 'data', 'rebaseline_server')
 
     def results_json(self):
         self._serve_json(self.server.results_json)
@@ -234,7 +234,7 @@ class RebaselineHTTPRequestHandler(ReflectionHandler):
         test_json = self.server.results_json['tests'][test]
 
         if test_json['state'] != STATE_NEEDS_REBASELINE:
-            self.send_error(400, "Test %s is in unexpected state: %s" % (test, test_json["state"]))
+            self.send_error(400, 'Test %s is in unexpected state: %s' % (test, test_json['state']))
             return
 
         log = []

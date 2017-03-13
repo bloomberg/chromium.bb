@@ -82,7 +82,7 @@ class TestCopier(object):
         self._prefixed_properties = {}
 
     def do_import(self):
-        _log.info("Importing %s into %s", self.source_repo_path, self.destination_directory)
+        _log.info('Importing %s into %s', self.source_repo_path, self.destination_directory)
         self.find_importable_tests()
         self.import_tests()
 
@@ -212,7 +212,7 @@ class TestCopier(object):
         for line in expectation_lines:
             if 'SKIP' in line.expectations:
                 if line.specifiers:
-                    _log.warning("W3CImportExpectations:%s should not have any specifiers", line.line_numbers)
+                    _log.warning('W3CImportExpectations:%s should not have any specifiers', line.line_numbers)
                     continue
                 paths_to_skip.add(line.name)
         return paths_to_skip

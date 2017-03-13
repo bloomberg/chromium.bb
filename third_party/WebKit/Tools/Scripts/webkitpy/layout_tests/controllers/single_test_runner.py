@@ -51,7 +51,7 @@ def run_single_test(
     try:
         return runner.run()
     except DeviceFailure as error:
-        _log.error("device failed: %s", error)
+        _log.error('device failed: %s', error)
         return TestResult(test_input.test_name, device_failed=True)
 
 
@@ -228,7 +228,7 @@ class SingleTestRunner(object):
             raise AssertionError('unrecognized baseline location: %s' % location)
 
         fs.maybe_make_directory(output_dir)
-        output_basename = fs.basename(fs.splitext(self._test_name)[0] + "-expected" + extension)
+        output_basename = fs.basename(fs.splitext(self._test_name)[0] + '-expected' + extension)
         output_path = fs.join(output_dir, output_basename)
         _log.info('Writing new expected result "%s"', port.relative_test_filename(output_path))
         port.update_baseline(output_path, data)
@@ -257,17 +257,17 @@ class SingleTestRunner(object):
                                                        driver_output.crashed_pid,
                                                        self._port.output_contains_sanitizer_messages(driver_output.crash_log)))
             if driver_output.error:
-                _log.debug("%s %s crashed, (stderr lines):", self._worker_name, testname)
+                _log.debug('%s %s crashed, (stderr lines):', self._worker_name, testname)
             else:
-                _log.debug("%s %s crashed, (no stderr)", self._worker_name, testname)
+                _log.debug('%s %s crashed, (no stderr)', self._worker_name, testname)
         elif driver_output.leak:
             failures.append(test_failures.FailureLeak(bool(reference_filename),
                                                       driver_output.leak_log))
-            _log.debug("%s %s leaked", self._worker_name, testname)
+            _log.debug('%s %s leaked', self._worker_name, testname)
         elif driver_output.error:
-            _log.debug("%s %s output stderr lines:", self._worker_name, testname)
+            _log.debug('%s %s output stderr lines:', self._worker_name, testname)
         for line in driver_output.error.splitlines():
-            _log.debug("  %s", line)
+            _log.debug('  %s', line)
         return failures
 
     def _compare_output(self, expected_driver_output, driver_output):
@@ -309,7 +309,7 @@ class SingleTestRunner(object):
         return True, []
 
     def _is_render_tree(self, text):
-        return text and "layer at (0,0) size 800x600" in text
+        return text and 'layer at (0,0) size 800x600' in text
 
     def _compare_text(self, expected_text, actual_text):
         failures = []
@@ -338,7 +338,7 @@ class SingleTestRunner(object):
         # changed to "\r\n" by our system (Python/Cygwin), resulting in
         # "\r\r\n", when, in fact, we wanted to compare the text output with
         # the normalized text expectation files.
-        return output.replace("\r\r\n", "\r\n").replace("\r\n", "\n")
+        return output.replace('\r\r\n', '\r\n').replace('\r\n', '\n')
 
     # FIXME: This function also creates the image diff. Maybe that work should
     # be handled elsewhere?

@@ -36,21 +36,21 @@ class TestAutoRebaseline(BaseTestCase):
     def setUp(self):
         super(TestAutoRebaseline, self).setUp()
         self.tool.builders = BuilderList({
-            "MOCK Mac10.10": {"port_name": "test-mac-mac10.10", "specifiers": ["Mac10.10", "Release"]},
-            "MOCK Mac10.11": {"port_name": "test-mac-mac10.11", "specifiers": ["Mac10.11", "Release"]},
-            "MOCK Precise": {"port_name": "test-linux-precise", "specifiers": ["Precise", "Release"]},
-            "MOCK Trusty": {"port_name": "test-linux-trusty", "specifiers": ["Trusty", "Release"]},
-            "MOCK Win7": {"port_name": "test-win-win7", "specifiers": ["Win7", "Release"]},
-            "MOCK Win7 (dbg)": {"port_name": "test-win-win7", "specifiers": ["Win7", "Debug"]},
+            'MOCK Mac10.10': {'port_name': 'test-mac-mac10.10', 'specifiers': ['Mac10.10', 'Release']},
+            'MOCK Mac10.11': {'port_name': 'test-mac-mac10.11', 'specifiers': ['Mac10.11', 'Release']},
+            'MOCK Precise': {'port_name': 'test-linux-precise', 'specifiers': ['Precise', 'Release']},
+            'MOCK Trusty': {'port_name': 'test-linux-trusty', 'specifiers': ['Trusty', 'Release']},
+            'MOCK Win7': {'port_name': 'test-win-win7', 'specifiers': ['Win7', 'Release']},
+            'MOCK Win7 (dbg)': {'port_name': 'test-win-win7', 'specifiers': ['Win7', 'Debug']},
         })
         self.command.latest_revision_processed_on_all_bots = lambda: 9000
-        self.command.bot_revision_data = lambda git: [{"builder": "MOCK Win7", "revision": "9000"}]
+        self.command.bot_revision_data = lambda git: [{'builder': 'MOCK Win7', 'revision': '9000'}]
 
     def test_release_builders(self):
         # Testing private method - pylint: disable=protected-access
         self.tool.builders = BuilderList({
-            "MOCK Mac10.10": {"port_name": "test-mac-mac10.10", "specifiers": ["Mac10.10", "Release"]},
-            "MOCK Mac10.11 (dbg)": {"port_name": "test-mac-mac10.11", "specifiers": ["Mac10.11", "Debug"]},
+            'MOCK Mac10.10': {'port_name': 'test-mac-mac10.10', 'specifiers': ['Mac10.10', 'Release']},
+            'MOCK Mac10.11 (dbg)': {'port_name': 'test-mac-mac10.11', 'specifiers': ['Mac10.11', 'Debug']},
         })
         self.assertEqual(self.command._release_builders(), ['MOCK Mac10.10'])
 
@@ -80,17 +80,17 @@ class TestAutoRebaseline(BaseTestCase):
 
     def test_tests_to_rebaseline_over_limit(self):
         def blame(_):
-            result = ""
+            result = ''
             for i in range(0, self.command.MAX_LINES_TO_REBASELINE + 1):
-                result += ("624c3081c0 path/to/TestExpectations                   "
-                           "(<foobarbaz1@chromium.org> 2013-04-28 04:52:41 +0000   13) "
-                           "crbug.com/24182 path/to/rebaseline-%s.html [ NeedsRebaseline ]\n" % i)
+                result += ('624c3081c0 path/to/TestExpectations                   '
+                           '(<foobarbaz1@chromium.org> 2013-04-28 04:52:41 +0000   13) '
+                           'crbug.com/24182 path/to/rebaseline-%s.html [ NeedsRebaseline ]\n' % i)
             return result
         self.tool.git().blame = blame
 
         expected_list_of_tests = []
         for i in range(0, self.command.MAX_LINES_TO_REBASELINE):
-            expected_list_of_tests.append("path/to/rebaseline-%s.html" % i)
+            expected_list_of_tests.append('path/to/rebaseline-%s.html' % i)
 
         min_revision = 9000
         self.assertEqual(self.command.tests_to_rebaseline(self.tool, min_revision, print_revisions=False), (
@@ -102,16 +102,16 @@ class TestAutoRebaseline(BaseTestCase):
             True))
 
     def test_commit_message(self):
-        author = "foo@chromium.org"
+        author = 'foo@chromium.org'
         revision = 1234
-        commit = "abcd567"
+        commit = 'abcd567'
         bugs = set()
         self.assertEqual(self.command.commit_message(author, revision, commit, bugs),
                          'Auto-rebaseline for r1234\n\n'
                          'https://chromium.googlesource.com/chromium/src/+/abcd567\n\n'
                          'TBR=foo@chromium.org\n')
 
-        bugs = set(["234", "345"])
+        bugs = set(['234', '345'])
         self.assertEqual(self.command.commit_message(author, revision, commit, bugs),
                          'Auto-rebaseline for r1234\n\n'
                          'https://chromium.googlesource.com/chromium/src/+/abcd567\n\n'
@@ -156,42 +156,42 @@ class TestAutoRebaseline(BaseTestCase):
         # Have prototype-chocolate only fail on "MOCK Mac10.11",
         # and pass on "Mock Mac10.10".
         self.tool.buildbot.set_results(Build('MOCK Mac10.11'), LayoutTestResults({
-            "tests": {
-                "fast": {
-                    "dom": {
-                        "prototype-taco.html": {
-                            "expected": "PASS",
-                            "actual": "PASS TEXT",
-                            "is_unexpected": True
+            'tests': {
+                'fast': {
+                    'dom': {
+                        'prototype-taco.html': {
+                            'expected': 'PASS',
+                            'actual': 'PASS TEXT',
+                            'is_unexpected': True
                         },
-                        "prototype-chocolate.html": {
-                            "expected": "FAIL",
-                            "actual": "PASS"
+                        'prototype-chocolate.html': {
+                            'expected': 'FAIL',
+                            'actual': 'PASS'
                         },
-                        "prototype-strawberry.html": {
-                            "expected": "PASS",
-                            "actual": "IMAGE PASS",
-                            "is_unexpected": True
+                        'prototype-strawberry.html': {
+                            'expected': 'PASS',
+                            'actual': 'IMAGE PASS',
+                            'is_unexpected': True
                         }
                     }
                 }
             }
         }))
         self.tool.buildbot.set_results(Build('MOCK Mac10.10'), LayoutTestResults({
-            "tests": {
-                "fast": {
-                    "dom": {
-                        "prototype-taco.html": {
-                            "expected": "PASS",
-                            "actual": "PASS",
+            'tests': {
+                'fast': {
+                    'dom': {
+                        'prototype-taco.html': {
+                            'expected': 'PASS',
+                            'actual': 'PASS',
                         },
-                        "prototype-chocolate.html": {
-                            "expected": "FAIL",
-                            "actual": "FAIL"
+                        'prototype-chocolate.html': {
+                            'expected': 'FAIL',
+                            'actual': 'FAIL'
                         },
-                        "prototype-strawberry.html": {
-                            "expected": "PASS",
-                            "actual": "PASS",
+                        'prototype-strawberry.html': {
+                            'expected': 'PASS',
+                            'actual': 'PASS',
                         }
                     }
                 }
@@ -207,15 +207,15 @@ crbug.com/24182 path/to/not-cycled-through-bots.html [ NeedsRebaseline ]
 crbug.com/24182 path/to/locally-changed-lined.html [ NeedsRebaseline ]
 """)
 
-        self._write_test_file(test_port, 'fast/dom/prototype-taco.html', "Dummy test contents")
-        self._write_test_file(test_port, 'fast/dom/prototype-strawberry.html', "Dummy test contents")
-        self._write_test_file(test_port, 'fast/dom/prototype-chocolate.html', "Dummy test contents")
+        self._write_test_file(test_port, 'fast/dom/prototype-taco.html', 'Dummy test contents')
+        self._write_test_file(test_port, 'fast/dom/prototype-strawberry.html', 'Dummy test contents')
+        self._write_test_file(test_port, 'fast/dom/prototype-chocolate.html', 'Dummy test contents')
 
         self.tool.executive = MockLineRemovingExecutive()
 
         self.tool.builders = BuilderList({
-            "MOCK Mac10.10": {"port_name": "test-mac-mac10.10", "specifiers": ["Mac10.10", "Release"]},
-            "MOCK Mac10.11": {"port_name": "test-mac-mac10.11", "specifiers": ["Mac10.11", "Release"]},
+            'MOCK Mac10.10': {'port_name': 'test-mac-mac10.10', 'specifiers': ['Mac10.10', 'Release']},
+            'MOCK Mac10.11': {'port_name': 'test-mac-mac10.11', 'specifiers': ['Mac10.11', 'Release']},
         })
 
         self.command.tree_status = lambda: 'closed'
@@ -272,13 +272,13 @@ crbug.com/24182 path/to/locally-changed-lined.html [ NeedsRebaseline ]
 
         # Have prototype-chocolate only fail on "MOCK Mac10.11".
         self.tool.buildbot.set_results(Build('MOCK Mac10.11'), LayoutTestResults({
-            "tests": {
-                "fast": {
-                    "dom": {
-                        "prototype-taco.html": {
-                            "expected": "PASS",
-                            "actual": "PASS TEXT",
-                            "is_unexpected": True
+            'tests': {
+                'fast': {
+                    'dom': {
+                        'prototype-taco.html': {
+                            'expected': 'PASS',
+                            'actual': 'PASS TEXT',
+                            'is_unexpected': True
                         }
                     }
                 }
@@ -289,10 +289,10 @@ crbug.com/24182 path/to/locally-changed-lined.html [ NeedsRebaseline ]
 Bug(foo) fast/dom/prototype-taco.html [ NeedsRebaseline ]
 """)
 
-        self._write_test_file(test_port, 'fast/dom/prototype-taco.html', "Dummy test contents")
+        self._write_test_file(test_port, 'fast/dom/prototype-taco.html', 'Dummy test contents')
 
         self.tool.builders = BuilderList({
-            "MOCK Mac10.11": {"port_name": "test-mac-mac10.11", "specifiers": ["Mac10.11", "Release"]},
+            'MOCK Mac10.11': {'port_name': 'test-mac-mac10.11', 'specifiers': ['Mac10.11', 'Release']},
         })
 
         self.command.SECONDS_BEFORE_GIVING_UP = 0
@@ -321,13 +321,13 @@ Bug(foo) fast/dom/prototype-taco.html [ NeedsRebaseline ]
 
         for builder in ['MOCK Mac10.10', 'MOCK Mac10.11']:
             self.tool.buildbot.set_results(Build(builder), LayoutTestResults({
-                "tests": {
-                    "fast": {
-                        "dom": {
-                            "prototype-taco.html": {
-                                "expected": "FAIL",
-                                "actual": "PASS",
-                                "is_unexpected": True
+                'tests': {
+                    'fast': {
+                        'dom': {
+                            'prototype-taco.html': {
+                                'expected': 'FAIL',
+                                'actual': 'PASS',
+                                'is_unexpected': True
                             }
                         }
                     }
@@ -338,13 +338,13 @@ Bug(foo) fast/dom/prototype-taco.html [ NeedsRebaseline ]
 Bug(foo) fast/dom/prototype-taco.html [ NeedsRebaseline ]
 """)
 
-        self._write_test_file(test_port, 'fast/dom/prototype-taco.html', "Dummy test contents")
+        self._write_test_file(test_port, 'fast/dom/prototype-taco.html', 'Dummy test contents')
 
         self.tool.executive = MockLineRemovingExecutive()
 
         self.tool.builders = BuilderList({
-            "MOCK Mac10.10": {"port_name": "test-mac-mac10.10", "specifiers": ["Mac10.10", "Release"]},
-            "MOCK Mac10.11": {"port_name": "test-mac-mac10.11", "specifiers": ["Mac10.11", "Release"]},
+            'MOCK Mac10.10': {'port_name': 'test-mac-mac10.10', 'specifiers': ['Mac10.10', 'Release']},
+            'MOCK Mac10.11': {'port_name': 'test-mac-mac10.11', 'specifiers': ['Mac10.11', 'Release']},
         })
 
         self.command.tree_status = lambda: 'open'
@@ -372,13 +372,13 @@ Bug(foo) [ Linux Win ] fast/dom/prototype-taco.html [ NeedsRebaseline ]
         test_port = self.tool.port_factory.get('test')
 
         self.tool.buildbot.set_results(Build('MOCK Win7'), LayoutTestResults({
-            "tests": {
-                "fast": {
-                    "dom": {
-                        "prototype-taco.html": {
-                            "expected": "FAIL",
-                            "actual": "PASS",
-                            "is_unexpected": True
+            'tests': {
+                'fast': {
+                    'dom': {
+                        'prototype-taco.html': {
+                            'expected': 'FAIL',
+                            'actual': 'PASS',
+                            'is_unexpected': True
                         }
                     }
                 }
@@ -389,12 +389,12 @@ Bug(foo) [ Linux Win ] fast/dom/prototype-taco.html [ NeedsRebaseline ]
 Bug(foo) fast/dom/prototype-taco.html [ NeedsRebaseline ]
 """)
 
-        self._write_test_file(test_port, 'fast/dom/prototype-taco.html', "Dummy test contents")
+        self._write_test_file(test_port, 'fast/dom/prototype-taco.html', 'Dummy test contents')
 
         self.tool.executive = MockLineRemovingExecutive()
 
         self.tool.builders = BuilderList({
-            "MOCK Win7": {"port_name": "test-win-win7", "specifiers": ["Win7", "Release"]},
+            'MOCK Win7': {'port_name': 'test-win-win7', 'specifiers': ['Win7', 'Release']},
         })
         old_branch_name = self.tool.git().current_branch_or_ref
         try:
@@ -425,13 +425,13 @@ Bug(foo) [ Linux Mac Win10 ] fast/dom/prototype-taco.html [ NeedsRebaseline ]
         test_port = self.tool.port_factory.get('test')
 
         self.tool.buildbot.set_results(Build('MOCK Win7'), LayoutTestResults({
-            "tests": {
-                "fast": {
-                    "dom": {
-                        "prototype-taco.html": {
-                            "expected": "FAIL",
-                            "actual": "PASS",
-                            "is_unexpected": True
+            'tests': {
+                'fast': {
+                    'dom': {
+                        'prototype-taco.html': {
+                            'expected': 'FAIL',
+                            'actual': 'PASS',
+                            'is_unexpected': True
                         }
                     }
                 }
@@ -442,12 +442,12 @@ Bug(foo) [ Linux Mac Win10 ] fast/dom/prototype-taco.html [ NeedsRebaseline ]
 Bug(foo) fast/dom/prototype-taco.html [ NeedsRebaseline ]
 """)
 
-        self._write_test_file(test_port, 'fast/dom/prototype-taco.html', "Dummy test contents")
+        self._write_test_file(test_port, 'fast/dom/prototype-taco.html', 'Dummy test contents')
 
         self.tool.executive = MockLineRemovingExecutive()
 
         self.tool.builders = BuilderList({
-            "MOCK Win7": {"port_name": "test-win-win7", "specifiers": ["Win7", "Release"]},
+            'MOCK Win7': {'port_name': 'test-win-win7', 'specifiers': ['Win7', 'Release']},
         })
         old_branch_name = self.tool.git().current_branch_or_ref
         try:
@@ -479,13 +479,13 @@ Bug(foo) [ Linux Mac Win10 ] fast/dom/prototype-taco.html [ NeedsRebaseline ]
 
         for builder in ['MOCK Mac10.10', 'MOCK Mac10.11']:
             self.tool.buildbot.set_results(Build(builder), LayoutTestResults({
-                "tests": {
-                    "fast": {
-                        "dom": {
-                            "prototype-taco.html": {
-                                "expected": "FAIL",
-                                "actual": "PASS",
-                                "is_unexpected": True
+                'tests': {
+                    'fast': {
+                        'dom': {
+                            'prototype-taco.html': {
+                                'expected': 'FAIL',
+                                'actual': 'PASS',
+                                'is_unexpected': True
                             }
                         }
                     }
@@ -496,13 +496,13 @@ Bug(foo) [ Linux Mac Win10 ] fast/dom/prototype-taco.html [ NeedsRebaseline ]
 Bug(foo) fast/dom/prototype-taco.html [ NeedsRebaseline ]
 """)
 
-        self._write_test_file(test_port, 'fast/dom/prototype-taco.html', "Dummy test contents")
+        self._write_test_file(test_port, 'fast/dom/prototype-taco.html', 'Dummy test contents')
 
         self.tool.executive = MockLineRemovingExecutive()
 
         self.tool.builders = BuilderList({
-            "MOCK Mac10.10": {"port_name": "test-mac-mac10.10", "specifiers": ["Mac10.10", "Release"]},
-            "MOCK Mac10.11": {"port_name": "test-mac-mac10.11", "specifiers": ["Mac10.11", "Release"]},
+            'MOCK Mac10.10': {'port_name': 'test-mac-mac10.10', 'specifiers': ['Mac10.10', 'Release']},
+            'MOCK Mac10.11': {'port_name': 'test-mac-mac10.11', 'specifiers': ['Mac10.11', 'Release']},
         })
 
         self.command.tree_status = lambda: 'open'

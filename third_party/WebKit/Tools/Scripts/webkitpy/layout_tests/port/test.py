@@ -49,7 +49,7 @@ class TestInstance(object):
 
     def __init__(self, name):
         self.name = name
-        self.base = name[(name.rfind("/") + 1):name.rfind(".")]
+        self.base = name[(name.rfind('/') + 1):name.rfind('.')]
         self.crash = False
         self.web_process_crash = False
         self.exception = False
@@ -140,11 +140,11 @@ def unit_test_list():
               actual_checksum=None)
     tests.add('failures/expected/keyboard.html', keyboard=True)
     tests.add('failures/expected/newlines_leading.html',
-              expected_text="\nfoo\n", actual_text="foo\n")
+              expected_text='\nfoo\n', actual_text='foo\n')
     tests.add('failures/expected/newlines_trailing.html',
-              expected_text="foo\n\n", actual_text="foo\n")
+              expected_text='foo\n\n', actual_text='foo\n')
     tests.add('failures/expected/newlines_with_excess_CR.html',
-              expected_text="foo\r\r\r\n", actual_text="foo\n")
+              expected_text='foo\r\r\r\n', actual_text='foo\n')
     tests.add('failures/expected/text.html', actual_text='text_fail-png')
     tests.add('failures/expected/crash_then_text.html')
     tests.add('failures/expected/skip_text.html', actual_text='text diff')
@@ -162,9 +162,9 @@ layer at (0,0) size 800x34
 """, expected_text=None)
     tests.add('failures/unexpected/crash.html', crash=True)
     tests.add('failures/unexpected/crash-with-stderr.html', crash=True,
-              error="mock-std-error-output")
+              error='mock-std-error-output')
     tests.add('failures/unexpected/web-process-crash-with-stderr.html', web_process_crash=True,
-              error="mock-std-error-output")
+              error='mock-std-error-output')
     tests.add('failures/unexpected/pass.html')
     tests.add('failures/unexpected/text-checksum.html',
               actual_text='text-checksum_fail-txt',
@@ -454,7 +454,7 @@ class TestPort(Port):
         if not actual_contents or not expected_contents:
             return (True, None)
         if diffed:
-            return ("< %s\n---\n> %s\n" % (expected_contents, actual_contents), None)
+            return ('< %s\n---\n> %s\n' % (expected_contents, actual_contents), None)
         return (None, None)
 
     def layout_tests_dir(self):
@@ -505,7 +505,7 @@ class TestPort(Port):
         pass
 
     def path_to_apache(self):
-        return "/usr/sbin/httpd"
+        return '/usr/sbin/httpd'
 
     def path_to_apache_config_file(self):
         return self._filesystem.join(self.apache_config_directory(), 'httpd.conf')

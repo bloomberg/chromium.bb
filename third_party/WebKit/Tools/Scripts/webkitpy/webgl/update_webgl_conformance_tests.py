@@ -42,10 +42,10 @@ def translate_includes(text):
     # Mapping of single filename to relative path under WebKit root.
     # Assumption: these filenames are globally unique.
     include_mapping = {
-        "js-test-style.css": "../../js/resources",
-        "js-test-pre.js": "../../js/resources",
-        "js-test-post.js": "../../js/resources",
-        "desktop-gl-constants.js": "resources",
+        'js-test-style.css': '../../js/resources',
+        'js-test-pre.js': '../../js/resources',
+        'js-test-post.js': '../../js/resources',
+        'desktop-gl-constants.js': 'resources',
     }
 
     for filename, path in include_mapping.items():
@@ -77,7 +77,7 @@ def update_file(in_filename, out_dir):
     # check out_dir exists
     out_filename = os.path.join(out_dir, os.path.basename(in_filename))
 
-    _log.debug("Processing " + in_filename)
+    _log.debug('Processing ' + in_filename)
     with open(in_filename, 'r') as in_file:
         with open(out_filename, 'w') as out_file:
             out_file.write(translate_khronos_test(in_file.read()))
@@ -106,7 +106,7 @@ def configure_logging(options):
 
 
 def option_parser():
-    usage = "usage: %prog [options] (input file or directory)"
+    usage = 'usage: %prog [options] (input file or directory)'
     parser = optparse.OptionParser(usage=usage)
     parser.add_option('-v', '--verbose',
                       action='store_true',
@@ -128,7 +128,7 @@ def main():
     configure_logging(options)
 
     if len(args) == 0:
-        _log.error("Must specify an input directory or filename.")
+        _log.error('Must specify an input directory or filename.')
         parser.print_help()
         return 1
 

@@ -59,7 +59,7 @@ class NetworkTransaction(object):
                 if self._return_none_on_404 and error.code == 404:
                     return None
                 self._check_for_timeout()
-                _log.warning("Received HTTP status %s loading \"%s\".  Retrying in %s seconds...",
+                _log.warning('Received HTTP status %s loading "%s".  Retrying in %s seconds...',
                              error.code, error.filename, self._backoff_seconds)
                 self._sleep()
 

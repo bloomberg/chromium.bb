@@ -45,7 +45,7 @@ class W3CTestConverterTest(unittest.TestCase):
     def fake_dir_path(self, dirname):
         filesystem = Host().filesystem
         webkit_root = WebKitFinder(filesystem).webkit_base()
-        return filesystem.abspath(filesystem.join(webkit_root, "LayoutTests", "css", dirname))
+        return filesystem.abspath(filesystem.join(webkit_root, 'LayoutTests', 'css', dirname))
 
     def test_read_prefixed_property_list(self):
         """Tests that the current list of properties requiring the -webkit- prefix load correctly."""

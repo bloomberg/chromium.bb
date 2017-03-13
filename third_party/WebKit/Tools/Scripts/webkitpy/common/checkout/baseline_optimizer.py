@@ -59,7 +59,7 @@ class BaselineOptimizer(object):
         # So, we can optimize the virtual path, then the virtual root, and then
         # the regular path.
 
-        _log.debug("Optimizing regular fallback path.")
+        _log.debug('Optimizing regular fallback path.')
         result = self._optimize_subtree(baseline_name)
         non_virtual_baseline_name = self._virtual_base(baseline_name)
         if not non_virtual_baseline_name:
@@ -67,13 +67,13 @@ class BaselineOptimizer(object):
 
         self._optimize_virtual_root(baseline_name, non_virtual_baseline_name)
 
-        _log.debug("Optimizing non-virtual fallback path.")
+        _log.debug('Optimizing non-virtual fallback path.')
         result |= self._optimize_subtree(non_virtual_baseline_name)
         return result
 
     def write_by_directory(self, results_by_directory, writer, indent):
         for path in sorted(results_by_directory):
-            writer("%s%s: %s" % (indent, self._platform(path), results_by_directory[path][0:6]))
+            writer('%s%s: %s' % (indent, self._platform(path), results_by_directory[path][0:6]))
 
     def read_results_by_directory(self, baseline_name):
         results_by_directory = {}
@@ -92,10 +92,10 @@ class BaselineOptimizer(object):
 
         if new_results_by_directory == results_by_directory:
             if new_results_by_directory:
-                _log.debug("  %s: (already optimal)", basename)
-                self.write_by_directory(results_by_directory, _log.debug, "    ")
+                _log.debug('  %s: (already optimal)', basename)
+                self.write_by_directory(results_by_directory, _log.debug, '    ')
             else:
-                _log.debug("  %s: (no baselines found)", basename)
+                _log.debug('  %s: (no baselines found)', basename)
             # This is just used for unit tests.
             # Intentionally set it to the old data if we don't modify anything.
             self.new_results_by_directory.append(results_by_directory)
@@ -106,15 +106,15 @@ class BaselineOptimizer(object):
             # This really should never happen. Just a sanity check to make
             # sure the script fails in the case of bugs instead of committing
             # incorrect baselines.
-            _log.error("  %s: optimization failed", basename)
-            self.write_by_directory(results_by_directory, _log.warning, "      ")
+            _log.error('  %s: optimization failed', basename)
+            self.write_by_directory(results_by_directory, _log.warning, '      ')
             return False
 
-        _log.debug("  %s:", basename)
-        _log.debug("    Before: ")
-        self.write_by_directory(results_by_directory, _log.debug, "      ")
-        _log.debug("    After: ")
-        self.write_by_directory(new_results_by_directory, _log.debug, "      ")
+        _log.debug('  %s:', basename)
+        _log.debug('    Before: ')
+        self.write_by_directory(results_by_directory, _log.debug, '      ')
+        _log.debug('    After: ')
+        self.write_by_directory(new_results_by_directory, _log.debug, '      ')
 
         self._move_baselines(baseline_name, results_by_directory, new_results_by_directory)
         return True
@@ -134,13 +134,13 @@ class BaselineOptimizer(object):
                     fs_files.append(file_name)
 
         if fs_files:
-            _log.debug("    Deleting (file system):")
+            _log.debug('    Deleting (file system):')
             for platform_dir in sorted(self._platform(filename) for filename in fs_files):
-                _log.debug("      " + platform_dir)
+                _log.debug('      ' + platform_dir)
             for filename in fs_files:
                 self._filesystem.remove(filename)
         else:
-            _log.debug("    (Nothing to delete)")
+            _log.debug('    (Nothing to delete)')
 
         file_names = []
         for directory, result in new_results_by_directory.items():
@@ -151,11 +151,11 @@ class BaselineOptimizer(object):
                 file_names.append(destination)
 
         if file_names:
-            _log.debug("    Adding:")
+            _log.debug('    Adding:')
             for platform_dir in sorted(self._platform(filename) for filename in file_names):
-                _log.debug("      " + platform_dir)
+                _log.debug('      ' + platform_dir)
         else:
-            _log.debug("    (Nothing to add)")
+            _log.debug('    (Nothing to add)')
 
     def _platform(self, filename):
         platform_dir = self.ROOT_LAYOUT_TESTS_DIRECTORY + self._filesystem.sep + 'platform' + self._filesystem.sep
@@ -183,8 +183,8 @@ class BaselineOptimizer(object):
                     return
                 break
 
-        _log.debug("Deleting redundant virtual root expected result.")
-        _log.debug("    Deleting (file system): " + virtual_root_baseline_path)
+        _log.debug('Deleting redundant virtual root expected result.')
+        _log.debug('    Deleting (file system): ' + virtual_root_baseline_path)
         self._filesystem.remove(virtual_root_baseline_path)
 
     def _baseline_root(self, baseline_name):
@@ -227,7 +227,6 @@ class BaselineOptimizer(object):
         else:
             baseline_name_without_virtual = baseline_name
         return self._filesystem.join(self._webkit_base, directory, baseline_name_without_virtual)
-
 
     def _results_by_port_name(self, results_by_directory, baseline_name):
         results_by_port_name = {}
@@ -322,5 +321,4 @@ class BaselineOptimizer(object):
         for index, directory in enumerate(fallback_path):
             if directory in results_by_directory and (results_by_directory[directory] == current_result):
                 return index, directory
-        assert False, "result %s not found in fallback_path %s, %s" % (current_result, fallback_path, results_by_directory)
-
+        assert False, 'result %s not found in fallback_path %s, %s' % (current_result, fallback_path, results_by_directory)

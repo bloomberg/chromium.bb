@@ -130,8 +130,8 @@ class Driver(object):
         self._current_cmd_line = None
 
         self._measurements = {}
-        if self._port.get_option("profile"):
-            profiler_name = self._port.get_option("profiler")
+        if self._port.get_option('profile'):
+            profiler_name = self._port.get_option('profiler')
             self._profiler = ProfilerFactory.create_profiler(
                 self._port.host,
                 self._port._path_to_driver(),  # pylint: disable=protected-access
@@ -178,7 +178,7 @@ class Driver(object):
                 self.error_from_test = 'OUTPUT CONTAINS "' + sanitizer + \
                     '", so we are treating this test as if it crashed, even though it did not.\n\n' + self.error_from_test
                 crashed = True
-                self._crashed_process_name = "unknown process name"
+                self._crashed_process_name = 'unknown process name'
                 self._crashed_pid = 0
 
         if stop_when_done or crashed or timed_out or leaked:
@@ -197,7 +197,7 @@ class Driver(object):
 
             # If we don't find a crash log use a placeholder error message instead.
             if not crash_log:
-                pid_str = str(self._crashed_pid) if self._crashed_pid else "unknown pid"
+                pid_str = str(self._crashed_pid) if self._crashed_pid else 'unknown pid'
                 crash_log = 'No crash log found for %s:%s.\n' % (self._crashed_process_name, pid_str)
                 # If we were unresponsive append a message informing there may not have been a crash.
                 if self._subprocess_was_unresponsive:
@@ -225,9 +225,9 @@ class Driver(object):
         # used by e.g. tools/valgrind/valgrind_tests.py.
         return shlex.split(wrapper_option) if wrapper_option else []
 
-    HTTP_DIR = "http/tests/"
-    HTTP_LOCAL_DIR = "http/tests/local/"
-    WPT_DIR = "external/wpt/"
+    HTTP_DIR = 'http/tests/'
+    HTTP_LOCAL_DIR = 'http/tests/local/'
+    WPT_DIR = 'external/wpt/'
 
     def is_http_test(self, test_name):
         return test_name.startswith(self.HTTP_DIR) and not test_name.startswith(self.HTTP_LOCAL_DIR)
@@ -235,9 +235,9 @@ class Driver(object):
     def _get_http_host_and_ports_for_test(self, test_name):
         if self._port.should_use_wptserve(test_name):
             # TODO(burnik): Read from config or args.
-            return ("web-platform.test", 8001, 8444)
+            return ('web-platform.test', 8001, 8444)
         else:
-            return ("127.0.0.1", 8000, 8443)
+            return ('127.0.0.1', 8000, 8443)
 
     def test_to_uri(self, test_name):
         """Convert a test name to a URI.
@@ -260,9 +260,9 @@ class Driver(object):
         relative_path = test_name[len(test_dir_prefix):]
         hostname, insecure_port, secure_port = self._get_http_host_and_ports_for_test(test_name)
 
-        if "/https/" in test_name or ".https." in test_name:
-            return "https://%s:%d/%s" % (hostname, secure_port, relative_path)
-        return "http://%s:%d/%s" % (hostname, insecure_port, relative_path)
+        if '/https/' in test_name or '.https.' in test_name:
+            return 'https://%s:%d/%s' % (hostname, secure_port, relative_path)
+        return 'http://%s:%d/%s' % (hostname, insecure_port, relative_path)
 
     def uri_to_test(self, uri):
         """Return the base layout test name for a given URI.
@@ -275,14 +275,14 @@ class Driver(object):
         # This looks like a bit of a hack, since the uri is used instead of test name.
         hostname, insecure_port, secure_port = self._get_http_host_and_ports_for_test(uri)
 
-        if uri.startswith("file:///"):
+        if uri.startswith('file:///'):
             prefix = path.abspath_to_uri(self._port.host.platform, self._port.layout_tests_dir())
             if not prefix.endswith('/'):
                 prefix += '/'
             return uri[len(prefix):]
-        if uri.startswith("http://"):
+        if uri.startswith('http://'):
             return uri.replace('http://%s:%d/' % (hostname, insecure_port), self.HTTP_DIR)
-        if uri.startswith("https://"):
+        if uri.startswith('https://'):
             return uri.replace('https://%s:%d/' % (hostname, secure_port), self.HTTP_DIR)
         raise NotImplementedError('unknown url type: %s' % uri)
 
@@ -320,14 +320,14 @@ class Driver(object):
         self._leak_log = None
         cmd_line = self.cmd_line(pixel_tests, per_test_args)
         self._server_process = self._port.server_process_constructor(
-            self._port, server_name, cmd_line, environment, more_logging=self._port.get_option("driver_logging"))
+            self._port, server_name, cmd_line, environment, more_logging=self._port.get_option('driver_logging'))
         self._server_process.start()
         self._current_cmd_line = cmd_line
 
         if wait_for_ready:
             deadline = time.time() + DRIVER_START_TIMEOUT_SECS
             if not self._wait_for_server_process_output(self._server_process, deadline, '#READY'):
-                _log.error("content_shell took too long to startup.")
+                _log.error('content_shell took too long to startup.')
 
     def _wait_for_server_process_output(self, server_process, deadline, text):
         output = ''
@@ -380,13 +380,13 @@ class Driver(object):
         return cmd
 
     def _check_for_driver_crash(self, error_line):
-        if error_line == "#CRASHED\n":
+        if error_line == '#CRASHED\n':
             # This is used on Windows to report that the process has crashed
             # See http://trac.webkit.org/changeset/65537.
             self._crashed_process_name = self._server_process.name()
             self._crashed_pid = self._server_process.pid()
-        elif (error_line.startswith("#CRASHED - ")
-              or error_line.startswith("#PROCESS UNRESPONSIVE - ")):
+        elif (error_line.startswith('#CRASHED - ')
+              or error_line.startswith('#PROCESS UNRESPONSIVE - ')):
             # WebKitTestRunner uses this to report that the WebProcess subprocess crashed.
             match = re.match(r'#(?:CRASHED|PROCESS UNRESPONSIVE) - (\S+)', error_line)
             self._crashed_process_name = match.group(1) if match else 'WebProcess'
@@ -395,7 +395,7 @@ class Driver(object):
             self._crashed_pid = pid
             # FIXME: delete this after we're sure this code is working :)
             _log.debug('%s crash, pid = %s, error_line = %s', self._crashed_process_name, str(pid), error_line)
-            if error_line.startswith("#PROCESS UNRESPONSIVE - "):
+            if error_line.startswith('#PROCESS UNRESPONSIVE - '):
                 self._subprocess_was_unresponsive = True
                 self._port.sample_process(self._crashed_process_name, self._crashed_pid)
                 # We want to show this since it's not a regular crash and probably we don't have a crash log.
@@ -404,7 +404,7 @@ class Driver(object):
         return self.has_crashed()
 
     def _check_for_leak(self, error_line):
-        if error_line.startswith("#LEAK - "):
+        if error_line.startswith('#LEAK - '):
             self._leaked = True
             match = re.match(r'#LEAK - (\S+) pid (\d+) (.+)\n', error_line)
             self._leak_log = match.group(3)
@@ -431,7 +431,7 @@ class Driver(object):
             command += "'--pixel-test"
         if driver_input.image_hash:
             command += "'" + driver_input.image_hash
-        return command + "\n"
+        return command + '\n'
 
     def _read_first_block(self, deadline):
         # returns (text_content, audio_content)
@@ -474,10 +474,10 @@ class Driver(object):
         block.content += line
 
     def _strip_eof(self, line):
-        if line and line.endswith("#EOF\n"):
+        if line and line.endswith('#EOF\n'):
             return line[:-5], True
-        if line and line.endswith("#EOF\r\n"):
-            _log.error("Got a CRLF-terminated #EOF - this is a driver bug.")
+        if line and line.endswith('#EOF\r\n'):
+            _log.error('Got a CRLF-terminated #EOF - this is a driver bug.')
             return line[:-6], True
         return line, False
 
@@ -509,9 +509,9 @@ class Driver(object):
                 err_line, self.err_seen_eof = self._strip_eof(err_line)
 
             if out_line:
-                if out_line[-1] != "\n":
+                if out_line[-1] != '\n':
                     _log.error(
-                        "Last character read from DRT stdout line was not a newline!  This indicates either a NRWT or DRT bug.")
+                        'Last character read from DRT stdout line was not a newline!  This indicates either a NRWT or DRT bug.')
                 content_length_before_header_check = block._content_length
                 self._process_stdout_line(block, out_line)
                 # FIXME: Unlike HTTP, DRT dumps the content right after printing a Content-Length header.
@@ -520,7 +520,7 @@ class Driver(object):
                     if block._content_length > 0:
                         block.content = self._server_process.read_stdout(deadline, block._content_length)
                     else:
-                        _log.error("Received content of type %s with Content-Length of 0!  This indicates a bug in %s.",
+                        _log.error('Received content of type %s with Content-Length of 0!  This indicates a bug in %s.',
                                    block.content_type, self._server_process.name())
 
             if err_line:

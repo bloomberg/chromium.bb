@@ -33,7 +33,7 @@ from webkitpy.common.system.log_testing import LoggingTestCase
 
 
 class NetworkTransactionTest(LoggingTestCase):
-    exception = Exception("Test exception")
+    exception = Exception('Test exception')
 
     def setUp(self):
         super(NetworkTransactionTest, self).setUp()
@@ -62,11 +62,11 @@ class NetworkTransactionTest(LoggingTestCase):
     def _raise_500_error(self):
         self._run_count += 1
         if self._run_count < 3:
-            raise HTTPError("http://example.com/", 500, "internal server error", None, None)
+            raise HTTPError('http://example.com/', 500, 'internal server error', None, None)
         return 42
 
     def _raise_404_error(self):
-        raise HTTPError("http://foo.com/", 404, "not found", None, None)
+        raise HTTPError('http://foo.com/', 404, 'not found', None, None)
 
     def test_retry(self):
         transaction = NetworkTransaction(initial_backoff_seconds=0)

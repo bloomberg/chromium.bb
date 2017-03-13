@@ -58,16 +58,16 @@ class MockProcess(object):
 
 
 class MockExecutive(object):
-    PIPE = "MOCK PIPE"
-    STDOUT = "MOCK STDOUT"
-    DEVNULL = "MOCK_DEVNULL"
+    PIPE = 'MOCK PIPE'
+    STDOUT = 'MOCK STDOUT'
+    DEVNULL = 'MOCK_DEVNULL'
 
     @staticmethod
     def ignore_error(error):
         pass
 
     def __init__(self, should_log=False, should_throw=False,
-                 output="MOCK output of child process", stderr='',
+                 output='MOCK output of child process', stderr='',
                  exit_code=0, exception=None, run_command_fn=None):
         self._should_log = should_log
         self._should_throw = should_throw
@@ -90,12 +90,12 @@ class MockExecutive(object):
             if process_name_filter(process_name):
                 running_pids.append(process_pid)
 
-        _log.info("MOCK running_pids: %s", running_pids)
+        _log.info('MOCK running_pids: %s', running_pids)
         return running_pids
 
     def command_for_printing(self, args):
         string_args = map(unicode, args)
-        return " ".join(string_args)
+        return ' '.join(string_args)
 
     # The argument list should match Executive.run_command, even if
     # some arguments are not used. pylint: disable=unused-argument
@@ -115,18 +115,18 @@ class MockExecutive(object):
         assert isinstance(args, list) or isinstance(args, tuple)
 
         if self._should_log:
-            env_string = ""
+            env_string = ''
             if env:
-                env_string = ", env=%s" % env
-            input_string = ""
+                env_string = ', env=%s' % env
+            input_string = ''
             if input:
-                input_string = ", input=%s" % input
-            _log.info("MOCK run_command: %s, cwd=%s%s%s", args, cwd, env_string, input_string)
+                input_string = ', input=%s' % input
+            _log.info('MOCK run_command: %s, cwd=%s%s%s', args, cwd, env_string, input_string)
 
         if self._exception:
             raise self._exception  # pylint: disable=raising-bad-type
         if self._should_throw:
-            raise ScriptError("MOCK ScriptError", output=self._output)
+            raise ScriptError('MOCK ScriptError', output=self._output)
 
         if self._run_command_fn:
             return self._run_command_fn(args)
@@ -159,13 +159,13 @@ class MockExecutive(object):
         assert all(isinstance(arg, basestring) for arg in args)
         self.calls.append(args)
         if self._should_log:
-            cwd_string = ""
+            cwd_string = ''
             if cwd:
-                cwd_string = ", cwd=%s" % cwd
-            env_string = ""
+                cwd_string = ', cwd=%s' % cwd
+            env_string = ''
             if env:
-                env_string = ", env=%s" % env
-            _log.info("MOCK popen: %s%s%s", args, cwd_string, env_string)
+                env_string = ', env=%s' % env
+            _log.info('MOCK popen: %s%s%s', args, cwd_string, env_string)
         if not self._proc:
             self._proc = MockProcess(self._output)
         return self._proc

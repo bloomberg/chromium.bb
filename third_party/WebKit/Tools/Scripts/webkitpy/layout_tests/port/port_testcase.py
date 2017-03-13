@@ -101,7 +101,6 @@ class PortTestCase(LoggingTestCase):
         self.assertIn('pretty patches', logs)
         self.assertIn('build requirements', logs)
 
-
     def test_default_batch_size(self):
         port = self.make_port()
 
@@ -157,12 +156,12 @@ class PortTestCase(LoggingTestCase):
     def test_diff_image(self):
 
         def _path_to_image_diff():
-            return "/path/to/image_diff"
+            return '/path/to/image_diff'
 
         port = self.make_port()
         port._path_to_image_diff = _path_to_image_diff
 
-        mock_image_diff = "MOCK Image Diff"
+        mock_image_diff = 'MOCK Image Diff'
 
         def mock_run_command(args):
             port.host.filesystem.write_binary_file(args[4], mock_image_diff)
@@ -170,17 +169,17 @@ class PortTestCase(LoggingTestCase):
 
         # Images are different.
         port._executive = MockExecutive(run_command_fn=mock_run_command)  # pylint: disable=protected-access
-        self.assertEqual(mock_image_diff, port.diff_image("EXPECTED", "ACTUAL")[0])
+        self.assertEqual(mock_image_diff, port.diff_image('EXPECTED', 'ACTUAL')[0])
 
         # Images are the same.
         port._executive = MockExecutive(exit_code=0)  # pylint: disable=protected-access
-        self.assertEqual(None, port.diff_image("EXPECTED", "ACTUAL")[0])
+        self.assertEqual(None, port.diff_image('EXPECTED', 'ACTUAL')[0])
 
         # There was some error running image_diff.
         port._executive = MockExecutive(exit_code=2)  # pylint: disable=protected-access
         exception_raised = False
         try:
-            port.diff_image("EXPECTED", "ACTUAL")
+            port.diff_image('EXPECTED', 'ACTUAL')
         except ValueError:
             exception_raised = True
         self.assertFalse(exception_raised)
@@ -188,7 +187,7 @@ class PortTestCase(LoggingTestCase):
     def test_diff_image_crashed(self):
         port = self.make_port()
         port._executive = MockExecutive(exit_code=2)  # pylint: disable=protected-access
-        self.assertEqual(port.diff_image("EXPECTED", "ACTUAL"),
+        self.assertEqual(port.diff_image('EXPECTED', 'ACTUAL'),
                          (None, 'Image diff returned an exit code of 2. See http://crbug.com/278596'))
 
     def test_test_configuration(self):

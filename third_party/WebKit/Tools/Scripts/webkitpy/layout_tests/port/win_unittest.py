@@ -47,8 +47,8 @@ class WinPortTest(port_testcase.PortTestCase):
         output = output_capture.OutputCapture()
         orig_environ = port.host.environ.copy()
         env = output.assert_outputs(self, port.setup_environ_for_server)
-        self.assertEqual(orig_environ["PATH"], port.host.environ.get("PATH"))
-        self.assertNotEqual(env["PATH"], port.host.environ.get("PATH"))
+        self.assertEqual(orig_environ['PATH'], port.host.environ.get('PATH'))
+        self.assertNotEqual(env['PATH'], port.host.environ.get('PATH'))
 
     def test_setup_environ_for_server_cygpath(self):
         port = self.make_port()

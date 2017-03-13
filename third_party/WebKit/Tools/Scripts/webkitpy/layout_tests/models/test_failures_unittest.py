@@ -70,7 +70,7 @@ class TestFailuresTest(unittest.TestCase):
         crash_set = set([FailureCrash(), FailureCrash()])
         self.assertEqual(len(crash_set), 1)
         # The hash happens to be the name of the class, but sets still work:
-        crash_set = set([FailureCrash(), "FailureCrash"])
+        crash_set = set([FailureCrash(), 'FailureCrash'])
         self.assertEqual(len(crash_set), 2)
 
     def test_crashes(self):

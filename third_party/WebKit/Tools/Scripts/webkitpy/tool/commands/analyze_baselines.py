@@ -37,10 +37,10 @@ _log = logging.getLogger(__name__)
 
 
 class AnalyzeBaselines(AbstractRebaseliningCommand):
-    name = "analyze-baselines"
-    help_text = "Analyzes the baselines for the given tests and prints results that are identical."
+    name = 'analyze-baselines'
+    help_text = 'Analyzes the baselines for the given tests and prints results that are identical.'
     show_in_main_help = True
-    argument_names = "TEST_NAMES"
+    argument_names = 'TEST_NAMES'
 
     def __init__(self):
         super(AnalyzeBaselines, self).__init__(options=[
@@ -60,10 +60,10 @@ class AnalyzeBaselines(AbstractRebaseliningCommand):
             name = baseline_name(self._tool.filesystem, test_name, suffix)
             results_by_directory = self._baseline_optimizer.read_results_by_directory(name)
             if results_by_directory:
-                self._write("%s:" % name)
-                self._baseline_optimizer.write_by_directory(results_by_directory, self._write, "  ")
+                self._write('%s:' % name)
+                self._baseline_optimizer.write_by_directory(results_by_directory, self._write, '  ')
             elif options.missing:
-                self._write("%s: (no baselines found)" % name)
+                self._write('%s: (no baselines found)' % name)
 
     def execute(self, options, args, tool):
         self._tool = tool

@@ -140,7 +140,7 @@ class ManagerTest(unittest.TestCase):
         self._make_fake_test_result(port.host, '/tmp/layout-test-results')
         self.assertTrue(port.host.filesystem.exists('/tmp/layout-test-results'))
         timestamp = time.strftime(
-            "%Y-%m-%d-%H-%M-%S", time.localtime(port.host.filesystem.mtime('/tmp/layout-test-results/results.html')))
+            '%Y-%m-%d-%H-%M-%S', time.localtime(port.host.filesystem.mtime('/tmp/layout-test-results/results.html')))
         archived_file_name = '/tmp/layout-test-results' + '_' + timestamp
         manager = get_manager()
         manager._rename_results_folder()

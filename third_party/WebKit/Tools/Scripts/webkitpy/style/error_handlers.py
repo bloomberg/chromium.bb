@@ -119,7 +119,7 @@ class DefaultStyleErrorHandler(object):
         return self._configuration.max_reports_per_category[category]
 
     def should_line_be_checked(self, line_number):
-        "Returns if a particular line should be checked"
+        'Returns if a particular line should be checked'
         # Was the line that was modified?
         return self._line_numbers is None or line_number in self._line_numbers
 
@@ -153,6 +153,6 @@ class DefaultStyleErrorHandler(object):
                                               line_number=line_number,
                                               message=message)
         if category_total == max_reports:
-            self._configuration.stderr_write("Suppressing further [%s] reports "
-                                             "for this file.\n" % category)
+            self._configuration.stderr_write('Suppressing further [%s] reports '
+                                             'for this file.\n' % category)
         return True

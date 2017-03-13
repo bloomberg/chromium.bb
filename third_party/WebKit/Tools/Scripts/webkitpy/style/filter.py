@@ -41,15 +41,15 @@ def validate_filter_rules(filter_rules, all_categories):
     for rule in filter_rules:
         if not (rule.startswith('+') or rule.startswith('-')):
             raise ValueError('Invalid filter rule "%s": every rule '
-                             "must start with + or -." % rule)
+                             'must start with + or -.' % rule)
 
         for category in all_categories:
             if category.startswith(rule[1:]):
                 break
         else:
             raise ValueError('Suspected incorrect filter rule "%s": '
-                             "the rule does not match the beginning "
-                             "of any category name." % rule)
+                             'the rule does not match the beginning '
+                             'of any category name.' % rule)
 
 
 class _CategoryFilter(object):
@@ -77,7 +77,7 @@ class _CategoryFilter(object):
         self._should_check_category = {}  # Cached dictionary of category to True/False
 
     def __str__(self):
-        return ",".join(self._filter_rules)
+        return ','.join(self._filter_rules)
 
     # Useful for unit testing.
     def __eq__(self, other):

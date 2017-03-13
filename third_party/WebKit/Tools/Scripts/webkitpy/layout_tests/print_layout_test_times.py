@@ -77,9 +77,9 @@ def print_times(host, options, times):
     by_key = times_by_key(times, options.forward, options.backward)
     for key in sorted(by_key):
         if key:
-            host.print_("%s %d" % (key, by_key[key]))
+            host.print_('%s %d' % (key, by_key[key]))
         else:
-            host.print_("%d" % by_key[key])
+            host.print_('%d' % by_key[key])
 
 
 def print_fastest(host, port, options, times):
@@ -114,7 +114,7 @@ def print_fastest(host, port, options, times):
 
     for k in sorted(fast_tests_by_key):
         for t in fast_tests_by_key[k]:
-            host.print_("%s %d" % (t, times[t]))
+            host.print_('%s %d' % (t, times[t]))
     return
 
 

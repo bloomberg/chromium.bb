@@ -47,8 +47,8 @@ class TestInput(object):
     def __repr__(self):
         return (
             "TestInput('%s', timeout_ms=%s, requires_lock=%s, "
-            "reference_files=%s, should_run_pixel_test=%s, "
-            "should_add_missing_baselines=%s)" % (
+            'reference_files=%s, should_run_pixel_test=%s, '
+            'should_add_missing_baselines=%s)' % (
                 self.test_name,
                 self.timeout_ms,
                 self.requires_lock,

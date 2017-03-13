@@ -73,25 +73,25 @@ class ReflectionHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         # (https://docs.python.org/2/library/basehttpserver.html) say "Subclasses should
         # not need to override or extend the __init__() method."
         # pylint: disable=attribute-defined-outside-init
-        if "?" in self.path:
-            path, query_string = self.path.split("?", 1)
+        if '?' in self.path:
+            path, query_string = self.path.split('?', 1)
             self.query = cgi.parse_qs(query_string)
         else:
             path = self.path
             self.query = {}
-        function_or_file_name = path[1:] or "index.html"
+        function_or_file_name = path[1:] or 'index.html'
 
         _, extension = os.path.splitext(function_or_file_name)
         if extension in self.STATIC_FILE_EXTENSIONS:
             self._serve_static_file(function_or_file_name)
             return
 
-        function_name = function_or_file_name.replace(".", "_")
+        function_name = function_or_file_name.replace('.', '_')
         if not hasattr(self, function_name):
-            self.send_error(404, "Unknown function %s" % function_name)
+            self.send_error(404, 'Unknown function %s' % function_name)
             return
-        if function_name[0] == "_":
-            self.send_error(401, "Not allowed to invoke private or protected methods")
+        if function_name[0] == '_':
+            self.send_error(401, 'Not allowed to invoke private or protected methods')
             return
         function = getattr(self, function_name)
         function()
@@ -100,7 +100,7 @@ class ReflectionHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         self._serve_file(os.path.join(self.STATIC_FILE_DIRECTORY, static_path))
 
     def quitquitquit(self):
-        self._serve_text("Server quit.\n")
+        self._serve_text('Server quit.\n')
         # Shutdown has to happen on another thread from the server's thread,
         # otherwise there's a deadlock.
         threading.Thread(target=self.server.shutdown).start()
@@ -112,7 +112,7 @@ class ReflectionHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     def _serve_text(self, text):
         self.send_response(200)
         self._send_access_control_header()
-        self.send_header("Content-type", "text/plain")
+        self.send_header('Content-type', 'text/plain')
         self.end_headers()
         self.wfile.write(text)
 
@@ -125,22 +125,22 @@ class ReflectionHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 
     def _serve_file(self, file_path, cacheable_seconds=0, headers_only=False):
         if not os.path.exists(file_path):
-            self.send_error(404, "File not found")
+            self.send_error(404, 'File not found')
             return
-        with codecs.open(file_path, "rb") as static_file:
+        with codecs.open(file_path, 'rb') as static_file:
             self.send_response(200)
             self._send_access_control_header()
-            self.send_header("Content-Length", os.path.getsize(file_path))
+            self.send_header('Content-Length', os.path.getsize(file_path))
             mime_type, _ = mimetypes.guess_type(file_path)
             if mime_type:
-                self.send_header("Content-type", mime_type)
+                self.send_header('Content-type', mime_type)
 
             if cacheable_seconds:
                 expires_time = (datetime.datetime.now() +
                                 datetime.timedelta(0, cacheable_seconds))
                 expires_formatted = wsgiref.handlers.format_date_time(
                     time.mktime(expires_time.timetuple()))
-                self.send_header("Expires", expires_formatted)
+                self.send_header('Expires', expires_formatted)
             self.end_headers()
 
             if not headers_only:
@@ -149,7 +149,7 @@ class ReflectionHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     def _serve_xml(self, xml):
         self.send_response(200)
         self._send_access_control_header()
-        self.send_header("Content-type", "text/xml")
+        self.send_header('Content-type', 'text/xml')
         self.end_headers()
         xml = xml.encode('utf-8')
         self.wfile.write(xml)

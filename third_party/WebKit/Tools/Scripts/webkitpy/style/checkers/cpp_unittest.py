@@ -74,7 +74,7 @@ class ErrorCollector:
         if self._lines_to_check and not line_number in self._lines_to_check:
             return False
 
-        if self._filter.should_check(category, ""):
+        if self._filter.should_check(category, ''):
             self._seen_style_categories[category] = 1
             self._errors.append('%s  [%s] [%d]' % (message, category, confidence))
         return True
@@ -3711,7 +3711,7 @@ class WebKitStyleTest(CppStyleTestBase):
         self.assert_lint(
             'using std::min;',
             "Use 'using namespace std;' instead of 'using std::min;'."
-            "  [build/using_std] [4]",
+            '  [build/using_std] [4]',
             'foo.cpp')
 
     def test_using_std_swap_ignored(self):
@@ -3765,9 +3765,9 @@ class WebKitStyleTest(CppStyleTestBase):
 
     def test_names(self):
         name_underscore_error_message = (" is incorrectly named. Don't use underscores in your identifier names."
-                                         "  [readability/naming/underscores] [4]")
+                                         '  [readability/naming/underscores] [4]')
         name_tooshort_error_message = (" is incorrectly named. Don't use the single letter 'l' as an identifier name."
-                                       "  [readability/naming] [4]")
+                                       '  [readability/naming] [4]')
 
         # Basic cases from WebKit style guide.
         self.assert_lint('struct Data;', '')
@@ -4104,13 +4104,13 @@ class CppCheckerTest(unittest.TestCase):
         pass
 
     def _checker(self):
-        return CppChecker("foo", "h", self.mock_handle_style_error, 3)
+        return CppChecker('foo', 'h', self.mock_handle_style_error, 3)
 
     def test_init(self):
         """Test __init__ constructor."""
         checker = self._checker()
-        self.assertEqual(checker.file_extension, "h")
-        self.assertEqual(checker.file_path, "foo")
+        self.assertEqual(checker.file_extension, 'h')
+        self.assertEqual(checker.file_path, 'foo')
         self.assertEqual(checker.handle_style_error, self.mock_handle_style_error)
         self.assertEqual(checker.min_confidence, 3)
 
@@ -4126,11 +4126,11 @@ class CppCheckerTest(unittest.TestCase):
             pass
 
         # Verify that a difference in any argument cause equality to fail.
-        checker = CppChecker("foo", "h", self.mock_handle_style_error, 3)
-        self.assertFalse(checker == CppChecker("bar", "h", self.mock_handle_style_error, 3))
-        self.assertFalse(checker == CppChecker("foo", "c", self.mock_handle_style_error, 3))
-        self.assertFalse(checker == CppChecker("foo", "h", mock_handle_style_error2, 3))
-        self.assertFalse(checker == CppChecker("foo", "h", self.mock_handle_style_error, 4))
+        checker = CppChecker('foo', 'h', self.mock_handle_style_error, 3)
+        self.assertFalse(checker == CppChecker('bar', 'h', self.mock_handle_style_error, 3))
+        self.assertFalse(checker == CppChecker('foo', 'c', self.mock_handle_style_error, 3))
+        self.assertFalse(checker == CppChecker('foo', 'h', mock_handle_style_error2, 3))
+        self.assertFalse(checker == CppChecker('foo', 'h', self.mock_handle_style_error, 4))
 
     def test_ne(self):
         """Test __ne__ inequality function."""

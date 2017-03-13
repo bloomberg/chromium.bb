@@ -176,7 +176,7 @@ class MockDRT(object):
         self._driver = self._port.create_driver(0)
 
     def run(self):
-        self._stdout.write("#READY\n")
+        self._stdout.write('#READY\n')
         self._stdout.flush()
         while True:
             line = self._stdin.readline()

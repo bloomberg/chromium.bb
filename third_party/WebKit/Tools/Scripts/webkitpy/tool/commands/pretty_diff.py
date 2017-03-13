@@ -40,15 +40,15 @@ _log = logging.getLogger(__name__)
 
 
 class PrettyDiff(Command):
-    name = "pretty-diff"
-    help_text = "Shows the pretty diff in the default browser"
+    name = 'pretty-diff'
+    help_text = 'Shows the pretty diff in the default browser'
     show_in_main_help = True
 
     def __init__(self):
         options = [
-            optparse.make_option("-g", "--git-commit", action="store", dest="git_commit",
-                                 help=("Operate on a local commit. If a range, the commits are squashed into one. <ref>.... "
-                                       "includes the working copy changes. UPSTREAM can be used for the upstream/tracking branch."))
+            optparse.make_option('-g', '--git-commit', action='store', dest='git_commit',
+                                 help=('Operate on a local commit. If a range, the commits are squashed into one. <ref>.... '
+                                       'includes the working copy changes. UPSTREAM can be used for the upstream/tracking branch.'))
         ]
         super(PrettyDiff, self).__init__(options)
         self._tool = None
@@ -57,7 +57,7 @@ class PrettyDiff(Command):
         self._tool = tool
         pretty_diff_file = self._show_pretty_diff(options)
         if pretty_diff_file:
-            diff_correct = tool.user.confirm("Was that diff correct?")
+            diff_correct = tool.user.confirm('Was that diff correct?')
             pretty_diff_file.close()
             if not diff_correct:
                 sys.exit(1)
@@ -74,11 +74,11 @@ class PrettyDiff(Command):
             # file alive until the user has had a chance to confirm the diff.
             return pretty_diff_file
         except ScriptError as error:
-            _log.warning("PrettyPatch failed.  :(")
+            _log.warning('PrettyPatch failed.  :(')
             _log.error(error.message_with_output())
             self._exit(error.exit_code or 2)
         except OSError:
-            _log.warning("PrettyPatch unavailable.")
+            _log.warning('PrettyPatch unavailable.')
 
     def _diff(self, options):
         changed_files = self._tool.git().changed_files(options.git_commit)
@@ -90,5 +90,5 @@ class PrettyDiff(Command):
             assert file_path.endswith('.html')
             self._tool.executive.run_command(['cygstart', file_path])
             return
-        url = "file://%s" % urllib.quote(file_path)
+        url = 'file://%s' % urllib.quote(file_path)
         self._tool.user.open_url(url)

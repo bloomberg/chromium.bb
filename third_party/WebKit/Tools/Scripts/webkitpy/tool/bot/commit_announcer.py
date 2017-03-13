@@ -33,10 +33,10 @@ from webkitpy.thirdparty.irc.ircbot import SingleServerIRCBot
 
 _log = logging.getLogger(__name__)
 
-SERVER = "irc.freenode.net"
+SERVER = 'irc.freenode.net'
 PORT = 6667
-CHANNEL = "#blink"
-NICKNAME = "commit-bot"
+CHANNEL = '#blink'
+NICKNAME = 'commit-bot'
 
 PULL_TIMEOUT_SECONDS = 60 * 5
 UPDATE_WAIT_SECONDS = 10
@@ -44,7 +44,7 @@ RETRY_ATTEMPTS = 8
 
 
 class CommitAnnouncer(SingleServerIRCBot):
-    _commit_detail_format = "%H\n%ae\n%s\n%b"  # commit-sha1, author email, subject, body
+    _commit_detail_format = '%H\n%ae\n%s\n%b'  # commit-sha1, author email, subject, body
 
     def __init__(self, tool, announce_path, irc_password):
         SingleServerIRCBot.__init__(self, [(SERVER, PORT, irc_password)], NICKNAME, NICKNAME)
@@ -67,7 +67,7 @@ class CommitAnnouncer(SingleServerIRCBot):
         if not self.connection.is_connected():
             return
         if not self._update(force_clean=True):
-            self.stop("Failed to update repository!")
+            self.stop('Failed to update repository!')
             return
         new_commits = self.git.git_commits_since(self.last_commit)
         if not new_commits:
@@ -92,7 +92,7 @@ class CommitAnnouncer(SingleServerIRCBot):
     def ping(self):
         self._post('Pong.')
 
-    def stop(self, message=""):
+    def stop(self, message=''):
         self.connection.execute_delayed(0, lambda: self.die(message))
 
     # IRC event handlers. Methods' arguments are determined by superclass

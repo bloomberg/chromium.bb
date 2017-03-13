@@ -37,7 +37,7 @@ def _default_handlers(stream, logging_level):
     # Create the filter.
     def should_log(record):
         """Return whether a logging.LogRecord should be logged."""
-        if record.name.startswith("webkitpy.thirdparty"):
+        if record.name.startswith('webkitpy.thirdparty'):
             return False
         return True
 
@@ -47,9 +47,9 @@ def _default_handlers(stream, logging_level):
     # Create the handler.
     handler = logging.StreamHandler(stream)
     if logging_level == logging.DEBUG:
-        formatter = logging.Formatter("%(name)s: [%(levelname)s] %(message)s")
+        formatter = logging.Formatter('%(name)s: [%(levelname)s] %(message)s')
     else:
-        formatter = logging.Formatter("%(message)s")
+        formatter = logging.Formatter('%(message)s')
 
     handler.setFormatter(formatter)
     handler.addFilter(logging_filter)
@@ -103,6 +103,6 @@ def configure_logging(logging_level=None, logger=None, stream=None,
     for handler in handlers:
         logger.addHandler(handler)
 
-    _log.debug("Debug logging enabled.")
+    _log.debug('Debug logging enabled.')
 
     return handlers

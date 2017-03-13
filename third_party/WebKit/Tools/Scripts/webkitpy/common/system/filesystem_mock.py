@@ -88,16 +88,16 @@ class MockFileSystem(object):
         return self._split(path)[1]
 
     def expanduser(self, path):
-        if path[0] != "~":
+        if path[0] != '~':
             return path
         parts = path.split(self.sep, 1)
-        home_directory = self.sep + "Users" + self.sep + "mock"
+        home_directory = self.sep + 'Users' + self.sep + 'mock'
         if len(parts) == 1:
             return home_directory
         return home_directory + self.sep + parts[1]
 
     def path_to_module(self, module_name):
-        return "/mock-checkout/third_party/WebKit/Tools/Scripts/" + module_name.replace('.', '/') + ".py"
+        return '/mock-checkout/third_party/WebKit/Tools/Scripts/' + module_name.replace('.', '/') + '.py'
 
     def chdir(self, path):
         path = self.normpath(path)
@@ -209,7 +209,7 @@ class MockFileSystem(object):
     def walk(self, top):
         sep = self.sep
         if not self.isdir(top):
-            raise OSError("%s is not a directory" % top)
+            raise OSError('%s is not a directory' % top)
 
         if not top.endswith(sep):
             top += sep
@@ -431,7 +431,7 @@ class WritableBinaryFileObject(object):
         self.fs = fs
         self.path = path
         self.closed = False
-        self.fs.files[path] = ""
+        self.fs.files[path] = ''
 
     def __enter__(self):
         return self
@@ -482,7 +482,7 @@ class ReadableBinaryFileObject(object):
 class ReadableTextFileObject(ReadableBinaryFileObject):
 
     def __init__(self, fs, path, data):
-        super(ReadableTextFileObject, self).__init__(fs, path, StringIO.StringIO(data.decode("utf-8")))
+        super(ReadableTextFileObject, self).__init__(fs, path, StringIO.StringIO(data.decode('utf-8')))
 
     def close(self):
         self.data.close()

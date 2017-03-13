@@ -56,22 +56,22 @@ class PortTest(unittest.TestCase):
 
     def test_pretty_patch_os_error(self):
         port = self.make_port(executive=MockExecutive(exception=OSError))
-        self.assertEqual(port.pretty_patch_text("patch.txt"),
+        self.assertEqual(port.pretty_patch_text('patch.txt'),
                          port._pretty_patch_error_html)
 
         # This tests repeated calls to make sure we cache the result.
-        self.assertEqual(port.pretty_patch_text("patch.txt"),
+        self.assertEqual(port.pretty_patch_text('patch.txt'),
                          port._pretty_patch_error_html)
 
     def test_pretty_patch_script_error(self):
         # FIXME: This is some ugly white-box test hacking ...
         port = self.make_port(executive=MockExecutive(exception=ScriptError))
         port._pretty_patch_available = True
-        self.assertEqual(port.pretty_patch_text("patch.txt"),
+        self.assertEqual(port.pretty_patch_text('patch.txt'),
                          port._pretty_patch_error_html)
 
         # This tests repeated calls to make sure we cache the result.
-        self.assertEqual(port.pretty_patch_text("patch.txt"),
+        self.assertEqual(port.pretty_patch_text('patch.txt'),
                          port._pretty_patch_error_html)
 
     def test_setup_test_run(self):
@@ -340,14 +340,14 @@ class PortTest(unittest.TestCase):
 
     def test_parse_reftest_list(self):
         port = self.make_port(with_tests=True)
-        port.host.filesystem.files['bar/reftest.list'] = "\n".join(["== test.html test-ref.html",
-                                                                    "",
-                                                                    "# some comment",
-                                                                    "!= test-2.html test-notref.html # more comments",
-                                                                    "== test-3.html test-ref.html",
-                                                                    "== test-3.html test-ref2.html",
-                                                                    "!= test-3.html test-notref.html",
-                                                                    "fuzzy(80,500) == test-3 test-ref.html"])
+        port.host.filesystem.files['bar/reftest.list'] = '\n'.join(['== test.html test-ref.html',
+                                                                    '',
+                                                                    '# some comment',
+                                                                    '!= test-2.html test-notref.html # more comments',
+                                                                    '== test-3.html test-ref.html',
+                                                                    '== test-3.html test-ref2.html',
+                                                                    '!= test-3.html test-notref.html',
+                                                                    'fuzzy(80,500) == test-3 test-ref.html'])
 
         # Note that we don't support the syntax in the last line; the code should ignore it, rather than crashing.
 

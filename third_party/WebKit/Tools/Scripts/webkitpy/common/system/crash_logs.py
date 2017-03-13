@@ -40,17 +40,17 @@ class CrashLogs(object):
         return None
 
     def _log_directory_darwin(self):
-        log_directory = self._host.filesystem.expanduser("~")
-        log_directory = self._host.filesystem.join(log_directory, "Library", "Logs")
-        if self._host.filesystem.exists(self._host.filesystem.join(log_directory, "DiagnosticReports")):
-            log_directory = self._host.filesystem.join(log_directory, "DiagnosticReports")
+        log_directory = self._host.filesystem.expanduser('~')
+        log_directory = self._host.filesystem.join(log_directory, 'Library', 'Logs')
+        if self._host.filesystem.exists(self._host.filesystem.join(log_directory, 'DiagnosticReports')):
+            log_directory = self._host.filesystem.join(log_directory, 'DiagnosticReports')
         else:
-            log_directory = self._host.filesystem.join(log_directory, "CrashReporter")
+            log_directory = self._host.filesystem.join(log_directory, 'CrashReporter')
         return log_directory
 
     def _find_newest_log_darwin(self, process_name, pid, include_errors, newer_than):
         def is_crash_log(basename):
-            return basename.startswith(process_name + "_") and basename.endswith(".crash")
+            return basename.startswith(process_name + '_') and basename.endswith('.crash')
 
         log_directory = self._log_directory_darwin()
         logs = self._host.filesystem.files_under(

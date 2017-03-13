@@ -36,10 +36,10 @@ def log_thread_state(logger, name, thread_id, msg=''):
     """Log information about the given thread state."""
     stack = _find_thread_stack(thread_id)
     assert stack is not None
-    logger("")
-    logger("%s (tid %d) %s" % (name, thread_id, msg))
+    logger('')
+    logger('%s (tid %d) %s' % (name, thread_id, msg))
     _log_stack(logger, stack)
-    logger("")
+    logger('')
 
 
 def _find_thread_stack(thread_id):
@@ -65,4 +65,4 @@ def log_traceback(logger, tb):
     for frame_str in traceback.format_list(stack):
         for line in frame_str.split('\n'):
             if line:
-                logger("  %s" % line)
+                logger('  %s' % line)

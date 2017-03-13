@@ -160,6 +160,7 @@ class LintTest(unittest.TestCase):
         self.assertIn('flag-specific:1 Path does not exist. does/not/exist', logging_stream.getvalue())
         self.assertNotIn('noproblem', logging_stream.getvalue())
 
+
 class CheckVirtualSuiteTest(unittest.TestCase):
 
     def test_check_virtual_test_suites(self):

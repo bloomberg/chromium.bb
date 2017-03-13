@@ -38,8 +38,8 @@ _log = logging.getLogger(__name__)
 
 
 class FlakyTests(Command):
-    name = "print-flaky-tests"
-    help_text = "Print out flaky tests based on results from the flakiness dashboard"
+    name = 'print-flaky-tests'
+    help_text = 'Print out flaky tests based on results from the flakiness dashboard'
     show_in_main_help = True
 
     FLAKINESS_DASHBOARD_URL = 'https://test-results.appspot.com/dashboards/flakiness_dashboard.html#testType=webkit_tests&tests=%s'

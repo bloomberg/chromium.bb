@@ -69,7 +69,7 @@ class TestGenerateIDLDiff(unittest.TestCase):
         self.assertEqual(deleted['ExtAttributes'], [])
         self.assertEqual(added['Name'], 'computedTiming')
         self.assertEqual(added['Type'], 'ComputedTimingProperties')
-        self.assertEqual(added['ExtAttributes'], [{"Name": "maxChannelCount"}])
+        self.assertEqual(added['ExtAttributes'], [{'Name': 'maxChannelCount'}])
         self.assertEqual(unchanged['Name'], 'timing')
         self.assertEqual(unchanged['Type'], 'AnimationEffectTiming')
         self.assertEqual(unchanged['ExtAttributes'], [])
@@ -77,9 +77,9 @@ class TestGenerateIDLDiff(unittest.TestCase):
     def test_changed_operation(self):
         changed_interface = self.diff['ANGLEInstancedArrays']
         members = changed_interface['Operations']
-        deleted_arguments = [{"Type": "long", "Name": "primcount"}]
-        added_arguments = [{"Type": "unsigned long", "Name": "mode"}]
-        unchanged_arguments = [{"Type": "unsigned long", "Name": "mode"}]
+        deleted_arguments = [{'Type': 'long', 'Name': 'primcount'}]
+        added_arguments = [{'Type': 'unsigned long', 'Name': 'mode'}]
+        unchanged_arguments = [{'Type': 'unsigned long', 'Name': 'mode'}]
         for member in members:
             if member.get(DIFF_TAG) == DIFF_TAG_DELETED:
                 deleted = member

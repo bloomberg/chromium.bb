@@ -310,7 +310,7 @@ def get_test_config(test_files=None, result_files=None):
 
     class TestMacPort(Port):
         # Abstract method path_to_apache not implemented - pylint: disable=abstract-method
-        port_name = "mac"
+        port_name = 'mac'
         FALLBACK_PATHS = {'': ['mac']}
 
     return TestConfig(
