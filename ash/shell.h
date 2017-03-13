@@ -240,6 +240,7 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
                                 const gfx::Insets& insets);
 
   // Called when the user logs in.
+  // TODO(jamescook): Merge this with WmShell::UpdateAfterLoginStatusChange()?
   void OnLoginStateChanged(LoginStatus status);
 
   // Called when the application is exiting.

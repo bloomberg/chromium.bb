@@ -303,6 +303,13 @@ void WmShell::SessionStateChanged(session_manager::SessionState state) {
   // multiple times (e.g. initial login vs. multiprofile add session).
   if (state == session_manager::SessionState::ACTIVE)
     CreateShelfView();
+
+  // Only trigger an update in mash because with classic ash chrome calls
+  // UpdateAfterLoginStatusChange() directly.
+  if (IsRunningInMash()) {
+    // TODO(jamescook): Should this call Shell::OnLoginStatusChanged() too?
+    UpdateAfterLoginStatusChange(session_controller_->GetLoginStatus());
+  }
 }
 
 }  // namespace ash

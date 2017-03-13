@@ -9,6 +9,7 @@
 #include <utility>
 #include <vector>
 
+#include "ash/common/login_status.h"
 #include "ash/common/session/session_controller.h"
 #include "ash/common/session/session_state_observer.h"
 #include "ash/public/interfaces/session_controller.mojom.h"
@@ -189,6 +190,68 @@ TEST_F(SessionControllerTest, SessionState) {
     EXPECT_EQ(test_case.expected_is_user_session_blocked,
               controller()->IsUserSessionBlocked())
         << "Test case state=" << static_cast<int>(test_case.state);
+  }
+}
+
+// Tests that LoginStatus is computed correctly for most session states.
+TEST_F(SessionControllerTest, GetLoginStatus) {
+  using session_manager::SessionState;
+
+  const struct {
+    SessionState state;
+    LoginStatus expected_status;
+  } kTestCases[] = {
+      {SessionState::UNKNOWN, LoginStatus::NOT_LOGGED_IN},
+      {SessionState::OOBE, LoginStatus::NOT_LOGGED_IN},
+      {SessionState::LOGIN_PRIMARY, LoginStatus::NOT_LOGGED_IN},
+      {SessionState::LOGGED_IN_NOT_ACTIVE, LoginStatus::NOT_LOGGED_IN},
+      {SessionState::LOCKED, LoginStatus::LOCKED},
+      // TODO: Add LOGIN_SECONDARY if we added a status for it.
+  };
+
+  mojom::SessionInfo info;
+  FillDefaultSessionInfo(&info);
+  for (const auto& test_case : kTestCases) {
+    info.state = test_case.state;
+    SetSessionInfo(info);
+    EXPECT_EQ(test_case.expected_status, controller()->GetLoginStatus())
+        << "Test case state=" << static_cast<int>(test_case.state);
+  }
+}
+
+// Tests that LoginStatus is computed correctly for active sessions.
+TEST_F(SessionControllerTest, GetLoginStateForActiveSession) {
+  // Simulate an active user session.
+  mojom::SessionInfo info;
+  FillDefaultSessionInfo(&info);
+  info.state = session_manager::SessionState::ACTIVE;
+  SetSessionInfo(info);
+
+  const struct {
+    user_manager::UserType user_type;
+    LoginStatus expected_status;
+  } kTestCases[] = {
+      {user_manager::USER_TYPE_REGULAR, LoginStatus::USER},
+      {user_manager::USER_TYPE_GUEST, LoginStatus::GUEST},
+      {user_manager::USER_TYPE_PUBLIC_ACCOUNT, LoginStatus::PUBLIC},
+      {user_manager::USER_TYPE_SUPERVISED, LoginStatus::SUPERVISED},
+      {user_manager::USER_TYPE_KIOSK_APP, LoginStatus::KIOSK_APP},
+      {user_manager::USER_TYPE_CHILD, LoginStatus::SUPERVISED},
+      {user_manager::USER_TYPE_ARC_KIOSK_APP, LoginStatus::ARC_KIOSK_APP},
+      // TODO: Add USER_TYPE_ACTIVE_DIRECTORY if we add a status for it.
+  };
+
+  for (const auto& test_case : kTestCases) {
+    mojom::UserSessionPtr session = mojom::UserSession::New();
+    session->session_id = 1u;
+    session->type = test_case.user_type;
+    session->account_id = AccountId::FromUserEmail("user1@test.com");
+    session->display_name = "User 1";
+    session->display_email = "user1@test.com";
+    controller()->UpdateUserSession(std::move(session));
+
+    EXPECT_EQ(test_case.expected_status, controller()->GetLoginStatus())
+        << "Test case user_type=" << static_cast<int>(test_case.user_type);
   }
 }
 
