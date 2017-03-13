@@ -6,9 +6,9 @@
 
 #include "ash/common/shell_delegate.h"
 #include "ash/common/wm/window_state.h"
-#include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/shell.h"
 
 namespace ash {
 
@@ -37,7 +37,7 @@ bool IsWindowConsideredVisibleForActivation(WmWindow* window) {
   DCHECK(window);
   // If the |window| doesn't belong to the current active user and also doesn't
   // show for the current active user, then it should not be activated.
-  if (!WmShell::Get()->delegate()->CanShowWindowForUser(window))
+  if (!Shell::Get()->shell_delegate()->CanShowWindowForUser(window))
     return false;
 
   if (window->IsVisible())

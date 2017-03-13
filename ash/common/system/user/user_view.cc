@@ -26,6 +26,7 @@
 #include "ash/resources/grit/ash_resources.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/root_window_controller.h"
+#include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "base/memory/ptr_util.h"
 #include "components/signin/core/account_id/account_id.h"
@@ -60,7 +61,7 @@ void SwitchUser(UserIndex user_index) {
 }
 
 bool IsMultiProfileSupportedAndUserActive() {
-  return WmShell::Get()->delegate()->IsMultiProfilesEnabled() &&
+  return Shell::Get()->shell_delegate()->IsMultiProfilesEnabled() &&
          !WmShell::Get()->GetSessionStateDelegate()->IsUserSessionBlocked();
 }
 

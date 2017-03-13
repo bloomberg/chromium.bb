@@ -216,7 +216,7 @@ void TabletPowerButtonController::SetDisplayForcedOff(bool forced_off) {
       ->SetBacklightsForcedOff(forced_off);
   backlights_forced_off_ = forced_off;
 
-  ShellDelegate* delegate = WmShell::Get()->delegate();
+  ShellDelegate* delegate = Shell::Get()->shell_delegate();
   delegate->SetTouchscreenEnabledInPrefs(!forced_off,
                                          true /* use_local_state */);
   delegate->UpdateTouchscreenStatusFromPrefs();

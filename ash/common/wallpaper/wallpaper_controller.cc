@@ -234,7 +234,7 @@ bool WallpaperController::WallpaperIsAlreadyLoaded(
 
 void WallpaperController::OpenSetWallpaperPage() {
   if (wallpaper_picker_ &&
-      WmShell::Get()->wallpaper_delegate()->CanOpenSetWallpaperPage()) {
+      Shell::Get()->wallpaper_delegate()->CanOpenSetWallpaperPage()) {
     wallpaper_picker_->Open();
   }
 }
@@ -326,7 +326,7 @@ int WallpaperController::GetWallpaperContainerId(bool locked) {
 
 void WallpaperController::UpdateWallpaper(bool clear_cache) {
   current_wallpaper_.reset();
-  WmShell::Get()->wallpaper_delegate()->UpdateWallpaper(clear_cache);
+  Shell::Get()->wallpaper_delegate()->UpdateWallpaper(clear_cache);
 }
 
 void WallpaperController::SetProminentColor(SkColor color) {

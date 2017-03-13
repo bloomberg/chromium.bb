@@ -188,7 +188,7 @@ void LockStateController::SetLockScreenDisplayedCallback(
 
 void LockStateController::OnHostCloseRequested(
     const aura::WindowTreeHost* host) {
-  WmShell::Get()->delegate()->Exit();
+  Shell::Get()->shell_delegate()->Exit();
 }
 
 void LockStateController::OnLoginStateChanged(LoginStatus status) {

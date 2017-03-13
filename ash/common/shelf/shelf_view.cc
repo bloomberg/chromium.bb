@@ -25,6 +25,7 @@
 #include "ash/common/wm/root_window_finder.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
+#include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "base/auto_reset.h"
 #include "base/memory/ptr_util.h"
@@ -1639,7 +1640,7 @@ void ShelfView::ShowContextMenuForView(views::View* source,
   }
 
   std::unique_ptr<ui::MenuModel> context_menu_model(
-      WmShell::Get()->delegate()->CreateContextMenu(wm_shelf_, item));
+      Shell::Get()->shell_delegate()->CreateContextMenu(wm_shelf_, item));
   if (!context_menu_model)
     return;
 

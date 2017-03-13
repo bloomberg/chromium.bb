@@ -24,6 +24,7 @@
 #include "ash/common/system/tray_accessibility.h"
 #include "ash/common/system/user/user_observer.h"
 #include "ash/common/wm_shell.h"
+#include "ash/shell.h"
 #include "ash/system/chromeos/rotation/tray_rotation_lock.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
@@ -323,8 +324,7 @@ void SystemTrayDelegateChromeOS::ShowEnterpriseInfo() {
 }
 
 void SystemTrayDelegateChromeOS::ShowUserLogin() {
-  ash::WmShell* wm_shell = ash::WmShell::Get();
-  if (!wm_shell->delegate()->IsMultiProfilesEnabled())
+  if (!ash::Shell::Get()->shell_delegate()->IsMultiProfilesEnabled())
     return;
 
   // Only regular non-supervised users could add other users to current session.

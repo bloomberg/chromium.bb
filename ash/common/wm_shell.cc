@@ -31,7 +31,6 @@
 #include "ash/common/system/tray/system_tray_controller.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/system/tray/system_tray_notifier.h"
-#include "ash/common/wallpaper/wallpaper_delegate.h"
 #include "ash/common/wm/immersive_context_ash.h"
 #include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/common/wm/mru_window_tracker.h"
@@ -46,9 +45,6 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "services/preferences/public/cpp/pref_client_store.h"
-#include "services/preferences/public/interfaces/preferences.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "ui/app_list/presenter/app_list.h"
 #include "ui/display/display.h"
 
@@ -58,12 +54,9 @@ namespace ash {
 WmShell* WmShell::instance_ = nullptr;
 
 WmShell::~WmShell() {
+  DCHECK_EQ(this, instance_);
+  instance_ = nullptr;
   session_controller_->RemoveSessionStateObserver(this);
-}
-
-// static
-void WmShell::Set(WmShell* instance) {
-  instance_ = instance;
 }
 
 // static
@@ -120,7 +113,8 @@ void WmShell::CreateShelfDelegate() {
   // about multi-profile login state.
   DCHECK(GetSessionStateDelegate());
   DCHECK_GT(GetSessionStateDelegate()->NumberOfLoggedInUsers(), 0);
-  shelf_delegate_.reset(delegate_->CreateShelfDelegate(shelf_model()));
+  shelf_delegate_.reset(
+      Shell::Get()->shell_delegate()->CreateShelfDelegate(shelf_model()));
   shelf_window_watcher_.reset(new ShelfWindowWatcher(shelf_model()));
 }
 
@@ -149,9 +143,8 @@ void WmShell::SetShelfDelegateForTesting(
   shelf_delegate_ = std::move(test_delegate);
 }
 
-WmShell::WmShell(std::unique_ptr<ShellDelegate> shell_delegate)
-    : delegate_(std::move(shell_delegate)),
-      app_list_(base::MakeUnique<app_list::AppList>()),
+WmShell::WmShell()
+    : app_list_(base::MakeUnique<app_list::AppList>()),
       brightness_control_delegate_(
           base::MakeUnique<system::BrightnessControllerChromeos>()),
       cast_config_(base::MakeUnique<CastConfigController>()),
@@ -169,19 +162,13 @@ WmShell::WmShell(std::unique_ptr<ShellDelegate> shell_delegate)
       system_tray_controller_(base::MakeUnique<SystemTrayController>()),
       system_tray_notifier_(base::MakeUnique<SystemTrayNotifier>()),
       vpn_list_(base::MakeUnique<VpnList>()),
-      wallpaper_delegate_(delegate_->CreateWallpaperDelegate()),
       window_cycle_controller_(base::MakeUnique<WindowCycleController>()),
       window_selector_controller_(
           base::MakeUnique<WindowSelectorController>()) {
+  DCHECK(!instance_);
+  instance_ = this;
   session_controller_->AddSessionStateObserver(this);
 
-  prefs::mojom::PreferencesServiceFactoryPtr pref_factory_ptr;
-  // Can be null in tests.
-  if (!delegate_->GetShellConnector())
-    return;
-  delegate_->GetShellConnector()->BindInterface(prefs::mojom::kServiceName,
-                                                &pref_factory_ptr);
-  pref_store_ = new preferences::PrefClientStore(std::move(pref_factory_ptr));
 }
 
 RootWindowController* WmShell::GetPrimaryRootWindowController() {
@@ -189,7 +176,7 @@ RootWindowController* WmShell::GetPrimaryRootWindowController() {
 }
 
 bool WmShell::IsForceMaximizeOnFirstRun() {
-  return delegate()->IsForceMaximizeOnFirstRun();
+  return Shell::Get()->shell_delegate()->IsForceMaximizeOnFirstRun();
 }
 
 bool WmShell::IsSystemModalWindowOpen() {

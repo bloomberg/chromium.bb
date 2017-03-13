@@ -963,7 +963,7 @@ void LoginDisplayHostImpl::Observe(
     VLOG(1) << "Login WebUI >> wp animation done";
     is_wallpaper_loaded_ = true;
     if (!ash_util::IsRunningInMash()) {
-      ash::WmShell::Get()
+      ash::Shell::Get()
           ->wallpaper_delegate()
           ->OnWallpaperBootAnimationFinished();
     } else {

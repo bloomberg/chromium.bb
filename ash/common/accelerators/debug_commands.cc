@@ -107,7 +107,7 @@ void HandleToggleWallpaperMode() {
       Shell::GetInstance()->wallpaper_controller();
   switch (++index % 4) {
     case 0:
-      ash::WmShell::Get()->wallpaper_delegate()->InitializeWallpaper();
+      Shell::Get()->wallpaper_delegate()->InitializeWallpaper();
       break;
     case 1:
       wallpaper_controller->SetWallpaperImage(
@@ -129,12 +129,12 @@ void HandleToggleWallpaperMode() {
 
 void HandleToggleTouchpad() {
   base::RecordAction(base::UserMetricsAction("Accel_Toggle_Touchpad"));
-  ash::WmShell::Get()->delegate()->ToggleTouchpad();
+  Shell::Get()->shell_delegate()->ToggleTouchpad();
 }
 
 void HandleToggleTouchscreen() {
   base::RecordAction(base::UserMetricsAction("Accel_Toggle_Touchscreen"));
-  ShellDelegate* delegate = WmShell::Get()->delegate();
+  ShellDelegate* delegate = Shell::Get()->shell_delegate();
   delegate->SetTouchscreenEnabledInPrefs(
       !delegate->IsTouchscreenEnabledInPrefs(false /* use_local_state */),
       false /* use_local_state */);

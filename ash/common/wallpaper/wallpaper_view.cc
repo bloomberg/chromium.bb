@@ -195,7 +195,7 @@ void WallpaperView::ShowContextMenuForView(views::View* source,
 views::Widget* CreateWallpaper(WmWindow* root_window, int container_id) {
   WallpaperController* controller =
       Shell::GetInstance()->wallpaper_controller();
-  WallpaperDelegate* wallpaper_delegate = WmShell::Get()->wallpaper_delegate();
+  WallpaperDelegate* wallpaper_delegate = Shell::Get()->wallpaper_delegate();
 
   views::Widget* wallpaper_widget = new views::Widget;
   views::Widget::InitParams params(

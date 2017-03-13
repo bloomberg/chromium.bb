@@ -6,9 +6,9 @@
 
 #include "ash/ash_export.h"
 #include "ash/common/wallpaper/wallpaper_delegate.h"
-#include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/root_window_controller.h"
+#include "ash/shell.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/views/widget/widget.h"
@@ -119,7 +119,7 @@ void WallpaperWidgetController::StartAnimating(
         widget_->GetLayer()->GetAnimator());
     settings.AddObserver(new ShowWallpaperAnimationObserver(
         root_window_controller, widget_,
-        WmShell::Get()->wallpaper_delegate()->ShouldShowInitialAnimation()));
+        Shell::Get()->wallpaper_delegate()->ShouldShowInitialAnimation()));
     // When |widget_| shows, AnimateShowWindowCommon() is called to do the
     // animation. Sets transition duration to 0 to avoid animating to the
     // show animation's initial values.

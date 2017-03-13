@@ -1156,7 +1156,7 @@ class MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerImplTest
 
     // Get some base objects.
     shell_delegate_ = static_cast<ash::test::TestShellDelegate*>(
-        ash::WmShell::Get()->delegate());
+        ash::Shell::Get()->shell_delegate());
     shell_delegate_->set_multi_profiles_enabled(true);
   }
 

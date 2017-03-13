@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "ash/common/shell_delegate.h"
-#include "ash/common/wm_shell.h"
+#include "ash/shell.h"
 #include "base/files/file.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
@@ -48,7 +48,7 @@ void OpenPdf(base::Optional<base::FilePath> file_path) {
     return;
 
   GURL gurl = net::FilePathToFileURL(file_path.value());
-  ash::WmShell::Get()->delegate()->OpenUrlFromArc(gurl);
+  ash::Shell::Get()->shell_delegate()->OpenUrlFromArc(gurl);
   // TODO(poromov) Delete file after printing. (http://crbug.com/629843)
 }
 

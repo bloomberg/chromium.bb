@@ -10,6 +10,7 @@ include_rules = [
   "+gpu/config",
   "+media",
   "+mojo/public",
+  "+services/preferences/public",
   "+services/service_manager/public",
   "+services/ui/public",
   "+skia/ext",

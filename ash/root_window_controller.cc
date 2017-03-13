@@ -536,7 +536,7 @@ void RootWindowController::OnWallpaperAnimationFinished(views::Widget* widget) {
   // Make sure the wallpaper is visible.
   system_wallpaper_->SetColor(SK_ColorBLACK);
   boot_splash_screen_.reset();
-  WmShell::Get()->wallpaper_delegate()->OnWallpaperAnimationFinished();
+  Shell::Get()->wallpaper_delegate()->OnWallpaperAnimationFinished();
   // Only removes old component when wallpaper animation finished. If we
   // remove the old one before the new wallpaper is done fading in there will
   // be a white flash during the animation.
@@ -727,7 +727,7 @@ void RootWindowController::SetTouchAccessibilityAnchorPoint(
 
 void RootWindowController::ShowContextMenu(const gfx::Point& location_in_screen,
                                            ui::MenuSourceType source_type) {
-  ShellDelegate* delegate = WmShell::Get()->delegate();
+  ShellDelegate* delegate = Shell::Get()->shell_delegate();
   DCHECK(delegate);
   menu_model_.reset(delegate->CreateContextMenu(wm_shelf_.get(), nullptr));
   if (!menu_model_)

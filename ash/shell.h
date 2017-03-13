@@ -53,6 +53,10 @@ namespace gfx {
 class Insets;
 }
 
+namespace preferences {
+class PrefClientStore;
+}
+
 namespace ui {
 class UserActivityDetector;
 class UserActivityPowerManagerNotifier;
@@ -118,6 +122,7 @@ class ScreenshotController;
 class ScreenPinningController;
 class ScreenPositionController;
 class SessionStateDelegate;
+class ShellDelegate;
 struct ShellInitParams;
 class ShellObserver;
 class ShutdownObserver;
@@ -133,6 +138,7 @@ class VirtualKeyboardController;
 class VideoActivityNotifier;
 class VideoDetector;
 class WallpaperController;
+class WallpaperDelegate;
 class WebNotificationTray;
 class WindowPositioner;
 class WindowTreeHostManager;
@@ -165,7 +171,10 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   static Shell* CreateInstance(const ShellInitParams& init_params);
 
   // Should never be called before |CreateInstance()|.
-  static Shell* GetInstance();
+  // TODO: deprecated. Use Get() instead. GetInstance() will be renamed close
+  // to branch point.
+  static Shell* GetInstance() { return Get(); }
+  static Shell* Get();
 
   // Returns true if the ash shell has been instantiated.
   static bool HasInstance();
@@ -291,11 +300,14 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   LockStateController* lock_state_controller() {
     return lock_state_controller_.get();
   }
+  preferences::PrefClientStore* pref_store() { return pref_store_.get(); }
   PaletteDelegate* palette_delegate() { return palette_delegate_.get(); }
+  ShellDelegate* shell_delegate() { return shell_delegate_.get(); }
   VideoDetector* video_detector() { return video_detector_.get(); }
   WallpaperController* wallpaper_controller() {
     return wallpaper_controller_.get();
   }
+  WallpaperDelegate* wallpaper_delegate() { return wallpaper_delegate_.get(); }
   WindowTreeHostManager* window_tree_host_manager() {
     return window_tree_host_manager_.get();
   }
@@ -487,7 +499,8 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   friend class test::ShellTestApi;
   friend class shell::WindowWatcher;
 
-  explicit Shell(std::unique_ptr<WmShell> wm_shell);
+  Shell(std::unique_ptr<ShellDelegate> shell_delegate,
+        std::unique_ptr<WmShell> wm_shell);
   ~Shell() override;
 
   void Init(const ShellInitParams& init_params);
@@ -542,11 +555,14 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   std::unique_ptr<PaletteDelegate> palette_delegate_;
   std::unique_ptr<DragDropController> drag_drop_controller_;
   std::unique_ptr<ResizeShadowController> resize_shadow_controller_;
+  std::unique_ptr<ShellDelegate> shell_delegate_;
   std::unique_ptr<ToastManager> toast_manager_;
   std::unique_ptr<WallpaperController> wallpaper_controller_;
+  std::unique_ptr<WallpaperDelegate> wallpaper_delegate_;
   std::unique_ptr<::wm::ShadowController> shadow_controller_;
   std::unique_ptr<::wm::VisibilityController> visibility_controller_;
   std::unique_ptr<::wm::WindowModalityController> window_modality_controller_;
+  scoped_refptr<preferences::PrefClientStore> pref_store_;
   std::unique_ptr<ui::devtools::UiDevToolsServer> devtools_server_;
   std::unique_ptr<views::corewm::TooltipController> tooltip_controller_;
   LinkHandlerModelFactory* link_handler_model_factory_;

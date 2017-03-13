@@ -118,7 +118,7 @@ class WallpaperControllerTest : public test::AshTestBase {
     root_window_controller->SetAnimatingWallpaperWidgetController(nullptr);
     controller_ = Shell::GetInstance()->wallpaper_controller();
     wallpaper_delegate_ = static_cast<test::TestWallpaperDelegate*>(
-        WmShell::Get()->wallpaper_delegate());
+        Shell::Get()->wallpaper_delegate());
     controller_->set_wallpaper_reload_delay_for_test(0);
   }
 

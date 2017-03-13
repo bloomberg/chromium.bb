@@ -73,7 +73,7 @@ class DeprecatedAcceleratorNotificationDelegate
 
   void Click() override {
     if (!WmShell::Get()->GetSessionStateDelegate()->IsUserSessionBlocked())
-      WmShell::Get()->delegate()->OpenKeyboardShortcutHelpPage();
+      Shell::Get()->shell_delegate()->OpenKeyboardShortcutHelpPage();
   }
 
  private:
@@ -475,7 +475,7 @@ void AcceleratorControllerDelegateAura::ShowDeprecatedAcceleratorNotification(
       new message_center::Notification(
           message_center::NOTIFICATION_TYPE_SIMPLE, notification_id,
           base::string16(), message,
-          WmShell::Get()->delegate()->GetDeprecatedAcceleratorImage(),
+          Shell::Get()->shell_delegate()->GetDeprecatedAcceleratorImage(),
           base::string16(), GURL(),
           message_center::NotifierId(
               message_center::NotifierId::SYSTEM_COMPONENT,

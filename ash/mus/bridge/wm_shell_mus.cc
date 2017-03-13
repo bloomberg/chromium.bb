@@ -115,18 +115,15 @@ class SessionStateDelegateStub : public SessionStateDelegate {
 
 WmShellMus::WmShellMus(
     WmWindow* primary_root_window,
-    std::unique_ptr<ShellDelegate> shell_delegate,
     WindowManager* window_manager,
     views::PointerWatcherEventRouter* pointer_watcher_event_router,
     bool create_session_state_delegate_stub)
-    : WmShell(std::move(shell_delegate)),
-      window_manager_(window_manager),
+    : window_manager_(window_manager),
       primary_root_window_(primary_root_window),
       pointer_watcher_event_router_(pointer_watcher_event_router) {
   if (create_session_state_delegate_stub)
     session_state_delegate_ = base::MakeUnique<SessionStateDelegateStub>();
   DCHECK(primary_root_window_);
-  WmShell::Set(this);
 
   uint16_t accelerator_namespace_id = 0u;
   const bool add_result =
@@ -146,7 +143,6 @@ WmShellMus::WmShellMus(
 }
 
 WmShellMus::~WmShellMus() {
-  WmShell::Set(nullptr);
 }
 
 // static

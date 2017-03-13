@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/ui/ash/multi_user/multi_user_notification_blocker_chromeos.h"
+
 #include "ash/common/system/system_notifier.h"
-#include "ash/common/wm_shell.h"
+#include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/test_shell_delegate.h"
 #include "base/macros.h"
@@ -11,7 +13,6 @@
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
-#include "chrome/browser/ui/ash/multi_user/multi_user_notification_blocker_chromeos.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_chromeos.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
@@ -44,7 +45,7 @@ class MultiUserNotificationBlockerChromeOSTest
 
     ash::test::TestShellDelegate* shell_delegate =
         static_cast<ash::test::TestShellDelegate*>(
-            ash::WmShell::Get()->delegate());
+            ash::Shell::Get()->shell_delegate());
     shell_delegate->set_multi_profiles_enabled(true);
     chrome::MultiUserWindowManager::CreateInstance();
 

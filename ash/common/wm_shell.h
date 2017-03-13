@@ -35,10 +35,6 @@ class Insets;
 class Point;
 }
 
-namespace preferences {
-class PrefClientStore;
-}
-
 namespace views {
 class PointerWatcher;
 enum class PointerWatcherEventTypes;
@@ -68,14 +64,12 @@ class ShelfController;
 class ShelfDelegate;
 class ShelfModel;
 class ShelfWindowWatcher;
-class ShellDelegate;
 struct ShellInitParams;
 class ShutdownController;
 class SystemTrayDelegate;
 class SystemTrayController;
 class SystemTrayNotifier;
 class VpnList;
-class WallpaperDelegate;
 class WindowCycleController;
 class WindowCycleEventFilter;
 class WindowResizer;
@@ -97,15 +91,10 @@ class ASH_EXPORT WmShell : public SessionStateObserver {
  public:
   ~WmShell() override;
 
-  // This is necessary for a handful of places that is difficult to plumb
-  // through context.
-  static void Set(WmShell* instance);
   static WmShell* Get();
   static bool HasInstance() { return instance_ != nullptr; }
 
   virtual void Shutdown();
-
-  ShellDelegate* delegate() { return delegate_.get(); }
 
   AcceleratorController* accelerator_controller() {
     return accelerator_controller_.get();
@@ -147,8 +136,6 @@ class ASH_EXPORT WmShell : public SessionStateObserver {
     return new_window_controller_.get();
   }
 
-  preferences::PrefClientStore* pref_store() { return pref_store_.get(); }
-
   SessionController* session_controller() { return session_controller_.get(); }
 
   ShelfController* shelf_controller() { return shelf_controller_.get(); }
@@ -174,8 +161,6 @@ class ASH_EXPORT WmShell : public SessionStateObserver {
   }
 
   VpnList* vpn_list() { return vpn_list_.get(); }
-
-  WallpaperDelegate* wallpaper_delegate() { return wallpaper_delegate_.get(); }
 
   WindowCycleController* window_cycle_controller() {
     return window_cycle_controller_.get();
@@ -363,7 +348,7 @@ class ASH_EXPORT WmShell : public SessionStateObserver {
   virtual void CreatePointerWatcherAdapter() = 0;
 
  protected:
-  explicit WmShell(std::unique_ptr<ShellDelegate> shell_delegate);
+  WmShell();
 
   // Called during startup to create the primary WindowTreeHost and
   // the corresponding RootWindowController.
@@ -400,10 +385,6 @@ class ASH_EXPORT WmShell : public SessionStateObserver {
 
   static WmShell* instance_;
 
-  std::unique_ptr<ShellDelegate> delegate_;
-
-  scoped_refptr<preferences::PrefClientStore> pref_store_;
-
   std::unique_ptr<AcceleratorController> accelerator_controller_;
   std::unique_ptr<app_list::AppList> app_list_;
   std::unique_ptr<BrightnessControlDelegate> brightness_control_delegate_;
@@ -428,7 +409,6 @@ class ASH_EXPORT WmShell : public SessionStateObserver {
   std::unique_ptr<SystemTrayNotifier> system_tray_notifier_;
   std::unique_ptr<SystemTrayDelegate> system_tray_delegate_;
   std::unique_ptr<VpnList> vpn_list_;
-  std::unique_ptr<WallpaperDelegate> wallpaper_delegate_;
   std::unique_ptr<WindowCycleController> window_cycle_controller_;
   std::unique_ptr<WindowSelectorController> window_selector_controller_;
 

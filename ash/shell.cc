@@ -110,6 +110,8 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/system/devicemode.h"
 #include "components/ui_devtools/devtools_server.h"
+#include "services/preferences/public/cpp/pref_client_store.h"
+#include "services/preferences/public/interfaces/preferences.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/ui/public/interfaces/constants.mojom.h"
 #include "ui/aura/client/aura_constants.h"
@@ -199,15 +201,15 @@ Shell* Shell::CreateInstance(const ShellInitParams& init_params) {
   CHECK(!instance_);
   WmShell* wm_shell = init_params.wm_shell;
   if (!wm_shell)
-    wm_shell =
-        new WmShellAura(base::WrapUnique<ShellDelegate>(init_params.delegate));
-  instance_ = new Shell(base::WrapUnique<WmShell>(wm_shell));
+    wm_shell = new WmShellAura();
+  instance_ = new Shell(base::WrapUnique<ShellDelegate>(init_params.delegate),
+                        base::WrapUnique<WmShell>(wm_shell));
   instance_->Init(init_params);
   return instance_;
 }
 
 // static
-Shell* Shell::GetInstance() {
+Shell* Shell::Get() {
   CHECK(instance_);
   return instance_;
 }
@@ -478,8 +480,10 @@ void Shell::NotifyShelfAutoHideBehaviorChanged(WmWindow* root_window) {
 ////////////////////////////////////////////////////////////////////////////////
 // Shell, private:
 
-Shell::Shell(std::unique_ptr<WmShell> wm_shell)
+Shell::Shell(std::unique_ptr<ShellDelegate> shell_delegate,
+             std::unique_ptr<WmShell> wm_shell)
     : wm_shell_(std::move(wm_shell)),
+      shell_delegate_(std::move(shell_delegate)),
       link_handler_model_factory_(nullptr),
       display_configurator_(new display::DisplayConfigurator()),
       native_cursor_manager_(nullptr),
@@ -489,7 +493,7 @@ Shell::Shell(std::unique_ptr<WmShell> wm_shell)
   // state on WmShellAura. http://crbug.com/671246.
 
   if (!wm_shell_->IsRunningInMash()) {
-    gpu_support_.reset(wm_shell_->delegate()->CreateGPUSupport());
+    gpu_support_.reset(shell_delegate_->CreateGPUSupport());
     display_manager_.reset(ScreenAsh::CreateDisplayManager());
     window_tree_host_manager_.reset(new WindowTreeHostManager);
     user_metrics_recorder_.reset(new UserMetricsRecorder);
@@ -506,7 +510,7 @@ Shell::~Shell() {
   if (!is_mash)
     user_metrics_recorder_->OnShellShuttingDown();
 
-  wm_shell_->delegate()->PreShutdown();
+  shell_delegate_->PreShutdown();
 
   // Remove the focus from any window. This will prevent overhead and side
   // effects (e.g. crashes) from changing focus during shutdown.
@@ -661,6 +665,9 @@ Shell::~Shell() {
 
   // Needs to happen right before |instance_| is reset.
   wm_shell_.reset();
+  wallpaper_delegate_.reset();
+  pref_store_ = nullptr;
+  shell_delegate_.reset();
 
   DCHECK(instance_ == this);
   instance_ = nullptr;
@@ -671,11 +678,20 @@ void Shell::Init(const ShellInitParams& init_params) {
 
   blocking_pool_ = init_params.blocking_pool;
 
+  wallpaper_delegate_ = shell_delegate_->CreateWallpaperDelegate();
+
+  // Can be null in tests.
+  if (shell_delegate_->GetShellConnector()) {
+    prefs::mojom::PreferencesServiceFactoryPtr pref_factory_ptr;
+    shell_delegate_->GetShellConnector()->BindInterface(
+        prefs::mojom::kServiceName, &pref_factory_ptr);
+    pref_store_ = new preferences::PrefClientStore(std::move(pref_factory_ptr));
+  }
+
   // Some delegates access WmShell during their construction. Create them here
   // instead of the WmShell constructor.
-  accessibility_delegate_.reset(
-      wm_shell_->delegate()->CreateAccessibilityDelegate());
-  palette_delegate_ = wm_shell_->delegate()->CreatePaletteDelegate();
+  accessibility_delegate_.reset(shell_delegate_->CreateAccessibilityDelegate());
+  palette_delegate_ = shell_delegate_->CreatePaletteDelegate();
   toast_manager_ = base::MakeUnique<ToastManager>();
 
   // Create the app list item in the shelf data model.
@@ -718,7 +734,7 @@ void Shell::Init(const ShellInitParams& init_params) {
         new CursorManager(base::WrapUnique(native_cursor_manager_)));
   }
 
-  wm_shell_->delegate()->PreInit();
+  shell_delegate_->PreInit();
   bool display_initialized = true;
   if (!is_mash) {
     display_initialized = display_manager_->InitFromCommandLine();
@@ -870,10 +886,10 @@ void Shell::Init(const ShellInitParams& init_params) {
   AddShellObserver(lock_state_controller_.get());
 
   // The connector is unavailable in some tests.
-  if (is_mash && wm_shell_->delegate()->GetShellConnector()) {
+  if (is_mash && shell_delegate_->GetShellConnector()) {
     ui::mojom::UserActivityMonitorPtr user_activity_monitor;
-    wm_shell_->delegate()->GetShellConnector()->BindInterface(
-        ui::mojom::kServiceName, &user_activity_monitor);
+    shell_delegate_->GetShellConnector()->BindInterface(ui::mojom::kServiceName,
+                                                        &user_activity_monitor);
     user_activity_forwarder_ = base::MakeUnique<aura::UserActivityForwarder>(
         std::move(user_activity_monitor), user_activity_detector_.get());
   }
@@ -914,8 +930,7 @@ void Shell::Init(const ShellInitParams& init_params) {
 
   event_client_.reset(new EventClientImpl);
 
-  session_state_delegate_.reset(
-      wm_shell_->delegate()->CreateSessionStateDelegate());
+  session_state_delegate_.reset(shell_delegate_->CreateSessionStateDelegate());
   // Must occur after Shell has installed its early pre-target handlers (for
   // example, WindowModalityController).
   wm_shell_->CreatePointerWatcherAdapter();
@@ -924,7 +939,7 @@ void Shell::Init(const ShellInitParams& init_params) {
   shadow_controller_.reset(new ::wm::ShadowController(focus_controller_.get()));
 
   wm_shell_->SetSystemTrayDelegate(
-      base::WrapUnique(wm_shell_->delegate()->CreateSystemTrayDelegate()));
+      base::WrapUnique(shell_delegate_->CreateSystemTrayDelegate()));
 
   // Create AshTouchTransformController before
   // WindowTreeHostManager::InitDisplays()
@@ -950,7 +965,7 @@ void Shell::Init(const ShellInitParams& init_params) {
   // Initialize the wallpaper after the RootWindowController has been created,
   // otherwise the widget will not paint when restoring after a browser crash.
   // Also, initialize after display initialization to ensure correct sizing.
-  wm_shell_->wallpaper_delegate()->InitializeWallpaper();
+  wallpaper_delegate_->InitializeWallpaper();
 
   if (cursor_manager_) {
     if (initially_hide_cursor_)
@@ -994,9 +1009,8 @@ void Shell::InitKeyboard() {
       }
     }
     keyboard::KeyboardController::ResetInstance(
-        new keyboard::KeyboardController(
-            wm_shell_->delegate()->CreateKeyboardUI(),
-            virtual_keyboard_controller_.get()));
+        new keyboard::KeyboardController(shell_delegate_->CreateKeyboardUI(),
+                                         virtual_keyboard_controller_.get()));
   }
 }
 

@@ -11,6 +11,7 @@
 #include "ash/common/wallpaper/wallpaper_delegate.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
+#include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "build/build_config.h"
 #include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
@@ -98,9 +99,7 @@ bool LauncherContextMenu::IsCommandIdEnabled(int command_id) const {
       return !item_.pinned_by_policy && (item_.type == ash::TYPE_APP_SHORTCUT ||
                                          item_.type == ash::TYPE_APP);
     case MENU_CHANGE_WALLPAPER:
-      return ash::WmShell::Get()
-          ->wallpaper_delegate()
-          ->CanOpenSetWallpaperPage();
+      return ash::Shell::Get()->wallpaper_delegate()->CanOpenSetWallpaperPage();
     case MENU_AUTO_HIDE:
       return CanUserModifyShelfAutoHideBehavior(controller_->profile());
     default:

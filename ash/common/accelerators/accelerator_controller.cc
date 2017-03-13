@@ -144,7 +144,7 @@ void HandleMediaPrevTrack() {
 }
 
 bool CanHandleNewIncognitoWindow() {
-  return WmShell::Get()->delegate()->IsIncognitoAllowed();
+  return Shell::Get()->shell_delegate()->IsIncognitoAllowed();
 }
 
 void HandleNewIncognitoWindow() {
@@ -414,7 +414,7 @@ void HandleSuspend() {
 }
 
 bool CanHandleCycleUser() {
-  return WmShell::Get()->delegate()->IsMultiProfilesEnabled() &&
+  return Shell::Get()->shell_delegate()->IsMultiProfilesEnabled() &&
          WmShell::Get()->GetSessionStateDelegate()->NumberOfLoggedInUsers() > 1;
 }
 
@@ -1110,7 +1110,7 @@ AcceleratorController::GetAcceleratorProcessingRestriction(int action) {
           actions_allowed_at_lock_screen_.end()) {
     return RESTRICTION_PREVENT_PROCESSING;
   }
-  if (wm_shell->delegate()->IsRunningInForcedAppMode() &&
+  if (Shell::Get()->shell_delegate()->IsRunningInForcedAppMode() &&
       actions_allowed_in_app_mode_.find(action) ==
           actions_allowed_in_app_mode_.end()) {
     return RESTRICTION_PREVENT_PROCESSING;

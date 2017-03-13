@@ -47,14 +47,9 @@
 
 namespace ash {
 
-WmShellAura::WmShellAura(std::unique_ptr<ShellDelegate> shell_delegate)
-    : WmShell(std::move(shell_delegate)) {
-  WmShell::Set(this);
-}
+WmShellAura::WmShellAura() {}
 
-WmShellAura::~WmShellAura() {
-  WmShell::Set(nullptr);
-}
+WmShellAura::~WmShellAura() {}
 
 void WmShellAura::Shutdown() {
   if (added_display_observer_)

@@ -36,7 +36,7 @@ bool ContextMenuMus::IsCommandIdChecked(int command_id) const {
 
 bool ContextMenuMus::IsCommandIdEnabled(int command_id) const {
   if (command_id == MENU_CHANGE_WALLPAPER)
-    return WmShell::Get()->wallpaper_delegate()->CanOpenSetWallpaperPage();
+    return Shell::Get()->wallpaper_delegate()->CanOpenSetWallpaperPage();
   return true;
 }
 

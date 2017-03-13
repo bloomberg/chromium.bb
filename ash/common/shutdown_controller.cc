@@ -5,7 +5,7 @@
 #include "ash/common/shutdown_controller.h"
 
 #include "ash/common/shell_delegate.h"
-#include "ash/common/wm_shell.h"
+#include "ash/shell.h"
 #include "base/sys_info.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager_client.h"
@@ -19,7 +19,7 @@ ShutdownController::~ShutdownController() {}
 void ShutdownController::ShutDownOrReboot() {
   // For developers on Linux desktop just exit the app.
   if (!base::SysInfo::IsRunningOnChromeOS()) {
-    WmShell::Get()->delegate()->Exit();
+    Shell::Get()->shell_delegate()->Exit();
     return;
   }
 

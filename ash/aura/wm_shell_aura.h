@@ -20,7 +20,7 @@ class PointerWatcherAdapter;
 class ASH_EXPORT WmShellAura : public WmShell,
                                public WindowTreeHostManager::Observer {
  public:
-  explicit WmShellAura(std::unique_ptr<ShellDelegate> shell_delegate);
+  WmShellAura();
   ~WmShellAura() override;
 
   static WmShellAura* Get();

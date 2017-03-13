@@ -116,7 +116,7 @@ void ExitWarningHandler::HandleAccelerator() {
       CancelTimer();
       Hide();
       WmShell::Get()->RecordUserMetricsAction(UMA_ACCEL_EXIT_SECOND_Q);
-      WmShell::Get()->delegate()->Exit();
+      Shell::Get()->shell_delegate()->Exit();
       break;
     case EXITING:
       break;

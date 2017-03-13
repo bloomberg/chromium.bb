@@ -67,7 +67,7 @@ class TabletPowerButtonControllerTest : public AshTestBase {
     tablet_controller_->SetTickClockForTesting(
         std::unique_ptr<base::TickClock>(tick_clock_));
     shell_delegate_ =
-        static_cast<TestShellDelegate*>(WmShell::Get()->delegate());
+        static_cast<TestShellDelegate*>(Shell::Get()->shell_delegate());
     generator_ = &AshTestBase::GetEventGenerator();
     power_manager_client_->SendBrightnessChanged(kNonZeroBrightness, false);
     EXPECT_FALSE(GetBacklightsForcedOff());

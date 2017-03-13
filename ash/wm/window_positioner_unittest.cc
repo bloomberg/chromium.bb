@@ -147,7 +147,7 @@ TEST_F(WindowPositionerTest, FirstRunMaximizeWindowHighResloution) {
   ui::WindowShowState show_state_out = ui::SHOW_STATE_DEFAULT;
 
   test::TestShellDelegate* const delegate =
-      static_cast<test::TestShellDelegate*>(WmShell::Get()->delegate());
+      static_cast<test::TestShellDelegate*>(Shell::Get()->shell_delegate());
   delegate->SetForceMaximizeOnFirstRun(true);
 
   WindowPositioner::GetBoundsAndShowStateForNewWindow(
@@ -166,7 +166,7 @@ TEST_F(WindowPositionerTest, FirstRunMaximizeWindowLowResolution) {
   ui::WindowShowState show_state_out = ui::SHOW_STATE_DEFAULT;
 
   test::TestShellDelegate* const delegate =
-      static_cast<test::TestShellDelegate*>(WmShell::Get()->delegate());
+      static_cast<test::TestShellDelegate*>(Shell::Get()->shell_delegate());
   delegate->SetForceMaximizeOnFirstRun(true);
 
   WindowPositioner::GetBoundsAndShowStateForNewWindow(

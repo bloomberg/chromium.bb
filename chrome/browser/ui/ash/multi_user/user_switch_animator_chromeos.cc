@@ -191,7 +191,7 @@ void UserSwitchAnimatorChromeOS::TransitionWallpaper(
     AnimationStep animation_step) {
   // Handle the wallpaper switch.
   ash::WallpaperDelegate* wallpaper_delegate =
-      ash::WmShell::Get()->wallpaper_delegate();
+      ash::Shell::Get()->wallpaper_delegate();
   if (animation_step == ANIMATION_STEP_HIDE_OLD_USER) {
     // Set the wallpaper cross dissolve animation duration to our complete
     // animation cycle for a fade in and fade out.

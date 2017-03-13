@@ -39,7 +39,6 @@ class WmShellMus : public WmShell {
   // If |create_session_state_delegate_stub| is true SessionStateDelegateStub is
   // created. If false, the SessionStateDelegate from Shell is used.
   WmShellMus(WmWindow* primary_root_window,
-             std::unique_ptr<ShellDelegate> shell_delegate,
              WindowManager* window_manager,
              views::PointerWatcherEventRouter* pointer_watcher_event_router,
              bool create_session_state_delegate_stub);
