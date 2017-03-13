@@ -25,6 +25,7 @@
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/StyleChangeReason.h"
 #include "core/layout/svg/LayoutSVGResourceContainer.h"
+#include "core/svg/GradientAttributes.h"
 #include "core/svg/SVGStopElement.h"
 #include "core/svg/SVGTransformList.h"
 
@@ -119,7 +120,37 @@ void SVGGradientElement::childrenChanged(const ChildrenChange& change) {
         LayoutInvalidationReason::ChildChanged);
 }
 
-Vector<Gradient::ColorStop> SVGGradientElement::buildStops() {
+void SVGGradientElement::collectCommonAttributes(
+    GradientAttributes& attributes) const {
+  if (!attributes.hasSpreadMethod() && spreadMethod()->isSpecified())
+    attributes.setSpreadMethod(spreadMethod()->currentValue()->enumValue());
+
+  if (!attributes.hasGradientUnits() && gradientUnits()->isSpecified())
+    attributes.setGradientUnits(gradientUnits()->currentValue()->enumValue());
+
+  if (!attributes.hasGradientTransform() &&
+      hasTransform(SVGElement::ExcludeMotionTransform)) {
+    attributes.setGradientTransform(
+        calculateTransform(SVGElement::ExcludeMotionTransform));
+  }
+
+  if (!attributes.hasStops()) {
+    const Vector<Gradient::ColorStop>& stops(buildStops());
+    if (!stops.isEmpty())
+      attributes.setStops(stops);
+  }
+}
+
+const SVGGradientElement* SVGGradientElement::referencedElement() const {
+  // Respect xlink:href, take attributes from referenced element.
+  Element* referencedElement =
+      targetElementFromIRIString(hrefString(), treeScope());
+  if (!referencedElement || !isSVGGradientElement(*referencedElement))
+    return nullptr;
+  return toSVGGradientElement(referencedElement);
+}
+
+Vector<Gradient::ColorStop> SVGGradientElement::buildStops() const {
   Vector<Gradient::ColorStop> stops;
 
   float previousOffset = 0.0f;

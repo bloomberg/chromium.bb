@@ -103,83 +103,51 @@ LayoutObject* SVGRadialGradientElement::createLayoutObject(
   return new LayoutSVGResourceRadialGradient(this);
 }
 
-static void setGradientAttributes(SVGGradientElement* element,
+static void setGradientAttributes(const SVGGradientElement& element,
                                   RadialGradientAttributes& attributes,
-                                  bool isRadial = true) {
-  if (!attributes.hasSpreadMethod() && element->spreadMethod()->isSpecified())
-    attributes.setSpreadMethod(
-        element->spreadMethod()->currentValue()->enumValue());
+                                  bool isRadial) {
+  element.collectCommonAttributes(attributes);
 
-  if (!attributes.hasGradientUnits() && element->gradientUnits()->isSpecified())
-    attributes.setGradientUnits(
-        element->gradientUnits()->currentValue()->enumValue());
+  if (!isRadial)
+    return;
+  const SVGRadialGradientElement& radial = toSVGRadialGradientElement(element);
 
-  if (!attributes.hasGradientTransform() &&
-      element->hasTransform(SVGElement::ExcludeMotionTransform)) {
-    attributes.setGradientTransform(
-        element->calculateTransform(SVGElement::ExcludeMotionTransform));
-  }
+  if (!attributes.hasCx() && radial.cx()->isSpecified())
+    attributes.setCx(radial.cx()->currentValue());
 
-  if (!attributes.hasStops()) {
-    const Vector<Gradient::ColorStop>& stops(element->buildStops());
-    if (!stops.isEmpty())
-      attributes.setStops(stops);
-  }
+  if (!attributes.hasCy() && radial.cy()->isSpecified())
+    attributes.setCy(radial.cy()->currentValue());
 
-  if (isRadial) {
-    SVGRadialGradientElement* radial = toSVGRadialGradientElement(element);
+  if (!attributes.hasR() && radial.r()->isSpecified())
+    attributes.setR(radial.r()->currentValue());
 
-    if (!attributes.hasCx() && radial->cx()->isSpecified())
-      attributes.setCx(radial->cx()->currentValue());
+  if (!attributes.hasFx() && radial.fx()->isSpecified())
+    attributes.setFx(radial.fx()->currentValue());
 
-    if (!attributes.hasCy() && radial->cy()->isSpecified())
-      attributes.setCy(radial->cy()->currentValue());
+  if (!attributes.hasFy() && radial.fy()->isSpecified())
+    attributes.setFy(radial.fy()->currentValue());
 
-    if (!attributes.hasR() && radial->r()->isSpecified())
-      attributes.setR(radial->r()->currentValue());
-
-    if (!attributes.hasFx() && radial->fx()->isSpecified())
-      attributes.setFx(radial->fx()->currentValue());
-
-    if (!attributes.hasFy() && radial->fy()->isSpecified())
-      attributes.setFy(radial->fy()->currentValue());
-
-    if (!attributes.hasFr() && radial->fr()->isSpecified())
-      attributes.setFr(radial->fr()->currentValue());
-  }
+  if (!attributes.hasFr() && radial.fr()->isSpecified())
+    attributes.setFr(radial.fr()->currentValue());
 }
 
 bool SVGRadialGradientElement::collectGradientAttributes(
     RadialGradientAttributes& attributes) {
-  if (!layoutObject())
-    return false;
+  DCHECK(layoutObject());
 
-  HeapHashSet<Member<SVGGradientElement>> processedGradients;
-  SVGGradientElement* current = this;
-
-  setGradientAttributes(current, attributes);
-  processedGradients.insert(current);
+  VisitedSet visited;
+  const SVGGradientElement* current = this;
 
   while (true) {
-    // Respect xlink:href, take attributes from referenced element
-    Node* refNode = SVGURIReference::targetElementFromIRIString(
-        current->href()->currentValue()->value(), treeScope());
-    if (refNode && isSVGGradientElement(*refNode)) {
-      current = toSVGGradientElement(refNode);
+    setGradientAttributes(*current, attributes,
+                          isSVGRadialGradientElement(*current));
+    visited.insert(current);
 
-      // Cycle detection
-      if (processedGradients.contains(current))
-        break;
-
-      if (!current->layoutObject())
-        return false;
-
-      setGradientAttributes(current, attributes,
-                            isSVGRadialGradientElement(*current));
-      processedGradients.insert(current);
-    } else {
+    current = current->referencedElement();
+    if (!current || visited.contains(current))
       break;
-    }
+    if (!current->layoutObject())
+      return false;
   }
 
   // Handle default values for fx/fy

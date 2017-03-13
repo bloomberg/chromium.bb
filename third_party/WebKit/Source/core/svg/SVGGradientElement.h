@@ -32,6 +32,8 @@
 
 namespace blink {
 
+struct GradientAttributes;
+
 enum SVGSpreadMethodType {
   SVGSpreadMethodUnknown = 0,
   SVGSpreadMethodPad,
@@ -47,22 +49,25 @@ class SVGGradientElement : public SVGElement, public SVGURIReference {
   USING_GARBAGE_COLLECTED_MIXIN(SVGGradientElement);
 
  public:
-  Vector<Gradient::ColorStop> buildStops();
-
-  SVGAnimatedTransformList* gradientTransform() {
+  SVGAnimatedTransformList* gradientTransform() const {
     return m_gradientTransform.get();
   }
-  SVGAnimatedEnumeration<SVGSpreadMethodType>* spreadMethod() {
+  SVGAnimatedEnumeration<SVGSpreadMethodType>* spreadMethod() const {
     return m_spreadMethod.get();
   }
-  SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType>* gradientUnits() {
+  SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType>* gradientUnits() const {
     return m_gradientUnits.get();
   }
+
+  const SVGGradientElement* referencedElement() const;
+  void collectCommonAttributes(GradientAttributes&) const;
 
   DECLARE_VIRTUAL_TRACE();
 
  protected:
   SVGGradientElement(const QualifiedName&, Document&);
+
+  using VisitedSet = HeapHashSet<Member<const SVGGradientElement>>;
 
   void svgAttributeChanged(const QualifiedName&) override;
 
@@ -74,6 +79,8 @@ class SVGGradientElement : public SVGElement, public SVGURIReference {
                                             MutableStylePropertySet*) override;
 
   void childrenChanged(const ChildrenChange&) final;
+
+  Vector<Gradient::ColorStop> buildStops() const;
 
   Member<SVGAnimatedTransformList> m_gradientTransform;
   Member<SVGAnimatedEnumeration<SVGSpreadMethodType>> m_spreadMethod;

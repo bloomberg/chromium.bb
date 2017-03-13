@@ -94,81 +94,47 @@ LayoutObject* SVGLinearGradientElement::createLayoutObject(
   return new LayoutSVGResourceLinearGradient(this);
 }
 
-static void setGradientAttributes(SVGGradientElement* element,
+static void setGradientAttributes(const SVGGradientElement& element,
                                   LinearGradientAttributes& attributes,
-                                  bool isLinear = true) {
-  if (!attributes.hasSpreadMethod() && element->spreadMethod()->isSpecified())
-    attributes.setSpreadMethod(
-        element->spreadMethod()->currentValue()->enumValue());
+                                  bool isLinear) {
+  element.collectCommonAttributes(attributes);
 
-  if (!attributes.hasGradientUnits() && element->gradientUnits()->isSpecified())
-    attributes.setGradientUnits(
-        element->gradientUnits()->currentValue()->enumValue());
+  if (!isLinear)
+    return;
+  const SVGLinearGradientElement& linear = toSVGLinearGradientElement(element);
 
-  if (!attributes.hasGradientTransform() &&
-      element->hasTransform(SVGElement::ExcludeMotionTransform)) {
-    attributes.setGradientTransform(
-        element->calculateTransform(SVGElement::ExcludeMotionTransform));
-  }
+  if (!attributes.hasX1() && linear.x1()->isSpecified())
+    attributes.setX1(linear.x1()->currentValue());
 
-  if (!attributes.hasStops()) {
-    const Vector<Gradient::ColorStop>& stops(element->buildStops());
-    if (!stops.isEmpty())
-      attributes.setStops(stops);
-  }
+  if (!attributes.hasY1() && linear.y1()->isSpecified())
+    attributes.setY1(linear.y1()->currentValue());
 
-  if (isLinear) {
-    SVGLinearGradientElement* linear = toSVGLinearGradientElement(element);
+  if (!attributes.hasX2() && linear.x2()->isSpecified())
+    attributes.setX2(linear.x2()->currentValue());
 
-    if (!attributes.hasX1() && linear->x1()->isSpecified())
-      attributes.setX1(linear->x1()->currentValue());
-
-    if (!attributes.hasY1() && linear->y1()->isSpecified())
-      attributes.setY1(linear->y1()->currentValue());
-
-    if (!attributes.hasX2() && linear->x2()->isSpecified())
-      attributes.setX2(linear->x2()->currentValue());
-
-    if (!attributes.hasY2() && linear->y2()->isSpecified())
-      attributes.setY2(linear->y2()->currentValue());
-  }
+  if (!attributes.hasY2() && linear.y2()->isSpecified())
+    attributes.setY2(linear.y2()->currentValue());
 }
 
 bool SVGLinearGradientElement::collectGradientAttributes(
     LinearGradientAttributes& attributes) {
-  if (!layoutObject())
-    return false;
+  DCHECK(layoutObject());
 
-  HeapHashSet<Member<SVGGradientElement>> processedGradients;
-  SVGGradientElement* current = this;
-
-  setGradientAttributes(current, attributes);
-  processedGradients.insert(current);
+  VisitedSet visited;
+  const SVGGradientElement* current = this;
 
   while (true) {
-    // Respect xlink:href, take attributes from referenced element
-    Node* refNode = SVGURIReference::targetElementFromIRIString(
-        current->href()->currentValue()->value(), treeScope());
-    if (refNode && isSVGGradientElement(*refNode)) {
-      current = toSVGGradientElement(refNode);
+    setGradientAttributes(*current, attributes,
+                          isSVGLinearGradientElement(*current));
+    visited.insert(current);
 
-      // Cycle detection
-      if (processedGradients.contains(current))
-        return true;
-
-      if (!current->layoutObject())
-        return false;
-
-      setGradientAttributes(current, attributes,
-                            isSVGLinearGradientElement(*current));
-      processedGradients.insert(current);
-    } else {
-      return true;
-    }
+    current = current->referencedElement();
+    if (!current || visited.contains(current))
+      break;
+    if (!current->layoutObject())
+      return false;
   }
-
-  ASSERT_NOT_REACHED();
-  return false;
+  return true;
 }
 
 bool SVGLinearGradientElement::selfHasRelativeLengths() const {
