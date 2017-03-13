@@ -304,6 +304,27 @@ TEST_F(MaximizeModeControllerTest, TabletModeTransition) {
   EXPECT_TRUE(IsMaximizeModeStarted());
 }
 
+// When there is no keyboard accelerometer available maximize mode should solely
+// rely on the tablet mode switch.
+TEST_F(MaximizeModeControllerTest,
+       TabletModeTransitionNoKeyboardAccelerometer) {
+  ASSERT_FALSE(IsMaximizeModeStarted());
+  TriggerLidUpdate(gfx::Vector3dF(0.0f, 0.0f, kMeanGravity));
+  ASSERT_FALSE(IsMaximizeModeStarted());
+
+  SetTabletMode(true);
+  EXPECT_TRUE(IsMaximizeModeStarted());
+
+  // Single sensor reading should not change mode.
+  TriggerLidUpdate(gfx::Vector3dF(0.0f, 0.0f, kMeanGravity));
+  EXPECT_TRUE(IsMaximizeModeStarted());
+
+  // With a single sensor we should exit immediately on the tablet mode switch
+  // rather than waiting for stabilized accelerometer readings.
+  SetTabletMode(false);
+  EXPECT_FALSE(IsMaximizeModeStarted());
+}
+
 // Verify the maximize mode enter/exit thresholds for stable angles.
 TEST_F(MaximizeModeControllerTest, StableHingeAnglesWithLidOpened) {
   ASSERT_FALSE(IsMaximizeModeStarted());
@@ -443,15 +464,6 @@ TEST_F(MaximizeModeControllerTest, VerticalHingeTest) {
     // one failure rather than potentially hundreds.
     ASSERT_TRUE(IsMaximizeModeStarted());
   }
-}
-
-// Tests that when an accelerometer event is received which has no keyboard that
-// we enter maximize mode.
-TEST_F(MaximizeModeControllerTest,
-       NoKeyboardAccelerometerTriggersMaximizeMode) {
-  ASSERT_FALSE(IsMaximizeModeStarted());
-  TriggerLidUpdate(gfx::Vector3dF(0.0f, 0.0f, kMeanGravity));
-  ASSERT_TRUE(IsMaximizeModeStarted());
 }
 
 // Test if this case does not crash. See http://crbug.com/462806

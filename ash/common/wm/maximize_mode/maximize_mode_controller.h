@@ -153,6 +153,9 @@ class ASH_EXPORT MaximizeModeController :
   // Whether we have ever seen accelerometer data.
   bool have_seen_accelerometer_data_;
 
+  // Whether both accelerometers are available.
+  bool can_detect_lid_angle_;
+
   // Tracks time spent in (and out of) touchview mode.
   base::Time touchview_usage_interval_start_time_;
   base::TimeDelta total_touchview_time_;
