@@ -94,7 +94,8 @@ TEST_F(HistoryEntryInserterTest, AddItems) {
 
 // Tests that items from different dates are added in correctly ordered
 // sections.
-TEST_F(HistoryEntryInserterTest, AddSections) {
+// TODO(crbug.com/700814): Reneable it.
+TEST_F(HistoryEntryInserterTest, DISABLED_AddSections) {
   base::Time today =
       base::Time::Now().LocalMidnight() + base::TimeDelta::FromHours(1);
   base::TimeDelta day = base::TimeDelta::FromDays(1);
