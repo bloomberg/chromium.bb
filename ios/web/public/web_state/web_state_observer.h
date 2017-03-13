@@ -60,9 +60,9 @@ class WebStateObserver {
   // and related methods to listen for continued events from this
   // WebState.
   //
-  // This is also fired by same-page navigations, such as fragment navigations
-  // or pushState/replaceState, which will not result in a document change. To
-  // filter these out, use NavigationContext::IsSamePage().
+  // This is also fired by same-document navigations, such as fragment
+  // navigations or pushState/replaceState, which will not result in a document
+  // change. To filter these out, use NavigationContext::IsSameDocument().
   //
   // |navigation_context| will be destroyed at the end of this call, so do not
   // keep a reference to it afterward.

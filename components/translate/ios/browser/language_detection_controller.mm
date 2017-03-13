@@ -140,7 +140,7 @@ void LanguageDetectionController::PageLoaded(
 
 void LanguageDetectionController::DidFinishNavigation(
     web::NavigationContext* navigation_context) {
-  if (navigation_context->IsSamePage())
+  if (navigation_context->IsSameDocument())
     StartLanguageDetection();
 }
 

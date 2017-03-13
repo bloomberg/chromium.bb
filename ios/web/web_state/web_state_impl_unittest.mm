@@ -386,7 +386,7 @@ TEST_F(WebStateImplTest, ObserverTest) {
       observer->did_finish_navigation_info()->context.get();
   ASSERT_TRUE(context);
   EXPECT_EQ(url, context->GetUrl());
-  EXPECT_TRUE(context->IsSamePage());
+  EXPECT_TRUE(context->IsSameDocument());
   EXPECT_FALSE(context->IsErrorPage());
 
   // Reset the observer and test that DidFinishNavigation() is called
@@ -400,7 +400,7 @@ TEST_F(WebStateImplTest, ObserverTest) {
   context = observer->did_finish_navigation_info()->context.get();
   ASSERT_TRUE(context);
   EXPECT_EQ(url, context->GetUrl());
-  EXPECT_FALSE(context->IsSamePage());
+  EXPECT_FALSE(context->IsSameDocument());
   EXPECT_TRUE(context->IsErrorPage());
 
   // Test that OnTitleChanged() is called.

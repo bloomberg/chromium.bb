@@ -34,7 +34,7 @@ class NavigationContextImpl : public NavigationContext {
   // NavigationContext overrides:
   WebState* GetWebState() override;
   const GURL& GetUrl() const override;
-  bool IsSamePage() const override;
+  bool IsSameDocument() const override;
   bool IsErrorPage() const override;
 
  private:
@@ -46,7 +46,7 @@ class NavigationContextImpl : public NavigationContext {
 
   WebState* web_state_ = nullptr;
   GURL url_;
-  bool is_same_page_ = false;
+  bool is_same_document_ = false;
   bool is_error_page_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(NavigationContextImpl);

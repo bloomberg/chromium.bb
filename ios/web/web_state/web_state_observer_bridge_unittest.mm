@@ -57,7 +57,7 @@ TEST_F(WebStateObserverBridgeTest, DidFinishNavigation) {
       [observer_ didFinishNavigationInfo]->context.get();
   ASSERT_TRUE(actual_context);
   EXPECT_EQ(&test_web_state_, actual_context->GetWebState());
-  EXPECT_EQ(context->IsSamePage(), actual_context->IsSamePage());
+  EXPECT_EQ(context->IsSameDocument(), actual_context->IsSameDocument());
   EXPECT_EQ(context->IsErrorPage(), actual_context->IsErrorPage());
   EXPECT_EQ(context->GetUrl(), actual_context->GetUrl());
 }

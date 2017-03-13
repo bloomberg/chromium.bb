@@ -24,12 +24,12 @@ class NavigationContext {
   // The URL the WebState is navigating to.
   virtual const GURL& GetUrl() const = 0;
 
-  // Whether the navigation happened in the same page. Examples of same page
-  // navigations are:
+  // Whether the navigation happened within the same document. Examples of same
+  // document navigations are:
   // * reference fragment navigations
   // * pushState/replaceState
-  // * same page history navigation
-  virtual bool IsSamePage() const = 0;
+  // * same document history navigation
+  virtual bool IsSameDocument() const = 0;
 
   // Whether the navigation resulted in an error page.
   virtual bool IsErrorPage() const = 0;

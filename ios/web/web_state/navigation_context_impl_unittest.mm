@@ -27,7 +27,7 @@ TEST_F(NavigationContextImplTest, NavigationContext) {
 
   EXPECT_EQ(&web_state_, context->GetWebState());
   EXPECT_EQ(url_, context->GetUrl());
-  EXPECT_FALSE(context->IsSamePage());
+  EXPECT_FALSE(context->IsSameDocument());
   EXPECT_FALSE(context->IsErrorPage());
 }
 
@@ -39,7 +39,7 @@ TEST_F(NavigationContextImplTest, SamePageNavigationContext) {
 
   EXPECT_EQ(&web_state_, context->GetWebState());
   EXPECT_EQ(url_, context->GetUrl());
-  EXPECT_TRUE(context->IsSamePage());
+  EXPECT_TRUE(context->IsSameDocument());
   EXPECT_FALSE(context->IsErrorPage());
 }
 
@@ -52,7 +52,7 @@ TEST_F(NavigationContextImplTest, ErrorPageNavigationContext) {
 
   EXPECT_EQ(&web_state_, context->GetWebState());
   EXPECT_EQ(url_, context->GetUrl());
-  EXPECT_FALSE(context->IsSamePage());
+  EXPECT_FALSE(context->IsSameDocument());
   EXPECT_TRUE(context->IsErrorPage());
 }
 

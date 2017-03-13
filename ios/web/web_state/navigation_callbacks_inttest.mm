@@ -29,7 +29,7 @@ ACTION_P2(VerifyNewPageContext, web_state, url) {
   ASSERT_TRUE(context);
   EXPECT_EQ(web_state, context->GetWebState());
   EXPECT_EQ(url, context->GetUrl());
-  EXPECT_FALSE(context->IsSamePage());
+  EXPECT_FALSE(context->IsSameDocument());
   EXPECT_FALSE(context->IsErrorPage());
   NavigationManager* navigation_manager = web_state->GetNavigationManager();
   NavigationItem* item = navigation_manager->GetLastCommittedItem();
@@ -44,7 +44,7 @@ ACTION_P2(VerifySamePageContext, web_state, url) {
   ASSERT_TRUE(context);
   EXPECT_EQ(web_state, context->GetWebState());
   EXPECT_EQ(url, context->GetUrl());
-  EXPECT_TRUE(context->IsSamePage());
+  EXPECT_TRUE(context->IsSameDocument());
   EXPECT_FALSE(context->IsErrorPage());
   NavigationManager* navigation_manager = web_state->GetNavigationManager();
   NavigationItem* item = navigation_manager->GetLastCommittedItem();

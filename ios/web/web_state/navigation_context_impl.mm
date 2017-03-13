@@ -13,7 +13,7 @@ std::unique_ptr<NavigationContext>
 NavigationContextImpl::CreateNavigationContext(WebState* web_state,
                                                const GURL& url) {
   std::unique_ptr<NavigationContext> resut(new NavigationContextImpl(
-      web_state, url, false /* is_same_page */, false /* is_error_page */));
+      web_state, url, false /* is_same_document */, false /* is_error_page */));
   return resut;
 }
 
@@ -22,7 +22,7 @@ std::unique_ptr<NavigationContext>
 NavigationContextImpl::CreateSamePageNavigationContext(WebState* web_state,
                                                        const GURL& url) {
   std::unique_ptr<NavigationContext> result(new NavigationContextImpl(
-      web_state, url, true /* is_same_page */, false /* is_error_page */));
+      web_state, url, true /* is_same_document */, false /* is_error_page */));
   return result;
 }
 
@@ -31,7 +31,7 @@ std::unique_ptr<NavigationContext>
 NavigationContextImpl::CreateErrorPageNavigationContext(WebState* web_state,
                                                         const GURL& url) {
   std::unique_ptr<NavigationContext> result(new NavigationContextImpl(
-      web_state, url, false /* is_same_page */, true /* is_error_page */));
+      web_state, url, false /* is_same_document */, true /* is_error_page */));
   return result;
 }
 
@@ -43,8 +43,8 @@ const GURL& NavigationContextImpl::GetUrl() const {
   return url_;
 }
 
-bool NavigationContextImpl::IsSamePage() const {
-  return is_same_page_;
+bool NavigationContextImpl::IsSameDocument() const {
+  return is_same_document_;
 }
 
 bool NavigationContextImpl::IsErrorPage() const {
@@ -53,11 +53,11 @@ bool NavigationContextImpl::IsErrorPage() const {
 
 NavigationContextImpl::NavigationContextImpl(WebState* web_state,
                                              const GURL& url,
-                                             bool is_same_page,
+                                             bool is_same_document,
                                              bool is_error_page)
     : web_state_(web_state),
       url_(url),
-      is_same_page_(is_same_page),
+      is_same_document_(is_same_document),
       is_error_page_(is_error_page) {}
 
 NavigationContextImpl::~NavigationContextImpl() = default;

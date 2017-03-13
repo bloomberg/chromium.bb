@@ -132,13 +132,13 @@ TestUpdateFaviconUrlCandidatesInfo::~TestUpdateFaviconUrlCandidatesInfo() =
   _didFinishNavigationInfo =
       base::MakeUnique<web::TestDidFinishNavigationInfo>();
   _didFinishNavigationInfo->web_state = webState;
-  if (navigation->IsSamePage()) {
+  if (navigation->IsSameDocument()) {
     ASSERT_FALSE(navigation->IsErrorPage());
     _didFinishNavigationInfo->context =
         web::NavigationContextImpl::CreateSamePageNavigationContext(
             navigation->GetWebState(), navigation->GetUrl());
   } else if (navigation->IsErrorPage()) {
-    ASSERT_FALSE(navigation->IsSamePage());
+    ASSERT_FALSE(navigation->IsSameDocument());
     _didFinishNavigationInfo->context =
         web::NavigationContextImpl::CreateErrorPageNavigationContext(
             navigation->GetWebState(), navigation->GetUrl());

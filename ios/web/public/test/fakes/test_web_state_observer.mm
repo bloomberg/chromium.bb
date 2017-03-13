@@ -68,13 +68,13 @@ void TestWebStateObserver::DidFinishNavigation(NavigationContext* context) {
   did_finish_navigation_info_ =
       base::MakeUnique<web::TestDidFinishNavigationInfo>();
   did_finish_navigation_info_->web_state = web_state();
-  if (context->IsSamePage()) {
+  if (context->IsSameDocument()) {
     ASSERT_FALSE(context->IsErrorPage());
     did_finish_navigation_info_->context =
         NavigationContextImpl::CreateSamePageNavigationContext(
             context->GetWebState(), context->GetUrl());
   } else if (context->IsErrorPage()) {
-    ASSERT_FALSE(context->IsSamePage());
+    ASSERT_FALSE(context->IsSameDocument());
     did_finish_navigation_info_->context =
         NavigationContextImpl::CreateErrorPageNavigationContext(
             context->GetWebState(), context->GetUrl());
