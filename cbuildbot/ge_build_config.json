@@ -374,6 +374,18 @@
       ]
     },
     {
+      "name": "fizz",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": true,
+          "leader_board": true,
+          "board_group": "fizz",
+          "arch": "X86_INTERNAL"
+        }
+      ]
+    },
+    {
       "name": "gale",
       "configs": [
         {

@@ -8944,6 +8944,90 @@
             "chrome_internal"
         ]
     },
+    "fizz-chromium-pfq": {
+        "_template": "chromium_pfq",
+        "boards": [
+            "fizz"
+        ],
+        "buildslave_type": "baremetal",
+        "important": false,
+        "useflags": [
+            "-chrome_internal"
+        ]
+    },
+    "fizz-compile-only-pre-cq": {
+        "_template": "compile_only_pre_cq",
+        "boards": [
+            "fizz"
+        ]
+    },
+    "fizz-full": {
+        "_template": "full",
+        "boards": [
+            "fizz"
+        ],
+        "buildslave_type": "baremetal",
+        "prebuilts": "public",
+        "useflags": [
+            "-chrome_internal"
+        ]
+    },
+    "fizz-no-vmtest-pre-cq": {
+        "_template": "no_vmtest_pre_cq",
+        "boards": [
+            "fizz"
+        ]
+    },
+    "fizz-paladin": {
+        "_template": "paladin",
+        "boards": [
+            "fizz"
+        ],
+        "important": false,
+        "vm_tests": []
+    },
+    "fizz-pre-cq": {
+        "_template": "pre_cq",
+        "boards": [
+            "fizz"
+        ],
+        "buildslave_type": "baremetal"
+    },
+    "fizz-release": {
+        "_template": "release",
+        "active_waterfall": "chromeos",
+        "boards": [
+            "fizz"
+        ],
+        "buildslave_type": "baremetal"
+    },
+    "fizz-tot-chromium-pfq-informational": {
+        "_template": "chromium_pfq_informational",
+        "boards": [
+            "fizz"
+        ],
+        "buildslave_type": "baremetal",
+        "useflags": [
+            "-chrome_internal"
+        ]
+    },
+    "fizz-tot-chromium-pfq-informational-gn": {
+        "_template": "chromium_pfq_informational_gn",
+        "boards": [
+            "fizz"
+        ],
+        "buildslave_type": "baremetal",
+        "useflags": [
+            "-chrome_internal",
+            "gn"
+        ]
+    },
+    "fizz-unittest-stress": {
+        "_template": "unittest_stress",
+        "boards": [
+            "fizz"
+        ]
+    },
     "gale-chrome-pfq": {
         "_template": "chrome_pfq",
         "boards": [
