@@ -9,7 +9,7 @@
     Exposed=ServiceWorker,
     RuntimeEnabled=BackgroundFetch
 ] interface BackgroundFetchedEvent : BackgroundFetchEvent {
-    // TODO(peter): Implement the `completeFetches` attribute.
+    readonly attribute FrozenArray<BackgroundFetchSettledRequest> completedFetches;
 
     [CallWith=ScriptState] Promise<void> updateUI(DOMString title);
 };

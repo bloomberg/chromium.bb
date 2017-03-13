@@ -7,6 +7,7 @@
 #include "bindings/core/v8/ScriptState.h"
 #include "core/dom/DOMException.h"
 #include "modules/EventModulesNames.h"
+#include "modules/background_fetch/BackgroundFetchSettledRequest.h"
 #include "modules/background_fetch/BackgroundFetchedEventInit.h"
 
 namespace blink {
@@ -14,9 +15,15 @@ namespace blink {
 BackgroundFetchedEvent::BackgroundFetchedEvent(
     const AtomicString& type,
     const BackgroundFetchedEventInit& init)
-    : BackgroundFetchEvent(type, init) {}
+    : BackgroundFetchEvent(type, init),
+      m_completedFetches(init.completedFetches()) {}
 
 BackgroundFetchedEvent::~BackgroundFetchedEvent() = default;
+
+HeapVector<Member<BackgroundFetchSettledRequest>>
+BackgroundFetchedEvent::completedFetches() const {
+  return m_completedFetches;
+}
 
 ScriptPromise BackgroundFetchedEvent::updateUI(ScriptState* scriptState,
                                                String title) {
@@ -27,6 +34,11 @@ ScriptPromise BackgroundFetchedEvent::updateUI(ScriptState* scriptState,
 
 const AtomicString& BackgroundFetchedEvent::interfaceName() const {
   return EventNames::BackgroundFetchedEvent;
+}
+
+DEFINE_TRACE(BackgroundFetchedEvent) {
+  visitor->trace(m_completedFetches);
+  BackgroundFetchEvent::trace(visitor);
 }
 
 }  // namespace blink

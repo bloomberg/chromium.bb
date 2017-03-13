@@ -12,6 +12,7 @@
 
 namespace blink {
 
+class BackgroundFetchSettledRequest;
 class BackgroundFetchedEventInit;
 
 class BackgroundFetchedEvent final : public BackgroundFetchEvent {
@@ -26,15 +27,22 @@ class BackgroundFetchedEvent final : public BackgroundFetchEvent {
 
   ~BackgroundFetchedEvent() override;
 
+  // Web Exposed attribute defined in the IDL file.
+  HeapVector<Member<BackgroundFetchSettledRequest>> completedFetches() const;
+
   // Web Exposed method defined in the IDL file.
   ScriptPromise updateUI(ScriptState*, String title);
 
   // ExtendableEvent interface.
   const AtomicString& interfaceName() const override;
 
+  DECLARE_VIRTUAL_TRACE();
+
  private:
   BackgroundFetchedEvent(const AtomicString& type,
                          const BackgroundFetchedEventInit&);
+
+  HeapVector<Member<BackgroundFetchSettledRequest>> m_completedFetches;
 };
 
 }  // namespace blink

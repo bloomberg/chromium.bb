@@ -19,6 +19,10 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     getter totalDownloadSize
 [Worker]     method abort
 [Worker]     method constructor
+[Worker] interface BackgroundFetchRequest
+[Worker]     attribute @@toStringTag
+[Worker]     getter request
+[Worker]     method constructor
 [Worker] interface BarcodeDetector
 [Worker]     attribute @@toStringTag
 [Worker]     method constructor

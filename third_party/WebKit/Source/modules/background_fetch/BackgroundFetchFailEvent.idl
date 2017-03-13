@@ -9,5 +9,5 @@
     Exposed=ServiceWorker,
     RuntimeEnabled=BackgroundFetch
 ] interface BackgroundFetchFailEvent : BackgroundFetchEvent {
-    // TODO(peter): Implement the `failedFetches` attribute.
+    readonly attribute FrozenArray<BackgroundFetchSettledRequest> failedFetches;
 };

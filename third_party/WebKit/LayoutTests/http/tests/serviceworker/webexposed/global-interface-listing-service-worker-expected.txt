@@ -5,6 +5,7 @@ interface BackgroundFetchEvent : ExtendableEvent
     getter tag
     method constructor
 interface BackgroundFetchFailEvent : BackgroundFetchEvent
+    getter failedFetches
     method constructor
 interface BackgroundFetchManager
     method constructor
@@ -18,7 +19,14 @@ interface BackgroundFetchRegistration
     getter totalDownloadSize
     method abort
     method constructor
+interface BackgroundFetchRequest
+    getter request
+    method constructor
+interface BackgroundFetchSettledRequest : BackgroundFetchRequest
+    getter response
+    method constructor
 interface BackgroundFetchedEvent : BackgroundFetchEvent
+    getter completedFetches
     method constructor
     method updateUI
 interface BarcodeDetector

@@ -5,5 +5,5 @@
 // https://wicg.github.io/background-fetch/#background-fetch-end-event
 
 dictionary BackgroundFetchedEventInit : BackgroundFetchEventInit {
-    // TODO(peter): Implement the `completeFetches` attribute.
+    required sequence<BackgroundFetchSettledRequest> completedFetches;
 };

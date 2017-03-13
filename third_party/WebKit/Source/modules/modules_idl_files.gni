@@ -46,6 +46,8 @@ modules_idl_files =
                     "background_fetch/BackgroundFetchFailEvent.idl",
                     "background_fetch/BackgroundFetchManager.idl",
                     "background_fetch/BackgroundFetchRegistration.idl",
+                    "background_fetch/BackgroundFetchRequest.idl",
+                    "background_fetch/BackgroundFetchSettledRequest.idl",
                     "background_fetch/BackgroundFetchedEvent.idl",
                     "background_sync/SyncEvent.idl",
                     "background_sync/SyncManager.idl",
