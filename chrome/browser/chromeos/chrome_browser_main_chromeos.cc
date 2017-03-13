@@ -238,10 +238,7 @@ class DBusServices {
       service_providers.push_back(base::MakeUnique<DisplayPowerServiceProvider>(
           base::MakeUnique<ChromeDisplayPowerServiceProviderDelegate>()));
     }
-    // TODO(teravest): Remove this service provider once clients use
-    // LivenessService instead of LibCrosService.
-    service_providers.push_back(
-        base::MakeUnique<LivenessServiceProvider>(kLibCrosServiceInterface));
+    service_providers.push_back(base::MakeUnique<LivenessServiceProvider>());
     service_providers.push_back(base::MakeUnique<ScreenLockServiceProvider>());
     if (ash_util::IsRunningInMash()) {
       service_providers.push_back(base::MakeUnique<ConsoleServiceProvider>(
@@ -254,13 +251,6 @@ class DBusServices {
     cros_dbus_service_ = CrosDBusService::Create(
         kLibCrosServiceName, dbus::ObjectPath(kLibCrosServicePath),
         std::move(service_providers));
-
-    CrosDBusService::ServiceProviderList liveness_service_providers;
-    liveness_service_providers.push_back(
-        base::MakeUnique<LivenessServiceProvider>(kLivenessServiceInterface));
-    liveness_service_ = CrosDBusService::Create(
-        kLivenessServiceName, dbus::ObjectPath(kLivenessServicePath),
-        std::move(liveness_service_providers));
 
     // Initialize PowerDataCollector after DBusThreadManager is initialized.
     PowerDataCollector::Initialize();
@@ -311,7 +301,6 @@ class DBusServices {
     CertLoader::Shutdown();
     TPMTokenLoader::Shutdown();
     cros_dbus_service_.reset();
-    liveness_service_.reset();
     PowerDataCollector::Shutdown();
     PowerPolicyController::Shutdown();
     device::BluetoothAdapterFactory::Shutdown();
@@ -328,8 +317,6 @@ class DBusServices {
   // TODO(derat): Move these providers into more-specific services that are
   // split between different processes: http://crbug.com/692246
   std::unique_ptr<CrosDBusService> cros_dbus_service_;
-
-  std::unique_ptr<CrosDBusService> liveness_service_;
 
   std::unique_ptr<NetworkConnectDelegateChromeOS> network_connect_delegate_;
 

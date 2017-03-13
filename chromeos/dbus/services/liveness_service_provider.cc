@@ -11,16 +11,15 @@
 
 namespace chromeos {
 
-LivenessServiceProvider::LivenessServiceProvider(
-    const std::string& service_interface)
-    : service_interface_(service_interface), weak_ptr_factory_(this) {}
+LivenessServiceProvider::LivenessServiceProvider() : weak_ptr_factory_(this) {}
 
 LivenessServiceProvider::~LivenessServiceProvider() {}
 
 void LivenessServiceProvider::Start(
     scoped_refptr<dbus::ExportedObject> exported_object) {
   exported_object->ExportMethod(
-      service_interface_, kLivenessServiceCheckLivenessMethod,
+      kLibCrosServiceInterface,
+      kCheckLiveness,
       base::Bind(&LivenessServiceProvider::CheckLiveness,
                  weak_ptr_factory_.GetWeakPtr()),
       base::Bind(&LivenessServiceProvider::OnExported,
