@@ -3231,6 +3231,7 @@ void ChromeContentBrowserClient::RegisterInProcessServices(
     content::ServiceInfo info;
     info.factory = base::Bind(&ash_util::CreateEmbeddedAshService,
                               base::ThreadTaskRunnerHandle::Get());
+    info.task_runner = base::ThreadTaskRunnerHandle::Get();
     services->insert(std::make_pair(ash::mojom::kServiceName, info));
   }
 #endif  // OS_CHROMEOS

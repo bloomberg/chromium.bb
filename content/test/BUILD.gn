@@ -1365,6 +1365,7 @@ test("content_unittests") {
     "../common/sandbox_mac_system_access_unittest.mm",
     "../common/sandbox_mac_unittest_helper.h",
     "../common/sandbox_mac_unittest_helper.mm",
+    "../common/service_manager/service_manager_connection_impl_unittest.cc",
     "../common/service_worker/service_worker_utils_unittest.cc",
     "../common/webplugininfo_unittest.cc",
     "../public/test/referrer_unittest.cc",

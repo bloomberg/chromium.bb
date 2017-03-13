@@ -450,7 +450,6 @@ void BrowserContext::Initialize(
 
     ServiceManagerConnection* connection =
         connection_holder->service_manager_connection();
-    connection->Start();
 
     // New embedded service factories should be added to |connection| here.
 
@@ -469,6 +468,7 @@ void BrowserContext::Initialize(
     for (const auto& entry : services) {
       connection->AddEmbeddedService(entry.first, entry.second);
     }
+    connection->Start();
   }
 }
 
