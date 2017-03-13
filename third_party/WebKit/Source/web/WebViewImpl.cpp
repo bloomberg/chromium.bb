@@ -1918,7 +1918,7 @@ void WebViewImpl::resizeWithBrowserControls(const WebSize& newSize,
   bool isRotation =
       page()->settings().getMainFrameResizesAreOrientationChanges() &&
       m_size.width && contentsSize().width() && newSize.width != m_size.width &&
-      !m_fullscreenController->isFullscreen();
+      !m_fullscreenController->isFullscreenOrTransitioning();
   m_size = newSize;
 
   FloatSize viewportAnchorCoords(viewportAnchorCoordX, viewportAnchorCoordY);

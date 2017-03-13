@@ -60,7 +60,7 @@ class FullscreenController {
   // element has changed.
   void fullscreenElementChanged(Element*, Element*);
 
-  bool isFullscreen() { return m_state == State::Fullscreen; }
+  bool isFullscreenOrTransitioning() const { return m_state != State::Initial; }
 
   void updateSize();
 
