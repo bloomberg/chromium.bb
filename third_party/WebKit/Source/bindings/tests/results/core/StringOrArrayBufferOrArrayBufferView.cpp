@@ -22,23 +22,6 @@ namespace blink {
 
 StringOrArrayBufferOrArrayBufferView::StringOrArrayBufferOrArrayBufferView() : m_type(SpecificTypeNone) {}
 
-String StringOrArrayBufferOrArrayBufferView::getAsString() const {
-  DCHECK(isString());
-  return m_string;
-}
-
-void StringOrArrayBufferOrArrayBufferView::setString(String value) {
-  DCHECK(isNull());
-  m_string = value;
-  m_type = SpecificTypeString;
-}
-
-StringOrArrayBufferOrArrayBufferView StringOrArrayBufferOrArrayBufferView::fromString(String value) {
-  StringOrArrayBufferOrArrayBufferView container;
-  container.setString(value);
-  return container;
-}
-
 TestArrayBuffer* StringOrArrayBufferOrArrayBufferView::getAsArrayBuffer() const {
   DCHECK(isArrayBuffer());
   return m_arrayBuffer;
@@ -70,6 +53,23 @@ void StringOrArrayBufferOrArrayBufferView::setArrayBufferView(TestArrayBufferVie
 StringOrArrayBufferOrArrayBufferView StringOrArrayBufferOrArrayBufferView::fromArrayBufferView(TestArrayBufferView* value) {
   StringOrArrayBufferOrArrayBufferView container;
   container.setArrayBufferView(value);
+  return container;
+}
+
+String StringOrArrayBufferOrArrayBufferView::getAsString() const {
+  DCHECK(isString());
+  return m_string;
+}
+
+void StringOrArrayBufferOrArrayBufferView::setString(String value) {
+  DCHECK(isNull());
+  m_string = value;
+  m_type = SpecificTypeString;
+}
+
+StringOrArrayBufferOrArrayBufferView StringOrArrayBufferOrArrayBufferView::fromString(String value) {
+  StringOrArrayBufferOrArrayBufferView container;
+  container.setString(value);
   return container;
 }
 
@@ -114,12 +114,12 @@ v8::Local<v8::Value> ToV8(const StringOrArrayBufferOrArrayBufferView& impl, v8::
   switch (impl.m_type) {
     case StringOrArrayBufferOrArrayBufferView::SpecificTypeNone:
       return v8::Null(isolate);
-    case StringOrArrayBufferOrArrayBufferView::SpecificTypeString:
-      return v8String(isolate, impl.getAsString());
     case StringOrArrayBufferOrArrayBufferView::SpecificTypeArrayBuffer:
       return ToV8(impl.getAsArrayBuffer(), creationContext, isolate);
     case StringOrArrayBufferOrArrayBufferView::SpecificTypeArrayBufferView:
       return ToV8(impl.getAsArrayBufferView(), creationContext, isolate);
+    case StringOrArrayBufferOrArrayBufferView::SpecificTypeString:
+      return v8String(isolate, impl.getAsString());
     default:
       NOTREACHED();
   }

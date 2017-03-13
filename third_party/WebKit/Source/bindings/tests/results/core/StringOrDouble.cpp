@@ -19,23 +19,6 @@ namespace blink {
 
 StringOrDouble::StringOrDouble() : m_type(SpecificTypeNone) {}
 
-String StringOrDouble::getAsString() const {
-  DCHECK(isString());
-  return m_string;
-}
-
-void StringOrDouble::setString(String value) {
-  DCHECK(isNull());
-  m_string = value;
-  m_type = SpecificTypeString;
-}
-
-StringOrDouble StringOrDouble::fromString(String value) {
-  StringOrDouble container;
-  container.setString(value);
-  return container;
-}
-
 double StringOrDouble::getAsDouble() const {
   DCHECK(isDouble());
   return m_double;
@@ -50,6 +33,23 @@ void StringOrDouble::setDouble(double value) {
 StringOrDouble StringOrDouble::fromDouble(double value) {
   StringOrDouble container;
   container.setDouble(value);
+  return container;
+}
+
+String StringOrDouble::getAsString() const {
+  DCHECK(isString());
+  return m_string;
+}
+
+void StringOrDouble::setString(String value) {
+  DCHECK(isNull());
+  m_string = value;
+  m_type = SpecificTypeString;
+}
+
+StringOrDouble StringOrDouble::fromString(String value) {
+  StringOrDouble container;
+  container.setString(value);
   return container;
 }
 
@@ -88,10 +88,10 @@ v8::Local<v8::Value> ToV8(const StringOrDouble& impl, v8::Local<v8::Object> crea
   switch (impl.m_type) {
     case StringOrDouble::SpecificTypeNone:
       return v8::Null(isolate);
-    case StringOrDouble::SpecificTypeString:
-      return v8String(isolate, impl.getAsString());
     case StringOrDouble::SpecificTypeDouble:
       return v8::Number::New(isolate, impl.getAsDouble());
+    case StringOrDouble::SpecificTypeString:
+      return v8String(isolate, impl.getAsString());
     default:
       NOTREACHED();
   }

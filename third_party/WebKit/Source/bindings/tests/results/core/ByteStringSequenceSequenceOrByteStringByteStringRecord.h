@@ -29,15 +29,15 @@ class CORE_EXPORT ByteStringSequenceSequenceOrByteStringByteStringRecord final {
   ByteStringSequenceSequenceOrByteStringByteStringRecord();
   bool isNull() const { return m_type == SpecificTypeNone; }
 
-  bool isByteStringSequenceSequence() const { return m_type == SpecificTypeByteStringSequenceSequence; }
-  const Vector<Vector<String>>& getAsByteStringSequenceSequence() const;
-  void setByteStringSequenceSequence(const Vector<Vector<String>>&);
-  static ByteStringSequenceSequenceOrByteStringByteStringRecord fromByteStringSequenceSequence(const Vector<Vector<String>>&);
-
   bool isByteStringByteStringRecord() const { return m_type == SpecificTypeByteStringByteStringRecord; }
   const Vector<std::pair<String, String>>& getAsByteStringByteStringRecord() const;
   void setByteStringByteStringRecord(const Vector<std::pair<String, String>>&);
   static ByteStringSequenceSequenceOrByteStringByteStringRecord fromByteStringByteStringRecord(const Vector<std::pair<String, String>>&);
+
+  bool isByteStringSequenceSequence() const { return m_type == SpecificTypeByteStringSequenceSequence; }
+  const Vector<Vector<String>>& getAsByteStringSequenceSequence() const;
+  void setByteStringSequenceSequence(const Vector<Vector<String>>&);
+  static ByteStringSequenceSequenceOrByteStringByteStringRecord fromByteStringSequenceSequence(const Vector<Vector<String>>&);
 
   ByteStringSequenceSequenceOrByteStringByteStringRecord(const ByteStringSequenceSequenceOrByteStringByteStringRecord&);
   ~ByteStringSequenceSequenceOrByteStringByteStringRecord();
@@ -47,13 +47,13 @@ class CORE_EXPORT ByteStringSequenceSequenceOrByteStringByteStringRecord final {
  private:
   enum SpecificTypes {
     SpecificTypeNone,
-    SpecificTypeByteStringSequenceSequence,
     SpecificTypeByteStringByteStringRecord,
+    SpecificTypeByteStringSequenceSequence,
   };
   SpecificTypes m_type;
 
-  Vector<Vector<String>> m_byteStringSequenceSequence;
   Vector<std::pair<String, String>> m_byteStringByteStringRecord;
+  Vector<Vector<String>> m_byteStringSequenceSequence;
 
   friend CORE_EXPORT v8::Local<v8::Value> ToV8(const ByteStringSequenceSequenceOrByteStringByteStringRecord&, v8::Local<v8::Object>, v8::Isolate*);
 };

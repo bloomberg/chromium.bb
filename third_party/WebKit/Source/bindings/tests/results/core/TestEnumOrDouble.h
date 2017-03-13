@@ -27,15 +27,15 @@ class CORE_EXPORT TestEnumOrDouble final {
   TestEnumOrDouble();
   bool isNull() const { return m_type == SpecificTypeNone; }
 
-  bool isTestEnum() const { return m_type == SpecificTypeTestEnum; }
-  String getAsTestEnum() const;
-  void setTestEnum(String);
-  static TestEnumOrDouble fromTestEnum(String);
-
   bool isDouble() const { return m_type == SpecificTypeDouble; }
   double getAsDouble() const;
   void setDouble(double);
   static TestEnumOrDouble fromDouble(double);
+
+  bool isTestEnum() const { return m_type == SpecificTypeTestEnum; }
+  String getAsTestEnum() const;
+  void setTestEnum(String);
+  static TestEnumOrDouble fromTestEnum(String);
 
   TestEnumOrDouble(const TestEnumOrDouble&);
   ~TestEnumOrDouble();
@@ -45,13 +45,13 @@ class CORE_EXPORT TestEnumOrDouble final {
  private:
   enum SpecificTypes {
     SpecificTypeNone,
-    SpecificTypeTestEnum,
     SpecificTypeDouble,
+    SpecificTypeTestEnum,
   };
   SpecificTypes m_type;
 
-  String m_testEnum;
   double m_double;
+  String m_testEnum;
 
   friend CORE_EXPORT v8::Local<v8::Value> ToV8(const TestEnumOrDouble&, v8::Local<v8::Object>, v8::Isolate*);
 };

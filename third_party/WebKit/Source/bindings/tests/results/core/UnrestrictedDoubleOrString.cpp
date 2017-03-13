@@ -19,23 +19,6 @@ namespace blink {
 
 UnrestrictedDoubleOrString::UnrestrictedDoubleOrString() : m_type(SpecificTypeNone) {}
 
-double UnrestrictedDoubleOrString::getAsUnrestrictedDouble() const {
-  DCHECK(isUnrestrictedDouble());
-  return m_unrestrictedDouble;
-}
-
-void UnrestrictedDoubleOrString::setUnrestrictedDouble(double value) {
-  DCHECK(isNull());
-  m_unrestrictedDouble = value;
-  m_type = SpecificTypeUnrestrictedDouble;
-}
-
-UnrestrictedDoubleOrString UnrestrictedDoubleOrString::fromUnrestrictedDouble(double value) {
-  UnrestrictedDoubleOrString container;
-  container.setUnrestrictedDouble(value);
-  return container;
-}
-
 String UnrestrictedDoubleOrString::getAsString() const {
   DCHECK(isString());
   return m_string;
@@ -50,6 +33,23 @@ void UnrestrictedDoubleOrString::setString(String value) {
 UnrestrictedDoubleOrString UnrestrictedDoubleOrString::fromString(String value) {
   UnrestrictedDoubleOrString container;
   container.setString(value);
+  return container;
+}
+
+double UnrestrictedDoubleOrString::getAsUnrestrictedDouble() const {
+  DCHECK(isUnrestrictedDouble());
+  return m_unrestrictedDouble;
+}
+
+void UnrestrictedDoubleOrString::setUnrestrictedDouble(double value) {
+  DCHECK(isNull());
+  m_unrestrictedDouble = value;
+  m_type = SpecificTypeUnrestrictedDouble;
+}
+
+UnrestrictedDoubleOrString UnrestrictedDoubleOrString::fromUnrestrictedDouble(double value) {
+  UnrestrictedDoubleOrString container;
+  container.setUnrestrictedDouble(value);
   return container;
 }
 
@@ -88,10 +88,10 @@ v8::Local<v8::Value> ToV8(const UnrestrictedDoubleOrString& impl, v8::Local<v8::
   switch (impl.m_type) {
     case UnrestrictedDoubleOrString::SpecificTypeNone:
       return v8::Null(isolate);
-    case UnrestrictedDoubleOrString::SpecificTypeUnrestrictedDouble:
-      return v8::Number::New(isolate, impl.getAsUnrestrictedDouble());
     case UnrestrictedDoubleOrString::SpecificTypeString:
       return v8String(isolate, impl.getAsString());
+    case UnrestrictedDoubleOrString::SpecificTypeUnrestrictedDouble:
+      return v8::Number::New(isolate, impl.getAsUnrestrictedDouble());
     default:
       NOTREACHED();
   }

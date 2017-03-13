@@ -19,6 +19,23 @@ namespace blink {
 
 TestEnumOrDouble::TestEnumOrDouble() : m_type(SpecificTypeNone) {}
 
+double TestEnumOrDouble::getAsDouble() const {
+  DCHECK(isDouble());
+  return m_double;
+}
+
+void TestEnumOrDouble::setDouble(double value) {
+  DCHECK(isNull());
+  m_double = value;
+  m_type = SpecificTypeDouble;
+}
+
+TestEnumOrDouble TestEnumOrDouble::fromDouble(double value) {
+  TestEnumOrDouble container;
+  container.setDouble(value);
+  return container;
+}
+
 String TestEnumOrDouble::getAsTestEnum() const {
   DCHECK(isTestEnum());
   return m_testEnum;
@@ -44,23 +61,6 @@ void TestEnumOrDouble::setTestEnum(String value) {
 TestEnumOrDouble TestEnumOrDouble::fromTestEnum(String value) {
   TestEnumOrDouble container;
   container.setTestEnum(value);
-  return container;
-}
-
-double TestEnumOrDouble::getAsDouble() const {
-  DCHECK(isDouble());
-  return m_double;
-}
-
-void TestEnumOrDouble::setDouble(double value) {
-  DCHECK(isNull());
-  m_double = value;
-  m_type = SpecificTypeDouble;
-}
-
-TestEnumOrDouble TestEnumOrDouble::fromDouble(double value) {
-  TestEnumOrDouble container;
-  container.setDouble(value);
   return container;
 }
 
@@ -107,10 +107,10 @@ v8::Local<v8::Value> ToV8(const TestEnumOrDouble& impl, v8::Local<v8::Object> cr
   switch (impl.m_type) {
     case TestEnumOrDouble::SpecificTypeNone:
       return v8::Null(isolate);
-    case TestEnumOrDouble::SpecificTypeTestEnum:
-      return v8String(isolate, impl.getAsTestEnum());
     case TestEnumOrDouble::SpecificTypeDouble:
       return v8::Number::New(isolate, impl.getAsDouble());
+    case TestEnumOrDouble::SpecificTypeTestEnum:
+      return v8String(isolate, impl.getAsTestEnum());
     default:
       NOTREACHED();
   }

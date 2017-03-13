@@ -25,23 +25,6 @@ namespace blink {
 
 TestInterfaceOrLong::TestInterfaceOrLong() : m_type(SpecificTypeNone) {}
 
-TestInterfaceImplementation* TestInterfaceOrLong::getAsTestInterface() const {
-  DCHECK(isTestInterface());
-  return m_testInterface;
-}
-
-void TestInterfaceOrLong::setTestInterface(TestInterfaceImplementation* value) {
-  DCHECK(isNull());
-  m_testInterface = value;
-  m_type = SpecificTypeTestInterface;
-}
-
-TestInterfaceOrLong TestInterfaceOrLong::fromTestInterface(TestInterfaceImplementation* value) {
-  TestInterfaceOrLong container;
-  container.setTestInterface(value);
-  return container;
-}
-
 int32_t TestInterfaceOrLong::getAsLong() const {
   DCHECK(isLong());
   return m_long;
@@ -56,6 +39,23 @@ void TestInterfaceOrLong::setLong(int32_t value) {
 TestInterfaceOrLong TestInterfaceOrLong::fromLong(int32_t value) {
   TestInterfaceOrLong container;
   container.setLong(value);
+  return container;
+}
+
+TestInterfaceImplementation* TestInterfaceOrLong::getAsTestInterface() const {
+  DCHECK(isTestInterface());
+  return m_testInterface;
+}
+
+void TestInterfaceOrLong::setTestInterface(TestInterfaceImplementation* value) {
+  DCHECK(isNull());
+  m_testInterface = value;
+  m_type = SpecificTypeTestInterface;
+}
+
+TestInterfaceOrLong TestInterfaceOrLong::fromTestInterface(TestInterfaceImplementation* value) {
+  TestInterfaceOrLong container;
+  container.setTestInterface(value);
   return container;
 }
 
@@ -101,10 +101,10 @@ v8::Local<v8::Value> ToV8(const TestInterfaceOrLong& impl, v8::Local<v8::Object>
   switch (impl.m_type) {
     case TestInterfaceOrLong::SpecificTypeNone:
       return v8::Null(isolate);
-    case TestInterfaceOrLong::SpecificTypeTestInterface:
-      return ToV8(impl.getAsTestInterface(), creationContext, isolate);
     case TestInterfaceOrLong::SpecificTypeLong:
       return v8::Integer::New(isolate, impl.getAsLong());
+    case TestInterfaceOrLong::SpecificTypeTestInterface:
+      return ToV8(impl.getAsTestInterface(), creationContext, isolate);
     default:
       NOTREACHED();
   }

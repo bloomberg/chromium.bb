@@ -27,15 +27,15 @@ class CORE_EXPORT StringOrDouble final {
   StringOrDouble();
   bool isNull() const { return m_type == SpecificTypeNone; }
 
-  bool isString() const { return m_type == SpecificTypeString; }
-  String getAsString() const;
-  void setString(String);
-  static StringOrDouble fromString(String);
-
   bool isDouble() const { return m_type == SpecificTypeDouble; }
   double getAsDouble() const;
   void setDouble(double);
   static StringOrDouble fromDouble(double);
+
+  bool isString() const { return m_type == SpecificTypeString; }
+  String getAsString() const;
+  void setString(String);
+  static StringOrDouble fromString(String);
 
   StringOrDouble(const StringOrDouble&);
   ~StringOrDouble();
@@ -45,13 +45,13 @@ class CORE_EXPORT StringOrDouble final {
  private:
   enum SpecificTypes {
     SpecificTypeNone,
-    SpecificTypeString,
     SpecificTypeDouble,
+    SpecificTypeString,
   };
   SpecificTypes m_type;
 
-  String m_string;
   double m_double;
+  String m_string;
 
   friend CORE_EXPORT v8::Local<v8::Value> ToV8(const StringOrDouble&, v8::Local<v8::Object>, v8::Isolate*);
 };

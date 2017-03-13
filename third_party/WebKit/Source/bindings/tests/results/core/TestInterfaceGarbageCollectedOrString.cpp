@@ -20,23 +20,6 @@ namespace blink {
 
 TestInterfaceGarbageCollectedOrString::TestInterfaceGarbageCollectedOrString() : m_type(SpecificTypeNone) {}
 
-TestInterfaceGarbageCollected* TestInterfaceGarbageCollectedOrString::getAsTestInterfaceGarbageCollected() const {
-  DCHECK(isTestInterfaceGarbageCollected());
-  return m_testInterfaceGarbageCollected;
-}
-
-void TestInterfaceGarbageCollectedOrString::setTestInterfaceGarbageCollected(TestInterfaceGarbageCollected* value) {
-  DCHECK(isNull());
-  m_testInterfaceGarbageCollected = value;
-  m_type = SpecificTypeTestInterfaceGarbageCollected;
-}
-
-TestInterfaceGarbageCollectedOrString TestInterfaceGarbageCollectedOrString::fromTestInterfaceGarbageCollected(TestInterfaceGarbageCollected* value) {
-  TestInterfaceGarbageCollectedOrString container;
-  container.setTestInterfaceGarbageCollected(value);
-  return container;
-}
-
 String TestInterfaceGarbageCollectedOrString::getAsString() const {
   DCHECK(isString());
   return m_string;
@@ -51,6 +34,23 @@ void TestInterfaceGarbageCollectedOrString::setString(String value) {
 TestInterfaceGarbageCollectedOrString TestInterfaceGarbageCollectedOrString::fromString(String value) {
   TestInterfaceGarbageCollectedOrString container;
   container.setString(value);
+  return container;
+}
+
+TestInterfaceGarbageCollected* TestInterfaceGarbageCollectedOrString::getAsTestInterfaceGarbageCollected() const {
+  DCHECK(isTestInterfaceGarbageCollected());
+  return m_testInterfaceGarbageCollected;
+}
+
+void TestInterfaceGarbageCollectedOrString::setTestInterfaceGarbageCollected(TestInterfaceGarbageCollected* value) {
+  DCHECK(isNull());
+  m_testInterfaceGarbageCollected = value;
+  m_type = SpecificTypeTestInterfaceGarbageCollected;
+}
+
+TestInterfaceGarbageCollectedOrString TestInterfaceGarbageCollectedOrString::fromTestInterfaceGarbageCollected(TestInterfaceGarbageCollected* value) {
+  TestInterfaceGarbageCollectedOrString container;
+  container.setTestInterfaceGarbageCollected(value);
   return container;
 }
 
@@ -88,10 +88,10 @@ v8::Local<v8::Value> ToV8(const TestInterfaceGarbageCollectedOrString& impl, v8:
   switch (impl.m_type) {
     case TestInterfaceGarbageCollectedOrString::SpecificTypeNone:
       return v8::Null(isolate);
-    case TestInterfaceGarbageCollectedOrString::SpecificTypeTestInterfaceGarbageCollected:
-      return ToV8(impl.getAsTestInterfaceGarbageCollected(), creationContext, isolate);
     case TestInterfaceGarbageCollectedOrString::SpecificTypeString:
       return v8String(isolate, impl.getAsString());
+    case TestInterfaceGarbageCollectedOrString::SpecificTypeTestInterfaceGarbageCollected:
+      return ToV8(impl.getAsTestInterfaceGarbageCollected(), creationContext, isolate);
     default:
       NOTREACHED();
   }
