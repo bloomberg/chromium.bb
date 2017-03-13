@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_NTP_SNIPPETS_FAKE_DOWNLOAD_ITEM_H_
-#define CHROME_BROWSER_NTP_SNIPPETS_FAKE_DOWNLOAD_ITEM_H_
+#ifndef CONTENT_PUBLIC_TEST_FAKE_DOWNLOAD_ITEM_H_
+#define CONTENT_PUBLIC_TEST_FAKE_DOWNLOAD_ITEM_H_
 
 #include <string>
 #include <vector>
@@ -17,9 +17,9 @@
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
 
-namespace test {
+namespace content {
 
-class FakeDownloadItem : public content::DownloadItem {
+class FakeDownloadItem : public DownloadItem {
  public:
   FakeDownloadItem();
   ~FakeDownloadItem() override;
@@ -76,7 +76,7 @@ class FakeDownloadItem : public content::DownloadItem {
   void Remove() override;
   void OpenDownload() override;
   void ShowDownloadInShell() override;
-  content::DownloadInterruptReason GetLastReason() const override;
+  DownloadInterruptReason GetLastReason() const override;
   bool IsPaused() const override;
   bool IsTemporary() const override;
   bool CanResume() const override;
@@ -102,7 +102,7 @@ class FakeDownloadItem : public content::DownloadItem {
   const std::string& GetHash() const override;
   void DeleteFile(const base::Callback<void(bool)>& callback) override;
   bool IsDangerous() const override;
-  content::DownloadDangerType GetDangerType() const override;
+  DownloadDangerType GetDangerType() const override;
   bool TimeRemaining(base::TimeDelta* remaining) const override;
   int64_t CurrentSpeed() const override;
   int PercentComplete() const override;
@@ -118,10 +118,9 @@ class FakeDownloadItem : public content::DownloadItem {
   bool GetAutoOpened() override;
   bool GetOpened() const override;
   base::Time GetLastAccessTime() const override;
-  content::BrowserContext* GetBrowserContext() const override;
-  content::WebContents* GetWebContents() const override;
-  void OnContentCheckCompleted(
-      content::DownloadDangerType danger_type) override;
+  BrowserContext* GetBrowserContext() const override;
+  WebContents* GetWebContents() const override;
+  void OnContentCheckCompleted(DownloadDangerType danger_type) override;
   void SetOpenWhenComplete(bool open) override;
   void SetOpened(bool opened) override;
   void SetLastAccessTime(base::Time time) override;
@@ -150,6 +149,6 @@ class FakeDownloadItem : public content::DownloadItem {
   DISALLOW_COPY_AND_ASSIGN(FakeDownloadItem);
 };
 
-}  // namespace test
+}  // namespace content
 
-#endif  // CHROME_BROWSER_NTP_SNIPPETS_FAKE_DOWNLOAD_ITEM_H_
+#endif  // CONTENT_PUBLIC_TEST_FAKE_DOWNLOAD_ITEM_H_

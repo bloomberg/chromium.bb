@@ -2,13 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ntp_snippets/fake_download_item.h"
+#include "content/public/test/fake_download_item.h"
 
 #include "base/bind.h"
 
-using content::DownloadItem;
-
-namespace test {
+namespace content {
 
 FakeDownloadItem::FakeDownloadItem() = default;
 
@@ -164,9 +162,9 @@ void FakeDownloadItem::ShowDownloadInShell() {
   NOTREACHED();
 }
 
-content::DownloadInterruptReason FakeDownloadItem::GetLastReason() const {
+DownloadInterruptReason FakeDownloadItem::GetLastReason() const {
   NOTREACHED();
-  return content::DownloadInterruptReason();
+  return DownloadInterruptReason();
 }
 
 bool FakeDownloadItem::IsPaused() const {
@@ -294,9 +292,9 @@ bool FakeDownloadItem::IsDangerous() const {
   return false;
 }
 
-content::DownloadDangerType FakeDownloadItem::GetDangerType() const {
+DownloadDangerType FakeDownloadItem::GetDangerType() const {
   NOTREACHED();
-  return content::DownloadDangerType();
+  return DownloadDangerType();
 }
 
 bool FakeDownloadItem::TimeRemaining(base::TimeDelta* remaining) const {
@@ -371,18 +369,17 @@ base::Time FakeDownloadItem::GetLastAccessTime() const {
   return base::Time();
 }
 
-content::BrowserContext* FakeDownloadItem::GetBrowserContext() const {
+BrowserContext* FakeDownloadItem::GetBrowserContext() const {
   NOTREACHED();
   return nullptr;
 }
 
-content::WebContents* FakeDownloadItem::GetWebContents() const {
+WebContents* FakeDownloadItem::GetWebContents() const {
   NOTREACHED();
   return nullptr;
 }
 
-void FakeDownloadItem::OnContentCheckCompleted(
-    content::DownloadDangerType danger_type) {
+void FakeDownloadItem::OnContentCheckCompleted(DownloadDangerType danger_type) {
   NOTREACHED();
 }
 
@@ -407,4 +404,4 @@ std::string FakeDownloadItem::DebugString(bool verbose) const {
   return std::string();
 }
 
-}  // namespace test
+}  // namespace content
