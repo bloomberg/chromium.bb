@@ -259,6 +259,13 @@ template("mojom") {
         "-g",
         "c++",
       ]
+      depfile = "{{source_gen_dir}}/${generator_shared_target_name}_{{source_name_part}}.d"
+      args += [
+        "--depfile",
+        depfile,
+        "--depfile_target",
+        "{{source_gen_dir}}/{{source_name_part}}.mojom-shared-internal.h",
+      ]
     }
   }
 
@@ -388,6 +395,14 @@ template("mojom") {
             bindings_configuration.variant,
           ]
         }
+        depfile =
+            "{{source_gen_dir}}/${generator_target_name}_{{source_name_part}}.d"
+        args += [
+          "--depfile",
+          depfile,
+          "--depfile_target",
+          "{{source_gen_dir}}/{{source_name_part}}.mojom${variant_dash_suffix}.cc",
+        ]
 
         args += [
           "--typemap",
