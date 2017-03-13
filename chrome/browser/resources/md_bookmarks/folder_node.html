@@ -32,10 +32,7 @@
 
       #container {
         height: 40px;
-      }
-
-      #descendants {
-        -webkit-padding-start: 40.5px;
+        padding-left: calc(var(--node-depth, 0) * 30px);
       }
 
       #folder-label {
@@ -80,7 +77,8 @@
           items="[[item_.children]]"
           as="child"
           filter="isFolder_">
-        <bookmarks-folder-node item-id="[[child]]">
+        <bookmarks-folder-node item-id="[[child]]"
+            depth="[[getChildDepth_(depth)]]">
         </bookmarks-folder-node>
       </template>
     </div>

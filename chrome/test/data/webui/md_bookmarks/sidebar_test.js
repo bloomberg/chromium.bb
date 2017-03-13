@@ -31,7 +31,8 @@ suite('<bookmarks-sidebar>', function() {
   });
 
   test('selecting and deselecting folders dispatches action', function() {
-    var rootFolders = sidebar.$['folder-tree'].children;
+    var rootFolders =
+        sidebar.$['folder-tree'].querySelectorAll('bookmarks-folder-node');
     var firstGen = rootFolders[0].$['descendants'].querySelectorAll(
         'bookmarks-folder-node');
     var secondGen =
@@ -49,4 +50,26 @@ suite('<bookmarks-sidebar>', function() {
     assertEquals('select-folder', store.lastAction.name);
     assertEquals(rootFolders[1].itemId, store.lastAction.id);
   });
+
+  test('depth calculation', function() {
+    var rootFolders =
+        sidebar.$['folder-tree'].querySelectorAll('bookmarks-folder-node');
+    var firstGen = rootFolders[0].$['descendants'].querySelectorAll(
+        'bookmarks-folder-node');
+    var secondGen =
+        firstGen[0].$['descendants'].querySelectorAll('bookmarks-folder-node');
+
+    Array.prototype.forEach.call(rootFolders, function(f) {
+      assertEquals(0, f.depth);
+      assertEquals('0', f.style.getPropertyValue('--node-depth'));
+    });
+    Array.prototype.forEach.call(firstGen, function(f) {
+      assertEquals(1, f.depth);
+      assertEquals('1', f.style.getPropertyValue('--node-depth'));
+    });
+    Array.prototype.forEach.call(secondGen, function(f) {
+      assertEquals(2, f.depth);
+      assertEquals('2', f.style.getPropertyValue('--node-depth'));
+    });
+  })
 });

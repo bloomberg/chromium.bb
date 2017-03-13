@@ -15,6 +15,11 @@ Polymer({
       observer: 'updateFromStore',
     },
 
+    depth: {
+      type: Number,
+      observer: 'depthChanged_',
+    },
+
     /** @type {BookmarkNode} */
     item_: Object,
 
@@ -78,10 +83,10 @@ Polymer({
   },
 
   /**
+   * @private
    * @param {string} itemId
    * @param {string} selectedFolder
    * @return {boolean}
-   * @private
    */
   computeIsSelected_: function(itemId, selectedFolder) {
     return itemId == selectedFolder;
@@ -97,6 +102,19 @@ Polymer({
         return true;
     }
     return false;
+  },
+
+  /** @private */
+  depthChanged_: function() {
+    this.style.setProperty('--node-depth', this.depth.toString());
+  },
+
+  /**
+   * @private
+   * @return {number}
+   */
+  getChildDepth_: function() {
+    return this.depth + 1;
   },
 
   /**
