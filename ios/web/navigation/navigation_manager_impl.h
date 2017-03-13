@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #import "ios/web/public/navigation_item_list.h"
 #import "ios/web/public/navigation_manager.h"
+#include "ios/web/public/reload_type.h"
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
 
@@ -140,7 +141,7 @@ class NavigationManagerImpl : public NavigationManager {
   void GoBack() override;
   void GoForward() override;
   void GoToIndex(int index) override;
-  void Reload(bool check_for_reposts) override;
+  void Reload(ReloadType reload_type, bool check_for_reposts) override;
   void OverrideDesktopUserAgentForNextPendingItem() override;
 
   // Returns the current list of transient url rewriters, passing ownership to

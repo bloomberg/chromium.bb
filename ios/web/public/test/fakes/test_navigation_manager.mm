@@ -127,7 +127,8 @@ void TestNavigationManager::GoToIndex(int index) {
   NOTREACHED();
 }
 
-void TestNavigationManager::Reload(bool check_for_repost) {
+void TestNavigationManager::Reload(ReloadType reload_type,
+                                   bool check_for_repost) {
   NOTREACHED();
 }
 

@@ -38,7 +38,7 @@ class TestNavigationManager : public web::NavigationManager {
   void GoBack() override;
   void GoForward() override;
   void GoToIndex(int index) override;
-  void Reload(bool check_for_reposts) override;
+  void Reload(ReloadType reload_type, bool check_for_reposts) override;
   void OverrideDesktopUserAgentForNextPendingItem() override;
 
   // Setters for test data.

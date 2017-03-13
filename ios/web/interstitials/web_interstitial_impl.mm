@@ -10,6 +10,7 @@
 #import "ios/web/navigation/navigation_manager_impl.h"
 #import "ios/web/public/interstitials/web_interstitial_delegate.h"
 #import "ios/web/public/navigation_manager.h"
+#include "ios/web/public/reload_type.h"
 #import "ios/web/web_state/web_state_impl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -93,7 +94,7 @@ void WebInterstitialImpl::DontProceed() {
   NSUserDefaults* user_defaults = [NSUserDefaults standardUserDefaults];
   if (![user_defaults boolForKey:@"PendingIndexNavigationDisabled"]) {
     // Reload last committed entry.
-    nav_manager->Reload(true /* check_for_repost */);
+    nav_manager->Reload(ReloadType::NORMAL, true /* check_for_repost */);
   }
 
   delete this;

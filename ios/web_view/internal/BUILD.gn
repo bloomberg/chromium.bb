@@ -43,6 +43,7 @@ source_set("internal") {
     "//components/translate/core/common",
     "//ios/net",
     "//ios/web",
+    "//ios/web:reload_type",
     "//ios/web:user_agent",
     "//ios/web/public/app",
     "//ios/web_view/internal/translate",

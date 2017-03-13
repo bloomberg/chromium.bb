@@ -15,6 +15,7 @@
 #include "ios/web/public/browser_state.h"
 #import "ios/web/public/navigation_item.h"
 #import "ios/web/public/navigation_manager.h"
+#include "ios/web/public/reload_type.h"
 #import "ios/web/public/web_state/web_state.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -88,7 +89,8 @@
 
 - (void)reload {
   [self restoreOnlineURL];
-  _webState->GetNavigationManager()->Reload(false);
+  _webState->GetNavigationManager()->Reload(web::ReloadType::NORMAL,
+                                            false /*check_for_repost*/);
 }
 
 - (void)restoreOnlineURL {

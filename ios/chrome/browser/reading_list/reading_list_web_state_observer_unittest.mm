@@ -8,6 +8,7 @@
 #include "components/reading_list/ios/reading_list_model_impl.h"
 #include "ios/chrome/browser/reading_list/offline_url_utils.h"
 #import "ios/web/public/navigation_item.h"
+#include "ios/web/public/reload_type.h"
 #import "ios/web/public/test/fakes/test_navigation_manager.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
 #include "ios/web/public/test/web_test.h"
@@ -25,7 +26,9 @@ const char kTestDistilledURL[] = "http://foo.bar/distilled";
 // A Test navigation manager that checks if Reload was called.
 class TestNavigationManager : public web::TestNavigationManager {
  public:
-  void Reload(bool check_for_repost) override { reload_called_ = true; }
+  void Reload(web::ReloadType reload_type, bool check_for_repost) override {
+    reload_called_ = true;
+  }
   bool ReloadCalled() { return reload_called_; }
 
  private:

@@ -15,6 +15,7 @@
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
 #include "ios/web/public/navigation_item.h"
 #include "ios/web/public/navigation_manager.h"
+#include "ios/web/public/reload_type.h"
 #include "ios/web/public/web_state/web_state_user_data.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -294,7 +295,8 @@ void ReadingListWebStateObserver::LoadOfflineReadingListEntry() {
     item = navigationManager->GetLastCommittedItem();
     item->SetURL(url);
     item->SetVirtualURL(pending_url_);
-    navigationManager->Reload(false);
+    navigationManager->Reload(web::ReloadType::NORMAL,
+                              false /*check_for_repost*/);
   } else if (navigationManager->GetPendingItemIndex() != -1 &&
              navigationManager->GetItemAtIndex(
                  navigationManager->GetPendingItemIndex()) == item) {

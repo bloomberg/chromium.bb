@@ -19,6 +19,7 @@ source_set("web_arc") {
   deps = [
     ":core",
     ":js_resources",
+    ":reload_type",
     ":resources",
     ":user_agent",
     "//base",
@@ -257,6 +258,7 @@ source_set("web") {
   deps = [
     ":core",
     ":js_resources",
+    ":reload_type",
     ":resources",
     ":user_agent",
     "//base",
@@ -343,6 +345,12 @@ source_set("user_agent") {
   ]
 
   configs += [ "//build/config/compiler:enable_arc" ]
+}
+
+source_set("reload_type") {
+  sources = [
+    "public/reload_type.h",
+  ]
 }
 
 source_set("earl_grey_test_support") {

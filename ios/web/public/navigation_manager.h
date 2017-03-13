@@ -10,6 +10,7 @@
 #import "base/mac/scoped_nsobject.h"
 #include "ios/web/public/browser_url_rewriter.h"
 #include "ios/web/public/referrer.h"
+#include "ios/web/public/reload_type.h"
 #include "ui/base/page_transition_types.h"
 
 @class NSDictionary;
@@ -149,11 +150,15 @@ class NavigationManager {
   // TODO(crbug.com/533848): Update to use size_t.
   virtual void GoToIndex(int index) = 0;
 
-  // Reloads the current item. If |check_for_repost| is true and the current
-  // item has POST data the user is prompted to see if they really want to
-  // reload the page. In nearly all cases pass in true.  If a transient item is
-  // showing, initiates a new navigation to its URL.
-  virtual void Reload(bool check_for_repost) = 0;
+  // Reloads the visible item under the specified ReloadType. If
+  // |check_for_repost| is true and the current item has POST data the user is
+  // prompted to see if they really want to reload the page. In nearly all cases
+  // pass in true.  If a transient item is showing, initiates a new navigation
+  // to its URL.
+  // TODO(crbug.com/700571): implement the logic for when |reload_type| is
+  // ORIGINAL_REQUEST_URL.
+  // TODO(crbug.com/700958): implement the logic for |check_for_repost|.
+  virtual void Reload(ReloadType reload_type, bool check_for_repost) = 0;
 
   // Forces the pending item to be loaded using desktop user agent. Note that
   // the pending item may or may not already exist.

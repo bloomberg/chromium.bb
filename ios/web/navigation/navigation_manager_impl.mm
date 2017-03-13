@@ -17,6 +17,7 @@
 #include "ios/web/navigation/navigation_manager_facade_delegate.h"
 #include "ios/web/public/load_committed_details.h"
 #import "ios/web/public/navigation_item.h"
+#include "ios/web/public/reload_type.h"
 #import "ios/web/public/web_client.h"
 #import "ios/web/public/web_state/web_state.h"
 #include "ui/base/page_transition_types.h"
@@ -337,7 +338,8 @@ void NavigationManagerImpl::GoToIndex(int index) {
   delegate_->GoToIndex(index);
 }
 
-void NavigationManagerImpl::Reload(bool check_for_reposts) {
+void NavigationManagerImpl::Reload(ReloadType reload_type,
+                                   bool check_for_reposts) {
   // Navigation manager may be empty if the only pending item failed to load
   // with SSL error and the user has decided not to proceed.
   NavigationItem* item = GetVisibleItem();

@@ -12,6 +12,7 @@
 #include "base/strings/sys_string_conversions.h"
 #import "ios/web/public/navigation_manager.h"
 #include "ios/web/public/referrer.h"
+#include "ios/web/public/reload_type.h"
 #import "ios/web/public/web_state/context_menu_params.h"
 #import "ios/web/public/web_state/js/crw_js_injection_receiver.h"
 #import "ios/web/public/web_state/ui/crw_web_delegate.h"
@@ -131,7 +132,7 @@
 }
 
 - (void)reload {
-  _webState->GetNavigationManager()->Reload(true);
+  _webState->GetNavigationManager()->Reload(web::ReloadType::NORMAL, true);
 }
 
 - (void)stopLoading {
