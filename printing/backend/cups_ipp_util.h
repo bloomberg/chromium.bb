@@ -9,9 +9,9 @@
 
 #include <vector>
 
-#include "base/strings/string_piece.h"
 #include "printing/backend/cups_printer.h"
 #include "printing/backend/print_backend.h"
+#include "printing/printing_export.h"
 
 namespace printing {
 
@@ -53,8 +53,9 @@ bool CollateDefault(const CupsOptionProvider& printer);
 
 // Populates the |printer_info| object with attributes retrived using IPP from
 // |printer|.
-void CapsAndDefaultsFromPrinter(const CupsOptionProvider& printer,
-                                PrinterSemanticCapsAndDefaults* printer_info);
+PRINTING_EXPORT void CapsAndDefaultsFromPrinter(
+    const CupsOptionProvider& printer,
+    PrinterSemanticCapsAndDefaults* printer_info);
 
 }  // namespace printing
 

@@ -27,21 +27,21 @@ class PRINTING_EXPORT CupsOptionProvider {
   // Returns the supported ipp attributes for the given |option_name|.
   // ipp_attribute_t* is owned by CupsOptionProvider.
   virtual ipp_attribute_t* GetSupportedOptionValues(
-      base::StringPiece option_name) const = 0;
+      const char* option_name) const = 0;
 
   // Returns supported attribute values for |option_name| where the value can be
   // convered to a string.
   virtual std::vector<base::StringPiece> GetSupportedOptionValueStrings(
-      base::StringPiece option_name) const = 0;
+      const char* option_name) const = 0;
 
   // Returns the default ipp attributes for the given |option_name|.
   // ipp_attribute_t* is owned by CupsOptionProvider.
   virtual ipp_attribute_t* GetDefaultOptionValue(
-      base::StringPiece option_name) const = 0;
+      const char* option_name) const = 0;
 
   // Returns true if the |value| is supported by option |name|.
-  virtual bool CheckOptionSupported(base::StringPiece name,
-                                    base::StringPiece value) const = 0;
+  virtual bool CheckOptionSupported(const char* name,
+                                    const char* value) const = 0;
 };
 
 // Represents a CUPS printer.
@@ -65,13 +65,12 @@ class PRINTING_EXPORT CupsPrinter : public CupsOptionProvider {
 
   // CupsOptionProvider
   ipp_attribute_t* GetSupportedOptionValues(
-      base::StringPiece option_name) const override;
+      const char* option_name) const override;
   std::vector<base::StringPiece> GetSupportedOptionValueStrings(
-      base::StringPiece option_name) const override;
+      const char* option_name) const override;
   ipp_attribute_t* GetDefaultOptionValue(
-      base::StringPiece option_name) const override;
-  bool CheckOptionSupported(base::StringPiece name,
-                            base::StringPiece value) const override;
+      const char* option_name) const override;
+  bool CheckOptionSupported(const char* name, const char* value) const override;
 
   // Returns the contents of the PPD retrieved from the print server.
   std::string GetPPD() const;
@@ -91,7 +90,7 @@ class PRINTING_EXPORT CupsPrinter : public CupsOptionProvider {
   // is 0 if there is an error.  Check availability before using this operation.
   // Usage on an unavailable printer is undefined.
   ipp_status_t CreateJob(int* job_id,
-                         base::StringPiece job_title,
+                         const std::string& title,
                          const std::vector<cups_option_t>& options);
 
   // Add a document to a print job.  |job_id| must be non-zero and refer to a
@@ -100,7 +99,7 @@ class PRINTING_EXPORT CupsPrinter : public CupsOptionProvider {
   // print job.  |options| should be IPP key value pairs for the Send-Document
   // operation.
   bool StartDocument(int job_id,
-                     base::StringPiece document_name,
+                     const std::string& document_name,
                      bool last_doc,
                      const std::vector<cups_option_t>& options);
 

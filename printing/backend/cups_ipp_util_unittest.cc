@@ -20,13 +20,13 @@ class MockCupsOptionProvider : public CupsOptionProvider {
   ~MockCupsOptionProvider() override {}
 
   ipp_attribute_t* GetSupportedOptionValues(
-      base::StringPiece option_name) const override {
+      const char* option_name) const override {
     const auto attr = supported_attributes_.find(option_name);
     return attr != supported_attributes_.end() ? attr->second : nullptr;
   }
 
   std::vector<base::StringPiece> GetSupportedOptionValueStrings(
-      base::StringPiece option_name) const override {
+      const char* option_name) const override {
     ipp_attribute_t* attr = GetSupportedOptionValues(option_name);
     if (!attr)
       return std::vector<base::StringPiece>();
@@ -41,13 +41,13 @@ class MockCupsOptionProvider : public CupsOptionProvider {
   }
 
   ipp_attribute_t* GetDefaultOptionValue(
-      base::StringPiece option_name) const override {
+      const char* option_name) const override {
     const auto attr = default_attributes_.find(option_name);
     return attr != default_attributes_.end() ? attr->second : nullptr;
   }
 
-  bool CheckOptionSupported(base::StringPiece name,
-                            base::StringPiece value) const override {
+  bool CheckOptionSupported(const char* name,
+                            const char* value) const override {
     NOTREACHED();
     return false;
   }

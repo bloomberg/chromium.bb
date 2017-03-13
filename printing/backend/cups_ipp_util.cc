@@ -65,8 +65,8 @@ ColorModel ColorModelFromIppColor(base::StringPiece ippColor) {
 }
 
 bool PrinterSupportsValue(const CupsOptionProvider& printer,
-                          base::StringPiece name,
-                          base::StringPiece value) {
+                          const char* name,
+                          const char* value) {
   std::vector<base::StringPiece> values =
       printer.GetSupportedOptionValueStrings(name);
   return base::ContainsValue(values, value);
