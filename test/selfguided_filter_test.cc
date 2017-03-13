@@ -46,7 +46,7 @@ class AV1SelfguidedFilterTest
 
     uint8_t *input = new uint8_t[w * h];
     uint8_t *output = new uint8_t[w * h];
-    int32_t *tmpbuf = (int32_t *)aom_malloc(RESTORATION_TMPBUF_SIZE);
+    int32_t *tmpbuf = (int32_t *)aom_memalign(16, RESTORATION_TMPBUF_SIZE);
     memset(tmpbuf, 0, RESTORATION_TMPBUF_SIZE);
 
     ACMRandom rnd(ACMRandom::DeterministicSeed());
@@ -92,7 +92,7 @@ class AV1SelfguidedFilterTest
     uint8_t *input = new uint8_t[stride * max_h];
     uint8_t *output = new uint8_t[out_stride * max_h];
     uint8_t *output2 = new uint8_t[out_stride * max_h];
-    int32_t *tmpbuf = (int32_t *)aom_malloc(RESTORATION_TMPBUF_SIZE);
+    int32_t *tmpbuf = (int32_t *)aom_memalign(16, RESTORATION_TMPBUF_SIZE);
     memset(tmpbuf, 0, RESTORATION_TMPBUF_SIZE);
 
     ACMRandom rnd(ACMRandom::DeterministicSeed());
@@ -163,7 +163,7 @@ class AV1HighbdSelfguidedFilterTest
 
     uint16_t *input = new uint16_t[w * h];
     uint16_t *output = new uint16_t[w * h];
-    int32_t *tmpbuf = (int32_t *)aom_malloc(RESTORATION_TMPBUF_SIZE);
+    int32_t *tmpbuf = (int32_t *)aom_memalign(16, RESTORATION_TMPBUF_SIZE);
     memset(tmpbuf, 0, RESTORATION_TMPBUF_SIZE);
 
     ACMRandom rnd(ACMRandom::DeterministicSeed());
@@ -212,7 +212,7 @@ class AV1HighbdSelfguidedFilterTest
     uint16_t *input = new uint16_t[stride * max_h];
     uint16_t *output = new uint16_t[out_stride * max_h];
     uint16_t *output2 = new uint16_t[out_stride * max_h];
-    int32_t *tmpbuf = (int32_t *)aom_malloc(RESTORATION_TMPBUF_SIZE);
+    int32_t *tmpbuf = (int32_t *)aom_memalign(16, RESTORATION_TMPBUF_SIZE);
     memset(tmpbuf, 0, RESTORATION_TMPBUF_SIZE);
 
     ACMRandom rnd(ACMRandom::DeterministicSeed());
