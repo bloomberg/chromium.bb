@@ -63,6 +63,7 @@ class ResourcePrefetchCommonTest : public testing::Test {
         profile_.get(), PrefetchOrigin::EXTERNAL));
     EXPECT_FALSE(config.IsPrefetchingEnabledForOrigin(
         profile_.get(), PrefetchOrigin::NAVIGATION));
+    EXPECT_GT(config.min_resource_hits_to_trigger_prefetch, 1U);
   }
 
   void TestIsDefaultExtraConfig(const ResourcePrefetchPredictorConfig& config) {
@@ -71,6 +72,7 @@ class ResourcePrefetchCommonTest : public testing::Test {
     EXPECT_FALSE(config.IsMoreResourcesEnabledForTest());
     EXPECT_FALSE(config.IsSmallDBEnabledForTest());
     EXPECT_FALSE(config.is_url_learning_enabled);
+    EXPECT_GT(config.min_resource_hits_to_trigger_prefetch, 1U);
   }
 
  protected:

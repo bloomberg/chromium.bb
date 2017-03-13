@@ -66,6 +66,12 @@ bool IsSpeculativeResourcePrefetchingEnabled(
     config->is_url_learning_enabled = true;
   }
 
+  // Ensure that a resource that was only seen once is never prefetched. This
+  // prevents the easy mistake of trying to prefetch an ephemeral url.
+  DCHECK_GT(config->min_resource_hits_to_trigger_prefetch, 1U);
+  if (config->min_resource_hits_to_trigger_prefetch < 2)
+    config->min_resource_hits_to_trigger_prefetch = 2;
+
   std::string mode_value = base::GetFieldTrialParamValueByFeature(
       kSpeculativeResourcePrefetchingFeature, kModeParamName);
   if (mode_value == kLearningMode) {
