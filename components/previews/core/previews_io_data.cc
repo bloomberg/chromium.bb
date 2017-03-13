@@ -51,8 +51,10 @@ PreviewsIOData::~PreviewsIOData() {}
 
 void PreviewsIOData::Initialize(
     base::WeakPtr<PreviewsUIService> previews_ui_service,
-    std::unique_ptr<PreviewsOptOutStore> previews_opt_out_store) {
+    std::unique_ptr<PreviewsOptOutStore> previews_opt_out_store,
+    const PreviewsIsEnabledCallback& is_enabled_callback) {
   DCHECK(ui_task_runner_->BelongsToCurrentThread());
+  is_enabled_callback_ = is_enabled_callback;
   previews_ui_service_ = previews_ui_service;
 
   // Set up the IO thread portion of |this|.
@@ -88,15 +90,16 @@ void PreviewsIOData::ClearBlackList(base::Time begin_time,
 
 bool PreviewsIOData::ShouldAllowPreview(const net::URLRequest& request,
                                         PreviewsType type) const {
-  if (!IsPreviewsTypeEnabled(type))
-    return false;
-  // The blacklist will disallow certain hosts for periods of time based on
-  // user's opting out of the preview
-  if (!previews_black_list_) {
+  if (is_enabled_callback_.is_null() || !previews_black_list_) {
     LogPreviewsEligibilityReason(
         PreviewsEligibilityReason::BLACKLIST_UNAVAILABLE, type);
     return false;
   }
+  if (!is_enabled_callback_.Run(type))
+    return false;
+
+  // The blacklist will disallow certain hosts for periods of time based on
+  // user's opting out of the preview
   PreviewsEligibilityReason status =
       previews_black_list_->IsLoadedAndAllowed(request.url(), type);
   if (status != PreviewsEligibilityReason::ALLOWED) {

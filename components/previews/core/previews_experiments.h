@@ -52,10 +52,17 @@ base::TimeDelta OfflinePreviewFreshnessDuration();
 // served.
 net::EffectiveConnectionType EffectiveConnectionTypeThreshold();
 
+// Whether offline previews are enabled.
+bool IsOfflinePreviewsEnabled();
+
+// The blacklist version for offline previews.
+int OfflinePreviewsVersion();
+
 }  // namespace params
 
 enum class PreviewsType {
   NONE = 0,
+  // The user is shown an offline page as a preview.
   OFFLINE = 1,
   // Insert new enum values here. Keep values sequential to allow looping
   // from NONE+1 to LAST-1.
@@ -66,17 +73,6 @@ typedef std::vector<std::pair<PreviewsType, int>> PreviewsTypeList;
 
 // Returns true if any client-side previews experiment is active.
 bool IsIncludedInClientSidePreviewsExperimentsFieldTrial();
-
-// Returns true if the field trial that should enable previews for |type| for
-// prohibitvely slow networks is active.
-bool IsPreviewsTypeEnabled(PreviewsType type);
-
-// Returns the version of preview treatment |type|. Defaults to 0 if not
-// specified in field trial config.
-int GetPreviewsTypeVersion(PreviewsType type);
-
-// Returns the enabled PreviewsTypes with their version.
-std::unique_ptr<PreviewsTypeList> GetEnabledPreviews();
 
 // Sets the appropriate state for field trial and variations to imitate the
 // offline pages field trial.
