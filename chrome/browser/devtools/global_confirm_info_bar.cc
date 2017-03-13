@@ -147,8 +147,7 @@ GlobalConfirmInfoBar::GlobalConfirmInfoBar(
     : delegate_(std::move(delegate)),
       browser_tab_strip_tracker_(this, nullptr, nullptr),
       weak_factory_(this) {
-  browser_tab_strip_tracker_.Init(
-      BrowserTabStripTracker::InitWith::BROWSERS_IN_ACTIVE_DESKTOP);
+  browser_tab_strip_tracker_.Init();
 }
 
 GlobalConfirmInfoBar::~GlobalConfirmInfoBar() {

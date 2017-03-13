@@ -17,8 +17,7 @@
 
 TabStripModelStatsRecorder::TabStripModelStatsRecorder()
     : browser_tab_strip_tracker_(this, nullptr, nullptr) {
-  browser_tab_strip_tracker_.Init(
-      BrowserTabStripTracker::InitWith::ALL_BROWERS);
+  browser_tab_strip_tracker_.Init();
 }
 
 TabStripModelStatsRecorder::~TabStripModelStatsRecorder() {

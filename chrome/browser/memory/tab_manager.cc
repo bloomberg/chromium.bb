@@ -155,8 +155,7 @@ TabManager::TabManager()
 #if defined(OS_CHROMEOS)
   delegate_.reset(new TabManagerDelegate(weak_ptr_factory_.GetWeakPtr()));
 #endif
-  browser_tab_strip_tracker_.Init(
-      BrowserTabStripTracker::InitWith::ALL_BROWERS);
+  browser_tab_strip_tracker_.Init();
 
   // Set up default callbacks. These may be overridden post-construction as
   // testing seams.

@@ -86,8 +86,7 @@ BrowserStatusMonitor::BrowserStatusMonitor(
 
   ash::Shell::GetInstance()->activation_client()->AddObserver(this);
 
-  browser_tab_strip_tracker_.Init(
-      BrowserTabStripTracker::InitWith::ALL_BROWERS);
+  browser_tab_strip_tracker_.Init();
 }
 
 BrowserStatusMonitor::~BrowserStatusMonitor() {

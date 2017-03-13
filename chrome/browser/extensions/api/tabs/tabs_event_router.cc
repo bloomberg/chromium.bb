@@ -141,8 +141,7 @@ TabsEventRouter::TabsEventRouter(Profile* profile)
       tab_manager_scoped_observer_(this) {
   DCHECK(!profile->IsOffTheRecord());
 
-  browser_tab_strip_tracker_.Init(
-      BrowserTabStripTracker::InitWith::ALL_BROWERS);
+  browser_tab_strip_tracker_.Init();
 
   tab_manager_scoped_observer_.Add(g_browser_process->GetTabManager());
 }

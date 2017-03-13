@@ -28,18 +28,12 @@ BrowserTabStripTracker::~BrowserTabStripTracker() {
   BrowserList::RemoveObserver(this);
 }
 
-void BrowserTabStripTracker::Init(InitWith init_with) {
+void BrowserTabStripTracker::Init() {
   BrowserList::AddObserver(this);
 
   base::AutoReset<bool> restter(&is_processing_initial_browsers_, true);
-  if (init_with == InitWith::BROWSERS_IN_ACTIVE_DESKTOP) {
-    for (Browser* browser : *BrowserList::GetInstance())
-      MaybeTrackBrowser(browser);
-  } else {
-    DCHECK(InitWith::ALL_BROWERS == init_with);
-    for (auto* browser : *BrowserList::GetInstance())
-      MaybeTrackBrowser(browser);
-  }
+  for (auto* browser : *BrowserList::GetInstance())
+    MaybeTrackBrowser(browser);
 }
 
 void BrowserTabStripTracker::StopObservingAndSendOnBrowserRemoved() {

@@ -121,8 +121,7 @@ void TabUsageRecorder::TabPinnedStateChanged(TabStripModel* tab_strip_model,
 TabUsageRecorder::TabUsageRecorder()
     : tab_reactivation_tracker_(this),
       browser_tab_strip_tracker_(this, nullptr, nullptr) {
-  browser_tab_strip_tracker_.Init(
-      BrowserTabStripTracker::InitWith::ALL_BROWERS);
+  browser_tab_strip_tracker_.Init();
 }
 
 TabUsageRecorder::~TabUsageRecorder() = default;

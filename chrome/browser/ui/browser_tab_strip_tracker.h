@@ -28,12 +28,6 @@ class TabStripModelObserver;
 // should be tracked.
 class BrowserTabStripTracker : public chrome::BrowserListObserver {
  public:
-  // See Init() for details.
-  enum class InitWith {
-    BROWSERS_IN_ACTIVE_DESKTOP,
-    ALL_BROWERS,
-  };
-
   // See class description for details. You only need specify a
   // TabStripModelObserver. |delegate| and |browser_list_observer| are
   // optional.
@@ -43,13 +37,13 @@ class BrowserTabStripTracker : public chrome::BrowserListObserver {
   ~BrowserTabStripTracker() override;
 
   // Starts tracking BrowserList for changes and additionally observes the
-  // existing Browsers matching |init_with|. If there is a
-  // BrowserTabStripTrackerDelegate it is called to determine if the Browser
-  // should be observed. If an existing Browser should be observed
-  // TabInsertedAt() is called for any existing tabs. If a delegate needs to
-  // differentiate between Browsers observed by way of Init() vs. a Browser
-  // added after the fact use is_processing_initial_browsers().
-  void Init(InitWith init_with);
+  // existing Browsers. If there is a BrowserTabStripTrackerDelegate it is
+  // called to determine if the Browser should be observed. If an existing
+  // Browser should be observed TabInsertedAt() is called for any existing tabs.
+  // If a delegate needs to differentiate between Browsers observed by way of
+  // Init() vs. a Browser added after the fact use
+  // is_processing_initial_browsers().
+  void Init();
 
   // Returns true if processing an existing Browser in Init().
   bool is_processing_initial_browsers() const {

@@ -81,8 +81,7 @@ WebNavigationEventRouter::WebNavigationEventRouter(Profile* profile)
                  content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
                  content::NotificationService::AllSources());
 
-  browser_tab_strip_tracker_.Init(
-      BrowserTabStripTracker::InitWith::ALL_BROWERS);
+  browser_tab_strip_tracker_.Init();
 }
 
 WebNavigationEventRouter::~WebNavigationEventRouter() {
