@@ -12,6 +12,7 @@ import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.support.annotation.Nullable;
+import android.support.graphics.drawable.VectorDrawableCompat;
 import android.widget.ListView;
 
 import org.chromium.base.VisibleForTesting;
@@ -81,12 +82,14 @@ public class ClearBrowsingDataPreferences extends PreferenceFragment
             if (ClearBrowsingDataTabsFragment.isFeatureEnabled()) {
                 int dp = mParent.getResources().getConfiguration().smallestScreenWidthDp;
                 if (dp >= MIN_DP_FOR_ICON) {
-                    if (option.iconNeedsTinting()) {
+                    if (option.iconIsBitmap()) {
                         Drawable icon = TintedDrawable.constructTintedDrawable(
                                 mParent.getResources(), option.getIcon(), R.color.google_grey_600);
                         mCheckbox.setIcon(icon);
                     } else {
-                        mCheckbox.setIcon(option.getIcon());
+                        Drawable icon = VectorDrawableCompat.create(mParent.getResources(),
+                                option.getIcon(), mParent.getActivity().getTheme());
+                        mCheckbox.setIcon(icon);
                     }
                 }
             } else {
@@ -180,26 +183,25 @@ public class ClearBrowsingDataPreferences extends PreferenceFragment
      */
     public enum DialogOption {
         CLEAR_HISTORY(
-                BrowsingDataType.HISTORY, PREF_HISTORY, R.drawable.ic_history_grey600_24dp, false),
+                BrowsingDataType.HISTORY, PREF_HISTORY, R.drawable.ic_history_grey600_24dp, true),
         CLEAR_COOKIES_AND_SITE_DATA(
                 BrowsingDataType.COOKIES, PREF_COOKIES, R.drawable.permission_cookie, true),
-        CLEAR_CACHE(
-                BrowsingDataType.CACHE, PREF_CACHE, R.drawable.ic_collections_grey600_24dp, false),
-        CLEAR_PASSWORDS(BrowsingDataType.PASSWORDS, PREF_PASSWORDS,
-                R.drawable.ic_vpn_key_grey600_24dp, false),
+        CLEAR_CACHE(BrowsingDataType.CACHE, PREF_CACHE, R.drawable.ic_collections_grey, false),
+        CLEAR_PASSWORDS(
+                BrowsingDataType.PASSWORDS, PREF_PASSWORDS, R.drawable.ic_vpn_key_grey, false),
         CLEAR_FORM_DATA(
                 BrowsingDataType.FORM_DATA, PREF_FORM_DATA, R.drawable.bookmark_edit_normal, true);
 
         private final int mDataType;
         private final String mPreferenceKey;
         private final int mIcon;
-        private final boolean mNeedsTinting;
+        private final boolean mIsBitmap;
 
-        private DialogOption(int dataType, String preferenceKey, int icon, boolean needsTinting) {
+        private DialogOption(int dataType, String preferenceKey, int icon, boolean isBitmap) {
             mDataType = dataType;
             mPreferenceKey = preferenceKey;
             mIcon = icon;
-            mNeedsTinting = needsTinting;
+            mIsBitmap = isBitmap;
         }
 
         /**
@@ -224,10 +226,10 @@ public class ClearBrowsingDataPreferences extends PreferenceFragment
         }
 
         /**
-         * @return Whether the icon has a different color than google_grey_600.
+         * @return Whether the icon is a bitmap. Otherwise it's a vector.
          */
-        public boolean iconNeedsTinting() {
-            return mNeedsTinting;
+        public boolean iconIsBitmap() {
+            return mIsBitmap;
         }
     }
 
