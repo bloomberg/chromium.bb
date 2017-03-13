@@ -139,6 +139,10 @@ crbug.com/674396 [ Win ] compositing/reflections/nested-reflection-transition.ht
 # Added 2016-12-15
 crbug.com/674468 [ Trusty ] compositing/reflections/nested-reflection-transition.html [ Pass Failure ]
 
+# Added 2016-12-16
+crbug.com/674858 [ Linux ] virtual/threaded/printing/offscreencanvas-2d-printing.html [ Pass Failure Crash ]
+crbug.com/674858 [ Linux ] virtual/threaded/printing/offscreencanvas-webgl-printing.html [ Pass Failure Crash ]
+
 # Added 2017-01-16
 crbug.com/681471 paint/invalidation/media-audio-no-spurious-repaints.html [ Failure Pass Timeout ]
 crbug.com/681471 virtual/disable-spinvalidation/paint/invalidation/media-audio-no-spurious-repaints.html [ Failure Pass Timeout ]
@@ -842,8 +846,6 @@ crbug.com/526463 fast/events/wheel/mouse-wheel-scroll-latching.html [ Failure ]
 crbug.com/526463 fast/events/wheel/wheel-scroll-latching-on-scrollbar.html [ Failure Timeout ]
 crbug.com/526463 fast/events/wheel/mainthread-touchpad-fling-latching.html [ Failure Timeout ]
 
-crbug.com/526463 virtual/wheelscrolllatching/fast/events/wheel/wheel-scroll-latching-on-scrollbar.html [ Timeout Pass ]
-
 crbug.com/410974 virtual/threaded/fast/scroll-behavior/scroll-customization/scrollstate-basic.html [ Pass Failure ]
 crbug.com/410974 virtual/threaded/fast/scroll-behavior/scroll-customization/scrollstate-consume-deltas.html [ Pass Failure ]
 crbug.com/410974 virtual/threaded/fast/scroll-behavior/scroll-customization/scrollstate-consume-deltas-throw.html [ Pass Failure ]
@@ -1191,7 +1193,6 @@ crbug.com/492664 external/csswg-test/css-writing-modes-3/clip-rect-vrl-008.xht [
 crbug.com/492664 external/csswg-test/css-writing-modes-3/line-box-direction-vrl-009.xht [ Failure ]
 
 crbug.com/637255 [ Win10 ] media/video-transformed.html [ Pass Failure ]
-crbug.com/637255 [ Win10 ] media/video-layer-crash.html [ Pass Failure ]
 
 crbug.com/691045 media/autoplay-muted.html [ Pass Timeout ]
 
@@ -1848,8 +1849,6 @@ crbug.com/490015 virtual/stable/http/tests/sendbeacon/beacon-blob-with-non-simpl
 crbug.com/694958 virtual/stable/http/tests/navigation/same-and-different-back.html [ Skip ]
 
 # These tests have console error messages whose order is not deterministic.
-crbug.com/685778 http/tests/dom/promise-rejection-events.html [ Pass Failure ]
-crbug.com/685778 virtual/mojo-loading/http/tests/dom/promise-rejection-events.html [ Pass Failure ]
 crbug.com/679742 external/wpt/html/semantics/scripting-1/the-script-element/module/crossorigin.html [ Pass Failure ]
 crbug.com/679742 external/wpt/html/semantics/scripting-1/the-script-element/module/errorhandling.html [ Pass Failure ]
 
@@ -2258,7 +2257,6 @@ crbug.com/626703 external/wpt/workers/opaque-origin.html [ Failure Crash ]
 crbug.com/626703 external/wpt/fullscreen/api/element-request-fullscreen-two-iframes-manual.html [ Timeout ]
 
 # Other untriaged test failures, timeouts and crashes from newly-imported WPT tests.
-crbug.com/626703 external/wpt/html/syntax/parsing/template/creating-an-element-for-the-token/template-owner-document.html [ Pass Timeout ]
 crbug.com/666703 external/wpt/html/browsers/sandboxing/sandbox-disallow-same-origin.html [ Timeout ]
 crbug.com/626703 external/wpt/html/dom/documents/dom-tree-accessors/Document.currentScript.html [ Timeout ]
 crbug.com/626703 external/wpt/html/browsers/history/the-location-interface/location-protocol-setter-non-broken.html [ Failure Pass ]
@@ -2798,10 +2796,6 @@ crbug.com/673539 [ Linux Win ] css3/filters/effect-contrast-hw.html [ Pass Failu
 # Added 2016-12-15
 crbug.com/674466 [ Win10 ] fast/forms/select/menulist-appearance-rtl.html [ Pass Failure ]
 
-# Added 2016-12-16
-crbug.com/674858 [ Linux ] virtual/threaded/printing/offscreencanvas-2d-printing.html [ Pass Failure Crash ]
-crbug.com/674858 [ Linux ] virtual/threaded/printing/offscreencanvas-webgl-printing.html [ Pass Failure Crash ]
-
 # Added 2016-12-22
 crbug.com/676537 fast/css/imageTileOpacity.html [ Pass Failure ]
 
@@ -2921,15 +2915,9 @@ crbug.com/688515 fast/spatial-navigation/snav-div-overflow-scrol-hidden.html [ P
 crbug.com/688486 external/wpt/service-workers/service-worker/fetch-request-redirect.https.html [ Failure Pass ]
 crbug.com/688486 external/wpt/service-workers/service-worker/fetch-request-resources.https.html [ Failure Pass ]
 
-# Sheriff failures 2017-02-13
-crbug.com/691423 [ Mac ] fast/frames/location-change-no-file-access.html [ Failure Pass ]
-
 # Sheriff failures 2017-02-21
 crbug.com/73609 http/tests/media/video-play-stall.html [ Pass Timeout ]
 crbug.com/73609 virtual/mojo-loading/http/tests/media/video-play-stall.html [ Pass Timeout ]
-
-# Sheriff failures 2017-02-23
-crbug.com/695352 [ Mac ] virtual/threaded/compositing/visibility/overlays-persist-on-navigation.html [ Pass Crash ]
 
 # Sheriff failures 2017-02-27
 crbug.com/696407 [ Linux ] external/wpt/html/browsers/history/the-location-interface/location-protocol-setter-with-colon.sub.html [ Failure Pass ]
