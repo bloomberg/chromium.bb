@@ -836,7 +836,7 @@ WebInputEventResult WebViewImpl::handleGestureEvent(
       // and is not being screencasted itself. This leads to bad user
       // experience.
       WebDevToolsAgentImpl* devTools = mainFrameDevToolsAgentImpl();
-      VisualViewport& visualViewport = page()->frameHost().visualViewport();
+      VisualViewport& visualViewport = page()->visualViewport();
       bool screencastEnabled = devTools && devTools->screencastEnabled();
       if (event.data.tap.width > 0 &&
           !visualViewport.shouldDisableDesktopWorkarounds() &&
@@ -1008,7 +1008,7 @@ bool WebViewImpl::startPageScaleAnimation(const IntPoint& targetPosition,
                                           bool useAnchor,
                                           float newScale,
                                           double durationInSeconds) {
-  VisualViewport& visualViewport = page()->frameHost().visualViewport();
+  VisualViewport& visualViewport = page()->visualViewport();
   WebPoint clampedPoint = targetPosition;
   if (!useAnchor) {
     clampedPoint =
@@ -1395,8 +1395,7 @@ void WebViewImpl::computeScaleAndScrollForBlockRect(
 
   scale = clampPageScaleFactorToLimits(scale);
   scroll = mainFrameImpl()->frameView()->rootFrameToContents(scroll);
-  scroll = page()->frameHost().visualViewport().clampDocumentOffsetAtScale(
-      scroll, scale);
+  scroll = page()->visualViewport().clampDocumentOffsetAtScale(scroll, scale);
 }
 
 static Node* findCursorDefiningAncestor(Node* node, LocalFrame* frame) {
@@ -1773,8 +1772,8 @@ WebSize WebViewImpl::size() {
 }
 
 void WebViewImpl::resizeVisualViewport(const WebSize& newSize) {
-  page()->frameHost().visualViewport().setSize(newSize);
-  page()->frameHost().visualViewport().clampToBoundaries();
+  page()->visualViewport().setSize(newSize);
+  page()->visualViewport().clampToBoundaries();
 }
 
 void WebViewImpl::performResize() {
@@ -1793,7 +1792,7 @@ void WebViewImpl::performResize() {
       mainFrameImpl()->frame()->document()->viewportDescription());
   updateMainFrameLayoutSize();
 
-  page()->frameHost().visualViewport().setSize(m_size);
+  page()->visualViewport().setSize(m_size);
 
   if (mainFrameImpl()->frameView()) {
     mainFrameImpl()->frameView()->setInitialViewportSize(ICBSize);
@@ -1841,7 +1840,7 @@ void WebViewImpl::didUpdateBrowserControls() {
   if (!view)
     return;
 
-  VisualViewport& visualViewport = page()->frameHost().visualViewport();
+  VisualViewport& visualViewport = page()->visualViewport();
 
   {
     // This object will save the current visual viewport offset w.r.t. the
@@ -1902,7 +1901,7 @@ void WebViewImpl::resizeWithBrowserControls(const WebSize& newSize,
     // swapped to a LocalFrame at a later time.
     m_size = newSize;
     pageScaleConstraintsSet().didChangeInitialContainingBlockSize(m_size);
-    page()->frameHost().visualViewport().setSize(m_size);
+    page()->visualViewport().setSize(m_size);
     return;
   }
 
@@ -1914,7 +1913,7 @@ void WebViewImpl::resizeWithBrowserControls(const WebSize& newSize,
   if (!view)
     return;
 
-  VisualViewport& visualViewport = page()->frameHost().visualViewport();
+  VisualViewport& visualViewport = page()->visualViewport();
 
   bool isRotation =
       page()->settings().getMainFrameResizesAreOrientationChanges() &&
@@ -2140,7 +2139,7 @@ WebInputEventResult WebViewImpl::handleInputEvent(
     autofillClient->firstUserGestureObserved();
   }
 
-  page()->frameHost().visualViewport().startTrackingPinchStats();
+  page()->visualViewport().startTrackingPinchStats();
 
   TRACE_EVENT1("input,rail", "WebViewImpl::handleInputEvent", "type",
                WebInputEvent::GetName(inputEvent.type()));
@@ -2244,7 +2243,7 @@ WebInputEventResult WebViewImpl::handleInputEvent(
     if (pinchEvent.data.pinchUpdate.zoomDisabled)
       return WebInputEventResult::NotHandled;
 
-    if (page()->frameHost().visualViewport().magnifyScaleAroundAnchor(
+    if (page()->visualViewport().magnifyScaleAroundAnchor(
             pinchEvent.data.pinchUpdate.scale,
             FloatPoint(pinchEvent.x, pinchEvent.y)))
       return WebInputEventResult::HandledSystem;
@@ -2733,7 +2732,7 @@ bool WebViewImpl::scrollFocusedEditableElementIntoRect(
 
   bool zoomInToLegibleScale =
       m_webSettings->autoZoomFocusedNodeToLegibleScale() &&
-      !page()->frameHost().visualViewport().shouldDisableDesktopWorkarounds();
+      !page()->visualViewport().shouldDisableDesktopWorkarounds();
 
   if (zoomInToLegibleScale) {
     // When deciding whether to zoom in on a focused text box, we should decide
@@ -2767,7 +2766,7 @@ void WebViewImpl::computeScaleAndScrollForFocusedNode(Node* focusedNode,
                                                       float& newScale,
                                                       IntPoint& newScroll,
                                                       bool& needAnimation) {
-  VisualViewport& visualViewport = page()->frameHost().visualViewport();
+  VisualViewport& visualViewport = page()->visualViewport();
 
   WebRect caretInViewport, unusedEnd;
   selectionBounds(caretInViewport, unusedEnd);
@@ -2950,7 +2949,7 @@ float WebViewImpl::pageScaleFactor() const {
   if (!page())
     return 1;
 
-  return page()->frameHost().visualViewport().scale();
+  return page()->visualViewport().scale();
 }
 
 float WebViewImpl::clampPageScaleFactorToLimits(float scaleFactor) const {
@@ -2960,17 +2959,17 @@ float WebViewImpl::clampPageScaleFactorToLimits(float scaleFactor) const {
 
 void WebViewImpl::setVisualViewportOffset(const WebFloatPoint& offset) {
   DCHECK(page());
-  page()->frameHost().visualViewport().setLocation(offset);
+  page()->visualViewport().setLocation(offset);
 }
 
 WebFloatPoint WebViewImpl::visualViewportOffset() const {
   DCHECK(page());
-  return page()->frameHost().visualViewport().visibleRect().location();
+  return page()->visualViewport().visibleRect().location();
 }
 
 WebFloatSize WebViewImpl::visualViewportSize() const {
   DCHECK(page());
-  return page()->frameHost().visualViewport().visibleRect().size();
+  return page()->visualViewport().visibleRect().size();
 }
 
 void WebViewImpl::scrollAndRescaleViewports(
@@ -2994,14 +2993,14 @@ void WebViewImpl::scrollAndRescaleViewports(
 
   setPageScaleFactor(scaleFactor);
 
-  page()->frameHost().visualViewport().setLocation(visualViewportOrigin);
+  page()->visualViewport().setLocation(visualViewportOrigin);
 }
 
 void WebViewImpl::setPageScaleFactorAndLocation(float scaleFactor,
                                                 const FloatPoint& location) {
   DCHECK(page());
 
-  page()->frameHost().visualViewport().setScaleAndLocation(
+  page()->visualViewport().setScaleAndLocation(
       clampPageScaleFactorToLimits(scaleFactor), location);
 }
 
@@ -3012,7 +3011,7 @@ void WebViewImpl::setPageScaleFactor(float scaleFactor) {
   if (scaleFactor == pageScaleFactor())
     return;
 
-  page()->frameHost().visualViewport().setScale(scaleFactor);
+  page()->visualViewport().setScale(scaleFactor);
 }
 
 void WebViewImpl::setDeviceScaleFactor(float scaleFactor) {
@@ -3292,7 +3291,7 @@ void WebViewImpl::resetScaleStateImmediately() {
 }
 
 void WebViewImpl::resetScrollAndScaleState() {
-  page()->frameHost().visualViewport().reset();
+  page()->visualViewport().reset();
 
   if (!page()->mainFrame()->isLocalFrame())
     return;
@@ -3643,7 +3642,7 @@ void WebViewImpl::didCommitLoad(bool isNewNavigation,
   }
 
   // Give the visual viewport's scroll layer its initial size.
-  page()->frameHost().visualViewport().mainFrameDidChangeSize();
+  page()->visualViewport().mainFrameDidChangeSize();
 
   // Make sure link highlight from previous page is cleared.
   m_linkHighlights.clear();
@@ -3669,7 +3668,7 @@ void WebViewImpl::layoutUpdated(WebLocalFrameImpl* webframe) {
     if (frameSize != m_size) {
       m_size = frameSize;
 
-      page()->frameHost().visualViewport().setSize(m_size);
+      page()->visualViewport().setSize(m_size);
       pageScaleConstraintsSet().didChangeInitialContainingBlockSize(m_size);
       frame->view()->setInitialViewportSize(m_size);
 
@@ -3763,7 +3762,7 @@ Element* WebViewImpl::focusedElement() const {
 HitTestResult WebViewImpl::hitTestResultForViewportPos(
     const IntPoint& posInViewport) {
   IntPoint rootFramePoint(
-      m_page->frameHost().visualViewport().viewportToRootFrame(posInViewport));
+      m_page->visualViewport().viewportToRootFrame(posInViewport));
   return hitTestResultForRootFramePos(rootFramePoint);
 }
 
@@ -3837,7 +3836,7 @@ void WebViewImpl::registerViewportLayersWithCompositor() {
       layoutViewportScrollLayer ? layoutViewportScrollLayer->platformLayer()
                                 : nullptr;
 
-  VisualViewport& visualViewport = page()->frameHost().visualViewport();
+  VisualViewport& visualViewport = page()->visualViewport();
 
   // TODO(bokan): This was moved here from when registerViewportLayers was a
   // part of VisualViewport and maybe doesn't belong here. See comment inside
@@ -3857,7 +3856,7 @@ void WebViewImpl::setRootGraphicsLayer(GraphicsLayer* graphicsLayer) {
   // In SPv2, setRootLayer is used instead.
   DCHECK(!RuntimeEnabledFeatures::slimmingPaintV2Enabled());
 
-  VisualViewport& visualViewport = page()->frameHost().visualViewport();
+  VisualViewport& visualViewport = page()->visualViewport();
   visualViewport.attachLayerTree(graphicsLayer);
   if (graphicsLayer) {
     m_rootGraphicsLayer = visualViewport.rootGraphicsLayer();
@@ -3992,7 +3991,7 @@ void WebViewImpl::applyViewportDeltas(
     const WebFloatSize& elasticOverscrollDelta,
     float pageScaleDelta,
     float browserControlsShownRatioDelta) {
-  VisualViewport& visualViewport = page()->frameHost().visualViewport();
+  VisualViewport& visualViewport = page()->visualViewport();
 
   // Store the desired offsets the visual viewport before setting the top
   // controls ratio since doing so will change the bounds and move the

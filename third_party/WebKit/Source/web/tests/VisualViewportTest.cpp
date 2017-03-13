@@ -203,8 +203,7 @@ TEST_P(VisualViewportTest, TestResize) {
   navigateTo("about:blank");
   forceFullCompositingUpdate();
 
-  VisualViewport& visualViewport =
-      frame()->page()->frameHost().visualViewport();
+  VisualViewport& visualViewport = frame()->page()->visualViewport();
 
   IntSize webViewSize = webViewImpl()->size();
 
@@ -242,8 +241,7 @@ TEST_P(VisualViewportTest, TestVisibleContentRect) {
   // Scroll layout viewport and verify visibleContentRect.
   webViewImpl()->mainFrame()->setScrollOffset(WebSize(0, 50));
 
-  VisualViewport& visualViewport =
-      frame()->page()->frameHost().visualViewport();
+  VisualViewport& visualViewport = frame()->page()->visualViewport();
   EXPECT_EQ(IntRect(IntPoint(0, 0), size - scrollbarSize),
             visualViewport.visibleContentRect(ExcludeScrollbars));
   EXPECT_EQ(IntRect(IntPoint(0, 0), size),
@@ -274,8 +272,7 @@ TEST_P(VisualViewportTest, TestResizeAtFullyScrolledPreservesViewportLocation) {
   navigateTo(m_baseURL + "content-width-1000.html");
 
   FrameView& frameView = *webViewImpl()->mainFrameImpl()->frameView();
-  VisualViewport& visualViewport =
-      frame()->page()->frameHost().visualViewport();
+  VisualViewport& visualViewport = frame()->page()->visualViewport();
 
   visualViewport.setScale(2);
 
@@ -351,8 +348,7 @@ TEST_P(VisualViewportTest, TestResizeAfterVerticalScroll) {
   webViewImpl()->setPageScaleFactor(2.0);
 
   // Scroll visual viewport to the bottom of the main frame
-  VisualViewport& visualViewport =
-      frame()->page()->frameHost().visualViewport();
+  VisualViewport& visualViewport = frame()->page()->visualViewport();
   visualViewport.setLocation(FloatPoint(0, 300));
   EXPECT_FLOAT_SIZE_EQ(FloatSize(0, 300), visualViewport.getScrollOffset());
 
@@ -412,8 +408,7 @@ TEST_P(VisualViewportTest, TestResizeAfterHorizontalScroll) {
   webViewImpl()->setPageScaleFactor(2.0);
 
   // Scroll visual viewport to the right edge of the frame
-  VisualViewport& visualViewport =
-      frame()->page()->frameHost().visualViewport();
+  VisualViewport& visualViewport = frame()->page()->visualViewport();
   visualViewport.setLocation(FloatPoint(150, 0));
   EXPECT_FLOAT_SIZE_EQ(FloatSize(150, 0), visualViewport.getScrollOffset());
 
@@ -447,8 +442,7 @@ TEST_P(VisualViewportTest, TestWebViewResizedBeforeAttachment) {
   mainFrameWidget->setRootGraphicsLayer(
       frameView.layoutViewItem().compositor()->rootGraphicsLayer());
 
-  VisualViewport& visualViewport =
-      frame()->page()->frameHost().visualViewport();
+  VisualViewport& visualViewport = frame()->page()->visualViewport();
   EXPECT_FLOAT_SIZE_EQ(FloatSize(320, 240),
                        visualViewport.containerLayer()->size());
 }
@@ -462,8 +456,7 @@ TEST_P(VisualViewportTest, TestVisibleRect) {
   navigateTo("about:blank");
   forceFullCompositingUpdate();
 
-  VisualViewport& visualViewport =
-      frame()->page()->frameHost().visualViewport();
+  VisualViewport& visualViewport = frame()->page()->visualViewport();
 
   // Initial visible rect should be the whole frame.
   EXPECT_SIZE_EQ(IntSize(webViewImpl()->size()), visualViewport.size());
@@ -513,8 +506,7 @@ TEST_P(VisualViewportTest, TestVisibleRectInDocument) {
   registerMockedHttpURLLoad("200-by-800-viewport.html");
   navigateTo(m_baseURL + "200-by-800-viewport.html");
 
-  VisualViewport& visualViewport =
-      frame()->page()->frameHost().visualViewport();
+  VisualViewport& visualViewport = frame()->page()->visualViewport();
 
   // Scale the viewport to 2X and move it.
   visualViewport.setScale(2);
@@ -567,8 +559,7 @@ TEST_P(VisualViewportTest, TestOffsetClamping) {
 
   // Visual viewport should be initialized to same size as frame so no scrolling
   // possible.
-  VisualViewport& visualViewport =
-      frame()->page()->frameHost().visualViewport();
+  VisualViewport& visualViewport = frame()->page()->visualViewport();
   EXPECT_FLOAT_POINT_EQ(FloatPoint(0, 0),
                         visualViewport.visibleRect().location());
 
@@ -623,8 +614,7 @@ TEST_P(VisualViewportTest, TestOffsetClampingWithResize) {
 
   // Visual viewport should be initialized to same size as frame so no scrolling
   // possible.
-  VisualViewport& visualViewport =
-      frame()->page()->frameHost().visualViewport();
+  VisualViewport& visualViewport = frame()->page()->visualViewport();
   EXPECT_FLOAT_POINT_EQ(FloatPoint(0, 0),
                         visualViewport.visibleRect().location());
 
@@ -692,8 +682,7 @@ TEST_P(VisualViewportTest, TestOffsetClampingWithResizeAndScale) {
 
   // Visual viewport should be initialized to same size as WebView so no
   // scrolling possible.
-  VisualViewport& visualViewport =
-      frame()->page()->frameHost().visualViewport();
+  VisualViewport& visualViewport = frame()->page()->visualViewport();
   EXPECT_FLOAT_POINT_EQ(FloatPoint(0, 0),
                         visualViewport.visibleRect().location());
 
@@ -785,8 +774,7 @@ TEST_P(VisualViewportTest, TestAttachingNewFrameSetsInnerScrollLayerSize) {
   navigateTo(m_baseURL + "content-width-1000.html");
   webViewImpl()->updateAllLifecyclePhases();
 
-  VisualViewport& visualViewport =
-      frame()->page()->frameHost().visualViewport();
+  VisualViewport& visualViewport = frame()->page()->visualViewport();
   visualViewport.setScale(2);
   visualViewport.move(ScrollOffset(50, 60));
 
@@ -832,16 +820,14 @@ TEST_P(VisualViewportTest, TestVisualViewportGetsSizeInAutoSizeMode) {
   initializeWithDesktopSettings();
 
   EXPECT_SIZE_EQ(IntSize(0, 0), IntSize(webViewImpl()->size()));
-  EXPECT_SIZE_EQ(IntSize(0, 0),
-                 frame()->page()->frameHost().visualViewport().size());
+  EXPECT_SIZE_EQ(IntSize(0, 0), frame()->page()->visualViewport().size());
 
   webViewImpl()->enableAutoResizeMode(WebSize(10, 10), WebSize(1000, 1000));
 
   registerMockedHttpURLLoad("200-by-300.html");
   navigateTo(m_baseURL + "200-by-300.html");
 
-  EXPECT_SIZE_EQ(IntSize(200, 300),
-                 frame()->page()->frameHost().visualViewport().size());
+  EXPECT_SIZE_EQ(IntSize(200, 300), frame()->page()->visualViewport().size());
 }
 
 // Test that the text selection handle's position accounts for the visual
@@ -853,8 +839,7 @@ TEST_P(VisualViewportTest, TestTextSelectionHandles) {
   registerMockedHttpURLLoad("pinch-viewport-input-field.html");
   navigateTo(m_baseURL + "pinch-viewport-input-field.html");
 
-  VisualViewport& visualViewport =
-      frame()->page()->frameHost().visualViewport();
+  VisualViewport& visualViewport = frame()->page()->visualViewport();
   webViewImpl()->setInitialFocus(false);
 
   WebRect originalAnchor;
@@ -895,8 +880,7 @@ TEST_P(VisualViewportTest, TestSavedToHistoryItem) {
                      .currentItem()
                      ->visualViewportScrollOffset());
 
-  VisualViewport& visualViewport =
-      frame()->page()->frameHost().visualViewport();
+  VisualViewport& visualViewport = frame()->page()->visualViewport();
   visualViewport.setScale(2);
 
   EXPECT_EQ(2, toLocalFrame(webViewImpl()->page()->mainFrame())
@@ -931,8 +915,7 @@ TEST_P(VisualViewportTest, TestRestoredFromHistoryItem) {
                                     WebHistoryDifferentDocumentLoad,
                                     WebCachePolicy::UseProtocolCachePolicy);
 
-  VisualViewport& visualViewport =
-      frame()->page()->frameHost().visualViewport();
+  VisualViewport& visualViewport = frame()->page()->visualViewport();
   EXPECT_EQ(2, visualViewport.scale());
 
   EXPECT_FLOAT_POINT_EQ(FloatPoint(100, 120),
@@ -963,8 +946,7 @@ TEST_P(VisualViewportTest, TestRestoredFromLegacyHistoryItem) {
                                     WebHistoryDifferentDocumentLoad,
                                     WebCachePolicy::UseProtocolCachePolicy);
 
-  VisualViewport& visualViewport =
-      frame()->page()->frameHost().visualViewport();
+  VisualViewport& visualViewport = frame()->page()->visualViewport();
   EXPECT_EQ(2, visualViewport.scale());
   EXPECT_SIZE_EQ(
       ScrollOffset(100, 150),
@@ -990,8 +972,7 @@ TEST_P(VisualViewportTest,
 
   EXPECT_SIZE_EQ(IntSize(1000, 1000), frameView->frameRect().size());
 
-  VisualViewport& visualViewport =
-      frame()->page()->frameHost().visualViewport();
+  VisualViewport& visualViewport = frame()->page()->visualViewport();
   visualViewport.setScale(2);
   visualViewport.setLocation(FloatPoint(350, 350));
 
@@ -1040,8 +1021,7 @@ TEST_P(VisualViewportTest,
   // Move the visual viewport over and make the selection in the same
   // screen-space location. The selection should change to two characters to the
   // right and down one line.
-  VisualViewport& visualViewport =
-      frame()->page()->frameHost().visualViewport();
+  VisualViewport& visualViewport = frame()->page()->visualViewport();
   visualViewport.move(ScrollOffset(60, 25));
   mainFrame->toWebLocalFrame()->moveRangeSelection(initialPoint, endPoint);
   EXPECT_EQ("t ", mainFrame->toWebLocalFrame()->selectionAsText().utf8());
@@ -1056,8 +1036,7 @@ TEST_P(VisualViewportTest, DISABLED_TestScrollFocusedEditableElementIntoRect) {
   registerMockedHttpURLLoad("pinch-viewport-input-field.html");
   navigateTo(m_baseURL + "pinch-viewport-input-field.html");
 
-  VisualViewport& visualViewport =
-      frame()->page()->frameHost().visualViewport();
+  VisualViewport& visualViewport = frame()->page()->visualViewport();
   webViewImpl()->resizeVisualViewport(IntSize(200, 100));
   webViewImpl()->setInitialFocus(false);
   visualViewport.setLocation(FloatPoint());
@@ -1177,8 +1156,7 @@ TEST_P(VisualViewportTest, TestContextMenuShownInCorrectLocation) {
 
   // Now pinch zoom into the page and move the visual viewport. The context menu
   // should still appear at the location of the event, relative to the WebView.
-  VisualViewport& visualViewport =
-      frame()->page()->frameHost().visualViewport();
+  VisualViewport& visualViewport = frame()->page()->visualViewport();
   webViewImpl()->setPageScaleFactor(2);
   EXPECT_CALL(mockWebFrameClient, didChangeScrollOffset(_));
   visualViewport.setLocation(FloatPoint(60, 80));
@@ -1206,8 +1184,7 @@ TEST_P(VisualViewportTest, TestClientNotifiedOfScrollEvents) {
   webViewImpl()->mainFrameImpl()->setClient(&mockWebFrameClient);
 
   webViewImpl()->setPageScaleFactor(2);
-  VisualViewport& visualViewport =
-      frame()->page()->frameHost().visualViewport();
+  VisualViewport& visualViewport = frame()->page()->visualViewport();
 
   EXPECT_CALL(mockWebFrameClient, didChangeScrollOffset(_));
   visualViewport.setLocation(FloatPoint(60, 80));
@@ -1239,8 +1216,7 @@ TEST_P(VisualViewportTest, ScrollIntoViewFractionalOffset) {
   FrameView& frameView = *webViewImpl()->mainFrameImpl()->frameView();
   ScrollableArea* layoutViewportScrollableArea =
       frameView.layoutViewportScrollableArea();
-  VisualViewport& visualViewport =
-      frame()->page()->frameHost().visualViewport();
+  VisualViewport& visualViewport = frame()->page()->visualViewport();
   Element* inputBox = frame()->document()->getElementById("box");
 
   webViewImpl()->setPageScaleFactor(2);
@@ -1315,8 +1291,7 @@ TEST_P(VisualViewportTest, TestBrowserControlsAdjustment) {
   registerMockedHttpURLLoad("content-width-1000.html");
   navigateTo(m_baseURL + "content-width-1000.html");
 
-  VisualViewport& visualViewport =
-      frame()->page()->frameHost().visualViewport();
+  VisualViewport& visualViewport = frame()->page()->visualViewport();
   FrameView& frameView = *webViewImpl()->mainFrameImpl()->frameView();
 
   visualViewport.setScale(1);
@@ -1366,8 +1341,7 @@ TEST_P(VisualViewportTest, TestBrowserControlsAdjustmentWithScale) {
   registerMockedHttpURLLoad("content-width-1000.html");
   navigateTo(m_baseURL + "content-width-1000.html");
 
-  VisualViewport& visualViewport =
-      frame()->page()->frameHost().visualViewport();
+  VisualViewport& visualViewport = frame()->page()->visualViewport();
   FrameView& frameView = *webViewImpl()->mainFrameImpl()->frameView();
 
   visualViewport.setScale(2);
@@ -1450,8 +1424,7 @@ TEST_P(VisualViewportTest, TestBrowserControlsAdjustmentAndResize) {
   registerMockedHttpURLLoad("content-width-1000.html");
   navigateTo(m_baseURL + "content-width-1000.html");
 
-  VisualViewport& visualViewport =
-      frame()->page()->frameHost().visualViewport();
+  VisualViewport& visualViewport = frame()->page()->visualViewport();
   FrameView& frameView = *webViewImpl()->mainFrameImpl()->frameView();
 
   visualViewport.setScale(pageScale);
@@ -1523,8 +1496,7 @@ TEST_P(VisualViewportTest, TestBrowserControlsShrinkAdjustmentAndResize) {
   registerMockedHttpURLLoad("content-width-1000.html");
   navigateTo(m_baseURL + "content-width-1000.html");
 
-  VisualViewport& visualViewport =
-      frame()->page()->frameHost().visualViewport();
+  VisualViewport& visualViewport = frame()->page()->visualViewport();
   FrameView& frameView = *webViewImpl()->mainFrameImpl()->frameView();
 
   visualViewport.setScale(pageScale);
@@ -1623,8 +1595,7 @@ TEST_P(VisualViewportTest,
   webViewImpl()->resize(IntSize(100, 150));
   navigateTo("about:blank");
 
-  VisualViewport& visualViewport =
-      frame()->page()->frameHost().visualViewport();
+  VisualViewport& visualViewport = frame()->page()->visualViewport();
   EXPECT_FALSE(visualViewport.layerForHorizontalScrollbar()->parent());
   EXPECT_FALSE(visualViewport.layerForVerticalScrollbar()->parent());
 }
@@ -1637,8 +1608,7 @@ TEST_P(VisualViewportTest,
   webViewImpl()->resize(IntSize(100, 150));
   navigateTo("about:blank");
 
-  VisualViewport& visualViewport =
-      frame()->page()->frameHost().visualViewport();
+  VisualViewport& visualViewport = frame()->page()->visualViewport();
   EXPECT_TRUE(visualViewport.layerForHorizontalScrollbar()->parent());
   EXPECT_TRUE(visualViewport.layerForVerticalScrollbar()->parent());
 }
@@ -1677,8 +1647,7 @@ TEST_P(VisualViewportTest, ResizeVisualViewportStaysWithinOuterViewport) {
 
   webViewImpl()->resizeVisualViewport(IntSize(100, 100));
 
-  VisualViewport& visualViewport =
-      frame()->page()->frameHost().visualViewport();
+  VisualViewport& visualViewport = frame()->page()->visualViewport();
   visualViewport.move(ScrollOffset(0, 100));
 
   EXPECT_EQ(100, visualViewport.getScrollOffset().height());
@@ -1701,8 +1670,7 @@ TEST_P(VisualViewportTest, ElementBoundsInViewportSpaceAccountsForViewport) {
 
   IntRect bounds = inputElement->layoutObject()->absoluteBoundingBoxRect();
 
-  VisualViewport& visualViewport =
-      frame()->page()->frameHost().visualViewport();
+  VisualViewport& visualViewport = frame()->page()->visualViewport();
   IntPoint scrollDelta(250, 400);
   visualViewport.setScale(2);
   visualViewport.setLocation(scrollDelta);
@@ -1744,8 +1712,7 @@ TEST_P(VisualViewportTest, bodyAndWindowScrollPropertiesAccountForViewport) {
   registerMockedHttpURLLoad("200-by-300-viewport.html");
   navigateTo(m_baseURL + "200-by-300-viewport.html");
 
-  VisualViewport& visualViewport =
-      frame()->page()->frameHost().visualViewport();
+  VisualViewport& visualViewport = frame()->page()->visualViewport();
   visualViewport.setScale(2);
 
   // Chrome's quirky behavior regarding viewport scrolling means we treat the
@@ -1838,8 +1805,7 @@ TEST_P(VisualViewportTest, FractionalMaxScrollOffset) {
   webViewImpl()->resize(IntSize(101, 201));
   navigateTo("about:blank");
 
-  VisualViewport& visualViewport =
-      frame()->page()->frameHost().visualViewport();
+  VisualViewport& visualViewport = frame()->page()->visualViewport();
   ScrollableArea* scrollableArea = &visualViewport;
 
   webViewImpl()->setPageScaleFactor(1.0);
@@ -1858,8 +1824,7 @@ TEST_P(VisualViewportTest, SlowScrollAfterImplScroll) {
   webViewImpl()->resize(IntSize(800, 600));
   navigateTo("about:blank");
 
-  VisualViewport& visualViewport =
-      frame()->page()->frameHost().visualViewport();
+  VisualViewport& visualViewport = frame()->page()->visualViewport();
 
   // Apply some scroll and scale from the impl-side.
   webViewImpl()->applyViewportDeltas(WebFloatSize(300, 200), WebFloatSize(0, 0),
@@ -1926,8 +1891,7 @@ TEST_P(VisualViewportTest, TestCoordinateTransforms) {
   registerMockedHttpURLLoad("content-width-1000.html");
   navigateTo(m_baseURL + "content-width-1000.html");
 
-  VisualViewport& visualViewport =
-      webViewImpl()->page()->frameHost().visualViewport();
+  VisualViewport& visualViewport = webViewImpl()->page()->visualViewport();
   FrameView& frameView = *webViewImpl()->mainFrameImpl()->frameView();
 
   // At scale = 1 the transform should be a no-op.
@@ -2020,8 +1984,7 @@ TEST_P(VisualViewportTest, PinchZoomGestureScrollsVisualViewportOnly) {
 
   webViewImpl()->handleInputEvent(WebCoalescedInputEvent(pinchUpdate));
 
-  VisualViewport& visualViewport =
-      webViewImpl()->page()->frameHost().visualViewport();
+  VisualViewport& visualViewport = webViewImpl()->page()->visualViewport();
   FrameView& frameView = *webViewImpl()->mainFrameImpl()->frameView();
 
   EXPECT_FLOAT_SIZE_EQ(FloatSize(50, 50), visualViewport.getScrollOffset());
@@ -2075,8 +2038,7 @@ TEST_P(VisualViewportTest, ResizeAnchoringWithRootScroller) {
   frameView.getScrollableArea()->setScrollOffset(ScrollOffset(0, 400),
                                                  ProgrammaticScroll);
 
-  VisualViewport& visualViewport =
-      webViewImpl()->page()->frameHost().visualViewport();
+  VisualViewport& visualViewport = webViewImpl()->page()->visualViewport();
   visualViewport.setScrollOffset(ScrollOffset(0, 400), ProgrammaticScroll);
 
   webViewImpl()->resize(IntSize(800, 500));

@@ -107,6 +107,7 @@ Page::Page(PageClients& pageClients)
       m_pointerLockController(PointerLockController::create(this)),
       m_browserControls(BrowserControls::create(*this)),
       m_eventHandlerRegistry(new EventHandlerRegistry(*this)),
+      m_visualViewport(VisualViewport::create(*this)),
       m_mainFrame(nullptr),
       m_editorClient(pageClients.editorClient),
       m_spellCheckerClient(pageClients.spellCheckerClient),
@@ -180,6 +181,14 @@ EventHandlerRegistry& Page::eventHandlerRegistry() {
 
 const EventHandlerRegistry& Page::eventHandlerRegistry() const {
   return *m_eventHandlerRegistry;
+}
+
+VisualViewport& Page::visualViewport() {
+  return *m_visualViewport;
+}
+
+const VisualViewport& Page::visualViewport() const {
+  return *m_visualViewport;
 }
 
 ClientRectList* Page::nonFastScrollableRects(const LocalFrame* frame) {
@@ -321,11 +330,11 @@ void Page::setUserAgentPageScaleConstraints(
 }
 
 void Page::setPageScaleFactor(float scale) {
-  frameHost().visualViewport().setScale(scale);
+  visualViewport().setScale(scale);
 }
 
 float Page::pageScaleFactor() const {
-  return frameHost().visualViewport().scale();
+  return visualViewport().scale();
 }
 
 void Page::setDeviceScaleFactorDeprecated(float scaleFactor) {
@@ -542,14 +551,13 @@ void Page::didCommitLoad(LocalFrame* frame) {
     frameHost().consoleMessageStorage().clear();
     useCounter().didCommitLoad(url);
     deprecation().clearSuppression();
-    frameHost().visualViewport().sendUMAMetrics();
+    visualViewport().sendUMAMetrics();
 
     // Need to reset visual viewport position here since before commit load we
     // would update the previous history item, Page::didCommitLoad is called
     // after a new history item is created in FrameLoader.
     // See crbug.com/642279
-    frameHost().visualViewport().setScrollOffset(ScrollOffset(),
-                                                 ProgrammaticScroll);
+    visualViewport().setScrollOffset(ScrollOffset(), ProgrammaticScroll);
     m_hostsUsingFeatures.updateMeasurementsAndClear();
   }
 }
@@ -581,6 +589,7 @@ DEFINE_TRACE(Page) {
   visitor->trace(m_scrollingCoordinator);
   visitor->trace(m_browserControls);
   visitor->trace(m_eventHandlerRegistry);
+  visitor->trace(m_visualViewport);
   visitor->trace(m_mainFrame);
   visitor->trace(m_validationMessageClient);
   visitor->trace(m_useCounter);

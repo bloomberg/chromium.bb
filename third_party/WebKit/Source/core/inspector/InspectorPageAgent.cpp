@@ -30,13 +30,13 @@
 
 #include "core/inspector/InspectorPageAgent.h"
 
+#include <memory>
 #include "bindings/core/v8/DOMWrapperWorld.h"
 #include "bindings/core/v8/ScriptController.h"
 #include "bindings/core/v8/ScriptRegexp.h"
 #include "core/HTMLNames.h"
 #include "core/dom/DOMImplementation.h"
 #include "core/dom/Document.h"
-#include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
@@ -57,6 +57,7 @@
 #include "core/loader/FrameLoader.h"
 #include "core/loader/resource/CSSStyleSheetResource.h"
 #include "core/loader/resource/ScriptResource.h"
+#include "core/page/Page.h"
 #include "platform/PlatformResourceLoader.h"
 #include "platform/UserGestureIndicator.h"
 #include "platform/loader/fetch/MemoryCache.h"
@@ -69,7 +70,6 @@
 #include "wtf/Vector.h"
 #include "wtf/text/Base64.h"
 #include "wtf/text/TextEncoding.h"
-#include <memory>
 
 namespace blink {
 
@@ -865,7 +865,7 @@ Response InspectorPageAgent::getLayoutMetrics(
     std::unique_ptr<protocol::Page::VisualViewport>* outVisualViewport,
     std::unique_ptr<protocol::DOM::Rect>* outContentSize) {
   LocalFrame* mainFrame = m_inspectedFrames->root();
-  VisualViewport& visualViewport = mainFrame->host()->visualViewport();
+  VisualViewport& visualViewport = mainFrame->page()->visualViewport();
 
   mainFrame->document()->updateStyleAndLayoutIgnorePendingStylesheets();
 

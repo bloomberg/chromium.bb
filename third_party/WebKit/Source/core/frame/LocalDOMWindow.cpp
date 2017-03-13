@@ -958,10 +958,6 @@ FloatSize LocalDOMWindow::getViewportSize(
   if (!page)
     return FloatSize();
 
-  // If we have a Page, we must have a FrameHost.
-  FrameHost* host = frame()->host();
-  DCHECK(host);
-
   // The main frame's viewport size depends on the page scale. Since the
   // initial page scale depends on the content width and is set after a
   // layout, perform one now so queries during page load will use the up to
@@ -979,7 +975,7 @@ FloatSize LocalDOMWindow::getViewportSize(
   }
 
   return frame()->isMainFrame() && !page->settings().getInertVisualViewport()
-             ? FloatSize(host->visualViewport().visibleRect().size())
+             ? FloatSize(page->visualViewport().visibleRect().size())
              : FloatSize(view->visibleContentRect(scrollbarInclusion).size());
 }
 

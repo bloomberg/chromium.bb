@@ -25,7 +25,6 @@
 
 #include "core/layout/LayoutMedia.h"
 
-#include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/VisualViewport.h"
 #include "core/html/HTMLMediaElement.h"
@@ -151,17 +150,17 @@ LayoutUnit LayoutMedia::computePanelWidth(const LayoutRect& mediaRect) const {
   if (mediaElement() && mediaElement()->isFullscreen())
     return mediaRect.width();
 
-  FrameHost* frameHost = document().frameHost();
-  LocalFrame* mainFrame = document().page()->deprecatedLocalMainFrame();
+  Page* page = document().page();
+  LocalFrame* mainFrame = page->deprecatedLocalMainFrame();
   FrameView* pageView = mainFrame ? mainFrame->view() : nullptr;
-  if (!frameHost || !mainFrame || !pageView)
+  if (!mainFrame || !pageView)
     return mediaRect.width();
 
   if (pageView->horizontalScrollbarMode() != ScrollbarAlwaysOff)
     return mediaRect.width();
 
   // On desktop, this will include scrollbars when they stay visible.
-  const LayoutUnit visibleWidth(frameHost->visualViewport().visibleWidth());
+  const LayoutUnit visibleWidth(page->visualViewport().visibleWidth());
   const LayoutUnit absoluteXOffset(
       localToAbsolute(
           FloatPoint(mediaRect.location()),

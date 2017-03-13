@@ -41,13 +41,13 @@
 #include "core/editing/FrameSelection.h"
 #include "core/editing/PlainTextRange.h"
 #include "core/editing/iterators/TextIterator.h"
-#include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/VisualViewport.h"
 #include "core/html/HTMLElement.h"
 #include "core/layout/HitTestResult.h"
 #include "core/layout/LayoutObject.h"
+#include "core/page/PAge.h"
 #include "core/style/ComputedStyle.h"
 #include "platform/fonts/Font.h"
 #include "platform/mac/ColorMac.h"
@@ -179,7 +179,7 @@ NSAttributedString* WebSubstringUtil::attributedWordAtPoint(
 
   // Convert to NSAttributedString.
   NSAttributedString* string = attributedSubstringFromRange(
-      wordRange, frame->host()->visualViewport().scale());
+      wordRange, frame->page()->visualViewport().scale());
   baselinePoint = getBaselinePoint(frame->view(), wordRange, string);
   return string;
 }
@@ -210,7 +210,7 @@ NSAttributedString* WebSubstringUtil::attributedSubstringInRange(
     return nil;
 
   NSAttributedString* result = attributedSubstringFromRange(
-      ephemeralRange, frame->host()->visualViewport().scale());
+      ephemeralRange, frame->page()->visualViewport().scale());
   if (baselinePoint)
     *baselinePoint = getBaselinePoint(frame->view(), ephemeralRange, result);
   return result;

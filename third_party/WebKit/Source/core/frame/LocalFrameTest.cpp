@@ -127,11 +127,11 @@ TEST_F(LocalFrameTest, dragImageForSelectionUsesPageScaleFactor) {
   setBodyContent(
       "<div>Hello world! This tests that the bitmap for drag image is scaled "
       "by page scale factor</div>");
-  frame().host()->visualViewport().setScale(1);
+  frame().page()->visualViewport().setScale(1);
   frame().selection().selectAll();
   updateAllLifecyclePhases();
   const std::unique_ptr<DragImage> image1(frame().dragImageForSelection(0.75f));
-  frame().host()->visualViewport().setScale(2);
+  frame().page()->visualViewport().setScale(2);
   frame().selection().selectAll();
   updateAllLifecyclePhases();
   const std::unique_ptr<DragImage> image2(frame().dragImageForSelection(0.75f));

@@ -394,11 +394,11 @@ void ImageDocument::updateImageStyle() {
           // To ensure the checker pattern is visible for large images, the
           // checker size is dynamically adjusted to account for how much the
           // page is currently being scaled.
-          scale = frame()->host()->visualViewport().scale();
+          scale = frame()->page()->visualViewport().scale();
         } else {
           // The checker pattern is initialized based on how large the image is
           // relative to the viewport.
-          int viewportWidth = frame()->host()->visualViewport().size().width();
+          int viewportWidth = frame()->page()->visualViewport().size().width();
           scale = viewportWidth / static_cast<double>(calculateDivWidth());
         }
 
@@ -511,7 +511,7 @@ int ImageDocument::calculateDivWidth() {
   //   of the frame.
   // * Images smaller in either dimension are centered along that axis.
   LayoutSize imageSize = cachedImageSize(m_imageElement);
-  int viewportWidth = frame()->host()->visualViewport().size().width();
+  int viewportWidth = frame()->page()->visualViewport().size().width();
 
   // For huge images, minimum-scale=0.1 is still too big on small screens.
   // Set the <div> width so that the image will shrink to fit the width of the
@@ -535,7 +535,7 @@ void ImageDocument::windowSizeChanged() {
     // can display the full image without shrinking it, allowing a full-width
     // reading mode for normal-width-huge-height images.
     float viewportAspectRatio =
-        frame()->host()->visualViewport().size().aspectRatio();
+        frame()->page()->visualViewport().size().aspectRatio();
     int divHeight = std::max(imageSize.height().toInt(),
                              static_cast<int>(divWidth / viewportAspectRatio));
     m_divElement->setInlineStyleProperty(CSSPropertyHeight, divHeight,

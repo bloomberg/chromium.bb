@@ -45,7 +45,6 @@ class ConsoleMessageStorage;
 class OverscrollController;
 class Page;
 class TopDocumentRootScrollerController;
-class VisualViewport;
 
 // FrameHost is the set of global data shared between multiple frames
 // and is provided by the embedder to each frame when created.
@@ -74,9 +73,6 @@ class CORE_EXPORT FrameHost final
   OverscrollController& overscrollController();
   const OverscrollController& overscrollController() const;
 
-  VisualViewport& visualViewport();
-  const VisualViewport& visualViewport() const;
-
   ConsoleMessageStorage& consoleMessageStorage();
   const ConsoleMessageStorage& consoleMessageStorage() const;
 
@@ -92,7 +88,6 @@ class CORE_EXPORT FrameHost final
   explicit FrameHost(Page&);
 
   const Member<Page> m_page;
-  const Member<VisualViewport> m_visualViewport;
   const Member<OverscrollController> m_overscrollController;
   const Member<ConsoleMessageStorage> m_consoleMessageStorage;
   const Member<TopDocumentRootScrollerController>

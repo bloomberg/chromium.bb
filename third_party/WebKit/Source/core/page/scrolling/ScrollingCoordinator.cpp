@@ -235,7 +235,7 @@ void ScrollingCoordinator::updateAfterCompositingChangeIfNeeded() {
     Element* fullscreenElement =
         Fullscreen::fullscreenElementFrom(*mainFrameDocument);
     WebLayer* visualViewportScrollLayer =
-        toWebLayer(m_page->frameHost().visualViewport().scrollLayer());
+        toWebLayer(m_page->visualViewport().scrollLayer());
 
     if (visualViewportScrollLayer) {
       if (fullscreenElement &&
@@ -485,8 +485,7 @@ bool ScrollingCoordinator::scrollableAreaScrollLayerDidChange(
   GraphicsLayer* scrollLayer = scrollableArea->layerForScrolling();
 
   if (scrollLayer) {
-    bool isForVisualViewport =
-        scrollableArea == &m_page->frameHost().visualViewport();
+    bool isForVisualViewport = scrollableArea == &m_page->visualViewport();
     scrollLayer->setScrollableArea(scrollableArea, isForVisualViewport);
   }
 
@@ -840,8 +839,7 @@ void ScrollingCoordinator::setShouldUpdateScrollLayerPositionOnMainThread(
       !m_page->deprecatedLocalMainFrame()->view())
     return;
 
-  GraphicsLayer* visualViewportLayer =
-      m_page->frameHost().visualViewport().scrollLayer();
+  GraphicsLayer* visualViewportLayer = m_page->visualViewport().scrollLayer();
   WebLayer* visualViewportScrollLayer = toWebLayer(visualViewportLayer);
   GraphicsLayer* layer = m_page->deprecatedLocalMainFrame()
                              ->view()

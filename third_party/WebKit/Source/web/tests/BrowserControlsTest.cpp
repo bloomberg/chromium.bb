@@ -133,7 +133,7 @@ class BrowserControlsTest : public ::testing::Test {
     return m_helper.webView()->mainFrameImpl()->frame();
   }
   VisualViewport& visualViewport() const {
-    return m_helper.webView()->page()->frameHost().visualViewport();
+    return m_helper.webView()->page()->visualViewport();
   }
 
  private:

@@ -154,8 +154,7 @@ TEST_F(TextFinderTest, FindTextAutosizing) {
   bool wrapWithinFrame = true;
 
   // Set viewport scale to 20 in order to simulate zoom-in
-  VisualViewport& visualViewport =
-      document().page()->frameHost().visualViewport();
+  VisualViewport& visualViewport = document().page()->visualViewport();
   visualViewport.setScale(20);
 
   // Enforce autosizing

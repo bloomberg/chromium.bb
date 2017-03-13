@@ -679,7 +679,7 @@ TEST(WebInputEventConversionTest, VisualViewportOffset) {
   webViewImpl->setPageScaleFactor(2);
 
   IntPoint visualOffset(35, 60);
-  webViewImpl->page()->frameHost().visualViewport().setLocation(visualOffset);
+  webViewImpl->page()->visualViewport().setLocation(visualOffset);
 
   FrameView* view = toLocalFrame(webViewImpl->page()->mainFrame())->view();
 
@@ -820,7 +820,7 @@ TEST(WebInputEventConversionTest, ElasticOverscroll) {
   float pageScale = 2;
   webViewImpl->setPageScaleFactor(pageScale);
   IntPoint visualOffset(35, 60);
-  webViewImpl->page()->frameHost().visualViewport().setLocation(visualOffset);
+  webViewImpl->page()->visualViewport().setLocation(visualOffset);
   {
     WebMouseEvent webMouseEvent(WebInputEvent::MouseMove,
                                 WebInputEvent::NoModifiers,

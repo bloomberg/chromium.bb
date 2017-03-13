@@ -151,8 +151,7 @@ TEST_F(ExternalPopupMenuTest, PopupAccountsForVisualViewportTransform) {
   LayoutMenuList* menuList = toLayoutMenuList(select->layoutObject());
   ASSERT_TRUE(menuList);
 
-  VisualViewport& visualViewport =
-      webView()->page()->frameHost().visualViewport();
+  VisualViewport& visualViewport = webView()->page()->visualViewport();
 
   IntRect rectInDocument = menuList->absoluteBoundingBoxRect();
 

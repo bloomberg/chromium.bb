@@ -28,9 +28,10 @@
 
 #include "web/PageOverlay.h"
 
-#include "core/frame/FrameHost.h"
+#include <memory>
 #include "core/frame/LocalFrame.h"
 #include "core/frame/VisualViewport.h"
+#include "core/page/Page.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/GraphicsLayer.h"
@@ -42,7 +43,6 @@
 #include "web/WebFrameWidgetImpl.h"
 #include "web/WebLocalFrameImpl.h"
 #include "wtf/PtrUtil.h"
-#include <memory>
 
 namespace blink {
 
@@ -87,7 +87,7 @@ void PageOverlay::update() {
     platformLayer->addMainThreadScrollingReasons(
         MainThreadScrollingReason::kPageOverlay);
     if (frame->isMainFrame()) {
-      frame->host()->visualViewport().containerLayer()->addChild(m_layer.get());
+      frame->page()->visualViewport().containerLayer()->addChild(m_layer.get());
     } else {
       toWebFrameWidgetImpl(m_frameImpl->frameWidget())
           ->rootGraphicsLayer()
@@ -95,7 +95,7 @@ void PageOverlay::update() {
     }
   }
 
-  FloatSize size(frame->host()->visualViewport().size());
+  FloatSize size(frame->page()->visualViewport().size());
   if (size != m_layer->size())
     m_layer->setSize(size);
 

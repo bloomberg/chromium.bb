@@ -83,8 +83,7 @@ DummyPageHolder::DummyPageHolder(const IntSize& initialViewSize,
   m_frame = LocalFrame::create(m_localFrameClient.get(), &m_page->frameHost(),
                                nullptr, interfaceProvider);
   m_frame->setView(FrameView::create(*m_frame, initialViewSize));
-  m_frame->view()->page()->frameHost().visualViewport().setSize(
-      initialViewSize);
+  m_frame->view()->page()->visualViewport().setSize(initialViewSize);
   m_frame->init();
 }
 

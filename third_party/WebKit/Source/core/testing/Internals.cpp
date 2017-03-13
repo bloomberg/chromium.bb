@@ -2260,7 +2260,7 @@ float Internals::pageScaleFactor(ExceptionState& exceptionState) {
     return 0;
   }
   Page* page = m_document->page();
-  return page->frameHost().visualViewport().pageScale();
+  return page->visualViewport().pageScale();
 }
 
 void Internals::setPageScaleFactor(float scaleFactor,
@@ -2273,7 +2273,7 @@ void Internals::setPageScaleFactor(float scaleFactor,
     return;
   }
   Page* page = m_document->page();
-  page->frameHost().visualViewport().setScale(scaleFactor);
+  page->visualViewport().setScale(scaleFactor);
 }
 
 void Internals::setPageScaleFactorLimits(float minScaleFactor,
@@ -2293,7 +2293,7 @@ bool Internals::magnifyScaleAroundAnchor(float scaleFactor, float x, float y) {
   if (!frame())
     return false;
 
-  return frame()->host()->visualViewport().magnifyScaleAroundAnchor(
+  return frame()->page()->visualViewport().magnifyScaleAroundAnchor(
       scaleFactor, FloatPoint(x, y));
 }
 
@@ -3072,14 +3072,14 @@ void Internals::setVisualViewportOffset(int x, int y) {
   if (!frame())
     return;
 
-  frame()->host()->visualViewport().setLocation(FloatPoint(x, y));
+  frame()->page()->visualViewport().setLocation(FloatPoint(x, y));
 }
 
 int Internals::visualViewportHeight() {
   if (!frame())
     return 0;
 
-  return expandedIntSize(frame()->host()->visualViewport().visibleRect().size())
+  return expandedIntSize(frame()->page()->visualViewport().visibleRect().size())
       .height();
 }
 
@@ -3087,7 +3087,7 @@ int Internals::visualViewportWidth() {
   if (!frame())
     return 0;
 
-  return expandedIntSize(frame()->host()->visualViewport().visibleRect().size())
+  return expandedIntSize(frame()->page()->visualViewport().visibleRect().size())
       .width();
 }
 

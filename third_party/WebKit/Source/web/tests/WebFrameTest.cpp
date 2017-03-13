@@ -1167,7 +1167,7 @@ TEST_P(ParameterizedWebFrameTest,
     }
   }
 
-  frameView->page()->frameHost().visualViewport().setSize(IntSize(200, 200));
+  frameView->page()->visualViewport().setSize(IntSize(200, 200));
 
   for (Frame* frame = mainFrame; frame; frame = frame->tree().traverseNext()) {
     if (!frame->isLocalFrame())
@@ -1811,7 +1811,7 @@ TEST_P(ParameterizedWebFrameTest,
   EXPECT_EQ(viewportHeight, scrollContainer->size().height());
 
   LocalFrame* frame = webViewHelper.webView()->mainFrameImpl()->frame();
-  VisualViewport& visualViewport = frame->page()->frameHost().visualViewport();
+  VisualViewport& visualViewport = frame->page()->visualViewport();
   EXPECT_EQ(viewportHeight, visualViewport.containerLayer()->size().height());
   EXPECT_TRUE(
       visualViewport.containerLayer()->platformLayer()->masksToBounds());
@@ -6046,7 +6046,7 @@ TEST_F(WebFrameTest, DisambiguationPopupVisualViewport) {
   webViewImpl->setPageScaleFactor(2.0);
 
   // Scroll visual viewport to the top of the main frame.
-  VisualViewport& visualViewport = frame->page()->frameHost().visualViewport();
+  VisualViewport& visualViewport = frame->page()->visualViewport();
   visualViewport.setLocation(FloatPoint(0, 0));
   EXPECT_SIZE_EQ(ScrollOffset(0, 0), visualViewport.getScrollOffset());
 
@@ -7728,11 +7728,8 @@ TEST_F(WebFrameTest, FullscreenLayerNonScrollable) {
   FrameView* frameView = webViewHelper.webView()->mainFrameImpl()->frameView();
   WebLayer* layoutViewportScrollLayer =
       webViewImpl->compositor()->scrollLayer()->platformLayer();
-  WebLayer* visualViewportScrollLayer = frameView->page()
-                                            ->frameHost()
-                                            .visualViewport()
-                                            .scrollLayer()
-                                            ->platformLayer();
+  WebLayer* visualViewportScrollLayer =
+      frameView->page()->visualViewport().scrollLayer()->platformLayer();
   ASSERT_FALSE(layoutViewportScrollLayer->userScrollableHorizontal());
   ASSERT_FALSE(layoutViewportScrollLayer->userScrollableVertical());
   ASSERT_FALSE(visualViewportScrollLayer->userScrollableHorizontal());
@@ -8537,10 +8534,9 @@ TEST_F(WebFrameSwapTest, ValidateSizeOnRemoteToLocalMainFrameSwap) {
 
   // Verify that the size that was set with a remote main frame is correct
   // after swapping to a local frame.
-  FrameHost* host =
-      toWebViewImpl(localFrame->view())->page()->mainFrame()->host();
-  EXPECT_EQ(size.width, host->visualViewport().size().width());
-  EXPECT_EQ(size.height, host->visualViewport().size().height());
+  Page* page = toWebViewImpl(localFrame->view())->page()->mainFrame()->page();
+  EXPECT_EQ(size.width, page->visualViewport().size().width());
+  EXPECT_EQ(size.height, page->visualViewport().size().height());
 
   // Manually reset to break WebViewHelper's dependency on the stack allocated
   // TestWebFrameClient.

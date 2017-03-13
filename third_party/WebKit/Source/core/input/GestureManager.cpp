@@ -294,7 +294,7 @@ WebInputEventResult GestureManager::handleGestureTap(
         preDispatchStyleVersion != m_frame->document()->styleVersion();
 
     IntPoint tappedPositionInViewport =
-        frameHost()->visualViewport().rootFrameToViewport(tappedPosition);
+        m_frame->page()->visualViewport().rootFrameToViewport(tappedPosition);
     m_frame->chromeClient().showUnhandledTapUIIfNeeded(
         tappedPositionInViewport, tappedNode, domTreeChanged || styleChanged);
   }

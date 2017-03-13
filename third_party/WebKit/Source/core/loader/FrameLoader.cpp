@@ -279,7 +279,7 @@ void FrameLoader::saveScrollState() {
           m_frame->view()->layoutViewportScrollableArea())
     m_currentItem->setScrollOffset(layoutScrollableArea->getScrollOffset());
   m_currentItem->setVisualViewportScrollOffset(toScrollOffset(
-      m_frame->host()->visualViewport().visibleRect().location()));
+      m_frame->page()->visualViewport().visibleRect().location()));
 
   if (m_frame->isMainFrame())
     m_currentItem->setPageScaleFactor(m_frame->page()->pageScaleFactor());
@@ -1452,7 +1452,7 @@ void FrameLoader::restoreScrollPositionAndViewStateForLoadType(
           view->layoutViewportScrollableArea()->getScrollOffset();
     }
 
-    VisualViewport& visualViewport = m_frame->host()->visualViewport();
+    VisualViewport& visualViewport = m_frame->page()->visualViewport();
     if (shouldRestoreScale && shouldRestoreScroll) {
       visualViewport.setScaleAndLocation(m_currentItem->pageScaleFactor(),
                                          FloatPoint(visualViewportOffset));

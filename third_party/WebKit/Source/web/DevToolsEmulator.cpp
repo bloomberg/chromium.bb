@@ -277,7 +277,7 @@ void DevToolsEmulator::enableMobileEmulation() {
   m_webViewImpl->page()->settings().setViewportStyle(WebViewportStyle::Mobile);
   m_webViewImpl->page()->settings().setViewportEnabled(true);
   m_webViewImpl->page()->settings().setViewportMetaEnabled(true);
-  m_webViewImpl->page()->frameHost().visualViewport().initializeScrollbars();
+  m_webViewImpl->page()->visualViewport().initializeScrollbars();
   m_webViewImpl->settings()->setShrinksViewportContentToFit(true);
   m_webViewImpl->page()->settings().setTextAutosizingEnabled(true);
   m_webViewImpl->page()->settings().setPreferCompositingToLCDTextEnabled(true);
@@ -313,7 +313,7 @@ void DevToolsEmulator::disableMobileEmulation() {
   ComputedStyle::invalidateInitialStyle();
   m_webViewImpl->page()->settings().setViewportEnabled(false);
   m_webViewImpl->page()->settings().setViewportMetaEnabled(false);
-  m_webViewImpl->page()->frameHost().visualViewport().initializeScrollbars();
+  m_webViewImpl->page()->visualViewport().initializeScrollbars();
   m_webViewImpl->settings()->setShrinksViewportContentToFit(false);
   m_webViewImpl->page()->settings().setTextAutosizingEnabled(
       m_embedderTextAutosizingEnabled);
@@ -350,7 +350,7 @@ float DevToolsEmulator::compositorDeviceScaleFactor() const {
 void DevToolsEmulator::forceViewport(const WebFloatPoint& position,
                                      float scale) {
   GraphicsLayer* containerLayer =
-      m_webViewImpl->page()->frameHost().visualViewport().containerLayer();
+      m_webViewImpl->page()->visualViewport().containerLayer();
   if (!m_viewportOverride) {
     m_viewportOverride = ViewportOverride();
 
@@ -379,7 +379,7 @@ void DevToolsEmulator::resetViewport() {
   m_viewportOverride = WTF::nullopt;
 
   GraphicsLayer* containerLayer =
-      m_webViewImpl->page()->frameHost().visualViewport().containerLayer();
+      m_webViewImpl->page()->visualViewport().containerLayer();
   if (containerLayer)
     containerLayer->setMasksToBounds(originalMasking);
   updateRootLayerTransform();

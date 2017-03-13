@@ -198,8 +198,8 @@ void WebFrameWidgetImpl::sendResizeEventAndRepaint() {
 void WebFrameWidgetImpl::resizeVisualViewport(const WebSize& newSize) {
   // TODO(alexmos, kenrb): resizing behavior such as this should be changed
   // to use Page messages.  https://crbug.com/599688.
-  page()->frameHost().visualViewport().setSize(newSize);
-  page()->frameHost().visualViewport().clampToBoundaries();
+  page()->visualViewport().setSize(newSize);
+  page()->visualViewport().clampToBoundaries();
 
   view()->didUpdateFullscreenSize();
 }

@@ -438,7 +438,7 @@ void WebPagePopupImpl::resize(const WebSize& newSizeInViewport) {
 
   if (m_page) {
     toLocalFrame(m_page->mainFrame())->view()->resize(newSizeInViewport);
-    m_page->frameHost().visualViewport().setSize(newSizeInViewport);
+    m_page->visualViewport().setSize(newSizeInViewport);
   }
 
   m_widgetClient->didInvalidateRect(

@@ -1590,13 +1590,10 @@ void CompositedLayerMapping::updateInternalHierarchy() {
   // TODO(pdr): Ensure painting uses the correct GraphicsLayer when root layer
   // scrolls is enabled.  crbug.com/638719
   if (m_isMainFrameLayoutViewLayer &&
-      !RuntimeEnabledFeatures::slimmingPaintV2Enabled())
-    bottomLayer = layoutObject()
-                      .frame()
-                      ->page()
-                      ->frameHost()
-                      .visualViewport()
-                      .containerLayer();
+      !RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+    bottomLayer =
+        layoutObject().frame()->page()->visualViewport().containerLayer();
+  }
   updateBottomLayer(m_overflowControlsAncestorClippingLayer.get());
   updateBottomLayer(m_overflowControlsHostLayer.get());
   if (m_layerForHorizontalScrollbar)

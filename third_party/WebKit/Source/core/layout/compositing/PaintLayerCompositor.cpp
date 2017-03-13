@@ -1314,7 +1314,7 @@ bool PaintLayerCompositor::isMainFrame() const {
 }
 
 VisualViewport& PaintLayerCompositor::visualViewport() const {
-  return m_layoutView.frameView()->page()->frameHost().visualViewport();
+  return m_layoutView.frameView()->page()->visualViewport();
 }
 
 String PaintLayerCompositor::debugName(

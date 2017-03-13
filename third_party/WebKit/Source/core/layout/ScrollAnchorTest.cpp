@@ -42,7 +42,7 @@ class ScrollAnchorTest
   }
 
   VisualViewport& visualViewport() {
-    return document().view()->page()->frameHost().visualViewport();
+    return document().view()->page()->visualViewport();
   }
 
   ScrollableArea* scrollerForElement(Element* element) {

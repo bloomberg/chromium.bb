@@ -564,7 +564,7 @@ void FrameView::setFrameRect(const IntRect& newRect) {
                         newRect.height() != oldRect.height());
 
     if (m_frame->isMainFrame())
-      m_frame->host()->visualViewport().mainFrameDidChangeSize();
+      m_frame->page()->visualViewport().mainFrameDidChangeSize();
 
     frame().loader().restoreScrollPositionAndViewState();
   }
@@ -1427,7 +1427,7 @@ FloatSize FrameView::viewportSizeForViewportUnits() const {
     // be the viewport with browser controls showing, we add the browser
     // controls height, compensating for page scale as well, since we want to
     // use the viewport with browser controls hidden for vh (to match Safari).
-    int viewportWidth = m_frame->host()->visualViewport().size().width();
+    int viewportWidth = m_frame->page()->visualViewport().size().width();
     if (m_frame->isMainFrame() && layoutSize.width() && viewportWidth) {
       float pageScaleAtLayoutWidth = viewportWidth / layoutSize.width();
       layoutSize.expand(0, browserControls.height() / pageScaleAtLayoutWidth);
@@ -2614,7 +2614,7 @@ IntSize FrameView::inputEventsOffsetForEmulation() const {
 }
 
 float FrameView::inputEventsScaleFactor() const {
-  float pageScale = m_frame->host()->visualViewport().scale();
+  float pageScale = m_frame->page()->visualViewport().scale();
   return pageScale * m_inputEventsScaleFactorForEmulation;
 }
 
@@ -2759,7 +2759,7 @@ void FrameView::didAttachDocument() {
   DCHECK(m_frame->document());
 
   if (m_frame->isMainFrame()) {
-    ScrollableArea& visualViewport = frameHost->visualViewport();
+    ScrollableArea& visualViewport = m_frame->page()->visualViewport();
     ScrollableArea* layoutViewport = layoutViewportScrollableArea();
     DCHECK(layoutViewport);
 
@@ -4378,14 +4378,14 @@ FloatPoint FrameView::rootFrameToContents(
 
 IntRect FrameView::viewportToContents(const IntRect& rectInViewport) const {
   IntRect rectInRootFrame =
-      m_frame->host()->visualViewport().viewportToRootFrame(rectInViewport);
+      m_frame->page()->visualViewport().viewportToRootFrame(rectInViewport);
   IntRect frameRect = convertFromRootFrame(rectInRootFrame);
   return frameToContents(frameRect);
 }
 
 IntPoint FrameView::viewportToContents(const IntPoint& pointInViewport) const {
   IntPoint pointInRootFrame =
-      m_frame->host()->visualViewport().viewportToRootFrame(pointInViewport);
+      m_frame->page()->visualViewport().viewportToRootFrame(pointInViewport);
   IntPoint pointInFrame = convertFromRootFrame(pointInRootFrame);
   return frameToContents(pointInFrame);
 }
@@ -4393,13 +4393,13 @@ IntPoint FrameView::viewportToContents(const IntPoint& pointInViewport) const {
 IntRect FrameView::contentsToViewport(const IntRect& rectInContents) const {
   IntRect rectInFrame = contentsToFrame(rectInContents);
   IntRect rectInRootFrame = convertToRootFrame(rectInFrame);
-  return m_frame->host()->visualViewport().rootFrameToViewport(rectInRootFrame);
+  return m_frame->page()->visualViewport().rootFrameToViewport(rectInRootFrame);
 }
 
 IntPoint FrameView::contentsToViewport(const IntPoint& pointInContents) const {
   IntPoint pointInFrame = contentsToFrame(pointInContents);
   IntPoint pointInRootFrame = convertToRootFrame(pointInFrame);
-  return m_frame->host()->visualViewport().rootFrameToViewport(
+  return m_frame->page()->visualViewport().rootFrameToViewport(
       pointInRootFrame);
 }
 
@@ -4413,7 +4413,7 @@ IntRect FrameView::contentsToScreen(const IntRect& rect) const {
 IntPoint FrameView::soonToBeRemovedUnscaledViewportToContents(
     const IntPoint& pointInViewport) const {
   IntPoint pointInRootFrame = flooredIntPoint(
-      m_frame->host()->visualViewport().viewportCSSPixelsToRootFrame(
+      m_frame->page()->visualViewport().viewportCSSPixelsToRootFrame(
           pointInViewport));
   IntPoint pointInThisFrame = convertFromRootFrame(pointInRootFrame);
   return frameToContents(pointInThisFrame);

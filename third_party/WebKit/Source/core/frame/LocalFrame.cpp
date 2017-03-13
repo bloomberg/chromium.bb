@@ -121,7 +121,7 @@ class DragImageBuilder {
     // use-zoom-for-dsf.
     float deviceScaleFactor =
         m_localFrame->page()->deviceScaleFactorDeprecated();
-    float pageScaleFactor = m_localFrame->host()->visualViewport().scale();
+    float pageScaleFactor = m_localFrame->page()->visualViewport().scale();
     m_bounds.setWidth(m_bounds.width() * deviceScaleFactor * pageScaleFactor);
     m_bounds.setHeight(m_bounds.height() * deviceScaleFactor * pageScaleFactor);
     m_builder = WTF::wrapUnique(new PaintRecordBuilder(

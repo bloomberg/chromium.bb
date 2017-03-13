@@ -1115,7 +1115,7 @@ IntRect Element::visibleBoundsInVisualViewport() const {
     return IntRect();
   // TODO(tkent): Can we check invisibility by scrollable non-frame elements?
 
-  IntSize viewportSize = document().page()->frameHost().visualViewport().size();
+  IntSize viewportSize = document().page()->visualViewport().size();
   IntRect rect(0, 0, viewportSize.width(), viewportSize.height());
   // We don't use absoluteBoundingBoxRect() because it can return an IntRect
   // larger the actual size by 1px. crbug.com/470503

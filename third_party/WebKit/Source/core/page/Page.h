@@ -69,6 +69,7 @@ class ScrollingCoordinator;
 class Settings;
 class SpellCheckerClient;
 class ValidationMessageClient;
+class VisualViewport;
 class WebLayerTreeView;
 
 typedef uint64_t LinkHash;
@@ -193,6 +194,9 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
   EventHandlerRegistry& eventHandlerRegistry();
   const EventHandlerRegistry& eventHandlerRegistry() const;
 
+  VisualViewport& visualViewport();
+  const VisualViewport& visualViewport() const;
+
   void setTabKeyCyclesThroughElements(bool b) {
     m_tabKeyCyclesThroughElements = b;
   }
@@ -292,6 +296,7 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
   Member<ScrollingCoordinator> m_scrollingCoordinator;
   const Member<BrowserControls> m_browserControls;
   const Member<EventHandlerRegistry> m_eventHandlerRegistry;
+  const Member<VisualViewport> m_visualViewport;
 
   // Typically, the main frame and Page should both be owned by the embedder,
   // which must call Page::willBeDestroyed() prior to destroying Page. This

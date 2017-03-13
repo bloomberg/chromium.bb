@@ -31,7 +31,6 @@
 #include "core/frame/FrameHost.h"
 
 #include "core/frame/FrameView.h"
-#include "core/frame/VisualViewport.h"
 #include "core/inspector/ConsoleMessageStorage.h"
 #include "core/page/Page.h"
 #include "core/page/scrolling/OverscrollController.h"
@@ -47,9 +46,8 @@ FrameHost* FrameHost::create(Page& page) {
 
 FrameHost::FrameHost(Page& page)
     : m_page(&page),
-      m_visualViewport(VisualViewport::create(page)),
       m_overscrollController(
-          OverscrollController::create(*m_visualViewport,
+          OverscrollController::create(m_page->visualViewport(),
                                        m_page->chromeClient())),
       m_consoleMessageStorage(new ConsoleMessageStorage()),
       m_globalRootScrollerController(
@@ -82,14 +80,6 @@ const OverscrollController& FrameHost::overscrollController() const {
   return *m_overscrollController;
 }
 
-VisualViewport& FrameHost::visualViewport() {
-  return *m_visualViewport;
-}
-
-const VisualViewport& FrameHost::visualViewport() const {
-  return *m_visualViewport;
-}
-
 ConsoleMessageStorage& FrameHost::consoleMessageStorage() {
   return *m_consoleMessageStorage;
 }
@@ -105,7 +95,6 @@ TopDocumentRootScrollerController& FrameHost::globalRootScrollerController()
 
 DEFINE_TRACE(FrameHost) {
   visitor->trace(m_page);
-  visitor->trace(m_visualViewport);
   visitor->trace(m_overscrollController);
   visitor->trace(m_consoleMessageStorage);
   visitor->trace(m_globalRootScrollerController);

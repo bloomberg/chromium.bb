@@ -113,9 +113,7 @@ class RootScrollerTest : public ::testing::Test {
     return webViewImpl()->mainFrameImpl()->frame()->view();
   }
 
-  VisualViewport& visualViewport() const {
-    return frameHost().visualViewport();
-  }
+  VisualViewport& visualViewport() const { return page().visualViewport(); }
 
   BrowserControls& browserControls() const { return page().browserControls(); }
 

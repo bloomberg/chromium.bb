@@ -149,7 +149,7 @@ TEST_F(HTMLInputElementTest, ImageTypeCrash) {
 }
 
 TEST_F(HTMLInputElementTest, DateTimeChooserSizeParamRespectsScale) {
-  document().view()->frame().host()->visualViewport().setScale(2.f);
+  document().view()->frame().page()->visualViewport().setScale(2.f);
   document().body()->setInnerHTML(
       "<input type='date' style='width:200px;height:50px' />");
   document().view()->updateAllLifecyclePhases();

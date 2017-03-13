@@ -37,7 +37,6 @@
 #include "core/events/MouseEvent.h"
 #include "core/events/TouchEvent.h"
 #include "core/events/WheelEvent.h"
-#include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/VisualViewport.h"
 #include "core/layout/api/LayoutItem.h"
@@ -70,11 +69,8 @@ FloatPoint frameTranslation(const FrameViewBase* frameViewBase) {
     if (rootView) {
       scale = rootView->inputEventsScaleFactor();
       offset = FloatSize(rootView->inputEventsOffsetForEmulation());
-      visualViewport = flooredIntPoint(rootView->page()
-                                           ->frameHost()
-                                           .visualViewport()
-                                           .visibleRect()
-                                           .location());
+      visualViewport = flooredIntPoint(
+          rootView->page()->visualViewport().visibleRect().location());
       overscrollOffset = rootView->page()->chromeClient().elasticOverscroll();
     }
   }

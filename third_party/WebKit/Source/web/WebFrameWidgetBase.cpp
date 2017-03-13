@@ -140,8 +140,7 @@ void WebFrameWidgetBase::dragSourceEndedAt(const WebPoint& pointInViewport,
     return;
   }
   WebFloatPoint pointInRootFrame(
-      page()->frameHost().visualViewport().viewportToRootFrame(
-          pointInViewport));
+      page()->visualViewport().viewportToRootFrame(pointInViewport));
 
   WebMouseEvent fakeMouseMove(WebInputEvent::MouseMove, pointInRootFrame,
                               WebFloatPoint(screenPoint.x, screenPoint.y),
@@ -216,8 +215,7 @@ WebDragOperation WebFrameWidgetBase::dragTargetDragEnterOrOver(
 
 WebPoint WebFrameWidgetBase::viewportToRootFrame(
     const WebPoint& pointInViewport) const {
-  return page()->frameHost().visualViewport().viewportToRootFrame(
-      pointInViewport);
+  return page()->visualViewport().viewportToRootFrame(pointInViewport);
 }
 
 WebViewImpl* WebFrameWidgetBase::view() const {

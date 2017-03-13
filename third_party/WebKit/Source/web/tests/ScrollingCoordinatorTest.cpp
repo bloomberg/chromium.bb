@@ -162,7 +162,7 @@ TEST_P(ScrollingCoordinatorTest, fastScrollingByDefault) {
                 WebEventListenerClass::MouseWheel));
 
   WebLayer* innerViewportScrollLayer =
-      page->frameHost().visualViewport().scrollLayer()->platformLayer();
+      page->visualViewport().scrollLayer()->platformLayer();
   ASSERT_TRUE(innerViewportScrollLayer->scrollable());
   ASSERT_FALSE(innerViewportScrollLayer->shouldScrollOnMainThread());
 }
@@ -188,7 +188,7 @@ TEST_P(ScrollingCoordinatorTest, fastScrollingCanBeDisabledWithSetting) {
 
   // Main scrolling should also propagate to inner viewport layer.
   WebLayer* innerViewportScrollLayer =
-      page->frameHost().visualViewport().scrollLayer()->platformLayer();
+      page->visualViewport().scrollLayer()->platformLayer();
   ASSERT_TRUE(innerViewportScrollLayer->scrollable());
   ASSERT_TRUE(innerViewportScrollLayer->shouldScrollOnMainThread());
 }

@@ -30,11 +30,11 @@
 #include "core/dom/ViewportDescription.h"
 
 #include "core/dom/Document.h"
-#include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
 #include "core/frame/VisualViewport.h"
+#include "core/page/Page.h"
 #include "platform/Histogram.h"
 #include "platform/weborigin/KURL.h"
 
@@ -249,7 +249,7 @@ void ViewportDescription::reportMobilePageStats(
     TypeCount
   };
 
-  if (!mainFrame || !mainFrame->host() || !mainFrame->view() ||
+  if (!mainFrame || !mainFrame->page() || !mainFrame->view() ||
       !mainFrame->document())
     return;
 
@@ -276,7 +276,7 @@ void ViewportDescription::reportMobilePageStats(
         // width, we report the zoom level that we'd need to be at for the
         // entire page to be visible.
         int viewportWidth = maxWidth.intValue();
-        int windowWidth = mainFrame->host()->visualViewport().size().width();
+        int windowWidth = mainFrame->page()->visualViewport().size().width();
         int overviewZoomPercent =
             100 * windowWidth / static_cast<float>(viewportWidth);
         DEFINE_STATIC_LOCAL(SparseHistogram, overviewZoomHistogram,

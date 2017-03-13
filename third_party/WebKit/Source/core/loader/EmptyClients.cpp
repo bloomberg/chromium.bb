@@ -115,7 +115,7 @@ void EmptyChromeClient::attachRootGraphicsLayer(GraphicsLayer* layer,
   Page* page = localRoot ? localRoot->page() : nullptr;
   if (!page)
     return;
-  page->frameHost().visualViewport().attachLayerTree(layer);
+  page->visualViewport().attachLayerTree(layer);
 }
 
 String EmptyChromeClient::acceptLanguages() {

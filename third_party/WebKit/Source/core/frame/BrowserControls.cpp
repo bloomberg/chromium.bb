@@ -42,7 +42,7 @@ FloatSize BrowserControls::scrollBy(FloatSize pendingDelta) {
     return pendingDelta;
 
   float oldOffset = contentOffset();
-  float pageScale = m_page->frameHost().visualViewport().scale();
+  float pageScale = m_page->visualViewport().scale();
 
   // Update accumulated vertical scroll and apply it to browser controls
   // Compute scroll delta in viewport space by applying page scale

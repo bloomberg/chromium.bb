@@ -1794,7 +1794,7 @@ WebInputEventResult EventHandler::sendContextMenuEventForKey(
   FrameSelection& selection = m_frame->selection();
   Position start =
       selection.computeVisibleSelectionInDOMTreeDeprecated().start();
-  VisualViewport& visualViewport = frameHost()->visualViewport();
+  VisualViewport& visualViewport = m_frame->page()->visualViewport();
 
   if (!overrideTargetElement && start.anchorNode() &&
       (selection.computeVisibleSelectionInDOMTreeDeprecated()

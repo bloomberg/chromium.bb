@@ -695,7 +695,7 @@ void TextAutosizer::updatePageInfo() {
 IntSize TextAutosizer::windowSize() const {
   Page* page = m_document->page();
   ASSERT(page);
-  return page->frameHost().visualViewport().size();
+  return page->visualViewport().size();
 }
 
 void TextAutosizer::resetMultipliers() {

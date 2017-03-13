@@ -31,9 +31,9 @@
 
 #include "core/inspector/InspectorLayerTreeAgent.h"
 
+#include <memory>
 #include "core/dom/DOMNodeIds.h"
 #include "core/dom/Document.h"
-#include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/VisualViewport.h"
@@ -45,6 +45,7 @@
 #include "core/layout/compositing/PaintLayerCompositor.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/page/ChromeClient.h"
+#include "core/page/Page.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/graphics/CompositingReasons.h"
 #include "platform/graphics/GraphicsLayer.h"
@@ -55,7 +56,6 @@
 #include "public/platform/WebLayer.h"
 #include "wtf/text/Base64.h"
 #include "wtf/text/StringBuilder.h"
-#include <memory>
 
 namespace blink {
 
@@ -302,7 +302,7 @@ PaintLayerCompositor* InspectorLayerTreeAgent::paintLayerCompositor() {
 
 GraphicsLayer* InspectorLayerTreeAgent::rootGraphicsLayer() {
   return m_inspectedFrames->root()
-      ->host()
+      ->page()
       ->visualViewport()
       .rootGraphicsLayer();
 }

@@ -1920,7 +1920,7 @@ void WebLocalFrameImpl::loadJavaScriptURL(const KURL& url) {
 HitTestResult WebLocalFrameImpl::hitTestResultForVisualViewportPos(
     const IntPoint& posInViewport) {
   IntPoint rootFramePoint(
-      frame()->host()->visualViewport().viewportToRootFrame(posInViewport));
+      frame()->page()->visualViewport().viewportToRootFrame(posInViewport));
   IntPoint docPoint(frame()->view()->rootFrameToContents(rootFramePoint));
   HitTestResult result = frame()->eventHandler().hitTestResultAtPoint(
       docPoint, HitTestRequest::ReadOnly | HitTestRequest::Active);

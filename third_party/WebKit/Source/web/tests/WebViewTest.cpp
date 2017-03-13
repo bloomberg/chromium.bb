@@ -4123,8 +4123,7 @@ TEST_P(WebViewTest, ForceAndResetViewport) {
       m_webViewHelper.initializeAndLoad(m_baseURL + "200-by-300.html");
   webViewImpl->resize(WebSize(100, 150));
   webViewImpl->layerTreeView()->setViewportSize(WebSize(100, 150));
-  VisualViewport* visualViewport =
-      &webViewImpl->page()->frameHost().visualViewport();
+  VisualViewport* visualViewport = &webViewImpl->page()->visualViewport();
   DevToolsEmulator* devToolsEmulator = webViewImpl->devToolsEmulator();
 
   TransformationMatrix expectedMatrix;

@@ -60,8 +60,8 @@ float DOMVisualViewport::scrollLeft() {
   if (!frame || !frame->isMainFrame())
     return 0;
 
-  if (FrameHost* host = frame->host())
-    return host->visualViewport().scrollLeft();
+  if (Page* page = frame->page())
+    return page->visualViewport().scrollLeft();
 
   return 0;
 }
@@ -71,8 +71,8 @@ float DOMVisualViewport::scrollTop() {
   if (!frame || !frame->isMainFrame())
     return 0;
 
-  if (FrameHost* host = frame->host())
-    return host->visualViewport().scrollTop();
+  if (Page* page = frame->page())
+    return page->visualViewport().scrollTop();
 
   return 0;
 }
@@ -116,8 +116,8 @@ double DOMVisualViewport::clientWidth() {
                                  frame->pageZoomFactor());
   }
 
-  if (FrameHost* host = frame->host())
-    return host->visualViewport().clientWidth();
+  if (Page* page = frame->page())
+    return page->visualViewport().clientWidth();
 
   return 0;
 }
@@ -133,8 +133,8 @@ double DOMVisualViewport::clientHeight() {
                                  frame->pageZoomFactor());
   }
 
-  if (FrameHost* host = frame->host())
-    return host->visualViewport().clientHeight();
+  if (Page* page = frame->page())
+    return page->visualViewport().clientHeight();
 
   return 0;
 }
@@ -147,8 +147,8 @@ double DOMVisualViewport::scale() {
   if (!frame->isMainFrame())
     return 1;
 
-  if (FrameHost* host = m_window->frame()->host())
-    return host->visualViewport().pageScale();
+  if (Page* page = m_window->frame()->page())
+    return page->visualViewport().pageScale();
 
   return 0;
 }

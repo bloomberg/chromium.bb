@@ -411,9 +411,9 @@ void InspectorOverlay::rebuildOverlayPage() {
 
   IntRect visibleRectInDocument =
       view->getScrollableArea()->visibleContentRect();
-  IntSize viewportSize = frame->host()->visualViewport().size();
+  IntSize viewportSize = frame->page()->visualViewport().size();
   overlayMainFrame()->view()->resize(viewportSize);
-  overlayPage()->frameHost().visualViewport().setSize(viewportSize);
+  overlayPage()->visualViewport().setSize(viewportSize);
   overlayMainFrame()->setPageZoomFactor(windowToViewportScale());
 
   reset(viewportSize, visibleRectInDocument.location());
@@ -596,7 +596,7 @@ void InspectorOverlay::reset(const IntSize& viewportSize,
       "deviceScaleFactor",
       m_frameImpl->frame()->page()->deviceScaleFactorDeprecated());
   resetData->setDouble("pageScaleFactor",
-                       m_frameImpl->frame()->host()->visualViewport().scale());
+                       m_frameImpl->frame()->page()->visualViewport().scale());
 
   IntRect viewportInScreen =
       m_frameImpl->frame()->page()->chromeClient().viewportToScreen(
