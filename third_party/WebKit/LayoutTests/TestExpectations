@@ -884,19 +884,6 @@ crbug.com/421283 html/marquee/marquee-scrollamount.html [ Pass Failure ]
 # TODO(oshima): Mac Android are currently not supported.
 crbug.com/567837 [ Mac Android ] virtual/scalefactor200withzoom/fast/hidpi/static [ Skip ]
 
-# More cleanup needed after SK_SUPPORT_LEGACY_BROKEN_LERP removal
-crbug.com/700914 [ Win ] fast/table/backgr_position-table-row-collapsed-border.html [ NeedsManualRebaseline ]
-crbug.com/700914 [ Win ] fast/table/backgr_border-table-row-collapsed-border.html [ NeedsManualRebaseline ]
-crbug.com/700914 [ Win ] fast/table/backgr_simple-table-row-collapsed-border.html [ NeedsManualRebaseline ]
-crbug.com/700914 [ Win ] fast/table/backgr_simple-table-cell-collapsed-border.html [ NeedsManualRebaseline ]
-crbug.com/700914 [ Win ] fast/table/backgr_simple-table-cell.html [ NeedsManualRebaseline ]
-crbug.com/700914 [ Win ] fast/table/backgr_simple-table-column-group.html [ NeedsManualRebaseline ]
-crbug.com/700914 [ Win ] fast/table/backgr_position-table-column-group-collapsed-border.html [ NeedsManualRebaseline ]
-crbug.com/700914 [ Win ] http/tests/inspector/network/waterfall-images.html [ NeedsManualRebaseline ]
-crbug.com/700914 [ Win ] virtual/mojo-loading/http/tests/inspector/network/waterfall-images.html [ NeedsManualRebaseline ]
-crbug.com/700914 [ Mac ] svg/W3C-SVG-1.1/animate-elem-14-t.svg [ NeedsManualRebaseline ]
-crbug.com/700914 [ Mac10.9 Mac10.10 ] virtual/mojo-loading/http/tests/webfont/popup-menu-load-webfont-after-open.html [ NeedsManualRebaseline ]
-
 # Mac does not support fractional scale factor.
 crbug.com/567837 [ Mac ] virtual/scalefactor150/fast/hidpi/static [ Skip ]
 
