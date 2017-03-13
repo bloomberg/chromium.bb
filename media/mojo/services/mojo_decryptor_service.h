@@ -8,14 +8,14 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include <unordered_map>
-
 #include "base/callback.h"
+#include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "media/base/decryptor.h"
 #include "media/mojo/interfaces/decryptor.mojom.h"
+#include "media/mojo/services/media_mojo_export.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
 namespace media {
@@ -27,7 +27,8 @@ class MojoDecoderBufferWriter;
 
 // A mojom::Decryptor implementation. This object is owned by the creator,
 // and uses a weak binding across the mojo interface.
-class MojoDecryptorService : public mojom::Decryptor {
+class MEDIA_MOJO_EXPORT MojoDecryptorService
+    : NON_EXPORTED_BASE(public mojom::Decryptor) {
  public:
   using StreamType = media::Decryptor::StreamType;
   using Status = media::Decryptor::Status;
@@ -35,6 +36,10 @@ class MojoDecryptorService : public mojom::Decryptor {
   // Constructs a MojoDecryptorService and binds it to the |request|. Keeps a
   // copy of |cdm| to prevent it from being deleted as long as it is needed.
   // |error_handler| will be called if a connection error occurs.
+  // TODO(jrummell): Ideally this should take a Decryptor instead of |cdm|.
+  // The owner of the MojoDecryptorService should control the lifetime of the
+  // CDM. Both this and the CDM are owned by MojoCdmService, so it seems
+  // possible. http://crbug.com/701107.
   MojoDecryptorService(const scoped_refptr<ContentDecryptionModule>& cdm,
                        mojo::InterfaceRequest<mojom::Decryptor> request,
                        const base::Closure& error_handler);
@@ -62,13 +67,12 @@ class MojoDecryptorService : public mojom::Decryptor {
       const DecryptAndDecodeVideoCallback& callback) final;
   void ResetDecoder(StreamType stream_type) final;
   void DeinitializeDecoder(StreamType stream_type) final;
-  void ReleaseSharedBuffer(mojo::ScopedSharedBufferHandle buffer,
-                           uint64_t buffer_size) final;
 
  private:
   void OnReadDone(StreamType stream_type,
                   const DecryptCallback& callback,
                   scoped_refptr<DecoderBuffer> buffer);
+
   // Callback executed once Decrypt() is done.
   void OnDecryptDone(const DecryptCallback& callback,
                      Status status,
@@ -106,11 +110,6 @@ class MojoDecryptorService : public mojom::Decryptor {
   // Decryptor referenced by |cdm_|.
   scoped_refptr<ContentDecryptionModule> cdm_;
   media::Decryptor* decryptor_;
-
-  // Keep a reference to VideoFrames until ReleaseSharedBuffer() is called
-  // to release it.
-  std::unordered_map<MojoHandle, scoped_refptr<VideoFrame>>
-      in_use_video_frames_;
 
   base::WeakPtr<MojoDecryptorService> weak_this_;
   base::WeakPtrFactory<MojoDecryptorService> weak_factory_;

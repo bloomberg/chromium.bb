@@ -49,12 +49,12 @@ interface Decryptor {
   // been successfully initialized.
   // At most one decrypt-and-decode call is allowed at any time for a
   // |stream_type|.
-  // For video, ReleaseSharedBuffer() must be called when the VideoFrame
-  // is shared memory based and the memory is no longer needed.
+  // For video, |releaser| must be closed (if it is bound) when the VideoFrame
+  // is no longer needed so that any shared resources can be reused.
   DecryptAndDecodeAudio(DecoderBuffer encrypted)
       => (Status status, array<AudioBuffer> audio_buffers);
   DecryptAndDecodeVideo(DecoderBuffer encrypted)
-      => (Status status, VideoFrame? video_frame);
+      => (Status status, VideoFrame? video_frame, FrameResourceReleaser? releaser);
 
   // Resets the decoder for |stream_type| to a clean initialized state and
   // cancels any pending decrypt-and-decode operations immediately with ERROR.
@@ -70,7 +70,10 @@ interface Decryptor {
   // After this operation, the decoder is set to an uninitialized state.
   // The decoder can be reinitialized after it is deinitialized.
   DeinitializeDecoder(StreamType stream_type);
-
-  // Releases the shared memory.
-  ReleaseSharedBuffer(handle<shared_buffer> buffer, uint64 buffer_size);
 };
+
+// Interface for controlling the the resources associated with a VideoFrame.
+// This is returned when calling DecryptAndDecodeVideo(), and the connection
+// (if it exists) should be closed when the VideoFrame is no longer needed in
+// order to reuse the shared resources associated with the VideoFrame.
+interface FrameResourceReleaser {};

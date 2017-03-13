@@ -19,8 +19,33 @@
 #include "media/mojo/common/mojo_decoder_buffer_converter.h"
 #include "media/mojo/common/mojo_shared_buffer_video_frame.h"
 #include "media/mojo/interfaces/demuxer_stream.mojom.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 
 namespace media {
+
+namespace {
+
+// A mojom::FrameResourceReleaser implementation. This object is created when
+// DecryptAndDecodeVideo() returns a shared memory video frame, and holds
+// on to the local frame. When MojoDecryptor is done using the frame,
+// the connection should be broken and this will free the shared resources
+// associated with the frame.
+class FrameResourceReleaserImpl final : public mojom::FrameResourceReleaser {
+ public:
+  explicit FrameResourceReleaserImpl(scoped_refptr<VideoFrame> frame)
+      : frame_(std::move(frame)) {
+    DVLOG(1) << __func__;
+    DCHECK_EQ(VideoFrame::STORAGE_MOJO_SHARED_BUFFER, frame_->storage_type());
+  }
+  ~FrameResourceReleaserImpl() override { DVLOG(1) << __func__; }
+
+ private:
+  scoped_refptr<VideoFrame> frame_;
+
+  DISALLOW_COPY_AND_ASSIGN(FrameResourceReleaserImpl);
+};
+
+}  // namespace
 
 MojoDecryptorService::MojoDecryptorService(
     const scoped_refptr<ContentDecryptionModule>& cdm,
@@ -107,12 +132,6 @@ void MojoDecryptorService::DeinitializeDecoder(StreamType stream_type) {
   decryptor_->DeinitializeDecoder(stream_type);
 }
 
-void MojoDecryptorService::ReleaseSharedBuffer(
-    mojo::ScopedSharedBufferHandle buffer,
-    uint64_t buffer_size) {
-  in_use_video_frames_.erase(buffer.get().value());
-}
-
 void MojoDecryptorService::OnReadDone(StreamType stream_type,
                                       const DecryptCallback& callback,
                                       scoped_refptr<DecoderBuffer> buffer) {
@@ -180,7 +199,7 @@ void MojoDecryptorService::OnVideoRead(
     const DecryptAndDecodeVideoCallback& callback,
     scoped_refptr<DecoderBuffer> buffer) {
   if (!buffer) {
-    callback.Run(Status::kError, nullptr);
+    callback.Run(Status::kError, nullptr, nullptr);
     return;
   }
 
@@ -196,6 +215,8 @@ void MojoDecryptorService::OnAudioDecoded(
   DVLOG_IF(1, status != Status::kSuccess) << __func__ << "(" << status << ")";
   DVLOG_IF(3, status == Status::kSuccess) << __func__;
 
+  // Note that the audio data is sent over the mojo pipe. This could be
+  // improved to use shared memory (http://crbug.com/593896).
   std::vector<mojom::AudioBufferPtr> audio_buffers;
   for (const auto& frame : frames)
     audio_buffers.push_back(mojom::AudioBuffer::From(frame));
@@ -212,20 +233,21 @@ void MojoDecryptorService::OnVideoDecoded(
 
   if (!frame) {
     DCHECK_NE(status, Status::kSuccess);
-    callback.Run(status, nullptr);
+    callback.Run(status, nullptr, nullptr);
     return;
   }
 
-  // If |frame| has shared memory that will be passed back, keep a reference
+  // If |frame| has shared memory that will be passed back, keep the reference
   // to it until the other side is done with the memory.
+  mojom::VideoFramePtr mojo_frame = mojom::VideoFrame::From(frame);
+  mojom::FrameResourceReleaserPtr releaser;
   if (frame->storage_type() == VideoFrame::STORAGE_MOJO_SHARED_BUFFER) {
-    MojoSharedBufferVideoFrame* mojo_frame =
-        static_cast<MojoSharedBufferVideoFrame*>(frame.get());
-    in_use_video_frames_.insert(
-        std::make_pair(mojo_frame->Handle().value(), frame));
+    mojo::MakeStrongBinding(
+        base::MakeUnique<FrameResourceReleaserImpl>(std::move(frame)),
+        mojo::MakeRequest(&releaser));
   }
 
-  callback.Run(status, mojom::VideoFrame::From(frame));
+  callback.Run(status, std::move(mojo_frame), std::move(releaser));
 }
 
 }  // namespace media

@@ -178,8 +178,8 @@ struct VideoFrame {
   // Timestamp in microseconds of the associated frame.
   mojo.common.mojom.TimeDelta timestamp;
 
-  // Contents of the video frame.
-  VideoFrameData data;
+  // Contents of the video frame. Will be null for end of stream frames.
+  VideoFrameData? data;
 };
 
 // Possible choices for storing VideoFrame data.

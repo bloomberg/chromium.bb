@@ -22,6 +22,16 @@
 
 namespace media {
 
+namespace {
+
+void ReleaseFrameResource(mojom::FrameResourceReleaserPtr releaser) {
+  // Close the connection, which will result in the service realizing the frame
+  // resource is no longer needed.
+  releaser.reset();
+}
+
+}  // namespace
+
 MojoDecryptor::MojoDecryptor(mojom::DecryptorPtr remote_decryptor)
     : remote_decryptor_(std::move(remote_decryptor)), weak_factory_(this) {
   DVLOG(1) << __func__;
@@ -214,7 +224,8 @@ void MojoDecryptor::OnAudioDecoded(
 
 void MojoDecryptor::OnVideoDecoded(const VideoDecodeCB& video_decode_cb,
                                    Status status,
-                                   mojom::VideoFramePtr video_frame) {
+                                   mojom::VideoFramePtr video_frame,
+                                   mojom::FrameResourceReleaserPtr releaser) {
   DVLOG_IF(1, status != kSuccess) << __func__ << "(" << status << ")";
   DVLOG_IF(3, status == kSuccess) << __func__;
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -226,24 +237,14 @@ void MojoDecryptor::OnVideoDecoded(const VideoDecodeCB& video_decode_cb,
 
   scoped_refptr<VideoFrame> frame(video_frame.To<scoped_refptr<VideoFrame>>());
 
-  // If using shared memory, ensure that ReleaseSharedBuffer() is called when
+  // If using shared memory, ensure that |releaser| is closed when
   // |frame| is destroyed.
-  if (frame->storage_type() == VideoFrame::STORAGE_MOJO_SHARED_BUFFER) {
-    MojoSharedBufferVideoFrame* mojo_frame =
-        static_cast<MojoSharedBufferVideoFrame*>(frame.get());
-    mojo_frame->SetMojoSharedBufferDoneCB(base::Bind(
-        &MojoDecryptor::ReleaseSharedBuffer, weak_factory_.GetWeakPtr()));
+  if (releaser) {
+    frame->AddDestructionObserver(
+        base::Bind(&ReleaseFrameResource, base::Passed(&releaser)));
   }
 
   video_decode_cb.Run(status, frame);
-}
-
-void MojoDecryptor::ReleaseSharedBuffer(mojo::ScopedSharedBufferHandle buffer,
-                                        size_t buffer_size) {
-  DVLOG(1) << __func__;
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-  remote_decryptor_->ReleaseSharedBuffer(std::move(buffer), buffer_size);
 }
 
 }  // namespace media

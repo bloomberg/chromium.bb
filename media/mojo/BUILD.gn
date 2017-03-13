@@ -9,6 +9,7 @@ source_set("unit_tests") {
   sources = [
     "clients/mojo_audio_decoder_unittest.cc",
     "clients/mojo_cdm_unittest.cc",
+    "clients/mojo_decryptor_unittest.cc",
     "clients/mojo_renderer_unittest.cc",
     "common/media_type_converters_unittest.cc",
     "common/mojo_decoder_buffer_converter_unittest.cc",
