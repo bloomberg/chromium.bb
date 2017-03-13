@@ -4,7 +4,11 @@
 
 #include "content/browser/devtools/protocol/page_handler.h"
 
+#include <algorithm>
+#include <memory>
 #include <string>
+#include <utility>
+#include <vector>
 
 #include "base/base64.h"
 #include "base/bind.h"
@@ -284,6 +288,7 @@ Response PageHandler::NavigateToHistoryEntry(int entry_id) {
 void PageHandler::CaptureScreenshot(
     Maybe<std::string> format,
     Maybe<int> quality,
+    Maybe<bool> from_surface,
     std::unique_ptr<CaptureScreenshotCallback> callback) {
   if (!host_ || !host_->GetRenderWidgetHost()) {
     callback->sendFailure(Response::InternalError());
@@ -296,7 +301,8 @@ void PageHandler::CaptureScreenshot(
   host_->GetRenderWidgetHost()->GetSnapshotFromBrowser(
       base::Bind(&PageHandler::ScreenshotCaptured, weak_factory_.GetWeakPtr(),
                  base::Passed(std::move(callback)), screenshot_format,
-                 screenshot_quality));
+                 screenshot_quality),
+      from_surface.fromMaybe(false));
 }
 
 void PageHandler::PrintToPDF(std::unique_ptr<PrintToPDFCallback> callback) {

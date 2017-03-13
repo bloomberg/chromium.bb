@@ -312,7 +312,7 @@ void HeadlessShell::OnExpressionResult(
 
 void HeadlessShell::CaptureScreenshot() {
   devtools_client_->GetPage()->GetExperimental()->CaptureScreenshot(
-      page::CaptureScreenshotParams::Builder().Build(),
+      page::CaptureScreenshotParams::Builder().SetFromSurface(true).Build(),
       base::Bind(&HeadlessShell::OnScreenshotCaptured,
                  weak_factory_.GetWeakPtr()));
 }

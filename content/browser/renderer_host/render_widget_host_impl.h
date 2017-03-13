@@ -49,6 +49,7 @@
 #include "ui/events/latency_info.h"
 #include "ui/gfx/native_widget_types.h"
 
+class SkBitmap;
 struct FrameHostMsg_HittestData_Params;
 struct ViewHostMsg_SelectionBounds_Params;
 struct ViewHostMsg_UpdateRect_Params;
@@ -200,14 +201,19 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
   // Notification that the screen info has changed.
   void NotifyScreenInfoChanged();
 
-  // Forces redraw in the renderer and when the update reaches the browser
-  // grabs snapshot from the compositor. On MacOS, the snapshot is taken from
-  // the Cocoa view for end-to-end testing purposes. Returns a gfx::Image that
-  // is backed by an NSImage on MacOS or by an SkBitmap otherwise. The
-  // gfx::Image may be empty if the snapshot failed.
+  // Forces redraw in the renderer and when the update reaches the browser.
+  // grabs snapshot from the compositor.
+  // If |from_surface| is false, it will obtain the snapshot directly from the
+  // view (On MacOS, the snapshot is taken from the Cocoa view for end-to-end
+  // testing  purposes).
+  // Otherwise, the snapshot is obtained from the view's surface, with no bounds
+  // defined.
+  // Returns a gfx::Image that is backed by an NSImage on MacOS or by an
+  // SkBitmap otherwise. The gfx::Image may be empty if the snapshot failed.
   using GetSnapshotFromBrowserCallback =
       base::Callback<void(const gfx::Image&)>;
-  void GetSnapshotFromBrowser(const GetSnapshotFromBrowserCallback& callback);
+  void GetSnapshotFromBrowser(const GetSnapshotFromBrowserCallback& callback,
+                              bool from_surface);
 
   const NativeWebKeyboardEvent* GetLastKeyboardEvent() const;
 
@@ -694,6 +700,11 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
 
   void WindowSnapshotReachedScreen(int snapshot_id);
 
+  void OnSnapshotFromSurfaceReceived(int snapshot_id,
+                                     int retry_count,
+                                     const SkBitmap& bitmap,
+                                     ReadbackResponse response);
+
   void OnSnapshotReceived(int snapshot_id, const gfx::Image& image);
 
   // 1. Grants permissions to URL (if any)
@@ -857,6 +868,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
   int next_browser_snapshot_id_;
   using PendingSnapshotMap = std::map<int, GetSnapshotFromBrowserCallback>;
   PendingSnapshotMap pending_browser_snapshots_;
+  PendingSnapshotMap pending_surface_browser_snapshots_;
 
   // Indicates whether a RenderFramehost has ownership, in which case this
   // object does not self destroy.

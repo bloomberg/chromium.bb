@@ -136,7 +136,7 @@ class HeadlessWebContentsScreenshotTest
 
   void OnPageSetupCompleted(std::unique_ptr<runtime::EvaluateResult> result) {
     devtools_client_->GetPage()->GetExperimental()->CaptureScreenshot(
-        page::CaptureScreenshotParams::Builder().Build(),
+        page::CaptureScreenshotParams::Builder().SetFromSurface(true).Build(),
         base::Bind(&HeadlessWebContentsScreenshotTest::OnScreenshotCaptured,
                    base::Unretained(this)));
   }

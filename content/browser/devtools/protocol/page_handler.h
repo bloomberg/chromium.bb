@@ -7,6 +7,10 @@
 
 #include <stddef.h>
 
+#include <map>
+#include <memory>
+#include <string>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -73,6 +77,7 @@ class PageHandler : public DevToolsDomainHandler,
   void CaptureScreenshot(
       Maybe<std::string> format,
       Maybe<int> quality,
+      Maybe<bool> from_surface,
       std::unique_ptr<CaptureScreenshotCallback> callback) override;
   void PrintToPDF(std::unique_ptr<PrintToPDFCallback> callback) override;
   Response StartScreencast(Maybe<std::string> format,

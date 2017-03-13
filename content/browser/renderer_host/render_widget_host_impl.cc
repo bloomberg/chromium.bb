@@ -1419,8 +1419,17 @@ void RenderWidgetHostImpl::NotifyScreenInfoChanged() {
 }
 
 void RenderWidgetHostImpl::GetSnapshotFromBrowser(
-    const GetSnapshotFromBrowserCallback& callback) {
+    const GetSnapshotFromBrowserCallback& callback,
+    bool from_surface) {
   int id = next_browser_snapshot_id_++;
+  if (from_surface) {
+    pending_surface_browser_snapshots_.insert(std::make_pair(id, callback));
+    ui::LatencyInfo latency_info;
+    latency_info.AddLatencyNumber(ui::WINDOW_SNAPSHOT_FRAME_NUMBER_COMPONENT, 0,
+                                  id);
+    Send(new ViewMsg_ForceRedraw(GetRoutingID(), latency_info));
+    return;
+  }
 
 #if defined(OS_MACOSX)
   // MacOS version of underlying GrabViewSnapshot() blocks while
@@ -2343,26 +2352,67 @@ void RenderWidgetHostImpl::DidReceiveRendererFrame() {
 void RenderWidgetHostImpl::WindowSnapshotReachedScreen(int snapshot_id) {
   DCHECK(base::MessageLoopForUI::IsCurrent());
 
-#if defined(OS_ANDROID)
-  // On Android, call sites should pass in the bounds with correct offset
-  // to capture the intended content area.
-  gfx::Rect snapshot_bounds(GetView()->GetViewBounds());
-  snapshot_bounds.Offset(0, GetView()->GetNativeView()->content_offset().y());
-#else
-  gfx::Rect snapshot_bounds(GetView()->GetViewBounds().size());
-#endif
-
-  gfx::Image image;
-  if (ui::GrabViewSnapshot(GetView()->GetNativeView(), snapshot_bounds,
-                           &image)) {
-    OnSnapshotReceived(snapshot_id, image);
-    return;
+  if (!pending_surface_browser_snapshots_.empty()) {
+    GetView()->CopyFromSurface(
+        gfx::Rect(), gfx::Size(),
+        base::Bind(&RenderWidgetHostImpl::OnSnapshotFromSurfaceReceived,
+                   weak_factory_.GetWeakPtr(), snapshot_id, 0),
+        kN32_SkColorType);
   }
 
-  ui::GrabViewSnapshotAsync(
-      GetView()->GetNativeView(), snapshot_bounds,
-      base::Bind(&RenderWidgetHostImpl::OnSnapshotReceived,
-                 weak_factory_.GetWeakPtr(), snapshot_id));
+  if (!pending_browser_snapshots_.empty()) {
+#if defined(OS_ANDROID)
+    // On Android, call sites should pass in the bounds with correct offset
+    // to capture the intended content area.
+    gfx::Rect snapshot_bounds(GetView()->GetViewBounds());
+    snapshot_bounds.Offset(0, GetView()->GetNativeView()->content_offset().y());
+#else
+    gfx::Rect snapshot_bounds(GetView()->GetViewBounds().size());
+#endif
+
+    gfx::Image image;
+    if (ui::GrabViewSnapshot(GetView()->GetNativeView(), snapshot_bounds,
+                             &image)) {
+      OnSnapshotReceived(snapshot_id, image);
+      return;
+    }
+
+    ui::GrabViewSnapshotAsync(
+        GetView()->GetNativeView(), snapshot_bounds,
+        base::Bind(&RenderWidgetHostImpl::OnSnapshotReceived,
+                   weak_factory_.GetWeakPtr(), snapshot_id));
+  }
+}
+
+void RenderWidgetHostImpl::OnSnapshotFromSurfaceReceived(
+    int snapshot_id,
+    int retry_count,
+    const SkBitmap& bitmap,
+    ReadbackResponse response) {
+  static const int kMaxRetries = 5;
+  if (response != READBACK_SUCCESS && retry_count < kMaxRetries) {
+    GetView()->CopyFromSurface(
+        gfx::Rect(), gfx::Size(),
+        base::Bind(&RenderWidgetHostImpl::OnSnapshotFromSurfaceReceived,
+                   weak_factory_.GetWeakPtr(), snapshot_id, retry_count + 1),
+        kN32_SkColorType);
+    return;
+  }
+  // If all retries have failed, we return an empty image.
+  gfx::Image image;
+  if (response == READBACK_SUCCESS)
+    image = gfx::Image::CreateFrom1xBitmap(bitmap);
+  // Any pending snapshots with a lower ID than the one received are considered
+  // to be implicitly complete, and returned the same snapshot data.
+  PendingSnapshotMap::iterator it = pending_surface_browser_snapshots_.begin();
+  while (it != pending_surface_browser_snapshots_.end()) {
+    if (it->first <= snapshot_id) {
+      it->second.Run(image);
+      pending_surface_browser_snapshots_.erase(it++);
+    } else {
+      ++it;
+    }
+  }
 }
 
 void RenderWidgetHostImpl::OnSnapshotReceived(int snapshot_id,
