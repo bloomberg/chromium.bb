@@ -1368,16 +1368,11 @@
             ],
             "experiments": [
                 {
-                    "name": "Enabled-PeekingCardAnimated",
-                    "params": {
-                        "content_suggestions_backend": "https://chromecontentsuggestions-pa.googleapis.com/v1/suggestions/fetch",
-                        "first_card_animation_max_runs": "7",
-                        "first_card_offset": "0"
-                    },
-                    "enable_features": [
-                        "NTPSnippets",
-                        "NTPSnippetsIncreasedVisibility"
-                    ]
+                    "//1": "This represents a group that controls how we hit the content",
+                    "//2": "suggestions server, but there's nothing to specify as experiment_id",
+                    "//3": "and send_to_gws are not allowed in the test config. This exists to",
+                    "//4": "silence warnings for real configs that must have a matching group.",
+                    "name": "ContentSuggestionsBackend-FCS"
                 }
             ]
         }
