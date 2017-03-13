@@ -12,17 +12,7 @@
           "reason": "subtree"
         },
         {
-          "object": "LayoutBlockFlow (relative positioned) DIV id='ul'",
-          "rect": [677, 250, 100, 100],
-          "reason": "subtree"
-        },
-        {
-          "object": "LayoutBlockFlow DIV",
-          "rect": [677, 250, 100, 100],
-          "reason": "subtree"
-        },
-        {
-          "object": "LayoutBlockFlow (positioned) DIV id='scrollpanel'",
+          "object": "LayoutBlockFlow (relative positioned) DIV class='container'",
           "rect": [677, 50, 100, 100],
           "reason": "subtree"
         },
@@ -33,6 +23,11 @@
         },
         {
           "object": "LayoutBlockFlow DIV",
+          "rect": [677, 50, 100, 100],
+          "reason": "subtree"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='scrollpanel'",
           "rect": [677, 50, 100, 100],
           "reason": "subtree"
         }
@@ -40,6 +35,22 @@
     }
   ],
   "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow DIV id='scrollpanel'",
+      "reason": "subtree"
+    },
+    {
+      "object": "LayoutBlockFlow (relative positioned) DIV class='container'",
+      "reason": "subtree"
+    },
+    {
+      "object": "LayoutBlockFlow (relative positioned) DIV id='ul'",
+      "reason": "subtree"
+    },
+    {
+      "object": "LayoutBlockFlow DIV",
+      "reason": "subtree"
+    },
     {
       "object": "LayoutBlockFlow (positioned) DIV id='scrollpanel'",
       "reason": "style change"

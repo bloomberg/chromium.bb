@@ -8,12 +8,12 @@
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow DIV id='test' class='stretchy'",
-          "rect": [28, 54, 500, 50],
+          "rect": [28, 56, 500, 50],
           "reason": "subtree"
         },
         {
           "object": "LayoutBlockFlow DIV id='test' class='stretchy'",
-          "rect": [28, 54, 250, 50],
+          "rect": [28, 56, 250, 50],
           "reason": "subtree"
         }
       ]

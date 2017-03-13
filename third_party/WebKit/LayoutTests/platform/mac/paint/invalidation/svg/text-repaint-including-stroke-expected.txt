@@ -12,6 +12,11 @@
           "reason": "subtree"
         },
         {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [30, 0, 404, 60],
+          "reason": "subtree"
+        },
+        {
           "object": "LayoutSVGText text id='bounce'",
           "rect": [30, 0, 404, 60],
           "reason": "subtree"
@@ -20,6 +25,22 @@
     }
   ],
   "objectPaintInvalidations": [
+    {
+      "object": "LayoutSVGText text id='bounce'",
+      "reason": "subtree"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "subtree"
+    },
+    {
+      "object": "LayoutSVGInlineText #text",
+      "reason": "subtree"
+    },
+    {
+      "object": "InlineTextBox 'Repaint me!'",
+      "reason": "subtree"
+    },
     {
       "object": "LayoutSVGText text id='bounce'",
       "reason": "subtree"
