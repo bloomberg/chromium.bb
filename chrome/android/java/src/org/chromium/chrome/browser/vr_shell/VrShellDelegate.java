@@ -400,6 +400,7 @@ public class VrShellDelegate {
     }
 
     private void enterVR() {
+        if (mInVr) return;
         if (mRestoreSystemUiVisibilityFlag == -1
                 || mActivity.getResources().getConfiguration().orientation
                         != Configuration.ORIENTATION_LANDSCAPE) {
@@ -717,6 +718,7 @@ public class VrShellDelegate {
     }
 
     private boolean createVrShell() {
+        assert mVrShell == null;
         if (mVrClassesWrapper == null) return false;
         mTabModelSelector = mActivity.getCompositorViewHolder().detachForVR();
         if (mTabModelSelector == null) return false;
@@ -768,6 +770,7 @@ public class VrShellDelegate {
             mVrShell.teardown();
             mVrShell = null;
             mActivity.getCompositorViewHolder().onExitVR(mTabModelSelector);
+            mTabModelSelector = null;
         }
     }
 
