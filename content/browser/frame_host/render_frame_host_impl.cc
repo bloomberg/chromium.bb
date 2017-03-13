@@ -1977,9 +1977,6 @@ void RenderFrameHostImpl::OnAccessibilityEvents(
 
   RenderWidgetHostViewBase* view = GetViewForAccessibility();
 
-  if (frame_tree_node_->IsMainFrame() && view)
-    view->SetMainFrameAXTreeID(GetAXTreeID());
-
   AccessibilityMode accessibility_mode = delegate_->GetAccessibilityMode();
   if ((accessibility_mode != AccessibilityModeOff) && view && is_active()) {
     if (accessibility_mode & ACCESSIBILITY_MODE_FLAG_NATIVE_APIS)
