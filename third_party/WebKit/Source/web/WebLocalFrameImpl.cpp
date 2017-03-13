@@ -285,6 +285,7 @@ class ChromePrintContext : public PrintContext {
   virtual void begin(float width, float height) {
     DCHECK(!m_printedPageWidth);
     m_printedPageWidth = width;
+    m_printedPageHeight = height;
     PrintContext::begin(m_printedPageWidth, height);
   }
 
@@ -302,8 +303,10 @@ class ChromePrintContext : public PrintContext {
     if (!frame()->document() || frame()->document()->layoutViewItem().isNull())
       return 0;
 
-    IntRect pageRect = m_pageRects[pageNumber];
-    PaintRecordBuilder builder(pageRect, &canvas->getMetaData());
+    // The page rect gets scaled and translated, so specify the entire
+    // print content area here as the recording rect.
+    IntRect printedPageRect(0, 0, m_printedPageHeight, m_printedPageWidth);
+    PaintRecordBuilder builder(printedPageRect, &canvas->getMetaData());
     builder.context().setPrinting(true);
 
     float scale = spoolPage(builder, pageNumber);
@@ -426,6 +429,7 @@ class ChromePrintContext : public PrintContext {
 
   // Set when printing.
   float m_printedPageWidth;
+  float m_printedPageHeight;
 };
 
 // Simple class to override some of PrintContext behavior. This is used when
