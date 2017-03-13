@@ -60,10 +60,6 @@ grit("resources") {
 
   source = "virtual_driver_setup_resources.grd"
 
-  # TODO(thakis): Consider removing this in favor of the default directory,
-  # https://crbug.com/697092
-  # output_dir = "$root_gen_dir/virtual_driver_setup_resources"
-
   outputs = [
     "grit/virtual_driver_setup_resources.h",
     "virtual_driver_setup_resources_ar.rc",
