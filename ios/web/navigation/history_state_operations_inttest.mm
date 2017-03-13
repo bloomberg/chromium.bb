@@ -49,7 +49,7 @@ NSString* const kOnLoadCheckScript = @"isOnLoadPlaceholderTextVisible()";
 NSString* const kNoOpCheckScript = @"isNoOpPlaceholderTextVisible()";
 
 // Wait timeout for state updates.
-const NSTimeInterval kWaitForStateUpdateTimeout = 2.0;
+const NSTimeInterval kWaitForStateUpdateTimeout = 5.0;
 
 }  // namespace
 
