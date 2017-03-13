@@ -272,7 +272,8 @@ external/wpt/http [ Skip ]
 ## Owners: none; No tests in the directory.
 # external/wpt/images [ Pass ]
 external/wpt/imagebitmap-renderingcontext [ Skip ]
-external/wpt/infrastructure [ Skip ]
+## Owners: smcgruer@chromium.org
+# external/wpt/infrastructure [ Skip ]
 ## Owners: dom-dev@chromium.org
 # external/wpt/innerText [ Pass ]
 external/wpt/js [ Skip ]
