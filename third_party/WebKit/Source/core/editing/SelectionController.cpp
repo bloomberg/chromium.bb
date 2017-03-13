@@ -1015,6 +1015,10 @@ void SelectionController::sendContextMenuEvent(
 
 void SelectionController::passMousePressEventToSubframe(
     const MouseEventWithHitTestResults& mev) {
+  // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // needs to be audited.  See http://crbug.com/590369 for more details.
+  m_frame->document()->updateStyleAndLayoutIgnorePendingStylesheets();
+
   // If we're clicking into a frame that is selected, the frame will appear
   // greyed out even though we're clicking on the selection.  This looks
   // really strange (having the whole frame be greyed out), so we deselect the
@@ -1023,10 +1027,6 @@ void SelectionController::passMousePressEventToSubframe(
       flooredIntPoint(mev.event().positionInRootFrame()));
   if (!selection().contains(p))
     return;
-
-  // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
-  // needs to be audited.  See http://crbug.com/590369 for more details.
-  m_frame->document()->updateStyleAndLayoutIgnorePendingStylesheets();
 
   const VisiblePositionInFlatTree& visiblePos =
       visiblePositionOfHitTestResult(mev.hitTestResult());
