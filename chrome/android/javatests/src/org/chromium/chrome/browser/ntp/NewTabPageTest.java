@@ -286,7 +286,7 @@ public class NewTabPageTest extends ChromeTabbedActivityTestBase {
     @MediumTest
     @Feature({"NewTabPage"})
     public void testUrlFocusAnimationsDisabledOnLoad() throws InterruptedException {
-        assertFalse(getUrlFocusAnimatonsDisabled());
+        assertFalse(getUrlFocusAnimationsDisabled());
         ChromeTabUtils.waitForTabPageLoaded(mTab, new Runnable() {
             @Override
             public void run() {
@@ -298,13 +298,13 @@ public class NewTabPageTest extends ChromeTabbedActivityTestBase {
                         mTab.loadUrl(new LoadUrlParams(mTestServer.getURL(TEST_PAGE),
                                 pageTransition));
                         // It should be disabled as soon as a load URL is triggered.
-                        assertTrue(getUrlFocusAnimatonsDisabled());
+                        assertTrue(getUrlFocusAnimationsDisabled());
                     }
                 });
             }
         });
         // Ensure it is still marked as disabled once the new page is fully loaded.
-        assertTrue(getUrlFocusAnimatonsDisabled());
+        assertTrue(getUrlFocusAnimationsDisabled());
     }
 
     @LargeTest
@@ -328,7 +328,7 @@ public class NewTabPageTest extends ChromeTabbedActivityTestBase {
                     "/ntp_test.html",
                     "<html><body></body></html>", null, delayAction);
 
-            assertFalse(getUrlFocusAnimatonsDisabled());
+            assertFalse(getUrlFocusAnimationsDisabled());
 
             clickFakebox();
             UrlBar urlBar = (UrlBar) getActivity().findViewById(R.id.url_bar);
@@ -362,7 +362,7 @@ public class NewTabPageTest extends ChromeTabbedActivityTestBase {
             waitForUrlFocusAnimationsDisabledState(false);
             delaySemaphore.release();
             loadedCallback.waitForCallback(0);
-            assertFalse(getUrlFocusAnimatonsDisabled());
+            assertFalse(getUrlFocusAnimationsDisabled());
         } finally {
             webServer.shutdown();
         }
@@ -470,7 +470,7 @@ public class NewTabPageTest extends ChromeTabbedActivityTestBase {
         mNtp.captureThumbnail(canvas);
     }
 
-    private boolean getUrlFocusAnimatonsDisabled() {
+    private boolean getUrlFocusAnimationsDisabled() {
         return ThreadUtils.runOnUiThreadBlockingNoException(new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
@@ -483,7 +483,7 @@ public class NewTabPageTest extends ChromeTabbedActivityTestBase {
         CriteriaHelper.pollInstrumentationThread(Criteria.equals(disabled, new Callable<Boolean>() {
             @Override
             public Boolean call() {
-                return getUrlFocusAnimatonsDisabled();
+                return getUrlFocusAnimationsDisabled();
             }
         }));
     }
