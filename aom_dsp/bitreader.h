@@ -250,7 +250,7 @@ static INLINE int aom_read_cdf_unscaled_(aom_reader *r, const aom_cdf_prob *cdf,
 
 #if CONFIG_ACCOUNTING
   if (ACCT_STR_NAME) aom_process_accounting(r, ACCT_STR_NAME);
-  aom_update_raw_counts(r, (nsymbs == 2));
+  aom_update_symb_counts(r, (nsymbs == 2));
 #endif
   return ret;
 }
