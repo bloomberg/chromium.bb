@@ -30,6 +30,12 @@
 #include "av1/encoder/picklpf.h"
 #include "av1/encoder/pickrst.h"
 
+// When set to 1, only RESTORE_WIENER or RESTORE_NONE are allowed
+#define FORCE_RESTORE_WIENER_ONLY 0
+
+// Number of Wiener iterations
+#define NUM_WIENER_ITERS 10
+
 typedef double (*search_restore_type)(const YV12_BUFFER_CONFIG *src,
                                       AV1_COMP *cpi, int partial_frame,
                                       RestorationInfo *info,
@@ -671,7 +677,7 @@ static int wiener_decompose_sep_sym(double *M, double *H, double *a,
   memcpy(b, init_filt, sizeof(*b) * WIENER_WIN);
 
   iter = 1;
-  while (iter < 10) {
+  while (iter < NUM_WIENER_ITERS) {
     update_a_sep_sym(Mc, Hc, a, b);
     update_b_sep_sym(Mc, Hc, a, b);
     iter++;
@@ -1051,11 +1057,18 @@ static double search_switchable_restoration(
     double best_cost = tile_cost[RESTORE_NONE][tile_idx];
     rsi->restoration_type[tile_idx] = RESTORE_NONE;
     for (r = 1; r < RESTORE_SWITCHABLE_TYPES; r++) {
+#if FORCE_RESTORE_WIENER_ONLY
+      if (r != RESTORE_WIENER) continue;
+#endif  // FORCE_RESTORE_WIENER_ONLY
       if (tile_cost[r][tile_idx] < best_cost) {
         rsi->restoration_type[tile_idx] = r;
         best_cost = tile_cost[r][tile_idx];
       }
     }
+#if FORCE_RESTORE_WIENER_ONLY
+    assert(rsi->restoration_type[tile_idx] == RESTORE_WIENER ||
+           rsi->restoration_type[tile_idx] == RESTORE_NONE);
+#endif  // FORCE_RESTORE_WIENER_ONLY
     cost_switchable += best_cost;
   }
   return cost_switchable;
@@ -1084,6 +1097,9 @@ void av1_pick_filter_restoration(const YV12_BUFFER_CONFIG *src, AV1_COMP *cpi,
   }
 
   for (r = 0; r < RESTORE_SWITCHABLE_TYPES; ++r) {
+#if FORCE_RESTORE_WIENER_ONLY
+    if (r != RESTORE_NONE && r != RESTORE_WIENER) continue;
+#endif  // FORCE_RESTORE_WIENER_ONLY
     cost_restore[r] = search_restore_fun[r](
         src, cpi, method == LPF_PICK_FROM_SUBIMAGE, &cm->rst_info[0],
         restore_types[r], tile_cost[r], &cpi->trial_frame_rst);
@@ -1094,12 +1110,18 @@ void av1_pick_filter_restoration(const YV12_BUFFER_CONFIG *src, AV1_COMP *cpi,
   best_cost_restore = DBL_MAX;
   best_restore = 0;
   for (r = 0; r < RESTORE_TYPES; ++r) {
+#if FORCE_RESTORE_WIENER_ONLY
+    if (r != RESTORE_NONE && r != RESTORE_WIENER) continue;
+#endif  // FORCE_RESTORE_WIENER_ONLY
     if (cost_restore[r] < best_cost_restore) {
       best_restore = r;
       best_cost_restore = cost_restore[r];
     }
   }
   cm->rst_info[0].frame_restoration_type = best_restore;
+#if FORCE_RESTORE_WIENER_ONLY
+  assert(best_restore == RESTORE_WIENER || best_restore == RESTORE_NONE);
+#endif  // FORCE_RESTORE_WIENER_ONLY
   if (best_restore != RESTORE_SWITCHABLE) {
     memcpy(cm->rst_info[0].restoration_type, restore_types[best_restore],
            ntiles * sizeof(restore_types[best_restore][0]));
