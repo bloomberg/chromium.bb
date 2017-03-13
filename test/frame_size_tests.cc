@@ -66,18 +66,18 @@ TEST_F(AV1FrameSizeTests, LargeValidSizes) {
   expected_res_ = AOM_CODEC_OK;
   ASSERT_NO_FATAL_FAILURE(RunLoop(&video));
 #else
-// This test produces a pretty large single frame allocation,  (roughly
-// 25 megabits). The encoder allocates a good number of these frames
-// one for each lag in frames (for 2 pass), and then one for each possible
-// reference buffer (8) - we can end up with up to 30 buffers of roughly this
-// size or almost 1 gig of memory.
-// In total the allocations will exceed 2GiB which may cause a failure with
-// mingw + wine, use a smaller size in that case.
-#if defined(_WIN32) && !defined(_WIN64) || defined(__OS2__)
-  video.SetSize(2560, 1440);
-#else
-  video.SetSize(4096, 4096);
-#endif
+  // This test produces a pretty large single frame allocation,  (roughly
+  // 25 megabits). The encoder allocates a good number of these frames
+  // one for each lag in frames (for 2 pass), and then one for each possible
+  // reference buffer (8) - we can end up with up to 30 buffers of roughly this
+  // size or almost 1 gig of memory.
+  // In total the allocations will exceed 2GiB which may cause a failure with
+  // non-64 bit platforms, use a smaller size in that case.
+  if (sizeof(void *) < 8)
+    video.SetSize(2560, 1440);
+  else
+    video.SetSize(4096, 4096);
+
   video.set_limit(2);
   expected_res_ = AOM_CODEC_OK;
   ASSERT_NO_FATAL_FAILURE(RunLoop(&video));
