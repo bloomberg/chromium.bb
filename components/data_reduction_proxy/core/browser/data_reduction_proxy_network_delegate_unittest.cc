@@ -12,11 +12,13 @@
 #include <utility>
 
 #include "base/command_line.h"
+#include "base/files/file_util.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/field_trial.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -57,6 +59,7 @@
 #include "net/test/test_data_directory.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_job_factory_impl.h"
+#include "net/url_request/url_request_status.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -354,6 +357,24 @@ class DataReductionProxyNetworkDelegateTest : public testing::Test {
     return request;
   }
 
+  // Reads brotli encoded content to |encoded_brotli_buffer_|.
+  void ReadBrotliFile() {
+    // Get the path of data directory.
+    const size_t kDefaultBufferSize = 4096;
+    base::FilePath data_dir;
+    PathService::Get(base::DIR_SOURCE_ROOT, &data_dir);
+    data_dir = data_dir.AppendASCII("net");
+    data_dir = data_dir.AppendASCII("data");
+    data_dir = data_dir.AppendASCII("filter_unittests");
+
+    // Read data from the encoded file into buffer.
+    base::FilePath encoded_file_path;
+    encoded_file_path = data_dir.AppendASCII("google.br");
+    ASSERT_TRUE(
+        base::ReadFileToString(encoded_file_path, &encoded_brotli_buffer_));
+    ASSERT_GE(kDefaultBufferSize, encoded_brotli_buffer_.size());
+  }
+
   // Fetches a single URL request, verifies the correctness of Accept-Encoding
   // header, and verifies that the response is cached only if |expect_cached|
   // is set to true. Each line in |response_headers| should end with "\r\n" and
@@ -369,8 +390,14 @@ class DataReductionProxyNetworkDelegateTest : public testing::Test {
     GURL url(kTestURL);
 
     int response_body_size = 140;
-    const std::string response_body(
-        base::checked_cast<size_t>(response_body_size), ' ');
+    std::string response_body;
+    if (expect_brotli && !expect_cached) {
+      response_body = encoded_brotli_buffer_;
+      response_body_size = response_body.size();
+    } else {
+      response_body =
+          std::string(base::checked_cast<size_t>(response_body_size), ' ');
+    }
 
     mock_socket_factory_.AddSSLSocketDataProvider(&ssl_socket_data_provider_);
 
@@ -441,6 +468,8 @@ class DataReductionProxyNetworkDelegateTest : public testing::Test {
     request->Start();
     base::RunLoop().RunUntilIdle();
 
+    EXPECT_EQ(0, request->status().ToNetError());
+
     if (!expect_cached) {
       EXPECT_EQ(response_body_size,
                 request->received_response_content_length());
@@ -450,6 +479,10 @@ class DataReductionProxyNetworkDelegateTest : public testing::Test {
       VerifyBrotliPresent(request.get(), expect_brotli);
     } else {
       EXPECT_TRUE(request->was_cached());
+      std::string content_encoding_value;
+      request->GetResponseHeaderByName("Content-Encoding",
+                                       &content_encoding_value);
+      EXPECT_EQ(expect_brotli, content_encoding_value == "br");
     }
   }
 
@@ -460,10 +493,16 @@ class DataReductionProxyNetworkDelegateTest : public testing::Test {
     EXPECT_TRUE(request_headers_sent.GetHeader("Accept-Encoding",
                                                &accept_encoding_value));
     EXPECT_NE(std::string::npos, accept_encoding_value.find("gzip"));
+
+    std::string content_encoding_value;
+    request->GetResponseHeaderByName("Content-Encoding",
+                                     &content_encoding_value);
+
     if (expect_brotli) {
       // Brotli should be the last entry in the Accept-Encoding header.
       EXPECT_EQ(accept_encoding_value.length() - 2,
                 accept_encoding_value.find("br"));
+      EXPECT_EQ("br", content_encoding_value);
     } else {
       EXPECT_EQ(std::string::npos, accept_encoding_value.find("br"));
     }
@@ -577,6 +616,9 @@ class DataReductionProxyNetworkDelegateTest : public testing::Test {
   net::SSLSocketDataProvider ssl_socket_data_provider_;
 
   std::unique_ptr<net::StaticSocketDataProvider> socket_;
+
+  // Encoded Brotli content read from a file. May be empty.
+  std::string encoded_brotli_buffer_;
 };
 
 TEST_F(DataReductionProxyNetworkDelegateTest, AuthenticationTest) {
@@ -1127,6 +1169,8 @@ TEST_F(DataReductionProxyNetworkDelegateTest,
        BrotliAdvertisement_BrotliDisabled) {
   Init(true /* use_secure_proxy */, false /* enable_brotli_globally */);
 
+  ReadBrotliFile();
+
   std::string response_headers =
       "HTTP/1.1 200 OK\r\n"
       "Content-Length: 140\r\n"
@@ -1197,10 +1241,10 @@ TEST_F(DataReductionProxyNetworkDelegateTest, BrotliAdvertisement) {
 
   std::string response_headers =
       "HTTP/1.1 200 OK\r\n"
-      "Content-Length: 140\r\n"
       "Via: 1.1 Chrome-Compression-Proxy\r\n"
       "x-original-content-length: 200\r\n"
       "Cache-Control: max-age=1200\r\n"
+      "Content-Encoding: br\r\n"
       "Vary: accept-encoding\r\n";
   response_headers += "\r\n";
 
