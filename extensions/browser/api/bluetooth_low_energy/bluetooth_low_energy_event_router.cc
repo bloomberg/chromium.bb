@@ -638,8 +638,9 @@ void BluetoothLowEnergyEventRouter::ReadCharacteristicValue(
   }
 
   characteristic->ReadRemoteCharacteristic(
-      base::Bind(&BluetoothLowEnergyEventRouter::OnValueSuccess,
-                 weak_ptr_factory_.GetWeakPtr(), callback),
+      base::Bind(
+          &BluetoothLowEnergyEventRouter::OnReadRemoteCharacteristicSuccess,
+          weak_ptr_factory_.GetWeakPtr(), instance_id, callback),
       base::Bind(&BluetoothLowEnergyEventRouter::OnError,
                  weak_ptr_factory_.GetWeakPtr(), error_callback));
 }
@@ -800,7 +801,7 @@ void BluetoothLowEnergyEventRouter::ReadDescriptorValue(
   }
 
   descriptor->ReadRemoteDescriptor(
-      base::Bind(&BluetoothLowEnergyEventRouter::OnValueSuccess,
+      base::Bind(&BluetoothLowEnergyEventRouter::OnReadRemoteDescriptorSuccess,
                  weak_ptr_factory_.GetWeakPtr(), callback),
       base::Bind(&BluetoothLowEnergyEventRouter::OnError,
                  weak_ptr_factory_.GetWeakPtr(), error_callback));
@@ -1597,10 +1598,23 @@ BluetoothLowEnergyEventRouter::FindDescriptorById(
   return descriptor;
 }
 
-void BluetoothLowEnergyEventRouter::OnValueSuccess(
+void BluetoothLowEnergyEventRouter::OnReadRemoteCharacteristicSuccess(
+    const std::string& characteristic_instance_id,
     const base::Closure& callback,
     const std::vector<uint8_t>& value) {
-  VLOG(2) << "Remote characteristic/descriptor value read successful.";
+  VLOG(2) << "Remote characteristic value read successful.";
+
+  BluetoothRemoteGattCharacteristic* characteristic =
+      FindCharacteristicById(characteristic_instance_id);
+
+  GattCharacteristicValueChanged(adapter_.get(), characteristic, value);
+  callback.Run();
+}
+
+void BluetoothLowEnergyEventRouter::OnReadRemoteDescriptorSuccess(
+    const base::Closure& callback,
+    const std::vector<uint8_t>& value) {
+  VLOG(2) << "Remote descriptor value read successful.";
   callback.Run();
 }
 

@@ -700,15 +700,15 @@ IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, ReadCharacteristicValue) {
   event_router()->GattCharacteristicAdded(mock_adapter_, chrc0_.get());
 
   EXPECT_CALL(*mock_adapter_, GetDevice(_))
-      .Times(3)
+      .Times(4)
       .WillRepeatedly(Return(device0_.get()));
 
   EXPECT_CALL(*device0_, GetGattService(kTestServiceId0))
-      .Times(3)
+      .Times(4)
       .WillRepeatedly(Return(service0_.get()));
 
   EXPECT_CALL(*service0_, GetCharacteristic(kTestCharacteristicId0))
-      .Times(3)
+      .Times(4)
       .WillRepeatedly(Return(chrc0_.get()));
 
   std::vector<uint8_t> value;
