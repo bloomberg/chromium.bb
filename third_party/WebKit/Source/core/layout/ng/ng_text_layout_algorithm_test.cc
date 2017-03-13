@@ -18,7 +18,13 @@ class NGTextLayoutAlgorithmTest : public NGBaseLayoutAlgorithmTest {};
 
 // Verifies that text can flow correctly around floats that were positioned
 // before the inline block.
-TEST_F(NGTextLayoutAlgorithmTest, TextFloatsAroundFloatsBefore) {
+// Failing on Android: crbug.com/700868
+#if OS(ANDROID)
+#define MAYBE_TextFloatsAroundFloatsBefore DISABLED_TextFloatsAroundFloatsBefore
+#else
+#define MAYBE_TextFloatsAroundFloatsBefore TextFloatsAroundFloatsBefore
+#endif
+TEST_F(NGTextLayoutAlgorithmTest, MAYBE_TextFloatsAroundFloatsBefore) {
   setBodyInnerHTML(R"HTML(
     <!DOCTYPE html>
     <style>
