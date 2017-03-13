@@ -2929,3 +2929,6 @@ crbug.com/402805 [ Mac10.10 Mac10.11 ] inspector-protocol/input/emulateTouchFrom
 crbug.com/700374 [ Win ] virtual/mojo-loading/http/tests/inspector/workers-on-navigation.html [ Failure Pass ]
 crbug.com/700374 [ Win ] http/tests/inspector/workers-on-navigation.html [ Failure Pass ]
 crbug.com/700387 [ Win7 ] external/wpt/fullscreen/api/document-exit-fullscreen-nested-in-iframe-manual.html [ Timeout Pass ]
+
+# Sheriff failures 2017-03-13
+crbug.com/701140 inspector-protocol/css/css-get-rule-list.html [ Failure Pass ]
