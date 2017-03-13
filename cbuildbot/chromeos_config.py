@@ -472,6 +472,7 @@ _x86_internal_release_boards = frozenset([
     'expresso',
     'falco',
     'falco_li',
+    'fizz',
     'gandof',
     'glados',
     'glados-cheets',
@@ -577,6 +578,7 @@ _cheets_x86_boards = _cheets_boards | frozenset([
     'chell',
     'cyan',
     'edgar',
+    'fizz',
     'gandof',
     'glados',
     'glimmer-cheets',
@@ -672,6 +674,7 @@ _waterfall_config_map = {
     constants.WATERFALL_INTERNAL: frozenset([
         # Experimental Paladins.
         'chell-paladin',
+        'fizz-paladin',
         'gale-paladin',
         'kip-paladin',
         'loonix-paladin',
