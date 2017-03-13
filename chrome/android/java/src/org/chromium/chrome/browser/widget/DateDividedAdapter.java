@@ -233,7 +233,7 @@ public abstract class DateDividedAdapter extends Adapter<RecyclerView.ViewHolder
 
         public TimedItem getItemAt(int index) {
             // 0 is allocated to the date header. The list header has no items.
-            if (index == 0 || mIsListHeader || mIsListFooter) return null;
+            if (index <= 0 || mIsListHeader || mIsListFooter) return null;
 
             sortIfNeeded();
             return mItems.get(index - 1);
