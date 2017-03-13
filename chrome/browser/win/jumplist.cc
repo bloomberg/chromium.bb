@@ -4,6 +4,9 @@
 
 #include "chrome/browser/win/jumplist.h"
 
+#include <Shlwapi.h>
+#include <windows.h>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback_helpers.h"
@@ -15,6 +18,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/trace_event/trace_event.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
@@ -225,6 +229,22 @@ bool UpdateJumpList(const wchar_t* app_id,
   return true;
 }
 
+// Renames the directory |from_dir| to |to_path|. This method fails if any
+// process has a handle open in |from_dir| or if |to_path| exists. Base::Move()
+// tries to rename a file and if this fails, it tries copy-n-delete; This
+// RenameDirectory method only does the rename part.
+bool RenameDirectory(const base::FilePath& from_path,
+                     const base::FilePath& to_path) {
+  base::ThreadRestrictions::AssertIOAllowed();
+  if (from_path.ReferencesParent() || to_path.ReferencesParent())
+    return false;
+  if (from_path.value().length() >= MAX_PATH ||
+      to_path.value().length() >= MAX_PATH) {
+    return false;
+  }
+  return MoveFileEx(from_path.value().c_str(), to_path.value().c_str(), 0) != 0;
+}
+
 // Updates the jumplist, once all the data has been fetched.
 void RunUpdateOnFileThread(
     IncognitoModePrefs::Availability incognito_availability,
@@ -250,17 +270,19 @@ void RunUpdateOnFileThread(
   // Delete the directory which contains old icon files, rename the current
   // icon directory, and create a new directory which contains new JumpList
   // icon files.
-  base::FilePath icon_dir_old(icon_dir.value() + L"Old");
+  base::FilePath icon_dir_old = icon_dir.DirName().Append(
+      icon_dir.BaseName().value() + FILE_PATH_LITERAL("Old"));
 
   enum FolderOperationResult {
     SUCCESS = 0,
     DELETE_DEST_FAILED = 1 << 0,
-    MOVE_FAILED = 1 << 1,
-    DELETE_SRC_FAILED = 1 << 2,
-    CREATE_SRC_FAILED = 1 << 3,
+    RENAME_FAILED = 1 << 1,
+    DELETE_SRC_CONTENT_FAILED = 1 << 2,
+    DELETE_SRC_DIR_FAILED = 1 << 3,
+    CREATE_SRC_FAILED = 1 << 4,
     // This value is beyond the sum of all bit fields above and
     // should remain last (shifted by one more than the last value)
-    END = 1 << 4
+    END = 1 << 5
   };
 
   // This variable records the status of three folder operations.
@@ -268,31 +290,44 @@ void RunUpdateOnFileThread(
 
   base::ScopedClosureRunner log_operation_status_when_done(base::Bind(
       [](uint32_t* folder_operation_status_ptr) {
-        UMA_HISTOGRAM_ENUMERATION("WinJumplist.DetailedFolderResults",
-                                  *folder_operation_status_ptr,
-                                  FolderOperationResult::END);
+        UMA_HISTOGRAM_ENUMERATION(
+            "WinJumplist.DetailedFolderResultsDeleteUpdated",
+            *folder_operation_status_ptr, FolderOperationResult::END);
       },
       base::Unretained(&folder_operation_status)));
 
-  // If deletion of |icon_dir_old| fails, do not move |icon_dir| to
+  // If deletion of |icon_dir_old| fails, do not rename |icon_dir| to
   // |icon_dir_old|, instead, delete |icon_dir| directly to avoid bloating
   // |icon_dir_old| by moving more things to it.
   if (!base::DeleteFile(icon_dir_old, true)) {
     folder_operation_status |= FolderOperationResult::DELETE_DEST_FAILED;
-    // If deletion of |icon_dir| fails, exit early. This skips creating the same
-    // directory and updating jumplist icons to avoid bloating the JumplistIcons
-    // folder.
+    // If deletion of any item in |icon_dir| fails, exit early. If deletion of
+    // all the items succeeds while only deletion of the dir fails, it is okay
+    // to proceed. This skips creating the same directory and updating jumplist
+    // icons to avoid bloating the JumplistIcons folder.
     if (!base::DeleteFile(icon_dir, true)) {
-      folder_operation_status |= FolderOperationResult::DELETE_SRC_FAILED;
-      return;
+      if (!::PathIsDirectoryEmpty(icon_dir.value().c_str())) {
+        folder_operation_status |=
+            FolderOperationResult::DELETE_SRC_CONTENT_FAILED;
+        return;
+      }
+      folder_operation_status |= FolderOperationResult::DELETE_SRC_DIR_FAILED;
     }
-  } else if (!base::Move(icon_dir, icon_dir_old)) {
-    folder_operation_status |= FolderOperationResult::MOVE_FAILED;
-    // If Move() fails, delete |icon_dir| to avoid file accumulation in this
-    // directory, which can eventually lead the folder to be huge.
+  } else if (!RenameDirectory(icon_dir, icon_dir_old)) {
+    // If RenameDirectory() fails, delete |icon_dir| to avoid file accumulation
+    // in this directory, which can eventually lead the folder to be huge.
+    folder_operation_status |= FolderOperationResult::RENAME_FAILED;
+    // If deletion of any item in |icon_dir| fails, exit early. If deletion of
+    // all the items succeeds while only deletion of the dir fails, it is okay
+    // to proceed. This skips creating the same directory and updating jumplist
+    // icons to avoid bloating the JumplistIcons folder.
     if (!base::DeleteFile(icon_dir, true)) {
-      folder_operation_status |= FolderOperationResult::DELETE_SRC_FAILED;
-      return;
+      if (!::PathIsDirectoryEmpty(icon_dir.value().c_str())) {
+        folder_operation_status |=
+            FolderOperationResult::DELETE_SRC_CONTENT_FAILED;
+        return;
+      }
+      folder_operation_status |= FolderOperationResult::DELETE_SRC_DIR_FAILED;
     }
   }
 
