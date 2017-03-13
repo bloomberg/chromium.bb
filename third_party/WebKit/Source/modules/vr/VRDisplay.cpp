@@ -558,9 +558,14 @@ void VRDisplay::submitFrame() {
   RefPtr<Image> imageRef = m_renderingContext->getImage(
       PreferAcceleration, SnapshotReasonCreateImageBitmap);
 
-  // Hardware-accelerated rendering should always be texture backed.
-  // I hope nobody is trying to do WebVR with software rendering.
-  DCHECK(imageRef->isTextureBacked());
+  // Hardware-accelerated rendering should always be texture backed,
+  // as implemented by AcceleratedStaticBitmapImage. Ensure this is
+  // the case, don't attempt to render if using an unexpected drawing
+  // path.
+  if (!imageRef->isTextureBacked()) {
+    NOTREACHED() << "WebVR requires hardware-accelerated rendering to texture";
+    return;
+  }
 
   // The AcceleratedStaticBitmapImage must be kept alive until the
   // mailbox is used via createAndConsumeTextureCHROMIUM, the mailbox
