@@ -158,10 +158,16 @@ void TemplateURLServiceTestUtil::SetGoogleBaseURL(const GURL& base_url) {
 
 TemplateURL* TemplateURLServiceTestUtil::AddExtensionControlledTURL(
     std::unique_ptr<TemplateURL> extension_turl,
-    std::unique_ptr<TemplateURL::AssociatedExtensionInfo> info) {
-  bool wants_to_be_default = info->wants_to_be_default_engine;
+    const std::string& extension_id,
+    bool wants_to_be_default,
+    base::Time install_time) {
+  auto extension_info =
+      base::MakeUnique<TemplateURL::AssociatedExtensionInfo>(extension_id);
+  extension_info->wants_to_be_default_engine = wants_to_be_default;
+  extension_info->install_time = install_time;
+
   TemplateURL* result = model()->AddExtensionControlledTURL(
-      std::move(extension_turl), std::move(info));
+      std::move(extension_turl), std::move(extension_info));
   if (wants_to_be_default && result) {
     SetExtensionDefaultSearchInPrefs(profile()->GetTestingPrefService(),
                                      result->data());

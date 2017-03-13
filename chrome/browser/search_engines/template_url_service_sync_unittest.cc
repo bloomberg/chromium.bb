@@ -444,10 +444,7 @@ TEST_F(TemplateURLServiceSyncTest, GetAllSyncDataWithSearchOverrideExtension) {
       GenerateDummyTemplateURLData("extension");
   auto ext_dse = base::MakeUnique<TemplateURL>(
       *extension, TemplateURL::NORMAL_CONTROLLED_BY_EXTENSION);
-  auto ext_info = base::MakeUnique<TemplateURL::AssociatedExtensionInfo>("ext");
-  ext_info->wants_to_be_default_engine = true;
-  test_util_a_->AddExtensionControlledTURL(std::move(ext_dse),
-                                           std::move(ext_info));
+  test_util_a_->AddExtensionControlledTURL(std::move(ext_dse), "ext", true);
 
   const TemplateURL* ext_turl = model()->GetDefaultSearchProvider();
   EXPECT_TRUE(model()->IsExtensionControlledDefaultSearch());
@@ -1764,10 +1761,7 @@ TEST_F(TemplateURLServiceSyncTest, SyncWithExtensionDefaultSearch) {
       GenerateDummyTemplateURLData("extensiondefault");
   auto ext_dse = base::MakeUnique<TemplateURL>(
       *extension, TemplateURL::NORMAL_CONTROLLED_BY_EXTENSION);
-  auto ext_info = base::MakeUnique<TemplateURL::AssociatedExtensionInfo>("ext");
-  ext_info->wants_to_be_default_engine = true;
-  test_util_a_->AddExtensionControlledTURL(std::move(ext_dse),
-                                           std::move(ext_info));
+  test_util_a_->AddExtensionControlledTURL(std::move(ext_dse), "ext", true);
 
   const TemplateURL* dsp_turl = model()->GetDefaultSearchProvider();
   EXPECT_TRUE(model()->IsExtensionControlledDefaultSearch());
@@ -1819,10 +1813,8 @@ TEST_F(TemplateURLServiceSyncTest, ExtensionAndNormalEngineConflict) {
       GenerateDummyTemplateURLData("common_keyword");
   auto ext_dse = base::MakeUnique<TemplateURL>(
       *extension, TemplateURL::NORMAL_CONTROLLED_BY_EXTENSION);
-  auto ext_info = base::MakeUnique<TemplateURL::AssociatedExtensionInfo>("ext");
-  ext_info->wants_to_be_default_engine = true;
-  const TemplateURL* extension_turl = test_util_a_->AddExtensionControlledTURL(
-      std::move(ext_dse), std::move(ext_info));
+  const TemplateURL* extension_turl =
+      test_util_a_->AddExtensionControlledTURL(std::move(ext_dse), "ext", true);
   EXPECT_TRUE(model()->IsExtensionControlledDefaultSearch());
   EXPECT_EQ(extension_turl, model()->GetTemplateURLForKeyword(kCommonKeyword));
 
