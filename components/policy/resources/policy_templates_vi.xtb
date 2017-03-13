@@ -333,6 +333,21 @@
       Nếu HardwareAccelerationModeEnabled được đặt thành false thì Disable3DAPIs sẽ được bỏ qua và tương đương với Disable3DAPIs đang được đặt thành true.</translation>
 <translation id="2168397434410358693">Độ trễ lúc không sử dụng khi chạy trên nguồn AC</translation>
 <translation id="2170233653554726857">Bật tối ưu hóa WPAD</translation>
+<translation id="2176565653304920879">Khi chính sách này được đặt, tính năng phát hiện múi giờ tự động sẽ là một trong những cách sau đây tùy thuộc vào giá trị của cài đặt:
+
+      Nếu được đặt thành TimezoneAutomaticDetectionUsersDecide, người dùng có thể kiểm soát tính năng phát hiện múi giờ tự động bằng cách sử dụng các biện pháp kiểm soát thông thường trong chrome://settings.
+
+      Nếu được đặt thành TimezoneAutomaticDetectionDisabled, các biện pháp kiểm soát múi giờ tự động trong chrome://settings sẽ bị tắt. Tính năng phát hiện múi giờ tự động sẽ luôn được tắt.
+
+      Nếu được đặt thành TimezoneAutomaticDetectionIPOnly, các biện pháp kiểm soát múi giờ trong chrome://settings sẽ bị tắt. Tính năng phát hiện múi giờ tự động sẽ luôn được bật. Phát hiện múi giờ sẽ sử dụng phương pháp chỉ IP để phân giải vị trí.
+
+      Nếu được đặt thành TimezoneAutomaticDetectionSendWiFiAccessPoints, các biện pháp kiểm soát múi giờ trong chrome://settings sẽ bị tắt. Tính năng phát hiện múi giờ tự động sẽ luôn được bật. Danh sách các điểm truy cập Wi-Fi hiển thị sẽ luôn được gửi tới máy chủ API vị trí địa lý để phát hiện múi giờ chi tiết.
+
+      Nếu được đặt thành TimezoneAutomaticDetectionSendAllLocationInfo, các biện pháp kiểm soát múi giờ trong chrome://settings sẽ bị tắt. Tính năng phát hiện múi giờ tự động sẽ luôn được bật. Thông tin vị trí (như các điểm truy cập Wi-Fi, Tháp di động có thể truy cập, GPS) sẽ được gửi tới máy chủ để phát hiện múi giờ chi tiết.
+
+      Nếu chính sách này không được đặt, tính năng sẽ hoạt động như thể TimezoneAutomaticDetectionUsersDecide được đặt.
+
+      Nếu chính sách SystemTimezone được đặt, tính năng này sẽ ghi đè chính sách này. Trong trường hợp này, tính năng phát hiện múi giờ tự động bị tắt hoàn toàn.</translation>
 <translation id="2178899310296064282">Buộc sử dụng ít nhất Chế độ hạn chế trung bình trên YouTube</translation>
 <translation id="2183294522275408937">Cài đặt này kiểm soát tần suất màn hình khóa yêu cầu nhập mật khẩu để tiếp tục sử dụng mở khóa nhanh. Mỗi khi truy cập màn hình khóa, nếu mục nhập mật khẩu cuối cùng không thuộc cài đặt này, thì tính năng mở khóa nhanh sẽ không khả dụng khi truy cập màn hình khóa. Nếu người dùng ở trên màn hình khóa quá khoảng thời gian này, mật khẩu sẽ được yêu cầu vào lần tiếp theo người dùng nhập sai mã hoặc truy cập lại màn hình khóa, tùy theo trường hợp nào đến trước.
 
@@ -1461,6 +1476,13 @@ Khi chính sách này được đặt thành false hoặc không được địn
           Nếu không thiết lập chính sách này, 'AskNotifications' sẽ được sử dụng và người dùng có thể thay đổi cài đặt này.</translation>
 <translation id="538108065117008131">Cho phép <ph name="PRODUCT_FRAME_NAME" /> xử lý các loại nội dung sau.</translation>
 <translation id="5388730678841939057">Lựa chọn chiến lược dùng để giải phóng dung lượng đĩa trong khi dọn sạch tự động (không được dùng nữa)</translation>
+<translation id="5392172595902933844">Thông tin về trạng thái của Android được gửi lại cho
+      máy chủ.
+
+      Nếu chính sách được đặt thành false hoặc chưa được đặt thì không có thông tin trạng thái nào được báo cáo.
+      Nếu được đặt thành true, thông tin trạng thái sẽ được báo cáo.
+
+      Chính sách này chỉ áp dụng nếu các ứng dụng Android được bật.</translation>
 <translation id="5395271912574071439">Bật tính năng ẩn của máy máy chủ truy cập từ xa trong khi đang thực hiện kết nối.
 
           Nếu bạn bật cài đặt này thì các thiết bị đầu vào và đầu ra vật lý của máy chủ sẽ bị tắt khi đang thực hiện kết nối từ xa.

@@ -332,6 +332,21 @@
       Kung nakatakda sa false ang HardwareAccelerationModeEnabled, babalewalain ag Disable3DAPIs at magiging katumbas nito ang pagkakatakda ng Disable3DAPIs sa true.</translation>
 <translation id="2168397434410358693">Idle delay kapag tumatakbo habang nakasaksak sa kuryente</translation>
 <translation id="2170233653554726857">I-enable ang pag-optimize ng WPAD</translation>
+<translation id="2176565653304920879">Kapag nakatakda ang patakarang ito, ang awtomatikong proseso ng pag-detect ng timezone ay magiging isa sa mga sumusunod na paraan depende sa value ng setting:
+
+      Kung itatakda sa TimezoneAutomaticDetectionUsersDecide, makokontrol ng mga user ang awtomatikong pag-detect ng timezone gamit ang mga normal na kontrol sa chrome://settings.
+
+      Kung itatakda sa TimezoneAutomaticDetectionDisabled, madi-disable ang mga awtomatikong kontrol sa chrome://settings. Magiging palaging naka-off ang awtomatikong pag-detect ng timezone.
+
+      Kung itatakda sa TimezoneAutomaticDetectionIPOnly, madi-disable ang mga kontrol sa timezone sa chrome://settings. Magiging palaging naka-on ang awtomatikong pag-detect ng timezone. Gagamit ang pag-detect ng timezone ng paraang IP lang ang gagamitin upang malaman ang lokasyon.
+
+      Kung itatakda sa TimezoneAutomaticDetectionSendWiFiAccessPoints, madi-disable ang mga kontrol sa timezone sa chrome://settings. Magiging palaging naka-on ang awtomatikong pag-detect ng timezone. Ipapadala palagi ang listahan ng mga makikitang access-point ng WiFi sa server ng Geolocation API para sa napakadetalyadong pag-detect ng timezone.
+
+      Kung itatakda sa TimezoneAutomaticDetectionSendAllLocationInfo, madi-disable ang mga kontrol sa timezone sa chrome://settings. Magiging palaging naka-on ang awtomatikong pag-detect ng timezone. Ipapadala ang impormasyon sa lokasyon (gaya ng mga access-point ng WiFi, maaaring makaugnayang Mga Cell Tower, GPS) sa isang server para sa napakadetalyadong pag-detect ng timezone.
+
+      Kung hindi itatakda ang patakarang ito, gagana ito nang parang nakatakda sa TimezoneAutomaticDetectionUsersDecide.
+
+      Kung itatakda ang patakaran na SystemTimezone, io-override nito ang patakarang ito. Sa sitwasyong ito, ganap na naka-disable ang awtomatikong pag-detect ng timezone.</translation>
 <translation id="2178899310296064282">Magpatupad ng kahit Moderate na Restricted Mode lang sa YouTube</translation>
 <translation id="2183294522275408937">Kinokontrol ng setting na ito kung gaano kadalas hihilingin ng lock screen na ilagay ang password upang patuloy na magamit ang mabilisang pag-unlock. Sa bawat pagpunta sa lock screen, kung lampas sa setting na ito ang huling paglalagay ng password, hindi magiging available ang mabilisang pag-unlock sa pagpunta sa lock screen. Kung mananatili ang user sa lock screen nang lampas sa panahong ito, hihingi ng password sa susunod na pagkakataong maglagay ng maling code o bumalik sa lock screen ang user, alinman ang mauna.
 
@@ -1459,6 +1474,12 @@
           Kung hinayaang hindi nakatakda ang patakarang ito, gagamitin ang 'AskNotifications' at magagawa ng user na baguhin ito.</translation>
 <translation id="538108065117008131">Payagan ang <ph name="PRODUCT_FRAME_NAME" /> na pamahalaan ang mga sumusunod na uri ng nilalaman.</translation>
 <translation id="5388730678841939057">Pinipili ang diskarteng gagamitin upang magbakante ng espasyo sa disk sa panahon ng awtomatikong pag-clean-up (hindi na ginagamit)</translation>
+<translation id="5392172595902933844">Ibinabalik ang impormasyon tungkol sa status ng Android sa server.
+
+      Kung itatakda sa false o hahayaang hindi nakatakda ang patakaran, walang iuulat na impormasyon ng status.
+      Kung itatakda sa true, iuulat ang impormasyon ng status.
+
+      Nalalapat lang ang patakarang ito kung naka-enable ang mga Android app.</translation>
 <translation id="5395271912574071439">Pinapagana ang paghadlang sa mga remote access host habang kasalukuyang gumagana ang koneksyon.
 
           Kung pinagana ang setting na ito, hindi papaganahin ang pisikal na input at output na device ng mga host habang kasalukuyang gumagana ang remote na koneksyon.
@@ -2429,6 +2450,7 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="7937766917976512374">Payagan o tanggihan ang pagkuha ng video</translation>
 <translation id="7941975817681987555">Huwag hulaan ang mga pagkilos sa network sa anumang koneksyon sa network</translation>
 <translation id="7953256619080733119">Mga pinapamahalaang host ng manu-manong exception ng user</translation>
+<translation id="7965394584578183156">Palaging magpadala ng mga access-point ng WiFi sa server habang nilulutas ang timezone.</translation>
 <translation id="7971839631300653352">SSL 3.0</translation>
 <translation id="7974114691960514888">Hindi na sinusuportahan ang patakarang ito.
           Pinapagana ang paggamit ng STUN at mga relay server kapag kumokonekta sa isang malayuang client.
@@ -2595,6 +2617,7 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="8390049129576938611">Dini-disable ang internal PDF viewer sa <ph name="PRODUCT_NAME" />. Sa halip, itinuturing nito ito bilang download at pinapayagan ang user na magbukas ng mga PDF na file gamit ang default na application.
 
       Kung iiwanang hindi nakatakda o naka-disable ang patakarang ito, gagamitin ang PDF plugin upang magbukas ng mga PDF file maliban na lang kung idi-disable ito ng user.</translation>
+<translation id="8398203849316312944">Palaging magpadala ng anumang available na signal ng lokasyon sa server habang nilulutas ang timezone.</translation>
 <translation id="8402079500086185021">Palaging Magbukas ng mga PDF file nang external</translation>
 <translation id="8412312801707973447">Kung isinasagawa ang mga online na pagsusuri sa OCSP/CRL</translation>
 <translation id="8413348101535146315">Ine-enable ang pagwawakas ng mga proseso sa Task Manager ng <ph name="PRODUCT_NAME" />.

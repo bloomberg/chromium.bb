@@ -335,6 +335,21 @@
       HardwareAccelerationModeEnabled를 false로 설정하면 Disable3DAPIs가 무시되며 Disable3DAPIs를 true로 설정한 것과 같습니다.</translation>
 <translation id="2168397434410358693">AC 전원으로 실행할 때 유휴 지연</translation>
 <translation id="2170233653554726857">WPAD 최적화 사용</translation>
+<translation id="2176565653304920879">이 정책을 설정하면 설정 값에 따라 자동 시간대 감지 절차가 다음 방법 중 한 가지로 진행됩니다.
+
+      TimezoneAutomaticDetectionUsersDecide로 설정하면 사용자는 chrome://settings의 일반 컨트롤을 사용하여 자동 시간대 감지를 조정할 수 있습니다.
+
+      TimezoneAutomaticDetectionDisabled로 설정하면 chrome://settings의 자동 시간대 조정 기능이 사용 중지되며 자동 시간대 감지는 항상 사용 중지됩니다.
+
+      TimezoneAutomaticDetectionIPOnly로 설정하면 chrome://settings의 시간대 조정이 사용 중지되며 자동 시간대 감지는 항상 사용 설정됩니다. 시간대 감지에서 IP 전용 방식을 사용하여 위치를 파악합니다.
+
+      TimezoneAutomaticDetectionSendWiFiAccessPoints로 설정하면 chrome://settings의 시간대 조정 기능이 사용 중지되며 자동 시간대 감지는 항상 사용 설정됩니다. 정밀한 시간대 감지를 위해 가용 Wi-Fi 액세스 포인트 목록이 항상 Geolocation API 서버로 전송됩니다.
+
+      TimezoneAutomaticDetectionSendAllLocationInfo로 설정하면 chrome://settings의 시간대 조정이 사용 중지되며 자동 시간대 감지는 항상 사용 설정됩니다. 정밀한 시간대 감지를 위해 위치 정보(예: Wi-Fi 액세스 포인트, 연결 가능한 기지국, GPS)가 서버로 전송됩니다.
+
+      이 정책을 설정하지 않으면 TimezoneAutomaticDetectionUsersDecide가 설정된 것처럼 작동합니다.
+
+      SystemTimezone 정책이 설정된 경우 이 정책이 재정의됩니다. 이 경우 자동 시간대 감지 기능이 완전히 사용 중지됩니다.</translation>
 <translation id="2178899310296064282">YouTube에서 최소한 보통 제한 모드 사용</translation>
 <translation id="2183294522275408937">이 설정은 계속 빠른 잠금 해제 모드를 사용하기 위해 잠금 화면에서 얼마나 자주 비밀번호를 요청할 것인지 제어합니다. 잠금 화면으로 전환될 때마다 마지막으로 비밀번호를 입력한 이후 이 설정보다 오랜 시간이 지나면 잠금 화면에서 빠른 잠금 해제를 사용할 수 없게 됩니다. 이 기간이 지난 후 사용자에게 잠금 화면이 표시된 상황에서 다음에 사용자가 잘못된 코드를 입력하거나 잠금 화면으로 다시 전환되는 경우 중 먼저 해당하는 경우 비밀번호를 요청하게 됩니다.
 
@@ -1465,6 +1480,13 @@
           이 정책을 설정하지 않은 경우 'AskNotifications' 정책이 사용되며 사용자가 설정을 변경할 수 있습니다.</translation>
 <translation id="538108065117008131"><ph name="PRODUCT_FRAME_NAME" />이(가) 다음 콘텐츠 유형을 다루도록 허용</translation>
 <translation id="5388730678841939057">자동 정리 중 디스크 공간 확보에 사용할 방법 선택(지원 중단됨)</translation>
+<translation id="5392172595902933844">Android 상태 관련 정보가 서버로 다시
+      전송됩니다.
+
+      정책을 false로 설정하거나 설정하지 않으며 상태 정보가 보고되지 않습니다.
+      정책을 true로 설정하면 상태 정보가 보고됩니다.
+
+      이 정책은 Android 앱이 사용 설정된 경우에만 적용됩니다.</translation>
 <translation id="5395271912574071439">연결이 진행 중일 때 원격 액세스 호스트 차단을 사용합니다.
 
           이 설정을 사용하도록 설정하면 원격 연결이 진행 중일 때 호스트의 물리적인 입력/출력 기기가 사용 중지됩니다.
@@ -2432,6 +2454,7 @@
 <translation id="7937766917976512374">동영상 캡처 허용 또는 거부</translation>
 <translation id="7941975817681987555">모든 네트워크 연결의 네트워크 활동 예측 안함</translation>
 <translation id="7953256619080733119">관리 사용자 직접 예외 호스트</translation>
+<translation id="7965394584578183156">시간대를 파악하는 동안 항상 Wi-Fi 액세스 포인트를 서버로 전송합니다.</translation>
 <translation id="7971839631300653352">SSL 3.0</translation>
 <translation id="7974114691960514888">이 정책은 더 이상 지원되지 않습니다.
           원격 클라이언트에 연결할 때 STUN 및 릴레이 서버를 사용하도록 설정합니다.
@@ -2598,6 +2621,7 @@
 <translation id="8390049129576938611"><ph name="PRODUCT_NAME" />의 내부 PDF 뷰어를 사용 중지합니다. 대신 이를 다운로드 파일로 처리해 사용자가 기본 애플리케이션으로 PDF 파일을 열 수 있도록 합니다.
 
       이 정책이 설정되어 있지 않거나 사용 중지되어 있으면 사용자가 사용 중지하지 않는 한 PDF 플러그인을 사용하여 PDF 파일이 열립니다.</translation>
+<translation id="8398203849316312944">시간대를 파악하는 동안 항상 사용 가능한 위치 신호를 모두 서버로 전송합니다.</translation>
 <translation id="8402079500086185021">항상 외부 앱으로 PDF 파일 열기</translation>
 <translation id="8412312801707973447">온라인 OCSP/CRL 확인 수행 여부</translation>
 <translation id="8413348101535146315"><ph name="PRODUCT_NAME" />의 작업 관리자에서 종료 프로세스를 사용 설정합니다.

@@ -326,6 +326,21 @@
       Jeśli zasada HardwareAccelerationModeEnabled jest wyłączona, zasada Disable3DAPIs jest ignorowana, a włączona jest zasada równoważna wobec Disable3DAPI.</translation>
 <translation id="2168397434410358693">Opóźnienie bezczynności przy zasilaniu sieciowym</translation>
 <translation id="2170233653554726857">Włącz optymalizację WPAD</translation>
+<translation id="2176565653304920879">Gdy zasada jest ustawiona, proces automatycznego wykrywania strefy czasowej przebiega na jeden z tych sposobów, zależnie od ustawionej wartości:
+
+      Jeśli wartość to TimezoneAutomaticDetectionUsersDecide, użytkownicy mogą określać automatyczne wykrywanie strefy czasowej przy użyciu zwykłych opcji na stronie chrome://settings.
+
+      Jeśli wartość to TimezoneAutomaticDetectionDisabled, opcje sterowania automatyczną zmianą strefy czasowej na stronie chrome://settings są wyłączone. Automatyczne wykrywanie strefy czasowej jest zawsze wyłączone.
+
+      Jeśli wartość to TimezoneAutomaticDetectionIPOnly, opcje sterowania automatyczną zmianą strefy czasowej na stronie chrome://settings są wyłączone. Automatyczne wykrywanie strefy czasowej jest zawsze włączone. Wykrywanie strefy czasowej do określania lokalizacji używa tylko adresu IP.
+
+      Jeśli wartość to TimezoneAutomaticDetectionSendWiFiAccessPoints, opcje sterowania automatyczną zmianą strefy czasowej na stronie chrome://settings są wyłączone. Automatyczne wykrywanie strefy czasowej jest zawsze włączone. Lista widocznych punktów dostępu Wi-Fi jest zawsze przesyłana do serwera interfejsu API geolokalizacji, by z dużą dokładnością wykrywać strefę czasową.
+
+      Jeśli wartość to TimezoneAutomaticDetectionSendAllLocationInfo, opcje sterowania automatyczną zmianą strefy czasowej na stronie chrome://settings są wyłączone. Automatyczne wykrywanie strefy czasowej jest zawsze włączone. Na serwer przesyłane są informacje o lokalizacji (takie jak dane GPS, dane o punktach dostępu Wi-Fi czy o komórkowych stacjach przekaźnikowych w zasięgu), by z dużą dokładnością wykrywać strefę czasową.
+
+      Jeśli ta zasada nie jest ustawiona, stosowana jest wartość TimezoneAutomaticDetectionUsersDecide.
+
+      Tę zasadę zastępuje włączona zasada SystemTimezone. Jeśli obowiązuje zasada SystemTimezone, automatyczne wykrywanie strefy czasowej jest całkowicie wyłączone.</translation>
 <translation id="2178899310296064282">Wymuś co najmniej umiarkowany tryb ograniczonego dostępu w YouTube</translation>
 <translation id="2183294522275408937">To ustawienie określa, jak często trzeba podawać hasło na ekranie blokady, gdy używane jest szybkie odblokowanie. Szybkie odblokowanie ekranu blokady nie będzie możliwe, jeśli od ostatniego wpisania hasła minęło więcej czasu, niż określa to wartość tego ustawienia. Jeśli ekran blokady będzie otwarty dłużej niż wartość tego ustawienia, użytkownik będzie musiał podać hasło po podaniu błędnego kodu lub ponownym wyświetleniu ekranu blokady, w zależności od tego, co nastąpi wcześniej.
 
@@ -1376,6 +1391,12 @@ Jeśli ta zasada nie zostanie ustawiona, użytkownik będzie mógł korzystać z
 <translation id="5378985487213287085">Umożliwia określenie, czy witryny mogą wyświetlać powiadomienia na pulpicie. Wyświetlanie powiadomień na pulpicie może być domyślnie dozwolone lub zabronione bądź użytkownikowi może być wyświetlany monit za każdym razem, gdy witryna chce wyświetlić takie powiadomienie. W przypadku nieskonfigurowania tej zasady będzie używana zasada „AskNotifications”, a użytkownik będzie mógł zmienić to ustawienie.</translation>
 <translation id="538108065117008131">Zezwalaj wtyczce <ph name="PRODUCT_FRAME_NAME" /> na obsługę następujących typów treści</translation>
 <translation id="5388730678841939057">Wybierz strategię zwalniania miejsca na dysku podczas automatycznego czyszczenia (wycofana)</translation>
+<translation id="5392172595902933844">Informacje o stanie Androida są wysyłane z powrotem na serwer.
+
+      Jeśli zasada jest wyłączona lub nieskonfigurowana, nie są wysyłane żadne informacje o stanie.
+      Jeśli jest włączona, informacje o stanie są wysyłane.
+
+      Ta zasada ma zastosowanie tylko wtedy, gdy są włączone aplikacje na Androida.</translation>
 <translation id="5395271912574071439">Włącza separację hostów zdalnego dostępu podczas połączenia.
 
           W przypadku włączenia tej opcji fizyczne urządzenia wejściowe i wyjściowe hosta będą wyłączane na czas trwania połączenia zdalnego.

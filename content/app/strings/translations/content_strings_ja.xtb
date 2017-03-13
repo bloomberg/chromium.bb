@@ -64,6 +64,7 @@
 <translation id="3450233048674729344">値は <ph name="MAXIMUM" /> 以下にする必要があります。</translation>
 <translation id="3486220673238053218">定義</translation>
 <translation id="3557673793733683882">見出し <ph name="HEADING_LEVEL" /></translation>
+<translation id="3639613635497528239">残りの再生時間（秒）</translation>
 <translation id="3706100364254443312">切り替え</translation>
 <translation id="3732799496749320381">月</translation>
 <translation id="3785482301506746191">シークバー</translation>
@@ -127,6 +128,7 @@
 <translation id="6404546809543547843">オーディオ再生バー</translation>
 <translation id="648732519525291180">時間選択ツール</translation>
 <translation id="658823671542763450">全画面表示</translation>
+<translation id="663493177488814956">フィード</translation>
 <translation id="6637586476836377253">ログ</translation>
 <translation id="6643016212128521049">クリア</translation>
 <translation id="6663448176199120256">最近の検索</translation>

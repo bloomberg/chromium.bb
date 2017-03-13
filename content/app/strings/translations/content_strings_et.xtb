@@ -64,6 +64,7 @@
 <translation id="3450233048674729344">Väärtus peab olema väiksem või võrdne <ph name="MAXIMUM" />-ga.</translation>
 <translation id="3486220673238053218">definitsioon</translation>
 <translation id="3557673793733683882">päis <ph name="HEADING_LEVEL" /></translation>
+<translation id="3639613635497528239">filmi järelejäänud aeg sekundites</translation>
 <translation id="3706100364254443312">lüliti</translation>
 <translation id="3732799496749320381">kk</translation>
 <translation id="3785482301506746191">video ajakursor</translation>
@@ -127,6 +128,7 @@
 <translation id="6404546809543547843">heli ajamõõdik</translation>
 <translation id="648732519525291180">kellaaja valija</translation>
 <translation id="658823671542763450">kuvamine täisekraanil</translation>
+<translation id="663493177488814956">voog</translation>
 <translation id="6637586476836377253">logi</translation>
 <translation id="6643016212128521049">Tühjenda</translation>
 <translation id="6663448176199120256">Viimased otsingud</translation>

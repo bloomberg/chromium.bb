@@ -340,6 +340,21 @@
       Om HardwareAccelerationModeEnabled är inställd på falskt ignoreras Disable3DAPIs och det motsvarar att Disable3DAPIs är inställd på sant.</translation>
 <translation id="2168397434410358693">Inaktivitetstid när enheten är ansluten till elnätet</translation>
 <translation id="2170233653554726857">Aktivera WPAD-optimering</translation>
+<translation id="2176565653304920879">När den här principen har ställts in fungerar den automatiska identifieringen av tidszon på något av följande sätt beroende på vilken inställning som har valts:
+
+      Med inställningen TimezoneAutomaticDetectionUsersDecide kan användarna bestämma om tidszonen ska identifieras automatiskt via de vanliga valmöjligheterna i chrome://settings.
+
+      Med inställningen TimezoneAutomaticDetectionDisabled inaktiveras valmöjligheterna i chrome://settings. Automatisk identifiering av tidszon är alltid inaktiverat.
+
+      Med inställningen TimezoneAutomaticDetectionIPOnly inaktiveras valmöjligheterna i chrome://settings. Automatisk identifiering av tidszon är alltid aktiverat. Platsen fastställs endast med hjälp av IP när tidszonen identifieras.
+
+      Med inställningen TimezoneAutomaticDetectionSendWiFiAccessPoints inaktiveras valmöjligheterna i chrome://settings. Automatisk identifiering av tidszon är alltid aktiverat. Listan med synliga Wi-Fi-åtkomstpunkter skickas alltid till servern för Geolocation API så att tidszonen ska kunna identifieras med hög precision.
+
+      Med inställningen TimezoneAutomaticDetectionSendAllLocationInfo inaktiveras valmöjligheterna i chrome://settings. Automatisk identifiering av tidszon är alltid aktiverat. Platsinformation (som Wi-Fi-åtkomstpunkter, åtkomliga mobilmaster, GPS) skickas till en server så att tidszonen ska kunna identifieras med hög precision.
+
+      Om principen inte har ställts in fungerar det på samma sätt som med inställningen TimezoneAutomaticDetectionUsersDecide.
+
+      Om principen SystemTimezone har ställts in har den företräde framför den här principen. I så fall inaktiveras automatisk identifiering av tidszon helt.</translation>
 <translation id="2178899310296064282">Tillämpa minst medelbegränsat läge på YouTube</translation>
 <translation id="2183294522275408937">Inställningen styr hur ofta låsskärmen ska begära att lösenordet anges för att snabb upplåsning ska användas. Snabb upplåsning blir inte tillgänglig när låsskärmen visas om du översteg inställningen senaste gången du angav lösenordet. Om användaren har låsskärmen öppen längre än den här tidsperioden krävs ett lösenord nästa gång användaren anger fel kod eller när låsskärmen visas på nytt.
 
@@ -1480,6 +1495,12 @@
           Om policyn inte anges används AskNotifications och användaren kan ändra inställningen.</translation>
 <translation id="538108065117008131">Tillåt att <ph name="PRODUCT_FRAME_NAME" /> hanterar följande innehållstyper.</translation>
 <translation id="5388730678841939057">Väljer den strategi som används för att frigöra diskutrymme under automatisk rensning (föråldrad).</translation>
+<translation id="5392172595902933844">Android-statusrapporter skickas till servern.
+
+      Om principen har ställts in på falskt eller lämnats utan värde skickas ingen statusinformation.
+      Om principen har ställts in på sant skickas statusinformation.
+
+      Principen gäller bara om Android-appar har aktiverats.</translation>
 <translation id="5395271912574071439">Aktiverar avskärmning av fjärråtkomstvärdar när en anslutning har upprättats.
 
           Om den här inställningen är aktiverad inaktiveras värdens fysiska indata- och utadataenheter när en fjärranslutning har upprättats.
@@ -2450,6 +2471,7 @@
 <translation id="7937766917976512374">Tillåta eller neka videoinspelning</translation>
 <translation id="7941975817681987555">Förutsäg inte nätverksåtgärder för någon nätverksanslutning</translation>
 <translation id="7953256619080733119">Värdar för hanterade användares manuella undantag</translation>
+<translation id="7965394584578183156">Skicka alltid Wi-Fi-åtkomstpunkter till servern medan tidszon fastställs.</translation>
 <translation id="7971839631300653352">SSL 3.0</translation>
 <translation id="7974114691960514888">Policyn stöds inte längre.
           Gör att STUN och reläservrar kan användas för att ansluta till en fjärrklient.
@@ -2616,6 +2638,7 @@
 <translation id="8390049129576938611">Inaktiverar den interna PDF-läsaren i <ph name="PRODUCT_NAME" />. PDF-filer behandlas i stället som nedladdningar så att användaren kan öppna dem med standardappen.
 
       Om den här principen inte anges eller är inaktiverad öppnas PDF-filer med PDF-pluginprogrammet såvida användaren inte inaktiverar det.</translation>
+<translation id="8398203849316312944">Skicka alltid tillgängliga platssignaler till servern medan tidszon fastställs.</translation>
 <translation id="8402079500086185021">Öppna alltid PDF-filer med en extern app</translation>
 <translation id="8412312801707973447">Anger huruvida OCSP/CRL-onlinekontroller ska utföras</translation>
 <translation id="8413348101535146315">Gör det möjligt att avsluta aktiviteter i Aktivitetshanteraren i <ph name="PRODUCT_NAME" />.

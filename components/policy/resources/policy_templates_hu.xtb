@@ -327,6 +327,21 @@
       Ha a HardwareAccelerationModeEnabled értéke false (hamis), a rendszer figyelmen kívül hagyja a Disable3DAPIs értékét, ami megegyezik azzal, mintha a Disable3DAPIs értéke true (igaz) lenne.</translation>
 <translation id="2168397434410358693">Tétlenség késleltetése hálózati áramról való működés során</translation>
 <translation id="2170233653554726857">A WPAD-optimalizálás engedélyezése</translation>
+<translation id="2176565653304920879">Ha be van állítva ez a házirend, akkor az automatikus időzóna-érzékelési folyamat az alábbi módok valamelyikén történik a beállítás értékétől függően:
+
+      A TimezoneAutomaticDetectionUsersDecide beállítás esetén a felhasználók normál módon állíthatják be az időzóna automatikus érzékelését a chrome://settings oldalon.
+
+      A TimezoneAutomaticDetectionDisabled beállítás esetén le vannak tiltva az automatikus időzóna-érzékelésre vonatkozó beállítások a chrome://settings oldalon. Ezzel a beállítással a rendszer soha nem érzékeli automatikusan az időzónát.
+
+      A TimezoneAutomaticDetectionIPOnly beállítás esetén az időzóna-beállítások le vannak tiltva a chrome://settings oldalon. Ezzel a beállítással a rendszer mindig automatikusan érzékeli az időzónát. Az időzóna-érzékelés csak IP-címen alapuló módszert használ a hely meghatározásához.
+
+      A TimezoneAutomaticDetectionSendWiFiAccessPoints beállítás esetén az időzóna-beállítások le vannak tiltva a chrome://settings oldalon. Ezzel a beállítással a rendszer mindig automatikusan érzékeli az időzónát. Az időzóna pontos érzékelése érdekében a rendszer minden esetben elküldi a látható Wi-Fi hozzáférési pontok listáját a Geolocation API szerver felé.
+
+      A TimezoneAutomaticDetectionSendAllLocationInfo beállítás esetén az időzóna-beállítások le vannak tiltva a chrome://settings oldalon. Ezzel a beállítással a rendszer mindig automatikusan érzékeli az időzónát. Az időzóna pontosabb érzékelése érdekében a rendszer továbbítja a helyadatokat (például a Wi-Fi hozzáférési pontokat, az elérhető adótornyokat és a GPS-adatokat) az egyik szervernek.
+
+      Ha nincs beállítva ez a házirend, akkor úgy viselkedik, mintha a TimezoneAutomaticDetectionUsersDecide házirend lenne beállítva.
+
+      Ha be van állítva a SystemTimezone házirend, akkor felülbírálja ezt a házirendet. Ebben az esetben teljes mértékben le van tiltva az időzóna automatikus érzékelése.</translation>
 <translation id="2178899310296064282">Legalább mérsékelt Korlátozott mód kényszerítése a YouTube-on</translation>
 <translation id="2183294522275408937">Ez a beállítás azt szabályozza, hogy a lezárási képernyő milyen gyakran kéri jelszó megadását a gyorsfeloldás használatának folytatásához. Amikor megnyitja a lezárási képernyőt, a gyorsfeloldás nem áll rendelkezésre, ha az utolsó jelszó megadása az itt beállított időtartamnál régebben történt. Ha a felhasználó az adott időtartamnál tovább marad a lezárási képernyőn, a program jelszót kér a legközelebbi alkalommal, amikor a felhasználó rossz kódot ír be, vagy újra megnyitja a lezárási képernyőt, attól függően, melyik következik be előbb.
 
@@ -1376,6 +1391,13 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 <translation id="5378985487213287085">Meghatározhatja, hogy a weboldalak megjeleníthessenek-e asztali értesítéseket. Az asztali értesítések megjelenítése lehet alapértelmezés szerint engedélyezett, alapértelmezés szerint tiltott, vagy megkérdezheti a felhasználót minden alkalommal, amikor egy webhely asztali értesítéseket kíván megjeleníteni. Ha a házirend konfigurálatlanul marad, a rendszer az "AskNotifications" értéket használja, amelyet a felhasználó módosíthat.</translation>
 <translation id="538108065117008131">A következő tartalomtípusok kezelésének engedélyezése a <ph name="PRODUCT_FRAME_NAME" /> számára.</translation>
 <translation id="5388730678841939057">Kiválasztja az automatikus megtisztítás során a lemezterület felszabadításához használt stratégiát (elavult)</translation>
+<translation id="5392172595902933844">Információk küldése az Android állapotáról a
+      szervernek.
+
+      Ha a házirend értéke hamis vagy nincs megadva, akkor nem készül jelentés az állapotadatokról.
+      Ha a beállítás igaz, az állapotadatokról jelentés készül.
+
+      A házirend csak akkor van érvényben, ha engedélyezve vannak az Android-alkalmazások.</translation>
 <translation id="5395271912574071439">Engedélyezi a távoli hozzáférésű gazdagépek lefüggönyözését, miközben kapcsolat van folyamatban.
 
           Ha engedélyezve van ez a beállítás, akkor a gazdagép fizikai be- és kimeneti eszközei a távoli kapcsolat folyamán le vannak tiltva.
@@ -2290,6 +2312,7 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 <translation id="7937766917976512374">Videorögzítés engedélyezése vagy tiltása</translation>
 <translation id="7941975817681987555">A hálózati műveletek előrejelzése semmilyen hálózaton ne történjen meg</translation>
 <translation id="7953256619080733119">Felügyelt felhasználó manuális kivételi gazdagépei</translation>
+<translation id="7965394584578183156">Mindig elküldi a Wi-Fi hozzáférési pontokat a szervernek az időzóna meghatározása során.</translation>
 <translation id="7971839631300653352">SSL 3.0</translation>
 <translation id="7974114691960514888">Ez a házirend már nem támogatott. Távoli ügyfélhez való csatlakozáskor lehetővé teszi a STUN és továbbítószerverek használatát. Ha ez a beállítás engedélyezett, akkor ez a gép láthatja a távoli szervereket, és csatlakozni is tud hozzájuk, még akkor is, ha tűzfal választja el őket. Amennyiben ez a lehetőség ki van kapcsolva, és a tűzfal szűri a kimenő UDP-kapcsolatokat, akkor ez a gép csak a helyi hálózaton belül található szerverekhez tud csatlakozni.</translation>
 <translation id="7986374692540430898">Az Android-alkalmazások nem kényszeríthetők proxy használatára. A proxybeállítások egy része hozzáférhető az Android-alkalmazások számára is, amelyek aztán saját belátásuk szerint vesznek figyelembe. Részletesebb tájékoztatásért lásd: <ph name="PROXY_MODE_POLICY" />.</translation>
@@ -2443,6 +2466,7 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 <translation id="8390049129576938611">Kikapcsolja a belső PDF-olvasót a(z) <ph name="PRODUCT_NAME" /> termékben. Ehelyett letöltésként kezeli, és engedélyezi a felhasználó számára PDF-fájlok megnyitását az alapértelmezett alkalmazással.
 
       Ha a házirend nincs megadva vagy ki van kapcsolva, a rendszer a PDF beépülő modult használja a PDF-fájlok megnyitásához, kivéve, ha a felhasználó letiltja ezt.</translation>
+<translation id="8398203849316312944">Mindig elküldi a rendelkezésre álló helyjeleket a szervernek az időzóna meghatározása során.</translation>
 <translation id="8402079500086185021">A PDF-fájlok megnyitása mindig külsőleg történjen</translation>
 <translation id="8412312801707973447">Végbemenjenek-e online OCSP-/CRL-ellenőrzések</translation>
 <translation id="8413348101535146315">Lehetővé teszi a folyamatok befejezését a <ph name="PRODUCT_NAME" /> Folyamatkezelőjében.

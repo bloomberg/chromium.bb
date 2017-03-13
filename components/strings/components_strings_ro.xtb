@@ -104,6 +104,7 @@
 <translation id="1962204205936693436">Marcaje <ph name="DOMAIN" /></translation>
 <translation id="1973335181906896915">Eroare de serializare</translation>
 <translation id="1974060860693918893">Avansate</translation>
+<translation id="1978555033938440688">Versiune de firmware</translation>
 <translation id="2001146170449793414">{COUNT,plural, =1{și încă una}few{și încă #}other{și încă #}}</translation>
 <translation id="2020194265157481222">Numele de pe card este obligatoriu</translation>
 <translation id="2025186561304664664">Proxy-ul este setat la Configurat automat.</translation>
@@ -450,6 +451,7 @@
 <translation id="5359637492792381994">Acest server nu a putut dovedi că este <ph name="DOMAIN" />. Momentan, certificatul său de securitate nu este valid. Cauza poate fi o eroare de configurare sau interceptarea conexiunii de către un atacator. <ph name="BEGIN_LEARN_MORE_LINK" />Află mai multe<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="536296301121032821">Setările pentru politică nu au putut fi stocate</translation>
 <translation id="5386426401304769735">Lanțul de certificate pentru acest site conține un certificat semnat folosind SHA-1.</translation>
+<translation id="5402410679244714488">Expirat în <ph name="EXPIRATION_DATE_ABBR" />, folosit ultima dată acum peste un an</translation>
 <translation id="5421136146218899937">Șterge datele de navigare...</translation>
 <translation id="5430298929874300616">Elimină marcajul</translation>
 <translation id="5431657950005405462">Fișierul nu a fost găsit</translation>
@@ -536,6 +538,7 @@
 <translation id="6282194474023008486">Cod poștal</translation>
 <translation id="6290238015253830360">Articolele sugerate apar aici</translation>
 <translation id="6305205051461490394">Adresa URL <ph name="URL" /> nu poate fi accesată.</translation>
+<translation id="6319915415804115995">Folosit ultima dată acum peste un an</translation>
 <translation id="6321917430147971392">Verificați setările DNS</translation>
 <translation id="6328639280570009161">Încercați să dezactivați anticiparea rețelei</translation>
 <translation id="6328786501058569169">Acest site este înșelător</translation>

@@ -323,6 +323,21 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
       Se HardwareAccelerationModeEnabled é definida como "false", Disable3DAPIs é ignorada. Isso equivale a definir Disable3DAPIs como "true".</translation>
 <translation id="2168397434410358693">Intervalo de inatividade no funcionamento com alimentação CA</translation>
 <translation id="2170233653554726857">Ativar otimização WPAD</translation>
+<translation id="2176565653304920879">Quando esta política é definida, o fluxo de detecção automática de fuso horário acontece de uma das seguintes formas, dependendo do valor da configuração:
+
+      Se definida para TimezoneAutomaticDetectionUsersDecide, os usuários poderão controlar a detecção automática de fuso horário usando controles normais em chrome://settings.
+
+      Se definida para TimezoneAutomaticDetectionDisabled, os controles de fuso horário automático em chrome://settings serão desativados. A detecção automática de fuso horário ficará sempre desativada.
+
+      Se definida para TimezoneAutomaticDetectionIPOnly, os controles de fuso horário em chrome://settings serão desativados. A detecção automática de fuso horário ficará sempre ativada. A detecção de fuso horário usará o método "somente IP" para determinar o local.
+
+      Se definida para TimezoneAutomaticDetectionSendWiFiAccessPoints, os controles de fuso horário em chrome://settings serão desativados. A detecção automática de fuso horário ficará sempre ativada. A lista de pontos de acesso Wi-Fi visíveis sempre será enviada ao servidor da API de geolocalização para garantir uma detecção de fuso horário refinada.
+
+      Se esta política for definida para TimezoneAutomaticDetectionSendAllLocationInfo, os controles de fuso horário em chrome://settings serão desativados. A detecção automática de fuso horário ficará sempre ativada. As informações de local (como pontos de acesso Wi-Fi, torres de celular acessíveis, GPS) serão enviadas a um servidor para garantir uma detecção de fuso horário refinada.
+
+      Se esta política não for definida, ela se comportará como se TimezoneAutomaticDetectionUsersDecide estivesse definida.
+
+      Se a política SystemTimezone for definida, ela substituirá esta política. Nesse caso, a detecção automática de fuso horário será completamente desativada.</translation>
 <translation id="2178899310296064282">Aplicar pelo menos o Modo restrito moderado no YouTube</translation>
 <translation id="2183294522275408937">Esta configuração controla com que frequência a tela de bloqueio solicitará que a senha seja informada para continuar usando o desbloqueio rápido. Se a senha tiver sido informada pela última vez em uma data fora do período dessa configuração, o desbloqueio rápido não estará disponível ao acessar a tela de bloqueio. Se o usuário ficar na tela de bloqueio após esse período, uma senha será solicitada na próxima vez que ele informar o código errado ou acessar novamente a tela de bloqueio, o que ocorrer primeiro.
 
@@ -1365,6 +1380,13 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 <translation id="5378985487213287085">Permite que você defina se os websites são autorizados a exibir notificações na área de trabalho. A exibição de notificações na área de trabalho pode ser autorizada ou recusada por padrão ou o usuário pode ser solicitado a autorizar todas as vezes em que um website desejar exibir notificações na área de trabalho. Se esta política for deixada sem definição, a política "AskNotifications" será utilizada, podendo ser modificada pelo usuário.</translation>
 <translation id="538108065117008131">Permitir que o <ph name="PRODUCT_FRAME_NAME" /> lide com os seguintes tipos de conteúdo.</translation>
 <translation id="5388730678841939057">Seleciona a estratégia usada para liberar espaço em disco durante a limpeza automática (obsoleta)</translation>
+<translation id="5392172595902933844">As informações sobre o status do Android são enviadas de volta para o
+      servidor.
+
+      Se a política for definida como "false" ou não for configurada, nenhuma informação de status será enviada.
+      Se for definida como "true", as informações de status serão enviadas.
+
+      Esta política se aplicará somente se os apps Android estiverem ativados.</translation>
 <translation id="5395271912574071439">Ativa as cortinas de hosts de acesso remoto enquanto uma conexão está em andamento. Se essa configuração for ativada, os dispositivos de entrada e saída físicas dos hosts serão desativados enquanto houver uma conexão remota em andamento. Se essa configuração for desativada ou não estiver definida, os usuários locais e remotos poderão interagir com o host quando ele estiver sendo compartilhado.</translation>
 <translation id="5423001109873148185">Caso ativada, esta política força mecanismos de pesquisa a serem importados do navegador padrão atual. Se ativada, esta política também afeta a caixa de diálogo de importação. Caso seja desativada, o mecanismo de pesquisa padrão não é importado. Se não for definida, o usuário pode ser solicitado a responder se deseja importar ou permitir a importação automática.</translation>
 <translation id="5423197884968724595">Nome de restrição do Android WebView:</translation>

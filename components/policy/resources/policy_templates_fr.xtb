@@ -340,6 +340,21 @@ Si ce paramètre n'est pas défini, les utilisateurs peuvent ouvrir normalement 
       Si la règle HardwareAccelerationModeEnabled est définie sur "False", la règle Disable3DAPIs est ignorée, ce qui équivaut à définir Disable3DAPIs sur "True".</translation>
 <translation id="2168397434410358693">Délai d'inactivité (secteur)</translation>
 <translation id="2170233653554726857">Activer l'optimisation WPAD</translation>
+<translation id="2176565653304920879">Lorsque cette règle est configurée, le mode de détection automatique du fuseau horaire dépend de la valeur définie :
+
+      TimezoneAutomaticDetectionUsersDecide : les utilisateurs peuvent contrôler la détection automatique du fuseau horaire à l'aide des commandes classiques disponibles dans chrome://settings
+
+     TimezoneAutomaticDetectionDisabled : les commandes automatiques de fuseau horaire disponibles dans chrome://settings sont désactivées. La détection automatique du fuseau horaire est dans ce cas toujours désactivée.
+
+      TimezoneAutomaticDetectionIPOnly : les commandes de fuseau horaire disponibles dans chrome://settings sont désactivées. La détection automatique du fuseau horaire est dans ce cas toujours activée. Elle utilise une méthode reposant exclusivement sur l'adresse IP pour mettre à jour la position.
+
+      TimezoneAutomaticDetectionSendWiFiAccessPoints : les commandes de fuseau horaire disponibles dans chrome://settings sont désactivées. La détection automatique du fuseau horaire est dans ce cas toujours activée. La liste des points d'accès Wi-Fi visibles est toujours transmise au serveur de l'API Geolocation pour une détection de fuseau horaire plus précise.
+
+      TimezoneAutomaticDetectionSendAllLocationInfo : les commandes de fuseau horaire disponibles dans chrome://settings sont désactivées. La détection automatique du fuseau horaire est dans ce cas toujours activée. Les informations de localisation (comme les points d'accès Wi-Fi, les antennes relais accessibles et les données GPS) sont transmises à un serveur pour une détection de fuseau horaire plus précise.
+
+      Si cette règle n'est pas configurée, elle est appliquée comme si la valeur TimezoneAutomaticDetectionUsersDecide était définie.
+
+      Si la règle SystemTimezone est configurée, elle remplace celle-ci. La détection automatique du fuseau horaire est alors totalement désactivée.</translation>
 <translation id="2178899310296064282">Appliquer au moins le mode restreint modéré sur YouTube</translation>
 <translation id="2183294522275408937">Ce paramètre définit la fréquence à laquelle l'utilisateur sera invité à saisir le mot de passe dans l'écran de verrouillage pour pouvoir continuer à utiliser le déverrouillage rapide. Chaque fois que l'écran de verrouillage est activé, si la dernière saisie du mot de passe est antérieure à ce paramètre, le déverrouillage rapide n'est pas disponible. Si l'utilisateur reste sur l'écran de verrouillage au-delà de cette période, il sera invité à saisir un mot de passe la prochaine fois qu'il indiquera un code erroné ou accédera à nouveau à l'écran de verrouillage, selon l'événement qui survient en premier.
 
@@ -1489,6 +1504,12 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
 Si cette règle n'est pas configurée, le paramètre "AskNotifications" est utilisé et l'utilisateur est en mesure de le modifier.</translation>
 <translation id="538108065117008131">Autoriser <ph name="PRODUCT_FRAME_NAME" /> à gérer les types de contenus suivants.</translation>
 <translation id="5388730678841939057">Sélectionner la stratégie utilisée pour libérer de l'espace disque au cours du nettoyage automatique</translation>
+<translation id="5392172595902933844">Cette règle renvoie au serveur des informations sur l'état d'Android.
+
+      Si cette règle est définie sur "False" ou si elle n'est pas configurée, les informations sur l'état ne sont pas transmises.
+      Si cette règle est définie sur "True", les informations sur l'état sont transmises.
+
+      Cette règle ne s'applique que si les applications Android sont activées.</translation>
 <translation id="5395271912574071439">Active la protection des hôtes d'accès à distance lorsqu'une connexion est en cours.
 
           En cas d'activation de ce paramètre, les appareils d'entrée et de sortie physiques des hôtes sont désactivés tant qu'une connexion est en cours.
@@ -2459,6 +2480,7 @@ Si cette règle n'est pas configurée, la valeur par défaut globale est utilis�
 <translation id="7937766917976512374">Autoriser ou interdire la capture vidéo</translation>
 <translation id="7941975817681987555">Ne pas prédire d'actions réseau lors d'une connexion au réseau</translation>
 <translation id="7953256619080733119">Hôtes d'exception manuelle des utilisateurs gérés</translation>
+<translation id="7965394584578183156">Toujours transmettre les points d'accès Wi-Fi au serveur tout en mettant à jour le fuseau horaire</translation>
 <translation id="7971839631300653352">SSL 3.0</translation>
 <translation id="7974114691960514888">Cette règle n'est plus disponible. 
 Permet l'utilisation de serveurs STUN et relais lors de la connexion à un client distant. 
@@ -2625,6 +2647,7 @@ Si ce paramètre n'est pas défini, l'utilisateur peut décider d'utiliser cette
 <translation id="8390049129576938611">Désactive la visionneuse de documents PDF intégrée dans <ph name="PRODUCT_NAME" />. Les fichiers PDF sont alors traités comme des téléchargements que l'utilisateur peut ouvrir avec l'application par défaut.
 
       Si cette règle n'est pas définie ou si elle est désactivée, le plug-in PDF est utilisé pour ouvrir les fichiers PDF, sauf si l'utilisateur le désactive.</translation>
+<translation id="8398203849316312944">Toujours transmettre les signaux de localisation disponibles au serveur tout en mettant à jour le fuseau horaire</translation>
 <translation id="8402079500086185021">Toujours ouvrir les fichiers PDF en externe</translation>
 <translation id="8412312801707973447">Si des contrôles OCSP/CRL en ligne sont effectués</translation>
 <translation id="8413348101535146315">Permet de mettre fin aux processus dans le gestionnaire des tâches de <ph name="PRODUCT_NAME" />.

@@ -27,6 +27,7 @@ You must have Bluetooth and Location turned on in order to use the Physical Web.
 <translation id="124678866338384709">Close current tab</translation>
 <translation id="1258753120186372309">Google doodle: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1272079795634619415">Stop</translation>
+<translation id="1283039547216852943">Tap to expand</translation>
 <translation id="1285320974508926690">Never translate this site</translation>
 <translation id="1291207594882862231">Clear history, cookies, site data, cache…</translation>
 <translation id="129553762522093515">Recently closed</translation>
@@ -82,6 +83,7 @@ You must have Bluetooth and Location turned on in order to use the Physical Web.
 <translation id="1825719650605518411">First Run Experience</translation>
 <translation id="1829244130665387512">Find in page</translation>
 <translation id="1832521218263067499">Security incidents</translation>
+<translation id="1841591888176896630">%1$s Chrome suggestions</translation>
 <translation id="1853692000353488670">New incognito tab</translation>
 <translation id="189172778771606813">Close navigation drawer</translation>
 <translation id="1933845786846280168">Selected Tab</translation>
@@ -113,7 +115,6 @@ You must have Bluetooth and Location turned on in order to use the Physical Web.
 <translation id="219985413780390209">Protect you and your device from dangerous sites</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, web app. <ph name="APP_URL" /></translation>
 <translation id="2268044343513325586">Refine</translation>
-<translation id="2279474006916349339">All Chrome's app data will be deleted permanently. This includes all files, settings, accounts, databases, etc.</translation>
 <translation id="2286841657746966508">Billing address</translation>
 <translation id="2315043854645842844">Client side certificate selection is not supported by the operating system.</translation>
 <translation id="2321958826496381788">Drag the slider until you can read this comfortably. Text should look at least this big after double-tapping on a paragraph.</translation>
@@ -145,7 +146,6 @@ You must have Bluetooth and Location turned on in order to use the Physical Web.
 <translation id="2587052924345400782">Newer version is available</translation>
 <translation id="2593272815202181319">Monospace</translation>
 <translation id="2621115761605608342">Allow JavaScript for a specific site.</translation>
-<translation id="2646820313617290661">Your parents help manage these settings.</translation>
 <translation id="2653659639078652383">Submit</translation>
 <translation id="2677748264148917807">Leave</translation>
 <translation id="2704606927547763573">Copied</translation>
@@ -256,6 +256,7 @@ To adjust your search term, long press to select. To refine your search, slide t
 <translation id="393697183122708255">No enabled voice search available</translation>
 <translation id="3946611741043634542">By continuing, you agree to Chrome’s <ph name="BEGIN_LINK1" />Terms of Service<ph name="END_LINK1" /> and <ph name="BEGIN_LINK2" />Privacy Notice<ph name="END_LINK2" />.</translation>
 <translation id="3950820424414687140">Sign in</translation>
+<translation id="395922942268463099">Pages updated regularly</translation>
 <translation id="3967822245660637423">Download complete</translation>
 <translation id="397583555483684758">Sync has stopped working</translation>
 <translation id="3985215325736559418">Do you want to download <ph name="FILE_NAME" /> again?</translation>
@@ -316,7 +317,6 @@ To adjust your search term, long press to select. To refine your search, slide t
 <translation id="4686372254213217147">Original size</translation>
 <translation id="4698413471314543145">Critical functionality required to run Chrome is missing; either your Chrome installation is incomplete or not compatible with this version of Android.</translation>
 <translation id="4699172675775169585">Cached images and files</translation>
-<translation id="4710672574193412565">Add a Google account from the accounts page in your device's Settings app.</translation>
 <translation id="4714588616299687897">Save up to 60% of your data</translation>
 <translation id="4720023427747327413">Open in <ph name="PRODUCT_NAME" /></translation>
 <translation id="4730876730346568982">You are switching sync accounts from <ph name="ACCOUNT_EMAIL_OLD" /> to <ph name="ACCOUNT_EMAIL_NEW" />. Your existing Chrome data is managed by <ph name="MANAGED_DOMAIN" />. This will delete your data from this device, but your data will remain in <ph name="ACCOUNT_EMAIL_OLD" />.</translation>
@@ -337,6 +337,7 @@ To adjust your search term, long press to select. To refine your search, slide t
 <translation id="4862624982077154323">On some websites, you can pay with supported payment apps. Choose which apps to use in Chrome.</translation>
 <translation id="4881695831933465202">Open</translation>
 <translation id="4885273946141277891">Unsupported number of Chrome instances.</translation>
+<translation id="490442468485962363">Open in Chrome incognito tab</translation>
 <translation id="4910889077668685004">Payment apps</translation>
 <translation id="4915549754973153784"><ph name="BEGIN_LINK" />Get help<ph name="END_LINK" /> while scanning for devices…</translation>
 <translation id="4943872375798546930">No results</translation>
@@ -448,6 +449,7 @@ However, you aren't invisible. Going incognito doesn't hide your browsing from y
 <translation id="5939518447894949180">Reset</translation>
 <translation id="5942872142862698679">Using Google for search</translation>
 <translation id="5956665950594638604">Open the Chrome Help Centre in a new tab</translation>
+<translation id="5962718611393537961">Tap to collapse</translation>
 <translation id="6000066717592683814">Keep Google</translation>
 <translation id="6010869025736512584">Accessing video input</translation>
 <translation id="6012342843556706400">Chrome needs location access to share it with this site.</translation>
@@ -458,7 +460,6 @@ However, you aren't invisible. Going incognito doesn't hide your browsing from y
 <translation id="604996488070107836"><ph name="FILE_NAME" /> download failed due to an unknown error.</translation>
 <translation id="605721222689873409">YY</translation>
 <translation id="6075798973483050474">Edit home page</translation>
-<translation id="6078323886959318429">Add shortcut</translation>
 <translation id="60923314841986378"><ph name="HOURS" /> hours left</translation>
 <translation id="6108923351542677676">Setup in progress…</translation>
 <translation id="6112702117600201073">Refreshing page</translation>
@@ -584,7 +585,6 @@ Your Google account may have other forms of browsing history like searches and a
 <translation id="7498271377022651285">Please wait…</translation>
 <translation id="7514365320538308">Download</translation>
 <translation id="7521387064766892559">JavaScript</translation>
-<translation id="753693763123565012">That's all for now</translation>
 <translation id="7562080006725997899">Clear browsing data</translation>
 <translation id="756809126120519699">Cleared Chrome data</translation>
 <translation id="7588950540487816470">Physical web</translation>
@@ -603,7 +603,6 @@ Your Google account may have other forms of browsing history like searches and a
 <translation id="7658239707568436148">Cancel</translation>
 <translation id="7665369617277396874">Add account</translation>
 <translation id="7698359219371678927">Create email in <ph name="APP_NAME" /></translation>
-<translation id="771135159654932189">See what's nearby</translation>
 <translation id="7764225426217299476">Add address</translation>
 <translation id="7765158879357617694">Move</translation>
 <translation id="7769602470925380267">Accept and sign out</translation>
@@ -638,6 +637,7 @@ Your Google account may have other forms of browsing history like searches and a
 <translation id="8035133914807600019">New folder…</translation>
 <translation id="8037750541064988519"><ph name="DAYS" /> days left</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> MB available</translation>
+<translation id="8058746566562539958">Open in new Chrome tab</translation>
 <translation id="8063895661287329888">Failed to add bookmark.</translation>
 <translation id="806745655614357130">Keep my data separate</translation>
 <translation id="8068648041423924542">Unable to select certificate.</translation>

@@ -336,6 +336,21 @@ vastama ühele printeritest, mida <ph name="PRODUCT_NAME" /> toetab.
       Kui HardwareAccelerationModeEnabled on seatud väärtusele Väär, eiratakse atribuuti Disable3DAPIs, mis on võrdväärne atribuudi Disable3DAPIs seadmisega väärtusele Tõene.</translation>
 <translation id="2168397434410358693">Jõudeoleku viiteaeg võrgutoite kasutamisel</translation>
 <translation id="2170233653554726857">WPAD-optimeerimise lubamine</translation>
+<translation id="2176565653304920879">Kui reegel on määratud, toimib ajavööndi automaatse tuvastamise voog seade väärtusest olenevalt järgmisel moel.
+
+      Kui valitud on seade TimezoneAutomaticDetectionUsersDecide, saavad kasutajad ajavööndi automaatset tuvastamist jaotises chrome://settings tavapäraste juhtnuppude abil hallata.
+
+      Kui valitud on seade TimezoneAutomaticDetectionDisabled, keelatakse ajavööndi automaatsed juhtnupud jaotises chrome://settings. Ajavööndi automaatne tuvastamine on alati välja lülitatud.
+
+      Kui valitud on seade TimezoneAutomaticDetectionIPOnly, keelatakse ajavööndi juhtnupud jaotises chrome://settings. Ajavööndi automaatne tuvastamine on alati sisse lülitatud. Ajavööndi tuvastamise funktsioon kasutab asukoha lahendamiseks ainult IP-aadressil põhinevat meetodit.
+
+      Kui valitud on seade TimezoneAutomaticDetectionSendWiFiAccessPoints, keelatakse ajavööndi juhtnupud jaotises chrome://settings. Ajavööndi automaatne tuvastamine on alati sisse lülitatud. Nähtavate WiFi-pääsupunktide loend saadetakse ajavööndi täpseks tuvastamiseks alati asukoha määramise API serverisse.
+
+      Kui valitud on seade TimezoneAutomaticDetectionSendAllLocationInfo, keelatakse ajavööndi juhtnupud jaotises chrome://settings. Ajavööndi automaatne tuvastamine on alati sisse lülitatud. Asukohateave (nt WiFi-pääsupunktid, kättesaadavad mobiilimastid, GPS) saadetakse täpseks ajavööndi tuvastamiseks serverisse.
+
+      Kui reegel on määramata, käitub see, nagu oleks valitud seade TimezoneAutomaticDetectionUsersDecide.
+
+      Kui määratud on reegel SystemTimezone, alistab see selle reegli. Sel juhul keelatakse ajavööndi automaatne tuvastamine täielikult.</translation>
 <translation id="2178899310296064282">Jõusta YouTube'is vähemalt keskmiselt piiratud režiim</translation>
 <translation id="2183294522275408937">See seade juhib, kui sageli nõuab lukustuskuva parooli sisestamist, et kiiravamise kasutamist jätkata. Iga kord kui kuva lukustatakse ja parooli sisestamisest on möödunud kauem, kui on selle seade väärtus, pole kiiravamine lukustuskuval saadaval. Kui kasutaja on lukustuskuval sellest perioodist kauem, nõutakse parooli järgmisel korral, kui kasutaja sisestab vale koodi või aktiveerib uuesti lukustuskuva (olenevalt sellest, kumb enne juhtub).
 
@@ -1457,6 +1472,13 @@ vastama ühele printeritest, mida <ph name="PRODUCT_NAME" /> toetab.
           Kui jätate selle reegli määramata, siis kasutatakse reeglit „AskNotifications” ja kasutaja saab seda muuta.</translation>
 <translation id="538108065117008131">Teenusel <ph name="PRODUCT_FRAME_NAME" /> järgmist tüüpi sisu käsitsemise lubamine.</translation>
 <translation id="5388730678841939057">Valib automaatse puhastamise ajal kettaruumi vabastamiseks strateegia (pakkumine on peatatud)</translation>
+<translation id="5392172595902933844">Androidi olekuteave saadetakse tagasi
+      serverisse.
+
+      Kui reegel on määratud väärtusele Väär või see on määramata, siis olekuteavet ei edastata.
+      Kui reegel on määratud väärtusele Tõene, esitatakse olekuteavet.
+
+      See reegel kehtib ainult juhul, kui Androidi rakendused on lubatud.</translation>
 <translation id="5395271912574071439">Võimaldab ühenduse ajal varjata kaugjuurdepääsu hoste.
 
           Kui see seade on lubatud, siis on hostide füüsilised sisend- ja väljundseadmed kaugühenduse ajal keelatud.
@@ -2425,6 +2447,7 @@ vastama ühele printeritest, mida <ph name="PRODUCT_NAME" /> toetab.
 <translation id="7937766917976512374">Video jäädvustamise lubamine või keelamine</translation>
 <translation id="7941975817681987555">Ära ennusta võrgutoiminguid ühegi võrguühenduse puhul</translation>
 <translation id="7953256619080733119">Kasutaja käsitsi sisestatavate hostide erandite haldamine</translation>
+<translation id="7965394584578183156">Ajavööndi lahendamisel saadetakse WiFi-pääsupunktid alati serverisse.</translation>
 <translation id="7971839631300653352">SSL 3.0</translation>
 <translation id="7974114691960514888">Seda reeglit ei toetata enam.
           Lubab STUN-i ja vaheserverite kasutamise kaugkliendiga ühenduse loomisel.
@@ -2594,6 +2617,7 @@ vastama ühele printeritest, mida <ph name="PRODUCT_NAME" /> toetab.
 <translation id="8390049129576938611">Keelab sisemise PDF-vaaturi rakenduses <ph name="PRODUCT_NAME" />. Selle asemel koheldakse seda allalaadimisena ja kasutaja saab PDF-faile vaikerakendusega avada.
 
       Kui keelate reegli või jätate selle määramata, kasutatakse PDF-failide avamiseks PDF-i pistikprogrammi, välja arvatud juhul, kui kasutaja selle keelab.</translation>
+<translation id="8398203849316312944">Ajavööndi lahendamisel saadetakse saadaolevad asukohasignaalid alati serverisse.</translation>
 <translation id="8402079500086185021">Ava PDF-failid alati väliselt</translation>
 <translation id="8412312801707973447">Kontrolli võrgus OCSP-d/CRL-i</translation>
 <translation id="8413348101535146315">Lubab protsessid brauseri <ph name="PRODUCT_NAME" /> tegumihalduris lõpetada.

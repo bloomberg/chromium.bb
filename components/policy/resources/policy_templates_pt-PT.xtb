@@ -330,6 +330,21 @@
       Se a política HardwareAccelerationModeEnabled estiver definida como falsa, a política Disable3DAPIs é ignorada e é equivalente à definição da política Disable3DAPIs como verdadeira.</translation>
 <translation id="2168397434410358693">Atraso de inatividade quando o dispositivo está ligado à eletricidade</translation>
 <translation id="2170233653554726857">Ativar otimização WPAD</translation>
+<translation id="2176565653304920879">Quando esta política está definida, o fluxo da deteção automática do fuso horário é um dos seguintes, consoante o valor da definição:
+
+      Se estiver definida como TimezoneAutomaticDetectionUsersDecide, os utilizadores podem controlar a deteção automática do fuso horário ao utilizar controlos normais em chrome://settings.
+
+      Se estiver definida como TimezoneAutomaticDetectionDisabled, os controlos automáticos do fuso horário disponíveis em chrome://settings estão desativados. A deteção automática do fuso horário está sempre desativada.
+
+      Se estiver definida como TimezoneAutomaticDetectionIPOnly, os controlos do fuso horário disponíveis em chrome://settings estão desativados. A deteção automática do fuso horário está sempre ativada. A deteção do fuso horário utiliza o método apenas de IP para resolver a localização.
+
+      Se estiver definida como TimezoneAutomaticDetectionSendWiFiAccessPoints, os controlos do fuso horário disponíveis em chrome://settings estão desativados. A deteção automática do fuso horário está sempre ativada. A lista de pontos de acesso Wi-Fi visíveis é sempre enviada para o servidor da API de geolocalização, de modo a permitir a deteção precisa do fuso horário.
+
+      Se estiver definida como TimezoneAutomaticDetectionSendAllLocationInfo, os controlos automáticos do fuso horário disponíveis em chrome://settings estão desativados. A deteção automática do fuso horário está sempre ativada. As informações da localização (tal como pontos de acesso Wi-Fi, torres de difusão alcançáveis, GPS) serão enviadas para um servidor para uma deteção precisa do fuso horário.
+
+      Se esta política não estiver definida, o comportamento é o mesmo como se TimezoneAutomaticDetectionUsersDecide estivesse definido.
+
+      Se a política SystemTimezone estiver definida, substitui esta política. Nesse caso, a deteção automática do fuso horário está totalmente desativada.</translation>
 <translation id="2178899310296064282">Aplicar pelo menos o Modo restrito moderado no YouTube</translation>
 <translation id="2183294522275408937">Esta definição controla a frequência com que o ecrã de bloqueio solicita a introdução da palavra-passe para continuar a utilizar o desbloqueio rápido. Sempre que se acede ao ecrã de bloqueio, se a última introdução da palavra-passe tiver sido superior a esta definição, o desbloqueio rápido não estará disponível ao entrar no ecrã de bloqueio. Se o utilizador se mantiver no ecrã de bloqueio após este período de tempo, será solicitada uma palavra-passe da próxima vez que o utilizador introduzir o código errado ou voltar a aceder ao ecrã de bloqueio, o que ocorrer primeiro.
 
@@ -1380,6 +1395,13 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
 <translation id="5378985487213287085">Permite definir se os Web sites estão autorizados a apresentar notificações no ambiente de trabalho. A apresentação de notificações no ambiente de trabalho pode ser permitida por predefinição, negada por predefinição ou o utilizador pode ser questionado sempre que um Web site pretenda apresentar notificações no ambiente de trabalho. Se esta política não for definida, será utilizada a definição "AskNotifications" e o utilizador poderá alterá-la.</translation>
 <translation id="538108065117008131">Permitir que o <ph name="PRODUCT_FRAME_NAME" /> processe os seguintes tipos de conteúdo.</translation>
 <translation id="5388730678841939057">Seleciona a estratégia utilizada para libertar espaço no disco durante a limpeza automática (obsoleto)</translation>
+<translation id="5392172595902933844">As informações sobre o estado do Android são enviadas novamente para o
+      servidor.
+
+      Se a política estiver definida como falsa ou não definida, não são comunicadas quaisquer informações de estado.
+      Se estiver definida como verdadeira, são comunicadas informações de estado.
+
+      Esta política aplica-se apenas se as aplicações Android estiverem ativadas.</translation>
 <translation id="5395271912574071439">Ativa a proteção de anfitriões de acesso remoto enquanto existir uma ligação em progresso.
 
           Se esta definição estiver ativada, então, os dispositivos de entrada e saída físicos do anfitrião são desativados enquanto existir uma ligação remota em progresso.

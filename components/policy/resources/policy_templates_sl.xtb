@@ -335,6 +335,21 @@ Vrednost prilagoditve mora biti 100 % ali več.</translation>
       Če je pravilnik HardwareAccelerationModeEnabled onemogočen, se pravilnik Disable3DAPIs prezre in je enako, kot če je pravilnik Disable3DAPIs omogočen.</translation>
 <translation id="2168397434410358693">Časovni zamik nedejavnosti ob napajanju iz električnega omrežja</translation>
 <translation id="2170233653554726857">Omogočanje optimizacije za WPAD</translation>
+<translation id="2176565653304920879">Če je ta pravilnik nastavljen, je samodejno zaznavanje časovnega pasu odvisno od vrednosti nastavitve:
+
+      Če je nastavljen na TimezoneAutomaticDetectionUsersDecide, lahko uporabniki z običajnimi kontrolniki v chrome://settings nadzirajo samodejno zaznavanje časovnega pasu.
+
+      Če je nastavljen na TimezoneAutomaticDetectionDisabled, so kontrolniki za samodejno zaznavanje časovnega pasu v chrome://settings onemogočeni. Samodejno zaznavanje časovnega pasu je vedno izklopljeno.
+
+      Če je nastavljen na TimezoneAutomaticDetectionIPOnly, so kontrolniki za časovni pas v chrome://settings onemogočeni. Samodejno zaznavanje časovnega pasu je vedno vklopljeno. Pri zaznavanju časovnega pasu se za določanje lokacije uporablja samo IP.
+
+      Če je nastavljen na TimezoneAutomaticDetectionSendWiFiAccessPoints, so kontrolniki za časovni pas v chrome://settings onemogočeni. Samodejno zaznavanje časovnega pasu bo vedno vklopljeno. Seznam vidnih dostopnih točk Wi-Fi bo vedno poslan v strežnik API-ja za geolokacijo zaradi natančnega zaznavanja časovnega pasu.
+
+      Če je nastavljen na TimezoneAutomaticDetectionSendAllLocationInfo, so kontrolniki za časovni pas v chrome://settings onemogočeni. Samodejno zaznavanje časovnega pasu bo vedno vklopljeno. Podatki o lokaciji (na primer dostopne točke Wi-Fi, dosegljive bazne postaje, GPS) bodo poslani v strežnik zaradi natančnega zaznavanja časovnega pasu.
+
+      Če ta pravilnik ni nastavljen, deluje, kot da je nastavljena možnost TimezoneAutomaticDetectionUsersDecide.
+
+      Če je nastavljen pravilnik SystemTimezone, preglasi ta pravilnik. V tem primeru je samodejno zaznavanje časovnega pasu v celoti onemogočeno.</translation>
 <translation id="2178899310296064282">Uveljavitev vsaj Zmerno omejenega načina v YouTubu</translation>
 <translation id="2183294522275408937">Ta nastavitev nadzira, kako pogosto zaklenjeni zaslon zahteva vnos gesla, če želi uporabnik naprej uporabljati hitro odklepanje. Ob vsakem odpiranju zaklenjenega zaslona se preveri čas, ki je pretekel od zadnjega vnosa gesla – če presega to vrednost, ob odpiranju zaklenjenega zaslona hitro odklepanje ne bo na voljo. Če se uporabnik zadrži pri zaklenjenem zaslonu dlje od tega časovnega obdobja, bo od uporabnika zahtevano geslo, ko naslednjič vnese napačno kodo ali znova odpre zaklenjeni zaslon, kar koli se zgodi prej.
 
@@ -1474,6 +1489,13 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
           Če ta pravilnik ni nastavljen, bo uporabljen pravilnik »AskNotifications« in uporabnik bo lahko to spremenil.</translation>
 <translation id="538108065117008131">Dovoli, da <ph name="PRODUCT_FRAME_NAME" /> obravnava te vrste vsebine.</translation>
 <translation id="5388730678841939057">Izbere strategijo za sproščanje prostora na disku med samodejnim čiščenjem (zastarelo)</translation>
+<translation id="5392172595902933844">Podatki o stanju Androida se pošljejo nazaj v
+      strežnik.
+
+      Če je pravilnik onemogočen ali ni nastavljen, se podatki o stanju ne poročajo.
+      Če je omogočen, se podatki o stanju poročajo.
+
+      Ta pravilnik se uporabi samo, če so aplikacije za Android omogočene.</translation>
 <translation id="5395271912574071439">Omogoča zakrivanja gostiteljev za oddaljeni dostop, ko je vzpostavljena povezava.
 
           Če je ta nastavitev omogočena, so vhodne in izhodne naprave gostitelja onemogočene, ko je vzpostavljena povezava na daljavo.
@@ -2444,6 +2466,7 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 <translation id="7937766917976512374">Omogočanje ali onemogočanje snemanje videoposnetka</translation>
 <translation id="7941975817681987555">Ne predvidevaj omrežnih dejanj v nobeni omrežni povezavi</translation>
 <translation id="7953256619080733119">Gostitelji ročnih izjem za upravljanega uporabnika</translation>
+<translation id="7965394584578183156">Vedno pošlji dostopne točke Wi-Fi v strežnik pri določanju časovnega pasu.</translation>
 <translation id="7971839631300653352">SSL 3.0</translation>
 <translation id="7974114691960514888">Ta pravilnik ni več podprt.
           Omogoča uporabo strežnikov STUN in posredovalnih strežnikov pri povezovanju z oddaljenim odjemalcem.
@@ -2610,6 +2633,7 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 <translation id="8390049129576938611">V brskalniku <ph name="PRODUCT_NAME" /> onemogoči notranji pregledovalnik PDF-jev. Namesto tega datoteke PDF obravnava kot prenose in uporabniku omogoča njihovo odpiranje s privzeto aplikacijo.
 
       Če ta pravilnik ni nastavljen ali je onemogočen, se bo za odpiranje datotek PDF uporabljal vtičnik za PDF-je, razen če ga uporabnik onemogoči.</translation>
+<translation id="8398203849316312944">Vedno pošlji vse razpoložljive signale lokacije v strežnik pri določanju časovnega pasu.</translation>
 <translation id="8402079500086185021">Vedno odpri datoteke PDF v zunanjem pregledovalniku</translation>
 <translation id="8412312801707973447">Ali se izvaja spletni pregled OCSP/CRL</translation>
 <translation id="8413348101535146315">Omogoča procese prekinitve v upravitelju opravil izdelka <ph name="PRODUCT_NAME" />.

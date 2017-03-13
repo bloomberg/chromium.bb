@@ -327,6 +327,21 @@ Sera hii ikiondolewa, chaguo-msingi zitatumika kwa mipangilio yote.</translation
       Kipengee cha HardwareAccelerationModeEnabled kikiwekwa kuwa sivyo,  Disable3DAPIs hupuuzwa na ni sawa na Disable3DAPIs kuwekwa kuwa ndivyo.</translation>
 <translation id="2168397434410358693">Kutokuwa na shughuli kunachelewesha wakati wa kuendesha kwenye nishati ya AC</translation>
 <translation id="2170233653554726857">Washa uboreshaji wa WPAD</translation>
+<translation id="2176565653304920879">Sera hii ikiwekwa, mtiririko wa kugundua saa za eneo kiotomatiki utakuwa katika mojawapo wa njia zifuatazo kulingana na thamani ya mipangilio:
+
+      Ikiwekwa kuwa TimezoneAutomaticDetectionUsersDecide, watumiaji wataweza kudhibiti kipengee cha kugundua saa za eneo kiotomatiki kwa kutumia vidhibiti vya kawaida katika chrome://settings.
+
+      Ikiwekwa kuwa TimezoneAutomaticDetectionDisabled, vidhibiti vya kugundua  saa za eneo kiotomatiki katika chrome://settings vitazimwa. Kipengele cha kugundua saa za eneo kiotomatiki kitakuwa kimezimwa wakati wote.
+
+      Ikiwekwa kuwa TimezoneAutomaticDetectionIPOnly, vidhibiti vya saa za eneo katika chrome://settings vitazimwa. Kipengele cha kugundua saa za eneo kiotomatiki kitakuwa kimewashwa wakati wote. Kipengele cha kugundua saa za eneo kitatumia mbinu ya IP pekee kurekebisha suala la mahali.
+
+      Ikiwekwa kuwa TimezoneAutomaticDetectionSendWiFiAccessPoints, vidhibiti vya saa za eneo katika chrome://settings vitazimwa. Kipengele cha kugundua saa za eneo kiotomatiki kitakuwa kimewashwa wakati wote. Orodha ya maeneo ya kufikia WiFi yatatumwa kwenye seva ya API ya Kutambulisha Mahali Kila wakati kwa ugunduzi sahihi wa saa za eneo.
+
+     Ikiwekwa kuwa TimezoneAutomaticDetectionSendAllLocationInfo, vidhibiti vya saa za eneo katika chrome://settings vitazimwa. Kipengele cha kugundua saa za eneo kiotomatiki kitakuwa kimewashwa wakati wote. Maelezo ya eneo (kama vile maeneo ya kufikia WiFi, Minara inayoweza Kupokea mtandao, GPS) yatatumwa kwenye seva kwa ugunduzi sahihi wa saa za eneo.
+
+      Sera hii isipowekwa, itaonekana kama kwamba TimezoneAutomaticDetectionUsersDecide imewekwa.
+
+      Sera ya SystemTimezone ikiwekwa, itabatilisha sera hii. Katika hali hii kipengele cha ungunduzi wa saa za eneo kiotomatiki kitazimwa kabisa.</translation>
 <translation id="2178899310296064282">Tekeleza angalau Hali Yenye Mipaka Wastani kwenye YouTube</translation>
 <translation id="2183294522275408937">Mipangilio hii inadhibiti idadi ambayo skrini iliyofungwa itaomba nenosiri liwekwe ili uendelee kutumia kipengele cha kufungua haraka. Kila mara skrini iliyofungwa inapowekwa, iwapo nenosiri lililowekwa ni zaidi ya mipangilio hii, kipengele cha kufungua haraka hakitapatikana unapoingia kwenye skrini iliyofungwa. Ikiwa mtumiaji atakuwa kwenye skrini iliyofungwa kwa zaidi ya muda huu, ataombwa nenosiri wakati ujao akiweka nambari ya kuthibitisha ambayo si sahihi, au akiweka tena skrini iliyofungwa, chochote kitakachotokea kwanza.
 
@@ -1451,6 +1466,12 @@ Sera hii huathiri aina zote za vifaa vya kuingiza video na si tu kamera iliyojen
           Ikiwa sera hii itasalia kama haijawekwa,  'AskNotifications' itatumika na mtumiaji ataweza kuibadilisha.</translation>
 <translation id="538108065117008131">Ruhusu <ph name="PRODUCT_FRAME_NAME" /> kushughulikia aina zifuatazo za maudhui.</translation>
 <translation id="5388730678841939057">Huchagua mkakati unaotumiwa kufuta baadhi ya faili ili kuacha nafasi wakati wa kufuta kiotomatiki (imekosolewa)</translation>
+<translation id="5392172595902933844">Maelezo kuhusu hali ya Android yatatumwa kwenye seva.
+
+      Sera hii ikiwekwa kuwa sivyo au isipowekwa, maelezo ya hali hayataripotiwa.
+      Ikiwekwa kuwa ndivyo, maelezo ya hali yataripotiwa.
+
+      Sera hii inatumika tu iwapo programu za Android zimewashwa.</translation>
 <translation id="5395271912574071439">Inawezesha uzuiaji wa wapangishaji wa ufikivu wa mbali wakati muunganisho unapoendelea.
 
           Ikiwa mpangilio huu utawezeshwa, basi vifaa halisi vya ingizo na towe vitalemazwa wakati muunganisho wa mbali unapoendelea.
