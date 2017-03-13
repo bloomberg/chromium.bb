@@ -234,12 +234,14 @@ ChromeLauncherControllerImpl::ChromeLauncherControllerImpl(
     // If running in separated destkop mode, we create the multi profile version
     // of status monitor.
     browser_status_monitor_.reset(new MultiProfileBrowserStatusMonitor(this));
+    browser_status_monitor_->Initialize();
     extension_app_window_controller.reset(
         new MultiProfileAppWindowLauncherController(this));
   } else {
     // Create our v1/v2 application / browser monitors which will inform the
     // launcher of status changes.
     browser_status_monitor_.reset(new BrowserStatusMonitor(this));
+    browser_status_monitor_->Initialize();
     extension_app_window_controller.reset(
         new ExtensionAppWindowLauncherController(this));
   }

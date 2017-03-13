@@ -35,6 +35,11 @@ class BrowserStatusMonitor : public aura::client::ActivationChangeObserver,
   explicit BrowserStatusMonitor(ChromeLauncherController* launcher_controller);
   ~BrowserStatusMonitor() override;
 
+  // Do the initialization work. Note: This function should not be called in the
+  // constructor function because the virtual member function AddV1AppToShelf()
+  // is called inside this function.
+  void Initialize();
+
   // A function which gets called when the current user has changed.
   // Note that this function is called by the ChromeLauncherController to be
   // able to do the activation in a proper order - rather then setting an
@@ -119,6 +124,7 @@ class BrowserStatusMonitor : public aura::client::ActivationChangeObserver,
       webcontents_to_observer_map_;
 
   BrowserTabStripTracker browser_tab_strip_tracker_;
+  bool initialized_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserStatusMonitor);
 };
