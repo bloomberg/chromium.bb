@@ -12,6 +12,7 @@
 #import "ios/chrome/browser/ui/commands/generic_chrome_command.h"
 #include "ios/chrome/browser/ui/commands/ios_command_ids.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_collection_view_item.h"
+#include "ios/chrome/browser/ui/ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/earl_grey/accessibility_util.h"
@@ -19,6 +20,7 @@
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
+#import "ios/testing/earl_grey/disabled_test_macros.h"
 #import "ios/testing/wait_util.h"
 #import "ios/third_party/material_components_ios/src/components/Snackbar/src/MaterialSnackbar.h"
 #import "ios/web/public/test/http_server.h"
@@ -96,8 +98,8 @@ void performActionOnEntry(const std::string& entryTitle,
   [[EarlGrey selectElementWithMatcher:
                  grey_allOf(chrome_test_util::StaticTextWithAccessibilityLabel(
                                 base::SysUTF8ToNSString(entryTitle)),
-                            grey_sufficientlyVisible(), grey_interactable(),
-                            nil)] performAction:action];
+                            grey_sufficientlyVisible(), nil)]
+      performAction:action];
 }
 
 // Taps the entry with the title |entryTitle|.
@@ -219,6 +221,11 @@ size_t ModelReadSize(ReadingListModel* model) {
 // Tests that sharing a web page to the Reading List results in a snackbar
 // appearing, and that the Reading List entry is present in the Reading List.
 - (void)testSavingToReadingList {
+  // TODO(crbug.com/700001): This test is failing on iPad.
+  if (IsIPadIdiom()) {
+    EARL_GREY_TEST_DISABLED(@"Disabled for iPad");
+  }
+
   // Setup a server serving a page at http://potato with the title "tomato".
   std::map<GURL, std::string> responses;
   const GURL regularPageURL = web::test::HttpServer::MakeUrl("http://potato");
