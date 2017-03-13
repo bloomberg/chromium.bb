@@ -373,14 +373,6 @@ const TransformationMatrix& GeometryMapper::localToAncestorMatrixInternal(
        it++) {
     TransformationMatrix localTransformMatrix = (*it)->matrix();
     localTransformMatrix.applyTransformOrigin((*it)->origin());
-
-    // Flattening Lemma: flatten(A * flatten(B)) = flatten(flatten(A) * B).
-    // goo.gl/DNKyOc. Thus we can flatten transformMatrix rather than
-    // localTransformMatrix, because GeometryMapper only supports transforms
-    // into a flattened destination space.
-    if ((*it)->flattensInheritedTransform())
-      transformMatrix.flattenTo2d();
-
     transformMatrix = transformMatrix * localTransformMatrix;
     (*it)->getTransformCache().setCachedTransform(ancestorTransformNode,
                                                   transformMatrix);

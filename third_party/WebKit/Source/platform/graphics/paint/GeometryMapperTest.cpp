@@ -276,32 +276,6 @@ TEST_F(GeometryMapperTest, NestedTransforms) {
       *getTransform(transform1.get(), rootPropertyTreeState().transform()));
 }
 
-TEST_F(GeometryMapperTest, NestedTransformsFlattening) {
-  TransformationMatrix rotateTransform;
-  rotateTransform.rotate3d(45, 0, 0);
-  RefPtr<TransformPaintPropertyNode> transform1 =
-      TransformPaintPropertyNode::create(rootPropertyTreeState().transform(),
-                                         rotateTransform, FloatPoint3D());
-
-  TransformationMatrix inverseRotateTransform;
-  inverseRotateTransform.rotate3d(-45, 0, 0);
-  RefPtr<TransformPaintPropertyNode> transform2 =
-      TransformPaintPropertyNode::create(transform1, inverseRotateTransform,
-                                         FloatPoint3D(),
-                                         true);  // Flattens
-
-  PropertyTreeState localState = rootPropertyTreeState();
-  localState.setTransform(transform2.get());
-
-  FloatRect input(0, 0, 100, 100);
-  rotateTransform.flattenTo2d();
-  TransformationMatrix final = rotateTransform * inverseRotateTransform;
-  FloatRect output = final.mapRect(input);
-  bool hasRadius = false;
-  CHECK_MAPPINGS(input, output, output, final, FloatClipRect(), localState,
-                 rootPropertyTreeState(), hasRadius);
-}
-
 TEST_F(GeometryMapperTest, NestedTransformsScaleAndTranslation) {
   TransformationMatrix scaleTransform;
   scaleTransform.scale(2);
@@ -845,11 +819,11 @@ TEST_F(GeometryMapperTest, FilterWithClipsAndTransforms) {
   EXPECT_EQ(FloatRect(-150, -150, 450, 450), output);
 
   bool hasRadius = false;
-  TransformationMatrix combinedTransform =
-      transformAboveEffect->matrix() * transformBelowEffect->matrix();
-  CHECK_MAPPINGS(input, output, FloatRect(0, 0, 300, 300), combinedTransform,
-                 FloatClipRect(FloatRect(30, 30, 270, 270)), localState,
-                 rootPropertyTreeState(), hasRadius);
+  CHECK_MAPPINGS(
+      input, output, FloatRect(0, 0, 300, 300),
+      transformAboveEffect->matrix() * transformBelowEffect->matrix(),
+      FloatClipRect(FloatRect(30, 30, 270, 270)), localState,
+      rootPropertyTreeState(), hasRadius);
 }
 
 TEST_F(GeometryMapperTest, ReflectionWithPaintOffset) {

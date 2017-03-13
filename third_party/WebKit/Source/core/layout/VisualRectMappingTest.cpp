@@ -6,7 +6,6 @@
 #include "core/layout/LayoutView.h"
 #include "core/layout/PaintInvalidationState.h"
 #include "core/paint/PaintLayer.h"
-#include "core/paint/PaintPropertyTreePrinter.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
@@ -25,47 +24,16 @@ class VisualRectMappingTest : public RenderingTest {
       toLayoutBox(object).flipForWritingMode(rect);
     const LayoutBoxModelObject& paintInvalidationContainer =
         object.containerForPaintInvalidation();
-
-    checkVisualRect(object, paintInvalidationContainer, rect,
-                    object.visualRect(), true);
-  }
-
-  void checkVisualRect(const LayoutObject& object,
-                       const LayoutBoxModelObject& ancestor,
-                       const LayoutRect& localRect,
-                       const LayoutRect& expectedVisualRect,
-                       bool adjustForBacking = false) {
-    LayoutRect slowMapRect = localRect;
-    object.mapToVisualRectInAncestorSpace(&ancestor, slowMapRect);
-    if (slowMapRect.isEmpty() && object.visualRect().isEmpty())
+    object.mapToVisualRectInAncestorSpace(&paintInvalidationContainer, rect);
+    if (rect.isEmpty() && object.visualRect().isEmpty())
       return;
-
-    FloatRect geometryMapperRect(localRect);
-    if (object.paintProperties()) {
-      geometryMapperRect.moveBy(FloatPoint(object.paintOffset()));
-      document().view()->geometryMapper().sourceToDestinationVisualRect(
-          *object.paintProperties()->localBorderBoxProperties(),
-          *ancestor.paintProperties()->contentsProperties(),
-          geometryMapperRect);
-      geometryMapperRect.moveBy(-FloatPoint(ancestor.paintOffset()));
-    }
-
     // The following condition can be false if paintInvalidationContainer is
     // a LayoutView and compositing is not enabled.
-    if (adjustForBacking && ancestor.isPaintInvalidationContainer()) {
-      PaintLayer::mapRectInPaintInvalidationContainerToBacking(ancestor,
-                                                               slowMapRect);
-      LayoutRect temp(geometryMapperRect);
-      PaintLayer::mapRectInPaintInvalidationContainerToBacking(ancestor, temp);
-      geometryMapperRect = FloatRect(temp);
+    if (paintInvalidationContainer.isPaintInvalidationContainer()) {
+      PaintLayer::mapRectInPaintInvalidationContainerToBacking(
+          paintInvalidationContainer, rect);
     }
-    EXPECT_TRUE(enclosingIntRect(slowMapRect)
-                    .contains(enclosingIntRect(expectedVisualRect)));
-
-    if (object.paintProperties()) {
-      EXPECT_EQ(enclosingIntRect(expectedVisualRect),
-                enclosingIntRect(geometryMapperRect));
-    }
+    EXPECT_EQ(enclosingIntRect(rect), enclosingIntRect(object.visualRect()));
   }
 };
 
@@ -273,8 +241,11 @@ TEST_F(VisualRectMappingTest, SelfFlippedWritingMode) {
   // This rect is in physical coordinates of target.
   EXPECT_EQ(LayoutRect(0, 0, 140, 70), rect);
 
-  checkPaintInvalidationVisualRect(*target);
-  EXPECT_EQ(LayoutRect(222, 111, 140, 70), target->visualRect());
+  rect = localVisualRect;
+  target->flipForWritingMode(rect);
+  EXPECT_TRUE(target->mapToVisualRectInAncestorSpace(&layoutView(), rect));
+  EXPECT_EQ(LayoutRect(222, 111, 140, 70), rect);
+  EXPECT_EQ(rect, target->visualRect());
 }
 
 TEST_F(VisualRectMappingTest, ContainerFlippedWritingMode) {
@@ -307,11 +278,11 @@ TEST_F(VisualRectMappingTest, ContainerFlippedWritingMode) {
   EXPECT_TRUE(target->mapToVisualRectInAncestorSpace(container, rect));
   // 100 is the physical x location of target in container.
   EXPECT_EQ(LayoutRect(100, 0, 140, 110), rect);
-
   rect = targetLocalVisualRect;
   target->flipForWritingMode(rect);
-  checkPaintInvalidationVisualRect(*target);
-  EXPECT_EQ(LayoutRect(322, 111, 140, 110), target->visualRect());
+  EXPECT_TRUE(target->mapToVisualRectInAncestorSpace(&layoutView(), rect));
+  EXPECT_EQ(LayoutRect(322, 111, 140, 110), rect);
+  EXPECT_EQ(rect, target->visualRect());
 
   LayoutRect containerLocalVisualRect = container->localVisualRect();
   EXPECT_EQ(LayoutRect(0, 0, 200, 100), containerLocalVisualRect);
@@ -361,11 +332,13 @@ TEST_F(VisualRectMappingTest, ContainerOverflowScroll) {
   // overflow:scroll.
   EXPECT_EQ(LayoutRect(2, 3, 140, 110), rect);
 
-  checkPaintInvalidationVisualRect(*target);
+  rect = targetLocalVisualRect;
+  EXPECT_TRUE(target->mapToVisualRectInAncestorSpace(&layoutView(), rect));
   // (2, 3, 140, 100) is first clipped by container's overflow clip, to
   // (10, 10, 50, 80), then is by added container's offset in LayoutView
   // (111, 222).
-  EXPECT_EQ(LayoutRect(232, 121, 50, 80), target->visualRect());
+  EXPECT_EQ(LayoutRect(232, 121, 50, 80), rect);
+  EXPECT_EQ(rect, target->visualRect());
 
   LayoutRect containerLocalVisualRect = container->localVisualRect();
   // Because container has overflow clip, its visual overflow doesn't include
@@ -378,8 +351,10 @@ TEST_F(VisualRectMappingTest, ContainerOverflowScroll) {
   // Container should not apply overflow clip on its own overflow rect.
   EXPECT_EQ(LayoutRect(0, 0, 70, 100), rect);
 
-  checkPaintInvalidationVisualRect(*container);
-  EXPECT_EQ(LayoutRect(222, 111, 70, 100), container->visualRect());
+  rect = containerLocalVisualRect;
+  EXPECT_TRUE(container->mapToVisualRectInAncestorSpace(&layoutView(), rect));
+  EXPECT_EQ(LayoutRect(222, 111, 70, 100), rect);
+  EXPECT_EQ(rect, container->visualRect());
 }
 
 TEST_F(VisualRectMappingTest, ContainerFlippedWritingModeAndOverflowScroll) {
@@ -428,14 +403,17 @@ TEST_F(VisualRectMappingTest, ContainerFlippedWritingModeAndOverflowScroll) {
   // Rect is clipped by container's overflow clip because of overflow:scroll.
   EXPECT_EQ(LayoutRect(-2, 3, 140, 110), rect);
 
-  checkPaintInvalidationVisualRect(*target);
+  rect = targetLocalVisualRect;
+  target->flipForWritingMode(rect);
+  EXPECT_TRUE(target->mapToVisualRectInAncestorSpace(&layoutView(), rect));
   // (-2, 3, 140, 100) is first clipped by container's overflow clip, to
   // (40, 10, 50, 80), then is added by container's offset in LayoutView
   // (111, 222).
   // TODO(crbug.com/600039): rect.x() should be 262 (left + border-left), but is
   // offset
   // by extra horizontal border-widths because of layout error.
-  EXPECT_EQ(LayoutRect(322, 121, 50, 80), target->visualRect());
+  EXPECT_EQ(LayoutRect(322, 121, 50, 80), rect);
+  EXPECT_EQ(rect, target->visualRect());
 
   LayoutRect containerLocalVisualRect = container->localVisualRect();
   // Because container has overflow clip, its visual overflow doesn't include
@@ -449,11 +427,14 @@ TEST_F(VisualRectMappingTest, ContainerFlippedWritingModeAndOverflowScroll) {
   EXPECT_TRUE(container->mapToVisualRectInAncestorSpace(container, rect));
   EXPECT_EQ(LayoutRect(0, 0, 110, 120), rect);
 
+  rect = containerLocalVisualRect;
+  container->flipForWritingMode(rect);
+  EXPECT_TRUE(container->mapToVisualRectInAncestorSpace(&layoutView(), rect));
   // TODO(crbug.com/600039): rect.x() should be 222 (left), but is offset by
   // extra horizontal
   // border-widths because of layout error.
-  checkPaintInvalidationVisualRect(*container);
-  EXPECT_EQ(LayoutRect(282, 111, 110, 120), container->visualRect());
+  EXPECT_EQ(LayoutRect(282, 111, 110, 120), rect);
+  EXPECT_EQ(rect, container->visualRect());
 }
 
 TEST_F(VisualRectMappingTest, ContainerOverflowHidden) {
@@ -483,8 +464,9 @@ TEST_F(VisualRectMappingTest, ContainerOverflowHidden) {
   EXPECT_EQ(LayoutRect(0, 0, 140, 110), rect);
 
   rect = targetLocalVisualRect;
+  EXPECT_TRUE(target->mapToVisualRectInAncestorSpace(container, rect));
   // Rect is not clipped by container's overflow clip.
-  checkVisualRect(*target, *container, rect, LayoutRect(10, 10, 140, 110));
+  EXPECT_EQ(LayoutRect(10, 10, 140, 110), rect);
 }
 
 TEST_F(VisualRectMappingTest, ContainerFlippedWritingModeAndOverflowHidden) {
@@ -525,9 +507,9 @@ TEST_F(VisualRectMappingTest, ContainerFlippedWritingModeAndOverflowHidden) {
 
   rect = targetLocalVisualRect;
   target->flipForWritingMode(rect);
-  // 58 = target_physical_x(100) + container_border_left(40) - scroll_left(58)
-  checkVisualRect(*target, *container, rect, LayoutRect(-10, 10, 140, 110));
   EXPECT_TRUE(target->mapToVisualRectInAncestorSpace(container, rect));
+  // 58 = target_physical_x(100) + container_border_left(40) - scroll_left(58)
+  EXPECT_EQ(LayoutRect(-10, 10, 140, 110), rect);
 }
 
 TEST_F(VisualRectMappingTest, ContainerAndTargetDifferentFlippedWritingMode) {
@@ -613,9 +595,12 @@ TEST_F(VisualRectMappingTest,
   EXPECT_EQ(stackingContext, &absolute->containerForPaintInvalidation());
   EXPECT_EQ(stackingContext, absolute->container());
 
-  EXPECT_EQ(LayoutRect(0, 0, 50, 50), absolute->localVisualRect());
-  checkPaintInvalidationVisualRect(*absolute);
-  EXPECT_EQ(LayoutRect(222, 111, 50, 50), absolute->visualRect());
+  LayoutRect absoluteVisualRect = absolute->localVisualRect();
+  EXPECT_EQ(LayoutRect(0, 0, 50, 50), absoluteVisualRect);
+  rect = absoluteVisualRect;
+  EXPECT_TRUE(absolute->mapToVisualRectInAncestorSpace(stackingContext, rect));
+  EXPECT_EQ(LayoutRect(222, 111, 50, 50), rect);
+  EXPECT_EQ(rect, absolute->visualRect());
 }
 
 TEST_F(VisualRectMappingTest,
@@ -664,9 +649,12 @@ TEST_F(VisualRectMappingTest, CSSClip) {
 
   LayoutBox* target = toLayoutBox(getLayoutObjectByElementId("target"));
 
-  EXPECT_EQ(LayoutRect(0, 0, 400, 400), target->localVisualRect());
-  checkPaintInvalidationVisualRect(*target);
-  EXPECT_EQ(LayoutRect(0, 0, 200, 200), target->visualRect());
+  LayoutRect targetLocalVisualRect = target->localVisualRect();
+  EXPECT_EQ(LayoutRect(0, 0, 400, 400), targetLocalVisualRect);
+  LayoutRect rect = targetLocalVisualRect;
+  EXPECT_TRUE(target->mapToVisualRectInAncestorSpace(&layoutView(), rect));
+  EXPECT_EQ(LayoutRect(0, 0, 200, 200), rect);
+  EXPECT_EQ(rect, target->visualRect());
 }
 
 TEST_F(VisualRectMappingTest, ContainPaint) {
@@ -678,9 +666,12 @@ TEST_F(VisualRectMappingTest, ContainPaint) {
 
   LayoutBox* target = toLayoutBox(getLayoutObjectByElementId("target"));
 
-  EXPECT_EQ(LayoutRect(0, 0, 400, 400), target->localVisualRect());
-  checkPaintInvalidationVisualRect(*target);
-  EXPECT_EQ(LayoutRect(0, 0, 200, 200), target->visualRect());
+  LayoutRect targetLocalVisualRect = target->localVisualRect();
+  EXPECT_EQ(LayoutRect(0, 0, 400, 400), targetLocalVisualRect);
+  LayoutRect rect = targetLocalVisualRect;
+  EXPECT_TRUE(target->mapToVisualRectInAncestorSpace(&layoutView(), rect));
+  EXPECT_EQ(LayoutRect(0, 0, 200, 200), rect);
+  EXPECT_EQ(rect, target->visualRect());
 }
 
 TEST_F(VisualRectMappingTest, FloatUnderInline) {
@@ -705,8 +696,8 @@ TEST_F(VisualRectMappingTest, FloatUnderInline) {
   EXPECT_EQ(rect, target->visualRect());
 
   rect = targetVisualRect;
-
-  checkVisualRect(*target, *span, rect, LayoutRect(-200, -100, 33, 44));
+  EXPECT_TRUE(target->mapToVisualRectInAncestorSpace(span, rect));
+  EXPECT_EQ(LayoutRect(-200, -100, 33, 44), rect);
 }
 
 TEST_F(VisualRectMappingTest, ShouldAccountForPreserve3d) {
@@ -731,40 +722,13 @@ TEST_F(VisualRectMappingTest, ShouldAccountForPreserve3d) {
   LayoutRect originalRect(0, 0, 100, 100);
   // Multiply both matrices together before flattening.
   TransformationMatrix matrix = container->layer()->currentTransform();
+  matrix *= target->layer()->currentTransform();
   matrix.flattenTo2d();
-  matrix *= target->layer()->currentTransform();
-  LayoutRect output(matrix.mapRect(FloatRect(originalRect)));
+  FloatRect output = matrix.mapRect(FloatRect(originalRect));
 
-  checkVisualRect(*target, *target->view(), originalRect, output);
-}
-
-TEST_F(VisualRectMappingTest, ShouldAccountForPreserve3dNested) {
-  enableCompositing();
-  setBodyInnerHTML(
-      "<style>"
-      "* { margin: 0; }"
-      "#container {"
-      "  transform-style: preserve-3d;"
-      "  transform: rotateX(-45deg);"
-      "  width: 100px; height: 100px;"
-      "}"
-      "#target {"
-      "  transform-style: preserve-3d; transform: rotateX(45deg);"
-      "  background: lightblue;"
-      "  width: 100px; height: 100px;"
-      "}"
-      "</style>"
-      "<div id='container'><div id='target'></div></div>");
-  LayoutBlock* container =
-      toLayoutBlock(getLayoutObjectByElementId("container"));
-  LayoutBlock* target = toLayoutBlock(getLayoutObjectByElementId("target"));
-  LayoutRect originalRect(0, 0, 100, 100);
-  // Multiply both matrices together before flattening.
-  TransformationMatrix matrix = container->layer()->currentTransform();
-  matrix *= target->layer()->currentTransform();
-  LayoutRect output(matrix.mapRect(FloatRect(originalRect)));
-
-  checkVisualRect(*target, *target->view(), originalRect, output);
+  EXPECT_TRUE(
+      target->mapToVisualRectInAncestorSpace(target->view(), originalRect));
+  EXPECT_EQ(LayoutRect(enclosingIntRect(output)), originalRect);
 }
 
 TEST_F(VisualRectMappingTest, ShouldAccountForPerspective) {
@@ -788,47 +752,17 @@ TEST_F(VisualRectMappingTest, ShouldAccountForPerspective) {
   LayoutBlock* target = toLayoutBlock(getLayoutObjectByElementId("target"));
   LayoutRect originalRect(0, 0, 100, 100);
   TransformationMatrix matrix = container->layer()->currentTransform();
+  TransformationMatrix targetMatrix;
+  // getTransformfromContainter includes transform and perspective matrix
+  // of the container.
+  target->getTransformFromContainer(container, LayoutSize(), targetMatrix);
+  matrix *= targetMatrix;
   matrix.flattenTo2d();
-  TransformationMatrix targetMatrix;
-  // getTransformfromContainter includes transform and perspective matrix
-  // of the container.
-  target->getTransformFromContainer(container, LayoutSize(), targetMatrix);
-  matrix *= targetMatrix;
-  LayoutRect output(matrix.mapRect(FloatRect(originalRect)));
+  FloatRect output = matrix.mapRect(FloatRect(originalRect));
 
-  checkVisualRect(*target, *target->view(), originalRect, output);
-}
-
-TEST_F(VisualRectMappingTest, ShouldAccountForPerspectiveNested) {
-  enableCompositing();
-  setBodyInnerHTML(
-      "<style>"
-      "* { margin: 0; }"
-      "#container {"
-      "  transform-style: preserve-3d;"
-      "  transform: rotateX(-45deg); perspective: 100px;"
-      "  width: 100px; height: 100px;"
-      "}"
-      "#target {"
-      "  transform-style: preserve-3d; transform: rotateX(45deg);"
-      "  background: lightblue;"
-      "  width: 100px; height: 100px;"
-      "}"
-      "</style>"
-      "<div id='container'><div id='target'></div></div>");
-  LayoutBlock* container =
-      toLayoutBlock(getLayoutObjectByElementId("container"));
-  LayoutBlock* target = toLayoutBlock(getLayoutObjectByElementId("target"));
-  LayoutRect originalRect(0, 0, 100, 100);
-  TransformationMatrix matrix = container->layer()->currentTransform();
-  TransformationMatrix targetMatrix;
-  // getTransformfromContainter includes transform and perspective matrix
-  // of the container.
-  target->getTransformFromContainer(container, LayoutSize(), targetMatrix);
-  matrix *= targetMatrix;
-  LayoutRect output(matrix.mapRect(FloatRect(originalRect)));
-
-  checkVisualRect(*target, *target->view(), originalRect, output);
+  EXPECT_TRUE(
+      target->mapToVisualRectInAncestorSpace(target->view(), originalRect));
+  EXPECT_EQ(LayoutRect(enclosingIntRect(output)), originalRect);
 }
 
 }  // namespace blink

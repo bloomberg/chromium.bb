@@ -24,8 +24,6 @@ class PLATFORM_EXPORT GeometryMapperTransformCache {
   // Returns the transformed rect (see GeometryMapper.h) of |this| in the
   // space of |ancestorTransform|, if there is one cached. Otherwise returns
   // null.
-  //
-  // These transforms are not flattened to 2d.
   const TransformationMatrix* getCachedTransform(
       const TransformPaintPropertyNode* ancestorTransform);
 
