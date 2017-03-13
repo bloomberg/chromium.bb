@@ -90,15 +90,22 @@ TEST(SurfaceTest, CopyRequestLifetime) {
   EXPECT_TRUE(manager.GetSurfaceForId(surface_id));
   EXPECT_FALSE(copy_called);
 
-  CompositorFrame frame2;
-  frame2.render_pass_list.push_back(RenderPass::Create());
-  frame2.render_pass_list.back()->id = 1;
-  frame2.render_pass_list.push_back(RenderPass::Create());
-  frame2.render_pass_list.back()->id = 2;
-  factory.SubmitCompositorFrame(local_surface_id, std::move(frame2),
-                                SurfaceFactory::DrawCallback());
+  int max_frame = 3, start_id = 200;
+  for (int i = 0; i < max_frame; ++i) {
+    CompositorFrame frame;
+    frame.render_pass_list.push_back(RenderPass::Create());
+    frame.render_pass_list.back()->id = i * 3 + start_id;
+    frame.render_pass_list.push_back(RenderPass::Create());
+    frame.render_pass_list.back()->id = i * 3 + start_id + 1;
+    frame.render_pass_list.push_back(RenderPass::Create());
+    frame.render_pass_list.back()->id = i * 3 + start_id + 2;
+    factory.SubmitCompositorFrame(local_surface_id, std::move(frame),
+                                  SurfaceFactory::DrawCallback());
+  }
 
-  // The copy request should stay on the Surface after a new frame is created.
+  int last_pass_id = (max_frame - 1) * 3 + start_id + 2;
+  // The copy request should stay on the Surface until TakeCopyOutputRequests
+  // is called.
   EXPECT_FALSE(copy_called);
   EXPECT_EQ(
       1u,
@@ -108,9 +115,9 @@ TEST(SurfaceTest, CopyRequestLifetime) {
   surface->TakeCopyOutputRequests(&copy_requests);
   EXPECT_EQ(1u, copy_requests.size());
   // Last (root) pass should receive copy request.
-  ASSERT_EQ(1u, copy_requests.count(2));
+  ASSERT_EQ(1u, copy_requests.count(last_pass_id));
   EXPECT_FALSE(copy_called);
-  copy_requests.find(2)->second->SendEmptyResult();
+  copy_requests.find(last_pass_id)->second->SendEmptyResult();
   EXPECT_TRUE(copy_called);
 
   factory.EvictSurface();
