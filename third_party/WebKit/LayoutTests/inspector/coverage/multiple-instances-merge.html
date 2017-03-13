@@ -1,7 +1,7 @@
 <html>
 <head>
 <script src="../../http/tests/inspector/inspector-test.js"></script>
-<script src="../../http/tests/inspector/elements-test.js"></script>
+<script src="../../http/tests/inspector/debugger-test.js"></script>
 <script src="coverage-test.js"></script>
 <script src="resources/coverage.js"></script>
 
@@ -11,7 +11,7 @@
 async function test()
 {
     InspectorTest.startCoverage();
-    await InspectorTest.evaluateInPagePromise("performActions()");
+    await InspectorTest.evaluateInPagePromise("performActions(); frames[0].performActionsInFrame()");
     await InspectorTest.stopCoverage();
 
     var coverageView = self.runtime.sharedInstance(Coverage.CoverageView);
@@ -24,13 +24,27 @@ async function test()
         var type = Coverage.CoverageListView._typeToString(data.type());
         InspectorTest.addResult(`${url} ${type} used: ${data.usedSize()} unused: ${data.unusedSize()} total: ${data.size()}`);
     }
+
+    await dumpDecorationsInFile("highlight-in-source.css");
+    await dumpDecorationsInFile("coverage.js");
+
     InspectorTest.completeTest();
+
+    async function dumpDecorationsInFile(file)
+    {
+        await InspectorTest.sourceDecorated(file);
+        var lines = Array.prototype.map.call(document.querySelectorAll(".text-editor-coverage-unused-marker"),
+                                             e => e.parentElement.previousSibling.textContent);
+        InspectorTest.addResult(`Unused lines in ${file}`);
+        InspectorTest.addResult(lines);
+    }
 }
 
 </script>
 </head>
 
 <body onload="runTest()">
+<iframe src="resources/subframe.html"></iframe>
 <p class="class">
 Tests the coverage list view after finishing recording in the Coverage view.
 </p>

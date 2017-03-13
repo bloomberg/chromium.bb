@@ -1,0 +1,10 @@
+
+Tests the coverage list view after finishing recording in the Coverage view.
+
+.../inspector/coverage/resources/coverage.js JS used: 277 unused: 121 total: 402
+.../inspector/coverage/resources/highlight-in-source.css CSS used: 87 unused: 106 total: 209
+Unused lines in highlight-in-source.css
+9,10,11,12,18,19,20,22,23,24
+Unused lines in coverage.js
+3,4,5,11,18,19,20
+
