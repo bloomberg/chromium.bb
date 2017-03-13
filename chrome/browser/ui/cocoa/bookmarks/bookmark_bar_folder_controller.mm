@@ -1635,6 +1635,9 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   if (index == selectedIndex_)
     return;
 
+  if (index >= 0 && [[buttons_ objectAtIndex:index] isEmpty])
+    index = -1;
+
   [self setStateOfButtonByIndex:selectedIndex_ state:NO];
   [self setStateOfButtonByIndex:index state:YES];
   selectedIndex_ = index;

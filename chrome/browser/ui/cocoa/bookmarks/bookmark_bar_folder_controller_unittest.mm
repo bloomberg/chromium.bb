@@ -1393,6 +1393,31 @@ TEST_F(BookmarkBarFolderControllerMenuTest, HoverThenDeleteBookmark) {
   EXPECT_FALSE(buttonThatMouseIsIn);
 }
 
+// Tests that sending keyboard events to the (empty) button in an empty
+// folder menu does not crash. https://crbug.com/690424
+TEST_F(BookmarkBarFolderControllerMenuTest, ActOnEmptyMenu) {
+  BookmarkModel* model = BookmarkModelFactory::GetForBrowserContext(profile());
+  const BookmarkNode* root = model->bookmark_bar_node();
+  const BookmarkNode* folder =
+      model->AddFolder(root, root->child_count(), ASCIIToUTF16("empty"));
+  ASSERT_TRUE(folder);
+
+  BookmarkButton* button = [bar_ buttonWithTitleEqualTo:@"empty"];
+  [[button target] performSelector:@selector(openBookmarkFolderFromButton:)
+                        withObject:button];
+
+  BookmarkBarFolderController* bbfc = [bar_ folderController];
+  NSArray* buttons = [bbfc buttons];
+  ASSERT_EQ(1u, [buttons count]);
+
+  button = [buttons objectAtIndex:0];
+  EXPECT_TRUE([button isEmpty]);
+
+  [bbfc mouseEnteredButton:button event:nil];
+
+  EXPECT_TRUE([bbfc handleInputText:@" "]);
+}
+
 // Just like a BookmarkBarFolderController but intercedes when providing
 // pasteboard drag data.
 @interface BookmarkBarFolderControllerDragData : BookmarkBarFolderController {
