@@ -29,6 +29,7 @@
 #import "ios/chrome/browser/ui/settings/cells/autofill_data_item.h"
 #import "ios/chrome/browser/ui/settings/cells/autofill_edit_item.h"
 #import "ios/chrome/browser/ui/settings/cells/native_app_item.h"
+#import "ios/chrome/browser/ui/settings/cells/signin_promo_item.h"
 #import "ios/chrome/browser/ui/settings/cells/sync_switch_item.h"
 #import "ios/chrome/browser/ui/settings/cells/text_and_error_item.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
@@ -69,6 +70,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeAccountDetail,
   ItemTypeAccountCheckMark,
   ItemTypeAccountSignIn,
+  ItemTypeSigninPromo,
   ItemTypeApp,
   ItemTypePaymentsSingleLine,
   ItemTypePaymentsDynamicHeight,
@@ -290,6 +292,8 @@ const CGFloat kHorizontalImageFixedSize = 40;
       toSectionWithIdentifier:SectionIdentifierAccountCell];
   [model addItem:[self accountSignInItem]
       toSectionWithIdentifier:SectionIdentifierAccountCell];
+  [model addItem:[self signinPromoItem]
+      toSectionWithIdentifier:SectionIdentifierAccountCell];
 
   // Account control cells.
   [model addSectionWithIdentifier:SectionIdentifierAccountControlCell];
@@ -350,6 +354,7 @@ const CGFloat kHorizontalImageFixedSize = 40;
     case ItemTypeAutofillStorageSwitch:
     case ItemTypePaymentsDynamicHeight:
     case ItemTypeAutofillDynamicHeight:
+    case ItemTypeSigninPromo:
       return [MDCCollectionViewCell
           cr_preferredHeightForWidth:CGRectGetWidth(collectionView.bounds)
                              forItem:item];
@@ -398,13 +403,17 @@ const CGFloat kHorizontalImageFixedSize = 40;
     hidesInkViewAtIndexPath:(nonnull NSIndexPath*)indexPath {
   NSInteger sectionIdentifier =
       [self.collectionViewModel sectionIdentifierForSection:indexPath.section];
-  switch (sectionIdentifier) {
-    case SectionIdentifierFooters:
+  if (sectionIdentifier == SectionIdentifierFooters)
+    return YES;
+  CollectionViewItem* item =
+      [self.collectionViewModel itemAtIndexPath:indexPath];
+  switch (item.type) {
     case ItemTypeSwitchBasic:
     case ItemTypeSwitchDynamicHeight:
     case ItemTypeApp:
     case ItemTypeAutofillStorageSwitch:
     case ItemTypeSwitchSync:
+    case ItemTypeSigninPromo:
       return YES;
     default:
       return NO;
@@ -451,6 +460,19 @@ const CGFloat kHorizontalImageFixedSize = 40;
                                  ->GetDefaultAvatar(),
                              kHorizontalImageFixedSize);
   return accountSignInItem;
+}
+
+- (CollectionViewItem*)signinPromoItem {
+  SigninPromoItem* signinPromoItem =
+      [[[SigninPromoItem alloc] initWithType:ItemTypeSigninPromo] autorelease];
+  signinPromoItem.profileName = @"Jane";
+  signinPromoItem.profileEmail = @"jane@example.com";
+  signinPromoItem.profileImage =
+      CircularImageFromImage(ios::GetChromeBrowserProvider()
+                                 ->GetSigninResourcesProvider()
+                                 ->GetDefaultAvatar(),
+                             kHorizontalImageFixedSize);
+  return signinPromoItem;
 }
 
 - (CollectionViewItem*)accountControlItem {
