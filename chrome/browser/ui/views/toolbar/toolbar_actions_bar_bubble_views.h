@@ -23,8 +23,12 @@ class Link;
 class ToolbarActionsBarBubbleViews : public views::BubbleDialogDelegateView,
                                      public views::LinkListener {
  public:
+  // Creates the bubble anchored to |anchor_view| or, if that is null, to
+  // |anchor_point| in screen coordinates.
   ToolbarActionsBarBubbleViews(
       views::View* anchor_view,
+      const gfx::Point& anchor_point,
+      bool anchored_to_action,
       std::unique_ptr<ToolbarActionsBarBubbleDelegate> delegate);
   ~ToolbarActionsBarBubbleViews() override;
 
@@ -53,6 +57,7 @@ class ToolbarActionsBarBubbleViews : public views::BubbleDialogDelegateView,
   std::unique_ptr<ToolbarActionsBarBubbleDelegate> delegate_;
   views::Label* item_list_;
   views::Link* link_;
+  const bool anchored_to_action_;
 
   DISALLOW_COPY_AND_ASSIGN(ToolbarActionsBarBubbleViews);
 };

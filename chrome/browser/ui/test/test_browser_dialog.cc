@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
+#include "base/stl_util.h"
 #include "base/test/gtest_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/platform_util.h"
@@ -110,6 +111,14 @@ void TestBrowserDialog::RunDialog() {
 
   auto added = base::STLSetDifference<std::vector<views::Widget*>>(
       widgets_after, widgets_before);
+
+  if (added.size() > 1) {
+    // Some tests create a standalone window to anchor a dialog. In those cases,
+    // ignore added Widgets that are not dialogs.
+    base::EraseIf(added, [](views::Widget* widget) {
+      return !widget->widget_delegate()->AsDialogDelegate();
+    });
+  }
 
   // This can fail if no dialog was shown, if the dialog shown wasn't a toolkit-
   // views dialog, or if more than one child dialog was shown.

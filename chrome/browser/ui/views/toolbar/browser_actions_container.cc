@@ -260,12 +260,14 @@ void BrowserActionsContainer::ShowToolbarActionBubble(
   DCHECK(!active_bubble_);
 
   views::View* anchor_view = nullptr;
+  bool anchored_to_action_view = false;
   if (!controller->GetAnchorActionId().empty()) {
     ToolbarActionView* action_view =
         GetViewForId(controller->GetAnchorActionId());
     if (action_view) {
       anchor_view =
           action_view->visible() ? action_view : GetOverflowReferenceView();
+      anchored_to_action_view = true;
     } else {
       anchor_view = BrowserView::GetBrowserViewForBrowser(browser_)
                         ->toolbar()
@@ -275,8 +277,9 @@ void BrowserActionsContainer::ShowToolbarActionBubble(
     anchor_view = this;
   }
 
-  ToolbarActionsBarBubbleViews* bubble =
-      new ToolbarActionsBarBubbleViews(anchor_view, std::move(controller));
+  ToolbarActionsBarBubbleViews* bubble = new ToolbarActionsBarBubbleViews(
+      anchor_view, gfx::Point(), anchored_to_action_view,
+      std::move(controller));
   active_bubble_ = bubble;
   views::BubbleDialogDelegateView::CreateBubble(bubble);
   bubble->GetWidget()->AddObserver(this);

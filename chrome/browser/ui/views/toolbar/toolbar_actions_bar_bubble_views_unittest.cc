@@ -63,8 +63,10 @@ class ToolbarActionsBarBubbleViewsTest : public views::ViewsTestBase {
     ASSERT_FALSE(bubble_widget_);
     ASSERT_FALSE(bubble_);
     anchor_widget_ = CreateAnchorWidget();
+    bool anchored_to_action = false;
     bubble_ = new ToolbarActionsBarBubbleViews(
-      anchor_widget_->GetContentsView(), delegate->GetDelegate());
+        anchor_widget_->GetContentsView(), gfx::Point(), anchored_to_action,
+        delegate->GetDelegate());
     bubble_widget_ = views::BubbleDialogDelegateView::CreateBubble(bubble_);
     bubble_->Show();
   }
@@ -209,7 +211,8 @@ TEST_F(ToolbarActionsBarBubbleViewsTest, TestShowAndCloseBubble) {
                                                ActionString());
   delegate.set_dismiss_button_text(DismissString());
   ToolbarActionsBarBubbleViews* bubble = new ToolbarActionsBarBubbleViews(
-      anchor_widget->GetContentsView(), delegate.GetDelegate());
+      anchor_widget->GetContentsView(), gfx::Point(), false,
+      delegate.GetDelegate());
 
   EXPECT_FALSE(delegate.shown());
   EXPECT_FALSE(delegate.close_action());

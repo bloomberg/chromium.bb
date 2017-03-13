@@ -19,6 +19,7 @@
 #import "chrome/browser/ui/cocoa/extensions/browser_actions_container_view.h"
 #import "chrome/browser/ui/cocoa/extensions/extension_popup_controller.h"
 #import "chrome/browser/ui/cocoa/extensions/toolbar_actions_bar_bubble_mac.h"
+#import "chrome/browser/ui/cocoa/extensions/toolbar_actions_bar_bubble_views_presenter.h"
 #import "chrome/browser/ui/cocoa/image_button_cell.h"
 #import "chrome/browser/ui/cocoa/l10n_util.h"
 #import "chrome/browser/ui/cocoa/menu_button.h"
@@ -141,10 +142,6 @@ const CGFloat kBrowserActionBubbleYOffset = 3.0;
 // Creates a message bubble with the given |delegate|.
 - (void)createMessageBubble:
     (std::unique_ptr<ToolbarActionsBarBubbleDelegate>)delegate;
-
-// Called when the window for the active bubble is closing, and sets the active
-// bubble to nil.
-- (void)bubbleWindowClosing:(NSNotification*)notification;
 
 // Sets the current focused view. Should only be used for the overflow
 // container.
@@ -271,6 +268,10 @@ void ToolbarActionsBarBridge::ShowToolbarActionBubble(
         new ToolbarActionsBar(toolbarActionsBarBridge_.get(),
                               browser_,
                               mainBar));
+    if (ui::MaterialDesignController::IsSecondaryUiMaterial()) {
+      viewsBubblePresenter_ =
+          base::MakeUnique<ToolbarActionsBarBubbleViewsPresenter>(self);
+    }
 
     containerView_ = container;
     [containerView_ setMinWidth:toolbarActionsBar_->GetMinimumWidth()];
@@ -401,6 +402,11 @@ void ToolbarActionsBarBridge::ShowToolbarActionBubble(
 - (gfx::Size)sizeForOverflowWidth:(int)maxWidth {
   toolbarActionsBar_->SetOverflowRowWidth(maxWidth);
   return [self preferredSize];
+}
+
+- (void)bubbleWindowClosing:(NSNotification*)notification {
+  activeBubble_ = nil;
+  toolbarActionsBar_->OnBubbleClosed();
 }
 
 - (void)updateMaxWidth {
@@ -730,10 +736,16 @@ void ToolbarActionsBarBridge::ShowToolbarActionBubble(
 
 - (NSPoint)popupPointForView:(NSView*)view
                   withBounds:(NSRect)bounds {
-  // Anchor point just above the center of the bottom.
-  int y = [view isFlipped] ? NSMaxY(bounds) - kBrowserActionBubbleYOffset :
-                             kBrowserActionBubbleYOffset;
-  NSPoint anchor = NSMakePoint(NSMidX(bounds), y);
+  NSPoint anchor;
+  if (ui::MaterialDesignController::IsSecondaryUiMaterial()) {
+    // Anchor to the bottom-right of the button.
+    anchor = NSMakePoint(NSMaxX(bounds), [view isFlipped] ? NSMaxY(bounds) : 0);
+  } else {
+    // Anchor point just above the center of the bottom.
+    int y = [view isFlipped] ? NSMaxY(bounds) - kBrowserActionBubbleYOffset
+                             : kBrowserActionBubbleYOffset;
+    anchor = NSMakePoint(NSMidX(bounds), y);
+  }
   // Convert the point to the container view's frame, and adjust for animation.
   NSPoint anchorInContainer =
       [containerView_ convertPoint:anchor fromView:view];
@@ -806,7 +818,17 @@ void ToolbarActionsBarBridge::ShowToolbarActionBubble(
   NSPoint anchor = [self popupPointForView:anchorView
                                 withBounds:[anchorView bounds]];
 
-  anchor = ui::ConvertPointFromWindowToScreen([containerView_ window], anchor);
+  NSWindow* parentWindow = [containerView_ window];
+  anchor = ui::ConvertPointFromWindowToScreen(parentWindow, anchor);
+  if (viewsBubblePresenter_) {
+    viewsBubblePresenter_->PresentAt(std::move(delegate), parentWindow, anchor,
+                                     anchoredToAction);
+    // No need to set |activeBubble_| as it's only used for Cocoa tests. Also,
+    // skip registering for notifications since the presenter will call
+    // -bubbleWindowClosing: directly.
+    return;
+  }
+
   activeBubble_ = [[ToolbarActionsBarBubbleMac alloc]
       initWithParentWindow:[containerView_ window]
                anchorPoint:anchor
@@ -818,11 +840,6 @@ void ToolbarActionsBarBridge::ShowToolbarActionBubble(
              name:NSWindowWillCloseNotification
            object:[activeBubble_ window]];
   [activeBubble_ showWindow:nil];
-}
-
-- (void)bubbleWindowClosing:(NSNotification*)notification {
-  activeBubble_ = nil;
-  toolbarActionsBar_->OnBubbleClosed();
 }
 
 - (void)setFocusedViewIndex:(NSInteger)index {
