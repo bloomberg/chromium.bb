@@ -126,14 +126,14 @@ MemoryUsageStats TaskGroupSampler::RefreshMemoryUsage() {
 
   MemoryUsageStats memory_usage;
 #if defined(OS_MACOSX)
-  memory_usage.physical_bytes =
-      static_cast<int64_t>(process_metrics_->GetWorkingSetSize());
-
   size_t private_bytes = 0;
   size_t shared_bytes = 0;
-  if (process_metrics_->GetMemoryBytes(&private_bytes, &shared_bytes)) {
+  size_t resident_bytes = 0;
+  if (process_metrics_->GetMemoryBytes(&private_bytes, &shared_bytes,
+                                       &resident_bytes)) {
     memory_usage.private_bytes = static_cast<int64_t>(private_bytes);
     memory_usage.shared_bytes = static_cast<int64_t>(shared_bytes);
+    memory_usage.physical_bytes = resident_bytes;
   }
 #else
   // Refreshing the physical/private/shared memory at one shot.

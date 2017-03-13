@@ -596,9 +596,22 @@ bool ProcessMetricsMemoryDumpProvider::OnMemoryDump(
 bool ProcessMetricsMemoryDumpProvider::DumpProcessTotals(
     const base::trace_event::MemoryDumpArgs& args,
     base::trace_event::ProcessMemoryDump* pmd) {
-  const uint64_t rss_bytes = rss_bytes_for_testing
-                                 ? rss_bytes_for_testing
-                                 : process_metrics_->GetWorkingSetSize();
+#if defined(OS_MACOSX)
+  size_t private_bytes;
+  size_t shared_bytes;
+  size_t resident_bytes;
+  if (!process_metrics_->GetMemoryBytes(&private_bytes, &shared_bytes,
+                                        &resident_bytes)) {
+    return false;
+  }
+  uint64_t rss_bytes = resident_bytes;
+  pmd->process_totals()->SetExtraFieldInBytes("private_bytes", private_bytes);
+  pmd->process_totals()->SetExtraFieldInBytes("shared_bytes", shared_bytes);
+#else
+  uint64_t rss_bytes = process_metrics_->GetWorkingSetSize();
+#endif  // defined(OS_MACOSX)
+  if (rss_bytes_for_testing)
+    rss_bytes = rss_bytes_for_testing;
 
   // rss_bytes will be 0 if the process ended while dumping.
   if (!rss_bytes)
@@ -625,12 +638,6 @@ bool ProcessMetricsMemoryDumpProvider::DumpProcessTotals(
     }
     close(clear_refs_fd);
   }
-#elif defined(MACOSX)
-  size_t private_bytes;
-  bool res = process_metrics_->GetMemoryBytes(&private_bytes,
-                                              nullptr /* shared_bytes */);
-  if (res)
-    pmd->process_totals()->SetExtraFieldInBytes("private_bytes", private_bytes);
 #elif defined(OS_WIN)
   if (args.level_of_detail ==
       base::trace_event::MemoryDumpLevelOfDetail::DETAILED) {
