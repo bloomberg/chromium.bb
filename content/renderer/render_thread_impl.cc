@@ -1376,7 +1376,7 @@ media::GpuVideoAcceleratorFactories* RenderThreadImpl::GetGpuFactories() {
   bool support_locking = true;
   scoped_refptr<ui::ContextProviderCommandBuffer> media_context_provider =
       CreateOffscreenContext(gpu_channel_host, limits, support_locking,
-                             ui::command_buffer_metrics::RENDER_WORKER_CONTEXT,
+                             ui::command_buffer_metrics::MEDIA_CONTEXT,
                              gpu::GPU_STREAM_DEFAULT,
                              gpu::GpuStreamPriority::NORMAL);
   if (!media_context_provider->BindToCurrentThread())
