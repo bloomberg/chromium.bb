@@ -647,11 +647,6 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
   return self;
 }
 
-- (instancetype)init {
-  NOTREACHED();
-  return nil;
-}
-
 - (NSArray*)accessoryViewProviders {
   NSMutableArray* providers = [NSMutableArray array];
   id<FormInputAccessoryViewProvider> provider =
