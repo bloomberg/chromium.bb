@@ -192,7 +192,8 @@ TEST(CoreTest, BasicDataPipe) {
             MojoWait(hc, MOJO_HANDLE_SIGNAL_READABLE, 0, &state));
 
   EXPECT_EQ(MOJO_HANDLE_SIGNAL_NONE, state.satisfied_signals);
-  EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
+  EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED |
+                MOJO_HANDLE_SIGNAL_NEW_DATA_READABLE,
             state.satisfiable_signals);
 
   // The producer |hp| should be writable.
@@ -229,8 +230,10 @@ TEST(CoreTest, BasicDataPipe) {
                                          &result_index, states));
 
   EXPECT_EQ(0u, result_index);
-  EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE, states[0].satisfied_signals);
-  EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
+  EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_NEW_DATA_READABLE,
+            states[0].satisfied_signals);
+  EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED |
+                MOJO_HANDLE_SIGNAL_NEW_DATA_READABLE,
             states[0].satisfiable_signals);
 
   // Do a two-phase write to |hp|.

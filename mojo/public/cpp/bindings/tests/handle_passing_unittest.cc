@@ -113,7 +113,7 @@ class SampleFactoryImpl : public sample::Factory {
     ASSERT_EQ(MOJO_RESULT_OK,
               MojoWait(pipe.get().value(), MOJO_HANDLE_SIGNAL_READABLE,
                        MOJO_DEADLINE_INDEFINITE, &state));
-    ASSERT_EQ(MOJO_HANDLE_SIGNAL_READABLE, state.satisfied_signals);
+    ASSERT_TRUE(state.satisfied_signals & MOJO_HANDLE_SIGNAL_READABLE);
     ASSERT_EQ(MOJO_RESULT_OK,
               ReadDataRaw(
                   pipe.get(), nullptr, &data_size, MOJO_READ_DATA_FLAG_QUERY));

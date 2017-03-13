@@ -149,6 +149,11 @@ const MojoDeadline MOJO_DEADLINE_INDEFINITE = static_cast<MojoDeadline>(-1);
 //   |MOJO_HANDLE_SIGNAL_READABLE| - Can read (e.g., a message) from the handle.
 //   |MOJO_HANDLE_SIGNAL_WRITABLE| - Can write (e.g., a message) to the handle.
 //   |MOJO_HANDLE_SIGNAL_PEER_CLOSED| - The peer handle is closed.
+//   |MOJO_HANDLE_SIGNAL_NEW_DATA_READABLE| - Can read data from a data pipe
+//       consumer handle (implying MOJO_HANDLE_SIGNAL_READABLE is also set),
+//       AND there is some nonzero quantity of new data available on the pipe
+//       since the last |MojoReadData()| or |MojoBeginReadData()| call on the
+//       handle.
 
 typedef uint32_t MojoHandleSignals;
 
@@ -157,11 +162,13 @@ const MojoHandleSignals MOJO_HANDLE_SIGNAL_NONE = 0;
 const MojoHandleSignals MOJO_HANDLE_SIGNAL_READABLE = 1 << 0;
 const MojoHandleSignals MOJO_HANDLE_SIGNAL_WRITABLE = 1 << 1;
 const MojoHandleSignals MOJO_HANDLE_SIGNAL_PEER_CLOSED = 1 << 2;
+const MojoHandleSignals MOJO_HANDLE_SIGNAL_NEW_DATA_READABLE = 1 << 3;
 #else
 #define MOJO_HANDLE_SIGNAL_NONE ((MojoHandleSignals)0)
 #define MOJO_HANDLE_SIGNAL_READABLE ((MojoHandleSignals)1 << 0)
 #define MOJO_HANDLE_SIGNAL_WRITABLE ((MojoHandleSignals)1 << 1)
 #define MOJO_HANDLE_SIGNAL_PEER_CLOSED ((MojoHandleSignals)1 << 2)
+#define MOJO_HANDLE_SIGNAL_NEW_DATA_READABLE ((MojoHandleSignals)1 << 3);
 #endif
 
 // |MojoHandleSignalsState|: Returned by wait functions to indicate the
