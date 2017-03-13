@@ -20,7 +20,6 @@ from chromite.lib import gerrit
 from chromite.lib import git
 from chromite.lib import gob_util
 from chromite.lib import osutils
-from chromite.lib import patch_unittest
 from chromite.lib import retry_util
 from chromite.lib import timeout_util
 
@@ -356,40 +355,6 @@ class GerritHelperTest(cros_test_lib.GerritTestCase):
     self.assertNotEqual(gpatch2.approval_timestamp, 0)
     self.assertNotEqual(gpatch2.commit_timestamp, 0)
     self.assertEqual(gpatch2.approval_timestamp, gpatch2.commit_timestamp)
-
-class GerritHelperLocalTest(patch_unittest.MockPatchBase):
-  """GerritHelper local tests."""
-
-  def _GetHelper(self, remote=site_config.params.EXTERNAL_REMOTE):
-    return gerrit.GetGerritHelper(remote)
-
-  def testRemoveReady(self):
-    """RemoveReady doesn't reset Code-Review"""
-    patch = self.GetPatches(1)
-    helper = self._GetHelper()
-    mock_reset = self.PatchObject(gob_util, 'ResetReviewLabels')
-    helper.RemoveReady(patch)
-
-    self.assertEqual(mock_reset.call_count, 2)
-    mock_reset.assert_called_once(helper.host, helper._to_changenum(patch),
-                                  label='Commit-Queue', notify='OWNER')
-    mock_reset.assert_called_once(helper.host, helper._to_changenum(patch),
-                                  label='Trybot-Ready', notify='OWNER')
-
-  def testRemoveReadyResetCodeReview(self):
-    """RemoveReady resets Code-Review."""
-    patch = self.GetPatches(1)
-    helper = self._GetHelper()
-    mock_reset = self.PatchObject(gob_util, 'ResetReviewLabels')
-    helper.RemoveReady(patch, extra_labels={'Code-Review'})
-
-    self.assertEqual(mock_reset.call_count, 3)
-    mock_reset.assert_called_once(helper.host, helper._to_changenum(patch),
-                                  label='Commit-Queue', notify='OWNER')
-    mock_reset.assert_called_once(helper.host, helper._to_changenum(patch),
-                                  label='Trybot-Ready', notify='OWNER')
-    mock_reset.assert_called_once(helper.host, helper._to_changenum(patch),
-                                  label='Code-Review', notify='OWNER')
 
 
 @cros_test_lib.NetworkTest()

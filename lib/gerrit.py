@@ -381,20 +381,16 @@ class GerritHelper(object):
     gob_util.SetHashtags(self.host, self._to_changenum(change),
                          add=add, remove=remove)
 
-  def RemoveReady(self, change, extra_labels=None, dryrun=False):
+  def RemoveReady(self, change, dryrun=False):
     """Set the 'Commit-Queue' and 'Trybot-Ready' labels on a |change| to '0'."""
-    labels_to_reset = {'Commit-Queue', 'Trybot-Ready'}
-    if extra_labels is not None:
-      labels_to_reset |= extra_labels
-
     if dryrun:
-      logging.info('Would have reset %s labels for '
-                   '%s', ', '.join(labels_to_reset), change)
+      logging.info('Would have reset Commit-Queue and Trybot-Ready label for '
+                   '%s', change)
       return
-
-    for label in labels_to_reset:
-      gob_util.ResetReviewLabels(self.host, self._to_changenum(change),
-                                 label=label, notify='OWNER')
+    gob_util.ResetReviewLabels(self.host, self._to_changenum(change),
+                               label='Commit-Queue', notify='OWNER')
+    gob_util.ResetReviewLabels(self.host, self._to_changenum(change),
+                               label='Trybot-Ready', notify='OWNER')
 
   def SubmitChange(self, change, dryrun=False):
     """Land (merge) a gerrit change using the JSON API."""

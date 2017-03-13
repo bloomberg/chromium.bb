@@ -1467,36 +1467,11 @@ class ValidationPool(object):
     # tried to submit changes that failed to submit.
     self._InsertCLActionToDatabase(change, action, reason)
 
-  def _RemoveCodeReview(self, failure):
-    """Determine whether to remove the 'Code-Review' ready label.
-
-    Args:
-      failure: cros_patch.PatchException instance.
-
-    Returns:
-      Boolean indicating whether to reset the Code-Review to 0.
-    """
-    if (self._builder_name == constants.PRE_CQ_LAUNCHER_NAME and
-        (isinstance(failure, cros_patch.BrokenCQDepends) or
-         isinstance(failure, cros_patch.BrokenChangeID))):
-      return True
-    else:
-      return False
-
-  def RemoveReady(self, change, failure=None, reason=None):
-    """Remove the commit ready and trybot ready bits for |change|.
-
-    Args:
-      change: A GerritPatch or GerritPatchTuple object.
-      failure: A cros_patch.PatchException instance.
-      reason: string reason for submission to be recorded in cidb. (Should be
-              None or constant with name STRATEGY_* from constants.py):
-    """
+  def RemoveReady(self, change, reason=None):
+    """Remove the commit ready and trybot ready bits for |change|."""
     try:
-      extra_labels = ({'Code-Review'} if self._RemoveCodeReview(failure)
-                      else None)
       self._helper_pool.ForChange(change).RemoveReady(
-          change, extra_labels=extra_labels, dryrun=self.dryrun)
+          change, dryrun=self.dryrun)
     except gob_util.GOBError as e:
       if (e.http_status == httplib.CONFLICT and
           e.reason == gob_util.GOB_ERROR_REASON_CLOSED_CHANGE):
@@ -1649,7 +1624,7 @@ class ValidationPool(object):
     msg = ('%(queue)s failed to apply your change in %(build_log)s .'
            ' %(failure)s')
     self.SendNotification(failure.patch, msg, failure=failure)
-    self.RemoveReady(failure.patch, failure=failure)
+    self.RemoveReady(failure.patch)
 
   def _HandleIncorrectSubmission(self, failure):
     """Handler for when Paladin incorrectly submits a change."""

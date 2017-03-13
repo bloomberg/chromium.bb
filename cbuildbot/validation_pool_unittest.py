@@ -483,8 +483,7 @@ class TestCoreLogic(MoxBase):
       # thinking that the first arg isn't passed in; we suppress it to suppress
       # the pylnt bug.
       # pylint: disable=E1120
-      gerrit.GerritHelper.RemoveReady(
-          failure.patch, extra_labels=None, dryrun=False)
+      gerrit.GerritHelper.RemoveReady(failure.patch, dryrun=False)
 
     self.mox.ReplayAll()
     master_pool._HandleApplyFailure(notified_patches)
@@ -1617,71 +1616,33 @@ class LoadManifestTest(cros_test_lib.TempDirTestCase):
     self.assertEqual(self.pool.candidates[0].total_fail_count, 3)
 
 
-class RemoveReadyTest(cros_test_lib.MockTempDirTestCase,
-                      patch_unittest.MockPatchBase):
+class RemoveReadyTest(cros_test_lib.MockTempDirTestCase):
   """Tests for RemoveReady."""
 
   def setUp(self):
     """Sets up a pool."""
     self.pool = MakePool()
 
-  def test_RemoveCodeReview_PreCQ(self):
-    """Test _RemoveCodeReview on PreCQ."""
-    pre_cq_pool = MakePool(builder_name=constants.PRE_CQ_LAUNCHER_NAME)
-    patch = self.GetPatches(1)
-    failure = cros_patch.BrokenCQDepends(patch, 'text')
-    self.assertTrue(pre_cq_pool._RemoveCodeReview(failure))
-
-  def test_RemoveCodeReview_CQ(self):
-    """Test _RemoveCodeReview on CQ."""
-    patch = self.GetPatches(1)
-    failure = cros_patch.BrokenCQDepends(patch, 'text')
-    self.assertFalse(self.pool._RemoveCodeReview(failure))
-
-  def test_RemoveCodeReviewNoneFailure(self):
-    """Test _RemoveCodeReview on None failure."""
-    self.assertFalse(self.pool._RemoveCodeReview(None))
-
-  def testRemoveReadyRemoveCodeReview(self):
-    """Test RemoveReady by removing Code-Review."""
-    pre_cq_pool = MakePool(builder_name=constants.PRE_CQ_LAUNCHER_NAME)
-    remove_ready_mock = self.PatchObject(gerrit.GerritHelper, 'RemoveReady')
-    patch = self.GetPatches(1)
-    failure = cros_patch.BrokenCQDepends(patch, 'text')
-
-    pre_cq_pool.RemoveReady(patch, failure)
-    remove_ready_mock.assert_called_with(
-        patch, extra_labels={'Code-Review'}, dryrun=True)
-
-  def testRemoveReadyDoNotRemoveCodeReview(self):
-    """Test RemoveReady by not removing Code-Review."""
-    remove_ready_mock = self.PatchObject(gerrit.GerritHelper, 'RemoveReady')
-    patch = self.GetPatches(1)
-    failure = cros_patch.BrokenCQDepends(patch, 'text')
-
-    self.pool.RemoveReady(patch, failure)
-    remove_ready_mock.assert_called_with(
-        patch, extra_labels=None, dryrun=True)
-
   def testRemoveReadyRaisesException(self):
     """Test RemoveReady which raises exception."""
-    patch = self.GetPatches(1)
-    remove_ready_mock = self.PatchObject(gerrit.GerritHelper, 'RemoveReady')
-    remove_ready_mock.side_effect = (
+    helper_mock = mock.Mock()
+    helper_mock.ForChange.return_value.RemoveReady.side_effect = (
         gob_util.GOBError(http_status=409, reason="test"))
+    self.pool._helper_pool = helper_mock
 
-    self.assertRaises(gob_util.GOBError, self.pool.RemoveReady, patch)
+    self.assertRaises(gob_util.GOBError, self.pool.RemoveReady,
+                      mock.Mock)
 
   def testRemoveReadyDoesNotRaiseException(self):
     """Test RemoveReady which does not raise exception."""
-    patch = self.GetPatches(1)
-    remove_ready_mock = self.PatchObject(gerrit.GerritHelper, 'RemoveReady')
-    remove_ready_mock.side_effect = (
+    helper_mock = mock.Mock()
+    helper_mock.ForChange.return_value.RemoveReady.side_effect = (
         gob_util.GOBError(http_status=409,
                           reason=gob_util.GOB_ERROR_REASON_CLOSED_CHANGE))
+    self.pool._helper_pool = helper_mock
 
     self.pool._run = None
     self.PatchObject(validation_pool.ValidationPool,
                      '_InsertCLActionToDatabase')
 
-    self.pool.RemoveReady(patch)
+    self.pool.RemoveReady(mock.Mock())
