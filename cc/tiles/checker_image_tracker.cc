@@ -5,6 +5,7 @@
 #include "cc/tiles/checker_image_tracker.h"
 
 #include "base/bind.h"
+#include "base/stl_util.h"
 #include "base/trace_event/trace_event.h"
 
 namespace cc {
@@ -41,19 +42,17 @@ void CheckerImageTracker::FilterImagesForCheckeringForTile(
     WhichTree tree) {
   DCHECK(checkered_images->empty());
 
-  auto images_to_checker = std::remove_if(
-      images->begin(), images->end(),
-      [this, tree, &checkered_images](const DrawImage& draw_image) {
-        const sk_sp<const SkImage>& image = draw_image.image();
-        DCHECK(image->isLazyGenerated());
-        if (ShouldCheckerImage(image, tree)) {
-          ScheduleImageDecodeIfNecessary(image);
-          checkered_images->insert(image->uniqueID());
-          return true;
-        }
-        return false;
-      });
-  images->erase(images_to_checker, images->end());
+  base::EraseIf(*images,
+                [this, tree, &checkered_images](const DrawImage& draw_image) {
+                  const sk_sp<const SkImage>& image = draw_image.image();
+                  DCHECK(image->isLazyGenerated());
+                  if (ShouldCheckerImage(image, tree)) {
+                    ScheduleImageDecodeIfNecessary(image);
+                    checkered_images->insert(image->uniqueID());
+                    return true;
+                  }
+                  return false;
+                });
 }
 
 const ImageIdFlatSet& CheckerImageTracker::TakeImagesToInvalidateOnSyncTree() {

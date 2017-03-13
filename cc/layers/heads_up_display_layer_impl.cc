@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/numerics/safe_conversions.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
@@ -102,12 +103,10 @@ void HeadsUpDisplayLayerImpl::AcquireResource(
 
 void HeadsUpDisplayLayerImpl::ReleaseUnmatchedSizeResources(
     ResourceProvider* resource_provider) {
-  auto it_erase =
-      std::remove_if(resources_.begin(), resources_.end(),
-                     [this](const std::unique_ptr<ScopedResource>& resource) {
-                       return internal_content_bounds_ != resource->size();
-                     });
-  resources_.erase(it_erase, resources_.end());
+  base::EraseIf(resources_,
+                [this](const std::unique_ptr<ScopedResource>& resource) {
+                  return internal_content_bounds_ != resource->size();
+                });
 }
 
 bool HeadsUpDisplayLayerImpl::WillDraw(DrawMode draw_mode,

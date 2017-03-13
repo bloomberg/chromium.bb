@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/stl_util.h"
 #include "base/trace_event/trace_event_argument.h"
 
 namespace cc {
@@ -90,7 +91,7 @@ struct MainThreadScrollingReason {
     // Remove '{main_thread_scrolling_reasons:[', ']}', and any '"' chars.
     std::string result =
         result_in_array_foramt.substr(34, result_in_array_foramt.length() - 36);
-    result.erase(std::remove(result.begin(), result.end(), '\"'), result.end());
+    base::Erase(result, '\"');
     return result;
   }
 

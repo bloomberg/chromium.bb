@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/callback.h"
+#include "base/stl_util.h"
 #include "base/values.h"
 #include "cc/trees/layer_tree_host_impl.h"
 
@@ -35,12 +36,10 @@ void MicroBenchmarkControllerImpl::DidCompleteCommit() {
 }
 
 void MicroBenchmarkControllerImpl::CleanUpFinishedBenchmarks() {
-  benchmarks_.erase(
-      std::remove_if(benchmarks_.begin(), benchmarks_.end(),
-                     [](const std::unique_ptr<MicroBenchmarkImpl>& benchmark) {
-                       return benchmark->IsDone();
-                     }),
-      benchmarks_.end());
+  base::EraseIf(benchmarks_,
+                [](const std::unique_ptr<MicroBenchmarkImpl>& benchmark) {
+                  return benchmark->IsDone();
+                });
 }
 
 }  // namespace cc

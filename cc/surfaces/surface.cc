@@ -9,7 +9,7 @@
 
 #include <algorithm>
 
-#include "cc/base/container_util.h"
+#include "base/stl_util.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/output/copy_output_request.h"
 #include "cc/surfaces/local_surface_id_allocator.h"
@@ -113,12 +113,10 @@ void Surface::RequestCopyOfOutput(
     const base::UnguessableToken& source = copy_request->source();
     // Remove existing CopyOutputRequests made on the Surface by the same
     // source.
-    auto to_remove =
-        std::remove_if(copy_requests.begin(), copy_requests.end(),
-                       [&source](const std::unique_ptr<CopyOutputRequest>& x) {
-                         return x->has_source() && x->source() == source;
-                       });
-    copy_requests.erase(to_remove, copy_requests.end());
+    base::EraseIf(copy_requests,
+                  [&source](const std::unique_ptr<CopyOutputRequest>& x) {
+                    return x->has_source() && x->source() == source;
+                  });
   }
   copy_requests.push_back(std::move(copy_request));
 }
@@ -301,14 +299,11 @@ void Surface::AddDestructionDependency(SurfaceSequence sequence) {
 void Surface::SatisfyDestructionDependencies(
     std::unordered_set<SurfaceSequence, SurfaceSequenceHash>* sequences,
     std::unordered_set<FrameSinkId, FrameSinkIdHash>* valid_frame_sink_ids) {
-  destruction_dependencies_.erase(
-      std::remove_if(destruction_dependencies_.begin(),
-                     destruction_dependencies_.end(),
-                     [sequences, valid_frame_sink_ids](SurfaceSequence seq) {
-                       return (!!sequences->erase(seq) ||
-                               !valid_frame_sink_ids->count(seq.frame_sink_id));
-                     }),
-      destruction_dependencies_.end());
+  base::EraseIf(destruction_dependencies_,
+                [sequences, valid_frame_sink_ids](SurfaceSequence seq) {
+                  return (!!sequences->erase(seq) ||
+                          !valid_frame_sink_ids->count(seq.frame_sink_id));
+                });
 }
 
 void Surface::UnrefFrameResources(const CompositorFrame& frame) {

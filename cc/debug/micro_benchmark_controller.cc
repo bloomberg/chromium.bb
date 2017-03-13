@@ -9,6 +9,7 @@
 
 #include "base/callback.h"
 #include "base/memory/ptr_util.h"
+#include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "cc/debug/invalidation_benchmark.h"
@@ -110,12 +111,10 @@ void MicroBenchmarkController::DidUpdateLayers() {
 }
 
 void MicroBenchmarkController::CleanUpFinishedBenchmarks() {
-  benchmarks_.erase(
-      std::remove_if(benchmarks_.begin(), benchmarks_.end(),
-                     [](const std::unique_ptr<MicroBenchmark>& benchmark) {
-                       return benchmark->IsDone();
-                     }),
-      benchmarks_.end());
+  base::EraseIf(benchmarks_,
+                [](const std::unique_ptr<MicroBenchmark>& benchmark) {
+                  return benchmark->IsDone();
+                });
 }
 
 }  // namespace cc
