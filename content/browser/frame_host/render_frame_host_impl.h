@@ -768,6 +768,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void OnShowPopup(const FrameHostMsg_ShowPopup_Params& params);
   void OnHidePopup();
 #endif
+#if defined(OS_ANDROID)
+  void OnNavigationHandledByEmbedder();
+#endif
   void OnShowCreatedWindow(int pending_widget_routing_id,
                            WindowOpenDisposition disposition,
                            const gfx::Rect& initial_rect,

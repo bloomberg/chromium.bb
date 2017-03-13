@@ -5268,6 +5268,10 @@ WebNavigationPolicy RenderFrameImpl::decidePolicyForNavigation(
           this, is_content_initiated, render_view_was_created_by_renderer,
           frame_, info.urlRequest, info.navigationType, info.defaultPolicy,
           is_redirect)) {
+    if (IsBrowserSideNavigationEnabled()) {
+      // Need to let the browser know so it can notify its observers.
+      Send(new FrameHostMsg_NavigationHandledByEmbedder(routing_id_));
+    }
     return blink::WebNavigationPolicyIgnore;
   }
 #endif
