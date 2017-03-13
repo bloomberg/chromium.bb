@@ -67,8 +67,11 @@ class MEDIA_EXPORT WebmMuxer : public NON_EXPORTED_BASE(mkvmuxer::IMkvWriter) {
 
   // Functions to add video and audio frames with |encoded_data.data()|
   // to WebM Segment. Either one returns true on success.
+  // |encoded_alpha| represents the encode output of alpha channel when
+  // available, can be nullptr otherwise.
   bool OnEncodedVideo(const VideoParameters& params,
                       std::unique_ptr<std::string> encoded_data,
+                      std::unique_ptr<std::string> encoded_alpha,
                       base::TimeTicks timestamp,
                       bool is_key_frame);
   bool OnEncodedAudio(const media::AudioParameters& params,
@@ -101,6 +104,7 @@ class MEDIA_EXPORT WebmMuxer : public NON_EXPORTED_BASE(mkvmuxer::IMkvWriter) {
 
   // Helper to simplify saving frames. Returns true on success.
   bool AddFrame(std::unique_ptr<std::string> encoded_data,
+                std::unique_ptr<std::string> encoded_alpha_data,
                 uint8_t track_index,
                 base::TimeDelta timestamp,
                 bool is_key_frame);
@@ -145,11 +149,13 @@ class MEDIA_EXPORT WebmMuxer : public NON_EXPORTED_BASE(mkvmuxer::IMkvWriter) {
   // received, if expected, since WebM headers can only be written once.
   struct EncodedVideoFrame {
     EncodedVideoFrame(std::unique_ptr<std::string> data,
+                      std::unique_ptr<std::string> alpha_data,
                       base::TimeTicks timestamp,
                       bool is_keyframe);
     ~EncodedVideoFrame();
 
     std::unique_ptr<std::string> data;
+    std::unique_ptr<std::string> alpha_data;
     base::TimeTicks timestamp;
     bool is_keyframe;
 

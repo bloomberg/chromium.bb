@@ -65,8 +65,12 @@ class CONTENT_EXPORT MediaRecorderHandler final
  private:
   friend class MediaRecorderHandlerTest;
 
+  // Called to indicate there is encoded video data available. |encoded_alpha|
+  // represents the encode output of alpha channel when available, can be
+  // nullptr otherwise.
   void OnEncodedVideo(const media::WebmMuxer::VideoParameters& params,
                       std::unique_ptr<std::string> encoded_data,
+                      std::unique_ptr<std::string> encoded_alpha,
                       base::TimeTicks timestamp,
                       bool is_key_frame);
   void OnEncodedAudio(const media::AudioParameters& params,

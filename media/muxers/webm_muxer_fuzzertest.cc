@@ -65,9 +65,12 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
         const auto visible_rect = gfx::Size(16 + rng() % 128, 16 + rng() % 128);
         const auto video_frame = VideoFrame::CreateBlackFrame(visible_rect);
         const auto is_key_frame = rng() % 2;
-        muxer.OnEncodedVideo(WebmMuxer::VideoParameters(video_frame),
-                             base::MakeUnique<std::string>(str),
-                             base::TimeTicks(), is_key_frame);
+        const auto has_alpha_frame = rng() % 4;
+        muxer.OnEncodedVideo(
+            WebmMuxer::VideoParameters(video_frame),
+            base::MakeUnique<std::string>(str),
+            has_alpha_frame ? base::MakeUnique<std::string>(str) : nullptr,
+            base::TimeTicks(), is_key_frame);
         base::RunLoop run_loop;
         run_loop.RunUntilIdle();
       }

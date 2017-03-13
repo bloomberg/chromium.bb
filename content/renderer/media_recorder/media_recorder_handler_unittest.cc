@@ -55,17 +55,18 @@ struct MediaRecorderTestParams {
   const bool has_audio;
   const char* const mime_type;
   const char* const codecs;
+  const bool encoder_supports_alpha;
 };
 
 // Array of valid combinations of video/audio/codecs and expected collected
 // encoded sizes to use for parameterizing MediaRecorderHandlerTest.
 static const MediaRecorderTestParams kMediaRecorderTestParams[] = {
-    {true, false, "video/webm", "vp8"},
-    {true, false, "video/webm", "vp9"},
+    {true, false, "video/webm", "vp8", true},
+    {true, false, "video/webm", "vp9", true},
 #if BUILDFLAG(RTC_USE_H264)
-    {true, false, "video/webm", "h264"},
+    {true, false, "video/webm", "h264", false},
 #endif
-    {false, true, "video/webm", "vp8"}};
+    {false, true, "video/webm", "vp8", true}};
 
 class MediaRecorderHandlerTest : public TestWithParam<MediaRecorderTestParams>,
                                  public blink::WebMediaRecorderHandlerClient {
@@ -217,7 +218,8 @@ TEST_P(MediaRecorderHandlerTest, InitializeStartStop) {
   media_recorder_handler_.reset();
 }
 
-// Sends 2 frames and expect them as WebM contained encoded data in writeData().
+// Sends 2 opaque frames and 1 transparent frame and expects them as WebM
+// contained encoded data in writeData().
 TEST_P(MediaRecorderHandlerTest, EncodeVideoFrames) {
   // Video-only test.
   if (GetParam().has_audio)
@@ -265,6 +267,33 @@ TEST_P(MediaRecorderHandlerTest, EncodeVideoFrames) {
         .WillOnce(RunClosure(quit_closure));
 
     OnVideoFrameForTesting(video_frame);
+    run_loop.Run();
+  }
+  Mock::VerifyAndClearExpectations(this);
+
+  {
+    const scoped_refptr<media::VideoFrame> alpha_frame =
+        media::VideoFrame::CreateTransparentFrame(gfx::Size(160, 80));
+    const size_t kEncodedSizeThreshold = 16;
+    EXPECT_EQ(4u, media::VideoFrame::NumPlanes(alpha_frame->format()));
+    base::RunLoop run_loop;
+    base::Closure quit_closure = run_loop.QuitClosure();
+    // The second time around writeData() is called a number of times to write
+    // the WebM frame header, and then is pinged with the encoded data.
+    EXPECT_CALL(*this, writeData(_, Lt(kEncodedSizeThreshold), _, _))
+        .Times(AtLeast(1));
+    EXPECT_CALL(*this, writeData(_, Gt(kEncodedSizeThreshold), _, _))
+        .Times(1)
+        .WillOnce(RunClosure(quit_closure));
+    if (GetParam().encoder_supports_alpha) {
+      EXPECT_CALL(*this, writeData(_, Lt(kEncodedSizeThreshold), _, _))
+          .Times(AtLeast(1));
+      EXPECT_CALL(*this, writeData(_, Gt(kEncodedSizeThreshold), _, _))
+          .Times(1)
+          .WillOnce(RunClosure(quit_closure));
+    }
+
+    OnVideoFrameForTesting(alpha_frame);
     run_loop.Run();
   }
 

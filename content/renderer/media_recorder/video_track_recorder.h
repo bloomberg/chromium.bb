@@ -51,6 +51,7 @@ class CONTENT_EXPORT VideoTrackRecorder
   using OnEncodedVideoCB =
       base::Callback<void(const media::WebmMuxer::VideoParameters& params,
                           std::unique_ptr<std::string> encoded_data,
+                          std::unique_ptr<std::string> encoded_alpha,
                           base::TimeTicks capture_timestamp,
                           bool is_key_frame)>;
 
@@ -75,6 +76,9 @@ class CONTENT_EXPORT VideoTrackRecorder
                          int32_t bits_per_second,
                          const scoped_refptr<media::VideoFrame>& frame,
                          base::TimeTicks capture_time);
+
+  // TODO(emircan): Remove after refactor, see http://crbug.com/700433.
+  bool CanEncodeAlphaChannelForTesting();
 
   // Used to check that we are destroyed on the same thread we were created.
   base::ThreadChecker main_render_thread_checker_;
