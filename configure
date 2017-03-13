@@ -310,6 +310,7 @@ EXPERIMENT_LIST="
     ref_adapt
     lv_map
     mv_compress
+    frame_superres
 "
 CONFIG_LIST="
     dependency_tracking
