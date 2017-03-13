@@ -87,7 +87,7 @@ message TypedValue {
 }
 
 // An activity represents information about something of interest on a thread.
-// Next id: 11
+// Next id: 14
 message Activity {
   enum Type {
     UNKNOWN = 0;
@@ -96,6 +96,7 @@ message Activity {
     ACT_EVENT_WAIT = 3;
     ACT_THREAD_JOIN = 4;
     ACT_PROCESS_WAIT = 5;
+    ACT_GENERIC = 6;
   }
 
   // Identifies the type of the activity (and specifies which fields are
@@ -105,8 +106,12 @@ message Activity {
   // Creation time of the activity.
   optional int64 time = 2;
 
-  // The address that is the origin of the activity.
-  // Expected for ACT_TASK_*
+  // The address that pushed the activity onto the stack.
+  optional uint64 address = 11;
+
+  // The address that is the origin of the activity. This is useful for things
+  // like tasks that are posted from a completely different thread though most
+  // activities will leave it null.
   optional uint64 origin_address = 3;
 
   // The sequence identifier of the posted task.
@@ -124,6 +129,12 @@ message Activity {
 
   // A unique identifier for a process.
   optional int64 process_id = 8;
+
+  // An arbitrary identifier used for association.
+  optional uint32 generic_id = 12;
+
+  // An arbitrary value used for information purposes.
+  optional int32 generic_data = 13;
 
   // Tag id 10 is reserved for server side augmentation.
 

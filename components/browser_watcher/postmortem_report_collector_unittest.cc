@@ -342,7 +342,7 @@ namespace {
 
 // Parameters for the activity tracking.
 const size_t kFileSize = 2 * 1024;
-const int kStackDepth = 5;
+const int kStackDepth = 6;
 const uint64_t kAllocatorId = 0;
 const char kAllocatorName[] = "PostmortemReportCollectorCollectionTest";
 const uint64_t kTaskSequenceNum = 42;
@@ -352,6 +352,8 @@ const uintptr_t kEventAddress = 1002U;
 const int kThreadId = 43;
 const int kProcessId = 44;
 const int kAnotherThreadId = 45;
+const uint32_t kGenericId = 46U;
+const int32_t kGenericData = 47;
 
 }  // namespace
 
@@ -445,6 +447,8 @@ TEST_F(PostmortemReportCollectorCollectionTest, CollectSuccess) {
                          ActivityData::ForThread(kThreadId));
   tracker_->PushActivity(nullptr, base::debug::Activity::ACT_PROCESS_WAIT,
                          ActivityData::ForProcess(kProcessId));
+  tracker_->PushActivity(nullptr, base::debug::Activity::ACT_GENERIC,
+                         ActivityData::ForGeneric(kGenericId, kGenericData));
   // Note: this exceeds the activity stack's capacity.
   tracker_->PushActivity(nullptr, base::debug::Activity::ACT_THREAD_JOIN,
                          ActivityData::ForThread(kAnotherThreadId));
@@ -478,8 +482,8 @@ TEST_F(PostmortemReportCollectorCollectionTest, CollectSuccess) {
             thread_state.thread_id());
 #endif
 
-  EXPECT_EQ(6, thread_state.activity_count());
-  ASSERT_EQ(5, thread_state.activities_size());
+  EXPECT_EQ(7, thread_state.activity_count());
+  ASSERT_EQ(6, thread_state.activities_size());
   {
     const Activity& activity = thread_state.activities(0);
     EXPECT_EQ(Activity::ACT_TASK_RUN, activity.type());
@@ -513,6 +517,13 @@ TEST_F(PostmortemReportCollectorCollectionTest, CollectSuccess) {
     const Activity& activity = thread_state.activities(4);
     EXPECT_EQ(Activity::ACT_PROCESS_WAIT, activity.type());
     EXPECT_EQ(kProcessId, activity.process_id());
+    EXPECT_EQ(0U, activity.user_data().size());
+  }
+  {
+    const Activity& activity = thread_state.activities(5);
+    EXPECT_EQ(Activity::ACT_GENERIC, activity.type());
+    EXPECT_EQ(kGenericId, activity.generic_id());
+    EXPECT_EQ(kGenericData, activity.generic_data());
     EXPECT_EQ(0U, activity.user_data().size());
   }
 }

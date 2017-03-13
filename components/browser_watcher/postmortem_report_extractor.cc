@@ -140,6 +140,47 @@ void CollectModuleInformation(
   }
 }
 
+void CollectActivity(const base::debug::Activity& recorded,
+                     Activity* collected) {
+  DCHECK(collected);
+
+  collected->set_time(recorded.time_internal);
+  collected->set_address(recorded.calling_address);
+  collected->set_origin_address(recorded.origin_address);
+
+  // TODO(manzagop): the current collection deals with specific activity types;
+  // consider modifying it to handle the notion of activity categories.
+  switch (recorded.activity_type) {
+    case base::debug::Activity::ACT_TASK_RUN:
+      collected->set_type(Activity::ACT_TASK_RUN);
+      collected->set_task_sequence_id(recorded.data.task.sequence_id);
+      break;
+    case base::debug::Activity::ACT_LOCK_ACQUIRE:
+      collected->set_type(Activity::ACT_LOCK_ACQUIRE);
+      collected->set_lock_address(recorded.data.lock.lock_address);
+      break;
+    case base::debug::Activity::ACT_EVENT_WAIT:
+      collected->set_type(Activity::ACT_EVENT_WAIT);
+      collected->set_event_address(recorded.data.event.event_address);
+      break;
+    case base::debug::Activity::ACT_THREAD_JOIN:
+      collected->set_type(Activity::ACT_THREAD_JOIN);
+      collected->set_thread_id(recorded.data.thread.thread_id);
+      break;
+    case base::debug::Activity::ACT_PROCESS_WAIT:
+      collected->set_type(Activity::ACT_PROCESS_WAIT);
+      collected->set_process_id(recorded.data.process.process_id);
+      break;
+    case base::debug::Activity::ACT_GENERIC:
+      collected->set_type(Activity::ACT_GENERIC);
+      collected->set_generic_id(recorded.data.generic.id);
+      collected->set_generic_data(recorded.data.generic.info);
+      break;
+    default:
+      break;
+  }
+}
+
 void CollectThread(
     const base::debug::ThreadActivityAnalyzer::Snapshot& snapshot,
     ThreadState* thread_state) {
@@ -150,37 +191,9 @@ void CollectThread(
   thread_state->set_activity_count(snapshot.activity_stack_depth);
 
   for (size_t i = 0; i < snapshot.activity_stack.size(); ++i) {
-    const base::debug::Activity& recorded = snapshot.activity_stack[i];
     Activity* collected = thread_state->add_activities();
 
-    // Collect activity.
-    switch (recorded.activity_type) {
-      case base::debug::Activity::ACT_TASK_RUN:
-        collected->set_type(Activity::ACT_TASK_RUN);
-        collected->set_origin_address(recorded.origin_address);
-        collected->set_task_sequence_id(recorded.data.task.sequence_id);
-        break;
-      case base::debug::Activity::ACT_LOCK_ACQUIRE:
-        collected->set_type(Activity::ACT_LOCK_ACQUIRE);
-        collected->set_lock_address(recorded.data.lock.lock_address);
-        break;
-      case base::debug::Activity::ACT_EVENT_WAIT:
-        collected->set_type(Activity::ACT_EVENT_WAIT);
-        collected->set_event_address(recorded.data.event.event_address);
-        break;
-      case base::debug::Activity::ACT_THREAD_JOIN:
-        collected->set_type(Activity::ACT_THREAD_JOIN);
-        collected->set_thread_id(recorded.data.thread.thread_id);
-        break;
-      case base::debug::Activity::ACT_PROCESS_WAIT:
-        collected->set_type(Activity::ACT_PROCESS_WAIT);
-        collected->set_process_id(recorded.data.process.process_id);
-        break;
-      default:
-        break;
-    }
-
-    // Collect user data.
+    CollectActivity(snapshot.activity_stack[i], collected);
     if (i < snapshot.user_data_stack.size()) {
       CollectUserData(snapshot.user_data_stack[i],
                       collected->mutable_user_data(), nullptr);

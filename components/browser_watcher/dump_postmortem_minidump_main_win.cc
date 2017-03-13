@@ -101,6 +101,8 @@ void PrintActivity(FILE* out,
   fprintf(out, "type: %d\n", activity.type());
   Indent(out, indent_level + 1);
   fprintf(out, "time: %lld\n", activity.time());
+  Indent(out, indent_level + 1);
+  fprintf(out, "address: %llX\n", activity.address());
   switch (activity.type()) {
     case browser_watcher::Activity::UNKNOWN:
       break;
@@ -124,6 +126,11 @@ void PrintActivity(FILE* out,
     case browser_watcher::Activity::ACT_PROCESS_WAIT:
       Indent(out, indent_level + 1);
       fprintf(out, "process_id: %lld\n", activity.process_id());
+      break;
+    case browser_watcher::Activity::ACT_GENERIC:
+      Indent(out, indent_level + 1);
+      fprintf(out, "id: %u, data: %d\n", activity.generic_id(),
+              activity.generic_data());
       break;
   }
 
