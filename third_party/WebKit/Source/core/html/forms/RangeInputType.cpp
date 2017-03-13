@@ -65,10 +65,8 @@ static const int rangeDefaultStepBase = 0;
 static const int rangeStepScaleFactor = 1;
 
 static Decimal ensureMaximum(const Decimal& proposedValue,
-                             const Decimal& minimum,
-                             const Decimal& fallbackValue) {
-  return proposedValue >= minimum ? proposedValue
-                                  : std::max(minimum, fallbackValue);
+                             const Decimal& minimum) {
+  return proposedValue >= minimum ? proposedValue : minimum;
 }
 
 InputType* RangeInputType::create(HTMLInputElement& element) {
@@ -134,7 +132,7 @@ StepRange RangeInputType::createStepRange(
       parseToNumber(element().fastGetAttribute(minAttr), rangeDefaultMinimum);
   const Decimal maximum = ensureMaximum(
       parseToNumber(element().fastGetAttribute(maxAttr), rangeDefaultMaximum),
-      minimum, rangeDefaultMaximum);
+      minimum);
 
   const Decimal step = StepRange::parseStep(
       anyStepHandling, stepDescription, element().fastGetAttribute(stepAttr));
