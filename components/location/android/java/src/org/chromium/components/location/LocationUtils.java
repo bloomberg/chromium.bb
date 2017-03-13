@@ -74,6 +74,7 @@ public class LocationUtils {
      * Returns whether location services are enabled system-wide, i.e. whether any application is
      * able to access location.
      */
+    @SuppressWarnings("deprecation")
     public boolean isSystemLocationSettingEnabled() {
         Context context = ContextUtils.getApplicationContext();
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
