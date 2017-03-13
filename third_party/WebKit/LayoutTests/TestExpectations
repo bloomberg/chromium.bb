@@ -1550,9 +1550,6 @@ crbug.com/618082 [ Win10 ] virtual/threaded/printing/thead-repeats-at-top-of-eac
 
 crbug.com/474759 fast/writing-mode/vertical-rl-replaced-selection.html [ Failure ]
 
-# Cleanup after http://crrev.com/2731393002
-crbug.com/696216 fast/forms/select/menulist-appearance-rtl.html [ NeedsRebaseline ]
-
 crbug.com/353746 virtual/android/fullscreen/video-specified-size.html [ Failure Pass ]
 
 crbug.com/527270 accessibility/name-calc-img.html [ Failure Pass Timeout ]
