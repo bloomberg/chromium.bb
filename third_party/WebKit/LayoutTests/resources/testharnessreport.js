@@ -214,6 +214,10 @@
         results.textContent = resultStr;
 
         function done() {
+            let xhtmlNS = 'http://www.w3.org/1999/xhtml';
+            var body = null;
+            if (output_document.body && output_document.body.tagName == 'BODY' && output_document.body.namespaceURI == xhtmlNS)
+                body = output_document.body;
             // A temporary workaround since |window.self| property lookup starts
             // failing if the frame is detached. |output_document| may be an
             // ancestor of |self| so clearing |textContent| may detach |self|.
@@ -230,17 +234,20 @@
 
                 // Anything isn't material to the testrunner output, so should
                 // be hidden from the text dump.
-                if (output_document.body && output_document.body.tagName == 'BODY')
-                    output_document.body.textContent = '';
+                if (body)
+                    body.textContent = '';
             }
 
             // Add results element to output_document.
-            if (!output_document.body || output_document.body.tagName != 'BODY') {
-                if (!output_document.documentElement)
-                    output_document.appendChild(output_document.createElement('html'));
-                else if (output_document.body) // output_document.body is <frameset>.
-                    output_document.body.remove();
-                output_document.documentElement.appendChild(output_document.createElement("body"));
+            if (!body) {
+                // output_document might be an SVG document.
+                if (output_document.documentElement)
+                    output_document.documentElement.remove();
+                let html = output_document.createElementNS(xhtmlNS, 'html');
+                output_document.appendChild(html);
+                body = output_document.createElementNS(xhtmlNS, 'body');
+                body.setAttribute('style', 'white-space:pre;');
+                html.appendChild(body);
             }
             output_document.body.appendChild(results);
 

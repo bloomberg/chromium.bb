@@ -1,4 +1,4 @@
- This is a testharness.js-based test.
+This is a testharness.js-based test.
 FAIL innerHTML in XHTML: getting while the document is in an invalid state assert_throws: getting element with ":" in its local name function "function () {
     document.documentElement.innerHTML;
   }" did not throw
