@@ -138,24 +138,13 @@ static inline bool svgPaintTypeHasURL(SVGPaintType paintType) {
 
 static inline LayoutSVGResourcePaintServer* paintingResourceFromSVGPaint(
     TreeScope& treeScope,
-    const SVGPaintType& paintType,
     const String& paintUri,
-    AtomicString& id,
-    bool& hasPendingResource) {
-  if (!svgPaintTypeHasURL(paintType))
-    return nullptr;
-
+    AtomicString& id) {
   id = SVGURIReference::fragmentIdentifierFromIRIString(paintUri, treeScope);
   LayoutSVGResourceContainer* container =
       treeScope.ensureSVGTreeScopedResources().resourceById(id);
-  if (!container) {
-    hasPendingResource = true;
+  if (!container || !container->isSVGPaintServer())
     return nullptr;
-  }
-
-  if (!container->isSVGPaintServer())
-    return nullptr;
-
   return toLayoutSVGResourcePaintServer(container);
 }
 
@@ -255,23 +244,19 @@ std::unique_ptr<SVGResources> SVGResources::buildResources(
   }
 
   if (fillAndStrokeTags().contains(tagName)) {
-    if (style.hasFill()) {
-      bool hasPendingResource = false;
+    if (style.hasFill() && svgPaintTypeHasURL(style.fillPaintType())) {
       AtomicString id;
-      LayoutSVGResourcePaintServer* resource = paintingResourceFromSVGPaint(
-          treeScope, style.fillPaintType(), style.fillPaintUri(), id,
-          hasPendingResource);
-      if (!ensureResources(resources).setFill(resource) && hasPendingResource)
+      LayoutSVGResourcePaintServer* resource =
+          paintingResourceFromSVGPaint(treeScope, style.fillPaintUri(), id);
+      if (!ensureResources(resources).setFill(resource))
         treeScopeResources.addPendingResource(id, element);
     }
 
-    if (style.hasStroke()) {
-      bool hasPendingResource = false;
+    if (style.hasStroke() && svgPaintTypeHasURL(style.strokePaintType())) {
       AtomicString id;
-      LayoutSVGResourcePaintServer* resource = paintingResourceFromSVGPaint(
-          treeScope, style.strokePaintType(), style.strokePaintUri(), id,
-          hasPendingResource);
-      if (!ensureResources(resources).setStroke(resource) && hasPendingResource)
+      LayoutSVGResourcePaintServer* resource =
+          paintingResourceFromSVGPaint(treeScope, style.strokePaintUri(), id);
+      if (!ensureResources(resources).setStroke(resource))
         treeScopeResources.addPendingResource(id, element);
     }
   }
