@@ -85,7 +85,8 @@ void ContentPasswordManagerDriver::FillPasswordForm(
     const autofill::PasswordFormFillData& form_data) {
   const int key = next_free_key_++;
   password_autofill_manager_.OnAddPasswordFormMapping(key, form_data);
-  GetPasswordAutofillAgent()->FillPasswordForm(key, form_data);
+  GetPasswordAutofillAgent()->FillPasswordForm(
+      key, autofill::ClearPasswordValues(form_data));
 }
 
 void ContentPasswordManagerDriver::AllowPasswordGenerationForForm(

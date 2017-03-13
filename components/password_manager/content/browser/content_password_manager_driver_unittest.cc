@@ -7,6 +7,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
+#include "base/strings/utf_string_conversions.h"
 #include "components/autofill/content/common/autofill_agent.mojom.h"
 #include "components/autofill/core/browser/test_autofill_client.h"
 #include "components/password_manager/core/browser/stub_log_manager.h"
@@ -21,6 +22,10 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using autofill::PasswordForm;
+using autofill::PasswordFormFillData;
+using base::ASCIIToUTF16;
+using testing::_;
 using testing::Return;
 
 namespace password_manager {
@@ -67,12 +72,11 @@ class FakePasswordAutofillAgent
     logging_state_active_ = false;
   }
 
- private:
   // autofill::mojom::PasswordAutofillAgent:
-  void FillPasswordForm(
-      int key,
-      const autofill::PasswordFormFillData& form_data) override {}
+  MOCK_METHOD2(FillPasswordForm,
+               void(int, const autofill::PasswordFormFillData&));
 
+ private:
   void SetLoggingState(bool active) override {
     called_set_logging_state_ = true;
     logging_state_active_ = active;
@@ -91,6 +95,47 @@ class FakePasswordAutofillAgent
 
   mojo::Binding<autofill::mojom::PasswordAutofillAgent> binding_;
 };
+
+PasswordFormFillData GetTestPasswordFormFillData() {
+  // Create the current form on the page.
+  PasswordForm form_on_page;
+  form_on_page.origin = GURL("https://foo.com/");
+  form_on_page.action = GURL("https://foo.com/login");
+  form_on_page.signon_realm = "https://foo.com/";
+  form_on_page.scheme = PasswordForm::SCHEME_HTML;
+
+  // Create an exact match in the database.
+  PasswordForm preferred_match = form_on_page;
+  preferred_match.username_element = ASCIIToUTF16("username");
+  preferred_match.username_value = ASCIIToUTF16("test@gmail.com");
+  preferred_match.password_element = ASCIIToUTF16("password");
+  preferred_match.password_value = ASCIIToUTF16("test");
+  preferred_match.preferred = true;
+
+  std::map<base::string16, const PasswordForm*> matches;
+  PasswordForm non_preferred_match = preferred_match;
+  non_preferred_match.username_value = ASCIIToUTF16("test1@gmail.com");
+  non_preferred_match.password_value = ASCIIToUTF16("test1");
+  matches[non_preferred_match.username_value] = &non_preferred_match;
+
+  PasswordFormFillData result;
+  InitPasswordFormFillData(form_on_page, matches, &preferred_match, true, false,
+                           &result);
+  return result;
+}
+
+MATCHER_P(WerePasswordsCleared,
+          should_preferred_password_cleared,
+          "Passwords not cleared") {
+  if (should_preferred_password_cleared && !arg.password_field.value.empty())
+    return false;
+
+  for (auto& credentials : arg.additional_logins)
+    if (!credentials.second.password.empty())
+      return false;
+
+  return true;
+}
 
 }  // namespace
 
@@ -364,6 +409,20 @@ TEST_F(ContentPasswordManagerDriverTest,
   old_rfh_tester->SimulateSwapOutACK();
   EXPECT_TRUE(!!(entry->GetSSL().content_status &
                  content::SSLStatus::DISPLAYED_PASSWORD_FIELD_ON_HTTP));
+}
+
+TEST_F(ContentPasswordManagerDriverTest, ClearPasswordsOnAutofill) {
+  std::unique_ptr<ContentPasswordManagerDriver> driver(
+      new ContentPasswordManagerDriver(main_rfh(), &password_manager_client_,
+                                       &autofill_client_));
+
+  for (bool wait_for_username : {false, true}) {
+    PasswordFormFillData fill_data = GetTestPasswordFormFillData();
+    fill_data.wait_for_username = wait_for_username;
+    EXPECT_CALL(fake_agent_,
+                FillPasswordForm(_, WerePasswordsCleared(wait_for_username)));
+    driver->FillPasswordForm(fill_data);
+  }
 }
 
 INSTANTIATE_TEST_CASE_P(,

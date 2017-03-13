@@ -96,6 +96,10 @@ void InitPasswordFormFillData(
     bool enable_other_possible_usernames,
     PasswordFormFillData* result);
 
+// Renderer needs to have only a password that should be autofilled, all other
+// passwords might be safety erased.
+PasswordFormFillData ClearPasswordValues(const PasswordFormFillData& data);
+
 }  // namespace autofill
 
 #endif  // COMPONENTS_AUTOFILL_CORE_COMMON_PASSWORD_FORM_FILL_DATA_H__
