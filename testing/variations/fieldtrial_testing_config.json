@@ -2470,35 +2470,6 @@
             ]
         }
     ],
-    "SecurityWarningIconUpdate": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "ios",
-                "linux",
-                "mac",
-                "win"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "SecurityWarningIconUpdate"
-                    ]
-                },
-                {
-                    "name": "Control",
-                    "disable_features": [
-                        "SecurityWarningIconUpdate"
-                    ]
-                },
-                {
-                    "name": "Default"
-                }
-            ]
-        }
-    ],
     "SettingsEnforcement": [
         {
             "platforms": [
