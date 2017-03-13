@@ -1,4 +1,3 @@
-CONSOLE ERROR: line 83: Uncaught (in promise) TypeError: Failed to execute 'query' on 'MediaCapabilities': Illegal invocation
 This is a testharness.js-based test.
 PASS Navigator interface: attribute mediaCapabilities 
 PASS Navigator must be primary interface of navigator 

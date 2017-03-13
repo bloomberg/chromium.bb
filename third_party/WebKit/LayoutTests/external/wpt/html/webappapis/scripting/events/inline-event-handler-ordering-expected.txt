@@ -1,5 +1,3 @@
-CONSOLE ERROR: line 52: Uncaught SyntaxError: Unexpected token }
-CONSOLE ERROR: line 52: Uncaught SyntaxError: Unexpected token }
 This is a testharness.js-based test.
 Harness Error. harness_status.status = 1 , harness_status.message = Uncaught SyntaxError: Unexpected token }
 FAIL Inline event handlers retain their ordering when invalid and force-compiled assert_array_equals: property 1, expected "TWO" but got "THREE"

@@ -1,12 +1,3 @@
-CONSOLE ERROR: line 83: Uncaught (in promise) TypeError: Failed to execute 'createOffer' on 'RTCPeerConnection': Illegal invocation
-CONSOLE ERROR: line 83: Uncaught (in promise) TypeError: Failed to execute 'setLocalDescription' on 'RTCPeerConnection': Illegal invocation
-CONSOLE ERROR: line 83: Uncaught (in promise) TypeError: Failed to execute 'createAnswer' on 'RTCPeerConnection': Illegal invocation
-CONSOLE ERROR: line 83: Uncaught (in promise) TypeError: Failed to execute 'setRemoteDescription' on 'RTCPeerConnection': Illegal invocation
-CONSOLE ERROR: line 83: Uncaught (in promise) TypeError: Failed to execute 'addIceCandidate' on 'RTCPeerConnection': Illegal invocation
-CONSOLE ERROR: line 83: Uncaught (in promise) TypeError: Failed to execute 'getStats' on 'RTCPeerConnection': Illegal invocation
-CONSOLE ERROR: line 83: Uncaught (in promise) TypeError: Failed to execute 'setLocalDescription' on 'RTCPeerConnection': 1 argument required, but only 0 present.
-CONSOLE ERROR: line 83: Uncaught (in promise) TypeError: Failed to execute 'setRemoteDescription' on 'RTCPeerConnection': 1 argument required, but only 0 present.
-CONSOLE ERROR: line 83: Uncaught (in promise) TypeError: Failed to execute 'addIceCandidate' on 'RTCPeerConnection': 1 argument required, but only 0 present.
 This is a testharness.js-based test.
 Found 116 tests; 60 PASS, 56 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS EventTarget interface: existence and properties of interface object 

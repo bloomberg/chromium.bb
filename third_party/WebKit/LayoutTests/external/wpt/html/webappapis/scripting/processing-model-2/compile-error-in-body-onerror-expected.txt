@@ -1,6 +1,0 @@
-CONSOLE ERROR: line 19: Uncaught SyntaxError: Unexpected token )
-CONSOLE ERROR: line 17: Uncaught SyntaxError: Unexpected token )
-This is a testharness.js-based test.
-PASS window.onerror - compile error in <body onerror> 
-Harness: the test ran to completion.
-

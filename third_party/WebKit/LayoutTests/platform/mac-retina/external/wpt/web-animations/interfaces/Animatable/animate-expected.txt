@@ -1,6 +1,3 @@
-CONSOLE WARNING: line 78: Invalid keyframe value for property top: invalid
-CONSOLE WARNING: line 78: Invalid keyframe value for property left: invalid
-CONSOLE WARNING: line 78: Invalid keyframe value for property left: invalid
 This is a testharness.js-based test.
 Found 69 tests; 25 PASS, 44 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Element.animate() creates an Animation object 

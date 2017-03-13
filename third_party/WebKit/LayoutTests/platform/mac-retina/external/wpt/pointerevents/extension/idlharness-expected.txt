@@ -1,4 +1,3 @@
-CONSOLE MESSAGE: line 251: callback not yet supported
 This is a testharness.js-based test.
 PASS PointerEvent interface: existence and properties of interface object 
 PASS PointerEvent interface object length 

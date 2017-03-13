@@ -1,5 +1,3 @@
-CONSOLE ERROR: line 1: Uncaught SyntaxError: Unexpected token import
-CONSOLE ERROR: line 1325: Uncaught Error: Tried to create a test with file_is_test
 This is a testharness.js-based test.
 FAIL An external module script with nomodule must run Uncaught SyntaxError: Unexpected token import
 Harness: the test ran to completion.

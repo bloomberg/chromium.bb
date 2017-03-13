@@ -1,4 +1,3 @@
-CONSOLE WARNING: line 1: The rtcpMuxPolicy option is being considered for removal and may be removed no earlier than M60, around August 2017. If you depend on it, please see https://www.chromestatus.com/features/5654810086866944 for more details.
 This is a testharness.js-based test.
 Found 73 tests; 61 PASS, 12 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS RTCPeerConnection.length 

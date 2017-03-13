@@ -1,4 +1,3 @@
-CONSOLE ERROR: line 136: Uncaught (in promise) SyntaxError: The source provided ('about:blank') could not be parsed as a value list.
 This is a testharness.js-based test.
 PASS querySelectorAll 
 PASS createElement 

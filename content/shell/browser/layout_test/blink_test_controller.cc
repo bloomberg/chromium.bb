@@ -168,6 +168,10 @@ void BlinkTestResultPrinter::PrintAudioFooter() {
   state_ = IN_IMAGE_BLOCK;
 }
 
+void BlinkTestResultPrinter::AddMessageToStderr(const std::string& message) {
+  *error_ << message;
+}
+
 void BlinkTestResultPrinter::AddMessage(const std::string& message) {
   AddMessageRaw(message + "\n");
 }
@@ -420,6 +424,8 @@ bool BlinkTestController::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(BlinkTestController, message)
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_PrintMessage, OnPrintMessage)
+    IPC_MESSAGE_HANDLER(ShellViewHostMsg_PrintMessageToStderr,
+                        OnPrintMessageToStderr)
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_TextDump, OnTextDump)
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_InitiateLayoutDump,
                         OnInitiateLayoutDump)
@@ -773,6 +779,10 @@ void BlinkTestController::OnLayoutDumpResponse(RenderFrameHost* sender,
 
 void BlinkTestController::OnPrintMessage(const std::string& message) {
   printer_->AddMessageRaw(message);
+}
+
+void BlinkTestController::OnPrintMessageToStderr(const std::string& message) {
+  printer_->AddMessageToStderr(message);
 }
 
 void BlinkTestController::OnOverridePreferences(const WebPreferences& prefs) {

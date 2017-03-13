@@ -294,6 +294,10 @@ void BlinkTestRunner::SetDeviceOrientationData(
   SetMockDeviceOrientationData(data);
 }
 
+void BlinkTestRunner::PrintMessageToStderr(const std::string& message) {
+  Send(new ShellViewHostMsg_PrintMessageToStderr(routing_id(), message));
+}
+
 void BlinkTestRunner::PrintMessage(const std::string& message) {
   Send(new ShellViewHostMsg_PrintMessage(routing_id(), message));
 }

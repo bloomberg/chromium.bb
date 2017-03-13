@@ -70,6 +70,10 @@ class WebTestDelegate {
   virtual void SetDeviceOrientationData(
       const blink::WebDeviceOrientationData& data) = 0;
 
+  // Add a message to stderr (not saved to expected output files, for debugging
+  // only).
+  virtual void PrintMessageToStderr(const std::string& message) = 0;
+
   // Add a message to the text dump for the layout test.
   virtual void PrintMessage(const std::string& message) = 0;
 

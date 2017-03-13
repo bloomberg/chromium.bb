@@ -72,6 +72,7 @@ class BlinkTestRunner : public RenderViewObserver,
   void SetDeviceMotionData(const blink::WebDeviceMotionData& data) override;
   void SetDeviceOrientationData(
       const blink::WebDeviceOrientationData& data) override;
+  void PrintMessageToStderr(const std::string& message) override;
   void PrintMessage(const std::string& message) override;
   void PostTask(const base::Closure& task) override;
   void PostDelayedTask(const base::Closure& task, long long ms) override;

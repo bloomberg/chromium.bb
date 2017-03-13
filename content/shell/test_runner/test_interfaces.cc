@@ -120,7 +120,8 @@ void TestInterfaces::ConfigureForTestWithURL(const blink::WebURL& test_url,
   }
   if (spec.find("/external/wpt/") != std::string::npos ||
       spec.find("/external/csswg-test/") != std::string::npos ||
-      spec.find("://web-platform.test") != std::string::npos)
+      spec.find("://web-platform.test") != std::string::npos ||
+      spec.find("/harness-tests/wpt/") != std::string::npos)
     test_runner_->set_is_web_platform_tests_mode();
 }
 

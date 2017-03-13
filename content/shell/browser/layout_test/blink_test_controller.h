@@ -85,6 +85,7 @@ class BlinkTestResultPrinter {
   void PrintAudioBlock(const std::vector<unsigned char>& audio_data);
   void PrintAudioFooter();
 
+  void AddMessageToStderr(const std::string& message);
   void AddMessage(const std::string& message);
   void AddMessageRaw(const std::string& message);
   void AddErrorMessage(const std::string& message);
@@ -202,6 +203,7 @@ class BlinkTestController : public base::NonThreadSafe,
   void OnTextDump(const std::string& dump);
   void OnInitiateLayoutDump();
   void OnLayoutDumpResponse(RenderFrameHost* sender, const std::string& dump);
+  void OnPrintMessageToStderr(const std::string& message);
   void OnPrintMessage(const std::string& message);
   void OnOverridePreferences(const WebPreferences& prefs);
   void OnTestFinished();

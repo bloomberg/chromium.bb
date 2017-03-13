@@ -1,11 +1,3 @@
-CONSOLE ERROR: line 707: Failed parsing 'srcset' attribute value since it has an unknown descriptor.
-CONSOLE ERROR: line 707: Dropped srcset candidate "\u0000\u0001\u0002\u0003\u0004\u0005\u0006\u0007"
-CONSOLE ERROR: line 707: Failed parsing 'srcset' attribute value since it has an unknown descriptor.
-CONSOLE ERROR: line 707: Dropped srcset candidate "[object"
-CONSOLE ERROR: line 724: Failed parsing 'srcset' attribute value since it has an unknown descriptor.
-CONSOLE ERROR: line 724: Dropped srcset candidate "\u0000\u0001\u0002\u0003\u0004\u0005\u0006\u0007"
-CONSOLE ERROR: line 724: Failed parsing 'srcset' attribute value since it has an unknown descriptor.
-CONSOLE ERROR: line 724: Dropped srcset candidate "[object"
 This is a testharness.js-based test.
 PASS img.title: 32 tests
 PASS img.lang: 32 tests

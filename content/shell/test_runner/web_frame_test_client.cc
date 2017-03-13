@@ -648,10 +648,15 @@ void WebFrameTestClient::didAddMessageToConsole(
     default:
       level = "MESSAGE";
   }
-  delegate_->PrintMessage(std::string("CONSOLE ") + level + ": ");
+  std::string console_message(std::string("CONSOLE ") + level + ": ");
   if (source_line) {
-    delegate_->PrintMessage(base::StringPrintf("line %d: ", source_line));
+    console_message += base::StringPrintf("line %d: ", source_line);
   }
+  // Console messages shouldn't be included in the expected output for
+  // web-platform-tests because they may create non-determinism not
+  // intended by the test author. They are still included in the stderr
+  // output for debug purposes.
+  bool dump_to_stderr = test_runner()->is_web_platform_tests_mode();
   if (!message.text.isEmpty()) {
     std::string new_message;
     new_message = message.text.utf8();
@@ -660,9 +665,15 @@ void WebFrameTestClient::didAddMessageToConsole(
       new_message = new_message.substr(0, file_protocol) +
                     URLSuitableForTestResult(new_message.substr(file_protocol));
     }
-    delegate_->PrintMessage(new_message);
+    console_message += new_message;
   }
-  delegate_->PrintMessage(std::string("\n"));
+  console_message += "\n";
+
+  if (dump_to_stderr) {
+    delegate_->PrintMessageToStderr(console_message);
+  } else {
+    delegate_->PrintMessage(console_message);
+  }
 }
 
 blink::WebNavigationPolicy WebFrameTestClient::decidePolicyForNavigation(

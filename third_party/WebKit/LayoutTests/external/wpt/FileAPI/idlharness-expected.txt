@@ -1,4 +1,3 @@
-CONSOLE MESSAGE: line 251: callback not yet supported
 This is a testharness.js-based test.
 Found 92 tests; 88 PASS, 4 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS URL interface: operation createObjectURL(Blob) 

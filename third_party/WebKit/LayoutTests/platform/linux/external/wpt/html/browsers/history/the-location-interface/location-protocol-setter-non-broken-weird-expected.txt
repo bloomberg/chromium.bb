@@ -1,4 +1,3 @@
-CONSOLE WARNING: Subresource requests using legacy protocols (like `ftp:`) are deprecated, and will be blocked in M59, around June 2017. Please deliver web-accessible resources over modern protocols like HTTPS. See https://www.chromestatus.com/feature/5709390967472128 for more details.
 This is a testharness.js-based test.
 PASS Set location.protocol to x 
 FAIL Set location.protocol to data Blocked a frame with origin "http://web-platform.test:8001" from accessing a cross-origin frame.

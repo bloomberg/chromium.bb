@@ -1,4 +1,3 @@
-CONSOLE ERROR: line 77: Uncaught (in promise) TypeError: The stream has been aborted
 This is a testharness.js-based test.
 PASS Piping from an errored readable stream to an errored writable stream 
 PASS Piping from an errored readable stream to an errored writable stream; preventAbort = true 

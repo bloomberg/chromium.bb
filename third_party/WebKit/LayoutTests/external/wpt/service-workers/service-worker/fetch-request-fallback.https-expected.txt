@@ -1,6 +1,0 @@
-CONSOLE ERROR: XMLHttpRequest cannot load https://www1.web-platform.test:8444/service-workers/service-worker/resources/fetch-access-control.py?. No 'Access-Control-Allow-Origin' header is present on the requested resource. Origin 'https://web-platform.test:8444' is therefore not allowed access.
-CONSOLE ERROR: XMLHttpRequest cannot load https://www1.web-platform.test:8444/service-workers/service-worker/resources/fetch-access-control.py?. No 'Access-Control-Allow-Origin' header is present on the requested resource. Origin 'https://web-platform.test:8444' is therefore not allowed access.
-This is a testharness.js-based test.
-PASS Verify the fallback behavior of FetchEvent 
-Harness: the test ran to completion.
-
