@@ -21,6 +21,7 @@
 #include "ios/chrome/browser/sync/sync_setup_service_factory.h"
 #import "ios/chrome/browser/ui/first_run/first_run_chrome_signin_view_controller.h"
 #include "ios/chrome/browser/ui/first_run/welcome_to_chrome_view_controller.h"
+#include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
@@ -114,7 +115,8 @@ void AssertAuthenticatedIdentityInActiveProfile(ChromeIdentity* identity) {
   [[EarlGrey selectElementWithMatcher:termsOfServiceLink]
       performAction:grey_tap()];
 
-  [[EarlGrey selectElementWithMatcher:grey_text(@"Chromium Terms of Service")]
+  [[EarlGrey selectElementWithMatcher:grey_text(l10n_util::GetNSString(
+                                          IDS_IOS_FIRSTRUN_TERMS_TITLE))]
       assertWithMatcher:grey_sufficientlyVisible()];
 
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"back_bar_button")]
