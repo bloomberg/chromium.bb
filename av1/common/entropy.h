@@ -49,6 +49,9 @@ extern "C" {
 #define CATEGORY6_TOKEN 10  // 67+   Extra Bits 14+1
 #define EOB_TOKEN 11        // EOB   Extra Bits 0+0
 #if CONFIG_NEW_TOKENSET
+#define NO_EOB 0           // Not an end-of-block
+#define EARLY_EOB 1        // End of block before the last position
+#define LAST_EOB 2         // End of block in the last position (implicit)
 #define BLOCK_Z_TOKEN 255  // block zero
 #define ONE_TOKEN_EOB 1
 #define ONE_TOKEN_NEOB 2

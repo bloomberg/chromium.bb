@@ -839,9 +839,13 @@ static void pack_mb_tokens(aom_writer *w, const TOKENEXTRA **tp,
       p++;
       continue;
     }
-    int comb_symb = 2 * AOMMIN(token, TWO_TOKEN) - p->is_eob + 1;
-
-    aom_write_symbol(w, comb_symb, *p->head_cdf, 6);
+    if (p->eob_val == LAST_EOB) {
+      // Just code a flag indicating whether the value is >1 or 1.
+      aom_write_bit(w, token != ONE_TOKEN);
+    } else {
+      int comb_symb = 2 * AOMMIN(token, TWO_TOKEN) - p->eob_val + 1;
+      aom_write_symbol(w, comb_symb, *p->head_cdf, 6);
+    }
     if (token > ONE_TOKEN) {
       aom_write_symbol(w, token - TWO_TOKEN, *p->tail_cdf,
                        CATEGORY6_TOKEN + 1 - 2);
