@@ -139,13 +139,6 @@ RenderProcessImpl::RenderProcessImpl(
                     std::move(worker_pool_index_for_traits_callback)),
       enabled_bindings_(0) {
 #if defined(OS_WIN)
-  // Record whether the machine is enterprise managed in a crash key. This
-  // will be used to better identify whether crashes are from enterprise users.
-  // Note that this is done very early on so that crashes have the highest
-  // chance of getting tagged.
-  base::debug::SetCrashKeyValue(
-      "is-enterprise-managed", base::win::IsEnterpriseManaged() ? "yes" : "no");
-
   // HACK:  See http://b/issue?id=1024307 for rationale.
   if (GetModuleHandle(L"LPK.DLL") == NULL) {
     // Makes sure lpk.dll is loaded by gdi32 to make sure ExtTextOut() works
