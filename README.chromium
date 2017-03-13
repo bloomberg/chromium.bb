@@ -14,3 +14,7 @@ Local Modifications:
   Removed many unused files, e.g. all non-OpenSSL cipher implementations.
 
   Patched in https://github.com/cisco/libsrtp/pull/209.
+
+  Patched in https://github.com/cisco/libsrtp/pull/259.
+
+  Patched in https://github.com/cisco/libsrtp/pull/262.
