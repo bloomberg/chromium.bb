@@ -162,11 +162,6 @@ By default, xrgb8888 is used.
 sets Weston's idle timeout in seconds. This idle timeout is the time
 after which Weston will enter an "inactive" mode and screen will fade to
 black. A value of 0 disables the timeout.
-.TP 7
-.BI "pageflip-timeout="milliseconds
-sets Weston's pageflip timeout in milliseconds.  This sets a timer to exit
-gracefully with a log message and an exit code of 1 in case the DRM driver is
-non-responsive.  Setting it to 0 disables this feature.
 
 .IR Important
 : This option may also be set via Weston's '-i' command
@@ -181,6 +176,11 @@ set to 300 seconds.
 .TP 7
 .BI "require-input=" true
 require an input device for launch
+.TP 7
+.BI "pageflip-timeout="milliseconds
+sets Weston's pageflip timeout in milliseconds.  This sets a timer to exit
+gracefully with a log message and an exit code of 1 in case the DRM driver is
+non-responsive.  Setting it to 0 disables this feature.
 
 .SH "LIBINPUT SECTION"
 The
