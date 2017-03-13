@@ -366,8 +366,9 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
 #else
 #define MAYBE_ExecuteDefaultTaskOnDrive ExecuteDefaultTaskOnDrive
 #endif
+// Flaky: crbug.com/699978
 WRAPPED_INSTANTIATE_TEST_CASE_P(
-    MAYBE_ExecuteDefaultTaskOnDrive,
+    DISABLED_ExecuteDefaultTaskOnDrive,
     FileManagerBrowserTest,
     ::testing::Values(TestParameter(NOT_IN_GUEST_MODE,
                                     "executeDefaultTaskOnDrive")));
