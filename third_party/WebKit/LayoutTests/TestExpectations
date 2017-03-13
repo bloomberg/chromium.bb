@@ -1551,15 +1551,6 @@ crbug.com/618082 [ Win10 ] virtual/threaded/printing/thead-repeats-at-top-of-eac
 crbug.com/474759 fast/writing-mode/vertical-rl-replaced-selection.html [ Failure ]
 
 # Cleanup after http://crrev.com/2731393002
-crbug.com/696216 fast/table/backgr_border-table-row-group.html [ NeedsRebaseline ]
-crbug.com/696216 fast/table/backgr_position-table-row-group.html [ NeedsRebaseline ]
-crbug.com/696216 fast/table/backgr_simple-table.html [ NeedsRebaseline ]
-crbug.com/696216 svg/batik/text/textAnchor3.svg [ NeedsRebaseline ]
-crbug.com/696216 svg/wicd/test-scalable-background-image2.xhtml [ NeedsRebaseline ]
-crbug.com/696216 svg/W3C-SVG-1.1/animate-elem-02-t.svg [ NeedsRebaseline ]
-crbug.com/696216 svg/W3C-SVG-1.1/fonts-elem-07-b.svg [ NeedsRebaseline ]
-crbug.com/696216 svg/W3C-SVG-1.1-SE/coords-dom-02-f.svg [ NeedsRebaseline ]
-crbug.com/696216 virtual/mojo-loading/http/tests/webfont/popup-menu-load-webfont-after-open.html [ NeedsRebaseline ]
 crbug.com/696216 fast/forms/select/menulist-appearance-rtl.html [ NeedsRebaseline ]
 
 crbug.com/353746 virtual/android/fullscreen/video-specified-size.html [ Failure Pass ]
