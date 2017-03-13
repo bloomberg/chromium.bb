@@ -239,18 +239,6 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
   bool isCursorVisible() const;
   void setIsCursorVisible(bool isVisible) { m_isCursorVisible = isVisible; }
 
-  // Don't allow more than a certain number of frames in a page.
-  // This seems like a reasonable upper bound, and otherwise mutually
-  // recursive frameset pages can quickly bring the program to its knees
-  // with exponential growth in the number of frames.
-  static const int maxNumberOfFrames = 1000;
-  void incrementSubframeCount() { ++m_subframeCount; }
-  void decrementSubframeCount() {
-    DCHECK_GT(m_subframeCount, 0);
-    --m_subframeCount;
-  }
-  int subframeCount() const;
-
   void setDefaultPageScaleLimits(float minScale, float maxScale);
   void setUserAgentPageScaleConstraints(
       const PageScaleConstraints& newConstraints);
@@ -342,8 +330,6 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
 #if DCHECK_IS_ON()
   bool m_isPainting = false;
 #endif
-
-  int m_subframeCount;
 
   // A pointer to all the interfaces provided to in-process Frames for this
   // Page.

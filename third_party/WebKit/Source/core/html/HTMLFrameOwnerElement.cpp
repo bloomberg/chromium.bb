@@ -33,7 +33,6 @@
 #include "core/layout/api/LayoutPartItem.h"
 #include "core/loader/FrameLoadRequest.h"
 #include "core/loader/FrameLoader.h"
-#include "core/page/Page.h"
 #include "core/plugins/PluginView.h"
 #include "platform/weborigin/SecurityOrigin.h"
 
@@ -313,7 +312,8 @@ bool HTMLFrameOwnerElement::loadOrRedirectSubframe(
   if (!SubframeLoadingDisabler::canLoadFrame(*this))
     return false;
 
-  if (document().frame()->host()->subframeCount() >= Page::maxNumberOfFrames)
+  if (document().frame()->host()->subframeCount() >=
+      FrameHost::maxNumberOfFrames)
     return false;
 
   FrameLoadRequest frameLoadRequest(&document(), url, "_self",

@@ -51,7 +51,8 @@ FrameHost::FrameHost(Page& page)
                                        m_page->chromeClient())),
       m_consoleMessageStorage(new ConsoleMessageStorage()),
       m_globalRootScrollerController(
-          TopDocumentRootScrollerController::create(page)) {}
+          TopDocumentRootScrollerController::create(page)),
+      m_subframeCount(0) {}
 
 // Explicitly in the .cpp to avoid default constructor in .h
 FrameHost::~FrameHost() {}
@@ -100,16 +101,23 @@ DEFINE_TRACE(FrameHost) {
   visitor->trace(m_globalRootScrollerController);
 }
 
-void FrameHost::incrementSubframeCount() {
-  page().incrementSubframeCount();
-}
+#if DCHECK_IS_ON()
+void checkFrameCountConsistency(int expectedFrameCount, Frame* frame) {
+  ASSERT(expectedFrameCount >= 0);
 
-void FrameHost::decrementSubframeCount() {
-  page().decrementSubframeCount();
+  int actualFrameCount = 0;
+  for (; frame; frame = frame->tree().traverseNext())
+    ++actualFrameCount;
+
+  ASSERT(expectedFrameCount == actualFrameCount);
 }
+#endif
 
 int FrameHost::subframeCount() const {
-  return page().subframeCount();
+#if DCHECK_IS_ON()
+  checkFrameCountConsistency(m_subframeCount + 1, m_page->mainFrame());
+#endif
+  return m_subframeCount;
 }
 
 }  // namespace blink
