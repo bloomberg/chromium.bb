@@ -490,4 +490,10 @@ static const CGFloat kTabElementYOrigin = 6;
   [[target_ dragController] maybeStartDrag:event forTab:tab];
 }
 
+- (void)keyUp:(NSEvent*)event {
+  unichar keyChar = [[event characters] characterAtIndex:0];
+  if (keyChar == '\r' || keyChar == '\n')
+    [self selectTab:self];
+}
+
 @end

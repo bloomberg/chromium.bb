@@ -4,6 +4,7 @@
 
 #import "chrome/browser/ui/cocoa/tabs/tab_view.h"
 
+#include "base/command_line.h"
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/mac/sdk_forward_declarations.h"
@@ -16,6 +17,7 @@
 #import "chrome/browser/ui/cocoa/tabs/tab_window_controller.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
 #import "chrome/browser/ui/cocoa/view_id_util.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/grit/theme_resources.h"
 #include "skia/ext/skia_utils_mac.h"
 #import "third_party/google_toolbox_for_mac/src/AppKit/GTMFadeTruncatingTextFieldCell.h"
@@ -32,6 +34,10 @@ namespace {
 
 // The color of the icons in dark mode theme.
 const SkColor kDarkModeIconColor = SkColorSetARGB(0xFF, 0xC4, 0xC4, 0xC4);
+
+bool IsTabStripKeyboardFocusEnabled() {
+  return base::FeatureList::IsEnabled(features::kTabStripKeyboardFocus);
+}
 
 }  // namespace
 
@@ -787,6 +793,27 @@ CGFloat LineWidthFromContext(CGContextRef context) {
 
 - (void)windowDidChangeActive {
   [self setNeedsDisplay:YES];
+}
+
+- (BOOL)acceptsFirstResponder {
+  return IsTabStripKeyboardFocusEnabled() ? YES : NO;
+}
+
+- (BOOL)becomeFirstResponder {
+  return IsTabStripKeyboardFocusEnabled() ? YES : NO;
+}
+
+- (void)drawFocusRingMask {
+  if (!IsTabStripKeyboardFocusEnabled())
+    return;
+  if ([titleView_ isHidden])
+    NSRectFill([self bounds]);
+  else
+    NSRectFill([titleView_ frame]);
+}
+
+- (NSRect)focusRingMaskBounds {
+  return [self bounds];
 }
 
 @end  // @implementation TabView

@@ -2349,6 +2349,12 @@ const FeatureEntry kFeatureEntries[] = {
          kSpeculativeResourcePrefetchingFeatureVariations,
          "SpeculativeResourcePrefetchingValidation")},
 
+#if defined(OS_MACOSX)
+    {"tab-strip-keyboard-focus", IDS_FLAGS_TAB_STRIP_KEYBOARD_FOCUS_NAME,
+     IDS_FLAGS_TAB_STRIP_KEYBOARD_FOCUS_DESCRIPTION, kOsMac,
+     FEATURE_VALUE_TYPE(features::kTabStripKeyboardFocus)}
+#endif
+
     // NOTE: Adding new command-line switches requires adding corresponding
     // entries to enum "LoginCustomFlags" in histograms.xml. See note in
     // histograms.xml and don't forget to run AboutFlagsHistogramTest unit test.

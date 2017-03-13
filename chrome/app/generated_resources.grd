@@ -6321,6 +6321,14 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_FLAGS_FULLSCREEN_TOOLBAR_REVEAL_DESCRIPTION" desc="Description of the flag to reveal the fullscreen toolbar for tab strip changes">
           Reveal the toolbar in fullscreen for a short period when the tab strip has changed.
         </message>
+        <message name="IDS_FLAGS_TAB_STRIP_KEYBOARD_FOCUS_NAME" desc="Name of the
+  flag to enable keyboard focus for the tab strip">
+          Tab Strip Keyboard Focus
+        </message>
+        <message name="IDS_FLAGS_TAB_STRIP_KEYBOARD_FOCUS_DESCRIPTION"
+  desc="Description of the flag to enable keyboard focus for the tab strip">
+          Enable keyboard focus for the tabs in the tab strip.
+        </message>
       </if>
       <message name="IDS_FLAGS_HOSTED_APP_SHIM_CREATION_NAME" desc="Name of the flag to enable creation of app shims for hosted apps on Mac.">
         Creation of app shims for hosted apps on Mac

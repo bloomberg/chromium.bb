@@ -74,6 +74,10 @@ const base::Feature kBrowserHangFixesExperiment{
 // Enables or disables the browser's touch bar.
 const base::Feature kBrowserTouchBar{"BrowserTouchBar",
                                      base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Enables or disables keyboard focus for the tab strip.
+const base::Feature kTabStripKeyboardFocus{"TabStripKeyboardFocus",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // defined(OS_MACOSX)
 
 #if defined(OS_ANDROID)
