@@ -60,10 +60,8 @@ bool ChromeWebViewPermissionHelperDelegate::OnMessageReceived(
   IPC_BEGIN_MESSAGE_MAP(ChromeWebViewPermissionHelperDelegate, message)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_CouldNotLoadPlugin,
                         OnCouldNotLoadPlugin)
-#if BUILDFLAG(ENABLE_PLUGIN_INSTALLATION)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_RemovePluginPlaceholderHost,
                         OnRemovePluginPlaceholderHost)
-#endif
     IPC_MESSAGE_UNHANDLED(return false)
   IPC_END_MESSAGE_MAP()
 
@@ -99,11 +97,9 @@ void ChromeWebViewPermissionHelperDelegate::OnBlockedOutdatedPlugin(
     const std::string& identifier) {
 }
 
-#if BUILDFLAG(ENABLE_PLUGIN_INSTALLATION)
 void ChromeWebViewPermissionHelperDelegate::OnRemovePluginPlaceholderHost(
     int placeholder_id) {
 }
-#endif  // BUILDFLAG(ENABLE_PLUGIN_INSTALLATION)
 
 void ChromeWebViewPermissionHelperDelegate::OnPermissionResponse(
     const std::string& identifier,

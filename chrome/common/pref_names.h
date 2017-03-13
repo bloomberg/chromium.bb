@@ -364,7 +364,7 @@ extern const char kPluginsShowDetails[];
 #endif
 extern const char kPluginsAllowOutdated[];
 extern const char kPluginsAlwaysAuthorize[];
-#if BUILDFLAG(ENABLE_PLUGIN_INSTALLATION)
+#if BUILDFLAG(ENABLE_PLUGINS)
 extern const char kPluginsMetadata[];
 extern const char kPluginsResourceCacheUpdate[];
 #endif

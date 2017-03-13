@@ -142,7 +142,7 @@
 #endif  // defined(ENABLE_MEDIA_ROUTER)
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
-#if BUILDFLAG(ENABLE_PLUGIN_INSTALLATION)
+#if BUILDFLAG(ENABLE_PLUGINS)
 #include "chrome/browser/plugins/plugins_resource_service.h"
 #endif
 
@@ -370,9 +370,6 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
 
 #if BUILDFLAG(ENABLE_PLUGINS)
   PluginFinder::RegisterPrefs(registry);
-#endif
-
-#if BUILDFLAG(ENABLE_PLUGIN_INSTALLATION)
   PluginsResourceService::RegisterPrefs(registry);
 #endif
 

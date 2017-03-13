@@ -81,14 +81,7 @@ class ChromePluginPlaceholder final
   void ShowPermissionBubbleCallback();
 
   // IPC message handlers:
-#if BUILDFLAG(ENABLE_PLUGIN_INSTALLATION)
-  void OnDidNotFindMissingPlugin();
-  void OnFoundMissingPlugin(const base::string16& plugin_name);
-  void OnStartedDownloadingPlugin();
   void OnFinishedDownloadingPlugin();
-  void OnErrorDownloadingPlugin(const std::string& error);
-  void OnCancelledDownloadingPlugin();
-#endif
   void OnPluginComponentUpdateDownloading();
   void OnPluginComponentUpdateSuccess();
   void OnPluginComponentUpdateFailure();
@@ -101,10 +94,6 @@ class ChromePluginPlaceholder final
   // |routing_id()| is the routing ID of our associated RenderView, but we have
   // a separate routing ID for messages specific to this placeholder.
   int32_t placeholder_routing_id_ = MSG_ROUTING_NONE;
-
-#if BUILDFLAG(ENABLE_PLUGIN_INSTALLATION)
-  bool has_host_ = false;
-#endif
 
   int context_menu_request_id_;  // Nonzero when request pending.
   base::string16 plugin_name_;

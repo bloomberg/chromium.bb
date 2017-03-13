@@ -832,7 +832,6 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
         break;
       }
       case ChromeViewHostMsg_GetPluginInfo_Status::kOutdatedBlocked: {
-#if BUILDFLAG(ENABLE_PLUGIN_INSTALLATION)
         placeholder = create_blocked_plugin(
             IDR_BLOCKED_PLUGIN_HTML,
             l10n_util::GetStringFUTF16(IDS_PLUGIN_OUTDATED, group_name));
@@ -840,9 +839,6 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
         render_frame->Send(new ChromeViewHostMsg_BlockedOutdatedPlugin(
             render_frame->GetRoutingID(), placeholder->CreateRoutingId(),
             identifier));
-#else
-        NOTREACHED();
-#endif
         break;
       }
       case ChromeViewHostMsg_GetPluginInfo_Status::kOutdatedDisallowed: {

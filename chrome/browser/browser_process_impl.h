@@ -27,6 +27,7 @@
 #include "components/prefs/pref_change_registrar.h"
 #include "extensions/features/features.h"
 #include "media/media_features.h"
+#include "ppapi/features/features.h"
 #include "printing/features/features.h"
 
 class ChromeChildProcessWatcher;
@@ -36,7 +37,7 @@ class DevToolsAutoOpener;
 class RemoteDebuggingServer;
 class PrefRegistrySimple;
 
-#if BUILDFLAG(ENABLE_PLUGIN_INSTALLATION)
+#if BUILDFLAG(ENABLE_PLUGINS)
 class PluginsResourceService;
 #endif
 
@@ -319,7 +320,7 @@ class BrowserProcessImpl : public BrowserProcess,
   std::unique_ptr<component_updater::SupervisedUserWhitelistInstaller>
       supervised_user_whitelist_installer_;
 
-#if BUILDFLAG(ENABLE_PLUGIN_INSTALLATION)
+#if BUILDFLAG(ENABLE_PLUGINS)
   std::unique_ptr<PluginsResourceService> plugins_resource_service_;
 #endif
 

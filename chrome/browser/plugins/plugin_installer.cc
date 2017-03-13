@@ -21,47 +21,9 @@
 
 using content::DownloadItem;
 
-PluginInstaller::PluginInstaller()
-    : state_(INSTALLER_STATE_IDLE),
-      strong_observer_count_(0) {
-}
+PluginInstaller::PluginInstaller() : strong_observer_count_(0) {}
 
 PluginInstaller::~PluginInstaller() {
-}
-
-void PluginInstaller::OnDownloadUpdated(DownloadItem* download) {
-  DownloadItem::DownloadState state = download->GetState();
-  switch (state) {
-    case DownloadItem::IN_PROGRESS:
-      return;
-    case DownloadItem::COMPLETE: {
-      DCHECK_EQ(INSTALLER_STATE_DOWNLOADING, state_);
-      state_ = INSTALLER_STATE_IDLE;
-      for (PluginInstallerObserver& observer : observers_)
-        observer.DownloadFinished();
-      break;
-    }
-    case DownloadItem::CANCELLED: {
-      DownloadCancelled();
-      break;
-    }
-    case DownloadItem::INTERRUPTED: {
-      content::DownloadInterruptReason reason = download->GetLastReason();
-      DownloadError(content::DownloadInterruptReasonToString(reason));
-      break;
-    }
-    case DownloadItem::MAX_DOWNLOAD_STATE: {
-      NOTREACHED();
-      return;
-    }
-  }
-  download->RemoveObserver(this);
-}
-
-void PluginInstaller::OnDownloadDestroyed(DownloadItem* download) {
-  DCHECK_EQ(INSTALLER_STATE_DOWNLOADING, state_);
-  state_ = INSTALLER_STATE_IDLE;
-  download->RemoveObserver(this);
 }
 
 void PluginInstaller::AddObserver(PluginInstallerObserver* observer) {
@@ -87,50 +49,8 @@ void PluginInstaller::RemoveWeakObserver(
   weak_observers_.RemoveObserver(observer);
 }
 
-void PluginInstaller::StartInstalling(const GURL& plugin_url,
-                                      content::WebContents* web_contents) {
-  content::DownloadManager* download_manager =
-      content::BrowserContext::GetDownloadManager(
-          web_contents->GetBrowserContext());
-  StartInstallingWithDownloadManager(
-      plugin_url, web_contents, download_manager);
-}
-
-void PluginInstaller::StartInstallingWithDownloadManager(
-    const GURL& plugin_url,
-    content::WebContents* web_contents,
-    content::DownloadManager* download_manager) {
-  DCHECK_EQ(INSTALLER_STATE_IDLE, state_);
-  state_ = INSTALLER_STATE_DOWNLOADING;
-  for (PluginInstallerObserver& observer : observers_)
-    observer.DownloadStarted();
-  std::unique_ptr<content::DownloadUrlParameters> download_parameters(
-      content::DownloadUrlParameters::CreateForWebContentsMainFrame(
-          web_contents, plugin_url));
-  download_parameters->set_callback(
-      base::Bind(&PluginInstaller::DownloadStarted, base::Unretained(this)));
-  RecordDownloadSource(DOWNLOAD_INITIATED_BY_PLUGIN_INSTALLER);
-  download_manager->DownloadUrl(std::move(download_parameters));
-}
-
-void PluginInstaller::DownloadStarted(
-    content::DownloadItem* item,
-    content::DownloadInterruptReason interrupt_reason) {
-  if (interrupt_reason != content::DOWNLOAD_INTERRUPT_REASON_NONE) {
-    std::string msg = base::StringPrintf(
-        "Error %d: %s",
-        interrupt_reason,
-        content::DownloadInterruptReasonToString(interrupt_reason).c_str());
-    DownloadError(msg);
-    return;
-  }
-  item->SetOpenWhenComplete(true);
-  item->AddObserver(this);
-}
-
 void PluginInstaller::OpenDownloadURL(const GURL& plugin_url,
                                       content::WebContents* web_contents) {
-  DCHECK_EQ(INSTALLER_STATE_IDLE, state_);
   web_contents->OpenURL(content::OpenURLParams(
       plugin_url, content::Referrer(web_contents->GetURL(),
                                     blink::WebReferrerPolicyDefault),
@@ -138,18 +58,4 @@ void PluginInstaller::OpenDownloadURL(const GURL& plugin_url,
       false));
   for (PluginInstallerObserver& observer : observers_)
     observer.DownloadFinished();
-}
-
-void PluginInstaller::DownloadError(const std::string& msg) {
-  DCHECK_EQ(INSTALLER_STATE_DOWNLOADING, state_);
-  state_ = INSTALLER_STATE_IDLE;
-  for (PluginInstallerObserver& observer : observers_)
-    observer.DownloadError(msg);
-}
-
-void PluginInstaller::DownloadCancelled() {
-  DCHECK_EQ(INSTALLER_STATE_DOWNLOADING, state_);
-  state_ = INSTALLER_STATE_IDLE;
-  for (PluginInstallerObserver& observer : observers_)
-    observer.DownloadCancelled();
 }

@@ -1075,7 +1075,7 @@ const char kPluginsAllowOutdated[] = "plugins.allow_outdated";
 // be always allowed or not.
 const char kPluginsAlwaysAuthorize[] = "plugins.always_authorize";
 
-#if BUILDFLAG(ENABLE_PLUGIN_INSTALLATION)
+#if BUILDFLAG(ENABLE_PLUGINS)
 // Dictionary holding plugins metadata.
 const char kPluginsMetadata[] = "plugins.metadata";
 

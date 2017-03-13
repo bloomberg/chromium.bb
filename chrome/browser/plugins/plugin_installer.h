@@ -19,22 +19,13 @@ class PluginInstallerObserver;
 class WeakPluginInstallerObserver;
 
 namespace content {
-class DownloadManager;
 class WebContents;
 }
 
-class PluginInstaller : public content::DownloadItem::Observer {
+class PluginInstaller {
  public:
-  enum InstallerState {
-    INSTALLER_STATE_IDLE,
-    INSTALLER_STATE_DOWNLOADING,
-  };
-
   PluginInstaller();
-  ~PluginInstaller() override;
-
-  void OnDownloadUpdated(content::DownloadItem* download) override;
-  void OnDownloadDestroyed(content::DownloadItem* download) override;
+  ~PluginInstaller();
 
   void AddObserver(PluginInstallerObserver* observer);
   void RemoveObserver(PluginInstallerObserver* observer);
@@ -42,36 +33,19 @@ class PluginInstaller : public content::DownloadItem::Observer {
   void AddWeakObserver(WeakPluginInstallerObserver* observer);
   void RemoveWeakObserver(WeakPluginInstallerObserver* observer);
 
-  InstallerState state() const { return state_; }
-
   // Opens the download URL in a new tab.
   void OpenDownloadURL(const GURL& plugin_url,
                        content::WebContents* web_contents);
 
-  // Starts downloading the download URL and opens the downloaded file
-  // when finished.
-  void StartInstalling(const GURL& plugin_url,
-                       content::WebContents* web_contents);
-
  private:
-  void StartInstallingWithDownloadManager(
-      const GURL& plugin_url,
-      content::WebContents* web_contents,
-      content::DownloadManager* download_manager);
-  void DownloadStarted(content::DownloadItem* item,
-                       content::DownloadInterruptReason interrupt_reason);
-  void DownloadError(const std::string& msg);
-  void DownloadCancelled();
-
-  InstallerState state_;
-  base::ObserverList<PluginInstallerObserver> observers_;
-  int strong_observer_count_;
-  base::ObserverList<WeakPluginInstallerObserver> weak_observers_;
-
   FRIEND_TEST_ALL_PREFIXES(PluginInstallerTest,
                            StartInstalling_SuccessfulDownload);
   FRIEND_TEST_ALL_PREFIXES(PluginInstallerTest, StartInstalling_FailedStart);
   FRIEND_TEST_ALL_PREFIXES(PluginInstallerTest, StartInstalling_Interrupted);
+
+  base::ObserverList<PluginInstallerObserver> observers_;
+  int strong_observer_count_;
+  base::ObserverList<WeakPluginInstallerObserver> weak_observers_;
   DISALLOW_COPY_AND_ASSIGN(PluginInstaller);
 };
 

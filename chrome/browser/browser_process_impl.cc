@@ -163,7 +163,7 @@
 #include "chrome/browser/component_updater/pnacl_component_installer.h"
 #endif
 
-#if BUILDFLAG(ENABLE_PLUGIN_INSTALLATION)
+#if BUILDFLAG(ENABLE_PLUGINS)
 #include "chrome/browser/plugins/plugins_resource_service.h"
 #endif
 
@@ -306,7 +306,7 @@ void BrowserProcessImpl::StartTearDown() {
   if (safe_browsing_service_.get())
     safe_browsing_service()->ShutDown();
   network_time_tracker_.reset();
-#if BUILDFLAG(ENABLE_PLUGIN_INSTALLATION)
+#if BUILDFLAG(ENABLE_PLUGINS)
   plugins_resource_service_.reset();
 #endif
 
@@ -1103,11 +1103,10 @@ void BrowserProcessImpl::PreMainMessageLoopRun() {
   // Triggers initialization of the singleton instance on UI thread.
   PluginFinder::GetInstance()->Init();
 
-#if BUILDFLAG(ENABLE_PLUGIN_INSTALLATION)
-  DCHECK(!plugins_resource_service_.get());
-  plugins_resource_service_.reset(new PluginsResourceService(local_state()));
+  DCHECK(!plugins_resource_service_);
+  plugins_resource_service_ =
+      base::MakeUnique<PluginsResourceService>(local_state());
   plugins_resource_service_->Init();
-#endif
 #endif  // BUILDFLAG(ENABLE_PLUGINS)
 
 #if !defined(OS_ANDROID)

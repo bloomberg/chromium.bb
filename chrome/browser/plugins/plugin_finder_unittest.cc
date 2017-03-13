@@ -32,8 +32,11 @@ TEST(PluginFinderTest, JsonSyntax) {
     EXPECT_TRUE(plugin->GetString("name", &dummy_str));
     if (plugin->HasKey("help_url"))
       EXPECT_TRUE(plugin->GetString("help_url", &dummy_str));
-    if (plugin->HasKey("displayurl"))
-      EXPECT_TRUE(plugin->GetBoolean("displayurl", &dummy_bool));
+    bool display_url = false;
+    if (plugin->HasKey("displayurl")) {
+      EXPECT_TRUE(plugin->GetBoolean("displayurl", &display_url));
+      EXPECT_TRUE(display_url);
+    }
     if (plugin->HasKey("requires_authorization"))
       EXPECT_TRUE(plugin->GetBoolean("requires_authorization", &dummy_bool));
     const base::ListValue* mime_types = NULL;

@@ -300,33 +300,14 @@ IPC_SYNC_MESSAGE_CONTROL1_3(
     std::vector<base::string16> /* additional_param_values */)
 #endif
 
-#if BUILDFLAG(ENABLE_PLUGIN_INSTALLATION)
 // Notifies the browser that a missing plugin placeholder has been removed, so
 // the corresponding PluginPlaceholderHost can be deleted.
 IPC_MESSAGE_ROUTED1(ChromeViewHostMsg_RemovePluginPlaceholderHost,
                     int /* placeholder_id */)
 
-// Notifies a missing plugin placeholder that a plugin with name |plugin_name|
-// has been found.
-IPC_MESSAGE_ROUTED1(ChromeViewMsg_FoundMissingPlugin,
-                    base::string16 /* plugin_name */)
-
-// Notifies a missing plugin placeholder that no plugin has been found.
-IPC_MESSAGE_ROUTED0(ChromeViewMsg_DidNotFindMissingPlugin)
-
-// Notifies a missing plugin placeholder that we have started downloading
-// the plugin.
-IPC_MESSAGE_ROUTED0(ChromeViewMsg_StartedDownloadingPlugin)
-
 // Notifies a missing plugin placeholder that we have finished downloading
 // the plugin.
 IPC_MESSAGE_ROUTED0(ChromeViewMsg_FinishedDownloadingPlugin)
-
-// Notifies a missing plugin placeholder that there was an error downloading
-// the plugin.
-IPC_MESSAGE_ROUTED1(ChromeViewMsg_ErrorDownloadingPlugin,
-                    std::string /* message */)
-#endif  // BUILDFLAG(ENABLE_PLUGIN_INSTALLATION)
 
 // Notifies a missing plugin placeholder that we have finished component-
 // updating the plug-in.
@@ -340,9 +321,6 @@ IPC_MESSAGE_ROUTED0(ChromeViewMsg_PluginComponentUpdateFailure)
 // download.
 IPC_MESSAGE_ROUTED0(ChromeViewMsg_PluginComponentUpdateDownloading)
 
-// Notifies a missing plugin placeholder that the user cancelled downloading
-// the plugin.
-IPC_MESSAGE_ROUTED0(ChromeViewMsg_CancelledDownloadingPlugin)
 
 // Tells the browser to show the Flash permission bubble in the same tab.
 IPC_MESSAGE_ROUTED0(ChromeViewHostMsg_ShowFlashPermissionBubble)

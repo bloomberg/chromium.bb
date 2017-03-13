@@ -46,8 +46,6 @@ declare_args() {
   # Specify --mash to chrome to have chrome start the mash environment.
   enable_package_mash_services = is_chromeos
 
-  enable_plugin_installation = is_win || is_mac
-
   enable_service_discovery = enable_mdns || is_mac
 
   # Enables use of the session service, which is enabled by default.

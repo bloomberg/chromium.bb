@@ -31,6 +31,8 @@ GURL GetPluginsServerURL() {
   std::string filename;
 #if defined(OS_WIN)
   filename = "plugins_win.json";
+#elif defined(OS_CHROMEOS)
+  filename = "plugins_chromeos.json";
 #elif defined(OS_LINUX)
   filename = "plugins_linux.json";
 #elif defined(OS_MACOSX)

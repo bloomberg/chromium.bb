@@ -16,6 +16,7 @@
 #include "chrome/common/features.h"
 #include "content/public/common/url_constants.h"
 #include "media/media_features.h"
+#include "ppapi/features/features.h"
 #include "printing/features/features.h"
 
 namespace chrome {
@@ -460,7 +461,7 @@ extern const char kChromiumProjectURL[];
 // first run dialog.
 extern const char kLearnMoreReportingURL[];
 
-#if BUILDFLAG(ENABLE_PLUGIN_INSTALLATION)
+#if BUILDFLAG(ENABLE_PLUGINS)
 // The URL for the "Learn more" page for the outdated plugin infobar.
 extern const char kOutdatedPluginLearnMoreURL[];
 #endif

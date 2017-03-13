@@ -382,7 +382,7 @@ void PluginInfoMessageFilter::Context::DecidePluginStatus(
     return;
   }
 
-#if BUILDFLAG(ENABLE_PLUGIN_INSTALLATION)
+#if BUILDFLAG(ENABLE_PLUGINS)
   // Check if the plugin is outdated.
   if (security_status == PluginMetadata::SECURITY_STATUS_OUT_OF_DATE &&
       !allow_outdated_plugins_.GetValue()) {
@@ -393,7 +393,7 @@ void PluginInfoMessageFilter::Context::DecidePluginStatus(
     }
     return;
   }
-#endif
+#endif  // BUILDFLAG(ENABLE_PLUGINS)
 
   // Check if the plugin is crashing too much.
   if (PluginService::GetInstance()->IsPluginUnstable(plugin.path) &&

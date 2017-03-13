@@ -4932,9 +4932,6 @@ test("unit_tests") {
       "//ui/app_list:test_support",
     ]
   }
-  if (enable_plugins && !enable_plugin_installation) {
-    sources -= [ "../browser/plugins/plugin_installer_unittest.cc" ]
-  }
 }
 
 if (safe_browsing_mode == 1 && is_mac) {

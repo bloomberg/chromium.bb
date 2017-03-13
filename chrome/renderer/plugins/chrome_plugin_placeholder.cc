@@ -79,14 +79,9 @@ ChromePluginPlaceholder::~ChromePluginPlaceholder() {
   if (placeholder_routing_id_ == MSG_ROUTING_NONE)
     return;
   RenderThread::Get()->RemoveRoute(placeholder_routing_id_);
-#if BUILDFLAG(ENABLE_PLUGIN_INSTALLATION)
-  if (has_host_) {
-    RenderThread::Get()->Send(new ChromeViewHostMsg_RemovePluginPlaceholderHost(
-        routing_id(), placeholder_routing_id_));
-  }
-#endif
 }
 
+// TODO(bauerb): Move this method to NonLoadablePluginPlaceholder?
 // static
 ChromePluginPlaceholder* ChromePluginPlaceholder::CreateLoadableMissingPlugin(
     content::RenderFrame* render_frame,
@@ -181,19 +176,8 @@ int32_t ChromePluginPlaceholder::CreateRoutingId() {
 bool ChromePluginPlaceholder::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(ChromePluginPlaceholder, message)
-#if BUILDFLAG(ENABLE_PLUGIN_INSTALLATION)
-    IPC_MESSAGE_HANDLER(ChromeViewMsg_FoundMissingPlugin, OnFoundMissingPlugin)
-    IPC_MESSAGE_HANDLER(ChromeViewMsg_DidNotFindMissingPlugin,
-                        OnDidNotFindMissingPlugin)
-    IPC_MESSAGE_HANDLER(ChromeViewMsg_StartedDownloadingPlugin,
-                        OnStartedDownloadingPlugin)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_FinishedDownloadingPlugin,
                         OnFinishedDownloadingPlugin)
-    IPC_MESSAGE_HANDLER(ChromeViewMsg_ErrorDownloadingPlugin,
-                        OnErrorDownloadingPlugin)
-    IPC_MESSAGE_HANDLER(ChromeViewMsg_CancelledDownloadingPlugin,
-                        OnCancelledDownloadingPlugin)
-#endif
     IPC_MESSAGE_HANDLER(ChromeViewMsg_PluginComponentUpdateDownloading,
                         OnPluginComponentUpdateDownloading)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_PluginComponentUpdateSuccess,
@@ -221,42 +205,9 @@ void ChromePluginPlaceholder::ShowPermissionBubbleCallback() {
       new ChromeViewHostMsg_ShowFlashPermissionBubble(routing_id()));
 }
 
-#if BUILDFLAG(ENABLE_PLUGIN_INSTALLATION)
-void ChromePluginPlaceholder::OnDidNotFindMissingPlugin() {
-  SetMessage(l10n_util::GetStringUTF16(IDS_PLUGIN_NOT_FOUND));
-}
-
-void ChromePluginPlaceholder::OnFoundMissingPlugin(
-    const base::string16& plugin_name) {
-  if (status_ == ChromeViewHostMsg_GetPluginInfo_Status::kNotFound)
-    SetMessage(l10n_util::GetStringFUTF16(IDS_PLUGIN_FOUND, plugin_name));
-  has_host_ = true;
-  plugin_name_ = plugin_name;
-}
-
-void ChromePluginPlaceholder::OnStartedDownloadingPlugin() {
-  SetMessage(l10n_util::GetStringFUTF16(IDS_PLUGIN_DOWNLOADING, plugin_name_));
-}
-
 void ChromePluginPlaceholder::OnFinishedDownloadingPlugin() {
-  bool is_installing =
-      status_ == ChromeViewHostMsg_GetPluginInfo_Status::kNotFound;
-  SetMessage(l10n_util::GetStringFUTF16(
-      is_installing ? IDS_PLUGIN_INSTALLING : IDS_PLUGIN_UPDATING,
-      plugin_name_));
+  SetMessage(l10n_util::GetStringFUTF16(IDS_PLUGIN_UPDATING, plugin_name_));
 }
-
-void ChromePluginPlaceholder::OnErrorDownloadingPlugin(
-    const std::string& error) {
-  SetMessage(l10n_util::GetStringFUTF16(IDS_PLUGIN_DOWNLOAD_ERROR,
-                                        base::UTF8ToUTF16(error)));
-}
-
-void ChromePluginPlaceholder::OnCancelledDownloadingPlugin() {
-  SetMessage(
-      l10n_util::GetStringFUTF16(IDS_PLUGIN_DOWNLOAD_CANCELLED, plugin_name_));
-}
-#endif  // BUILDFLAG(ENABLE_PLUGIN_INSTALLATION)
 
 void ChromePluginPlaceholder::OnPluginComponentUpdateDownloading() {
   SetMessage(l10n_util::GetStringFUTF16(IDS_PLUGIN_DOWNLOADING, plugin_name_));

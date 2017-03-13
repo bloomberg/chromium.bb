@@ -1958,7 +1958,6 @@ split_static_library("browser") {
   }
 
   if (enable_plugins) {
-    # See also the plugin_installation_sources list below.
     sources += [
       "browsing_data/browsing_data_flash_lso_helper.cc",
       "browsing_data/browsing_data_flash_lso_helper.h",
@@ -1990,6 +1989,10 @@ split_static_library("browser") {
       "plugins/plugin_info_message_filter.h",
       "plugins/plugin_infobar_delegates.cc",
       "plugins/plugin_infobar_delegates.h",
+      "plugins/plugin_installer.cc",
+      "plugins/plugin_installer.h",
+      "plugins/plugin_installer_observer.cc",
+      "plugins/plugin_installer_observer.h",
       "plugins/plugin_metadata.cc",
       "plugins/plugin_metadata.h",
       "plugins/plugin_observer.cc",
@@ -2006,6 +2009,8 @@ split_static_library("browser") {
       "plugins/plugin_utils.h",
       "plugins/plugins_field_trial.cc",
       "plugins/plugins_field_trial.h",
+      "plugins/plugins_resource_service.cc",
+      "plugins/plugins_resource_service.h",
       "renderer_host/pepper/chrome_browser_pepper_host_factory.cc",
       "renderer_host/pepper/chrome_browser_pepper_host_factory.h",
       "renderer_host/pepper/device_id_fetcher.cc",
@@ -3693,17 +3698,6 @@ split_static_library("browser") {
         "media/webrtc/window_icon_util_ozone.cc",
       ]
     }
-  }
-
-  if (enable_plugin_installation) {
-    sources += [
-      "plugins/plugin_installer.cc",
-      "plugins/plugin_installer.h",
-      "plugins/plugin_installer_observer.cc",
-      "plugins/plugin_installer_observer.h",
-      "plugins/plugins_resource_service.cc",
-      "plugins/plugins_resource_service.h",
-    ]
   }
 
   if (enable_app_list) {

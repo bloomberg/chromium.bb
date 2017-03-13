@@ -15,6 +15,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/plugins/plugin_installer.h"
 #include "chrome/browser/plugins/plugin_metadata.h"
 #include "chrome/common/features.h"
 #include "chrome/common/pref_names.h"
@@ -26,16 +27,10 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "url/gurl.h"
 
-#if BUILDFLAG(ENABLE_PLUGIN_INSTALLATION)
-#include "chrome/browser/plugins/plugin_installer.h"
-#endif
-
 using base::DictionaryValue;
 using content::PluginService;
 
 namespace {
-
-typedef std::map<std::string, PluginMetadata*> PluginMap;
 
 // Do not change these values, as they are used in UMA.
 enum class PluginListError {
@@ -105,7 +100,7 @@ std::unique_ptr<PluginMetadata> CreatePluginMetadata(
   base::string16 name;
   success = plugin_dict->GetString("name", &name);
   DCHECK(success);
-  bool display_url = false;
+  bool display_url = true;
   plugin_dict->GetBoolean("displayurl", &display_url);
   base::string16 group_name_matcher;
   success = plugin_dict->GetString("group_name_matcher", &group_name_matcher);
@@ -245,7 +240,6 @@ base::DictionaryValue* PluginFinder::LoadBuiltInPluginList() {
 PluginFinder::~PluginFinder() {
 }
 
-#if BUILDFLAG(ENABLE_PLUGIN_INSTALLATION)
 bool PluginFinder::FindPlugin(
     const std::string& mime_type,
     const std::string& language,
@@ -288,7 +282,6 @@ bool PluginFinder::FindPluginWithIdentifier(
   }
   return true;
 }
-#endif
 
 void PluginFinder::ReinitializePlugins(
     const base::DictionaryValue* plugin_list) {
@@ -301,20 +294,16 @@ void PluginFinder::ReinitializePlugins(
 
   version_ = version;
 
-  identifier_plugin_.clear();
-
   for (base::DictionaryValue::Iterator plugin_it(*plugin_list);
       !plugin_it.IsAtEnd(); plugin_it.Advance()) {
     const base::DictionaryValue* plugin = NULL;
     const std::string& identifier = plugin_it.key();
     if (plugin_list->GetDictionaryWithoutPathExpansion(identifier, &plugin)) {
-      DCHECK(!identifier_plugin_[identifier]);
+      DCHECK(identifier_plugin_.find(identifier) == identifier_plugin_.end());
       identifier_plugin_[identifier] = CreatePluginMetadata(identifier, plugin);
 
-#if BUILDFLAG(ENABLE_PLUGIN_INSTALLATION)
       if (installers_.find(identifier) == installers_.end())
         installers_[identifier] = base::MakeUnique<PluginInstaller>();
-#endif
     }
   }
 }

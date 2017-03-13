@@ -15,16 +15,7 @@ PluginInstallerObserver::~PluginInstallerObserver() {
   installer_->RemoveObserver(this);
 }
 
-void PluginInstallerObserver::DownloadStarted() {
-}
-
 void PluginInstallerObserver::DownloadFinished() {
-}
-
-void PluginInstallerObserver::DownloadError(const std::string& message) {
-}
-
-void PluginInstallerObserver::DownloadCancelled() {
 }
 
 WeakPluginInstallerObserver::WeakPluginInstallerObserver(

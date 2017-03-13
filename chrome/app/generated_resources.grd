@@ -6818,9 +6818,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_PLUGIN_NOT_AUTHORIZED" desc="The placeholder text for a plugin that requires user permission to run.">
         <ph name="PLUGIN_NAME">$1<ex>Java</ex></ph> needs your permission to run
       </message>
-      <message name="IDS_PLUGIN_NOT_FOUND" desc="The placeholder text for an unknown plugin that is not installed.">
-        Plugin not found
-      </message>
       <message name="IDS_PLUGIN_DOWNLOADING" desc="The placeholder text when downloading a missing plugin.">
         Downloading <ph name="PLUGIN_NAME">$1<ex>Realplayer</ex></ph>...
       </message>
@@ -6833,23 +6830,8 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_PLUGIN_DOWNLOAD_CANCELLED" desc="The placeholder text when the user canceled downloading the plugin.">
         Canceled
       </message>
-      <message name="IDS_PLUGIN_INSTALLING" desc="The placeholder text when installing a missing plugin.">
-        When <ph name="PLUGIN_NAME">$1<ex>Realplayer</ex></ph> finishes installing, reload the page to activate it
-      </message>
       <message name="IDS_PLUGIN_UPDATING" desc="The placeholder text when updating an out-of-date plugin.">
         When <ph name="PLUGIN_NAME">$1<ex>Realplayer</ex></ph> finishes updating, reload the page to activate it
-      </message>
-      <message name="IDS_PLUGIN_FOUND" desc="The placeholder text for a known plugin that is not installed.">
-        Install <ph name="PLUGIN_NAME">$1<ex>Quicktime</ex></ph> to display this content
-      </message>
-      <message name="IDS_PLUGIN_CONFIRM_INSTALL_DIALOG_TITLE" desc="Title of the plugin installation confirmation dialog.">
-        Install <ph name="PLUGIN_NAME">$1<ex>Realplayer</ex></ph>
-      </message>
-      <message name="IDS_PLUGIN_CONFIRM_INSTALL_DIALOG_MSG" desc="Message of the plugin installation confirmation dialog.">
-        Install <ph name="PLUGIN_NAME">$1<ex>Realplayer</ex></ph>? Only install plugins that you trust.
-      </message>
-      <message name="IDS_PLUGIN_CONFIRM_INSTALL_DIALOG_ACCEPT_BUTTON" desc="Button title to install a missing plugin.">
-        Install
       </message>
       <message name="IDS_PLUGIN_DISABLED" desc="The placeholder text for a disabled plugin.">
         <ph name="PLUGIN_NAME">$1<ex>Flash</ex></ph> disabled.

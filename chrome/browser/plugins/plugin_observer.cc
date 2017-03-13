@@ -20,8 +20,11 @@
 #include "chrome/browser/plugins/flash_download_interception.h"
 #include "chrome/browser/plugins/plugin_finder.h"
 #include "chrome/browser/plugins/plugin_infobar_delegates.h"
+#include "chrome/browser/plugins/plugin_installer.h"
+#include "chrome/browser/plugins/plugin_installer_observer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/tab_modal_confirm_dialog.h"
+#include "chrome/browser/ui/tab_modal_confirm_dialog_delegate.h"
 #include "chrome/common/features.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/grit/generated_resources.h"
@@ -42,84 +45,11 @@
 #include "content/public/common/webplugininfo.h"
 #include "ui/base/l10n/l10n_util.h"
 
-#if BUILDFLAG(ENABLE_PLUGIN_INSTALLATION)
-#include "chrome/browser/plugins/plugin_installer.h"
-#include "chrome/browser/plugins/plugin_installer_observer.h"
-#include "chrome/browser/ui/tab_modal_confirm_dialog_delegate.h"
-#endif  // BUILDFLAG(ENABLE_PLUGIN_INSTALLATION)
-
 using content::PluginService;
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(PluginObserver);
 
 namespace {
-
-#if BUILDFLAG(ENABLE_PLUGIN_INSTALLATION)
-
-// ConfirmInstallDialogDelegate ------------------------------------------------
-
-class ConfirmInstallDialogDelegate : public TabModalConfirmDialogDelegate,
-                                     public WeakPluginInstallerObserver {
- public:
-  ConfirmInstallDialogDelegate(content::WebContents* web_contents,
-                               PluginInstaller* installer,
-                               std::unique_ptr<PluginMetadata> plugin_metadata);
-
-  // TabModalConfirmDialogDelegate methods:
-  base::string16 GetTitle() override;
-  base::string16 GetDialogMessage() override;
-  base::string16 GetAcceptButtonTitle() override;
-  void OnAccepted() override;
-  void OnCanceled() override;
-
-  // WeakPluginInstallerObserver methods:
-  void DownloadStarted() override;
-  void OnlyWeakObserversLeft() override;
-
- private:
-  content::WebContents* web_contents_;
-  std::unique_ptr<PluginMetadata> plugin_metadata_;
-};
-
-ConfirmInstallDialogDelegate::ConfirmInstallDialogDelegate(
-    content::WebContents* web_contents,
-    PluginInstaller* installer,
-    std::unique_ptr<PluginMetadata> plugin_metadata)
-    : TabModalConfirmDialogDelegate(web_contents),
-      WeakPluginInstallerObserver(installer),
-      web_contents_(web_contents),
-      plugin_metadata_(std::move(plugin_metadata)) {}
-
-base::string16 ConfirmInstallDialogDelegate::GetTitle() {
-  return l10n_util::GetStringFUTF16(
-      IDS_PLUGIN_CONFIRM_INSTALL_DIALOG_TITLE, plugin_metadata_->name());
-}
-
-base::string16 ConfirmInstallDialogDelegate::GetDialogMessage() {
-  return l10n_util::GetStringFUTF16(IDS_PLUGIN_CONFIRM_INSTALL_DIALOG_MSG,
-                                    plugin_metadata_->name());
-}
-
-base::string16 ConfirmInstallDialogDelegate::GetAcceptButtonTitle() {
-  return l10n_util::GetStringUTF16(
-      IDS_PLUGIN_CONFIRM_INSTALL_DIALOG_ACCEPT_BUTTON);
-}
-
-void ConfirmInstallDialogDelegate::OnAccepted() {
-  installer()->StartInstalling(plugin_metadata_->plugin_url(), web_contents_);
-}
-
-void ConfirmInstallDialogDelegate::OnCanceled() {
-}
-
-void ConfirmInstallDialogDelegate::DownloadStarted() {
-  Cancel();
-}
-
-void ConfirmInstallDialogDelegate::OnlyWeakObserversLeft() {
-  Cancel();
-}
-#endif  // BUILDFLAG(ENABLE_PLUGIN_INSTALLATION)
 
 // ReloadPluginInfoBarDelegate -------------------------------------------------
 
@@ -196,7 +126,6 @@ bool ReloadPluginInfoBarDelegate::Accept() {
 
 // PluginObserver -------------------------------------------------------------
 
-#if BUILDFLAG(ENABLE_PLUGIN_INSTALLATION)
 class PluginObserver::PluginPlaceholderHost : public PluginInstallerObserver {
  public:
   PluginPlaceholderHost(PluginObserver* observer,
@@ -207,30 +136,6 @@ class PluginObserver::PluginPlaceholderHost : public PluginInstallerObserver {
         observer_(observer),
         routing_id_(routing_id) {
     DCHECK(installer);
-    switch (installer->state()) {
-      case PluginInstaller::INSTALLER_STATE_IDLE: {
-        observer->Send(new ChromeViewMsg_FoundMissingPlugin(routing_id_,
-                                                            plugin_name));
-        break;
-      }
-      case PluginInstaller::INSTALLER_STATE_DOWNLOADING: {
-        DownloadStarted();
-        break;
-      }
-    }
-  }
-
-  // PluginInstallerObserver methods:
-  void DownloadStarted() override {
-    observer_->Send(new ChromeViewMsg_StartedDownloadingPlugin(routing_id_));
-  }
-
-  void DownloadError(const std::string& msg) override {
-    observer_->Send(new ChromeViewMsg_ErrorDownloadingPlugin(routing_id_, msg));
-  }
-
-  void DownloadCancelled() override {
-    observer_->Send(new ChromeViewMsg_CancelledDownloadingPlugin(routing_id_));
   }
 
   void DownloadFinished() override {
@@ -243,7 +148,6 @@ class PluginObserver::PluginPlaceholderHost : public PluginInstallerObserver {
 
   int routing_id_;
 };
-#endif  // BUILDFLAG(ENABLE_PLUGIN_INSTALLATION)
 
 class PluginObserver::ComponentObserver
     : public update_client::UpdateClient::Observer {
@@ -358,10 +262,8 @@ bool PluginObserver::OnMessageReceived(
                         OnBlockedOutdatedPlugin)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_BlockedComponentUpdatedPlugin,
                         OnBlockedComponentUpdatedPlugin)
-#if BUILDFLAG(ENABLE_PLUGIN_INSTALLATION)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_RemovePluginPlaceholderHost,
                         OnRemovePluginPlaceholderHost)
-#endif
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_ShowFlashPermissionBubble,
                         OnShowFlashPermissionBubble)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_CouldNotLoadPlugin,
@@ -375,7 +277,6 @@ bool PluginObserver::OnMessageReceived(
 
 void PluginObserver::OnBlockedOutdatedPlugin(int placeholder_id,
                                              const std::string& identifier) {
-#if BUILDFLAG(ENABLE_PLUGIN_INSTALLATION)
   PluginFinder* finder = PluginFinder::GetInstance();
   // Find plugin to update.
   PluginInstaller* installer = NULL;
@@ -390,11 +291,6 @@ void PluginObserver::OnBlockedOutdatedPlugin(int placeholder_id,
   } else {
     NOTREACHED();
   }
-#else
-  // If we don't support third-party plugin installation, we shouldn't have
-  // outdated plugins.
-  NOTREACHED();
-#endif  // BUILDFLAG(ENABLE_PLUGIN_INSTALLATION)
 }
 
 void PluginObserver::OnBlockedComponentUpdatedPlugin(
@@ -412,7 +308,6 @@ void PluginObserver::RemoveComponentObserver(int placeholder_id) {
   component_observers_.erase(it);
 }
 
-#if BUILDFLAG(ENABLE_PLUGIN_INSTALLATION)
 void PluginObserver::OnRemovePluginPlaceholderHost(int placeholder_id) {
   auto it = plugin_placeholders_.find(placeholder_id);
   if (it == plugin_placeholders_.end()) {
@@ -421,7 +316,6 @@ void PluginObserver::OnRemovePluginPlaceholderHost(int placeholder_id) {
   }
   plugin_placeholders_.erase(it);
 }
-#endif  // BUILDFLAG(ENABLE_PLUGIN_INSTALLATION)
 
 void PluginObserver::OnShowFlashPermissionBubble() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);

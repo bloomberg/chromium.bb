@@ -66,12 +66,7 @@ class ChromeWebViewPermissionHelperDelegate :
   void OnCouldNotLoadPlugin(const base::FilePath& plugin_path);
   void OnBlockedOutdatedPlugin(int placeholder_id,
                                const std::string& identifier);
-#if BUILDFLAG(ENABLE_PLUGIN_INSTALLATION)
-  void OnFindMissingPlugin(int placeholder_id, const std::string& mime_type);
-
   void OnRemovePluginPlaceholderHost(int placeholder_id);
-#endif  // BUILDFLAG(ENABLE_PLUGIN_INSTALLATION)
-
   void OnPermissionResponse(const std::string& identifier,
                             bool allow,
                             const std::string& user_input);
