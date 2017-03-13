@@ -35,9 +35,6 @@ declare_args() {
 
   # Whether we should use glib, a low level C utility library.
   use_glib = is_linux
-
-  # Enable experimental vulkan backend.
-  enable_vulkan = false
 }
 
 declare_args() {

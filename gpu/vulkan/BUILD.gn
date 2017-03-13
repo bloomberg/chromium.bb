@@ -2,13 +2,15 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//build/config/ui.gni")
+import("features.gni")
+import("//build/buildflag_header.gni")
 import("//testing/test.gni")
 
-config("vulkan_config") {
-  defines = [ "ENABLE_VULKAN" ]
+# Generate a buildflag header for compile-time checking of Vulkan support.
+buildflag_header("features") {
+  header = "features.h"
+  flags = [ "ENABLE_VULKAN=$enable_vulkan" ]
 }
-
 if (enable_vulkan) {
   vulkan_lib_dir = getenv("VULKAN_SDK") + "/lib"
   component("vulkan") {
@@ -50,10 +52,7 @@ if (enable_vulkan) {
       configs += [ "//build/config:precompiled_headers" ]
       defines = [ "VULKAN_IMPLEMENTATION" ]
 
-      all_dependent_configs = [
-        ":vulkan_config",
-        "//third_party/vulkan:vulkan_headers",
-      ]
+      all_dependent_configs = [ "//third_party/vulkan:vulkan_headers" ]
       libs = [ "vulkan" ]
 
       if (current_cpu == "x64") {
