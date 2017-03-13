@@ -5,7 +5,12 @@
 #ifndef COMPONENTS_DOODLE_DOODLE_TYPES_H_
 #define COMPONENTS_DOODLE_DOODLE_TYPES_H_
 
+#include "base/optional.h"
 #include "url/gurl.h"
+
+namespace base {
+class DictionaryValue;
+}
 
 namespace doodle {
 
@@ -32,6 +37,10 @@ struct DoodleImage {
   DoodleImage();
   ~DoodleImage();
 
+  static base::Optional<DoodleImage> FromDictionary(
+      const base::DictionaryValue& dict,
+      const base::Optional<GURL>& base_url);
+
   bool operator==(const DoodleImage& other) const;
   bool operator!=(const DoodleImage& other) const;
 
@@ -50,6 +59,10 @@ struct DoodleConfig {
   DoodleConfig();
   DoodleConfig(const DoodleConfig& config);  // = default;
   ~DoodleConfig();
+
+  static base::Optional<DoodleConfig> FromDictionary(
+      const base::DictionaryValue& dict,
+      const base::Optional<GURL>& base_url);
 
   bool operator==(const DoodleConfig& other) const;
   bool operator!=(const DoodleConfig& other) const;

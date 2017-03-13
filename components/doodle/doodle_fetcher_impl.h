@@ -67,15 +67,6 @@ class DoodleFetcherImpl : public DoodleFetcher, public net::URLFetcherDelegate {
       const base::DictionaryValue& ddljson,
       base::TimeDelta* time_to_live) const;
 
-  bool ParseImage(const base::DictionaryValue& image_dict,
-                  const std::string& image_name,
-                  DoodleImage* image) const;
-  void ParseBaseInformation(const base::DictionaryValue& ddljson,
-                            DoodleConfig* config,
-                            base::TimeDelta* time_to_live) const;
-  GURL ParseRelativeUrl(const base::DictionaryValue& dict_value,
-                        const std::string& key) const;
-
   void RespondToAllCallbacks(DoodleState state,
                              base::TimeDelta time_to_live,
                              const base::Optional<DoodleConfig>& config);

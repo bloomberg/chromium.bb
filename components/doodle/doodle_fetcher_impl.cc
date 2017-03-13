@@ -38,39 +38,7 @@ std::string StripSafetyPreamble(const std::string& json) {
   return json_sp.as_string();
 }
 
-DoodleType ParseDoodleType(const base::DictionaryValue& ddljson) {
-  std::string type_str;
-  ddljson.GetString("doodle_type", &type_str);
-  if (type_str == "SIMPLE") {
-    return DoodleType::SIMPLE;
-  }
-  if (type_str == "RANDOM") {
-    return DoodleType::RANDOM;
-  }
-  if (type_str == "VIDEO") {
-    return DoodleType::VIDEO;
-  }
-  if (type_str == "INTERACTIVE") {
-    return DoodleType::INTERACTIVE;
-  }
-  if (type_str == "INLINE_INTERACTIVE") {
-    return DoodleType::INLINE_INTERACTIVE;
-  }
-  if (type_str == "SLIDESHOW") {
-    return DoodleType::SLIDESHOW;
-  }
-  return DoodleType::UNKNOWN;
-}
-
 }  // namespace
-
-DoodleImage::DoodleImage()
-    : height(0), width(0), is_animated_gif(false), is_cta(false) {}
-DoodleImage::~DoodleImage() = default;
-
-DoodleConfig::DoodleConfig() : doodle_type(DoodleType::UNKNOWN) {}
-DoodleConfig::DoodleConfig(const DoodleConfig& config) = default;
-DoodleConfig::~DoodleConfig() = default;
 
 DoodleFetcherImpl::DoodleFetcherImpl(
     scoped_refptr<net::URLRequestContextGetter> download_context,
@@ -164,51 +132,8 @@ void DoodleFetcherImpl::OnJsonParseFailed(const std::string& error_message) {
 base::Optional<DoodleConfig> DoodleFetcherImpl::ParseDoodleConfigAndTimeToLive(
     const base::DictionaryValue& ddljson,
     base::TimeDelta* time_to_live) const {
-  DoodleConfig doodle;
-  // The |large_image| field is required (it's the "default" representation for
-  // the doodle).
-  if (!ParseImage(ddljson, "large_image", &doodle.large_image)) {
-    return base::nullopt;
-  }
-  ParseBaseInformation(ddljson, &doodle, time_to_live);
-  ParseImage(ddljson, "transparent_large_image",
-             &doodle.transparent_large_image);
-  ParseImage(ddljson, "large_cta_image", &doodle.large_cta_image);
-  return doodle;
-}
-
-bool DoodleFetcherImpl::ParseImage(const base::DictionaryValue& image_parent,
-                                   const std::string& image_name,
-                                   DoodleImage* image) const {
-  DCHECK(image);
-  const base::DictionaryValue* image_dict = nullptr;
-  if (!image_parent.GetDictionary(image_name, &image_dict)) {
-    return false;
-  }
-  image->url = ParseRelativeUrl(*image_dict, "url");
-  if (!image->url.is_valid()) {
-    DLOG(WARNING) << "Image URL for \"" << image_name << "\" is invalid.";
-    return false;
-  }
-  image_dict->GetInteger("height", &image->height);
-  image_dict->GetInteger("width", &image->width);
-  image_dict->GetBoolean("is_animated_gif", &image->is_animated_gif);
-  image_dict->GetBoolean("is_cta", &image->is_cta);
-  return true;
-}
-
-void DoodleFetcherImpl::ParseBaseInformation(
-    const base::DictionaryValue& ddljson,
-    DoodleConfig* config,
-    base::TimeDelta* time_to_live) const {
-  config->search_url = ParseRelativeUrl(ddljson, "search_url");
-  config->target_url = ParseRelativeUrl(ddljson, "target_url");
-  config->fullpage_interactive_url =
-      ParseRelativeUrl(ddljson, "fullpage_interactive_url");
-
-  config->doodle_type = ParseDoodleType(ddljson);
-  ddljson.GetString("alt_text", &config->alt_text);
-  ddljson.GetString("interactive_html", &config->interactive_html);
+  base::Optional<DoodleConfig> doodle =
+      DoodleConfig::FromDictionary(ddljson, GetGoogleBaseUrl());
 
   // The JSON doesn't guarantee the number to fit into an int.
   double ttl = 0;  // Expires immediately if the parameter is missing.
@@ -222,17 +147,8 @@ void DoodleFetcherImpl::ParseBaseInformation(
     DLOG(WARNING) << "Clamping Doodle TTL to 30 days!";
   }
   *time_to_live = base::TimeDelta::FromMillisecondsD(ttl);
-}
 
-GURL DoodleFetcherImpl::ParseRelativeUrl(
-    const base::DictionaryValue& dict_value,
-    const std::string& key) const {
-  std::string str_url;
-  dict_value.GetString(key, &str_url);
-  if (str_url.empty()) {
-    return GURL();
-  }
-  return GetGoogleBaseUrl().Resolve(str_url);
+  return doodle;
 }
 
 void DoodleFetcherImpl::RespondToAllCallbacks(
