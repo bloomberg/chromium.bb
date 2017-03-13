@@ -126,10 +126,7 @@ class WebApkInstaller : public net::URLFetcherDelegate {
       JNIEnv* env,
       const base::android::ScopedJavaLocalRef<jstring>& java_file_path);
 
-  // Returns whether Google Play Services can be used and the install delegate
-  // is available.
-  // Note: it is possible that this delegate is null even when installing
-  // WebAPKs using Google Play is enabled.
+  // Returns whether Google Play supports installing WebAPKs.
   virtual bool CanUseGooglePlayInstallService();
 
   // Called when the package name of the WebAPK is available and the install

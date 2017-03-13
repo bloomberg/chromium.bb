@@ -61,11 +61,6 @@ public class WebApkInstaller {
     }
 
     @CalledByNative
-    private boolean canUseGooglePlayInstallService() {
-        return ChromeWebApkHost.canUseGooglePlayToInstallWebApk();
-    }
-
-    @CalledByNative
     private void destroy() {
         if (mListener != null) {
             ApplicationStatus.unregisterApplicationStateListener(mListener);

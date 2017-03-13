@@ -20,6 +20,7 @@
 #include "base/task_runner_util.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/android/shortcut_helper.h"
+#include "chrome/browser/android/webapk/chrome_webapk_host.h"
 #include "chrome/browser/android/webapk/webapk.pb.h"
 #include "chrome/browser/android/webapk/webapk_icon_hasher.h"
 #include "chrome/browser/profiles/profile.h"
@@ -309,8 +310,8 @@ bool WebApkInstaller::StartUpdateUsingDownloadedWebApk(
 }
 
 bool WebApkInstaller::CanUseGooglePlayInstallService() {
-  JNIEnv* env = base::android::AttachCurrentThread();
-  return Java_WebApkInstaller_canUseGooglePlayInstallService(env, java_ref_);
+  return ChromeWebApkHost::GetGooglePlayInstallState() ==
+         GooglePlayInstallState::SUPPORTED;
 }
 
 void WebApkInstaller::InstallOrUpdateWebApkFromGooglePlay(

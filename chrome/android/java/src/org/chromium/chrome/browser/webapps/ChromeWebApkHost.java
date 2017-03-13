@@ -82,7 +82,7 @@ public class ChromeWebApkHost {
      * If {@link sCanUseGooglePlayInstall} hasn't been set yet, it returns false immediately and
      * calls the Google Play Install API to update {@link sCanUseGooglePlayInstall} asynchronously.
      */
-    public static boolean canUseGooglePlayToInstallWebApk() {
+    private static boolean canUseGooglePlayToInstallWebApk() {
         return getGooglePlayInstallState() == GooglePlayInstallState.SUPPORTED;
     }
 
