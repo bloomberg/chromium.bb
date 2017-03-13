@@ -35,9 +35,11 @@
 #include <limits.h>
 #include <string.h>
 
-#if DCHECK_IS_ON()
+// TODO(meade): Revert this by 17 Mar 17.
+// This is for investigating crbug.com/694520
+// #if DCHECK_IS_ON()
 #include "wtf/ThreadRestrictionVerifier.h"
-#endif
+// #endif
 
 #if OS(MACOSX)
 typedef const struct __CFString* CFStringRef;
@@ -307,24 +309,30 @@ class WTF_EXPORT StringImpl {
   }
 
   ALWAYS_INLINE bool hasOneRef() const {
-#if DCHECK_IS_ON()
-    DCHECK(isStatic() || m_verifier.isSafeToUse()) << asciiForDebugging();
-#endif
+    // TODO(meade): Revert this by 17 Mar 17.
+    // This is for investigating crbug.com/694520
+    // #if DCHECK_IS_ON()
+    CHECK(isStatic() || m_verifier.isSafeToUse()) << asciiForDebugging();
+    // #endif
     return m_refCount == 1;
   }
 
   ALWAYS_INLINE void ref() const {
-#if DCHECK_IS_ON()
-    DCHECK(isStatic() || m_verifier.onRef(m_refCount)) << asciiForDebugging();
-#endif
+    // TODO(meade): Revert this by 17 Mar 17.
+    // This is for investigating crbug.com/694520
+    // #if DCHECK_IS_ON()
+    CHECK(isStatic() || m_verifier.onRef(m_refCount)) << asciiForDebugging();
+    // #endif
     ++m_refCount;
   }
 
   ALWAYS_INLINE void deref() const {
-#if DCHECK_IS_ON()
-    DCHECK(isStatic() || m_verifier.onDeref(m_refCount))
+    // TODO(meade): Revert this by 17 Mar 17.
+    // This is for investigating crbug.com/694520
+    // #if DCHECK_IS_ON()
+    CHECK(isStatic() || m_verifier.onDeref(m_refCount))
         << asciiForDebugging() << " " << currentThread();
-#endif
+    // #endif
     if (!--m_refCount)
       destroyIfNotStatic();
   }
@@ -511,9 +519,11 @@ class WTF_EXPORT StringImpl {
   void destroyIfNotStatic() const;
   void updateContainsOnlyASCII() const;
 
-#if DCHECK_IS_ON()
+  // TODO(meade): Revert this by 17 Mar 17.
+  // This is for investigating crbug.com/694520
+  // #if DCHECK_IS_ON()
   std::string asciiForDebugging() const;
-#endif
+// #endif
 
 #ifdef STRING_STATS
   static StringStats m_stringStats;
@@ -530,9 +540,11 @@ class WTF_EXPORT StringImpl {
 #endif
 
  private:
-#if DCHECK_IS_ON()
+  // TODO(meade): Revert this by 17 Mar 17.
+  // This is for investigating crbug.com/694520
+  // #if DCHECK_IS_ON()
   mutable ThreadRestrictionVerifier m_verifier;
-#endif
+  // #endif
   mutable unsigned m_refCount;
   const unsigned m_length;
   mutable unsigned m_hash : 24;
