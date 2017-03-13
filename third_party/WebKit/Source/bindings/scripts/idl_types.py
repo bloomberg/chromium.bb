@@ -298,11 +298,37 @@ class IdlUnionType(IdlTypeBase):
         self.member_types = state['member_types']
 
     @property
+    def flattened_member_types(self):
+        """Returns the set of the union's flattened member types.
+
+        https://heycam.github.io/webidl/#dfn-flattened-union-member-types
+        """
+        # We cannot use a set directly because each member is an IdlTypeBase-derived class, and
+        # comparing two objects of the same type is not the same as comparing their names. In
+        # other words:
+        #   x = IdlType('ByteString')
+        #   y = IdlType('ByteString')
+        #   x == y  # False
+        #   x.name == y.name  # True
+        # |flattened_members|'s keys are type names, the values are type |objects.
+        # We assume we can use two IDL objects of the same type interchangeably.
+        flattened_members = {}
+        for member in self.member_types:
+            if member.is_nullable:
+                member = member.inner_type
+            if member.is_union_type:
+                for inner_member in member.flattened_member_types:
+                    flattened_members[inner_member.name] = inner_member
+            else:
+                flattened_members[member.name] = member
+        return set(flattened_members.values())
+
+    @property
     def is_union_type(self):
         return True
 
     def single_matching_member_type(self, predicate):
-        matching_types = filter(predicate, self.member_types)
+        matching_types = filter(predicate, self.flattened_member_types)
         if len(matching_types) > 1:
             raise "%s is ambigious." % self.name
         return matching_types[0] if matching_types else None

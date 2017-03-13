@@ -54,7 +54,7 @@ def container_context(union_type, interfaces_info):
     object_type = None
     record_type = None
     string_type = None
-    for member in sorted(union_type.member_types, key=lambda m: m.name):
+    for member in sorted(union_type.flattened_member_types, key=lambda m: m.name):
         context = member_context(member, interfaces_info)
         members.append(context)
         if member.base_type == 'ArrayBuffer':

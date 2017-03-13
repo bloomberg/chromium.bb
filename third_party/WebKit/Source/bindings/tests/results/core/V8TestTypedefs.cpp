@@ -11,20 +11,32 @@
 // clang-format off
 #include "V8TestTypedefs.h"
 
+#include "bindings/core/v8/ByteStringOrNodeList.h"
 #include "bindings/core/v8/ByteStringSequenceSequenceOrByteStringByteStringRecord.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/IDLTypes.h"
+#include "bindings/core/v8/LongSequenceOrEvent.h"
 #include "bindings/core/v8/NativeValueTraitsImpl.h"
+#include "bindings/core/v8/NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord.h"
 #include "bindings/core/v8/StringOrDouble.h"
 #include "bindings/core/v8/TestInterfaceOrTestInterfaceEmpty.h"
 #include "bindings/core/v8/V8DOMConfiguration.h"
+#include "bindings/core/v8/V8Event.h"
+#include "bindings/core/v8/V8Node.h"
+#include "bindings/core/v8/V8NodeList.h"
 #include "bindings/core/v8/V8ObjectConstructor.h"
 #include "bindings/core/v8/V8TestCallbackInterface.h"
 #include "bindings/core/v8/V8TestInterface.h"
 #include "bindings/core/v8/V8TestInterfaceEmpty.h"
 #include "bindings/core/v8/V8TestObject.h"
+#include "bindings/core/v8/V8XMLHttpRequest.h"
+#include "bindings/core/v8/XMLHttpRequestOrString.h"
 #include "core/dom/Document.h"
+#include "core/dom/NameNodeList.h"
+#include "core/dom/NodeList.h"
+#include "core/dom/StaticNodeList.h"
 #include "core/frame/LocalDOMWindow.h"
+#include "core/html/LabelsNodeList.h"
 #include "wtf/GetPtr.h"
 #include "wtf/RefPtr.h"
 
@@ -304,6 +316,24 @@ static void methodThatReturnsRecordMethod(const v8::FunctionCallbackInfo<v8::Val
   v8SetReturnValue(info, ToV8(impl->methodThatReturnsRecord(), info.Holder(), info.GetIsolate()));
 }
 
+static void voidMethodNestedUnionTypeMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestTypedefs", "voidMethodNestedUnionType");
+
+  TestTypedefs* impl = V8TestTypedefs::toImpl(info.Holder());
+
+  if (UNLIKELY(info.Length() < 1)) {
+    exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
+    return;
+  }
+
+  NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord arg;
+  V8NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrNullOrStringByteStringOrNodeListRecord::toImpl(info.GetIsolate(), info[0], arg, UnionTypeConversionMode::Nullable, exceptionState);
+  if (exceptionState.hadException())
+    return;
+
+  impl->voidMethodNestedUnionType(arg);
+}
+
 static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info) {
   if (UNLIKELY(info.Length() < 1)) {
     V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToConstruct("TestTypedefs", ExceptionMessages::notEnoughArguments(1, info.Length())));
@@ -391,6 +421,10 @@ void V8TestTypedefs::methodThatReturnsRecordMethodCallback(const v8::FunctionCal
   TestTypedefsV8Internal::methodThatReturnsRecordMethod(info);
 }
 
+void V8TestTypedefs::voidMethodNestedUnionTypeMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestTypedefsV8Internal::voidMethodNestedUnionTypeMethod(info);
+}
+
 // Suppress warning: global constructors, because AttributeConfiguration is trivial
 // and does not depend on another global objects.
 #if defined(COMPONENT_BUILD) && defined(WIN32) && COMPILER(CLANG)
@@ -422,6 +456,7 @@ const V8DOMConfiguration::MethodConfiguration V8TestTypedefsMethods[] = {
     {"methodTakingOilpanValueRecord", V8TestTypedefs::methodTakingOilpanValueRecordMethodCallback, nullptr, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder, V8DOMConfiguration::DoNotCheckAccess},
     {"unionWithRecordMethod", V8TestTypedefs::unionWithRecordMethodMethodCallback, nullptr, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder, V8DOMConfiguration::DoNotCheckAccess},
     {"methodThatReturnsRecord", V8TestTypedefs::methodThatReturnsRecordMethodCallback, nullptr, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder, V8DOMConfiguration::DoNotCheckAccess},
+    {"voidMethodNestedUnionType", V8TestTypedefs::voidMethodNestedUnionTypeMethodCallback, nullptr, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder, V8DOMConfiguration::DoNotCheckAccess},
 };
 
 void V8TestTypedefs::constructorCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {

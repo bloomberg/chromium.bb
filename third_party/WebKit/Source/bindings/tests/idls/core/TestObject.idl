@@ -130,6 +130,7 @@ interface TestObject {
     attribute (DOMString or sequence<DOMString>) stringOrStringSequenceAttribute;
     attribute (TestEnum or double) testEnumOrDoubleAttribute;
     attribute (unrestricted double or DOMString) unrestrictedDoubleOrStringAttribute;
+    attribute ((double or DOMString) or sequence<(double or DOMString)>) nestedUnionAtribute;
 
     // Extended attributes
     [LogActivity, LogAllWorlds] attribute long activityLoggingAccessForAllWorldsLongAttribute;
