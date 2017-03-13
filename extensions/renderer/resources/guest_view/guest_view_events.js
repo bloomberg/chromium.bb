@@ -27,6 +27,12 @@ function GuestViewEvents(view) {
   this.setupEvents();
 }
 
+// Prevent GuestViewEvents inadvertently inheritng code from the global Object,
+// allowing a pathway for unintended execution of user code.
+// TODO(wjmaclean): Use utils.expose() here instead, track down other issues
+// of Object inheritance. https://crbug.com/701034
+GuestViewEvents.prototype.__proto__ = null;
+
 // |GuestViewEvents.EVENTS| is a dictionary of extension events to be listened
 //     for, which specifies how each event should be handled. The events are
 //     organized by name, and by default will be dispatched as DOM events with

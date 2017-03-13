@@ -33,6 +33,8 @@ function GuestViewContainer(element, viewType) {
 
 // Prevent GuestViewContainer inadvertently inheriting code from the global
 // Object, allowing a pathway for executing unintended user code execution.
+// TODO(wjmaclean): Use utils.expose() here instead? Track down other issues
+// of Object inheritance. https://crbug.com/701034
 GuestViewContainer.prototype.__proto__ = null;
 
 // Forward public API methods from |proto| to their internal implementations.

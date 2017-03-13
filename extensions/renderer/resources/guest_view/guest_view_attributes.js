@@ -17,6 +17,12 @@ function Attribute(name, view) {
   this.defineProperty();
 }
 
+// Prevent GuestViewEvents inadvertently inheritng code from the global Object,
+// allowing a pathway for unintended execution of user code.
+// TODO(wjmaclean): Use utils.expose() here instead, track down other issues
+// of Object inheritance. https://crbug.com/701034
+Attribute.prototype.__proto__ = null;
+
 // Retrieves and returns the attribute's value.
 Attribute.prototype.getValue = function() {
   return this.view.element.getAttribute(this.name) || '';

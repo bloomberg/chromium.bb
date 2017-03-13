@@ -37,6 +37,12 @@ function WebViewActionRequest(webViewImpl, event, webViewEvent, interfaceName) {
   }
 }
 
+// Prevent GuestViewEvents inadvertently inheritng code from the global Object,
+// allowing a pathway for unintended execution of user code.
+// TODO(wjmaclean): Use utils.expose() here instead, track down other issues
+// of Object inheritance. https://crbug.com/701034
+WebViewActionRequest.prototype.__proto__ = null;
+
 // Performs the default action for the request.
 WebViewActionRequest.prototype.defaultAction = function() {
   // Do nothing if the action has already been taken or the requester is
