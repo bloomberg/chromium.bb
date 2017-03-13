@@ -1306,8 +1306,7 @@ bool LayoutObject::mapToVisualRectInAncestorSpaceInternal(
         transformState.setQuad(FloatQuad(FloatRect(rect)));
       }
 
-      bool preserve3D = (parent->style()->preserves3D() && !parent->isText()) ||
-                        (style()->preserves3D() && !isText());
+      bool preserve3D = parent->style()->preserves3D() && !parent->isText();
 
       TransformState::TransformAccumulation accumulation =
           preserve3D ? TransformState::AccumulateTransform
