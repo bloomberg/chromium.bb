@@ -591,7 +591,7 @@ void HTMLParserScriptRunner::requestDeferredScript(Element* element) {
   // "Add the element to the end of the list of scripts that will execute
   //  when the document has finished parsing associated with the Document
   //  of the parser that created the element."
-  m_scriptsToExecuteAfterParsing.append(pendingScript);
+  m_scriptsToExecuteAfterParsing.push_back(pendingScript);
 }
 
 PendingScript* HTMLParserScriptRunner::requestPendingScript(

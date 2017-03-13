@@ -296,7 +296,7 @@ void FrameSerializer::serializeFrame(const LocalFrame& frame) {
 
     CString frameHTML =
         document.encoding().encode(text, WTF::EntitiesForUnencodables);
-    m_resources->append(SerializedResource(
+    m_resources->push_back(SerializedResource(
         url, document.suggestedMIMEType(),
         SharedBuffer::create(frameHTML.data(), frameHTML.length())));
   }
@@ -388,7 +388,7 @@ void FrameSerializer::serializeCSSStyleSheet(CSSStyleSheet& styleSheet,
     String textString = cssText.toString();
     CString text =
         textEncoding.encode(textString, WTF::CSSEncodedEntitiesForUnencodables);
-    m_resources->append(
+    m_resources->push_back(
         SerializedResource(url, String("text/css"),
                            SharedBuffer::create(text.data(), text.length())));
     m_resourceURLs.insert(url);
@@ -473,7 +473,7 @@ void FrameSerializer::addToResources(
     return;
   }
 
-  m_resources->append(SerializedResource(url, mimeType, std::move(data)));
+  m_resources->push_back(SerializedResource(url, mimeType, std::move(data)));
   m_resourceURLs.insert(url);
 }
 

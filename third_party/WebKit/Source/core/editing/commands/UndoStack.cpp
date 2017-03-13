@@ -51,11 +51,11 @@ void UndoStack::registerUndoStep(UndoStep* step) {
     m_undoStack.removeFirst();  // drop oldest item off the far end
   if (!m_inRedo)
     m_redoStack.clear();
-  m_undoStack.append(step);
+  m_undoStack.push_back(step);
 }
 
 void UndoStack::registerRedoStep(UndoStep* step) {
-  m_redoStack.append(step);
+  m_redoStack.push_back(step);
 }
 
 bool UndoStack::canUndo() const {

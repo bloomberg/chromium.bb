@@ -235,7 +235,7 @@ void DocumentWebSocketChannel::send(const CString& message) {
   probe::didSendWebSocketFrame(document(), m_identifier,
                                WebSocketFrame::OpCodeText, true, message.data(),
                                message.length());
-  m_messages.append(new Message(message));
+  m_messages.push_back(new Message(message));
   processSendQueue();
 }
 
@@ -250,7 +250,7 @@ void DocumentWebSocketChannel::send(PassRefPtr<BlobDataHandle> blobDataHandle) {
   // affect actual behavior.
   probe::didSendWebSocketFrame(document(), m_identifier,
                                WebSocketFrame::OpCodeBinary, true, "", 0);
-  m_messages.append(new Message(std::move(blobDataHandle)));
+  m_messages.push_back(new Message(std::move(blobDataHandle)));
   processSendQueue();
 }
 
@@ -267,7 +267,7 @@ void DocumentWebSocketChannel::send(const DOMArrayBuffer& buffer,
   // buffer.slice copies its contents.
   // FIXME: Reduce copy by sending the data immediately when we don't need to
   // queue the data.
-  m_messages.append(
+  m_messages.push_back(
       new Message(buffer.slice(byteOffset, byteOffset + byteLength)));
   processSendQueue();
 }
@@ -282,7 +282,8 @@ void DocumentWebSocketChannel::sendTextAsCharVector(
   probe::didSendWebSocketFrame(document(), m_identifier,
                                WebSocketFrame::OpCodeText, true, data->data(),
                                data->size());
-  m_messages.append(new Message(std::move(data), MessageTypeTextAsCharVector));
+  m_messages.push_back(
+      new Message(std::move(data), MessageTypeTextAsCharVector));
   processSendQueue();
 }
 
@@ -296,7 +297,7 @@ void DocumentWebSocketChannel::sendBinaryAsCharVector(
   probe::didSendWebSocketFrame(document(), m_identifier,
                                WebSocketFrame::OpCodeBinary, true, data->data(),
                                data->size());
-  m_messages.append(
+  m_messages.push_back(
       new Message(std::move(data), MessageTypeBinaryAsCharVector));
   processSendQueue();
 }
@@ -306,7 +307,7 @@ void DocumentWebSocketChannel::close(int code, const String& reason) {
   DCHECK(m_handle);
   unsigned short codeToSend = static_cast<unsigned short>(
       code == CloseEventCodeNotSpecified ? CloseEventCodeNoStatusRcvd : code);
-  m_messages.append(new Message(codeToSend, reason));
+  m_messages.push_back(new Message(codeToSend, reason));
   processSendQueue();
 }
 

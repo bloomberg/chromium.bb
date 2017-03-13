@@ -252,13 +252,14 @@ bool HarfBuzzShaper::extractShapeResults(RangeData* rangeData,
     if (currentClusterResult == Shaped && !isLastResort) {
       // Now it's clear that we need to continue processing.
       if (!fontCycleQueued) {
-        rangeData->holesQueue.append(HolesQueueItem(HolesQueueNextFont, 0, 0));
+        rangeData->holesQueue.push_back(
+            HolesQueueItem(HolesQueueNextFont, 0, 0));
         fontCycleQueued = true;
       }
 
       // Here we need to put character positions.
       ASSERT(numCharacters);
-      rangeData->holesQueue.append(
+      rangeData->holesQueue.push_back(
           HolesQueueItem(HolesQueueRange, startIndex, numCharacters));
     }
 
@@ -569,9 +570,9 @@ void HarfBuzzShaper::shapeSegment(RangeData* rangeData,
   RefPtr<FontFallbackIterator> fallbackIterator =
       font->createFontFallbackIterator(segment.fontFallbackPriority);
 
-  rangeData->holesQueue.append(HolesQueueItem(HolesQueueNextFont, 0, 0));
-  rangeData->holesQueue.append(HolesQueueItem(HolesQueueRange, segment.start,
-                                              segment.end - segment.start));
+  rangeData->holesQueue.push_back(HolesQueueItem(HolesQueueNextFont, 0, 0));
+  rangeData->holesQueue.push_back(HolesQueueItem(HolesQueueRange, segment.start,
+                                                 segment.end - segment.start));
 
   bool fontCycleQueued = false;
   Vector<UChar32> fallbackCharsHint;

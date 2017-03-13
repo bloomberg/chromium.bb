@@ -182,7 +182,7 @@ void ScriptRunIterator::openBracket(UChar32 ch) {
       --m_bracketsFixupDepth;
     }
   }
-  m_brackets.append(BracketRec({ch, USCRIPT_COMMON}));
+  m_brackets.push_back(BracketRec({ch, USCRIPT_COMMON}));
   ++m_bracketsFixupDepth;
 }
 

@@ -81,11 +81,11 @@ void SQLTransactionCoordinator::acquireLock(
     CoordinationInfo& info =
         m_coordinationInfoMap.insert(dbIdentifier, CoordinationInfo())
             .storedValue->value;
-    info.pendingTransactions.append(transaction);
+    info.pendingTransactions.push_back(transaction);
     processPendingTransactions(info);
   } else {
     CoordinationInfo& info = coordinationInfoIterator->value;
-    info.pendingTransactions.append(transaction);
+    info.pendingTransactions.push_back(transaction);
     processPendingTransactions(info);
   }
 }

@@ -538,12 +538,12 @@ bool DOMPatchSupport::removeChildAndMoveToNew(Digest* oldDigest,
 
 void DOMPatchSupport::markNodeAsUsed(Digest* digest) {
   HeapDeque<Member<Digest>> queue;
-  queue.append(digest);
+  queue.push_back(digest);
   while (!queue.isEmpty()) {
     Digest* first = queue.takeFirst();
     m_unusedNodesMap.erase(first->m_sha1);
     for (size_t i = 0; i < first->m_children.size(); ++i)
-      queue.append(first->m_children[i].get());
+      queue.push_back(first->m_children[i].get());
   }
 }
 

@@ -228,7 +228,7 @@ void SpellCheckRequester::enqueueRequest(SpellCheckRequest* request) {
       m_requestQueue.remove(sameElementRequest);
   }
 
-  m_requestQueue.append(request);
+  m_requestQueue.push_back(request);
 }
 
 void SpellCheckRequester::didCheck(int sequence,

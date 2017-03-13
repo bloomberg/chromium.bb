@@ -126,8 +126,6 @@ class Deque : public ConditionalDestructor<Deque<T, INLINE_CAPACITY, Allocator>,
   const T& operator[](size_t i) const { return at(i); }
 
   template <typename U>
-  void append(U&&);
-  template <typename U>
   void prepend(U&&);
   void removeFirst();
   void remove(iterator&);
@@ -135,9 +133,7 @@ class Deque : public ConditionalDestructor<Deque<T, INLINE_CAPACITY, Allocator>,
 
   // STL compatibility.
   template <typename U>
-  void push_back(U&& u) {
-    append(std::forward<U>(u));
-  }
+  void push_back(U&&);
   template <typename U>
   void push_front(U&& u) {
     prepend(std::forward<U>(u));
@@ -503,7 +499,7 @@ inline T Deque<T, inlineCapacity, Allocator>::takeLast() {
 
 template <typename T, size_t inlineCapacity, typename Allocator>
 template <typename U>
-inline void Deque<T, inlineCapacity, Allocator>::append(U&& value) {
+inline void Deque<T, inlineCapacity, Allocator>::push_back(U&& value) {
   expandCapacityIfNeeded();
   T* newElement = &m_buffer.buffer()[m_end];
   if (m_end == m_buffer.capacity() - 1)

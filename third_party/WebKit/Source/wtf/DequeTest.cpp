@@ -95,18 +95,18 @@ void checkNumberSequenceReverse(Deque<int, inlineCapacity>& deque,
 template <size_t inlineCapacity>
 void reverseTest() {
   Deque<int, inlineCapacity> intDeque;
-  intDeque.append(10);
-  intDeque.append(11);
-  intDeque.append(12);
-  intDeque.append(13);
+  intDeque.push_back(10);
+  intDeque.push_back(11);
+  intDeque.push_back(12);
+  intDeque.push_back(13);
 
   checkNumberSequence(intDeque, 10, 13, true);
   checkNumberSequence(intDeque, 13, 10, false);
   checkNumberSequenceReverse(intDeque, 13, 10, true);
   checkNumberSequenceReverse(intDeque, 10, 13, false);
 
-  intDeque.append(14);
-  intDeque.append(15);
+  intDeque.push_back(14);
+  intDeque.push_back(15);
   EXPECT_EQ(10, intDeque.takeFirst());
   EXPECT_EQ(15, intDeque.takeLast());
   checkNumberSequence(intDeque, 11, 14, true);
@@ -115,7 +115,7 @@ void reverseTest() {
   checkNumberSequenceReverse(intDeque, 11, 14, false);
 
   for (int i = 15; i < 200; ++i)
-    intDeque.append(i);
+    intDeque.push_back(i);
   checkNumberSequence(intDeque, 11, 199, true);
   checkNumberSequence(intDeque, 199, 11, false);
   checkNumberSequenceReverse(intDeque, 199, 11, true);
@@ -175,8 +175,8 @@ template <typename OwnPtrDeque>
 void ownPtrTest() {
   int destructNumber = 0;
   OwnPtrDeque deque;
-  deque.append(WTF::wrapUnique(new DestructCounter(0, &destructNumber)));
-  deque.append(WTF::wrapUnique(new DestructCounter(1, &destructNumber)));
+  deque.push_back(WTF::wrapUnique(new DestructCounter(0, &destructNumber)));
+  deque.push_back(WTF::wrapUnique(new DestructCounter(1, &destructNumber)));
   EXPECT_EQ(2u, deque.size());
 
   std::unique_ptr<DestructCounter>& counter0 = deque.first();
@@ -265,8 +265,8 @@ class MoveOnly {
 
 TEST(DequeTest, MoveOnlyType) {
   Deque<MoveOnly> deque;
-  deque.append(MoveOnly(1));
-  deque.append(MoveOnly(2));
+  deque.push_back(MoveOnly(1));
+  deque.push_back(MoveOnly(2));
   EXPECT_EQ(2u, deque.size());
 
   ASSERT_EQ(1, deque.first().value());
@@ -317,9 +317,9 @@ class WrappedInt {
 template <size_t inlineCapacity>
 void swapWithOrWithoutInlineCapacity() {
   Deque<WrappedInt, inlineCapacity> dequeA;
-  dequeA.append(WrappedInt(1));
+  dequeA.push_back(WrappedInt(1));
   Deque<WrappedInt, inlineCapacity> dequeB;
-  dequeB.append(WrappedInt(2));
+  dequeB.push_back(WrappedInt(2));
 
   ASSERT_EQ(dequeA.size(), dequeB.size());
   dequeA.swap(dequeB);
@@ -329,7 +329,7 @@ void swapWithOrWithoutInlineCapacity() {
   ASSERT_EQ(1u, dequeB.size());
   EXPECT_EQ(1, dequeB.first().get());
 
-  dequeA.append(WrappedInt(3));
+  dequeA.push_back(WrappedInt(3));
 
   ASSERT_GT(dequeA.size(), dequeB.size());
   dequeA.swap(dequeB);
@@ -347,7 +347,7 @@ void swapWithOrWithoutInlineCapacity() {
   ASSERT_EQ(1u, dequeB.size());
   EXPECT_EQ(1, dequeB.first().get());
 
-  dequeA.append(WrappedInt(4));
+  dequeA.push_back(WrappedInt(4));
   dequeA.swap(dequeB);
 
   ASSERT_EQ(1u, dequeA.size());
@@ -388,8 +388,8 @@ void testDestructorAndConstructorCallsWhenSwappingWithInlineCapacity() {
 
   Deque<RefPtr<LivenessCounter>, inlineCapacity> deque;
   Deque<RefPtr<LivenessCounter>, inlineCapacity> deque2;
-  deque.append(&counter);
-  deque2.append(&counter);
+  deque.push_back(&counter);
+  deque2.push_back(&counter);
   EXPECT_EQ(2u, LivenessCounter::s_live);
 
   // Add various numbers of elements to deques, then remove various numbers
@@ -407,7 +407,7 @@ void testDestructorAndConstructorCallsWhenSwappingWithInlineCapacity() {
       deque2.clear();
       EXPECT_EQ(0u, LivenessCounter::s_live);
       for (unsigned k = 0; k < j; k++)
-        deque.append(&counter);
+        deque.push_back(&counter);
       EXPECT_EQ(j, LivenessCounter::s_live);
       EXPECT_EQ(j, deque.size());
       for (unsigned k = 0; k < i; k++)
@@ -422,9 +422,9 @@ void testDestructorAndConstructorCallsWhenSwappingWithInlineCapacity() {
       deque.swap(deque2);
       EXPECT_EQ(j - i, LivenessCounter::s_live);
 
-      deque2.append(&counter);
-      deque2.append(&counter);
-      deque2.append(&counter);
+      deque2.push_back(&counter);
+      deque2.push_back(&counter);
+      deque2.push_back(&counter);
 
       for (unsigned k = 0; k < 12; k++) {
         EXPECT_EQ(3 + j - i, LivenessCounter::s_live);
@@ -440,7 +440,7 @@ void testDestructorAndConstructorCallsWhenSwappingWithInlineCapacity() {
         EXPECT_EQ(3u, deque2.size());
 
         deque2.removeFirst();
-        deque2.append(&counter);
+        deque2.push_back(&counter);
       }
     }
   }
@@ -477,13 +477,13 @@ void testValuesMovedAndSwappedWithInlineCapacity() {
           deque.clear();
           deque2.clear();
           for (unsigned i = 0; i < pad; i++)
-            deque.append(103);
+            deque.push_back(103);
           for (unsigned i = 0; i < pad2; i++)
-            deque2.append(888);
+            deque2.push_back(888);
           for (unsigned i = 0; i < size; i++)
-            deque.append(i);
+            deque.push_back(i);
           for (unsigned i = 0; i < size2; i++)
-            deque2.append(i + 42);
+            deque2.push_back(i + 42);
           for (unsigned i = 0; i < pad; i++)
             EXPECT_EQ(103u, deque.takeFirst());
           for (unsigned i = 0; i < pad2; i++)
@@ -510,8 +510,8 @@ TEST(DequeTest, ValuesMovedAndSwappedWithInlineCapacity) {
 TEST(DequeTest, UniquePtr) {
   using Pointer = std::unique_ptr<int>;
   Deque<Pointer> deque;
-  deque.append(Pointer(new int(1)));
-  deque.append(Pointer(new int(2)));
+  deque.push_back(Pointer(new int(1)));
+  deque.push_back(Pointer(new int(2)));
   deque.prepend(Pointer(new int(-1)));
   deque.prepend(Pointer(new int(-2)));
   ASSERT_EQ(4u, deque.size());
@@ -530,7 +530,7 @@ TEST(DequeTest, UniquePtr) {
   deque.pop_back();
   EXPECT_EQ(0u, deque.size());
 
-  deque.append(Pointer(new int(42)));
+  deque.push_back(Pointer(new int(42)));
   deque[0] = Pointer(new int(24));
   ASSERT_EQ(1u, deque.size());
   EXPECT_EQ(24, *deque[0]);
@@ -562,8 +562,8 @@ TEST(DequeTest, MoveShouldNotMakeCopy) {
   // element-wise copy/move.
   Deque<CountCopy, 1> deque;
   int counter = 0;
-  deque.append(CountCopy(&counter));
-  deque.append(CountCopy(&counter));
+  deque.push_back(CountCopy(&counter));
+  deque.push_back(CountCopy(&counter));
 
   Deque<CountCopy, 1> other(deque);
   counter = 0;
@@ -578,7 +578,7 @@ TEST(DequeTest, MoveShouldNotMakeCopy) {
 TEST(DequeTest, RemoveWhileIterating) {
   Deque<int> deque;
   for (int i = 0; i < 10; ++i)
-    deque.append(i);
+    deque.push_back(i);
 
   // All numbers present.
   {

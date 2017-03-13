@@ -108,7 +108,7 @@ class BytesConsumerTestUtil {
 
     // Add a command to this handle. This function must be called BEFORE
     // any BytesConsumer methods are called.
-    void add(const Command& command) { m_commands.append(command); }
+    void add(const Command& command) { m_commands.push_back(command); }
 
     Result beginRead(const char** buffer, size_t* available) override;
     Result endRead(size_t readSize) override;

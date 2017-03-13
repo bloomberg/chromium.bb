@@ -95,7 +95,7 @@ void PlatformSpeechSynthesizerMock::speak(
     speakNow();
     return;
   }
-  m_queuedUtterances.append(utterance);
+  m_queuedUtterances.push_back(utterance);
 }
 
 void PlatformSpeechSynthesizerMock::speakNow() {

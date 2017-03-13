@@ -120,7 +120,7 @@ class DataConsumerHandleTestUtil::ReplayingHandle::ReaderImpl final
 void DataConsumerHandleTestUtil::ReplayingHandle::Context::add(
     const Command& command) {
   MutexLocker locker(m_mutex);
-  m_commands.append(command);
+  m_commands.push_back(command);
 }
 
 void DataConsumerHandleTestUtil::ReplayingHandle::Context::attachReader(

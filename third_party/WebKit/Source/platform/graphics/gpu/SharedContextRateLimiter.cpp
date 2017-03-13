@@ -45,7 +45,7 @@ void SharedContextRateLimiter::tick() {
   if (!gl || gl->GetGraphicsResetStatusKHR() != GL_NO_ERROR)
     return;
 
-  m_queries.append(0);
+  m_queries.push_back(0);
   if (m_canUseSyncQueries)
     gl->GenQueriesEXT(1, &m_queries.last());
   if (m_canUseSyncQueries) {

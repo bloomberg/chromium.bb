@@ -264,7 +264,7 @@ void NetworkResourcesData::setResourceContent(const String& requestId,
     // was loading, so remove it, if any.
     if (resourceData->hasContent())
       m_contentSize -= resourceData->removeContent();
-    m_requestIdsDeque.append(requestId);
+    m_requestIdsDeque.push_back(requestId);
     resourceData->setContent(content, base64Encoded);
     m_contentSize += dataLength;
   }
@@ -282,7 +282,7 @@ void NetworkResourcesData::maybeAddResourceData(const String& requestId,
   if (resourceData->isContentEvicted())
     return;
   if (ensureFreeSpace(dataLength) && !resourceData->isContentEvicted()) {
-    m_requestIdsDeque.append(requestId);
+    m_requestIdsDeque.push_back(requestId);
     resourceData->appendData(data, dataLength);
     m_contentSize += dataLength;
   }

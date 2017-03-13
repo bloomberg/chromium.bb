@@ -406,7 +406,7 @@ void PointerEventManager::dispatchTouchPointerEvents(
       if (result != WebInputEventResult::NotHandled &&
           pointerEvent->type() == EventTypeNames::pointerdown &&
           pointerEvent->isPrimary()) {
-        m_touchIdsForCanceledPointerdowns.append(event.uniqueTouchEventId);
+        m_touchIdsForCanceledPointerdowns.push_back(event.uniqueTouchEventId);
       }
     }
   }

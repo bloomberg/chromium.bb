@@ -2426,27 +2426,27 @@ TEST(HeapTest, HeapCollectionTypes) {
       set3->add(oneB);
       set3->add(oneB);
       vector->push_back(oneB);
-      deque->append(oneB);
+      deque->push_back(oneB);
       vector2->push_back(threeB);
       vector2->push_back(fourB);
-      deque2->append(threeE);
-      deque2->append(fourE);
+      deque2->push_back(threeE);
+      deque2->push_back(fourE);
       vectorWU->push_back(PairWrappedUnwrapped(&*oneC, 42));
-      dequeWU->append(PairWrappedUnwrapped(&*oneE, 42));
+      dequeWU->push_back(PairWrappedUnwrapped(&*oneE, 42));
       vectorWU2->push_back(PairWrappedUnwrapped(&*threeC, 43));
       vectorWU2->push_back(PairWrappedUnwrapped(&*fourC, 44));
       vectorWU2->push_back(PairWrappedUnwrapped(&*fiveC, 45));
-      dequeWU2->append(PairWrappedUnwrapped(&*threeE, 43));
-      dequeWU2->append(PairWrappedUnwrapped(&*fourE, 44));
-      dequeWU2->append(PairWrappedUnwrapped(&*fiveE, 45));
+      dequeWU2->push_back(PairWrappedUnwrapped(&*threeE, 43));
+      dequeWU2->push_back(PairWrappedUnwrapped(&*fourE, 44));
+      dequeWU2->push_back(PairWrappedUnwrapped(&*fiveE, 45));
       vectorUW->push_back(PairUnwrappedWrapped(1, &*oneD));
       vectorUW2->push_back(PairUnwrappedWrapped(103, &*threeD));
       vectorUW2->push_back(PairUnwrappedWrapped(104, &*fourD));
       vectorUW2->push_back(PairUnwrappedWrapped(105, &*fiveD));
-      dequeUW->append(PairUnwrappedWrapped(1, &*oneF));
-      dequeUW2->append(PairUnwrappedWrapped(103, &*threeF));
-      dequeUW2->append(PairUnwrappedWrapped(104, &*fourF));
-      dequeUW2->append(PairUnwrappedWrapped(105, &*fiveF));
+      dequeUW->push_back(PairUnwrappedWrapped(1, &*oneF));
+      dequeUW2->push_back(PairUnwrappedWrapped(103, &*threeF));
+      dequeUW2->push_back(PairUnwrappedWrapped(104, &*fourF));
+      dequeUW2->push_back(PairUnwrappedWrapped(105, &*fiveF));
 
       EXPECT_TRUE(dequeContains(*deque, oneB));
 
@@ -2872,7 +2872,7 @@ class NonTrivialObject final {
  public:
   NonTrivialObject() {}
   explicit NonTrivialObject(int num) {
-    m_deque.append(IntWrapper::create(num));
+    m_deque.push_back(IntWrapper::create(num));
     m_vector.push_back(IntWrapper::create(num));
   }
   DEFINE_INLINE_TRACE() {
@@ -3854,8 +3854,8 @@ TEST(HeapTest, PersistentHeapCollectionTypes) {
     pVec.push_back(one);
     pVec.push_back(two);
 
-    pDeque.append(seven);
-    pDeque.append(two);
+    pDeque.push_back(seven);
+    pDeque.push_back(two);
 
     Vec* vec = new Vec();
     vec->swap(pVec);
@@ -3934,7 +3934,7 @@ TEST(HeapTest, CollectionNesting) {
   it->value.push_back(IntWrapper::create(42));
   EXPECT_EQ(1u, map->at(key).size());
 
-  it2->value.append(IntWrapper::create(42));
+  it2->value.push_back(IntWrapper::create(42));
   EXPECT_EQ(1u, map2->at(key).size());
 
   Persistent<HeapHashMap<void*, IntVector>> keepAlive(map);
@@ -4005,7 +4005,7 @@ TEST(HeapTest, CollectionNesting3) {
   HeapDeque<IntDeque>* deque = new HeapDeque<IntDeque>();
 
   vector->push_back(IntVector());
-  deque->append(IntDeque());
+  deque->push_back(IntDeque());
 
   HeapVector<IntVector>::iterator it = vector->begin();
   HeapDeque<IntDeque>::iterator it2 = deque->begin();
@@ -4013,7 +4013,7 @@ TEST(HeapTest, CollectionNesting3) {
   EXPECT_EQ(0u, it2->size());
 
   it->push_back(IntWrapper::create(42));
-  it2->append(IntWrapper::create(42));
+  it2->push_back(IntWrapper::create(42));
   EXPECT_EQ(1u, it->size());
   EXPECT_EQ(1u, it2->size());
 
@@ -4058,17 +4058,17 @@ TEST(HeapTest, EmbeddedInDeque) {
     PersistentHeapDeque<VectorObject, 2> inlineDeque;
     PersistentHeapDeque<VectorObject> outlineDeque;
     VectorObject i1, i2;
-    inlineDeque.append(i1);
-    inlineDeque.append(i2);
+    inlineDeque.push_back(i1);
+    inlineDeque.push_back(i2);
 
     VectorObject o1, o2;
-    outlineDeque.append(o1);
-    outlineDeque.append(o2);
+    outlineDeque.push_back(o1);
+    outlineDeque.push_back(o2);
 
     PersistentHeapDeque<VectorObjectInheritedTrace> dequeInheritedTrace;
     VectorObjectInheritedTrace it1, it2;
-    dequeInheritedTrace.append(it1);
-    dequeInheritedTrace.append(it2);
+    dequeInheritedTrace.push_back(it1);
+    dequeInheritedTrace.push_back(it2);
 
     preciselyCollectGarbage();
     EXPECT_EQ(0, SimpleFinalizedObject::s_destructorCalls);
@@ -5711,7 +5711,7 @@ TEST(HeapTest, DequeExpand) {
   // deque's buffer.
   int i = 0;
   for (; i < 60; ++i)
-    deque->append(IntWrapper::create(i));
+    deque->push_back(IntWrapper::create(i));
 
   EXPECT_EQ(60u, deque->size());
   i = 0;
@@ -5735,7 +5735,7 @@ TEST(HeapTest, DequeExpand) {
   // Append even more, eventually causing an expansion of the underlying
   // buffer once the end index wraps around and reaches the start index.
   for (i = 0; i < 70; ++i)
-    deque->append(IntWrapper::create(60 + i));
+    deque->push_back(IntWrapper::create(60 + i));
 
   // Verify that the final buffer expansion copied the start and end segments
   // of the old buffer to both ends of the expanded buffer, along with
@@ -5795,8 +5795,8 @@ TEST(HeapTest, DequePartObjectsExpand) {
   // deque's buffer.
   int i = 0;
   for (; i < 60; ++i) {
-    deque->append(PartObjectWithRef(i));
-    dequeUnused->append(PartObjectWithRef(i));
+    deque->push_back(PartObjectWithRef(i));
+    dequeUnused->push_back(PartObjectWithRef(i));
   }
 
   EXPECT_EQ(60u, deque->size());
@@ -5821,7 +5821,7 @@ TEST(HeapTest, DequePartObjectsExpand) {
   // Append even more, eventually causing an expansion of the underlying
   // buffer once the end index wraps around and reaches the start index.
   for (i = 0; i < 70; ++i)
-    deque->append(PartObjectWithRef(60 + i));
+    deque->push_back(PartObjectWithRef(60 + i));
 
   // Verify that the final buffer expansion copied the start and end segments
   // of the old buffer to both ends of the expanded buffer, along with
@@ -5834,7 +5834,7 @@ TEST(HeapTest, DequePartObjectsExpand) {
   }
 
   for (i = 0; i < 70; ++i)
-    deque->append(PartObjectWithRef(130 + i));
+    deque->push_back(PartObjectWithRef(130 + i));
 
   EXPECT_EQ(150u, deque->size());
   i = 0;

@@ -145,7 +145,7 @@ void NavigatorGamepad::didUpdateData() {
   sampleGamepad(change.index, *gamepad, change.pad);
   m_gamepads->set(change.index, gamepad);
 
-  m_pendingEvents.append(gamepad);
+  m_pendingEvents.push_back(gamepad);
   m_dispatchOneEventRunner->runAsync();
 }
 
@@ -263,10 +263,10 @@ void NavigatorGamepad::pageVisibilityChanged() {
                                    oldGamepad->id() != newGamepad->id();
     if (connectedGamepadChanged || (oldWasConnected && !newIsConnected)) {
       oldGamepad->setConnected(false);
-      m_pendingEvents.append(oldGamepad);
+      m_pendingEvents.push_back(oldGamepad);
     }
     if (connectedGamepadChanged || (!oldWasConnected && newIsConnected)) {
-      m_pendingEvents.append(newGamepad);
+      m_pendingEvents.push_back(newGamepad);
     }
   }
 

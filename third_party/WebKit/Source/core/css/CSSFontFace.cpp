@@ -39,7 +39,7 @@ namespace blink {
 
 void CSSFontFace::addSource(CSSFontFaceSource* source) {
   source->setFontFace(this);
-  m_sources.append(source);
+  m_sources.push_back(source);
 }
 
 void CSSFontFace::setSegmentedFontFace(

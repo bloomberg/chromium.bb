@@ -152,7 +152,7 @@ class InProcessWorkerMessagingProxyForTest
   void confirmMessageFromWorkerObject() override {
     EXPECT_TRUE(isMainThread());
     InProcessWorkerMessagingProxy::confirmMessageFromWorkerObject();
-    m_events.append(Notification::MessageConfirmed);
+    m_events.push_back(Notification::MessageConfirmed);
     if (m_blocking)
       testing::exitRunLoop();
     m_blocking = false;
@@ -161,7 +161,7 @@ class InProcessWorkerMessagingProxyForTest
   void pendingActivityFinished() override {
     EXPECT_TRUE(isMainThread());
     InProcessWorkerMessagingProxy::pendingActivityFinished();
-    m_events.append(Notification::PendingActivityReported);
+    m_events.push_back(Notification::PendingActivityReported);
     if (m_blocking)
       testing::exitRunLoop();
     m_blocking = false;
@@ -169,7 +169,7 @@ class InProcessWorkerMessagingProxyForTest
 
   void workerThreadTerminated() override {
     EXPECT_TRUE(isMainThread());
-    m_events.append(Notification::ThreadTerminated);
+    m_events.push_back(Notification::ThreadTerminated);
     if (m_blocking)
       testing::exitRunLoop();
     m_blocking = false;

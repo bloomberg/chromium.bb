@@ -122,7 +122,7 @@ class SourceStreamDataQueue {
   void produce(const uint8_t* data, size_t length) {
     MutexLocker locker(m_mutex);
     DCHECK(!m_finished);
-    m_data.append(std::make_pair(data, length));
+    m_data.push_back(std::make_pair(data, length));
     m_haveData.signal();
   }
 

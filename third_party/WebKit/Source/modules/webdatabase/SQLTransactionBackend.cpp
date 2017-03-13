@@ -501,7 +501,7 @@ void SQLTransactionBackend::enqueueStatementBackend(
     SQLStatementBackend* statementBackend) {
   DCHECK(isMainThread());
   MutexLocker locker(m_statementMutex);
-  m_statementQueue.append(statementBackend);
+  m_statementQueue.push_back(statementBackend);
 }
 
 void SQLTransactionBackend::computeNextStateAndCleanupIfNeeded() {

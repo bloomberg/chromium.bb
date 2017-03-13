@@ -515,7 +515,7 @@ ScriptPromise MediaKeySession::generateRequest(ScriptState* scriptState,
   ScriptPromise promise = result->promise();
 
   // 10. Run the following steps asynchronously (done in generateRequestTask())
-  m_pendingActions.append(PendingAction::CreatePendingGenerateRequest(
+  m_pendingActions.push_back(PendingAction::CreatePendingGenerateRequest(
       result, initDataType, initDataBuffer));
   DCHECK(!m_actionTimer.isActive());
   m_actionTimer.startOneShot(0, BLINK_FROM_HERE);
@@ -610,7 +610,7 @@ ScriptPromise MediaKeySession::load(ScriptState* scriptState,
   ScriptPromise promise = result->promise();
 
   // 8. Run the following steps asynchronously (done in loadTask())
-  m_pendingActions.append(
+  m_pendingActions.push_back(
       PendingAction::CreatePendingLoadRequest(result, sessionId));
   DCHECK(!m_actionTimer.isActive());
   m_actionTimer.startOneShot(0, BLINK_FROM_HERE);
@@ -729,7 +729,7 @@ ScriptPromise MediaKeySession::update(ScriptState* scriptState,
   ScriptPromise promise = result->promise();
 
   // 6. Run the following steps asynchronously (done in updateTask())
-  m_pendingActions.append(
+  m_pendingActions.push_back(
       PendingAction::CreatePendingUpdate(result, responseCopy));
   if (!m_actionTimer.isActive())
     m_actionTimer.startOneShot(0, BLINK_FROM_HERE);
@@ -774,7 +774,7 @@ ScriptPromise MediaKeySession::close(ScriptState* scriptState) {
   ScriptPromise promise = result->promise();
 
   // 5. Run the following steps in parallel (done in closeTask()).
-  m_pendingActions.append(PendingAction::CreatePendingClose(result));
+  m_pendingActions.push_back(PendingAction::CreatePendingClose(result));
   if (!m_actionTimer.isActive())
     m_actionTimer.startOneShot(0, BLINK_FROM_HERE);
 
@@ -824,7 +824,7 @@ ScriptPromise MediaKeySession::remove(ScriptState* scriptState) {
   ScriptPromise promise = result->promise();
 
   // 5. Run the following steps asynchronously (done in removeTask()).
-  m_pendingActions.append(PendingAction::CreatePendingRemove(result));
+  m_pendingActions.push_back(PendingAction::CreatePendingRemove(result));
   if (!m_actionTimer.isActive())
     m_actionTimer.startOneShot(0, BLINK_FROM_HERE);
 

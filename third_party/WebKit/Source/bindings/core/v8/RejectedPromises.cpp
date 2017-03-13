@@ -194,9 +194,9 @@ void RejectedPromises::rejectedWithNoHandler(
     const String& errorMessage,
     std::unique_ptr<SourceLocation> location,
     AccessControlStatus corsStatus) {
-  m_queue.append(Message::create(scriptState, data.GetPromise(),
-                                 data.GetValue(), errorMessage,
-                                 std::move(location), corsStatus));
+  m_queue.push_back(Message::create(scriptState, data.GetPromise(),
+                                    data.GetValue(), errorMessage,
+                                    std::move(location), corsStatus));
 }
 
 void RejectedPromises::handlerAdded(v8::PromiseRejectMessage data) {

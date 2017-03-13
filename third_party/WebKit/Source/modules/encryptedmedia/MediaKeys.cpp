@@ -220,7 +220,7 @@ ScriptPromise MediaKeys::setServerCertificate(
   ScriptPromise promise = result->promise();
 
   // 5. Run the following steps asynchronously (documented in timerFired()).
-  m_pendingActions.append(PendingAction::CreatePendingSetServerCertificate(
+  m_pendingActions.push_back(PendingAction::CreatePendingSetServerCertificate(
       result, serverCertificateBuffer));
   if (!m_timer.isActive())
     m_timer.startOneShot(0, BLINK_FROM_HERE);

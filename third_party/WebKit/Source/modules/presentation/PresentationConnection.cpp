@@ -266,7 +266,7 @@ void PresentationConnection::send(const String& message,
   if (!canSendMessage(exceptionState))
     return;
 
-  m_messages.append(new Message(message));
+  m_messages.push_back(new Message(message));
   handleMessageQueue();
 }
 
@@ -276,7 +276,7 @@ void PresentationConnection::send(DOMArrayBuffer* arrayBuffer,
   if (!canSendMessage(exceptionState))
     return;
 
-  m_messages.append(new Message(arrayBuffer));
+  m_messages.push_back(new Message(arrayBuffer));
   handleMessageQueue();
 }
 
@@ -286,7 +286,7 @@ void PresentationConnection::send(DOMArrayBufferView* arrayBufferView,
   if (!canSendMessage(exceptionState))
     return;
 
-  m_messages.append(new Message(arrayBufferView->buffer()));
+  m_messages.push_back(new Message(arrayBufferView->buffer()));
   handleMessageQueue();
 }
 
@@ -295,7 +295,7 @@ void PresentationConnection::send(Blob* data, ExceptionState& exceptionState) {
   if (!canSendMessage(exceptionState))
     return;
 
-  m_messages.append(new Message(data->blobDataHandle()));
+  m_messages.push_back(new Message(data->blobDataHandle()));
   handleMessageQueue();
 }
 

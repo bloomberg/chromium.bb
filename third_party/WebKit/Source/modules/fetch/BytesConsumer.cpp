@@ -223,7 +223,7 @@ class TeeHelper final : public GarbageCollectedFinalized<TeeHelper>,
     void enqueue(Chunk* chunk) {
       if (m_isCancelled)
         return;
-      m_chunks.append(chunk);
+      m_chunks.push_back(chunk);
     }
 
     bool isEmpty() const { return m_chunks.isEmpty(); }

@@ -88,7 +88,7 @@ void DOMWebSocket::EventQueue::dispatch(Event* event) {
       m_target->dispatchEvent(event);
       break;
     case Suspended:
-      m_events.append(event);
+      m_events.push_back(event);
       break;
     case Stopped:
       DCHECK(m_events.isEmpty());
@@ -141,7 +141,7 @@ void DOMWebSocket::EventQueue::dispatchQueuedEvents() {
   }
   if (m_state == Suspended) {
     while (!m_events.isEmpty())
-      events.append(m_events.takeFirst());
+      events.push_back(m_events.takeFirst());
     events.swap(m_events);
   }
 }

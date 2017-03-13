@@ -136,7 +136,7 @@ class FileReader::ThrottlingController final
       m_runningReaders.insert(reader);
       return;
     }
-    m_pendingReaders.append(reader);
+    m_pendingReaders.push_back(reader);
     executeReaders();
   }
 

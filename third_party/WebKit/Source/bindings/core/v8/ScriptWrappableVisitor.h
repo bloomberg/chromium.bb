@@ -172,11 +172,11 @@ class CORE_EXPORT ScriptWrappableVisitor : public v8::EmbedderHeapTracer,
     if (!m_tracingInProgress)
       return false;
 
-    m_markingDeque.append(WrapperMarkingData(traceWrappersCallback,
-                                             heapObjectHeaderCallback, object));
+    m_markingDeque.push_back(WrapperMarkingData(
+        traceWrappersCallback, heapObjectHeaderCallback, object));
 #if DCHECK_IS_ON()
     if (!m_advancingTracing) {
-      m_verifierDeque.append(WrapperMarkingData(
+      m_verifierDeque.push_back(WrapperMarkingData(
           traceWrappersCallback, heapObjectHeaderCallback, object));
     }
 #endif

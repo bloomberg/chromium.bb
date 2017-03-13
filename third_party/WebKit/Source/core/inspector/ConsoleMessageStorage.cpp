@@ -21,7 +21,7 @@ void ConsoleMessageStorage::addConsoleMessage(ExecutionContext* context,
     ++m_expiredCount;
     m_messages.removeFirst();
   }
-  m_messages.append(message);
+  m_messages.push_back(message);
 }
 
 void ConsoleMessageStorage::clear() {

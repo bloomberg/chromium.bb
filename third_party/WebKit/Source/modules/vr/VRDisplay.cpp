@@ -298,7 +298,7 @@ ScriptPromise VRDisplay::requestPresent(ScriptState* scriptState,
     // If we are waiting on the results of a previous requestPresent call don't
     // fire a new request, just cache the resolver and resolve it when the
     // original request returns.
-    m_pendingPresentResolvers.append(resolver);
+    m_pendingPresentResolvers.push_back(resolver);
   } else if (firstPresent) {
     bool secureContext = scriptState->getExecutionContext()->isSecureContext();
     if (!m_display) {
@@ -309,7 +309,7 @@ ScriptPromise VRDisplay::requestPresent(ScriptState* scriptState,
       return promise;
     }
 
-    m_pendingPresentResolvers.append(resolver);
+    m_pendingPresentResolvers.push_back(resolver);
     m_submit_frame_client_binding.Close();
     m_display->RequestPresent(
         secureContext,

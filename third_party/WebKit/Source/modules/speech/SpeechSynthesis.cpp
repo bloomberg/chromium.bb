@@ -96,7 +96,7 @@ void SpeechSynthesis::startSpeakingImmediately() {
 void SpeechSynthesis::speak(SpeechSynthesisUtterance* utterance) {
   ASSERT(utterance);
 
-  m_utteranceQueue.append(utterance);
+  m_utteranceQueue.push_back(utterance);
 
   // If the queue was empty, speak this immediately.
   if (m_utteranceQueue.size() == 1)

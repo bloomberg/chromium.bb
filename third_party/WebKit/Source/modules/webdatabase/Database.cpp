@@ -326,7 +326,7 @@ SQLTransactionBackend* Database::runTransaction(SQLTransaction* transaction,
 
   SQLTransactionBackend* transactionBackend =
       SQLTransactionBackend::create(this, transaction, wrapper, readOnly);
-  m_transactionQueue.append(transactionBackend);
+  m_transactionQueue.push_back(transactionBackend);
   if (!m_transactionInProgress)
     scheduleTransaction();
 

@@ -386,7 +386,7 @@ void HTMLDocumentParser::notifyPendingTokenizedChunks() {
   }
 
   for (auto& chunk : pendingChunks)
-    m_speculations.append(std::move(chunk));
+    m_speculations.push_back(std::move(chunk));
 
   if (!isPaused() && !isScheduledForResume()) {
     if (m_tasksWereSuspended)

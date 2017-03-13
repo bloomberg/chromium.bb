@@ -67,7 +67,7 @@ void SegmentedString::append(const SegmentedSubstring& s) {
     m_currentString = s;
     updateAdvanceFunctionPointers();
   } else {
-    m_substrings.append(s);
+    m_substrings.push_back(s);
   }
   m_empty = false;
 }

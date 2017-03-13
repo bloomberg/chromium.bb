@@ -58,7 +58,7 @@ void ScriptRunner::queueScriptForExecution(ScriptLoader* scriptLoader,
       break;
 
     case InOrder:
-      m_pendingInOrderScripts.append(scriptLoader);
+      m_pendingInOrderScripts.push_back(scriptLoader);
       m_numberOfInOrderScriptsWithPendingNotification++;
       break;
     case None:
@@ -100,7 +100,8 @@ void ScriptRunner::scheduleReadyInOrderScripts() {
     // notifyScriptLoadError(); it continues this draining of ready scripts.
     if (m_pendingInOrderScripts.first()->errorOccurred())
       break;
-    m_inOrderScriptsToExecuteSoon.append(m_pendingInOrderScripts.takeFirst());
+    m_inOrderScriptsToExecuteSoon.push_back(
+        m_pendingInOrderScripts.takeFirst());
     postTask(BLINK_FROM_HERE);
   }
 }
@@ -117,7 +118,7 @@ void ScriptRunner::notifyScriptReady(ScriptLoader* scriptLoader,
       SECURITY_CHECK(m_pendingAsyncScripts.contains(scriptLoader));
 
       m_pendingAsyncScripts.erase(scriptLoader);
-      m_asyncScriptsToExecuteSoon.append(scriptLoader);
+      m_asyncScriptsToExecuteSoon.push_back(scriptLoader);
 
       postTask(BLINK_FROM_HERE);
 

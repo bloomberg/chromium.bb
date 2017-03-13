@@ -780,7 +780,7 @@ void Fullscreen::enqueueChangeEvent(Document& document,
       target = &document;
     event = createEvent(EventTypeNames::webkitfullscreenchange, *target);
   }
-  m_eventQueue.append(event);
+  m_eventQueue.push_back(event);
   // NOTE: The timer is started in didEnterFullscreen/didExitFullscreen.
 }
 
@@ -790,7 +790,7 @@ void Fullscreen::enqueueErrorEvent(Element& element, RequestType requestType) {
     event = createEvent(EventTypeNames::fullscreenerror, element.document());
   else
     event = createEvent(EventTypeNames::webkitfullscreenerror, element);
-  m_eventQueue.append(event);
+  m_eventQueue.push_back(event);
   m_eventQueueTimer.startOneShot(0, BLINK_FROM_HERE);
 }
 
@@ -806,7 +806,7 @@ void Fullscreen::eventQueueTimerFired(TimerBase*) {
     // documentElement.
     if (!target->isConnected() && document()->documentElement()) {
       DCHECK(isPrefixed(event->type()));
-      eventQueue.append(
+      eventQueue.push_back(
           createEvent(event->type(), *document()->documentElement()));
     }
 
