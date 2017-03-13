@@ -76,4 +76,14 @@ void AXWindowObjWrapper::OnWindowHierarchyChanged(
     AXAuraObjCache::GetInstance()->Remove(params.target, params.old_parent);
 }
 
+void AXWindowObjWrapper::OnWindowBoundsChanged(aura::Window* window,
+                                               const gfx::Rect& old_bounds,
+                                               const gfx::Rect& new_bounds) {
+  Widget* widget = Widget::GetWidgetForNativeView(window);
+  if (widget) {
+    widget->GetRootView()->NotifyAccessibilityEvent(
+        ui::AX_EVENT_LOCATION_CHANGED, true);
+  }
+}
+
 }  // namespace views

@@ -40,6 +40,9 @@ class AXWindowObjWrapper : public AXAuraObjWrapper,
   void OnWindowDestroyed(aura::Window* window) override;
   void OnWindowDestroying(aura::Window* window) override;
   void OnWindowHierarchyChanged(const HierarchyChangeParams& params) override;
+  void OnWindowBoundsChanged(aura::Window* window,
+                             const gfx::Rect& old_bounds,
+                             const gfx::Rect& new_bounds) override;
 
  private:
   aura::Window* window_;
