@@ -2093,8 +2093,10 @@ const StaticRangeVector* targetRangesForInputEvent(const Node& node) {
   return new StaticRangeVector(1, StaticRange::create(range));
 }
 
-DispatchEventResult dispatchBeforeInputInsertText(Node* target,
-                                                  const String& data) {
+DispatchEventResult dispatchBeforeInputInsertText(
+    Node* target,
+    const String& data,
+    InputEvent::InputType inputType) {
   if (!RuntimeEnabledFeatures::inputEventEnabled())
     return DispatchEventResult::NotCanceled;
   if (!target)
@@ -2102,8 +2104,7 @@ DispatchEventResult dispatchBeforeInputInsertText(Node* target,
   // TODO(chongz): Pass appropriate |ranges| after it's defined on spec.
   // http://w3c.github.io/editing/input-events.html#dom-inputevent-inputtype
   InputEvent* beforeInputEvent = InputEvent::createBeforeInput(
-      InputEvent::InputType::InsertText, data,
-      inputTypeIsCancelable(InputEvent::InputType::InsertText),
+      inputType, data, inputTypeIsCancelable(inputType),
       InputEvent::EventIsComposing::NotComposing,
       targetRangesForInputEvent(*target));
   return target->dispatchEvent(beforeInputEvent);

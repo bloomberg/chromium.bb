@@ -186,9 +186,11 @@ class CORE_EXPORT Editor final : public GarbageCollectedFinalized<Editor> {
   bool executeCommand(const String& commandName, const String& value);
 
   bool insertText(const String&, KeyboardEvent* triggeringEvent);
-  bool insertTextWithoutSendingTextEvent(const String&,
-                                         bool selectInsertedText,
-                                         TextEvent* triggeringEvent);
+  bool insertTextWithoutSendingTextEvent(
+      const String&,
+      bool selectInsertedText,
+      TextEvent* triggeringEvent,
+      InputEvent::InputType = InputEvent::InputType::InsertText);
   bool insertLineBreak();
   bool insertParagraphSeparator();
 

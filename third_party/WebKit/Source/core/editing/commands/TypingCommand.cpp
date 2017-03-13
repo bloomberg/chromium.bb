@@ -313,7 +313,8 @@ void TypingCommand::insertText(
     const SelectionInDOMTree& passedSelectionForInsertion,
     Options options,
     TextCompositionType compositionType,
-    const bool isIncrementalInsertion) {
+    const bool isIncrementalInsertion,
+    InputEvent::InputType inputType) {
   LocalFrame* frame = document.frame();
   DCHECK(frame);
 
@@ -363,6 +364,7 @@ void TypingCommand::insertText(
                                                      PreventSpellChecking);
     lastTypingCommand->m_isIncrementalInsertion = isIncrementalInsertion;
     lastTypingCommand->m_selectionStart = selectionStart;
+    lastTypingCommand->m_inputType = inputType;
 
     EditingState editingState;
     EventQueueScope eventQueueScope;
@@ -380,6 +382,7 @@ void TypingCommand::insertText(
   }
   command->m_isIncrementalInsertion = isIncrementalInsertion;
   command->m_selectionStart = selectionStart;
+  command->m_inputType = inputType;
   command->apply();
 
   if (changeSelection) {
@@ -489,6 +492,9 @@ InputEvent::InputType TypingCommand::inputType() const {
 
   if (m_compositionType != TextCompositionNone)
     return InputType::InsertCompositionText;
+
+  if (m_inputType != InputType::None)
+    return m_inputType;
 
   switch (m_commandType) {
     // TODO(chongz): |DeleteSelection| is used by IME but we don't have

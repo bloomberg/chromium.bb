@@ -421,7 +421,10 @@ const String& nonBreakingSpaceString();
 
 // Functions dispatch InputEvent
 const StaticRangeVector* targetRangesForInputEvent(const Node&);
-DispatchEventResult dispatchBeforeInputInsertText(Node*, const String& data);
+DispatchEventResult dispatchBeforeInputInsertText(
+    Node*,
+    const String& data,
+    InputEvent::InputType = InputEvent::InputType::InsertText);
 DispatchEventResult dispatchBeforeInputEditorCommand(Node*,
                                                      InputEvent::InputType,
                                                      const StaticRangeVector*);

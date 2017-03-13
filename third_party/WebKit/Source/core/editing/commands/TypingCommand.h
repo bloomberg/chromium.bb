@@ -71,12 +71,14 @@ class CORE_EXPORT TypingCommand final : public CompositeEditCommand {
                          Options,
                          TextCompositionType = TextCompositionNone,
                          const bool isIncrementalInsertion = false);
-  static void insertText(Document&,
-                         const String&,
-                         const SelectionInDOMTree&,
-                         Options,
-                         TextCompositionType = TextCompositionNone,
-                         const bool isIncrementalInsertion = false);
+  static void insertText(
+      Document&,
+      const String&,
+      const SelectionInDOMTree&,
+      Options,
+      TextCompositionType = TextCompositionNone,
+      const bool isIncrementalInsertion = false,
+      InputEvent::InputType = InputEvent::InputType::InsertText);
   static bool insertLineBreak(Document&);
   static bool insertParagraphSeparator(Document&);
   static bool insertParagraphSeparatorInQuotedContent(Document&);
@@ -188,6 +190,7 @@ class CORE_EXPORT TypingCommand final : public CompositeEditCommand {
 
   bool m_isIncrementalInsertion;
   size_t m_selectionStart;
+  InputEvent::InputType m_inputType;
 };
 
 DEFINE_TYPE_CASTS(TypingCommand,

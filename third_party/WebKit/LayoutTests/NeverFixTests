@@ -28,6 +28,7 @@ fast/harness/sample-fail-mismatch-reftest.html [ WontFix ]
 [ Win Linux ] editing/pasteboard/emacs-ctrl-k-with-move.html [ WontFix ]
 [ Win Linux ] editing/pasteboard/emacs-ctrl-k-y-001.html [ WontFix ]
 [ Win Linux ] editing/input/emacs-ctrl-o.html [ WontFix ]
+[ Win Linux ] fast/events/inputevents/inputevent-yank.html [ WontFix ]
 
 # Chrome Mac doesn't support Ctrl+Up/Down key-bindings.
 [ Mac ] editing/input/ctrl-up-down.html [ WontFix ]

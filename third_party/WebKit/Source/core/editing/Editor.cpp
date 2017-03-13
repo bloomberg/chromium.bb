@@ -1026,9 +1026,11 @@ bool Editor::insertText(const String& text, KeyboardEvent* triggeringEvent) {
   return frame().eventHandler().handleTextInputEvent(text, triggeringEvent);
 }
 
-bool Editor::insertTextWithoutSendingTextEvent(const String& text,
-                                               bool selectInsertedText,
-                                               TextEvent* triggeringEvent) {
+bool Editor::insertTextWithoutSendingTextEvent(
+    const String& text,
+    bool selectInsertedText,
+    TextEvent* triggeringEvent,
+    InputEvent::InputType inputType) {
   if (text.isEmpty())
     return false;
 
@@ -1045,7 +1047,8 @@ bool Editor::insertTextWithoutSendingTextEvent(const String& text,
       selectInsertedText ? TypingCommand::SelectInsertedText : 0,
       triggeringEvent && triggeringEvent->isComposition()
           ? TypingCommand::TextCompositionConfirm
-          : TypingCommand::TextCompositionNone);
+          : TypingCommand::TextCompositionNone,
+      false, inputType);
 
   // Reveal the current selection
   if (LocalFrame* editedFrame = selection.start().document()->frame()) {

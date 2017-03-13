@@ -1919,8 +1919,23 @@ static bool executeYank(LocalFrame& frame,
                         Event*,
                         EditorCommandSource,
                         const String&) {
+  const String& yankString = frame.editor().killRing().yank();
+  if (dispatchBeforeInputInsertText(
+          eventTargetNodeForDocument(frame.document()), yankString,
+          InputEvent::InputType::InsertFromYank) !=
+      DispatchEventResult::NotCanceled)
+    return true;
+
+  // 'beforeinput' event handler may destroy document.
+  if (frame.document()->frame() != &frame)
+    return false;
+
+  // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // needs to be audited. see http://crbug.com/590369 for more details.
+  frame.document()->updateStyleAndLayoutIgnorePendingStylesheets();
+
   frame.editor().insertTextWithoutSendingTextEvent(
-      frame.editor().killRing().yank(), false, 0);
+      yankString, false, 0, InputEvent::InputType::InsertFromYank);
   frame.editor().killRing().setToYankedState();
   return true;
 }
@@ -1929,8 +1944,24 @@ static bool executeYankAndSelect(LocalFrame& frame,
                                  Event*,
                                  EditorCommandSource,
                                  const String&) {
+  const String& yankString = frame.editor().killRing().yank();
+  if (dispatchBeforeInputInsertText(
+          eventTargetNodeForDocument(frame.document()), yankString,
+          InputEvent::InputType::InsertFromYank) !=
+      DispatchEventResult::NotCanceled)
+    return true;
+
+  // 'beforeinput' event handler may destroy document.
+  if (frame.document()->frame() != &frame)
+    return false;
+
+  // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // needs to be audited. see http://crbug.com/590369 for more details.
+  frame.document()->updateStyleAndLayoutIgnorePendingStylesheets();
+
   frame.editor().insertTextWithoutSendingTextEvent(
-      frame.editor().killRing().yank(), true, 0);
+      frame.editor().killRing().yank(), true, 0,
+      InputEvent::InputType::InsertFromYank);
   frame.editor().killRing().setToYankedState();
   return true;
 }
