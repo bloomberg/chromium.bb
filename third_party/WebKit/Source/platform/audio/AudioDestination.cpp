@@ -73,11 +73,6 @@ AudioDestination::AudioDestination(AudioIOCallback& callback,
       m_fifo(
           WTF::wrapUnique(new PushPullFIFO(numberOfOutputChannels, kFIFOSize))),
       m_framesElapsed(0) {
-  m_callbackBufferSize = hardwareBufferSize();
-  if (!checkBufferSize()) {
-    NOTREACHED();
-  }
-
   // Create WebAudioDevice. blink::WebAudioDevice is designed to support the
   // local input (e.g. loopback from OS audio system), but Chromium's media
   // renderer does not support it currently. Thus, we use zero for the number
@@ -86,6 +81,11 @@ AudioDestination::AudioDestination(AudioIOCallback& callback,
       0, numberOfOutputChannels, latencyHint, this, String(),
       std::move(securityOrigin)));
   DCHECK(m_webAudioDevice);
+
+  m_callbackBufferSize = m_webAudioDevice->framesPerBuffer();
+  if (!checkBufferSize()) {
+    NOTREACHED();
+  }
 }
 
 AudioDestination::~AudioDestination() {
