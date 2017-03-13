@@ -192,7 +192,7 @@ int check_full(const char *tableList, const char *str,
          latter has been modified by the translation and contains some
          information about outbuf */
       if (typeform != NULL) print_typeform(typeform, inlen);
-      fprintf(stderr, "Expected: '%s' (length %d)\n", expected, expectedlen);
+      if (cursorPos != NULL) fprintf(stderr, "Cursor:   %d\n", *cursorPos);
       fprintf(stderr, "Received: '");
       print_widechars(outbuf, outlen);
       fprintf(stderr, "' (length %d)\n", outlen);
@@ -210,16 +210,16 @@ int check_full(const char *tableList, const char *str,
 #endif
 
       if (i < outlen && i < expectedlen) {
-	fprintf(stderr, "Diff: Expected '%.*s' but received '%.*s' in index %d\n",
-	        (int)expected_utf8_len, expected_utf8, (int)out_utf8_len, out_utf8, i);
+        fprintf(stderr, "Diff:     Expected '%.*s' but received '%.*s' in index %d\n",
+          (int)expected_utf8_len, expected_utf8, (int)out_utf8_len, out_utf8, i);
       } else if (i < expectedlen) {
-	fprintf(stderr,
-	        "Diff: Expected '%.*s' but received nothing in index %d\n",
-	        (int)expected_utf8_len, expected_utf8, i);
+        fprintf(stderr,
+          "Diff:     Expected '%.*s' but received nothing in index %d\n",
+          (int)expected_utf8_len, expected_utf8, i);
       } else {
-	fprintf(stderr,
-	        "Diff: Expected nothing but received '%.*s' in index %d\n",
-	        (int)out_utf8_len, out_utf8, i);
+        fprintf(stderr,
+          "Diff:     Expected nothing but received '%.*s' in index %d\n",
+          (int)out_utf8_len, out_utf8, i);
       }
       free(expected_utf8);
       free(out_utf8);
