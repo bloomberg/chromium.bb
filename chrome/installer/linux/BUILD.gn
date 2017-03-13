@@ -194,7 +194,6 @@ group("installer_deps") {
   }
   if (current_cpu == "x86" || current_cpu == "x64") {
     public_deps += [
-      "//third_party/widevine/cdm:widevine_signature_scripts",
       "//third_party/widevine/cdm:widevinecdm",
       "//third_party/widevine/cdm:widevinecdmadapter",
     ]

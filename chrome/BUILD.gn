@@ -273,12 +273,8 @@ if (!is_android && !is_mac) {
     # Only ChromeOS has precompiled Flash that needs to get copied to the output
     # directory. On other platforms, Flash is either component-updated only or
     # not supported at all.
-    # As well, the scripts to sign files for Widevine need to be copied to the
-    # output directory so that the scripts can be run on the executables after
-    # stripping.
     if (is_chromeos) {
       deps += [ "//third_party/adobe/flash:flapper_binaries" ]
-      data_deps += [ "//third_party/widevine/cdm:widevine_signature_scripts" ]
     }
 
     data_deps += [ "//third_party/widevine/cdm:widevinecdmadapter" ]

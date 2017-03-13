@@ -25,16 +25,10 @@ if (is_android) {
   if (is_chromeos) {
     widevine_cdm_version_h_file =
         "chromeos/$widevine_arch/widevine_cdm_version.h"
-    widevine_cdm_binary_files = [
-      "chromeos/$widevine_arch/libwidevinecdm.so",
-      "chromeos/$widevine_arch/libwidevinecdm.so.sig",
-    ]
+    widevine_cdm_binary_files = [ "chromeos/$widevine_arch/libwidevinecdm.so" ]
   } else if (is_linux) {
     widevine_cdm_version_h_file = "linux/$widevine_arch/widevine_cdm_version.h"
-    widevine_cdm_binary_files = [
-      "linux/$widevine_arch/libwidevinecdm.so",
-      "linux/$widevine_arch/libwidevinecdm.so.sig",
-    ]
+    widevine_cdm_binary_files = [ "linux/$widevine_arch/libwidevinecdm.so" ]
   } else if (is_win) {
     widevine_cdm_version_h_file = "win/$widevine_arch/widevine_cdm_version.h"
     widevine_cdm_binary_files = [
