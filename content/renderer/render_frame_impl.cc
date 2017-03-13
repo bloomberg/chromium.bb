@@ -5254,10 +5254,21 @@ WebNavigationPolicy RenderFrameImpl::decidePolicyForNavigation(
                 ->navigation_state()
                 ->IsContentInitiated()
           : !IsBrowserInitiated(pending_navigation_params_.get());
+
+  // Webkit is asking whether to navigate to a new URL.
+  // This is fine normally, except if we're showing UI from one security
+  // context and they're trying to navigate to a different context.
+  const GURL& url = info.urlRequest.url();
+
+  // With PlzNavigate, the redirect list is available for the first url. So
+  // maintain the old behavior of not classifying the first URL in the chain as
+  // a redirect.
   bool is_redirect =
       info.extraData ||
       (pending_navigation_params_ &&
-       !pending_navigation_params_->request_params.redirects.empty());
+       !pending_navigation_params_->request_params.redirects.empty() &&
+       (!IsBrowserSideNavigationEnabled() ||
+        url != pending_navigation_params_->request_params.redirects[0]));
 
 #ifdef OS_ANDROID
   bool render_view_was_created_by_renderer =
@@ -5278,11 +5289,6 @@ WebNavigationPolicy RenderFrameImpl::decidePolicyForNavigation(
 
   Referrer referrer(
       RenderViewImpl::GetReferrerFromRequest(frame_, info.urlRequest));
-
-  // Webkit is asking whether to navigate to a new URL.
-  // This is fine normally, except if we're showing UI from one security
-  // context and they're trying to navigate to a different context.
-  const GURL& url = info.urlRequest.url();
 
   // If the browser is interested, then give it a chance to look at the request.
   if (is_content_initiated && IsTopLevelNavigation(frame_) &&

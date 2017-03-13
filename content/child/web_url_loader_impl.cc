@@ -717,10 +717,8 @@ void WebURLLoaderImpl::Context::OnReceivedResponse(
     for (size_t i = 0; i < stream_override_->redirect_responses.size(); ++i) {
       bool result = OnReceivedRedirect(stream_override_->redirect_infos[i],
                                        stream_override_->redirect_responses[i]);
-      if (!result) {
-        NOTREACHED();
+      if (!result)
         return;
-      }
     }
   }
 
