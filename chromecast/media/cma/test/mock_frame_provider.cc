@@ -34,7 +34,7 @@ void MockFrameProvider::Configure(
   delayed_task_pattern_ = delayed_task_pattern;
   pattern_idx_ = 0;
 
-  frame_generator_.reset(frame_generator.release());
+  frame_generator_ = std::move(frame_generator);
 }
 
 void MockFrameProvider::SetDelayFlush(bool delay_flush) {

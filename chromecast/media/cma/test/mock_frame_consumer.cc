@@ -34,7 +34,7 @@ void MockFrameConsumer::Configure(
     std::unique_ptr<FrameGeneratorForTest> frame_generator) {
   delayed_task_pattern_ = delayed_task_pattern;
   last_read_aborted_by_flush_ = last_read_aborted_by_flush;
-  frame_generator_.reset(frame_generator.release());
+  frame_generator_ = std::move(frame_generator);
 }
 
 void MockFrameConsumer::Start(const base::Closure& done_cb) {

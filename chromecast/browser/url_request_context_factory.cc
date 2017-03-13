@@ -304,7 +304,7 @@ void URLRequestContextFactory::InitializeMainContextDependencies(
   }
   request_interceptors.clear();
 
-  main_job_factory_.reset(top_job_factory.release());
+  main_job_factory_ = std::move(top_job_factory);
 
   main_dependencies_initialized_ = true;
 }
