@@ -5728,7 +5728,7 @@ TEST_F(LayerTreeHostCommonTest, TransformedClipParent) {
   clip_child->test_properties()->clip_parent = clip_parent;
   std::unique_ptr<std::set<LayerImpl*>> clip_children(new std::set<LayerImpl*>);
   clip_children->insert(clip_child);
-  clip_parent->test_properties()->clip_children.reset(clip_children.release());
+  clip_parent->test_properties()->clip_children = std::move(clip_children);
 
   intervening->SetMasksToBounds(true);
   clip_parent->SetMasksToBounds(true);

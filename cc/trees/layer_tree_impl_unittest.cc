@@ -1073,7 +1073,7 @@ TEST_F(LayerTreeImplTest, HitTestingRespectsClipParents) {
     std::unique_ptr<std::set<LayerImpl*>> clip_children(
         new std::set<LayerImpl*>);
     clip_children->insert(grand_child.get());
-    root->test_properties()->clip_children.reset(clip_children.release());
+    root->test_properties()->clip_children = std::move(clip_children);
 
     child->test_properties()->AddChild(std::move(grand_child));
     root->test_properties()->AddChild(std::move(child));
