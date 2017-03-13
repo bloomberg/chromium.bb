@@ -340,13 +340,13 @@ PermissionResult PermissionManager::GetPermissionStatus(
 
 PermissionResult PermissionManager::GetPermissionStatusForFrame(
     ContentSettingsType permission,
-    content::RenderFrameHost* render_frame_host) {
+    content::RenderFrameHost* render_frame_host,
+    const GURL& requesting_origin) {
   content::WebContents* web_contents =
       content::WebContents::FromRenderFrameHost(render_frame_host);
   GURL embedding_origin = web_contents->GetLastCommittedURL().GetOrigin();
-  return GetPermissionStatusHelper(
-      permission, render_frame_host,
-      render_frame_host->GetLastCommittedURL().GetOrigin(), embedding_origin);
+  return GetPermissionStatusHelper(permission, render_frame_host,
+                                   requesting_origin, embedding_origin);
 }
 
 int PermissionManager::RequestPermission(

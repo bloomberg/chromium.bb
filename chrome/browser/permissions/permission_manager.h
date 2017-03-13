@@ -58,9 +58,13 @@ class PermissionManager : public KeyedService,
   // Returns the permission status for a given frame. This should be preferred
   // over GetPermissionStatus as additional checks can be performed when we know
   // the exact context the request is coming from.
+  // TODO(raymes): Currently we still pass the |requesting_origin| as a separate
+  // parameter because we can't yet guarantee that it matches the last committed
+  // origin of the RenderFrameHost. See crbug.com/698985.
   PermissionResult GetPermissionStatusForFrame(
       ContentSettingsType permission,
-      content::RenderFrameHost* render_frame_host);
+      content::RenderFrameHost* render_frame_host,
+      const GURL& requesting_origin);
 
   // content::PermissionManager implementation.
   int RequestPermission(
