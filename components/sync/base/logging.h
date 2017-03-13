@@ -27,7 +27,7 @@ bool VlogIsOnForLocation(const tracked_objects::Location& from_here,
 
 #define DVLOG_LOC(from_here, verbose_level)              \
   LAZY_STREAM(VLOG_LOC_STREAM(from_here, verbose_level), \
-              ::logging::DEBUG_MODE &&                   \
+              DCHECK_IS_ON() &&                          \
                   (VLOG_IS_ON(verbose_level) ||          \
                    ::syncer::VlogIsOnForLocation(from_here, verbose_level)))
 

@@ -21,7 +21,7 @@ void LogData(const T& data,
              std::unique_ptr<base::DictionaryValue> (
                  *to_dictionary_value)(const T&, bool),
              const std::string& description) {
-  if (::logging::DEBUG_MODE && VLOG_IS_ON(1)) {
+  if (DCHECK_IS_ON() && VLOG_IS_ON(1)) {
     std::unique_ptr<base::DictionaryValue> value =
         (*to_dictionary_value)(data, true /* include_specifics */);
     std::string message;
