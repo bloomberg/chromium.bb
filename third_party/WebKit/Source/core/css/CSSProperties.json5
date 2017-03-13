@@ -1398,6 +1398,8 @@
     },
     {
       name: "orphans",
+      api_class: "CSSPropertyAPIFragmentation",
+      api_methods: ["parseSingleValue"],
       inherited: true,
       interpolable: true,
       type_name: "short",
@@ -2028,6 +2030,8 @@
     "-webkit-box-lines",
     {
       name: "-webkit-box-ordinal-group",
+      api_class: "CSSPropertyAPIFragmentation",
+      api_methods: ["parseSingleValue"],
       type_name: "unsigned int",
     },
     "-webkit-box-orient",
@@ -2331,6 +2335,8 @@
     },
     {
       name: "widows",
+      api_class: "CSSPropertyAPIFragmentation",
+      api_methods: ["parseSingleValue"],
       inherited: true,
       interpolable: true,
       type_name: "short",

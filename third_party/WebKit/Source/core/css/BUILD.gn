@@ -381,6 +381,7 @@ blink_core_sources("css") {
     "properties/CSSPropertyAPIFontVariantLigatures.cpp",
     "properties/CSSPropertyAPIFontVariantNumeric.cpp",
     "properties/CSSPropertyAPIFontVariationSettings.cpp",
+    "properties/CSSPropertyAPIFragmentation.cpp",
     "properties/CSSPropertyAPIGridAutoFlow.cpp",
     "properties/CSSPropertyAPIGridAutoLine.cpp",
     "properties/CSSPropertyAPIGridLine.cpp",

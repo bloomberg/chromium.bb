@@ -1962,10 +1962,6 @@ const CSSValue* CSSPropertyParser::parseSingleValue(
     case CSSPropertyGridRowGap:
       return consumeLengthOrPercent(m_range, m_context->mode(),
                                     ValueRangeNonNegative);
-    case CSSPropertyWebkitBoxOrdinalGroup:
-    case CSSPropertyOrphans:
-    case CSSPropertyWidows:
-      return consumePositiveInteger(m_range);
     case CSSPropertyColor:
     case CSSPropertyBackgroundColor:
       return consumeColor(m_range, m_context->mode(), inQuirksMode());
