@@ -245,7 +245,9 @@ void NativeViewAccessibility::PopulateChildWidgetVector(
     std::vector<Widget*>* result_child_widgets) {
   // Only attach child widgets to the root view.
   Widget* widget = view_->GetWidget();
-  if (!widget || widget->GetRootView() != view_)
+  // Note that during window close, a Widget may exist in a state where it has
+  // no NativeView, but hasn't yet torn down its view hierarchy.
+  if (!widget || !widget->GetNativeView() || widget->GetRootView() != view_)
     return;
 
   std::set<Widget*> child_widgets;

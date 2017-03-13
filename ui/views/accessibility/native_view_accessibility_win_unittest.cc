@@ -208,5 +208,21 @@ TEST_F(NativeViewAccessibilityWinTest, DISABLED_RetrieveAllAlerts) {
   CoTaskMemFree(targets);
 }
 
+// Test trying to retrieve child widgets during window close does not crash.
+TEST_F(NativeViewAccessibilityWinTest, GetAllOwnedWidgetsCrash) {
+  Widget widget;
+  Widget::InitParams init_params =
+      CreateParams(Widget::InitParams::TYPE_WINDOW);
+  init_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  widget.Init(init_params);
+  widget.CloseNow();
+
+  LONG child_count = 0;
+  ScopedComPtr<IAccessible> content_accessible(
+      widget.GetRootView()->GetNativeViewAccessible());
+  EXPECT_EQ(S_OK, content_accessible->get_accChildCount(&child_count));
+  EXPECT_EQ(1L, child_count);
+}
+
 }  // namespace test
 }  // namespace views
