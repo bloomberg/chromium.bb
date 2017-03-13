@@ -7364,7 +7364,8 @@ class TestHistoryWebFrameClient : public FrameTestHelpers::TestWebFrameClient {
     m_replacesCurrentHistoryItem = false;
   }
 
-  void didStartProvisionalLoad(WebDataSource* dataSource) {
+  void didStartProvisionalLoad(WebDataSource* dataSource,
+                               WebURLRequest& request) {
     m_replacesCurrentHistoryItem = dataSource->replacesCurrentHistoryItem();
   }
 
@@ -10123,7 +10124,7 @@ class CallbackOrderingWebFrameClient
     EXPECT_EQ(0, m_callbackCount++);
     FrameTestHelpers::TestWebFrameClient::didStartLoading(toDifferentDocument);
   }
-  void didStartProvisionalLoad(WebDataSource*) override {
+  void didStartProvisionalLoad(WebDataSource*, WebURLRequest&) override {
     EXPECT_EQ(1, m_callbackCount++);
   }
   void didCommitProvisionalLoad(WebLocalFrame*,

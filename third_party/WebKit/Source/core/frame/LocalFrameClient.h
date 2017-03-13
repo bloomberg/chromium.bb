@@ -104,7 +104,8 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
                                              HistoryCommitType,
                                              bool contentInitiated) {}
   virtual void dispatchWillCommitProvisionalLoad() = 0;
-  virtual void dispatchDidStartProvisionalLoad(DocumentLoader*) = 0;
+  virtual void dispatchDidStartProvisionalLoad(DocumentLoader*,
+                                               ResourceRequest&) = 0;
   virtual void dispatchDidReceiveTitle(const String&) = 0;
   virtual void dispatchDidChangeIcons(IconType) = 0;
   virtual void dispatchDidCommitLoad(HistoryItem*, HistoryCommitType) = 0;

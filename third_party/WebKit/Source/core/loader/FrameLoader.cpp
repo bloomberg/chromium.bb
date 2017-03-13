@@ -1767,7 +1767,8 @@ void FrameLoader::startLoad(FrameLoadRequest& frameLoadRequest,
   // TODO(ananta):
   // We should get rid of the dependency on the DocumentLoader in consumers of
   // the didStartProvisionalLoad() notification.
-  client()->dispatchDidStartProvisionalLoad(m_provisionalDocumentLoader);
+  client()->dispatchDidStartProvisionalLoad(m_provisionalDocumentLoader,
+                                            resourceRequest);
   DCHECK(m_provisionalDocumentLoader);
 
   if (navigationPolicy == NavigationPolicyCurrentTab) {

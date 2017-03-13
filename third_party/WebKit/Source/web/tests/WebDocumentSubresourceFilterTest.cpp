@@ -55,7 +55,8 @@ class TestDocumentSubresourceFilter : public WebDocumentSubresourceFilter {
 class SubresourceFilteringWebFrameClient
     : public FrameTestHelpers::TestWebFrameClient {
  public:
-  void didStartProvisionalLoad(WebDataSource* dataSource) override {
+  void didStartProvisionalLoad(WebDataSource* dataSource,
+                               WebURLRequest& request) override {
     // Normally, the filter should be set when the load is committed. For
     // the sake of this test, however, inject it earlier to verify that it
     // is not consulted for the main resource load.

@@ -5,12 +5,6 @@
 crbug.com/551000 http/tests/inspector/network/x-frame-options-deny.html [ Failure ]
 crbug.com/551000 virtual/mojo-loading/http/tests/inspector/network/x-frame-options-deny.html [ Failure ]
 
-# Flipped order between diStartProvisionalLoad & willSendRequest
-crbug.com/647698 http/tests/loading/307-after-303-after-post.html [ Failure ]
-crbug.com/625765 http/tests/loading/redirect-methods.html [ Crash Failure ]
-crbug.com/647698 virtual/mojo-loading/http/tests/loading/307-after-303-after-post.html [ Failure ]
-crbug.com/625765 virtual/mojo-loading/http/tests/loading/redirect-methods.html [ Crash Failure ]
-
 # https://crbug.com/555418: Move `X-Frame-Options` and CSP's `frame-ancestor`
 # checks up out of the renderer.
 crbug.com/555418 http/tests/security/contentSecurityPolicy/1.1/form-action-src-redirect-blocked.html [ Failure ]

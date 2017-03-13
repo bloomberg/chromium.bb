@@ -553,7 +553,8 @@ class CONTENT_EXPORT RenderFrameImpl
   void willSubmitForm(const blink::WebFormElement& form) override;
   void didCreateDataSource(blink::WebLocalFrame* frame,
                            blink::WebDataSource* datasource) override;
-  void didStartProvisionalLoad(blink::WebDataSource* data_source) override;
+  void didStartProvisionalLoad(blink::WebDataSource* data_source,
+                               blink::WebURLRequest& request) override;
   void didReceiveServerRedirectForProvisionalLoad(
       blink::WebLocalFrame* frame) override;
   void didFailProvisionalLoad(blink::WebLocalFrame* frame,
@@ -1393,6 +1394,36 @@ class CONTENT_EXPORT RenderFrameImpl
   // A bitwise OR of bindings types that have been enabled for this RenderFrame.
   // See BindingsPolicy for details.
   int enabled_bindings_ = 0;
+
+  // PlzNavigate:
+  // Contains information about a pending navigation to be sent to the browser.
+  // We save information about the navigation in decidePolicyForNavigation().
+  // The navigation is sent to the browser in didStartProvisionalLoad().
+  // Please see the BeginNavigation() for information.
+  struct PendingNavigationInfo {
+    blink::WebNavigationType navigation_type;
+    blink::WebNavigationPolicy policy;
+    bool replaces_current_history_item;
+    bool history_navigation_in_new_child_frame;
+    bool client_redirect;
+    bool cache_disabled;
+    blink::WebFormElement form;
+
+    PendingNavigationInfo(const NavigationPolicyInfo& info)
+        : navigation_type(info.navigationType),
+          policy(info.defaultPolicy),
+          replaces_current_history_item(info.replacesCurrentHistoryItem),
+          history_navigation_in_new_child_frame(
+              info.isHistoryNavigationInNewChildFrame),
+          client_redirect(info.isClientRedirect),
+          cache_disabled(info.isCacheDisabled),
+          form(info.form) {}
+  };
+
+  // PlzNavigate: Contains information about a pending navigation to be sent to
+  // the browser. This state is allocated in decidePolicyForNavigation() and
+  // is used and released in didStartProvisionalLoad().
+  std::unique_ptr<PendingNavigationInfo> pending_navigation_info_;
 
   base::WeakPtrFactory<RenderFrameImpl> weak_factory_;
 

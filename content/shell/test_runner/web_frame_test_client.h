@@ -61,7 +61,8 @@ class WebFrameTestClient : public blink::WebFrameClient {
                          const blink::WebString& suggested_name,
                          bool replaces_current_history_item) override;
   void loadErrorPage(int reason) override;
-  void didStartProvisionalLoad(blink::WebDataSource* data_source) override;
+  void didStartProvisionalLoad(blink::WebDataSource* data_source,
+                               blink::WebURLRequest& request) override;
   void didReceiveServerRedirectForProvisionalLoad(
       blink::WebLocalFrame* frame) override;
   void didFailProvisionalLoad(blink::WebLocalFrame* frame,

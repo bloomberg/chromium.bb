@@ -417,10 +417,13 @@ void LocalFrameClientImpl::dispatchWillCommitProvisionalLoad() {
 }
 
 void LocalFrameClientImpl::dispatchDidStartProvisionalLoad(
-    DocumentLoader* loader) {
+    DocumentLoader* loader,
+    ResourceRequest& request) {
   if (m_webFrame->client()) {
+    WrappedResourceRequest wrappedRequest(request);
     m_webFrame->client()->didStartProvisionalLoad(
-        WebDataSourceImpl::fromDocumentLoader(loader));
+        WebDataSourceImpl::fromDocumentLoader(loader),
+        wrappedRequest);
   }
   if (WebDevToolsAgentImpl* devTools = devToolsAgent())
     devTools->didStartProvisionalLoad(m_webFrame->frame());

@@ -92,7 +92,8 @@ class LocalFrameClientImpl final : public LocalFrameClient {
                                      HistoryCommitType,
                                      bool contentInitiated) override;
   void dispatchWillCommitProvisionalLoad() override;
-  void dispatchDidStartProvisionalLoad(DocumentLoader*) override;
+  void dispatchDidStartProvisionalLoad(DocumentLoader*,
+                                       ResourceRequest&) override;
   void dispatchDidReceiveTitle(const String&) override;
   void dispatchDidChangeIcons(IconType) override;
   void dispatchDidCommitLoad(HistoryItem*, HistoryCommitType) override;

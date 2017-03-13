@@ -346,7 +346,8 @@ class BLINK_EXPORT WebFrameClient {
   virtual void didCreateDataSource(WebLocalFrame*, WebDataSource*) {}
 
   // A new provisional load has been started.
-  virtual void didStartProvisionalLoad(WebDataSource* dataSource) {}
+  virtual void didStartProvisionalLoad(WebDataSource* dataSource,
+                                       WebURLRequest& request) {}
 
   // The provisional load was redirected via a HTTP 3xx response.
   virtual void didReceiveServerRedirectForProvisionalLoad(WebLocalFrame*) {}

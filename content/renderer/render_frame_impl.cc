@@ -3430,8 +3430,8 @@ void RenderFrameImpl::didCreateDataSource(blink::WebLocalFrame* frame,
           content_initiated));
 }
 
-void RenderFrameImpl::didStartProvisionalLoad(
-    blink::WebDataSource* data_source) {
+void RenderFrameImpl::didStartProvisionalLoad(blink::WebDataSource* data_source,
+                                              blink::WebURLRequest& request) {
   // In fast/loader/stop-provisional-loads.html, we abort the load before this
   // callback is invoked.
   if (!data_source)
@@ -3440,6 +3440,27 @@ void RenderFrameImpl::didStartProvisionalLoad(
   TRACE_EVENT2("navigation,benchmark,rail",
                "RenderFrameImpl::didStartProvisionalLoad", "id", routing_id_,
                "url", data_source->getRequest().url().string().utf8());
+
+  // PlzNavigate:
+  // If we have a pending navigation to be sent to the browser send it here.
+  if (pending_navigation_info_.get()) {
+    DCHECK(IsBrowserSideNavigationEnabled());
+    NavigationPolicyInfo info(request);
+    info.navigationType = pending_navigation_info_->navigation_type;
+    info.defaultPolicy = pending_navigation_info_->policy;
+    info.replacesCurrentHistoryItem =
+        pending_navigation_info_->replaces_current_history_item;
+    info.isHistoryNavigationInNewChildFrame =
+        pending_navigation_info_->history_navigation_in_new_child_frame;
+    info.isClientRedirect = pending_navigation_info_->client_redirect;
+    info.isCacheDisabled = pending_navigation_info_->cache_disabled;
+    info.form = pending_navigation_info_->form;
+
+    pending_navigation_info_.reset(nullptr);
+
+    BeginNavigation(info);
+  }
+
   DocumentState* document_state = DocumentState::FromDataSource(data_source);
   NavigationStateImpl* navigation_state = static_cast<NavigationStateImpl*>(
       document_state->navigation_state());
@@ -5479,7 +5500,9 @@ WebNavigationPolicy RenderFrameImpl::decidePolicyForNavigation(
       info.urlRequest.checkForBrowserSideNavigation() &&
       ShouldMakeNetworkRequestForURL(url)) {
     if (info.defaultPolicy == blink::WebNavigationPolicyCurrentTab) {
-      BeginNavigation(info);
+      // The BeginNavigation() call happens in didStartProvisionalLoad(). We
+      // need to save information about the navigation here.
+      pending_navigation_info_.reset(new PendingNavigationInfo(info));
       return blink::WebNavigationPolicyHandledByClient;
     } else {
       LoadURLExternally(info.urlRequest, info.defaultPolicy);
@@ -5850,6 +5873,11 @@ void RenderFrameImpl::NavigateInternal(
     const RequestNavigationParams& request_params,
     std::unique_ptr<StreamOverrideParameters> stream_params) {
   bool browser_side_navigation = IsBrowserSideNavigationEnabled();
+
+  // PlzNavigate
+  // Clear pending navigations which weren't sent to the browser because we
+  // did not get a didStartProvisionalLoad() notification for them.
+  pending_navigation_info_.reset(nullptr);
 
   // Lower bound for browser initiated navigation start time.
   base::TimeTicks renderer_navigation_start = base::TimeTicks::Now();
