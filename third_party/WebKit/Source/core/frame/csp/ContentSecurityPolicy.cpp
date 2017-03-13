@@ -1479,10 +1479,12 @@ bool ContentSecurityPolicy::urlMatchesSelf(const KURL& url) const {
   return m_selfSource->matches(url, RedirectStatus::NoRedirect);
 }
 
-bool ContentSecurityPolicy::protocolMatchesSelf(const KURL& url) const {
-  if (equalIgnoringCase("http", m_selfProtocol))
-    return url.protocolIsInHTTPFamily();
-  return equalIgnoringCase(url.protocol(), m_selfProtocol);
+bool ContentSecurityPolicy::protocolEqualsSelf(const String& protocol) const {
+  return equalIgnoringCase(protocol, m_selfProtocol);
+}
+
+const String& ContentSecurityPolicy::getSelfProtocol() const {
+  return m_selfProtocol;
 }
 
 bool ContentSecurityPolicy::shouldBypassMainWorld(

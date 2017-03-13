@@ -105,10 +105,10 @@ TEST_F(CSPSourceTest, RedirectMatching) {
   EXPECT_TRUE(
       source.matches(KURL(base, "http://example.com:8000/foo"),
                      ResourceRequest::RedirectStatus::FollowedRedirect));
-  EXPECT_TRUE(
+  // Should not allow upgrade of port or scheme without upgrading both
+  EXPECT_FALSE(
       source.matches(KURL(base, "https://example.com:8000/foo"),
                      ResourceRequest::RedirectStatus::FollowedRedirect));
-
   EXPECT_FALSE(
       source.matches(KURL(base, "http://not-example.com:8000/foo"),
                      ResourceRequest::RedirectStatus::FollowedRedirect));
@@ -164,9 +164,8 @@ TEST_F(CSPSourceTest, SchemeIsEmpty) {
     EXPECT_FALSE(source.matches(KURL(base, "http://a.com")));
     EXPECT_TRUE(source.matches(KURL(base, "https://a.com")));
     EXPECT_FALSE(source.matches(KURL(base, "http-so://a.com")));
-    // TODO(mkwst, arthursonzogni): Maybe it should return true.
-    // See http://crbug.com/692442
-    EXPECT_FALSE(source.matches(KURL(base, "https-so://a.com")));
+    // TODO(jochen): Maybe it should return false?
+    EXPECT_TRUE(source.matches(KURL(base, "https-so://a.com")));
     EXPECT_FALSE(source.matches(KURL(base, "ftp://a.com")));
   }
 
@@ -207,13 +206,12 @@ TEST_F(CSPSourceTest, InsecureHostSchemePortMatchesSecurePort) {
                      CSPSource::NoWildcard, CSPSource::NoWildcard);
     EXPECT_TRUE(source.matches(KURL(base, "http://example.com/")));
     EXPECT_TRUE(source.matches(KURL(base, "http://example.com:80/")));
-    // TODO(mkwst, arthursonzogni): It is weird to upgrade the port without the
-    // sheme. See http://crbug.com/692499
-    EXPECT_TRUE(source.matches(KURL(base, "http://example.com:443/")));
+
+    // Should not allow scheme upgrades unless both port and scheme are upgraded
+    EXPECT_FALSE(source.matches(KURL(base, "http://example.com:443/")));
     EXPECT_TRUE(source.matches(KURL(base, "https://example.com/")));
-    // TODO(mkwst, arthursonzogni): It is weird to upgrade the scheme without
-    // the port. See http://crbug.com/692499
-    EXPECT_TRUE(source.matches(KURL(base, "https://example.com:80/")));
+    EXPECT_FALSE(source.matches(KURL(base, "https://example.com:80/")));
+
     EXPECT_TRUE(source.matches(KURL(base, "https://example.com:443/")));
 
     EXPECT_FALSE(source.matches(KURL(base, "http://example.com:8443/")));
@@ -235,9 +233,21 @@ TEST_F(CSPSourceTest, InsecureHostSchemePortMatchesSecurePort) {
                      CSPSource::NoWildcard, CSPSource::NoWildcard);
     EXPECT_TRUE(source.matches(KURL(base, "http://example.com/")));
     EXPECT_TRUE(source.matches(KURL(base, "https://example.com:443")));
-    // TODO(mkwst, arthursonzogni): It is weird to upgrade the port without the
-    // sheme. See http://crbug.com/692499
-    EXPECT_TRUE(source.matches(KURL(base, "http://example.com:443")));
+    // Should not allow upgrade of port or scheme without upgrading both
+    EXPECT_FALSE(source.matches(KURL(base, "http://example.com:443")));
+  }
+
+  // source port is empty
+  {
+    CSPSource source(csp.get(), "http", "example.com", 0, "/",
+                     CSPSource::NoWildcard, CSPSource::NoWildcard);
+
+    EXPECT_TRUE(source.matches(KURL(base, "http://example.com")));
+    EXPECT_TRUE(source.matches(KURL(base, "https://example.com")));
+    EXPECT_TRUE(source.matches(KURL(base, "https://example.com:443")));
+    // Should not allow upgrade of port or scheme without upgrading both
+    EXPECT_FALSE(source.matches(KURL(base, "https://example.com:80")));
+    EXPECT_FALSE(source.matches(KURL(base, "http://example.com:443")));
   }
 }
 

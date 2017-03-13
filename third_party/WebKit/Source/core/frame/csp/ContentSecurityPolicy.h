@@ -365,7 +365,8 @@ class CORE_EXPORT ContentSecurityPolicy
   }
 
   bool urlMatchesSelf(const KURL&) const;
-  bool protocolMatchesSelf(const KURL&) const;
+  bool protocolEqualsSelf(const String&) const;
+  const String& getSelfProtocol() const;
 
   bool experimentalFeaturesEnabled() const;
 

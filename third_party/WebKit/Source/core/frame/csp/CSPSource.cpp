@@ -30,25 +30,48 @@ CSPSource::CSPSource(ContentSecurityPolicy* policy,
 
 bool CSPSource::matches(const KURL& url,
                         ResourceRequest::RedirectStatus redirectStatus) const {
-  bool schemesMatch = m_scheme.isEmpty() ? m_policy->protocolMatchesSelf(url)
-                                         : schemeMatches(url.protocol());
-  if (!schemesMatch)
+  SchemeMatchingResult schemesMatch = schemeMatches(url.protocol());
+  if (schemesMatch == SchemeMatchingResult::NotMatching)
     return false;
   if (isSchemeOnly())
     return true;
   bool pathsMatch = (redirectStatus == RedirectStatus::FollowedRedirect) ||
                     pathMatches(url.path());
-  return hostMatches(url.host()) && portMatches(url.port(), url.protocol()) &&
-         pathsMatch;
+  PortMatchingResult portsMatch = portMatches(url.port(), url.protocol());
+
+  // if either the scheme or the port would require an upgrade (e.g. from http
+  // to https) then check that both of them can upgrade to ensure that we don't
+  // run into situations where we only upgrade the port but not the scheme or
+  // viceversa
+  if ((requiresUpgrade(schemesMatch) || (requiresUpgrade(portsMatch))) &&
+      (!canUpgrade(schemesMatch) || !canUpgrade(portsMatch))) {
+    return false;
+  }
+
+  return hostMatches(url.host()) && portsMatch != PortMatchingResult::NotMatching && pathsMatch;
 }
 
-bool CSPSource::schemeMatches(const String& protocol) const {
+CSPSource::SchemeMatchingResult CSPSource::schemeMatches(
+    const String& protocol) const {
   DCHECK_EQ(protocol, protocol.lower());
-  if (m_scheme == "http")
-    return protocol == "http" || protocol == "https";
-  if (m_scheme == "ws")
-    return protocol == "ws" || protocol == "wss";
-  return protocol == m_scheme;
+  const String& scheme =
+      (m_scheme.isEmpty() ? m_policy->getSelfProtocol() : m_scheme);
+
+  if (scheme == protocol)
+    return SchemeMatchingResult::MatchingExact;
+
+  if ((scheme == "http" && protocol == "https") ||
+      (scheme == "http" && protocol == "https-so") ||
+      (scheme == "ws" && protocol == "wss")) {
+    return SchemeMatchingResult::MatchingUpgrade;
+  }
+
+  if ((scheme == "http" && protocol == "http-so") ||
+      (scheme == "https" && protocol == "https-so")) {
+    return SchemeMatchingResult::MatchingExact;
+  }
+
+  return SchemeMatchingResult::NotMatching;
 }
 
 bool CSPSource::hostMatches(const String& host) const {
@@ -92,28 +115,45 @@ bool CSPSource::pathMatches(const String& urlPath) const {
   return path == m_path;
 }
 
-bool CSPSource::portMatches(int port, const String& protocol) const {
+CSPSource::PortMatchingResult CSPSource::portMatches(
+    int port,
+    const String& protocol) const {
   if (m_portWildcard == HasWildcard)
-    return true;
+    return PortMatchingResult::MatchingWildcard;
 
-  if (port == m_port)
-    return true;
+  if (port == m_port) {
+    if (port == 0)
+      return PortMatchingResult::MatchingWildcard;
+    return PortMatchingResult::MatchingExact;
+  }
 
-  if (m_port == 80 &&
+  bool isSchemeHttp;  // needed for detecting an upgrade when the port is 0
+  isSchemeHttp = m_scheme.isEmpty() ? m_policy->protocolEqualsSelf("http")
+                                    : equalIgnoringCase("http", m_scheme);
+
+  if ((m_port == 80 || (m_port == 0 && isSchemeHttp)) &&
       (port == 443 || (port == 0 && defaultPortForProtocol(protocol) == 443)))
-    return true;
+    return PortMatchingResult::MatchingUpgrade;
 
-  if (!port)
-    return isDefaultPortForProtocol(m_port, protocol);
+  if (!port) {
+    if (isDefaultPortForProtocol(m_port, protocol))
+      return PortMatchingResult::MatchingExact;
 
-  if (!m_port)
-    return isDefaultPortForProtocol(port, protocol);
+    return PortMatchingResult::NotMatching;
+  }
 
-  return false;
+  if (!m_port) {
+    if (isDefaultPortForProtocol(port, protocol))
+      return PortMatchingResult::MatchingExact;
+
+    return PortMatchingResult::NotMatching;
+  }
+
+  return PortMatchingResult::NotMatching;
 }
 
 bool CSPSource::subsumes(CSPSource* other) const {
-  if (!schemeMatches(other->m_scheme))
+  if (schemeMatches(other->m_scheme) == SchemeMatchingResult::NotMatching)
     return false;
 
   if (other->isSchemeOnly() || isSchemeOnly())
@@ -126,21 +166,22 @@ bool CSPSource::subsumes(CSPSource* other) const {
 
   bool hostSubsumes = (m_host == other->m_host || hostMatches(other->m_host));
   bool portSubsumes = (m_portWildcard == HasWildcard) ||
-                      portMatches(other->m_port, other->m_scheme);
+      portMatches(other->m_port, other->m_scheme) != PortMatchingResult::NotMatching;
   bool pathSubsumes = pathMatches(other->m_path);
   return hostSubsumes && portSubsumes && pathSubsumes;
 }
 
 bool CSPSource::isSimilar(CSPSource* other) const {
   bool schemesMatch =
-      schemeMatches(other->m_scheme) || other->schemeMatches(m_scheme);
+      schemeMatches(other->m_scheme) != SchemeMatchingResult::NotMatching
+      || other->schemeMatches(m_scheme) != SchemeMatchingResult::NotMatching;
   if (!schemesMatch || isSchemeOnly() || other->isSchemeOnly())
     return schemesMatch;
   bool hostsMatch = (m_host == other->m_host) || hostMatches(other->m_host) ||
                     other->hostMatches(m_host);
   bool portsMatch = (other->m_portWildcard == HasWildcard) ||
-                    portMatches(other->m_port, other->m_scheme) ||
-                    other->portMatches(m_port, m_scheme);
+      portMatches(other->m_port, other->m_scheme) != PortMatchingResult::NotMatching ||
+      other->portMatches(m_port, m_scheme) != PortMatchingResult::NotMatching;
   bool pathsMatch = pathMatches(other->m_path) || other->pathMatches(m_path);
   if (hostsMatch && portsMatch && pathsMatch)
     return true;
@@ -152,7 +193,7 @@ CSPSource* CSPSource::intersect(CSPSource* other) const {
   if (!isSimilar(other))
     return nullptr;
 
-  String scheme = other->schemeMatches(m_scheme) ? m_scheme : other->m_scheme;
+  String scheme = other->schemeMatches(m_scheme) != SchemeMatchingResult::NotMatching ? m_scheme : other->m_scheme;
   if (isSchemeOnly() || other->isSchemeOnly()) {
     const CSPSource* stricter = isSchemeOnly() ? other : this;
     return new CSPSource(m_policy, scheme, stricter->m_host, stricter->m_port,

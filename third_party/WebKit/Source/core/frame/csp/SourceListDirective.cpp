@@ -62,7 +62,7 @@ bool SourceListDirective::allows(
   if (m_allowStar) {
     if (url.protocolIsInHTTPFamily() || url.protocolIs("ftp") ||
         url.protocolIs("ws") || url.protocolIs("wss") ||
-        m_policy->protocolMatchesSelf(url))
+        m_policy->protocolEqualsSelf(url.protocol()))
       return true;
 
     return hasSourceMatchInList(url, redirectStatus);
