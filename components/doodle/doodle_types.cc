@@ -66,13 +66,13 @@ base::Optional<DoodleImage> ParseImage(const base::DictionaryValue& parent_dict,
 base::Optional<DoodleImage> DoodleImage::FromDictionary(
     const base::DictionaryValue& dict,
     const base::Optional<GURL>& base_url) {
-  DoodleImage image;
-
   // The URL is the only required field.
-  image.url = ParseUrl(dict, "url", base_url);
-  if (!image.url.is_valid()) {
+  GURL url = ParseUrl(dict, "url", base_url);
+  if (!url.is_valid()) {
     return base::nullopt;
   }
+
+  DoodleImage image(url);
 
   dict.GetInteger("height", &image.height);
   dict.GetInteger("width", &image.width);
@@ -82,8 +82,11 @@ base::Optional<DoodleImage> DoodleImage::FromDictionary(
   return image;
 }
 
-DoodleImage::DoodleImage()
-    : height(0), width(0), is_animated_gif(false), is_cta(false) {}
+DoodleImage::DoodleImage(const GURL& url)
+    : url(url), height(0), width(0), is_animated_gif(false), is_cta(false) {
+  DCHECK(url.is_valid());
+}
+
 DoodleImage::~DoodleImage() = default;
 
 bool DoodleImage::operator==(const DoodleImage& other) const {
@@ -95,7 +98,9 @@ bool DoodleImage::operator!=(const DoodleImage& other) const {
   return !(*this == other);
 }
 
-DoodleConfig::DoodleConfig() : doodle_type(DoodleType::UNKNOWN) {}
+DoodleConfig::DoodleConfig(DoodleType doodle_type,
+                           const DoodleImage& large_image)
+    : doodle_type(doodle_type), large_image(large_image) {}
 DoodleConfig::DoodleConfig(const DoodleConfig& config) = default;
 DoodleConfig::~DoodleConfig() = default;
 
@@ -103,8 +108,6 @@ DoodleConfig::~DoodleConfig() = default;
 base::Optional<DoodleConfig> DoodleConfig::FromDictionary(
     const base::DictionaryValue& dict,
     const base::Optional<GURL>& base_url) {
-  DoodleConfig doodle;
-
   // The |large_image| field is required (it's the "default" representation for
   // the doodle).
   base::Optional<DoodleImage> large_image =
@@ -112,11 +115,11 @@ base::Optional<DoodleConfig> DoodleConfig::FromDictionary(
   if (!large_image.has_value()) {
     return base::nullopt;
   }
-  doodle.large_image = large_image.value();
 
   std::string type_str;
   dict.GetString("doodle_type", &type_str);
-  doodle.doodle_type = DoodleTypeFromString(type_str);
+
+  DoodleConfig doodle(DoodleTypeFromString(type_str), large_image.value());
 
   dict.GetString("alt_text", &doodle.alt_text);
 

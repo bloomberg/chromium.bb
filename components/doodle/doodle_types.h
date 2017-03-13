@@ -31,10 +31,9 @@ enum class DoodleType {
   SLIDESHOW,
 };
 
-// Information about a Doodle image. If the image is invalid, the |url| will be
-// empty and invalid. By default the dimensions are 0.
+// Information about a Doodle image. By default the dimensions are 0.
 struct DoodleImage {
-  DoodleImage();
+  DoodleImage(const GURL& url);
   ~DoodleImage();
 
   static base::Optional<DoodleImage> FromDictionary(
@@ -56,7 +55,7 @@ struct DoodleImage {
 // All information about a current doodle that can be fetched from the remote
 // end. By default, all URLs are empty and therefore invalid.
 struct DoodleConfig {
-  DoodleConfig();
+  DoodleConfig(DoodleType doodle_type, const DoodleImage& large_image);
   DoodleConfig(const DoodleConfig& config);  // = default;
   ~DoodleConfig();
 
@@ -76,8 +75,8 @@ struct DoodleConfig {
   GURL fullpage_interactive_url;
 
   DoodleImage large_image;
-  DoodleImage large_cta_image;
-  DoodleImage transparent_large_image;
+  base::Optional<DoodleImage> large_cta_image;
+  base::Optional<DoodleImage> transparent_large_image;
 
   // Copying and assignment allowed.
 };

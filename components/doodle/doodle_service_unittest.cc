@@ -55,6 +55,10 @@ class MockDoodleObserver : public DoodleService::Observer {
                void(const base::Optional<DoodleConfig>&));
 };
 
+DoodleConfig CreateConfig(DoodleType type) {
+  return DoodleConfig(type, DoodleImage(GURL("https://doodle.com/image.jpg")));
+}
+
 }  // namespace
 
 class DoodleServiceTest : public testing::Test {
@@ -105,8 +109,7 @@ TEST_F(DoodleServiceTest, FetchesConfigOnRefresh) {
   EXPECT_THAT(fetcher()->num_pending_callbacks(), Eq(1u));
 
   // Serve it (with an arbitrary config).
-  DoodleConfig config;
-  config.doodle_type = DoodleType::SIMPLE;
+  DoodleConfig config = CreateConfig(DoodleType::SIMPLE);
   fetcher()->ServeAllCallbacks(DoodleState::AVAILABLE,
                                base::TimeDelta::FromHours(1), config);
 
@@ -119,8 +122,7 @@ TEST_F(DoodleServiceTest, FetchesConfigOnRefresh) {
   EXPECT_THAT(fetcher()->num_pending_callbacks(), Eq(1u));
 
   // Serve it with a different config.
-  DoodleConfig other_config;
-  other_config.doodle_type = DoodleType::SLIDESHOW;
+  DoodleConfig other_config = CreateConfig(DoodleType::SLIDESHOW);
   DCHECK(config != other_config);
   fetcher()->ServeAllCallbacks(DoodleState::AVAILABLE,
                                base::TimeDelta::FromHours(1), other_config);
@@ -141,8 +143,7 @@ TEST_F(DoodleServiceTest, CallsObserverOnConfigReceived) {
   ASSERT_THAT(fetcher()->num_pending_callbacks(), Eq(1u));
 
   // Serve it (with an arbitrary config). The observer should get notified.
-  DoodleConfig config;
-  config.doodle_type = DoodleType::SIMPLE;
+  DoodleConfig config = CreateConfig(DoodleType::SIMPLE);
   EXPECT_CALL(observer, OnDoodleConfigUpdated(Eq(config)));
   fetcher()->ServeAllCallbacks(DoodleState::AVAILABLE,
                                base::TimeDelta::FromHours(1), config);
@@ -154,8 +155,7 @@ TEST_F(DoodleServiceTest, CallsObserverOnConfigReceived) {
 TEST_F(DoodleServiceTest, CallsObserverOnConfigRemoved) {
   // Load some doodle config.
   service()->Refresh();
-  DoodleConfig config;
-  config.doodle_type = DoodleType::SIMPLE;
+  DoodleConfig config = CreateConfig(DoodleType::SIMPLE);
   fetcher()->ServeAllCallbacks(DoodleState::AVAILABLE,
                                base::TimeDelta::FromHours(1), config);
   ASSERT_THAT(service()->config(), Eq(config));
@@ -179,8 +179,7 @@ TEST_F(DoodleServiceTest, CallsObserverOnConfigRemoved) {
 TEST_F(DoodleServiceTest, CallsObserverOnConfigUpdated) {
   // Load some doodle config.
   service()->Refresh();
-  DoodleConfig config;
-  config.doodle_type = DoodleType::SIMPLE;
+  DoodleConfig config = CreateConfig(DoodleType::SIMPLE);
   fetcher()->ServeAllCallbacks(DoodleState::AVAILABLE,
                                base::TimeDelta::FromHours(1), config);
   ASSERT_THAT(service()->config(), Eq(config));
@@ -193,8 +192,7 @@ TEST_F(DoodleServiceTest, CallsObserverOnConfigUpdated) {
 
   // Serve the request with a different doodle config. The observer should get
   // notified.
-  DoodleConfig other_config;
-  other_config.doodle_type = DoodleType::SLIDESHOW;
+  DoodleConfig other_config = CreateConfig(DoodleType::SLIDESHOW);
   DCHECK(config != other_config);
   EXPECT_CALL(observer, OnDoodleConfigUpdated(Eq(other_config)));
   fetcher()->ServeAllCallbacks(DoodleState::AVAILABLE,
@@ -207,8 +205,7 @@ TEST_F(DoodleServiceTest, CallsObserverOnConfigUpdated) {
 TEST_F(DoodleServiceTest, DoesNotCallObserverIfConfigEquivalent) {
   // Load some doodle config.
   service()->Refresh();
-  DoodleConfig config;
-  config.doodle_type = DoodleType::SIMPLE;
+  DoodleConfig config = CreateConfig(DoodleType::SIMPLE);
   fetcher()->ServeAllCallbacks(DoodleState::AVAILABLE,
                                base::TimeDelta::FromHours(1), config);
   ASSERT_THAT(service()->config(), Eq(config));
@@ -221,8 +218,7 @@ TEST_F(DoodleServiceTest, DoesNotCallObserverIfConfigEquivalent) {
 
   // Serve the request with an equivalent doodle config. The observer should
   // *not* get notified.
-  DoodleConfig equivalent_config;
-  equivalent_config.doodle_type = DoodleType::SIMPLE;
+  DoodleConfig equivalent_config = CreateConfig(DoodleType::SIMPLE);
   DCHECK(config == equivalent_config);
   fetcher()->ServeAllCallbacks(
       DoodleState::AVAILABLE, base::TimeDelta::FromHours(1), equivalent_config);
@@ -234,8 +230,7 @@ TEST_F(DoodleServiceTest, DoesNotCallObserverIfConfigEquivalent) {
 TEST_F(DoodleServiceTest, CallsObserverWhenConfigExpires) {
   // Load some doodle config.
   service()->Refresh();
-  DoodleConfig config;
-  config.doodle_type = DoodleType::SIMPLE;
+  DoodleConfig config = CreateConfig(DoodleType::SIMPLE);
   fetcher()->ServeAllCallbacks(DoodleState::AVAILABLE,
                                base::TimeDelta::FromHours(1), config);
   ASSERT_THAT(service()->config(), Eq(config));
@@ -267,8 +262,7 @@ TEST_F(DoodleServiceTest, DisregardsAlreadyExpiredConfigs) {
   // Load an already-expired config. This should have no effect; in particular
   // no call to the observer.
   service()->Refresh();
-  DoodleConfig config;
-  config.doodle_type = DoodleType::SIMPLE;
+  DoodleConfig config = CreateConfig(DoodleType::SIMPLE);
   fetcher()->ServeAllCallbacks(DoodleState::AVAILABLE,
                                base::TimeDelta::FromSeconds(0), config);
   EXPECT_THAT(service()->config(), Eq(base::nullopt));
