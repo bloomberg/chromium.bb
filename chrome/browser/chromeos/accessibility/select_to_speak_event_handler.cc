@@ -19,13 +19,17 @@
 namespace chromeos {
 
 SelectToSpeakEventHandler::SelectToSpeakEventHandler() {
-  if (ash::Shell::HasInstance())
-    ash::Shell::GetInstance()->AddPreTargetHandler(this);
+  if (ash::Shell::HasInstance()) {
+    ash::Shell::GetInstance()->GetPrimaryRootWindow()->AddPreTargetHandler(
+        this);
+  }
 }
 
 SelectToSpeakEventHandler::~SelectToSpeakEventHandler() {
-  if (ash::Shell::HasInstance())
-    ash::Shell::GetInstance()->RemovePreTargetHandler(this);
+  if (ash::Shell::HasInstance()) {
+    ash::Shell::GetInstance()->GetPrimaryRootWindow()->RemovePreTargetHandler(
+        this);
+  }
 }
 
 void SelectToSpeakEventHandler::OnKeyEvent(ui::KeyEvent* event) {
