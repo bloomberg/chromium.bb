@@ -77,6 +77,7 @@
 #include "ui/gfx/overlay_transform.h"
 #include "ui/gfx/transform.h"
 #include "ui/gl/ca_renderer_layer_params.h"
+#include "ui/gl/dc_renderer_layer_params.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_fence.h"
@@ -2170,6 +2171,7 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   // The GL_CHROMIUM_schedule_ca_layer extension requires that SwapBuffers and
   // equivalent functions reset shared state.
   void ClearScheduleCALayerState();
+  void ClearScheduleDCLayerState();
 
   // Helper method to call glClear workaround.
   void ClearFramebufferForWorkaround(GLbitfield mask);
@@ -2466,6 +2468,16 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   };
 
   std::unique_ptr<CALayerSharedState> ca_layer_shared_state_;
+
+  struct DCLayerSharedState {
+    float opacity;
+    bool is_clipped;
+    gfx::Rect clip_rect;
+    int z_order;
+    gfx::Transform transform;
+  };
+
+  std::unique_ptr<DCLayerSharedState> dc_layer_shared_state_;
 
   DISALLOW_COPY_AND_ASSIGN(GLES2DecoderImpl);
 };
@@ -11810,6 +11822,7 @@ void GLES2DecoderImpl::DoSwapBuffersWithBoundsCHROMIUM(
   }
 
   ClearScheduleCALayerState();
+  ClearScheduleDCLayerState();
 
   std::vector<gfx::Rect> bounds(count);
   for (GLsizei i = 0; i < count; ++i) {
@@ -11846,6 +11859,7 @@ error::Error GLES2DecoderImpl::HandlePostSubBufferCHROMIUM(
   }
 
   ClearScheduleCALayerState();
+  ClearScheduleDCLayerState();
 
   if (supports_async_swap_) {
     TRACE_EVENT_ASYNC_BEGIN0("cc", "GLES2DecoderImpl::AsyncSwapBuffers", this);
@@ -11985,6 +11999,91 @@ error::Error GLES2DecoderImpl::HandleScheduleCALayerCHROMIUM(
   if (!surface_->ScheduleCALayer(params)) {
     LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glScheduleCALayerCHROMIUM",
                        "failed to schedule CALayer");
+  }
+  return error::kNoError;
+}
+
+error::Error GLES2DecoderImpl::HandleScheduleDCLayerSharedStateCHROMIUM(
+    uint32_t immediate_data_size,
+    const volatile void* cmd_data) {
+  const volatile gles2::cmds::ScheduleDCLayerSharedStateCHROMIUM& c =
+      *static_cast<
+          const volatile gles2::cmds::ScheduleDCLayerSharedStateCHROMIUM*>(
+          cmd_data);
+
+  const GLfloat* mem = GetSharedMemoryAs<const GLfloat*>(c.shm_id, c.shm_offset,
+                                                         20 * sizeof(GLfloat));
+  if (!mem) {
+    return error::kOutOfBounds;
+  }
+  gfx::RectF clip_rect(mem[0], mem[1], mem[2], mem[3]);
+  gfx::Transform transform(mem[4], mem[8], mem[12], mem[16], mem[5], mem[9],
+                           mem[13], mem[17], mem[6], mem[10], mem[14], mem[18],
+                           mem[7], mem[11], mem[15], mem[19]);
+  dc_layer_shared_state_.reset(new DCLayerSharedState);
+  dc_layer_shared_state_->opacity = c.opacity;
+  dc_layer_shared_state_->is_clipped = c.is_clipped ? true : false;
+  dc_layer_shared_state_->clip_rect = gfx::ToEnclosingRect(clip_rect);
+  dc_layer_shared_state_->z_order = c.z_order;
+  dc_layer_shared_state_->transform = transform;
+  return error::kNoError;
+}
+
+error::Error GLES2DecoderImpl::HandleScheduleDCLayerCHROMIUM(
+    uint32_t immediate_data_size,
+    const volatile void* cmd_data) {
+  const volatile gles2::cmds::ScheduleDCLayerCHROMIUM& c =
+      *static_cast<const volatile gles2::cmds::ScheduleDCLayerCHROMIUM*>(
+          cmd_data);
+  GLuint filter = c.filter;
+  if (filter != GL_NEAREST && filter != GL_LINEAR) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glScheduleDCLayerCHROMIUM",
+                       "invalid filter");
+    return error::kNoError;
+  }
+
+  if (!dc_layer_shared_state_) {
+    LOCAL_SET_GL_ERROR(
+        GL_INVALID_OPERATION, "glScheduleDCLayerCHROMIUM",
+        "glScheduleDCLayerSharedStateCHROMIUM has not been called");
+    return error::kNoError;
+  }
+
+  gl::GLImage* image = nullptr;
+  GLuint contents_texture_id = c.contents_texture_id;
+  if (contents_texture_id) {
+    TextureRef* ref = texture_manager()->GetTexture(contents_texture_id);
+    if (!ref) {
+      LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glScheduleDCLayerCHROMIUM",
+                         "unknown texture");
+      return error::kNoError;
+    }
+    Texture::ImageState image_state;
+    image = ref->texture()->GetLevelImage(ref->texture()->target(), 0,
+                                          &image_state);
+    if (!image) {
+      LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glScheduleDCLayerCHROMIUM",
+                         "unsupported texture format");
+      return error::kNoError;
+    }
+  }
+
+  const GLfloat* mem = GetSharedMemoryAs<const GLfloat*>(c.shm_id, c.shm_offset,
+                                                         8 * sizeof(GLfloat));
+  if (!mem) {
+    return error::kOutOfBounds;
+  }
+  gfx::RectF contents_rect(mem[0], mem[1], mem[2], mem[3]);
+  gfx::RectF bounds_rect(mem[4], mem[5], mem[6], mem[7]);
+
+  ui::DCRendererLayerParams params = ui::DCRendererLayerParams(
+      dc_layer_shared_state_->is_clipped, dc_layer_shared_state_->clip_rect,
+      dc_layer_shared_state_->z_order, dc_layer_shared_state_->transform, image,
+      contents_rect, gfx::ToEnclosingRect(bounds_rect), c.background_color,
+      c.edge_aa_mask, dc_layer_shared_state_->opacity, filter);
+  if (!surface_->ScheduleDCLayer(params)) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glScheduleDCLayerCHROMIUM",
+                       "failed to schedule DCLayer");
   }
   return error::kNoError;
 }
@@ -15310,6 +15409,7 @@ void GLES2DecoderImpl::DoSwapBuffers() {
   }
 
   ClearScheduleCALayerState();
+  ClearScheduleDCLayerState();
 
   // If offscreen then don't actually SwapBuffers to the display. Just copy
   // the rendered frame to another frame buffer.
@@ -15430,6 +15530,7 @@ void GLES2DecoderImpl::DoCommitOverlayPlanes() {
     return;
   }
   ClearScheduleCALayerState();
+  ClearScheduleDCLayerState();
   if (supports_async_swap_) {
     surface_->CommitOverlayPlanesAsync(base::Bind(
         &GLES2DecoderImpl::FinishSwapBuffers, base::AsWeakPtr(this)));
@@ -19220,6 +19321,10 @@ bool GLES2DecoderImpl::ChromiumImageNeedsRGBEmulation() {
 
 void GLES2DecoderImpl::ClearScheduleCALayerState() {
   ca_layer_shared_state_.reset();
+}
+
+void GLES2DecoderImpl::ClearScheduleDCLayerState() {
+  dc_layer_shared_state_.reset();
 }
 
 void GLES2DecoderImpl::ClearFramebufferForWorkaround(GLbitfield mask) {

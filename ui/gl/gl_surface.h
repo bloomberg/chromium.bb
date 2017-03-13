@@ -29,6 +29,7 @@ class VSyncProvider;
 
 namespace ui {
 struct CARendererLayerParams;
+struct DCRendererLayerParams;
 }
 
 namespace gl {
@@ -198,6 +199,8 @@ class GL_EXPORT GLSurface : public base::RefCounted<GLSurface> {
   virtual void ScheduleCALayerInUseQuery(
       std::vector<CALayerInUseQuery> queries);
 
+  virtual bool ScheduleDCLayer(const ui::DCRendererLayerParams& params);
+
   virtual bool IsSurfaceless() const;
 
   virtual bool FlipsVertically() const;
@@ -282,6 +285,7 @@ class GL_EXPORT GLSurfaceAdapter : public GLSurface {
                             GLImage* image,
                             const gfx::Rect& bounds_rect,
                             const gfx::RectF& crop_rect) override;
+  bool ScheduleDCLayer(const ui::DCRendererLayerParams& params) override;
   bool IsSurfaceless() const override;
   bool FlipsVertically() const override;
   bool BuffersFlipped() const override;

@@ -2449,6 +2449,7 @@ void GLRenderer::FinishDrawingFrame() {
   blend_shadow_ = false;
 
   ScheduleCALayers();
+  ScheduleDCLayers();
   ScheduleOverlays();
 }
 
@@ -3182,6 +3183,64 @@ void GLRenderer::ScheduleCALayers() {
     gl_->ScheduleCALayerCHROMIUM(
         texture_id, contents_rect, ca_layer_overlay.background_color,
         ca_layer_overlay.edge_aa_mask, bounds_rect, filter);
+  }
+
+  // Take the number of copied render passes in this frame, and use 3 times that
+  // amount as the cache limit.
+  if (overlay_resource_pool_) {
+    overlay_resource_pool_->SetResourceUsageLimits(
+        std::numeric_limits<std::size_t>::max(), copied_render_pass_count * 5);
+  }
+}
+
+void GLRenderer::ScheduleDCLayers() {
+  if (overlay_resource_pool_) {
+    overlay_resource_pool_->CheckBusyResources();
+  }
+
+  scoped_refptr<DCLayerOverlaySharedState> shared_state;
+  size_t copied_render_pass_count = 0;
+  for (const DCLayerOverlay& dc_layer_overlay :
+       current_frame()->dc_layer_overlay_list) {
+    DCHECK(!dc_layer_overlay.rpdq);
+
+    ResourceId contents_resource_id = dc_layer_overlay.contents_resource_id;
+    unsigned texture_id = 0;
+    if (contents_resource_id) {
+      pending_overlay_resources_.push_back(
+          base::MakeUnique<ResourceProvider::ScopedReadLockGL>(
+              resource_provider_, contents_resource_id));
+      texture_id = pending_overlay_resources_.back()->texture_id();
+    }
+    GLfloat contents_rect[4] = {
+        dc_layer_overlay.contents_rect.x(), dc_layer_overlay.contents_rect.y(),
+        dc_layer_overlay.contents_rect.width(),
+        dc_layer_overlay.contents_rect.height(),
+    };
+    GLfloat bounds_rect[4] = {
+        dc_layer_overlay.bounds_rect.x(), dc_layer_overlay.bounds_rect.y(),
+        dc_layer_overlay.bounds_rect.width(),
+        dc_layer_overlay.bounds_rect.height(),
+    };
+    GLboolean is_clipped = dc_layer_overlay.shared_state->is_clipped;
+    GLfloat clip_rect[4] = {dc_layer_overlay.shared_state->clip_rect.x(),
+                            dc_layer_overlay.shared_state->clip_rect.y(),
+                            dc_layer_overlay.shared_state->clip_rect.width(),
+                            dc_layer_overlay.shared_state->clip_rect.height()};
+    GLint z_order = dc_layer_overlay.shared_state->z_order;
+    GLfloat transform[16];
+    dc_layer_overlay.shared_state->transform.asColMajorf(transform);
+    unsigned filter = dc_layer_overlay.filter;
+
+    if (dc_layer_overlay.shared_state != shared_state) {
+      shared_state = dc_layer_overlay.shared_state;
+      gl_->ScheduleDCLayerSharedStateCHROMIUM(
+          dc_layer_overlay.shared_state->opacity, is_clipped, clip_rect,
+          z_order, transform);
+    }
+    gl_->ScheduleDCLayerCHROMIUM(
+        texture_id, contents_rect, dc_layer_overlay.background_color,
+        dc_layer_overlay.edge_aa_mask, bounds_rect, filter);
   }
 
   // Take the number of copied render passes in this frame, and use 3 times that

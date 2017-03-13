@@ -297,40 +297,42 @@
   OP(CommitOverlayPlanesCHROMIUM)                          /* 538 */ \
   OP(SwapInterval)                                         /* 539 */ \
   OP(FlushDriverCachesCHROMIUM)                            /* 540 */ \
-  OP(MatrixLoadfCHROMIUMImmediate)                         /* 541 */ \
-  OP(MatrixLoadIdentityCHROMIUM)                           /* 542 */ \
-  OP(GenPathsCHROMIUM)                                     /* 543 */ \
-  OP(DeletePathsCHROMIUM)                                  /* 544 */ \
-  OP(IsPathCHROMIUM)                                       /* 545 */ \
-  OP(PathCommandsCHROMIUM)                                 /* 546 */ \
-  OP(PathParameterfCHROMIUM)                               /* 547 */ \
-  OP(PathParameteriCHROMIUM)                               /* 548 */ \
-  OP(PathStencilFuncCHROMIUM)                              /* 549 */ \
-  OP(StencilFillPathCHROMIUM)                              /* 550 */ \
-  OP(StencilStrokePathCHROMIUM)                            /* 551 */ \
-  OP(CoverFillPathCHROMIUM)                                /* 552 */ \
-  OP(CoverStrokePathCHROMIUM)                              /* 553 */ \
-  OP(StencilThenCoverFillPathCHROMIUM)                     /* 554 */ \
-  OP(StencilThenCoverStrokePathCHROMIUM)                   /* 555 */ \
-  OP(StencilFillPathInstancedCHROMIUM)                     /* 556 */ \
-  OP(StencilStrokePathInstancedCHROMIUM)                   /* 557 */ \
-  OP(CoverFillPathInstancedCHROMIUM)                       /* 558 */ \
-  OP(CoverStrokePathInstancedCHROMIUM)                     /* 559 */ \
-  OP(StencilThenCoverFillPathInstancedCHROMIUM)            /* 560 */ \
-  OP(StencilThenCoverStrokePathInstancedCHROMIUM)          /* 561 */ \
-  OP(BindFragmentInputLocationCHROMIUMBucket)              /* 562 */ \
-  OP(ProgramPathFragmentInputGenCHROMIUM)                  /* 563 */ \
-  OP(GetBufferSubDataAsyncCHROMIUM)                        /* 564 */ \
-  OP(CoverageModulationCHROMIUM)                           /* 565 */ \
-  OP(BlendBarrierKHR)                                      /* 566 */ \
-  OP(ApplyScreenSpaceAntialiasingCHROMIUM)                 /* 567 */ \
-  OP(BindFragDataLocationIndexedEXTBucket)                 /* 568 */ \
-  OP(BindFragDataLocationEXTBucket)                        /* 569 */ \
-  OP(GetFragDataIndexEXT)                                  /* 570 */ \
-  OP(UniformMatrix4fvStreamTextureMatrixCHROMIUMImmediate) /* 571 */ \
-  OP(OverlayPromotionHintCHROMIUM)                         /* 572 */ \
-  OP(SwapBuffersWithBoundsCHROMIUMImmediate)               /* 573 */ \
-  OP(SetDrawRectangleCHROMIUM)                             /* 574 */
+  OP(ScheduleDCLayerSharedStateCHROMIUM)                   /* 541 */ \
+  OP(ScheduleDCLayerCHROMIUM)                              /* 542 */ \
+  OP(MatrixLoadfCHROMIUMImmediate)                         /* 543 */ \
+  OP(MatrixLoadIdentityCHROMIUM)                           /* 544 */ \
+  OP(GenPathsCHROMIUM)                                     /* 545 */ \
+  OP(DeletePathsCHROMIUM)                                  /* 546 */ \
+  OP(IsPathCHROMIUM)                                       /* 547 */ \
+  OP(PathCommandsCHROMIUM)                                 /* 548 */ \
+  OP(PathParameterfCHROMIUM)                               /* 549 */ \
+  OP(PathParameteriCHROMIUM)                               /* 550 */ \
+  OP(PathStencilFuncCHROMIUM)                              /* 551 */ \
+  OP(StencilFillPathCHROMIUM)                              /* 552 */ \
+  OP(StencilStrokePathCHROMIUM)                            /* 553 */ \
+  OP(CoverFillPathCHROMIUM)                                /* 554 */ \
+  OP(CoverStrokePathCHROMIUM)                              /* 555 */ \
+  OP(StencilThenCoverFillPathCHROMIUM)                     /* 556 */ \
+  OP(StencilThenCoverStrokePathCHROMIUM)                   /* 557 */ \
+  OP(StencilFillPathInstancedCHROMIUM)                     /* 558 */ \
+  OP(StencilStrokePathInstancedCHROMIUM)                   /* 559 */ \
+  OP(CoverFillPathInstancedCHROMIUM)                       /* 560 */ \
+  OP(CoverStrokePathInstancedCHROMIUM)                     /* 561 */ \
+  OP(StencilThenCoverFillPathInstancedCHROMIUM)            /* 562 */ \
+  OP(StencilThenCoverStrokePathInstancedCHROMIUM)          /* 563 */ \
+  OP(BindFragmentInputLocationCHROMIUMBucket)              /* 564 */ \
+  OP(ProgramPathFragmentInputGenCHROMIUM)                  /* 565 */ \
+  OP(GetBufferSubDataAsyncCHROMIUM)                        /* 566 */ \
+  OP(CoverageModulationCHROMIUM)                           /* 567 */ \
+  OP(BlendBarrierKHR)                                      /* 568 */ \
+  OP(ApplyScreenSpaceAntialiasingCHROMIUM)                 /* 569 */ \
+  OP(BindFragDataLocationIndexedEXTBucket)                 /* 570 */ \
+  OP(BindFragDataLocationEXTBucket)                        /* 571 */ \
+  OP(GetFragDataIndexEXT)                                  /* 572 */ \
+  OP(UniformMatrix4fvStreamTextureMatrixCHROMIUMImmediate) /* 573 */ \
+  OP(OverlayPromotionHintCHROMIUM)                         /* 574 */ \
+  OP(SwapBuffersWithBoundsCHROMIUMImmediate)               /* 575 */ \
+  OP(SetDrawRectangleCHROMIUM)                             /* 576 */
 
 enum CommandId {
   kOneBeforeStartPoint =

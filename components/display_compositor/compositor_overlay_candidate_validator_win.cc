@@ -4,12 +4,7 @@
 
 #include "components/display_compositor/compositor_overlay_candidate_validator_win.h"
 
-#include <memory>
-
-#include "base/memory/ptr_util.h"
 #include "cc/output/overlay_processor.h"
-#include "cc/output/overlay_strategy_underlay.h"
-#include "ui/gfx/geometry/rect_conversions.h"
 
 namespace display_compositor {
 
@@ -21,21 +16,19 @@ CompositorOverlayCandidateValidatorWin::
 
 void CompositorOverlayCandidateValidatorWin::GetStrategies(
     cc::OverlayProcessor::StrategyList* strategies) {
-  strategies->push_back(base::MakeUnique<cc::OverlayStrategyUnderlay>(this));
 }
 
 void CompositorOverlayCandidateValidatorWin::CheckOverlaySupport(
     cc::OverlayCandidateList* candidates) {
-  for (cc::OverlayCandidate& candidate : *candidates) {
-    candidate.display_rect =
-        gfx::RectF(gfx::ToEnclosingRect(candidate.display_rect));
-    candidate.overlay_handled = true;
-    candidate.plane_z_order = -1;
-  }
+  NOTIMPLEMENTED();
 }
 
 bool CompositorOverlayCandidateValidatorWin::AllowCALayerOverlays() {
   return false;
+}
+
+bool CompositorOverlayCandidateValidatorWin::AllowDCLayerOverlays() {
+  return true;
 }
 
 void CompositorOverlayCandidateValidatorWin::SetSoftwareMirrorMode(

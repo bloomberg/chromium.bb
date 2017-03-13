@@ -825,6 +825,16 @@ error::Error DoScheduleCALayerCHROMIUM(GLuint contents_texture_id,
 error::Error DoScheduleCALayerInUseQueryCHROMIUM(
     GLuint n,
     const volatile GLuint* textures);
+error::Error DoScheduleDCLayerSharedStateCHROMIUM(GLfloat opacity,
+                                                  GLboolean is_clipped,
+                                                  const GLfloat* clip_rect,
+                                                  GLint z_order,
+                                                  const GLfloat* transform);
+error::Error DoScheduleDCLayerCHROMIUM(GLuint contents_texture_id,
+                                       const GLfloat* contents_rect,
+                                       GLuint background_color,
+                                       GLuint edge_aa_mask,
+                                       const GLfloat* bounds_rect);
 error::Error DoCommitOverlayPlanesCHROMIUM();
 error::Error DoSwapInterval(GLint interval);
 error::Error DoFlushDriverCachesCHROMIUM();

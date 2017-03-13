@@ -156,6 +156,11 @@ void GLSurface::ScheduleCALayerInUseQuery(
   NOTIMPLEMENTED();
 }
 
+bool GLSurface::ScheduleDCLayer(const ui::DCRendererLayerParams& params) {
+  NOTIMPLEMENTED();
+  return false;
+}
+
 bool GLSurface::IsSurfaceless() const {
   return false;
 }
@@ -347,6 +352,11 @@ bool GLSurfaceAdapter::ScheduleOverlayPlane(int z_order,
                                             const gfx::RectF& crop_rect) {
   return surface_->ScheduleOverlayPlane(
       z_order, transform, image, bounds_rect, crop_rect);
+}
+
+bool GLSurfaceAdapter::ScheduleDCLayer(
+    const ui::DCRendererLayerParams& params) {
+  return surface_->ScheduleDCLayer(params);
 }
 
 bool GLSurfaceAdapter::IsSurfaceless() const {

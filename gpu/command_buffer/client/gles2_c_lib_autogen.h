@@ -1507,6 +1507,25 @@ void GL_APIENTRY GLES2FlushDriverCachesCHROMIUM() {
 GLuint GL_APIENTRY GLES2GetLastFlushIdCHROMIUM() {
   return gles2::GetGLContext()->GetLastFlushIdCHROMIUM();
 }
+void GL_APIENTRY
+GLES2ScheduleDCLayerSharedStateCHROMIUM(GLfloat opacity,
+                                        GLboolean is_clipped,
+                                        const GLfloat* clip_rect,
+                                        GLint z_order,
+                                        const GLfloat* transform) {
+  gles2::GetGLContext()->ScheduleDCLayerSharedStateCHROMIUM(
+      opacity, is_clipped, clip_rect, z_order, transform);
+}
+void GL_APIENTRY GLES2ScheduleDCLayerCHROMIUM(GLuint contents_texture_id,
+                                              const GLfloat* contents_rect,
+                                              GLuint background_color,
+                                              GLuint edge_aa_mask,
+                                              const GLfloat* bounds_rect,
+                                              GLuint filter) {
+  gles2::GetGLContext()->ScheduleDCLayerCHROMIUM(
+      contents_texture_id, contents_rect, background_color, edge_aa_mask,
+      bounds_rect, filter);
+}
 void GL_APIENTRY GLES2MatrixLoadfCHROMIUM(GLenum matrixMode, const GLfloat* m) {
   gles2::GetGLContext()->MatrixLoadfCHROMIUM(matrixMode, m);
 }
@@ -2878,6 +2897,15 @@ extern const NameToFunc g_gles2_function_table[] = {
     {
         "glGetLastFlushIdCHROMIUM",
         reinterpret_cast<GLES2FunctionPointer>(glGetLastFlushIdCHROMIUM),
+    },
+    {
+        "glScheduleDCLayerSharedStateCHROMIUM",
+        reinterpret_cast<GLES2FunctionPointer>(
+            glScheduleDCLayerSharedStateCHROMIUM),
+    },
+    {
+        "glScheduleDCLayerCHROMIUM",
+        reinterpret_cast<GLES2FunctionPointer>(glScheduleDCLayerCHROMIUM),
     },
     {
         "glMatrixLoadfCHROMIUM",

@@ -90,6 +90,10 @@ bool CompositorOverlayCandidateValidatorOzone::AllowCALayerOverlays() {
   return false;
 }
 
+bool CompositorOverlayCandidateValidatorOzone::AllowDCLayerOverlays() {
+  return false;
+}
+
 void CompositorOverlayCandidateValidatorOzone::CheckOverlaySupport(
     cc::OverlayCandidateList* surfaces) {
   // SW mirroring copies out of the framebuffer, so we can't remove any

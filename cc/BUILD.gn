@@ -180,6 +180,8 @@ cc_component("cc") {
     "output/copy_output_request.h",
     "output/copy_output_result.cc",
     "output/copy_output_result.h",
+    "output/dc_layer_overlay.cc",
+    "output/dc_layer_overlay.h",
     "output/direct_renderer.cc",
     "output/direct_renderer.h",
     "output/dynamic_geometry_binding.cc",

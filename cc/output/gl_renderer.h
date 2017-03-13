@@ -244,6 +244,7 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
   void RestoreGLState();
 
   void ScheduleCALayers();
+  void ScheduleDCLayers();
   void ScheduleOverlays();
 
   // Copies the contents of the render pass draw quad, including filter effects,

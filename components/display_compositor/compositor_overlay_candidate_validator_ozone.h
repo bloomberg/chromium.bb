@@ -30,6 +30,7 @@ class DISPLAY_COMPOSITOR_EXPORT CompositorOverlayCandidateValidatorOzone
   // cc::OverlayCandidateValidator implementation.
   void GetStrategies(cc::OverlayProcessor::StrategyList* strategies) override;
   bool AllowCALayerOverlays() override;
+  bool AllowDCLayerOverlays() override;
   void CheckOverlaySupport(cc::OverlayCandidateList* surfaces) override;
 
   // CompositorOverlayCandidateValidator implementation.

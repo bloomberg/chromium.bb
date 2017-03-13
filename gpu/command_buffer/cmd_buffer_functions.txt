@@ -313,6 +313,8 @@ GL_APICALL void         GL_APIENTRY glCommitOverlayPlanesCHROMIUM (void);
 GL_APICALL void         GL_APIENTRY glSwapInterval (GLint interval);
 GL_APICALL void         GL_APIENTRY glFlushDriverCachesCHROMIUM (void);
 GL_APICALL GLuint       GL_APIENTRY glGetLastFlushIdCHROMIUM (void);
+GL_APICALL void         GL_APIENTRY glScheduleDCLayerSharedStateCHROMIUM (GLfloat opacity, GLboolean is_clipped, const GLfloat* clip_rect, GLint z_order, const GLfloat* transform);
+GL_APICALL void         GL_APIENTRY glScheduleDCLayerCHROMIUM (GLuint contents_texture_id, const GLfloat* contents_rect, GLuint background_color, GLuint edge_aa_mask, const GLfloat* bounds_rect, GLuint filter);
 
 // Extension CHROMIUM_path_rendering.
 GL_APICALL void         GL_APIENTRY glMatrixLoadfCHROMIUM (GLenumMatrixMode matrixMode, const GLfloat* m);

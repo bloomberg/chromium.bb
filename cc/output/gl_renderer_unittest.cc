@@ -1642,6 +1642,8 @@ class TestOverlayProcessor : public OverlayProcessor {
     // Returns true if draw quads can be represented as CALayers (Mac only).
     MOCK_METHOD0(AllowCALayerOverlays, bool());
 
+    bool AllowDCLayerOverlays() override { return false; }
+
     // A list of possible overlay candidates is presented to this function.
     // The expected result is that those candidates that can be in a separate
     // plane are marked with |overlay_handled| set to true, otherwise they are
@@ -1783,6 +1785,7 @@ class SingleOverlayOnTopProcessor : public OverlayProcessor {
     }
 
     bool AllowCALayerOverlays() override { return false; }
+    bool AllowDCLayerOverlays() override { return false; }
 
     void CheckOverlaySupport(OverlayCandidateList* surfaces) override {
       ASSERT_EQ(1U, surfaces->size());

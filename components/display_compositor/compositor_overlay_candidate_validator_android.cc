@@ -56,6 +56,10 @@ bool CompositorOverlayCandidateValidatorAndroid::AllowCALayerOverlays() {
   return false;
 }
 
+bool CompositorOverlayCandidateValidatorAndroid::AllowDCLayerOverlays() {
+  return false;
+}
+
 // Overlays will still be allowed when software mirroring is enabled, even
 // though they won't appear in the mirror.
 void CompositorOverlayCandidateValidatorAndroid::SetSoftwareMirrorMode(

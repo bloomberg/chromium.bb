@@ -2199,6 +2199,31 @@ GLuint GLES2TraceImplementation::GetLastFlushIdCHROMIUM() {
   return gl_->GetLastFlushIdCHROMIUM();
 }
 
+void GLES2TraceImplementation::ScheduleDCLayerSharedStateCHROMIUM(
+    GLfloat opacity,
+    GLboolean is_clipped,
+    const GLfloat* clip_rect,
+    GLint z_order,
+    const GLfloat* transform) {
+  TRACE_EVENT_BINARY_EFFICIENT0(
+      "gpu", "GLES2Trace::ScheduleDCLayerSharedStateCHROMIUM");
+  gl_->ScheduleDCLayerSharedStateCHROMIUM(opacity, is_clipped, clip_rect,
+                                          z_order, transform);
+}
+
+void GLES2TraceImplementation::ScheduleDCLayerCHROMIUM(
+    GLuint contents_texture_id,
+    const GLfloat* contents_rect,
+    GLuint background_color,
+    GLuint edge_aa_mask,
+    const GLfloat* bounds_rect,
+    GLuint filter) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::ScheduleDCLayerCHROMIUM");
+  gl_->ScheduleDCLayerCHROMIUM(contents_texture_id, contents_rect,
+                               background_color, edge_aa_mask, bounds_rect,
+                               filter);
+}
+
 void GLES2TraceImplementation::MatrixLoadfCHROMIUM(GLenum matrixMode,
                                                    const GLfloat* m) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::MatrixLoadfCHROMIUM");

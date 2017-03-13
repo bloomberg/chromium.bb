@@ -22,6 +22,10 @@ bool CompositorOverlayCandidateValidatorMac::AllowCALayerOverlays() {
   return !ca_layer_disabled_ && !software_mirror_active_;
 }
 
+bool CompositorOverlayCandidateValidatorMac::AllowDCLayerOverlays() {
+  return false;
+}
+
 void CompositorOverlayCandidateValidatorMac::CheckOverlaySupport(
     cc::OverlayCandidateList* surfaces) {}
 

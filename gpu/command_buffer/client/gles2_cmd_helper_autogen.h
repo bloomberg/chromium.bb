@@ -2814,6 +2814,32 @@ void FlushDriverCachesCHROMIUM() {
   }
 }
 
+void ScheduleDCLayerSharedStateCHROMIUM(GLfloat opacity,
+                                        GLboolean is_clipped,
+                                        GLint z_order,
+                                        GLuint shm_id,
+                                        GLuint shm_offset) {
+  gles2::cmds::ScheduleDCLayerSharedStateCHROMIUM* c =
+      GetCmdSpace<gles2::cmds::ScheduleDCLayerSharedStateCHROMIUM>();
+  if (c) {
+    c->Init(opacity, is_clipped, z_order, shm_id, shm_offset);
+  }
+}
+
+void ScheduleDCLayerCHROMIUM(GLuint contents_texture_id,
+                             GLuint background_color,
+                             GLuint edge_aa_mask,
+                             GLuint filter,
+                             GLuint shm_id,
+                             GLuint shm_offset) {
+  gles2::cmds::ScheduleDCLayerCHROMIUM* c =
+      GetCmdSpace<gles2::cmds::ScheduleDCLayerCHROMIUM>();
+  if (c) {
+    c->Init(contents_texture_id, background_color, edge_aa_mask, filter, shm_id,
+            shm_offset);
+  }
+}
+
 void MatrixLoadfCHROMIUMImmediate(GLenum matrixMode, const GLfloat* m) {
   const uint32_t size =
       gles2::cmds::MatrixLoadfCHROMIUMImmediate::ComputeSize();

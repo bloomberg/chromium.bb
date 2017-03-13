@@ -776,6 +776,17 @@ virtual void CommitOverlayPlanesCHROMIUM() = 0;
 virtual void SwapInterval(GLint interval) = 0;
 virtual void FlushDriverCachesCHROMIUM() = 0;
 virtual GLuint GetLastFlushIdCHROMIUM() = 0;
+virtual void ScheduleDCLayerSharedStateCHROMIUM(GLfloat opacity,
+                                                GLboolean is_clipped,
+                                                const GLfloat* clip_rect,
+                                                GLint z_order,
+                                                const GLfloat* transform) = 0;
+virtual void ScheduleDCLayerCHROMIUM(GLuint contents_texture_id,
+                                     const GLfloat* contents_rect,
+                                     GLuint background_color,
+                                     GLuint edge_aa_mask,
+                                     const GLfloat* bounds_rect,
+                                     GLuint filter) = 0;
 virtual void MatrixLoadfCHROMIUM(GLenum matrixMode, const GLfloat* m) = 0;
 virtual void MatrixLoadIdentityCHROMIUM(GLenum matrixMode) = 0;
 virtual GLuint GenPathsCHROMIUM(GLsizei range) = 0;

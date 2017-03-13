@@ -4,6 +4,7 @@
 
 #include "cc/output/overlay_processor.h"
 
+#include "cc/output/dc_layer_overlay.h"
 #include "cc/output/output_surface.h"
 #include "cc/output/overlay_strategy_single_on_top.h"
 #include "cc/output/overlay_strategy_underlay.h"
@@ -86,6 +87,27 @@ bool OverlayProcessor::ProcessForCALayers(
   return true;
 }
 
+bool OverlayProcessor::ProcessForDCLayers(
+    ResourceProvider* resource_provider,
+    RenderPass* render_pass,
+    const RenderPassFilterList& render_pass_filters,
+    const RenderPassFilterList& render_pass_background_filters,
+    OverlayCandidateList* overlay_candidates,
+    DCLayerOverlayList* dc_layer_overlays,
+    gfx::Rect* damage_rect) {
+  OverlayCandidateValidator* overlay_validator =
+      surface_->GetOverlayCandidateValidator();
+  if (!overlay_validator || !overlay_validator->AllowDCLayerOverlays())
+    return false;
+
+  dc_processor_.Process(resource_provider, gfx::RectF(render_pass->output_rect),
+                        &render_pass->quad_list, &overlay_damage_rect_,
+                        damage_rect, dc_layer_overlays);
+
+  DCHECK(overlay_candidates->empty());
+  return true;
+}
+
 void OverlayProcessor::ProcessForOverlays(
     ResourceProvider* resource_provider,
     RenderPass* render_pass,
@@ -93,6 +115,7 @@ void OverlayProcessor::ProcessForOverlays(
     const RenderPassFilterList& render_pass_background_filters,
     OverlayCandidateList* candidates,
     CALayerOverlayList* ca_layer_overlays,
+    DCLayerOverlayList* dc_layer_overlays,
     gfx::Rect* damage_rect,
     std::vector<gfx::Rect>* content_bounds) {
 #if defined(OS_ANDROID)
@@ -106,6 +129,7 @@ void OverlayProcessor::ProcessForOverlays(
   // CALayers because the framebuffer would be missing the removed quads'
   // contents.
   if (!render_pass->copy_requests.empty()) {
+    dc_processor_.ClearOverlayState();
     // If overlay processing was skipped for a frame there's no way to be sure
     // of the state of the previous frame, so reset.
     previous_frame_underlay_rect_ = gfx::Rect();
@@ -116,6 +140,12 @@ void OverlayProcessor::ProcessForOverlays(
   if (ProcessForCALayers(resource_provider, render_pass, render_pass_filters,
                          render_pass_background_filters, candidates,
                          ca_layer_overlays, damage_rect)) {
+    return;
+  }
+
+  if (ProcessForDCLayers(resource_provider, render_pass, render_pass_filters,
+                         render_pass_background_filters, candidates,
+                         dc_layer_overlays, damage_rect)) {
     return;
   }
 

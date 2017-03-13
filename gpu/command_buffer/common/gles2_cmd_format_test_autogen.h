@@ -4670,6 +4670,43 @@ TEST_F(GLES2FormatTest, FlushDriverCachesCHROMIUM) {
   CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
 }
 
+TEST_F(GLES2FormatTest, ScheduleDCLayerSharedStateCHROMIUM) {
+  cmds::ScheduleDCLayerSharedStateCHROMIUM& cmd =
+      *GetBufferAs<cmds::ScheduleDCLayerSharedStateCHROMIUM>();
+  void* next_cmd = cmd.Set(&cmd, static_cast<GLfloat>(11),
+                           static_cast<GLboolean>(12), static_cast<GLint>(13),
+                           static_cast<GLuint>(14), static_cast<GLuint>(15));
+  EXPECT_EQ(
+      static_cast<uint32_t>(cmds::ScheduleDCLayerSharedStateCHROMIUM::kCmdId),
+      cmd.header.command);
+  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<GLfloat>(11), cmd.opacity);
+  EXPECT_EQ(static_cast<GLboolean>(12), cmd.is_clipped);
+  EXPECT_EQ(static_cast<GLint>(13), cmd.z_order);
+  EXPECT_EQ(static_cast<GLuint>(14), cmd.shm_id);
+  EXPECT_EQ(static_cast<GLuint>(15), cmd.shm_offset);
+  CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
+}
+
+TEST_F(GLES2FormatTest, ScheduleDCLayerCHROMIUM) {
+  cmds::ScheduleDCLayerCHROMIUM& cmd =
+      *GetBufferAs<cmds::ScheduleDCLayerCHROMIUM>();
+  void* next_cmd =
+      cmd.Set(&cmd, static_cast<GLuint>(11), static_cast<GLuint>(12),
+              static_cast<GLuint>(13), static_cast<GLuint>(14),
+              static_cast<GLuint>(15), static_cast<GLuint>(16));
+  EXPECT_EQ(static_cast<uint32_t>(cmds::ScheduleDCLayerCHROMIUM::kCmdId),
+            cmd.header.command);
+  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<GLuint>(11), cmd.contents_texture_id);
+  EXPECT_EQ(static_cast<GLuint>(12), cmd.background_color);
+  EXPECT_EQ(static_cast<GLuint>(13), cmd.edge_aa_mask);
+  EXPECT_EQ(static_cast<GLuint>(14), cmd.filter);
+  EXPECT_EQ(static_cast<GLuint>(15), cmd.shm_id);
+  EXPECT_EQ(static_cast<GLuint>(16), cmd.shm_offset);
+  CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
+}
+
 TEST_F(GLES2FormatTest, MatrixLoadfCHROMIUMImmediate) {
   const int kSomeBaseValueToTestWith = 51;
   static GLfloat data[] = {

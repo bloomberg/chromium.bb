@@ -28,6 +28,7 @@ class DISPLAY_COMPOSITOR_EXPORT CompositorOverlayCandidateValidatorAndroid
   void GetStrategies(cc::OverlayProcessor::StrategyList* strategies) override;
   void CheckOverlaySupport(cc::OverlayCandidateList* surfaces) override;
   bool AllowCALayerOverlays() override;
+  bool AllowDCLayerOverlays() override;
 
   void SetSoftwareMirrorMode(bool enabled) override;
 

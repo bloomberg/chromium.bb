@@ -1795,6 +1795,57 @@ error::Error GLES2DecoderPassthroughImpl::HandleScheduleCALayerCHROMIUM(
   return error::kNoError;
 }
 
+error::Error
+GLES2DecoderPassthroughImpl::HandleScheduleDCLayerSharedStateCHROMIUM(
+    uint32_t immediate_data_size,
+    const volatile void* cmd_data) {
+  const volatile gles2::cmds::ScheduleDCLayerSharedStateCHROMIUM& c =
+      *static_cast<
+          const volatile gles2::cmds::ScheduleDCLayerSharedStateCHROMIUM*>(
+          cmd_data);
+  const GLfloat* mem = GetSharedMemoryAs<const GLfloat*>(c.shm_id, c.shm_offset,
+                                                         20 * sizeof(GLfloat));
+  if (!mem) {
+    return error::kOutOfBounds;
+  }
+  GLfloat opacity = static_cast<GLfloat>(c.opacity);
+  GLboolean is_clipped = static_cast<GLboolean>(c.is_clipped);
+  const GLfloat* clip_rect = mem + 0;
+  GLint z_order = static_cast<GLint>(c.z_order);
+  const GLfloat* transform = mem + 4;
+  error::Error error = DoScheduleDCLayerSharedStateCHROMIUM(
+      opacity, is_clipped, clip_rect, z_order, transform);
+  if (error != error::kNoError) {
+    return error;
+  }
+  return error::kNoError;
+}
+
+error::Error GLES2DecoderPassthroughImpl::HandleScheduleDCLayerCHROMIUM(
+    uint32_t immediate_data_size,
+    const volatile void* cmd_data) {
+  const volatile gles2::cmds::ScheduleDCLayerCHROMIUM& c =
+      *static_cast<const volatile gles2::cmds::ScheduleDCLayerCHROMIUM*>(
+          cmd_data);
+  const GLfloat* mem = GetSharedMemoryAs<const GLfloat*>(c.shm_id, c.shm_offset,
+                                                         8 * sizeof(GLfloat));
+  if (!mem) {
+    return error::kOutOfBounds;
+  }
+  GLuint contents_texture_id = static_cast<GLint>(c.contents_texture_id);
+  const GLfloat* contents_rect = mem;
+  GLuint background_color = static_cast<GLuint>(c.background_color);
+  GLuint edge_aa_mask = static_cast<GLuint>(c.edge_aa_mask);
+  const GLfloat* bounds_rect = mem + 4;
+  error::Error error =
+      DoScheduleDCLayerCHROMIUM(contents_texture_id, contents_rect,
+                                background_color, edge_aa_mask, bounds_rect);
+  if (error != error::kNoError) {
+    return error;
+  }
+  return error::kNoError;
+}
+
 error::Error GLES2DecoderPassthroughImpl::HandleGenPathsCHROMIUM(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {
