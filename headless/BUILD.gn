@@ -208,6 +208,8 @@ static_library("headless_lib") {
               "lib/browser/headless_devtools_manager_delegate.cc",
               "lib/browser/headless_devtools_manager_delegate.h",
               "lib/browser/headless_macros.h",
+              "lib/browser/headless_network_delegate.cc",
+              "lib/browser/headless_network_delegate.h",
               "lib/browser/headless_platform_event_source.cc",
               "lib/browser/headless_platform_event_source.h",
               "lib/browser/headless_url_request_context_getter.cc",

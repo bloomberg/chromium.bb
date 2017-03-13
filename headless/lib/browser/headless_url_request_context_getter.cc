@@ -12,6 +12,7 @@
 #include "base/single_thread_task_runner.h"
 #include "content/public/browser/browser_thread.h"
 #include "headless/lib/browser/headless_browser_context_options.h"
+#include "headless/lib/browser/headless_network_delegate.h"
 #include "net/dns/mapped_host_resolver.h"
 #include "net/proxy/proxy_service.h"
 #include "net/url_request/url_request_context.h"
@@ -73,6 +74,7 @@ HeadlessURLRequestContextGetter::GetURLRequestContext() {
     } else {
       builder.set_proxy_config_service(std::move(proxy_config_service_));
     }
+    builder.set_network_delegate(base::MakeUnique<HeadlessNetworkDelegate>());
 
     if (!host_resolver_rules_.empty()) {
       std::unique_ptr<net::HostResolver> host_resolver(

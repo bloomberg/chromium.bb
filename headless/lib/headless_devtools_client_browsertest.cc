@@ -22,6 +22,7 @@
 #include "headless/public/headless_devtools_client.h"
 #include "headless/public/headless_devtools_target.h"
 #include "headless/test/headless_browser_test.h"
+#include "headless/test/test_protocol_handler.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -884,5 +885,52 @@ class HeadlessDevToolsNetworkBlockedUrlTest
 };
 
 HEADLESS_ASYNC_DEVTOOLED_TEST_F(HeadlessDevToolsNetworkBlockedUrlTest);
+
+namespace {
+// Keep in sync with X_DevTools_Emulate_Network_Conditions_Client_Id defined in
+// HTTPNames.json5.
+const char kDevToolsEmulateNetworkConditionsClientId[] =
+    "X-DevTools-Emulate-Network-Conditions-Client-Id";
+}  // namespace
+
+class DevToolsHeaderStrippingTest : public HeadlessAsyncDevTooledBrowserTest,
+                                    public page::Observer,
+                                    public network::Observer {
+  void RunDevTooledTest() override {
+    EXPECT_TRUE(embedded_test_server()->Start());
+    base::RunLoop run_loop;
+    devtools_client_->GetPage()->AddObserver(this);
+    devtools_client_->GetPage()->Enable();
+    // Enable network domain in order to get DevTools to add the header.
+    devtools_client_->GetNetwork()->AddObserver(this);
+    devtools_client_->GetNetwork()->Enable(run_loop.QuitClosure());
+    base::MessageLoop::ScopedNestableTaskAllower nest_loop(
+        base::MessageLoop::current());
+    run_loop.Run();
+    devtools_client_->GetPage()->Navigate(
+        "http://not-an-actual-domain.tld/hello.html");
+  }
+
+  ProtocolHandlerMap GetProtocolHandlers() override {
+    const std::string kResponseBody = "<p>HTTP response body</p>";
+    ProtocolHandlerMap protocol_handlers;
+    protocol_handlers[url::kHttpScheme] =
+        base::MakeUnique<TestProtocolHandler>(kResponseBody);
+    test_handler_ = static_cast<TestProtocolHandler*>(
+        protocol_handlers[url::kHttpScheme].get());
+    return protocol_handlers;
+  }
+
+  void OnLoadEventFired(const page::LoadEventFiredParams&) override {
+    EXPECT_FALSE(test_handler_->last_http_request_headers().IsEmpty());
+    EXPECT_FALSE(test_handler_->last_http_request_headers().HasHeader(
+        kDevToolsEmulateNetworkConditionsClientId));
+    FinishAsynchronousTest();
+  }
+
+  TestProtocolHandler* test_handler_;  // NOT OWNED
+};
+
+HEADLESS_ASYNC_DEVTOOLED_TEST_F(DevToolsHeaderStrippingTest);
 
 }  // namespace headless

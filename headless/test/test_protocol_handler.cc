@@ -14,6 +14,7 @@ TestProtocolHandler::TestProtocolHandler(const std::string& body)
 net::URLRequestJob* TestProtocolHandler::MaybeCreateJob(
     net::URLRequest* request,
     net::NetworkDelegate* network_delegate) const {
+  last_http_request_headers_ = request->extra_request_headers();
   return new TestURLRequestJob(request, network_delegate, body_);
 }
 
