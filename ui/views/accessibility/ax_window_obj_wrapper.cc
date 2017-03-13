@@ -8,6 +8,7 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "ui/accessibility/ax_node_data.h"
+#include "ui/accessibility/platform/aura_window_properties.h"
 #include "ui/aura/window.h"
 #include "ui/views/accessibility/ax_aura_obj_cache.h"
 #include "ui/views/widget/widget.h"
@@ -54,6 +55,11 @@ void AXWindowObjWrapper::Serialize(ui::AXNodeData* out_node_data) {
                                     base::UTF16ToUTF8(window_->GetTitle()));
   out_node_data->state = 0;
   out_node_data->location = gfx::RectF(window_->bounds());
+
+  ui::AXTreeIDRegistry::AXTreeID child_ax_tree_id =
+      window_->GetProperty(ui::kChildAXTreeID);
+  if (child_ax_tree_id != ui::AXTreeIDRegistry::kNoAXTreeID)
+    out_node_data->AddIntAttribute(ui::AX_ATTR_CHILD_TREE_ID, child_ax_tree_id);
 }
 
 int32_t AXWindowObjWrapper::GetID() {

@@ -97,6 +97,15 @@ component("accessibility") {
       configs += [ "//build/config/linux:glib" ]
     }
   }
+
+  if (use_aura) {
+    sources += [
+      "platform/aura_window_properties.cc",
+      "platform/aura_window_properties.h",
+    ]
+
+    public_deps += [ "//ui/aura" ]
+  }
 }
 
 if (is_android) {
