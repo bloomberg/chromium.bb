@@ -77,9 +77,6 @@ DEFINE_TRACE(IDBObjectStore) {
 
 void IDBObjectStore::setName(const String& name,
                              ExceptionState& exceptionState) {
-  if (!RuntimeEnabledFeatures::indexedDBExperimentalEnabled())
-    return;
-
   IDB_TRACE("IDBObjectStore::setName");
   if (!m_transaction->isVersionChange()) {
     exceptionState.throwDOMException(

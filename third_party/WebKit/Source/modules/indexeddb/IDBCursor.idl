@@ -45,7 +45,6 @@ enum IDBCursorDirection {
     [CallWith=ScriptState, RaisesException] IDBRequest update(any value);
     [RaisesException] void advance([EnforceRange] unsigned long count);
     [CallWith=ScriptState, ImplementedAs=continueFunction, RaisesException] void continue([Default=Undefined] optional any key);
-    // TODO(jsbell): Proposal: https://github.com/w3c/IndexedDB/issues/14
-    [CallWith=ScriptState, RaisesException, RuntimeEnabled=IndexedDBExperimental] void continuePrimaryKey(any key, any primaryKey);
+    [CallWith=ScriptState, RaisesException] void continuePrimaryKey(any key, any primaryKey);
     [CallWith=ScriptState, ImplementedAs=deleteFunction, RaisesException] IDBRequest delete();
 };

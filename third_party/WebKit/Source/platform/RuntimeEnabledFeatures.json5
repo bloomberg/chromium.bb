@@ -464,10 +464,6 @@
       status: "test",
     },
     {
-      name: "IndexedDBExperimental",
-      status: "stable",
-    },
-    {
       name: "InertTopControls",
       status: "stable",
     },

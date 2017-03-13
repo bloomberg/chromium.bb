@@ -65,9 +65,6 @@ DEFINE_TRACE(IDBIndex) {
 }
 
 void IDBIndex::setName(const String& name, ExceptionState& exceptionState) {
-  if (!RuntimeEnabledFeatures::indexedDBExperimentalEnabled())
-    return;
-
   IDB_TRACE("IDBIndex::setName");
   if (!m_transaction->isVersionChange()) {
     exceptionState.throwDOMException(

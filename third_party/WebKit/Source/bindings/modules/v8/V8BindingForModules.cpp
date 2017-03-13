@@ -104,8 +104,7 @@ v8::Local<v8::Value> ToV8(const IDBKey* key,
     case IDBKey::StringType:
       return v8String(isolate, key->string());
     case IDBKey::BinaryType:
-      // Experimental feature: binary keys
-      // https://w3c.github.io/IndexedDB/#steps-to-convert-a-key-to-a-value
+      // https://w3c.github.io/IndexedDB/#convert-a-value-to-a-key
       return ToV8(DOMArrayBuffer::create(reinterpret_cast<const unsigned char*>(
                                              key->binary()->data()),
                                          key->binary()->size()),
@@ -177,40 +176,37 @@ static const size_t maximumDepth = 2000;
 static IDBKey* createIDBKeyFromValue(v8::Isolate* isolate,
                                      v8::Local<v8::Value> value,
                                      Vector<v8::Local<v8::Array>>& stack,
-                                     ExceptionState& exceptionState,
-                                     bool allowExperimentalTypes = false) {
+                                     ExceptionState& exceptionState) {
   if (value->IsNumber() && !std::isnan(value.As<v8::Number>()->Value()))
     return IDBKey::createNumber(value.As<v8::Number>()->Value());
   if (value->IsString())
     return IDBKey::createString(toCoreString(value.As<v8::String>()));
   if (value->IsDate() && !std::isnan(value.As<v8::Date>()->ValueOf()))
     return IDBKey::createDate(value.As<v8::Date>()->ValueOf());
-  if (allowExperimentalTypes ||
-      RuntimeEnabledFeatures::indexedDBExperimentalEnabled()) {
-    // Experimental feature: binary keys
-    // https://w3c.github.io/IndexedDB/#dfn-convert-a-value-to-a-key
-    if (value->IsArrayBuffer()) {
-      DOMArrayBuffer* buffer = V8ArrayBuffer::toImpl(value.As<v8::Object>());
-      if (buffer->isNeutered()) {
-        exceptionState.throwTypeError("The ArrayBuffer is neutered.");
-        return nullptr;
-      }
-      const char* start = static_cast<const char*>(buffer->data());
-      size_t length = buffer->byteLength();
-      return IDBKey::createBinary(SharedBuffer::create(start, length));
+
+  // https://w3c.github.io/IndexedDB/#convert-a-key-to-a-value
+  if (value->IsArrayBuffer()) {
+    DOMArrayBuffer* buffer = V8ArrayBuffer::toImpl(value.As<v8::Object>());
+    if (buffer->isNeutered()) {
+      exceptionState.throwTypeError("The ArrayBuffer is neutered.");
+      return nullptr;
     }
-    if (value->IsArrayBufferView()) {
-      DOMArrayBufferView* view =
-          V8ArrayBufferView::toImpl(value.As<v8::Object>());
-      if (view->buffer()->isNeutered()) {
-        exceptionState.throwTypeError("The viewed ArrayBuffer is neutered.");
-        return nullptr;
-      }
-      const char* start = static_cast<const char*>(view->baseAddress());
-      size_t length = view->byteLength();
-      return IDBKey::createBinary(SharedBuffer::create(start, length));
-    }
+    const char* start = static_cast<const char*>(buffer->data());
+    size_t length = buffer->byteLength();
+    return IDBKey::createBinary(SharedBuffer::create(start, length));
   }
+  if (value->IsArrayBufferView()) {
+    DOMArrayBufferView* view =
+        V8ArrayBufferView::toImpl(value.As<v8::Object>());
+    if (view->buffer()->isNeutered()) {
+      exceptionState.throwTypeError("The viewed ArrayBuffer is neutered.");
+      return nullptr;
+    }
+    const char* start = static_cast<const char*>(view->baseAddress());
+    size_t length = view->byteLength();
+    return IDBKey::createBinary(SharedBuffer::create(start, length));
+  }
+
   if (value->IsArray()) {
     v8::Local<v8::Array> array = value.As<v8::Array>();
 
@@ -232,8 +228,8 @@ static IDBKey* createIDBKeyFromValue(v8::Isolate* isolate,
         exceptionState.rethrowV8Exception(block.Exception());
         return nullptr;
       }
-      IDBKey* subkey = createIDBKeyFromValue(
-          isolate, item, stack, exceptionState, allowExperimentalTypes);
+      IDBKey* subkey =
+          createIDBKeyFromValue(isolate, item, stack, exceptionState);
       if (!subkey)
         subkeys.push_back(IDBKey::createInvalid());
       else
@@ -248,11 +244,10 @@ static IDBKey* createIDBKeyFromValue(v8::Isolate* isolate,
 
 static IDBKey* createIDBKeyFromValue(v8::Isolate* isolate,
                                      v8::Local<v8::Value> value,
-                                     ExceptionState& exceptionState,
-                                     bool allowExperimentalTypes = false) {
+                                     ExceptionState& exceptionState) {
   Vector<v8::Local<v8::Array>> stack;
-  if (IDBKey* key = createIDBKeyFromValue(isolate, value, stack, exceptionState,
-                                          allowExperimentalTypes))
+  if (IDBKey* key =
+          createIDBKeyFromValue(isolate, value, stack, exceptionState))
     return key;
   return IDBKey::createInvalid();
 }
@@ -287,8 +282,7 @@ static Vector<String> parseKeyPath(const String& keyPath) {
 static IDBKey* createIDBKeyFromValueAndKeyPath(v8::Isolate* isolate,
                                                v8::Local<v8::Value> v8Value,
                                                const String& keyPath,
-                                               ExceptionState& exceptionState,
-                                               bool allowExperimentalTypes) {
+                                               ExceptionState& exceptionState) {
   Vector<String> keyPathElements = parseKeyPath(keyPath);
   ASSERT(isolate->InContext());
 
@@ -356,24 +350,21 @@ static IDBKey* createIDBKeyFromValueAndKeyPath(v8::Isolate* isolate,
       return nullptr;
     }
   }
-  return createIDBKeyFromValue(isolate, v8Value, exceptionState,
-                               allowExperimentalTypes);
+  return createIDBKeyFromValue(isolate, v8Value, exceptionState);
 }
 
-static IDBKey* createIDBKeyFromValueAndKeyPath(
-    v8::Isolate* isolate,
-    v8::Local<v8::Value> value,
-    const IDBKeyPath& keyPath,
-    ExceptionState& exceptionState,
-    bool allowExperimentalTypes = false) {
+static IDBKey* createIDBKeyFromValueAndKeyPath(v8::Isolate* isolate,
+                                               v8::Local<v8::Value> value,
+                                               const IDBKeyPath& keyPath,
+                                               ExceptionState& exceptionState) {
   ASSERT(!keyPath.isNull());
   v8::HandleScope handleScope(isolate);
   if (keyPath.getType() == IDBKeyPath::ArrayType) {
     IDBKey::KeyArray result;
     const Vector<String>& array = keyPath.array();
     for (size_t i = 0; i < array.size(); ++i) {
-      IDBKey* key = createIDBKeyFromValueAndKeyPath(
-          isolate, value, array[i], exceptionState, allowExperimentalTypes);
+      IDBKey* key = createIDBKeyFromValueAndKeyPath(isolate, value, array[i],
+                                                    exceptionState);
       if (!key)
         return nullptr;
       result.push_back(key);
@@ -382,8 +373,8 @@ static IDBKey* createIDBKeyFromValueAndKeyPath(
   }
 
   ASSERT(keyPath.getType() == IDBKeyPath::StringType);
-  return createIDBKeyFromValueAndKeyPath(
-      isolate, value, keyPath.string(), exceptionState, allowExperimentalTypes);
+  return createIDBKeyFromValueAndKeyPath(isolate, value, keyPath.string(),
+                                         exceptionState);
 }
 
 // Deserialize just the value data & blobInfo from the given IDBValue.
@@ -605,13 +596,9 @@ void assertPrimaryKeyValidOrInjectable(ScriptState* scriptState,
   ScriptValue keyValue = ScriptValue::from(scriptState, value->primaryKey());
   ScriptValue scriptValue(scriptState, deserializeIDBValueData(isolate, value));
 
-  // This assertion is about already persisted data, so allow experimental
-  // types.
-  const bool allowExperimentalTypes = true;
   DummyExceptionStateForTesting exceptionState;
   IDBKey* expectedKey = createIDBKeyFromValueAndKeyPath(
-      isolate, scriptValue.v8Value(), value->keyPath(), exceptionState,
-      allowExperimentalTypes);
+      isolate, scriptValue.v8Value(), value->keyPath(), exceptionState);
   ASSERT(!exceptionState.hadException());
   if (expectedKey && expectedKey->isEqual(value->primaryKey()))
     return;
