@@ -9,5 +9,5 @@ dictionary AudioConfiguration {
 
     DOMString channels;
     unsigned long bitrate;
-    unsigned long sampleprate;
+    unsigned long samplerate;
 };

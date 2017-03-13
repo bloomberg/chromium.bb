@@ -55,6 +55,8 @@ component("blink") {
     "webencryptedmediaclient_impl.h",
     "webinbandtexttrack_impl.cc",
     "webinbandtexttrack_impl.h",
+    "webmediacapabilitiesclient_impl.cc",
+    "webmediacapabilitiesclient_impl.h",
     "webmediaplayer_delegate.h",
     "webmediaplayer_params.cc",
     "webmediaplayer_params.h",

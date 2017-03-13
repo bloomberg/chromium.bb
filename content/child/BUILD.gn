@@ -236,6 +236,7 @@ target(link_target_type, "child") {
     "//gpu/command_buffer/client",
     "//ipc",
     "//media",
+    "//media/blink",
     "//mojo/common",
     "//mojo/edk/system",
     "//net",

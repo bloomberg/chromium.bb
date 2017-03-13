@@ -5,24 +5,37 @@
 #ifndef MediaDecodingAbility_h
 #define MediaDecodingAbility_h
 
+#include <memory>
+
 #include "bindings/core/v8/ScriptWrappable.h"
+#include "public/platform/modules/media_capabilities/WebMediaDecodingAbility.h"
 
 namespace blink {
 
+class ScriptPromiseResolver;
+
 // Implementation of the MediaDecodingAbility interface.
 class MediaDecodingAbility final
-    : public GarbageCollected<MediaDecodingAbility>,
+    : public GarbageCollectedFinalized<MediaDecodingAbility>,
       public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  MediaDecodingAbility();
+  using WebType = std::unique_ptr<WebMediaDecodingAbility>;
+  static MediaDecodingAbility* take(ScriptPromiseResolver*,
+                                    std::unique_ptr<WebMediaDecodingAbility>);
 
   bool supported() const;
   bool smooth() const;
   bool powerEfficient() const;
 
   DECLARE_VIRTUAL_TRACE();
+
+ private:
+  MediaDecodingAbility() = delete;
+  explicit MediaDecodingAbility(std::unique_ptr<WebMediaDecodingAbility>);
+
+  std::unique_ptr<WebMediaDecodingAbility> m_webMediaDecodingAbility;
 };
 
 }  // namespace blink
