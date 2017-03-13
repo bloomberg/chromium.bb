@@ -56,7 +56,7 @@ PassRefPtr<Gradient> LayoutSVGResourceLinearGradient::buildGradient() const {
       Gradient::create(startPoint(attributes), endPoint(attributes));
   gradient->setSpreadMethod(
       platformSpreadMethodFromSVGType(attributes.spreadMethod()));
-  addStops(*gradient, attributes.stops());
+  gradient->addColorStops(attributes.stops());
   return gradient.release();
 }
 

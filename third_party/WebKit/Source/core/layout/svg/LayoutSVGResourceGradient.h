@@ -53,8 +53,6 @@ class LayoutSVGResourceGradient : public LayoutSVGResourcePaintServer {
   bool isChildAllowed(LayoutObject* child, const ComputedStyle&) const final;
 
  protected:
-  void addStops(Gradient&, const Vector<Gradient::ColorStop>&) const;
-
   virtual SVGUnitTypes::SVGUnitType gradientUnits() const = 0;
   virtual AffineTransform calculateGradientTransform() const = 0;
   virtual bool collectGradientAttributes(SVGGradientElement*) = 0;

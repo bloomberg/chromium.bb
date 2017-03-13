@@ -70,7 +70,7 @@ PassRefPtr<Gradient> LayoutSVGResourceRadialGradient::buildGradient() const {
                        centerPoint(attributes), radius(attributes));
   gradient->setSpreadMethod(
       platformSpreadMethodFromSVGType(attributes.spreadMethod()));
-  addStops(*gradient, attributes.stops());
+  gradient->addColorStops(attributes.stops());
   return gradient.release();
 }
 

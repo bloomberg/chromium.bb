@@ -119,13 +119,6 @@ bool LayoutSVGResourceGradient::isChildAllowed(LayoutObject* child,
   return toLayoutSVGResourceContainer(child)->isSVGPaintServer();
 }
 
-void LayoutSVGResourceGradient::addStops(
-    Gradient& gradient,
-    const Vector<Gradient::ColorStop>& stops) const {
-  for (const auto& stop : stops)
-    gradient.addColorStop(stop);
-}
-
 GradientSpreadMethod LayoutSVGResourceGradient::platformSpreadMethodFromSVGType(
     SVGSpreadMethodType method) {
   switch (method) {

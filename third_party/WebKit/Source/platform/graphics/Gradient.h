@@ -73,6 +73,7 @@ class PLATFORM_EXPORT Gradient : public RefCounted<Gradient> {
   void addColorStop(float value, const Color& color) {
     addColorStop(ColorStop(value, color));
   }
+  void addColorStops(const Vector<Gradient::ColorStop>&);
 
   bool isRadial() const { return m_radial; }
   bool isZeroSize() const {
