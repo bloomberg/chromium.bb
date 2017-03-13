@@ -135,7 +135,7 @@ bool RenderWidgetHostViewChildFrame::HasFocus() const {
 }
 
 bool RenderWidgetHostViewChildFrame::IsSurfaceAvailableForCopy() const {
-  return local_surface_id_.is_valid();
+  return has_frame_;
 }
 
 void RenderWidgetHostViewChildFrame::Show() {
@@ -349,41 +349,34 @@ void RenderWidgetHostViewChildFrame::DidReceiveCompositorFrameAck() {
       true /* is_swap_ack */, cc::ReturnedResourceArray()));
 }
 
-bool RenderWidgetHostViewChildFrame::ShouldCreateNewSurfaceId(
-    uint32_t compositor_frame_sink_id,
-    const cc::CompositorFrame& frame) {
-  gfx::Size new_frame_size = frame.render_pass_list.back()->output_rect.size();
-  float new_scale_factor = frame.metadata.device_scale_factor;
-
-  return compositor_frame_sink_id != last_compositor_frame_sink_id_ ||
-         new_frame_size != current_surface_size_ ||
-         new_scale_factor != current_surface_scale_factor_;
-}
-
 void RenderWidgetHostViewChildFrame::ProcessCompositorFrame(
     uint32_t compositor_frame_sink_id,
     cc::CompositorFrame frame) {
-  if (ShouldCreateNewSurfaceId(compositor_frame_sink_id, frame)) {
-    ClearCompositorSurfaceIfNecessary();
-    // If the renderer changed its frame sink, reset the
-    // CompositorFrameSinkSupport to avoid returning stale resources.
-    if (compositor_frame_sink_id != last_compositor_frame_sink_id_) {
-      ResetCompositorFrameSinkSupport();
-      CreateCompositorFrameSinkSupport();
-    }
+  // If the renderer changed its frame sink, reset the
+  // CompositorFrameSinkSupport to avoid returning stale resources.
+  if (compositor_frame_sink_id != last_compositor_frame_sink_id_) {
+    ResetCompositorFrameSinkSupport();
+    CreateCompositorFrameSinkSupport();
     last_compositor_frame_sink_id_ = compositor_frame_sink_id;
-    current_surface_size_ = frame.render_pass_list.back()->output_rect.size();
-    current_surface_scale_factor_ = frame.metadata.device_scale_factor;
+    local_surface_id_ = cc::LocalSurfaceId();
   }
 
+  gfx::Size new_frame_size = frame.render_pass_list.back()->output_rect.size();
+  float new_scale_factor = frame.metadata.device_scale_factor;
   bool allocated_new_local_surface_id = false;
-  if (!local_surface_id_.is_valid()) {
+  if (!local_surface_id_.is_valid() ||
+      new_frame_size != current_surface_size_ ||
+      new_scale_factor != current_surface_scale_factor_) {
     local_surface_id_ = id_allocator_->GenerateId();
+    current_surface_size_ = frame.render_pass_list.back()->output_rect.size();
+    current_surface_scale_factor_ = frame.metadata.device_scale_factor;
     allocated_new_local_surface_id = true;
   }
 
   support_->SubmitCompositorFrame(local_surface_id_, std::move(frame));
-  if (allocated_new_local_surface_id)
+  has_frame_ = true;
+
+  if (allocated_new_local_surface_id || HasEmbedderChanged())
     SendSurfaceInfoToEmbedder();
   ProcessFrameSwappedCallbacks();
 }
@@ -395,7 +388,7 @@ void RenderWidgetHostViewChildFrame::SendSurfaceInfoToEmbedder() {
   cc::SurfaceId surface_id(frame_sink_id_, local_surface_id_);
   // The renderer process will satisfy this dependency when it creates a
   // SurfaceLayer.
-  manager->GetSurfaceForId(surface_id)->AddDestructionDependency(sequence);
+  manager->RequireSequence(surface_id, sequence);
   cc::SurfaceInfo surface_info(surface_id, current_surface_scale_factor_,
                                current_surface_size_);
   SendSurfaceInfoToEmbedderImpl(surface_info, sequence);
@@ -675,9 +668,10 @@ RenderWidgetHostViewChildFrame::CreateBrowserAccessibilityManager(
 }
 
 void RenderWidgetHostViewChildFrame::ClearCompositorSurfaceIfNecessary() {
-  if (support_)
-    support_->EvictFrame();
-  local_surface_id_ = cc::LocalSurfaceId();
+  if (!support_)
+    return;
+  support_->EvictFrame();
+  has_frame_ = false;
 }
 
 bool RenderWidgetHostViewChildFrame::IsChildFrameForTesting() const {
@@ -710,6 +704,10 @@ void RenderWidgetHostViewChildFrame::ResetCompositorFrameSinkSupport() {
                                                       frame_sink_id_);
   }
   support_.reset();
+}
+
+bool RenderWidgetHostViewChildFrame::HasEmbedderChanged() {
+  return false;
 }
 
 }  // namespace content

@@ -272,14 +272,6 @@ void RenderWidgetHostViewGuest::SetTooltipText(
     guest_->SetTooltipText(tooltip_text);
 }
 
-bool RenderWidgetHostViewGuest::ShouldCreateNewSurfaceId(
-    uint32_t compositor_frame_sink_id,
-    const cc::CompositorFrame& frame) {
-  return (guest_ && guest_->has_attached_since_surface_set()) ||
-         RenderWidgetHostViewChildFrame::ShouldCreateNewSurfaceId(
-             compositor_frame_sink_id, frame);
-}
-
 void RenderWidgetHostViewGuest::SendSurfaceInfoToEmbedderImpl(
     const cc::SurfaceInfo& surface_info,
     const cc::SurfaceSequence& sequence) {
@@ -644,6 +636,10 @@ void RenderWidgetHostViewGuest::OnHandleInputEvent(
     host_->ForwardGestureEvent(gesture_event);
     return;
   }
+}
+
+bool RenderWidgetHostViewGuest::HasEmbedderChanged() {
+  return guest_ && guest_->has_attached_since_surface_set();
 }
 
 }  // namespace content

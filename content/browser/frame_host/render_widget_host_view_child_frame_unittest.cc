@@ -107,6 +107,10 @@ class RenderWidgetHostViewChildFrameTest : public testing::Test {
     return cc::SurfaceId(view_->frame_sink_id_, view_->local_surface_id_);
   }
 
+  void ClearCompositorSurfaceIfNecessary() {
+    view_->ClearCompositorSurfaceIfNecessary();
+  }
+
  protected:
   base::MessageLoopForUI message_loop_;
   std::unique_ptr<BrowserContext> browser_context_;
@@ -181,6 +185,39 @@ TEST_F(RenderWidgetHostViewChildFrameTest, MAYBE_SwapCompositorFrame) {
     EXPECT_EQ(cc::SurfaceInfo(id, scale_factor, view_size),
               test_frame_connector_->last_surface_info_);
   }
+}
+
+// Check that frame eviction does not trigger allocation of a new local surface
+// id.
+TEST_F(RenderWidgetHostViewChildFrameTest, FrameEvictionKeepsLocalSurfaceId) {
+  gfx::Size view_size(100, 100);
+  gfx::Rect view_rect(view_size);
+  float scale_factor = 1.f;
+
+  view_->SetSize(view_size);
+  view_->Show();
+
+  // Submit a frame. Remember the local surface id and check that has_frame()
+  // returns true.
+  view_->OnSwapCompositorFrame(
+      0, CreateDelegatedFrame(scale_factor, view_size, view_rect));
+
+  cc::SurfaceId surface_id = GetSurfaceId();
+  EXPECT_TRUE(surface_id.is_valid());
+  EXPECT_TRUE(view_->has_frame());
+
+  // Evict the frame. The surface id must remain the same but has_frame() should
+  // return false.
+  ClearCompositorSurfaceIfNecessary();
+  EXPECT_EQ(surface_id, GetSurfaceId());
+  EXPECT_FALSE(view_->has_frame());
+
+  // Submit another frame. Since it has the same size and scale as the first
+  // one, the same surface id must be used. has_frame() must return true.
+  view_->OnSwapCompositorFrame(
+      0, CreateDelegatedFrame(scale_factor, view_size, view_rect));
+  EXPECT_EQ(surface_id, GetSurfaceId());
+  EXPECT_TRUE(view_->has_frame());
 }
 
 }  // namespace content

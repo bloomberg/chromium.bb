@@ -125,12 +125,9 @@ class CONTENT_EXPORT RenderWidgetHostViewGuest
   bool IsRenderWidgetHostViewGuest() override;
   RenderWidgetHostViewBase* GetOwnerRenderWidgetHostView() const;
 
- protected:
-  friend class RenderWidgetHostView;
-  bool ShouldCreateNewSurfaceId(uint32_t compositor_frame_sink_id,
-                                const cc::CompositorFrame& frame) override;
-
  private:
+  friend class RenderWidgetHostView;
+
   void SendSurfaceInfoToEmbedderImpl(
       const cc::SurfaceInfo& surface_info,
       const cc::SurfaceSequence& sequence) override;
@@ -153,6 +150,8 @@ class CONTENT_EXPORT RenderWidgetHostViewGuest
   void OnHandleInputEvent(RenderWidgetHostImpl* embedder,
                           int browser_plugin_instance_id,
                           const blink::WebInputEvent* event);
+
+  bool HasEmbedderChanged() override;
 
   // BrowserPluginGuest and RenderWidgetHostViewGuest's lifetimes are not tied
   // to one another, therefore we access |guest_| through WeakPtr.

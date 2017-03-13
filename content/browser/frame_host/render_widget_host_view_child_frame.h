@@ -180,6 +180,8 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
 
   void UpdateViewportIntersection(const gfx::Rect& viewport_intersection);
 
+  bool has_frame() { return has_frame_; }
+
  protected:
   friend class RenderWidgetHostView;
   friend class RenderWidgetHostViewChildFrameTest;
@@ -187,9 +189,6 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
 
   explicit RenderWidgetHostViewChildFrame(RenderWidgetHost* widget);
   void Init();
-
-  virtual bool ShouldCreateNewSurfaceId(uint32_t compositor_frame_sink_id,
-                                        const cc::CompositorFrame& frame);
 
   void ProcessCompositorFrame(uint32_t compositor_frame_sink_id,
                               cc::CompositorFrame frame);
@@ -242,6 +241,8 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   void CreateCompositorFrameSinkSupport();
   void ResetCompositorFrameSinkSupport();
 
+  virtual bool HasEmbedderChanged();
+
   using FrameSwappedCallbackList = std::deque<std::unique_ptr<base::Closure>>;
   // Since frame-drawn callbacks are "fire once", we use std::deque to make
   // it convenient to swap() when processing the list.
@@ -249,6 +250,8 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
 
   // The surface client ID of the parent RenderWidgetHostView.  0 if none.
   cc::FrameSinkId parent_frame_sink_id_;
+
+  bool has_frame_ = false;
 
   base::WeakPtrFactory<RenderWidgetHostViewChildFrame> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewChildFrame);
