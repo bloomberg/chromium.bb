@@ -14,14 +14,11 @@ config("freetype_config") {
 config("freetype-warnings") {
   cflags = []
 
-  # The reduction of FreeType files to a minimum triggers -Wunused-function
-  # warnings in ftbase.c
-  cflags += [ "-Wno-unused-function" ]
-}
-
-config("freetype-visibility") {
-  cflags = []
-  cflags += [ "-fvisibility=default" ]
+  if (is_clang) {
+    # The reduction of FreeType files to a minimum triggers -Wunused-function
+    # warnings in ftbase.c
+    cflags += [ "-Wno-unused-function" ]
+  }
 }
 
 component("freetype") {
@@ -77,13 +74,16 @@ component("freetype") {
     "FT_CONFIG_OPTIONS_H=<freetype-custom-config/ftoption.h>",
   ]
 
+  if (is_win && is_component_build) {
+    # Used for managing declspec(dllimport/export) visibility.
+    defines += [ "FT2_BUILD_DLL" ]
+  }
+
   public_configs = [ ":freetype_config" ]
   configs -= [ "//build/config/compiler:chromium_code" ]
-  configs += [
-    "//build/config/compiler:no_chromium_code",
-    ":freetype-warnings",
-    ":freetype-visibility",
-  ]
+  configs += [ "//build/config/compiler:no_chromium_code" ]
+
+  configs += [ ":freetype-warnings" ]
 
   deps = [
     "//third_party/libpng",

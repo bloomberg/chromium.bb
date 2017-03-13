@@ -309,9 +309,23 @@ FT_BEGIN_HEADER
   /*   Do not #undef these macros here since the build system might define */
   /*   them for certain configurations only.                               */
   /*                                                                       */
-/* #define FT_EXPORT(x)      extern x */
-/* #define FT_EXPORT_DEF(x)  x */
 
+#if defined(_WIN32)
+
+#if defined(FT2_BUILD_DLL)
+#if defined(FT2_BUILD_LIBRARY)
+#define FT_EXPORT(x)     __declspec(dllexport) x
+#define FT_EXPORT_DEF(x) __declspec(dllexport) x
+#else
+#define FT_EXPORT(x)     __declspec(dllimport) x
+#define FT_EXPORT_DEF(x) __declspec(dllimport) x
+#endif
+#endif
+
+#else
+#define FT_EXPORT(x)     __attribute__((visibility ("default"))) x
+#define FT_EXPORT_DEF(x) __attribute__((visibility ("default"))) x
+#endif
 
   /*************************************************************************/
   /*                                                                       */
