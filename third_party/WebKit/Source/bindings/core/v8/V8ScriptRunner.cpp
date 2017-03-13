@@ -644,10 +644,9 @@ v8::MaybeLocal<v8::Value> V8ScriptRunner::callFunction(
     return v8::MaybeLocal<v8::Value>();
   }
 
-  DCHECK(!frame ||
-         BindingSecurity::shouldAllowAccessToFrame(
-             toDOMWindow(function->CreationContext())->toLocalDOMWindow(),
-             frame, BindingSecurity::ErrorReportOption::DoNotReport));
+  DCHECK(!frame || BindingSecurity::shouldAllowAccessToFrame(
+                       toLocalDOMWindow(function->CreationContext()), frame,
+                       BindingSecurity::ErrorReportOption::DoNotReport));
   CHECK(!ThreadState::current()->isWrapperTracingForbidden());
   v8::MicrotasksScope microtasksScope(isolate,
                                       v8::MicrotasksScope::kRunMicrotasks);

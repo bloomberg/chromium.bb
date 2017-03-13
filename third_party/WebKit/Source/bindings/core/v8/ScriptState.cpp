@@ -79,7 +79,7 @@ void ScriptState::setExecutionContext(ExecutionContext*) {
 
 LocalDOMWindow* ScriptState::domWindow() const {
   v8::HandleScope scope(m_isolate);
-  return toLocalDOMWindow(toDOMWindow(context()));
+  return toLocalDOMWindow(context());
 }
 
 ScriptState* ScriptState::forMainWorld(LocalFrame* frame) {

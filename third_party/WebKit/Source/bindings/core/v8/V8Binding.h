@@ -983,7 +983,7 @@ CORE_EXPORT v8::Isolate* toIsolate(ExecutionContext*);
 CORE_EXPORT v8::Isolate* toIsolate(LocalFrame*);
 
 CORE_EXPORT DOMWindow* toDOMWindow(v8::Isolate*, v8::Local<v8::Value>);
-DOMWindow* toDOMWindow(v8::Local<v8::Context>);
+LocalDOMWindow* toLocalDOMWindow(v8::Local<v8::Context>);
 LocalDOMWindow* enteredDOMWindow(v8::Isolate*);
 CORE_EXPORT LocalDOMWindow* currentDOMWindow(v8::Isolate*);
 CORE_EXPORT ExecutionContext* toExecutionContext(v8::Local<v8::Context>);
@@ -998,15 +998,15 @@ CORE_EXPORT v8::Local<v8::Context> toV8Context(ExecutionContext*,
                                                DOMWrapperWorld&);
 // Returns a V8 context associated with a Frame and a DOMWrapperWorld.
 // This method returns an empty context if the frame is already detached.
-CORE_EXPORT v8::Local<v8::Context> toV8Context(Frame*, DOMWrapperWorld&);
+CORE_EXPORT v8::Local<v8::Context> toV8Context(LocalFrame*, DOMWrapperWorld&);
 // Like toV8Context but also returns the context if the frame is already
 // detached.
-CORE_EXPORT v8::Local<v8::Context> toV8ContextEvenIfDetached(Frame*,
+CORE_EXPORT v8::Local<v8::Context> toV8ContextEvenIfDetached(LocalFrame*,
                                                              DOMWrapperWorld&);
 
 // Returns the frame object of the window object associated with
 // a context, if the window is currently being displayed in a Frame.
-CORE_EXPORT Frame* toFrameIfNotDetached(v8::Local<v8::Context>);
+CORE_EXPORT LocalFrame* toLocalFrameIfNotDetached(v8::Local<v8::Context>);
 
 // If 'storage' is non-null, it must be large enough to copy all bytes in the
 // array buffer view into it.  Use allocateFlexibleArrayBufferStorage(v8Value)

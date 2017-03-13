@@ -31,8 +31,7 @@ void V8PerformanceObserver::constructorCustom(
   v8::Local<v8::Object> wrapper = info.Holder();
 
   Performance* performance = nullptr;
-  LocalDOMWindow* window =
-      toLocalDOMWindow(toDOMWindow(wrapper->CreationContext()));
+  LocalDOMWindow* window = toLocalDOMWindow(wrapper->CreationContext());
   if (!window) {
     V8ThrowException::throwTypeError(
         info.GetIsolate(),

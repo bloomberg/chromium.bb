@@ -244,10 +244,10 @@ bool {{v8_class_or_partial}}::securityCheck(v8::Local<v8::Context> accessingCont
     return false;  // the frame is gone.
 
   const DOMWindow* targetWindow = V8Window::toImpl(window);
-  return BindingSecurity::shouldAllowAccessTo(toLocalDOMWindow(toDOMWindow(accessingContext)), targetWindow, BindingSecurity::ErrorReportOption::DoNotReport);
+  return BindingSecurity::shouldAllowAccessTo(toLocalDOMWindow(accessingContext), targetWindow, BindingSecurity::ErrorReportOption::DoNotReport);
   {% elif interface_name == 'Location' %}
   {{cpp_class}}* impl = {{v8_class}}::toImpl(accessedObject);
-  return BindingSecurity::shouldAllowAccessTo(toLocalDOMWindow(toDOMWindow(accessingContext)), impl, BindingSecurity::ErrorReportOption::DoNotReport);
+  return BindingSecurity::shouldAllowAccessTo(toLocalDOMWindow(accessingContext), impl, BindingSecurity::ErrorReportOption::DoNotReport);
   {% else %}
   #error "Unexpected security check for interface {{interface_name}}"
   {% endif %}

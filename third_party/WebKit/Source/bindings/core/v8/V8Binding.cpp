@@ -717,21 +717,22 @@ DOMWindow* toDOMWindow(v8::Isolate* isolate, v8::Local<v8::Value> value) {
   return 0;
 }
 
-DOMWindow* toDOMWindow(v8::Local<v8::Context> context) {
+LocalDOMWindow* toLocalDOMWindow(v8::Local<v8::Context> context) {
   if (context.IsEmpty())
     return 0;
-  return toDOMWindow(context->GetIsolate(), context->Global());
+  return toLocalDOMWindow(
+      toDOMWindow(context->GetIsolate(), context->Global()));
 }
 
 LocalDOMWindow* enteredDOMWindow(v8::Isolate* isolate) {
   LocalDOMWindow* window =
-      toLocalDOMWindow(toDOMWindow(isolate->GetEnteredOrMicrotaskContext()));
+      toLocalDOMWindow(isolate->GetEnteredOrMicrotaskContext());
   DCHECK(window);
   return window;
 }
 
 LocalDOMWindow* currentDOMWindow(v8::Isolate* isolate) {
-  return toLocalDOMWindow(toDOMWindow(isolate->GetCurrentContext()));
+  return toLocalDOMWindow(isolate->GetCurrentContext());
 }
 
 ExecutionContext* toExecutionContext(v8::Local<v8::Context> context) {
@@ -760,8 +761,8 @@ ExecutionContext* currentExecutionContext(v8::Isolate* isolate) {
   return toExecutionContext(isolate->GetCurrentContext());
 }
 
-Frame* toFrameIfNotDetached(v8::Local<v8::Context> context) {
-  DOMWindow* window = toDOMWindow(context);
+LocalFrame* toLocalFrameIfNotDetached(v8::Local<v8::Context> context) {
+  LocalDOMWindow* window = toLocalDOMWindow(context);
   if (window && window->isCurrentlyDisplayedInFrame())
     return window->frame();
   // We return 0 here because |context| is detached from the Frame. If we
@@ -801,7 +802,7 @@ v8::Local<v8::Context> toV8Context(ExecutionContext* context,
   return v8::Local<v8::Context>();
 }
 
-v8::Local<v8::Context> toV8Context(Frame* frame, DOMWrapperWorld& world) {
+v8::Local<v8::Context> toV8Context(LocalFrame* frame, DOMWrapperWorld& world) {
   if (!frame)
     return v8::Local<v8::Context>();
   v8::Local<v8::Context> context = toV8ContextEvenIfDetached(frame, world);
@@ -809,13 +810,13 @@ v8::Local<v8::Context> toV8Context(Frame* frame, DOMWrapperWorld& world) {
     return v8::Local<v8::Context>();
   ScriptState* scriptState = ScriptState::from(context);
   if (scriptState->contextIsValid()) {
-    ASSERT(toFrameIfNotDetached(context) == frame);
+    DCHECK_EQ(frame, toLocalFrameIfNotDetached(context));
     return scriptState->context();
   }
   return v8::Local<v8::Context>();
 }
 
-v8::Local<v8::Context> toV8ContextEvenIfDetached(Frame* frame,
+v8::Local<v8::Context> toV8ContextEvenIfDetached(LocalFrame* frame,
                                                  DOMWrapperWorld& world) {
   ASSERT(frame);
   return frame->windowProxy(world)->contextIfInitialized();

@@ -83,7 +83,7 @@ V8DOMActivityLogger* V8DOMActivityLogger::currentActivityLogger() {
 
   v8::HandleScope handleScope(isolate);
   v8::Local<v8::Context> context = isolate->GetCurrentContext();
-  if (context.IsEmpty() || !toDOMWindow(context))
+  if (context.IsEmpty() || !toLocalDOMWindow(context))
     return 0;
 
   V8PerContextData* contextData = ScriptState::from(context)->perContextData();
@@ -101,7 +101,7 @@ V8DOMActivityLogger::currentActivityLoggerIfIsolatedWorld() {
 
   v8::HandleScope handleScope(isolate);
   v8::Local<v8::Context> context = isolate->GetCurrentContext();
-  if (context.IsEmpty() || !toDOMWindow(context))
+  if (context.IsEmpty() || !toLocalDOMWindow(context))
     return 0;
 
   ScriptState* scriptState = ScriptState::from(context);

@@ -47,7 +47,7 @@ EventListener* V8EventListenerHelper::getEventListener(
     DCHECK(!isAttribute);
     return V8EventListenerHelper::existingEventListener(value, scriptState);
   }
-  if (toDOMWindow(scriptState->context()))
+  if (toLocalDOMWindow(scriptState->context()))
     return V8EventListenerHelper::ensureEventListener<V8EventListener>(
         value, isAttribute, scriptState);
   return V8EventListenerHelper::ensureEventListener<

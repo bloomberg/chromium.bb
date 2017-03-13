@@ -110,11 +110,11 @@ void V8WrapperInstantiationScope::securityCheck(
     return;
   // If the context is different, we need to make sure that the current
   // context has access to the creation context.
-  Frame* frame = toFrameIfNotDetached(contextForWrapper);
+  LocalFrame* frame = toLocalFrameIfNotDetached(contextForWrapper);
   if (!frame) {
     // Sandbox detached frames - they can't create cross origin objects.
     LocalDOMWindow* callingWindow = currentDOMWindow(isolate);
-    DOMWindow* targetWindow = toDOMWindow(contextForWrapper);
+    LocalDOMWindow* targetWindow = toLocalDOMWindow(contextForWrapper);
     // TODO(jochen): Currently, Location is the only object for which we can
     // reach this code path. Should be generalized.
     ExceptionState exceptionState(isolate, ExceptionState::ConstructionContext,
@@ -147,7 +147,7 @@ void V8WrapperInstantiationScope::convertException() {
   ExceptionState exceptionState(isolate, ExceptionState::ConstructionContext,
                                 "Location");
   LocalDOMWindow* callingWindow = currentDOMWindow(isolate);
-  DOMWindow* targetWindow = toDOMWindow(m_context);
+  LocalDOMWindow* targetWindow = toLocalDOMWindow(m_context);
   exceptionState.throwSecurityError(
       targetWindow->sanitizedCrossDomainAccessErrorMessage(callingWindow),
       targetWindow->crossDomainAccessErrorMessage(callingWindow));

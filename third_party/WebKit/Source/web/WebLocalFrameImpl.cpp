@@ -510,8 +510,7 @@ WebLocalFrame* WebLocalFrame::frameForCurrentContext() {
 }
 
 WebLocalFrame* WebLocalFrame::frameForContext(v8::Local<v8::Context> context) {
-  return WebLocalFrameImpl::fromFrame(
-      toLocalFrame(toFrameIfNotDetached(context)));
+  return WebLocalFrameImpl::fromFrame(toLocalFrameIfNotDetached(context));
 }
 
 WebLocalFrame* WebLocalFrame::fromFrameOwnerElement(const WebElement& element) {
