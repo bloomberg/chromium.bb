@@ -262,7 +262,7 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
                     '--tests-root',
                     '/mock-checkout/third_party/WebKit/LayoutTests/external/wpt'
                 ],
-                ['git', 'cl', 'try', '-b', 'MOCK Try Linux']
+                ['git', 'cl', 'try', '-m', 'tryserver.blink', '-b', 'MOCK Try Linux']
             ])
 
     def test_rebaseline_calls(self):
@@ -293,7 +293,7 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
         self.command.trigger_builds(['MOCK Try Linux', 'MOCK Try Win'])
         self.assertEqual(
             self.tool.executive.calls,
-            [['git', 'cl', 'try', '-b', 'MOCK Try Linux', '-b', 'MOCK Try Win']])
+            [['git', 'cl', 'try', '-m', 'tryserver.blink', '-b', 'MOCK Try Linux', '-b', 'MOCK Try Win']])
         self.assertLog([
             'INFO: Triggering try jobs for:\n',
             'INFO:   MOCK Try Linux\n',

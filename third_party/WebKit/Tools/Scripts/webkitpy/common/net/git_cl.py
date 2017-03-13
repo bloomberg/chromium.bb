@@ -35,6 +35,18 @@ class GitCL(object):
             command += ['--auth-refresh-token-json', self._auth_refresh_token_json]
         return self._host.executive.run_command(command, cwd=self._cwd)
 
+    def trigger_try_jobs(self, builders=None):
+        builders = builders or self._host.builders.all_try_builder_names()
+        if 'android_blink_rel' in builders:
+            self.run(['try', '-b', 'android_blink_rel'])
+            builders.remove('android_blink_rel')
+        # TODO(qyearsley): Stop explicitly adding the master name when
+        # git cl try can get the master name; see http://crbug.com/700523.
+        command = ['try', '-m', 'tryserver.blink']
+        for builder in sorted(builders):
+            command.extend(['-b', builder])
+        self.run(command)
+
     def get_issue_number(self):
         return self.run(['issue']).split()[2]
 

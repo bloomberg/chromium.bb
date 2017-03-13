@@ -115,11 +115,9 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
 
     def trigger_builds(self, builders):
         _log.info('Triggering try jobs for:')
-        command = ['try']
         for builder in sorted(builders):
             _log.info('  %s', builder)
-            command.extend(['-b', builder])
-        self.git_cl().run(command)
+        self.git_cl().trigger_try_jobs(builders)
 
     def builders_with_no_results(self, builds):
         """Returns the set of builders that don't have finished results."""

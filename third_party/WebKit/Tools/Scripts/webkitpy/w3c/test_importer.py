@@ -344,9 +344,10 @@ class TestImporter(object):
         _log.info('Issue: %s', self.git_cl.run(['issue']).strip())
 
         # First, try on Blink try bots in order to get any new baselines.
+        # TODO(qyearsley): Make this faster by triggering all try jobs in
+        # one invocation.
         _log.info('Triggering try jobs.')
-        for try_bot in self.host.builders.all_try_builder_names():
-            self.git_cl.run(['try', '-b', try_bot])
+        self.git_cl.trigger_try_jobs()
         try_results = self.git_cl.wait_for_try_jobs(
             poll_delay_seconds=POLL_DELAY_SECONDS, timeout_seconds=TIMEOUT_SECONDS)
 
