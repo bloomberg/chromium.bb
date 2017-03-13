@@ -302,6 +302,14 @@ blink::Animation* InspectorAnimationAgent::animationClone(
       for (auto& oldKeyframe : oldKeyframes)
         newKeyframes.push_back(toAnimatableValueKeyframe(oldKeyframe.get()));
       newModel = AnimatableValueKeyframeEffectModel::create(newKeyframes);
+    } else if (oldModel->isTransitionKeyframeEffectModel()) {
+      TransitionKeyframeEffectModel* oldTransitionKeyframeModel =
+          toTransitionKeyframeEffectModel(oldModel);
+      KeyframeVector oldKeyframes = oldTransitionKeyframeModel->getFrames();
+      TransitionKeyframeVector newKeyframes;
+      for (auto& oldKeyframe : oldKeyframes)
+        newKeyframes.push_back(toTransitionKeyframe(oldKeyframe.get()));
+      newModel = TransitionKeyframeEffectModel::create(newKeyframes);
     }
 
     KeyframeEffect* newEffect = KeyframeEffect::create(
@@ -372,15 +380,15 @@ Response InspectorAnimationAgent::setTiming(const String& animationId,
   if (type == AnimationType::CSSTransition) {
     KeyframeEffect* effect = toKeyframeEffect(animation->effect());
     KeyframeEffectModelBase* model = toKeyframeEffectModelBase(effect->model());
-    const AnimatableValueKeyframeEffectModel* oldModel =
-        toAnimatableValueKeyframeEffectModel(model);
+    const TransitionKeyframeEffectModel* oldModel =
+        toTransitionKeyframeEffectModel(model);
     // Refer to CSSAnimations::calculateTransitionUpdateForProperty() for the
     // structure of transitions.
     const KeyframeVector& frames = oldModel->getFrames();
     ASSERT(frames.size() == 3);
     KeyframeVector newFrames;
     for (int i = 0; i < 3; i++)
-      newFrames.push_back(toAnimatableValueKeyframe(frames[i]->clone().get()));
+      newFrames.push_back(toTransitionKeyframe(frames[i]->clone().get()));
     // Update delay, represented by the distance between the first two
     // keyframes.
     newFrames[1]->setOffset(delay / (delay + duration));

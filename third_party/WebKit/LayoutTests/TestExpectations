@@ -1280,6 +1280,8 @@ crbug.com/472330 fast/borders/border-image-outset-split-inline-vertical-lr.html 
 crbug.com/472330 fast/writing-mode/box-shadow-vertical-lr.html [ Failure ]
 crbug.com/472330 fast/writing-mode/box-shadow-vertical-rl.html [ Failure ]
 
+crbug.com/700795 [ Mac ] inspector/animation/animation-transition-setTiming-crash.html [ Timeout Pass ]
+
 # Flaky on Win10 and Win7
 crbug.com/619539 [ Win ] http/tests/workers/terminate-during-sync-operation-file.html [ Pass Timeout ]
 crbug.com/619539 [ Win ] virtual/mojo-loading/http/tests/workers/terminate-during-sync-operation-file.html [ Pass Timeout ]
