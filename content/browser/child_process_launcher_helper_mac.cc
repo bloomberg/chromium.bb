@@ -158,6 +158,9 @@ void ChildProcessLauncherHelper::SetRegisteredFilesForService(
 }
 
 // static
+void ChildProcessLauncherHelper::ResetRegisteredFilesForTesting() {}
+
+// static
 base::File OpenFileToShare(const base::FilePath& path,
                            base::MemoryMappedFile::Region* region) {
   // Not used yet (until required files are described in the service manifest on

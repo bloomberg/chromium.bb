@@ -124,5 +124,8 @@ void ChildProcessLauncherHelper::SetRegisteredFilesForService(
   DCHECK(required_files.empty());
 }
 
+// static
+void ChildProcessLauncherHelper::ResetRegisteredFilesForTesting() {}
+
 }  // namespace internal
 }  // namespace content

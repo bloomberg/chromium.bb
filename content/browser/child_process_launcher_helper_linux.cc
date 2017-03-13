@@ -152,6 +152,11 @@ void ChildProcessLauncherHelper::SetRegisteredFilesForService(
 }
 
 // static
+void ChildProcessLauncherHelper::ResetRegisteredFilesForTesting() {
+  ResetFilesToShareForTestingPosix();
+}
+
+// static
 base::File OpenFileToShare(const base::FilePath& path,
                            base::MemoryMappedFile::Region* region) {
   base::FilePath exe_dir;

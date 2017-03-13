@@ -4,6 +4,7 @@
 
 #include "content/public/test/test_service_manager_context.h"
 
+#include "content/browser/child_process_launcher.h"
 #include "content/browser/service_manager/service_manager_context.h"
 
 namespace content {
@@ -11,6 +12,8 @@ namespace content {
 TestServiceManagerContext::TestServiceManagerContext()
     : context_(new ServiceManagerContext) {}
 
-TestServiceManagerContext::~TestServiceManagerContext() {}
+TestServiceManagerContext::~TestServiceManagerContext() {
+  ChildProcessLauncher::ResetRegisteredFilesForTesting();
+}
 
 }  // namespace content

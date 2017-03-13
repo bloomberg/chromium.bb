@@ -159,6 +159,11 @@ void ChildProcessLauncher::SetRegisteredFilesForService(
       service_name, std::move(required_files));
 }
 
+// static
+void ChildProcessLauncher::ResetRegisteredFilesForTesting() {
+  ChildProcessLauncherHelper::ResetRegisteredFilesForTesting();
+}
+
 ChildProcessLauncher::Client* ChildProcessLauncher::ReplaceClientForTest(
     Client* client) {
   Client* ret = client_;

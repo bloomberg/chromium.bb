@@ -141,5 +141,9 @@ void SetFilesToShareForServicePosix(const std::string& service_name,
   GetRequiredFilesByServiceMap()[service_name] = std::move(required_files);
 }
 
+void ResetFilesToShareForTestingPosix() {
+  GetRequiredFilesByServiceMap().clear();
+}
+
 }  // namespace internal
 }  // namespace content

@@ -160,6 +160,8 @@ class ChildProcessLauncherHelper :
       const std::string& service_name,
       catalog::RequiredFileMap required_files);
 
+  static void ResetRegisteredFilesForTesting();
+
  private:
   friend class base::RefCountedThreadSafe<ChildProcessLauncherHelper>;
 

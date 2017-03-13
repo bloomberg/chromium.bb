@@ -43,6 +43,9 @@ std::unique_ptr<FileDescriptorInfo> CreateDefaultPosixFilesToMap(
 void SetFilesToShareForServicePosix(const std::string& service_name,
                                     catalog::RequiredFileMap required_files);
 
+// Called from unit_tests in order to reset all previously registered files.
+void ResetFilesToShareForTestingPosix();
+
 // Opens the file in read mode at the given path. Note that the path should be
 // relative and the way it is resolved is platform specific.
 // |region| is set to the region of the file that should be read.
