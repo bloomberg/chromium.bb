@@ -279,6 +279,8 @@ static void GLibLogHandler(const gchar* log_domain,
     LOG(ERROR) << message;
   } else if (strstr(message, "Theme parsing error")) {
     LOG(ERROR) << message;
+  } else if (strstr(message, "unknown signature")) {
+    LOG(ERROR) << message;
   } else {
     LOG(DFATAL) << log_domain << ": " << message;
   }
