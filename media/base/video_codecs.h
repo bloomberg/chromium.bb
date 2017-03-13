@@ -13,6 +13,8 @@
 
 namespace media {
 
+class VideoColorSpace;
+
 // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.media
 enum VideoCodec {
   // These values are histogrammed over time; do not change their ordinal
@@ -104,7 +106,7 @@ std::string MEDIA_EXPORT GetProfileName(VideoCodecProfile profile);
 MEDIA_EXPORT bool ParseNewStyleVp9CodecID(const std::string& codec_id,
                                           VideoCodecProfile* profile,
                                           uint8_t* level_idc,
-                                          gfx::ColorSpace::TransferID* eotf);
+                                          VideoColorSpace* color_space);
 
 MEDIA_EXPORT bool ParseLegacyVp9CodecID(const std::string& codec_id,
                                         VideoCodecProfile* profile,

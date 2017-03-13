@@ -11,6 +11,7 @@
 #include "media/base/key_system_properties.h"
 #include "media/base/media_export.h"
 #include "media/base/video_codecs.h"
+#include "media/base/video_color_space.h"
 #include "ui/gfx/color_space.h"
 #include "url/gurl.h"
 
@@ -32,7 +33,7 @@ struct MEDIA_EXPORT VideoConfig {
   VideoCodec codec;
   VideoCodecProfile profile;
   int level;
-  gfx::ColorSpace::TransferID eotf;
+  media::VideoColorSpace color_space;
 };
 
 struct MEDIA_EXPORT KeySystemInfoForUMA {

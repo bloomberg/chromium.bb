@@ -183,62 +183,120 @@ TEST_F(RenderMediaClientTest, IsKeySystemsUpdateNeeded) {
 
 TEST_F(RenderMediaClientTest, IsSupportedVideoConfigBasics) {
   // Default to common 709.
-  const gfx::ColorSpace::TransferID kTransferId =
-      gfx::ColorSpace::TransferID::BT709;
+  const media::VideoColorSpace kColorSpace = media::VideoColorSpace::BT709();
 
   // Some codecs do not have a notion of level.
   const int kUnspecifiedLevel = 0;
 
   // Expect support for baseline configuration of known codecs.
   EXPECT_TRUE(render_media_client_->IsSupportedVideoConfig(
-      {media::kCodecH264, media::H264PROFILE_BASELINE, 1, kTransferId}));
+      {media::kCodecH264, media::H264PROFILE_BASELINE, 1, kColorSpace}));
   EXPECT_TRUE(render_media_client_->IsSupportedVideoConfig(
       {media::kCodecVP8, media::VP8PROFILE_ANY, kUnspecifiedLevel,
-       kTransferId}));
+       kColorSpace}));
   EXPECT_TRUE(render_media_client_->IsSupportedVideoConfig(
       {media::kCodecVP9, media::VP9PROFILE_PROFILE0, kUnspecifiedLevel,
-       kTransferId}));
+       kColorSpace}));
   EXPECT_TRUE(render_media_client_->IsSupportedVideoConfig(
       {media::kCodecTheora, media::VIDEO_CODEC_PROFILE_UNKNOWN,
-       kUnspecifiedLevel, kTransferId}));
+       kUnspecifiedLevel, kColorSpace}));
 
   // Expect non-support for the following.
   EXPECT_FALSE(render_media_client_->IsSupportedVideoConfig(
       {media::kUnknownVideoCodec, media::VIDEO_CODEC_PROFILE_UNKNOWN,
-       kUnspecifiedLevel, kTransferId}));
+       kUnspecifiedLevel, kColorSpace}));
   EXPECT_FALSE(render_media_client_->IsSupportedVideoConfig(
       {media::kCodecVC1, media::VIDEO_CODEC_PROFILE_UNKNOWN, kUnspecifiedLevel,
-       kTransferId}));
+       kColorSpace}));
   EXPECT_FALSE(render_media_client_->IsSupportedVideoConfig(
       {media::kCodecMPEG2, media::VIDEO_CODEC_PROFILE_UNKNOWN,
-       kUnspecifiedLevel, kTransferId}));
+       kUnspecifiedLevel, kColorSpace}));
   EXPECT_FALSE(render_media_client_->IsSupportedVideoConfig(
       {media::kCodecMPEG4, media::VIDEO_CODEC_PROFILE_UNKNOWN,
-       kUnspecifiedLevel, kTransferId}));
+       kUnspecifiedLevel, kColorSpace}));
   EXPECT_FALSE(render_media_client_->IsSupportedVideoConfig(
       {media::kCodecHEVC, media::VIDEO_CODEC_PROFILE_UNKNOWN, kUnspecifiedLevel,
-       kTransferId}));
+       kColorSpace}));
 }
 
 TEST_F(RenderMediaClientTest, IsSupportedVideoConfig_VP9TransferFunctions) {
+  size_t num_found = 0;
   // TODO(hubbe): Verify support for HDR codecs when color management enabled.
-  const std::set<gfx::ColorSpace::TransferID> kSupportedTransfers = {
-      gfx::ColorSpace::TransferID::GAMMA22,
-      gfx::ColorSpace::TransferID::BT709,
-      gfx::ColorSpace::TransferID::SMPTE170M,
-      gfx::ColorSpace::TransferID::BT2020_10,
-      gfx::ColorSpace::TransferID::BT2020_12,
-      gfx::ColorSpace::TransferID::IEC61966_2_1,
+  const std::set<media::VideoColorSpace::TransferID> kSupportedTransfers = {
+      media::VideoColorSpace::TransferID::GAMMA22,
+      media::VideoColorSpace::TransferID::UNSPECIFIED,
+      media::VideoColorSpace::TransferID::BT709,
+      media::VideoColorSpace::TransferID::SMPTE170M,
+      media::VideoColorSpace::TransferID::BT2020_10,
+      media::VideoColorSpace::TransferID::BT2020_12,
+      media::VideoColorSpace::TransferID::IEC61966_2_1,
   };
 
-  for (int i = 0; i <= static_cast<int>(gfx::ColorSpace::TransferID::LAST);
+  for (int i = 0; i <= (1 << (8 * sizeof(media::VideoColorSpace::TransferID)));
        i++) {
-    gfx::ColorSpace::TransferID transfer =
-        static_cast<gfx::ColorSpace::TransferID>(i);
-    EXPECT_EQ(kSupportedTransfers.find(transfer) != kSupportedTransfers.end(),
-              render_media_client_->IsSupportedVideoConfig(
-                  {media::kCodecVP9, media::VP9PROFILE_PROFILE0, 1, transfer}));
+    media::VideoColorSpace color_space = media::VideoColorSpace::BT709();
+    color_space.transfer = media::VideoColorSpace::GetTransferID(i);
+    bool found = kSupportedTransfers.find(color_space.transfer) !=
+                 kSupportedTransfers.end();
+    if (found)
+      num_found++;
+    EXPECT_EQ(found, render_media_client_->IsSupportedVideoConfig(
+                         {media::kCodecVP9, media::VP9PROFILE_PROFILE0, 1,
+                          color_space}));
   }
+  EXPECT_EQ(kSupportedTransfers.size(), num_found);
+}
+
+TEST_F(RenderMediaClientTest, IsSupportedVideoConfig_VP9Primaries) {
+  size_t num_found = 0;
+  // TODO(hubbe): Verify support for HDR codecs when color management enabled.
+  const std::set<media::VideoColorSpace::PrimaryID> kSupportedPrimaries = {
+      media::VideoColorSpace::PrimaryID::BT709,
+      media::VideoColorSpace::PrimaryID::UNSPECIFIED,
+      media::VideoColorSpace::PrimaryID::BT470M,
+      media::VideoColorSpace::PrimaryID::BT470BG,
+      media::VideoColorSpace::PrimaryID::SMPTE170M,
+  };
+
+  for (int i = 0; i <= (1 << (8 * sizeof(media::VideoColorSpace::PrimaryID)));
+       i++) {
+    media::VideoColorSpace color_space = media::VideoColorSpace::BT709();
+    color_space.primaries = media::VideoColorSpace::GetPrimaryID(i);
+    bool found = kSupportedPrimaries.find(color_space.primaries) !=
+                 kSupportedPrimaries.end();
+    if (found)
+      num_found++;
+    EXPECT_EQ(found, render_media_client_->IsSupportedVideoConfig(
+                         {media::kCodecVP9, media::VP9PROFILE_PROFILE0, 1,
+                          color_space}));
+  }
+  EXPECT_EQ(kSupportedPrimaries.size(), num_found);
+}
+
+TEST_F(RenderMediaClientTest, IsSupportedVideoConfig_VP9Matrix) {
+  size_t num_found = 0;
+  // TODO(hubbe): Verify support for HDR codecs when color management enabled.
+  const std::set<media::VideoColorSpace::MatrixID> kSupportedMatrix = {
+      media::VideoColorSpace::MatrixID::BT709,
+      media::VideoColorSpace::MatrixID::UNSPECIFIED,
+      media::VideoColorSpace::MatrixID::BT470BG,
+      media::VideoColorSpace::MatrixID::SMPTE170M,
+      media::VideoColorSpace::MatrixID::BT2020_NCL,
+  };
+
+  for (int i = 0; i <= (1 << (8 * sizeof(media::VideoColorSpace::MatrixID)));
+       i++) {
+    media::VideoColorSpace color_space = media::VideoColorSpace::BT709();
+    color_space.matrix = media::VideoColorSpace::GetMatrixID(i);
+    bool found =
+        kSupportedMatrix.find(color_space.matrix) != kSupportedMatrix.end();
+    if (found)
+      num_found++;
+    EXPECT_EQ(found, render_media_client_->IsSupportedVideoConfig(
+                         {media::kCodecVP9, media::VP9PROFILE_PROFILE0, 1,
+                          color_space}));
+  }
+  EXPECT_EQ(kSupportedMatrix.size(), num_found);
 }
 
 }  // namespace content

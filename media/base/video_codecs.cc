@@ -8,6 +8,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
+#include "media/base/video_color_space.h"
 
 namespace media {
 
@@ -94,73 +95,12 @@ std::string GetProfileName(VideoCodecProfile profile) {
   return "";
 }
 
-// Described in ISO 23001-8:2016 Table 3.
-bool ParseVp9Eotf(const int value, gfx::ColorSpace::TransferID* eotf) {
-  switch (value) {
-    case 1:
-      *eotf = gfx::ColorSpace::TransferID::BT709;
-      break;
-    case 2:
-      // "2" is interpreted as "Unspecified"
-      *eotf = gfx::ColorSpace::TransferID::INVALID;
-      break;
-    case 4:
-      *eotf = gfx::ColorSpace::TransferID::GAMMA22;
-      break;
-    case 5:
-      *eotf = gfx::ColorSpace::TransferID::GAMMA28;
-      break;
-    case 6:
-      *eotf = gfx::ColorSpace::TransferID::SMPTE170M;
-      break;
-    case 7:
-      *eotf = gfx::ColorSpace::TransferID::SMPTE240M;
-      break;
-    case 8:
-      *eotf = gfx::ColorSpace::TransferID::LINEAR;
-      break;
-    case 9:
-      *eotf = gfx::ColorSpace::TransferID::LOG;
-      break;
-    case 10:
-      *eotf = gfx::ColorSpace::TransferID::LOG_SQRT;
-      break;
-    case 11:
-      *eotf = gfx::ColorSpace::TransferID::IEC61966_2_4;
-      break;
-    case 12:
-      *eotf = gfx::ColorSpace::TransferID::BT1361_ECG;
-      break;
-    case 13:
-      *eotf = gfx::ColorSpace::TransferID::IEC61966_2_1;
-      break;
-    case 14:
-      *eotf = gfx::ColorSpace::TransferID::BT2020_10;
-      break;
-    case 15:
-      *eotf = gfx::ColorSpace::TransferID::BT2020_12;
-      break;
-    case 16:
-      *eotf = gfx::ColorSpace::TransferID::SMPTEST2084;
-      break;
-    case 17:
-      *eotf = gfx::ColorSpace::TransferID::SMPTEST428_1;
-      break;
-    default:
-      // Includes reserved values of 0, 3, 18 - 255.
-      *eotf = gfx::ColorSpace::TransferID::INVALID;
-      return false;
-  }
-
-  return true;
-}
-
 bool ParseNewStyleVp9CodecID(const std::string& codec_id,
                              VideoCodecProfile* profile,
                              uint8_t* level_idc,
-                             gfx::ColorSpace::TransferID* eotf) {
+                             VideoColorSpace* color_space) {
   // Initialize optional fields to their defaults.
-  *eotf = gfx::ColorSpace::TransferID::BT709;
+  *color_space = VideoColorSpace::BT709();
 
   std::vector<std::string> fields = base::SplitString(
       codec_id, ".", base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
@@ -241,32 +181,26 @@ bool ParseNewStyleVp9CodecID(const std::string& codec_id,
 
   if (values.size() < 4)
     return true;
-  const int color_primaries = values[3];
-  // TODO(chcunningham): parse and bubble up color primaries, described in ISO
-  // 23001-8:2016 Table 2.
-  // Values 0, 3, and 23 - 255 are reserved.
-  if (color_primaries == 0 || color_primaries == 3 || color_primaries > 22) {
-    DVLOG(3) << __func__ << " Invalid color primaries (" << color_primaries
-             << ")";
+  color_space->primaries = VideoColorSpace::GetPrimaryID(values[3]);
+  if (color_space->primaries == VideoColorSpace::PrimaryID::INVALID) {
+    DVLOG(3) << __func__ << " Invalid color primaries (" << values[3] << ")";
     return false;
   }
 
   if (values.size() < 5)
     return true;
-  if (!ParseVp9Eotf(values[4], eotf)) {
+  color_space->transfer = VideoColorSpace::GetTransferID(values[4]);
+  if (color_space->transfer == VideoColorSpace::TransferID::INVALID) {
     DVLOG(3) << __func__ << " Invalid transfer function (" << values[4] << ")";
     return false;
   }
 
-  // TODO(chcunningham): Parse and bubble up the following fields. For now just
-  // doing basic validation.
-
   if (values.size() < 6)
     return true;
-  const int matrix_coefficients = values[5];
-  if (matrix_coefficients > 11) {
-    DVLOG(3) << __func__ << " Invalid matrix coefficients ("
-             << matrix_coefficients << ")";
+  color_space->matrix = VideoColorSpace::GetMatrixID(values[5]);
+  if (color_space->matrix == VideoColorSpace::MatrixID::INVALID) {
+    DVLOG(3) << __func__ << " Invalid matrix coefficients (" << values[5]
+             << ")";
     return false;
   }
 
@@ -278,12 +212,16 @@ bool ParseNewStyleVp9CodecID(const std::string& codec_id,
              << video_full_range_flag << ")";
     return false;
   }
+  color_space->range = video_full_range_flag == 1
+                           ? gfx::ColorSpace::RangeID::FULL
+                           : gfx::ColorSpace::RangeID::LIMITED;
 
   if (values.size() < 8)
     return true;
   const int chroma_subsampling = values[7];
   if (chroma_subsampling > 3 ||
-      (chroma_subsampling != 3 && matrix_coefficients == 0)) {
+      (chroma_subsampling != 3 &&
+       color_space->matrix == VideoColorSpace::MatrixID::RGB)) {
     DVLOG(3) << __func__ << " Invalid chroma subsampling ("
              << chroma_subsampling << ")";
     return false;
@@ -662,11 +600,11 @@ VideoCodec StringToVideoCodec(const std::string& codec_id) {
 
   VideoCodecProfile profile = VIDEO_CODEC_PROFILE_UNKNOWN;
   uint8_t level = 0;
-  gfx::ColorSpace::TransferID eotf = gfx::ColorSpace::TransferID::INVALID;
+  VideoColorSpace color_space;
 
   if (codec_id == "vp8" || codec_id == "vp8.0")
     return kCodecVP8;
-  if (ParseNewStyleVp9CodecID(codec_id, &profile, &level, &eotf) ||
+  if (ParseNewStyleVp9CodecID(codec_id, &profile, &level, &color_space) ||
       ParseLegacyVp9CodecID(codec_id, &profile, &level)) {
     return kCodecVP9;
   }
