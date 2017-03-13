@@ -41,7 +41,9 @@ ExternalComponentLoader::~ExternalComponentLoader() {}
 
 void ExternalComponentLoader::StartLoading() {
   prefs_.reset(new base::DictionaryValue());
+#if defined(GOOGLE_CHROME_BUILD)
   AddExternalExtension(extension_misc::kInAppPaymentsSupportAppId);
+#endif  // defined(GOOGLE_CHROME_BUILD)
 
   if (HotwordServiceFactory::IsHotwordAllowed(profile_))
     AddExternalExtension(extension_misc::kHotwordSharedModuleId);
