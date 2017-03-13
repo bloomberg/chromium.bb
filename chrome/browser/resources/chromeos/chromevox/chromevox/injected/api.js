@@ -129,6 +129,23 @@ if (typeof(goog) != 'undefined' && goog.require) {
    };
 
 
+   /**
+    * Maybe enable MathJaX support.
+    */
+  function maybeEnableMathJaX() {
+     if (!MathJax || !MathJax.Hub || !MathJax.Hub.Register ||
+         !MathJax.Hub.Register.LoadHook)
+       return;
+
+     MathJax.Hub.Register.LoadHook(
+         '[a11y]/explorer.js',
+         function() {
+           MathJax.Extension.explorer.Enable(true, true);
+         });
+     MathJax.Ajax.Require('[a11y]/explorer.js');
+   }
+
+
    /*
     * Public API.
     */
@@ -164,6 +181,7 @@ if (typeof(goog) != 'undefined' && goog.require) {
     */
    cvox.Api.internalEnable = function() {
      isActive_ = true;
+     maybeEnableMathJaX();
      if (!implementation) {
        connect_();
      }
