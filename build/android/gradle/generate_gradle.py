@@ -249,7 +249,7 @@ class _ProjectContextGenerator(object):
   def _GenJniLibs(self, root_entry):
     libraries = []
     for entry in self._GetEntries(root_entry):
-      libraries += entry.BuildConfig().get('native', [])
+      libraries += entry.BuildConfig().get('native', {}).get('libraries', [])
     if libraries:
       return _CreateJniLibsDir(constants.GetOutDirectory(),
           self.EntryOutputDir(root_entry), libraries)
