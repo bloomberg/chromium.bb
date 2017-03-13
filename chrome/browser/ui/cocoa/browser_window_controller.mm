@@ -1654,6 +1654,10 @@ bool IsTabDetachingInFullscreenEnabled() {
       [[AvatarIconController alloc] initWithBrowser:browser_.get()]);
   }
   view = [avatarButtonController_ view];
+  if (cocoa_l10n_util::ShouldFlipWindowControlsInRTL())
+    [view setAutoresizingMask:NSViewMaxXMargin | NSViewMinYMargin];
+  else
+    [view setAutoresizingMask:NSViewMinXMargin | NSViewMinYMargin];
   [view setHidden:![self shouldShowAvatar]];
 
   // Install the view.

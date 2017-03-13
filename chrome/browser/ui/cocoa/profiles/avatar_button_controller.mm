@@ -18,7 +18,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
-#include "chrome/browser/ui/cocoa/l10n_util.h"
 #import "chrome/browser/ui/cocoa/profiles/avatar_button.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
@@ -184,10 +183,6 @@ const CGFloat kFrameColorDarkUpperBound = 0.33;
     [[avatarButton cell] setHighlightsBy:NSNoCellMask];
     [avatarButton setBordered:YES];
 
-    if (cocoa_l10n_util::ShouldFlipWindowControlsInRTL())
-      [avatarButton setAutoresizingMask:NSViewMaxXMargin | NSViewMinYMargin];
-    else
-      [avatarButton setAutoresizingMask:NSViewMinXMargin | NSViewMinYMargin];
     [avatarButton setTarget:self];
     [avatarButton setAction:@selector(buttonClicked:)];
     [avatarButton setRightAction:@selector(buttonClicked:)];
