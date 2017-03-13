@@ -26,9 +26,9 @@ namespace chromeos {
 // messages.  It can be tested with the following command:
 //
 // % dbus-send --system --type=method_call --print-reply
-//     --dest=org.chromium.LivenessService
-//     /org/chromium/LivenessService
-//     org.chromium.LivenessServiceInterface.CheckLiveness
+//     --dest=org.chromium.LibCrosService
+//     /org/chromium/LibCrosService
+//     org.chromium.LibCrosServiceInterface.CheckLiveness
 //
 // -> method return sender=:1.9 -> dest=:1.27 reply_serial=2
 //
@@ -36,9 +36,7 @@ namespace chromeos {
 class CHROMEOS_EXPORT LivenessServiceProvider
     : public CrosDBusService::ServiceProviderInterface {
  public:
-  // TODO(teravest): Remove the service_interface argument once this is no
-  // longer used by LibCrosService.
-  explicit LivenessServiceProvider(const std::string& service_interface);
+  LivenessServiceProvider();
   ~LivenessServiceProvider() override;
 
   // CrosDBusService::ServiceProviderInterface overrides:
@@ -54,8 +52,6 @@ class CHROMEOS_EXPORT LivenessServiceProvider
   // Called on UI thread in response to a D-Bus request.
   void CheckLiveness(dbus::MethodCall* method_call,
                      dbus::ExportedObject::ResponseSender response_sender);
-
-  std::string service_interface_;
 
   // Keep this last so that all weak pointers will be invalidated at the
   // beginning of destruction.
