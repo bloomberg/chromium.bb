@@ -26,7 +26,6 @@
 #include "core/layout/svg/LayoutSVGResourceMasker.h"
 #include "core/layout/svg/LayoutSVGResourcePaintServer.h"
 #include "core/style/ComputedStyle.h"
-#include "core/svg/SVGFilterElement.h"
 #include "core/svg/SVGGradientElement.h"
 #include "core/svg/SVGPatternElement.h"
 #include "core/svg/SVGURIReference.h"
@@ -102,8 +101,8 @@ static HashSet<AtomicString>& fillAndStrokeTags() {
 static HashSet<AtomicString>& chainableResourceTags() {
   DEFINE_STATIC_LOCAL(HashSet<AtomicString>, s_tagList,
                       ({
-                          linearGradientTag.localName(), filterTag.localName(),
-                          patternTag.localName(), radialGradientTag.localName(),
+                          linearGradientTag.localName(), patternTag.localName(),
+                          radialGradientTag.localName(),
                       }));
   return s_tagList;
 }
@@ -114,8 +113,6 @@ static inline AtomicString targetReferenceFromResource(SVGElement& element) {
     target = toSVGPatternElement(element).href()->currentValue()->value();
   else if (isSVGGradientElement(element))
     target = toSVGGradientElement(element).href()->currentValue()->value();
-  else if (isSVGFilterElement(element))
-    target = toSVGFilterElement(element).href()->currentValue()->value();
   else
     ASSERT_NOT_REACHED();
 
