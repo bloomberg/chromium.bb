@@ -389,10 +389,6 @@ String Deprecation::deprecationMessage(UseCounter::Feature feature) {
           "redirected response. This will result in an error in %s.",
           milestoneString(M59));
 
-    case UseCounter::CSSSelectorInternalMediaControlsCastButton:
-      return willBeRemoved("-internal-media-controls-cast-button selector", M59,
-                           "5734009183141888");
-
     case UseCounter::CSSSelectorInternalMediaControlsOverlayCastButton:
       return willBeRemoved(
           "-internal-media-controls-overlay-cast-button selector", M59,

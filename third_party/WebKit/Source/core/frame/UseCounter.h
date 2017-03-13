@@ -795,7 +795,6 @@ class CORE_EXPORT UseCounter {
     NodeFilterIsFunction = 1059,
     NodeFilterIsObject = 1060,
     CSSSelectorInternalPseudoListBox = 1062,
-    CSSSelectorInternalMediaControlsCastButton = 1063,
     CSSSelectorInternalMediaControlsOverlayCastButton = 1064,
     CSSSelectorInternalPseudoSpatialNavigationFocus = 1065,
     SameOriginTextScript = 1066,

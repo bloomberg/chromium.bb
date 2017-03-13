@@ -850,10 +850,8 @@ void CSSSelectorParser::recordUsageAndDeprecations(
           break;
         case CSSSelector::PseudoWebKitCustomElement:
           if (m_context->mode() != UASheetMode) {
-            if (current->value() == "-internal-media-controls-cast-button") {
-              feature = UseCounter::CSSSelectorInternalMediaControlsCastButton;
-            } else if (current->value() ==
-                       "-internal-media-controls-overlay-cast-button") {
+            if (current->value() ==
+                "-internal-media-controls-overlay-cast-button") {
               feature =
                   UseCounter::CSSSelectorInternalMediaControlsOverlayCastButton;
             } else if (current->value() ==

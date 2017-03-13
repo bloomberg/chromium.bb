@@ -287,8 +287,6 @@ struct NameToPseudoStruct {
 // These tables should be kept sorted.
 const static NameToPseudoStruct pseudoTypeWithoutArgumentsMap[] = {
     {"-internal-list-box", CSSSelector::PseudoListBox},
-    {"-internal-media-controls-cast-button",
-     CSSSelector::PseudoWebKitCustomElement},
     {"-internal-media-controls-overlay-cast-button",
      CSSSelector::PseudoWebKitCustomElement},
     {"-internal-media-controls-text-track-list",
