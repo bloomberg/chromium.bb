@@ -4,18 +4,15 @@
 
 #include "ash/common/system/chromeos/screen_security/screen_tray_item.h"
 
-#include "ash/common/material_design/material_design_controller.h"
-#include "ash/common/shelf/wm_shelf_util.h"
-#include "ash/common/system/tray/fixed_sized_image_view.h"
+#include "ash/common/system/tray/system_tray.h"
 #include "ash/common/system/tray/tray_constants.h"
 #include "ash/common/system/tray/tray_popup_item_style.h"
 #include "ash/common/system/tray/tray_popup_utils.h"
-#include "ash/resources/grit/ash_resources.h"
 #include "ash/resources/vector_icons/vector_icons.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/message_center/message_center.h"
 #include "ui/views/controls/button/label_button.h"
+#include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/fill_layout.h"
 
@@ -26,14 +23,8 @@ namespace tray {
 ScreenTrayView::ScreenTrayView(ScreenTrayItem* screen_tray_item)
     : TrayItemView(screen_tray_item), screen_tray_item_(screen_tray_item) {
   CreateImageView();
-  if (MaterialDesignController::UseMaterialDesignSystemIcons()) {
-    image_view()->SetImage(
-        gfx::CreateVectorIcon(kSystemTrayScreenShareIcon, kTrayIconColor));
-  } else {
-    image_view()->SetImage(ui::ResourceBundle::GetSharedInstance()
-                               .GetImageNamed(IDR_AURA_UBER_TRAY_SCREENSHARE)
-                               .ToImageSkia());
-  }
+  image_view()->SetImage(
+      gfx::CreateVectorIcon(kSystemTrayScreenShareIcon, kTrayIconColor));
   Update();
 }
 
@@ -83,18 +74,10 @@ void ScreenStatusView::ButtonPressed(views::Button* sender,
 }
 
 void ScreenStatusView::CreateItems() {
-  const bool use_md = MaterialDesignController::IsSystemTrayMenuMaterial();
   icon_ = TrayPopupUtils::CreateMainImageView();
   icon_->SetImage(gfx::CreateVectorIcon(
       kSystemMenuScreenShareIcon, TrayPopupItemStyle::GetIconColor(
                                       TrayPopupItemStyle::ColorStyle::ACTIVE)));
-  if (!use_md) {
-    set_background(views::Background::CreateSolidBackground(kBackgroundColor));
-    ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
-    icon_->SetImage(bundle.GetImageNamed(IDR_AURA_UBER_TRAY_SCREENSHARE_DARK)
-                        .ToImageSkia());
-  }
-
   label_ = TrayPopupUtils::CreateDefaultLabel();
   label_->SetMultiLine(true);
   label_->SetText(label_text_);

@@ -6,6 +6,7 @@
 
 #include "ash/common/system/chromeos/screen_security/screen_capture_tray_item.h"
 #include "ash/common/system/chromeos/screen_security/screen_share_tray_item.h"
+#include "ash/common/system/tray/system_tray.h"
 #include "ash/common/system/tray/system_tray_notifier.h"
 #include "ash/common/system/tray/tray_item_view.h"
 #include "ash/common/test/ash_test.h"
