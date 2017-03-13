@@ -26,6 +26,8 @@
 #ifndef ContentSecurityPolicy_h
 #define ContentSecurityPolicy_h
 
+#include <memory>
+#include <utility>
 #include "bindings/core/v8/ScriptState.h"
 #include "core/CoreExport.h"
 #include "core/dom/ExecutionContext.h"
@@ -36,6 +38,7 @@
 #include "platform/network/ContentSecurityPolicyParsers.h"
 #include "platform/network/HTTPParsers.h"
 #include "platform/network/ResourceRequest.h"
+#include "platform/weborigin/SchemeRegistry.h"
 #include "platform/weborigin/SecurityViolationReportingPolicy.h"
 #include "public/platform/WebInsecureRequestPolicy.h"
 #include "wtf/HashSet.h"
@@ -43,9 +46,6 @@
 #include "wtf/text/StringHash.h"
 #include "wtf/text/TextPosition.h"
 #include "wtf/text/WTFString.h"
-
-#include <memory>
-#include <utility>
 
 namespace WTF {
 class OrdinalNumber;
@@ -366,7 +366,6 @@ class CORE_EXPORT ContentSecurityPolicy
 
   bool urlMatchesSelf(const KURL&) const;
   bool protocolMatchesSelf(const KURL&) const;
-  bool selfMatchesInnerURL() const;
 
   bool experimentalFeaturesEnabled() const;
 
@@ -375,6 +374,9 @@ class CORE_EXPORT ContentSecurityPolicy
   CSPSource* getSelfSource() const { return m_selfSource; }
 
   static bool shouldBypassMainWorld(const ExecutionContext*);
+  static bool shouldBypassContentSecurityPolicy(
+      const KURL&,
+      SchemeRegistry::PolicyAreas = SchemeRegistry::PolicyAreaAll);
 
   static bool isNonceableElement(const Element*);
   static const char* getNonceReplacementString() { return "[Replaced]"; }

@@ -60,7 +60,6 @@
 #include "platform/network/ResourceResponse.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/KnownPorts.h"
-#include "platform/weborigin/SchemeRegistry.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebAddressSpace.h"
@@ -494,7 +493,7 @@ bool isAllowedByAll(const CSPDirectiveListVector& policies,
                     const KURL& url,
                     RedirectStatus redirectStatus,
                     SecurityViolationReportingPolicy reportingPolicy) {
-  if (SchemeRegistry::schemeShouldBypassContentSecurityPolicy(url.protocol()))
+  if (ContentSecurityPolicy::shouldBypassContentSecurityPolicy(url))
     return true;
 
   bool isAllowed = true;
@@ -502,6 +501,7 @@ bool isAllowedByAll(const CSPDirectiveListVector& policies,
     isAllowed &=
         (policy.get()->*allowFromURL)(url, redirectStatus, reportingPolicy);
   }
+
   return isAllowed;
 }
 
@@ -515,7 +515,7 @@ bool isAllowedByAll(const CSPDirectiveListVector& policies,
                     const String& nonce,
                     RedirectStatus redirectStatus,
                     SecurityViolationReportingPolicy reportingPolicy) {
-  if (SchemeRegistry::schemeShouldBypassContentSecurityPolicy(url.protocol()))
+  if (ContentSecurityPolicy::shouldBypassContentSecurityPolicy(url))
     return true;
 
   bool isAllowed = true;
@@ -538,7 +538,7 @@ bool isAllowedByAll(const CSPDirectiveListVector& policies,
                     ParserDisposition parserDisposition,
                     RedirectStatus redirectStatus,
                     SecurityViolationReportingPolicy reportingPolicy) {
-  if (SchemeRegistry::schemeShouldBypassContentSecurityPolicy(url.protocol())) {
+  if (ContentSecurityPolicy::shouldBypassContentSecurityPolicy(url)) {
     // If we're running experimental features, bypass CSP only for
     // non-parser-inserted resources whose scheme otherwise bypasses CSP. If
     // we're not running experimental features, bypass CSP for all resources
@@ -735,7 +735,7 @@ bool ContentSecurityPolicy::allowScriptFromSource(
     ParserDisposition parserDisposition,
     RedirectStatus redirectStatus,
     SecurityViolationReportingPolicy reportingPolicy) const {
-  if (SchemeRegistry::schemeShouldBypassContentSecurityPolicy(url.protocol())) {
+  if (shouldBypassContentSecurityPolicy(url)) {
     UseCounter::count(
         document(),
         parserDisposition == ParserInserted
@@ -868,8 +868,7 @@ bool ContentSecurityPolicy::allowImageFromSource(
     const KURL& url,
     RedirectStatus redirectStatus,
     SecurityViolationReportingPolicy reportingPolicy) const {
-  if (SchemeRegistry::schemeShouldBypassContentSecurityPolicy(
-          url.protocol(), SchemeRegistry::PolicyAreaImage))
+  if (shouldBypassContentSecurityPolicy(url, SchemeRegistry::PolicyAreaImage))
     return true;
   return isAllowedByAll<&CSPDirectiveList::allowImageFromSource>(
       m_policies, url, redirectStatus, reportingPolicy);
@@ -880,8 +879,7 @@ bool ContentSecurityPolicy::allowStyleFromSource(
     const String& nonce,
     RedirectStatus redirectStatus,
     SecurityViolationReportingPolicy reportingPolicy) const {
-  if (SchemeRegistry::schemeShouldBypassContentSecurityPolicy(
-          url.protocol(), SchemeRegistry::PolicyAreaStyle))
+  if (shouldBypassContentSecurityPolicy(url, SchemeRegistry::PolicyAreaStyle))
     return true;
   return isAllowedByAll<&CSPDirectiveList::allowStyleFromSource>(
       m_policies, url, nonce, redirectStatus, reportingPolicy);
@@ -1148,8 +1146,8 @@ void ContentSecurityPolicy::reportViolation(
   // we should at least stop spamming reporting endpoints. See
   // https://crbug.com/524356 for detail.
   if (!violationData.sourceFile().isEmpty() &&
-      SchemeRegistry::schemeShouldBypassContentSecurityPolicy(
-          KURL(ParsedURLString, violationData.sourceFile()).protocol())) {
+      shouldBypassContentSecurityPolicy(
+          KURL(ParsedURLString, violationData.sourceFile()))) {
     return;
   }
 
@@ -1487,18 +1485,6 @@ bool ContentSecurityPolicy::protocolMatchesSelf(const KURL& url) const {
   return equalIgnoringCase(url.protocol(), m_selfProtocol);
 }
 
-bool ContentSecurityPolicy::selfMatchesInnerURL() const {
-  // Due to backwards-compatibility concerns, we allow 'self' to match blob and
-  // filesystem URLs if we're in a context that bypasses Content Security Policy
-  // in the main world.
-  //
-  // TODO(mkwst): Revisit this once embedders have an opportunity to update
-  // their extension models.
-  return m_executionContext &&
-         SchemeRegistry::schemeShouldBypassContentSecurityPolicy(
-             m_executionContext->getSecurityOrigin()->protocol());
-}
-
 bool ContentSecurityPolicy::shouldBypassMainWorld(
     const ExecutionContext* context) {
   if (context && context->isDocument()) {
@@ -1639,6 +1625,18 @@ bool ContentSecurityPolicy::subsumes(const ContentSecurityPolicy& other) const {
   }
 
   return m_policies[0]->subsumes(otherVector);
+}
+
+bool ContentSecurityPolicy::shouldBypassContentSecurityPolicy(
+    const KURL& url,
+    SchemeRegistry::PolicyAreas area) {
+  if (SecurityOrigin::shouldUseInnerURL(url)) {
+    return SchemeRegistry::schemeShouldBypassContentSecurityPolicy(
+        SecurityOrigin::extractInnerURL(url).protocol(), area);
+  } else {
+    return SchemeRegistry::schemeShouldBypassContentSecurityPolicy(
+        url.protocol(), area);
+  }
 }
 
 }  // namespace blink

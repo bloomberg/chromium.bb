@@ -15,6 +15,7 @@
 #include "platform/network/ContentSecurityPolicyParsers.h"
 #include "platform/network/ResourceRequest.h"
 #include "platform/weborigin/KURL.h"
+#include "platform/weborigin/SchemeRegistry.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/WebAddressSpace.h"
 #include "public/platform/WebInsecureRequestPolicy.h"
@@ -987,6 +988,134 @@ TEST_F(ContentSecurityPolicyTest, Subsumes) {
                           ContentSecurityPolicyHeaderTypeEnforce,
                           ContentSecurityPolicyHeaderSourceHTTP);
   EXPECT_TRUE(csp->subsumes(*other));
+}
+
+TEST_F(ContentSecurityPolicyTest, RequestsAllowedWhenBypassingCSP) {
+  KURL base;
+  document = Document::create();
+  document->setSecurityOrigin(secureOrigin);  // https://example.com
+  document->setURL(secureURL);                // https://example.com
+  csp->bindToExecutionContext(document.get());
+  csp->didReceiveHeader("default-src https://example.com",
+                        ContentSecurityPolicyHeaderTypeEnforce,
+                        ContentSecurityPolicyHeaderSourceHTTP);
+
+  EXPECT_TRUE(csp->allowRequest(WebURLRequest::RequestContextObject,
+                                KURL(base, "https://example.com/"), String(),
+                                IntegrityMetadataSet(), ParserInserted,
+                                ResourceRequest::RedirectStatus::NoRedirect,
+                                SecurityViolationReportingPolicy::SuppressReporting));
+
+  EXPECT_FALSE(csp->allowRequest(
+      WebURLRequest::RequestContextObject,
+      KURL(base, "https://not-example.com/"), String(), IntegrityMetadataSet(),
+      ParserInserted, ResourceRequest::RedirectStatus::NoRedirect,
+      SecurityViolationReportingPolicy::SuppressReporting));
+
+  // Register "https" as bypassing CSP, which should now bypass it entirely
+  SchemeRegistry::registerURLSchemeAsBypassingContentSecurityPolicy("https");
+
+  EXPECT_TRUE(csp->allowRequest(WebURLRequest::RequestContextObject,
+                                KURL(base, "https://example.com/"), String(),
+                                IntegrityMetadataSet(), ParserInserted,
+                                ResourceRequest::RedirectStatus::NoRedirect,
+                                SecurityViolationReportingPolicy::SuppressReporting));
+
+  EXPECT_TRUE(csp->allowRequest(
+      WebURLRequest::RequestContextObject,
+      KURL(base, "https://not-example.com/"), String(), IntegrityMetadataSet(),
+      ParserInserted, ResourceRequest::RedirectStatus::NoRedirect,
+      SecurityViolationReportingPolicy::SuppressReporting));
+
+  SchemeRegistry::removeURLSchemeRegisteredAsBypassingContentSecurityPolicy(
+      "https");
+}
+TEST_F(ContentSecurityPolicyTest, FilesystemAllowedWhenBypassingCSP) {
+  KURL base;
+  document = Document::create();
+  document->setSecurityOrigin(secureOrigin);  // https://example.com
+  document->setURL(secureURL);                // https://example.com
+  csp->bindToExecutionContext(document.get());
+  csp->didReceiveHeader("default-src https://example.com",
+                        ContentSecurityPolicyHeaderTypeEnforce,
+                        ContentSecurityPolicyHeaderSourceHTTP);
+
+  EXPECT_FALSE(
+      csp->allowRequest(WebURLRequest::RequestContextObject,
+                        KURL(base, "filesystem:https://example.com/file.txt"),
+                        String(), IntegrityMetadataSet(), ParserInserted,
+                        ResourceRequest::RedirectStatus::NoRedirect,
+                        SecurityViolationReportingPolicy::SuppressReporting));
+
+  EXPECT_FALSE(csp->allowRequest(
+      WebURLRequest::RequestContextObject,
+      KURL(base, "filesystem:https://not-example.com/file.txt"), String(),
+      IntegrityMetadataSet(), ParserInserted,
+      ResourceRequest::RedirectStatus::NoRedirect,
+      SecurityViolationReportingPolicy::SuppressReporting));
+
+  // Register "https" as bypassing CSP, which should now bypass it entirely
+  SchemeRegistry::registerURLSchemeAsBypassingContentSecurityPolicy("https");
+
+  EXPECT_TRUE(
+      csp->allowRequest(WebURLRequest::RequestContextObject,
+                        KURL(base, "filesystem:https://example.com/file.txt"),
+                        String(), IntegrityMetadataSet(), ParserInserted,
+                        ResourceRequest::RedirectStatus::NoRedirect,
+                        SecurityViolationReportingPolicy::SuppressReporting));
+
+  EXPECT_TRUE(csp->allowRequest(
+      WebURLRequest::RequestContextObject,
+      KURL(base, "filesystem:https://not-example.com/file.txt"), String(),
+      IntegrityMetadataSet(), ParserInserted,
+      ResourceRequest::RedirectStatus::NoRedirect,
+      SecurityViolationReportingPolicy::SuppressReporting));
+
+  SchemeRegistry::removeURLSchemeRegisteredAsBypassingContentSecurityPolicy(
+      "https");
+}
+
+TEST_F(ContentSecurityPolicyTest, BlobAllowedWhenBypassingCSP) {
+  KURL base;
+  document = Document::create();
+  document->setSecurityOrigin(secureOrigin);  // https://example.com
+  document->setURL(secureURL);                // https://example.com
+  csp->bindToExecutionContext(document.get());
+  csp->didReceiveHeader("default-src https://example.com",
+                        ContentSecurityPolicyHeaderTypeEnforce,
+                        ContentSecurityPolicyHeaderSourceHTTP);
+
+  EXPECT_FALSE(csp->allowRequest(
+      WebURLRequest::RequestContextObject,
+      KURL(base, "blob:https://example.com/"), String(), IntegrityMetadataSet(),
+      ParserInserted, ResourceRequest::RedirectStatus::NoRedirect,
+      SecurityViolationReportingPolicy::SuppressReporting));
+
+  EXPECT_FALSE(csp->allowRequest(WebURLRequest::RequestContextObject,
+                                 KURL(base, "blob:https://not-example.com/"),
+                                 String(), IntegrityMetadataSet(),
+                                 ParserInserted,
+                                 ResourceRequest::RedirectStatus::NoRedirect,
+                                 SecurityViolationReportingPolicy::SuppressReporting));
+
+  // Register "https" as bypassing CSP, which should now bypass it entirely
+  SchemeRegistry::registerURLSchemeAsBypassingContentSecurityPolicy("https");
+
+  EXPECT_TRUE(csp->allowRequest(
+      WebURLRequest::RequestContextObject,
+      KURL(base, "blob:https://example.com/"), String(), IntegrityMetadataSet(),
+      ParserInserted, ResourceRequest::RedirectStatus::NoRedirect,
+      SecurityViolationReportingPolicy::SuppressReporting));
+
+  EXPECT_TRUE(csp->allowRequest(WebURLRequest::RequestContextObject,
+                                KURL(base, "blob:https://not-example.com/"),
+                                String(), IntegrityMetadataSet(),
+                                ParserInserted,
+                                ResourceRequest::RedirectStatus::NoRedirect,
+                                SecurityViolationReportingPolicy::SuppressReporting));
+
+  SchemeRegistry::removeURLSchemeRegisteredAsBypassingContentSecurityPolicy(
+      "https");
 }
 
 }  // namespace blink

@@ -68,15 +68,10 @@ bool SourceListDirective::allows(
     return hasSourceMatchInList(url, redirectStatus);
   }
 
-  KURL effectiveURL =
-      m_policy->selfMatchesInnerURL() && SecurityOrigin::shouldUseInnerURL(url)
-          ? SecurityOrigin::extractInnerURL(url)
-          : url;
-
-  if (m_allowSelf && m_policy->urlMatchesSelf(effectiveURL))
+  if (m_allowSelf && m_policy->urlMatchesSelf(url))
     return true;
 
-  return hasSourceMatchInList(effectiveURL, redirectStatus);
+  return hasSourceMatchInList(url, redirectStatus);
 }
 
 bool SourceListDirective::allowInline() const {
