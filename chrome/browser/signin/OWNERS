@@ -13,3 +13,6 @@ per-file easy_unlock_*=xiyuan@chromium.org
 per-file screenlock_bridge*=tbarzic@chromium.org
 per-file screenlock_bridge*=tengs@chromium.org
 per-file screenlock_bridge*=xiyuan@chromium.org
+
+# TEAM: chrome-signin@chromium.org
+# COMPONENT: Services>SignIn
