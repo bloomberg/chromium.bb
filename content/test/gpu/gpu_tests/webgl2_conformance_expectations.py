@@ -1004,6 +1004,9 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance2/textures/image_bitmap_from_video/' +
         'tex-2d-rgba16f-rgba-half_float.html',
         ['linux', ('amd', 0x6613)], bug=701138)
+    self.Fail('conformance2/textures/image_bitmap_from_video/' +
+        'tex-2d-rgba32f-rgba-float.html',
+        ['linux', ('amd', 0x6613)], bug=701138)
 
     # Conflicting expectations to test that the
     # "Expectations have no collisions" unittest works.
