@@ -7,10 +7,12 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/android/jni_android.h"
 #include "base/callback.h"
 #include "base/macros.h"
+#include "chrome/common/thumbnail_capturer.mojom.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "content/public/common/context_menu_params.h"
 #include "ui/gfx/geometry/size.h"
@@ -50,7 +52,8 @@ class ContextMenuHelper
   static base::android::ScopedJavaLocalRef<jobject> CreateJavaContextMenuParams(
       const content::ContextMenuParams& params);
 
-  void OnShareImage(const std::string& thumbnail_data,
+  void OnShareImage(chrome::mojom::ThumbnailCapturerPtr thumbnail_capturer,
+                    const std::vector<uint8_t>& thumbnail_data,
                     const gfx::Size& original_size);
 
   base::android::ScopedJavaGlobalRef<jobject> java_obj_;
@@ -59,6 +62,8 @@ class ContextMenuHelper
   content::ContextMenuParams context_menu_params_;
   int render_frame_id_;
   int render_process_id_;
+
+  base::WeakPtrFactory<ContextMenuHelper> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ContextMenuHelper);
 };

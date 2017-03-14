@@ -6,11 +6,15 @@
 
 #include <stdint.h>
 
+#include <vector>
+
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
+#include "base/bind_helpers.h"
 #include "chrome/browser/android/download/download_controller_base.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
+#include "chrome/common/thumbnail_capturer.mojom.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
 #include "content/public/browser/android/content_view_core.h"
 #include "content/public/browser/render_frame_host.h"
@@ -18,6 +22,7 @@
 #include "content/public/common/context_menu_params.h"
 #include "jni/ContextMenuHelper_jni.h"
 #include "jni/ContextMenuParams_jni.h"
+#include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/WebKit/public/web/WebContextMenuData.h"
 #include "ui/android/window_android.h"
 #include "ui/gfx/geometry/point.h"
@@ -36,7 +41,7 @@ const char kDataReductionProxyPassthroughHeader[] =
     "Chrome-Proxy: pass-through\r\n";
 
 ContextMenuHelper::ContextMenuHelper(content::WebContents* web_contents)
-    : web_contents_(web_contents) {
+    : web_contents_(web_contents), weak_factory_(this) {
   JNIEnv* env = base::android::AttachCurrentThread();
   java_obj_.Reset(
       env,
@@ -149,17 +154,21 @@ void ContextMenuHelper::ShareImage(JNIEnv* env,
   if (!render_frame_host)
     return;
 
-  CoreTabHelper::FromWebContents(web_contents_)->
-      RequestThumbnailForContextNode(
-          render_frame_host,
-          0,
-          gfx::Size(kShareImageMaxWidth, kShareImageMaxHeight),
-          base::Bind(&ContextMenuHelper::OnShareImage,
-                     base::Unretained(this)));
+  chrome::mojom::ThumbnailCapturerPtr thumbnail_capturer;
+  render_frame_host->GetRemoteInterfaces()->GetInterface(&thumbnail_capturer);
+  // Bind the InterfacePtr into the callback so that it's kept alive until
+  // there's either a connection error or a response.
+  auto* thumbnail_capturer_proxy = thumbnail_capturer.get();
+  thumbnail_capturer_proxy->RequestThumbnailForContextNode(
+      0, gfx::Size(kShareImageMaxWidth, kShareImageMaxHeight),
+      base::Bind(&ContextMenuHelper::OnShareImage, weak_factory_.GetWeakPtr(),
+                 base::Passed(&thumbnail_capturer)));
 }
 
-void ContextMenuHelper::OnShareImage(const std::string& thumbnail_data,
-                                     const gfx::Size& original_size) {
+void ContextMenuHelper::OnShareImage(
+    chrome::mojom::ThumbnailCapturerPtr thumbnail_capturer,
+    const std::vector<uint8_t>& thumbnail_data,
+    const gfx::Size& original_size) {
   content::ContentViewCore* content_view_core =
       content::ContentViewCore::FromWebContents(web_contents_);
   if (!content_view_core)
@@ -173,9 +182,7 @@ void ContextMenuHelper::OnShareImage(const std::string& thumbnail_data,
 
   JNIEnv* env = base::android::AttachCurrentThread();
   base::android::ScopedJavaLocalRef<jbyteArray> j_bytes =
-      base::android::ToJavaByteArray(
-          env, reinterpret_cast<const uint8_t*>(thumbnail_data.data()),
-          thumbnail_data.length());
+      base::android::ToJavaByteArray(env, thumbnail_data);
 
   Java_ContextMenuHelper_onShareImageReceived(env, java_obj_, jwindow_android,
                                               j_bytes);

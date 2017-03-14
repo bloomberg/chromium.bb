@@ -16,6 +16,7 @@
           "autofill::mojom::PasswordGenerationAgent",
           "chrome::mojom::ImageContextMenuRenderer",
           "chrome::mojom::InsecureContentRenderer",
+          "chrome::mojom::ThumbnailCapturer",
           "contextual_search::mojom::OverlayPageNotifierService",
           "dom_distiller::mojom::DistillerPageNotifierService"
         ]

@@ -116,6 +116,9 @@ ChromeRenderFrameObserver::ChromeRenderFrameObserver(
   render_frame->GetInterfaceRegistry()->AddInterface(
       base::Bind(&ChromeRenderFrameObserver::OnImageContextMenuRendererRequest,
                  base::Unretained(this)));
+  render_frame->GetInterfaceRegistry()->AddInterface(
+      base::Bind(&ChromeRenderFrameObserver::OnThumbnailCapturerRequest,
+                 base::Unretained(this)));
 
   // Don't do anything else for subframes.
   if (!render_frame->IsMainFrame())
@@ -149,8 +152,6 @@ bool ChromeRenderFrameObserver::OnMessageReceived(const IPC::Message& message) {
     // tab_android.cc's use is converted to Mojo.
     IPC_MESSAGE_HANDLER(ChromeViewMsg_RequestReloadImageForContextNode,
                         RequestReloadImageForContextNode)
-    IPC_MESSAGE_HANDLER(ChromeViewMsg_RequestThumbnailForContextNode,
-                        OnRequestThumbnailForContextNode)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_SetClientSidePhishingDetection,
                         OnSetClientSidePhishingDetection)
 #if BUILDFLAG(ENABLE_PRINTING)
@@ -189,19 +190,18 @@ void ChromeRenderFrameObserver::RequestReloadImageForContextNode() {
   }
 }
 
-void ChromeRenderFrameObserver::OnRequestThumbnailForContextNode(
-    int thumbnail_min_area_pixels,
+void ChromeRenderFrameObserver::RequestThumbnailForContextNode(
+    int32_t thumbnail_min_area_pixels,
     const gfx::Size& thumbnail_max_size_pixels,
-    int callback_id) {
+    const RequestThumbnailForContextNodeCallback& callback) {
   WebNode context_node = render_frame()->GetWebFrame()->contextMenuNode();
   SkBitmap thumbnail;
   gfx::Size original_size;
   if (!context_node.isNull() && context_node.isElementNode()) {
     blink::WebImage image = context_node.to<WebElement>().imageContents();
     original_size = image.size();
-    thumbnail = Downscale(image,
-                          thumbnail_min_area_pixels,
-                          thumbnail_max_size_pixels);
+    thumbnail =
+        Downscale(image, thumbnail_min_area_pixels, thumbnail_max_size_pixels);
   }
 
   SkBitmap bitmap;
@@ -210,7 +210,7 @@ void ChromeRenderFrameObserver::OnRequestThumbnailForContextNode(
   else
     thumbnail.copyTo(&bitmap, kN32_SkColorType);
 
-  std::string thumbnail_data;
+  std::vector<uint8_t> thumbnail_data;
   SkAutoLockPixels lock(bitmap);
   if (bitmap.getPixels()) {
     const int kDefaultQuality = 90;
@@ -218,12 +218,12 @@ void ChromeRenderFrameObserver::OnRequestThumbnailForContextNode(
     if (gfx::JPEGCodec::Encode(
             reinterpret_cast<unsigned char*>(bitmap.getAddr32(0, 0)),
             gfx::JPEGCodec::FORMAT_SkBitmap, bitmap.width(), bitmap.height(),
-            static_cast<int>(bitmap.rowBytes()), kDefaultQuality, &data))
-      thumbnail_data = std::string(data.begin(), data.end());
+            static_cast<int>(bitmap.rowBytes()), kDefaultQuality, &data)) {
+      thumbnail_data.swap(data);
+    }
   }
 
-  Send(new ChromeViewHostMsg_RequestThumbnailForContextNode_ACK(
-      routing_id(), thumbnail_data, original_size, callback_id));
+  callback.Run(thumbnail_data, original_size);
 }
 
 void ChromeRenderFrameObserver::OnPrintNodeUnderContextMenu() {
@@ -359,4 +359,9 @@ void ChromeRenderFrameObserver::OnDestruct() {
 void ChromeRenderFrameObserver::OnImageContextMenuRendererRequest(
     chrome::mojom::ImageContextMenuRendererRequest request) {
   image_context_menu_renderer_bindings_.AddBinding(this, std::move(request));
+}
+
+void ChromeRenderFrameObserver::OnThumbnailCapturerRequest(
+    chrome::mojom::ThumbnailCapturerRequest request) {
+  thumbnail_capturer_bindings_.AddBinding(this, std::move(request));
 }

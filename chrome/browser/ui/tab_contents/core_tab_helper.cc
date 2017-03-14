@@ -20,6 +20,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/render_messages.h"
+#include "chrome/common/thumbnail_capturer.mojom.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/guest_view/browser/guest_view_manager.h"
 #include "components/search_engines/template_url.h"
@@ -36,6 +37,7 @@
 #include "content/public/common/context_menu_params.h"
 #include "net/base/load_states.h"
 #include "net/http/http_request_headers.h"
+#include "services/service_manager/public/cpp/interface_provider.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if !defined(OS_ANDROID)
@@ -57,11 +59,10 @@ DEFINE_WEB_CONTENTS_USER_DATA_KEY(CoreTabHelper);
 CoreTabHelper::CoreTabHelper(WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
       delegate_(NULL),
-      content_restrictions_(0) {
-}
+      content_restrictions_(0),
+      weak_factory_(this) {}
 
-CoreTabHelper::~CoreTabHelper() {
-}
+CoreTabHelper::~CoreTabHelper() {}
 
 base::string16 CoreTabHelper::GetDefaultTitle() {
   return l10n_util::GetStringUTF16(IDS_DEFAULT_TAB_TITLE);
@@ -105,31 +106,19 @@ void CoreTabHelper::UpdateContentRestrictions(int content_restrictions) {
 }
 
 void CoreTabHelper::SearchByImageInNewTab(
-    content::RenderFrameHost* render_frame_host, const GURL& src_url) {
-  RequestThumbnailForContextNode(
-      render_frame_host,
-      kImageSearchThumbnailMinSize,
-      gfx::Size(kImageSearchThumbnailMaxWidth,
-                kImageSearchThumbnailMaxHeight),
-      base::Bind(&CoreTabHelper::DoSearchByImageInNewTab,
-                 base::Unretained(this),
-                 src_url));
-}
-
-void CoreTabHelper::RequestThumbnailForContextNode(
     content::RenderFrameHost* render_frame_host,
-    int minimum_size,
-    gfx::Size maximum_size,
-    const ContextNodeThumbnailCallback& callback) {
-  int callback_id = thumbnail_callbacks_.Add(
-      base::MakeUnique<ContextNodeThumbnailCallback>(callback));
-
-  render_frame_host->Send(
-      new ChromeViewMsg_RequestThumbnailForContextNode(
-          render_frame_host->GetRoutingID(),
-          minimum_size,
-          maximum_size,
-          callback_id));
+    const GURL& src_url) {
+  chrome::mojom::ThumbnailCapturerPtr thumbnail_capturer;
+  render_frame_host->GetRemoteInterfaces()->GetInterface(&thumbnail_capturer);
+  // Bind the InterfacePtr into the callback so that it's kept alive until
+  // there's either a connection error or a response.
+  auto* thumbnail_capturer_proxy = thumbnail_capturer.get();
+  thumbnail_capturer_proxy->RequestThumbnailForContextNode(
+      kImageSearchThumbnailMinSize,
+      gfx::Size(kImageSearchThumbnailMaxWidth, kImageSearchThumbnailMaxHeight),
+      base::Bind(&CoreTabHelper::DoSearchByImageInNewTab,
+                 weak_factory_.GetWeakPtr(), base::Passed(&thumbnail_capturer),
+                 src_url));
 }
 
 // static
@@ -301,35 +290,13 @@ void CoreTabHelper::BeforeUnloadDialogCancelled() {
   OnCloseCanceled();
 }
 
-bool CoreTabHelper::OnMessageReceived(
-    const IPC::Message& message,
-    content::RenderFrameHost* render_frame_host) {
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(CoreTabHelper, message)
-    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_RequestThumbnailForContextNode_ACK,
-                        OnRequestThumbnailForContextNodeACK)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-  return handled;
-}
-
-void CoreTabHelper::OnRequestThumbnailForContextNodeACK(
-    const std::string& thumbnail_data,
-    const gfx::Size& original_size,
-    int callback_id) {
-  ContextNodeThumbnailCallback* callback =
-      thumbnail_callbacks_.Lookup(callback_id);
-  if (!callback)
-    return;
-  callback->Run(thumbnail_data, original_size);
-  thumbnail_callbacks_.Remove(callback_id);
-}
-
 // Handles the image thumbnail for the context node, composes a image search
 // request based on the received thumbnail and opens the request in a new tab.
-void CoreTabHelper::DoSearchByImageInNewTab(const GURL& src_url,
-                                            const std::string& thumbnail_data,
-                                            const gfx::Size& original_size) {
+void CoreTabHelper::DoSearchByImageInNewTab(
+    chrome::mojom::ThumbnailCapturerPtr thumbnail_capturer,
+    const GURL& src_url,
+    const std::vector<uint8_t>& thumbnail_data,
+    const gfx::Size& original_size) {
   if (thumbnail_data.empty())
     return;
 
@@ -347,7 +314,8 @@ void CoreTabHelper::DoSearchByImageInNewTab(const GURL& src_url,
 
   TemplateURLRef::SearchTermsArgs search_args =
       TemplateURLRef::SearchTermsArgs(base::string16());
-  search_args.image_thumbnail_content = thumbnail_data;
+  search_args.image_thumbnail_content.assign(thumbnail_data.begin(),
+                                             thumbnail_data.end());
   search_args.image_url = src_url;
   search_args.image_original_size = original_size;
   TemplateURLRef::PostContent post_content;

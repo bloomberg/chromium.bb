@@ -15,6 +15,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
+#include "base/run_loop.h"
 #include "base/strings/string16.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -31,6 +32,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/render_messages.h"
+#include "chrome/common/thumbnail_capturer.mojom.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/search_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -42,6 +44,7 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
@@ -53,6 +56,7 @@
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_filter.h"
 #include "net/url_request/url_request_interceptor.h"
+#include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
 #include "third_party/WebKit/public/web/WebContextMenuData.h"
 #include "ui/base/models/menu_model.h"
@@ -548,90 +552,6 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, OpenLinkInProfile) {
 }
 #endif  // !defined(OS_CHROMEOS)
 
-class ThumbnailResponseWatcher : public content::NotificationObserver {
- public:
-  enum QuitReason {
-    STILL_RUNNING = 0,
-    THUMBNAIL_RECEIVED,
-    RENDER_PROCESS_GONE,
-  };
-
-  class MessageFilter : public content::BrowserMessageFilter {
-   public:
-    explicit MessageFilter(ThumbnailResponseWatcher* owner)
-        : content::BrowserMessageFilter(ChromeMsgStart), owner_(owner) {}
-
-    bool OnMessageReceived(const IPC::Message& message) override {
-      if (message.type() ==
-          ChromeViewHostMsg_RequestThumbnailForContextNode_ACK::ID) {
-        content::BrowserThread::PostTask(
-            content::BrowserThread::UI, FROM_HERE,
-            base::Bind(&MessageFilter::OnRequestThumbnailForContextNodeACK,
-                       this));
-      }
-      return false;
-    }
-
-    void OnRequestThumbnailForContextNodeACK() {
-      if (owner_)
-        owner_->OnRequestThumbnailForContextNodeACK();
-    }
-
-    void Disown() { owner_ = nullptr; }
-
-   private:
-    ~MessageFilter() override {}
-
-    ThumbnailResponseWatcher* owner_;
-
-    DISALLOW_COPY_AND_ASSIGN(MessageFilter);
-  };
-
-  explicit ThumbnailResponseWatcher(
-      content::RenderProcessHost* render_process_host)
-      : message_loop_runner_(new content::MessageLoopRunner),
-        filter_(new MessageFilter(this)),
-        quit_reason_(STILL_RUNNING) {
-    notification_registrar_.Add(
-        this, content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
-        content::Source<content::RenderProcessHost>(render_process_host));
-    notification_registrar_.Add(
-        this, content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
-        content::Source<content::RenderProcessHost>(render_process_host));
-    render_process_host->AddFilter(filter_.get());
-  }
-
-  ~ThumbnailResponseWatcher() override { filter_->Disown(); }
-
-  QuitReason Wait() WARN_UNUSED_RESULT {
-    message_loop_runner_->Run();
-    DCHECK_NE(STILL_RUNNING, quit_reason_);
-    return quit_reason_;
-  }
-
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override {
-    DCHECK(type == content::NOTIFICATION_RENDERER_PROCESS_CLOSED ||
-           type == content::NOTIFICATION_RENDERER_PROCESS_TERMINATED);
-    quit_reason_ = RENDER_PROCESS_GONE;
-    message_loop_runner_->Quit();
-  }
-
-  void OnRequestThumbnailForContextNodeACK() {
-    quit_reason_ = THUMBNAIL_RECEIVED;
-    message_loop_runner_->Quit();
-  }
-
- private:
-  scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
-  scoped_refptr<MessageFilter> filter_;
-  content::NotificationRegistrar notification_registrar_;
-  QuitReason quit_reason_;
-
-  DISALLOW_COPY_AND_ASSIGN(ThumbnailResponseWatcher);
-};
-
 // Maintains image search test state. In particular, note that |menu_observer_|
 // must live until the right-click completes asynchronously.
 class SearchByImageBrowserTest : public InProcessBrowserTest {
@@ -650,10 +570,14 @@ class SearchByImageBrowserTest : public InProcessBrowserTest {
   }
 
   void AttemptImageSearch() {
-    // Right-click where the image should be.
     // |menu_observer_| will cause the search-by-image menu item to be clicked.
     menu_observer_.reset(new ContextMenuNotificationObserver(
         IDC_CONTENT_CONTEXT_SEARCHWEBFORIMAGE));
+    RightClickImage();
+  }
+
+  // Right-click where the image should be.
+  void RightClickImage() {
     content::WebContents* tab =
         browser()->tab_strip_model()->GetActiveWebContents();
     content::SimulateMouseClickAt(tab, 0, blink::WebMouseEvent::Button::Right,
@@ -716,14 +640,36 @@ IN_PROC_BROWSER_TEST_F(SearchByImageBrowserTest, ImageSearchWithCorruptImage) {
   static const char kCorruptImage[] = "/image_search/corrupt.png";
   SetupAndLoadImagePage(kCorruptImage);
 
-  content::WebContents* tab =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  ThumbnailResponseWatcher watcher(tab->GetRenderProcessHost());
-  AttemptImageSearch();
+  // Open and close a context menu.
+  ContextMenuWaiter waiter(content::NotificationService::AllSources());
+  RightClickImage();
+  waiter.WaitForMenuOpenAndClose();
+
+  chrome::mojom::ThumbnailCapturerPtr thumbnail_capturer;
+  browser()
+      ->tab_strip_model()
+      ->GetActiveWebContents()
+      ->GetMainFrame()
+      ->GetRemoteInterfaces()
+      ->GetInterface(&thumbnail_capturer);
+
+  auto callback = [](bool* response_received, const base::Closure& quit,
+                     const std::vector<uint8_t>& thumbnail_data,
+                     const gfx::Size& original_size) {
+    *response_received = true;
+    quit.Run();
+  };
+
+  base::RunLoop run_loop;
+  bool response_received = false;
+  thumbnail_capturer->RequestThumbnailForContextNode(
+      0, gfx::Size(2048, 2048),
+      base::Bind(callback, &response_received, run_loop.QuitClosure()));
+  run_loop.Run();
 
   // The browser should receive a response from the renderer, because the
   // renderer should not crash.
-  EXPECT_EQ(ThumbnailResponseWatcher::THUMBNAIL_RECEIVED, watcher.Wait());
+  ASSERT_TRUE(response_received);
 }
 
 class LoadImageRequestInterceptor : public net::URLRequestInterceptor {

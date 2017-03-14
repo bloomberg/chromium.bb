@@ -8,9 +8,10 @@
 #include <string>
 
 #include "base/callback.h"
-#include "base/id_map.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
+#include "chrome/common/thumbnail_capturer.mojom.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "ui/gfx/geometry/size.h"
@@ -22,9 +23,6 @@ class CoreTabHelperDelegate;
 class CoreTabHelper : public content::WebContentsObserver,
                       public content::WebContentsUserData<CoreTabHelper> {
  public:
-  using ContextNodeThumbnailCallback =
-      base::Callback<void(const std::string&, const gfx::Size&)>;
-
   ~CoreTabHelper() override;
 
   // Initial title assigned to NavigationEntries from Navigate.
@@ -56,11 +54,6 @@ class CoreTabHelper : public content::WebContentsObserver,
   // the image resources.
   void SearchByImageInNewTab(content::RenderFrameHost* render_frame_host,
                              const GURL& src_url);
-  void RequestThumbnailForContextNode(
-      content::RenderFrameHost* render_frame_host,
-      int minimum_size,
-      gfx::Size maximum_size,
-      const ContextNodeThumbnailCallback& callback);
 
   CoreTabHelperDelegate* delegate() const { return delegate_; }
   void set_delegate(CoreTabHelperDelegate* d) { delegate_ = d; }
@@ -85,15 +78,12 @@ class CoreTabHelper : public content::WebContentsObserver,
   void WebContentsDestroyed() override;
   void BeforeUnloadFired(const base::TimeTicks& proceed_time) override;
   void BeforeUnloadDialogCancelled() override;
-  bool OnMessageReceived(const IPC::Message& message,
-                         content::RenderFrameHost* render_frame_host) override;
 
-  void OnRequestThumbnailForContextNodeACK(const std::string& thumbnail_data,
-                                           const gfx::Size& original_size,
-                                           int callback_id);
-  void DoSearchByImageInNewTab(const GURL& src_url,
-                               const std::string& thumbnail_data,
-                               const gfx::Size& original_size);
+  void DoSearchByImageInNewTab(
+      chrome::mojom::ThumbnailCapturerPtr thumbnail_capturer,
+      const GURL& src_url,
+      const std::vector<uint8_t>& thumbnail_data,
+      const gfx::Size& original_size);
 
   // Delegate for notifying our owner about stuff. Not owned by us.
   CoreTabHelperDelegate* delegate_;
@@ -115,7 +105,7 @@ class CoreTabHelper : public content::WebContentsObserver,
   // (full-page plugins for now only) permissions.
   int content_restrictions_;
 
-  IDMap<std::unique_ptr<ContextNodeThumbnailCallback>> thumbnail_callbacks_;
+  base::WeakPtrFactory<CoreTabHelper> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(CoreTabHelper);
 };

@@ -700,6 +700,7 @@ mojom("mojo_bindings") {
     "renderer_configuration.mojom",
     "resource_usage_reporter.mojom",
     "shell_handler_win.mojom",
+    "thumbnail_capturer.mojom",
   ]
 
   if (is_chromeos) {
@@ -713,6 +714,7 @@ mojom("mojo_bindings") {
   public_deps = [
     "//components/content_settings/core/common:mojo_bindings",
     "//mojo/common:common_custom_types",
+    "//ui/gfx/geometry/mojo",
     "//url/mojo:url_mojom_gurl",
   ]
 }

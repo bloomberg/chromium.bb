@@ -139,16 +139,6 @@ IPC_MESSAGE_ROUTED1(ChromeViewMsg_SetClientSidePhishingDetection,
 // TODO(nigeltao): delete this when tab_android.cc's use is converted to Mojo.
 IPC_MESSAGE_ROUTED0(ChromeViewMsg_RequestReloadImageForContextNode)
 
-// Asks the renderer for a thumbnail of the image selected by the most
-// recently opened context menu, if there is one. If the image's area
-// is greater than thumbnail_min_area it will be downscaled to
-// be within thumbnail_max_size. The possibly downsampled image will be
-// returned in a ChromeViewHostMsg_RequestThumbnailForContextNode_ACK message.
-IPC_MESSAGE_ROUTED3(ChromeViewMsg_RequestThumbnailForContextNode,
-                    int /* thumbnail_min_area_pixels */,
-                    gfx::Size /* thumbnail_max_size_pixels */,
-                    int /* ID of the callback */)
-
 // Notifies the renderer whether hiding/showing the browser controls is enabled,
 // what the current state should be, and whether or not to animate to the
 // proper state.
@@ -160,13 +150,6 @@ IPC_MESSAGE_ROUTED3(ChromeViewMsg_UpdateBrowserControlsState,
 // Updates the window features of the render view.
 IPC_MESSAGE_ROUTED1(ChromeViewMsg_SetWindowFeatures,
                     blink::mojom::WindowFeatures /* window_features */)
-
-// Responds to the request for a thumbnail.
-// Thumbnail data will be empty is a thumbnail could not be produced.
-IPC_MESSAGE_ROUTED3(ChromeViewHostMsg_RequestThumbnailForContextNode_ACK,
-                    std::string /* JPEG-encoded thumbnail data */,
-                    gfx::Size /* original size of the image */,
-                    int /* ID of the callback */)
 
 // Requests application info for the page. The renderer responds back with
 // ChromeViewHostMsg_DidGetWebApplicationInfo.
