@@ -61,12 +61,9 @@ class CORE_EXPORT DOMWrapperWorld : public RefCounted<DOMWrapperWorld> {
     DocumentXMLTreeViewerWorldId,
     IsolatedWorldIdLimit,
 
-    // TODO(nhiroki): Dynamically allocate a world id for the following worlds
-    // instead of a fixed value (https://crbug.com/697622).
-    GarbageCollectorWorldId,
-    RegExpWorldId,
-    TestingWorldId,
-    WorkerWorldId,
+    // Other worlds can use IDs after this. Don't manually pick up an ID from
+    // this range. generateWorldIdForType() picks it up on behalf of you.
+    UnspecifiedWorldIdStart,
   };
 
   enum class WorldType {
@@ -149,10 +146,10 @@ class CORE_EXPORT DOMWrapperWorld : public RefCounted<DOMWrapperWorld> {
 
   static unsigned s_numberOfNonMainWorldsInMainThread;
 
-  // Returns an identifier for a given world type. This must not call for
+  // Returns an identifier for a given world type. This must not be called for
   // WorldType::IsolatedWorld because an identifier for the world is given from
   // out of DOMWrapperWorld.
-  static int getWorldIdForType(WorldType);
+  static int generateWorldIdForType(WorldType);
 
   const WorldType m_worldType;
   const int m_worldId;

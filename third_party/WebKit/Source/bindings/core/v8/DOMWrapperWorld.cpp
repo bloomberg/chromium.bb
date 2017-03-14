@@ -83,11 +83,25 @@ class DOMObjectHolder : public DOMObjectHolderBase {
 
 unsigned DOMWrapperWorld::s_numberOfNonMainWorldsInMainThread = 0;
 
+using WorldMap = HashMap<int, DOMWrapperWorld*>;
+
+static WorldMap& isolatedWorldMap() {
+  DCHECK(isMainThread());
+  DEFINE_STATIC_LOCAL(WorldMap, map, ());
+  return map;
+}
+
+static WorldMap& worldMap() {
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(ThreadSpecific<WorldMap>, map,
+                                  new ThreadSpecific<WorldMap>);
+  return *map;
+}
+
 PassRefPtr<DOMWrapperWorld> DOMWrapperWorld::create(v8::Isolate* isolate,
                                                     WorldType worldType) {
   DCHECK_NE(WorldType::Isolated, worldType);
-  return adoptRef(
-      new DOMWrapperWorld(isolate, worldType, getWorldIdForType(worldType)));
+  return adoptRef(new DOMWrapperWorld(isolate, worldType,
+                                      generateWorldIdForType(worldType)));
 }
 
 DOMWrapperWorld::DOMWrapperWorld(v8::Isolate* isolate,
@@ -97,8 +111,28 @@ DOMWrapperWorld::DOMWrapperWorld(v8::Isolate* isolate,
       m_worldId(worldId),
       m_domDataStore(
           WTF::wrapUnique(new DOMDataStore(isolate, isMainWorld()))) {
-  if (isWorkerWorld())
-    workerWorld() = this;
+  switch (worldType) {
+    case WorldType::Main:
+      // MainWorld is managed separately from worldMap() and isolatedWorldMap().
+      // See mainWorld().
+      break;
+    case WorldType::Isolated: {
+      DCHECK(isMainThread());
+      WorldMap& map = isolatedWorldMap();
+      DCHECK(!map.contains(worldId));
+      map.insert(worldId, this);
+      break;
+    }
+    case WorldType::GarbageCollector:
+    case WorldType::RegExp:
+    case WorldType::Testing:
+    case WorldType::Worker: {
+      WorldMap& map = worldMap();
+      DCHECK(!map.contains(worldId));
+      map.insert(worldId, this);
+      break;
+    }
+  }
   if (worldId != WorldId::MainWorldId && isMainThread())
     s_numberOfNonMainWorldsInMainThread++;
 }
@@ -111,12 +145,6 @@ DOMWrapperWorld& DOMWrapperWorld::mainWorld() {
   return *cachedMainWorld;
 }
 
-DOMWrapperWorld*& DOMWrapperWorld::workerWorld() {
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(ThreadSpecific<DOMWrapperWorld*>, workerWorld,
-                                  new ThreadSpecific<DOMWrapperWorld*>);
-  return *workerWorld;
-}
-
 PassRefPtr<DOMWrapperWorld> DOMWrapperWorld::fromWorldId(v8::Isolate* isolate,
                                                          int worldId) {
   if (worldId == MainWorldId)
@@ -124,47 +152,40 @@ PassRefPtr<DOMWrapperWorld> DOMWrapperWorld::fromWorldId(v8::Isolate* isolate,
   return ensureIsolatedWorld(isolate, worldId);
 }
 
-typedef HashMap<int, DOMWrapperWorld*> WorldMap;
-static WorldMap& isolatedWorldMap() {
-  ASSERT(isMainThread());
-  DEFINE_STATIC_LOCAL(WorldMap, map, ());
-  return map;
-}
-
 void DOMWrapperWorld::allWorldsInMainThread(
     Vector<RefPtr<DOMWrapperWorld>>& worlds) {
   ASSERT(isMainThread());
   worlds.push_back(&mainWorld());
-  WorldMap& isolatedWorlds = isolatedWorldMap();
-  for (WorldMap::iterator it = isolatedWorlds.begin();
-       it != isolatedWorlds.end(); ++it)
-    worlds.push_back(it->value);
+  for (DOMWrapperWorld* world : worldMap().values())
+    worlds.push_back(world);
+  for (DOMWrapperWorld* world : isolatedWorldMap().values())
+    worlds.push_back(world);
 }
 
 void DOMWrapperWorld::markWrappersInAllWorlds(
     ScriptWrappable* scriptWrappable,
     const ScriptWrappableVisitor* visitor) {
-  // Handle marking in per-worker wrapper worlds.
-  if (!isMainThread()) {
-    DCHECK(ThreadState::current()->isolate());
-    DOMWrapperWorld* worker = workerWorld();
-    if (worker) {
-      DOMDataStore& dataStore = worker->domDataStore();
-      if (dataStore.containsWrapper(scriptWrappable)) {
-        dataStore.markWrapper(scriptWrappable);
-      }
-    }
-    return;
+  // Marking for worlds other than the main world and the isolated worlds.
+  DCHECK(ThreadState::current()->isolate());
+  for (DOMWrapperWorld* world : worldMap().values()) {
+    DOMDataStore& dataStore = world->domDataStore();
+    if (dataStore.containsWrapper(scriptWrappable))
+      dataStore.markWrapper(scriptWrappable);
   }
 
+  // The main world and isolated worlds should exist only on the main thread.
+  if (!isMainThread())
+    return;
+
+  // Marking for the main world.
   scriptWrappable->markWrapper(visitor);
+
+  // Marking for the isolated worlds.
   WorldMap& isolatedWorlds = isolatedWorldMap();
   for (auto& world : isolatedWorlds.values()) {
     DOMDataStore& dataStore = world->domDataStore();
-    if (dataStore.containsWrapper(scriptWrappable)) {
-      // Marking for the isolated worlds
+    if (dataStore.containsWrapper(scriptWrappable))
       dataStore.markWrapper(scriptWrappable);
-    }
   }
 }
 
@@ -193,8 +214,7 @@ DOMWrapperWorld::~DOMWrapperWorld() {
 void DOMWrapperWorld::dispose() {
   m_domObjectHolders.clear();
   m_domDataStore.reset();
-  if (isWorkerWorld())
-    workerWorld() = nullptr;
+  worldMap().remove(m_worldId);
 }
 
 #if DCHECK_IS_ON()
@@ -210,16 +230,14 @@ PassRefPtr<DOMWrapperWorld> DOMWrapperWorld::ensureIsolatedWorld(
   ASSERT(isIsolatedWorldId(worldId));
 
   WorldMap& map = isolatedWorldMap();
-  WorldMap::AddResult result = map.insert(worldId, nullptr);
-  RefPtr<DOMWrapperWorld> world = result.storedValue->value;
-  if (world) {
-    ASSERT(world->worldId() == worldId);
+  auto it = map.find(worldId);
+  if (it != map.end()) {
+    RefPtr<DOMWrapperWorld> world = it->value;
+    DCHECK_EQ(worldId, world->worldId());
     return world.release();
   }
 
-  world = adoptRef(new DOMWrapperWorld(isolate, WorldType::Isolated, worldId));
-  result.storedValue->value = world.get();
-  return world.release();
+  return adoptRef(new DOMWrapperWorld(isolate, WorldType::Isolated, worldId));
 }
 
 typedef HashMap<int, RefPtr<SecurityOrigin>> IsolatedWorldSecurityOriginMap;
@@ -323,7 +341,11 @@ void DOMWrapperWorld::weakCallbackForDOMObjectHolder(
   holderBase->world()->unregisterDOMObjectHolder(holderBase);
 }
 
-int DOMWrapperWorld::getWorldIdForType(WorldType worldType) {
+int DOMWrapperWorld::generateWorldIdForType(WorldType worldType) {
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(ThreadSpecific<int>, s_nextWorldId,
+                                  new ThreadSpecific<int>);
+  if (!s_nextWorldId.isSet())
+    *s_nextWorldId = WorldId::UnspecifiedWorldIdStart;
   switch (worldType) {
     case WorldType::Main:
       return MainWorldId;
@@ -333,17 +355,13 @@ int DOMWrapperWorld::getWorldIdForType(WorldType worldType) {
       NOTREACHED();
       return InvalidWorldId;
     case WorldType::GarbageCollector:
-      return GarbageCollectorWorldId;
     case WorldType::RegExp:
-      return RegExpWorldId;
     case WorldType::Testing:
-      return TestingWorldId;
-    // Currently, WorldId for a worker/worklet is a fixed value, but this
-    // doesn't work when multiple worklets are created on a thread.
-    // TODO(nhiroki): Expand the identifier space for workers/worklets.
-    // (https://crbug.com/697622)
     case WorldType::Worker:
-      return WorkerWorldId;
+      int worldId = *s_nextWorldId;
+      CHECK_GE(worldId, WorldId::UnspecifiedWorldIdStart);
+      *s_nextWorldId = worldId + 1;
+      return worldId;
   }
   NOTREACHED();
   return InvalidWorldId;
