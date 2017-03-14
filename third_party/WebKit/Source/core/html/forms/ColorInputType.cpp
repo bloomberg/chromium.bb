@@ -245,6 +245,8 @@ Vector<ColorSuggestion> ColorInputType::suggestions() const {
   if (dataList) {
     HTMLDataListOptionsCollection* options = dataList->options();
     for (unsigned i = 0; HTMLOptionElement* option = options->item(i); i++) {
+      if (option->isDisabledFormControl() || option->value().isEmpty())
+        continue;
       if (!element().isValidValue(option->value()))
         continue;
       Color color;

@@ -361,6 +361,8 @@ void RangeInputType::updateTickMarkValues() {
   for (unsigned i = 0; i < options->length(); ++i) {
     HTMLOptionElement* optionElement = options->item(i);
     String optionValue = optionElement->value();
+    if (optionElement->isDisabledFormControl() || optionValue.isEmpty())
+      continue;
     if (!this->element().isValidValue(optionValue))
       continue;
     m_tickMarkValues.push_back(parseToNumber(optionValue, Decimal::nan()));

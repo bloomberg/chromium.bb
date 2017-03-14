@@ -37,12 +37,7 @@ DEFINE_TYPE_CASTS(HTMLDataListOptionsCollection,
 
 inline bool HTMLDataListOptionsCollection::elementMatches(
     const HTMLElement& element) const {
-  if (isHTMLOptionElement(element)) {
-    const HTMLOptionElement& option = toHTMLOptionElement(element);
-    if (!option.isDisabledFormControl() && !option.value().isEmpty())
-      return true;
-  }
-  return false;
+  return isHTMLOptionElement(element);
 }
 
 }  // namespace blink

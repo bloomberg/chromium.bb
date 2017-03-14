@@ -1558,7 +1558,8 @@ bool HTMLInputElement::hasValidDataListOptions() const {
     return false;
   HTMLDataListOptionsCollection* options = dataList->options();
   for (unsigned i = 0; HTMLOptionElement* option = options->item(i); ++i) {
-    if (isValidValue(option->value()))
+    if (!option->value().isEmpty() && !option->isDisabledFormControl() &&
+        isValidValue(option->value()))
       return true;
   }
   return false;
@@ -1593,7 +1594,8 @@ HTMLInputElement::filteredDataListOptions() const {
         continue;
     }
     // TODO(tkent): Should allow invalid strings. crbug.com/607097.
-    if (!isValidValue(option->value()))
+    if (option->value().isEmpty() || option->isDisabledFormControl() ||
+        !isValidValue(option->value()))
       continue;
     filtered.push_back(option);
   }
@@ -1816,7 +1818,8 @@ bool HTMLInputElement::setupDateTimeChooserParameters(
   if (HTMLDataListElement* dataList = this->dataList()) {
     HTMLDataListOptionsCollection* options = dataList->options();
     for (unsigned i = 0; HTMLOptionElement* option = options->item(i); ++i) {
-      if (!isValidValue(option->value()))
+      if (option->value().isEmpty() || option->isDisabledFormControl() ||
+          !isValidValue(option->value()))
         continue;
       DateTimeSuggestion suggestion;
       suggestion.value =

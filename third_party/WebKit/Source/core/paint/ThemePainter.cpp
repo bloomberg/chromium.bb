@@ -327,6 +327,8 @@ void ThemePainter::paintSliderTicks(const LayoutObject& o,
   for (unsigned i = 0; HTMLOptionElement* optionElement = options->item(i);
        i++) {
     String value = optionElement->value();
+    if (optionElement->isDisabledFormControl() || value.isEmpty())
+      continue;
     if (!input->isValidValue(value))
       continue;
     double parsedValue =
