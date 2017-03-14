@@ -191,6 +191,8 @@ normalize_scroll(struct libinput_event_pointer *pointer_event,
 		value = libinput_event_pointer_get_axis_value(pointer_event,
 							      axis);
 		break;
+	default:
+		assert(!"unhandled event source in normalize_scroll");
 	}
 
 	return value;
