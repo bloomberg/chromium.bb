@@ -24,7 +24,7 @@
       <settings-toggle-button id="enabled" class="start"
           pref="{{prefs.arc.enabled}}"
           label="$i18n{androidAppsEnabled}"
-          on-change="onArcEnabledChange_"
+          on-settings-boolean-control-change="onArcEnabledChange_"
           no-set-pref>
         <a href="$i18nRaw{androidAppsLearnMoreUrl}" target="_blank"
             class="more-actions" on-tap="stopPropagation_">
