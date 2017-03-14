@@ -690,7 +690,7 @@ void InspectorCSSAgent::restore() {
   if (m_state->booleanProperty(CSSAgentState::cssAgentEnabled, false))
     wasEnabled();
   if (m_state->booleanProperty(CSSAgentState::ruleRecordingEnabled, false))
-    setCoverageEnabled(true);
+    setUsageTrackerStatus(true);
 }
 
 void InspectorCSSAgent::flushPendingProtocolNotifications() {
@@ -755,7 +755,7 @@ Response InspectorCSSAgent::disable() {
   m_state->setBoolean(CSSAgentState::cssAgentEnabled, false);
   m_resourceContentLoader->cancel(m_resourceContentLoaderClientId);
   m_state->setBoolean(CSSAgentState::ruleRecordingEnabled, false);
-  setCoverageEnabled(false);
+  setUsageTrackerStatus(false);
   return Response::OK();
 }
 
@@ -2413,7 +2413,7 @@ void InspectorCSSAgent::visitLayoutTreeNodes(
   }
 }
 
-void InspectorCSSAgent::setCoverageEnabled(bool enabled) {
+void InspectorCSSAgent::setUsageTrackerStatus(bool enabled) {
   if (enabled) {
     if (!m_tracker)
       m_tracker = new StyleRuleUsageTracker();
@@ -2431,9 +2431,9 @@ void InspectorCSSAgent::setCoverageEnabled(bool enabled) {
   }
 }
 
-Response InspectorCSSAgent::startCoverageTracking() {
+Response InspectorCSSAgent::startRuleUsageTracking() {
   m_state->setBoolean(CSSAgentState::ruleRecordingEnabled, true);
-  setCoverageEnabled(true);
+  setUsageTrackerStatus(true);
   return Response::OK();
 }
 
@@ -2449,10 +2449,11 @@ InspectorCSSAgent::buildObjectForRuleUsage(CSSStyleRule* rule, bool used) {
   return result;
 }
 
-Response InspectorCSSAgent::getCoverage(
+Response InspectorCSSAgent::stopRuleUsageTracking(
     std::unique_ptr<protocol::Array<protocol::CSS::RuleUsage>>* result) {
-  if (!m_tracker)
-    return Response::Error("CSS coverage is not enabled");
+  if (!m_tracker) {
+    return Response::Error("CSS rule usage tracking is not enabled");
+  }
 
   *result = protocol::Array<protocol::CSS::RuleUsage>::create();
 
@@ -2485,13 +2486,9 @@ Response InspectorCSSAgent::getCoverage(
       }
     }
   }
-  return Response::OK();
-}
 
-Response InspectorCSSAgent::stopCoverageTracking() {
-  if (!m_tracker)
-    return Response::Error("CSS coverage is not enabled");
-  setCoverageEnabled(false);
+  setUsageTrackerStatus(false);
+
   return Response::OK();
 }
 

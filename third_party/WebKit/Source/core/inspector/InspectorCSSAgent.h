@@ -122,7 +122,7 @@ class CORE_EXPORT InspectorCSSAgent final
   void fontsUpdated();
   void getUnusedRules(
       std::unique_ptr<protocol::Array<protocol::CSS::RuleUsage>>*);
-  void setCoverageEnabled(bool);
+  void setUsageTrackerStatus(bool enabled);
 
   void enable(std::unique_ptr<EnableCallback>) override;
   protocol::Response disable() override;
@@ -196,12 +196,11 @@ class CORE_EXPORT InspectorCSSAgent final
       int nodeId,
       protocol::Maybe<protocol::Array<String>>* backgroundColors) override;
 
-  protocol::Response startCoverageTracking() override;
-  protocol::Response getCoverage(
+  protocol::Response startRuleUsageTracking() override;
+
+  protocol::Response stopRuleUsageTracking(
       std::unique_ptr<protocol::Array<protocol::CSS::RuleUsage>>* result)
       override;
-
-  protocol::Response stopCoverageTracking() override;
 
   void collectMediaQueriesFromRule(CSSRule*,
                                    protocol::Array<protocol::CSS::CSSMedia>*);
