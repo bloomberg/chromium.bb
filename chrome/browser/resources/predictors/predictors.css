@@ -37,6 +37,10 @@ td {
   padding: 3px;
 }
 
+tr td:first-child[rowspan] {
+  background-color: rgb(215, 215, 215);
+}
+
 tbody > td:first-child {
   white-space: nowrap;
 }

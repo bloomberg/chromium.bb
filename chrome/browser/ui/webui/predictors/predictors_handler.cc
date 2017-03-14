@@ -131,6 +131,9 @@ void PredictorsHandler::AddPrefetchDataMapToListValue(
       resource->SetDouble("position", r.average_position());
       resource->SetDouble(
           "score", ResourcePrefetchPredictorTables::ComputeResourceScore(r));
+      resource->SetBoolean(
+          "is_prefetchable",
+          resource_prefetch_predictor_->IsResourcePrefetchable(r));
       resources->Append(std::move(resource));
     }
     main->Set("resources", resources);

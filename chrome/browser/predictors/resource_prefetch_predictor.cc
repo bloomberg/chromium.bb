@@ -645,6 +645,15 @@ bool ResourcePrefetchPredictor::IsUrlPrefetchable(const GURL& main_frame_url) {
   return GetPrefetchData(main_frame_url, nullptr);
 }
 
+bool ResourcePrefetchPredictor::IsResourcePrefetchable(
+    const ResourceData& resource) const {
+  float confidence = static_cast<float>(resource.number_of_hits()) /
+                     (resource.number_of_hits() + resource.number_of_misses());
+  return confidence >= config_.min_resource_confidence_to_trigger_prefetch &&
+         resource.number_of_hits() >=
+             config_.min_resource_hits_to_trigger_prefetch;
+}
+
 void ResourcePrefetchPredictor::SetObserverForTesting(TestObserver* observer) {
   observer_ = observer;
 }
@@ -1341,15 +1350,6 @@ void ResourcePrefetchPredictor::LearnRedirect(const std::string& key,
                    empty_data, empty_data, url_redirect_data,
                    host_redirect_data));
   }
-}
-
-bool ResourcePrefetchPredictor::IsResourcePrefetchable(
-    const ResourceData& resource) const {
-  float confidence = static_cast<float>(resource.number_of_hits()) /
-                     (resource.number_of_hits() + resource.number_of_misses());
-  return confidence >= config_.min_resource_confidence_to_trigger_prefetch &&
-         resource.number_of_hits() >=
-             config_.min_resource_hits_to_trigger_prefetch;
 }
 
 void ResourcePrefetchPredictor::ReportDatabaseReadiness(

@@ -72,12 +72,11 @@ function renderCacheData(body, database) {
         var t = document.createElement('td');
         t.rowSpan = main.resources.length;
         t.textContent = truncateString(main.main_frame_url);
-        t.className = 'last';
         row.appendChild(t);
       }
 
-      if (j == main.resources.length - 1)
-        row.className = 'last';
+      row.className = resource.is_prefetchable ? 'action-prerender'
+                                               : 'action-none';
 
       row.appendChild(document.createElement('td')).textContent =
           truncateString(resource.resource_url);

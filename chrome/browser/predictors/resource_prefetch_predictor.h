@@ -220,6 +220,10 @@ class ResourcePrefetchPredictor
   // Returns true if prefetching data exists for the |main_frame_url|.
   virtual bool IsUrlPrefetchable(const GURL& main_frame_url);
 
+  // Returns true iff |resource| has sufficient confidence level and required
+  // number of hits.
+  bool IsResourcePrefetchable(const ResourceData& resource) const;
+
   // Sets the |observer| to be notified when the resource prefetch predictor
   // data changes. Previously registered observer will be discarded. Call
   // this with nullptr parameter to de-register observer.
@@ -371,10 +375,6 @@ class ResourcePrefetchPredictor
                      const std::string& final_redirect,
                      size_t max_redirect_map_size,
                      RedirectDataMap* redirect_map);
-
-  // Returns true iff |resource| has sufficient confidence level and required
-  // number of hits.
-  bool IsResourcePrefetchable(const ResourceData& resource) const;
 
   // Reports database readiness metric defined as percentage of navigated hosts
   // found in DB for last X entries in history.
