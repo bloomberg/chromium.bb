@@ -810,6 +810,7 @@ VpxEncoder::VpxEncoder(
     : Encoder(on_encoded_video_callback, bits_per_second),
       use_vp9_(use_vp9) {
   codec_config_.g_timebase.den = 0;  // Not initialized.
+  alpha_codec_config_.g_timebase.den = 0;  // Not initialized.
   DCHECK(encoding_thread_->IsRunning());
 }
 
