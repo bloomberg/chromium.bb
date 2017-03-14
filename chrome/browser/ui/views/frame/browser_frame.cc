@@ -229,6 +229,11 @@ void BrowserFrame::OnNativeWidgetWorkspaceChanged() {
   Widget::OnNativeWidgetWorkspaceChanged();
 }
 
+void BrowserFrame::OnNativeThemeUpdated(ui::NativeTheme* observed_theme) {
+  views::Widget::OnNativeThemeUpdated(observed_theme);
+  browser_view_->NativeThemeUpdated(observed_theme);
+}
+
 void BrowserFrame::ShowContextMenuForView(views::View* source,
                                           const gfx::Point& p,
                                           ui::MenuSourceType source_type) {

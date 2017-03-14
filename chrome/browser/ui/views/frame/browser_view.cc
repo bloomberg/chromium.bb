@@ -1656,6 +1656,22 @@ base::string16 BrowserView::GetAccessibleTabLabel(bool include_app_name,
   return base::string16();
 }
 
+void BrowserView::NativeThemeUpdated(const ui::NativeTheme* theme) {
+  // We don't handle theme updates in OnThemeChanged() as that function is
+  // called while views are being iterated over. Please see
+  // View::PropagateNativeThemeChanged() for details. The theme update
+  // handling in UserChangedTheme() can cause views to be nuked or created
+  // which is a bad thing during iteration.
+
+  // Do not handle native theme changes before the browser view is initialized.
+  if (!initialized_)
+    return;
+  // Don't infinitely recurse.
+  if (!handling_theme_changed_)
+    UserChangedTheme();
+  chrome::MaybeShowInvertBubbleView(this);
+}
+
 views::View* BrowserView::GetInitiallyFocusedView() {
   return nullptr;
 }
@@ -1988,17 +2004,6 @@ void BrowserView::OnThemeChanged() {
   }
 
   views::View::OnThemeChanged();
-}
-
-void BrowserView::OnNativeThemeChanged(const ui::NativeTheme* theme) {
-  // Do not handle native theme changes before the browser view is initialized.
-  if (!initialized_)
-    return;
-  ClientView::OnNativeThemeChanged(theme);
-  // Don't infinitely recurse.
-  if (!handling_theme_changed_)
-    UserChangedTheme();
-  chrome::MaybeShowInvertBubbleView(this);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

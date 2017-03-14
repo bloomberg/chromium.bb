@@ -989,9 +989,6 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
 
   ScopedObserver<ui::NativeTheme, ui::NativeThemeObserver> observer_manager_;
 
-  // Guard to avoid reentrancy while processing a theme changed message.
-  bool processing_theme_changed_;
-
   DISALLOW_COPY_AND_ASSIGN(Widget);
 };
 

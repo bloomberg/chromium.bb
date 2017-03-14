@@ -175,8 +175,7 @@ Widget::Widget()
       auto_release_capture_(true),
       views_with_layers_dirty_(false),
       movement_disabled_(false),
-      observer_manager_(this),
-      processing_theme_changed_(false) {}
+      observer_manager_(this) {}
 
 Widget::~Widget() {
   DestroyRootView();
@@ -919,8 +918,6 @@ void Widget::DebugToggleFrameType() {
 }
 
 void Widget::FrameTypeChanged() {
-  if (processing_theme_changed_)
-    return;
   native_widget_->FrameTypeChanged();
 }
 
@@ -1427,10 +1424,6 @@ void Widget::OnNativeThemeUpdated(ui::NativeTheme* observed_theme) {
     observer_manager_.Add(current_native_theme);
   }
 
-  DCHECK_EQ(processing_theme_changed_, false);
-
-  base::AutoReset<bool> auto_theme_changed_recursion_break(
-      &processing_theme_changed_, true);
   root_view_->PropagateNativeThemeChanged(current_native_theme);
 }
 
