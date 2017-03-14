@@ -36,7 +36,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling sfntly
   # and whatever else without interference from each other.
-  'sfntly_revision': '64f78562d2003eb7cacaaa86a398cbd41881ba6f',
+  'sfntly_revision': '84f71089cb80e6ed31d87f3aa5caab43f1427e85',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
