@@ -60,8 +60,7 @@ void runCallback(ExecutionContext* executionContext,
   if (!executionContext)
     return;
   DCHECK(executionContext->isContextThread());
-  probe::AsyncTask asyncTask(executionContext, task.get(),
-                             true /* isInstrumented */);
+  probe::AsyncTask asyncTask(executionContext, task.get());
   (*task)();
 }
 

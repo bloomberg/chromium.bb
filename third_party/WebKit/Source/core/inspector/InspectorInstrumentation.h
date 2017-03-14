@@ -63,13 +63,16 @@ class CORE_EXPORT AsyncTask {
   STACK_ALLOCATED();
 
  public:
-  AsyncTask(ExecutionContext*, void* task);
-  AsyncTask(ExecutionContext*, void* task, bool enabled);
+  AsyncTask(ExecutionContext*,
+            void* task,
+            const char* step = nullptr,
+            bool enabled = true);
   ~AsyncTask();
 
  private:
   ThreadDebugger* m_debugger;
   void* m_task;
+  bool m_recurring;
 };
 
 // Called from generated instrumentation code.
@@ -112,12 +115,10 @@ inline InstrumentingAgents* instrumentingAgentsFor(EventTarget* eventTarget) {
 
 CORE_EXPORT void asyncTaskScheduled(ExecutionContext*,
                                     const String& name,
-                                    void*,
-                                    bool recurring = false);
+                                    void*);
 CORE_EXPORT void asyncTaskScheduledBreakable(ExecutionContext*,
                                              const char* name,
-                                             void*,
-                                             bool recurring = false);
+                                             void*);
 CORE_EXPORT void asyncTaskCanceled(ExecutionContext*, void*);
 CORE_EXPORT void asyncTaskCanceledBreakable(ExecutionContext*,
                                             const char* name,

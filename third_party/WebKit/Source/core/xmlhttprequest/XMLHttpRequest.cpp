@@ -958,8 +958,7 @@ void XMLHttpRequest::createRequest(PassRefPtr<EncodedFormData> httpBody,
   // Also, only async requests support upload progress events.
   bool uploadEvents = false;
   if (m_async) {
-    probe::asyncTaskScheduled(&executionContext, "XMLHttpRequest.send", this,
-                              true);
+    probe::asyncTaskScheduled(&executionContext, "XMLHttpRequest.send", this);
     dispatchProgressEvent(EventTypeNames::loadstart, 0, 0);
     // Event handler could have invalidated this send operation,
     // (re)setting the send flag and/or initiating another send
@@ -1216,11 +1215,11 @@ void XMLHttpRequest::dispatchProgressEvent(const AtomicString& type,
       lengthComputable ? static_cast<unsigned long long>(expectedLength) : 0;
 
   ExecutionContext* context = getExecutionContext();
-  probe::AsyncTask asyncTask(context, this, m_async);
+  probe::AsyncTask asyncTask(
+      context, this, type == EventTypeNames::loadend ? nullptr : "progress",
+      m_async);
   m_progressEventThrottle->dispatchProgressEvent(type, lengthComputable, loaded,
                                                  total);
-  if (m_async && type == EventTypeNames::loadend)
-    probe::asyncTaskCanceled(context, this);
 }
 
 void XMLHttpRequest::dispatchProgressEventFromSnapshot(

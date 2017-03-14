@@ -103,6 +103,9 @@ ScriptedIdleTaskController::registerCallback(
   m_callbacks.set(id, callback);
   long long timeoutMillis = options.timeout();
 
+  probe::asyncTaskScheduled(getExecutionContext(), "requestIdleCallback",
+                            callback);
+
   RefPtr<internal::IdleRequestCallbackWrapper> callbackWrapper =
       internal::IdleRequestCallbackWrapper::create(id, this);
   m_scheduler->postIdleTask(
@@ -158,7 +161,7 @@ void ScriptedIdleTaskController::runCallback(
     double deadlineSeconds,
     IdleDeadline::CallbackType callbackType) {
   DCHECK(!m_suspended);
-  auto callback = m_callbacks.take(id);
+  IdleRequestCallback* callback = m_callbacks.take(id);
   if (!callback)
     return;
 
@@ -170,8 +173,10 @@ void ScriptedIdleTaskController::runCallback(
       ("WebCore.ScriptedIdleTaskController.IdleCallbackDeadline", 0, 50, 50));
   idleCallbackDeadlineHistogram.count(allottedTimeMillis);
 
+  probe::AsyncTask asyncTask(getExecutionContext(), callback);
   probe::UserCallback probe(getExecutionContext(), "requestIdleCallback",
                             AtomicString(), true);
+
   TRACE_EVENT1(
       "devtools.timeline", "FireIdleCallback", "data",
       InspectorIdleCallbackFireEvent::data(

@@ -132,7 +132,7 @@ void XMLHttpRequestProgressEventThrottle::dispatchReadyStateChangeEvent(
     // the event handler calls xhr.abort()). In such cases a
     // readystatechange should have been already dispatched if necessary.
     probe::AsyncTask asyncTask(m_target->getExecutionContext(), m_target,
-                               m_target->isAsync());
+                               "progress", m_target->isAsync());
     m_target->dispatchEvent(event);
   }
 }
@@ -146,7 +146,7 @@ void XMLHttpRequestProgressEventThrottle::dispatchProgressProgressEvent(
                  InspectorXhrReadyStateChangeEvent::data(
                      m_target->getExecutionContext(), m_target));
     probe::AsyncTask asyncTask(m_target->getExecutionContext(), m_target,
-                               m_target->isAsync());
+                               "progress", m_target->isAsync());
     m_target->dispatchEvent(Event::create(EventTypeNames::readystatechange));
   }
 
@@ -155,7 +155,7 @@ void XMLHttpRequestProgressEventThrottle::dispatchProgressProgressEvent(
 
   m_hasDispatchedProgressProgressEvent = true;
   probe::AsyncTask asyncTask(m_target->getExecutionContext(), m_target,
-                             m_target->isAsync());
+                             "progress", m_target->isAsync());
   m_target->dispatchEvent(progressEvent);
 }
 

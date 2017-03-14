@@ -93,7 +93,7 @@ class FileReader::ThrottlingController final
     if (!controller)
       return;
 
-    probe::asyncTaskScheduled(context, "FileReader", reader, true);
+    probe::asyncTaskScheduled(context, "FileReader", reader);
     controller->pushReader(reader);
   }
 
@@ -452,7 +452,7 @@ void FileReader::didFail(FileError::ErrorCode errorCode) {
 }
 
 void FileReader::fireEvent(const AtomicString& type) {
-  probe::AsyncTask asyncTask(getExecutionContext(), this);
+  probe::AsyncTask asyncTask(getExecutionContext(), this, "event");
   if (!m_loader) {
     dispatchEvent(ProgressEvent::create(type, false, 0, 0));
     return;

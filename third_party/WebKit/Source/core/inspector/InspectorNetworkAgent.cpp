@@ -803,7 +803,8 @@ void InspectorNetworkAgent::didReceiveEncodedDataLength(
   m_resourcesData->addPendingEncodedDataLength(requestId, encodedDataLength);
 }
 
-void InspectorNetworkAgent::didFinishLoading(unsigned long identifier,
+void InspectorNetworkAgent::didFinishLoading(LocalFrame*,
+                                             unsigned long identifier,
                                              double monotonicFinishTime,
                                              int64_t encodedDataLength,
                                              int64_t decodedBodyLength) {
@@ -841,8 +842,8 @@ void InspectorNetworkAgent::didReceiveCORSRedirectResponse(
     Resource* resource) {
   // Update the response and finish loading
   didReceiveResourceResponse(frame, identifier, loader, response, resource);
-  didFinishLoading(identifier, 0, WebURLLoaderClient::kUnknownEncodedDataLength,
-                   0);
+  didFinishLoading(frame, identifier, 0,
+                   WebURLLoaderClient::kUnknownEncodedDataLength, 0);
 }
 
 void InspectorNetworkAgent::didFailLoading(unsigned long identifier,

@@ -104,7 +104,7 @@ DOMTimer::DOMTimer(ExecutionContext* context,
                        InspectorTimerInstallEvent::data(context, timeoutID,
                                                         interval, singleShot));
   probe::asyncTaskScheduledBreakable(
-      context, singleShot ? "setTimeout" : "setInterval", this, !singleShot);
+      context, singleShot ? "setTimeout" : "setInterval", this);
 }
 
 DOMTimer::~DOMTimer() {
@@ -145,7 +145,8 @@ void DOMTimer::fired() {
   probe::UserCallback probe(context,
                             repeatInterval() ? "setInterval" : "setTimeout",
                             AtomicString(), true);
-  probe::AsyncTask asyncTask(context, this);
+  probe::AsyncTask asyncTask(context, this,
+                             repeatInterval() ? "fired" : nullptr);
 
   // Simple case for non-one-shot timers.
   if (isActive()) {

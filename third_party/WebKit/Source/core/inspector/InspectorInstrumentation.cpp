@@ -71,43 +71,51 @@ double ProbeBase::duration() const {
   return captureEndTime() - m_startTime;
 }
 
-AsyncTask::AsyncTask(ExecutionContext* context, void* task)
-    : AsyncTask(context, task, true) {}
-
-AsyncTask::AsyncTask(ExecutionContext* context, void* task, bool enabled)
+AsyncTask::AsyncTask(ExecutionContext* context,
+                     void* task,
+                     const char* step,
+                     bool enabled)
     : m_debugger(enabled ? ThreadDebugger::from(toIsolate(context)) : nullptr),
-      m_task(task) {
-  TRACE_EVENT_FLOW_END0("devtools.timeline.async", "AsyncTask", task);
+      m_task(task),
+      m_recurring(step) {
+  if (m_recurring) {
+    TRACE_EVENT_FLOW_STEP0("devtools.timeline.async", "AsyncTask", task,
+                           step ? step : "");
+  } else {
+    TRACE_EVENT_FLOW_END0("devtools.timeline.async", "AsyncTask", task);
+  }
   if (m_debugger)
     m_debugger->asyncTaskStarted(m_task);
 }
 
 AsyncTask::~AsyncTask() {
-  if (m_debugger)
+  if (m_debugger) {
     m_debugger->asyncTaskFinished(m_task);
+    if (!m_recurring)
+      m_debugger->asyncTaskCanceled(m_task);
+  }
 }
 
 void asyncTaskScheduled(ExecutionContext* context,
                         const String& name,
-                        void* task,
-                        bool recurring) {
+                        void* task) {
   TRACE_EVENT_FLOW_BEGIN1("devtools.timeline.async", "AsyncTask", task, "data",
                           InspectorAsyncTask::data(name));
   if (ThreadDebugger* debugger = ThreadDebugger::from(toIsolate(context)))
-    debugger->asyncTaskScheduled(name, task, recurring);
+    debugger->asyncTaskScheduled(name, task, true);
 }
 
 void asyncTaskScheduledBreakable(ExecutionContext* context,
                                  const char* name,
-                                 void* task,
-                                 bool recurring) {
-  asyncTaskScheduled(context, name, task, recurring);
+                                 void* task) {
+  asyncTaskScheduled(context, name, task);
   breakableLocation(context, name);
 }
 
 void asyncTaskCanceled(ExecutionContext* context, void* task) {
   if (ThreadDebugger* debugger = ThreadDebugger::from(toIsolate(context)))
     debugger->asyncTaskCanceled(task);
+  TRACE_EVENT_FLOW_END0("devtools.timeline.async", "AsyncTask", task);
 }
 
 void asyncTaskCanceledBreakable(ExecutionContext* context,

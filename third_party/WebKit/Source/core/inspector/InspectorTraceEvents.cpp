@@ -115,7 +115,8 @@ void InspectorTraceEvents::didReceiveData(LocalFrame* frame,
       InspectorReceiveDataEvent::data(identifier, frame, encodedDataLength));
 }
 
-void InspectorTraceEvents::didFinishLoading(unsigned long identifier,
+void InspectorTraceEvents::didFinishLoading(LocalFrame* frame,
+                                            unsigned long identifier,
                                             double finishTime,
                                             int64_t encodedDataLength,
                                             int64_t decodedBodyLength) {

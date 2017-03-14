@@ -59,7 +59,7 @@ void WorkerOrWorkletGlobalScope::runTask(
     std::unique_ptr<ExecutionContextTask> task,
     bool isInstrumented) {
   DCHECK(thread()->isCurrentThread());
-  probe::AsyncTask asyncTask(this, task.get(), isInstrumented);
+  probe::AsyncTask asyncTask(this, task.get(), nullptr, isInstrumented);
   task->performTask(this);
 }
 

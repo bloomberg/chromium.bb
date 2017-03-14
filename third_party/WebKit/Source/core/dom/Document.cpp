@@ -4476,7 +4476,7 @@ void Document::sendSensitiveInputVisibilityInternal() {
 void Document::runExecutionContextTask(
     std::unique_ptr<ExecutionContextTask> task,
     bool isInstrumented) {
-  probe::AsyncTask asyncTask(this, task.get(), isInstrumented);
+  probe::AsyncTask asyncTask(this, task.get(), nullptr, isInstrumented);
   task->performTask(this);
 }
 

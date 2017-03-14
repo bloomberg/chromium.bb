@@ -169,7 +169,7 @@ class XMLHttpRequest;
     void didReceiveEncodedDataLength([Keep] LocalFrame*, unsigned long identifier, int encodedDataLength);
 
     [Network, TraceEvents]
-    void didFinishLoading(LocalFrame* frame, unsigned long identifier, double finishTime, int64_t encodedDataLength, int64_t decodedBodyLength);
+    void didFinishLoading([Keep] LocalFrame* frame, unsigned long identifier, double finishTime, int64_t encodedDataLength, int64_t decodedBodyLength);
 
     [Network]
     void didReceiveCORSRedirectResponse([Keep] LocalFrame*, unsigned long identifier, DocumentLoader*, const ResourceResponse&, Resource*);
