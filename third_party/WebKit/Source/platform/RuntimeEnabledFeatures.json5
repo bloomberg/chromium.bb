@@ -811,7 +811,7 @@
     {
       name: "SlimmingPaintInvalidation",
       implied_by: ["SlimmingPaintV2"],
-      status: "stable",
+      status: "experimental",
     },
     {
       name: "SlimmingPaintV2",
