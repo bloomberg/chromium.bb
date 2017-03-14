@@ -105,6 +105,9 @@ class CONTENT_EXPORT NavigatorDelegate {
   // preserved in the omnibox.  Defaults to false.
   virtual bool ShouldPreserveAbortedURLs();
 
+  // Returns the overriden user agent string if it's set.
+  virtual const std::string& GetUserAgentOverride() const = 0;
+
   // A RenderFrameHost in the specified |frame_tree_node| started loading a new
   // document. This correponds to Blink's notion of the throbber starting.
   // |to_different_document| will be true unless the load is a fragment

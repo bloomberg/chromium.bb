@@ -127,6 +127,7 @@ void AddAdditionalRequestHeaders(net::HttpRequestHeaders* headers,
                                  FrameMsg_Navigate_Type::Value navigation_type,
                                  BrowserContext* browser_context,
                                  const std::string& method,
+                                 const std::string user_agent_override,
                                  FrameTreeNode* frame_tree_node) {
   if (!url.SchemeIsHTTPOrHTTPS())
     return;
@@ -142,7 +143,9 @@ void AddAdditionalRequestHeaders(net::HttpRequestHeaders* headers,
     headers->SetHeaderIfMissing("Save-Data", "on");
 
   headers->SetHeaderIfMissing(net::HttpRequestHeaders::kUserAgent,
-                              GetContentClient()->GetUserAgent());
+                              user_agent_override.empty()
+                                  ? GetContentClient()->GetUserAgent()
+                                  : user_agent_override);
 
   // Check whether DevTools wants to override user agent for this request
   // after setting the default user agent.
@@ -326,12 +329,14 @@ NavigationRequest::NavigationRequest(
                                 common_params_.method == "POST");
 
   // Add necessary headers that may not be present in the BeginNavigationParams.
+  const std::string user_agent_override =
+      frame_tree_node_->navigator()->GetDelegate()->GetUserAgentOverride();
   net::HttpRequestHeaders headers;
   headers.AddHeadersFromString(begin_params_.headers);
   AddAdditionalRequestHeaders(
       &headers, common_params_.url, common_params_.navigation_type,
       frame_tree_node_->navigator()->GetController()->GetBrowserContext(),
-      common_params.method, frame_tree_node);
+      common_params.method, user_agent_override, frame_tree_node);
   begin_params_.headers = headers.ToString();
 }
 
