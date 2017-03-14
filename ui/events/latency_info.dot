@@ -33,7 +33,7 @@ INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT \l"];
     style=invis;
     node [shape=plaintext];
     key [label="\
-INPUT_MODALITY = (Wheel | Mouse)\l\
+INPUT_MODALITY = (Wheel | Touch\l\
 THREAD = (Main | Impl)\l\
 SCROLL = (ScrollBegin | ScrollUpdate)\l"]
   }
