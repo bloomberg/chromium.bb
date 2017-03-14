@@ -302,14 +302,13 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   }
 
  private:
-  // TODO(sashab): Move these to the bottom of ComputedStyle.
-  ALWAYS_INLINE ComputedStyle();
-
+  // TODO(sashab): Move these private members to the bottom of ComputedStyle.
   enum InitialStyleTag { InitialStyle };
   ALWAYS_INLINE explicit ComputedStyle(InitialStyleTag);
   ALWAYS_INLINE ComputedStyle(const ComputedStyle&);
 
   static PassRefPtr<ComputedStyle> createInitialStyle();
+  // TODO(shend): Remove this. Initial style should not be mutable.
   static inline ComputedStyle& mutableInitialStyle() {
     LEAK_SANITIZER_DISABLED_SCOPE;
     DEFINE_STATIC_REF(ComputedStyle, s_initialStyle,

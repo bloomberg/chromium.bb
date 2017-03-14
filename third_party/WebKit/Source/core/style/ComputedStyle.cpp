@@ -95,7 +95,7 @@ struct SameSizeAsComputedStyle : public RefCounted<SameSizeAsComputedStyle> {
 ASSERT_SIZE(ComputedStyle, SameSizeAsComputedStyle);
 
 PassRefPtr<ComputedStyle> ComputedStyle::create() {
-  return adoptRef(new ComputedStyle());
+  return adoptRef(new ComputedStyle(initialStyle()));
 }
 
 PassRefPtr<ComputedStyle> ComputedStyle::createInitialStyle() {
@@ -118,24 +118,6 @@ PassRefPtr<ComputedStyle> ComputedStyle::createAnonymousStyleWithDisplay(
 
 PassRefPtr<ComputedStyle> ComputedStyle::clone(const ComputedStyle& other) {
   return adoptRef(new ComputedStyle(other));
-}
-
-ALWAYS_INLINE ComputedStyle::ComputedStyle()
-    : ComputedStyleBase(),
-      RefCounted<ComputedStyle>(),
-      m_box(initialStyle().m_box),
-      m_visual(initialStyle().m_visual),
-      m_background(initialStyle().m_background),
-      m_surround(initialStyle().m_surround),
-      m_rareNonInheritedData(initialStyle().m_rareNonInheritedData),
-      m_rareInheritedData(initialStyle().m_rareInheritedData),
-      m_styleInheritedData(initialStyle().m_styleInheritedData),
-      m_svgStyle(initialStyle().m_svgStyle) {
-  initializeBitDefaults();  // Would it be faster to copy this from the default
-                            // style?
-  static_assert((sizeof(InheritedData) <= 8), "InheritedData should not grow");
-  static_assert((sizeof(NonInheritedData) <= 12),
-                "NonInheritedData should not grow");
 }
 
 ALWAYS_INLINE ComputedStyle::ComputedStyle(InitialStyleTag)
