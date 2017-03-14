@@ -101,19 +101,15 @@ std::unique_ptr<CallClosureTask<T, threadAffinity>> createCallClosureTask(
 
 }  // namespace internal
 
-// Create tasks passed within a single thread.
-// When posting tasks within a thread, use |createSameThreadTask| instead
-// of using |bind| directly to state explicitly that there is no need to care
-// about thread safety when posting the task.
-// When posting tasks across threads, use |createCrossThreadTask|.
-template <typename FunctionType, typename... P>
-std::unique_ptr<ExecutionContextTask> createSameThreadTask(
-    FunctionType function,
-    P&&... parameters) {
-  return internal::createCallClosureTask(
-      WTF::bind(function, std::forward<P>(parameters)...));
-}
+// createSameThreadTask() is deprecated and removed.
+// Use WTF::bind() and post it to WebTaskRunner obtained by
+// TaskRunnerHelper::get() when posting a task within a single thread.
 
+// createCrossThreadTask() is deprecated and will be removed.
+// Use crossThreadBind() and post it to an appropriate task runner
+// when posting a task to another thread.
+// See https://crbug.com/625927 for details.
+//
 // createCrossThreadTask(...) is ExecutionContextTask version of
 // crossThreadBind().
 // Using WTF::bind() directly is not thread-safe due to temporary objects, see

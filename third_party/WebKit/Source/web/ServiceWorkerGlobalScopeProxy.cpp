@@ -30,11 +30,12 @@
 
 #include "web/ServiceWorkerGlobalScopeProxy.h"
 
+#include <memory>
+#include <utility>
 #include "bindings/core/v8/SourceLocation.h"
 #include "bindings/core/v8/WorkerOrWorkletScriptController.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"
-#include "core/dom/ExecutionContextTask.h"
 #include "core/dom/MessagePort.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/origin_trials/OriginTrials.h"
@@ -60,6 +61,7 @@
 #include "modules/serviceworkers/ServiceWorkerGlobalScope.h"
 #include "modules/serviceworkers/ServiceWorkerWindowClient.h"
 #include "modules/serviceworkers/WaitUntilObserver.h"
+#include "platform/CrossThreadFunctional.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "public/platform/modules/notifications/WebNotificationData.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerEventResult.h"
@@ -70,8 +72,6 @@
 #include "wtf/Assertions.h"
 #include "wtf/Functional.h"
 #include "wtf/PtrUtil.h"
-#include <memory>
-#include <utility>
 
 namespace blink {
 
