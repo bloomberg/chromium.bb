@@ -668,11 +668,12 @@ void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
   // Enable the audio processing components.
   webrtc::AudioProcessing::Config apm_config;
 
+  if (playout_data_source_) {
+    playout_data_source_->AddPlayoutSink(this);
+  }
+
   if (echo_cancellation) {
     EnableEchoCancellation(audio_processing_.get());
-
-    if (playout_data_source_)
-      playout_data_source_->AddPlayoutSink(this);
 
     // Prepare for logging echo information. If there are data remaining in
     // |echo_information_| we simply discard it.
