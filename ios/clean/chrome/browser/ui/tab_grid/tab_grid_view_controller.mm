@@ -105,7 +105,7 @@ const CGFloat kToolbarHeight = 64.0f;
 
 - (NSInteger)collectionView:(UICollectionView*)collectionView
      numberOfItemsInSection:(NSInteger)section {
-  NSInteger items = [self.dataSource numberOfTabsInTabGrid];
+  int items = [self.dataSource numberOfTabsInTabGrid];
   // HACK: Do not make showing noTabsOverlay a side effect of the dataSource
   // callback.
   if (items) {
@@ -124,7 +124,9 @@ const CGFloat kToolbarHeight = 64.0f;
                                     forIndexPath:indexPath]);
   cell.delegate = self;
   [cell setSessionType:TabSwitcherSessionType::REGULAR_SESSION];
-  [cell setAppearanceForTabTitle:[self.dataSource titleAtIndex:indexPath.item]
+  DCHECK_LE(indexPath.item, INT_MAX);
+  int item = static_cast<int>(indexPath.item);
+  [cell setAppearanceForTabTitle:[self.dataSource titleAtIndex:item]
                          favicon:nil
                         cellSize:CGSizeZero];
   [cell setSelected:(indexPath.item == [self.dataSource indexOfActiveTab])];
@@ -162,15 +164,13 @@ const CGFloat kToolbarHeight = 64.0f;
 }
 
 - (void)createNewTab:(id)sender {
-  // PLACEHOLDER: The new WebStateList data structure will have implications
-  // on how new tabs are created.
   NSInteger index = [self.grid numberOfItemsInSection:0];
   NSIndexPath* indexPath = [NSIndexPath indexPathForItem:index inSection:0];
   auto updateBlock = ^{
     // Unselect current selected item.
-    NSInteger selectedIndex = [self.dataSource indexOfActiveTab];
     NSIndexPath* selectedIndexPath =
-        [NSIndexPath indexPathForItem:selectedIndex inSection:0];
+        [NSIndexPath indexPathForItem:[self.dataSource indexOfActiveTab]
+                            inSection:0];
     [self.grid reloadItemsAtIndexPaths:@[ selectedIndexPath ]];
 
     // Create and show new tab.
@@ -189,10 +189,12 @@ const CGFloat kToolbarHeight = 64.0f;
 }
 
 - (void)cellPressed:(UICollectionViewCell*)cell {
-  NSInteger selectedIndex = [self.dataSource indexOfActiveTab];
+  int selectedIndex = [self.dataSource indexOfActiveTab];
   NSIndexPath* newSelectedIndexPath = [self.grid indexPathForCell:cell];
   [self.tabCommandHandler showTabAtIndexPath:newSelectedIndexPath];
-  if (newSelectedIndexPath.item != selectedIndex) {
+  if (selectedIndex == kTabGridDataSourceInvalidIndex) {
+    [self.grid reloadItemsAtIndexPaths:@[ newSelectedIndexPath ]];
+  } else if (newSelectedIndexPath.item != selectedIndex) {
     NSIndexPath* selectedIndexPath =
         [NSIndexPath indexPathForItem:selectedIndex inSection:0];
     [self.grid

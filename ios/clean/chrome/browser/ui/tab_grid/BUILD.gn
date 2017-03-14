@@ -20,6 +20,7 @@ source_set("tab_grid") {
     "//ios/clean/chrome/browser/ui/settings",
     "//ios/clean/chrome/browser/ui/tab",
     "//ios/shared/chrome/browser/coordinator_context",
+    "//ios/shared/chrome/browser/tabs",
     "//ios/web",
     "//net",
     "//ui/base",

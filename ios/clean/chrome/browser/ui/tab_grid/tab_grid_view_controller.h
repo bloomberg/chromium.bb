@@ -13,6 +13,8 @@
 
 #import "ios/clean/chrome/browser/ui/animators/zoom_transition_delegate.h"
 
+const int kTabGridDataSourceInvalidIndex = -1;
+
 @protocol SettingsCommands;
 @protocol TabCommands;
 @protocol TabGridCommands;
@@ -24,13 +26,14 @@
 @protocol TabGridDataSource<NSObject>
 
 // The number of tabs to be displayed in the grid.
-- (NSUInteger)numberOfTabsInTabGrid;
+- (int)numberOfTabsInTabGrid;
 
 // Title for the tab at |index| in the grid.
-- (NSString*)titleAtIndex:(NSInteger)index;
+- (NSString*)titleAtIndex:(int)index;
 
-// Index for the active tab.
-- (NSInteger)indexOfActiveTab;
+// Index for the active tab or kTabGridDataSourceInvalidIndex if there is no
+// active tab.
+- (int)indexOfActiveTab;
 
 @end
 
