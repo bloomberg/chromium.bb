@@ -81,6 +81,8 @@ source_set("audio") {
     "audio_manager_base.h",
     "audio_output_controller.cc",
     "audio_output_controller.h",
+    "audio_output_delegate.cc",
+    "audio_output_delegate.h",
     "audio_output_device.cc",
     "audio_output_device.h",
     "audio_output_dispatcher.cc",

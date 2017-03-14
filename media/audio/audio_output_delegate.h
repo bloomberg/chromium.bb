@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_RENDERER_HOST_MEDIA_AUDIO_OUTPUT_DELEGATE_H_
-#define CONTENT_BROWSER_RENDERER_HOST_MEDIA_AUDIO_OUTPUT_DELEGATE_H_
+#ifndef MEDIA_AUDIO_AUDIO_OUTPUT_DELEGATE_H_
+#define MEDIA_AUDIO_AUDIO_OUTPUT_DELEGATE_H_
 
 #include <memory>
 #include <string>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "content/common/content_export.h"
+#include "media/base/media_export.h"
 
 namespace base {
 class SharedMemory;
@@ -18,18 +18,17 @@ class CancelableSyncSocket;
 }
 
 namespace media {
+
 class AudioOutputController;
-}
 
-namespace content {
-
-class CONTENT_EXPORT AudioOutputDelegate {
+class MEDIA_EXPORT AudioOutputDelegate {
  public:
-  class CONTENT_EXPORT EventHandler {
+  // An AudioOutputDelegate must not call back to its EventHandler in its
+  // constructor.
+  class MEDIA_EXPORT EventHandler {
    public:
-    virtual ~EventHandler() {}
-
-    // All these methods are called on the IO thread.
+    EventHandler();
+    virtual ~EventHandler();
 
     // Called when construction is finished and the stream is ready for
     // playout.
@@ -41,7 +40,8 @@ class CONTENT_EXPORT AudioOutputDelegate {
     virtual void OnStreamError(int stream_id) = 0;
   };
 
-  virtual ~AudioOutputDelegate() {}
+  AudioOutputDelegate();
+  virtual ~AudioOutputDelegate();
 
   // TODO(maxmorin): Remove GetController() when crbug.com/647185 is closed.
   // This function is used to provide control of the audio stream to
@@ -50,7 +50,7 @@ class CONTENT_EXPORT AudioOutputDelegate {
   // AudioOutputDelegate. In this case, it is still safe to call functions on
   // the controller, but it will not do anything. The controller is also shared
   // with AudioStreamMonitor.
-  virtual scoped_refptr<media::AudioOutputController> GetController() const = 0;
+  virtual scoped_refptr<AudioOutputController> GetController() const = 0;
   virtual int GetStreamId() const = 0;
 
   // Stream control:
@@ -59,6 +59,6 @@ class CONTENT_EXPORT AudioOutputDelegate {
   virtual void OnSetVolume(double volume) = 0;
 };
 
-}  // namespace content
+}  // namespace media
 
-#endif  // CONTENT_BROWSER_RENDERER_HOST_MEDIA_AUDIO_OUTPUT_DELEGATE_H_
+#endif  // MEDIA_AUDIO_AUDIO_OUTPUT_DELEGATE_H_

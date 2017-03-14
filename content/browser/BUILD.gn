@@ -1133,7 +1133,6 @@ source_set("browser") {
     "renderer_host/media/audio_input_sync_writer.h",
     "renderer_host/media/audio_output_authorization_handler.cc",
     "renderer_host/media/audio_output_authorization_handler.h",
-    "renderer_host/media/audio_output_delegate.h",
     "renderer_host/media/audio_output_delegate_impl.cc",
     "renderer_host/media/audio_output_delegate_impl.h",
     "renderer_host/media/audio_renderer_host.cc",

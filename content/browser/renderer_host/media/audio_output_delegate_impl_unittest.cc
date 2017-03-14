@@ -76,7 +76,7 @@ class MockObserver : public content::MediaObserver {
                void(int render_process_id, int render_frame_id));
 };
 
-class MockEventHandler : public AudioOutputDelegate::EventHandler {
+class MockEventHandler : public media::AudioOutputDelegate::EventHandler {
  public:
   MOCK_METHOD3(OnStreamCreated,
                void(int stream_id,

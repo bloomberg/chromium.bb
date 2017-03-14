@@ -10,8 +10,8 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "content/browser/renderer_host/media/audio_output_delegate.h"
 #include "content/common/content_export.h"
+#include "media/audio/audio_output_delegate.h"
 
 namespace content {
 class AudioMirroringManager;
@@ -30,9 +30,10 @@ namespace content {
 
 // This class, except for the AudioOutputDelegateImpl::EventHandler
 // implementation, is operated on the IO thread.
-class CONTENT_EXPORT AudioOutputDelegateImpl : public AudioOutputDelegate {
+class CONTENT_EXPORT AudioOutputDelegateImpl
+    : public media::AudioOutputDelegate {
  public:
-  AudioOutputDelegateImpl(AudioOutputDelegate::EventHandler* handler,
+  AudioOutputDelegateImpl(EventHandler* handler,
                           media::AudioManager* audio_manager,
                           std::unique_ptr<media::AudioLog> audio_log,
                           AudioMirroringManager* mirroring_manager,

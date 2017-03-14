@@ -16,15 +16,13 @@
 #include "media/audio/audio_input_ipc.h"
 #include "media/audio/audio_output_ipc.h"
 #include "media/base/ipc/media_param_traits.h"
+#include "media/base/ipc/media_param_traits_macros.h"
 #include "media/gpu/ipc/common/media_param_traits.h"
 #include "url/origin.h"
 
 #undef IPC_MESSAGE_EXPORT
 #define IPC_MESSAGE_EXPORT CONTENT_EXPORT
 #define IPC_MESSAGE_START AudioMsgStart
-
-IPC_ENUM_TRAITS_MAX_VALUE(media::OutputDeviceStatus,
-                          media::OUTPUT_DEVICE_STATUS_MAX)
 
 IPC_STRUCT_BEGIN(AudioInputHostMsg_CreateStream_Config)
   IPC_STRUCT_MEMBER(media::AudioParameters, params)

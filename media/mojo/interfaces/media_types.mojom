@@ -24,6 +24,10 @@ enum AudioCodec;
 [Native]
 enum ChannelLayout;
 
+// See media/base/output_device_info.h for descriptions.
+[Native]
+enum OutputDeviceStatus;
+
 // See media/base/sample_format.h for descriptions.
 [Native]
 enum SampleFormat;

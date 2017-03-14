@@ -1,0 +1,31 @@
+// Copyright 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module media.mojom;
+
+import "media/mojo/interfaces/audio_parameters.mojom";
+import "media/mojo/interfaces/media_types.mojom";
+
+// An interface for controlling an audio output stream.
+// On error, the message pipe is closed.
+// To close the stream, just close the message pipe.
+interface AudioOutputStream {
+  // Starts rendering audio.
+  Play();
+
+  // Stops rendering audio and sends a signal to the |socket_descriptor|
+  // indicating this.
+  Pause();
+
+  // Sets volume. Volume must be in the range [0, 1].
+  SetVolume(double volume);
+};
+
+interface AudioOutputStreamProvider {
+  // Creates a new AudioOutputStream using |params|. |shared_buffer| and
+  // |socket_descriptor| are used to write data to the stream as defined
+  // in AudioDeviceThread. Can only be called once.
+  Acquire(AudioOutputStream& output_stream, AudioParameters params)
+  => (handle<shared_buffer> shared_buffer, handle socket_descriptor);
+};

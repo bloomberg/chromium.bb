@@ -47,10 +47,10 @@
 #include <vector>
 
 #include "content/browser/renderer_host/media/audio_output_authorization_handler.h"
-#include "content/browser/renderer_host/media/audio_output_delegate.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "content/public/browser/render_process_host.h"
+#include "media/audio/audio_output_delegate.h"
 
 namespace base {
 class SharedMemory;
@@ -70,7 +70,7 @@ class MediaStreamManager;
 
 class CONTENT_EXPORT AudioRendererHost
     : public BrowserMessageFilter,
-      public AudioOutputDelegate::EventHandler {
+      public media::AudioOutputDelegate::EventHandler {
  public:
   // Called from UI thread from the owner of this object.
   AudioRendererHost(int render_process_id,
@@ -112,7 +112,7 @@ class CONTENT_EXPORT AudioRendererHost
   typedef base::Callback<void(bool have_access)> OutputDeviceAccessCB;
 
   using AudioOutputDelegateVector =
-      std::vector<std::unique_ptr<AudioOutputDelegate>>;
+      std::vector<std::unique_ptr<media::AudioOutputDelegate>>;
 
   // The type of a function that is run on the UI thread to check whether the
   // routing IDs reference a valid RenderFrameHost. The function then runs
@@ -188,7 +188,7 @@ class CONTENT_EXPORT AudioRendererHost
   // Returns delegates_.end() if not found.
   AudioOutputDelegateVector::iterator LookupIteratorById(int stream_id);
   // Returns nullptr if not found.
-  AudioOutputDelegate* LookupById(int stream_id);
+  media::AudioOutputDelegate* LookupById(int stream_id);
 
   // Helper method to check if the authorization procedure for stream
   // |stream_id| has started.

@@ -18,6 +18,7 @@
 #include "media/base/demuxer_stream.h"
 #include "media/base/eme_constants.h"
 #include "media/base/encryption_scheme.h"
+#include "media/base/output_device_info.h"
 #include "media/base/sample_format.h"
 #include "media/base/subsample_entry.h"
 #include "media/base/video_codecs.h"
@@ -71,6 +72,9 @@ IPC_ENUM_TRAITS_MAX_VALUE(media::ContentDecryptionModule::MessageType,
 
 IPC_ENUM_TRAITS_MAX_VALUE(media::CdmSessionType,
                           media::CdmSessionType::SESSION_TYPE_MAX)
+
+IPC_ENUM_TRAITS_MAX_VALUE(media::OutputDeviceStatus,
+                          media::OUTPUT_DEVICE_STATUS_MAX)
 
 IPC_ENUM_TRAITS_MAX_VALUE(media::SampleFormat, media::kSampleFormatMax)
 
