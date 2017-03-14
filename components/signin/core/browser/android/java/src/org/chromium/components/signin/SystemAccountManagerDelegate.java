@@ -193,7 +193,10 @@ public class SystemAccountManagerDelegate implements AccountManagerDelegate {
                 }
             }
         };
-        mAccountManager.updateCredentials(account, "android", null, activity, realCallback, null);
+        // Android 4.4 throws NullPointerException if null is passed
+        Bundle emptyOptions = new Bundle();
+        mAccountManager.updateCredentials(
+                account, "android", emptyOptions, activity, realCallback, null);
     }
 
     protected boolean hasGetAccountsPermission() {
