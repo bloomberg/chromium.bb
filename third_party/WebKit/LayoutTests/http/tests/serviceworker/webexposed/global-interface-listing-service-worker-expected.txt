@@ -267,6 +267,16 @@ interface DOMPointReadOnly
     method constructor
     method matrixTransform
     method toJSON
+interface DOMQuad
+    static method fromQuad
+    static method fromRect
+    getter p1
+    getter p2
+    getter p3
+    getter p4
+    method constructor
+    method getBounds
+    method toJSON
 interface DOMRect : DOMRectReadOnly
     getter height
     getter width

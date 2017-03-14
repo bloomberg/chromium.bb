@@ -7,7 +7,7 @@
 [
  Constructor(optional DOMPointInit p1, optional DOMPointInit p2,
                   optional DOMPointInit p3, optional DOMPointInit p4),
- // TODO(hs1217.lee): Exposed=(Window,Worker)
+ Exposed=(Window,Worker),
  RuntimeEnabled=GeometryInterfaces
 ]
 interface DOMQuad {
