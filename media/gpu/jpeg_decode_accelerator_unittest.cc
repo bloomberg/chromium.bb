@@ -439,7 +439,7 @@ class JpegDecodeAcceleratorTest : public ::testing::Test {
 };
 
 void JpegDecodeAcceleratorTest::TestDecode(size_t num_concurrent_decoders) {
-  LOG_ASSERT(test_image_files_.size() == expected_status_.size());
+  LOG_ASSERT(test_image_files_.size() >= expected_status_.size());
   base::Thread decoder_thread("DecoderThread");
   ASSERT_TRUE(decoder_thread.Start());
 
@@ -461,8 +461,10 @@ void JpegDecodeAcceleratorTest::TestDecode(size_t num_concurrent_decoders) {
           FROM_HERE, base::Bind(&JpegClient::StartDecode,
                                 base::Unretained(clients[i]), index));
     }
-    for (size_t i = 0; i < num_concurrent_decoders; i++) {
-      ASSERT_EQ(notes[i]->Wait(), expected_status_[index]);
+    if (index < expected_status_.size()) {
+      for (size_t i = 0; i < num_concurrent_decoders; i++) {
+        ASSERT_EQ(notes[i]->Wait(), expected_status_[index]);
+      }
     }
   }
 
@@ -528,6 +530,17 @@ TEST_F(JpegDecodeAcceleratorTest, KeepDecodeAfterFailure) {
   expected_status_.push_back(CS_ERROR);
   expected_status_.push_back(CS_DECODE_PASS);
   TestDecode(1);
+}
+
+TEST_F(JpegDecodeAcceleratorTest, Abort) {
+  const size_t kNumOfJpegToDecode = 5;
+  for (size_t i = 0; i < kNumOfJpegToDecode; i++)
+    test_image_files_.push_back(g_env->image_data_1280x720_default_.get());
+  // Verify only one decode success to ensure both decoders have started the
+  // decoding. Then destroy the first decoder when it is still decoding. The
+  // kernel should not crash during this test.
+  expected_status_.push_back(CS_DECODE_PASS);
+  TestDecode(2);
 }
 
 }  // namespace
