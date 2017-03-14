@@ -8,6 +8,7 @@ include_rules = [
   "+components/sync/test/fake_server/android",
   "+components/toolbar",
   "+components/web_contents_delegate_android",
+  "+device/vr/features.h",
   "+sandbox/linux/seccomp-bpf/sandbox_bpf.h",
   "+sandbox/sandbox_features.h",
   "+third_party/gvr-android-sdk",

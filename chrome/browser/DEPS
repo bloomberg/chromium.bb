@@ -22,6 +22,7 @@ include_rules = [
   "+device/media_transfer_protocol",
   "+device/power_save_blocker",
   "+device/usb",
+  "+device/vr/features.h",
   "+extensions/browser",
   "+extensions/common",
   "+extensions/components/javascript_dialog_extensions_client",

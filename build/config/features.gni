@@ -70,12 +70,6 @@ declare_args() {
 
   # Whether or not to use external popup menu.
   use_external_popup_menu = is_android || is_mac
-
-  # Enable WebVR support by default on Android
-  # Still requires command line flag to access API
-  # TODO(bshe): Enable for other architecture too. Currently we only support arm
-  # and arm64.
-  enable_webvr = is_android && (current_cpu == "arm" || current_cpu == "arm64")
 }
 
 # Additional dependent variables -----------------------------------------------

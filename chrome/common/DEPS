@@ -28,6 +28,7 @@ include_rules = [
   "+components/translate/core/common",
   "+components/url_formatter",
   "+components/version_info",
+  "+device/vr/features.h",
   "+extensions/common",
   "+extensions/features",
   "+gin/public",  # For profiling.cc

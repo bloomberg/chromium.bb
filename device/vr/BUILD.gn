@@ -2,11 +2,18 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//build/config/features.gni")
+import("features.gni")
+import("//build/buildflag_header.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 
 if (is_android) {
   import("//build/config/android/rules.gni")  # For generate_jni().
+}
+
+# Generate a buildflag header for compile-time checking of WebVR support.
+buildflag_header("features") {
+  header = "features.h"
+  flags = [ "ENABLE_WEBVR=$enable_webvr" ]
 }
 
 component("vr") {

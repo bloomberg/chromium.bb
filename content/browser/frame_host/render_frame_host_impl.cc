@@ -97,6 +97,7 @@
 #include "device/generic_sensor/sensor_provider_impl.h"
 #include "device/geolocation/geolocation_service_context.h"
 #include "device/vibration/vibration_manager_impl.h"
+#include "device/vr/features.h"
 #include "device/wake_lock/wake_lock_service_context.h"
 #include "media/base/media_switches.h"
 #include "media/media_features.h"
@@ -125,7 +126,7 @@
 #include "content/browser/frame_host/popup_menu_helper_mac.h"
 #endif
 
-#if defined(ENABLE_WEBVR)
+#if BUILDFLAG(ENABLE_WEBVR)
 #include "device/vr/vr_service_impl.h"  // nogncheck
 #else
 #include "device/vr/vr_service.mojom.h"  // nogncheck
@@ -2367,7 +2368,7 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
                  process_->GetID(),
                  routing_id_));
 
-#if defined(ENABLE_WEBVR)
+#if BUILDFLAG(ENABLE_WEBVR)
   GetInterfaceRegistry()->AddInterface<device::mojom::VRService>(
       base::Bind(&device::VRServiceImpl::Create));
 #else

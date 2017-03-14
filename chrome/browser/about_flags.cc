@@ -74,6 +74,7 @@
 #include "content/public/common/feature_h264_with_openh264_ffmpeg.h"
 #include "content/public/common/features.h"
 #include "device/base/features.h"
+#include "device/vr/features.h"
 #include "extensions/features/features.h"
 #include "gin/public/gin_features.h"
 #include "gpu/config/gpu_switches.h"
@@ -1656,7 +1657,7 @@ const FeatureEntry kFeatureEntries[] = {
 #endif  // OS_MACOSX
     {"enable-webvr", IDS_FLAGS_WEBVR_NAME, IDS_FLAGS_WEBVR_DESCRIPTION, kOsAll,
      SINGLE_VALUE_TYPE(switches::kEnableWebVR)},
-#if defined(ENABLE_WEBVR)
+#if BUILDFLAG(ENABLE_WEBVR)
     {"enable-webvr-experimental-rendering",
      IDS_FLAGS_WEBVR_EXPERIMENTAL_RENDERING_NAME,
      IDS_FLAGS_WEBVR_EXPERIMENTAL_RENDERING_DESCRIPTION, kOsAndroid,

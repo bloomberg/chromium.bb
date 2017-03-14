@@ -78,6 +78,7 @@ source_set("browser") {
     "//device/sensors",
     "//device/vibration",
     "//device/vr",
+    "//device/vr:features",
     "//device/wake_lock",
     "//google_apis",
     "//gpu",

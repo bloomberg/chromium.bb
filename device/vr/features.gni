@@ -1,0 +1,11 @@
+# Copyright 2016 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+declare_args() {
+  # Enable WebVR support by default on Android
+  # Still requires command line flag to access API
+  # TODO(bshe): Enable for other architecture too. Currently we only support arm
+  # and arm64.
+  enable_webvr = is_android && (current_cpu == "arm" || current_cpu == "arm64")
+}

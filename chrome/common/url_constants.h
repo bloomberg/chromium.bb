@@ -15,6 +15,7 @@
 #include "build/build_config.h"
 #include "chrome/common/features.h"
 #include "content/public/common/url_constants.h"
+#include "device/vr/features.h"
 #include "media/media_features.h"
 #include "ppapi/features/features.h"
 #include "printing/features/features.h"
@@ -270,7 +271,7 @@ extern const char kChromeUISnippetsInternalsHost[];
 extern const char kChromeUIWebApksHost[];
 #endif
 
-#if defined(ENABLE_WEBVR)
+#if BUILDFLAG(ENABLE_WEBVR)
 extern const char kChromeUIVrShellUIHost[];
 #endif
 
