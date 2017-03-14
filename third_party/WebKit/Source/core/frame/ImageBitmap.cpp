@@ -4,7 +4,6 @@
 
 #include "core/frame/ImageBitmap.h"
 
-#include "core/html/Float32ImageData.h"
 #include "core/html/HTMLCanvasElement.h"
 #include "core/html/HTMLVideoElement.h"
 #include "core/html/ImageData.h"
@@ -932,11 +931,6 @@ ImageBitmap::ImageBitmap(ImageData* data,
   m_image = StaticBitmapImage::create(std::move(skImage));
 }
 
-// TODO(zakerinasab): Fix the constructor from Float32ImageData.
-ImageBitmap::ImageBitmap(Float32ImageData* data,
-                         Optional<IntRect> cropRect,
-                         const ImageBitmapOptions& options) {}
-
 ImageBitmap::ImageBitmap(ImageBitmap* bitmap,
                          Optional<IntRect> cropRect,
                          const ImageBitmapOptions& options) {
@@ -1016,12 +1010,6 @@ ImageBitmap* ImageBitmap::create(OffscreenCanvas* offscreenCanvas,
 }
 
 ImageBitmap* ImageBitmap::create(ImageData* data,
-                                 Optional<IntRect> cropRect,
-                                 const ImageBitmapOptions& options) {
-  return new ImageBitmap(data, cropRect, options);
-}
-
-ImageBitmap* ImageBitmap::create(Float32ImageData* data,
                                  Optional<IntRect> cropRect,
                                  const ImageBitmapOptions& options) {
   return new ImageBitmap(data, cropRect, options);

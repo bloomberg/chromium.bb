@@ -1889,13 +1889,6 @@ interface FileReader : EventTarget
     setter onloadend
     setter onloadstart
     setter onprogress
-interface Float32ImageData
-    attribute @@toStringTag
-    getter colorSpace
-    getter data
-    getter height
-    getter width
-    method constructor
 interface FocusEvent : UIEvent
     attribute @@toStringTag
     getter relatedTarget
@@ -3761,8 +3754,9 @@ interface ImageCapture
     method takePhoto
 interface ImageData
     attribute @@toStringTag
-    getter colorSpace
+    getter colorSettings
     getter data
+    getter dataUnion
     getter height
     getter width
     method constructor

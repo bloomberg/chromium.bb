@@ -21,7 +21,6 @@
 #include <memory>
 
 namespace blink {
-class Float32ImageData;
 class HTMLCanvasElement;
 class HTMLVideoElement;
 class ImageData;
@@ -64,9 +63,6 @@ class CORE_EXPORT ImageBitmap final
                              Optional<IntRect>,
                              const ImageBitmapOptions& = ImageBitmapOptions());
   static ImageBitmap* create(ImageData*,
-                             Optional<IntRect>,
-                             const ImageBitmapOptions& = ImageBitmapOptions());
-  static ImageBitmap* create(Float32ImageData*,
                              Optional<IntRect>,
                              const ImageBitmapOptions& = ImageBitmapOptions());
   static ImageBitmap* create(ImageBitmap*,
@@ -154,7 +150,6 @@ class CORE_EXPORT ImageBitmap final
   ImageBitmap(HTMLCanvasElement*, Optional<IntRect>, const ImageBitmapOptions&);
   ImageBitmap(OffscreenCanvas*, Optional<IntRect>, const ImageBitmapOptions&);
   ImageBitmap(ImageData*, Optional<IntRect>, const ImageBitmapOptions&);
-  ImageBitmap(Float32ImageData*, Optional<IntRect>, const ImageBitmapOptions&);
   ImageBitmap(ImageBitmap*, Optional<IntRect>, const ImageBitmapOptions&);
   ImageBitmap(PassRefPtr<StaticBitmapImage>);
   ImageBitmap(PassRefPtr<StaticBitmapImage>,

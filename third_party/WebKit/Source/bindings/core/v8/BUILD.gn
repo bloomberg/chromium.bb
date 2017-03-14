@@ -121,6 +121,8 @@ generated_core_dictionary_files = [
   "$blink_core_output_dir/frame/ScrollToOptions.h",
   "$blink_core_output_dir/html/AssignedNodesOptions.cpp",
   "$blink_core_output_dir/html/AssignedNodesOptions.h",
+  "$blink_core_output_dir/html/ImageDataColorSettings.cpp",
+  "$blink_core_output_dir/html/ImageDataColorSettings.h",
   "$blink_core_output_dir/html/canvas/CanvasContextCreationAttributes.cpp",
   "$blink_core_output_dir/html/canvas/CanvasContextCreationAttributes.h",
   "$blink_core_output_dir/html/track/TrackEventInit.cpp",
@@ -228,6 +230,8 @@ bindings_core_generated_union_type_files = [
   "$bindings_core_v8_output_dir/USVStringSequenceSequenceOrUSVStringOrURLSearchParams.h",
   "$bindings_core_v8_output_dir/UnrestrictedDoubleOrString.cpp",
   "$bindings_core_v8_output_dir/UnrestrictedDoubleOrString.h",
+  "$bindings_core_v8_output_dir/Uint8ClampedArrayOrUint16ArrayOrFloat32Array.cpp",
+  "$bindings_core_v8_output_dir/Uint8ClampedArrayOrUint16ArrayOrFloat32Array.h",
   "$bindings_core_v8_output_dir/VideoTrackOrAudioTrackOrTextTrack.cpp",
   "$bindings_core_v8_output_dir/VideoTrackOrAudioTrackOrTextTrack.h",
 ]

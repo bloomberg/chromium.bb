@@ -31,16 +31,6 @@
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/Platform.h"
 
-constexpr const char* kLegacyCanvasColorSpaceName = "legacy-srgb";
-constexpr const char* kSRGBCanvasColorSpaceName = "srgb";
-constexpr const char* kRec2020CanvasColorSpaceName = "rec2020";
-constexpr const char* kP3CanvasColorSpaceName = "p3";
-
-constexpr const char* kRGBA8CanvasPixelFormatName = "8-8-8-8";
-constexpr const char* kRGB10A2CanvasPixelFormatName = "10-10-10-2";
-constexpr const char* kRGBA12CanvasPixelFormatName = "12-12-12-12";
-constexpr const char* kF16CanvasPixelFormatName = "float16";
-
 namespace blink {
 
 CanvasRenderingContext::CanvasRenderingContext(

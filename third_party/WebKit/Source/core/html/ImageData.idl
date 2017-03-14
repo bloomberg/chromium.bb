@@ -29,7 +29,7 @@
 // https://html.spec.whatwg.org/#dom-imagedata
 // https://github.com/junov/CanvasColorSpace/blob/master/CanvasColorSpaceProposal.md#imagedata
 
-enum ImageDataColorSpace { "legacy-srgb", "srgb", "linear-rgb" };
+typedef (Uint8ClampedArray or Uint16Array or Float32Array) ImageDataArray;
 
 [
     Constructor(unsigned long sw, unsigned long sh),
@@ -38,12 +38,18 @@ enum ImageDataColorSpace { "legacy-srgb", "srgb", "linear-rgb" };
     RaisesException=Constructor,
 ] interface ImageData {
 
-    [RuntimeEnabled=ExperimentalCanvasFeatures, RaisesException] ImageData createImageData(unsigned long sw, unsigned long sh, ImageDataColorSpace colorSpace);
-    [RuntimeEnabled=ExperimentalCanvasFeatures, RaisesException] ImageData createImageData(Uint8ClampedArray data, unsigned long sw, ImageDataColorSpace colorSpace);
-    [RuntimeEnabled=ExperimentalCanvasFeatures, RaisesException] ImageData createImageData(Uint8ClampedArray data, unsigned long sw, unsigned long sh, ImageDataColorSpace colorSpace);
+    // The following createImageData functions are used instead of the regular constructors
+    // as currently Blink IDL does not allow to put custom constructors behind a flag
+    // (crbug.com/672978). These must be replaced with regular constructor declaration
+    // as specified in the proposal before shipping.
+    // https://github.com/WICG/canvas-color-space/blob/master/CanvasColorSpaceProposal.md
+
+    [RuntimeEnabled=ExperimentalCanvasFeatures, RaisesException] ImageData createImageData(unsigned long sw, unsigned long sh, ImageDataColorSettings imageDataColorSettings);
+    [RuntimeEnabled=ExperimentalCanvasFeatures, RaisesException] ImageData createImageData(ImageDataArray data, unsigned long sw, unsigned long sh, ImageDataColorSettings imageDataColorSettings);
 
     readonly attribute unsigned long width;
     readonly attribute unsigned long height;
     readonly attribute Uint8ClampedArray data;
-    readonly attribute ImageDataColorSpace colorSpace;
+    [RuntimeEnabled=ExperimentalCanvasFeatures] readonly attribute ImageDataArray dataUnion;
+    [RuntimeEnabled=ExperimentalCanvasFeatures] readonly attribute ImageDataColorSettings colorSettings;
 };

@@ -38,24 +38,89 @@
 
 namespace blink {
 
+bool RaiseDOMExceptionAndReturnFalse(ExceptionState* exceptionState,
+                                     ExceptionCode exceptionCode,
+                                     const char* message) {
+  if (exceptionState)
+    exceptionState->throwDOMException(exceptionCode, message);
+  return false;
+}
+
 bool ImageData::validateConstructorArguments(const unsigned& paramFlags,
                                              const IntSize* size,
                                              const unsigned& width,
                                              const unsigned& height,
                                              const DOMArrayBufferView* data,
-                                             const String* colorSpace,
-                                             ExceptionState* exceptionState,
-                                             ImageDataType imageDataType) {
-  if (paramFlags & kParamData) {
-    if (data->type() != DOMArrayBufferView::ViewType::TypeUint8Clamped &&
-        data->type() != DOMArrayBufferView::ViewType::TypeFloat32)
-      return false;
-    if (data->type() == DOMArrayBufferView::ViewType::TypeUint8Clamped &&
-        imageDataType != kUint8ClampedImageData)
-      imageDataType = kFloat32ImageData;
+                                             ExceptionState* exceptionState) {
+  // We accept all the combinations of colorSpace and storageFormat in an
+  // ImageDataColorSettings to be stored in an ImageData. Therefore, we don't
+  // check the color settings in this function.
+
+  if ((paramFlags & kParamWidth) && !width) {
+    return RaiseDOMExceptionAndReturnFalse(
+        exceptionState, IndexSizeError,
+        "The source width is zero or not a number.");
   }
 
-  // ImageData::create parameters without ExceptionState
+  if ((paramFlags & kParamHeight) && !height) {
+    return RaiseDOMExceptionAndReturnFalse(
+        exceptionState, IndexSizeError,
+        "The source height is zero or not a number.");
+  }
+
+  if (paramFlags & (kParamWidth | kParamHeight)) {
+    CheckedNumeric<unsigned> dataSize = 4;
+    dataSize *= width;
+    dataSize *= height;
+    if (!dataSize.IsValid())
+      return RaiseDOMExceptionAndReturnFalse(
+          exceptionState, IndexSizeError,
+          "The requested image size exceeds the supported range.");
+  }
+
+  unsigned dataLength = 0;
+  if (paramFlags & kParamData) {
+    DCHECK(data);
+    switch (data->type()) {
+      case DOMArrayBufferView::ViewType::TypeUint8Clamped:
+        dataLength = data->view()->byteLength();
+        break;
+      case DOMArrayBufferView::ViewType::TypeUint16:
+        dataLength = data->view()->byteLength() / 2;
+        break;
+      case DOMArrayBufferView::ViewType::TypeFloat32:
+        dataLength = data->view()->byteLength() / 4;
+        break;
+      default:
+        return RaiseDOMExceptionAndReturnFalse(
+            exceptionState, NotSupportedError,
+            "The input data type is not supported.");
+    }
+
+    if (!dataLength) {
+      return RaiseDOMExceptionAndReturnFalse(
+          exceptionState, IndexSizeError, "The input data has zero elements.");
+    }
+
+    if (dataLength % 4) {
+      return RaiseDOMExceptionAndReturnFalse(
+          exceptionState, IndexSizeError,
+          "The input data length is not a multiple of 4.");
+    }
+
+    if ((paramFlags & kParamWidth) && (dataLength / 4) % width) {
+      return RaiseDOMExceptionAndReturnFalse(
+          exceptionState, IndexSizeError,
+          "The input data length is not a multiple of (4 * width).");
+    }
+
+    if ((paramFlags & kParamHeight & kParamWidth) &&
+        height != dataLength / (4 * width))
+      return RaiseDOMExceptionAndReturnFalse(
+          exceptionState, IndexSizeError,
+          "The input data length is not equal to (4 * width * height).");
+  }
+
   if (paramFlags & kParamSize) {
     if (!size->width() || !size->height())
       return false;
@@ -65,132 +130,60 @@ bool ImageData::validateConstructorArguments(const unsigned& paramFlags,
     if (!dataSize.IsValid())
       return false;
     if (paramFlags & kParamData) {
-      DCHECK(data);
-      unsigned length =
-          data->type() == DOMArrayBufferView::ViewType::TypeUint8Clamped
-              ? (const_cast<DOMUint8ClampedArray*>(
-                     static_cast<const DOMUint8ClampedArray*>(data)))
-                    ->length()
-              : (const_cast<DOMFloat32Array*>(
-                     static_cast<const DOMFloat32Array*>(data)))
-                    ->length();
-      if (dataSize.ValueOrDie() > length)
+      if (dataSize.ValueOrDie() > dataLength)
         return false;
     }
-    return true;
   }
 
-  // ImageData::create parameters with ExceptionState
-  if ((paramFlags & kParamWidth) && !width) {
-    exceptionState->throwDOMException(
-        IndexSizeError, "The source width is zero or not a number.");
-    return false;
-  }
-  if ((paramFlags & kParamHeight) && !height) {
-    exceptionState->throwDOMException(
-        IndexSizeError, "The source height is zero or not a number.");
-    return false;
-  }
-  if (paramFlags & (kParamWidth | kParamHeight)) {
-    CheckedNumeric<unsigned> dataSize = 4;
-    dataSize *= width;
-    dataSize *= height;
-    if (!dataSize.IsValid()) {
-      exceptionState->throwDOMException(
-          IndexSizeError,
-          "The requested image size exceeds the supported range.");
-      return false;
-    }
-  }
-  if (paramFlags & kParamData) {
-    DCHECK(data);
-    unsigned length =
-        data->type() == DOMArrayBufferView::ViewType::TypeUint8Clamped
-            ? (const_cast<DOMUint8ClampedArray*>(
-                   static_cast<const DOMUint8ClampedArray*>(data)))
-                  ->length()
-            : (const_cast<DOMFloat32Array*>(
-                   static_cast<const DOMFloat32Array*>(data)))
-                  ->length();
-    if (!length) {
-      exceptionState->throwDOMException(IndexSizeError,
-                                        "The input data has zero elements.");
-      return false;
-    }
-    if (length % 4) {
-      exceptionState->throwDOMException(
-          IndexSizeError, "The input data length is not a multiple of 4.");
-      return false;
-    }
-    length /= 4;
-    if (length % width) {
-      exceptionState->throwDOMException(
-          IndexSizeError,
-          "The input data length is not a multiple of (4 * width).");
-      return false;
-    }
-    if ((paramFlags & kParamHeight) && height != length / width) {
-      exceptionState->throwDOMException(
-          IndexSizeError,
-          "The input data length is not equal to (4 * width * height).");
-      return false;
-    }
-  }
-  if (paramFlags & kParamColorSpace) {
-    if (!colorSpace || colorSpace->length() == 0) {
-      exceptionState->throwDOMException(
-          NotSupportedError, "The source color space is not defined.");
-      return false;
-    }
-    if (imageDataType == kUint8ClampedImageData &&
-        *colorSpace != kLegacyImageDataColorSpaceName &&
-        *colorSpace != kSRGBImageDataColorSpaceName) {
-      exceptionState->throwDOMException(NotSupportedError,
-                                        "The input color space is not "
-                                        "supported in "
-                                        "Uint8ClampedArray-backed ImageData.");
-      return false;
-    }
-    if (imageDataType == kFloat32ImageData &&
-        *colorSpace != kLinearRGBImageDataColorSpaceName) {
-      exceptionState->throwDOMException(NotSupportedError,
-                                        "The input color space is not "
-                                        "supported in "
-                                        "Float32Array-backed ImageData.");
-      return false;
-    }
-  }
   return true;
 }
 
-DOMUint8ClampedArray* ImageData::allocateAndValidateUint8ClampedArray(
+DOMArrayBufferView* ImageData::allocateAndValidateDataArray(
     const unsigned& length,
+    ImageDataStorageFormat storageFormat,
     ExceptionState* exceptionState) {
   if (!length)
     return nullptr;
-  DOMUint8ClampedArray* dataArray = DOMUint8ClampedArray::createOrNull(length);
-  if (!dataArray || length != dataArray->length()) {
-    if (exceptionState) {
+
+  DOMArrayBufferView* dataArray = nullptr;
+  unsigned dataLength = 0;
+  switch (storageFormat) {
+    case kUint8ClampedArrayStorageFormat:
+      dataArray = DOMUint8ClampedArray::createOrNull(length);
+      dataLength = dataArray->view()->byteLength();
+      break;
+    case kUint16ArrayStorageFormat:
+      dataArray = DOMUint16Array::createOrNull(length);
+      dataLength = dataArray->view()->byteLength() / 2;
+      break;
+    case kFloat32ArrayStorageFormat:
+      dataArray = DOMFloat32Array::createOrNull(length);
+      dataLength = dataArray->view()->byteLength() / 4;
+      break;
+    default:
+      NOTREACHED();
+  }
+
+  if (!dataArray || length != dataLength) {
+    if (exceptionState)
       exceptionState->throwDOMException(V8RangeError,
                                         "Out of memory at ImageData creation");
-    }
     return nullptr;
   }
+
   return dataArray;
 }
 
 ImageData* ImageData::create(const IntSize& size) {
   if (!ImageData::validateConstructorArguments(kParamSize, &size))
     return nullptr;
-  DOMUint8ClampedArray* byteArray =
-      ImageData::allocateAndValidateUint8ClampedArray(4 * size.width() *
-                                                      size.height());
-  if (!byteArray)
-    return nullptr;
+  DOMArrayBufferView* byteArray = allocateAndValidateDataArray(
+      4 * size.width() * size.height(), kUint8ClampedArrayStorageFormat);
   return new ImageData(size, byteArray);
 }
 
-// This function accepts size (0, 0).
+// This function accepts size (0, 0) and always returns the ImageData in
+// "srgb" color space and "uint8" storage format.
 ImageData* ImageData::createForTest(const IntSize& size) {
   CheckedNumeric<unsigned> dataSize = 4;
   dataSize *= size.width();
@@ -211,17 +204,8 @@ ImageData* ImageData::create(const IntSize& size,
   if (!ImageData::validateConstructorArguments(kParamSize | kParamData, &size,
                                                0, 0, byteArray))
     return nullptr;
-  return new ImageData(size, byteArray);
-}
 
-ImageData* ImageData::create(const IntSize& size,
-                             DOMUint8ClampedArray* byteArray,
-                             const String& colorSpace) {
-  if (!ImageData::validateConstructorArguments(
-          kParamSize | kParamData | kParamColorSpace, &size, 0, 0, byteArray,
-          &colorSpace))
-    return nullptr;
-  return new ImageData(size, byteArray, colorSpace);
+  return new ImageData(size, byteArray);
 }
 
 ImageData* ImageData::create(unsigned width,
@@ -229,21 +213,21 @@ ImageData* ImageData::create(unsigned width,
                              ExceptionState& exceptionState) {
   if (!ImageData::validateConstructorArguments(kParamWidth | kParamHeight,
                                                nullptr, width, height, nullptr,
-                                               nullptr, &exceptionState))
+                                               &exceptionState))
     return nullptr;
-  DOMUint8ClampedArray* byteArray =
-      ImageData::allocateAndValidateUint8ClampedArray(4 * width * height,
-                                                      &exceptionState);
+
+  DOMArrayBufferView* byteArray = allocateAndValidateDataArray(
+      4 * width * height, kUint8ClampedArrayStorageFormat, &exceptionState);
   return byteArray ? new ImageData(IntSize(width, height), byteArray) : nullptr;
 }
 
 ImageData* ImageData::create(DOMUint8ClampedArray* data,
                              unsigned width,
                              ExceptionState& exceptionState) {
-  if (!ImageData::validateConstructorArguments(kParamData | kParamWidth,
-                                               nullptr, width, 0, data, nullptr,
-                                               &exceptionState))
+  if (!ImageData::validateConstructorArguments(
+          kParamData | kParamWidth, nullptr, width, 0, data, &exceptionState))
     return nullptr;
+
   unsigned height = data->length() / (width * 4);
   return new ImageData(IntSize(width, height), data);
 }
@@ -254,50 +238,55 @@ ImageData* ImageData::create(DOMUint8ClampedArray* data,
                              ExceptionState& exceptionState) {
   if (!ImageData::validateConstructorArguments(
           kParamData | kParamWidth | kParamHeight, nullptr, width, height, data,
-          nullptr, &exceptionState))
+          &exceptionState))
     return nullptr;
+
   return new ImageData(IntSize(width, height), data);
 }
 
-ImageData* ImageData::createImageData(unsigned width,
-                                      unsigned height,
-                                      String colorSpace,
-                                      ExceptionState& exceptionState) {
-  if (!ImageData::validateConstructorArguments(
-          kParamWidth | kParamHeight | kParamColorSpace, nullptr, width, height,
-          nullptr, &colorSpace, &exceptionState))
+ImageData* ImageData::createImageData(
+    unsigned width,
+    unsigned height,
+    const ImageDataColorSettings& colorSettings,
+    ExceptionState& exceptionState) {
+  if (!ImageData::validateConstructorArguments(kParamWidth | kParamHeight,
+                                               nullptr, width, height, nullptr,
+                                               &exceptionState))
     return nullptr;
 
-  DOMUint8ClampedArray* byteArray =
-      ImageData::allocateAndValidateUint8ClampedArray(4 * width * height,
-                                                      &exceptionState);
-  return byteArray
-             ? new ImageData(IntSize(width, height), byteArray, colorSpace)
-             : nullptr;
+  ImageDataStorageFormat storageFormat =
+      ImageData::getImageDataStorageFormat(colorSettings.storageFormat());
+  DOMArrayBufferView* bufferView = allocateAndValidateDataArray(
+      4 * width * height, storageFormat, &exceptionState);
+
+  if (!bufferView)
+    return nullptr;
+
+  return new ImageData(IntSize(width, height), bufferView, &colorSettings);
 }
 
-ImageData* ImageData::createImageData(DOMUint8ClampedArray* data,
-                                      unsigned width,
-                                      String colorSpace,
-                                      ExceptionState& exceptionState) {
-  if (!ImageData::validateConstructorArguments(
-          kParamData | kParamWidth | kParamColorSpace, nullptr, width, 0, data,
-          &colorSpace, &exceptionState))
-    return nullptr;
-  unsigned height = data->length() / (width * 4);
-  return new ImageData(IntSize(width, height), data, colorSpace);
-}
+ImageData* ImageData::createImageData(
+    ImageDataArray& data,
+    unsigned width,
+    unsigned height,
+    const ImageDataColorSettings& colorSettings,
+    ExceptionState& exceptionState) {
+  DOMArrayBufferView* bufferView = nullptr;
+  if (data.isUint8ClampedArray())
+    bufferView = data.getAsUint8ClampedArray();
+  else if (data.isUint16Array())
+    bufferView = data.getAsUint16Array();
+  else if (data.isFloat32Array())
+    bufferView = data.getAsFloat32Array();
+  else
+    NOTREACHED();
 
-ImageData* ImageData::createImageData(DOMUint8ClampedArray* data,
-                                      unsigned width,
-                                      unsigned height,
-                                      String colorSpace,
-                                      ExceptionState& exceptionState) {
   if (!ImageData::validateConstructorArguments(
-          kParamData | kParamWidth | kParamHeight | kParamColorSpace, nullptr,
-          width, height, data, &colorSpace, &exceptionState))
+          kParamData | kParamWidth | kParamHeight, nullptr, width, height,
+          bufferView, &exceptionState))
     return nullptr;
-  return new ImageData(IntSize(width, height), data, colorSpace);
+
+  return new ImageData(IntSize(width, height), bufferView, &colorSettings);
 }
 
 ScriptPromise ImageData::createImageBitmap(ScriptState* scriptState,
@@ -330,7 +319,7 @@ v8::Local<v8::Object> ImageData::associateWithWrapper(
   wrapper =
       ScriptWrappable::associateWithWrapper(isolate, wrapperType, wrapper);
 
-  if (!wrapper.IsEmpty() && m_data.get()) {
+  if (!wrapper.IsEmpty() && m_data) {
     // Create a V8 Uint8ClampedArray object and set the "data" property
     // of the ImageData object to the created v8 object, eliminating the
     // C++ callback when accessing the "data" property.
@@ -344,61 +333,95 @@ v8::Local<v8::Object> ImageData::associateWithWrapper(
   return wrapper;
 }
 
-ImageDataColorSpace ImageData::getImageDataColorSpace(String colorSpaceName) {
-  if (colorSpaceName == kLegacyImageDataColorSpaceName)
-    return kLegacyImageDataColorSpace;
-  if (colorSpaceName == kSRGBImageDataColorSpaceName)
-    return kSRGBImageDataColorSpace;
-  if (colorSpaceName == kLinearRGBImageDataColorSpaceName)
-    return kLinearRGBImageDataColorSpace;
-  NOTREACHED();
-  return kLegacyImageDataColorSpace;
-}
-
-String ImageData::getImageDataColorSpaceName(ImageDataColorSpace colorSpace) {
-  switch (colorSpace) {
-    case kLegacyImageDataColorSpace:
-      return kLegacyImageDataColorSpaceName;
-    case kSRGBImageDataColorSpace:
-      return kSRGBImageDataColorSpaceName;
-    case kLinearRGBImageDataColorSpace:
-      return kLinearRGBImageDataColorSpaceName;
-  }
-  NOTREACHED();
-  return String();
-}
-
-sk_sp<SkColorSpace> ImageData::imageDataColorSpaceToSkColorSpace(
-    ImageDataColorSpace colorSpace) {
-  switch (colorSpace) {
-    case kLegacyImageDataColorSpace:
-      return ColorBehavior::globalTargetColorSpace().ToSkColorSpace();
-    case kSRGBImageDataColorSpace:
-      return SkColorSpace::MakeSRGB();
-    case kLinearRGBImageDataColorSpace:
-      return SkColorSpace::MakeSRGBLinear();
-  }
-  NOTREACHED();
+const DOMUint8ClampedArray* ImageData::data() const {
+  if (m_colorSettings.storageFormat() == kUint8ClampedArrayStorageFormatName)
+    return m_data.get();
   return nullptr;
 }
 
+DOMUint8ClampedArray* ImageData::data() {
+  if (m_colorSettings.storageFormat() == kUint8ClampedArrayStorageFormatName)
+    return m_data.get();
+  return nullptr;
+}
+
+ImageDataStorageFormat ImageData::getImageDataStorageFormat(
+    const String& storageFormatName) {
+  if (storageFormatName == kUint8ClampedArrayStorageFormatName)
+    return kUint8ClampedArrayStorageFormat;
+  if (storageFormatName == kUint16ArrayStorageFormatName)
+    return kUint16ArrayStorageFormat;
+  if (storageFormatName == kFloat32ArrayStorageFormatName)
+    return kFloat32ArrayStorageFormat;
+  NOTREACHED();
+  return kUint8ClampedArrayStorageFormat;
+}
+
+// For ImageData, the color space is only specified by color settings.
+// It cannot have a SkColorSpace. This doesn't mean anything. Fix this.
 sk_sp<SkColorSpace> ImageData::getSkColorSpace() {
   if (!RuntimeEnabledFeatures::experimentalCanvasFeaturesEnabled() ||
       !RuntimeEnabledFeatures::colorCorrectRenderingEnabled())
     return nullptr;
-  return ImageData::imageDataColorSpaceToSkColorSpace(m_colorSpace);
+
+  return SkColorSpace::MakeSRGB();
+}
+
+void ImageData::trace(Visitor* visitor) {
+  visitor->trace(m_data);
+  visitor->trace(m_dataU16);
+  visitor->trace(m_dataF32);
+  visitor->trace(m_dataUnion);
 }
 
 ImageData::ImageData(const IntSize& size,
-                     DOMUint8ClampedArray* byteArray,
-                     String colorSpaceName)
-    : m_size(size),
-      m_colorSpace(getImageDataColorSpace(colorSpaceName)),
-      m_data(byteArray) {
+                     DOMArrayBufferView* data,
+                     const ImageDataColorSettings* colorSettings)
+    : m_size(size) {
   DCHECK_GE(size.width(), 0);
   DCHECK_GE(size.height(), 0);
-  SECURITY_CHECK(static_cast<unsigned>(size.width() * size.height() * 4) <=
-                 m_data->length());
+  DCHECK(data);
+
+  m_data = nullptr;
+  m_dataU16 = nullptr;
+  m_dataF32 = nullptr;
+
+  if (colorSettings) {
+    m_colorSettings.setColorSpace(colorSettings->colorSpace());
+    m_colorSettings.setStorageFormat(colorSettings->storageFormat());
+  }
+
+  ImageDataStorageFormat storageFormat =
+      getImageDataStorageFormat(m_colorSettings.storageFormat());
+
+  switch (storageFormat) {
+    case kUint8ClampedArrayStorageFormat:
+      m_data = const_cast<DOMUint8ClampedArray*>(
+          static_cast<const DOMUint8ClampedArray*>(data));
+      m_dataUnion.setUint8ClampedArray(m_data);
+      SECURITY_CHECK(static_cast<unsigned>(size.width() * size.height() * 4) <=
+                     m_data->length());
+      break;
+
+    case kUint16ArrayStorageFormat:
+      m_dataU16 =
+          const_cast<DOMUint16Array*>(static_cast<const DOMUint16Array*>(data));
+      m_dataUnion.setUint16Array(m_dataU16);
+      SECURITY_CHECK(static_cast<unsigned>(size.width() * size.height() * 4) <=
+                     m_dataU16->length());
+      break;
+
+    case kFloat32ArrayStorageFormat:
+      m_dataF32 = const_cast<DOMFloat32Array*>(
+          static_cast<const DOMFloat32Array*>(data));
+      m_dataUnion.setFloat32Array(m_dataF32);
+      SECURITY_CHECK(static_cast<unsigned>(size.width() * size.height() * 4) <=
+                     m_dataF32->length());
+      break;
+
+    default:
+      NOTREACHED();
+  }
 }
 
 }  // namespace blink
