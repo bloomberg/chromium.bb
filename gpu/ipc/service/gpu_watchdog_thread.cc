@@ -241,11 +241,47 @@ void GpuWatchdogThread::OnCheck(bool after_suspend) {
 
   // Post a task to the watchdog thread to exit if the monitored thread does
   // not respond in time.
-  task_runner()->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&GpuWatchdogThread::DeliberatelyTerminateToRecoverFromHang,
-                 weak_factory_.GetWeakPtr()),
-      timeout);
+  task_runner()->PostDelayedTask(FROM_HERE,
+                                 base::Bind(&GpuWatchdogThread::OnCheckTimeout,
+                                            weak_factory_.GetWeakPtr()),
+                                 timeout);
+}
+
+void GpuWatchdogThread::OnCheckTimeout() {
+  // Should not get here while the system is suspended.
+  DCHECK(!suspended_);
+
+  // If the watchdog woke up significantly behind schedule, disarm and reset
+  // the watchdog check. This is to prevent the watchdog thread from terminating
+  // when a machine wakes up from sleep or hibernation, which would otherwise
+  // appear to be a hang.
+  if (base::Time::Now() > suspension_timeout_) {
+    armed_ = false;
+    OnCheck(true);
+    return;
+  }
+
+  if (!base::subtle::NoBarrier_Load(&awaiting_acknowledge_)) {
+    // This should be possible only when CheckArmed() has been called but
+    // OnAcknowledge() hasn't.
+    // In this case the watched thread might need more time to finish posting
+    // OnAcknowledge task.
+
+    // Continue with the termination after an additional delay.
+    task_runner()->PostDelayedTask(
+        FROM_HERE,
+        base::Bind(&GpuWatchdogThread::DeliberatelyTerminateToRecoverFromHang,
+                   weak_factory_.GetWeakPtr()),
+        0.5 * timeout_);
+
+    // Post a task that does nothing on the watched thread to bump its priority
+    // and make it more likely to get scheduled.
+    watched_message_loop_->task_runner()->PostTask(
+        FROM_HERE, base::Bind(&base::DoNothing));
+    return;
+  }
+
+  DeliberatelyTerminateToRecoverFromHang();
 }
 
 // Use the --disable-gpu-watchdog command line switch to disable this.
@@ -267,16 +303,6 @@ void GpuWatchdogThread::DeliberatelyTerminateToRecoverFromHang() {
     return;
   }
 #endif
-
-  // If the watchdog woke up significantly behind schedule, disarm and reset
-  // the watchdog check. This is to prevent the watchdog thread from terminating
-  // when a machine wakes up from sleep or hibernation, which would otherwise
-  // appear to be a hang.
-  if (base::Time::Now() > suspension_timeout_) {
-    armed_ = false;
-    OnCheck(true);
-    return;
-  }
 
 #if defined(USE_X11)
   XWindowAttributes attributes;

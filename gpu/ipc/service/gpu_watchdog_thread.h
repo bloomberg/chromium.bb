@@ -73,6 +73,7 @@ class GPU_EXPORT GpuWatchdogThread : public base::Thread,
 
   void OnAcknowledge();
   void OnCheck(bool after_suspend);
+  void OnCheckTimeout();
   void DeliberatelyTerminateToRecoverFromHang();
 #if defined(USE_X11)
   void SetupXServer();
