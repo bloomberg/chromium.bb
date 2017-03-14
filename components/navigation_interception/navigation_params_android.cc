@@ -16,8 +16,13 @@ base::android::ScopedJavaLocalRef<jobject> CreateJavaNavigationParams(
     JNIEnv* env,
     const NavigationParams& params,
     bool has_user_gesture_carryover) {
+  const GURL& url = params.base_url_for_data_url().is_empty()
+                        ? params.url()
+                        : params.base_url_for_data_url();
+  DCHECK(params.base_url_for_data_url().is_empty() ||
+         params.url().SchemeIs(url::kDataScheme));
   ScopedJavaLocalRef<jstring> jstring_url =
-      ConvertUTF8ToJavaString(env, params.url().spec());
+      ConvertUTF8ToJavaString(env, url.spec());
 
   ScopedJavaLocalRef<jstring> jstring_referrer =
       ConvertUTF8ToJavaString(env, params.referrer().url.spec());

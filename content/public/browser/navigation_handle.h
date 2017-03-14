@@ -110,6 +110,9 @@ class CONTENT_EXPORT NavigationHandle {
   // if the navigation is not a restore.
   virtual RestoreType GetRestoreType() = 0;
 
+  // Used for specifying a base URL for pages loaded via data URLs.
+  virtual const GURL& GetBaseURLForDataURL() = 0;
+
   // Parameters available at network request start time ------------------------
   //
   // The following parameters are only available when the network request is

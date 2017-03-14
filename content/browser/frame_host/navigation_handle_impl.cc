@@ -458,6 +458,10 @@ RestoreType NavigationHandleImpl::GetRestoreType() {
   return restore_type_;
 }
 
+const GURL& NavigationHandleImpl::GetBaseURLForDataURL() {
+  return base_url_for_data_url_;
+}
+
 NavigationData* NavigationHandleImpl::GetNavigationData() {
   return navigation_data_.get();
 }

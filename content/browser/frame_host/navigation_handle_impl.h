@@ -162,6 +162,7 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   const std::string& GetSearchableFormEncoding() override;
   ReloadType GetReloadType() override;
   RestoreType GetRestoreType() override;
+  const GURL& GetBaseURLForDataURL() override;
   const GlobalRequestID& GetGlobalRequestID() override;
 
   NavigationData* GetNavigationData() override;
@@ -351,6 +352,10 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
     complete_callback_for_testing_ = callback;
   }
 
+  void set_base_url_for_data_url(const GURL& url) {
+    base_url_for_data_url_ = url;
+  }
+
  private:
   friend class NavigationHandleImplTest;
 
@@ -512,6 +517,7 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
 
   GURL previous_url_;
   GURL base_url_;
+  GURL base_url_for_data_url_;
   net::HostPortPair socket_address_;
   NavigationType navigation_type_;
 

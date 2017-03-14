@@ -1175,6 +1175,9 @@ void NavigatorImpl::RequestNavigation(FrameTreeNode* frame_tree_node,
   if (!navigation_request)
     return;  // Navigation was synchronously stopped.
 
+  navigation_request->navigation_handle()->set_base_url_for_data_url(
+      entry.GetBaseURLForDataURL());
+
   // Have the current renderer execute its beforeunload event if needed. If it
   // is not needed then NavigationRequest::BeginNavigation should be directly
   // called instead.

@@ -17,7 +17,8 @@ NavigationParams::NavigationParams(const GURL& url,
                                    ui::PageTransition transition_type,
                                    bool is_redirect,
                                    bool is_external_protocol,
-                                   bool is_main_frame)
+                                   bool is_main_frame,
+                                   const GURL& base_url_for_data_url)
     : url_(url),
       referrer_(referrer),
       has_user_gesture_(has_user_gesture),
@@ -25,8 +26,8 @@ NavigationParams::NavigationParams(const GURL& url,
       transition_type_(transition_type),
       is_redirect_(is_redirect),
       is_external_protocol_(is_external_protocol),
-      is_main_frame_(is_main_frame) {
-}
+      is_main_frame_(is_main_frame),
+      base_url_for_data_url_(base_url_for_data_url) {}
 
 void NavigationParams::operator=(const NavigationParams& rhs) {
   Assign(rhs);
