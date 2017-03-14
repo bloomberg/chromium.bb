@@ -41,6 +41,7 @@ class _BattOrBenchmark(perf_benchmark.PerfBenchmark):
 # crbug.com/565180: Only include cases that report time_to_play
 # Taken directly from media benchmark.
 @benchmark.Disabled('android', 'win8')
+@benchmark.Owner(emails=['charliea@chromium.org'])
 class BattOrToughVideoCases(_BattOrBenchmark):
   """Obtains media metrics for key user scenarios."""
   page_set = page_sets.ToughVideoCasesPageSet
@@ -51,6 +52,7 @@ class BattOrToughVideoCases(_BattOrBenchmark):
 
 
 @benchmark.Enabled('mac')
+@benchmark.Owner(emails=['charliea@chromium.org'])
 class BattOrTrivialPages(_BattOrBenchmark):
 
   def CreateStorySet(self, options):
@@ -62,6 +64,7 @@ class BattOrTrivialPages(_BattOrBenchmark):
     return 'battor.trivial_pages'
 
 @benchmark.Enabled('mac')
+@benchmark.Owner(emails=['charliea@chromium.org'])
 class BattOrSteadyStatePages(_BattOrBenchmark):
 
   def CreateStorySet(self, options):

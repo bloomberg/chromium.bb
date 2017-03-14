@@ -52,6 +52,7 @@ class Media(perf_benchmark.PerfBenchmark):
 
 # crbug.com/565180: Only include cases that don't report time_to_play
 @benchmark.Disabled('android')
+@benchmark.Owner(emails=['crouleau@chromium.org', 'videostack-eng@google.com'])
 class MediaExtra(perf_benchmark.PerfBenchmark):
   """Obtains extra media metrics for key user scenarios."""
   test = media.Media
@@ -63,6 +64,7 @@ class MediaExtra(perf_benchmark.PerfBenchmark):
 
 
 @benchmark.Disabled('android', 'mac')
+@benchmark.Owner(emails=['crouleau@chromium.org', 'videostack-eng@google.com'])
 class MediaNetworkSimulation(perf_benchmark.PerfBenchmark):
   """Obtains media metrics under different network simulations."""
   test = media.Media
@@ -130,6 +132,7 @@ class MediaChromeOS(perf_benchmark.PerfBenchmark):
 
 
 @benchmark.Disabled('android-webview')  # crbug.com/419689
+@benchmark.Owner(emails=['crouleau@chromium.org', 'videostack-eng@google.com'])
 class MediaSourceExtensions(perf_benchmark.PerfBenchmark):
   """Obtains media metrics for key media source extensions functions."""
   test = _MSEMeasurement

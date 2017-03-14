@@ -52,6 +52,7 @@ class _MemoryInfra(perf_benchmark.PerfBenchmark):
 
 
 @benchmark.Enabled('android')  # catapult:#3176
+@benchmark.Owner(emails=['perezju@chromium.org'])
 class MemoryBenchmarkTop10Mobile(_MemoryInfra):
   """Measure foreground/background memory on top 10 mobile page set.
 
@@ -77,6 +78,7 @@ class MemoryBenchmarkTop10Mobile(_MemoryInfra):
 
 
 @benchmark.Enabled('android')  # catapult:#3176
+@benchmark.Owner(emails=['perezju@chromium.org'])
 class MemoryBenchmarkTop10MobileStress(MemoryBenchmarkTop10Mobile):
   """Run top 10 mobile page set without closing/restarting the browser.
 
@@ -96,6 +98,7 @@ class MemoryBenchmarkTop10MobileStress(MemoryBenchmarkTop10Mobile):
 
 # Benchmark disabled by default. Force to run with --also-run-disabled-tests.
 @benchmark.Disabled('all')
+@benchmark.Owner(emails=['perezju@chromium.org'])
 class DualBrowserBenchmark(_MemoryInfra):
   """Measures memory usage while interacting with two different browsers.
 
@@ -123,6 +126,7 @@ class DualBrowserBenchmark(_MemoryInfra):
 
 # Benchmark disabled by default. Force to run with --also-run-disabled-tests.
 @benchmark.Disabled('all')
+@benchmark.Owner(emails=['perezju@chromium.org'])
 class LongRunningDualBrowserBenchmark(_MemoryInfra):
   """Measures memory during prolonged usage of alternating browsers.
 
@@ -152,6 +156,7 @@ class LongRunningDualBrowserBenchmark(_MemoryInfra):
 
 
 @benchmark.Enabled('android')  # catapult:#3176
+@benchmark.Owner(emails=['bashi@chromium.org'])
 class RendererMemoryBlinkMemoryMobile(_MemoryInfra):
   """Timeline based benchmark for measuring memory consumption on mobile
   sites on which blink's memory consumption is relatively high.
@@ -216,6 +221,7 @@ class _MemoryV8Benchmark(_MemoryInfra):
     return 'v8' in value.name
 
 
+@benchmark.Owner(emails=['ulan@chromium.org'])
 class MemoryLongRunningIdleGmail(_MemoryV8Benchmark):
   """Use (recorded) real world web sites and measure memory consumption
   of long running idle Gmail page """
@@ -234,6 +240,7 @@ class MemoryLongRunningIdleGmail(_MemoryV8Benchmark):
 
 
 @benchmark.Enabled('has tabs')  # http://crbug.com/612210
+@benchmark.Owner(emails=['ulan@chromium.org'])
 class MemoryLongRunningIdleGmailBackground(_MemoryV8Benchmark):
   """Use (recorded) real world web sites and measure memory consumption
   of long running idle Gmail page """

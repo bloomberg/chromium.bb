@@ -41,6 +41,7 @@ class WebrtcPeerConnection(_Webrtc):
     return 'webrtc.peerconnection'
 
 
+@benchmark.Owner(emails=['phoglund@chromium.org'])
 class WebrtcDataChannel(_Webrtc):
   """Measures WebRtc DataChannel loopback."""
   page_set = page_sets.WebrtcDatachannelPageSet
@@ -51,6 +52,7 @@ class WebrtcDataChannel(_Webrtc):
 
 
 @benchmark.Disabled('android')  # http://crbug.com/663802
+@benchmark.Owner(emails=['ehmaldonado@chromium.org', 'phoglund@chromium.org'])
 class WebrtcStressTest(perf_benchmark.PerfBenchmark):
   """Measures WebRtc CPU and GPU usage with multiple peer connections."""
   page_set = page_sets.WebrtcStresstestPageSet
@@ -71,6 +73,7 @@ class WebrtcStressTest(perf_benchmark.PerfBenchmark):
 # capture. See http://crbug.com/603232.
 @benchmark.Disabled('reference')
 @benchmark.Disabled('android')  # http://crbug.com/610019
+@benchmark.Owner(emails=['qiangchen@chromium.org'])
 class WebrtcRendering(perf_benchmark.PerfBenchmark):
   """Specific time measurements (e.g. fps, smoothness) for WebRtc rendering."""
 

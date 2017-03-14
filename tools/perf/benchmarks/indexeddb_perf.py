@@ -89,6 +89,7 @@ class _IndexedDbMeasurement(legacy_page_test.LegacyPageTest):
 
 
 @benchmark.Disabled('linux') # crbug.com/677972
+@benchmark.Owner(emails=['cmumford@chromium.org'])
 class IndexedDbOriginalSectioned(perf_benchmark.PerfBenchmark):
   """Chromium's IndexedDB Performance tests."""
   test = _IndexedDbMeasurement
@@ -100,6 +101,7 @@ class IndexedDbOriginalSectioned(perf_benchmark.PerfBenchmark):
 
 
 @benchmark.Disabled('linux') # crbug.com/677972
+@benchmark.Owner(emails=['cmumford@chromium.org'])
 class IndexedDbTracing(perf_benchmark.PerfBenchmark):
   """IndexedDB Performance tests that use tracing."""
   page_set = page_sets.IndexedDBEndurePageSet

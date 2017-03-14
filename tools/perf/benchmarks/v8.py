@@ -30,6 +30,7 @@ def CreateV8TimelineBasedMeasurementOptions():
 
 
 @benchmark.Disabled('win')        # crbug.com/416502
+@benchmark.Owner(emails=['hpayer@chromium.org', 'rmcilroy@chromium.org'])
 class V8Top25(perf_benchmark.PerfBenchmark):
   """Measures V8 GC metrics on the while scrolling down the top 25 web pages.
 
@@ -48,6 +49,7 @@ class V8Top25(perf_benchmark.PerfBenchmark):
 
 
 @benchmark.Enabled('android')
+@benchmark.Owner(emails=['hpayer@chromium.org', 'rmcilroy@chromium.org'])
 class V8KeyMobileSites(perf_benchmark.PerfBenchmark):
   """Measures V8 GC metrics on the while scrolling down key mobile sites.
 
@@ -123,6 +125,7 @@ class _InfiniteScrollBenchmark(perf_benchmark.PerfBenchmark):
     return True
 
 
+@benchmark.Owner(emails=['jochen@chromium.org'])
 class V8TodoMVC(perf_benchmark.PerfBenchmark):
   """Measures V8 Execution metrics on the TodoMVC examples."""
   page_set = page_sets.TodoMVCPageSet
@@ -145,6 +148,7 @@ class V8TodoMVC(perf_benchmark.PerfBenchmark):
     return True
 
 
+@benchmark.Owner(emails=['mvstaton@chromium.org'])
 class V8TodoMVCTurbo(V8TodoMVC):
   """Measures V8 Execution metrics on the TodoMVC examples
   using Ignition+TurboFan."""
@@ -161,6 +165,7 @@ class V8TodoMVCTurbo(V8TodoMVC):
 
 
 
+@benchmark.Owner(emails=['ulan@chromium.org'])
 class V8InfiniteScroll(_InfiniteScrollBenchmark):
   """Measures V8 GC metrics and memory usage while scrolling the top web pages.
   http://www.chromium.org/developers/design-documents/rendering-benchmarks"""
@@ -172,6 +177,7 @@ class V8InfiniteScroll(_InfiniteScrollBenchmark):
     return 'v8.infinite_scroll_tbmv2'
 
 
+@benchmark.Owner(emails=['mvstaton@chromium.org'])
 class V8InfiniteScrollTurbo(V8InfiniteScroll):
   """Measures V8 GC metrics using Ignition+TurboFan."""
 
@@ -185,6 +191,7 @@ class V8InfiniteScrollTurbo(V8InfiniteScroll):
 
 
 @benchmark.Enabled('android')
+@benchmark.Owner(emails=['ulan@chromium.org'])
 class V8MobileInfiniteScroll(_InfiniteScrollBenchmark):
   """Measures V8 GC metrics and memory usage while scrolling the top mobile
   web pages.
@@ -203,6 +210,7 @@ class V8MobileInfiniteScroll(_InfiniteScrollBenchmark):
 
 
 @benchmark.Enabled('android')
+@benchmark.Owner(emails=['mvstaton@chromium.org'])
 class V8MobileInfiniteScrollTurbo(V8MobileInfiniteScroll):
   """Measures V8 GC metrics and memory usage while scrolling the top mobile
   web pages and running Ignition+TurboFan.
@@ -217,6 +225,7 @@ class V8MobileInfiniteScrollTurbo(V8MobileInfiniteScroll):
     return 'v8.mobile_infinite_scroll-turbo_tbmv2'
 
 
+@benchmark.Owner(emails=['hablich@chromium.org'])
 class V8Adword(perf_benchmark.PerfBenchmark):
   """Measures V8 Execution metrics on the Adword page."""
 
@@ -300,6 +309,7 @@ class _Top25RuntimeStats(perf_benchmark.PerfBenchmark):
 
 
 @benchmark.Disabled('android', 'win', 'reference')  # crbug.com/664318
+@benchmark.Owner(emails=['cbruni@chromium.org'])
 class V8Top25RuntimeStats(_Top25RuntimeStats):
   """Runtime Stats benchmark for a 25 top V8 web pages.
 
