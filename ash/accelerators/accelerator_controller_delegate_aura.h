@@ -36,10 +36,6 @@ class ASH_EXPORT AcceleratorControllerDelegateAura
                         const ui::Accelerator& previous_accelerator) override;
   void PerformAction(AcceleratorAction action,
                      const ui::Accelerator& accelerator) override;
-  void ShowDeprecatedAcceleratorNotification(const char* const notification_id,
-                                             int message_id,
-                                             int old_shortcut_id,
-                                             int new_shortcut_id) override;
 
  private:
   std::unique_ptr<ScreenshotDelegate> screenshot_delegate_;

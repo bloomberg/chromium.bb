@@ -34,13 +34,6 @@ class ASH_EXPORT AcceleratorControllerDelegate {
   virtual void PerformAction(AcceleratorAction action,
                              const ui::Accelerator& accelerator) = 0;
 
-  // Shows a warning the user is using a deprecated accelerator.
-  virtual void ShowDeprecatedAcceleratorNotification(
-      const char* const notification_id,
-      int message_id,
-      int old_shortcut_id,
-      int new_shortcut_id) = 0;
-
  protected:
   virtual ~AcceleratorControllerDelegate() {}
 };

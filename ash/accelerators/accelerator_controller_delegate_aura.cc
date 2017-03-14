@@ -12,9 +12,7 @@
 #include "ash/accelerators/accelerator_commands_aura.h"
 #include "ash/common/accelerators/debug_commands.h"
 #include "ash/common/accessibility_types.h"
-#include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shelf/wm_shelf.h"
-#include "ash/common/shell_delegate.h"
 #include "ash/common/system/system_notifier.h"
 #include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/common/wm/window_state.h"
@@ -38,12 +36,9 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
-#include "base/strings/string_split.h"
-#include "base/strings/utf_string_conversions.h"
 #include "base/sys_info.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/accelerators/accelerator.h"
-#include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_sequence.h"
 #include "ui/compositor/layer_animator.h"
@@ -51,72 +46,11 @@
 #include "ui/display/screen.h"
 #include "ui/events/event.h"
 #include "ui/events/keycodes/keyboard_codes.h"
-#include "ui/message_center/message_center.h"
-#include "ui/message_center/notification.h"
-#include "ui/message_center/notifier_settings.h"
 
 namespace ash {
 namespace {
 
 using base::UserMetricsAction;
-
-// The notification delegate that will be used to open the keyboard shortcut
-// help page when the notification is clicked.
-class DeprecatedAcceleratorNotificationDelegate
-    : public message_center::NotificationDelegate {
- public:
-  DeprecatedAcceleratorNotificationDelegate() {}
-
-  // message_center::NotificationDelegate:
-  bool HasClickedListener() override { return true; }
-
-  void Click() override {
-    if (!WmShell::Get()->GetSessionStateDelegate()->IsUserSessionBlocked())
-      Shell::Get()->shell_delegate()->OpenKeyboardShortcutHelpPage();
-  }
-
- private:
-  // Private destructor since NotificationDelegate is ref-counted.
-  ~DeprecatedAcceleratorNotificationDelegate() override {}
-
-  DISALLOW_COPY_AND_ASSIGN(DeprecatedAcceleratorNotificationDelegate);
-};
-
-// Ensures that there are no word breaks at the "+"s in the shortcut texts such
-// as "Ctrl+Shift+Space".
-void EnsureNoWordBreaks(base::string16* shortcut_text) {
-  std::vector<base::string16> keys =
-      base::SplitString(*shortcut_text, base::ASCIIToUTF16("+"),
-                        base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
-
-  if (keys.size() < 2U)
-    return;
-
-  // The plus sign surrounded by the word joiner to guarantee an non-breaking
-  // shortcut.
-  const base::string16 non_breaking_plus =
-      base::UTF8ToUTF16("\xe2\x81\xa0+\xe2\x81\xa0");
-  shortcut_text->clear();
-  for (size_t i = 0; i < keys.size() - 1; ++i) {
-    *shortcut_text += keys[i];
-    *shortcut_text += non_breaking_plus;
-  }
-
-  *shortcut_text += keys.back();
-}
-
-// Gets the notification message after it formats it in such a way that there
-// are no line breaks in the middle of the shortcut texts.
-base::string16 GetNotificationText(int message_id,
-                                   int old_shortcut_id,
-                                   int new_shortcut_id) {
-  base::string16 old_shortcut = l10n_util::GetStringUTF16(old_shortcut_id);
-  base::string16 new_shortcut = l10n_util::GetStringUTF16(new_shortcut_id);
-  EnsureNoWordBreaks(&old_shortcut);
-  EnsureNoWordBreaks(&new_shortcut);
-
-  return l10n_util::GetStringFUTF16(message_id, new_shortcut, old_shortcut);
-}
 
 bool CanHandleMagnifyScreen() {
   return Shell::GetInstance()->magnification_controller()->IsEnabled();
@@ -445,28 +379,6 @@ void AcceleratorControllerDelegateAura::PerformAction(
     default:
       break;
   }
-}
-
-void AcceleratorControllerDelegateAura::ShowDeprecatedAcceleratorNotification(
-    const char* const notification_id,
-    int message_id,
-    int old_shortcut_id,
-    int new_shortcut_id) {
-  const base::string16 message =
-      GetNotificationText(message_id, old_shortcut_id, new_shortcut_id);
-  std::unique_ptr<message_center::Notification> notification(
-      new message_center::Notification(
-          message_center::NOTIFICATION_TYPE_SIMPLE, notification_id,
-          base::string16(), message,
-          Shell::Get()->shell_delegate()->GetDeprecatedAcceleratorImage(),
-          base::string16(), GURL(),
-          message_center::NotifierId(
-              message_center::NotifierId::SYSTEM_COMPONENT,
-              system_notifier::kNotifierDeprecatedAccelerator),
-          message_center::RichNotificationData(),
-          new DeprecatedAcceleratorNotificationDelegate));
-  message_center::MessageCenter::Get()->AddNotification(
-      std::move(notification));
 }
 
 }  // namespace ash

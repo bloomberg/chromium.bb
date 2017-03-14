@@ -145,14 +145,5 @@ void AcceleratorControllerDelegateMus::PerformAction(
   }
 }
 
-void AcceleratorControllerDelegateMus::ShowDeprecatedAcceleratorNotification(
-    const char* const notification_id,
-    int message_id,
-    int old_shortcut_id,
-    int new_shortcut_id) {
-  // TODO: http://crbug.com/630316.
-  NOTIMPLEMENTED();
-}
-
 }  // namespace mus
 }  // namespace ash

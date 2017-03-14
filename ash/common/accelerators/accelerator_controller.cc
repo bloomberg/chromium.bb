@@ -46,6 +46,8 @@
 #include "ash/strings/grit/ash_strings.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
+#include "base/strings/string_split.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager_client.h"
 #include "ui/base/accelerators/accelerator.h"
@@ -66,6 +68,85 @@ using message_center::Notification;
 // Identifier for the high contrast toggle accelerator notification.
 const char kHighContrastToggleAccelNotificationId[] =
     "chrome://settings/accessibility/highcontrast";
+
+// The notification delegate that will be used to open the keyboard shortcut
+// help page when the notification is clicked.
+class DeprecatedAcceleratorNotificationDelegate
+    : public message_center::NotificationDelegate {
+ public:
+  DeprecatedAcceleratorNotificationDelegate() {}
+
+  // message_center::NotificationDelegate:
+  bool HasClickedListener() override { return true; }
+
+  void Click() override {
+    if (!WmShell::Get()->GetSessionStateDelegate()->IsUserSessionBlocked())
+      Shell::Get()->shell_delegate()->OpenKeyboardShortcutHelpPage();
+  }
+
+ private:
+  // Private destructor since NotificationDelegate is ref-counted.
+  ~DeprecatedAcceleratorNotificationDelegate() override {}
+
+  DISALLOW_COPY_AND_ASSIGN(DeprecatedAcceleratorNotificationDelegate);
+};
+
+// Ensures that there are no word breaks at the "+"s in the shortcut texts such
+// as "Ctrl+Shift+Space".
+void EnsureNoWordBreaks(base::string16* shortcut_text) {
+  std::vector<base::string16> keys =
+      base::SplitString(*shortcut_text, base::ASCIIToUTF16("+"),
+                        base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+
+  if (keys.size() < 2U)
+    return;
+
+  // The plus sign surrounded by the word joiner to guarantee an non-breaking
+  // shortcut.
+  const base::string16 non_breaking_plus =
+      base::UTF8ToUTF16("\xe2\x81\xa0+\xe2\x81\xa0");
+  shortcut_text->clear();
+  for (size_t i = 0; i < keys.size() - 1; ++i) {
+    *shortcut_text += keys[i];
+    *shortcut_text += non_breaking_plus;
+  }
+
+  *shortcut_text += keys.back();
+}
+
+// Gets the notification message after it formats it in such a way that there
+// are no line breaks in the middle of the shortcut texts.
+base::string16 GetNotificationText(int message_id,
+                                   int old_shortcut_id,
+                                   int new_shortcut_id) {
+  base::string16 old_shortcut = l10n_util::GetStringUTF16(old_shortcut_id);
+  base::string16 new_shortcut = l10n_util::GetStringUTF16(new_shortcut_id);
+  EnsureNoWordBreaks(&old_shortcut);
+  EnsureNoWordBreaks(&new_shortcut);
+
+  return l10n_util::GetStringFUTF16(message_id, new_shortcut, old_shortcut);
+}
+
+// Shows a warning the user is using a deprecated accelerator.
+void ShowDeprecatedAcceleratorNotification(const char* const notification_id,
+                                           int message_id,
+                                           int old_shortcut_id,
+                                           int new_shortcut_id) {
+  const base::string16 message =
+      GetNotificationText(message_id, old_shortcut_id, new_shortcut_id);
+  std::unique_ptr<Notification> notification(new Notification(
+      message_center::NOTIFICATION_TYPE_SIMPLE, notification_id,
+      base::string16(), message,
+      Shell::Get()->shell_delegate()->GetDeprecatedAcceleratorImage(),
+      base::string16(), GURL(),
+      message_center::NotifierId(
+          message_center::NotifierId::SYSTEM_COMPONENT,
+          system_notifier::kNotifierDeprecatedAccelerator),
+      message_center::RichNotificationData(),
+      new DeprecatedAcceleratorNotificationDelegate));
+  message_center::MessageCenter::Get()->AddNotification(
+      std::move(notification));
+}
 
 ui::Accelerator CreateAccelerator(ui::KeyboardCode keycode,
                                   int modifiers,
@@ -1175,12 +1256,10 @@ AcceleratorController::MaybeDeprecatedAcceleratorPressed(
   // Record UMA stats.
   RecordUmaHistogram(data->uma_histogram_name, DEPRECATED_USED);
 
-  if (delegate_) {
-    // We always display the notification as long as this |data| entry exists.
-    delegate_->ShowDeprecatedAcceleratorNotification(
-        data->uma_histogram_name, data->notification_message_id,
-        data->old_shortcut_id, data->new_shortcut_id);
-  }
+  // We always display the notification as long as this |data| entry exists.
+  ShowDeprecatedAcceleratorNotification(
+      data->uma_histogram_name, data->notification_message_id,
+      data->old_shortcut_id, data->new_shortcut_id);
 
   if (!data->deprecated_enabled)
     return AcceleratorProcessingStatus::STOP;
