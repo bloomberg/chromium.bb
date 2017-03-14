@@ -234,6 +234,8 @@ component("gl") {
       "gl_bindings_autogen_wgl.h",
       "gl_context_wgl.cc",
       "gl_context_wgl.h",
+      "gl_image_dxgi.cc",
+      "gl_image_dxgi.h",
       "gl_surface_osmesa_win.cc",
       "gl_surface_osmesa_win.h",
       "gl_surface_wgl.cc",

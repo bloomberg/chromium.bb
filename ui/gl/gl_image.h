@@ -86,10 +86,7 @@ class GL_EXPORT GLImage : public base::RefCounted<GLImage> {
   virtual bool EmulatingRGB() const;
 
   // An identifier for subclasses. Necessary for safe downcasting.
-  enum class Type {
-    NONE,
-    IOSURFACE
-  };
+  enum class Type { NONE, IOSURFACE, DXGI_IMAGE };
   virtual Type GetType() const;
 
  protected:
