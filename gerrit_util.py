@@ -686,7 +686,7 @@ def AddReviewers(host, change, add=None, is_reviewer=True, notify=True):
       _ = ReadHttpJsonResponse(conn, ignore_404=False)
     except GerritError as e:
       if e.http_status == 422:  # "Unprocessable Entity"
-        LOGGER.warn('Failed to add "%s" as a %s' % (r, state.lower()))
+        LOGGER.warn('Note: "%s" not added as a %s' % (r, state.lower()))
         errors = True
       else:
         raise
