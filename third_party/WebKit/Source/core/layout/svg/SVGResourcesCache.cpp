@@ -101,6 +101,17 @@ static inline bool layoutObjectCanHaveResources(LayoutObject* layoutObject) {
          !layoutObject->isSVGInlineText();
 }
 
+static inline bool isLayoutObjectOfResourceContainer(LayoutObject* layoutObject) {
+  LayoutObject* current = layoutObject;
+  while (current) {
+    if (current->isSVGResourceContainer()) {
+      return true;
+    }
+    current = current->parent();
+  }
+  return false;
+}
+
 void SVGResourcesCache::clientStyleChanged(LayoutObject* layoutObject,
                                            StyleDifference diff,
                                            const ComputedStyle& newStyle) {
@@ -128,8 +139,14 @@ void SVGResourcesCache::clientStyleChanged(LayoutObject* layoutObject,
     cache.addResourcesFromLayoutObject(layoutObject, newStyle);
   }
 
+  // If this layoutObject is the child of ResourceContainer and it require
+  // repainting that changes of CSS properties such as 'visibility',
+  // request repainting.
+  bool needsLayout = diff.needsFullPaintInvalidation() &&
+                     isLayoutObjectOfResourceContainer(layoutObject);
+
   LayoutSVGResourceContainer::markForLayoutAndParentResourceInvalidation(
-      layoutObject, false);
+      layoutObject, needsLayout);
 }
 
 void SVGResourcesCache::clientWasAddedToTree(LayoutObject* layoutObject,
