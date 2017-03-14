@@ -14,6 +14,7 @@
 #include "base/logging.h"
 #include "base/numerics/safe_math.h"
 #include "base/task_runner_util.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "components/nacl/browser/nacl_browser.h"
 #include "components/nacl/browser/pnacl_translation_cache.h"
@@ -30,10 +31,16 @@ static const base::FilePath::CharType kTranslationCacheDirectoryName[] =
 // Delay to wait for initialization of the cache backend
 static const int kTranslationCacheInitializationDelayMs = 20;
 
-void CloseBaseFile(base::File auto_file_closer) {
+void CloseBaseFile(base::File file) {
+  base::PostTaskWithTraits(
+      FROM_HERE,
+      base::TaskTraits()
+          .MayBlock()
+          .WithPriority(base::TaskPriority::BACKGROUND)
+          .WithShutdownBehavior(
+              base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN),
+      base::Bind([](base::File file) {}, Passed(std::move(file))));
 }
-
-void CloseScopedFile(std::unique_ptr<base::File> auto_file_closer) {}
 
 }  // namespace
 
@@ -179,8 +186,6 @@ void PnaclHost::InitForTest(base::FilePath temp_dir, bool in_memory) {
 // static
 void PnaclHost::DoCreateTemporaryFile(base::FilePath temp_dir,
                                       TempFileCallback cb) {
-  DCHECK(BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
-
   base::FilePath file_path;
   base::File file;
   bool rv = temp_dir.empty()
@@ -320,8 +325,7 @@ void PnaclHost::OnTempFileReturn(const TranslationID& id,
     // The renderer may have signaled an error or closed while the temp
     // file was being created.
     LOG(ERROR) << "OnTempFileReturn: id not found";
-    BrowserThread::PostBlockingPoolTask(
-        FROM_HERE, base::Bind(CloseBaseFile, Passed(std::move(file))));
+    CloseBaseFile(std::move(file));
     return;
   }
   if (!file.IsValid()) {
@@ -469,9 +473,7 @@ void PnaclHost::TranslationFinished(int render_process_id,
     if (entry->second.got_nexe_fd) {
       std::unique_ptr<base::File> file(entry->second.nexe_fd);
       entry->second.nexe_fd = NULL;
-      BrowserThread::PostBlockingPoolTask(
-          FROM_HERE,
-          base::Bind(CloseScopedFile, Passed(&file)));
+      CloseBaseFile(std::move(*file.get()));
     }
     pending_translations_.erase(entry);
   }
@@ -550,24 +552,18 @@ void PnaclHost::OnBufferCopiedToTempFile(const TranslationID& id,
   DCHECK(thread_checker_.CalledOnValidThread());
   PendingTranslationMap::iterator entry(pending_translations_.find(id));
   if (entry == pending_translations_.end()) {
-    BrowserThread::PostBlockingPoolTask(
-        FROM_HERE,
-        base::Bind(CloseScopedFile, Passed(&file)));
+    CloseBaseFile(std::move(*file.get()));
     return;
   }
   if (file_error == -1) {
     // Write error on the temp file. Request a new file and start over.
-    BrowserThread::PostBlockingPoolTask(
-        FROM_HERE,
-        base::Bind(CloseScopedFile, Passed(&file)));
+    CloseBaseFile(std::move(*file.get()));
     CreateTemporaryFile(base::Bind(&PnaclHost::OnTempFileReturn,
                                    base::Unretained(this), entry->first));
     return;
   }
   entry->second.callback.Run(*file.get(), true);
-  BrowserThread::PostBlockingPoolTask(
-      FROM_HERE,
-      base::Bind(CloseScopedFile, Passed(&file)));
+  CloseBaseFile(std::move(*file.get()));
   pending_translations_.erase(entry);
 }
 
@@ -584,9 +580,7 @@ void PnaclHost::RendererClosing(int render_process_id) {
       // Clean up the open files.
       std::unique_ptr<base::File> file(to_erase->second.nexe_fd);
       to_erase->second.nexe_fd = NULL;
-      BrowserThread::PostBlockingPoolTask(
-          FROM_HERE,
-          base::Bind(CloseScopedFile, Passed(&file)));
+      CloseBaseFile(std::move(*file.get()));
       std::string key(to_erase->second.cache_key);
       bool may_be_cached = TranslationMayBeCached(to_erase);
       pending_translations_.erase(to_erase);
