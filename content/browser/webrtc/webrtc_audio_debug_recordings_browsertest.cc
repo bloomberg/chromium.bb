@@ -144,6 +144,8 @@ IN_PROC_BROWSER_TEST_F(WebRtcAudioDebugRecordingsBrowserTest,
   NavigateToURL(shell(), url);
   ExecuteJavascriptAndWaitForOk("call({video: true, audio: true});");
 
+  WebRTCInternals::GetInstance()->DisableAudioDebugRecordings();
+
   // Verify that the expected AEC dump file exists and contains some data.
   base::ProcessId render_process_id = base::kNullProcessId;
   EXPECT_TRUE(GetRenderProcessHostId(&render_process_id));
@@ -279,6 +281,8 @@ IN_PROC_BROWSER_TEST_F(WebRtcAudioDebugRecordingsBrowserTest,
   EXPECT_TRUE(ExecuteScriptAndExtractString(
       shell2, "call({video: true, audio: true});", &result));
   ASSERT_STREQ("OK", result.c_str());
+
+  WebRTCInternals::GetInstance()->DisableAudioDebugRecordings();
 
   RenderProcessHost::iterator it =
       content::RenderProcessHost::AllHostsIterator();
