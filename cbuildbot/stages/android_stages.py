@@ -11,6 +11,7 @@ import os
 from chromite.cbuildbot import cbuildbot_run
 from chromite.cbuildbot import commands
 from chromite.cbuildbot.stages import generic_stages
+from chromite.lib import config_lib
 from chromite.lib import constants
 from chromite.lib import cros_logging as logging
 from chromite.lib import failures_lib
@@ -179,26 +180,28 @@ class DownloadAndroidDebugSymbolsStage(generic_stages.BoardSpecificBuilderStage,
                                        generic_stages.ArchivingStageMixin):
   """Stage that downloads Android debug symbols.
 
-  This stage should run only when Android is being uprev'ed.
   Downloaded archive will be picked up by DebugSymbolsStage.
   """
 
   @failures_lib.SetFailureType(failures_lib.InfrastructureFailure)
   def PerformStage(self):
-    if not self._android_rev:
-      logging.info('Doing nothing because we are not upreving Android.')
+    if not config_lib.IsCanaryType(self._run.config.build_type):
+      logging.info('This stage runs only in release builders.')
       return
 
+    # Get the Android versions set by AndroidMetadataStage.
     version_dict = self._run.attrs.metadata.GetDict().get('version', {})
     android_build_branch = version_dict.get('android-branch')
     android_version = version_dict.get('android')
+
+    # On boards not supporting Android, versions will be None.
     if not (android_build_branch and android_version):
-      logging.PrintBuildbotStepWarnings()
-      logging.warning(
-          'Android version info is not available. Skipping download. '
-          'version_dict=%r',
-          version_dict)
+      logging.info('Android is not enabled on this board. Skipping.')
       return
+
+    logging.info(
+        'Downloading symbols of Android %s (%s)...',
+        android_version, android_build_branch)
 
     board_use_flags = portage_util.GetBoardUseFlags(self._current_board)
     arch = None
