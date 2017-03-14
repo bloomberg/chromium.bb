@@ -71,12 +71,6 @@ declare_args() {
   # Whether or not to use external popup menu.
   use_external_popup_menu = is_android || is_mac
 }
-
-# Additional dependent variables -----------------------------------------------
-
-# Chrome OS: whether to also build the upcoming version of
-# ChromeVox, which can then be enabled via a command-line switch.
-enable_chromevox_next = false
 #
 # =============================================
 #   PLEASE DO NOT ADD MORE FLAGS TO THIS FILE
