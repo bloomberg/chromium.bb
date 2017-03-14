@@ -18,6 +18,7 @@
 #include "chromecast/media/cma/pipeline/video_pipeline_client.h"
 #include "chromecast/public/media/media_pipeline_backend.h"
 #include "chromecast/public/media/media_pipeline_device_params.h"
+#include "chromecast/public/volume_control.h"
 #include "media/audio/audio_device_description.h"
 #include "media/base/audio_decoder_config.h"
 #include "media/base/demuxer_stream.h"
@@ -98,9 +99,16 @@ void CastRenderer::Initialize(::media::MediaResource* media_resource,
   if (device_id == "")
     device_id = ::media::AudioDeviceDescription::kDefaultDeviceId;
 
-  MediaPipelineDeviceParams params(
-      sync_type, MediaPipelineDeviceParams::kAudioStreamNormal, device_id,
-      backend_task_runner_.get());
+  AudioContentType content_type;
+  if (device_id == kAlarmAudioDeviceId) {
+    content_type = AudioContentType::kAlarm;
+  } else if (audio_device_id_ == kTtsAudioDeviceId) {
+    content_type = AudioContentType::kCommunication;
+  } else {
+    content_type = AudioContentType::kMedia;
+  }
+  MediaPipelineDeviceParams params(sync_type, backend_task_runner_.get(),
+                                   content_type, audio_device_id_);
 
   if (audio_device_id_ == kTtsAudioDeviceId ||
       audio_device_id_ ==
@@ -109,7 +117,7 @@ void CastRenderer::Initialize(::media::MediaResource* media_resource,
   }
 
   std::unique_ptr<MediaPipelineBackend> backend =
-      backend_factory_->CreateBackend(params, audio_device_id_);
+      backend_factory_->CreateBackend(params);
 
   // Create pipeline.
   MediaPipelineClient pipeline_client;

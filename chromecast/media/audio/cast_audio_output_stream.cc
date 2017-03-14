@@ -16,6 +16,8 @@
 #include "chromecast/public/media/decoder_config.h"
 #include "chromecast/public/media/media_pipeline_backend.h"
 #include "chromecast/public/media/media_pipeline_device_params.h"
+#include "chromecast/public/volume_control.h"
+#include "media/audio/audio_device_description.h"
 #include "media/base/decoder_buffer.h"
 
 namespace {
@@ -48,7 +50,8 @@ class CastAudioOutputStream::Backend
     MediaPipelineDeviceParams device_params(
         MediaPipelineDeviceParams::kModeIgnorePts,
         MediaPipelineDeviceParams::kAudioStreamSoundEffects,
-        backend_task_runner_.get());
+        backend_task_runner_.get(), AudioContentType::kMedia,
+        ::media::AudioDeviceDescription::kDefaultDeviceId);
     backend_ = audio_manager->CreateMediaPipelineBackend(device_params);
     if (!backend_)
       return false;

@@ -27,8 +27,7 @@ class MediaPipelineBackendFactory {
   virtual ~MediaPipelineBackendFactory();
 
   virtual std::unique_ptr<MediaPipelineBackend> CreateBackend(
-      const MediaPipelineDeviceParams& params,
-      const std::string& audio_device_id);
+      const MediaPipelineDeviceParams& params);
 
  protected:
   MediaPipelineBackendManager* media_pipeline_backend_manager() {

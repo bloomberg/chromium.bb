@@ -35,6 +35,8 @@
 #include "chromecast/public/media/decoder_config.h"
 #include "chromecast/public/media/media_pipeline_backend.h"
 #include "chromecast/public/media/media_pipeline_device_params.h"
+#include "chromecast/public/volume_control.h"
+#include "media/audio/audio_device_description.h"
 #include "media/base/audio_decoder_config.h"
 #include "media/base/audio_timestamp_helper.h"
 #include "media/base/decoder_buffer.h"
@@ -188,12 +190,18 @@ class AudioVideoPipelineDeviceTest : public testing::Test {
   void SetUp() override {
     CastMediaShlib::Initialize(
         base::CommandLine::ForCurrentProcess()->argv());
+    if (VolumeControl::Initialize) {
+      VolumeControl::Initialize(base::CommandLine::ForCurrentProcess()->argv());
+    }
   }
 
   void TearDown() override {
     // Pipeline must be destroyed before finalizing media shlib.
     backend_.reset();
     effects_backends_.clear();
+    if (VolumeControl::Finalize) {
+      VolumeControl::Finalize();
+    }
     CastMediaShlib::Finalize();
   }
 
@@ -616,7 +624,9 @@ AudioVideoPipelineDeviceTest::~AudioVideoPipelineDeviceTest() {}
 void AudioVideoPipelineDeviceTest::Initialize() {
   // Create the media device.
   task_runner_.reset(new TaskRunnerImpl());
-  MediaPipelineDeviceParams params(sync_type_, audio_type_, task_runner_.get());
+  MediaPipelineDeviceParams params(
+      sync_type_, audio_type_, task_runner_.get(), AudioContentType::kMedia,
+      ::media::AudioDeviceDescription::kDefaultDeviceId);
   backend_.reset(CastMediaShlib::CreateMediaPipelineBackend(params));
   CHECK(backend_);
 }
@@ -638,8 +648,9 @@ void AudioVideoPipelineDeviceTest::AddEffectsStreams() {
   for (int i = 0; i < kNumEffectsStreams; ++i) {
     MediaPipelineDeviceParams params(
         MediaPipelineDeviceParams::kModeIgnorePts,
-        MediaPipelineDeviceParams::kAudioStreamSoundEffects,
-        task_runner_.get());
+        MediaPipelineDeviceParams::kAudioStreamSoundEffects, task_runner_.get(),
+        AudioContentType::kMedia,
+        ::media::AudioDeviceDescription::kDefaultDeviceId);
     MediaPipelineBackend* effects_backend =
         CastMediaShlib::CreateMediaPipelineBackend(params);
     CHECK(effects_backend);

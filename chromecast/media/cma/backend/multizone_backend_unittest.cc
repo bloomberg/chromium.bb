@@ -27,6 +27,8 @@
 #include "chromecast/public/media/decoder_config.h"
 #include "chromecast/public/media/media_pipeline_backend.h"
 #include "chromecast/public/media/media_pipeline_device_params.h"
+#include "chromecast/public/volume_control.h"
+#include "media/audio/audio_device_description.h"
 #include "media/base/audio_decoder_config.h"
 #include "media/base/decoder_buffer.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -136,12 +138,18 @@ class MultizoneBackendTest : public testing::TestWithParam<TestParams> {
   void SetUp() override {
     srand(12345);
     CastMediaShlib::Initialize(base::CommandLine::ForCurrentProcess()->argv());
+    if (VolumeControl::Initialize) {
+      VolumeControl::Initialize(base::CommandLine::ForCurrentProcess()->argv());
+    }
   }
 
   void TearDown() override {
     // Pipeline must be destroyed before finalizing media shlib.
     audio_feeder_.reset();
     effects_feeders_.clear();
+    if (VolumeControl::Finalize) {
+      VolumeControl::Finalize();
+    }
     CastMediaShlib::Finalize();
   }
 
@@ -189,7 +197,8 @@ void BufferFeeder::Initialize(float playback_rate) {
       MediaPipelineDeviceParams::kModeIgnorePts,
       effects_only_ ? MediaPipelineDeviceParams::kAudioStreamSoundEffects
                     : MediaPipelineDeviceParams::kAudioStreamNormal,
-      task_runner_.get());
+      task_runner_.get(), AudioContentType::kMedia,
+      ::media::AudioDeviceDescription::kDefaultDeviceId);
   backend_.reset(CastMediaShlib::CreateMediaPipelineBackend(params));
   CHECK(backend_);
 

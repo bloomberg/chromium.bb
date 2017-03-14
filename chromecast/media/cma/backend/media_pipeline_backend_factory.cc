@@ -21,8 +21,7 @@ MediaPipelineBackendFactory::~MediaPipelineBackendFactory() {}
 
 std::unique_ptr<MediaPipelineBackend>
 MediaPipelineBackendFactory::CreateBackend(
-    const MediaPipelineDeviceParams& params,
-    const std::string& audio_device_id) {
+    const MediaPipelineDeviceParams& params) {
   return media_pipeline_backend_manager_->CreateMediaPipelineBackend(params);
 }
 

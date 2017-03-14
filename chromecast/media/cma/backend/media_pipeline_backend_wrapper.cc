@@ -5,7 +5,9 @@
 #include "chromecast/media/cma/backend/media_pipeline_backend_wrapper.h"
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "chromecast/media/cma/backend/media_pipeline_backend_manager.h"
+#include "chromecast/public/cast_media_shlib.h"
 
 namespace chromecast {
 namespace media {
@@ -13,46 +15,49 @@ namespace media {
 using DecoderType = MediaPipelineBackendManager::DecoderType;
 
 MediaPipelineBackendWrapper::MediaPipelineBackendWrapper(
-    std::unique_ptr<MediaPipelineBackend> backend,
-    int stream_type,
-    float stream_type_volume,
+    const media::MediaPipelineDeviceParams& params,
     MediaPipelineBackendManager* backend_manager)
-    : backend_(std::move(backend)),
-      stream_type_(stream_type),
-      audio_decoder_wrapper_(nullptr),
-      stream_type_volume_(stream_type_volume),
-      is_initialized_(false),
+    : backend_(base::WrapUnique(
+          media::CastMediaShlib::CreateMediaPipelineBackend(params))),
+      backend_manager_(backend_manager),
+      sfx_backend_(params.audio_type ==
+                   media::MediaPipelineDeviceParams::kAudioStreamSoundEffects),
+      have_audio_decoder_(false),
       have_video_decoder_(false),
-      backend_manager_(backend_manager) {
+      playing_(false) {
   DCHECK(backend_);
+  DCHECK(backend_manager_);
 }
 
 MediaPipelineBackendWrapper::~MediaPipelineBackendWrapper() {
-  backend_manager_->OnMediaPipelineBackendDestroyed(this);
-
-  if (audio_decoder_wrapper_)
-    backend_manager_->DecrementDecoderCount(DecoderType::AUDIO_DECODER);
+  if (have_audio_decoder_)
+    backend_manager_->DecrementDecoderCount(
+        sfx_backend_ ? DecoderType::SFX_DECODER : DecoderType::AUDIO_DECODER);
   if (have_video_decoder_)
     backend_manager_->DecrementDecoderCount(DecoderType::VIDEO_DECODER);
+
+  if (playing_) {
+    LOG(WARNING) << "Destroying media backend while still in 'playing' state";
+    if (have_audio_decoder_ && !sfx_backend_) {
+      backend_manager_->UpdatePlayingAudioCount(-1);
+    }
+  }
 }
 
 MediaPipelineBackend::AudioDecoder*
 MediaPipelineBackendWrapper::CreateAudioDecoder() {
-  DCHECK(!is_initialized_);
-  if (audio_decoder_wrapper_)
-    return nullptr;
+  DCHECK(!have_audio_decoder_);
 
-  if (!backend_manager_->IncrementDecoderCount(DecoderType::AUDIO_DECODER))
+  if (!backend_manager_->IncrementDecoderCount(
+          sfx_backend_ ? DecoderType::SFX_DECODER : DecoderType::AUDIO_DECODER))
     return nullptr;
+  have_audio_decoder_ = true;
 
-  audio_decoder_wrapper_.reset(
-      new AudioDecoderWrapper(backend_->CreateAudioDecoder()));
-  return audio_decoder_wrapper_.get();
+  return backend_->CreateAudioDecoder();
 }
 
 MediaPipelineBackend::VideoDecoder*
 MediaPipelineBackendWrapper::CreateVideoDecoder() {
-  DCHECK(!is_initialized_);
   DCHECK(!have_video_decoder_);
 
   if (!backend_manager_->IncrementDecoderCount(DecoderType::VIDEO_DECODER))
@@ -63,28 +68,36 @@ MediaPipelineBackendWrapper::CreateVideoDecoder() {
 }
 
 bool MediaPipelineBackendWrapper::Initialize() {
-  DCHECK(!is_initialized_);
-  is_initialized_ = backend_->Initialize();
-  if (is_initialized_ && audio_decoder_wrapper_)
-    audio_decoder_wrapper_->SetStreamTypeVolume(stream_type_volume_);
-
-  return is_initialized_;
+  return backend_->Initialize();
 }
 
 bool MediaPipelineBackendWrapper::Start(int64_t start_pts) {
-  return backend_->Start(start_pts);
+  if (!backend_->Start(start_pts)) {
+    return false;
+  }
+  SetPlaying(true);
+  return true;
 }
 
 void MediaPipelineBackendWrapper::Stop() {
   backend_->Stop();
+  SetPlaying(false);
 }
 
 bool MediaPipelineBackendWrapper::Pause() {
-  return backend_->Pause();
+  if (!backend_->Pause()) {
+    return false;
+  }
+  SetPlaying(false);
+  return true;
 }
 
 bool MediaPipelineBackendWrapper::Resume() {
-  return backend_->Resume();
+  if (!backend_->Resume()) {
+    return false;
+  }
+  SetPlaying(true);
+  return true;
 }
 
 int64_t MediaPipelineBackendWrapper::GetCurrentPts() {
@@ -95,15 +108,14 @@ bool MediaPipelineBackendWrapper::SetPlaybackRate(float rate) {
   return backend_->SetPlaybackRate(rate);
 }
 
-int MediaPipelineBackendWrapper::GetStreamType() const {
-  return stream_type_;
-}
-
-void MediaPipelineBackendWrapper::SetStreamTypeVolume(
-    float stream_type_volume) {
-  stream_type_volume_ = stream_type_volume;
-  if (is_initialized_ && audio_decoder_wrapper_)
-    audio_decoder_wrapper_->SetStreamTypeVolume(stream_type_volume_);
+void MediaPipelineBackendWrapper::SetPlaying(bool playing) {
+  if (playing == playing_) {
+    return;
+  }
+  playing_ = playing;
+  if (have_audio_decoder_ && !sfx_backend_) {
+    backend_manager_->UpdatePlayingAudioCount(playing_ ? 1 : -1);
+  }
 }
 
 }  // namespace media

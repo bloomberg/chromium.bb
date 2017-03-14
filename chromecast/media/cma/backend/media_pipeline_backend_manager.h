@@ -11,6 +11,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/observer_list_threadsafe.h"
 #include "base/single_thread_task_runner.h"
 #include "chromecast/public/media/media_pipeline_backend.h"
 #include "chromecast/public/media/media_pipeline_device_params.h"
@@ -18,35 +19,44 @@
 namespace chromecast {
 namespace media {
 
-// This class manages created media pipelines, and provides volume control by
-// stream type.
-// All functions in this class should be called on the media thread.
+// This class tracks all created media backends, tracking whether or not volume
+// feedback sounds should be enabled based on the currently active backends.
+// Volume feedback sounds are only enabled when there are no active audio
+// streams (apart from sound-effects streams).
 class MediaPipelineBackendManager {
  public:
-  enum DecoderType { AUDIO_DECODER, VIDEO_DECODER, NUM_DECODER_TYPES };
+  class AllowVolumeFeedbackObserver {
+   public:
+    virtual void AllowVolumeFeedbackSounds(bool allow) = 0;
+
+   protected:
+    virtual ~AllowVolumeFeedbackObserver() = default;
+  };
+
+  enum DecoderType {
+    AUDIO_DECODER,
+    VIDEO_DECODER,
+    SFX_DECODER,
+    NUM_DECODER_TYPES
+  };
 
   explicit MediaPipelineBackendManager(
       scoped_refptr<base::SingleThreadTaskRunner> media_task_runner);
   ~MediaPipelineBackendManager();
 
-  // Create media pipeline backend.
+  // Creates a media pipeline backend. Must be called on the same thread as
+  // |media_task_runner_|.
   std::unique_ptr<MediaPipelineBackend> CreateMediaPipelineBackend(
       const MediaPipelineDeviceParams& params);
-
-  // Create media pipeline backend with a specific stream_type.
-  std::unique_ptr<MediaPipelineBackend> CreateMediaPipelineBackend(
-      const MediaPipelineDeviceParams& params,
-      int stream_type);
-
-  // Sets the relative volume for a specified stream type,
-  // with range [0.0, 1.0] inclusive. If |multiplier| is outside the
-  // range [0.0, 1.0], it is clamped to that range.
-  // TODO(tianyuwang): change stream_type to use a enum.
-  void SetVolumeMultiplier(int stream_type, float volume);
 
   base::SingleThreadTaskRunner* task_runner() const {
     return media_task_runner_.get();
   }
+
+  // Adds/removes an observer for when folume feedback sounds are allowed.
+  // An observer must be removed on the same thread that added it.
+  void AddAllowVolumeFeedbackObserver(AllowVolumeFeedbackObserver* observer);
+  void RemoveAllowVolumeFeedbackObserver(AllowVolumeFeedbackObserver* observer);
 
  private:
   friend class MediaPipelineBackendWrapper;
@@ -56,21 +66,19 @@ class MediaPipelineBackendManager {
   bool IncrementDecoderCount(DecoderType type);
   void DecrementDecoderCount(DecoderType type);
 
-  // Internal clean up when a new media pipeline backend is destroyed.
-  void OnMediaPipelineBackendDestroyed(const MediaPipelineBackend* backend);
-
-  float GetVolumeMultiplier(int stream_type);
+  // Update the count of playing non-effects audio streams.
+  void UpdatePlayingAudioCount(int change);
 
   const scoped_refptr<base::SingleThreadTaskRunner> media_task_runner_;
-
-  // A vector that stores all of the existing media_pipeline_backends_.
-  std::vector<MediaPipelineBackend*> media_pipeline_backends_;
 
   // Total count of decoders created
   int decoder_count_[NUM_DECODER_TYPES];
 
-  // Volume multiplier for each type of audio streams.
-  std::map<int, float> volume_by_stream_type_;
+  // Total number of playing non-effects streams.
+  int playing_noneffects_audio_streams_count_;
+
+  scoped_refptr<base::ObserverListThreadSafe<AllowVolumeFeedbackObserver>>
+      allow_volume_feedback_observers_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaPipelineBackendManager);
 };

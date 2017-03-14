@@ -8,13 +8,14 @@
 namespace chromecast {
 namespace media {
 
-extern const char kAlarmAudioDeviceId[];
-extern const char kEarconAudioDeviceId[];
-extern const char kTtsAudioDeviceId[];
+// Local-only audio (don't send over multiroom).
+extern const char kLocalAudioDeviceId[];
 
-const int kDefaultAudioStreamType = 0;
-const int kAlarmAudioStreamType = 1;
-const int kTtsAudioStreamType = 2;
+extern const char kAlarmAudioDeviceId[];
+
+// TODO(kmackay|bshaya) Remove this, just use
+// ::media::AudioDeviceDescription::kCommunicationsDeviceId.
+extern const char kTtsAudioDeviceId[];
 
 }  // namespace media
 }  // namespace chromecast

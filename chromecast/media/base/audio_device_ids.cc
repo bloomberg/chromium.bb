@@ -7,8 +7,8 @@
 namespace chromecast {
 namespace media {
 
+const char kLocalAudioDeviceId[] = "local";
 const char kAlarmAudioDeviceId[] = "assistant-alarm";
-const char kEarconAudioDeviceId[] = "default-earcon";
 const char kTtsAudioDeviceId[] = "assistant-tts";
 
 }  // namespace media

@@ -24,6 +24,7 @@ source_set("public") {
     "reboot_shlib.h",
     "task_runner.h",
     "video_plane.h",
+    "volume_control.h",
   ]
 
   public_configs = [ ":public_config" ]

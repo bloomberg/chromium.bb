@@ -269,7 +269,7 @@ StreamMixerAlsa::StreamMixerAlsa()
   filter_groups_.push_back(base::MakeUnique<FilterGroup>(
       std::unordered_set<std::string>(
           {::media::AudioDeviceDescription::kDefaultDeviceId,
-           kEarconAudioDeviceId, ""}),
+           kLocalAudioDeviceId, ""}),
       AudioFilterFactory::MEDIA_AUDIO_FILTER));
 
   DefineAlsaParameters();
