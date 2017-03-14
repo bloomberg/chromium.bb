@@ -237,7 +237,6 @@ int SensorManagerAndroid::GetNumberActiveDeviceMotionSensors() {
 
 SensorManagerAndroid::OrientationSensorType
 SensorManagerAndroid::GetOrientationSensorTypeUsed() {
-  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!device_sensors_.is_null());
   return static_cast<SensorManagerAndroid::OrientationSensorType>(
       Java_DeviceSensors_getOrientationSensorTypeUsed(AttachCurrentThread(),
