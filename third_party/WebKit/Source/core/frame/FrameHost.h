@@ -44,7 +44,6 @@ class BrowserControls;
 class ConsoleMessageStorage;
 class OverscrollController;
 class Page;
-class TopDocumentRootScrollerController;
 
 // FrameHost is the set of global data shared between multiple frames
 // and is provided by the embedder to each frame when created.
@@ -75,8 +74,6 @@ class CORE_EXPORT FrameHost final
 
   ConsoleMessageStorage& consoleMessageStorage();
   const ConsoleMessageStorage& consoleMessageStorage() const;
-
-  TopDocumentRootScrollerController& globalRootScrollerController() const;
 
   DECLARE_TRACE();
 

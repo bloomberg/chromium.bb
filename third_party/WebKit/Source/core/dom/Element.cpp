@@ -531,7 +531,7 @@ void Element::callDistributeScroll(ScrollState& scrollState) {
   // crbug.com/623079.
   bool disableCustomCallbacks = !scrollState.isDirectManipulation() &&
                                 !document()
-                                     .frameHost()
+                                     .page()
                                      ->globalRootScrollerController()
                                      .isViewportScrollCallback(callback);
 
@@ -620,7 +620,7 @@ void Element::callApplyScroll(ScrollState& scrollState) {
   // crbug.com/623079.
   bool disableCustomCallbacks = !scrollState.isDirectManipulation() &&
                                 !document()
-                                     .frameHost()
+                                     .page()
                                      ->globalRootScrollerController()
                                      .isViewportScrollCallback(callback);
 

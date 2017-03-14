@@ -346,12 +346,12 @@ void FrameView::dispose() {
   if (ScrollingCoordinator* scrollingCoordinator = this->scrollingCoordinator())
     scrollingCoordinator->willDestroyScrollableArea(this);
 
-  FrameHost* frameHost = m_frame->host();
+  Page* page = m_frame->page();
   // TODO(dcheng): It's wrong that the frame can be detached before the
   // FrameView. Figure out what's going on and fix FrameView to be disposed with
   // the correct timing.
-  if (frameHost)
-    frameHost->globalRootScrollerController().didDisposeScrollableArea(*this);
+  if (page)
+    page->globalRootScrollerController().didDisposeScrollableArea(*this);
 
   // We need to clear the RootFrameViewport's animator since it gets called
   // from non-GC'd objects and RootFrameViewport will still have a pointer to
@@ -1626,7 +1626,7 @@ void FrameView::removeViewportConstrainedObject(LayoutObject& object) {
 
 void FrameView::viewportSizeChanged(bool widthChanged, bool heightChanged) {
   DCHECK(widthChanged || heightChanged);
-  DCHECK(m_frame->host());
+  DCHECK(m_frame->page());
 
   if (LayoutViewItem layoutView = this->layoutViewItem()) {
     if (layoutView.usesCompositing())
@@ -1636,7 +1636,7 @@ void FrameView::viewportSizeChanged(bool widthChanged, bool heightChanged) {
   // Ensure the root scroller compositing layers update geometry in response to
   // the URL bar resizing.
   if (m_frame->isMainFrame())
-    m_frame->host()->globalRootScrollerController().mainFrameViewResized();
+    m_frame->page()->globalRootScrollerController().mainFrameViewResized();
 
   showOverlayScrollbars();
 
@@ -2767,8 +2767,9 @@ void FrameView::didAttachDocument() {
         RootFrameViewport::create(visualViewport, *layoutViewport);
     m_viewportScrollableArea = rootFrameViewport;
 
-    frameHost->globalRootScrollerController().initializeViewportScrollCallback(
-        *rootFrameViewport);
+    frameHost->page()
+        .globalRootScrollerController()
+        .initializeViewportScrollCallback(*rootFrameViewport);
   }
 }
 
@@ -3068,7 +3069,7 @@ void FrameView::updateLifecyclePhasesInternal(
       DCHECK(RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled() ||
              lifecycle().state() >= DocumentLifecycle::CompositingClean);
 
-      m_frame->host()->globalRootScrollerController().didUpdateCompositing();
+      m_frame->page()->globalRootScrollerController().didUpdateCompositing();
 
       if (targetState >= DocumentLifecycle::PrePaintClean) {
         if (!RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled())
@@ -3787,11 +3788,11 @@ void FrameView::removeChild(FrameViewBase* child) {
 bool FrameView::visualViewportSuppliesScrollbars() {
   // On desktop, we always use the layout viewport's scrollbars.
   if (!m_frame->settings() || !m_frame->settings()->getViewportEnabled() ||
-      !m_frame->document() || !m_frame->host())
+      !m_frame->document() || !m_frame->page())
     return false;
 
   const TopDocumentRootScrollerController& controller =
-      m_frame->host()->globalRootScrollerController();
+      m_frame->page()->globalRootScrollerController();
 
   if (!layoutViewportScrollableArea())
     return false;
@@ -3850,8 +3851,8 @@ IntSize FrameView::maximumScrollOffsetInt() const {
   IntSize visibleSize = visibleContentSize(ExcludeScrollbars);
   IntSize contentBounds = contentsSize();
 
-  FrameHost* host = m_frame->host();
-  DCHECK(host);
+  Page* page = m_frame->page();
+  DCHECK(page);
 
   // We need to perform this const_cast since maximumScrollOffsetInt is a const
   // method but we can't make layoutViewportScrollableArea const since it can
@@ -3860,7 +3861,7 @@ IntSize FrameView::maximumScrollOffsetInt() const {
   const ScrollableArea* layoutViewport =
       const_cast<FrameView*>(this)->layoutViewportScrollableArea();
   TopDocumentRootScrollerController& controller =
-      host->globalRootScrollerController();
+      page->globalRootScrollerController();
   if (layoutViewport == controller.rootScrollerArea())
     visibleSize = controller.rootScrollerVisibleArea();
 

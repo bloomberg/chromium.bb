@@ -524,7 +524,7 @@ TEST_F(RootScrollerTest, SetRootScrollerIframeUsesCorrectLayerAndCallback) {
   Element* container = iframe->contentDocument()->getElementById("container");
 
   const TopDocumentRootScrollerController& mainController =
-      mainFrame()->document()->frameHost()->globalRootScrollerController();
+      mainFrame()->document()->page()->globalRootScrollerController();
 
   NonThrowableExceptionState nonThrow;
 
@@ -762,7 +762,7 @@ TEST_F(RootScrollerTest, RemoveClippingOnCompositorLayers) {
   RootScrollerController& childController =
       iframe->contentDocument()->rootScrollerController();
   TopDocumentRootScrollerController& globalController =
-      frameHost().globalRootScrollerController();
+      page().globalRootScrollerController();
 
   LayoutView* mainLayoutView = mainFrameView()->layoutView();
   LayoutView* childLayoutView = iframe->contentDocument()->layoutView();
@@ -1092,7 +1092,7 @@ TEST_F(RootScrollerTest, DocumentElementHasNoLayoutObject) {
   executeScript("document.documentElement.style.display = 'none';");
 
   const TopDocumentRootScrollerController& globalController =
-      mainFrame()->document()->frameHost()->globalRootScrollerController();
+      mainFrame()->document()->page()->globalRootScrollerController();
 
   EXPECT_EQ(mainFrame()->document()->documentElement(),
             globalController.globalRootScroller());

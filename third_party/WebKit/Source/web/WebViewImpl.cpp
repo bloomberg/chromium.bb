@@ -3831,7 +3831,7 @@ void WebViewImpl::registerViewportLayersWithCompositor() {
 
   // Get the outer viewport scroll layer.
   GraphicsLayer* layoutViewportScrollLayer =
-      page()->frameHost().globalRootScrollerController().rootScrollerLayer();
+      page()->globalRootScrollerController().rootScrollerLayer();
   WebLayer* layoutViewportWebLayer =
       layoutViewportScrollLayer ? layoutViewportScrollLayer->platformLayer()
                                 : nullptr;

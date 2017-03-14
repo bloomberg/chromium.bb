@@ -172,7 +172,7 @@ void PaintLayerScrollableArea::dispose() {
 
   box()
       .document()
-      .frameHost()
+      .page()
       ->globalRootScrollerController()
       .didDisposeScrollableArea(*this);
 
@@ -508,10 +508,10 @@ IntSize PaintLayerScrollableArea::maximumScrollOffsetInt() const {
   IntSize visibleSize =
       pixelSnappedIntRect(box().overflowClipRect(box().location())).size();
 
-  FrameHost* host = layoutBox()->document().frameHost();
-  DCHECK(host);
+  Page* page = layoutBox()->document().page();
+  DCHECK(page);
   TopDocumentRootScrollerController& controller =
-      host->globalRootScrollerController();
+      page->globalRootScrollerController();
 
   // The global root scroller should be clipped by the top FrameView rather
   // than it's overflow clipping box. This is to ensure that content exposed by
@@ -1898,7 +1898,7 @@ bool PaintLayerScrollableArea::visualViewportSuppliesScrollbars() const {
     return false;
 
   const TopDocumentRootScrollerController& controller =
-      layoutBox()->document().frameHost()->globalRootScrollerController();
+      layoutBox()->document().page()->globalRootScrollerController();
 
   return RootScrollerUtil::scrollableAreaForRootScroller(
              controller.globalRootScroller()) == this;

@@ -495,7 +495,7 @@ void PaintLayerCompositor::updateClippingOnCompositorLayers() {
   }
 
   const TopDocumentRootScrollerController& globalRootScrollerController =
-      m_layoutView.document().frameHost()->globalRootScrollerController();
+      m_layoutView.document().page()->globalRootScrollerController();
 
   Element* documentElement = m_layoutView.document().documentElement();
   bool frameIsRootScroller =
@@ -640,7 +640,7 @@ void PaintLayerCompositor::updateContainerSizes() {
   FrameView* frameView = m_layoutView.frameView();
 
   const TopDocumentRootScrollerController& globalRootScrollerController =
-      m_layoutView.document().frameHost()->globalRootScrollerController();
+      m_layoutView.document().page()->globalRootScrollerController();
 
   // The global root scroller must always size to the root FrameView.
   if (rootLayer() &&

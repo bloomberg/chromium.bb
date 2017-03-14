@@ -86,11 +86,6 @@ const ConsoleMessageStorage& FrameHost::consoleMessageStorage() const {
   return *m_consoleMessageStorage;
 }
 
-TopDocumentRootScrollerController& FrameHost::globalRootScrollerController()
-    const {
-  return page().globalRootScrollerController();
-}
-
 DEFINE_TRACE(FrameHost) {
   visitor->trace(m_page);
   visitor->trace(m_overscrollController);

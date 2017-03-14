@@ -6,11 +6,11 @@
 
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
-#include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/layout/LayoutBox.h"
 #include "core/layout/api/LayoutViewItem.h"
 #include "core/layout/compositing/PaintLayerCompositor.h"
+#include "core/page/Page.h"
 #include "core/page/scrolling/RootScrollerUtil.h"
 #include "core/page/scrolling/TopDocumentRootScrollerController.h"
 #include "core/paint/PaintLayer.h"
@@ -122,8 +122,8 @@ void RootScrollerController::recomputeEffectiveRootScroller() {
         CompositingUpdateRebuildTree);
   }
 
-  if (FrameHost* frameHost = m_document->frameHost())
-    frameHost->globalRootScrollerController().didChangeRootScroller();
+  if (Page* page = m_document->page())
+    page->globalRootScrollerController().didChangeRootScroller();
 }
 
 bool RootScrollerController::isValidRootScroller(const Element& element) const {

@@ -1376,7 +1376,7 @@ void CompositedLayerMapping::updateScrollingLayerGeometry(
       pixelSnappedIntRect(layoutBox.overflowClipRect(LayoutPoint()));
 
   const TopDocumentRootScrollerController& globalRootScrollerController =
-      layoutBox.document().frameHost()->globalRootScrollerController();
+      layoutBox.document().page()->globalRootScrollerController();
 
   if (&m_owningLayer == globalRootScrollerController.rootScrollerPaintLayer()) {
     LayoutRect clipRect =

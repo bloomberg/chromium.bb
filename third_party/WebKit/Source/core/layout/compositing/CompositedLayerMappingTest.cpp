@@ -939,7 +939,7 @@ TEST_P(CompositedLayerMappingTest, RootScrollerAncestorsNotClipped) {
   NonThrowableExceptionState nonThrow;
 
   TopDocumentRootScrollerController& rootScrollerController =
-      document().frameHost()->globalRootScrollerController();
+      document().page()->globalRootScrollerController();
 
   setBodyInnerHTML(
       // The container DIV is composited with scrolling contents and a
