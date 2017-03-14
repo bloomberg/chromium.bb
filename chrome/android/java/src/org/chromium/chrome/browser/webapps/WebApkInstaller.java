@@ -157,10 +157,19 @@ public class WebApkInstaller {
     @CalledByNative
     private void updateAsyncFromGooglePlay(
             String packageName, int version, String title, String token, String url) {
-        if (mGooglePlayWebApkInstallDelegate == null) return;
+        if (mGooglePlayWebApkInstallDelegate == null) {
+            notify(false);
+            return;
+        }
 
+        Callback<Boolean> callback = new Callback<Boolean>() {
+            @Override
+            public void onResult(Boolean success) {
+                WebApkInstaller.this.notify(success);
+            }
+        };
         mGooglePlayWebApkInstallDelegate.installAsync(
-                packageName, version, title, token, url, null);
+                packageName, version, title, token, url, callback);
     }
 
     /**
