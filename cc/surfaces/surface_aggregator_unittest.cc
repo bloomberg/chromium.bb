@@ -647,9 +647,9 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, UnreferencedSurface) {
                               parent_local_surface_id);
 
   test::Quad parent_quads[] = {
-      test::Quad::SolidColorQuad(SK_ColorWHITE),
+      test::Quad::SolidColorQuad(SK_ColorGRAY),
       test::Quad::SurfaceQuad(embedded_surface_id, InvalidSurfaceId(), 1.f),
-      test::Quad::SolidColorQuad(SK_ColorBLACK)};
+      test::Quad::SolidColorQuad(SK_ColorLTGRAY)};
   test::Pass parent_passes[] = {
       test::Pass(parent_quads, arraysize(parent_quads))};
 

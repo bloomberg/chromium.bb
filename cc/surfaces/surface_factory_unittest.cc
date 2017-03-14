@@ -184,8 +184,8 @@ TEST_F(SurfaceFactoryTest, ResourceLifetimeSimple) {
   EXPECT_EQ(0u, client_.returned_resources().size());
   client_.clear_returned_resources();
 
-  // The second frame references no resources and thus should make all resources
-  // available to be returned.
+  // The second frame references no resources of first frame and thus should
+  // make all resources of first frame available to be returned.
   SubmitCompositorFrameWithResources(NULL, 0);
 
   ResourceId expected_returned_ids[] = {1, 2, 3};
@@ -194,6 +194,29 @@ TEST_F(SurfaceFactoryTest, ResourceLifetimeSimple) {
   CheckReturnedResourcesMatchExpected(
       expected_returned_ids, expected_returned_counts,
       arraysize(expected_returned_counts), gpu::SyncToken());
+
+  ResourceId third_frame_ids[] = {4, 5, 6};
+  SubmitCompositorFrameWithResources(third_frame_ids,
+                                     arraysize(third_frame_ids));
+
+  // All of the resources submitted in the third frame are still in use at this
+  // time by virtue of being in the pending frame, so none can be returned to
+  // the client yet.
+  EXPECT_EQ(0u, client_.returned_resources().size());
+  client_.clear_returned_resources();
+
+  // The forth frame references no resources of third frame and thus should
+  // make all resources of third frame available to be returned.
+  ResourceId forth_frame_ids[] = {7, 8, 9};
+  SubmitCompositorFrameWithResources(forth_frame_ids,
+                                     arraysize(forth_frame_ids));
+
+  ResourceId forth_expected_returned_ids[] = {4, 5, 6};
+  int forth_expected_returned_counts[] = {1, 1, 1};
+  // Resources were never consumed so no sync token should be set.
+  CheckReturnedResourcesMatchExpected(
+      forth_expected_returned_ids, forth_expected_returned_counts,
+      arraysize(forth_expected_returned_counts), gpu::SyncToken());
 }
 
 // Tests submitting a frame with resources followed by one with no resources
