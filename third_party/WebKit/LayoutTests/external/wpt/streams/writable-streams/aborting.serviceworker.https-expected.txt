@@ -26,12 +26,11 @@ PASS underlying abort() should not be called until underlying write() completes
 PASS underlying abort() should not be called if underlying close() has started 
 PASS if underlying close() has started and then rejects, the abort() and close() promises should reject with the underlying close rejection reason 
 PASS underlying abort() should be called while closing if underlying close() has not started yet 
-FAIL if a writer is created for a stream with a pending abort, its ready should be rejected with a TypeError assert_unreached: Should have rejected: ready of the second writer should be rejected with a TypeError Reached unreachable code
 PASS writer close() promise should resolve before abort() promise 
 PASS writer.ready should reject on controller error without waiting for underlying write 
-FAIL writer.abort() while there is an in-flight write, and then finish the write with rejection assert_array_equals: writePromise, abortPromise and writer.closed must reject property 1, expected "abortPromise" but got "closed"
-FAIL writer.abort(), controller.error() while there is an in-flight write, and then finish the write promise_test: Unhandled rejection with value: object "TypeError: Cannot error a errored writable stream"
-PASS controller.error(), writer.abort() while there is an in-flight write, and then finish the write 
+FAIL writer.abort() while there is a pending write, and then finish the write with rejection assert_array_equals: writePromise, abortPromise and writer.closed must reject property 1, expected "abortPromise" but got "closed"
+FAIL writer.abort(), controller.error() while there is a pending write, and then finish the write promise_test: Unhandled rejection with value: object "TypeError: Cannot error a errored writable stream"
+PASS controller.error(), writer.abort() while there is a pending write, and then finish the write 
 PASS releaseLock() while aborting should reject the original closed promise 
 PASS releaseLock() during delayed async abort() should create a new rejected closed promise 
 Harness: the test ran to completion.

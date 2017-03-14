@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 67 tests; 25 PASS, 42 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 69 tests; 25 PASS, 44 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Element.animate() creates an Animation object 
 FAIL Element.animate() creates an Animation object in the relevant realm of the target element Cannot read property 'prototype' of undefined
 PASS Element.animate() creates an Animation object with a KeyframeEffect 
@@ -26,9 +26,11 @@ FAIL Element.animate() accepts a two property (a shorthand and one of its compon
 FAIL Element.animate() accepts a keyframe sequence with duplicate values for a given interior offset anim.effect.getKeyframes is not a function
 FAIL Element.animate() accepts a keyframe sequence with duplicate values for offsets 0 and 1 anim.effect.getKeyframes is not a function
 FAIL Element.animate() accepts a two property four keyframe sequence anim.effect.getKeyframes is not a function
-FAIL Element.animate() accepts a single keyframe sequence with omitted offsets anim.effect.getKeyframes is not a function
+FAIL Element.animate() accepts a single keyframe sequence with omitted offset anim.effect.getKeyframes is not a function
+FAIL Element.animate() accepts a single keyframe sequence with null offset anim.effect.getKeyframes is not a function
 FAIL Element.animate() accepts a single keyframe sequence with string offset anim.effect.getKeyframes is not a function
 FAIL Element.animate() accepts a one property keyframe sequence with some omitted offsets anim.effect.getKeyframes is not a function
+FAIL Element.animate() accepts a one property keyframe sequence with some null offsets anim.effect.getKeyframes is not a function
 FAIL Element.animate() accepts a two property keyframe sequence with some omitted offsets anim.effect.getKeyframes is not a function
 FAIL Element.animate() accepts a one property keyframe sequence with all omitted offsets anim.effect.getKeyframes is not a function
 FAIL Element.animate() accepts a keyframe sequence with different easing values, but the same easing value for a given offset anim.effect.getKeyframes is not a function
