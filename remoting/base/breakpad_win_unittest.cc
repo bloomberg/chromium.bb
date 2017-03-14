@@ -140,9 +140,13 @@ void BreakpadWinDeathTest::SetUp() {
 }
 
 TEST_F(BreakpadWinDeathTest, TestAccessViolation) {
+#if !defined(ADDRESS_SANITIZER)
+  // ASan overrides the user unhandled exception filter so we won't receive this
+  // callback.
   if (callbacks_.get()) {
     EXPECT_CALL(*callbacks_, OnClientDumpRequested());
   }
+#endif  // !defined(ADDRESS_SANITIZER)
 
   // Generate access violation exception.
   ASSERT_DEATH(*reinterpret_cast<volatile int*>(NULL) = 1, "");
