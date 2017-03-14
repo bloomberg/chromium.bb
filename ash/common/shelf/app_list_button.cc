@@ -133,19 +133,22 @@ void AppListButton::OnPaint(gfx::Canvas* canvas) {
   // ring draws sharply and is centered at all scale factors.
   const float kRingOuterRadiusDp = 7.f;
   const float kRingThicknessDp = 1.5f;
-  gfx::ScopedCanvas scoped_canvas(canvas);
-  const float dsf = canvas->UndoDeviceScaleFactor();
-  circle_center.Scale(dsf);
 
-  cc::PaintFlags fg_flags;
-  fg_flags.setAntiAlias(true);
-  fg_flags.setStyle(cc::PaintFlags::kStroke_Style);
-  fg_flags.setColor(kShelfIconColor);
-  const float thickness = std::ceil(kRingThicknessDp * dsf);
-  const float radius = std::ceil(kRingOuterRadiusDp * dsf) - thickness / 2;
-  fg_flags.setStrokeWidth(thickness);
-  // Make sure the center of the circle lands on pixel centers.
-  canvas->DrawCircle(circle_center, radius, fg_flags);
+  {
+    gfx::ScopedCanvas scoped_canvas(canvas);
+    const float dsf = canvas->UndoDeviceScaleFactor();
+    circle_center.Scale(dsf);
+
+    cc::PaintFlags fg_flags;
+    fg_flags.setAntiAlias(true);
+    fg_flags.setStyle(cc::PaintFlags::kStroke_Style);
+    fg_flags.setColor(kShelfIconColor);
+    const float thickness = std::ceil(kRingThicknessDp * dsf);
+    const float radius = std::ceil(kRingOuterRadiusDp * dsf) - thickness / 2;
+    fg_flags.setStrokeWidth(thickness);
+    // Make sure the center of the circle lands on pixel centers.
+    canvas->DrawCircle(circle_center, radius, fg_flags);
+  }
 
   views::Painter::PaintFocusPainter(this, canvas, focus_painter());
 }
