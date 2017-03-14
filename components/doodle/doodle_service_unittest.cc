@@ -15,6 +15,7 @@
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "components/prefs/testing_pref_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -64,13 +65,21 @@ DoodleConfig CreateConfig(DoodleType type) {
 class DoodleServiceTest : public testing::Test {
  public:
   DoodleServiceTest()
-      : fetcher_(nullptr),
-        task_runner_(new base::TestMockTimeTaskRunner()),
+      : task_runner_(new base::TestMockTimeTaskRunner()),
         task_runner_handle_(task_runner_),
         tick_clock_(task_runner_->GetMockTickClock()),
+        fetcher_(nullptr),
         expiry_timer_(nullptr) {
+    DoodleService::RegisterProfilePrefs(pref_service_.registry());
+
     task_runner_->FastForwardBy(base::TimeDelta::FromHours(12345));
 
+    RecreateService();
+  }
+
+  void DestroyService() { service_ = nullptr; }
+
+  void RecreateService() {
     auto expiry_timer = base::MakeUnique<base::OneShotTimer>(tick_clock_.get());
     expiry_timer->SetTaskRunner(task_runner_);
     expiry_timer_ = expiry_timer.get();
@@ -78,8 +87,9 @@ class DoodleServiceTest : public testing::Test {
     auto fetcher = base::MakeUnique<FakeDoodleFetcher>();
     fetcher_ = fetcher.get();
 
-    service_ = base::MakeUnique<DoodleService>(std::move(fetcher),
-                                               std::move(expiry_timer));
+    service_ = base::MakeUnique<DoodleService>(
+        &pref_service_, std::move(fetcher), std::move(expiry_timer),
+        task_runner_->GetMockClock());
   }
 
   DoodleService* service() { return service_.get(); }
@@ -88,16 +98,17 @@ class DoodleServiceTest : public testing::Test {
   base::TestMockTimeTaskRunner* task_runner() { return task_runner_.get(); }
 
  private:
-  // Weak, owned by the service.
-  FakeDoodleFetcher* fetcher_;
+  TestingPrefServiceSimple pref_service_;
 
   scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
   base::ThreadTaskRunnerHandle task_runner_handle_;
   std::unique_ptr<base::TickClock> tick_clock_;
-  // Weak, owned by the service.
-  base::OneShotTimer* expiry_timer_;
 
   std::unique_ptr<DoodleService> service_;
+
+  // Weak, owned by the service.
+  FakeDoodleFetcher* fetcher_;
+  base::OneShotTimer* expiry_timer_;
 };
 
 TEST_F(DoodleServiceTest, FetchesConfigOnRefresh) {
@@ -129,6 +140,67 @@ TEST_F(DoodleServiceTest, FetchesConfigOnRefresh) {
 
   // The config should have been updated.
   EXPECT_THAT(service()->config(), Eq(other_config));
+}
+
+TEST_F(DoodleServiceTest, PersistsConfig) {
+  // Load some doodle config.
+  service()->Refresh();
+  DoodleConfig config = CreateConfig(DoodleType::SIMPLE);
+  config.large_image.url = GURL("https://doodle.com/doodle.jpg");
+  fetcher()->ServeAllCallbacks(DoodleState::AVAILABLE,
+                               base::TimeDelta::FromHours(1), config);
+  ASSERT_THAT(service()->config(), Eq(config));
+
+  // Re-create the service. It should have persisted the config, and load it
+  // again automatically.
+  RecreateService();
+  EXPECT_THAT(service()->config(), Eq(config));
+}
+
+TEST_F(DoodleServiceTest, PersistsExpiryDate) {
+  // Load some doodle config.
+  service()->Refresh();
+  DoodleConfig config = CreateConfig(DoodleType::SIMPLE);
+  config.large_image.url = GURL("https://doodle.com/doodle.jpg");
+  fetcher()->ServeAllCallbacks(DoodleState::AVAILABLE,
+                               base::TimeDelta::FromHours(1), config);
+  ASSERT_THAT(service()->config(), Eq(config));
+
+  // Destroy the service, and let some time pass.
+  DestroyService();
+  task_runner()->FastForwardBy(base::TimeDelta::FromMinutes(15));
+
+  // Remove the abandoned expiry task from the task runner.
+  ASSERT_THAT(task_runner()->GetPendingTaskCount(), Eq(1u));
+  task_runner()->ClearPendingTasks();
+
+  // Re-create the service. The persisted config should have been loaded again.
+  RecreateService();
+  EXPECT_THAT(service()->config(), Eq(config));
+
+  // Its time-to-live should have been updated.
+  EXPECT_THAT(task_runner()->GetPendingTaskCount(), Eq(1u));
+  EXPECT_THAT(task_runner()->NextPendingTaskDelay(),
+              Eq(base::TimeDelta::FromMinutes(45)));
+}
+
+TEST_F(DoodleServiceTest, PersistedConfigExpires) {
+  // Load some doodle config.
+  service()->Refresh();
+  DoodleConfig config = CreateConfig(DoodleType::SIMPLE);
+  config.large_image.url = GURL("https://doodle.com/doodle.jpg");
+  fetcher()->ServeAllCallbacks(DoodleState::AVAILABLE,
+                               base::TimeDelta::FromHours(1), config);
+  ASSERT_THAT(service()->config(), Eq(config));
+
+  // Destroy the service, and let enough time pass so that the config expires.
+  DestroyService();
+  task_runner()->FastForwardBy(base::TimeDelta::FromHours(1));
+
+  // Re-create the service. The persisted config should have been discarded
+  // because it is expired.
+  RecreateService();
+  EXPECT_THAT(service()->config(), Eq(base::nullopt));
 }
 
 TEST_F(DoodleServiceTest, CallsObserverOnConfigReceived) {
@@ -236,7 +308,7 @@ TEST_F(DoodleServiceTest, CallsObserverWhenConfigExpires) {
   ASSERT_THAT(service()->config(), Eq(config));
 
   // Make sure the task arrived at the timer's task runner.
-  ASSERT_THAT(task_runner()->GetPendingTaskCount(), Eq(1u));
+  EXPECT_THAT(task_runner()->GetPendingTaskCount(), Eq(1u));
   EXPECT_THAT(task_runner()->NextPendingTaskDelay(),
               Eq(base::TimeDelta::FromHours(1)));
 

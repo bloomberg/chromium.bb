@@ -8,14 +8,41 @@
 
 #include "base/bind.h"
 #include "base/time/time.h"
+#include "base/values.h"
+#include "components/doodle/pref_names.h"
+#include "components/prefs/pref_registry.h"
+#include "components/prefs/pref_registry_simple.h"
+#include "components/prefs/pref_service.h"
 
 namespace doodle {
 
-DoodleService::DoodleService(std::unique_ptr<DoodleFetcher> fetcher,
-                             std::unique_ptr<base::OneShotTimer> expiry_timer)
-    : fetcher_(std::move(fetcher)), expiry_timer_(std::move(expiry_timer)) {
+// static
+void DoodleService::RegisterProfilePrefs(PrefRegistrySimple* pref_registry) {
+  pref_registry->RegisterDictionaryPref(prefs::kCachedConfig,
+                                        new base::DictionaryValue(),
+                                        PrefRegistry::LOSSY_PREF);
+  pref_registry->RegisterInt64Pref(prefs::kCachedConfigExpiry, 0,
+                                   PrefRegistry::LOSSY_PREF);
+}
+
+DoodleService::DoodleService(PrefService* pref_service,
+                             std::unique_ptr<DoodleFetcher> fetcher,
+                             std::unique_ptr<base::OneShotTimer> expiry_timer,
+                             std::unique_ptr<base::Clock> clock)
+    : pref_service_(pref_service),
+      fetcher_(std::move(fetcher)),
+      expiry_timer_(std::move(expiry_timer)),
+      clock_(std::move(clock)) {
+  DCHECK(pref_service_);
   DCHECK(fetcher_);
   DCHECK(expiry_timer_);
+  DCHECK(clock_);
+
+  base::Time expiry_date = base::Time::FromInternalValue(
+      pref_service_->GetInt64(prefs::kCachedConfigExpiry));
+  base::Optional<DoodleConfig> config = DoodleConfig::FromDictionary(
+      *pref_service_->GetDictionary(prefs::kCachedConfig), base::nullopt);
+  UpdateCachedConfig(expiry_date - clock_->Now(), config);
 }
 
 DoodleService::~DoodleService() = default;
@@ -37,6 +64,12 @@ void DoodleService::DoodleFetched(
     DoodleState state,
     base::TimeDelta time_to_live,
     const base::Optional<DoodleConfig>& doodle_config) {
+  UpdateCachedConfig(time_to_live, doodle_config);
+}
+
+void DoodleService::UpdateCachedConfig(
+    base::TimeDelta time_to_live,
+    const base::Optional<DoodleConfig>& doodle_config) {
   // Handle the case where the new config is already expired.
   bool expired = time_to_live <= base::TimeDelta();
   const base::Optional<DoodleConfig>& new_config =
@@ -47,16 +80,23 @@ void DoodleService::DoodleFetched(
   // configs themselves.
   if (cached_config_ != new_config) {
     cached_config_ = new_config;
+
+    if (cached_config_.has_value()) {
+      pref_service_->Set(prefs::kCachedConfig, *cached_config_->ToDictionary());
+      base::Time expiry_date = clock_->Now() + time_to_live;
+      pref_service_->SetInt64(prefs::kCachedConfigExpiry,
+                              expiry_date.ToInternalValue());
+    } else {
+      pref_service_->ClearPref(prefs::kCachedConfig);
+      pref_service_->ClearPref(prefs::kCachedConfigExpiry);
+    }
+
     for (auto& observer : observers_) {
       observer.OnDoodleConfigUpdated(cached_config_);
     }
   }
 
   // Even if the configs are identical, the time-to-live might have changed.
-  UpdateTimeToLive(time_to_live);
-}
-
-void DoodleService::UpdateTimeToLive(base::TimeDelta time_to_live) {
   // (Re-)schedule the cache expiry.
   if (cached_config_.has_value()) {
     expiry_timer_->Start(
@@ -69,10 +109,7 @@ void DoodleService::UpdateTimeToLive(base::TimeDelta time_to_live) {
 
 void DoodleService::DoodleExpired() {
   DCHECK(cached_config_.has_value());
-  cached_config_.reset();
-  for (auto& observer : observers_) {
-    observer.OnDoodleConfigUpdated(cached_config_);
-  }
+  UpdateCachedConfig(base::TimeDelta(), base::nullopt);
 }
 
 }  // namespace doodle
