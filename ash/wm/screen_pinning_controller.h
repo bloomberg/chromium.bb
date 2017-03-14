@@ -24,7 +24,13 @@ class WmWindow;
 template <typename UserData>
 class WindowUserData;
 
-// Handles pinned state.
+// Supports "screen pinning" for ARC++ apps. From the Android docs:
+// "Lets you temporarily restrict users from leaving your task or being
+// interrupted by notifications. This could be used, for example, if you are
+// developing an education app to support high stakes assessment requirements on
+// Android, or a single-purpose or kiosk application."
+// https://developer.android.com/about/versions/android-5.0.html#ScreenPinning
+// See also ArcKioskAppLauncher::CheckAndPinWindow().
 class ScreenPinningController : public WindowTreeHostManager::Observer {
  public:
   explicit ScreenPinningController(
