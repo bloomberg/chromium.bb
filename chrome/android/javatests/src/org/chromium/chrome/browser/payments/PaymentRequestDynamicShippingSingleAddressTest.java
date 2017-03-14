@@ -36,7 +36,7 @@ public class PaymentRequestDynamicShippingSingleAddressTest extends PaymentReque
         // The user has a shipping address on disk.
         String billingAddressId = helper.setProfile(new AutofillProfile("", "https://example.com",
                 true, "Jon Doe", "Google", "340 Main St", "CA", "Los Angeles", "", "90291", "",
-                "US", "555-555-5555", "", "en-US"));
+                "US", "650-253-0000", "", "en-US"));
         helper.setCreditCard(new CreditCard("", "https://example.com", true, true, "Jon Doe",
                 "4111111111111111", "1111", "12", "2050", "visa", R.drawable.pr_visa,
                 billingAddressId, "" /* serverId */));
@@ -152,13 +152,13 @@ public class PaymentRequestDynamicShippingSingleAddressTest extends PaymentReque
         clickInShippingSummaryAndWait(R.id.payments_section, mReadyForInput);
         clickInShippingAddressAndWait(R.id.payments_add_option_button, mReadyToEdit);
         setTextInEditorAndWait(new String[] {"Bob", "Google", "1600 Amphitheatre Pkwy",
-                "Mountain View", "CA", "94043", "999-999-9999"}, mEditorTextUpdate);
+                "Mountain View", "CA", "94043", "650-253-0000"}, mEditorTextUpdate);
         clickInEditorAndWait(R.id.payments_edit_done_button, mReadyToPay);
         clickAndWait(R.id.button_primary, mReadyForUnmaskInput);
         setTextInCardUnmaskDialogAndWait(R.id.card_unmask_input, "123", mReadyToUnmask);
         clickCardUnmaskButtonAndWait(DialogInterface.BUTTON_POSITIVE, mDismissed);
         expectResultContains(new String[] {"Bob", "Google", "1600 Amphitheatre Pkwy",
-                "Mountain View", "CA", "94043", "999-999-9999"});
+                "Mountain View", "CA", "94043", "+1 650-253-0000"});
     }
 
     /** Quickly pressing "add address" and then [X] should not crash. */

@@ -2945,6 +2945,8 @@ split_static_library("browser") {
       "android/webapps/webapp_registry.h",
       "autofill/android/personal_data_manager_android.cc",
       "autofill/android/personal_data_manager_android.h",
+      "autofill/android/phone_number_util_android.cc",
+      "autofill/android/phone_number_util_android.h",
       "chrome_browser_field_trials_mobile.cc",
       "chrome_browser_field_trials_mobile.h",
       "dom_distiller/dom_distiller_service_factory_android.cc",
@@ -3077,6 +3079,7 @@ split_static_library("browser") {
       "//third_party/android_opengl/etc1",
       "//third_party/android_tools:cpu_features",
       "//third_party/libaddressinput:util",
+      "//third_party/libphonenumber",
       "//third_party/smhasher:murmurhash2",
     ]
 
@@ -3956,6 +3959,7 @@ if (is_android) {
       "../android/java/src/org/chromium/chrome/browser/autofill/CreditCardScannerBridge.java",
       "../android/java/src/org/chromium/chrome/browser/autofill/PasswordGenerationPopupBridge.java",
       "../android/java/src/org/chromium/chrome/browser/autofill/PersonalDataManager.java",
+      "../android/java/src/org/chromium/chrome/browser/autofill/PhoneNumberUtil.java",
       "../android/java/src/org/chromium/chrome/browser/banners/AppBannerManager.java",
       "../android/java/src/org/chromium/chrome/browser/bookmarks/BookmarkBridge.java",
       "../android/java/src/org/chromium/chrome/browser/browsing_data/UrlFilterBridge.java",

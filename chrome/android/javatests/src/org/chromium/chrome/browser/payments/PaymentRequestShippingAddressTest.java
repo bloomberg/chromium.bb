@@ -106,12 +106,12 @@ public class PaymentRequestShippingAddressTest extends PaymentRequestTestBase {
         clickInShippingSummaryAndWait(R.id.payments_section, mReadyForInput);
         clickInShippingAddressAndWait(R.id.payments_add_option_button, mReadyToEdit);
         setTextInEditorAndWait(new String[] {"Seb Doe", "Google", "340 Main St", "Los Angeles",
-                "CA", "90291", "555-555-5555"}, mEditorTextUpdate);
+                "CA", "90291", "650-253-0000"}, mEditorTextUpdate);
         clickInEditorAndWait(R.id.payments_edit_done_button, mReadyToPay);
 
         // Make sure that the shipping label does not include the country.
         assertTrue(getShippingAddressOptionRowAtIndex(0).getLabelText().toString().equals(
-                "Seb Doe\nGoogle, 340 Main St, Los Angeles, CA 90291\n555-555-5555"));
+                "Seb Doe\nGoogle, 340 Main St, Los Angeles, CA 90291\n+1 650-253-0000"));
     }
 
     /**

@@ -35,7 +35,7 @@ public class PaymentRequestMetricsTest extends PaymentRequestTestBase {
         // The user has a shipping address and a credit card associated with that address on disk.
         String mBillingAddressId = mHelper.setProfile(new AutofillProfile("", "https://example.com",
                 true, "Jon Doe", "Google", "340 Main St", "CA", "Los Angeles", "", "90291", "",
-                "US", "555-555-5555", "", "en-US"));
+                "US", "650-253-0000", "", "en-US"));
         mHelper.setCreditCard(new CreditCard("", "https://example.com", true, true, "Jon Doe",
                 "4111111111111111", "1111", "12", "2050", "visa", R.drawable.pr_visa,
                 mBillingAddressId, "" /* serverId */));
@@ -281,7 +281,7 @@ public class PaymentRequestMetricsTest extends PaymentRequestTestBase {
         clickInShippingSummaryAndWait(R.id.payments_section, mReadyForInput);
         clickInShippingAddressAndWait(R.id.payments_add_option_button, mReadyToEdit);
         setTextInEditorAndWait(new String[] {"Seb Doe", "Google", "340 Main St", "Los Angeles",
-                "CA", "90291", "555-555-5555"}, mEditorTextUpdate);
+                "CA", "90291", "650-253-0000"}, mEditorTextUpdate);
         clickInEditorAndWait(R.id.payments_edit_done_button, mReadyToPay);
 
         // Make sure "Shown" is still logged only once.

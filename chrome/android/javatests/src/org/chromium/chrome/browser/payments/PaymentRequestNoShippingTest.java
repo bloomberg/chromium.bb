@@ -34,7 +34,7 @@ public class PaymentRequestNoShippingTest extends PaymentRequestTestBase {
         AutofillTestHelper helper = new AutofillTestHelper();
         String billingAddressId = helper.setProfile(new AutofillProfile("", "https://example.com",
                 true, "Jon Doe", "Google", "340 Main St", "CA", "Los Angeles", "", "90291", "",
-                "US", "310-310-6000", "jon.doe@gmail.com", "en-US"));
+                "US", "650-253-0000", "jon.doe@gmail.com", "en-US"));
         helper.setCreditCard(new CreditCard("", "https://example.com", true, true, "Jon Doe",
                 "4111111111111111", "1111", "12", "2050", "visa", R.drawable.pr_visa,
                 billingAddressId, "" /* serverId */));
@@ -183,7 +183,7 @@ public class PaymentRequestNoShippingTest extends PaymentRequestTestBase {
                 mReadyToEdit);
 
         setTextInEditorAndWait(new String[] {"Bob", "Google", "1600 Amphitheatre Pkwy",
-                "Mountain View", "CA", "94043", "999-999-9999"}, mEditorTextUpdate);
+                "Mountain View", "CA", "94043", "650-253-0000"}, mEditorTextUpdate);
         clickInEditorAndWait(R.id.payments_edit_done_button, mReadyToEdit);
 
         clickInCardEditorAndWait(R.id.payments_edit_done_button, mReadyToPay);
@@ -191,7 +191,7 @@ public class PaymentRequestNoShippingTest extends PaymentRequestTestBase {
         setTextInCardUnmaskDialogAndWait(R.id.card_unmask_input, "123", mReadyToUnmask);
         clickCardUnmaskButtonAndWait(DialogInterface.BUTTON_POSITIVE, mDismissed);
         expectResultContains(new String[] {"5454545454545454", "12", "Bob", "Google",
-                "1600 Amphitheatre Pkwy", "Mountain View", "CA", "94043", "999-999-9999"});
+                "1600 Amphitheatre Pkwy", "Mountain View", "CA", "94043", "+1 650-253-0000"});
     }
 
     /** Quickly pressing on "add card" and then [X] should not crash. */

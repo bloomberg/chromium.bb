@@ -54,18 +54,17 @@ public class PaymentRequestIncompleteContactDetailsAndFreeShippingTest
         assertTrue(getShippingAddressSuggestionLabel(0).contains("Phone number required"));
         clickInShippingAddressAndWait(R.id.payments_first_radio_button, mReadyToEdit);
         setTextInEditorAndWait(new String[] {"Jon Doe", "Google", "340 Main St", "Los Angeles",
-                "CA", "90291", "555-555-5555"},
-                mEditorTextUpdate);
+                "CA", "90291", "650-253-0000"}, mEditorTextUpdate);
         // The contact is now complete, but not selected.
         clickInEditorAndWait(R.id.payments_edit_done_button, mReadyForInput);
         // We select it.
         clickInContactInfoAndWait(R.id.payments_section, mReadyForInput);
-        assertEquals(
-                "Jon Doe\n555-555-5555\njon.doe@google.com", getContactDetailsSuggestionLabel(0));
+        assertEquals("Jon Doe\n+1 650-253-0000\njon.doe@google.com",
+                getContactDetailsSuggestionLabel(0));
         clickInContactInfoAndWait(R.id.payments_first_radio_button, mReadyToPay);
 
         clickAndWait(R.id.button_primary, mDismissed);
-        expectResultContains(new String[] {"Jon Doe", "555-555-5555", "jon.doe@google.com"});
+        expectResultContains(new String[] {"Jon Doe", "+1 650-253-0000", "jon.doe@google.com"});
     }
 
     /** Add a shipping address with valid data and see that the contacts section is updated. */
@@ -83,21 +82,21 @@ public class PaymentRequestIncompleteContactDetailsAndFreeShippingTest
         // Add a new Shipping Address and see that the contact section updates.
         clickInShippingAddressAndWait(R.id.payments_add_option_button, mReadyToEdit);
         setTextInEditorAndWait(new String[] {"Jane Doe", "Edge Corp.", "111 Wall St.", "New York",
-                "NY", "10110", "555-212-2222"},
-                mEditorTextUpdate);
+                "NY", "10110", "650-253-0000"}, mEditorTextUpdate);
         clickInEditorAndWait(R.id.payments_edit_done_button, mReadyForInput);
         assertEquals("Jon Doe\njon.doe@google.com\nPhone number required",
                 getContactDetailsSuggestionLabel(0));
-        assertEquals("Jane Doe\n555-212-2222\nEmail required", getContactDetailsSuggestionLabel(1));
+        assertEquals(
+                "Jane Doe\n+1 650-253-0000\nEmail required", getContactDetailsSuggestionLabel(1));
 
         // Now edit the first contact and pay.
         clickInContactInfoAndWait(R.id.payments_section, mReadyForInput);
         clickInContactInfoAndWait(R.id.payments_first_radio_button, mReadyToEdit);
         setTextInEditorAndWait(
-                new String[] {"Jon Doe", "514-212-2222", "jon.doe@google.com"}, mEditorTextUpdate);
+                new String[] {"Jon Doe", "650-253-0000", "jon.doe@google.com"}, mEditorTextUpdate);
         clickInEditorAndWait(R.id.payments_edit_done_button, mReadyToPay);
 
         clickAndWait(R.id.button_primary, mDismissed);
-        expectResultContains(new String[] {"Jon Doe", "514-212-2222", "jon.doe@google.com"});
+        expectResultContains(new String[] {"Jon Doe", "+1 650-253-0000", "jon.doe@google.com"});
     }
 }

@@ -108,6 +108,7 @@
 #include "chrome/browser/android/webapk/webapk_update_manager.h"
 #include "chrome/browser/android/webapps/add_to_homescreen_manager.h"
 #include "chrome/browser/autofill/android/personal_data_manager_android.h"
+#include "chrome/browser/autofill/android/phone_number_util_android.h"
 #include "chrome/browser/dom_distiller/dom_distiller_service_factory_android.h"
 #include "chrome/browser/dom_distiller/tab_utils_android.h"
 #include "chrome/browser/engagement/site_engagement_service_android.h"
@@ -355,6 +356,7 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
      PermissionUpdateInfoBarDelegate::RegisterPermissionUpdateInfoBarDelegate},
     {"PersonalDataManagerAndroid",
      autofill::PersonalDataManagerAndroid::Register},
+    {"PhoneNumberUtil", RegisterPhoneNumberUtil},
     {"PhysicalWebDataSourceAndroid",
      PhysicalWebDataSourceAndroid::RegisterPhysicalWebDataSource},
     {"PolicyAuditor", RegisterPolicyAuditor},

@@ -13,12 +13,10 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
-import android.os.AsyncTask;
 import android.os.Handler;
 import android.support.v4.view.animation.FastOutLinearInInterpolator;
 import android.support.v4.view.animation.LinearOutSlowInInterpolator;
 import android.support.v7.widget.Toolbar.OnMenuItemClickListener;
-import android.telephony.PhoneNumberFormattingTextWatcher;
 import android.text.InputFilter;
 import android.text.Spanned;
 import android.text.TextWatcher;
@@ -40,6 +38,7 @@ import android.widget.TextView;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.autofill.PhoneNumberUtil;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.payments.ui.PaymentRequestUI.PaymentRequestObserverForTest;
 import org.chromium.chrome.browser.preferences.autofill.CreditCardNumberFormattingTextWatcher;
@@ -151,20 +150,7 @@ public class EditorView extends AlwaysDismissedDialog implements OnClickListener
         };
 
         mCardNumberFormatter = new CreditCardNumberFormattingTextWatcher();
-        new AsyncTask<Void, Void, PhoneNumberFormattingTextWatcher>() {
-            @Override
-            protected PhoneNumberFormattingTextWatcher doInBackground(Void... unused) {
-                return new PhoneNumberFormattingTextWatcher();
-            }
-
-            @Override
-            protected void onPostExecute(PhoneNumberFormattingTextWatcher result) {
-                mPhoneFormatter = result;
-                if (mPhoneInput != null) {
-                    mPhoneInput.addTextChangedListener(mPhoneFormatter);
-                }
-            }
-        }.execute();
+        mPhoneFormatter = new PhoneNumberUtil.FormatTextWatcher();
     }
 
     /** Launches the Autofill help page on top of the current Context. */

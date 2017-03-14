@@ -32,14 +32,14 @@ public class PaymentRequestJourneyLoggerTest extends PaymentRequestTestBase {
         // The user has a shipping address and a credit card associated with that address on disk.
         String mBillingAddressId = mHelper.setProfile(new AutofillProfile("", "https://example.com",
                 true, "Jon Doe", "Google", "340 Main St", "CA", "Los Angeles", "", "90291", "",
-                "US", "555-555-5555", "", "en-US"));
+                "US", "650-253-0000", "", "en-US"));
         mHelper.setCreditCard(new CreditCard("", "https://example.com", true, true, "Jon Doe",
                 "4111111111111111", "1111", "12", "2050", "visa", R.drawable.pr_visa,
                 mBillingAddressId, "" /* serverId */));
         // The user also has an incomplete address and an incomplete card saved.
         String mIncompleteAddressId = mHelper.setProfile(new AutofillProfile("",
                 "https://example.com", true, "In Complete", "Google", "344 Main St", "CA", "", "",
-                "90291", "", "US", "555-555-5555", "", "en-US"));
+                "90291", "", "US", "650-253-0000", "", "en-US"));
         mHelper.setCreditCard(new CreditCard("", "https://example.com", true, true, "",
                 "4111111111111111", "1111", "18", "2075", "visa", R.drawable.pr_visa,
                 mIncompleteAddressId, "" /* serverId */));
@@ -157,10 +157,8 @@ public class PaymentRequestJourneyLoggerTest extends PaymentRequestTestBase {
         // Add a new shipping address.
         clickInShippingAddressAndWait(R.id.payments_add_option_button, mReadyToEdit);
         setSpinnerSelectionInEditorAndWait(0 /* Afghanistan */, mReadyToEdit);
-        setTextInEditorAndWait(
-                new String[] {"Alice", "Supreme Court", "Airport Road", "Kabul", "1043",
-                        "999-999-9999"},
-                mEditorTextUpdate);
+        setTextInEditorAndWait(new String[] {"Alice", "Supreme Court", "Airport Road", "Kabul",
+                "1043", "650-253-0000"}, mEditorTextUpdate);
         clickInEditorAndWait(R.id.payments_edit_done_button, mReadyToPay);
 
         // Complete the transaction.
