@@ -68,6 +68,7 @@ class ScopedPageSuspender;
 class ScrollingCoordinator;
 class Settings;
 class SpellCheckerClient;
+class TopDocumentRootScrollerController;
 class ValidationMessageClient;
 class VisualViewport;
 class WebLayerTreeView;
@@ -194,6 +195,8 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
   EventHandlerRegistry& eventHandlerRegistry();
   const EventHandlerRegistry& eventHandlerRegistry() const;
 
+  TopDocumentRootScrollerController& globalRootScrollerController() const;
+
   VisualViewport& visualViewport();
   const VisualViewport& visualViewport() const;
 
@@ -284,6 +287,8 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
   Member<ScrollingCoordinator> m_scrollingCoordinator;
   const Member<BrowserControls> m_browserControls;
   const Member<EventHandlerRegistry> m_eventHandlerRegistry;
+  const Member<TopDocumentRootScrollerController>
+      m_globalRootScrollerController;
   const Member<VisualViewport> m_visualViewport;
 
   // Typically, the main frame and Page should both be owned by the embedder,

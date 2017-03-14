@@ -34,7 +34,6 @@
 #include "core/inspector/ConsoleMessageStorage.h"
 #include "core/page/Page.h"
 #include "core/page/scrolling/OverscrollController.h"
-#include "core/page/scrolling/TopDocumentRootScrollerController.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebScheduler.h"
 
@@ -50,8 +49,6 @@ FrameHost::FrameHost(Page& page)
           OverscrollController::create(m_page->visualViewport(),
                                        m_page->chromeClient())),
       m_consoleMessageStorage(new ConsoleMessageStorage()),
-      m_globalRootScrollerController(
-          TopDocumentRootScrollerController::create(page)),
       m_subframeCount(0) {}
 
 // Explicitly in the .cpp to avoid default constructor in .h
@@ -91,14 +88,13 @@ const ConsoleMessageStorage& FrameHost::consoleMessageStorage() const {
 
 TopDocumentRootScrollerController& FrameHost::globalRootScrollerController()
     const {
-  return *m_globalRootScrollerController;
+  return page().globalRootScrollerController();
 }
 
 DEFINE_TRACE(FrameHost) {
   visitor->trace(m_page);
   visitor->trace(m_overscrollController);
   visitor->trace(m_consoleMessageStorage);
-  visitor->trace(m_globalRootScrollerController);
 }
 
 #if DCHECK_IS_ON()

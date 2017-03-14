@@ -55,6 +55,7 @@
 #include "core/page/ScopedPageSuspender.h"
 #include "core/page/ValidationMessageClient.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
+#include "core/page/scrolling/TopDocumentRootScrollerController.h"
 #include "core/paint/PaintLayer.h"
 #include "platform/WebFrameScheduler.h"
 #include "platform/graphics/GraphicsLayer.h"
@@ -107,6 +108,8 @@ Page::Page(PageClients& pageClients)
       m_pointerLockController(PointerLockController::create(this)),
       m_browserControls(BrowserControls::create(*this)),
       m_eventHandlerRegistry(new EventHandlerRegistry(*this)),
+      m_globalRootScrollerController(
+          TopDocumentRootScrollerController::create(*this)),
       m_visualViewport(VisualViewport::create(*this)),
       m_mainFrame(nullptr),
       m_editorClient(pageClients.editorClient),
@@ -180,6 +183,10 @@ EventHandlerRegistry& Page::eventHandlerRegistry() {
 
 const EventHandlerRegistry& Page::eventHandlerRegistry() const {
   return *m_eventHandlerRegistry;
+}
+
+TopDocumentRootScrollerController& Page::globalRootScrollerController() const {
+  return *m_globalRootScrollerController;
 }
 
 VisualViewport& Page::visualViewport() {
@@ -569,6 +576,7 @@ DEFINE_TRACE(Page) {
   visitor->trace(m_scrollingCoordinator);
   visitor->trace(m_browserControls);
   visitor->trace(m_eventHandlerRegistry);
+  visitor->trace(m_globalRootScrollerController);
   visitor->trace(m_visualViewport);
   visitor->trace(m_mainFrame);
   visitor->trace(m_validationMessageClient);
