@@ -12,6 +12,8 @@
 
 #if defined(OS_ANDROID)
 #include <jni.h>
+#elif defined(OS_MACOSX)
+#include <objc/objc.h>
 #endif
 
 // This file provides cross platform typedefs for native widget types.
@@ -139,18 +141,10 @@ typedef HFONT NativeFont;
 typedef IAccessible* NativeViewAccessible;
 #elif defined(OS_IOS)
 typedef UIFont* NativeFont;
-#ifdef __OBJC__
 typedef id NativeViewAccessible;
-#else
-typedef void* NativeViewAccessible;
-#endif  // __OBJC__
 #elif defined(OS_MACOSX)
 typedef NSFont* NativeFont;
-#ifdef __OBJC__
 typedef id NativeViewAccessible;
-#else
-typedef void* NativeViewAccessible;
-#endif  // __OBJC__
 #else  // Android, Linux, Chrome OS, etc.
 // Linux doesn't have a native font type.
 #if defined(USE_X11) && !defined(OS_CHROMEOS)
