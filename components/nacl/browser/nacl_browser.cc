@@ -16,6 +16,7 @@
 #include "base/pickle.h"
 #include "base/rand_util.h"
 #include "base/single_thread_task_runner.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -375,13 +376,13 @@ void NaClBrowser::EnsureValidationCacheAvailable() {
       // We can get away not giving this a sequence ID because this is the first
       // task and further file access will not occur until after we get a
       // response.
-      if (!content::BrowserThread::PostBlockingPoolTaskAndReply(
-              FROM_HERE,
-              base::Bind(ReadCache, validation_cache_file_path_, data),
-              base::Bind(&NaClBrowser::OnValidationCacheLoaded,
-                         base::Unretained(this), base::Owned(data)))) {
-        RunWithoutValidationCache();
-      }
+      base::PostTaskWithTraitsAndReply(
+          FROM_HERE,
+          base::TaskTraits().MayBlock().WithPriority(
+              base::TaskPriority::BACKGROUND),
+          base::Bind(ReadCache, validation_cache_file_path_, data),
+          base::Bind(&NaClBrowser::OnValidationCacheLoaded,
+                     base::Unretained(this), base::Owned(data)));
     } else {
       RunWithoutValidationCache();
     }
