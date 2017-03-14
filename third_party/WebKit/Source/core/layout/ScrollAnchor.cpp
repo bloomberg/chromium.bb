@@ -125,6 +125,9 @@ static bool candidateMayMoveWithScroller(const LayoutObject* candidate,
 
 ScrollAnchor::ExamineResult ScrollAnchor::examine(
     const LayoutObject* candidate) const {
+  if (candidate == scrollerLayoutBox(m_scroller))
+    return ExamineResult(Continue);
+
   if (candidate->isLayoutInline())
     return ExamineResult(Continue);
 
@@ -159,29 +162,47 @@ ScrollAnchor::ExamineResult ScrollAnchor::examine(
 void ScrollAnchor::findAnchor() {
   TRACE_EVENT0("blink", "ScrollAnchor::findAnchor");
   SCOPED_BLINK_UMA_HISTOGRAM_TIMER("Layout.ScrollAnchor.TimeToFindAnchor");
+  findAnchorRecursive(scrollerLayoutBox(m_scroller));
+}
 
-  LayoutObject* stayWithin = scrollerLayoutBox(m_scroller);
-  LayoutObject* candidate = stayWithin->nextInPreOrder(stayWithin);
-  while (candidate) {
-    ExamineResult result = examine(candidate);
-    if (result.viable) {
-      m_anchorObject = candidate;
-      m_corner = result.corner;
-    }
-    switch (result.status) {
-      case Skip:
-        candidate = candidate->nextInPreOrderAfterChildren(stayWithin);
-        break;
-      case Constrain:
-        stayWithin = candidate;
-      // fall through
-      case Continue:
-        candidate = candidate->nextInPreOrder(stayWithin);
-        break;
-      case Return:
-        return;
+bool ScrollAnchor::findAnchorRecursive(LayoutObject* candidate) {
+  ExamineResult result = examine(candidate);
+  if (result.viable) {
+    m_anchorObject = candidate;
+    m_corner = result.corner;
+  }
+
+  if (result.status == Return)
+    return true;
+
+  if (result.status == Skip)
+    return false;
+
+  for (LayoutObject* child = candidate->slowFirstChild(); child;
+       child = child->nextSibling()) {
+    if (findAnchorRecursive(child))
+      return true;
+  }
+
+  // Make a separate pass to catch positioned descendants with a static DOM
+  // parent that we skipped over (crbug.com/692701).
+  if (candidate->isLayoutBlock()) {
+    if (TrackedLayoutBoxListHashSet* positionedDescendants =
+            toLayoutBlock(candidate)->positionedObjects()) {
+      for (LayoutBox* descendant : *positionedDescendants) {
+        if (descendant->parent() != candidate) {
+          if (findAnchorRecursive(descendant))
+            return true;
+        }
+      }
     }
   }
+
+  if (result.status == Constrain)
+    return true;
+
+  DCHECK(result.status == Continue);
+  return false;
 }
 
 bool ScrollAnchor::computeScrollAnchorDisablingStyleChanged() {

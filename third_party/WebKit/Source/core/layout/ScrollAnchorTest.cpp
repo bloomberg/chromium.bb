@@ -547,6 +547,34 @@ TEST_P(ScrollAnchorTest, ExcludeAbsolutePositionThatSticksToViewport) {
   EXPECT_EQ(absPos->layoutObject(), scrollAnchor(scroller).anchorObject());
 }
 
+TEST_P(ScrollAnchorTest, DescendsIntoAbsPosWithOffscreenStaticParent) {
+  setBodyInnerHTML(
+      "<style>"
+      "  body, html { height: 0; }"
+      "  #abs {"
+      "    position: absolute;"
+      "    left: 50px;"
+      "    top: 50px;"
+      "    height: 1200px;"
+      "    padding: 50px;"
+      "    border: 5px solid gray;"
+      "  }"
+      "  #anchor {"
+      "    background-color: #afa;"
+      "    width: 100px;"
+      "    height: 100px;"
+      "  }"
+      "</style>"
+      "<div id='abs'>"
+      "  <div id='changer'></div>"
+      "  <div id='anchor'></div>"
+      "</div>");
+
+  scrollLayoutViewport(ScrollOffset(0, 120));
+  setHeight(document().getElementById("changer"), 100);
+  EXPECT_EQ(220, layoutViewport()->scrollOffsetInt().height());
+}
+
 // Test that we descend into zero-height containers that have overflowing
 // content.
 TEST_P(ScrollAnchorTest, DescendsIntoContainerWithOverflow) {

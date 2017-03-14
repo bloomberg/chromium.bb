@@ -68,6 +68,8 @@ class CORE_EXPORT ScrollAnchor final {
 
  private:
   void findAnchor();
+  // Returns true if searching should stop. Stores result in m_anchorObject.
+  bool findAnchorRecursive(LayoutObject*);
   bool computeScrollAnchorDisablingStyleChanged();
 
   enum WalkStatus { Skip = 0, Constrain, Continue, Return };
