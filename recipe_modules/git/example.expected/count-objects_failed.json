@@ -24,6 +24,7 @@
     "env": {
       "PATH": "RECIPE_PACKAGE_REPO[depot_tools]:%(PATH)s"
     },
+    "infra_step": true,
     "name": "git fetch"
   },
   {
@@ -34,6 +35,7 @@
       "FETCH_HEAD"
     ],
     "cwd": "[START_DIR]/src",
+    "infra_step": true,
     "name": "git checkout"
   },
   {
@@ -43,6 +45,7 @@
       "HEAD"
     ],
     "cwd": "[START_DIR]/src",
+    "infra_step": true,
     "name": "read revision",
     "stdout": "/path/to/tmp/",
     "~followup_annotations": [
@@ -58,6 +61,7 @@
       "-x"
     ],
     "cwd": "[START_DIR]/src",
+    "infra_step": true,
     "name": "git clean"
   },
   {
@@ -67,6 +71,7 @@
       "sync"
     ],
     "cwd": "[START_DIR]/src",
+    "infra_step": true,
     "name": "submodule sync"
   },
   {
@@ -78,6 +83,7 @@
       "--recursive"
     ],
     "cwd": "[START_DIR]/src",
+    "infra_step": true,
     "name": "submodule update"
   },
   {
@@ -89,6 +95,7 @@
       "-v"
     ],
     "cwd": "[START_DIR]/src",
+    "infra_step": true,
     "name": "count-objects",
     "stdout": "/path/to/tmp/",
     "~followup_annotations": [
@@ -104,6 +111,7 @@
       "remote.origin.url"
     ],
     "cwd": "[START_DIR]/src",
+    "infra_step": true,
     "name": "git config remote.origin.url",
     "stdout": "/path/to/tmp/",
     "~followup_annotations": [
@@ -119,6 +127,7 @@
       "-s"
     ],
     "cwd": "[START_DIR]/src",
+    "infra_step": true,
     "name": "git show",
     "stdout": "/path/to/tmp/"
   },
@@ -130,6 +139,7 @@
       "--tags"
     ],
     "cwd": "[START_DIR]/src",
+    "infra_step": true,
     "name": "git fetch tags"
   },
   {
@@ -138,6 +148,7 @@
       "status"
     ],
     "cwd": "[START_DIR]/src",
+    "infra_step": true,
     "name": "git status"
   },
   {
@@ -146,6 +157,7 @@
       "status"
     ],
     "cwd": "[START_DIR]/src",
+    "infra_step": true,
     "name": "git status can_fail_build"
   },
   {
@@ -154,6 +166,7 @@
       "status"
     ],
     "cwd": "[START_DIR]/src",
+    "infra_step": true,
     "name": "git status cannot_fail_build"
   },
   {
@@ -166,6 +179,7 @@
     "env": {
       "PATH": "RECIPE_PACKAGE_REPO[depot_tools]:%(PATH)s"
     },
+    "infra_step": true,
     "name": "git new-branch refactor"
   },
   {
@@ -180,6 +194,7 @@
     "env": {
       "PATH": "RECIPE_PACKAGE_REPO[depot_tools]:%(PATH)s"
     },
+    "infra_step": true,
     "name": "git new-branch feature"
   },
   {
@@ -189,6 +204,7 @@
       "origin/master"
     ],
     "cwd": "[START_DIR]/src",
+    "infra_step": true,
     "name": "my repo rebase"
   },
   {
@@ -200,6 +216,7 @@
       "--all"
     ],
     "cwd": "[START_DIR]/src",
+    "infra_step": true,
     "name": "git bundle"
   },
   {

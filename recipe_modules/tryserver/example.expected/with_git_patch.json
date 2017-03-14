@@ -19,6 +19,7 @@
       "johndoe#123.diff"
     ],
     "cwd": "[TMP_BASE]/patch_tmp_1",
+    "infra_step": true,
     "name": "patch fetch"
   },
   {
@@ -30,6 +31,7 @@
       "-x"
     ],
     "cwd": "[TMP_BASE]/patch_tmp_1",
+    "infra_step": true,
     "name": "patch clean"
   },
   {
@@ -40,6 +42,7 @@
       "FETCH_HEAD"
     ],
     "cwd": "[TMP_BASE]/patch_tmp_1",
+    "infra_step": true,
     "name": "patch git checkout"
   },
   {
@@ -73,6 +76,7 @@
       "--name-only"
     ],
     "cwd": "[START_DIR]/v8",
+    "infra_step": true,
     "name": "git diff to analyze patch",
     "stdout": "/path/to/tmp/",
     "~followup_annotations": [

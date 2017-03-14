@@ -7,6 +7,7 @@
       "--verbose"
     ],
     "cwd": "RECIPE_PACKAGE_REPO[depot_tools]",
+    "infra_step": true,
     "name": "ensure git tooling on windows",
     "timeout": 300
   },
@@ -18,6 +19,7 @@
       "--name-only"
     ],
     "cwd": "[START_DIR]",
+    "infra_step": true,
     "name": "git diff to analyze patch",
     "stdout": "/path/to/tmp/",
     "~followup_annotations": [

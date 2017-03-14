@@ -19,6 +19,7 @@
       "[TMP_BASE]/boom",
       "gs://example/some/random/path/to/boom"
     ],
+    "infra_step": true,
     "name": "gsutil upload",
     "~followup_annotations": [
       "@@@STEP_LINK@gsutil.upload@https://storage.googleapis.com/example/some/random/path/to/boom@@@"
@@ -45,6 +46,7 @@
       "[TMP_BASE]/boom",
       "gs://example/some/random/path/to/boom"
     ],
+    "infra_step": true,
     "name": "gsutil upload (2)",
     "~followup_annotations": [
       "@@@STEP_LINK@gsutil.upload@https://storage.googleapis.com/example/some/random/path/to/boom@@@"
@@ -62,6 +64,7 @@
       "gs://example/some/random/path/**",
       "gs://example/staging"
     ],
+    "infra_step": true,
     "name": "gsutil cp"
   },
   {
@@ -78,6 +81,7 @@
       "gs://example/some/random/path/**",
       "gs://example/staging"
     ],
+    "infra_step": true,
     "name": "gsutil cp (2)"
   },
   {
@@ -92,6 +96,7 @@
       "gs://example/some/random/path/to/boom",
       "[TMP_BASE]/boom"
     ],
+    "infra_step": true,
     "name": "gsutil gsutil download url"
   },
   {
@@ -106,6 +111,7 @@
       "gs://example/staging/to/boom",
       "[TMP_BASE]/erang"
     ],
+    "infra_step": true,
     "name": "gsutil download"
   },
   {
@@ -120,6 +126,7 @@
       "path/to/key",
       "gs://example/some/random/path/to/boom"
     ],
+    "infra_step": true,
     "name": "gsutil signed url"
   },
   {
@@ -133,6 +140,7 @@
       "rm",
       "gs://example/staging/to/boom"
     ],
+    "infra_step": true,
     "name": "gsutil remove"
   },
   {
@@ -146,6 +154,7 @@
       "ls",
       "gs://example/foo"
     ],
+    "infra_step": true,
     "name": "gsutil list"
   },
   {
@@ -160,6 +169,7 @@
       "gs://example/some/random/path/to/boom",
       "gs://example/staging/to/boom"
     ],
+    "infra_step": true,
     "name": "gsutil copy",
     "~followup_annotations": [
       "@@@STEP_LINK@gsutil.copy@https://storage.cloud.google.com/example/staging/to/boom@@@"
@@ -176,6 +186,7 @@
       "cat",
       "gs://example/foo"
     ],
+    "infra_step": true,
     "name": "gsutil cat"
   },
   {

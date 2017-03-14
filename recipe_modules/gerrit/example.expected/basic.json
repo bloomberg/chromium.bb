@@ -19,6 +19,7 @@
     "env": {
       "PATH": "%(PATH)s:RECIPE_PACKAGE_REPO[depot_tools]"
     },
+    "infra_step": true,
     "name": "gerrit create_gerrit_branch",
     "~followup_annotations": [
       "@@@STEP_LOG_LINE@json.output@{@@@",
@@ -47,6 +48,7 @@
     "env": {
       "PATH": "%(PATH)s:RECIPE_PACKAGE_REPO[depot_tools]"
     },
+    "infra_step": true,
     "name": "gerrit get_gerrit_branch",
     "~followup_annotations": [
       "@@@STEP_LOG_LINE@json.output@{@@@",

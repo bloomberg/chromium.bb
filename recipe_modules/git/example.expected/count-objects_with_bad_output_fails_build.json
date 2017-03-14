@@ -24,6 +24,7 @@
     "env": {
       "PATH": "RECIPE_PACKAGE_REPO[depot_tools]:%(PATH)s"
     },
+    "infra_step": true,
     "name": "git fetch"
   },
   {
@@ -34,6 +35,7 @@
       "FETCH_HEAD"
     ],
     "cwd": "[START_DIR]/src",
+    "infra_step": true,
     "name": "git checkout"
   },
   {
@@ -43,6 +45,7 @@
       "HEAD"
     ],
     "cwd": "[START_DIR]/src",
+    "infra_step": true,
     "name": "read revision",
     "stdout": "/path/to/tmp/",
     "~followup_annotations": [
@@ -58,6 +61,7 @@
       "-x"
     ],
     "cwd": "[START_DIR]/src",
+    "infra_step": true,
     "name": "git clean"
   },
   {
@@ -67,6 +71,7 @@
       "sync"
     ],
     "cwd": "[START_DIR]/src",
+    "infra_step": true,
     "name": "submodule sync"
   },
   {
@@ -78,6 +83,7 @@
       "--recursive"
     ],
     "cwd": "[START_DIR]/src",
+    "infra_step": true,
     "name": "submodule update"
   },
   {
@@ -89,6 +95,7 @@
       "-v"
     ],
     "cwd": "[START_DIR]/src",
+    "infra_step": true,
     "name": "count-objects",
     "stdout": "/path/to/tmp/",
     "~followup_annotations": [
