@@ -18,22 +18,20 @@ namespace {
 // Actions on an axis are disallowed if the perpendicular axis has a filter set
 // and no filter is set for the queried axis.
 bool IsYAxisActionDisallowed(TouchAction action) {
-  return ((action & TOUCH_ACTION_PAN_X) && !(action & TOUCH_ACTION_PAN_Y));
+  return (action & TOUCH_ACTION_PAN_X) && !(action & TOUCH_ACTION_PAN_Y);
 }
 
 bool IsXAxisActionDisallowed(TouchAction action) {
-  return ((action & TOUCH_ACTION_PAN_Y) && !(action & TOUCH_ACTION_PAN_X));
+  return (action & TOUCH_ACTION_PAN_Y) && !(action & TOUCH_ACTION_PAN_X);
 }
 
 }  // namespace
 
-TouchActionFilter::TouchActionFilter() :
-  drop_scroll_gesture_events_(false),
-  drop_pinch_gesture_events_(false),
-  drop_current_tap_ending_event_(false),
-  allow_current_double_tap_event_(true),
-  allowed_touch_action_(TOUCH_ACTION_AUTO) {
-}
+TouchActionFilter::TouchActionFilter()
+    : suppress_manipulation_events_(false),
+      drop_current_tap_ending_event_(false),
+      allow_current_double_tap_event_(true),
+      allowed_touch_action_(TOUCH_ACTION_AUTO) {}
 
 bool TouchActionFilter::FilterGestureEvent(WebGestureEvent* gesture_event) {
   if (gesture_event->sourceDevice != blink::WebGestureDeviceTouchscreen)
@@ -43,26 +41,29 @@ bool TouchActionFilter::FilterGestureEvent(WebGestureEvent* gesture_event) {
   // can decide to send a touch cancel event).
   switch (gesture_event->type()) {
     case WebInputEvent::GestureScrollBegin:
-      DCHECK(!drop_scroll_gesture_events_);
-      DCHECK(!drop_pinch_gesture_events_);
-      drop_pinch_gesture_events_ =
-          (allowed_touch_action_ & TOUCH_ACTION_PINCH_ZOOM) == 0;
-      drop_scroll_gesture_events_ = ShouldSuppressScroll(*gesture_event);
-      return drop_scroll_gesture_events_;
+      DCHECK(!suppress_manipulation_events_);
+      suppress_manipulation_events_ =
+          ShouldSuppressManipulation(*gesture_event);
+      return suppress_manipulation_events_;
 
     case WebInputEvent::GestureScrollUpdate:
-      if (drop_scroll_gesture_events_) {
+      if (suppress_manipulation_events_)
         return true;
-      } else {
-        // Scrolls restricted to a specific axis shouldn't permit movement
-        // in the perpendicular axis.
-        if (IsYAxisActionDisallowed(allowed_touch_action_)) {
-          gesture_event->data.scrollUpdate.deltaY = 0;
-          gesture_event->data.scrollUpdate.velocityY = 0;
-        } else if (IsXAxisActionDisallowed(allowed_touch_action_)) {
-          gesture_event->data.scrollUpdate.deltaX = 0;
-          gesture_event->data.scrollUpdate.velocityX = 0;
-        }
+
+      // Scrolls restricted to a specific axis shouldn't permit movement
+      // in the perpendicular axis.
+      //
+      // Note the direction suppression with pinch-zoom here, which matches
+      // Edge: a "touch-action: pan-y pinch-zoom" region allows vertical
+      // two-finger scrolling but a "touch-action: pan-x pinch-zoom" region
+      // doesn't.
+      // TODO(mustaq): Add it to spec?
+      if (IsYAxisActionDisallowed(allowed_touch_action_)) {
+        gesture_event->data.scrollUpdate.deltaY = 0;
+        gesture_event->data.scrollUpdate.velocityY = 0;
+      } else if (IsXAxisActionDisallowed(allowed_touch_action_)) {
+        gesture_event->data.scrollUpdate.deltaX = 0;
+        gesture_event->data.scrollUpdate.velocityX = 0;
       }
       break;
 
@@ -70,7 +71,7 @@ bool TouchActionFilter::FilterGestureEvent(WebGestureEvent* gesture_event) {
       // Touchscreen flings should always have non-zero velocity.
       DCHECK(gesture_event->data.flingStart.velocityX ||
              gesture_event->data.flingStart.velocityY);
-      if (!drop_scroll_gesture_events_) {
+      if (!suppress_manipulation_events_) {
         // Flings restricted to a specific axis shouldn't permit velocity
         // in the perpendicular axis.
         if (IsYAxisActionDisallowed(allowed_touch_action_))
@@ -84,23 +85,15 @@ bool TouchActionFilter::FilterGestureEvent(WebGestureEvent* gesture_event) {
           gesture_event->setType(WebInputEvent::GestureScrollEnd);
         }
       }
-      return FilterScrollEndingGesture();
+      return FilterManipulationEventAndResetState();
 
     case WebInputEvent::GestureScrollEnd:
-      return FilterScrollEndingGesture();
+      return FilterManipulationEventAndResetState();
 
     case WebInputEvent::GesturePinchBegin:
-      return drop_pinch_gesture_events_;
-
     case WebInputEvent::GesturePinchUpdate:
-      return drop_pinch_gesture_events_;
-
     case WebInputEvent::GesturePinchEnd:
-      // TODO(mustaq): Don't reset drop_pinch_gesture_events_ here because a
-      // pinch-zoom-out-then-zoom-in sends two separate pinch sequences within a
-      // single gesture-scroll sequence, see crbug.com/662047#c13. Is it
-      // expected?
-      return drop_pinch_gesture_events_;
+      return suppress_manipulation_events_;
 
     // The double tap gesture is a tap ending event. If a double tap gesture is
     // filtered out, replace it with a tap event.
@@ -126,6 +119,7 @@ bool TouchActionFilter::FilterGestureEvent(WebGestureEvent* gesture_event) {
       allow_current_double_tap_event_ =
           (allowed_touch_action_ & TOUCH_ACTION_DOUBLE_TAP_ZOOM) != 0;
       // Fall through.
+
     case WebInputEvent::GestureTapCancel:
       if (drop_current_tap_ending_event_) {
         drop_current_tap_ending_event_ = false;
@@ -146,10 +140,9 @@ bool TouchActionFilter::FilterGestureEvent(WebGestureEvent* gesture_event) {
   return false;
 }
 
-bool TouchActionFilter::FilterScrollEndingGesture() {
-  drop_pinch_gesture_events_ = false;
-  if (drop_scroll_gesture_events_) {
-    drop_scroll_gesture_events_ = false;
+bool TouchActionFilter::FilterManipulationEventAndResetState() {
+  if (suppress_manipulation_events_) {
+    suppress_manipulation_events_ = false;
     return true;
   }
   return false;
@@ -176,15 +169,15 @@ void TouchActionFilter::ResetTouchAction() {
   allowed_touch_action_ = TOUCH_ACTION_AUTO;
 }
 
-bool TouchActionFilter::ShouldSuppressScroll(
+bool TouchActionFilter::ShouldSuppressManipulation(
     const blink::WebGestureEvent& gesture_event) {
   DCHECK_EQ(gesture_event.type(), WebInputEvent::GestureScrollBegin);
-  // if there are two or more pointers then ensure that we allow panning
-  // if pinch-zoom is allowed. Determine if this should really occur in the
-  // GestureScrollBegin or not; see crbug.com/649034.
-  if (!drop_pinch_gesture_events_ &&
-       gesture_event.data.scrollBegin.pointerCount >= 2) {
-    return false;
+
+  if (gesture_event.data.scrollBegin.pointerCount >= 2) {
+    // Any GestureScrollBegin with more than one fingers is like a pinch-zoom
+    // for touch-actions, see crbug.com/632525. Therefore, we switch to
+    // blocked-manipulation mode iff pinch-zoom is disallowed.
+    return (allowed_touch_action_ & TOUCH_ACTION_PINCH_ZOOM) == 0;
   }
 
   if ((allowed_touch_action_ & TOUCH_ACTION_PAN) == TOUCH_ACTION_PAN)
@@ -196,6 +189,11 @@ bool TouchActionFilter::ShouldSuppressScroll(
     return true;
 
   // If there's no hint or it's perfectly diagonal, then allow the scroll.
+  // Note, however, that the panning direction of the following GSU/GPB events
+  // is updated if needed to make them touch-action compliant.
+  //
+  // TODO(mustaq): With unidirectional touch-action, this can
+  // allow wrong panning with diagonal swipes. Investigate. crbug.com/697102
   if (fabs(gesture_event.data.scrollBegin.deltaXHint) ==
       fabs(gesture_event.data.scrollBegin.deltaYHint))
     return false;

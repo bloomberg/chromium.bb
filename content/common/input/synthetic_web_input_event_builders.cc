@@ -117,11 +117,13 @@ WebGestureEvent SyntheticWebGestureEventBuilder::Build(
 WebGestureEvent SyntheticWebGestureEventBuilder::BuildScrollBegin(
     float dx_hint,
     float dy_hint,
-    blink::WebGestureDevice source_device) {
+    blink::WebGestureDevice source_device,
+    int pointer_count) {
   WebGestureEvent result =
       Build(WebInputEvent::GestureScrollBegin, source_device);
   result.data.scrollBegin.deltaXHint = dx_hint;
   result.data.scrollBegin.deltaYHint = dy_hint;
+  result.data.scrollBegin.pointerCount = pointer_count;
   return result;
 }
 

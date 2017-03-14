@@ -20,11 +20,13 @@ namespace content {
 // each touch point.
 // For details see the touch-action design doc at http://goo.gl/KcKbxQ.
 class CONTENT_EXPORT TouchActionFilter {
-public:
+ public:
   TouchActionFilter();
 
-  // Returns true if the supplied gesture event should be dropped based on
-  // the current touch-action state.
+  // Returns true if the supplied gesture event should be dropped based on the
+  // current touch-action state. Otherwise returns false, and possibly modifies
+  // the event's directional parameters to make the event compatible with
+  // the effective touch-action.
   bool FilterGestureEvent(blink::WebGestureEvent* gesture_event);
 
   // Called when a set-touch-action message is received from the renderer
@@ -39,18 +41,12 @@ public:
 
   TouchAction allowed_touch_action() const { return allowed_touch_action_; }
 
-  // Return the intersection of two TouchAction values.
-  static TouchAction Intersect(TouchAction ta1, TouchAction ta2);
+ private:
+  bool ShouldSuppressManipulation(const blink::WebGestureEvent&);
+  bool FilterManipulationEventAndResetState();
 
-private:
-  bool ShouldSuppressScroll(const blink::WebGestureEvent& gesture_event);
-  bool FilterScrollEndingGesture();
-
-  // Whether GestureScroll events should be discarded due to touch-action.
-  bool drop_scroll_gesture_events_;
-
-  // Whether GesturePinch events should be discarded due to touch-action.
-  bool drop_pinch_gesture_events_;
+  // Whether scroll and pinch gestures should be discarded due to touch-action.
+  bool suppress_manipulation_events_;
 
   // Whether a tap ending event in this sequence should be discarded because a
   // previous GestureTapUnconfirmed event was turned into a GestureTap.

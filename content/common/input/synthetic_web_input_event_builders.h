@@ -62,7 +62,8 @@ class CONTENT_EXPORT SyntheticWebGestureEventBuilder {
   static blink::WebGestureEvent BuildScrollBegin(
       float dx_hint,
       float dy_hint,
-      blink::WebGestureDevice source_device);
+      blink::WebGestureDevice source_device,
+      int pointer_count = 1);
   static blink::WebGestureEvent BuildScrollUpdate(
       float dx,
       float dy,
