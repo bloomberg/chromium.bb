@@ -63,56 +63,6 @@ InspectorTest.createWorkspaceWithTarget = function(ignoreEvents)
     return target;
 }
 
-InspectorTest.waitForWorkspaceUISourceCodeAddedEvent = function(callback, count, projectType)
-{
-    InspectorTest.uiSourceCodeAddedEventsLeft = count || 1;
-    InspectorTest.testWorkspace.removeEventListener(Workspace.Workspace.Events.UISourceCodeAdded, InspectorTest._defaultWorkspaceEventHandler);
-    InspectorTest.testWorkspace.addEventListener(Workspace.Workspace.Events.UISourceCodeAdded, uiSourceCodeAdded);
-
-    function uiSourceCodeAdded(event)
-    {
-        if (projectType && event.data.project().type() !== projectType)
-            return;
-        if (!projectType && event.data.project().type() === Workspace.projectTypes.Service)
-            return;
-        if (!(--InspectorTest.uiSourceCodeAddedEventsLeft)) {
-            InspectorTest.testWorkspace.removeEventListener(Workspace.Workspace.Events.UISourceCodeAdded, uiSourceCodeAdded);
-            InspectorTest.testWorkspace.addEventListener(Workspace.Workspace.Events.UISourceCodeAdded, InspectorTest._defaultWorkspaceEventHandler);
-        }
-        callback(event.data);
-    }
-}
-
-InspectorTest.waitForWorkspaceUISourceCodeRemovedEvent = function(callback, count)
-{
-    InspectorTest.uiSourceCodeRemovedEventsLeft = count || 1;
-    InspectorTest.testWorkspace.removeEventListener(Workspace.Workspace.Events.UISourceCodeRemoved, InspectorTest._defaultWorkspaceEventHandler);
-    InspectorTest.testWorkspace.addEventListener(Workspace.Workspace.Events.UISourceCodeRemoved, uiSourceCodeRemoved);
-
-    function uiSourceCodeRemoved(event)
-    {
-        if (event.data.project().type() === Workspace.projectTypes.Service)
-            return;
-        if (!(--InspectorTest.uiSourceCodeRemovedEventsLeft)) {
-            InspectorTest.testWorkspace.removeEventListener(Workspace.Workspace.Events.UISourceCodeRemoved, uiSourceCodeRemoved);
-            InspectorTest.testWorkspace.addEventListener(Workspace.Workspace.Events.UISourceCodeRemoved, InspectorTest._defaultWorkspaceEventHandler);
-        }
-        callback(event.data);
-    }
-}
-
-InspectorTest.addMockUISourceCodeToWorkspace = function(url, type, content)
-{
-    var mockContentProvider = Common.StaticContentProvider.fromString(url, type, content);
-    InspectorTest.testNetworkProject.addFile(mockContentProvider, null, false);
-}
-
-InspectorTest.addMockUISourceCodeViaNetwork = function(url, type, content, target)
-{
-    var mockContentProvider = Common.StaticContentProvider.fromString(url, type, content);
-    InspectorTest.testNetworkProject.addFile(mockContentProvider, target.resourceTreeModel.mainFrame, false);
-}
-
 InspectorTest._defaultWorkspaceEventHandler = function(event)
 {
     var uiSourceCode = event.data;
@@ -121,67 +71,7 @@ InspectorTest._defaultWorkspaceEventHandler = function(event)
     InspectorTest.addResult(`Workspace event: ${event.type.toString()}: ${uiSourceCode.url()}.`);
 }
 
-InspectorTest.uiSourceCodeURL = function(uiSourceCode)
-{
-    return uiSourceCode.url().replace(/.*LayoutTests/, "LayoutTests");
-}
-
-InspectorTest.dumpUISourceCode = function(uiSourceCode, callback)
-{
-    InspectorTest.addResult("UISourceCode: " + InspectorTest.uiSourceCodeURL(uiSourceCode));
-    if (uiSourceCode.contentType() === Common.resourceTypes.Script || uiSourceCode.contentType() === Common.resourceTypes.Document)
-        InspectorTest.addResult("UISourceCode is content script: " + (uiSourceCode.project().type() === Workspace.projectTypes.ContentScripts));
-    uiSourceCode.requestContent().then(didRequestContent);
-
-    function didRequestContent(content, contentEncoded)
-    {
-        InspectorTest.addResult("Highlighter type: " + Bindings.NetworkProject.uiSourceCodeMimeType(uiSourceCode));
-        InspectorTest.addResult("UISourceCode content: " + content);
-        callback();
-    }
-}
-
-InspectorTest.fileSystemUISourceCodes = function()
-{
-    var uiSourceCodes = [];
-    var fileSystemProjects = Workspace.workspace.projectsForType(Workspace.projectTypes.FileSystem);
-    for (var project of fileSystemProjects)
-        uiSourceCodes = uiSourceCodes.concat(project.uiSourceCodes());
-    return uiSourceCodes;
-}
-
-InspectorTest.refreshFileSystemProjects = function(callback)
-{
-    var barrier = new CallbackBarrier();
-    var projects = Workspace.workspace.projects();
-    for (var i = 0; i < projects.length; ++i)
-        projects[i].refresh("/", barrier.createCallback());
-    barrier.callWhenDone(callback);
-}
-
-InspectorTest.waitForGivenUISourceCode = function(name, callback)
-{
-    var uiSourceCodes = Workspace.workspace.uiSourceCodes();
-    for (var i = 0; i < uiSourceCodes.length; ++i) {
-        if (uiSourceCodes[i].name() === name) {
-            setImmediate(callback);
-            return;
-        }
-    }
-    Workspace.workspace.addEventListener(Workspace.Workspace.Events.UISourceCodeAdded, uiSourceCodeAdded);
-
-    function uiSourceCodeAdded(event)
-    {
-        if (event.data.name() === name) {
-            Workspace.workspace.removeEventListener(Workspace.Workspace.Events.UISourceCodeAdded, uiSourceCodeAdded);
-            setImmediate(callback);
-        }
-    }
-}
-
 InspectorTest.uiSourceCodes = {};
-
-InspectorTest.dumpTargetIds = false;
 
 InspectorTest.initializeDefaultMappingOnTarget = function(target)
 {
@@ -204,11 +94,6 @@ InspectorTest.initializeDefaultMappingOnTarget = function(target)
         }
     };
     target.defaultMapping = defaultMapping;
-}
-
-InspectorTest.dumpTarget = function(targetAware)
-{
-    return InspectorTest.dumpTargetIds ?  "target " + targetAware.target().id() + " " : "";
 }
 
 InspectorTest.DebuggerModelMock = class extends SDK.SDKModel {
@@ -287,7 +172,7 @@ InspectorTest.DebuggerModelMock = class extends SDK.SDKModel {
 
     setBreakpointByURL(url, lineNumber, columnNumber, condition, callback)
     {
-        InspectorTest.addResult("    " + InspectorTest.dumpTarget(this) + "debuggerModel.setBreakpoint(" + [url, lineNumber, condition].join(":") + ")");
+        InspectorTest.addResult("    debuggerModel.setBreakpoint(" + [url, lineNumber, condition].join(":") + ")");
 
         var breakpointId = url + ":" + lineNumber;
         if (this._breakpoints[breakpointId]) {
@@ -318,7 +203,7 @@ InspectorTest.DebuggerModelMock = class extends SDK.SDKModel {
 
     removeBreakpoint(breakpointId, callback)
     {
-        InspectorTest.addResult("    " + InspectorTest.dumpTarget(this) + "debuggerModel.removeBreakpoint(" + breakpointId + ")");
+        InspectorTest.addResult("    debuggerModel.removeBreakpoint(" + breakpointId + ")");
         delete this._breakpoints[breakpointId];
         if (callback)
             setTimeout(callback, 0);
@@ -371,11 +256,11 @@ InspectorTest.setupLiveLocationSniffers = function()
 {
     InspectorTest.addSniffer(Bindings.DebuggerWorkspaceBinding.prototype, "createLiveLocation", function(rawLocation)
     {
-        InspectorTest.addResult("    Location created: " + InspectorTest.dumpTarget(rawLocation) + rawLocation.scriptId + ":" + rawLocation.lineNumber);
+        InspectorTest.addResult("    Location created: " + rawLocation.scriptId + ":" + rawLocation.lineNumber);
     }, true);
     InspectorTest.addSniffer(Bindings.DebuggerWorkspaceBinding.Location.prototype, "dispose", function()
     {
-        InspectorTest.addResult("    Location disposed: " + InspectorTest.dumpTarget(this._rawLocation) + this._rawLocation.scriptId + ":" + this._rawLocation.lineNumber);
+        InspectorTest.addResult("    Location disposed: " + this._rawLocation.scriptId + ":" + this._rawLocation.lineNumber);
     }, true);
 }
 
