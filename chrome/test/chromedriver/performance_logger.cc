@@ -42,7 +42,13 @@ bool IsEnabled(const PerfLoggingPrefs::InspectorDomainStatus& domain_status) {
 }
 
 // Returns whether |command| is in kRequestTraceCommands[] (case-insensitive).
-bool ShouldRequestTraceEvents(const std::string& command) {
+// In the case of GetLog, also check if it has been called previously, that it
+// was emptying an empty log.
+bool ShouldRequestTraceEvents(const std::string& command,
+                              const bool log_emptied) {
+  if (base::EqualsCaseInsensitiveASCII(command, "GetLog") && !log_emptied)
+    return false;
+
   for (auto* request_command : kRequestTraceCommands) {
     if (base::EqualsCaseInsensitiveASCII(command, request_command))
       return true;
@@ -103,7 +109,8 @@ Status PerformanceLogger::OnEvent(
 
 Status PerformanceLogger::BeforeCommand(const std::string& command_name) {
   // Only dump trace buffer after tracing has been started.
-  if (trace_buffering_ && ShouldRequestTraceEvents(command_name)) {
+  if (trace_buffering_ &&
+      ShouldRequestTraceEvents(command_name, log_->Emptied())) {
     Status status = CollectTraceEvents();
     if (status.IsError())
       return status;

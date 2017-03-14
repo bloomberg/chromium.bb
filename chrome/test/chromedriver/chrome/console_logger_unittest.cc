@@ -87,6 +87,8 @@ class FakeLog : public Log {
                            const std::string& source,
                            const std::string& message) override;
 
+  bool Emptied() const override;
+
   const ScopedVector<LogEntry>& GetEntries() {
     return entries_;
   }
@@ -100,6 +102,10 @@ void FakeLog::AddEntryTimestamped(const base::Time& timestamp,
                                   const std::string& source,
                                   const std::string& message) {
   entries_.push_back(new LogEntry(timestamp, level, source, message));
+}
+
+bool FakeLog::Emptied() const {
+  return true;
 }
 
 void ValidateLogEntry(const LogEntry *entry,

@@ -142,8 +142,7 @@ bool WebDriverLog::NameToLevel(const std::string& name, Log::Level* out_level) {
 }
 
 WebDriverLog::WebDriverLog(const std::string& type, Log::Level min_level)
-    : type_(type), min_level_(min_level) {
-}
+    : type_(type), min_level_(min_level), emptied_(true) {}
 
 WebDriverLog::~WebDriverLog() {
   size_t sum = 0;
@@ -157,9 +156,11 @@ std::unique_ptr<base::ListValue> WebDriverLog::GetAndClearEntries() {
   std::unique_ptr<base::ListValue> ret;
   if (batches_of_entries_.empty()) {
     ret.reset(new base::ListValue());
+    emptied_ = true;
   } else {
     ret = std::move(batches_of_entries_.front());
     batches_of_entries_.pop_front();
+    emptied_ = false;
   }
   return ret;
 }
@@ -213,6 +214,10 @@ void WebDriverLog::AddEntryTimestamped(const base::Time& timestamp,
   } else {
     batches_of_entries_.back()->Append(std::move(log_entry_dict));
   }
+}
+
+bool WebDriverLog::Emptied() const {
+  return emptied_;
 }
 
 const std::string& WebDriverLog::type() const {

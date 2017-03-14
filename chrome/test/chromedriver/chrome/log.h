@@ -35,6 +35,8 @@ class Log {
                                    const std::string& source,
                                    const std::string& message) = 0;
 
+  virtual bool Emptied() const = 0;
+
   // Adds an entry to the log, timestamped with the current time.
   void AddEntry(Level level,
                 const std::string& source,

@@ -56,6 +56,9 @@ class WebDriverLog : public Log {
                            const std::string& source,
                            const std::string& message) override;
 
+  // Whether or not batches_of_entries_ is empty when it is being emptied.
+  bool Emptied() const override;
+
   const std::string& type() const;
   void set_min_level(Level min_level);
   Level min_level() const;
@@ -63,6 +66,9 @@ class WebDriverLog : public Log {
  private:
   const std::string type_;  // WebDriver log type.
   Level min_level_;  // Minimum level of entries to store.
+  // Log is empty when it is emptied, or when it is initialized (because we
+  // want GetLog to collect trace events initially).
+  bool emptied_;
 
   // A queue of batches of entries. Each batch can have no more than
   // |kMaxReturnedEntries| values in it. This is to avoid HTTP response buffer
