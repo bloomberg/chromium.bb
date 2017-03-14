@@ -4611,9 +4611,10 @@ static int read_compressed_header(AV1Decoder *pbi, const uint8_t *data,
   }
 
 #if CONFIG_EXT_PARTITION_TYPES
-  for (i = 0; i < PARTITION_TYPES - 1; ++i)
-    av1_diff_update_prob(&r, &fc->partition_prob[0][i], ACCT_STR);
-  for (j = 1; j < PARTITION_CONTEXTS_PRIMARY; ++j)
+  for (j = 0; j < PARTITION_PLOFFSET; ++j)
+    for (i = 0; i < PARTITION_TYPES - 1; ++i)
+      av1_diff_update_prob(&r, &fc->partition_prob[j][i], ACCT_STR);
+  for (; j < PARTITION_CONTEXTS_PRIMARY; ++j)
     for (i = 0; i < EXT_PARTITION_TYPES - 1; ++i)
       av1_diff_update_prob(&r, &fc->partition_prob[j][i], ACCT_STR);
 #else

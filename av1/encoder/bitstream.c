@@ -4666,17 +4666,17 @@ static uint32_t write_compressed_header(AV1_COMP *cpi, uint8_t *data) {
   }
 
 #if CONFIG_EXT_PARTITION_TYPES
-  prob_diff_update(av1_partition_tree, fc->partition_prob[0],
-                   counts->partition[0], PARTITION_TYPES, probwt, header_bc);
-  for (i = 1; i < PARTITION_CONTEXTS_PRIMARY; ++i)
+  for (i = 0; i < PARTITION_PLOFFSET; ++i)
+    prob_diff_update(av1_partition_tree, fc->partition_prob[i],
+                     counts->partition[i], PARTITION_TYPES, probwt, header_bc);
+  for (; i < PARTITION_CONTEXTS_PRIMARY; ++i)
     prob_diff_update(av1_ext_partition_tree, fc->partition_prob[i],
                      counts->partition[i], EXT_PARTITION_TYPES, probwt,
                      header_bc);
 #else
-  for (i = 0; i < PARTITION_CONTEXTS_PRIMARY; ++i) {
+  for (i = 0; i < PARTITION_CONTEXTS_PRIMARY; ++i)
     prob_diff_update(av1_partition_tree, fc->partition_prob[i],
                      counts->partition[i], PARTITION_TYPES, probwt, header_bc);
-  }
 #endif  // CONFIG_EXT_PARTITION_TYPES
 #if CONFIG_UNPOISON_PARTITION_CTX
   for (; i < PARTITION_CONTEXTS_PRIMARY + PARTITION_BLOCK_SIZES; ++i) {

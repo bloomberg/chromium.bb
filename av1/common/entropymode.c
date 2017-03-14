@@ -2528,13 +2528,14 @@ void av1_adapt_intra_frame_probs(AV1_COMMON *cm) {
                          counts->uv_mode[i], fc->uv_mode_prob[i]);
 
 #if CONFIG_EXT_PARTITION_TYPES
-  aom_tree_merge_probs(av1_partition_tree, pre_fc->partition_prob[0],
-                       counts->partition[0], fc->partition_prob[0]);
-  for (i = 1; i < PARTITION_CONTEXTS_PRIMARY; i++)
+  for (i = 0; i < PARTITION_PLOFFSET; ++i)
+    aom_tree_merge_probs(av1_partition_tree, pre_fc->partition_prob[i],
+                         counts->partition[i], fc->partition_prob[i]);
+  for (; i < PARTITION_CONTEXTS_PRIMARY; ++i)
     aom_tree_merge_probs(av1_ext_partition_tree, pre_fc->partition_prob[i],
                          counts->partition[i], fc->partition_prob[i]);
 #else
-  for (i = 0; i < PARTITION_CONTEXTS_PRIMARY; i++) {
+  for (i = 0; i < PARTITION_CONTEXTS_PRIMARY; ++i) {
     aom_tree_merge_probs(av1_partition_tree, pre_fc->partition_prob[i],
                          counts->partition[i], fc->partition_prob[i]);
   }
