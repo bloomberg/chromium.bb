@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/sys_info.h"
+#include "base/task_scheduler/post_task.h"
 #include "build/build_config.h"
 #include "components/nacl/browser/bad_message.h"
 #include "components/nacl/browser/nacl_browser.h"
@@ -193,13 +194,14 @@ void NaClHostMessageFilter::LaunchNaClContinuation(
 
   // Process a list of resource file URLs in
   // |launch_params.resource_files_to_prefetch|.
-  content::BrowserThread::PostBlockingPoolTask(
+  base::PostTaskWithTraits(
       FROM_HERE,
-      base::Bind(&NaClHostMessageFilter::BatchOpenResourceFiles,
-                 this,
-                 safe_launch_params,
-                 reply_msg,
-                 permissions));
+      base::TaskTraits()
+          .MayBlock()
+          .WithPriority(base::TaskPriority::USER_BLOCKING)
+          .WithShutdownBehavior(base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN),
+      base::Bind(&NaClHostMessageFilter::BatchOpenResourceFiles, this,
+                 safe_launch_params, reply_msg, permissions));
 }
 
 void NaClHostMessageFilter::BatchOpenResourceFiles(
