@@ -9,6 +9,7 @@
 
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/wm_shell.h"
+#include "ash/shell.h"
 #include "ash/shell/example_factory.h"
 #include "ash/shell/toplevel_window.h"
 #include "base/callback.h"
@@ -282,7 +283,7 @@ class ExampleAppListViewDelegate : public app_list::AppListViewDelegate {
 
   void Dismiss() override {
     DCHECK(WmShell::HasInstance());
-    WmShell::Get()->DismissAppList();
+    Shell::Get()->DismissAppList();
   }
 
   void ViewClosing() override {

@@ -163,8 +163,8 @@ TEST_F(AcceleratorFilterTest, SearchKeyShortcutsAreAlwaysHandled) {
   EXPECT_FALSE(session_state_delegate->IsScreenLocked());
 
   // Search+L is processed when the app_list target visibility is false.
-  WmShell::Get()->DismissAppList();
-  EXPECT_FALSE(WmShell::Get()->GetAppListTargetVisibility());
+  Shell::Get()->DismissAppList();
+  EXPECT_FALSE(Shell::Get()->GetAppListTargetVisibility());
   generator.PressKey(ui::VKEY_L, ui::EF_COMMAND_DOWN);
   generator.ReleaseKey(ui::VKEY_L, ui::EF_COMMAND_DOWN);
   EXPECT_TRUE(session_state_delegate->IsScreenLocked());

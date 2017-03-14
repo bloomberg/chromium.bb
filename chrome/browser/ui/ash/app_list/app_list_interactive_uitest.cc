@@ -10,6 +10,7 @@
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/shell.h"
 #include "base/run_loop.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "ui/app_list/presenter/app_list.h"
@@ -19,12 +20,14 @@ using AppListTest = InProcessBrowserTest;
 
 // An integration test to toggle the app list by pressing the shelf button.
 IN_PROC_BROWSER_TEST_F(AppListTest, PressAppListButtonToShowAndDismiss) {
-  ash::WmShell* shell = ash::WmShell::Get();
-  ash::WmShelf* shelf = ash::WmShelf::ForWindow(shell->GetActiveWindow());
+  ash::Shell* shell = ash::Shell::Get();
+  ash::WmShelf* shelf =
+      ash::WmShelf::ForWindow(ash::WmShell::Get()->GetActiveWindow());
   ash::ShelfWidget* shelf_widget = shelf->shelf_widget();
   ash::AppListButton* app_list_button = shelf_widget->GetAppListButton();
 
-  ash::WmWindow* root_window = shell->GetActiveWindow()->GetRootWindow();
+  ash::WmWindow* root_window =
+      ash::WmShell::Get()->GetActiveWindow()->GetRootWindow();
   ash::WmWindow* app_list_container = root_window->GetChildByShellWindowId(
       ash::kShellWindowId_AppListContainer);
   ui::test::EventGenerator generator(shelf_widget->GetNativeWindow());

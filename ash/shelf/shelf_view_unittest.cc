@@ -1476,8 +1476,8 @@ TEST_F(ShelfViewTest, ShouldHideTooltipTest) {
 
 TEST_F(ShelfViewTest, ShouldHideTooltipWithAppListWindowTest) {
   // Trigger mock notifications that the app list was shown.
-  WmShell::Get()->app_list()->OnTargetVisibilityChanged(true);
-  WmShell::Get()->app_list()->OnVisibilityChanged(true, GetPrimaryDisplayId());
+  Shell::Get()->app_list()->OnTargetVisibilityChanged(true);
+  Shell::Get()->app_list()->OnVisibilityChanged(true, GetPrimaryDisplayId());
   AppListButton* app_list_button = shelf_view_->GetAppListButton();
   app_list_button->OnAppListShown();
 
@@ -2042,19 +2042,19 @@ class ShelfViewInkDropTest : public ShelfViewTest {
 
   void ShowAppList() {
     // Trigger a mock notification that the app list was shown.
-    WmShell::Get()->app_list()->OnTargetVisibilityChanged(true);
+    Shell::Get()->app_list()->OnTargetVisibilityChanged(true);
     app_list_button_->OnAppListShown();
   }
 
   void DismissAppList() {
     // Trigger a mock notification that the app list was dismissed.
-    WmShell::Get()->app_list()->OnTargetVisibilityChanged(false);
+    Shell::Get()->app_list()->OnTargetVisibilityChanged(false);
     app_list_button_->OnAppListDismissed();
   }
 
   void FinishAppListVisibilityChange() {
     // Trigger a mock notification that the app list finished animating.
-    app_list::AppList* app_list = WmShell::Get()->app_list();
+    app_list::AppList* app_list = Shell::Get()->app_list();
     app_list->OnVisibilityChanged(app_list->GetTargetVisibility(),
                                   GetPrimaryDisplayId());
   }

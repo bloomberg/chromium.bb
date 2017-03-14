@@ -45,7 +45,6 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "ui/app_list/presenter/app_list.h"
 #include "ui/display/display.h"
 
 namespace ash {
@@ -144,8 +143,7 @@ void WmShell::SetShelfDelegateForTesting(
 }
 
 WmShell::WmShell()
-    : app_list_(base::MakeUnique<app_list::AppList>()),
-      brightness_control_delegate_(
+    : brightness_control_delegate_(
           base::MakeUnique<system::BrightnessControllerChromeos>()),
       cast_config_(base::MakeUnique<CastConfigController>()),
       focus_cycler_(base::MakeUnique<FocusCycler>()),
@@ -168,7 +166,6 @@ WmShell::WmShell()
   DCHECK(!instance_);
   instance_ = this;
   session_controller_->AddSessionStateObserver(this);
-
 }
 
 RootWindowController* WmShell::GetPrimaryRootWindowController() {
@@ -221,30 +218,6 @@ void WmShell::OnModalWindowRemoved(WmWindow* removed) {
         ->GetSystemModalLayoutManager(removed)
         ->DestroyModalBackground();
   }
-}
-
-void WmShell::ShowAppList() {
-  // Show the app list on the default display for new windows.
-  app_list_->Show(
-      Shell::GetWmRootWindowForNewWindows()->GetDisplayNearestWindow().id());
-}
-
-void WmShell::DismissAppList() {
-  app_list_->Dismiss();
-}
-
-void WmShell::ToggleAppList() {
-  // Toggle the app list on the default display for new windows.
-  app_list_->ToggleAppList(
-      Shell::GetWmRootWindowForNewWindows()->GetDisplayNearestWindow().id());
-}
-
-bool WmShell::IsApplistVisible() const {
-  return app_list_->IsVisible();
-}
-
-bool WmShell::GetAppListTargetVisibility() const {
-  return app_list_->GetTargetVisibility();
 }
 
 void WmShell::SetKeyboardUI(std::unique_ptr<KeyboardUI> keyboard_ui) {

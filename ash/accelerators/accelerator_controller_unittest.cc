@@ -1020,7 +1020,7 @@ TEST_F(AcceleratorControllerTest, GlobalAccelerators) {
 
 TEST_F(AcceleratorControllerTest, GlobalAcceleratorsToggleAppList) {
   app_list::test::TestAppListPresenter test_app_list_presenter;
-  WmShell::Get()->app_list()->SetAppListPresenter(
+  Shell::Get()->app_list()->SetAppListPresenter(
       test_app_list_presenter.CreateInterfacePtrAndBind());
   AccessibilityDelegate* delegate =
       Shell::GetInstance()->accessibility_delegate();

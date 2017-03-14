@@ -520,7 +520,7 @@ TEST_F(WindowSelectorTest, TextFilterActive) {
   EXPECT_TRUE(wm::IsActiveWindow(window1.get()));
   EXPECT_EQ(window1.get(), GetFocusedWindow());
 
-  WmShell::Get()->ToggleAppList();
+  Shell::Get()->ToggleAppList();
 
   // Activating overview cancels the App-list which normally would activate the
   // previously active |window1|. Overview mode should properly transfer focus

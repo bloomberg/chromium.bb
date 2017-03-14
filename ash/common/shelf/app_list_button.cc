@@ -9,8 +9,8 @@
 #include "ash/common/shelf/shelf_view.h"
 #include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/system/tray/tray_popup_utils.h"
-#include "ash/common/wm_shell.h"
 #include "ash/public/cpp/shelf_types.h"
+#include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "base/memory/ptr_util.h"
 #include "ui/accessibility/ax_node_data.h"
@@ -106,7 +106,7 @@ void AppListButton::OnGestureEvent(ui::GestureEvent* event) {
       event->SetHandled();
       return;
     case ui::ET_GESTURE_TAP_DOWN:
-      if (!WmShell::Get()->IsApplistVisible())
+      if (!Shell::Get()->IsAppListVisible())
         AnimateInkDrop(views::InkDropState::ACTION_PENDING, event);
       ImageButton::OnGestureEvent(event);
       break;
@@ -179,7 +179,7 @@ void AppListButton::NotifyClick(const ui::Event& event) {
 bool AppListButton::ShouldEnterPushedState(const ui::Event& event) {
   if (!shelf_view_->ShouldEventActivateButton(this, event))
     return false;
-  if (WmShell::Get()->IsApplistVisible())
+  if (Shell::Get()->IsAppListVisible())
     return false;
   return views::ImageButton::ShouldEnterPushedState(event);
 }

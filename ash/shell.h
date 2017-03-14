@@ -43,6 +43,10 @@ namespace chromeos {
 class AudioA11yController;
 }
 
+namespace app_list {
+class AppList;
+}
+
 namespace display {
 class DisplayChangeObserver;
 class DisplayConfigurator;
@@ -276,6 +280,7 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   AccessibilityDelegate* accessibility_delegate() {
     return accessibility_delegate_.get();
   }
+  app_list::AppList* app_list() { return app_list_.get(); }
   const scoped_refptr<base::SequencedWorkerPool>& blocking_pool() {
     return blocking_pool_;
   }
@@ -450,6 +455,22 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   void AddShellObserver(ShellObserver* observer);
   void RemoveShellObserver(ShellObserver* observer);
 
+  // Shows the app list on the active root window.
+  void ShowAppList();
+
+  // Dismisses the app list.
+  void DismissAppList();
+
+  // Shows the app list if it's not visible. Dismisses it otherwise.
+  void ToggleAppList();
+
+  // Returns app list actual visibility. This might differ from
+  // GetAppListTargetVisibility() when hiding animation is still in flight.
+  bool IsAppListVisible() const;
+
+  // Returns app list target visibility.
+  bool GetAppListTargetVisibility() const;
+
   // Notifies observers that maximize mode has started, windows might still
   // animate.
   void NotifyMaximizeModeStarted();
@@ -563,6 +584,7 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   std::unique_ptr<::wm::ShadowController> shadow_controller_;
   std::unique_ptr<::wm::VisibilityController> visibility_controller_;
   std::unique_ptr<::wm::WindowModalityController> window_modality_controller_;
+  std::unique_ptr<app_list::AppList> app_list_;
   scoped_refptr<preferences::PrefClientStore> pref_store_;
   std::unique_ptr<ui::devtools::UiDevToolsServer> devtools_server_;
   std::unique_ptr<views::corewm::TooltipController> tooltip_controller_;

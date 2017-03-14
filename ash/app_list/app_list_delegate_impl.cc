@@ -9,16 +9,17 @@
 #include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/wm_shell.h"
 #include "ash/root_window_controller.h"
+#include "ash/shell.h"
 #include "ui/app_list/presenter/app_list.h"
 
 namespace ash {
 
 AppListDelegateImpl::AppListDelegateImpl() {
-  WmShell::Get()->app_list()->set_delegate(this);
+  Shell::Get()->app_list()->set_delegate(this);
 }
 
 AppListDelegateImpl::~AppListDelegateImpl() {
-  WmShell::Get()->app_list()->set_delegate(nullptr);
+  Shell::Get()->app_list()->set_delegate(nullptr);
 }
 
 void AppListDelegateImpl::OnAppListVisibilityChanged(bool visible,

@@ -35,7 +35,7 @@ void BindAcceleratorControllerRequestOnMainThread(
 }
 
 void BindAppListRequestOnMainThread(app_list::mojom::AppListRequest request) {
-  WmShell::Get()->app_list()->BindRequest(std::move(request));
+  Shell::Get()->app_list()->BindRequest(std::move(request));
 }
 
 void BindCastConfigOnMainThread(mojom::CastConfigRequest request) {

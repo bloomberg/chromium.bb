@@ -21,10 +21,6 @@
 #include "ui/wm/public/activation_change_observer.h"
 #include "ui/wm/public/window_types.h"
 
-namespace app_list {
-class AppList;
-}
-
 namespace display {
 class Display;
 class ManagedDisplayInfo;
@@ -99,8 +95,6 @@ class ASH_EXPORT WmShell : public SessionStateObserver {
   AcceleratorController* accelerator_controller() {
     return accelerator_controller_.get();
   }
-
-  app_list::AppList* app_list() { return app_list_.get(); }
 
   BrightnessControlDelegate* brightness_control_delegate() {
     return brightness_control_delegate_.get();
@@ -233,22 +227,6 @@ class ASH_EXPORT WmShell : public SessionStateObserver {
   void SimulateModalWindowOpenForTesting(bool modal_window_open) {
     simulate_modal_window_open_for_testing_ = modal_window_open;
   }
-
-  // Shows the app list on the active root window.
-  void ShowAppList();
-
-  // Dismisses the app list.
-  void DismissAppList();
-
-  // Shows the app list if it's not visible. Dismisses it otherwise.
-  void ToggleAppList();
-
-  // Returns app list actual visibility. This might differ from
-  // GetAppListTargetVisibility() when hiding animation is still in flight.
-  bool IsApplistVisible() const;
-
-  // Returns app list target visibility.
-  bool GetAppListTargetVisibility() const;
 
   // Returns true if a window is currently pinned.
   virtual bool IsPinned() = 0;
@@ -386,7 +364,6 @@ class ASH_EXPORT WmShell : public SessionStateObserver {
   static WmShell* instance_;
 
   std::unique_ptr<AcceleratorController> accelerator_controller_;
-  std::unique_ptr<app_list::AppList> app_list_;
   std::unique_ptr<BrightnessControlDelegate> brightness_control_delegate_;
   std::unique_ptr<CastConfigController> cast_config_;
   std::unique_ptr<FocusCycler> focus_cycler_;

@@ -8,6 +8,7 @@
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
+#include "ash/shell.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "ui/base/accelerators/accelerator.h"
@@ -128,7 +129,7 @@ bool AcceleratorRouter::ShouldProcessAcceleratorNow(
   if (accelerator_controller->IsPreferred(accelerator))
     return true;
 
-  return WmShell::Get()->GetAppListTargetVisibility();
+  return Shell::Get()->GetAppListTargetVisibility();
 }
 
 }  // namespace ash

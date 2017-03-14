@@ -141,7 +141,7 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
 
   // Initialize the example app list presenter.
   example_app_list_presenter_ = base::MakeUnique<ExampleAppListPresenter>();
-  WmShell::Get()->app_list()->SetAppListPresenter(
+  Shell::Get()->app_list()->SetAppListPresenter(
       example_app_list_presenter_->CreateInterfacePtrAndBind());
 
   ash::Shell::GetPrimaryRootWindow()->GetHost()->Show();

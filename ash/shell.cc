@@ -111,6 +111,7 @@
 #include "services/preferences/public/interfaces/preferences.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/ui/public/interfaces/constants.mojom.h"
+#include "ui/app_list/presenter/app_list.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
 #include "ui/aura/layout_manager.h"
@@ -418,6 +419,30 @@ void Shell::RemoveShellObserver(ShellObserver* observer) {
   shell_observers_.RemoveObserver(observer);
 }
 
+void Shell::ShowAppList() {
+  // Show the app list on the default display for new windows.
+  app_list_->Show(
+      GetWmRootWindowForNewWindows()->GetDisplayNearestWindow().id());
+}
+
+void Shell::DismissAppList() {
+  app_list_->Dismiss();
+}
+
+void Shell::ToggleAppList() {
+  // Toggle the app list on the default display for new windows.
+  app_list_->ToggleAppList(
+      GetWmRootWindowForNewWindows()->GetDisplayNearestWindow().id());
+}
+
+bool Shell::IsAppListVisible() const {
+  return app_list_->IsVisible();
+}
+
+bool Shell::GetAppListTargetVisibility() const {
+  return app_list_->GetTargetVisibility();
+}
+
 void Shell::NotifyMaximizeModeStarted() {
   for (auto& observer : shell_observers_)
     observer.OnMaximizeModeStarted();
@@ -481,6 +506,7 @@ Shell::Shell(std::unique_ptr<ShellDelegate> shell_delegate,
              std::unique_ptr<WmShell> wm_shell)
     : wm_shell_(std::move(wm_shell)),
       shell_delegate_(std::move(shell_delegate)),
+      app_list_(base::MakeUnique<app_list::AppList>()),
       link_handler_model_factory_(nullptr),
       display_configurator_(new display::DisplayConfigurator()),
       native_cursor_manager_(nullptr),
