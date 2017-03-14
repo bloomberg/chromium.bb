@@ -23,6 +23,7 @@ import android.webkit.WebSettings.LayoutAlgorithm;
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwSettings;
 import org.chromium.android_webview.AwWebResourceResponse;
+import org.chromium.android_webview.test.TestAwContentsClient.DoUpdateVisitedHistoryHelper;
 import org.chromium.android_webview.test.util.CommonResources;
 import org.chromium.android_webview.test.util.ImagePageGenerator;
 import org.chromium.android_webview.test.util.JSUtils;
@@ -36,7 +37,6 @@ import org.chromium.base.test.util.TestFileUtil;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.content.browser.test.util.DOMUtils;
 import org.chromium.content.browser.test.util.HistoryUtils;
-import org.chromium.content.browser.test.util.TestCallbackHelperContainer;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.net.test.util.TestWebServer;
@@ -2872,14 +2872,13 @@ public class AwSettingsTest extends AwTestBase {
                     }
             );
 
-            TestCallbackHelperContainer.OnPageFinishedHelper onPageFinishedHelper =
-                    contentClient.getOnPageFinishedHelper();
-            int initialCallCount = onPageFinishedHelper.getCallCount();
-            loadUrlSync(awContents, onPageFinishedHelper, url);
-            // loadUrlSync only waits for a single onPageFinished, now wait for another one.
-            onPageFinishedHelper.waitForCallback(initialCallCount + 1, 1, WAIT_TIMEOUT_MS,
-                    TimeUnit.MILLISECONDS);
-            assertEquals(url, onPageFinishedHelper.getUrl());
+            DoUpdateVisitedHistoryHelper doUpdateVisitedHistoryHelper =
+                    contentClient.getDoUpdateVisitedHistoryHelper();
+            int callCount = doUpdateVisitedHistoryHelper.getCallCount();
+            loadUrlAsync(awContents, url);
+            doUpdateVisitedHistoryHelper.waitForCallback(callCount);
+            assertEquals(url, doUpdateVisitedHistoryHelper.getUrl());
+            assertEquals(true, doUpdateVisitedHistoryHelper.getIsReload());
         } finally {
             if (httpServer != null) {
                 httpServer.shutdown();
