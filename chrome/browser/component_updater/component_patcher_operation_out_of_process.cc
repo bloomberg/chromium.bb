@@ -61,12 +61,9 @@ void ChromeOutOfProcessPatcher::PatchOnIOThread(const std::string& operation,
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   DCHECK(!utility_process_mojo_client_);
 
-  const base::string16 utility_process_name =
-      l10n_util::GetStringUTF16(IDS_UTILITY_PROCESS_COMPONENT_PATCHER_NAME);
-
-  utility_process_mojo_client_.reset(
-      new content::UtilityProcessMojoClient<chrome::mojom::FilePatcher>(
-          utility_process_name));
+  utility_process_mojo_client_ = base::MakeUnique<
+      content::UtilityProcessMojoClient<chrome::mojom::FilePatcher>>(
+      l10n_util::GetStringUTF16(IDS_UTILITY_PROCESS_COMPONENT_PATCHER_NAME));
   utility_process_mojo_client_->set_error_callback(
       base::Bind(&ChromeOutOfProcessPatcher::PatchDone, this, -1));
 
