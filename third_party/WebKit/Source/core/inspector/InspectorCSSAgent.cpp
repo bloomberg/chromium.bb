@@ -690,7 +690,7 @@ void InspectorCSSAgent::restore() {
   if (m_state->booleanProperty(CSSAgentState::cssAgentEnabled, false))
     wasEnabled();
   if (m_state->booleanProperty(CSSAgentState::ruleRecordingEnabled, false))
-    setUsageTrackerStatus(true);
+    setCoverageEnabled(true);
 }
 
 void InspectorCSSAgent::flushPendingProtocolNotifications() {
@@ -755,7 +755,7 @@ Response InspectorCSSAgent::disable() {
   m_state->setBoolean(CSSAgentState::cssAgentEnabled, false);
   m_resourceContentLoader->cancel(m_resourceContentLoaderClientId);
   m_state->setBoolean(CSSAgentState::ruleRecordingEnabled, false);
-  setUsageTrackerStatus(false);
+  setCoverageEnabled(false);
   return Response::OK();
 }
 
@@ -2413,7 +2413,7 @@ void InspectorCSSAgent::visitLayoutTreeNodes(
   }
 }
 
-void InspectorCSSAgent::setUsageTrackerStatus(bool enabled) {
+void InspectorCSSAgent::setCoverageEnabled(bool enabled) {
   if (enabled) {
     if (!m_tracker)
       m_tracker = new StyleRuleUsageTracker();
@@ -2431,9 +2431,9 @@ void InspectorCSSAgent::setUsageTrackerStatus(bool enabled) {
   }
 }
 
-Response InspectorCSSAgent::startRuleUsageTracking() {
+Response InspectorCSSAgent::startCoverageTracking() {
   m_state->setBoolean(CSSAgentState::ruleRecordingEnabled, true);
-  setUsageTrackerStatus(true);
+  setCoverageEnabled(true);
   return Response::OK();
 }
 
@@ -2449,11 +2449,10 @@ InspectorCSSAgent::buildObjectForRuleUsage(CSSStyleRule* rule, bool used) {
   return result;
 }
 
-Response InspectorCSSAgent::stopRuleUsageTracking(
+Response InspectorCSSAgent::getCoverage(
     std::unique_ptr<protocol::Array<protocol::CSS::RuleUsage>>* result) {
-  if (!m_tracker) {
-    return Response::Error("CSS rule usage tracking is not enabled");
-  }
+  if (!m_tracker)
+    return Response::Error("CSS coverage is not enabled");
 
   *result = protocol::Array<protocol::CSS::RuleUsage>::create();
 
@@ -2486,9 +2485,13 @@ Response InspectorCSSAgent::stopRuleUsageTracking(
       }
     }
   }
+  return Response::OK();
+}
 
-  setUsageTrackerStatus(false);
-
+Response InspectorCSSAgent::stopCoverageTracking() {
+  if (!m_tracker)
+    return Response::Error("CSS coverage is not enabled");
+  setCoverageEnabled(false);
   return Response::OK();
 }
 

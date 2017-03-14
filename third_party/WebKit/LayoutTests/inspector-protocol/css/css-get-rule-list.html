@@ -11,8 +11,10 @@ function test()
 
     function testGetRuleListAfterStartingRecording()
     {
-        InspectorTest.sendCommandOrDie("CSS.startRuleUsageTracking", {},  () =>
-                                       { InspectorTest.sendCommandOrDie("CSS.stopRuleUsageTracking", {}, ruleListLoaded); });
+        InspectorTest.sendCommandOrDie("CSS.startCoverageTracking", {},  () => {
+            InspectorTest.sendCommandOrDie("CSS.getCoverage", {}, ruleListLoaded);
+            InspectorTest.sendCommandOrDie("CSS.stopCoverageTracking", {}, () => {});
+        });
     }
 
     function ruleListLoaded(result)

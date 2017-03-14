@@ -3163,18 +3163,23 @@
                 ],
                 "description": "For the main document and any content documents, return the LayoutTreeNodes and a whitelisted subset of the computed style. It only returns pushed nodes, on way to pull all nodes is to call DOM.getDocument with a depth of -1.",
                 "experimental": true
-	    },
+            },
             {
-                "name": "startRuleUsageTracking",
-                "description": "Enables the selector recording.",
+                "name": "startCoverageTracking",
+                "description": "Enables CSS coverage instrumentation.",
                 "experimental": true
             },
             {
-                "name": "stopRuleUsageTracking",
+                "name": "getCoverage",
+                "description": "Retrieves the accumulated coverage data.",
                 "returns": [
                     { "name": "ruleUsage", "type": "array", "items": { "$ref": "RuleUsage" } }
                 ],
-                "description": "The list of rules with an indication of whether these were used",
+                "experimental": true
+            },
+            {
+                "name": "stopCoverageTracking",
+                "description": "Disables CSS coverage instrumentation.",
                 "experimental": true
             }
         ],
