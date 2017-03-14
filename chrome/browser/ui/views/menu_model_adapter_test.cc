@@ -174,8 +174,8 @@ class MenuModelAdapterTest : public ViewEventTestBase,
                                     this, true);
 
     menu_ = menu_model_adapter_.CreateMenu();
-    menu_runner_.reset(
-        new views::MenuRunner(menu_, views::MenuRunner::HAS_MNEMONICS));
+    menu_runner_.reset(new views::MenuRunner(
+        menu_, views::MenuRunner::HAS_MNEMONICS | views::MenuRunner::ASYNC));
 
     ViewEventTestBase::SetUp();
   }

@@ -38,7 +38,7 @@ void MenuTestBase::KeyPress(ui::KeyboardCode keycode,
 }
 
 int MenuTestBase::GetMenuRunnerFlags() {
-  return views::MenuRunner::HAS_MNEMONICS;
+  return views::MenuRunner::HAS_MNEMONICS | views::MenuRunner::ASYNC;
 }
 
 void MenuTestBase::SetUp() {

@@ -93,32 +93,3 @@ typedef MenuControllerMnemonicTest<ui::VKEY_A,0>
 #endif
 
 VIEW_TEST(MenuControllerMnemonicTestNoMatch, MAYBE_NoMatch);
-
-class MenuRunnerCancelTest : public MenuTestBase {
- public:
-  MenuRunnerCancelTest() {}
-
-  // MenuTestBase overrides:
-  void BuildMenu(views::MenuItemView* menu) override {
-    menu->AppendMenuItemWithLabel(1, base::ASCIIToUTF16("One&/"));
-    menu->AppendMenuItemWithLabel(2, base::ASCIIToUTF16("Two"));
-  }
-
-  void DoTestWithMenuOpen() override {
-    ASSERT_EQ(true, menu_runner()->IsRunning());
-    menu_runner()->Cancel();
-    // On calling Cancel, the nested message loop spun by the menu, should be
-    // marked for termination. However, since we are still in the last
-    // iteration of the nested message loop, MenuRunner::IsRunning(), should
-    // return true.
-    ASSERT_EQ(true, menu_runner()->IsRunning());
-    Done();
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MenuRunnerCancelTest);
-};
-
-// Test that MenuRunner::IsRunning() returns true, immediately after calling
-// MenuRunner::Cancel() for a syncronous menu.
-VIEW_TEST(MenuRunnerCancelTest, IsRunningAfterCancel);
