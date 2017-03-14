@@ -49,6 +49,11 @@
 
 namespace blink {
 
+struct InProcessWorkerMessagingProxy::QueuedTask {
+  RefPtr<SerializedScriptValue> message;
+  MessagePortChannelArray channels;
+};
+
 InProcessWorkerMessagingProxy::InProcessWorkerMessagingProxy(
     InProcessWorkerBase* workerObject,
     WorkerClients* workerClients)
@@ -149,7 +154,7 @@ void InProcessWorkerMessagingProxy::postMessageToWorkerGlobalScope(
     workerThread()->postTask(BLINK_FROM_HERE, std::move(task));
   } else {
     m_queuedEarlyTasks.push_back(
-        WTF::makeUnique<QueuedTask>(std::move(message), std::move(channels)));
+        QueuedTask{std::move(message), std::move(channels)});
   }
 }
 
@@ -192,8 +197,8 @@ void InProcessWorkerMessagingProxy::workerThreadCreated() {
     std::unique_ptr<WTF::CrossThreadClosure> task = crossThreadBind(
         &InProcessWorkerObjectProxy::processMessageFromWorkerObject,
         crossThreadUnretained(&workerObjectProxy()),
-        queuedTask->message.release(),
-        WTF::passed(std::move(queuedTask->channels)),
+        queuedTask.message.release(),
+        WTF::passed(std::move(queuedTask.channels)),
         crossThreadUnretained(workerThread()));
     workerThread()->postTask(BLINK_FROM_HERE, std::move(task));
   }
@@ -237,12 +242,5 @@ bool InProcessWorkerMessagingProxy::hasPendingActivity() const {
     return false;
   return m_workerGlobalScopeHasPendingActivity;
 }
-
-InProcessWorkerMessagingProxy::QueuedTask::QueuedTask(
-    RefPtr<SerializedScriptValue> message,
-    MessagePortChannelArray channels)
-    : message(std::move(message)), channels(std::move(channels)) {}
-
-InProcessWorkerMessagingProxy::QueuedTask::~QueuedTask() = default;
 
 }  // namespace blink
