@@ -244,6 +244,9 @@ void NGLineBuilder::PlaceItems(
         continue;
       } else if (layout_object->isFloating()) {
         // TODO(kojii): Implement float.
+        DLOG(ERROR) << "Floats in inline not implemented yet.";
+        // TODO(kojii): Temporarily clearNeedsLayout() for not to assert.
+        layout_object->clearNeedsLayout();
         continue;
       }
       DCHECK(layout_object->isAtomicInlineLevel());
@@ -409,13 +412,16 @@ void NGLineBuilder::CopyFragmentDataToLayoutBlockFlow() {
         run = new BidiRun(text_fragment->StartOffset() - text_offset,
                           text_fragment->EndOffset() - text_offset,
                           item.BidiLevel(), LineLayoutItem(layout_object));
-        } else {
-          DCHECK(layout_object->isAtomicInlineLevel());
-          run = new BidiRun(0, 1, item.BidiLevel(),
-                            LineLayoutItem(layout_object));
-        }
-        bidi_runs.addRun(run);
-        fragments_for_bidi_runs.push_back(text_fragment);
+        layout_object->clearNeedsLayout();
+      } else {
+        DCHECK(layout_object->isAtomicInlineLevel());
+        run =
+            new BidiRun(0, 1, item.BidiLevel(), LineLayoutItem(layout_object));
+        // TODO(kojii): Temporarily clearNeedsLayout() for not to assert.
+        layout_object->clearNeedsLayout();
+      }
+      bidi_runs.addRun(run);
+      fragments_for_bidi_runs.push_back(text_fragment);
     }
     // TODO(kojii): bidi needs to find the logical last run.
     bidi_runs.setLogicallyLastRun(bidi_runs.lastRun());

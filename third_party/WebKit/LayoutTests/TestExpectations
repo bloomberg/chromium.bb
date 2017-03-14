@@ -334,6 +334,7 @@ crbug.com/635619 virtual/layout_ng/css2.1/20110323/outline-color-applies-to-008.
 crbug.com/635619 virtual/layout_ng/css2.1/20110323/outline-color-applies-to-012.htm [ Skip ]
 crbug.com/635619 virtual/layout_ng/css2.1/20110323/outline-color-applies-to-014.htm [ Skip ]
 crbug.com/635619 virtual/layout_ng/css2.1/20110323/overflow-applies-to-008.htm [ Skip ]
+crbug.com/635619 virtual/layout_ng/css2.1/20110323/overflow-applies-to-009.htm [ Skip ]
 crbug.com/635619 virtual/layout_ng/css2.1/20110323/overflow-applies-to-010.htm [ Skip ]
 crbug.com/635619 virtual/layout_ng/css2.1/20110323/overflow-applies-to-012.htm [ Skip ]
 crbug.com/635619 virtual/layout_ng/css2.1/20110323/overflow-applies-to-014.htm [ Skip ]

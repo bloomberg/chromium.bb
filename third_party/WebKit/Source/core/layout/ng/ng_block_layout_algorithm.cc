@@ -459,16 +459,13 @@ RefPtr<NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
 
     if (child->Type() == NGLayoutInputNode::kLegacyInline) {
       LayoutInlineChild(toNGInlineNode(child), child_space.get());
-      // TODO(kojii): We need to get NGInlineNode::NextSibiling() and continue,
-      // but currently it always return nullptr. This needs to change when it
-      // supports inline/block mixed children.
-      break;
+
+    } else {
+      RefPtr<NGLayoutResult> layout_result =
+          child->Layout(child_space.get(), child_break_token);
+
+      FinishChildLayout(child, child_space.get(), layout_result);
     }
-
-    RefPtr<NGLayoutResult> layout_result =
-        child->Layout(child_space.get(), child_break_token);
-
-    FinishChildLayout(child, child_space.get(), layout_result);
 
     entry = child_iterator.NextChild();
     child = entry.node;

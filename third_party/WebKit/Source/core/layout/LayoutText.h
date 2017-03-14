@@ -180,6 +180,10 @@ class CORE_EXPORT LayoutText : public LayoutObject {
                          unsigned len,
                          bool force = false);
 
+  // TODO(kojii): setTextInternal() is temporarily public for NGInlineNode.
+  // This will be back to protected when NGInlineNode can paint directly.
+  virtual void setTextInternal(PassRefPtr<StringImpl>);
+
   virtual void transformText();
 
   bool canBeSelectionLeaf() const override { return true; }
@@ -227,7 +231,6 @@ class CORE_EXPORT LayoutText : public LayoutObject {
   void styleWillChange(StyleDifference, const ComputedStyle&) final {}
   void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) override;
 
-  virtual void setTextInternal(PassRefPtr<StringImpl>);
   virtual UChar previousCharacter() const;
 
   void addLayerHitTestRects(LayerHitTestRects&,

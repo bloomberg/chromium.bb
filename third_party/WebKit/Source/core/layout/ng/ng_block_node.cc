@@ -161,10 +161,12 @@ NGLayoutInputNode* NGBlockNode::NextSibling() {
   if (!next_sibling_) {
     LayoutObject* next_sibling = layout_box_->nextSibling();
     if (next_sibling) {
-      if (next_sibling->isInline())
-        next_sibling_ = new NGInlineNode(next_sibling, &Style());
-      else
+      if (next_sibling->isInline()) {
+        next_sibling_ = new NGInlineNode(
+            next_sibling, toLayoutBlockFlow(layout_box_->parent()));
+      } else {
         next_sibling_ = new NGBlockNode(next_sibling);
+      }
     }
   }
   return next_sibling_;
@@ -179,7 +181,7 @@ NGLayoutInputNode* NGBlockNode::FirstChild() {
     LayoutObject* child = layout_box_->slowFirstChild();
     if (child) {
       if (child->isInline()) {
-        first_child_ = new NGInlineNode(child, &Style());
+        first_child_ = new NGInlineNode(child, toLayoutBlockFlow(layout_box_));
       } else {
         first_child_ = new NGBlockNode(child);
       }
@@ -242,29 +244,14 @@ void NGBlockNode::CopyFragmentDataToLayoutBox(
     }
   }
 
-  // TODO(layout-dev): Currently we are not actually performing layout on
-  // inline children. For now just clear the needsLayout bit so that we can
-  // run unittests.
-  if (HasInlineChildren()) {
-    for (InlineWalker walker(
-             LineLayoutBlockFlow(toLayoutBlockFlow(layout_box_)));
-         !walker.atEnd(); walker.advance()) {
-      LayoutObject* o = LineLayoutAPIShim::layoutObjectFrom(walker.current());
-      o->clearNeedsLayout();
-    }
+  for (const auto& child_fragment : fragment->Children()) {
+    if (child_fragment->IsPlaced())
+      FragmentPositionUpdated(toNGPhysicalBoxFragment(*child_fragment));
 
-    // Ensure the position of the children are copied across to the
-    // LayoutObject tree.
-  } else {
-    for (const auto& child_fragment : fragment->Children()) {
-      if (child_fragment->IsPlaced())
-        FragmentPositionUpdated(toNGPhysicalBoxFragment(*child_fragment));
-
-      for (const auto& floating_object :
-           toNGPhysicalBoxFragment(child_fragment.get())->PositionedFloats()) {
-        FloatingObjectPositionedUpdated(
-            floating_object, toLayoutBox(child_fragment->GetLayoutObject()));
-      }
+    for (const auto& floating_object :
+         toNGPhysicalBoxFragment(child_fragment.get())->PositionedFloats()) {
+      FloatingObjectPositionedUpdated(
+          floating_object, toLayoutBox(child_fragment->GetLayoutObject()));
     }
   }
 

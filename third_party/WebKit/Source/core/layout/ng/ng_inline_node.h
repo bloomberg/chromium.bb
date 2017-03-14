@@ -6,6 +6,7 @@
 #define NGInlineNode_h
 
 #include "core/CoreExport.h"
+#include "core/layout/LayoutBlockFlow.h"
 #include "core/layout/ng/ng_layout_input_node.h"
 #include "platform/fonts/FontFallbackPriority.h"
 #include "platform/fonts/shaping/ShapeResult.h"
@@ -34,14 +35,15 @@ class NGLineBuilder;
 // inline nodes and their descendants.
 class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
  public:
-  NGInlineNode(LayoutObject* start_inline, const ComputedStyle* block_style);
+  NGInlineNode(LayoutObject* start_inline, LayoutBlockFlow*);
   ~NGInlineNode() override;
 
-  const ComputedStyle* BlockStyle() const { return block_style_.get(); }
+  LayoutBlockFlow* GetLayoutBlockFlow() const { return block_; }
+  const ComputedStyle* BlockStyle() const { return block_->style(); }
+  NGLayoutInputNode* NextSibling() override;
 
   RefPtr<NGLayoutResult> Layout(NGConstraintSpace*, NGBreakToken*) override;
   void LayoutInline(NGConstraintSpace*, NGLineBuilder*);
-  NGInlineNode* NextSibling() override;
   LayoutObject* GetLayoutObject() override;
 
   // Computes the value of min-content and max-content for this anonymous block
@@ -60,7 +62,6 @@ class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
   Vector<NGLayoutInlineItem>& Items() { return items_; }
   NGLayoutInlineItemRange Items(unsigned start_index, unsigned end_index);
 
-  LayoutBlockFlow* GetLayoutBlockFlow() const;
   void GetLayoutTextOffsets(Vector<unsigned, 32>*);
 
   bool IsBidiEnabled() const { return is_bidi_enabled_; }
@@ -76,20 +77,18 @@ class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
   // Prepare inline and text content for layout. Must be called before
   // calling the Layout method.
   void PrepareLayout();
-  bool IsPrepareLayoutFinished() const { return !items_.isEmpty(); }
+  bool IsPrepareLayoutFinished() const { return !text_content_.isNull(); }
 
-  void CollectInlines(LayoutObject* start, LayoutObject* last);
-  void CollectInlines(LayoutObject* start,
-                      LayoutObject* last,
-                      NGLayoutInlineItemsBuilder*);
+  void CollectInlines(LayoutObject* start, LayoutBlockFlow*);
+  LayoutObject* CollectInlines(LayoutObject* start,
+                               LayoutBlockFlow*,
+                               NGLayoutInlineItemsBuilder*);
   void SegmentText();
   void ShapeText();
 
   LayoutObject* start_inline_;
-  LayoutObject* last_inline_;
-  RefPtr<const ComputedStyle> block_style_;
-
-  Member<NGInlineNode> next_sibling_;
+  LayoutBlockFlow* block_;
+  Member<NGLayoutInputNode> next_sibling_;
 
   // Text content for all inline items represented by a single NGInlineNode
   // instance. Encoded either as UTF-16 or latin-1 depending on content.
