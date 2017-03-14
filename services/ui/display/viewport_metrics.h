@@ -7,28 +7,20 @@
 
 #include <string>
 
-#include "ui/display/display.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/gfx/geometry/size.h"
 
 namespace display {
 
 struct ViewportMetrics {
   std::string ToString() const;
 
-  gfx::Rect bounds;     // DIP.
-  gfx::Rect work_area;  // DIP.
-  gfx::Size pixel_size;
-  Display::Rotation rotation = Display::ROTATE_0;
-  Display::TouchSupport touch_support = Display::TOUCH_SUPPORT_UNKNOWN;
+  gfx::Rect bounds_in_pixels;
   float device_scale_factor = 0.0f;
   float ui_scale_factor = 0.0f;
 };
 
 inline bool operator==(const ViewportMetrics& lhs, const ViewportMetrics& rhs) {
-  return lhs.bounds == rhs.bounds && lhs.work_area == rhs.work_area &&
-         lhs.pixel_size == rhs.pixel_size && lhs.rotation == rhs.rotation &&
-         lhs.touch_support == rhs.touch_support &&
+  return lhs.bounds_in_pixels == rhs.bounds_in_pixels &&
          lhs.device_scale_factor == rhs.device_scale_factor &&
          lhs.ui_scale_factor == rhs.ui_scale_factor;
 }

@@ -630,9 +630,11 @@ ServerWindow* WindowManagerState::GetRootWindowContaining(
   if (window_manager_display_roots_.empty())
     return nullptr;
 
+  // TODO(riajiang): This is broken for HDPI because it mixes PPs and DIPs. See
+  // http://crbug.com/701036 for details.
   WindowManagerDisplayRoot* target_display_root = nullptr;
   for (auto& display_root_ptr : window_manager_display_roots_) {
-    if (display_root_ptr->display()->platform_display()->GetBounds().Contains(
+    if (display_root_ptr->display()->GetDisplay().bounds().Contains(
             *location)) {
       target_display_root = display_root_ptr.get();
       break;
@@ -649,7 +651,7 @@ ServerWindow* WindowManagerState::GetRootWindowContaining(
   // Translate the location to be relative to the display instead of relative
   // to the screen space.
   gfx::Point origin =
-      target_display_root->display()->platform_display()->GetBounds().origin();
+      target_display_root->display()->GetDisplay().bounds().origin();
   *location -= origin.OffsetFromOrigin();
   return target_display_root->root();
 }

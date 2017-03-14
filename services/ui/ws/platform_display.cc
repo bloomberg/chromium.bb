@@ -7,7 +7,7 @@
 #include "base/memory/ptr_util.h"
 #include "services/ui/ws/platform_display_default.h"
 #include "services/ui/ws/platform_display_factory.h"
-#include "services/ui/ws/platform_display_init_params.h"
+#include "services/ui/ws/server_window.h"
 
 namespace ui {
 namespace ws {
@@ -17,11 +17,12 @@ PlatformDisplayFactory* PlatformDisplay::factory_ = nullptr;
 
 // static
 std::unique_ptr<PlatformDisplay> PlatformDisplay::Create(
-    const PlatformDisplayInitParams& init_params) {
+    ServerWindow* root,
+    const display::ViewportMetrics& metrics) {
   if (factory_)
-    return factory_->CreatePlatformDisplay(init_params);
+    return factory_->CreatePlatformDisplay(root, metrics);
 
-  return base::MakeUnique<PlatformDisplayDefault>(init_params);
+  return base::MakeUnique<PlatformDisplayDefault>(root, metrics);
 }
 
 }  // namespace ws

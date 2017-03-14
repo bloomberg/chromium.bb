@@ -9,7 +9,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "services/ui/display/screen_manager.h"
-#include "services/ui/display/viewport_metrics.h"
+#include "ui/display/display.h"
 
 namespace display {
 
@@ -30,8 +30,7 @@ class ScreenManagerStubInternal : public ScreenManager {
   void RequestCloseDisplay(int64_t display_id) override;
 
   // Sample display information.
-  int64_t display_id_ = 1;
-  ViewportMetrics display_metrics_;
+  Display display_;
 
   ScreenManagerDelegate* delegate_ = nullptr;
 

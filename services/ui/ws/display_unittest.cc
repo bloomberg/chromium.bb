@@ -25,10 +25,9 @@
 #include "services/ui/ws/window_tree.h"
 #include "services/ui/ws/window_tree_binding.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/display/display.h"
 #include "ui/events/event.h"
 #include "ui/gfx/geometry/rect.h"
-
-using display::ViewportMetrics;
 
 namespace ui {
 namespace ws {
@@ -123,7 +122,7 @@ class DisplayTest : public testing::Test {
 TEST_F(DisplayTest, CreateDisplay) {
   AddWindowManager(window_server(), kTestId1);
   const int64_t display_id =
-      screen_manager().AddDisplay(MakeViewportMetrics(0, 0, 1024, 768, 1.0f));
+      screen_manager().AddDisplay(MakeDisplay(0, 0, 1024, 768, 1.0f));
 
   ASSERT_EQ(1u, display_manager()->displays().size());
   Display* display = display_manager()->GetDisplayById(display_id);
@@ -144,7 +143,7 @@ TEST_F(DisplayTest, CreateDisplay) {
 TEST_F(DisplayTest, CreateDisplayBeforeWM) {
   // Add one display, no WM exists yet.
   const int64_t display_id =
-      screen_manager().AddDisplay(MakeViewportMetrics(0, 0, 1024, 768, 1.0f));
+      screen_manager().AddDisplay(MakeDisplay(0, 0, 1024, 768, 1.0f));
   EXPECT_EQ(1u, display_manager()->displays().size());
 
   Display* display = display_manager()->GetDisplayById(display_id);
@@ -197,22 +196,28 @@ TEST_F(DisplayTest, CreateDisplayWithTwoWindowManagers) {
 
 TEST_F(DisplayTest, CreateDisplayWithDeviceScaleFactor) {
   // The display bounds should be the pixel_size / device_scale_factor.
-  const ViewportMetrics metrics = MakeViewportMetrics(0, 0, 1024, 768, 2.0f);
-  EXPECT_EQ("0,0 512x384", metrics.bounds.ToString());
-  EXPECT_EQ("1024x768", metrics.pixel_size.ToString());
+  display::Display display = MakeDisplay(0, 0, 1024, 768, 2.0f);
+  EXPECT_EQ("0,0 512x384", display.bounds().ToString());
 
-  const int64_t display_id = screen_manager().AddDisplay(metrics);
-  Display* display = display_manager()->GetDisplayById(display_id);
+  const int64_t display_id = screen_manager().AddDisplay(display);
+  display.set_id(display_id);
+  Display* ws_display = display_manager()->GetDisplayById(display_id);
 
   // The root ServerWindow bounds should be in PP.
-  EXPECT_EQ("0,0 1024x768", display->root_window()->bounds().ToString());
+  EXPECT_EQ("0,0 1024x768", ws_display->root_window()->bounds().ToString());
 
-  ViewportMetrics modified_metrics = metrics;
-  modified_metrics.work_area.set_height(metrics.work_area.height() - 48);
-  screen_manager().ModifyDisplay(display_id, modified_metrics);
+  // Modify the display work area to be 48 DIPs smaller.
+  display::Display modified_display = display;
+  gfx::Rect modified_work_area = display.work_area();
+  modified_work_area.set_height(modified_work_area.height() - 48);
+  modified_display.set_work_area(modified_work_area);
+  screen_manager().ModifyDisplay(modified_display);
+
+  // The display work area should have changed.
+  EXPECT_EQ("0,0 512x336", ws_display->GetDisplay().work_area().ToString());
 
   // The root ServerWindow should still be in PP after updating the work area.
-  EXPECT_EQ("0,0 1024x768", display->root_window()->bounds().ToString());
+  EXPECT_EQ("0,0 1024x768", ws_display->root_window()->bounds().ToString());
 }
 
 TEST_F(DisplayTest, Destruction) {

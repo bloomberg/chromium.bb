@@ -14,6 +14,7 @@
 #include "services/ui/ws/ids.h"
 #include "services/ui/ws/user_id.h"
 #include "services/ui/ws/user_id_tracker_observer.h"
+#include "ui/display/display.h"
 
 namespace ui {
 namespace ws {
@@ -51,7 +52,7 @@ class DisplayManager : public UserIdTrackerObserver,
   std::set<const Display*> displays() const;
 
   // Notifies when something about the Display changes.
-  void OnDisplayUpdate(Display* display);
+  void OnDisplayUpdate(const display::Display& display);
 
   // Returns the Display that contains |window|, or null if |window| is not
   // attached to a display.
@@ -86,10 +87,10 @@ class DisplayManager : public UserIdTrackerObserver,
                              const UserId& active_id) override;
 
   // display::ScreenManagerDelegate:
-  void OnDisplayAdded(int64_t id,
+  void OnDisplayAdded(const display::Display& display,
                       const display::ViewportMetrics& metrics) override;
   void OnDisplayRemoved(int64_t id) override;
-  void OnDisplayModified(int64_t id,
+  void OnDisplayModified(const display::Display& display,
                          const display::ViewportMetrics& metrics) override;
   void OnPrimaryDisplayChanged(int64_t primary_display_id) override;
 

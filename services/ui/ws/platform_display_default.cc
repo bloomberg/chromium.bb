@@ -8,7 +8,6 @@
 #include "gpu/ipc/client/gpu_channel_host.h"
 #include "services/ui/display/screen_manager.h"
 #include "services/ui/ws/display_client_compositor_frame_sink.h"
-#include "services/ui/ws/platform_display_init_params.h"
 #include "services/ui/ws/server_window.h"
 #include "ui/base/cursor/image_cursors.h"
 #include "ui/display/display.h"
@@ -31,15 +30,15 @@ namespace ui {
 namespace ws {
 
 PlatformDisplayDefault::PlatformDisplayDefault(
-    const PlatformDisplayInitParams& init_params)
-    : display_id_(init_params.display_id),
+    ServerWindow* root_window,
+    const display::ViewportMetrics& metrics)
+    : root_window_(root_window),
 #if !defined(OS_ANDROID)
       image_cursors_(new ImageCursors),
 #endif
-      metrics_(init_params.metrics),
+      metrics_(metrics),
       widget_(gfx::kNullAcceleratedWidget),
-      root_window_(init_params.root_window),
-      init_device_scale_factor_(init_params.metrics.device_scale_factor) {
+      init_device_scale_factor_(metrics.device_scale_factor) {
 }
 
 PlatformDisplayDefault::~PlatformDisplayDefault() {
@@ -56,11 +55,9 @@ PlatformDisplayDefault::~PlatformDisplayDefault() {
 void PlatformDisplayDefault::Init(PlatformDisplayDelegate* delegate) {
   delegate_ = delegate;
 
-  DCHECK(!metrics_.pixel_size.IsEmpty());
+  const gfx::Rect& bounds = metrics_.bounds_in_pixels;
+  DCHECK(!bounds.size().IsEmpty());
 
-  // TODO(kylechar): The origin here isn't right if any displays have
-  // scale_factor other than 1.0 but will prevent windows from being stacked.
-  gfx::Rect bounds(metrics_.bounds.origin(), metrics_.pixel_size);
 #if defined(OS_WIN)
   platform_window_ = base::MakeUnique<ui::WinWindow>(this, bounds);
 #elif defined(USE_X11) && !defined(OS_CHROMEOS)
@@ -80,10 +77,6 @@ void PlatformDisplayDefault::Init(PlatformDisplayDelegate* delegate) {
   image_cursors_->SetDisplay(delegate_->GetDisplay(),
                              metrics_.device_scale_factor);
 #endif
-}
-
-int64_t PlatformDisplayDefault::GetId() const {
-  return display_id_;
 }
 
 void PlatformDisplayDefault::SetViewportSize(const gfx::Size& size) {
@@ -128,10 +121,6 @@ void PlatformDisplayDefault::SetImeVisibility(bool visible) {
     ime->SetImeVisibility(visible);
 }
 
-gfx::Rect PlatformDisplayDefault::GetBounds() const {
-  return metrics_.bounds;
-}
-
 FrameGenerator* PlatformDisplayDefault::GetFrameGenerator() {
   return frame_generator_.get();
 }
@@ -142,8 +131,8 @@ bool PlatformDisplayDefault::UpdateViewportMetrics(
     return false;
 
   gfx::Rect bounds = platform_window_->GetBounds();
-  if (bounds.size() != metrics.pixel_size) {
-    bounds.set_size(metrics.pixel_size);
+  if (bounds.size() != metrics.bounds_in_pixels.size()) {
+    bounds.set_size(metrics.bounds_in_pixels.size());
     platform_window_->SetBounds(bounds);
   }
 
@@ -153,29 +142,26 @@ bool PlatformDisplayDefault::UpdateViewportMetrics(
   return true;
 }
 
-const display::ViewportMetrics& PlatformDisplayDefault::GetViewportMetrics()
-    const {
-  return metrics_;
-}
-
 gfx::AcceleratedWidget PlatformDisplayDefault::GetAcceleratedWidget() const {
   return widget_;
 }
 
 void PlatformDisplayDefault::UpdateEventRootLocation(ui::LocatedEvent* event) {
+  // TODO(riajiang): This is broken for HDPI because it mixes PPs and DIPs. See
+  // http://crbug.com/701036 for details.
+  const display::Display& display = delegate_->GetDisplay();
   gfx::Point location = event->location();
-  location.Offset(metrics_.bounds.x(), metrics_.bounds.y());
+  location.Offset(display.bounds().x(), display.bounds().y());
   event->set_root_location(location);
 }
 
 void PlatformDisplayDefault::OnBoundsChanged(const gfx::Rect& new_bounds) {
   // We only care if the window size has changed.
-  if (new_bounds.size() == metrics_.pixel_size)
+  if (new_bounds.size() == metrics_.bounds_in_pixels.size())
     return;
 
-  // TODO(kylechar): Maybe do something here. For CrOS we don't need to support
-  // PlatformWindow initiated resizes. For other platforms we need to do
-  // something but that isn't fully flushed out.
+  // TODO(tonikitoo): Handle the bounds changing in external window mode. The
+  // window should be resized by the WS and it shouldn't involve ScreenManager.
 }
 
 void PlatformDisplayDefault::OnDamageRect(const gfx::Rect& damaged_region) {
@@ -228,7 +214,10 @@ void PlatformDisplayDefault::DispatchEvent(ui::Event* event) {
 }
 
 void PlatformDisplayDefault::OnCloseRequest() {
-  display::ScreenManager::GetInstance()->RequestCloseDisplay(GetId());
+  // TODO(tonikitoo): Handle a close request in external window mode. The window
+  // should be closed by the WS and it shouldn't involve ScreenManager.
+  const int64_t display_id = delegate_->GetDisplay().id();
+  display::ScreenManager::GetInstance()->RequestCloseDisplay(display_id);
 }
 
 void PlatformDisplayDefault::OnClosed() {}

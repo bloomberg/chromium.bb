@@ -308,7 +308,7 @@ void ScreenManagerOzoneInternal::OnDisplayAdded(const Display& display) {
   DVLOG(1) << "OnDisplayAdded: " << display.ToString() << "\n  "
            << metrics.ToString();
   screen_->display_list().AddDisplay(display, DisplayList::Type::NOT_PRIMARY);
-  delegate_->OnDisplayAdded(display.id(), metrics);
+  delegate_->OnDisplayAdded(display, metrics);
 }
 
 void ScreenManagerOzoneInternal::OnDisplayRemoved(const Display& display) {
@@ -327,7 +327,7 @@ void ScreenManagerOzoneInternal::OnDisplayMetricsChanged(
   DVLOG(1) << "OnDisplayModified: " << display.ToString() << "\n  "
            << metrics.ToString();
   screen_->display_list().UpdateDisplay(display);
-  delegate_->OnDisplayModified(display.id(), metrics);
+  delegate_->OnDisplayModified(display, metrics);
 }
 
 ViewportMetrics ScreenManagerOzoneInternal::GetViewportMetricsForDisplay(
@@ -336,11 +336,9 @@ ViewportMetrics ScreenManagerOzoneInternal::GetViewportMetricsForDisplay(
       display_manager_->GetDisplayInfo(display.id());
 
   ViewportMetrics metrics;
-  metrics.bounds = display.bounds();
-  metrics.work_area = display.work_area();
-  metrics.pixel_size = managed_info.bounds_in_native().size();
-  metrics.rotation = display.rotation();
-  metrics.touch_support = display.touch_support();
+  // TODO(kylechar): The origin of |metrics.bounds_in_pixels| should be updated
+  // so that PlatformWindows appear next to one another for multiple displays.
+  metrics.bounds_in_pixels = managed_info.bounds_in_native();
   metrics.device_scale_factor = display.device_scale_factor();
   metrics.ui_scale_factor = managed_info.configured_ui_scale();
 

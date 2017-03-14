@@ -11,29 +11,31 @@
 #include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "services/service_manager/public/cpp/interface_registry.h"
-#include "ui/display/display.h"
+#include "services/ui/display/viewport_metrics.h"
+#include "ui/gfx/geometry/dip_util.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace display {
 namespace {
 
-// Build a ViewportMetric for a 1024x768 display.
-ViewportMetrics DefaultViewportMetrics() {
-  ViewportMetrics metrics;
+constexpr gfx::Size kDisplayPixelSize(1024, 768);
 
-  metrics.device_scale_factor = 1.0f;
+// Build a 1024x768 pixel display.
+Display DefaultDisplay() {
+  float device_scale_factor = 1.f;
   if (Display::HasForceDeviceScaleFactor())
-    metrics.device_scale_factor = Display::GetForcedDeviceScaleFactor();
+    device_scale_factor = Display::GetForcedDeviceScaleFactor();
 
-  metrics.pixel_size = gfx::Size(1024, 768);
-  gfx::Size scaled_size = gfx::ScaleToRoundedSize(
-      metrics.pixel_size, 1.0f / metrics.device_scale_factor);
+  gfx::Size scaled_size =
+      gfx::ConvertSizeToDIP(device_scale_factor, kDisplayPixelSize);
 
-  metrics.bounds = gfx::Rect(scaled_size);
-  metrics.work_area = gfx::Rect(scaled_size);
+  Display display(1);
+  display.set_bounds(gfx::Rect(scaled_size));
+  display.set_work_area(display.bounds());
+  display.set_device_scale_factor(device_scale_factor);
 
-  return metrics;
+  return display;
 }
 
 }  // namespace
@@ -49,7 +51,12 @@ ScreenManagerStubInternal::ScreenManagerStubInternal()
 ScreenManagerStubInternal::~ScreenManagerStubInternal() {}
 
 void ScreenManagerStubInternal::FixedSizeScreenConfiguration() {
-  delegate_->OnDisplayAdded(display_id_, display_metrics_);
+  ViewportMetrics metrics;
+  metrics.bounds_in_pixels = gfx::Rect(kDisplayPixelSize);
+  metrics.device_scale_factor = display_.device_scale_factor();
+  metrics.ui_scale_factor = 1.f;
+
+  delegate_->OnDisplayAdded(display_, metrics);
 }
 
 void ScreenManagerStubInternal::AddInterfaces(
@@ -58,7 +65,7 @@ void ScreenManagerStubInternal::AddInterfaces(
 void ScreenManagerStubInternal::Init(ScreenManagerDelegate* delegate) {
   DCHECK(delegate);
   delegate_ = delegate;
-  display_metrics_ = DefaultViewportMetrics();
+  display_ = DefaultDisplay();
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(&ScreenManagerStubInternal::FixedSizeScreenConfiguration,
@@ -66,7 +73,7 @@ void ScreenManagerStubInternal::Init(ScreenManagerDelegate* delegate) {
 }
 
 void ScreenManagerStubInternal::RequestCloseDisplay(int64_t display_id) {
-  if (display_id == display_id_) {
+  if (display_id == display_.id()) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(&ScreenManagerDelegate::OnDisplayRemoved,
                               base::Unretained(delegate_), display_id));

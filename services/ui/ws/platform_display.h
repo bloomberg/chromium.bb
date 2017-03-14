@@ -15,10 +15,6 @@
 #include "services/ui/public/interfaces/cursor.mojom.h"
 #include "ui/gfx/native_widget_types.h"
 
-namespace gfx {
-class Rect;
-}
-
 namespace ui {
 
 struct TextInputState;
@@ -28,7 +24,7 @@ namespace ws {
 class FrameGenerator;
 class PlatformDisplayDelegate;
 class PlatformDisplayFactory;
-struct PlatformDisplayInitParams;
+class ServerWindow;
 
 // PlatformDisplay is used to connect the root ServerWindow to a display.
 class PlatformDisplay {
@@ -36,9 +32,8 @@ class PlatformDisplay {
   virtual ~PlatformDisplay() {}
 
   static std::unique_ptr<PlatformDisplay> Create(
-      const PlatformDisplayInitParams& init_params);
-
-  virtual int64_t GetId() const = 0;
+      ServerWindow* root_window,
+      const display::ViewportMetrics& metrics);
 
   virtual void Init(PlatformDisplayDelegate* delegate) = 0;
 
@@ -55,14 +50,10 @@ class PlatformDisplay {
   virtual void UpdateTextInputState(const ui::TextInputState& state) = 0;
   virtual void SetImeVisibility(bool visible) = 0;
 
-  virtual gfx::Rect GetBounds() const = 0;
-
   // Updates the viewport metrics for the display, returning true if any
   // metrics have changed.
   virtual bool UpdateViewportMetrics(
       const display::ViewportMetrics& metrics) = 0;
-
-  virtual const display::ViewportMetrics& GetViewportMetrics() const = 0;
 
   // Returns the AcceleratedWidget associated with the Display. It can return
   // kNullAcceleratedWidget if the accelerated widget is not available yet.

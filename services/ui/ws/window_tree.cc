@@ -197,10 +197,10 @@ void WindowTree::AddRootForWindowManager(const ServerWindow* root) {
   window_id_to_client_id_map_[root->id()] = client_window_id;
   roots_.insert(root);
 
-  Display* display = GetDisplay(root);
-  DCHECK(display);
+  Display* ws_display = GetDisplay(root);
+  DCHECK(ws_display);
 
-  window_manager_internal_->WmNewDisplayAdded(display->ToDisplay(),
+  window_manager_internal_->WmNewDisplayAdded(ws_display->GetDisplay(),
                                               WindowToWindowData(root),
                                               root->parent()->IsDrawn());
 }

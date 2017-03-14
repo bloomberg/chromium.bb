@@ -12,12 +12,12 @@
 #include "base/strings/utf_string_conversions.h"
 #include "services/service_manager/public/interfaces/connector.mojom.h"
 #include "services/ui/common/types.h"
+#include "services/ui/display/viewport_metrics.h"
 #include "services/ui/public/interfaces/cursor.mojom.h"
 #include "services/ui/ws/display_binding.h"
 #include "services/ui/ws/display_manager.h"
 #include "services/ui/ws/focus_controller.h"
 #include "services/ui/ws/platform_display.h"
-#include "services/ui/ws/platform_display_init_params.h"
 #include "services/ui/ws/user_activity_monitor.h"
 #include "services/ui/ws/window_manager_display_root.h"
 #include "services/ui/ws/window_manager_state.h"
@@ -27,6 +27,7 @@
 #include "services/ui/ws/window_tree.h"
 #include "services/ui/ws/window_tree_binding.h"
 #include "ui/base/cursor/cursor.h"
+#include "ui/display/screen.h"
 
 namespace ui {
 namespace ws {
@@ -60,21 +61,28 @@ Display::~Display() {
   }
 }
 
-void Display::Init(const PlatformDisplayInitParams& init_params,
+void Display::Init(const display::ViewportMetrics& metrics,
                    std::unique_ptr<DisplayBinding> binding) {
   binding_ = std::move(binding);
   display_manager()->AddDisplay(this);
 
-  CreateRootWindow(init_params.metrics.pixel_size);
-  PlatformDisplayInitParams params_copy = init_params;
-  params_copy.root_window = root_.get();
+  CreateRootWindow(metrics.bounds_in_pixels.size());
 
-  platform_display_ = PlatformDisplay::Create(params_copy);
+  platform_display_ = PlatformDisplay::Create(root_.get(), metrics);
   platform_display_->Init(this);
 }
 
 int64_t Display::GetId() const {
-  return platform_display_->GetId();
+  // TODO(tonikitoo): Implement a different ID for external window mode.
+  return display_.id();
+}
+
+void Display::SetDisplay(const display::Display& display) {
+  display_ = display;
+}
+
+const display::Display& Display::GetDisplay() {
+  return display_;
 }
 
 DisplayManager* Display::display_manager() {
@@ -83,22 +91,6 @@ DisplayManager* Display::display_manager() {
 
 const DisplayManager* Display::display_manager() const {
   return window_server_->display_manager();
-}
-
-display::Display Display::ToDisplay() const {
-  display::Display display(GetId());
-
-  const display::ViewportMetrics& metrics =
-      platform_display_->GetViewportMetrics();
-
-  display.set_bounds(metrics.bounds);
-  display.set_work_area(metrics.work_area);
-  display.set_device_scale_factor(metrics.device_scale_factor);
-  display.set_rotation(metrics.rotation);
-  display.set_touch_support(
-      display::Display::TouchSupport::TOUCH_SUPPORT_UNKNOWN);
-
-  return display;
 }
 
 gfx::Size Display::GetSize() const {
@@ -220,7 +212,7 @@ void Display::InitWindowManagerDisplayRoots() {
   } else {
     CreateWindowManagerDisplayRootsFromFactories();
   }
-  display_manager()->OnDisplayUpdate(this);
+  display_manager()->OnDisplayUpdate(display_);
 }
 
 void Display::CreateWindowManagerDisplayRootsFromFactories() {
@@ -264,10 +256,6 @@ void Display::CreateRootWindow(const gfx::Size& size) {
   focus_controller_->AddObserver(this);
 }
 
-display::Display Display::GetDisplay() {
-  return ToDisplay();
-}
-
 ServerWindow* Display::GetRootWindow() {
   return root_.get();
 }
@@ -299,10 +287,10 @@ void Display::OnNativeCaptureLost() {
 
 void Display::OnViewportMetricsChanged(
     const display::ViewportMetrics& metrics) {
-  if (root_->bounds().size() == metrics.pixel_size)
+  if (root_->bounds().size() == metrics.bounds_in_pixels.size())
     return;
 
-  gfx::Rect new_bounds(metrics.pixel_size);
+  gfx::Rect new_bounds(metrics.bounds_in_pixels.size());
   root_->SetBounds(new_bounds, allocator_.GenerateId());
   for (auto& pair : window_manager_display_root_map_)
     pair.second->root()->SetBounds(new_bounds, allocator_.GenerateId());

@@ -55,12 +55,12 @@ class TestScreenManager : public display::ScreenManager {
   // returns it. Calls OnDisplayAdded() on delegate.
   int64_t AddDisplay();
 
-  // Adds a new display with provided |metrics|, generates a unique display id
+  // Adds a new display with provided |display|, generates a unique display id
   // and returns it. Calls OnDisplayAdded() on delegate.
-  int64_t AddDisplay(const display::ViewportMetrics& metrics);
+  int64_t AddDisplay(const display::Display& display);
 
   // Calls OnDisplayModified() on delegate.
-  void ModifyDisplay(int64_t id, const display::ViewportMetrics& metrics);
+  void ModifyDisplay(const display::Display& display);
 
   // Calls OnDisplayRemoved() on delegate.
   void RemoveDisplay(int64_t id);
@@ -278,7 +278,8 @@ class TestPlatformDisplayFactory : public PlatformDisplayFactory {
 
   // PlatformDisplayFactory:
   std::unique_ptr<PlatformDisplay> CreatePlatformDisplay(
-      const PlatformDisplayInitParams& init_params) override;
+      ServerWindow* root_window,
+      const display::ViewportMetrics& metrics) override;
 
  private:
   mojom::Cursor* cursor_storage_;
@@ -659,14 +660,14 @@ class WindowEventTargetingHelper {
 // WindowManagerWindowTreeFactory and associated WindowTree for the WM.
 void AddWindowManager(WindowServer* window_server, const UserId& user_id);
 
-// Create a new ViewportMetrics object with specified bounds, size and
-// scale factor. Bounds origin, |origin_x| and |origin_y|, are in DIP and bounds
-// size is computed.
-display::ViewportMetrics MakeViewportMetrics(int origin_x,
-                                             int origin_y,
-                                             int width_pixels,
-                                             int height_pixels,
-                                             float scale_factor);
+// Create a new Display object with specified origin, pixel size and device
+// scale factor. The bounds size is computed based on the pixel size and device
+// scale factor.
+display::Display MakeDisplay(int origin_x,
+                             int origin_y,
+                             int width_pixels,
+                             int height_pixels,
+                             float scale_factor);
 
 // Returns the first and only root of |tree|. If |tree| has zero or more than
 // one root returns null.

@@ -35,24 +35,25 @@ namespace {
 
 // Holds info about the display state we want to test.
 struct DisplayState {
-  int64_t id;
+  Display display;
   ViewportMetrics metrics;
 };
 
 // Matchers that operate on DisplayState.
 MATCHER_P(DisplayIdIs, display_id, "") {
-  *result_listener << "has id " << arg.id;
-  return arg.id == display_id;
+  *result_listener << "has id " << arg.display.id();
+  return arg.display.id() == display_id;
 }
 
 MATCHER_P(DisplayPixelSizeIs, size_string, "") {
-  *result_listener << "has size " << arg.metrics.pixel_size.ToString();
-  return arg.metrics.pixel_size.ToString() == size_string;
+  *result_listener << "has size "
+                   << arg.metrics.bounds_in_pixels.size().ToString();
+  return arg.metrics.bounds_in_pixels.size().ToString() == size_string;
 }
 
 MATCHER_P(DisplayBoundsIs, bounds_string, "") {
-  *result_listener << "has size " << arg.metrics.bounds.ToString();
-  return arg.metrics.bounds.ToString() == bounds_string;
+  *result_listener << "has size " << arg.display.bounds().ToString();
+  return arg.display.bounds().ToString() == bounds_string;
 }
 
 // Test delegate to track what functions calls the delegate receives.
@@ -84,18 +85,20 @@ class TestScreenManagerDelegate : public ScreenManagerDelegate {
     changes_ += name + "(" + value + ")";
   }
 
-  void OnDisplayAdded(int64_t id, const ViewportMetrics& metrics) override {
-    added_.push_back({id, metrics});
-    AddChange("Added", base::Int64ToString(id));
+  void OnDisplayAdded(const display::Display& display,
+                      const ViewportMetrics& metrics) override {
+    added_.push_back({display, metrics});
+    AddChange("Added", base::Int64ToString(display.id()));
   }
 
   void OnDisplayRemoved(int64_t id) override {
     AddChange("Removed", base::Int64ToString(id));
   }
 
-  void OnDisplayModified(int64_t id, const ViewportMetrics& metrics) override {
-    modified_.push_back({id, metrics});
-    AddChange("Modified", base::Int64ToString(id));
+  void OnDisplayModified(const display::Display& display,
+                         const ViewportMetrics& metrics) override {
+    modified_.push_back({display, metrics});
+    AddChange("Modified", base::Int64ToString(display.id()));
   }
 
   void OnPrimaryDisplayChanged(int64_t primary_display_id) override {

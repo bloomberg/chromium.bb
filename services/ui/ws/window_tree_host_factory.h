@@ -9,7 +9,6 @@
 
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/ui/public/interfaces/window_tree_host.mojom.h"
-#include "services/ui/ws/platform_display_init_params.h"
 #include "services/ui/ws/user_id.h"
 
 namespace ui {
@@ -31,7 +30,6 @@ class WindowTreeHostFactory : public mojom::WindowTreeHostFactory {
 
   WindowServer* window_server_;
   const UserId user_id_;
-  PlatformDisplayInitParams platform_display_init_params_;
   mojo::BindingSet<mojom::WindowTreeHostFactory> bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowTreeHostFactory);

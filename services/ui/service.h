@@ -32,7 +32,6 @@
 #include "services/ui/public/interfaces/window_server_test.mojom.h"
 #include "services/ui/public/interfaces/window_tree.mojom.h"
 #include "services/ui/public/interfaces/window_tree_host.mojom.h"
-#include "services/ui/ws/platform_display_init_params.h"
 #include "services/ui/ws/user_id.h"
 #include "services/ui/ws/window_server_delegate.h"
 
