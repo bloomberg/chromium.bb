@@ -5,8 +5,6 @@
 #ifndef COMPONENTS_EXO_WAYLAND_CLIENTS_CLIENT_BASE_H_
 #define COMPONENTS_EXO_WAYLAND_CLIENTS_CLIENT_BASE_H_
 
-#include <drm_fourcc.h>
-
 #include <memory>
 #include <string>
 #include <vector>
@@ -44,7 +42,7 @@ class ClientBase {
     bool transparent_background = false;
     bool use_drm = false;
     std::string use_drm_value;
-    int32_t drm_format = DRM_FORMAT_ABGR8888;
+    int32_t drm_format = 0;
   };
 
   struct Globals {

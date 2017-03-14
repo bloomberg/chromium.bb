@@ -126,21 +126,25 @@ const GrGLInterface* GrGLCreateNativeInterface() {
     return eglGetProcAddress(name);
   });
 }
+
+zwp_linux_buffer_params_v1_listener g_params_listener = {
+    LinuxBufferParamsCreated, LinuxBufferParamsFailed};
 #endif
 
 wl_registry_listener g_registry_listener = {RegistryHandler, RegistryRemover};
 
 wl_buffer_listener g_buffer_listener = {BufferRelease};
 
-zwp_linux_buffer_params_v1_listener g_params_listener = {
-    LinuxBufferParamsCreated, LinuxBufferParamsFailed};
-
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
 // ClientBase::InitParams, public:
 
-ClientBase::InitParams::InitParams() {}
+ClientBase::InitParams::InitParams() {
+#if defined(OZONE_PLATFORM_GBM)
+  drm_format = DRM_FORMAT_ABGR8888;
+#endif
+}
 
 ClientBase::InitParams::~InitParams() {}
 
@@ -366,8 +370,8 @@ ClientBase::~ClientBase() {}
 
 std::unique_ptr<ClientBase::Buffer> ClientBase::CreateBuffer(
     int32_t drm_format) {
-#if defined(OZONE_PLATFORM_GBM)
   std::unique_ptr<Buffer> buffer(new Buffer());
+#if defined(OZONE_PLATFORM_GBM)
   if (device_) {
     buffer->bo.reset(gbm_bo_create(device_.get(), width_, height_, drm_format,
                                    GBM_BO_USE_SCANOUT | GBM_BO_USE_RENDERING));
