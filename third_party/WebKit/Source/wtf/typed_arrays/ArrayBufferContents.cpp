@@ -135,10 +135,14 @@ ArrayBufferContents::DataHandle ArrayBufferContents::createDataHandle(
 }
 
 ArrayBufferContents::DataHolder::DataHolder()
-    : m_data(nullptr, freeMemory), m_sizeInBytes(0), m_isShared(NotShared) {}
+    : m_data(nullptr, freeMemory),
+      m_sizeInBytes(0),
+      m_isShared(NotShared),
+      m_hasRegisteredExternalAllocation(false) {}
 
 ArrayBufferContents::DataHolder::~DataHolder() {
-  adjustAmountOfExternalAllocatedMemory(-static_cast<int64_t>(m_sizeInBytes));
+  if (m_hasRegisteredExternalAllocation)
+    adjustAmountOfExternalAllocatedMemory(-static_cast<int64_t>(m_sizeInBytes));
 
   m_data.reset();
   m_sizeInBytes = 0;
@@ -150,6 +154,7 @@ void ArrayBufferContents::DataHolder::allocateNew(unsigned sizeInBytes,
                                                   InitializationPolicy policy) {
   DCHECK(!m_data);
   DCHECK_EQ(m_sizeInBytes, 0u);
+  DCHECK(!m_hasRegisteredExternalAllocation);
 
   m_data = createDataHandle(sizeInBytes, policy);
   if (!m_data)
@@ -166,6 +171,7 @@ void ArrayBufferContents::DataHolder::adopt(DataHandle data,
                                             SharingType isShared) {
   DCHECK(!m_data);
   DCHECK_EQ(m_sizeInBytes, 0u);
+  DCHECK(!m_hasRegisteredExternalAllocation);
 
   m_data = std::move(data);
   m_sizeInBytes = sizeInBytes;
@@ -177,6 +183,7 @@ void ArrayBufferContents::DataHolder::adopt(DataHandle data,
 void ArrayBufferContents::DataHolder::copyMemoryFrom(const DataHolder& source) {
   DCHECK(!m_data);
   DCHECK_EQ(m_sizeInBytes, 0u);
+  DCHECK(!m_hasRegisteredExternalAllocation);
 
   m_data = createDataHandle(source.sizeInBytes(), DontInitialize);
   if (!m_data)
@@ -186,6 +193,19 @@ void ArrayBufferContents::DataHolder::copyMemoryFrom(const DataHolder& source) {
   memcpy(m_data.get(), source.data(), source.sizeInBytes());
 
   adjustAmountOfExternalAllocatedMemory(m_sizeInBytes);
+}
+
+void ArrayBufferContents::DataHolder::
+    registerExternalAllocationWithCurrentContext() {
+  DCHECK(!m_hasRegisteredExternalAllocation);
+  adjustAmountOfExternalAllocatedMemory(static_cast<int64_t>(m_sizeInBytes));
+}
+
+void ArrayBufferContents::DataHolder::
+    unregisterExternalAllocationWithCurrentContext() {
+  if (!m_hasRegisteredExternalAllocation)
+    return;
+  adjustAmountOfExternalAllocatedMemory(-static_cast<int64_t>(m_sizeInBytes));
 }
 
 }  // namespace WTF

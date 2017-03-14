@@ -136,13 +136,13 @@ class CORE_EXPORT SerializedScriptValue
   // The memory registration is revoked automatically in destructor.
   void registerMemoryAllocatedWithCurrentScriptContext();
 
-  // Upon passing a serialized value from one context to another (via a
-  // postMessage()), the allocation amounts it has registered with the
-  // 'origining' context must be discharged, as the 'target' context will assume
-  // ownership of value. This method takes care of the first part of the
-  // external allocation bookkeeping, the above registration method the other
-  // half.
-  void unregisterMemoryAllocatedByCurrentScriptContext();
+  // The dual, unregistering / subtracting the external memory allocation costs
+  // of this SerializedScriptValue with the current context. This includes
+  // discounting the cost of the transferables.
+  //
+  // The value is updated and marked as having no allocations registered,
+  // hence subsequent calls will be no-ops.
+  void unregisterMemoryAllocatedWithCurrentScriptContext();
 
   const uint8_t* data() const { return m_dataBuffer.get(); }
   size_t dataLengthInBytes() const { return m_dataBufferSize; }
@@ -188,8 +188,9 @@ class CORE_EXPORT SerializedScriptValue
   std::unique_ptr<ArrayBufferContentsArray> m_arrayBufferContentsArray;
   std::unique_ptr<ImageBitmapContentsArray> m_imageBitmapContentsArray;
   BlobDataHandleMap m_blobDataHandles;
-  size_t m_externallyAllocatedMemory;
-  bool m_adjustTransferableExternalAllocationOnContextTransfer;
+
+  bool m_hasRegisteredExternalAllocation;
+  bool m_transferablesNeedExternalAllocationRegistration;
 };
 
 template <>

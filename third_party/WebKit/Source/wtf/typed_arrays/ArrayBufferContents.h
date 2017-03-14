@@ -102,27 +102,14 @@ class WTF_EXPORT ArrayBufferContents {
     s_adjustAmountOfExternalAllocatedMemoryFunction = function;
   }
 
-  enum LeaveOrEnter {
-    Leave,
-    Enter,
-  };
+  void registerExternalAllocationWithCurrentContext() {
+    if (m_holder)
+      m_holder->registerExternalAllocationWithCurrentContext();
+  }
 
-  // Externally allocated memory is kept track of per context (isolate),
-  // hence when moving ArrayBufferContents to another context, its
-  // externally allocated memory needs to be registered with its
-  // destination context.
-  //
-  // Expose |adjustExternalAllocatedMemoryUponContextTransfer| in order to do
-  // so, which postMessage() implementations make use of when transferring
-  // array buffers.
-  void adjustExternalAllocatedMemoryUponContextTransfer(
-      LeaveOrEnter direction) {
-    int64_t diff = static_cast<int64_t>(sizeInBytes());
-    if (!diff)
-      return;
-    if (direction == Leave)
-      diff = -diff;
-    m_holder->adjustAmountOfExternalAllocatedMemory(diff);
+  void unregisterExternalAllocationWithCurrentContext() {
+    if (m_holder)
+      m_holder->unregisterExternalAllocationWithCurrentContext();
   }
 
  private:
@@ -149,12 +136,17 @@ class WTF_EXPORT ArrayBufferContents {
     unsigned sizeInBytes() const { return m_sizeInBytes; }
     bool isShared() const { return m_isShared == Shared; }
 
+    void registerExternalAllocationWithCurrentContext();
+    void unregisterExternalAllocationWithCurrentContext();
+
+   private:
     void adjustAmountOfExternalAllocatedMemory(int64_t diff) {
+      m_hasRegisteredExternalAllocation = !m_hasRegisteredExternalAllocation;
+      DCHECK(!diff || (m_hasRegisteredExternalAllocation == (diff > 0)));
       checkIfAdjustAmountOfExternalAllocatedMemoryIsConsistent();
       s_adjustAmountOfExternalAllocatedMemoryFunction(diff);
     }
 
-   private:
     void adjustAmountOfExternalAllocatedMemory(unsigned diff) {
       adjustAmountOfExternalAllocatedMemory(static_cast<int64_t>(diff));
     }
@@ -177,6 +169,7 @@ class WTF_EXPORT ArrayBufferContents {
     DataHandle m_data;
     unsigned m_sizeInBytes;
     SharingType m_isShared;
+    bool m_hasRegisteredExternalAllocation;
   };
 
   RefPtr<DataHolder> m_holder;

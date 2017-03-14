@@ -284,9 +284,9 @@ void V8Window::postMessageMethodCustom(
   if (exceptionState.hadException())
     return;
 
+  message->unregisterMemoryAllocatedWithCurrentScriptContext();
   window->postMessage(message.get(), transferables.messagePorts, targetOrigin,
                       source, exceptionState);
-  message->unregisterMemoryAllocatedByCurrentScriptContext();
 }
 
 void V8Window::openMethodCustom(

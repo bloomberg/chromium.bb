@@ -109,12 +109,12 @@ PassRefPtr<SerializedScriptValue> SerializedScriptValue::create(
 }
 
 SerializedScriptValue::SerializedScriptValue()
-    : m_externallyAllocatedMemory(0),
-      m_adjustTransferableExternalAllocationOnContextTransfer(false) {}
+    : m_hasRegisteredExternalAllocation(false),
+      m_transferablesNeedExternalAllocationRegistration(false) {}
 
 SerializedScriptValue::SerializedScriptValue(const String& wireData)
-    : m_externallyAllocatedMemory(0),
-      m_adjustTransferableExternalAllocationOnContextTransfer(false) {
+    : m_hasRegisteredExternalAllocation(false),
+      m_transferablesNeedExternalAllocationRegistration(false) {
   size_t byteLength = wireData.length() * 2;
   m_dataBuffer.reset(static_cast<uint8_t*>(WTF::Partitions::bufferMalloc(
       byteLength, "SerializedScriptValue buffer")));
@@ -127,10 +127,10 @@ SerializedScriptValue::~SerializedScriptValue() {
   // If the allocated memory was not registered before, then this class is
   // likely used in a context other than Worker's onmessage environment and the
   // presence of current v8 context is not guaranteed. Avoid calling v8 then.
-  if (m_externallyAllocatedMemory) {
+  if (m_hasRegisteredExternalAllocation) {
     ASSERT(v8::Isolate::GetCurrent());
     v8::Isolate::GetCurrent()->AdjustAmountOfExternalAllocatedMemory(
-        -static_cast<int64_t>(m_externallyAllocatedMemory));
+        -static_cast<int64_t>(dataLengthInBytes()));
   }
 }
 
@@ -446,47 +446,39 @@ SerializedScriptValue::transferArrayBufferContents(
   return contents;
 }
 
-void SerializedScriptValue::unregisterMemoryAllocatedByCurrentScriptContext() {
-  // If the caller is the only one holding a reference then this serialized
-  // value hasn't transferred ownership & no unregistration of allocation
-  // costs wanted.
-  if (hasOneRef() || m_adjustTransferableExternalAllocationOnContextTransfer)
-    return;
-  if (m_externallyAllocatedMemory) {
+void SerializedScriptValue::
+    unregisterMemoryAllocatedWithCurrentScriptContext() {
+  if (m_hasRegisteredExternalAllocation) {
     v8::Isolate::GetCurrent()->AdjustAmountOfExternalAllocatedMemory(
-        -static_cast<int64_t>(m_externallyAllocatedMemory));
-    m_externallyAllocatedMemory = 0;
+        -static_cast<int64_t>(dataLengthInBytes()));
+    m_hasRegisteredExternalAllocation = false;
   }
+
   // TODO: if other transferables start accounting for their external
   // allocations with V8, extend this with corresponding cases.
-  if (m_arrayBufferContentsArray) {
-    for (auto& buffer : *m_arrayBufferContentsArray) {
-      buffer.adjustExternalAllocatedMemoryUponContextTransfer(
-          WTF::ArrayBufferContents::Leave);
-    }
-    // Mark value as needing re-registration of external allocation
-    // costs in its target context, as handled by
-    // |registerMemoryAllocatedWithCurrentScriptContext()|.
-    m_adjustTransferableExternalAllocationOnContextTransfer = true;
+  if (m_arrayBufferContentsArray &&
+      !m_transferablesNeedExternalAllocationRegistration) {
+    for (auto& buffer : *m_arrayBufferContentsArray)
+      buffer.unregisterExternalAllocationWithCurrentContext();
+    m_transferablesNeedExternalAllocationRegistration = true;
   }
 }
 
 void SerializedScriptValue::registerMemoryAllocatedWithCurrentScriptContext() {
-  if (m_externallyAllocatedMemory)
+  if (m_hasRegisteredExternalAllocation)
     return;
 
-  m_externallyAllocatedMemory = dataLengthInBytes();
-  int64_t diff = static_cast<int64_t>(m_externallyAllocatedMemory);
+  m_hasRegisteredExternalAllocation = true;
+  int64_t diff = static_cast<int64_t>(dataLengthInBytes());
   DCHECK_GE(diff, 0);
   v8::Isolate::GetCurrent()->AdjustAmountOfExternalAllocatedMemory(diff);
-  if (m_adjustTransferableExternalAllocationOnContextTransfer) {
-    DCHECK(m_arrayBufferContentsArray);
-    for (size_t i = 0; i < m_arrayBufferContentsArray->size(); ++i) {
-      WTF::ArrayBufferContents& buffer = m_arrayBufferContentsArray->at(i);
-      buffer.adjustExternalAllocatedMemoryUponContextTransfer(
-          WTF::ArrayBufferContents::Enter);
-    }
-    m_adjustTransferableExternalAllocationOnContextTransfer = false;
+
+  // Only (re)register allocation cost for transferables if this
+  // SerializedScriptValue has explicitly unregistered them before.
+  if (m_arrayBufferContentsArray &&
+      m_transferablesNeedExternalAllocationRegistration) {
+    for (auto& buffer : *m_arrayBufferContentsArray)
+      buffer.registerExternalAllocationWithCurrentContext();
   }
 }
 
