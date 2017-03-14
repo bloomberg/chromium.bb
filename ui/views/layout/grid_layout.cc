@@ -820,6 +820,11 @@ int GridLayout::GetPreferredHeightForWidth(const View* host, int width) const {
 
 void GridLayout::SizeRowsAndColumns(bool layout, int width, int height,
                                     gfx::Size* pref) const {
+  // Protect against clients asking for metrics during the addition of a View.
+  // The View is in the hierarchy, but it will not be accounted for in the
+  // layout calculations at this point, so the result will be incorrect.
+  DCHECK(!adding_view_) << "GridLayout queried while adding a view.";
+
   // Make sure the master columns have been calculated.
   CalculateMasterColumnsIfNecessary();
   pref->SetSize(0, 0);

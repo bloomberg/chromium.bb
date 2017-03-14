@@ -5,6 +5,7 @@
 #include "ui/views/layout/grid_layout.h"
 
 #include "base/compiler_specific.h"
+#include "base/test/gtest_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/views/view.h"
 
@@ -32,6 +33,36 @@ class SettableSizeView : public View {
   gfx::Size pref_;
 
   DISALLOW_COPY_AND_ASSIGN(SettableSizeView);
+};
+
+// A test view that wants to alter its preferred size and re-layout when it gets
+// added to the View hierarchy.
+class LayoutOnAddView : public SettableSizeView {
+ public:
+  LayoutOnAddView() : SettableSizeView(gfx::Size(10, 10)) {}
+
+  void set_target_size(const gfx::Size& target_size) {
+    target_size_ = target_size;
+  }
+
+  // View:
+  void ViewHierarchyChanged(
+      const ViewHierarchyChangedDetails& details) override {
+    if (GetPreferredSize() == target_size_)
+      return;
+
+    // Contrive a realistic thing that a View might what to do, but which would
+    // break the layout machinery. Note an override of OnNativeThemeChanged()
+    // would be more compelling, but there is no Widget in this test harness.
+    set_pref(target_size_);
+    PreferredSizeChanged();
+    parent()->Layout();
+  }
+
+ private:
+  gfx::Size target_size_;
+
+  DISALLOW_COPY_AND_ASSIGN(LayoutOnAddView);
 };
 
 // A view with fixed circumference that trades height for width.
@@ -733,6 +764,31 @@ TEST_F(GridLayoutTest, MinimumPreferredSize) {
   layout.set_minimum_size(gfx::Size(40, 40));
   GetPreferredSize();
   EXPECT_EQ(gfx::Size(40, 40), pref);
+
+  RemoveAll();
+}
+
+// Test that attempting a Layout() while nested in AddView() causes a DCHECK.
+// GridLayout must guard against this as it hasn't yet updated the internal
+// structures it uses to calculate Layout, so will give bogus results.
+TEST_F(GridLayoutTest, LayoutOnAddDeath) {
+  // Don't use the |layout| data member from the test harness, otherwise
+  // SetLayoutManager() can take not take ownership.
+  GridLayout* grid_layout = new GridLayout(&host);
+  host.SetLayoutManager(grid_layout);
+  ColumnSet* set = grid_layout->AddColumnSet(0);
+  set->AddColumn(GridLayout::FILL, GridLayout::FILL, 0, GridLayout::USE_PREF, 0,
+                 0);
+  grid_layout->StartRow(0, 0);
+  LayoutOnAddView view;
+  EXPECT_DCHECK_DEATH(grid_layout->AddView(&view));
+  // Death tests use fork(), so nothing should be added here.
+  EXPECT_FALSE(view.parent());
+
+  // If the View has nothing to change, adding should succeed.
+  view.set_target_size(view.GetPreferredSize());
+  grid_layout->AddView(&view);
+  EXPECT_TRUE(view.parent());
 
   RemoveAll();
 }
