@@ -30,6 +30,7 @@
 #include "core/CSSPropertyNames.h"
 #include "core/EventNames.h"
 #include "core/HTMLNames.h"
+#include "core/InputTypeNames.h"
 #include "core/clipboard/DataObject.h"
 #include "core/clipboard/DataTransfer.h"
 #include "core/clipboard/Pasteboard.h"
@@ -133,6 +134,15 @@ InputEvent::EventIsComposing isComposingFromCommand(
           TypingCommand::TextCompositionNone)
     return InputEvent::EventIsComposing::IsComposing;
   return InputEvent::EventIsComposing::NotComposing;
+}
+
+bool isInPasswordFieldWithUnrevealedPassword(const Position& position) {
+  TextControlElement* textControl = enclosingTextControl(position);
+  if (!isHTMLInputElement(textControl))
+    return false;
+  HTMLInputElement* input = toHTMLInputElement(textControl);
+  return (input->type() == InputTypeNames::password) &&
+         !input->shouldRevealPassword();
 }
 
 }  // anonymous namespace
@@ -325,7 +335,7 @@ bool Editor::canCopy() const {
     return true;
   FrameSelection& selection = frame().selection();
   return selection.computeVisibleSelectionInDOMTreeDeprecated().isRange() &&
-         !isInPasswordField(
+         !isInPasswordFieldWithUnrevealedPassword(
              frame().selection().computeVisibleSelectionInDOMTree().start());
 }
 
