@@ -332,7 +332,13 @@ IN_PROC_BROWSER_TEST_F(TwoClientAppListSyncTest, UpdateIncognitoEnableDisable) {
   ASSERT_FALSE(IsIncognitoEnabled(GetProfile(1), 0));
 }
 
-IN_PROC_BROWSER_TEST_F(TwoClientAppListSyncTest, DisableApps) {
+// crbug.com/689662
+#if defined(OS_CHROMEOS)
+#define MAYBE_DisableApps DISABLED_DisableApps
+#else
+#define MAYBE_DisableApps DisableApps
+#endif
+IN_PROC_BROWSER_TEST_F(TwoClientAppListSyncTest, MAYBE_DisableApps) {
   ASSERT_TRUE(SetupSync());
   ASSERT_TRUE(AllProfilesHaveSameAppList());
 
@@ -371,7 +377,13 @@ IN_PROC_BROWSER_TEST_F(TwoClientAppListSyncTest, DisableSync) {
 
 // Install some apps on both clients, then sync. Move an app on one client
 // and sync. Both clients should have the updated position for the app.
-IN_PROC_BROWSER_TEST_F(TwoClientAppListSyncTest, Move) {
+// crbug.com/689662
+#if defined(OS_CHROMEOS)
+#define MAYBE_Move DISABLED_Move
+#else
+#define MAYBE_Move Move
+#endif
+IN_PROC_BROWSER_TEST_F(TwoClientAppListSyncTest, MAYBE_Move) {
   ASSERT_TRUE(SetupSync());
   ASSERT_TRUE(AllProfilesHaveSameAppList());
 

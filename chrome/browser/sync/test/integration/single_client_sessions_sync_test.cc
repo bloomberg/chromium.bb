@@ -323,7 +323,13 @@ IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest, TabMovedToOtherWindow) {
       {{base_url.spec()}, {new_window_url.spec(), moved_tab_url.spec()}}));
 }
 
-IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest, CookieJarMismatch) {
+// crbug.com/689662
+#if defined(OS_CHROMEOS)
+#define MAYBE_CookieJarMismatch DISABLED_CookieJarMismatch
+#else
+#define MAYBE_CookieJarMismatch CookieJarMismatch
+#endif
+IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest, MAYBE_CookieJarMismatch) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   ASSERT_TRUE(CheckInitialState(0));

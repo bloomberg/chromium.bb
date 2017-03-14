@@ -79,7 +79,13 @@ IN_PROC_BROWSER_TEST_F(SingleClientPrintersSyncTest, RemovePrinter) {
 }
 
 // Verify that merging data added before sync works.
-IN_PROC_BROWSER_TEST_F(SingleClientPrintersSyncTest, AddBeforeSetup) {
+// crbug.com/689662
+#if defined(OS_CHROMEOS)
+#define MAYBE_AddBeforeSetup DISABLED_AddBeforeSetup
+#else
+#define MAYBE_AddBeforeSetup AddBeforeSetup
+#endif
+IN_PROC_BROWSER_TEST_F(SingleClientPrintersSyncTest, MAYBE_AddBeforeSetup) {
   ASSERT_TRUE(SetupClients());
 
   AddPrinter(GetPrinterStore(0), printers_helper::CreateTestPrinter(0));

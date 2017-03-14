@@ -147,7 +147,13 @@ IN_PROC_BROWSER_TEST_F(SyncErrorTest, ActionableErrorTest) {
 
 // This test verifies that sync keeps retrying if it encounters error during
 // setup.
-IN_PROC_BROWSER_TEST_F(SyncErrorTest, ErrorWhileSettingUp) {
+// crbug.com/689662
+#if defined(OS_CHROMEOS)
+#define MAYBE_ErrorWhileSettingUp DISABLED_ErrorWhileSettingUp
+#else
+#define MAYBE_ErrorWhileSettingUp ErrorWhileSettingUp
+#endif
+IN_PROC_BROWSER_TEST_F(SyncErrorTest, MAYBE_ErrorWhileSettingUp) {
   ASSERT_TRUE(SetupClients());
 
 #if !defined(OS_CHROMEOS)

@@ -158,7 +158,13 @@ class EnableDisableSingleClientTest : public SyncTest {
   DISALLOW_COPY_AND_ASSIGN(EnableDisableSingleClientTest);
 };
 
-IN_PROC_BROWSER_TEST_F(EnableDisableSingleClientTest, EnableOneAtATime) {
+// crbug.com/689662
+#if defined(OS_CHROMEOS)
+#define MAYBE_EnableOneAtATime DISABLED_EnableOneAtATime
+#else
+#define MAYBE_EnableOneAtATime EnableOneAtATime
+#endif
+IN_PROC_BROWSER_TEST_F(EnableDisableSingleClientTest, MAYBE_EnableOneAtATime) {
   // Setup sync with no enabled types.
   SetupTest(false);
 
@@ -180,7 +186,13 @@ IN_PROC_BROWSER_TEST_F(EnableDisableSingleClientTest, EnableOneAtATime) {
   }
 }
 
-IN_PROC_BROWSER_TEST_F(EnableDisableSingleClientTest, DisableOneAtATime) {
+// crbug.com/689662
+#if defined(OS_CHROMEOS)
+#define MAYBE_DisableOneAtATime DISABLED_DisableOneAtATime
+#else
+#define MAYBE_DisableOneAtATime DisableOneAtATime
+#endif
+IN_PROC_BROWSER_TEST_F(EnableDisableSingleClientTest, MAYBE_DisableOneAtATime) {
   // Setup sync with no disabled types.
   SetupTest(true);
 
