@@ -2,6 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from recipe_engine.config import List, Single, ConfigList, ConfigGroup
+from recipe_engine.recipe_api import Property
+
 DEPS = [
   'recipe_engine/path',
   'recipe_engine/platform',
@@ -10,7 +13,18 @@ DEPS = [
   'cipd',
 ]
 
-def RunSteps(api):
+PROPERTIES = {
+  'use_pkg': Property(default=False, kind=bool),
+  'pkg_files': Property(default=(), kind=List(str)),
+  'pkg_dirs': Property(default=(), kind=ConfigList(lambda: ConfigGroup(
+    path=Single(str),
+    exclusions=List(str),
+  ))),
+  'ver_files': Property(default=(), kind=List(str)),
+  'install_mode': Property(default=None),
+}
+
+def RunSteps(api, use_pkg, pkg_files, pkg_dirs, ver_files, install_mode):
   # Need to set service account credentials.
   api.cipd.set_service_account_credentials(
       api.cipd.default_bot_service_account_credentials)
@@ -49,10 +63,27 @@ def RunSteps(api):
                           'fake_tag_2': 'fake_value_2'})
 
   # Create (build & register).
-  api.cipd.create(api.path['start_dir'].join('fake-package.yaml'),
-                  refs=['fake-ref-1', 'fake-ref-2'],
-                  tags={'fake_tag_1': 'fake_value_1',
-                        'fake_tag_2': 'fake_value_2'})
+  if use_pkg:
+    root = api.path['start_dir'].join('some_subdir')
+    pkg = api.cipd.PackageDefinition('infra/fake-package', root, install_mode)
+    for fullpath in pkg_files:
+      pkg.add_file(api.path.abs_to_path(fullpath))
+    for obj in pkg_dirs:
+      pkg.add_dir(api.path.abs_to_path(obj.get('path', '')),
+                  obj.get('exclusions'))
+    for pth in ver_files:
+      pkg.add_version_file(pth)
+
+    api.cipd.create_from_pkg(pkg,
+                             refs=['fake-ref-1', 'fake-ref-2'],
+                             tags={'fake_tag_1': 'fake_value_1',
+                                   'fake_tag_2': 'fake_value_2'})
+  else:
+    api.cipd.create_from_yaml(api.path['start_dir'].join('fake-package.yaml'),
+                              refs=['fake-ref-1', 'fake-ref-2'],
+                              tags={'fake_tag_1': 'fake_value_1',
+                                    'fake_tag_2': 'fake_value_2'})
+
 
   # Set tag or ref of an already existing package.
   api.cipd.set_tag('fake-package',
@@ -67,39 +98,89 @@ def RunSteps(api):
 def GenTests(api):
   yield (
     # This is very common dev workstation, but not all devs are on it.
-    api.test('basic') +
-    api.platform('linux', 64)
+    api.test('basic')
+    + api.platform('linux', 64)
   )
 
   yield (
-    api.test('mac64') +
-    api.platform('mac', 64)
+    api.test('mac64')
+    + api.platform('mac', 64)
   )
 
   yield (
-    api.test('win64') +
-    api.platform('win', 64)
+    api.test('win64')
+    + api.platform('win', 64)
   )
 
   yield (
-    api.test('describe-failed') +
-    api.platform('linux', 64) +
-    api.override_step_data(
+    api.test('describe-failed')
+    + api.platform('linux', 64)
+    + api.override_step_data(
       'cipd describe public/package/linux-amd64',
       api.cipd.example_error(
         'package "public/package/linux-amd64-ubuntu14_04" not registered',
-      )
-    )
+      ))
   )
 
   yield (
-    api.test('describe-many-instances') +
-    api.platform('linux', 64) +
-    api.override_step_data(
+    api.test('describe-many-instances')
+    + api.platform('linux', 64)
+    + api.override_step_data(
       'cipd search fake-package/linux-amd64 dead:beaf',
       api.cipd.example_search(
         'public/package/linux-amd64-ubuntu14_04',
         instances=3
-      )
+      ))
+  )
+
+  yield (
+    api.test('basic_pkg')
+    + api.properties(
+      use_pkg=True,
+      pkg_files=[
+        '[START_DIR]/some_subdir/a/path/to/file.py',
+        '[START_DIR]/some_subdir/some_config.cfg',
+      ],
+      pkg_dirs=[
+        {
+          'path': '[START_DIR]/some_subdir/directory',
+        },
+        {
+          'path': '[START_DIR]/some_subdir/other_dir',
+          'exclusions': [
+            r'.*\.pyc',
+          ]
+        },
+      ],
+      ver_file=['.versions/file.cipd_version'],
     )
+  )
+
+  yield (
+    api.test('pkg_bad_verfile')
+    + api.properties(
+      use_pkg=True,
+      ver_files=['a', 'b'],
+    )
+    + api.expect_exception('ValueError')
+  )
+
+  yield (
+    api.test('pkg_bad_mode')
+    + api.properties(
+      use_pkg=True,
+      install_mode='',
+    )
+    + api.expect_exception('ValueError')
+  )
+
+  yield (
+    api.test('pkg_bad_file')
+    + api.properties(
+      use_pkg=True,
+      pkg_files=[
+        '[START_DIR]/a/path/to/file.py',
+      ],
+    )
+    + api.expect_exception('ValueError')
   )

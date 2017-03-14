@@ -1,7 +1,7 @@
 [
   {
     "cmd": [
-      "cipd",
+      "cipd.bat",
       "ensure",
       "-root",
       "[START_DIR]\\packages",
@@ -27,7 +27,7 @@
   },
   {
     "cmd": [
-      "cipd",
+      "cipd.bat",
       "search",
       "public/package/windows-amd64",
       "-tag",
@@ -52,7 +52,7 @@
   },
   {
     "cmd": [
-      "cipd",
+      "cipd.bat",
       "describe",
       "public/package/windows-amd64",
       "-version",
@@ -103,7 +103,7 @@
   },
   {
     "cmd": [
-      "cipd",
+      "cipd.bat",
       "ensure",
       "-root",
       "[START_DIR]\\packages",
@@ -133,7 +133,7 @@
   },
   {
     "cmd": [
-      "cipd",
+      "cipd.bat",
       "search",
       "private/package/windows-amd64",
       "-tag",
@@ -158,7 +158,7 @@
   },
   {
     "cmd": [
-      "cipd",
+      "cipd.bat",
       "describe",
       "private/package/windows-amd64",
       "-version",
@@ -204,7 +204,7 @@
   },
   {
     "cmd": [
-      "cipd",
+      "cipd.bat",
       "pkg-build",
       "-in",
       "fake-input-dir",
@@ -228,7 +228,7 @@
   },
   {
     "cmd": [
-      "cipd",
+      "cipd.bat",
       "pkg-build",
       "-in",
       "fake-input-dir",
@@ -254,7 +254,7 @@
   },
   {
     "cmd": [
-      "cipd",
+      "cipd.bat",
       "pkg-register",
       "fake-package-path",
       "-json-output",
@@ -283,7 +283,7 @@
   },
   {
     "cmd": [
-      "cipd",
+      "cipd.bat",
       "create",
       "-pkg-def",
       "[START_DIR]\\fake-package.yaml",
@@ -302,13 +302,19 @@
     ],
     "name": "create fake-package.yaml",
     "~followup_annotations": [
-      "@@@STEP_LOG_LINE@json.output (invalid)@null@@@",
-      "@@@STEP_LOG_END@json.output (invalid)@@@"
+      "@@@STEP_TEXT@</br>pkg: fake-package.yaml</br>id: 40-chars-fake-of-the-package-instance_id@@@",
+      "@@@STEP_LOG_LINE@json.output@{@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"result\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"instance_id\": \"40-chars-fake-of-the-package-instance_id\", @@@",
+      "@@@STEP_LOG_LINE@json.output@    \"package\": \"fake-package.yaml\"@@@",
+      "@@@STEP_LOG_LINE@json.output@  }@@@",
+      "@@@STEP_LOG_LINE@json.output@}@@@",
+      "@@@STEP_LOG_END@json.output@@@"
     ]
   },
   {
     "cmd": [
-      "cipd",
+      "cipd.bat",
       "set-tag",
       "fake-package",
       "-version",
@@ -338,7 +344,7 @@
   },
   {
     "cmd": [
-      "cipd",
+      "cipd.bat",
       "set-ref",
       "fake-package",
       "-version",
@@ -368,7 +374,7 @@
   },
   {
     "cmd": [
-      "cipd",
+      "cipd.bat",
       "search",
       "fake-package/windows-amd64",
       "-tag",
