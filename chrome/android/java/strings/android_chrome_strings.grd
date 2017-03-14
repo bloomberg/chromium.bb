@@ -1877,7 +1877,7 @@ To obtain new licenses, connect to the internet and play your downloaded content
         No downloads found
       </message>
       <message name="IDS_DOWNLOAD_MANAGER_OFFLINE_HEADER_TITLE" desc="Text explaining the number of suggested offline pages.">
-        %1$s Chrome suggestions
+        <ph name="NUMBER_OF_SUGGESTIONS">%1$s<ex>10</ex></ph> Chrome suggestions
       </message>
       <message name="IDS_DOWNLOAD_MANAGER_OFFLINE_HEADER_DESCRIPTION" desc="Text containing the offline pages description.">
         Pages updated regularly
