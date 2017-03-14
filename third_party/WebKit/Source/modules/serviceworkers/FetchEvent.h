@@ -12,23 +12,22 @@
 #include "modules/fetch/Request.h"
 #include "modules/serviceworkers/ExtendableEvent.h"
 #include "modules/serviceworkers/FetchEventInit.h"
-#include "modules/serviceworkers/RespondWithObserver.h"
 #include "modules/serviceworkers/WaitUntilObserver.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
 
 class ExceptionState;
+class FetchRespondWithObserver;
 class Request;
 class Response;
-class RespondWithObserver;
 class ScriptState;
 class WebDataConsumerHandle;
 struct WebServiceWorkerError;
 class WebURLResponse;
 
 // A fetch event is dispatched by the client to a service worker's script
-// context. RespondWithObserver can be used to notify the client about the
+// context. FetchRespondWithObserver can be used to notify the client about the
 // service worker's response.
 class MODULES_EXPORT FetchEvent final : public ExtendableEvent {
   DEFINE_WRAPPERTYPEINFO();
@@ -43,7 +42,7 @@ class MODULES_EXPORT FetchEvent final : public ExtendableEvent {
   static FetchEvent* create(ScriptState*,
                             const AtomicString& type,
                             const FetchEventInit&,
-                            RespondWithObserver*,
+                            FetchRespondWithObserver*,
                             WaitUntilObserver*,
                             bool navigationPreloadSent);
 
@@ -68,12 +67,12 @@ class MODULES_EXPORT FetchEvent final : public ExtendableEvent {
   FetchEvent(ScriptState*,
              const AtomicString& type,
              const FetchEventInit&,
-             RespondWithObserver*,
+             FetchRespondWithObserver*,
              WaitUntilObserver*,
              bool navigationPreloadSent);
 
  private:
-  Member<RespondWithObserver> m_observer;
+  Member<FetchRespondWithObserver> m_observer;
   Member<Request> m_request;
   Member<PreloadResponseProperty> m_preloadResponseProperty;
   String m_clientId;

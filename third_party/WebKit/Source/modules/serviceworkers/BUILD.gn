@@ -12,6 +12,8 @@ blink_modules_sources("serviceworkers") {
     "ExtendableMessageEvent.h",
     "FetchEvent.cpp",
     "FetchEvent.h",
+    "FetchRespondWithObserver.cpp",
+    "FetchRespondWithObserver.h",
     "ForeignFetchEvent.cpp",
     "ForeignFetchEvent.h",
     "ForeignFetchRespondWithObserver.cpp",

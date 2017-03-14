@@ -26,7 +26,7 @@ ForeignFetchRespondWithObserver* ForeignFetchRespondWithObserver::create(
       requestContext, std::move(requestOrigin), observer);
 }
 
-void ForeignFetchRespondWithObserver::responseWasFulfilled(
+void ForeignFetchRespondWithObserver::onResponseFulfilled(
     const ScriptValue& value) {
   ASSERT(getExecutionContext());
   ExceptionState exceptionState(value.isolate(), ExceptionState::UnknownContext,
@@ -36,7 +36,7 @@ void ForeignFetchRespondWithObserver::responseWasFulfilled(
                                             value, exceptionState);
   if (exceptionState.hadException()) {
     exceptionState.clearException();
-    responseWasRejected(WebServiceWorkerResponseErrorNoForeignFetchResponse);
+    onResponseRejected(WebServiceWorkerResponseErrorNoForeignFetchResponse);
     return;
   }
 
@@ -51,7 +51,7 @@ void ForeignFetchRespondWithObserver::responseWasFulfilled(
   if (!foreignFetchResponse.hasOrigin()) {
     if (foreignFetchResponse.hasHeaders() &&
         !foreignFetchResponse.headers().isEmpty()) {
-      responseWasRejected(
+      onResponseRejected(
           WebServiceWorkerResponseErrorForeignFetchHeadersWithoutOrigin);
       return;
     }
@@ -63,7 +63,7 @@ void ForeignFetchRespondWithObserver::responseWasFulfilled(
       response = Response::create(getExecutionContext(), opaqueData);
     }
   } else if (m_requestOrigin->toString() != foreignFetchResponse.origin()) {
-    responseWasRejected(
+    onResponseRejected(
         WebServiceWorkerResponseErrorForeignFetchMismatchedOrigin);
     return;
   } else if (!isOpaque) {
@@ -88,7 +88,7 @@ void ForeignFetchRespondWithObserver::responseWasFulfilled(
     response = Response::create(getExecutionContext(), responseData);
   }
 
-  RespondWithObserver::responseWasFulfilled(
+  FetchRespondWithObserver::onResponseFulfilled(
       ScriptValue::from(value.getScriptState(), response));
 }
 
@@ -102,14 +102,14 @@ ForeignFetchRespondWithObserver::ForeignFetchRespondWithObserver(
     WebURLRequest::RequestContext requestContext,
     PassRefPtr<SecurityOrigin> requestOrigin,
     WaitUntilObserver* observer)
-    : RespondWithObserver(context,
-                          eventID,
-                          requestURL,
-                          requestMode,
-                          redirectMode,
-                          frameType,
-                          requestContext,
-                          observer),
+    : FetchRespondWithObserver(context,
+                               eventID,
+                               requestURL,
+                               requestMode,
+                               redirectMode,
+                               frameType,
+                               requestContext,
+                               observer),
       m_requestOrigin(requestOrigin) {}
 
 }  // namespace blink

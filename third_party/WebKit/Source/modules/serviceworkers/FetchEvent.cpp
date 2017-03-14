@@ -10,6 +10,7 @@
 #include "modules/fetch/BytesConsumerForDataConsumerHandle.h"
 #include "modules/fetch/Request.h"
 #include "modules/fetch/Response.h"
+#include "modules/serviceworkers/FetchRespondWithObserver.h"
 #include "modules/serviceworkers/ServiceWorkerError.h"
 #include "modules/serviceworkers/ServiceWorkerGlobalScope.h"
 #include "public/platform/WebURLResponse.h"
@@ -29,7 +30,7 @@ FetchEvent* FetchEvent::create(ScriptState* scriptState,
 FetchEvent* FetchEvent::create(ScriptState* scriptState,
                                const AtomicString& type,
                                const FetchEventInit& initializer,
-                               RespondWithObserver* respondWithObserver,
+                               FetchRespondWithObserver* respondWithObserver,
                                WaitUntilObserver* waitUntilObserver,
                                bool navigationPreloadSent) {
   return new FetchEvent(scriptState, type, initializer, respondWithObserver,
@@ -67,7 +68,7 @@ const AtomicString& FetchEvent::interfaceName() const {
 FetchEvent::FetchEvent(ScriptState* scriptState,
                        const AtomicString& type,
                        const FetchEventInit& initializer,
-                       RespondWithObserver* respondWithObserver,
+                       FetchRespondWithObserver* respondWithObserver,
                        WaitUntilObserver* waitUntilObserver,
                        bool navigationPreloadSent)
     : ExtendableEvent(type, initializer, waitUntilObserver),

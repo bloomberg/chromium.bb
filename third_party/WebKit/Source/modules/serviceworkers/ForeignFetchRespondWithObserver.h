@@ -5,14 +5,14 @@
 #ifndef ForeignFetchRespondWithObserver_h
 #define ForeignFetchRespondWithObserver_h
 
-#include "modules/serviceworkers/RespondWithObserver.h"
+#include "modules/serviceworkers/FetchRespondWithObserver.h"
 
 namespace blink {
 
 // This class observes the service worker's handling of a ForeignFetchEvent and
 // notifies the client.
 class MODULES_EXPORT ForeignFetchRespondWithObserver final
-    : public RespondWithObserver {
+    : public FetchRespondWithObserver {
  public:
   static ForeignFetchRespondWithObserver* create(
       ExecutionContext*,
@@ -25,7 +25,7 @@ class MODULES_EXPORT ForeignFetchRespondWithObserver final
       PassRefPtr<SecurityOrigin>,
       WaitUntilObserver*);
 
-  void responseWasFulfilled(const ScriptValue&) override;
+  void onResponseFulfilled(const ScriptValue&) override;
 
  private:
   ForeignFetchRespondWithObserver(ExecutionContext*,

@@ -164,10 +164,11 @@ void ServiceWorkerGlobalScopeProxy::dispatchFetchEvent(
       workerGlobalScope()->scriptController()->getScriptState());
   WaitUntilObserver* waitUntilObserver = WaitUntilObserver::create(
       workerGlobalScope(), WaitUntilObserver::Fetch, fetchEventID);
-  RespondWithObserver* respondWithObserver = RespondWithObserver::create(
-      workerGlobalScope(), fetchEventID, webRequest.url(), webRequest.mode(),
-      webRequest.redirectMode(), webRequest.frameType(),
-      webRequest.requestContext(), waitUntilObserver);
+  FetchRespondWithObserver* respondWithObserver =
+      FetchRespondWithObserver::create(
+          workerGlobalScope(), fetchEventID, webRequest.url(),
+          webRequest.mode(), webRequest.redirectMode(), webRequest.frameType(),
+          webRequest.requestContext(), waitUntilObserver);
   Request* request = Request::create(
       workerGlobalScope()->scriptController()->getScriptState(), webRequest);
   request->getHeaders()->setGuard(Headers::ImmutableGuard);
