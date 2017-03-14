@@ -42,6 +42,7 @@
 #include <sys/wait.h>
 #include <sys/socket.h>
 #include <sys/signalfd.h>
+#include <sys/sysmacros.h>
 #include <signal.h>
 #include <unistd.h>
 #include <fcntl.h>
