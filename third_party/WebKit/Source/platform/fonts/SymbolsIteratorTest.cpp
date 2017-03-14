@@ -122,6 +122,14 @@ TEST_F(SymbolsIteratorTest, CombiningCircle) {
   CHECK_RUNS({{"◌́◌̀◌̈◌̂◌̄◌̊", FontFallbackPriority::Text}});
 }
 
+TEST_F(SymbolsIteratorTest, CombiningEnclosingCircleBackslash) {
+  CHECK_RUNS({{"A⃠B⃠C⃠", FontFallbackPriority::Text},
+              {"🚷🚯🚱🔞📵🚭🚫", FontFallbackPriority::EmojiEmoji},
+              {"🎙⃠", FontFallbackPriority::EmojiText},
+              {"📸⃠🔫⃠", FontFallbackPriority::EmojiEmoji},
+              {"a⃠b⃠c⃠", FontFallbackPriority::Text}});
+}
+
 // TODO: Perhaps check for invalid country indicator combinations?
 
 TEST_F(SymbolsIteratorTest, FlagsVsNonFlags) {

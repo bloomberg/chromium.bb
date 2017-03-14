@@ -26,8 +26,7 @@ FontFallbackPriority SymbolsIterator::fontFallbackPriorityForCharacter(
       Character::isRegionalIndicator(codepoint))
     return FontFallbackPriority::Text;
 
-  if (codepoint == combiningEnclosingKeycapCharacter ||
-      codepoint == combiningEnclosingCircleBackslashCharacter)
+  if (codepoint == combiningEnclosingKeycapCharacter)
     return FontFallbackPriority::EmojiEmoji;
 
   if (Character::isEmojiEmojiDefault(codepoint) ||
@@ -66,6 +65,7 @@ bool SymbolsIterator::consume(unsigned* symbolsLimit,
                FontFallbackPriority::EmojiEmoji) &&
          m_nextChar != variationSelector15Character &&
          m_nextChar != variationSelector16Character &&
+         m_nextChar != combiningEnclosingCircleBackslashCharacter &&
          !Character::isRegionalIndicator(m_nextChar) &&
          !((m_nextChar == leftSpeechBubbleCharacter ||
             m_nextChar == rainbowCharacter || m_nextChar == maleSignCharacter ||
@@ -97,12 +97,6 @@ bool SymbolsIterator::consume(unsigned* symbolsLimit,
           peekChar == combiningEnclosingKeycapCharacter) {
         m_currentFontFallbackPriority = FontFallbackPriority::EmojiEmoji;
       };
-
-      // ...and Combining Enclosing Circle Backslash.
-      if (m_currentFontFallbackPriority == FontFallbackPriority::EmojiText &&
-          peekChar == combiningEnclosingCircleBackslashCharacter) {
-        m_currentFontFallbackPriority = FontFallbackPriority::EmojiEmoji;
-      }
 
       // Regional indicators
       if (Character::isRegionalIndicator(m_nextChar) &&
