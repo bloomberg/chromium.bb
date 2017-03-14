@@ -1298,6 +1298,25 @@
             ]
         }
     ],
+    "NTPBookmarkSuggestion": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Phase2Enabled3wWithDesktop",
+                    "params": {
+                        "bookmarks_consider_desktop_visits": "true",
+                        "bookmarks_max_age_in_days": "21"
+                    },
+                    "enable_features": [
+                        "NTPBookmarkSuggestions"
+                    ]
+                }
+            ]
+        }
+    ],
     "NTPPersonalizedSectionRanking": [
         {
             "platforms": [
