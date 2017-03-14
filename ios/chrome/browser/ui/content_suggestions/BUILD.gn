@@ -22,6 +22,8 @@ source_set("content_suggestions") {
     "content_suggestions_favicon_internal_cell.mm",
     "content_suggestions_favicon_item.h",
     "content_suggestions_favicon_item.mm",
+    "content_suggestions_footer_item.h",
+    "content_suggestions_footer_item.mm",
     "content_suggestions_image_fetcher.h",
     "content_suggestions_section_information.h",
     "content_suggestions_section_information.mm",
@@ -58,6 +60,7 @@ source_set("unit_tests") {
     "content_suggestions_article_item_unittest.mm",
     "content_suggestions_expandable_item_unittest.mm",
     "content_suggestions_favicon_item_unittest.mm",
+    "content_suggestions_footer_item_unittest.mm",
     "content_suggestions_stack_item_unittest.mm",
     "content_suggestions_text_item_unittest.mm",
   ]

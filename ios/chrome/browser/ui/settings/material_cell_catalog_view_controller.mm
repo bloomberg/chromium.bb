@@ -24,6 +24,8 @@
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_switch_item.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_text_item.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
+#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_article_item.h"
+#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_footer_item.h"
 #import "ios/chrome/browser/ui/icons/chrome_icon.h"
 #import "ios/chrome/browser/ui/settings/cells/account_signin_item.h"
 #import "ios/chrome/browser/ui/settings/cells/autofill_data_item.h"
@@ -51,6 +53,7 @@ typedef NS_ENUM(NSInteger, SectionIdentifier) {
   SectionIdentifierAccountCell,
   SectionIdentifierAccountControlCell,
   SectionIdentifierFooters,
+  SectionIdentifierContentSuggestionsCell,
 };
 
 typedef NS_ENUM(NSInteger, ItemType) {
@@ -80,6 +83,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeAutofillStorageSwitch,
   ItemTypeAccountControlDynamicHeight,
   ItemTypeFooter,
+  ItemTypeContentSuggestions,
 };
 
 // Image fixed horizontal size.
@@ -302,6 +306,13 @@ const CGFloat kHorizontalImageFixedSize = 40;
   [model addItem:[self accountControlItemWithExtraLongText]
       toSectionWithIdentifier:SectionIdentifierAccountControlCell];
 
+  // Content Suggestions cells.
+  [model addSectionWithIdentifier:SectionIdentifierContentSuggestionsCell];
+  [model addItem:[self contentSuggestionsArticleItem]
+      toSectionWithIdentifier:SectionIdentifierContentSuggestionsCell];
+  [model addItem:[self contentSuggestionsFooterItem]
+      toSectionWithIdentifier:SectionIdentifierContentSuggestionsCell];
+
   // Footers.
   [model addSectionWithIdentifier:SectionIdentifierFooters];
   [model addItem:[self shortFooterItem]
@@ -344,6 +355,7 @@ const CGFloat kHorizontalImageFixedSize = 40;
   CollectionViewItem* item =
       [self.collectionViewModel itemAtIndexPath:indexPath];
   switch (item.type) {
+    case ItemTypeContentSuggestions:
     case ItemTypeFooter:
     case ItemTypeSwitchDynamicHeight:
     case ItemTypeSwitchSync:
@@ -665,6 +677,29 @@ const CGFloat kHorizontalImageFixedSize = 40;
                     @"Hello Hello Hello Hello Hello Hello Hello Hello Hello "
                     @"Hello Hello Hello Hello Hello Hello Hello Hello Hello ";
   footerItem.image = [UIImage imageNamed:@"app_icon_placeholder"];
+  return footerItem;
+}
+
+- (ContentSuggestionsArticleItem*)contentSuggestionsArticleItem {
+  ContentSuggestionsArticleItem* articleItem =
+      [[ContentSuggestionsArticleItem alloc]
+          initWithType:ItemTypeContentSuggestions
+                 title:@"This is an incredible article, you should read it!"
+              subtitle:@"Really, this is the best article I have ever seen, it "
+                       @"is mandatory to read it! It describes how to write "
+                       @"the best article."
+              delegate:nil
+                   url:GURL()];
+  articleItem.publisher = @"Top Publisher.com";
+  return articleItem;
+}
+
+- (ContentSuggestionsFooterItem*)contentSuggestionsFooterItem {
+  ContentSuggestionsFooterItem* footerItem =
+      [[ContentSuggestionsFooterItem alloc]
+          initWithType:ItemTypeContentSuggestions
+                 title:@"Footer title"
+                 block:nil];
   return footerItem;
 }
 
