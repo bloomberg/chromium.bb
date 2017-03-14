@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/cocoa/website_settings/website_settings_utils_cocoa.h"
+#include "chrome/browser/ui/cocoa/page_info/website_settings_utils_cocoa.h"
 
 namespace {
 // The amount of horizontal space between the button's title and its arrow icon.

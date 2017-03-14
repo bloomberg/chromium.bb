@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "chrome/browser/ui/cocoa/website_settings/permission_selector_button.h"
+#import "chrome/browser/ui/cocoa/page_info/permission_selector_button.h"
 
 #include "base/strings/sys_string_conversions.h"
-#include "chrome/browser/ui/cocoa/website_settings/website_settings_utils_cocoa.h"
+#include "chrome/browser/ui/cocoa/page_info/website_settings_utils_cocoa.h"
 #include "chrome/browser/ui/page_info/website_settings_ui.h"
 #import "ui/base/cocoa/menu_controller.h"
 

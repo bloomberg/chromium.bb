@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "chrome/browser/ui/cocoa/website_settings/website_settings_bubble_controller.h"
+#import "chrome/browser/ui/cocoa/page_info/website_settings_bubble_controller.h"
 
 #include <stddef.h>
 

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "chrome/browser/ui/cocoa/website_settings/split_block_button.h"
+#import "chrome/browser/ui/cocoa/page_info/split_block_button.h"
 
 #include <cmath>
 

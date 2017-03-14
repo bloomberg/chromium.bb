@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "chrome/browser/ui/cocoa/website_settings/website_settings_bubble_controller.h"
+#import "chrome/browser/ui/cocoa/page_info/website_settings_bubble_controller.h"
 
 #import <AppKit/AppKit.h>
 
@@ -20,7 +20,7 @@
 #import "chrome/browser/ui/cocoa/info_bubble_view.h"
 #import "chrome/browser/ui/cocoa/info_bubble_window.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
-#import "chrome/browser/ui/cocoa/website_settings/permission_selector_button.h"
+#import "chrome/browser/ui/cocoa/page_info/permission_selector_button.h"
 #include "chrome/browser/ui/page_info/permission_menu_model.h"
 #import "chrome/browser/ui/tab_dialogs.h"
 #include "chrome/common/url_constants.h"
