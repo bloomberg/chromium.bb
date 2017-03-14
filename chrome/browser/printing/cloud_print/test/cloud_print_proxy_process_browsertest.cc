@@ -20,6 +20,7 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/test/multiprocess_test.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/platform_thread.h"
@@ -99,8 +100,8 @@ class TestStartupClientChannelListener : public IPC::Listener {
   bool OnMessageReceived(const IPC::Message& message) override { return false; }
 };
 
-void ConnectOnBlockingPool(mojo::ScopedMessagePipeHandle handle,
-                           mojo::edk::NamedPlatformHandle os_pipe) {
+void ConnectAsync(mojo::ScopedMessagePipeHandle handle,
+                  mojo::edk::NamedPlatformHandle os_pipe) {
   mojo::edk::ScopedPlatformHandle os_pipe_handle =
       mojo::edk::CreateClientHandle(os_pipe);
   if (!os_pipe_handle.is_valid())
@@ -401,7 +402,10 @@ class CloudPrintProxyPolicyStartupTest : public base::MultiProcessTest,
 };
 
 CloudPrintProxyPolicyStartupTest::CloudPrintProxyPolicyStartupTest()
-    : thread_bundle_(content::TestBrowserThreadBundle::REAL_IO_THREAD) {
+    :  // TaskScheduler must run on its own thread because the main thread waits
+       // for a task running in it.
+      thread_bundle_(content::TestBrowserThreadBundle::REAL_IO_THREAD |
+                     content::TestBrowserThreadBundle::REAL_TASK_SCHEDULER) {
   // Although is really a unit test which runs in the browser_tests binary, it
   // doesn't get the unit setup which normally happens in the unit test binary.
   ChromeUnitTestSuite::InitializeProviders();
@@ -481,9 +485,12 @@ void CloudPrintProxyPolicyStartupTest::WaitForConnect() {
   EXPECT_TRUE(base::ThreadTaskRunnerHandle::Get().get());
 
   mojo::MessagePipe pipe;
-  BrowserThread::PostBlockingPoolTask(
-      FROM_HERE, base::Bind(&ConnectOnBlockingPool, base::Passed(&pipe.handle1),
-                            GetServiceProcessChannel()));
+  base::PostTaskWithTraits(
+      FROM_HERE,
+      base::TaskTraits().MayBlock().WithPriority(
+          base::TaskPriority::BACKGROUND),
+      base::Bind(&ConnectAsync, base::Passed(&pipe.handle1),
+                 GetServiceProcessChannel()));
   ServiceProcessControl::GetInstance()->SetChannel(
       IPC::ChannelProxy::Create(IPC::ChannelMojo::CreateClientFactory(
                                     std::move(pipe.handle0), IOTaskRunner()),
