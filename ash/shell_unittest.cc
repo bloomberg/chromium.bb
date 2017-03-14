@@ -167,10 +167,9 @@ class ShellTest : public test::AshTestBase {
     EXPECT_TRUE(lock_widget->GetNativeView()->HasFocus());
 
     // Verify menu is closed.
-    EXPECT_NE(views::MenuController::EXIT_NONE, menu_controller->exit_type());
+    EXPECT_EQ(nullptr, views::MenuController::GetActiveInstance());
     lock_widget->Close();
     delegate->UnlockScreen();
-    EXPECT_EQ(nullptr, views::MenuController::GetActiveInstance());
   }
 };
 
