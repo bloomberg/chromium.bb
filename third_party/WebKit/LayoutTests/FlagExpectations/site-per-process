@@ -1,6 +1,9 @@
 # These tests currently fail when they run with --site-per-process.
 # See https://crbug.com/477150.
 
+# https://crbug.com/700535: Times out after r454488 landed.
+crbug.com/700535 fast/dnd/dropEffect-for-effectAllowed.html [ Timeout ]
+
 # https://crbug.com/697111: assert failures in test added in r451938.
 crbug.com/697111 svg/dom/getScreenCTM-ancestor-transform.html [ Failure ]
 
