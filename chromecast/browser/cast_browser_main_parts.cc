@@ -227,8 +227,12 @@ DefaultCommandLineSwitch g_default_switches[] = {
   { switches::kEnableDefaultMediaSession, "" },
 #endif
 #if BUILDFLAG(IS_CAST_AUDIO_ONLY)
+#if defined(OS_ANDROID)
+  { switches::kDisableGLDrawingForTests, "" },
+#else
   { switches::kDisableGpu, "" },
-#endif
+#endif  // defined(OS_ANDROID)
+#endif  // BUILDFLAG(IS_CAST_AUDIO_ONLY)
 #if defined(OS_LINUX)
 #if defined(ARCH_CPU_X86_FAMILY)
   // This is needed for now to enable the x11 Ozone platform to work with
