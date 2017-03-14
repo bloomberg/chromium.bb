@@ -8,6 +8,7 @@
 
 #include <algorithm>
 #include <memory>
+#include <utility>
 #include <vector>
 
 #include "base/command_line.h"
@@ -57,6 +58,7 @@
 #include "components/ukm/ukm_entry.h"
 #include "components/ukm/ukm_source.h"
 #include "components/variations/variations_associated_data.h"
+#include "net/base/url_util.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -5739,6 +5741,98 @@ TEST_F(AutofillManagerTest, NotifyDriverOfCreditCardInteraction) {
     GetAutofillSuggestions(form, field);
     EXPECT_TRUE(autofill_driver_->did_interact_with_credit_card_form());
     autofill_driver_->ClearDidInteractWithCreditCardForm();
+  }
+}
+
+// Tests that a form with server only types is still autofillable if the form
+// gets updated in cache.
+TEST_F(AutofillManagerTest, DisplaySuggestionsForUpdatedServerTypedForm) {
+  // Create a form with unknown heuristic fields.
+  FormData form;
+  form.name = ASCIIToUTF16("MyForm");
+  form.origin = GURL("http://myform.com/form.html");
+  form.action = GURL("http://myform.com/submit.html");
+
+  FormFieldData field;
+  test::CreateTestFormField("Field 1", "field1", "", "text", &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("Field 2", "field2", "", "text", &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("Field 3", "field3", "", "text", &field);
+  form.fields.push_back(field);
+
+  auto form_structure = base::MakeUnique<TestFormStructure>(form);
+  form_structure->DetermineHeuristicTypes();
+  // Make sure the form can not be autofilled now.
+  ASSERT_EQ(0u, form_structure->autofill_count());
+  for (size_t idx = 0; idx < form_structure->field_count(); ++idx) {
+    ASSERT_EQ(UNKNOWN_TYPE, form_structure->field(idx)->heuristic_type());
+  }
+
+  // Prepare and set known server fields.
+  const std::vector<ServerFieldType> heuristic_types(form.fields.size(),
+                                                     UNKNOWN_TYPE);
+  const std::vector<ServerFieldType> server_types{NAME_FIRST, NAME_MIDDLE,
+                                                  NAME_LAST};
+  form_structure->SetFieldTypes(heuristic_types, server_types);
+  autofill_manager_->AddSeenForm(std::move(form_structure));
+
+  // Make sure the form can be autofilled.
+  for (const FormFieldData& field : form.fields) {
+    GetAutofillSuggestions(form, field);
+    ASSERT_TRUE(external_delegate_->on_suggestions_returned_seen());
+  }
+
+  // Modify one of the fields in the original form.
+  form.fields[0].css_classes += ASCIIToUTF16("a");
+
+  // Expect the form still can be autofilled.
+  for (const FormFieldData& field : form.fields) {
+    GetAutofillSuggestions(form, field);
+    EXPECT_TRUE(external_delegate_->on_suggestions_returned_seen());
+  }
+
+  // Modify form action URL. This can happen on in-page navitaion if the form
+  // doesn't have an actual action (attribute is empty).
+  form.action = net::AppendQueryParameter(form.action, "arg", "value");
+
+  // Expect the form still can be autofilled.
+  for (const FormFieldData& field : form.fields) {
+    GetAutofillSuggestions(form, field);
+    EXPECT_TRUE(external_delegate_->on_suggestions_returned_seen());
+  }
+}
+
+// Tests that a form with <select> field is accepted if <option> value (not
+// content) is quite long. Some websites use value to propagate long JSON to
+// JS-backed logic.
+TEST_F(AutofillManagerTest, FormWithLongOptionValuesIsAcceptable) {
+  FormData form;
+  form.name = ASCIIToUTF16("MyForm");
+  form.origin = GURL("http://myform.com/form.html");
+  form.action = GURL("http://myform.com/submit.html");
+
+  FormFieldData field;
+  test::CreateTestFormField("First name", "firstname", "", "text", &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("Last name", "lastname", "", "text", &field);
+  form.fields.push_back(field);
+
+  // Prepare <select> field with long <option> values.
+  const size_t kOptionValueLength = 10240;
+  const std::string long_string(kOptionValueLength, 'a');
+  const std::vector<const char*> values(3, long_string.c_str());
+  const std::vector<const char*> contents{"A", "B", "C"};
+  test::CreateTestSelectField("Country", "country", "", values, contents,
+                              values.size(), &field);
+  form.fields.push_back(field);
+
+  FormsSeen({form});
+
+  // Suggestions should be displayed.
+  for (const FormFieldData& field : form.fields) {
+    GetAutofillSuggestions(form, field);
+    EXPECT_TRUE(external_delegate_->on_suggestions_returned_seen());
   }
 }
 

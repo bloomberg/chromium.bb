@@ -35,7 +35,6 @@ bool IsValidFormFieldData(const FormFieldData& field) {
          IsValidString16(field.value) &&
          IsValidString(field.form_control_type) &&
          IsValidString(field.autocomplete_attribute) &&
-         IsValidString16Vector(field.option_values) &&
          IsValidString16Vector(field.option_contents);
 }
 

@@ -116,7 +116,8 @@ class FormStructure {
   bool ShouldBeCrowdsourced() const;
 
   // Sets the field types to be those set for |cached_form|.
-  void UpdateFromCache(const FormStructure& cached_form);
+  void UpdateFromCache(const FormStructure& cached_form,
+                       const bool apply_is_autofilled);
 
   // Logs quality metrics for |this|, which should be a user-submitted form.
   // This method should only be called after the possible field types have been

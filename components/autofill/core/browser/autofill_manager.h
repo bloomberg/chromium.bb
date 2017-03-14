@@ -414,6 +414,9 @@ class AutofillManager : public AutofillDownloadManager::Observer,
   // Parses the forms using heuristic matching and querying the Autofill server.
   void ParseForms(const std::vector<FormData>& forms);
 
+  // Parses the form and adds it to |form_structures_|.
+  bool ParseForm(const FormData& form, FormStructure** parsed_form_structure);
+
   // Imports the form data, submitted by the user, into |personal_data_|.
   void ImportFormData(const FormStructure& submitted_form);
 

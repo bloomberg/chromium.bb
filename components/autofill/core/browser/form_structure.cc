@@ -624,17 +624,16 @@ bool FormStructure::ShouldBeCrowdsourced() const {
          ShouldBeParsed();
 }
 
-void FormStructure::UpdateFromCache(const FormStructure& cached_form) {
+void FormStructure::UpdateFromCache(const FormStructure& cached_form,
+                                    const bool apply_is_autofilled) {
   // Map from field signatures to cached fields.
-  std::map<std::string, const AutofillField*> cached_fields;
+  std::map<base::string16, const AutofillField*> cached_fields;
   for (size_t i = 0; i < cached_form.field_count(); ++i) {
     auto* const field = cached_form.field(i);
-    cached_fields[field->FieldSignatureAsStr()] = field;
+    cached_fields[field->unique_name()] = field;
   }
-
   for (auto& field : *this) {
-    std::map<std::string, const AutofillField*>::const_iterator cached_field =
-        cached_fields.find(field->FieldSignatureAsStr());
+    const auto& cached_field = cached_fields.find(field->unique_name());
     if (cached_field != cached_fields.end()) {
       if (field->form_control_type != "select-one" &&
           field->value == cached_field->second->value) {
@@ -649,6 +648,9 @@ void FormStructure::UpdateFromCache(const FormStructure& cached_form) {
       field->set_server_type(cached_field->second->server_type());
       field->SetHtmlType(cached_field->second->html_type(),
                          cached_field->second->html_mode());
+      if (apply_is_autofilled) {
+        field->is_autofilled = cached_field->second->is_autofilled;
+      }
       field->set_previously_autofilled(
           cached_field->second->previously_autofilled());
       field->set_section(cached_field->second->section());
@@ -662,9 +664,6 @@ void FormStructure::UpdateFromCache(const FormStructure& cached_form) {
   // rearranged via JavaScript between page load and form submission, so we
   // copy over the |form_signature_field_names_| corresponding to the query
   // request.
-  DCHECK_EQ(cached_form.form_name_, form_name_);
-  DCHECK_EQ(cached_form.source_url_, source_url_);
-  DCHECK_EQ(cached_form.target_url_, target_url_);
   form_signature_ = cached_form.form_signature_;
 }
 
