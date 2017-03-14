@@ -63,8 +63,7 @@
         '<(DEPTH)/third_party/polymer/v1_0/components-chromium/iron-resizable-behavior/compiled_resources2.gyp:iron-resizable-behavior-extracted',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:i18n_behavior',
-
-	'fingerprint_browser_proxy',
+        'fingerprint_browser_proxy',
       ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
@@ -105,7 +104,7 @@
       'dependencies': [
         '../compiled_resources2.gyp:route',
         '<(EXTERNS_GYP):quick_unlock_private',
-	'lock_screen_constants',
+        'lock_screen_constants',
       ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
@@ -121,7 +120,7 @@
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:web_ui_listener_behavior',
         'easy_unlock_browser_proxy',
         'easy_unlock_turn_off_dialog',
-	'lock_screen_constants',
+        'lock_screen_constants',
         'lock_state_behavior',
         'profile_info_browser_proxy',
         'sync_browser_proxy',
@@ -155,7 +154,7 @@
       'dependencies': [
         '../compiled_resources2.gyp:route',
         'fingerprint_browser_proxy',
-	'lock_screen_constants',
+        'lock_screen_constants',
         'lock_state_behavior',
         'password_prompt_dialog',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:i18n_behavior',
@@ -167,9 +166,8 @@
       'dependencies': [
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:i18n_behavior',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:web_ui_listener_behavior',
-
-	'fingerprint_browser_proxy',
-	'fingerprint_progress_arc',
+        'fingerprint_browser_proxy',
+        'fingerprint_progress_arc',
       ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
@@ -177,7 +175,7 @@
       'target_name': 'setup_pin_dialog',
       'dependencies': [
         '../compiled_resources2.gyp:route',
-	'lock_screen_constants',
+        'lock_screen_constants',
         'password_prompt_dialog',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:i18n_behavior',
       ],
