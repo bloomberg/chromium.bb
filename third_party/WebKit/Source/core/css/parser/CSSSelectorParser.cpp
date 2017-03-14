@@ -854,28 +854,6 @@ void CSSSelectorParser::recordUsageAndDeprecations(
                 "-internal-media-controls-overlay-cast-button") {
               feature =
                   UseCounter::CSSSelectorInternalMediaControlsOverlayCastButton;
-            } else if (current->value() ==
-                       "-internal-media-controls-text-track-list") {
-              feature =
-                  UseCounter::CSSSelectorInternalMediaControlsTextTrackList;
-            } else if (current->value() ==
-                       "-internal-media-controls-text-track-list-item") {
-              feature =
-                  UseCounter::CSSSelectorInternalMediaControlsTextTrackListItem;
-            } else if (current->value() ==
-                       "-internal-media-controls-text-track-list-item-input") {
-              feature = UseCounter::
-                  CSSSelectorInternalMediaControlsTextTrackListItemInput;
-            } else if (current->value() ==
-                       "-internal-media-controls-text-track-list-kind-"
-                       "captions") {
-              feature = UseCounter::
-                  CSSSelectorInternalMediaControlsTextTrackListKindCaptions;
-            } else if (current->value() ==
-                       "-internal-media-controls-text-track-list-kind-"
-                       "subtitles") {
-              feature = UseCounter::
-                  CSSSelectorInternalMediaControlsTextTrackListKindSubtitles;
             }
           }
           break;
