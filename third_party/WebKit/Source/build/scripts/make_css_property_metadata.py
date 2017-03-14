@@ -24,7 +24,8 @@ class CSSPropertyMetadataWriter(css_properties.CSSProperties):
     def generate_css_property_metadata_cpp(self):
         return {
             'properties_including_aliases': self._properties_including_aliases,
-            'switches': [('descriptor_only', 'isDescriptorOnly'),
+            'switches': [('is_descriptor', 'isDescriptor'),
+                         ('is_property', 'isProperty'),
                          ('interpolable', 'isInterpolableProperty'),
                          ('inherited', 'isInheritedProperty'),
                          ('supports_percentage', 'propertySupportsPercentage'),

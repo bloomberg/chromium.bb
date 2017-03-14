@@ -973,7 +973,7 @@ static CSSValue* parseKeywordValue(CSSPropertyID propertyId,
       return nullptr;
 
     // Descriptors do not support css wide keywords.
-    if (CSSPropertyMetadata::isDescriptorOnly(propertyId))
+    if (!CSSPropertyMetadata::isProperty(propertyId))
       return nullptr;
   }
 

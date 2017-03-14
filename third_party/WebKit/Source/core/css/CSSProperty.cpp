@@ -275,7 +275,7 @@ bool CSSProperty::isAffectedByAllProperty(CSSPropertyID propertyID) {
   if (propertyID == CSSPropertyVariable)
     return false;
 
-  if (CSSPropertyMetadata::isDescriptorOnly(propertyID))
+  if (!CSSPropertyMetadata::isProperty(propertyID))
     return false;
 
   // all shorthand spec says:

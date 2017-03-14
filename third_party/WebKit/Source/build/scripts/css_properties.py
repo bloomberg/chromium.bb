@@ -41,6 +41,11 @@ class CSSProperties(json5_generator.Writer):
         # StylePropertyMetadata additionally assumes there are under 1024 properties.
         assert self._first_enum_value + len(properties) < 512, 'Property aliasing expects there are under 512 properties.'
 
+        for property in properties:
+            assert property['is_descriptor'] or property['is_property'], \
+                property['name'] + ' must be either a property, a descriptor' +\
+                ' or both'
+
         for offset, property in enumerate(properties):
             property['property_id'] = name_utilities.enum_for_css_property(property['name'])
             property['upper_camel_name'] = name_utilities.camel_case(property['name'])

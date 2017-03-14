@@ -22,7 +22,8 @@ class CORE_EXPORT CSSPropertyMetadata {
   static bool propertySupportsPercentage(CSSPropertyID unresolvedProperty);
   static bool propertyIsRepeated(CSSPropertyID unresolvedProperty);
   static char repetitionSeparator(CSSPropertyID unresolvedProperty);
-  static bool isDescriptorOnly(CSSPropertyID unresolvedProperty);
+  static bool isDescriptor(CSSPropertyID unresolvedProperty);
+  static bool isProperty(CSSPropertyID unresolvedProperty);
 
   static void filterEnabledCSSPropertiesIntoVector(const CSSPropertyID*,
                                                    size_t length,

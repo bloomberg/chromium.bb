@@ -1100,7 +1100,7 @@ Response InspectorCSSAgent::getComputedStyleForNode(
     CSSPropertyID propertyId = static_cast<CSSPropertyID>(id);
     if (!CSSPropertyMetadata::isEnabledProperty(propertyId) ||
         isShorthandProperty(propertyId) ||
-        CSSPropertyMetadata::isDescriptorOnly(propertyId))
+        !CSSPropertyMetadata::isProperty(propertyId))
       continue;
     (*style)->addItem(
         protocol::CSS::CSSComputedStyleProperty::create()

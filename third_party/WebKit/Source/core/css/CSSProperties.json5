@@ -17,10 +17,16 @@
     runtime_flag: {
     },
 
-    // - descriptor_only
-    // These are actually descriptors and not CSS properties. Properties with
-    // the same name as a descriptor do not get this flag.
-    descriptor_only: {
+    // - is_descriptor
+    // Whether it is the name of a CSS descriptor.
+    // TODO(alancutter): Don't use CSSPropertyID for descriptors.
+    is_descriptor: {
+    },
+
+    // - is_property
+    // Whether it is the name of a CSS property.
+    is_property: {
+      default: true,
     },
 
     // - longhands: "property;other-property"
@@ -342,6 +348,7 @@
       api_class: true,
       api_methods: ["parseSingleValue"],
       converter: "convertFontFamily",
+      is_descriptor: true,
       font: true,
       inherited: true,
       name_for_methods: "FamilyDescription",
@@ -382,6 +389,7 @@
     },
     {
       name: "font-stretch",
+      is_descriptor: true,
       font: true,
       inherited: true,
       name_for_methods: "Stretch",
@@ -390,6 +398,7 @@
     },
     {
       name: "font-style",
+      is_descriptor: true,
       font: true,
       inherited: true,
       name_for_methods: "Style",
@@ -430,6 +439,7 @@
     {
       name: "font-weight",
       converter: "convertFontWeight",
+      is_descriptor: true,
       font: true,
       inherited: true,
       interpolable: true,
@@ -440,6 +450,7 @@
     {
       name: "font-feature-settings",
       converter: "convertFontFeatureSettings",
+      is_descriptor: true,
       font: true,
       inherited: true,
       name_for_methods: "FeatureSettings",
@@ -514,6 +525,7 @@
       api_class: true,
       api_methods: ["parseSingleValue"],
       custom_all: true,
+      is_descriptor: true,
       priority: "High",
     },
 
@@ -1099,6 +1111,7 @@
       name: "height",
       api_class: "CSSPropertyAPIWidthOrHeight",
       converter: "convertLengthSizing",
+      is_descriptor: true,
       initial: "initialSize",
       interpolable: true,
       keywords: ["auto", "fit-content", "min-content", "max-content"],
@@ -1293,12 +1306,14 @@
     {
       name: "max-height",
       converter: "convertLengthMaxSizing",
+      is_descriptor: true,
       initial: "initialMaxSize",
       interpolable: true,
     },
     {
       name: "max-width",
       converter: "convertLengthMaxSizing",
+      is_descriptor: true,
       initial: "initialMaxSize",
       interpolable: true,
     },
@@ -1306,6 +1321,7 @@
       name: "min-height",
       api_class: "CSSPropertyAPIWidthOrHeight",
       converter: "convertLengthSizing",
+      is_descriptor: true,
       initial: "initialMinSize",
       interpolable: true,
     },
@@ -1313,6 +1329,7 @@
       name: "min-width",
       api_class: "CSSPropertyAPIWidthOrHeight",
       converter: "convertLengthSizing",
+      is_descriptor: true,
       initial: "initialMinSize",
       interpolable: true,
     },
@@ -2345,6 +2362,7 @@
       name: "width",
       api_class: "CSSPropertyAPIWidthOrHeight",
       converter: "convertLengthSizing",
+      is_descriptor: true,
       initial: "initialSize",
       interpolable: true,
       keywords: ["auto", "fit-content", "min-content", "max-content"],
@@ -2584,36 +2602,43 @@
       inherited: true,
     },
 
-    // Descriptors
+    // Descriptor only names
 
     {
       name: "font-display",
-      descriptor_only: true,
+      is_descriptor: true,
+      is_property: false,
       runtime_flag: "CSSFontDisplay",
     },
     {
       name: "max-zoom",
-      descriptor_only: true,
+      is_descriptor: true,
+      is_property: false,
     },
     {
       name: "min-zoom",
-      descriptor_only: true,
+      is_descriptor: true,
+      is_property: false,
     },
     {
       name: "orientation",
-      descriptor_only: true,
+      is_descriptor: true,
+      is_property: false,
     },
     {
       name: "src",
-      descriptor_only: true,
+      is_descriptor: true,
+      is_property: false,
     },
     {
       name: "unicode-range",
-      descriptor_only: true,
+      is_descriptor: true,
+      is_property: false,
     },
     {
       name: "user-zoom",
-      descriptor_only: true,
+      is_descriptor: true,
+      is_property: false,
     },
 
     // Shorthands
@@ -2694,6 +2719,7 @@
     },
     {
       name: "font-variant",
+      is_descriptor: true,
       longhands: "font-variant-ligatures;font-variant-caps;font-variant-numeric",
     },
     {

@@ -69,7 +69,7 @@ class StyleBuilderWriter(css_properties.CSSProperties):
                 property['is_inherited_setter'] = 'set' + name + 'IsInherited'
             property['should_declare_functions'] = not property['use_handlers_for'] and not property['longhands'] \
                 and not property['direction_aware'] and not property['builder_skip'] \
-                and not property['descriptor_only']
+                and property['is_property']
 
     @template_expander.use_jinja('StyleBuilderFunctions.h.tmpl',
                                  filters=filters)
