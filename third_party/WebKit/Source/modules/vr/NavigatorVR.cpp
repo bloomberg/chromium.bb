@@ -7,7 +7,6 @@
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "core/dom/DOMException.h"
 #include "core/dom/Document.h"
-#include "core/dom/DocumentUserGestureToken.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/Fullscreen.h"
 #include "core/frame/LocalDOMWindow.h"
@@ -19,7 +18,6 @@
 #include "modules/vr/VRDisplay.h"
 #include "modules/vr/VRGetDevicesCallback.h"
 #include "modules/vr/VRPose.h"
-#include "platform/UserGestureIndicator.h"
 #include "public/platform/Platform.h"
 #include "wtf/PtrUtil.h"
 
@@ -131,12 +129,10 @@ void NavigatorVR::enqueueVREvent(VRDisplayEvent* event) {
   supplementable()->frame()->domWindow()->enqueueWindowEvent(event);
 }
 
-void NavigatorVR::dispatchVRGestureEvent(VRDisplayEvent* event) {
+void NavigatorVR::dispatchVREvent(VRDisplayEvent* event) {
   if (!(supplementable()->frame()))
     return;
 
-  UserGestureIndicator gestureIndicator(
-      DocumentUserGestureToken::create(document()));
   LocalDOMWindow* window = supplementable()->frame()->domWindow();
   DCHECK(window);
   event->setTarget(window);

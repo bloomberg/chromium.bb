@@ -6,7 +6,6 @@
 
 #include "core/css/StylePropertySet.h"
 #include "core/dom/DOMException.h"
-#include "core/dom/DocumentUserGestureToken.h"
 #include "core/dom/FrameRequestCallback.h"
 #include "core/dom/ScriptedAnimationController.h"
 #include "core/dom/TaskRunnerHelper.h"
@@ -228,7 +227,8 @@ ScriptPromise VRDisplay::requestPresent(ScriptState* scriptState,
   // If the VRDisplay is already presenting, however, repeated calls are
   // allowed outside a user gesture so that the presented content may be
   // updated.
-  if (firstPresent && !UserGestureIndicator::utilizeUserGesture()) {
+  if (firstPresent && !UserGestureIndicator::utilizeUserGesture() &&
+      !m_inDisplayActivate) {
     DOMException* exception = DOMException::create(
         InvalidStateError, "API can only be initiated by a user gesture.");
     resolver->reject(exception);
@@ -369,7 +369,6 @@ ScriptPromise VRDisplay::exitPresent(ScriptState* scriptState) {
 
 void VRDisplay::beginPresent() {
   Document* doc = this->document();
-  std::unique_ptr<UserGestureIndicator> gestureIndicator;
   if (m_capabilities->hasExternalDisplay()) {
     forceExitPresent();
     DOMException* exception = DOMException::create(
@@ -679,7 +678,8 @@ void VRDisplay::stopPresenting() {
 void VRDisplay::OnActivate(device::mojom::blink::VRDisplayEventReason reason) {
   if (!m_navigatorVR->isFocused() || m_displayBlurred)
     return;
-  m_navigatorVR->dispatchVRGestureEvent(VRDisplayEvent::create(
+  AutoReset<bool> activating(&m_inDisplayActivate, true);
+  m_navigatorVR->dispatchVREvent(VRDisplayEvent::create(
       EventTypeNames::vrdisplayactivate, true, false, this, reason));
 }
 

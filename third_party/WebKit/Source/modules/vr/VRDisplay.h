@@ -185,6 +185,7 @@ class VRDisplay final : public EventTargetWithInlineData,
   bool m_pendingRaf = false;
   bool m_pendingVsync = false;
   bool m_inAnimationFrame = false;
+  bool m_inDisplayActivate = false;
   bool m_displayBlurred = false;
   double m_timebase = -1;
   bool m_pendingPreviousFrameRender = false;
