@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/threading/thread_checker.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
 
 namespace autofill {
@@ -19,17 +20,16 @@ class GURL;
 
 namespace password_manager {
 
-class PasswordStore;
+class PasswordManagerClient;
 
 // The class is responsible for migrating the passwords saved on HTTP to HTTPS
-// origin.
+// origin. It automatically determines whether HTTP passwords should be moved or
+// copied depending on the site's HSTS status. If a site has HSTS enabled, the
+// HTTP password is considered obsolete and will be replaced by an HTTPS
+// version. If HSTS is not enabled, some parts of the site might still be served
+// via HTTP, which is why the password is copied in this case.
 class HttpPasswordMigrator : public PasswordStoreConsumer {
  public:
-  enum class MigrationMode {
-    MOVE,  // HTTP credentials are deleted after migration to HTTPS.
-    COPY,  // HTTP credentials are kept after migration to HTTPS.
-  };
-
   // API to be implemented by an embedder of HttpPasswordMigrator.
   class Consumer {
    public:
@@ -43,8 +43,7 @@ class HttpPasswordMigrator : public PasswordStoreConsumer {
 
   // |https_origin| should specify a valid HTTPS URL.
   HttpPasswordMigrator(const GURL& https_origin,
-                       MigrationMode mode,
-                       PasswordStore* password_store,
+                       const PasswordManagerClient* client,
                        Consumer* consumer);
   ~HttpPasswordMigrator() override;
 
@@ -52,10 +51,29 @@ class HttpPasswordMigrator : public PasswordStoreConsumer {
   void OnGetPasswordStoreResults(
       std::vector<std::unique_ptr<autofill::PasswordForm>> results) override;
 
+  // Callback for |PasswordManagerClient::PostHSTSQueryForHost|.
+  void OnHSTSQueryResult(bool is_hsts);
+
  private:
-  const MigrationMode mode_;
+  enum class MigrationMode {
+    MOVE,  // HTTP credentials are deleted after migration to HTTPS.
+    COPY,  // HTTP credentials are kept after migration to HTTPS.
+  };
+
+  void ProcessPasswordStoreResults();
+
+  const PasswordManagerClient* const client_;
   Consumer* consumer_;
-  PasswordStore* password_store_;
+
+  // |ProcessPasswordStoreResults| requires that both |OnHSTSQueryResult| and
+  // |OnGetPasswordStoreResults| have returned. Since this can happen in an
+  // arbitrary order, boolean flags are introduced to indicate completion. Only
+  // if both are set to true |ProcessPasswordStoreResults| gets called.
+  bool got_hsts_query_result_ = false;
+  bool got_password_store_results_ = false;
+  MigrationMode mode_;
+  std::vector<std::unique_ptr<autofill::PasswordForm>> results_;
+  base::ThreadChecker thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(HttpPasswordMigrator);
 };

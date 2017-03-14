@@ -38,6 +38,7 @@ enum PasswordSyncState {
 // environment.
 class PasswordManagerClient {
  public:
+  using HSTSCallback = base::Callback<void(bool)>;
   using CredentialsCallback =
       base::Callback<void(const autofill::PasswordForm*)>;
 
@@ -53,9 +54,11 @@ class PasswordManagerClient {
   // password manager is disabled, or in the presence of SSL errors on a page.
   virtual bool IsFillingEnabledForCurrentPage() const;
 
-  // Checks whether HTTP Strict Transport Security (HSTS) is active for the host
-  // of the given origin.
-  virtual bool IsHSTSActiveForHost(const GURL& origin) const;
+  // Checks asynchronously whether HTTP Strict Transport Security (HSTS) is
+  // active for the host of the given origin. Notifies |callback| with the
+  // result on the calling thread.
+  virtual void PostHSTSQueryForHost(const GURL& origin,
+                                    const HSTSCallback& callback) const;
 
   // Checks if the Credential Manager API is allowed to run on the page. It's
   // not allowed while prerendering and the pre-rendered WebContents will be

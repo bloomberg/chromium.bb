@@ -173,6 +173,13 @@ enum CredentialManagerGetMediation {
   CREDENTIAL_MANAGER_GET_UNMEDIATED
 };
 
+// Metrics: "PasswordManager.HttpPasswordMigrationMode"
+enum HttpPasswordMigrationMode {
+  HTTP_PASSWORD_MIGRATION_MODE_MOVE,
+  HTTP_PASSWORD_MIGRATION_MODE_COPY,
+  HTTP_PASSWORD_MIGRATION_MODE_COUNT
+};
+
 enum PasswordReusePasswordFieldDetected {
   NO_PASSWORD_FIELD,
   HAS_PASSWORD_FIELD,
@@ -228,6 +235,9 @@ void LogShouldBlockPasswordForSameOriginButDifferentScheme(bool should_block);
 
 // Logs number of passwords migrated from HTTP to HTTPS.
 void LogCountHttpMigratedPasswords(int count);
+
+// Logs mode of HTTP password migration.
+void LogHttpPasswordMigrationMode(HttpPasswordMigrationMode mode);
 
 // Log if the account chooser has empty username or duplicate usernames. In
 // addition record number of the placeholder avatars and total number of rows.

@@ -7,10 +7,12 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_io_data.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/passwords/manage_passwords_ui_controller.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -23,7 +25,11 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
+#include "net/cert/cert_verify_result.h"
+#include "net/http/transport_security_state.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "net/url_request/url_request_context.h"
+#include "net/url_request/url_request_context_getter.h"
 
 namespace {
 
@@ -46,6 +52,23 @@ class PasswordStoreResultsObserver
 
   DISALLOW_COPY_AND_ASSIGN(PasswordStoreResultsObserver);
 };
+
+void AddHSTSHostImpl(
+    const scoped_refptr<net::URLRequestContextGetter>& request_context,
+    const std::string& host) {
+  ASSERT_TRUE(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  net::TransportSecurityState* transport_security_state =
+      request_context->GetURLRequestContext()->transport_security_state();
+  if (!transport_security_state) {
+    ADD_FAILURE();
+    return;
+  }
+
+  base::Time expiry = base::Time::Now() + base::TimeDelta::FromDays(1000);
+  bool include_subdomains = false;
+  transport_security_state->AddHSTS(host, expiry, include_subdomains);
+  EXPECT_TRUE(transport_security_state->ShouldUpgradeToSSL(host));
+}
 
 }  // namespace
 
@@ -137,10 +160,26 @@ void PasswordManagerBrowserTestBase::SetUpOnMainThread() {
       FILE_PATH_LITERAL("chrome/test/data");
   https_test_server().ServeFilesFromSourceDirectory(base::FilePath(kDocRoot));
   ASSERT_TRUE(https_test_server().Start());
+
+  // Whitelist all certs for the HTTPS server.
+  auto cert = https_test_server().GetCertificate();
+  net::CertVerifyResult verify_result;
+  verify_result.cert_status = 0;
+  verify_result.is_issued_by_known_root = true;
+  verify_result.verified_cert = cert;
+  mock_cert_verifier().AddResultForCert(cert.get(), verify_result, net::OK);
 }
 
 void PasswordManagerBrowserTestBase::TearDownOnMainThread() {
   ASSERT_TRUE(embedded_test_server()->ShutdownAndWaitUntilComplete());
+}
+
+void PasswordManagerBrowserTestBase::SetUpInProcessBrowserTestFixture() {
+  ProfileIOData::SetCertVerifierForTesting(&mock_cert_verifier_);
+}
+
+void PasswordManagerBrowserTestBase::TearDownInProcessBrowserTestFixture() {
+  ProfileIOData::SetCertVerifierForTesting(nullptr);
 }
 
 content::WebContents* PasswordManagerBrowserTestBase::WebContents() {
@@ -290,4 +329,17 @@ void PasswordManagerBrowserTestBase::CheckElementValue(
       RenderViewHost(), value_check_script, &return_value));
   EXPECT_TRUE(return_value) << "element_id = " << element_id
                             << ", expected_value = " << expected_value;
+}
+
+void PasswordManagerBrowserTestBase::AddHSTSHost(const std::string& host) {
+  base::RunLoop run_loop;
+
+  content::BrowserThread::PostTaskAndReply(
+      content::BrowserThread::IO, FROM_HERE,
+      base::Bind(&AddHSTSHostImpl,
+                 make_scoped_refptr(browser()->profile()->GetRequestContext()),
+                 host),
+      run_loop.QuitClosure());
+
+  run_loop.Run();
 }

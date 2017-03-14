@@ -1381,11 +1381,6 @@ IN_PROC_BROWSER_TEST_F(
 IN_PROC_BROWSER_TEST_F(
     PasswordManagerBrowserTestBase,
     NoPromptForLoginFailedAndServerPushSeperateLoginForm_HttpsToHttp) {
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      ::switches::kAllowRunningInsecureContent);
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      ::switches::kIgnoreCertificateErrors);
-
   // This test case cannot inject the scripts via content::ExecuteScript() in
   // files served through HTTPS. Therefore the scripts are made part of the HTML
   // site and executed on load.
@@ -1410,11 +1405,6 @@ IN_PROC_BROWSER_TEST_F(
 IN_PROC_BROWSER_TEST_F(
     PasswordManagerBrowserTestBase,
     NoPromptForSeperateLoginFormWhenSwitchingFromHttpsToHttp) {
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      ::switches::kAllowRunningInsecureContent);
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      ::switches::kIgnoreCertificateErrors);
-
   std::string path = "/password/password_form.html";
   GURL https_url(https_test_server().GetURL(path));
   ASSERT_TRUE(https_url.SchemeIs(url::kHttpsScheme));
@@ -1509,6 +1499,63 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
       WebContents(), 0, blink::WebMouseEvent::Button::Left, gfx::Point(1, 1));
   WaitForElementValue("username_field", "user");
   CheckElementValue("password_field", "12345");
+}
+
+// Tests that obsolete HTTP credentials are moved when a site migrated to HTTPS
+// and has HSTS enabled.
+IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
+                       ObsoleteHttpCredentialMovedOnMigrationToHstsSite) {
+  // Add an http credential to the password store.
+  GURL https_origin = https_test_server().base_url();
+  ASSERT_TRUE(https_origin.SchemeIs(url::kHttpsScheme));
+  GURL::Replacements rep;
+  rep.SetSchemeStr(url::kHttpScheme);
+  GURL http_origin = https_origin.ReplaceComponents(rep);
+  autofill::PasswordForm http_form;
+  http_form.signon_realm = http_origin.spec();
+  http_form.origin = http_origin;
+  http_form.username_value = base::ASCIIToUTF16("user");
+  http_form.password_value = base::ASCIIToUTF16("12345");
+  scoped_refptr<password_manager::TestPasswordStore> password_store =
+      static_cast<password_manager::TestPasswordStore*>(
+          PasswordStoreFactory::GetForProfile(
+              browser()->profile(), ServiceAccessType::IMPLICIT_ACCESS)
+              .get());
+  password_store->AddLogin(http_form);
+
+  // Treat the host of the HTTPS test server as HSTS.
+  AddHSTSHost(https_test_server().host_port_pair().host());
+
+  // Navigate to HTTPS page and trigger the migration.
+  NavigationObserver form_observer(WebContents());
+  ui_test_utils::NavigateToURL(
+      browser(), https_test_server().GetURL("/password/password_form.html"));
+  form_observer.Wait();
+
+  // Issue the query for HTTPS credentials.
+  WaitForPasswordStore();
+
+  // Realize there are no HTTPS credentials and issue the query for HTTP
+  // credentials instead.
+  WaitForPasswordStore();
+
+  // Sync with IO thread before continuing. This is necessary, because the
+  // credential migration triggers a query for the HSTS state which gets
+  // executed on the IO thread. The actual task is empty, because only the reply
+  // is relevant. By the time the reply is executed it is guaranteed that the
+  // migration is completed.
+  const auto empty_lambda = []() {};
+  base::RunLoop run_loop;
+  content::BrowserThread::PostTaskAndReply(content::BrowserThread::IO,
+                                           FROM_HERE, base::Bind(empty_lambda),
+                                           run_loop.QuitClosure());
+  run_loop.Run();
+
+  // Only HTTPS passwords should be present.
+  EXPECT_TRUE(
+      password_store->stored_passwords().at(http_origin.spec()).empty());
+  EXPECT_FALSE(
+      password_store->stored_passwords().at(https_origin.spec()).empty());
 }
 
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,

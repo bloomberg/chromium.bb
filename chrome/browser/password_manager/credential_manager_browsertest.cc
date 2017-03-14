@@ -16,8 +16,6 @@
 #include "components/password_manager/core/browser/test_password_store.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
-#include "net/cert/cert_verify_result.h"
-#include "net/cert/mock_cert_verifier.h"
 #include "net/dns/mock_host_resolver.h"
 
 namespace {
@@ -44,20 +42,7 @@ class CredentialManagerBrowserTest : public PasswordManagerBrowserTestBase {
     observer.Wait();
   }
 
-  void SetUpInProcessBrowserTestFixture() override {
-    ProfileIOData::SetCertVerifierForTesting(&mock_cert_verifier_);
-  }
-
-  void TearDownInProcessBrowserTestFixture() override {
-    ProfileIOData::SetCertVerifierForTesting(nullptr);
-  }
-
-  net::MockCertVerifier& mock_cert_verifier() {
-    return mock_cert_verifier_;
-  }
-
  private:
-  net::MockCertVerifier mock_cert_verifier_;
   DISALLOW_COPY_AND_ASSIGN(CredentialManagerBrowserTest);
 };
 
@@ -118,14 +103,6 @@ IN_PROC_BROWSER_TEST_F(CredentialManagerBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(CredentialManagerBrowserTest,
                        StoreSavesPSLMatchedCredential) {
-  // Setup mock certificate for all origins.
-  auto cert = https_test_server().GetCertificate();
-  net::CertVerifyResult verify_result;
-  verify_result.cert_status = 0;
-  verify_result.is_issued_by_known_root = true;
-  verify_result.verified_cert = cert;
-  mock_cert_verifier().AddResultForCert(cert.get(), verify_result, net::OK);
-
   // Redirect all requests to localhost.
   host_resolver()->AddRule("*", "127.0.0.1");
 
@@ -183,6 +160,64 @@ IN_PROC_BROWSER_TEST_F(CredentialManagerBrowserTest,
   EXPECT_EQ(2U, passwords.size());
   EXPECT_TRUE(base::ContainsKey(passwords, psl_url.spec()));
   EXPECT_TRUE(base::ContainsKey(passwords, www_url.spec()));
+}
+
+IN_PROC_BROWSER_TEST_F(CredentialManagerBrowserTest,
+                       ObsoleteHttpCredentialMovedOnMigrationToHstsSite) {
+  // Add an http credential to the password store.
+  GURL https_origin = https_test_server().base_url();
+  ASSERT_TRUE(https_origin.SchemeIs(url::kHttpsScheme));
+  GURL::Replacements rep;
+  rep.SetSchemeStr(url::kHttpScheme);
+  GURL http_origin = https_origin.ReplaceComponents(rep);
+  autofill::PasswordForm http_form;
+  http_form.signon_realm = http_origin.spec();
+  http_form.origin = http_origin;
+  http_form.username_value = base::ASCIIToUTF16("user");
+  http_form.password_value = base::ASCIIToUTF16("12345");
+  scoped_refptr<password_manager::TestPasswordStore> password_store =
+      static_cast<password_manager::TestPasswordStore*>(
+          PasswordStoreFactory::GetForProfile(
+              browser()->profile(), ServiceAccessType::IMPLICIT_ACCESS)
+              .get());
+  password_store->AddLogin(http_form);
+  WaitForPasswordStore();
+
+  // Treat the host of the HTTPS test server as HSTS.
+  AddHSTSHost(https_test_server().host_port_pair().host());
+
+  // Navigate to HTTPS page and trigger the migration.
+  ui_test_utils::NavigateToURL(
+      browser(), https_test_server().GetURL("/password/done.html"));
+
+  // Call the API to trigger |get| and |store| and redirect.
+  ASSERT_TRUE(content::ExecuteScript(
+      RenderViewHost(), "navigator.credentials.get({password: true})"));
+
+  // Issue the query for HTTPS credentials.
+  WaitForPasswordStore();
+
+  // Realize there are no HTTPS credentials and issue the query for HTTP
+  // credentials instead.
+  WaitForPasswordStore();
+
+  // Sync with IO thread before continuing. This is necessary, because the
+  // credential migration triggers a query for the HSTS state which gets
+  // executed on the IO thread. The actual task is empty, because only the reply
+  // is relevant. By the time the reply is executed it is guaranteed that the
+  // migration is completed.
+  const auto empty_lambda = []() {};
+  base::RunLoop run_loop;
+  content::BrowserThread::PostTaskAndReply(content::BrowserThread::IO,
+                                           FROM_HERE, base::Bind(empty_lambda),
+                                           run_loop.QuitClosure());
+  run_loop.Run();
+
+  // Only HTTPS passwords should be present.
+  EXPECT_TRUE(
+      password_store->stored_passwords().at(http_origin.spec()).empty());
+  EXPECT_FALSE(
+      password_store->stored_passwords().at(https_origin.spec()).empty());
 }
 
 IN_PROC_BROWSER_TEST_F(CredentialManagerBrowserTest,

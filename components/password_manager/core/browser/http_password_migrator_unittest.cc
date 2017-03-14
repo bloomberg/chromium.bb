@@ -8,6 +8,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/password_manager/core/browser/mock_password_store.h"
+#include "components/password_manager/core/browser/stub_password_manager_client.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -15,9 +16,10 @@ namespace password_manager {
 namespace {
 
 using autofill::PasswordForm;
-using testing::_;
 using testing::ElementsAre;
 using testing::Pointee;
+using testing::SaveArg;
+using testing::_;
 
 constexpr char kTestHttpsURL[] = "https://example.org/";
 constexpr char kTestHttpURL[] = "http://example.org/";
@@ -74,49 +76,71 @@ class MockConsumer : public HttpPasswordMigrator::Consumer {
   }
 };
 
+class MockPasswordManagerClient : public StubPasswordManagerClient {
+ public:
+  explicit MockPasswordManagerClient(PasswordStore* store) : store_(store) {}
+
+  PasswordStore* GetPasswordStore() const override { return store_; }
+  MOCK_CONST_METHOD2(PostHSTSQueryForHost,
+                     void(const GURL&, const HSTSCallback& callback));
+
+ private:
+  PasswordStore* store_;
+
+  DISALLOW_COPY_AND_ASSIGN(MockPasswordManagerClient);
+};
+
+}  // namespace
+
 class HttpPasswordMigratorTest : public testing::Test {
  public:
-  HttpPasswordMigratorTest() {
-    mock_store_ = new testing::StrictMock<MockPasswordStore>;
-  }
+  HttpPasswordMigratorTest()
+      : mock_store_(new testing::StrictMock<MockPasswordStore>),
+        client_(mock_store_.get()) {}
 
   ~HttpPasswordMigratorTest() override { mock_store_->ShutdownOnUIThread(); }
 
   MockConsumer& consumer() { return consumer_; }
   MockPasswordStore& store() { return *mock_store_; }
+  MockPasswordManagerClient& client() { return client_; }
 
  protected:
-  void TestEmptyStore(HttpPasswordMigrator::MigrationMode mode);
-  void TestFullStore(HttpPasswordMigrator::MigrationMode mode);
+  void TestEmptyStore(bool is_hsts);
+  void TestFullStore(bool is_hsts);
 
  private:
   base::MessageLoop message_loop_;  // Used by mock_store_.
   MockConsumer consumer_;
   scoped_refptr<MockPasswordStore> mock_store_;
+  MockPasswordManagerClient client_;
 
   DISALLOW_COPY_AND_ASSIGN(HttpPasswordMigratorTest);
 };
 
-void HttpPasswordMigratorTest::TestEmptyStore(
-    HttpPasswordMigrator::MigrationMode mode) {
+void HttpPasswordMigratorTest::TestEmptyStore(bool is_hsts) {
   PasswordStore::FormDigest form(autofill::PasswordForm::SCHEME_HTML,
                                  kTestHttpURL, GURL(kTestHttpURL));
   EXPECT_CALL(store(), GetLogins(form, _));
-  HttpPasswordMigrator migrator(GURL(kTestHttpsURL), mode, &store(),
-                                &consumer());
+  PasswordManagerClient::HSTSCallback callback;
+  EXPECT_CALL(client(), PostHSTSQueryForHost(GURL(kTestHttpsURL), _))
+      .WillOnce(SaveArg<1>(&callback));
+  HttpPasswordMigrator migrator(GURL(kTestHttpsURL), &client(), &consumer());
+  callback.Run(is_hsts);
 
   EXPECT_CALL(consumer(), ProcessForms(std::vector<autofill::PasswordForm*>()));
   migrator.OnGetPasswordStoreResults(
       std::vector<std::unique_ptr<autofill::PasswordForm>>());
 }
 
-void HttpPasswordMigratorTest::TestFullStore(
-    HttpPasswordMigrator::MigrationMode mode) {
+void HttpPasswordMigratorTest::TestFullStore(bool is_hsts) {
   PasswordStore::FormDigest form_digest(autofill::PasswordForm::SCHEME_HTML,
                                         kTestHttpURL, GURL(kTestHttpURL));
   EXPECT_CALL(store(), GetLogins(form_digest, _));
-  HttpPasswordMigrator migrator(GURL(kTestHttpsURL), mode, &store(),
-                                &consumer());
+  PasswordManagerClient::HSTSCallback callback;
+  EXPECT_CALL(client(), PostHSTSQueryForHost(GURL(kTestHttpsURL), _))
+      .WillOnce(SaveArg<1>(&callback));
+  HttpPasswordMigrator migrator(GURL(kTestHttpsURL), &client(), &consumer());
+  callback.Run(is_hsts);
 
   PasswordForm form = CreateTestForm();
   PasswordForm psl_form = CreateTestPSLForm();
@@ -126,8 +150,7 @@ void HttpPasswordMigratorTest::TestFullStore(
   expected_form.signon_realm = expected_form.origin.spec();
 
   EXPECT_CALL(store(), AddLogin(expected_form));
-  EXPECT_CALL(store(), RemoveLogin(form))
-      .Times(mode == HttpPasswordMigrator::MigrationMode::MOVE);
+  EXPECT_CALL(store(), RemoveLogin(form)).Times(is_hsts);
   EXPECT_CALL(consumer(), ProcessForms(ElementsAre(Pointee(expected_form))));
   std::vector<std::unique_ptr<autofill::PasswordForm>> results;
   results.push_back(base::MakeUnique<PasswordForm>(psl_form));
@@ -136,21 +159,20 @@ void HttpPasswordMigratorTest::TestFullStore(
   migrator.OnGetPasswordStoreResults(std::move(results));
 }
 
-TEST_F(HttpPasswordMigratorTest, EmptyStoreWithMove) {
-  TestEmptyStore(HttpPasswordMigrator::MigrationMode::MOVE);
+TEST_F(HttpPasswordMigratorTest, EmptyStoreWithHSTS) {
+  TestEmptyStore(true);
 }
 
-TEST_F(HttpPasswordMigratorTest, EmptyStoreWithCopy) {
-  TestEmptyStore(HttpPasswordMigrator::MigrationMode::COPY);
+TEST_F(HttpPasswordMigratorTest, EmptyStoreWithoutHSTS) {
+  TestEmptyStore(false);
 }
 
-TEST_F(HttpPasswordMigratorTest, FullStoreWithMove) {
-  TestFullStore(HttpPasswordMigrator::MigrationMode::MOVE);
+TEST_F(HttpPasswordMigratorTest, FullStoreWithHSTS) {
+  TestFullStore(true);
 }
 
-TEST_F(HttpPasswordMigratorTest, FullStoreWithCopy) {
-  TestFullStore(HttpPasswordMigrator::MigrationMode::COPY);
+TEST_F(HttpPasswordMigratorTest, FullStoreWithoutHSTS) {
+  TestFullStore(false);
 }
 
-}  // namespace
 }  // namespace password_manager

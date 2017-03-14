@@ -12,6 +12,7 @@
 #include "components/password_manager/core/browser/password_store_consumer.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/test/test_utils.h"
+#include "net/cert/mock_cert_verifier.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 
 namespace autofill {
@@ -96,6 +97,8 @@ class PasswordManagerBrowserTestBase : public InProcessBrowserTest {
   // InProcessBrowserTest:
   void SetUpOnMainThread() override;
   void TearDownOnMainThread() override;
+  void SetUpInProcessBrowserTestFixture() override;
+  void TearDownInProcessBrowserTestFixture() override;
 
  protected:
   // Wrapper around ui_test_utils::NavigateToURL that waits until
@@ -136,13 +139,18 @@ class PasswordManagerBrowserTestBase : public InProcessBrowserTest {
                          const std::string& element_id,
                          const std::string& expected_value);
 
+  // Synchronoulsy adds the given host to the list of valid HSTS hosts.
+  void AddHSTSHost(const std::string& host);
+
   // Accessors
   content::WebContents* WebContents();
   content::RenderViewHost* RenderViewHost();
   net::EmbeddedTestServer& https_test_server() { return https_test_server_; }
+  net::MockCertVerifier& mock_cert_verifier() { return mock_cert_verifier_; }
 
  private:
   net::EmbeddedTestServer https_test_server_;
+  net::MockCertVerifier mock_cert_verifier_;
   DISALLOW_COPY_AND_ASSIGN(PasswordManagerBrowserTestBase);
 };
 

@@ -18,6 +18,8 @@
 
 using autofill::PasswordForm;
 using testing::Return;
+using testing::SaveArg;
+using testing::_;
 
 namespace password_manager {
 
@@ -75,7 +77,8 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
   explicit MockPasswordManagerClient(PasswordStore* store) : store_(store) {}
 
   PasswordStore* GetPasswordStore() const override { return store_; }
-  MOCK_CONST_METHOD1(IsHSTSActiveForHost, bool(const GURL&));
+  MOCK_CONST_METHOD2(PostHSTSQueryForHost,
+                     void(const GURL&, const HSTSCallback& callback));
 
  private:
   PasswordStore* store_;
@@ -130,13 +133,18 @@ TEST_F(ObsoleteHttpCleanerTest, TestBlacklistDeletion) {
     PasswordForm form =
         test_case.is_http ? CreateTestHTTPForm() : CreateTestHTTPSForm();
     form.blacklisted_by_user = test_case.is_blacklisted;
-    if (test_case.is_http && test_case.is_blacklisted) {
-      EXPECT_CALL(client(), IsHSTSActiveForHost(form.origin))
-          .WillOnce(Return(test_case.is_hsts));
+    PasswordManagerClient::HSTSCallback callback;
+    const bool should_expect_hsts_query =
+        test_case.is_http && test_case.is_blacklisted;
+    if (should_expect_hsts_query) {
+      EXPECT_CALL(client(), PostHSTSQueryForHost(form.origin, _))
+          .WillOnce(SaveArg<1>(&callback));
     }
 
-    EXPECT_CALL(store(), RemoveLogin(form)).Times(test_case.is_deleted);
     cleaner.OnGetPasswordStoreResults(MakeResults({form}));
+    EXPECT_CALL(store(), RemoveLogin(form)).Times(test_case.is_deleted);
+    if (should_expect_hsts_query)
+      callback.Run(test_case.is_hsts);
   }
 }
 
@@ -188,10 +196,18 @@ TEST_F(ObsoleteHttpCleanerTest, TestAutofillableDeletion) {
           https_form.password_value + base::ASCIIToUTF16("-different");
     }
 
-    EXPECT_CALL(client(), IsHSTSActiveForHost(https_form.origin))
-        .WillOnce(Return(test_case.is_hsts));
-    EXPECT_CALL(store(), RemoveLogin(http_form)).Times(test_case.is_deleted);
+    PasswordManagerClient::HSTSCallback callback;
+    const bool should_expect_hsts_query =
+        test_case.same_host && test_case.same_user && test_case.same_pass;
+    if (should_expect_hsts_query) {
+      EXPECT_CALL(client(), PostHSTSQueryForHost(http_form.origin, _))
+          .WillOnce(SaveArg<1>(&callback));
+    }
+
     cleaner.OnGetPasswordStoreResults(MakeResults({http_form, https_form}));
+    EXPECT_CALL(store(), RemoveLogin(http_form)).Times(test_case.is_deleted);
+    if (should_expect_hsts_query)
+      callback.Run(test_case.is_hsts);
   }
 }
 
@@ -218,14 +234,22 @@ TEST_F(ObsoleteHttpCleanerTest, TestSiteStatsDeletion) {
 
     InteractionsStats stats =
         test_case.is_http ? CreateTestHTTPStats() : CreateTestHTTPSStats();
-    if (test_case.is_http) {
-      EXPECT_CALL(client(), IsHSTSActiveForHost(stats.origin_domain))
-          .WillOnce(Return(test_case.is_hsts));
+    PasswordManagerClient::HSTSCallback callback;
+    const bool should_expect_hsts_query = test_case.is_http;
+    if (should_expect_hsts_query) {
+      EXPECT_CALL(client(), PostHSTSQueryForHost(stats.origin_domain, _))
+          .WillOnce(SaveArg<1>(&callback));
     }
 
+    cleaner.OnGetSiteStatistics({stats});
     EXPECT_CALL(store(), RemoveSiteStatsImpl(stats.origin_domain))
         .Times(test_case.is_deleted);
-    cleaner.OnGetSiteStatistics({stats});
+    if (should_expect_hsts_query)
+      callback.Run(test_case.is_hsts);
+
+    // We expect a call to |RemoveSiteStatsImpl| which is a async task posted
+    // from |PasswordStore::RemoveSiteStats|. Hence the following line is
+    // necessary to ensure |RemoveSiteStatsImpl| gets called.
     base::RunLoop().RunUntilIdle();
   }
 }

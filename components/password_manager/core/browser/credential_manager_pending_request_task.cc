@@ -134,8 +134,7 @@ void CredentialManagerPendingRequestTask::OnGetPasswordStoreResults(
   if (results.empty()) {
     // Try to migrate the HTTP passwords and process them later.
     http_migrator_ = base::MakeUnique<HttpPasswordMigrator>(
-        origin_, HttpPasswordMigrator::MigrationMode::COPY,
-        delegate_->client()->GetPasswordStore(), this);
+        origin_, delegate_->client(), this);
     return;
   }
   ProcessForms(std::move(results));

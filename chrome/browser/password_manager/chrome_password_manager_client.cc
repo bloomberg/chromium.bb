@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/singleton.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
@@ -50,6 +51,7 @@
 #include "components/sessions/content/content_record_password_state.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/version_info/version_info.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
@@ -137,6 +139,22 @@ void ReportMetrics(bool password_manager_enabled,
       "PasswordManager.ShouldShowAutoSignInFirstRunExperience",
       password_bubble_experiment::ShouldShowAutoSignInPromptFirstRunExperience(
           profile->GetPrefs()));
+}
+
+bool IsHSTSActiveForHostAndRequestContext(
+    const GURL& origin,
+    const scoped_refptr<net::URLRequestContextGetter>& request_context) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  if (!origin.is_valid())
+    return false;
+
+  net::TransportSecurityState* security_state =
+      request_context->GetURLRequestContext()->transport_security_state();
+
+  if (!security_state)
+    return false;
+
+  return security_state->ShouldUpgradeToSSL(origin.host());
 }
 
 }  // namespace
@@ -240,20 +258,14 @@ bool ChromePasswordManagerClient::IsFillingEnabledForCurrentPage() const {
          IsPasswordManagementEnabledForCurrentPage();
 }
 
-bool ChromePasswordManagerClient::IsHSTSActiveForHost(
-    const GURL& origin) const {
-  if (!origin.is_valid())
-    return false;
-
-  net::TransportSecurityState* security_state =
-      profile_->GetRequestContext()
-          ->GetURLRequestContext()
-          ->transport_security_state();
-
-  if (!security_state)
-    return false;
-
-  return security_state->ShouldUpgradeToSSL(origin.host());
+void ChromePasswordManagerClient::PostHSTSQueryForHost(
+    const GURL& origin,
+    const HSTSCallback& callback) const {
+  content::BrowserThread::PostTaskAndReplyWithResult(
+      content::BrowserThread::IO, FROM_HERE,
+      base::Bind(&IsHSTSActiveForHostAndRequestContext, origin,
+                 make_scoped_refptr(profile_->GetRequestContext())),
+      callback);
 }
 
 bool ChromePasswordManagerClient::OnCredentialManagerUsed() {
