@@ -709,10 +709,6 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   void updateAncestorDependentCompositingInputs(
       const AncestorDependentCompositingInputs&,
       bool hasAncestorWithClipPath);
-  void updateDescendantDependentCompositingInputs(
-      bool hasDescendantWithClipPath,
-      bool hasNonIsolatedDescendantWithBlendMode,
-      bool hasRootScrollerAsDescendant);
   void didUpdateCompositingInputs();
 
   const IntRect& clippedAbsoluteBoundingBox() const {
@@ -789,11 +785,6 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   // context's painted output, but not the content in any grandparent
   // stacking contexts.
   bool hasNonIsolatedDescendantWithBlendMode() const;
-
-  bool hasRootScrollerAsDescendant() const {
-    DCHECK(!m_needsDescendantDependentFlagsUpdate);
-    return m_hasRootScrollerAsDescendant;
-  }
 
   bool lostGroupedMapping() const {
     DCHECK(isAllowedToQueryCompositingState());
@@ -1206,7 +1197,6 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   unsigned m_hasDescendantWithClipPath : 1;
   unsigned m_hasNonIsolatedDescendantWithBlendMode : 1;
   unsigned m_hasAncestorWithClipPath : 1;
-  unsigned m_hasRootScrollerAsDescendant : 1;
 
   unsigned m_selfPaintingStatusChanged : 1;
 

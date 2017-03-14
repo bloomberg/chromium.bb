@@ -538,9 +538,6 @@ void CompositedLayerMapping::
   if (clippingContainer->enclosingLayer() == scrollParent)
     return;
 
-  if (clippingContainer->enclosingLayer()->hasRootScrollerAsDescendant())
-    return;
-
   if (compositingAncestor->layoutObject().isDescendantOf(clippingContainer))
     return;
 
@@ -608,12 +605,6 @@ bool CompositedLayerMapping::updateGraphicsLayerConfiguration() {
 
   // Our scrolling layer will clip.
   if (m_owningLayer.needsCompositedScrolling())
-    needsDescendantsClippingLayer = false;
-
-  // We disable clipping on ancestor layers of the root scroller to give it
-  // the same behavior w.r.t browser controls as the real root layer. See the
-  // RootScrollerController class for more details.
-  if (m_owningLayer.hasRootScrollerAsDescendant())
     needsDescendantsClippingLayer = false;
 
   const PaintLayer* scrollParent = this->scrollParent();
@@ -2301,6 +2292,7 @@ bool CompositedLayerMapping::updateScrollingLayers(bool needsScrollingLayers) {
       m_scrollingLayer =
           createGraphicsLayer(CompositingReasonLayerForScrollingContainer);
       m_scrollingLayer->setDrawsContent(false);
+      m_scrollingLayer->setMasksToBounds(true);
 
       // Inner layer which renders the content that scrolls.
       m_scrollingContentsLayer =
@@ -2319,9 +2311,6 @@ bool CompositedLayerMapping::updateScrollingLayers(bool needsScrollingLayers) {
         scrollingCoordinator->scrollableAreasDidChange();
       }
     }
-
-    m_scrollingLayer->setMasksToBounds(
-        !m_owningLayer.hasRootScrollerAsDescendant());
   } else if (m_scrollingLayer) {
     m_scrollingLayer = nullptr;
     m_scrollingContentsLayer = nullptr;

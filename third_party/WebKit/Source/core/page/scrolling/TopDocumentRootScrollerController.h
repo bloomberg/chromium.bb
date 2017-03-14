@@ -93,8 +93,6 @@ class CORE_EXPORT TopDocumentRootScrollerController
 
   Document* topDocument() const;
 
-  void setNeedsCompositingInputsUpdateOnGlobalRootScroller();
-
   // The apply-scroll callback that moves browser controls and produces
   // overscroll effects. This class makes sure this callback is set on the
   // appropriate root scroller element.

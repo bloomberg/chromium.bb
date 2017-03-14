@@ -147,12 +147,6 @@ class CORE_EXPORT PaintLayerCompositor final : public GraphicsLayerClient {
 
   void updateRootLayerPosition();
 
-  // If the root scroller isn't the root layer then the PaintLayerCompositor
-  // must disable clipping on its layers so that the root scroller can
-  // expand/shrink its clipping layer in response to browser controls and have
-  // the result be visible.
-  void updateClippingOnCompositorLayers();
-
   void setIsInWindow(bool);
 
   static PaintLayerCompositor* frameContentsCompositor(LayoutPart&);

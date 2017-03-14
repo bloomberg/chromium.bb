@@ -105,22 +105,7 @@ void RootScrollerController::recomputeEffectiveRootScroller() {
       return;
   }
 
-  PaintLayer* oldRootScrollerLayer = rootScrollerPaintLayer();
-
   m_effectiveRootScroller = newEffectiveRootScroller;
-
-  // This change affects both the old and new layers.
-  if (oldRootScrollerLayer)
-    oldRootScrollerLayer->setNeedsCompositingInputsUpdate();
-  if (rootScrollerPaintLayer())
-    rootScrollerPaintLayer()->setNeedsCompositingInputsUpdate();
-
-  // The above may not be enough as we need to update existing ancestor
-  // GraphicsLayers. This will force us to rebuild the GraphicsLayer tree.
-  if (LayoutView* layoutView = m_document->layoutView()) {
-    layoutView->compositor()->setNeedsCompositingUpdate(
-        CompositingUpdateRebuildTree);
-  }
 
   if (Page* page = m_document->page())
     page->globalRootScrollerController().didChangeRootScroller();

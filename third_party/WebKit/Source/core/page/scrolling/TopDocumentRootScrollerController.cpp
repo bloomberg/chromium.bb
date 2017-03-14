@@ -132,21 +132,10 @@ void TopDocumentRootScrollerController::recomputeGlobalRootScroller() {
   // scrolling the element so it will apply scroll to the element itself.
   target->setApplyScroll(m_viewportApplyScroll, "disable-native-scroll");
 
-  // A change in global root scroller requires a compositing inputs update to
-  // the new and old global root scroller since it might change how the
-  // ancestor layers are clipped. e.g. An iframe that's the global root
-  // scroller clips its layers like the root frame.  Normally this is set
-  // when the local effective root scroller changes but the global root
-  // scroller can change because the parent's effective root scroller
-  // changes.
-  setNeedsCompositingInputsUpdateOnGlobalRootScroller();
-
   ScrollableArea* oldRootScrollerArea =
       RootScrollerUtil::scrollableAreaForRootScroller(m_globalRootScroller);
 
   m_globalRootScroller = target;
-
-  setNeedsCompositingInputsUpdateOnGlobalRootScroller();
 
   // Ideally, scroll customization would pass the current element to scroll to
   // the apply scroll callback but this doesn't happen today so we set it
@@ -168,23 +157,6 @@ Document* TopDocumentRootScrollerController::topDocument() const {
     return nullptr;
 
   return toLocalFrame(m_page->mainFrame())->document();
-}
-
-void TopDocumentRootScrollerController::
-    setNeedsCompositingInputsUpdateOnGlobalRootScroller() {
-  if (!m_globalRootScroller)
-    return;
-
-  PaintLayer* layer = m_globalRootScroller->document()
-                          .rootScrollerController()
-                          .rootScrollerPaintLayer();
-
-  if (layer)
-    layer->setNeedsCompositingInputsUpdate();
-
-  if (LayoutView* view = m_globalRootScroller->document().layoutView()) {
-    view->compositor()->setNeedsCompositingUpdate(CompositingUpdateRebuildTree);
-  }
 }
 
 void TopDocumentRootScrollerController::didUpdateCompositing() {

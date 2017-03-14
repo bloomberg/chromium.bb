@@ -68,7 +68,6 @@
 #include "core/layout/svg/LayoutSVGResourceClipper.h"
 #include "core/layout/svg/LayoutSVGRoot.h"
 #include "core/page/Page.h"
-#include "core/page/scrolling/RootScrollerController.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
 #include "core/paint/BoxReflectionUtils.h"
 #include "core/paint/FilterEffectBuilder.h"
@@ -156,7 +155,6 @@ PaintLayer::PaintLayer(LayoutBoxModelObject& layoutObject)
       m_hasDescendantWithClipPath(false),
       m_hasNonIsolatedDescendantWithBlendMode(false),
       m_hasAncestorWithClipPath(false),
-      m_hasRootScrollerAsDescendant(false),
       m_selfPaintingStatusChanged(false),
       m_layoutObject(layoutObject),
       m_parent(0),
@@ -674,7 +672,6 @@ void PaintLayer::updateDescendantDependentFlags() {
     m_hasVisibleDescendant = false;
     m_hasNonIsolatedDescendantWithBlendMode = false;
     m_hasDescendantWithClipPath = false;
-    m_hasRootScrollerAsDescendant = false;
 
     for (PaintLayer* child = firstChild(); child;
          child = child->nextSibling()) {
@@ -690,13 +687,6 @@ void PaintLayer::updateDescendantDependentFlags() {
 
       m_hasDescendantWithClipPath |= child->hasDescendantWithClipPath() ||
                                      child->layoutObject().hasClipPath();
-
-      m_hasRootScrollerAsDescendant |= child->hasRootScrollerAsDescendant() ||
-                                       (child ==
-                                        child->layoutObject()
-                                            .document()
-                                            .rootScrollerController()
-                                            .rootScrollerPaintLayer());
     }
 
     if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled() &&

@@ -431,8 +431,6 @@ void PaintLayerCompositor::updateIfNeeded() {
       }
     }
 
-    updateClippingOnCompositorLayers();
-
     GraphicsLayerUpdater updater;
     updater.update(*updateRoot, layersNeedingPaintInvalidation);
 
@@ -483,35 +481,6 @@ void PaintLayerCompositor::updateIfNeeded() {
   // Inform the inspector that the layer tree has changed.
   if (isMainFrame())
     probe::layerTreeDidChange(m_layoutView.frame());
-}
-
-void PaintLayerCompositor::updateClippingOnCompositorLayers() {
-  bool shouldClip = !rootLayer()->hasRootScrollerAsDescendant();
-  if (m_rootContentLayer) {
-    // FIXME: with rootLayerScrolls, we probably don't even need
-    // m_rootContentLayer?
-    m_rootContentLayer->setMasksToBounds(
-        !RuntimeEnabledFeatures::rootLayerScrollingEnabled() && shouldClip);
-  }
-
-  const TopDocumentRootScrollerController& globalRootScrollerController =
-      m_layoutView.document().page()->globalRootScrollerController();
-
-  Element* documentElement = m_layoutView.document().documentElement();
-  bool frameIsRootScroller =
-      documentElement &&
-      documentElement->isSameNode(
-          globalRootScrollerController.globalRootScroller());
-
-  // We normally clip iframes' (but not the root frame) overflow controls
-  // host and container layers but if the root scroller is the iframe itself
-  // we want it to behave like the root frame.
-  shouldClip &= !frameIsRootScroller && !m_layoutView.frame()->isLocalRoot();
-
-  if (m_containerLayer)
-    m_containerLayer->setMasksToBounds(shouldClip);
-  if (m_overflowControlsHostLayer)
-    m_overflowControlsHostLayer->setMasksToBounds(shouldClip);
 }
 
 static void restartAnimationOnCompositor(const LayoutObject& layoutObject) {
@@ -1140,6 +1109,13 @@ void PaintLayerCompositor::ensureRootLayer() {
     m_rootContentLayer->setPosition(FloatPoint());
     m_rootContentLayer->setOwnerNodeId(
         DOMNodeIds::idForNode(m_layoutView.node()));
+
+    // FIXME: with rootLayerScrolls, we probably don't even need
+    // m_rootContentLayer?
+    if (!RuntimeEnabledFeatures::rootLayerScrollingEnabled()) {
+      // Need to clip to prevent transformed content showing outside this frame
+      m_rootContentLayer->setMasksToBounds(true);
+    }
   }
 
   if (shouldCreateOwnLayers && !m_overflowControlsHostLayer) {
@@ -1147,9 +1123,14 @@ void PaintLayerCompositor::ensureRootLayer() {
     ASSERT(!m_containerLayer);
 
     // Create a layer to host the clipping layer and the overflow controls
-    // layers.  Whether these layers mask the content below is determined
-    // in updateClippingOnCompositorLayers.
+    // layers.
     m_overflowControlsHostLayer = GraphicsLayer::create(this);
+
+    // Clip iframe's overflow controls layer.
+    bool containerMasksToBounds = !m_layoutView.frame()->isLocalRoot();
+    m_overflowControlsHostLayer->setMasksToBounds(containerMasksToBounds);
+
+    // Create a clipping layer if this is an iframe or settings require to clip.
     m_containerLayer = GraphicsLayer::create(this);
     m_scrollLayer = GraphicsLayer::create(this);
     if (ScrollingCoordinator* scrollingCoordinator =
