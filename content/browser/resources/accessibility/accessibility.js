@@ -7,11 +7,26 @@ cr.define('accessibility', function() {
 
   // Note: keep these values in sync with the values in
   // content/common/accessibility_mode_enums.h
-  const MODE_FLAG_NATIVE_APIS = 1 << 0;
-  const MODE_FLAG_WEB_CONTENTS = 1 << 1;
-  const MODE_FLAG_INLINE_TEXT_BOXES = 1 << 2;
-  const MODE_FLAG_SCREEN_READER = 1 << 3;
-  const MODE_FLAG_HTML = 1 << 4;
+  const AccessibilityMode = {
+    kOff: 0,
+    kNativeAPIs: 1 << 0,
+    kWebContents: 1 << 1,
+    kInlineTextBoxes: 1 << 2,
+    kScreenReader: 1 << 3,
+    kHTML: 1 << 4,
+
+    get kComplete() {
+      return AccessibilityMode.kNativeAPIs | AccessibilityMode.kWebContents |
+        AccessibilityMode.kInlineTextBoxes | AccessibilityMode.kScreenReader |
+        AccessibilityMode.kHTML;
+    },
+
+    get kWebContentsOnly() {
+      return AccessibilityMode.kWebContents |
+        AccessibilityMode.kInlineTextBoxes | AccessibilityMode.kScreenReader |
+        AccessibilityMode.kHTML;
+    }
+  };
 
   function requestData() {
     var xhr = new XMLHttpRequest();
@@ -96,11 +111,12 @@ cr.define('accessibility', function() {
       siteInfo.appendChild(formatValue(data, properties[j]));
     row.appendChild(siteInfo);
 
-    row.appendChild(createModeElement(MODE_FLAG_NATIVE_APIS, data))
-    row.appendChild(createModeElement(MODE_FLAG_WEB_CONTENTS, data))
-    row.appendChild(createModeElement(MODE_FLAG_INLINE_TEXT_BOXES, data))
-    row.appendChild(createModeElement(MODE_FLAG_SCREEN_READER, data))
-    row.appendChild(createModeElement(MODE_FLAG_HTML, data))
+    row.appendChild(createModeElement(AccessibilityMode.kNativeAPIs, data))
+    row.appendChild(createModeElement(AccessibilityMode.kWebContents, data))
+    row.appendChild(createModeElement(AccessibilityMode.kInlineTextBoxes,
+      data))
+    row.appendChild(createModeElement(AccessibilityMode.kScreenReader, data))
+    row.appendChild(createModeElement(AccessibilityMode.kHTML, data))
 
     row.appendChild(document.createTextNode(' | '));
 
@@ -139,15 +155,15 @@ cr.define('accessibility', function() {
 
   function getNameForAccessibilityMode(mode) {
     switch (mode) {
-      case MODE_FLAG_NATIVE_APIS:
+      case AccessibilityMode.kNativeAPIs:
         return "native"
-      case MODE_FLAG_WEB_CONTENTS:
+      case AccessibilityMode.kWebContents:
         return "web"
-      case MODE_FLAG_INLINE_TEXT_BOXES:
+      case AccessibilityMode.kInlineTextBoxes:
         return "inline text"
-      case MODE_FLAG_SCREEN_READER:
+      case AccessibilityMode.kScreenReader:
         return "screen reader"
-      case MODE_FLAG_HTML:
+      case AccessibilityMode.kHTML:
         return "html"
     }
     return "unknown"
