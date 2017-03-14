@@ -22,8 +22,10 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
+#include "ui/resources/grit/ui_resources.h"
 #include "ui/wm/public/activation_client.h"
 
 namespace ash {
@@ -57,7 +59,12 @@ void UpdateShelfItemForWindow(ShelfItem* item, aura::Window* window) {
   gfx::ImageSkia* image = window->GetProperty(aura::client::kAppIconKey);
   if (!image || image->isNull())
     image = window->GetProperty(aura::client::kWindowIconKey);
-  item->image = image ? *image : gfx::ImageSkia();
+  if (!image || image->isNull()) {
+    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+    item->image = rb.GetImageNamed(IDR_DEFAULT_FAVICON_32).AsImageSkia();
+  } else {
+    item->image = *image;
+  }
 
   item->title = window->GetTitle();
 
