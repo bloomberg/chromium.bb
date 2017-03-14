@@ -97,6 +97,7 @@ LayoutObject* SVGLinearGradientElement::createLayoutObject(
 static void setGradientAttributes(const SVGGradientElement& element,
                                   LinearGradientAttributes& attributes,
                                   bool isLinear) {
+  element.synchronizeAnimatedSVGAttribute(anyQName());
   element.collectCommonAttributes(attributes);
 
   if (!isLinear)

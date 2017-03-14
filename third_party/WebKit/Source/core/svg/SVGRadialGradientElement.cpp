@@ -106,6 +106,7 @@ LayoutObject* SVGRadialGradientElement::createLayoutObject(
 static void setGradientAttributes(const SVGGradientElement& element,
                                   RadialGradientAttributes& attributes,
                                   bool isRadial) {
+  element.synchronizeAnimatedSVGAttribute(anyQName());
   element.collectCommonAttributes(attributes);
 
   if (!isRadial)

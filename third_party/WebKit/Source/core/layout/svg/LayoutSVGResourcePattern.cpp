@@ -136,6 +136,10 @@ SVGPaintServer LayoutSVGResourcePattern::preparePaintServer(
   if (!patternElement)
     return SVGPaintServer::invalid();
 
+  // Validate patter DOM state before building the actual
+  // pattern. This should avoid tearing down the pattern we're
+  // currently working on. Preferably the state validation should have
+  // no side-effects though.
   if (m_shouldCollectPatternAttributes) {
     patternElement->synchronizeAnimatedSVGAttribute(anyQName());
 

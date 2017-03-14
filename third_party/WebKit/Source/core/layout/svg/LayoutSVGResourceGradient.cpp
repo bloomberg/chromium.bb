@@ -52,21 +52,13 @@ SVGPaintServer LayoutSVGResourceGradient::preparePaintServer(
     const LayoutObject& object) {
   clearInvalidationMask();
 
-  // Be sure to synchronize all SVG properties on the gradientElement _before_
-  // processing any further. Otherwhise the call to collectGradientAttributes()
-  // in createTileImage(), may cause the SVG DOM property synchronization to
-  // kick in, which causes removeAllClientsFromCache() to be called, which in
-  // turn deletes our GradientData object! Leaving out the line below will cause
-  // svg/dynamic-updates/SVG*GradientElement-svgdom* to crash.
-  SVGGradientElement* gradientElement = toSVGGradientElement(element());
-  if (!gradientElement)
-    return SVGPaintServer::invalid();
-
+  // Validate gradient DOM state before building the actual
+  // gradient. This should avoid tearing down the gradient we're
+  // currently working on. Preferably the state validation should have
+  // no side-effects though.
   if (m_shouldCollectGradientAttributes) {
-    gradientElement->synchronizeAnimatedSVGAttribute(anyQName());
-    if (!collectGradientAttributes(gradientElement))
+    if (!collectGradientAttributes())
       return SVGPaintServer::invalid();
-
     m_shouldCollectGradientAttributes = false;
   }
 
