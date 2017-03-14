@@ -535,9 +535,6 @@ class MEDIA_GPU_EXPORT DXVAVideoDecodeAccelerator
   // contexts.
   bool use_keyed_mutex_;
 
-  // Color spaced used when initializing the dx11 format converter.
-  gfx::ColorSpace dx11_converter_color_space_;
-
   // Outputs from the dx11 format converter will be in this color space.
   gfx::ColorSpace dx11_converter_output_color_space_;
 

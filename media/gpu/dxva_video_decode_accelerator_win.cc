@@ -2783,7 +2783,6 @@ bool DXVAVideoDecodeAccelerator::InitializeID3D11VideoProcessor(
     enumerator_.Release();
     processor_width_ = 0;
     processor_height_ = 0;
-    dx11_converter_color_space_ = gfx::ColorSpace();
 
     D3D11_VIDEO_PROCESSOR_CONTENT_DESC desc;
     desc.InputFrameFormat = D3D11_VIDEO_FRAME_FORMAT_PROGRESSIVE;
@@ -2827,10 +2826,7 @@ bool DXVAVideoDecodeAccelerator::InitializeID3D11VideoProcessor(
     dx11_converter_output_color_space_ = color_space;
   } else {
     dx11_converter_output_color_space_ = gfx::ColorSpace::CreateSRGB();
-    // Not sure if this call is expensive, let's only do it if the color
-    // space changes.
-    if ((use_color_info_ || use_fp16_) &&
-        dx11_converter_color_space_ != color_space) {
+    if (use_color_info_ || use_fp16_) {
       base::win::ScopedComPtr<ID3D11VideoContext1> video_context1;
       HRESULT hr = video_context_.QueryInterface(video_context1.Receive());
       if (SUCCEEDED(hr)) {
@@ -2855,7 +2851,6 @@ bool DXVAVideoDecodeAccelerator::InitializeID3D11VideoProcessor(
         video_context_->VideoProcessorSetOutputColorSpace(
             d3d11_processor_.get(), &d3d11_color_space);
       }
-      dx11_converter_color_space_ = color_space;
     }
   }
   return true;
