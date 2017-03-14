@@ -47,10 +47,8 @@ class WebRtcMediaStreamAdapterTest : public ::testing::Test {
         audio ? static_cast<size_t>(1) : 0);
     if (audio) {
       blink::WebMediaStreamSource audio_source;
-      audio_source.initialize("audio",
-                              blink::WebMediaStreamSource::TypeAudio,
-                              "audio",
-                              false /* remote */);
+      audio_source.initialize("audio", blink::WebMediaStreamSource::TypeAudio,
+                              "audio");
       ProcessedLocalAudioSource* const source = new ProcessedLocalAudioSource(
           -1 /* consumer_render_frame_id is N/A for non-browser tests */,
           StreamDeviceInfo(MEDIA_DEVICE_AUDIO_CAPTURE, "Mock audio device",
@@ -78,10 +76,8 @@ class WebRtcMediaStreamAdapterTest : public ::testing::Test {
     MediaStreamSource::SourceStoppedCallback dummy_callback;
     if (video) {
       blink::WebMediaStreamSource video_source;
-      video_source.initialize("video",
-                              blink::WebMediaStreamSource::TypeVideo,
-                              "video",
-                              false /* remote */);
+      video_source.initialize("video", blink::WebMediaStreamSource::TypeVideo,
+                              "video");
       MediaStreamVideoSource* native_source =
           new MockMediaStreamVideoSource(false);
       video_source.setExtraData(native_source);
@@ -143,9 +139,7 @@ TEST_F(WebRtcMediaStreamAdapterTest,
   // Create a blink MediaStream description.
   blink::WebMediaStreamSource audio_source;
   audio_source.initialize("audio source",
-                          blink::WebMediaStreamSource::TypeAudio,
-                          "something",
-                          false /* remote */);
+                          blink::WebMediaStreamSource::TypeAudio, "something");
 
   blink::WebVector<blink::WebMediaStreamTrack> audio_tracks(
       static_cast<size_t>(1));

@@ -243,8 +243,7 @@ class MediaStreamAudioTest : public ::testing::Test {
   void SetUp() override {
     blink_audio_source_.initialize(blink::WebString::fromUTF8("audio_id"),
                                    blink::WebMediaStreamSource::TypeAudio,
-                                   blink::WebString::fromUTF8("audio_track"),
-                                   false /* remote */);
+                                   blink::WebString::fromUTF8("audio_track"));
     blink_audio_track_.initialize(blink_audio_source_.id(),
                                   blink_audio_source_);
   }

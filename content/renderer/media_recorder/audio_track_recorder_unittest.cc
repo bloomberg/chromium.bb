@@ -217,8 +217,7 @@ class AudioTrackRecorderTest : public TestWithParam<ATRTestParams> {
     blink::WebMediaStreamSource audio_source;
     audio_source.initialize(blink::WebString::fromUTF8("dummy_source_id"),
                             blink::WebMediaStreamSource::TypeAudio,
-                            blink::WebString::fromUTF8("dummy_source_name"),
-                            false /* remote */);
+                            blink::WebString::fromUTF8("dummy_source_name"));
     audio_source.setExtraData(new MediaStreamAudioSource(true));
     blink_track_.initialize(blink::WebString::fromUTF8("audio_track"),
                             audio_source);

@@ -24,8 +24,7 @@ class CONTENT_EXPORT ExternalMediaStreamAudioSource final
       scoped_refptr<media::AudioCapturerSource> source,
       int sample_rate,
       media::ChannelLayout channel_layout,
-      int frames_per_buffer,
-      bool is_remote);
+      int frames_per_buffer);
 
   ~ExternalMediaStreamAudioSource() final;
 

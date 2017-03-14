@@ -71,7 +71,6 @@ class PLATFORM_EXPORT MediaStreamSource final
   static MediaStreamSource* create(const String& id,
                                    StreamType,
                                    const String& name,
-                                   bool remote,
                                    ReadyState = ReadyStateLive,
                                    bool requiresConsumer = false);
 
@@ -80,7 +79,6 @@ class PLATFORM_EXPORT MediaStreamSource final
   const String& id() const { return m_id; }
   StreamType type() const { return m_type; }
   const String& name() const { return m_name; }
-  bool remote() const { return m_remote; }
 
   void setReadyState(ReadyState);
   ReadyState getReadyState() const { return m_readyState; }
@@ -118,14 +116,12 @@ class PLATFORM_EXPORT MediaStreamSource final
   MediaStreamSource(const String& id,
                     StreamType,
                     const String& name,
-                    bool remote,
                     ReadyState,
                     bool requiresConsumer);
 
   String m_id;
   StreamType m_type;
   String m_name;
-  bool m_remote;
   ReadyState m_readyState;
   bool m_requiresConsumer;
   HeapHashSet<WeakMember<Observer>> m_observers;

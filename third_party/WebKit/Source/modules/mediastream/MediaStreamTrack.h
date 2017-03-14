@@ -60,7 +60,6 @@ class MODULES_EXPORT MediaStreamTrack
   String kind() const;
   String id() const;
   String label() const;
-  bool remote() const;
 
   bool enabled() const;
   void setEnabled(bool);

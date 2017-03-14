@@ -10,9 +10,9 @@ ExternalMediaStreamAudioSource::ExternalMediaStreamAudioSource(
     scoped_refptr<media::AudioCapturerSource> source,
     int sample_rate,
     media::ChannelLayout channel_layout,
-    int frames_per_buffer,
-    bool is_remote)
-    : MediaStreamAudioSource(!is_remote), source_(std::move(source)),
+    int frames_per_buffer)
+    : MediaStreamAudioSource(false),
+      source_(std::move(source)),
       was_started_(false) {
   DVLOG(1)
       << "ExternalMediaStreamAudioSource::ExternalMediaStreamAudioSource()";

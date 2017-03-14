@@ -515,8 +515,7 @@ void PepperMediaStreamVideoTrackHost::InitBlinkTrack() {
   blink::WebMediaStreamSource webkit_source;
   webkit_source.initialize(blink::WebString::fromASCII(source_id),
                            blink::WebMediaStreamSource::TypeVideo,
-                           blink::WebString::fromASCII(kPepperVideoSourceName),
-                           false /* remote */);
+                           blink::WebString::fromASCII(kPepperVideoSourceName));
   MediaStreamVideoSource* const source =
       new VideoSource(weak_factory_.GetWeakPtr());
   webkit_source.setExtraData(source);  // Takes ownership of |source|.

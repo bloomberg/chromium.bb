@@ -35,23 +35,19 @@ namespace blink {
 MediaStreamSource* MediaStreamSource::create(const String& id,
                                              StreamType type,
                                              const String& name,
-                                             bool remote,
                                              ReadyState readyState,
                                              bool requiresConsumer) {
-  return new MediaStreamSource(id, type, name, remote, readyState,
-                               requiresConsumer);
+  return new MediaStreamSource(id, type, name, readyState, requiresConsumer);
 }
 
 MediaStreamSource::MediaStreamSource(const String& id,
                                      StreamType type,
                                      const String& name,
-                                     bool remote,
                                      ReadyState readyState,
                                      bool requiresConsumer)
     : m_id(id),
       m_type(type),
       m_name(name),
-      m_remote(remote),
       m_readyState(readyState),
       m_requiresConsumer(requiresConsumer) {}
 
