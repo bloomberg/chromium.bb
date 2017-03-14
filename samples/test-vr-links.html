@@ -246,6 +246,7 @@ found in the LICENSE file.
       var leftIntersect = false;
       var rightIntersect = false;
 
+      var playerPosition = [0, PLAYER_HEIGHT, 0];
       var leftPosition = [-0.5, PLAYER_HEIGHT, -1.0];
       var rightPosition = [0.5, PLAYER_HEIGHT, -1.0];
 
@@ -306,14 +307,21 @@ found in the LICENSE file.
       }
 
       function lookingAtSphere(position, radius, pose) {
-        var lookVec = [0, 0, -1];
+        var lookVec = vec3.fromValues(0, 0, -1);
         vec3.transformQuat(lookVec, lookVec, pose.orientation);
-        // TODO: Proper ray intersection
-        if (position[0] < 0 && lookVec[0] < -0.2 && lookVec[0] > -0.6)
-          return true;
-        if (position[0] > 0 && lookVec[0] > 0.2 && lookVec[0] < 0.6)
-          return true;
-        return false;
+
+        var m = vec3.create();
+        vec3.sub(m, playerPosition, position); 
+        var b = vec3.dot(m, lookVec); 
+        var c = vec3.dot(m, m) - radius * radius; 
+
+        // Exit if player's origin outside of sphere (c > 0) and lookVec is pointing away from sphere (b > 0) 
+        if (c > 0.0 && b > 0.0) 
+          return false; 
+        var discr = b*b - c; 
+
+        // negative discriminant = lookVec misses sphere 
+        return (discr >= 0.0);
       }
 
       function onAnimationFrame (t) {
