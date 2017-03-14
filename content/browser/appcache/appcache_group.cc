@@ -176,6 +176,8 @@ void AppCacheGroup::StartUpdateWithNewMasterEntry(
 void AppCacheGroup::CancelUpdate() {
   if (update_job_) {
     delete update_job_;
+    // The update_job_ destructor calls AppCacheGroup::SetUpdateAppCacheStatus
+    // which zeroes update_job_.
     DCHECK(!update_job_);
     DCHECK_EQ(IDLE, update_status_);
   }
