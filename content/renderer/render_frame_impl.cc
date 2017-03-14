@@ -4322,37 +4322,6 @@ void RenderFrameImpl::willSendRequest(blink::WebLocalFrame* frame,
   // when it is re-created in the new process.
   bool should_replace_current_entry = data_source->replacesCurrentHistoryItem();
 
-  // Initializes service worker related request info.
-  if (request.getFrameType() == blink::WebURLRequest::FrameTypeTopLevel ||
-      request.getFrameType() == blink::WebURLRequest::FrameTypeNested) {
-    // |provisionalDataSource| may be null in some content::ResourceFetcher
-    // use cases, we don't hook those requests.
-    if (frame->provisionalDataSource()) {
-      blink::WebServiceWorkerNetworkProvider* provider =
-          frame->provisionalDataSource()->getServiceWorkerNetworkProvider();
-      DCHECK(provider);
-      provider->willSendRequest(request);
-    }
-  } else if (frame->dataSource()) {
-    blink::WebServiceWorkerNetworkProvider* provider =
-        frame->dataSource()->getServiceWorkerNetworkProvider();
-    DCHECK(provider);
-    provider->willSendRequest(request);
-
-    // If the provider does not have a controller at this point, the renderer
-    // expects the request to never be handled by a controlling service worker,
-    // so set the ServiceWorkerMode to skip local workers here. Otherwise, a
-    // service worker that is in the process of becoming the controller (i.e.,
-    // via claim()) on the browser-side could handle the request and break
-    // the assumptions of the renderer.
-    if (!provider->isControlledByServiceWorker() &&
-        request.getServiceWorkerMode() !=
-            blink::WebURLRequest::ServiceWorkerMode::None) {
-      request.setServiceWorkerMode(
-          blink::WebURLRequest::ServiceWorkerMode::Foreign);
-    }
-  }
-
   WebFrame* parent = frame->parent();
   int parent_routing_id = parent ? GetRoutingIdForFrameOrProxy(parent) : -1;
 

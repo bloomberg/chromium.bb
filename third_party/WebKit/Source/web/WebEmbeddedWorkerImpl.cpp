@@ -330,14 +330,6 @@ void WebEmbeddedWorkerImpl::loadShadowPage() {
                        SubstituteData(buffer, "text/html", "UTF-8", KURL())));
 }
 
-void WebEmbeddedWorkerImpl::willSendRequest(WebLocalFrame* frame,
-                                            WebURLRequest& request) {
-  auto* networkProvider =
-      frame->dataSource()->getServiceWorkerNetworkProvider();
-  if (networkProvider)
-    networkProvider->willSendRequest(request);
-}
-
 void WebEmbeddedWorkerImpl::didFinishDocumentLoad(WebLocalFrame* frame) {
   DCHECK(!m_mainScriptLoader);
   DCHECK(m_mainFrame);

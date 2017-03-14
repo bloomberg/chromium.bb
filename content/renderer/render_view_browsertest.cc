@@ -1995,7 +1995,7 @@ TEST_F(RenderViewImplTest, ServiceWorkerNetworkProviderSetup) {
   blink::WebURLRequest request(GURL("http://foo.com"));
   request.setRequestContext(blink::WebURLRequest::RequestContextSubresource);
   blink::WebURLResponse redirect_response;
-  frame()->willSendRequest(GetMainFrame(), request);
+  webprovider->willSendRequest(request);
   extra_data = static_cast<RequestExtraData*>(request.getExtraData());
   ASSERT_TRUE(extra_data);
   EXPECT_EQ(extra_data->service_worker_provider_id(), provider->provider_id());

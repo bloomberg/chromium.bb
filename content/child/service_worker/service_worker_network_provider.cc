@@ -59,6 +59,21 @@ class WebServiceWorkerNetworkProviderForFrame
       extra_data = new RequestExtraData();
     extra_data->set_service_worker_provider_id(provider_->provider_id());
     request.setExtraData(extra_data);
+
+    // If the provider does not have a controller at this point, the renderer
+    // expects the request to never be handled by a controlling service worker,
+    // so set the ServiceWorkerMode to skip local workers here. Otherwise, a
+    // service worker that is in the process of becoming the controller (i.e.,
+    // via claim()) on the browser-side could handle the request and break
+    // the assumptions of the renderer.
+    if (request.getFrameType() != blink::WebURLRequest::FrameTypeTopLevel &&
+        request.getFrameType() != blink::WebURLRequest::FrameTypeNested &&
+        !provider_->IsControlledByServiceWorker() &&
+        request.getServiceWorkerMode() !=
+            blink::WebURLRequest::ServiceWorkerMode::None) {
+      request.setServiceWorkerMode(
+          blink::WebURLRequest::ServiceWorkerMode::Foreign);
+    }
   }
 
   bool isControlledByServiceWorker() override {

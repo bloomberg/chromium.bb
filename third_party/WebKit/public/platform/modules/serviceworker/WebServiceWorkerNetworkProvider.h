@@ -36,9 +36,9 @@ namespace blink {
 class WebURLRequest;
 
 // This interface is implemented by the client and is only called on the main
-// thread. Used by ServiceWorker and SharedWorker. isControlledByServiceWorker()
-// and serviceWorkerID() are to be implemented only by SharedWorker's provider,
-// as they are needed only for controllee workers.
+// thread. isControlledByServiceWorker() and serviceWorkerID() are to be
+// implemented only by Frame and SharedWorker's provider as they are needed
+// only for controllee contexts (but not in controller context).
 //
 // An instance of this class is owned by the associated loading context, e.g.
 // DocumentLoader.

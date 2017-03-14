@@ -73,7 +73,6 @@ class WebSharedWorkerImpl final : public WebFrameClient,
   // WebFrameClient methods to support resource loading thru the 'shadow page'.
   WebApplicationCacheHost* createApplicationCacheHost(
       WebApplicationCacheHostClient*) override;
-  void willSendRequest(WebLocalFrame*, WebURLRequest&) override;
   void didFinishDocumentLoad(WebLocalFrame*) override;
 
   // WebDevToolsAgentClient overrides.

@@ -66,6 +66,7 @@
 #include "core/timing/DOMWindowPerformance.h"
 #include "core/timing/Performance.h"
 #include "platform/WebFrameScheduler.h"
+#include "platform/exported/WrappedResourceRequest.h"
 #include "platform/instrumentation/tracing/TracedValue.h"
 #include "platform/loader/fetch/ClientHintsPreferences.h"
 #include "platform/loader/fetch/FetchInitiatorTypeNames.h"
@@ -424,6 +425,12 @@ void FrameFetchContext::dispatchDidChangeResourcePriority(
 void FrameFetchContext::prepareRequest(ResourceRequest& request) {
   frame()->loader().applyUserAgent(request);
   localFrameClient()->dispatchWillSendRequest(request);
+
+  if (masterDocumentLoader()->getServiceWorkerNetworkProvider()) {
+    WrappedResourceRequest webreq(request);
+    masterDocumentLoader()->getServiceWorkerNetworkProvider()->willSendRequest(
+        webreq);
+  }
 }
 
 void FrameFetchContext::dispatchWillSendRequest(
@@ -514,7 +521,6 @@ void FrameFetchContext::dispatchDidLoadResourceFromMemoryCache(
       request, resource->response());
   dispatchWillSendRequest(identifier, request, ResourceResponse(),
                           resource->options().initiatorInfo);
-
   probe::markResourceAsCached(frame(), identifier);
   if (!resource->response().isNull()) {
     dispatchDidReceiveResponseInternal(identifier, resource->response(),
@@ -830,8 +836,9 @@ int64_t FrameFetchContext::serviceWorkerID() const {
   DCHECK(masterDocumentLoader());
   auto* service_worker_network_provider =
       masterDocumentLoader()->getServiceWorkerNetworkProvider();
-  return service_worker_network_provider &&
-         service_worker_network_provider->serviceWorkerID();
+  return service_worker_network_provider
+             ? service_worker_network_provider->serviceWorkerID()
+             : -1;
 }
 
 bool FrameFetchContext::isMainFrame() const {

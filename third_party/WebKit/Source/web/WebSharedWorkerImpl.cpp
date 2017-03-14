@@ -168,14 +168,6 @@ void WebSharedWorkerImpl::loadShadowPage() {
                        SubstituteData(buffer, "text/html", "UTF-8", KURL())));
 }
 
-void WebSharedWorkerImpl::willSendRequest(WebLocalFrame* frame,
-                                          WebURLRequest& request) {
-  auto* networkProvider =
-      frame->dataSource()->getServiceWorkerNetworkProvider();
-  if (networkProvider)
-    networkProvider->willSendRequest(request);
-}
-
 void WebSharedWorkerImpl::didFinishDocumentLoad(WebLocalFrame* frame) {
   DCHECK(isMainThread());
   DCHECK(!m_loadingDocument);
