@@ -333,4 +333,34 @@ TEST_F(ResourcePrefetcherTest, TestHistogramsCollected) {
       prefetcher_delegate_.ResourcePrefetcherFinishedCalled(prefetcher_.get()));
 }
 
+TEST_F(ResourcePrefetcherTest, TestReferrer) {
+  std::string url = "https://www.notgoogle.com/cats.html";
+  std::string https_resource = "https://www.google.com/resource1.png";
+  std::string http_resource = "http://www.google.com/resource1.png";
+
+  std::vector<GURL> urls = {GURL(https_resource), GURL(http_resource)};
+
+  prefetcher_ = base::MakeUnique<TestResourcePrefetcher>(
+      &prefetcher_delegate_, config_, GURL(url), urls);
+
+  AddStartUrlRequestExpectation(https_resource);
+  AddStartUrlRequestExpectation(http_resource);
+  prefetcher_->Start();
+
+  net::URLRequest* request = GetInFlightRequest(https_resource);
+  EXPECT_TRUE(request);
+  EXPECT_EQ(url, request->referrer());
+
+  request = GetInFlightRequest(http_resource);
+  EXPECT_TRUE(request);
+  EXPECT_EQ("", request->referrer());
+
+  OnResponse(https_resource);
+  OnResponse(http_resource);
+
+  // Expect the final call.
+  EXPECT_TRUE(
+      prefetcher_delegate_.ResourcePrefetcherFinishedCalled(prefetcher_.get()));
+}
+
 }  // namespace predictors

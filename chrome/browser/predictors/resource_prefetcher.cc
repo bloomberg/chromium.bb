@@ -11,6 +11,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/trace_event/trace_event.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/common/referrer.h"
 #include "net/base/io_buffer.h"
 #include "net/base/load_flags.h"
 #include "net/base/request_priority.h"
@@ -146,7 +147,13 @@ void ResourcePrefetcher::SendRequest(const GURL& url) {
   url_request->set_method("GET");
   url_request->set_first_party_for_cookies(main_frame_url_);
   url_request->set_initiator(url::Origin(main_frame_url_));
-  url_request->SetReferrer(main_frame_url_.spec());
+
+  content::Referrer referrer(main_frame_url_, blink::WebReferrerPolicyDefault);
+  content::Referrer sanitized_referrer =
+      content::Referrer::SanitizeForRequest(url, referrer);
+  content::Referrer::SetReferrerForRequest(url_request.get(),
+                                           sanitized_referrer);
+
   url_request->SetLoadFlags(url_request->load_flags() | net::LOAD_PREFETCH);
   StartURLRequest(url_request.get());
   inflight_requests_.insert(
