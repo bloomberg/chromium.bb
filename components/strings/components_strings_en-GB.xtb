@@ -196,11 +196,9 @@
 <translation id="277499241957683684">Missing device record</translation>
 <translation id="2784949926578158345">The connection was reset.</translation>
 <translation id="2794233252405721443">Site blocked</translation>
-<translation id="2812680587231492111">That pickup option isn’t available. Try a different option.</translation>
 <translation id="2824775600643448204">Address and search bar</translation>
 <translation id="2826760142808435982">The connection is encrypted and authenticated using <ph name="CIPHER" /> and uses <ph name="KX" /> as the key exchange mechanism.</translation>
 <translation id="2835170189407361413">Clear form</translation>
-<translation id="2849041323157393173">That delivery option isn’t available. Try a different option.</translation>
 <translation id="2889159643044928134">Don't reload</translation>
 <translation id="2900469785430194048">Google Chrome ran out of memory while trying to display this web page.</translation>
 <translation id="2909946352844186028">A network change was detected.</translation>
@@ -333,7 +331,6 @@
 <translation id="4030383055268325496">&amp;Undo add</translation>
 <translation id="404928562651467259">WARNING</translation>
 <translation id="4058922952496707368">Key "<ph name="SUBKEY" />": <ph name="ERROR" /></translation>
-<translation id="4072486802667267160">There was an error processing your order. Please try again.</translation>
 <translation id="4075732493274867456">The client and server don't support a common SSL protocol version or cipher suite.</translation>
 <translation id="4079302484614802869">Proxy configuration is set to use a .pac script URL, not fixed proxy servers.</translation>
 <translation id="4098354747657067197">Deceptive site ahead</translation>
@@ -345,6 +342,7 @@
 <translation id="4118212371799607889">This server could not prove that it is <ph name="DOMAIN" />; its security certificate is not trusted by Chromium. This may be caused by a misconfiguration or an attacker intercepting your connection. <ph name="BEGIN_LEARN_MORE_LINK" />Find out more<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="4129401438321186435">{COUNT,plural, =1{1 other}other{# others}}</translation>
 <translation id="4130226655945681476">Checking the network cables, modem and router</translation>
+<translation id="4137140866298219568">Exp: <ph name="EXPIRATION_DATE_ABBR" />, last used: <ph name="LAST_USED_DATE_NO_DETAIL" /></translation>
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4169947484918424451">Do you want Chromium to save this card?</translation>
 <translation id="4171400957073367226">Bad verification signature</translation>
@@ -404,11 +402,11 @@
 <translation id="4803924862070940586"><ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="4813512666221746211">Network error</translation>
 <translation id="4816492930507672669">Fit to page</translation>
-<translation id="483020001682031208">No Physical Web pages to show</translation>
 <translation id="4850886885716139402">View</translation>
 <translation id="4858792381671956233">You asked your parents if it's OK to visit this site</translation>
 <translation id="4880827082731008257">Search history</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
+<translation id="4897073194580895694">Last used: <ph name="LAST_USED_MONTH" /></translation>
 <translation id="4914479371620770914">{URL_count,plural, =1{and 1 more web page}other{and # more web pages}}</translation>
 <translation id="4923417429809017348">This page has been translated from an unknown language into <ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="4923459931733593730">Payment</translation>
@@ -584,7 +582,6 @@
 <translation id="6628463337424475685"><ph name="ENGINE" /> Search</translation>
 <translation id="6644283850729428850">This policy has been deprecated.</translation>
 <translation id="6652240803263749613">This server could not prove that it is <ph name="DOMAIN" />; its security certificate is not trusted by your computer's operating system. This may be caused by a misconfiguration or an attacker intercepting your connection. <ph name="BEGIN_LEARN_MORE_LINK" />Find out more<ph name="END_LEARN_MORE_LINK" />.</translation>
-<translation id="6665267558048410100">That delivery option isn’t available. Try a different option.</translation>
 <translation id="6671697161687535275">Remove form suggestion from Chromium?</translation>
 <translation id="6685834062052613830">Sign out and complete setup</translation>
 <translation id="6710213216561001401">Previous</translation>
@@ -767,7 +764,6 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY" /> may come in handy next time.</tr
 <translation id="8466379296835108687">{COUNT,plural, =1{1 credit card}other{# credit cards}}</translation>
 <translation id="8483780878231876732">To use cards from your Google account, sign in to Chrome</translation>
 <translation id="8488350697529856933">Applies to</translation>
-<translation id="8492969205326575646">Unsupported card type</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> took too long to respond.</translation>
 <translation id="852346902619691059">This server could not prove that it is <ph name="DOMAIN" />; its security certificate is not trusted by your device's operating system. This may be caused by a misconfiguration or an attacker intercepting your connection. <ph name="BEGIN_LEARN_MORE_LINK" />Find out more<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="8543181531796978784">You can <ph name="BEGIN_ERROR_LINK" />report a detection problem<ph name="END_ERROR_LINK" /> or, if you understand the risks to your security, <ph name="BEGIN_LINK" />visit this unsafe site<ph name="END_LINK" />.</translation>
@@ -778,6 +774,7 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY" /> may come in handy next time.</tr
 <translation id="859285277496340001">The certificate does not specify a mechanism to check whether it has been revoked.</translation>
 <translation id="8620436878122366504">Your parents haven't approved it yet</translation>
 <translation id="8647750283161643317">Reset all to default</translation>
+<translation id="8662285765512809409">Exp: <ph name="EXPIRATION_DATE_ABBR" />, added: <ph name="ADDED_TO_AUTOFILL_MONTH" /></translation>
 <translation id="8703575177326907206">Your connection to <ph name="DOMAIN" /> is not encrypted.</translation>
 <translation id="8725066075913043281">Try again</translation>
 <translation id="8728672262656704056">You’ve gone incognito</translation>
@@ -801,10 +798,10 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY" /> may come in handy next time.</tr
 <translation id="8891727572606052622">Invalid proxy mode.</translation>
 <translation id="889901481107108152">Sorry, this experiment is not available on your platform.</translation>
 <translation id="8903921497873541725">Zoom in</translation>
+<translation id="8928945116588336256">Added: <ph name="ADDED_TO_AUTOFILL_MONTH" /></translation>
 <translation id="8931333241327730545">Do you want to save this card to your Google Account?</translation>
 <translation id="8932102934695377596">Your clock is behind</translation>
 <translation id="8954894007019320973">(Cont.)</translation>
-<translation id="895548565263634352">Read stories from <ph name="ARTICLE_PUBLISHER" /> and <ph name="OTHER_ARTICLE_COUNT" /> more</translation>
 <translation id="8971063699422889582">Server's certificate has expired.</translation>
 <translation id="8986494364107987395">Automatically send usage statistics and crash reports to Google</translation>
 <translation id="8987927404178983737">Month</translation>

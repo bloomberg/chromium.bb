@@ -145,6 +145,7 @@ Nadaljnja navodila preberite v e-poštnem sporočilu, ki ste ga prejeli na <ph n
 <translation id="5170938038195470297">Vašega profila ni mogoče uporabiti, ker je iz novejše različice Google Chroma.
 
 Nekatere funkcije morda ne bodo na voljo. Navedite drug imenik profila ali uporabite novejšo različico Google Chroma.</translation>
+<translation id="5176234269072261959">Pomagajte izboljšati Google Chrome s poročanjem trenutnih nastavitev.</translation>
 <translation id="5193136243808726294">Googlov OS Chrome ne more odpreti te strani.</translation>
 <translation id="5204098752394657250"><ph name="TERMS_OF_SERVICE_LINK" />Pogoji storitve<ph name="END_TERMS_OF_SERVICE_LINK" /> za Google Chrome</translation>
 <translation id="5243785881901838525">Google Payments (kopirano v Chrome)</translation>
@@ -185,6 +186,7 @@ Google Chrome ne more obnoviti vaših nastavitev.</translation>
 <translation id="6291549208091401781">Google Chrome je že nameščen za vse uporabnike v računalniku.</translation>
 <translation id="629218512217695915">Uporabite geslo, ki ga ustvari Chrome</translation>
 <translation id="6338556085225130112">Posodabljanje Google Chroma</translation>
+<translation id="6368805772029492593">Zaradi večje varnosti bo Google Chrome šifriral vaše podatke.</translation>
 <translation id="6368958679917195344">Sistem Chrome OS uporablja dodatno <ph name="BEGIN_LINK_CROS_OSS" />odprtokodno programsko opremo<ph name="END_LINK_CROS_OSS" />.</translation>
 <translation id="6400076122676892962">Ta računalnik kmalu ne bo več prejemal posodobitev za Google Chrome, ker različice sistema Mac OS X 10.6, 10.7 in 10.8 ne bodo več podprte.</translation>
 <translation id="6410540444482791104">S samodejnim pošiljanjem nekaterih informacij o sistemu in vsebine strani Googlu, s čimer pomagate pri hitrejšem zaznavanju nevarnih aplikacij in spletnih mest, lahko pomagate narediti Chrome varnejši in preprostejši za uporabo.</translation>
@@ -211,6 +213,7 @@ Google Chrome ne more obnoviti vaših nastavitev.</translation>
 <translation id="7164397146364144019">S samodejnim poročanjem podrobnosti o morebitnih varnostnih dogodkih Googlu lahko pomagate narediti Chrome varnejši in preprostejši za uporabo.</translation>
 <translation id="7177347454226092725">S tem bodo iz te naprave trajno izbrisani podatki brskanja. Če želite pozneje prenesti podatke, se v Chrome prijavite kot $2.</translation>
 <translation id="7185038942300673794">Razširitev <ph name="EXTENSION_NAME" /> je dodana v Chrome.</translation>
+<translation id="7193750696137290001">Google Chrome je v tem jeziku.</translation>
 <translation id="7196020411877309443">Zakaj je to prikazano?</translation>
 <translation id="7242029209006116544">Prijavljate se z upravljanim računom in s tem njegovemu skrbniku omogočate nadzor vašega profila v Google Chromu. Vaši podatki v Chromu, kot so aplikacije, zaznamki, zgodovina, gesla in druge nastavitve, bodo postali trajno povezani z uporabnikom <ph name="USER_NAME" />. Te podatke boste lahko izbrisali z nadzorno ploščo za Google Račune, vendar jih ne boste mogli povezati z drugim računom. Če želite, lahko ustvarite nov profil, da bodo obstoječi podatki v Chromu ostali ločeni. <ph name="LEARN_MORE" /></translation>
 <translation id="729375352412857283">Ta računalnik kmalu ne bo več prejemal posodobitev za Google Chrome, ker sistema Windows XP in Windows Vista ne bosta več podprta.</translation>
@@ -241,12 +244,12 @@ Google Chrome ne more obnoviti vaših nastavitev.</translation>
 <translation id="7896673875602241923">Nekdo se je prijavil v Chrome v tem računalniku kot <ph name="ACCOUNT_EMAIL_LAST" />. Ustvarite nov uporabniški profil za Chrome, če želite, da bodo vaši podatki ločeni.</translation>
 <translation id="7908168227788431038">Samo še malo. Znova zaženite Google Chrome, da dokončate posodobitev.</translation>
 <translation id="795025003224538582">Ne zaženi znova</translation>
+<translation id="7964230182933713106">OS Chrome je v tem jeziku.</translation>
 <translation id="8005540215158006229">Chrome je skoraj pripravljen.</translation>
 <translation id="8008534537613507642">Vnovična namestitev Chroma</translation>
 <translation id="8030318113982266900">Posodabljanje naprave na kanal <ph name="CHANNEL_NAME" /> ...</translation>
 <translation id="8032142183999901390">Ko odstranite račun iz Chroma, boste morali morda znova naložiti odprte zavihke, če želite uveljaviti spremembo.</translation>
 <translation id="8129812357326543296">O &amp;Google Chromu</translation>
-<translation id="8179874765710681175">Namestite Chrome v telefonu. V telefon vam bomo poslali SMS.</translation>
 <translation id="8183957050892517584">Chrome bo varno shranil vaše osebne podatke, tako da vam jih ne bo treba več vnesti.</translation>
 <translation id="8211929904040702368">S tem bo iz te naprave izbrisanih vsaj toliko elementov: <ph name="TOTAL_COUNT" />. Če želite pozneje prenesti podatke, se v Chrome prijavite kot $2.</translation>
 <translation id="8255190535488645436">Google Chrome uporablja vašo kamero in mikrofon.</translation>

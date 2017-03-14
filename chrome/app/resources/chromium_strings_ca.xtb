@@ -46,6 +46,7 @@
 <translation id="2535480412977113886">Chromium OS no ha pogut sincronitzar les vostres dades perquè la informació d'inici de sessió del vostre compte no està actualitzada.</translation>
 <translation id="2572494885440352020">Aplicació auxiliar de Chromium</translation>
 <translation id="2587578672395088481">Cal reiniciar Chromium OS per aplicar l'actualització.</translation>
+<translation id="2605472041568654097">Informa de la configuració actual per ajudar-nos a millorar Chromium.</translation>
 <translation id="2636877269779209383">Chromium necessita accedir a la càmera per compartir-la amb aquest lloc.</translation>
 <translation id="2647554856022461007">Chromium pot utilitzar serveis web per millorar la navegació, però si vols els pots desactivar. <ph name="BEGIN_LINK" />Més informació<ph name="END_LINK" /></translation>
 <translation id="2648074677641340862">S'ha produït un error en el sistema operatiu durant la instal·lació. Torneu a baixar Chromium.</translation>

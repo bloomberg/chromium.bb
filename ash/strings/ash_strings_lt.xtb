@@ -7,7 +7,6 @@
 <translation id="1127238861555034875">Didinamojo stiklo režimas</translation>
 <translation id="1153356358378277386">Susieti įrenginiai</translation>
 <translation id="1195412055398077112">sritis aplink vaizdo kraštus</translation>
-<translation id="1247372569136754018">Mikrofonas (vidinis)</translation>
 <translation id="1252999807265626933">Įkraunama naudojant <ph name="POWER_SOURCE" /></translation>
 <translation id="1270290102613614947">Ekrano klaviatūra išjungta</translation>
 <translation id="1272079795634619415">Sustabdyti</translation>
@@ -34,7 +33,6 @@
 <translation id="1882897271359938046">Dubliuojama <ph name="DISPLAY_NAME" /></translation>
 <translation id="1919743966458266018">Pakeistas užduočių tvarkytuvės atidarymo spartusis klavišas. Naudokite <ph name="NEW_SHORTCUT" /> vietoje <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="1923539912171292317">Automatiniai paspaudimai</translation>
-<translation id="1942830294380034169">Perpildymo mygtukas</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="2122028596993374965">Sustabdyti „<ph name="TAB_NAME" />“ perdavimą į: <ph name="RECEIVER_NAME" /></translation>
@@ -94,19 +92,16 @@
 <translation id="3683428399328702079"><ph name="DISPLAY_NAME" /> skyra pakeista į <ph name="RESOLUTION" /></translation>
 <translation id="370649949373421643">Įgalinti „Wi-Fi“</translation>
 <translation id="3712407551474845318">Užfiksuoti sritį</translation>
-<translation id="371370241367527062">Priekinis mikrofonas</translation>
 <translation id="3742055079367172538">Ekrano kopija padaryta</translation>
 <translation id="3775358506042162758">Naudodami kelių paskyrų funkciją, galite turėti iki trijų paskyrų.</translation>
 <translation id="3783640748446814672">alt</translation>
 <translation id="3784455785234192852">Užrakinti</translation>
-<translation id="3798670284305777884">Garsiakalbis (vidinis)</translation>
 <translation id="3799026279081545374">Turbūt jūsų kroviklis yra netinkamas. Jei gyvenate JAV, skambinkite numeriu 866-628-1371, kad gautumėte pagalbos ir būtų pakeistas kroviklis. Jei gyvenate JK, skambinkite numeriu 0800-026-0613. Jei gyvenate Airijoje, skambinkite numeriu 1-800-832-664. Jei gyvenate Kanadoje, skambinkite numeriu 866-628-1372. Jei gyvenate Australijoje, skambinkite numeriu 1-800-067-460.</translation>
 <translation id="3846575436967432996">Nėra tinklo informacijos</translation>
 <translation id="3891340733213178823">Jei norite atsijungti, du kartus paspauskite „Ctrl“ + „Shift“ + Q.</translation>
 <translation id="3893630138897523026">„ChromeVox“ (ekrano skaitymas balsu)</translation>
 <translation id="3899995891769452915">Įvestis balsu</translation>
 <translation id="3901991538546252627">Jungiamasi prie „<ph name="NAME" />“</translation>
-<translation id="394485226368336402">Garso nustatymai</translation>
 <translation id="3967919079500697218">Jūsų administratorius išjungė ekrano kopijų kūrimo funkciją.</translation>
 <translation id="397105322502079400">Skaičiuojama...</translation>
 <translation id="3995138139523574647">USB-C įrenginys (prievadas dešinėje, užpakalinėje dalyje)</translation>
@@ -137,17 +132,14 @@
 <translation id="5170568018924773124">Rodyti aplanke</translation>
 <translation id="5222676887888702881">Atsijungti</translation>
 <translation id="523505283826916779">Pasiekiamumo nustatymai</translation>
-<translation id="5313326810920013265">„Bluetooth“ nustatymai</translation>
 <translation id="532063867737390965">Šį tinklo nustatymą išjungė administratorius.</translation>
 <translation id="5331975486040154427">USB-C įrenginys (prievadas kairėje, užpakalinėje dalyje)</translation>
 <translation id="5431825016875453137">„OpenVPN“ / L2TP</translation>
 <translation id="544691375626129091">Prie šio seanso jau pridėti visi galimi naudotojai.</translation>
 <translation id="5507786745520522457">Nustatyti mobiliojo ryšio duomenis</translation>
-<translation id="553675580533261935">Išeinama iš sesijos</translation>
 <translation id="5548285847212963613">Galite prisijungti prie šio tinklo naudodami plėtinį „<ph name="EXTENSION_NAME" />“.</translation>
 <translation id="5571066253365925590">„Bluetooth“ įgalinta</translation>
 <translation id="5597451508971090205"><ph name="DATE" />, <ph name="SHORT_WEEKDAY" /></translation>
-<translation id="5648021990716966815">Mikrofono jungtis</translation>
 <translation id="5777841717266010279">Nutraukti ekrano bendrinimą?</translation>
 <translation id="57838592816432529">Nutildyti</translation>
 <translation id="5895138241574237353">Paleisti iš naujo</translation>
@@ -205,7 +197,6 @@ Jei norite išjungti, paspauskite „Ctrl“ + „Alt“ + Z.</translation>
 <translation id="7129360219436193655">Lazerinio žymeklio režimas</translation>
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7168224885072002358">Po <ph name="TIMEOUT_SECONDS" /> bus grąžinta sena skyra</translation>
-<translation id="7256634071279256947">Užpakalinis mikrofonas</translation>
 <translation id="7348093485538360975">Ekraninė klaviatūra</translation>
 <translation id="735745346212279324">VPN atjungtas</translation>
 <translation id="742594950370306541">Kamera naudojama.</translation>

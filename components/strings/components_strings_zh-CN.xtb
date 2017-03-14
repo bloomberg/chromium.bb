@@ -104,7 +104,6 @@
 <translation id="1962204205936693436"><ph name="DOMAIN" />书签</translation>
 <translation id="1973335181906896915">序列化错误</translation>
 <translation id="1974060860693918893">高级</translation>
-<translation id="1978555033938440688">固件版本</translation>
 <translation id="2001146170449793414">{COUNT,plural, =1{以及另外 1 个应用}other{以及另外 # 个应用}}</translation>
 <translation id="2020194265157481222">持卡人姓名是必填项</translation>
 <translation id="2025186561304664664">代理已设为自动配置。</translation>
@@ -448,7 +447,6 @@
 <translation id="5359637492792381994">此服务器无法证明其所在网域是 <ph name="DOMAIN" />；服务器的安全证书目前无效。出现此问题的原因可能是配置有误，或是有攻击者拦截您的连接。<ph name="BEGIN_LEARN_MORE_LINK" />了解详情<ph name="END_LEARN_MORE_LINK" />。</translation>
 <translation id="536296301121032821">无法存储策略设置</translation>
 <translation id="5386426401304769735">此网站的证书链包含使用 SHA-1 签署的证书。</translation>
-<translation id="5402410679244714488">到期日期：<ph name="EXPIRATION_DATE_ABBR" />；距离上次使用已超过 1 年</translation>
 <translation id="5421136146218899937">清除浏览数据...</translation>
 <translation id="5430298929874300616">移除书签</translation>
 <translation id="5431657950005405462">找不到您的文件</translation>
@@ -534,7 +532,6 @@
 <translation id="6282194474023008486">邮编</translation>
 <translation id="6290238015253830360">为您推荐的文章会显示在此处</translation>
 <translation id="6305205051461490394">无法访问 <ph name="URL" />。</translation>
-<translation id="6319915415804115995">距离上次使用已超过 1 年</translation>
 <translation id="6321917430147971392">请检查您的DNS设置是否正确</translation>
 <translation id="6328639280570009161">请尝试停用网络联想查询功能</translation>
 <translation id="6328786501058569169">此网站是欺骗性网站</translation>

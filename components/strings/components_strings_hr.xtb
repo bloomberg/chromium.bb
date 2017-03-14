@@ -104,7 +104,6 @@
 <translation id="1962204205936693436">Oznake s domene <ph name="DOMAIN" /></translation>
 <translation id="1973335181906896915">Pogreška postavljanja u seriju</translation>
 <translation id="1974060860693918893">Napredno</translation>
-<translation id="1978555033938440688">Verzija opreme</translation>
 <translation id="2001146170449793414">{COUNT,plural, =1{i još 1}one{i još #}few{i još #}other{i još #}}</translation>
 <translation id="2020194265157481222">Potrebno je ime na kartici</translation>
 <translation id="2025186561304664664">Proxy je postavljen na automatsko konfiguriranje.</translation>
@@ -450,7 +449,6 @@
 <translation id="5359637492792381994">Poslužitelj nije mogao dokazati da je to <ph name="DOMAIN" /> jer sigurnosni certifikat trenutačno nije važeći. Razlog može biti pogrešna konfiguracija ili napad na vašu vezu. <ph name="BEGIN_LEARN_MORE_LINK" />Saznajte više<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="536296301121032821">Pohrana postavki pravila nije uspjela</translation>
 <translation id="5386426401304769735">Lanac certifikata za ovu web-lokaciju sadrži certifikat s SHA-1 potpisom.</translation>
-<translation id="5402410679244714488">Istek: <ph name="EXPIRATION_DATE_ABBR" />, posljednja upotreba prije više od godinu dana</translation>
 <translation id="5421136146218899937">Obriši podatke pregledavanja...</translation>
 <translation id="5430298929874300616">Ukloni oznaku</translation>
 <translation id="5431657950005405462">Datoteka nije pronađena</translation>
@@ -537,7 +535,6 @@
 <translation id="6282194474023008486">Poštanski broj</translation>
 <translation id="6290238015253830360">Ovdje će se prikazivati predloženi članci</translation>
 <translation id="6305205051461490394">Web-lokacija <ph name="URL" /> nije dostupna.</translation>
-<translation id="6319915415804115995">Posljednja upotreba prije više od godinu dana</translation>
 <translation id="6321917430147971392">Provjerite postavke DNS-a</translation>
 <translation id="6328639280570009161">Pokušajte onemogućiti predviđanja mreže</translation>
 <translation id="6328786501058569169">Ova je web-lokacija obmanjujuća</translation>

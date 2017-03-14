@@ -104,7 +104,6 @@
 <translation id="1962204205936693436">Отметки от <ph name="DOMAIN" /></translation>
 <translation id="1973335181906896915">Грешка при сериализирането</translation>
 <translation id="1974060860693918893">Разширени</translation>
-<translation id="1978555033938440688">Версия на фърмуера</translation>
 <translation id="2001146170449793414">{COUNT,plural, =1{и още 1}other{и още #}}</translation>
 <translation id="2020194265157481222">Името на картодържателя е задължително</translation>
 <translation id="2025186561304664664">За прокси сървъра е зададена автоматична конфигурация.</translation>
@@ -451,7 +450,6 @@
 <translation id="5359637492792381994">Сървърът не можа да докаже, че е <ph name="DOMAIN" />. Понастоящем сертификатът му за сигурност не е валиден. Това може да се дължи на неправилно конфигуриране или на прехващане на връзката ви от извършител на атака. <ph name="BEGIN_LEARN_MORE_LINK" />Научете повече<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="536296301121032821">Съхраняването на настройките за правилото не бе успешно</translation>
 <translation id="5386426401304769735">Веригата от сертификати за този сайт съдържа сертификат, подписан с SHA-1.</translation>
-<translation id="5402410679244714488">Валидност: <ph name="EXPIRATION_DATE_ABBR" />. Последно използване преди повече от година</translation>
 <translation id="5421136146218899937">Изчистване на данните за сърфирането...</translation>
 <translation id="5430298929874300616">Премахване на отметката</translation>
 <translation id="5431657950005405462">Файлът ви не бе намерен</translation>
@@ -538,7 +536,6 @@
 <translation id="6282194474023008486">Пощенски код</translation>
 <translation id="6290238015253830360">Предложените ви статии ще се показват тук</translation>
 <translation id="6305205051461490394">Няма достъп до <ph name="URL" />.</translation>
-<translation id="6319915415804115995">Последно използване преди повече от година</translation>
 <translation id="6321917430147971392">Проверете настройките си за DNS</translation>
 <translation id="6328639280570009161">Опитайте да деактивирате предвижданията за мрежата</translation>
 <translation id="6328786501058569169">Този сайт е измамен</translation>

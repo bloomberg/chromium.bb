@@ -91,7 +91,6 @@
 <translation id="1122242684574577509">Autenticazione non riuscita. Fai clic per visitare la pagina di accesso della rete Wi-Fi in uso (<ph name="NETWORK_ID" />).</translation>
 <translation id="1122960773616686544">Aggiungi il nome ai segnalibri</translation>
 <translation id="1123316951456119629">Se scolleghi il tuo account Google da <ph name="PRODUCT_NAME" />, i tuoi dati rimarranno su questo computer ma le modifiche apportate non verranno più sincronizzate con il tuo account Google. I dati già memorizzati nel tuo account Google rimarranno lì fino a quando non li rimuoverai tramite <ph name="BEGIN_LINK" />Google Dashboard<ph name="END_LINK" />.</translation>
-<translation id="1123726616645361044">Colori scuri e vivaci</translation>
 <translation id="1124772482545689468">Utente</translation>
 <translation id="1128109161498068552">Non consentire ai siti di utilizzare messaggi esclusivi di sistema per accedere a dispositivi MIDI</translation>
 <translation id="1128128132059598906">EAP-TTLS</translation>
@@ -257,7 +256,6 @@
 <translation id="1358735829858566124">Il file o la directory non è utilizzabile.</translation>
 <translation id="1358741672408003399">Ortografia e grammatica</translation>
 <translation id="1359381790106966506">Aggiorna autorizzazioni</translation>
-<translation id="1360943814180810746">Password salvata. Accedi alle tue password da qualsiasi dispositivo all'indirizzo <ph name="SAVED_PASSWORDS_LINK" />.</translation>
 <translation id="1361164813881551742">Aggiungi manualmente</translation>
 <translation id="1361655923249334273">Inutilizzato</translation>
 <translation id="136180453919764941">Batteria - <ph name="STATUS" /></translation>
@@ -300,7 +298,6 @@ Tieni presente che il Bluetooth verrà attivato per tutti i dispositivi compatib
 <translation id="1406500794671479665">Verifica in corso...</translation>
 <translation id="1407050882688520094">Hai dei certificati su file che identificano queste autorità di certificazione:</translation>
 <translation id="1407489512183974736">Ritagliato al centro</translation>
-<translation id="1408401193050207503">Colore dello shelf nell'interfaccia utente del sistema Chrome OS</translation>
 <translation id="1408504635543854729">Esplora i contenuti del dispositivo nell'app File. I contenuti sono limitati da un amministratore e non possono essere modificati.</translation>
 <translation id="1408789165795197664">Avanzate...</translation>
 <translation id="1409390508152595145">Crea utente supervisionato</translation>
@@ -454,9 +451,7 @@ Tieni presente che il Bluetooth verrà attivato per tutti i dispositivi compatib
 <translation id="1567723158593978621">Se l'opzione viene attivata, per accedere al browser viene utilizzato il nuovo flusso di accesso Gaia separato da password.</translation>
 <translation id="1567993339577891801">Console JavaScript</translation>
 <translation id="1568323446248056064">Apri le impostazioni dello schermo</translation>
-<translation id="1568595224147524689">Individua il sensore di impronte digitali sul dispositivo e toccalo con il dito.</translation>
 <translation id="1568822834048182062">I Preferiti, la cronologia, le password e altre impostazioni verranno sincronizzate con il tuo account Google.</translation>
-<translation id="1572266655485775982">Attiva Wi-Fi</translation>
 <translation id="1572876035008611720">Inserisci il tuo indirizzo email</translation>
 <translation id="1576594961618857597">Avatar bianco predefinito</translation>
 <translation id="1580652505892042215">Contesto:</translation>
@@ -602,7 +597,6 @@ Tieni presente che il Bluetooth verrà attivato per tutti i dispositivi compatib
 <translation id="175772926354468439">Attiva tema</translation>
 <translation id="1758018619400202187">EAP-TLS</translation>
 <translation id="1758831820837444715">Configura rete Ethernet</translation>
-<translation id="1760367484402714517">Modifica eccezione</translation>
 <translation id="1763046204212875858">Creazione di scorciatoie applicazione</translation>
 <translation id="1763108912552529023">Continua a esplorare</translation>
 <translation id="1764226536771329714">beta</translation>
@@ -822,6 +816,7 @@ Tieni presente che il Bluetooth verrà attivato per tutti i dispositivi compatib
 <translation id="2099172618127234427">Stai attivando le funzioni di debug di Chrome OS, che a loro volta impostano il daemon sshd e abilitano l'avvio da unità USB.</translation>
 <translation id="2099686503067610784">Eliminare il certificato del server "<ph name="CERTIFICATE_NAME" />"?</translation>
 <translation id="2100273922101894616">Accesso automatico</translation>
+<translation id="2100499704602262897">Attiva V8 per utilizzare il nuovo interprete sperimentale Ignition e il compilatore TurboFan per l'esecuzione di JavaScript.</translation>
 <translation id="2101225219012730419">Versione:</translation>
 <translation id="2101797668776986011">Pepper 3D</translation>
 <translation id="2103164230797186308">Gli aggiornamenti software non sono più disponibili per questo dispositivo. Prova a eseguire l'upgrade.</translation>
@@ -882,6 +877,7 @@ Tieni presente che il Bluetooth verrà attivato per tutti i dispositivi compatib
 <translation id="2164862903024139959">Tastiera Vietnamita (TCVN)</translation>
 <translation id="2165722503303595908">Dimensione</translation>
 <translation id="2166369534954157698">Pranzo d'acqua fa volti sghembi</translation>
+<translation id="2167276631610992935">JavaScript</translation>
 <translation id="2168214441502403371">Tastiera Persiano</translation>
 <translation id="2169062631698640254">Accedi comunque</translation>
 <translation id="2173717785608830047">Sblocco rapido (PIN)</translation>
@@ -1074,6 +1070,7 @@ Dopo avere creato un nuovo utente supervisionato, puoi gestirne le impostazioni 
 <translation id="2422426094670600218">&lt;senza nome&gt;</translation>
 <translation id="2423578206845792524">Sa&amp;lva immagine con nome...</translation>
 <translation id="2424091190911472304">Esegui sempre su <ph name="ORIGIN" /></translation>
+<translation id="2425632738803359658">Utilizza il menu utente di material design</translation>
 <translation id="2425665904502185219">Dimensioni totali file</translation>
 <translation id="2431394478374894294">Consente di attivare la funzione di input vocale della tastiera virtuale.</translation>
 <translation id="2432876185343582491">Aggiungi una carta</translation>
@@ -1163,6 +1160,7 @@ Non credo che questo sito debba essere bloccato.</translation>
 <translation id="253434972992662860">&amp;Pausa</translation>
 <translation id="2534460670861217804">Proxy HTTP sicuro</translation>
 <translation id="253557089021624350">Conteggio attività keep-alive</translation>
+<translation id="2537329513587967427">Aggiungi, modifica o rimuovi motori di ricerca</translation>
 <translation id="2539110682392681234">Le impostazioni proxy sono applicate dal tuo amministratore.</translation>
 <translation id="2539524384386349900">Rileva</translation>
 <translation id="2541423446708352368">Mostra tutti i download</translation>
@@ -1549,6 +1547,7 @@ Non credo che questo sito debba essere bloccato.</translation>
 <translation id="300544934591011246">Password precedente</translation>
 <translation id="3007072109817179209">Supporto in WebRTC della decodifica di video stream utilizzando l'hardware della piattaforma.</translation>
 <translation id="3007214526293698309">Correggi proporzioni</translation>
+<translation id="3008863991906202557">Quando questa opzione viene abilitata, viene attivata la versione material design del menu utente desktop, che ha un flusso più intuitivo.</translation>
 <translation id="3009300415590184725">Annullare la procedura di configurazione del servizio dati mobile?</translation>
 <translation id="3009779501245596802">Indexed databases</translation>
 <translation id="3010279545267083280">Password eliminata</translation>
@@ -2186,7 +2185,7 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="3812034401428455285"><ph name="UWS_NAME" /> e <ph name="UWS_NAME" /></translation>
 <translation id="3812525830114410218">Certificato non valido</translation>
 <translation id="3813296892522778813">Visita la <ph name="BEGIN_LINK_CHROMIUM" />guida di Google Chrome<ph name="END_LINK_CHROMIUM" /> se non riesci a trovare quello che cerchi</translation>
-<translation id="3813984289128269159">Ok Google</translation>
+<translation id="3813984289128269159">OK Google</translation>
 <translation id="3815016854028376614">Metodo di immissione Zhuyin</translation>
 <translation id="3815571115159309122"><ph name="FILE_COUNT" /> nuove foto trovate
     <ph name="LINE_BREAK1" />
@@ -2302,6 +2301,7 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="3954354850384043518">In corso</translation>
 <translation id="3955193568934677022">Consenti ai siti di riprodurre i contenuti protetti (opzione consigliata)</translation>
 <translation id="3958088479270651626">Importa Preferiti e impostazioni</translation>
+<translation id="3959660191855946280">Aggiungi o rimuovi stampanti</translation>
 <translation id="3960566196862329469">ONC</translation>
 <translation id="3966072572894326936">Scegli un'altra cartella...</translation>
 <translation id="3966388904776714213">Lettore audio</translation>
@@ -2889,7 +2889,7 @@ Premi un tasto qualsiasi per continuare a esplorare.</translation>
 <translation id="4839303808932127586">Sal&amp;va video come...</translation>
 <translation id="4839550772477464452">Funzioni di sicurezza potenzialmente indesiderate</translation>
 <translation id="4839847978919684242"><ph name="SELCTED_FILES_COUNT" /> elementi selezionati</translation>
-<translation id="4842976633412754305">Questa pagina sta tentando di caricare script da fonti non autenticate.</translation>
+<translation id="4842976633412754305">Questa pagina sta provando a caricare script di fonti non autenticate.</translation>
 <translation id="4844333629810439236">Altre tastiere</translation>
 <translation id="4846680374085650406">Stai seguendo il consiglio dell'amministratore per questa impostazione.</translation>
 <translation id="4848167023574541189">Nessuna password trovata</translation>
@@ -2911,7 +2911,6 @@ Premi un tasto qualsiasi per continuare a esplorare.</translation>
 <translation id="48607902311828362">Modalità aereo</translation>
 <translation id="4862050643946421924">Aggiunta del dispositivo...</translation>
 <translation id="4862642413395066333">Firma risposte OCSP</translation>
-<translation id="4864369630010738180">Accesso in corso...</translation>
 <translation id="4865571580044923428">Gestisci eccezioni...</translation>
 <translation id="4866139711390152178">Il proprietario potrebbe decidere di inviare a Google dati di diagnostica e utilizzo relativi a questo dispositivo. <ph name="BEGIN_LINK1" />Ulteriori informazioni<ph name="END_LINK1" /></translation>
 <translation id="4870177177395420201"><ph name="PRODUCT_NAME" /> non è in grado di determinare o impostare il browser predefinito.</translation>
@@ -3107,6 +3106,7 @@ Premi un tasto qualsiasi per continuare a esplorare.</translation>
 <translation id="5137929532584371582">16</translation>
 <translation id="5138177765054221193">Per i siti che sono stati impostati in modo da "consentire" i contenuti Flash vengono eseguiti tutti i contenuti, inclusi quelli non ritenuti importanti.</translation>
 <translation id="5139955368427980650">&amp;Apri</translation>
+<translation id="5141240743006678641">Crittografa le password sincronizzate con le tue credenziali Google</translation>
 <translation id="5143374789336132547">L'estensione "<ph name="EXTENSION_NAME" />" ha cambiato la pagina mostrata quando fai clic sul pulsante Pagina iniziale.</translation>
 <translation id="5143712164865402236">Passa a schermo intero</translation>
 <translation id="5144820558584035333">Hangul 3 Set (390)</translation>
@@ -4381,6 +4381,7 @@ Utilizza questa funzione solo con gli account che consideri attendibili.</transl
 <translation id="6843725295806269523">disattiva audio</translation>
 <translation id="6845038076637626672">Apri ingrandita</translation>
 <translation id="6847758263950452722">Salva pagina in MHTML</translation>
+<translation id="6851261092040379723">Pipeline di compilazione JavaScript sperimentale</translation>
 <translation id="6853388645642883916">Programma di aggiornamento in sospensione</translation>
 <translation id="68541483639528434">Chiudi le altre schede</translation>
 <translation id="6856623341093082836">Configura e regola la precisione del touchscreen</translation>
@@ -4672,6 +4673,7 @@ Utilizza questa funzione solo con gli account che consideri attendibili.</transl
 <translation id="7262004276116528033">Questo servizio di accesso è in hosting su <ph name="SAML_DOMAIN" /></translation>
 <translation id="7262221505565121">Eccezioni all'accesso con plug-in senza sandbox</translation>
 <translation id="7264275118036872269">Impossibile avviare il rilevamento del dispositivo Bluetooth.</translation>
+<translation id="7264454014834869122">Scegli dal Chrome Web Store</translation>
 <translation id="726502072182862130">Nome e icona del profilo Google</translation>
 <translation id="7268365133021434339">Chiudi schede</translation>
 <translation id="7268659760406822741">Servizi disponibili</translation>
@@ -5040,6 +5042,7 @@ Utilizza questa funzione solo con gli account che consideri attendibili.</transl
 <translation id="7792012425874949788">Qualcosa è andato storto in fase di accesso</translation>
 <translation id="7792388396321542707">Interrompi condivisione</translation>
 <translation id="7794058097940213561">Formatta dispositivo</translation>
+<translation id="779798319486679958">Scegli i tipi di carattere</translation>
 <translation id="7799329977874311193">Documento HTML</translation>
 <translation id="7800518121066352902">Ruota in senso anti&amp;orario</translation>
 <translation id="7801746894267596941">Solo un utente che dispone della tua passphrase può leggere i tuoi dati criptati: la passphrase non viene inviata a Google o memorizzata da Google. Se dimentichi la passphrase, dovrai</translation>
@@ -5153,6 +5156,7 @@ Utilizza questa funzione solo con gli account che consideri attendibili.</transl
 <translation id="7968742106503422125">Lettura e modifica dei dati copiati e incollati</translation>
 <translation id="7968796119156413760">Consente di utilizzare l'API Android Midi per WebMIDI (solo con dispositivi Android M o versione successiva).</translation>
 <translation id="7968833647796919681">Attiva raccolta di dati sul rendimento</translation>
+<translation id="7968982339740310781">Mostra dettagli</translation>
 <translation id="7969525169268594403">Sloveno</translation>
 <translation id="7972714317346275248">PKCS #1 SHA-384 con crittografia RSA</translation>
 <translation id="7973320858902175766">Component Patcher</translation>
@@ -5566,6 +5570,7 @@ Conserva il file di chiave in un luogo sicuro. Ti servirà per creare nuove vers
 <translation id="8525306231823319788">Schermo intero</translation>
 <translation id="8528074251912154910">Aggiungi lingue</translation>
 <translation id="8528962588711550376">Accesso in corso.</translation>
+<translation id="8532294913309524834">Ordina le lingue in base alle tue preferenze.</translation>
 <translation id="8535005006684281994">URL di rinnovo certificato Netscape</translation>
 <translation id="8539727552378197395">No (solo Http)</translation>
 <translation id="8541084862688000575">Carica automaticamente le app Android</translation>
@@ -5582,6 +5587,7 @@ Conserva il file di chiave in un luogo sicuro. Ti servirà per creare nuove vers
 <translation id="8551388862522347954">Licenze</translation>
 <translation id="8551494947769799688">Lettone</translation>
 <translation id="8553342806078037065">Gestisci altre persone</translation>
+<translation id="855705891482654011">Carica estensioni non in pacchetto</translation>
 <translation id="855773602626431402">È stata impedita l'esecuzione di un plug-in senza sandbox in questa pagina.</translation>
 <translation id="8557930019681227453">Manifest</translation>
 <translation id="8559694214572302298">Image Decoder</translation>
@@ -5692,6 +5698,7 @@ Conserva il file di chiave in un luogo sicuro. Ti servirà per creare nuove vers
 <translation id="869891660844655955">Data di scadenza</translation>
 <translation id="8700934097952626751">Fai clic per avviare la ricerca vocale</translation>
 <translation id="870112442358620996">Chiedi di salvare le password con Google Smart Lock per password.</translation>
+<translation id="8704458368793604611">Consente all'utente di applicare manualmente la generazione delle password in un campo di password.</translation>
 <translation id="8704521619148782536">L'operazione sta richiedendo più tempo del solito. Puoi continuare ad aspettare oppure annullare l'operazione e riprovare più tardi.</translation>
 <translation id="8704983632490900895">Consente di attivare la condivisione delle pagine offline salvate tramite altre applicazioni.</translation>
 <translation id="8705331520020532516">Numero di serie</translation>
@@ -5983,6 +5990,7 @@ Le finestre, le notifiche e le finestre di dialogo successive potrebbero essere 
 <translation id="9088234649737575428"><ph name="PLUGIN_NAME" /> è bloccato dalle norme aziendali</translation>
 <translation id="9088917181875854783">Conferma che la passkey sia visualizzata su "<ph name="DEVICE_NAME" />":</translation>
 <translation id="9090669887503413452">Invia informazioni di sistema</translation>
+<translation id="9091644496128082315">Cripta i dati sincronizzati con la tua <ph name="BEGIN_LINK" />passphrase di sincronizzazione<ph name="END_LINK" />.</translation>
 <translation id="9092426026094675787">Contrassegna origini non sicure come "non sicure"</translation>
 <translation id="9094033019050270033">Aggiorna password</translation>
 <translation id="9094982973264386462">Rimuovi</translation>
@@ -6025,6 +6033,7 @@ Le finestre, le notifiche e le finestre di dialogo successive potrebbero essere 
 <translation id="9137916601698928395">Apri link come <ph name="USER" /></translation>
 <translation id="9138978632494473300">Aggiungi scorciatoie per le seguenti posizioni:</translation>
 <translation id="9140698733984208191">Ora muovi leggermente il dito per acquisire tutte le varie parti dell'impronta digitale.</translation>
+<translation id="9145718805518496796">Crea pacchetto estensioni...</translation>
 <translation id="9147392381910171771">&amp;Opzioni</translation>
 <translation id="9148058034647219655">Esci</translation>
 <translation id="9148126808321036104">Esegui di nuovo l'accesso</translation>

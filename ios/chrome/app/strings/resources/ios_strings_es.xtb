@@ -172,6 +172,7 @@ Para ajustar el término de búsqueda, mantén pulsado el texto para seleccionar
 <translation id="4359125752503270327">Esta página se abrirá en otra aplicación.</translation>
 <translation id="4378154925671717803">Teléfono</translation>
 <translation id="441868831736628555">Aviso de privacidad</translation>
+<translation id="4473991315115669931">Navegar en modo incógnito</translation>
 <translation id="4526249700380860531">Consulta y administra contraseñas guardadas en la página <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4536418791685807335">Prueba a iniciar sesión de nuevo.</translation>
 <translation id="4620246317052452550">Páginas que has leído</translation>
@@ -380,6 +381,7 @@ Tus datos se cifraron con tu frase de contraseña de sincronización el <ph name
 <translation id="8741995161408053644">Es posible que tu cuenta de Google tenga otras formas del historial de navegación en la página <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
 <translation id="8775144690796719618">La URL no es válida</translation>
 <translation id="8820817407110198400">Marcadores</translation>
+<translation id="882482397944455431">Salir del modo incógnito</translation>
 <translation id="8840513115188359703">No se cerrará la sesión en tu cuenta de Google.</translation>
 <translation id="8904976895050290827">Sincronización de Chrome</translation>
 <translation id="895541991026785598">Notificar un error</translation>

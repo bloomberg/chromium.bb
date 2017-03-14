@@ -104,7 +104,6 @@
 <translation id="1962204205936693436">Закладки <ph name="DOMAIN" /></translation>
 <translation id="1973335181906896915">Не удалось выполнить сериализацию</translation>
 <translation id="1974060860693918893">Дополнительные</translation>
-<translation id="1978555033938440688">Версия ПО</translation>
 <translation id="2001146170449793414">{COUNT,plural, =1{и ещё 1}one{и ещё #}few{и ещё #}many{и ещё #}other{и ещё #}}</translation>
 <translation id="2020194265157481222">Необходимо указать имя владельца карты</translation>
 <translation id="2025186561304664664">Прокси-сервер настраивается автоматически.</translation>
@@ -450,7 +449,6 @@
 <translation id="5359637492792381994">Сервер не может подтвердить связь с доменом <ph name="DOMAIN" />, его сертификат в настоящий момент недействителен. Возможно, проблема связана с настройками сервера или действиями злоумышленников, которые пытаются перехватить соединение. <ph name="BEGIN_LEARN_MORE_LINK" />Подробнее…<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="536296301121032821">Не удалось сохранить настройки политики</translation>
 <translation id="5386426401304769735">В цепочке сертификатов этого сайта есть сертификат, подписанный с помощью алгоритма SHA-1.</translation>
-<translation id="5402410679244714488">Срок действия: <ph name="EXPIRATION_DATE_ABBR" />, использовалась более года назад</translation>
 <translation id="5421136146218899937">Очистить историю...</translation>
 <translation id="5430298929874300616">Удалить закладку</translation>
 <translation id="5431657950005405462">Файл не найден</translation>
@@ -537,7 +535,6 @@
 <translation id="6282194474023008486">Почтовый индекс</translation>
 <translation id="6290238015253830360">Здесь появятся рекомендуемые статьи.</translation>
 <translation id="6305205051461490394">Сайт <ph name="URL" /> недоступен.</translation>
-<translation id="6319915415804115995">Использовалась более года назад</translation>
 <translation id="6321917430147971392">Проверьте настройки DNS</translation>
 <translation id="6328639280570009161">Отключите предсказание сетевых действий</translation>
 <translation id="6328786501058569169">Это поддельный сайт</translation>

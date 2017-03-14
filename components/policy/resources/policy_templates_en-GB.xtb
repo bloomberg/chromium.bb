@@ -335,21 +335,6 @@
       If HardwareAccelerationModeEnabled is set to false, Disable3DAPIs is ignored and it is equivalent to Disable3DAPIs being set to true.</translation>
 <translation id="2168397434410358693">Idle delay when running on AC power</translation>
 <translation id="2170233653554726857">Enable WPAD optimisation</translation>
-<translation id="2176565653304920879">When this policy is set, automatic time zone detection flow will be in one of the following ways depending on the value of the setting:
-
-      If set to TimezoneAutomaticDetectionUsersDecide, users would be able to control automatic time zone detection using normal controls in chrome://settings.
-
-      If set to TimezoneAutomaticDetectionDisabled, automatic time zone controls in chrome://settings will be disabled. Automatic time zone detection will always be off.
-
-      If set to TimezoneAutomaticDetectionIPOnly, time zone controls in chrome://settings will be disabled. Automatic time zone detection will always be on. Time zone detection will use IP-only method to resolve location.
-
-      If set to TimezoneAutomaticDetectionSendWiFiAccessPoints, time zone controls in chrome://settings will be disabled. Automatic time zone detection will always be on. The list of visible Wi-Fi access points will always be sent to Geolocation API server for fine-grained time zone detection.
-
-      If set to TimezoneAutomaticDetectionSendAllLocationInfo, time zone controls in chrome://settings will be disabled. Automatic time zone detection will always be on. Location information (such as Wi-Fi access points, reachable mobile masts, GPS) will be sent to a server for fine-grained time zone detection.
-
-      If this policy is not set, it will behave as if TimezoneAutomaticDetectionUsersDecide is set.
-
-      If SystemTimezone policy is set, it overrides this policy. In this case automatic time zone detection is completely disabled.</translation>
 <translation id="2178899310296064282">Enforce at least Moderate Restricted Mode on YouTube</translation>
 <translation id="2183294522275408937">This setting controls how often the lock screen will request the password to be entered in order to continue using quick unlock. Each time the lock screen is entered, if the last password entry was more than this setting, the quick unlock will not be available on entering the lock screen. Should the user stay on the lock screen past this period of time, a password will be requested next time the user enters the wrong code, or re-enters the lock screen, whichever comes first.
 
@@ -1490,13 +1475,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
           If this policy is left not set, 'AskNotifications' will be used and the user will be able to change it.</translation>
 <translation id="538108065117008131">Allow <ph name="PRODUCT_FRAME_NAME" /> to handle the following content types.</translation>
 <translation id="5388730678841939057">Selects the strategy used to free up disk space during automatic clean-up</translation>
-<translation id="5392172595902933844">Information about the status of Android is sent back to the
-      server.
-
-      If the policy is set to false or left unset, no status information is reported.
-      If set to true, status information is reported.
-
-      This policy only applies if Android apps are enabled.</translation>
 <translation id="5395271912574071439">Enables curtaining of remote access hosts while a connection is in progress.
 
           If this setting is enabled, then hosts' physical input and output devices are disabled while a remote connection is in progress.

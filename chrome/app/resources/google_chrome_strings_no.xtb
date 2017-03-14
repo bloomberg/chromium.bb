@@ -139,6 +139,7 @@ Vi har sendt deg (<ph name="ACCOUNT_EMAIL" />) en e-post med nærmere instruksjo
 <translation id="5037239767309817516">For at endringen skal tre i kraft, må du lukke alle vinduer og starte Google Chrome på nytt.</translation>
 <translation id="5132929315877954718">Oppdag flotte apper, spill, utvidelser og temaer for Google Chrome.</translation>
 <translation id="5170938038195470297">Profilen din kan ikke brukes fordi den er fra en nyere versjon av Google Chrome. Enkelte funksjoner kan være utilgjengelige. Angi en annen profilkatalog, eller bruk en nyere versjon av Chrome.</translation>
+<translation id="5176234269072261959">Bidra til å gjøre Chrome bedre ved å rapportere gjeldende innstillinger</translation>
 <translation id="5193136243808726294">Google Chrome OS kan ikke åpne denne siden</translation>
 <translation id="5204098752394657250">Google Chrome – <ph name="TERMS_OF_SERVICE_LINK" />vilkår for bruk<ph name="END_TERMS_OF_SERVICE_LINK" /></translation>
 <translation id="5243785881901838525">Google Payments (kopiert til Chrome)</translation>
@@ -177,6 +178,7 @@ Vi har sendt deg (<ph name="ACCOUNT_EMAIL" />) en e-post med nærmere instruksjo
 <translation id="6291549208091401781">Google Chrome er allerede installert for alle brukerne på datamaskinen din.</translation>
 <translation id="629218512217695915">Bruk passordet som genereres av Chrome</translation>
 <translation id="6338556085225130112">Oppdaterer Google Chrome</translation>
+<translation id="6368805772029492593">Google Chrome krypterer dataene dine for å øke sikkerheten.</translation>
 <translation id="6368958679917195344">Chrome OS muliggjøres av <ph name="BEGIN_LINK_CROS_OSS" />tilleggsprogramvare med åpen kildekode<ph name="END_LINK_CROS_OSS" />.</translation>
 <translation id="6400076122676892962">Denne datamaskinen kommer snart til å slutte å motta oppdateringer av Google Chrome fordi Mac OS X 10.6, 10.7 og 10.8 ikke støttes lenger.</translation>
 <translation id="6410540444482791104">Du kan bidra til å gjøre Chrome tryggere og enklere å bruke ved å sende Google noe systeminformasjon og sideinnhold automatisk. Dette hjelper oss med å oppdage farlige apper og nettsteder.</translation>
@@ -203,6 +205,7 @@ Vi har sendt deg (<ph name="ACCOUNT_EMAIL" />) en e-post med nærmere instruksjo
 <translation id="7164397146364144019">Du kan bidra til å gjøre Chrome tryggere og enklere å bruke, ved å rapportere detaljer om mulige sikkerhetsbrudd til Google automatisk.</translation>
 <translation id="7177347454226092725">Dette fører til at nettlesingsdataene dine slettes permanent fra denne enheten. For å hente dataene dine igjen senere, logg på Chrome som $2.</translation>
 <translation id="7185038942300673794"><ph name="EXTENSION_NAME" /> har blitt lagt til i Chrome.</translation>
+<translation id="7193750696137290001">Google Chrome vises på dette språket.</translation>
 <translation id="7196020411877309443">Hvorfor vises dette?</translation>
 <translation id="7242029209006116544">Du er i ferd med å logge deg på med en administrert konto og gir administratoren kontroll over Chrome-profilen din. Chrome-dataene dine, som apper, bokmerker, loggen, passord og andre innstillinger, blir permanent knyttet til <ph name="USER_NAME" />. Du kan slette disse dataene via kontooversikten for Google, men du kan ikke knytte disse dataene til en annen konto. Du kan velge om du vil opprette en ny profil for å holde de eksisterende Chrome-dataene dine atskilte. <ph name="LEARN_MORE" /></translation>
 <translation id="729375352412857283">Denne datamaskinen kommer snart til å slutte å motta oppdateringer av Google Chrome fordi Windows XP og Windows Vista ikke støttes lenger.</translation>
@@ -233,12 +236,12 @@ Vi har sendt deg (<ph name="ACCOUNT_EMAIL" />) en e-post med nærmere instruksjo
 <translation id="7896673875602241923">Noen har tidligere logget på Chrome på denne datamaskinen som <ph name="ACCOUNT_EMAIL_LAST" />. Opprett en ny Chrome-bruker for å holde informasjonen din atskilt.</translation>
 <translation id="7908168227788431038">Nå er oppdateringen snart ferdig! Start Google Chrome på nytt for å fullføre oppdateringen.</translation>
 <translation id="795025003224538582">Ikke start på nytt</translation>
+<translation id="7964230182933713106">Chrome OS vises på dette språket.</translation>
 <translation id="8005540215158006229">Chrome er nesten klar.</translation>
 <translation id="8008534537613507642">Installer Chrome på nytt</translation>
 <translation id="8030318113982266900">Oppdaterer enheten din til <ph name="CHANNEL_NAME" />-kanalen ...</translation>
 <translation id="8032142183999901390">Når du har fjernet kontoen din fra Chrome, kan det hende at du må laste inn de åpne fanene på nytt før endringene trer i kraft.</translation>
 <translation id="8129812357326543296">Om &amp;Google Chrome</translation>
-<translation id="8179874765710681175">Installer Chrome på telefonen din. Vi sender deg en SMS.</translation>
 <translation id="8183957050892517584">Chrome lagrer personopplysningene dine sikkert, slik at du slipper å skrive dem inn på nytt.</translation>
 <translation id="8211929904040702368">Dette fører til at minst <ph name="TOTAL_COUNT" /> elementer slettes permanent fra denne enheten. For å hente dataene dine igjen, logg på Chrome som $2.</translation>
 <translation id="8255190535488645436">Google Chrome bruker kameraet og mikrofonen din.</translation>

@@ -27,7 +27,6 @@ Tem de ter a Localização e o Bluetooth ativados para poder utilizar a Web fís
 <translation id="124678866338384709">Fechar o separador atual</translation>
 <translation id="1258753120186372309">Doodle da Google: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1272079795634619415">Parar</translation>
-<translation id="1283039547216852943">Toque para expandir</translation>
 <translation id="1285320974508926690">Nunca traduzir este site</translation>
 <translation id="1291207594882862231">Limpar histórico, cookies, dados de sites, cache…</translation>
 <translation id="129553762522093515">Fechados recentemente</translation>
@@ -83,7 +82,6 @@ Tem de ter a Localização e o Bluetooth ativados para poder utilizar a Web fís
 <translation id="1825719650605518411">Experiência de primeira execução</translation>
 <translation id="1829244130665387512">Localizar na página</translation>
 <translation id="1832521218263067499">Incidentes de segurança</translation>
-<translation id="1841591888176896630">%1$s sugestões do Chrome</translation>
 <translation id="1853692000353488670">Novo separador de navegação anónima</translation>
 <translation id="189172778771606813">Fechar a gaveta de navegação</translation>
 <translation id="1933845786846280168">Separador selecionado</translation>
@@ -115,6 +113,7 @@ Tem de ter a Localização e o Bluetooth ativados para poder utilizar a Web fís
 <translation id="219985413780390209">Proteja-se e ao seu dispositivo contra sites perigosos</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, aplicação Web. <ph name="APP_URL" /></translation>
 <translation id="2268044343513325586">Refinar</translation>
+<translation id="2279474006916349339">Todos os dados de aplicações do Chrome são eliminados permanentemente, incluindo todos os ficheiros, definições, contas, bases de dados, etc.</translation>
 <translation id="2286841657746966508">Endereço de facturação</translation>
 <translation id="2315043854645842844">O sistema operativo não suporta a seleção do certificado do lado do cliente.</translation>
 <translation id="2321958826496381788">Arraste o controlo de deslize até conseguir ler confortavelmente. O texto deve ter, pelo menos, este tamanho depois de tocar duas vezes num parágrafo.</translation>
@@ -146,6 +145,7 @@ Tem de ter a Localização e o Bluetooth ativados para poder utilizar a Web fís
 <translation id="2587052924345400782">Versão mais recente dispon.</translation>
 <translation id="2593272815202181319">Monoespaço</translation>
 <translation id="2621115761605608342">Permitir JavaScript num site específico.</translation>
+<translation id="2646820313617290661">Os teus pais ajudam a gerir estas definições.</translation>
 <translation id="2653659639078652383">Submeter</translation>
 <translation id="2677748264148917807">Sair</translation>
 <translation id="2704606927547763573">Copiado</translation>
@@ -256,7 +256,6 @@ Para ajustar o termo de pesquisa, prima continuamente para selecionar. Para refi
 <translation id="393697183122708255">Nenhuma pesq. por voz ativada disponível</translation>
 <translation id="3946611741043634542">Ao continuar, aceita os <ph name="BEGIN_LINK1" />Termos de Utilização<ph name="END_LINK1" /> e o <ph name="BEGIN_LINK2" />Aviso de Privacidade<ph name="END_LINK2" /> do Chrome.</translation>
 <translation id="3950820424414687140">Iniciar sessão</translation>
-<translation id="395922942268463099">Páginas atualizadas regularmente</translation>
 <translation id="3967822245660637423">Transferência concluída</translation>
 <translation id="397583555483684758">A sincronização deixou de funcionar</translation>
 <translation id="3985215325736559418">Pretende transferir <ph name="FILE_NAME" /> novamente?</translation>
@@ -317,6 +316,7 @@ Para ajustar o termo de pesquisa, prima continuamente para selecionar. Para refi
 <translation id="4686372254213217147">Tamanho original</translation>
 <translation id="4698413471314543145">Uma funcionalidade crítica, necessária para executar o Chrome, está em falta. A instalação do Chrome pode estar incompleta ou não ser compatível com esta versão do Android.</translation>
 <translation id="4699172675775169585">Imagens e ficheiros em cache</translation>
+<translation id="4710672574193412565">Adicione uma Conta Google na página Contas na aplicação Definições do dispositivo.</translation>
 <translation id="4714588616299687897">Poupe até 60% dos seus dados</translation>
 <translation id="4720023427747327413">Abrir no <ph name="PRODUCT_NAME" /></translation>
 <translation id="4730876730346568982">Está a mudar de contas de sincronização de <ph name="ACCOUNT_EMAIL_OLD" /> para <ph name="ACCOUNT_EMAIL_NEW" />. Os dados do Chrome existentes são geridos por <ph name="MANAGED_DOMAIN" />. Esta ação elimina os seus dados deste dispositivo, embora permaneçam em <ph name="ACCOUNT_EMAIL_OLD" />.</translation>
@@ -337,7 +337,6 @@ Para ajustar o termo de pesquisa, prima continuamente para selecionar. Para refi
 <translation id="4862624982077154323">Nalguns Websites, é possível pagar com aplicações de pagamento compatíveis. Escolha as aplicações que pretende utilizar no Chrome.</translation>
 <translation id="4881695831933465202">Abrir</translation>
 <translation id="4885273946141277891">Número não suportado de instâncias do Chrome.</translation>
-<translation id="490442468485962363">Abrir em sep. anón. do Chrome</translation>
 <translation id="4910889077668685004">Aplicações de pagamento</translation>
 <translation id="4915549754973153784"><ph name="BEGIN_LINK" />Obter ajuda<ph name="END_LINK" /> enquanto procura dispositivos…</translation>
 <translation id="4943872375798546930">Nenhum resultado</translation>
@@ -449,7 +448,6 @@ No entanto, a navegação não é invisível. Passar para o modo de navegação 
 <translation id="5939518447894949180">Repor</translation>
 <translation id="5942872142862698679">A utilizar o Google para pesquisa</translation>
 <translation id="5956665950594638604">Abrir Centro de Ajuda do Chrome num novo separador</translation>
-<translation id="5962718611393537961">Toque para reduzir</translation>
 <translation id="6000066717592683814">Manter o Google</translation>
 <translation id="6010869025736512584">A aceder à entrada de vídeo</translation>
 <translation id="6012342843556706400">O Chrome necessita de acesso à localização para a partilhar com este site.</translation>
@@ -460,6 +458,7 @@ No entanto, a navegação não é invisível. Passar para o modo de navegação 
 <translation id="604996488070107836">A transferência de <ph name="FILE_NAME" /> falhou devido a um erro desconhecido.</translation>
 <translation id="605721222689873409">AA</translation>
 <translation id="6075798973483050474">Editar página inicial</translation>
+<translation id="6078323886959318429">Adicionar atalho</translation>
 <translation id="60923314841986378">Faltam <ph name="HOURS" /> horas</translation>
 <translation id="6108923351542677676">Configuração em curso…</translation>
 <translation id="6112702117600201073">A atualizar a página</translation>
@@ -585,6 +584,7 @@ A sua Conta Google pode ter outras formas do histórico de navegação, como pes
 <translation id="7498271377022651285">Aguarde…</translation>
 <translation id="7514365320538308">Transferir</translation>
 <translation id="7521387064766892559">JavaScript</translation>
+<translation id="753693763123565012">É tudo por agora</translation>
 <translation id="7562080006725997899">A limpar dados de navegação</translation>
 <translation id="756809126120519699">Dados do Chrome limpos</translation>
 <translation id="7588950540487816470">Web física</translation>
@@ -603,6 +603,7 @@ A sua Conta Google pode ter outras formas do histórico de navegação, como pes
 <translation id="7658239707568436148">Cancelar</translation>
 <translation id="7665369617277396874">Adicionar conta</translation>
 <translation id="7698359219371678927">Criar email no <ph name="APP_NAME" /></translation>
+<translation id="771135159654932189">Ver o que há nas proximidades</translation>
 <translation id="7764225426217299476">Adicionar endereço</translation>
 <translation id="7765158879357617694">Mover</translation>
 <translation id="7769602470925380267">Aceitar e terminar sessão</translation>
@@ -637,7 +638,6 @@ A sua Conta Google pode ter outras formas do histórico de navegação, como pes
 <translation id="8035133914807600019">Nova pasta…</translation>
 <translation id="8037750541064988519">Faltam <ph name="DAYS" /> dias</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> MB disponíveis</translation>
-<translation id="8058746566562539958">Abrir num novo sep. do Chrome</translation>
 <translation id="8063895661287329888">Falha ao adicionar marcador.</translation>
 <translation id="806745655614357130">Manter os meus dados separados</translation>
 <translation id="8068648041423924542">Não é possível selecionar o certificado.</translation>

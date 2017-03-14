@@ -27,7 +27,6 @@ Per poter utilizzare il Physical Web, devi attivare il Bluetooth e la geolocaliz
 <translation id="124678866338384709">Chiudi scheda corrente</translation>
 <translation id="1258753120186372309">Doodle di Google: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1272079795634619415">Interrompi</translation>
-<translation id="1283039547216852943">Tocca per espandere</translation>
 <translation id="1285320974508926690">Non tradurre mai questo sito</translation>
 <translation id="1291207594882862231">Cancella la cronologia, i cookie, i dati dei siti, la cache…</translation>
 <translation id="129553762522093515">Chiuse di recente</translation>
@@ -83,7 +82,6 @@ Per poter utilizzare il Physical Web, devi attivare il Bluetooth e la geolocaliz
 <translation id="1825719650605518411">Esperienza prima esecuzione</translation>
 <translation id="1829244130665387512">Trova nella pagina</translation>
 <translation id="1832521218263067499">Problemi di sicurezza</translation>
-<translation id="1841591888176896630">%1$s suggerimenti di Chrome</translation>
 <translation id="1853692000353488670">Nuova scheda in incognito</translation>
 <translation id="189172778771606813">Chiudi riquadro di navigazione a scomparsa</translation>
 <translation id="1933845786846280168">Scheda selezionata</translation>
@@ -115,6 +113,7 @@ Per poter utilizzare il Physical Web, devi attivare il Bluetooth e la geolocaliz
 <translation id="219985413780390209">Proteggi te stesso e il tuo dispositivo da siti pericolosi</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, app web. <ph name="APP_URL" /></translation>
 <translation id="2268044343513325586">Perfeziona</translation>
+<translation id="2279474006916349339">Tutti i dati delle app di Chrome saranno eliminati definitivamente. Sono inclusi tutti i file, le impostazioni, gli account, i database e così via.</translation>
 <translation id="2286841657746966508">Indirizzo di fatturazione</translation>
 <translation id="2315043854645842844">La selezione del certificato lato client non è supportata dal sistema operativo.</translation>
 <translation id="2321958826496381788">Trascina il cursore finché leggi il testo senza problemi. Il testo dovrebbe avere queste dimensioni minime quando tocchi due volte un paragrafo.</translation>
@@ -146,6 +145,7 @@ Per poter utilizzare il Physical Web, devi attivare il Bluetooth e la geolocaliz
 <translation id="2587052924345400782">Nuova versione disponibile</translation>
 <translation id="2593272815202181319">Monospace</translation>
 <translation id="2621115761605608342">Consenti JavaScript per un sito specifico.</translation>
+<translation id="2646820313617290661">I tuoi genitori ti aiutano a gestire queste impostazioni.</translation>
 <translation id="2653659639078652383">Invia</translation>
 <translation id="2677748264148917807">Esci</translation>
 <translation id="2704606927547763573">Copiata</translation>
@@ -256,7 +256,6 @@ Per modificare il termine di ricerca, premi a lungo per selezionarlo. Per perfez
 <translation id="393697183122708255">Nessuna ricerca vocale attiva disponib.</translation>
 <translation id="3946611741043634542">Se continui, accetti i <ph name="BEGIN_LINK1" />Termini di servizio<ph name="END_LINK1" /> e l'<ph name="BEGIN_LINK2" />Informativa sulla privacy<ph name="END_LINK2" /> di Chrome.</translation>
 <translation id="3950820424414687140">Accedi</translation>
-<translation id="395922942268463099">Pagine aggiornate regolarmente</translation>
 <translation id="3967822245660637423">Download completato</translation>
 <translation id="397583555483684758">La sincronizzazione si è interrotta</translation>
 <translation id="3985215325736559418">Scaricare di nuovo <ph name="FILE_NAME" />?</translation>
@@ -317,6 +316,7 @@ Per modificare il termine di ricerca, premi a lungo per selezionarlo. Per perfez
 <translation id="4686372254213217147">Dimensione originale</translation>
 <translation id="4698413471314543145">Manca una funzionalità fondamentale per l'esecuzione di Chrome; l'installazione di Chrome è incompleta oppure non è compatibile con la versione di Android installata.</translation>
 <translation id="4699172675775169585">Immagini e file memorizzati nella cache</translation>
+<translation id="4710672574193412565">Aggiungi un account Google dalla pagina Account nell'app Impostazioni del dispositivo.</translation>
 <translation id="4714588616299687897">Riduci l'utilizzo di dati fino al 60%</translation>
 <translation id="4720023427747327413">Apri in <ph name="PRODUCT_NAME" /></translation>
 <translation id="4730876730346568982">Stai per cambiare account di sincronizzazione, passando dall'account <ph name="ACCOUNT_EMAIL_OLD" /> all'account <ph name="ACCOUNT_EMAIL_NEW" />. I tuoi attuali dati di Chrome vengono gestiti da <ph name="MANAGED_DOMAIN" />. I dati verranno eliminati da questo dispositivo, ma rimarranno memorizzati nell'account <ph name="ACCOUNT_EMAIL_OLD" />.</translation>
@@ -337,7 +337,6 @@ Per modificare il termine di ricerca, premi a lungo per selezionarlo. Per perfez
 <translation id="4862624982077154323">Su alcuni siti web puoi pagare con app di pagamento supportate. Scegli le app da utilizzare in Chrome.</translation>
 <translation id="4881695831933465202">Apri</translation>
 <translation id="4885273946141277891">Numero di istanze di Chrome non supportato.</translation>
-<translation id="490442468485962363">Apri in scheda in incognito di Chrome</translation>
 <translation id="4910889077668685004">App di pagamento</translation>
 <translation id="4915549754973153784"><ph name="BEGIN_LINK" />Richiedi assistenza<ph name="END_LINK" /> durante la ricerca di dispositivi…</translation>
 <translation id="4943872375798546930">Nessun risultato</translation>
@@ -449,7 +448,6 @@ Tuttavia, le tue attività non sono invisibili. L'attivazione della modalità di
 <translation id="5939518447894949180">Ripristina</translation>
 <translation id="5942872142862698679">Google in uso per la ricerca</translation>
 <translation id="5956665950594638604">Apri Centro assistenza di Chrome in nuova scheda</translation>
-<translation id="5962718611393537961">Tocca per comprimere</translation>
 <translation id="6000066717592683814">Mantieni Google</translation>
 <translation id="6010869025736512584">Accesso all'input video in corso</translation>
 <translation id="6012342843556706400">Chrome deve avere accesso alla posizione per condividerla con questo sito.</translation>
@@ -460,6 +458,7 @@ Tuttavia, le tue attività non sono invisibili. L'attivazione della modalità di
 <translation id="604996488070107836">Download del file <ph name="FILE_NAME" /> non riuscito a causa di un errore sconosciuto.</translation>
 <translation id="605721222689873409">AA</translation>
 <translation id="6075798973483050474">Modifica Home page</translation>
+<translation id="6078323886959318429">Aggiungi scorciatoia</translation>
 <translation id="60923314841986378"><ph name="HOURS" /> ore rimanenti</translation>
 <translation id="6108923351542677676">Configurazione in corso…</translation>
 <translation id="6112702117600201073">Aggiornamento della pagina in corso</translation>
@@ -585,6 +584,7 @@ Il tuo account Google potrebbe avere altre forme di cronologia di navigazione, a
 <translation id="7498271377022651285">Attendi…</translation>
 <translation id="7514365320538308">Scarica</translation>
 <translation id="7521387064766892559">JavaScript</translation>
+<translation id="753693763123565012">Per il momento è tutto</translation>
 <translation id="7562080006725997899">Cancellazione dei dati di navigazione in corso</translation>
 <translation id="756809126120519699">Dati di Chrome cancellati</translation>
 <translation id="7588950540487816470">Physical Web</translation>
@@ -603,6 +603,7 @@ Il tuo account Google potrebbe avere altre forme di cronologia di navigazione, a
 <translation id="7658239707568436148">Annulla</translation>
 <translation id="7665369617277396874">Aggiungi account</translation>
 <translation id="7698359219371678927">Crea email in <ph name="APP_NAME" /></translation>
+<translation id="771135159654932189">Scopri cosa c'è nelle vicinanze</translation>
 <translation id="7764225426217299476">Aggiungi indirizzo</translation>
 <translation id="7765158879357617694">Sposta</translation>
 <translation id="7769602470925380267">Accetta ed esci</translation>
@@ -637,7 +638,6 @@ Il tuo account Google potrebbe avere altre forme di cronologia di navigazione, a
 <translation id="8035133914807600019">Nuova cartella…</translation>
 <translation id="8037750541064988519"><ph name="DAYS" /> giorni rimanenti</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> MB disponibili</translation>
-<translation id="8058746566562539958">Apri in nuova scheda di Chrome</translation>
 <translation id="8063895661287329888">Impossibile aggiungere preferito.</translation>
 <translation id="806745655614357130">Mantieni separati i miei dati</translation>
 <translation id="8068648041423924542">Impossibile selezionare il certificato.</translation>

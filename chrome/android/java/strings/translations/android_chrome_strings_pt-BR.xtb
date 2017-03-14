@@ -27,7 +27,6 @@
 <translation id="124678866338384709">Fechar a guia atual</translation>
 <translation id="1258753120186372309">Doodle do Google: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1272079795634619415">Parar</translation>
-<translation id="1283039547216852943">Toque para expandir</translation>
 <translation id="1285320974508926690">Nunca traduzir este site</translation>
 <translation id="1291207594882862231">Limpar histórico, cookies, dados do site, cache…</translation>
 <translation id="129553762522093515">Recentemente fechadas</translation>
@@ -83,7 +82,6 @@
 <translation id="1825719650605518411">Tela de apresentação</translation>
 <translation id="1829244130665387512">Encontrar na página</translation>
 <translation id="1832521218263067499">Incidentes de segurança</translation>
-<translation id="1841591888176896630">%1$s sugestões do Chrome</translation>
 <translation id="1853692000353488670">Nova guia anônima</translation>
 <translation id="189172778771606813">Fechar gaveta de navegação</translation>
 <translation id="1933845786846280168">Guia selecionada</translation>
@@ -115,6 +113,7 @@
 <translation id="219985413780390209">Proteger você e seu dispositivo de sites perigosos</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, aplicativo da Web. <ph name="APP_URL" /></translation>
 <translation id="2268044343513325586">Refinar</translation>
+<translation id="2279474006916349339">Todos os dados de app do Chrome serão excluídos permanentemente. Isso inclui todos os arquivos, configurações, contas, bancos de dados, etc.</translation>
 <translation id="2286841657746966508">Endereço de faturamento</translation>
 <translation id="2315043854645842844">A seleção de certificado do cliente não é compatível com o sistema operacional.</translation>
 <translation id="2321958826496381788">Arraste o controle deslizante até a leitura ficar confortável. Depois de um toque duplo em um parágrafo, o texto deve ficar pelo menos deste tamanho.</translation>
@@ -146,6 +145,7 @@
 <translation id="2587052924345400782">Versão mais recente disponível</translation>
 <translation id="2593272815202181319">Espaçamento uniforme</translation>
 <translation id="2621115761605608342">Permitir JavaScript para um site específico.</translation>
+<translation id="2646820313617290661">Seus pais ajudam a gerenciar essas configurações.</translation>
 <translation id="2653659639078652383">Enviar</translation>
 <translation id="2677748264148917807">Sair</translation>
 <translation id="2704606927547763573">Copiado</translation>
@@ -255,7 +255,6 @@ Para selecionar o termo que quer pesquisar, toque no termo e mantenha-o pression
 <translation id="393697183122708255">Nenhuma pesq. por voz ativada disponível</translation>
 <translation id="3946611741043634542">Ao continuar, você concorda com os <ph name="BEGIN_LINK1" />Termos de Serviço<ph name="END_LINK1" /> e com o <ph name="BEGIN_LINK2" />Aviso de privacidade<ph name="END_LINK2" /> do Chrome.</translation>
 <translation id="3950820424414687140">Fazer login</translation>
-<translation id="395922942268463099">Páginas atualizadas regularmente</translation>
 <translation id="3967822245660637423">Download concluído</translation>
 <translation id="397583555483684758">A sincronização parou de funcionar</translation>
 <translation id="3985215325736559418">Deseja fazer o download do arquivo <ph name="FILE_NAME" /> novamente?</translation>
@@ -316,6 +315,7 @@ Para selecionar o termo que quer pesquisar, toque no termo e mantenha-o pression
 <translation id="4686372254213217147">Tamanho original</translation>
 <translation id="4698413471314543145">Um recurso importante e necessário para a execução do Google Chrome está ausente. Isso acontece porque a instalação do Google Chrome não foi concluída ou porque ele não é compatível com esta versão do Android.</translation>
 <translation id="4699172675775169585">Imagens e arquivos armazenados em cache</translation>
+<translation id="4710672574193412565">Adicione uma Conta do Google na página de Contas do app Config. do seu dispositivo.</translation>
 <translation id="4714588616299687897">Economize até 60% dos seus dados</translation>
 <translation id="4720023427747327413">Abrir no <ph name="PRODUCT_NAME" /></translation>
 <translation id="4730876730346568982">Você está alternando entre contas de sincronização de <ph name="ACCOUNT_EMAIL_OLD" /> para <ph name="ACCOUNT_EMAIL_NEW" />. Seus dados do Chrome já existentes são gerenciados por <ph name="MANAGED_DOMAIN" />. Isso excluirá seus dados deste dispositivo, mas eles permanecerão em <ph name="ACCOUNT_EMAIL_OLD" />.</translation>
@@ -336,7 +336,6 @@ Para selecionar o termo que quer pesquisar, toque no termo e mantenha-o pression
 <translation id="4862624982077154323">Em alguns websites, é possível pagar com apps de pagamento compatíveis. Escolha quais apps usar no Chrome.</translation>
 <translation id="4881695831933465202">Abrir</translation>
 <translation id="4885273946141277891">Número de instâncias do Google Chrome não suportado.</translation>
-<translation id="490442468485962363">Abrir em guia anônima Chrome</translation>
 <translation id="4910889077668685004">Apps de pagamento</translation>
 <translation id="4915549754973153784"><ph name="BEGIN_LINK" />Receber ajuda<ph name="END_LINK" /> ao procurar dispositivos…</translation>
 <translation id="4943872375798546930">Nenhum resultado</translation>
@@ -447,7 +446,6 @@ Para selecionar o termo que quer pesquisar, toque no termo e mantenha-o pression
 <translation id="5939518447894949180">Redefinir</translation>
 <translation id="5942872142862698679">Usando o Google para pesquisar</translation>
 <translation id="5956665950594638604">Abrir Central de Ajuda do Chrome em uma nova guia</translation>
-<translation id="5962718611393537961">Toque para recolher</translation>
 <translation id="6000066717592683814">Continuar usando o Google</translation>
 <translation id="6010869025736512584">Acessando entrada de vídeo</translation>
 <translation id="6012342843556706400">O Chrome precisa ter acesso ao local para compartilhá-lo com este site.</translation>
@@ -458,6 +456,7 @@ Para selecionar o termo que quer pesquisar, toque no termo e mantenha-o pression
 <translation id="604996488070107836">Falha no download do arquivo <ph name="FILE_NAME" /> devido a um erro desconhecido.</translation>
 <translation id="605721222689873409">AA</translation>
 <translation id="6075798973483050474">Editar página inicial</translation>
+<translation id="6078323886959318429">Adicionar atalho</translation>
 <translation id="60923314841986378"><ph name="HOURS" /> horas restantes</translation>
 <translation id="6108923351542677676">Configuração em andamento...</translation>
 <translation id="6112702117600201073">Atualizando página</translation>
@@ -583,6 +582,7 @@ Por exemplo, alguns websites podem reagir a esse pedido mostrando anúncios que 
 <translation id="7498271377022651285">Aguarde...</translation>
 <translation id="7514365320538308">Fazer o download</translation>
 <translation id="7521387064766892559">JavaScript</translation>
+<translation id="753693763123565012">Isso é tudo por enquanto</translation>
 <translation id="7562080006725997899">Limpando dados de navegação</translation>
 <translation id="756809126120519699">Dados do Chrome apagados</translation>
 <translation id="7588950540487816470">Web física</translation>
@@ -601,6 +601,7 @@ Por exemplo, alguns websites podem reagir a esse pedido mostrando anúncios que 
 <translation id="7658239707568436148">Cancelar</translation>
 <translation id="7665369617277396874">Adicionar conta</translation>
 <translation id="7698359219371678927">Criar e-mail no <ph name="APP_NAME" /></translation>
+<translation id="771135159654932189">Ver o que está nas proximidades</translation>
 <translation id="7764225426217299476">Adicionar endereço</translation>
 <translation id="7765158879357617694">Mover</translation>
 <translation id="7769602470925380267">Aceitar e sair</translation>
@@ -635,7 +636,6 @@ Por exemplo, alguns websites podem reagir a esse pedido mostrando anúncios que 
 <translation id="8035133914807600019">Nova pasta...</translation>
 <translation id="8037750541064988519"><ph name="DAYS" /> dias restantes</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> MB disponíveis</translation>
-<translation id="8058746566562539958">Abrir em nova guia do Chrome</translation>
 <translation id="8063895661287329888">Falha ao adicionar favorito.</translation>
 <translation id="806745655614357130">Manter meus dados separados</translation>
 <translation id="8068648041423924542">Não foi possível selecionar certificado.</translation>

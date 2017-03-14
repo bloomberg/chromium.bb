@@ -143,6 +143,7 @@ Täiendavad juhised leiate aadressilt <ph name="ACCOUNT_EMAIL" />.</translation>
 <translation id="5170938038195470297">Teie profiili ei saa kasutada, kuna see pärineb Google Chrome'i uuemast versioonist.
 
 Mõned funktsioonid ei pruugi saadaval olla. Määrake muu profiilikataloog või kasutage Chrome'i uuemat versiooni.</translation>
+<translation id="5176234269072261959">Aidake muuta Chrome paremaks, teavitades meid praegustest seadetest.</translation>
 <translation id="5193136243808726294">Google'i Chrome OS ei saa seda lehte avada.</translation>
 <translation id="5204098752394657250">Google Chrome'i <ph name="TERMS_OF_SERVICE_LINK" />teenusetingimused<ph name="END_TERMS_OF_SERVICE_LINK" /></translation>
 <translation id="5243785881901838525">Google Payments (Chrome'i kopeeritud)</translation>
@@ -181,6 +182,7 @@ Mõned funktsioonid ei pruugi saadaval olla. Määrake muu profiilikataloog või
 <translation id="6291549208091401781">Google Chrome on arvutisse kõigi kasutajate jaoks juba installitud.</translation>
 <translation id="629218512217695915">Kasuta Chrome'i loodud parooli</translation>
 <translation id="6338556085225130112">Google Chrome'i värskendamine</translation>
+<translation id="6368805772029492593">Turvalisuse suurendamiseks krüptib Google Chrome teie andmed.</translation>
 <translation id="6368958679917195344">Chrome OS on võimalik tänu <ph name="BEGIN_LINK_CROS_OSS" />avatud lähtekoodiga lisatarkvarale<ph name="END_LINK_CROS_OSS" />.</translation>
 <translation id="6400076122676892962">Arvuti ei saa varsti enam Google Chrome'i värskendusi, kuna Mac OS X 10.6, 10.7 ja 10.8 tugi lõpeb.</translation>
 <translation id="6410540444482791104">Saate aidata muuta Chrome'i turvalisemaks ja hõlpsamini kasutatavaks, kui lubate saata Google'ile automaatselt teatud süsteemiteavet ning lehesisu, mis aitab tuvastada ohtlikke rakendusi ja saite.</translation>
@@ -207,6 +209,7 @@ Mõned funktsioonid ei pruugi saadaval olla. Määrake muu profiilikataloog või
 <translation id="7164397146364144019">Saate aidata muuta Chrome'i turvalisemaks ja lihtsamalt kasutatavaks, kui teavitate Google'it automaatselt võimalike turvaintsidentide üksikasjadest.</translation>
 <translation id="7177347454226092725">See kustutab sellest seadmest jäädavalt teie sirvimisandmed. Hiljem oma andmete toomiseks logige Chrome'i sisse kasutajana $2.</translation>
 <translation id="7185038942300673794"><ph name="EXTENSION_NAME" /> on Chrome'i lisatud.</translation>
+<translation id="7193750696137290001">Google Chrome kuvatakse selles keeles.</translation>
 <translation id="7196020411877309443">Miks mulle seda näidatakse?</translation>
 <translation id="7242029209006116544">Logite sisse hallatud kontoga ja annate selle administraatorile üle oma Google Chrome'i profiili juhtimise. Teie Chrome'i andmed, näiteks rakendused, järjehoidjad, ajalugu, paroolid ja muud seaded seotakse jäädavalt kasutajaga <ph name="USER_NAME" />. Saate need andmed Google'i kontode juhtpaneeli kaudu kustutada, kuid te ei saa neid seostada teise kontoga. Võite olemasolevate Chrome'i andmete eraldi hoidmiseks luua aga uue profiili. <ph name="LEARN_MORE" /></translation>
 <translation id="729375352412857283">Arvuti ei saa varsti enam Google Chrome'i värskendusi, kuna Windows XP ja Windows Vista tugi lõpeb.</translation>
@@ -237,12 +240,12 @@ Mõned funktsioonid ei pruugi saadaval olla. Määrake muu profiilikataloog või
 <translation id="7896673875602241923">Keegi on varem selles arvutis Chrome'i sisse loginud kasutajana <ph name="ACCOUNT_EMAIL_LAST" />. Looge uus Chrome'i kasutaja, et oma teave eraldi hoida.</translation>
 <translation id="7908168227788431038">Rakendus on peaaegu ajakohane! Värskenduse lõpuleviimiseks taaskäivitage Google Chrome.</translation>
 <translation id="795025003224538582">Ära taaskäivita</translation>
+<translation id="7964230182933713106">Chrome OS kuvatakse selles keeles.</translation>
 <translation id="8005540215158006229">Chrome on peaaegu valmis.</translation>
 <translation id="8008534537613507642">Installi Chrome uuesti</translation>
 <translation id="8030318113982266900">Seadet värskendatakse kanalile <ph name="CHANNEL_NAME" /> ...</translation>
 <translation id="8032142183999901390">Pärast konto eemaldamist Chrome'ist tuleb avatud vahekaardid võib-olla uuesti laadida, et need toimiksid.</translation>
 <translation id="8129812357326543296">Teave &amp;Google Chrome'i kohta</translation>
-<translation id="8179874765710681175">Installige Chrome oma telefoni. Saadame teie telefoni SMS-i.</translation>
 <translation id="8183957050892517584">Chrome salvestab turvaliselt teie isiklikud andmed, et te ei peaks neid uuesti sisestama.</translation>
 <translation id="8211929904040702368">See kustutab sellest seadmest jäädavalt vähemalt <ph name="TOTAL_COUNT" /> üksust. Hiljem oma andmete toomiseks logige Chrome'i sisse kasutajana $2.</translation>
 <translation id="8255190535488645436">Google Chrome kasutab kaamerat ja mikrofoni.</translation>

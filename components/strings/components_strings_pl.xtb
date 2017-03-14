@@ -196,11 +196,9 @@
 <translation id="277499241957683684">Brak rekordu urządzenia</translation>
 <translation id="2784949926578158345">Połączenie zostało zresetowane.</translation>
 <translation id="2794233252405721443">Strona zablokowana</translation>
-<translation id="2812680587231492111">Ta opcja odbioru jest niedostępna .Wybierz inną.</translation>
 <translation id="2824775600643448204">Pasek adresu i wyszukiwania</translation>
 <translation id="2826760142808435982">Połączenie jest szyfrowane i uwierzytelniane algorytmem <ph name="CIPHER" />, a mechanizm wymiany kluczy to <ph name="KX" />.</translation>
 <translation id="2835170189407361413">Wyczyść formularz</translation>
-<translation id="2849041323157393173">Ta opcja dostawy jest niedostępna. Wybierz inną.</translation>
 <translation id="2889159643044928134">Nie ładuj ponownie</translation>
 <translation id="2900469785430194048">Podczas próby wyświetlenia tej strony w Google Chrome zabrakło pamięci.</translation>
 <translation id="2909946352844186028">Wykryto zmianę sieci.</translation>
@@ -333,7 +331,6 @@
 <translation id="4030383055268325496">&amp;Cofnij dodanie</translation>
 <translation id="404928562651467259">OSTRZEŻENIE</translation>
 <translation id="4058922952496707368">Klucz „<ph name="SUBKEY" />”: <ph name="ERROR" /></translation>
-<translation id="4072486802667267160">Podczas przetwarzania zamówienia wystąpił błąd. Spróbuj ponownie.</translation>
 <translation id="4075732493274867456">Klient i serwer nie obsługują wspólnej wersji protokołu SSL lub mechanizmu szyfrowania.</translation>
 <translation id="4079302484614802869">Proxy skonfigurowano do używania URL-a skryptu PAC, a nie ustalonych serwerów proxy.</translation>
 <translation id="4098354747657067197">Wchodzisz na stronę wprowadzającą w błąd</translation>
@@ -345,6 +342,7 @@
 <translation id="4118212371799607889">Ten serwer nie mógł udowodnić, że należy do <ph name="DOMAIN" />. Jego certyfikat nie jest zaufany w Chromium. Może to być spowodowane błędną konfiguracją lub przechwyceniem połączenia przez atakującego. <ph name="BEGIN_LEARN_MORE_LINK" />Dowiedz się więcej<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="4129401438321186435">{COUNT,plural, =1{1 inny wpis}few{# inne wpisy}many{# innych wpisów}other{# innego wpisu}}</translation>
 <translation id="4130226655945681476">Sprawdź kable sieciowe, modem i router</translation>
+<translation id="4137140866298219568">Data ważności: <ph name="EXPIRATION_DATE_ABBR" />, ostatnio używana: <ph name="LAST_USED_DATE_NO_DETAIL" /></translation>
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4169947484918424451">Czy Chromium ma zapisać tę kartę?</translation>
 <translation id="4171400957073367226">Nieprawidłowy podpis weryfikujący</translation>
@@ -404,11 +402,11 @@
 <translation id="4803924862070940586"><ph name="FORMATTED_TOTAL_AMOUNT" /> <ph name="CURRENCY_CODE" /></translation>
 <translation id="4813512666221746211">Błąd sieci</translation>
 <translation id="4816492930507672669">Dopasuj do strony</translation>
-<translation id="483020001682031208">Brak stron internetu rzeczy do pokazania</translation>
 <translation id="4850886885716139402">Widok</translation>
 <translation id="4858792381671956233">Zapytałeś rodziców, czy możesz wejść na tę stronę</translation>
 <translation id="4880827082731008257">Przeszukaj historię</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
+<translation id="4897073194580895694">Ostatnio używana: <ph name="LAST_USED_MONTH" /></translation>
 <translation id="4914479371620770914">{URL_count,plural, =1{i jeszcze 1 strona}few{i jeszcze # strony}many{i jeszcze # stron}other{i jeszcze # strony}}</translation>
 <translation id="4923417429809017348">Ta strona została przetłumaczona z nieznanego języka na język <ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="4923459931733593730">Płatność</translation>
@@ -584,7 +582,6 @@
 <translation id="6628463337424475685">Wyszukiwarka <ph name="ENGINE" /></translation>
 <translation id="6644283850729428850">Zasada jest przestarzała.</translation>
 <translation id="6652240803263749613">Ten serwer nie mógł udowodnić, że należy do <ph name="DOMAIN" />. Jego certyfikat nie jest zaufany w systemie operacyjnym Twojego komputera. Może to być spowodowane błędną konfiguracją lub przechwyceniem połączenia przez atakującego. <ph name="BEGIN_LEARN_MORE_LINK" />Dowiedz się więcej<ph name="END_LEARN_MORE_LINK" />.</translation>
-<translation id="6665267558048410100">Ta opcja zakupu jest niedostępna. Wybierz inną.</translation>
 <translation id="6671697161687535275">Usunąć tę podpowiedź do formularza z Chromium?</translation>
 <translation id="6685834062052613830">Wyloguj się i dokończ konfigurację</translation>
 <translation id="6710213216561001401">Wstecz</translation>
@@ -767,7 +764,6 @@ Psst! Następnym razem możesz użyć trybu incognito <ph name="SHORTCUT_KEY" />
 <translation id="8466379296835108687">{COUNT,plural, =1{1 karta kredytowa}few{# karty kredytowe}many{# kart kredytowych}other{# karty kredytowej}}</translation>
 <translation id="8483780878231876732">Aby użyć kart z konta Google, zaloguj się w Chrome</translation>
 <translation id="8488350697529856933">Dotyczy</translation>
-<translation id="8492969205326575646">Nieobsługiwany typ karty</translation>
 <translation id="8498891568109133222">Serwer <ph name="HOST_NAME" /> potrzebował zbyt wiele czasu na odpowiedź.</translation>
 <translation id="852346902619691059">Ten serwer nie mógł udowodnić, że należy do <ph name="DOMAIN" />. Jego certyfikat nie jest zaufany w systemie operacyjnym Twojego urządzenia. Może to być spowodowane błędną konfiguracją lub przechwyceniem połączenia przez atakującego. <ph name="BEGIN_LEARN_MORE_LINK" />Dowiedz się więcej<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="8543181531796978784">Możesz <ph name="BEGIN_ERROR_LINK" />zgłosić problem z wykrywaniem<ph name="END_ERROR_LINK" /> lub – jeśli rozumiesz zagrożenie – <ph name="BEGIN_LINK" />wejść na tę niebezpieczną stronę<ph name="END_LINK" />.</translation>
@@ -778,6 +774,7 @@ Psst! Następnym razem możesz użyć trybu incognito <ph name="SHORTCUT_KEY" />
 <translation id="859285277496340001">Certyfikat nie określa mechanizmu do sprawdzania, czy został on unieważniony.</translation>
 <translation id="8620436878122366504">Twoi rodzice jeszcze na to nie zezwolili</translation>
 <translation id="8647750283161643317">Przywróć wszystkie ustawienia domyślne</translation>
+<translation id="8662285765512809409">Data ważności: <ph name="EXPIRATION_DATE_ABBR" />, dodano: <ph name="ADDED_TO_AUTOFILL_MONTH" /></translation>
 <translation id="8703575177326907206">Połączenie z witryną <ph name="DOMAIN" /> nie jest szyfrowane.</translation>
 <translation id="8725066075913043281">Spróbuj ponownie</translation>
 <translation id="8728672262656704056">Jesteś w trybie incognito</translation>
@@ -801,10 +798,10 @@ Psst! Następnym razem możesz użyć trybu incognito <ph name="SHORTCUT_KEY" />
 <translation id="8891727572606052622">Nieprawidłowy tryb proxy</translation>
 <translation id="889901481107108152">Eksperyment jest niedostępny na Twojej platformie.</translation>
 <translation id="8903921497873541725">Powiększ</translation>
+<translation id="8928945116588336256">Dodano: <ph name="ADDED_TO_AUTOFILL_MONTH" /></translation>
 <translation id="8931333241327730545">Chcesz zapisać tę kartę na swoim koncie Google?</translation>
 <translation id="8932102934695377596">Twój zegar się spóźnia</translation>
 <translation id="8954894007019320973">(cd.)</translation>
-<translation id="895548565263634352">Przeczytaj artykuły wydawcy <ph name="ARTICLE_PUBLISHER" /> i jeszcze <ph name="OTHER_ARTICLE_COUNT" /></translation>
 <translation id="8971063699422889582">Ważność certyfikatu serwera wygasła.</translation>
 <translation id="8986494364107987395">Automatycznie przesyłaj do Google statystyki użytkowania i raporty o awariach</translation>
 <translation id="8987927404178983737">Miesiąc</translation>

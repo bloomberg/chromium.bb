@@ -317,21 +317,6 @@ Si esta política no se configura, se utilizará 'Permitir complementos' y el us
       Si HardwareAccelerationModeEnabled se establece en false, Disable3DAPIs se ignora y es equivalente a que Disable3DAPIs se establezca en true.</translation>
 <translation id="2168397434410358693">Demora de inactividad con alimentación de CA</translation>
 <translation id="2170233653554726857">Habilitar optimización de WPAD</translation>
-<translation id="2176565653304920879">Cuando se establece esta política, la detección automática de la zona horaria se llevará a cabo de las siguientes formas, según el valor de la configuración:
-
-      Si se establece el valor TimezoneAutomaticDetectionUsersDecide, los usuarios podrán cambiar la detección automática de la zona horaria con los controles normales en chrome://settings.
-
-      Si se establece el valor TimezoneAutomaticDetectionDisabled, se inhabilitan los controles de la zona horaria automática en chrome://settings. La detección automática de la zona horaria siempre estará desactivada.
-
-      Si se establece el valor TimezoneAutomaticDetectionIPOnly, se inhabilitarán los controles de la zona horaria en chrome://settings. La detección automática de la zona horaria siempre estará activada. La detección de la zona horaria usará el método de solo IP para determinar la ubicación.
-
-      Si se establece el valor TimezoneAutomaticDetectionSendWiFiAccessPoints, se inhabilitan los controles de la zona horaria automática en chrome://settings. La detección automática de la zona horaria siempre estará activada. La lista de los puntos de acceso de Wi-Fi visibles se enviará siempre al servidor de la API de ubicación geográfica para una detección detallada de la zona horaria.
-
-      Si se establece el valor TimezoneAutomaticDetectionSendAllLocationInfo, se inhabilitan los controles de la zona horaria automática en chrome://settings. La detección automática de la zona horaria siempre estará activada. La información de la ubicación (como los puntos de acceso de Wi-Fi, torres de telefonía móvil accesibles, GPS) se enviará a un servidor para una detección detallada de la zona horaria.
-
-      Si no se establece esta política, se aplicará como si se hubiera establecido el valor TimezoneAutomaticDetectionUsersDecide.
-
-      Si se establece la política SystemTimezone, se anula esta política. En este caso, la detección automática de la zona horaria se inhabilita por completo.</translation>
 <translation id="2178899310296064282">Aplicar al menos el modo restringido moderado en YouTube</translation>
 <translation id="2183294522275408937">Esta configuración controla la frecuencia con la que la pantalla bloqueada solicitará la contraseña para continuar usando el desbloqueo rápido. Cada vez que ingresas a la pantalla bloqueada, si el último ingreso de contraseña superó al de esta configuración, el desbloqueo rápido no estará disponible para la pantalla bloqueada. Si el usuario permanece en la pantalla bloqueada después de este período, se solicitará que el usuario ingrese una contraseña cada vez que ingrese un código incorrecto o se active la pantalla bloqueada (lo que ocurra primero).
 
@@ -1389,13 +1374,6 @@ Si esta política no se configura, se utilizará 'Permitir complementos' y el us
 <translation id="5378985487213287085">Te permite configurar si los sitios web pueden mostrar notificaciones de escritorio. Esto se puede permitir de manera predeterminada, se puede denegar de manera predeterminada o se le puede preguntar al usuario cada vez que un sitio web quiera mostrar notificaciones de escritorio. Si esta política no se configura, se usará "AskNotifications" y el usuario podrá cambiarlo.</translation>
 <translation id="538108065117008131">Permitir que <ph name="PRODUCT_FRAME_NAME" /> maneje los siguientes tipos de contenido.</translation>
 <translation id="5388730678841939057">Seleccionar la estrategia utilizada para liberar espacio en el disco durante el proceso de limpieza automática (en desuso)</translation>
-<translation id="5392172595902933844">La información sobre el estado de Android se envía nuevamente al
-      servidor.
-
-      Si la política se establece como falsa o no se establece, el estado no se informa.
-      Si se establece como verdadera, el estado se informa.
-
-      Esta política solo se aplica si están habilitadas las apps de Android.</translation>
 <translation id="5395271912574071439">Habilita el modo de cortina para los hosts de acceso remoto durante una conexión. Si se habilita esta opción, los dispositivos físicos de entrada y salida del host se inhabilitan durante la conexión remota. Si se inhabilita o no se configura esta opción, tanto los usuarios locales como los remotos pueden interactuar con el host cuando se comparte.</translation>
 <translation id="5423001109873148185">Esta política, si se habilita, fuerza la importación de los motores de búsqueda del navegador predeterminado actual. Si se la habilita, esta política también afecta el cuadro de diálogo de importación. Si se la inhabilita, no se importa el motor de búsqueda predeterminado. Si esta política no se configura, se le puede preguntar al usuario si desea importar el motor de búsqueda o la importación puede realizarse de forma automática.</translation>
 <translation id="5423197884968724595">Nombre de restricción de WebView de Android:</translation>
@@ -2303,7 +2281,6 @@ desactivarlo).</translation>
 <translation id="7937766917976512374">Permitir o rechazar la captura de video</translation>
 <translation id="7941975817681987555">No predecir acciones de la red en ninguna conexión de red</translation>
 <translation id="7953256619080733119">Hosts de excepción manual de usuario administrado</translation>
-<translation id="7965394584578183156">Enviar siempre puntos de acceso de Wi-Fi al servidor mientras se determina la zona horaria.</translation>
 <translation id="7971839631300653352">SSL 3.0</translation>
 <translation id="7974114691960514888">Esta política ya no es compatible. Habilita el uso de servidores STUN y de retransmisión cuando se establece una conexión con un cliente remoto. Si se habilita esta configuración, esta máquina podrá descubrir y conectarse a máquinas host remotas, incluso si están separadas por un firewall. Si se inhabilita esta configuración y el firewall filtra las conexiones UDP de salida, esta máquina solo se conectará a máquinas host dentro de la red local.</translation>
 <translation id="7986374692540430898">No puedes forzar las apps de Android a que usen un proxy. Las apps de Android tienen a su disposición un subgrupo de opciones de configuración de proxy que pueden respetar de forma voluntaria. Para obtener más información, consulta la política <ph name="PROXY_MODE_POLICY" />.</translation>
@@ -2461,7 +2438,6 @@ desactivarlo).</translation>
 <translation id="8390049129576938611">Inhabilita la app interna para ver archivos PDF <ph name="PRODUCT_NAME" />. Los considera archivos de descarga y le permite al usuario abrirlos con la aplicación predeterminada.
 
       Si esta política no se establece o se inhabilita, el complemento de PDF se usará para abrir archivos PDF a menos que el usuario lo inhabilite.</translation>
-<translation id="8398203849316312944">Enviar siempre cualquier señal de ubicación disponible al servidor mientras se determina la zona horaria.</translation>
 <translation id="8402079500086185021">Abrir siempre archivos PDF de forma externa</translation>
 <translation id="8412312801707973447">Se realizan comprobaciones OCSP/CRL si estás conectado.</translation>
 <translation id="8413348101535146315">Permite finalizar procesos en el Administrador de tareas de <ph name="PRODUCT_NAME" />.

@@ -331,21 +331,6 @@
       Dacă HardwareAccelerationModeEnabled este dezactivat, Disable3DAPIs este ignorat, fiind echivalent cu activarea Disable3DAPIs.</translation>
 <translation id="2168397434410358693">Interval de inactivitate la funcționarea pe c.a.</translation>
 <translation id="2170233653554726857">Activați optimizarea pentru WPAD</translation>
-<translation id="2176565653304920879">Când această politică este configurată, fluxul de detectare automată a fusului orar va fi într-unul dintre următoarele moduri, în funcție de valoarea setării:
-
-      Dacă este setată la TimezoneAutomaticDetectionUsersDecide, utilizatorii vor putea controla detectarea automată a fusului orar folosind comenzi obișnuite în chrome://settings.
-
-      Dacă este setată la TimezoneAutomaticDetectionDisabled, comenzile pentru fusul orar automat din chrome://settings vor fi dezactivate. Detectarea automată a fusului orar va fi întotdeauna dezactivată.
-
-      Dacă este setată la TimezoneAutomaticDetectionIPOnly, comenzile pentru fusul orar din chrome://settings vor fi dezactivate. Detectarea automată a fusului orar va fi întotdeauna activată. Detectarea fusului orar va folosi numai metoda prin adresa IP pentru a stabili locația.
-
-      Dacă este setată la TimezoneAutomaticDetectionSendWiFiAccessPoints, comenzile pentru fusul orar din chrome://settings vor fi dezactivate. Detectarea automată a fusului orar va fi întotdeauna activată. Lista cu punctele de acces Wi-Fi vizibile va fi trimisă întotdeauna către serverul API-ului Geolocation pentru detectarea exactă a fusului orar.
-
-      Dacă este setată la TimezoneAutomaticDetectionSendAllLocationInfo, comenzile pentru fusul orar din chrome://settings vor fi dezactivate. Detectarea automată a fusului orar va fi întotdeauna activată. Informațiile despre locație (cum ar fi punctele de acces Wi-Fi, turnurile de telefonie mobilă accesibili, GPS) vor fi trimise la un server pentru detectarea exactă a fusului orar.
-
-      Dacă această politică nu este configurată, se va comporta ca și cum TimezoneAutomaticDetectionUsersDecide ar fi setată.
-
-      Dacă politica SystemTimezone este configurată, va modifica această politică. În acest caz, detectarea automată a fusului orar este complet dezactivată.</translation>
 <translation id="2178899310296064282">Impune cel puțin Modul restricționat moderat pe YouTube</translation>
 <translation id="2183294522275408937">Această setare controlează frecvența cu care ecranul de blocare solicită introducerea parolei pentru a se folosi în continuare deblocarea rapidă. Dacă ultima introducere a parolei a fost în urmă cu mai mult decât prevede această setare, deblocarea rapidă nu va mai fi disponibilă la accesarea ecranului de blocare. Dacă utilizatorul menține pornit ecranul de blocare mai mult decât acest interval de timp, se va solicita o parolă data viitoare când acesta introduce codul greșit sau când accesează din nou ecranul de blocare, în funcție de care dintre acestea se realizează prima.
 
@@ -1412,13 +1397,6 @@
 <translation id="5378985487213287085">Vă permite să setați dacă site-urile web au permisiunea de a afișa notificări pe desktop. Afișarea notificărilor pe desktop poate fi permisă în mod prestabilit, refuzată în mod prestabilit sau utilizatorul poate fi întrebat de fiecare dată când un site web vrea să afișeze notificări pe desktop. Dacă această politică nu este setată, va fi utilizată politica „AskNotifications”, iar utilizatorul va putea să o schimbe.</translation>
 <translation id="538108065117008131">Permite <ph name="PRODUCT_FRAME_NAME" /> să gestioneze următoarele tipuri de conținut.</translation>
 <translation id="5388730678841939057">Selectează strategia folosită pentru eliberarea spațiului pe disc în timpul curățării automate (învechită)</translation>
-<translation id="5392172595902933844">Informațiile despre starea Android sunt trimise la
-      server.
-
-      Dacă politica este dezactivată sau nu este configurată, informațiile despre stare nu vor fi raportate.
-      Dacă politica este activată, informațiile despre stare vor fi raportate.
-
-      Politica se aplică numai dacă sunt activate aplicațiile Android.</translation>
 <translation id="5395271912574071439">Permite protecția gazdelor de acces la distanță în timpul unei conexiuni.
 
           Dacă această setare este activată, atunci dispozitivele de intrare și de ieșire fizică ale gazdei sunt dezactivate în timpul unei conexiuni la distanță.
@@ -2333,7 +2311,6 @@ nu poate fi stabilit de utilizator din setările browserului.
 <translation id="7937766917976512374">Permiteți sau refuzați preluarea conținutului video</translation>
 <translation id="7941975817681987555">Nu anticipa acțiunile în rețea pentru nicio conexiune la rețea</translation>
 <translation id="7953256619080733119">Gazde pentru excepții adăugate manual ale utilizatorilor gestionați</translation>
-<translation id="7965394584578183156">Trimite întotdeauna punctele de acces Wi-Fi către server în timp ce se stabilește fusul orar.</translation>
 <translation id="7971839631300653352">SSL 3.0</translation>
 <translation id="7974114691960514888">Această politică nu mai este acceptată. Permite utilizarea de servere STUN și de retransmisie în cazul conectării la un client la distanță. Dacă această setare este activată, atunci acest computer poate să descopere computere gazdă la distanță și să se conecteze la acestea, chiar dacă există un firewall. Dacă această setare este dezactivată, iar conexiunile UDP de ieșire sunt filtrate de firewall, atunci acest computer se poate conecta numai la computerele gazdă aflate în rețeaua locală.</translation>
 <translation id="7986374692540430898">Nu poți forța aplicațiile Android să folosească un proxy. Un subset al setărilor de proxy este pus la dispoziția aplicațiilor Android, pe care acestea pot alege în mod voluntar să îl respecte. Pentru detalii suplimentare, consultă politica <ph name="PROXY_MODE_POLICY" />.</translation>
@@ -2486,7 +2463,6 @@ nu poate fi stabilit de utilizator din setările browserului.
 <translation id="8390049129576938611">Dezactivează vizualizatorul PDF intern în <ph name="PRODUCT_NAME" />. Îl tratează ca pe o descărcare și permite utilizatorului să deschidă fișierele PDF folosind aplicația prestabilită.
 
       Dacă această politică nu este configurată sau este dezactivată, pluginul PDF va fi folosit pentru a deschide fișierele PDF, dacă utilizatorul nu îl dezactivează.</translation>
-<translation id="8398203849316312944">Trimite întotdeauna semnalele disponibile privind locația către server în timp ce se stabilește fusul orar.</translation>
 <translation id="8402079500086185021">Deschide întotdeauna fișierele PDF extern</translation>
 <translation id="8412312801707973447">Această politică stabilește dacă sunt efectuate verificări OCSP/CRL online</translation>
 <translation id="8413348101535146315">Activează oprirea proceselor în Managerul de activități din <ph name="PRODUCT_NAME" />.

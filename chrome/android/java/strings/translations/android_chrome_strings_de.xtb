@@ -27,7 +27,6 @@ Zur Verwendung von Physical Web müssen Bluetooth und der Standortdienst aktivie
 <translation id="124678866338384709">Aktuellen Tab schließen</translation>
 <translation id="1258753120186372309">Google-Doodle: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1272079795634619415">Stopp</translation>
-<translation id="1283039547216852943">Zum Maximieren tippen</translation>
 <translation id="1285320974508926690">Diese Website nie übersetzen</translation>
 <translation id="1291207594882862231">Verlauf, Cookies, Websitedaten, Cache leeren…</translation>
 <translation id="129553762522093515">Kürzlich geschlossen</translation>
@@ -74,7 +73,6 @@ Zur Verwendung von Physical Web müssen Bluetooth und der Standortdienst aktivie
 <translation id="1671236975893690980">Download ausstehend...</translation>
 <translation id="169033420419426091"><ph name="FILE_NAME" /> konnte nicht heruntergeladen werden, weil keine SD-Karte gefunden wurde.</translation>
 <translation id="1709438864123551175">Datensparmodus</translation>
-<translation id="1729516292547892356">Google VR Services aktualisieren, um Virtual-Reality-Inhalte zu sehen</translation>
 <translation id="1742134235943978220">In folgende Sprache übersetzt: <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="1749561566933687563">Lesezeichen synchronisieren</translation>
 <translation id="17513872634828108">Geöffnete Tabs</translation>
@@ -83,7 +81,6 @@ Zur Verwendung von Physical Web müssen Bluetooth und der Standortdienst aktivie
 <translation id="1825719650605518411">First Run Experience</translation>
 <translation id="1829244130665387512">Seite durchsuchen</translation>
 <translation id="1832521218263067499">Sicherheitsrelevante Zwischenfälle</translation>
-<translation id="1841591888176896630">%1$s Chrome-Vorschläge</translation>
 <translation id="1853692000353488670">Neuer Inkognito-Tab</translation>
 <translation id="189172778771606813">Navigationsleiste schließen</translation>
 <translation id="1933845786846280168">Ausgewählter Tab</translation>
@@ -105,7 +102,6 @@ Zur Verwendung von Physical Web müssen Bluetooth und der Standortdienst aktivie
 <translation id="2095887075102408547">Wenn diese Funktion aktiviert ist, nutzt Chrome Google-Server, um besuchte Seiten vor dem Download zu komprimieren. Über private Verbindungen (HTTPS) oder in Inkognito-Tabs aufgerufene Seiten werden von Google nicht optimiert oder protokolliert.</translation>
 <translation id="2096396629993765042">Sie werden nicht von Ihrem Google-Konto abgemeldet. Eventuell finden Sie unter <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> weitere Arten von Browserverlaufsdaten für Ihr Google-Konto.</translation>
 <translation id="2100273922101894616">Automatisch anmelden</translation>
-<translation id="2111511281910874386">Seite aufrufen</translation>
 <translation id="2126426811489709554">Powered by Chrome</translation>
 <translation id="213279576345780926"><ph name="TAB_TITLE" /> geschlossen</translation>
 <translation id="2139186145475833000">Zum Startbildschirm hinzu</translation>
@@ -115,6 +111,7 @@ Zur Verwendung von Physical Web müssen Bluetooth und der Standortdienst aktivie
 <translation id="219985413780390209">Mich und mein Gerät vor schädlichen Websites schützen</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, Web-App. <ph name="APP_URL" /></translation>
 <translation id="2268044343513325586">Verfeinern</translation>
+<translation id="2279474006916349339">Alle App-Daten in Chrome werden dauerhaft gelöscht. Hierzu gehören alle Dateien, Einstellungen, Konten, Datenbanken usw.</translation>
 <translation id="2286841657746966508">Rechnungsadresse</translation>
 <translation id="2315043854645842844">Die clientseitige Zertifikatauswahl wird vom Betriebssystem nicht unterstützt.</translation>
 <translation id="2321958826496381788">Ziehen Sie den Schieberegler, bis Sie diesen Text problemlos lesen können. Nach dem Doppeltippen auf einen Abschnitt sollte der Text mindestens so groß sein.</translation>
@@ -146,6 +143,7 @@ Zur Verwendung von Physical Web müssen Bluetooth und der Standortdienst aktivie
 <translation id="2587052924345400782">Neuere Version verfügbar</translation>
 <translation id="2593272815202181319">Monospace</translation>
 <translation id="2621115761605608342">JavaScript für eine bestimmte Website zulassen.</translation>
+<translation id="2646820313617290661">Deine Eltern verwalten diese Einstellungen.</translation>
 <translation id="2653659639078652383">Senden</translation>
 <translation id="2677748264148917807">Verlassen</translation>
 <translation id="2704606927547763573">Kopiert</translation>
@@ -256,7 +254,6 @@ Zur Anpassung des Suchbegriffs drücken Sie einige Sekunden lang auf den entspre
 <translation id="393697183122708255">Keine aktivierte Sprachsuche verfügbar</translation>
 <translation id="3946611741043634542">Sobald Sie fortfahren, stimmen Sie den <ph name="BEGIN_LINK1" />Nutzungsbedingungen<ph name="END_LINK1" /> und den <ph name="BEGIN_LINK2" />Datenschutzhinweisen<ph name="END_LINK2" /> von Chrome zu.</translation>
 <translation id="3950820424414687140">Anmelden</translation>
-<translation id="395922942268463099">Regelmäßig aktualisierte Seiten</translation>
 <translation id="3967822245660637423">Download abgeschlossen</translation>
 <translation id="397583555483684758">Die Synchronisierung funktioniert nicht mehr</translation>
 <translation id="3985215325736559418">Soll <ph name="FILE_NAME" /> erneut heruntergeladen werden?</translation>
@@ -317,6 +314,7 @@ Zur Anpassung des Suchbegriffs drücken Sie einige Sekunden lang auf den entspre
 <translation id="4686372254213217147">Originalgröße</translation>
 <translation id="4698413471314543145">Es fehlen wichtige Funktionen zur Ausführung von Chrome. Ihre Chrome-Installation ist entweder unvollständig oder nicht mit dieser Android-Version kompatibel.</translation>
 <translation id="4699172675775169585">Bilder und Dateien im Cache</translation>
+<translation id="4710672574193412565">Fügen Sie ein Google-Konto über die Seite "Konten" der App "Einstellungen" Ihres Geräts hinzu.</translation>
 <translation id="4714588616299687897">Reduzieren Sie Ihre Daten um bis zu 60 %</translation>
 <translation id="4720023427747327413">In <ph name="PRODUCT_NAME" /> öffnen</translation>
 <translation id="4730876730346568982">Sie wechseln das Synchronisierungskonto von <ph name="ACCOUNT_EMAIL_OLD" /> zu <ph name="ACCOUNT_EMAIL_NEW" />. Ihre vorhandenen Chrome-Daten werden von <ph name="MANAGED_DOMAIN" /> verwaltet. Dadurch werden Ihre Daten von diesem Gerät gelöscht, aber Ihre Daten verbleiben in <ph name="ACCOUNT_EMAIL_OLD" />.</translation>
@@ -337,7 +335,6 @@ Zur Anpassung des Suchbegriffs drücken Sie einige Sekunden lang auf den entspre
 <translation id="4862624982077154323">Auf manchen Websites kann mit unterstützten Zahlungs-Apps bezahlt werden. Wählen Sie aus, welche Apps in Chrome verwendet werden sollen.</translation>
 <translation id="4881695831933465202">Öffnen</translation>
 <translation id="4885273946141277891">Nicht unterstützte Anzahl von Chrome-Instanzen</translation>
-<translation id="490442468485962363">In Chrome-Inkognito-Tab öffnen</translation>
 <translation id="4910889077668685004">Zahlungs-Apps</translation>
 <translation id="4915549754973153784"><ph name="BEGIN_LINK" />Hilfe aufrufen<ph name="END_LINK" />, während nach Geräten gesucht wird…</translation>
 <translation id="4943872375798546930">Keine Ergebnisse</translation>
@@ -449,7 +446,6 @@ Sie sind jedoch nicht unsichtbar. Der Inkognitomodus verhindert nicht, dass Info
 <translation id="5939518447894949180">Zurücksetzen</translation>
 <translation id="5942872142862698679">Suche erfolgt mit Google</translation>
 <translation id="5956665950594638604">Chrome-Hilfe in einem neuen Tab öffnen</translation>
-<translation id="5962718611393537961">Zum Minimieren tippen</translation>
 <translation id="6000066717592683814">Google beibehalten</translation>
 <translation id="6010869025736512584">Zugriff auf Video-Eingang</translation>
 <translation id="6012342843556706400">Chrome benötigt Zugriff auf den Standort, um ihn für diese Website freizugeben.</translation>
@@ -460,6 +456,7 @@ Sie sind jedoch nicht unsichtbar. Der Inkognitomodus verhindert nicht, dass Info
 <translation id="604996488070107836"><ph name="FILE_NAME" /> konnte aufgrund eines unbekannten Fehlers nicht heruntergeladen werden.</translation>
 <translation id="605721222689873409">JJ</translation>
 <translation id="6075798973483050474">Startseite bearbeiten</translation>
+<translation id="6078323886959318429">Tastenkombination hinzufügen</translation>
 <translation id="60923314841986378"><ph name="HOURS" /> Stunden übrig</translation>
 <translation id="6108923351542677676">Einrichtung läuft...</translation>
 <translation id="6112702117600201073">Aktualisierung der Seite</translation>
@@ -585,6 +582,7 @@ Eventuell finden Sie unter <ph name="BEGIN_LINK" />history.google.com<ph name="E
 <translation id="7498271377022651285">Bitte warten...</translation>
 <translation id="7514365320538308">Herunterladen</translation>
 <translation id="7521387064766892559">JavaScript</translation>
+<translation id="753693763123565012">Das ist im Moment alles</translation>
 <translation id="7562080006725997899">Browserdaten werden gelöscht</translation>
 <translation id="756809126120519699">Gelöschte Chrome-Daten</translation>
 <translation id="7588950540487816470">Physical Web</translation>
@@ -603,6 +601,7 @@ Eventuell finden Sie unter <ph name="BEGIN_LINK" />history.google.com<ph name="E
 <translation id="7658239707568436148">Abbrechen</translation>
 <translation id="7665369617277396874">Konto hinzufügen</translation>
 <translation id="7698359219371678927">E-Mail in <ph name="APP_NAME" /> erstellen</translation>
+<translation id="771135159654932189">URLs in der Nähe</translation>
 <translation id="7764225426217299476">Adresse hinzufügen</translation>
 <translation id="7765158879357617694">Verschieben</translation>
 <translation id="7769602470925380267">Akzeptieren und abmelden</translation>
@@ -637,7 +636,6 @@ Eventuell finden Sie unter <ph name="BEGIN_LINK" />history.google.com<ph name="E
 <translation id="8035133914807600019">Neuer Ordner…</translation>
 <translation id="8037750541064988519"><ph name="DAYS" /> Tage übrig</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> MB verfügbar</translation>
-<translation id="8058746566562539958">In neuem Chrome-Tab öffnen</translation>
 <translation id="8063895661287329888">Fehler beim Hinzufügen des Lesezeichens.</translation>
 <translation id="806745655614357130">Daten getrennt halten</translation>
 <translation id="8068648041423924542">Zertifikat kann nicht ausgewählt werden.</translation>
@@ -726,7 +724,6 @@ Um neue Lizenzen zu erwerben, stellen Sie eine Internetverbindung her und spiele
 <translation id="9063523880881406963">"Desktopversion anfordern" deaktivieren</translation>
 <translation id="9065203028668620118">Bearbeiten</translation>
 <translation id="9070377983101773829">Sprachsuche starten</translation>
-<translation id="9071742570345586758">Google VR Services installieren, um Virtual-Reality-Inhalte zu sehen</translation>
 <translation id="9086455579313502267">Kein Zugriff auf das Netzwerk</translation>
 <translation id="9099018167121903954"><ph name="KILOBYTES" /> KB heruntergeladen</translation>
 <translation id="9099292894781394535">Einsparungen bei der Datennutzung</translation>

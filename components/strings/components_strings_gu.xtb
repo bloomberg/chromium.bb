@@ -342,6 +342,7 @@
 <translation id="4118212371799607889">આ સર્વર એ સાબિત કરી શક્યું નથી કે તે <ph name="DOMAIN" /> છે; તેનું સુરક્ષા પ્રમાણપત્ર, Chromium દ્વારા વિશ્વસનીય નથી. આ કદાચ કોઈ ખોટી ગોઠવણી અથવા કોઈ હુમલાખોર તમારા કનેક્શનને અટકાવી રહ્યો હોવાને કારણે થયું છે. <ph name="BEGIN_LEARN_MORE_LINK" />વધુ જાણો<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="4129401438321186435">{COUNT,plural, =1{1 અન્ય}one{# અન્ય}other{# અન્ય}}</translation>
 <translation id="4130226655945681476">નેટવર્ક કેબલ્સ, મૉડેમ અને રાઉટર તપાસીને</translation>
+<translation id="4137140866298219568">સમાપ્તિ: <ph name="EXPIRATION_DATE_ABBR" />, છેલ્લે ઉપયોગ: <ph name="LAST_USED_DATE_NO_DETAIL" /></translation>
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4169947484918424451">શું તમે ઇચ્છો છો કે Chromium આ કાર્ડ સાચવે?</translation>
 <translation id="4171400957073367226">ખોટી ચકાસણી સહી</translation>
@@ -405,6 +406,7 @@
 <translation id="4858792381671956233">તમે આ સાઇટની મુલાકાત લો છો તે ઠીક છે કે કેમ તેવું તમે તમારા માતાપિતાને પૂછ્યું</translation>
 <translation id="4880827082731008257">ઇતિહાસ શોધ</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
+<translation id="4897073194580895694">છેલ્લે ઉપયોગ: <ph name="LAST_USED_MONTH" /></translation>
 <translation id="4914479371620770914">{URL_count,plural, =1{અને 1 વધુ વેબ પૃષ્ઠ}one{અને # વધુ વેબ પૃષ્ઠ}other{અને # વધુ વેબ પૃષ્ઠ}}</translation>
 <translation id="4923417429809017348">આ પૃષ્ઠ કોઈ અજ્ઞાત ભાષામાંથી <ph name="LANGUAGE_LANGUAGE" /> માં અનુવાદિત કરવામાં આવ્યું છે</translation>
 <translation id="4923459931733593730">ચુકવણી</translation>
@@ -772,6 +774,7 @@
 <translation id="859285277496340001">પ્રમાણપત્રને રદ કરવામાં આવ્યું છે કે નહિ તે તપાસવા માટે કોઈપણ મેકેનિઝમ નિર્દિષ્ટ કરતું નથી.</translation>
 <translation id="8620436878122366504">તમારા માતાપિતાએ તેને હજી સુધી મંજૂર કરેલ નથી</translation>
 <translation id="8647750283161643317">બધાને ડિફોલ્ટ પર ફરીથી સેટ કરો</translation>
+<translation id="8662285765512809409">સમાપ્તિ: <ph name="EXPIRATION_DATE_ABBR" />, ઉમેર્યું: <ph name="ADDED_TO_AUTOFILL_MONTH" /></translation>
 <translation id="8703575177326907206"><ph name="DOMAIN" /> સાથેનું તમારું કનેક્શન એન્ક્રિપ્ટેડ નથી.</translation>
 <translation id="8725066075913043281">ફરી પ્રયાસ કરો</translation>
 <translation id="8728672262656704056">તમે છુપા મોડમાં ગયા છો</translation>
@@ -795,6 +798,7 @@
 <translation id="8891727572606052622">અમાન્ય પ્રોક્સી મોડ.</translation>
 <translation id="889901481107108152">માફ કરશો, આ પ્રયોગ તમારા પ્લેટફોર્મ પર ઉપલબ્ધ નથી.</translation>
 <translation id="8903921497873541725">ઝૂમ વધારો</translation>
+<translation id="8928945116588336256">ઉમેર્યું: <ph name="ADDED_TO_AUTOFILL_MONTH" /></translation>
 <translation id="8931333241327730545">શું તમે આ કાર્ડને તમારા Google એકાઉન્ટમાં સાચવવા માગો છો?</translation>
 <translation id="8932102934695377596">તમારી ઘડિયાળ પાછળ છે</translation>
 <translation id="8954894007019320973">(ચાલુ.)</translation>

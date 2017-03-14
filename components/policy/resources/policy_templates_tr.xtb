@@ -332,21 +332,6 @@
       HardwareAccelerationModeEnabled yanlış seçeneğine ayarlanırsa Disable3DAPI'lar yoksayılır, bu da Disable3DAPI öğelerinin doğru seçeneğine ayarlanmasıyla eşdeğerdir.</translation>
 <translation id="2168397434410358693">AC güçle çalışırken boşta kalma gecikmesi</translation>
 <translation id="2170233653554726857">WPAD optimizasyonunu etkinleştir</translation>
-<translation id="2176565653304920879">Bu politika ayarlandığında, otomatik saat dilimi algılama akışı, ayarın değerine bağlı olarak aşağıdaki yöntemlerden birini kullanır: 
-
-      TimezoneAutomaticDetectionUsersDecide değerine ayarlanırsa kullanıcılar, chrome://settings sayfasındaki normal kontrolleri kullanarak otomatik saat dilimi algılamayı kontrol edebilir.
-
-      TimezoneAutomaticDetectionDisabled değerine ayarlanırsa chrome://settings sayfasındaki otomatik saat dilimi kontrolleri devre dışı bırakılır. Otomatik saat dilimi algılama her zaman kapalı olur.
-
-      TimezoneAutomaticDetectionIPOnly değerine ayarlanırsa chrome://settings sayfasındaki saat dilimi kontrolleri devre dışı bırakılır. Otomatik saat dilimi algılama her zaman açık olur. Saat dilimi algılama, konumu çözümlemek için yalnızca IP yöntemini kullanır.
-
-      TimezoneAutomaticDetectionSendWiFiAccessPoints değerine ayarlanırsa chrome://settings sayfasındaki saat dilimi kontrolleri devre dışı bırakılır. Otomatik saat dilimi algılama her zaman açık olur. Saat diliminin hassas bir şekilde algılanması için görünür kablosuz erişim noktalarının listesi her zaman Coğrafi Konum API'si sunucusuna gönderilir.
-
-      TimezoneAutomaticDetectionSendAllLocationInfo değerine ayarlanırsa chrome://settings sayfasındaki saat dilimi kontrolleri devre dışı bırakılır. Otomatik saat dilimi algılama her zaman açık olur. Saat diliminin hassas bir şekilde algılanması için konum bilgileri (Kablosuz erişim noktaları, erişilebilir Baz İstasyonları, GPS gibi) bir sunucuya gönderilir.
-
-      Bu politika ayarlanmazsa TimezoneAutomaticDetectionUsersDecide değeri belirlenmiş gibi davranır.
-
-      SystemTimezone politikası ayarlanırsa bu politika geçersiz kılınır. Bu durumda, otomatik saat dilimi algılama tamamen devre dışı bırakılır.</translation>
 <translation id="2178899310296064282">YouTube'da en azından Orta Düzey Kısıtlı Mod'u zorunlu kıl</translation>
 <translation id="2183294522275408937">Bu ayar, hızlı kilit açmanın kullanılmaya devam edilebilmesi için kilit ekranında ne sıklıkta şifre sorulacağını kontrol eder. Kilit ekranına her girildiğinde, son şifre girişi bu ayarda belirtilen süreden daha uzun zaman önce yapılmışsa, kilit ekranına girişte hızlı kilit açma kullanılamaz. Kullanıcı bu süreden daha uzun süre kilit ekranında kalırsa, yanlış kod girdiğinde veya kilit ekranına tekrar girdiğinde (hangisi önce olursa) şifre sorulur.
 
@@ -1476,12 +1461,6 @@ politikayı geçersiz kılamaz.
           Bu politika ayarlanmadan bırakılırsa, 'AskNotifications' kullanılır ve kullanıcı ayarı değiştirebilir.</translation>
 <translation id="538108065117008131"><ph name="PRODUCT_FRAME_NAME" /> için aşağıdaki içerik türlerini işlemeye izin ver.</translation>
 <translation id="5388730678841939057">Otomatik temizlik sırasında disk alanı boşaltmak için kullanılan stratejiyi seçer (kullanımdan kaldırıldı)</translation>
-<translation id="5392172595902933844">Android'in durumuyla ilgili bilgiler sunucuya geri gönderilir.
-
-      Politika yanlış (false) değerine ayarlanır veya ayarlanmadan bırakılırsa durum bilgisi bildirilmez.
-      Doğru (true) değerine ayarlanırsa durum bilgisi bildirilir.
-
-      Bu politika, yalnızca Android uygulamalarının etkin olması durumunda geçerlidir.</translation>
 <translation id="5395271912574071439">Bir bağlantı devam ederken uzaktan erişen ana makinelerin perdelenmesini etkinleştirir.
 
           Bu ayar etkinleştirilirse, uzak bağlantı devam ettiği sürece ana makinelerin fiziksel giriş ve çıkış cihazları devre dışı bırakılır.
@@ -2449,7 +2428,6 @@ Bu politika yanlış (false) değerine ayarlanırsa Yeni Sekme sayfasında, otom
 <translation id="7937766917976512374">Video yakalamaya izin verme veya reddetme</translation>
 <translation id="7941975817681987555">Ağ bağlantılarında ağ işlemlerini tahmin etme</translation>
 <translation id="7953256619080733119">Yönetilen kullanıcı manuel istisna ana makineleri</translation>
-<translation id="7965394584578183156">Saat dilimini çözümlerken kablosuz erişim noktalarını her zaman sunucuya gönder.</translation>
 <translation id="7971839631300653352">SSL 3.0</translation>
 <translation id="7974114691960514888">Bu politika artık desteklenmiyor.
           Bir uzak istemciye bağlanırken STUN ve geçiş sunucularının kullanılabilmesini sağlar.
@@ -2618,7 +2596,6 @@ Bu politika yanlış (false) değerine ayarlanırsa Yeni Sekme sayfasında, otom
 <translation id="8390049129576938611"><ph name="PRODUCT_NAME" /> içindeki dahili PDF görüntüleyiciyi devre dışı bırakır. Bunun yerine, dosyayı indirilecek dosya olarak ele alır ve kullanıcının PDF dosyalarını varsayılan uygulamayla açmasına olanak tanır.
 
       Bu politika ayarlanmaz veya devre dışı bırakılırsa, kullanıcı devre dışı bırakmadıkça PDF dosyalarını açmak için PDF eklentisi kullanılır.</translation>
-<translation id="8398203849316312944">Saat dilimini çözümlerken kullanılabilir konum sinyallerini her zaman sunucuya gönder.</translation>
 <translation id="8402079500086185021">PDF dosyalarını her zaman harici olarak aç</translation>
 <translation id="8412312801707973447">Çevrimiçi OCSP/CRL denetimlerinin yapılıp yapılmayacağı</translation>
 <translation id="8413348101535146315"><ph name="PRODUCT_NAME" /> Görev Yöneticisi'ndeki işlemlerin sona erdirilebilmesini sağlar.

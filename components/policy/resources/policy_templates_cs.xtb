@@ -295,21 +295,6 @@ Pokud tato zásada není nastavena, použije se výchozí hodnota 0 a uživatel
 <translation id="2166715102875984646">Deaktivovat podporu rozhraní API pro 3D grafiku</translation>
 <translation id="2168397434410358693">Prodleva nečinnosti při napájení ze sítě</translation>
 <translation id="2170233653554726857">Povolení optimalizace WPAD</translation>
-<translation id="2176565653304920879">Když je tato zásada nastavena, automatické zjištění časového pásma bude v závislosti na hodnotě nastavení probíhat jedním z následujících způsobů:
-
-      Je-li tato zásada nastavena na možnost TimezoneAutomaticDetectionUsersDecide, uživatelé budou moci automatické zjišťování časového pásma ovládat pomocí běžných ovládacích prvků na stránce chrome://settings.
-
-      Je-li tato zásada nastavena na možnost TimezoneAutomaticDetectionDisabled, ovládací prvky automatického zjišťování časového pásma na stránce chrome://settings budou deaktivovány. Automatické zjišťování časového pásma bude vždy vypnuto.
-
-      Je-li tato zásada nastavena na možnost TimezoneAutomaticDetectionIPOnly, ovládací prvky časových pásem na stránce chrome://settings budou deaktivovány. Automatické zjišťování časového pásma bude vždy zapnuto. Poloha se za účelem zjištění časového pásma bude určovat pouze podle IP adresy.
-
-      Je-li tato zásada nastavena na možnost TimezoneAutomaticDetectionSendWiFiAccessPoints, ovládací prvky časových pásem na stránce chrome://settings budou deaktivovány. Automatické zjišťování časového pásma bude vždy zapnuto. Za účelem přesného určení časového pásma se vždy odešle seznam viditelných přístupových bodů Wi-Fi na server Geolocation API.
-
-      Je-li tato zásada nastavena na možnost TimezoneAutomaticDetectionSendAllLocationInfo, ovládací prvky časových pásem na stránce chrome://settings budou deaktivovány. Automatické zjišťování časového pásma bude vždy zapnuto. Údaje o poloze (jako jsou přístupové body Wi-Fi, dostupné vysílače mobilní sítě a informace ze systému GPS) budou za účelem přesného určení časového pásma odeslány na server.
-
-      Pokud tato zásada není nastavena, bude se chovat, jako by byla nastavena na možnost TimezoneAutomaticDetectionUsersDecide.
-
-      Pokud je nastavena zásada SystemTimezone, má před touto zásadou přednost. V tomto případě je automatické zjišťování časového pásma zcela vypnuto.</translation>
 <translation id="2178899310296064282">Vynutit na YouTube alespoň střední nastavení omezeného režimu</translation>
 <translation id="2183294522275408937">Toto nastavení udává, jak často bude na obrazovce uzamčení vyžadováno zadání hesla, aby bylo možné i nadále používat rychlé odemknutí. Při každém vstupu na obrazovku uzamčení se zkontroluje, jaká doba uplynula od posledního zadání hesla. Pokud uplynula delší doba než udává toto nastavení, funkce rychlého odemknutí nebude k dispozici. Pokud uživatel na obrazovce uzamčení zůstane a tato doba bude překročena, bude uživatel o heslo požádán, buď až zadá nesprávný kód, nebo až znovu přejde na obrazovku uzamčení (podle toho, co nastane dříve).
 
@@ -1423,12 +1408,6 @@ Pokud zásadu nastavíte, můžete nakonfigurovat, zda má uživatel oprávněn�
           Pokud tuto zásadu nenastavíte, použije se zásada AskNotifications a uživatelé ji budou moci změnit.</translation>
 <translation id="538108065117008131">Umožňuje pluginu <ph name="PRODUCT_FRAME_NAME" /> zpracovávat následující typy obsahu.</translation>
 <translation id="5388730678841939057">Zvolí strategii pro uvolnění místa na disku při automatickém čištění (zastaralé)</translation>
-<translation id="5392172595902933844">Informace o stavu systému Android se odesílají zpět na server.
-
-      Je-li tato zásada nastavena na hodnotu False nebo nenastavena, nebudou hlášeny žádné informace o stavu.
-      Pokud je nastavena na hodnotu True, informace budou hlášeny.
-
-      Tato zásada se používá pouze v případě, že jsou povoleny aplikace pro Android.</translation>
 <translation id="5395271912574071439">Povolí blokování uživatelského rozhraní hostitelů vzdáleného přístupu během připojení.
           Je-li nastavení povoleno, jsou fyzická vstupní a výstupní zařízení hostitele během probíhajícího vzdáleného připojení deaktivována.
 
@@ -2351,7 +2330,6 @@ Tato zásada není k dispozici v instancích Windows, které nejsou připojen�
 <translation id="7937766917976512374">Povolit nebo zakázat záznam videa</translation>
 <translation id="7941975817681987555">Nepředvídat síťové akce u žádných síťových připojení</translation>
 <translation id="7953256619080733119">Hostitelské servery ručních výjimek spravovaného uživatele</translation>
-<translation id="7965394584578183156">Při určování časového pásma na server vždy odeslat přístupové body Wi-Fi.</translation>
 <translation id="7971839631300653352">SSL 3.0</translation>
 <translation id="7974114691960514888">Tato zásada již není podporována.
           Povolí použití synchronizačních serverů a serverů STUN při připojování ke vzdálenému klientu.
@@ -2505,7 +2483,6 @@ Pokud je tato zásada nastavena na hodnotu false, prohlížeč uvítací stránk
 <translation id="8390049129576938611">Zakáže v prohlížeči <ph name="PRODUCT_NAME" /> interní prohlížeč souborů PDF. Soubory PDF se budou stahovat a uživatel je bude moci otevřít ve výchozí aplikaci.
 
       Pokud tuto zásadu ponecháte nenastavenou nebo deaktivovanou, budou se soubory PDF otevírat pomocí pluginu PDF (pokud jej uživatel nezakáže).</translation>
-<translation id="8398203849316312944">Při určování časového pásma na server vždy odesílat všechny dostupné signály týkající se polohy.</translation>
 <translation id="8402079500086185021">Soubory PDF otevírat vždy externě</translation>
 <translation id="8412312801707973447">Zda se budou provádět online kontroly OCSP/CRL</translation>
 <translation id="8413348101535146315">Umožňuje ukončování procesů ve Správci úloh prohlížeče <ph name="PRODUCT_NAME" />.

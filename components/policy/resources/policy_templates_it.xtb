@@ -296,21 +296,6 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
       Se la norma HardwareAccelerationModeEnabled è impostata su false, la norma Disable3DAPIs viene ignorata ed equivale all'impostazione su true della norma Disable3DAPIs.</translation>
 <translation id="2168397434410358693">Ritardo inattività in caso di utilizzo di CA</translation>
 <translation id="2170233653554726857">Attiva ottimizzazione WPAD</translation>
-<translation id="2176565653304920879">Se questa norma viene impostata, il flusso di rilevamento automatico del fuso orario sarà uno dei seguenti, a seconda del valore dell'impostazione:
-
-      Se la norma viene impostata su TimezoneAutomaticDetectionUsersDecide, gli utenti potranno controllare il rilevamento automatico del fuso orario tramite i normali controlli alla pagina chrome://settings.
-
-      Se la norma viene impostata su TimezoneAutomaticDetectionDisabled, i controlli per il rilevamento automatico del fuso orario alla pagina chrome://settings saranno disattivati. Il rilevamento automatico del fuso orario sarà sempre disattivato.
-
-      Se la norma viene impostata su TimezoneAutomaticDetectionIPOnly, i controlli per il rilevamento automatico del fuso orario alla pagina chrome://settings saranno disattivati. Il rilevamento automatico del fuso orario sarà sempre attivo. La funzione di rilevamento del fuso orario utilizzerà il metodo Solo IP per stabilire la posizione.
-
-      Se la norma viene impostata su TimezoneAutomaticDetectionSendWiFiAccessPoints, i controlli per il rilevamento automatico del fuso orario alla pagina chrome://settings saranno disattivati. Il rilevamento automatico del fuso orario sarà sempre attivo. L'elenco dei punti di accesso Wi-Fi visibili sarà sempre inviato al server dell'API di geolocalizzazione per rilevare il fuso orario con precisione.
-
-      Se la norma viene impostata su TimezoneAutomaticDetectionSendAllLocationInfo, i controlli per il rilevamento automatico del fuso orario alla pagina chrome://settings saranno disattivati. Il rilevamento automatico del fuso orario sarà sempre attivo. Le informazioni sulla posizione (ad esempio, punti di accesso Wi-Fi, torri radio raggiungibili, GPS) saranno inviate a un server per rilevare il fuso orario con precisione.
-
-      Se la norma non viene impostata, verrà gestita come se fosse impostata su TimezoneAutomaticDetectionUsersDecide.
-
-      Se la norma SystemTimezone è impostata, sostituisce questa norma. In questo caso il rilevamento automatico del fuso orario viene completamente disattivato.</translation>
 <translation id="2178899310296064282">Imponi almeno il Livello medio della Modalità con restrizioni su YouTube</translation>
 <translation id="2183294522275408937">Questa impostazione consente di stabilire la frequenza della richiesta di inserimento della password nella schermata di blocco per poter continuare a utilizzare lo sblocco rapido. Se il periodo di tempo trascorso dall'ultima volta che è stata inserita la password è superiore alla frequenza impostata, lo sblocco rapido non sarà disponibile quando si accede alla schermata di blocco. Se l'utente rimane nella schermata di blocco per un periodo superiore a quello impostato, verrà richiesta la password la volta successiva che l'utente inserirà il codice sbagliato o accederà di nuovo alla schermata di blocco.
 
@@ -1343,12 +1328,6 @@ Se la norma non viene impostata, <ph name="PRODUCT_NAME" /> caricherà tutti gli
 <translation id="5378985487213287085">Permette di stabilire se consentire o meno la visualizzazione di notifiche desktop nei siti web. La visualizzazione di notifiche desktop può essere consentita o negata per impostazione predefinita oppure l'utente può ricevere una richiesta ogni volta che un sito web desidera visualizzare le notifiche desktop. Se questa norma non viene impostata, verrà utilizzato il valore "AskNotifications", che potrà essere modificato dagli utenti.</translation>
 <translation id="538108065117008131">Consenti a <ph name="PRODUCT_FRAME_NAME" /> di gestire i seguenti tipi di contenuto.</translation>
 <translation id="5388730678841939057">Consente di selezionare la strategia da utilizzare per liberare spazio su disco durante la pulizia automatica (obsoleta)</translation>
-<translation id="5392172595902933844">Le informazioni sullo stato di Android vengono rimandate al server.
-
-      Se la norma viene impostata su false o non viene del tutto impostata, le informazioni sullo stato non vengono segnalate.
-      Se viene impostata su true, le informazioni sullo stato vengono segnalate.
-
-      Questa norma viene applicata soltanto se le app Android sono attive.</translation>
 <translation id="5395271912574071439">Consente di attivare la separazione degli host di accesso remoto durante una connessione.
 
 Se questa impostazione viene attivata, i dispositivi di input e output fisici degli host verranno disattivati durante una connessione remota.

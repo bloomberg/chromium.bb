@@ -139,6 +139,7 @@
 <translation id="5037239767309817516">この変更を反映するには、すべての Google Chrome ウィンドウを閉じてからもう一度起動してください。</translation>
 <translation id="5132929315877954718">Google Chrome のすばらしいアプリ、ゲーム、拡張機能、テーマをぜひご利用ください。</translation>
 <translation id="5170938038195470297">バージョンが新しい Google Chrome のプロフィールは使用できません。一部の機能が利用できない可能性があります。別の場所のプロフィールを指定するか、新しいバージョンの Chrome をご使用ください。</translation>
+<translation id="5176234269072261959">現在の設定を送信して Chrome の品質向上にご協力ください。</translation>
 <translation id="5193136243808726294">Google Chrome OS ではこのページを開けません。</translation>
 <translation id="5204098752394657250">Google Chrome <ph name="TERMS_OF_SERVICE_LINK" />利用規約<ph name="END_TERMS_OF_SERVICE_LINK" /></translation>
 <translation id="5243785881901838525">Google ペイメント（Chrome にコピー）</translation>
@@ -177,6 +178,7 @@
 <translation id="6291549208091401781">Google Chrome は既にパソコンのすべてのユーザー対してインストールされています。</translation>
 <translation id="629218512217695915">Chrome で生成されたパスワードを使用する</translation>
 <translation id="6338556085225130112">Google Chrome を更新しています</translation>
+<translation id="6368805772029492593">セキュリティ強化のため、Google Chrome ではデータが暗号化されます。</translation>
 <translation id="6368958679917195344">Chrome OS は、<ph name="BEGIN_LINK_CROS_OSS" />オープンソース ソフトウェア<ph name="END_LINK_CROS_OSS" />が追加されて実現しました。</translation>
 <translation id="6400076122676892962">Mac OS X 10.6、10.7、10.8 はサポートされなくなったため、このパソコンでは間もなく Google Chrome のアップデートが受信されなくなります。</translation>
 <translation id="6410540444482791104">危険なアプリやサイトの検出に役立てるために一部のシステム情報やページのコンテンツを Google に自動送信して、Chrome の安全性と利便性の向上にご協力ください。</translation>
@@ -203,6 +205,7 @@
 <translation id="7164397146364144019">セキュリティに関する事象についての詳細を Google に自動送信して、Chrome の安全性と利便性の向上にご協力ください。</translation>
 <translation id="7177347454226092725">閲覧データがこの端末から完全に削除されます。後でデータを取得するには、$2 として Chrome にログインしてください。</translation>
 <translation id="7185038942300673794"><ph name="EXTENSION_NAME" /> が Chrome に追加されました。</translation>
+<translation id="7193750696137290001">Google Chrome はこの言語で表示されています。</translation>
 <translation id="7196020411877309443">このウィンドウが表示される理由</translation>
 <translation id="7242029209006116544">現在、管理対象アカウントでログインしており、あなたの Google Chrome プロフィールを管理者が制御できる状態になっています。あなたの Chrome データ（アプリ、ブックマーク、履歴、パスワードなどの設定）は永続的に <ph name="USER_NAME" /> に関連付けられます。このデータは Google アカウントのダッシュボードを介して削除できますが、このデータを別のアカウントに関連付けることはできなくなります。新しいプロフィールを作成して、既存の Chrome データを別に保管することができます。<ph name="LEARN_MORE" /></translation>
 <translation id="729375352412857283">Windows XP と Windows Vista はサポートされなくなったため、このパソコンでは間もなく Google Chrome のアップデートが受信されなくなります。</translation>
@@ -233,12 +236,12 @@
 <translation id="7896673875602241923">前回このパソコンで別のユーザー（<ph name="ACCOUNT_EMAIL_LAST" />）が Chrome にログインしました。情報を個別に保持するには、新しい Chrome ユーザーを作成してください。</translation>
 <translation id="7908168227788431038">Google Chrome を再起動して更新を完了してください。</translation>
 <translation id="795025003224538582">再起動しない</translation>
+<translation id="7964230182933713106">Chrome OS はこの言語で表示されています。</translation>
 <translation id="8005540215158006229">Chrome はすぐに利用できるようになります。</translation>
 <translation id="8008534537613507642">Chrome を再インストール</translation>
 <translation id="8030318113982266900">デバイスを <ph name="CHANNEL_NAME" /> チャンネルに更新しています...</translation>
 <translation id="8032142183999901390">Chrome からアカウントを削除したら、場合によっては開いているタブを再読み込みして変更を反映させる必要があります。</translation>
 <translation id="8129812357326543296">Google Chrome について(&amp;G)</translation>
-<translation id="8179874765710681175">Chrome をスマートフォンにインストールしませんか。Google よりスマートフォンに SMS をお送りします。</translation>
 <translation id="8183957050892517584">Chrome でユーザーの情報が安全に保存されるので、再度入力する必要がなくなります。</translation>
 <translation id="8211929904040702368">少なくとも <ph name="TOTAL_COUNT" /> 件の項目がこの端末から完全に削除されます。後でデータを取得するには、$2 として Chrome にログインしてください。</translation>
 <translation id="8255190535488645436">Google Chrome がカメラとマイクを使用しています。</translation>

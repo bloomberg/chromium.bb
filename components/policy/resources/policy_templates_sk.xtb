@@ -316,21 +316,6 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
       Ak povolenie HardwareAccelerationModeEnabled nastavíte na možnosť False, povolenie Disable3DAPIs sa bude ignorovať a bude sa zhodovať s povolením Disable3DAPIs nastaveným na možnosť True.</translation>
 <translation id="2168397434410358693">Oneskorenie režimu nečinnosti pri používaní napájacieho zdroja</translation>
 <translation id="2170233653554726857">Povoliť optimalizáciu pomocou protokolu WPAD</translation>
-<translation id="2176565653304920879">Keď je toto pravidlo nastavené, postup automatického zisťovania časového pásma bude v závislosti od hodnoty daného nastavenia prebiehať jedným z nasledujúcich spôsobov:
-
-      Ak je nastavené na hodnotu TimezoneAutomaticDetectionUsersDecide, používatelia budú môcť ovládať automatické zisťovanie časového pásma pomocou bežných ovládacích prvkov v nastaveniach na adrese chrome://settings.
-
-      Ak je nastavené na hodnotu TimezoneAutomaticDetectionDisabled, ovládacie prvky automatického zisťovania časového pásma budú v nastaveniach na adrese chrome://settings zakázané. Automatické zisťovanie časového pásma bude vždy vypnuté.
-
-      Ak je nastavené na hodnotu TimezoneAutomaticDetectionIPOnly, ovládacie prvky časového pásma budú v nastaveniach na adrese chrome://settings zakázané. Automatické zisťovanie časového pásma bude vždy zapnuté. Zisťovanie časového pásma bude na rozpoznávanie polohy používať iba metódu pomocou adresy IP.
-
-      Ak je nastavené na hodnotu TimezoneAutomaticDetectionSendWiFiAccessPoints, ovládacie prvky časového pásma budú v nastaveniach na adrese chrome://settings zakázané. Automatické zisťovanie časového pásma bude vždy zapnuté. Zoznam viditeľných prístupových bodov Wi-Fi sa bude vždy posielať na server s rozhraním Geolocation API, ktorý zisťovanie časového pásma ešte viac spresní.
-
-      Ak je nastavené na hodnotu TimezoneAutomaticDetectionSendAllLocationInfo, ovládacie prvky časového pásma budú v nastaveniach na adrese chrome://settings zakázané. Automatické zisťovanie časového pásma bude vždy zapnuté. Informácie o polohe (ako sú prístupové body Wi-Fi, stanice BTS v dosahu a súradnice GPS) sa budú odosielať na server, ktorý zisťovanie časového pásma ešte viac spresní.
-
-      Ak toto pravidlo nie je nastavené, bude sa správať, ako keby bolo nastavené pravidlo TimezoneAutomaticDetectionUsersDecide.
-
-      Ak je nastavené pravidlo SystemTimezone, toto pravidlo prepíše. V tomto prípade bude automatické zisťovanie časového pásma úplne zakázané.</translation>
 <translation id="2178899310296064282">Vynútiť aspoň stredný obmedzený režim v službe YouTube</translation>
 <translation id="2183294522275408937">Toto nastavenie ovláda, ako často bude zámka obrazovky požadovať zadanie hesla na ďalšie používanie rýchleho odomknutia. Ak prebehlo posledné zadanie hesla neskôr ako toto nastavenie, nebude rýchle odomknutie pri vstupe na uzamknutú obrazovku k dispozícii. Ak používateľ zostane na uzamknutej obrazovke dlhšie ako toto časové obdobie, pri zadaní nesprávneho kódu alebo pri opätovnom prístupe na uzamknutú obrazovku (podľa toho, čo nastane prvé) sa bude vyžadovať heslo.
       Ak je toto nastavenie nakonfigurované, používatelia využívajúci rýchle odomknutie budú musieť na uzamknutej obrazovke zadať svoje heslo v závislosti od tohto nastavenia.
@@ -1467,13 +1452,6 @@ volania rozhrania API zlyhajú a nahlásia kód chyby.</translation>
           Ak bude toto nastavenie ponechané nenastavené, použije sa pravidlo „AskNotifications“ a používateľ ho bude môcť zmeniť.</translation>
 <translation id="538108065117008131">Povoliť doplnku <ph name="PRODUCT_FRAME_NAME" /> spracovávať tieto typy obsahu.</translation>
 <translation id="5388730678841939057">Zvolí stratégiu, ktorá sa použije na uvoľnenie miesta na disku počas automatického čistenia (ktorej podpora bola ukončená)</translation>
-<translation id="5392172595902933844">Informácie o stave Androidu sa odosielajú späť na
-      server.
-
-      Ak je toto pravidlo nastavené na hodnotu False alebo nie je nastavené, nebudú sa hlásiť žiadne informácie o stave.
-      Ak je nastavené na hodnotu True, informácie o stave sa budú nahlasovať.
-
-      Toto pravidlo platí iba vtedy, keď sú povolené aplikácie pre Android.</translation>
 <translation id="5395271912574071439">Povoľuje zakrývanie hostiteľov vzdialeného prístupu počas nadviazaného spojenia.
 
           Ak je toto nastavenie povolené, fyzické zariadenia vstupu a výstupu hostiteľa budú počas prebiehajúceho vzdialeného spojenia zakázané.

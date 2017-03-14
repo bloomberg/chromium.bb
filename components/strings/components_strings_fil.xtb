@@ -104,7 +104,6 @@
 <translation id="1962204205936693436">Mga Bookmark ng <ph name="DOMAIN" /></translation>
 <translation id="1973335181906896915">Error sa serialization</translation>
 <translation id="1974060860693918893">Advanced</translation>
-<translation id="1978555033938440688">Bersyon ng Firmware</translation>
 <translation id="2001146170449793414">{COUNT,plural, =1{at 1 pa}one{at # pa}other{at # pa}}</translation>
 <translation id="2020194265157481222">Kinakailangan ang pangalan sa card</translation>
 <translation id="2025186561304664664">Nakatakda sa awtomatikong naka-configure ang proxy.</translation>
@@ -451,7 +450,6 @@
 <translation id="5359637492792381994">Hindi mapatunayan ng server na ito na ito ang <ph name="DOMAIN" />; walang bisa ang certificate na panseguridad nito sa ngayon. Maaaring sanhi ito ng maling pag-configure o ng isang nang-aatake na humahadlang sa iyong koneksyon. <ph name="BEGIN_LEARN_MORE_LINK" />Matuto nang higit pa<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="536296301121032821">Nabigo i-load ang mga setting ng patakaran sa store</translation>
 <translation id="5386426401304769735">Naglalaman ang chain ng certificate para sa site na ito ng certificate na naka-sign gamit ang SHA-1.</translation>
-<translation id="5402410679244714488">Petsa ng pag-expire: <ph name="EXPIRATION_DATE_ABBR" />, huling ginamit mahigit isang taon na ang nakalipas</translation>
 <translation id="5421136146218899937">I-clear ang data sa pagba-browse...</translation>
 <translation id="5430298929874300616">Alisin ang bookmark</translation>
 <translation id="5431657950005405462">Hindi nakita ang iyong file</translation>
@@ -538,7 +536,6 @@
 <translation id="6282194474023008486">Postal code</translation>
 <translation id="6290238015253830360">Lalabas dito ang iminungkahi mong artikulo</translation>
 <translation id="6305205051461490394">Hindi makakonekta sa <ph name="URL" />.</translation>
-<translation id="6319915415804115995">Huling ginamit mahigit isang taon na ang nakalipas</translation>
 <translation id="6321917430147971392">Suriin ang iyong mga setting ng DNS</translation>
 <translation id="6328639280570009161">Subukang i-disable ang paghula ng network</translation>
 <translation id="6328786501058569169">Mapanlinlang ang site na ito</translation>

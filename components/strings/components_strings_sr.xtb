@@ -104,7 +104,6 @@
 <translation id="1962204205936693436"><ph name="DOMAIN" /> – обележивачи</translation>
 <translation id="1973335181906896915">Грешка при серијализацији</translation>
 <translation id="1974060860693918893">Напредне опције</translation>
-<translation id="1978555033938440688">Верзија фирмвера</translation>
 <translation id="2001146170449793414">{COUNT,plural, =1{ и још 1}one{и још #}few{и још #}other{и још #}}</translation>
 <translation id="2020194265157481222">Име на картици је обавезно</translation>
 <translation id="2025186561304664664">Прокси је подешен да буде аутоматски конфигурисан.</translation>
@@ -451,7 +450,6 @@
 <translation id="5359637492792381994">Овај сервер не може да докаже да је <ph name="DOMAIN" />; његов безбедносни сертификат тренутно није важећи. Узрок томе је можда погрешна конфигурација или нападач који је прекинуо везу. <ph name="BEGIN_LEARN_MORE_LINK" />Сазнајте више<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="536296301121032821">Складиштење подешавања смерница није успело</translation>
 <translation id="5386426401304769735">Ланац сертификата за овај сајт садржи сертификат потписан помоћу алгоритма SHA-1.</translation>
-<translation id="5402410679244714488">Истиче: <ph name="EXPIRATION_DATE_ABBR" />, последњи пут коришћено пре више од годину дана</translation>
 <translation id="5421136146218899937">Обриши податке прегледања...</translation>
 <translation id="5430298929874300616">Уклоните обележивач</translation>
 <translation id="5431657950005405462">Датотека није пронађена</translation>
@@ -537,7 +535,6 @@
 <translation id="6282194474023008486">Поштански број</translation>
 <translation id="6290238015253830360">Предложени чланци се приказују овде</translation>
 <translation id="6305205051461490394">URL <ph name="URL" /> није доступан.</translation>
-<translation id="6319915415804115995">Последњи пут коришћено пре више од годину дана</translation>
 <translation id="6321917430147971392">Проверите DNS подешавања</translation>
 <translation id="6328639280570009161">Покушајте да онемогућите предвиђање мреже</translation>
 <translation id="6328786501058569169">Овај сајт је обмањујућ</translation>

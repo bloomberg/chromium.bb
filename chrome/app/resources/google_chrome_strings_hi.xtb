@@ -141,6 +141,7 @@
 <translation id="5170938038195470297">आपकी प्रोफ़ाइल का उपयोग नहीं किया जा सकता क्‍योंकि यह Google Chrome के किसी नए वर्शन से है.
 
 कुछ विशेषताएं अनुपलब्‍ध हो सकती हैं. कृपया कोई भिन्‍न प्रोफ़ाइल निर्देशिका निर्दिष्ट करें या Chrome के किसी नए वर्शन का उपयोग करें.</translation>
+<translation id="5176234269072261959">वर्तमान सेटिंग की रिपोर्ट करके Chrome को बेहतर बनाने में सहायता करें.</translation>
 <translation id="5193136243808726294">Google Chrome OS यह पेज नहीं खोल सकता.</translation>
 <translation id="5204098752394657250">Google Chrome <ph name="TERMS_OF_SERVICE_LINK" />सेवा की शर्तों<ph name="END_TERMS_OF_SERVICE_LINK" /></translation>
 <translation id="5243785881901838525">Google पेमेंट्स (Chrome पर कॉपी किया गया)</translation>
@@ -179,6 +180,7 @@
 <translation id="6291549208091401781">Google Chrome आपके कंप्यूटर पर मौजूद सभी उपयोगकर्ताओं के लिए पहले से इंंस्टॉल है.</translation>
 <translation id="629218512217695915">Chrome द्वारा जनरेट किए गए पासवर्ड का उपयोग करें</translation>
 <translation id="6338556085225130112">Google Chrome अपडेट हो रहा है</translation>
+<translation id="6368805772029492593">अतिरिक्‍त सुरक्षा के लिए, Google Chrome आपके डेटा को एन्‍क्रिप्‍ट करेगा.</translation>
 <translation id="6368958679917195344">Chrome OS को अतिरिक्त <ph name="BEGIN_LINK_CROS_OSS" />ओपन सोर्स सॉफ़्टवेयर<ph name="END_LINK_CROS_OSS" /> द्वारा संभव बनाया गया है.</translation>
 <translation id="6400076122676892962">यह कंप्‍यूटर जल्‍दी ही Google Chrome के अपडेट प्राप्‍त करना बंद कर देगा क्‍योंकि अब Mac OS X 10.6, 10.7, और 10.8 समर्थित नहीं रहेंगे.</translation>
 <translation id="6410540444482791104">खतरनाक ऐप्लिकेशन और साइटों का पता लगाने में सहायता करने के लिए Google को अपने आप कुछ सिस्टम जानकारी और पेज सामग्री भेजकर आप Chrome को उपयोग में अधिक सुरक्षित और अधिक आसान बनाने में सहायता कर सकते हैं.</translation>
@@ -205,6 +207,7 @@
 <translation id="7164397146364144019">आप Google को संभावित सुरक्षा घटनाओं के विवरणों की अपने आप रिपोर्ट करके Chrome को अधिक सुरक्षित और आसान बनाने में सहायता कर सकते हैं.</translation>
 <translation id="7177347454226092725">इससे इस डिवाइस से आपका ब्राउज़िंग डेटा स्थायी रूप से हट जाएगा. बाद में अपना डेटा प्राप्त करने के लिए, Chrome में $2 के रूप में प्रवेश करें.</translation>
 <translation id="7185038942300673794"><ph name="EXTENSION_NAME" /> को Chrome में जोड़ दिया गया है.</translation>
+<translation id="7193750696137290001">Google Chrome इस भाषा में दिखाया जा रहा है.</translation>
 <translation id="7196020411877309443">मैं यह क्यों देख रहा/रही हूं?</translation>
 <translation id="7242029209006116544">आप प्रबंधित खाते से प्रवेश कर रहे हैं और उसके व्यवस्थापक को अपनी Google Chrome प्रोफ़ाइल पर नियंत्रण दे रहे हैं. आपका Chrome डेटा, जैसे आपके ऐप्स , बुकमार्क, इतिहास, पासवर्ड, और अन्य सेटिंग <ph name="USER_NAME" /> से स्थायी रूप से जुड़ जाएंगी. आप Google खाता डैशबोर्ड से इस डेटा को हटा सकेंगे, लेकिन आप किसी अन्य खाते से इस डेटा को संबद्ध नहीं कर सकेंगे. <ph name="LEARN_MORE" /></translation>
 <translation id="729375352412857283">यह कंप्‍यूटर जल्‍दी ही Google Chrome के अपडेट प्राप्‍त करना बंद कर देगा क्‍योंकि Windows XP और Windows Vista अब समर्थित नहीं रहेंगे.</translation>
@@ -235,6 +238,7 @@
 <translation id="7896673875602241923">इस कंप्यूटर पर पहले किसी अन्य व्यक्ति ने <ph name="ACCOUNT_EMAIL_LAST" /> के रूप में Chrome में प्रवेश किया है. अपनी जानकारी अलग रखने के लिए कृपया नया Chrome उपयोगकर्ता बनाएं.</translation>
 <translation id="7908168227788431038">लगभग अप टू डेट हो गया है! अपडेट करना पूरा करने के लिए Google Chrome को पुन: लॉन्च करें.</translation>
 <translation id="795025003224538582">पुन: प्रारंभ न करें</translation>
+<translation id="7964230182933713106">Chrome OS इस भाषा में दिखाया जा रहा है.</translation>
 <translation id="8005540215158006229">Chrome लगभग तैयार है.</translation>
 <translation id="8008534537613507642">Chrome फिर से इंस्टॉल करें</translation>
 <translation id="8030318113982266900">आपके डिवाइस को <ph name="CHANNEL_NAME" /> चैनल पर अपडेट किया जा रहा है...</translation>

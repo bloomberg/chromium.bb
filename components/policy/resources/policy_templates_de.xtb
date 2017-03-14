@@ -312,21 +312,6 @@ Diese Richtlinien sind nur aktiv, wenn der Chrome Remote Desktop-Host installier
       Wenn "HardwareAccelerationModeEnabled" auf "false" gesetzt ist, wird "Disable3DAPIs" ignoriert, als ob "Disable3DAPIs" auf "true" gesetzt wäre.</translation>
 <translation id="2168397434410358693">Inaktivitätsverzögerung im Netzbetrieb</translation>
 <translation id="2170233653554726857">WPAD-Optimierung aktivieren</translation>
-<translation id="2176565653304920879">Wenn diese Richtlinie aktiviert wird, hängt die automatische Erkennung der Zeitzone folgendermaßen vom Wert der Einstellung ab:
-
-      Ist "TimezoneAutomaticDetectionUsersDecide" aktiviert, können Nutzer die automatische Zeitzonenerkennung über die normalen Steuerelemente unter chrome://settings verwalten.
-
-      Ist "TimezoneAutomaticDetectionDisabled" aktiviert, sind die Steuerelemente für die automatische Zeitzonenerkennung unter chrome://settings deaktiviert. Die automatische Erkennung der Zeitzone ist dann immer deaktiviert.
-
-      Ist "TimezoneAutomaticDetectionIPOnly" aktiviert, sind die Steuerelemente für die automatische Zeitzonenerkennung unter chrome://settings deaktiviert. Die automatische Erkennung der Zeitzone ist dann immer aktiviert. Für die Erkennung der Zeitzone wird die Methode "Nur IP" zum Auflösen des Standorts verwendet.
-
-      Ist "TimezoneAutomaticDetectionSendWiFiAccessPoints" aktiviert, sind die Steuerelemente für die automatische Zeitzonenerkennung unter chrome://settings deaktiviert. Die automatische Erkennung der Zeitzone ist dann immer aktiviert. Die Liste der sichtbaren WLAN-Zugangspunkte wird zur genauen Erkennung der Zeitzone stets an den Geolocation API-Server gesendet.
-
-      Ist "TimezoneAutomaticDetectionSendAllLocationInfo" aktiviert, sind die Steuerelemente für die automatische Zeitzonenerkennung unter chrome://settings deaktiviert. Die automatische Erkennung der Zeitzone ist dann immer aktiviert. Standortinformationen wie WLAN-Zugangspunkte, erreichbare Mobilfunksendemasten und GPS werden zur genauen Erkennung der Zeitzone an einen Server gesendet.
-
-      Wenn diese Richtlinie konfiguriert ist, verhält sie sich so, als wäre "TimezoneAutomaticDetectionUsersDecide" aktiviert.
-
-      Ist die Richtlinie "SystemTimezone" konfiguriert, wird diese Richtlinie überschrieben. In diesem Fall ist die automatische Zeitzonenerkennung komplett deaktiviert.</translation>
 <translation id="2178899310296064282">Mindestens den moderaten eingeschränkten Modus auf YouTube erzwingen</translation>
 <translation id="2183294522275408937">Mit dieser Einstellung wird festgelegt, wie oft Sie auf dem Sperrbildschirm dazu aufgefordert werden, das Passwort einzugeben, um das schnelle Entsperren weiterhin verwenden zu können. Jedes Mal, wenn der Sperrbildschirm aktiviert wird, und die letzte Passworteingabe länger her ist als in dieser Einstellung festgelegt, ist das schnelle Entsperren beim Eintreten in den Sperrmodus nicht mehr verfügbar. Sollte sich der Nutzer nach diesem Zeitraum noch auf dem Sperrbildschirm befinden, wird ein Passwort angefordert, wenn der Nutzer das nächste Mal einen falschen Code eingibt oder erneut in den Sperrmodus wechselt, je nachdem, welcher Fall zuerst eintritt.
 
@@ -1375,13 +1360,6 @@ Falls die Richtlinie auf "false" gesetzt wird, werden Anfragen für Bildschirm-W
 <translation id="5378985487213287085">Ermöglicht Ihnen festzulegen, ob Websites Desktop-Benachrichtigungen anzeigen dürfen. Das Anzeigen von Desktop-Benachrichtigungen kann entweder standardmäßig gestattet oder nicht gestattet werden oder auf Anfrage beim Nutzer geschehen. Wenn diese Richtlinie nicht konfiguriert ist, so kommt "AskNotifications" zum Einsatz, wobei dies vom Nutzer geändert werden kann.</translation>
 <translation id="538108065117008131">Verarbeitung der folgenden Inhaltstypen durch <ph name="PRODUCT_FRAME_NAME" /> zulassen</translation>
 <translation id="5388730678841939057">Legt die Strategie fest, die bei der automatischen Bereinigung zur Freigabe von Festplattenspeicher verwendet wird (veraltet)</translation>
-<translation id="5392172595902933844">Informationen zum Status von Android werden an den Server
-      zurückgesendet.
-
-      Wenn für die Richtlinie "false" festgelegt oder sie gar nicht konfiguriert wird, werden keine Statusinformationen gesendet.
-      Wird "true" festgelegt, werden Statusinformationen übermittelt.
-
-      Diese Richtlinie wird nur angewendet, wenn Android-Apps aktiviert sind.</translation>
 <translation id="5395271912574071439">Aktiviert die Zugangsbeschränkung für Remote-Zugriff-Hosts bei bestehender Verbindung
 
           Wenn diese Einstellung aktiviert ist, werden die physischen Ein- und Ausgabegeräte des Hosts bei bestehender Remote-Verbindung deaktiviert.
@@ -2273,7 +2251,6 @@ Wird diese Richtlinie nicht konfiguriert, wird der standardmäßige Profilpfad v
 <translation id="7937766917976512374">Videoaufzeichnung gestatten oder ablehnen</translation>
 <translation id="7941975817681987555">Netzwerkaktionen nicht über Netzwerkverbindungen vervollständigen</translation>
 <translation id="7953256619080733119">Manuell festgelegte Ausnahme-Hosts für verwalteten Nutzer</translation>
-<translation id="7965394584578183156">Beim Auflösen der Zeitzone immer WLAN-Zugangspunkte an den Server senden.</translation>
 <translation id="7971839631300653352">SSL 3.0</translation>
 <translation id="7974114691960514888">Diese Richtlinie wird nicht mehr unterstützt. Sie aktiviert beim Verbinden zu einem Remote-Client den Einsatz von STUN und Relay-Servern. Wenn diese Einstellung aktiviert wird, kann dieser Computer Remote-Hostcomputer finden und eine Verbindung herstellen, selbst wenn sie sich hinter einer Firewall befinden. Sollte die Einstellung deaktiviert sein und ausgehende UDP-Verbindungen von der Firewall gefiltert werden, dann kann dieser Computer nur Verbindungen zu Hostcomputern innerhalb des lokalen Netzwerks aufbauen.</translation>
 <translation id="7986374692540430898">Android-Apps können nicht zur Verwendung eines Proxys gezwungen werden. Ein Teil der Proxyeinstellungen ist für Android-Apps verfügbar und kann auf freiwilliger Basis übernommen werden. Weitere Informationen finden Sie in der Richtlinie <ph name="PROXY_MODE_POLICY" />.</translation>
@@ -2417,7 +2394,6 @@ Diese Außerkraftsetzung soll in Zukunft beseitigt werden.</translation>
 <translation id="8390049129576938611">Deaktiviert den internen PDF-Viewer in <ph name="PRODUCT_NAME" />. Stattdessen werden PDF-Dateien als Download behandelt und der Nutzer kann sie mit der Standard-Anwendung öffnen.
 
       Wenn diese Richtlinie deaktiviert oder nicht eingestellt ist, wird zum Öffnen von PDF-Dateien das PDF-Plug-in genutzt, sofern der Nutzer es nicht deaktiviert.</translation>
-<translation id="8398203849316312944">Beim Auflösen der Zeitzone immer verfügbare Standortsignale an den Server senden.</translation>
 <translation id="8402079500086185021">PDF-Dateien immer extern öffnen</translation>
 <translation id="8412312801707973447">Ob online OCSP-/CRL-Prüfungen durchgeführt werden</translation>
 <translation id="8413348101535146315">Ermöglicht das Beenden von Prozessen im Task-Manager von <ph name="PRODUCT_NAME" />.

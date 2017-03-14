@@ -196,11 +196,9 @@
 <translation id="277499241957683684">डिव्हाइस रेकॉर्ड गहाळ</translation>
 <translation id="2784949926578158345">कनेक्शन रीसेट केले.</translation>
 <translation id="2794233252405721443">साइट अवरोधित केली</translation>
-<translation id="2812680587231492111">तो निवडण्‍याचा पर्याय उपलब्ध नाही. एक भिन्न पर्याय वापरून पहा.</translation>
 <translation id="2824775600643448204">पत्ता आणि शोध बार</translation>
 <translation id="2826760142808435982">कनेक्शन <ph name="CIPHER" /> वापरून आणि की विनिमय तंत्र म्हणून <ph name="KX" /> वापर कूटबद्ध आणि प्रमाणीकृत केले आहे.</translation>
 <translation id="2835170189407361413">फॉर्म क्लिअर करा</translation>
-<translation id="2849041323157393173">तो वितरण पर्याय उपलब्ध नाही. एक भिन्न पर्याय वापरून पहा.</translation>
 <translation id="2889159643044928134">रीलोड करु नका</translation>
 <translation id="2900469785430194048">हे वेबपृष्ठ प्रदर्शित करण्याचा प्रयत्न करताना Google Chrome ची मेमरी संपली आहे.</translation>
 <translation id="2909946352844186028">एक नेटवर्क बदल आढळला.</translation>
@@ -333,7 +331,6 @@
 <translation id="4030383055268325496">&amp;जोडा पूर्ववत करा</translation>
 <translation id="404928562651467259">चेतावणी:</translation>
 <translation id="4058922952496707368">की "<ph name="SUBKEY" />": <ph name="ERROR" /></translation>
-<translation id="4072486802667267160">आपल्या मागणीवर प्रक्रिया करताना त्रुटी आली, कृपया पुन्हा प्रयत्न करा.</translation>
 <translation id="4075732493274867456">क्लायंट आणि सर्व्हर एक सामान्य SSL प्रोटोकॉल आवृत्ती किंवा सायफर संचाचे समर्थन करीत नाही.</translation>
 <translation id="4079302484614802869">प्रॉक्सी कॉन्फिगरेशन .pac स्क्रिप्ट URL वापरण्‍यास सेट करण्‍यात आले आहे, निश्चित प्रॉक्सी सर्व्हर नव्हे.</translation>
 <translation id="4098354747657067197">भ्रामक साइट पुढे आहे</translation>
@@ -345,6 +342,7 @@
 <translation id="4118212371799607889">हा सर्व्हर <ph name="DOMAIN" /> हे असल्याचे सिद्ध करू शकला नाही; याचे सुरक्षा प्रमाणपत्र Chromium द्वारे विश्वसनीय नाही; हे कदाचित एका चुकीच्या कॉन्फिगरेशनमुळे किंवा आक्रमणकर्त्याने आपले कनेक्शन आंतरखंडित केल्यामुळे झाले असू शकते. <ph name="BEGIN_LEARN_MORE_LINK" />अधिक जाणून घ्या<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="4129401438321186435">{COUNT,plural, =1{अन्य 1}one{अन्य #}other{अन्य #}}</translation>
 <translation id="4130226655945681476">नेटवर्क केबल, मोडेम आणि राउटर तपासत आहे</translation>
+<translation id="4137140866298219568">कालबाह्यता: <ph name="EXPIRATION_DATE_ABBR" />, अखेरचे वापरले: <ph name="LAST_USED_DATE_NO_DETAIL" /></translation>
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4169947484918424451">Chromium ने हे कार्ड जतन करावे असे आपण इच्छिता?</translation>
 <translation id="4171400957073367226">खराब सत्यापन स्वाक्षरी</translation>
@@ -404,11 +402,11 @@
 <translation id="4803924862070940586"><ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="4813512666221746211">नेटवर्क त्रुटी</translation>
 <translation id="4816492930507672669">पृष्‍ठानुरुप करा</translation>
-<translation id="483020001682031208">दर्शविण्यासाठी कोणतीही वास्तविक वेब पृष्ठे नाहीत</translation>
 <translation id="4850886885716139402">पहा</translation>
 <translation id="4858792381671956233">या साइटला भेट देणे ठीक आहे का ते आपण आपल्‍या पालकांना विचारले</translation>
 <translation id="4880827082731008257">इतिहास शोध</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
+<translation id="4897073194580895694">अखेरचे वापरले: <ph name="LAST_USED_MONTH" /></translation>
 <translation id="4914479371620770914">{URL_count,plural, =1{आणि 1 आणखी वेब पृष्ठ}one{आणि # आणखी वेब पृष्‍ठ}other{आणि # आणखी वेब पृष्ठे}}</translation>
 <translation id="4923417429809017348">हे पृष्ठ अज्ञात भाषेतून <ph name="LANGUAGE_LANGUAGE" /> मध्ये अनुवादित करण्यात आले</translation>
 <translation id="4923459931733593730">देयक</translation>
@@ -585,7 +583,6 @@
 <translation id="6628463337424475685"><ph name="ENGINE" /> शोध</translation>
 <translation id="6644283850729428850">हे धोरण नापसंत आहे.</translation>
 <translation id="6652240803263749613">हा सर्व्हर <ph name="DOMAIN" /> हे असल्याचे सिद्ध करू शकला नाही; याचे सुरक्षा प्रमाणपत्र आपल्या संगणकाच्या ऑपरेटिंग प्रणालीद्वारे विश्वसनीय नाही; हे कदाचित एका चुकीच्या कॉन्फिगरेशनमुळे किंवा आक्रमणकर्त्याने आपले कनेक्शन आंतरखंडित केल्यामुळे झाले असू शकते. <ph name="BEGIN_LEARN_MORE_LINK" />अधिक जाणून घ्या<ph name="END_LEARN_MORE_LINK" />.</translation>
-<translation id="6665267558048410100">तो पाठविण्‍याचा पर्याय उपलब्ध नाही. एक भिन्न पर्याय वापरून पहा.</translation>
 <translation id="6671697161687535275">Chromium वरून फॉर्म सूचना काढायच्या?</translation>
 <translation id="6685834062052613830">साइन आउट करा आणि सेटअप पूर्ण करा</translation>
 <translation id="6710213216561001401">मागील</translation>
@@ -768,7 +765,6 @@
 <translation id="8466379296835108687">{COUNT,plural, =1{1 क्रेडिट कार्ड}one{# क्रेडिट कार्ड}other{# क्रेडिट कार्ड}}</translation>
 <translation id="8483780878231876732">आपल्या Google खात्यावरून कार्ड वापरण्यासाठी Chrome मध्ये साइन इन करा</translation>
 <translation id="8488350697529856933">यावर लागू होते</translation>
-<translation id="8492969205326575646">असमर्थित कार्ड प्रकार</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> नी प्रतिसाद देण्यात बराच वेळ घेतला.</translation>
 <translation id="852346902619691059">हा सर्व्हर <ph name="DOMAIN" /> हे असल्याचे सिद्ध करू शकला नाही; याचे सुरक्षा प्रमाणपत्र आपल्या डिव्हाइसच्या ऑपरेटिंग प्रणालीद्वारे विश्वसनीय नाही; हे कदाचित एका चुकीच्या कॉन्फिगरेशनमुळे किंवा आक्रमणकर्त्याने आपले कनेक्शन आंतरखंडित केल्यामुळे झाले असू शकते. <ph name="BEGIN_LEARN_MORE_LINK" />अधिक जाणून घ्या<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="8543181531796978784">आपण <ph name="BEGIN_ERROR_LINK" />ओळखण्‍याच्या समस्‍येचा अहवाल<ph name="END_ERROR_LINK" /> देऊ शकता किंवा आपल्‍या सुरक्षिततेस असणार्‍या जोखीम आपण समजत असल्‍यास, <ph name="BEGIN_LINK" />या असुरक्षित साइटला भेट द्या<ph name="END_LINK" />.</translation>
@@ -779,6 +775,7 @@
 <translation id="859285277496340001">प्रमाणपत्र निरस्त झाले आहे किंवा नाही हे तपासण्यासाठी प्रणाली निर्दिष्ट करत नाही.</translation>
 <translation id="8620436878122366504">आपल्या पालकांनी अद्याप ती मंजूर केली नाही</translation>
 <translation id="8647750283161643317">सर्व डीफॉल्टमध्ये रीसेट करा</translation>
+<translation id="8662285765512809409">कालबाह्यता: <ph name="EXPIRATION_DATE_ABBR" />, जोडली: <ph name="ADDED_TO_AUTOFILL_MONTH" /></translation>
 <translation id="8703575177326907206"><ph name="DOMAIN" /> चे आपले कनेक्शन कूटबद्ध केलेले नाही.</translation>
 <translation id="8725066075913043281">पुन्हा प्रयत्न करा</translation>
 <translation id="8728672262656704056">आपण गुप्त झाला आहात</translation>
@@ -802,10 +799,10 @@
 <translation id="8891727572606052622">अवैध प्रॉक्सी मोड.</translation>
 <translation id="889901481107108152">क्षमस्व, हा प्रयोग आपल्या प्लॅटफॉर्मवर उपलब्ध नाही.</translation>
 <translation id="8903921497873541725">झूम वाढवा</translation>
+<translation id="8928945116588336256">जोडली: <ph name="ADDED_TO_AUTOFILL_MONTH" /></translation>
 <translation id="8931333241327730545">आपण आपल्या Google खात्यात हे कार्ड जतन करू इच्छिता?</translation>
 <translation id="8932102934695377596">आपले घड्याळ मागे आहे</translation>
 <translation id="8954894007019320973">(सुरू)</translation>
-<translation id="895548565263634352"><ph name="ARTICLE_PUBLISHER" /> आणि आणखी <ph name="OTHER_ARTICLE_COUNT" /> मधील कथा वाचा</translation>
 <translation id="8971063699422889582">सर्व्हरचे प्रमाणपत्र कालबाह्य झाले आहे.</translation>
 <translation id="8986494364107987395">Google ला वापर आकडेवारी आणि क्रॅश अहवाल स्वयंचलितपणे पाठवा</translation>
 <translation id="8987927404178983737">महिना</translation>

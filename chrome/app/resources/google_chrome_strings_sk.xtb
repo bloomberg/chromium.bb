@@ -143,6 +143,7 @@ Ak chcete profilu <ph name="NEW_PROFILE_NAME" /> zabrániť pristupovať do vá�
 <translation id="5170938038195470297">Váš profil sa nedá použiť, pretože pochádza z novšej verzie prehliadača Google Chrome.
 
 Niektoré funkcie môžu byť nedostupné. Zadajte iný adresár profilu alebo použite novšiu verziu prehliadača Chrome.</translation>
+<translation id="5176234269072261959">Nahláste aktuálne nastavenia a pomôžte tak zlepšiť Chrome.</translation>
 <translation id="5193136243808726294">Google Chrome OS nedokáže túto stránku otvoriť.</translation>
 <translation id="5204098752394657250"><ph name="TERMS_OF_SERVICE_LINK" />Zmluvné podmienky<ph name="END_TERMS_OF_SERVICE_LINK" /> prehliadača Google Chrome</translation>
 <translation id="5243785881901838525">Google Payments (skopírované do Chromu)</translation>
@@ -183,6 +184,7 @@ Prehliadač Google Chrome nedokáže obnoviť vaše nastavenia.</translation>
 <translation id="6291549208091401781">Google Chrome už majú nainštalovaný všetci používatelia na vašom počítači.</translation>
 <translation id="629218512217695915">Použite heslo generované prehliadačom Chrome</translation>
 <translation id="6338556085225130112">Chrome sa aktualizuje</translation>
+<translation id="6368805772029492593">V záujme vyššej miery zabezpečenia budú dáta v prehliadači Google Chrome šifrované.</translation>
 <translation id="6368958679917195344">Chrome OS mohol vzniknúť vďaka ďalšiemu <ph name="BEGIN_LINK_CROS_OSS" />softvéru s otvoreným zdrojom<ph name="END_LINK_CROS_OSS" />.</translation>
 <translation id="6400076122676892962">Tento počítač čoskoro prestane dostávať aktualizácie prehliadača Google Chrome, pretože systém Mac OS X verzií 10.6, 10.7 a 10.8 už nebude ďalej podporovaný.</translation>
 <translation id="6410540444482791104">Automatickým odosielaním niektorých informácií o systéme a obsahu stránok môžete prispieť k lepšiemu rozpoznávaniu nebezpečných aplikácií a webov a zvýšiť tak zabezpečenie Chromu a zjednodušiť jeho používanie.</translation>
@@ -209,6 +211,7 @@ Prehliadač Google Chrome nedokáže obnoviť vaše nastavenia.</translation>
 <translation id="7164397146364144019">Automatickým nahlasovaním podrobností o možných bezpečnostných problémoch môžete prispieť k zvýšeniu zabezpečenia prehliadača Chrome a k zjednodušeniu jeho používania.</translation>
 <translation id="7177347454226092725">Táto akcia natrvalo odstráni vaše dáta prehliadania z tohto zariadenia. Ak budete chcieť tieto dáta neskôr opäť načítať, prihláste sa do Chromu ako $2.</translation>
 <translation id="7185038942300673794">Rozšírenie <ph name="EXTENSION_NAME" /> bolo pridané do prehliadača Chrome.</translation>
+<translation id="7193750696137290001">Google Chrome sa zobrazuje v tomto jazyku.</translation>
 <translation id="7196020411877309443">Prečo sa zobrazila táto výzva?</translation>
 <translation id="7242029209006116544">Prihlasujete sa pomocou spravovaného účtu a jeho správcovi dávate kontrolu nad vaším profilom prehliadača Chrome. Vaše údaje prehliadača Chrome, ako sú aplikácie, záložky, história, heslá a iné nastavenia, sa natrvalo priradia k účtu <ph name="USER_NAME" />. Tieto údaje budete môcť odstrániť len pomocou panela Dashboard v Účtoch Google, ale nebudete ich môcť priradiť k inému účtu. Ak chcete, aby boli existujúce údaje prehliadača Chrome oddelené, môžete vytvoriť nový profil. <ph name="LEARN_MORE" /></translation>
 <translation id="729375352412857283">Tento počítač čoskoro prestane dostávať aktualizácie prehliadača Google Chrome, pretože systémy Windows XP a Windows Vista už nebudú ďalej podporované.</translation>
@@ -239,6 +242,7 @@ Prehliadač Google Chrome nedokáže obnoviť vaše nastavenia.</translation>
 <translation id="7896673875602241923">Do Chromu sa už na tomto počítači niekto prihlásil pomocou účtu <ph name="ACCOUNT_EMAIL_LAST" />. Ak chcete ponechať svoje informácie oddelené, vytvorte v Chrome nového používateľa.</translation>
 <translation id="7908168227788431038">Aktualizácia je takmer hotová! Dokončite ju reštartovaním prehliadača Google Chrome.</translation>
 <translation id="795025003224538582">Nereštartovať</translation>
+<translation id="7964230182933713106">Chrome OS sa zobrazuje v tomto jazyku.</translation>
 <translation id="8005540215158006229">Prehliadač Chrome je takmer pripravený.</translation>
 <translation id="8008534537613507642">Preinštalovať prehliadač Chrome</translation>
 <translation id="8030318113982266900">Prebieha aktualizácia vášho zariadenia na kanál <ph name="CHANNEL_NAME" />...</translation>

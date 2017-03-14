@@ -104,7 +104,6 @@
 <translation id="1962204205936693436"><ph name="DOMAIN" /> žymės</translation>
 <translation id="1973335181906896915">Serijinio rengimo klaida</translation>
 <translation id="1974060860693918893">Išplėstiniai</translation>
-<translation id="1978555033938440688">Programinės aparatinės įrangos versija</translation>
 <translation id="2001146170449793414">{COUNT,plural, =1{ir dar 1}one{ir dar #}few{ir dar #}many{ir dar #}other{ir dar #}}</translation>
 <translation id="2020194265157481222">Būtina nurodyti ant kortelės pateiktą vardą</translation>
 <translation id="2025186561304664664">Nustatytas automatinis įgaliotojo serverio konfigūravimas.</translation>
@@ -452,7 +451,6 @@
 <translation id="5359637492792381994">Šiam serveriui nepavyko patvirtinti, kad tai yra <ph name="DOMAIN" />; jo saugos sertifikatas šiuo metu negalioja. Taip gali būti dėl netinkamos konfigūracijos ar dėl ryšį pertraukusio užpuoliko. <ph name="BEGIN_LEARN_MORE_LINK" />Sužinokite daugiau<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="536296301121032821">Išsaugant politikos nustatymus įvyko klaida</translation>
 <translation id="5386426401304769735">Šios svetainės sertifikatų grandinėje yra sertifikatas, pasirašytas naudojant SHA-1.</translation>
-<translation id="5402410679244714488">Gal. l. pab.: <ph name="EXPIRATION_DATE_ABBR" />, pask. k. naudota daugiau nei prieš metus</translation>
 <translation id="5421136146218899937">Išvalyti naršymo duomenis...</translation>
 <translation id="5430298929874300616">Pašalinti žymę</translation>
 <translation id="5431657950005405462">Failas nerastas</translation>
@@ -539,7 +537,6 @@
 <translation id="6282194474023008486">Pašto kodas</translation>
 <translation id="6290238015253830360">Jūsų pasiūlyti straipsniai rodomi čia</translation>
 <translation id="6305205051461490394"><ph name="URL" /> nepasiekiama.</translation>
-<translation id="6319915415804115995">Paskutinį kartą naudota daugiau nei prieš metus</translation>
 <translation id="6321917430147971392">Patikrinkite DNS nustatymus</translation>
 <translation id="6328639280570009161">Bandykite neleisti tinklo numatymo</translation>
 <translation id="6328786501058569169">Ši svetainė yra apgaulinga</translation>

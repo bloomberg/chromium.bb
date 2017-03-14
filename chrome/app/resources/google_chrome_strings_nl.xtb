@@ -145,6 +145,7 @@ Controleer je e-mail op <ph name="ACCOUNT_EMAIL" /> voor verdere instructies.</t
 <translation id="5170938038195470297">Je profiel kan niet worden gebruikt omdat dit afkomstig is van een nieuwere versie van Google Chrome.
 
 Sommige functies zijn wellicht niet beschikbaar. Geef een andere profieldirectory op of gebruik een nieuwere versie van Chrome.</translation>
+<translation id="5176234269072261959">Help Chrome beter te maken door de huidige instellingen te melden.</translation>
 <translation id="5193136243808726294">Google Chrome OS kan deze pagina niet openen.</translation>
 <translation id="5204098752394657250"><ph name="TERMS_OF_SERVICE_LINK" />Servicevoorwaarden<ph name="END_TERMS_OF_SERVICE_LINK" /> van Google Chrome</translation>
 <translation id="5243785881901838525">Google Payments (gekopieerd naar Chrome)</translation>
@@ -183,6 +184,7 @@ Sommige functies zijn wellicht niet beschikbaar. Geef een andere profieldirector
 <translation id="6291549208091401781">Google Chrome is al geïnstalleerd voor alle gebruikers op je computer.</translation>
 <translation id="629218512217695915">Wachtwoord gebruiken dat is gegenereerd door Chrome</translation>
 <translation id="6338556085225130112">Google Chrome updaten</translation>
+<translation id="6368805772029492593">Je gegevens worden voor extra beveiliging door Google Chrome gecodeerd.</translation>
 <translation id="6368958679917195344">Chrome OS wordt mogelijk gemaakt door aanvullende <ph name="BEGIN_LINK_CROS_OSS" />open source-software<ph name="END_LINK_CROS_OSS" />.</translation>
 <translation id="6400076122676892962">Deze computer ontvangt binnenkort geen Google Chrome-updates meer, omdat Mac OS X 10.6, 10.7 en 10.8 niet meer worden ondersteund.</translation>
 <translation id="6410540444482791104">Je kunt helpen Chrome veiliger en gebruiksvriendelijker te maken door automatisch bepaalde systeeminformatie en paginacontent naar Google te verzenden om te helpen bij de detectie van gevaarlijke apps en sites.</translation>
@@ -209,6 +211,7 @@ Sommige functies zijn wellicht niet beschikbaar. Geef een andere profieldirector
 <translation id="7164397146364144019">Je kunt helpen Chrome veiliger en gebruiksvriendelijker te maken door automatisch informatie over mogelijke beveiligingsincidenten aan Google te melden.</translation>
 <translation id="7177347454226092725">Hiermee worden je browsergegevens definitief van dit apparaat verwijderd. Als je je gegevens later wilt terughalen, log je in bij Chrome als $2.</translation>
 <translation id="7185038942300673794"><ph name="EXTENSION_NAME" /> is toegevoegd aan Chrome.</translation>
+<translation id="7193750696137290001">Google Chrome wordt weergegeven in deze taal.</translation>
 <translation id="7196020411877309443">Waarom zie ik dit venster?</translation>
 <translation id="7242029209006116544">Je logt in op een beheerd account waarmee de eigenaar van dat account beheer krijgt over je Google Chrome-profiel. Je Chrome-gegevens zoals je apps, bladwijzers, geschiedenis, wachtwoorden en andere instellingen worden permanent gekoppeld aan <ph name="USER_NAME" />. Je kunt deze gegevens verwijderen via het Google Accounts Dashboard, maar je kunt deze gegevens niet koppelen aan een ander account. Je kunt ook een nieuw profiel maken om je bestaande Chrome-gegevens gescheiden te houden. <ph name="LEARN_MORE" /></translation>
 <translation id="729375352412857283">Deze computer ontvangt binnenkort geen Google Chrome-updates meer, omdat Windows XP en Windows Vista niet meer worden ondersteund.</translation>
@@ -239,12 +242,12 @@ Sommige functies zijn wellicht niet beschikbaar. Geef een andere profieldirector
 <translation id="7896673875602241923">Iemand heeft eerder bij Chrome op deze computer ingelogd als <ph name="ACCOUNT_EMAIL_LAST" />. Maak een nieuwe Chrome-gebruiker om je informatie gescheiden te houden.</translation>
 <translation id="7908168227788431038">Updaten bijna voltooid. Start Google Chrome opnieuw op om de update te voltooien.</translation>
 <translation id="795025003224538582">Niet opnieuw starten</translation>
+<translation id="7964230182933713106">Chrome OS wordt weergegeven in deze taal.</translation>
 <translation id="8005540215158006229">Chrome is bijna klaar.</translation>
 <translation id="8008534537613507642">Chrome opnieuw installeren</translation>
 <translation id="8030318113982266900">Je apparaat bijwerken naar <ph name="CHANNEL_NAME" /> kanaal...</translation>
 <translation id="8032142183999901390">Nadat je je account uit Chrome hebt verwijderd, moet je je geopende tabbladen mogelijk opnieuw laden om de wijzigingen door te voeren.</translation>
 <translation id="8129812357326543296">Over &amp;Google Chrome</translation>
-<translation id="8179874765710681175">Installeer Chrome op je telefoon. We sturen een sms naar je telefoon.</translation>
 <translation id="8183957050892517584">Chrome slaat je persoonlijke gegevens veilig op, zodat je ze niet opnieuw hoeft op te geven.</translation>
 <translation id="8211929904040702368">Hiermee worden ten minste <ph name="TOTAL_COUNT" /> items definitief van dit apparaat verwijderd. Als je je gegevens later wilt terughalen, log je in bij Chrome als $2.</translation>
 <translation id="8255190535488645436">Google Chrome gebruikt je camera en microfoon.</translation>

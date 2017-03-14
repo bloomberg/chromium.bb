@@ -142,6 +142,7 @@ Daha fazla talimat için lütfen e-postanızı <ph name="ACCOUNT_EMAIL" /> kontr
 <translation id="5170938038195470297">Profiliniz daha yeni bir Google Chrome sürümünden geldiği için kullanılamıyor.
 
 Bazı özellikler kullanılamayabilir. Lütfen farklı bir profil dizini belirtin veya daha yeni bir Chrome sürümü kullanın.</translation>
+<translation id="5176234269072261959">Mevcut ayarlarınızı bildirerek Chrome'u daha iyi hale getirmemize yardımcı olun.</translation>
 <translation id="5193136243808726294">Google Chrome OS bu sayfayı açamıyor.</translation>
 <translation id="5204098752394657250">Google Chrome <ph name="TERMS_OF_SERVICE_LINK" />Hizmet Şartları<ph name="END_TERMS_OF_SERVICE_LINK" /></translation>
 <translation id="5243785881901838525">Google Payments (Chrome'a kopyalandı)</translation>
@@ -180,6 +181,7 @@ Bazı özellikler kullanılamayabilir. Lütfen farklı bir profil dizini belirti
 <translation id="6291549208091401781">Google Chrome zaten bilgisayarınızdaki tüm kullanıcılar için yüklendi.</translation>
 <translation id="629218512217695915">Chrome tarafından oluşturulan şifreyi kullan</translation>
 <translation id="6338556085225130112">Google Chrome güncelleniyor</translation>
+<translation id="6368805772029492593">Google Chrome ek güvenlik sağlamak için verilerinizi şifreler.</translation>
 <translation id="6368958679917195344">Chrome OS, ek <ph name="BEGIN_LINK_CROS_OSS" />açık kaynak yazılımlardan<ph name="END_LINK_CROS_OSS" /> yararlanılarak geliştirilmiştir.</translation>
 <translation id="6400076122676892962">Mac OS X 10.6, 10.7 ve 10.8 artık desteklenmeyeceğinden, bu bilgisayar yakında Google Chrome güncellemeleri almayı durduracaktır.</translation>
 <translation id="6410540444482791104">Tehlikeli uygulamalar ve sitelerin tespit edilmesine yardımcı olmak üzere Google'a bazı sistem bilgilerini ve sayfa içeriklerini otomatik olarak göndererek, Chrome'un daha güvenli olmasını ve daha kolay kullanılmasını sağlayabilirsiniz.</translation>
@@ -206,6 +208,7 @@ Bazı özellikler kullanılamayabilir. Lütfen farklı bir profil dizini belirti
 <translation id="7164397146364144019">Olası güvenlik olaylarının ayrıntılarını Google'a otomatik olarak bildirerek Chrome'un daha güvenli ve kullanımı kolay bir hale gelmesine yardımcı olabilirsiniz.</translation>
 <translation id="7177347454226092725">Bu işlem tarama verilerinizi bu cihazdan kalıcı olarak silecektir. Verilerinizi daha sonra geri almak için Chrome'da $2 olarak oturum açın.</translation>
 <translation id="7185038942300673794"><ph name="EXTENSION_NAME" /> Chrome'a eklendi.</translation>
+<translation id="7193750696137290001">Google Chrome bu dilde görüntüleniyor.</translation>
 <translation id="7196020411877309443">Neden bunu görüyorum?</translation>
 <translation id="7242029209006116544">Yönetilen bir hesapla oturum açıyor ve hesabın yöneticisine Google Chrome profilinizi denetleme izni veriyorsunuz. Uygulamalarınız, yer işaretleriniz, geçmişiniz, şifreleriniz ve diğer ayarlarınız gibi Chrome verileriniz kalıcı olarak <ph name="USER_NAME" /> ile bağlantılandırılacaktır. Google Hesapları Hesap Özeti'ni kullanarak bu verileri silebilecek, ancak bu verileri başka bir hesapla ilişkilendiremeyeceksiniz. İsterseniz mevcut Chrome verilerinizi ayrı tutmak için yeni bir profil oluşturabilirsiniz.<ph name="LEARN_MORE" /></translation>
 <translation id="729375352412857283">Windows XP ve Windows Vista artık desteklenmeyeceğinden, bu bilgisayar yakında Google Chrome güncellemeleri almayı durduracaktır.</translation>
@@ -236,12 +239,12 @@ Bazı özellikler kullanılamayabilir. Lütfen farklı bir profil dizini belirti
 <translation id="7896673875602241923">Birisi daha önce bu bilgisayarda <ph name="ACCOUNT_EMAIL_LAST" /> olarak Chrome oturumu açmış. Bilgilerinizi ayrı tutmak için yeni bir Chrome kullanıcısı oluşturun.</translation>
 <translation id="7908168227788431038">Az kaldı! Güncellemeyi tamamlamak için Google Chrome'u yeniden başlatın.</translation>
 <translation id="795025003224538582">Yeniden başlatma</translation>
+<translation id="7964230182933713106">Chrome OS bu dilde görüntüleniyor.</translation>
 <translation id="8005540215158006229">Chrome neredeyse hazır.</translation>
 <translation id="8008534537613507642">Chrome'u yeniden yükle</translation>
 <translation id="8030318113982266900">Cihazınız <ph name="CHANNEL_NAME" /> kanalına güncelleniyor...</translation>
 <translation id="8032142183999901390">Hesabınızı Chrome'dan kaldırdıktan sonra, geçerli olması için açık sekmelerinizi yeniden yüklemeniz gerekebilir.</translation>
 <translation id="8129812357326543296">&amp;Google Chrome hakkında</translation>
-<translation id="8179874765710681175">Chrome'u telefonunuza yükleyin. Telefonunuza SMS göndereceğiz.</translation>
 <translation id="8183957050892517584">Chrome, kişisel bilgilerinizi güvenli şekilde depoladığından bu bilgileri tekrar yazmak zorunda kalmazsınız.</translation>
 <translation id="8211929904040702368">Bu işlem, en az <ph name="TOTAL_COUNT" /> öğeyi bu cihazdan kalıcı olarak silecektir. Verilerinizi daha sonra geri almak için Chrome'da $2 olarak oturum açın.</translation>
 <translation id="8255190535488645436">Google Chrome kameranızı ve mikrofonunuzu kullanıyor.</translation>

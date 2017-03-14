@@ -145,6 +145,7 @@ Consulta tu correo electrónico (<ph name="ACCOUNT_EMAIL" />) para obtener más 
 <translation id="5170938038195470297">No se puede usar tu perfil porque se corresponde con una versión más reciente de Google Chrome.
 
 Puede que algunas funciones no estén disponibles. Especifica otro directorio de perfil o usa una versión más reciente de Chrome.</translation>
+<translation id="5176234269072261959">Genera un informe de la configuración actual para ayudar a mejorar Chrome.</translation>
 <translation id="5193136243808726294">Google Chrome OS no puede abrir esta página.</translation>
 <translation id="5204098752394657250"><ph name="TERMS_OF_SERVICE_LINK" />Condiciones de Servicio<ph name="END_TERMS_OF_SERVICE_LINK" /> de Google Chrome</translation>
 <translation id="5243785881901838525">Google Payments (copiada en Chrome)</translation>
@@ -185,6 +186,7 @@ Google Chrome no puede recuperar tu configuración.</translation>
 <translation id="6291549208091401781">Google Chrome ya está instalado para todos los usuarios de tu ordenador.</translation>
 <translation id="629218512217695915">Utilizar contraseña generada por Chrome</translation>
 <translation id="6338556085225130112">Actualizando Google Chrome</translation>
+<translation id="6368805772029492593">Para mayor seguridad, Google Chrome cifrará tus datos.</translation>
 <translation id="6368958679917195344">Chrome OS está creado con <ph name="BEGIN_LINK_CROS_OSS" />software libre<ph name="END_LINK_CROS_OSS" /> adicional.</translation>
 <translation id="6400076122676892962">Este ordenador pronto dejará de recibir actualizaciones de Google Chrome porque Mac OS X 10.6, 10.7 y 10.8 dejarán de ser compatibles.</translation>
 <translation id="6410540444482791104">Ayuda a que Chrome sea más seguro y se pueda utilizar más fácilmente enviando de forma automática información del sistema y contenido de las páginas a Google para que pueda detectar aplicaciones y sitios web peligrosos.</translation>
@@ -211,6 +213,7 @@ Google Chrome no puede recuperar tu configuración.</translation>
 <translation id="7164397146364144019">Puedes ayudar a que Chrome sea más seguro y más fácil de utilizar enviando a Google automáticamente información sobre posibles incidentes de seguridad.</translation>
 <translation id="7177347454226092725">Se eliminarán permanentemente tus datos de navegación de este dispositivo. Para recuperar tus datos en otro momento, inicia sesión en Chrome como $2.</translation>
 <translation id="7185038942300673794"><ph name="EXTENSION_NAME" /> se ha añadido a Chrome.</translation>
+<translation id="7193750696137290001">Google Chrome se muestra en este idioma.</translation>
 <translation id="7196020411877309443">¿Por qué aparece este mensaje?</translation>
 <translation id="7242029209006116544">Vas a iniciar sesión con una cuenta administrada, lo que significa que proporcionarás a su administrador control sobre tu perfil de Google Chrome. Tus datos de Chrome como, por ejemplo, tus aplicaciones, tus marcadores, tu historial, tus contraseñas y otras opciones se vincularán de forma permanente a la cuenta <ph name="USER_NAME" />. Podrás eliminar estos datos a través del Panel de control de cuentas de Google, pero no podrás asociar estos datos a otra cuenta. De forma opcional, puedes crear un nuevo perfil para mantener separados tus datos de Chrome. <ph name="LEARN_MORE" /></translation>
 <translation id="729375352412857283">Este ordenador pronto dejará de recibir actualizaciones de Google Chrome porque Windows XP y Windows Vista dejarán de ser compatibles.</translation>
@@ -241,12 +244,12 @@ Google Chrome no puede recuperar tu configuración.</translation>
 <translation id="7896673875602241923">Otro usuario ha iniciado sesión anteriormente en Chrome con la cuenta <ph name="ACCOUNT_EMAIL_LAST" /> a través de este ordenador. Debes crear un usuario de Chrome para proteger tu información.</translation>
 <translation id="7908168227788431038">Google Chrome casi ha terminado de actualizarse. Reinícialo para completar la actualización.</translation>
 <translation id="795025003224538582">No reiniciar</translation>
+<translation id="7964230182933713106">Chrome OS se muestra en este idioma.</translation>
 <translation id="8005540215158006229">Chrome está casi listo</translation>
 <translation id="8008534537613507642">Reinstalar Chrome</translation>
 <translation id="8030318113982266900">Actualizando el canal del dispositivo a <ph name="CHANNEL_NAME" />...</translation>
 <translation id="8032142183999901390">Después de eliminar tu cuenta de Chrome, es posible que tengas que volver a cargar las pestañas abiertas para que el cambio se aplique.</translation>
 <translation id="8129812357326543296">Información de &amp;Google Chrome</translation>
-<translation id="8179874765710681175">Instala Chrome en tu teléfono. Te enviaremos un SMS a tu teléfono.</translation>
 <translation id="8183957050892517584">Chrome almacenará de forma segura tu información personal, de modo que no tendrás que volver a introducirla.</translation>
 <translation id="8211929904040702368">Se eliminarán permanentemente al menos <ph name="TOTAL_COUNT" /> elementos de este dispositivo. Para recuperar tus datos en otro momento, inicia sesión en Chrome como $2.</translation>
 <translation id="8255190535488645436">Google Chrome está utilizando la cámara y el micrófono.</translation>

@@ -333,21 +333,6 @@
       Hvis HardwareAccelerationModeEnabled settes til false (usann), ignoreres Disable3DAPIs, og det gir samme effekt som å sette Disable3DAPIs til true (sann).</translation>
 <translation id="2168397434410358693">Inaktivitetsforsinkelse når enheten kjører på vekselstrøm</translation>
 <translation id="2170233653554726857">Slå på WPAD-optimalisering</translation>
-<translation id="2176565653304920879">Når denne regelen er spesifisert, blir tidssonen automatisk påvist i henhold til innstillingen som er valgt. Her ser du de ulike alternativene:
-
-      Hvis TimezoneAutomaticDetectionUsersDecide er angitt, kan brukerne kontrollere den automatiske påvisningen av tidssoner ved å bruke vanlige kontroller i chrome://settings.
-
-      Hvis TimezoneAutomaticDetectionDisabled er angitt, er kontrollene for automatisk tidssone i chrome://settings slått av. Automatisk påvisning av tidssoner er alltid av.
-
-      Hvis TimezoneAutomaticDetectionIPOnly er angitt, er tidssonekontrollene i chrome://settings slått av. Automatisk påvisning av tidssoner er alltid på. Systemet bruker bare IP-adresser for å finne riktig tidssone.
-
-      Hvis TimezoneAutomaticDetectionSendWiFiAccessPoints er angitt, er tidssonekontrollene i chrome://settings slått av. Automatisk påvisning av tidssoner er alltid på. Listen over synlige Wi-Fi-tilgangspunkter sendes alltid til Geolocation API-tjeneren, slik at det kan utføres detaljert påvisning av tidssonen.
-
-      Hvis TimezoneAutomaticDetectionSendAllLocationInfo er angitt, er tidssonekontrollene i chrome://settings slått av. Automatisk påvisning av tidssoner er alltid på. Posisjonsinformasjon (som Wi-Fi-tilgangspunkter, basestasjoner som kan nås, og GPS) sendes til en tjener, slik at det kan utføres detaljert påvisning av tidssonen.
-
-      Hvis denne regelen ikke spesifiseres, har det samme effekt som om TimezoneAutomaticDetectionUsersDecide var angitt.
-
-      Hvis SystemTimezone-regelen er spesifisert, overstyrer den denne regelen. I så fall er automatisk påvisning av tidssoner slått helt av.</translation>
 <translation id="2178899310296064282">Fremtving bruk av minst moderat nivå for Begrenset innhold-modus på YouTube</translation>
 <translation id="2183294522275408937">Denne innstillingen kontrollerer hvor ofte brukerne må skrive inn passord på låseskjermen for å fortsette å bruke hurtigopplåsing. Når en bruker kommer til låseskjermen og det har gått lengre tid siden passordet sist ble skrevet inn, enn det som er angitt i denne innstillingen, er det ikke mulig for vedkommende å bruke hurtigopplåsing. Hvis brukeren blir på låseskjermen etter at denne tidsperioden er over, må vedkommende skrive inn passordet neste gang han eller hun skriver inn feil kode eller kommer tilbake til låseskjermen (avhengig av hva som skjer først).
 
@@ -1446,13 +1431,6 @@
           Hvis denne retningslinjen ikke angis, brukes AskNotification, og brukeren kan endre på dette.</translation>
 <translation id="538108065117008131">Gi <ph name="PRODUCT_FRAME_NAME" /> tillatelse til å håndtere følgende innholdstyper.</translation>
 <translation id="5388730678841939057">Velger strategien som brukes for å frigjøre diskplass ved automatisk opprydding (foreldet)</translation>
-<translation id="5392172595902933844">Informasjon om Android-statusen sendes tilbake til
-      tjeneren.
-
-      Hvis regelen er angitt som «false» (usann) eller ikke er angitt, blir ingen statusinformasjon rapportert.
-      Hvis den er angitt som «true» (sann), blir statusinformasjon sendt.
-
-      Denne regelen gjelder bare hvis Android-apper er slått på.</translation>
 <translation id="5395271912574071439">Aktiverer begrensning (curtaining) av verter for fjerntilgang mens en tilkobling er aktiv.
 
           Hvis denne innstillingen er aktivert, deaktiveres vertenes fysiske enheter for inn- og utdata mens en fjerntilkobling er aktiv.
@@ -2411,7 +2389,6 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 <translation id="7937766917976512374">Tillat eller blokkér videoopptak</translation>
 <translation id="7941975817681987555">Ikke forutsi nettverkshandlinger på noen nettverkstilkoblinger</translation>
 <translation id="7953256619080733119">Verter for manuelle unntak for administrerte brukere</translation>
-<translation id="7965394584578183156">Send alltid Wi-Fi-tilgangspunkter til tjeneren mens tidssonen påvises.</translation>
 <translation id="7971839631300653352">SSL 3.0</translation>
 <translation id="7974114691960514888">Denne retningslinjen støttes ikke lenger. Aktiverer bruk av STUN og relétjenere ved tilkobling til en ekstern klient. Hvis denne innstillingen er aktivert, kan maskinen oppdage og koble seg til eksterne vertsmaskiner selv om de er adskilt av en brannmur. Hvis denne innstillingen er deaktivert og utgående UDP-tilkoblinger filtreres av brannmuren, kan denne maskinen bare koble seg til vertsmaskiner i det lokale nettverket.</translation>
 <translation id="7986374692540430898">Du kan ikke tvinge Android-apper til å bruke proxy-tjenere. En undergruppe av proxy-innstillinger – som de kan velge å respektere frivillig – er gjort tilgjengelig for Android-apper. Se regelen <ph name="PROXY_MODE_POLICY" /> for flere detaljer.</translation>
@@ -2574,7 +2551,6 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 <translation id="838870586332499308">Aktiver datastreifing</translation>
 <translation id="8390049129576938611">Slår av den interne appen for visning av PDF-filer i <ph name="PRODUCT_NAME" />. PDF-filer blir i stedet lastet ned, og brukeren kan åpne dem med standardappen.
     Hvis disse retningslinjene slås av eller ikke angis, åpnes PDF-filer i PDF-programtillegget frem til brukeren eventuelt slår det av.</translation>
-<translation id="8398203849316312944">Send alltid eventuelle tilgjengelige posisjonssignaler til tjeneren mens tidssonen påvises.</translation>
 <translation id="8402079500086185021">Åpne alltid PDF-filer eksternt</translation>
 <translation id="8412312801707973447">Angir om OCSP/CRL-kontroller utføres på nettet</translation>
 <translation id="8413348101535146315">Slår på muligheten for å avslutte prosesser i oppgavebehandlingen i <ph name="PRODUCT_NAME" />.

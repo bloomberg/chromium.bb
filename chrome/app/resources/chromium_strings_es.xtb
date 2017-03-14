@@ -48,6 +48,7 @@ Es posible que algunas funciones no estén disponibles y que no se guarden los c
 <translation id="2535480412977113886">Chromium OS no ha podido sincronizar los datos porque la información de inicio de sesión de tu cuenta está obsoleta.</translation>
 <translation id="2572494885440352020">Chromium Helper</translation>
 <translation id="2587578672395088481">Chromium OS se debe reiniciar para que se aplique la actualización.</translation>
+<translation id="2605472041568654097">Genera un informe de la configuración actual para ayudar a mejorar Chromium.</translation>
 <translation id="2636877269779209383">Chromium necesita acceder a la cámara para compartirla con este sitio web.</translation>
 <translation id="2647554856022461007">Chromium puede utilizar los servicios web para mejorar la experiencia de navegación. Puedes inhabilitar estos servicios. <ph name="BEGIN_LINK" />Más información<ph name="END_LINK" /></translation>
 <translation id="2648074677641340862">Se ha producido un error de sistema operativo durante el proceso de instalación. Vuelve a descargar Chromium.</translation>

@@ -143,6 +143,7 @@
 <translation id="5170938038195470297">‏لا يمكن استخدام ملفك الشخصي نظرًا لأنه من إصدار أحدث من Google Chrome.
 
 قد تكون بعض الميزات غير متاحة. الرجاء تحديد دليل ملف شخصي مختلف أو استخدام إصدار أحدث من Chrome.</translation>
+<translation id="5176234269072261959">‏ساعد في تحسين Chrome من خلال الإبلاغ عن الإعدادات الحالية.</translation>
 <translation id="5193136243808726294">‏يتعذر على نظام التشغيل Google Chrome فتح هذه الصفحة.</translation>
 <translation id="5204098752394657250">‏<ph name="TERMS_OF_SERVICE_LINK" />بنود خدمة<ph name="END_TERMS_OF_SERVICE_LINK" /> Google Chrome</translation>
 <translation id="5243785881901838525">‏Google Payments (تم النسخ إلى Chrome)</translation>
@@ -181,6 +182,7 @@
 <translation id="6291549208091401781">‏تم تثبيت Google Chrome من قبل لجميع المستخدمين على الكمبيوتر.</translation>
 <translation id="629218512217695915">‏استخدام كلمة المرور التي تم إنشاؤها بواسطة Chrome</translation>
 <translation id="6338556085225130112">‏تحديث Google Chrome</translation>
+<translation id="6368805772029492593">‏لمزيد من الأمان، سيشفر Google Chrome بياناتك</translation>
 <translation id="6368958679917195344">‏أصبح نظام التشغيل Chrome متاحًا من خلال <ph name="BEGIN_LINK_CROS_OSS" />برنامج مفتوح المصدر<ph name="END_LINK_CROS_OSS" /> إضافي.</translation>
 <translation id="6400076122676892962">‏سيتوقف هذا الكمبيوتر قريبًا عن استلام تحديثات Google Chrome لأن أنظمة Mac OS X 10.6 و10.7 و10.8 ستصبح غير مدعومة.</translation>
 <translation id="6410540444482791104">‏يمكنك المساعدة في جعل Chrome أكثر أمانًا وأسهل استخدامًا عن طريق إرسال بعض معلومات النظام ومحتوى الصفحة تلقائيًا إلى Google للمساعدة في اكتشاف المواقع والتطبيقات الضارة.</translation>
@@ -207,6 +209,7 @@
 <translation id="7164397146364144019">‏يمكنك المساعدة في جعل Chrome أكثر أمانًا وأسهل استخدامًا بإبلاغ Google تلقائيًا بتفاصيل أي مخاطر أمنية محتملة.</translation>
 <translation id="7177347454226092725">‏سيؤدي هذا إلى حذف بيانات التصفح من هذا الجهاز نهائيًا. ولاسترداد بياناتك لاحقًا، سجّل الدخول إلى Chrome باعتبارك ($2).</translation>
 <translation id="7185038942300673794">‏تمت إضافة <ph name="EXTENSION_NAME" /> إلى Chrome.</translation>
+<translation id="7193750696137290001">‏يتم عرض Google Chrome بهذه اللغة.</translation>
 <translation id="7196020411877309443">لماذا أرى مربع الحوار هذا؟</translation>
 <translation id="7242029209006116544">‏إنك تسجل الدخول باستخدام حساب مُدار وتمنح المشرف إمكانية التحكم في ملفك الشخصي في Google Chrome. وسيتم ربط بيانات Chrome التابعة لك، مثل التطبيقات والإشارات المرجعية والسجلّ وكلمات المرور والإعدادات الأخرى بالمستخدم <ph name="USER_NAME" />. وستتمكن من حذف هذه البيانات عبر لوحة تحكم حسابات Google، ولكنك لن تتمكن من إقران هذه البيانات بحساب آخر. ويُمكنك اختيار إنشاء ملف شخصي جديد للإبقاء على بياناتك الحالية في Chrome بشكل مستقل. <ph name="LEARN_MORE" /></translation>
 <translation id="729375352412857283">‏سيتوقف هذا الكمبيوتر قريبًا عن استلام تحديثات Google Chrome لأن أنظمة Windows XP وWindows Vista لن تصبح مدعومة بعد الآن.</translation>
@@ -237,6 +240,7 @@
 <translation id="7896673875602241923">‏سجّل شخص ما الدخول من قبل إلى Chrome على جهاز الكمبيوتر هذا باسم <ph name="ACCOUNT_EMAIL_LAST" />. يُرجى إنشاء حساب مستخدم جديد في Chrome للإبقاء على معلوماتك بشكلٍ منفصل.</translation>
 <translation id="7908168227788431038">‏أوشك التحديث على الانتهاء! أعِد تشغيل Google Chrome لإنهاء التحديث.</translation>
 <translation id="795025003224538582">عدم إعادة التشغيل</translation>
+<translation id="7964230182933713106">‏يتم عرض نظام تشغيل Chrome بهذه اللغة.</translation>
 <translation id="8005540215158006229">‏Chrome جاهز تقريبًا.</translation>
 <translation id="8008534537613507642">‏إعادة تثبيت Chrome</translation>
 <translation id="8030318113982266900">جارٍ تحديث جهازك إلى قناة <ph name="CHANNEL_NAME" />...</translation>

@@ -333,21 +333,6 @@
       Als 'HardwareAccelerationModeEnabled' op 'onwaar' wordt ingesteld, wordt 'Disable3DAPIs' genegeerd. Dit is hetzelfde als 'Disable3DAPIs' instellen op 'waar'.</translation>
 <translation id="2168397434410358693">Inactieve vertraging wanneer op netstroom wordt gewerkt</translation>
 <translation id="2170233653554726857">WPAD-optimalisatie inschakelen</translation>
-<translation id="2176565653304920879">Als dit beleid is ingesteld, wordt het proces voor automatische tijdzonedetectie op een van de volgende manieren uitgevoerd, afhankelijk van de waarde van de instelling:
-
-       Als TimezoneAutomaticDetectionUsersDecide is ingesteld, kunnen gebruikers automatische tijdzonedetectie beheren via de normale beheeropties in chrome://settings.
-
-      Als TimezoneAutomaticDetectionDisabled is ingesteld, zijn de beheeropties voor automatische tijdzonedetectie in chrome://settings uitgeschakeld. Automatische tijdzonedetectie is altijd uitgeschakeld.
-
-      Als TimezoneAutomaticDetectionIPOnly is ingesteld, zijn de beheeropties voor de tijdzone in chrome://settings uitgeschakeld. Automatische tijdzonedetectie is altijd ingeschakeld. Tijdzonedetectie maakt gebruikt van de methode die gebaseerd is op IP-adressen om de locatie te bepalen.
-
-       Als TimezoneAutomaticDetectionSendWiFiAccessPoints is ingesteld, zijn de beheeropties voor de tijdzone in chrome://settings uitgeschakeld. Automatische tijdzonedetectie is altijd ingeschakeld. De lijst met zichtbare wifi-toegangspunten wordt altijd verzonden naar de Geolocatie-API-server voor gedetailleerde tijdzonedetectie.
-
-      Als TimezoneAutomaticDetectionSendAllLocationInfo is ingesteld, zijn de beheeropties voor de tijdzone in chrome://settings uitgeschakeld. Automatische tijdzonedetectie is altijd ingeschakeld. Locatiegegevens (zoals wifi-toegangspunten, bereikbare zendmasten, GPS) worden naar een server verzonden voor gedetailleerde tijdzonedetectie.
-
-      Als dit beleid niet is ingesteld, gedraagt het zich alsof TimezoneAutomaticDetectionUsersDecide is ingesteld.
-
-      Als het beleid SystemTimezone is ingesteld, overschrijft het dit beleid. In dat geval is automatische tijdzonedetectie volledig uitgeschakeld.</translation>
 <translation id="2178899310296064282">Minimaal de gemiddelde 'Beperkte modus' op YouTube afdwingen</translation>
 <translation id="2183294522275408937">Met deze instelling wordt bepaald hoe vaak het wachtwoord voor het vergrendelingsscherm moet worden opgegeven om de functie voor snel ontgrendelen te kunnen blijven gebruiken. Telkens wanneer het vergrendelingsscherm wordt weergegeven en het wachtwoord nog niet is opgegeven gedurende de ingestelde periode, is de functie voor snel ontgrendelen niet beschikbaar om het vergrendelingsscherm te ontgrendelen. Wanneer het vergrendelingsscherm niet wordt ontgrendeld gedurende de ingestelde periode, moet de volgende keer dat de gebruiker een verkeerde code invoert of het vergrendelingsscherm opnieuw opent een wachtwoord worden opgegeven.
 
@@ -1475,13 +1460,6 @@
           Als dit beleid niet wordt ingesteld, wordt 'AskNotifications' gebruikt en kan de gebruiker dit aanpassen.</translation>
 <translation id="538108065117008131"><ph name="PRODUCT_FRAME_NAME" /> toestaan de volgende soorten content te verwerken.</translation>
 <translation id="5388730678841939057">Hiermee selecteer je de strategie die wordt gebruikt om schijfruimte vrij te maken tijdens het automatisch opschonen (verouderd)</translation>
-<translation id="5392172595902933844">Informatie over de status van Android wordt teruggestuurd naar de
-      server.
-
-      Als het beleid is ingesteld op 'false' (onwaar) of niet is ingesteld, wordt er geen statusinformatie gerapporteerd.
-      Als het beleid is ingesteld op 'true' (waar), wordt de statusinformatie gerapporteerd.
-
-      Dit beleid is alleen van toepassing als Android-apps zijn ingeschakeld.</translation>
 <translation id="5395271912574071439">Schakelt afscherming van hosts voor externe toegang in terwijl een verbinding tot stand wordt gebracht.
 
           Als deze instelling is ingeschakeld, worden de fysieke invoer- en uitvoerapparaten van hosts uitgeschakeld terwijl een externe verbinding tot stand wordt gebracht.
@@ -2417,7 +2395,6 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 <translation id="7937766917976512374">Het opnemen van video's toestaan of weigeren</translation>
 <translation id="7941975817681987555">Geen netwerkacties voorspellen voor een netwerkverbinding</translation>
 <translation id="7953256619080733119">Hosts van handmatige uitzonderingen voor beheerde gebruikers</translation>
-<translation id="7965394584578183156">Wifi-toegangspunten altijd verzenden naar de server wanneer de tijdzone wordt bepaald.</translation>
 <translation id="7971839631300653352">SSL 3.0</translation>
 <translation id="7974114691960514888">Dit beleid wordt niet meer ondersteund.
           Maakt het gebruik van STUN en relayservers mogelijk bij het verbinding maken met een externe client.
@@ -2583,7 +2560,6 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 <translation id="8390049129576938611">Hiermee wordt de interne pdf-viewer in <ph name="PRODUCT_NAME" /> uitgeschakeld. In plaats daarvan wordt dit beschouwd als download. De gebruiker kan pdf-bestanden openen met de standaard-app.
 
       Als dit beleid niet wordt ingesteld of wordt uitgeschakeld, wordt de pdf-plug-in gebruikt om pdf-bestanden te openen, tenzij de gebruiker deze uitschakelt.</translation>
-<translation id="8398203849316312944">Beschikbare locatiesignalen altijd verzenden naar de server wanneer de tijdzone wordt bepaald.</translation>
 <translation id="8402079500086185021">Pdf-bestanden altijd extern openen</translation>
 <translation id="8412312801707973447">Uitvoer van online OCSP/CRL-controles</translation>
 <translation id="8413348101535146315">Hiermee wordt het beëindigen van processen in Taakbeheer van <ph name="PRODUCT_NAME" /> mogelijk gemaakt.

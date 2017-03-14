@@ -139,6 +139,7 @@ További utasításokat a(z) <ph name="ACCOUNT_EMAIL" /> címére küldött e-ma
 <translation id="5037239767309817516">Ahhoz, hogy a módosítás hatályba lépjen, zárja be az összes Google Chrome ablakot, és indítsa újra az alkalmazást.</translation>
 <translation id="5132929315877954718">Fedezzen fel nagyszerű alkalmazásokat, játékokat, bővítményeket és témákat a Google Chrome-hoz.</translation>
 <translation id="5170938038195470297">A profilja nem használható, mivel a Google Chrome egy újabb verziójából származik. Előfordulhat, hogy egyes funkciók nem érhetők el. Kérjük, adjon meg egy másik profilmappát, vagy használja a Google Chrome újabb verzióját.</translation>
+<translation id="5176234269072261959">Segítsen a Chrome fejlesztésében a jelenlegi beállítások elküldésével.</translation>
 <translation id="5193136243808726294">A Google Chrome OS nem tudja megnyitni ezt az oldalt.</translation>
 <translation id="5204098752394657250">Google Chrome <ph name="TERMS_OF_SERVICE_LINK" />Általános Szerződési Feltételek<ph name="END_TERMS_OF_SERVICE_LINK" /></translation>
 <translation id="5243785881901838525">Google Payments (a Chrome-ba másolva)</translation>
@@ -177,6 +178,7 @@ További utasításokat a(z) <ph name="ACCOUNT_EMAIL" /> címére küldött e-ma
 <translation id="6291549208091401781">A Google Chrome már telepítve van az összes felhasználó számára a számítógépen.</translation>
 <translation id="629218512217695915">Chrome által generált jelszó használata</translation>
 <translation id="6338556085225130112">A Google Chrome frissítése</translation>
+<translation id="6368805772029492593">A nagyobb biztonság érdekében a Google Chrome titkosítja az Ön adatait.</translation>
 <translation id="6368958679917195344">A Chrome OS-hez egyéb <ph name="BEGIN_LINK_CROS_OSS" />nyílt forráskódú szoftver<ph name="END_LINK_CROS_OSS" /> is hozzájárult.</translation>
 <translation id="6400076122676892962">Ez a számítógép hamarosan nem fog több Google Chrome-frissítést kapni, mert a böngésző nem fogja támogatni a Mac OS X 10.6, 10.7 és 10.8 rendszereket.</translation>
 <translation id="6410540444482791104">A rendszer-információk és oldaltartalmak automatikus küldésével segítséget nyújthat a Google-nak a Chrome használatának biztonságosabbá és egyszerűbbé tételéhez, illetve a veszélyes alkalmazások és webhelyek felderítéséhez.</translation>
@@ -203,6 +205,7 @@ További utasításokat a(z) <ph name="ACCOUNT_EMAIL" /> címére küldött e-ma
 <translation id="7164397146364144019">Az esetleges biztonsági események adatainak automatikus jelentésével segítséget nyújthat a Google-nak a Chrome használatának biztonságosabbá és egyszerűbbé tételéhez.</translation>
 <translation id="7177347454226092725">Ezzel az eszközön lévő összes böngészési adat véglegesen törlődik. Az adatok későbbi lekéréséhez jelentkezzen be a Chrome-ba mint $2.</translation>
 <translation id="7185038942300673794">A(z) <ph name="EXTENSION_NAME" /> hozzá lett adva a Chrome-hoz.</translation>
+<translation id="7193750696137290001">A Google Chrome ezen a nyelven jelenik meg.</translation>
 <translation id="7196020411877309443">Miért jelenik meg ez az üzenet?</translation>
 <translation id="7242029209006116544">Kezelt fiókkal jelentkezik be, és annak adminisztrátora számára hozzáférést biztosít Google Chrome-profiljához. Chrome-adatait – például alkalmazásait, könyvjelzőit, előzményeit, jelszavait és más beállításait – a rendszer véglegesen társítja a(z) <ph name="USER_NAME" /> fiókhoz. Ezen adatokat a Google-fiók Irányítópultján törölheti, de más fiókhoz nem társíthatja őket. Létrehozhat egy új profilt is meglévő Chrome-adatainak külön tárolásához. <ph name="LEARN_MORE" /></translation>
 <translation id="729375352412857283">Ez a számítógép hamarosan nem fog több Google Chrome-frissítést kapni, mert a böngésző nem fogja támogatni a Windows XP és Windows Vista rendszereket.</translation>
@@ -233,12 +236,12 @@ További utasításokat a(z) <ph name="ACCOUNT_EMAIL" /> címére küldött e-ma
 <translation id="7896673875602241923">Valaki korábban <ph name="ACCOUNT_EMAIL_LAST" /> néven bejelentkezett a Chrome-ba erről a számítógépről. Az adatai elkülönítéséhez hozzon létre új Chrome-felhasználót.</translation>
 <translation id="7908168227788431038">Már majdnem naprakész! Indítsa újra a Google Chrome-ot a frissítés befejezéséhez.</translation>
 <translation id="795025003224538582">Ne indítsa újra</translation>
+<translation id="7964230182933713106">A Chrome OS ezen a nyelven jelenik meg</translation>
 <translation id="8005540215158006229">A Chrome majdnem készen áll.</translation>
 <translation id="8008534537613507642">A Chrome újratelepítése</translation>
 <translation id="8030318113982266900">Eszköz frissítése a(z) <ph name="CHANNEL_NAME" /> csatornára...</translation>
 <translation id="8032142183999901390">Fiókjának eltávolítása után a Chrome-ból előfordulhat, hogy újra kell töltenie a megnyitott lapokat ahhoz, hogy a változások életbe lépjenek.</translation>
 <translation id="8129812357326543296">A &amp;Google Chrome névjegye</translation>
-<translation id="8179874765710681175">Telepítse a Chrome-ot telefonjára. SMS-t küldünk majd a telefonra.</translation>
 <translation id="8183957050892517584">A Chrome biztonságosan tárolja a személyes adatait, így nem kell újra begépelnie őket.</translation>
 <translation id="8211929904040702368">Ezzel véglegesen töröl legalább <ph name="TOTAL_COUNT" /> elemet erről az eszközről. Az adatok későbbi lekéréséhez jelentkezzen be a Chrome-ba mint $2.</translation>
 <translation id="8255190535488645436">A Google Chrome használja a kamerát és a mikrofont.</translation>

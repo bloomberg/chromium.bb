@@ -27,7 +27,6 @@
 <translation id="124678866338384709">סגור את הכרטיסייה הנוכחית</translation>
 <translation id="1258753120186372309">‏דודל של Google‏: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1272079795634619415">הפסק</translation>
-<translation id="1283039547216852943">הקש כדי להרחיב</translation>
 <translation id="1285320974508926690">לעולם אל תתרגם אתר זה</translation>
 <translation id="1291207594882862231">‏נקה את ההיסטוריה, קובצי ה-Cookie, נתוני האתרים, המטמון…</translation>
 <translation id="129553762522093515">נסגרו לאחרונה</translation>
@@ -83,7 +82,6 @@
 <translation id="1825719650605518411">חוויית הפעלה ראשונה</translation>
 <translation id="1829244130665387512">חפש בדף</translation>
 <translation id="1832521218263067499">תקריות אבטחה</translation>
-<translation id="1841591888176896630">‏%1$s הצעות של Chrome</translation>
 <translation id="1853692000353488670">כרטיסייה חדשה לגלישה בסתר</translation>
 <translation id="189172778771606813">סגור את חלונית ההזזה לניווט</translation>
 <translation id="1933845786846280168">הכרטיסייה שנבחרה</translation>
@@ -115,6 +113,7 @@
 <translation id="219985413780390209">הגן על עצמך ועל המכשיר מפני אתרים מסוכנים</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, אפליקציית אינטרנט. <ph name="APP_URL" /></translation>
 <translation id="2268044343513325586">צמצם</translation>
+<translation id="2279474006916349339">‏כל נתוני היישומים של Chrome יימחקו לצמיתות, כולל כל הקבצים, ההגדרות, החשבונות, מסדי הנתונים וכו'.</translation>
 <translation id="2286841657746966508">כתובת לחיוב</translation>
 <translation id="2315043854645842844">מערכת ההפעלה אינה תומכת בבחירת אישור בצד הלקוח.</translation>
 <translation id="2321958826496381788">גרור את המחוון עד שתוכל לקרוא את הקטע הזה בצורה נוחה. לאחר שתקיש פעמיים על פיסקה, הטקסט אמור להיות מוצג בגודל הזה לפחות.</translation>
@@ -146,6 +145,7 @@
 <translation id="2587052924345400782">יש גרסה חדשה יותר</translation>
 <translation id="2593272815202181319">רוחב אחיד</translation>
 <translation id="2621115761605608342">‏אפשר JavaScript לאתר ספציפי.</translation>
+<translation id="2646820313617290661">ההורים שלך עוזרים בניהול ההגדרות האלה.</translation>
 <translation id="2653659639078652383">שלח</translation>
 <translation id="2677748264148917807">צא</translation>
 <translation id="2704606927547763573">הועתק</translation>
@@ -256,7 +256,6 @@
 <translation id="393697183122708255">חיפוש קולי מופעל לא זמין</translation>
 <translation id="3946611741043634542">‏אם תמשיך, משמעות הדבר היא שאתה מסכים <ph name="BEGIN_LINK1" />לתנאים ולהגבלות<ph name="END_LINK1" /> ול<ph name="BEGIN_LINK2" />הודעת הפרטיות<ph name="END_LINK2" /> של Chrome.</translation>
 <translation id="3950820424414687140">כניסה</translation>
-<translation id="395922942268463099">דפים המעודכנים על בסיס קבוע</translation>
 <translation id="3967822245660637423">ההורדה הושלמה</translation>
 <translation id="397583555483684758">הסנכרון הפסיק לפעול</translation>
 <translation id="3985215325736559418">האם להוריד שוב את <ph name="FILE_NAME" />?</translation>
@@ -317,6 +316,7 @@
 <translation id="4686372254213217147">גודל מקורי</translation>
 <translation id="4698413471314543145">‏חסרה פונקציונליות קריטית הנדרשת להפעלת Chrome. התקנת Chrome אינה מלאה, או שאינה תואמת לגרסה הזו של Android.</translation>
 <translation id="4699172675775169585">תמונות וקבצים בזכרון השמור</translation>
+<translation id="4710672574193412565">‏הוסף חשבון Google מהדף 'חשבונות' שבאפליקציית ההגדרות של המכשיר שלך.</translation>
 <translation id="4714588616299687897">חסוך עד 60% בשימוש בנתונים</translation>
 <translation id="4720023427747327413">פתח ב-<ph name="PRODUCT_NAME" /></translation>
 <translation id="4730876730346568982">‏אתה עובר מחשבון סינכרון <ph name="ACCOUNT_EMAIL_OLD" /> אל חשבון סינכרון <ph name="ACCOUNT_EMAIL_NEW" />. הנתונים הקיימים שלך ב-Chrome מנוהלים על-ידי <ph name="MANAGED_DOMAIN" />. פעולה זו תמחק את הנתונים מהמכשיר הזה, אבל הם יישארו ב-<ph name="ACCOUNT_EMAIL_OLD" />.</translation>
@@ -337,7 +337,6 @@
 <translation id="4862624982077154323">‏בחלק מהאתרים אפשר לשלם באמצעות אפליקציות תשלום נתמכות. בחר את האפליקציות שבהן תשתמש ב-Chrome.</translation>
 <translation id="4881695831933465202">פתח</translation>
 <translation id="4885273946141277891">‏מספר בלתי נתמך של מופעי Chrome.</translation>
-<translation id="490442468485962363">‏פתח בכרטיסיית גלישה בסתר של Chrome</translation>
 <translation id="4910889077668685004">אפליקציות תשלום</translation>
 <translation id="4915549754973153784"><ph name="BEGIN_LINK" />קבל עזרה<ph name="END_LINK" /> בזמן חיפוש התקנים…</translation>
 <translation id="4943872375798546930">אין תוצאות</translation>
@@ -449,7 +448,6 @@
 <translation id="5939518447894949180">אפס</translation>
 <translation id="5942872142862698679">‏שימוש ב-Google לחיפוש</translation>
 <translation id="5956665950594638604">‏פתח את מרכז העזרה של Chrome בכרטיסייה חדשה</translation>
-<translation id="5962718611393537961">הקש כדי לכווץ</translation>
 <translation id="6000066717592683814">‏המשך להשתמש ב-Google</translation>
 <translation id="6010869025736512584">גישה לפלט אודיו</translation>
 <translation id="6012342843556706400">‏Chrome זקוק לגישה אל המיקום כדי לשתף אותו עם האתר הזה.</translation>
@@ -460,6 +458,7 @@
 <translation id="604996488070107836">הורדת <ph name="FILE_NAME" /> נכשלה עקב שגיאה לא ידועה.</translation>
 <translation id="605721222689873409">YY</translation>
 <translation id="6075798973483050474">עריכת דף הבית</translation>
+<translation id="6078323886959318429">הוסף קיצור דרך</translation>
 <translation id="60923314841986378">נותרו <ph name="HOURS" /> שעות</translation>
 <translation id="6108923351542677676">ההגדרה מתבצעת…</translation>
 <translation id="6112702117600201073">מרענן את הדף</translation>
@@ -585,6 +584,7 @@
 <translation id="7498271377022651285">המתן…</translation>
 <translation id="7514365320538308">הורד</translation>
 <translation id="7521387064766892559">JavaScript</translation>
+<translation id="753693763123565012">זה הכול בינתיים</translation>
 <translation id="7562080006725997899">מנקה נתוני גלישה</translation>
 <translation id="756809126120519699">‏נתוני Chrome נוקו</translation>
 <translation id="7588950540487816470">האינטרנט הווירטופיזי</translation>
@@ -603,6 +603,7 @@
 <translation id="7658239707568436148">ביטול</translation>
 <translation id="7665369617277396874">הוסף חשבון</translation>
 <translation id="7698359219371678927">צור הודעת אימייל ב-<ph name="APP_NAME" /></translation>
+<translation id="771135159654932189">ראה מה נמצא בקרבת מקום</translation>
 <translation id="7764225426217299476">הוסף כתובת</translation>
 <translation id="7765158879357617694">העבר</translation>
 <translation id="7769602470925380267">קבל וצא מהחשבון</translation>
@@ -637,7 +638,6 @@
 <translation id="8035133914807600019">תיקייה חדשה…</translation>
 <translation id="8037750541064988519">נותרו <ph name="DAYS" /> ימים</translation>
 <translation id="8051695050440594747">‏‎<ph name="MEGABYTES" /> MB זמינים</translation>
-<translation id="8058746566562539958">‏פתח בכרטיסייה חדשה של Chrome</translation>
 <translation id="8063895661287329888">הוספת הסימנייה נכשלה.</translation>
 <translation id="806745655614357130">שמור בנפרד את הנתונים שלי</translation>
 <translation id="8068648041423924542">אין אפשרות לבחור אישור.</translation>

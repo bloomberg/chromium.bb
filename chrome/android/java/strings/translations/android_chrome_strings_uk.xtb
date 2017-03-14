@@ -27,7 +27,6 @@
 <translation id="124678866338384709">Закрити поточну вкладку</translation>
 <translation id="1258753120186372309">Дудл Google: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1272079795634619415">Зупинити</translation>
-<translation id="1283039547216852943">Торкніться, щоб розгорнути</translation>
 <translation id="1285320974508926690">Ніколи не перекладати цей сайт</translation>
 <translation id="1291207594882862231">Очистити історію, файли cookie, дані сайтів, кеш…</translation>
 <translation id="129553762522093515">Нещодавно закриті</translation>
@@ -83,7 +82,6 @@
 <translation id="1825719650605518411">Перший запуск</translation>
 <translation id="1829244130665387512">Знайти на сторінці</translation>
 <translation id="1832521218263067499">Випадки порушення безпеки</translation>
-<translation id="1841591888176896630">Пропозицій Chrome: %1$s</translation>
 <translation id="1853692000353488670">Нова анонімна вкладка</translation>
 <translation id="189172778771606813">Закрити панель навігації</translation>
 <translation id="1933845786846280168">Вибрана вкладка</translation>
@@ -115,6 +113,7 @@
 <translation id="219985413780390209">Захистіть себе та свій пристрій від небезпечних сайтів</translation>
 <translation id="2206488550163399966">Веб-додаток <ph name="APP_NAME" />: <ph name="APP_URL" /></translation>
 <translation id="2268044343513325586">Уточнити</translation>
+<translation id="2279474006916349339">Усі дані Chrome буде видалено назавжди. Це стосується всіх файлів, налаштувань, облікових записів, баз даних тощо.</translation>
 <translation id="2286841657746966508">Розрахункова адреса</translation>
 <translation id="2315043854645842844">Операційна система не підтримує сертифікат, вибраний на стороні клієнта.</translation>
 <translation id="2321958826496381788">Перетягуйте повзунок, доки розмір тексту не стане зручним для читання. Якщо двічі торкнутись абзацу, розмір тексту має стати принаймні таким, як цей.</translation>
@@ -146,6 +145,7 @@
 <translation id="2587052924345400782">Доступна новіша версія</translation>
 <translation id="2593272815202181319">Однакової ширини</translation>
 <translation id="2621115761605608342">Увімкнути Javascript на певному сайті.</translation>
+<translation id="2646820313617290661">Цими налаштуваннями керують ваші батьки.</translation>
 <translation id="2653659639078652383">Надіслати</translation>
 <translation id="2677748264148917807">Вийти</translation>
 <translation id="2704606927547763573">Скопійов.</translation>
@@ -256,7 +256,6 @@
 <translation id="393697183122708255">Голосовий пошук вимкнено</translation>
 <translation id="3946611741043634542">Продовжуючи, ви приймаєте <ph name="BEGIN_LINK1" />Умови використання<ph name="END_LINK1" /> та <ph name="BEGIN_LINK2" />Примітку про конфіденційність<ph name="END_LINK2" /> Chrome.</translation>
 <translation id="3950820424414687140">Увійти</translation>
-<translation id="395922942268463099">Сторінки регулярно оновлюються</translation>
 <translation id="3967822245660637423">Завантажено</translation>
 <translation id="397583555483684758">Синхронізація перестала працювати</translation>
 <translation id="3985215325736559418">Завантажити файл "<ph name="FILE_NAME" />" повторно?</translation>
@@ -317,6 +316,7 @@
 <translation id="4686372254213217147">Оригінальний розмір</translation>
 <translation id="4698413471314543145">Немає важливого компонента, який потрібний для роботи Chrome. Встановлення Chrome не завершено або веб-переглядач не сумісний із цією версією Android.</translation>
 <translation id="4699172675775169585">Кешовані зображення та файли</translation>
+<translation id="4710672574193412565">Додайте обліковий запис Google зі сторінки "Облікові записи" в додатку Налаштування на пристрої.</translation>
 <translation id="4714588616299687897">Заощаджуйте до 60% трафіку</translation>
 <translation id="4720023427747327413">Відкрити в <ph name="PRODUCT_NAME" /></translation>
 <translation id="4730876730346568982">Ви переходите з облікового запису для синхронізації <ph name="ACCOUNT_EMAIL_OLD" /> на <ph name="ACCOUNT_EMAIL_NEW" />. Ваші наявні дані Chrome збережено в домені <ph name="MANAGED_DOMAIN" />. Дані буде видалено з цього пристрою, але вони залишаться в обліковому записі <ph name="ACCOUNT_EMAIL_OLD" />.</translation>
@@ -337,7 +337,6 @@
 <translation id="4862624982077154323">На деяких веб-сайтах можна оплачувати за допомогою підтримуваних додатків для платежів. Виберіть додатки, якими користуватиметесь у Chrome.</translation>
 <translation id="4881695831933465202">Відкрити</translation>
 <translation id="4885273946141277891">Забагато копій Chrome.</translation>
-<translation id="490442468485962363">Відкрити в анонімній вкладці Chrome</translation>
 <translation id="4910889077668685004">Додатки для платежів</translation>
 <translation id="4915549754973153784"><ph name="BEGIN_LINK" />Довідка<ph name="END_LINK" /> під час пошуку пристроїв…</translation>
 <translation id="4943872375798546930">Не знайдено жодного результату</translation>
@@ -449,7 +448,6 @@
 <translation id="5939518447894949180">Скинути</translation>
 <translation id="5942872142862698679">Пошук за допомогою Google</translation>
 <translation id="5956665950594638604">Відкрити Довідковий центр Chrome у новій вкладці</translation>
-<translation id="5962718611393537961">Торкніться, щоб згорнути</translation>
 <translation id="6000066717592683814">Залишити Google</translation>
 <translation id="6010869025736512584">Отримання доступу до відеовходу</translation>
 <translation id="6012342843556706400">Chrome потрібен доступ до геоданих, щоб дозволити цьому сайту використовувати їх.</translation>
@@ -460,6 +458,7 @@
 <translation id="604996488070107836">Не вдалося завантажити файл <ph name="FILE_NAME" />. Сталася невідома помилка.</translation>
 <translation id="605721222689873409">РР</translation>
 <translation id="6075798973483050474">Змінити домашню сторінку</translation>
+<translation id="6078323886959318429">Додати ярлик</translation>
 <translation id="60923314841986378">Залишилося <ph name="HOURS" /> год</translation>
 <translation id="6108923351542677676">Виконується налаштування…</translation>
 <translation id="6112702117600201073">Оновлення сторінки</translation>
@@ -585,6 +584,7 @@
 <translation id="7498271377022651285">Зачекайте…</translation>
 <translation id="7514365320538308">Завантажити</translation>
 <translation id="7521387064766892559">JavaScript</translation>
+<translation id="753693763123565012">Більше нічого немає</translation>
 <translation id="7562080006725997899">Очищення даних веб-перегляду</translation>
 <translation id="756809126120519699">Дані Chrome видалено</translation>
 <translation id="7588950540487816470">Інтернет навколо нас</translation>
@@ -603,6 +603,7 @@
 <translation id="7658239707568436148">Скасувати</translation>
 <translation id="7665369617277396874">Додати обліковий запис</translation>
 <translation id="7698359219371678927">Створити електронну адресу в додатку <ph name="APP_NAME" /></translation>
+<translation id="771135159654932189">Веб-сторінки поблизу</translation>
 <translation id="7764225426217299476">Додати адресу</translation>
 <translation id="7765158879357617694">Перемістити</translation>
 <translation id="7769602470925380267">Прийняти та вийти</translation>
@@ -637,7 +638,6 @@
 <translation id="8035133914807600019">Нова папка…</translation>
 <translation id="8037750541064988519">Залишилося <ph name="DAYS" /> дн.</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> Мб доступно</translation>
-<translation id="8058746566562539958">Відкрити в новій вкладці Chrome</translation>
 <translation id="8063895661287329888">Не вдалося додати закладку.</translation>
 <translation id="806745655614357130">Зберігати мої дані окремо</translation>
 <translation id="8068648041423924542">Не вдалося вибрати сертифікат.</translation>

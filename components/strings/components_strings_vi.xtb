@@ -342,6 +342,7 @@
 <translation id="4118212371799607889">Máy chủ này không chứng minh được rằng đó là <ph name="DOMAIN" />; chứng chỉ bảo mật của máy chủ này không được Chromium tin tưởng. Điều này có thể do cấu hình sai hoặc có kẻ tấn công chặn kết nối của bạn. <ph name="BEGIN_LEARN_MORE_LINK" />Tìm hiểu thêm<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="4129401438321186435">{COUNT,plural, =1{1 mục khác}other{# mục khác}}</translation>
 <translation id="4130226655945681476">Kiểm tra cáp mạng, modem và bộ định tuyến</translation>
+<translation id="4137140866298219568">Hết hạn: <ph name="EXPIRATION_DATE_ABBR" />, sử dụng lần cuối: <ph name="LAST_USED_DATE_NO_DETAIL" /></translation>
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4169947484918424451">Bạn có muốn Chromium lưu thẻ này không?</translation>
 <translation id="4171400957073367226">Chữ ký xác minh không hợp lệ</translation>
@@ -405,6 +406,7 @@
 <translation id="4858792381671956233">Bạn đã hỏi cha mẹ mình xem có thể truy cập vào trang này hay không</translation>
 <translation id="4880827082731008257">Lịch sử tìm kiếm</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
+<translation id="4897073194580895694">Sử dụng lần cuối: <ph name="LAST_USED_MONTH" /></translation>
 <translation id="4914479371620770914">{URL_count,plural, =1{và thêm 1 trang web}other{và thêm # trang web}}</translation>
 <translation id="4923417429809017348">Trang này đã được dịch từ một ngôn ngữ không xác định sang <ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="4923459931733593730">Thanh toán</translation>
@@ -773,6 +775,7 @@ Lưu ý! Chế độ ẩn danh <ph name="SHORTCUT_KEY" /> có thể hữu ích v
 <translation id="859285277496340001">Chứng chỉ không ghi rõ cơ chế kiểm tra xem chứng chỉ đã bị thu hồi hay chưa.</translation>
 <translation id="8620436878122366504">Cha mẹ của bạn chưa phê duyệt trang web</translation>
 <translation id="8647750283161643317">Đặt lại tất cả về mặc định</translation>
+<translation id="8662285765512809409">Hết hạn: <ph name="EXPIRATION_DATE_ABBR" />, ngày thêm: <ph name="ADDED_TO_AUTOFILL_MONTH" /></translation>
 <translation id="8703575177326907206">Kết nối của bạn đến <ph name="DOMAIN" /> không được mã hóa.</translation>
 <translation id="8725066075913043281">Thử lại</translation>
 <translation id="8728672262656704056">Bạn đã truy cập ẩn danh</translation>
@@ -796,6 +799,7 @@ Lưu ý! Chế độ ẩn danh <ph name="SHORTCUT_KEY" /> có thể hữu ích v
 <translation id="8891727572606052622">Chế độ proxy không hợp lệ.</translation>
 <translation id="889901481107108152">Rất tiếc, thử nghiệm này không sẵn có trên nền tảng của bạn.</translation>
 <translation id="8903921497873541725">Phóng to</translation>
+<translation id="8928945116588336256">Ngày thêm: <ph name="ADDED_TO_AUTOFILL_MONTH" /></translation>
 <translation id="8931333241327730545">Bạn có muốn lưu thẻ này vào Tài khoản Google của mình không?</translation>
 <translation id="8932102934695377596">Đồng hồ của bạn chạy chậm</translation>
 <translation id="8954894007019320973">(Tiếp tục)</translation>

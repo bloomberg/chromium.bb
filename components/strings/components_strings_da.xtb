@@ -104,7 +104,6 @@
 <translation id="1962204205936693436">Bogmærker fra <ph name="DOMAIN" /></translation>
 <translation id="1973335181906896915">Serialiseringsfejl</translation>
 <translation id="1974060860693918893">Avanceret</translation>
-<translation id="1978555033938440688">Firmwareversion</translation>
 <translation id="2001146170449793414">{COUNT,plural, =1{og 1 mere}one{og # mere}other{og # mere}}</translation>
 <translation id="2020194265157481222">Navn på kort er obligatorisk</translation>
 <translation id="2025186561304664664">Proxyen konfigureres automatisk.</translation>
@@ -451,7 +450,6 @@
 <translation id="5359637492792381994">Denne server kunne ikke bevise, at den tilhører <ph name="DOMAIN" />, da sikkerhedscertifikatet ikke er gyldigt i øjeblikket. Dette kan skyldes en fejlkonfiguration, eller at en hacker har opfanget din forbindelse. <ph name="BEGIN_LEARN_MORE_LINK" />Få flere oplysninger<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="536296301121032821">Der kunne ikke gemmes indstillinger for politik</translation>
 <translation id="5386426401304769735">Certifikatkæden for dette website indeholder et certifikat, der er signeret med SHA-1.</translation>
-<translation id="5402410679244714488">Udløbsdato: <ph name="EXPIRATION_DATE_ABBR" />, sidst anvendt for mere end et år siden</translation>
 <translation id="5421136146218899937">Ryd browserdata...</translation>
 <translation id="5430298929874300616">Fjern bogmærke</translation>
 <translation id="5431657950005405462">Din fil blev ikke fundet</translation>
@@ -538,7 +536,6 @@
 <translation id="6282194474023008486">Postnummer</translation>
 <translation id="6290238015253830360">Forslag til artikler til dig vises her</translation>
 <translation id="6305205051461490394"><ph name="URL" /> kan ikke nås.</translation>
-<translation id="6319915415804115995">Sidst anvendt for mere end et år siden</translation>
 <translation id="6321917430147971392">Kontrollér dine DNS-indstillinger</translation>
 <translation id="6328639280570009161">Prøv at deaktivere netværksforslag</translation>
 <translation id="6328786501058569169">Dette website er vildledende</translation>

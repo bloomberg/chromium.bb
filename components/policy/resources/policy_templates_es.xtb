@@ -334,21 +334,6 @@ Si esta política se establece en True, <ph name="PRODUCT_OS_NAME" /> intentará
       Si se ha asignado el valor false a la política HardwareAccelerationModeEnabled, se ignorará Disable3DAPIs y se le asigna el valor true a Disable3DAPIs.</translation>
 <translation id="2168397434410358693">Retraso de inactividad cuando el dispositivo está conectado a la red</translation>
 <translation id="2170233653554726857">Habilitar optimización de WPAD</translation>
-<translation id="2176565653304920879">El flujo de detección automática de la zona horaria puede ser de una de las siguientes formas, en función del valor que se asigne a esta política:
-
-      Si se le asigna el valor TimezoneAutomaticDetectionUsersDecide, los usuarios pueden controlar la detección automática de la zona horaria mediante los controles normales en la página chrome://settings.
-
-      Si se le asigna el valor TimezoneAutomaticDetectionDisabled, se inhabilitarán los controles de zona horaria automática en la página chrome://settings. La detección automática de la zona horaria estará siempre desactivada.
-
-      Si se le asigna el valor TimezoneAutomaticDetectionIPOnly, se inhabilitarán los controles de zona horaria en la página chrome://settings. La detección automática de la zona horaria estará siempre activada. La detección de la zona horaria utilizará solo la IP para conocer la ubicación.
-
-      Si se le asigna el valor TimezoneAutomaticDetectionSendWiFiAccessPoints, se inhabilitarán los controles de zona horaria en la página chrome://settings. La detección automática de la zona horaria estará siempre activada. La lista de puntos de acceso Wi-Fi visibles se enviará siempre al servidor API de geolocalización para detectar la zona horaria de forma más precisa.
-
-      Si se le asigna el valor TimezoneAutomaticDetectionSendAllLocationInfo, se inhabilitarán los controles de zona horaria en la página chrome://settings. La detección automática de la zona horaria estará siempre activada. La información sobre la ubicación (como los puntos de acceso Wi-Fi, las antenas de telefonía móvil disponibles y el GPS) se enviará a un servidor para detectar la zona horaria de forma más precisa.
-
-      Si no se establece esta política, el comportamiento será el mismo que si se hubiera establecido el valor TimezoneAutomaticDetectionUsersDecide.
-
-      Si se establece la política SystemTimezone, se anula esta política. En este caso, la detección automática de la zona horaria se inhabilita por completo.</translation>
 <translation id="2178899310296064282">Aplicar como mínimo el modo restringido moderado en YouTube</translation>
 <translation id="2183294522275408937">Esta opción controla la frecuencia con la que la pantalla de bloqueo solicitará que se introduzca la contraseña y así poder seguir utilizando el desbloqueo rápido. Cada vez que se introduzca la pantalla de bloqueo (si la frecuencia con la que se hizo la última vez fue mayor), el desbloqueo rápido no estará disponible. Si el usuario permanece en la pantalla de bloqueo tras este periodo de tiempo, se le solicitará una contraseña la próxima vez que este introduzca un código erróneo o vuelva a introducir la pantalla de bloqueo (lo que ocurra primero).
 
@@ -1486,12 +1471,6 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
           Si no se establece esta política, se usará la política AskNotifications y el usuario podrá modificarla.</translation>
 <translation id="538108065117008131">Permitir que <ph name="PRODUCT_FRAME_NAME" /> gestione los tipos de contenido que se indican a continuación.</translation>
 <translation id="5388730678841939057">Selecciona la estrategia utilizada para liberar espacio en disco durante la limpieza automática (obsoleta)</translation>
-<translation id="5392172595902933844">La información sobre el estado de Android se envía al servidor.
-
-      Si se asigna el valor false a la política o no se le asigna ningún valor, no se proporciona información sobre el estado.
-      Si se asigna el valor true, se proporciona información sobre el estado.
-
-      Esta política solo se aplica si las aplicaciones para Android están habilitadas.</translation>
 <translation id="5395271912574071439">Permite activar el modo de cortina en los hosts de acceso remoto durante una conexión.
 
           Si se habilita esta opción, los dispositivos físicos de entrada y salida del host se inhabilitan durante la conexión remota.
@@ -2447,7 +2426,6 @@ Si esta opción no está establecida o está establecida en True, los dispositiv
 <translation id="7937766917976512374">Permitir o denegar captura de vídeo</translation>
 <translation id="7941975817681987555">No predecir las acciones de red en ninguna conexión de red</translation>
 <translation id="7953256619080733119">Hosts de excepción manual de usuario administrado</translation>
-<translation id="7965394584578183156">Enviar siempre los puntos de acceso Wi-Fi al servidor mientras se detecta la zona horaria.</translation>
 <translation id="7971839631300653352">SSL 3.0</translation>
 <translation id="7974114691960514888">Ya no se admite esta política.
           Permite habilitar la utilización del protocolo STUN y de servidores de retransmisión al conectar con un cliente remoto.
@@ -2614,7 +2592,6 @@ Si la política está establecida en False, no se informará sobre la lista de i
 <translation id="8390049129576938611">Inhabilita el visor de PDF interno en <ph name="PRODUCT_NAME" />. En su lugar, trata el archivo PDF como una descarga y permite al usuario abrir archivos PDF con la aplicación predeterminada.
 
       Si esta política no se establece o se inhabilita, el complemento de PDF se usará para abrir archivos PDF a menos que el usuario lo inhabilite.</translation>
-<translation id="8398203849316312944">Enviar siempre cualquier señal de ubicación disponible al servidor mientras se detecta la zona horaria.</translation>
 <translation id="8402079500086185021">Abrir siempre los archivos PDF de forma externa</translation>
 <translation id="8412312801707973447">Se realizan comprobaciones OCSP/CRL si estás online</translation>
 <translation id="8413348101535146315">Permite finalizar procesos en el administrador de tareas de <ph name="PRODUCT_NAME" />.

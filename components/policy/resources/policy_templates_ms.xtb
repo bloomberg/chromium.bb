@@ -340,21 +340,6 @@ Contoh komponen seperti itu termasuk senarai pembatalan sijil dan data semakan i
       Jika HardwareAccelerationModeEnabled ditetapkan kepada palsu, Disable3DAPIs diabaikan dan keadaan itu sama seperti Disable3DAPIs ditetapkan kepada benar.</translation>
 <translation id="2168397434410358693">Kelewatan melahu apabila dijalankan dengan kuasa AC</translation>
 <translation id="2170233653554726857">Dayakan pengoptimuman WPAD</translation>
-<translation id="2176565653304920879">Apabila dasar ini ditetapkan, aliran pengesanan zon waktu automatik akan menjadi satu daripada cara berikut bergantung pada nilai tetapan:
-
-      Jika ditetapkan pada TimezoneAutomaticDetectionUsersDecide, pengguna dapat mengawal pengesanan zon waktu automatik menggunakan kawalan biasa dalam chrome://settings.
-
-      Jika ditetapkan pada TimezoneAutomaticDetectionDisabled, kawalan zon waktu automatik dalam chrome://settings akan dilumpuhkan. Pengesanan zon waktu automatik akan sentiasa dimatikan.
-
-      Jika ditetapkan pada TimezoneAutomaticDetectionIPOnly, kawalan zon waktu dalam chrome://settings akan dilumpuhkan. Pengesanan zon waktu automatik akan sentiasa dihidupkan. Pengesanan zon waktu akan menggunakan kaedah IP sahaja untuk menyelesaikan lokasi.
-
-      Jika ditetapkan pada TimezoneAutomaticDetectionSendWiFiAccessPoints, kawalan zon waktu dalam chrome://settings akan dilumpuhkan. Pengesanan zon waktu automatik akan sentiasa dihidupkan. Senarai pusat akses Wi-Fi yang kelihatan akan sentiasa dihantar ke pelayan API Geolokasi untuk pengesanan zon waktu yang terperinci.
-
-      Jika ditetapkan pada TimezoneAutomaticDetectionSendAllLocationInfo, kawalan zon waktu dalam chrome://settings akan dilumpuhkan. Pengesanan zon waktu automatik akan sentiasa dihidupkan. Maklumat lokasi (seperti pusat akses Wi-Fi, Menara Sel yang boleh dihubungi, GPS) akan dihantar ke pelayan untuk pengesanan zon waktu yang terperinci.
-
-      ika dasar ini tidak ditetapkan, dasar ini akan berkelakuan seolah-olah TimezoneAutomaticDetectionUsersDecide ditetapkan.
-
-      Jika dasar SystemTimezone dasar tersebut akan melangkau dasar ini. Dalam hal ini, pengesanan zon waktu automatik dilumpuhkan sepenuhnya.</translation>
 <translation id="2178899310296064282">Kuatkuasakan sekurang-kurangnya Mod Sekatan Sederhana di YouTube</translation>
 <translation id="2183294522275408937">Tetapan ini mengawal kekerapan kunci skrin meminta kata laluan yang perlu dimasukkan untuk terus menggunakan buka kunci pantas. Setiap kali kunci skrin dimasukkan dan jika bilangan masukan kata laluan terakhir melebihi tetapan ini, buka kunci pantas tidak akan tersedia untuk memasuki kunci skrin. Sekiranya pengguna terus berada pada kunci skrin melebihi tempoh masa ini, kata laluan akan diminta apabila pengguna memasukkan kod yang salah selepas ini atau memasuki semula kunci skrin, mana-mana pilihan yang dilakukan dahulu.
 
@@ -1487,13 +1472,6 @@ Contoh komponen seperti itu termasuk senarai pembatalan sijil dan data semakan i
           Jika dasar ini dibiarkan tanpa ditetapkan, 'AskNotifications' akan digunakan dan pengguna akan boleh mengubahnya.</translation>
 <translation id="538108065117008131">Benarkan <ph name="PRODUCT_FRAME_NAME" /> untuk menguruskan jenis kandungan berikut.</translation>
 <translation id="5388730678841939057">Pilih strategi yang digunakan untuk mengosongkan ruang cakera semasa pembersihan automatik (dikecam)</translation>
-<translation id="5392172595902933844">Maklumat tentang status Android dihantar kembali ke
-      pelayan.
-
-      Jika dasar ini ditetapkan kepada palsu atau dibiarkan tanpa ditetapkan, maklumat status tidak akan dilaporkan.
-            Jika ditetapkan kepada benar, maklumat status akan dilaporkan.
-
-      Dasar ini hanya terpakai jika apl Android didayakan.</translation>
 <translation id="5395271912574071439">Mendayakan pengadangan hos akses jauh semasa sambungan sedang dijalankan.
 
           Jika tetapan ini didayakan, maka peranti masukan dan keluaran fizikal hos akan dilumpuhkan semasa sambungan jauh sedang dijalankan.

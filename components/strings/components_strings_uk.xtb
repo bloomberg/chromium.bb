@@ -342,6 +342,7 @@
 <translation id="4118212371799607889">Не вдалося підтвердити, що це сервер <ph name="DOMAIN" />. Chromium вважає його сертифікат безпеки ненадійним. Імовірні причини: сервер налаштовано неправильно або хтось намагається перехопити ваше з’єднання. <ph name="BEGIN_LEARN_MORE_LINK" />Докладніше<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="4129401438321186435">{COUNT,plural, =1{і ще 1 елемент даних}one{і ще # елемент даних}few{і ще # елементи даних}many{і ще # елементів даних}other{і ще # елемента даних}}</translation>
 <translation id="4130226655945681476">перевірити мережевий кабель, модем і маршрутизатор</translation>
+<translation id="4137140866298219568">Діє до <ph name="EXPIRATION_DATE_ABBR" />. Востаннє використано <ph name="LAST_USED_DATE_NO_DETAIL" /></translation>
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4169947484918424451">Зберегти цю картку в Chromium?</translation>
 <translation id="4171400957073367226">Недійсний підпис для підтвердження</translation>
@@ -405,6 +406,7 @@
 <translation id="4858792381671956233">Ви надіслали батькам запит на перегляд цього сайту</translation>
 <translation id="4880827082731008257">Пошук в історії</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
+<translation id="4897073194580895694">Востаннє використано <ph name="LAST_USED_MONTH" /></translation>
 <translation id="4914479371620770914">{URL_count,plural, =1{і ще 1 веб-сторінка}one{і ще # веб-сторінка}few{і ще # веб-сторінки}many{і ще # веб-сторінок}other{і ще # веб-сторінки}}</translation>
 <translation id="4923417429809017348">Цю сторінку перекладено з невідомої мови оригіналу такою мовою: <ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="4923459931733593730">Оплата</translation>
@@ -773,6 +775,7 @@
 <translation id="859285277496340001">Сертифікат не вказує на механізм перевірки його відкликання.</translation>
 <translation id="8620436878122366504">Батьки ще не схвалили його</translation>
 <translation id="8647750283161643317">Скинути все до налаштувань за умовчанням</translation>
+<translation id="8662285765512809409">Діє до <ph name="EXPIRATION_DATE_ABBR" />. Додано <ph name="ADDED_TO_AUTOFILL_MONTH" /></translation>
 <translation id="8703575177326907206">Ваше з’єднання з <ph name="DOMAIN" /> не зашифровано.</translation>
 <translation id="8725066075913043281">Повторити спробу</translation>
 <translation id="8728672262656704056">Ви перейшли в режим анонімного перегляду</translation>
@@ -796,6 +799,7 @@
 <translation id="8891727572606052622">Недійсний режим проксі-сервера.</translation>
 <translation id="889901481107108152">На жаль, цей експеримент не доступний на вашій платформі.</translation>
 <translation id="8903921497873541725">Збільшити масштаб</translation>
+<translation id="8928945116588336256">Додано <ph name="ADDED_TO_AUTOFILL_MONTH" /></translation>
 <translation id="8931333241327730545">Зберегти цю картку у вашому обліковому записі Google?</translation>
 <translation id="8932102934695377596">Ваш годинник запізнюється</translation>
 <translation id="8954894007019320973">(Продовж.)</translation>

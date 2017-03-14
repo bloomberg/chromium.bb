@@ -104,7 +104,6 @@
 <translation id="1962204205936693436">Domeeni <ph name="DOMAIN" /> järjehoidjad</translation>
 <translation id="1973335181906896915">Viga jadaks teisendamisel</translation>
 <translation id="1974060860693918893">Täpsemad</translation>
-<translation id="1978555033938440688">Püsivara versioon</translation>
 <translation id="2001146170449793414">{COUNT,plural, =1{ja veel 1}other{ja veel #}}</translation>
 <translation id="2020194265157481222">Kaardil olev nimi on nõutav</translation>
 <translation id="2025186561304664664">Puhverserver seadistatakse automaatselt.</translation>
@@ -451,7 +450,6 @@
 <translation id="5359637492792381994">Server ei suutnud tõestada, et tegemist on domeeniga <ph name="DOMAIN" />. Selle turvasertifikaat on praegu kehtetu. Selle põhjuseks võib olla vale seadistus või teie ühendust segav ründaja. <ph name="BEGIN_LEARN_MORE_LINK" />Vaadake lisateavet<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="536296301121032821">Reegli seadete talletamine ebaõnnestus</translation>
 <translation id="5386426401304769735">Selle saidi sertifikaadiahel sisaldab sertifikaati, mis on allkirjastatud SHA-1-ga.</translation>
-<translation id="5402410679244714488">Aegub: <ph name="EXPIRATION_DATE_ABBR" />, viimati kasutati üle aasta tagasi</translation>
 <translation id="5421136146218899937">Sirvimisandmete kustutamine ...</translation>
 <translation id="5430298929874300616">Järjehoidja eemaldamine</translation>
 <translation id="5431657950005405462">Teie faili ei leitud</translation>
@@ -538,7 +536,6 @@
 <translation id="6282194474023008486">Sihtnumber</translation>
 <translation id="6290238015253830360">Teie soovitatud artiklid kuvatakse siin</translation>
 <translation id="6305205051461490394">URL-iga <ph name="URL" /> ei saa ühendust.</translation>
-<translation id="6319915415804115995">Viimati kasutati üle aasta tagasi</translation>
 <translation id="6321917430147971392">Kontrollige DNS-i seadeid</translation>
 <translation id="6328639280570009161">Proovige keelata võrguprognoos</translation>
 <translation id="6328786501058569169">See sait on petturlik</translation>

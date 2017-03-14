@@ -342,6 +342,7 @@
 <translation id="4118212371799607889">‏השרת הזה לא הצליח להוכיח שהוא <ph name="DOMAIN" />; Chromium אינו בוטח באישור האבטחה שלו. ייתכן שהסיבה לכך היא הגדרה שגויה או שתוקף מיירט את החיבור שלך. <ph name="BEGIN_LEARN_MORE_LINK" />למידע נוסף<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="4129401438321186435">{COUNT,plural, =1{אחד נוסף}two{שניים נוספים}many{# נוספים}other{# נוספים}}</translation>
 <translation id="4130226655945681476">בדוק את כבלי הרשת, את המודם ואת הנתב</translation>
+<translation id="4137140866298219568">תאריך תפוגה: <ph name="EXPIRATION_DATE_ABBR" />, שימוש אחרון: <ph name="LAST_USED_DATE_NO_DETAIL" /></translation>
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4169947484918424451">‏האם תרצה ש-Chromium ישמור את הכרטיס הזה?</translation>
 <translation id="4171400957073367226">חתימת אימות לא חוקית</translation>
@@ -409,6 +410,7 @@ Del</translation>
 <translation id="4858792381671956233">שאלת את ההורים שלך אם אתה יכול לגשת לאתר הזה</translation>
 <translation id="4880827082731008257">חפש בהיסטוריה</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
+<translation id="4897073194580895694">שימוש אחרון: <ph name="LAST_USED_MONTH" /></translation>
 <translation id="4914479371620770914">{URL_count,plural, =1{ועוד דף אינטרנט אחד}two{ועוד # דפי אינטרנט}many{ועוד # דפי אינטרנט}other{ועוד # דפי אינטרנט}}</translation>
 <translation id="4923417429809017348">דף זה תורגם משפה לא ידועה ל<ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="4923459931733593730">תשלום</translation>
@@ -778,6 +780,7 @@ Del</translation>
 <translation id="859285277496340001">האישור אינו מציין מנגנון הבודק אם הוא נשלל.</translation>
 <translation id="8620436878122366504">ההורים שלך עדיין לא אישרו זאת</translation>
 <translation id="8647750283161643317">אפס הכל לברירת המחדל</translation>
+<translation id="8662285765512809409">תאריך תפוגה: <ph name="EXPIRATION_DATE_ABBR" />, תאריך הוספה: <ph name="ADDED_TO_AUTOFILL_MONTH" /></translation>
 <translation id="8703575177326907206">ההתחברות שלך אל <ph name="DOMAIN" /> אינה מוצפנת.</translation>
 <translation id="8725066075913043281">נסה שוב</translation>
 <translation id="8728672262656704056">עברת למצב גלישה בסתר</translation>
@@ -801,6 +804,7 @@ Del</translation>
 <translation id="8891727572606052622">‏מצב שרת Proxy לא חוקי.</translation>
 <translation id="889901481107108152">מצטערים, ניסוי זה אינו זמין בפלטפורמה שלך.</translation>
 <translation id="8903921497873541725">התקרב</translation>
+<translation id="8928945116588336256">תאריך הוספה: <ph name="ADDED_TO_AUTOFILL_MONTH" /></translation>
 <translation id="8931333241327730545">‏האם ברצונך לשמור את הכרטיס הזה בחשבון Google שלך?</translation>
 <translation id="8932102934695377596">השעון שלך מאחר</translation>
 <translation id="8954894007019320973">(המשך)</translation>

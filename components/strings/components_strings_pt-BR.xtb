@@ -342,6 +342,7 @@
 <translation id="4118212371799607889">Este servidor não conseguiu provar que é <ph name="DOMAIN" />. O certificado de segurança dele não é confiável para o Chromium. Isso pode ser causado por uma configuração incorreta ou por um invasor que interceptou sua conexão. <ph name="BEGIN_LEARN_MORE_LINK" />Saiba mais<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="4129401438321186435">{COUNT,plural, =1{mais 1}one{mais #}other{mais #}}</translation>
 <translation id="4130226655945681476">Verificar os cabos de rede, modem e roteador</translation>
+<translation id="4137140866298219568">Validade: <ph name="EXPIRATION_DATE_ABBR" />, último uso: <ph name="LAST_USED_DATE_NO_DETAIL" /></translation>
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4169947484918424451">Deseja que o Chromium salve este cartão?</translation>
 <translation id="4171400957073367226">Assinatura de verificação inválida</translation>
@@ -405,6 +406,7 @@
 <translation id="4858792381671956233">Você perguntou aos seus responsáveis se pode visitar este site</translation>
 <translation id="4880827082731008257">Histórico de pesquisa</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
+<translation id="4897073194580895694">Último uso: <ph name="LAST_USED_MONTH" /></translation>
 <translation id="4914479371620770914">{URL_count,plural, =1{e mais 1 página da Web}one{e mais # página da Web}other{e mais # páginas da Web}}</translation>
 <translation id="4923417429809017348">Esta página foi traduzida de um idioma desconhecido para o <ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="4923459931733593730">Pagamento</translation>
@@ -773,6 +775,7 @@ Dica: o modo de navegação anônimo <ph name="SHORTCUT_KEY" /> pode ser útil d
 <translation id="859285277496340001">O certificado não especifica um mecanismo para verificar se ele foi revogado.</translation>
 <translation id="8620436878122366504">Seus responsáveis ainda não o aprovaram</translation>
 <translation id="8647750283161643317">Redefinir tudo para o padrão</translation>
+<translation id="8662285765512809409">Validade: <ph name="EXPIRATION_DATE_ABBR" />, data de adição: <ph name="ADDED_TO_AUTOFILL_MONTH" /></translation>
 <translation id="8703575177326907206">Sua conexão com <ph name="DOMAIN" /> não está criptografada.</translation>
 <translation id="8725066075913043281">Tentar novamente</translation>
 <translation id="8728672262656704056">Você entrou no modo de navegação anônima</translation>
@@ -796,6 +799,7 @@ Dica: o modo de navegação anônimo <ph name="SHORTCUT_KEY" /> pode ser útil d
 <translation id="8891727572606052622">Modo de proxy inválido.</translation>
 <translation id="889901481107108152">Esta experiência não está disponível na sua plataforma.</translation>
 <translation id="8903921497873541725">Aumentar zoom</translation>
+<translation id="8928945116588336256">Data de adição: <ph name="ADDED_TO_AUTOFILL_MONTH" /></translation>
 <translation id="8931333241327730545">Deseja salvar este cartão na sua Conta do Google?</translation>
 <translation id="8932102934695377596">Seu relógio está atrasado</translation>
 <translation id="8954894007019320973">(Continuação)</translation>

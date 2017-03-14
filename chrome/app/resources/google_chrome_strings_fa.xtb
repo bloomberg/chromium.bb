@@ -140,6 +140,7 @@
 <translation id="5037239767309817516">‏لطفاً همه پنجره‌های Google Chrome را ببندید و برای اعمال این تغییر، دوباره آن را راه‌اندازی کنید.</translation>
 <translation id="5132929315877954718">‏برنامه‌های کاربردی، بازی‌ها، افزونه‌ها و طرح‌های زمینه فوق‌العاده را برای Google Chrome کاوش کنید.</translation>
 <translation id="5170938038195470297">‏نمایهٔ شما نمی‌تواند استفاده شود زیرا مربوط به یک نسخه جدیدتر از Google Chrome است. بعضی از ویژگی‌ها ممکن است موجود نباشند. لطفاً یک مسیر دیگر برای نمایه تعیین کنید یا از نسخه جدیدتر Chrome استفاده کنید.</translation>
+<translation id="5176234269072261959">‏با گزارش تنظیمات فعلی، به بهتر شدن Chrome کمک کنید.</translation>
 <translation id="5193136243808726294">‏Google Chrome OS نمی‌‎تواند این صفحه را باز کند.</translation>
 <translation id="5204098752394657250">‏Google Chrome <ph name="TERMS_OF_SERVICE_LINK" />شرایط خدمات<ph name="END_TERMS_OF_SERVICE_LINK" /></translation>
 <translation id="5243785881901838525">‏Google Payments (در Chrome کپی شد)</translation>
@@ -178,6 +179,7 @@
 <translation id="6291549208091401781">‏Google Chrome از قبل برای همه کاربران این رایانه نصب شده است.</translation>
 <translation id="629218512217695915">‏استفاده از گذرواژه ایجاد شده توسط Chrome</translation>
 <translation id="6338556085225130112">‏به‌روزرسانی Google Chrome</translation>
+<translation id="6368805772029492593">‏برای امنیت بیشتر، Google Chrome داده‌های شما را رمزگذاری می‌کند.</translation>
 <translation id="6368958679917195344">‏Chrome OS با یک <ph name="BEGIN_LINK_CROS_OSS" />نرم‌افزار منبع آزاد<ph name="END_LINK_CROS_OSS" /> دیگر امکان‌پذیر است.</translation>
 <translation id="6400076122676892962">‏دریافت به‌روزرسانی‌های Google Chrome به زودی در این رایانه متوقف خواهد شد زیرا Mac OS X نسخه ۱۰٫۶،‏ ۱۰٫۷ و ۱۰٫۸ دیگر پشتیبانی نمی‌شود.</translation>
 <translation id="6410540444482791104">‏می‌توانید با ارسال خودکار برخی از اطلاعات سیستم و محتوای صفحه به Google‏، Chrome را ایمن‌تر و آسان‌تر کنید. Google از این اطلاعات برای شناسایی برنامه‌ها و سایت‌های خطرناک استفاده می‌کند.</translation>
@@ -204,6 +206,7 @@
 <translation id="7164397146364144019">‏می‌توانید با گزارش خودکار جزئیات حوادث امنیتی احتمالی به Google به ایمن‌تر شدن Chrome و استفاده آسان‌تر از آن کمک کنید.</translation>
 <translation id="7177347454226092725">‏این کار داده‌های محصول مرورتان را برای همیشه از این دستگاه حذف می‌کند. برای بازیابی داده‌هایتان در فرصتی دیگر، با نام $2 وارد سیستم Chrome شوید.</translation>
 <translation id="7185038942300673794">‏<ph name="EXTENSION_NAME" /> به Chrome اضافه شد.</translation>
+<translation id="7193750696137290001">‏Google Chrome به این زبان نشان داده می‌شود.</translation>
 <translation id="7196020411877309443">چرا من این را می‌بینم؟</translation>
 <translation id="7242029209006116544">‏شما با حساب مدیریت‌شده وارد سیستم می‌شوید و به سرپرست آن اجازه کنترل بر نمایه Google Chrome خود را می‌دهید. داده‌های Chrome شما شامل برنامه‌ها، نشانک‌ها، سابقه، گذرواژه‌ها و سایر تنظیمات برای همیشه به <ph name="USER_NAME" /> مرتبط خواهد شد. می‌توانید این داده‌ها را از طریق داشبورد حساب‌های Google حذف کنید اما نمی‌توانید این داده‌ها را به حساب دیگری مرتبط سازید. در صورت تمایل برای ذخیره داده‌های Chrome موجود به صورت جداگانه می‌توانید نمایه جدیدی ایجاد کنید. <ph name="LEARN_MORE" /></translation>
 <translation id="729375352412857283">‏دریافت به‌روزرسانی‌های Google Chrome به‌زودی در این رایانه متوقف می‌شود، زیرا Windows XP و Windows Vista دیگر پشتیبانی نمی‌شوند.</translation>
@@ -234,6 +237,7 @@
 <translation id="7896673875602241923">‏شخصی قبلاً به‌عنوان <ph name="ACCOUNT_EMAIL_LAST" /> به سیستم Chrome در این رایانه وارد شده است. برای اینکه اطلاعاتتان جدا حفظ شود، لطفاً کاربر Chrome جدیدی ایجاد کنید.</translation>
 <translation id="7908168227788431038">‏تقریباً به‌روز شده است! برای تمام کردن به‌روزرسانی، Google Chrome را راه‌اندازی مجدد کنید.</translation>
 <translation id="795025003224538582">راه‌اندازی مجدد نشود</translation>
+<translation id="7964230182933713106">‏سیستم عامل Chrome به این زبان نشان داده می‌شود.</translation>
 <translation id="8005540215158006229">‏Chrome تقریباً آماده است.</translation>
 <translation id="8008534537613507642">‏نصب مجدد Chrome</translation>
 <translation id="8030318113982266900">درحال به روزرسانی دستگاه شما به کانال <ph name="CHANNEL_NAME" />...</translation>

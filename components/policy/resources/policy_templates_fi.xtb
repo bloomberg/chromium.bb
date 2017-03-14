@@ -323,21 +323,6 @@ Jos tämä asetus ei ole käytössä, järjestelmäpalkissa ei näytetä suurta 
       Jos käytännön HardwareAccelerationModeEnabled arvoksi asetetaan Epätosi, Disable3DAPIs ohitetaan, jolloin lopputulos vastaa Disable3DAPIs-käytännön arvoa Tosi.</translation>
 <translation id="2168397434410358693">Käyttämättömyysaika käytettäessä laitetta verkkovirralla</translation>
 <translation id="2170233653554726857">Ota WPAD-optimointi käyttöön</translation>
-<translation id="2176565653304920879">Kun tämä käytäntö on määritetty, aikavyöhykkeen automaattinen tunnistaminen tapahtuu jollakin seuraavista tavoista, määritetystä arvosta riippuen:
-
-      Jos arvo on TimezoneAutomaticDetectionUsersDecide, käyttäjät voivat hallita aikavyöhykkeen tunnistamista normaalisti osoitteessa chrome://settings.
-
-      Jos arvo on TimezoneAutomaticDetectionDisabled, osoitteen chrome://settings automaattiset aikavyöhykevalinnat poistetaan käytöstä. Aikavyöhykkeen automaattinen tunnistaminen on aina poissa käytöstä.
-
-      Jos arvo on TimezoneAutomaticDetectionIPOnly, osoitteen chrome://settings aikavyöhykevalinnat poistetaan käytöstä. Aikavyöhykkeen automaattinen tunnistaminen on aina käytössä. Aikavyöhyke tunnistetaan sijainnista, joka perustuu pelkkään IP-osoitteeseen.
-
-      Jos arvo on TimezoneAutomaticDetectionSendWiFiAccessPoints, osoitteen chrome://settings aikavyöhykevalinnat poistetaan käytöstä. Aikavyöhykkeen automaattinen tunnistaminen on aina käytössä. Aikavyöhyke tunnistetaan aina tarkasti lähettämällä näkyvien Wi-Fi-tukiasemien luettelo sijainnin sovellusliittymän palvelimelle.
-
-      Jos arvo on TimezoneAutomaticDetectionSendAllLocationInfo, osoitteen chrome://settings aikavyöhykevalinnat poistetaan käytöstä. Aikavyöhykkeen automaattinen tunnistaminen on aina käytössä. Aikavyöhyke tunnistetaan aina tarkasti lähettämällä palvelimelle sijaintitietoja (esim. Wi-Fin ja matkapuhelinverkon tukiasemia ja GPS-signaaleja).
-
-      Jos käytännölle ei määritetä arvoa, se käyttäytyy arvon TimezoneAutomaticDetectionUsersDecide mukaisesti.
-
-      Jos SystemTimezone-käytäntö on määritetty, se ohittaa tämän käytännön. Tässä tapauksessa aikavyöhykkeen automaattinen tunnistaminen poistetaan käytöstä.</translation>
 <translation id="2178899310296064282">Pakota vähintään keskitason rajoitettu tila YouTubessa</translation>
 <translation id="2183294522275408937">Tämä asetus määrittää, kuinka usein lukitusnäyttö pyytää salasanaa, ennen kuin lukituksen pika-avaamisen käyttöä voi jatkaa. Kun käyttäjä siirtyy lukitusnäytölle, lukituksen pika-avaaminen ei ole käytettävissä, jos salasanan edellisestä antamiskerrasta kulunut aika ylittää tässä asetuksessa määritetyn ajan. Jos käyttäjä pysyy määritetyn ajan yli lukitusnäytöllä, häneltä pyydetään salasanaa, kun hän seuraavan kerran antaa virheellisen PIN-koodin tai siirtyy lukitusnäytölle uudelleen (riippuen siitä, kumpi tapahtuu ensin).
 
@@ -1393,13 +1378,6 @@ Jos tätä asetusta ei ole määritetty, kaikentyyppisiä sovelluksia ja laajenn
 <translation id="5378985487213287085">Voit määrittää, saavatko sivustot näyttää työpöytäilmoituksia. Työpöytäilmoituksien näyttäminen voidaan sallia oletuksena, kieltää oletuksena, tai käyttäjältä voidaan kysyä aina sivuston halutessa näyttää työpöytäilmoituksia. Jos tätä käytäntöä ei ole määritetty, käytetään AskNotifications-käytäntöä, ja käyttäjä voi muuttaa sitä.</translation>
 <translation id="538108065117008131">Anna tuotteen <ph name="PRODUCT_FRAME_NAME" /> käsitellä seuraavia sisältötyyppejä.</translation>
 <translation id="5388730678841939057">Valitsee tavan, jolla automaattinen puhdistus vapauttaa levytilaa (vanhentunut)</translation>
-<translation id="5392172595902933844">Androidin tilatietoja lähetetään takaisin
-      palvelimelle.
-
-      Jos käytännön arvoksi on määritetty epätosi tai sitä ei ole määritetty, tilatietoja ei lähetetä.
-      Jos käytännön arvoksi on määritetty tosi, tilatiedot lähetetään.
-
-      Tätä käytäntöä sovelletaan vain, jos Android-sovellukset on otettu käyttöön.</translation>
 <translation id="5395271912574071439">Mahdollistaa etäisäntien verhoamisen, kun yhteys on muodostettu.
 
           Jos tämä asetus on käytössä, isännän tulo- ja lähtölaitteet poistetaan käytöstä, kun etäyhteys on muodostettu.
@@ -2309,7 +2287,6 @@ Jos tätä käytäntöä ei ole määritetty, käytetään oletusarvoa (32).</tr
 <translation id="7937766917976512374">Salli tai estä videon kaappaaminen</translation>
 <translation id="7941975817681987555">Älä ennakoi verkon toimia millään verkkoyhteydellä</translation>
 <translation id="7953256619080733119">Hallinnoidun käyttäjän manuaalisten poikkeuksien isännät</translation>
-<translation id="7965394584578183156">Lähetä aina Wi-Fi-tukiasemien nimet palvelimelle aikavyöhykkeen selvittämisen yhteydessä.</translation>
 <translation id="7971839631300653352">SSL 3.0</translation>
 <translation id="7974114691960514888">Tätä käytäntöä ei enää tueta. Ottaa käyttöön STUN- ja relay-palvelimet, kun muodostetaan yhteyttä etäasiakkaaseen. Jos tämä asetus on käytössä, tämä kone voi löytää etäasiakkaan ja muodostaa yhteyden, vaikka asiakkaat olisivat palomuurin takana. Jos asetus ei ole käytössä ja lähtevät UDP-yhteydet menevät palomuurin kautta, tämä kone hyväksyy vain paikallisessa verkossa olevien isäntäkoneiden yhteydet.</translation>
 <translation id="7986374692540430898">Et voi pakottaa Android-sovelluksia käyttämään välityspalvelinta. Osa välityspalvelinasetuksista on Android-sovellusten käytettävissä, ja ne voivat halutessaan noudattaa niitä. Lue lisää käytännöstä <ph name="PROXY_MODE_POLICY" />.</translation>
@@ -2463,7 +2440,6 @@ Tämä käytäntö ei ole käytössä tavallisilla käyttäjätileillä.</transl
 <translation id="8390049129576938611">Poista käytöstä tuotteen <ph name="PRODUCT_NAME" /> sisäinen PDF-katseluohjelma. Tuote kohtelee PDF-tiedostoja latauksina ja sallii niiden avaamisen käyttäjän valitsemalla oletussovelluksella.
 
       Jos tätä käytäntöä ei määritetä tai se poistetaan käytöstä, PDF-tiedostot avataan käyttämällä PDF-laajennusta, ellei käyttäjä poista laajennusta käytöstä.</translation>
-<translation id="8398203849316312944">Lähetä aina käytettävissä olevat sijaintisignaalit palvelimelle aikavyöhykkeen selvittämisen yhteydessä.</translation>
 <translation id="8402079500086185021">Avaa PDF-tiedostot aina ulkoisella sovelluksella</translation>
 <translation id="8412312801707973447">OCSP-/CRL-tarkistusten suorittaminen</translation>
 <translation id="8413348101535146315">Tämä käytäntö sallii prosessien lopettamisen <ph name="PRODUCT_NAME" />n tehtävänhallinnassa.

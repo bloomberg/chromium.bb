@@ -145,6 +145,7 @@ Ytterligare anvisningar har skickats med e-post till dig på <ph name="ACCOUNT_E
 <translation id="5170938038195470297">Profilen kan inte användas eftersom den tillhör en nyare version av Google Chrome.
 
 Vissa funktioner är kanske inte tillgängliga. Ange en annan profilkatalog om du vill använda en nyare version av Chrome.</translation>
+<translation id="5176234269072261959">Hjälp oss att förbättra Chrome genom att rapportera dina aktuella inställningar.</translation>
 <translation id="5193136243808726294">Det går inte att öppna den här sidan i Google Chrome OS.</translation>
 <translation id="5204098752394657250">Google Chromes <ph name="TERMS_OF_SERVICE_LINK" />användarvillkor<ph name="END_TERMS_OF_SERVICE_LINK" /></translation>
 <translation id="5243785881901838525">Google Payments (har kopierats till Chrome)</translation>
@@ -185,6 +186,7 @@ Google Chrome kan inte återställa dina inställningar.</translation>
 <translation id="6291549208091401781">Google Chrome har redan installerats för alla användare på datorn.</translation>
 <translation id="629218512217695915">Använd lösenordet som genererats av Chrome</translation>
 <translation id="6338556085225130112">Uppdatera Google Chrome</translation>
+<translation id="6368805772029492593">Din data krypteras i Google Chrome för att öka säkerheten.</translation>
 <translation id="6368958679917195344">Chrome OS fungerar tack vare <ph name="BEGIN_LINK_CROS_OSS" />öppen källkod<ph name="END_LINK_CROS_OSS" />.</translation>
 <translation id="6400076122676892962">Den här datorn slutar snart ta emot uppdateringar för Google Chrome eftersom stödet för Mac OS X 10.6, 10.7 och 10.8 kommer att upphöra.</translation>
 <translation id="6410540444482791104">Du kan bidra till att göra Chrome säkrare och enklare att använda genom att låta viss systeminformation och visst sidinnehåll skickas automatiskt till Google i syfte att identifiera skadliga appar och webbplatser.</translation>
@@ -211,6 +213,7 @@ Google Chrome kan inte återställa dina inställningar.</translation>
 <translation id="7164397146364144019">Du kan bidra till att göra Chrome säkrare och enklare att använda genom att rapportera uppgifter om möjliga säkerhetsincidenter till Google automatiskt.</translation>
 <translation id="7177347454226092725">All webbinformation raderas permanent från enheten. Logga in i Chrome som $2 om du vill kunna återställa data senare.</translation>
 <translation id="7185038942300673794"><ph name="EXTENSION_NAME" /> har lagts till i Chrome.</translation>
+<translation id="7193750696137290001">Google Chrome visas på det här språket.</translation>
 <translation id="7196020411877309443">Varför visas det här?</translation>
 <translation id="7242029209006116544">Du loggar in med ett hanterat konto och ger dess administratör kontroll över din Google Chrome-profil. Dina Chrome-uppgifter, t.ex. dina appar, bokmärken, din historik, dina lösenord och andra inställningar, knyts permanent till <ph name="USER_NAME" />. Du kommer att kunna ta bort dessa uppgifter via instrumentpanelen i Google Konton, men du kommer inte att kunna koppla dessa uppgifter till ett annat konto. Du kan skapa en ny profil om du vill hålla dina befintliga Chrome-uppgifter separata. <ph name="LEARN_MORE" /></translation>
 <translation id="729375352412857283">Den här datorn slutar snart ta emot uppdateringar för Google Chrome eftersom stödet för Windows XP och Windows Vista kommer att upphöra.</translation>
@@ -241,12 +244,12 @@ Google Chrome kan inte återställa dina inställningar.</translation>
 <translation id="7896673875602241923">Någon har tidigare loggat in i Chrome som <ph name="ACCOUNT_EMAIL_LAST" /> på den här datorn. Skapa en ny Chrome-användare så att dina uppgifter hålls separat.</translation>
 <translation id="7908168227788431038">Nästan klart! Slutför uppdateringen genom att starta om Google Chrome.</translation>
 <translation id="795025003224538582">Starta inte om</translation>
+<translation id="7964230182933713106">Chrome OS visas på det här språket.</translation>
 <translation id="8005540215158006229">Chrome är nästan klar.</translation>
 <translation id="8008534537613507642">Installera om Chrome</translation>
 <translation id="8030318113982266900">Uppdaterar din enhet till kanalen <ph name="CHANNEL_NAME" /> ...</translation>
 <translation id="8032142183999901390">När du har tagit bort kontot från Chrome kan öppna flikar behöva läsas in på nytt för att ändringen ska träda i kraft.</translation>
 <translation id="8129812357326543296">Om &amp;Google Chrome</translation>
-<translation id="8179874765710681175">Installera Chrome på mobilen. Vi skickar ett sms till mobilen.</translation>
 <translation id="8183957050892517584">Chrome sparar dina personliga uppgifter på ett säkert sätt så att du inte behöver ange dem på nytt.</translation>
 <translation id="8211929904040702368">Det här innebär att minst <ph name="TOTAL_COUNT" /> objekt raderas från enheten. Logga in i Chrome som $2 om du vill kunna återställa data senare.</translation>
 <translation id="8255190535488645436">Google Chrome använder din kamera och mikrofon.</translation>

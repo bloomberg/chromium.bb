@@ -327,21 +327,6 @@
       Jika HardwareAccelerationModeEnabled disetel ke False, Disable3DAPI akan diabaikan dan setara dengan Disable3DAPI yang disetel ke True.</translation>
 <translation id="2168397434410358693">Menunda waktu menganggur saat menggunakan daya AC</translation>
 <translation id="2170233653554726857">Aktifkan pengoptimalan WPAD</translation>
-<translation id="2176565653304920879">Saat kebijakan ini disetel, alur deteksi zona waktu otomatis akan menggunakan salah satu cara berikut, tergantung nilai setelan:
-
-      Jika disetel ke TimezoneAutomaticDetectionUsersDecide, pengguna dapat mengontrol deteksi zona waktu otomatis menggunakan kontrol normal di chrome://settings.
-
-      Jika disetel ke TimezoneAutomaticDetectionDisabled, kontrol zona waktu otomatis di chrome://settings akan dinonaktifkan. Deteksi zona waktu otomatis akan selalu nonaktif.
-
-      Jika disetel ke TimezoneAutomaticDetectionIPOnly, kontrol zona waktu di chrome://settings akan dinonaktifkan. Deteksi zona waktu otomatis akan selalu aktif. Deteksi zona waktu akan menggunakan metode hanya-IP untuk menentukan lokasi.
-
-      Jika disetel ke TimezoneAutomaticDetectionSendWiFiAccessPoints, kontrol zona waktu di chrome://settings akan dinonaktifkan. Deteksi zona waktu otomatis akan selalu aktif. Daftar titik akses Wi-Fi yang terlihat akan selalu dikirim ke server API Geolocation untuk deteksi zona waktu yang lebih rinci.
-
-      Jika disetel ke TimezoneAutomaticDetectionSendAllLocationInfo, kontrol zona waktu di chrome://settings akan dinonaktifkan. Deteksi zona waktu otomatis akan selalu aktif. Informasi lokasi (seperti titik akses Wi-Fi, Menara Seluler yang dapat dijangkau, GPS) akan dikirim ke server untuk deteksi zona waktu yang lebih rinci.
-
-      Jika kebijakan ini tidak disetel, perilakunya sama dengan saat TimezoneAutomaticDetectionUsersDecide disetel.
-
-      Jika kebijakan SystemTimezone disetel, kebijakan tersebut akan mengganti kebijakan ini. Dalam kasus ini, deteksi zona waktu otomatis akan dinonaktifkan sepenuhnya.</translation>
 <translation id="2178899310296064282">Terapkan setidaknya Mode Terbatas Menengah di YouTube</translation>
 <translation id="2183294522275408937">Setelan ini mengontrol seberapa sering layar kunci akan meminta sandi dimasukkan guna melanjutkan penggunaan buka kunci cepat. Setiap kali masuk ke layar kunci, jika entri sandi terakhir melebihi setelan ini, buka kunci cepat tidak akan tersedia untuk masuk ke layar kunci. Jika pengguna membiarkan layar kunci melewati periode ini, sandi akan diminta lagi nantinya apabila pengguna salah memasukkan kode, atau masuk ke layar kunci lagi, mana saja yang muncul terlebih dahulu.
 
@@ -602,7 +587,7 @@
 <translation id="2801230735743888564">Mengizinkan pengguna memainkan game dinosaur easter egg saat perangkat offline.
 
       Jika kebijakan ini disetel ke False, pengguna tidak dapat memainkan game dinosaur easter egg saat perangkat offline. Jika setelan ini disetel ke True, pengguna dapat memainkan game tersebut. Jika kebijakan ini tidak disetel, pengguna tidak dapat memainkan game dinosaur easter egg pada Chrome OS yang terdaftar, tapi pengguna dapat memainkannya dalam situasi tertentu.</translation>
-<translation id="2805707493867224476">Izinkan semua situs menampilkan pop-up</translation>
+<translation id="2805707493867224476">Izinkan semua situs menampilkan munculan</translation>
 <translation id="2808013382476173118">Memungkinkan penggunaan server STUN saat klien jarak jauh mencoba untuk membuat koneksi ke komputer ini.
 
           Jika setelan ini diaktifkan, klien jarak jauh dapat menemukan dan tersambung ke komputer ini meskipun terpisah oleh firewall.
@@ -1398,13 +1383,6 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
 <translation id="5378985487213287085">Memungkinkan Anda menyetel apakah situs web diizinkan untuk menampilkan pemberitahuan desktop. Menampilkan pemberitahuan desktop dapat diizinkan secara default, ditolak secara default, atau pengguna dapat ditanya setiap kali sebuah situs web ingin menampilkan pemberitahuan desktop. Jika kebijakan ini tidak disetel, 'AskNotifications' akan digunakan dan pengguna dapat mengubahnya.</translation>
 <translation id="538108065117008131">Izinkan <ph name="PRODUCT_FRAME_NAME" /> menangani jenis konten berikut.</translation>
 <translation id="5388730678841939057">Memilih strategi yang digunakan untuk mengosongkan ruang disk selama pembersihan otomatis (tidak lagi digunakan)</translation>
-<translation id="5392172595902933844">Informasi tentang status Android dikirim kembali ke
-      server.
-
-      Jika kebijakan disetel ke false atau tidak disetel, tidak ada informasi status yang dilaporkan.
-      Jika disetel ke true, informasi status akan dilaporkan.
-
-      Kebijakan ini hanya berlaku jika aplikasi Android diaktifkan.</translation>
 <translation id="5395271912574071439">Mengaktifkan pemberian tirai hosting akses jarak jauh saat sambungan berlangsung.
 
           Jika setelan ini diaktifkan, perangkat keluaran dan masukan fisik hosting akan dinonaktifkan saat sambungan jarak jauh berlangsung.

@@ -27,7 +27,6 @@
 <translation id="124678866338384709">إغلاق علامة التبويب الحالية</translation>
 <translation id="1258753120186372309">‏رسم الشعار المبتكر من Google: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1272079795634619415">إيقاف</translation>
-<translation id="1283039547216852943">النقر للتوسيع</translation>
 <translation id="1285320974508926690">عدم ترجمة هذا الموقع مطلقًا</translation>
 <translation id="1291207594882862231">محو السجل وملفات تعريف الارتباط وبيانات المواقع وذاكرة التخزين المؤقت...</translation>
 <translation id="129553762522093515">المغلقة حديثًا</translation>
@@ -83,7 +82,6 @@
 <translation id="1825719650605518411">تجربة التشغيل لأول مرة</translation>
 <translation id="1829244130665387512">البحث في الصفحة</translation>
 <translation id="1832521218263067499">حوادث تتعلق بالأمن</translation>
-<translation id="1841591888176896630">‏%1$s من اقتراحات Chrome</translation>
 <translation id="1853692000353488670">علامة تبويب جديدة للتصفح المتخفي</translation>
 <translation id="189172778771606813">إغلاق لائحة التنقل</translation>
 <translation id="1933845786846280168">علامة تبويب محددة</translation>
@@ -115,6 +113,7 @@
 <translation id="219985413780390209">حمايتك وحماية جهازك من المواقع الخطرة</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />، تطبيق ويب. <ph name="APP_URL" /></translation>
 <translation id="2268044343513325586">تحسين</translation>
+<translation id="2279474006916349339">‏ستُحذَف جميع بيانات تطبيق Chrome نهائيًا. ويتضمَّن ذلك جميع الملفات والإعدادات والحسابات وقواعد البيانات وما إلى ذلك.</translation>
 <translation id="2286841657746966508">عنوان الفاتورة</translation>
 <translation id="2315043854645842844">لا يدعم نظام التشغيل تحديد الشهادة من جانب العميل.</translation>
 <translation id="2321958826496381788">يمكنك سحب شريط التمرير حتى تتمكن من قراءة هذا النص بسهولة. يجب أن يظهر النص بهذا الحجم على الأقل بعد النقر مرتين على إحدى الفقرات.</translation>
@@ -146,6 +145,7 @@
 <translation id="2587052924345400782">يتوفر إصدار أحدث</translation>
 <translation id="2593272815202181319">أحادي المسافة</translation>
 <translation id="2621115761605608342">السماح بجافا سكريبت لموقع ويب معين.</translation>
+<translation id="2646820313617290661">يساعد أبواك في إدارة هذه الإعدادات.</translation>
 <translation id="2653659639078652383">إرسال</translation>
 <translation id="2677748264148917807">الخروج</translation>
 <translation id="2704606927547763573">تم النسخ</translation>
@@ -256,7 +256,6 @@
 <translation id="393697183122708255">لا يتوفر بحث صوتي تم تمكينه</translation>
 <translation id="3946611741043634542">‏من خلال المتابعة، فإنك توافق على <ph name="BEGIN_LINK1" />بنود الخدمة<ph name="END_LINK1" /> و<ph name="BEGIN_LINK2" />إشعار الخصوصية<ph name="END_LINK2" /> من Chrome.</translation>
 <translation id="3950820424414687140">تسجيل الدخول</translation>
-<translation id="395922942268463099">صفحات تم تحديثها بانتظام</translation>
 <translation id="3967822245660637423">اكتمل التنزيل</translation>
 <translation id="397583555483684758">توقفت المزامنة</translation>
 <translation id="3985215325736559418">هل تريد تنزيل <ph name="FILE_NAME" /> مرة أخرى؟</translation>
@@ -318,6 +317,7 @@
 <translation id="4686372254213217147">الحجم الأصلي</translation>
 <translation id="4698413471314543145">‏هناك وظائف مفقودة تعد ذات أهمية كبيرة لتشغيل Chrome؛ إما أن يكون الإصدار الذي تستخدمه من Chrome غير مكتمل، أو ليس متوافقًا مع هذا الإصدار من Android.</translation>
 <translation id="4699172675775169585">الصور والملفات المخزنة مؤقتًا</translation>
+<translation id="4710672574193412565">‏أضف حساب Google من صفحة "الحسابات" في تطبيق إعدادات جهازك.</translation>
 <translation id="4714588616299687897">توفير ما يصل إلى 60% من بياناتك</translation>
 <translation id="4720023427747327413">الفتح في <ph name="PRODUCT_NAME" /></translation>
 <translation id="4730876730346568982">‏أنت تجري تبديلاً لحسابات المزامنة من <ph name="ACCOUNT_EMAIL_OLD" /> إلى <ph name="ACCOUNT_EMAIL_NEW" />. يتم إدارة بيانات Chrome الحالية من خلال <ph name="MANAGED_DOMAIN" />. سيؤدي ذلك إلى حذف بياناتك من هذا الجهاز، ولكن ستظل بياناتك في <ph name="ACCOUNT_EMAIL_OLD" />.</translation>
@@ -338,7 +338,6 @@
 <translation id="4862624982077154323">‏يمكنك الدفع باستخدام تطبيقات الدفع المتوافقة، وذلك على بعض مواقع الويب. اختر التطبيقات المُراد استخدامها في Chrome.</translation>
 <translation id="4881695831933465202">فتح</translation>
 <translation id="4885273946141277891">‏عدد نسخ Chrome غير متوافق.</translation>
-<translation id="490442468485962363">‏فتح في تبويب تصفح Chrome متخفي</translation>
 <translation id="4910889077668685004">تطبيقات الدفع</translation>
 <translation id="4915549754973153784"><ph name="BEGIN_LINK" />الحصول على مساعدة<ph name="END_LINK" /> أثناء البحث عن الأجهزة…</translation>
 <translation id="4943872375798546930">لا نتائج</translation>
@@ -450,7 +449,6 @@
 <translation id="5939518447894949180">إعادة</translation>
 <translation id="5942872142862698679">‏استخدام محرك Google للبحث</translation>
 <translation id="5956665950594638604">‏فتح مركز مساعدة Chrome في علامة تبويب جديدة</translation>
-<translation id="5962718611393537961">النقر للتصغير</translation>
 <translation id="6000066717592683814">‏الاستمرار في استخدام محرك Google</translation>
 <translation id="6010869025736512584">جارٍ الوصول إلى إدخال الفيديو</translation>
 <translation id="6012342843556706400">‏يحتاج Chrome إلى الحصول على حق الوصول إلى الموقع لمشاركته مع موقع الويب هذا.</translation>
@@ -461,6 +459,7 @@
 <translation id="604996488070107836">أخفق تنزيل الملف <ph name="FILE_NAME" /> بسبب خطأ غير معلوم.</translation>
 <translation id="605721222689873409">العام</translation>
 <translation id="6075798973483050474">تعديل الصفحة الرئيسية</translation>
+<translation id="6078323886959318429">إضافة اختصار</translation>
 <translation id="60923314841986378">عدد الساعات المتبقية: <ph name="HOURS" /></translation>
 <translation id="6108923351542677676">الإعداد قيد التقدّم…</translation>
 <translation id="6112702117600201073">يتم الآن تحديث الصفحة</translation>
@@ -586,6 +585,7 @@
 <translation id="7498271377022651285">يُرجى الانتظار...</translation>
 <translation id="7514365320538308">تنزيل</translation>
 <translation id="7521387064766892559">جافا سكريبت</translation>
+<translation id="753693763123565012">هذا كل شيء</translation>
 <translation id="7562080006725997899">جارٍ محو بيانات التصفح</translation>
 <translation id="756809126120519699">‏بيانات Chrome التي تم محوها</translation>
 <translation id="7588950540487816470">الشبكة المادية</translation>
@@ -604,6 +604,7 @@
 <translation id="7658239707568436148">إلغاء</translation>
 <translation id="7665369617277396874">إضافة حساب</translation>
 <translation id="7698359219371678927">إنشاء بريد إلكتروني في <ph name="APP_NAME" /></translation>
+<translation id="771135159654932189">‏الاطلاع على عناوين URL المجاورة</translation>
 <translation id="7764225426217299476">إضافة عنوان</translation>
 <translation id="7765158879357617694">نقل</translation>
 <translation id="7769602470925380267">قبول وتسجيل الخروج</translation>
@@ -638,7 +639,6 @@
 <translation id="8035133914807600019">مجلد جديد...</translation>
 <translation id="8037750541064988519">عدد الأيام المتبقية: <ph name="DAYS" /></translation>
 <translation id="8051695050440594747">هناك <ph name="MEGABYTES" /> ميغابايت متوفرة</translation>
-<translation id="8058746566562539958">‏فتح بعلامة تبويب Chrome جديدة</translation>
 <translation id="8063895661287329888">أخفقت إضافة الإشارة المرجعية.</translation>
 <translation id="806745655614357130">الحفاظ على البيانات التابعة لي منفصلة</translation>
 <translation id="8068648041423924542">يتعذر تحديد الشهادة.</translation>

@@ -327,21 +327,6 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
       Hvis HardwareAccelerationModeEnabled er angivet til Falsk, ignoreres Disable3DAPIs, og det svarer til, at Disable3DAPIs er angivet til Sand.</translation>
 <translation id="2168397434410358693">Inaktivitetsforsinkelse, når strømforsyningen er tilsluttet</translation>
 <translation id="2170233653554726857">Aktivér WPAD-optimering</translation>
-<translation id="2176565653304920879">Når denne politik er indstillet, fungerer flowet for registrering af tidszoner på en af de følgende måder, alt efter hvilken værdi der bruges i indstillingen:
-
-      Hvis der er indstillet til TimezoneAutomaticDetectionUsersDecide, kan brugerne kontrollere den automatiske registrering af tidszoner med de almindelige kontrolelementer i chrome://settings.
-
-      Hvis der er indstillet til TimezoneAutomaticDetectionDisabled, bliver de automatiske kontrolelementer for tidszoner i chrome://settings deaktiveret. Automatisk registrering af tidszoner vil altid være deaktiveret.
-
-      Hvis der er indstillet til TimezoneAutomaticDetectionIPOnly, bliver kontrolelementerne for tidszone i chrome://settings deaktiveret. Automatisk registrering af tidszoner vil altid være aktiveret. Registreringen af tidszoner bruger udelukkende IP-metoden til at fastlægge placeringen.
-
-      Hvis der indstilles til TimezoneAutomaticDetectionSendWiFiAccessPoints, bliver kontrolelementerne for tidszoner i chrome://settings deaktiveret. Automatisk registrering af tidszoner vil altid være aktiveret. Listen over synlige Wi-Fi-adgangspunkter sendes altid til Geolocation API-serveren, så der kan foretages detaljeret registrering af tidszoner.
-
-      Hvis der indstilles til TimezoneAutomaticDetectionSendAllLocationInfo, bliver kontrolelementerne for tidszoner i chrome://settings deaktiveret. Automatisk registrering af tidszoner vil altid være aktiveret. Placeringsoplysninger (som f.eks. Wi-Fi-adgangspunkter, tilgængelige mobiltårne, GPS) bliver sendt til en server, så der kan foretages detaljeret registrering af tidszoner.
-
-      Hvis politikken ikke indstilles, svarer det til, at TimezoneAutomaticDetectionUsersDecide er indstillet.
-
-      Hvis politikken SystemTimezone indstilles, tilsidesættes denne politik. I dette tilfælde deaktiveres registrering af tidszoner helt.</translation>
 <translation id="2178899310296064282">Gennemtving som minimum Moderat begrænset tilstand på YouTube</translation>
 <translation id="2183294522275408937">Denne indstilling styrer, hvor ofte låseskærmen kræver, at adgangskoden indtastes for at fortsætte med at bruge hurtig oplåsning. Når du går ind på låseskærmen, vil hurtig oplåsning ikke være tilgængelig, hvis den seneste adgang med adgangskode overskrider denne indstilling. Hvis brugeren bliver på låseskærmen ud over det angivne tidsrum, anmodes der om en adgangskode, næste gang brugeren indtaster den forkerte kode eller går ind på låseskærmen, alt efter hvad der kommer først.
 
@@ -1411,13 +1396,6 @@ Hvis denne politik slås fra eller indstilles til False (falsk), er udviklertils
 <translation id="5378985487213287085">Giver dig mulighed for at angive, om websites må vise underretninger på skrivebordet. Visning af underretninger på skrivebordet kan tillades som standard, nægtes som standard, eller brugeren kan blive spurgt, hver gang et website ønsker at vise underretninger på skrivebordet. Hvis denne politik ikke angives, anvendes "AskNotifications", og brugeren vil kunne ændre det.</translation>
 <translation id="538108065117008131">Tillad, at <ph name="PRODUCT_FRAME_NAME" /> håndterer følgende indholdstyper.</translation>
 <translation id="5388730678841939057">Vælger den strategi, der bruges til at frigøre diskplads ved automatisk oprydning (udfaset)</translation>
-<translation id="5392172595902933844">Der sendes oplysninger om status for Android tilbage til
-      serveren.
-
-      Hvis politikken indstilles til falsk eller ikke indstilles, rapporteres der ingen statusoplysninger.
-      Hvis der indstilles til sand, rapporteres der statusoplysninger.
-
-      Denne politik gælder kun, hvis Android-apps er aktiveret.</translation>
 <translation id="5395271912574071439">Aktiverer skærmning af eksterne hosts, mens en forbindelse er etableret.
 
           Hvis denne indstilling aktiveres, deaktiveres de fysiske input- og outputenheder for hosts, mens en fjernforbindelse er etableret.
@@ -2326,7 +2304,6 @@ Dynamisk opdatering af denne politik understøttes i M56 og nyere versioner.</tr
 <translation id="7937766917976512374">Tillad eller afvis videooptagelse</translation>
 <translation id="7941975817681987555">Forudse ikke netværkshandlinger på nogen netværksforbindelse</translation>
 <translation id="7953256619080733119">Manuel undtagelse for host for administreret bruger</translation>
-<translation id="7965394584578183156">Send altid Wi-Fi-adgangspunkter til serveren under opdatering af tidszone.</translation>
 <translation id="7971839631300653352">SSL 3.0</translation>
 <translation id="7974114691960514888">Denne politik understøttes ikke længere. Muliggør brug af STUN- og relæservere ved oprettelse af forbindelse til en ekstern klient. Hvis denne indstilling er aktiveret, kan denne maskine finde og oprette forbindelse til eksterne værtsmaskiner, selvom de er adskilt af en firewall. Hvis denne indstilling er deaktiveret, og udgående UDP-forbindelser filtreres af firewallen, kan denne maskine kun oprette forbindelse til værtsmaskiner inden for det lokale netværk.</translation>
 <translation id="7986374692540430898">Du kan ikke tvinge Android-apps til at anvende en proxy. Bestemte proxyindstillinger er tilgængelige for Android-apps, som de kan vælge at imødekomme. Se politikken <ph name="PROXY_MODE_POLICY" /> for at få flere oplysninger.</translation>
@@ -2475,7 +2452,6 @@ Dynamisk opdatering af denne politik understøttes i M56 og nyere versioner.</tr
 <translation id="8390049129576938611">Deaktiverer den interne PDF-fremviser i <ph name="PRODUCT_NAME" />. Behandler den i stedet som download og gør det muligt for brugeren at åbne PDF-filer via standardapplikationen.
 
       Hvis politikken ikke angives, eller hvis den deaktiveres, anvendes PDF-pluginnet til at åbne PDF-filer, medmindre brugeren deaktiverer pluginnet.</translation>
-<translation id="8398203849316312944">Send altid eventuelle tilgængelige placeringssignaler til serveren under opdatering af tidszone.</translation>
 <translation id="8402079500086185021">Åbn altid PDF-filer eksternt</translation>
 <translation id="8412312801707973447">Om der udføres online kontrol af OCSP/CRL</translation>
 <translation id="8413348101535146315">Aktiverer mulighed for at afslutte processer i Jobliste for <ph name="PRODUCT_NAME" />.
