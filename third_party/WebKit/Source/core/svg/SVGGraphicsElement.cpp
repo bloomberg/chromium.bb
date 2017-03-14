@@ -169,20 +169,16 @@ void SVGGraphicsElement::svgAttributeChanged(const QualifiedName& attrName) {
   }
 
   if (attrName == SVGNames::transformAttr) {
-    LayoutObject* object = layoutObject();
-    if (!object)
-      return;
-
-    invalidateSVGPresentationAttributeStyle();
-
     SVGElement::InvalidationGuard invalidationGuard(this);
+    invalidateSVGPresentationAttributeStyle();
     // TODO(fs): The InvalidationGuard will make sure all instances are
     // invalidated, but the style recalc will propagate to instances too. So
     // there is some redundant operations being performed here. Could we get
     // away with removing the InvalidationGuard?
     setNeedsStyleRecalc(LocalStyleChange,
                         StyleChangeReasonForTracing::fromAttribute(attrName));
-    markForLayoutAndParentResourceInvalidation(object);
+    if (LayoutObject* object = layoutObject())
+      markForLayoutAndParentResourceInvalidation(object);
     return;
   }
 
