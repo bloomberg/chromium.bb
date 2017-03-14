@@ -2080,11 +2080,17 @@ void GLRenderer::DrawYUVVideoQuad(const YUVVideoDrawQuad* quad,
   if (!src_color_space.IsValid())
     src_color_space = gfx::ColorSpace::CreateREC709();
 
+  // The source color space should never be RGB.
+  DCHECK_NE(src_color_space, src_color_space.GetAsFullRangeRGB());
+
   ResourceProvider::ScopedSamplerGL y_plane_lock(
       resource_provider_, quad->y_plane_resource_id(), GL_TEXTURE1, GL_LINEAR);
+  if (base::FeatureList::IsEnabled(media::kVideoColorManagement))
+    DCHECK_EQ(src_color_space, y_plane_lock.color_space());
   ResourceProvider::ScopedSamplerGL u_plane_lock(
       resource_provider_, quad->u_plane_resource_id(), GL_TEXTURE2, GL_LINEAR);
   DCHECK_EQ(y_plane_lock.target(), u_plane_lock.target());
+  DCHECK_EQ(y_plane_lock.color_space(), u_plane_lock.color_space());
   // TODO(jbauman): Use base::Optional when available.
   std::unique_ptr<ResourceProvider::ScopedSamplerGL> v_plane_lock;
 
@@ -2093,6 +2099,7 @@ void GLRenderer::DrawYUVVideoQuad(const YUVVideoDrawQuad* quad,
         resource_provider_, quad->v_plane_resource_id(), GL_TEXTURE3,
         GL_LINEAR));
     DCHECK_EQ(y_plane_lock.target(), v_plane_lock->target());
+    DCHECK_EQ(y_plane_lock.color_space(), v_plane_lock->color_space());
   }
   std::unique_ptr<ResourceProvider::ScopedSamplerGL> a_plane_lock;
   if (alpha_texture_mode == YUV_HAS_ALPHA_TEXTURE) {
@@ -2991,6 +2998,9 @@ void GLRenderer::SetUseProgram(const ProgramKey& program_key,
   // performed.
   // TODO(ccameron): Ensure that media mailboxes be accurate.
   // https://crbug.com/699243
+  // The source color space for non-YUV draw quads should always be full-range
+  // RGB.
+  DCHECK_EQ(src_color_space, src_color_space.GetAsFullRangeRGB());
   if (settings_->enable_color_correct_rendering) {
     SetUseProgram(program_key, src_color_space,
                   current_frame()->current_render_pass->color_space);

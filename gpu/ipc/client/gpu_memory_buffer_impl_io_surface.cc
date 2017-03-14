@@ -120,7 +120,7 @@ void GpuMemoryBufferImplIOSurface::SetColorSpaceForScanout(
 
   // Retrieve the ICC profile data.
   gfx::ICCProfile icc_profile;
-  if (!color_space_.GetICCProfile(&icc_profile)) {
+  if (!color_space_.GetAsFullRangeRGB().GetICCProfile(&icc_profile)) {
     DLOG(ERROR) << "Failed to set color space for scanout: no ICC profile.";
     return;
   }

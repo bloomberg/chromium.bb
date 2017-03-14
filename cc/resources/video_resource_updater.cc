@@ -446,6 +446,7 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
     output_resource_format =
         resource_provider_->YuvResourceFormat(bits_per_channel);
   }
+  gfx::ColorSpace output_color_space = video_frame->ColorSpace();
 
   // If GPU compositing is enabled, but the output resource format
   // returned by the resource provider is RGBA_8888, then a GPU driver
@@ -461,6 +462,7 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
   // Obviously, this is suboptimal and should be addressed once ubercompositor
   // starts shaping up.
   if (software_compositor || texture_needs_rgb_conversion) {
+    output_color_space = output_color_space.GetAsFullRangeRGB();
     output_resource_format = kRGBResourceFormat;
     output_plane_count = 1;
     bits_per_channel = 8;
@@ -491,9 +493,8 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
 
     const bool is_immutable = true;
     ResourceList::iterator resource_it = RecycleOrAllocateResource(
-        output_plane_resource_size, output_resource_format,
-        video_frame->ColorSpace(), software_compositor, is_immutable,
-        video_frame->unique_id(), i);
+        output_plane_resource_size, output_resource_format, output_color_space,
+        software_compositor, is_immutable, video_frame->unique_id(), i);
 
     resource_it->add_ref();
     plane_resources.push_back(resource_it);
@@ -550,7 +551,7 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
       TextureMailbox mailbox(plane_resource.mailbox(), gpu::SyncToken(),
                              resource_provider_->GetResourceTextureTarget(
                                  plane_resource.resource_id()));
-      mailbox.set_color_space(video_frame->ColorSpace());
+      mailbox.set_color_space(output_color_space);
       external_resources.mailboxes.push_back(mailbox);
       external_resources.release_callbacks.push_back(base::Bind(
           &RecycleResource, AsWeakPtr(), plane_resource.resource_id()));
@@ -652,7 +653,7 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
     TextureMailbox mailbox(plane_resource.mailbox(), gpu::SyncToken(),
                            resource_provider_->GetResourceTextureTarget(
                                plane_resource.resource_id()));
-    mailbox.set_color_space(video_frame->ColorSpace());
+    mailbox.set_color_space(output_color_space);
     external_resources.mailboxes.push_back(mailbox);
     external_resources.release_callbacks.push_back(base::Bind(
         &RecycleResource, AsWeakPtr(), plane_resource.resource_id()));
@@ -685,6 +686,7 @@ void VideoResourceUpdater::ReturnTexture(
 // texture.
 void VideoResourceUpdater::CopyPlaneTexture(
     media::VideoFrame* video_frame,
+    const gfx::ColorSpace& resource_color_space,
     const gpu::MailboxHolder& mailbox_holder,
     VideoFrameExternalResources* external_resources) {
   gpu::gles2::GLES2Interface* gl = context_provider_->ContextGL();
@@ -700,7 +702,7 @@ void VideoResourceUpdater::CopyPlaneTexture(
   const int no_plane_index = -1;  // Do not recycle referenced textures.
   VideoResourceUpdater::ResourceList::iterator resource =
       RecycleOrAllocateResource(output_plane_resource_size, copy_target_format,
-                                video_frame->ColorSpace(), false, is_immutable,
+                                resource_color_space, false, is_immutable,
                                 no_unique_id, no_plane_index);
   resource->add_ref();
 
@@ -726,7 +728,7 @@ void VideoResourceUpdater::CopyPlaneTexture(
   // sync token is not required.
   TextureMailbox mailbox(resource->mailbox(), gpu::SyncToken(), GL_TEXTURE_2D,
                          video_frame->coded_size(), false, false);
-  mailbox.set_color_space(video_frame->ColorSpace());
+  mailbox.set_color_space(resource_color_space);
   external_resources->mailboxes.push_back(mailbox);
 
   external_resources->release_callbacks.push_back(
@@ -745,6 +747,7 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForHardwarePlanes(
           media::VideoFrameMetadata::READ_LOCK_FENCES_ENABLED)) {
     external_resources.read_lock_fences_enabled = true;
   }
+  gfx::ColorSpace resource_color_space = video_frame->ColorSpace();
 
   external_resources.type = ResourceTypeForVideoFrame(video_frame.get());
   if (external_resources.type == VideoFrameExternalResources::NONE) {
@@ -752,6 +755,8 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForHardwarePlanes(
                 << media::VideoPixelFormatToString(video_frame->format());
     return external_resources;
   }
+  if (external_resources.type == VideoFrameExternalResources::YUV_RESOURCE)
+    resource_color_space = resource_color_space.GetAsFullRangeRGB();
 
   const size_t num_planes = media::VideoFrame::NumPlanes(video_frame->format());
   for (size_t i = 0; i < num_planes; ++i) {
@@ -761,7 +766,8 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForHardwarePlanes(
 
     if (video_frame->metadata()->IsTrue(
             media::VideoFrameMetadata::COPY_REQUIRED)) {
-      CopyPlaneTexture(video_frame.get(), mailbox_holder, &external_resources);
+      CopyPlaneTexture(video_frame.get(), resource_color_space, mailbox_holder,
+                       &external_resources);
     } else {
       TextureMailbox mailbox(mailbox_holder.mailbox, mailbox_holder.sync_token,
                              mailbox_holder.texture_target,
@@ -769,7 +775,7 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForHardwarePlanes(
                              video_frame->metadata()->IsTrue(
                                  media::VideoFrameMetadata::ALLOW_OVERLAY),
                              false);
-      mailbox.set_color_space(video_frame->ColorSpace());
+      mailbox.set_color_space(resource_color_space);
 #if defined(OS_ANDROID)
       mailbox.set_is_backed_by_surface_texture(video_frame->metadata()->IsTrue(
           media::VideoFrameMetadata::SURFACE_TEXTURE));

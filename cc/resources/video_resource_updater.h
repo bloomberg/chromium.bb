@@ -177,6 +177,7 @@ class CC_EXPORT VideoResourceUpdater
                                           bool immutable_hint);
   void DeleteResource(ResourceList::iterator resource_it);
   void CopyPlaneTexture(media::VideoFrame* video_frame,
+                        const gfx::ColorSpace& resource_color_space,
                         const gpu::MailboxHolder& mailbox_holder,
                         VideoFrameExternalResources* external_resources);
   VideoFrameExternalResources CreateForHardwarePlanes(

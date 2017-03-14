@@ -5,6 +5,7 @@
 #include "ui/gfx/color_space.h"
 
 #include <map>
+#include <sstream>
 
 #include "base/lazy_instance.h"
 #include "base/synchronization/lock.h"
@@ -324,6 +325,48 @@ bool ColorSpace::operator<(const ColorSpace& other) const {
   return false;
 }
 
+std::string ColorSpace::ToString() const {
+  std::stringstream ss;
+  ss << "{primaries:";
+  if (primaries_ == PrimaryID::CUSTOM) {
+    ss << "[";
+    for (size_t i = 0; i < 3; ++i) {
+      ss << "[";
+      for (size_t j = 0; j < 3; ++j) {
+        ss << custom_primary_matrix_[3 * i + j];
+        ss << ",";
+      }
+      ss << "],";
+    }
+    ss << "]";
+  } else {
+    ss << static_cast<int>(primaries_);
+  }
+  ss << ", transfer:";
+  if (transfer_ == TransferID::CUSTOM) {
+    ss << "[";
+    for (size_t i = 0; i < 7; ++i)
+      ss << custom_transfer_params_[i];
+    ss << "]";
+  } else {
+    ss << static_cast<int>(transfer_);
+  }
+  ss << ", matrix:" << static_cast<int>(matrix_);
+  ss << ", range:" << static_cast<int>(range_);
+  ss << ", icc_profile_id:" << icc_profile_id_;
+  ss << "}";
+  return ss.str();
+}
+
+ColorSpace ColorSpace::GetAsFullRangeRGB() const {
+  ColorSpace result(*this);
+  if (!IsValid())
+    return result;
+  result.matrix_ = MatrixID::RGB;
+  result.range_ = RangeID::FULL;
+  return result;
+}
+
 sk_sp<SkColorSpace> ColorSpace::ToSkColorSpace() const {
   // If we got a specific SkColorSpace from the ICCProfile that this color space
   // was created from, use that.
@@ -406,8 +449,18 @@ sk_sp<SkColorSpace> ColorSpace::ToNonlinearBlendedSkColorSpace() const {
 }
 
 bool ColorSpace::GetICCProfile(ICCProfile* icc_profile) const {
-  if (!IsValid())
+  if (!IsValid()) {
+    DLOG(ERROR) << "Cannot fetch ICCProfile for invalid space.";
     return false;
+  }
+  if (matrix_ != MatrixID::RGB) {
+    DLOG(ERROR) << "Not creating non-RGB ICCProfile";
+    return false;
+  }
+  if (range_ != RangeID::FULL) {
+    DLOG(ERROR) << "Not creating non-full-range ICCProfile";
+    return false;
+  }
 
   // If this was created from an ICC profile, retrieve that exact profile.
   ICCProfile result;
@@ -781,6 +834,10 @@ void ColorSpace::GetRangeAdjustMatrix(SkMatrix44* matrix) const {
       matrix->postTranslate(-16.0f/219.0f, -15.5f/224.0f, -15.5f/224.0f);
       break;
   }
+}
+
+std::ostream& operator<<(std::ostream& out, const ColorSpace& color_space) {
+  return out << color_space.ToString();
 }
 
 }  // namespace gfx

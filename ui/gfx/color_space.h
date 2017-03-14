@@ -6,6 +6,7 @@
 #define UI_GFX_COLOR_SPACE_H_
 
 #include <stdint.h>
+#include <ostream>
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
@@ -144,8 +145,13 @@ class GFX_EXPORT ColorSpace {
   bool operator==(const ColorSpace& other) const;
   bool operator!=(const ColorSpace& other) const;
   bool operator<(const ColorSpace& other) const;
+  std::string ToString() const;
 
   bool IsHDR() const;
+
+  // Return this color space with any range adjust or YUV to RGB conversion
+  // stripped off.
+  gfx::ColorSpace GetAsFullRangeRGB() const;
 
   // This will return nullptr for non-RGB spaces, spaces with non-FULL
   // range, and unspecified spaces.
@@ -157,10 +163,7 @@ class GFX_EXPORT ColorSpace {
   sk_sp<SkColorSpace> ToNonlinearBlendedSkColorSpace() const;
 
   // Populate |icc_profile| with an ICC profile that represents this color
-  // space. Returns false if this space is not representable. This ICC profile
-  // will be constructed ignoring the range adjust and transfer matrices (this
-  // is to match the IOSurface interface which takes the ICC profile and range
-  // and transfer matrices separately).
+  // space. Returns false if this space is not representable.
   bool GetICCProfile(ICCProfile* icc_profile) const;
 
   void GetPrimaryMatrix(SkMatrix44* to_XYZD50) const;
@@ -201,6 +204,10 @@ class GFX_EXPORT ColorSpace {
   friend struct IPC::ParamTraits<gfx::ColorSpace>;
   FRIEND_TEST_ALL_PREFIXES(SimpleColorSpace, GetColorSpace);
 };
+
+// Stream operator so ColorSpace can be used in assertion statements.
+GFX_EXPORT std::ostream& operator<<(std::ostream& out,
+                                    const ColorSpace& color_space);
 
 }  // namespace gfx
 
