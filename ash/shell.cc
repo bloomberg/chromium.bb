@@ -27,9 +27,6 @@
 #include "ash/common/login_status.h"
 #include "ash/common/palette_delegate.h"
 #include "ash/common/session/session_state_delegate.h"
-#include "ash/common/shelf/app_list_shelf_item_delegate.h"
-#include "ash/common/shelf/shelf_delegate.h"
-#include "ash/common/shelf/shelf_model.h"
 #include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/shell_delegate.h"
 #include "ash/common/shell_observer.h"
@@ -693,10 +690,6 @@ void Shell::Init(const ShellInitParams& init_params) {
   accessibility_delegate_.reset(shell_delegate_->CreateAccessibilityDelegate());
   palette_delegate_ = shell_delegate_->CreatePaletteDelegate();
   toast_manager_ = base::MakeUnique<ToastManager>();
-
-  // Create the app list item in the shelf data model.
-  AppListShelfItemDelegate::CreateAppListItemAndDelegate(
-      wm_shell_->shelf_model());
 
   // Install the custom factory early on so that views::FocusManagers for Tray,
   // Shelf, and WallPaper could be created by the factory.

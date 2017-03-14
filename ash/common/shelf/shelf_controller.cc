@@ -4,6 +4,7 @@
 
 #include "ash/common/shelf/shelf_controller.h"
 
+#include "ash/common/shelf/app_list_shelf_item_delegate.h"
 #include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
@@ -47,7 +48,10 @@ WmShelf* GetShelfForDisplay(int64_t display_id) {
 
 }  // namespace
 
-ShelfController::ShelfController() {}
+ShelfController::ShelfController() {
+  // Create the app list item in the shelf.
+  AppListShelfItemDelegate::CreateAppListItemAndDelegate(&model_);
+}
 
 ShelfController::~ShelfController() {}
 
