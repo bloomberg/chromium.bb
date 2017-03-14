@@ -1529,7 +1529,7 @@ if (is_android) {
 
   java_cpp_enum("website_settings_action_javagen") {
     sources = [
-      "browser/ui/website_settings/website_settings.h",
+      "browser/ui/page_info/website_settings.h",
     ]
   }
 

@@ -6,7 +6,7 @@
 
 #include "base/mac/scoped_nsobject.h"
 #import "chrome/browser/ui/cocoa/test/cocoa_test_helper.h"
-#include "chrome/browser/ui/website_settings/website_settings_ui.h"
+#include "chrome/browser/ui/page_info/website_settings_ui.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 

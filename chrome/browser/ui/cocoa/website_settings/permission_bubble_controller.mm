@@ -29,7 +29,7 @@
 #include "chrome/browser/ui/exclusive_access/exclusive_access_context.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_manager.h"
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller.h"
-#include "chrome/browser/ui/website_settings/permission_menu_model.h"
+#include "chrome/browser/ui/page_info/permission_menu_model.h"
 #include "chrome/browser/ui/website_settings/permission_prompt.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/website_settings/website_settings_infobar_delegate.h"
+#include "chrome/browser/ui/page_info/website_settings_infobar_delegate.h"
 
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"

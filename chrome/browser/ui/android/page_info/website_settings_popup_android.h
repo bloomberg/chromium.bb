@@ -11,7 +11,7 @@
 
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
-#include "chrome/browser/ui/website_settings/website_settings_ui.h"
+#include "chrome/browser/ui/page_info/website_settings_ui.h"
 
 namespace content {
 class WebContents;

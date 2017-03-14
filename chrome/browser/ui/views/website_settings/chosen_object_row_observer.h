@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_WEBSITE_SETTINGS_CHOSEN_OBJECT_ROW_OBSERVER_H_
 #define CHROME_BROWSER_UI_VIEWS_WEBSITE_SETTINGS_CHOSEN_OBJECT_ROW_OBSERVER_H_
 
-#include "chrome/browser/ui/website_settings/website_settings_ui.h"
+#include "chrome/browser/ui/page_info/website_settings_ui.h"
 
 class ChosenObjectRowObserver {
  public:

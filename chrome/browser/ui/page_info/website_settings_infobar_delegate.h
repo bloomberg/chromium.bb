@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_WEBSITE_SETTINGS_WEBSITE_SETTINGS_INFOBAR_DELEGATE_H_
-#define CHROME_BROWSER_UI_WEBSITE_SETTINGS_WEBSITE_SETTINGS_INFOBAR_DELEGATE_H_
+#ifndef CHROME_BROWSER_UI_PAGE_INFO_WEBSITE_SETTINGS_INFOBAR_DELEGATE_H_
+#define CHROME_BROWSER_UI_PAGE_INFO_WEBSITE_SETTINGS_INFOBAR_DELEGATE_H_
 
 #include "base/macros.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
@@ -37,4 +37,4 @@ class WebsiteSettingsInfoBarDelegate : public ConfirmInfoBarDelegate {
   DISALLOW_COPY_AND_ASSIGN(WebsiteSettingsInfoBarDelegate);
 };
 
-#endif  // CHROME_BROWSER_UI_WEBSITE_SETTINGS_WEBSITE_SETTINGS_INFOBAR_DELEGATE_H_
+#endif  // CHROME_BROWSER_UI_PAGE_INFO_WEBSITE_SETTINGS_INFOBAR_DELEGATE_H_

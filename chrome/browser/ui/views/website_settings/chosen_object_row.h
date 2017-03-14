@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_WEBSITE_SETTINGS_CHOSEN_OBJECT_ROW_H_
 
 #include "base/macros.h"
-#include "chrome/browser/ui/website_settings/website_settings_ui.h"
+#include "chrome/browser/ui/page_info/website_settings_ui.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/view.h"
 

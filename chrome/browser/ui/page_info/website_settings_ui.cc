@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/website_settings/website_settings_ui.h"
+#include "chrome/browser/ui/page_info/website_settings_ui.h"
 
 #include "base/macros.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"

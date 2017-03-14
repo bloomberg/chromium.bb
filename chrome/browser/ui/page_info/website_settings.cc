@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/website_settings/website_settings.h"
+#include "chrome/browser/ui/page_info/website_settings.h"
 
 #include <stddef.h>
 #include <stdint.h>
@@ -39,7 +39,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/chrome_ssl_host_state_delegate.h"
 #include "chrome/browser/ssl/chrome_ssl_host_state_delegate_factory.h"
-#include "chrome/browser/ui/website_settings/website_settings_ui.h"
+#include "chrome/browser/ui/page_info/website_settings_ui.h"
 #include "chrome/browser/usb/usb_chooser_context.h"
 #include "chrome/browser/usb/usb_chooser_context_factory.h"
 #include "chrome/common/chrome_switches.h"
@@ -75,7 +75,7 @@
 
 #if !defined(OS_ANDROID)
 #include "chrome/browser/ui/exclusive_access/exclusive_access_manager.h"
-#include "chrome/browser/ui/website_settings/website_settings_infobar_delegate.h"
+#include "chrome/browser/ui/page_info/website_settings_infobar_delegate.h"
 #endif
 
 using base::ASCIIToUTF16;

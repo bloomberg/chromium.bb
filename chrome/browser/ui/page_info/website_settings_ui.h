@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_WEBSITE_SETTINGS_WEBSITE_SETTINGS_UI_H_
-#define CHROME_BROWSER_UI_WEBSITE_SETTINGS_WEBSITE_SETTINGS_UI_H_
+#ifndef CHROME_BROWSER_UI_PAGE_INFO_WEBSITE_SETTINGS_UI_H_
+#define CHROME_BROWSER_UI_PAGE_INFO_WEBSITE_SETTINGS_UI_H_
 
 #include <memory>
 #include <string>
 #include <vector>
 
 #include "base/strings/string16.h"
-#include "chrome/browser/ui/website_settings/website_settings.h"
+#include "chrome/browser/ui/page_info/website_settings.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "ui/gfx/native_widget_types.h"
@@ -202,4 +202,4 @@ typedef WebsiteSettingsUI::CookieInfoList CookieInfoList;
 typedef WebsiteSettingsUI::PermissionInfoList PermissionInfoList;
 typedef WebsiteSettingsUI::ChosenObjectInfoList ChosenObjectInfoList;
 
-#endif  // CHROME_BROWSER_UI_WEBSITE_SETTINGS_WEBSITE_SETTINGS_UI_H_
+#endif  // CHROME_BROWSER_UI_PAGE_INFO_WEBSITE_SETTINGS_UI_H_

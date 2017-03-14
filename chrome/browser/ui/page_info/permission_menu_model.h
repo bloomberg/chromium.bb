@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_WEBSITE_SETTINGS_PERMISSION_MENU_MODEL_H_
-#define CHROME_BROWSER_UI_WEBSITE_SETTINGS_PERMISSION_MENU_MODEL_H_
+#ifndef CHROME_BROWSER_UI_PAGE_INFO_PERMISSION_MENU_MODEL_H_
+#define CHROME_BROWSER_UI_PAGE_INFO_PERMISSION_MENU_MODEL_H_
 
 #include "base/macros.h"
-#include "chrome/browser/ui/website_settings/website_settings_ui.h"
+#include "chrome/browser/ui/page_info/website_settings_ui.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "ui/base/models/simple_menu_model.h"
@@ -53,4 +53,4 @@ class PermissionMenuModel : public ui::SimpleMenuModel,
   DISALLOW_COPY_AND_ASSIGN(PermissionMenuModel);
 };
 
-#endif  // CHROME_BROWSER_UI_WEBSITE_SETTINGS_PERMISSION_MENU_MODEL_H_
+#endif  // CHROME_BROWSER_UI_PAGE_INFO_PERMISSION_MENU_MODEL_H_
