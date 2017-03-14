@@ -1314,7 +1314,13 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest,
                                .size());
 }
 
-IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, VirtualTimeTest) {
+// TODO(701223): Enable this on android.
+#if defined(OS_ANDROID)
+#define MAYBE_VirtualTimeTest DISABLED_VirtualTimeTest
+#else
+#define MAYBE_VirtualTimeTest VirtualTimeTest
+#endif
+IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, MAYBE_VirtualTimeTest) {
   NavigateToURLBlockUntilNavigationsComplete(shell(), GURL("about:blank"), 1);
   Attach();
 
