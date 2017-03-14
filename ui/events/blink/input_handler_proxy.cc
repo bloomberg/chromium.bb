@@ -311,7 +311,7 @@ void InputHandlerProxy::HandleInputEventWithLatencyInfo(
   // Note: Other input can race ahead of gesture input as they don't have to go
   // through the queue, but we believe it's OK to do so.
   if (!compositor_event_queue_ ||
-      !IsGestureScollOrPinch(event_with_callback->event().type())) {
+      !IsGestureScrollOrFlingOrPinch(event_with_callback->event().type())) {
     DispatchSingleInputEvent(std::move(event_with_callback),
                              tick_clock_->NowTicks());
     return;
@@ -336,7 +336,7 @@ void InputHandlerProxy::DispatchSingleInputEvent(
     std::unique_ptr<EventWithCallback> event_with_callback,
     const base::TimeTicks now) {
   if (compositor_event_queue_ &&
-      IsGestureScollOrPinch(event_with_callback->event().type())) {
+      IsGestureScrollOrFlingOrPinch(event_with_callback->event().type())) {
     // Report the coalesced count only for continuous events to avoid the noise
     // from non-continuous events.
     if (IsContinuousGestureEvent(event_with_callback->event().type())) {

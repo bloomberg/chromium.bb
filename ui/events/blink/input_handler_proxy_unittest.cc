@@ -126,15 +126,17 @@ WebGestureEvent CreateFling(WebGestureDevice source_device,
                      modifiers);
 }
 
-WebScopedInputEvent CreateGestureScrollOrPinch(WebInputEvent::Type type,
-                                               float deltaYOrScale = 0,
-                                               int x = 0,
-                                               int y = 0) {
+WebScopedInputEvent CreateGestureScrollFlingPinch(WebInputEvent::Type type,
+                                                  float deltaYOrScale = 0,
+                                                  int x = 0,
+                                                  int y = 0) {
   WebGestureEvent gesture(type, WebInputEvent::NoModifiers,
                           WebInputEvent::TimeStampForTesting);
   gesture.sourceDevice = blink::WebGestureDeviceTouchpad;
   if (type == WebInputEvent::GestureScrollUpdate) {
     gesture.data.scrollUpdate.deltaY = deltaYOrScale;
+  } else if (type == WebInputEvent::GestureFlingStart) {
+    gesture.data.flingStart.velocityY = deltaYOrScale;
   } else if (type == WebInputEvent::GesturePinchUpdate) {
     gesture.data.pinchUpdate.scale = deltaYOrScale;
     gesture.x = x;
@@ -541,7 +543,7 @@ class InputHandlerProxyEventQueueTest : public testing::Test {
                           int y = 0) {
     LatencyInfo latency;
     input_handler_proxy_->HandleInputEventWithLatencyInfo(
-        CreateGestureScrollOrPinch(type, deltay_or_scale, x, y), latency,
+        CreateGestureScrollFlingPinch(type, deltay_or_scale, x, y), latency,
         base::Bind(
             &InputHandlerProxyEventQueueTest::DidHandleInputEventAndOverscroll,
             weak_ptr_factory_.GetWeakPtr()));
@@ -3530,6 +3532,55 @@ TEST_F(InputHandlerProxyEventQueueTest, OriginalEventsTracing) {
   EXPECT_EQ(WebInputEvent::GestureScrollEnd,
             end_events[4]->GetKnownArgAsInt("type"));
   testing::Mock::VerifyAndClearExpectations(&mock_input_handler_);
+}
+
+TEST_F(InputHandlerProxyEventQueueTest, GestureScrollFlingOrder) {
+  // Handle scroll on compositor.
+  cc::InputHandlerScrollResult scroll_result_did_scroll_;
+  scroll_result_did_scroll_.did_scroll = true;
+
+  EXPECT_CALL(mock_input_handler_, ScrollBegin(testing::_, testing::_))
+      .WillRepeatedly(testing::Return(kImplThreadScrollState));
+  EXPECT_CALL(mock_input_handler_, SetNeedsAnimateInput())
+      .Times(::testing::AtLeast(1));
+  EXPECT_CALL(
+      mock_input_handler_,
+      ScrollBy(testing::Property(&cc::ScrollState::delta_y, testing::Gt(0))))
+      .WillRepeatedly(testing::Return(scroll_result_did_scroll_));
+  EXPECT_CALL(mock_input_handler_, ScrollEnd(testing::_))
+      .Times(::testing::AtLeast(1));
+
+  // Simulate scroll.
+  HandleGestureEvent(WebInputEvent::GestureScrollBegin);
+  HandleGestureEvent(WebInputEvent::GestureScrollUpdate, -20);
+  HandleGestureEvent(WebInputEvent::GestureScrollUpdate, -30);
+  HandleGestureEvent(WebInputEvent::GestureFlingStart, -10);
+
+  // ScrollUpdate and FlingStart should be queued.
+  EXPECT_EQ(2ul, event_queue().size());
+  EXPECT_EQ(1ul, event_disposition_recorder_.size());
+  EXPECT_EQ(WebInputEvent::GestureScrollUpdate,
+            event_queue()[0]->event().type());
+  EXPECT_EQ(WebInputEvent::GestureFlingStart, event_queue()[1]->event().type());
+
+  // Dispatch events.
+  input_handler_proxy_->DeliverInputForBeginFrame();
+  EXPECT_EQ(0ul, event_queue().size());
+  EXPECT_EQ(4ul, event_disposition_recorder_.size());
+  EXPECT_TRUE(
+      input_handler_proxy_->gesture_scroll_on_impl_thread_for_testing());
+
+  // Send FlingCancel to stop scrolling.
+  HandleGestureEvent(WebInputEvent::GestureFlingCancel);
+  EXPECT_EQ(1ul, event_queue().size());
+  EXPECT_EQ(WebInputEvent::GestureFlingCancel,
+            event_queue()[0]->event().type());
+  input_handler_proxy_->DeliverInputForBeginFrame();
+  EXPECT_EQ(0ul, event_queue().size());
+  EXPECT_EQ(5ul, event_disposition_recorder_.size());
+  // Should stop scrolling. Note that no ScrollEnd was sent.
+  EXPECT_TRUE(
+      !input_handler_proxy_->gesture_scroll_on_impl_thread_for_testing());
 }
 
 INSTANTIATE_TEST_CASE_P(AnimateInput,

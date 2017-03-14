@@ -86,13 +86,13 @@ int WebEventModifiersToEventFlags(int modifiers);
 blink::WebInputEvent::Modifiers DomCodeToWebInputEventModifiers(
     ui::DomCode code);
 
-bool IsGestureScollOrPinch(blink::WebInputEvent::Type);
+bool IsGestureScrollOrFlingOrPinch(blink::WebInputEvent::Type);
 
 bool IsContinuousGestureEvent(blink::WebInputEvent::Type);
 
 inline const blink::WebGestureEvent& ToWebGestureEvent(
     const blink::WebInputEvent& event) {
-  DCHECK(IsGestureScollOrPinch(event.type()));
+  DCHECK(blink::WebInputEvent::isGestureEventType(event.type()));
   return static_cast<const blink::WebGestureEvent&>(event);
 }
 
