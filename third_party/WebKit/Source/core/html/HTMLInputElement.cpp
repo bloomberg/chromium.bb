@@ -1266,12 +1266,12 @@ void HTMLInputElement::defaultEventHandler(Event* evt) {
     HTMLFormElement* formForSubmission = m_inputTypeView->formForSubmission();
     // Form may never have been present, or may have been destroyed by code
     // responding to the change event.
-    if (formForSubmission) {
+    if (formForSubmission)
       formForSubmission->submitImplicitly(evt, canTriggerImplicitSubmission());
-      // We treat implicit submission is something like blur()-then-focus(). So
-      // we reset the last value. crbug.com/695349.
-      setTextAsOfLastFormControlChangeEvent(value());
-    }
+
+    // We treat implicit submission is something like blur()-then-focus(). So
+    // we reset the last value. crbug.com/695349 and crbug.com/700842.
+    setTextAsOfLastFormControlChangeEvent(value());
 
     evt->setDefaultHandled();
     return;
