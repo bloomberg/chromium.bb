@@ -826,7 +826,14 @@ public class AwContentsClientShouldInterceptRequestTest extends AwTestBase {
         loadDataWithBaseUrlAsync(mAwContents, pageHtml, "text/html", false, baseUrl, null);
         mShouldInterceptRequestHelper.waitForCallback(callCount, 1);
         assertEquals(1, mShouldInterceptRequestHelper.getUrls().size());
-        assertEquals(imageUrl, mShouldInterceptRequestHelper.getUrls().get(0));
+        if (!mShouldInterceptRequestHelper.getUrls().get(0).equals(imageUrl)) {
+            // With PlzNavigate, data URLs are intercepted so wait for the next request.
+            // See https://codereview.chromium.org/2235303002/.
+            callCount = mShouldInterceptRequestHelper.getCallCount();
+            mShouldInterceptRequestHelper.waitForCallback(callCount, 1);
+            assertEquals(imageUrl, mShouldInterceptRequestHelper.getUrls().get(1));
+        }
+
         Map<String, String> headers =
                 mShouldInterceptRequestHelper.getRequestsForUrl(imageUrl).requestHeaders;
         assertTrue(headers.containsKey(refererHeaderName));
