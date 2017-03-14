@@ -40,6 +40,7 @@ class GURL;
 @protocol TabHeadersDelegate;
 @class TabModel;
 @protocol TabSnapshottingDelegate;
+@protocol FindInPageControllerDelegate;
 
 namespace infobars {
 class InfoBarManager;
@@ -138,6 +139,8 @@ extern NSString* const kProxyPassthroughHeaderValue;
 @property(nonatomic, assign) id<TabHeadersDelegate> tabHeadersDelegate;
 @property(nonatomic, assign) id<TabSnapshottingDelegate>
     tabSnapshottingDelegate;
+@property(nonatomic, readonly) id<FindInPageControllerDelegate>
+    findInPageControllerDelegate;
 
 // Whether or not desktop user agent is used for the currently visible page.
 @property(nonatomic, readonly) BOOL usesDesktopUserAgent;

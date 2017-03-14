@@ -54,14 +54,11 @@
 #import "ios/chrome/browser/autofill/autofill_controller.h"
 #import "ios/chrome/browser/autofill/form_input_accessory_view_controller.h"
 #import "ios/chrome/browser/autofill/form_suggestion_controller.h"
-#include "ios/chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/browser/crash_loop_detection_util.h"
 #include "ios/chrome/browser/experimental_flags.h"
-#include "ios/chrome/browser/favicon/favicon_service_factory.h"
 #import "ios/chrome/browser/find_in_page/find_in_page_controller.h"
-#import "ios/chrome/browser/find_in_page/find_tab_helper.h"
 #import "ios/chrome/browser/geolocation/omnibox_geolocation_controller.h"
 #include "ios/chrome/browser/history/history_service_factory.h"
 #include "ios/chrome/browser/history/top_sites_factory.h"
@@ -72,8 +69,6 @@
 #import "ios/chrome/browser/passwords/password_controller.h"
 #import "ios/chrome/browser/passwords/passwords_ui_delegate_impl.h"
 #include "ios/chrome/browser/pref_names.h"
-#include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
-#include "ios/chrome/browser/reading_list/reading_list_web_state_observer.h"
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #include "ios/chrome/browser/sessions/ios_chrome_session_tab_helper.h"
 #include "ios/chrome/browser/signin/account_consistency_service_factory.h"
@@ -84,13 +79,11 @@
 #import "ios/chrome/browser/snapshots/snapshot_manager.h"
 #import "ios/chrome/browser/snapshots/snapshot_overlay_provider.h"
 #import "ios/chrome/browser/snapshots/web_controller_snapshot_helper.h"
-#include "ios/chrome/browser/ssl/ios_security_state_tab_helper.h"
-#import "ios/chrome/browser/store_kit/store_kit_tab_helper.h"
-#include "ios/chrome/browser/sync/ios_chrome_synced_tab_delegate.h"
 #import "ios/chrome/browser/tabs/legacy_tab_helper.h"
 #import "ios/chrome/browser/tabs/tab_delegate.h"
 #import "ios/chrome/browser/tabs/tab_dialog_delegate.h"
 #import "ios/chrome/browser/tabs/tab_headers_delegate.h"
+#import "ios/chrome/browser/tabs/tab_helper_util.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/tabs/tab_private.h"
 #import "ios/chrome/browser/tabs/tab_snapshotting_delegate.h"
@@ -111,12 +104,9 @@
 #import "ios/chrome/browser/ui/sad_tab/sad_tab_view.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/browser/web/auto_reload_bridge.h"
-#import "ios/chrome/browser/web/blocked_popup_tab_helper.h"
 #import "ios/chrome/browser/web/external_app_launcher.h"
-#include "ios/chrome/browser/web/network_activity_indicator_tab_helper.h"
 #import "ios/chrome/browser/web/passkit_dialog_provider.h"
 #include "ios/chrome/browser/web/print_observer.h"
-#import "ios/chrome/browser/web/repost_form_tab_helper.h"
 #import "ios/chrome/browser/xcallback_parameters.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
@@ -547,35 +537,11 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
     [self initNativeAppNavigationController];
 
     if (attachTabHelpers) {
-      // IOSChromeSessionTabHelper comes first because it sets up the tab ID,
-      // and other helpers may rely on that.
-      IOSChromeSessionTabHelper::CreateForWebState(self.webState);
-
-      NetworkActivityIndicatorTabHelper::CreateForWebState(self.webState,
-                                                           self.tabId);
-      IOSChromeSyncedTabDelegate::CreateForWebState(self.webState);
-      InfoBarManagerImpl::CreateForWebState(self.webState);
-      IOSSecurityStateTabHelper::CreateForWebState(self.webState);
-      RepostFormTabHelper::CreateForWebState(self.webState);
-      BlockedPopupTabHelper::CreateForWebState(self.webState);
-      FindTabHelper::CreateForWebState(self.webState, self);
-      StoreKitTabHelper::CreateForWebState(self.webState);
-
-      if (reading_list::switches::IsReadingListEnabled()) {
-        ReadingListModel* model =
-            ReadingListModelFactory::GetForBrowserState(browserState_);
-        ReadingListWebStateObserver::FromWebState(self.webState, model);
-      }
+      AttachTabHelpers(self.webState);
 
       tabInfoBarObserver_.reset(new TabInfoBarObserver(self));
       tabInfoBarObserver_->SetShouldObserveInfoBarManager(true);
 
-      if (AccountConsistencyService* account_consistency_service =
-              ios::AccountConsistencyServiceFactory::GetForBrowserState(
-                  browserState_)) {
-        account_consistency_service->SetWebStateHandler(self.webState, self);
-      }
-      ChromeIOSTranslateClient::CreateForWebState(self.webState);
       if (experimental_flags::IsAutoReloadEnabled()) {
         autoReloadBridge_.reset([[AutoReloadBridge alloc] initWithTab:self]);
       }
@@ -600,22 +566,6 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
               initWithWebState:self.webState
                      providers:[self accessoryViewProviders]]);
 
-      ios::ChromeBrowserState* original_browser_state =
-          ios::ChromeBrowserState::FromBrowserState(
-              self.webState->GetBrowserState())
-              ->GetOriginalChromeBrowserState();
-      favicon::WebFaviconDriver::CreateForWebState(
-          self.webState,
-          ios::FaviconServiceFactory::GetForBrowserState(
-              original_browser_state, ServiceAccessType::IMPLICIT_ACCESS),
-          ios::HistoryServiceFactory::GetForBrowserState(
-              original_browser_state, ServiceAccessType::IMPLICIT_ACCESS),
-          ios::BookmarkModelFactory::GetForBrowserState(
-              original_browser_state));
-      history::WebStateTopSitesObserver::CreateForWebState(
-          self.webState,
-          ios::TopSitesFactory::GetForBrowserState(original_browser_state)
-              .get());
       [self setShouldObserveFaviconChanges:YES];
 
       if (parentModel && parentModel.syncedWindowDelegate) {
@@ -630,9 +580,6 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
             initWithWebState:self.webState
                     delegate:self]);
       }
-
-      // Allow the embedder to attach tab helpers.
-      ios::GetChromeBrowserProvider()->AttachTabHelpers(self.webState, self);
     }
 
     [[NSNotificationCenter defaultCenter]
@@ -659,6 +606,10 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
   [providers addObject:[passwordController_ suggestionProvider]];
   [providers addObject:[autofillController_ suggestionProvider]];
   return providers;
+}
+
+- (id<FindInPageControllerDelegate>)findInPageControllerDelegate {
+  return self;
 }
 
 + (Tab*)preloadingTabWithBrowserState:(ios::ChromeBrowserState*)browserState
