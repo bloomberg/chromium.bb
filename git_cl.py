@@ -183,6 +183,30 @@ def ask_for_data(prompt):
     sys.exit(1)
 
 
+def confirm_or_exit(prefix='', action='confirm'):
+  """Asks user to press enter to continue or press Ctrl+C to abort."""
+  if not prefix or prefix.endswith('\n'):
+    mid = 'Press'
+  elif prefix.endswith('.'):
+    mid = ' Press'
+  elif prefix.endswith(' '):
+    mid = 'press'
+  else:
+    mid = ' press'
+  ask_for_data('%s%s Enter to %s, or Ctrl+C to abort' % (prefix, mid, action))
+
+
+def ask_for_explicit_yes(prompt):
+  """Returns whether user typed 'y' or 'yes' to confirm the given prompt"""
+  result = ask_for_data(prompt + ' [Yes/No]: ').lower()
+  while True:
+    if 'yes'.startswith(result):
+      return True
+    if 'no'.startswith(result):
+      return False
+    result = ask_for_data('Please, type yes or no: ').lower()
+
+
 def _git_branch_config_key(branch, key):
   """Helper method to return Git config key for a branch."""
   assert branch, 'branch name is required to set git config for it'
@@ -1559,7 +1583,7 @@ class Changelist(object):
         print('Uploading will still work, but if you\'ve uploaded to this '
               'issue from another machine or branch the patch you\'re '
               'uploading now might not include those changes.')
-        ask_for_data('About to upload; enter to confirm.')
+        confirm_or_exit(action='upload')
 
     print_stats(options.similarity, options.find_copies, git_diff_args)
     ret = self.CMDUploadChange(options, git_diff_args, change)
@@ -2317,8 +2341,7 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
            git_host, self._gerrit_host,
            cookie_auth.get_new_password_message(git_host)))
       if not force:
-        ask_for_data('If you know what you are doing, press Enter to continue, '
-                     'Ctrl+C to abort.')
+        confirm_or_exit('If you know what you are doing', action='continue')
       return
     else:
       missing = (
@@ -2453,11 +2476,10 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
   def UpdateDescriptionRemote(self, description, force=False):
     if gerrit_util.HasPendingChangeEdit(self._GetGerritHost(), self.GetIssue()):
       if not force:
-        ask_for_data(
+        confirm_or_exit(
             'The description cannot be modified while the issue has a pending '
-            'unpublished edit.  Either publish the edit in the Gerrit web UI '
-            'or delete it.\n\n'
-            'Press Enter to delete the unpublished edit, Ctrl+C to abort.')
+            'unpublished edit. Either publish the edit in the Gerrit web UI '
+            'or delete it.\n\n', action='delete the unpublished edit')
 
       gerrit_util.DeletePendingChangeEdit(self._GetGerritHost(),
                                           self.GetIssue())
@@ -2538,10 +2560,10 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
     detail = self._GetChangeDetail(['CURRENT_REVISION', 'LABELS'])
     if u'Commit-Queue' in detail.get('labels', {}):
       if not force:
-        ask_for_data('\nIt seems this repository has a Commit Queue, '
-                     'which can test and land changes for you. '
-                     'Are you sure you wish to bypass it?\n'
-                     'Press Enter to continue, Ctrl+C to abort.')
+        confirm_or_exit('\nIt seems this repository has a Commit Queue, '
+                        'which can test and land changes for you. '
+                        'Are you sure you wish to bypass it?\n',
+                        action='bypass CQ')
 
     differs = True
     last_upload = self._GitGetBranchConfigValue('gerritsquashhash')
@@ -2556,9 +2578,9 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
               'patchset')
     if differs:
       if not force:
-        ask_for_data(
-            'Do you want to submit latest Gerrit patchset and bypass hooks?\n'
-            'Press Enter to continue, Ctrl+C to abort.')
+        confirm_or_exit(
+            'Do you want to submit latest Gerrit patchset and bypass hooks?\n',
+            action='submit')
       print('WARNING: bypassing hooks and submitting latest uploaded patchset')
     elif not bypass_hooks:
       hook_results = self.RunHook(
@@ -2652,8 +2674,7 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
           'and may interfere with it in subtle ways.\n'
           'We recommend you remove the commit-msg hook.')
     if offer_removal:
-      reply = ask_for_data('Do you want to remove it now? [Yes/No]')
-      if reply.lower().startswith('y'):
+      if ask_for_explicit_yes('Do you want to remove it now?'):
         gclient_utils.rm_file_or_tree(hook)
         print('Gerrit commit-msg hook removed.')
       else:
@@ -2719,7 +2740,7 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
               'and edit it if necessary but keep the "Change-Id: %s" footer\n'
               % (self.GetIssue(), '\n  '.join(footer_change_ids), change_id,
                  change_id))
-          ask_for_data('Press enter to edit now, Ctrl+C to abort')
+          confirm_or_exit(action='edit')
           if not options.force:
             change_desc = ChangeDescription(message)
             change_desc.prompt(bug=options.bug)
@@ -2809,7 +2830,7 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
       print('git log %s..%s' % (parent, ref_to_push))
       print('You can also use `git squash-branch` to squash these into a '
             'single commit.')
-      ask_for_data('About to upload; enter to confirm.')
+      confirm_or_exit(action='upload')
 
     if options.reviewers or options.tbr_owners:
       change_desc.update_reviewers(options.reviewers, options.tbr_owners,
@@ -3608,9 +3629,8 @@ def upload_branch_deps(cl, args):
     print('There are no dependent local branches for %s' % root_branch)
     return 0
 
-  print('This command will checkout all dependent branches and run '
-        '"git cl upload".')
-  ask_for_data('[Press enter to continue or ctrl-C to quit]')
+  confirm_or_exit('This command will checkout all dependent branches and run '
+                  '"git cl upload".', action='continue')
 
   # Add a default patchset title to all upload calls in Rietveld.
   if not cl.IsGerrit():

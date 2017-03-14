@@ -464,7 +464,8 @@ class TestGitCl(TestCase):
                   self._mocked_call(['get_or_create_merge_base']+list(a))))
     self.mock(git_cl, 'BranchExists', lambda _: True)
     self.mock(git_cl, 'FindCodereviewSettingsFile', lambda: '')
-    self.mock(git_cl, 'ask_for_data', self._mocked_call)
+    self.mock(git_cl, 'ask_for_data', lambda *a, **k: self._mocked_call(
+        *(['ask_for_data'] + list(a)), **k))
     self.mock(git_cl, 'write_json', lambda path, contents:
         self._mocked_call('write_json', path, contents))
     self.mock(git_cl.presubmit_support, 'DoPresubmitChecks', PresubmitMock)
@@ -549,6 +550,20 @@ class TestGitCl(TestCase):
     if isinstance(result, Exception):
       raise result
     return result
+
+  def test_ask_for_explicit_yes_true(self):
+    self.calls = [
+        (('ask_for_data', 'prompt [Yes/No]: '), 'blah'),
+        (('ask_for_data', 'Please, type yes or no: '), 'ye'),
+    ]
+    self.assertTrue(git_cl.ask_for_explicit_yes('prompt'))
+
+  def test_ask_for_explicit_yes_true(self):
+    self.calls = [
+        (('ask_for_data', 'prompt [Yes/No]: '), 'yesish'),
+        (('ask_for_data', 'Please, type yes or no: '), 'nO'),
+    ]
+    self.assertFalse(git_cl.ask_for_explicit_yes('prompt'))
 
   def test_LoadCodereviewSettingsFromFile_gerrit(self):
     codereview_file = StringIO.StringIO('GERRIT_HOST: true')
@@ -1247,7 +1262,7 @@ class TestGitCl(TestCase):
       if not title:
         calls += [
             ((['git', 'show', '-s', '--format=%s', 'HEAD'],), ''),
-            (('Title for patchset []: ',), 'User input'),
+            (('ask_for_data', 'Title for patchset []: '), 'User input'),
         ]
         title = 'User_input'
     if not git_footers.get_footer_change_id(description) and not squash:
@@ -1562,8 +1577,10 @@ class TestGitCl(TestCase):
     self.mock(git_cl, 'CMDupload', mock_CMDupload)
 
     self.calls = [
-        (('[Press enter to continue or ctrl-C to quit]',), ''),
-      ]
+        (('ask_for_data', 'This command will checkout all dependent branches '
+                          'and run "git cl upload". Press Enter to continue, '
+                          'or Ctrl+C to abort'), ''),
+    ]
 
     class MockChangelist():
       def __init__(self):
@@ -1950,8 +1967,6 @@ class TestGitCl(TestCase):
               CookiesAuthenticatorMockFactory(hosts_with_creds=auth))
     self.mock(git_cl, 'DieWithError',
               lambda msg, change=None: self._mocked_call(['DieWithError', msg]))
-    self.mock(git_cl, 'ask_for_data',
-              lambda msg: self._mocked_call(['ask_for_data', msg]))
     self.calls = self._gerrit_ensure_auth_calls(skip_auth_check=skip_auth_check)
     cl = git_cl.Changelist(codereview='gerrit')
     cl.branch = 'master'
@@ -1979,8 +1994,8 @@ class TestGitCl(TestCase):
       'chromium-review.googlesource.com': 'other',
     })
     self.calls.append(
-        ((['ask_for_data', 'If you know what you are doing, '
-                           'press Enter to continue, Ctrl+C to abort.'],), ''))
+        (('ask_for_data', 'If you know what you are doing '
+                          'press Enter to continue, or Ctrl+C to abort'), ''))
     self.assertIsNone(cl.EnsureAuthenticated(force=False))
 
   def test_gerrit_ensure_authenticated_ok(self):
@@ -2678,7 +2693,7 @@ class TestGitCl(TestCase):
         ((['exists', '/abs/git_repo_root/.git/hooks/commit-msg'],), True),
         ((['FileRead', '/abs/git_repo_root/.git/hooks/commit-msg'],),
          '...\n# From Gerrit Code Review\n...\nadd_ChangeId()\n'),
-        (('Do you want to remove it now? [Yes/No]',), 'Yes'),
+        (('ask_for_data', 'Do you want to remove it now? [Yes/No]: '), 'Yes'),
         ((['rm_file_or_tree', '/abs/git_repo_root/.git/hooks/commit-msg'],),
          ''),
     ]
