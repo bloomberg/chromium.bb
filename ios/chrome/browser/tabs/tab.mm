@@ -527,12 +527,12 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
 
     webStateImpl_.reset(static_cast<web::WebStateImpl*>(webState.release()));
     webStateObserver_.reset(
-        new web::WebStateObserverBridge(webStateImpl_.get(), self));
+        new web::WebStateObserverBridge(self.webState, self));
     [self updateLastVisitedTimestamp];
 
     // Do not respect |attachTabHelpers| as this tab helper is required for
     // proper conversion from WebState to Tab.
-    LegacyTabHelper::CreateForWebState(webStateImpl_.get(), self);
+    LegacyTabHelper::CreateForWebState(self.webState, self);
 
     [self.webController setDelegate:self];
 
@@ -755,7 +755,7 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
 }
 
 - (NSString*)title {
-  base::string16 title = webStateImpl_->GetTitle();
+  base::string16 title = self.webState->GetTitle();
   if (title.empty())
     title = l10n_util::GetStringUTF16(IDS_DEFAULT_TAB_TITLE);
   return base::SysUTF16ToNSString(title);
@@ -863,11 +863,11 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
 }
 
 - (web::NavigationManager*)navigationManager {
-  return webStateImpl_ ? webStateImpl_->GetNavigationManager() : nullptr;
+  return self.webState ? self.webState->GetNavigationManager() : nullptr;
 }
 
 - (web::NavigationManagerImpl*)navigationManagerImpl {
-  return webStateImpl_ ? &(webStateImpl_->GetNavigationManagerImpl()) : nullptr;
+  return self.webState ? &(webStateImpl_->GetNavigationManagerImpl()) : nullptr;
 }
 
 // Swap out the existing session history with a new list of navigations. Forces
@@ -896,7 +896,7 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
     [self.webController removeObserver:fullScreenController_];
     fullScreenController_.reset([[FullScreenController alloc]
          initWithDelegate:fullScreenControllerDelegate_
-        navigationManager:&(webStateImpl_->GetNavigationManagerImpl())
+        navigationManager:self.navigationManager
                 sessionID:self.tabId]);
     [self.webController addObserver:fullScreenController_];
     // If the content of the page was loaded without knowledge of the
@@ -954,11 +954,9 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
   // The check for fullScreenControllerDelegate is necessary to avoid recreating
   // a FullScreenController during teardown.
   if (!fullScreenController_ && fullScreenControllerDelegate) {
-    NavigationManagerImpl* navigationManager =
-        &(webStateImpl_->GetNavigationManagerImpl());
     fullScreenController_.reset([[FullScreenController alloc]
          initWithDelegate:fullScreenControllerDelegate
-        navigationManager:navigationManager
+        navigationManager:self.navigationManager
                 sessionID:self.tabId]);
     if (fullScreenController_) {
       [self.webController addObserver:fullScreenController_];
@@ -1248,7 +1246,7 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
   base::scoped_nsobject<Tab> kungFuDeathGrip([self retain]);
   [parentTabModel_ didCloseTab:self];  // Inform parent of tab closure.
 
-  LegacyTabHelper::RemoveFromWebState(webStateImpl_.get());
+  LegacyTabHelper::RemoveFromWebState(self.webState);
   webStateImpl_.reset();
 }
 
