@@ -2860,6 +2860,22 @@
             ]
         }
     ],
+    "V8Ignition": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "linux",
+                "mac",
+                "win"
+            ],
+            "experiments": [
+                {
+                    "name": "Future"
+                }
+            ]
+        }
+    ],
     "ViewsSimplifiedFullscreenUI": [
         {
             "platforms": [
