@@ -67,8 +67,11 @@ void Baz(OnceCallback<void(int)> cb) {
 
 // |Qux| takes the ownership of |cb| and transfers ownership to PostTask(),
 // which also takes the ownership of |cb|.
+// NOTE: TaskRunner is not actually migrated to OnceClosure yet. Once TaskRunner
+// supports OnceClosure, a OnceCallback can be posted as follows:
 void Qux(OnceCallback<void(int)> cb) {
-  PostTask(FROM_HERE, std::move(cb));
+  PostTask(FROM_HERE,
+           base::BindOnce(std::move(cb), 42));  // not yet implemented!
 }
 ```
 
