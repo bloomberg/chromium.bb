@@ -38,13 +38,13 @@ function test() {
          },
     ];
 
-    InspectorTest.addSniffer(UI.inspectorView, "showPanel", onPanelShown);
+    InspectorTest.addSniffer(UI.viewManager, "showView", onShowView);
 
     InspectorTest.addResult(`Browser version: ${Help.browserVersion()}\n`);
     Help.showReleaseNoteIfNeeded();
 
-    function onPanelShown(viewId, panelPromise) {
-        panelPromise.then(() => {
+    function onShowView(viewId, isUserGesture, viewPromise) {
+      viewPromise.then(() => {
             var releaseNoteView = UI.viewManager.view("release-note");
             var releaseNoteElement = releaseNoteView[UI.View._widgetSymbol].contentElement;
             InspectorTest.addResult("Dumping release note text:");

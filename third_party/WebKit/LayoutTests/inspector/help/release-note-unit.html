@@ -14,12 +14,12 @@ function test()
         Help._latestReleaseNote = Help._getReleaseNoteByVersion(browserVersion);
         InspectorTest.addResult(`Last seen version: ${lastSeenVersion}`);
         InspectorTest.addResult(`Browser version: ${browserVersion}`);
-        InspectorTest.addSniffer(UI.inspectorView, "showPanel", onPanelShown);
+        InspectorTest.addSniffer(UI.viewManager, "showView", onShowView);
         var showedReleaseNote = false;
 
         Help._showReleaseNoteIfNeeded(lastSeenVersion, browserVersion);
 
-        function onPanelShown() {
+        function onShowView() {
             showedReleaseNote = true;
         }
         if (showedReleaseNote)
