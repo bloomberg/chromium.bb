@@ -77,8 +77,7 @@ class MockPwsClient implements PwsClient {
      * @param fetchIconCallback The callback to be run when the icon is received.
      */
     @Override
-    public void fetchIcon(final String iconUrl,
-            final FetchIconCallback fetchIconCallback) {
+    public void fetchIcon(final String iconUrl, final FetchIconCallback fetchIconCallback) {
         mFetchIconCalls.add(iconUrl);
         fetchIconCallback.onIconReceived(iconUrl, mIconBitmaps.remove(0));
     }
