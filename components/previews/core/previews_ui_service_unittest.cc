@@ -26,8 +26,7 @@ class TestPreviewsUIService : public PreviewsUIService {
       std::unique_ptr<PreviewsOptOutStore> previews_opt_out_store)
       : PreviewsUIService(previews_io_data,
                           io_task_runner,
-                          std::move(previews_opt_out_store),
-                          PreviewsIsEnabledCallback()),
+                          std::move(previews_opt_out_store)),
         io_data_set_(false) {}
   ~TestPreviewsUIService() override {}
 

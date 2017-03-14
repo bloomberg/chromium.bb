@@ -8,7 +8,6 @@
 #include <memory>
 #include <string>
 
-#include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -28,8 +27,6 @@ class PreviewsBlackList;
 class PreviewsOptOutStore;
 class PreviewsUIService;
 
-typedef base::Callback<bool(PreviewsType)> PreviewsIsEnabledCallback;
-
 // A class to manage the IO portion of inter-thread communication between
 // previews/ objects. Created on the UI thread, but used only on the IO thread
 // after initialization.
@@ -43,8 +40,7 @@ class PreviewsIOData : public PreviewsDecider {
   // Stores |previews_ui_service| as |previews_ui_service_| and posts a task to
   // InitializeOnIOThread on the IO thread.
   void Initialize(base::WeakPtr<PreviewsUIService> previews_ui_service,
-                  std::unique_ptr<PreviewsOptOutStore> previews_opt_out_store,
-                  const PreviewsIsEnabledCallback& is_enabled_callback);
+                  std::unique_ptr<PreviewsOptOutStore> previews_opt_out_store);
 
   // Adds a navigation to |url| to the black list with result |opt_out|.
   void AddPreviewNavigation(const GURL& url, bool opt_out, PreviewsType type);
@@ -78,9 +74,6 @@ class PreviewsIOData : public PreviewsDecider {
   // happening on the IO thread.
   scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
-
-  // Whether the preview is enabled. Valid after Initialize() is called.
-  PreviewsIsEnabledCallback is_enabled_callback_;
 
   base::WeakPtrFactory<PreviewsIOData> weak_factory_;
 

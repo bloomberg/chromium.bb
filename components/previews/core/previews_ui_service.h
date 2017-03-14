@@ -13,7 +13,6 @@
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "components/previews/core/previews_experiments.h"
-#include "components/previews/core/previews_io_data.h"
 #include "components/previews/core/previews_opt_out_store.h"
 
 class GURL;
@@ -32,8 +31,7 @@ class PreviewsUIService {
   PreviewsUIService(
       PreviewsIOData* previews_io_data,
       const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
-      std::unique_ptr<PreviewsOptOutStore> previews_opt_out_store,
-      const PreviewsIsEnabledCallback& is_enabled_callback);
+      std::unique_ptr<PreviewsOptOutStore> previews_opt_out_store);
   virtual ~PreviewsUIService();
 
   // Sets |io_data_| to |io_data| to allow calls from the UI thread to the IO

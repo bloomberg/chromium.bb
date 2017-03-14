@@ -36,8 +36,7 @@ class PreviewsOptOutStoreSQL : public PreviewsOptOutStore {
   PreviewsOptOutStoreSQL(
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
       scoped_refptr<base::SequencedTaskRunner> background_task_runner,
-      const base::FilePath& database_dir,
-      std::unique_ptr<PreviewsTypeList> enabled_previews);
+      const base::FilePath& database_dir);
   ~PreviewsOptOutStoreSQL() override;
 
   // PreviewsOptOutStore implementation:
@@ -60,9 +59,6 @@ class PreviewsOptOutStoreSQL : public PreviewsOptOutStore {
 
   // SQL connection to the SQLite database.
   std::unique_ptr<sql::Connection> db_;
-
-  // All enabled previews and versions.
-  const std::unique_ptr<PreviewsTypeList> enabled_previews_;
 
   DISALLOW_COPY_AND_ASSIGN(PreviewsOptOutStoreSQL);
 };

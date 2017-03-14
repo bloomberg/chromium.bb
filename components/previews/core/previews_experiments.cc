@@ -189,19 +189,6 @@ net::EffectiveConnectionType EffectiveConnectionTypeThreshold() {
   return effective_connection_type;
 }
 
-bool IsOfflinePreviewsEnabled() {
-  //  Check if "show_offline_pages" is set to "true".
-  return ClientSidePreviewsParamValue(kOfflinePagesSlowNetwork) ==
-         kExperimentEnabled;
-}
-
-int OfflinePreviewsVersion() {
-  int version;
-  if (!base::StringToInt(ClientSidePreviewsParamValue(kVersion), &version))
-    version = 0;
-  return version;
-}
-
 }  // namespace params
 
 bool IsIncludedInClientSidePreviewsExperimentsFieldTrial() {
@@ -211,6 +198,47 @@ bool IsIncludedInClientSidePreviewsExperimentsFieldTrial() {
   return base::StartsWith(
       base::FieldTrialList::FindFullName(kClientSidePreviewsFieldTrial),
       kEnabled, base::CompareCase::SENSITIVE);
+}
+
+bool IsPreviewsTypeEnabled(PreviewsType type) {
+  switch (type) {
+    case PreviewsType::OFFLINE:
+      return ClientSidePreviewsParamValue(kOfflinePagesSlowNetwork) ==
+             kExperimentEnabled;
+    default:
+      NOTREACHED();
+      return false;
+  }
+}
+
+int GetPreviewsTypeVersion(PreviewsType type) {
+  int version = 0;  // default
+  switch (type) {
+    case PreviewsType::OFFLINE:
+      base::StringToInt(ClientSidePreviewsParamValue(kVersion), &version);
+      return version;
+    // List remaining enum cases vs. default to catch when new one is added.
+    case PreviewsType::NONE:
+      break;
+    case PreviewsType::LAST:
+      break;
+  }
+  NOTREACHED();
+  return -1;
+}
+
+std::unique_ptr<PreviewsTypeList> GetEnabledPreviews() {
+  std::unique_ptr<PreviewsTypeList> enabled_previews(new PreviewsTypeList());
+
+  // Loop across all previews types (relies on sequential enum values).
+  for (int i = static_cast<int>(PreviewsType::NONE) + 1;
+       i < static_cast<int>(PreviewsType::LAST); ++i) {
+    PreviewsType type = static_cast<PreviewsType>(i);
+    if (IsPreviewsTypeEnabled(type)) {
+      enabled_previews->push_back({type, GetPreviewsTypeVersion(type)});
+    }
+  }
+  return enabled_previews;
 }
 
 bool EnableOfflinePreviewsForTesting() {

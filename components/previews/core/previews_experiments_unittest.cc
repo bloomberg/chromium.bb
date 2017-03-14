@@ -145,13 +145,13 @@ void VerifyNewParams() {
 // Verifies that we can enable offline previews via field trial.
 TEST_F(PreviewsExperimentsTest, TestFieldTrialOfflinePage) {
   EXPECT_FALSE(IsIncludedInClientSidePreviewsExperimentsFieldTrial());
-  EXPECT_FALSE(params::IsOfflinePreviewsEnabled());
+  EXPECT_FALSE(IsPreviewsTypeEnabled(PreviewsType::OFFLINE));
 
   base::FieldTrialList field_trial_list(nullptr);
   ASSERT_TRUE(EnableOfflinePreviewsForTesting());
 
   EXPECT_TRUE(IsIncludedInClientSidePreviewsExperimentsFieldTrial());
-  EXPECT_TRUE(params::IsOfflinePreviewsEnabled());
+  EXPECT_TRUE(IsPreviewsTypeEnabled(PreviewsType::OFFLINE));
   variations::testing::ClearAllVariationParams();
 }
 
