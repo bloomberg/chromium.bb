@@ -222,13 +222,11 @@ ScoredHistoryMatches URLIndexPrivateData::HistoryItemsForTerms(
     search_term_cache_.clear();
   } else {
     // Remove any stale SearchTermCacheItems.
-    for (SearchTermCacheMap::iterator cache_iter = search_term_cache_.begin();
-         cache_iter != search_term_cache_.end(); ) {
-      if (!cache_iter->second.used_)
-        cache_iter = search_term_cache_.erase(cache_iter);
-      else
-        ++cache_iter;
-    }
+    base::EraseIf(
+        search_term_cache_,
+        [](const std::pair<base::string16, SearchTermCacheItem>& item) {
+          return !item.second.used_;
+        });
   }
 
   return scored_items;
@@ -586,12 +584,9 @@ HistoryIDSet URLIndexPrivateData::HistoryIDsForTerm(
 
     // We must filter the word list because the resulting word set surely
     // contains words which do not have the search term as a proper subset.
-    word_id_set.erase(std::remove_if(word_id_set.begin(), word_id_set.end(),
-                                     [&](WordID word_id) {
-                                       return word_list_[word_id].find(term) ==
-                                              base::string16::npos;
-                                     }),
-                      word_id_set.end());
+    base::EraseIf(word_id_set, [this, &term](WordID word_id) {
+      return word_list_[word_id].find(term) == base::string16::npos;
+    });
   } else {
     word_id_set = WordIDSetForTermChars(Char16SetFromString16(term));
   }
@@ -681,12 +676,9 @@ void URLIndexPrivateData::HistoryIdsToScoredMatches(
                              &lower_terms_to_word_starts_offsets);
 
   // Filter bad matches and other matches we don't want to display.
-  auto filter = [this, template_url_service](const HistoryID history_id) {
+  base::EraseIf(history_ids, [&](const HistoryID history_id) {
     return ShouldFilter(history_id, template_url_service);
-  };
-  history_ids.erase(
-      std::remove_if(history_ids.begin(), history_ids.end(), filter),
-      history_ids.end());
+  });
 
   // Score the matches.
   const size_t num_matches = history_ids.size();
