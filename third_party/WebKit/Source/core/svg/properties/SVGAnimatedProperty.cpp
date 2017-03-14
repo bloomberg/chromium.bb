@@ -40,7 +40,10 @@ SVGAnimatedPropertyBase::SVGAnimatedPropertyBase(
     const QualifiedName& attributeName,
     CSSPropertyID cssPropertyId)
     : m_type(type),
-      m_cssPropertyId(cssPropertyId),
+      // Cast to avoid warnings about unsafe bitfield truncations of the CSS
+      // property enum. CSS properties that don't fit in this bitfield are never
+      // used here. See static_assert in header.
+      m_cssPropertyId(static_cast<unsigned>(cssPropertyId)),
       m_contextElement(contextElement),
       m_attributeName(attributeName) {
   DCHECK(m_contextElement);
