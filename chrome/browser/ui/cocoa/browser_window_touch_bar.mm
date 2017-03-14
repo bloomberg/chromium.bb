@@ -9,6 +9,7 @@
 #include "base/mac/mac_util.h"
 #import "base/mac/scoped_nsobject.h"
 #import "base/mac/sdk_forward_declarations.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/app/vector_icons/vector_icons.h"
@@ -34,6 +35,20 @@
 #include "ui/vector_icons/vector_icons.h"
 
 namespace {
+
+// The touch bar actions that are being recorded in a histogram. These values
+// should not be re-ordered or removed.
+enum TouchBarAction {
+  BACK = 0,
+  FORWARD,
+  STOP,
+  RELOAD,
+  HOME,
+  SEARCH,
+  STAR,
+  NEW_TAB,
+  TOUCH_BAR_ACTION_COUNT
+};
 
 // The touch bar's identifier.
 const NSTouchBarCustomizationIdentifier kBrowserWindowTouchBarId =
@@ -81,6 +96,37 @@ NSButton* CreateTouchBarButton(const gfx::VectorIcon& icon,
                          action:@selector(executeCommand:)];
   button.tag = command;
   return button;
+}
+
+TouchBarAction TouchBarActionFromCommand(int command) {
+  switch (command) {
+    case IDC_BACK:
+      return TouchBarAction::BACK;
+    case IDC_FORWARD:
+      return TouchBarAction::FORWARD;
+    case IDC_STOP:
+      return TouchBarAction::STOP;
+    case IDC_RELOAD:
+      return TouchBarAction::RELOAD;
+    case IDC_HOME:
+      return TouchBarAction::HOME;
+    case IDC_FOCUS_LOCATION:
+      return TouchBarAction::SEARCH;
+    case IDC_BOOKMARK_PAGE:
+      return TouchBarAction::STAR;
+    case IDC_NEW_TAB:
+      return TouchBarAction::NEW_TAB;
+    default:
+      NOTREACHED();
+      return TouchBarAction::TOUCH_BAR_ACTION_COUNT;
+  }
+}
+
+// Logs the sample's UMA metrics into the DefaultTouchBar.Metrics histogram.
+void LogTouchBarUMA(int command) {
+  UMA_HISTOGRAM_ENUMERATION("TouchBar.Default.Metrics",
+                            TouchBarActionFromCommand(command),
+                            TOUCH_BAR_ACTION_COUNT);
 }
 
 // A class registered for C++ notifications. This is used to detect changes in
@@ -268,14 +314,16 @@ class HomePrefNotificationBridge {
 
 - (void)backOrForward:(id)sender {
   NSSegmentedControl* control = sender;
-  if ([control selectedSegment] == kBackSegmentIndex)
-    commandUpdater_->ExecuteCommand(IDC_BACK);
-  else
-    commandUpdater_->ExecuteCommand(IDC_FORWARD);
+  int command =
+      [control selectedSegment] == kBackSegmentIndex ? IDC_BACK : IDC_FORWARD;
+  LogTouchBarUMA(command);
+  commandUpdater_->ExecuteCommand(command);
 }
 
 - (void)executeCommand:(id)sender {
-  commandUpdater_->ExecuteCommand([sender tag]);
+  int command = [sender tag];
+  LogTouchBarUMA(command);
+  commandUpdater_->ExecuteCommand(command);
 }
 
 @end
