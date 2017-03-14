@@ -9,13 +9,11 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/size.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/link_listener.h"
-
-namespace gfx {
-class Rect;
-}
 
 namespace views {
 class RadioButton;
@@ -93,8 +91,8 @@ class TryChromeDialogView : public views::ButtonListener,
   // it has the following properties: a) is visible and b) is attached to the
   // bottom of the working area. For LTR machines it returns a left side
   // rectangle and for RTL it returns a right side rectangle so that the dialog
-  // does not compete with the standar place of the start menu.
-  gfx::Rect ComputeWindowPosition(int width, int height, bool is_RTL);
+  // does not compete with the standard place of the start menu.
+  gfx::Rect ComputeWindowPosition(gfx::Size size, bool is_RTL);
 
   // Create a windows region that looks like a toast of width |w| and height
   // |h|. This is best effort, so we don't care much if the operation fails.
