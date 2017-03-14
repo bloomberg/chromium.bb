@@ -258,6 +258,8 @@ blink_core_sources("css") {
     "cssom/CSSMatrixComponent.cpp",
     "cssom/CSSMatrixComponent.h",
     "cssom/CSSNumberValue.h",
+    "cssom/CSSNumericValue.cpp",
+    "cssom/CSSNumericValue.h",
     "cssom/CSSOMKeywords.h",
     "cssom/CSSOMTypes.h",
     "cssom/CSSPerspective.cpp",

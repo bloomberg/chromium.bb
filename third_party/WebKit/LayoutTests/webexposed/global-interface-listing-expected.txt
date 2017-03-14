@@ -584,6 +584,14 @@ interface CSSNumberValue : CSSStyleValue
     attribute @@toStringTag
     getter value
     method constructor
+interface CSSNumericValue : CSSStyleValue
+    attribute @@toStringTag
+    method add
+    method constructor
+    method div
+    method mul
+    method sub
+    method to
 interface CSSPageRule : CSSRule
     attribute @@toStringTag
     getter selectorText

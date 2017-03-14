@@ -66,6 +66,13 @@ CONSOLE MESSAGE: line 138:     method constructor
 CONSOLE MESSAGE: line 138: interface CSSNumberValue : CSSStyleValue
 CONSOLE MESSAGE: line 138:     getter value
 CONSOLE MESSAGE: line 138:     method constructor
+CONSOLE MESSAGE: line 138: interface CSSNumericValue : CSSStyleValue
+CONSOLE MESSAGE: line 138:     method add
+CONSOLE MESSAGE: line 138:     method constructor
+CONSOLE MESSAGE: line 138:     method div
+CONSOLE MESSAGE: line 138:     method mul
+CONSOLE MESSAGE: line 138:     method sub
+CONSOLE MESSAGE: line 138:     method to
 CONSOLE MESSAGE: line 138: interface CSSPerspective : CSSTransformComponent
 CONSOLE MESSAGE: line 138:     getter length
 CONSOLE MESSAGE: line 138:     method constructor

@@ -1,0 +1,18 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+// https://drafts.css-houdini.org/css-typed-om/#numeric-objects
+
+[
+  Exposed=(Window,PaintWorklet),
+  RuntimeEnabled=CSSTypedOM
+] interface CSSNumericValue : CSSStyleValue {
+  [RaisesException, NewObject] CSSNumericValue add(CSSNumericValue value);
+  [RaisesException, NewObject] CSSNumericValue sub(CSSNumericValue value);
+  [RaisesException, NewObject] CSSNumericValue mul(double value);
+  [RaisesException, NewObject] CSSNumericValue div(double value);
+
+  [RaisesException, NewObject] CSSNumericValue to(DOMString unit);
+
+  [RaisesException, NewObject] static CSSNumericValue parse(DOMString cssText);
+};
