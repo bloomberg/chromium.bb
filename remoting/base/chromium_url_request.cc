@@ -26,6 +26,7 @@ ChromiumUrlRequest::ChromiumUrlRequest(
   }
   url_fetcher_ = net::URLFetcher::Create(GURL(url), request_type, this);
   url_fetcher_->SetRequestContext(url_context.get());
+  url_fetcher_->SetReferrer("https://chrome.google.com/remotedesktop");
 }
 
 ChromiumUrlRequest::~ChromiumUrlRequest() {}
