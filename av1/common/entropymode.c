@@ -1666,6 +1666,34 @@ static const aom_cdf_prob default_uv_mode_cdf[INTRA_MODES][CDF_SIZE(
 };
 #endif  // CONFIG_ALT_INTRA
 
+#if CONFIG_EXT_PARTITION_TYPES
+static const aom_cdf_prob
+    default_partition_cdf[PARTITION_CONTEXTS][CDF_SIZE(EXT_PARTITION_TYPES)] = {
+      // 8x8 -> 4x4 only supports the four legacy partition types
+      { 25472, 28949, 31052, 32768, 0, 0, 0, 0, 0 },
+      { 18816, 22250, 28783, 32768, 0, 0, 0, 0, 0 },
+      { 18944, 26126, 29188, 32768, 0, 0, 0, 0, 0 },
+      { 15488, 22508, 27077, 32768, 0, 0, 0, 0, 0 },
+      { 22272, 23768, 25043, 29996, 30744, 31493, 32130, 32768, 0 },
+      { 11776, 13457, 16315, 28229, 29069, 29910, 31339, 32768, 0 },
+      { 10496, 14802, 16136, 27127, 29280, 31434, 32101, 32768, 0 },
+      { 6784, 8763, 10440, 29110, 30100, 31090, 31929, 32768, 0 },
+      { 22656, 23801, 24702, 30721, 31294, 31867, 32317, 32768, 0 },
+      { 8704, 9926, 12586, 28885, 29496, 30107, 31437, 32768, 0 },
+      { 6656, 10685, 11566, 27857, 29871, 31886, 32327, 32768, 0 },
+      { 2176, 3012, 3690, 31253, 31671, 32090, 32429, 32768, 0 },
+      { 28416, 28705, 28926, 32258, 32402, 32547, 32657, 32768, 0 },
+      { 9216, 9952, 11849, 30134, 30502, 30870, 31819, 32768, 0 },
+      { 7424, 9008, 9528, 30664, 31456, 32248, 32508, 32768, 0 },
+      { 1280, 1710, 2069, 31978, 32193, 32409, 32588, 32768, 0 },
+#if CONFIG_EXT_PARTITION
+      { 28416, 28705, 28926, 32258, 32402, 32547, 32657, 32768, 0 },
+      { 9216, 9952, 11849, 30134, 30502, 30870, 31819, 32768, 0 },
+      { 7424, 9008, 9528, 30664, 31456, 32248, 32508, 32768, 0 },
+      { 1280, 1710, 2069, 31978, 32193, 32409, 32588, 32768, 0 },
+#endif
+    };
+#else
 static const aom_cdf_prob
     default_partition_cdf[PARTITION_CONTEXTS][CDF_SIZE(PARTITION_TYPES)] = {
       { 25472, 28949, 31052, 32768, 0 }, { 18816, 22250, 28783, 32768, 0 },
@@ -1676,7 +1704,12 @@ static const aom_cdf_prob
       { 6656, 14714, 16477, 32768, 0 },  { 2176, 3849, 5205, 32768, 0 },
       { 28416, 28994, 29436, 32768, 0 }, { 9216, 10688, 14483, 32768, 0 },
       { 7424, 10592, 11632, 32768, 0 },  { 1280, 2141, 2859, 32768, 0 },
+#if CONFIG_EXT_PARTITION
+      { 28416, 28994, 29436, 32768, 0 }, { 9216, 10688, 14483, 32768, 0 },
+      { 7424, 10592, 11632, 32768, 0 },  { 1280, 2141, 2859, 32768, 0 },
+#endif
     };
+#endif
 
 static const aom_cdf_prob
     default_inter_mode_cdf[INTER_MODE_CONTEXTS][CDF_SIZE(INTER_MODES)] = {
@@ -2280,7 +2313,29 @@ void av1_set_mode_cdfs(struct AV1Common *cm) {
     av1_tree_to_cdf(av1_intra_mode_tree, fc->uv_mode_prob[i],
                     fc->uv_mode_cdf[i]);
 #if CONFIG_EXT_PARTITION_TYPES
-// FIXME
+  for (i = 0; i < PARTITION_PLOFFSET; ++i)
+    av1_tree_to_cdf(av1_partition_tree, fc->partition_prob[i],
+                    fc->partition_cdf[i]);
+  // Logical index (enum value) to inorder index (tree_to_cdf order)
+  aom_cdf_prob inorder_partition_cdf[CDF_SIZE(EXT_PARTITION_TYPES)] = {};
+  // TODO(aconverse): Generate this dynamically. The assumptions that
+  // av1_indices_from_tree() makes don't hold for this tree.
+  static const uint8_t av1_ext_partition_index_map[EXT_PARTITION_TYPES] = {
+    0, 1, 4, 7, 2, 3, 5, 6,
+  };
+  for (; i < PARTITION_CONTEXTS; ++i) {
+    av1_tree_to_cdf(av1_ext_partition_tree, fc->partition_prob[i],
+                    inorder_partition_cdf);
+    aom_cdf_prob cum_prob = 0;
+    for (j = 0; j < EXT_PARTITION_TYPES; ++j) {
+      int inorder_idx = av1_ext_partition_index_map[j];
+      aom_cdf_prob prob =
+          inorder_partition_cdf[inorder_idx] -
+          (inorder_idx > 0 ? inorder_partition_cdf[inorder_idx - 1] : 0);
+      fc->partition_cdf[i][j] = (cum_prob += prob);
+    }
+    assert(cum_prob == CDF_PROB_TOP);
+  }
 #else
   for (i = 0; i < PARTITION_CONTEXTS; ++i)
     av1_tree_to_cdf(av1_partition_tree, fc->partition_prob[i],

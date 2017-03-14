@@ -59,7 +59,7 @@
 
 static struct av1_token intra_mode_encodings[INTRA_MODES];
 static struct av1_token switchable_interp_encodings[SWITCHABLE_FILTERS];
-#if CONFIG_EXT_PARTITION_TYPES
+#if CONFIG_EXT_PARTITION_TYPES && !CONFIG_EC_MULTISYMBOL
 static const struct av1_token ext_partition_encodings[EXT_PARTITION_TYPES] = {
   { 0, 1 },  { 4, 3 },  { 12, 4 }, { 7, 3 },
   { 10, 4 }, { 11, 4 }, { 26, 5 }, { 27, 5 }
@@ -2499,8 +2499,12 @@ static void write_partition(const AV1_COMMON *const cm,
       av1_write_token(w, av1_partition_tree, probs, &partition_encodings[p]);
 #endif
     else
+#if CONFIG_EC_MULTISYMBOL
+      aom_write_symbol(w, p, ec_ctx->partition_cdf[ctx], EXT_PARTITION_TYPES);
+#else
       av1_write_token(w, av1_ext_partition_tree, probs,
                       &ext_partition_encodings[p]);
+#endif  // CONFIG_EC_MULTISYMBOL
 #else
 #if CONFIG_EC_MULTISYMBOL
     aom_write_symbol(w, p, ec_ctx->partition_cdf[ctx], PARTITION_TYPES);

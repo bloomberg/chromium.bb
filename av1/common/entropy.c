@@ -5694,11 +5694,7 @@ void av1_average_tile_intra_cdfs(FRAME_CONTEXT *fc, FRAME_CONTEXT *ec_ctxs[],
   AVERAGE_TILE_CDFS(seg.tree_cdf)
   AVERAGE_TILE_CDFS(uv_mode_cdf)
 
-#if CONFIG_EXT_PARTITION_TYPES
-// FIXME
-#else
   AVERAGE_TILE_CDFS(partition_cdf)
-#endif  // CONFIG_EXT_PARTITION_TYPES
 
 #if CONFIG_DELTA_Q
   AVERAGE_TILE_CDFS(delta_q_cdf)
