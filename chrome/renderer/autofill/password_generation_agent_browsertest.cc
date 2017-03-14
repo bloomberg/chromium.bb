@@ -272,6 +272,14 @@ const char kPasswordChangeFormHTML[] =
     "  <INPUT type = 'submit' value = 'Login'/> "
     "</FORM>";
 
+const char kPasswordFormAndSpanHTML[] =
+    "<FORM name = 'blah' action = 'http://www.random.com/pa/th?q=1&p=3#first'>"
+    "  <INPUT type = 'text' id = 'username'/> "
+    "  <INPUT type = 'password' id = 'password'/> "
+    "  <INPUT type = 'button' id = 'dummy'/> "
+    "</FORM>"
+    "<SPAN id='span'>Text to click on</SPAN>";
+
 TEST_F(PasswordGenerationAgentTest, DetectionTest) {
   // Don't shown the icon for non account creation forms.
   LoadHTMLWithUserGesture(kSigninFormHTML);
@@ -765,6 +773,41 @@ TEST_F(PasswordGenerationAgentTest, ConfirmationFieldVoteFromServer) {
   // response.
   EXPECT_EQ(base::string16(), ignored_password_element.value().utf16());
   EXPECT_EQ(password, confirmation_password_element.value().utf16());
+}
+
+TEST_F(PasswordGenerationAgentTest, RevealPassword) {
+  // Checks that revealed password is masked when the field lost focus.
+  // Test cases: user click on another input field and on non-focusable element.
+  LoadHTMLWithUserGesture(kPasswordFormAndSpanHTML);
+  SetNotBlacklistedMessage(password_generation_, kPasswordFormAndSpanHTML);
+  SetAccountCreationFormsDetectedMessage(password_generation_,
+                                         GetMainFrame()->document(), 0, 1);
+  const char* kGenerationElementId = "password";
+  const char* kSpanId = "span";
+  const char* kTextFieldId = "username";
+
+  ExpectGenerationAvailable(kGenerationElementId, true);
+  password_generation_->GeneratedPasswordAccepted(base::ASCIIToUTF16("pwd"));
+
+  const bool kFalseTrue[] = {false, true};
+  for (bool clickOnInputField : kFalseTrue) {
+    SCOPED_TRACE(testing::Message("clickOnInputField = ") << clickOnInputField);
+    // Click on the generation field to reveal the password value.
+    FocusField(kGenerationElementId);
+
+    WebDocument document = GetMainFrame()->document();
+    blink::WebElement element = document.getElementById(
+        blink::WebString::fromUTF8(kGenerationElementId));
+    ASSERT_FALSE(element.isNull());
+    blink::WebInputElement input = element.to<WebInputElement>();
+    EXPECT_TRUE(input.shouldRevealPassword());
+
+    // Click on another HTML element.
+    const char* const click_target_name =
+        clickOnInputField ? kTextFieldId : kSpanId;
+    EXPECT_TRUE(SimulateElementClick(click_target_name));
+    EXPECT_FALSE(input.shouldRevealPassword());
+  }
 }
 
 }  // namespace autofill

@@ -289,15 +289,15 @@ void AutofillAgent::FocusChangeComplete() {
   WebElement focused_element;
   if (!doc.isNull())
     focused_element = doc.focusedElement();
-  if (!focused_element.isNull()) {
-    if (password_generation_agent_ &&
-        password_generation_agent_->FocusedNodeHasChanged(focused_element)) {
-      is_generation_popup_possibly_visible_ = true;
-      is_popup_possibly_visible_ = true;
-    }
-    if (password_autofill_agent_)
-      password_autofill_agent_->FocusedNodeHasChanged(focused_element);
+  // PasswordGenerationAgent needs to know about focus changes, even if there is
+  // no focused element.
+  if (password_generation_agent_ &&
+      password_generation_agent_->FocusedNodeHasChanged(focused_element)) {
+    is_generation_popup_possibly_visible_ = true;
+    is_popup_possibly_visible_ = true;
   }
+  if (!focused_element.isNull() && password_autofill_agent_)
+    password_autofill_agent_->FocusedNodeHasChanged(focused_element);
 }
 
 void AutofillAgent::FormControlElementClicked(

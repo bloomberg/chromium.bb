@@ -127,6 +127,10 @@ void WebInputElement::setShouldRevealPassword(bool value) {
   unwrap<HTMLInputElement>()->setShouldRevealPassword(value);
 }
 
+bool WebInputElement::shouldRevealPassword() const {
+  return constUnwrap<HTMLInputElement>()->shouldRevealPassword();
+}
+
 WebInputElement::WebInputElement(HTMLInputElement* elem)
     : WebFormControlElement(elem) {}
 
