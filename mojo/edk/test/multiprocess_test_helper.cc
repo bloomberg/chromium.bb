@@ -58,7 +58,7 @@ int RunClientFunction(Func handler) {
 MultiprocessTestHelper::MultiprocessTestHelper() {}
 
 MultiprocessTestHelper::~MultiprocessTestHelper() {
-  CHECK(!test_child_.IsValid());
+  CHECK(!test_child_.process.IsValid());
 }
 
 ScopedMessagePipeHandle MultiprocessTestHelper::StartChild(
@@ -74,7 +74,7 @@ ScopedMessagePipeHandle MultiprocessTestHelper::StartChildWithExtraSwitch(
     const std::string& switch_value,
     LaunchType launch_type) {
   CHECK(!test_child_name.empty());
-  CHECK(!test_child_.IsValid());
+  CHECK(!test_child_.process.IsValid());
 
   std::string test_child_main = test_child_name + "TestChildMain";
 
@@ -168,22 +168,22 @@ ScopedMessagePipeHandle MultiprocessTestHelper::StartChildWithExtraSwitch(
   if (launch_type == LaunchType::CHILD ||
       launch_type == LaunchType::NAMED_CHILD) {
     DCHECK(server_handle.is_valid());
-    process.Connect(test_child_.Handle(),
+    process.Connect(test_child_.process.Handle(),
                     ConnectionParams(std::move(server_handle)),
                     process_error_callback_);
   }
 
-  CHECK(test_child_.IsValid());
+  CHECK(test_child_.process.IsValid());
   return pipe;
 }
 
 int MultiprocessTestHelper::WaitForChildShutdown() {
-  CHECK(test_child_.IsValid());
+  CHECK(test_child_.process.IsValid());
 
   int rv = -1;
-  WaitForMultiprocessTestChildExit(test_child_, TestTimeouts::action_timeout(),
-                                   &rv);
-  test_child_.Close();
+  WaitForMultiprocessTestChildExit(test_child_.process,
+                                   TestTimeouts::action_timeout(), &rv);
+  test_child_.process.Close();
   return rv;
 }
 

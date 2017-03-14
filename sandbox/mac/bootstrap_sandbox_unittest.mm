@@ -104,13 +104,14 @@ class BootstrapSandboxTest : public base::MultiProcessTest {
     base::LaunchOptions options;
     options.pre_exec_delegate = pre_exec_delegate.get();
 
-    base::Process process = SpawnChildWithOptions(child_name, options);
-    ASSERT_TRUE(process.IsValid());
+    base::SpawnChildResult spawn_child =
+        SpawnChildWithOptions(child_name, options);
+    ASSERT_TRUE(spawn_child.process.IsValid());
     int code = 0;
-    EXPECT_TRUE(process.WaitForExit(&code));
+    EXPECT_TRUE(spawn_child.process.WaitForExit(&code));
     EXPECT_EQ(0, code);
     if (out_pid)
-      *out_pid = process.Pid();
+      *out_pid = spawn_child.process.Pid();
   }
 
  protected:
@@ -124,15 +125,15 @@ TEST_F(BootstrapSandboxTest, DistributedNotifications_Unsandboxed) {
   base::scoped_nsobject<DistributedNotificationObserver> observer(
       [[DistributedNotificationObserver alloc] init]);
 
-  base::Process process = SpawnChild(kNotificationTestMain);
-  ASSERT_TRUE(process.IsValid());
+  base::SpawnChildResult spawn_child = SpawnChild(kNotificationTestMain);
+  ASSERT_TRUE(spawn_child.process.IsValid());
   int code = 0;
-  EXPECT_TRUE(process.WaitForExit(&code));
+  EXPECT_TRUE(spawn_child.process.WaitForExit(&code));
   EXPECT_EQ(0, code);
 
   [observer waitForNotification];
   EXPECT_EQ(1, [observer receivedCount]);
-  EXPECT_EQ(process.Pid(), [[observer object] intValue]);
+  EXPECT_EQ(spawn_child.process.Pid(), [[observer object] intValue]);
 }
 
 // Run the test with the sandbox enabled without notifications on the policy
@@ -471,7 +472,9 @@ TEST_F(BootstrapSandboxTest, ChildOutliveSandbox) {
       sandbox_->NewClient(kTestPolicyId));
   base::LaunchOptions options;
   options.pre_exec_delegate = pre_exec_delegate.get();
-  base::Process process = SpawnChildWithOptions("ChildOutliveSandbox", options);
+  base::SpawnChildResult spawn_result =
+      SpawnChildWithOptions("ChildOutliveSandbox", options);
+  base::Process& process = spawn_result.process;
   ASSERT_TRUE(process.IsValid());
 
   // Synchronize with the child.

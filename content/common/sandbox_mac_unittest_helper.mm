@@ -77,13 +77,13 @@ bool MacSandboxTest::RunTestInSandbox(SandboxType sandbox_type,
   if (test_data)
     setenv(kTestDataKey, test_data, 1);
 
-  base::Process child_process = SpawnChild("mac_sandbox_test_runner");
-  if (!child_process.IsValid()) {
+  base::SpawnChildResult spawn_child = SpawnChild("mac_sandbox_test_runner");
+  if (!spawn_child.process.IsValid()) {
     LOG(WARNING) << "SpawnChild failed";
     return false;
   }
   int code = -1;
-  if (!child_process.WaitForExit(&code)) {
+  if (!spawn_child.process.WaitForExit(&code)) {
     LOG(WARNING) << "Process::WaitForExit failed";
     return false;
   }

@@ -41,36 +41,37 @@ class ScopedSleeperProcess {
   }
 
   ~ScopedSleeperProcess() {
-    if (process_.IsValid()) {
-      process_.Terminate(-1, false);
-      EXPECT_TRUE(process_.WaitForExit(nullptr));
+    if (spawn_child_.process.IsValid()) {
+      spawn_child_.process.Terminate(-1, false);
+      EXPECT_TRUE(spawn_child_.process.WaitForExit(nullptr));
     }
   }
 
   void Launch() {
-    ASSERT_FALSE(process_.IsValid());
+    ASSERT_FALSE(spawn_child_.process.IsValid());
 
     base::CommandLine cmd_line(base::GetMultiProcessTestChildBaseCommandLine());
     base::LaunchOptions options;
     options.start_hidden = true;
-    process_ = base::SpawnMultiProcessTestChild("Sleeper", cmd_line, options);
-    ASSERT_TRUE(process_.IsValid());
+    spawn_child_ =
+        base::SpawnMultiProcessTestChild("Sleeper", cmd_line, options);
+    ASSERT_TRUE(spawn_child_.process.IsValid());
   }
 
   void Kill(int exit_code, bool wait) {
-    ASSERT_TRUE(process_.IsValid());
+    ASSERT_TRUE(spawn_child_.process.IsValid());
     ASSERT_FALSE(is_killed_);
-    process_.Terminate(exit_code, false);
+    spawn_child_.process.Terminate(exit_code, false);
     int seen_exit_code = 0;
-    EXPECT_TRUE(process_.WaitForExit(&seen_exit_code));
+    EXPECT_TRUE(spawn_child_.process.WaitForExit(&seen_exit_code));
     EXPECT_EQ(exit_code, seen_exit_code);
     is_killed_ = true;
   }
 
-  const base::Process& process() const { return process_; }
+  const base::Process& process() const { return spawn_child_.process; }
 
  private:
-  base::Process process_;
+  base::SpawnChildResult spawn_child_;
   bool is_killed_;
 };
 

@@ -62,12 +62,12 @@ TEST_F(FallbackCrashHandlingTest, SetupAndRunAsFallbackCrashHandler) {
 
   base::LaunchOptions options;
   options.start_hidden = true;
-  base::Process test_child = base::SpawnMultiProcessTestChild(
+  base::SpawnChildResult spawn_child = base::SpawnMultiProcessTestChild(
       "FallbackCrashHandlingWinRunHandler", cmd_line, options);
 
-  ASSERT_TRUE(test_child.IsValid());
+  ASSERT_TRUE(spawn_child.process.IsValid());
   int exit_code = -1;
-  ASSERT_TRUE(test_child.WaitForExit(&exit_code));
+  ASSERT_TRUE(spawn_child.process.WaitForExit(&exit_code));
   ASSERT_EQ(kFallbackCrashTerminationCode, static_cast<uint32_t>(exit_code));
 
   // Validate that the database contains one valid crash dump.

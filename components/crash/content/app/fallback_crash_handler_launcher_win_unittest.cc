@@ -143,9 +143,10 @@ TEST_F(FallbackCrashHandlerLauncherTest, LaunchAndWaitForHandler) {
   // Because this process is heavily multithreaded it's going to be flaky
   // and generally fraught with peril to try and grab a minidump of it.
   // Instead, fire off a sacrificial process to do the testing.
-  base::Process test_process = SpawnChild("TestCrashHandlerLauncherMain");
+  base::SpawnChildResult spawn_child =
+      SpawnChild("TestCrashHandlerLauncherMain");
   int exit_code = 0;
-  ASSERT_TRUE(test_process.WaitForExit(&exit_code));
+  ASSERT_TRUE(spawn_child.process.WaitForExit(&exit_code));
   ASSERT_EQ(0, exit_code);
 }
 

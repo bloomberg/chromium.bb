@@ -470,9 +470,9 @@ base::Process CloudPrintProxyPolicyStartupTest::Launch(
           .release(),
       IPC::Channel::MODE_SERVER, this, IOTaskRunner());
 
-  base::Process process = SpawnChild(name);
-  EXPECT_TRUE(process.IsValid());
-  return process;
+  base::SpawnChildResult spawn_result = SpawnChild(name);
+  EXPECT_TRUE(spawn_result.process.IsValid());
+  return std::move(spawn_result.process);
 }
 
 void CloudPrintProxyPolicyStartupTest::WaitForConnect() {

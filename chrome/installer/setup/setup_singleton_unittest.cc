@@ -140,7 +140,9 @@ class SetupSingletonTest : public base::MultiProcessTest {
   base::Process SpawnChildProcess(const std::string& process_name) {
     base::LaunchOptions options;
     options.start_hidden = true;
-    return SpawnChildWithOptions(process_name, options);
+    base::SpawnChildResult spawn_result =
+        SpawnChildWithOptions(process_name, options);
+    return std::move(spawn_result.process);
   }
 
   const base::FilePath& install_dir_path() const {
