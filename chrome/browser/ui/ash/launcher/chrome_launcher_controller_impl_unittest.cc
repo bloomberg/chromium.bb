@@ -1932,6 +1932,55 @@ TEST_P(ChromeLauncherControllerImplWithArcTest, ArcDeferredLaunch) {
               (request1->IsForApp(app3) && request2->IsForApp(app2)));
 }
 
+// Ensure the deferred controller does not override the active app controller
+// (crbug.com/701152).
+TEST_P(ChromeLauncherControllerImplWithArcTest, ArcDeferredLaunchForActiveApp) {
+  RecreateChromeLauncher();
+  SendListOfArcApps();
+  arc_test_.StopArcInstance();
+
+  const arc::mojom::AppInfo& app = arc_test_.fake_apps()[0];
+  const std::string app_id = ArcAppTest::GetAppId(app);
+
+  launcher_controller_->PinAppWithID(app_id);
+  EXPECT_TRUE(launcher_controller_->IsAppPinned(app_id));
+  const ash::ShelfID shelf_id =
+      launcher_controller_->GetShelfIDForAppID(app_id);
+  EXPECT_NE(ash::kInvalidShelfID, shelf_id);
+
+  int item_index = model_->ItemIndexByID(shelf_id);
+  ASSERT_GE(item_index, 0);
+
+  EXPECT_EQ(model_->items()[item_index].status, ash::STATUS_CLOSED);
+  EXPECT_EQ(model_->items()[item_index].type, ash::TYPE_APP_SHORTCUT);
+
+  // Play Store app is ARC app that might be represented by native Chrome
+  // platform app.
+  AppWindowLauncherItemController* app_controller =
+      new ExtensionAppWindowLauncherItemController(app_id, "",
+                                                   launcher_controller_.get());
+  launcher_controller_->SetItemController(shelf_id, app_controller);
+  launcher_controller_->SetItemStatus(shelf_id, ash::STATUS_RUNNING);
+
+  // This launch request should be ignored in case of active app.
+  arc::LaunchApp(profile(), app_id, ui::EF_LEFT_MOUSE_BUTTON);
+  EXPECT_FALSE(launcher_controller_->GetArcDeferredLauncher()->HasApp(app_id));
+
+  // Close app but shortcut should exist.
+  launcher_controller_->CloseLauncherItem(shelf_id);
+  EXPECT_EQ(shelf_id, launcher_controller_->GetShelfIDForAppID(app_id));
+
+  // This should switch shelf item into closed state.
+  item_index = model_->ItemIndexByID(shelf_id);
+  ASSERT_GE(item_index, 0);
+  EXPECT_EQ(model_->items()[item_index].status, ash::STATUS_CLOSED);
+  EXPECT_EQ(model_->items()[item_index].type, ash::TYPE_APP_SHORTCUT);
+
+  // Now launch request should not be ignored.
+  arc::LaunchApp(profile(), app_id, ui::EF_LEFT_MOUSE_BUTTON);
+  EXPECT_TRUE(launcher_controller_->GetArcDeferredLauncher()->HasApp(app_id));
+}
+
 TEST_P(ChromeLauncherControllerImplMultiProfileWithArcTest, ArcMultiUser) {
   SendListOfArcApps();
 
