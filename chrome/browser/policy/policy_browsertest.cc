@@ -1735,16 +1735,15 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionInstallForcelist) {
   content::WindowedNotificationObserver extension_crashed_observer(
       extensions::NOTIFICATION_EXTENSION_PROCESS_TERMINATED,
       content::NotificationService::AllSources());
-  content::WindowedNotificationObserver extension_loaded_observer(
-      extensions::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
-      content::NotificationService::AllSources());
+  extensions::TestExtensionRegistryObserver extension_loaded_observer(
+      extensions::ExtensionRegistry::Get(browser()->profile()), kGoodCrxId);
   extensions::ExtensionHost* extension_host =
       extensions::ProcessManager::Get(browser()->profile())
           ->GetBackgroundHostForExtension(kGoodCrxId);
   extension_host->render_process_host()->Shutdown(content::RESULT_CODE_KILLED,
                                                   false);
   extension_crashed_observer.Wait();
-  extension_loaded_observer.Wait();
+  extension_loaded_observer.WaitForExtensionLoaded();
 }
 
 IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionRecommendedInstallationMode) {
