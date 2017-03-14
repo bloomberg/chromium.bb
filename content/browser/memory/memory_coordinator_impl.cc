@@ -232,14 +232,6 @@ MemoryState MemoryCoordinatorImpl::GetCurrentMemoryState() const {
   return browser_memory_state_;
 }
 
-void MemoryCoordinatorImpl::SetCurrentMemoryStateForTesting(
-    MemoryState memory_state) {
-  // Resets |last_state_change_| so that
-  // UpdateBrowserStateAndNotifyStateToClients() to set memory state forcibly.
-  last_state_change_ = base::TimeTicks();
-  UpdateBrowserStateAndNotifyStateToClients(memory_state);
-}
-
 void MemoryCoordinatorImpl::ForceSetMemoryCondition(MemoryCondition condition,
                                                     base::TimeDelta duration) {
   UpdateConditionIfNeeded(condition);

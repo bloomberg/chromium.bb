@@ -449,28 +449,6 @@ TEST_F(MemoryCoordinatorImplTest, UpdateCondition) {
   }
 }
 
-TEST_F(MemoryCoordinatorImplTest, SetMemoryStateForTesting) {
-  MockMemoryCoordinatorClient client;
-  base::MemoryCoordinatorClientRegistry::GetInstance()->Register(&client);
-  EXPECT_EQ(base::MemoryState::NORMAL, coordinator_->GetCurrentMemoryState());
-  EXPECT_EQ(base::MemoryState::NORMAL,
-            base::MemoryCoordinatorProxy::GetInstance()->
-                GetCurrentMemoryState());
-  EXPECT_EQ(base::MemoryState::NORMAL, client.state());
-
-  base::MemoryCoordinatorProxy::GetInstance()->SetCurrentMemoryStateForTesting(
-      base::MemoryState::THROTTLED);
-  EXPECT_EQ(base::MemoryState::THROTTLED,
-            coordinator_->GetCurrentMemoryState());
-  EXPECT_EQ(base::MemoryState::THROTTLED,
-            base::MemoryCoordinatorProxy::GetInstance()->
-            GetCurrentMemoryState());
-  RunUntilIdle();
-  EXPECT_TRUE(client.did_state_changed());
-  EXPECT_EQ(base::MemoryState::THROTTLED, client.state());
-  base::MemoryCoordinatorClientRegistry::GetInstance()->Unregister(&client);
-}
-
 TEST_F(MemoryCoordinatorImplTest, ForceSetMemoryCondition) {
   auto* condition_observer = coordinator_->condition_observer_.get();
   condition_observer->expected_renderer_size_ = 10;

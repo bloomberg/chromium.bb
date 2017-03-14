@@ -4,7 +4,7 @@
 
 #include "chrome/browser/sessions/tab_loader.h"
 
-#include "base/memory/memory_coordinator_proxy.h"
+#include "base/memory/memory_coordinator_client_registry.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
@@ -62,7 +62,7 @@ class TabLoaderTest : public testing::Test {
 TEST_F(TabLoaderTest, MAYBE_OnMemoryStateChange) {
   TabLoader::RestoreTabs(restored_tabs_, base::TimeTicks());
   EXPECT_TRUE(TabLoader::shared_tab_loader_->loading_enabled_);
-  base::MemoryCoordinatorProxy::GetInstance()->SetCurrentMemoryStateForTesting(
+  base::MemoryCoordinatorClientRegistry::GetInstance()->Notify(
       base::MemoryState::THROTTLED);
   // ObserverListThreadsafe is used to notify the state to clients, so running
   // the loop is necessary here.

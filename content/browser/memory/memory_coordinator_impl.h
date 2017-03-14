@@ -80,8 +80,6 @@ class CONTENT_EXPORT MemoryCoordinatorImpl : public base::MemoryCoordinator,
 
   // base::MemoryCoordinator implementations:
   MemoryState GetCurrentMemoryState() const override;
-  // Temporarily sets memory state of the browser process for testing.
-  void SetCurrentMemoryStateForTesting(MemoryState memory_state) override;
 
   // content::MemoryCoordinator implementation:
   MemoryState GetStateForProcess(base::ProcessHandle handle) override;
