@@ -113,6 +113,8 @@ MusClient::MusClient(service_manager::Connector* connector,
 
   ViewsDelegate::GetInstance()->set_native_widget_factory(
       base::Bind(&MusClient::CreateNativeWidget, base::Unretained(this)));
+  ViewsDelegate::GetInstance()->set_desktop_window_tree_host_factory(base::Bind(
+      &MusClient::CreateDesktopWindowTreeHost, base::Unretained(this)));
 }
 
 MusClient::~MusClient() {
@@ -125,6 +127,8 @@ MusClient::~MusClient() {
   if (ViewsDelegate::GetInstance()) {
     ViewsDelegate::GetInstance()->set_native_widget_factory(
         ViewsDelegate::NativeWidgetFactory());
+    ViewsDelegate::GetInstance()->set_desktop_window_tree_host_factory(
+        ViewsDelegate::DesktopWindowTreeHostFactory());
   }
 
   base::DiscardableMemoryAllocator::SetInstance(nullptr);
@@ -218,11 +222,8 @@ NativeWidget* MusClient::CreateNativeWidget(
     native_widget->SetDesktopWindowTreeHost(
         base::WrapUnique(init_params.desktop_window_tree_host));
   } else {
-    std::map<std::string, std::vector<uint8_t>> mus_properties =
-        ConfigurePropertiesFromParams(init_params);
     native_widget->SetDesktopWindowTreeHost(
-        base::MakeUnique<DesktopWindowTreeHostMus>(delegate, native_widget,
-                                                   &mus_properties));
+        CreateDesktopWindowTreeHost(init_params, delegate, native_widget));
   }
   return native_widget;
 }
@@ -251,6 +252,16 @@ void MusClient::RemoveObserver(MusClientObserver* observer) {
 void MusClient::SetMusPropertyMirror(
     std::unique_ptr<MusPropertyMirror> mirror) {
   mus_property_mirror_ = std::move(mirror);
+}
+
+std::unique_ptr<DesktopWindowTreeHost> MusClient::CreateDesktopWindowTreeHost(
+    const Widget::InitParams& init_params,
+    internal::NativeWidgetDelegate* delegate,
+    DesktopNativeWidgetAura* desktop_native_widget_aura) {
+  std::map<std::string, std::vector<uint8_t>> mus_properties =
+      ConfigurePropertiesFromParams(init_params);
+  return base::MakeUnique<DesktopWindowTreeHostMus>(
+      delegate, desktop_native_widget_aura, &mus_properties);
 }
 
 void MusClient::OnEmbed(

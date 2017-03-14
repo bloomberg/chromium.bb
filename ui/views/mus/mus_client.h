@@ -44,6 +44,7 @@ class WMState;
 
 namespace views {
 
+class DesktopNativeWidgetAura;
 class MusClientObserver;
 class MusPropertyMirror;
 class PointerWatcherEventRouter;
@@ -98,7 +99,6 @@ class VIEWS_MUS_EXPORT MusClient : public aura::WindowTreeClientDelegate,
   //  NativeWidget has not been explicitly set.
   NativeWidget* CreateNativeWidget(const Widget::InitParams& init_params,
                                    internal::NativeWidgetDelegate* delegate);
-
   // Called when the capture client has been set for a window to notify
   // PointerWatcherEventRouter and CaptureSynchronizer.
   void OnCaptureClientSet(aura::client::CaptureClient* capture_client);
@@ -118,6 +118,14 @@ class VIEWS_MUS_EXPORT MusClient : public aura::WindowTreeClientDelegate,
  private:
   friend class AuraInit;
   friend class test::MusClientTestApi;
+
+  // Creates a DesktopWindowTreeHostMus. This is set as the factory function
+  // ViewsDelegate such that if DesktopNativeWidgetAura is created without a
+  // DesktopWindowTreeHost this is created.
+  std::unique_ptr<DesktopWindowTreeHost> CreateDesktopWindowTreeHost(
+      const Widget::InitParams& init_params,
+      internal::NativeWidgetDelegate* delegate,
+      DesktopNativeWidgetAura* desktop_native_widget_aura);
 
   // aura::WindowTreeClientDelegate:
   void OnEmbed(
