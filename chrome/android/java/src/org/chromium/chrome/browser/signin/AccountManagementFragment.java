@@ -22,6 +22,7 @@ import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.UserManager;
@@ -32,6 +33,7 @@ import android.preference.PreferenceScreen;
 import android.text.TextUtils;
 import android.util.Pair;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
@@ -374,6 +376,7 @@ public class AccountManagementFragment extends PreferenceFragment
             }
             parentAccounts.setSummary(parentText);
             parentAccounts.setSelectable(false);
+            ((ChromeBasePreference) parentAccounts).setUseReducedPadding(true);
 
             final int childContentSummary;
             int defaultBehavior = prefService.getDefaultSupervisedUserFilteringBehavior();
@@ -385,7 +388,16 @@ public class AccountManagementFragment extends PreferenceFragment
                 childContentSummary = R.string.account_management_child_content_all;
             }
             childContent.setSummary(childContentSummary);
-            childContent.setSelectable(false);
+            // TODO(dgn): made selectable to show the dividers. Find a way to avoid this. A side
+            // effect is that it shows a tap ripple on an item that is not interactive.
+            // childContent.setSelectable(false);
+
+            Drawable newIcon = ApiCompatibilityUtils.getDrawable(
+                    getResources(), R.drawable.ic_drive_site_white_24dp);
+            newIcon.mutate().setColorFilter(
+                    ApiCompatibilityUtils.getColor(getResources(), R.color.google_grey_600),
+                    PorterDuff.Mode.SRC_IN);
+            childContent.setIcon(newIcon);
         } else {
             PreferenceScreen prefScreen = getPreferenceScreen();
             prefScreen.removePreference(findPreference(PREF_PARENTAL_SETTINGS));
@@ -413,7 +425,7 @@ public class AccountManagementFragment extends PreferenceFragment
             pref.setTitle(account.name);
 
             boolean isChildAccount = ChildAccountService.isChildAccount();
-
+            pref.setUseReducedPadding(isChildAccount);
             pref.setIcon(new BitmapDrawable(getResources(),
                     isChildAccount ? getBadgedUserPicture(account.name, getResources()) :
                         getUserPicture(account.name, getResources())));

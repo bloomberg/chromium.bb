@@ -23,9 +23,11 @@
         android:key="parental_settings"
         android:title="@string/account_management_parental_settings"
         android:order="1001" />
-    <Preference
+
+    <org.chromium.chrome.browser.preferences.ChromeBasePreference
         android:key="parent_accounts"
         android:order="1002" />
+
     <Preference
         android:key="child_content"
         android:title="@string/account_management_child_content_title"
