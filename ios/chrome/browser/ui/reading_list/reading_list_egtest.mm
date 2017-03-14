@@ -221,28 +221,29 @@ size_t ModelReadSize(ReadingListModel* model) {
 // Tests that sharing a web page to the Reading List results in a snackbar
 // appearing, and that the Reading List entry is present in the Reading List.
 - (void)testSavingToReadingList {
-  // TODO(crbug.com/700001): This test is failing on iPad.
-  if (IsIPadIdiom()) {
-    EARL_GREY_TEST_DISABLED(@"Disabled for iPad");
-  }
-
-  // Setup a server serving a page at http://potato with the title "tomato".
+  // Setup a server serving a distillable page at http://potato with the title
+  // "tomato", and a non distillable page at http://beans
   std::map<GURL, std::string> responses;
-  const GURL regularPageURL = web::test::HttpServer::MakeUrl("http://potato");
+  const GURL distillablePageURL =
+      web::test::HttpServer::MakeUrl("http://potato");
 
   std::string contentToRemove = "Text that distillation should remove.";
   std::string contentToKeep = "Text that distillation should keep.";
-
   // Distillation only occurs on pages that are not too small.
-  responses[regularPageURL] = "<html><head><title>tomato</title></head>" +
-                              contentToRemove * 20 + "<article>" +
-                              contentToKeep * 20 + "</article>" +
-                              contentToRemove * 20 + "</html>";
+  responses[distillablePageURL] = "<html><head><title>tomato</title></head>" +
+                                  contentToRemove * 20 + "<article>" +
+                                  contentToKeep * 20 + "</article>" +
+                                  contentToRemove * 20 + "</html>";
+
+  const GURL nonDistillablePageURL =
+      web::test::HttpServer::MakeUrl("http://beans");
+  responses[nonDistillablePageURL] =
+      "<html><head><title>greens</title></head></html>";
 
   web::test::SetUpSimpleHttpServer(responses);
 
   // Open http://potato
-  [ChromeEarlGrey loadURL:regularPageURL];
+  [ChromeEarlGrey loadURL:distillablePageURL];
 
   // Add the page to the reading list.
   [ChromeEarlGreyUI openShareMenu];
@@ -274,6 +275,10 @@ size_t ModelReadSize(ReadingListModel* model) {
   GREYAssert(testing::WaitUntilConditionOrTimeout(kSnackbarDisappearanceTimeout,
                                                   waitForDisappearance),
              @"Snackbar did not disappear.");
+
+  // Navigate to http://beans
+  [ChromeEarlGrey loadURL:nonDistillablePageURL];
+  [ChromeEarlGrey waitForPageToFinishLoading];
 
   // Verify that a page with the title "tomato" is present in the reading list.
   OpenReadingList();
