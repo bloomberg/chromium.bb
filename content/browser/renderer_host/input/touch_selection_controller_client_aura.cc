@@ -121,7 +121,8 @@ TouchSelectionControllerClientAura::TouchSelectionControllerClientAura(
       quick_menu_requested_(false),
       touch_down_(false),
       scroll_in_progress_(false),
-      handle_drag_in_progress_(false) {
+      handle_drag_in_progress_(false),
+      show_quick_menu_immediately_for_test_(false) {
   DCHECK(rwhva_);
 }
 
