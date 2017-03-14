@@ -205,30 +205,31 @@ TEST_F(SystemTrayTest, SystemTrayDefaultView) {
 // Make sure the opening system tray bubble will not deactivate the
 // other window. crbug.com/120680.
 TEST_F(SystemTrayTest, Activation) {
-  // TODO: investigate why this fails in mash. http://crbug.com/695559.
-  if (WmShell::Get()->IsRunningInMash())
-    return;
-
   SystemTray* tray = GetPrimarySystemTray();
   std::unique_ptr<views::Widget> widget(CreateTestWidget(
       nullptr, kShellWindowId_DefaultContainer, gfx::Rect(0, 0, 100, 100)));
   EXPECT_TRUE(widget->IsActive());
 
+  // The window stays active after the bubble opens.
   tray->ShowDefaultView(BUBBLE_CREATE_NEW);
   ASSERT_TRUE(tray->GetWidget());
   EXPECT_FALSE(tray->GetSystemBubble()->bubble_view()->GetWidget()->IsActive());
   EXPECT_TRUE(widget->IsActive());
 
+  // Activating the bubble makes the window lose activation.
   tray->ActivateBubble();
   EXPECT_TRUE(tray->GetSystemBubble()->bubble_view()->GetWidget()->IsActive());
   EXPECT_FALSE(widget->IsActive());
 
-  // Accelerator will activate the bubble.
+  // Closing the bubble re-activates the window.
   tray->CloseSystemBubble();
-
   EXPECT_TRUE(widget->IsActive());
+
+  // Opening the bubble with an accelerator activates the bubble because the
+  // user will probably navigate with the keyboard.
   WmShell::Get()->accelerator_controller()->PerformActionIfEnabled(
       SHOW_SYSTEM_TRAY_BUBBLE);
+  ASSERT_TRUE(tray->GetWidget());
   EXPECT_TRUE(tray->GetSystemBubble()->bubble_view()->GetWidget()->IsActive());
   EXPECT_FALSE(widget->IsActive());
 }

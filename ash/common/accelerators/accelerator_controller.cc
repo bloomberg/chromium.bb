@@ -28,6 +28,7 @@
 #include "ash/common/system/keyboard_brightness_control_delegate.h"
 #include "ash/common/system/status_area_widget.h"
 #include "ash/common/system/system_notifier.h"
+#include "ash/common/system/tray/system_tray.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/system/tray/system_tray_notifier.h"
 #include "ash/common/system/web_notification/web_notification_tray.h"
@@ -229,6 +230,16 @@ void HandleShowMessageCenterBubble() {
         status_area_widget->web_notification_tray();
     if (notification_tray->visible())
       notification_tray->ShowMessageCenterBubble();
+  }
+}
+
+void HandleShowSystemTrayBubble() {
+  base::RecordAction(UserMetricsAction("Accel_Show_System_Tray_Bubble"));
+  WmWindow* target_root = Shell::GetWmRootWindowForNewWindows();
+  SystemTray* tray = target_root->GetRootWindowController()->GetSystemTray();
+  if (!tray->HasSystemBubble()) {
+    tray->ShowDefaultView(BUBBLE_CREATE_NEW);
+    tray->ActivateBubble();
   }
 }
 
@@ -839,6 +850,7 @@ bool AcceleratorController::CanPerformAction(
     case RESTORE_TAB:
     case SHOW_IME_MENU_BUBBLE:
     case SHOW_KEYBOARD_OVERLAY:
+    case SHOW_SYSTEM_TRAY_BUBBLE:
     case SHOW_TASK_MANAGER:
     case SUSPEND:
     case TOGGLE_FULLSCREEN:
@@ -1017,6 +1029,9 @@ void AcceleratorController::PerformAction(AcceleratorAction action,
       break;
     case SHOW_STYLUS_TOOLS:
       HandleShowStylusTools();
+      break;
+    case SHOW_SYSTEM_TRAY_BUBBLE:
+      HandleShowSystemTrayBubble();
       break;
     case SHOW_TASK_MANAGER:
       HandleShowTaskManager();

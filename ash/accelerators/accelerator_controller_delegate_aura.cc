@@ -16,7 +16,6 @@
 #include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/shell_delegate.h"
 #include "ash/common/system/system_notifier.h"
-#include "ash/common/system/tray/system_tray.h"
 #include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm/wm_event.h"
@@ -187,17 +186,6 @@ void HandleRotateActiveWindow() {
   }
 }
 
-void HandleShowSystemTrayBubble() {
-  base::RecordAction(UserMetricsAction("Accel_Show_System_Tray_Bubble"));
-  RootWindowController* controller =
-      RootWindowController::ForTargetRootWindow();
-  SystemTray* tray = controller->GetSystemTray();
-  if (!tray->HasSystemBubble()) {
-    tray->ShowDefaultView(BUBBLE_CREATE_NEW);
-    tray->ActivateBubble();
-  }
-}
-
 void HandleTakeWindowScreenshot(ScreenshotDelegate* screenshot_delegate) {
   base::RecordAction(UserMetricsAction("Accel_Take_Window_Screenshot"));
   DCHECK(screenshot_delegate);
@@ -294,7 +282,6 @@ bool AcceleratorControllerDelegateAura::HandlesAction(
     case SCALE_UI_RESET:
     case SCALE_UI_UP:
     case SHOW_MESSAGE_CENTER_BUBBLE:
-    case SHOW_SYSTEM_TRAY_BUBBLE:
     case SWAP_PRIMARY_DISPLAY:
     case TAKE_PARTIAL_SCREENSHOT:
     case TAKE_SCREENSHOT:
@@ -343,7 +330,6 @@ bool AcceleratorControllerDelegateAura::CanPerformAction(
     case POWER_RELEASED:
     case ROTATE_SCREEN:
     case ROTATE_WINDOW:
-    case SHOW_SYSTEM_TRAY_BUBBLE:
     case TAKE_PARTIAL_SCREENSHOT:
     case TAKE_SCREENSHOT:
     case TAKE_WINDOW_SCREENSHOT:
@@ -428,9 +414,6 @@ void AcceleratorControllerDelegateAura::PerformAction(
       break;
     case SCALE_UI_UP:
       accelerators::ZoomInternalDisplay(true /* up */);
-      break;
-    case SHOW_SYSTEM_TRAY_BUBBLE:
-      HandleShowSystemTrayBubble();
       break;
     case SWAP_PRIMARY_DISPLAY:
       HandleSwapPrimaryDisplay();
