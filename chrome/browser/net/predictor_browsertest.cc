@@ -26,6 +26,7 @@
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_remover.h"
 #include "chrome/browser/browsing_data/browsing_data_remover_factory.h"
+#include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
 #include "chrome/browser/net/predictor.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -1410,8 +1411,8 @@ IN_PROC_BROWSER_TEST_F(PredictorBrowserTest, ClearData) {
   BrowsingDataRemover* remover =
       BrowsingDataRemoverFactory::GetForBrowserContext(browser()->profile());
   remover->Remove(base::Time(), base::Time::Max(),
-                  BrowsingDataRemover::REMOVE_HISTORY,
-                  BrowsingDataHelper::UNPROTECTED_WEB);
+                  ChromeBrowsingDataRemoverDelegate::DATA_TYPE_HISTORY,
+                  BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB);
 
   GetListFromPrefsAsString(prefs::kDnsPrefetchingStartupList,
                            &cleared_startup_list);

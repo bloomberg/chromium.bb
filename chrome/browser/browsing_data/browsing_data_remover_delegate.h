@@ -5,14 +5,29 @@
 #ifndef CHROME_BROWSER_BROWSING_DATA_BROWSING_DATA_REMOVER_DELEGATE_H_
 #define CHROME_BROWSER_BROWSING_DATA_BROWSING_DATA_REMOVER_DELEGATE_H_
 
+class GURL;
+
 namespace content {
 class BrowsingDataFilterBuilder;
+}
+
+namespace storage {
+class SpecialStoragePolicy;
 }
 
 class BrowsingDataRemoverDelegate {
  public:
   virtual ~BrowsingDataRemoverDelegate() {}
 
+  // Determines whether |origin| matches |origin_type_mask|
+  // given the |special_storage_policy|. |origin_type_mask| should only contain
+  // embedder-specific datatypes.
+  virtual bool DoesOriginMatchEmbedderMask(
+      int origin_type_mask,
+      const GURL& origin,
+      storage::SpecialStoragePolicy* special_storage_policy) const = 0;
+
+  // Removes embedder-specific data.
   virtual void RemoveEmbedderData(
       const base::Time& delete_begin,
       const base::Time& delete_end,

@@ -19,6 +19,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_remover_factory.h"
+#include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
 #include "chrome/browser/browsing_data/mock_browsing_data_remover.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/test/base/testing_profile.h"
@@ -387,26 +388,32 @@ TEST_F(ChromeContentBrowserClientClearSiteDataTest, Parameters) {
     int mask;
   } test_cases[] = {
       {false, false, false, 0},
-      {true, false, false, BrowsingDataRemover::REMOVE_COOKIES |
-                               BrowsingDataRemover::REMOVE_CHANNEL_IDS |
-                               BrowsingDataRemover::REMOVE_PLUGIN_DATA},
-      {false, true, false, BrowsingDataRemover::REMOVE_SITE_DATA &
-                               ~BrowsingDataRemover::REMOVE_COOKIES &
-                               ~BrowsingDataRemover::REMOVE_CHANNEL_IDS &
-                               ~BrowsingDataRemover::REMOVE_PLUGIN_DATA},
-      {false, false, true, BrowsingDataRemover::REMOVE_CACHE},
-      {true, true, false, BrowsingDataRemover::REMOVE_SITE_DATA},
-      {true, false, true, BrowsingDataRemover::REMOVE_COOKIES |
-                              BrowsingDataRemover::REMOVE_CHANNEL_IDS |
-                              BrowsingDataRemover::REMOVE_PLUGIN_DATA |
-                              BrowsingDataRemover::REMOVE_CACHE},
-      {false, true, true, BrowsingDataRemover::REMOVE_CACHE |
-                              (BrowsingDataRemover::REMOVE_SITE_DATA &
-                               ~BrowsingDataRemover::REMOVE_COOKIES &
-                               ~BrowsingDataRemover::REMOVE_CHANNEL_IDS &
-                               ~BrowsingDataRemover::REMOVE_PLUGIN_DATA)},
-      {true, true, true, BrowsingDataRemover::REMOVE_SITE_DATA |
-                             BrowsingDataRemover::REMOVE_CACHE},
+      {true, false, false,
+       BrowsingDataRemover::DATA_TYPE_COOKIES |
+           BrowsingDataRemover::DATA_TYPE_CHANNEL_IDS |
+           ChromeBrowsingDataRemoverDelegate::DATA_TYPE_PLUGIN_DATA},
+      {false, true, false,
+       ChromeBrowsingDataRemoverDelegate::DATA_TYPE_SITE_DATA &
+           ~BrowsingDataRemover::DATA_TYPE_COOKIES &
+           ~BrowsingDataRemover::DATA_TYPE_CHANNEL_IDS &
+           ~ChromeBrowsingDataRemoverDelegate::DATA_TYPE_PLUGIN_DATA},
+      {false, false, true, BrowsingDataRemover::DATA_TYPE_CACHE},
+      {true, true, false,
+       ChromeBrowsingDataRemoverDelegate::DATA_TYPE_SITE_DATA},
+      {true, false, true,
+       BrowsingDataRemover::DATA_TYPE_COOKIES |
+           BrowsingDataRemover::DATA_TYPE_CHANNEL_IDS |
+           ChromeBrowsingDataRemoverDelegate::DATA_TYPE_PLUGIN_DATA |
+           BrowsingDataRemover::DATA_TYPE_CACHE},
+      {false, true, true,
+       BrowsingDataRemover::DATA_TYPE_CACHE |
+           (ChromeBrowsingDataRemoverDelegate::DATA_TYPE_SITE_DATA &
+            ~BrowsingDataRemover::DATA_TYPE_COOKIES &
+            ~BrowsingDataRemover::DATA_TYPE_CHANNEL_IDS &
+            ~ChromeBrowsingDataRemoverDelegate::DATA_TYPE_PLUGIN_DATA)},
+      {true, true, true,
+       ChromeBrowsingDataRemoverDelegate::DATA_TYPE_SITE_DATA |
+           BrowsingDataRemover::DATA_TYPE_CACHE},
   };
 
   for (unsigned int i = 0; i < arraysize(test_cases); ++i) {
@@ -414,16 +421,16 @@ TEST_F(ChromeContentBrowserClientClearSiteDataTest, Parameters) {
     const TestCase& test_case = test_cases[i];
 
     // We always delete data for all time and all origin types.
-    BrowsingDataHelper::OriginTypeMask all_origin_types =
-        BrowsingDataHelper::ALL;
+    int all_origin_types = ChromeBrowsingDataRemoverDelegate::ALL_ORIGIN_TYPES;
 
     // Some data are deleted for the origin and some for the registrable domain.
     // Depending on the chosen datatypes, this might result into one or two
     // calls. In the latter case, the removal mask will be split into two
     // parts - one for the origin deletion and one for the registrable domain.
-    const int domain_scoped_types = BrowsingDataRemover::REMOVE_COOKIES |
-                                    BrowsingDataRemover::REMOVE_CHANNEL_IDS |
-                                    BrowsingDataRemover::REMOVE_PLUGIN_DATA;
+    const int domain_scoped_types =
+        BrowsingDataRemover::DATA_TYPE_COOKIES |
+        BrowsingDataRemover::DATA_TYPE_CHANNEL_IDS |
+        ChromeBrowsingDataRemoverDelegate::DATA_TYPE_PLUGIN_DATA;
     int registrable_domain_deletion_mask = test_case.mask & domain_scoped_types;
     int origin_deletion_mask = test_case.mask & ~domain_scoped_types;
 
@@ -505,20 +512,21 @@ TEST_F(ChromeContentBrowserClientClearSiteDataTest, RegistrableDomains) {
 
     remover()->ExpectCall(
         base::Time(), base::Time::Max(),
-        BrowsingDataRemover::REMOVE_COOKIES |
-            BrowsingDataRemover::REMOVE_CHANNEL_IDS |
-            BrowsingDataRemover::REMOVE_PLUGIN_DATA,
-        BrowsingDataHelper::ALL, std::move(registrable_domain_filter_builder));
+        BrowsingDataRemover::DATA_TYPE_COOKIES |
+            BrowsingDataRemover::DATA_TYPE_CHANNEL_IDS |
+            ChromeBrowsingDataRemoverDelegate::DATA_TYPE_PLUGIN_DATA,
+        ChromeBrowsingDataRemoverDelegate::ALL_ORIGIN_TYPES,
+        std::move(registrable_domain_filter_builder));
 
     std::unique_ptr<BrowsingDataFilterBuilder> origin_filter_builder(
         BrowsingDataFilterBuilder::Create(
             BrowsingDataFilterBuilder::WHITELIST));
     origin_filter_builder->AddOrigin(url::Origin(GURL(test_case.origin)));
 
-    remover()->ExpectCall(
-        base::Time(), base::Time::Max(),
-        BrowsingDataRemover::REMOVE_CACHE, BrowsingDataHelper::ALL,
-        std::move(origin_filter_builder));
+    remover()->ExpectCall(base::Time(), base::Time::Max(),
+                          BrowsingDataRemover::DATA_TYPE_CACHE,
+                          ChromeBrowsingDataRemoverDelegate::ALL_ORIGIN_TYPES,
+                          std::move(origin_filter_builder));
 
     SetClearingFinished(false);
     client.ClearSiteData(

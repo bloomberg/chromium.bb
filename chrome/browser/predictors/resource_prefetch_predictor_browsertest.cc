@@ -13,6 +13,7 @@
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_remover.h"
 #include "chrome/browser/browsing_data/browsing_data_remover_factory.h"
+#include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
 #include "chrome/browser/predictors/resource_prefetch_predictor.h"
 #include "chrome/browser/predictors/resource_prefetch_predictor_factory.h"
 #include "chrome/browser/predictors/resource_prefetch_predictor_test_util.h"
@@ -468,9 +469,9 @@ class ResourcePrefetchPredictorBrowserTest : public InProcessBrowserTest {
     BrowsingDataRemover* remover =
         BrowsingDataRemoverFactory::GetForBrowserContext(browser()->profile());
     BrowsingDataRemoverObserver observer(remover);
-    remover->RemoveAndReply(base::Time(), base::Time::Max(),
-                            BrowsingDataRemover::REMOVE_CACHE,
-                            BrowsingDataHelper::UNPROTECTED_WEB, &observer);
+    remover->RemoveAndReply(
+        base::Time(), base::Time::Max(), BrowsingDataRemover::DATA_TYPE_CACHE,
+        BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB, &observer);
     observer.Wait();
 
     for (auto& kv : resources_)

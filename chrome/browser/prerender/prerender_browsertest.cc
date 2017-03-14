@@ -34,6 +34,7 @@
 #include "chrome/browser/browsing_data/browsing_data_remover.h"
 #include "chrome/browser/browsing_data/browsing_data_remover_factory.h"
 #include "chrome/browser/browsing_data/browsing_data_remover_test_util.h"
+#include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
@@ -236,7 +237,8 @@ void ClearBrowsingData(Browser* browser, int remove_mask) {
       BrowsingDataRemoverFactory::GetForBrowserContext(browser->profile());
   BrowsingDataRemoverCompletionObserver observer(remover);
   remover->RemoveAndReply(base::Time(), base::Time::Max(), remove_mask,
-                          BrowsingDataHelper::UNPROTECTED_WEB, &observer);
+                          BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB,
+                          &observer);
   observer.BlockUntilCompletion();
   // BrowsingDataRemover deletes itself.
 }
@@ -2524,7 +2526,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderClearHistory) {
       PrerenderTestURL("/prerender/prerender_page.html",
                        FINAL_STATUS_CACHE_OR_HISTORY_CLEARED, 1);
 
-  ClearBrowsingData(current_browser(), BrowsingDataRemover::REMOVE_HISTORY);
+  ClearBrowsingData(current_browser(),
+                    ChromeBrowsingDataRemoverDelegate::DATA_TYPE_HISTORY);
   prerender->WaitForStop();
 
   // Make sure prerender history was cleared.
@@ -2538,7 +2541,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderClearCache) {
       PrerenderTestURL("/prerender/prerender_page.html",
                        FINAL_STATUS_CACHE_OR_HISTORY_CLEARED, 1);
 
-  ClearBrowsingData(current_browser(), BrowsingDataRemover::REMOVE_CACHE);
+  ClearBrowsingData(current_browser(), BrowsingDataRemover::DATA_TYPE_CACHE);
   prerender->WaitForStop();
 
   // Make sure prerender history was not cleared.  Not a vital behavior, but

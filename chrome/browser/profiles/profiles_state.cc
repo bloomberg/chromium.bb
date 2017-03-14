@@ -13,6 +13,7 @@
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_remover.h"
 #include "chrome/browser/browsing_data/browsing_data_remover_factory.h"
+#include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
 #include "chrome/browser/profiles/gaia_info_update_service.h"
 #include "chrome/browser/profiles/gaia_info_update_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -248,7 +249,8 @@ void RemoveBrowsingDataForProfile(const base::FilePath& profile_path) {
 
   BrowsingDataRemoverFactory::GetForBrowserContext(profile)->Remove(
       base::Time(), base::Time::Max(),
-      BrowsingDataRemover::REMOVE_WIPE_PROFILE, BrowsingDataHelper::ALL);
+      ChromeBrowsingDataRemoverDelegate::WIPE_PROFILE,
+      ChromeBrowsingDataRemoverDelegate::ALL_ORIGIN_TYPES);
 }
 
 void SetLastUsedProfile(const std::string& profile_dir) {

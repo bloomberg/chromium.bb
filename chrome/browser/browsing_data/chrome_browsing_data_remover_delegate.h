@@ -18,6 +18,7 @@
 #include "components/browsing_data/core/browsing_data_utils.h"
 #include "components/offline_pages/core/offline_page_model.h"
 #include "components/search_engines/template_url_service.h"
+#include "extensions/features/features.h"
 #include "media/media_features.h"
 #include "ppapi/features/features.h"
 
@@ -46,6 +47,102 @@ class ChromeBrowsingDataRemoverDelegate : public BrowsingDataRemoverDelegate
 #endif
 {
  public:
+  // This is an extension of BrowsingDataRemover::RemoveDataMask which includes
+  // all datatypes therefrom and adds additional Chrome-specific ones.
+  // TODO(crbug.com/668114): Extend this to uint64_t to ensure that we won't
+  // run out of space anytime soon.
+  enum DataType {
+    // Embedder can start adding datatypes after the last platform datatype.
+    DATA_TYPE_EMBEDDER_BEGIN = BrowsingDataRemover::DATA_TYPE_CONTENT_END << 1,
+
+    // Chrome-specific datatypes.
+    DATA_TYPE_HISTORY = DATA_TYPE_EMBEDDER_BEGIN,
+    DATA_TYPE_FORM_DATA = DATA_TYPE_EMBEDDER_BEGIN << 1,
+    DATA_TYPE_PASSWORDS = DATA_TYPE_EMBEDDER_BEGIN << 2,
+    DATA_TYPE_PLUGIN_DATA = DATA_TYPE_EMBEDDER_BEGIN << 3,
+#if defined(OS_ANDROID)
+    DATA_TYPE_WEB_APP_DATA = DATA_TYPE_EMBEDDER_BEGIN << 4,
+#endif
+    DATA_TYPE_SITE_USAGE_DATA = DATA_TYPE_EMBEDDER_BEGIN << 5,
+    DATA_TYPE_DURABLE_PERMISSION = DATA_TYPE_EMBEDDER_BEGIN << 6,
+    DATA_TYPE_EXTERNAL_PROTOCOL_DATA = DATA_TYPE_EMBEDDER_BEGIN << 7,
+    DATA_TYPE_HOSTED_APP_DATA_TEST_ONLY = DATA_TYPE_EMBEDDER_BEGIN << 8,
+
+    // Group datatypes.
+
+    // "Site data" includes storage backend accessible to websites and some
+    // additional metadata kept by the browser (e.g. site usage data).
+    DATA_TYPE_SITE_DATA = BrowsingDataRemover::DATA_TYPE_APP_CACHE |
+                          BrowsingDataRemover::DATA_TYPE_COOKIES |
+                          BrowsingDataRemover::DATA_TYPE_FILE_SYSTEMS |
+                          BrowsingDataRemover::DATA_TYPE_INDEXED_DB |
+                          BrowsingDataRemover::DATA_TYPE_LOCAL_STORAGE |
+                          BrowsingDataRemover::DATA_TYPE_SERVICE_WORKERS |
+                          BrowsingDataRemover::DATA_TYPE_CACHE_STORAGE |
+                          BrowsingDataRemover::DATA_TYPE_WEB_SQL |
+                          BrowsingDataRemover::DATA_TYPE_CHANNEL_IDS |
+                          DATA_TYPE_PLUGIN_DATA |
+#if defined(OS_ANDROID)
+                          DATA_TYPE_WEB_APP_DATA |
+#endif
+                          DATA_TYPE_SITE_USAGE_DATA |
+                          DATA_TYPE_DURABLE_PERMISSION |
+                          DATA_TYPE_EXTERNAL_PROTOCOL_DATA,
+
+    // Datatypes protected by Important Sites.
+    IMPORTANT_SITES_DATA_TYPES =
+        DATA_TYPE_SITE_DATA | BrowsingDataRemover::DATA_TYPE_CACHE,
+
+    // Datatypes that can be deleted partially per URL / origin / domain,
+    // whichever makes sense.
+    FILTERABLE_DATA_TYPES = DATA_TYPE_SITE_DATA |
+                            BrowsingDataRemover::DATA_TYPE_CACHE |
+                            BrowsingDataRemover::DATA_TYPE_DOWNLOADS,
+
+    // Includes all the available remove options. Meant to be used by clients
+    // that wish to wipe as much data as possible from a Profile, to make it
+    // look like a new Profile.
+    ALL_DATA_TYPES = DATA_TYPE_SITE_DATA |
+                     BrowsingDataRemover::DATA_TYPE_CACHE |
+                     BrowsingDataRemover::DATA_TYPE_DOWNLOADS |
+                     DATA_TYPE_FORM_DATA |
+                     DATA_TYPE_HISTORY |
+                     DATA_TYPE_PASSWORDS |
+                     BrowsingDataRemover::DATA_TYPE_MEDIA_LICENSES,
+
+    // Includes all available remove options. Meant to be used when the Profile
+    // is scheduled to be deleted, and all possible data should be wiped from
+    // disk as soon as possible.
+    WIPE_PROFILE = ALL_DATA_TYPES | BrowsingDataRemover::DATA_TYPE_NO_CHECKS,
+  };
+
+  // This is an extension of BrowsingDataRemover::OriginType which includes all
+  // origin types therefrom and adds additional Chrome-specific ones.
+  enum OriginType {
+    // Embedder can start adding origin types after the last
+    // platform origin type.
+    ORIGIN_TYPE_EMBEDDER_BEGIN = BrowsingDataRemover::ORIGIN_TYPE_CONTENT_END
+                                 << 1,
+
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+    // Packaged apps and extensions (chrome-extension://*).
+    ORIGIN_TYPE_EXTENSION = ORIGIN_TYPE_EMBEDDER_BEGIN,
+#endif
+
+    // All origin types.
+    ALL_ORIGIN_TYPES = BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB |
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+                       ORIGIN_TYPE_EXTENSION |
+#endif
+                       BrowsingDataRemover::ORIGIN_TYPE_PROTECTED_WEB,
+  };
+
+  // Important sites protect a small set of sites from the deletion of certain
+  // datatypes. Therefore, those datatypes must be filterable by
+  // url/origin/domain.
+  static_assert((IMPORTANT_SITES_DATA_TYPES & ~FILTERABLE_DATA_TYPES) == 0,
+                "All important sites datatypes must be filterable.");
+
   // Used to track the deletion of a single data storage backend.
   class SubTask {
    public:
@@ -75,7 +172,11 @@ class ChromeBrowsingDataRemoverDelegate : public BrowsingDataRemoverDelegate
   ChromeBrowsingDataRemoverDelegate(content::BrowserContext* browser_context);
   ~ChromeBrowsingDataRemoverDelegate() override;
 
-  // Removes Chrome-specific data.
+  // BrowsingDataRemoverDelegate:
+  bool DoesOriginMatchEmbedderMask(
+      int origin_type_mask,
+      const GURL& origin,
+      storage::SpecialStoragePolicy* special_storage_policy) const override;
   void RemoveEmbedderData(
       const base::Time& delete_begin,
       const base::Time& delete_end,

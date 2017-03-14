@@ -54,85 +54,43 @@ class BrowsingDataFilterBuilder;
 class BrowsingDataRemover : public KeyedService {
  public:
   // Mask used for Remove.
-  enum RemoveDataMask {
-    REMOVE_APPCACHE = 1 << 0,
-    REMOVE_CACHE = 1 << 1,
-    REMOVE_COOKIES = 1 << 2,
-    REMOVE_DOWNLOADS = 1 << 3,
-    REMOVE_FILE_SYSTEMS = 1 << 4,
-    REMOVE_FORM_DATA = 1 << 5,
-    // In addition to visits, REMOVE_HISTORY removes keywords, last session and
-    // passwords UI statistics.
-    REMOVE_HISTORY = 1 << 6,
-    REMOVE_INDEXEDDB = 1 << 7,
-    REMOVE_LOCAL_STORAGE = 1 << 8,
-    REMOVE_PLUGIN_DATA = 1 << 9,
-    REMOVE_PASSWORDS = 1 << 10,
-    REMOVE_WEBSQL = 1 << 11,
-    REMOVE_CHANNEL_IDS = 1 << 12,
-    REMOVE_MEDIA_LICENSES = 1 << 13,
-    REMOVE_SERVICE_WORKERS = 1 << 14,
-    REMOVE_SITE_USAGE_DATA = 1 << 15,
+  enum DataType {
+    // Storage datatypes.
+    DATA_TYPE_APP_CACHE = 1 << 0,
+    DATA_TYPE_FILE_SYSTEMS = 1 << 1,
+    DATA_TYPE_INDEXED_DB = 1 << 2,
+    DATA_TYPE_LOCAL_STORAGE = 1 << 3,
+    DATA_TYPE_WEB_SQL = 1 << 4,
+    DATA_TYPE_SERVICE_WORKERS = 1 << 5,
+    DATA_TYPE_CACHE_STORAGE = 1 << 6,
+
+    // Other datatypes.
+    DATA_TYPE_COOKIES = 1 << 7,
+    DATA_TYPE_CHANNEL_IDS = 1 << 8,
+    DATA_TYPE_CACHE = 1 << 9,
+    DATA_TYPE_DOWNLOADS = 1 << 10,
+    DATA_TYPE_MEDIA_LICENSES = 1 << 11,
+
     // REMOVE_NOCHECKS intentionally does not check if the browser context is
     // prohibited from deleting history or downloads.
-    REMOVE_NOCHECKS = 1 << 16,
-    REMOVE_CACHE_STORAGE = 1 << 17,
-#if defined(OS_ANDROID)
-    REMOVE_WEBAPP_DATA = 1 << 18,
-#endif
-    REMOVE_DURABLE_PERMISSION = 1 << 19,
-    REMOVE_EXTERNAL_PROTOCOL_DATA = 1 << 20,
+    DATA_TYPE_NO_CHECKS = 1 << 12,
 
-    // The following flag is used only in tests. In normal usage, hosted app
-    // data is controlled by the REMOVE_COOKIES flag, applied to the
-    // protected-web origin.
-    REMOVE_HOSTED_APP_DATA_TESTONLY = 1 << 31,
-
-    // "Site data" includes cookies, appcache, file systems, indexedDBs, local
-    // storage, webSQL, service workers, cache storage, plugin data, web app
-    // data (on Android) and statistics about passwords.
-    REMOVE_SITE_DATA = REMOVE_APPCACHE | REMOVE_COOKIES | REMOVE_FILE_SYSTEMS |
-                       REMOVE_INDEXEDDB |
-                       REMOVE_LOCAL_STORAGE |
-                       REMOVE_PLUGIN_DATA |
-                       REMOVE_SERVICE_WORKERS |
-                       REMOVE_CACHE_STORAGE |
-                       REMOVE_WEBSQL |
-                       REMOVE_CHANNEL_IDS |
-#if defined(OS_ANDROID)
-                       REMOVE_WEBAPP_DATA |
-#endif
-                       REMOVE_SITE_USAGE_DATA |
-                       REMOVE_DURABLE_PERMISSION |
-                       REMOVE_EXTERNAL_PROTOCOL_DATA,
-
-    // Datatypes protected by Important Sites.
-    IMPORTANT_SITES_DATATYPES = REMOVE_SITE_DATA | REMOVE_CACHE,
-
-    // Datatypes that can be deleted partially per URL / origin / domain,
-    // whichever makes sense.
-    FILTERABLE_DATATYPES = REMOVE_SITE_DATA | REMOVE_CACHE | REMOVE_DOWNLOADS,
-
-    // Includes all the available remove options. Meant to be used by clients
-    // that wish to wipe as much data as possible from a Profile, to make it
-    // look like a new Profile.
-    REMOVE_ALL = REMOVE_SITE_DATA | REMOVE_CACHE | REMOVE_DOWNLOADS |
-                 REMOVE_FORM_DATA |
-                 REMOVE_HISTORY |
-                 REMOVE_PASSWORDS |
-                 REMOVE_MEDIA_LICENSES,
-
-    // Includes all available remove options. Meant to be used when the Profile
-    // is scheduled to be deleted, and all possible data should be wiped from
-    // disk as soon as possible.
-    REMOVE_WIPE_PROFILE = REMOVE_ALL | REMOVE_NOCHECKS,
+    // Embedders can add more datatypes beyond this point.
+    DATA_TYPE_CONTENT_END = DATA_TYPE_NO_CHECKS,
   };
 
-  // Important sites protect a small set of sites from the deletion of certain
-  // datatypes. Therefore, those datatypes must be filterable by
-  // url/origin/domain.
-  static_assert(0 == (IMPORTANT_SITES_DATATYPES & ~FILTERABLE_DATATYPES),
-                "All important sites datatypes must be filterable.");
+  enum OriginType {
+    // Web storage origins that StoragePartition recognizes as NOT protected
+    // according to its special storage policy.
+    ORIGIN_TYPE_UNPROTECTED_WEB = 1 << 0,
+
+    // Web storage origins that StoragePartition recognizes as protected
+    // according to its special storage policy.
+    ORIGIN_TYPE_PROTECTED_WEB = 1 << 1,
+
+    // Embedders can add more origin types beyond this point.
+    ORIGIN_TYPE_CONTENT_END = ORIGIN_TYPE_PROTECTED_WEB,
+  };
 
   // A helper enum to report the deletion of cookies and/or cache. Do not
   // reorder the entries, as this enum is passed to UMA.
@@ -160,6 +118,13 @@ class BrowsingDataRemover : public KeyedService {
   virtual void SetEmbedderDelegate(
       std::unique_ptr<BrowsingDataRemoverDelegate> embedder_delegate) = 0;
   virtual BrowsingDataRemoverDelegate* GetEmbedderDelegate() const = 0;
+
+  // Determines whether |origin| matches the |origin_type_mask| according to
+  // the |special_storage_policy|.
+  virtual bool DoesOriginMatchMask(
+      int origin_type_mask,
+      const GURL& origin,
+      storage::SpecialStoragePolicy* special_storage_policy) const = 0;
 
   // Removes browsing data within the given |time_range|, with datatypes being
   // specified by |remove_mask| and origin types by |origin_type_mask|.

@@ -15,6 +15,7 @@
 #include "chrome/browser/browsing_data/browsing_data_remover.h"
 #include "chrome/browser/browsing_data/browsing_data_remover_factory.h"
 #include "chrome/browser/browsing_data/browsing_data_remover_test_util.h"
+#include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/chrome_ssl_host_state_delegate_factory.h"
@@ -619,13 +620,13 @@ class RemoveBrowsingHistorySSLHostStateDelegateTest
     BrowsingDataRemover* remover =
         BrowsingDataRemoverFactory::GetForBrowserContext(profile);
     BrowsingDataRemoverCompletionObserver completion_observer(remover);
-    remover->RemoveAndReply(browsing_data::CalculateBeginDeleteTime(
-                                browsing_data::TimePeriod::LAST_HOUR),
-                            browsing_data::CalculateEndDeleteTime(
-                                browsing_data::TimePeriod::LAST_HOUR),
-                            BrowsingDataRemover::REMOVE_HISTORY,
-                            BrowsingDataHelper::UNPROTECTED_WEB,
-                            &completion_observer);
+    remover->RemoveAndReply(
+        browsing_data::CalculateBeginDeleteTime(
+            browsing_data::TimePeriod::LAST_HOUR),
+        browsing_data::CalculateEndDeleteTime(
+            browsing_data::TimePeriod::LAST_HOUR),
+        ChromeBrowsingDataRemoverDelegate::DATA_TYPE_HISTORY,
+        BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB, &completion_observer);
     completion_observer.BlockUntilCompletion();
   }
 };

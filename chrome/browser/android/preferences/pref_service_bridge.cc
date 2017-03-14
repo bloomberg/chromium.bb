@@ -29,6 +29,7 @@
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_remover.h"
 #include "chrome/browser/browsing_data/browsing_data_remover_factory.h"
+#include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/engagement/important_sites_util.h"
 #include "chrome/browser/history/web_history_service_factory.h"
@@ -653,20 +654,20 @@ static void ClearBrowsingData(
   for (const int data_type : data_types_vector) {
     switch (static_cast<browsing_data::BrowsingDataType>(data_type)) {
       case browsing_data::BrowsingDataType::HISTORY:
-        remove_mask |= BrowsingDataRemover::REMOVE_HISTORY;
+        remove_mask |= ChromeBrowsingDataRemoverDelegate::DATA_TYPE_HISTORY;
         break;
       case browsing_data::BrowsingDataType::CACHE:
-        remove_mask |= BrowsingDataRemover::REMOVE_CACHE;
+        remove_mask |= BrowsingDataRemover::DATA_TYPE_CACHE;
         break;
       case browsing_data::BrowsingDataType::COOKIES:
-        remove_mask |= BrowsingDataRemover::REMOVE_COOKIES;
-        remove_mask |= BrowsingDataRemover::REMOVE_SITE_DATA;
+        remove_mask |= BrowsingDataRemover::DATA_TYPE_COOKIES;
+        remove_mask |= ChromeBrowsingDataRemoverDelegate::DATA_TYPE_SITE_DATA;
         break;
       case browsing_data::BrowsingDataType::PASSWORDS:
-        remove_mask |= BrowsingDataRemover::REMOVE_PASSWORDS;
+        remove_mask |= ChromeBrowsingDataRemoverDelegate::DATA_TYPE_PASSWORDS;
         break;
       case browsing_data::BrowsingDataType::FORM_DATA:
-        remove_mask |= BrowsingDataRemover::REMOVE_FORM_DATA;
+        remove_mask |= ChromeBrowsingDataRemoverDelegate::DATA_TYPE_FORM_DATA;
         break;
       case browsing_data::BrowsingDataType::BOOKMARKS:
         // Bookmarks are deleted separately on the Java side.
@@ -704,9 +705,11 @@ static void ClearBrowsingData(
   // Delete the types protected by Important Sites with a filter,
   // and the rest completely.
   int filterable_mask =
-      remove_mask & BrowsingDataRemover::IMPORTANT_SITES_DATATYPES;
-  int nonfilterable_mask = remove_mask &
-      ~BrowsingDataRemover::IMPORTANT_SITES_DATATYPES;
+      remove_mask &
+      ChromeBrowsingDataRemoverDelegate::IMPORTANT_SITES_DATA_TYPES;
+  int nonfilterable_mask =
+      remove_mask &
+      ~ChromeBrowsingDataRemoverDelegate::IMPORTANT_SITES_DATA_TYPES;
 
   // ClearBrowsingDataObserver deletes itself when |browsing_data_remover| is
   // done with both removal tasks.
@@ -720,8 +723,8 @@ static void ClearBrowsingData(
   if (filterable_mask) {
     browsing_data_remover->RemoveWithFilterAndReply(
         browsing_data::CalculateBeginDeleteTime(period),
-        browsing_data::CalculateEndDeleteTime(period),
-        filterable_mask, BrowsingDataHelper::UNPROTECTED_WEB,
+        browsing_data::CalculateEndDeleteTime(period), filterable_mask,
+        BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB,
         std::move(filter_builder), observer);
   } else {
     // Make sure |observer| doesn't wait for the filtered task.
@@ -731,8 +734,8 @@ static void ClearBrowsingData(
   if (nonfilterable_mask) {
     browsing_data_remover->RemoveAndReply(
         browsing_data::CalculateBeginDeleteTime(period),
-        browsing_data::CalculateEndDeleteTime(period),
-        nonfilterable_mask, BrowsingDataHelper::UNPROTECTED_WEB, observer);
+        browsing_data::CalculateEndDeleteTime(period), nonfilterable_mask,
+        BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB, observer);
   } else {
     // Make sure |observer| doesn't wait for the non-filtered task.
     observer->OnBrowsingDataRemoverDone();

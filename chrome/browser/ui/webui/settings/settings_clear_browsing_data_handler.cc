@@ -14,6 +14,7 @@
 #include "chrome/browser/browsing_data/browsing_data_counter_utils.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_remover_factory.h"
+#include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
 #include "chrome/browser/history/web_history_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/common/channel_info.h"
@@ -122,40 +123,40 @@ void ClearBrowsingDataHandler::HandleClearBrowsingData(
 
   PrefService* prefs = profile_->GetPrefs();
 
-  int site_data_mask = BrowsingDataRemover::REMOVE_SITE_DATA;
+  int site_data_mask = ChromeBrowsingDataRemoverDelegate::DATA_TYPE_SITE_DATA;
   // Don't try to clear LSO data if it's not supported.
   if (!prefs->GetBoolean(prefs::kClearPluginLSODataEnabled))
-    site_data_mask &= ~BrowsingDataRemover::REMOVE_PLUGIN_DATA;
+    site_data_mask &= ~ChromeBrowsingDataRemoverDelegate::DATA_TYPE_PLUGIN_DATA;
 
   int remove_mask = 0;
   if (prefs->GetBoolean(prefs::kAllowDeletingBrowserHistory)) {
     if (prefs->GetBoolean(browsing_data::prefs::kDeleteBrowsingHistory))
-      remove_mask |= BrowsingDataRemover::REMOVE_HISTORY;
+      remove_mask |= ChromeBrowsingDataRemoverDelegate::DATA_TYPE_HISTORY;
     if (prefs->GetBoolean(browsing_data::prefs::kDeleteDownloadHistory))
-      remove_mask |= BrowsingDataRemover::REMOVE_DOWNLOADS;
+      remove_mask |= BrowsingDataRemover::DATA_TYPE_DOWNLOADS;
   }
 
   if (prefs->GetBoolean(browsing_data::prefs::kDeleteCache))
-    remove_mask |= BrowsingDataRemover::REMOVE_CACHE;
+    remove_mask |= BrowsingDataRemover::DATA_TYPE_CACHE;
 
   int origin_mask = 0;
   if (prefs->GetBoolean(browsing_data::prefs::kDeleteCookies)) {
     remove_mask |= site_data_mask;
-    origin_mask |= BrowsingDataHelper::UNPROTECTED_WEB;
+    origin_mask |= BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB;
   }
 
   if (prefs->GetBoolean(browsing_data::prefs::kDeletePasswords))
-    remove_mask |= BrowsingDataRemover::REMOVE_PASSWORDS;
+    remove_mask |= ChromeBrowsingDataRemoverDelegate::DATA_TYPE_PASSWORDS;
 
   if (prefs->GetBoolean(browsing_data::prefs::kDeleteFormData))
-    remove_mask |= BrowsingDataRemover::REMOVE_FORM_DATA;
+    remove_mask |= ChromeBrowsingDataRemoverDelegate::DATA_TYPE_FORM_DATA;
 
   if (prefs->GetBoolean(browsing_data::prefs::kDeleteMediaLicenses))
-    remove_mask |= BrowsingDataRemover::REMOVE_MEDIA_LICENSES;
+    remove_mask |= BrowsingDataRemover::DATA_TYPE_MEDIA_LICENSES;
 
   if (prefs->GetBoolean(browsing_data::prefs::kDeleteHostedAppsData)) {
     remove_mask |= site_data_mask;
-    origin_mask |= BrowsingDataHelper::PROTECTED_WEB;
+    origin_mask |= BrowsingDataRemover::ORIGIN_TYPE_PROTECTED_WEB;
   }
 
   // Record the deletion of cookies and cache.

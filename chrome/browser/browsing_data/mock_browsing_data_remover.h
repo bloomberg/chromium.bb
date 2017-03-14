@@ -26,6 +26,12 @@ class MockBrowsingDataRemover : public BrowsingDataRemover {
   void Shutdown() override;
 
   // BrowsingDataRemover:
+  // Determines whether |origin| matches the |origin_type_mask| according to
+  // the |special_storage_policy|.
+  bool DoesOriginMatchMask(
+      int origin_type_mask,
+      const GURL& origin,
+      storage::SpecialStoragePolicy* special_storage_policy) const override;
   void Remove(const base::Time& delete_begin,
               const base::Time& delete_end,
               int remove_mask,

@@ -15,7 +15,6 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
-#include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_remover_delegate.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
@@ -63,15 +62,23 @@ base::Callback<void(T)> IgnoreArgument(const base::Closure& callback) {
   return base::Bind(&IgnoreArgumentHelper<T>, callback);
 }
 
-// Helper to create callback for BrowsingDataRemoverImpl::DoesOriginMatchMask.
 bool DoesOriginMatchMaskAndUrls(
+    const base::WeakPtr<BrowsingDataRemoverImpl>& remover_weak_ptr,
     int origin_type_mask,
     const base::Callback<bool(const GURL&)>& predicate,
     const GURL& origin,
     storage::SpecialStoragePolicy* special_storage_policy) {
+  // If BrowsingDataRemoverImpl is null, it is not possible to determine which
+  // origins should have their data deleted, and so we do not delete
+  // anything. This is not a problem, because this can only happen shortly
+  // before shutdown and thus the deletion would likely not be able to
+  // finish anyway.
+  if (!remover_weak_ptr)
+    return false;
+
   return predicate.Run(origin) &&
-         BrowsingDataHelper::DoesOriginMatchMask(origin, origin_type_mask,
-                                                 special_storage_policy);
+         remover_weak_ptr->DoesOriginMatchMask(origin_type_mask, origin,
+                                               special_storage_policy);
 }
 
 void ClearHttpAuthCacheOnIOThread(
@@ -204,6 +211,41 @@ BrowsingDataRemoverImpl::GetEmbedderDelegate() const {
   return embedder_delegate_.get();
 }
 
+bool BrowsingDataRemoverImpl::DoesOriginMatchMask(
+    int origin_type_mask,
+    const GURL& origin,
+    storage::SpecialStoragePolicy* policy) const {
+  const std::vector<std::string>& schemes = url::GetWebStorageSchemes();
+  bool is_web_scheme =
+      (std::find(schemes.begin(), schemes.end(), origin.GetOrigin().scheme()) !=
+       schemes.end());
+
+  // If a websafe origin is unprotected, it matches iff UNPROTECTED_WEB.
+  if ((!policy || !policy->IsStorageProtected(origin.GetOrigin())) &&
+      is_web_scheme && (origin_type_mask & ORIGIN_TYPE_UNPROTECTED_WEB)) {
+    return true;
+  }
+  origin_type_mask &= ~ORIGIN_TYPE_UNPROTECTED_WEB;
+
+  // Hosted applications (protected and websafe origins) iff PROTECTED_WEB.
+  if (policy && policy->IsStorageProtected(origin.GetOrigin()) &&
+      is_web_scheme && (origin_type_mask & ORIGIN_TYPE_PROTECTED_WEB)) {
+    return true;
+  }
+  origin_type_mask &= ~ORIGIN_TYPE_PROTECTED_WEB;
+
+  DCHECK(embedder_delegate_ || !origin_type_mask)
+      << "The mask contains embedder-defined origin types, but there is no "
+      << "embedder delegate to process them.";
+
+  if (embedder_delegate_) {
+    return embedder_delegate_->DoesOriginMatchEmbedderMask(origin_type_mask,
+                                                           origin, policy);
+  }
+
+  return false;
+}
+
 void BrowsingDataRemoverImpl::Remove(const base::Time& delete_begin,
                                  const base::Time& delete_end,
                                  int remove_mask,
@@ -229,7 +271,6 @@ void BrowsingDataRemoverImpl::RemoveWithFilter(
     int remove_mask,
     int origin_type_mask,
     std::unique_ptr<BrowsingDataFilterBuilder> filter_builder) {
-  DCHECK_EQ(0, remove_mask & ~FILTERABLE_DATATYPES);
   DCHECK(filter_builder);
   RemoveInternal(delete_begin, delete_end, remove_mask, origin_type_mask,
                  std::move(filter_builder), nullptr);
@@ -242,7 +283,6 @@ void BrowsingDataRemoverImpl::RemoveWithFilterAndReply(
     int origin_type_mask,
     std::unique_ptr<BrowsingDataFilterBuilder> filter_builder,
     Observer* observer) {
-  DCHECK_EQ(0, remove_mask & ~FILTERABLE_DATATYPES);
   DCHECK(filter_builder);
   DCHECK(observer);
   RemoveInternal(delete_begin, delete_end, remove_mask, origin_type_mask,
@@ -323,33 +363,13 @@ void BrowsingDataRemoverImpl::RemoveImpl(
   remove_mask_ = remove_mask;
   origin_type_mask_ = origin_type_mask;
 
-  if (origin_type_mask_ & BrowsingDataHelper::UNPROTECTED_WEB) {
-    content::RecordAction(
-        UserMetricsAction("ClearBrowsingData_MaskContainsUnprotectedWeb"));
-  }
-  if (origin_type_mask_ & BrowsingDataHelper::PROTECTED_WEB) {
-    content::RecordAction(
-        UserMetricsAction("ClearBrowsingData_MaskContainsProtectedWeb"));
-  }
-  if (origin_type_mask_ & BrowsingDataHelper::EXTENSION) {
-    content::RecordAction(
-        UserMetricsAction("ClearBrowsingData_MaskContainsExtension"));
-  }
-  // If this fires, we added a new BrowsingDataHelper::OriginTypeMask without
-  // updating the user metrics above.
-  static_assert(
-      BrowsingDataHelper::ALL == (BrowsingDataHelper::UNPROTECTED_WEB |
-                                  BrowsingDataHelper::PROTECTED_WEB |
-                                  BrowsingDataHelper::EXTENSION),
-      "OriginTypeMask has been updated without updating user metrics");
-
   // Record the combined deletion of cookies and cache.
   CookieOrCacheDeletionChoice choice = NEITHER_COOKIES_NOR_CACHE;
-  if (remove_mask & REMOVE_COOKIES &&
-      origin_type_mask_ & BrowsingDataHelper::UNPROTECTED_WEB) {
-    choice = remove_mask & REMOVE_CACHE ? BOTH_COOKIES_AND_CACHE
-                                        : ONLY_COOKIES;
-  } else if (remove_mask & REMOVE_CACHE) {
+  if (remove_mask & DATA_TYPE_COOKIES &&
+      origin_type_mask_ & ORIGIN_TYPE_UNPROTECTED_WEB) {
+    choice =
+        remove_mask & DATA_TYPE_CACHE ? BOTH_COOKIES_AND_CACHE : ONLY_COOKIES;
+  } else if (remove_mask & DATA_TYPE_CACHE) {
     choice = ONLY_CACHE;
   }
 
@@ -372,8 +392,8 @@ void BrowsingDataRemoverImpl::RemoveImpl(
       filter_builder.BuildGeneralFilter();
 
   //////////////////////////////////////////////////////////////////////////////
-  // REMOVE_DOWNLOADS
-  if ((remove_mask & REMOVE_DOWNLOADS) && may_delete_history) {
+  // DATA_TYPE_DOWNLOADS
+  if ((remove_mask & DATA_TYPE_DOWNLOADS) && may_delete_history) {
     content::RecordAction(UserMetricsAction("ClearBrowsingData_Downloads"));
     content::DownloadManager* download_manager =
         BrowserContext::GetDownloadManager(browser_context_);
@@ -382,11 +402,11 @@ void BrowsingDataRemoverImpl::RemoveImpl(
   }
 
   //////////////////////////////////////////////////////////////////////////////
-  // REMOVE_CHANNEL_IDS
+  // DATA_TYPE_CHANNEL_IDS
   // Channel IDs are not separated for protected and unprotected web
   // origins. We check the origin_type_mask_ to prevent unintended deletion.
-  if (remove_mask & REMOVE_CHANNEL_IDS &&
-      origin_type_mask_ & BrowsingDataHelper::UNPROTECTED_WEB) {
+  if (remove_mask & DATA_TYPE_CHANNEL_IDS &&
+      origin_type_mask_ & ORIGIN_TYPE_UNPROTECTED_WEB) {
     content::RecordAction(
         UserMetricsAction("ClearBrowsingData_ChannelIDs"));
     // Since we are running on the UI thread don't call GetURLRequestContext().
@@ -406,41 +426,41 @@ void BrowsingDataRemoverImpl::RemoveImpl(
   // STORAGE PARTITION DATA
   uint32_t storage_partition_remove_mask = 0;
 
-  // We ignore the REMOVE_COOKIES request if UNPROTECTED_WEB is not set,
-  // so that callers who request REMOVE_SITE_DATA with PROTECTED_WEB
+  // We ignore the DATA_TYPE_COOKIES request if UNPROTECTED_WEB is not set,
+  // so that callers who request DATA_TYPE_SITE_DATA with another origin type
   // don't accidentally remove the cookies that are associated with the
   // UNPROTECTED_WEB origin. This is necessary because cookies are not separated
-  // between UNPROTECTED_WEB and PROTECTED_WEB.
-  if (remove_mask & REMOVE_COOKIES &&
-      origin_type_mask_ & BrowsingDataHelper::UNPROTECTED_WEB) {
+  // between UNPROTECTED_WEB and other origin types.
+  if (remove_mask & DATA_TYPE_COOKIES &&
+      origin_type_mask_ & ORIGIN_TYPE_UNPROTECTED_WEB) {
     storage_partition_remove_mask |=
         content::StoragePartition::REMOVE_DATA_MASK_COOKIES;
   }
-  if (remove_mask & REMOVE_LOCAL_STORAGE) {
+  if (remove_mask & DATA_TYPE_LOCAL_STORAGE) {
     storage_partition_remove_mask |=
         content::StoragePartition::REMOVE_DATA_MASK_LOCAL_STORAGE;
   }
-  if (remove_mask & REMOVE_INDEXEDDB) {
+  if (remove_mask & DATA_TYPE_INDEXED_DB) {
     storage_partition_remove_mask |=
         content::StoragePartition::REMOVE_DATA_MASK_INDEXEDDB;
   }
-  if (remove_mask & REMOVE_WEBSQL) {
+  if (remove_mask & DATA_TYPE_WEB_SQL) {
     storage_partition_remove_mask |=
         content::StoragePartition::REMOVE_DATA_MASK_WEBSQL;
   }
-  if (remove_mask & REMOVE_APPCACHE) {
+  if (remove_mask & DATA_TYPE_APP_CACHE) {
     storage_partition_remove_mask |=
         content::StoragePartition::REMOVE_DATA_MASK_APPCACHE;
   }
-  if (remove_mask & REMOVE_SERVICE_WORKERS) {
+  if (remove_mask & DATA_TYPE_SERVICE_WORKERS) {
     storage_partition_remove_mask |=
         content::StoragePartition::REMOVE_DATA_MASK_SERVICE_WORKERS;
   }
-  if (remove_mask & REMOVE_CACHE_STORAGE) {
+  if (remove_mask & DATA_TYPE_CACHE_STORAGE) {
     storage_partition_remove_mask |=
         content::StoragePartition::REMOVE_DATA_MASK_CACHE_STORAGE;
   }
-  if (remove_mask & REMOVE_FILE_SYSTEMS) {
+  if (remove_mask & DATA_TYPE_FILE_SYSTEMS) {
     storage_partition_remove_mask |=
         content::StoragePartition::REMOVE_DATA_MASK_FILE_SYSTEMS;
   }
@@ -448,7 +468,7 @@ void BrowsingDataRemoverImpl::RemoveImpl(
   // Content Decryption Modules used by Encrypted Media store licenses in a
   // private filesystem. These are different than content licenses used by
   // Flash (which are deleted father down in this method).
-  if (remove_mask & REMOVE_MEDIA_LICENSES) {
+  if (remove_mask & DATA_TYPE_MEDIA_LICENSES) {
     storage_partition_remove_mask |=
         content::StoragePartition::REMOVE_DATA_MASK_PLUGIN_PRIVATE_DATA;
   }
@@ -468,8 +488,7 @@ void BrowsingDataRemoverImpl::RemoveImpl(
         ~content::StoragePartition::QUOTA_MANAGED_STORAGE_MASK_PERSISTENT;
 
     if (delete_begin_ == base::Time() ||
-        origin_type_mask_ &
-          (BrowsingDataHelper::PROTECTED_WEB | BrowsingDataHelper::EXTENSION)) {
+        ((origin_type_mask_ & ~ORIGIN_TYPE_UNPROTECTED_WEB) != 0)) {
       // If we're deleting since the beginning of time, or we're removing
       // protected origins, then remove persistent quota data.
       quota_storage_remove_mask |=
@@ -487,14 +506,15 @@ void BrowsingDataRemoverImpl::RemoveImpl(
 
     storage_partition->ClearData(
         storage_partition_remove_mask, quota_storage_remove_mask,
-        base::Bind(&DoesOriginMatchMaskAndUrls, origin_type_mask_, filter),
+        base::Bind(&DoesOriginMatchMaskAndUrls, weak_ptr_factory_.GetWeakPtr(),
+                   origin_type_mask_, filter),
         cookie_matcher, delete_begin_, delete_end_,
         clear_storage_partition_data_.GetCompletionCallback());
   }
 
   //////////////////////////////////////////////////////////////////////////////
   // CACHE
-  if (remove_mask & REMOVE_CACHE) {
+  if (remove_mask & DATA_TYPE_CACHE) {
     // Tell the renderers to clear their cache.
     web_cache::WebCacheManager::GetInstance()->ClearCache();
 
@@ -523,7 +543,7 @@ void BrowsingDataRemoverImpl::RemoveImpl(
 
   //////////////////////////////////////////////////////////////////////////////
   // Auth cache.
-  if (remove_mask & REMOVE_COOKIES) {
+  if (remove_mask & DATA_TYPE_COOKIES) {
     scoped_refptr<net::URLRequestContextGetter> request_context =
         BrowserContext::GetDefaultStoragePartition(browser_context_)
             ->GetURLRequestContext();

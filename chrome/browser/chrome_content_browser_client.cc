@@ -37,6 +37,7 @@
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_remover.h"
 #include "chrome/browser/browsing_data/browsing_data_remover_factory.h"
+#include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
 #include "chrome/browser/budget_service/budget_service_impl.h"
 #include "chrome/browser/chrome_content_browser_client_parts.h"
 #include "chrome/browser/chrome_quota_permission_context.h"
@@ -2724,8 +2725,8 @@ void ChromeContentBrowserClient::ClearCache(RenderFrameHost* rfh) {
   BrowsingDataRemover* remover =
       BrowsingDataRemoverFactory::GetForBrowserContext(profile);
   remover->Remove(base::Time(), base::Time::Max(),
-                  BrowsingDataRemover::REMOVE_CACHE,
-                  BrowsingDataHelper::UNPROTECTED_WEB);
+                  BrowsingDataRemover::DATA_TYPE_CACHE,
+                  BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB);
 }
 
 void ChromeContentBrowserClient::ClearCookies(RenderFrameHost* rfh) {
@@ -2733,9 +2734,9 @@ void ChromeContentBrowserClient::ClearCookies(RenderFrameHost* rfh) {
       rfh->GetSiteInstance()->GetProcess()->GetBrowserContext());
   BrowsingDataRemover* remover =
       BrowsingDataRemoverFactory::GetForBrowserContext(profile);
-  int remove_mask = BrowsingDataRemover::REMOVE_SITE_DATA;
+  int remove_mask = ChromeBrowsingDataRemoverDelegate::DATA_TYPE_SITE_DATA;
   remover->Remove(base::Time(), base::Time::Max(), remove_mask,
-                  BrowsingDataHelper::UNPROTECTED_WEB);
+                  BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB);
 }
 
 void ChromeContentBrowserClient::ClearSiteData(
@@ -2773,10 +2774,11 @@ void ChromeContentBrowserClient::ClearSiteData(
 
     remover->RemoveWithFilterAndReply(
         base::Time(), base::Time::Max(),
-        BrowsingDataRemover::REMOVE_COOKIES |
-            BrowsingDataRemover::REMOVE_CHANNEL_IDS |
-            BrowsingDataRemover::REMOVE_PLUGIN_DATA,
-        BrowsingDataHelper::ALL, std::move(domain_filter_builder), observer);
+        BrowsingDataRemover::DATA_TYPE_COOKIES |
+            BrowsingDataRemover::DATA_TYPE_CHANNEL_IDS |
+            ChromeBrowsingDataRemoverDelegate::DATA_TYPE_PLUGIN_DATA,
+        ChromeBrowsingDataRemoverDelegate::ALL_ORIGIN_TYPES,
+        std::move(domain_filter_builder), observer);
   } else {
     // The first removal task is a no-op.
     observer->OnBrowsingDataRemoverDone();
@@ -2785,13 +2787,13 @@ void ChromeContentBrowserClient::ClearSiteData(
   // Delete origin-scoped data.
   int remove_mask = 0;
   if (remove_storage) {
-    remove_mask |= BrowsingDataRemover::REMOVE_SITE_DATA &
-                   ~BrowsingDataRemover::REMOVE_COOKIES &
-                   ~BrowsingDataRemover::REMOVE_CHANNEL_IDS &
-                   ~BrowsingDataRemover::REMOVE_PLUGIN_DATA;
+    remove_mask |= ChromeBrowsingDataRemoverDelegate::DATA_TYPE_SITE_DATA &
+                   ~BrowsingDataRemover::DATA_TYPE_COOKIES &
+                   ~BrowsingDataRemover::DATA_TYPE_CHANNEL_IDS &
+                   ~ChromeBrowsingDataRemoverDelegate::DATA_TYPE_PLUGIN_DATA;
   }
   if (remove_cache)
-    remove_mask |= BrowsingDataRemover::REMOVE_CACHE;
+    remove_mask |= BrowsingDataRemover::DATA_TYPE_CACHE;
 
   if (remove_mask) {
     std::unique_ptr<BrowsingDataFilterBuilder> origin_filter_builder(
@@ -2800,9 +2802,9 @@ void ChromeContentBrowserClient::ClearSiteData(
     origin_filter_builder->AddOrigin(origin);
 
     remover->RemoveWithFilterAndReply(
-        base::Time(), base::Time::Max(),
-        remove_mask, BrowsingDataHelper::ALL, std::move(origin_filter_builder),
-        observer);
+        base::Time(), base::Time::Max(), remove_mask,
+        ChromeBrowsingDataRemoverDelegate::ALL_ORIGIN_TYPES,
+        std::move(origin_filter_builder), observer);
   } else {
     // The second removal task is a no-op.
     observer->OnBrowsingDataRemoverDone();

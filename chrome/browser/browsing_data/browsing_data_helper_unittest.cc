@@ -12,10 +12,6 @@
 #include "url/gurl.h"
 #include "url/url_constants.h"
 
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-#include "chrome/browser/extensions/mock_extension_special_storage_policy.h"
-#endif
-
 namespace {
 
 const char kTestOrigin1[] = "http://host1:1/";
@@ -29,10 +25,6 @@ const GURL kOrigin2(kTestOrigin2);
 const GURL kOrigin3(kTestOrigin3);
 const GURL kOriginExt(kTestOriginExt);
 const GURL kOriginDevTools(kTestOriginDevTools);
-
-const int kExtension = BrowsingDataHelper::EXTENSION;
-const int kProtected = BrowsingDataHelper::PROTECTED_WEB;
-const int kUnprotected = BrowsingDataHelper::UNPROTECTED_WEB;
 
 class BrowsingDataHelperTest : public testing::Test {
  public:
@@ -49,12 +41,6 @@ class BrowsingDataHelperTest : public testing::Test {
     GURL test(scheme + "://example.com");
     return (BrowsingDataHelper::HasExtensionScheme(test) &&
             BrowsingDataHelper::IsExtensionScheme(scheme));
-  }
-
-  bool Match(const GURL& origin,
-             int mask,
-             storage::SpecialStoragePolicy* policy) {
-    return BrowsingDataHelper::DoesOriginMatchMask(origin, mask, policy);
   }
 
  private:
@@ -115,73 +101,6 @@ TEST_F(BrowsingDataHelperTest, SchemesThatCantStoreDataDontMatchAnything) {
 
   EXPECT_FALSE(IsWebScheme("invalid-scheme-i-just-made-up"));
   EXPECT_FALSE(IsExtensionScheme("invalid-scheme-i-just-made-up"));
-}
-
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-TEST_F(BrowsingDataHelperTest, TestMatches) {
-  scoped_refptr<MockExtensionSpecialStoragePolicy> mock_policy =
-      new MockExtensionSpecialStoragePolicy;
-  // Protect kOrigin1.
-  mock_policy->AddProtected(kOrigin1.GetOrigin());
-
-  EXPECT_FALSE(Match(kOrigin1, kUnprotected, mock_policy.get()));
-  EXPECT_TRUE(Match(kOrigin2, kUnprotected, mock_policy.get()));
-  EXPECT_FALSE(Match(kOriginExt, kUnprotected, mock_policy.get()));
-  EXPECT_FALSE(Match(kOriginDevTools, kUnprotected, mock_policy.get()));
-
-  EXPECT_TRUE(Match(kOrigin1, kProtected, mock_policy.get()));
-  EXPECT_FALSE(Match(kOrigin2, kProtected, mock_policy.get()));
-  EXPECT_FALSE(Match(kOriginExt, kProtected, mock_policy.get()));
-  EXPECT_FALSE(Match(kOriginDevTools, kProtected, mock_policy.get()));
-
-  EXPECT_FALSE(Match(kOrigin1, kExtension, mock_policy.get()));
-  EXPECT_FALSE(Match(kOrigin2, kExtension, mock_policy.get()));
-  EXPECT_TRUE(Match(kOriginExt, kExtension, mock_policy.get()));
-  EXPECT_FALSE(Match(kOriginDevTools, kExtension, mock_policy.get()));
-
-  EXPECT_TRUE(Match(kOrigin1, kUnprotected | kProtected, mock_policy.get()));
-  EXPECT_TRUE(Match(kOrigin2, kUnprotected | kProtected, mock_policy.get()));
-  EXPECT_FALSE(Match(kOriginExt, kUnprotected | kProtected, mock_policy.get()));
-  EXPECT_FALSE(
-      Match(kOriginDevTools, kUnprotected | kProtected, mock_policy.get()));
-
-  EXPECT_FALSE(Match(kOrigin1, kUnprotected | kExtension, mock_policy.get()));
-  EXPECT_TRUE(Match(kOrigin2, kUnprotected | kExtension, mock_policy.get()));
-  EXPECT_TRUE(Match(kOriginExt, kUnprotected | kExtension, mock_policy.get()));
-  EXPECT_FALSE(
-      Match(kOriginDevTools, kUnprotected | kExtension, mock_policy.get()));
-
-  EXPECT_TRUE(Match(kOrigin1, kProtected | kExtension, mock_policy.get()));
-  EXPECT_FALSE(Match(kOrigin2, kProtected | kExtension, mock_policy.get()));
-  EXPECT_TRUE(Match(kOriginExt, kProtected | kExtension, mock_policy.get()));
-  EXPECT_FALSE(
-      Match(kOriginDevTools, kProtected | kExtension, mock_policy.get()));
-
-  EXPECT_TRUE(Match(
-      kOrigin1, kUnprotected | kProtected | kExtension, mock_policy.get()));
-  EXPECT_TRUE(Match(
-      kOrigin2, kUnprotected | kProtected | kExtension, mock_policy.get()));
-  EXPECT_TRUE(Match(
-      kOriginExt, kUnprotected | kProtected | kExtension, mock_policy.get()));
-  EXPECT_FALSE(Match(kOriginDevTools,
-                     kUnprotected | kProtected | kExtension,
-                     mock_policy.get()));
-}
-#endif
-
-// If extensions are disabled, there is no policy.
-TEST_F(BrowsingDataHelperTest, TestNoPolicyMatches) {
-  EXPECT_FALSE(Match(kOrigin1, kExtension, nullptr));
-  EXPECT_TRUE(Match(kOrigin1, kUnprotected, nullptr));
-  EXPECT_FALSE(Match(kOrigin1, kProtected, nullptr));
-
-  EXPECT_TRUE(Match(kOriginExt, kExtension, nullptr));
-  EXPECT_FALSE(Match(kOriginExt, kUnprotected, nullptr));
-  EXPECT_FALSE(Match(kOriginExt, kProtected, nullptr));
-
-  EXPECT_FALSE(Match(kOriginDevTools, kExtension, nullptr));
-  EXPECT_FALSE(Match(kOriginDevTools, kUnprotected, nullptr));
-  EXPECT_FALSE(Match(kOriginDevTools, kProtected, nullptr));
 }
 
 }  // namespace

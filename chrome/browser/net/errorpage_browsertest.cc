@@ -23,6 +23,7 @@
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_remover.h"
 #include "chrome/browser/browsing_data/browsing_data_remover_factory.h"
+#include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
 #include "chrome/browser/net/net_error_diagnostics_dialog.h"
 #include "chrome/browser/net/url_request_mock_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -1009,8 +1010,8 @@ IN_PROC_BROWSER_TEST_F(ErrorPageTest, StaleCacheStatus) {
   BrowsingDataRemover* remover =
       BrowsingDataRemoverFactory::GetForBrowserContext(browser()->profile());
   remover->Remove(base::Time(), base::Time::Max(),
-                  BrowsingDataRemover::REMOVE_CACHE,
-                  BrowsingDataHelper::UNPROTECTED_WEB);
+                  BrowsingDataRemover::DATA_TYPE_CACHE,
+                  BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB);
   ui_test_utils::NavigateToURL(browser(), test_url);
   EXPECT_TRUE(ProbeStaleCopyValue(false));
   EXPECT_FALSE(IsDisplayingText(browser(), GetShowSavedButtonLabel()));
@@ -1282,8 +1283,8 @@ IN_PROC_BROWSER_TEST_F(ErrorPageNavigationCorrectionsFailTest,
   BrowsingDataRemover* remover =
       BrowsingDataRemoverFactory::GetForBrowserContext(browser()->profile());
   remover->Remove(base::Time(), base::Time::Max(),
-                  BrowsingDataRemover::REMOVE_CACHE,
-                  BrowsingDataHelper::UNPROTECTED_WEB);
+                  BrowsingDataRemover::DATA_TYPE_CACHE,
+                  BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB);
   ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
       browser(), test_url, 2);
   EXPECT_TRUE(ProbeStaleCopyValue(false));

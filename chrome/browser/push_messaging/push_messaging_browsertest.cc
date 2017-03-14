@@ -22,6 +22,7 @@
 #include "chrome/browser/browsing_data/browsing_data_remover.h"
 #include "chrome/browser/browsing_data/browsing_data_remover_factory.h"
 #include "chrome/browser/browsing_data/browsing_data_remover_test_util.h"
+#include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/engagement/site_engagement_score.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
@@ -2067,9 +2068,10 @@ IN_PROC_BROWSER_TEST_F(
   BrowsingDataRemover* remover =
       BrowsingDataRemoverFactory::GetForBrowserContext(GetBrowser()->profile());
   BrowsingDataRemoverCompletionObserver observer(remover);
-  remover->RemoveAndReply(base::Time(), base::Time::Max(),
-                          BrowsingDataRemover::REMOVE_SITE_DATA,
-                          BrowsingDataHelper::UNPROTECTED_WEB, &observer);
+  remover->RemoveAndReply(
+      base::Time(), base::Time::Max(),
+      ChromeBrowsingDataRemoverDelegate::DATA_TYPE_SITE_DATA,
+      BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB, &observer);
   observer.BlockUntilCompletion();
 
   base::RunLoop run_loop;

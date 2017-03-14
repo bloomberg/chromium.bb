@@ -21,6 +21,7 @@
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_remover.h"
 #include "chrome/browser/browsing_data/browsing_data_remover_factory.h"
+#include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
 #include "chrome/browser/policy/cloud/user_cloud_policy_manager_factory.h"
 #include "chrome/browser/policy/cloud/user_policy_signin_service_factory.h"
 #include "chrome/browser/policy/cloud/user_policy_signin_service_mobile.h"
@@ -61,9 +62,10 @@ class ProfileDataRemover : public BrowsingDataRemover::Observer {
         origin_runner_(base::ThreadTaskRunnerHandle::Get()),
         remover_(BrowsingDataRemoverFactory::GetForBrowserContext(profile)) {
     remover_->AddObserver(this);
-    remover_->RemoveAndReply(base::Time(), base::Time::Max(),
-                             BrowsingDataRemover::REMOVE_ALL,
-                             BrowsingDataHelper::ALL, this);
+    remover_->RemoveAndReply(
+        base::Time(), base::Time::Max(),
+        ChromeBrowsingDataRemoverDelegate::ALL_DATA_TYPES,
+        ChromeBrowsingDataRemoverDelegate::ALL_ORIGIN_TYPES, this);
   }
 
   ~ProfileDataRemover() override {}

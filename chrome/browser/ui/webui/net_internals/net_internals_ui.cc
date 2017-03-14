@@ -35,6 +35,7 @@
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_remover.h"
 #include "chrome/browser/browsing_data/browsing_data_remover_factory.h"
+#include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/io_thread.h"
@@ -505,8 +506,8 @@ void NetInternalsMessageHandler::OnClearBrowserCache(
       BrowsingDataRemoverFactory::GetForBrowserContext(
           Profile::FromWebUI(web_ui()));
   remover->Remove(base::Time(), base::Time::Max(),
-                  BrowsingDataRemover::REMOVE_CACHE,
-                  BrowsingDataHelper::UNPROTECTED_WEB);
+                  BrowsingDataRemover::DATA_TYPE_CACHE,
+                  BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB);
   // BrowsingDataRemover deletes itself.
 }
 

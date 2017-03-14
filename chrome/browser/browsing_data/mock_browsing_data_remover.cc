@@ -40,13 +40,19 @@ void MockBrowsingDataRemover::RemoveAndReply(const base::Time& delete_begin,
                  observer);
 }
 
+bool MockBrowsingDataRemover::DoesOriginMatchMask(
+    int origin_type_mask,
+    const GURL& origin,
+    storage::SpecialStoragePolicy* special_storage_policy) const {
+  return true;
+}
+
 void MockBrowsingDataRemover::RemoveWithFilter(
     const base::Time& delete_begin,
     const base::Time& delete_end,
     int remove_mask,
     int origin_type_mask,
     std::unique_ptr<content::BrowsingDataFilterBuilder> filter_builder) {
-  DCHECK_EQ(0, remove_mask & ~FILTERABLE_DATATYPES);
   DCHECK(filter_builder);
   RemoveInternal(delete_begin, delete_end, remove_mask, origin_type_mask,
                  std::move(filter_builder), nullptr);
@@ -59,7 +65,6 @@ void MockBrowsingDataRemover::RemoveWithFilterAndReply(
     int origin_type_mask,
     std::unique_ptr<content::BrowsingDataFilterBuilder> filter_builder,
     Observer* observer) {
-  DCHECK_EQ(0, remove_mask & ~FILTERABLE_DATATYPES);
   DCHECK(filter_builder);
   DCHECK(observer);
   RemoveInternal(delete_begin, delete_end, remove_mask, origin_type_mask,

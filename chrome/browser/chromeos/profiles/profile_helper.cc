@@ -12,6 +12,7 @@
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_remover.h"
 #include "chrome/browser/browsing_data/browsing_data_remover_factory.h"
+#include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
 #include "chrome/browser/chromeos/base/file_flusher.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/signin/oauth2_login_manager_factory.h"
@@ -263,8 +264,9 @@ void ProfileHelper::ClearSigninProfile(const base::Closure& on_clear_callback) {
         BrowsingDataRemoverFactory::GetForBrowserContext(GetSigninProfile());
     browsing_data_remover_->AddObserver(this);
     browsing_data_remover_->RemoveAndReply(
-        base::Time(), base::Time::Max(), BrowsingDataRemover::REMOVE_SITE_DATA,
-        BrowsingDataHelper::ALL, this);
+        base::Time(), base::Time::Max(),
+        ChromeBrowsingDataRemoverDelegate::DATA_TYPE_SITE_DATA,
+        ChromeBrowsingDataRemoverDelegate::ALL_ORIGIN_TYPES, this);
   } else {
     on_clear_profile_stage_finished_.Run();
   }
