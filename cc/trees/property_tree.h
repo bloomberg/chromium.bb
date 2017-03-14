@@ -100,7 +100,6 @@ class CC_EXPORT PropertyTree {
  private:
   std::vector<T> nodes_;
 
-  friend class TransformTree;
   bool needs_update_;
   PropertyTrees* property_trees_;
 };

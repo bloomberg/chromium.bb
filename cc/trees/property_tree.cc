@@ -130,9 +130,9 @@ void TransformTree::clear() {
 }
 
 void TransformTree::set_needs_update(bool needs_update) {
-  if (needs_update && !needs_update_)
+  if (needs_update && !PropertyTree<TransformNode>::needs_update())
     property_trees()->UpdateTransformTreeUpdateNumber();
-  needs_update_ = needs_update;
+  PropertyTree<TransformNode>::set_needs_update(needs_update);
 }
 
 bool TransformTree::ComputeTranslation(int source_id,
