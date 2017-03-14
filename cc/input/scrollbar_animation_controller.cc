@@ -170,7 +170,6 @@ float ScrollbarAnimationController::AnimationProgressAtTime(
 
 void ScrollbarAnimationController::RunAnimationFrame(float progress) {
   ApplyOpacityToScrollbars(1.f - progress);
-  client_->SetNeedsRedrawForScrollbarAnimation();
   if (progress == 1.f)
     StopAnimation();
 }
@@ -376,6 +375,9 @@ void ScrollbarAnimationController::ApplyOpacityToScrollbars(float opacity) {
 
   bool previouslyVisible = opacity_ > 0.0f;
   bool currentlyVisible = opacity > 0.0f;
+
+  if (opacity_ != opacity)
+    client_->SetNeedsRedrawForScrollbarAnimation();
 
   opacity_ = opacity;
 

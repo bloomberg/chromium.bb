@@ -2322,6 +2322,9 @@ LayerTreeHostImpl::TakeCompletedImageDecodeCallbacks() {
 }
 
 void LayerTreeHostImpl::DidChangeScrollbarVisibility() {
+  // Need a commit since input handling for scrollbars is handled in Blink so
+  // we need to communicate to Blink when the compositor shows/hides the
+  // scrollbars.
   client_->SetNeedsCommitOnImplThread();
 }
 

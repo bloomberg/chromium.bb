@@ -2803,6 +2803,10 @@ class LayerTreeHostImplTestScrollbarAnimation : public LayerTreeHostImplTest {
     host_impl_->active_tree()->BuildPropertyTreesForTesting();
     host_impl_->active_tree()->DidBecomeActive();
     DrawFrame();
+
+    // SetScrollLayerId will initialize the scrollbar which will cause it to
+    // show and request a redraw.
+    did_request_redraw_ = false;
   }
 
   void RunTest(LayerTreeSettings::ScrollbarAnimator animator) {
@@ -3126,6 +3130,70 @@ TEST_F(LayerTreeHostImplTestScrollbarOpacity, AuraOverlay) {
 
 TEST_F(LayerTreeHostImplTestScrollbarOpacity, NoAnimator) {
   RunTest(LayerTreeSettings::NO_ANIMATOR);
+}
+
+TEST_F(LayerTreeHostImplTest, ScrollbarVisibilityChangeCausesRedrawAndCommit) {
+  LayerTreeSettings settings = DefaultSettings();
+  settings.scrollbar_animator = LayerTreeSettings::AURA_OVERLAY;
+  settings.scrollbar_show_delay = base::TimeDelta::FromMilliseconds(20);
+  settings.scrollbar_fade_out_delay = base::TimeDelta::FromMilliseconds(20);
+  settings.scrollbar_fade_out_duration = base::TimeDelta::FromMilliseconds(20);
+  gfx::Size content_size(100, 100);
+
+  CreateHostImpl(settings, CreateCompositorFrameSink());
+  host_impl_->CreatePendingTree();
+  CreateScrollAndContentsLayers(host_impl_->pending_tree(), content_size);
+  std::unique_ptr<SolidColorScrollbarLayerImpl> scrollbar =
+      SolidColorScrollbarLayerImpl::Create(host_impl_->pending_tree(), 400,
+                                           VERTICAL, 10, 0, false, true);
+  scrollbar->test_properties()->opacity = 0.f;
+  LayerImpl* scroll = host_impl_->pending_tree()->OuterViewportScrollLayer();
+  LayerImpl* container =
+      host_impl_->pending_tree()->InnerViewportContainerLayer();
+  scrollbar->SetScrollLayerId(scroll->id());
+  container->test_properties()->AddChild(std::move(scrollbar));
+  host_impl_->pending_tree()->PushPageScaleFromMainThread(1.f, 1.f, 1.f);
+  host_impl_->pending_tree()->BuildPropertyTreesForTesting();
+  host_impl_->ActivateSyncTree();
+
+  ScrollbarAnimationController* scrollbar_controller =
+      host_impl_->ScrollbarAnimationControllerForId(scroll->id());
+
+  // Scrollbars will flash shown but we should have a fade out animation
+  // queued. Run it and fade out the scrollbars.
+  {
+    ASSERT_FALSE(animation_task_.Equals(base::Closure()));
+    ASSERT_FALSE(animation_task_.IsCancelled());
+    animation_task_.Run();
+
+    base::TimeTicks fake_now = base::TimeTicks::Now();
+    scrollbar_controller->Animate(fake_now);
+    fake_now += settings.scrollbar_fade_out_delay;
+    scrollbar_controller->Animate(fake_now);
+
+    ASSERT_TRUE(scrollbar_controller->ScrollbarsHidden());
+  }
+
+  // Move the mouse over the scrollbar region. This should post a delayed show
+  // task. Execute it to show the scrollbars.
+  {
+    animation_task_ = base::Closure();
+    scrollbar_controller->DidMouseMoveNear(VERTICAL, 0);
+    ASSERT_FALSE(animation_task_.Equals(base::Closure()));
+    ASSERT_FALSE(animation_task_.IsCancelled());
+  }
+
+  // The show task should cause the scrollbars to show. Ensure that we
+  // requested a redraw and a commit.
+  {
+    did_request_redraw_ = false;
+    did_request_commit_ = false;
+    ASSERT_TRUE(scrollbar_controller->ScrollbarsHidden());
+    animation_task_.Run();
+    ASSERT_FALSE(scrollbar_controller->ScrollbarsHidden());
+    EXPECT_TRUE(did_request_redraw_);
+    EXPECT_TRUE(did_request_commit_);
+  }
 }
 
 TEST_F(LayerTreeHostImplTest, ScrollbarInnerLargerThanOuter) {
