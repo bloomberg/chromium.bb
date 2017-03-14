@@ -429,6 +429,7 @@ class _JSCViewBuilder(object):
             for value in type_.enum_values]
         if len(dst_dict['enum_values']) > 0:
           dst_dict['enum_values'][-1]['last'] = True
+          dst_dict['enum_values'][0]['first'] = True
       elif type_.instance_of is not None:
         dst_dict['simple_type'] = type_.instance_of
       else:

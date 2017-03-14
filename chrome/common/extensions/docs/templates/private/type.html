@@ -22,7 +22,11 @@
             </dd>
           </dl>
         {{:e.description}}
-          {{?e.last}}or {{/}}<code>"{{e.name}}"</code>{{^e.last}}, {{/}}
+          {{^e.last}}
+            <code>"{{e.name}}"</code>, 
+          {{:e.last}}
+            {{^e.first}}or {{/e.first}}<code>"{{e.name}}"</code>
+          {{/e.last}}
         {{/e.description}}
       {{/enum_values}}
     </td></tr>
