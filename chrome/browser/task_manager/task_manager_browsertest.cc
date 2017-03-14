@@ -1044,7 +1044,14 @@ IN_PROC_BROWSER_TEST_P(TaskManagerOOPIFBrowserTest,
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(0, MatchAnySubframe()));
 }
 
-IN_PROC_BROWSER_TEST_P(TaskManagerOOPIFBrowserTest, OrderingOfDependentRows) {
+// Flaky on Linux http://crbug.com/700684
+#if defined(OS_LINUX)
+#define MAYBE_OrderingOfDependentRows DISABLED_OrderingOfDependentRows
+#else
+#define MAYBE_OrderingOfDependentRows OrderingOfDependentRows
+#endif
+IN_PROC_BROWSER_TEST_P(TaskManagerOOPIFBrowserTest,
+                       MAYBE_OrderingOfDependentRows) {
   ShowTaskManager();
 
   GURL a_with_frames(embedded_test_server()->GetURL(
