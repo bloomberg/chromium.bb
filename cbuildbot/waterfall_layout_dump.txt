@@ -203,13 +203,10 @@ wolf-release (gce_beefy)
 wolf-tot-paladin (gce_beefy)
 x86-alex-chrome-pfq (baremetal)
 x86-alex-paladin (gce_beefy)
-x86-alex_he-release (gce_beefy)
 x86-generic-chromium-pfq (baremetal)
 x86-mario-nowithdebug-paladin (gce_beefy)
 x86-mario-paladin (baremetal)
 x86-zgb-paladin (gce_beefy)
-x86-zgb-release (gce_beefy)
-x86-zgb_he-release (gce_beefy)
 zako-release (gce_beefy)
 
 == chromeos.infra ==

@@ -222,7 +222,7 @@
       "configs": [
         {
           "builder": "RELEASE",
-          "experimental": true,
+          "experimental": false,
           "leader_board": true,
           "board_group": "glados",
           "arch": "X86_INTERNAL"
@@ -1182,7 +1182,7 @@
       "configs": [
         {
           "builder": "RELEASE",
-          "experimental": true,
+          "experimental": false,
           "leader_board": false,
           "board_group": "veyron",
           "arch": "ARM_INTERNAL"
@@ -1218,7 +1218,7 @@
       "configs": [
         {
           "builder": "RELEASE",
-          "experimental": true,
+          "experimental": false,
           "leader_board": false,
           "board_group": "veyron",
           "arch": "ARM_INTERNAL"
@@ -1290,7 +1290,7 @@
       "configs": [
         {
           "builder": "RELEASE",
-          "experimental": true,
+          "experimental": false,
           "leader_board": false,
           "board_group": "veyron",
           "arch": "ARM_INTERNAL"
@@ -1341,42 +1341,6 @@
           "experimental": false,
           "leader_board": false,
           "board_group": "slippy",
-          "arch": "X86_INTERNAL"
-        }
-      ]
-    },
-    {
-      "name": "x86-alex_he",
-      "configs": [
-        {
-          "builder": "RELEASE",
-          "experimental": false,
-          "leader_board": false,
-          "board_group": "pineview",
-          "arch": "X86_INTERNAL"
-        }
-      ]
-    },
-    {
-      "name": "x86-zgb",
-      "configs": [
-        {
-          "builder": "RELEASE",
-          "experimental": false,
-          "leader_board": false,
-          "board_group": "pineview",
-          "arch": "X86_INTERNAL"
-        }
-      ]
-    },
-    {
-      "name": "x86-zgb_he",
-      "configs": [
-        {
-          "builder": "RELEASE",
-          "experimental": false,
-          "leader_board": false,
-          "board_group": "pineview",
           "arch": "X86_INTERNAL"
         }
       ]
