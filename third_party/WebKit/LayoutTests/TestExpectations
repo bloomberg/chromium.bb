@@ -159,10 +159,6 @@ crbug.com/674468 [ Trusty ] compositing/reflections/nested-reflection-transition
 crbug.com/674858 [ Linux ] virtual/threaded/printing/offscreencanvas-2d-printing.html [ Pass Failure Crash ]
 crbug.com/674858 [ Linux ] virtual/threaded/printing/offscreencanvas-webgl-printing.html [ Pass Failure Crash ]
 
-# Added 2017-01-16
-crbug.com/681471 paint/invalidation/media-audio-no-spurious-repaints.html [ Failure Pass Timeout ]
-crbug.com/681471 virtual/disable-spinvalidation/paint/invalidation/media-audio-no-spurious-repaints.html [ Failure Pass Timeout ]
-
 # Added 2017-02-20
 crbug.com/693510 compositing/reflections/nested-reflection-anchor-point.html [ Failure Pass ]
 crbug.com/693510 compositing/reflections/nested-reflection-animated.html [ Failure Pass ]

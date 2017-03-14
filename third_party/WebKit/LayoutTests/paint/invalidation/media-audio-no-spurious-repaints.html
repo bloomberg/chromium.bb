@@ -21,7 +21,7 @@ async_test(function(t) {
         // Manually verify the number of repaints instead of using a repaint
         // test since media playback is asynchronous by nature and its threading
         // will cause a variance in the number of repaints on test bots.
-        var minExpected = 3, maxExpected = 4, expectedRect = [8, 8, 300, 150];
+        var minExpected = 5, maxExpected = 8, expectedRect = [8, 8, 300, 150];
 
         t.add_cleanup(function() {
             if (t.status == t.PASS)
