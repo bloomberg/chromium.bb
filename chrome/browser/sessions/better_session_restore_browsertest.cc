@@ -460,13 +460,14 @@ IN_PROC_BROWSER_TEST_F(ContinueWhereILeftOffTest, PRE_CookiesClearedOnExit) {
       ->SetDefaultCookieSetting(CONTENT_SETTING_SESSION_ONLY);
 }
 
-// Flaky on Mac. http://crbug.com/656211.
+// Flaky. http://crbug.com/656211, http://crbug.com/700683
 #if defined(OS_MACOSX)
 #define MAYBE_CookiesClearedOnExit DISABLED_CookiesClearedOnExit
 #else
 #define MAYBE_CookiesClearedOnExit CookiesClearedOnExit
 #endif
-IN_PROC_BROWSER_TEST_F(ContinueWhereILeftOffTest, MAYBE_CookiesClearedOnExit) {
+IN_PROC_BROWSER_TEST_F(ContinueWhereILeftOffTest,
+                       DISABLED_CookiesClearedOnExit) {
   CheckReloadedPageNotRestored();
 }
 
@@ -688,7 +689,8 @@ IN_PROC_BROWSER_TEST_F(RestartTest, PRE_LocalStorageClearedOnExit) {
   Restart();
 }
 
-IN_PROC_BROWSER_TEST_F(RestartTest, LocalStorageClearedOnExit) {
+// Flaky(crbug.com/700694)
+IN_PROC_BROWSER_TEST_F(RestartTest, DISABLED_LocalStorageClearedOnExit) {
   CheckReloadedPageRestored();
 }
 
