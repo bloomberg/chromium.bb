@@ -4363,6 +4363,33 @@ TEST_P(GLES2DecoderManualInitTest, TexStorageInvalidLevels) {
   EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
 }
 
+TEST_P(GLES2DecoderManualInitTest, TexStorageInvalidSize) {
+  InitState init;
+  init.gl_version = "OpenGL 4.2";
+  init.extensions = "GL_ARB_texture_storage";
+  init.bind_generates_resource = true;
+  InitDecoder(init);
+  DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
+  {
+    TexStorage2DEXT cmd;
+    cmd.Init(GL_TEXTURE_2D, 1, GL_RGBA8, 0, 4);
+    EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+    EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
+  }
+  {
+    TexStorage2DEXT cmd;
+    cmd.Init(GL_TEXTURE_2D, 1, GL_RGBA8, 4, 0);
+    EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+    EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
+  }
+  {
+    TexStorage2DEXT cmd;
+    cmd.Init(GL_TEXTURE_2D, 1, GL_RGBA8, 0, 0);
+    EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+    EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
+  }
+}
+
 class GLES2DecoderTexStorageFormatAndTypeTest
     : public GLES2DecoderManualInitTest {
  public:

@@ -17249,9 +17249,14 @@ void GLES2DecoderImpl::TexStorageImpl(GLenum target,
         GL_INVALID_OPERATION, function_name, "target invalid for format");
     return;
   }
+  // The glTexStorage entry points require width, height, and depth to be
+  // at least 1, but the other texture entry points (those which use
+  // ValidForTarget) do not. So we have to add an extra check here.
+  bool is_invalid_texstorage_size = width < 1 || height < 1 || depth < 1;
   if (!texture_manager()->ValidForTarget(target, 0, width, height, depth) ||
-      TextureManager::ComputeMipMapCount(
-          target, width, height, depth) < levels) {
+      is_invalid_texstorage_size ||
+      TextureManager::ComputeMipMapCount(target, width, height, depth) <
+          levels) {
     LOCAL_SET_GL_ERROR(
         GL_INVALID_VALUE, function_name, "dimensions out of range");
     return;
