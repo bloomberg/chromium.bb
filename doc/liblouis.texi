@@ -1997,7 +1997,14 @@ Do a backward translation.
 To use it to translate or back-translate a file use a line like
 
 @example
-lou_translate --forward en-us-g2.ctb <liblouis.txt >testtrans
+lou_translate --forward en-us-g2.ctb < input.txt > output.brl
+@end example
+
+Use a pipe if you would rather just pass some given text to the
+translator. The result will be written to standard output:
+
+@example
+echo 'Text to translate' | lou_translate --forward en-us-g2.ctb
 @end example
 
 @node lou_checkhyphens
