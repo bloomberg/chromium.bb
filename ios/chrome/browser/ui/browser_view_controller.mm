@@ -3449,11 +3449,10 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
   Tab* tab = [_model currentTab];
   [tab.webController dismissKeyboard];
 
-  DCHECK([tab navigationManager]);
-  CRWSessionController* sc =
-      [tab navigationManagerImpl]->GetSessionController();
+  web::NavigationItemList backwardItems =
+      [tab navigationManager]->GetBackwardItems();
   [_toolbarController showTabHistoryPopupInView:[self view]
-                                      withItems:[sc backwardItems]
+                                      withItems:backwardItems
                                  forBackHistory:YES];
 }
 
@@ -3466,11 +3465,10 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
   Tab* tab = [_model currentTab];
   [tab.webController dismissKeyboard];
 
-  DCHECK([tab navigationManager]);
-  CRWSessionController* sc =
-      [tab navigationManagerImpl]->GetSessionController();
+  web::NavigationItemList forwardItems =
+      [tab navigationManager]->GetForwardItems();
   [_toolbarController showTabHistoryPopupInView:[self view]
-                                      withItems:[sc forwardItems]
+                                      withItems:forwardItems
                                  forBackHistory:NO];
 }
 

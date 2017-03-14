@@ -11,7 +11,7 @@ namespace web {
 
 // A minimal implementation of web::NavigationManager that raises NOTREACHED()
 // on most calls.
-class TestNavigationManager : public web::NavigationManager {
+class TestNavigationManager : public NavigationManager {
  public:
   TestNavigationManager();
   ~TestNavigationManager() override;
@@ -39,6 +39,8 @@ class TestNavigationManager : public web::NavigationManager {
   void GoForward() override;
   void GoToIndex(int index) override;
   void Reload(ReloadType reload_type, bool check_for_reposts) override;
+  NavigationItemList GetBackwardItems() const override;
+  NavigationItemList GetForwardItems() const override;
   void OverrideDesktopUserAgentForNextPendingItem() override;
 
   // Setters for test data.

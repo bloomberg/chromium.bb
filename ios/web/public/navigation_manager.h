@@ -9,6 +9,7 @@
 
 #import "base/mac/scoped_nsobject.h"
 #include "ios/web/public/browser_url_rewriter.h"
+#include "ios/web/public/navigation_item_list.h"
 #include "ios/web/public/referrer.h"
 #include "ios/web/public/reload_type.h"
 #include "ui/base/page_transition_types.h"
@@ -159,6 +160,11 @@ class NavigationManager {
   // ORIGINAL_REQUEST_URL.
   // TODO(crbug.com/700958): implement the logic for |check_for_repost|.
   virtual void Reload(ReloadType reload_type, bool check_for_repost) = 0;
+
+  // Returns a list of all non-redirected NavigationItems whose index precedes
+  // or follows the current index.
+  virtual NavigationItemList GetBackwardItems() const = 0;
+  virtual NavigationItemList GetForwardItems() const = 0;
 
   // Forces the pending item to be loaded using desktop user agent. Note that
   // the pending item may or may not already exist.

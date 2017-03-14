@@ -338,6 +338,14 @@ void NavigationManagerImpl::GoToIndex(int index) {
   delegate_->GoToIndex(index);
 }
 
+NavigationItemList NavigationManagerImpl::GetBackwardItems() const {
+  return [session_controller_ backwardItems];
+}
+
+NavigationItemList NavigationManagerImpl::GetForwardItems() const {
+  return [session_controller_ forwardItems];
+}
+
 void NavigationManagerImpl::Reload(ReloadType reload_type,
                                    bool check_for_reposts) {
   // Navigation manager may be empty if the only pending item failed to load

@@ -132,6 +132,16 @@ void TestNavigationManager::Reload(ReloadType reload_type,
   NOTREACHED();
 }
 
+NavigationItemList TestNavigationManager::GetBackwardItems() const {
+  NOTREACHED();
+  return NavigationItemList();
+}
+
+NavigationItemList TestNavigationManager::GetForwardItems() const {
+  NOTREACHED();
+  return NavigationItemList();
+}
+
 void TestNavigationManager::OverrideDesktopUserAgentForNextPendingItem() {
   NOTREACHED();
 }
