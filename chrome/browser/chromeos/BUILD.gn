@@ -1461,10 +1461,6 @@ source_set("chromeos") {
   if (use_cras) {
     defines = [ "USE_CRAS" ]
   }
-
-  if (ui_compositor_image_transport) {
-    deps += [ "//ui/gl" ]
-  }
 }
 
 static_library("arc_test_support") {

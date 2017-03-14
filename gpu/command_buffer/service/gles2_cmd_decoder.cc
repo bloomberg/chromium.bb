@@ -5166,11 +5166,6 @@ error::Error GLES2DecoderImpl::HandleResizeCHROMIUM(
   width = std::max(1U, width);
   height = std::max(1U, height);
 
-#if defined(OS_POSIX) && !defined(OS_MACOSX) && \
-    !defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
-  // Make sure that we are done drawing to the back buffer before resizing.
-  glFinish();
-#endif
   bool is_offscreen = !!offscreen_target_frame_buffer_.get();
   if (is_offscreen) {
     if (!ResizeOffscreenFramebuffer(gfx::Size(width, height))) {

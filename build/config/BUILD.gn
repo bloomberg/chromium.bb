@@ -57,10 +57,6 @@ config("feature_flags") {
     # TODO(brettw) should probably be "=1".
     defines += [ "USE_UDEV" ]
   }
-  if (ui_compositor_image_transport) {
-    # TODO(brettw) should probably be "=1".
-    defines += [ "UI_COMPOSITOR_IMAGE_TRANSPORT" ]
-  }
   if (use_ash) {
     defines += [ "USE_ASH=1" ]
   }

@@ -2334,9 +2334,6 @@ split_static_library("browser") {
       "//ui/views/mus",
     ]
   }
-  if (ui_compositor_image_transport) {
-    deps += [ "//ui/gl" ]
-  }
 
   if (use_ash) {
     # Cross-platform Ash sources.
