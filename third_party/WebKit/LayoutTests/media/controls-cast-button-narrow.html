@@ -41,12 +41,5 @@ async_test(function(t) {
             }));
         }));
     });
-
-    function isVisible(button) {
-        var computedStyle = getComputedStyle(button);
-        return computedStyle.display !== "none" &&
-               computedStyle.display !== "hidden" &&
-               computedStyle.visibility === "visible";
-    }
 });
 </script>

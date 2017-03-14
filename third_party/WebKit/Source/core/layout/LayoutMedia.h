@@ -83,7 +83,6 @@ class LayoutMedia : public LayoutImage {
 
   LayoutUnit computePanelWidth(const LayoutRect& mediaWidth) const;
 
-  Optional<LayoutUnit> m_lastReportedPanelWidth;
   LayoutObjectChildList m_children;
 };
 

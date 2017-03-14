@@ -29,6 +29,9 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/ClientRect.h"
 #include "core/dom/Fullscreen.h"
+#include "core/dom/ResizeObserver.h"
+#include "core/dom/ResizeObserverCallback.h"
+#include "core/dom/ResizeObserverEntry.h"
 #include "core/dom/TaskRunnerHelper.h"
 #include "core/events/MouseEvent.h"
 #include "core/frame/Settings.h"
@@ -45,6 +48,23 @@
 #include "platform/EventDispatchForbiddenScope.h"
 
 namespace blink {
+
+namespace {
+
+// TODO(steimel): should have better solution than hard-coding pixel values.
+// Defined in core/css/mediaControls.css, core/css/mediaControlsAndroid.css,
+// and core/paint/MediaControlsPainter.cpp.
+constexpr int kOverlayPlayButtonWidth = 48;
+constexpr int kOverlayPlayButtonHeight = 48;
+constexpr int kOverlayBottomMargin = 10;
+constexpr int kAndroidMediaPanelHeight = 48;
+
+constexpr int kMinWidthForOverlayPlayButton = kOverlayPlayButtonWidth;
+constexpr int kMinHeightForOverlayPlayButton = kOverlayPlayButtonHeight +
+                                               kAndroidMediaPanelHeight +
+                                               (2 * kOverlayBottomMargin);
+
+}  // anonymous namespace
 
 // If you change this value, then also update the corresponding value in
 // LayoutTests/media/media-controls.js.
@@ -128,6 +148,31 @@ class MediaControls::BatchedControlUpdate {
 // Count of number open batches for controls visibility.
 int MediaControls::BatchedControlUpdate::s_batchDepth = 0;
 
+class MediaControls::MediaControlsResizeObserverCallback final
+    : public ResizeObserverCallback {
+ public:
+  explicit MediaControlsResizeObserverCallback(MediaControls* controls)
+      : m_controls(controls) {
+    DCHECK(controls);
+  }
+  ~MediaControlsResizeObserverCallback() override = default;
+
+  void handleEvent(const HeapVector<Member<ResizeObserverEntry>>& entries,
+                   ResizeObserver* observer) override {
+    DCHECK_EQ(1u, entries.size());
+    DCHECK_EQ(entries[0]->target(), m_controls->m_mediaElement);
+    m_controls->notifyElementSizeChanged(entries[0]->contentRect());
+  }
+
+  DEFINE_INLINE_TRACE() {
+    visitor->trace(m_controls);
+    ResizeObserverCallback::trace(visitor);
+  }
+
+ private:
+  Member<MediaControls> m_controls;
+};
+
 MediaControls::MediaControls(HTMLMediaElement& mediaElement)
     : HTMLDivElement(mediaElement.document()),
       m_mediaElement(&mediaElement),
@@ -160,12 +205,16 @@ MediaControls::MediaControls(HTMLMediaElement& mediaElement)
       m_hideTimerBehaviorFlags(IgnoreNone),
       m_isMouseOverControls(false),
       m_isPausedForScrubbing(false),
-      m_panelWidthChangedTimer(TaskRunnerHelper::get(TaskType::UnspecedTimer,
-                                                     &mediaElement.document()),
-                               this,
-                               &MediaControls::panelWidthChangedTimerFired),
-      m_panelWidth(0),
-      m_keepShowingUntilTimerFires(false) {}
+      m_resizeObserver(ResizeObserver::create(
+          mediaElement.document(),
+          new MediaControlsResizeObserverCallback(this))),
+      m_elementSizeChangedTimer(TaskRunnerHelper::get(TaskType::UnspecedTimer,
+                                                      &mediaElement.document()),
+                                this,
+                                &MediaControls::elementSizeChangedTimerFired),
+      m_keepShowingUntilTimerFires(false) {
+  m_resizeObserver->observe(m_mediaElement);
+}
 
 MediaControls* MediaControls::create(HTMLMediaElement& mediaElement,
                                      ShadowRoot& shadowRoot) {
@@ -365,6 +414,13 @@ Node::InsertionNotificationRequest MediaControls::insertedInto(
   if (m_orientationLockDelegate)
     m_orientationLockDelegate->attach();
 
+  if (!m_resizeObserver) {
+    m_resizeObserver =
+        ResizeObserver::create(m_mediaElement->document(),
+                               new MediaControlsResizeObserverCallback(this));
+    m_resizeObserver->observe(m_mediaElement);
+  }
+
   return HTMLDivElement::insertedInto(root);
 }
 
@@ -378,6 +434,8 @@ void MediaControls::removedFrom(ContainerNode*) {
   m_mediaEventListener->detach();
   if (m_orientationLockDelegate)
     m_orientationLockDelegate->detach();
+
+  m_resizeObserver.clear();
 }
 
 void MediaControls::reset() {
@@ -836,25 +894,30 @@ void MediaControls::onExitedFullscreen() {
   startHideMediaControlsTimer();
 }
 
-void MediaControls::notifyPanelWidthChanged(const LayoutUnit& newWidth) {
-  // Don't bother to do any work if this matches the most recent panel
-  // width, since we're called after layout.
+void MediaControls::notifyElementSizeChanged(ClientRect* newSize) {
   // Note that this code permits a bad frame on resize, since it is
   // run after the relayout / paint happens.  It would be great to improve
   // this, but it would be even greater to move this code entirely to
   // JS and fix it there.
-  m_panelWidth = newWidth.toInt();
+
+  IntSize oldSize = m_size;
+  m_size.setWidth(newSize->width());
+  m_size.setHeight(newSize->height());
 
   // Adjust for effective zoom.
-  if (!m_panel->layoutObject() || !m_panel->layoutObject()->style())
-    return;
-  m_panelWidth =
-      ceil(m_panelWidth / m_panel->layoutObject()->style()->effectiveZoom());
+  if (m_panel->layoutObject() && m_panel->layoutObject()->style()) {
+    m_size.setWidth(ceil(m_size.width() /
+                         m_panel->layoutObject()->style()->effectiveZoom()));
+    m_size.setHeight(ceil(m_size.height() /
+                          m_panel->layoutObject()->style()->effectiveZoom()));
+  }
 
-  m_panelWidthChangedTimer.startOneShot(0, BLINK_FROM_HERE);
+  // Don't bother to do any work if this matches the most recent size.
+  if (oldSize != m_size)
+    m_elementSizeChangedTimer.startOneShot(0, BLINK_FROM_HERE);
 }
 
-void MediaControls::panelWidthChangedTimerFired(TimerBase*) {
+void MediaControls::elementSizeChangedTimerFired(TimerBase*) {
   computeWhichControlsFit();
 }
 
@@ -882,7 +945,7 @@ void MediaControls::computeWhichControlsFit() {
   // element.
   const int sliderMargin = 36;  // Sliders have 18px margin on each side.
 
-  if (!m_panelWidth) {
+  if (!m_size.width()) {
     // No layout yet -- hide everything, then make them show up later.
     // This prevents the wrong controls from being shown briefly
     // immediately after the first layout and paint, but before we have
@@ -927,7 +990,7 @@ void MediaControls::computeWhichControlsFit() {
       width += sliderMargin;
     element->shouldShowButtonInOverflowMenu(false);
     if (element->isWanted()) {
-      if (usedWidth + width <= m_panelWidth) {
+      if (usedWidth + width <= m_size.width()) {
         element->setDoesFit(true);
         usedWidth += width;
       } else {
@@ -955,12 +1018,19 @@ void MediaControls::computeWhichControlsFit() {
       if ((firstDisplacedElement == m_timeline.get()) ||
           (firstDisplacedElement == m_volumeSlider.get()))
         width += sliderMargin;
-      if (usedWidth + width <= m_panelWidth)
+      if (usedWidth + width <= m_size.width())
         firstDisplacedElement->setDoesFit(true);
     }
   } else if (overflowElements.size() == 1) {
     m_overflowMenu->setIsWanted(false);
     overflowElements.front()->setDoesFit(true);
+  }
+
+  // Decide if the overlay play button fits.
+  if (m_overlayPlayButton) {
+    bool doesFit = m_size.width() >= kMinWidthForOverlayPlayButton &&
+                   m_size.height() >= kMinHeightForOverlayPlayButton;
+    m_overlayPlayButton->setDoesFit(doesFit);
   }
 }
 
@@ -1010,6 +1080,7 @@ void MediaControls::hideAllMenus() {
 }
 
 DEFINE_TRACE(MediaControls) {
+  visitor->trace(m_resizeObserver);
   visitor->trace(m_mediaElement);
   visitor->trace(m_panel);
   visitor->trace(m_overlayPlayButton);

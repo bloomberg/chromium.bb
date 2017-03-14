@@ -31,6 +31,7 @@
 #include "core/html/HTMLMediaElement.h"
 #include "core/html/TimeRanges.h"
 #include "core/html/shadow/MediaControlElementTypes.h"
+#include "core/html/shadow/MediaControls.h"
 #include "core/layout/LayoutBox.h"
 #include "core/paint/PaintInfo.h"
 #include "core/style/ComputedStyle.h"
@@ -50,7 +51,8 @@ static const int mediaSliderThumbTouchHeight = 48;
 static const int mediaSliderThumbPaintWidth = 12;  // Painted area.
 static const int mediaSliderThumbPaintHeight = 12;
 
-// Overlay play button size.
+// Overlay play button size. If this changes, it must also be changed in
+// core/html/shadow/MediaControls.cpp.
 static const int mediaOverlayPlayButtonWidth = 48;
 static const int mediaOverlayPlayButtonHeight = 48;
 
@@ -176,6 +178,10 @@ bool MediaControlsPainter::paintMediaOverlayPlayButton(
   if (!hasSource(mediaElement) || !mediaElement->paused())
     return false;
 
+  MediaControlPanelElement* panelElement = nullptr;
+  if (mediaElement->mediaControls())
+    panelElement = mediaElement->mediaControls()->panelElement();
+
   static Image* mediaOverlayPlay = platformResource("mediaplayerOverlayPlay");
 
   IntRect buttonRect(rect);
@@ -187,9 +193,10 @@ bool MediaControlsPainter::paintMediaOverlayPlayButton(
   if (!box)
     return false;
   int mediaHeight = box->pixelSnappedHeight();
+  int mediaPanelHeight = panelElement ? panelElement->clientHeight() : 0;
   buttonRect.setX(rect.center().x() - mediaOverlayPlayButtonWidth / 2);
   buttonRect.setY(rect.center().y() - mediaOverlayPlayButtonHeight / 2 +
-                  (mediaHeight - rect.height()) / 2);
+                  (mediaHeight - rect.height() - mediaPanelHeight) / 2);
   buttonRect.setWidth(mediaOverlayPlayButtonWidth);
   buttonRect.setHeight(mediaOverlayPlayButtonHeight);
 

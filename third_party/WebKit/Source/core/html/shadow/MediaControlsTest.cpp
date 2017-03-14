@@ -171,10 +171,11 @@ class MediaControlsTest : public ::testing::Test {
         WebRemotePlaybackAvailability::DeviceAvailable);
   }
 
-  void ensureLayout() {
-    // Force a relayout, so that the controls know the width.  Otherwise,
-    // they don't know if, for example, the cast button will fit.
-    m_mediaControls->mediaElement().clientWidth();
+  void ensureSizing() {
+    // Fire the size-change callback to ensure that the controls have
+    // been properly notified of the video size.
+    m_mediaControls->notifyElementSizeChanged(
+        m_mediaControls->mediaElement().getBoundingClientRect());
   }
 
   void simulateHideMediaControlsTimerFired() {
@@ -262,7 +263,7 @@ TEST_F(MediaControlsTest, ResetDoesNotTriggerInitialLayout) {
 }
 
 TEST_F(MediaControlsTest, CastButtonRequiresRoute) {
-  ensureLayout();
+  ensureSizing();
   mediaControls().mediaElement().setBooleanAttribute(HTMLNames::controlsAttr,
                                                      true);
 
@@ -277,7 +278,7 @@ TEST_F(MediaControlsTest, CastButtonRequiresRoute) {
 }
 
 TEST_F(MediaControlsTest, CastButtonDisableRemotePlaybackAttr) {
-  ensureLayout();
+  ensureSizing();
   mediaControls().mediaElement().setBooleanAttribute(HTMLNames::controlsAttr,
                                                      true);
 
@@ -364,7 +365,7 @@ TEST_F(MediaControlsTest, KeepControlsVisibleIfOverflowListVisible) {
 }
 
 TEST_F(MediaControlsTest, DownloadButtonDisplayed) {
-  ensureLayout();
+  ensureSizing();
 
   Element* downloadButton = getElementByShadowPseudoId(
       mediaControls(), "-internal-media-controls-download-button");
@@ -379,7 +380,7 @@ TEST_F(MediaControlsTest, DownloadButtonDisplayed) {
 }
 
 TEST_F(MediaControlsTest, DownloadButtonNotDisplayedEmptyUrl) {
-  ensureLayout();
+  ensureSizing();
 
   Element* downloadButton = getElementByShadowPseudoId(
       mediaControls(), "-internal-media-controls-download-button");
@@ -393,7 +394,7 @@ TEST_F(MediaControlsTest, DownloadButtonNotDisplayedEmptyUrl) {
 }
 
 TEST_F(MediaControlsTest, DownloadButtonDisplayedHiddenAndDisplayed) {
-  ensureLayout();
+  ensureSizing();
 
   Element* downloadButton = getElementByShadowPseudoId(
       mediaControls(), "-internal-media-controls-download-button");
@@ -423,7 +424,7 @@ TEST_F(MediaControlsTest, DownloadButtonDisplayedHiddenAndDisplayed) {
 }
 
 TEST_F(MediaControlsTest, DownloadButtonRecordsClickOnlyOnce) {
-  ensureLayout();
+  ensureSizing();
 
   MediaControlDownloadButtonElement* downloadButton =
       static_cast<MediaControlDownloadButtonElement*>(
@@ -453,7 +454,7 @@ TEST_F(MediaControlsTest, DownloadButtonRecordsClickOnlyOnce) {
 }
 
 TEST_F(MediaControlsTest, DownloadButtonNotDisplayedInfiniteDuration) {
-  ensureLayout();
+  ensureSizing();
 
   Element* downloadButton = getElementByShadowPseudoId(
       mediaControls(), "-internal-media-controls-download-button");
@@ -470,7 +471,7 @@ TEST_F(MediaControlsTest, DownloadButtonNotDisplayedInfiniteDuration) {
 }
 
 TEST_F(MediaControlsTest, DownloadButtonNotDisplayedHLS) {
-  ensureLayout();
+  ensureSizing();
 
   Element* downloadButton = getElementByShadowPseudoId(
       mediaControls(), "-internal-media-controls-download-button");
@@ -484,7 +485,7 @@ TEST_F(MediaControlsTest, DownloadButtonNotDisplayedHLS) {
 }
 
 TEST_F(MediaControlsTest, TimelineSeekToRoundedEnd) {
-  ensureLayout();
+  ensureSizing();
 
   MediaControlTimelineElement* timeline =
       static_cast<MediaControlTimelineElement*>(getElementByShadowPseudoId(
@@ -509,7 +510,7 @@ TEST_F(MediaControlsTest, TimelineSeekToRoundedEnd) {
 }
 
 TEST_F(MediaControlsTest, TimelineImmediatelyUpdatesCurrentTime) {
-  ensureLayout();
+  ensureSizing();
 
   MediaControlTimelineElement* timeline =
       static_cast<MediaControlTimelineElement*>(getElementByShadowPseudoId(

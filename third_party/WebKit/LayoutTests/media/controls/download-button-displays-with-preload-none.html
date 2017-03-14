@@ -21,11 +21,5 @@ async_test(function(t) {
       throw 'Failed to find download button';
     return button;
   }
-
-  function isVisible(button) {
-    var computedStyle = getComputedStyle(button);
-    return computedStyle.display !== "none" &&
-           computedStyle.visibility === "visible";
-  }
 });
 </script>

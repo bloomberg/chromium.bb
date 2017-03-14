@@ -228,3 +228,9 @@ function isControlsPanelVisible(element)
 {
     return getComputedStyle(mediaControlsButton(element, "panel")).opacity == "1";
 }
+
+function isVisible(button) {
+    var computedStyle = getComputedStyle(button);
+    return computedStyle.display !== "none" &&
+           computedStyle.visibility === "visible";
+}

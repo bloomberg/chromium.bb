@@ -53,8 +53,6 @@ void LayoutMedia::layout() {
 
   LayoutState state(*this);
 
-  Optional<LayoutUnit> newPanelWidth;
-
 // Iterate the children in reverse order so that the media controls are laid
 // out before the text track container. This is to ensure that the text
 // track rendering has an up-to-date position of the media controls for
@@ -82,7 +80,6 @@ void LayoutMedia::layout() {
     LayoutUnit width = newRect.width();
     if (child->node()->isMediaControls()) {
       width = computePanelWidth(newRect);
-      newPanelWidth = width;
     }
 
     LayoutBox* layoutBox = toLayoutBox(child);
@@ -96,18 +93,6 @@ void LayoutMedia::layout() {
   }
 
   clearNeedsLayout();
-
-  // Notify our MediaControls that a layout has happened.
-  if (mediaElement() && mediaElement()->mediaControls() &&
-      newPanelWidth.has_value()) {
-    if (!m_lastReportedPanelWidth.has_value() ||
-        m_lastReportedPanelWidth.value() != newPanelWidth.value()) {
-      mediaElement()->mediaControls()->notifyPanelWidthChanged(
-          newPanelWidth.value());
-      // Store the last value we reported, so we know if it has changed.
-      m_lastReportedPanelWidth = newPanelWidth.value();
-    }
-  }
 }
 
 bool LayoutMedia::isChildAllowed(LayoutObject* child,
