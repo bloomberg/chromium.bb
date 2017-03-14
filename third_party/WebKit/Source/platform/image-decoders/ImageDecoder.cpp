@@ -356,7 +356,7 @@ bool ImageDecoder::initFrameBuffer(size_t frameIndex) {
     // This frame doesn't rely on any previous data.
     if (!buffer->setSizeAndColorSpace(size().width(), size().height(),
                                       colorSpaceForSkImages())) {
-      return setFailed();
+      return false;
     }
   } else {
     ImageFrame* const prevBuffer =
@@ -370,7 +370,7 @@ bool ImageDecoder::initFrameBuffer(size_t frameIndex) {
     if ((!canReusePreviousFrameBuffer(frameIndex) ||
          !buffer->takeBitmapDataIfWritable(prevBuffer)) &&
         !buffer->copyBitmapData(*prevBuffer))
-      return setFailed();
+      return false;
 
     if (prevBuffer->getDisposalMethod() ==
         ImageFrame::DisposeOverwriteBgcolor) {
@@ -382,10 +382,11 @@ bool ImageDecoder::initFrameBuffer(size_t frameIndex) {
     }
   }
 
+  onInitFrameBuffer(frameIndex);
+
   // Update our status to be partially complete.
   buffer->setStatus(ImageFrame::FramePartial);
 
-  onInitFrameBuffer(frameIndex);
   return true;
 }
 

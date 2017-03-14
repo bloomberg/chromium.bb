@@ -307,28 +307,37 @@ bool ImageFrameGenerator::decode(SegmentReader* data,
       return false;
   }
 
-  if (!m_isMultiFrame && newDecoder && allDataReceived) {
-    // If we're using an external memory allocator that means we're decoding
-    // directly into the output memory and we can save one memcpy.
-    ASSERT(allocator);
-    (*decoder)->setMemoryAllocator(allocator);
-  }
 
   if (shouldCallSetData)
     (*decoder)->setData(data, allDataReceived);
-  ImageFrame* frame = (*decoder)->frameBufferAtIndex(index);
+
+  bool usingExternalAllocator = false;
 
   // For multi-frame image decoders, we need to know how many frames are
   // in that image in order to release the decoder when all frames are
   // decoded. frameCount() is reliable only if all data is received and set in
   // decoder, particularly with GIF.
-  if (allDataReceived)
+  if (allDataReceived) {
     m_frameCount = (*decoder)->frameCount();
+    // TODO (scroggo): If !m_isMultiFrame && newDecoder && allDataReceived, it
+    // should always be the case that 1u == m_frameCount. But it looks like it
+    // is currently possible for m_frameCount to be another value.
+    if (!m_isMultiFrame && newDecoder && 1u == m_frameCount) {
+      // If we're using an external memory allocator that means we're decoding
+      // directly into the output memory and we can save one memcpy.
+      DCHECK(allocator);
+      (*decoder)->setMemoryAllocator(allocator);
+      usingExternalAllocator = true;
+    }
+  }
+
+  ImageFrame* frame = (*decoder)->frameBufferAtIndex(index);
 
   (*decoder)->setData(PassRefPtr<SegmentReader>(nullptr),
                       false);  // Unref SegmentReader from ImageDecoder.
   (*decoder)->clearCacheExceptFrame(index);
-  (*decoder)->setMemoryAllocator(0);
+  if (usingExternalAllocator)
+    (*decoder)->setMemoryAllocator(0);
 
   if (!frame || frame->getStatus() == ImageFrame::FrameEmpty)
     return false;

@@ -47,9 +47,9 @@ namespace {
 const char kAcceptHeader[] = "Accept";
 const char kFrameAcceptHeader[] =
     "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,"
-    "*/*;q=0.8";
+    "image/apng,*/*;q=0.8";
 const char kStylesheetAcceptHeader[] = "text/css,*/*;q=0.1";
-const char kImageAcceptHeader[] = "image/webp,image/*,*/*;q=0.8";
+const char kImageAcceptHeader[] = "image/webp,image/apng,image/*,*/*;q=0.8";
 const char kDefaultAcceptHeader[] = "*/*";
 
 // Used to write into an existing IOBuffer at a given offset.

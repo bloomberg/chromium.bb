@@ -38,11 +38,6 @@
 
 #include "platform/image-decoders/png/PNGImageDecoder.h"
 
-#include "platform/image-decoders/png/PNGImageReader.h"
-#include "png.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
-
 namespace blink {
 
 PNGImageDecoder::PNGImageDecoder(AlphaOption alphaOption,
@@ -50,9 +45,100 @@ PNGImageDecoder::PNGImageDecoder(AlphaOption alphaOption,
                                  size_t maxDecodedBytes,
                                  size_t offset)
     : ImageDecoder(alphaOption, colorBehavior, maxDecodedBytes),
-      m_offset(offset) {}
+      m_offset(offset),
+      m_currentFrame(0),
+      // It would be logical to default to cAnimationNone, but BitmapImage uses
+      // that as a signal to never check again, meaning the actual count will
+      // never be respected.
+      m_repetitionCount(cAnimationLoopOnce),
+      m_hasAlphaChannel(false),
+      m_currentBufferSawAlpha(false) {}
 
 PNGImageDecoder::~PNGImageDecoder() {}
+
+bool PNGImageDecoder::setFailed() {
+  m_reader.reset();
+  return ImageDecoder::setFailed();
+}
+
+size_t PNGImageDecoder::decodeFrameCount() {
+  parse(ParseQuery::MetaData);
+  return failed() ? m_frameBufferCache.size() : m_reader->frameCount();
+}
+
+void PNGImageDecoder::decode(size_t index) {
+  parse(ParseQuery::MetaData);
+
+  if (failed())
+    return;
+
+  updateAggressivePurging(index);
+
+  Vector<size_t> framesToDecode = findFramesToDecode(index);
+  for (auto i = framesToDecode.rbegin(); i != framesToDecode.rend(); i++) {
+    m_currentFrame = *i;
+    if (!m_reader->decode(*m_data, *i)) {
+      setFailed();
+      return;
+    }
+
+    // If this returns false, we need more data to continue decoding.
+    if (!postDecodeProcessing(*i))
+      break;
+  }
+
+  // It is also a fatal error if all data is received and we have decoded all
+  // frames available but the file is truncated.
+  if (index >= m_frameBufferCache.size() - 1 && isAllDataReceived() &&
+      m_reader && !m_reader->parseCompleted())
+    setFailed();
+}
+
+void PNGImageDecoder::parse(ParseQuery query) {
+  if (failed() || (m_reader && m_reader->parseCompleted()))
+    return;
+
+  if (!m_reader)
+    m_reader = WTF::makeUnique<PNGImageReader>(this, m_offset);
+
+  if (!m_reader->parse(*m_data, query))
+    setFailed();
+}
+
+void PNGImageDecoder::clearFrameBuffer(size_t index) {
+  if (m_reader)
+    m_reader->clearDecodeState(index);
+  ImageDecoder::clearFrameBuffer(index);
+}
+
+bool PNGImageDecoder::canReusePreviousFrameBuffer(size_t index) const {
+  DCHECK(index < m_frameBufferCache.size());
+  return m_frameBufferCache[index].getDisposalMethod() !=
+         ImageFrame::DisposeOverwritePrevious;
+}
+
+void PNGImageDecoder::setRepetitionCount(int repetitionCount) {
+  m_repetitionCount = repetitionCount;
+}
+
+int PNGImageDecoder::repetitionCount() const {
+  return failed() ? cAnimationLoopOnce : m_repetitionCount;
+}
+
+void PNGImageDecoder::initializeNewFrame(size_t index) {
+  const PNGImageReader::FrameInfo& frameInfo = m_reader->frameInfo(index);
+  ImageFrame& buffer = m_frameBufferCache[index];
+
+  DCHECK(IntRect(IntPoint(), size()).contains(frameInfo.frameRect));
+  buffer.setOriginalFrameRect(frameInfo.frameRect);
+
+  buffer.setDuration(frameInfo.duration);
+  buffer.setDisposalMethod(frameInfo.disposalMethod);
+  buffer.setAlphaBlendSource(frameInfo.alphaBlend);
+
+  size_t previousFrameIndex = findRequiredPreviousFrame(index, false);
+  buffer.setRequiredPreviousFrameIndex(previousFrameIndex);
+}
 
 inline sk_sp<SkColorSpace> readColorSpace(png_structp png, png_infop info) {
   if (png_get_valid(png, info, PNG_INFO_sRGB))
@@ -111,22 +197,8 @@ inline sk_sp<SkColorSpace> readColorSpace(png_structp png, png_infop info) {
 void PNGImageDecoder::headerAvailable() {
   png_structp png = m_reader->pngPtr();
   png_infop info = m_reader->infoPtr();
-  png_uint_32 width = png_get_image_width(png, info);
-  png_uint_32 height = png_get_image_height(png, info);
 
-  // Protect against large PNGs. See http://bugzil.la/251381 for more details.
-  const unsigned long maxPNGSize = 1000000UL;
-  if (width > maxPNGSize || height > maxPNGSize) {
-    longjmp(JMPBUF(png), 1);
-    return;
-  }
-
-  // Set the image size now that the image header is available.
-  if (!setSize(width, height)) {
-    longjmp(JMPBUF(png), 1);
-    return;
-  }
-
+  png_uint_32 width, height;
   int bitDepth, colorType, interlaceType, compressionType;
   png_get_IHDR(png, info, &width, &height, &bitDepth, &colorType,
                &interlaceType, &compressionType, nullptr);
@@ -148,11 +220,29 @@ void PNGImageDecoder::headerAvailable() {
       colorType == PNG_COLOR_TYPE_GRAY_ALPHA)
     png_set_gray_to_rgb(png);
 
-  if ((colorType & PNG_COLOR_MASK_COLOR) && !ignoresColorSpace()) {
-    // We only support color profiles for color PALETTE and RGB[A] PNG.
-    // TODO(msarret): Add GRAY profile support, block CYMK?
-    if (sk_sp<SkColorSpace> colorSpace = readColorSpace(png, info))
-      setEmbeddedColorSpace(std::move(colorSpace));
+  // Only set the size and the color space of the image once since non-first
+  // frames also use this method: there is no per-frame color space, and the
+  // image size is determined from the header width and height.
+  if (!isDecodedSizeAvailable()) {
+    // Protect against large PNGs. See http://bugzil.la/251381 for more details.
+    const unsigned long maxPNGSize = 1000000UL;
+    if (width > maxPNGSize || height > maxPNGSize) {
+      longjmp(JMPBUF(png), 1);
+      return;
+    }
+
+    // Set the image size now that the image header is available.
+    if (!setSize(width, height)) {
+      longjmp(JMPBUF(png), 1);
+      return;
+    }
+
+    if ((colorType & PNG_COLOR_MASK_COLOR) && !ignoresColorSpace()) {
+      // We only support color profiles for color PALETTE and RGB[A] PNG.
+      // TODO(msarret): Add GRAY profile support, block CYMK?
+      if (sk_sp<SkColorSpace> colorSpace = readColorSpace(png, info))
+        setEmbeddedColorSpace(colorSpace);
+    }
   }
 
   if (!hasEmbeddedColorSpace()) {
@@ -171,6 +261,8 @@ void PNGImageDecoder::headerAvailable() {
     }
   }
 
+  DCHECK(isDecodedSizeAvailable());
+
   // Tell libpng to send us rows for interlaced pngs.
   if (interlaceType == PNG_INTERLACE_ADAM7)
     png_set_interlace_handling(png);
@@ -180,55 +272,40 @@ void PNGImageDecoder::headerAvailable() {
 
   int channels = png_get_channels(png, info);
   DCHECK(channels == 3 || channels == 4);
-  m_reader->setHasAlpha(channels == 4);
-
-  if (m_reader->decodingSizeOnly()) {
-// If we only needed the size, halt the reader.
-#if PNG_LIBPNG_VER_MAJOR > 1 || \
-    (PNG_LIBPNG_VER_MAJOR == 1 && PNG_LIBPNG_VER_MINOR >= 5)
-    // Passing '0' tells png_process_data_pause() not to cache unprocessed data.
-    m_reader->setReadOffset(m_reader->currentBufferSize() -
-                            png_process_data_pause(png, 0));
-#else
-    m_reader->setReadOffset(m_reader->currentBufferSize() - png->buffer_size);
-    png->buffer_size = 0;
-#endif
-  }
+  m_hasAlphaChannel = (channels == 4);
 }
 
 void PNGImageDecoder::rowAvailable(unsigned char* rowBuffer,
                                    unsigned rowIndex,
                                    int) {
-  if (m_frameBufferCache.isEmpty())
+  if (m_currentFrame >= m_frameBufferCache.size())
     return;
 
-  // Initialize the framebuffer if needed.
-  ImageFrame& buffer = m_frameBufferCache[0];
+  ImageFrame& buffer = m_frameBufferCache[m_currentFrame];
   if (buffer.getStatus() == ImageFrame::FrameEmpty) {
     png_structp png = m_reader->pngPtr();
-    if (!buffer.setSizeAndColorSpace(size().width(), size().height(),
-                                     colorSpaceForSkImages())) {
+    if (!initFrameBuffer(m_currentFrame)) {
       longjmp(JMPBUF(png), 1);
       return;
     }
 
-    unsigned colorChannels = m_reader->hasAlpha() ? 4 : 3;
+    DCHECK_EQ(ImageFrame::FramePartial, buffer.getStatus());
+
     if (PNG_INTERLACE_ADAM7 ==
         png_get_interlace_type(png, m_reader->infoPtr())) {
-      m_reader->createInterlaceBuffer(colorChannels * size().width() *
-                                      size().height());
+      unsigned colorChannels = m_hasAlphaChannel ? 4 : 3;
+      m_reader->createInterlaceBuffer(colorChannels * size().area());
       if (!m_reader->interlaceBuffer()) {
         longjmp(JMPBUF(png), 1);
         return;
       }
     }
 
-    buffer.setStatus(ImageFrame::FramePartial);
-    buffer.setHasAlpha(false);
-
-    // For PNGs, the frame always fills the entire image.
-    buffer.setOriginalFrameRect(IntRect(IntPoint(), size()));
+    m_currentBufferSawAlpha = false;
   }
+
+  const IntRect& frameRect = buffer.originalFrameRect();
+  DCHECK(IntRect(IntPoint(), size()).contains(frameRect));
 
   /* libpng comments (here to explain what follows).
    *
@@ -242,14 +319,22 @@ void PNGImageDecoder::rowAvailable(unsigned char* rowBuffer,
    * may make your life easier.
    */
 
-  // Nothing to do if the row is unchanged, or the row is outside
-  // the image bounds: libpng may send extra rows, ignore them to
-  // make our lives easier.
+  // Nothing to do if the row is unchanged, or the row is outside the image
+  // bounds. In the case that a frame presents more data than the indicated
+  // frame size, ignore the extra rows and use the frame size as the source
+  // of truth. libpng can send extra rows: ignore them too, this to prevent
+  // memory writes outside of the image bounds (security).
   if (!rowBuffer)
     return;
-  int y = rowIndex;
-  if (y < 0 || y >= size().height())
+
+  DCHECK_GT(frameRect.height(), 0);
+  if (rowIndex >= static_cast<unsigned>(frameRect.height()))
     return;
+
+  int y = rowIndex + frameRect.y();
+  if (y < 0)
+    return;
+  DCHECK_LT(y, size().height());
 
   /* libpng comments (continued).
    *
@@ -270,7 +355,7 @@ void PNGImageDecoder::rowAvailable(unsigned char* rowBuffer,
    * old row and the new row.
    */
 
-  bool hasAlpha = m_reader->hasAlpha();
+  bool hasAlpha = m_hasAlphaChannel;
   png_bytep row = rowBuffer;
 
   if (png_bytep interlaceBuffer = m_reader->interlaceBuffer()) {
@@ -281,8 +366,8 @@ void PNGImageDecoder::rowAvailable(unsigned char* rowBuffer,
 
   // Write the decoded row pixels to the frame buffer. The repetitive
   // form of the row write loops is for speed.
-  ImageFrame::PixelData* const dstRow = buffer.getAddr(0, y);
-  int width = size().width();
+  ImageFrame::PixelData* const dstRow = buffer.getAddr(frameRect.x(), y);
+  int width = frameRect.width();
 
   png_bytep srcPtr = row;
   if (hasAlpha) {
@@ -305,23 +390,47 @@ void PNGImageDecoder::rowAvailable(unsigned char* rowBuffer,
     }
 
     unsigned alphaMask = 255;
-    if (buffer.premultiplyAlpha()) {
-      for (auto *dstPixel = dstRow; dstPixel < dstRow + width;
-           srcPtr += 4, ++dstPixel) {
-        buffer.setRGBAPremultiply(dstPixel, srcPtr[0], srcPtr[1], srcPtr[2],
-                                  srcPtr[3]);
-        alphaMask &= srcPtr[3];
+    if (m_frameBufferCache[m_currentFrame].getAlphaBlendSource() ==
+        ImageFrame::BlendAtopBgcolor) {
+      if (buffer.premultiplyAlpha()) {
+        for (auto *dstPixel = dstRow; dstPixel < dstRow + width;
+             dstPixel++, srcPtr += 4) {
+          buffer.setRGBAPremultiply(dstPixel, srcPtr[0], srcPtr[1], srcPtr[2],
+                                    srcPtr[3]);
+          alphaMask &= srcPtr[3];
+        }
+      } else {
+        for (auto *dstPixel = dstRow; dstPixel < dstRow + width;
+             dstPixel++, srcPtr += 4) {
+          buffer.setRGBARaw(dstPixel, srcPtr[0], srcPtr[1], srcPtr[2],
+                            srcPtr[3]);
+          alphaMask &= srcPtr[3];
+        }
       }
     } else {
-      for (auto *dstPixel = dstRow; dstPixel < dstRow + width;
-           srcPtr += 4, ++dstPixel) {
-        buffer.setRGBARaw(dstPixel, srcPtr[0], srcPtr[1], srcPtr[2], srcPtr[3]);
-        alphaMask &= srcPtr[3];
+      // Now, the blend method is ImageFrame::BlendAtopPreviousFrame. Since the
+      // frame data of the previous frame is copied at initFrameBuffer, we can
+      // blend the pixel of this frame, stored in |srcPtr|, over the previous
+      // pixel stored in |dstPixel|.
+      if (buffer.premultiplyAlpha()) {
+        for (auto *dstPixel = dstRow; dstPixel < dstRow + width;
+             dstPixel++, srcPtr += 4) {
+          buffer.blendRGBAPremultiplied(dstPixel, srcPtr[0], srcPtr[1],
+                                        srcPtr[2], srcPtr[3]);
+          alphaMask &= srcPtr[3];
+        }
+      } else {
+        for (auto *dstPixel = dstRow; dstPixel < dstRow + width;
+             dstPixel++, srcPtr += 4) {
+          buffer.blendRGBARaw(dstPixel, srcPtr[0], srcPtr[1], srcPtr[2],
+                              srcPtr[3]);
+          alphaMask &= srcPtr[3];
+        }
       }
     }
 
-    if (alphaMask != 255 && !buffer.hasAlpha())
-      buffer.setHasAlpha(true);
+    if (alphaMask != 255)
+      m_currentBufferSawAlpha = true;
 
   } else {
     for (auto *dstPixel = dstRow; dstPixel < dstRow + width;
@@ -341,32 +450,44 @@ void PNGImageDecoder::rowAvailable(unsigned char* rowBuffer,
   buffer.setPixelsChanged(true);
 }
 
-void PNGImageDecoder::complete() {
-  if (m_frameBufferCache.isEmpty())
+void PNGImageDecoder::frameComplete() {
+  if (m_currentFrame >= m_frameBufferCache.size())
     return;
 
-  m_frameBufferCache[0].setStatus(ImageFrame::FrameComplete);
-}
+  if (m_reader->interlaceBuffer())
+    m_reader->clearInterlaceBuffer();
 
-inline bool isComplete(const PNGImageDecoder* decoder) {
-  return decoder->frameIsCompleteAtIndex(0);
-}
-
-void PNGImageDecoder::decode(bool onlySize) {
-  if (failed())
+  ImageFrame& buffer = m_frameBufferCache[m_currentFrame];
+  if (buffer.getStatus() == ImageFrame::FrameEmpty) {
+    longjmp(JMPBUF(m_reader->pngPtr()), 1);
     return;
+  }
 
-  if (!m_reader)
-    m_reader = WTF::makeUnique<PNGImageReader>(this, m_offset);
+  if (!m_currentBufferSawAlpha)
+    correctAlphaWhenFrameBufferSawNoAlpha(m_currentFrame);
 
-  // If we couldn't decode the image but have received all the data, decoding
-  // has failed.
-  if (!m_reader->decode(*m_data, onlySize) && isAllDataReceived())
-    setFailed();
+  buffer.setStatus(ImageFrame::FrameComplete);
+}
 
-  // If decoding is done or failed, we don't need the PNGImageReader anymore.
-  if (isComplete(this) || failed())
-    m_reader.reset();
+bool PNGImageDecoder::frameIsCompleteAtIndex(size_t index) const {
+  if (!isDecodedSizeAvailable())
+    return false;
+
+  DCHECK(!failed() && m_reader);
+
+  // For non-animated images, return whether the status of the frame is
+  // ImageFrame::FrameComplete with ImageDecoder::frameIsCompleteAtIndex.
+  // This matches the behavior of WEBPImageDecoder.
+  if (m_reader->parseCompleted() && m_reader->frameCount() == 1)
+    return ImageDecoder::frameIsCompleteAtIndex(index);
+
+  return m_reader->frameIsReceivedAtIndex(index);
+}
+
+float PNGImageDecoder::frameDurationAtIndex(size_t index) const {
+  if (index < m_frameBufferCache.size())
+    return m_frameBufferCache[index].duration();
+  return 0;
 }
 
 }  // namespace blink

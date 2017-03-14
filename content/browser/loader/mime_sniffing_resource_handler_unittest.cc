@@ -621,18 +621,18 @@ void MimeSniffingResourceHandlerTest::TestHandlerNoSniffing(
 TEST_F(MimeSniffingResourceHandlerTest, AcceptHeaders) {
   EXPECT_EQ(
       "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,"
-      "*/*;q=0.8",
+      "image/apng,*/*;q=0.8",
       TestAcceptHeaderSetting(RESOURCE_TYPE_MAIN_FRAME));
   EXPECT_EQ(
       "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,"
-      "*/*;q=0.8",
+      "image/apng,*/*;q=0.8",
       TestAcceptHeaderSetting(RESOURCE_TYPE_SUB_FRAME));
   EXPECT_EQ("text/css,*/*;q=0.1",
             TestAcceptHeaderSetting(RESOURCE_TYPE_STYLESHEET));
   EXPECT_EQ("*/*", TestAcceptHeaderSetting(RESOURCE_TYPE_SCRIPT));
-  EXPECT_EQ("image/webp,image/*,*/*;q=0.8",
+  EXPECT_EQ("image/webp,image/apng,image/*,*/*;q=0.8",
             TestAcceptHeaderSetting(RESOURCE_TYPE_IMAGE));
-  EXPECT_EQ("image/webp,image/*,*/*;q=0.8",
+  EXPECT_EQ("image/webp,image/apng,image/*,*/*;q=0.8",
             TestAcceptHeaderSetting(RESOURCE_TYPE_FAVICON));
   EXPECT_EQ("*/*", TestAcceptHeaderSetting(RESOURCE_TYPE_FONT_RESOURCE));
   EXPECT_EQ("*/*", TestAcceptHeaderSetting(RESOURCE_TYPE_SUB_RESOURCE));

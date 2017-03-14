@@ -27,9 +27,12 @@
 #define PNGImageReader_h
 
 #include "platform/PlatformExport.h"
+#include "platform/geometry/IntRect.h"
+#include "platform/image-decoders/ImageFrame.h"
 #include "png.h"
 #include "wtf/Allocator.h"
 #include "wtf/PtrUtil.h"
+#include "wtf/Vector.h"
 
 #if !defined(PNG_LIBPNG_VER_MAJOR) || !defined(PNG_LIBPNG_VER_MINOR)
 #error version error: compile against a versioned libpng.
@@ -44,6 +47,7 @@
 
 namespace blink {
 
+class FastSharedBufferReader;
 class PNGImageDecoder;
 class SegmentReader;
 
@@ -52,34 +56,113 @@ class PLATFORM_EXPORT PNGImageReader final {
   WTF_MAKE_NONCOPYABLE(PNGImageReader);
 
  public:
-  PNGImageReader(PNGImageDecoder*, size_t offset);
+  PNGImageReader(PNGImageDecoder*, size_t initialOffset);
   ~PNGImageReader();
 
-  bool decode(const SegmentReader&, bool sizeOnly);
+  struct FrameInfo {
+    // The offset where the frame data of this frame starts.
+    size_t startOffset;
+    // The number of bytes that contain frame data, starting at startOffset.
+    size_t byteLength;
+    size_t duration;
+    IntRect frameRect;
+    ImageFrame::DisposalMethod disposalMethod;
+    ImageFrame::AlphaBlendSource alphaBlend;
+  };
+
+  enum class ParseQuery { Size, MetaData };
+
+  bool parse(SegmentReader&, ParseQuery);
+
+  // Returns false on a fatal error.
+  bool decode(SegmentReader&, size_t);
+  const FrameInfo& frameInfo(size_t) const;
+
+  // Number of complete frames parsed so far; includes frame 0 even if partial.
+  size_t frameCount() const { return m_frameInfo.size(); }
+
+  bool parseCompleted() const { return m_parseCompleted; };
+
+  bool frameIsReceivedAtIndex(size_t index) const {
+    if (!index)
+      return firstFrameFullyReceived();
+    return index < frameCount();
+  }
+
+  void clearDecodeState(size_t);
+
   png_structp pngPtr() const { return m_png; }
   png_infop infoPtr() const { return m_info; }
-
-  size_t getReadOffset() const { return m_readOffset; }
-  void setReadOffset(size_t offset) { m_readOffset = offset; }
-  size_t currentBufferSize() const { return m_currentBufferSize; }
-  bool decodingSizeOnly() const { return m_decodingSizeOnly; }
-  void setHasAlpha(bool hasAlpha) { m_hasAlpha = hasAlpha; }
-  bool hasAlpha() const { return m_hasAlpha; }
 
   png_bytep interlaceBuffer() const { return m_interlaceBuffer.get(); }
   void createInterlaceBuffer(int size) {
     m_interlaceBuffer = wrapArrayUnique(new png_byte[size]);
   }
+  void clearInterlaceBuffer() { m_interlaceBuffer.reset(); }
 
  private:
   png_structp m_png;
   png_infop m_info;
+  png_uint_32 m_width;
+  png_uint_32 m_height;
+
   PNGImageDecoder* m_decoder;
+
+  // The offset in the stream where the PNG image starts.
+  const size_t m_initialOffset;
+  // How many bytes have been read during parsing.
   size_t m_readOffset;
-  size_t m_currentBufferSize;
-  bool m_decodingSizeOnly;
-  bool m_hasAlpha;
+  size_t m_progressiveDecodeOffset;
+  size_t m_idatOffset;
+
+  bool m_idatIsPartOfAnimation;
+  // All IDAT chunks must precede the first fdAT chunk, and all fdAT chunks
+  // should be separated from the IDAT chunks by an fcTL chunk. So this is true
+  // until the first fcTL chunk after an IDAT chunk. After that, only fdAT
+  // chunks are expected.
+  bool m_expectIdats;
+  bool m_isAnimated;
+  bool m_parsedSignature;
+  bool m_parsedIHDR;
+  bool m_parseCompleted;
+  uint32_t m_reportedFrameCount;
+  uint32_t m_nextSequenceNumber;
+  // True when an fcTL has been parsed but not its corresponding fdAT or IDAT
+  // chunk. Consecutive fcTLs is an error.
+  bool m_fctlNeedsDatChunk;
+  bool m_ignoreAnimation;
+
   std::unique_ptr<png_byte[]> m_interlaceBuffer;
+
+  // Value used for the byteLength of a FrameInfo struct to indicate that it is
+  // the first frame and its byteLength is not yet known. 1 is a safe value
+  // since the byteLength field of a frame is at least 12.
+  static constexpr size_t kFirstFrameIndicator = 1;
+
+  // Stores information about a frame until it can be pushed to |m_frameInfo|
+  // once all the frame data has been read from the stream.
+  FrameInfo m_newFrame;
+  Vector<FrameInfo, 1> m_frameInfo;
+
+  size_t processData(const FastSharedBufferReader&,
+                     size_t offset,
+                     size_t length);
+  // Returns false on a fatal error.
+  bool parseSize(const FastSharedBufferReader&);
+  // Returns false on an error.
+  bool parseFrameInfo(const png_byte* data);
+  bool shouldDecodeWithNewPNG(size_t) const;
+  void startFrameDecoding(const FastSharedBufferReader&, size_t);
+  // Returns whether the frame was completely decoded.
+  bool progressivelyDecodeFirstFrame(const FastSharedBufferReader&);
+  void decodeFrame(const FastSharedBufferReader&, size_t);
+  void processFdatChunkAsIdat(png_uint_32 fdatLength);
+  // Returns false on a fatal error.
+  bool checkSequenceNumber(const png_byte* position);
+  bool firstFrameFullyReceived() const {
+    return !m_frameInfo.isEmpty() &&
+           m_frameInfo[0].byteLength != kFirstFrameIndicator;
+  }
 };
 
 }  // namespace blink

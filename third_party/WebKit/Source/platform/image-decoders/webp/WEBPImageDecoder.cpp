@@ -164,8 +164,8 @@ bool WEBPImageDecoder::frameIsCompleteAtIndex(size_t index) const {
     return false;
   if (!(m_formatFlags & ANIMATION_FLAG))
     return ImageDecoder::frameIsCompleteAtIndex(index);
-  bool frameIsLoadedAtIndex = index < m_frameBufferCache.size();
-  return frameIsLoadedAtIndex;
+  bool frameIsReceivedAtIndex = index < m_frameBufferCache.size();
+  return frameIsReceivedAtIndex;
 }
 
 float WEBPImageDecoder::frameDurationAtIndex(size_t index) const {
@@ -417,8 +417,11 @@ void WEBPImageDecoder::decode(size_t index) {
 
   DCHECK(m_demux);
   for (auto i = framesToDecode.rbegin(); i != framesToDecode.rend(); ++i) {
-    if ((m_formatFlags & ANIMATION_FLAG) && !initFrameBuffer(*i))
+    if ((m_formatFlags & ANIMATION_FLAG) && !initFrameBuffer(*i)) {
+      setFailed();
       return;
+    }
+
     WebPIterator webpFrame;
     if (!WebPDemuxGetFrame(m_demux, *i + 1, &webpFrame)) {
       setFailed();

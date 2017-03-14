@@ -83,6 +83,19 @@ const unsigned char animatedGIF[] = {
     0x01, 0x00, 0x01, 0x00, 0x00, 0x02, 0x02, 0x4c, 0x01, 0x00, 0x3b,
 };
 
+// Raw data for a GIF file with 1x1 white pixels. Modified from animatedGIF.
+const unsigned char whiteGIF[] = {
+    0x47, 0x49, 0x46, 0x38, 0x39, 0x61, 0x01, 0x00, 0x01, 0x00, 0xf0, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0xff, 0xff, 0xff, 0x21, 0xff, 0x0b, 0x4e, 0x45,
+    0x54, 0x53, 0x43, 0x41, 0x50, 0x45, 0x32, 0x2e, 0x30, 0x03, 0x01, 0x00,
+    0x00, 0x00, 0x21, 0xff, 0x0b, 0x49, 0x6d, 0x61, 0x67, 0x65, 0x4d, 0x61,
+    0x67, 0x69, 0x63, 0x6b, 0x0d, 0x67, 0x61, 0x6d, 0x6d, 0x61, 0x3d, 0x30,
+    0x2e, 0x34, 0x35, 0x34, 0x35, 0x35, 0x00, 0x21, 0xff, 0x0b, 0x49, 0x6d,
+    0x61, 0x67, 0x65, 0x4d, 0x61, 0x67, 0x69, 0x63, 0x6b, 0x0d, 0x67, 0x61,
+    0x6d, 0x6d, 0x61, 0x3d, 0x30, 0x2e, 0x34, 0x35, 0x34, 0x35, 0x35, 0x00,
+    0x21, 0xf9, 0x04, 0x00, 0x00, 0x00, 0xff, 0x00, 0x2c, 0x00, 0x00, 0x00,
+    0x00, 0x01, 0x00, 0x01, 0x00, 0x00, 0x02, 0x02, 0x4c, 0x01, 0x00, 0x3b};
+
 }  // namespace
 
 class DeferredImageDecoderTest : public ::testing::Test,
@@ -324,33 +337,39 @@ TEST_F(DeferredImageDecoderTest, smallerFrameCount) {
 }
 
 TEST_F(DeferredImageDecoderTest, frameOpacity) {
-  std::unique_ptr<DeferredImageDecoder> decoder = DeferredImageDecoder::create(
-      m_data, true, ImageDecoder::AlphaPremultiplied,
-      ColorBehavior::transformToTargetForTesting());
+  for (bool testGIF : {false, true}) {
+    if (testGIF)
+      m_data = SharedBuffer::create(whiteGIF, sizeof(whiteGIF));
 
-  SkImageInfo pixInfo = SkImageInfo::MakeN32Premul(1, 1);
+    std::unique_ptr<DeferredImageDecoder> decoder =
+        DeferredImageDecoder::create(
+            m_data, true, ImageDecoder::AlphaPremultiplied,
+            ColorBehavior::transformToTargetForTesting());
 
-  size_t rowBytes = pixInfo.minRowBytes();
-  size_t size = pixInfo.getSafeSize(rowBytes);
+    SkImageInfo pixInfo = SkImageInfo::MakeN32Premul(1, 1);
 
-  Vector<char> storage(size);
-  SkPixmap pixmap(pixInfo, storage.data(), rowBytes);
+    size_t rowBytes = pixInfo.minRowBytes();
+    size_t size = pixInfo.getSafeSize(rowBytes);
 
-  // Before decoding, the frame is not known to be opaque.
-  sk_sp<SkImage> frame = decoder->createFrameAtIndex(0);
-  ASSERT_TRUE(frame);
-  EXPECT_FALSE(frame->isOpaque());
+    Vector<char> storage(size);
+    SkPixmap pixmap(pixInfo, storage.data(), rowBytes);
 
-  // Force a lazy decode by reading pixels.
-  EXPECT_TRUE(frame->readPixels(pixmap, 0, 0));
+    // Before decoding, the frame is not known to be opaque.
+    sk_sp<SkImage> frame = decoder->createFrameAtIndex(0);
+    ASSERT_TRUE(frame);
+    EXPECT_FALSE(frame->isOpaque());
 
-  // After decoding, the frame is known to be opaque.
-  frame = decoder->createFrameAtIndex(0);
-  ASSERT_TRUE(frame);
-  EXPECT_TRUE(frame->isOpaque());
+    // Force a lazy decode by reading pixels.
+    EXPECT_TRUE(frame->readPixels(pixmap, 0, 0));
 
-  // Re-generating the opaque-marked frame should not fail.
-  EXPECT_TRUE(frame->readPixels(pixmap, 0, 0));
+    // After decoding, the frame is known to be opaque.
+    frame = decoder->createFrameAtIndex(0);
+    ASSERT_TRUE(frame);
+    EXPECT_TRUE(frame->isOpaque());
+
+    // Re-generating the opaque-marked frame should not fail.
+    EXPECT_TRUE(frame->readPixels(pixmap, 0, 0));
+  }
 }
 
 // The DeferredImageDecoder would sometimes assume that a frame was a certain

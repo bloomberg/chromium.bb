@@ -26,12 +26,11 @@
 #ifndef PNGImageDecoder_h
 #define PNGImageDecoder_h
 
-#include "platform/image-decoders/ImageDecoder.h"
 #include <memory>
+#include "platform/image-decoders/ImageDecoder.h"
+#include "platform/image-decoders/png/PNGImageReader.h"
 
 namespace blink {
-
-class PNGImageReader;
 
 class PLATFORM_EXPORT PNGImageDecoder final : public ImageDecoder {
   WTF_MAKE_NONCOPYABLE(PNGImageDecoder);
@@ -45,24 +44,36 @@ class PLATFORM_EXPORT PNGImageDecoder final : public ImageDecoder {
 
   // ImageDecoder:
   String filenameExtension() const override { return "png"; }
+  int repetitionCount() const override;
+  bool frameIsCompleteAtIndex(size_t) const override;
+  float frameDurationAtIndex(size_t) const override;
+  bool setFailed() override;
 
   // Callbacks from libpng
   void headerAvailable();
   void rowAvailable(unsigned char* row, unsigned rowIndex, int);
-  void complete();
+  void frameComplete();
+
+  void setRepetitionCount(int);
 
  private:
-  // ImageDecoder:
-  void decodeSize() override { decode(true); }
-  void decode(size_t) override { decode(false); }
+  using ParseQuery = PNGImageReader::ParseQuery;
 
-  // Decodes the image.  If |onlySize| is true, stops decoding after
-  // calculating the image size.  If decoding fails but there is no more
-  // data coming, sets the "decode failure" flag.
-  void decode(bool onlySize);
+  // ImageDecoder:
+  void decodeSize() override { parse(ParseQuery::Size); }
+  void decode(size_t) override;
+  void parse(ParseQuery);
+  size_t decodeFrameCount() override;
+  void initializeNewFrame(size_t) override;
+  void clearFrameBuffer(size_t) override;
+  bool canReusePreviousFrameBuffer(size_t) const override;
 
   std::unique_ptr<PNGImageReader> m_reader;
   const unsigned m_offset;
+  size_t m_currentFrame;
+  int m_repetitionCount;
+  bool m_hasAlphaChannel;
+  bool m_currentBufferSawAlpha;
 };
 
 }  // namespace blink

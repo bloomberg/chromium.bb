@@ -189,11 +189,12 @@ bool GIFImageDecoder::frameComplete(size_t frameIndex) {
   // Initialize the frame if necessary.  Some GIFs insert do-nothing frames,
   // in which case we never reach haveDecodedRow() before getting here.
   if (!initFrameBuffer(frameIndex))
-    return false;  // initFrameBuffer() has already called setFailed().
+    return setFailed();
 
-  m_frameBufferCache[frameIndex].setStatus(ImageFrame::FrameComplete);
   if (!m_currentBufferSawAlpha)
     correctAlphaWhenFrameBufferSawNoAlpha(frameIndex);
+
+  m_frameBufferCache[frameIndex].setStatus(ImageFrame::FrameComplete);
 
   return true;
 }

@@ -26,6 +26,10 @@ void createDecodingBaseline(DecoderCreator,
                             Vector<unsigned>* baselineHashes);
 
 void testByteByByteDecode(DecoderCreator createDecoder,
+                          SharedBuffer* data,
+                          size_t expectedFrameCount,
+                          int expectedRepetitionCount);
+void testByteByByteDecode(DecoderCreator createDecoder,
                           const char* file,
                           size_t expectedFrameCount,
                           int expectedRepetitionCount);
