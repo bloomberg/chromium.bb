@@ -87,6 +87,29 @@ class PLATFORM_EXPORT StrokeData final {
   // is specified but the line width is too small to draw circles.
   static bool strokeIsDashed(float width, StrokeStyle);
 
+  // The length of the dash relative to the line thickness for dashed stroking.
+  // A different dash length may be used when dashes are adjusted to better
+  // fit a given length path. Thin lines need longer dashes to avoid
+  // looking like dots when drawn.
+  static float dashLengthRatio(float thickness) {
+    return thickness >= 3 ? 2.0 : 3.0;
+  }
+
+  // The length of the gap between dashes relative to the line thickness for
+  // dashed stroking. A different gap may be used when dashes are adjusted to
+  // better fit a given length path. Thin lines need longer gaps to avoid
+  // looking like a continuous line when drawn.
+  static float dashGapRatio(float thickness) {
+    return thickness >= 3 ? 1.0 : 2.0;
+  }
+
+  // Return a dash gap size that places dashes at each end of a stroke that is
+  // strokeLength long, given preferred dash and gap sizes. The gap returned is
+  // the one that minimizes deviation from the preferred gap length.
+  static float selectBestDashGap(float strokeLength,
+                                 float dashLength,
+                                 float gapLength);
+
  private:
   StrokeStyle m_style;
   float m_thickness;

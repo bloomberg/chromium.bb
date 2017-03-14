@@ -1034,44 +1034,44 @@ void BoxBorderPainter::drawDashedDottedBoxSideFromPath(
     return;
   }
 
-  // The stroke is doubled here because the provided path is the
-  // outside edge of the border so half the stroke is clipped off.
   // The extra multiplier is so that the clipping mask can antialias
   // the edges to prevent jaggies.
   graphicsContext.setStrokeThickness(drawThickness * 1.1f);
   graphicsContext.setStrokeStyle(
       borderStyle == BorderStyleDashed ? DashedStroke : DottedStroke);
 
-  // If the number of dashes that fit in the path is odd and non-integral
-  // then we will have an awkwardly-sized dash at the end of the path. To
-  // try to avoid that here, we simply make the whitespace dashes ever so
-  // slightly bigger.
   // TODO(schenney): This code for setting up the dash effect is trying to
   // do the same thing as StrokeData::setupPaintDashPathEffect and should be
   // refactored to re-use that code. It would require
   // GraphicsContext::strokePath to take a length parameter.
-  float dashLength =
-      thickness * ((borderStyle == BorderStyleDashed) ? 3.0f : 1.0f);
+  float dashLength = drawThickness;
   float gapLength = dashLength;
-  float numberOfDashes = centerlinePath.length() / dashLength;
+  if (borderStyle == BorderStyleDashed) {
+    dashLength *= StrokeData::dashLengthRatio(drawThickness);
+    gapLength *= StrokeData::dashGapRatio(drawThickness);
+  }
+  float pathLength = centerlinePath.length();
   // Don't try to show dashes if we have less than 2 dashes + 2 gaps.
-  // FIXME: should do this test per side.
-  if (numberOfDashes >= 4) {
-    bool evenNumberOfFullDashes = !((int)numberOfDashes % 2);
-    bool integralNumberOfDashes = !(numberOfDashes - (int)numberOfDashes);
-    if (!evenNumberOfFullDashes && !integralNumberOfDashes) {
-      float numberOfGaps = numberOfDashes / 2;
-      gapLength += (dashLength / numberOfGaps);
-    }
-
+  // TODO(schenney): should do this test per side.
+  if (pathLength >= 2 * dashLength + gapLength) {
+    float gap = gapLength;
+    if (borderStyle == BorderStyleDashed)
+      gap = StrokeData::selectBestDashGap(pathLength, dashLength, gapLength);
     DashArray lineDash;
     lineDash.push_back(dashLength);
-    lineDash.push_back(gapLength);
+    lineDash.push_back(gap);
     graphicsContext.setLineDash(lineDash, dashLength);
-  }
+  } else if (pathLength > dashLength) {
+    // Exactly 2 dashes proportionally sized
+    float multiplier = pathLength / (2 * dashLength + gapLength);
+    DashArray lineDash;
+    lineDash.push_back(dashLength * multiplier);
+    lineDash.push_back(gapLength * multiplier);
+    graphicsContext.setLineDash(lineDash, 0);
+  }  // else don't dash at all
 
-  // FIXME: stroking the border path causes issues with tight corners:
-  // https://bugs.webkit.org/show_bug.cgi?id=58711
+  // TODO(schenney): stroking the border path causes issues with tight corners:
+  // https://bugs.chromium.org/p/chromium/issues/detail?id=344234
   graphicsContext.strokePath(centerlinePath);
 }
 
@@ -1090,24 +1090,18 @@ void BoxBorderPainter::drawWideDottedBoxSideFromPath(
 
   // Adjust the width to get equal dot spacing as much as possible.
   float perDotLength = thickness * 2;
-  static float epsilon = 1.0e-2f;
   float pathLength = borderPath.length();
 
-  if (pathLength < perDotLength + thickness) {
-    // Exactly 2 dots with whatever space we can get
+  if (pathLength < perDotLength) {
+    // Not enoguh space for 2 dots. Just draw 1 by giving a gap that is
+    // bigger than the length.
     DashArray lineDash;
     lineDash.push_back(0);
-    lineDash.push_back(pathLength - thickness - epsilon);
+    lineDash.push_back(perDotLength);
     graphicsContext.setLineDash(lineDash, 0);
   } else {
-    // Determine what number of dots gives the minimum deviation from
-    // idealGap between dots. Set the gap to that width.
-    float minNumDots = floorf((pathLength + thickness) / perDotLength);
-    float maxNumDots = minNumDots + 1;
-    float minGap = (pathLength - minNumDots * thickness) / (minNumDots - 1);
-    float maxGap = (pathLength - maxNumDots * thickness) / (maxNumDots - 1);
-    auto gap =
-        fabs(minGap - thickness) < fabs(maxGap - thickness) ? minGap : maxGap;
+    float gap = StrokeData::selectBestDashGap(pathLength, thickness, thickness);
+    static const float epsilon = 1.0e-2f;
     DashArray lineDash;
     lineDash.push_back(0);
     lineDash.push_back(gap + thickness - epsilon);
