@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #import "base/mac/bind_objc_block.h"
+#include "base/mac/foundation_util.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/browsing_data/core/pref_names.h"
@@ -61,15 +62,8 @@ const char kUrl[] = "http://foo/browsing";
 const char kUrlWithSetCookie[] = "http://foo/set_cookie";
 const char kResponse[] = "bar";
 const char kResponseWithSetCookie[] = "bar with set cookie";
-const char kNoCookieText[] = "No cookies";
-const char kCookie[] = "a=b";
-const char kJavaScriptGetCookies[] =
-    "var c = document.cookie ? document.cookie.split(/;\\s*/) : [];"
-    "if (!c.length) {"
-    "  document.documentElement.innerHTML = 'No cookies!';"
-    "} else {"
-    "  document.documentElement.innerHTML = 'OK: ' + c.join(',');"
-    "}";
+NSString* const kCookieName = @"name";
+NSString* const kCookieValue = @"value";
 
 enum MetricsServiceType {
   kMetrics,
@@ -162,29 +156,6 @@ id<GREYMatcher> TranslateSettingsButton() {
 // Matcher for the save button in the save password bar.
 id<GREYMatcher> savePasswordButton() {
   return ButtonWithAccessibilityLabelId(IDS_IOS_PASSWORD_MANAGER_SAVE_BUTTON);
-}
-
-// Asserts that there is no cookie in current web state.
-void AssertNoCookieExists() {
-  NSError* error = nil;
-  chrome_test_util::ExecuteJavaScript(
-      base::SysUTF8ToNSString(kJavaScriptGetCookies), &error);
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewContainingText(
-                                          kNoCookieText)]
-      assertWithMatcher:grey_notNil()];
-}
-
-// Asserts |cookie| exists in current web state.
-void AssertCookieExists(const char cookie[]) {
-  NSError* error = nil;
-  chrome_test_util::ExecuteJavaScript(
-      base::SysUTF8ToNSString(kJavaScriptGetCookies), &error);
-  NSString* const expectedCookieText =
-      [NSString stringWithFormat:@"OK: %@", base::SysUTF8ToNSString(cookie)];
-  [[EarlGrey
-      selectElementWithMatcher:chrome_test_util::WebViewContainingText(
-                                   base::SysNSStringToUTF8(expectedCookieText))]
-      assertWithMatcher:grey_notNil()];
 }
 
 // Run as a task to check if a certificate has been added to the ChannelIDStore.
@@ -675,8 +646,12 @@ bool IsCertificateCleared() {
   // Creates a map of canned responses and set up the test HTML server.
   std::map<GURL, std::pair<std::string, std::string>> response;
 
+  NSString* cookieForURL =
+      [NSString stringWithFormat:@"%@=%@", kCookieName, kCookieValue];
+
   response[web::test::HttpServer::MakeUrl(kUrlWithSetCookie)] =
-      std::pair<std::string, std::string>(kCookie, kResponseWithSetCookie);
+      std::pair<std::string, std::string>(base::SysNSStringToUTF8(cookieForURL),
+                                          kResponseWithSetCookie);
   response[web::test::HttpServer::MakeUrl(kUrl)] =
       std::pair<std::string, std::string>("", kResponse);
 
@@ -687,7 +662,9 @@ bool IsCertificateCleared() {
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewContainingText(
                                           kResponse)]
       assertWithMatcher:grey_notNil()];
-  AssertNoCookieExists();
+
+  NSDictionary* cookies = [ChromeEarlGrey cookies];
+  GREYAssertEqual(0U, cookies.count, @"No cookie should be found.");
 
   // Visit |kUrlWithSetCookie| to set a cookie and then load |kUrl| to check it
   // is still set.
@@ -700,10 +677,13 @@ bool IsCertificateCleared() {
                                           kResponse)]
       assertWithMatcher:grey_notNil()];
 
-  AssertCookieExists(kCookie);
+  cookies = [ChromeEarlGrey cookies];
+  GREYAssertEqualObjects(kCookieValue, cookies[kCookieName],
+                         @"Failed to set cookie.");
+  GREYAssertEqual(1U, cookies.count, @"Only one cookie should be found.");
 
-  // Restore the Clear Browsing Data checkmarks prefs to their default state in
-  // Teardown.
+  // Restore the Clear Browsing Data checkmarks prefs to their default state
+  // in Teardown.
   [self setTearDownHandler:^{
     [self restoreClearBrowsingDataCheckmarksToDefault];
   }];
@@ -716,7 +696,10 @@ bool IsCertificateCleared() {
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewContainingText(
                                           kResponse)]
       assertWithMatcher:grey_notNil()];
-  AssertNoCookieExists();
+
+  cookies = [ChromeEarlGrey cookies];
+  GREYAssertEqual(0U, cookies.count, @"No cookie should be found.");
+
   chrome_test_util::CloseAllTabs();
 }
 

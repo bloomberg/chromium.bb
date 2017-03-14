@@ -7,6 +7,7 @@
 #import <Foundation/Foundation.h>
 #import <WebKit/WebKit.h>
 
+#include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/app/history_test_util.h"
@@ -64,6 +65,33 @@ id ExecuteJavaScript(NSString* javascript,
   // After clearing browsing history via code, wait for the UI to be done
   // with any updates. This includes icons from the new tab page being removed.
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+}
+
+#pragma mark - Cookie Utilities
+
++ (NSDictionary*)cookies {
+  NSString* const kGetCookiesScript =
+      @"document.cookie ? document.cookie.split(/;\\s*/) : [];";
+
+  // TODO(crbug.com/690057): Remove __unsafe_unretained once all callers of
+  // |ExecuteJavaScript| are converted to ARC.
+  NSError* __unsafe_unretained error = nil;
+  id result = chrome_test_util::ExecuteJavaScript(kGetCookiesScript, &error);
+
+  GREYAssertTrue(result && !error, @"Failed to get cookies.");
+
+  NSArray* nameValuePairs = base::mac::ObjCCastStrict<NSArray>(result);
+  NSMutableDictionary* cookies = [NSMutableDictionary dictionary];
+  for (NSString* nameValuePair in nameValuePairs) {
+    NSArray* cookieNameValue = [nameValuePair componentsSeparatedByString:@"="];
+    GREYAssertEqual(2U, cookieNameValue.count, @"Cookie has invalid format.");
+
+    NSString* cookieName = cookieNameValue[0];
+    NSString* cookieValue = cookieNameValue[1];
+    cookies[cookieName] = cookieValue;
+  }
+
+  return cookies;
 }
 
 #pragma mark - Navigation Utilities

@@ -34,6 +34,13 @@ id ExecuteJavaScript(NSString* javascript,
 // Clears browsing history.
 + (void)clearBrowsingHistory;
 
+#pragma mark - Cookie Utilities
+
+// Returns cookies as key value pairs, where key is a cookie name and value is a
+// cookie value.
+// NOTE: this method fails the test if there are errors getting cookies.
++ (NSDictionary*)cookies;
+
 #pragma mark - Navigation Utilities
 
 // Loads |URL| in the current WebState with transition of type

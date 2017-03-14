@@ -29,42 +29,10 @@ const char kTestUrlIncognitoBrowsing[] = "http://choux/incognito/browsing";
 const char kTestUrlIncognitoSetCookie[] = "http://choux/incognito/set_cookie";
 
 const char kTestResponse[] = "fleur";
-NSString* const kNoCookieText = @"No cookies!";
-NSString* const kNormalCookieKey = @"request";
+NSString* const kNormalCookieName = @"request";
 NSString* const kNormalCookieValue = @"pony";
-NSString* const kIncognitoCookieKey = @"secret";
+NSString* const kIncognitoCookieName = @"secret";
 NSString* const kIncognitoCookieValue = @"rainbow";
-
-NSString* const kGetCookieScript =
-    @"var c = document.cookie ? document.cookie.split(/;\\s*/) : [];"
-     "if (!c.length) {"
-     "  document.documentElement.innerHTML = 'No cookies!';"
-     "} else {"
-     "  document.documentElement.innerHTML = 'OK: ' + c.join(',');"
-     "}";
-
-// Checks that a cookie of key=value is the only cookie exists in current domain
-// in current web state.
-// Returns true if cookie |key| of value |value| is the only cookie that exists.
-bool CheckCookieExists(NSString* key, NSString* value) {
-  NSError* error = nil;
-  id result = chrome_test_util::ExecuteJavaScript(kGetCookieScript, &error);
-  if (error)
-    return false;
-  NSString* stringResult = base::mac::ObjCCastStrict<NSString>(result);
-  NSString* expectedText = [NSString stringWithFormat:@"OK: %@=%@", key, value];
-  return [stringResult isEqualToString:expectedText];
-}
-
-// Checks that there is no cookie in current domain in current web state.
-bool CheckNoCookieExists() {
-  NSError* error = nil;
-  id result = chrome_test_util::ExecuteJavaScript(kGetCookieScript, &error);
-  if (error)
-    return false;
-  NSString* stringResult = base::mac::ObjCCastStrict<NSString>(result);
-  return [stringResult isEqualToString:kNoCookieText];
-}
 
 }  // namespace
 
@@ -84,9 +52,9 @@ bool CheckNoCookieExists() {
   std::map<GURL, std::pair<std::string, std::string>> responses;
 
   NSString* normalCookie = [NSString
-      stringWithFormat:@"%@=%@", kNormalCookieKey, kNormalCookieValue];
+      stringWithFormat:@"%@=%@", kNormalCookieName, kNormalCookieValue];
   NSString* incognitoCookie = [NSString
-      stringWithFormat:@"%@=%@", kIncognitoCookieKey, kIncognitoCookieValue];
+      stringWithFormat:@"%@=%@", kIncognitoCookieName, kIncognitoCookieValue];
 
   responses[web::test::HttpServer::MakeUrl(kTestUrlNormalBrowsing)] =
       std::pair<std::string, std::string>("", kTestResponse);
@@ -132,39 +100,43 @@ bool CheckNoCookieExists() {
   // the incognito test cookie is not found.
   [ChromeEarlGrey
       loadURL:web::test::HttpServer::MakeUrl(kTestUrlNormalSetCookie)];
-  GREYAssertTrue(CheckCookieExists(kNormalCookieKey, kNormalCookieValue),
-                 @"Failed to set normal cookie in normal mode. (1)");
-  GREYAssertFalse(CheckCookieExists(kIncognitoCookieKey, kIncognitoCookieValue),
-                  @"Incognito cookie should not be found in normal mode. (1)");
+  NSDictionary* cookies = [ChromeEarlGrey cookies];
+  GREYAssertEqualObjects(kNormalCookieValue, cookies[kNormalCookieName],
+                         @"Failed to set normal cookie in normal mode.");
+  GREYAssertEqual(1U, cookies.count,
+                  @"Only one cookie should be found in normal mode.");
 
   // Opens an incognito tab, loads the dummy page, and sets incognito test
   // cookie.
   chrome_test_util::OpenNewIncognitoTab();
   [ChromeEarlGrey
       loadURL:web::test::HttpServer::MakeUrl(kTestUrlIncognitoSetCookie)];
-  GREYAssertTrue(CheckCookieExists(kIncognitoCookieKey, kIncognitoCookieValue),
-                 @"Failed to set incognito cookie in incognito mode. (2)");
+  cookies = [ChromeEarlGrey cookies];
+  GREYAssertEqualObjects(kIncognitoCookieValue, cookies[kIncognitoCookieName],
+                         @"Failed to set incognito cookie in incognito mode.");
+  GREYAssertEqual(1U, cookies.count,
+                  @"Only one cookie should be found in incognito mode.");
 
   // Switches back to normal profile by opening up a new tab. Test cookie
   // should not be found.
   chrome_test_util::OpenNewTab();
   [ChromeEarlGrey
       loadURL:web::test::HttpServer::MakeUrl(kTestUrlNormalBrowsing)];
-  GREYAssertTrue(CheckCookieExists(kNormalCookieKey, kNormalCookieValue),
-                 @"Normal cookie should be found in normal mode. (3)");
-  GREYAssertFalse(CheckCookieExists(kIncognitoCookieKey, kIncognitoCookieValue),
-                  @"Incognito cookie should not be found in normal mode. (3)");
+  cookies = [ChromeEarlGrey cookies];
+  GREYAssertEqualObjects(kNormalCookieValue, cookies[kNormalCookieName],
+                         @"Normal cookie should still exist in normal mode.");
+  GREYAssertEqual(1U, cookies.count,
+                  @"Only one cookie should be found in normal mode.");
 
   // Finally, closes all incognito tabs while still in normal tab.
   // Checks that incognito cookie is gone.
   chrome_test_util::CloseAllIncognitoTabs();
   chrome_test_util::OpenNewTab();
   [ChromeEarlGrey
-      loadURL:web::test::HttpServer::MakeUrl(kTestUrlNormalBrowsing)];
-  GREYAssertTrue(CheckCookieExists(kNormalCookieKey, kNormalCookieValue),
-                 @"Normal cookie should be found in normal mode. (4)");
-  GREYAssertFalse(CheckCookieExists(kIncognitoCookieKey, kIncognitoCookieValue),
-                  @"Incognito cookie should be gone from normal mode. (4)");
+      loadURL:web::test::HttpServer::MakeUrl(kTestUrlIncognitoBrowsing)];
+  cookies = [ChromeEarlGrey cookies];
+  GREYAssertEqual(0U, cookies.count,
+                  @"Incognito cookie should be gone from normal mode.");
 }
 
 // Tests that a cookie set in incognito tab is removed after closing all
@@ -179,8 +151,11 @@ bool CheckNoCookieExists() {
   chrome_test_util::OpenNewIncognitoTab();
   [ChromeEarlGrey
       loadURL:web::test::HttpServer::MakeUrl(kTestUrlIncognitoSetCookie)];
-  GREYAssertTrue(CheckCookieExists(kIncognitoCookieKey, kIncognitoCookieValue),
-                 @"Failed to set incognito cookie in incognito mode. (1)");
+  NSDictionary* cookies = [ChromeEarlGrey cookies];
+  GREYAssertEqualObjects(kIncognitoCookieValue, cookies[kIncognitoCookieName],
+                         @"Failed to set incognito cookie in incognito mode.");
+  GREYAssertEqual(1U, cookies.count,
+                  @"Only one cookie should be found in incognito mode.");
 
   // Closes all incognito tabs and switch back to a normal tab.
   chrome_test_util::CloseAllIncognitoTabs();
@@ -193,14 +168,18 @@ bool CheckNoCookieExists() {
   chrome_test_util::OpenNewIncognitoTab();
   [ChromeEarlGrey
       loadURL:web::test::HttpServer::MakeUrl(kTestUrlIncognitoBrowsing)];
-  GREYAssertTrue(CheckNoCookieExists(),
-                 @"Incognito cookie should be gone from incognito mode. (2)");
+  cookies = [ChromeEarlGrey cookies];
+  GREYAssertEqual(0U, cookies.count,
+                  @"Incognito cookie should be gone from incognito mode.");
 
   // Verifies that new incognito cookies can be set.
   [ChromeEarlGrey
       loadURL:web::test::HttpServer::MakeUrl(kTestUrlIncognitoSetCookie)];
-  GREYAssertTrue(CheckCookieExists(kIncognitoCookieKey, kIncognitoCookieValue),
-                 @"Failed to set incognito cookie in incognito mode. (3)");
+  cookies = [ChromeEarlGrey cookies];
+  GREYAssertEqualObjects(kIncognitoCookieValue, cookies[kIncognitoCookieName],
+                         @"Failed to set incognito cookie in incognito mode.");
+  GREYAssertEqual(1U, cookies.count,
+                  @"Only one cookie should be found in incognito mode.");
 }
 
 // Tests that a cookie set in normal tab is not available in an incognito tab.
@@ -208,15 +187,19 @@ bool CheckNoCookieExists() {
   // Sets cookie in normal tab.
   [ChromeEarlGrey
       loadURL:web::test::HttpServer::MakeUrl(kTestUrlNormalSetCookie)];
-  GREYAssertTrue(CheckCookieExists(kNormalCookieKey, kNormalCookieValue),
-                 @"Failed to set normal cookie in normal mode. (1)");
+  NSDictionary* cookies = [ChromeEarlGrey cookies];
+  GREYAssertEqualObjects(kNormalCookieValue, cookies[kNormalCookieName],
+                         @"Normal cookie should still exist in normal mode.");
+  GREYAssertEqual(1U, cookies.count,
+                  @"Only one cookie should be found in normal mode.");
 
   // Switches to a new incognito tab and verifies that cookie is not there.
   chrome_test_util::OpenNewIncognitoTab();
   [ChromeEarlGrey
       loadURL:web::test::HttpServer::MakeUrl(kTestUrlIncognitoBrowsing)];
-  GREYAssertTrue(CheckNoCookieExists(),
-                 @"Normal cookie should not be found in incognito mode. (2)");
+  cookies = [ChromeEarlGrey cookies];
+  GREYAssertEqual(0U, cookies.count,
+                  @"Normal cookie should not be found in incognito mode.");
 
   // Closes all incognito tabs and then switching back to a normal tab. Verifies
   // that the cookie set earlier is still there.
@@ -224,8 +207,12 @@ bool CheckNoCookieExists() {
   chrome_test_util::OpenNewTab();
   [ChromeEarlGrey
       loadURL:web::test::HttpServer::MakeUrl(kTestUrlNormalBrowsing)];
-  GREYAssertTrue(CheckCookieExists(kNormalCookieKey, kNormalCookieValue),
-                 @"Normal cookie should still be found in normal mode. (3)");
+  cookies = [ChromeEarlGrey cookies];
+  GREYAssertEqualObjects(
+      kNormalCookieValue, cookies[kNormalCookieName],
+      @"Normal cookie should still be found in normal mode.");
+  GREYAssertEqual(1U, cookies.count,
+                  @"Only one cookie should be found in normal mode.");
 }
 
 // Tests that a cookie set in incognito tab is only available in another
@@ -238,21 +225,31 @@ bool CheckNoCookieExists() {
   chrome_test_util::OpenNewIncognitoTab();
   [ChromeEarlGrey
       loadURL:web::test::HttpServer::MakeUrl(kTestUrlIncognitoSetCookie)];
-  GREYAssertTrue(CheckCookieExists(kIncognitoCookieKey, kIncognitoCookieValue),
-                 @"Failed to set incognito cookie in incognito mode. (1)");
+  NSDictionary* cookies = [ChromeEarlGrey cookies];
+  GREYAssertEqualObjects(kIncognitoCookieValue, cookies[kIncognitoCookieName],
+                         @"Failed to set incognito cookie in incognito mode.");
+  GREYAssertEqual(1U, cookies.count,
+                  @"Only one cookie should be found in incognito mode.");
+
   // Switches back to a normal tab and verifies that cookie set in incognito tab
   // is not available.
   chrome_test_util::OpenNewTab();
   [ChromeEarlGrey
       loadURL:web::test::HttpServer::MakeUrl(kTestUrlNormalBrowsing)];
-  GREYAssertTrue(CheckNoCookieExists(),
-                 @"Incognito cookie should not be found in normal mode. (2)");
+  cookies = [ChromeEarlGrey cookies];
+  GREYAssertEqual(0U, cookies.count,
+                  @"Incognito cookie should not be found in normal mode.");
+
   // Returns back to Incognito tab and cookie is still there.
   chrome_test_util::OpenNewIncognitoTab();
   [ChromeEarlGrey
       loadURL:web::test::HttpServer::MakeUrl(kTestUrlIncognitoBrowsing)];
-  GREYAssertTrue(CheckCookieExists(kIncognitoCookieKey, kIncognitoCookieValue),
-                 @"Incognito cookie should be found in incognito mode. (3)");
+  cookies = [ChromeEarlGrey cookies];
+  GREYAssertEqualObjects(
+      kIncognitoCookieValue, cookies[kIncognitoCookieName],
+      @"Incognito cookie should be found in incognito mode.");
+  GREYAssertEqual(1U, cookies.count,
+                  @"Only one cookie should be found in incognito mode.");
 }
 
 // Tests that a cookie set in a normal tab can be found in another normal tab.
@@ -260,15 +257,22 @@ bool CheckNoCookieExists() {
   // Loads page and sets cookie in first normal tab.
   [ChromeEarlGrey
       loadURL:web::test::HttpServer::MakeUrl(kTestUrlNormalSetCookie)];
-  GREYAssertTrue(CheckCookieExists(kNormalCookieKey, kNormalCookieValue),
-                 @"Failed to set normal cookie in normal mode. (1)");
+  NSDictionary* cookies = [ChromeEarlGrey cookies];
+  GREYAssertEqualObjects(kNormalCookieValue, cookies[kNormalCookieName],
+                         @"Failed to set normal cookie in normal mode.");
+  GREYAssertEqual(1U, cookies.count,
+                  @"Only one cookie should be found in normal mode.");
 
   // Creates another normal tab and verifies that the cookie is also there.
   chrome_test_util::OpenNewTab();
   [ChromeEarlGrey
       loadURL:web::test::HttpServer::MakeUrl(kTestUrlNormalBrowsing)];
-  GREYAssertTrue(CheckCookieExists(kNormalCookieKey, kNormalCookieValue),
-                 @"Normal cookie should still be found in normal mode. (2)");
+  cookies = [ChromeEarlGrey cookies];
+  GREYAssertEqualObjects(
+      kNormalCookieValue, cookies[kNormalCookieName],
+      @"Normal cookie should still be found in normal mode.");
+  GREYAssertEqual(1U, cookies.count,
+                  @"Only one cookie should be found in normal mode.");
 }
 
 @end
