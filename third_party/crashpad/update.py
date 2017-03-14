@@ -7,6 +7,7 @@
 
 import argparse
 import os
+import pipes
 import re
 import subprocess
 import sys
@@ -131,7 +132,8 @@ def main(args):
          'filter-branch',
          '--force',
          '--index-filter',
-         'git rm --cached --ignore-unmatch ' + ' '.join(parsed.exclude),
+         'git rm --cached --ignore-unmatch ' +
+             ' '.join(pipes.quote(path) for path in parsed.exclude),
          revision_old + '..UPDATE_TO'],
         cwd=toplevel,
         shell=IS_WINDOWS)
