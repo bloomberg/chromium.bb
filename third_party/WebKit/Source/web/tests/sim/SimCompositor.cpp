@@ -79,14 +79,14 @@ void SimCompositor::clearSelection() {
   m_hasSelection = false;
 }
 
-SimDisplayItemList SimCompositor::beginFrame() {
+SimDisplayItemList SimCompositor::beginFrame(double timeDeltaInSeconds) {
   DCHECK(m_webViewImpl);
   DCHECK(!m_deferCommits);
   DCHECK(m_needsBeginFrame);
+  DCHECK_GT(timeDeltaInSeconds, 0);
   m_needsBeginFrame = false;
 
-  // Always advance the time as if the compositor was running at 60fps.
-  m_lastFrameTimeMonotonic = monotonicallyIncreasingTime() + 0.016;
+  m_lastFrameTimeMonotonic += timeDeltaInSeconds;
 
   m_webViewImpl->beginFrame(m_lastFrameTimeMonotonic);
   m_webViewImpl->updateAllLifecyclePhases();

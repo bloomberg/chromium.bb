@@ -30,7 +30,8 @@ class SimCompositor final : public WebLayerTreeView {
 
   // Execute the BeginMainFrame processing steps, an approximation of what
   // cc::ThreadProxy::BeginMainFrame would do.
-  SimDisplayItemList beginFrame();
+  // If time is not specified a 60Hz frame rate time progression is used.
+  SimDisplayItemList beginFrame(double timeDeltaInSeconds = 0.016);
 
   bool needsBeginFrame() const { return m_needsBeginFrame; }
   bool deferCommits() const { return m_deferCommits; }
