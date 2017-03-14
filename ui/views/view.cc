@@ -163,6 +163,9 @@ View::~View() {
         delete child;
     }
   }
+
+  for (ViewObserver& observer : observers_)
+    observer.OnViewIsDeleting(this);
 }
 
 // Tree operations -------------------------------------------------------------

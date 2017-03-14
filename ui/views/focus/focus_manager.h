@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "ui/base/accelerators/accelerator_manager.h"
+#include "ui/views/view_observer.h"
 #include "ui/views/views_export.h"
 
 // FocusManager handles focus traversal, stores and restores focused views, and
@@ -70,6 +71,12 @@
 // Note that FocusTraversable views do not have to be RootViews:
 // AccessibleToolbarView is FocusTraversable.
 
+namespace base {
+namespace debug {
+class StackTrace;
+}
+}
+
 namespace ui {
 class Accelerator;
 class AcceleratorTarget;
@@ -118,7 +125,8 @@ class VIEWS_EXPORT FocusChangeListener {
   virtual ~FocusChangeListener() {}
 };
 
-class VIEWS_EXPORT FocusManager {
+// FocusManager adds itself as a ViewObserver to the currently focused view.
+class VIEWS_EXPORT FocusManager : public ViewObserver {
  public:
   // The reason why the focus changed.
   enum FocusChangeReason {
@@ -146,7 +154,7 @@ class VIEWS_EXPORT FocusManager {
   };
 
   FocusManager(Widget* widget, std::unique_ptr<FocusManagerDelegate> delegate);
-  virtual ~FocusManager();
+  ~FocusManager() override;
 
   // Processes the passed key event for accelerators and keyboard traversal.
   // Returns false if the event has been consumed and should not be processed
@@ -331,6 +339,9 @@ class VIEWS_EXPORT FocusManager {
   // of |keyboard_accesible_|.
   bool IsFocusable(View* view) const;
 
+  // ViewObserver:
+  void OnViewIsDeleting(View* view) override;
+
   // Whether arrow key traversal is enabled.
   static bool arrow_key_traversal_enabled_;
 
@@ -343,6 +354,9 @@ class VIEWS_EXPORT FocusManager {
 
   // The view that currently is focused.
   View* focused_view_ = nullptr;
+
+  // TODO(sky): remove, used for debugging 687232.
+  std::unique_ptr<base::debug::StackTrace> stack_when_focused_view_set_;
 
   // The AcceleratorManager this FocusManager is associated with.
   ui::AcceleratorManager accelerator_manager_;

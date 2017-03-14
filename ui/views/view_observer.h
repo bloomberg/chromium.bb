@@ -33,6 +33,9 @@ class VIEWS_EXPORT ViewObserver {
   // parent view. |view| is the child view being moved.
   virtual void OnChildViewReordered(View* view) {}
 
+  // Called from ~View.
+  virtual void OnViewIsDeleting(View* observed_view) {}
+
  protected:
   virtual ~ViewObserver() {}
 };
