@@ -19,6 +19,7 @@
 #include "content/browser/frame_host/navigation_request_info.h"
 #include "content/browser/frame_host/navigator.h"
 #include "content/browser/frame_host/navigator_impl.h"
+#include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/loader/navigation_url_loader.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
@@ -32,6 +33,7 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_data.h"
 #include "content/public/browser/navigation_ui_data.h"
+#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/stream_handle.h"
 #include "content/public/common/appcache_info.h"
@@ -40,6 +42,7 @@
 #include "content/public/common/request_context_type.h"
 #include "content/public/common/resource_response.h"
 #include "content/public/common/url_constants.h"
+#include "content/public/common/web_preferences.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/base/url_util.h"
@@ -667,8 +670,14 @@ void NavigationRequest::OnStartChecksComplete(
   }
 
   if (IsSchemeSupportedForAppCache(common_params_.url)) {
-    navigation_handle_->InitAppCacheHandle(
-        static_cast<ChromeAppCacheService*>(partition->GetAppCacheService()));
+    RenderFrameHostImpl* render_frame_host =
+        frame_tree_node_->render_manager()->GetFrameHostForNavigation(*this);
+    if (render_frame_host->GetRenderViewHost()
+            ->GetWebkitPreferences()
+            .application_cache_enabled) {
+      navigation_handle_->InitAppCacheHandle(
+          static_cast<ChromeAppCacheService*>(partition->GetAppCacheService()));
+    }
   }
 
   // Mark the fetch_start (Navigation Timing API).
