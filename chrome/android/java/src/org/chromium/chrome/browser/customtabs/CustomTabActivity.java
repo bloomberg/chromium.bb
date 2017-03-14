@@ -441,6 +441,9 @@ public class CustomTabActivity extends ChromeActivity {
                     @Override
                     public void onClick(View v) {
                         RecordUserAction.record("CustomTabs.CloseButtonClicked");
+                        if (mIntentDataProvider.shouldEnableEmbeddedMediaExperience()) {
+                            RecordUserAction.record("CustomTabs.CloseButtonClicked.DownloadsUI");
+                        }
                         finishAndClose(false);
                     }
                 });
@@ -822,6 +825,12 @@ public class CustomTabActivity extends ChromeActivity {
                         mIntentDataProvider.sendButtonPendingIntentWithUrl(
                                 getApplicationContext(), getActivityTab().getUrl());
                         RecordUserAction.record("CustomTabsCustomActionButtonClick");
+                        if (mIntentDataProvider.shouldEnableEmbeddedMediaExperience()
+                                && TextUtils.equals(
+                                           params.getDescription(), getString(R.string.share))) {
+                            RecordUserAction.record(
+                                    "CustomTabsCustomActionButtonClick.DownloadsUI.Share");
+                        }
                     }
                 });
     }
