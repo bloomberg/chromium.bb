@@ -830,6 +830,11 @@ void UsbDeviceHandleImpl::SetConfigurationOnBlockingThread(
 void UsbDeviceHandleImpl::SetConfigurationComplete(
     bool success,
     const ResultCallback& callback) {
+  if (!device_) {
+    callback.Run(false);
+    return;
+  }
+
   if (success) {
     device_->RefreshActiveConfiguration();
     RefreshEndpointMap();
@@ -857,6 +862,16 @@ void UsbDeviceHandleImpl::ClaimInterfaceOnBlockingThread(
 void UsbDeviceHandleImpl::ClaimInterfaceComplete(
     scoped_refptr<InterfaceClaimer> interface_claimer,
     const ResultCallback& callback) {
+  if (!device_) {
+    // Ensure that the InterfaceClaimer is released on the blocking thread.
+    InterfaceClaimer* raw_interface_claimer = interface_claimer.get();
+    interface_claimer->AddRef();
+    interface_claimer = nullptr;
+    blocking_task_runner_->ReleaseSoon(FROM_HERE, raw_interface_claimer);
+    callback.Run(false);
+    return;
+  }
+
   if (interface_claimer) {
     claimed_interfaces_[interface_claimer->interface_number()] =
         interface_claimer;
@@ -888,6 +903,11 @@ void UsbDeviceHandleImpl::SetInterfaceAlternateSettingComplete(
     int alternate_setting,
     bool success,
     const ResultCallback& callback) {
+  if (!device_) {
+    callback.Run(false);
+    return;
+  }
+
   if (success) {
     claimed_interfaces_[interface_number]->set_alternate_setting(
         alternate_setting);
@@ -919,6 +939,7 @@ void UsbDeviceHandleImpl::ClearHaltOnBlockingThread(
 
 void UsbDeviceHandleImpl::RefreshEndpointMap() {
   DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(device_);
   endpoint_map_.clear();
   const UsbConfigDescriptor* config = device_->active_configuration();
   if (config) {

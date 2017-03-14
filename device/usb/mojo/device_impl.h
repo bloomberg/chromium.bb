@@ -46,8 +46,9 @@ class DeviceImpl : public Device, public device::UsbDevice::Observer {
                                     uint16_t index);
 
   // Handles completion of an open request.
-  void OnOpen(const OpenCallback& callback,
-              scoped_refptr<device::UsbDeviceHandle> handle);
+  static void OnOpen(base::WeakPtr<DeviceImpl> device,
+                     const OpenCallback& callback,
+                     scoped_refptr<device::UsbDeviceHandle> handle);
   void OnPermissionGrantedForOpen(const OpenCallback& callback, bool granted);
 
   // Device implementation:

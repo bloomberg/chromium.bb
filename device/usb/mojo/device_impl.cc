@@ -172,12 +172,20 @@ bool DeviceImpl::HasControlTransferPermission(
   }
 }
 
-void DeviceImpl::OnOpen(const OpenCallback& callback,
+// static
+void DeviceImpl::OnOpen(base::WeakPtr<DeviceImpl> self,
+                        const OpenCallback& callback,
                         scoped_refptr<UsbDeviceHandle> handle) {
-  device_handle_ = handle;
-  if (device_handle_ && permission_provider_)
-    permission_provider_->IncrementConnectionCount();
-  callback.Run(handle ? OpenDeviceError::OK : OpenDeviceError::ACCESS_DENIED);
+  if (!self) {
+    handle->Close();
+    return;
+  }
+
+  self->device_handle_ = std::move(handle);
+  if (self->device_handle_ && self->permission_provider_)
+    self->permission_provider_->IncrementConnectionCount();
+  callback.Run(self->device_handle_ ? OpenDeviceError::OK
+                                    : OpenDeviceError::ACCESS_DENIED);
 }
 
 void DeviceImpl::OnPermissionGrantedForOpen(const OpenCallback& callback,
