@@ -1225,6 +1225,11 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
   // Reset association with the webController.
   [self.webController setDelegate:nil];
 
+  webStateImpl_->ClearTransientContentView();
+  // Terminate the network activity before notifying the parent model, because
+  // the parent model may initiate the request context destruction.
+  [self terminateNetworkActivity];
+
   // Cancel any queued dialogs.
   [self.dialogDelegate cancelDialogForTab:self];
 
