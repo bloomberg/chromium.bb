@@ -2035,14 +2035,11 @@
   <message name="IDS_SETTINGS_ADD_SITE_EXCEPTION_PLACEHOLDER" desc="Placeholder text shown before the user starts typing a new content settings exception for a site." >
     [*.]example.com
   </message>
-  <message name="IDS_SETTINGS_ADD_SITE_LINK" desc="Link text to show (to open the Add Site dialog)">
-    Add site exception
-  </message>
   <message name="IDS_SETTINGS_ADD_SITE_TITLE" desc="Title for the Add Site dialog">
-    Add an exception for a site
+    Add a site
   </message>
   <message name="IDS_SETTINGS_EDIT_SITE_TITLE" desc="Title for the Edit Site dialog">
-    Edit exception
+    Edit site
   </message>
   <message name="IDS_SETTINGS_ADD_SITE" desc="The label for the input box for adding a site">
     Site
@@ -2403,7 +2400,7 @@
     Passwords
   </message>
   <message name="IDS_SETTINGS_ENABLE_PAYMENTS_INTEGRATION_CHECKBOX_LABEL" desc="Label for the checkbox that controls the Autofill/Payments integration feature.">
-    Credit cards and addresses using Google Payments
+    Credit cards and addresses using Google Payments.
   </message>
   <message name="IDS_SETTINGS_OPEN_TABS_CHECKBOX_LABEL" desc="Label for the checkbox which enables or disables syncing open tabs between multiple browser instances.">
     Open Tabs
