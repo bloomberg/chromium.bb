@@ -10,6 +10,7 @@
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/CoreExport.h"
 #include "core/dom/Range.h"
+#include "core/editing/EphemeralRange.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
@@ -37,6 +38,14 @@ class CORE_EXPORT StaticRange final : public GarbageCollected<StaticRange>,
     return new StaticRange(range->ownerDocument(), range->startContainer(),
                            range->startOffset(), range->endContainer(),
                            range->endOffset());
+  }
+  static StaticRange* create(const EphemeralRange& range) {
+    DCHECK(!range.isNull());
+    return new StaticRange(range.document(),
+                           range.startPosition().computeContainerNode(),
+                           range.startPosition().computeOffsetInContainerNode(),
+                           range.endPosition().computeContainerNode(),
+                           range.endPosition().computeOffsetInContainerNode());
   }
 
   Node* startContainer() const { return m_startContainer.get(); }

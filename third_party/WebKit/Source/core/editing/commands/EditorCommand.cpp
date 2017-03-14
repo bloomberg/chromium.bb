@@ -207,7 +207,7 @@ StaticRangeVector* RangesFromCurrentSelectionOrExtendCaret(
   if (selectionModifier.selection().isNone())
     return ranges;
   ranges->push_back(StaticRange::create(
-      createRange(firstEphemeralRangeOf(selectionModifier.selection()))));
+      firstEphemeralRangeOf(selectionModifier.selection())));
   return ranges;
 }
 

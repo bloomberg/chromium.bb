@@ -2081,14 +2081,17 @@ bool isTextSecurityNode(const Node* node) {
 }
 
 const StaticRangeVector* targetRangesForInputEvent(const Node& node) {
+  // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // needs to be audited. see http://crbug.com/590369 for more details.
+  node.document().updateStyleAndLayoutIgnorePendingStylesheets();
   if (!hasRichlyEditableStyle(node))
     return nullptr;
-  Range* range = createRange(
+  const EphemeralRange& range =
       firstEphemeralRangeOf(node.document()
                                 .frame()
                                 ->selection()
-                                .computeVisibleSelectionInDOMTreeDeprecated()));
-  if (!range)
+                                .computeVisibleSelectionInDOMTreeDeprecated());
+  if (range.isNull())
     return nullptr;
   return new StaticRangeVector(1, StaticRange::create(range));
 }
