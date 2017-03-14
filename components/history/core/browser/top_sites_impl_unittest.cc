@@ -31,9 +31,12 @@
 #include "components/history/core/test/wait_top_sites_loaded_observer.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "url/gurl.h"
+
+using testing::ContainerEq;
 
 namespace history {
 
@@ -634,6 +637,42 @@ TEST_F(TopSitesImplTest, GetMostVisited) {
   EXPECT_EQ(news, querier.urls()[0].url);
   EXPECT_EQ(google, querier.urls()[1].url);
   ASSERT_NO_FATAL_FAILURE(ContainsPrepopulatePages(querier, 2));
+}
+
+// Tests GetMostVisitedURLs with a redirect.
+TEST_F(TopSitesImplTest, GetMostVisitedWithRedirect) {
+  GURL bare("http://cnn.com/");
+  GURL www("https://www.cnn.com/");
+  GURL edition("https://edition.cnn.com/");
+
+  AddPageToHistory(edition, base::ASCIIToUTF16("CNN"),
+                   history::RedirectList{bare, www, edition},
+                   base::Time::Now());
+  AddPageToHistory(edition);
+
+  StartQueryForMostVisited();
+  WaitForHistory();
+
+  TopSitesQuerier querier;
+  querier.QueryTopSites(top_sites(), false);
+
+  ASSERT_EQ(1, querier.number_of_callbacks());
+
+  // This behavior is not desirable: even though edition.cnn.com is in the list
+  // of top sites, and the the bare URL cnn.com is just a redirect to it, we're
+  // returning both. Even worse, the NTP will show the same title, icon, and
+  // thumbnail for the site, so to the user it looks like we just have the same
+  // thing twice.  (https://crbug.com/567132)
+  std::vector<GURL> expected_urls = {bare, edition};  // should be {edition}.
+
+  for (const auto& prepopulated : GetPrepopulatedPages()) {
+    expected_urls.push_back(prepopulated.most_visited.url);
+  }
+  std::vector<GURL> actual_urls;
+  for (const auto& actual : querier.urls()) {
+    actual_urls.push_back(actual.url);
+  }
+  EXPECT_THAT(actual_urls, ContainerEq(expected_urls));
 }
 
 // Makes sure changes done to top sites get mirrored to the db.
