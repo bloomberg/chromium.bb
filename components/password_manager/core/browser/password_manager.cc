@@ -252,7 +252,9 @@ void PasswordManager::SaveGenerationFieldDetectedByClassifier(
     form_manager->SaveGenerationFieldDetectedByClassifier(generation_field);
 }
 
-void PasswordManager::ProvisionallySavePassword(const PasswordForm& form) {
+void PasswordManager::ProvisionallySavePassword(
+    const PasswordForm& form,
+    const password_manager::PasswordManagerDriver* driver) {
   bool is_saving_and_filling_enabled =
       client_->IsSavingAndFillingEnabledForCurrentPage();
 
@@ -295,7 +297,8 @@ void PasswordManager::ProvisionallySavePassword(const PasswordForm& form) {
   // instances for UMA.
   for (auto iter = pending_login_managers_.begin();
        iter != pending_login_managers_.end(); ++iter) {
-    PasswordFormManager::MatchResultMask result = (*iter)->DoesManage(form);
+    PasswordFormManager::MatchResultMask result =
+        (*iter)->DoesManage(form, driver);
 
     if (result == PasswordFormManager::RESULT_NO_MATCH)
       continue;
@@ -457,7 +460,7 @@ void PasswordManager::DidNavigateMainFrame() {
 void PasswordManager::OnPasswordFormSubmitted(
     password_manager::PasswordManagerDriver* driver,
     const PasswordForm& password_form) {
-  ProvisionallySavePassword(password_form);
+  ProvisionallySavePassword(password_form, driver);
   for (size_t i = 0; i < submission_callbacks_.size(); ++i) {
     submission_callbacks_[i].Run(password_form);
   }
@@ -471,7 +474,7 @@ void PasswordManager::OnPasswordFormForceSaveRequested(
   // TODO(msramek): This is just a sketch. We will need to show a custom bubble,
   // mark the form as force saved, and recreate the pending login managers,
   // because the password store might have changed.
-  ProvisionallySavePassword(password_form);
+  ProvisionallySavePassword(password_form, driver);
   if (provisional_save_manager_)
     OnLoginSuccessful();
 }
@@ -512,7 +515,7 @@ void PasswordManager::CreatePendingLoginManagers(
       continue;
     bool old_manager_found = false;
     for (const auto& old_manager : pending_login_managers_) {
-      if (old_manager->DoesManage(*iter) !=
+      if (old_manager->DoesManage(*iter, driver) !=
           PasswordFormManager::RESULT_COMPLETE_MATCH) {
         continue;
       }
@@ -690,7 +693,7 @@ void PasswordManager::OnInPageNavigation(
     logger->LogMessage(Logger::STRING_ON_IN_PAGE_NAVIGATION);
   }
 
-  ProvisionallySavePassword(password_form);
+  ProvisionallySavePassword(password_form, driver);
 
   if (!CanProvisionalManagerSave())
     return;
@@ -887,7 +890,7 @@ PasswordFormManager* PasswordManager::GetMatchingPendingManager(
 
   for (auto& login_manager : pending_login_managers_) {
     PasswordFormManager::MatchResultMask result =
-        login_manager->DoesManage(form);
+        login_manager->DoesManage(form, nullptr);
 
     if (result == PasswordFormManager::RESULT_NO_MATCH)
       continue;

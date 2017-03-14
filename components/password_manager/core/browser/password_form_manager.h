@@ -69,9 +69,9 @@ class PasswordFormManager : public FormFetcher::Consumer {
     RESULT_NO_MATCH = 0,
     RESULT_ACTION_MATCH = 1 << 0,
     RESULT_HTML_ATTRIBUTES_MATCH = 1 << 1,
-    RESULT_ORIGINS_MATCH = 1 << 2,
+    RESULT_ORIGINS_OR_FRAMES_MATCH = 1 << 2,
     RESULT_COMPLETE_MATCH = RESULT_ACTION_MATCH | RESULT_HTML_ATTRIBUTES_MATCH |
-                            RESULT_ORIGINS_MATCH
+                            RESULT_ORIGINS_OR_FRAMES_MATCH
   };
   // Use MatchResultMask to contain combinations of MatchResultFlags values.
   // It's a signed int rather than unsigned to avoid signed/unsigned mismatch
@@ -89,7 +89,11 @@ class PasswordFormManager : public FormFetcher::Consumer {
 
   // Compares basic data of |observed_form_| with |form| and returns how much
   // they match. The return value is a MatchResultMask bitmask.
-  MatchResultMask DoesManage(const autofill::PasswordForm& form) const;
+  // |driver| is optional and if it's given it should be a driver that
+  // corresponds to a frame from which |form| comes from.
+  MatchResultMask DoesManage(
+      const autofill::PasswordForm& form,
+      const password_manager::PasswordManagerDriver* driver) const;
 
   // Update |this| with the |form| that was actually submitted. Used to
   // determine what type the submitted form is for

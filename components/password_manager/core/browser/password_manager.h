@@ -128,7 +128,11 @@ class PasswordManager : public LoginModel {
   // When a form is submitted, we prepare to save the password but wait
   // until we decide the user has successfully logged in. This is step 1
   // of 2 (see SavePassword).
-  void ProvisionallySavePassword(const autofill::PasswordForm& form);
+  // |driver| is optional and if it's given it should be a driver that
+  // corresponds to a frame from which |form| comes from.
+  void ProvisionallySavePassword(
+      const autofill::PasswordForm& form,
+      const password_manager::PasswordManagerDriver* driver);
 
   // Should be called when the user navigates the main frame. Not called for
   // in-page navigation.

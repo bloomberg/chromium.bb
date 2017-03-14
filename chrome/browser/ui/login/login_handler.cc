@@ -193,7 +193,7 @@ void LoginHandler::SetAuth(const base::string16& username,
   if (password_manager_) {
     password_form_.username_value = username;
     password_form_.password_value = password;
-    password_manager_->ProvisionallySavePassword(password_form_);
+    password_manager_->ProvisionallySavePassword(password_form_, nullptr);
     if (logger) {
       logger->LogPasswordForm(
           autofill::SavePasswordProgressLogger::STRING_LOGINHANDLER_FORM,
