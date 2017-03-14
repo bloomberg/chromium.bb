@@ -110,19 +110,17 @@ class WebApkInstaller : public net::URLFetcherDelegate {
                   const ShortcutInfo& shortcut_info,
                   const SkBitmap& shortcut_icon);
 
-  // Starts installation of the downloaded WebAPK. Returns whether the install
-  // could be started. The installation may still fail if true is returned.
+  // Starts installion of the downloaded WebAPK.
   // |file_path| is the file path that the WebAPK was downloaded to.
-  // |package_name| is the package name that the WebAPK should be installed at.
-  virtual bool StartInstallingDownloadedWebApk(
+  // |package_name| is the package name of the WebAPK.
+  virtual void InstallDownloadedWebApk(
       JNIEnv* env,
       const base::android::ScopedJavaLocalRef<jstring>& java_file_path,
       const base::android::ScopedJavaLocalRef<jstring>& java_package_name);
 
-  // Starts update using the downloaded WebAPK. Returns whether the updating
-  // could be started. The updating may still fail if true is returned.
+  // Starts update using the downloaded WebAPK.
   // |file_path| is the file path that the WebAPK was downloaded to.
-  virtual bool StartUpdateUsingDownloadedWebApk(
+  virtual void UpdateUsingDownloadedWebApk(
       JNIEnv* env,
       const base::android::ScopedJavaLocalRef<jstring>& java_file_path);
 

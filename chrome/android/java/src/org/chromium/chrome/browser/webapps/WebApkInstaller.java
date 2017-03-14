@@ -41,8 +41,8 @@ public class WebApkInstaller {
     /** Monitors installation progress. */
     private InstallerDelegate mInstallTask;
 
-    /** Indicates whether to install or update a WebAPK. */
-    private boolean mIsInstall;
+    /** Whether a homescreen shortcut should be added on success. */
+    private boolean mAddHomescreenShortcut;
 
     /** Weak pointer to the native WebApkInstaller. */
     private long mNativePointer;
@@ -70,16 +70,13 @@ public class WebApkInstaller {
     }
 
     /**
-     * Installs a WebAPK and monitors the installation process.
+     * Installs WebAPK via "unsigned sources" using APK downloaded to {@link filePath}.
      * @param filePath File to install.
      * @param packageName Package name to install WebAPK at.
-     * @return True if the install was started. A "true" return value does not guarantee that the
-     *         install succeeds.
      */
     @CalledByNative
-    private boolean installAsyncAndMonitorInstallationFromNative(
-            String filePath, String packageName) {
-        mIsInstall = true;
+    private void installDownloadedWebApkAsync(String filePath, String packageName) {
+        mAddHomescreenShortcut = true;
         mWebApkPackageName = packageName;
 
         // Start monitoring the installation.
@@ -91,7 +88,12 @@ public class WebApkInstaller {
         mListener = createApplicationStateListener();
         ApplicationStatus.registerApplicationStateListener(mListener);
 
-        return installDownloadedWebApk(filePath);
+        // Notify native only if the intent could not be delivered. If the intent was delivered
+        // successfully, notify native once InstallerDelegate has determined whether the install
+        // was successful.
+        if (!installOrUpdateDownloadedWebApkImpl(filePath)) {
+            notify(false);
+        }
     }
 
     /**
@@ -129,21 +131,29 @@ public class WebApkInstaller {
     }
 
     private void notify(boolean success) {
+        if (mListener != null) {
+            ApplicationStatus.unregisterApplicationStateListener(mListener);
+            mListener = null;
+        }
+        mInstallTask = null;
         if (mNativePointer != 0) {
             nativeOnInstallFinished(mNativePointer, success);
+        }
+        if (mAddHomescreenShortcut && success) {
+            ShortcutHelper.addWebApkShortcut(
+                    ContextUtils.getApplicationContext(), mWebApkPackageName);
         }
     }
 
     /**
-     * Updates a WebAPK.
+     * Updates WebAPK via "unsigned sources" using APK downloaded to {@link filePath}.
      * @param filePath File to update.
-     * @return True if the update was started. A "true" return value does not guarantee that the
-     *         update succeeds.
      */
     @CalledByNative
-    private boolean updateAsyncFromNative(String filePath) {
-        mIsInstall = false;
-        return installDownloadedWebApk(filePath);
+    private void updateUsingDownloadedWebApkAsync(String filePath) {
+        // We can't use InstallerDelegate to detect whether updates are successful. If there was no
+        // error in delivering the intent, assume that the update will be successful.
+        notify(installOrUpdateDownloadedWebApkImpl(filePath));
     }
 
     /**
@@ -173,12 +183,10 @@ public class WebApkInstaller {
     }
 
     /**
-     * Sends intent to Android to show prompt and install downloaded WebAPK.
+     * Sends intent to Android to show prompt to install or update downloaded WebAPK.
      * @param filePath File to install.
      */
-    private boolean installDownloadedWebApk(String filePath) {
-        // TODO(pkotwicz|hanxi): For Chrome Stable figure out a different way of installing
-        // WebAPKs which does not involve enabling "installation from Unsigned Sources".
+    private boolean installOrUpdateDownloadedWebApkImpl(String filePath) {
         Context context = ContextUtils.getApplicationContext();
         Intent intent;
         File pathToInstall = new File(filePath);
@@ -202,21 +210,9 @@ public class WebApkInstaller {
             @Override
             public void onInstallFinished(InstallerDelegate task, boolean success) {
                 if (mInstallTask != task) return;
-                onInstallFinishedInternal(success);
+                WebApkInstaller.this.notify(success);
             }
         };
-    }
-
-    private void onInstallFinishedInternal(boolean success) {
-        ApplicationStatus.unregisterApplicationStateListener(mListener);
-        mInstallTask = null;
-        if (mNativePointer != 0) {
-            nativeOnInstallFinished(mNativePointer, success);
-        }
-        if (success && mIsInstall) {
-            ShortcutHelper.addWebApkShortcut(ContextUtils.getApplicationContext(),
-                    mWebApkPackageName);
-        }
     }
 
     private ApplicationStatus.ApplicationStateListener createApplicationStateListener() {
@@ -233,7 +229,7 @@ public class WebApkInstaller {
                  */
                 if (newState == ApplicationState.HAS_RUNNING_ACTIVITIES
                         && !isWebApkInstalled(mWebApkPackageName)) {
-                    onInstallFinishedInternal(false);
+                    WebApkInstaller.this.notify(false);
                     return;
                 }
             }

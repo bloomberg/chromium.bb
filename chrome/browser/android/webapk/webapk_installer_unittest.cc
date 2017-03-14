@@ -66,18 +66,17 @@ class TestWebApkInstaller : public WebApkInstaller {
         can_use_google_play_install_service_(
             can_use_google_play_install_service) {}
 
-  bool StartInstallingDownloadedWebApk(
+  void InstallDownloadedWebApk(
       JNIEnv* env,
       const base::android::ScopedJavaLocalRef<jstring>& file_path,
       const base::android::ScopedJavaLocalRef<jstring>& package_name) override {
     PostTaskToRunSuccessCallback();
-    return true;
   }
 
-  bool StartUpdateUsingDownloadedWebApk(
+  void UpdateUsingDownloadedWebApk(
       JNIEnv* env,
       const base::android::ScopedJavaLocalRef<jstring>& file_path) override {
-    return true;
+    PostTaskToRunSuccessCallback();
   }
 
   bool CanUseGooglePlayInstallService() override {

@@ -294,19 +294,19 @@ bool WebApkInstaller::Register(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
 
-bool WebApkInstaller::StartInstallingDownloadedWebApk(
+void WebApkInstaller::InstallDownloadedWebApk(
     JNIEnv* env,
     const base::android::ScopedJavaLocalRef<jstring>& java_file_path,
     const base::android::ScopedJavaLocalRef<jstring>& java_package_name) {
-  return Java_WebApkInstaller_installAsyncAndMonitorInstallationFromNative(
+  Java_WebApkInstaller_installDownloadedWebApkAsync(
       env, java_ref_, java_file_path, java_package_name);
 }
 
-bool WebApkInstaller::StartUpdateUsingDownloadedWebApk(
+void WebApkInstaller::UpdateUsingDownloadedWebApk(
     JNIEnv* env,
     const base::android::ScopedJavaLocalRef<jstring>& java_file_path) {
-  return Java_WebApkInstaller_updateAsyncFromNative(env, java_ref_,
-                                                    java_file_path);
+  Java_WebApkInstaller_updateUsingDownloadedWebApkAsync(env, java_ref_,
+                                                        java_file_path);
 }
 
 bool WebApkInstaller::CanUseGooglePlayInstallService() {
@@ -604,23 +604,13 @@ void WebApkInstaller::OnWebApkMadeWorldReadable(
   JNIEnv* env = base::android::AttachCurrentThread();
   base::android::ScopedJavaLocalRef<jstring> java_file_path =
       base::android::ConvertUTF8ToJavaString(env, file_path.value());
-  base::android::ScopedJavaLocalRef<jstring> java_package_name =
-      base::android::ConvertUTF8ToJavaString(env, webapk_package_);
-  bool success = false;
   if (task_type_ == INSTALL) {
-    success =
-        StartInstallingDownloadedWebApk(env, java_file_path, java_package_name);
+    base::android::ScopedJavaLocalRef<jstring> java_package_name =
+        base::android::ConvertUTF8ToJavaString(env, webapk_package_);
+    InstallDownloadedWebApk(env, java_file_path, java_package_name);
   } else if (task_type_ == UPDATE) {
-    success = StartUpdateUsingDownloadedWebApk(env, java_file_path);
-    if (success) {
-      // Since WebApkInstaller doesn't listen to WebAPKs' update events
-      // we call OnSuccess() as long as the update started successfully.
-      OnSuccess();
-      return;
-    }
+    UpdateUsingDownloadedWebApk(env, java_file_path);
   }
-  if (!success)
-    OnFailure();
 }
 
 void WebApkInstaller::OnTimeout() {
