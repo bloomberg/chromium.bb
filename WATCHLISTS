@@ -893,7 +893,8 @@
                   'rlz/win/lib/machine_id_win.cc',
     },
     'safe_browsing': {
-      'filepath': 'chrome/(browser|common|renderer)/safe_browsing/',
+      'filepath': 'chrome/(browser|common|renderer)/safe_browsing/|'\
+                  'components/safe_browsing/',
     },
     'safe_browsing_db': {
       'filepath': 'components/safe_browsing_db/',
@@ -2089,8 +2090,10 @@
     'rlz_id': ['alito+watch@chromium.org',
                'gab+watch@chromium.org',
                'robertshield+watch@chromium.org'],
-    'safe_browsing': ['grt+watch@chromium.org'],
-    'safe_browsing_db': ['vakh+watch@chromium.org'],
+    'safe_browsing': ['grt+watch@chromium.org',
+                      'timvolodine@chromium.org'],
+    'safe_browsing_db': ['vakh+watch@chromium.org',
+                         'timvolodine@chromium.org'],
     'scheduler': ['scheduler-bugs@chromium.org'],
     'screen_orientation': ['mlamouri+watch-screen-orientation@chromium.org'],
     'service_worker': ['horo+watch@chromium.org',
