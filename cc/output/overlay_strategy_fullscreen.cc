@@ -38,8 +38,14 @@ bool OverlayStrategyFullscreen::Attempt(
   if (front == quad_list->end())
     return false;
 
+  const DrawQuad* quad = *front;
+  if (quad->ShouldDrawWithBlending() ||
+      quad->shared_quad_state->opacity != 1.f ||
+      quad->shared_quad_state->blend_mode != SkBlendMode::kSrcOver)
+    return false;
+
   OverlayCandidate candidate;
-  if (!OverlayCandidate::FromDrawQuad(resource_provider, *front, &candidate)) {
+  if (!OverlayCandidate::FromDrawQuad(resource_provider, quad, &candidate)) {
     return false;
   }
 

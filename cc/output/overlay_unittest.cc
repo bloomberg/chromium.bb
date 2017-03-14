@@ -507,6 +507,29 @@ TEST_F(FullscreenOverlayTest, SuccessfulOverlay) {
   EXPECT_EQ(original_resource_id, candidate_list.front().resource_id);
 }
 
+TEST_F(FullscreenOverlayTest, AlphaFail) {
+  std::unique_ptr<RenderPass> pass = CreateRenderPass();
+  TextureDrawQuad* original_quad = CreateFullscreenCandidateQuad(
+      resource_provider_.get(), pass->shared_quad_state_list.back(),
+      pass.get());
+  original_quad->opaque_rect = gfx::Rect(0, 0, 0, 0);
+
+  // Check for potential candidates.
+  OverlayCandidateList candidate_list;
+  RenderPassFilterList render_pass_filters;
+  RenderPassFilterList render_pass_background_filters;
+  overlay_processor_->ProcessForOverlays(
+      resource_provider_.get(), pass.get(), render_pass_filters,
+      render_pass_background_filters, &candidate_list, nullptr, nullptr,
+      &damage_rect_, &content_bounds_);
+
+  RenderPass* main_pass = pass.get();
+  // Check that all the quads are gone.
+  EXPECT_EQ(1U, main_pass->quad_list.size());
+  // Check that we have only one overlay.
+  EXPECT_EQ(0U, candidate_list.size());
+}
+
 TEST_F(FullscreenOverlayTest, ResourceSizeInPixelsFail) {
   std::unique_ptr<RenderPass> pass = CreateRenderPass();
   TextureDrawQuad* original_quad = CreateFullscreenCandidateQuad(
