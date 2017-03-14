@@ -1070,8 +1070,7 @@ public class ContextualSearchManager implements ContextualSearchManagementDelega
      * a load of a user-visible search result.
      * @param isFailure Whether the navigation failed.
      */
-    @Override
-    public void onContextualSearchRequestNavigation(boolean isFailure) {
+    private void onContextualSearchRequestNavigation(boolean isFailure) {
         if (mSearchRequest == null) return;
 
         if (mSearchRequest.isUsingLowPriority()) {
