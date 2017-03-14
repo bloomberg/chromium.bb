@@ -413,7 +413,7 @@ void WorkerThreadableLoader::didReceiveResourceTiming(
   DCHECK(!isMainThread());
   if (!m_client)
     return;
-  std::unique_ptr<ResourceTimingInfo> info(
+  RefPtr<ResourceTimingInfo> info(
       ResourceTimingInfo::adopt(std::move(timingData)));
   WorkerGlobalScopePerformance::performance(*m_workerGlobalScope)
       ->addResourceTiming(*info);

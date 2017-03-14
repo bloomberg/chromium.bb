@@ -229,12 +229,12 @@ class PLATFORM_EXPORT ResourceFetcher
   TaskRunnerTimer<ResourceFetcher> m_resourceTimingReportTimer;
 
   using ResourceTimingInfoMap =
-      HeapHashMap<Member<Resource>, std::unique_ptr<ResourceTimingInfo>>;
+      HeapHashMap<Member<Resource>, RefPtr<ResourceTimingInfo>>;
   ResourceTimingInfoMap m_resourceTimingInfoMap;
 
-  std::unique_ptr<ResourceTimingInfo> m_navigationTimingInfo;
+  RefPtr<ResourceTimingInfo> m_navigationTimingInfo;
 
-  Vector<std::unique_ptr<ResourceTimingInfo>> m_scheduledResourceTimingReports;
+  Vector<RefPtr<ResourceTimingInfo>> m_scheduledResourceTimingReports;
 
   HeapHashSet<Member<ResourceLoader>> m_loaders;
   HeapHashSet<Member<ResourceLoader>> m_nonBlockingLoaders;

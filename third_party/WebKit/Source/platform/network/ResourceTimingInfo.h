@@ -45,17 +45,18 @@ namespace blink {
 
 struct CrossThreadResourceTimingInfoData;
 
-class PLATFORM_EXPORT ResourceTimingInfo {
+class PLATFORM_EXPORT ResourceTimingInfo
+    : public RefCounted<ResourceTimingInfo> {
   USING_FAST_MALLOC(ResourceTimingInfo);
   WTF_MAKE_NONCOPYABLE(ResourceTimingInfo);
 
  public:
-  static std::unique_ptr<ResourceTimingInfo> create(const AtomicString& type,
-                                                    const double time,
-                                                    bool isMainResource) {
-    return WTF::wrapUnique(new ResourceTimingInfo(type, time, isMainResource));
+  static PassRefPtr<ResourceTimingInfo> create(const AtomicString& type,
+                                               const double time,
+                                               bool isMainResource) {
+    return adoptRef(new ResourceTimingInfo(type, time, isMainResource));
   }
-  static std::unique_ptr<ResourceTimingInfo> adopt(
+  static PassRefPtr<ResourceTimingInfo> adopt(
       std::unique_ptr<CrossThreadResourceTimingInfoData>);
 
   // Gets a copy of the data suitable for passing to another thread.

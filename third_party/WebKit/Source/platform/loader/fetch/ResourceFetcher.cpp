@@ -312,13 +312,13 @@ void ResourceFetcher::requestLoadStarted(unsigned long identifier,
       !m_validatedURLs.contains(request.resourceRequest().url())) {
     // Resources loaded from memory cache should be reported the first time
     // they're used.
-    std::unique_ptr<ResourceTimingInfo> info = ResourceTimingInfo::create(
+    RefPtr<ResourceTimingInfo> info = ResourceTimingInfo::create(
         request.options().initiatorInfo.name, monotonicallyIncreasingTime(),
         resource->getType() == Resource::MainResource);
     populateTimingInfo(info.get(), resource);
     info->clearLoadTimings();
     info->setLoadFinishTime(info->initialTime());
-    m_scheduledResourceTimingReports.push_back(std::move(info));
+    m_scheduledResourceTimingReports.push_back(info.release());
     if (!m_resourceTimingReportTimer.isActive())
       m_resourceTimingReportTimer.startOneShot(0, BLINK_FROM_HERE);
   }
@@ -633,7 +633,7 @@ Resource* ResourceFetcher::requestResource(
 
 void ResourceFetcher::resourceTimingReportTimerFired(TimerBase* timer) {
   DCHECK_EQ(timer, &m_resourceTimingReportTimer);
-  Vector<std::unique_ptr<ResourceTimingInfo>> timingReports;
+  Vector<RefPtr<ResourceTimingInfo>> timingReports;
   timingReports.swap(m_scheduledResourceTimingReports);
   for (const auto& timingInfo : timingReports)
     context().addResourceTiming(*timingInfo);
@@ -755,7 +755,7 @@ void ResourceFetcher::storePerformanceTimingInitiatorInformation(
         ResourceTimingInfo::create(fetchInitiator, startTime, isMainResource);
   }
 
-  std::unique_ptr<ResourceTimingInfo> info =
+  RefPtr<ResourceTimingInfo> info =
       ResourceTimingInfo::create(fetchInitiator, startTime, isMainResource);
 
   if (resource->isCacheValidator()) {
@@ -767,7 +767,7 @@ void ResourceFetcher::storePerformanceTimingInitiatorInformation(
 
   if (!isMainResource ||
       context().updateTimingInfoForIFrameNavigation(info.get())) {
-    m_resourceTimingInfoMap.insert(resource, std::move(info));
+    m_resourceTimingInfoMap.insert(resource, info.release());
   }
 }
 
@@ -1171,7 +1171,7 @@ void ResourceFetcher::handleLoaderFinish(Resource* resource,
           encodedDataLength == -1 ? 0 : encodedDataLength);
     }
   }
-  if (std::unique_ptr<ResourceTimingInfo> info =
+  if (RefPtr<ResourceTimingInfo> info =
           m_resourceTimingInfoMap.take(resource)) {
     // Store redirect responses that were packed inside the final response.
     addRedirectsToTimingInfo(resource, info.get());
