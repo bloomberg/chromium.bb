@@ -92,10 +92,8 @@ void SessionController::RemoveSessionStateObserver(
 LoginStatus SessionController::GetLoginStatus() const {
   using session_manager::SessionState;
 
-  // TODO(jamescook|xiyuan): This is a temporary hack until we decide if we want
-  // to convert code using LoginStatus to use SessionState instead. There isn't
-  // a 1:1 mapping of SessionState to LoginStatus. See also
-  // WmShell::SessionStateChanged().
+  // TODO(jamescook|xiyuan): There is not a 1:1 mapping of SessionState to
+  // LoginStatus. Fix the cases that don't match. http://crbug.com/701193
   switch (state_) {
     case SessionState::UNKNOWN:
     case SessionState::OOBE:

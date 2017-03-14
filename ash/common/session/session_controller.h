@@ -86,8 +86,9 @@ class ASH_EXPORT SessionController
   void AddSessionStateObserver(SessionStateObserver* observer);
   void RemoveSessionStateObserver(SessionStateObserver* observer);
 
-  // Returns the legacy ash notion of login status.
-  // NOTE: Prefer GetSessionState() in new code.
+  // Returns the ash notion of login status.
+  // NOTE: Prefer GetSessionState() in new code because the concept of
+  // SessionState more closes matches the state in chrome.
   LoginStatus GetLoginStatus() const;
 
   // mojom::SessionController
