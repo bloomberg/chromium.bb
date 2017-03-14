@@ -1200,7 +1200,6 @@ class _ClassState(object):
 class _FileState(object):
 
     def __init__(self, clean_lines, file_extension):
-        self._did_inside_namespace_indent_warning = False
         self._clean_lines = clean_lines
         if file_extension in ['m', 'mm']:
             self._is_objective_c = True
@@ -1217,12 +1216,6 @@ class _FileState(object):
         else:
             self._is_objective_c = False
             self._is_c = False
-
-    def set_did_inside_namespace_indent_warning(self):
-        self._did_inside_namespace_indent_warning = True
-
-    def did_inside_namespace_indent_warning(self):
-        return self._did_inside_namespace_indent_warning
 
     def is_objective_c(self):
         if self._is_objective_c is None:
@@ -1821,13 +1814,6 @@ def check_enum_casing(clean_lines, line_number, enum_state, error):
     if not enum_state.process_clean_line(line):
         error(line_number, 'readability/enum_casing', 4,
               'enum members should use InterCaps with an initial capital letter.')
-
-
-def get_initial_spaces_for_line(clean_line):
-    initial_spaces = 0
-    while initial_spaces < len(clean_line) and clean_line[initial_spaces] == ' ':
-        initial_spaces += 1
-    return initial_spaces
 
 
 def check_using_std(clean_lines, line_number, file_state, error):

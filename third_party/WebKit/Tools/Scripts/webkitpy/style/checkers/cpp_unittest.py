@@ -50,10 +50,7 @@ from webkitpy.style.filter import FilterConfiguration
 # is in STYLE_CATEGORIES, to help keep that list up to date.
 
 
-class ErrorCollector:
-    _all_style_categories = CppChecker.categories
-    # This is a list including all categories seen in any unit test.
-    _seen_style_categories = {}
+class ErrorCollector(object):
 
     def __init__(self, assert_fn, filter=None, lines_to_check=None):
         """assert_fn: a function to call when we notice a problem.
@@ -62,6 +59,7 @@ class ErrorCollector:
         self._assert_fn = assert_fn
         self._errors = []
         self._lines_to_check = lines_to_check
+        self._all_style_categories = CppChecker.categories
         if not filter:
             filter = FilterConfiguration()
         self._filter = filter
@@ -75,7 +73,6 @@ class ErrorCollector:
             return False
 
         if self._filter.should_check(category, ''):
-            self._seen_style_categories[category] = 1
             self._errors.append('%s  [%s] [%d]' % (message, category, confidence))
         return True
 
@@ -87,20 +84,6 @@ class ErrorCollector:
 
     def result_list(self):
         return self._errors
-
-    def verify_all_categories_are_seen(self):
-        """Fails if there's a category in _all_style_categories - _seen_style_categories.
-
-        This should only be called after all tests are run, so
-        _seen_style_categories has had a chance to fully populate.  Since
-        this isn't called from within the normal unittest framework, we
-        can't use the normal unittest assert macros.  Instead we just exit
-        when we see an error.  Good thing this test is always run last!
-        """
-        for category in self._all_style_categories:
-            if category not in self._seen_style_categories:
-                import sys
-                sys.exit('FATAL ERROR: There are no tests for category "%s"' % category)
 
 
 class CppFunctionsTest(unittest.TestCase):
@@ -2541,9 +2524,6 @@ class CheckForFunctionLengthsTest(CppStyleTestBase):
 
     def function_body(self, number_of_lines):
         return ' {\n' + '  this_is_just_a_test();\n' * number_of_lines + '}'
-
-    def function_body_with_blank_lines(self, number_of_lines):
-        return ' {\n' + '  this_is_just_a_test();\n\n' * number_of_lines + '}'
 
     def function_body_with_no_lints(self, number_of_lines):
         return ' {\n' + '  this_is_just_a_test();  // NOLINT\n' * number_of_lines + '}'
