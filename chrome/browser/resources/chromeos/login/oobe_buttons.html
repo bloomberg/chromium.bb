@@ -42,6 +42,16 @@
 <dom-module id="oobe-text-button">
   <link rel="stylesheet" href="oobe_text_button.css">
   <template>
+    <style>
+      :root {
+        --paper-button-flat-keyboard-focus: {
+          border-color: var(--oobe-text-button-focused-border-color);
+          border-radius: 2px;
+          border-style: solid;
+          border-width: 2px;
+        };
+      }
+    </style>
     <paper-button id="textButton" on-tap="onClick_" disabled="[[disabled]]"
         inverse$="[[inverse]]" aria-label$="[[labelForAria]]">
       <div id="container"
