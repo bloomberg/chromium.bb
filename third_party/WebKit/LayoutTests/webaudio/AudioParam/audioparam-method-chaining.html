@@ -12,7 +12,7 @@
 <body>
   <script>
 
-    var sampleRate = 44100;
+    var sampleRate = 8000;
 
     // Create a dummy array for setValueCurveAtTime method.
     var curveArray = new Float32Array([5.0, 6.0]);
@@ -53,7 +53,7 @@
 
     // Task: test method chaining with invalid operation.
     audit.defineTask('invalid-operation', function (done) {
-      var context = new OfflineAudioContext(1, 44100, 44100);
+      var context = new OfflineAudioContext(1, sampleRate, sampleRate);
       var osc = context.createOscillator();
       var amp1 = context.createGain();
       var amp2 = context.createGain();

@@ -18,7 +18,7 @@
       var sampleRate = 16000;
 
       // How long to render for each test.
-      var renderDuration = 1;
+      var renderDuration = 0.5;
       // Where to end the automations.  Fairly arbitrary, but must end before
       // the renderDuration.
       var automationEndTime = renderDuration / 2;
@@ -199,7 +199,7 @@
         f.Q.linearRampToValueAtTime(parameters.Q[1], automationEndTime);
 
         context.startRendering()
-          .then(createFilterVerifier(createBandpassFilter, 1.1062e-6, parameters, b.getChannelData(0),
+          .then(createFilterVerifier(createBandpassFilter, 1.16232e-6, parameters, b.getChannelData(0),
             "Output of bandpass filter with Q automation"))
           .then(done);
       });
@@ -229,7 +229,7 @@
         f.gain.linearRampToValueAtTime(parameters.gain[1], automationEndTime);
 
         context.startRendering()
-          .then(createFilterVerifier(createLowShelfFilter, 1.4306e-5, parameters, b.getChannelData(0),
+          .then(createFilterVerifier(createLowShelfFilter, 2.7657e-5, parameters, b.getChannelData(0),
             "Output of lowshelf filter with gain automation"))
           .then(done);
       });
@@ -253,7 +253,7 @@
         f.detune.linearRampToValueAtTime(parameters.detune[1], automationEndTime);
 
         context.startRendering()
-          .then(createFilterVerifier(createBandpassFilter, 2.9535e-5, parameters, b.getChannelData(0),
+          .then(createFilterVerifier(createBandpassFilter, 3.1471e-5, parameters, b.getChannelData(0),
             "Output of bandpass filter with detune automation"))
           .then(done);
       });
