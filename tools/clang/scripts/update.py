@@ -397,8 +397,9 @@ def VeryifyVersionOfBuiltClangMatchesVERSION():
 def UpdateClang(args):
   print 'Updating Clang to %s...' % PACKAGE_VERSION
 
-  # Required for LTO, which is used when is_official_build = true.
-  need_gold_plugin = sys.platform.startswith('linux')
+  need_gold_plugin = 'LLVM_DOWNLOAD_GOLD_PLUGIN' in os.environ or (
+      sys.platform.startswith('linux') and
+      'buildtype=Official' in os.environ.get('GYP_DEFINES', ''))
 
   if ReadStampFile() == PACKAGE_VERSION and not args.force_local_build:
     print 'Clang is already up to date.'
