@@ -74,10 +74,9 @@ public class ChromeInstrumentationTestRunner extends BaseChromiumInstrumentation
                             (Class<? extends VrClassesWrapper>) Class.forName(
                                     "org.chromium.chrome.browser.vr_shell.VrClassesWrapperImpl");
                     Constructor<?> vrClassesBuilderConstructor =
-                            vrClassesBuilderClass.getConstructor(Context.class);
+                            vrClassesBuilderClass.getConstructor();
                     VrClassesWrapper vrClassesBuilder =
-                            (VrClassesWrapper) vrClassesBuilderConstructor.newInstance(
-                                    getTargetContext());
+                            (VrClassesWrapper) vrClassesBuilderConstructor.newInstance();
                     mDaydreamApi = vrClassesBuilder.createVrDaydreamApi(getTargetContext());
                 } catch (ClassNotFoundException | InstantiationException | IllegalAccessException
                         | IllegalArgumentException | InvocationTargetException

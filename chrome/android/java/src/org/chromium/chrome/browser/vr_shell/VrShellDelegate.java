@@ -722,7 +722,12 @@ public class VrShellDelegate {
         if (mVrClassesWrapper == null) return false;
         mTabModelSelector = mActivity.getCompositorViewHolder().detachForVR();
         if (mTabModelSelector == null) return false;
-        mVrShell = mVrClassesWrapper.createVrShell(mActivity, this, mTabModelSelector);
+        StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskWrites();
+        try {
+            mVrShell = mVrClassesWrapper.createVrShell(mActivity, this, mTabModelSelector);
+        } finally {
+            StrictMode.setThreadPolicy(oldPolicy);
+        }
         return mVrShell != null;
     }
 
