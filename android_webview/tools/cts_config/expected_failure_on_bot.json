@@ -3,6 +3,10 @@
     {
       "name": "testPageScroll",
       "_bug_id": "crbug.com/534643"
+    },
+    {
+      "name": "testJavascriptInterfaceForClientPopup",
+      "_bug_id": "crbug.com/698369"
     }
   ],
   "android.webkit.cts.WebSettingsTest": [
