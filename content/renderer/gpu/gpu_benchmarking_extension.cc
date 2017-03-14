@@ -61,6 +61,13 @@
 #include "ui/gfx/codec/png_codec.h"
 #include "v8/include/v8.h"
 
+#if defined(OS_WIN) && !defined(NDEBUG)
+#include <XpsObjectModel.h>
+#include "base/win/scoped_comptr.h"
+#include "skia/ext/skia_encode_image.h"
+#include "ui/gfx/codec/skia_image_encoder_adapter.h"
+#endif
+
 using blink::WebCanvas;
 using blink::WebLocalFrame;
 using blink::WebImageCache;
@@ -513,6 +520,31 @@ static void PrintDocumentTofile(v8::Isolate* isolate,
     doc->close();
   }
 }
+
+// This function is only used for correctness testing of this experimental
+// feature; no need for it in release builds.
+// Also note:  You must execute Chrome with `--no-sandbox` and
+// `--enable-gpu-benchmarking` for this to work.
+#if defined(OS_WIN) && !defined(NDEBUG)
+static sk_sp<SkDocument> MakeXPSDocument(SkWStream* s) {
+  // Hand Skia an image encoder, needed for XPS backend.
+  skia::SetImageEncoder(&gfx::EncodeSkiaImage);
+
+  // I am not sure why this hasn't been initialized yet.
+  (void)CoInitializeEx(nullptr,
+                       COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
+  // In non-sandboxed mode, we will need to create and hold on to the
+  // factory before entering the sandbox.
+  base::win::ScopedComPtr<IXpsOMObjectFactory> factory;
+  HRESULT hr = factory.CreateInstance(CLSID_XpsOMObjectFactory, nullptr,
+                                      CLSCTX_INPROC_SERVER);
+  if (FAILED(hr) || !factory) {
+    LOG(ERROR) << "CoCreateInstance(CLSID_XpsOMObjectFactory, ...) failed:"
+               << logging::SystemErrorCodeToString(hr);
+  }
+  return SkDocument::MakeXPS(s, factory.get());
+}
+#endif
 }  // namespace
 
 gin::WrapperInfo GpuBenchmarking::kWrapperInfo = {gin::kEmbedderNativeGin};
@@ -600,13 +632,18 @@ void GpuBenchmarking::SetRasterizeOnlyVisibleContent() {
 
 void GpuBenchmarking::PrintPagesToSkPictures(v8::Isolate* isolate,
                                              const std::string& filename) {
-    PrintDocumentTofile(isolate, filename, &SkMakeMultiPictureDocument);
+  PrintDocumentTofile(isolate, filename, &SkMakeMultiPictureDocument);
 }
 
 void GpuBenchmarking::PrintPagesToXPS(v8::Isolate* isolate,
                                       const std::string& filename) {
-    PrintDocumentTofile(isolate, filename,
-                        [](SkWStream* s) { return SkDocument::MakeXPS(s); });
+#if defined(OS_WIN) && !defined(NDEBUG)
+  PrintDocumentTofile(isolate, filename, &MakeXPSDocument);
+#else
+  std::string msg("PrintPagesToXPS is unsupported.");
+  isolate->ThrowException(v8::Exception::Error(v8::String::NewFromUtf8(
+      isolate, msg.c_str(), v8::String::kNormalString, msg.length())));
+#endif
 }
 
 void GpuBenchmarking::PrintToSkPicture(v8::Isolate* isolate,
