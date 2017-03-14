@@ -136,6 +136,7 @@ import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.vr_shell.VrShellDelegate;
 import org.chromium.chrome.browser.webapps.AddToHomescreenManager;
 import org.chromium.chrome.browser.widget.BottomSheet;
+import org.chromium.chrome.browser.widget.BottomSheetContentController;
 import org.chromium.chrome.browser.widget.ControlContainer;
 import org.chromium.chrome.browser.widget.EmptyBottomSheetObserver;
 import org.chromium.chrome.browser.widget.FadingBackgroundView;
@@ -368,6 +369,13 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
                 }
             });
             mFadingBackgroundView.addObserver(mBottomSheet);
+
+            BottomSheetContentController contentController =
+                    (BottomSheetContentController) ((ViewStub) findViewById(R.id.bottom_nav_stub))
+                            .inflate();
+            int controlContainerHeight =
+                    ((ControlContainer) findViewById(R.id.control_container)).getView().getHeight();
+            contentController.init(mBottomSheet, controlContainerHeight);
         }
         ((BottomContainer) findViewById(R.id.bottom_container)).initialize(mFullscreenManager);
     }

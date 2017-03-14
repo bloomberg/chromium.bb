@@ -27,3 +27,10 @@
 # implementation of org.apache.http.params.HttpParams so it can safely be
 # ignored.
 -dontwarn org.apache.http.params.HttpParams
+
+# This class member is referenced in BottomSheetBottomNav as a temporary
+# measure until the support library contains a solution for disabling shifting
+# mode. TODO(twellington): remove once support library has a fix and is rolled.
+-keepclassmembers class android.support.design.internal.BottomNavigationMenuView {
+    boolean mShiftingMode;
+}

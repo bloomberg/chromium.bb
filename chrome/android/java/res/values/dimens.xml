@@ -407,12 +407,19 @@
     <dimen name="downloads_item_file_type_icon_padding">12dp</dimen>
     <dimen name="downloads_item_margin">16dp</dimen>
 
-    <!-- SelectableListLayout styles -->
+    <!-- SelectableListLayout dimensions -->
     <dimen name="selectable_list_layout_end_icon">24dp</dimen>
     <dimen name="selectable_list_layout_row_end_padding">16dp</dimen>
     <dimen name="selectable_list_layout_start_icon_width">56dp</dimen>
     <dimen name="toolbar_wide_display_nav_icon_offset">-18dp</dimen>
     <dimen name="toolbar_wide_display_end_offset">-14dp</dimen>
+
+    <!-- Bottom sheet bottom nav dimensions -->
+    <dimen name="bottom_nav_height">56dp</dimen>
+    <dimen name="bottom_nav_space_from_toolbar">96dp</dimen>
+    <!-- The following two dimensions override defaults in Android's BottomNavigationView -->
+    <dimen name="design_bottom_navigation_text_size">12sp</dimen>
+    <dimen name="design_bottom_navigation_active_text_size">14sp</dimen>
 
     <!--  Miscellaneous dimensions -->
     <dimen name="action_bar_shadow_height">10dp</dimen>

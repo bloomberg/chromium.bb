@@ -446,6 +446,22 @@ public class BottomSheet
     }
 
     /**
+     * Gets the minimum offset of the bottom sheet.
+     * @return The min offset.
+     */
+    public float getMinOffset() {
+        return getPeekRatio() * mContainerHeight;
+    }
+
+    /**
+     * Gets the sheet's offset from the bottom of the screen.
+     * @return The sheet's distance from the bottom of the screen.
+     */
+    public float getSheetOffsetFromBottom() {
+        return mContainerHeight - getTranslationY();
+    }
+
+    /**
      * Determines if a touch event is inside the toolbar. This assumes the toolbar is the full
      * width of the screen and that the toolbar is at the top of the bottom sheet.
      * @param e The motion event to test.
@@ -592,22 +608,6 @@ public class BottomSheet
      */
     private float getMaxOffset() {
         return getFullRatio() * mContainerHeight;
-    }
-
-    /**
-     * Gets the minimum offset of the bottom sheet.
-     * @return The min offset.
-     */
-    private float getMinOffset() {
-        return getPeekRatio() * mContainerHeight;
-    }
-
-    /**
-     * Gets the sheet's offset from the bottom of the screen.
-     * @return The sheet's distance from the bottom of the screen.
-     */
-    private float getSheetOffsetFromBottom() {
-        return mContainerHeight - getTranslationY();
     }
 
     /**
