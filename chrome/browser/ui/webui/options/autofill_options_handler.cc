@@ -28,7 +28,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/autofill/core/browser/autofill_country.h"
+#include "components/autofill/core/browser/autofill_address_util.h"
 #include "components/autofill/core/browser/autofill_data_util.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/country_combobox_model.h"
@@ -41,31 +41,15 @@
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_ui.h"
 #include "third_party/libaddressinput/messages.h"
-#include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_ui.h"
-#include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_ui_component.h"
-#include "third_party/libaddressinput/src/cpp/include/libaddressinput/localization.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/webui/web_ui_util.h"
 
-using autofill::AutofillCountry;
 using autofill::AutofillType;
-using autofill::ServerFieldType;
 using autofill::AutofillProfile;
 using autofill::CreditCard;
 using autofill::PersonalDataManager;
-using i18n::addressinput::AddressUiComponent;
 
 namespace {
-
-static const char kFullNameField[] = "fullName";
-static const char kCompanyNameField[] = "companyName";
-static const char kAddressLineField[] = "addrLines";
-static const char kDependentLocalityField[] = "dependentLocality";
-static const char kCityField[] = "city";
-static const char kStateField[] = "state";
-static const char kPostalCodeField[] = "postalCode";
-static const char kSortingCodeField[] = "sortingCode";
-static const char kCountryField[] = "country";
 
 static const char kComponents[] = "components";
 static const char kLanguageCode[] = "languageCode";
@@ -81,126 +65,6 @@ std::unique_ptr<base::DictionaryValue> CreditCardToDictionary(
   value->SetBoolean("isCached",
                     card.record_type() == CreditCard::FULL_SERVER_CARD);
   return value;
-}
-
-// Fills |components| with the address UI components that should be used to
-// input an address for |country_code| when UI BCP 47 language code is
-// |ui_language_code|. If |components_language_code| is not NULL, then sets it
-// to the BCP 47 language code that should be used to format the address for
-// display.
-void GetAddressComponents(const std::string& country_code,
-                          const std::string& ui_language_code,
-                          base::ListValue* address_components,
-                          std::string* components_language_code) {
-  DCHECK(address_components);
-
-  i18n::addressinput::Localization localization;
-  localization.SetGetter(l10n_util::GetStringUTF8);
-  std::string not_used;
-  std::vector<AddressUiComponent> components =
-      i18n::addressinput::BuildComponents(
-          country_code, localization, ui_language_code,
-          components_language_code ? components_language_code : &not_used);
-  if (components.empty()) {
-    static const char kDefaultCountryCode[] = "US";
-    components = i18n::addressinput::BuildComponents(
-        kDefaultCountryCode, localization, ui_language_code,
-        components_language_code ? components_language_code : &not_used);
-  }
-  DCHECK(!components.empty());
-
-  base::ListValue* line = nullptr;
-  static const char kField[] = "field";
-  static const char kLength[] = "length";
-  for (size_t i = 0; i < components.size(); ++i) {
-    if (i == 0 ||
-        components[i - 1].length_hint == AddressUiComponent::HINT_LONG ||
-        components[i].length_hint == AddressUiComponent::HINT_LONG) {
-      line = new base::ListValue;
-      address_components->Append(base::WrapUnique(line));
-    }
-
-    std::unique_ptr<base::DictionaryValue> component(new base::DictionaryValue);
-    component->SetString("name", components[i].name);
-
-    switch (components[i].field) {
-      case i18n::addressinput::COUNTRY:
-        component->SetString(kField, kCountryField);
-        break;
-      case i18n::addressinput::ADMIN_AREA:
-        component->SetString(kField, kStateField);
-        break;
-      case i18n::addressinput::LOCALITY:
-        component->SetString(kField, kCityField);
-        break;
-      case i18n::addressinput::DEPENDENT_LOCALITY:
-        component->SetString(kField, kDependentLocalityField);
-        break;
-      case i18n::addressinput::SORTING_CODE:
-        component->SetString(kField, kSortingCodeField);
-        break;
-      case i18n::addressinput::POSTAL_CODE:
-        component->SetString(kField, kPostalCodeField);
-        break;
-      case i18n::addressinput::STREET_ADDRESS:
-        component->SetString(kField, kAddressLineField);
-        break;
-      case i18n::addressinput::ORGANIZATION:
-        component->SetString(kField, kCompanyNameField);
-        break;
-      case i18n::addressinput::RECIPIENT:
-        component->SetString(kField, kFullNameField);
-        break;
-    }
-
-    switch (components[i].length_hint) {
-      case AddressUiComponent::HINT_LONG:
-        component->SetString(kLength, "long");
-        break;
-      case AddressUiComponent::HINT_SHORT:
-        component->SetString(kLength, "short");
-        break;
-    }
-
-    line->Append(std::move(component));
-  }
-}
-
-// Sets data related to the country <select>.
-void SetCountryData(const PersonalDataManager& manager,
-                    base::DictionaryValue* localized_strings,
-                    const std::string& ui_language_code) {
-  autofill::CountryComboboxModel model;
-  model.SetCountries(manager, base::Callback<bool(const std::string&)>(),
-                     ui_language_code);
-  const std::vector<std::unique_ptr<autofill::AutofillCountry>>& countries =
-      model.countries();
-  localized_strings->SetString("defaultCountryCode",
-                               countries.front()->country_code());
-
-  // An ordered list of options to show in the <select>.
-  std::unique_ptr<base::ListValue> country_list(new base::ListValue());
-  for (size_t i = 0; i < countries.size(); ++i) {
-    std::unique_ptr<base::DictionaryValue> option_details(
-        new base::DictionaryValue());
-    option_details->SetString("name", model.GetItemAt(i));
-    option_details->SetString(
-        "value",
-        countries[i] ? countries[i]->country_code() : "separator");
-    country_list->Append(std::move(option_details));
-  }
-  localized_strings->Set("autofillCountrySelectList", country_list.release());
-
-  std::unique_ptr<base::ListValue> default_country_components(
-      new base::ListValue);
-  std::string default_country_language_code;
-  GetAddressComponents(countries.front()->country_code(), ui_language_code,
-                       default_country_components.get(),
-                       &default_country_language_code);
-  localized_strings->Set("autofillDefaultCountryComponents",
-                         default_country_components.release());
-  localized_strings->SetString("autofillDefaultCountryLanguageCode",
-                               default_country_language_code);
 }
 
 }  // namespace
@@ -423,8 +287,9 @@ void AutofillOptionsHandler::LoadAddressEditorComponents(
   base::DictionaryValue input;
   std::unique_ptr<base::ListValue> components(new base::ListValue);
   std::string language_code;
-  GetAddressComponents(country_code, g_browser_process->GetApplicationLocale(),
-                       components.get(), &language_code);
+  autofill::GetAddressComponents(country_code,
+                                 g_browser_process->GetApplicationLocale(),
+                                 components.get(), &language_code);
   input.Set(kComponents, components.release());
   input.SetString(kLanguageCode, language_code);
 
@@ -607,25 +472,25 @@ void AutofillOptionsHandler::AutofillProfileToDictionary(
     base::DictionaryValue* address) {
   address->SetString("guid", profile.guid());
   address->SetString(
-      kFullNameField,
+      autofill::kFullNameField,
       profile.GetInfo(AutofillType(autofill::NAME_FULL),
                       g_browser_process->GetApplicationLocale()));
-  address->SetString(kCompanyNameField,
+  address->SetString(autofill::kCompanyNameField,
                      profile.GetRawInfo(autofill::COMPANY_NAME));
-  address->SetString(kAddressLineField,
+  address->SetString(autofill::kAddressLineField,
                      profile.GetRawInfo(autofill::ADDRESS_HOME_STREET_ADDRESS));
-  address->SetString(kCityField,
+  address->SetString(autofill::kCityField,
                      profile.GetRawInfo(autofill::ADDRESS_HOME_CITY));
-  address->SetString(kStateField,
+  address->SetString(autofill::kStateField,
                      profile.GetRawInfo(autofill::ADDRESS_HOME_STATE));
   address->SetString(
-      kDependentLocalityField,
+      autofill::kDependentLocalityField,
       profile.GetRawInfo(autofill::ADDRESS_HOME_DEPENDENT_LOCALITY));
-  address->SetString(kSortingCodeField,
+  address->SetString(autofill::kSortingCodeField,
                      profile.GetRawInfo(autofill::ADDRESS_HOME_SORTING_CODE));
-  address->SetString(kPostalCodeField,
+  address->SetString(autofill::kPostalCodeField,
                      profile.GetRawInfo(autofill::ADDRESS_HOME_ZIP));
-  address->SetString(kCountryField,
+  address->SetString(autofill::kCountryField,
                      profile.GetRawInfo(autofill::ADDRESS_HOME_COUNTRY));
   address->SetString("phone",
                      profile.GetRawInfo(autofill::PHONE_HOME_WHOLE_NUMBER));
@@ -633,7 +498,7 @@ void AutofillOptionsHandler::AutofillProfileToDictionary(
   address->SetString(kLanguageCode, profile.language_code());
 
   std::unique_ptr<base::ListValue> components(new base::ListValue);
-  GetAddressComponents(
+  autofill::GetAddressComponents(
       base::UTF16ToUTF8(profile.GetRawInfo(autofill::ADDRESS_HOME_COUNTRY)),
       profile.language_code(), components.get(), nullptr);
   address->Set(kComponents, components.release());

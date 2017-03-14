@@ -18,6 +18,8 @@ static_library("browser") {
     "autocomplete_history_manager.cc",
     "autocomplete_history_manager.h",
     "autofill-inl.h",
+    "autofill_address_util.cc",
+    "autofill_address_util.h",
     "autofill_client.h",
     "autofill_country.cc",
     "autofill_country.h",
