@@ -3,4 +3,5 @@ include_rules = [
  "+components/constrained_window",
  "+services/ui/public/cpp",
  "+components/user_manager",
+ "+third_party/libaddressinput",
 ]

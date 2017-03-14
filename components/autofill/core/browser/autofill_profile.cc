@@ -48,8 +48,8 @@
 
 using base::ASCIIToUTF16;
 using base::UTF16ToUTF8;
-using i18n::addressinput::AddressData;
-using i18n::addressinput::AddressField;
+using ::i18n::addressinput::AddressData;
+using ::i18n::addressinput::AddressField;
 
 namespace autofill {
 namespace {

@@ -6,6 +6,8 @@
 
 #include <utility>
 
+#include "ui/base/models/combobox_model.h"
+
 namespace payments {
 
 ValidatingCombobox::ValidatingCombobox(
@@ -13,7 +15,10 @@ ValidatingCombobox::ValidatingCombobox(
     std::unique_ptr<ValidationDelegate> delegate)
     : Combobox(std::move(model)),
       delegate_(std::move(delegate)),
-      was_blurred_(false) {}
+      was_blurred_(false) {
+  // No need to remove observer on owned model.
+  this->model()->AddObserver(this);
+}
 
 ValidatingCombobox::~ValidatingCombobox() {}
 
@@ -35,6 +40,11 @@ void ValidatingCombobox::OnContentsChanged() {
     return;
 
   Validate();
+}
+
+void ValidatingCombobox::OnComboboxModelChanged(
+    ui::ComboboxModel* unused_model) {
+  ModelChanged();
 }
 
 void ValidatingCombobox::Validate() {

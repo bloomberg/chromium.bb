@@ -5,13 +5,17 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_PAYMENTS_VALIDATING_COMBOBOX_H_
 #define CHROME_BROWSER_UI_VIEWS_PAYMENTS_VALIDATING_COMBOBOX_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "chrome/browser/ui/views/payments/validation_delegate.h"
+#include "ui/base/models/combobox_model_observer.h"
 #include "ui/views/controls/combobox/combobox.h"
 
 namespace payments {
 
-class ValidatingCombobox : public views::Combobox {
+class ValidatingCombobox : public views::Combobox,
+                           public ui::ComboboxModelObserver {
  public:
   ValidatingCombobox(std::unique_ptr<ui::ComboboxModel> model,
                      std::unique_ptr<ValidationDelegate> delegate);
@@ -23,6 +27,9 @@ class ValidatingCombobox : public views::Combobox {
 
   // Called when the combobox contents is changed. May do validation.
   void OnContentsChanged();
+
+  // ui::ComboboxModelObserver:
+  void OnComboboxModelChanged(ui::ComboboxModel* model) override;
 
  private:
   // Will call to the ValidationDelegate to validate the contents of the

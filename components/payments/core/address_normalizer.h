@@ -49,8 +49,8 @@ class AddressNormalizer : public autofill::LoadRulesListener {
     virtual ~Request() {}
   };
 
-  AddressNormalizer(std::unique_ptr<i18n::addressinput::Source> source,
-                    std::unique_ptr<i18n::addressinput::Storage> storage);
+  AddressNormalizer(std::unique_ptr<::i18n::addressinput::Source> source,
+                    std::unique_ptr<::i18n::addressinput::Storage> storage);
   ~AddressNormalizer() override;
 
   // Start loading the validation rules for the specified |region_code|.

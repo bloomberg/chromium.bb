@@ -343,4 +343,10 @@
   <message name="IDS_AUTOFILL_DIALOG_PLACEHOLDER_CVC" desc="The placeholder/label text for credit card verification code in the requestAutocomplete dialog.">
     CVC
   </message>
+  <message name="IDS_AUTOFILL_LOADING_REGIONS" desc="The string to display in the regions combo box while loading the region data.">
+    Loading...
+  </message>
+  <message name="IDS_AUTOFILL_FAILED_LOADING_REGIONS" desc="The string to display in the regions combo box when loading the region data failed.">
+    Failed loading regions data
+  </message>
 </grit-part>

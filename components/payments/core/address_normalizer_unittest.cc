@@ -4,6 +4,8 @@
 
 #include "components/payments/core/address_normalizer.h"
 
+#include <utility>
+
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_task_scheduler.h"
@@ -75,8 +77,8 @@ class ChromiumTestdataSource : public TestdataSource {
 // loaded.
 class TestAddressNormalizer : public AddressNormalizer {
  public:
-  TestAddressNormalizer(std::unique_ptr<i18n::addressinput::Source> source,
-                        std::unique_ptr<i18n::addressinput::Storage> storage)
+  TestAddressNormalizer(std::unique_ptr<::i18n::addressinput::Source> source,
+                        std::unique_ptr<::i18n::addressinput::Storage> storage)
       : AddressNormalizer(std::move(source), std::move(storage)),
         should_load_rules_(true) {}
 
