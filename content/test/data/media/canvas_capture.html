@@ -43,7 +43,7 @@ function drawOffscreenCanvasCommit(canvas, drawCounter) {
 
 function drawBitmapRenderer(canvas, drawCounter) {
   var gl = canvas.getContext('bitmaprenderer');
-  var offscreen = new OffscreenCanvas(64, 48);
+  var offscreen = new OffscreenCanvas(canvas.width, canvas.height);
   var ctx = offscreen.getContext('2d');
   ctx.fillStyle = 'green';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -54,7 +54,6 @@ function drawBitmapRenderer(canvas, drawCounter) {
 function testCanvasCapture(drawFunction) {
   var canvas = document.createElement('canvas');
   canvas.width = canvas.height = 64;
-  document.body.appendChild(canvas);
 
   var stream = canvas.captureStream();
   assertTrue(stream, 'Error creating MediaStream');

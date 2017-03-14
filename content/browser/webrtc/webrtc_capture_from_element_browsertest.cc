@@ -88,10 +88,8 @@ IN_PROC_BROWSER_TEST_F(WebRtcCaptureFromElementBrowserTest,
   MakeTypicalCall("testCanvasCapture(drawWebGL);", kCanvasCaptureTestHtmlFile);
 }
 
-// This test causes GL related issues on Win and Mac: https://crbug.com/695452.
-IN_PROC_BROWSER_TEST_F(
-    WebRtcCaptureFromElementBrowserTest,
-    DISABLED_VerifyCanvasCaptureOffscreenCanvasCommitFrames) {
+IN_PROC_BROWSER_TEST_F(WebRtcCaptureFromElementBrowserTest,
+                       VerifyCanvasCaptureOffscreenCanvasCommitFrames) {
   MakeTypicalCall("testCanvasCapture(drawOffscreenCanvasCommit);",
                   kCanvasCaptureTestHtmlFile);
 }
