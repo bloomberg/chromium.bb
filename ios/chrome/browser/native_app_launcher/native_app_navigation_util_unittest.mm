@@ -4,47 +4,36 @@
 
 #include "ios/chrome/browser/native_app_launcher/native_app_navigation_util.h"
 
-#import "ios/web/navigation/crw_session_controller.h"
-#import "ios/web/navigation/navigation_manager_impl.h"
-#include "ios/web/public/referrer.h"
-#include "ios/web/public/test/web_test.h"
-#import "ios/web/web_state/web_state_impl.h"
+#include "base/memory/ptr_util.h"
+#import "ios/web/public/test/fakes/test_navigation_manager.h"
+#import "ios/web/public/test/fakes/test_web_state.h"
+#include "testing/platform_test.h"
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
 
-namespace {
-
-class NativeAppNavigationUtilsTest : public web::WebTest {
+// Tests the implementation of IsLinkNavigation(). The function being tested
+// uses public NavigationManager interfaces and can be tested by using
+// TestNavigationManager that implements the same interface.
+class NativeAppNavigationUtilsTest : public PlatformTest {
  protected:
   void SetUp() override {
-    web::WebTest::SetUp();
-    // WebStateImpl object is needed here to have access to CRWSessionController
-    // for setting up NavigationManager entries.
-    std::unique_ptr<web::WebStateImpl> web_state(
-        new web::WebStateImpl(GetBrowserState()));
-    web_state->GetNavigationManagerImpl().InitializeSession(NO);
-    web_state->SetWebUsageEnabled(true);
-    web_state_.reset(web_state.release());
+    PlatformTest::SetUp();
+    std::unique_ptr<web::TestNavigationManager> test_navigation_manager =
+        base::MakeUnique<web::TestNavigationManager>();
+    test_navigation_manager_ = test_navigation_manager.get();
+    test_web_state_.SetNavigationManager(std::move(test_navigation_manager));
   }
 
-  void TearDown() override {
-    web_state_.reset();
-    web::WebTest::TearDown();
-  }
+  web::WebState* web_state() { return &test_web_state_; }
 
-  web::WebState* web_state() { return web_state_->GetWebState(); }
-
+  // Adds a navigation item of |transition| type to current WebState.
   void AddItem(const std::string& url_spec, ui::PageTransition transition) {
-    CRWSessionController* session_controller =
-        web_state_->GetNavigationManagerImpl().GetSessionController();
-    web_state_->GetNavigationManagerImpl().AddPendingItem(
-        GURL(url_spec), web::Referrer(), transition,
-        web::NavigationInitiationType::USER_INITIATED);
-    [session_controller commitPendingItem];
+    test_navigation_manager_->AddItem(GURL(url_spec), transition);
   }
 
  private:
-  std::unique_ptr<web::WebStateImpl> web_state_;
+  web::TestNavigationManager* test_navigation_manager_;
+  web::TestWebState test_web_state_;
 };
 
 // Tests that default state is not a link click.
@@ -95,5 +84,3 @@ TEST_F(NativeAppNavigationUtilsTest, TestTypedUrlWithRedirectEarlier) {
   AddItem("http://blah.com/page2", ui::PAGE_TRANSITION_TYPED);
   EXPECT_FALSE(native_app_launcher::IsLinkNavigation(web_state()));
 }
-
-}  // namespace

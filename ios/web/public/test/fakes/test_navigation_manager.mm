@@ -7,7 +7,8 @@
 namespace web {
 
 TestNavigationManager::TestNavigationManager()
-    : pending_item_(nullptr),
+    : items_index_(-1),
+      pending_item_(nullptr),
       last_committed_item_(nullptr),
       visible_item_(nullptr) {}
 
@@ -71,18 +72,20 @@ void TestNavigationManager::AddTransientURLRewriter(
 }
 
 int TestNavigationManager::GetItemCount() const {
-  NOTREACHED();
-  return 0;
+  return items_.size();
 }
 
 web::NavigationItem* TestNavigationManager::GetItemAtIndex(size_t index) const {
-  NOTREACHED();
-  return nullptr;
+  return items_[index].get();
 }
 
 int TestNavigationManager::GetCurrentItemIndex() const {
-  NOTREACHED();
-  return 0;
+  return items_index_;
+}
+
+void TestNavigationManager::SetCurrentItemIndex(const int index) {
+  DCHECK(index == -1 || index >= 0 && index < GetItemCount());
+  items_index_ = index;
 }
 
 int TestNavigationManager::GetLastCommittedItemIndex() const {
@@ -96,8 +99,13 @@ int TestNavigationManager::GetPendingItemIndex() const {
 }
 
 bool TestNavigationManager::RemoveItemAtIndex(int index) {
-  NOTREACHED();
-  return false;
+  if (index < 0 || index >= GetItemCount())
+    return false;
+  DCHECK(items_index_ != index);
+  items_.erase(items_.begin() + index);
+  if (items_index_ > index)
+    --items_index_;
+  return true;
 }
 
 bool TestNavigationManager::CanGoBack() const {
@@ -144,6 +152,16 @@ NavigationItemList TestNavigationManager::GetForwardItems() const {
 
 void TestNavigationManager::OverrideDesktopUserAgentForNextPendingItem() {
   NOTREACHED();
+}
+
+// Adds a new navigation item of |transition| type at the end of this
+// navigation manager.
+void TestNavigationManager::AddItem(const GURL& url,
+                                    ui::PageTransition transition) {
+  items_.push_back(web::NavigationItem::Create());
+  items_.back()->SetTransitionType(transition);
+  items_.back()->SetURL(url);
+  SetCurrentItemIndex(GetItemCount() - 1);
 }
 
 }  // namespace web
