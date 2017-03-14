@@ -1038,7 +1038,7 @@ bool WaitForRenderFrameReady(RenderFrameHost* rfh) {
 void EnableAccessibilityForWebContents(WebContents* web_contents) {
   WebContentsImpl* web_contents_impl =
       static_cast<WebContentsImpl*>(web_contents);
-  web_contents_impl->SetAccessibilityMode(ACCESSIBILITY_MODE_COMPLETE);
+  web_contents_impl->SetAccessibilityMode(kAccessibilityModeComplete);
 }
 
 void WaitForAccessibilityFocusChange() {

@@ -39,9 +39,9 @@ class AndroidGranularityMovementBrowserTest : public ContentBrowserTest {
     NavigateToURL(shell(), GURL(url::kAboutBlankURL));
 
     // Load the page.
-    AccessibilityNotificationWaiter waiter(
-        shell()->web_contents(), ACCESSIBILITY_MODE_COMPLETE,
-        ui::AX_EVENT_LOAD_COMPLETE);
+    AccessibilityNotificationWaiter waiter(shell()->web_contents(),
+                                           kAccessibilityModeComplete,
+                                           ui::AX_EVENT_LOAD_COMPLETE);
     NavigateToURL(shell(), url);
     waiter.WaitForNotification();
 
@@ -69,9 +69,9 @@ class AndroidGranularityMovementBrowserTest : public ContentBrowserTest {
   base::string16 TraverseNodeAtGranularity(
       BrowserAccessibility* node,
       int granularity) {
-    AccessibilityNotificationWaiter waiter(
-        shell()->web_contents(), ACCESSIBILITY_MODE_COMPLETE,
-        ui::AX_EVENT_TREE_CHANGED);
+    AccessibilityNotificationWaiter waiter(shell()->web_contents(),
+                                           kAccessibilityModeComplete,
+                                           ui::AX_EVENT_TREE_CHANGED);
     node->manager()->SetAccessibilityFocus(*node);
     waiter.WaitForNotification();
 

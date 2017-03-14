@@ -87,8 +87,7 @@ void BrowserAccessibilityManagerWin::OnIAccessible2Used() {
   // enable basic web accessibility support. (Full screen reader support is
   // detected later when specific more advanced APIs are accessed.)
   BrowserAccessibilityStateImpl::GetInstance()->AddAccessibilityModeFlags(
-      ACCESSIBILITY_MODE_FLAG_NATIVE_APIS |
-      ACCESSIBILITY_MODE_FLAG_WEB_CONTENTS);
+      AccessibilityMode::kNativeAPIs | AccessibilityMode::kWebContents);
 }
 
 void BrowserAccessibilityManagerWin::UserIsReloading() {

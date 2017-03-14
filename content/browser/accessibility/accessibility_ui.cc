@@ -81,7 +81,7 @@ std::unique_ptr<base::DictionaryValue> BuildTargetDescriptor(
   target_data->SetString(kNameField, net::EscapeForHTML(name));
   target_data->SetInteger(kPidField, base::GetProcId(handle));
   target_data->SetString(kFaviconUrlField, favicon_url.spec());
-  target_data->SetInteger(kAccessibilityModeField, accessibility_mode);
+  target_data->SetInteger(kAccessibilityModeField, accessibility_mode.mode());
   return target_data;
 }
 
@@ -89,7 +89,7 @@ std::unique_ptr<base::DictionaryValue> BuildTargetDescriptor(
     RenderViewHost* rvh) {
   WebContentsImpl* web_contents = static_cast<WebContentsImpl*>(
       WebContents::FromRenderViewHost(rvh));
-  AccessibilityMode accessibility_mode = AccessibilityModeOff;
+  AccessibilityMode accessibility_mode;
 
   std::string title;
   GURL url;
@@ -147,11 +147,11 @@ bool HandleRequestCallback(BrowserContext* current_context,
       BrowserAccessibilityStateImpl::GetInstance()->accessibility_mode();
   bool disabled = base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kDisableRendererAccessibility);
-  bool native = 0 != (mode & ACCESSIBILITY_MODE_FLAG_NATIVE_APIS);
-  bool web = 0 != (mode & ACCESSIBILITY_MODE_FLAG_WEB_CONTENTS);
-  bool text = 0 != (mode & ACCESSIBILITY_MODE_FLAG_INLINE_TEXT_BOXES);
-  bool screenreader = 0 != (mode & ACCESSIBILITY_MODE_FLAG_SCREEN_READER);
-  bool html = 0 != (mode & ACCESSIBILITY_MODE_FLAG_HTML);
+  bool native = mode.has_mode(AccessibilityMode::kNativeAPIs);
+  bool web = mode.has_mode(AccessibilityMode::kWebContents);
+  bool text = mode.has_mode(AccessibilityMode::kInlineTextBoxes);
+  bool screenreader = mode.has_mode(AccessibilityMode::kScreenReader);
+  bool html = mode.has_mode(AccessibilityMode::kHTML);
 
   // The "native" and "web" flags are disabled if
   // --disable-renderer-accessibility is set.
@@ -223,6 +223,7 @@ void AccessibilityUI::ToggleAccessibility(const base::ListValue* args) {
   CHECK_EQ(3U, args->GetSize());
   CHECK(args->GetString(0, &process_id_str));
   CHECK(args->GetString(1, &route_id_str));
+  // TODO(695247): We should pass each ax flag seperately
   CHECK(args->GetInteger(2, &mode));
   CHECK(base::StringToInt(process_id_str, &process_id));
   CHECK(base::StringToInt(route_id_str, &route_id));
@@ -233,9 +234,22 @@ void AccessibilityUI::ToggleAccessibility(const base::ListValue* args) {
   auto* web_contents =
       static_cast<WebContentsImpl*>(WebContents::FromRenderViewHost(rvh));
   AccessibilityMode current_mode = web_contents->GetAccessibilityMode();
-  // Flip the bits represented by |mode|. See accessibility_mode_enums.h for
-  // values.
-  current_mode ^= mode;
+
+  if (mode & AccessibilityMode::kNativeAPIs)
+    current_mode.set_mode(AccessibilityMode::kNativeAPIs, true);
+
+  if (mode & AccessibilityMode::kWebContents)
+    current_mode.set_mode(AccessibilityMode::kWebContents, true);
+
+  if (mode & AccessibilityMode::kInlineTextBoxes)
+    current_mode.set_mode(AccessibilityMode::kInlineTextBoxes, true);
+
+  if (mode & AccessibilityMode::kScreenReader)
+    current_mode.set_mode(AccessibilityMode::kScreenReader, true);
+
+  if (mode & AccessibilityMode::kHTML)
+    current_mode.set_mode(AccessibilityMode::kHTML, true);
+
   web_contents->SetAccessibilityMode(current_mode);
 }
 
@@ -254,15 +268,15 @@ void AccessibilityUI::SetGlobalFlag(const base::ListValue* args) {
 
   AccessibilityMode new_mode;
   if (flag_name_str == kNative) {
-    new_mode = ACCESSIBILITY_MODE_FLAG_NATIVE_APIS;
+    new_mode = AccessibilityMode::kNativeAPIs;
   } else if (flag_name_str == kWeb) {
-    new_mode = ACCESSIBILITY_MODE_FLAG_WEB_CONTENTS;
+    new_mode = AccessibilityMode::kWebContents;
   } else if (flag_name_str == kText) {
-    new_mode = ACCESSIBILITY_MODE_FLAG_INLINE_TEXT_BOXES;
+    new_mode = AccessibilityMode::kInlineTextBoxes;
   } else if (flag_name_str == kScreenReader) {
-    new_mode = ACCESSIBILITY_MODE_FLAG_SCREEN_READER;
+    new_mode = AccessibilityMode::kScreenReader;
   } else if (flag_name_str == kHTML) {
-    new_mode = ACCESSIBILITY_MODE_FLAG_HTML;
+    new_mode = AccessibilityMode::kHTML;
   } else {
     NOTREACHED();
     return;
@@ -270,19 +284,18 @@ void AccessibilityUI::SetGlobalFlag(const base::ListValue* args) {
 
   // It doesn't make sense to enable one of the flags that depends on
   // web contents without enabling web contents accessibility too.
-  if (enabled &&
-      (new_mode == ACCESSIBILITY_MODE_FLAG_INLINE_TEXT_BOXES ||
-       new_mode == ACCESSIBILITY_MODE_FLAG_SCREEN_READER ||
-       new_mode == ACCESSIBILITY_MODE_FLAG_HTML)) {
-    new_mode |= ACCESSIBILITY_MODE_FLAG_WEB_CONTENTS;
+  if (enabled && (new_mode.has_mode(AccessibilityMode::kInlineTextBoxes) ||
+                  new_mode.has_mode(AccessibilityMode::kScreenReader) ||
+                  new_mode.has_mode(AccessibilityMode::kHTML))) {
+    new_mode.set_mode(AccessibilityMode::kWebContents, true);
   }
 
   // Similarly if you disable web accessibility we should remove all
   // flags that depend on it.
-  if (!enabled && new_mode == ACCESSIBILITY_MODE_FLAG_WEB_CONTENTS) {
-    new_mode |= ACCESSIBILITY_MODE_FLAG_INLINE_TEXT_BOXES;
-    new_mode |= ACCESSIBILITY_MODE_FLAG_SCREEN_READER;
-    new_mode |= ACCESSIBILITY_MODE_FLAG_HTML;
+  if (!enabled && new_mode.has_mode(AccessibilityMode::kWebContents)) {
+    new_mode.set_mode(AccessibilityMode::kInlineTextBoxes, true);
+    new_mode.set_mode(AccessibilityMode::kScreenReader, true);
+    new_mode.set_mode(AccessibilityMode::kHTML, true);
   }
 
   BrowserAccessibilityStateImpl* state =
@@ -320,8 +333,9 @@ void AccessibilityUI::RequestAccessibilityTree(const base::ListValue* args) {
       static_cast<WebContentsImpl*>(WebContents::FromRenderViewHost(rvh));
   // No matter the state of the current web_contents, we want to force the mode
   // because we are about to show the accessibility tree
-  web_contents->SetAccessibilityMode(ACCESSIBILITY_MODE_FLAG_NATIVE_APIS |
-                                     ACCESSIBILITY_MODE_FLAG_WEB_CONTENTS);
+  web_contents->SetAccessibilityMode(AccessibilityMode(
+      AccessibilityMode::kNativeAPIs | AccessibilityMode::kWebContents));
+
   std::unique_ptr<AccessibilityTreeFormatter> formatter;
   if (g_show_internal_accessibility_tree)
     formatter.reset(new AccessibilityTreeFormatterBlink());

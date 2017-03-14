@@ -1978,8 +1978,8 @@ void RenderFrameHostImpl::OnAccessibilityEvents(
   RenderWidgetHostViewBase* view = GetViewForAccessibility();
 
   AccessibilityMode accessibility_mode = delegate_->GetAccessibilityMode();
-  if ((accessibility_mode != AccessibilityModeOff) && view && is_active()) {
-    if (accessibility_mode & ACCESSIBILITY_MODE_FLAG_NATIVE_APIS)
+  if (!accessibility_mode.is_mode_off() && view && is_active()) {
+    if (accessibility_mode.has_mode(AccessibilityMode::kNativeAPIs))
       GetOrCreateBrowserAccessibilityManager();
 
     std::vector<AXEventNotificationDetails> details;
@@ -2006,7 +2006,7 @@ void RenderFrameHostImpl::OnAccessibilityEvents(
       details.push_back(detail);
     }
 
-    if (accessibility_mode & ACCESSIBILITY_MODE_FLAG_NATIVE_APIS) {
+    if (accessibility_mode.has_mode(AccessibilityMode::kNativeAPIs)) {
       if (browser_accessibility_manager_)
         browser_accessibility_manager_->OnAccessibilityEvents(details);
     }
@@ -2051,7 +2051,7 @@ void RenderFrameHostImpl::OnAccessibilityLocationChanges(
       render_view_host_->GetWidget()->GetView());
   if (view && is_active()) {
     AccessibilityMode accessibility_mode = delegate_->GetAccessibilityMode();
-    if (accessibility_mode & ACCESSIBILITY_MODE_FLAG_NATIVE_APIS) {
+    if (accessibility_mode.has_mode(AccessibilityMode::kNativeAPIs)) {
       BrowserAccessibilityManager* manager =
           GetOrCreateBrowserAccessibilityManager();
       if (manager)
@@ -2076,7 +2076,7 @@ void RenderFrameHostImpl::OnAccessibilityLocationChanges(
 void RenderFrameHostImpl::OnAccessibilityFindInPageResult(
     const AccessibilityHostMsg_FindInPageResultParams& params) {
   AccessibilityMode accessibility_mode = delegate_->GetAccessibilityMode();
-  if (accessibility_mode & ACCESSIBILITY_MODE_FLAG_NATIVE_APIS) {
+  if (accessibility_mode.has_mode(AccessibilityMode::kNativeAPIs)) {
     BrowserAccessibilityManager* manager =
         GetOrCreateBrowserAccessibilityManager();
     if (manager) {
@@ -2946,8 +2946,8 @@ bool RenderFrameHostImpl::IsSameSiteInstance(
 }
 
 void RenderFrameHostImpl::UpdateAccessibilityMode() {
-  AccessibilityMode accessibility_mode = delegate_->GetAccessibilityMode();
-  Send(new FrameMsg_SetAccessibilityMode(routing_id_, accessibility_mode));
+  int accessibility_mode_raw = delegate_->GetAccessibilityMode().mode();
+  Send(new FrameMsg_SetAccessibilityMode(routing_id_, accessibility_mode_raw));
 }
 
 void RenderFrameHostImpl::RequestAXTreeSnapshot(
@@ -2966,7 +2966,7 @@ void RenderFrameHostImpl::SetAccessibilityCallbackForTesting(
 
 void RenderFrameHostImpl::UpdateAXTreeData() {
   AccessibilityMode accessibility_mode = delegate_->GetAccessibilityMode();
-  if (accessibility_mode == AccessibilityModeOff || !is_active()) {
+  if (accessibility_mode.is_mode_off() || !is_active()) {
     return;
   }
 
@@ -3010,7 +3010,7 @@ BrowserAccessibilityManager*
 void RenderFrameHostImpl::ActivateFindInPageResultForAccessibility(
     int request_id) {
   AccessibilityMode accessibility_mode = delegate_->GetAccessibilityMode();
-  if (accessibility_mode & ACCESSIBILITY_MODE_FLAG_NATIVE_APIS) {
+  if (accessibility_mode.has_mode(AccessibilityMode::kNativeAPIs)) {
     BrowserAccessibilityManager* manager =
         GetOrCreateBrowserAccessibilityManager();
     if (manager)

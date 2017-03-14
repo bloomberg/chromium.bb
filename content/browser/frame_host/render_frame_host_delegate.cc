@@ -63,7 +63,7 @@ std::string RenderFrameHostDelegate::GetDefaultMediaDeviceID(
 }
 
 AccessibilityMode RenderFrameHostDelegate::GetAccessibilityMode() const {
-  return AccessibilityModeOff;
+  return AccessibilityMode();
 }
 
 RenderFrameHost* RenderFrameHostDelegate::GetGuestByInstanceID(

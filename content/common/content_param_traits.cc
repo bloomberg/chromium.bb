@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include "base/strings/string_number_conversions.h"
+#include "content/common/accessibility_mode.h"
 #include "content/common/message_port.h"
 #include "ipc/ipc_mojo_param_traits.h"
 #include "net/base/ip_endpoint.h"
@@ -89,6 +90,28 @@ void ParamTraits<content::MessagePort>::Log(const param_type& p,
                                             std::string* l) {
 }
 
+void ParamTraits<content::AccessibilityMode>::GetSize(base::PickleSizer* s,
+                                                      const param_type& p) {
+  IPC::GetParamSize(s, p.mode());
+}
+
+void ParamTraits<content::AccessibilityMode>::Write(base::Pickle* m,
+                                                    const param_type& p) {
+  IPC::WriteParam(m, p.mode());
+}
+
+bool ParamTraits<content::AccessibilityMode>::Read(const base::Pickle* m,
+                                                   base::PickleIterator* iter,
+                                                   param_type* r) {
+  uint32_t value;
+  if (!IPC::ReadParam(m, iter, &value))
+    return false;
+  *r = content::AccessibilityMode(value);
+  return true;
+}
+
+void ParamTraits<content::AccessibilityMode>::Log(const param_type& p,
+                                                  std::string* l) {}
 }  // namespace IPC
 
 // Generate param traits size methods.

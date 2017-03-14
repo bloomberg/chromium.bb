@@ -21,22 +21,21 @@ namespace content {
 // These values are written to logs.  Do not renumber or delete
 // existing items; add new entries to the end of the list.
 enum ModeFlagHistogramValue {
-  UMA_AX_MODE_FLAG_NATIVE_APIS = 0,
-  UMA_AX_MODE_FLAG_WEB_CONTENTS = 1,
-  UMA_AX_MODE_FLAG_INLINE_TEXT_BOXES = 2,
-  UMA_AX_MODE_FLAG_SCREEN_READER = 3,
-  UMA_AX_MODE_FLAG_HTML = 4,
+  UMA_AX_MODE_NATIVE_APIS = 0,
+  UMA_AX_MODE_WEB_CONTENTS = 1,
+  UMA_AX_MODE_INLINE_TEXT_BOXES = 2,
+  UMA_AX_MODE_SCREEN_READER = 3,
+  UMA_AX_MODE_HTML = 4,
 
   // This must always be the last enum. It's okay for its value to
   // increase, but none of the other enum values may change.
-  UMA_AX_MODE_FLAG_MAX
+  UMA_AX_MODE_MAX
 };
 
 // Record a histograms for an accessibility mode when it's enabled.
 void RecordNewAccessibilityModeFlags(ModeFlagHistogramValue mode_flag) {
-  UMA_HISTOGRAM_ENUMERATION("Accessibility.ModeFlag",
-                            mode_flag,
-                            UMA_AX_MODE_FLAG_MAX);
+  UMA_HISTOGRAM_ENUMERATION("Accessibility.ModeFlag", mode_flag,
+                            UMA_AX_MODE_MAX);
 }
 
 // Update the accessibility histogram 45 seconds after initialization.
@@ -56,7 +55,6 @@ BrowserAccessibilityStateImpl* BrowserAccessibilityStateImpl::GetInstance() {
 
 BrowserAccessibilityStateImpl::BrowserAccessibilityStateImpl()
     : BrowserAccessibilityState(),
-      accessibility_mode_(AccessibilityModeOff),
       disable_hot_tracking_(false) {
   ResetAccessibilityModeValue();
 #if defined(OS_WIN)
@@ -91,7 +89,7 @@ void BrowserAccessibilityStateImpl::OnScreenReaderDetected() {
 }
 
 void BrowserAccessibilityStateImpl::EnableAccessibility() {
-  AddAccessibilityModeFlags(ACCESSIBILITY_MODE_COMPLETE);
+  AddAccessibilityModeFlags(kAccessibilityModeComplete);
 }
 
 void BrowserAccessibilityStateImpl::DisableAccessibility() {
@@ -99,10 +97,10 @@ void BrowserAccessibilityStateImpl::DisableAccessibility() {
 }
 
 void BrowserAccessibilityStateImpl::ResetAccessibilityModeValue() {
-  accessibility_mode_ = AccessibilityModeOff;
+  accessibility_mode_ = AccessibilityMode();
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kForceRendererAccessibility)) {
-    accessibility_mode_ = ACCESSIBILITY_MODE_COMPLETE;
+    accessibility_mode_ = kAccessibilityModeComplete;
   }
 }
 
@@ -116,8 +114,7 @@ void BrowserAccessibilityStateImpl::ResetAccessibilityMode() {
 }
 
 bool BrowserAccessibilityStateImpl::IsAccessibleBrowser() {
-  return ((accessibility_mode_ & ACCESSIBILITY_MODE_COMPLETE) ==
-          ACCESSIBILITY_MODE_COMPLETE);
+  return accessibility_mode_ == kAccessibilityModeComplete;
 }
 
 void BrowserAccessibilityStateImpl::AddHistogramCallback(
@@ -164,17 +161,17 @@ void BrowserAccessibilityStateImpl::AddAccessibilityModeFlags(
     return;
 
   // Retrieve only newly added modes for the purposes of logging.
-  AccessibilityMode new_mode_flags = accessibility_mode_ & (~previous_mode);
-  if (new_mode_flags & ACCESSIBILITY_MODE_FLAG_NATIVE_APIS)
-    RecordNewAccessibilityModeFlags(UMA_AX_MODE_FLAG_NATIVE_APIS);
-  if (new_mode_flags & ACCESSIBILITY_MODE_FLAG_WEB_CONTENTS)
-    RecordNewAccessibilityModeFlags(UMA_AX_MODE_FLAG_WEB_CONTENTS);
-  if (new_mode_flags & ACCESSIBILITY_MODE_FLAG_INLINE_TEXT_BOXES)
-    RecordNewAccessibilityModeFlags(UMA_AX_MODE_FLAG_INLINE_TEXT_BOXES);
-  if (new_mode_flags & ACCESSIBILITY_MODE_FLAG_SCREEN_READER)
-    RecordNewAccessibilityModeFlags(UMA_AX_MODE_FLAG_SCREEN_READER);
-  if (new_mode_flags & ACCESSIBILITY_MODE_FLAG_HTML)
-    RecordNewAccessibilityModeFlags(UMA_AX_MODE_FLAG_HTML);
+  int new_mode_flags = mode.mode() & (~previous_mode.mode());
+  if (new_mode_flags & AccessibilityMode::kNativeAPIs)
+    RecordNewAccessibilityModeFlags(UMA_AX_MODE_NATIVE_APIS);
+  if (new_mode_flags & AccessibilityMode::kWebContents)
+    RecordNewAccessibilityModeFlags(UMA_AX_MODE_WEB_CONTENTS);
+  if (new_mode_flags & AccessibilityMode::kInlineTextBoxes)
+    RecordNewAccessibilityModeFlags(UMA_AX_MODE_INLINE_TEXT_BOXES);
+  if (new_mode_flags & AccessibilityMode::kScreenReader)
+    RecordNewAccessibilityModeFlags(UMA_AX_MODE_SCREEN_READER);
+  if (new_mode_flags & AccessibilityMode::kHTML)
+    RecordNewAccessibilityModeFlags(UMA_AX_MODE_HTML);
 
   std::vector<WebContentsImpl*> web_contents_vector =
       WebContentsImpl::GetAllWebContents();
@@ -186,11 +183,14 @@ void BrowserAccessibilityStateImpl::RemoveAccessibilityModeFlags(
     AccessibilityMode mode) {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kForceRendererAccessibility) &&
-      mode == ACCESSIBILITY_MODE_COMPLETE) {
+      mode == kAccessibilityModeComplete) {
     return;
   }
 
-  accessibility_mode_ = accessibility_mode_ ^ (mode & accessibility_mode_);
+  int raw_flags =
+      accessibility_mode_.mode() ^ (mode.mode() & accessibility_mode_.mode());
+  accessibility_mode_ = raw_flags;
+
   std::vector<WebContentsImpl*> web_contents_vector =
       WebContentsImpl::GetAllWebContents();
   for (size_t i = 0; i < web_contents_vector.size(); ++i)

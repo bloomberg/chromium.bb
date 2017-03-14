@@ -2499,10 +2499,7 @@ bool RenderViewImpl::didTapMultipleTargets(
   // as this interferes with "touch exploration".
   AccessibilityMode accessibility_mode =
       GetMainRenderFrame()->accessibility_mode();
-  bool matches_accessibility_mode_complete =
-      (accessibility_mode & ACCESSIBILITY_MODE_COMPLETE) ==
-          ACCESSIBILITY_MODE_COMPLETE;
-  if (matches_accessibility_mode_complete)
+  if (accessibility_mode == kAccessibilityModeComplete)
     return false;
 
   // The touch_rect, target_rects and zoom_rect are in the outer viewport

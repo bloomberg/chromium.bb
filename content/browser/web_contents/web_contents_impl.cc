@@ -964,7 +964,9 @@ void WebContentsImpl::SetAccessibilityMode(AccessibilityMode mode) {
 }
 
 void WebContentsImpl::AddAccessibilityMode(AccessibilityMode mode) {
-  SetAccessibilityMode(accessibility_mode_ | mode);
+  AccessibilityMode new_mode(accessibility_mode_);
+  new_mode |= mode;
+  SetAccessibilityMode(new_mode);
 }
 
 void WebContentsImpl::RequestAXTreeSnapshot(AXTreeSnapshotCallback callback) {
@@ -1076,20 +1078,20 @@ const std::string& WebContentsImpl::GetUserAgentOverride() const {
 }
 
 void WebContentsImpl::EnableWebContentsOnlyAccessibilityMode() {
-  if (GetAccessibilityMode() != AccessibilityModeOff) {
+  if (!GetAccessibilityMode().is_mode_off()) {
     for (RenderFrameHost* rfh : GetAllFrames())
       ResetAccessibility(rfh);
   } else {
-    AddAccessibilityMode(ACCESSIBILITY_MODE_WEB_CONTENTS_ONLY);
+    AddAccessibilityMode(kAccessibilityModeWebContentsOnly);
   }
 }
 
 bool WebContentsImpl::IsWebContentsOnlyAccessibilityModeForTesting() const {
-  return accessibility_mode_ == ACCESSIBILITY_MODE_WEB_CONTENTS_ONLY;
+  return accessibility_mode_ == kAccessibilityModeWebContentsOnly;
 }
 
 bool WebContentsImpl::IsFullAccessibilityModeForTesting() const {
-  return accessibility_mode_ == ACCESSIBILITY_MODE_COMPLETE;
+  return accessibility_mode_ == kAccessibilityModeComplete;
 }
 
 const PageImportanceSignals& WebContentsImpl::GetPageImportanceSignals() const {

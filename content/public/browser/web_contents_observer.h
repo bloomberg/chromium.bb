@@ -393,7 +393,7 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener,
 
   // Called when accessibility events or location changes are received
   // from a render frame, but only when the accessibility mode has the
-  // ACCESSIBILITY_MODE_FLAG_WEB_CONTENTS flag set.
+  // AccessibilityMode::kWebContents flag set.
   virtual void AccessibilityEventReceived(
       const std::vector<AXEventNotificationDetails>& details) {}
   virtual void AccessibilityLocationChangesReceived(

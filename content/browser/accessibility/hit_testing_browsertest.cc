@@ -30,9 +30,9 @@ class AccessibilityHitTestingBrowserTest : public ContentBrowserTest {
     BrowserAccessibilityManager* manager =
         web_contents->GetRootBrowserAccessibilityManager();
 
-    AccessibilityNotificationWaiter hover_waiter(
-        shell()->web_contents(), ACCESSIBILITY_MODE_COMPLETE,
-        ui::AX_EVENT_HOVER);
+    AccessibilityNotificationWaiter hover_waiter(shell()->web_contents(),
+                                                 kAccessibilityModeComplete,
+                                                 ui::AX_EVENT_HOVER);
     for (FrameTreeNode* node : frame_tree->Nodes())
       hover_waiter.ListenToAdditionalFrame(node->current_frame_host());
     manager->HitTest(point);
@@ -58,9 +58,9 @@ class AccessibilityHitTestingBrowserTest : public ContentBrowserTest {
 
     // Each call to CachingAsyncHitTest results in at least one HOVER
     // event received. Block until we receive it.
-    AccessibilityNotificationWaiter hover_waiter(
-        shell()->web_contents(), ACCESSIBILITY_MODE_COMPLETE,
-        ui::AX_EVENT_HOVER);
+    AccessibilityNotificationWaiter hover_waiter(shell()->web_contents(),
+                                                 kAccessibilityModeComplete,
+                                                 ui::AX_EVENT_HOVER);
     for (FrameTreeNode* node : frame_tree->Nodes())
       hover_waiter.ListenToAdditionalFrame(node->current_frame_host());
     BrowserAccessibility* result = manager->CachingAsyncHitTest(screen_point);
@@ -75,7 +75,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityHitTestingBrowserTest,
 
   // Load the page.
   AccessibilityNotificationWaiter waiter(shell()->web_contents(),
-                                         ACCESSIBILITY_MODE_COMPLETE,
+                                         kAccessibilityModeComplete,
                                          ui::AX_EVENT_LOAD_COMPLETE);
   const char url_str[] =
       "data:text/html,"
@@ -104,7 +104,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityHitTestingBrowserTest,
   NavigateToURL(shell(), GURL(url::kAboutBlankURL));
 
   AccessibilityNotificationWaiter waiter(shell()->web_contents(),
-                                         ACCESSIBILITY_MODE_COMPLETE,
+                                         kAccessibilityModeComplete,
                                          ui::AX_EVENT_LOAD_COMPLETE);
   GURL url(embedded_test_server()->GetURL(
       "/accessibility/html/iframe-coordinates.html"));
@@ -160,7 +160,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityHitTestingBrowserTest,
   NavigateToURL(shell(), GURL(url::kAboutBlankURL));
 
   AccessibilityNotificationWaiter waiter(shell()->web_contents(),
-                                         ACCESSIBILITY_MODE_COMPLETE,
+                                         kAccessibilityModeComplete,
                                          ui::AX_EVENT_LOAD_COMPLETE);
   GURL url(embedded_test_server()->GetURL(
       "/accessibility/hit_testing/hit_testing.html"));

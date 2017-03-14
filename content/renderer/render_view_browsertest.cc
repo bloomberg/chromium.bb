@@ -23,6 +23,7 @@
 #include "cc/trees/layer_tree_host.h"
 #include "content/child/request_extra_data.h"
 #include "content/child/service_worker/service_worker_network_provider.h"
+#include "content/common/accessibility_mode.h"
 #include "content/common/content_switches_internal.h"
 #include "content/common/frame_messages.h"
 #include "content/common/frame_owner_properties.h"
@@ -2001,20 +2002,20 @@ TEST_F(RenderViewImplTest, ServiceWorkerNetworkProviderSetup) {
 }
 
 TEST_F(RenderViewImplTest, OnSetAccessibilityMode) {
-  ASSERT_EQ(AccessibilityModeOff, frame()->accessibility_mode());
+  ASSERT_TRUE(frame()->accessibility_mode().is_mode_off());
   ASSERT_FALSE(frame()->render_accessibility());
 
-  frame()->SetAccessibilityMode(ACCESSIBILITY_MODE_WEB_CONTENTS_ONLY);
-  ASSERT_EQ(ACCESSIBILITY_MODE_WEB_CONTENTS_ONLY,
-            frame()->accessibility_mode());
+  frame()->SetAccessibilityMode(kAccessibilityModeWebContentsOnly);
+  ASSERT_TRUE(frame()->accessibility_mode() ==
+              kAccessibilityModeWebContentsOnly);
   ASSERT_TRUE(frame()->render_accessibility());
 
-  frame()->SetAccessibilityMode(AccessibilityModeOff);
-  ASSERT_EQ(AccessibilityModeOff, frame()->accessibility_mode());
+  frame()->SetAccessibilityMode(AccessibilityMode());
+  ASSERT_TRUE(frame()->accessibility_mode().is_mode_off());
   ASSERT_FALSE(frame()->render_accessibility());
 
-  frame()->SetAccessibilityMode(ACCESSIBILITY_MODE_COMPLETE);
-  ASSERT_EQ(ACCESSIBILITY_MODE_COMPLETE, frame()->accessibility_mode());
+  frame()->SetAccessibilityMode(kAccessibilityModeComplete);
+  ASSERT_TRUE(frame()->accessibility_mode() == kAccessibilityModeComplete);
   ASSERT_TRUE(frame()->render_accessibility());
 }
 

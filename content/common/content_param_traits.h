@@ -19,6 +19,7 @@
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
 
 namespace content {
+class AccessibilityMode;
 class MessagePort;
 }
 
@@ -57,6 +58,17 @@ struct CONTENT_EXPORT ParamTraits<content::MessagePort> {
   static void GetSize(base::PickleSizer* sizer, const param_type& p);
   static void Write(base::Pickle* m, const param_type& p);
   static bool Read(const base::Pickle* m, base::PickleIterator* iter,
+                   param_type* r);
+  static void Log(const param_type& p, std::string* l);
+};
+
+template <>
+struct CONTENT_EXPORT ParamTraits<content::AccessibilityMode> {
+  typedef content::AccessibilityMode param_type;
+  static void GetSize(base::PickleSizer* sizer, const param_type& p);
+  static void Write(base::Pickle* m, const param_type& p);
+  static bool Read(const base::Pickle* m,
+                   base::PickleIterator* iter,
                    param_type* r);
   static void Log(const param_type& p, std::string* l);
 };

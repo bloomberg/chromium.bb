@@ -1238,8 +1238,9 @@ void ContentViewCoreImpl::SetAccessibilityEnabledInternal(bool enabled) {
     // explicitly disallowed by a command-line flag, then enable it for
     // this WebContents if that succeeded.
     accessibility_state->OnScreenReaderDetected();
-    if (accessibility_state->IsAccessibleBrowser() && web_contents_)
-      web_contents_->AddAccessibilityMode(ACCESSIBILITY_MODE_COMPLETE);
+    if (accessibility_state->IsAccessibleBrowser() && web_contents_) {
+      web_contents_->AddAccessibilityMode(kAccessibilityModeComplete);
+    }
   } else {
     accessibility_state->ResetAccessibilityMode();
     if (web_contents_) {

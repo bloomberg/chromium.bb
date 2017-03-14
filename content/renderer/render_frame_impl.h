@@ -26,7 +26,7 @@
 #include "base/process/process_handle.h"
 #include "base/single_thread_task_runner.h"
 #include "build/build_config.h"
-#include "content/common/accessibility_mode_enums.h"
+#include "content/common/accessibility_mode.h"
 #include "content/common/associated_interface_registry_impl.h"
 #include "content/common/download/mhtml_save_status.h"
 #include "content/common/frame.mojom.h"
@@ -1312,8 +1312,7 @@ class CONTENT_EXPORT RenderFrameImpl
   // The current accessibility mode.
   AccessibilityMode accessibility_mode_;
 
-  // Only valid if |accessibility_mode_| is anything other than
-  // AccessibilityModeOff.
+  // Only valid if |accessibility_mode_| has no flags.
   RenderAccessibilityImpl* render_accessibility_;
 
   std::unique_ptr<RelatedAppsFetcher> related_apps_fetcher_;

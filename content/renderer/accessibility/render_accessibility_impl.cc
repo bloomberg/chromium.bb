@@ -69,7 +69,11 @@ void RenderAccessibilityImpl::SnapshotAccessibilityTree(
   WebAXObject root = context.root();
   if (!root.updateLayoutAndCheckValidity())
     return;
-  BlinkAXTreeSource tree_source(render_frame, ACCESSIBILITY_MODE_COMPLETE);
+  BlinkAXTreeSource tree_source(
+      render_frame,
+      AccessibilityMode::kNativeAPIs | AccessibilityMode::kWebContents |
+          AccessibilityMode::kInlineTextBoxes |
+          AccessibilityMode::kScreenReader | AccessibilityMode::kHTML);
   tree_source.SetRoot(root);
   ScopedFreezeBlinkAXTreeSource freeze(&tree_source);
   BlinkAXTreeSerializer serializer(&tree_source);
@@ -102,7 +106,7 @@ RenderAccessibilityImpl::RenderAccessibilityImpl(RenderFrameImpl* render_frame,
 #if !defined(OS_ANDROID)
   // Inline text boxes can be enabled globally on all except Android.
   // On Android they can be requested for just a specific node.
-  if (mode & ACCESSIBILITY_MODE_FLAG_INLINE_TEXT_BOXES)
+  if (mode.has_mode(AccessibilityMode::kInlineTextBoxes))
     settings->setInlineTextBoxAccessibilityEnabled(true);
 #endif
 

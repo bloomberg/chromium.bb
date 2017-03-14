@@ -776,8 +776,7 @@ IPC_MESSAGE_ROUTED2(FrameMsg_ExtractSmartClipData,
                     gfx::Rect /* rect */)
 
 // Change the accessibility mode in the renderer process.
-IPC_MESSAGE_ROUTED1(FrameMsg_SetAccessibilityMode,
-                    AccessibilityMode)
+IPC_MESSAGE_ROUTED1(FrameMsg_SetAccessibilityMode, content::AccessibilityMode)
 
 // Dispatch a load event in the iframe element containing this frame.
 IPC_MESSAGE_ROUTED0(FrameMsg_DispatchLoad)

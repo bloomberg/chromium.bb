@@ -433,7 +433,7 @@ void BlinkAXTreeSource::SerializeNode(blink::WebAXObject src,
   // The following set of attributes are only accessed when the accessibility
   // mode is set to screen reader mode, otherwise only the more basic
   // attributes are populated.
-  if (accessibility_mode_ & ACCESSIBILITY_MODE_FLAG_SCREEN_READER) {
+  if (accessibility_mode_.has_mode(AccessibilityMode::kScreenReader)) {
     blink::WebString web_placeholder = src.placeholder(nameFrom);
     if (!web_placeholder.isEmpty())
       dst->AddStringAttribute(ui::AX_ATTR_PLACEHOLDER, web_placeholder.utf8());
@@ -750,7 +750,7 @@ void BlinkAXTreeSource::SerializeNode(blink::WebAXObject src,
     WebElement element = node.to<WebElement>();
     is_iframe = element.hasHTMLTagName("iframe");
 
-    if (accessibility_mode_ & ACCESSIBILITY_MODE_FLAG_HTML) {
+    if (accessibility_mode_.has_mode(AccessibilityMode::kHTML)) {
       // TODO(ctguil): The tagName in WebKit is lower cased but
       // HTMLElement::nodeName calls localNameUpper. Consider adding
       // a WebElement method that returns the original lower cased tagName.

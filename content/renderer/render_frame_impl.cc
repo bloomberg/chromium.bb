@@ -1104,7 +1104,6 @@ RenderFrameImpl::RenderFrameImpl(const CreateParams& params)
       push_messaging_client_(NULL),
       screen_orientation_dispatcher_(NULL),
       manifest_manager_(NULL),
-      accessibility_mode_(AccessibilityModeOff),
       render_accessibility_(NULL),
       media_player_delegate_(NULL),
       previews_state_(PREVIEWS_UNSPECIFIED),
@@ -2137,7 +2136,7 @@ void RenderFrameImpl::OnSetAccessibilityMode(AccessibilityMode new_mode) {
     render_accessibility_ = NULL;
   }
 
-  if (accessibility_mode_ & ACCESSIBILITY_MODE_FLAG_WEB_CONTENTS) {
+  if (accessibility_mode_.has_mode(AccessibilityMode::kWebContents)) {
     render_accessibility_ = new RenderAccessibilityImpl(
         this, accessibility_mode_);
   }
