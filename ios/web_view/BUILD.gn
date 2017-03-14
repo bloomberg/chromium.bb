@@ -2,13 +2,93 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# Public target that should be used to depend on web_view. Only give access
-# to the web_view public headers while still linking with the implementation.
-group("web_view") {
+import("//build/config/ios/ios_sdk.gni")
+import("//build/config/ios/rules.gni")
+import("//tools/grit/repack.gni")
+
+config("config") {
+  include_dirs = [
+    "internal",
+    "public",
+  ]
+}
+
+ios_framework_bundle("web_view") {
+  output_name = "ChromeWebView"
+  info_plist = "Info.plist"
+
+  sources = [
+    "public/cwv.h",
+  ]
+
+  public_headers = [
+    "public/criwv_translate_manager.h",
+    "public/cwv.h",
+    "public/cwv_delegate.h",
+    "public/cwv_html_element.h",
+    "public/cwv_navigation_delegate.h",
+    "public/cwv_translate_delegate.h",
+    "public/cwv_ui_delegate.h",
+    "public/cwv_web_view.h",
+    "public/cwv_web_view_configuration.h",
+    "public/cwv_website_data_store.h",
+  ]
+
+  deps = [
+    ":packed_resources",
+    "//base",
+    "//components/infobars/core",
+    "//components/keyed_service/core",
+    "//components/keyed_service/ios",
+    "//components/pref_registry",
+    "//components/prefs",
+    "//components/translate/core/browser",
+    "//components/translate/core/common",
+    "//components/translate/ios/browser",
+    "//ios/net",
+    "//ios/web",
+    "//ios/web:user_agent",
+    "//ios/web/public/app",
+    "//ios/web_view/internal",
+    "//net",
+    "//net:extras",
+    "//ui/base",
+    "//url",
+  ]
+
   public_deps = [
     "//ios/web_view/public",
   ]
+
+  libs = [ "UIKit.framework" ]
+
+  public_configs = [ ":config" ]
+
+  configs += [ "//build/config/compiler:enable_arc" ]
+}
+
+repack("repack_resources") {
+  visibility = [ ":packed_resources" ]
   deps = [
-    "//ios/web_view/internal",
+    "//components/resources:components_resources",
+    "//ios/web:resources",
+  ]
+  sources = [
+    "$root_gen_dir/components/components_resources.pak",
+    "$root_gen_dir/ios/web/ios_web_resources.pak",
+  ]
+  output = "$target_gen_dir/web_view_resources.pak"
+}
+
+bundle_data("packed_resources") {
+  visibility = [ "//ios/web_view:*" ]
+  public_deps = [
+    ":repack_resources",
+  ]
+  sources = [
+    "$target_gen_dir/web_view_resources.pak",
+  ]
+  outputs = [
+    "{{bundle_resources_dir}}/{{source_file_part}}",
   ]
 }

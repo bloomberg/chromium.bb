@@ -20,6 +20,7 @@ ios_eg_test("ios_web_view_shell_egtests") {
 
   deps = [
     ":earl_grey_test_support",
+    "//ios/web_view:web_view+link",
 
     # All shared libraries must have the sanitizer deps to properly link in
     # asan mode (this target will be empty in other cases).
@@ -37,12 +38,17 @@ source_set("earl_grey_test_support") {
   deps = [
     "//base",
     "//ios/testing:ios_test_support",
-    "//ios/third_party/earl_grey",
     "//ios/web_view/shell",
   ]
 
   public_deps = [
     "//build/config/ios:xctest",
+    "//ios/third_party/earl_grey",
+  ]
+
+  libs = [
+    "WebKit.framework",
+    "XCTest.framework",
   ]
 
   sources = [
