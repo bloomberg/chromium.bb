@@ -14978,6 +14978,14 @@ read aloud to screenreader users to announce that a completion is available.">
         Enable receiving entity suggestions in Omnibox.
       </message>
     </if>
+    <if expr="chromeos">
+      <message name="IDS_FLAGS_ENABLE_CHROMEVOX_ARC_SUPPORT_NAME" desc="Name of the flag that enables ChromeVox support for ARC.">
+        ChromeVox ARC support
+      </message>
+      <message name="IDS_FLAGS_ENABLE_CHROMEVOX_ARC_SUPPORT_DESCRIPTION" desc="Description of the flag that enables ChromeVox support for ARC.">
+        Enable ChromeVox screen reader features in ARC
+      </message>
+    </if>
   </messages>
  </release>
 </grit>

@@ -2356,6 +2356,13 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kTabStripKeyboardFocus)}
 #endif
 
+#if defined(OS_CHROMEOS)
+    {"enable-chromevox-arc-support",
+     IDS_FLAGS_ENABLE_CHROMEVOX_ARC_SUPPORT_NAME,
+     IDS_FLAGS_ENABLE_CHROMEVOX_ARC_SUPPORT_DESCRIPTION, kOsCrOS,
+     SINGLE_VALUE_TYPE(chromeos::switches::kEnableChromeVoxArcSupport)},
+#endif  // defined(OS_CHROMEOS)
+
     // NOTE: Adding new command-line switches requires adding corresponding
     // entries to enum "LoginCustomFlags" in histograms.xml. See note in
     // histograms.xml and don't forget to run AboutFlagsHistogramTest unit test.

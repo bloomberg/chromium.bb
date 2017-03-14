@@ -152,9 +152,17 @@ class ArcSettingsServiceImpl
   // Returns the integer value of the pref.  pref_name must exist.
   int GetIntegerPref(const std::string& pref_name) const;
 
+  // Gets whether this is a managed pref.
+  bool IsBooleanPrefManaged(const std::string& pref_name) const;
+
   // Sends boolean pref broadcast to the delegate.
   void SendBoolPrefSettingsBroadcast(const std::string& pref_name,
                                      const std::string& action) const;
+
+  // Same as above, except sends a specific boolean value.
+  void SendBoolValueSettingsBroadcast(bool value,
+                                      bool managed,
+                                      const std::string& action) const;
 
   // Sends a broadcast to the delegate.
   void SendSettingsBroadcast(const std::string& action,
@@ -490,14 +498,39 @@ void ArcSettingsServiceImpl::SyncReportingConsent() const {
 }
 
 void ArcSettingsServiceImpl::SyncSpokenFeedbackEnabled() const {
-  std::string setting =
-      "org.chromium.arc.intent_helper.SET_SPOKEN_FEEDBACK_ENABLED";
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kEnableChromeVoxArcSupport))
-    setting = "org.chromium.arc.intent_helper.SET_ACCESSIBILITY_HELPER_ENABLED";
+  // Chrome spoken feedback triggers enabling of Android spoken feedback.
+  // There are two types of spoken feedback from Android:
+  // 1. Talkback (default)
+  // 2. accessibility helper (experimental, works through ChromeVox).
+  // These two features are mutually exclusive.
 
-  SendBoolPrefSettingsBroadcast(prefs::kAccessibilitySpokenFeedbackEnabled,
-                                setting);
+  const PrefService::Preference* pref = registrar_.prefs()->FindPreference(
+      prefs::kAccessibilitySpokenFeedbackEnabled);
+  DCHECK(pref);
+  bool enabled = false;
+  bool value_exists = pref->GetValue()->GetAsBoolean(&enabled);
+  CHECK(value_exists);
+  bool managed =
+      IsBooleanPrefManaged(prefs::kAccessibilitySpokenFeedbackEnabled);
+
+  std::string talkback_setting =
+      "org.chromium.arc.intent_helper.SET_SPOKEN_FEEDBACK_ENABLED";
+  std::string accessibility_helper_setting =
+      "org.chromium.arc.intent_helper.SET_ACCESSIBILITY_HELPER_ENABLED";
+
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          chromeos::switches::kEnableChromeVoxArcSupport)) {
+    // Make sure if ChromeVox is on, TalkBack is off.
+    if (enabled)
+      SendBoolValueSettingsBroadcast(false, managed, talkback_setting);
+
+    SendBoolValueSettingsBroadcast(enabled, managed,
+                                   accessibility_helper_setting);
+
+    return;
+  }
+
+  SendBoolValueSettingsBroadcast(enabled, managed, talkback_setting);
 }
 
 void ArcSettingsServiceImpl::SyncTimeZone() const {
@@ -558,6 +591,16 @@ int ArcSettingsServiceImpl::GetIntegerPref(const std::string& pref_name) const {
   return val;
 }
 
+bool ArcSettingsServiceImpl::IsBooleanPrefManaged(
+    const std::string& pref_name) const {
+  const PrefService::Preference* pref =
+      registrar_.prefs()->FindPreference(pref_name);
+  DCHECK(pref);
+  bool value_exists = pref->GetValue()->is_bool();
+  DCHECK(value_exists);
+  return !pref->IsUserModifiable();
+}
+
 void ArcSettingsServiceImpl::SendBoolPrefSettingsBroadcast(
     const std::string& pref_name,
     const std::string& action) const {
@@ -567,9 +610,16 @@ void ArcSettingsServiceImpl::SendBoolPrefSettingsBroadcast(
   bool enabled = false;
   bool value_exists = pref->GetValue()->GetAsBoolean(&enabled);
   DCHECK(value_exists);
+  SendBoolValueSettingsBroadcast(enabled, !pref->IsUserModifiable(), action);
+}
+
+void ArcSettingsServiceImpl::SendBoolValueSettingsBroadcast(
+    bool enabled,
+    bool managed,
+    const std::string& action) const {
   base::DictionaryValue extras;
   extras.SetBoolean("enabled", enabled);
-  extras.SetBoolean("managed", !pref->IsUserModifiable());
+  extras.SetBoolean("managed", managed);
   SendSettingsBroadcast(action, extras);
 }
 
