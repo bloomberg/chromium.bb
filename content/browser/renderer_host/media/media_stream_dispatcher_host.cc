@@ -91,6 +91,7 @@ bool MediaStreamDispatcherHost::OnMessageReceived(const IPC::Message& message) {
                         OnCloseDevice)
     IPC_MESSAGE_HANDLER(MediaStreamHostMsg_SetCapturingLinkSecured,
                         OnSetCapturingLinkSecured)
+    IPC_MESSAGE_HANDLER(MediaStreamHostMsg_StreamStarted, OnStreamStarted)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -180,6 +181,12 @@ void MediaStreamDispatcherHost::OnSetCapturingLinkSecured(int session_id,
 
   media_stream_manager_->SetCapturingLinkSecured(render_process_id_, session_id,
                                                  type, is_secure);
+}
+
+void MediaStreamDispatcherHost::OnStreamStarted(const std::string& label) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  media_stream_manager_->OnStreamStarted(label);
 }
 
 }  // namespace content

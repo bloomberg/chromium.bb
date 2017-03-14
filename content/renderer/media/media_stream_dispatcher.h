@@ -72,6 +72,9 @@ class CONTENT_EXPORT MediaStreamDispatcher
   // Close a started device. |label| is provided in OnDeviceOpened.
   void CloseDevice(const std::string& label);
 
+  // This method is called when the stream is started successfully.
+  void OnStreamStarted(const std::string& label);
+
   // Check if the label is a valid stream.
   virtual bool IsStream(const std::string& label);
   // Get the video session_id given a label. The label identifies a stream.

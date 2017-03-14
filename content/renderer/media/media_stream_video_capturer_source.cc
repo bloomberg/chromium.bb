@@ -364,6 +364,7 @@ void LocalVideoCapturerSource::OnStateUpdate(VideoCaptureState state) {
       base::ResetAndReturn(&running_callback_).Run(false);
       break;
 
+    case VIDEO_CAPTURE_STATE_STARTING:
     case VIDEO_CAPTURE_STATE_PAUSED:
     case VIDEO_CAPTURE_STATE_RESUMED:
       // Not applicable to reporting on device starts or errors.

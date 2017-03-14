@@ -285,7 +285,7 @@ TEST_P(FakeVideoCaptureDeviceTest, CaptureUsing) {
       EnumerateDevices());
   ASSERT_FALSE(descriptors->empty());
 
-  auto device =
+  std::unique_ptr<VideoCaptureDevice> device =
       FakeVideoCaptureDeviceFactory::CreateDeviceWithDefaultResolutions(
           testing::get<0>(GetParam()), testing::get<1>(GetParam()),
           testing::get<2>(GetParam()));
@@ -301,7 +301,7 @@ TEST_P(FakeVideoCaptureDeviceTest, CaptureUsing) {
                                    gfx::Size(1920, 1080));
 
   for (const auto& resolution : resolutions_to_test) {
-    auto client = CreateClient();
+    std::unique_ptr<MockClient> client = CreateClient();
     EXPECT_CALL(*client, OnError(_, _)).Times(0);
     EXPECT_CALL(*client, OnStarted());
 
@@ -397,7 +397,7 @@ TEST_F(FakeVideoCaptureDeviceTest, ErrorDeviceReportsError) {
 }
 
 TEST_F(FakeVideoCaptureDeviceTest, GetAndSetCapabilities) {
-  auto device =
+  std::unique_ptr<VideoCaptureDevice> device =
       FakeVideoCaptureDeviceFactory::CreateDeviceWithDefaultResolutions(
           PIXEL_FORMAT_I420,
           FakeVideoCaptureDevice::DeliveryMode::USE_DEVICE_INTERNAL_BUFFERS,
@@ -422,7 +422,8 @@ TEST_F(FakeVideoCaptureDeviceTest, GetAndSetCapabilities) {
   run_loop_.reset(new base::RunLoop());
   run_loop_->Run();
 
-  auto* capabilities = image_capture_client_->capabilities();
+  const mojom::PhotoCapabilities* capabilities =
+      image_capture_client_->capabilities();
   ASSERT_TRUE(capabilities);
   EXPECT_EQ(100, capabilities->iso->min);
   EXPECT_EQ(100, capabilities->iso->max);
@@ -510,7 +511,7 @@ TEST_F(FakeVideoCaptureDeviceTest, GetAndSetCapabilities) {
 }
 
 TEST_F(FakeVideoCaptureDeviceTest, TakePhoto) {
-  auto device =
+  std::unique_ptr<VideoCaptureDevice> device =
       FakeVideoCaptureDeviceFactory::CreateDeviceWithDefaultResolutions(
           PIXEL_FORMAT_I420,
           FakeVideoCaptureDevice::DeliveryMode::USE_DEVICE_INTERNAL_BUFFERS,
@@ -602,7 +603,7 @@ TEST_P(FakeVideoCaptureDeviceFactoryTest, FrameRateAndDeviceCount) {
     capture_params.requested_format.frame_rate = GetParam().expected_fps;
     capture_params.requested_format.pixel_format =
         GetParam().expected_pixel_formats[device_index];
-    auto client = CreateClient();
+    std::unique_ptr<MockClient> client = CreateClient();
     EXPECT_CALL(*client, OnStarted());
     device->AllocateAndStart(capture_params, std::move(client));
     WaitForCapturedFrame();

@@ -168,6 +168,13 @@ void MediaStreamDispatcher::CloseDevice(const std::string& label) {
   Send(new MediaStreamHostMsg_CloseDevice(routing_id(), label));
 }
 
+void MediaStreamDispatcher::OnStreamStarted(const std::string& label) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DVLOG(1) << "MediaStreamDispatcher::OnStreamStarted(" << label << ")";
+
+  Send(new MediaStreamHostMsg_StreamStarted(label));
+}
+
 void MediaStreamDispatcher::OnDestruct() {
   // Do not self-destruct. UserMediaClientImpl owns |this|.
 }

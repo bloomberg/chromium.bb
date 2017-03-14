@@ -133,3 +133,6 @@ IPC_MESSAGE_CONTROL3(MediaStreamHostMsg_SetCapturingLinkSecured,
                      int,                      /* session_id */
                      content::MediaStreamType, /* type */
                      bool /* is_secure */)
+
+// Tell the browser process that the stream has been started successfully.
+IPC_MESSAGE_CONTROL1(MediaStreamHostMsg_StreamStarted, std::string /* label */)

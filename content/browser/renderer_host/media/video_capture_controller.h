@@ -180,8 +180,8 @@ class CONTENT_EXPORT VideoCaptureController : public media::VideoFrameReceiver {
   // All clients served by this controller.
   ControllerClients controller_clients_;
 
-  // Takes on only the states 'STARTED' and 'ERROR'. 'ERROR' is an absorbing
-  // state which stops the flow of data to clients.
+  // Takes on only the states 'STARTING', 'STARTED' and 'ERROR'. 'ERROR' is an
+  // absorbing state which stops the flow of data to clients.
   VideoCaptureState state_;
 
   int next_buffer_context_id_ = 0;

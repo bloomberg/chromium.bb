@@ -548,7 +548,7 @@ void UserMediaClientImpl::OnStreamGenerated(
   // Wait for the tracks to be started successfully or to fail.
   request_info->CallbackOnTracksStarted(
       base::Bind(&UserMediaClientImpl::OnCreateNativeTracksCompleted,
-                 weak_factory_.GetWeakPtr()));
+                 weak_factory_.GetWeakPtr(), label));
 }
 
 void UserMediaClientImpl::OnStreamGeneratedForCancelledRequest(
@@ -817,6 +817,7 @@ void UserMediaClientImpl::CreateAudioTracks(
 }
 
 void UserMediaClientImpl::OnCreateNativeTracksCompleted(
+    const std::string& label,
     UserMediaRequestInfo* request,
     MediaStreamRequestResult result,
     const blink::WebString& result_name) {
@@ -827,6 +828,7 @@ void UserMediaClientImpl::OnCreateNativeTracksCompleted(
 
   if (result == content::MEDIA_DEVICE_OK) {
     GetUserMediaRequestSucceeded(request->web_stream, request->request);
+    media_stream_dispatcher_->OnStreamStarted(label);
   } else {
     GetUserMediaRequestFailed(request->request, result, result_name);
 

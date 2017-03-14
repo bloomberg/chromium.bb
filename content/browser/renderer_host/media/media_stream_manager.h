@@ -264,6 +264,9 @@ class CONTENT_EXPORT MediaStreamManager
   void FlushVideoCaptureThreadForTesting();
 #endif
 
+  // This method is called when all tracks are started.
+  void OnStreamStarted(const std::string& label);
+
  private:
   // Contains all data needed to keep track of requests.
   class DeviceRequest;

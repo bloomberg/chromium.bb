@@ -229,10 +229,10 @@ class CONTENT_EXPORT UserMediaClientImpl
 
   // Callback function triggered when all native versions of the
   // underlying media sources and tracks have been created and started.
-  void OnCreateNativeTracksCompleted(
-      UserMediaRequestInfo* request,
-      MediaStreamRequestResult result,
-      const blink::WebString& result_name);
+  void OnCreateNativeTracksCompleted(const std::string& label,
+                                     UserMediaRequestInfo* request,
+                                     MediaStreamRequestResult result,
+                                     const blink::WebString& result_name);
 
   void OnStreamGeneratedForCancelledRequest(
       const StreamDeviceInfoArray& audio_array,

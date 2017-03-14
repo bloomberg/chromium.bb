@@ -742,6 +742,7 @@ TEST_F(VideoCaptureManagerTest, PauseAndResumeClient) {
   // Add a second client that is never paused, then pause/resume the first
   // client, and no calls to VideoCaptureDevice::MaybeSuspend() or Resume() are
   // made.
+  EXPECT_CALL(*frame_observer_, OnStarted(_));
   const VideoCaptureControllerID client_id2 =
       StartClient(video_session_id, true);
   PauseClient(client_id);

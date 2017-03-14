@@ -803,4 +803,35 @@ TEST_F(VideoCaptureControllerTest,
   Mock::VerifyAndClearExpectations(client_a_.get());
 }
 
+// Tests that the VideoCaptureController reports OnStarted() to all clients,
+// even if they connect after VideoCaptureController::OnStarted() has been
+// invoked.
+TEST_F(VideoCaptureControllerTest, OnStartedForMultipleClients) {
+  media::VideoCaptureParams session_100;
+  session_100.requested_format = media::VideoCaptureFormat(
+      gfx::Size(320, 240), 30, media::PIXEL_FORMAT_I420);
+  media::VideoCaptureParams session_200 = session_100;
+  media::VideoCaptureParams session_300 = session_100;
+
+  const VideoCaptureControllerID client_a_route_1(1);
+  const VideoCaptureControllerID client_a_route_2(2);
+  const VideoCaptureControllerID client_b_route_1(3);
+
+  controller_->AddClient(client_a_route_1, client_a_.get(), 100, session_100);
+  controller_->AddClient(client_b_route_1, client_b_.get(), 300, session_300);
+  ASSERT_EQ(2, controller_->GetClientCount());
+
+  {
+    InSequence s;
+    // Simulate the OnStarted event from device.
+    EXPECT_CALL(*client_a_, OnStarted(_));
+    EXPECT_CALL(*client_b_, OnStarted(_));
+    device_client_->OnStarted();
+
+    // VideoCaptureController will take care of the OnStarted event for the
+    // clients who join later.
+    EXPECT_CALL(*client_a_, OnStarted(_));
+    controller_->AddClient(client_a_route_2, client_a_.get(), 200, session_200);
+  }
+}
 }  // namespace content

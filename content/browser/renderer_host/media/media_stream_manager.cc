@@ -1338,6 +1338,7 @@ void MediaStreamManager::HandleRequestDone(const std::string& label,
   switch (request->request_type) {
     case MEDIA_OPEN_DEVICE_PEPPER_ONLY:
       FinalizeOpenDevice(label, request);
+      OnStreamStarted(label);
       break;
     case MEDIA_GENERATE_STREAM: {
       FinalizeGenerateStream(label, request);
@@ -1346,17 +1347,6 @@ void MediaStreamManager::HandleRequestDone(const std::string& label,
     default:
       NOTREACHED();
       break;
-  }
-
-  if (request->ui_proxy.get()) {
-    request->ui_proxy->OnStarted(
-        base::Bind(&MediaStreamManager::StopMediaStreamFromBrowser,
-                   base::Unretained(this),
-                   label),
-        base::Bind(&MediaStreamManager::OnMediaStreamUIWindowId,
-                   base::Unretained(this),
-                   request->video_type(),
-                   request->devices));
   }
 }
 
@@ -1773,6 +1763,21 @@ MediaStreamDevices MediaStreamManager::ConvertToMediaStreamDevices(
         video_capture_manager()->GetCameraCalibration(device.id);
   }
   return devices;
+}
+
+void MediaStreamManager::OnStreamStarted(const std::string& label) {
+  DeviceRequest* const request = FindRequest(label);
+  if (!request)
+    return;
+
+  if (request->ui_proxy) {
+    request->ui_proxy->OnStarted(
+        base::Bind(&MediaStreamManager::StopMediaStreamFromBrowser,
+                   base::Unretained(this), label),
+        base::Bind(&MediaStreamManager::OnMediaStreamUIWindowId,
+                   base::Unretained(this), request->video_type(),
+                   request->devices));
+  }
 }
 
 }  // namespace content

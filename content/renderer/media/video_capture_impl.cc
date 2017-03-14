@@ -83,7 +83,9 @@ VideoCaptureImpl::VideoCaptureImpl(media::VideoCaptureSessionId session_id)
 
 VideoCaptureImpl::~VideoCaptureImpl() {
   DCHECK(io_thread_checker_.CalledOnValidThread());
-  if (state_ == VIDEO_CAPTURE_STATE_STARTED && GetVideoCaptureHost())
+  if ((state_ == VIDEO_CAPTURE_STATE_STARTING ||
+       state_ == VIDEO_CAPTURE_STATE_STARTED) &&
+      GetVideoCaptureHost())
     GetVideoCaptureHost()->Stop(device_id_);
 }
 
@@ -107,29 +109,23 @@ void VideoCaptureImpl::StartCapture(
   client_info.state_update_cb = state_update_cb;
   client_info.deliver_frame_cb = deliver_frame_cb;
 
-  if (state_ == VIDEO_CAPTURE_STATE_ERROR) {
-    state_update_cb.Run(VIDEO_CAPTURE_STATE_ERROR);
-  } else if (clients_pending_on_restart_.count(client_id) ||
-             clients_.count(client_id)) {
-    DLOG(FATAL) << __func__ << " This client has already started.";
-  } else {
-    // Note: |state_| might not be started at this point. But we tell
-    // client that we have started.
-    state_update_cb.Run(VIDEO_CAPTURE_STATE_STARTED);
-    if (state_ == VIDEO_CAPTURE_STATE_STARTED) {
+  switch (state_) {
+    case VIDEO_CAPTURE_STATE_STARTING:
+    case VIDEO_CAPTURE_STATE_STARTED:
       clients_[client_id] = client_info;
       // TODO(sheu): Allowing resolution change will require that all
       // outstanding clients of a capture session support resolution change.
       DCHECK_EQ(params_.resolution_change_policy,
                 params.resolution_change_policy);
-    } else if (state_ == VIDEO_CAPTURE_STATE_STOPPING) {
+      return;
+    case VIDEO_CAPTURE_STATE_STOPPING:
       clients_pending_on_restart_[client_id] = client_info;
       DVLOG(1) << __func__ << " Got new resolution while stopping: "
                << params.requested_format.frame_size.ToString();
-    } else {
+      return;
+    case VIDEO_CAPTURE_STATE_STOPPED:
+    case VIDEO_CAPTURE_STATE_ENDED:
       clients_[client_id] = client_info;
-      if (state_ == VIDEO_CAPTURE_STATE_STARTED)
-        return;
       params_ = params;
       params_.requested_format.frame_rate =
           std::min(params_.requested_format.frame_rate,
@@ -138,7 +134,16 @@ void VideoCaptureImpl::StartCapture(
       DVLOG(1) << "StartCapture: starting with first resolution "
                << params_.requested_format.frame_size.ToString();
       StartCaptureInternal();
-    }
+      return;
+    case VIDEO_CAPTURE_STATE_ERROR:
+      state_update_cb.Run(VIDEO_CAPTURE_STATE_ERROR);
+      return;
+    case VIDEO_CAPTURE_STATE_PAUSED:
+    case VIDEO_CAPTURE_STATE_RESUMED:
+      // The internal |state_| is never set to PAUSED/RESUMED since
+      // VideoCaptureImpl is not modified by those.
+      NOTREACHED();
+      return;
   }
 }
 
@@ -188,8 +193,13 @@ void VideoCaptureImpl::OnStateChanged(mojom::VideoCaptureState state) {
 
   switch (state) {
     case mojom::VideoCaptureState::STARTED:
-      // Capture has started in the browser process. Since we have already
-      // told all clients that we have started there's nothing to do.
+      state_ = VIDEO_CAPTURE_STATE_STARTED;
+      for (const auto& client : clients_)
+        client.second.state_update_cb.Run(VIDEO_CAPTURE_STATE_STARTED);
+      // In case there is any frame dropped before STARTED, always request for
+      // a frame refresh to start the video call with.
+      // Capture device will make a decision if it should refresh a frame.
+      RequestRefreshFrame();
       break;
     case mojom::VideoCaptureState::STOPPED:
       state_ = VIDEO_CAPTURE_STATE_STOPPED;
@@ -227,9 +237,6 @@ void VideoCaptureImpl::OnBufferCreated(int32_t buffer_id,
   DVLOG(1) << __func__ << " buffer_id: " << buffer_id;
   DCHECK(io_thread_checker_.CalledOnValidThread());
   DCHECK(handle.is_valid());
-
-  if (state_ != VIDEO_CAPTURE_STATE_STARTED)
-    return;
 
   base::SharedMemoryHandle memory_handle;
   size_t memory_size = 0;
@@ -350,7 +357,8 @@ void VideoCaptureImpl::OnClientBufferFinished(
 
 void VideoCaptureImpl::StopDevice() {
   DCHECK(io_thread_checker_.CalledOnValidThread());
-  if (state_ != VIDEO_CAPTURE_STATE_STARTED)
+  if (state_ != VIDEO_CAPTURE_STATE_STARTING &&
+      state_ != VIDEO_CAPTURE_STATE_STARTED)
     return;
   state_ = VIDEO_CAPTURE_STATE_STOPPING;
   GetVideoCaptureHost()->Stop(device_id_);
@@ -379,10 +387,10 @@ void VideoCaptureImpl::RestartCapture() {
 
 void VideoCaptureImpl::StartCaptureInternal() {
   DCHECK(io_thread_checker_.CalledOnValidThread());
+  state_ = VIDEO_CAPTURE_STATE_STARTING;
 
   GetVideoCaptureHost()->Start(device_id_, session_id_, params_,
                                observer_binding_.CreateInterfacePtrAndBind());
-  state_ = VIDEO_CAPTURE_STATE_STARTED;
 }
 
 void VideoCaptureImpl::OnDeviceSupportedFormats(

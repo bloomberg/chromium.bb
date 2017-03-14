@@ -15,6 +15,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::_;
+using ::testing::InSequence;
 using ::testing::Invoke;
 using ::testing::InvokeWithoutArgs;
 using ::testing::SaveArg;
@@ -28,6 +29,8 @@ void RunEmptyFormatsCallback(const VideoCaptureDeviceFormatsCB& callback) {
   media::VideoCaptureFormats formats;
   callback.Run(formats);
 }
+
+ACTION(DoNothing) {}
 
 // Mock implementation of the Mojo Host service.
 class MockMojoVideoCaptureHost : public mojom::VideoCaptureHost {
@@ -89,6 +92,12 @@ class VideoCaptureImplTest : public ::testing::Test {
 
     video_capture_impl_->SetVideoCaptureHostForTesting(
         &mock_video_capture_host_);
+
+    ON_CALL(mock_video_capture_host_, DoStart(_, _, _))
+        .WillByDefault(InvokeWithoutArgs([this]() {
+          video_capture_impl_->OnStateChanged(
+              mojom::VideoCaptureState::STARTED);
+        }));
   }
 
  protected:
@@ -184,7 +193,7 @@ TEST_F(VideoCaptureImplTest, Simple) {
 }
 
 TEST_F(VideoCaptureImplTest, TwoClientsInSequence) {
-  EXPECT_CALL(*this, OnStateUpdate(VIDEO_CAPTURE_STATE_STARTED)).Times(2);
+  EXPECT_CALL(*this, OnStateUpdate(VIDEO_CAPTURE_STATE_STARTED));
   EXPECT_CALL(*this, OnStateUpdate(VIDEO_CAPTURE_STATE_STOPPED)).Times(2);
   EXPECT_CALL(mock_video_capture_host_, DoStart(_, kSessionId, params_small_));
   EXPECT_CALL(mock_video_capture_host_, Stop(_));
@@ -196,7 +205,7 @@ TEST_F(VideoCaptureImplTest, TwoClientsInSequence) {
 }
 
 TEST_F(VideoCaptureImplTest, LargeAndSmall) {
-  EXPECT_CALL(*this, OnStateUpdate(VIDEO_CAPTURE_STATE_STARTED)).Times(2);
+  EXPECT_CALL(*this, OnStateUpdate(VIDEO_CAPTURE_STATE_STARTED));
   EXPECT_CALL(*this, OnStateUpdate(VIDEO_CAPTURE_STATE_STOPPED)).Times(2);
   EXPECT_CALL(mock_video_capture_host_, DoStart(_, kSessionId, params_large_));
   EXPECT_CALL(mock_video_capture_host_, Stop(_));
@@ -208,7 +217,7 @@ TEST_F(VideoCaptureImplTest, LargeAndSmall) {
 }
 
 TEST_F(VideoCaptureImplTest, SmallAndLarge) {
-  EXPECT_CALL(*this, OnStateUpdate(VIDEO_CAPTURE_STATE_STARTED)).Times(2);
+  EXPECT_CALL(*this, OnStateUpdate(VIDEO_CAPTURE_STATE_STARTED));
   EXPECT_CALL(*this, OnStateUpdate(VIDEO_CAPTURE_STATE_STOPPED)).Times(2);
   EXPECT_CALL(mock_video_capture_host_, DoStart(_, kSessionId, params_small_));
   EXPECT_CALL(mock_video_capture_host_, Stop(_));
@@ -303,10 +312,14 @@ TEST_F(VideoCaptureImplTest, BufferReceivedAfterStop) {
 
 TEST_F(VideoCaptureImplTest, AlreadyStarted) {
   media::VideoCaptureParams params = {};
-  EXPECT_CALL(*this, OnStateUpdate(VIDEO_CAPTURE_STATE_STARTED)).Times(2);
+  EXPECT_CALL(*this, OnStateUpdate(VIDEO_CAPTURE_STATE_STARTED));
   EXPECT_CALL(*this, OnStateUpdate(VIDEO_CAPTURE_STATE_STOPPED)).Times(2);
-  EXPECT_CALL(mock_video_capture_host_, DoStart(_, kSessionId, _))
-      .WillOnce(SaveArg<2>(&params));
+  EXPECT_CALL(mock_video_capture_host_, DoStart(_, kSessionId, params_small_))
+      .WillOnce(DoAll(InvokeWithoutArgs([this]() {
+                        video_capture_impl_->OnStateChanged(
+                            mojom::VideoCaptureState::STARTED);
+                      }),
+                      SaveArg<2>(&params)));
   EXPECT_CALL(mock_video_capture_host_, Stop(_));
 
   StartCapture(0, params_small_);
@@ -337,6 +350,36 @@ TEST_F(VideoCaptureImplTest, ErrorBeforeStop) {
 
   OnStateChanged(mojom::VideoCaptureState::FAILED);
 
+  StopCapture(0);
+}
+
+TEST_F(VideoCaptureImplTest, BufferReceivedBeforeOnStarted) {
+  const int kBufferId = 16;
+
+  base::SharedMemory shm;
+  const size_t frame_size = media::VideoFrame::AllocationSize(
+      media::PIXEL_FORMAT_I420, params_small_.requested_format.frame_size);
+  ASSERT_TRUE(shm.CreateAndMapAnonymous(frame_size));
+
+  InSequence s;
+  EXPECT_CALL(mock_video_capture_host_, DoStart(_, kSessionId, params_small_))
+      .WillOnce(DoNothing());
+  EXPECT_CALL(mock_video_capture_host_, ReleaseBuffer(_, kBufferId, _));
+  StartCapture(0, params_small_);
+  SimulateOnBufferCreated(kBufferId, shm);
+  SimulateBufferReceived(kBufferId, params_small_.requested_format.frame_size);
+
+  EXPECT_CALL(*this, OnStateUpdate(VIDEO_CAPTURE_STATE_STARTED));
+  EXPECT_CALL(mock_video_capture_host_, RequestRefreshFrame(_));
+  video_capture_impl_->OnStateChanged(mojom::VideoCaptureState::STARTED);
+
+  // Additional STARTED will cause RequestRefreshFrame a second time.
+  EXPECT_CALL(*this, OnStateUpdate(VIDEO_CAPTURE_STATE_STARTED));
+  EXPECT_CALL(mock_video_capture_host_, RequestRefreshFrame(_));
+  video_capture_impl_->OnStateChanged(mojom::VideoCaptureState::STARTED);
+
+  EXPECT_CALL(*this, OnStateUpdate(VIDEO_CAPTURE_STATE_STOPPED));
+  EXPECT_CALL(mock_video_capture_host_, Stop(_));
   StopCapture(0);
 }
 

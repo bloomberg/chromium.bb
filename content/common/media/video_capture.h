@@ -23,6 +23,7 @@ using VideoCaptureDeliverFrameCB =
 // browser process and renderer process. Browser process sends information about
 // the current capture state and error to the renderer process using this type.
 enum VideoCaptureState {
+  VIDEO_CAPTURE_STATE_STARTING,
   VIDEO_CAPTURE_STATE_STARTED,
   VIDEO_CAPTURE_STATE_PAUSED,
   VIDEO_CAPTURE_STATE_RESUMED,

@@ -91,6 +91,8 @@ class CONTENT_EXPORT MediaStreamDispatcherHost : public BrowserMessageFilter,
                                  content::MediaStreamType type,
                                  bool is_secure);
 
+  void OnStreamStarted(const std::string& label);
+
   int render_process_id_;
   std::string salt_;
   MediaStreamManager* media_stream_manager_;

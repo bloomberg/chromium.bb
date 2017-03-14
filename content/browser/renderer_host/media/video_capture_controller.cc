@@ -147,7 +147,7 @@ VideoCaptureController::BufferContext::CloneHandle() {
 
 VideoCaptureController::VideoCaptureController()
     : consumer_feedback_observer_(nullptr),
-      state_(VIDEO_CAPTURE_STATE_STARTED),
+      state_(VIDEO_CAPTURE_STATE_STARTING),
       has_received_frames_(false),
       weak_ptr_factory_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -208,13 +208,16 @@ void VideoCaptureController::AddClient(
   if (FindClient(id, event_handler, controller_clients_))
     return;
 
+  // If the device has reported OnStarted event, report it to this client here.
+  if (state_ == VIDEO_CAPTURE_STATE_STARTED)
+    event_handler->OnStarted(id);
+
   std::unique_ptr<ControllerClient> client =
       base::MakeUnique<ControllerClient>(id, event_handler, session_id, params);
   // If we already have gotten frame_info from the device, repeat it to the new
   // client.
-  if (state_ == VIDEO_CAPTURE_STATE_STARTED) {
+  if (state_ != VIDEO_CAPTURE_STATE_ERROR) {
     controller_clients_.push_back(std::move(client));
-    return;
   }
 }
 
@@ -374,7 +377,7 @@ void VideoCaptureController::OnFrameReadyInBuffer(
   buffer_context_iter->set_frame_feedback_id(frame_feedback_id);
   DCHECK(!buffer_context_iter->HasConsumers());
 
-  if (state_ == VIDEO_CAPTURE_STATE_STARTED) {
+  if (state_ != VIDEO_CAPTURE_STATE_ERROR) {
     const int buffer_context_id = buffer_context_iter->buffer_context_id();
     for (const auto& client : controller_clients_) {
       if (client->session_closed || client->paused)
@@ -463,6 +466,7 @@ void VideoCaptureController::OnLog(const std::string& message) {
 
 void VideoCaptureController::OnStarted() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  state_ = VIDEO_CAPTURE_STATE_STARTED;
 
   for (const auto& client : controller_clients_) {
     if (client->session_closed)

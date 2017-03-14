@@ -21,6 +21,7 @@
 
 using ::testing::_;
 using ::testing::DoAll;
+using ::testing::InSequence;
 using ::testing::SaveArg;
 using media::BindToCurrentLoop;
 
@@ -63,6 +64,8 @@ class MockVideoCaptureImpl : public VideoCaptureImpl,
              mojom::VideoCaptureObserverPtr observer) override {
     // For every Start(), expect a corresponding Stop() call.
     EXPECT_CALL(*this, Stop(_));
+    // Simulate device started.
+    OnStateChanged(mojom::VideoCaptureState::STARTED);
   }
 
   MOCK_METHOD1(Stop, void(int32_t));
@@ -131,8 +134,15 @@ class VideoCaptureImplManagerTest : public ::testing::Test,
       bool same_session_id) {
     base::RunLoop run_loop;
     base::Closure quit_closure = BindToCurrentLoop(run_loop.QuitClosure());
-    EXPECT_CALL(*this, OnStarted(_)).Times(kNumClients - 1)
-        .RetiresOnSaturation();
+
+    InSequence s;
+    if (!same_session_id) {
+      // |OnStarted| will only be received once from each device if there are
+      // multiple request to the same device.
+      EXPECT_CALL(*this, OnStarted(_))
+          .Times(kNumClients - 1)
+          .RetiresOnSaturation();
+    }
     EXPECT_CALL(*this, OnStarted(_)).WillOnce(RunClosure(quit_closure))
         .RetiresOnSaturation();
     std::array<base::Closure, kNumClients> stop_callbacks;

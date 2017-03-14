@@ -294,11 +294,14 @@ class StubClient : public media::VideoCaptureDevice::Client {
     // analysis is too slow, the backlog of frames will grow without bound and
     // trouble erupts. http://crbug.com/174519
     using media::VideoFrame;
-    auto buffer_access = buffer.handle_provider->GetHandleForInProcessAccess();
-    auto frame = VideoFrame::WrapExternalSharedMemory(
-        media::PIXEL_FORMAT_I420, format.frame_size, visible_rect,
-        format.frame_size, buffer_access->data(), buffer_access->mapped_size(),
-        base::SharedMemory::NULLHandle(), 0u, base::TimeDelta());
+    std::unique_ptr<media::VideoCaptureBufferHandle> buffer_access =
+        buffer.handle_provider->GetHandleForInProcessAccess();
+    scoped_refptr<media::VideoFrame> frame =
+        VideoFrame::WrapExternalSharedMemory(
+            media::PIXEL_FORMAT_I420, format.frame_size, visible_rect,
+            format.frame_size, buffer_access->data(),
+            buffer_access->mapped_size(), base::SharedMemory::NULLHandle(), 0u,
+            base::TimeDelta());
     const gfx::Point center = visible_rect.CenterPoint();
     const int center_offset_y =
         (frame->stride(VideoFrame::kYPlane) * center.y()) + center.x();
@@ -554,7 +557,7 @@ class WebContentsVideoCaptureDeviceTest : public testing::Test {
 
   void SimulateSourceSizeChange(const gfx::Size& size) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
-    auto* const view = test_view();
+    CaptureTestView* const view = test_view();
     view->SetSize(size);
     // Normally, RenderWidgetHostImpl would notify WebContentsImpl that the size
     // has changed.  However, in this test setup, where there is no render
@@ -575,7 +578,8 @@ class WebContentsVideoCaptureDeviceTest : public testing::Test {
     while ((base::TimeTicks::Now() - start_time) <
                TestTimeouts::action_max_timeout()) {
       SimulateDrawEvent();
-      const auto color_and_size = client_observer()->WaitForNextFrame();
+      const std::pair<SkColor, gfx::Size>& color_and_size =
+          client_observer()->WaitForNextFrame();
       if (color_and_size.first == ConvertRgbToYuv(color) &&
           color_and_size.second == size) {
         return;
@@ -643,7 +647,7 @@ class WebContentsVideoCaptureDeviceTest : public testing::Test {
 TEST_F(WebContentsVideoCaptureDeviceTest,
        SafelyStartsUpAfterWebContentsHasGone) {
   ResetWebContents();
-  auto client = client_observer()->PassClient();
+  std::unique_ptr<StubClient> client = client_observer()->PassClient();
   EXPECT_CALL(*client, OnStarted());
   device()->AllocateAndStart(DefaultCaptureParams(), std::move(client));
   ASSERT_NO_FATAL_FAILURE(client_observer()->WaitForError());
@@ -657,7 +661,7 @@ TEST_F(WebContentsVideoCaptureDeviceTest,
        RunsThenErrorsOutWhenWebContentsIsDestroyed) {
   // We'll simulate the tab being closed after the capture pipeline is up and
   // running.
-  auto client = client_observer()->PassClient();
+  std::unique_ptr<StubClient> client = client_observer()->PassClient();
   EXPECT_CALL(*client, OnStarted());
   device()->AllocateAndStart(DefaultCaptureParams(), std::move(client));
 
@@ -703,7 +707,7 @@ TEST_F(WebContentsVideoCaptureDeviceTest,
        DeliversToCorrectClientAcrossRestarts) {
   // While the device is up-and-running, expect frame captures.
   client_observer()->SetIsExpectingFrames(true);
-  auto client = client_observer()->PassClient();
+  std::unique_ptr<StubClient> client = client_observer()->PassClient();
   EXPECT_CALL(*client, OnStarted());
   device()->AllocateAndStart(DefaultCaptureParams(), std::move(client));
   base::RunLoop().RunUntilIdle();
@@ -729,7 +733,7 @@ TEST_F(WebContentsVideoCaptureDeviceTest,
   // expect to see any frame captures.
   StubClientObserver observer2;
   observer2.SetIsExpectingFrames(true);
-  auto client2 = observer2.PassClient();
+  std::unique_ptr<StubClient> client2 = observer2.PassClient();
   EXPECT_CALL(*client2, OnStarted());
   device()->AllocateAndStart(DefaultCaptureParams(), std::move(client2));
   test_view()->SetSolidColor(SK_ColorBLUE);
@@ -746,7 +750,7 @@ TEST_F(WebContentsVideoCaptureDeviceTest,
 // consumer. The test will alternate between the RGB/SkBitmap and YUV/VideoFrame
 // capture paths.
 TEST_F(WebContentsVideoCaptureDeviceTest, GoesThroughAllTheMotions) {
-  auto client = client_observer()->PassClient();
+  std::unique_ptr<StubClient> client = client_observer()->PassClient();
   EXPECT_CALL(*client, OnStarted());
   device()->AllocateAndStart(DefaultCaptureParams(), std::move(client));
 
@@ -781,10 +785,10 @@ TEST_F(WebContentsVideoCaptureDeviceTest, GoesThroughAllTheMotions) {
 // policy, the source size changes result in video frames of possibly varying
 // resolutions, but all with the same aspect ratio.
 TEST_F(WebContentsVideoCaptureDeviceTest, VariableResolution_FixedAspectRatio) {
-  auto capture_params = DefaultCaptureParams();
+  media::VideoCaptureParams capture_params = DefaultCaptureParams();
   capture_params.resolution_change_policy =
       media::RESOLUTION_POLICY_FIXED_ASPECT_RATIO;
-  auto client = client_observer()->PassClient();
+  std::unique_ptr<StubClient> client = client_observer()->PassClient();
   EXPECT_CALL(*client, OnStarted());
   device()->AllocateAndStart(capture_params, std::move(client));
 
@@ -829,10 +833,10 @@ TEST_F(WebContentsVideoCaptureDeviceTest, VariableResolution_FixedAspectRatio) {
 // policy, the source size changes result in video frames of possibly varying
 // resolutions.
 TEST_F(WebContentsVideoCaptureDeviceTest, VariableResolution_AnyWithinLimits) {
-  auto capture_params = DefaultCaptureParams();
+  media::VideoCaptureParams capture_params = DefaultCaptureParams();
   capture_params.resolution_change_policy =
       media::RESOLUTION_POLICY_ANY_WITHIN_LIMIT;
-  auto client = client_observer()->PassClient();
+  std::unique_ptr<StubClient> client = client_observer()->PassClient();
   EXPECT_CALL(*client, OnStarted());
   device()->AllocateAndStart(capture_params, std::move(client));
 
@@ -901,11 +905,11 @@ TEST_F(WebContentsVideoCaptureDeviceTest,
     ASSERT_NE(capture_preferred_size, web_contents()->GetPreferredSize());
 
     // Start the WebContentsVideoCaptureDevice.
-    auto capture_params = DefaultCaptureParams();
+    media::VideoCaptureParams capture_params = DefaultCaptureParams();
     capture_params.requested_format.frame_size = oddball_size;
     capture_params.resolution_change_policy = policy;
     StubClientObserver unused_observer;
-    auto client = unused_observer.PassClient();
+    std::unique_ptr<StubClient> client = unused_observer.PassClient();
     EXPECT_CALL(*client, OnStarted());
     device()->AllocateAndStart(capture_params, std::move(client));
     base::RunLoop().RunUntilIdle();
@@ -973,7 +977,7 @@ TEST_F(WebContentsVideoCaptureDeviceTest,
 
 // Tests the Suspend/Resume() functionality.
 TEST_F(WebContentsVideoCaptureDeviceTest, SuspendsAndResumes) {
-  auto client = client_observer()->PassClient();
+  std::unique_ptr<StubClient> client = client_observer()->PassClient();
   EXPECT_CALL(*client, OnStarted());
   device()->AllocateAndStart(DefaultCaptureParams(), std::move(client));
 
@@ -1008,7 +1012,7 @@ TEST_F(WebContentsVideoCaptureDeviceTest, SuspendsAndResumes) {
 
 // Tests the RequestRefreshFrame() functionality.
 TEST_F(WebContentsVideoCaptureDeviceTest, ProvidesRefreshFrames) {
-  auto client = client_observer()->PassClient();
+  std::unique_ptr<StubClient> client = client_observer()->PassClient();
   EXPECT_CALL(*client, OnStarted());
   device()->AllocateAndStart(DefaultCaptureParams(), std::move(client));
 

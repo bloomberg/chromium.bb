@@ -122,6 +122,10 @@ class MockMediaStreamDispatcherHost : public MediaStreamDispatcherHost,
         render_frame_id, page_request_id, device_id, type, security_origin);
   }
 
+  void OnStreamStarted(const std::string label) {
+    MediaStreamDispatcherHost::OnStreamStarted(label);
+  }
+
   std::string label_;
   StreamDeviceInfoArray audio_devices_;
   StreamDeviceInfoArray video_devices_;
@@ -164,6 +168,9 @@ class MockMediaStreamDispatcherHost : public MediaStreamDispatcherHost,
       StreamDeviceInfoArray video_device_list) {
     OnStreamGenerated(current_ipc_->routing_id(), request_id,
                       audio_device_list.size(), video_device_list.size());
+    // Simulate the stream started event back to host for UI testing.
+    OnStreamStarted(label);
+
     // Notify that the event have occurred.
     base::Closure quit_closure = quit_closures_.front();
     quit_closures_.pop();
