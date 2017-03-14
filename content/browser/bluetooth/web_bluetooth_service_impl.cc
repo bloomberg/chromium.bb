@@ -64,33 +64,12 @@ blink::mojom::WebBluetoothResult TranslateConnectErrorAndRecord(
     case device::BluetoothDevice::ERROR_UNSUPPORTED_DEVICE:
       RecordConnectGATTOutcome(UMAConnectGATTOutcome::UNSUPPORTED_DEVICE);
       return blink::mojom::WebBluetoothResult::CONNECT_UNSUPPORTED_DEVICE;
-    case device::BluetoothDevice::ERROR_ATTRIBUTE_LENGTH_INVALID:
-      RecordConnectGATTOutcome(UMAConnectGATTOutcome::ATTRIBUTE_LENGTH_INVALID);
-      return blink::mojom::WebBluetoothResult::CONNECT_ATTRIBUTE_LENGTH_INVALID;
-    case device::BluetoothDevice::ERROR_CONNECTION_CONGESTED:
-      RecordConnectGATTOutcome(UMAConnectGATTOutcome::CONNECTION_CONGESTED);
-      return blink::mojom::WebBluetoothResult::CONNECT_CONNECTION_CONGESTED;
-    case device::BluetoothDevice::ERROR_INSUFFICIENT_ENCRYPTION:
-      RecordConnectGATTOutcome(UMAConnectGATTOutcome::INSUFFICIENT_ENCRYPTION);
-      return blink::mojom::WebBluetoothResult::CONNECT_INSUFFICIENT_ENCRYPTION;
-    case device::BluetoothDevice::ERROR_OFFSET_INVALID:
-      RecordConnectGATTOutcome(UMAConnectGATTOutcome::OFFSET_INVALID);
-      return blink::mojom::WebBluetoothResult::CONNECT_OFFSET_INVALID;
-    case device::BluetoothDevice::ERROR_READ_NOT_PERMITTED:
-      RecordConnectGATTOutcome(UMAConnectGATTOutcome::READ_NOT_PERMITTED);
-      return blink::mojom::WebBluetoothResult::CONNECT_READ_NOT_PERMITTED;
-    case device::BluetoothDevice::ERROR_REQUEST_NOT_SUPPORTED:
-      RecordConnectGATTOutcome(UMAConnectGATTOutcome::REQUEST_NOT_SUPPORTED);
-      return blink::mojom::WebBluetoothResult::CONNECT_REQUEST_NOT_SUPPORTED;
-    case device::BluetoothDevice::ERROR_WRITE_NOT_PERMITTED:
-      RecordConnectGATTOutcome(UMAConnectGATTOutcome::WRITE_NOT_PERMITTED);
-      return blink::mojom::WebBluetoothResult::CONNECT_WRITE_NOT_PERMITTED;
     case device::BluetoothDevice::NUM_CONNECT_ERROR_CODES:
       NOTREACHED();
-      return blink::mojom::WebBluetoothResult::UNTRANSLATED_CONNECT_ERROR_CODE;
+      return blink::mojom::WebBluetoothResult::CONNECT_UNKNOWN_FAILURE;
   }
   NOTREACHED();
-  return blink::mojom::WebBluetoothResult::UNTRANSLATED_CONNECT_ERROR_CODE;
+  return blink::mojom::WebBluetoothResult::CONNECT_UNKNOWN_FAILURE;
 }
 
 blink::mojom::WebBluetoothResult TranslateGATTErrorAndRecord(

@@ -1797,51 +1797,6 @@ std::string LayoutTestBluetoothAdapterProvider::errorUUID(uint32_t alias) {
 }
 
 // static
-BluetoothUUID LayoutTestBluetoothAdapterProvider::connectErrorUUID(
-    BluetoothDevice::ConnectErrorCode error_code) {
-  // Case values listed in alphabetical order.
-  // Associated UUIDs are defined in layout tests and should remain stable
-  // even if BluetoothDevice enum values change.
-  switch (error_code) {
-    case BluetoothDevice::ERROR_ATTRIBUTE_LENGTH_INVALID:
-      return BluetoothUUID("0008");
-    case BluetoothDevice::ERROR_AUTH_CANCELED:
-      return BluetoothUUID("0004");
-    case BluetoothDevice::ERROR_AUTH_FAILED:
-      return BluetoothUUID("0003");
-    case BluetoothDevice::ERROR_AUTH_REJECTED:
-      return BluetoothUUID("0005");
-    case BluetoothDevice::ERROR_AUTH_TIMEOUT:
-      return BluetoothUUID("0006");
-    case BluetoothDevice::ERROR_CONNECTION_CONGESTED:
-      return BluetoothUUID("0009");
-    case BluetoothDevice::ERROR_FAILED:
-      return BluetoothUUID("0002");
-    case BluetoothDevice::ERROR_INPROGRESS:
-      return BluetoothUUID("0001");
-    case BluetoothDevice::ERROR_INSUFFICIENT_ENCRYPTION:
-      return BluetoothUUID("000a");
-    case BluetoothDevice::ERROR_OFFSET_INVALID:
-      return BluetoothUUID("000b");
-    case BluetoothDevice::ERROR_READ_NOT_PERMITTED:
-      return BluetoothUUID("000c");
-    case BluetoothDevice::ERROR_REQUEST_NOT_SUPPORTED:
-      return BluetoothUUID("000d");
-    case BluetoothDevice::ERROR_UNKNOWN:
-      return BluetoothUUID("0000");
-    case BluetoothDevice::ERROR_UNSUPPORTED_DEVICE:
-      return BluetoothUUID("0007");
-    case BluetoothDevice::ERROR_WRITE_NOT_PERMITTED:
-      return BluetoothUUID("000e");
-    case BluetoothDevice::NUM_CONNECT_ERROR_CODES:
-      NOTREACHED();
-      return BluetoothUUID();
-  }
-  NOTREACHED();
-  return BluetoothUUID();
-}
-
-// static
 std::string LayoutTestBluetoothAdapterProvider::makeMACAddress(uint64_t addr) {
   return BluetoothDevice::CanonicalizeAddress(
       base::StringPrintf("%012" PRIx64, addr));

@@ -17,13 +17,6 @@ var errorCanceled = 'Request canceled';
 var errorTimeout = 'Operation timed out';
 var errorUnsupportedDevice = 'This device is not supported on ' +
     'the current platform';
-var errorAttributeLengthInvalid = 'Attribute length invalid';
-var errorConnectionCongested = 'Connection congested';
-var errorInsufficientEncryption = 'Insufficient encryption';
-var errorOffsetInvalid = 'Offset invalid';
-var errorReadNotPermitted = 'Permission denied';
-var errorRequestNotSupported = 'Request not supported';
-var errorWriteNotPermitted = 'Permission denied';
 
 function expectError(message) {
   if (!chrome.runtime.lastError)
@@ -76,13 +69,6 @@ queue = [function() {
   makeConnectErrorFunction(errorCanceled),
   makeConnectErrorFunction(errorTimeout),
   makeConnectErrorFunction(errorUnsupportedDevice),
-  makeConnectErrorFunction(errorAttributeLengthInvalid),
-  makeConnectErrorFunction(errorConnectionCongested),
-  makeConnectErrorFunction(errorInsufficientEncryption),
-  makeConnectErrorFunction(errorOffsetInvalid),
-  makeConnectErrorFunction(errorReadNotPermitted),
-  makeConnectErrorFunction(errorRequestNotSupported),
-  makeConnectErrorFunction(errorWriteNotPermitted),
 function () {
   expectSuccess();
 

@@ -92,40 +92,23 @@ DOMException* BluetoothError::createDOMException(
       // NetworkErrors:
       MAP_ERROR(CONNECT_ALREADY_IN_PROGRESS, NetworkError,
                 "Connection already in progress.");
-      MAP_ERROR(CONNECT_ATTRIBUTE_LENGTH_INVALID, NetworkError,
-                "Write operation exceeds the maximum length of the attribute.");
       MAP_ERROR(CONNECT_AUTH_CANCELED, NetworkError,
                 "Authentication canceled.");
       MAP_ERROR(CONNECT_AUTH_FAILED, NetworkError, "Authentication failed.");
       MAP_ERROR(CONNECT_AUTH_REJECTED, NetworkError,
                 "Authentication rejected.");
       MAP_ERROR(CONNECT_AUTH_TIMEOUT, NetworkError, "Authentication timeout.");
-      MAP_ERROR(CONNECT_CONNECTION_CONGESTED, NetworkError,
-                "Remote device connection is congested.");
-      MAP_ERROR(CONNECT_INSUFFICIENT_ENCRYPTION, NetworkError,
-                "Insufficient encryption for a given operation");
-      MAP_ERROR(
-          CONNECT_OFFSET_INVALID, NetworkError,
-          "Read or write operation was requested with an invalid offset.");
-      MAP_ERROR(CONNECT_READ_NOT_PERMITTED, NetworkError,
-                "GATT read operation is not permitted.");
-      MAP_ERROR(CONNECT_REQUEST_NOT_SUPPORTED, NetworkError,
-                "The given request is not supported.");
       MAP_ERROR(CONNECT_UNKNOWN_ERROR, NetworkError,
                 "Unknown error when connecting to the device.");
       MAP_ERROR(CONNECT_UNKNOWN_FAILURE, NetworkError,
                 "Connection failed for unknown reason.");
       MAP_ERROR(CONNECT_UNSUPPORTED_DEVICE, NetworkError,
                 "Unsupported device.");
-      MAP_ERROR(CONNECT_WRITE_NOT_PERMITTED, NetworkError,
-                "GATT write operation is not permitted.");
       MAP_ERROR(DEVICE_NO_LONGER_IN_RANGE, NetworkError,
                 "Bluetooth Device is no longer in range.");
       MAP_ERROR(GATT_NOT_PAIRED, NetworkError, "GATT Error: Not paired.");
       MAP_ERROR(GATT_OPERATION_IN_PROGRESS, NetworkError,
                 "GATT operation already in progress.");
-      MAP_ERROR(UNTRANSLATED_CONNECT_ERROR_CODE, NetworkError,
-                "Unknown ConnectErrorCode.");
 
       // NotFoundErrors:
       MAP_ERROR(WEB_BLUETOOTH_NOT_SUPPORTED, NotFoundError,

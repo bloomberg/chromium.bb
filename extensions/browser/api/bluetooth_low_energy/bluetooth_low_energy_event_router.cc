@@ -1683,9 +1683,6 @@ void BluetoothLowEnergyEventRouter::OnConnectError(
   connecting_devices_.erase(connect_id);
   Status error_status = kStatusErrorFailed;
   switch (error_code) {
-    case BluetoothDevice::ERROR_ATTRIBUTE_LENGTH_INVALID:
-      error_status = kStatusErrorAttributeLengthInvalid;
-      break;
     case BluetoothDevice::ERROR_AUTH_CANCELED:
       error_status = kStatusErrorCanceled;
       break;
@@ -1698,35 +1695,17 @@ void BluetoothLowEnergyEventRouter::OnConnectError(
     case BluetoothDevice::ERROR_AUTH_TIMEOUT:
       error_status = kStatusErrorTimeout;
       break;
-    case BluetoothDevice::ERROR_CONNECTION_CONGESTED:
-      error_status = kStatusErrorConnectionCongested;
-      break;
     case BluetoothDevice::ERROR_FAILED:
       error_status = kStatusErrorFailed;
       break;
     case BluetoothDevice::ERROR_INPROGRESS:
       error_status = kStatusErrorInProgress;
       break;
-    case BluetoothDevice::ERROR_INSUFFICIENT_ENCRYPTION:
-      error_status = kStatusErrorInsufficientEncryption;
-      break;
-    case BluetoothDevice::ERROR_OFFSET_INVALID:
-      error_status = kStatusErrorOffsetInvalid;
-      break;
-    case BluetoothDevice::ERROR_READ_NOT_PERMITTED:
-      error_status = kStatusErrorPermissionDenied;
-      break;
-    case BluetoothDevice::ERROR_REQUEST_NOT_SUPPORTED:
-      error_status = kStatusErrorRequestNotSupported;
-      break;
     case BluetoothDevice::ERROR_UNKNOWN:
       error_status = kStatusErrorFailed;
       break;
     case BluetoothDevice::ERROR_UNSUPPORTED_DEVICE:
       error_status = kStatusErrorUnsupportedDevice;
-      break;
-    case BluetoothDevice::ERROR_WRITE_NOT_PERMITTED:
-      error_status = kStatusErrorPermissionDenied;
       break;
     case BluetoothDevice::NUM_CONNECT_ERROR_CODES:
       NOTREACHED();

@@ -1144,10 +1144,11 @@ IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, GattConnection) {
       .WillRepeatedly(Return(device0_.get()));
   EXPECT_CALL(*mock_adapter_, GetDevice(kTestLeDeviceAddress1))
       .WillRepeatedly(Return(device1_.get()));
-  static_assert(BluetoothDevice::NUM_CONNECT_ERROR_CODES == 15,
+  static_assert(
+      BluetoothDevice::NUM_CONNECT_ERROR_CODES == 8,
       "Update required if the number of BluetoothDevice enums changes.");
   EXPECT_CALL(*device0_, CreateGattConnection(_, _))
-      .Times(16)
+      .Times(9)
       .WillOnce(InvokeCallbackArgument<1>(BluetoothDevice::ERROR_FAILED))
       .WillOnce(InvokeCallbackArgument<1>(BluetoothDevice::ERROR_INPROGRESS))
       .WillOnce(InvokeCallbackArgument<1>(BluetoothDevice::ERROR_AUTH_FAILED))
@@ -1156,20 +1157,6 @@ IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, GattConnection) {
       .WillOnce(InvokeCallbackArgument<1>(BluetoothDevice::ERROR_AUTH_TIMEOUT))
       .WillOnce(
           InvokeCallbackArgument<1>(BluetoothDevice::ERROR_UNSUPPORTED_DEVICE))
-      .WillOnce(InvokeCallbackArgument<1>(
-          BluetoothDevice::ERROR_ATTRIBUTE_LENGTH_INVALID))
-      .WillOnce(InvokeCallbackArgument<1>(
-          BluetoothDevice::ERROR_CONNECTION_CONGESTED))
-      .WillOnce(InvokeCallbackArgument<1>(
-          BluetoothDevice::ERROR_INSUFFICIENT_ENCRYPTION))
-      .WillOnce(
-          InvokeCallbackArgument<1>(BluetoothDevice::ERROR_OFFSET_INVALID))
-      .WillOnce(InvokeCallbackArgument<1>(
-          BluetoothDevice::ERROR_READ_NOT_PERMITTED))
-      .WillOnce(InvokeCallbackArgument<1>(
-          BluetoothDevice::ERROR_REQUEST_NOT_SUPPORTED))
-      .WillOnce(InvokeCallbackArgument<1>(
-          BluetoothDevice::ERROR_WRITE_NOT_PERMITTED))
       .WillOnce(InvokeCallbackWithScopedPtrArg<0, BluetoothGattConnection>(
           CreateGattConnection(mock_adapter_, kTestLeDeviceAddress0,
                                true /* expect_disconnect */)))

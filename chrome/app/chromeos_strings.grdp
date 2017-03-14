@@ -2665,27 +2665,6 @@ Press any key to continue exploring.
   <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_CONNECT_UNSUPPORTED_DEVICE">
     Unsupported Bluetooth device: "<ph name="DEVICE_NAME">%1<ex>Nexus 4</ex></ph>".
   </message>
-  <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_CONNECT_ATTRIBUTE_LENGTH_INVALID">
-    Write operation exceeds the maximum length of the attribute to: "<ph name="DEVICE_NAME">%1<ex>Nexus 4</ex></ph>".
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_CONNECT_CONNECTION_CONGESTED">
-    Connection is congested to remote device: "<ph name="DEVICE_NAME">%1<ex>Nexus 4</ex></ph>".
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_CONNECT_INSUFFICIENT_ENCRYPTION">
-    Insufficient encryption for a given operation on: "<ph name="DEVICE_NAME">%1<ex>Nexus 4</ex></ph>".
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_CONNECT_OFFSET_INVALID">
-    Read or write operation was requested with an invalid offset on: "<ph name="DEVICE_NAME">%1<ex>Nexus 4</ex></ph>".
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_CONNECT_READ_NOT_PERMITTED">
-    Read operation is not permitted on: "<ph name="DEVICE_NAME">%1<ex>Nexus 4</ex></ph>".
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_CONNECT_REQUEST_NOT_SUPPORTED">
-    The given request is not supported to: "<ph name="DEVICE_NAME">%1<ex>Nexus 4</ex></ph>".
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_CONNECT_WRITE_NOT_PERMITTED">
-    Write operation is not permitted on: "<ph name="DEVICE_NAME">%1<ex>Nexus 4</ex></ph>".
-  </message>
   <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_DISCONNECT_FAILED">
     Failed to disconnect from "<ph name="DEVICE_NAME">%1<ex>Nexus S</ex></ph>".
   </message>

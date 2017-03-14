@@ -47,26 +47,21 @@ const char kErrorAdapterNotInitialized[] =
     "Could not initialize Bluetooth adapter";
 const char kErrorAlreadyConnected[] = "Already connected";
 const char kErrorAlreadyNotifying[] = "Already notifying";
-const char kErrorAttributeLengthInvalid[] = "Attribute length invalid";
 const char kErrorAuthenticationFailed[] = "Authentication failed";
 const char kErrorCanceled[] = "Request canceled";
-const char kErrorConnectionCongested[] = "Connection congested";
 const char kErrorGattNotSupported[] = "Operation not supported by this service";
 const char kErrorHigherSecurity[] = "Higher security needed";
 const char kErrorInProgress[] = "In progress";
 const char kErrorInsufficientAuthorization[] = "Insufficient authorization";
-const char kErrorInsufficientEncryption[] = "Insufficient encryption";
 const char kErrorInvalidAdvertisementLength[] = "Invalid advertisement length";
 const char kErrorInvalidLength[] = "Invalid attribute value length";
 const char kErrorNotConnected[] = "Not connected";
 const char kErrorNotFound[] = "Instance not found";
 const char kErrorNotNotifying[] = "Not notifying";
-const char kErrorOffsetInvalid[] = "Offset invalid";
 const char kErrorOperationFailed[] = "Operation failed";
 const char kErrorPermissionDenied[] = "Permission denied";
 const char kErrorPlatformNotSupported[] =
     "This operation is not supported on the current platform";
-const char kErrorRequestNotSupported[] = "Request not supported";
 const char kErrorTimeout[] = "Operation timed out";
 const char kErrorUnsupportedDevice[] =
     "This device is not supported on the current platform";
@@ -100,14 +95,10 @@ std::string StatusToString(BluetoothLowEnergyEventRouter::Status status) {
       return kErrorAlreadyConnected;
     case BluetoothLowEnergyEventRouter::kStatusErrorAlreadyNotifying:
       return kErrorAlreadyNotifying;
-    case BluetoothLowEnergyEventRouter::kStatusErrorAttributeLengthInvalid:
-      return kErrorAttributeLengthInvalid;
     case BluetoothLowEnergyEventRouter::kStatusErrorAuthenticationFailed:
       return kErrorAuthenticationFailed;
     case BluetoothLowEnergyEventRouter::kStatusErrorCanceled:
       return kErrorCanceled;
-    case BluetoothLowEnergyEventRouter::kStatusErrorConnectionCongested:
-      return kErrorConnectionCongested;
     case BluetoothLowEnergyEventRouter::kStatusErrorGattNotSupported:
       return kErrorGattNotSupported;
     case BluetoothLowEnergyEventRouter::kStatusErrorHigherSecurity:
@@ -116,8 +107,6 @@ std::string StatusToString(BluetoothLowEnergyEventRouter::Status status) {
       return kErrorInProgress;
     case BluetoothLowEnergyEventRouter::kStatusErrorInsufficientAuthorization:
       return kErrorInsufficientAuthorization;
-    case BluetoothLowEnergyEventRouter::kStatusErrorInsufficientEncryption:
-      return kErrorInsufficientEncryption;
     case BluetoothLowEnergyEventRouter::kStatusErrorInvalidLength:
       return kErrorInvalidLength;
     case BluetoothLowEnergyEventRouter::kStatusErrorNotConnected:
@@ -126,12 +115,8 @@ std::string StatusToString(BluetoothLowEnergyEventRouter::Status status) {
       return kErrorNotFound;
     case BluetoothLowEnergyEventRouter::kStatusErrorNotNotifying:
       return kErrorNotNotifying;
-    case BluetoothLowEnergyEventRouter::kStatusErrorOffsetInvalid:
-      return kErrorOffsetInvalid;
     case BluetoothLowEnergyEventRouter::kStatusErrorPermissionDenied:
       return kErrorPermissionDenied;
-    case BluetoothLowEnergyEventRouter::kStatusErrorRequestNotSupported:
-      return kErrorRequestNotSupported;
     case BluetoothLowEnergyEventRouter::kStatusErrorTimeout:
       return kErrorTimeout;
     case BluetoothLowEnergyEventRouter::kStatusErrorUnsupportedDevice:

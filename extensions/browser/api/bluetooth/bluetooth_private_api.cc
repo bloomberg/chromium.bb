@@ -516,9 +516,6 @@ void BluetoothPrivateConnectFunction::OnErrorCallback(
     device::BluetoothDevice::ConnectErrorCode error) {
   bt_private::ConnectResultType result = bt_private::CONNECT_RESULT_TYPE_NONE;
   switch (error) {
-    case device::BluetoothDevice::ERROR_ATTRIBUTE_LENGTH_INVALID:
-      result = bt_private::CONNECT_RESULT_TYPE_ATTRIBUTELENGTHINVALID;
-      break;
     case device::BluetoothDevice::ERROR_AUTH_CANCELED:
       result = bt_private::CONNECT_RESULT_TYPE_AUTHCANCELED;
       break;
@@ -531,35 +528,17 @@ void BluetoothPrivateConnectFunction::OnErrorCallback(
     case device::BluetoothDevice::ERROR_AUTH_TIMEOUT:
       result = bt_private::CONNECT_RESULT_TYPE_AUTHTIMEOUT;
       break;
-    case device::BluetoothDevice::ERROR_CONNECTION_CONGESTED:
-      result = bt_private::CONNECT_RESULT_TYPE_CONNECTIONCONGESTED;
-      break;
     case device::BluetoothDevice::ERROR_FAILED:
       result = bt_private::CONNECT_RESULT_TYPE_FAILED;
       break;
     case device::BluetoothDevice::ERROR_INPROGRESS:
       result = bt_private::CONNECT_RESULT_TYPE_INPROGRESS;
       break;
-    case device::BluetoothDevice::ERROR_INSUFFICIENT_ENCRYPTION:
-      result = bt_private::CONNECT_RESULT_TYPE_INSUFFICIENTENCRYPTION;
-      break;
-    case device::BluetoothDevice::ERROR_OFFSET_INVALID:
-      result = bt_private::CONNECT_RESULT_TYPE_OFFSETINVALID;
-      break;
-    case device::BluetoothDevice::ERROR_READ_NOT_PERMITTED:
-      result = bt_private::CONNECT_RESULT_TYPE_READNOTPERMITTED;
-      break;
-    case device::BluetoothDevice::ERROR_REQUEST_NOT_SUPPORTED:
-      result = bt_private::CONNECT_RESULT_TYPE_REQUESTNOTSUPPORTED;
-      break;
     case device::BluetoothDevice::ERROR_UNKNOWN:
       result = bt_private::CONNECT_RESULT_TYPE_UNKNOWNERROR;
       break;
     case device::BluetoothDevice::ERROR_UNSUPPORTED_DEVICE:
       result = bt_private::CONNECT_RESULT_TYPE_UNSUPPORTEDDEVICE;
-      break;
-    case device::BluetoothDevice::ERROR_WRITE_NOT_PERMITTED:
-      result = bt_private::CONNECT_RESULT_TYPE_WRITENOTPERMITTED;
       break;
     case device::BluetoothDevice::NUM_CONNECT_ERROR_CODES:
       NOTREACHED();
