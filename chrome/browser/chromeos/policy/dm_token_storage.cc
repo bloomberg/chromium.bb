@@ -5,7 +5,7 @@
 #include "chrome/browser/chromeos/policy/dm_token_storage.h"
 
 #include "base/bind.h"
-#include "base/threading/sequenced_worker_pool.h"
+#include "base/task_scheduler/post_task.h"
 #include "chrome/browser/chromeos/settings/token_encryptor.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/cryptohome/system_salt_getter.h"
@@ -17,14 +17,12 @@ namespace {
 
 std::string EncryptToken(const std::string& system_salt,
                          const std::string& dm_token) {
-  DCHECK(content::BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
   chromeos::CryptohomeTokenEncryptor encryptor(system_salt);
   return encryptor.EncryptWithSystemSalt(dm_token);
 }
 
 std::string DecryptToken(const std::string& system_salt,
                          const std::string encrypted_dm_token) {
-  DCHECK(content::BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
   chromeos::CryptohomeTokenEncryptor encryptor(system_salt);
   return encryptor.DecryptWithSystemSalt(encrypted_dm_token);
 }
@@ -129,8 +127,10 @@ void DMTokenStorage::EncryptAndStoreToken() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(!system_salt_.empty());
   DCHECK(!dm_token_.empty());
-  base::PostTaskAndReplyWithResult(
-      content::BrowserThread::GetBlockingPool(), FROM_HERE,
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE,
+      base::TaskTraits().MayBlock().WithPriority(
+          base::TaskPriority::BACKGROUND),
       base::Bind(&EncryptToken, system_salt_, dm_token_),
       base::Bind(&DMTokenStorage::OnTokenEncrypted,
                  weak_ptr_factory_.GetWeakPtr()));
@@ -152,8 +152,10 @@ void DMTokenStorage::LoadAndDecryptToken() {
   std::string encrypted_dm_token =
       local_state_->GetString(prefs::kDeviceDMToken);
   if (!encrypted_dm_token.empty()) {
-    base::PostTaskAndReplyWithResult(
-        content::BrowserThread::GetBlockingPool(), FROM_HERE,
+    base::PostTaskWithTraitsAndReplyWithResult(
+        FROM_HERE,
+        base::TaskTraits().MayBlock().WithPriority(
+            base::TaskPriority::BACKGROUND),
         base::Bind(&DecryptToken, system_salt_, encrypted_dm_token),
         base::Bind(&DMTokenStorage::FlushRetrieveTokenCallback,
                    weak_ptr_factory_.GetWeakPtr()));
