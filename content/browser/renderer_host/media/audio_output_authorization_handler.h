@@ -14,9 +14,12 @@
 #include "content/browser/media/media_devices_permission_checker.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "media/audio/audio_device_description.h"
-#include "media/audio/audio_manager.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/output_device_info.h"
+
+namespace media {
+class AudioSystem;
+}
 
 namespace content {
 
@@ -40,7 +43,7 @@ class CONTENT_EXPORT AudioOutputAuthorizationHandler {
                           const media::AudioParameters& params,
                           const std::string& raw_device_id)>;
 
-  AudioOutputAuthorizationHandler(media::AudioManager* audio_manager,
+  AudioOutputAuthorizationHandler(media::AudioSystem* audio_system,
                                   MediaStreamManager* media_stream_manager,
                                   int render_process_id_,
                                   const std::string& salt);
@@ -84,7 +87,7 @@ class CONTENT_EXPORT AudioOutputAuthorizationHandler {
       const std::string& raw_device_id,
       const media::AudioParameters& output_params) const;
 
-  media::AudioManager* audio_manager_;
+  media::AudioSystem* audio_system_;
   MediaStreamManager* const media_stream_manager_;
   std::unique_ptr<MediaDevicesPermissionChecker> permission_checker_;
   const int render_process_id_;

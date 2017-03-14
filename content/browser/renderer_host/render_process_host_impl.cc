@@ -1091,8 +1091,8 @@ void RenderProcessHostImpl::CreateMessageFilters() {
       BrowserMainLoop::GetInstance()->user_input_monitor());
   AddFilter(audio_input_renderer_host_.get());
   audio_renderer_host_ = new AudioRendererHost(
-      GetID(), audio_manager, AudioMirroringManager::GetInstance(),
-      media_stream_manager,
+      GetID(), audio_manager, BrowserMainLoop::GetInstance()->audio_system(),
+      AudioMirroringManager::GetInstance(), media_stream_manager,
       browser_context->GetResourceContext()->GetMediaDeviceIDSalt());
   AddFilter(audio_renderer_host_.get());
   AddFilter(

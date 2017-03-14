@@ -78,16 +78,23 @@ class MockAudioManager : public AudioManager {
   const char* GetName() override;
 
   // Setters to emulate desired in-test behavior.
-  void SetInputStreamParameters(const AudioParameters& input_params);
+  void SetInputStreamParameters(const AudioParameters& params);
+  void SetOutputStreamParameters(const AudioParameters& params);
+  void SetDefaultOutputStreamParameters(const AudioParameters& params);
   void SetHasInputDevices(bool has_input_devices);
+  void SetHasOutputDevices(bool has_output_devices);
 
  protected:
   ~MockAudioManager() override;
 
  private:
   friend class base::DeleteHelper<MockAudioManager>;
+
   AudioParameters input_params_;
+  AudioParameters output_params_;
+  AudioParameters default_output_params_;
   bool has_input_devices_ = true;
+  bool has_output_devices_ = true;
 
   DISALLOW_COPY_AND_ASSIGN(MockAudioManager);
 };

@@ -26,6 +26,7 @@
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "ipc/ipc_message_utils.h"
+#include "media/audio/audio_system_impl.h"
 #include "media/audio/fake_audio_log_factory.h"
 #include "media/audio/fake_audio_manager.h"
 #include "media/base/bind_to_current_loop.h"
@@ -128,11 +129,13 @@ class MockAudioRendererHost : public AudioRendererHost {
   MockAudioRendererHost(base::RunLoop* auth_run_loop,
                         int render_process_id,
                         media::AudioManager* audio_manager,
+                        media::AudioSystem* audio_system,
                         AudioMirroringManager* mirroring_manager,
                         MediaStreamManager* media_stream_manager,
                         const std::string& salt)
       : AudioRendererHost(render_process_id,
                           audio_manager,
+                          audio_system,
                           mirroring_manager,
                           media_stream_manager,
                           salt),
@@ -235,13 +238,15 @@ class AudioRendererHostTest : public testing::Test {
         audio_manager_(base::MakeUnique<FakeAudioManagerWithAssociations>(
             base::ThreadTaskRunnerHandle::Get(),
             log_factory.get())),
+        audio_system_(media::AudioSystemImpl::Create(audio_manager_.get())),
         render_process_host_(&browser_context_, &auth_run_loop_) {
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kUseFakeDeviceForMediaStream);
     media_stream_manager_.reset(new MediaStreamManager(audio_manager_.get()));
     host_ = new MockAudioRendererHost(
         &auth_run_loop_, render_process_host_.GetID(), audio_manager_.get(),
-        &mirroring_manager_, media_stream_manager_.get(), kSalt);
+        audio_system_.get(), &mirroring_manager_, media_stream_manager_.get(),
+        kSalt);
 
     // Simulate IPC channel connected.
     host_->set_peer_process_for_testing(base::Process::Current());
@@ -511,6 +516,7 @@ class AudioRendererHostTest : public testing::Test {
   TestBrowserContext browser_context_;
   std::unique_ptr<media::FakeAudioLogFactory> log_factory;
   std::unique_ptr<FakeAudioManagerWithAssociations> audio_manager_;
+  std::unique_ptr<media::AudioSystem> audio_system_;
   MockAudioMirroringManager mirroring_manager_;
   base::RunLoop auth_run_loop_;
   MockRenderProcessHostWithSignaling render_process_host_;
