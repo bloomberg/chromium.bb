@@ -62,52 +62,6 @@ bool detectTextEncoding(const char* data,
   if (encoding == UNKNOWN_ENCODING || encoding == UTF8)
     return false;
 
-  // Map all the Shift-JIS variants to Shift-JIS.
-  if (hintUserLanguage && !strncmp(hintUserLanguage, "ja", 2) &&
-      IsShiftJisOrVariant(encoding)) {
-    encoding = JAPANESE_SHIFT_JIS;
-  }
-
-  // 7-bit encodings (except ISO-2022-JP), and some obscure encodings not
-  // supported in WHATWG encoding standard are marked as ASCII to keep the raw
-  // bytes intact.
-  // TODO(jinsukkim): Put this conversion into CED library, and enable "WHATWG"
-  // mode.
-  switch (encoding) {
-    case HZ_GB_2312:
-    case ISO_2022_KR:
-    case ISO_2022_CN:
-    case UTF7:
-
-    case CHINESE_EUC_DEC:
-    case CHINESE_CNS:
-    case CHINESE_BIG5_CP950:
-    case JAPANESE_CP932:
-    case MSFT_CP874:
-    case TSCII:
-    case TAMIL_MONO:
-    case TAMIL_BI:
-    case JAGRAN:
-    case BHASKAR:
-    case HTCHANAKYA:
-    case BINARYENC:
-    case UTF8UTF8:
-    case TAM_ELANGO:
-    case TAM_LTTMBARANI:
-    case TAM_SHREE:
-    case TAM_TBOOMIS:
-    case TAM_TMNEWS:
-    case TAM_WEBTAMIL:
-    case KDDI_SHIFT_JIS:
-    case DOCOMO_SHIFT_JIS:
-    case SOFTBANK_SHIFT_JIS:
-    case KDDI_ISO_2022_JP:
-    case SOFTBANK_ISO_2022_JP:
-      encoding = ASCII_7BIT;
-      break;
-    default:
-      break;
-  }
   *detectedEncoding = WTF::TextEncoding(MimeEncodingName(encoding));
   return true;
 }
