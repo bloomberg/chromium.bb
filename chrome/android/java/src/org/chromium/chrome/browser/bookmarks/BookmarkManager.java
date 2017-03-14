@@ -233,6 +233,20 @@ public class BookmarkManager implements BookmarkDelegate {
     }
 
     /**
+     * See {@link SelectableListLayout#detachContentView()}.
+     */
+    public View detachContentView() {
+        return mSelectableListLayout.detachContentView();
+    }
+
+    /**
+     * @return The vertical scroll offset of the content view.
+     */
+    public int getVerticalScrollOffset() {
+        return mRecyclerView.computeVerticalScrollOffset();
+    }
+
+    /**
      * Sets the listener that reacts upon the change of the UI state of bookmark manager.
      */
     public void setBasicNativePage(BasicNativePage nativePage) {

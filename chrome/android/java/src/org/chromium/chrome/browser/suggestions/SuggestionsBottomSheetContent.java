@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.suggestions;
 
-import android.support.v7.widget.RecyclerView;
 import android.view.View;
 
 import org.chromium.chrome.browser.ChromeActivity;
@@ -76,13 +75,18 @@ public class SuggestionsBottomSheetContent implements BottomSheet.BottomSheetCon
     }
 
     @Override
-    public RecyclerView getScrollingContentView() {
+    public View getContentView() {
         return mRecyclerView;
     }
 
     @Override
     public View getToolbarView() {
         return null;
+    }
+
+    @Override
+    public int getVerticalScrollOffset() {
+        return mRecyclerView.computeVerticalScrollOffset();
     }
 
     public ContextMenuManager getContextMenuManager() {

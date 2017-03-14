@@ -288,6 +288,20 @@ public class DownloadManagerUi implements OnMenuItemClickListener, SearchDelegat
     }
 
     /**
+     * See {@link SelectableListLayout#detachContentView()}.
+     */
+    public View detachContentView() {
+        return mSelectableListLayout.detachContentView();
+    }
+
+    /**
+     * @return The vertical scroll offset of the content view.
+     */
+    public int getVerticalScrollOffset() {
+        return mRecyclerView.computeVerticalScrollOffset();
+    }
+
+    /**
      * Sets the download manager to the state that the url represents.
      */
     public void updateForUrl(String url) {

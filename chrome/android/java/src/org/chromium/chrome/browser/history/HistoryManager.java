@@ -21,6 +21,7 @@ import android.support.v7.widget.RecyclerView.OnScrollListener;
 import android.support.v7.widget.Toolbar.OnMenuItemClickListener;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
+import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
@@ -220,6 +221,20 @@ public class HistoryManager implements OnMenuItemClickListener, SignInStateObser
      */
     public ViewGroup getView() {
         return mSelectableListLayout;
+    }
+
+    /**
+     * See {@link SelectableListLayout#detachContentView()}.
+     */
+    public View detachContentView() {
+        return mSelectableListLayout.detachContentView();
+    }
+
+    /**
+     * @return The vertical scroll offset of the content view.
+     */
+    public int getVerticalScrollOffset() {
+        return mRecyclerView.computeVerticalScrollOffset();
     }
 
     /**

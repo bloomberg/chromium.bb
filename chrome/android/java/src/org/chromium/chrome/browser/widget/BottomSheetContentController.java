@@ -15,19 +15,32 @@ import android.view.MenuItem;
 import android.view.View;
 
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.bookmarks.BookmarkSheetContent;
+import org.chromium.chrome.browser.download.DownloadSheetContent;
+import org.chromium.chrome.browser.history.HistorySheetContent;
+import org.chromium.chrome.browser.suggestions.SuggestionsBottomSheetContent;
+import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.util.MathUtils;
-import org.chromium.ui.widget.Toast;
+import org.chromium.chrome.browser.widget.BottomSheet.BottomSheetContent;
 
 import java.lang.reflect.Field;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Map.Entry;
 
 /**
  * Displays and controls a {@link BottomNavigationView} fixed to the bottom of the
- * {@link BottomSheet}.
+ * {@link BottomSheet}. Also manages {@link BottomSheetContent} displayed in the BottomSheet.
  */
 public class BottomSheetContentController extends BottomNavigationView
         implements BottomSheetObserver, OnNavigationItemSelectedListener {
     private BottomSheet mBottomSheet;
+    private TabModelSelector mTabModelSelector;
     private float mDistanceBelowToolbarPx;
+    private int mSelectedItemId;
+
+    private final Map<Integer, BottomSheetContent> mBottomSheetContents = new HashMap<>();
 
     public BottomSheetContentController(Context context, AttributeSet atts) {
         super(context, atts);
@@ -37,10 +50,13 @@ public class BottomSheetContentController extends BottomNavigationView
      * Initializes the {@link BottomSheetContentController}.
      * @param bottomSheet The {@link BottomSheet} associated with this bottom nav.
      * @param controlContainerHeight The height of the control container in px.
+     * @param tabModelSelector The {@link TabModelSelector} for the application.
      */
-    public void init(BottomSheet bottomSheet, int controlContainerHeight) {
+    public void init(BottomSheet bottomSheet, int controlContainerHeight,
+            TabModelSelector tabModelSelector) {
         mBottomSheet = bottomSheet;
         mBottomSheet.addObserver(this);
+        mTabModelSelector = tabModelSelector;
 
         Resources res = getContext().getResources();
         mDistanceBelowToolbarPx = controlContainerHeight
@@ -50,10 +66,20 @@ public class BottomSheetContentController extends BottomNavigationView
         disableShiftingMode();
     }
 
+    /**
+     * Initialize the default {@link BottomSheetContent}.
+     */
+    public void initializeDefaultContent() {
+        mBottomSheet.showContent(getSheetContentForId(R.id.action_home));
+        mSelectedItemId = R.id.action_home;
+    }
+
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
-        Toast.makeText(getContext(), "Not implemented", Toast.LENGTH_SHORT).show();
-        return false;
+        if (mSelectedItemId == item.getItemId()) return false;
+
+        showBottomSheetContent(item.getItemId());
+        return true;
     }
 
     @Override
@@ -68,7 +94,22 @@ public class BottomSheetContentController extends BottomNavigationView
     public void onSheetOpened() {}
 
     @Override
-    public void onSheetClosed() {}
+    public void onSheetClosed() {
+        Iterator<Entry<Integer, BottomSheetContent>> contentIterator =
+                mBottomSheetContents.entrySet().iterator();
+        while (contentIterator.hasNext()) {
+            Entry<Integer, BottomSheetContent> entry = contentIterator.next();
+            if (entry.getKey() == R.id.action_home) continue;
+
+            entry.getValue().destroy();
+            contentIterator.remove();
+        }
+        // TODO(twellington): determine a policy for destroying the SuggestionsBottomSheetContent.
+
+        if (mSelectedItemId == 0 || mSelectedItemId == R.id.action_home) return;
+
+        showBottomSheetContent(R.id.action_home);
+    }
 
     @Override
     public void onLoadUrl(String url) {}
@@ -95,5 +136,36 @@ public class BottomSheetContentController extends BottomNavigationView
         } catch (NoSuchFieldException | IllegalAccessException e) {
             // Do nothing if reflection fails.
         }
+    }
+
+    private BottomSheetContent getSheetContentForId(int navItemId) {
+        BottomSheetContent content = mBottomSheetContents.get(navItemId);
+        if (content != null) return content;
+
+        if (navItemId == R.id.action_home) {
+            content = new SuggestionsBottomSheetContent(
+                    mTabModelSelector.getCurrentTab().getActivity(), mBottomSheet,
+                    mTabModelSelector);
+        } else if (navItemId == R.id.action_downloads) {
+            content = new DownloadSheetContent(mTabModelSelector.getCurrentTab().getActivity(),
+                    mTabModelSelector.getCurrentModel().isIncognito());
+        } else if (navItemId == R.id.action_bookmarks) {
+            content = new BookmarkSheetContent(mTabModelSelector.getCurrentTab().getActivity());
+        } else if (navItemId == R.id.action_history) {
+            content = new HistorySheetContent(mTabModelSelector.getCurrentTab().getActivity());
+        }
+        mBottomSheetContents.put(navItemId, content);
+        return content;
+    }
+
+    private void showBottomSheetContent(int navItemId) {
+        // There are some bugs related to programatically selecting menu items that are fixed in
+        // newer support library versions.
+        // TODO(twellington): remove this after the support library is rolled.
+        if (mSelectedItemId != 0) getMenu().findItem(mSelectedItemId).setChecked(false);
+        mSelectedItemId = navItemId;
+        getMenu().findItem(mSelectedItemId).setChecked(true);
+
+        mBottomSheet.showContent(getSheetContentForId(mSelectedItemId));
     }
 }

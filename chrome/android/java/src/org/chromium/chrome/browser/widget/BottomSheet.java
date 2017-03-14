@@ -11,7 +11,6 @@ import android.content.Context;
 import android.graphics.Region;
 import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
-import android.support.v7.widget.RecyclerView;
 import android.util.AttributeSet;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
@@ -29,7 +28,6 @@ import org.chromium.chrome.browser.NativePageHost;
 import org.chromium.chrome.browser.TabLoadStatus;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.ntp.NativePageFactory;
-import org.chromium.chrome.browser.suggestions.SuggestionsBottomSheetContent;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
@@ -125,9 +123,6 @@ public class BottomSheet
     /** A handle to the content being shown by the sheet. */
     private BottomSheetContent mSheetContent;
 
-    /** This is the default {@link BottomSheetContent} to show when the bottom sheet is opened. */
-    private BottomSheetContent mSuggestionsContent;
-
     /** A handle to the toolbar control container. */
     private View mControlContainer;
 
@@ -149,11 +144,11 @@ public class BottomSheet
      */
     public interface BottomSheetContent {
         /**
-         * Gets the {@link RecyclerView} that holds the content to be displayed in the Chrome Home
-         * bottom sheet.
-         * @return The scrolling content view.
+         * Gets the {@link View} that holds the content to be displayed in the Chrome Home bottom
+         * sheet.
+         * @return The content view.
          */
-        RecyclerView getScrollingContentView();
+        View getContentView();
 
         /**
          * Get the {@link View} that contains the toolbar specific to the content being displayed.
@@ -164,6 +159,16 @@ public class BottomSheet
          */
         @Nullable
         View getToolbarView();
+
+        /**
+         * @return The vertical scroll offset of the content view.
+         */
+        int getVerticalScrollOffset();
+
+        /**
+         * Called to destroy the BottomSheetContent when it is no longer in use.
+         */
+        void destroy();
     }
 
     /**
@@ -198,12 +203,9 @@ public class BottomSheet
             boolean isSheetInMaxPosition =
                     MathUtils.areFloatsEqual(currentShownRatio, getFullRatio());
 
-            RecyclerView scrollingView = null;
-            if (mSheetContent != null) scrollingView = mSheetContent.getScrollingContentView();
-
             // Allow the bottom sheet's content to be scrolled up without dragging the sheet down.
-            if (!isTouchEventInToolbar(e2) && isSheetInMaxPosition && scrollingView != null
-                    && scrollingView.computeVerticalScrollOffset() > 0) {
+            if (!isTouchEventInToolbar(e2) && isSheetInMaxPosition && mSheetContent != null
+                    && mSheetContent.getVerticalScrollOffset() > 0) {
                 mIsScrolling = false;
                 return false;
             }
@@ -391,14 +393,6 @@ public class BottomSheet
         mBottomSheetContentContainer.addView(mPlaceholder, placeHolderParams);
     }
 
-    /** Initialise the default bottom sheet content. */
-    public void initializeDefaultContent() {
-        assert mSheetContent == null;
-        mSuggestionsContent = new SuggestionsBottomSheetContent(
-                mTabModelSelector.getCurrentTab().getActivity(), this, mTabModelSelector);
-        showContent(mSuggestionsContent);
-    }
-
     @Override
     public int loadUrl(LoadUrlParams params, boolean incognito) {
         for (BottomSheetObserver o : mObservers) o.onLoadUrl(params.getUrl());
@@ -462,6 +456,29 @@ public class BottomSheet
     }
 
     /**
+     * Show content in the bottom sheet's content area.
+     * @param content The {@link BottomSheetContent} to show.
+     */
+    public void showContent(BottomSheetContent content) {
+        // If the desired content is already showing, do nothing.
+        if (mSheetContent == content) return;
+
+        if (mSheetContent != null) {
+            mBottomSheetContentContainer.removeView(mSheetContent.getContentView());
+            mSheetContent = null;
+        }
+
+        if (content == null) {
+            mBottomSheetContentContainer.addView(mPlaceholder);
+            return;
+        }
+
+        mBottomSheetContentContainer.removeView(mPlaceholder);
+        mSheetContent = content;
+        mBottomSheetContentContainer.addView(mSheetContent.getContentView());
+    }
+
+    /**
      * Determines if a touch event is inside the toolbar. This assumes the toolbar is the full
      * width of the screen and that the toolbar is at the top of the bottom sheet.
      * @param e The motion event to test.
@@ -479,8 +496,6 @@ public class BottomSheet
      * A notification that the sheet is exiting the peek state into one that shows content.
      */
     private void onSheetOpened() {
-        showContent(mSuggestionsContent);
-
         for (BottomSheetObserver o : mObservers) o.onSheetOpened();
     }
 
@@ -489,29 +504,6 @@ public class BottomSheet
      */
     private void onSheetClosed() {
         for (BottomSheetObserver o : mObservers) o.onSheetClosed();
-    }
-
-    /**
-     * Show content in the bottom sheet's content area.
-     * @param content The {@link BottomSheetContent} to show.
-     */
-    private void showContent(BottomSheetContent content) {
-        // If the desired content is already showing, do nothing.
-        if (mSheetContent == content) return;
-
-        if (mSheetContent != null) {
-            mBottomSheetContentContainer.removeView(mSheetContent.getScrollingContentView());
-            mSheetContent = null;
-        }
-
-        if (content == null) {
-            mBottomSheetContentContainer.addView(mPlaceholder);
-            return;
-        }
-
-        mBottomSheetContentContainer.removeView(mPlaceholder);
-        mSheetContent = content;
-        mBottomSheetContentContainer.addView(mSheetContent.getScrollingContentView());
     }
 
     /**

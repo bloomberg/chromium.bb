@@ -255,6 +255,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     private AppMenuHandler mAppMenuHandler;
     private ToolbarManager mToolbarManager;
     private BottomSheet mBottomSheet;
+    private BottomSheetContentController mBottomSheetContentController;
     private FadingBackgroundView mFadingBackgroundView;
 
     // Time in ms that it took took us to inflate the initial layout
@@ -370,12 +371,13 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
             });
             mFadingBackgroundView.addObserver(mBottomSheet);
 
-            BottomSheetContentController contentController =
+            mBottomSheetContentController =
                     (BottomSheetContentController) ((ViewStub) findViewById(R.id.bottom_nav_stub))
                             .inflate();
             int controlContainerHeight =
                     ((ControlContainer) findViewById(R.id.control_container)).getView().getHeight();
-            contentController.init(mBottomSheet, controlContainerHeight);
+            mBottomSheetContentController.init(
+                    mBottomSheet, controlContainerHeight, mTabModelSelector);
         }
         ((BottomContainer) findViewById(R.id.bottom_container)).initialize(mFullscreenManager);
     }
@@ -939,8 +941,8 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         DeferredStartupHandler.getInstance().addDeferredTask(new Runnable() {
             @Override
             public void run() {
-                if (isActivityDestroyed() || mBottomSheet == null) return;
-                mBottomSheet.initializeDefaultContent();
+                if (isActivityDestroyed() || mBottomSheetContentController == null) return;
+                mBottomSheetContentController.initializeDefaultContent();
             }
         });
     }

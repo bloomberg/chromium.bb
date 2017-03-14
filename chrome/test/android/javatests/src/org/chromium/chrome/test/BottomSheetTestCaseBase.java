@@ -6,6 +6,8 @@ package org.chromium.chrome.test;
 
 import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_PHONE;
 
+import android.support.v7.widget.RecyclerView;
+
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Restriction;
@@ -42,8 +44,10 @@ public abstract class BottomSheetTestCaseBase extends ChromeTabbedActivityTestBa
                         BottomSheet.SHEET_STATE_FULL, /* animate = */ false);
             }
         });
+        // The default BottomSheetContent is SuggestionsBottomSheetContent, whose content view is a
+        // RecyclerView.
         RecyclerViewTestUtils.waitForStableRecyclerView(
-                getBottomSheetContent().getScrollingContentView());
+                ((RecyclerView) getBottomSheetContent().getContentView()));
 
         mBottomSheet = getActivity().getBottomSheet();
     }

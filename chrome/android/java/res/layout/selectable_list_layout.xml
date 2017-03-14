@@ -12,14 +12,6 @@
         android:background="@color/appbar_background"
         android:layout_alignParentTop="true" />
 
-    <android.support.v7.widget.RecyclerView
-        android:id="@+id/recycler_view"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_alignParentBottom="true"
-        android:layout_below="@id/action_bar"
-        android:visibility="gone" />
-
     <org.chromium.chrome.browser.widget.FadingShadowView
         android:id="@+id/shadow"
         android:layout_width="match_parent"
@@ -27,23 +19,32 @@
         android:layout_below="@id/action_bar" />
 
     <FrameLayout
-       android:layout_below="@id/action_bar"
-       android:layout_width="match_parent"
-       android:layout_height="match_parent" >
-      <TextView
-          android:id="@+id/empty_view"
-          android:layout_width="wrap_content"
-          android:layout_height="wrap_content"
-          android:layout_gravity="center"
-          android:drawablePadding="3dp"
-          android:textColor="@color/google_grey_700"
-          android:textSize="16sp"
-          android:visibility="gone" />
-    </FrameLayout>
+        android:id="@+id/list_content"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_alignParentBottom="true"
+        android:layout_below="@id/action_bar">
 
-    <org.chromium.chrome.browser.widget.LoadingView
-        android:id="@+id/loading_view"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerInParent="true" />
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/recycler_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/empty_view"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:drawablePadding="3dp"
+            android:textColor="@color/google_grey_700"
+            android:textSize="16sp"
+            android:visibility="gone" />
+
+        <org.chromium.chrome.browser.widget.LoadingView
+            android:id="@+id/loading_view"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center" />
+    </FrameLayout>
 </merge>

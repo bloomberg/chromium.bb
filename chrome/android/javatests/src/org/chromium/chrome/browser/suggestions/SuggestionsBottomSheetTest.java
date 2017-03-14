@@ -11,6 +11,7 @@ import android.support.test.filters.MediumTest;
 import android.support.v7.widget.RecyclerView.ViewHolder;
 import android.view.MotionEvent;
 
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ntp.cards.ItemViewType;
 import org.chromium.chrome.test.BottomSheetTestCaseBase;
@@ -46,7 +47,7 @@ public class SuggestionsBottomSheetTest extends BottomSheetTestCaseBase {
     @MediumTest
     public void testContextMenu() throws InterruptedException {
         SuggestionsRecyclerView recyclerView =
-                (SuggestionsRecyclerView) getBottomSheetContent().getScrollingContentView();
+                (SuggestionsRecyclerView) getBottomSheetContent().getContentView();
 
         ViewHolder firstCardViewHolder = RecyclerViewTestUtils.waitForView(recyclerView, 2);
         assertEquals(firstCardViewHolder.getItemViewType(), ItemViewType.SNIPPET);
@@ -56,7 +57,13 @@ public class SuggestionsBottomSheetTest extends BottomSheetTestCaseBase {
         TestTouchUtils.longClickView(getInstrumentation(), firstCardViewHolder.itemView);
         assertTrue(recyclerView.onInterceptTouchEvent(createTapEvent()));
 
-        getActivity().closeContextMenu();
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                getActivity().closeContextMenu();
+            }
+        });
+
         assertFalse(recyclerView.onInterceptTouchEvent(createTapEvent()));
     }
 

@@ -298,6 +298,24 @@ public class SelectableListLayout<E>
     }
 
     /**
+     * Removes the content view from this view and returns it so that it may be re-attached
+     * elsewhere.
+     * @return The content view, which consists of the {@link RecyclerView} that holds the list of
+     *         items, the empty view, and the loading view.
+     */
+    public View detachContentView() {
+        View contentView = findViewById(R.id.list_content);
+        assert contentView != null;
+        removeView(contentView);
+
+        // The background color is typically set on the SelectableListLayout rather than the content
+        // view. Set the background color for the content view so that it is not transparent.
+        contentView.setBackground(getBackground());
+
+        return contentView;
+    }
+
+    /**
      * Called when a search is starting.
      */
     public void onStartSearch() {
