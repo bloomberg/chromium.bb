@@ -160,7 +160,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
           : base::SysUTF16ToNSString(_creditCard.LastFourDigits());
   cardNumberitem.textFieldEnabled = isEditing;
   cardNumberitem.autofillType = autofill::CREDIT_CARD_NUMBER;
-  [self setCardTypeIconForItem:cardNumberitem];
+  cardNumberitem.cardTypeIcon =
+      [self cardTypeIconFromCardNumber:cardNumberitem.textFieldValue];
   [model addItem:cardNumberitem
       toSectionWithIdentifier:SectionIdentifierFields];
 
@@ -200,22 +201,34 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 #pragma mark - UITextFieldDelegate
 
-- (void)textFieldDidEndEditing:(UITextField*)textField {
-  NSIndexPath* cellPath = [self indexPathForCurrentTextField];
-  DCHECK(cellPath);
-  NSIndexPath* itemPath = [NSIndexPath indexPathForItem:[cellPath row]
-                                              inSection:[cellPath section]];
+// This method is called as the text is being typed in, pasted, or deleted. Asks
+// the delegate if the text should be changed. Should always return YES. During
+// typing/pasting text, |newText| contains one or more new characters. When user
+// deletes text, |newText| is empty. |range| is the range of characters to be
+// replaced.
+- (BOOL)textField:(UITextField*)textField
+    shouldChangeCharactersInRange:(NSRange)range
+                replacementString:(NSString*)newText {
+  // Find the respective item for the text field.
+  NSIndexPath* indexPath = [self indexPathForCurrentTextField];
+  DCHECK(indexPath);
   AutofillEditItem* item = base::mac::ObjCCastStrict<AutofillEditItem>(
-      [self.collectionViewModel itemAtIndexPath:itemPath]);
+      [self.collectionViewModel itemAtIndexPath:indexPath]);
 
-  if (item.autofillType == autofill::CREDIT_CARD_NUMBER)
-    [self setCardTypeIconForItem:item];
+  // If the user is typing in the credit card number field, update the card type
+  // icon (e.g. "Visa") to reflect the number being typed.
+  if (item.autofillType == autofill::CREDIT_CARD_NUMBER) {
+    // Obtain the text being typed.
+    NSString* updatedText =
+        [textField.text stringByReplacingCharactersInRange:range
+                                                withString:newText];
+    item.cardTypeIcon = [self cardTypeIconFromCardNumber:updatedText];
+    // Update the cell.
+    [self reconfigureCellsForItems:@[ item ]
+           inSectionWithIdentifier:SectionIdentifierFields];
+  }
 
-  // Update the cell.
-  [self reconfigureCellsForItems:@[ item ]
-         inSectionWithIdentifier:SectionIdentifierFields];
-
-  [super textFieldDidEndEditing:textField];
+  return YES;
 }
 
 #pragma mark - MDCCollectionViewEditingDelegate
@@ -297,19 +310,19 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 #pragma mark - Helper Methods
 
-- (void)setCardTypeIconForItem:(AutofillEditItem*)item {
+- (UIImage*)cardTypeIconFromCardNumber:(NSString*)cardNumber {
   const char* cardType = autofill::CreditCard::GetCreditCardType(
-      base::SysNSStringToUTF16(item.textFieldValue));
+      base::SysNSStringToUTF16(cardNumber));
   if (cardType != autofill::kGenericCard) {
     int resourceID =
         autofill::data_util::GetPaymentRequestData(cardType).icon_resource_id;
     // Resize and set the card type icon.
     CGFloat dimension = kCardTypeIconDimension;
-    item.cardTypeIcon =
-        ResizeImage(NativeImage(resourceID), CGSizeMake(dimension, dimension),
-                    ProjectionMode::kAspectFillNoClipping);
+    return ResizeImage(NativeImage(resourceID),
+                       CGSizeMake(dimension, dimension),
+                       ProjectionMode::kAspectFillNoClipping);
   } else {
-    item.cardTypeIcon = nil;
+    return nil;
   }
 }
 
