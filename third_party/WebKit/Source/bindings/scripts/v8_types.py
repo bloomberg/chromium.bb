@@ -1059,21 +1059,6 @@ IdlUnionType.is_implicit_nullable = False
 IdlTypeBase.is_explicit_nullable = property(is_explicit_nullable)
 
 
-def number_of_nullable_member_types_union(idl_type):
-    # http://heycam.github.io/webidl/#dfn-number-of-nullable-member-types
-    count = 0
-    for member in idl_type.member_types:
-        if member.is_nullable:
-            count += 1
-            member = member.inner_type
-        if member.is_union_type:
-            count += number_of_nullable_member_types_union(member)
-    return count
-
-IdlUnionType.number_of_nullable_member_types = property(
-    number_of_nullable_member_types_union)
-
-
 def includes_nullable_type_union(idl_type):
     # http://heycam.github.io/webidl/#dfn-includes-a-nullable-type
     return idl_type.number_of_nullable_member_types == 1

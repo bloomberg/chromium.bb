@@ -324,6 +324,21 @@ class IdlUnionType(IdlTypeBase):
         return set(flattened_members.values())
 
     @property
+    def number_of_nullable_member_types(self):
+        """Returns the union's number of nullable types.
+
+        http://heycam.github.io/webidl/#dfn-number-of-nullable-member-types
+        """
+        count = 0
+        for member in self.member_types:
+            if member.is_nullable:
+                count += 1
+                member = member.inner_type
+            if member.is_union_type:
+                count += member.number_of_nullable_member_types
+        return count
+
+    @property
     def is_union_type(self):
         return True
 
