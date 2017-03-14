@@ -24,6 +24,7 @@
 #include "ui/base/dragdrop/drop_target_event.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/dragdrop/os_exchange_data_provider_aurax11.h"
+#include "ui/base/layout.h"
 #include "ui/base/x/selection_utils.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/base/x/x11_window_event_manager.h"
@@ -893,11 +894,10 @@ void DesktopDragDropClientAuraX11::OnMouseMovement(
     int flags,
     base::TimeTicks event_time) {
   if (drag_widget_.get()) {
-    display::Display display =
-        display::Screen::GetScreen()->GetDisplayNearestWindow(
-            drag_widget_->GetNativeWindow());
-    gfx::Point scaled_point = gfx::ScaleToRoundedPoint(
-        screen_point, 1.f / display.device_scale_factor());
+    float scale_factor =
+        ui::GetScaleFactorForNativeView(drag_widget_->GetNativeWindow());
+    gfx::Point scaled_point =
+        gfx::ScaleToRoundedPoint(screen_point, 1.f / scale_factor);
     drag_widget_->SetBounds(
         gfx::Rect(scaled_point - drag_widget_offset_, drag_image_size_));
     drag_widget_->StackAtTop();

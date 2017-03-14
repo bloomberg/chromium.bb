@@ -10,9 +10,8 @@
 #include "build/build_config.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_port.h"
+#include "ui/base/layout.h"
 #include "ui/compositor/compositor.h"
-#include "ui/display/display.h"
-#include "ui/display/screen.h"
 #include "ui/events/event.h"
 
 #if defined(OS_ANDROID)
@@ -134,9 +133,7 @@ void WindowTreeHostPlatform::OnCursorVisibilityChangedNative(bool show) {
 
 void WindowTreeHostPlatform::OnBoundsChanged(const gfx::Rect& new_bounds) {
   float current_scale = compositor()->device_scale_factor();
-  float new_scale = display::Screen::GetScreen()
-                        ->GetDisplayNearestWindow(window())
-                        .device_scale_factor();
+  float new_scale = ui::GetScaleFactorForNativeView(window());
   gfx::Rect old_bounds = bounds_;
   bounds_ = new_bounds;
   if (bounds_.origin() != old_bounds.origin()) {

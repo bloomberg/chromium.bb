@@ -8,6 +8,7 @@ include_rules = [
   "+ui/android/view_android.h",
   "+ui/android/window_android.h",
   "+ui/android/window_android_compositor.h",
+  "+ui/base/layout.h",
   "+ui/compositor",
   "+ui/display",
   "+ui/gfx",

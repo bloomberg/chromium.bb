@@ -4,9 +4,10 @@
 
 #include "ui/base/layout.h"
 
-#include <Cocoa/Cocoa.h>
+#import <Cocoa/Cocoa.h>
 
 #include "base/mac/sdk_forward_declarations.h"
+#include "ui/display/display.h"
 
 namespace {
 
@@ -28,6 +29,8 @@ float GetScaleFactorScaleForNativeView(gfx::NativeView view) {
 namespace ui {
 
 float GetScaleFactorForNativeView(gfx::NativeView view) {
+  if (display::Display::HasForceDeviceScaleFactor())
+    return display::Display::GetForcedDeviceScaleFactor();
   return GetScaleFactorScaleForNativeView(view);
 }
 

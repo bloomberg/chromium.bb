@@ -75,7 +75,6 @@
 #include "ui/base/cocoa/cocoa_base_utils.h"
 #import "ui/base/cocoa/fullscreen_window_manager.h"
 #import "ui/base/cocoa/underlay_opengl_hosting_window.h"
-#include "ui/base/layout.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/layer.h"
 #include "ui/display/display.h"
@@ -687,10 +686,6 @@ int RenderWidgetHostViewMac::window_number() const {
   if (!window)
     return -1;
   return [window windowNumber];
-}
-
-float RenderWidgetHostViewMac::ViewScaleFactor() const {
-  return ui::GetScaleFactorForNativeView(cocoa_view_);
 }
 
 void RenderWidgetHostViewMac::UpdateDisplayLink() {
@@ -1523,9 +1518,7 @@ cc::FrameSinkId RenderWidgetHostViewMac::FrameSinkIdAtPoint(
     gfx::Point* transformed_point) {
   // The surface hittest happens in device pixels, so we need to convert the
   // |point| from DIPs to pixels before hittesting.
-  float scale_factor = display::Screen::GetScreen()
-                           ->GetDisplayNearestWindow(cocoa_view_)
-                           .device_scale_factor();
+  float scale_factor = ui::GetScaleFactorForNativeView(cocoa_view_);
   gfx::Point point_in_pixels = gfx::ConvertPointToPixel(scale_factor, point);
   cc::SurfaceId id =
       browser_compositor_->GetDelegatedFrameHost()->SurfaceIdAtPoint(
@@ -1580,9 +1573,7 @@ bool RenderWidgetHostViewMac::TransformPointToLocalCoordSpace(
     gfx::Point* transformed_point) {
   // Transformations use physical pixels rather than DIP, so conversion
   // is necessary.
-  float scale_factor = display::Screen::GetScreen()
-                           ->GetDisplayNearestWindow(cocoa_view_)
-                           .device_scale_factor();
+  float scale_factor = ui::GetScaleFactorForNativeView(cocoa_view_);
   gfx::Point point_in_pixels = gfx::ConvertPointToPixel(scale_factor, point);
   if (!browser_compositor_->GetDelegatedFrameHost()
            ->TransformPointToLocalCoordSpace(point_in_pixels, original_surface,

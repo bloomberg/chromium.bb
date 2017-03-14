@@ -663,10 +663,9 @@ gfx::Size RenderWidgetHostViewAndroid::GetPhysicalBackingSize() const {
   if (!content_view_core_) {
     if (default_bounds_.IsEmpty()) return gfx::Size();
 
-    return gfx::Size(default_bounds_.right()
-        * ui::GetScaleFactorForNativeView(GetNativeView()),
-        default_bounds_.bottom()
-        * ui::GetScaleFactorForNativeView(GetNativeView()));
+    float scale_factor = view_.GetDipScale();
+    return gfx::Size(default_bounds_.right() * scale_factor,
+                     default_bounds_.bottom() * scale_factor);
   }
 
   return content_view_core_->GetPhysicalBackingSize();
@@ -1300,8 +1299,7 @@ RenderWidgetHostViewAndroid::CreateDrawable() {
       content_view_core_->GetContext();
   return std::unique_ptr<ui::TouchHandleDrawable>(
       new CompositedTouchHandleDrawable(
-          content_view_core_->GetViewAndroid()->GetLayer(),
-          ui::GetScaleFactorForNativeView(GetNativeView()),
+          content_view_core_->GetViewAndroid()->GetLayer(), view_.GetDipScale(),
           // Use the activity context where possible (instead of the application
           // context) to ensure proper handle theming.
           activityContext.is_null() ? base::android::GetApplicationContext()
@@ -1376,7 +1374,7 @@ void RenderWidgetHostViewAndroid::OnFrameMetadataUpdated(
       frame_metadata.top_controls_height *
           frame_metadata.top_controls_shown_ratio));
 
-  float dip_scale = ui::GetScaleFactorForNativeView(GetNativeView());
+  float dip_scale = view_.GetDipScale();
   float top_controls_pix = frame_metadata.top_controls_height * dip_scale;
   float top_shown_pix =
       top_controls_pix * frame_metadata.top_controls_shown_ratio;
@@ -2135,8 +2133,7 @@ void RenderWidgetHostViewAndroid::CreateOverscrollControllerIfPossible() {
     return;
 
   overscroll_controller_ = base::MakeUnique<OverscrollControllerAndroid>(
-      overscroll_refresh_handler, compositor,
-      ui::GetScaleFactorForNativeView(GetNativeView()));
+      overscroll_refresh_handler, compositor, view_.GetDipScale());
 }
 
 }  // namespace content

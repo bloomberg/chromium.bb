@@ -31,6 +31,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/cursor/cursor.h"
+#include "ui/base/layout.h"
 #include "ui/base/platform_window_defaults.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/base/view_prop.h"
@@ -403,9 +404,7 @@ void WindowTreeHostX11::SetBoundsInPixels(const gfx::Rect& bounds) {
   // Even if the host window's size doesn't change, aura's root window
   // size, which is in DIP, changes when the scale changes.
   float current_scale = compositor()->device_scale_factor();
-  float new_scale = display::Screen::GetScreen()
-                        ->GetDisplayNearestWindow(window())
-                        .device_scale_factor();
+  float new_scale = ui::GetScaleFactorForNativeView(window());
   bool origin_changed = bounds_.origin() != bounds.origin();
   bool size_changed = bounds_.size() != bounds.size();
   XWindowChanges changes = {0};

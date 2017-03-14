@@ -30,10 +30,10 @@
 #include "ui/base/dragdrop/os_exchange_data_provider_aurax11.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/ime/input_method.h"
+#include "ui/base/layout.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/base/x/x11_util_internal.h"
 #include "ui/base/x/x11_window_event_manager.h"
-#include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/events/devices/x11/device_data_manager_x11.h"
 #include "ui/events/devices/x11/device_list_cache_x11.h"
@@ -1816,12 +1816,8 @@ void DesktopWindowTreeHostX11::ConvertEventToDifferentHost(
     ui::LocatedEvent* located_event,
     DesktopWindowTreeHostX11* host) {
   DCHECK_NE(this, host);
-  const display::Display display_src =
-      display::Screen::GetScreen()->GetDisplayNearestWindow(window());
-  const display::Display display_dest =
-      display::Screen::GetScreen()->GetDisplayNearestWindow(host->window());
-  DCHECK_EQ(display_src.device_scale_factor(),
-            display_dest.device_scale_factor());
+  DCHECK_EQ(ui::GetScaleFactorForNativeView(window()),
+            ui::GetScaleFactorForNativeView(host->window()));
   gfx::Vector2d offset =
       GetLocationOnScreenInPixels() - host->GetLocationOnScreenInPixels();
   gfx::PointF location_in_pixel_in_host =

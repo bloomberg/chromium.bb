@@ -14,8 +14,7 @@
 #include "ui/android/view_android.h"
 #include "ui/android/window_android.h"
 #include "ui/android/window_android_compositor.h"
-#include "ui/display/display.h"
-#include "ui/display/screen.h"
+#include "ui/base/layout.h"
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/snapshot/snapshot_async.h"
@@ -43,9 +42,7 @@ static void MakeAsyncCopyRequest(
   std::unique_ptr<cc::CopyOutputRequest> request =
       cc::CopyOutputRequest::CreateBitmapRequest(callback);
 
-  const display::Display& display =
-      display::Screen::GetScreen()->GetDisplayNearestWindow(window);
-  float scale = display.device_scale_factor();
+  float scale = ui::GetScaleFactorForNativeView(window);
   request->set_area(gfx::ScaleToEnclosingRect(source_rect, scale));
   window->GetCompositor()->RequestCopyOfOutputOnRootLayer(std::move(request));
 }

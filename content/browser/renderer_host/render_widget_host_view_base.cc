@@ -17,7 +17,7 @@
 #include "content/browser/renderer_host/text_input_manager.h"
 #include "content/common/content_switches_internal.h"
 #include "media/base/video_frame.h"
-#include "ui/display/display.h"
+#include "ui/base/layout.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/geometry/size_conversions.h"
@@ -104,10 +104,9 @@ bool RenderWidgetHostViewBase::GetBackgroundOpaque() {
 }
 
 gfx::Size RenderWidgetHostViewBase::GetPhysicalBackingSize() const {
-  display::Display display =
-      display::Screen::GetScreen()->GetDisplayNearestWindow(GetNativeView());
-  return gfx::ScaleToCeiledSize(GetRequestedRendererSize(),
-                                display.device_scale_factor());
+  return gfx::ScaleToCeiledSize(
+      GetRequestedRendererSize(),
+      ui::GetScaleFactorForNativeView(GetNativeView()));
 }
 
 bool RenderWidgetHostViewBase::DoBrowserControlsShrinkBlinkSize() const {

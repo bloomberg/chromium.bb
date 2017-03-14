@@ -82,7 +82,6 @@
 #include "ui/base/ui_base_types.h"
 #include "ui/compositor/compositor_vsync_manager.h"
 #include "ui/compositor/dip_util.h"
-#include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/events/blink/blink_event_util.h"
 #include "ui/events/blink/web_input_event.h"
@@ -439,9 +438,7 @@ void RenderWidgetHostViewAura::InitAsChild(
   if (parent_view)
     parent_view->AddChild(GetNativeView());
 
-  const display::Display display =
-      display::Screen::GetScreen()->GetDisplayNearestWindow(window_);
-  device_scale_factor_ = display.device_scale_factor();
+  device_scale_factor_ = ui::GetScaleFactorForNativeView(window_);
 }
 
 void RenderWidgetHostViewAura::InitAsPopup(
@@ -490,9 +487,7 @@ void RenderWidgetHostViewAura::InitAsPopup(
 
   event_filter_for_popup_exit_.reset(new EventFilterForPopupExit(this));
 
-  const display::Display display =
-      display::Screen::GetScreen()->GetDisplayNearestWindow(window_);
-  device_scale_factor_ = display.device_scale_factor();
+  device_scale_factor_ = ui::GetScaleFactorForNativeView(window_);
 }
 
 void RenderWidgetHostViewAura::InitAsFullscreen(
@@ -517,9 +512,7 @@ void RenderWidgetHostViewAura::InitAsFullscreen(
   Show();
   Focus();
 
-  const display::Display display =
-      display::Screen::GetScreen()->GetDisplayNearestWindow(window_);
-  device_scale_factor_ = display.device_scale_factor();
+  device_scale_factor_ = ui::GetScaleFactorForNativeView(window_);
 }
 
 RenderWidgetHost* RenderWidgetHostViewAura::GetRenderWidgetHost() const {

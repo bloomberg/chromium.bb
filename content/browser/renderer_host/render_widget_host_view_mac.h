@@ -431,9 +431,6 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
 
   int window_number() const;
 
-  // The scale factor for the screen that the view is currently on.
-  float ViewScaleFactor() const;
-
   // Update properties, such as the scale factor for the backing store
   // and for any CALayers, and the screen color profile.
   void UpdateBackingStoreProperties();

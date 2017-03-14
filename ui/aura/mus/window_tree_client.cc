@@ -43,8 +43,8 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/aura/window_tracker.h"
+#include "ui/base/layout.h"
 #include "ui/base/ui_base_types.h"
-#include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/events/event.h"
 #include "ui/gfx/geometry/dip_util.h"
@@ -140,9 +140,7 @@ void SetWindowTypeFromProperties(
 // Helper function to get the device_scale_factor() of the display::Display
 // nearest to |window|.
 float ScaleFactorForDisplay(Window* window) {
-  return display::Screen::GetScreen()
-      ->GetDisplayNearestWindow(window)
-      .device_scale_factor();
+  return ui::GetScaleFactorForNativeView(window);
 }
 
 void ConvertEventLocationToDip(int64_t display_id, ui::LocatedEvent* event) {
