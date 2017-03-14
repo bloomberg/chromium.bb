@@ -64,7 +64,8 @@
         <id value="12"  vendor="Imagination" comment="Contact James Jones"/>
         <id value="13"  vendor="Google" tool="Shaderc over Glslang" comment="Contact David Neto, dneto@google.com"/>
         <id value="14"  vendor="Google" tool="spiregg" comment="Contact Lei Zhang, antiagainst@google.com"/>
-        <unused start="15" end="0xFFFF" comment="Tool ID range reservable for future use by vendors"/>
+        <id value="15"  vendor="Google" tool="rspirv" comment="Contact Lei Zhang, antiagainst@gmail.com"/>
+        <unused start="16" end="0xFFFF" comment="Tool ID range reservable for future use by vendors"/>
     </ids>
 
     <!-- SECTION: SPIR-V Opcodes and Enumerants -->
