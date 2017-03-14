@@ -1257,9 +1257,9 @@ PVQ_SKIP_TYPE av1_pvq_encode_helper(MACROBLOCK *x, tran_low_t *const coeff,
 
   // Encode residue of DC coeff, if required.
   if (!has_dc_skip || out_int32[0]) {
-    generic_encode(&daala_enc->w, &daala_enc->state.adapt.model_dc[plane],
+    generic_encode(&daala_enc->w, &daala_enc->state.adapt->model_dc[plane],
                    abs(out_int32[0]) - has_dc_skip, -1,
-                   &daala_enc->state.adapt.ex_dc[plane][tx_size][0], 2);
+                   &daala_enc->state.adapt->ex_dc[plane][tx_size][0], 2);
   }
   if (out_int32[0]) {
     aom_write_bit(&daala_enc->w, out_int32[0] < 0);

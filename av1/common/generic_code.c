@@ -30,7 +30,7 @@ void aom_cdf_init(uint16_t *cdf, int ncdfs, int nsyms, int val, int first) {
 void aom_cdf_init_q15_1D(uint16_t *cdf, int nsyms, int cdf_size) {
   int i;
   for (i = 0; i < nsyms; i++)
-    cdf[i] = (i + 1)*32768/nsyms;
+    cdf[i] = (i + 1)*CDF_PROB_TOP/nsyms;
 
 #if CONFIG_EC_ADAPT
   cdf[cdf_size - 1] = 0;

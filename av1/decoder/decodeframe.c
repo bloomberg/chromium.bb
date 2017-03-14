@@ -396,9 +396,9 @@ static int av1_pvq_decode_helper(MACROBLOCKD *xd, tran_low_t *ref_coeff,
 
   if (!has_dc_skip || out_int32[0]) {
     out_int32[0] =
-        has_dc_skip + generic_decode(dec->r, &dec->state.adapt.model_dc[pli],
-                                     -1, &dec->state.adapt.ex_dc[pli][bs][0], 2,
-                                     "dc:mag");
+        has_dc_skip + generic_decode(dec->r, &dec->state.adapt->model_dc[pli],
+                                     -1, &dec->state.adapt->ex_dc[pli][bs][0],
+                                     2, "dc:mag");
     if (out_int32[0]) out_int32[0] *= aom_read_bit(dec->r, "dc:sign") ? -1 : 1;
   }
   out_int32[0] = out_int32[0] * pvq_dc_quant + ref_int32[0];
@@ -427,7 +427,7 @@ static PVQ_SKIP_TYPE read_pvq_skip(AV1_COMMON *cm, MACROBLOCKD *const xd,
   // So, only AC/DC skip info is coded
   const int ac_dc_coded = aom_read_symbol(
       xd->daala_dec.r,
-      xd->daala_dec.state.adapt.skip_cdf[2 * tx_size + (plane != 0)], 4,
+      xd->daala_dec.state.adapt->skip_cdf[2 * tx_size + (plane != 0)], 4,
       "skip");
   if (ac_dc_coded < 0 || ac_dc_coded > 3) {
     aom_internal_error(&cm->error, AOM_CODEC_INVALID_PARAM,
@@ -3297,7 +3297,6 @@ static void get_tile_buffers(
 static void daala_dec_init(AV1_COMMON *const cm, daala_dec_ctx *daala_dec,
                            aom_reader *r) {
   daala_dec->r = r;
-  od_adapt_ctx_reset(&daala_dec->state.adapt, 0);
 
   // TODO(yushin) : activity masking info needs be signaled by a bitstream
   daala_dec->use_activity_masking = AV1_PVQ_ENABLE_ACTIVITY_MASKING;
@@ -3448,14 +3447,18 @@ static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
                            td->pvq_ref_coeff,
 #endif
                            td->dqcoeff);
-#if CONFIG_PVQ
-      daala_dec_init(cm, &td->xd.daala_dec, &td->bit_reader);
-#endif
+
 #if CONFIG_EC_ADAPT
       // Initialise the tile context from the frame context
       td->tctx = *cm->fc;
       td->xd.tile_ctx = &td->tctx;
 #endif
+
+#if CONFIG_PVQ
+      daala_dec_init(cm, &td->xd.daala_dec, &td->bit_reader);
+      td->xd.daala_dec.state.adapt = &td->tctx.pvq_context;
+#endif
+
 #if CONFIG_PALETTE
       td->xd.plane[0].color_index_map = td->color_index_map[0];
       td->xd.plane[1].color_index_map = td->color_index_map[1];
@@ -3816,6 +3819,7 @@ static const uint8_t *decode_tiles_mt(AV1Decoder *pbi, const uint8_t *data,
                              twd->dqcoeff);
 #if CONFIG_PVQ
         daala_dec_init(cm, &twd->xd.daala_dec, &twd->bit_reader);
+        twd->xd.daala_dec.state.adapt = &twd->tctx.pvq_context;
 #endif
 #if CONFIG_EC_ADAPT
         // Initialise the tile context from the frame context

@@ -17,7 +17,7 @@ void od_encode_checkpoint(const daala_enc_ctx *enc, od_rollback_buffer *rbuf) {
 #else
 #error "CONFIG_PVQ currently requires CONFIG_DAALA_EC."
 #endif
-  OD_COPY(&rbuf->adapt, &enc->state.adapt, 1);
+  OD_COPY(&rbuf->adapt, enc->state.adapt, 1);
 }
 
 void od_encode_rollback(daala_enc_ctx *enc, const od_rollback_buffer *rbuf) {
@@ -26,5 +26,5 @@ void od_encode_rollback(daala_enc_ctx *enc, const od_rollback_buffer *rbuf) {
 #else
 #error "CONFIG_PVQ currently requires CONFIG_DAALA_EC."
 #endif
-  OD_COPY(&enc->state.adapt, &rbuf->adapt, 1);
+  OD_COPY(enc->state.adapt, &rbuf->adapt, 1);
 }

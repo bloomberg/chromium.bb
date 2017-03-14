@@ -797,10 +797,10 @@ PVQ_SKIP_TYPE od_pvq_encode(daala_enc_ctx *enc,
   else
     pvq_qm = 0;
 
-  exg = &enc->state.adapt.pvq.pvq_exg[pli][bs][0];
-  ext = enc->state.adapt.pvq.pvq_ext + bs*PVQ_MAX_PARTITIONS;
-  skip_cdf = enc->state.adapt.skip_cdf[2*bs + (pli != 0)];
-  model = enc->state.adapt.pvq.pvq_param_model;
+  exg = &enc->state.adapt->pvq.pvq_exg[pli][bs][0];
+  ext = enc->state.adapt->pvq.pvq_ext + bs*PVQ_MAX_PARTITIONS;
+  skip_cdf = enc->state.adapt->skip_cdf[2*bs + (pli != 0)];
+  model = enc->state.adapt->pvq.pvq_param_model;
   nb_bands = OD_BAND_OFFSETS[bs][0];
   off = &OD_BAND_OFFSETS[bs][1];
 
@@ -847,7 +847,7 @@ PVQ_SKIP_TYPE od_pvq_encode(daala_enc_ctx *enc,
 
     qg[i] = pvq_theta(out + off[i], in + off[i], ref + off[i], size[i],
      q, y + off[i], &theta[i], &max_theta[i],
-     &k[i], beta[i], &skip_diff, nodesync, is_keyframe, pli, &enc->state.adapt,
+     &k[i], beta[i], &skip_diff, nodesync, is_keyframe, pli, enc->state.adapt,
      qm + off[i], qm_inv + off[i], enc->pvq_norm_lambda, speed);
   }
   od_encode_checkpoint(enc, &buf);
@@ -871,8 +871,8 @@ PVQ_SKIP_TYPE od_pvq_encode(daala_enc_ctx *enc,
 #error "CONFIG_PVQ currently requires CONFIG_DAALA_EC."
 #endif
       od_encode_checkpoint(enc, &dc_buf);
-      generic_encode(&enc->w, &enc->state.adapt.model_dc[pli],
-       n - 1, -1, &enc->state.adapt.ex_dc[pli][bs][0], 2);
+      generic_encode(&enc->w, &enc->state.adapt->model_dc[pli],
+       n - 1, -1, &enc->state.adapt->ex_dc[pli][bs][0], 2);
 #if CONFIG_DAALA_EC
       tell2 = od_ec_enc_tell_frac(&enc->w.ec) - tell2;
 #else
@@ -926,14 +926,14 @@ PVQ_SKIP_TYPE od_pvq_encode(daala_enc_ctx *enc,
     encode_flip = pli != 0 && is_keyframe && theta[i] != -1 && !cfl_encoded;
     if (i == 0 || (!skip_rest && !(skip_dir & (1 << ((i - 1)%3))))) {
       pvq_encode_partition(&enc->w, qg[i], theta[i], max_theta[i], y + off[i],
-       size[i], k[i], model, &enc->state.adapt, exg + i, ext + i,
+       size[i], k[i], model, enc->state.adapt, exg + i, ext + i,
        nodesync, (pli != 0)*OD_TXSIZES*PVQ_MAX_PARTITIONS
        + bs*PVQ_MAX_PARTITIONS + i, is_keyframe, i == 0 && (i < nb_bands - 1),
        skip_rest, encode_flip, flip);
     }
     if (i == 0 && !skip_rest && bs > 0) {
       aom_write_symbol(&enc->w, skip_dir,
-       &enc->state.adapt.pvq.pvq_skip_dir_cdf[(pli != 0) + 2*(bs - 1)][0], 7);
+       &enc->state.adapt->pvq.pvq_skip_dir_cdf[(pli != 0) + 2*(bs - 1)][0], 7);
     }
     if (encode_flip) cfl_encoded = 1;
   }
@@ -977,8 +977,8 @@ PVQ_SKIP_TYPE od_pvq_encode(daala_enc_ctx *enc,
 #error "CONFIG_PVQ currently requires CONFIG_DAALA_EC."
 #endif
         od_encode_checkpoint(enc, &dc_buf);
-        generic_encode(&enc->w, &enc->state.adapt.model_dc[pli],
-         n - 1, -1, &enc->state.adapt.ex_dc[pli][bs][0], 2);
+        generic_encode(&enc->w, &enc->state.adapt->model_dc[pli],
+         n - 1, -1, &enc->state.adapt->ex_dc[pli][bs][0], 2);
 #if CONFIG_DAALA_EC
         tell2 = od_ec_enc_tell_frac(&enc->w.ec) - tell2;
 #else

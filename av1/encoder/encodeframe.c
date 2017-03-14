@@ -4866,9 +4866,7 @@ void av1_encode_tile(AV1_COMP *cpi, ThreadData *td, int tile_row,
   const TileInfo *const tile_info = &this_tile->tile_info;
   TOKENEXTRA *tok = cpi->tile_tok[tile_row][tile_col];
   int mi_row;
-#if CONFIG_PVQ
-  od_adapt_ctx *adapt;
-#endif
+
 #if CONFIG_DEPENDENT_HORZTILES
 #if CONFIG_TILE_GROUPS
   if ((!cm->dependent_horz_tiles) || (tile_row == 0) ||
@@ -4957,20 +4955,21 @@ void av1_encode_tile(AV1_COMP *cpi, ThreadData *td, int tile_row,
 #error "CONFIG_PVQ currently requires CONFIG_DAALA_EC."
 #endif
 
-  adapt = &td->mb.daala_enc.state.adapt;
-
 #if CONFIG_DAALA_EC
   od_ec_enc_reset(&td->mb.daala_enc.w.ec);
 #else
 #error "CONFIG_PVQ currently requires CONFIG_DAALA_EC."
 #endif
-  od_adapt_ctx_reset(adapt, 0);
 #endif  // #if CONFIG_PVQ
 
 #if CONFIG_EC_ADAPT
   this_tile->tctx = *cm->fc;
   td->mb.e_mbd.tile_ctx = &this_tile->tctx;
 #endif  // #if CONFIG_EC_ADAPT
+
+#if CONFIG_PVQ
+  td->mb.daala_enc.state.adapt = &this_tile->tctx.pvq_context;
+#endif  // CONFIG_PVQ
 
   for (mi_row = tile_info->mi_row_start; mi_row < tile_info->mi_row_end;
        mi_row += cm->mib_size) {

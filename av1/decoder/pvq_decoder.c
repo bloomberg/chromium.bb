@@ -337,9 +337,9 @@ void od_pvq_decode(daala_dec_ctx *dec,
   else
     pvq_qm = 0;
 
-  exg = &dec->state.adapt.pvq.pvq_exg[pli][bs][0];
-  ext = dec->state.adapt.pvq.pvq_ext + bs*PVQ_MAX_PARTITIONS;
-  model = dec->state.adapt.pvq.pvq_param_model;
+  exg = &dec->state.adapt->pvq.pvq_exg[pli][bs][0];
+  ext = dec->state.adapt->pvq.pvq_ext + bs*PVQ_MAX_PARTITIONS;
+  model = dec->state.adapt->pvq.pvq_param_model;
   nb_bands = OD_BAND_OFFSETS[bs][0];
   off = &OD_BAND_OFFSETS[bs][1];
   out[0] = ac_dc_coded & DC_CODED;
@@ -361,7 +361,7 @@ void od_pvq_decode(daala_dec_ctx *dec,
         q = OD_MAXI(1, q0);
 
       pvq_decode_partition(dec->r, q, size[i],
-       model, &dec->state.adapt, exg + i, ext + i, ref + off[i], out + off[i],
+       model, dec->state.adapt, exg + i, ext + i, ref + off[i], out + off[i],
        &noref[i], beta[i], nodesync, is_keyframe, pli,
        (pli != 0)*OD_TXSIZES*PVQ_MAX_PARTITIONS + bs*PVQ_MAX_PARTITIONS + i,
        &cfl, i == 0 && (i < nb_bands - 1), skip_rest, i, &skip[i],
@@ -370,7 +370,7 @@ void od_pvq_decode(daala_dec_ctx *dec,
         int skip_dir;
         int j;
         skip_dir = aom_read_symbol(dec->r,
-         &dec->state.adapt.pvq.pvq_skip_dir_cdf[(pli != 0) + 2*(bs - 1)][0], 7,
+         &dec->state.adapt->pvq.pvq_skip_dir_cdf[(pli != 0) + 2*(bs - 1)][0], 7,
          "pvq:skiprest");
         for (j = 0; j < 3; j++) skip_rest[j] = !!(skip_dir & (1 << j));
       }
