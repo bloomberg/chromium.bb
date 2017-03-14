@@ -64,7 +64,7 @@
 #endif
 
 #if BUILDFLAG(ENABLE_WEBRTC)
-#include "third_party/webrtc_overrides/init_webrtc.h"
+#include "third_party/webrtc_overrides/init_webrtc.h"  // nogncheck
 #endif
 
 #if defined(SANITIZER_COVERAGE)
