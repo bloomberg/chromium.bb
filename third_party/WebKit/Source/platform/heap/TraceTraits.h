@@ -204,9 +204,6 @@ class TraceTrait {
 
  private:
   static const T* ToWrapperTracingType(const void* t) {
-    static_assert(CanTraceWrappers<T>::value,
-                  "T should be able to trace wrappers. See "
-                  "dispatchTraceWrappers in WrapperVisitor.h");
     static_assert(!NeedsAdjustAndMark<T>::value,
                   "wrapper tracing is not supported within mixins");
 #if DCHECK_IS_ON()
@@ -241,7 +238,8 @@ void TraceTrait<T>::traceMarkedWrapper(const WrapperVisitor* visitor,
   // The term *mark* is misleading here as we effectively trace through the
   // API boundary, i.e., tell V8 that an object is alive. Actual marking
   // will be done in V8.
-  traceable->markAndDispatchTraceWrappers(visitor);
+  visitor->dispatchTraceWrappers(traceable);
+  visitor->markWrappersInAllWorlds(traceable);
 }
 
 template <typename T>

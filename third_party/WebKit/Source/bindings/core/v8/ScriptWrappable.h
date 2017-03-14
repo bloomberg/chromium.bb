@@ -48,10 +48,6 @@ class CORE_EXPORT TraceWrapperBase {
   TraceWrapperBase() = default;
   virtual bool isScriptWrappable() const { return false; }
 
-  void markAndDispatchTraceWrappers(const WrapperVisitor* visitor) const {
-    visitor->dispatchTraceWrappers(this);
-  }
-
   DECLARE_VIRTUAL_TRACE_WRAPPERS(){};
 };
 
@@ -164,11 +160,6 @@ class CORE_EXPORT ScriptWrappable : public TraceWrapperBase {
   //  wrapper in the main world. To mark wrappers in all worlds call
   //  ScriptWrappableVisitor::markWrapper(ScriptWrappable*, v8::Isolate*)
   void markWrapper(const WrapperVisitor*) const;
-
-  void markAndDispatchTraceWrappers(const WrapperVisitor* visitor) const {
-    visitor->markWrappersInAllWorlds(this);
-    visitor->dispatchTraceWrappers(this);
-  }
 
  private:
   // These classes are exceptionally allowed to use mainWorldWrapper().

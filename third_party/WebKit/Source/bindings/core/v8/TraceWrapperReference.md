@@ -257,7 +257,8 @@ difference that these classes need to inherit from ``TraceWrapperBase``.
 
 In the case we cannot afford inheriting from ``TraceWrapperBase``, which will
 add a vtable pointer for tracing wrappers, use
-``DECLARE_TRACE_WRAPPERS_WITHOUT_BASE`` to declare a traceWrappers method.
+``DEFINE_TRAIT_FOR_TRACE_WRAPPERS(ClassName)`` after defining
+``ClassName`` to define the proper tracing specializations.
 
 ## Explicit write barriers
 

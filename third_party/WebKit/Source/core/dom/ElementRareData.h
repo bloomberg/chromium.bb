@@ -213,6 +213,8 @@ class ElementRareData : public NodeRareData {
   explicit ElementRareData(LayoutObject*);
 };
 
+DEFINE_TRAIT_FOR_TRACE_WRAPPERS(ElementRareData);
+
 inline LayoutSize defaultMinimumSizeForResizing() {
   return LayoutSize(LayoutUnit::max(), LayoutUnit::max());
 }

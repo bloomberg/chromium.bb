@@ -41,22 +41,6 @@ class TraceWrapperMember;
   void traceWrappers(const WrapperVisitor* visitor) const
 
 /**
- * Declares markAndDispatchTraceWrappers and non-virtual traceWrappers methods.
- * Use this on non-TraceWrapperBase classes that participate in wrapper tracing
- * (e.g. NodeRareData):
- *
- *    class NodeRareData {
- *     public:
- *      DECLARE_TRACE_WRAPPERS_WITHOUT_BASE();
- *    };
- */
-#define DECLARE_TRACE_WRAPPERS_WITHOUT_BASE()                              \
-  void markAndDispatchTraceWrappers(const WrapperVisitor* visitor) const { \
-    traceWrappers(visitor);                                                \
-  }                                                                        \
-  DECLARE_TRACE_WRAPPERS()
-
-/**
  * Declares virtual traceWrappers method. It is used in ScriptWrappable, can be
  * used to override the method in the subclasses, and can be used by
  * non-ScriptWrappable classes which expect to be inherited.
@@ -86,6 +70,15 @@ class TraceWrapperMember;
 #define DEFINE_INLINE_TRACE_WRAPPERS() DECLARE_TRACE_WRAPPERS()
 #define DEFINE_INLINE_VIRTUAL_TRACE_WRAPPERS() DECLARE_VIRTUAL_TRACE_WRAPPERS()
 
+#define DEFINE_TRAIT_FOR_TRACE_WRAPPERS(ClassName)        \
+  template <>                                             \
+  inline void TraceTrait<ClassName>::traceMarkedWrapper(  \
+      const WrapperVisitor* visitor, const void* t) {     \
+    const ClassName* traceable = ToWrapperTracingType(t); \
+    DCHECK(heapObjectHeader(t)->isWrapperHeaderMarked()); \
+    traceable->traceWrappers(visitor);                    \
+  }
+
 // ###########################################################################
 // TODO(hlopko): Get rid of virtual calls using CRTP
 class PLATFORM_EXPORT WrapperVisitor {
@@ -100,9 +93,6 @@ class PLATFORM_EXPORT WrapperVisitor {
   template <typename T>
   void traceWrappers(const T* traceable) const {
     static_assert(sizeof(T), "T must be fully defined");
-    static_assert(CanTraceWrappers<T>::value,
-                  "T should be able to trace wrappers. See "
-                  "dispatchTraceWrappers in WrapperVisitor.h");
 
     if (!traceable) {
       return;
@@ -156,6 +146,10 @@ class PLATFORM_EXPORT WrapperVisitor {
   virtual bool markWrapperHeader(HeapObjectHeader*) const = 0;
 
   virtual void markWrappersInAllWorlds(const ScriptWrappable*) const = 0;
+  void markWrappersInAllWorlds(const TraceWrapperBase*) const {
+    // TraceWrapperBase cannot point to V8 and thus doesn't need to
+    // mark wrappers.
+  }
 
   template <typename T>
   ALWAYS_INLINE void markAndPushToMarkingDeque(const T* traceable) const {

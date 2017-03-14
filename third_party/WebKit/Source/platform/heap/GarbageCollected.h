@@ -246,17 +246,6 @@ class NeedsAdjustAndMark<T, false> {
       IsGarbageCollectedMixin<typename std::remove_const<T>::type>::value;
 };
 
-class WrapperVisitor;
-template <typename T, typename = void>
-struct CanTraceWrappers : std::false_type {};
-
-template <typename T>
-struct CanTraceWrappers<T,
-                        decltype(
-                            std::declval<T&>().markAndDispatchTraceWrappers(
-                                std::declval<WrapperVisitor*>()))>
-    : std::true_type {};
-
 // TODO(sof): migrate to wtf/TypeTraits.h
 template <typename T>
 class IsFullyDefined {

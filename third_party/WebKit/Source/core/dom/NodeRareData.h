@@ -74,7 +74,7 @@ class NodeMutationObserverData final
     visitor->trace(m_transientRegistry);
   }
 
-  DECLARE_TRACE_WRAPPERS_WITHOUT_BASE() {
+  DEFINE_INLINE_TRACE_WRAPPERS() {
     for (auto registration : m_registry) {
       visitor->traceWrappers(registration);
     }
@@ -90,6 +90,8 @@ class NodeMutationObserverData final
   HeapHashSet<TraceWrapperMember<MutationObserverRegistration>>
       m_transientRegistry;
 };
+
+DEFINE_TRAIT_FOR_TRACE_WRAPPERS(NodeMutationObserverData);
 
 class NodeRareData : public GarbageCollectedFinalized<NodeRareData>,
                      public NodeRareDataBase {
@@ -157,7 +159,7 @@ class NodeRareData : public GarbageCollectedFinalized<NodeRareData>,
   DECLARE_TRACE_AFTER_DISPATCH();
   void finalizeGarbageCollectedObject();
 
-  DECLARE_TRACE_WRAPPERS_WITHOUT_BASE();
+  DECLARE_TRACE_WRAPPERS();
   DECLARE_TRACE_WRAPPERS_AFTER_DISPATCH();
 
  protected:
@@ -179,6 +181,8 @@ class NodeRareData : public GarbageCollectedFinalized<NodeRareData>,
  protected:
   unsigned m_isElementRareData : 1;
 };
+
+DEFINE_TRAIT_FOR_TRACE_WRAPPERS(NodeRareData);
 
 }  // namespace blink
 

@@ -169,7 +169,7 @@ class NodeListsNodeData final : public GarbageCollected<NodeListsNodeData> {
   }
   DECLARE_TRACE();
 
-  DECLARE_TRACE_WRAPPERS_WITHOUT_BASE();
+  DECLARE_TRACE_WRAPPERS();
 
  private:
   NodeListsNodeData() : m_childNodeList(nullptr) {}
@@ -188,6 +188,8 @@ class NodeListsNodeData final : public GarbageCollected<NodeListsNodeData> {
   NodeListAtomicNameCacheMap m_atomicNameCaches;
   TagCollectionCacheNS m_tagCollectionCacheNS;
 };
+
+DEFINE_TRAIT_FOR_TRACE_WRAPPERS(NodeListsNodeData);
 
 template <typename Collection>
 inline Collection* ContainerNode::ensureCachedCollection(CollectionType type) {
