@@ -90,10 +90,10 @@ TEST(FakeAuthPolicyClientTest, NotStartedAuthPolicyService) {
         EXPECT_EQ(authpolicy::ERROR_DBUS_FAILURE, error);
       }));
   client.RefreshDevicePolicy(
-      base::Bind([](bool success) { EXPECT_EQ(false, success); }));
+      base::Bind([](bool success) { EXPECT_FALSE(success); }));
   client.RefreshUserPolicy(
       AccountId::FromUserEmail(kCorrectUserName),
-      base::Bind([](bool success) { EXPECT_EQ(false, success); }));
+      base::Bind([](bool success) { EXPECT_FALSE(success); }));
 }
 
 }  // namespace chromeos
