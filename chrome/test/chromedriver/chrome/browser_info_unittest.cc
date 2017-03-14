@@ -103,6 +103,18 @@ TEST(ParseBrowserString, DesktopChrome) {
   ASSERT_FALSE(browser_info.is_android);
 }
 
+TEST(ParseBrowserString, HeadlessChrome) {
+  BrowserInfo browser_info;
+  Status status =
+      ParseBrowserString(false, "HeadlessChrome/39.0.2171.59", &browser_info);
+  ASSERT_TRUE(status.IsOk());
+  ASSERT_EQ("headless chrome", browser_info.browser_name);
+  ASSERT_EQ("39.0.2171.59", browser_info.browser_version);
+  ASSERT_EQ(39, browser_info.major_version);
+  ASSERT_EQ(2171, browser_info.build_no);
+  ASSERT_FALSE(browser_info.is_android);
+}
+
 TEST(ParseBlinkVersionString, GitHash) {
   int rev = -1;
   Status status = ParseBlinkVersionString(

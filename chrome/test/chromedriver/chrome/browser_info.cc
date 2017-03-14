@@ -19,6 +19,9 @@ namespace {
 const char kVersionPrefix[] = "Chrome/";
 const size_t kVersionPrefixLen = sizeof(kVersionPrefix) - 1;
 
+const char kHeadlessVersionPrefix[] = "HeadlessChrome/";
+const size_t kHeadlessVersionPrefixLen = sizeof(kHeadlessVersionPrefix) - 1;
+
 }  // namespace
 
 BrowserInfo::BrowserInfo()
@@ -86,10 +89,21 @@ Status ParseBrowserString(bool has_android_package,
     return Status(kOk);
   }
 
+  const Status error =
+      Status(kUnknownError, "unrecognized Chrome version: " + browser_string);
+
   int build_no = 0;
   if (base::StartsWith(browser_string, kVersionPrefix,
+                       base::CompareCase::SENSITIVE) ||
+      base::StartsWith(browser_string, kHeadlessVersionPrefix,
                        base::CompareCase::SENSITIVE)) {
     std::string version = browser_string.substr(kVersionPrefixLen);
+    bool headless = false;
+    if (base::StartsWith(browser_string, kHeadlessVersionPrefix,
+                         base::CompareCase::SENSITIVE)) {
+      version = browser_string.substr(kHeadlessVersionPrefixLen);
+      headless = true;
+    }
 
     Status status = ParseBrowserVersionString(
         version, &browser_info->major_version, &build_no);
@@ -97,7 +111,10 @@ Status ParseBrowserString(bool has_android_package,
       return status;
 
     if (build_no != 0) {
-      browser_info->browser_name = "chrome";
+      if (headless)
+        browser_info->browser_name = "headless chrome";
+      else
+        browser_info->browser_name = "chrome";
       browser_info->browser_version = version;
       browser_info->build_no = build_no;
       return Status(kOk);
@@ -118,8 +135,7 @@ Status ParseBrowserString(bool has_android_package,
     return Status(kOk);
   }
 
-  return Status(kUnknownError,
-                "unrecognized Chrome version: " + browser_string);
+  return error;
 }
 
 Status ParseBrowserVersionString(const std::string& browser_version,
