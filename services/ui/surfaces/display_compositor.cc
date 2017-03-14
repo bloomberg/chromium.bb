@@ -67,6 +67,16 @@ void DisplayCompositor::CreateRootCompositorFrameSink(
   std::unique_ptr<cc::Display> display =
       CreateDisplay(frame_sink_id, surface_handle, begin_frame_source.get());
 
+  // Lazily inject a SurfaceDependencyTracker into SurfaceManager if surface
+  // synchronization is enabled.
+  if (!manager_.dependency_tracker() &&
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          cc::switches::kEnableSurfaceSynchronization)) {
+    std::unique_ptr<cc::SurfaceDependencyTracker> dependency_tracker(
+        new cc::SurfaceDependencyTracker(&manager_, begin_frame_source.get()));
+    manager_.SetDependencyTracker(std::move(dependency_tracker));
+  }
+
   compositor_frame_sinks_[frame_sink_id] =
       base::MakeUnique<display_compositor::GpuRootCompositorFrameSink>(
           this, &manager_, frame_sink_id, std::move(display),
