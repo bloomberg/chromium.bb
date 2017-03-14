@@ -750,10 +750,6 @@ ResourceRequestBlockedReason FrameFetchContext::canRequestInternal(
       // this check has nothing to do with CSP. https://crbug.com/600795
       return ResourceRequestBlockedReason::CSP;
     }
-  } else if (type == Resource::Media || type == Resource::TextTrack) {
-    DCHECK(frame());
-    if (!localFrameClient()->allowMedia(url))
-      return ResourceRequestBlockedReason::Other;
   }
 
   // SVG Images have unique security rules that prevent all subresource requests

@@ -258,10 +258,6 @@ void MediaDocumentParser::appendBytes(const char*, size_t) {
   if (m_didBuildDocumentStructure)
     return;
 
-  LocalFrame* frame = document()->frame();
-  if (!frame->loader().client()->allowMedia(document()->url()))
-    return;
-
   createDocumentStructure();
   finish();
 }

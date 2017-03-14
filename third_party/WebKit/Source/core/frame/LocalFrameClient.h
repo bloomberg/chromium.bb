@@ -240,7 +240,6 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
   virtual bool allowImage(bool enabledPerSettings, const KURL&) {
     return enabledPerSettings;
   }
-  virtual bool allowMedia(const KURL&) { return true; }
   virtual bool allowRunningInsecureContent(bool enabledPerSettings,
                                            SecurityOrigin*,
                                            const KURL&) {
