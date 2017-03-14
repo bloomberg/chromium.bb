@@ -62,7 +62,6 @@ Layer::Inputs::Inputs(int layer_id)
       scroll_parent(nullptr),
       clip_parent(nullptr),
       has_will_change_transform_hint(false),
-      has_preferred_raster_bounds(false),
       hide_layer_and_subtree(false),
       client(nullptr) {}
 
@@ -1189,10 +1188,6 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
   layer->SetUpdateRect(inputs_.update_rect);
 
   layer->SetHasWillChangeTransformHint(has_will_change_transform_hint());
-  if (has_preferred_raster_bounds())
-    layer->SetPreferredRasterBounds(preferred_raster_bounds());
-  else
-    layer->ClearPreferredRasterBounds();
   layer->SetNeedsPushProperties();
 
   // Reset any state that should be cleared for the next update.
@@ -1423,24 +1418,6 @@ void Layer::SetHasWillChangeTransformHint(bool has_will_change) {
   if (inputs_.has_will_change_transform_hint == has_will_change)
     return;
   inputs_.has_will_change_transform_hint = has_will_change;
-  SetNeedsCommit();
-}
-
-void Layer::SetPreferredRasterBounds(const gfx::Size& preferred_raster_bounds) {
-  if (inputs_.has_preferred_raster_bounds &&
-      inputs_.preferred_raster_bounds == preferred_raster_bounds)
-    return;
-
-  inputs_.has_preferred_raster_bounds = true;
-  inputs_.preferred_raster_bounds = preferred_raster_bounds;
-  SetNeedsCommit();
-}
-
-void Layer::ClearPreferredRasterBounds() {
-  if (!inputs_.has_preferred_raster_bounds)
-    return;
-  inputs_.has_preferred_raster_bounds = false;
-  inputs_.preferred_raster_bounds = gfx::Size();
   SetNeedsCommit();
 }
 

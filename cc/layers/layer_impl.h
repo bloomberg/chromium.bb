@@ -438,15 +438,6 @@ class CC_EXPORT LayerImpl {
     return has_will_change_transform_hint_;
   }
 
-  void SetPreferredRasterBounds(const gfx::Size& preferred_raster_bounds);
-  bool has_preferred_raster_bounds() const {
-    return has_preferred_raster_bounds_;
-  }
-  const gfx::Size& preferred_raster_scale() const {
-    return preferred_raster_bounds_;
-  }
-  void ClearPreferredRasterBounds();
-
   MutatorHost* GetMutatorHost() const;
 
   ElementListType GetElementTypeForAnimation() const;
@@ -562,9 +553,7 @@ class CC_EXPORT LayerImpl {
   std::unique_ptr<base::trace_event::ConvertableToTraceFormat>
       owned_debug_info_;
   base::trace_event::ConvertableToTraceFormat* debug_info_;
-  gfx::Size preferred_raster_bounds_;
 
-  bool has_preferred_raster_bounds_ : 1;
   bool has_will_change_transform_hint_ : 1;
   bool needs_push_properties_ : 1;
   bool scrollbars_hidden_ : 1;

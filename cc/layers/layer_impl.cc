@@ -78,7 +78,6 @@ LayerImpl::LayerImpl(LayerTreeImpl* tree_impl, int id)
       current_draw_mode_(DRAW_MODE_NONE),
       mutable_properties_(MutableProperty::kNone),
       debug_info_(nullptr),
-      has_preferred_raster_bounds_(false),
       has_will_change_transform_hint_(false),
       needs_push_properties_(false),
       scrollbars_hidden_(false) {
@@ -107,16 +106,6 @@ void LayerImpl::SetHasWillChangeTransformHint(bool has_will_change) {
   has_will_change_transform_hint_ = has_will_change;
 }
 
-void LayerImpl::SetPreferredRasterBounds(
-    const gfx::Size& preferred_raster_bounds) {
-  has_preferred_raster_bounds_ = true;
-  preferred_raster_bounds_ = preferred_raster_bounds;
-}
-
-void LayerImpl::ClearPreferredRasterBounds() {
-  has_preferred_raster_bounds_ = false;
-  preferred_raster_bounds_ = gfx::Size();
-}
 
 MutatorHost* LayerImpl::GetMutatorHost() const {
   return layer_tree_impl_ ? layer_tree_impl_->mutator_host() : nullptr;

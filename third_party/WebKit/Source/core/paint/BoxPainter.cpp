@@ -108,41 +108,6 @@ bool bleedAvoidanceIsClipping(BackgroundBleedAvoidance bleedAvoidance) {
 
 }  // anonymous namespace
 
-// Sets a preferred composited raster scale for box with a background image,
-// if possible.
-// |srcRect| is the rect, in the space of the source image, to raster.
-// |destRect| is the rect, in the local layout space of |obj|, to raster.
-inline void updatePreferredRasterBoundsFromImage(
-    const FloatRect srcRect,
-    const FloatRect& destRect,
-    const LayoutBoxModelObject& obj) {
-  if (!RuntimeEnabledFeatures::preferredImageRasterBoundsEnabled())
-    return;
-  // Not yet implemented for SPv2.
-  if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
-    return;
-  if (destRect.width() == 0.0f || destRect.height() == 0.0f)
-    return;
-  if (PaintLayer* paintLayer = obj.layer()) {
-    if (paintLayer->compositingState() != PaintsIntoOwnBacking)
-      return;
-    // TODO(chrishtr): ensure that this rounding does not ever lose any
-    // precision.
-    paintLayer->graphicsLayerBacking()->setPreferredRasterBounds(
-        roundedIntSize(srcRect.size()));
-  }
-}
-
-inline void clearPreferredRasterBounds(const LayoutBox& obj) {
-  if (!RuntimeEnabledFeatures::preferredImageRasterBoundsEnabled())
-    return;
-  if (PaintLayer* paintLayer = obj.layer()) {
-    if (paintLayer->compositingState() != PaintsIntoOwnBacking)
-      return;
-    paintLayer->graphicsLayerBacking()->clearPreferredRasterBounds();
-  }
-}
-
 void BoxPainter::paintBoxDecorationBackgroundWithRect(
     const PaintInfo& paintInfo,
     const LayoutPoint& paintOffset,
@@ -178,8 +143,6 @@ void BoxPainter::paintBoxDecorationBackgroundWithRect(
           paintInfo.context, displayItemClient,
           DisplayItem::kBoxDecorationBackground))
     return;
-
-  clearPreferredRasterBounds(m_layoutBox);
 
   DrawingRecorder recorder(
       paintInfo.context, displayItemClient,
@@ -597,8 +560,6 @@ inline bool paintFastBottomLayer(const LayoutBoxModelObject& obj,
                "data", InspectorPaintImageEvent::data(obj, *info.image));
   context.drawImageRRect(imageContext.image(), border, srcRect,
                          imageContext.compositeOp());
-
-  updatePreferredRasterBoundsFromImage(srcRect, border.rect(), obj);
 
   return true;
 }

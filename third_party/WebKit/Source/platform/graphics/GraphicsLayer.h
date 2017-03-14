@@ -276,10 +276,6 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
 
   void setHasWillChangeTransformHint(bool);
 
-  // See comments in cc::Layer::SetPreferredRasterBounds.
-  void setPreferredRasterBounds(const IntSize&);
-  void clearPreferredRasterBounds();
-
  protected:
   String debugName(cc::Layer*) const;
   bool shouldFlattenTransform() const { return m_shouldFlattenTransform; }
@@ -395,8 +391,6 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
   std::unique_ptr<PaintController> m_paintController;
 
   IntRect m_previousInterestRect;
-  IntSize m_preferredRasterBounds;
-  bool m_hasPreferredRasterBounds;
 };
 
 }  // namespace blink

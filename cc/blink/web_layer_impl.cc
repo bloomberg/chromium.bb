@@ -475,12 +475,4 @@ void WebLayerImpl::setHasWillChangeTransformHint(bool has_will_change) {
   layer_->SetHasWillChangeTransformHint(has_will_change);
 }
 
-void WebLayerImpl::setPreferredRasterBounds(const WebSize& bounds) {
-  layer_->SetPreferredRasterBounds(bounds);
-}
-
-void WebLayerImpl::clearPreferredRasterBounds() {
-  layer_->ClearPreferredRasterBounds();
-}
-
 }  // namespace cc_blink
