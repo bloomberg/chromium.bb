@@ -847,8 +847,14 @@ IN_PROC_BROWSER_TEST_P(BrowserCloseManagerBrowserTest,
             browser2->tab_strip_model()->GetWebContentsAt(1)->GetURL());
 }
 
+// Flaky on Linux. http://crbug.com/700641.
+#if defined(OS_LINUX)
+#define MAYBE_TestCloseTabDuringShutdown DISABLED_TestCloseTabDuringShutdown
+#else
+#define MAYBE_TestCloseTabDuringShutdown TestCloseTabDuringShutdown
+#endif
 IN_PROC_BROWSER_TEST_P(BrowserCloseManagerBrowserTest,
-                       TestCloseTabDuringShutdown) {
+                       MAYBE_TestCloseTabDuringShutdown) {
   ASSERT_TRUE(embedded_test_server()->Start());
   ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(
       browsers_[0], embedded_test_server()->GetURL("/beforeunload.html")));
