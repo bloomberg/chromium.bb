@@ -346,7 +346,7 @@ class Parser(object):
     p[0] = ast.Ordinal(value, filename=self.filename, lineno=p.lineno(1))
 
   def p_enum_1(self, p):
-    """enum : attribute_section ENUM NAME LBRACE nonempty_enum_value_list \
+    """enum : attribute_section ENUM NAME LBRACE enum_value_list \
                   RBRACE SEMI
             | attribute_section ENUM NAME LBRACE nonempty_enum_value_list \
                   COMMA RBRACE SEMI"""
@@ -357,6 +357,14 @@ class Parser(object):
     """enum : attribute_section ENUM NAME SEMI"""
     p[0] = ast.Enum(p[3], p[1], None, filename=self.filename,
                     lineno=p.lineno(2))
+
+  def p_enum_value_list_1(self, p):
+    """enum_value_list : """
+    p[0] = ast.EnumValueList()
+
+  def p_enum_value_list_2(self, p):
+    """enum_value_list : nonempty_enum_value_list"""
+    p[0] = p[1]
 
   def p_nonempty_enum_value_list_1(self, p):
     """nonempty_enum_value_list : enum_value"""

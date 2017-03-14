@@ -15,6 +15,7 @@ enum class {{enum_name}} : int32_t {
 };
 
 inline std::ostream& operator<<(std::ostream& os, {{enum_name}} value) {
+{%- if enum.fields %}
   switch(value) {
 {%-   for _, values in enum.fields|groupby('numeric_value') %}
     case {{enum_name}}::{{values[0].name}}:
@@ -31,6 +32,9 @@ inline std::ostream& operator<<(std::ostream& os, {{enum_name}} value) {
     default:
       return os << "Unknown {{enum_name}} value: " << static_cast<int32_t>(value);
   }
+{%- else %}
+  return os << "Unknown {{enum_name}} value: " << static_cast<int32_t>(value);
+{%- endif %}
 }
 
 {#-   Returns true if the given enum value exists in this version of enum. #}

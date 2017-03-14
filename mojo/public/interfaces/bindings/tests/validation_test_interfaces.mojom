@@ -56,6 +56,13 @@ enum EnumB {
   ENUM_B_2
 };
 
+// A non-extensible enum with no values is valid, but about as useless as
+// you would expect: it will fail validation for all values.
+enum EmptyEnum {};
+
+[Extensible]
+enum ExtensibleEmptyEnum {};
+
 union UnionA {
   StructA struct_a;
   bool b;
@@ -92,6 +99,8 @@ interface ConformanceTestInterface {
   Method18(UnionA? param0);
   Method19(Recursive recursive);
   Method20(map<StructB, uint8> param0);
+  Method21(ExtensibleEmptyEnum param0);
+  Method22(EmptyEnum param0);
 };
 
 struct BasicStruct {
