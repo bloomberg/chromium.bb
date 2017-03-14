@@ -496,8 +496,8 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   void NotifyPinnedStateChanged(WmWindow* pinned_window);
 
   // Notifies observers that the virtual keyboard has been
-  // activated/deactivated.
-  void NotifyVirtualKeyboardActivated(bool activated);
+  // activated/deactivated for |root_window|.
+  void NotifyVirtualKeyboardActivated(bool activated, WmWindow* root_window);
 
   // Notifies observers that the shelf was created for |root_window|.
   // TODO(jamescook): Move to Shelf.

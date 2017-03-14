@@ -16,12 +16,17 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
+#include "base/scoped_observer.h"
 #include "base/time/time.h"
 #include "ui/aura/window_observer.h"
 #include "ui/display/display_observer.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/keyboard/keyboard_controller_observer.h"
 #include "ui/wm/public/activation_change_observer.h"
+
+namespace keyboard {
+class KeyboardController;
+}
 
 namespace ash {
 class DockedBackgroundWidget;
@@ -161,6 +166,8 @@ class ASH_EXPORT DockedWindowLayoutManager
                                 WmWindow* root_window) override;
   void OnOverviewModeStarting() override;
   void OnOverviewModeEnded() override;
+  void OnVirtualKeyboardStateChanged(bool activated,
+                                     WmWindow* root_window) override;
 
  private:
   struct CompareMinimumHeight;
@@ -314,6 +321,10 @@ class ASH_EXPORT DockedWindowLayoutManager
 
   // Observers of dock bounds changes.
   base::ObserverList<DockedWindowLayoutManagerObserver> observer_list_;
+
+  ScopedObserver<keyboard::KeyboardController,
+                 keyboard::KeyboardControllerObserver>
+      keyboard_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(DockedWindowLayoutManager);
 };

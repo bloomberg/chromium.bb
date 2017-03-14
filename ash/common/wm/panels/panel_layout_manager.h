@@ -18,6 +18,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/scoped_observer.h"
 #include "ui/aura/window_observer.h"
 #include "ui/aura/window_tracker.h"
 #include "ui/keyboard/keyboard_controller.h"
@@ -95,6 +96,8 @@ class ASH_EXPORT PanelLayoutManager
   // Overridden from ShellObserver:
   void OnOverviewModeEnded() override;
   void OnShelfAlignmentChanged(WmWindow* root_window) override;
+  void OnVirtualKeyboardStateChanged(bool activated,
+                                     WmWindow* root_window) override;
 
   // Overridden from aura::WindowObserver
   void OnWindowPropertyChanged(aura::Window* window,
@@ -196,6 +199,11 @@ class ASH_EXPORT PanelLayoutManager
   // The last active panel. Used to maintain stacking order even if no panels
   // are currently focused.
   WmWindow* last_active_panel_;
+
+  ScopedObserver<keyboard::KeyboardController,
+                 keyboard::KeyboardControllerObserver>
+      keyboard_observer_;
+
   base::WeakPtrFactory<PanelLayoutManager> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PanelLayoutManager);

@@ -8,6 +8,7 @@
 #include <map>
 #include <utility>
 
+#include "ash/common/keyboard/keyboard_observer_register.h"
 #include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/shelf/wm_shelf_util.h"
 #include "ash/common/wm/overview/window_selector_controller.h"
@@ -101,7 +102,7 @@ struct VisiblePanelPositionInfo {
         max_major(0),
         major_pos(0),
         major_length(0),
-        window(NULL),
+        window(nullptr),
         slide_in(false) {}
 
   int min_major;
@@ -245,9 +246,10 @@ PanelLayoutManager::PanelLayoutManager(WmWindow* panel_container)
       in_add_window_(false),
       in_layout_(false),
       show_callout_widgets_(true),
-      dragged_panel_(NULL),
+      dragged_panel_(nullptr),
       shelf_(nullptr),
-      last_active_panel_(NULL),
+      last_active_panel_(nullptr),
+      keyboard_observer_(this),
       weak_factory_(this) {
   DCHECK(panel_container);
   WmShell* shell = panel_container->GetShell();
@@ -294,7 +296,7 @@ void PanelLayoutManager::StartDragging(WmWindow* panel) {
 }
 
 void PanelLayoutManager::FinishDragging() {
-  dragged_panel_ = NULL;
+  dragged_panel_ = nullptr;
   Relayout();
 }
 
@@ -385,10 +387,10 @@ void PanelLayoutManager::OnWindowRemovedFromLayout(WmWindow* child) {
   child->GetWindowState()->RemoveObserver(this);
 
   if (dragged_panel_ == child)
-    dragged_panel_ = NULL;
+    dragged_panel_ = nullptr;
 
   if (last_active_panel_ == child)
-    last_active_panel_ = NULL;
+    last_active_panel_ = nullptr;
 
   Relayout();
 }
@@ -450,6 +452,13 @@ void PanelLayoutManager::OnOverviewModeEnded() {
 void PanelLayoutManager::OnShelfAlignmentChanged(WmWindow* root_window) {
   if (root_window_controller_->GetWindow() == root_window)
     Relayout();
+}
+
+void PanelLayoutManager::OnVirtualKeyboardStateChanged(bool activated,
+                                                       WmWindow* root_window) {
+  UpdateKeyboardObserverFromStateChanged(activated, root_window,
+                                         panel_container_->GetRootWindow(),
+                                         &keyboard_observer_);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -792,7 +801,7 @@ void PanelLayoutManager::UpdateStacking(WmWindow* active_panel) {
     previous_panel = it->second;
   }
 
-  previous_panel = NULL;
+  previous_panel = nullptr;
   for (std::map<int, WmWindow*>::const_reverse_iterator it =
            window_ordering.rbegin();
        it != window_ordering.rend() && it->second != active_panel; ++it) {
@@ -930,6 +939,8 @@ void PanelLayoutManager::OnKeyboardBoundsChanging(
   OnWindowResized();
 }
 
-void PanelLayoutManager::OnKeyboardClosed() {}
+void PanelLayoutManager::OnKeyboardClosed() {
+  keyboard_observer_.RemoveAll();
+}
 
 }  // namespace ash

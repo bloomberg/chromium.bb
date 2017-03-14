@@ -10,6 +10,7 @@
 #include "ash/common/wm/wm_snap_to_pixel_layout_manager.h"
 #include "ash/common/wm/wm_types.h"
 #include "base/macros.h"
+#include "base/scoped_observer.h"
 #include "ui/aura/window_observer.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/keyboard/keyboard_controller.h"
@@ -57,7 +58,8 @@ class ASH_EXPORT LockLayoutManager
                              const gfx::Rect& new_bounds) override;
 
   // ShellObserver:
-  void OnVirtualKeyboardStateChanged(bool activated) override;
+  void OnVirtualKeyboardStateChanged(bool activated,
+                                     WmWindow* root_window) override;
 
   // keyboard::KeyboardControllerObserver overrides:
   void OnKeyboardBoundsChanging(const gfx::Rect& new_bounds) override;
@@ -71,8 +73,9 @@ class ASH_EXPORT LockLayoutManager
   WmWindow* window_;
   WmWindow* root_window_;
 
-  // True is subscribed as keyboard controller observer.
-  bool is_observing_keyboard_;
+  ScopedObserver<keyboard::KeyboardController,
+                 keyboard::KeyboardControllerObserver>
+      keyboard_observer_;
 
   // The bounds of the keyboard.
   gfx::Rect keyboard_bounds_;

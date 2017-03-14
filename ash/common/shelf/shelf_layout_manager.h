@@ -18,11 +18,16 @@
 #include "ash/public/cpp/shelf_types.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
+#include "base/scoped_observer.h"
 #include "base/timer/timer.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/keyboard/keyboard_controller_observer.h"
 #include "ui/wm/public/activation_change_observer.h"
+
+namespace keyboard {
+class KeyboardController;
+}
 
 namespace ui {
 class ImplicitAnimationObserver;
@@ -135,6 +140,8 @@ class ASH_EXPORT ShelfLayoutManager
   // Overridden from ShellObserver:
   void OnShelfAutoHideBehaviorChanged(WmWindow* root_window) override;
   void OnPinnedStateChanged(WmWindow* pinned_window) override;
+  void OnVirtualKeyboardStateChanged(bool activated,
+                                     WmWindow* root_window) override;
 
   // Overridden from aura::client::ActivationChangeObserver:
   void OnWindowActivated(ActivationReason reason,
@@ -357,6 +364,10 @@ class ASH_EXPORT ShelfLayoutManager
   // The current shelf background. Should not be assigned to directly, use
   // MaybeUpdateShelfBackground() instead.
   ShelfBackgroundType shelf_background_type_;
+
+  ScopedObserver<keyboard::KeyboardController,
+                 keyboard::KeyboardControllerObserver>
+      keyboard_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(ShelfLayoutManager);
 };

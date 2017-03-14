@@ -5,6 +5,7 @@
 #include "ash/common/wm/dock/docked_window_layout_manager.h"
 
 #include "ash/animation/animation_change_type.h"
+#include "ash/common/keyboard/keyboard_observer_register.h"
 #include "ash/common/shelf/shelf_background_animator.h"
 #include "ash/common/shelf/shelf_background_animator_observer.h"
 #include "ash/common/shelf/shelf_constants.h"
@@ -30,6 +31,7 @@
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
+#include "ui/keyboard/keyboard_controller.h"
 #include "ui/views/background.h"
 #include "ui/wm/core/coordinate_conversion.h"
 #include "ui/wm/core/window_animations.h"
@@ -381,7 +383,8 @@ DockedWindowLayoutManager::DockedWindowLayoutManager(WmWindow* dock_container)
       event_source_(DOCKED_ACTION_SOURCE_UNKNOWN),
       last_active_window_(nullptr),
       last_action_time_(base::Time::Now()),
-      background_widget_(nullptr) {
+      background_widget_(nullptr),
+      keyboard_observer_(this) {
   DCHECK(dock_container);
   Shell::GetInstance()->AddShellObserver(this);
   Shell::GetInstance()->activation_client()->AddObserver(this);
@@ -895,6 +898,14 @@ void DockedWindowLayoutManager::OnOverviewModeEnded() {
   UpdateDockBounds(DockedWindowLayoutManagerObserver::CHILD_CHANGED);
 }
 
+void DockedWindowLayoutManager::OnVirtualKeyboardStateChanged(
+    bool activated,
+    WmWindow* root_window) {
+  UpdateKeyboardObserverFromStateChanged(activated, root_window,
+                                         dock_container_->GetRootWindow(),
+                                         &keyboard_observer_);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // DockedWindowLayoutManager private implementation:
 
@@ -1337,6 +1348,8 @@ void DockedWindowLayoutManager::OnKeyboardBoundsChanging(
   UpdateDockBounds(DockedWindowLayoutManagerObserver::KEYBOARD_BOUNDS_CHANGING);
 }
 
-void DockedWindowLayoutManager::OnKeyboardClosed() {}
+void DockedWindowLayoutManager::OnKeyboardClosed() {
+  keyboard_observer_.RemoveAll();
+}
 
 }  // namespace ash

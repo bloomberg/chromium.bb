@@ -138,7 +138,8 @@ class WebUIScreenLocker : public WebUILoginView,
   void RenderProcessGone(base::TerminationStatus status) override;
 
   // ash::ShellObserver:
-  void OnVirtualKeyboardStateChanged(bool activated) override;
+  void OnVirtualKeyboardStateChanged(bool activated,
+                                     ash::WmWindow* root_window) override;
 
   // keyboard::KeyboardControllerObserver:
   void OnKeyboardBoundsChanging(const gfx::Rect& new_bounds) override;

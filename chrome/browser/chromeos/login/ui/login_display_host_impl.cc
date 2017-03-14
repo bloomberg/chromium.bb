@@ -1028,7 +1028,9 @@ void LoginDisplayHostImpl::OnActiveOutputNodeChanged() {
 ////////////////////////////////////////////////////////////////////////////////
 // LoginDisplayHostImpl, ash::ShellObserver:
 
-void LoginDisplayHostImpl::OnVirtualKeyboardStateChanged(bool activated) {
+void LoginDisplayHostImpl::OnVirtualKeyboardStateChanged(
+    bool activated,
+    ash::WmWindow* root_window) {
   if (keyboard::KeyboardController::GetInstance()) {
     if (activated) {
       if (!is_observing_keyboard_) {

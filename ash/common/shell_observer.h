@@ -67,8 +67,9 @@ class ASH_EXPORT ShellObserver {
   // animating but have been restored.
   virtual void OnMaximizeModeEnded() {}
 
-  // Called when keyboard is activated/deactivated.
-  virtual void OnVirtualKeyboardStateChanged(bool activated) {}
+  // Called when keyboard is activated/deactivated in |root_window|.
+  virtual void OnVirtualKeyboardStateChanged(bool activated,
+                                             WmWindow* root_window) {}
 
   // Called at the end of Shell::Init.
   virtual void OnShellInitialized() {}

@@ -673,13 +673,8 @@ void RootWindowController::ActivateKeyboard(
     return;
   }
   DCHECK(keyboard_controller);
-  keyboard_controller->AddObserver(wm_shelf_->shelf_layout_manager());
-  keyboard_controller->AddObserver(panel_layout_manager());
-  keyboard_controller->AddObserver(docked_window_layout_manager());
-  keyboard_controller->AddObserver(workspace_controller()->layout_manager());
-  keyboard_controller->AddObserver(
-      always_on_top_controller_->GetLayoutManager());
-  Shell::GetInstance()->NotifyVirtualKeyboardActivated(true);
+  Shell::GetInstance()->NotifyVirtualKeyboardActivated(
+      true, WmWindow::Get(GetRootWindow()));
   aura::Window* parent = GetContainer(kShellWindowId_ImeWindowParentContainer);
   DCHECK(parent);
   aura::Window* keyboard_container = keyboard_controller->GetContainerWindow();
@@ -703,14 +698,8 @@ void RootWindowController::DeactivateKeyboard(
     keyboard_controller->HideKeyboard(
         keyboard::KeyboardController::HIDE_REASON_AUTOMATIC);
     parent->RemoveChild(keyboard_container);
-    keyboard_controller->RemoveObserver(wm_shelf_->shelf_layout_manager());
-    keyboard_controller->RemoveObserver(panel_layout_manager());
-    keyboard_controller->RemoveObserver(docked_window_layout_manager());
-    keyboard_controller->RemoveObserver(
-        workspace_controller()->layout_manager());
-    keyboard_controller->RemoveObserver(
-        always_on_top_controller_->GetLayoutManager());
-    Shell::GetInstance()->NotifyVirtualKeyboardActivated(false);
+    Shell::GetInstance()->NotifyVirtualKeyboardActivated(
+        false, WmWindow::Get(GetRootWindow()));
   }
 }
 

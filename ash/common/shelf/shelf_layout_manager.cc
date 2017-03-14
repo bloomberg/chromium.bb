@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "ash/animation/animation_change_type.h"
+#include "ash/common/keyboard/keyboard_observer_register.h"
 #include "ash/common/session/session_controller.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shelf/shelf_constants.h"
@@ -93,7 +94,7 @@ class ShelfLayoutManager::UpdateShelfObserver
     shelf_->update_shelf_observer_ = this;
   }
 
-  void Detach() { shelf_ = NULL; }
+  void Detach() { shelf_ = nullptr; }
 
   void OnImplicitAnimationsCompleted() override {
     if (shelf_)
@@ -104,10 +105,10 @@ class ShelfLayoutManager::UpdateShelfObserver
  private:
   ~UpdateShelfObserver() override {
     if (shelf_)
-      shelf_->update_shelf_observer_ = NULL;
+      shelf_->update_shelf_observer_ = nullptr;
   }
 
-  // Shelf we're in. NULL if deleted before we're deleted.
+  // Shelf we're in. nullptr if deleted before we're deleted.
   ShelfLayoutManager* shelf_;
 
   DISALLOW_COPY_AND_ASSIGN(UpdateShelfObserver);
@@ -150,10 +151,11 @@ ShelfLayoutManager::ShelfLayoutManager(ShelfWidget* shelf_widget,
       gesture_drag_status_(GESTURE_DRAG_NONE),
       gesture_drag_amount_(0.f),
       gesture_drag_auto_hide_state_(SHELF_AUTO_HIDE_SHOWN),
-      update_shelf_observer_(NULL),
+      update_shelf_observer_(nullptr),
       chromevox_panel_height_(0),
       duration_override_in_ms_(0),
-      shelf_background_type_(SHELF_BACKGROUND_OVERLAP) {
+      shelf_background_type_(SHELF_BACKGROUND_OVERLAP),
+      keyboard_observer_(this) {
   DCHECK(shelf_widget_);
   DCHECK(wm_shelf_);
   Shell::GetInstance()->AddShellObserver(this);
@@ -182,7 +184,7 @@ void ShelfLayoutManager::PrepareForShutdown() {
 }
 
 bool ShelfLayoutManager::IsVisible() const {
-  // status_area_widget() may be NULL during the shutdown.
+  // status_area_widget() may be nullptr during the shutdown.
   return shelf_widget_->status_area_widget() &&
          shelf_widget_->status_area_widget()->IsVisible() &&
          (state_.visibility_state == SHELF_VISIBLE ||
@@ -210,7 +212,7 @@ gfx::Size ShelfLayoutManager::GetPreferredSize() {
 void ShelfLayoutManager::LayoutShelfAndUpdateBounds(bool change_work_area) {
   TargetBounds target_bounds;
   CalculateTargetBounds(state_, &target_bounds);
-  UpdateBoundsAndOpacity(target_bounds, false, change_work_area, NULL);
+  UpdateBoundsAndOpacity(target_bounds, false, change_work_area, nullptr);
 
   // Update insets in ShelfWindowTargeter when shelf bounds change.
   for (auto& observer : observers_)
@@ -405,6 +407,14 @@ void ShelfLayoutManager::OnPinnedStateChanged(WmWindow* pinned_window) {
   UpdateVisibilityState();
 }
 
+void ShelfLayoutManager::OnVirtualKeyboardStateChanged(bool activated,
+                                                       WmWindow* root_window) {
+  UpdateKeyboardObserverFromStateChanged(
+      activated, root_window,
+      WmWindow::Get(shelf_widget_->GetNativeWindow())->GetRootWindow(),
+      &keyboard_observer_);
+}
+
 void ShelfLayoutManager::OnWindowActivated(ActivationReason reason,
                                            aura::Window* gained_active,
                                            aura::Window* lost_active) {
@@ -435,7 +445,9 @@ void ShelfLayoutManager::OnKeyboardBoundsChanging(const gfx::Rect& new_bounds) {
   }
 }
 
-void ShelfLayoutManager::OnKeyboardClosed() {}
+void ShelfLayoutManager::OnKeyboardClosed() {
+  keyboard_observer_.RemoveAll();
+}
 
 ShelfBackgroundType ShelfLayoutManager::GetShelfBackgroundType() const {
   if (state_.pre_lock_screen_animation_active)
@@ -537,7 +549,7 @@ void ShelfLayoutManager::SetState(ShelfVisibilityState visibility_state) {
   CalculateTargetBounds(state_, &target_bounds);
   UpdateBoundsAndOpacity(
       target_bounds, true /* animate */, true /* change_work_area */,
-      delay_background_change ? update_shelf_observer_ : NULL);
+      delay_background_change ? update_shelf_observer_ : nullptr);
 
   // OnAutoHideStateChanged Should be emitted when:
   //  - firstly state changed to auto-hide from other state
@@ -1019,7 +1031,7 @@ void ShelfLayoutManager::SessionStateChanged(
   TargetBounds target_bounds;
   CalculateTargetBounds(state_, &target_bounds);
   UpdateBoundsAndOpacity(target_bounds, true /* animate */,
-                         true /* change_work_area */, NULL);
+                         true /* change_work_area */, nullptr);
   UpdateVisibilityState();
 }
 

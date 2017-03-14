@@ -4,6 +4,7 @@
 
 #include "ash/common/wm/lock_layout_manager.h"
 
+#include "ash/common/keyboard/keyboard_observer_register.h"
 #include "ash/common/wm/lock_window_state.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm/wm_event.h"
@@ -19,13 +20,11 @@ LockLayoutManager::LockLayoutManager(WmWindow* window)
     : wm::WmSnapToPixelLayoutManager(),
       window_(window),
       root_window_(window->GetRootWindow()),
-      is_observing_keyboard_(false) {
+      keyboard_observer_(this) {
   Shell::GetInstance()->AddShellObserver(this);
   root_window_->aura_window()->AddObserver(this);
-  if (keyboard::KeyboardController::GetInstance()) {
-    keyboard::KeyboardController::GetInstance()->AddObserver(this);
-    is_observing_keyboard_ = true;
-  }
+  if (keyboard::KeyboardController::GetInstance())
+    keyboard_observer_.Add(keyboard::KeyboardController::GetInstance());
 }
 
 LockLayoutManager::~LockLayoutManager() {
@@ -36,11 +35,6 @@ LockLayoutManager::~LockLayoutManager() {
     child->aura_window()->RemoveObserver(this);
 
   Shell::GetInstance()->RemoveShellObserver(this);
-
-  if (keyboard::KeyboardController::GetInstance() && is_observing_keyboard_) {
-    keyboard::KeyboardController::GetInstance()->RemoveObserver(this);
-    is_observing_keyboard_ = false;
-  }
 }
 
 void LockLayoutManager::OnWindowResized() {
@@ -88,18 +82,10 @@ void LockLayoutManager::OnWindowBoundsChanged(aura::Window* window,
   }
 }
 
-void LockLayoutManager::OnVirtualKeyboardStateChanged(bool activated) {
-  if (keyboard::KeyboardController::GetInstance()) {
-    if (activated) {
-      if (!is_observing_keyboard_) {
-        keyboard::KeyboardController::GetInstance()->AddObserver(this);
-        is_observing_keyboard_ = true;
-      }
-    } else {
-      keyboard::KeyboardController::GetInstance()->RemoveObserver(this);
-      is_observing_keyboard_ = false;
-    }
-  }
+void LockLayoutManager::OnVirtualKeyboardStateChanged(bool activated,
+                                                      WmWindow* root_window) {
+  UpdateKeyboardObserverFromStateChanged(activated, root_window, root_window_,
+                                         &keyboard_observer_);
 }
 
 void LockLayoutManager::OnKeyboardBoundsChanging(const gfx::Rect& new_bounds) {
@@ -107,7 +93,9 @@ void LockLayoutManager::OnKeyboardBoundsChanging(const gfx::Rect& new_bounds) {
   OnWindowResized();
 }
 
-void LockLayoutManager::OnKeyboardClosed() {}
+void LockLayoutManager::OnKeyboardClosed() {
+  keyboard_observer_.RemoveAll();
+}
 
 void LockLayoutManager::AdjustWindowsForWorkAreaChange(
     const wm::WMEvent* event) {

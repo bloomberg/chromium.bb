@@ -14,11 +14,16 @@
 #include "ash/common/wm/wm_types.h"
 #include "ash/common/wm_layout_manager.h"
 #include "base/macros.h"
+#include "base/scoped_observer.h"
 #include "ui/aura/window_observer.h"
 #include "ui/display/display_observer.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/keyboard/keyboard_controller_observer.h"
 #include "ui/wm/public/activation_change_observer.h"
+
+namespace keyboard {
+class KeyboardController;
+}
 
 namespace ash {
 
@@ -92,6 +97,8 @@ class ASH_EXPORT WorkspaceLayoutManager
   void OnFullscreenStateChanged(bool is_fullscreen,
                                 WmWindow* root_window) override;
   void OnPinnedStateChanged(WmWindow* pinned_window) override;
+  void OnVirtualKeyboardStateChanged(bool activated,
+                                     WmWindow* root_window) override;
 
  private:
   typedef std::set<WmWindow*> WindowSet;
@@ -133,6 +140,10 @@ class ASH_EXPORT WorkspaceLayoutManager
   // A window which covers the full container and which gets inserted behind the
   // topmost visible window.
   std::unique_ptr<WorkspaceLayoutManagerBackdropDelegate> backdrop_delegate_;
+
+  ScopedObserver<keyboard::KeyboardController,
+                 keyboard::KeyboardControllerObserver>
+      keyboard_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(WorkspaceLayoutManager);
 };

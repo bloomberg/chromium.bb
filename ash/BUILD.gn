@@ -108,6 +108,8 @@ component("ash") {
     "common/gpu_support_stub.h",
     "common/key_event_watcher.cc",
     "common/key_event_watcher.h",
+    "common/keyboard/keyboard_observer_register.cc",
+    "common/keyboard/keyboard_observer_register.h",
     "common/keyboard/keyboard_ui.cc",
     "common/keyboard/keyboard_ui.h",
     "common/keyboard/keyboard_ui_observer.h",

@@ -479,9 +479,10 @@ void Shell::NotifyPinnedStateChanged(WmWindow* pinned_window) {
     observer.OnPinnedStateChanged(pinned_window);
 }
 
-void Shell::NotifyVirtualKeyboardActivated(bool activated) {
+void Shell::NotifyVirtualKeyboardActivated(bool activated,
+                                           WmWindow* root_window) {
   for (auto& observer : shell_observers_)
-    observer.OnVirtualKeyboardStateChanged(activated);
+    observer.OnVirtualKeyboardStateChanged(activated, root_window);
 }
 
 void Shell::NotifyShelfCreatedForRootWindow(WmWindow* root_window) {

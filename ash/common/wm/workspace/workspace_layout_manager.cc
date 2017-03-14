@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "ash/common/keyboard/keyboard_observer_register.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/wm/always_on_top_controller.h"
@@ -40,7 +41,8 @@ WorkspaceLayoutManager::WorkspaceLayoutManager(WmWindow* window)
       root_window_controller_(root_window_->GetRootWindowController()),
       shell_(window_->GetShell()),
       work_area_in_parent_(wm::GetDisplayWorkAreaBoundsInParent(window_)),
-      is_fullscreen_(wm::GetWindowForFullscreenMode(window) != nullptr) {
+      is_fullscreen_(wm::GetWindowForFullscreenMode(window) != nullptr),
+      keyboard_observer_(this) {
   Shell::GetInstance()->AddShellObserver(this);
   Shell::GetInstance()->activation_client()->AddObserver(this);
   root_window_->aura_window()->AddObserver(this);
@@ -178,7 +180,9 @@ void WorkspaceLayoutManager::OnKeyboardBoundsChanging(
   }
 }
 
-void WorkspaceLayoutManager::OnKeyboardClosed() {}
+void WorkspaceLayoutManager::OnKeyboardClosed() {
+  keyboard_observer_.RemoveAll();
+}
 
 //////////////////////////////////////////////////////////////////////////////
 // WorkspaceLayoutManager, aura::WindowObserver implementation:
@@ -325,6 +329,13 @@ void WorkspaceLayoutManager::OnPinnedStateChanged(WmWindow* pinned_window) {
   }
 
   UpdateAlwaysOnTop(WmShell::Get()->IsPinned() ? pinned_window : nullptr);
+}
+
+void WorkspaceLayoutManager::OnVirtualKeyboardStateChanged(
+    bool activated,
+    WmWindow* root_window) {
+  UpdateKeyboardObserverFromStateChanged(activated, root_window, root_window_,
+                                         &keyboard_observer_);
 }
 
 //////////////////////////////////////////////////////////////////////////////

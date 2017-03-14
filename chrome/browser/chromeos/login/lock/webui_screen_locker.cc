@@ -416,7 +416,9 @@ void WebUIScreenLocker::RenderProcessGone(base::TerminationStatus status) {
 ////////////////////////////////////////////////////////////////////////////////
 // ash::ShellObserver:
 
-void WebUIScreenLocker::OnVirtualKeyboardStateChanged(bool activated) {
+void WebUIScreenLocker::OnVirtualKeyboardStateChanged(
+    bool activated,
+    ash::WmWindow* root_window) {
   if (keyboard::KeyboardController::GetInstance()) {
     if (activated) {
       if (!is_observing_keyboard_) {
