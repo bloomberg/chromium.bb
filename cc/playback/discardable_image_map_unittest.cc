@@ -379,6 +379,29 @@ TEST_F(DiscardableImageMapTest, PaintDestroyedWhileImageIsDrawn) {
   EXPECT_TRUE(images[0].image == discardable_image);
 }
 
+TEST_F(DiscardableImageMapTest, NullPaintOnSaveLayer) {
+  gfx::Rect visible_rect(2048, 2048);
+  FakeContentLayerClient content_layer_client;
+  content_layer_client.set_bounds(visible_rect.size());
+
+  sk_sp<SkImage> discardable_image = CreateDiscardableImage(gfx::Size(10, 10));
+
+  DiscardableImageMap image_map;
+  {
+    DiscardableImageMap::ScopedMetadataGenerator generator(&image_map,
+                                                           visible_rect.size());
+    SkPaint* null_paint = nullptr;
+    generator.canvas()->saveLayer(gfx::RectToSkRect(visible_rect), null_paint);
+    generator.canvas()->drawImage(discardable_image, 0, 0, nullptr);
+    generator.canvas()->restore();
+  }
+
+  std::vector<PositionScaleDrawImage> images =
+      GetDiscardableImagesInRect(image_map, gfx::Rect(0, 0, 1, 1));
+  EXPECT_EQ(1u, images.size());
+  EXPECT_TRUE(images[0].image == discardable_image);
+}
+
 TEST_F(DiscardableImageMapTest, GetDiscardableImagesInRectMaxImage) {
   gfx::Rect visible_rect(2048, 2048);
   FakeContentLayerClient content_layer_client;
