@@ -3160,7 +3160,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
       // load operation (e.g. notifying all observers) and record the URL so
       // that errors reported following the 'NO' reply can be safely ignored.
       if ([self shouldClosePageOnNativeApplicationLoad])
-        [_delegate webPageOrderedClose];
+        _webStateImpl->CloseWebState();
       [self stopLoading];
       [_openedApplicationURL addObject:request.URL];
       return NO;
@@ -3211,7 +3211,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
       // safely ignored.
       [_openedApplicationURL addObject:request.URL];
       if ([self shouldClosePageOnNativeApplicationLoad])
-        [_delegate webPageOrderedClose];
+        _webStateImpl->CloseWebState();
     }
     return NO;
   }
@@ -4379,7 +4379,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 
 - (void)webViewDidClose:(WKWebView*)webView {
   if (self.sessionController.openedByDOM) {
-    [self.delegate webPageOrderedClose];
+    _webStateImpl->CloseWebState();
   }
 }
 

@@ -33,6 +33,10 @@ class WebStateDelegate {
                                       const GURL& opener_url,
                                       bool initiated_by_user);
 
+  // Called when the page calls wants to close self by calling window.close()
+  // JavaScript API.
+  virtual void CloseWebState(WebState* source);
+
   // Returns the WebState the URL is opened in, or nullptr if the URL wasn't
   // opened immediately.
   virtual WebState* OpenURLFromWebState(WebState*,

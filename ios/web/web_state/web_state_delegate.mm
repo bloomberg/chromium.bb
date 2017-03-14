@@ -25,6 +25,8 @@ WebState* WebStateDelegate::CreateNewWebState(WebState* source,
   return nullptr;
 }
 
+void WebStateDelegate::CloseWebState(WebState* source) {}
+
 WebState* WebStateDelegate::OpenURLFromWebState(
     WebState*,
     const WebState::OpenURLParams&) {

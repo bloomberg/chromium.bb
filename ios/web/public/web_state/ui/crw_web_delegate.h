@@ -26,9 +26,6 @@ class GURL;
 // TODO(crbug.com/674991): Remove this protocol.
 @protocol CRWWebDelegate<NSObject>
 
-// Called when the page calls window.close() on itself. Begin the shut-down
-// sequence for this controller.
-- (void)webPageOrderedClose;
 // Called when an external app needs to be opened, it also passes |linkClicked|
 // to track if this call was a result of user action or not. Returns YES iff
 // |URL| is launched in an external app.

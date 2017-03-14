@@ -2415,6 +2415,21 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
   return childTab.webState;
 }
 
+- (void)closeWebState:(web::WebState*)webState {
+  // Only allow a web page to close itself if it was opened by DOM, or if there
+  // are no navigation items.
+  Tab* tab = LegacyTabHelper::GetTabForWebState(webState);
+  DCHECK([[tab navigationManagerImpl]->GetSessionController() isOpenedByDOM] ||
+         ![tab navigationManager]->GetItemCount());
+
+  if (![self tabModel])
+    return;
+
+  NSUInteger index = [[self tabModel] indexOfTab:tab];
+  if (index != NSNotFound)
+    [[self tabModel] closeTabAtIndex:index];
+}
+
 - (web::WebState*)webState:(web::WebState*)webState
          openURLWithParams:(const web::WebState::OpenURLParams&)params {
   switch (params.disposition) {

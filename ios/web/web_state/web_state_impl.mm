@@ -514,6 +514,12 @@ WebState* WebStateImpl::CreateNewWebState(const GURL& url,
   return nullptr;
 }
 
+void WebStateImpl::CloseWebState() {
+  if (delegate_) {
+    delegate_->CloseWebState(this);
+  }
+}
+
 void WebStateImpl::OnAuthRequired(
     NSURLProtectionSpace* protection_space,
     NSURLCredential* proposed_credential,

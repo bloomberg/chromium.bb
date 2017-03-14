@@ -261,6 +261,10 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
                               const GURL& opener_url,
                               bool initiated_by_user);
 
+  // Instructs the delegate to close this web state. Called when the page calls
+  // wants to close self by calling window.close() JavaScript API.
+  virtual void CloseWebState();
+
   // Notifies the delegate that request receives an authentication challenge
   // and is unable to respond using cached credentials.
   void OnAuthRequired(NSURLProtectionSpace* protection_space,

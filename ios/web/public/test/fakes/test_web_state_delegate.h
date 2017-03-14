@@ -24,6 +24,11 @@ struct TestCreateNewWebStateRequest {
   bool initiated_by_user = false;
 };
 
+// Encapsulates parameters passed to CloseWebState.
+struct TestCloseWebStateRequest {
+  WebState* web_state = nullptr;
+};
+
 // Encapsulates parameters passed to OpenURLFromWebState.
 struct TestOpenURLRequest {
   TestOpenURLRequest();
@@ -72,6 +77,7 @@ class TestWebStateDelegate : public WebStateDelegate {
                               const GURL& url,
                               const GURL& opener_url,
                               bool initiated_by_user) override;
+  void CloseWebState(WebState* source) override;
   WebState* OpenURLFromWebState(WebState*,
                                 const WebState::OpenURLParams&) override;
   JavaScriptDialogPresenter* GetJavaScriptDialogPresenter(WebState*) override;
@@ -109,6 +115,11 @@ class TestWebStateDelegate : public WebStateDelegate {
     return last_create_new_web_state_request_.get();
   }
 
+  // Returns the last Web State closing request passed to |CloseWebState|.
+  TestCloseWebStateRequest* last_close_web_state_request() const {
+    return last_close_web_state_request_.get();
+  }
+
   // Returns the last Open URL request passed to |OpenURLFromWebState|.
   TestOpenURLRequest* last_open_url_request() const {
     return last_open_url_request_.get();
@@ -138,12 +149,15 @@ class TestWebStateDelegate : public WebStateDelegate {
 
  private:
   std::vector<std::unique_ptr<WebState>> child_windows_;
+  // WebStates that were closed via |CloseWebState| callback.
+  std::vector<std::unique_ptr<WebState>> closed_child_windows_;
   // A page can open popup if its URL is in this set.
   std::set<GURL> allowed_popups_;
   std::vector<TestPopup> popups_;
   bool handle_context_menu_called_ = false;
   std::unique_ptr<TestCreateNewWebStateRequest>
       last_create_new_web_state_request_;
+  std::unique_ptr<TestCloseWebStateRequest> last_close_web_state_request_;
   std::unique_ptr<TestOpenURLRequest> last_open_url_request_;
   std::unique_ptr<TestRepostFormRequest> last_repost_form_request_;
   bool get_java_script_dialog_presenter_called_ = false;

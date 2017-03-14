@@ -353,9 +353,6 @@ enum class RendererTerminationTabState {
 // Returns the OpenInController for this tab.
 - (OpenInController*)openInController;
 
-// Calls the model and ask to close this tab.
-- (void)closeThisTab;
-
 // Initialize the Native App Launcher controller.
 - (void)initNativeAppNavigationController;
 
@@ -1429,15 +1426,6 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
   return openInController_.get();
 }
 
-- (void)closeThisTab {
-  if (!parentTabModel_)
-    return;
-
-  NSUInteger index = [parentTabModel_ indexOfTab:self];
-  if (index != NSNotFound)
-    [parentTabModel_ closeTabAtIndex:index];
-}
-
 - (id<CRWNativeContent>)controllerForUnhandledContentAtURL:(const GURL&)url {
   // Shows download manager UI for unhandled content.
   DownloadManagerController* downloadController =
@@ -1605,15 +1593,6 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
 }
 
 #pragma mark - CRWWebDelegate and CRWWebStateObserver protocol methods.
-
-// The web page wants to close its own window.
-- (void)webPageOrderedClose {
-  // Only allow a web page to close itself if it was opened by DOM, or if there
-  // are no navigation items.
-  DCHECK([[self navigationManagerImpl]->GetSessionController() isOpenedByDOM] ||
-         ![self navigationManager]->GetItemCount());
-  [self closeThisTab];
-}
 
 // This method is invoked whenever the system believes the URL is about to
 // change, or immediately after any unexpected change of the URL. The apparent

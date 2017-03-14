@@ -24,6 +24,10 @@
                   openerURL:(const GURL&)openerURL
             initiatedByUser:(BOOL)initiatedByUser;
 
+// Called when the page calls wants to close self by calling window.close()
+// JavaScript API.
+- (void)closeWebState:(web::WebState*)webState;
+
 // Returns the WebState the URL is opened in, or nullptr if the URL wasn't
 // opened immediately.
 - (web::WebState*)webState:(web::WebState*)webState
@@ -71,6 +75,7 @@ class WebStateDelegateBridge : public web::WebStateDelegate {
                               const GURL& url,
                               const GURL& opener_url,
                               bool initiated_by_user) override;
+  void CloseWebState(WebState* source) override;
   WebState* OpenURLFromWebState(WebState*,
                                 const WebState::OpenURLParams&) override;
   bool HandleContextMenu(WebState* source,

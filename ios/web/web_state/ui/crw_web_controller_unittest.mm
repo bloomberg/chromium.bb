@@ -842,12 +842,15 @@ class WindowOpenByDomTest : public web::WebTestWithWebController {
   // as a string.
   id OpenWindowByDom() {
     NSString* const kOpenWindowScript =
-        @"var w = window.open('javascript:void(0);', target='_blank');"
+        @"w = window.open('javascript:void(0);', target='_blank');"
          "w ? w.toString() : null;";
     id windowJSObject = ExecuteJavaScript(kOpenWindowScript);
-    WaitForBackgroundTasks();
     return windowJSObject;
   }
+
+  // Executes JavaScript that closes previously opened window.
+  void CloseWindow() { ExecuteJavaScript(@"w.close()"); }
+
   // URL of a page which opens child windows.
   const GURL opener_url_;
   web::TestWebStateDelegate delegate_;
@@ -894,6 +897,22 @@ TEST_F(WindowOpenByDomTest, DontBlockPopup) {
 
   ASSERT_EQ(1U, delegate_.child_windows().size());
   ASSERT_TRUE(delegate_.child_windows()[0]);
+  EXPECT_TRUE(delegate_.popups().empty());
+}
+
+// Tests that window.close closes the web state.
+TEST_F(WindowOpenByDomTest, CloseWindow) {
+  delegate_.allow_popups(opener_url_);
+  ASSERT_NSEQ(@"[object Window]", OpenWindowByDom());
+
+  ASSERT_EQ(1U, delegate_.child_windows().size());
+  ASSERT_TRUE(delegate_.child_windows()[0]);
+  EXPECT_TRUE(delegate_.popups().empty());
+
+  delegate_.child_windows()[0]->SetDelegate(&delegate_);
+  CloseWindow();
+
+  EXPECT_TRUE(delegate_.child_windows().empty());
   EXPECT_TRUE(delegate_.popups().empty());
 }
 

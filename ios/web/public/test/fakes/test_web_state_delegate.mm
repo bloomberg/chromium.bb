@@ -64,6 +64,20 @@ WebState* TestWebStateDelegate::CreateNewWebState(WebState* source,
   return child_windows_.back().get();
 }
 
+void TestWebStateDelegate::CloseWebState(WebState* source) {
+  last_close_web_state_request_ = base::MakeUnique<TestCloseWebStateRequest>();
+  last_close_web_state_request_->web_state = source;
+
+  // Remove WebState from |child_windows_|.
+  for (size_t i = 0; i < child_windows_.size(); i++) {
+    if (child_windows_[i].get() == source) {
+      closed_child_windows_.push_back(std::move(child_windows_[i]));
+      child_windows_.erase(child_windows_.begin() + i);
+      break;
+    }
+  }
+}
+
 WebState* TestWebStateDelegate::OpenURLFromWebState(
     WebState* web_state,
     const WebState::OpenURLParams& params) {

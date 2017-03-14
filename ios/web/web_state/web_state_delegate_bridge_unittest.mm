@@ -69,6 +69,17 @@ TEST_F(WebStateDelegateBridgeTest, CreateNewWebState) {
   ASSERT_TRUE([delegate_ webStateCreationRequested]);
 }
 
+// Tests |closeWebState:| forwarding.
+TEST_F(WebStateDelegateBridgeTest, CloseWebState) {
+  ASSERT_FALSE([delegate_ webState]);
+  ASSERT_FALSE([delegate_ webStateClosingRequested]);
+
+  bridge_->CloseWebState(&test_web_state_);
+
+  EXPECT_EQ(&test_web_state_, [delegate_ webState]);
+  ASSERT_TRUE([delegate_ webStateClosingRequested]);
+}
+
 // Tests |webState:openURLWithParams:| forwarding.
 TEST_F(WebStateDelegateBridgeTest, OpenURLFromWebState) {
   ASSERT_FALSE([delegate_ webState]);

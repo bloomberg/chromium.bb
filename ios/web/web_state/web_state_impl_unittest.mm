@@ -435,6 +435,13 @@ TEST_F(WebStateImplTest, DelegateTest) {
   EXPECT_EQ(opener_url, create_new_web_state_request->opener_url);
   EXPECT_TRUE(create_new_web_state_request->initiated_by_user);
 
+  // Test that CloseWebState() is called.
+  EXPECT_FALSE(delegate.last_close_web_state_request());
+  web_state_->CloseWebState();
+  ASSERT_TRUE(delegate.last_close_web_state_request());
+  EXPECT_EQ(web_state_.get(),
+            delegate.last_close_web_state_request()->web_state);
+
   // Test that OpenURLFromWebState() is called.
   WebState::OpenURLParams params(GURL("https://chromium.test/"), Referrer(),
                                  WindowOpenDisposition::CURRENT_TAB,

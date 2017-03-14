@@ -22,6 +22,8 @@
 // Whether |webState:createNewWebStateForURL:openerURL:initiatedByUser:| has
 // been called or not.
 @property(nonatomic, readonly) BOOL webStateCreationRequested;
+// Whether |closeWebState:| has been called or not.
+@property(nonatomic, readonly) BOOL webStateClosingRequested;
 // Whether |webState:runRepostFormDialogWithCompletionHandler:| has been called
 // or not.
 @property(nonatomic, readonly) BOOL repostFormWarningRequested;

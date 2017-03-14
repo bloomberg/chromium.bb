@@ -29,6 +29,12 @@ WebState* WebStateDelegateBridge::CreateNewWebState(WebState* source,
   return nullptr;
 }
 
+void WebStateDelegateBridge::CloseWebState(WebState* source) {
+  if ([delegate_ respondsToSelector:@selector(closeWebState:)]) {
+    [delegate_ closeWebState:source];
+  }
+}
+
 WebState* WebStateDelegateBridge::OpenURLFromWebState(
     WebState* source,
     const WebState::OpenURLParams& params) {
