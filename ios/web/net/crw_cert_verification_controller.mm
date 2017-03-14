@@ -11,6 +11,7 @@
 #import "base/mac/bind_objc_block.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/worker_pool.h"
 #include "ios/web/public/browser_state.h"
 #include "ios/web/public/certificate_policy_cache.h"
@@ -192,18 +193,20 @@ decideLoadPolicyForRejectedTrustResult:(SecTrustResultType)trustResult
   DCHECK(completionHandler);
   // SecTrustEvaluate performs trust evaluation synchronously, possibly making
   // network requests. The UI thread should not be blocked by that operation.
-  base::WorkerPool::PostTask(
-      FROM_HERE, base::BindBlockArc(^{
+  base::PostTaskWithTraits(
+      FROM_HERE,
+      base::TaskTraits().WithShutdownBehavior(
+          base::TaskShutdownBehavior::BLOCK_SHUTDOWN),
+      base::BindBlockArc(^{
         SecTrustResultType trustResult = kSecTrustResultInvalid;
         if (SecTrustEvaluate(trust.get(), &trustResult) != errSecSuccess) {
           trustResult = kSecTrustResultInvalid;
         }
-        web::WebThread::PostTask(web::WebThread::UI, FROM_HERE,
-                                 base::BindBlockArc(^{
-                                   completionHandler(trustResult);
-                                 }));
-      }),
-      false /* task_is_slow */);
+        // Use GCD API, which is guaranteed to be called during shutdown.
+        dispatch_async(dispatch_get_main_queue(), ^{
+          completionHandler(trustResult);
+        });
+      }));
 }
 
 - (web::CertAcceptPolicy)
