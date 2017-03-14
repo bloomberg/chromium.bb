@@ -172,7 +172,7 @@ class TeeHelper final : public GarbageCollectedFinalized<TeeHelper>,
       m_offset += read;
       if (chunk->size() == m_offset) {
         m_offset = 0;
-        m_chunks.removeFirst();
+        m_chunks.pop_front();
       }
       if (m_chunks.isEmpty() &&
           m_tee->getPublicState() == PublicState::Closed) {

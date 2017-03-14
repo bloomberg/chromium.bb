@@ -19,7 +19,7 @@ void ConsoleMessageStorage::addConsoleMessage(ExecutionContext* context,
   DCHECK(m_messages.size() <= maxConsoleMessageCount);
   if (m_messages.size() == maxConsoleMessageCount) {
     ++m_expiredCount;
-    m_messages.removeFirst();
+    m_messages.pop_front();
   }
   m_messages.push_back(message);
 }

@@ -374,7 +374,7 @@ void HTMLParserScriptRunner::pendingScriptFinished(
       // this code path.
       CHECK(false);
 
-      m_scriptsToExecuteAfterParsing.removeFirst();
+      m_scriptsToExecuteAfterParsing.pop_front();
       // TODO(hiroshige): executeScriptsWaitingForParsing() should be
       // called later at the appropriate time. https://crbug.com/696775
     }

@@ -127,7 +127,6 @@ class Deque : public ConditionalDestructor<Deque<T, INLINE_CAPACITY, Allocator>,
 
   template <typename U>
   void prepend(U&&);
-  void removeFirst();
   void remove(iterator&);
   void remove(const_iterator&);
 
@@ -139,7 +138,7 @@ class Deque : public ConditionalDestructor<Deque<T, INLINE_CAPACITY, Allocator>,
     prepend(std::forward<U>(u));
   }
   void pop_back();
-  void pop_front() { removeFirst(); }
+  void pop_front();
   bool empty() const { return isEmpty(); }
   T& front() { return first(); }
   const T& front() const { return first(); }
@@ -486,7 +485,7 @@ void Deque<T, inlineCapacity, Allocator>::expandCapacity() {
 template <typename T, size_t inlineCapacity, typename Allocator>
 inline T Deque<T, inlineCapacity, Allocator>::takeFirst() {
   T oldFirst = std::move(first());
-  removeFirst();
+  pop_front();
   return oldFirst;
 }
 
@@ -544,7 +543,7 @@ inline void Deque<T, inlineCapacity, Allocator>::emplace_front(Args&&... args) {
 }
 
 template <typename T, size_t inlineCapacity, typename Allocator>
-inline void Deque<T, inlineCapacity, Allocator>::removeFirst() {
+inline void Deque<T, inlineCapacity, Allocator>::pop_front() {
   DCHECK(!isEmpty());
   TypeOperations::destruct(&m_buffer.buffer()[m_start],
                            &m_buffer.buffer()[m_start + 1]);

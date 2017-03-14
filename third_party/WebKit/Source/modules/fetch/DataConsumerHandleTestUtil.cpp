@@ -217,7 +217,7 @@ void DataConsumerHandleTestUtil::ReplayingHandle::Context::consume(
   bool fullyConsumed = (size + m_offset >= top().body().size());
   if (fullyConsumed) {
     m_offset = 0;
-    m_commands.removeFirst();
+    m_commands.pop_front();
   } else {
     m_offset += size;
   }

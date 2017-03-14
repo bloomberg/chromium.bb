@@ -144,7 +144,7 @@ void SpeechSynthesis::handleSpeakingCompleted(
   // If the utterance that completed was the one we're currently speaking,
   // remove it from the queue and start speaking the next one.
   if (utterance == currentSpeechUtterance()) {
-    m_utteranceQueue.removeFirst();
+    m_utteranceQueue.pop_front();
     shouldStartSpeaking = !!m_utteranceQueue.size();
   }
 

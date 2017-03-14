@@ -60,17 +60,17 @@ Result BytesConsumerTestUtil::ReplayingBytesConsumer::beginRead(
       *available = command.body().size() - m_offset;
       return Result::Ok;
     case Command::Done:
-      m_commands.removeFirst();
+      m_commands.pop_front();
       close();
       return Result::Done;
     case Command::Error: {
       Error e(String::fromUTF8(command.body().data(), command.body().size()));
-      m_commands.removeFirst();
+      m_commands.pop_front();
       error(std::move(e));
       return Result::Error;
     }
     case Command::Wait:
-      m_commands.removeFirst();
+      m_commands.pop_front();
       m_state = InternalState::Waiting;
       TaskRunnerHelper::get(TaskType::Networking, m_executionContext)
           ->postTask(BLINK_FROM_HERE,
@@ -92,7 +92,7 @@ Result BytesConsumerTestUtil::ReplayingBytesConsumer::endRead(size_t read) {
     return Result::Ok;
 
   m_offset = 0;
-  m_commands.removeFirst();
+  m_commands.pop_front();
   return Result::Ok;
 }
 

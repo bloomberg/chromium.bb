@@ -204,13 +204,13 @@ void ownPtrTest() {
   EXPECT_EQ(0, destructNumber);
 
   EXPECT_EQ(0, deque.first()->get());
-  deque.removeFirst();
+  deque.pop_front();
   EXPECT_EQ(1, deque.first()->get());
   EXPECT_EQ(1u, deque.size());
   EXPECT_EQ(1, destructNumber);
 
   std::unique_ptr<DestructCounter> ownCounter1 = std::move(deque.first());
-  deque.removeFirst();
+  deque.pop_front();
   EXPECT_EQ(counter1, ownCounter1->get());
   EXPECT_EQ(0u, deque.size());
   EXPECT_EQ(1, destructNumber);
@@ -411,7 +411,7 @@ void testDestructorAndConstructorCallsWhenSwappingWithInlineCapacity() {
       EXPECT_EQ(j, LivenessCounter::s_live);
       EXPECT_EQ(j, deque.size());
       for (unsigned k = 0; k < i; k++)
-        deque.removeFirst();
+        deque.pop_front();
 
       EXPECT_EQ(j - i, LivenessCounter::s_live);
       EXPECT_EQ(j - i, deque.size());
@@ -439,7 +439,7 @@ void testDestructorAndConstructorCallsWhenSwappingWithInlineCapacity() {
         EXPECT_EQ(j - i, deque.size());
         EXPECT_EQ(3u, deque2.size());
 
-        deque2.removeFirst();
+        deque2.pop_front();
         deque2.push_back(&counter);
       }
     }
@@ -526,7 +526,7 @@ TEST(DequeTest, UniquePtr) {
   EXPECT_EQ(2, *last);
 
   EXPECT_EQ(2u, deque.size());
-  deque.removeFirst();
+  deque.pop_front();
   deque.pop_back();
   EXPECT_EQ(0u, deque.size());
 

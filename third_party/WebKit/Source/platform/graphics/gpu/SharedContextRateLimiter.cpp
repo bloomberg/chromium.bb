@@ -57,7 +57,7 @@ void SharedContextRateLimiter::tick() {
       GLuint result;
       gl->GetQueryObjectuivEXT(m_queries.first(), GL_QUERY_RESULT_EXT, &result);
       gl->DeleteQueriesEXT(1, &m_queries.first());
-      m_queries.removeFirst();
+      m_queries.pop_front();
     } else {
       gl->Finish();
       reset();
@@ -73,7 +73,7 @@ void SharedContextRateLimiter::reset() {
   if (gl && gl->GetGraphicsResetStatusKHR() == GL_NO_ERROR) {
     while (m_queries.size() > 0) {
       gl->DeleteQueriesEXT(1, &m_queries.first());
-      m_queries.removeFirst();
+      m_queries.pop_front();
     }
   } else {
     m_queries.clear();

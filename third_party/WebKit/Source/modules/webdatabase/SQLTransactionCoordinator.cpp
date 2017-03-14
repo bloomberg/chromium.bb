@@ -62,7 +62,7 @@ void SQLTransactionCoordinator::processPendingTransactions(
     } while (!info.pendingTransactions.isEmpty() &&
              info.pendingTransactions.first()->isReadOnly());
   } else if (info.activeReadTransactions.isEmpty()) {
-    info.pendingTransactions.removeFirst();
+    info.pendingTransactions.pop_front();
     info.activeWriteTransaction = firstPendingTransaction;
     firstPendingTransaction->lockAcquired();
   }

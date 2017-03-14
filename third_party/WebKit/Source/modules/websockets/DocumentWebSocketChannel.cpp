@@ -388,7 +388,7 @@ void DocumentWebSocketChannel::sendInternal(
   *consumedBufferedAmount += size;
 
   if (final) {
-    m_messages.removeFirst();
+    m_messages.pop_front();
     m_sentSizeOfTopMessage = 0;
   }
 }
@@ -430,7 +430,7 @@ void DocumentWebSocketChannel::processSendQueue() {
         DCHECK_EQ(m_messages.size(), 1u);
         DCHECK_EQ(m_sentSizeOfTopMessage, 0u);
         m_handle->close(message->code, message->reason);
-        m_messages.removeFirst();
+        m_messages.pop_front();
         break;
       }
     }

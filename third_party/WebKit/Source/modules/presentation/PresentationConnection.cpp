@@ -319,14 +319,14 @@ void PresentationConnection::handleMessageQueue() {
     switch (message->type) {
       case MessageTypeText:
         client->sendString(m_url, m_id, message->text, m_proxy.get());
-        m_messages.removeFirst();
+        m_messages.pop_front();
         break;
       case MessageTypeArrayBuffer:
         client->sendArrayBuffer(
             m_url, m_id,
             static_cast<const uint8_t*>(message->arrayBuffer->data()),
             message->arrayBuffer->byteLength(), m_proxy.get());
-        m_messages.removeFirst();
+        m_messages.pop_front();
         break;
       case MessageTypeBlob:
         ASSERT(!m_blobLoader);
@@ -483,7 +483,7 @@ void PresentationConnection::didFinishLoadingBlob(DOMArrayBuffer* buffer) {
                          buffer->byteLength(), m_proxy.get());
   }
 
-  m_messages.removeFirst();
+  m_messages.pop_front();
   m_blobLoader.clear();
   handleMessageQueue();
 }
@@ -493,7 +493,7 @@ void PresentationConnection::didFailLoadingBlob(
   ASSERT(!m_messages.isEmpty() && m_messages.first()->type == MessageTypeBlob);
   // FIXME: generate error message?
   // Ignore the current failed blob item and continue with next items.
-  m_messages.removeFirst();
+  m_messages.pop_front();
   m_blobLoader.clear();
   handleMessageQueue();
 }

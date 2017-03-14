@@ -177,7 +177,7 @@ bool ScriptRunIterator::consume(unsigned& limit, UScriptCode& script) {
 
 void ScriptRunIterator::openBracket(UChar32 ch) {
   if (m_brackets.size() == kMaxBrackets) {
-    m_brackets.removeFirst();
+    m_brackets.pop_front();
     if (m_bracketsFixupDepth == kMaxBrackets) {
       --m_bracketsFixupDepth;
     }

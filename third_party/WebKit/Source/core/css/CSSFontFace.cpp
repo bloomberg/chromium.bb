@@ -65,7 +65,7 @@ void CSSFontFace::fontLoaded(RemoteFontFaceSource* source) {
       m_sources.clear();
       setLoadStatus(FontFace::Error);
     } else {
-      m_sources.removeFirst();
+      m_sources.pop_front();
       load();
     }
   }
@@ -103,7 +103,7 @@ PassRefPtr<SimpleFontData> CSSFontFace::getFontData(
         setLoadStatus(FontFace::Loaded);
       return result.release();
     }
-    m_sources.removeFirst();
+    m_sources.pop_front();
   }
 
   if (loadStatus() == FontFace::Unloaded)
@@ -169,7 +169,7 @@ void CSSFontFace::load(const FontDescription& fontDescription) {
         return;
       }
     }
-    m_sources.removeFirst();
+    m_sources.pop_front();
   }
   setLoadStatus(FontFace::Error);
 }
