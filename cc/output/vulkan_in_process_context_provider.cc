@@ -3,18 +3,17 @@
 // found in the LICENSE file.
 
 #include "cc/output/vulkan_in_process_context_provider.h"
-#include "gpu/vulkan/features.h"
 
-#if BUILDFLAG(ENABLE_VULKAN)
+#if defined(ENABLE_VULKAN)
 #include "gpu/vulkan/vulkan_device_queue.h"
 #include "gpu/vulkan/vulkan_implementation.h"
-#endif  // BUILDFLAG(ENABLE_VULKAN)
+#endif  // defined(ENABLE_VULKAN)
 
 namespace cc {
 
 scoped_refptr<VulkanInProcessContextProvider>
 VulkanInProcessContextProvider::Create() {
-#if BUILDFLAG(ENABLE_VULKAN)
+#if defined(ENABLE_VULKAN)
   if (!gpu::VulkanSupported())
     return nullptr;
 
@@ -29,7 +28,7 @@ VulkanInProcessContextProvider::Create() {
 }
 
 bool VulkanInProcessContextProvider::Initialize() {
-#if BUILDFLAG(ENABLE_VULKAN)
+#if defined(ENABLE_VULKAN)
   DCHECK(!device_queue_);
   std::unique_ptr<gpu::VulkanDeviceQueue> device_queue(
       new gpu::VulkanDeviceQueue);
@@ -48,7 +47,7 @@ bool VulkanInProcessContextProvider::Initialize() {
 }
 
 void VulkanInProcessContextProvider::Destroy() {
-#if BUILDFLAG(ENABLE_VULKAN)
+#if defined(ENABLE_VULKAN)
   if (device_queue_) {
     device_queue_->Destroy();
     device_queue_.reset();
@@ -57,7 +56,7 @@ void VulkanInProcessContextProvider::Destroy() {
 }
 
 gpu::VulkanDeviceQueue* VulkanInProcessContextProvider::GetDeviceQueue() {
-#if BUILDFLAG(ENABLE_VULKAN)
+#if defined(ENABLE_VULKAN)
   return device_queue_.get();
 #else
   return nullptr;

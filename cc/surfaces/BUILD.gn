@@ -83,7 +83,6 @@ cc_component("surfaces") {
     "//cc",
     "//gpu/command_buffer/client:gles2_interface",
     "//gpu/command_buffer/common",
-    "//gpu/vulkan:features",
     "//skia",
     "//ui/events:events_base",
     "//ui/gfx",

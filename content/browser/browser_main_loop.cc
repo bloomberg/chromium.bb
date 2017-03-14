@@ -93,7 +93,6 @@
 #include "device/battery/battery_status_service.h"
 #include "device/gamepad/gamepad_service.h"
 #include "device/sensors/device_sensor_service.h"
-#include "gpu/vulkan/features.h"
 #include "media/audio/audio_system_impl.h"
 #include "media/base/media.h"
 #include "media/base/user_input_monitor.h"
@@ -207,7 +206,7 @@
 #include "crypto/nss_util.h"
 #endif
 
-#if BUILDFLAG(ENABLE_VULKAN)
+#if defined(ENABLE_VULKAN)
 #include "gpu/vulkan/vulkan_implementation.h"
 #endif
 
@@ -1433,7 +1432,7 @@ int BrowserMainLoop::BrowserThreadsStarted() {
   base::PlatformThread::SetCurrentThreadPriority(base::ThreadPriority::DISPLAY);
 #endif
 
-#if BUILDFLAG(ENABLE_VULKAN)
+#if defined(ENABLE_VULKAN)
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableVulkan)) {
     gpu::InitializeVulkan();

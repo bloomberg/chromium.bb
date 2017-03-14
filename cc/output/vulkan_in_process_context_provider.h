@@ -9,7 +9,6 @@
 
 #include "cc/base/cc_export.h"
 #include "cc/output/vulkan_context_provider.h"
-#include "gpu/vulkan/features.h"
 
 namespace gpu {
 class VulkanDeviceQueue;
@@ -32,7 +31,7 @@ class CC_EXPORT VulkanInProcessContextProvider : public VulkanContextProvider {
   ~VulkanInProcessContextProvider() override;
 
  private:
-#if BUILDFLAG(ENABLE_VULKAN)
+#if defined(ENABLE_VULKAN)
   std::unique_ptr<gpu::VulkanDeviceQueue> device_queue_;
 #endif
 
