@@ -372,10 +372,9 @@ TEST_P(FileMetricsProviderTest, AccessReadWriteMetrics) {
       base::GlobalHistogramAllocator::ReleaseForTesting();
 
   // Register the file and allow the "checker" task to run.
-  provider()->RegisterSource(metrics_file(),
-                             FileMetricsProvider::SOURCE_HISTOGRAMS_ACTIVE_FILE,
-                             FileMetricsProvider::ASSOCIATE_CURRENT_RUN,
-                             kMetricsName);
+  provider()->RegisterSource(
+      metrics_file(), FileMetricsProvider::SOURCE_HISTOGRAMS_ACTIVE_FILE,
+      FileMetricsProvider::ASSOCIATE_CURRENT_RUN, nullptr);
 
   // Record embedded snapshots via snapshot-manager.
   OnDidCreateMetricsLog();

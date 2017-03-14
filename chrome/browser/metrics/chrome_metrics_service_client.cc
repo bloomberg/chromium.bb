@@ -227,12 +227,13 @@ std::unique_ptr<metrics::FileMetricsProvider> CreateFileMetricsProvider(
       base::GlobalHistogramAllocator::ConstructFilePaths(
           user_data_dir, kCrashpadHistogramAllocatorName, nullptr,
           &active_path);
-      // Register data that will be populated for the current run.
+      // Register data that will be populated for the current run. "Active"
+      // files need an empty "prefs_key" because they update the file itself.
       file_metrics_provider->RegisterSource(
           active_path,
           metrics::FileMetricsProvider::SOURCE_HISTOGRAMS_ACTIVE_FILE,
           metrics::FileMetricsProvider::ASSOCIATE_CURRENT_RUN,
-          kCrashpadHistogramAllocatorName);
+          base::StringPiece());
     }
   }
 

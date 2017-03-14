@@ -141,8 +141,10 @@ void FileMetricsProvider::RegisterSource(const base::FilePath& path,
   source->prefs_key = prefs_key.as_string();
 
   switch (source->type) {
-    case SOURCE_HISTOGRAMS_ATOMIC_FILE:
     case SOURCE_HISTOGRAMS_ACTIVE_FILE:
+      DCHECK(prefs_key.empty());
+    // fall through
+    case SOURCE_HISTOGRAMS_ATOMIC_FILE:
       source->path = path;
       break;
     case SOURCE_HISTOGRAMS_ATOMIC_DIR:
