@@ -4,6 +4,7 @@
 
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
+import("//gpu/vulkan/features.gni")
 import("//media/media_options.gni")
 import("//ppapi/features/features.gni")
 import("//printing/features/features.gni")
@@ -83,6 +84,7 @@ source_set("browser") {
     "//gpu/command_buffer/client:gles2_implementation",
     "//gpu/command_buffer/client:gles2_interface",
     "//gpu/ipc/host",
+    "//gpu/vulkan:features",
     "//ipc",
     "//media",
     "//media/capture",

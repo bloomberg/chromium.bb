@@ -2,8 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//build/config/ui.gni")
 import("//cc/cc.gni")
+import("//gpu/vulkan/features.gni")
 
 cc_component("cc") {
   sources = [
@@ -533,6 +533,7 @@ cc_component("cc") {
     "//gpu/command_buffer/client:gles2_interface",
     "//gpu/ipc:gl_in_process_context",
     "//gpu/skia_bindings:skia_bindings",
+    "//gpu/vulkan:features",
     "//media",
     "//mojo/public/cpp/bindings:struct_traits",
     "//third_party/libyuv",

@@ -24,9 +24,10 @@
 #include "cc/surfaces/surface_aggregator.h"
 #include "cc/surfaces/surface_manager.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
+#include "gpu/vulkan/features.h"
 #include "ui/gfx/buffer_types.h"
 
-#if defined(ENABLE_VULKAN)
+#if BUILDFLAG(ENABLE_VULKAN)
 #include "cc/output/vulkan_renderer.h"
 #endif
 

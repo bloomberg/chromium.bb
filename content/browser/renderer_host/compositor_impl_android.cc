@@ -61,6 +61,7 @@
 #include "gpu/ipc/client/command_buffer_proxy_impl.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
 #include "gpu/ipc/common/gpu_surface_tracker.h"
+#include "gpu/vulkan/features.h"
 #include "gpu/vulkan/vulkan_surface.h"
 #include "services/ui/public/cpp/gpu/context_provider_command_buffer.h"
 #include "third_party/khronos/GLES2/gl2.h"
@@ -99,7 +100,7 @@ struct CompositorDependencies {
   cc::SurfaceManager surface_manager;
   cc::FrameSinkIdAllocator frame_sink_id_allocator;
 
-#if defined(ENABLE_VULKAN)
+#if BUILDFLAG(ENABLE_VULKAN)
   scoped_refptr<cc::VulkanContextProvider> vulkan_context_provider;
 #endif
 };
@@ -109,7 +110,7 @@ base::LazyInstance<CompositorDependencies>::DestructorAtExit
 
 const unsigned int kMaxDisplaySwapBuffers = 1U;
 
-#if defined(ENABLE_VULKAN)
+#if BUILDFLAG(ENABLE_VULKAN)
 scoped_refptr<cc::VulkanContextProvider> GetSharedVulkanContextProvider() {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableVulkan)) {
@@ -304,7 +305,7 @@ class AndroidOutputSurface : public cc::OutputSurface {
   base::WeakPtrFactory<AndroidOutputSurface> weak_ptr_factory_;
 };
 
-#if defined(ENABLE_VULKAN)
+#if BUILDFLAG(ENABLE_VULKAN)
 class VulkanOutputSurface : public cc::OutputSurface {
  public:
   explicit VulkanOutputSurface(
@@ -627,7 +628,7 @@ void CompositorImpl::HandlePendingCompositorFrameSinkRequest() {
   if (!host_->IsVisible())
     return;
 
-#if defined(ENABLE_VULKAN)
+#if BUILDFLAG(ENABLE_VULKAN)
   CreateVulkanOutputSurface()
   if (display_)
     return;
@@ -658,7 +659,7 @@ void CompositorImpl::OnGpuChannelTimeout() {
   LOG(FATAL) << "Timed out waiting for GPU channel.";
 }
 
-#if defined(ENABLE_VULKAN)
+#if BUILDFLAG(ENABLE_VULKAN)
 void CompositorImpl::CreateVulkanOutputSurface() {
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableVulkan))
