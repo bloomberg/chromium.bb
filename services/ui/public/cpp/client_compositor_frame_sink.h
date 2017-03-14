@@ -36,6 +36,7 @@ class ClientCompositorFrameSink
   // cc::CompositorFrameSink implementation.
   bool BindToClient(cc::CompositorFrameSinkClient* client) override;
   void DetachFromClient() override;
+  void SetLocalSurfaceId(const cc::LocalSurfaceId& local_surface_id) override;
   void SubmitCompositorFrame(cc::CompositorFrame frame) override;
 
  private:
@@ -68,6 +69,7 @@ class ClientCompositorFrameSink
       client_binding_;
   std::unique_ptr<base::ThreadChecker> thread_checker_;
   const cc::FrameSinkId frame_sink_id_;
+  bool enable_surface_synchronization_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(ClientCompositorFrameSink);
 };

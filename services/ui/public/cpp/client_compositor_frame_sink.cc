@@ -5,7 +5,9 @@
 #include "services/ui/public/cpp/client_compositor_frame_sink.h"
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/memory/ptr_util.h"
+#include "cc/base/switches.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/output/compositor_frame_sink_client.h"
 
@@ -61,6 +63,13 @@ void ClientCompositorFrameSink::DetachFromClient() {
   cc::CompositorFrameSink::DetachFromClient();
 }
 
+void ClientCompositorFrameSink::SetLocalSurfaceId(
+    const cc::LocalSurfaceId& local_surface_id) {
+  DCHECK(local_surface_id.is_valid());
+  DCHECK(enable_surface_synchronization_);
+  local_surface_id_ = local_surface_id;
+}
+
 void ClientCompositorFrameSink::SubmitCompositorFrame(
     cc::CompositorFrame frame) {
   DCHECK(thread_checker_);
@@ -71,12 +80,13 @@ void ClientCompositorFrameSink::SubmitCompositorFrame(
   gfx::Size frame_size = last_submitted_frame_size_;
   if (!frame.render_pass_list.empty())
     frame_size = frame.render_pass_list.back()->output_rect.size();
-  if (!local_surface_id_.is_valid() || frame_size != last_submitted_frame_size_)
+  if (!enable_surface_synchronization_ &&
+      (!local_surface_id_.is_valid() ||
+       frame_size != last_submitted_frame_size_)) {
     local_surface_id_ = id_allocator_.GenerateId();
-
+  }
   compositor_frame_sink_->SubmitCompositorFrame(local_surface_id_,
                                                 std::move(frame));
-
   last_submitted_frame_size_ = frame_size;
 }
 
@@ -92,7 +102,11 @@ ClientCompositorFrameSink::ClientCompositorFrameSink(
                               nullptr),
       compositor_frame_sink_info_(std::move(compositor_frame_sink_info)),
       client_request_(std::move(client_request)),
-      frame_sink_id_(frame_sink_id) {}
+      frame_sink_id_(frame_sink_id) {
+  enable_surface_synchronization_ =
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          cc::switches::kEnableSurfaceSynchronization);
+}
 
 void ClientCompositorFrameSink::DidReceiveCompositorFrameAck() {
   DCHECK(thread_checker_);
