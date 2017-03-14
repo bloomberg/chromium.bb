@@ -113,22 +113,6 @@ void MediaDevicesPermissionChecker::CheckPermission(
       callback);
 }
 
-MediaDevicesManager::BoolDeviceTypes
-MediaDevicesPermissionChecker::CheckPermissionsOnUIThread(
-    MediaDevicesManager::BoolDeviceTypes requested_device_types,
-    int render_process_id,
-    int render_frame_id,
-    const url::Origin& security_origin) const {
-  if (use_override_) {
-    MediaDevicesManager::BoolDeviceTypes result;
-    result.fill(override_value_);
-    return result;
-  }
-
-  return DoCheckPermissionsOnUIThread(requested_device_types, render_process_id,
-                                      render_frame_id, security_origin);
-}
-
 void MediaDevicesPermissionChecker::CheckPermissions(
     MediaDevicesManager::BoolDeviceTypes requested,
     int render_process_id,
