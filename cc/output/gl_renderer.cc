@@ -1536,7 +1536,7 @@ static gfx::QuadF GetDeviceQuadWithAntialiasingOnExteriorEdges(
 
   // Only apply anti-aliasing to edges not clipped by culling or scissoring.
   // If an edge is degenerate we do not want to replace it with a "proper" edge
-  // as that will cause the quad to possibly expand is strange ways.
+  // as that will cause the quad to possibly expand in strange ways.
   if (!top_edge.degenerate() && is_top(clip_region, quad) &&
       tile_rect.y() == quad->rect.y()) {
     top_edge = device_layer_edges.top();
