@@ -8,10 +8,11 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_vector.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "content/browser/frame_host/frame_navigation_entry.h"
@@ -72,7 +73,7 @@ class CONTENT_EXPORT NavigationEntryImpl
     scoped_refptr<FrameNavigationEntry> frame_entry;
 
     // List of child TreeNodes, which will be deleted when this node is.
-    ScopedVector<TreeNode> children;
+    std::vector<std::unique_ptr<TreeNode>> children;
   };
 
   static NavigationEntryImpl* FromNavigationEntry(NavigationEntry* entry);

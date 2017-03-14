@@ -7,10 +7,10 @@
 
 #include <map>
 #include <memory>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 #include "base/time/time.h"
 #include "content/browser/android/content_video_view.h"
 #include "content/common/content_export.h"
@@ -114,7 +114,8 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
 
   // Adds a given player to the list.  Not private to allow embedders
   // to extend the manager and still utilize the base player management.
-  void AddPlayer(media::MediaPlayerAndroid* player, int delegate_id);
+  void AddPlayer(std::unique_ptr<media::MediaPlayerAndroid> player,
+                 int delegate_id);
 
   // Removes the player with the specified id.
   void DestroyPlayer(int player_id);
@@ -151,7 +152,7 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
 
  private:
   // Constructs a MediaPlayerAndroid object.
-  media::MediaPlayerAndroid* CreateMediaPlayer(
+  std::unique_ptr<media::MediaPlayerAndroid> CreateMediaPlayer(
       const MediaPlayerHostMsg_Initialize_Params& media_player_params,
       bool hide_url_log);
 
@@ -168,7 +169,7 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
   RenderFrameHost* const render_frame_host_;
 
   // An array of managed players.
-  ScopedVector<media::MediaPlayerAndroid> players_;
+  std::vector<std::unique_ptr<media::MediaPlayerAndroid>> players_;
 
   typedef std::map<int, bool> ActivePlayerMap;
   // Players that have requested decoding resources. Even though resource is

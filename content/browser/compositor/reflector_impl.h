@@ -6,8 +6,9 @@
 #define CONTENT_BROWSER_COMPOSITOR_REFLECTOR_IMPL_H_
 
 #include <memory>
+#include <vector>
 
-#include "base/memory/scoped_vector.h"
+#include "base/macros.h"
 #include "content/browser/compositor/image_transport_factory.h"
 #include "content/common/content_export.h"
 #include "gpu/command_buffer/common/mailbox_holder.h"
@@ -64,18 +65,20 @@ class CONTENT_EXPORT ReflectorImpl : public ui::Reflector {
  private:
   struct LayerData;
 
-  ScopedVector<ReflectorImpl::LayerData>::iterator FindLayerData(
+  std::vector<std::unique_ptr<LayerData>>::iterator FindLayerData(
       ui::Layer* layer);
   void UpdateTexture(LayerData* layer_data,
                      const gfx::Size& size,
                      const gfx::Rect& redraw_rect);
 
   ui::Compositor* mirrored_compositor_;
-  ScopedVector<LayerData> mirroring_layers_;
+  std::vector<std::unique_ptr<LayerData>> mirroring_layers_;
 
   scoped_refptr<OwnedMailbox> mailbox_;
   bool flip_texture_;
   BrowserCompositorOutputSurface* output_surface_;
+
+  DISALLOW_COPY_AND_ASSIGN(ReflectorImpl);
 };
 
 }  // namespace content

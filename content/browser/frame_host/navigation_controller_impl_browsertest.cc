@@ -5988,11 +5988,9 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 
   EXPECT_EQ(1U, nav_entry->root_node()->children.size());
 
-  NavigationEntryImpl::TreeNode* tree_node =
-      nav_entry->root_node()->children[0];
-  EXPECT_EQ(1U, tree_node->children.size());
+  EXPECT_EQ(1U, nav_entry->root_node()->children[0]->children.size());
 
-  tree_node = tree_node->children[0];
+  const auto& tree_node = nav_entry->root_node()->children[0]->children[0];
   EXPECT_EQ(0U, tree_node->children.size());
   EXPECT_EQ("foo-frame-name", tree_node->frame_entry->frame_unique_name());
 
@@ -6008,7 +6006,6 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   WebContentsImpl* web_contents =
       static_cast<WebContentsImpl*>(shell()->web_contents());
   FrameTreeNode* root = web_contents->GetFrameTree()->root();
-  NavigationEntryImpl::TreeNode* tree_node = nullptr;
 
   GURL start_url(embedded_test_server()->GetURL("/title1.html"));
   EXPECT_TRUE(NavigateToURL(shell(), start_url));
@@ -6020,7 +6017,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   EXPECT_TRUE(ExecuteScript(root, kAddNamedFrameScript));
   EXPECT_EQ(1U, root->child_count());
   EXPECT_EQ(1U, nav_entry->root_node()->children.size());
-  tree_node = nav_entry->root_node()->children[0];
+  auto* tree_node = nav_entry->root_node()->children[0].get();
 
   EXPECT_TRUE(ExecuteScript(root, kRemoveFrameScript));
   EXPECT_EQ(0U, root->child_count());
@@ -6032,7 +6029,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   EXPECT_TRUE(ExecuteScript(root, kAddNamedFrameScript));
   EXPECT_EQ(1U, root->child_count());
   EXPECT_EQ(1U, nav_entry->root_node()->children.size());
-  EXPECT_EQ(tree_node, nav_entry->root_node()->children[0]);
+  EXPECT_EQ(tree_node, nav_entry->root_node()->children[0].get());
 
   EXPECT_TRUE(ExecuteScript(root, kRemoveFrameScript));
   EXPECT_EQ(0U, root->child_count());

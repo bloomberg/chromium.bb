@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/location.h"
+#include "base/memory/ptr_util.h"
 #include "content/browser/compositor/browser_compositor_output_surface.h"
 #include "content/browser/compositor/owned_mailbox.h"
 #include "ui/compositor/layer.h"
@@ -44,7 +45,7 @@ void ReflectorImpl::DetachFromOutputSurface() {
   DCHECK(mailbox_.get());
   mailbox_ = nullptr;
   output_surface_ = nullptr;
-  for (LayerData* layer_data : mirroring_layers_)
+  for (const auto& layer_data : mirroring_layers_)
     layer_data->layer->SetShowSolidColorContent();
 }
 
@@ -65,7 +66,7 @@ void ReflectorImpl::OnSourceSurfaceReady(
 }
 
 void ReflectorImpl::OnMirroringCompositorResized() {
-  for (LayerData* layer_data : mirroring_layers_)
+  for (const auto& layer_data : mirroring_layers_)
     layer_data->layer->SchedulePaint(layer_data->layer->bounds());
 }
 
@@ -73,17 +74,16 @@ void ReflectorImpl::AddMirroringLayer(ui::Layer* layer) {
   DCHECK(layer->GetCompositor());
   DCHECK(mirroring_layers_.end() == FindLayerData(layer));
 
-  LayerData* layer_data = new LayerData(layer);
+  mirroring_layers_.push_back(base::MakeUnique<LayerData>(layer));
   if (mailbox_)
-    layer_data->needs_set_mailbox = true;
-  mirroring_layers_.push_back(layer_data);
+    mirroring_layers_.back()->needs_set_mailbox = true;
   mirrored_compositor_->ScheduleFullRedraw();
 }
 
 void ReflectorImpl::RemoveMirroringLayer(ui::Layer* layer) {
   DCHECK(layer->GetCompositor());
 
-  ScopedVector<LayerData>::iterator iter = FindLayerData(layer);
+  auto iter = FindLayerData(layer);
   DCHECK(iter != mirroring_layers_.end());
   (*iter)->layer->SetShowSolidColorContent();
   mirroring_layers_.erase(iter);
@@ -96,7 +96,7 @@ void ReflectorImpl::OnSourceTextureMailboxUpdated(
     scoped_refptr<OwnedMailbox> mailbox) {
   mailbox_ = mailbox;
   if (mailbox_.get()) {
-    for (LayerData* layer_data : mirroring_layers_)
+    for (const auto& layer_data : mirroring_layers_)
       layer_data->needs_set_mailbox = true;
 
     // The texture doesn't have the data. Request full redraw on mirrored
@@ -115,8 +115,8 @@ void ReflectorImpl::OnSourceSwapBuffers(const gfx::Size& surface_size) {
   DCHECK(mailbox_.get());
 
   // Request full redraw on mirroring compositor.
-  for (LayerData* layer_data : mirroring_layers_)
-    UpdateTexture(layer_data, surface_size, layer_data->layer->bounds());
+  for (const auto& layer_data : mirroring_layers_)
+    UpdateTexture(layer_data.get(), surface_size, layer_data->layer->bounds());
 }
 
 void ReflectorImpl::OnSourcePostSubBuffer(const gfx::Rect& swap_rect,
@@ -135,8 +135,8 @@ void ReflectorImpl::OnSourcePostSubBuffer(const gfx::Rect& swap_rect,
   }
 
   // Request redraw of the dirty portion in mirroring compositor.
-  for (LayerData* layer_data : mirroring_layers_)
-    UpdateTexture(layer_data, surface_size, mirroring_rect);
+  for (const auto& layer_data : mirroring_layers_)
+    UpdateTexture(layer_data.get(), surface_size, mirroring_rect);
 }
 
 static void ReleaseMailbox(scoped_refptr<OwnedMailbox> mailbox,
@@ -145,10 +145,10 @@ static void ReleaseMailbox(scoped_refptr<OwnedMailbox> mailbox,
   mailbox->UpdateSyncToken(sync_token);
 }
 
-ScopedVector<ReflectorImpl::LayerData>::iterator ReflectorImpl::FindLayerData(
-    ui::Layer* layer) {
+std::vector<std::unique_ptr<ReflectorImpl::LayerData>>::iterator
+ReflectorImpl::FindLayerData(ui::Layer* layer) {
   return std::find_if(mirroring_layers_.begin(), mirroring_layers_.end(),
-                      [layer](const LayerData* layer_data) {
+                      [layer](const std::unique_ptr<LayerData>& layer_data) {
                         return layer_data->layer == layer;
                       });
 }

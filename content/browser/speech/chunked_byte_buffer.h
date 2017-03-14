@@ -13,7 +13,6 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 #include "content/common/content_export.h"
 
 namespace content {
@@ -65,7 +64,7 @@ class CONTENT_EXPORT ChunkedByteBuffer {
     DISALLOW_COPY_AND_ASSIGN(Chunk);
   };
 
-  ScopedVector<Chunk> chunks_;
+  std::vector<std::unique_ptr<Chunk>> chunks_;
   std::unique_ptr<Chunk> partial_chunk_;
   size_t total_bytes_stored_;
 

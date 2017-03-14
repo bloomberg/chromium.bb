@@ -6,10 +6,12 @@
 
 #include <stddef.h>
 
+#include <memory>
+#include <vector>
+
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/memory/ptr_util.h"
-#include "base/memory/scoped_vector.h"
 #include "base/run_loop.h"
 #include "base/strings/string16.h"
 #include "content/browser/browser_thread_impl.h"
@@ -592,9 +594,10 @@ TEST_F(SiteInstanceTest, ProcessSharingByType) {
 
   // Make a bunch of mock renderers so that we hit the limit.
   std::unique_ptr<TestBrowserContext> browser_context(new TestBrowserContext());
-  ScopedVector<MockRenderProcessHost> hosts;
+  std::vector<std::unique_ptr<MockRenderProcessHost>> hosts;
   for (size_t i = 0; i < kMaxRendererProcessCount; ++i)
-    hosts.push_back(new MockRenderProcessHost(browser_context.get()));
+    hosts.push_back(
+        base::MakeUnique<MockRenderProcessHost>(browser_context.get()));
 
   // Create some extension instances and make sure they share a process.
   scoped_refptr<SiteInstanceImpl> extension1_instance(
@@ -627,8 +630,8 @@ TEST_F(SiteInstanceTest, ProcessSharingByType) {
   EXPECT_NE(extension1_instance->GetProcess(), webui1_instance->GetProcess());
 
   for (size_t i = 0; i < kMaxRendererProcessCount; ++i) {
-    EXPECT_NE(extension1_instance->GetProcess(), hosts[i]);
-    EXPECT_NE(webui1_instance->GetProcess(), hosts[i]);
+    EXPECT_NE(extension1_instance->GetProcess(), hosts[i].get());
+    EXPECT_NE(webui1_instance->GetProcess(), hosts[i].get());
   }
 
   DrainMessageLoop();

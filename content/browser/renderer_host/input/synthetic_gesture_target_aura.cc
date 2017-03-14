@@ -6,6 +6,9 @@
 
 #include <stddef.h>
 
+#include <memory>
+#include <vector>
+
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_aura.h"
 #include "content/browser/renderer_host/ui_events_helper.h"
@@ -36,27 +39,26 @@ void SyntheticGestureTargetAura::DispatchWebTouchEventToPlatform(
     touch_with_latency.event.touches[i].radiusX *= device_scale_factor_;
     touch_with_latency.event.touches[i].radiusY *= device_scale_factor_;
   }
-  ScopedVector<ui::TouchEvent> events;
+  std::vector<std::unique_ptr<ui::TouchEvent>> events;
   bool conversion_success = MakeUITouchEventsFromWebTouchEvents(
       touch_with_latency, &events, LOCAL_COORDINATES);
   DCHECK(conversion_success);
 
   aura::Window* window = GetWindow();
   aura::WindowTreeHost* host = window->GetHost();
-  for (ScopedVector<ui::TouchEvent>::iterator iter = events.begin(),
-      end = events.end(); iter != end; ++iter) {
-    (*iter)->ConvertLocationToTarget(window, host->window());
+  for (const auto& event : events) {
+    event->ConvertLocationToTarget(window, host->window());
 
     // Apply the screen scale factor to the event location after it has been
     // transformed to the target.
     gfx::PointF device_location =
-        gfx::ScalePoint((*iter)->location_f(), device_scale_factor_);
+        gfx::ScalePoint(event->location_f(), device_scale_factor_);
     gfx::PointF device_root_location =
-        gfx::ScalePoint((*iter)->root_location_f(), device_scale_factor_);
-    (*iter)->set_location_f(device_location);
-    (*iter)->set_root_location_f(device_root_location);
+        gfx::ScalePoint(event->root_location_f(), device_scale_factor_);
+    event->set_location_f(device_location);
+    event->set_root_location_f(device_root_location);
     ui::EventDispatchDetails details =
-        host->event_processor()->OnEventFromSource(*iter);
+        host->event_processor()->OnEventFromSource(event.get());
     if (details.dispatcher_destroyed)
       break;
   }

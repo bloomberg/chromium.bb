@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 
+#include "base/memory/ptr_util.h"
 #include "content/common/input/web_touch_event_traits.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
 #include "ui/events/base_event_utils.h"
@@ -41,7 +42,7 @@ namespace content {
 
 bool MakeUITouchEventsFromWebTouchEvents(
     const TouchEventWithLatencyInfo& touch_with_latency,
-    ScopedVector<ui::TouchEvent>* list,
+    std::vector<std::unique_ptr<ui::TouchEvent>>* list,
     TouchEventCoordinateSystem coordinate_system) {
   const blink::WebTouchEvent& touch = touch_with_latency.event;
   ui::EventType type = ui::ET_UNKNOWN;
@@ -76,13 +77,13 @@ bool MakeUITouchEventsFromWebTouchEvents(
       location = point.position;
     else
       location = point.screenPosition;
-    ui::TouchEvent* uievent = new ui::TouchEvent(
+    auto uievent = base::MakeUnique<ui::TouchEvent>(
         type, gfx::Point(), flags, point.id, timestamp, point.radiusX,
         point.radiusY, point.rotationAngle, point.force);
     uievent->set_location_f(location);
     uievent->set_root_location_f(location);
     uievent->set_latency(touch_with_latency.latency);
-    list->push_back(uievent);
+    list->push_back(std::move(uievent));
   }
   return true;
 }

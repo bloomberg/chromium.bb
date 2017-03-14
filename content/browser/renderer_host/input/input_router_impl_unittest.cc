@@ -10,10 +10,12 @@
 
 #include <memory>
 #include <tuple>
+#include <vector>
 
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
@@ -130,14 +132,13 @@ bool TouchEventsAreEquivalent(const ui::TouchEvent& first,
   return true;
 }
 
-bool EventListIsSubset(const ScopedVector<ui::TouchEvent>& subset,
-                       const ScopedVector<ui::TouchEvent>& set) {
+bool EventListIsSubset(
+    const std::vector<std::unique_ptr<ui::TouchEvent>>& subset,
+    const std::vector<std::unique_ptr<ui::TouchEvent>>& set) {
   if (subset.size() > set.size())
     return false;
   for (size_t i = 0; i < subset.size(); ++i) {
-    const ui::TouchEvent* first = subset[i];
-    const ui::TouchEvent* second = set[i];
-    bool equivalent = TouchEventsAreEquivalent(*first, *second);
+    bool equivalent = TouchEventsAreEquivalent(*(subset[i]), *(set[i]));
     if (!equivalent)
       return false;
   }
@@ -915,7 +916,7 @@ TEST_F(InputRouterImplTest, AckedTouchEventState) {
   EXPECT_TRUE(TouchEventQueueEmpty());
 
   // Send a bunch of events, and make sure the ACKed events are correct.
-  ScopedVector<ui::TouchEvent> expected_events;
+  std::vector<std::unique_ptr<ui::TouchEvent>> expected_events;
 
   // Use a custom timestamp for all the events to test that the acked events
   // have the same timestamp;
@@ -927,8 +928,8 @@ TEST_F(InputRouterImplTest, AckedTouchEventState) {
   SetTouchTimestamp(timestamp);
   uint32_t touch_press_event_id1 = SendTouchEvent();
   EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
-  expected_events.push_back(
-      new ui::TouchEvent(ui::ET_TOUCH_PRESSED, gfx::Point(1, 1), 0, timestamp));
+  expected_events.push_back(base::MakeUnique<ui::TouchEvent>(
+      ui::ET_TOUCH_PRESSED, gfx::Point(1, 1), 0, timestamp));
 
   // Move the finger.
   timestamp += base::TimeDelta::FromSeconds(10);
@@ -936,7 +937,7 @@ TEST_F(InputRouterImplTest, AckedTouchEventState) {
   SetTouchTimestamp(timestamp);
   uint32_t touch_move_event_id1 = SendTouchEvent();
   EXPECT_FALSE(TouchEventQueueEmpty());
-  expected_events.push_back(new ui::TouchEvent(
+  expected_events.push_back(base::MakeUnique<ui::TouchEvent>(
       ui::ET_TOUCH_MOVED, gfx::Point(500, 500), 0, timestamp));
 
   // Now press a second finger.
@@ -945,8 +946,8 @@ TEST_F(InputRouterImplTest, AckedTouchEventState) {
   SetTouchTimestamp(timestamp);
   uint32_t touch_press_event_id2 = SendTouchEvent();
   EXPECT_FALSE(TouchEventQueueEmpty());
-  expected_events.push_back(
-      new ui::TouchEvent(ui::ET_TOUCH_PRESSED, gfx::Point(2, 2), 1, timestamp));
+  expected_events.push_back(base::MakeUnique<ui::TouchEvent>(
+      ui::ET_TOUCH_PRESSED, gfx::Point(2, 2), 1, timestamp));
 
   // Move both fingers.
   timestamp += base::TimeDelta::FromSeconds(10);
@@ -955,10 +956,10 @@ TEST_F(InputRouterImplTest, AckedTouchEventState) {
   SetTouchTimestamp(timestamp);
   uint32_t touch_move_event_id2 = SendTouchEvent();
   EXPECT_FALSE(TouchEventQueueEmpty());
-  expected_events.push_back(
-      new ui::TouchEvent(ui::ET_TOUCH_MOVED, gfx::Point(10, 10), 0, timestamp));
-  expected_events.push_back(
-      new ui::TouchEvent(ui::ET_TOUCH_MOVED, gfx::Point(20, 20), 1, timestamp));
+  expected_events.push_back(base::MakeUnique<ui::TouchEvent>(
+      ui::ET_TOUCH_MOVED, gfx::Point(10, 10), 0, timestamp));
+  expected_events.push_back(base::MakeUnique<ui::TouchEvent>(
+      ui::ET_TOUCH_MOVED, gfx::Point(20, 20), 1, timestamp));
 
   // Receive the ACKs and make sure the generated events from the acked events
   // are correct.
@@ -978,7 +979,7 @@ TEST_F(InputRouterImplTest, AckedTouchEventState) {
     SendTouchEventACK(acks[i], INPUT_EVENT_ACK_STATE_NOT_CONSUMED,
                       touch_event_ids[i]);
     EXPECT_EQ(acks[i], ack_handler_->acked_touch_event().event.type());
-    ScopedVector<ui::TouchEvent> acked;
+    std::vector<std::unique_ptr<ui::TouchEvent>> acked;
 
     MakeUITouchEventsFromWebTouchEvents(
         ack_handler_->acked_touch_event(), &acked, coordinate_system);
