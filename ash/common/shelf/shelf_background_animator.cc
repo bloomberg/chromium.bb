@@ -98,14 +98,6 @@ void ShelfBackgroundAnimator::AnimationEnded(const gfx::Animation* animation) {
   animator_.reset();
 }
 
-void ShelfBackgroundAnimator::AnimationCanceled(
-    const gfx::Animation* animation) {
-  DCHECK_EQ(animation, animator_.get());
-  SetAnimationValues(animator_->IsShowing() ? 1.0 : 0.0);
-  // Animations are only cancelled when they are being pre-empted so we don't
-  // destroy the |animator_| because it may be re-used immediately.
-}
-
 void ShelfBackgroundAnimator::OnWallpaperDataChanged() {}
 
 void ShelfBackgroundAnimator::OnWallpaperColorsChanged() {

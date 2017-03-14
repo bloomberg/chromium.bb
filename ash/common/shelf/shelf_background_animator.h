@@ -82,7 +82,6 @@ class ASH_EXPORT ShelfBackgroundAnimator : public WmShelfObserver,
   // gfx::AnimationDelegate:
   void AnimationProgressed(const gfx::Animation* animation) override;
   void AnimationEnded(const gfx::Animation* animation) override;
-  void AnimationCanceled(const gfx::Animation* animation) override;
 
  protected:
   // WmShelfObserver:

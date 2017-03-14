@@ -278,19 +278,6 @@ TEST_F(ShelfBackgroundAnimatorTest,
   EXPECT_NE(animator, test_api_->animator());
 }
 
-TEST_F(ShelfBackgroundAnimatorTest,
-       AnimationProgressesToTargetWhenStoppingUnfinishedAnimator) {
-  PaintBackground(SHELF_BACKGROUND_OVERLAP, AnimationChangeType::ANIMATE);
-
-  EXPECT_NE(kShelfTranslucentAlpha, observer_.GetBackgroundAlpha());
-  EXPECT_NE(0, observer_.GetItemBackgroundAlpha());
-
-  test_api_->animator()->Stop();
-
-  EXPECT_EQ(kShelfTranslucentAlpha, observer_.GetBackgroundAlpha());
-  EXPECT_EQ(0, observer_.GetItemBackgroundAlpha());
-}
-
 // Verify observers are always notified, even when alpha values don't change.
 TEST_F(ShelfBackgroundAnimatorTest,
        ObserversAreNotifiedWhenSnappingToSameTargetBackground) {
