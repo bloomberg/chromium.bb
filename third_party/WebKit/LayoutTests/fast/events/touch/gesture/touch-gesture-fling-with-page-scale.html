@@ -13,8 +13,8 @@
 
   var startXInViewport;
   var startYInViewport;
-  var pinchViewportContentX = 300;
-  var pinchViewportContentY = 300;
+  var visualViewportContentX = 300;
+  var visualViewportContentY = 300;
   var scale = 2;
 
   var fullyScrolled;
@@ -30,8 +30,8 @@
 
     var startX = startSpot.offsetLeft + startSpot.offsetWidth/2;
     var startY = startSpot.offsetTop + startSpot.offsetHeight/2;
-    startXInViewport = (startX - pinchViewportContentX)*scale;
-    startYInViewport = (startY - pinchViewportContentY)*scale;
+    startXInViewport = (startX - visualViewportContentX)*scale;
+    startYInViewport = (startY - visualViewportContentY)*scale;
 
     if (window.testRunner && window.eventSender && window.internals) {
       internals.setPageScaleFactorLimits(1, 4.0);
@@ -81,13 +81,13 @@
 
     internals.setPageScaleFactor(scale);
 
-    // Position the pinch viewport.
+    // Position the visual viewport.
     eventSender.gestureScrollBegin(0, 0);
 
-    // Start from pinch viewport offset (0, 0).
+    // Start from visual viewport offset (0, 0).
     eventSender.gestureScrollUpdate(10000, 10000);
-    eventSender.gestureScrollUpdate(-pinchViewportContentX*scale,
-                                    -pinchViewportContentY*scale);
+    eventSender.gestureScrollUpdate(-visualViewportContentX*scale,
+                                    -visualViewportContentY*scale);
     eventSender.gestureScrollEnd(0, 0);
   }
 

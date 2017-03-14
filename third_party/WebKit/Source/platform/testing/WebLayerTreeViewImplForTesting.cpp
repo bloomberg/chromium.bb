@@ -154,8 +154,6 @@ void WebLayerTreeViewImplForTesting::registerViewportLayers(
     const blink::WebLayer* innerViewportScrollLayer,
     const blink::WebLayer* outerViewportScrollLayer) {
   m_layerTreeHost->RegisterViewportLayers(
-      // The scroll elasticity layer will only exist when using pinch virtual
-      // viewports.
       overscrollElasticityLayer
           ? static_cast<const cc_blink::WebLayerImpl*>(
                 overscrollElasticityLayer)
@@ -164,8 +162,6 @@ void WebLayerTreeViewImplForTesting::registerViewportLayers(
       static_cast<const cc_blink::WebLayerImpl*>(pageScaleLayer)->layer(),
       static_cast<const cc_blink::WebLayerImpl*>(innerViewportScrollLayer)
           ->layer(),
-      // The outer viewport layer will only exist when using pinch virtual
-      // viewports.
       outerViewportScrollLayer
           ? static_cast<const cc_blink::WebLayerImpl*>(outerViewportScrollLayer)
                 ->layer()

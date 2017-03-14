@@ -138,8 +138,7 @@ class WebLayerTreeView {
   // Prevents updates to layer tree from becoming visible.
   virtual void setDeferCommits(bool deferCommits) {}
 
-  // Identify key layers to the compositor when using the pinch virtual
-  // viewport.
+  // Identify key viewport layers to the compositor.
   virtual void registerViewportLayers(
       const WebLayer* overscrollElasticityLayer,
       const WebLayer* pageScaleLayer,

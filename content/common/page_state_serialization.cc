@@ -191,7 +191,7 @@ struct SerializeObject {
 // 18: Add referrer policy.
 // 19: Remove target frame id, which was a bad idea, and original url string,
 //         which is no longer used.
-// 20: Add pinch viewport scroll offset, the offset of the pinched zoomed
+// 20: Add visual viewport scroll offset, the offset of the pinched zoomed
 //     viewport within the unzoomed main frame.
 // 21: Add frame sequence number.
 // 22: Add scroll restoration type.

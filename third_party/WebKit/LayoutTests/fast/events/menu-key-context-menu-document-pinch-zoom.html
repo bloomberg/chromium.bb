@@ -9,9 +9,9 @@ description('This test checks if contextmenu event target is correct when handle
             ' expected to appear in the top left of the viewport), click on the orange box to focus it then use the' +
             ' menu key, and select some text in the box and use the menu key. Note: on Mac there is no menu key.');
 
-// Pinch Viewport will be at the bottom right quadrant of the page.
-var pinchViewportContentX = 400;
-var pinchViewportContentY = 300;
+// Visual Viewport will be at the bottom right quadrant of the page.
+var visualViewportContentX = 400;
+var visualViewportContentY = 300;
 var scale = 2;
 
 // Should match the static const in EventHandler::sendContextMenuEventForKey
@@ -28,8 +28,8 @@ var textbox;
 
 function handleContextMenuNoFocus(e) {
     event = e;
-    expectedX = kContextMenuMargin + pinchViewportContentX;
-    expectedY = kContextMenuMargin + pinchViewportContentY;
+    expectedX = kContextMenuMargin + visualViewportContentX;
+    expectedY = kContextMenuMargin + visualViewportContentY;
     expectedScreenX = kContextMenuMargin * scale;
     expectedScreenY = kContextMenuMargin * scale;
     shouldBe('event.clientX', 'expectedX');
@@ -43,8 +43,8 @@ function handleContextMenuFocus(e) {
     event = e;
     expectedX = anchor.offsetLeft + anchor.offsetWidth/2;
     expectedY = anchor.offsetTop + anchor.offsetHeight/2;
-    expectedScreenX = (expectedX - pinchViewportContentX) * scale;
-    expectedScreenY = (expectedY - pinchViewportContentY) * scale;
+    expectedScreenX = (expectedX - visualViewportContentX) * scale;
+    expectedScreenY = (expectedY - visualViewportContentY) * scale;
     shouldBe('event.clientX', 'expectedX');
     shouldBe('event.clientY', 'expectedY');
     shouldBe('event.screenX', 'expectedScreenX');
@@ -63,8 +63,8 @@ function handleContextMenuEditable(e) {
     // selections.
     expectedY = rangeRect.bottom - 1;
 
-    expectedScreenX = (expectedX - pinchViewportContentX) * scale;
-    expectedScreenY = (expectedY - pinchViewportContentY) * scale;
+    expectedScreenX = (expectedX - visualViewportContentX) * scale;
+    expectedScreenY = (expectedY - visualViewportContentY) * scale;
 
     shouldBe('event.clientX', 'expectedX');
     shouldBe('event.clientY', 'expectedY');
@@ -76,12 +76,12 @@ function handleContextMenuEditable(e) {
 var runTest = function() {
     internals.setPageScaleFactor(scale);
 
-    // Position the pinch viewport.
+    // Position the visual viewport.
     eventSender.gestureScrollBegin(0, 0);
 
-    // Start from pinch viewport offset (0, 0).
-    eventSender.gestureScrollUpdate(-pinchViewportContentX*scale,
-                                    -pinchViewportContentY*scale);
+    // Start from visual viewport offset (0, 0).
+    eventSender.gestureScrollUpdate(-visualViewportContentX*scale,
+                                    -visualViewportContentY*scale);
     eventSender.gestureScrollEnd(0, 0);
 
     anchor = document.getElementById("anchor");

@@ -12,8 +12,8 @@ function testVerticalScroll() {
 }
 
 function testHorizontalScroll() {
-  // Do a purely horizontal scroll. This will change pinch virtual viewport
-  // offset only.
+  // Do a purely horizontal scroll. This will change the visual viewport offset
+  // only.
   eventSender.continuousMouseScrollBy(-2, 0);
   shouldBecomeEqual('internals.visualViewportScrollX() == 201 && ' +
     'internals.visualViewportScrollY() == 301', 'true', testDiagonalScroll);
