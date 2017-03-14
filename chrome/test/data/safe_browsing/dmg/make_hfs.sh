@@ -33,6 +33,7 @@ fi
 
 RAMDISK_VOLUME=$(hdiutil attach -nomount ram://$RAMDISK_SIZE)
 diskutil erasevolume "${FILESYSTEM_TYPE}" "${VOLUME_NAME}" ${RAMDISK_VOLUME}
+diskutil mount ${RAMDISK_VOLUME}
 
 pushd "/Volumes/${VOLUME_NAME}"
 
