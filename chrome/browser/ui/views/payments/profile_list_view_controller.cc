@@ -102,7 +102,7 @@ class ShippingProfileViewController : public ProfileListViewController {
   }
 
   base::string16 GetHeaderString() override {
-    return l10n_util::GetStringUTF16(IDS_PAYMENT_REQUEST_SHIPPING_SECTION_NAME);
+    return GetShippingAddressSectionString(request_->options()->shipping_type);
   }
 
  private:
