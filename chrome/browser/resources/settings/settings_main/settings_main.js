@@ -267,6 +267,15 @@ Polymer({
           this.inSearchMode_ = !result.wasClearSearch;
           this.showNoResultsFound_ =
               this.inSearchMode_ && result.didFindMatches;
+
+          if (this.inSearchMode_) {
+            Polymer.IronA11yAnnouncer.requestAvailability();
+            this.fire('iron-announce', {
+              text: this.showNoResultsFound_ ?
+                  loadTimeData.getString('searchNoResults') :
+                  loadTimeData.getStringF('searchResults', query)
+            });
+          }
         }.bind(this));
       }.bind(this), 0);
     }.bind(this));

@@ -300,6 +300,9 @@
   <message name="IDS_SETTINGS_SEARCH_NO_RESULTS_HELP" desc="Help text for a search that has no results.">
     Go to <ph name="BEGIN_LINK_CHROMIUM">&lt;a target="_blank" href="$1"&gt;</ph>Google Chrome help<ph name="END_LINK_CHROMIUM">&lt;/a&gt;</ph> if you can't find what you're looking for
   </message>
+  <message name="IDS_SETTINGS_SEARCH_RESULTS" desc="Message announced to screenreader users when searching within settings completes and results are showing.">
+    Search results for '<ph name="SEARCH_TEXT">$1<ex>cookies</ex></ph>'
+  </message>
   <message name="IDS_SETTINGS_SETTINGS" desc="The settings page title.">
     Settings
   </message>
