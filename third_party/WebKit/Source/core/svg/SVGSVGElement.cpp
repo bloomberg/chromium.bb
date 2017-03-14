@@ -265,7 +265,10 @@ void SVGSVGElement::svgAttributeChanged(const QualifiedName& attrName) {
     // to mark it for updating.
     if (widthOrHeightChanged) {
       LayoutObject* layoutObject = this->layoutObject();
-      if (layoutObject && layoutObject->isSVGRoot()) {
+      // If the element is not attached, we cannot be sure if it is (going to
+      // be) an outermost root, so always mark presentation attributes dirty in
+      // that case.
+      if (!layoutObject || layoutObject->isSVGRoot()) {
         invalidateSVGPresentationAttributeStyle();
         setNeedsStyleRecalc(LocalStyleChange,
                             StyleChangeReasonForTracing::create(
