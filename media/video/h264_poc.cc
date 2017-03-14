@@ -13,25 +13,11 @@
 
 namespace media {
 
-H264POC::H264POC() {
-  Reset();
-}
-
-H264POC::~H264POC() {
-}
-
-void H264POC::Reset() {
-  // It shouldn't be necessary to reset these values, but doing so will improve
-  // reproducibility for buggy streams.
-  ref_pic_order_cnt_msb_ = 0;
-  ref_pic_order_cnt_lsb_ = 0;
-  prev_frame_num_ = 0;
-  prev_frame_num_offset_ = 0;
-}
+namespace {
 
 // Check if a slice includes memory management control operation 5, which
 // results in some |pic_order_cnt| state being cleared.
-static bool HasMMCO5(const media::H264SliceHeader& slice_hdr) {
+bool HasMMCO5(const media::H264SliceHeader& slice_hdr) {
   // Require that the frame actually has memory management control operations.
   if (slice_hdr.nal_ref_idc == 0 ||
       slice_hdr.idr_pic_flag ||
@@ -53,6 +39,24 @@ static bool HasMMCO5(const media::H264SliceHeader& slice_hdr) {
   return false;
 }
 
+}  // namespace
+
+H264POC::H264POC() {
+  Reset();
+}
+
+H264POC::~H264POC() {}
+
+void H264POC::Reset() {
+  // It shouldn't be necessary to reset these values, but doing so will improve
+  // reproducibility for buggy streams.
+  ref_pic_order_cnt_msb_ = 0;
+  ref_pic_order_cnt_lsb_ = 0;
+  prev_frame_num_ = 0;
+  prev_frame_num_offset_ = 0;
+  pending_mmco5_ = false;
+}
+
 bool H264POC::ComputePicOrderCnt(
     const H264SPS* sps,
     const H264SliceHeader& slice_hdr,
@@ -67,19 +71,14 @@ bool H264POC::ComputePicOrderCnt(
   int32_t max_pic_order_cnt_lsb =
       1 << (sps->log2_max_pic_order_cnt_lsb_minus4 + 4);
 
-  // Note: Duplicate frame numbers are ignored. They occur in many videos
-  // despite appearing to be invalid according to the spec.
-  // TODO(sandersd): Check if these videos are using slices or have redundant
-  // streams.
-
-  // Note: Gaps in frame numbers are also ignored. They do not affect POC
-  // computation.
-
   // Based on T-REC-H.264 8.2.1, "Decoding process for picture order
   // count", available from http://www.itu.int/rec/T-REC-H.264.
   //
   // Reorganized slightly from spec pseudocode to handle MMCO5 when storing
   // state instead of when loading it.
+  //
+  // Note: Gaps in frame numbers are ignored. They do not affect POC
+  // computation.
   switch (sps->pic_order_cnt_type) {
     case 0: {
       int32_t prev_pic_order_cnt_msb = ref_pic_order_cnt_msb_;
@@ -111,9 +110,19 @@ bool H264POC::ComputePicOrderCnt(
       //           (assuming no interlacing).
       int32_t top_foc = pic_order_cnt_msb + slice_hdr.pic_order_cnt_lsb;
       int32_t bottom_foc = top_foc + slice_hdr.delta_pic_order_cnt_bottom;
-      *pic_order_cnt = std::min(top_foc, bottom_foc);
+
+      // Compute POC.
+      //
+      // MMCO5, like IDR, starts a new reordering group. The POC is specified to
+      // change to 0 after decoding; we change it immediately and set the
+      // |pending_mmco5_| flag.
+      if (mmco5)
+        *pic_order_cnt = 0;
+      else
+        *pic_order_cnt = std::min(top_foc, bottom_foc);
 
       // Store state.
+      pending_mmco5_ = mmco5;
       prev_frame_num_ = slice_hdr.frame_num;
       if (slice_hdr.nal_ref_idc != 0) {
         if (mmco5) {
@@ -180,13 +189,20 @@ bool H264POC::ComputePicOrderCnt(
       int32_t top_foc = expected_pic_order_cnt + slice_hdr.delta_pic_order_cnt0;
       int32_t bottom_foc = top_foc + sps->offset_for_top_to_bottom_field +
                            slice_hdr.delta_pic_order_cnt1;
-      *pic_order_cnt = std::min(top_foc, bottom_foc);
+
+      // Compute POC. MMCO5 handling is the same as |pic_order_cnt_type| == 0.
+      if (mmco5)
+        *pic_order_cnt = 0;
+      else
+        *pic_order_cnt = std::min(top_foc, bottom_foc);
 
       // Store state.
+      pending_mmco5_ = mmco5;
       prev_frame_num_ = slice_hdr.frame_num;
-      prev_frame_num_offset_ = frame_num_offset;
       if (mmco5)
         prev_frame_num_offset_ = 0;
+      else
+        prev_frame_num_offset_ = frame_num_offset;
 
       break;
     }
@@ -203,18 +219,27 @@ bool H264POC::ComputePicOrderCnt(
 
       // 8-12, 8-13. Derive |temp_pic_order_count| (it's always the
       // |pic_order_cnt|, regardless of interlacing).
+      int32_t temp_pic_order_count;
       if (slice_hdr.idr_pic_flag)
-        *pic_order_cnt = 0;
+        temp_pic_order_count = 0;
       else if (slice_hdr.nal_ref_idc == 0)
-        *pic_order_cnt = 2 * (frame_num_offset + slice_hdr.frame_num) - 1;
+        temp_pic_order_count = 2 * (frame_num_offset + slice_hdr.frame_num) - 1;
       else
-        *pic_order_cnt = 2 * (frame_num_offset + slice_hdr.frame_num);
+        temp_pic_order_count = 2 * (frame_num_offset + slice_hdr.frame_num);
+
+      // Compute POC. MMCO5 handling is the same as |pic_order_cnt_type| == 0.
+      if (mmco5)
+        *pic_order_cnt = 0;
+      else
+        *pic_order_cnt = temp_pic_order_count;
 
       // Store state.
+      pending_mmco5_ = mmco5;
       prev_frame_num_ = slice_hdr.frame_num;
-      prev_frame_num_offset_ = frame_num_offset;
       if (mmco5)
         prev_frame_num_offset_ = 0;
+      else
+        prev_frame_num_offset_ = frame_num_offset;
 
       break;
     }

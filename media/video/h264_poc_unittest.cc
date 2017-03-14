@@ -23,7 +23,15 @@ class H264POCTest : public testing::Test {
 
  protected:
   bool ComputePOC() {
-    return h264_poc_.ComputePicOrderCnt(&sps_, slice_hdr_, &poc_);
+    bool result = h264_poc_.ComputePicOrderCnt(&sps_, slice_hdr_, &poc_);
+
+    // Clear MMCO5.
+    slice_hdr_.adaptive_ref_pic_marking_mode_flag = false;
+    slice_hdr_.ref_pic_marking[0].memory_mgmnt_control_operation = 0;
+    slice_hdr_.ref_pic_marking[1].memory_mgmnt_control_operation = 0;
+    slice_hdr_.ref_pic_marking[2].memory_mgmnt_control_operation = 0;
+
+    return result;
   }
 
   // Also sets as a reference frame and unsets IDR, which is required for
@@ -105,14 +113,14 @@ TEST_F(H264POCTest, PicOrderCntType0_WithMMCO5) {
   ASSERT_TRUE(ComputePOC());
   ASSERT_EQ(24, poc_);
 
+  // MMCO5 resets to 0.
   slice_hdr_.frame_num = 4;
   slice_hdr_.pic_order_cnt_lsb = 0;
   SetMMCO5();
   ASSERT_TRUE(ComputePOC());
-  ASSERT_EQ(32, poc_);
+  ASSERT_EQ(0, poc_);
 
-  // Due to the MMCO5 above, this is relative to 0, but also detected as
-  // positive wrapping.
+  // Still detected as positive wrapping.
   slice_hdr_.frame_num = 5;
   slice_hdr_.pic_order_cnt_lsb = 8;
   ASSERT_TRUE(ComputePOC());
@@ -184,7 +192,7 @@ TEST_F(H264POCTest, PicOrderCntType1_WithMMCO5) {
   SetMMCO5();
   slice_hdr_.frame_num = 0;
   ASSERT_TRUE(ComputePOC());
-  ASSERT_EQ(24, poc_);
+  ASSERT_EQ(0, poc_);
 
   // Ref frame, wrapping from before has been cleared.
   slice_hdr_.frame_num = 1;
@@ -192,8 +200,7 @@ TEST_F(H264POCTest, PicOrderCntType1_WithMMCO5) {
   ASSERT_EQ(1, poc_);
 }
 
-// Despite being invalid, videos with duplicate non-keyframe |frame_num| values
-// are common. http://crbug.com/615289, http://crbug.com/616349.
+// |frame_num| values may be duplicated by non-reference frames.
 TEST_F(H264POCTest, PicOrderCntType1_DupFrameNum) {
   sps_.pic_order_cnt_type = 1;
   sps_.log2_max_frame_num_minus4 = 0;  // 16
@@ -215,8 +222,9 @@ TEST_F(H264POCTest, PicOrderCntType1_DupFrameNum) {
   ASSERT_EQ(1, poc_);
 
   // Duplicate |frame_num| frame.
+  slice_hdr_.nal_ref_idc = 0;
   slice_hdr_.frame_num = 1;
-  slice_hdr_.delta_pic_order_cnt0 = 1;
+  slice_hdr_.delta_pic_order_cnt0 = 2;
   ASSERT_TRUE(ComputePOC());
   ASSERT_EQ(2, poc_);
 }
@@ -276,7 +284,7 @@ TEST_F(H264POCTest, PicOrderCntType2_WithMMCO5) {
   SetMMCO5();
   slice_hdr_.frame_num = 0;
   ASSERT_TRUE(ComputePOC());
-  ASSERT_EQ(32, poc_);
+  ASSERT_EQ(0, poc_);
 
   // Ref frame, wrapping from before has been cleared.
   slice_hdr_.frame_num = 1;

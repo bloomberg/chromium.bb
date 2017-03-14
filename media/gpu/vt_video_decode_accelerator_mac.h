@@ -102,6 +102,7 @@ class VTVideoDecodeAccelerator : public VideoDecodeAccelerator {
     // Slice header information.
     bool has_slice = false;
     bool is_idr = false;
+    bool has_mmco5 = false;
     int32_t pic_order_cnt = 0;
     int32_t reorder_window = 0;
 

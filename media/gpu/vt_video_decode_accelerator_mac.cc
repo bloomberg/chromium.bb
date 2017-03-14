@@ -209,6 +209,13 @@ bool InitializeVideoToolboxInternal() {
 
 // TODO(sandersd): Share this computation with the VAAPI decoder.
 int32_t ComputeReorderWindow(const H264SPS* sps) {
+  // When |pic_order_cnt_type| == 2, decode order always matches presentation
+  // order.
+  // TODO(sandersd): For |pic_order_cnt_type| == 1, analyze the delta cycle to
+  // find the minimum required reorder window.
+  if (sps->pic_order_cnt_type == 2)
+    return 0;
+
   // TODO(sandersd): Compute MaxDpbFrames.
   int32_t max_dpb_frames = 16;
 
@@ -592,6 +599,7 @@ void VTVideoDecodeAccelerator::DecodeTask(const BitstreamBuffer& bitstream,
 
           frame->has_slice = true;
           frame->is_idr = nalu.nal_unit_type == media::H264NALU::kIDRSlice;
+          frame->has_mmco5 = poc_.IsPendingMMCO5();
           frame->pic_order_cnt = pic_order_cnt;
           frame->reorder_window = ComputeReorderWindow(sps);
         }
@@ -604,9 +612,8 @@ void VTVideoDecodeAccelerator::DecodeTask(const BitstreamBuffer& bitstream,
     }
   }
 
-  if (frame->is_idr) {
+  if (frame->is_idr)
     waiting_for_idr_ = false;
-  }
 
   // If no IDR has been seen yet, skip decoding. Note that Flash sends
   // configuration changes as a bitstream with only SPS/PPS; we don't print
@@ -941,9 +948,14 @@ bool VTVideoDecodeAccelerator::ProcessTaskQueue() {
 
   const Task& task = task_queue_.front();
   switch (task.type) {
-    case TASK_FRAME:
-      if (reorder_queue_.size() < kMaxReorderQueueSize &&
-          (!task.frame->is_idr || reorder_queue_.empty())) {
+    case TASK_FRAME: {
+      bool reorder_queue_has_space =
+          reorder_queue_.size() < kMaxReorderQueueSize;
+      bool reorder_queue_flush_needed =
+          task.frame->is_idr || task.frame->has_mmco5;
+      bool reorder_queue_flush_done = reorder_queue_.empty();
+      if (reorder_queue_has_space &&
+          (!reorder_queue_flush_needed || reorder_queue_flush_done)) {
         DVLOG(2) << "Decode(" << task.frame->bitstream_id << ") complete";
         assigned_bitstream_ids_.erase(task.frame->bitstream_id);
         client_->NotifyEndOfBitstreamBuffer(task.frame->bitstream_id);
@@ -952,6 +964,7 @@ bool VTVideoDecodeAccelerator::ProcessTaskQueue() {
         return true;
       }
       return false;
+    }
 
     case TASK_FLUSH:
       DCHECK_EQ(task.type, pending_flush_tasks_.front());
@@ -995,7 +1008,8 @@ bool VTVideoDecodeAccelerator::ProcessReorderQueue() {
   // the next frame.
   bool flushing =
       !task_queue_.empty() && (task_queue_.front().type != TASK_FRAME ||
-                               task_queue_.front().frame->is_idr);
+                               task_queue_.front().frame->is_idr ||
+                               task_queue_.front().frame->has_mmco5);
 
   size_t reorder_window = std::max(0, reorder_queue_.top()->reorder_window);
   DVLOG(3) << __func__ << " size=" << reorder_queue_.size()
