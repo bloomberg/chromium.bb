@@ -139,6 +139,10 @@ TABS_SCHEMA_BRANCHES = MoveAllTo(CHROME_EXTENSIONS, {
             'name': 'get',
             'parameters': [
               {
+                'name': 'tabId',
+                'type': 'any'
+              },
+              {
                 'name': 'callback',
                 'type': 'function',
                 'parameters': [
@@ -147,10 +151,6 @@ TABS_SCHEMA_BRANCHES = MoveAllTo(CHROME_EXTENSIONS, {
                     'type': 'any'
                   }
                 ]
-              },
-              {
-                'name': 'tabId',
-                'type': 'any'
               }
             ]
           },
@@ -269,15 +269,15 @@ TABS_SCHEMA_BRANCHES = MoveAllTo(CHROME_EXTENSIONS, {
             'name': 'get',
             'parameters': [
               {
+                'name': 'tabId'
+              },
+              {
                 'name': 'callback',
                 'parameters': [
                   {
                     'name': 'tab'
                   }
                 ]
-              },
-              {
-                'name': 'tabId'
               }
             ]
           },
@@ -378,15 +378,15 @@ TABS_SCHEMA_BRANCHES = MoveAllTo(CHROME_EXTENSIONS, {
             'name': 'get',
             'parameters': [
               {
+                'name': 'tabId'
+              },
+              {
                 'name': 'callback',
                 'parameters': [
                   {
                     'name': 'tab'
                   }
                 ]
-              },
-              {
-                'name': 'tabId'
               }
             ]
           },

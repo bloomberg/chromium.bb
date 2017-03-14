@@ -144,11 +144,14 @@ class AvailabilityFinder(object):
         JSON_TEMPLATES + 'api_availabilities.json').Get().get(node_name)
     if node_info is None:
       return None
+
+    channel_info = None
     if node_info['channel'] == 'stable':
-      return AvailabilityInfo(
-          self._branch_utility.GetStableChannelInfo(node_info['version']))
-    return AvailabilityInfo(
-        self._branch_utility.GetChannelInfo(node_info['channel']))
+      channel_info = self._branch_utility.GetStableChannelInfo(
+          node_info['version'])
+    else:
+      channel_info = self._branch_utility.GetChannelInfo(node_info['channel'])
+    return AvailabilityInfo(channel_info) if channel_info else None
 
   @memoize
   def _CreateAPISchemaFileSystem(self, file_system):

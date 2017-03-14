@@ -34,11 +34,19 @@ class APICategorizer(object):
     return template_names
 
   def GetCategory(self, api_name):
-    '''Return the type of api.'Chrome' means the public apis,
-    private means the api only used by chrome, and experimental means
-    the apis with "experimental" prefix.
+    '''Returns the type of api:
+        "internal":     Used by chrome internally. Never documented.
+        "private":      APIs which are undocumented or are available to
+                        whitelisted apps/extensions.
+        "experimental": Experimental APIs.
+        "chrome":       Public APIs.
     '''
     documented_apis = self._GenerateAPICategories()
+    if api_name.endswith('Internal'):
+      assert api_name not in documented_apis, \
+          "Internal API %s on %s platform should not be documented" % (
+              api_name, self._platform)
+      return 'internal'
     if (api_name.endswith('Private') or
         api_name not in documented_apis):
       return 'private'

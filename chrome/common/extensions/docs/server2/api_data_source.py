@@ -11,7 +11,6 @@ from file_system import FileNotFoundError
 from future import All, Future
 from jsc_view import CreateJSCView, GetEventByNameFromEvents
 from platform_util import GetPlatforms
-from third_party.json_schema_compiler.model import UnixName
 
 
 class APIDataSource(DataSource):
@@ -90,9 +89,13 @@ class APIDataSource(DataSource):
       return self._GetSchemaView(platform, api)
 
     def get_platform_schemas(platform):
+      # Internal APIs are an internal implementation detail. Do not pass them to
+      # templates.
       return All([get_api_schema(platform, api)
-                 for api in self._platform_bundle.GetAPIModels(platform)
-                    .GetNames()],
+                  for api in self._platform_bundle.GetAPIModels(platform)
+                  .GetNames()
+                  if self._platform_bundle.GetAPICategorizer(platform)
+                  .GetCategory(api) != 'internal'],
                  except_pass=FileNotFoundError)
 
     return All([get_platform_schemas(platform) for platform in GetPlatforms()])

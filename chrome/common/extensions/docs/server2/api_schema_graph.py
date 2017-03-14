@@ -80,7 +80,8 @@ class APINodeCursor(object):
       if self._lookup_path[-1] == 'callback':
         # This is an event callback, so lookup_path[-2] is the event
         # node name, thus lookup_path[-3] must be 'events'.
-        assert self._lookup_path[-3] == 'events'
+        assert self._lookup_path[-3] == 'events' , \
+            'Invalid lookup path: %s' % (self._lookup_path)
         return self._lookup_path[:-1]
       # This is a function parameter.
       assert self._lookup_path[-2] == 'parameters'
