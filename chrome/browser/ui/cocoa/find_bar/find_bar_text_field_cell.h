@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef CHROME_BROWSER_UI_COCOA_FIND_BAR_FIND_BAR_TEXT_FIELD_CELL_H_
+#define CHROME_BROWSER_UI_COCOA_FIND_BAR_FIND_BAR_TEXT_FIELD_CELL_H_
+
 #import <Cocoa/Cocoa.h>
 
 #import "chrome/browser/ui/cocoa/styled_text_field_cell.h"
@@ -24,3 +27,5 @@
 - (NSString*)resultsString;
 
 @end
+
+#endif  // CHROME_BROWSER_UI_COCOA_FIND_BAR_FIND_BAR_TEXT_FIELD_CELL_H_

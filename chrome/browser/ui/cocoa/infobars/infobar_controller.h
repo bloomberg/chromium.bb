@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef CHROME_BROWSER_UI_COCOA_INFOBARS_INFOBAR_CONTROLLER_H_
+#define CHROME_BROWSER_UI_COCOA_INFOBARS_INFOBAR_CONTROLLER_H_
+
 #import <Cocoa/Cocoa.h>
 
 #include "base/mac/scoped_nsobject.h"
@@ -100,3 +103,5 @@ class InfoBarDelegate;
 // InfoBarController subclasses, one for each InfoBarDelegate
 // subclass.  Each of these subclasses overrides addAdditionalControls to
 // configure its view as necessary.
+
+#endif  // CHROME_BROWSER_UI_COCOA_INFOBARS_INFOBAR_CONTROLLER_H_

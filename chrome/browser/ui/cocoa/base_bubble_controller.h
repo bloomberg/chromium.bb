@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef CHROME_BROWSER_UI_COCOA_BASE_BUBBLE_CONTROLLER_H_
+#define CHROME_BROWSER_UI_COCOA_BASE_BUBBLE_CONTROLLER_H_
+
 #import <Cocoa/Cocoa.h>
 
 #include <memory>
@@ -109,3 +112,5 @@ class TabStripModelObserverBridge;
 // |-showWindow:| is overriden and does not call super. Noop on OSes <10.7.
 - (void)registerKeyStateEventTap;
 @end
+
+#endif  // CHROME_BROWSER_UI_COCOA_BASE_BUBBLE_CONTROLLER_H_

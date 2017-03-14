@@ -2,6 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef CHROME_BROWSER_UI_COCOA_BOOKMARKS_BOOKMARK_MODEL_OBSERVER_FOR_COCOA_H_
+#define CHROME_BROWSER_UI_COCOA_BOOKMARKS_BOOKMARK_MODEL_OBSERVER_FOR_COCOA_H_
+
+#import <Cocoa/Cocoa.h>
+
+#include <set>
+
+#include "base/mac/scoped_block.h"
+#include "base/macros.h"
+#include "components/bookmarks/browser/bookmark_model.h"
+#include "components/bookmarks/browser/bookmark_model_observer.h"
+
 // C++ bridge class to send a selector to a Cocoa object when the
 // bookmark model changes.  Some Cocoa objects edit the bookmark model
 // and temporarily save a copy of the state (e.g. bookmark button
@@ -15,19 +27,6 @@
 // cancel an edit if the removed node is a folder (editors often have
 // a list of "new parents").  But, just to be sure, notification
 // happens on any removal.
-
-#ifndef CHROME_BROWSER_UI_COCOA_BOOKMARKS_BOOKMARK_MODEL_OBSERVER_FOR_COCOA_H_
-#define CHROME_BROWSER_UI_COCOA_BOOKMARKS_BOOKMARK_MODEL_OBSERVER_FOR_COCOA_H_
-
-#import <Cocoa/Cocoa.h>
-
-#include <set>
-
-#include "base/mac/scoped_block.h"
-#include "base/macros.h"
-#include "components/bookmarks/browser/bookmark_model.h"
-#include "components/bookmarks/browser/bookmark_model_observer.h"
-
 class BookmarkModelObserverForCocoa : public bookmarks::BookmarkModelObserver {
  public:
   // Callback called on a significant model change.

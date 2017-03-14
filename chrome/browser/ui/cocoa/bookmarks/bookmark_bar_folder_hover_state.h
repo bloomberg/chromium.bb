@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef CHROME_BROWSER_UI_COCOA_BOOKMARKS_BOOKMARK_BAR_FOLDER_HOVER_STATE_H_
+#define CHROME_BROWSER_UI_COCOA_BOOKMARKS_BOOKMARK_BAR_FOLDER_HOVER_STATE_H_
+
 #import <Cocoa/Cocoa.h>
 
 #include "base/mac/scoped_nsobject.h"
@@ -76,3 +79,5 @@
 - (BookmarkButton*)hoverButton;
 - (HoverState)hoverState;
 @end
+
+#endif  // CHROME_BROWSER_UI_COCOA_BOOKMARKS_BOOKMARK_BAR_FOLDER_HOVER_STATE_H_

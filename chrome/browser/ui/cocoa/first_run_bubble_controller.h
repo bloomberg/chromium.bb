@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef CHROME_BROWSER_UI_COCOA_FIRST_RUN_BUBBLE_CONTROLLER_H_
+#define CHROME_BROWSER_UI_COCOA_FIRST_RUN_BUBBLE_CONTROLLER_H_
+
 #import <Cocoa/Cocoa.h>
 
 #import "chrome/browser/ui/cocoa/base_bubble_controller.h"
@@ -27,3 +30,5 @@ class Profile;
 - (IBAction)onChange:(id)sender;
 
 @end
+
+#endif  // CHROME_BROWSER_UI_COCOA_FIRST_RUN_BUBBLE_CONTROLLER_H_

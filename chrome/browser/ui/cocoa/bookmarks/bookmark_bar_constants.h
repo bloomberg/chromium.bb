@@ -2,10 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Constants used for positioning the bookmark bar. These aren't placed in a
-// different file because they're conditionally included in cross platform code
-// and thus no Objective-C++ stuff.
-
 #ifndef CHROME_BROWSER_UI_COCOA_BOOKMARKS_BOOKMARK_BAR_CONSTANTS_H_
 #define CHROME_BROWSER_UI_COCOA_BOOKMARKS_BOOKMARK_BAR_CONSTANTS_H_
 
@@ -13,6 +9,9 @@
 
 #include "chrome/browser/ui/bookmarks/bookmark_bar_constants.h"
 
+// Constants used for positioning the bookmark bar. These aren't placed in a
+// different file because they're conditionally included in cross platform code
+// and thus no Objective-C++ stuff.
 namespace bookmarks {
 
 // Correction used for computing other values based on the height.

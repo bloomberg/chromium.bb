@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef CHROME_BROWSER_UI_COCOA_EXTERNAL_PROTOCOL_DIALOG_H_
+#define CHROME_BROWSER_UI_COCOA_EXTERNAL_PROTOCOL_DIALOG_H_
+
 #import <Cocoa/Cocoa.h>
 
 #include "base/time/time.h"
@@ -21,3 +24,5 @@
     routingId:(int)routingId;
 
 @end
+
+#endif  // CHROME_BROWSER_UI_COCOA_EXTERNAL_PROTOCOL_DIALOG_H_

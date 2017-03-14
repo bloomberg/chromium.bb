@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef CHROME_BROWSER_UI_COCOA_TEST_STYLED_TEXT_FIELD_TEST_HELPER_H_
+#define CHROME_BROWSER_UI_COCOA_TEST_STYLED_TEXT_FIELD_TEST_HELPER_H_
+
 #import <Cocoa/Cocoa.h>
 #import "chrome/browser/ui/cocoa/styled_text_field_cell.h"
 
@@ -14,3 +17,5 @@
 @property(nonatomic, assign) CGFloat leftMargin;
 @property(nonatomic, assign) CGFloat rightMargin;
 @end
+
+#endif  // CHROME_BROWSER_UI_COCOA_TEST_STYLED_TEXT_FIELD_TEST_HELPER_H_

@@ -2,12 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// C++ bridge class between Chromium and Cocoa to connect the
-// Bookmarks (model) with the Bookmark Bar (view).
-//
-// There is exactly one BookmarkBarBridge per BookmarkBarController /
-// BrowserWindowController / Browser.
-
 #ifndef CHROME_BROWSER_UI_COCOA_BOOKMARKS_BOOKMARK_BAR_BRIDGE_H_
 #define CHROME_BROWSER_UI_COCOA_BOOKMARKS_BOOKMARK_BAR_BRIDGE_H_
 
@@ -19,6 +13,11 @@
 class Profile;
 @class BookmarkBarController;
 
+// C++ bridge class between Chromium and Cocoa to connect the
+// Bookmarks (model) with the Bookmark Bar (view).
+//
+// There is exactly one BookmarkBarBridge per BookmarkBarController /
+// BrowserWindowController / Browser.
 class BookmarkBarBridge : public bookmarks::BookmarkModelObserver {
  public:
   BookmarkBarBridge(Profile* profile,

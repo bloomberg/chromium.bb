@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef CHROME_BROWSER_UI_COCOA_WEBSITE_SETTINGS_PERMISSION_BUBBLE_CONTROLLER_H_
+#define CHROME_BROWSER_UI_COCOA_WEBSITE_SETTINGS_PERMISSION_BUBBLE_CONTROLLER_H_
+
 #import <Cocoa/Cocoa.h>
 
 #include "base/mac/scoped_nsobject.h"
@@ -61,3 +64,5 @@ class PermissionRequest;
 - (bool)hasVisibleLocationBar;
 
 @end
+
+#endif  // CHROME_BROWSER_UI_COCOA_WEBSITE_SETTINGS_PERMISSION_BUBBLE_CONTROLLER_H_

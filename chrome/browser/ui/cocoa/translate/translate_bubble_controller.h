@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef CHROME_BROWSER_UI_COCOA_TRANSLATE_TRANSLATE_BUBBLE_CONTROLLER_H_
+#define CHROME_BROWSER_UI_COCOA_TRANSLATE_TRANSLATE_BUBBLE_CONTROLLER_H_
+
 #import <Cocoa/Cocoa.h>
 
 #include <memory>
@@ -89,3 +92,5 @@ class WebContents;
 - (IBAction)handleCloseButtonPressed:(id)sender;
 - (IBAction)handleTranslateButtonPressed:(id)sender;
 @end
+
+#endif  // CHROME_BROWSER_UI_COCOA_TRANSLATE_TRANSLATE_BUBBLE_CONTROLLER_H_

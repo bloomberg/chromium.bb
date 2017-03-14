@@ -2,21 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// C++ controller for the bookmark menu; one per AppController (which
-// means there is only one).  When bookmarks are changed, this class
-// takes care of updating Cocoa bookmark menus.  This is not named
-// BookmarkMenuController to help avoid confusion between languages.
-// This class needs to be C++, not ObjC, since it derives from
-// BookmarkModelObserver.
-//
-// Most Chromium Cocoa menu items are static from a nib (e.g. New
-// Tab), but may be enabled/disabled under certain circumstances
-// (e.g. Cut and Paste).  In addition, most Cocoa menu items have
-// firstResponder: as a target.  Unusually, bookmark menu items are
-// created dynamically.  They also have a target of
-// BookmarkMenuCocoaController instead of firstResponder.
-// See BookmarkMenuBridge::AddNodeToMenu()).
-
 #ifndef CHROME_BROWSER_UI_COCOA_BOOKMARKS_BOOKMARK_MENU_BRIDGE_H_
 #define CHROME_BROWSER_UI_COCOA_BOOKMARKS_BOOKMARK_MENU_BRIDGE_H_
 
@@ -36,6 +21,20 @@ namespace bookmarks {
 class BookmarkNode;
 }
 
+// C++ controller for the bookmark menu; one per AppController (which
+// means there is only one).  When bookmarks are changed, this class
+// takes care of updating Cocoa bookmark menus.  This is not named
+// BookmarkMenuController to help avoid confusion between languages.
+// This class needs to be C++, not ObjC, since it derives from
+// BookmarkModelObserver.
+//
+// Most Chromium Cocoa menu items are static from a nib (e.g. New
+// Tab), but may be enabled/disabled under certain circumstances
+// (e.g. Cut and Paste).  In addition, most Cocoa menu items have
+// firstResponder: as a target.  Unusually, bookmark menu items are
+// created dynamically.  They also have a target of
+// BookmarkMenuCocoaController instead of firstResponder.
+// See BookmarkMenuBridge::AddNodeToMenu()).
 class BookmarkMenuBridge : public bookmarks::BookmarkModelObserver,
                            public MainMenuItem {
  public:

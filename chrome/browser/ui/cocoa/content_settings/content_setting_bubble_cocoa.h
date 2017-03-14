@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef CHROME_BROWSER_UI_COCOA_CONTENT_SETTINGS_CONTENT_SETTING_BUBBLE_COCOA_H_
+#define CHROME_BROWSER_UI_COCOA_CONTENT_SETTINGS_CONTENT_SETTING_BUBBLE_COCOA_H_
+
 #import <Cocoa/Cocoa.h>
 
 #include <map>
@@ -114,3 +117,5 @@ parentWindow:(NSWindow*)parentWindow
 - (content_setting_bubble::MediaMenuPartsMap*)mediaMenus;
 
 @end
+
+#endif  // CHROME_BROWSER_UI_COCOA_CONTENT_SETTINGS_CONTENT_SETTING_BUBBLE_COCOA_H_

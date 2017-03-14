@@ -2,11 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// The BookmarkBarToolbarView is responsible for drawing the background of the
-// BookmarkBar's toolbar in either of its two display modes - permanently
-// attached (slimline with a stroke at the bottom edge) or New Tab Page style
-// (padded with a round rect border and the New Tab Page theme behind).
-
 #ifndef CHROME_BROWSER_UI_COCOA_BOOKMARKS_BOOKMARK_BAR_TOOLBAR_VIEW_H_
 #define CHROME_BROWSER_UI_COCOA_BOOKMARKS_BOOKMARK_BAR_TOOLBAR_VIEW_H_
 
@@ -30,6 +25,10 @@ class Profile;
 
 @end
 
+// The BookmarkBarToolbarView is responsible for drawing the background of the
+// BookmarkBar's toolbar in either of its two display modes - permanently
+// attached (slimline with a stroke at the bottom edge) or New Tab Page style
+// (padded with a round rect border and the New Tab Page theme behind).
 @interface BookmarkBarToolbarView : AnimatableView {
  @private
   // The controller which tells us how we should be drawing (as normal or as a

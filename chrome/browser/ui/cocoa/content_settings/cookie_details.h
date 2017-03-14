@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef CHROME_BROWSER_UI_COCOA_CONTENT_SETTINGS_COOKIE_DETAILS_H_
+#define CHROME_BROWSER_UI_COCOA_CONTENT_SETTINGS_COOKIE_DETAILS_H_
+
 #import <Cocoa/Cocoa.h>
 
 #include "base/mac/scoped_nsobject.h"
@@ -252,3 +255,5 @@ enum CocoaCookieDetailsType {
 // in its initializer.
 - (id)initWithDetails:(CocoaCookieDetails*)details;
 @end
+
+#endif  // CHROME_BROWSER_UI_COCOA_CONTENT_SETTINGS_COOKIE_DETAILS_H_
