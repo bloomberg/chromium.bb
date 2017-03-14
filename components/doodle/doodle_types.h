@@ -5,6 +5,9 @@
 #ifndef COMPONENTS_DOODLE_DOODLE_TYPES_H_
 #define COMPONENTS_DOODLE_DOODLE_TYPES_H_
 
+#include <memory>
+#include <string>
+
 #include "base/optional.h"
 #include "url/gurl.h"
 
@@ -40,6 +43,8 @@ struct DoodleImage {
       const base::DictionaryValue& dict,
       const base::Optional<GURL>& base_url);
 
+  std::unique_ptr<base::DictionaryValue> ToDictionary() const;
+
   bool operator==(const DoodleImage& other) const;
   bool operator!=(const DoodleImage& other) const;
 
@@ -62,6 +67,8 @@ struct DoodleConfig {
   static base::Optional<DoodleConfig> FromDictionary(
       const base::DictionaryValue& dict,
       const base::Optional<GURL>& base_url);
+
+  std::unique_ptr<base::DictionaryValue> ToDictionary() const;
 
   bool operator==(const DoodleConfig& other) const;
   bool operator!=(const DoodleConfig& other) const;

@@ -4,29 +4,78 @@
 
 #include "components/doodle/doodle_types.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/values.h"
 
 namespace doodle {
 
 namespace {
 
+// String representations for the DoodleType enum.
+const char kDoodleTypeUnknown[] = "UNKNOWN";
+const char kDoodleTypeSimple[] = "SIMPLE";
+const char kDoodleTypeRandom[] = "RANDOM";
+const char kDoodleTypeVideo[] = "VIDEO";
+const char kDoodleTypeInteractive[] = "INTERACTIVE";
+const char kDoodleTypeInlineInteractive[] = "INLINE_INTERACTIVE";
+const char kDoodleTypeSlideshow[] = "SLIDESHOW";
+
+// JSON keys for DoodleImage fields.
+const char kKeyUrl[] = "url";
+const char kKeyHeight[] = "height";
+const char kKeyWidth[] = "width";
+const char kKeyIsAnimatedGif[] = "is_animated_gif";
+const char kKeyIsCta[] = "is_cta";
+
+// JSON keys for DoodleConfig fields.
+const char kKeyDoodleType[] = "doodle_type";
+const char kKeyAltText[] = "alt_text";
+const char kKeyInteractiveHtml[] = "interactive_html";
+const char kKeySearchUrl[] = "search_url";
+const char kKeyTargetUrl[] = "target_url";
+const char kKeyFullpageInteractiveUrl[] = "fullpage_interactive_url";
+const char kKeyLargeImage[] = "large_image";
+const char kKeyLargeCtaImage[] = "large_cta_image";
+const char kKeyTransparentLargeImage[] = "transparent_large_image";
+
+std::string DoodleTypeToString(DoodleType type) {
+  switch (type) {
+    case DoodleType::UNKNOWN:
+      return kDoodleTypeUnknown;
+    case DoodleType::SIMPLE:
+      return kDoodleTypeSimple;
+    case DoodleType::RANDOM:
+      return kDoodleTypeRandom;
+    case DoodleType::VIDEO:
+      return kDoodleTypeVideo;
+    case DoodleType::INTERACTIVE:
+      return kDoodleTypeInteractive;
+    case DoodleType::INLINE_INTERACTIVE:
+      return kDoodleTypeInlineInteractive;
+    case DoodleType::SLIDESHOW:
+      return kDoodleTypeSlideshow;
+  }
+  NOTREACHED();
+  return std::string();
+}
+
 DoodleType DoodleTypeFromString(const std::string& type_str) {
-  if (type_str == "SIMPLE") {
+  if (type_str == kDoodleTypeSimple) {
     return DoodleType::SIMPLE;
   }
-  if (type_str == "RANDOM") {
+  if (type_str == kDoodleTypeRandom) {
     return DoodleType::RANDOM;
   }
-  if (type_str == "VIDEO") {
+  if (type_str == kDoodleTypeVideo) {
     return DoodleType::VIDEO;
   }
-  if (type_str == "INTERACTIVE") {
+  if (type_str == kDoodleTypeInteractive) {
     return DoodleType::INTERACTIVE;
   }
-  if (type_str == "INLINE_INTERACTIVE") {
+  if (type_str == kDoodleTypeInlineInteractive) {
     return DoodleType::INLINE_INTERACTIVE;
   }
-  if (type_str == "SLIDESHOW") {
+  if (type_str == kDoodleTypeSlideshow) {
     return DoodleType::SLIDESHOW;
   }
   return DoodleType::UNKNOWN;
@@ -67,17 +116,17 @@ base::Optional<DoodleImage> DoodleImage::FromDictionary(
     const base::DictionaryValue& dict,
     const base::Optional<GURL>& base_url) {
   // The URL is the only required field.
-  GURL url = ParseUrl(dict, "url", base_url);
+  GURL url = ParseUrl(dict, kKeyUrl, base_url);
   if (!url.is_valid()) {
     return base::nullopt;
   }
 
   DoodleImage image(url);
 
-  dict.GetInteger("height", &image.height);
-  dict.GetInteger("width", &image.width);
-  dict.GetBoolean("is_animated_gif", &image.is_animated_gif);
-  dict.GetBoolean("is_cta", &image.is_cta);
+  dict.GetInteger(kKeyHeight, &image.height);
+  dict.GetInteger(kKeyWidth, &image.width);
+  dict.GetBoolean(kKeyIsAnimatedGif, &image.is_animated_gif);
+  dict.GetBoolean(kKeyIsCta, &image.is_cta);
 
   return image;
 }
@@ -88,6 +137,16 @@ DoodleImage::DoodleImage(const GURL& url)
 }
 
 DoodleImage::~DoodleImage() = default;
+
+std::unique_ptr<base::DictionaryValue> DoodleImage::ToDictionary() const {
+  auto dict = base::MakeUnique<base::DictionaryValue>();
+  dict->SetString(kKeyUrl, url.spec());
+  dict->SetInteger(kKeyHeight, height);
+  dict->SetInteger(kKeyWidth, width);
+  dict->SetBoolean(kKeyIsAnimatedGif, is_animated_gif);
+  dict->SetBoolean(kKeyIsCta, is_cta);
+  return dict;
+}
 
 bool DoodleImage::operator==(const DoodleImage& other) const {
   return url == other.url && height == other.height && width == other.width &&
@@ -111,36 +170,49 @@ base::Optional<DoodleConfig> DoodleConfig::FromDictionary(
   // The |large_image| field is required (it's the "default" representation for
   // the doodle).
   base::Optional<DoodleImage> large_image =
-      ParseImage(dict, "large_image", base_url);
+      ParseImage(dict, kKeyLargeImage, base_url);
   if (!large_image.has_value()) {
     return base::nullopt;
   }
 
   std::string type_str;
-  dict.GetString("doodle_type", &type_str);
+  dict.GetString(kKeyDoodleType, &type_str);
 
   DoodleConfig doodle(DoodleTypeFromString(type_str), large_image.value());
 
-  dict.GetString("alt_text", &doodle.alt_text);
+  dict.GetString(kKeyAltText, &doodle.alt_text);
 
-  dict.GetString("interactive_html", &doodle.interactive_html);
+  dict.GetString(kKeyInteractiveHtml, &doodle.interactive_html);
 
-  doodle.search_url = ParseUrl(dict, "search_url", base_url);
-  doodle.target_url = ParseUrl(dict, "target_url", base_url);
+  doodle.search_url = ParseUrl(dict, kKeySearchUrl, base_url);
+  doodle.target_url = ParseUrl(dict, kKeyTargetUrl, base_url);
   doodle.fullpage_interactive_url =
-      ParseUrl(dict, "fullpage_interactive_url", base_url);
+      ParseUrl(dict, kKeyFullpageInteractiveUrl, base_url);
 
-  auto large_cta_image = ParseImage(dict, "large_cta_image", base_url);
-  if (large_cta_image.has_value()) {
-    doodle.large_cta_image = large_cta_image.value();
-  }
-  auto transparent_large_image =
-      ParseImage(dict, "transparent_large_image", base_url);
-  if (transparent_large_image.has_value()) {
-    doodle.transparent_large_image = transparent_large_image.value();
-  }
+  doodle.large_cta_image = ParseImage(dict, kKeyLargeCtaImage, base_url);
+  doodle.transparent_large_image =
+      ParseImage(dict, kKeyTransparentLargeImage, base_url);
 
   return doodle;
+}
+
+std::unique_ptr<base::DictionaryValue> DoodleConfig::ToDictionary() const {
+  auto dict = base::MakeUnique<base::DictionaryValue>();
+  dict->SetString(kKeyDoodleType, DoodleTypeToString(doodle_type));
+  dict->SetString(kKeyAltText, alt_text);
+  dict->SetString(kKeyInteractiveHtml, interactive_html);
+  dict->SetString(kKeySearchUrl, search_url.spec());
+  dict->SetString(kKeyTargetUrl, target_url.spec());
+  dict->SetString(kKeyFullpageInteractiveUrl, fullpage_interactive_url.spec());
+  dict->Set(kKeyLargeImage, large_image.ToDictionary());
+  if (large_cta_image.has_value()) {
+    dict->Set(kKeyLargeCtaImage, large_cta_image->ToDictionary());
+  }
+  if (transparent_large_image.has_value()) {
+    dict->Set(kKeyTransparentLargeImage,
+              transparent_large_image->ToDictionary());
+  }
+  return dict;
 }
 
 bool DoodleConfig::operator==(const DoodleConfig& other) const {
