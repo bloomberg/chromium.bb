@@ -1179,6 +1179,10 @@ if (is_win) {
       "$root_out_dir/crashpad_handler",
     ]
 
+    if (enable_xpc_notifications) {
+      _chrome_symbols_sources += [ "$root_out_dir/AlertNotificationService.xpc/Contents/MacOS/AlertNotificationService" ]
+    }
+
     # It is possible to run dump_syms on unstripped products without dSYMs,
     # but doing so isn't logical and won't happen in practice.
     action_foreach("chrome_dump_syms") {
@@ -1207,6 +1211,10 @@ if (is_win) {
         "//breakpad:dump_syms",
         "//third_party/crashpad/crashpad/handler:crashpad_handler",
       ]
+
+      if (enable_xpc_notifications) {
+        deps += [ "//chrome/browser/ui/cocoa/notifications:alert_notification_xpc_service" ]
+      }
     }
 
     action("chrome_dsym_archive") {
@@ -1222,6 +1230,10 @@ if (is_win) {
         "$root_out_dir/$chrome_product_full_name.dSYM",
         "$root_out_dir/crashpad_handler.dSYM",
       ]
+
+      if (enable_xpc_notifications) {
+        _dsyms += [ "$root_out_dir/AlertNotificationService.dSYM" ]
+      }
 
       sources = _chrome_symbols_sources
 
@@ -1240,6 +1252,10 @@ if (is_win) {
         ":chrome_helper_app",
         "//third_party/crashpad/crashpad/handler:crashpad_handler",
       ]
+
+      if (enable_xpc_notifications) {
+        deps += [ "//chrome/browser/ui/cocoa/notifications:alert_notification_xpc_service" ]
+      }
     }
   } else {
     group("chrome_dump_syms") {
