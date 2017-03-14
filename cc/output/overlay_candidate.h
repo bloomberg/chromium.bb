@@ -11,7 +11,7 @@
 #include "cc/base/cc_export.h"
 #include "cc/base/resource_id.h"
 #include "cc/quads/render_pass.h"
-#include "cc/resources/resource_format.h"
+#include "ui/gfx/buffer_types.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/size.h"
@@ -52,8 +52,8 @@ class CC_EXPORT OverlayCandidate {
 
   // Transformation to apply to layer during composition.
   gfx::OverlayTransform transform;
-  // Format of the buffer to composite.
-  ResourceFormat format;
+  // Format of the buffer to scanout.
+  gfx::BufferFormat format;
   // Size of the resource, in pixels.
   gfx::Size resource_size_in_pixels;
   // Rect on the display to position the overlay to. Implementer must convert
