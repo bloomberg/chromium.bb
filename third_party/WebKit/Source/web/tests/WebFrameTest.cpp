@@ -11191,6 +11191,21 @@ TEST_F(WebFrameTest, MouseReleaseUpdatesScrollbarHoveredPart) {
   EXPECT_EQ(scrollbar->hoveredPart(), ScrollbarPart::NoPart);
 }
 
+TEST_F(WebFrameTest,
+       CustomScrollbarInOverlayScrollbarThemeWillNotCauseDCHECKFails) {
+  registerMockedHttpURLLoad(
+      "custom-scrollbar-dcheck-failed-when-paint-scroll-corner.html");
+  FrameTestHelpers::WebViewHelper webViewHelper;
+  WebViewImpl* webView = webViewHelper.initializeAndLoad(
+      m_baseURL +
+      "custom-scrollbar-dcheck-failed-when-paint-scroll-corner.html");
+
+  webViewHelper.resize(WebSize(200, 200));
+
+  // No DCHECK Fails. Issue 676678.
+  webView->updateAllLifecyclePhases();
+}
+
 static void disableCompositing(WebSettings* settings) {
   settings->setAcceleratedCompositingEnabled(false);
   settings->setPreferCompositingToLCDTextEnabled(false);

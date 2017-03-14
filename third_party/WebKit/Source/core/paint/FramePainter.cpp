@@ -228,8 +228,17 @@ void FramePainter::paintScrollCorner(GraphicsContext& context,
     return;
   }
 
-  ScrollbarTheme::theme().paintScrollCorner(context, *frameView().layoutView(),
-                                            cornerRect);
+  ScrollbarTheme* theme = nullptr;
+
+  if (frameView().horizontalScrollbar()) {
+    theme = &frameView().horizontalScrollbar()->theme();
+  } else if (frameView().verticalScrollbar()) {
+    theme = &frameView().verticalScrollbar()->theme();
+  } else {
+    NOTREACHED();
+  }
+
+  theme->paintScrollCorner(context, *frameView().layoutView(), cornerRect);
 }
 
 void FramePainter::paintScrollbar(GraphicsContext& context,
