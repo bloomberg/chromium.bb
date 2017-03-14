@@ -28,24 +28,40 @@
 
 #include "core/frame/FrameConsole.h"
 
+#include <memory>
 #include "bindings/core/v8/SourceLocation.h"
 #include "core/frame/FrameHost.h"
 #include "core/frame/LocalFrame.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/inspector/ConsoleMessageStorage.h"
 #include "core/inspector/MainThreadDebugger.h"
+#include "core/loader/DocumentLoader.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
 #include "platform/network/ResourceError.h"
 #include "platform/network/ResourceResponse.h"
 #include "wtf/text/StringBuilder.h"
-#include <memory>
 
 namespace blink {
 
 FrameConsole::FrameConsole(LocalFrame& frame) : m_frame(&frame) {}
 
 void FrameConsole::addMessage(ConsoleMessage* consoleMessage) {
+  // PlzNavigate: when trying to commit a navigation, the SourceLocation
+  // information for how the request was triggered has been stored in the
+  // provisional DocumentLoader. Use it instead.
+  DocumentLoader* provisionalLoader =
+      m_frame->loader().provisionalDocumentLoader();
+  if (provisionalLoader) {
+    std::unique_ptr<SourceLocation> sourceLocation =
+        provisionalLoader->copySourceLocation();
+    if (sourceLocation) {
+      consoleMessage = ConsoleMessage::create(
+          consoleMessage->source(), consoleMessage->level(),
+          consoleMessage->message(), std::move(sourceLocation));
+    }
+  }
+
   if (addMessageToStorage(consoleMessage))
     reportMessageToClient(consoleMessage->source(), consoleMessage->level(),
                           consoleMessage->message(),

@@ -30,6 +30,8 @@
 #ifndef DocumentLoader_h
 #define DocumentLoader_h
 
+#include <memory>
+#include "bindings/core/v8/SourceLocation.h"
 #include "core/CoreExport.h"
 #include "core/dom/ViewportDescription.h"
 #include "core/dom/WeakIdentifierMap.h"
@@ -200,6 +202,9 @@ class CORE_EXPORT DocumentLoader
     return m_serviceWorkerNetworkProvider.get();
   }
 
+  std::unique_ptr<SourceLocation> copySourceLocation() const;
+  void setSourceLocation(std::unique_ptr<SourceLocation>);
+
   DECLARE_VIRTUAL_TRACE();
 
  protected:
@@ -302,6 +307,11 @@ class CORE_EXPORT DocumentLoader
   InitialScrollState m_initialScrollState;
 
   bool m_wasBlockedAfterCSP;
+
+  // PlzNavigate: set when committing a navigation. The data has originally been
+  // captured when the navigation was sent to the browser process, and it is
+  // sent back at commit time.
+  std::unique_ptr<SourceLocation> m_sourceLocation;
 
   enum State {
     NotStarted,

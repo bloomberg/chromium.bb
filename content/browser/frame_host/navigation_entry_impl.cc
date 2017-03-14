@@ -685,7 +685,8 @@ CommonNavigationParams NavigationEntryImpl::ConstructCommonNavigationParams(
       dest_url, dest_referrer, GetTransitionType(), navigation_type,
       !IsViewSourceMode(), should_replace_entry(), ui_timestamp, report_type,
       GetBaseURLForDataURL(), GetHistoryURLForDataURL(), previews_state,
-      navigation_start, method, post_body ? post_body : post_data_);
+      navigation_start, method, post_body ? post_body : post_data_,
+      base::Optional<SourceLocation>());
 }
 
 StartNavigationParams NavigationEntryImpl::ConstructStartNavigationParams()

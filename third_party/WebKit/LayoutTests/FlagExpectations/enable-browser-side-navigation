@@ -20,14 +20,8 @@ Bug(none) external/wpt/html/browsers/history/the-location-interface/location-pro
 
 # https://crbug.com/695072: Preserve SourceLocation information.
 # This results in a missing line number in console error messages.
-# Fixed by https://codereview.chromium.org/2720763002/
-crbug.com/551000 http/tests/inspector/console-resource-errors.html [ Failure ]
-crbug.com/555418 http/tests/security/contentSecurityPolicy/redirect-does-not-match-paths.html [ Timeout ]
-crbug.com/695072 http/tests/security/location-href-clears-username-password.html [ Failure ]
+# The following tests need teh SourceLocation forwarded to the renderer when adding MixedContents error messages to the console.
 crbug.com/695072 http/tests/security/mixedContent/insecure-iframe-with-hsts.https.html [ Failure ]
-crbug.com/551000 virtual/mojo-loading/http/tests/inspector/console-resource-errors.html [ Failure ]
-crbug.com/555418 virtual/mojo-loading/http/tests/security/contentSecurityPolicy/redirect-does-not-match-paths.html [ Timeout ]
-crbug.com/695072 virtual/mojo-loading/http/tests/security/location-href-clears-username-password.html [ Failure ]
 crbug.com/695072 virtual/mojo-loading/http/tests/security/mixedContent/insecure-iframe-with-hsts.https.html [ Failure ]
 
 # These tests are flaky.

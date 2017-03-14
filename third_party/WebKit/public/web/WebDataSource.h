@@ -35,6 +35,7 @@
 
 #include "../platform/WebCommon.h"
 #include "WebNavigationType.h"
+#include "WebSourceLocation.h"
 #include "WebTextDirection.h"
 
 namespace blink {
@@ -130,6 +131,11 @@ class WebDataSource {
       std::unique_ptr<WebServiceWorkerNetworkProvider>) = 0;
   virtual WebServiceWorkerNetworkProvider*
   getServiceWorkerNetworkProvider() = 0;
+
+  // PlzNavigate
+  // Allows to specify the SourceLocation that triggered the navigation.
+  virtual void setSourceLocation(const WebSourceLocation&) = 0;
+  virtual void resetSourceLocation() = 0;
 
  protected:
   ~WebDataSource() {}

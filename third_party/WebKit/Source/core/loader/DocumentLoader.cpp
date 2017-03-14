@@ -235,6 +235,15 @@ void DocumentLoader::setServiceWorkerNetworkProvider(
   m_serviceWorkerNetworkProvider = std::move(provider);
 }
 
+void DocumentLoader::setSourceLocation(
+    std::unique_ptr<SourceLocation> sourceLocation) {
+  m_sourceLocation = std::move(sourceLocation);
+}
+
+std::unique_ptr<SourceLocation> DocumentLoader::copySourceLocation() const {
+  return m_sourceLocation ? m_sourceLocation->clone() : nullptr;
+}
+
 void DocumentLoader::dispatchLinkHeaderPreloads(
     ViewportDescriptionWrapper* viewport,
     LinkLoader::MediaPreloadPolicy mediaPolicy) {

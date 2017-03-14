@@ -45,6 +45,7 @@
 #include "WebNavigationType.h"
 #include "WebNavigatorContentUtilsClient.h"
 #include "WebSandboxFlags.h"
+#include "WebSourceLocation.h"
 #include "WebTextDirection.h"
 #include "public/platform/BlameContext.h"
 #include "public/platform/WebColor.h"
@@ -300,6 +301,7 @@ class BLINK_EXPORT WebFrameClient {
     bool isClientRedirect;
     WebFormElement form;
     bool isCacheDisabled;
+    WebSourceLocation sourceLocation;
 
     NavigationPolicyInfo(WebURLRequest& urlRequest)
         : extraData(nullptr),

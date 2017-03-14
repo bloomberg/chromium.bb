@@ -76,6 +76,8 @@ class WebDataSourceImpl final : public DocumentLoader, public WebDataSource {
   void setServiceWorkerNetworkProvider(
       std::unique_ptr<WebServiceWorkerNetworkProvider>) override;
   WebServiceWorkerNetworkProvider* getServiceWorkerNetworkProvider() override;
+  void setSourceLocation(const WebSourceLocation&) override;
+  void resetSourceLocation() override;
 
   static WebNavigationType toWebNavigationType(NavigationType);
 

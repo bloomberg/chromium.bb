@@ -677,6 +677,13 @@ CommonNavigationParams MakeCommonNavigationParams(
       navigation_type = FrameMsg_Navigate_Type::RELOAD;
   }
 
+  base::Optional<SourceLocation> source_location;
+  if (!info.sourceLocation.url.isNull()) {
+    source_location = SourceLocation(info.sourceLocation.url.latin1(),
+                                     info.sourceLocation.lineNumber,
+                                     info.sourceLocation.columnNumber);
+  }
+
   const RequestExtraData* extra_data =
       static_cast<RequestExtraData*>(info.urlRequest.getExtraData());
   DCHECK(extra_data);
@@ -686,7 +693,7 @@ CommonNavigationParams MakeCommonNavigationParams(
       report_type, GURL(), GURL(),
       static_cast<PreviewsState>(info.urlRequest.getPreviewsState()),
       base::TimeTicks::Now(), info.urlRequest.httpMethod().latin1(),
-      GetRequestBodyForWebURLRequest(info.urlRequest));
+      GetRequestBodyForWebURLRequest(info.urlRequest), source_location);
 }
 
 media::Context3D GetSharedMainThreadContext3D(
@@ -3417,6 +3424,20 @@ void RenderFrameImpl::didCreateDataSource(blink::WebLocalFrame* frame,
     // UnloadEventStart and UnloadEventEnd are still missing.
   }
 
+  // PlzNavigate: update the source location before processing the navigation
+  // commit.
+  if (IsBrowserSideNavigationEnabled() &&
+      navigation_state->common_params().source_location.has_value()) {
+    blink::WebSourceLocation source_location;
+    source_location.url = WebString::fromLatin1(
+        navigation_state->common_params().source_location->url);
+    source_location.lineNumber =
+        navigation_state->common_params().source_location->line_number;
+    source_location.columnNumber =
+        navigation_state->common_params().source_location->column_number;
+    datasource->setSourceLocation(source_location);
+  }
+
   // Create the serviceworker's per-document network observing object if it
   // does not exist (When navigation happens within a page, the provider already
   // exists).
@@ -6123,6 +6144,14 @@ void RenderFrameImpl::NavigateInternal(
 
   // In case LoadRequest failed before didCreateDataSource was called.
   pending_navigation_params_.reset();
+
+  // PlzNavigate: reset the source location now that the commit checks have been
+  // processed.
+  if (IsBrowserSideNavigationEnabled()) {
+    frame_->dataSource()->resetSourceLocation();
+    if (frame_->provisionalDataSource())
+      frame_->provisionalDataSource()->resetSourceLocation();
+  }
 }
 
 void RenderFrameImpl::UpdateEncoding(WebFrame* frame,

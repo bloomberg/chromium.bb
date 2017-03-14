@@ -26,6 +26,15 @@ bool ShouldMakeNetworkRequestForURL(const GURL& url) {
          url != content::kAboutSrcDocURL;
 }
 
+SourceLocation::SourceLocation() : line_number(0), column_number(0) {}
+
+SourceLocation::SourceLocation(const std::string& url,
+                               unsigned int line_number,
+                               unsigned int column_number)
+    : url(url), line_number(line_number), column_number(column_number) {}
+
+SourceLocation::~SourceLocation() {}
+
 CommonNavigationParams::CommonNavigationParams()
     : transition(ui::PAGE_TRANSITION_LINK),
       navigation_type(FrameMsg_Navigate_Type::DIFFERENT_DOCUMENT),
@@ -50,7 +59,8 @@ CommonNavigationParams::CommonNavigationParams(
     PreviewsState previews_state,
     const base::TimeTicks& navigation_start,
     std::string method,
-    const scoped_refptr<ResourceRequestBodyImpl>& post_data)
+    const scoped_refptr<ResourceRequestBodyImpl>& post_data,
+    base::Optional<SourceLocation> source_location)
     : url(url),
       referrer(referrer),
       transition(transition),
@@ -64,7 +74,8 @@ CommonNavigationParams::CommonNavigationParams(
       previews_state(previews_state),
       navigation_start(navigation_start),
       method(method),
-      post_data(post_data) {
+      post_data(post_data),
+      source_location(source_location) {
   // |method != "POST"| should imply absence of |post_data|.
   if (method != "POST" && post_data) {
     NOTREACHED();

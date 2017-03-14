@@ -574,6 +574,14 @@ NavigationPolicy LocalFrameClientImpl::decidePolicyForNavigation(
   if (form)
     navigationInfo.form = WebFormElement(form);
 
+  std::unique_ptr<SourceLocation> sourceLocation =
+      SourceLocation::capture(m_webFrame->frame()->document());
+  if (sourceLocation && !sourceLocation->isUnknown()) {
+    navigationInfo.sourceLocation.url = sourceLocation->url();
+    navigationInfo.sourceLocation.lineNumber = sourceLocation->lineNumber();
+    navigationInfo.sourceLocation.columnNumber = sourceLocation->columnNumber();
+  }
+
   WebNavigationPolicy webPolicy =
       m_webFrame->client()->decidePolicyForNavigation(navigationInfo);
   return static_cast<NavigationPolicy>(webPolicy);

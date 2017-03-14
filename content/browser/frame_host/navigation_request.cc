@@ -526,14 +526,20 @@ void NavigationRequest::OnResponseStarted(
   }
   DCHECK(render_frame_host || !response_should_be_rendered_);
 
-  // For renderer-initiated navigations that are set to commit in a different
-  // renderer, allow the embedder to cancel the transfer.
   if (!browser_initiated_ && render_frame_host &&
-      render_frame_host != frame_tree_node_->current_frame_host() &&
-      !frame_tree_node_->navigator()->GetDelegate()->ShouldTransferNavigation(
-          frame_tree_node_->IsMainFrame())) {
-    frame_tree_node_->ResetNavigationRequest(false);
-    return;
+      render_frame_host != frame_tree_node_->current_frame_host()) {
+    // Reset the source location information if the navigation will not commit
+    // in the current renderer process. This information originated in another
+    // process (the current one), it should not be transferred to the new one.
+    common_params_.source_location.reset();
+
+    // Allow the embedder to cancel the cross-process commit if needed.
+    // TODO(clamy): Rename ShouldTransferNavigation once PlzNavigate ships.
+    if (!frame_tree_node_->navigator()->GetDelegate()->ShouldTransferNavigation(
+            frame_tree_node_->IsMainFrame())) {
+      frame_tree_node_->ResetNavigationRequest(false);
+      return;
+    }
   }
 
   if (navigation_data)

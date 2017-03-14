@@ -172,6 +172,18 @@ WebDataSourceImpl::getServiceWorkerNetworkProvider() {
   return DocumentLoader::getServiceWorkerNetworkProvider();
 }
 
+void WebDataSourceImpl::setSourceLocation(
+    const WebSourceLocation& sourceLocation) {
+  std::unique_ptr<SourceLocation> location =
+      SourceLocation::create(sourceLocation.url, sourceLocation.lineNumber,
+                             sourceLocation.columnNumber, nullptr);
+  DocumentLoader::setSourceLocation(std::move(location));
+}
+
+void WebDataSourceImpl::resetSourceLocation() {
+  DocumentLoader::setSourceLocation(nullptr);
+}
+
 DEFINE_TRACE(WebDataSourceImpl) {
   DocumentLoader::trace(visitor);
 }
