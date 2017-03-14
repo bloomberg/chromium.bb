@@ -298,8 +298,8 @@ CHAR-LIMIT guidelines:
       <message name="IDS_PAYMENT_NO_APPS_SUMMARY" desc="Summary of the preference to list the payment apps on device when no payments apps installed.">
         No supported apps installed
       </message>
-      <message name="IDS_PAYMENT_APPS_CONTROL_MESSAGE" desc="Message to explain what the user controls by toggling the switch of the payment app preference.">
-        On some websites, you can pay with supported payment apps. Choose which apps to use in Chrome.
+      <message name="IDS_PAYMENT_APPS_USAGE_MESSAGE" desc="Message to explain the usage of the listed payment apps.">
+        On some websites, you can pay with above supported payment apps on your device.
       </message>
       <message name="IDS_AUTOFILL_CREDIT_CARDS_TITLE" desc="Title of the preference to list the user's credit cards that can be automatically filled into web page forms. [CHAR-LIMIT=32]">
         Credit cards

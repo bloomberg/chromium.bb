@@ -75,8 +75,6 @@ public class AndroidPaymentAppFactory implements PaymentAppFactoryAddition {
                     filterIntent.setPackage(packageName);
                     if (pm.resolveActivity(filterIntent, 0) == null) continue;
                 }
-                // Do not recommend disabled apps.
-                if (!PaymentPreferencesUtil.isAndroidPaymentAppEnabled(packageName)) continue;
                 AndroidPaymentApp installedApp = installedApps.get(packageName);
                 if (installedApp == null) {
                     CharSequence label = match.loadLabel(pm);
