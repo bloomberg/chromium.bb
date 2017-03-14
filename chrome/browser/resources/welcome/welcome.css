@@ -9,8 +9,8 @@ body {
   flex-direction: column;
   font-size: 100%;
   justify-content: center;
+  margin: 0;
   min-height: 100vh;
-  overflow-y: hidden;
 }
 
 @keyframes slideUpContent {
@@ -99,6 +99,11 @@ body {
 }
 
 .content {
+  height: 100%;
+  overflow-y: hidden;
+}
+
+.slider {
   align-items: center;
   animation: slideUpContent 600ms 1.8s cubic-bezier(.4, .2, 0, 1) both;
   display: flex;
