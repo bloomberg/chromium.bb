@@ -233,16 +233,17 @@ MotionEventAndroid::MotionEventAndroid(const MotionEventAndroid& e)
       cached_flags_(e.cached_flags_),
       cached_raw_position_offset_(e.cached_raw_position_offset_),
       unique_event_id_(ui::GetNextTouchEventId()) {
-  for (size_t i = 0; i < cached_pointer_count_; i++)
-    cached_pointers_[i] = e.cached_pointers_[i];
+  cached_pointers_[0] = e.cached_pointers_[0];
+  if (cached_pointer_count_ > 1)
+    cached_pointers_[1] = e.cached_pointers_[1];
 }
 
 std::unique_ptr<MotionEventAndroid> MotionEventAndroid::Offset(float x,
                                                                float y) const {
   std::unique_ptr<MotionEventAndroid> event(new MotionEventAndroid(*this));
-  for (size_t i = 0; i < cached_pointer_count_; i++) {
-    event->cached_pointers_[i] = OffsetCachedPointer(cached_pointers_[i], x, y);
-  }
+  event->cached_pointers_[0] = OffsetCachedPointer(cached_pointers_[0], x, y);
+  if (cached_pointer_count_ > 1)
+    event->cached_pointers_[1] = OffsetCachedPointer(cached_pointers_[1], x, y);
   return event;
 }
 
