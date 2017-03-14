@@ -113,16 +113,16 @@ bool IsEnterpriseManaged() {
 
 // Returns true if current user can change channel, false otherwise.
 bool CanChangeChannel(Profile* profile) {
-  bool value = false;
-  chromeos::CrosSettings::Get()->GetBoolean(chromeos::kReleaseChannelDelegated,
-                                            &value);
-
   // On a managed machine we delegate this setting to the users of the same
   // domain only if the policy value is "domain".
   if (IsEnterpriseManaged()) {
+    bool value = false;
+    chromeos::CrosSettings::Get()->GetBoolean(
+        chromeos::kReleaseChannelDelegated, &value);
     if (!value)
       return false;
-    // Get the currently logged in user and strip the domain part only.
+
+    // Get the currently logged-in user and strip the domain part only.
     std::string domain = "";
     const user_manager::User* user =
         profile ? chromeos::ProfileHelper::Get()->GetUserByProfile(profile)
@@ -135,16 +135,13 @@ bool CanChangeChannel(Profile* profile) {
     policy::BrowserPolicyConnectorChromeOS* connector =
         g_browser_process->platform_part()->browser_policy_connector_chromeos();
     return domain == connector->GetEnterpriseDomain();
-  } else {
-    chromeos::OwnerSettingsServiceChromeOS* service =
-        chromeos::OwnerSettingsServiceChromeOSFactory::GetInstance()
-            ->GetForBrowserContext(profile);
-    // On non managed machines we have local owner who is the only one to change
-    // anything. Ensure that ReleaseChannelDelegated is false.
-    if (service && service->IsOwner())
-      return !value;
   }
-  return false;
+
+  // On non-managed machines, only the local owner can change the channel.
+  chromeos::OwnerSettingsServiceChromeOS* service =
+      chromeos::OwnerSettingsServiceChromeOSFactory::GetInstance()
+          ->GetForBrowserContext(profile);
+  return service && service->IsOwner();
 }
 
 // Returns the path of the regulatory labels directory for a given region, if

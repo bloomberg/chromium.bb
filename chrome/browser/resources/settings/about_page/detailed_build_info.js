@@ -60,6 +60,29 @@ Polymer({
   },
 
   /**
+   * @param {boolean} canChangeChannel
+   * @return {string}
+   * @private
+   */
+  getChangeChannelIndicatorSourceName_: function(canChangeChannel) {
+    return loadTimeData.getBoolean('aboutEnterpriseManaged') ? '' :
+        loadTimeData.getString('ownerEmail');
+  },
+
+  /**
+   * @param {boolean} canChangeChannel
+   * @return {CrPolicyIndicatorType}
+   * @private
+   */
+  getChangeChannelIndicatorType_: function(canChangeChannel) {
+    if (canChangeChannel)
+      return CrPolicyIndicatorType.NONE;
+    return loadTimeData.getBoolean('aboutEnterpriseManaged') ?
+        CrPolicyIndicatorType.DEVICE_POLICY :
+        CrPolicyIndicatorType.OWNER;
+  },
+
+  /**
    * @param {!Event} e
    * @private
    */

@@ -35,6 +35,9 @@
 #if defined(OS_CHROMEOS)
 #include "ash/common/ash_switches.h"
 #include "ash/common/system/chromeos/devicetype_utils.h"
+#include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos.h"
+#include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos_factory.h"
+#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/ui/webui/chromeos/network_element_localized_strings_provider.h"
 #include "chrome/browser/ui/webui/chromeos/ui_account_tweaks.h"
@@ -1008,8 +1011,8 @@ void AddLanguagesStrings(content::WebUIDataSource* html_source) {
 }
 
 #if defined(OS_CHROMEOS)
-void AddMultiProfilesStrings(content::WebUIDataSource* html_source,
-                             Profile* profile) {
+void AddChromeOSUserStrings(content::WebUIDataSource* html_source,
+                            Profile* profile) {
   user_manager::UserManager* user_manager = user_manager::UserManager::Get();
 
   const user_manager::User* user =
@@ -1024,6 +1027,14 @@ void AddMultiProfilesStrings(content::WebUIDataSource* html_source,
       "secondaryUserBannerText",
       l10n_util::GetStringFUTF16(IDS_SETTINGS_SECONDARY_USER_BANNER,
                                  base::ASCIIToUTF16(primary_user_email)));
+
+  policy::BrowserPolicyConnectorChromeOS* connector =
+      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  if (!connector->IsEnterpriseManaged() &&
+      !user_manager->IsCurrentUserOwner()) {
+    html_source->AddString("ownerEmail",
+                           user_manager->GetOwnerAccountId().GetUserEmail());
+  }
 }
 #endif
 
@@ -1953,7 +1964,7 @@ void AddLocalizedStrings(content::WebUIDataSource* html_source,
   AddDeviceStrings(html_source);
   AddEasyUnlockStrings(html_source);
   AddInternetStrings(html_source);
-  AddMultiProfilesStrings(html_source, profile);
+  AddChromeOSUserStrings(html_source, profile);
   AddOncStrings(html_source);
 #else
   AddDefaultBrowserStrings(html_source);
