@@ -323,18 +323,18 @@ class PrefetchDelegate : public net::URLFetcherDelegate {
     return;
   }
 
-  Tab* tab = [Tab
-      newPreloadingTabWithBrowserState:browserState_
-                                   url:prerenderedURL_
-                              referrer:scheduledReferrer_
-                            transition:scheduledTransition_
-                              provider:self
-                                opener:nil
-                      desktopUserAgent:[delegate_ shouldUseDesktopUserAgent]
-                         configuration:^(Tab* tab) {
-                           [tab setIsPrerenderTab:YES];
-                           [tab setDelegate:self];
-                         }];
+  Tab* tab =
+      [Tab preloadingTabWithBrowserState:browserState_
+                                     url:prerenderedURL_
+                                referrer:scheduledReferrer_
+                              transition:scheduledTransition_
+                                provider:self
+                                  opener:nil
+                        desktopUserAgent:[delegate_ shouldUseDesktopUserAgent]
+                           configuration:^(Tab* tab) {
+                             [tab setIsPrerenderTab:YES];
+                             [tab setDelegate:self];
+                           }];
 
   // Create and set up the prerender.
   tab_.reset([tab retain]);

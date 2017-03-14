@@ -661,14 +661,14 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
   return providers;
 }
 
-+ (Tab*)newPreloadingTabWithBrowserState:(ios::ChromeBrowserState*)browserState
-                                     url:(const GURL&)URL
-                                referrer:(const web::Referrer&)referrer
-                              transition:(ui::PageTransition)transition
-                                provider:(id<CRWNativeContentProvider>)provider
-                                  opener:(Tab*)opener
-                        desktopUserAgent:(BOOL)desktopUserAgent
-                           configuration:(void (^)(Tab*))configuration {
++ (Tab*)preloadingTabWithBrowserState:(ios::ChromeBrowserState*)browserState
+                                  url:(const GURL&)URL
+                             referrer:(const web::Referrer&)referrer
+                           transition:(ui::PageTransition)transition
+                             provider:(id<CRWNativeContentProvider>)provider
+                               opener:(Tab*)opener
+                     desktopUserAgent:(BOOL)desktopUserAgent
+                        configuration:(void (^)(Tab*))configuration {
   Tab* tab = [[[Tab alloc] initWithBrowserState:browserState
                                          opener:opener
                                     openedByDOM:NO

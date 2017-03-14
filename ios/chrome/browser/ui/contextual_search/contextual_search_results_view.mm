@@ -140,14 +140,14 @@ enum SearchResultsViewVisibility { OFFSCREEN, PRELOAD, VISIBLE };
   };
 
   ui::PageTransition transition = ui::PAGE_TRANSITION_FROM_ADDRESS_BAR;
-  Tab* tab = [Tab newPreloadingTabWithBrowserState:self.opener.browserState
-                                               url:url
-                                          referrer:web::Referrer()
-                                        transition:transition
-                                          provider:self
-                                            opener:self.opener
-                                  desktopUserAgent:false
-                                     configuration:searchTabConfiguration];
+  Tab* tab = [Tab preloadingTabWithBrowserState:self.opener.browserState
+                                            url:url
+                                       referrer:web::Referrer()
+                                     transition:transition
+                                       provider:self
+                                         opener:self.opener
+                               desktopUserAgent:false
+                                  configuration:searchTabConfiguration];
   _tab.reset([tab retain]);
   // Don't actually start the page load yet -- that happens in -loadTab
 

@@ -191,14 +191,14 @@ extern NSString* const kProxyPassthroughHeaderValue;
 // properties and delegates on the tab. Calling code must take ownership of the
 // tab -- this is particularly important with Tab instances, because they will
 // fail a DCHECK if they are deallocated without -close being called.
-+ (Tab*)newPreloadingTabWithBrowserState:(ios::ChromeBrowserState*)browserState
-                                     url:(const GURL&)url
-                                referrer:(const web::Referrer&)referrer
-                              transition:(ui::PageTransition)transition
-                                provider:(id<CRWNativeContentProvider>)provider
-                                  opener:(Tab*)opener
-                        desktopUserAgent:(BOOL)desktopUserAgent
-                           configuration:(void (^)(Tab*))configuration;
++ (Tab*)preloadingTabWithBrowserState:(ios::ChromeBrowserState*)browserState
+                                  url:(const GURL&)url
+                             referrer:(const web::Referrer&)referrer
+                           transition:(ui::PageTransition)transition
+                             provider:(id<CRWNativeContentProvider>)provider
+                               opener:(Tab*)opener
+                     desktopUserAgent:(BOOL)desktopUserAgent
+                        configuration:(void (^)(Tab*))configuration;
 
 // Sets the parent tab model for this tab.  Can only be called if the tab does
 // not already have a parent tab model set.
