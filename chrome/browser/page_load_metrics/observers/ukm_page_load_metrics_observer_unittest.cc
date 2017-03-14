@@ -190,6 +190,8 @@ TEST_F(UkmPageLoadMetricsObserverTest, Basic) {
   EXPECT_EQ(entry_proto.event_hash(),
             base::HashMetricName(internal::kUkmPageLoadEventName));
   EXPECT_FALSE(entry_proto.metrics().empty());
+  ExpectMetric(internal::kUkmPageTransition, ui::PAGE_TRANSITION_LINK,
+               entry_proto.metrics());
   ExpectMetric(internal::kUkmParseStartName, 100, entry_proto.metrics());
   ExpectMetric(internal::kUkmDomContentLoadedName, 200, entry_proto.metrics());
   ExpectMetric(internal::kUkmFirstContentfulPaintName, 300,
@@ -199,6 +201,47 @@ TEST_F(UkmPageLoadMetricsObserverTest, Basic) {
       HasMetric(internal::kUkmFirstMeaningfulPaintName, entry_proto.metrics()));
   EXPECT_TRUE(
       HasMetric(internal::kUkmForegroundDurationName, entry_proto.metrics()));
+}
+
+TEST_F(UkmPageLoadMetricsObserverTest, FailedProvisionalLoad) {
+  EXPECT_CALL(mock_network_quality_provider(), GetEffectiveConnectionType())
+      .WillRepeatedly(Return(net::EFFECTIVE_CONNECTION_TYPE_2G));
+
+  GURL url(kTestUrl1);
+  content::RenderFrameHostTester* rfh_tester =
+      content::RenderFrameHostTester::For(main_rfh());
+  rfh_tester->SimulateNavigationStart(url);
+  rfh_tester->SimulateNavigationError(url, net::ERR_TIMED_OUT);
+  rfh_tester->SimulateNavigationStop();
+
+  // Simulate closing the tab.
+  DeleteContents();
+
+  EXPECT_EQ(1ul, ukm_source_count());
+  const ukm::UkmSource* source = GetUkmSource(0);
+  EXPECT_EQ(GURL(kTestUrl1), source->url());
+
+  EXPECT_GE(ukm_entry_count(), 1ul);
+  ukm::Entry entry_proto = GetMergedEntryProtoForSourceID(source->id());
+  EXPECT_EQ(entry_proto.source_id(), source->id());
+  EXPECT_EQ(entry_proto.event_hash(),
+            base::HashMetricName(internal::kUkmPageLoadEventName));
+
+  // Make sure that only the following metrics are logged. In particular, no
+  // paint/document/etc timing metrics should be logged for failed provisional
+  // loads.
+  EXPECT_EQ(5, entry_proto.metrics().size());
+  ExpectMetric(internal::kUkmPageTransition, ui::PAGE_TRANSITION_LINK,
+               entry_proto.metrics());
+  ExpectMetric(internal::kUkmEffectiveConnectionType,
+               net::EFFECTIVE_CONNECTION_TYPE_2G, entry_proto.metrics());
+  ExpectMetric(internal::kUkmNetErrorCode,
+               static_cast<int64_t>(net::ERR_TIMED_OUT) * -1,
+               entry_proto.metrics());
+  EXPECT_TRUE(
+      HasMetric(internal::kUkmForegroundDurationName, entry_proto.metrics()));
+  EXPECT_TRUE(
+      HasMetric(internal::kUkmFailedProvisionaLoadName, entry_proto.metrics()));
 }
 
 TEST_F(UkmPageLoadMetricsObserverTest, FirstMeaningfulPaint) {
@@ -306,4 +349,26 @@ TEST_F(UkmPageLoadMetricsObserverTest, EffectiveConnectionType) {
   EXPECT_FALSE(entry_proto.metrics().empty());
   ExpectMetric(internal::kUkmEffectiveConnectionType,
                net::EFFECTIVE_CONNECTION_TYPE_3G, entry_proto.metrics());
+}
+
+TEST_F(UkmPageLoadMetricsObserverTest, PageTransitionReload) {
+  GURL url(kTestUrl1);
+  NavigateWithPageTransitionAndCommit(GURL(kTestUrl1),
+                                      ui::PAGE_TRANSITION_RELOAD);
+
+  // Simulate closing the tab.
+  DeleteContents();
+
+  EXPECT_EQ(1ul, ukm_source_count());
+  const ukm::UkmSource* source = GetUkmSource(0);
+  EXPECT_EQ(GURL(kTestUrl1), source->url());
+
+  EXPECT_GE(ukm_entry_count(), 1ul);
+  ukm::Entry entry_proto = GetMergedEntryProtoForSourceID(source->id());
+  EXPECT_EQ(entry_proto.source_id(), source->id());
+  EXPECT_EQ(entry_proto.event_hash(),
+            base::HashMetricName(internal::kUkmPageLoadEventName));
+  EXPECT_FALSE(entry_proto.metrics().empty());
+  ExpectMetric(internal::kUkmPageTransition, ui::PAGE_TRANSITION_RELOAD,
+               entry_proto.metrics());
 }

@@ -24,8 +24,12 @@ const char kUkmFirstContentfulPaintName[] =
 const char kUkmFirstMeaningfulPaintName[] =
     "Experimental.PaintTiming.NavigationToFirstMeaningfulPaint";
 const char kUkmForegroundDurationName[] = "PageTiming.ForegroundDuration";
+const char kUkmFailedProvisionaLoadName[] =
+    "PageTiming.NavigationToFailedProvisionalLoad";
 const char kUkmEffectiveConnectionType[] =
     "Net.EffectiveConnectionType.OnNavigationStart";
+const char kUkmNetErrorCode[] = "Net.ErrorCode.OnFailedProvisionalLoad";
+const char kUkmPageTransition[] = "Navigation.PageTransition";
 
 }  // namespace internal
 
@@ -78,6 +82,14 @@ UkmPageLoadMetricsObserver::ObservePolicy UkmPageLoadMetricsObserver::OnStart(
     effective_connection_type_ =
         network_quality_provider_->GetEffectiveConnectionType();
   }
+  page_transition_ = navigation_handle->GetPageTransition();
+  return CONTINUE_OBSERVING;
+}
+
+UkmPageLoadMetricsObserver::ObservePolicy UkmPageLoadMetricsObserver::OnCommit(
+    content::NavigationHandle* navigation_handle) {
+  // The PageTransition for the navigation may be updated on commit.
+  page_transition_ = navigation_handle->GetPageTransition();
   return CONTINUE_OBSERVING;
 }
 
@@ -104,6 +116,19 @@ void UkmPageLoadMetricsObserver::OnFailedProvisionalLoad(
     const page_load_metrics::PageLoadExtraInfo& extra_info) {
   RecordPageLoadExtraInfoMetrics(
       extra_info, base::TimeTicks() /* no app_background_time */);
+
+  ukm::UkmService* ukm_service = g_browser_process->ukm_service();
+  std::unique_ptr<ukm::UkmEntryBuilder> builder =
+      ukm_service->GetEntryBuilder(source_id_, internal::kUkmPageLoadEventName);
+  // Error codes have negative values, however we log net error code enum values
+  // for UMA histograms using the equivalent positive value. For consistency in
+  // UKM, we convert to a positive value here.
+  int64_t net_error_code = static_cast<int64_t>(failed_load_info.error) * -1;
+  DCHECK_GE(net_error_code, 0);
+  builder->AddMetric(internal::kUkmNetErrorCode, net_error_code);
+  builder->AddMetric(
+      internal::kUkmFailedProvisionaLoadName,
+      failed_load_info.time_to_failed_provisional_load.InMilliseconds());
 }
 
 void UkmPageLoadMetricsObserver::OnComplete(
@@ -162,4 +187,7 @@ void UkmPageLoadMetricsObserver::RecordPageLoadExtraInfoMetrics(
     builder->AddMetric(internal::kUkmEffectiveConnectionType,
                        static_cast<int64_t>(effective_connection_type_));
   }
+  // page_transition_ fits in a uint32_t, so we can safely cast to int64_t.
+  builder->AddMetric(internal::kUkmPageTransition,
+                     static_cast<int64_t>(page_transition_));
 }

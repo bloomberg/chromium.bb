@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_observer.h"
 #include "net/nqe/network_quality_estimator.h"
+#include "ui/base/page_transition_types.h"
 
 namespace content {
 class WebContents;
@@ -23,7 +24,10 @@ extern const char kUkmLoadEventName[];
 extern const char kUkmFirstContentfulPaintName[];
 extern const char kUkmFirstMeaningfulPaintName[];
 extern const char kUkmForegroundDurationName[];
+extern const char kUkmFailedProvisionaLoadName[];
+extern const char kUkmNetErrorCode[];
 extern const char kUkmEffectiveConnectionType[];
+extern const char kUkmPageTransition[];
 
 }  // namespace internal
 
@@ -45,6 +49,8 @@ class UkmPageLoadMetricsObserver
   ObservePolicy OnStart(content::NavigationHandle* navigation_handle,
                         const GURL& currently_committed_url,
                         bool started_in_foreground) override;
+
+  ObservePolicy OnCommit(content::NavigationHandle* navigation_handle) override;
 
   ObservePolicy FlushMetricsOnAppEnterBackground(
       const page_load_metrics::PageLoadTiming& timing,
@@ -81,6 +87,9 @@ class UkmPageLoadMetricsObserver
 
   net::EffectiveConnectionType effective_connection_type_ =
       net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN;
+
+  // PAGE_TRANSITION_LINK is the default PageTransition value.
+  ui::PageTransition page_transition_ = ui::PAGE_TRANSITION_LINK;
 
   DISALLOW_COPY_AND_ASSIGN(UkmPageLoadMetricsObserver);
 };
