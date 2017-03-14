@@ -15,7 +15,7 @@ namespace metrics {
 
 extern const base::Feature kUploadSchedulerFeature;
 
-// Scheduler task to drive a MetricsService object's uploading.
+// Scheduler task to drive a ReportingService object's uploading.
 class MetricsUploadScheduler : public MetricsScheduler {
  public:
   // Creates MetricsUploadScheduler object with the given |upload_callback|
@@ -36,16 +36,6 @@ class MetricsUploadScheduler : public MetricsScheduler {
   void UploadOverDataUsageCap();
 
  private:
-  // Record the upload interval time.
-  virtual void LogActualUploadInterval(base::TimeDelta interval);
-
-  // MetricsScheduler:
-  void TriggerTask() override;
-
-  // The tick count of the last time log upload has been finished and null if no
-  // upload has been done yet.
-  base::TimeTicks last_upload_finish_time_;
-
   // Time to wait between uploads on success.
   const base::TimeDelta unsent_logs_interval_;
 

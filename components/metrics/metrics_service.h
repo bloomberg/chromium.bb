@@ -27,12 +27,12 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/metrics/clean_exit_beacon.h"
-#include "components/metrics/data_use_tracker.h"
 #include "components/metrics/execution_phase.h"
 #include "components/metrics/metrics_log.h"
 #include "components/metrics/metrics_log_manager.h"
 #include "components/metrics/metrics_log_store.h"
 #include "components/metrics/metrics_provider.h"
+#include "components/metrics/metrics_reporting_service.h"
 #include "components/metrics/net/network_metrics_provider.h"
 #include "components/variations/synthetic_trials.h"
 
@@ -50,9 +50,7 @@ struct ActiveGroupId;
 
 namespace metrics {
 
-class MetricsLogUploader;
 class MetricsRotationScheduler;
-class MetricsUploadScheduler;
 class MetricsServiceAccessor;
 class MetricsServiceClient;
 class MetricsStateManager;
@@ -110,8 +108,7 @@ class MetricsService : public base::HistogramFlattener {
   // Returns true if the last session exited cleanly.
   bool WasLastShutdownClean() const;
 
-  // At startup, prefs needs to be called with a list of all the pref names and
-  // types we'll be using.
+  // Registers local state prefs used by this class.
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
   // HistogramFlattener:
@@ -159,6 +156,7 @@ class MetricsService : public base::HistogramFlattener {
 
   bool recording_active() const;
   bool reporting_active() const;
+  bool has_unsent_logs() const;
 
   // Redundant test to ensure that we are notified of a clean exit.
   // This value should be true when process has completed shutdown.
@@ -200,7 +198,9 @@ class MetricsService : public base::HistogramFlattener {
  protected:
   // Exposed for testing.
   MetricsLogManager* log_manager() { return &log_manager_; }
-  MetricsLogStore* log_store() { return &log_store_; }
+  MetricsLogStore* log_store() {
+    return reporting_service_.metrics_log_store();
+  }
 
  private:
   friend class MetricsServiceAccessor;
@@ -307,10 +307,6 @@ class MetricsService : public base::HistogramFlattener {
   // complete.
   void OnFinalLogInfoCollectionDone();
 
-  // If recording is enabled, begins uploading the next completed log from
-  // the log manager, staging it if necessary.
-  void SendNextLog();
-
   // Returns true if any of the registered metrics providers have critical
   // stability metrics to report in an initial stability log.
   bool ProvidersHaveInitialStabilityMetrics();
@@ -326,12 +322,6 @@ class MetricsService : public base::HistogramFlattener {
   // Prepares the initial metrics log, which includes startup histograms and
   // profiler data, as well as incremental stability-related metrics.
   void PrepareInitialMetricsLog();
-
-  // Uploads the currently staged log (which must be non-null).
-  void SendStagedLog();
-
-  // Called after transmission completes (either successfully or with failure).
-  void OnLogUploadComplete(int response_code);
 
   // Reads, increments and then sets the specified long preference that is
   // stored as a string.
@@ -362,11 +352,11 @@ class MetricsService : public base::HistogramFlattener {
   // i.e., histograms with the |kUmaStabilityHistogramFlag| flag set.
   void RecordCurrentStabilityHistograms();
 
+  // Sub-service for uploading logs.
+  MetricsReportingService reporting_service_;
+
   // Manager for the various in-flight logs.
   MetricsLogManager log_manager_;
-
-  // Store of logs ready to be uploaded.
-  MetricsLogStore log_store_;
 
   // |histogram_snapshot_manager_| prepares histogram deltas for transmission.
   base::HistogramSnapshotManager histogram_snapshot_manager_;
@@ -392,7 +382,6 @@ class MetricsService : public base::HistogramFlattener {
   // These should not be set directly, but by calling SetRecording and
   // SetReporting.
   RecordingState recording_state_;
-  bool reporting_active_;
 
   // Indicate whether test mode is enabled, where the initial log should never
   // be cut, and logs are neither persisted nor uploaded.
@@ -407,12 +396,6 @@ class MetricsService : public base::HistogramFlattener {
   // initial stability log may be sent before this.
   std::unique_ptr<MetricsLog> initial_metrics_log_;
 
-  // Instance of the helper class for uploading logs.
-  std::unique_ptr<MetricsLogUploader> log_uploader_;
-
-  // Whether there is a current log upload in progress.
-  bool log_upload_in_progress_;
-
   // Whether the MetricsService object has received any notifications since
   // the last time a transmission was sent.
   bool idle_since_last_transmission_;
@@ -422,8 +405,6 @@ class MetricsService : public base::HistogramFlattener {
 
   // The scheduler for determining when log rotations should happen.
   std::unique_ptr<MetricsRotationScheduler> rotation_scheduler_;
-  // The scheduler for determining when uploads should happen.
-  std::unique_ptr<MetricsUploadScheduler> upload_scheduler_;
 
   // Stores the time of the first call to |GetUptimes()|.
   base::TimeTicks first_updated_time_;
@@ -448,9 +429,6 @@ class MetricsService : public base::HistogramFlattener {
   FRIEND_TEST_ALL_PREFIXES(MetricsServiceTest, RegisterSyntheticTrial);
   FRIEND_TEST_ALL_PREFIXES(MetricsServiceTest,
                            RegisterSyntheticMultiGroupFieldTrial);
-
-  // Pointer used for obtaining data use pref updater callback on above layers.
-  std::unique_ptr<DataUseTracker> data_use_tracker_;
 
   base::ThreadChecker thread_checker_;
 

@@ -104,18 +104,4 @@ void MetricsUploadScheduler::UploadOverDataUsageCap() {
   TaskDone(base::TimeDelta::FromMinutes(kOverDataUsageIntervalMinutes));
 }
 
-void MetricsUploadScheduler::LogActualUploadInterval(base::TimeDelta interval) {
-  UMA_HISTOGRAM_CUSTOM_COUNTS("UMA.ActualLogUploadInterval",
-                              interval.InMinutes(), 1,
-                              base::TimeDelta::FromHours(12).InMinutes(), 50);
-}
-
-void MetricsUploadScheduler::TriggerTask() {
-  if (!last_upload_finish_time_.is_null()) {
-    LogActualUploadInterval(base::TimeTicks::Now() - last_upload_finish_time_);
-    last_upload_finish_time_ = base::TimeTicks();
-  }
-  MetricsScheduler::TriggerTask();
-}
-
 }  // namespace metrics

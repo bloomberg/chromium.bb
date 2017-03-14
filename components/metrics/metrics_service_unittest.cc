@@ -189,8 +189,7 @@ TEST_F(MetricsServiceTest, InitialStabilityLogAfterCleanShutDown) {
   service.InitializeMetricsRecordingState();
 
   // No initial stability log should be generated.
-  EXPECT_FALSE(service.log_store()->has_unsent_logs());
-  EXPECT_FALSE(service.log_store()->has_staged_log());
+  EXPECT_FALSE(service.has_unsent_logs());
 
   // Ensure that HasInitialStabilityMetrics() is always called on providers,
   // for consistency, even if other conditions already indicate their presence.

@@ -131,7 +131,6 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/feature_list.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_base.h"
@@ -141,23 +140,18 @@
 #include "base/metrics/sparse_histogram.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/single_thread_task_runner.h"
-#include "base/strings/string_number_conversions.h"
-#include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/tracked_objects.h"
 #include "build/build_config.h"
-#include "components/metrics/data_use_tracker.h"
 #include "components/metrics/environment_recorder.h"
 #include "components/metrics/metrics_log.h"
 #include "components/metrics/metrics_log_manager.h"
 #include "components/metrics/metrics_log_uploader.h"
 #include "components/metrics/metrics_pref_names.h"
-#include "components/metrics/metrics_reporting_scheduler.h"
 #include "components/metrics/metrics_rotation_scheduler.h"
 #include "components/metrics/metrics_service_client.h"
 #include "components/metrics/metrics_state_manager.h"
-#include "components/metrics/metrics_upload_scheduler.h"
 #include "components/metrics/stability_metrics_provider.h"
 #include "components/metrics/url_constants.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -187,33 +181,6 @@ const int kInitializationDelaySeconds = 30;
 
 // The maximum number of events in a log uploaded to the UMA server.
 const int kEventLimit = 2400;
-
-// If an upload fails, and the transmission was over this byte count, then we
-// will discard the log, and not try to retransmit it.  We also don't persist
-// the log to the prefs for transmission during the next chrome session if this
-// limit is exceeded.
-const size_t kUploadLogAvoidRetransmitSize = 100 * 1024;
-
-enum ResponseStatus {
-  UNKNOWN_FAILURE,
-  SUCCESS,
-  BAD_REQUEST,  // Invalid syntax or log too large.
-  NO_RESPONSE,
-  NUM_RESPONSE_STATUSES
-};
-
-ResponseStatus ResponseCodeToStatus(int response_code) {
-  switch (response_code) {
-    case -1:
-      return NO_RESPONSE;
-    case 200:
-      return SUCCESS;
-    case 400:
-      return BAD_REQUEST;
-    default:
-      return UNKNOWN_FAILURE;
-  }
-}
 
 #if defined(OS_ANDROID) || defined(OS_IOS)
 void MarkAppCleanShutdownAndCommit(CleanExitBeacon* clean_exit_beacon,
@@ -254,20 +221,17 @@ void MetricsService::RegisterPrefs(PrefRegistrySimple* registry) {
 MetricsService::MetricsService(MetricsStateManager* state_manager,
                                MetricsServiceClient* client,
                                PrefService* local_state)
-    : log_store_(local_state, kUploadLogAvoidRetransmitSize),
+    : reporting_service_(client, local_state),
       histogram_snapshot_manager_(this),
       state_manager_(state_manager),
       client_(client),
       local_state_(local_state),
       clean_exit_beacon_(client->GetRegistryBackupKey(), local_state),
       recording_state_(UNSET),
-      reporting_active_(false),
       test_mode_active_(false),
       state_(INITIALIZED),
-      log_upload_in_progress_(false),
       idle_since_last_transmission_(false),
       session_id_(-1),
-      data_use_tracker_(DataUseTracker::Create(local_state_)),
       self_ptr_factory_(this) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(state_manager_);
@@ -288,6 +252,7 @@ MetricsService::~MetricsService() {
 }
 
 void MetricsService::InitializeMetricsRecordingState() {
+  reporting_service_.Initialize();
   InitializeMetricsState();
 
   base::Closure upload_callback =
@@ -300,9 +265,6 @@ void MetricsService::InitializeMetricsRecordingState() {
       // MetricsRotationScheduler is tied to the lifetime of |this|.
       base::Bind(&MetricsServiceClient::GetStandardUploadInterval,
                  base::Unretained(client_))));
-  base::Closure send_next_log_callback =
-      base::Bind(&MetricsService::SendNextLog, self_ptr_factory_.GetWeakPtr());
-  upload_scheduler_.reset(new MetricsUploadScheduler(send_next_log_callback));
 
   for (auto& provider : metrics_providers_)
     provider->Init();
@@ -327,14 +289,14 @@ void MetricsService::Stop() {
 }
 
 void MetricsService::EnableReporting() {
-  if (reporting_active_)
+  if (reporting_service_.reporting_active())
     return;
-  reporting_active_ = true;
+  reporting_service_.EnableReporting();
   StartSchedulerIfNecessary();
 }
 
 void MetricsService::DisableReporting() {
-  reporting_active_ = false;
+  reporting_service_.DisableReporting();
 }
 
 std::string MetricsService::GetClientId() {
@@ -396,7 +358,11 @@ bool MetricsService::recording_active() const {
 
 bool MetricsService::reporting_active() const {
   DCHECK(thread_checker_.CalledOnValidThread());
-  return reporting_active_;
+  return reporting_service_.reporting_active();
+}
+
+bool MetricsService::has_unsent_logs() const {
+  return reporting_service_.metrics_log_store()->has_unsent_logs();
 }
 
 void MetricsService::RecordDelta(const base::HistogramBase& histogram,
@@ -447,7 +413,7 @@ void MetricsService::RecordCompletedSessionEnd() {
 #if defined(OS_ANDROID) || defined(OS_IOS)
 void MetricsService::OnAppEnterBackground() {
   rotation_scheduler_->Stop();
-  upload_scheduler_->Stop();
+  reporting_service_.Stop();
 
   MarkAppCleanShutdownAndCommit(&clean_exit_beacon_, local_state_);
 
@@ -503,18 +469,15 @@ void MetricsService::ClearSavedStabilityMetrics() {
 }
 
 void MetricsService::PushExternalLog(const std::string& log) {
-  log_store_.StoreLog(log, MetricsLog::ONGOING_LOG);
+  log_store()->StoreLog(log, MetricsLog::ONGOING_LOG);
 }
 
 void MetricsService::UpdateMetricsUsagePrefs(const std::string& service_name,
                                              int message_size,
                                              bool is_cellular) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (data_use_tracker_) {
-    data_use_tracker_->UpdateMetricsUsagePrefs(service_name,
-                                               message_size,
-                                               is_cellular);
-  }
+  reporting_service_.UpdateMetricsUsagePrefs(service_name, message_size,
+                                             is_cellular);
 }
 
 //------------------------------------------------------------------------------
@@ -538,7 +501,7 @@ void MetricsService::InitializeMetricsState() {
     version_changed = true;
   }
 
-  log_store_.LoadPersistedUnsentLogs();
+  reporting_service_.Initialize();
 
   session_id_ = local_state_->GetInteger(prefs::kMetricsSessionID);
 
@@ -721,7 +684,7 @@ void MetricsService::CloseCurrentLog() {
   current_log->RecordGeneralMetrics(metrics_providers_);
   RecordCurrentHistograms();
   DVLOG(1) << "Generated an ongoing log.";
-  log_manager_.FinishCurrentLog(&log_store_);
+  log_manager_.FinishCurrentLog(log_store());
 }
 
 void MetricsService::PushPendingLogsToPersistentStorage() {
@@ -729,7 +692,7 @@ void MetricsService::PushPendingLogsToPersistentStorage() {
     return;  // We didn't and still don't have time to get plugin list etc.
 
   CloseCurrentLog();
-  log_store_.PersistUnsentLogs();
+  log_store()->PersistUnsentLogs();
 }
 
 //------------------------------------------------------------------------------
@@ -746,7 +709,7 @@ void MetricsService::StartSchedulerIfNecessary() {
   if (recording_active() &&
       (reporting_active() || state_ < SENDING_LOGS)) {
     rotation_scheduler_->Start();
-    upload_scheduler_->Start();
+    reporting_service_.Start();
   }
 }
 
@@ -771,8 +734,8 @@ void MetricsService::StartScheduledUpload() {
 
   // If there are unsent logs, send the next one. If not, start the asynchronous
   // process of finalizing the current log for upload.
-  if (state_ == SENDING_LOGS && log_store_.has_unsent_logs()) {
-    upload_scheduler_->Start();
+  if (state_ == SENDING_LOGS && has_unsent_logs()) {
+    reporting_service_.Start();
     rotation_scheduler_->RotationFinished();
   } else {
     // There are no logs left to send, so start creating a new one.
@@ -798,43 +761,9 @@ void MetricsService::OnFinalLogInfoCollectionDone() {
     CloseCurrentLog();
     OpenNewLog();
   }
-  HandleIdleSinceLastTransmission(true);
-  upload_scheduler_->Start();
+  reporting_service_.Start();
   rotation_scheduler_->RotationFinished();
-}
-
-void MetricsService::SendNextLog() {
-  DVLOG(1) << "SendNextLog";
-  if (!reporting_active()) {
-    upload_scheduler_->StopAndUploadCancelled();
-    return;
-  }
-  if (!log_store_.has_unsent_logs()) {
-    // Should only get here if serializing the log failed somehow.
-    upload_scheduler_->Stop();
-    // Reset backoff interval
-    upload_scheduler_->UploadFinished(true);
-    return;
-  }
-  if (!log_store_.has_staged_log())
-    log_store_.StageNextLog();
-
-  // Proceed to stage the log for upload if log size satisfies cellular log
-  // upload constrains.
-  bool upload_canceled = false;
-  bool is_cellular_logic = client_->IsUMACellularUploadLogicEnabled();
-  if (is_cellular_logic && data_use_tracker_ &&
-      !data_use_tracker_->ShouldUploadLogOnCellular(
-          log_store_.staged_log_hash().size())) {
-    upload_scheduler_->UploadOverDataUsageCap();
-    upload_canceled = true;
-  } else {
-    SendStagedLog();
-  }
-  if (is_cellular_logic) {
-    UMA_HISTOGRAM_BOOLEAN("UMA.LogUpload.Canceled.CellularConstraint",
-                          upload_canceled);
-  }
+  HandleIdleSinceLastTransmission(true);
 }
 
 bool MetricsService::ProvidersHaveInitialStabilityMetrics() {
@@ -879,12 +808,12 @@ bool MetricsService::PrepareInitialStabilityLog(
   //       stability stats from a previous session only.
 
   DVLOG(1) << "Generated an stability log.";
-  log_manager_.FinishCurrentLog(&log_store_);
+  log_manager_.FinishCurrentLog(log_store());
   log_manager_.ResumePausedLog();
 
   // Store unsent logs, including the stability log that was just saved, so
   // that they're not lost in case of a crash before upload time.
-  log_store_.PersistUnsentLogs();
+  log_store()->PersistUnsentLogs();
 
   return true;
 }
@@ -911,77 +840,14 @@ void MetricsService::PrepareInitialMetricsLog() {
   RecordCurrentHistograms();
 
   DVLOG(1) << "Generated an initial log.";
-  log_manager_.FinishCurrentLog(&log_store_);
+  log_manager_.FinishCurrentLog(log_store());
   log_manager_.ResumePausedLog();
 
   // Store unsent logs, including the initial log that was just saved, so
   // that they're not lost in case of a crash before upload time.
-  log_store_.PersistUnsentLogs();
+  log_store()->PersistUnsentLogs();
 
   state_ = SENDING_LOGS;
-}
-
-void MetricsService::SendStagedLog() {
-  DCHECK(log_store_.has_staged_log());
-  if (!log_store_.has_staged_log())
-    return;
-
-  DCHECK(!log_upload_in_progress_);
-  log_upload_in_progress_ = true;
-
-  if (!log_uploader_) {
-    log_uploader_ = client_->CreateUploader(
-        client_->GetMetricsServerUrl(), metrics::kDefaultMetricsMimeType,
-        metrics::MetricsLogUploader::UMA,
-        base::Bind(&MetricsService::OnLogUploadComplete,
-                   self_ptr_factory_.GetWeakPtr()));
-  }
-  const std::string hash = base::HexEncode(log_store_.staged_log_hash().data(),
-                                           log_store_.staged_log_hash().size());
-  log_uploader_->UploadLog(log_store_.staged_log(), hash);
-}
-
-
-void MetricsService::OnLogUploadComplete(int response_code) {
-  DVLOG(1) << "OnLogUploadComplete:" << response_code;
-  DCHECK(log_upload_in_progress_);
-  log_upload_in_progress_ = false;
-
-  // Log a histogram to track response success vs. failure rates.
-  UMA_HISTOGRAM_ENUMERATION("UMA.UploadResponseStatus.Protobuf",
-                            ResponseCodeToStatus(response_code),
-                            NUM_RESPONSE_STATUSES);
-
-  bool upload_succeeded = response_code == 200;
-
-  // Provide boolean for error recovery (allow us to ignore response_code).
-  bool discard_log = false;
-  const size_t log_size = log_store_.staged_log().length();
-  if (upload_succeeded) {
-    UMA_HISTOGRAM_COUNTS_10000("UMA.LogSize.OnSuccess", log_size / 1024);
-  } else if (log_size > kUploadLogAvoidRetransmitSize) {
-    UMA_HISTOGRAM_COUNTS("UMA.Large Rejected Log was Discarded",
-                         static_cast<int>(log_size));
-    discard_log = true;
-  } else if (response_code == 400) {
-    // Bad syntax.  Retransmission won't work.
-    discard_log = true;
-  }
-
-  if (upload_succeeded || discard_log) {
-    log_store_.DiscardStagedLog();
-    // Store the updated list to disk now that the removed log is uploaded.
-    log_store_.PersistUnsentLogs();
-  }
-
-  // Error 400 indicates a problem with the log, not with the server, so
-  // don't consider that a sign that the server is in trouble.
-  bool server_is_healthy = upload_succeeded || response_code == 400;
-  if (!log_store_.has_unsent_logs()) {
-    DVLOG(1) << "Stopping upload_scheduler_";
-    upload_scheduler_->Stop();
-  }
-  upload_scheduler_->UploadFinished(server_is_healthy);
 }
 
 void MetricsService::IncrementLongPrefsValue(const char* path) {
