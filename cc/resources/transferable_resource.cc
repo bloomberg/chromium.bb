@@ -10,6 +10,7 @@ namespace cc {
 TransferableResource::TransferableResource()
     : id(0),
       format(RGBA_8888),
+      buffer_format(gfx::BufferFormat::RGBA_8888),
       filter(0),
       read_lock_fences_enabled(false),
       is_software(false),

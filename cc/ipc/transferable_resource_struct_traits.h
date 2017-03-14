@@ -22,6 +22,11 @@ struct StructTraits<cc::mojom::TransferableResourceDataView,
     return static_cast<cc::mojom::ResourceFormat>(resource.format);
   }
 
+  static gfx::mojom::BufferFormat buffer_format(
+      const cc::TransferableResource& resource) {
+    return static_cast<gfx::mojom::BufferFormat>(resource.buffer_format);
+  }
+
   static uint32_t filter(const cc::TransferableResource& resource) {
     return resource.filter;
   }

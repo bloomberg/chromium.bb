@@ -227,11 +227,13 @@ TEST_F(StructTraitsTest, CompositorFrame) {
   // TransferableResource constants.
   const uint32_t tr_id = 1337;
   const ResourceFormat tr_format = ALPHA_8;
+  const gfx::BufferFormat tr_buffer_format = gfx::BufferFormat::R_8;
   const uint32_t tr_filter = 1234;
   const gfx::Size tr_size(1234, 5678);
   TransferableResource resource;
   resource.id = tr_id;
   resource.format = tr_format;
+  resource.buffer_format = tr_buffer_format;
   resource.filter = tr_filter;
   resource.size = tr_size;
 
@@ -265,6 +267,7 @@ TEST_F(StructTraitsTest, CompositorFrame) {
   TransferableResource out_resource = output.resource_list[0];
   EXPECT_EQ(tr_id, out_resource.id);
   EXPECT_EQ(tr_format, out_resource.format);
+  EXPECT_EQ(tr_buffer_format, out_resource.buffer_format);
   EXPECT_EQ(tr_filter, out_resource.filter);
   EXPECT_EQ(tr_size, out_resource.size);
 

@@ -20,6 +20,7 @@ bool StructTraits<cc::mojom::TransferableResourceDataView,
     return false;
   out->id = data.id();
   out->format = static_cast<cc::ResourceFormat>(data.format());
+  out->buffer_format = static_cast<gfx::BufferFormat>(data.buffer_format());
   out->filter = data.filter();
   out->read_lock_fences_enabled = data.read_lock_fences_enabled();
   out->is_software = data.is_software();

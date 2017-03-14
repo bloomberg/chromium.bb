@@ -38,6 +38,7 @@
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/gfx/buffer_types.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/gpu_memory_buffer.h"
@@ -488,6 +489,9 @@ class CC_EXPORT ResourceProvider
   // Indicates if this resource may be used for a hardware overlay plane.
   bool IsOverlayCandidate(ResourceId id);
 
+  // Return the format of the underlying buffer that can be used for scanout.
+  gfx::BufferFormat GetBufferFormat(ResourceId id);
+
 #if defined(OS_ANDROID)
   // Indicates if this resource is backed by an Android SurfaceTexture, and thus
   // can't really be promoted to an overlay.
@@ -632,6 +636,13 @@ class CC_EXPORT ResourceProvider
     // GpuMemoryBuffer resource allocation needs to know how the resource will
     // be used.
     gfx::BufferUsage usage;
+    // This is the the actual format of the underlaying GpuMemoryBuffer, if any,
+    // and might not correspond to ResourceFormat. This format is needed to
+    // scanout the buffer as HW overlay.
+    gfx::BufferFormat buffer_format;
+    // Resource format is the format as seen from the compositor and might not
+    // correspond to buffer_format (e.g: A resouce that was created from a YUV
+    // buffer could be seen as RGB from the compositor/GL.)
     ResourceFormat format;
     SharedBitmapId shared_bitmap_id;
     SharedBitmap* shared_bitmap;

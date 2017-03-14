@@ -457,6 +457,7 @@ bool Buffer::ProduceTransferableResource(
     resource->mailbox_holder = gpu::MailboxHolder(contents_texture->mailbox(),
                                                   sync_token, texture_target_);
     resource->is_overlay_candidate = is_overlay_candidate_;
+    resource->buffer_format = gpu_memory_buffer_->GetFormat();
 
     // The contents texture will be released when no longer used by the
     // compositor.

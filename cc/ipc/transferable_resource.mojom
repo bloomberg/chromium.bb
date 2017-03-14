@@ -6,6 +6,7 @@ module cc.mojom;
 
 import "gpu/ipc/common/mailbox_holder.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
+import "ui/gfx/mojo/buffer_types.mojom";
 
 enum ResourceFormat {
   RGBA_8888,
@@ -21,6 +22,7 @@ enum ResourceFormat {
 struct TransferableResource {
   uint32 id;
   ResourceFormat format;
+  gfx.mojom.BufferFormat buffer_format;  
   uint32 filter;
   gfx.mojom.Size size;
   gpu.mojom.MailboxHolder mailbox_holder;

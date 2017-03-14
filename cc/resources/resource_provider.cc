@@ -256,6 +256,7 @@ ResourceProvider::Resource::Resource(GLuint texture_id,
       hint(hint),
       type(type),
       usage(gfx::BufferUsage::GPU_READ_CPU_READ_WRITE),
+      buffer_format(gfx::BufferFormat::RGBA_8888),
       format(format),
       shared_bitmap(nullptr) {
 }
@@ -296,6 +297,7 @@ ResourceProvider::Resource::Resource(uint8_t* pixels,
       bound_image_id(0),
       hint(TEXTURE_HINT_IMMUTABLE),
       type(RESOURCE_TYPE_BITMAP),
+      buffer_format(gfx::BufferFormat::RGBA_8888),
       format(RGBA_8888),
       shared_bitmap(bitmap) {
   DCHECK(origin == DELEGATED || pixels);
@@ -338,6 +340,7 @@ ResourceProvider::Resource::Resource(const SharedBitmapId& bitmap_id,
       bound_image_id(0),
       hint(TEXTURE_HINT_IMMUTABLE),
       type(RESOURCE_TYPE_BITMAP),
+      buffer_format(gfx::BufferFormat::RGBA_8888),
       format(RGBA_8888),
       shared_bitmap_id(bitmap_id),
       shared_bitmap(nullptr) {
@@ -1103,6 +1106,11 @@ bool ResourceProvider::IsOverlayCandidate(ResourceId id) {
   return resource->is_overlay_candidate;
 }
 
+gfx::BufferFormat ResourceProvider::GetBufferFormat(ResourceId id) {
+  Resource* resource = GetResource(id);
+  return resource->buffer_format;
+}
+
 #if defined(OS_ANDROID)
 bool ResourceProvider::IsBackedBySurfaceTexture(ResourceId id) {
   Resource* resource = GetResource(id);
@@ -1600,6 +1608,7 @@ void ResourceProvider::ReceiveFromChild(
                              it->mailbox_holder.texture_target, it->filter,
                              TEXTURE_HINT_IMMUTABLE, RESOURCE_TYPE_GL_TEXTURE,
                              it->format));
+      resource->buffer_format = it->buffer_format;
       resource->set_mailbox(TextureMailbox(it->mailbox_holder.mailbox,
                                            it->mailbox_holder.sync_token,
                                            it->mailbox_holder.texture_target));
@@ -1765,6 +1774,7 @@ void ResourceProvider::TransferResource(Resource* source,
   DCHECK(source->allocated);
   resource->id = id;
   resource->format = source->format;
+  resource->buffer_format = source->buffer_format;
   resource->mailbox_holder.texture_target = source->target;
   resource->filter = source->filter;
   resource->size = source->size;

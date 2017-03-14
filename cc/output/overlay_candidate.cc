@@ -22,6 +22,11 @@ namespace {
 // Tolerance for considering axis vector elements to be zero.
 const SkMScalar kEpsilon = std::numeric_limits<float>::epsilon();
 
+const gfx::BufferFormat kOverlayFormats[] = {
+    gfx::BufferFormat::RGBX_8888, gfx::BufferFormat::RGBA_8888,
+    gfx::BufferFormat::BGRX_8888, gfx::BufferFormat::BGRA_8888,
+    gfx::BufferFormat::BGR_565};
+
 enum Axis { NONE, AXIS_POS_X, AXIS_NEG_X, AXIS_POS_Y, AXIS_NEG_Y };
 
 Axis VectorToAxis(const gfx::Vector3dF& vec) {
@@ -256,6 +261,12 @@ bool OverlayCandidate::FromTextureQuad(ResourceProvider* resource_provider,
                                        const TextureDrawQuad* quad,
                                        OverlayCandidate* candidate) {
   if (!resource_provider->IsOverlayCandidate(quad->resource_id()))
+    return false;
+
+  gfx::BufferFormat format =
+      resource_provider->GetBufferFormat(quad->resource_id());
+  if (std::find(std::begin(kOverlayFormats), std::end(kOverlayFormats),
+                format) == std::end(kOverlayFormats))
     return false;
   gfx::OverlayTransform overlay_transform = GetOverlayTransform(
       quad->shared_quad_state->quad_to_target_transform, quad->y_flipped);
