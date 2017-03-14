@@ -37,6 +37,7 @@
         "renderer": [
           "autofill::mojom::AutofillDriver",
           "autofill::mojom::PasswordManagerDriver",
+          "blink::mojom::InstalledAppProvider",
           "blink::mojom::ShareService",
           "bluetooth::mojom::AdapterFactory",
           "chrome::mojom::PrerenderCanceler",

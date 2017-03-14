@@ -88,6 +88,8 @@ include_rules = [
   "+third_party/WebKit/public/platform/modules/broadcastchannel/broadcast_channel.mojom.h",
   "+third_party/WebKit/public/platform/modules/indexeddb/WebIDBDatabaseException.h",
   "+third_party/WebKit/public/platform/modules/indexeddb/WebIDBTypes.h",
+  "+third_party/WebKit/public/platform/modules/installedapp/installed_app_provider.mojom.h",
+  "+third_party/WebKit/public/platform/modules/installedapp/related_application.mojom.h",
   "+third_party/WebKit/public/platform/modules/mediasession/media_session.mojom.h",
   "+third_party/WebKit/public/platform/modules/notifications/WebNotificationConstants.h",
   "+third_party/WebKit/public/platform/modules/notifications/notification.mojom.h",

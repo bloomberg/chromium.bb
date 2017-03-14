@@ -79,7 +79,6 @@ ScriptPromise NavigatorInstalledApp::getInstalledRelatedApps(
   }
 
   appController->getInstalledRelatedApps(
-      scriptState->getExecutionContext()->getSecurityOrigin(),
       WTF::wrapUnique(
           new CallbackPromiseAdapter<RelatedAppArray, void>(resolver)));
   return promise;
