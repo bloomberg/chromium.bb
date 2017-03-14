@@ -19,7 +19,7 @@ ios_app_bundle("showcase") {
     # asan mode (this target will be empty in other cases).
     "//build/config/sanitizers:deps",
   ]
-  bundle_deps = [ ":launchscreen_storyboard" ]
+  bundle_deps = [ "//ios/showcase/core/resources" ]
   assert_no_deps = ios_assert_no_deps
 }
 
@@ -57,10 +57,6 @@ ios_eg_test("ios_showcase_egtests") {
     # asan mode (this target will be empty in other cases).
     "//build/config/sanitizers:deps",
   ]
-  bundle_deps = [ ":launchscreen_storyboard" ]
+  bundle_deps = [ "//ios/showcase/core/resources" ]
   assert_no_deps = ios_assert_no_deps
-}
-
-bundle_data_ib_file("launchscreen_storyboard") {
-  source = "core/LaunchScreen.storyboard"
 }
