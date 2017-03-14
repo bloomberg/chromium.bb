@@ -6,6 +6,7 @@
 #define IOS_CHROME_BROWSER_UI_CONTENT_SUGGESTIONS_CONTENT_SUGGESTIONS_DATA_SINK_H_
 
 @class ContentSuggestionIdentifier;
+@class ContentSuggestionsSectionInformation;
 
 // Data sink for the ContentSuggestions. It will be notified when new data needs
 // to be pulled.
@@ -22,6 +23,11 @@
 // Notifies the Data Sink that it must remove all current data and reload new
 // ones.
 - (void)reloadAllData;
+
+// The section corresponding to |sectionInfo| has been invalidated and must be
+// cleared now. This is why this method is about the data source pushing
+// something to the data sink.
+- (void)clearSection:(ContentSuggestionsSectionInformation*)sectionInfo;
 
 @end
 

@@ -193,7 +193,16 @@ ntp_snippets::ContentSuggestion::ID SuggestionIDForSectionID(
             (ntp_snippets::ContentSuggestionsService*)suggestionsService
                          category:(ntp_snippets::Category)category
                   statusChangedTo:(ntp_snippets::CategoryStatus)status {
-  // Update dataSink.
+  if (!ntp_snippets::IsCategoryStatusInitOrAvailable(status)) {
+    // Remove the category from the UI if it is not available.
+    ContentSuggestionsCategoryWrapper* wrapper =
+        [[ContentSuggestionsCategoryWrapper alloc] initWithCategory:category];
+    ContentSuggestionsSectionInformation* sectionInfo =
+        self.sectionInformationByCategory[wrapper];
+
+    [self.dataSink clearSection:sectionInfo];
+    [self.sectionInformationByCategory removeObjectForKey:wrapper];
+  }
 }
 
 - (void)contentSuggestionsService:

@@ -37,6 +37,8 @@
 
 // Removes the entry at |indexPath|, from the collection and its model.
 - (void)dismissEntryAtIndexPath:(NSIndexPath*)indexPath;
+// Removes the |section|.
+- (void)dismissSection:(NSInteger)section;
 
 @end
 

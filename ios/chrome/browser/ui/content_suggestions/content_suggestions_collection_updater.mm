@@ -188,6 +188,14 @@ SectionIdentifier SectionIdentifierForInfo(
   }
 }
 
+- (void)clearSection:(ContentSuggestionsSectionInformation*)sectionInfo {
+  SectionIdentifier sectionIdentifier = SectionIdentifierForInfo(sectionInfo);
+  NSInteger section = [self.collectionViewController.collectionViewModel
+      sectionIdentifierForSection:sectionIdentifier];
+
+  [self.collectionViewController dismissSection:section];
+}
+
 #pragma mark - Public methods
 
 - (BOOL)shouldUseCustomStyleForSection:(NSInteger)section {

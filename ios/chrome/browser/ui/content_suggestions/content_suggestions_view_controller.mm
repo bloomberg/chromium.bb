@@ -66,7 +66,25 @@ const NSTimeInterval kAnimationDuration = 0.35;
     [self.collectionView deleteItemsAtIndexPaths:@[ indexPath ]];
   }
       completion:^(BOOL) {
-        // The context menu could be displayed for the delete entry.
+        // The context menu could be displayed for the deleted entry.
+        [self.suggestionCommandHandler dismissContextMenu];
+      }];
+}
+
+- (void)dismissSection:(NSInteger)section {
+  if (section >= [self numberOfSectionsInCollectionView:self.collectionView]) {
+    return;
+  }
+
+  NSInteger sectionIdentifier =
+      [self.collectionViewModel sectionIdentifierForSection:section];
+
+  [self.collectionView performBatchUpdates:^{
+    [self.collectionViewModel removeSectionWithIdentifier:sectionIdentifier];
+    [self.collectionView deleteSections:[NSIndexSet indexSetWithIndex:section]];
+  }
+      completion:^(BOOL) {
+        // The context menu could be displayed for the deleted entries.
         [self.suggestionCommandHandler dismissContextMenu];
       }];
 }
