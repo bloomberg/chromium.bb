@@ -30,6 +30,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/sys_byteorder.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
@@ -838,18 +839,14 @@ bool NaClProcessHost::StartNaClExecution() {
       // We have to reopen the file in the browser process; we don't want a
       // compromised renderer to pass an arbitrary fd that could get loaded
       // into the plugin process.
-      if (base::PostTaskAndReplyWithResult(
-              content::BrowserThread::GetBlockingPool(),
-              FROM_HERE,
-              base::Bind(OpenNaClReadExecImpl,
-                         file_path,
-                         true /* is_executable */),
-              base::Bind(&NaClProcessHost::StartNaClFileResolved,
-                         weak_factory_.GetWeakPtr(),
-                         params,
-                         file_path))) {
-        return true;
-      }
+      base::PostTaskWithTraitsAndReplyWithResult(
+          FROM_HERE,
+          base::TaskTraits().MayBlock().WithPriority(
+              base::TaskPriority::BACKGROUND),
+          base::Bind(OpenNaClReadExecImpl, file_path, true /* is_executable */),
+          base::Bind(&NaClProcessHost::StartNaClFileResolved,
+                     weak_factory_.GetWeakPtr(), params, file_path));
+      return true;
     }
   }
 
@@ -1064,21 +1061,13 @@ void NaClProcessHost::OnResolveFileToken(uint64_t file_token_lo,
   }
 
   // Open the file.
-  if (!base::PostTaskAndReplyWithResult(
-          content::BrowserThread::GetBlockingPool(),
-          FROM_HERE,
-          base::Bind(OpenNaClReadExecImpl, file_path, true /* is_executable */),
-          base::Bind(&NaClProcessHost::FileResolved,
-                     weak_factory_.GetWeakPtr(),
-                     file_token_lo,
-                     file_token_hi,
-                     file_path))) {
-    Send(new NaClProcessMsg_ResolveFileTokenReply(
-            file_token_lo,
-            file_token_hi,
-            IPC::PlatformFileForTransit(),
-            base::FilePath()));
-  }
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE,
+      base::TaskTraits().MayBlock().WithPriority(
+          base::TaskPriority::BACKGROUND),
+      base::Bind(OpenNaClReadExecImpl, file_path, true /* is_executable */),
+      base::Bind(&NaClProcessHost::FileResolved, weak_factory_.GetWeakPtr(),
+                 file_token_lo, file_token_hi, file_path));
 }
 
 void NaClProcessHost::FileResolved(
