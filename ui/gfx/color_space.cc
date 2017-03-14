@@ -434,18 +434,12 @@ sk_sp<SkColorSpace> ColorSpace::ToNonlinearBlendedSkColorSpace() const {
   SkMatrix44 primaries;
   GetPrimaryMatrix(&primaries);
   SkColorSpaceTransferFn tr_fn;
-  bool get_tr_fn_result = GetTransferFunction(&tr_fn);
-  if (!get_tr_fn_result) {
-    DLOG(ERROR) << "Failed to parameterize transfer function for SkColorSpace";
-    CreateSRGB().GetTransferFunction(&tr_fn);
+  if (!GetTransferFunction(&tr_fn)) {
+    DLOG(ERROR) << "Not creating non-parametric nonlinear-blended SkColorSpace";
+    return nullptr;
   }
-  sk_sp<SkColorSpace> result = SkColorSpace::MakeRGB(
-      tr_fn, primaries, SkColorSpace::kNonLinearBlending_ColorSpaceFlag);
-  if (!result) {
-    DLOG(ERROR) << "Failed to create nonlinearly blended SkColorSpace";
-    CreateSRGB().GetTransferFunction(&tr_fn);
-  }
-  return result;
+  return SkColorSpace::MakeRGB(tr_fn, primaries,
+                               SkColorSpace::kNonLinearBlending_ColorSpaceFlag);
 }
 
 bool ColorSpace::GetICCProfile(ICCProfile* icc_profile) const {
@@ -464,7 +458,7 @@ bool ColorSpace::GetICCProfile(ICCProfile* icc_profile) const {
 
   // If this was created from an ICC profile, retrieve that exact profile.
   ICCProfile result;
-  if (ICCProfile::FromId(icc_profile_id_, false, icc_profile))
+  if (ICCProfile::FromId(icc_profile_id_, icc_profile))
     return true;
 
   // Otherwise, construct an ICC profile based on the best approximated
@@ -494,6 +488,7 @@ void ColorSpace::GetPrimaryMatrix(SkMatrix44* to_XYZD50) const {
       return;
 
     case ColorSpace::PrimaryID::INVALID:
+    case ColorSpace::PrimaryID::ICC_BASED:
       to_XYZD50->setIdentity();
       return;
 
@@ -699,6 +694,7 @@ bool ColorSpace::GetTransferFunction(SkColorSpaceTransferFn* fn) const {
     case ColorSpace::TransferID::SMPTEST2084:
     case ColorSpace::TransferID::SMPTEST2084_NON_HDR:
     case ColorSpace::TransferID::INVALID:
+    case ColorSpace::TransferID::ICC_BASED:
       break;
   }
 

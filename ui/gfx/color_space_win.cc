@@ -78,6 +78,7 @@ DXVA2_ExtendedFormat ColorSpaceWin::GetExtendedFormat(
     case gfx::ColorSpace::PrimaryID::SMPTEST432_1:
     case gfx::ColorSpace::PrimaryID::XYZ_D50:
     case gfx::ColorSpace::PrimaryID::ADOBE_RGB:
+    case gfx::ColorSpace::PrimaryID::ICC_BASED:
     case gfx::ColorSpace::PrimaryID::CUSTOM:
     case gfx::ColorSpace::PrimaryID::INVALID:
       // Not handled
@@ -118,6 +119,7 @@ DXVA2_ExtendedFormat ColorSpaceWin::GetExtendedFormat(
     case gfx::ColorSpace::TransferID::ARIB_STD_B67:
     case gfx::ColorSpace::TransferID::GAMMA24:
     case gfx::ColorSpace::TransferID::SMPTEST2084_NON_HDR:
+    case gfx::ColorSpace::TransferID::ICC_BASED:
     case gfx::ColorSpace::TransferID::CUSTOM:
     case gfx::ColorSpace::TransferID::INVALID:
       // Not handled

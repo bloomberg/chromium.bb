@@ -6,6 +6,7 @@
 #define UI_GFX_SKIA_COLOR_SPACE_UTIL_H_
 
 #include "third_party/skia/include/core/SkColorSpace.h"
+#include "third_party/skia/include/core/SkICC.h"
 #include "ui/gfx/gfx_export.h"
 
 namespace gfx {
@@ -27,6 +28,14 @@ SkTransferFnIsApproximatelyIdentity(const SkColorSpaceTransferFn& fn);
 bool GFX_EXPORT SkApproximateTransferFn(const float* x,
                                         const float* t,
                                         size_t n,
+                                        SkColorSpaceTransferFn* fn);
+
+// Approximates |sk_icc| by the transfer function |fn|. Returns in |max_error|
+// the maximum pointwise of all color channels' transfer functions with |fn|.
+// Returns false if no approximation was possible, or no approximation
+// converged.
+bool GFX_EXPORT SkApproximateTransferFn(sk_sp<SkICC> sk_icc,
+                                        float* max_error,
                                         SkColorSpaceTransferFn* fn);
 
 bool GFX_EXPORT SkMatrixIsApproximatelyIdentity(const SkMatrix44& m);

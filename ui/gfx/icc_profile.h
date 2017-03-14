@@ -57,9 +57,14 @@ class GFX_EXPORT ICCProfile {
   // Create directly from profile data.
   static ICCProfile FromData(const void* icc_profile, size_t size);
 
-  // This will perform a potentially-lossy conversion to a more compact color
-  // space representation.
+  // Return a ColorSpace that references this ICCProfile. ColorTransforms
+  // created using this ColorSpace will match this ICCProfile precisely.
   const ColorSpace& GetColorSpace() const;
+
+  // Return a ColorSpace that is the best parametric approximation of this
+  // ICCProfile. The resulting ColorSpace will reference this ICCProfile only
+  // if the parametric approximation is almost exact.
+  const ColorSpace& GetParametricColorSpace() const;
 
   const std::vector<char>& GetData() const;
 
@@ -76,17 +81,17 @@ class GFX_EXPORT ICCProfile {
   friend ICCProfile ICCProfileForTestingGenericRGB();
   friend ICCProfile ICCProfileForTestingSRGB();
   friend ICCProfile ICCProfileForTestingNoAnalyticTrFn();
+  friend ICCProfile ICCProfileForTestingA2BOnly();
   static const uint64_t test_id_adobe_rgb_;
   static const uint64_t test_id_color_spin_;
   static const uint64_t test_id_generic_rgb_;
   static const uint64_t test_id_srgb_;
   static const uint64_t test_id_no_analytic_tr_fn_;
+  static const uint64_t test_id_a2b_only_;
 
   // Populate |icc_profile| with the ICCProfile corresponding to id |id|. Return
-  // false if |id| is not in the cache. If |only_if_needed| is true, then return
-  // false if |color_space_is_accurate_| is true for this profile (that is, if
-  // the ICCProfile is needed to know the space precisely).
-  static bool FromId(uint64_t id, bool only_if_needed, ICCProfile* icc_profile);
+  // false if |id| is not in the cache.
+  static bool FromId(uint64_t id, ICCProfile* icc_profile);
 
   // This method is used to hard-code the |id_| to a specific value, and is
   // used by test methods to ensure that they don't conflict with the values
@@ -95,7 +100,6 @@ class GFX_EXPORT ICCProfile {
                                    size_t size,
                                    uint64_t id);
 
-  static bool IsValidProfileLength(size_t length);
   void ComputeColorSpaceAndCache();
 
   // This globally identifies this ICC profile. It is used to look up this ICC
@@ -104,11 +108,13 @@ class GFX_EXPORT ICCProfile {
   uint64_t id_ = 0;
   std::vector<char> data_;
 
+  // |color_space| always links back to this ICC profile, and its SkColorSpace
+  // is always equal to the SkColorSpace created from this ICCProfile.
   gfx::ColorSpace color_space_;
 
-  // True if |color_space_| accurately represents this color space (this is
-  // false e.g, for lookup-based profiles).
-  bool color_space_is_accurate_ = false;
+  // |parametric_color_space_| will only link back to this ICC profile if it
+  // is accurate, and its SkColorSpace will always be parametrically created.
+  gfx::ColorSpace parametric_color_space_;
 
   // This is set to true if SkICC successfully parsed this profile.
   bool successfully_parsed_by_sk_icc_ = false;

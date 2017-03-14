@@ -266,8 +266,7 @@ void WindowTreeHost::InitCompositor() {
   compositor_->SetScaleAndSize(GetDeviceScaleFactorFromDisplay(window()),
                                GetBoundsInPixels().size());
   compositor_->SetRootLayer(window()->layer());
-  compositor_->SetDisplayColorSpace(
-      GetICCProfileForCurrentDisplay().GetColorSpace());
+  compositor_->SetDisplayColorProfile(GetICCProfileForCurrentDisplay());
 }
 
 void WindowTreeHost::OnAcceleratedWidgetAvailable() {

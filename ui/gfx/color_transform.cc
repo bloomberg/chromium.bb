@@ -746,6 +746,7 @@ void ColorTransformInternal::AppendColorSpaceToColorSpaceTransform(
       base::MakeUnique<ColorTransformMatrix>(Invert(GetRangeAdjustMatrix(to))));
 }
 
+// TODO(ccameron): Change this to SkColorSpaceXform.
 class QCMSColorTransform : public ColorTransformStep {
  public:
   // Takes ownership of the profiles
@@ -788,9 +789,21 @@ class QCMSColorTransform : public ColorTransformStep {
 
 ScopedQcmsProfile ColorTransformInternal::GetQCMSProfileIfNecessary(
     const ColorSpace& color_space) {
-  ICCProfile icc_profile;
-  if (!ICCProfile::FromId(color_space.icc_profile_id_, true, &icc_profile))
+  if (color_space.primaries_ != ColorSpace::PrimaryID::ICC_BASED &&
+      color_space.transfer_ != ColorSpace::TransferID::ICC_BASED) {
     return nullptr;
+  }
+  // TODO(ccameron): Use SkColorSpaceXform here to avoid looking up the
+  // ICCProfile.
+  ICCProfile icc_profile;
+  if (!ICCProfile::FromId(color_space.icc_profile_id_, &icc_profile)) {
+    // We needed the original ICC profile to construct this transform, but it
+    // has been flushed from our cache. Fall back to using the ICC profile's
+    // inaccurate, so spam the console.
+    // TODO(ccameron): This will go away when we switch to SkColorSpaceXform.
+    LOG(ERROR) << "Failed to retrieve original ICC profile, using sRGB";
+    return ScopedQcmsProfile(qcms_profile_sRGB());
+  }
   return ScopedQcmsProfile(qcms_profile_from_memory(
       icc_profile.GetData().data(), icc_profile.GetData().size()));
 }

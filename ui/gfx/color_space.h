@@ -42,8 +42,13 @@ class GFX_EXPORT ColorSpace {
     SMPTEST432_1,
     XYZ_D50,
     ADOBE_RGB,
+    // Primaries defined by the primary matrix |custom_primary_matrix_|.
     CUSTOM,
-    LAST = CUSTOM
+    // For color spaces defined by an ICC profile which cannot be represented
+    // parametrically. Any ColorTransform using this color space will use the
+    // ICC profile directly to compute a transform LUT.
+    ICC_BASED,
+    LAST = ICC_BASED,
   };
 
   enum class TransferID : uint16_t {
@@ -74,8 +79,11 @@ class GFX_EXPORT ColorSpace {
     IEC61966_2_1_HDR,
     // The same as LINEAR but is defined for all real values.
     LINEAR_HDR,
+    // A parametric transfer function defined by |custom_transfer_params_|.
     CUSTOM,
-    LAST = CUSTOM,
+    // See PrimaryID::ICC_BASED.
+    ICC_BASED,
+    LAST = ICC_BASED,
   };
 
   enum class MatrixID : int16_t {

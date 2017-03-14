@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <vector>
 
 #include "base/logging.h"
 
@@ -220,9 +221,9 @@ bool SkApproximateTransferFnInternal(const float* x,
                                      size_t n,
                                      SkColorSpaceTransferFn* fn) {
   // First, guess at a value of fD. Assume that the nonlinear segment applies
-  // to all x >= 0.1. This is generally a safe assumption (fD is usually less
+  // to all x >= 0.25. This is generally a safe assumption (fD is usually less
   // than 0.1).
-  fn->fD = 0.1f;
+  fn->fD = 0.25f;
 
   // Do a nonlinear regression on the nonlinear segment. Use a number of guesses
   // for the initial value of fG, because not all values will converge.
@@ -360,6 +361,44 @@ bool SkApproximateTransferFn(const float* x,
   fn->fF = 0;
   fn->fG = 1;
   return false;
+}
+
+bool GFX_EXPORT SkApproximateTransferFn(sk_sp<SkICC> sk_icc,
+                                        float* max_error,
+                                        SkColorSpaceTransferFn* fn) {
+  SkICC::Tables tables;
+  bool got_tables = sk_icc->rawTransferFnData(&tables);
+  if (!got_tables)
+    return false;
+
+  // Merge all channels' tables into a single array.
+  std::vector<float> x;
+  std::vector<float> t;
+  for (size_t c = 0; c < 3; ++c) {
+    SkICC::Channel* channels[3] = {&tables.fRed, &tables.fGreen, &tables.fBlue};
+    SkICC::Channel* channel = channels[c];
+    const float* data = reinterpret_cast<const float*>(
+        tables.fStorage->bytes() + channel->fOffset);
+    for (int i = 0; i < channel->fCount; ++i) {
+      float xi = i / (channel->fCount - 1.f);
+      float ti = data[i];
+      x.push_back(xi);
+      t.push_back(ti);
+    }
+  }
+
+  // Approximate and evalaute.
+  bool converged =
+      SkApproximateTransferFnInternal(x.data(), t.data(), x.size(), fn);
+  if (!converged)
+    return false;
+  *max_error = 0;
+  for (size_t i = 0; i < x.size(); ++i) {
+    float fn_of_xi = gfx::SkTransferFnEval(*fn, x[i]);
+    float error_at_xi = std::abs(t[i] - fn_of_xi);
+    *max_error = std::max(*max_error, error_at_xi);
+  }
+  return true;
 }
 
 bool SkMatrixIsApproximatelyIdentity(const SkMatrix44& m) {

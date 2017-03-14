@@ -1196,7 +1196,8 @@ void RenderWidget::Resize(const ResizeParams& params) {
   if (compositor_) {
     compositor_->setViewportSize(params.physical_backing_size);
     compositor_->setBottomControlsHeight(params.bottom_controls_height);
-    compositor_->SetRasterColorSpace(screen_info_.icc_profile.GetColorSpace());
+    compositor_->SetRasterColorSpace(
+        screen_info_.icc_profile.GetParametricColorSpace());
   }
 
   visible_viewport_size_ = params.visible_viewport_size;

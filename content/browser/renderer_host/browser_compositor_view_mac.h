@@ -64,7 +64,7 @@ class BrowserCompositorMac : public cc::BeginFrameObserver,
   void SwapCompositorFrame(uint32_t compositor_frame_sink_id,
                            cc::CompositorFrame frame);
   void SetHasTransparentBackground(bool transparent);
-  void SetDisplayColorSpace(const gfx::ColorSpace& color_space);
+  void SetDisplayColorProfile(const gfx::ICCProfile& icc_profile);
   void UpdateVSyncParameters(const base::TimeTicks& timebase,
                              const base::TimeDelta& interval);
   void SetNeedsBeginFrames(bool needs_begin_frames);
