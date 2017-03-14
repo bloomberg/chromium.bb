@@ -720,7 +720,7 @@ TEST_F(TaskSchedulerWorkerPoolHistogramTest, NumTasksBetweenWaitsWithDetach) {
 }
 
 // TODO(crbug.com/698046): disabled due to flakyness.
-TEST_F(TaskSchedulerWorkerPoolHistogramTest, DISABLED_NumTasksBeforeDetach) {
+TEST_F(TaskSchedulerWorkerPoolHistogramTest, NumTasksBeforeDetach) {
   InitializeWorkerPool(kReclaimTimeForDetachTests, kNumWorkersInWorkerPool);
 
   auto histogrammed_thread_task_runner =
@@ -740,10 +740,12 @@ TEST_F(TaskSchedulerWorkerPoolHistogramTest, DISABLED_NumTasksBeforeDetach) {
                      Unretained(&thread_ref)));
   histogrammed_thread_task_runner->PostTask(
       FROM_HERE, Bind(
-                     [](PlatformThreadRef thread_ref) {
-                       EXPECT_EQ(thread_ref, PlatformThreadRef());
+                     [](PlatformThreadRef* thread_ref) {
+                       ASSERT_FALSE(thread_ref->is_null());
+                       EXPECT_EQ(*thread_ref, PlatformThread::CurrentRef());
                      },
-                     thread_ref));
+                     Unretained(&thread_ref)));
+
   WaitableEvent detach_thread_running(
       WaitableEvent::ResetPolicy::MANUAL,
       WaitableEvent::InitialState::NOT_SIGNALED);
@@ -753,13 +755,15 @@ TEST_F(TaskSchedulerWorkerPoolHistogramTest, DISABLED_NumTasksBeforeDetach) {
   histogrammed_thread_task_runner->PostTask(
       FROM_HERE,
       Bind(
-          [](PlatformThreadRef thread_ref, WaitableEvent* detach_thread_running,
+          [](PlatformThreadRef* thread_ref,
+             WaitableEvent* detach_thread_running,
              WaitableEvent* detach_thread_continue) {
-            EXPECT_EQ(thread_ref, PlatformThreadRef());
+            ASSERT_FALSE(thread_ref->is_null());
+            EXPECT_EQ(*thread_ref, PlatformThread::CurrentRef());
             detach_thread_running->Signal();
             detach_thread_continue->Wait();
           },
-          thread_ref, Unretained(&detach_thread_running),
+          Unretained(&thread_ref), Unretained(&detach_thread_running),
           Unretained(&detach_thread_continue)));
 
   detach_thread_running.Wait();
@@ -785,6 +789,7 @@ TEST_F(TaskSchedulerWorkerPoolHistogramTest, DISABLED_NumTasksBeforeDetach) {
                      [](PlatformThreadRef thread_ref,
                         WaitableEvent* top_idle_thread_running,
                         WaitableEvent* top_idle_thread_continue) {
+                       ASSERT_FALSE(thread_ref.is_null());
                        EXPECT_NE(thread_ref, PlatformThread::CurrentRef())
                            << "Worker reused. Thread will not detach and the "
                               "histogram value will be wrong.";
