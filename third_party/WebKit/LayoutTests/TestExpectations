@@ -1867,7 +1867,6 @@ crbug.com/694525 external/wpt/content-security-policy [ Skip ]
 crbug.com/694525 external/wpt/content-security-policy/securitypolicyviolation [ Pass ]
 
 # These policies are not implemented yet.
-crbug.com/627968 external/wpt/referrer-policy/origin-when-cross-origin/http-rp/same-origin/ [ Skip ]
 crbug.com/627968 external/wpt/referrer-policy/same-origin/ [ Skip ]
 crbug.com/627968 external/wpt/referrer-policy/strict-origin/ [ Skip ]
 crbug.com/627968 external/wpt/referrer-policy/strict-origin-when-cross-origin/ [ Skip ]
