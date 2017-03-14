@@ -341,6 +341,8 @@ class PersonalDataManager : public KeyedService,
   friend class autofill::AutofillTest;
   friend class autofill::PersonalDataManagerFactory;
   friend class PersonalDataManagerTest;
+  friend class PersonalDataManagerTestBase;
+  friend class SaveImportedProfileTest;
   friend class ProfileSyncServiceAutofillTest;
   friend class ::RemoveAutofillTester;
   friend std::default_delete<PersonalDataManager>;

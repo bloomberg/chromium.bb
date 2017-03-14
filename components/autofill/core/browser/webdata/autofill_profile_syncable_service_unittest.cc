@@ -1191,76 +1191,126 @@ TEST_F(AutofillProfileSyncableServiceTest, NoUsageStatsNoSync) {
   autofill_syncable_service_.StopSyncing(syncer::AUTOFILL_PROFILE);
 }
 
-// Usage stats should be updated by sync.
-TEST_F(AutofillProfileSyncableServiceTest, SyncUpdatesUsageStats) {
-  typedef struct {
-    size_t local_use_count;
-    base::Time local_use_date;
-    size_t remote_use_count;
-    int remote_use_date;
-    size_t synced_use_count;
-    base::Time synced_use_date;
-  } TestCase;
+struct SyncUpdatesUsageStatsTestCase {
+  size_t local_use_count;
+  base::Time local_use_date;
+  size_t remote_use_count;
+  int remote_use_date;
+  size_t synced_use_count;
+  base::Time synced_use_date;
+};
 
-  TestCase test_cases[] = {
-      // Local profile with default stats.
-      {0U, base::Time(), 9U, 4321, 9U, base::Time::FromTimeT(4321)},
-      // Local profile has older stats than the server.
-      {3U, base::Time::FromTimeT(1234), 9U, 4321, 9U,
-       base::Time::FromTimeT(4321)},
-      // Local profile has newer stats than the server
-      {10U, base::Time::FromTimeT(9999), 9U, 4321, 9U,
-       base::Time::FromTimeT(4321)}};
+class SyncUpdatesUsageStatsTest
+    : public testing::TestWithParam<SyncUpdatesUsageStatsTestCase> {
+ public:
+  SyncUpdatesUsageStatsTest() { CountryNames::SetLocaleString("en-US"); }
 
-  for (const TestCase& test_case : test_cases) {
-    SetUp();
-    std::vector<std::unique_ptr<AutofillProfile>> profiles_from_web_db;
+  void SetUp() override { sync_processor_.reset(new MockSyncChangeProcessor); }
 
-    AutofillProfile profile(kGuid1, kHttpsOrigin);
-    profile.set_language_code("en");
-    profile.set_use_count(test_case.local_use_count);
-    profile.set_use_date(test_case.local_use_date);
-    EXPECT_EQ(test_case.local_use_count, profile.use_count());
-    EXPECT_EQ(test_case.local_use_date, profile.use_date());
-    profiles_from_web_db.push_back(base::MakeUnique<AutofillProfile>(profile));
+  // Wrapper around AutofillProfileSyncableService::MergeDataAndStartSyncing()
+  // that also verifies expectations.
+  void MergeDataAndStartSyncing(
+      std::vector<std::unique_ptr<AutofillProfile>> profiles_from_web_db,
+      const syncer::SyncDataList& data_list,
+      const MockAutofillProfileSyncableService::DataBundle& expected_bundle,
+      const syncer::SyncChangeList& expected_change_list) {
+    auto profile_returner = [&profiles_from_web_db]() {
+      return std::move(profiles_from_web_db);
+    };
+    EXPECT_CALL(autofill_syncable_service_, LoadAutofillData(_))
+        .Times(1)
+        .WillOnce(DoAll(LoadAutofillProfiles(profile_returner), Return(true)));
+    EXPECT_CALL(autofill_syncable_service_,
+                SaveChangesToWebData(DataBundleCheck(expected_bundle)))
+        .Times(1)
+        .WillOnce(Return(true));
+    if (expected_change_list.empty()) {
+      EXPECT_CALL(*sync_processor_, ProcessSyncChanges(_, _)).Times(0);
+    } else {
+      ON_CALL(*sync_processor_, ProcessSyncChanges(_, _))
+          .WillByDefault(Return(syncer::SyncError()));
+      EXPECT_CALL(*sync_processor_,
+                  ProcessSyncChanges(_, CheckSyncChanges(expected_change_list)))
+          .Times(1)
+          .WillOnce(Return(syncer::SyncError()));
+    }
 
-    // Remote data has usage stats.
-    sync_pb::EntitySpecifics specifics;
-    sync_pb::AutofillProfileSpecifics* autofill_specifics =
-        specifics.mutable_autofill_profile();
-    autofill_specifics->set_guid(profile.guid());
-    autofill_specifics->set_origin(profile.origin());
-    autofill_specifics->add_name_first(std::string());
-    autofill_specifics->add_name_middle(std::string());
-    autofill_specifics->add_name_last(std::string());
-    autofill_specifics->add_name_full(std::string());
-    autofill_specifics->add_email_address(std::string());
-    autofill_specifics->add_phone_home_whole_number(std::string());
-    autofill_specifics->set_address_home_language_code("en");
-    autofill_specifics->set_use_count(test_case.remote_use_count);
-    autofill_specifics->set_use_date(test_case.remote_use_date);
-    EXPECT_TRUE(autofill_specifics->has_use_count());
-    EXPECT_TRUE(autofill_specifics->has_use_date());
-
-    syncer::SyncDataList data_list;
-    data_list.push_back(syncer::SyncData::CreateLocalData(
-        profile.guid(), profile.guid(), specifics));
-
-    // Expect the local autofill profile to have usage stats after sync.
-    MockAutofillProfileSyncableService::DataBundle expected_bundle;
-    AutofillProfile expected_profile = profile;
-    expected_profile.set_use_count(test_case.synced_use_count);
-    expected_profile.set_use_date(test_case.synced_use_date);
-    expected_bundle.profiles_to_update.push_back(&expected_profile);
-
-    // Expect no changes to remote data.
-    syncer::SyncChangeList expected_empty_change_list;
-
-    MergeDataAndStartSyncing(std::move(profiles_from_web_db), data_list,
-                             expected_bundle, expected_empty_change_list);
-    autofill_syncable_service_.StopSyncing(syncer::AUTOFILL_PROFILE);
+    // Takes ownership of sync_processor_.
+    autofill_syncable_service_.MergeDataAndStartSyncing(
+        syncer::AUTOFILL_PROFILE, data_list, std::move(sync_processor_),
+        std::unique_ptr<syncer::SyncErrorFactory>(
+            new syncer::SyncErrorFactoryMock()));
   }
+
+ protected:
+  base::MessageLoop message_loop_;
+  MockAutofillProfileSyncableService autofill_syncable_service_;
+  std::unique_ptr<MockSyncChangeProcessor> sync_processor_;
+};
+
+TEST_P(SyncUpdatesUsageStatsTest, SyncUpdatesUsageStats) {
+  auto test_case = GetParam();
+  SetUp();
+  std::vector<std::unique_ptr<AutofillProfile>> profiles_from_web_db;
+
+  AutofillProfile profile(kGuid1, kHttpsOrigin);
+  profile.set_language_code("en");
+  profile.set_use_count(test_case.local_use_count);
+  profile.set_use_date(test_case.local_use_date);
+  EXPECT_EQ(test_case.local_use_count, profile.use_count());
+  EXPECT_EQ(test_case.local_use_date, profile.use_date());
+  profiles_from_web_db.push_back(base::MakeUnique<AutofillProfile>(profile));
+
+  // Remote data has usage stats.
+  sync_pb::EntitySpecifics specifics;
+  sync_pb::AutofillProfileSpecifics* autofill_specifics =
+      specifics.mutable_autofill_profile();
+  autofill_specifics->set_guid(profile.guid());
+  autofill_specifics->set_origin(profile.origin());
+  autofill_specifics->add_name_first(std::string());
+  autofill_specifics->add_name_middle(std::string());
+  autofill_specifics->add_name_last(std::string());
+  autofill_specifics->add_name_full(std::string());
+  autofill_specifics->add_email_address(std::string());
+  autofill_specifics->add_phone_home_whole_number(std::string());
+  autofill_specifics->set_address_home_language_code("en");
+  autofill_specifics->set_use_count(test_case.remote_use_count);
+  autofill_specifics->set_use_date(test_case.remote_use_date);
+  EXPECT_TRUE(autofill_specifics->has_use_count());
+  EXPECT_TRUE(autofill_specifics->has_use_date());
+
+  syncer::SyncDataList data_list;
+  data_list.push_back(syncer::SyncData::CreateLocalData(
+      profile.guid(), profile.guid(), specifics));
+
+  // Expect the local autofill profile to have usage stats after sync.
+  MockAutofillProfileSyncableService::DataBundle expected_bundle;
+  AutofillProfile expected_profile = profile;
+  expected_profile.set_use_count(test_case.synced_use_count);
+  expected_profile.set_use_date(test_case.synced_use_date);
+  expected_bundle.profiles_to_update.push_back(&expected_profile);
+
+  // Expect no changes to remote data.
+  syncer::SyncChangeList expected_empty_change_list;
+
+  MergeDataAndStartSyncing(std::move(profiles_from_web_db), data_list,
+                           expected_bundle, expected_empty_change_list);
+  autofill_syncable_service_.StopSyncing(syncer::AUTOFILL_PROFILE);
 }
+
+INSTANTIATE_TEST_CASE_P(
+    AutofillProfileSyncableServiceTest,
+    SyncUpdatesUsageStatsTest,
+    testing::Values(
+        // Local profile with default stats.
+        SyncUpdatesUsageStatsTestCase{0U, base::Time(), 9U, 4321, 9U,
+                                      base::Time::FromTimeT(4321)},
+        // Local profile has older stats than the server.
+        SyncUpdatesUsageStatsTestCase{3U, base::Time::FromTimeT(1234), 9U, 4321,
+                                      9U, base::Time::FromTimeT(4321)},
+        // Local profile has newer stats than the server
+        SyncUpdatesUsageStatsTestCase{10U, base::Time::FromTimeT(9999), 9U,
+                                      4321, 9U, base::Time::FromTimeT(4321)}));
 
 // Usage stats should be updated by the client.
 TEST_F(AutofillProfileSyncableServiceTest, ClientOverwritesUsageStats) {

@@ -27,7 +27,7 @@ class CreditCardField : public FormField {
   void AddClassifications(FieldCandidatesMap* field_candidates) const override;
 
  private:
-  friend class CreditCardFieldTest;
+  friend class CreditCardFieldTestBase;
 
   // Returns true if |scanner| points to a field that looks like a month
   // <select>.

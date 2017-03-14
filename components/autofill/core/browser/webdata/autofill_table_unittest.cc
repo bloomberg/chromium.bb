@@ -1955,60 +1955,111 @@ TEST_F(AutofillTableTest, DeleteUnmaskedCard) {
   outputs.clear();
 }
 
-TEST_F(AutofillTableTest, GetFormValuesForElementName_SubstringMatchEnabled) {
+const size_t kMaxCount = 2;
+struct GetFormValuesTestCase {
+  const char* const field_suggestion[kMaxCount];
+  const char* const field_contents;
+  size_t expected_suggestion_count;
+  const char* const expected_suggestion[kMaxCount];
+};
+
+class GetFormValuesTest : public testing::TestWithParam<GetFormValuesTestCase> {
+ public:
+  GetFormValuesTest() {}
+  ~GetFormValuesTest() override {}
+
+ protected:
+  void SetUp() override {
+    OSCryptMocker::SetUpWithSingleton();
+    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+    file_ = temp_dir_.GetPath().AppendASCII("TestWebDatabase");
+
+    table_.reset(new AutofillTable);
+    db_.reset(new WebDatabase);
+    db_->AddTable(table_.get());
+    ASSERT_EQ(sql::INIT_OK, db_->Init(file_));
+  }
+
+  void TearDown() override { OSCryptMocker::TearDown(); }
+
+  base::FilePath file_;
+  base::ScopedTempDir temp_dir_;
+  std::unique_ptr<AutofillTable> table_;
+  std::unique_ptr<WebDatabase> db_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(GetFormValuesTest);
+};
+
+TEST_P(GetFormValuesTest, GetFormValuesForElementName_SubstringMatchEnabled) {
   // Token matching is currently behind a flag.
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableSuggestionsWithSubstringMatch);
 
-  const size_t kMaxCount = 2;
-  const struct {
-    const char* const field_suggestion[kMaxCount];
-    const char* const field_contents;
-    size_t expected_suggestion_count;
-    const char* const expected_suggestion[kMaxCount];
-  } kTestCases[] = {
-      {{"user.test", "test_user"}, "TEST",   2, {"test_user", "user.test"}},
-      {{"user test", "test-user"}, "user",   2, {"user test", "test-user"}},
-      {{"user test", "test-rest"}, "user",   1, {"user test", nullptr}},
-      {{"user@test", "test_user"}, "user@t", 1, {"user@test", nullptr}},
-      {{"user.test", "test_user"}, "er.tes", 0, {nullptr,     nullptr}},
-      {{"user test", "test_user"}, "_ser",   0, {nullptr,     nullptr}},
-      {{"user.test", "test_user"}, "%ser",   0, {nullptr,     nullptr}},
-      {{"user.test", "test_user"},
-       "; DROP TABLE autofill;",
-       0,
-       {nullptr, nullptr}},
-  };
+  auto test_case = GetParam();
+  SCOPED_TRACE(testing::Message()
+               << "suggestion = " << test_case.field_suggestion[0]
+               << ", contents = " << test_case.field_contents);
 
-  for (const auto& test_case : kTestCases) {
-    SCOPED_TRACE(testing::Message()
-                 << "suggestion = " << test_case.field_suggestion[0]
-                 << ", contents = " << test_case.field_contents);
+  Time t1 = Time::Now();
 
-    Time t1 = Time::Now();
-
-    // Simulate the submission of a handful of entries in a field called "Name".
-    AutofillChangeList changes;
-    FormFieldData field;
-    for (size_t k = 0; k < kMaxCount; ++k) {
-      field.name = ASCIIToUTF16("Name");
-      field.value = ASCIIToUTF16(test_case.field_suggestion[k]);
-      table_->AddFormFieldValue(field, &changes);
-    }
-
-    std::vector<base::string16> v;
-    table_->GetFormValuesForElementName(
-        ASCIIToUTF16("Name"), ASCIIToUTF16(test_case.field_contents), &v, 6);
-
-    EXPECT_EQ(test_case.expected_suggestion_count, v.size());
-    for (size_t j = 0; j < test_case.expected_suggestion_count; ++j) {
-      EXPECT_EQ(ASCIIToUTF16(test_case.expected_suggestion[j]), v[j]);
-    }
-
-    changes.clear();
-    table_->RemoveFormElementsAddedBetween(t1, Time(), &changes);
+  // Simulate the submission of a handful of entries in a field called "Name".
+  AutofillChangeList changes;
+  FormFieldData field;
+  for (size_t k = 0; k < kMaxCount; ++k) {
+    field.name = ASCIIToUTF16("Name");
+    field.value = ASCIIToUTF16(test_case.field_suggestion[k]);
+    table_->AddFormFieldValue(field, &changes);
   }
+
+  std::vector<base::string16> v;
+  table_->GetFormValuesForElementName(
+      ASCIIToUTF16("Name"), ASCIIToUTF16(test_case.field_contents), &v, 6);
+
+  EXPECT_EQ(test_case.expected_suggestion_count, v.size());
+  for (size_t j = 0; j < test_case.expected_suggestion_count; ++j) {
+    EXPECT_EQ(ASCIIToUTF16(test_case.expected_suggestion[j]), v[j]);
+  }
+
+  changes.clear();
+  table_->RemoveFormElementsAddedBetween(t1, Time(), &changes);
 }
+
+INSTANTIATE_TEST_CASE_P(
+    AutofillTableTest,
+    GetFormValuesTest,
+    testing::Values(GetFormValuesTestCase{{"user.test", "test_user"},
+                                          "TEST",
+                                          2,
+                                          {"test_user", "user.test"}},
+                    GetFormValuesTestCase{{"user test", "test-user"},
+                                          "user",
+                                          2,
+                                          {"user test", "test-user"}},
+                    GetFormValuesTestCase{{"user test", "test-rest"},
+                                          "user",
+                                          1,
+                                          {"user test", nullptr}},
+                    GetFormValuesTestCase{{"user@test", "test_user"},
+                                          "user@t",
+                                          1,
+                                          {"user@test", nullptr}},
+                    GetFormValuesTestCase{{"user.test", "test_user"},
+                                          "er.tes",
+                                          0,
+                                          {nullptr, nullptr}},
+                    GetFormValuesTestCase{{"user test", "test_user"},
+                                          "_ser",
+                                          0,
+                                          {nullptr, nullptr}},
+                    GetFormValuesTestCase{{"user.test", "test_user"},
+                                          "%ser",
+                                          0,
+                                          {nullptr, nullptr}},
+                    GetFormValuesTestCase{{"user.test", "test_user"},
+                                          "; DROP TABLE autofill;",
+                                          0,
+                                          {nullptr, nullptr}}));
 
 TEST_F(AutofillTableTest, AutofillNoMetadata) {
   MetadataBatch metadata_batch;

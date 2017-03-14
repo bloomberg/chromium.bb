@@ -82,19 +82,9 @@ class TestCardUnmaskPromptController : public CardUnmaskPromptControllerImpl {
   DISALLOW_COPY_AND_ASSIGN(TestCardUnmaskPromptController);
 };
 
-class CardUnmaskPromptControllerImplTest : public testing::Test {
+class CardUnmaskPromptControllerImplGenericTest {
  public:
-  CardUnmaskPromptControllerImplTest() {}
-  ~CardUnmaskPromptControllerImplTest() override {}
-
-  void SetUp() override {
-    test_unmask_prompt_view_.reset(new TestCardUnmaskPromptView());
-    pref_service_.reset(new TestingPrefServiceSimple());
-    controller_.reset(new TestCardUnmaskPromptController(pref_service_.get()));
-    delegate_.reset(new TestCardUnmaskDelegate());
-    pref_service_->registry()->RegisterBooleanPref(
-        prefs::kAutofillWalletImportStorageCheckboxState, false);
-  }
+  CardUnmaskPromptControllerImplGenericTest() {}
 
   void ShowPrompt() {
     controller_->ShowPrompt(test_unmask_prompt_view_.get(),
@@ -132,6 +122,26 @@ class CardUnmaskPromptControllerImplTest : public testing::Test {
   std::unique_ptr<TestingPrefServiceSimple> pref_service_;
   std::unique_ptr<TestCardUnmaskPromptController> controller_;
   std::unique_ptr<TestCardUnmaskDelegate> delegate_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(CardUnmaskPromptControllerImplGenericTest);
+};
+
+class CardUnmaskPromptControllerImplTest
+    : public CardUnmaskPromptControllerImplGenericTest,
+      public testing::Test {
+ public:
+  CardUnmaskPromptControllerImplTest() {}
+  ~CardUnmaskPromptControllerImplTest() override {}
+
+  void SetUp() override {
+    test_unmask_prompt_view_.reset(new TestCardUnmaskPromptView());
+    pref_service_.reset(new TestingPrefServiceSimple());
+    controller_.reset(new TestCardUnmaskPromptController(pref_service_.get()));
+    delegate_.reset(new TestCardUnmaskDelegate());
+    pref_service_->registry()->RegisterBooleanPref(
+        prefs::kAutofillWalletImportStorageCheckboxState, false);
+  }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CardUnmaskPromptControllerImplTest);
@@ -433,80 +443,138 @@ TEST_F(CardUnmaskPromptControllerImplTest,
       "Autofill.UnmaskPrompt.UnmaskingDuration.Failure", 1);
 }
 
-TEST_F(CardUnmaskPromptControllerImplTest, CvcInputValidation) {
-  struct CvcCase {
-    const char* input;
-    bool valid;
-    // null when |valid| is false.
-    const char* canonicalized_input;
-  };
-  CvcCase cvc_cases[] = {
-    { "123", true, "123" },
-    { "123 ", true, "123" },
-    { " 1234 ", false  },
-    { "IOU", false  },
-  };
+struct CvcCase {
+  const char* input;
+  bool valid;
+  // null when |valid| is false.
+  const char* canonicalized_input;
+};
 
-  ShowPrompt();
+class CvcInputValidationTest : public CardUnmaskPromptControllerImplGenericTest,
+                               public testing::TestWithParam<CvcCase> {
+ public:
+  CvcInputValidationTest() {}
+  ~CvcInputValidationTest() override {}
 
-  for (const CvcCase& cvc_case : cvc_cases) {
-    EXPECT_EQ(cvc_case.valid,
-              controller_->InputCvcIsValid(ASCIIToUTF16(cvc_case.input)));
-    if (!cvc_case.valid)
-      continue;
-
-    controller_->OnUnmaskResponse(ASCIIToUTF16(cvc_case.input),
-                                  ASCIIToUTF16("1"), ASCIIToUTF16("2050"),
-                                  false);
-    EXPECT_EQ(ASCIIToUTF16(cvc_case.canonicalized_input),
-              delegate_->response().cvc);
+  void SetUp() override {
+    test_unmask_prompt_view_.reset(new TestCardUnmaskPromptView());
+    pref_service_.reset(new TestingPrefServiceSimple());
+    controller_.reset(new TestCardUnmaskPromptController(pref_service_.get()));
+    delegate_.reset(new TestCardUnmaskDelegate());
+    pref_service_->registry()->RegisterBooleanPref(
+        prefs::kAutofillWalletImportStorageCheckboxState, false);
   }
 
-  CvcCase cvc_cases_amex[] = {
-    { "123", false },
-    { "123 ", false },
-    { "1234", true, "1234" },
-    { "\t1234 ", true, "1234" },
-    { " 1234", true, "1234" },
-    { "IOU$", false  },
-  };
+ private:
+  DISALLOW_COPY_AND_ASSIGN(CvcInputValidationTest);
+};
 
+TEST_P(CvcInputValidationTest, CvcInputValidation) {
+  auto cvc_case = GetParam();
+  ShowPrompt();
+  EXPECT_EQ(cvc_case.valid,
+            controller_->InputCvcIsValid(ASCIIToUTF16(cvc_case.input)));
+  if (!cvc_case.valid)
+    return;
+
+  controller_->OnUnmaskResponse(ASCIIToUTF16(cvc_case.input), ASCIIToUTF16("1"),
+                                ASCIIToUTF16("2050"), false);
+  EXPECT_EQ(ASCIIToUTF16(cvc_case.canonicalized_input),
+            delegate_->response().cvc);
+}
+
+INSTANTIATE_TEST_CASE_P(CardUnmaskPromptControllerImplTest,
+                        CvcInputValidationTest,
+                        testing::Values(CvcCase{"123", true, "123"},
+                                        CvcCase{"123 ", true, "123"},
+                                        CvcCase{" 1234 ", false},
+                                        CvcCase{"IOU", false}));
+
+class CvcInputAmexValidationTest
+    : public CardUnmaskPromptControllerImplGenericTest,
+      public testing::TestWithParam<CvcCase> {
+ public:
+  CvcInputAmexValidationTest() {}
+  ~CvcInputAmexValidationTest() override {}
+
+  void SetUp() override {
+    test_unmask_prompt_view_.reset(new TestCardUnmaskPromptView());
+    pref_service_.reset(new TestingPrefServiceSimple());
+    controller_.reset(new TestCardUnmaskPromptController(pref_service_.get()));
+    delegate_.reset(new TestCardUnmaskDelegate());
+    pref_service_->registry()->RegisterBooleanPref(
+        prefs::kAutofillWalletImportStorageCheckboxState, false);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(CvcInputAmexValidationTest);
+};
+
+TEST_P(CvcInputAmexValidationTest, CvcInputValidation) {
+  auto cvc_case_amex = GetParam();
   ShowPromptAmex();
+  EXPECT_EQ(cvc_case_amex.valid,
+            controller_->InputCvcIsValid(ASCIIToUTF16(cvc_case_amex.input)));
+  if (!cvc_case_amex.valid)
+    return;
 
-  for (const CvcCase& cvc_case_amex : cvc_cases_amex) {
-    EXPECT_EQ(cvc_case_amex.valid,
-              controller_->InputCvcIsValid(ASCIIToUTF16(cvc_case_amex.input)));
-    if (!cvc_case_amex.valid)
-      continue;
-
-    controller_->OnUnmaskResponse(ASCIIToUTF16(cvc_case_amex.input),
-                                  base::string16(), base::string16(), false);
-    EXPECT_EQ(ASCIIToUTF16(cvc_case_amex.canonicalized_input),
-              delegate_->response().cvc);
-  }
+  controller_->OnUnmaskResponse(ASCIIToUTF16(cvc_case_amex.input),
+                                base::string16(), base::string16(), false);
+  EXPECT_EQ(ASCIIToUTF16(cvc_case_amex.canonicalized_input),
+            delegate_->response().cvc);
 }
 
-TEST_F(CardUnmaskPromptControllerImplTest, ExpirationDateValidation) {
-  struct {
-    const char* input_month;
-    const char* input_year;
-    bool valid;
-  } exp_cases[] = {
-      {"01", "2040", true},
-      {"1", "2040", true},
-      {"1", "40", true},
-      {"10", "40", true},
-      {"01", "1940", false},
-      {"13", "2040", false},
-  };
+INSTANTIATE_TEST_CASE_P(CardUnmaskPromptControllerImplTest,
+                        CvcInputAmexValidationTest,
+                        testing::Values(CvcCase{"123", false},
+                                        CvcCase{"123 ", false},
+                                        CvcCase{"1234", true, "1234"},
+                                        CvcCase{"\t1234 ", true, "1234"},
+                                        CvcCase{" 1234", true, "1234"},
+                                        CvcCase{"IOU$", false}));
 
+struct ExpirationDateTestCase {
+  const char* input_month;
+  const char* input_year;
+  bool valid;
+};
+
+class ExpirationDateValidationTest
+    : public CardUnmaskPromptControllerImplGenericTest,
+      public testing::TestWithParam<ExpirationDateTestCase> {
+ public:
+  ExpirationDateValidationTest() {}
+  ~ExpirationDateValidationTest() override {}
+
+  void SetUp() override {
+    test_unmask_prompt_view_.reset(new TestCardUnmaskPromptView());
+    pref_service_.reset(new TestingPrefServiceSimple());
+    controller_.reset(new TestCardUnmaskPromptController(pref_service_.get()));
+    delegate_.reset(new TestCardUnmaskDelegate());
+    pref_service_->registry()->RegisterBooleanPref(
+        prefs::kAutofillWalletImportStorageCheckboxState, false);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ExpirationDateValidationTest);
+};
+
+TEST_P(ExpirationDateValidationTest, ExpirationDateValidation) {
+  auto exp_case = GetParam();
   ShowPrompt();
-
-  for (const auto& exp_case : exp_cases) {
-    EXPECT_EQ(exp_case.valid, controller_->InputExpirationIsValid(
-                                  ASCIIToUTF16(exp_case.input_month),
-                                  ASCIIToUTF16(exp_case.input_year)));
-  }
+  EXPECT_EQ(exp_case.valid, controller_->InputExpirationIsValid(
+                                ASCIIToUTF16(exp_case.input_month),
+                                ASCIIToUTF16(exp_case.input_year)));
 }
+
+INSTANTIATE_TEST_CASE_P(
+    CardUnmaskPromptControllerImplTest,
+    ExpirationDateValidationTest,
+    testing::Values(ExpirationDateTestCase{"01", "2040", true},
+                    ExpirationDateTestCase{"1", "2040", true},
+                    ExpirationDateTestCase{"1", "40", true},
+                    ExpirationDateTestCase{"10", "40", true},
+                    ExpirationDateTestCase{"01", "1940", false},
+                    ExpirationDateTestCase{"13", "2040", false}));
 
 }  // namespace autofill

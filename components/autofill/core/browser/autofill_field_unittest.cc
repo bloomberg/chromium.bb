@@ -283,180 +283,239 @@ TEST_F(AutofillFieldTest, FillFormField_AutocompleteOff_CreditCardField) {
   EXPECT_EQ(ASCIIToUTF16("4111111111111111"), field.value);
 }
 
+struct AutofillFieldTestCase {
+  HtmlFieldType field_type;
+  size_t field_max_length;
+  std::string value_to_fill;
+  std::string expected_value;
+};
+
+class AutofillFieldPhoneNumberTest
+    : public testing::TestWithParam<AutofillFieldTestCase> {
+ public:
+  AutofillFieldPhoneNumberTest() { CountryNames::SetLocaleString("en-US"); }
+};
+
 // TODO(crbug.com/581514): Add support for filling only the prefix/suffix for
 // phone numbers with 10 or 11 digits.
-TEST_F(AutofillFieldTest, FillPhoneNumber) {
-  typedef struct {
-    HtmlFieldType field_type;
-    size_t field_max_length;
-    std::string value_to_fill;
-    std::string expected_value;
-  } TestCase;
+TEST_P(AutofillFieldPhoneNumberTest, FillPhoneNumber) {
+  auto test_case = GetParam();
+  AutofillField field;
+  field.SetHtmlType(test_case.field_type, HtmlFieldMode());
+  field.max_length = test_case.field_max_length;
 
-  TestCase test_cases[] = {
-      // Filling a phone type field with text should fill the text as is.
-      {HTML_TYPE_TEL, /* default value */ 0, "Oh hai", "Oh hai"},
-      // Filling a prefix type field with a phone number of 7 digits should just
-      // fill the prefix.
-      {HTML_TYPE_TEL_LOCAL_PREFIX, /* default value */ 0, "5551234", "555"},
-      // Filling a suffix type field with a phone number of 7 digits should just
-      // fill the suffix.
-      {HTML_TYPE_TEL_LOCAL_SUFFIX, /* default value */ 0, "5551234", "1234"},
-      // Filling a phone type field with a max length of 3 with a phone number
-      // of
-      // 7 digits should fill only the prefix.
-      {HTML_TYPE_TEL, 3, "5551234", "555"},
-      // Filling a phone type field with a max length of 4 with a phone number
-      // of
-      // 7 digits should fill only the suffix.
-      {HTML_TYPE_TEL, 4, "5551234", "1234"},
-      // Filling a phone type field with a max length of 10 with a phone number
-      // including the country code should fill the phone number without the
-      // country code.
-      {HTML_TYPE_TEL, 10, "15141254578", "5141254578"},
-      // Filling a phone type field with a max length of 5 with a phone number
-      // should fill with the last 5 digits of that phone number.
-      {HTML_TYPE_TEL, 5, "5141254578", "54578"}};
-
-  for (TestCase test_case : test_cases) {
-    AutofillField field;
-    field.SetHtmlType(test_case.field_type, HtmlFieldMode());
-    field.max_length = test_case.field_max_length;
-
-    AutofillField::FillFormField(field, ASCIIToUTF16(test_case.value_to_fill),
-                                 "en-US", "en-US", &field);
-    EXPECT_EQ(ASCIIToUTF16(test_case.expected_value), field.value);
-  }
+  AutofillField::FillFormField(field, ASCIIToUTF16(test_case.value_to_fill),
+                               "en-US", "en-US", &field);
+  EXPECT_EQ(ASCIIToUTF16(test_case.expected_value), field.value);
 }
 
-TEST_F(AutofillFieldTest, FillExpirationYearInput) {
-  typedef struct {
-    HtmlFieldType field_type;
-    size_t field_max_length;
-    std::string value_to_fill;
-    std::string expected_value;
-  } TestCase;
+INSTANTIATE_TEST_CASE_P(
+    AutofillFieldTest,
+    AutofillFieldPhoneNumberTest,
+    testing::Values(
+        // Filling a phone type field with text should fill the text as is.
+        AutofillFieldTestCase{HTML_TYPE_TEL, /* default value */ 0, "Oh hai",
+                              "Oh hai"},
+        // Filling a prefix type field with a phone number of 7 digits should
+        // just fill the prefix.
+        AutofillFieldTestCase{HTML_TYPE_TEL_LOCAL_PREFIX, /* default value */ 0,
+                              "5551234", "555"},
+        // Filling a suffix type field with a phone number of 7 digits should
+        // just fill the suffix.
+        AutofillFieldTestCase{HTML_TYPE_TEL_LOCAL_SUFFIX, /* default value */ 0,
+                              "5551234", "1234"},
+        // Filling a phone type field with a max length of 3 with a phone number
+        // of
+        // 7 digits should fill only the prefix.
+        AutofillFieldTestCase{HTML_TYPE_TEL, 3, "5551234", "555"},
+        // Filling a phone type field with a max length of 4 with a phone number
+        // of
+        // 7 digits should fill only the suffix.
+        AutofillFieldTestCase{HTML_TYPE_TEL, 4, "5551234", "1234"},
+        // Filling a phone type field with a max length of 10 with a phone
+        // number including the country code should fill the phone number
+        // without the country code.
+        AutofillFieldTestCase{HTML_TYPE_TEL, 10, "15141254578", "5141254578"},
+        // Filling a phone type field with a max length of 5 with a phone number
+        // should fill with the last 5 digits of that phone number.
+        AutofillFieldTestCase{HTML_TYPE_TEL, 5, "5141254578", "54578"}));
 
-  TestCase test_cases[] = {
-      // A field predicted as a 2 digits expiration year should fill the last 2
-      // digits of the expiration year if the field has an unspecified max
-      // length (0) or if it's greater than 1.
-      {HTML_TYPE_CREDIT_CARD_EXP_2_DIGIT_YEAR, /* default value */ 0, "2023",
-       "23"},
-      {HTML_TYPE_CREDIT_CARD_EXP_2_DIGIT_YEAR, 2, "2023", "23"},
-      {HTML_TYPE_CREDIT_CARD_EXP_2_DIGIT_YEAR, 12, "2023", "23"},
-      // A field predicted as a 2 digit expiration year should fill the last
-      // digit of the expiration year if the field has a max length of 1.
-      {HTML_TYPE_CREDIT_CARD_EXP_2_DIGIT_YEAR, 1, "2023", "3"},
-      // A field predicted as a 4 digit expiration year should fill the 4
-      // digits of the expiration year if the field has an unspecified max
-      // length (0) or if it's greater than 3 .
-      {HTML_TYPE_CREDIT_CARD_EXP_4_DIGIT_YEAR, /* default value */ 0, "2023",
-       "2023"},
-      {HTML_TYPE_CREDIT_CARD_EXP_4_DIGIT_YEAR, 4, "2023", "2023"},
-      {HTML_TYPE_CREDIT_CARD_EXP_4_DIGIT_YEAR, 12, "2023", "2023"},
-      // A field predicted as a 4 digits expiration year should fill the last 2
-      // digits of the expiration year if the field has a max length of 2.
-      {HTML_TYPE_CREDIT_CARD_EXP_4_DIGIT_YEAR, 2, "2023", "23"},
-      // A field predicted as a 4 digits expiration year should fill the last
-      // digit of the expiration year if the field has a max length of 1.
-      {HTML_TYPE_CREDIT_CARD_EXP_4_DIGIT_YEAR, 1, "2023", "3"},
-  };
+class AutofillFieldExpirationYearTest
+    : public testing::TestWithParam<AutofillFieldTestCase> {
+ public:
+  AutofillFieldExpirationYearTest() { CountryNames::SetLocaleString("en-US"); }
+};
 
-  for (TestCase test_case : test_cases) {
-    AutofillField field;
-    field.form_control_type = "text";
-    field.SetHtmlType(test_case.field_type, HtmlFieldMode());
-    field.max_length = test_case.field_max_length;
+TEST_P(AutofillFieldExpirationYearTest, FillExpirationYearInput) {
+  auto test_case = GetParam();
+  AutofillField field;
+  field.form_control_type = "text";
+  field.SetHtmlType(test_case.field_type, HtmlFieldMode());
+  field.max_length = test_case.field_max_length;
 
-    AutofillField::FillFormField(field, ASCIIToUTF16(test_case.value_to_fill),
-                                 "en-US", "en-US", &field);
-    EXPECT_EQ(ASCIIToUTF16(test_case.expected_value), field.value);
-  }
+  AutofillField::FillFormField(field, ASCIIToUTF16(test_case.value_to_fill),
+                               "en-US", "en-US", &field);
+  EXPECT_EQ(ASCIIToUTF16(test_case.expected_value), field.value);
 }
 
-TEST_F(AutofillFieldTest, FillExpirationDateInput) {
-  typedef struct {
-    HtmlFieldType field_type;
-    size_t field_max_length;
-    std::string value_to_fill;
-    std::string expected_value;
-    bool expected_response;
-  } TestCase;
+INSTANTIATE_TEST_CASE_P(
+    AutofillFieldTest,
+    AutofillFieldExpirationYearTest,
+    testing::Values(
+        // A field predicted as a 2 digits expiration year should fill the last
+        // 2 digits of the expiration year if the field has an unspecified max
+        // length (0) or if it's greater than 1.
+        AutofillFieldTestCase{HTML_TYPE_CREDIT_CARD_EXP_2_DIGIT_YEAR,
+                              /* default value */ 0, "2023", "23"},
+        AutofillFieldTestCase{HTML_TYPE_CREDIT_CARD_EXP_2_DIGIT_YEAR, 2, "2023",
+                              "23"},
+        AutofillFieldTestCase{HTML_TYPE_CREDIT_CARD_EXP_2_DIGIT_YEAR, 12,
+                              "2023", "23"},
+        // A field predicted as a 2 digit expiration year should fill the last
+        // digit of the expiration year if the field has a max length of 1.
+        AutofillFieldTestCase{HTML_TYPE_CREDIT_CARD_EXP_2_DIGIT_YEAR, 1, "2023",
+                              "3"},
+        // A field predicted as a 4 digit expiration year should fill the 4
+        // digits of the expiration year if the field has an unspecified max
+        // length (0) or if it's greater than 3 .
+        AutofillFieldTestCase{HTML_TYPE_CREDIT_CARD_EXP_4_DIGIT_YEAR,
+                              /* default value */ 0, "2023", "2023"},
+        AutofillFieldTestCase{HTML_TYPE_CREDIT_CARD_EXP_4_DIGIT_YEAR, 4, "2023",
+                              "2023"},
+        AutofillFieldTestCase{HTML_TYPE_CREDIT_CARD_EXP_4_DIGIT_YEAR, 12,
+                              "2023", "2023"},
+        // A field predicted as a 4 digits expiration year should fill the last
+        // 2 digits of the expiration year if the field has a max length of 2.
+        AutofillFieldTestCase{HTML_TYPE_CREDIT_CARD_EXP_4_DIGIT_YEAR, 2, "2023",
+                              "23"},
+        // A field predicted as a 4 digits expiration year should fill the last
+        // digit of the expiration year if the field has a max length of 1.
+        AutofillFieldTestCase{HTML_TYPE_CREDIT_CARD_EXP_4_DIGIT_YEAR, 1, "2023",
+                              "3"}));
 
-  TestCase test_cases[] = {
-      // Test invalid inputs
-      {HTML_TYPE_CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR, 0, "1/21", "", false},
-      {HTML_TYPE_CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR, 0, "01-21", "", false},
-      {HTML_TYPE_CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR, 0, "1/2021", "", false},
-      {HTML_TYPE_CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR, 0, "01-2021", "", false},
-      // Trim whitespace
-      {HTML_TYPE_CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR, 0, "01/22   ", "01/22",
-       true},
-      {HTML_TYPE_CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR, 0, "01/2022   ", "01/2022",
-       true},
-      // A field predicted as a expiration date w/ 2 digit year should fill
-      // with a format of MM/YY unless it has max-length of:
-      // 4: Use format MMYY
-      // 6: Use format MMYYYY
-      // 7: Use format MM/YYYY
-      {HTML_TYPE_CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR, /* default value */ 0,
-       "01/23", "01/23", true},
-      // Unsupported max lengths of 1-3, fail
-      {HTML_TYPE_CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR, 1, "01/23", "", false},
-      {HTML_TYPE_CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR, 2, "02/23", "", false},
-      {HTML_TYPE_CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR, 3, "03/23", "", false},
-      // A max length of 4 indicates a format of MMYY.
-      {HTML_TYPE_CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR, 4, "02/23", "0223", true},
-      // A max length of 6 indicates a format of MMYYYY, the 21st century is
-      // assumed.
-      // Desired case of proper max length >= 5
-      {HTML_TYPE_CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR, 5, "03/23", "03/23", true},
-      {HTML_TYPE_CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR, 6, "04/23", "042023", true},
-      // A max length of 7 indicates a format of MM/YYYY, the 21st century is
-      // assumed.
-      {HTML_TYPE_CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR, 7, "05/23", "05/2023",
-       true},
-      {HTML_TYPE_CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR, 12, "06/23", "06/23", true},
+struct AutofillFieldExpirationDateTestCase {
+  HtmlFieldType field_type;
+  size_t field_max_length;
+  std::string value_to_fill;
+  std::string expected_value;
+  bool expected_response;
+};
 
-      // A field predicted as a expiration date w/ 4 digit year should fill
-      // with a format of MM/YYYY unless it has max-length of:
-      // 4: Use format MMYY
-      // 5: Use format MM/YY
-      // 6: Use format MMYYYY
-      {HTML_TYPE_CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR, /* default value */ 0,
-       "01/2024", "01/2024", true},
-      // Unsupported max lengths of 1-3, fail
-      {HTML_TYPE_CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR, 1, "01/2024", "", false},
-      {HTML_TYPE_CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR, 2, "02/2024", "", false},
-      {HTML_TYPE_CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR, 3, "03/2024", "", false},
-      // A max length of 4 indicates a format of MMYY.
-      {HTML_TYPE_CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR, 4, "02/2024", "0224", true},
-      // A max length of 5 indicates a format of MM/YY.
-      {HTML_TYPE_CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR, 5, "03/2024", "03/24",
-       true},
-      // A max length of 6 indicates a format of MMYYYY.
-      {HTML_TYPE_CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR, 6, "04/2024", "042024",
-       true},
-      // Desired case of proper max length >= 7
-      {HTML_TYPE_CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR, 7, "05/2024", "05/2024",
-       true},
-      {HTML_TYPE_CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR, 12, "06/2024", "06/2024",
-       true},
-  };
+class AutofillFieldExpirationDateTest
+    : public testing::TestWithParam<AutofillFieldExpirationDateTestCase> {
+ public:
+  AutofillFieldExpirationDateTest() { CountryNames::SetLocaleString("en-US"); }
+};
 
-  for (TestCase test_case : test_cases) {
-    AutofillField field;
-    field.form_control_type = "text";
-    field.SetHtmlType(test_case.field_type, HtmlFieldMode());
-    field.max_length = test_case.field_max_length;
+TEST_P(AutofillFieldExpirationDateTest, FillExpirationDateInput) {
+  auto test_case = GetParam();
+  AutofillField field;
+  field.form_control_type = "text";
+  field.SetHtmlType(test_case.field_type, HtmlFieldMode());
+  field.max_length = test_case.field_max_length;
 
-    bool response = AutofillField::FillFormField(
+  bool response = AutofillField::FillFormField(
       field, ASCIIToUTF16(test_case.value_to_fill), "en-US", "en-US", &field);
-    EXPECT_EQ(ASCIIToUTF16(test_case.expected_value), field.value);
-    EXPECT_EQ(response, test_case.expected_response);
-  }
+  EXPECT_EQ(ASCIIToUTF16(test_case.expected_value), field.value);
+  EXPECT_EQ(response, test_case.expected_response);
 }
+
+INSTANTIATE_TEST_CASE_P(
+    AutofillFieldTest,
+    AutofillFieldExpirationDateTest,
+    testing::Values(
+        // Test invalid inputs
+        AutofillFieldExpirationDateTestCase{
+            HTML_TYPE_CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR, 0, "1/21", "", false},
+        AutofillFieldExpirationDateTestCase{
+            HTML_TYPE_CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR, 0, "01-21", "", false},
+        AutofillFieldExpirationDateTestCase{
+            HTML_TYPE_CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR, 0, "1/2021", "",
+            false},
+        AutofillFieldExpirationDateTestCase{
+            HTML_TYPE_CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR, 0, "01-2021", "",
+            false},
+        // Trim whitespace
+        AutofillFieldExpirationDateTestCase{
+            HTML_TYPE_CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR, 0, "01/22   ", "01/22",
+            true},
+        AutofillFieldExpirationDateTestCase{
+            HTML_TYPE_CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR, 0, "01/2022   ",
+            "01/2022", true},
+        // A field predicted as a expiration date w/ 2 digit year should fill
+        // with a format of MM/YY unless it has max-length of:
+        // 4: Use format MMYY
+        // 6: Use format MMYYYY
+        // 7: Use format MM/YYYY
+        AutofillFieldExpirationDateTestCase{
+            HTML_TYPE_CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR, /* default value */ 0,
+            "01/23", "01/23", true},
+        // Unsupported max lengths of 1-3, fail
+        AutofillFieldExpirationDateTestCase{
+            HTML_TYPE_CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR, 1, "01/23", "", false},
+        AutofillFieldExpirationDateTestCase{
+            HTML_TYPE_CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR, 2, "02/23", "", false},
+        AutofillFieldExpirationDateTestCase{
+            HTML_TYPE_CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR, 3, "03/23", "", false},
+        // A max length of 4 indicates a format of MMYY.
+        AutofillFieldExpirationDateTestCase{
+            HTML_TYPE_CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR, 4, "02/23", "0223",
+            true},
+        // A max length of 6 indicates a format of MMYYYY, the 21st century is
+        // assumed.
+        // Desired case of proper max length >= 5
+        AutofillFieldExpirationDateTestCase{
+            HTML_TYPE_CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR, 5, "03/23", "03/23",
+            true},
+        AutofillFieldExpirationDateTestCase{
+            HTML_TYPE_CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR, 6, "04/23", "042023",
+            true},
+        // A max length of 7 indicates a format of MM/YYYY, the 21st century is
+        // assumed.
+        AutofillFieldExpirationDateTestCase{
+            HTML_TYPE_CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR, 7, "05/23", "05/2023",
+            true},
+        AutofillFieldExpirationDateTestCase{
+            HTML_TYPE_CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR, 12, "06/23", "06/23",
+            true},
+
+        // A field predicted as a expiration date w/ 4 digit year should fill
+        // with a format of MM/YYYY unless it has max-length of:
+        // 4: Use format MMYY
+        // 5: Use format MM/YY
+        // 6: Use format MMYYYY
+        AutofillFieldExpirationDateTestCase{
+            HTML_TYPE_CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR, /* default value */ 0,
+            "01/2024", "01/2024", true},
+        // Unsupported max lengths of 1-3, fail
+        AutofillFieldExpirationDateTestCase{
+            HTML_TYPE_CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR, 1, "01/2024", "",
+            false},
+        AutofillFieldExpirationDateTestCase{
+            HTML_TYPE_CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR, 2, "02/2024", "",
+            false},
+        AutofillFieldExpirationDateTestCase{
+            HTML_TYPE_CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR, 3, "03/2024", "",
+            false},
+        // A max length of 4 indicates a format of MMYY.
+        AutofillFieldExpirationDateTestCase{
+            HTML_TYPE_CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR, 4, "02/2024", "0224",
+            true},
+        // A max length of 5 indicates a format of MM/YY.
+        AutofillFieldExpirationDateTestCase{
+            HTML_TYPE_CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR, 5, "03/2024", "03/24",
+            true},
+        // A max length of 6 indicates a format of MMYYYY.
+        AutofillFieldExpirationDateTestCase{
+            HTML_TYPE_CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR, 6, "04/2024", "042024",
+            true},
+        // Desired case of proper max length >= 7
+        AutofillFieldExpirationDateTestCase{
+            HTML_TYPE_CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR, 7, "05/2024",
+            "05/2024", true},
+        AutofillFieldExpirationDateTestCase{
+            HTML_TYPE_CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR, 12, "06/2024",
+            "06/2024", true}));
 
 TEST_F(AutofillFieldTest, FillSelectControlByValue) {
   std::vector<const char*> kOptions = {
@@ -493,130 +552,178 @@ TEST_F(AutofillFieldTest, FillSelectControlByContents) {
   EXPECT_EQ(ASCIIToUTF16("2"), field.value);  // Corresponds to "Miney".
 }
 
-TEST_F(AutofillFieldTest, FillSelectWithStates) {
-  typedef struct {
-    std::vector<const char*> select_values;
-    const char* input_value;
-    const char* expected_value;
-  } TestCase;
+struct FillSelectTestCase {
+  std::vector<const char*> select_values;
+  const char* input_value;
+  const char* expected_value;
+};
 
-  TestCase test_cases[] = {
-      // Filling the abbreviation.
-      {{"Alabama", "California"}, "CA", "California"},
-      // Attempting to fill the full name in a select full of abbreviations.
-      {{"AL", "CA"}, "California", "CA"},
-      // Different case and diacritics.
-      {{"QUÉBEC", "ALBERTA"}, "Quebec", "QUÉBEC"},
-      // Inexact state names.
-      {{"SC - South Carolina", "CA - California", "NC - North Carolina"},
-       "California",
-       "CA - California"},
-      // Don't accidentally match "Virginia" to "West Virginia".
-      {{"WV - West Virginia", "VA - Virginia", "NV - North Virginia"},
-       "Virginia",
-       "VA - Virginia"},
-      // Do accidentally match "Virginia" to "West Virginia".
-      // TODO(crbug.com/624770): This test should not pass, but it does because
-      // "Virginia" is a substring of "West Virginia".
-      {{"WV - West Virginia", "TX - Texas"}, "Virginia", "WV - West Virginia"},
-      // Tests that substring matches work for full state names (a full token
-      // match isn't required). Also tests that matches work for states with
-      // whitespace in the middle.
-      {{"California.", "North Carolina."}, "North Carolina", "North Carolina."},
-      {{"NC - North Carolina", "CA - California"}, "CA", "CA - California"},
-      // These are not states.
-      {{"NCNCA", "SCNCA"}, "NC", ""}};
+class AutofillSelectWithStatesTest
+    : public testing::TestWithParam<FillSelectTestCase> {
+ public:
+  AutofillSelectWithStatesTest() { CountryNames::SetLocaleString("en-US"); }
+};
 
-  for (TestCase test_case : test_cases) {
-    AutofillField field;
-    test::CreateTestSelectField(test_case.select_values, &field);
-    field.set_heuristic_type(ADDRESS_HOME_STATE);
+TEST_P(AutofillSelectWithStatesTest, FillSelectWithStates) {
+  auto test_case = GetParam();
+  AutofillField field;
+  test::CreateTestSelectField(test_case.select_values, &field);
+  field.set_heuristic_type(ADDRESS_HOME_STATE);
 
-    AutofillField::FillFormField(field, UTF8ToUTF16(test_case.input_value),
-                                 "en-US", "en-US", &field);
-    EXPECT_EQ(UTF8ToUTF16(test_case.expected_value), field.value);
-  }
+  AutofillField::FillFormField(field, UTF8ToUTF16(test_case.input_value),
+                               "en-US", "en-US", &field);
+  EXPECT_EQ(UTF8ToUTF16(test_case.expected_value), field.value);
 }
 
-TEST_F(AutofillFieldTest, FillSelectWithCountries) {
-  typedef struct {
-    std::vector<const char*> select_values;
-    const char* input_value;
-    const char* expected_value;
-  } TestCase;
+INSTANTIATE_TEST_CASE_P(
+    AutofillFieldTest,
+    AutofillSelectWithStatesTest,
+    testing::Values(
+        // Filling the abbreviation.
+        FillSelectTestCase{{"Alabama", "California"}, "CA", "California"},
+        // Attempting to fill the full name in a select full of abbreviations.
+        FillSelectTestCase{{"AL", "CA"}, "California", "CA"},
+        // Different case and diacritics.
+        FillSelectTestCase{{"QUÉBEC", "ALBERTA"}, "Quebec", "QUÉBEC"},
+        // Inexact state names.
+        FillSelectTestCase{
+            {"SC - South Carolina", "CA - California", "NC - North Carolina"},
+            "California",
+            "CA - California"},
+        // Don't accidentally match "Virginia" to "West Virginia".
+        FillSelectTestCase{
+            {"WV - West Virginia", "VA - Virginia", "NV - North Virginia"},
+            "Virginia",
+            "VA - Virginia"},
+        // Do accidentally match "Virginia" to "West Virginia".
+        // TODO(crbug.com/624770): This test should not pass, but it does
+        // because "Virginia" is a substring of "West Virginia".
+        FillSelectTestCase{{"WV - West Virginia", "TX - Texas"},
+                           "Virginia",
+                           "WV - West Virginia"},
+        // Tests that substring matches work for full state names (a full token
+        // match isn't required). Also tests that matches work for states with
+        // whitespace in the middle.
+        FillSelectTestCase{{"California.", "North Carolina."},
+                           "North Carolina",
+                           "North Carolina."},
+        FillSelectTestCase{{"NC - North Carolina", "CA - California"},
+                           "CA",
+                           "CA - California"},
+        // These are not states.
+        FillSelectTestCase{{"NCNCA", "SCNCA"}, "NC", ""}));
 
-  TestCase test_cases[] = {// Full country names.
-                           {{"Albania", "Canada"}, "CA", "Canada"},
-                           // Abbreviations.
-                           {{"AL", "CA"}, "Canada", "CA"}};
+class AutofillSelectWithCountriesTest
+    : public testing::TestWithParam<FillSelectTestCase> {
+ public:
+  AutofillSelectWithCountriesTest() { CountryNames::SetLocaleString("en-US"); }
+};
 
-  for (TestCase test_case : test_cases) {
-    AutofillField field;
-    test::CreateTestSelectField(test_case.select_values, &field);
-    field.set_heuristic_type(ADDRESS_HOME_COUNTRY);
+TEST_P(AutofillSelectWithCountriesTest, FillSelectWithCountries) {
+  auto test_case = GetParam();
+  AutofillField field;
+  test::CreateTestSelectField(test_case.select_values, &field);
+  field.set_heuristic_type(ADDRESS_HOME_COUNTRY);
 
-    AutofillField::FillFormField(field, UTF8ToUTF16(test_case.input_value),
-                                 "en-US", "en-US", &field);
-    EXPECT_EQ(UTF8ToUTF16(test_case.expected_value), field.value);
-  }
+  AutofillField::FillFormField(field, UTF8ToUTF16(test_case.input_value),
+                               "en-US", "en-US", &field);
+  EXPECT_EQ(UTF8ToUTF16(test_case.expected_value), field.value);
 }
 
-TEST_F(AutofillFieldTest, FillSelectControlWithExpirationMonth) {
-  typedef struct {
-    std::vector<const char*> select_values;
-    std::vector<const char*> select_contents;
-  } TestCase;
+INSTANTIATE_TEST_CASE_P(
+    AutofillFieldTest,
+    AutofillSelectWithCountriesTest,
+    testing::Values(
+        // Full country names.
+        FillSelectTestCase{{"Albania", "Canada"}, "CA", "Canada"},
+        // Abbreviations.
+        FillSelectTestCase{{"AL", "CA"}, "Canada", "CA"}));
 
-  TestCase test_cases[] = {
-      // Values start at 1.
-      {{"1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"},
-       NotNumericMonthsContentsNoPlaceholder()},
-      // Values start at 1 but single digits are whitespace padded!
-      {{" 1", " 2", " 3", " 4", " 5", " 6", " 7", " 8", " 9", "10", "11", "12"},
-       NotNumericMonthsContentsNoPlaceholder()},
-      // Values start at 0.
-      {{"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11"},
-       NotNumericMonthsContentsNoPlaceholder()},
-      // Values start at 00.
-      {{"00", "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11"},
-       NotNumericMonthsContentsNoPlaceholder()},
-      // The AngularJS framework adds a prefix to number types. Test that it is
-      // removed.
-      {{"number:1", "number:2", "number:3", "number:4", "number:5", "number:6",
-        "number:7", "number:8", "number:9", "number:10", "number:11",
-        "number:12"},
-       NotNumericMonthsContentsNoPlaceholder()},
-      // Values start at 0 and the first content is a placeholder.
-      {{"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"},
-       NotNumericMonthsContentsWithPlaceholder()},
-      // Values start at 1 and the first content is a placeholder.
-      {{"1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13"},
-       NotNumericMonthsContentsWithPlaceholder()},
-      // Values start at 01 and the first content is a placeholder.
-      {{"01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12",
-        "13"},
-       NotNumericMonthsContentsWithPlaceholder()},
-      // Values start at 0 after a placeholder.
-      {{"?", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11"},
-       NotNumericMonthsContentsWithPlaceholder()},
-      // Values start at 1 after a placeholder.
-      {{"?", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"},
-       NotNumericMonthsContentsWithPlaceholder()},
-      // Values start at 0 after a negative number.
-      {{"-1", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11"},
-       NotNumericMonthsContentsWithPlaceholder()},
-      // Values start at 1 after a negative number.
-      {{"-1", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"},
-       NotNumericMonthsContentsWithPlaceholder()}};
+struct FillWithExpirationMonthTestCase {
+  std::vector<const char*> select_values;
+  std::vector<const char*> select_contents;
+};
 
-  for (TestCase test_case : test_cases) {
-    ASSERT_EQ(test_case.select_values.size(), test_case.select_contents.size());
-
-    TestFillingExpirationMonth(test_case.select_values,
-                               test_case.select_contents,
-                               test_case.select_values.size());
+class AutofillSelectWithExpirationMonthTest
+    : public testing::TestWithParam<FillWithExpirationMonthTestCase> {
+ public:
+  AutofillSelectWithExpirationMonthTest() {
+    CountryNames::SetLocaleString("en-US");
   }
+};
+
+TEST_P(AutofillSelectWithExpirationMonthTest,
+       FillSelectControlWithExpirationMonth) {
+  auto test_case = GetParam();
+  ASSERT_EQ(test_case.select_values.size(), test_case.select_contents.size());
+
+  TestFillingExpirationMonth(test_case.select_values, test_case.select_contents,
+                             test_case.select_values.size());
 }
+
+INSTANTIATE_TEST_CASE_P(
+    AutofillFieldTest,
+    AutofillSelectWithExpirationMonthTest,
+    testing::Values(
+        // Values start at 1.
+        FillWithExpirationMonthTestCase{
+            {"1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"},
+            NotNumericMonthsContentsNoPlaceholder()},
+        // Values start at 1 but single digits are whitespace padded!
+        FillWithExpirationMonthTestCase{
+            {" 1", " 2", " 3", " 4", " 5", " 6", " 7", " 8", " 9", "10", "11",
+             "12"},
+            NotNumericMonthsContentsNoPlaceholder()},
+        // Values start at 0.
+        FillWithExpirationMonthTestCase{
+            {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11"},
+            NotNumericMonthsContentsNoPlaceholder()},
+        // Values start at 00.
+        FillWithExpirationMonthTestCase{
+            {"00", "01", "02", "03", "04", "05", "06", "07", "08", "09", "10",
+             "11"},
+            NotNumericMonthsContentsNoPlaceholder()},
+        // The AngularJS framework adds a prefix to number types. Test that it
+        // is removed.
+        FillWithExpirationMonthTestCase{
+            {"number:1", "number:2", "number:3", "number:4", "number:5",
+             "number:6", "number:7", "number:8", "number:9", "number:10",
+             "number:11", "number:12"},
+            NotNumericMonthsContentsNoPlaceholder()},
+        // Values start at 0 and the first content is a placeholder.
+        FillWithExpirationMonthTestCase{
+            {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11",
+             "12"},
+            NotNumericMonthsContentsWithPlaceholder()},
+        // Values start at 1 and the first content is a placeholder.
+        FillWithExpirationMonthTestCase{
+            {"1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12",
+             "13"},
+            NotNumericMonthsContentsWithPlaceholder()},
+        // Values start at 01 and the first content is a placeholder.
+        FillWithExpirationMonthTestCase{
+            {"01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11",
+             "12", "13"},
+            NotNumericMonthsContentsWithPlaceholder()},
+        // Values start at 0 after a placeholder.
+        FillWithExpirationMonthTestCase{
+            {"?", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11"},
+            NotNumericMonthsContentsWithPlaceholder()},
+        // Values start at 1 after a placeholder.
+        FillWithExpirationMonthTestCase{
+            {"?", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11",
+             "12"},
+            NotNumericMonthsContentsWithPlaceholder()},
+        // Values start at 0 after a negative number.
+        FillWithExpirationMonthTestCase{
+            {"-1", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10",
+             "11"},
+            NotNumericMonthsContentsWithPlaceholder()},
+        // Values start at 1 after a negative number.
+        FillWithExpirationMonthTestCase{
+            {"-1", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11",
+             "12"},
+            NotNumericMonthsContentsWithPlaceholder()}));
 
 TEST_F(AutofillFieldTest, FillSelectControlWithAbbreviatedMonthName) {
   std::vector<const char*> kMonthsAbbreviated = {
@@ -920,50 +1027,64 @@ TEST_F(AutofillFieldTest, FindShortestSubstringMatchInSelect) {
 
 // Tests that text state fields are filled correctly depending on their
 // maxlength attribute value.
-TEST_F(AutofillFieldTest, FillStateText) {
-  typedef struct {
-    HtmlFieldType field_type;
-    size_t field_max_length;
-    std::string value_to_fill;
-    std::string expected_value;
-    bool should_fill;
-  } TestCase;
+struct FillStateTextTestCase {
+  HtmlFieldType field_type;
+  size_t field_max_length;
+  std::string value_to_fill;
+  std::string expected_value;
+  bool should_fill;
+};
 
-  TestCase test_cases[] = {
-      // Filling a state to a text field with the default maxlength value should
-      // fill the state value as is.
-      {HTML_TYPE_ADDRESS_LEVEL1, /* default value */ 0, "New York", "New York",
-       true},
-      {HTML_TYPE_ADDRESS_LEVEL1, /* default value */ 0, "NY", "NY", true},
-      // Filling a state to a text field with a maxlength value equal to the
-      // value's length should fill the state value as is.
-      {HTML_TYPE_ADDRESS_LEVEL1, 8, "New York", "New York", true},
-      // Filling a state to a text field with a maxlength value lower than the
-      // value's length but higher than the value's abbreviation should fill the
-      // state abbreviation.
-      {HTML_TYPE_ADDRESS_LEVEL1, 2, "New York", "NY", true},
-      {HTML_TYPE_ADDRESS_LEVEL1, 2, "NY", "NY", true},
-      // Filling a state to a text field with a maxlength value lower than the
-      // value's length and the value's abbreviation should not fill at all.
-      {HTML_TYPE_ADDRESS_LEVEL1, 1, "New York", "", false},
-      {HTML_TYPE_ADDRESS_LEVEL1, 1, "NY", "", false},
-      // Filling a state to a text field with a maxlength value lower than the
-      // value's length and that has no associated abbreviation should not fill
-      // at all.
-      {HTML_TYPE_ADDRESS_LEVEL1, 3, "Quebec", "", false}};
+class AutofillStateTextTest
+    : public testing::TestWithParam<FillStateTextTestCase> {
+ public:
+  AutofillStateTextTest() { CountryNames::SetLocaleString("en-US"); }
+};
 
-  for (const TestCase& test_case : test_cases) {
-    AutofillField field;
-    field.SetHtmlType(test_case.field_type, HtmlFieldMode());
-    field.max_length = test_case.field_max_length;
+TEST_P(AutofillStateTextTest, FillStateText) {
+  auto test_case = GetParam();
+  AutofillField field;
+  field.SetHtmlType(test_case.field_type, HtmlFieldMode());
+  field.max_length = test_case.field_max_length;
 
-    bool has_filled = AutofillField::FillFormField(
-        field, ASCIIToUTF16(test_case.value_to_fill), "en-US", "en-US", &field);
+  bool has_filled = AutofillField::FillFormField(
+      field, ASCIIToUTF16(test_case.value_to_fill), "en-US", "en-US", &field);
 
-    EXPECT_EQ(test_case.should_fill, has_filled);
-    EXPECT_EQ(ASCIIToUTF16(test_case.expected_value), field.value);
-  }
+  EXPECT_EQ(test_case.should_fill, has_filled);
+  EXPECT_EQ(ASCIIToUTF16(test_case.expected_value), field.value);
 }
+
+INSTANTIATE_TEST_CASE_P(
+    AutofillFieldTest,
+    AutofillStateTextTest,
+    testing::Values(
+        // Filling a state to a text field with the default maxlength value
+        // should
+        // fill the state value as is.
+        FillStateTextTestCase{HTML_TYPE_ADDRESS_LEVEL1, /* default value */ 0,
+                              "New York", "New York", true},
+        FillStateTextTestCase{HTML_TYPE_ADDRESS_LEVEL1, /* default value */ 0,
+                              "NY", "NY", true},
+        // Filling a state to a text field with a maxlength value equal to the
+        // value's length should fill the state value as is.
+        FillStateTextTestCase{HTML_TYPE_ADDRESS_LEVEL1, 8, "New York",
+                              "New York", true},
+        // Filling a state to a text field with a maxlength value lower than the
+        // value's length but higher than the value's abbreviation should fill
+        // the state abbreviation.
+        FillStateTextTestCase{HTML_TYPE_ADDRESS_LEVEL1, 2, "New York", "NY",
+                              true},
+        FillStateTextTestCase{HTML_TYPE_ADDRESS_LEVEL1, 2, "NY", "NY", true},
+        // Filling a state to a text field with a maxlength value lower than the
+        // value's length and the value's abbreviation should not fill at all.
+        FillStateTextTestCase{HTML_TYPE_ADDRESS_LEVEL1, 1, "New York", "",
+                              false},
+        FillStateTextTestCase{HTML_TYPE_ADDRESS_LEVEL1, 1, "NY", "", false},
+        // Filling a state to a text field with a maxlength value lower than the
+        // value's length and that has no associated abbreviation should not
+        // fill at all.
+        FillStateTextTestCase{HTML_TYPE_ADDRESS_LEVEL1, 3, "Quebec", "",
+                              false}));
 
 }  // namespace
 }  // namespace autofill

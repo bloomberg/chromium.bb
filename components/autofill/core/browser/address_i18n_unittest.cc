@@ -35,60 +35,90 @@ using ::i18n::addressinput::RECIPIENT;
 using ::i18n::addressinput::SORTING_CODE;
 using ::i18n::addressinput::STREET_ADDRESS;
 
-TEST(AddressI18nTest, FieldTypeMirrorConversions) {
-  static const struct {
-    bool billing;
-    ServerFieldType server_field;
-    AddressField address_field;
-  } kTestData[] = {
-    {true, ADDRESS_BILLING_COUNTRY, COUNTRY},
-    {true, ADDRESS_BILLING_STATE, ADMIN_AREA},
-    {true, ADDRESS_BILLING_CITY, LOCALITY},
-    {true, ADDRESS_BILLING_DEPENDENT_LOCALITY, DEPENDENT_LOCALITY},
-    {true, ADDRESS_BILLING_SORTING_CODE, SORTING_CODE},
-    {true, ADDRESS_BILLING_ZIP, POSTAL_CODE},
-    {true, ADDRESS_BILLING_STREET_ADDRESS, STREET_ADDRESS},
-    {true, COMPANY_NAME, ORGANIZATION},
-    {true, NAME_BILLING_FULL, RECIPIENT},
-    {false, ADDRESS_HOME_COUNTRY, COUNTRY},
-    {false, ADDRESS_HOME_STATE, ADMIN_AREA},
-    {false, ADDRESS_HOME_CITY, LOCALITY},
-    {false, ADDRESS_HOME_DEPENDENT_LOCALITY, DEPENDENT_LOCALITY},
-    {false, ADDRESS_HOME_SORTING_CODE, SORTING_CODE},
-    {false, ADDRESS_HOME_ZIP, POSTAL_CODE},
-    {false, ADDRESS_HOME_STREET_ADDRESS, STREET_ADDRESS},
-    {false, COMPANY_NAME, ORGANIZATION},
-    {false, NAME_FULL, RECIPIENT},
-  };
+struct FieldTypeMirrorConversionsTestCase {
+  bool billing;
+  ServerFieldType server_field;
+  AddressField address_field;
+};
 
-  for (const auto& test_data : kTestData) {
-    AddressField address_field;
-    EXPECT_TRUE(FieldForType(test_data.server_field, &address_field));
-    EXPECT_EQ(test_data.address_field, address_field);
+class FieldTypeMirrorConversionsTest
+    : public testing::TestWithParam<FieldTypeMirrorConversionsTestCase> {};
 
-    ServerFieldType server_field =
-        TypeForField(test_data.address_field, test_data.billing);
-    EXPECT_EQ(test_data.server_field, server_field);
-  }
+TEST_P(FieldTypeMirrorConversionsTest, FieldTypeMirrorConversions) {
+  auto test_data = GetParam();
+  AddressField address_field;
+  EXPECT_TRUE(FieldForType(test_data.server_field, &address_field));
+  EXPECT_EQ(test_data.address_field, address_field);
+
+  ServerFieldType server_field =
+      TypeForField(test_data.address_field, test_data.billing);
+  EXPECT_EQ(test_data.server_field, server_field);
 }
 
-TEST(AddressI18nTest, FieldTypeUnidirectionalConversions) {
-  static const struct {
-    ServerFieldType server_field;
-    AddressField expected_address_field;
-  } kTestData[] = {
-    {ADDRESS_BILLING_LINE1, STREET_ADDRESS},
-    {ADDRESS_BILLING_LINE2, STREET_ADDRESS},
-    {ADDRESS_HOME_LINE1, STREET_ADDRESS},
-    {ADDRESS_HOME_LINE2, STREET_ADDRESS},
-  };
+INSTANTIATE_TEST_CASE_P(
+    AddressI18nTest,
+    FieldTypeMirrorConversionsTest,
+    testing::Values(
+        FieldTypeMirrorConversionsTestCase{true, ADDRESS_BILLING_COUNTRY,
+                                           COUNTRY},
+        FieldTypeMirrorConversionsTestCase{true, ADDRESS_BILLING_STATE,
+                                           ADMIN_AREA},
+        FieldTypeMirrorConversionsTestCase{true, ADDRESS_BILLING_CITY,
+                                           LOCALITY},
+        FieldTypeMirrorConversionsTestCase{
+            true, ADDRESS_BILLING_DEPENDENT_LOCALITY, DEPENDENT_LOCALITY},
+        FieldTypeMirrorConversionsTestCase{true, ADDRESS_BILLING_SORTING_CODE,
+                                           SORTING_CODE},
+        FieldTypeMirrorConversionsTestCase{true, ADDRESS_BILLING_ZIP,
+                                           POSTAL_CODE},
+        FieldTypeMirrorConversionsTestCase{true, ADDRESS_BILLING_STREET_ADDRESS,
+                                           STREET_ADDRESS},
+        FieldTypeMirrorConversionsTestCase{true, COMPANY_NAME, ORGANIZATION},
+        FieldTypeMirrorConversionsTestCase{true, NAME_BILLING_FULL, RECIPIENT},
+        FieldTypeMirrorConversionsTestCase{false, ADDRESS_HOME_COUNTRY,
+                                           COUNTRY},
+        FieldTypeMirrorConversionsTestCase{false, ADDRESS_HOME_STATE,
+                                           ADMIN_AREA},
+        FieldTypeMirrorConversionsTestCase{false, ADDRESS_HOME_CITY, LOCALITY},
+        FieldTypeMirrorConversionsTestCase{
+            false, ADDRESS_HOME_DEPENDENT_LOCALITY, DEPENDENT_LOCALITY},
+        FieldTypeMirrorConversionsTestCase{false, ADDRESS_HOME_SORTING_CODE,
+                                           SORTING_CODE},
+        FieldTypeMirrorConversionsTestCase{false, ADDRESS_HOME_ZIP,
+                                           POSTAL_CODE},
+        FieldTypeMirrorConversionsTestCase{false, ADDRESS_HOME_STREET_ADDRESS,
+                                           STREET_ADDRESS},
+        FieldTypeMirrorConversionsTestCase{false, COMPANY_NAME, ORGANIZATION},
+        FieldTypeMirrorConversionsTestCase{false, NAME_FULL, RECIPIENT}));
 
-  for (const auto& test_data : kTestData) {
-    AddressField actual_address_field;
-    FieldForType(test_data.server_field, &actual_address_field);
-    EXPECT_EQ(test_data.expected_address_field, actual_address_field);
-  }
+struct FieldTypeUnidirectionalConversionsTestCase {
+  ServerFieldType server_field;
+  AddressField expected_address_field;
+};
+
+class FieldTypeUnidirectionalConversionsTest
+    : public testing::TestWithParam<
+          FieldTypeUnidirectionalConversionsTestCase> {};
+
+TEST_P(FieldTypeUnidirectionalConversionsTest,
+       FieldTypeUnidirectionalConversions) {
+  auto test_data = GetParam();
+  AddressField actual_address_field;
+  FieldForType(test_data.server_field, &actual_address_field);
+  EXPECT_EQ(test_data.expected_address_field, actual_address_field);
 }
+
+INSTANTIATE_TEST_CASE_P(AddressI18nTest,
+                        FieldTypeUnidirectionalConversionsTest,
+                        testing::Values(
+                            FieldTypeUnidirectionalConversionsTestCase{
+                                ADDRESS_BILLING_LINE1, STREET_ADDRESS},
+                            FieldTypeUnidirectionalConversionsTestCase{
+                                ADDRESS_BILLING_LINE2, STREET_ADDRESS},
+                            FieldTypeUnidirectionalConversionsTestCase{
+                                ADDRESS_HOME_LINE1, STREET_ADDRESS},
+                            FieldTypeUnidirectionalConversionsTestCase{
+                                ADDRESS_HOME_LINE2, STREET_ADDRESS}));
 
 TEST(AddressI18nTest, UnconvertableServerFields) {
   EXPECT_FALSE(FieldForType(PHONE_HOME_NUMBER, NULL));

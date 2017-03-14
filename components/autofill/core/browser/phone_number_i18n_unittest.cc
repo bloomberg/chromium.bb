@@ -46,101 +46,117 @@ TEST(PhoneNumberI18NTest, NormalizePhoneNumber) {
   EXPECT_EQ(NormalizePhoneNumber(phone5, "US"), ASCIIToUTF16("6502346789"));
 }
 
-TEST(PhoneNumberI18NTest, ParsePhoneNumber) {
-  const struct test_case {
-    // Expected parsing result.
-    bool valid;
-    // Inputs.
-    std::string input;
-    std::string assumed_region;
-    // Further expectations.
-    std::string number;
-    std::string city_code;
-    std::string country_code;
-    std::string deduced_region;
-  } test_cases[] = {
+struct ParseNumberTestCase {
+  // Expected parsing result.
+  bool valid;
+  // Inputs.
+  std::string input;
+  std::string assumed_region;
+  // Further expectations.
+  std::string number;
+  std::string city_code;
+  std::string country_code;
+  std::string deduced_region;
+};
+
+class ParseNumberTest : public testing::TestWithParam<ParseNumberTestCase> {};
+
+TEST_P(ParseNumberTest, ParsePhoneNumber) {
+  auto test_case = GetParam();
+  SCOPED_TRACE("Testing phone number " + test_case.input);
+
+  base::string16 country_code, city_code, number;
+  std::string deduced_region;
+  ::i18n::phonenumbers::PhoneNumber unused_i18n_number;
+  EXPECT_EQ(
+      test_case.valid,
+      ParsePhoneNumber(ASCIIToUTF16(test_case.input), test_case.assumed_region,
+                       &country_code, &city_code, &number, &deduced_region,
+                       &unused_i18n_number));
+  EXPECT_EQ(ASCIIToUTF16(test_case.number), number);
+  EXPECT_EQ(ASCIIToUTF16(test_case.city_code), city_code);
+  EXPECT_EQ(ASCIIToUTF16(test_case.country_code), country_code);
+  EXPECT_EQ(test_case.deduced_region, deduced_region);
+}
+
+INSTANTIATE_TEST_CASE_P(
+    PhoneNumberI18NTest,
+    ParseNumberTest,
+    testing::Values(
         // Test for empty string.  Should give back empty strings.
-        {false, "", "US"},
+        ParseNumberTestCase{false, "", "US"},
         // Test for string with less than 7 digits.  Should give back empty
         // strings.
-        {false, "1234", "US"},
+        ParseNumberTestCase{false, "1234", "US"},
         // Test for string with exactly 7 digits.
         // Not a valid number - starts with 1
-        {false, "17134567", "US"},
+        ParseNumberTestCase{false, "17134567", "US"},
         // Not a valid number - does not have area code.
-        {false, "7134567", "US"},
+        ParseNumberTestCase{false, "7134567", "US"},
         // Valid Canadian toll-free number.
-        {true, "3101234", "US", "3101234", "", "", "CA"},
+        ParseNumberTestCase{true, "3101234", "US", "3101234", "", "", "CA"},
         // Test for string with greater than 7 digits but less than 10 digits.
         // Should fail parsing in US.
-        {false, "123456789", "US"},
+        ParseNumberTestCase{false, "123456789", "US"},
         // Test for string with greater than 7 digits but less than 10 digits
         // and
         // separators.
         // Should fail parsing in US.
-        {false, "12.345-6789", "US"},
+        ParseNumberTestCase{false, "12.345-6789", "US"},
         // Test for string with exactly 10 digits.
         // Should give back phone number and city code.
         // This one going to fail because of the incorrect area code.
-        {false, "1234567890", "US"},
+        ParseNumberTestCase{false, "1234567890", "US"},
         // This one going to fail because of the incorrect number (starts with
         // 1).
-        {false, "6501567890", "US"},
-        {true, "6504567890", "US", "4567890", "650", "", "US"},
+        ParseNumberTestCase{false, "6501567890", "US"},
+        ParseNumberTestCase{true, "6504567890", "US", "4567890", "650", "",
+                            "US"},
         // Test for string with exactly 10 digits and separators.
         // Should give back phone number and city code.
-        {true, "(650) 456-7890", "US", "4567890", "650", "", "US"},
+        ParseNumberTestCase{true, "(650) 456-7890", "US", "4567890", "650", "",
+                            "US"},
         // Tests for string with over 10 digits.
         // 01 is incorrect prefix in the USA, and if we interpret 011 as prefix,
         // the
         // rest is too short for international number - the parsing should fail.
-        {false, "0116504567890", "US"},
+        ParseNumberTestCase{false, "0116504567890", "US"},
         // 011 is a correct "dial out" prefix in the USA - the parsing should
         // succeed.
-        {true, "01116504567890", "US", "4567890", "650", "1", "US"},
+        ParseNumberTestCase{true, "01116504567890", "US", "4567890", "650", "1",
+                            "US"},
         // 011 is a correct "dial out" prefix in the USA but the rest of the
         // number
         // can't parse as a US number.
-        {true, "01178124567890", "US", "4567890", "812", "7", "RU"},
+        ParseNumberTestCase{true, "01178124567890", "US", "4567890", "812", "7",
+                            "RU"},
         // Test for string with over 10 digits with separator characters.
         // Should give back phone number, city code, and country code. "011" is
         // US "dial out" code, which is discarded.
-        {true, "(0111) 650-456.7890", "US", "4567890", "650", "1", "US"},
+        ParseNumberTestCase{true, "(0111) 650-456.7890", "US", "4567890", "650",
+                            "1", "US"},
         // Now try phone from Czech republic - it has 00 dial out code, 420
         // country
         // code and variable length area codes.
-        {true, "+420 27-89.10.112", "US", "910112", "278", "420", "CZ"},
-        {false, "27-89.10.112", "US"},
-        {true, "27-89.10.112", "CZ", "910112", "278", "", "CZ"},
-        {false, "420 57-89.10.112", "US"},
-        {true, "420 57-89.10.112", "CZ", "910112", "578", "420", "CZ"},
+        ParseNumberTestCase{true, "+420 27-89.10.112", "US", "910112", "278",
+                            "420", "CZ"},
+        ParseNumberTestCase{false, "27-89.10.112", "US"},
+        ParseNumberTestCase{true, "27-89.10.112", "CZ", "910112", "278", "",
+                            "CZ"},
+        ParseNumberTestCase{false, "420 57-89.10.112", "US"},
+        ParseNumberTestCase{true, "420 57-89.10.112", "CZ", "910112", "578",
+                            "420", "CZ"},
         // Parses vanity numbers.
-        {true, "1-650-FLOWERS", "US", "3569377", "650", "1", "US"},
+        ParseNumberTestCase{true, "1-650-FLOWERS", "US", "3569377", "650", "1",
+                            "US"},
         // 800 is not an area code, but the destination code. In our library
         // these
         // codes should be treated the same as area codes.
-        {true, "1-800-FLOWERS", "US", "3569377", "800", "1", "US"},
+        ParseNumberTestCase{true, "1-800-FLOWERS", "US", "3569377", "800", "1",
+                            "US"},
         // Don't add a country code where there was none.
-        {true, "(08) 450 777 7777", "DE", "7777777", "8450", "", "DE"},
-    };
-
-  for (const auto& test_case : test_cases) {
-    SCOPED_TRACE("Testing phone number " + test_case.input);
-
-    base::string16 country_code, city_code, number;
-    std::string deduced_region;
-    ::i18n::phonenumbers::PhoneNumber unused_i18n_number;
-    EXPECT_EQ(
-        test_case.valid,
-        ParsePhoneNumber(ASCIIToUTF16(test_case.input),
-                         test_case.assumed_region, &country_code, &city_code,
-                         &number, &deduced_region, &unused_i18n_number));
-    EXPECT_EQ(ASCIIToUTF16(test_case.number), number);
-    EXPECT_EQ(ASCIIToUTF16(test_case.city_code), city_code);
-    EXPECT_EQ(ASCIIToUTF16(test_case.country_code), country_code);
-    EXPECT_EQ(test_case.deduced_region, deduced_region);
-  }
-}
+        ParseNumberTestCase{true, "(08) 450 777 7777", "DE", "7777777", "8450",
+                            "", "DE"}));
 
 TEST(PhoneNumberI18NTest, ConstructPhoneNumber) {
   base::string16 number;
