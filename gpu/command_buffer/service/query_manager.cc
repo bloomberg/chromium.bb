@@ -1118,6 +1118,9 @@ bool QueryManager::EndQuery(Query* query, base::subtle::Atomic32 submit_count) {
 bool QueryManager::QueryCounter(
     Query* query, base::subtle::Atomic32 submit_count) {
   DCHECK(query);
+  if (!RemovePendingQuery(query)) {
+    return false;
+  }
   return query->QueryCounter(submit_count);
 }
 

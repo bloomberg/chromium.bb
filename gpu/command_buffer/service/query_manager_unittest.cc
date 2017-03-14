@@ -829,6 +829,36 @@ TEST_F(QueryManagerTest, TimeStampQuery) {
   manager_->Destroy(false);
 }
 
+TEST_F(QueryManagerTest, TimeStampQueryPending) {
+  const GLuint kClient1Id = 1;
+  const GLenum kTarget = GL_TIMESTAMP_EXT;
+  const base::subtle::Atomic32 kSubmitCount = 123;
+  gl::GPUTimingFake fake_timing_queries;
+
+  decoder_->GetGLContext()->CreateGPUTimingClient()->SetCpuTimeForTesting(
+      base::Bind(&gl::GPUTimingFake::GetFakeCPUTime));
+
+  QueryManager::Query* query = manager_->CreateQuery(
+      kTarget, kClient1Id, kSharedMemoryId, kSharedMemoryOffset);
+  ASSERT_TRUE(query != NULL);
+
+  const uint64_t expected_result =
+      100u * base::Time::kNanosecondsPerMicrosecond;
+  fake_timing_queries.SetCurrentGLTime(expected_result);
+  fake_timing_queries.ExpectGPUTimeStampQuery(*gl_, false);
+  EXPECT_TRUE(manager_->QueryCounter(query, kSubmitCount));
+  EXPECT_TRUE(query->IsPending());
+  fake_timing_queries.ExpectGPUTimeStampQuery(*gl_, false);
+  EXPECT_TRUE(manager_->QueryCounter(query, kSubmitCount));
+  EXPECT_TRUE(manager_->ProcessPendingQueries(false));
+
+  QuerySync* sync = decoder_->GetSharedMemoryAs<QuerySync*>(
+      kSharedMemoryId, kSharedMemoryOffset, sizeof(*sync));
+  EXPECT_EQ(expected_result, sync->result);
+
+  manager_->Destroy(false);
+}
+
 TEST_F(QueryManagerManualSetupTest, TimeStampDisjoint) {
   GpuServiceTest::SetUpWithGLVersion("OpenGL ES 3.0",
                                      "GL_EXT_disjoint_timer_query");
