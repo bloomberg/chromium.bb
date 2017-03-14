@@ -150,14 +150,15 @@ def main():
     protobuf = parse_protobuf(fh)
 
   engine_buf = get_unique([
-      b for b in protobuf['deps'] if b.get('project_id') == ['recipe_engine'] ])
+      b for b in protobuf.get('deps', [])
+      if b.get('project_id') == ['recipe_engine'] ])
   engine_url = get_unique(engine_buf['url'])
   engine_revision = get_unique(engine_buf['revision'])
   engine_subpath = (get_unique(engine_buf.get('path_override', ['']))
                     .replace('/', os.path.sep))
 
   recipes_path = os.path.join(repo_root,
-      get_unique(protobuf['recipes_path']).replace('/', os.path.sep))
+      get_unique(protobuf.get('recipes_path', [''])).replace('/', os.path.sep))
   deps_path = os.path.join(recipes_path, '.recipe_deps')
   engine_path = find_engine_override(sys.argv[1:])
   if not engine_path:
