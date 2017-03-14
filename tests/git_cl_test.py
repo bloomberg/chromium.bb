@@ -2933,6 +2933,56 @@ class TestGitCl(TestCase):
     self.assertEqual(cl.GetDescription(), 'desc1')  # cache hit.
     self.assertEqual(cl.GetDescription(force=True), 'desc2')
 
+  def _common_creds_check_mocks(self):
+    def exists_mock(path):
+      dirname = os.path.dirname(path)
+      if dirname == os.path.expanduser('~'):
+        dirname = '~'
+      base = os.path.basename(path)
+      if base in ('.netrc', '.gitcookies'):
+        return self._mocked_call('os.path.exists', '%s/%s' % (dirname, base))
+      # git cl also checks for existence other files not relevant to this test.
+      return None
+    self.mock(os.path, 'exists', exists_mock)
+    self.mock(sys, 'stdout', StringIO.StringIO())
+
+  def test_creds_check_gitcookies_not_configured(self):
+    self._common_creds_check_mocks()
+    self.calls = [
+      ((['git', 'config', '--global', 'http.cookiefile'],), CERR1),
+      (('os.path.exists', '~/.netrc'), True),
+      (('ask_for_data', 'Press Enter to setup .gitcookies, '
+        'or Ctrl+C to abort'), ''),
+      ((['git', 'config', '--global', 'http.cookiefile',
+         os.path.expanduser('~/.gitcookies')], ), ''),
+    ]
+    self.assertEqual(0, git_cl.main(['creds-check']))
+    self.assertRegexpMatches(
+        sys.stdout.getvalue(),
+        '^You seem to be using outdated .netrc for git credentials:')
+    self.assertRegexpMatches(
+        sys.stdout.getvalue(),
+        '\nConfigured git to use .gitcookies from')
+
+  def test_creds_check_gitcookies_configured_custom_broken(self):
+    self._common_creds_check_mocks()
+    self.calls = [
+      ((['git', 'config', '--global', 'http.cookiefile'],),
+       '/custom/.gitcookies'),
+      (('os.path.exists', '/custom/.gitcookies'), False),
+      (('ask_for_data', 'Reconfigure git to use default .gitcookies? '
+                        'Press Enter to reconfigure, or Ctrl+C to abort'), ''),
+      ((['git', 'config', '--global', 'http.cookiefile',
+         os.path.expanduser('~/.gitcookies')], ), ''),
+    ]
+    self.assertEqual(0, git_cl.main(['creds-check']))
+    self.assertRegexpMatches(
+        sys.stdout.getvalue(),
+        'WARNING: you have configured custom path to .gitcookies: ')
+    self.assertRegexpMatches(
+        sys.stdout.getvalue(),
+        'However, your configured .gitcookies file is missing.')
+
 if __name__ == '__main__':
   logging.basicConfig(
       level=logging.DEBUG if '-v' in sys.argv else logging.ERROR)

@@ -22,6 +22,7 @@ import multiprocessing
 import optparse
 import os
 import re
+import shutil
 import stat
 import sys
 import textwrap
@@ -187,7 +188,7 @@ def confirm_or_exit(prefix='', action='confirm'):
   """Asks user to press enter to continue or press Ctrl+C to abort."""
   if not prefix or prefix.endswith('\n'):
     mid = 'Press'
-  elif prefix.endswith('.'):
+  elif prefix.endswith('.') or prefix.endswith('?'):
     mid = ' Press'
   elif prefix.endswith(' '):
     mid = 'press'
@@ -3440,6 +3441,70 @@ def GetRietveldCodereviewSettingsInteractively():
   SetProperty(settings.GetBugPrefix(), 'Bug Prefix', 'bug-prefix', False)
   SetProperty(settings.GetRunPostUploadHook(), 'Run Post Upload Hook',
               'run-post-upload-hook', False)
+
+
+def _ensure_default_gitcookies_path(configured_path, default_path):
+  assert configured_path
+  if configured_path == default_path:
+    print('git is already configured to use your .gitcookies from %s' %
+          configured_path)
+    return
+
+  print('WARNING: you have configured custom path to .gitcookies: %s\n'
+        'Gerrit and other depot_tools expect .gitcookies at %s\n' %
+        (configured_path, default_path))
+
+  if not os.path.exists(configured_path):
+    print('However, your configured .gitcookies file is missing.')
+    confirm_or_exit('Reconfigure git to use default .gitcookies?',
+                    action='reconfigure')
+    RunGit(['config', '--global', 'http.cookiefile', default_path])
+    return
+
+  if os.path.exists(default_path):
+    print('WARNING: default .gitcookies file already exists %s' % default_path)
+    DieWithError('Please delete %s manually and re-run git cl creds-check' %
+                 default_path)
+
+  confirm_or_exit('Move existing .gitcookies to default location?',
+                  action='move')
+  shutil.move(configured_path, default_path)
+  RunGit(['config', '--global', 'http.cookiefile', default_path])
+  print('Moved and reconfigured git to use .gitcookies from %s' % default_path)
+
+
+def _configure_gitcookies_path(gitcookies_path):
+  netrc_path = gerrit_util.CookiesAuthenticator.get_netrc_path()
+  if os.path.exists(netrc_path):
+    print('You seem to be using outdated .netrc for git credentials: %s' %
+          netrc_path)
+  print('This tool will guide you through setting up recommended '
+        '.gitcookies store for git credentials.\n'
+        '\n'
+        'IMPORTANT: If something goes wrong and you decide to go back, do:\n'
+        '  git config --global --unset http.cookiefile\n'
+        '  mv %s %s.backup\n\n' % (gitcookies_path, gitcookies_path))
+  confirm_or_exit(action='setup .gitcookies')
+  RunGit(['config', '--global', 'http.cookiefile', gitcookies_path])
+  print('Configured git to use .gitcookies from %s' % gitcookies_path)
+
+
+def CMDcreds_check(parser, args):
+  """Checks credentials and suggests changes."""
+  _, _ = parser.parse_args(args)
+
+  if gerrit_util.GceAuthenticator.is_gce():
+    DieWithError('this command is not designed for GCE, are you on a bot?')
+
+  gitcookies_path = gerrit_util.CookiesAuthenticator.get_gitcookies_path()
+  configured_gitcookies_path = RunGitSilent(
+      ['config', '--global', 'http.cookiefile']).strip()
+  if configured_gitcookies_path:
+    _ensure_default_gitcookies_path(configured_gitcookies_path, gitcookies_path)
+  else:
+    _configure_gitcookies_path(gitcookies_path)
+  # TODO(tandrii): finish this.
+  return 0
 
 
 @subcommand.usage('[repo root containing codereview.settings]')
