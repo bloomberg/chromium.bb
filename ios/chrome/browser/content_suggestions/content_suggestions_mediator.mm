@@ -113,7 +113,7 @@ ntp_snippets::ContentSuggestion::ID SuggestionIDForSectionID(
         sectionInformationByCategory;
 
 // Converts the data in |category| to ContentSuggestion and adds them to the
-// |contentArray|.
+// |contentArray| if the category is available.
 - (void)addContentInCategory:(ntp_snippets::Category&)category
                      toArray:(NSMutableArray<ContentSuggestion*>*)contentArray;
 
@@ -164,17 +164,19 @@ ntp_snippets::ContentSuggestion::ID SuggestionIDForSectionID(
       self.contentService->GetCategories();
   NSMutableArray<ContentSuggestion*>* dataHolders = [NSMutableArray array];
   for (auto& category : categories) {
-    if (self.contentService->GetCategoryStatus(category) !=
-        ntp_snippets::CategoryStatus::AVAILABLE) {
-      continue;
-    }
-    if (!self.sectionInformationByCategory[
-            [ContentSuggestionsCategoryWrapper wrapperWithCategory:category]]) {
-      [self addSectionInformationForCategory:category];
-    }
     [self addContentInCategory:category toArray:dataHolders];
   }
   return dataHolders;
+}
+
+- (NSArray<ContentSuggestion*>*)suggestionsForSection:
+    (ContentSuggestionsSectionInformation*)sectionInfo {
+  ntp_snippets::Category category =
+      [[self categoryWrapperForSectionInfo:sectionInfo] category];
+
+  NSMutableArray* suggestions = [NSMutableArray array];
+  [self addContentInCategory:category toArray:suggestions];
+  return suggestions;
 }
 
 - (id<ContentSuggestionsImageFetcher>)imageFetcher {
@@ -186,7 +188,13 @@ ntp_snippets::ContentSuggestion::ID SuggestionIDForSectionID(
 - (void)contentSuggestionsService:
             (ntp_snippets::ContentSuggestionsService*)suggestionsService
          newSuggestionsInCategory:(ntp_snippets::Category)category {
-  [self.dataSink dataAvailable];
+  ContentSuggestionsCategoryWrapper* wrapper =
+      [ContentSuggestionsCategoryWrapper wrapperWithCategory:category];
+  if (!self.sectionInformationByCategory[wrapper]) {
+    [self addSectionInformationForCategory:category];
+  }
+  [self.dataSink
+      dataAvailableForSection:self.sectionInformationByCategory[wrapper]];
 }
 
 - (void)contentSuggestionsService:
@@ -246,12 +254,22 @@ ntp_snippets::ContentSuggestion::ID SuggestionIDForSectionID(
 
 - (void)addContentInCategory:(ntp_snippets::Category&)category
                      toArray:(NSMutableArray<ContentSuggestion*>*)contentArray {
+  if (self.contentService->GetCategoryStatus(category) !=
+      ntp_snippets::CategoryStatus::AVAILABLE) {
+    return;
+  }
+  ContentSuggestionsCategoryWrapper* categoryWrapper =
+      [ContentSuggestionsCategoryWrapper wrapperWithCategory:category];
+  if (!self.sectionInformationByCategory[categoryWrapper]) {
+    [self addSectionInformationForCategory:category];
+  }
+
   const std::vector<ntp_snippets::ContentSuggestion>& suggestions =
       self.contentService->GetSuggestionsForCategory(category);
-  ContentSuggestionsCategoryWrapper* categoryWrapper =
-      [[ContentSuggestionsCategoryWrapper alloc] initWithCategory:category];
+
   for (auto& contentSuggestion : suggestions) {
     ContentSuggestion* suggestion = ConvertContentSuggestion(contentSuggestion);
+
     suggestion.type = TypeForCategory(category);
     suggestion.suggestionIdentifier.sectionInfo =
         self.sectionInformationByCategory[categoryWrapper];

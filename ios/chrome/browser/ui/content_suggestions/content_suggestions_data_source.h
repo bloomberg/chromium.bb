@@ -6,6 +6,7 @@
 #define IOS_CHROME_BROWSER_UI_CONTENT_SUGGESTIONS_CONTENT_SUGGESTIONS_DATA_SOURCE_H_
 
 @class ContentSuggestion;
+@class ContentSuggestionsSectionInformation;
 @protocol ContentSuggestionsDataSink;
 @protocol ContentSuggestionsImageFetcher;
 
@@ -14,14 +15,18 @@
 @protocol ContentSuggestionsDataSource
 
 // The data sink that will be notified when the data change.
-@property(nonatomic, weak) id<ContentSuggestionsDataSink> dataSink;
+@property(nonatomic, nullable, weak) id<ContentSuggestionsDataSink> dataSink;
 
-// Returns all the data currently available. Returns an empty array if nothing
-// is available.
-- (NSArray<ContentSuggestion*>*)allSuggestions;
+// Returns all the data currently available.
+- (nonnull NSArray<ContentSuggestion*>*)allSuggestions;
+
+// Returns the data currently available for the section identified by
+// |sectionInfo|.
+- (nonnull NSArray<ContentSuggestion*>*)suggestionsForSection:
+    (nonnull ContentSuggestionsSectionInformation*)sectionInfo;
 
 // Returns an image updater for the suggestions provided by this data source.
-- (id<ContentSuggestionsImageFetcher>)imageFetcher;
+- (nullable id<ContentSuggestionsImageFetcher>)imageFetcher;
 
 @end
 

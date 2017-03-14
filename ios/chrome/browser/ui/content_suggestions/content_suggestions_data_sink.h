@@ -12,8 +12,10 @@
 // to be pulled.
 @protocol ContentSuggestionsDataSink
 
-// Notifies the Data Sink that new data is available.
-- (void)dataAvailable;
+// Notifies the Data Sink that new data is available for the section identified
+// by |sectionInfo|.
+- (void)dataAvailableForSection:
+    (ContentSuggestionsSectionInformation*)sectionInfo;
 
 // The suggestion associated with |suggestionIdentifier| has been invalidated by
 // the backend data source and should be cleared now. This is why this method is
