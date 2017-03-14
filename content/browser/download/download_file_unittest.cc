@@ -395,8 +395,11 @@ class DownloadFileTest : public testing::Test {
     return result_reason;
   }
 
-  // Prepare two byte streams to write to the same file sink.
-  void PrepareMultipleStreams(int64_t second_stream_length) {
+  // Prepare two byte streams to write to the same file sink. If
+  // |first_stream_completes_early| is true, the first stream will complete
+  // before the second stream starts.
+  void PrepareMultipleStreams(bool first_stream_completes_early,
+                              int64_t second_stream_length) {
     // Create a sparse file.
     ASSERT_TRUE(CreateDownloadFile(0, true, true));
     base::FilePath initial_path(download_file_->FullPath());
@@ -423,13 +426,19 @@ class DownloadFileTest : public testing::Test {
     ::testing::Sequence s1;
     SetupDataAppend(stream_1_data, 2, input_stream_1_, s1, stream_1_offset);
     SetupDataAppend(stream_0_data, 2, input_stream_, s0, 0);
-    SetupFinishStream(DOWNLOAD_INTERRUPT_REASON_NONE, input_stream_, s0);
+    // If the first stream doesn't finish before the second stream starts
+    // writing, its length will be cut short by the second stream. So
+    // STREAM_COMPLETE will never get called.
+    if (first_stream_completes_early)
+      SetupFinishStream(DOWNLOAD_INTERRUPT_REASON_NONE, input_stream_, s0);
+    else
+      EXPECT_CALL(*input_stream_, RegisterCallback(_)).RetiresOnSaturation();
 
     // Expectation on MockByteStreamReader for MultipleStreams tests:
     // 1. RegisterCallback: Must called twice. One to set the callback, the
     // other to release the stream.
     // 2. Read: If filled with N buffer, called (N+1) times, where the last Read
-    // call doesn't read any data but returns STRAM_COMPLETE.
+    // call doesn't read any data but returns STREAM_COMPLETE.
     // The stream may terminate in the middle and less Read calls are expected.
     // 3. GetStatus: Only called if the stream is completed and last Read call
     // returns STREAM_COMPLETE.
@@ -903,7 +912,7 @@ TEST_F(DownloadFileTest, StreamNonEmptyError) {
 //
 // Activate both streams at the same time.
 TEST_F(DownloadFileTest, MutipleStreamsWrite) {
-  PrepareMultipleStreams(0);
+  PrepareMultipleStreams(false, 0);
   EXPECT_CALL(*(observer_.get()), MockDestinationCompleted(_, _));
 
   int64_t stream_0_length =
@@ -927,7 +936,7 @@ TEST_F(DownloadFileTest, MutipleStreamsWrite) {
 
 // Activate and deplete one stream, later add the second stream.
 TEST_F(DownloadFileTest, MutipleStreamsOneStreamFirst) {
-  PrepareMultipleStreams(0);
+  PrepareMultipleStreams(true, 0);
 
   int64_t stream_0_length =
       static_cast<int64_t>(strlen(kTestData1) + strlen(kTestData2));
@@ -970,7 +979,7 @@ TEST_F(DownloadFileTest, MutipleStreamsLimitedLength) {
   int64_t stream_0_length =
       static_cast<int64_t>(strlen(kTestData1) + strlen(kTestData2));
   int64_t stream_1_length = static_cast<int64_t>(strlen(kTestData4)) - 1;
-  PrepareMultipleStreams(stream_1_length);
+  PrepareMultipleStreams(false, stream_1_length);
 
   EXPECT_CALL(*(observer_.get()), MockDestinationCompleted(_, _));
 

@@ -55,4 +55,40 @@ TEST(ParallelDownloadUtilsTest, FindSlicesToDownload) {
             slices_to_download[1].received_bytes);
 }
 
+TEST(ParallelDownloadUtilsTest, AddOrMergeReceivedSliceIntoSortedArray) {
+  std::vector<DownloadItem::ReceivedSlice> slices;
+  DownloadItem::ReceivedSlice slice1(500, 500);
+  EXPECT_EQ(0u, AddOrMergeReceivedSliceIntoSortedArray(slice1, slices));
+  EXPECT_EQ(1u, slices.size());
+  EXPECT_EQ(slice1, slices[0]);
+
+  // Adding a slice that can be merged with existing slice.
+  DownloadItem::ReceivedSlice slice2(1000, 400);
+  EXPECT_EQ(0u, AddOrMergeReceivedSliceIntoSortedArray(slice2, slices));
+  EXPECT_EQ(1u, slices.size());
+  EXPECT_EQ(500, slices[0].offset);
+  EXPECT_EQ(900, slices[0].received_bytes);
+
+  DownloadItem::ReceivedSlice slice3(0, 50);
+  EXPECT_EQ(0u, AddOrMergeReceivedSliceIntoSortedArray(slice3, slices));
+  EXPECT_EQ(2u, slices.size());
+  EXPECT_EQ(slice3, slices[0]);
+
+  DownloadItem::ReceivedSlice slice4(100, 50);
+  EXPECT_EQ(1u, AddOrMergeReceivedSliceIntoSortedArray(slice4, slices));
+  EXPECT_EQ(3u, slices.size());
+  EXPECT_EQ(slice3, slices[0]);
+  EXPECT_EQ(slice4, slices[1]);
+
+  // A new slice can only merge with an existing slice earlier in the file, not
+  // later in the file.
+  DownloadItem::ReceivedSlice slice5(50, 50);
+  EXPECT_EQ(0u, AddOrMergeReceivedSliceIntoSortedArray(slice5, slices));
+  EXPECT_EQ(3u, slices.size());
+  EXPECT_EQ(0, slices[0].offset);
+  EXPECT_EQ(100, slices[0].received_bytes);
+  EXPECT_EQ(slice4, slices[1]);
+
+}
+
 }  // namespace content

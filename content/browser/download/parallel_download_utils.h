@@ -17,6 +17,14 @@ namespace content {
 CONTENT_EXPORT std::vector<DownloadItem::ReceivedSlice> FindSlicesToDownload(
     const std::vector<DownloadItem::ReceivedSlice>& received_slices);
 
+// Adds or merges a new received slice into a vector of sorted slices. If the
+// slice can be merged with the slice preceding it, merge the 2 slices.
+// Otherwise, insert the slice and keep the vector sorted. Returns the index
+// of the newly updated slice.
+CONTENT_EXPORT size_t AddOrMergeReceivedSliceIntoSortedArray(
+    const DownloadItem::ReceivedSlice& new_slice,
+    std::vector<DownloadItem::ReceivedSlice>& received_slices);
+
 // Finch configuration utilities.
 //
 // Get the minimum slice size to use parallel download from finch configuration.

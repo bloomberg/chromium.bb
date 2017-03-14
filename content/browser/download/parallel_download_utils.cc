@@ -28,6 +28,13 @@ const char kParallelRequestCountFinchKey[] = "request_count";
 // specified.
 const int kParallelRequestCount = 2;
 
+// TODO(qinmin): replace this with a comparator operator in
+// DownloadItem::ReceivedSlice.
+bool compareReceivedSlices(const DownloadItem::ReceivedSlice& lhs,
+                           const DownloadItem::ReceivedSlice& rhs) {
+  return lhs.offset < rhs.offset;
+}
+
 }  // namespace
 
 std::vector<DownloadItem::ReceivedSlice> FindSlicesToDownload(
@@ -59,6 +66,24 @@ std::vector<DownloadItem::ReceivedSlice> FindSlicesToDownload(
     iter = next;
   }
   return result;
+}
+
+size_t AddOrMergeReceivedSliceIntoSortedArray(
+    const DownloadItem::ReceivedSlice& new_slice,
+    std::vector<DownloadItem::ReceivedSlice>& received_slices) {
+  std::vector<DownloadItem::ReceivedSlice>::iterator it =
+      std::upper_bound(received_slices.begin(), received_slices.end(),
+                       new_slice, compareReceivedSlices);
+  if (it != received_slices.begin()) {
+    std::vector<DownloadItem::ReceivedSlice>::iterator prev = std::prev(it);
+    if (prev->offset + prev->received_bytes == new_slice.offset) {
+      prev->received_bytes += new_slice.received_bytes;
+      return static_cast<size_t>(std::distance(received_slices.begin(), prev));
+    }
+  }
+
+  it = received_slices.emplace(it, new_slice);
+  return static_cast<size_t>(std::distance(received_slices.begin(), it));
 }
 
 int64_t GetMinSliceSizeConfig() {

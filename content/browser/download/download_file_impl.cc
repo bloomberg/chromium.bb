@@ -19,6 +19,7 @@
 #include "content/browser/download/download_interrupt_reasons_impl.h"
 #include "content/browser/download/download_net_log_parameters.h"
 #include "content/browser/download/download_stats.h"
+#include "content/browser/download/parallel_download_utils.h"
 #include "content/public/browser/browser_thread.h"
 #include "crypto/secure_hash.h"
 #include "crypto/sha2.h"
@@ -42,7 +43,11 @@ const int kInitialRenameRetryDelayMs = 200;
 const int kMaxRenameRetries = 3;
 
 DownloadFileImpl::SourceStream::SourceStream(int64_t offset, int64_t length)
-    : offset_(offset), length_(length), bytes_written_(0), finished_(false) {}
+    : offset_(offset),
+      length_(length),
+      bytes_written_(0),
+      finished_(false),
+      index_(0u) {}
 
 DownloadFileImpl::SourceStream::~SourceStream() = default;
 
@@ -320,8 +325,21 @@ void DownloadFileImpl::StreamActive(SourceStream* source_stream) {
           disk_writes_time_ += (base::TimeTicks::Now() - write_start);
           bytes_seen_ += incoming_data_size;
           total_incoming_data_size += incoming_data_size;
-          if (reason == DOWNLOAD_INTERRUPT_REASON_NONE)
+          if (reason == DOWNLOAD_INTERRUPT_REASON_NONE) {
+            int64_t prev_bytes_written = source_stream->bytes_written();
             source_stream->OnWriteBytesToDisk(incoming_data_size);
+            if (!is_sparse_file_)
+              break;
+            // If the write operation creates a new slice, add it to the
+            // |received_slices_| and update all the entries in
+            // |source_streams_|.
+            if (incoming_data_size > 0 && prev_bytes_written == 0) {
+              AddNewSlice(source_stream->offset(), incoming_data_size);
+            } else {
+              received_slices_[source_stream->index()].received_bytes +=
+                  incoming_data_size;
+            }
+          }
         }
         break;
       case ByteStreamReader::STREAM_COMPLETE:
@@ -438,6 +456,31 @@ void DownloadFileImpl::WillWriteToDisk(size_t data_len) {
                          this, &DownloadFileImpl::SendUpdate);
   }
   rate_estimator_.Increment(data_len);
+}
+
+void DownloadFileImpl::AddNewSlice(int64_t offset, int64_t length) {
+  if (!is_sparse_file_)
+    return;
+  size_t index = AddOrMergeReceivedSliceIntoSortedArray(
+      DownloadItem::ReceivedSlice(offset, length), received_slices_);
+  // Check if the slice is added as a new slice, or merged with an existing one.
+  bool slice_added = (offset == received_slices_[index].offset);
+  // Update the index of exising SourceStreams.
+  for (auto& stream : source_streams_) {
+    SourceStream* source_stream = stream.second.get();
+    if (source_stream->offset() > offset) {
+      if (slice_added && source_stream->bytes_written() > 0)
+        source_stream->set_index(source_stream->index() + 1);
+    } else if (source_stream->offset() == offset) {
+      source_stream->set_index(index);
+    } else if (source_stream->length() ==
+                   DownloadSaveInfo::kLengthFullContent ||
+               source_stream->length() > offset - source_stream->offset()) {
+      // The newly introduced slice will impact the length of the SourceStreams
+      // preceding it.
+      source_stream->set_length(offset - source_stream->offset());
+    }
+  }
 }
 
 DownloadFileImpl::RenameParameters::RenameParameters(

@@ -109,9 +109,12 @@ class CONTENT_EXPORT DownloadFileImpl : public DownloadFile {
     ByteStreamReader* stream_reader() const { return stream_reader_.get(); }
     int64_t offset() const { return offset_; }
     int64_t length() const { return length_; }
+    void set_length(int64_t length) { length_ = length; }
     int64_t bytes_written() const { return bytes_written_; }
     bool is_finished() const { return finished_; }
     void set_finished(bool finish) { finished_ = finish; }
+    size_t index() { return index_; }
+    void set_index(size_t index) { index_ = index; }
 
    private:
     // Starting position for the stream to write to disk.
@@ -128,6 +131,10 @@ class CONTENT_EXPORT DownloadFileImpl : public DownloadFile {
     // If all the data read from the stream has been successfully written to
     // disk.
     bool finished_;
+
+    // The slice index in the |received_slices_| vector. A slice was created
+    // once the stream started writing data to the target file.
+    size_t index_;
 
     // The stream through which data comes.
     std::unique_ptr<ByteStreamReader> stream_reader_;
@@ -183,6 +190,11 @@ class CONTENT_EXPORT DownloadFileImpl : public DownloadFile {
   // Register callback and start to read data from the stream.
   void RegisterAndActivateStream(SourceStream* source_stream);
 
+  // Adds a new slice to |received_slices_| and update the existing entries in
+  // |source_streams_| as their lengths will change.
+  // TODO(qinmin): add a test for this function.
+  void AddNewSlice(int64_t offset, int64_t length);
+
   // Return the total valid bytes received in the target file.
   // If the file is a sparse file, return the total number of valid bytes.
   // Otherwise, return the current file size.
@@ -215,7 +227,8 @@ class CONTENT_EXPORT DownloadFileImpl : public DownloadFile {
 
   // Set to true when multiple byte streams write to the same file.
   // The file may contain null bytes(holes) in between of valid data slices.
-  // TODO(xingliu): Pass a slice info vector to determine if the file is sparse.
+  // TODO(xingliu): Remove this variable. We can use size of |received_slices_|
+  // to determine if the file is sparse
   bool is_sparse_file_;
 
   // Statistics
