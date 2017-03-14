@@ -72,7 +72,7 @@ IN_PROC_BROWSER_TEST_P(FileManagerBrowserTestWithLegacyEventDispatch, Test) {
 #define MAYBE_FileDisplay FileDisplay
 #endif
 WRAPPED_INSTANTIATE_TEST_CASE_P(
-    MAYBE_FileDisplay,
+    DISABLED_FileDisplay,
     FileManagerBrowserTest,
     ::testing::Values(TestParameter(NOT_IN_GUEST_MODE, "fileDisplayDownloads"),
                       TestParameter(IN_GUEST_MODE, "fileDisplayDownloads"),
@@ -154,24 +154,21 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
 #define MAYBE_KeyboardOperations KeyboardOperations
 #endif
 WRAPPED_INSTANTIATE_TEST_CASE_P(
-    MAYBE_KeyboardOperations,
+    DISABLED_KeyboardOperations,
     FileManagerBrowserTest,
-    ::testing::Values(TestParameter(IN_GUEST_MODE, "keyboardDeleteDownloads"),
-                      TestParameter(NOT_IN_GUEST_MODE,
-                                    "keyboardDeleteDownloads"),
-                      TestParameter(NOT_IN_GUEST_MODE, "keyboardDeleteDrive"),
-                      TestParameter(IN_GUEST_MODE, "keyboardCopyDownloads"),
-                      TestParameter(NOT_IN_GUEST_MODE, "keyboardCopyDownloads"),
-                      TestParameter(NOT_IN_GUEST_MODE, "keyboardCopyDrive"),
-                      TestParameter(IN_GUEST_MODE, "renameFileDownloads"),
-                      TestParameter(NOT_IN_GUEST_MODE, "renameFileDownloads"),
-                      TestParameter(NOT_IN_GUEST_MODE, "renameFileDrive"),
-                      TestParameter(IN_GUEST_MODE,
-                                    "renameNewDirectoryDownloads"),
-                      TestParameter(NOT_IN_GUEST_MODE,
-                                    "renameNewDirectoryDownloads"),
-                      TestParameter(NOT_IN_GUEST_MODE,
-                                    "renameNewDirectoryDrive")));
+    ::testing::Values(
+        TestParameter(IN_GUEST_MODE, "keyboardDeleteDownloads"),
+        TestParameter(NOT_IN_GUEST_MODE, "keyboardDeleteDownloads"),
+        TestParameter(NOT_IN_GUEST_MODE, "keyboardDeleteDrive"),
+        TestParameter(IN_GUEST_MODE, "keyboardCopyDownloads"),
+        TestParameter(NOT_IN_GUEST_MODE, "keyboardCopyDownloads"),
+        TestParameter(NOT_IN_GUEST_MODE, "keyboardCopyDrive"),
+        TestParameter(IN_GUEST_MODE, "renameFileDownloads"),
+        TestParameter(NOT_IN_GUEST_MODE, "renameFileDownloads"),
+        TestParameter(NOT_IN_GUEST_MODE, "renameFileDrive"),
+        TestParameter(IN_GUEST_MODE, "renameNewDirectoryDownloads"),
+        TestParameter(NOT_IN_GUEST_MODE, "renameNewDirectoryDownloads"),
+        TestParameter(NOT_IN_GUEST_MODE, "renameNewDirectoryDrive")));
 
 #if defined(DISABLE_SLOW_FILESAPP_TESTS)
 #define MAYBE_Delete DISABLED_Delete
@@ -197,7 +194,7 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
 #define MAYBE_DirectoryTreeContextMenu DirectoryTreeContextMenu
 #endif
 WRAPPED_INSTANTIATE_TEST_CASE_P(
-    MAYBE_DirectoryTreeContextMenu,
+    DISABLED_DirectoryTreeContextMenu,
     FileManagerBrowserTest,
     ::testing::Values(
         TestParameter(NOT_IN_GUEST_MODE,
@@ -276,7 +273,7 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
 #define MAYBE_Transfer Transfer
 #endif
 WRAPPED_INSTANTIATE_TEST_CASE_P(
-    MAYBE_Transfer,
+    DISABLED_Transfer,
     FileManagerBrowserTest,
     ::testing::Values(
         TestParameter(NOT_IN_GUEST_MODE, "transferFromDriveToDownloads"),
@@ -392,7 +389,7 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
 #define MAYBE_GenericTask GenericTask
 #endif
 WRAPPED_INSTANTIATE_TEST_CASE_P(
-    MAYBE_GenericTask,
+    DISABLED_GenericTask,
     FileManagerBrowserTest,
     ::testing::Values(
         TestParameter(NOT_IN_GUEST_MODE, "genericTaskIsNotExecuted"),
@@ -566,7 +563,7 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
 #define MAYBE_GearMenu GearMenu
 #endif
 WRAPPED_INSTANTIATE_TEST_CASE_P(
-    MAYBE_GearMenu,
+    DISABLED_GearMenu,
     FileManagerBrowserTest,
     ::testing::Values(
         TestParameter(NOT_IN_GUEST_MODE, "showHiddenFilesOnDownloads"),
