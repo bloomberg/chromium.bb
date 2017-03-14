@@ -155,10 +155,8 @@ class TriageRelevantChanges(object):
   # Get stage names from stage classes instead of duplicating them here.
   COMMIT_QUEUE_SYNC = 'CommitQueueSync'
   MASTER_SLAVE_LKGM_SYNC = 'MasterSlaveLKGMSync'
-  COMMIT_QUEUE_COMPLETION = 'CommitQueueCompletion'
 
   STAGE_SYNC = {COMMIT_QUEUE_SYNC, MASTER_SLAVE_LKGM_SYNC}
-  STAGE_COMPLETION = {COMMIT_QUEUE_COMPLETION}
 
   def __init__(self, master_build_id, db, config, version, build_root, changes,
                buildbucket_info_dict, cidb_status_dict, completed_builds,
@@ -441,10 +439,12 @@ class TriageRelevantChanges(object):
           depend_changes = self.GetDependChanges(
               not_ignorable_changes, self.dependency_map)
           will_not_submit = not_ignorable_changes | depend_changes
-          self._UpdateWillNotSubmitChanges(will_not_submit)
-          logging.info('Build %s didn\'t pass %s, will not submit changes %s',
-                       build_config, self.STAGE_COMPLETION,
-                       cros_patch.GetChangesAsString(will_not_submit))
+
+          if will_not_submit:
+            self._UpdateWillNotSubmitChanges(will_not_submit)
+            logging.info('Build %s failed with not ignorable failures, will not'
+                         ' submit changes: %s', build_config,
+                         cros_patch.GetChangesAsString(will_not_submit))
 
         if not self.might_submit:
           # No need to process other completed builds, might_submit is empty.

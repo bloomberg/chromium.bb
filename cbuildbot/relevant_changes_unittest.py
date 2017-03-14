@@ -161,8 +161,6 @@ class TriageRelevantChangesTest(patch_unittest.MockPatchBase):
 
   COMMIT_QUEUE_SYNC = (
       relevant_changes.TriageRelevantChanges.COMMIT_QUEUE_SYNC)
-  COMMIT_QUEUE_COMPLETION = (
-      relevant_changes.TriageRelevantChanges.COMMIT_QUEUE_COMPLETION)
 
   BuildbucketInfos = build_status_unittest.BuildbucketInfos
 
@@ -310,13 +308,9 @@ class TriageRelevantChangesTest(patch_unittest.MockPatchBase):
 
     self.fake_cidb.InsertBuildStage(
         3, self.COMMIT_QUEUE_SYNC, builds[2], status=self.PASS)
-    self.fake_cidb.InsertBuildStage(
-        3, self.COMMIT_QUEUE_COMPLETION, builds[2], status=self.FAIL)
 
     self.fake_cidb.InsertBuildStage(
         4, self.COMMIT_QUEUE_SYNC, builds[3], status=self.PASS)
-    self.fake_cidb.InsertBuildStage(
-        4, self.COMMIT_QUEUE_COMPLETION, builds[3], status=self.PASS)
 
   def testGetSlaveStages(self):
     """Test GetSlaveStages."""
@@ -329,8 +323,8 @@ class TriageRelevantChangesTest(patch_unittest.MockPatchBase):
     self.assertItemsEqual(slave_stages.keys(), self.slaves)
     self.assertEqual(len(slave_stages['slave_1']), 1)
     self.assertEqual(len(slave_stages['slave_2']), 1)
-    self.assertEqual(len(slave_stages['slave_3']), 2)
-    self.assertEqual(len(slave_stages['slave_4']), 2)
+    self.assertEqual(len(slave_stages['slave_3']), 1)
+    self.assertEqual(len(slave_stages['slave_4']), 1)
 
   def testGetBuildsPassedAnyOfStagesOnSyncStage(self):
     """Returns builds which passed STAGE_SYNC."""
@@ -345,21 +339,6 @@ class TriageRelevantChangesTest(patch_unittest.MockPatchBase):
         slave_stages, relevant_changes.TriageRelevantChanges.STAGE_SYNC)
 
     self.assertItemsEqual(passed_builds, {'slave_2', 'slave_3', 'slave_4'})
-
-  def testGetBuildsPassedAnyOfStagesOnCompletionStage(self):
-    """Returns builds which passed STAGE_COMPLETION."""
-    self.PatchObject(relevant_changes.TriageRelevantChanges,
-                     '_UpdateSlaveInfo')
-    self._InsertSlaveBuilds(self.slaves, self.buildbucket_info_dict)
-    self._InsertDefaultSlaveStages(self.slaves)
-    triage_changes = self.GetTriageRelevantChanges()
-    slave_stages = relevant_changes.TriageRelevantChanges.GetSlaveStages(
-        self.master_build_id, self.fake_cidb, self.buildbucket_info_dict)
-    passed_builds = triage_changes.GetBuildsPassedAnyOfStages(
-        slave_stages,
-        relevant_changes.TriageRelevantChanges.STAGE_COMPLETION)
-
-    self.assertItemsEqual(passed_builds, {'slave_4'})
 
   def test_GetRelevantChangesWithoutCLActions(self):
     """Test _GetRelevantChanges without CLActions."""
@@ -574,9 +553,7 @@ class TriageRelevantChangesTest(patch_unittest.MockPatchBase):
     """Test build with failed completion stage and missing BuilderStatus."""
     build = 'slave_1'
     stages = [self._GetStage(status=self.PASS, build_config=build,
-                             name=self.COMMIT_QUEUE_SYNC),
-              self._GetStage(status=self.FAIL, build_config=build,
-                             name=self.COMMIT_QUEUE_COMPLETION)]
+                             name=self.COMMIT_QUEUE_SYNC)]
     self._GetMockSlaveInfoForProcessCompletedBuilds(build, stages)
     triage_changes = self.GetTriageRelevantChanges(
         completed_builds={build})
@@ -591,9 +568,7 @@ class TriageRelevantChangesTest(patch_unittest.MockPatchBase):
     """Test build with forgiven completion stage and passed BuilderStatus."""
     build = 'slave_1'
     stages = [self._GetStage(status=self.PASS, build_config=build,
-                             name=self.COMMIT_QUEUE_SYNC),
-              self._GetStage(status=self.FORGIVEN, build_config=build,
-                             name=self.COMMIT_QUEUE_COMPLETION)]
+                             name=self.COMMIT_QUEUE_SYNC)]
     self._GetMockSlaveInfoForProcessCompletedBuilds(build, stages)
     self.PatchObject(builder_status_lib.BuilderStatusManager,
                      'GetBuilderStatus',
@@ -613,9 +588,7 @@ class TriageRelevantChangesTest(patch_unittest.MockPatchBase):
     """Test build with forgiven completion stage and missing BuilderStatus."""
     build = 'slave_1'
     stages = [self._GetStage(status=self.PASS, build_config=build,
-                             name=self.COMMIT_QUEUE_SYNC),
-              self._GetStage(status=self.FORGIVEN, build_config=build,
-                             name=self.COMMIT_QUEUE_COMPLETION)]
+                             name=self.COMMIT_QUEUE_SYNC)]
     self._GetMockSlaveInfoForProcessCompletedBuilds(build, stages)
     can_ignore_failures_mock = self.PatchObject(
         triage_lib.CalculateSuspects, 'CanIgnoreFailures')
@@ -633,9 +606,7 @@ class TriageRelevantChangesTest(patch_unittest.MockPatchBase):
     """Test build with forgiven completion stage and failed BuilderStatus."""
     build = 'slave_1'
     stages = [self._GetStage(status=self.PASS, build_config=build,
-                             name=self.COMMIT_QUEUE_SYNC),
-              self._GetStage(status=self.FORGIVEN, build_config=build,
-                             name=self.COMMIT_QUEUE_COMPLETION)]
+                             name=self.COMMIT_QUEUE_SYNC)]
     self._GetMockSlaveInfoForProcessCompletedBuilds(build, stages)
     self.PatchObject(builder_status_lib.BuilderStatusManager,
                      'GetBuilderStatus',
@@ -656,9 +627,7 @@ class TriageRelevantChangesTest(patch_unittest.MockPatchBase):
     """Test build with passed completion stage and passed BuilderStatus."""
     build = 'slave_1'
     stages = [self._GetStage(status=self.PASS, build_config=build,
-                             name=self.COMMIT_QUEUE_SYNC),
-              self._GetStage(status=self.PASS, build_config=build,
-                             name=self.COMMIT_QUEUE_COMPLETION)]
+                             name=self.COMMIT_QUEUE_SYNC)]
     self._GetMockSlaveInfoForProcessCompletedBuilds(build, stages)
     self.PatchObject(builder_status_lib.BuilderStatusManager,
                      'GetBuilderStatus',
