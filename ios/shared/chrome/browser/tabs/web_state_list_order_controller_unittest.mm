@@ -6,6 +6,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#import "ios/shared/chrome/browser/tabs/fake_web_state_list_delegate.h"
 #import "ios/shared/chrome/browser/tabs/web_state_list.h"
 #import "ios/web/public/test/fakes/test_navigation_manager.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
@@ -34,10 +35,11 @@ class FakeNavigationManer : public web::TestNavigationManager {
 class WebStateListOrderControllerTest : public PlatformTest {
  public:
   WebStateListOrderControllerTest()
-      : web_state_list_(WebStateList::WebStateOwned),
+      : web_state_list_(&web_state_list_delegate_, WebStateList::WebStateOwned),
         order_controller_(&web_state_list_) {}
 
  protected:
+  FakeWebStateListDelegate web_state_list_delegate_;
   WebStateList web_state_list_;
   WebStateListOrderController order_controller_;
 

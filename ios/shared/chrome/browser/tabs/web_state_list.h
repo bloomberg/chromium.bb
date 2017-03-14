@@ -13,6 +13,7 @@
 #include "base/observer_list.h"
 #include "ui/base/page_transition_types.h"
 
+class WebStateListDelegate;
 class WebStateListObserver;
 class WebStateListOrderController;
 
@@ -30,7 +31,7 @@ class WebStateList {
     WebStateOwned,
   };
 
-  explicit WebStateList(WebStateOwnership ownership = WebStateBorrowed);
+  WebStateList(WebStateListDelegate* delegate, WebStateOwnership ownership);
   ~WebStateList();
 
   // Returns whether the model is empty or not.
@@ -121,6 +122,8 @@ class WebStateList {
   static const int kInvalidIndex = -1;
 
  private:
+  class WebStateWrapper;
+
   // Sets the opener of any WebState that reference the WebState at the
   // specified index to null.
   void ClearOpenersReferencing(int index);
@@ -139,8 +142,14 @@ class WebStateList {
                                     bool use_group,
                                     int n) const;
 
-  class WebStateWrapper;
+  // The WebStateList delegate.
+  WebStateListDelegate* delegate_;
+
+  // Whether this WebStateList owns the WebState it hosts.
+  // TODO(crbug.com/546222): remove once this is always "owned".
   const WebStateOwnership web_state_ownership_;
+
+  // Wrappers to the WebStates hosted by the WebStateList.
   std::vector<std::unique_ptr<WebStateWrapper>> web_state_wrappers_;
 
   // An object that determines where new WebState should be inserted and where

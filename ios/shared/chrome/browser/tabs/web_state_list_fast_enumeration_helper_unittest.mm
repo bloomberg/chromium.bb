@@ -6,6 +6,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#import "ios/shared/chrome/browser/tabs/fake_web_state_list_delegate.h"
 #import "ios/shared/chrome/browser/tabs/web_state_list.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
 #import "net/base/mac/url_conversions.h"
@@ -40,7 +41,8 @@ const char* const kURLs[] = {kURL0, kURL1, kURL2};
 class WebStateListFastEnumerationHelperTest : public PlatformTest {
  public:
   WebStateListFastEnumerationHelperTest()
-      : web_state_list_(WebStateList::WebStateOwned) {}
+      : web_state_list_(&web_state_list_delegate_,
+                        WebStateList::WebStateOwned) {}
 
   NSArray* ArrayFromWebStateList() {
     id<WebStateProxyFactory> proxy =
@@ -72,6 +74,7 @@ class WebStateListFastEnumerationHelperTest : public PlatformTest {
   }
 
  private:
+  FakeWebStateListDelegate web_state_list_delegate_;
   WebStateList web_state_list_;
 
   DISALLOW_COPY_AND_ASSIGN(WebStateListFastEnumerationHelperTest);

@@ -7,6 +7,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/supports_user_data.h"
+#import "ios/shared/chrome/browser/tabs/fake_web_state_list_delegate.h"
 #import "ios/shared/chrome/browser/tabs/web_state_list_observer.h"
 #import "ios/web/public/test/fakes/test_navigation_manager.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
@@ -139,13 +140,16 @@ class FakeNavigationManer : public web::TestNavigationManager {
 
 class WebStateListTest : public PlatformTest {
  public:
-  WebStateListTest() : web_state_list_(WebStateList::WebStateOwned) {
+  WebStateListTest()
+      : web_state_list_(&web_state_list_delegate_,
+                        WebStateList::WebStateOwned) {
     web_state_list_.AddObserver(&observer_);
   }
 
   ~WebStateListTest() override { web_state_list_.RemoveObserver(&observer_); }
 
  protected:
+  FakeWebStateListDelegate web_state_list_delegate_;
   WebStateList web_state_list_;
   WebStateListTestObserver observer_;
 
@@ -390,8 +394,9 @@ TEST_F(WebStateListTest, OwnershipBorrowed) {
       &kSupportsUserDataDeathGuardKey,
       base::MakeUnique<SupportsUserDataDeathGuard>(&web_state_was_killed));
 
-  auto web_state_list =
-      base::MakeUnique<WebStateList>(WebStateList::WebStateBorrowed);
+  FakeWebStateListDelegate web_state_list_delegate;
+  auto web_state_list = base::MakeUnique<WebStateList>(
+      &web_state_list_delegate, WebStateList::WebStateBorrowed);
   web_state_list->InsertWebState(0, test_web_state.get(), nullptr);
   EXPECT_FALSE(web_state_was_killed);
 
@@ -406,8 +411,9 @@ TEST_F(WebStateListTest, OwnershipOwned) {
       &kSupportsUserDataDeathGuardKey,
       base::MakeUnique<SupportsUserDataDeathGuard>(&web_state_was_killed));
 
-  auto web_state_list =
-      base::MakeUnique<WebStateList>(WebStateList::WebStateOwned);
+  FakeWebStateListDelegate web_state_list_delegate;
+  auto web_state_list = base::MakeUnique<WebStateList>(
+      &web_state_list_delegate, WebStateList::WebStateOwned);
   web_state_list->InsertWebState(0, test_web_state.release(), nullptr);
   EXPECT_FALSE(web_state_was_killed);
 

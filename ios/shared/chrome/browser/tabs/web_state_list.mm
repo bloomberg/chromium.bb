@@ -9,6 +9,7 @@
 
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#import "ios/shared/chrome/browser/tabs/web_state_list_delegate.h"
 #import "ios/shared/chrome/browser/tabs/web_state_list_observer.h"
 #import "ios/shared/chrome/browser/tabs/web_state_list_order_controller.h"
 #import "ios/web/public/navigation_manager.h"
@@ -87,9 +88,13 @@ bool WebStateList::WebStateWrapper::WasOpenedBy(const web::WebState* opener,
   return opener_last_committed_index_ == opener_navigation_index;
 }
 
-WebStateList::WebStateList(WebStateOwnership ownership)
-    : web_state_ownership_(ownership),
-      order_controller_(base::MakeUnique<WebStateListOrderController>(this)) {}
+WebStateList::WebStateList(WebStateListDelegate* delegate,
+                           WebStateOwnership ownership)
+    : delegate_(delegate),
+      web_state_ownership_(ownership),
+      order_controller_(base::MakeUnique<WebStateListOrderController>(this)) {
+  DCHECK(delegate_);
+}
 
 WebStateList::~WebStateList() {
   // Once WebStateList owns the WebState and has a CloseWebStateAt() method,
@@ -153,6 +158,8 @@ void WebStateList::InsertWebState(int index,
                                   web::WebState* web_state,
                                   web::WebState* opener) {
   DCHECK(ContainsIndex(index) || index == count());
+  delegate_->WillAddWebState(web_state);
+
   web_state_wrappers_.insert(web_state_wrappers_.begin() + index,
                              base::MakeUnique<WebStateWrapper>(web_state));
 
@@ -207,6 +214,8 @@ web::WebState* WebStateList::ReplaceWebStateAt(int index,
                                                web::WebState* web_state,
                                                web::WebState* opener) {
   DCHECK(ContainsIndex(index));
+  delegate_->WillAddWebState(web_state);
+
   ClearOpenersReferencing(index);
 
   auto& web_state_wrapper = web_state_wrappers_[index];

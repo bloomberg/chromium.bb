@@ -8,6 +8,8 @@ source_set("model") {
     "browser.mm",
     "browser_list.h",
     "browser_list.mm",
+    "browser_web_state_list_delegate.h",
+    "browser_web_state_list_delegate.mm",
   ]
   deps = [
     "//base",

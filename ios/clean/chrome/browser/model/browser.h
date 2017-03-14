@@ -5,8 +5,12 @@
 #ifndef IOS_CLEAN_CHROME_BROWSER_MODEL_BROWSER_H_
 #define IOS_CLEAN_CHROME_BROWSER_MODEL_BROWSER_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "ios/shared/chrome/browser/tabs/web_state_list.h"
+
+class WebStateList;
+class WebStateListDelegate;
 
 namespace ios {
 class ChromeBrowserState;
@@ -19,14 +23,15 @@ class Browser {
   explicit Browser(ios::ChromeBrowserState* browser_state);
   ~Browser();
 
-  WebStateList& web_state_list() { return web_state_list_; }
-  const WebStateList& web_state_list() const { return web_state_list_; }
+  WebStateList& web_state_list() { return *web_state_list_.get(); }
+  const WebStateList& web_state_list() const { return *web_state_list_.get(); }
 
   ios::ChromeBrowserState* browser_state() const { return browser_state_; }
 
  private:
-  WebStateList web_state_list_;
   ios::ChromeBrowserState* browser_state_;
+  std::unique_ptr<WebStateListDelegate> web_state_list_delegate_;
+  std::unique_ptr<WebStateList> web_state_list_;
 
   DISALLOW_COPY_AND_ASSIGN(Browser);
 };

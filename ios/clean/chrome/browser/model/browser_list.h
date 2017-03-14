@@ -5,6 +5,7 @@
 #ifndef IOS_CLEAN_CHROME_BROWSER_MODEL_BROWSER_LIST_H_
 #define IOS_CLEAN_CHROME_BROWSER_MODEL_BROWSER_LIST_H_
 
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
@@ -39,8 +40,8 @@ class BrowserList : public base::SupportsUserData::Data {
   void CloseBrowserAtIndex(int index);
 
  private:
-  std::vector<std::unique_ptr<Browser>> browsers_;
   ios::ChromeBrowserState* browser_state_;
+  std::vector<std::unique_ptr<Browser>> browsers_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserList);
 };
