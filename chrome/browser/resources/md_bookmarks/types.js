@@ -26,6 +26,15 @@ var BookmarkNode;
  */
 var NodeList;
 
+/**
+ * @typedef{{
+ *   term: string,
+ *   inProgress: boolean,
+ *   results: !Array<string>,
+ * }}
+ */
+var SearchState;
+
 /** @typedef {!Object<string, boolean>} */
 var ClosedFolderState;
 
@@ -34,6 +43,7 @@ var ClosedFolderState;
  *   nodes: NodeList,
  *   selectedFolder: ?string,
  *   closedFolders: ClosedFolderState,
+ *   search: SearchState,
  * }}
  */
 var BookmarksPageState;

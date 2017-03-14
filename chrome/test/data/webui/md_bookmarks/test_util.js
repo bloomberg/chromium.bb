@@ -12,10 +12,13 @@ function replaceBody(element) {
 }
 
 /**
- * Convert a tree of bookmark nodes into a normalized lookup table of nodes.
+ * Convert a list of top-level bookmark nodes into a normalized lookup table of
+ * nodes.
+ * @param {...BookmarkTreeNode} nodes
  */
-function testTree(root) {
-  return bookmarks.util.normalizeNodes(root);
+function testTree(nodes) {
+  return bookmarks.util.normalizeNodes(
+      createFolder('0', Array.from(arguments)));
 }
 
 /**

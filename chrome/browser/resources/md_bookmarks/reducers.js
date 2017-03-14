@@ -10,6 +10,61 @@
  */
 
 cr.define('bookmarks', function() {
+  var SearchState = {};
+
+  /**
+   * @param {SearchState} search
+   * @param {Action} action
+   * @return {SearchState}
+   */
+  SearchState.startSearch = function(search, action) {
+    return {
+      term: action.term,
+      inProgress: true,
+      results: [],
+    };
+  };
+
+  /**
+   * @param {SearchState} search
+   * @param {Action} action
+   * @return {SearchState}
+   */
+  SearchState.finishSearch = function(search, action) {
+    return /** @type {SearchState} */ (Object.assign({}, search, {
+      inProgress: false,
+      results: action.results,
+    }));
+  };
+
+  /** @return {SearchState} */
+  SearchState.clearSearch = function() {
+    return {
+      term: '',
+      inProgress: false,
+      results: [],
+    };
+  };
+
+  /**
+   * @param {SearchState} search
+   * @param {Action} action
+   * @return {SearchState}
+   */
+  SearchState.updateSearch = function(search, action) {
+    switch (action.name) {
+      case 'start-search':
+        return SearchState.startSearch(search, action);
+      case 'select-folder':
+      case 'clear-search':
+        return SearchState.clearSearch();
+      case 'finish-search':
+        return SearchState.finishSearch(search, action);
+      default:
+        return search;
+    }
+  };
+
   var NodeState = {};
 
   /**
@@ -112,6 +167,12 @@ cr.define('bookmarks', function() {
           return action.id;
         }
         return selectedFolder;
+      case 'finish-search':
+        return null;
+      case 'clear-search':
+        // TODO(tsergeant): Return to the folder that was selected before the
+        // search.
+        return nodes['0'].children[0];
       default:
         return selectedFolder;
     }
@@ -183,6 +244,7 @@ cr.define('bookmarks', function() {
           state.selectedFolder, action, state.nodes),
       closedFolders: ClosedFolderState.updateClosedFolders(
           state.closedFolders, action, state.nodes),
+      search: SearchState.updateSearch(state.search, action),
     };
   }
 
@@ -190,6 +252,7 @@ cr.define('bookmarks', function() {
     reduceAction: reduceAction,
     ClosedFolderState: ClosedFolderState,
     NodeState: NodeState,
+    SearchState: SearchState,
     SelectedFolderState: SelectedFolderState,
   };
 });

@@ -72,15 +72,15 @@
         </paper-button>
       </div>
     </dialog>
-    <div id="bookmarksCard" hidden$="[[isEmptyList_(displayedList.length)]]">
-      <template is="dom-repeat" items="[[displayedList]]" as="id">
+    <div id="bookmarksCard" hidden$="[[isEmptyList_(displayedList_.length)]]">
+      <template is="dom-repeat" items="[[displayedList_]]" as="id">
         <bookmarks-item item-id="[[id]]">
         </bookmarks-item>
       </template>
     </div>
     <div class="centered-message"
-        hidden$="[[!isEmptyList_(displayedList.length)]]">
-      [[emptyListMessage_(searchTerm)]]
+        hidden$="[[!isEmptyList_(displayedList_.length)]]">
+      [[emptyListMessage_(searchTerm_)]]
     </div>
   </template>
   <script src="chrome://bookmarks/list.js"></script>

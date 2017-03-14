@@ -8,20 +8,19 @@ suite('<bookmarks-sidebar>', function() {
 
   setup(function() {
     store = new bookmarks.TestStore({
-      nodes: testTree(createFolder('0', [
-        createFolder(
-            '1',
-            [
-              createFolder(
-                  '2',
-                  [
-                    createFolder('3', []),
-                    createFolder('4', []),
-                  ]),
-              createItem('5'),
-            ]),
-        createFolder('7', []),
-      ])),
+      nodes: testTree(
+          createFolder(
+              '1',
+              [
+                createFolder(
+                    '2',
+                    [
+                      createFolder('3', []),
+                      createFolder('4', []),
+                    ]),
+                createItem('5'),
+              ]),
+          createFolder('7', [])),
     });
     bookmarks.Store.instance_ = store;
 

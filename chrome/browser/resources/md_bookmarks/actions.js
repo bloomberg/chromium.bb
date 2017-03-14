@@ -52,6 +52,7 @@ cr.define('bookmarks.actions', function() {
    * @return {!Action}
    */
   function selectFolder(id) {
+    assert(id != '0', 'Cannot select root folder');
     return {
       name: 'select-folder',
       id: id,
@@ -71,11 +72,46 @@ cr.define('bookmarks.actions', function() {
     };
   }
 
+  /** @return {!Action} */
+  function clearSearch() {
+    return {
+      name: 'clear-search',
+    };
+  }
+
+  /**
+   * @param {string} term
+   * @return {!Action}
+   */
+  function setSearchTerm(term) {
+    if (!term)
+      return clearSearch();
+
+    return {
+      name: 'start-search',
+      term: term,
+    };
+  }
+
+  /**
+   * @param {!Array<string>} ids
+   * @return {!Action}
+   */
+  function setSearchResults(ids) {
+    return {
+      name: 'finish-search',
+      results: ids,
+    };
+  }
+
   return {
     changeFolderOpen: changeFolderOpen,
+    clearSearch: clearSearch,
     editBookmark: editBookmark,
     refreshNodes: refreshNodes,
     removeBookmark: removeBookmark,
     selectFolder: selectFolder,
+    setSearchResults: setSearchResults,
+    setSearchTerm: setSearchTerm,
   };
 });

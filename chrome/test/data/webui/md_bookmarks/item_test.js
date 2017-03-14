@@ -9,18 +9,18 @@ suite('<bookmarks-item>', function() {
 
   setup(function() {
     store = new bookmarks.TestStore({
-      nodes: testTree(createFolder('1', [createItem(['0'])])),
+      nodes: testTree(createFolder('1', [createItem(['2'])])),
     });
     bookmarks.Store.instance_ = store;
 
     item = document.createElement('bookmarks-item');
-    item.itemId = '0';
+    item.itemId = '2';
     replaceBody(item);
   });
 
   test('changing the url changes the favicon', function() {
     var favicon = item.$.icon.style.backgroundImage;
-    store.data.nodes['0'] = createItem('0', {url: 'https://mail.google.com'});
+    store.data.nodes['2'] = createItem('0', {url: 'https://mail.google.com'});
     store.notifyObservers();
     assertNotEquals(favicon, item.$.icon.style.backgroundImage);
   });

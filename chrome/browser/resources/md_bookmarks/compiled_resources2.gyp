@@ -118,6 +118,7 @@
         '<(DEPTH)/ui/webui/resources/cr_elements/cr_action_menu/compiled_resources2.gyp:cr_action_menu',
         '<(DEPTH)/ui/webui/resources/cr_elements/cr_toolbar/compiled_resources2.gyp:cr_toolbar',
         '<(EXTERNS_GYP):chrome_extensions',
+        'store_client',
       ],
       'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi'],
     },

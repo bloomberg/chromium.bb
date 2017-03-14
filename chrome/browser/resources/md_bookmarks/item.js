@@ -12,7 +12,7 @@ Polymer({
   properties: {
     itemId: {
       type: String,
-      observer: 'updateFromStore',
+      observer: 'onItemIdChanged_',
     },
 
     /** @private {BookmarkNode} */
@@ -58,6 +58,14 @@ Polymer({
       target: e.target,
       item: this.item_,
     });
+  },
+
+  /** @private */
+  onItemIdChanged_: function() {
+    // TODO(tsergeant): Add a histogram to measure whether this assertion fails
+    // for real users.
+    assert(this.getState().nodes[this.itemId]);
+    this.updateFromStore();
   },
 
   /** @private */

@@ -4,37 +4,39 @@
 
 suite('closed folder state', function() {
   var nodes;
+  // TODO(tsergeant): Remove use of 'initialState' and 'nextState'.
   var initialState;
 
   setup(function() {
-    nodes = testTree(createFolder('0', [
-      createFolder('1', []),
+    nodes = testTree(createFolder('1', [
+      createFolder('2', []),
     ]));
     initialState = {};
   });
 
   test('toggle folder open state', function() {
-    var action = bookmarks.actions.changeFolderOpen('1', false);
+    var action = bookmarks.actions.changeFolderOpen('2', false);
     var nextState = bookmarks.ClosedFolderState.updateClosedFolders(
         initialState, action, nodes);
-    assertTrue(nextState['1']);
-    assertFalse(!!nextState['0']);
+    assertFalse(!!nextState['1']);
+    assertTrue(nextState['2']);
   });
 
   test('select folder with closed parent', function() {
     var action;
     var nextState;
-    // Close '0'
-    action = bookmarks.actions.changeFolderOpen('0', false);
+    // Close '1'
+    action = bookmarks.actions.changeFolderOpen('1', false);
     nextState = bookmarks.ClosedFolderState.updateClosedFolders(
         initialState, action, nodes);
-    assertTrue(nextState['0']);
+    assertTrue(nextState['1']);
+    assertFalse(!!nextState['2']);
 
-    // Should re-open when '1' is selected.
-    action = bookmarks.actions.selectFolder('1');
+    // Should re-open when '2' is selected.
+    action = bookmarks.actions.selectFolder('2');
     nextState = bookmarks.ClosedFolderState.updateClosedFolders(
         nextState, action, nodes);
-    assertFalse(nextState['0']);
+    assertFalse(!!nextState['1']);
   });
 });
 
@@ -43,32 +45,32 @@ suite('selected folder', function() {
   var initialState;
 
   setup(function() {
-    nodes = testTree(createFolder('0', [
-      createFolder('1', []),
+    nodes = testTree(createFolder('1', [
+      createFolder('2', []),
     ]));
 
-    initialState = '0';
+    initialState = '1';
   });
 
   test('updates from selectFolder action', function() {
-    var action = bookmarks.actions.selectFolder('1');
+    var action = bookmarks.actions.selectFolder('2');
     var newState = bookmarks.SelectedFolderState.updateSelectedFolder(
         initialState, action, nodes);
-    assertEquals('1', newState);
+    assertEquals('2', newState);
   });
 
   test('updates when parent of selected folder is closed', function() {
     var action;
     var newState;
 
-    action = bookmarks.actions.selectFolder('1');
+    action = bookmarks.actions.selectFolder('2');
     newState = bookmarks.SelectedFolderState.updateSelectedFolder(
         initialState, action, nodes);
 
-    action = bookmarks.actions.changeFolderOpen('0', false);
+    action = bookmarks.actions.changeFolderOpen('1', false);
     newState = bookmarks.SelectedFolderState.updateSelectedFolder(
         newState, action, nodes);
-    assertEquals('0', newState);
+    assertEquals('1', newState);
   });
 });
 
@@ -76,16 +78,15 @@ suite('node state', function() {
   var initialState;
 
   setup(function() {
-    initialState = testTree(createFolder('0', [
-      createFolder(
-          '1',
-          [
-            createItem('2', {title: 'a', url: 'a.com'}),
-            createItem('3'),
-            createFolder('4', []),
-          ]),
-      createFolder('5', []),
-    ]));
+    initialState = testTree(
+        createFolder(
+            '1',
+            [
+              createItem('2', {title: 'a', url: 'a.com'}),
+              createItem('3'),
+              createFolder('4', []),
+            ]),
+        createFolder('5', []));
   });
 
   test('updates when a node is edited', function() {
@@ -123,5 +124,66 @@ suite('node state', function() {
 
     // TODO(tsergeant): Deleted nodes should be removed from the nodes map
     // entirely.
+  });
+});
+
+suite('search state', function() {
+  var state;
+
+  setup(function() {
+    // Search touches a few different things, so we test using the entire state:
+    state = bookmarks.util.createEmptyState();
+    state.nodes = testTree(createFolder('1', [
+      createFolder(
+          '2',
+          [
+            createItem('3'),
+          ]),
+    ]));
+  });
+
+  test('updates when search is started and finished', function() {
+    var action;
+
+    action = bookmarks.actions.selectFolder('2');
+    state = bookmarks.reduceAction(state, action);
+
+    action = bookmarks.actions.setSearchTerm('test');
+    state = bookmarks.reduceAction(state, action);
+
+    assertEquals('test', state.search.term);
+    assertTrue(state.search.inProgress);
+
+    // UI should not have changed yet:
+    assertEquals('2', state.selectedFolder);
+    assertDeepEquals(['3'], bookmarks.util.getDisplayedList(state));
+
+    action = bookmarks.actions.setSearchResults(['2', '3']);
+    var searchedState = bookmarks.reduceAction(state, action);
+
+    assertFalse(searchedState.search.inProgress);
+
+    // UI changes once search results arrive:
+    assertEquals(null, searchedState.selectedFolder);
+    assertDeepEquals(
+        ['2', '3'], bookmarks.util.getDisplayedList(searchedState));
+
+    // Case 1: Clear search by setting an empty search term.
+    action = bookmarks.actions.setSearchTerm('');
+    var clearedState = bookmarks.reduceAction(searchedState, action);
+
+    assertEquals('1', clearedState.selectedFolder);
+    assertDeepEquals(['2'], bookmarks.util.getDisplayedList(clearedState));
+    assertEquals('', clearedState.search.term);
+    assertDeepEquals([], clearedState.search.results);
+
+    // Case 2: Clear search by selecting a new folder.
+    action = bookmarks.actions.selectFolder('2');
+    var selectedState = bookmarks.reduceAction(searchedState, action);
+
+    assertEquals('2', selectedState.selectedFolder);
+    assertDeepEquals(['3'], bookmarks.util.getDisplayedList(selectedState));
+    assertEquals('', selectedState.search.term);
+    assertDeepEquals([], selectedState.search.results);
   });
 });

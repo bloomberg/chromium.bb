@@ -13,8 +13,8 @@ Polymer({
     /** @type {BookmarkNode} */
     menuItem_: Object,
 
-    /** @type {Array<string>} */
-    displayedList: {
+    /** @private {Array<string>} */
+    displayedList_: {
       type: Array,
       value: function() {
         // Use an empty list during initialization so that the databinding to
@@ -23,7 +23,8 @@ Polymer({
       },
     },
 
-    searchTerm: String,
+    /** @private */
+    searchTerm_: String,
   },
 
   listeners: {
@@ -31,8 +32,11 @@ Polymer({
   },
 
   attached: function() {
-    this.watch('displayedList', function(state) {
+    this.watch('displayedList_', function(state) {
       return bookmarks.util.getDisplayedList(state);
+    });
+    this.watch('searchTerm_', function(state) {
+      return state.search.term;
     });
     this.updateFromStore();
   },
@@ -113,12 +117,12 @@ Polymer({
 
   /** @private */
   emptyListMessage_: function() {
-    var emptyListMessage = this.searchTerm ? 'noSearchResults' : 'emptyList';
+    var emptyListMessage = this.searchTerm_ ? 'noSearchResults' : 'emptyList';
     return loadTimeData.getString(emptyListMessage);
   },
 
   /** @private */
   isEmptyList_: function() {
-    return this.displayedList.length == 0;
+    return this.displayedList_.length == 0;
   },
 });

@@ -12,7 +12,10 @@ cr.define('bookmarks.util', function() {
    * @return {!Array<string>}
    */
   function getDisplayedList(state) {
-    return assert(state.nodes[assert(state.selectedFolder)].children);
+    if (state.selectedFolder)
+      return assert(state.nodes[state.selectedFolder].children);
+
+    return state.search.results;
   }
 
   /**
@@ -52,6 +55,11 @@ cr.define('bookmarks.util', function() {
       nodes: {},
       selectedFolder: '0',
       closedFolders: {},
+      search: {
+        term: '',
+        inProgress: false,
+        results: [],
+      },
     };
   }
 
