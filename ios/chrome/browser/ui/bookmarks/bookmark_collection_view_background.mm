@@ -4,8 +4,11 @@
 
 #include "ios/chrome/browser/ui/bookmarks/bookmark_collection_view_background.h"
 
-#include "base/mac/objc_property_releaser.h"
 #import "ios/third_party/material_roboto_font_loader_ios/src/src/MaterialRobotoFontLoader.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 NSString* const kBookmarkGrayStar = @"bookmark_gray_star_large";
@@ -14,10 +17,7 @@ const CGFloat kEmptyBookmarkTextSize = 16.0;
 const CGFloat kImageViewOffsetFromText = 5.0;
 }  // namespace
 
-@interface BookmarkCollectionViewBackground () {
-  base::mac::ObjCPropertyReleaser
-      _propertyReleaser_BookmarkBookmarkCollectionViewBackground;
-}
+@interface BookmarkCollectionViewBackground ()
 
 // Star image view shown on top of the label.
 @property(nonatomic, retain) UIImageView* emptyBookmarksImageView;
@@ -34,8 +34,6 @@ const CGFloat kImageViewOffsetFromText = 5.0;
 - (instancetype)initWithFrame:(CGRect)frame {
   self = [super initWithFrame:frame];
   if (self) {
-    _propertyReleaser_BookmarkBookmarkCollectionViewBackground.Init(
-        self, [BookmarkCollectionViewBackground class]);
     _emptyBookmarksImageView = [self newBookmarkImageView];
     [self addSubview:_emptyBookmarksImageView];
     _emptyBookmarksLabel = [self newEmptyBookmarkLabel];

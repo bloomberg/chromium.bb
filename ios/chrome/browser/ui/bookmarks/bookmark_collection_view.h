@@ -213,7 +213,7 @@ class ChromeBrowserState;
 #pragma mark - Commonly used properties
 
 @property(nonatomic, assign, readonly) bookmarks::BookmarkModel* bookmarkModel;
-@property(nonatomic, assign, readonly) id<UrlLoader> loader;
+@property(nonatomic, weak, readonly) id<UrlLoader> loader;
 @property(nonatomic, assign, readonly) ios::ChromeBrowserState* browserState;
 
 #pragma mark - Editing

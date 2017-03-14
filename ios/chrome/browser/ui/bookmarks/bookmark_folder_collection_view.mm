@@ -5,7 +5,6 @@
 #import "ios/chrome/browser/ui/bookmarks/bookmark_folder_collection_view.h"
 
 #include "base/logging.h"
-#include "base/mac/objc_property_releaser.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "ios/chrome/browser/bookmarks/bookmarks_utils.h"
@@ -14,11 +13,13 @@
 #import "ios/chrome/browser/ui/bookmarks/bookmark_promo_cell.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_utils_ios.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 using bookmarks::BookmarkNode;
 
 @interface BookmarkFolderCollectionView ()<BookmarkPromoCellDelegate> {
-  base::mac::ObjCPropertyReleaser
-      _propertyReleaser_BookmarkFolderCollectionView;
   // A vector of folders to display in the collection view.
   std::vector<const BookmarkNode*> _subFolders;
   // A vector of bookmark urls to display in the collection view.
@@ -36,7 +37,7 @@ using bookmarks::BookmarkNode;
 @property(nonatomic, readonly, assign) NSInteger sectionCount;
 
 // Keep a reference to the promo cell to deregister as delegate.
-@property(nonatomic, retain) BookmarkPromoCell* promoCell;
+@property(nonatomic, strong) BookmarkPromoCell* promoCell;
 
 @end
 
@@ -49,9 +50,6 @@ using bookmarks::BookmarkNode;
                                frame:(CGRect)frame {
   self = [super initWithBrowserState:browserState frame:frame];
   if (self) {
-    _propertyReleaser_BookmarkFolderCollectionView.Init(
-        self, [BookmarkFolderCollectionView class]);
-
     [self updateCollectionView];
   }
   return self;
@@ -59,7 +57,6 @@ using bookmarks::BookmarkNode;
 
 - (void)dealloc {
   _promoCell.delegate = nil;
-  [super dealloc];
 }
 
 - (void)setDelegate:(id<BookmarkFolderCollectionViewDelegate>)delegate {

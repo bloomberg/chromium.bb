@@ -4,12 +4,15 @@
 
 #import "ios/chrome/browser/ui/bookmarks/bookmark_folder_table_view_cell.h"
 
-#include "base/mac/scoped_nsobject.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_utils_ios.h"
 #import "ios/chrome/browser/ui/rtl_geometry.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 #include "ui/base/l10n/l10n_util_mac.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 // The amount in points by which to offset horizontally the text label.
@@ -35,26 +38,24 @@ const CGFloat kFolderCellIndentationWidth = 32.0;
 }
 
 + (instancetype)folderCell {
-  base::scoped_nsobject<BookmarkFolderTableViewCell> folderCell(
+  BookmarkFolderTableViewCell* folderCell =
       [[[self class] alloc] initWithStyle:UITableViewCellStyleDefault
-                          reuseIdentifier:[self folderCellReuseIdentifier]]);
-  folderCell.get().indentationWidth = kFolderCellIndentationWidth;
-  folderCell.get().imageView.image =
-      [UIImage imageNamed:@"bookmark_gray_folder"];
-  return folderCell.autorelease();
+                          reuseIdentifier:[self folderCellReuseIdentifier]];
+  folderCell.indentationWidth = kFolderCellIndentationWidth;
+  folderCell.imageView.image = [UIImage imageNamed:@"bookmark_gray_folder"];
+  return folderCell;
 }
 
 + (instancetype)folderCreationCell {
-  base::scoped_nsobject<BookmarkFolderTableViewCell> newFolderCell(
-      [[[self class] alloc]
-            initWithStyle:UITableViewCellStyleDefault
-          reuseIdentifier:[self folderCreationCellReuseIdentifier]]);
-  newFolderCell.get().textLabel.text =
+  BookmarkFolderTableViewCell* newFolderCell = [[[self class] alloc]
+        initWithStyle:UITableViewCellStyleDefault
+      reuseIdentifier:[self folderCreationCellReuseIdentifier]];
+  newFolderCell.textLabel.text =
       l10n_util::GetNSString(IDS_IOS_BOOKMARK_CREATE_GROUP);
-  newFolderCell.get().imageView.image =
+  newFolderCell.imageView.image =
       [UIImage imageNamed:@"bookmark_gray_new_folder"];
-  newFolderCell.get().accessibilityIdentifier = @"Create New Folder";
-  return newFolderCell.autorelease();
+  newFolderCell.accessibilityIdentifier = @"Create New Folder";
+  return newFolderCell;
 }
 
 - (instancetype)initWithStyle:(UITableViewCellStyle)style
@@ -74,10 +75,10 @@ const CGFloat kFolderCellIndentationWidth = 32.0;
 - (void)setChecked:(BOOL)checked {
   if (checked != _checked) {
     _checked = checked;
-    base::scoped_nsobject<UIImageView> checkImageView(
+    UIImageView* checkImageView =
         checked ? [[UIImageView alloc]
                       initWithImage:[UIImage imageNamed:@"bookmark_blue_check"]]
-                : nil);
+                : nil;
     self.accessoryView = checkImageView;
   }
 }
