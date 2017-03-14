@@ -212,7 +212,7 @@ void highbd_filter_block2d_8_c(const uint16_t *src_ptr,
    *                               = 23
    * and filter_max_width = 16
    */
-  uint16_t intermediate_buffer[(kMaxDimension + 8) * kMaxDimension];
+  uint16_t intermediate_buffer[(kMaxDimension + 8) * kMaxDimension] = { 0 };
   const int intermediate_next_stride =
       1 - static_cast<int>(intermediate_height * output_width);
 

@@ -565,8 +565,8 @@ class SubpelVarianceTest
           aom_memalign(16, block_size_ * sizeof(uint16_t))));
       sec_ = CONVERT_TO_BYTEPTR(reinterpret_cast<uint16_t *>(
           aom_memalign(16, block_size_ * sizeof(uint16_t))));
-      ref_ =
-          CONVERT_TO_BYTEPTR(new uint16_t[block_size_ + width_ + height_ + 1]);
+      ref_ = CONVERT_TO_BYTEPTR(aom_memalign(
+          16, (block_size_ + width_ + height_ + 1) * sizeof(uint16_t)));
 #endif  // CONFIG_HIGHBITDEPTH
     }
     ASSERT_TRUE(src_ != NULL);
@@ -582,7 +582,7 @@ class SubpelVarianceTest
 #if CONFIG_HIGHBITDEPTH
     } else {
       aom_free(CONVERT_TO_SHORTPTR(src_));
-      delete[] CONVERT_TO_SHORTPTR(ref_);
+      aom_free(CONVERT_TO_SHORTPTR(ref_));
       aom_free(CONVERT_TO_SHORTPTR(sec_));
 #endif  // CONFIG_HIGHBITDEPTH
     }

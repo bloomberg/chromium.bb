@@ -234,6 +234,7 @@ static void interpolate(const uint8_t *const input, int inlength,
   }
 }
 
+#ifndef __clang_analyzer__
 static void down2_symeven(const uint8_t *const input, int length,
                           uint8_t *output) {
   // Actual filter len = 2 * filter_len_half.
@@ -288,6 +289,7 @@ static void down2_symeven(const uint8_t *const input, int length,
     }
   }
 }
+#endif
 
 static void down2_symodd(const uint8_t *const input, int length,
                          uint8_t *output) {
@@ -526,7 +528,7 @@ static void highbd_interpolate(const uint16_t *const input, int inlength,
     }
   }
 }
-
+#ifndef __clang_analyzer__
 static void highbd_down2_symeven(const uint16_t *const input, int length,
                                  uint16_t *output, int bd) {
   // Actual filter len = 2 * filter_len_half.
@@ -634,6 +636,7 @@ static void highbd_down2_symodd(const uint16_t *const input, int length,
     }
   }
 }
+#endif
 
 static void highbd_resize_multistep(const uint16_t *const input, int length,
                                     uint16_t *output, int olength,
