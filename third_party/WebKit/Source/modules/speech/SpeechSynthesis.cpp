@@ -227,7 +227,7 @@ SpeechSynthesisUtterance* SpeechSynthesis::currentSpeechUtterance() const {
   if (m_utteranceQueue.isEmpty())
     return nullptr;
 
-  return m_utteranceQueue.first();
+  return m_utteranceQueue.front();
 }
 
 const AtomicString& SpeechSynthesis::interfaceName() const {

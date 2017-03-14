@@ -315,7 +315,7 @@ void PresentationConnection::handleMessageQueue() {
     return;
 
   while (!m_messages.isEmpty() && !m_blobLoader) {
-    Message* message = m_messages.first().get();
+    Message* message = m_messages.front().get();
     switch (message->type) {
       case MessageTypeText:
         client->sendString(m_url, m_id, message->text, m_proxy.get());
@@ -473,7 +473,7 @@ void PresentationConnection::didClose() {
 }
 
 void PresentationConnection::didFinishLoadingBlob(DOMArrayBuffer* buffer) {
-  ASSERT(!m_messages.isEmpty() && m_messages.first()->type == MessageTypeBlob);
+  ASSERT(!m_messages.isEmpty() && m_messages.front()->type == MessageTypeBlob);
   ASSERT(buffer && buffer->buffer());
   // Send the loaded blob immediately here and continue processing the queue.
   WebPresentationClient* client = presentationClient(getExecutionContext());
@@ -490,7 +490,7 @@ void PresentationConnection::didFinishLoadingBlob(DOMArrayBuffer* buffer) {
 
 void PresentationConnection::didFailLoadingBlob(
     FileError::ErrorCode errorCode) {
-  ASSERT(!m_messages.isEmpty() && m_messages.first()->type == MessageTypeBlob);
+  ASSERT(!m_messages.isEmpty() && m_messages.front()->type == MessageTypeBlob);
   // FIXME: generate error message?
   // Ignore the current failed blob item and continue with next items.
   m_messages.pop_front();

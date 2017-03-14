@@ -207,7 +207,7 @@ DataConsumerHandleTestUtil::ReplayingHandle::Context::Context()
 const DataConsumerHandleTestUtil::Command&
 DataConsumerHandleTestUtil::ReplayingHandle::Context::top() {
   DCHECK(!isEmpty());
-  return m_commands.first();
+  return m_commands.front();
 }
 
 void DataConsumerHandleTestUtil::ReplayingHandle::Context::consume(

@@ -171,11 +171,11 @@ TEST(ScriptWrappableVisitorTest, OilpanClearsMarkingDequeWhenObjectDied) {
 
   visitor->markAndPushToMarkingDeque(object);
 
-  EXPECT_EQ(visitor->getMarkingDeque()->first().rawObjectPointer(), object);
+  EXPECT_EQ(visitor->getMarkingDeque()->front().rawObjectPointer(), object);
 
   preciselyCollectGarbage();
 
-  EXPECT_EQ(visitor->getMarkingDeque()->first().rawObjectPointer(), nullptr);
+  EXPECT_EQ(visitor->getMarkingDeque()->front().rawObjectPointer(), nullptr);
 
   visitor->AbortTracing();
 }

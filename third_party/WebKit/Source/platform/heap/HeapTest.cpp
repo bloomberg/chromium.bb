@@ -3879,9 +3879,9 @@ TEST(HeapTest, PersistentHeapCollectionTypes) {
     EXPECT_EQ(three, pVec.at(1));
 
     EXPECT_EQ(2u, pDeque.size());
-    EXPECT_EQ(seven, pDeque.first());
+    EXPECT_EQ(seven, pDeque.front());
     EXPECT_EQ(seven, pDeque.takeFirst());
-    EXPECT_EQ(two, pDeque.first());
+    EXPECT_EQ(two, pDeque.front());
 
     EXPECT_EQ(1u, pDeque.size());
 

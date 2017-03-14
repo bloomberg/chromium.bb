@@ -54,7 +54,7 @@ void CSSFontFace::didBeginLoad() {
 }
 
 void CSSFontFace::fontLoaded(RemoteFontFaceSource* source) {
-  if (!isValid() || source != m_sources.first())
+  if (!isValid() || source != m_sources.front())
     return;
 
   if (loadStatus() == FontFace::Loading) {
@@ -75,14 +75,14 @@ void CSSFontFace::fontLoaded(RemoteFontFaceSource* source) {
 }
 
 size_t CSSFontFace::approximateBlankCharacterCount() const {
-  if (!m_sources.isEmpty() && m_sources.first()->isBlank() &&
+  if (!m_sources.isEmpty() && m_sources.front()->isBlank() &&
       m_segmentedFontFace)
     return m_segmentedFontFace->approximateCharacterCount();
   return 0;
 }
 
 void CSSFontFace::didBecomeVisibleFallback(RemoteFontFaceSource* source) {
-  if (!isValid() || source != m_sources.first())
+  if (!isValid() || source != m_sources.front())
     return;
   if (m_segmentedFontFace)
     m_segmentedFontFace->fontFaceInvalidated();
@@ -94,7 +94,7 @@ PassRefPtr<SimpleFontData> CSSFontFace::getFontData(
     return nullptr;
 
   while (!m_sources.isEmpty()) {
-    Member<CSSFontFaceSource>& source = m_sources.first();
+    Member<CSSFontFaceSource>& source = m_sources.front();
     if (RefPtr<SimpleFontData> result = source->getFontData(fontDescription)) {
       if (loadStatus() == FontFace::Unloaded &&
           (source->isLoading() || source->isLoaded()))
@@ -154,7 +154,7 @@ void CSSFontFace::load(const FontDescription& fontDescription) {
   ASSERT(loadStatus() == FontFace::Loading);
 
   while (!m_sources.isEmpty()) {
-    Member<CSSFontFaceSource>& source = m_sources.first();
+    Member<CSSFontFaceSource>& source = m_sources.front();
     if (source->isValid()) {
       if (source->isLocal()) {
         if (source->isLocalFontAvailable(fontDescription)) {

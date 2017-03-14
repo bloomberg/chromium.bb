@@ -53,14 +53,14 @@ void SQLTransactionCoordinator::processPendingTransactions(
     return;
 
   SQLTransactionBackend* firstPendingTransaction =
-      info.pendingTransactions.first();
+      info.pendingTransactions.front();
   if (firstPendingTransaction->isReadOnly()) {
     do {
       firstPendingTransaction = info.pendingTransactions.takeFirst();
       info.activeReadTransactions.insert(firstPendingTransaction);
       firstPendingTransaction->lockAcquired();
     } while (!info.pendingTransactions.isEmpty() &&
-             info.pendingTransactions.first()->isReadOnly());
+             info.pendingTransactions.front()->isReadOnly());
   } else if (info.activeReadTransactions.isEmpty()) {
     info.pendingTransactions.pop_front();
     info.activeWriteTransaction = firstPendingTransaction;

@@ -265,7 +265,7 @@ bool Canvas2DLayerBridge::prepareIOSurfaceMailboxFromImage(
       imageTexture, 0, textureTarget, imageInfo->m_textureId, 0, 0, 0, 0, 0,
       m_size.width(), m_size.height(), GL_FALSE, GL_FALSE, GL_FALSE);
 
-  MailboxInfo& info = m_mailboxes.first();
+  MailboxInfo& info = m_mailboxes.front();
   gpu::Mailbox mailbox;
   gl->GenMailboxCHROMIUM(mailbox.name);
   gl->ProduceTextureDirectCHROMIUM(imageInfo->m_textureId, textureTarget,
@@ -376,7 +376,7 @@ bool Canvas2DLayerBridge::prepareMailboxFromImage(
     sk_sp<SkImage> image,
     cc::TextureMailbox* outMailbox) {
   createMailboxInfo();
-  MailboxInfo& mailboxInfo = m_mailboxes.first();
+  MailboxInfo& mailboxInfo = m_mailboxes.front();
 
   GrContext* grContext = m_contextProvider->grContext();
   if (!grContext) {

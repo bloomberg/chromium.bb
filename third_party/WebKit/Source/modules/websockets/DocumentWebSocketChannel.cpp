@@ -397,7 +397,7 @@ void DocumentWebSocketChannel::processSendQueue() {
   DCHECK(m_handle);
   uint64_t consumedBufferedAmount = 0;
   while (!m_messages.isEmpty() && !m_blobLoader) {
-    Message* message = m_messages.first().get();
+    Message* message = m_messages.front().get();
     if (m_sendingQuota == 0 && message->type != MessageTypeClose)
       break;
     switch (message->type) {
@@ -672,9 +672,9 @@ void DocumentWebSocketChannel::didFinishLoadingBlob(DOMArrayBuffer* buffer) {
   DCHECK(m_handle);
   // The loaded blob is always placed on m_messages[0].
   DCHECK_GT(m_messages.size(), 0u);
-  DCHECK_EQ(m_messages.first()->type, MessageTypeBlob);
+  DCHECK_EQ(m_messages.front()->type, MessageTypeBlob);
   // We replace it with the loaded blob.
-  m_messages.first() = new Message(buffer);
+  m_messages.front() = new Message(buffer);
   processSendQueue();
 }
 

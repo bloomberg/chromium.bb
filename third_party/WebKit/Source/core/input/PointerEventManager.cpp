@@ -712,7 +712,7 @@ bool PointerEventManager::primaryPointerdownCanceled(
   // 2^32-1 (>4.2 billion): even with a generous 100 unique ids per touch
   // sequence & one sequence per 10 second, it takes 13+ years to wrap back.
   while (!m_touchIdsForCanceledPointerdowns.isEmpty()) {
-    uint32_t firstId = m_touchIdsForCanceledPointerdowns.first();
+    uint32_t firstId = m_touchIdsForCanceledPointerdowns.front();
     if (firstId > uniqueTouchEventId)
       return false;
     m_touchIdsForCanceledPointerdowns.takeFirst();

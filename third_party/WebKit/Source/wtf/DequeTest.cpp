@@ -179,7 +179,7 @@ void ownPtrTest() {
   deque.push_back(WTF::wrapUnique(new DestructCounter(1, &destructNumber)));
   EXPECT_EQ(2u, deque.size());
 
-  std::unique_ptr<DestructCounter>& counter0 = deque.first();
+  std::unique_ptr<DestructCounter>& counter0 = deque.front();
   EXPECT_EQ(0, counter0->get());
   int counter1 = deque.last()->get();
   EXPECT_EQ(1, counter1);
@@ -203,13 +203,13 @@ void ownPtrTest() {
   }
   EXPECT_EQ(0, destructNumber);
 
-  EXPECT_EQ(0, deque.first()->get());
+  EXPECT_EQ(0, deque.front()->get());
   deque.pop_front();
-  EXPECT_EQ(1, deque.first()->get());
+  EXPECT_EQ(1, deque.front()->get());
   EXPECT_EQ(1u, deque.size());
   EXPECT_EQ(1, destructNumber);
 
-  std::unique_ptr<DestructCounter> ownCounter1 = std::move(deque.first());
+  std::unique_ptr<DestructCounter> ownCounter1 = std::move(deque.front());
   deque.pop_front();
   EXPECT_EQ(counter1, ownCounter1->get());
   EXPECT_EQ(0u, deque.size());
@@ -269,7 +269,7 @@ TEST(DequeTest, MoveOnlyType) {
   deque.push_back(MoveOnly(2));
   EXPECT_EQ(2u, deque.size());
 
-  ASSERT_EQ(1, deque.first().value());
+  ASSERT_EQ(1, deque.front().value());
   ASSERT_EQ(2, deque.last().value());
 
   MoveOnly oldFirst = deque.takeFirst();
@@ -325,9 +325,9 @@ void swapWithOrWithoutInlineCapacity() {
   dequeA.swap(dequeB);
 
   ASSERT_EQ(1u, dequeA.size());
-  EXPECT_EQ(2, dequeA.first().get());
+  EXPECT_EQ(2, dequeA.front().get());
   ASSERT_EQ(1u, dequeB.size());
-  EXPECT_EQ(1, dequeB.first().get());
+  EXPECT_EQ(1, dequeB.front().get());
 
   dequeA.push_back(WrappedInt(3));
 
@@ -335,25 +335,25 @@ void swapWithOrWithoutInlineCapacity() {
   dequeA.swap(dequeB);
 
   ASSERT_EQ(1u, dequeA.size());
-  EXPECT_EQ(1, dequeA.first().get());
+  EXPECT_EQ(1, dequeA.front().get());
   ASSERT_EQ(2u, dequeB.size());
-  EXPECT_EQ(2, dequeB.first().get());
+  EXPECT_EQ(2, dequeB.front().get());
 
   ASSERT_LT(dequeA.size(), dequeB.size());
   dequeA.swap(dequeB);
 
   ASSERT_EQ(2u, dequeA.size());
-  EXPECT_EQ(2, dequeA.first().get());
+  EXPECT_EQ(2, dequeA.front().get());
   ASSERT_EQ(1u, dequeB.size());
-  EXPECT_EQ(1, dequeB.first().get());
+  EXPECT_EQ(1, dequeB.front().get());
 
   dequeA.push_back(WrappedInt(4));
   dequeA.swap(dequeB);
 
   ASSERT_EQ(1u, dequeA.size());
-  EXPECT_EQ(1, dequeA.first().get());
+  EXPECT_EQ(1, dequeA.front().get());
   ASSERT_EQ(3u, dequeB.size());
-  EXPECT_EQ(2, dequeB.first().get());
+  EXPECT_EQ(2, dequeB.front().get());
 
   dequeB.swap(dequeA);
 }

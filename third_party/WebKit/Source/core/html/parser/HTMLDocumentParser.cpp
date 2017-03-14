@@ -635,7 +635,7 @@ void HTMLDocumentParser::pumpPendingSpeculations() {
 
     if (m_speculations.isEmpty() ||
         m_parserScheduler->yieldIfNeeded(
-            session, m_speculations.first()->startingScript))
+            session, m_speculations.front()->startingScript))
       break;
   }
 }

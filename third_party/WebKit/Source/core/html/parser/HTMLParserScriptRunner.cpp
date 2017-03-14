@@ -367,7 +367,7 @@ void HTMLParserScriptRunner::pendingScriptFinished(
     if (pendingScript == parserBlockingScript()) {
       m_parserBlockingScript = nullptr;
     } else {
-      CHECK_EQ(pendingScript, m_scriptsToExecuteAfterParsing.first());
+      CHECK_EQ(pendingScript, m_scriptsToExecuteAfterParsing.front());
 
       // TODO(hiroshige): Remove this CHECK() before going to beta.
       // This is only to make clusterfuzz to find a test case that executes
@@ -505,18 +505,18 @@ bool HTMLParserScriptRunner::executeScriptsWaitingForParsing() {
   while (!m_scriptsToExecuteAfterParsing.isEmpty()) {
     DCHECK(!isExecutingScript());
     DCHECK(!hasParserBlockingScript());
-    DCHECK(m_scriptsToExecuteAfterParsing.first()->resource());
+    DCHECK(m_scriptsToExecuteAfterParsing.front()->resource());
 
     // 1. "Spin the event loop until the first script in the list of scripts
     //     that will execute when the document has finished parsing
     //     has its "ready to be parser-executed" flag set and
     //     the parser's Document has no style sheet that is blocking scripts."
     // TODO(hiroshige): Is the latter part checked anywhere?
-    if (!m_scriptsToExecuteAfterParsing.first()->isReady()) {
-      m_scriptsToExecuteAfterParsing.first()->watchForLoad(this);
-      traceParserBlockingScript(m_scriptsToExecuteAfterParsing.first().get(),
+    if (!m_scriptsToExecuteAfterParsing.front()->isReady()) {
+      m_scriptsToExecuteAfterParsing.front()->watchForLoad(this);
+      traceParserBlockingScript(m_scriptsToExecuteAfterParsing.front().get(),
                                 !m_document->isScriptExecutionReady());
-      m_scriptsToExecuteAfterParsing.first()->markParserBlockingLoadStartTime();
+      m_scriptsToExecuteAfterParsing.front()->markParserBlockingLoadStartTime();
       return false;
     }
 

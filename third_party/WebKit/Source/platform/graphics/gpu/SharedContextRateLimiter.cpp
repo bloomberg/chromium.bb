@@ -55,8 +55,8 @@ void SharedContextRateLimiter::tick() {
   if (m_queries.size() > m_maxPendingTicks) {
     if (m_canUseSyncQueries) {
       GLuint result;
-      gl->GetQueryObjectuivEXT(m_queries.first(), GL_QUERY_RESULT_EXT, &result);
-      gl->DeleteQueriesEXT(1, &m_queries.first());
+      gl->GetQueryObjectuivEXT(m_queries.front(), GL_QUERY_RESULT_EXT, &result);
+      gl->DeleteQueriesEXT(1, &m_queries.front());
       m_queries.pop_front();
     } else {
       gl->Finish();
@@ -72,7 +72,7 @@ void SharedContextRateLimiter::reset() {
   gpu::gles2::GLES2Interface* gl = m_contextProvider->contextGL();
   if (gl && gl->GetGraphicsResetStatusKHR() == GL_NO_ERROR) {
     while (m_queries.size() > 0) {
-      gl->DeleteQueriesEXT(1, &m_queries.first());
+      gl->DeleteQueriesEXT(1, &m_queries.front());
       m_queries.pop_front();
     }
   } else {

@@ -89,11 +89,11 @@ class Deque : public ConditionalDestructor<Deque<T, INLINE_CAPACITY, Allocator>,
     return const_reverse_iterator(begin());
   }
 
-  T& first() {
+  T& front() {
     DCHECK_NE(m_start, m_end);
     return m_buffer.buffer()[m_start];
   }
-  const T& first() const {
+  const T& front() const {
     DCHECK_NE(m_start, m_end);
     return m_buffer.buffer()[m_start];
   }
@@ -140,8 +140,6 @@ class Deque : public ConditionalDestructor<Deque<T, INLINE_CAPACITY, Allocator>,
   void pop_back();
   void pop_front();
   bool empty() const { return isEmpty(); }
-  T& front() { return first(); }
-  const T& front() const { return first(); }
   T& back() { return last(); }
   const T& back() const { return last(); }
   template <typename... Args>
@@ -484,7 +482,7 @@ void Deque<T, inlineCapacity, Allocator>::expandCapacity() {
 
 template <typename T, size_t inlineCapacity, typename Allocator>
 inline T Deque<T, inlineCapacity, Allocator>::takeFirst() {
-  T oldFirst = std::move(first());
+  T oldFirst = std::move(front());
   pop_front();
   return oldFirst;
 }

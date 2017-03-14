@@ -95,10 +95,10 @@ void ScriptRunner::resume() {
 
 void ScriptRunner::scheduleReadyInOrderScripts() {
   while (!m_pendingInOrderScripts.isEmpty() &&
-         m_pendingInOrderScripts.first()->isReady()) {
+         m_pendingInOrderScripts.front()->isReady()) {
     // A ScriptLoader that failed is responsible for cancelling itself
     // notifyScriptLoadError(); it continues this draining of ready scripts.
-    if (m_pendingInOrderScripts.first()->errorOccurred())
+    if (m_pendingInOrderScripts.front()->errorOccurred())
       break;
     m_inOrderScriptsToExecuteSoon.push_back(
         m_pendingInOrderScripts.takeFirst());

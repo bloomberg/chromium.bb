@@ -81,7 +81,7 @@ class CORE_EXPORT CSSFontFace final
   void load();
   void load(const FontDescription&);
 
-  bool hadBlankText() { return isValid() && m_sources.first()->hadBlankText(); }
+  bool hadBlankText() { return isValid() && m_sources.front()->hadBlankText(); }
 
   DECLARE_TRACE();
 
