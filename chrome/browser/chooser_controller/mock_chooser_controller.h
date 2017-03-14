@@ -20,7 +20,7 @@ class MockChooserController : public ChooserController {
     PAIRED = 1 << 1,
   };
 
-  explicit MockChooserController(content::RenderFrameHost* owner);
+  MockChooserController();
   ~MockChooserController() override;
 
   // ChooserController:

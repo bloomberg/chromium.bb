@@ -60,9 +60,7 @@ class ChooserDialogCocoaControllerTest : public CocoaProfileTest {
         content::WebContents::Create(content::WebContents::CreateParams(
             profile(), content::SiteInstance::Create(profile())));
     ASSERT_TRUE(web_contents);
-    std::unique_ptr<MockChooserController> chooser_controller(
-        new MockChooserController(web_contents->GetMainFrame()));
-    ASSERT_TRUE(chooser_controller);
+    auto chooser_controller = base::MakeUnique<MockChooserController>();
     mock_chooser_controller_ = chooser_controller.get();
     chooser_dialog_.reset(
         new ChooserDialogCocoa(web_contents, std::move(chooser_controller)));

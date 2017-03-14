@@ -49,6 +49,8 @@ class UsbChooserContext : public ChooserContextBase,
                            const GURL& embedding_origin,
                            scoped_refptr<const device::UsbDevice> device);
 
+  base::WeakPtr<UsbChooserContext> AsWeakPtr();
+
  private:
   // ChooserContextBase implementation.
   bool IsValidObject(const base::DictionaryValue& object) override;
@@ -60,6 +62,7 @@ class UsbChooserContext : public ChooserContextBase,
   std::map<std::pair<GURL, GURL>, std::set<std::string>> ephemeral_devices_;
   device::UsbService* usb_service_;
   ScopedObserver<device::UsbService, device::UsbService::Observer> observer_;
+  base::WeakPtrFactory<UsbChooserContext> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(UsbChooserContext);
 };

@@ -236,7 +236,8 @@ bool UsbChooserDialogAndroid::DisplayDevice(
 
   return device::FindInWebUsbAllowedOrigins(
       device->webusb_allowed_origins(),
-      render_frame_host_->GetLastCommittedURL().GetOrigin());
+      render_frame_host_->GetLastCommittedURL().GetOrigin(), base::nullopt,
+      base::nullopt);
 }
 
 // static

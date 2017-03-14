@@ -576,7 +576,9 @@ void ReadWebUsbDescriptors(scoped_refptr<UsbDeviceHandle> device_handle,
 
 bool FindInWebUsbAllowedOrigins(
     const device::WebUsbAllowedOrigins* allowed_origins,
-    const GURL& origin) {
+    const GURL& origin,
+    base::Optional<uint8_t> config_value,
+    base::Optional<uint8_t> first_interface) {
   if (!allowed_origins)
     return false;
 
@@ -584,10 +586,16 @@ bool FindInWebUsbAllowedOrigins(
     return true;
 
   for (const auto& config : allowed_origins->configurations) {
+    if (config_value && *config_value != config.configuration_value)
+      continue;
+
     if (base::ContainsValue(config.origins, origin))
       return true;
 
     for (const auto& function : config.functions) {
+      if (first_interface && *first_interface != function.first_interface)
+        continue;
+
       if (base::ContainsValue(function.origins, origin))
         return true;
     }

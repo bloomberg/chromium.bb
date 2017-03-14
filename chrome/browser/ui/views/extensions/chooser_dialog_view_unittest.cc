@@ -30,8 +30,7 @@ class ChooserDialogViewTest : public views::ViewsTestBase {
   // views::ViewsTestBase:
   void SetUp() override {
     views::ViewsTestBase::SetUp();
-    std::unique_ptr<MockChooserController> mock_chooser_controller(
-        new MockChooserController(nullptr));
+    auto mock_chooser_controller = base::MakeUnique<MockChooserController>();
     mock_chooser_controller_ = mock_chooser_controller.get();
     std::unique_ptr<ChooserDialogView> chooser_dialog_view(
         new ChooserDialogView(std::move(mock_chooser_controller)));

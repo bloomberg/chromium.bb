@@ -12,6 +12,7 @@
 
 #include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
+#include "base/optional.h"
 #include "url/gurl.h"
 
 namespace device {
@@ -70,10 +71,13 @@ void ReadWebUsbDescriptors(
         void(std::unique_ptr<WebUsbAllowedOrigins> allowed_origins,
              const GURL& landing_page)>& callback);
 
-// Check if the origin is allowed.
+// Check if the origin is allowed to access a given device, optionally filtering
+// by configuration and function.
 bool FindInWebUsbAllowedOrigins(
     const device::WebUsbAllowedOrigins* allowed_origins,
-    const GURL& origin);
+    const GURL& origin,
+    base::Optional<uint8_t> configuration_value,
+    base::Optional<uint8_t> first_interface);
 
 }  // device
 

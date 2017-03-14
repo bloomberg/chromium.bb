@@ -11,8 +11,8 @@
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
-MockChooserController::MockChooserController(content::RenderFrameHost* owner)
-    : ChooserController(owner,
+MockChooserController::MockChooserController()
+    : ChooserController(nullptr,
                         IDS_USB_DEVICE_CHOOSER_PROMPT_ORIGIN,
                         IDS_USB_DEVICE_CHOOSER_PROMPT_EXTENSION_NAME) {}
 

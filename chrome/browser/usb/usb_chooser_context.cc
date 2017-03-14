@@ -54,7 +54,8 @@ bool CanStorePersistentEntry(const scoped_refptr<const UsbDevice>& device) {
 UsbChooserContext::UsbChooserContext(Profile* profile)
     : ChooserContextBase(profile, CONTENT_SETTINGS_TYPE_USB_CHOOSER_DATA),
       is_incognito_(profile->IsOffTheRecord()),
-      observer_(this) {
+      observer_(this),
+      weak_factory_(this) {
   usb_service_ = device::DeviceClient::Get()->GetUsbService();
   if (usb_service_)
     observer_.Add(usb_service_);
@@ -181,6 +182,10 @@ bool UsbChooserContext::HasDevicePermission(
   }
 
   return false;
+}
+
+base::WeakPtr<UsbChooserContext> UsbChooserContext::AsWeakPtr() {
+  return weak_factory_.GetWeakPtr();
 }
 
 bool UsbChooserContext::IsValidObject(const base::DictionaryValue& object) {

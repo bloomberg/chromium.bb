@@ -131,9 +131,7 @@ class ChooserController {
   View* view() const { return view_; }
 
  private:
-  content::RenderFrameHost* const owning_frame_;
-  const int title_string_id_origin_;
-  const int title_string_id_extension_;
+  base::string16 title_;
   View* view_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(ChooserController);

@@ -45,8 +45,7 @@ class DeviceChooserContentViewTest : public views::ViewsTestBase {
   // views::ViewsTestBase:
   void SetUp() override {
     views::ViewsTestBase::SetUp();
-    std::unique_ptr<MockChooserController> mock_chooser_controller(
-        new MockChooserController(nullptr));
+    auto mock_chooser_controller = base::MakeUnique<MockChooserController>();
     mock_chooser_controller_ = mock_chooser_controller.get();
     mock_table_view_observer_ = base::MakeUnique<MockTableViewObserver>();
     device_chooser_content_view_ = base::MakeUnique<DeviceChooserContentView>(
