@@ -100,7 +100,7 @@ const base::Feature kAndroidPayIntegrationV2{"AndroidPayIntegrationV2",
                                              base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kAndroidPaymentApps{"AndroidPaymentApps",
-                                        base::FEATURE_ENABLED_BY_DEFAULT};
+                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kAndroidPaymentAppsFilter{
     "AndroidPaymentAppsFilter", base::FEATURE_DISABLED_BY_DEFAULT};
