@@ -759,7 +759,6 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/physicalweb/PhysicalWebDiagnosticsPage.java",
   "java/src/org/chromium/chrome/browser/physicalweb/PhysicalWebShareActivity.java",
   "java/src/org/chromium/chrome/browser/physicalweb/PhysicalWebUma.java",
-  "java/src/org/chromium/chrome/browser/physicalweb/PwCollection.java",
   "java/src/org/chromium/chrome/browser/physicalweb/PwsClient.java",
   "java/src/org/chromium/chrome/browser/physicalweb/PwsClientImpl.java",
   "java/src/org/chromium/chrome/browser/physicalweb/PwsResult.java",
