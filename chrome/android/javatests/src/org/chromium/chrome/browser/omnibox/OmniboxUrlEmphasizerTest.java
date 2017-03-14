@@ -320,6 +320,22 @@ public class OmniboxUrlEmphasizerTest extends NativeLibraryTestBase {
     }
 
     /**
+     * Verify that an empty URL is processed correctly by
+     * OmniboxUrlEmphasizer.emphasizeUrl(). Regression test for crbug.com/700769
+     */
+    @UiThreadTest
+    @MediumTest
+    @Feature({"Browser", "Main"})
+    public void testEmptyUrl() {
+        Spannable url = new SpannableStringBuilder("");
+        OmniboxUrlEmphasizer.emphasizeUrl(
+                url, mResources, mProfile, ConnectionSecurityLevel.NONE, false, true, true);
+        EmphasizedUrlSpanHelper[] spans = EmphasizedUrlSpanHelper.getSpansForEmphasizedUrl(url);
+
+        assertEquals("Unexpected number of spans:", 0, spans.length);
+    }
+
+    /**
      * Verify that the origin index is calculated correctly for HTTP and HTTPS
      * URLs by OmniboxUrlEmphasizer.getOriginEndIndex().
      */

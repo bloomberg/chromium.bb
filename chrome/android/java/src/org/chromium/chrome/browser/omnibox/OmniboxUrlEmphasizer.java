@@ -64,6 +64,7 @@ public class OmniboxUrlEmphasizer {
          * @return The scheme extracted from |url|, canonicalized to lowercase.
          */
         public String extractScheme(String url) {
+            if (!hasScheme()) return "";
             return url.subSequence(schemeStart, schemeStart + schemeLength)
                     .toString()
                     .toLowerCase(Locale.US);
