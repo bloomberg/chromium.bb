@@ -2416,8 +2416,7 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
     /**
      * @see View#onDragEvent(DragEvent)
      */
-    // TODO(hush): uncomment below when we build with API 24.
-    // @TargetApi(Build.VERSION_CODES.N)
+    @TargetApi(Build.VERSION_CODES.N)
     public boolean onDragEvent(DragEvent event) {
         if (mNativeContentViewCore == 0 || Build.VERSION.SDK_INT <= Build.VERSION_CODES.M) {
             return false;
@@ -2437,9 +2436,8 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
 
         StringBuilder content = new StringBuilder("");
         if (event.getAction() == DragEvent.ACTION_DROP) {
-            // TODO(hush): obtain dragdrop permissions (via reflection?), when dragging files into
-            // Chrome/WebView is supported. Not necessary to do so for now, because only text
-            // dragging is supported.
+            // TODO(hush): obtain dragdrop permissions, when dragging files into Chrome/WebView is
+            // supported. Not necessary to do so for now, because only text dragging is supported.
             ClipData clipData = event.getClipData();
             final int itemCount = clipData.getItemCount();
             for (int i = 0; i < itemCount; i++) {

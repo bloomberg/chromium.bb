@@ -4,6 +4,7 @@
 
 package org.chromium.ui.base;
 
+import android.annotation.TargetApi;
 import android.content.ClipData;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -26,10 +27,6 @@ import java.net.URISyntaxException;
 @JNINamespace("ui")
 public abstract class ViewAndroidDelegate {
     private static final String TAG = "ViewAndroidDelegate";
-
-    // TODO(hush): use View#DRAG_FLAG_GLOBAL when Chromium starts to build with API 24.
-    private static final int DRAG_FLAG_GLOBAL = 1 << 8;
-
     private static final String GEO_SCHEME = "geo";
     private static final String TEL_SCHEME = "tel";
     private static final String MAILTO_SCHEME = "mailto";
@@ -95,8 +92,7 @@ public abstract class ViewAndroidDelegate {
      * @param shadowImage The shadow image for the dragged text.
      */
     @SuppressWarnings("deprecation")
-    // TODO(hush): uncomment below when we build with API 24.
-    // @TargetApi(Build.VERSION_CODES.N)
+    @TargetApi(Build.VERSION_CODES.N)
     @CalledByNative
     private boolean startDragAndDrop(String text, Bitmap shadowImage) {
         if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.M) return false;
@@ -108,9 +104,8 @@ public abstract class ViewAndroidDelegate {
         imageView.setImageBitmap(shadowImage);
         imageView.layout(0, 0, shadowImage.getWidth(), shadowImage.getHeight());
 
-        // TODO(hush): use View#startDragAndDrop when Chromium starts to build with API 24.
-        return containerView.startDrag(ClipData.newPlainText(null, text),
-                new View.DragShadowBuilder(imageView), null, DRAG_FLAG_GLOBAL);
+        return containerView.startDragAndDrop(ClipData.newPlainText(null, text),
+                new View.DragShadowBuilder(imageView), null, View.DRAG_FLAG_GLOBAL);
     }
 
     /**
