@@ -461,10 +461,8 @@ IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,
   EXPECT_EQ(TestPageUrl().spec(), notification.service_worker_scope().spec());
 }
 
-// TODO(felt): This DCHECKs when bubbles are enabled, when the file_url is
-// persisted. crbug.com/502057
 IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,
-                       DISABLED_CheckFilePermissionNotGranted) {
+                       CheckFilePermissionNotGranted) {
   // This case should succeed because a normal page URL is used.
   std::string script_result;
 
