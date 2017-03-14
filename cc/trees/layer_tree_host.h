@@ -510,7 +510,6 @@ class CC_EXPORT LayerTreeHost : public NON_EXPORTED_BASE(SurfaceReferenceOwner),
   void InitializeProxy(std::unique_ptr<Proxy> proxy);
 
   bool DoUpdateLayers(Layer* root_layer);
-  void UpdateHudLayer();
 
   void UpdateDeferCommitsInternal();
 

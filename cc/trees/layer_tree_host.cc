@@ -356,7 +356,6 @@ void LayerTreeHost::WillCommit() {
   client_->WillCommit();
 }
 
-void LayerTreeHost::UpdateHudLayer() {}
 
 void LayerTreeHost::UpdateDeferCommitsInternal() {
   proxy_->SetDeferCommits(defer_commits_ ||
@@ -646,7 +645,6 @@ bool LayerTreeHost::DoUpdateLayers(Layer* root_layer) {
                "source_frame_number", SourceFrameNumber());
 
   UpdateHudLayer(debug_state_.ShowHudInfo());
-  UpdateHudLayer();
 
   Layer* root_scroll =
       PropertyTreeBuilder::FindFirstScrollableLayer(root_layer);
