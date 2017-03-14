@@ -31,6 +31,10 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if defined(OS_MACOSX)
+#include "components/os_crypt/os_crypt_mocker.h"
+#endif
+
 using autofill::PasswordForm;
 using base::WaitableEvent;
 using testing::_;
@@ -840,9 +844,6 @@ TEST_F(PasswordStoreTest, GetLoginsWithAffiliatedRealms) {
   }
 }
 
-#if !defined(OS_MACOSX)
-// TODO(crbug.com/668155): Enable this test after fixing issues with
-// initialization PasswordStore with MockKeyChain in tests on MacOS.
 TEST_F(PasswordStoreTest, CheckPasswordReuse) {
   static constexpr PasswordFormData kTestCredentials[] = {
       {PasswordForm::SCHEME_HTML, "https://www.google.com",
@@ -850,6 +851,11 @@ TEST_F(PasswordStoreTest, CheckPasswordReuse) {
       {PasswordForm::SCHEME_HTML, "https://facebook.com",
        "https://facebook.com", "", L"", L"", L"", L"", L"topsecret", true, 1}};
 
+#if defined(OS_MACOSX)
+  // Mock Keychain. There is a call to Keychain on initializling
+  // PasswordReuseDetector, so it should be mocked.
+  OSCryptMocker::SetUpWithSingleton();
+#endif
   scoped_refptr<PasswordStoreDefault> store(new PasswordStoreDefault(
       base::ThreadTaskRunnerHandle::Get(), base::ThreadTaskRunnerHandle::Get(),
       base::MakeUnique<LoginDatabase>(test_login_db_file_path())));
@@ -889,7 +895,9 @@ TEST_F(PasswordStoreTest, CheckPasswordReuse) {
 
   store->ShutdownOnUIThread();
   base::RunLoop().RunUntilIdle();
-}
+#if defined(OS_MACOSX)
+  OSCryptMocker::TearDown();
 #endif
+}
 
 }  // namespace password_manager

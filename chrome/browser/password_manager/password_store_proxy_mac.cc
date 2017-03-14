@@ -46,12 +46,12 @@ bool PasswordStoreProxyMac::Init(
     return false;
   }
 
-  if (!password_manager::PasswordStore::Init(flare))
+  if (!ScheduleTask(base::Bind(
+          &PasswordStoreProxyMac::InitOnBackgroundThread, this,
+          static_cast<MigrationStatus>(migration_status_.GetValue()))))
     return false;
 
-  return ScheduleTask(
-      base::Bind(&PasswordStoreProxyMac::InitOnBackgroundThread, this,
-                 static_cast<MigrationStatus>(migration_status_.GetValue())));
+  return password_manager::PasswordStore::Init(flare);
 }
 
 void PasswordStoreProxyMac::ShutdownOnUIThread() {

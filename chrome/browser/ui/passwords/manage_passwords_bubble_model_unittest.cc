@@ -110,16 +110,7 @@ class ManagePasswordsBubbleModelTest : public ::testing::Test {
         password_manager::BuildPasswordStore<
             content::BrowserContext,
             testing::StrictMock<password_manager::MockPasswordStore>>);
-#if !defined(OS_MACOSX)
-    // TODO(crbug.com/668155): Remove conditional compilation when
-    // PasswordReuseDetector initialization will be implemented for Mac.
-    // The call of FillAutofillableLogins is caused by a posted task for an
-    // initialization of PasswordReuseDetector in the call of
-    // BuildPasswordStore() in the previous code. There is no thread race since
-    // unit tests run in one thread, and any post task will be executed after
-    // finishing the current function.
     EXPECT_CALL(*GetStore(), FillAutofillableLogins(_));
-#endif
   }
 
   void TearDown() override {
