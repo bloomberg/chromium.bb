@@ -54,7 +54,10 @@ component("init") {
       "gl_initializer_x11.cc",
     ]
 
-    deps += [ "//ui/gfx/x" ]
+    deps += [
+      "//ui/gfx/x",
+      "//ui/gl:gl_features",
+    ]
   } else if (use_ozone) {
     sources += [
       "gl_factory_ozone.cc",

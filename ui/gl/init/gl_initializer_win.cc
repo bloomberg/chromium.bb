@@ -104,11 +104,13 @@ bool InitializeStaticEGLInternal() {
       (use_gl == kGLImplementationSwiftShaderName) ||
       (use_gl == kGLImplementationSwiftShaderForWebGLName);
   if (using_swift_shader) {
-    if (!command_line->HasSwitch(switches::kSwiftShaderPath))
-      return false;
-    gles_path = command_line->GetSwitchValuePath(switches::kSwiftShaderPath);
+#if BUILDFLAG(ENABLE_SWIFTSHADER)
+    gles_path = module_path.Append(L"swiftshader/");
     // Preload library
     LoadLibrary(L"ddraw.dll");
+#else
+    return false;
+#endif
   } else {
     gles_path = module_path;
   }
@@ -132,18 +134,6 @@ bool InitializeStaticEGLInternal() {
     base::UnloadNativeLibrary(gles_library);
     return false;
   }
-
-#if BUILDFLAG(ENABLE_SWIFTSHADER)
-  if (using_swift_shader) {
-    // Register key so that SwiftShader doesn't display watermark logo.
-    typedef void (__stdcall *RegisterFunc)(const char* key);
-    RegisterFunc reg = reinterpret_cast<RegisterFunc>(
-      base::GetFunctionPointerFromNativeLibrary(gles_library, "Register"));
-    if (reg) {
-      reg("SS3GCKK6B448CF63");
-    }
-  }
-#endif
 
   GLGetProcAddressProc get_proc_address =
       reinterpret_cast<GLGetProcAddressProc>(

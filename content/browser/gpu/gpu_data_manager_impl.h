@@ -12,7 +12,6 @@
 #include <string>
 
 #include "base/compiler_specific.h"
-#include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/singleton.h"
@@ -80,7 +79,6 @@ class CONTENT_EXPORT GpuDataManagerImpl
   bool IsCompleteGpuInfoAvailable() const override;
   void RequestVideoMemoryUsageStatsUpdate() const override;
   bool ShouldUseSwiftShader() const override;
-  void RegisterSwiftShaderPath(const base::FilePath& path) override;
   // TODO(kbr): the threading model for the GpuDataManagerObservers is
   // not well defined, and it's impossible for callers to correctly
   // delete observers from anywhere except in one of the observer's

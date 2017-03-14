@@ -47,7 +47,6 @@ GL_EXPORT extern const char kSupportsDualGpus[];
 
 GL_EXPORT extern const char kUseANGLE[];
 GL_EXPORT extern const char kUseGL[];
-GL_EXPORT extern const char kSwiftShaderPath[];
 GL_EXPORT extern const char kTestGLLib[];
 GL_EXPORT extern const char kUseGpuInTests[];
 GL_EXPORT extern const char kEnableES3APIs[];

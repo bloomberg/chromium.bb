@@ -86,12 +86,6 @@ bool GpuDataManagerImpl::ShouldUseSwiftShader() const {
   return private_->ShouldUseSwiftShader();
 }
 
-void GpuDataManagerImpl::RegisterSwiftShaderPath(
-    const base::FilePath& path) {
-  base::AutoLock auto_lock(lock_);
-  private_->RegisterSwiftShaderPath(path);
-}
-
 void GpuDataManagerImpl::AddObserver(
     GpuDataManagerObserver* observer) {
   base::AutoLock auto_lock(lock_);

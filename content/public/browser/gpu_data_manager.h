@@ -14,10 +14,6 @@
 
 class GURL;
 
-namespace base {
-class FilePath;
-}
-
 namespace gpu {
 struct GPUInfo;
 }
@@ -75,9 +71,6 @@ class GpuDataManager {
 
   // Returns true if SwiftShader should be used.
   virtual bool ShouldUseSwiftShader() const = 0;
-
-  // Register a path to SwiftShader.
-  virtual void RegisterSwiftShaderPath(const base::FilePath& path) = 0;
 
   // Registers/unregister |observer|.
   virtual void AddObserver(GpuDataManagerObserver* observer) = 0;

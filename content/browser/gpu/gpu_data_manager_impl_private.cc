@@ -43,6 +43,7 @@
 #include "gpu/ipc/service/switches.h"
 #include "media/media_features.h"
 #include "ui/base/ui_base_switches.h"
+#include "ui/gl/gl_features.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_switches.h"
 #include "ui/gl/gpu_switching_manager.h"
@@ -452,12 +453,6 @@ bool GpuDataManagerImplPrivate::ShouldUseSwiftShader() const {
   return use_swiftshader_;
 }
 
-void GpuDataManagerImplPrivate::RegisterSwiftShaderPath(
-    const base::FilePath& path) {
-  swiftshader_path_ = path;
-  EnableSwiftShaderIfNecessary();
-}
-
 void GpuDataManagerImplPrivate::AddObserver(GpuDataManagerObserver* observer) {
   GpuDataManagerImpl::UnlockedSession session(owner_);
   observer_list_->AddObserver(observer);
@@ -765,11 +760,6 @@ void GpuDataManagerImplPrivate::AppendGpuCommandLine(
     command_line->AppendSwitchASCII(switches::kSupportsDualGpus, "true");
   else
     command_line->AppendSwitchASCII(switches::kSupportsDualGpus, "false");
-
-  if (!swiftshader_path_.empty()) {
-    command_line->AppendSwitchPath(switches::kSwiftShaderPath,
-                                   swiftshader_path_);
-  }
 
   if (!gpu_driver_bugs_.empty()) {
     command_line->AppendSwitchASCII(switches::kGpuDriverBugWorkarounds,
@@ -1152,8 +1142,6 @@ GpuDataManagerImplPrivate::GpuDataManagerImplPrivate(GpuDataManagerImpl* owner)
   DCHECK(owner_);
   const base::CommandLine* command_line =
       base::CommandLine::ForCurrentProcess();
-  swiftshader_path_ = command_line->GetSwitchValuePath(
-      switches::kSwiftShaderPath);
   if (ShouldDisableHardwareAcceleration())
     DisableHardwareAcceleration();
 
@@ -1258,13 +1246,14 @@ void GpuDataManagerImplPrivate::NotifyGpuInfoUpdate() {
 }
 
 void GpuDataManagerImplPrivate::EnableSwiftShaderIfNecessary() {
-  if (!GpuAccessAllowed(NULL) ||
+#if BUILDFLAG(ENABLE_SWIFTSHADER)
+  if (!GpuAccessAllowed(nullptr) ||
       blacklisted_features_.count(gpu::GPU_FEATURE_TYPE_ACCELERATED_WEBGL)) {
-    if (!swiftshader_path_.empty() &&
-        !base::CommandLine::ForCurrentProcess()->HasSwitch(
-             switches::kDisableSoftwareRasterizer))
+    if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kDisableSoftwareRasterizer))
       use_swiftshader_ = true;
   }
+#endif
 }
 
 std::string GpuDataManagerImplPrivate::GetDomainFromURL(

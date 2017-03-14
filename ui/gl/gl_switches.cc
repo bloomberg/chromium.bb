@@ -71,8 +71,6 @@ const char kUseANGLE[]                      = "use-angle";
 //  swiftshader: The SwiftShader software renderer.
 const char kUseGL[]                         = "use-gl";
 
-const char kSwiftShaderPath[]               = "swiftshader-path";
-
 // Inform Chrome that a GPU context will not be lost in power saving mode,
 // screen saving mode, etc.  Note that this flag does not ensure that a GPU
 // context will never be lost in any situations, say, a GPU reset.

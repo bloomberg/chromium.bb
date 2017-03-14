@@ -263,8 +263,6 @@ split_static_library("browser") {
     "component_updater/supervised_user_whitelist_installer.h",
     "component_updater/sw_reporter_installer_win.cc",
     "component_updater/sw_reporter_installer_win.h",
-    "component_updater/swiftshader_component_installer.cc",
-    "component_updater/swiftshader_component_installer.h",
     "conflicts/module_database_win.cc",
     "conflicts/module_database_win.h",
     "conflicts/module_event_sink_impl_win.cc",

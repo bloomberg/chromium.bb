@@ -10,7 +10,7 @@ import("//ui/ozone/ozone.gni")
 import("//testing/test.gni")
 
 declare_args() {
-  enable_swiftshader = is_chrome_branded && is_win
+  enable_swiftshader = is_win
 }
 
 use_egl = is_win || is_android || is_linux

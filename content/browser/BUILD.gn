@@ -148,6 +148,7 @@ source_set("browser") {
     "//ui/gfx/geometry",
     "//ui/gfx/geometry/mojo",
     "//ui/gl",
+    "//ui/gl:gl_features",
     "//ui/native_theme",
     "//ui/resources",
     "//ui/shell_dialogs",
@@ -1593,6 +1594,7 @@ source_set("browser") {
     deps += [
       "//third_party/iaccessible2",
       "//third_party/isimpledom",
+      "//third_party/swiftshader",
     ]
     libs += [
       "comctl32.lib",

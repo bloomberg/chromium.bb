@@ -57,7 +57,6 @@
 #include "chrome/browser/component_updater/sth_set_component_installer.h"
 #include "chrome/browser/component_updater/subresource_filter_component_installer.h"
 #include "chrome/browser/component_updater/supervised_user_whitelist_installer.h"
-#include "chrome/browser/component_updater/swiftshader_component_installer.h"
 #include "chrome/browser/component_updater/widevine_cdm_component_installer.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/first_run/first_run.h"
@@ -478,7 +477,6 @@ void RegisterComponentsForUpdate() {
 #if !defined(OS_ANDROID)
   RegisterPepperFlashComponent(cus);
 #if !defined(OS_CHROMEOS)
-  RegisterSwiftShaderComponent(cus);
   RegisterWidevineCdmComponent(cus);
 #endif  // !defined(OS_CHROMEOS)
 #endif  // !defined(OS_ANDROID)
