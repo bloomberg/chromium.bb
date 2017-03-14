@@ -1871,10 +1871,14 @@ RenderThreadImpl::CreateCompositorFrameSink(
 #if defined(USE_AURA)
   if (!use_software && IsRunningInMash() &&
       !command_line.HasSwitch(switches::kNoUseMusInRenderer)) {
+    scoped_refptr<gpu::GpuChannelHost> channel = EstablishGpuChannelSync();
+    // If the channel could not be established correctly, then return null. This
+    // would cause the compositor to wait and try again at a later time.
+    if (!channel)
+      return nullptr;
     return RendererWindowTreeClient::Get(routing_id)
         ->CreateCompositorFrameSink(
-            frame_sink_id,
-            gpu_->CreateContextProvider(EstablishGpuChannelSync()),
+            frame_sink_id, gpu_->CreateContextProvider(std::move(channel)),
             GetGpuMemoryBufferManager());
   }
 #endif
