@@ -170,10 +170,7 @@ class ShellTest : public test::AshTestBase {
     EXPECT_NE(views::MenuController::EXIT_NONE, menu_controller->exit_type());
     lock_widget->Close();
     delegate->UnlockScreen();
-
-    // In case the menu wasn't closed, cancel the menu to exit the nested menu
-    // run loop so that the test will not time out.
-    menu_controller->CancelAll();
+    EXPECT_EQ(nullptr, views::MenuController::GetActiveInstance());
   }
 };
 
@@ -348,20 +345,15 @@ TEST_F(ShellTest, LockScreenClosesActiveMenu) {
                               ->GetRootWindowController()
                               ->wallpaper_widget_controller()
                               ->widget();
-  std::unique_ptr<views::MenuRunner> menu_runner(
-      new views::MenuRunner(menu_model.get(), views::MenuRunner::CONTEXT_MENU));
-
-  // When MenuRunner runs a nested loop the LockScreenAndVerifyMenuClosed
-  // command will fire, check the menu state and ensure the nested menu loop
-  // is exited so that the test will terminate.
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&ShellTest::LockScreenAndVerifyMenuClosed,
-                            base::Unretained(this)));
+  std::unique_ptr<views::MenuRunner> menu_runner(new views::MenuRunner(
+      menu_model.get(),
+      views::MenuRunner::CONTEXT_MENU | views::MenuRunner::ASYNC));
 
   EXPECT_EQ(views::MenuRunner::NORMAL_EXIT,
             menu_runner->RunMenuAt(widget, NULL, gfx::Rect(),
                                    views::MENU_ANCHOR_TOPLEFT,
                                    ui::MENU_SOURCE_MOUSE));
+  LockScreenAndVerifyMenuClosed();
 }
 
 TEST_F(ShellTest, ManagedWindowModeBasics) {
