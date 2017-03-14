@@ -138,18 +138,25 @@ class MemoryCoordinatorTestThread : public base::Thread,
 };
 
 TEST_F(ChildMemoryCoordinatorImplTest, SingleClient) {
+  auto* memory_coordinator_proxy = base::MemoryCoordinatorProxy::GetInstance();
   MockMemoryCoordinatorClient client;
   RegisterClient(&client);
 
   ChangeState(mojom::MemoryState::THROTTLED);
   EXPECT_EQ(base::MemoryState::THROTTLED, client.last_state());
+  EXPECT_EQ(base::MemoryState::THROTTLED,
+            memory_coordinator_proxy->GetCurrentMemoryState());
 
   ChangeState(mojom::MemoryState::NORMAL);
   EXPECT_EQ(base::MemoryState::NORMAL, client.last_state());
+  EXPECT_EQ(base::MemoryState::NORMAL,
+            memory_coordinator_proxy->GetCurrentMemoryState());
 
   UnregisterClient(&client);
   ChangeState(mojom::MemoryState::THROTTLED);
   EXPECT_TRUE(base::MemoryState::THROTTLED != client.last_state());
+  EXPECT_EQ(base::MemoryState::THROTTLED,
+            memory_coordinator_proxy->GetCurrentMemoryState());
 }
 
 TEST_F(ChildMemoryCoordinatorImplTest, MultipleClients) {

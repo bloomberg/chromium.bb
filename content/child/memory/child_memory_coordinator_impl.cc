@@ -50,12 +50,17 @@ ChildMemoryCoordinatorImpl::ChildMemoryCoordinatorImpl(
   DCHECK(!g_child_memory_coordinator);
   g_child_memory_coordinator = this;
   parent_->AddChild(binding_.CreateInterfacePtrAndBind());
+  base::MemoryCoordinatorProxy::SetMemoryCoordinator(this);
 }
 
 ChildMemoryCoordinatorImpl::~ChildMemoryCoordinatorImpl() {
   base::AutoLock lock(*g_lock.Pointer());
   DCHECK(g_child_memory_coordinator == this);
   g_child_memory_coordinator = nullptr;
+}
+
+base::MemoryState ChildMemoryCoordinatorImpl::GetCurrentMemoryState() const {
+  return current_state_;
 }
 
 void ChildMemoryCoordinatorImpl::PurgeMemory() {
@@ -65,12 +70,11 @@ void ChildMemoryCoordinatorImpl::PurgeMemory() {
 }
 
 void ChildMemoryCoordinatorImpl::OnStateChange(mojom::MemoryState state) {
-  base::MemoryState base_state = ToBaseMemoryState(state);
+  current_state_ = ToBaseMemoryState(state);
   TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("memory-infra"),
                "ChildMemoryCoordinatorImpl::OnStateChange", "state",
-               MemoryStateToString(base_state));
-  base::MemoryCoordinatorClientRegistry::GetInstance()->Notify(
-      base_state);
+               MemoryStateToString(current_state_));
+  base::MemoryCoordinatorClientRegistry::GetInstance()->Notify(current_state_);
 }
 
 #if !defined(OS_ANDROID)
