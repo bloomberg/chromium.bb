@@ -121,6 +121,11 @@ void TestCompositorFrameSink::DetachFromClient() {
   CompositorFrameSink::DetachFromClient();
 }
 
+void TestCompositorFrameSink::SetLocalSurfaceId(
+    const LocalSurfaceId& local_surface_id) {
+  test_client_->DisplayReceivedLocalSurfaceId(local_surface_id);
+}
+
 void TestCompositorFrameSink::SubmitCompositorFrame(CompositorFrame frame) {
   test_client_->DisplayReceivedCompositorFrame(frame);
 

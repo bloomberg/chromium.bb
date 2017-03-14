@@ -500,6 +500,8 @@ void LayerTreeImpl::PushPropertiesTo(LayerTreeImpl* target_tree) {
 
   target_tree->set_content_source_id(content_source_id());
 
+  target_tree->set_local_surface_id(local_surface_id());
+
   target_tree->pending_page_scale_animation_ =
       std::move(pending_page_scale_animation_);
 

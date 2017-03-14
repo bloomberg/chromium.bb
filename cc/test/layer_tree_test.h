@@ -74,6 +74,8 @@ class LayerTreeTest : public testing::Test, public TestHooks {
       AnimationPlayer* player_to_receive_animation);
   void PostAddLongAnimationToMainThreadPlayer(
       AnimationPlayer* player_to_receive_animation);
+  void PostSetLocalSurfaceIdToMainThread(
+      const LocalSurfaceId& local_surface_id);
   void PostSetDeferCommitsToMainThread(bool defer_commits);
   void PostSetNeedsCommitToMainThread();
   void PostSetNeedsUpdateLayersToMainThread();
@@ -157,6 +159,7 @@ class LayerTreeTest : public testing::Test, public TestHooks {
   virtual void DispatchAddAnimationToPlayer(
       AnimationPlayer* player_to_receive_animation,
       double animation_duration);
+  void DispatchSetLocalSurfaceId(const LocalSurfaceId& local_surface_id);
   void DispatchSetDeferCommits(bool defer_commits);
   void DispatchSetNeedsCommit();
   void DispatchSetNeedsUpdateLayers();

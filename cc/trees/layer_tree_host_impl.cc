@@ -1711,6 +1711,12 @@ bool LayerTreeHostImpl::DrawLayers(FrameData* frame) {
   resource_provider_->PrepareSendToParent(resources,
                                           &compositor_frame.resource_list);
   compositor_frame.render_pass_list = std::move(frame->render_passes);
+  // TODO(fsamuel): Once all clients get their LocalSurfaceId from their parent,
+  // the LocalSurfaceId should hang off CompositorFrameMetadata.
+  if (active_tree()->local_surface_id().is_valid()) {
+    compositor_frame_sink_->SetLocalSurfaceId(
+        active_tree()->local_surface_id());
+  }
   compositor_frame_sink_->SubmitCompositorFrame(std::move(compositor_frame));
 
   // Clears the list of swap promises after calling DidSwap on each of them to

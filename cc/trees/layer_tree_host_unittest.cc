@@ -6852,8 +6852,38 @@ class LayerTreeHostTestPaintedDeviceScaleFactor : public LayerTreeHostTest {
 
   void AfterTest() override {}
 };
-
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestPaintedDeviceScaleFactor);
+
+// Makes sure that LocalSurfaceId is propagated to the CompositorFrameSink.
+class LayerTreeHostTestLocalSurfaceId : public LayerTreeHostTest {
+ protected:
+  void BeginTest() override {
+    expected_local_surface_id_ = allocator_.GenerateId();
+    PostSetLocalSurfaceIdToMainThread(expected_local_surface_id_);
+  }
+
+  DrawResult PrepareToDrawOnThread(LayerTreeHostImpl* host_impl,
+                                   LayerTreeHostImpl::FrameData* frame_data,
+                                   DrawResult draw_result) override {
+    EXPECT_EQ(DRAW_SUCCESS, draw_result);
+    EXPECT_EQ(expected_local_surface_id_,
+              host_impl->active_tree()->local_surface_id());
+    return draw_result;
+  }
+
+  void DisplayReceivedLocalSurfaceIdOnThread(
+      const LocalSurfaceId& local_surface_id) override {
+    EXPECT_EQ(expected_local_surface_id_, local_surface_id);
+    EndTest();
+  }
+
+  void AfterTest() override {}
+
+  LocalSurfaceId expected_local_surface_id_;
+  LocalSurfaceIdAllocator allocator_;
+};
+
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestLocalSurfaceId);
 
 // The GPU image decode controller hands images off to Skia for rasterization.
 // When used with large images, the images in question could be deleted before

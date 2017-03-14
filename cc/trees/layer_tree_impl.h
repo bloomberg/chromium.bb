@@ -232,6 +232,11 @@ class CC_EXPORT LayerTreeImpl {
   void set_content_source_id(uint32_t id) { content_source_id_ = id; }
   uint32_t content_source_id() { return content_source_id_; }
 
+  void set_local_surface_id(const LocalSurfaceId& id) {
+    local_surface_id_ = id;
+  }
+  const LocalSurfaceId& local_surface_id() const { return local_surface_id_; }
+
   void SetRasterColorSpace(const gfx::ColorSpace& raster_color_space);
   const gfx::ColorSpace& raster_color_space() const {
     return raster_color_space_;
@@ -499,6 +504,7 @@ class CC_EXPORT LayerTreeImpl {
   gfx::ColorSpace raster_color_space_;
 
   uint32_t content_source_id_;
+  LocalSurfaceId local_surface_id_;
 
   scoped_refptr<SyncedElasticOverscroll> elastic_overscroll_;
 

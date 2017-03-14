@@ -34,6 +34,8 @@ class TestCompositorFrameSinkClient {
   virtual std::unique_ptr<OutputSurface> CreateDisplayOutputSurface(
       scoped_refptr<ContextProvider> compositor_context_provider) = 0;
 
+  virtual void DisplayReceivedLocalSurfaceId(
+      const LocalSurfaceId& local_surface_id) = 0;
   virtual void DisplayReceivedCompositorFrame(const CompositorFrame& frame) = 0;
   virtual void DisplayWillDrawAndSwap(bool will_draw_and_swap,
                                       const RenderPassList& render_passes) = 0;
@@ -75,6 +77,7 @@ class TestCompositorFrameSink : public CompositorFrameSink,
   // CompositorFrameSink implementation.
   bool BindToClient(CompositorFrameSinkClient* client) override;
   void DetachFromClient() override;
+  void SetLocalSurfaceId(const LocalSurfaceId& local_surface_id) override;
   void SubmitCompositorFrame(CompositorFrame frame) override;
   void ForceReclaimResources() override;
 

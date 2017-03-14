@@ -152,6 +152,8 @@ Compositor::Compositor(const cc::FrameSinkId& frame_sink_id,
 
   settings.initial_debug_state.SetRecordRenderingStats(
       command_line->HasSwitch(cc::switches::kEnableGpuBenchmarking));
+  settings.needs_valid_local_surface_id =
+      command_line->HasSwitch(cc::switches::kEnableSurfaceSynchronization);
 
   settings.use_zero_copy = IsUIZeroCopyEnabled();
 
@@ -272,6 +274,10 @@ void Compositor::RemoveFrameSink(const cc::FrameSinkId& frame_sink_id) {
   context_factory_private_->GetSurfaceManager()->UnregisterFrameSinkHierarchy(
       frame_sink_id_, *it);
   child_frame_sinks_.erase(it);
+}
+
+void Compositor::SetLocalSurfaceId(const cc::LocalSurfaceId& local_surface_id) {
+  host_->SetLocalSurfaceId(local_surface_id);
 }
 
 void Compositor::SetCompositorFrameSink(

@@ -454,6 +454,10 @@ class LayerTreeTestCompositorFrameSinkClient
     return hooks_->CreateDisplayOutputSurfaceOnThread(
         std::move(compositor_context_provider));
   }
+  void DisplayReceivedLocalSurfaceId(
+      const LocalSurfaceId& local_surface_id) override {
+    hooks_->DisplayReceivedLocalSurfaceIdOnThread(local_surface_id);
+  }
   void DisplayReceivedCompositorFrame(const CompositorFrame& frame) override {
     hooks_->DisplayReceivedCompositorFrameOnThread(frame);
   }
@@ -544,6 +548,13 @@ void LayerTreeTest::PostAddLongAnimationToMainThreadPlayer(
       base::Bind(&LayerTreeTest::DispatchAddAnimationToPlayer,
                  main_thread_weak_ptr_,
                  base::Unretained(player_to_receive_animation), 1.0));
+}
+
+void LayerTreeTest::PostSetLocalSurfaceIdToMainThread(
+    const LocalSurfaceId& local_surface_id) {
+  main_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&LayerTreeTest::DispatchSetLocalSurfaceId,
+                            main_thread_weak_ptr_, local_surface_id));
 }
 
 void LayerTreeTest::PostSetDeferCommitsToMainThread(bool defer_commits) {
@@ -712,6 +723,13 @@ void LayerTreeTest::DispatchAddAnimationToPlayer(
     AddOpacityTransitionToPlayer(player_to_receive_animation,
                                  animation_duration, 0, 0.5, true);
   }
+}
+
+void LayerTreeTest::DispatchSetLocalSurfaceId(
+    const LocalSurfaceId& local_surface_id) {
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
+  if (layer_tree_host_)
+    layer_tree_host_->SetLocalSurfaceId(local_surface_id);
 }
 
 void LayerTreeTest::DispatchSetDeferCommits(bool defer_commits) {

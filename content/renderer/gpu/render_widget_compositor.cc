@@ -367,6 +367,8 @@ cc::LayerTreeSettings RenderWidgetCompositor::GenerateLayerTreeSettings(
 
   settings.initial_debug_state.SetRecordRenderingStats(
       cmd.HasSwitch(cc::switches::kEnableGpuBenchmarking));
+  settings.needs_valid_local_surface_id =
+      cmd.HasSwitch(cc::switches::kEnableSurfaceSynchronization);
 
   if (cmd.HasSwitch(cc::switches::kSlowDownRasterScaleFactor)) {
     const int kMinSlowDownScaleFactor = 0;
@@ -1143,6 +1145,11 @@ void RenderWidgetCompositor::SetIsForOopif(bool is_for_oopif) {
 
 void RenderWidgetCompositor::SetContentSourceId(uint32_t id) {
   layer_tree_host_->SetContentSourceId(id);
+}
+
+void RenderWidgetCompositor::SetLocalSurfaceId(
+    const cc::LocalSurfaceId& local_surface_id) {
+  layer_tree_host_->SetLocalSurfaceId(local_surface_id);
 }
 
 }  // namespace content

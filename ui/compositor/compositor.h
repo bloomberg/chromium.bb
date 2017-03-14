@@ -43,6 +43,7 @@ class ContextProvider;
 class Layer;
 class LayerTreeDebugState;
 class LayerTreeHost;
+class LocalSurfaceId;
 class RendererSettings;
 class SurfaceManager;
 class TaskGraphRunner;
@@ -215,6 +216,8 @@ class COMPOSITOR_EXPORT Compositor
 
   void AddFrameSink(const cc::FrameSinkId& frame_sink_id);
   void RemoveFrameSink(const cc::FrameSinkId& frame_sink_id);
+
+  void SetLocalSurfaceId(const cc::LocalSurfaceId& local_surface_id);
 
   void SetCompositorFrameSink(std::unique_ptr<cc::CompositorFrameSink> surface);
 

@@ -8505,6 +8505,8 @@ class FrameSinkClient : public TestCompositorFrameSinkClient {
     return FakeOutputSurface::Create3d(std::move(display_context_provider_));
   }
 
+  void DisplayReceivedLocalSurfaceId(
+      const LocalSurfaceId& local_surface_id) override {}
   void DisplayReceivedCompositorFrame(const CompositorFrame& frame) override {}
   void DisplayWillDrawAndSwap(bool will_draw_and_swap,
                               const RenderPassList& render_passes) override {}

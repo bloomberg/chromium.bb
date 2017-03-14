@@ -161,6 +161,8 @@ void LayerTreeHost::InitializeProxy(std::unique_ptr<Proxy> proxy) {
   proxy_ = std::move(proxy);
   proxy_->Start();
 
+  UpdateDeferCommitsInternal();
+
   mutator_host_->SetSupportsScrollAnimations(proxy_->SupportsImplScrolling());
 }
 
@@ -356,6 +358,12 @@ void LayerTreeHost::WillCommit() {
 
 void LayerTreeHost::UpdateHudLayer() {}
 
+void LayerTreeHost::UpdateDeferCommitsInternal() {
+  proxy_->SetDeferCommits(defer_commits_ ||
+                          (settings_.needs_valid_local_surface_id &&
+                           !local_surface_id_.is_valid()));
+}
+
 void LayerTreeHost::CommitComplete() {
   source_frame_number_++;
   client_->DidCommit();
@@ -432,7 +440,10 @@ void LayerTreeHost::DidLoseCompositorFrameSink() {
 }
 
 void LayerTreeHost::SetDeferCommits(bool defer_commits) {
-  proxy_->SetDeferCommits(defer_commits);
+  if (defer_commits_ == defer_commits)
+    return;
+  defer_commits_ = defer_commits;
+  UpdateDeferCommitsInternal();
 }
 
 DISABLE_CFI_PERF
@@ -985,6 +996,14 @@ void LayerTreeHost::SetContentSourceId(uint32_t id) {
   SetNeedsCommit();
 }
 
+void LayerTreeHost::SetLocalSurfaceId(const LocalSurfaceId& local_surface_id) {
+  if (local_surface_id_ == local_surface_id)
+    return;
+  local_surface_id_ = local_surface_id;
+  UpdateDeferCommitsInternal();
+  SetNeedsCommit();
+}
+
 void LayerTreeHost::RegisterLayer(Layer* layer) {
   DCHECK(!LayerById(layer->id()));
   DCHECK(!in_paint_layer_contents_);
@@ -1156,6 +1175,8 @@ void LayerTreeHost::PushPropertiesTo(LayerTreeImpl* tree_impl) {
   tree_impl->SetRasterColorSpace(raster_color_space_);
 
   tree_impl->set_content_source_id(content_source_id_);
+
+  tree_impl->set_local_surface_id(local_surface_id_);
 
   if (pending_page_scale_animation_) {
     tree_impl->SetPendingPageScaleAnimation(

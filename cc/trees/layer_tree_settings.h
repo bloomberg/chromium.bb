@@ -106,6 +106,10 @@ class CC_EXPORT LayerTreeSettings {
   bool enable_checker_imaging = false;
 
   LayerTreeDebugState initial_debug_state;
+
+  // Indicates that the LayerTreeHost should defer commits unless it has a valid
+  // LocalSurfaceId set.
+  bool needs_valid_local_surface_id = false;
 };
 
 }  // namespace cc

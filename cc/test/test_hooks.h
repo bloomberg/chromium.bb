@@ -67,6 +67,8 @@ class TestHooks : public AnimationDelegate {
   // draw, so you should record state you want to use here in
   // DrawLayersOnThread() instead. For that reason these methods do not receive
   // a LayerTreeHostImpl pointer.
+  virtual void DisplayReceivedLocalSurfaceIdOnThread(
+      const LocalSurfaceId& local_surface_id) {}
   virtual void DisplayReceivedCompositorFrameOnThread(
       const CompositorFrame& frame) {}
   virtual void DisplayWillDrawAndSwapOnThread(

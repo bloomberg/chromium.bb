@@ -50,6 +50,7 @@ class CompositorDependencies {
   virtual bool AreImageDecodeTasksEnabled() = 0;
   virtual bool IsThreadedAnimationEnabled() = 0;
   virtual bool IsScrollAnimatorEnabled() = 0;
+  virtual bool IsSurfaceSynchronizationEnabled() = 0;
 
   virtual ~CompositorDependencies() {}
 };

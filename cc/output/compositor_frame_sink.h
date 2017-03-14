@@ -27,6 +27,7 @@ namespace cc {
 
 class CompositorFrame;
 class CompositorFrameSinkClient;
+class LocalSurfaceId;
 class SharedBitmapManager;
 
 // An interface for submitting CompositorFrames to a display compositor
@@ -104,6 +105,10 @@ class CC_EXPORT CompositorFrameSink {
   // If supported, this causes a ReclaimResources for all resources that are
   // currently in use.
   virtual void ForceReclaimResources() {}
+
+  // If supported, this sets the LocalSurfaceId the CompositorFrameSink will use
+  // to submit a CompositorFrame.
+  virtual void SetLocalSurfaceId(const LocalSurfaceId& local_surface_id) {}
 
   // Support for a pull-model where draws are requested by the output surface.
   //

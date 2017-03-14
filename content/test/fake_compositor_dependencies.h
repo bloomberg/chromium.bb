@@ -38,6 +38,7 @@ class FakeCompositorDependencies : public CompositorDependencies {
   bool AreImageDecodeTasksEnabled() override;
   bool IsThreadedAnimationEnabled() override;
   bool IsScrollAnimatorEnabled() override;
+  bool IsSurfaceSynchronizationEnabled() override;
 
  private:
   cc::TestTaskGraphRunner task_graph_runner_;

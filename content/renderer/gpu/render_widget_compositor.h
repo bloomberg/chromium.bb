@@ -113,7 +113,8 @@ class CONTENT_EXPORT RenderWidgetCompositor
   void SetPaintedDeviceScaleFactor(float device_scale);
   void SetRasterColorSpace(const gfx::ColorSpace& color_space);
   void SetIsForOopif(bool is_for_oopif);
-  void SetContentSourceId(uint32_t);
+  void SetContentSourceId(uint32_t source_id);
+  void SetLocalSurfaceId(const cc::LocalSurfaceId& local_surface_id);
 
   // WebLayerTreeView implementation.
   cc::FrameSinkId getFrameSinkId() override;

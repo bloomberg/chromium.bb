@@ -314,6 +314,11 @@ class CC_EXPORT LayerTreeHost : public NON_EXPORTED_BASE(SurfaceReferenceOwner),
   void SetContentSourceId(uint32_t);
   uint32_t content_source_id() const { return content_source_id_; }
 
+  // If this LayerTreeHost needs a valid LocalSurfaceId then commits will be
+  // deferred until a valid LocalSurfaceId is provided.
+  void SetLocalSurfaceId(const LocalSurfaceId& local_surface_id);
+  const LocalSurfaceId& local_surface_id() const { return local_surface_id_; }
+
   void SetRasterColorSpace(const gfx::ColorSpace& raster_color_space);
   const gfx::ColorSpace& raster_color_space() const {
     return raster_color_space_;
@@ -507,9 +512,7 @@ class CC_EXPORT LayerTreeHost : public NON_EXPORTED_BASE(SurfaceReferenceOwner),
   bool DoUpdateLayers(Layer* root_layer);
   void UpdateHudLayer();
 
-  bool AnimateLayersRecursive(Layer* current, base::TimeTicks time);
-
-  void CalculateLCDTextMetricsCallback(Layer* layer);
+  void UpdateDeferCommitsInternal();
 
   const CompositorMode compositor_mode_;
 
@@ -579,6 +582,8 @@ class CC_EXPORT LayerTreeHost : public NON_EXPORTED_BASE(SurfaceReferenceOwner),
   gfx::ColorSpace raster_color_space_;
 
   uint32_t content_source_id_;
+  LocalSurfaceId local_surface_id_;
+  bool defer_commits_ = false;
 
   SkColor background_color_ = SK_ColorWHITE;
   bool has_transparent_background_ = false;

@@ -36,6 +36,7 @@
 #include "cc/scheduler/commit_earlyout_reason.h"
 #include "cc/scheduler/draw_result.h"
 #include "cc/scheduler/video_frame_controller.h"
+#include "cc/surfaces/local_surface_id.h"
 #include "cc/tiles/decoded_image_tracker.h"
 #include "cc/tiles/image_decode_cache.h"
 #include "cc/tiles/tile_manager.h"
@@ -719,6 +720,8 @@ class CC_EXPORT LayerTreeHostImpl
   std::set<UIResourceId> evicted_ui_resources_;
 
   CompositorFrameSink* compositor_frame_sink_;
+
+  LocalSurfaceId local_surface_id_;
 
   // The following scoped variables must not outlive the
   // |compositor_frame_sink_|.

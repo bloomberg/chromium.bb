@@ -412,6 +412,8 @@ class LayoutTestDependenciesImpl : public LayoutTestDependencies,
     return base::MakeUnique<cc::PixelTestOutputSurface>(
         std::move(context_provider), flipped_output_surface);
   }
+  void DisplayReceivedLocalSurfaceId(
+      const cc::LocalSurfaceId& local_surface_id) override {}
   void DisplayReceivedCompositorFrame(
       const cc::CompositorFrame& frame) override {}
   void DisplayWillDrawAndSwap(

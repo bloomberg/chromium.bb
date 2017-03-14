@@ -31,6 +31,7 @@ CC_EXPORT extern const char kEnableTileCompression[];
 CC_EXPORT extern const char kEnableColorCorrectRendering[];
 CC_EXPORT extern const char kEnableGpuBenchmarking[];
 CC_EXPORT extern const char kEnableTrueColorRendering[];
+CC_EXPORT extern const char kEnableSurfaceSynchronization[];
 
 // Debug visualizations.
 CC_EXPORT extern const char kShowCompositedLayerBorders[];
