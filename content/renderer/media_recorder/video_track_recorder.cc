@@ -692,10 +692,8 @@ void VEAEncoder::EncodeOnEncodingTaskRunner(
   DVLOG(3) << __func__;
   DCHECK(encoding_task_runner_->BelongsToCurrentThread());
 
-  if (input_size_ != frame->visible_rect().size() && video_encoder_) {
-    video_encoder_->Destroy();
+  if (input_size_ != frame->visible_rect().size() && video_encoder_)
     video_encoder_.reset();
-  }
 
   if (!video_encoder_)
     ConfigureEncoderOnEncodingTaskRunner(frame->visible_rect().size());
