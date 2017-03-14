@@ -477,7 +477,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   friend class base::RefCounted<Layer>;
   friend class LayerTreeHostCommon;
   friend class LayerTreeHost;
-  friend class LayerInternalsForTest;
 
   // Interactions with attached animations.
   gfx::ScrollOffset ScrollOffsetForAnimation() const;
