@@ -105,19 +105,31 @@ Polymer({
    * Queues a task to search the basic sections, then another for the advanced
    * sections.
    * @param {string} query The text to search for.
-   * @return {!Promise<!settings.SearchRequest>} A signal indicating that
+   * @return {!Promise<!settings.SearchResult>} A signal indicating that
    *     searching finished.
    */
   searchContents: function(query) {
-    var whenSearchDone = settings.getSearchManager().search(
-        query, assert(this.$$('#basicPage')));
+    var whenSearchDone = [
+      settings.getSearchManager().search(query, assert(this.$$('#basicPage'))),
+    ];
 
     if (this.pageVisibility.advancedSettings !== false) {
-      assert(whenSearchDone === settings.getSearchManager().search(
+      whenSearchDone.push(settings.getSearchManager().search(
           query, assert(this.$$('#advancedPageTemplate').get())));
     }
 
-    return whenSearchDone;
+    return Promise.all(whenSearchDone).then(function(requests) {
+      // Combine the SearchRequests results to a single SearchResult object.
+      return {
+        canceled: requests.some(function(r) { return r.canceled; }),
+        didFindMatches: requests.every(function(r) {
+          return !r.didFindMatches();
+        }),
+        // All requests correspond to the same user query, so only need to check
+        // one of them.
+        wasClearSearch: requests[0].isSame(''),
+      };
+    });
   },
 
 // <if expr="chromeos">

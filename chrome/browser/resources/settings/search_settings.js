@@ -2,6 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+cr.exportPath('settings');
+
+/**
+ * A data structure used by callers to combine the results of multiple search
+ * requests.
+ *
+ * @typedef {{
+ *   canceled: Boolean,
+ *   didFindMatches: Boolean,
+ *   wasClearSearch: Boolean,
+ * }}
+ */
+settings.SearchResult;
+
 cr.define('settings', function() {
   /** @const {string} */
   var WRAPPER_CSS_CLASS = 'search-highlight-wrapper';
@@ -125,8 +139,7 @@ cr.define('settings', function() {
     function doSearch(node) {
       if (node.nodeName == 'TEMPLATE' && node.hasAttribute('route-path') &&
           !node.if && !node.hasAttribute(SKIP_SEARCH_CSS_ATTRIBUTE)) {
-        getSearchManager().queue_.addRenderTask(
-            new RenderTask(request, node));
+        request.queue_.addRenderTask(new RenderTask(request, node));
         return;
       }
 
@@ -304,7 +317,7 @@ cr.define('settings', function() {
               parent.querySelector('[route-path="' + routePath + '"]');
           // Register a SearchAndHighlightTask for the part of the DOM that was
           // just rendered.
-          getSearchManager().queue_.addSearchAndHighlightTask(
+          this.request.queue_.addSearchAndHighlightTask(
               new SearchAndHighlightTask(this.request, assert(renderedNode)));
           resolve();
         }.bind(this));
@@ -372,8 +385,12 @@ cr.define('settings', function() {
 
   /**
    * @constructor
+   * @param {!settings.SearchRequest} request
    */
-  function TaskQueue() {
+  function TaskQueue(request) {
+    /** @private {!settings.SearchRequest} */
+    this.request_ = request;
+
     /**
      * @private {{
      *   high: !Array<!Task>,
@@ -452,18 +469,14 @@ cr.define('settings', function() {
 
         this.running_ = true;
         window.requestIdleCallback(function() {
-          function startNextTask() {
-            this.running_ = false;
-            this.consumePending_();
+          if (!this.request_.canceled) {
+            task.exec().then(function() {
+              this.running_ = false;
+              this.consumePending_();
+            }.bind(this));
           }
-          if (task.request.id ==
-              getSearchManager().activeRequest_.id) {
-            task.exec().then(startNextTask.bind(this));
-          } else {
-            // Dropping this task without ever executing it, since a new search
-            // has been issued since this task was queued.
-            startNextTask.call(this);
-          }
+          // Nothing to do otherwise. Since the request corresponding to this
+          // queue was canceled, the queue is disposed along with the request.
         }.bind(this));
         return;
       }
@@ -472,37 +485,51 @@ cr.define('settings', function() {
 
   /**
    * @constructor
+   *
+   * @param {string} rawQuery
+   * @param {!HTMLElement} root
    */
-  var SearchRequest = function(rawQuery) {
-    /** @type {number} */
-    this.id = SearchRequest.nextId_++;
-
+  var SearchRequest = function(rawQuery, root) {
     /** @private {string} */
     this.rawQuery_ = rawQuery;
+
+    /** @private {!HTMLElement} */
+    this.root_ = root;
 
     /** @type {?RegExp} */
     this.regExp = this.generateRegExp_();
 
     /**
-     * Whether this request was fully processed.
+     * Whether this request was canceled before completing.
      * @type {boolean}
      */
-    this.finished = false;
+    this.canceled = false;
 
     /** @private {boolean} */
     this.foundMatches_ = false;
 
     /** @type {!PromiseResolver} */
     this.resolver = new PromiseResolver();
-  };
 
-  /** @private {number} */
-  SearchRequest.nextId_ = 0;
+    /** @private {!TaskQueue} */
+    this.queue_ = new TaskQueue(this);
+    this.queue_.onEmpty(function() {
+      this.resolver.resolve(this);
+    }.bind(this));
+  };
 
   /** @private {!RegExp} */
   SearchRequest.SANITIZE_REGEX_ = /[-[\]{}()*+?.,\\^$|#\s]/g;
 
   SearchRequest.prototype = {
+    /**
+     * Fires this search request.
+     */
+    start: function() {
+      this.queue_.addTopLevelSearchTask(
+          new TopLevelSearchTask(this, this.root_));
+    },
+
     /**
      * @return {?RegExp}
      * @private
@@ -561,37 +588,36 @@ cr.define('settings', function() {
    * @implements {SearchManager}
    */
   var SearchManagerImpl = function() {
-    /** @private {?settings.SearchRequest} */
-    this.activeRequest_ = null;
+    /** @private {!Set<!settings.SearchRequest>} */
+    this.activeRequests_ = new Set();
 
-    /** @private {!TaskQueue} */
-    this.queue_ = new TaskQueue();
-    this.queue_.onEmpty(function() {
-      this.activeRequest_.finished = true;
-      this.activeRequest_.resolver.resolve(this.activeRequest_);
-      this.activeRequest_ = null;
-    }.bind(this));
+    /** @private {?string} */
+    this.lastSearchedText_ = null;
   };
   cr.addSingletonGetter(SearchManagerImpl);
 
   SearchManagerImpl.prototype = {
     /** @override */
     search: function(text, page) {
-      // Creating a new request only if the |text| changed.
-      if (!this.activeRequest_ || !this.activeRequest_.isSame(text)) {
-        // Resolving previous search request without marking it as
-        // 'finished', if any, and dropping all pending tasks.
-        this.queue_.reset();
-        if (this.activeRequest_)
-          this.activeRequest_.resolver.resolve(this.activeRequest_);
-
-        this.activeRequest_ = new SearchRequest(text);
+      // Cancel any pending requests if a request with different text is
+      // submitted.
+      if (text != this.lastSearchedText_) {
+        this.activeRequests_.forEach(function(request) {
+          request.canceled = true;
+          request.resolver.resolve(request);
+        });
+        this.activeRequests_.clear();
       }
 
-      this.queue_.addTopLevelSearchTask(
-          new TopLevelSearchTask(this.activeRequest_, page));
-
-      return this.activeRequest_.resolver.promise;
+      this.lastSearchedText_ = text;
+      var request = new SearchRequest(text, page);
+      this.activeRequests_.add(request);
+      request.start();
+      return request.resolver.promise.then(function() {
+        // Stop tracking requests that finished.
+        this.activeRequests_.delete(request);
+        return request;
+      }.bind(this));
     },
   };
 

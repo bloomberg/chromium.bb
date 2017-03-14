@@ -56,7 +56,8 @@ TEST_F('SettingsBasicPageBrowserTest', 'MAYBE_Load', function() {
     /** @override */
     search: function(text, page) {
       if (this.searchRequest_ == null || !this.searchRequest_.isSame(text)) {
-        this.searchRequest_ = new settings.SearchRequest(text);
+        this.searchRequest_ = new settings.SearchRequest(
+            text, document.createElement('div'));
         this.searchRequest_.finished = true;
         this.searchRequest_.updateMatches(false);
 

@@ -98,5 +98,36 @@ cr.define('settings_test', function() {
         assertEquals('Baz', options[2].textContent);
       });
     });
+
+    // Test that multiple requests for the same text correctly highlight their
+    // corresponding part of the tree without affecting other parts of the tree.
+    test('multiple simultaneous requests for the same text', function() {
+      document.body.innerHTML =
+          `<settings-section hidden-by-search>
+             <div><span>Hello there</span></div>
+           </settings-section>
+           <settings-section hidden-by-search>
+             <div><span>Hello over there</span></div>
+           </settings-section>
+           <settings-section hidden-by-search>
+             <div><span>Nothing</span></div>
+           </settings-section>`;
+
+      var sections = Array.prototype.slice.call(
+          document.querySelectorAll('settings-section'));
+
+      return Promise.all(
+        sections.map(function(section) {
+          return searchManager.search('there', section);
+        }),
+      ).then(function(requests) {
+        assertTrue(requests[0].didFindMatches());
+        assertFalse(sections[0].hiddenBySearch);
+        assertTrue(requests[1].didFindMatches());
+        assertFalse(sections[1].hiddenBySearch);
+        assertFalse(requests[2].didFindMatches());
+        assertTrue(sections[2].hiddenBySearch);
+      });
+    });
   });
 });

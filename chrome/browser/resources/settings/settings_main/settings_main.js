@@ -254,19 +254,19 @@ Polymer({
       setTimeout(function() {
         var whenSearchDone =
             assert(this.getPage_(settings.Route.BASIC)).searchContents(query);
-        whenSearchDone.then(function(request) {
+        whenSearchDone.then(function(result) {
           resolve();
-          if (!request.finished) {
+          if (result.canceled) {
             // Nothing to do here. A previous search request was canceled
-            // because a new search request was issued before the first one
-            // completed.
+            // because a new search request was issued with a different query
+            // before the previous completed.
             return;
           }
 
           this.toolbarSpinnerActive = false;
-          this.inSearchMode_ = !request.isSame('');
+          this.inSearchMode_ = !result.wasClearSearch;
           this.showNoResultsFound_ =
-              this.inSearchMode_ && !request.didFindMatches();
+              this.inSearchMode_ && result.didFindMatches;
         }.bind(this));
       }.bind(this), 0);
     }.bind(this));
