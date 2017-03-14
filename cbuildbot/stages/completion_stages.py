@@ -247,7 +247,7 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
       if sync_stages.MasterSlaveLKGMSyncStage.external_manager:
         sync_stages.MasterSlaveLKGMSyncStage.external_manager.PromoteCandidate()
 
-  def HandleFailure(self, failing, inflight, no_stat):
+  def HandleFailure(self, failing, inflight, no_stat, self_destructed):
     """Handle a build failure.
 
     This function is called whenever the cbuildbot run fails.
@@ -258,6 +258,8 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
       failing: The names of the failing builders.
       inflight: The names of the builders that are still running.
       no_stat: Set of builder names of slave builders that had status None.
+      self_destructed: Boolean indicating whether the master build destructed
+                       itself and stopped waiting completion of its slaves.
     """
     if failing or inflight or no_stat:
       logging.PrintBuildbotStepWarnings()
@@ -268,7 +270,7 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
           ', '.join(sorted(failing)),
           'Please check the logs of the failing builders for details.']))
 
-    if inflight:
+    if not self_destructed and inflight:
       logging.warning('\n'.join([
           'The following builders took too long to finish:',
           ', '.join(sorted(inflight)),
@@ -302,8 +304,11 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
     fatal = self._IsFailureFatal(failing, inflight, no_stat)
 
     if fatal:
-      self._AnnotateFailingBuilders(failing, inflight, no_stat, statuses)
-      self.HandleFailure(failing, inflight, no_stat)
+      self_destructed = self._run.attrs.metadata.GetValueWithDefault(
+          constants.SELF_DESTRUCTED_BUILD, False)
+      self._AnnotateFailingBuilders(
+          failing, inflight, no_stat, statuses, self_destructed)
+      self.HandleFailure(failing, inflight, no_stat, self_destructed)
       raise ImportantBuilderFailedException()
     else:
       self.HandleSuccess()
@@ -324,6 +329,18 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
     sanity_builders = self._run.config.sanity_check_slaves or []
     sanity_builders = set(sanity_builders)
     return not sanity_builders.issuperset(failing | inflight | no_stat)
+
+  def _PrintBuildMessage(self, text, url=None):
+    """Print the build message.
+
+    Args:
+      text: Text (string) to print.
+      url: URL (string) to link to the text, default to None.
+    """
+    if url is not None:
+      logging.PrintBuildbotLink(text, url)
+    else:
+      logging.PrintBuildbotStepText(text)
 
   def _AnnotateBuildStatusFromBuildbucket(self, no_stat):
     """Annotate the build statuses fetched from the Buildbucket.
@@ -373,7 +390,8 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
         logging.PrintBuildbotStepText('%s wasn\'t scheduled by master.'
                                       % config_name)
 
-  def _AnnotateFailingBuilders(self, failing, inflight, no_stat, statuses):
+  def _AnnotateFailingBuilders(self, failing, inflight, no_stat, statuses,
+                               self_destructed):
     """Add annotations that link to either failing or inflight builders.
 
     Adds buildbot links to failing builder dashboards. If no builders are
@@ -386,23 +404,36 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
       no_stat: Set of builder names of slave builders that had status None.
       statuses: A builder-name->status dictionary, which will provide
                 the dashboard_url values for any links.
+      self_destructed: Boolean indicating whether the master build destructed
+                       itself and stopped waiting completion of its slaves.
     """
-    builders_to_link = set.union(failing, inflight)
-    for builder in builders_to_link:
-      if statuses[builder].dashboard_url:
-        if statuses[builder].message:
-          text = '%s: %s' % (builder, statuses[builder].message.reason)
-        else:
-          text = '%s: timed out' % builder
+    for build in failing:
+      if statuses[build].message:
+        self._PrintBuildMessage(
+            '%s: %s' % (build, statuses[build].message.reason),
+            statuses[build].dashboard_url)
+      else:
+        self._PrintBuildMessage('%s: did not start' % build,
+                                statuses[build].dashboard_url)
 
-        logging.PrintBuildbotLink(text, statuses[builder].dashboard_url)
+    if not self_destructed:
+      for build in inflight:
+        self._PrintBuildMessage('%s: timed out' % build,
+                                statuses[build].dashboard_url)
 
-    if no_stat:
       if config_lib.UseBuildbucketScheduler(self._run.config):
         self._AnnotateBuildStatusFromBuildbucket(no_stat)
       else:
-        for builder in no_stat:
-          logging.PrintBuildbotStepText('%s did not start.' % builder)
+        for build in no_stat:
+          self._PrintBuildMessage('%s: did not start.' % build)
+    else:
+      logging.PrintBuildbotStepText('The master destructed itself and stopped '
+                                    'waiting for the following slaves:')
+      for build in inflight:
+        self._PrintBuildMessage('%s: still running' % build,
+                                statuses[build].dashboard_url)
+      for build in no_stat:
+        self._PrintBuildMessage('%s: did not start' % build)
 
   def GetSlaveStatuses(self):
     """Returns cached slave status results.
@@ -442,17 +473,19 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
 class CanaryCompletionStage(MasterSlaveSyncCompletionStage):
   """Collect build slave statuses and handle the failures."""
 
-  def HandleFailure(self, failing, inflight, no_stat):
+  def HandleFailure(self, failing, inflight, no_stat, self_destructed):
     """Handle a build failure or timeout in the Canary builders.
 
     Args:
       failing: Names of the builders that failed.
       inflight: Names of the builders that timed out.
       no_stat: Set of builder names of slave builders that had status None.
+      self_destructed: Boolean indicating whether the master build destructed
+                       itself and stopped waiting completion of its slaves.
     """
     # Print out the status about what builds failed or not.
     MasterSlaveSyncCompletionStage.HandleFailure(
-        self, failing, inflight, no_stat)
+        self, failing, inflight, no_stat, self_destructed)
 
     if self._run.config.master:
       self.CanaryMasterHandleFailure(failing, inflight, no_stat)
@@ -588,7 +621,7 @@ class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
 
     self._RecordSubmissionMetrics(True)
 
-  def HandleFailure(self, failing, inflight, no_stat):
+  def HandleFailure(self, failing, inflight, no_stat, self_destructed):
     """Handle a build failure or timeout in the Commit Queue.
 
     This function performs any tasks that need to happen when the Commit Queue
@@ -603,15 +636,17 @@ class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
       failing: Names of the builders that failed.
       inflight: Names of the builders that timed out.
       no_stat: Set of builder names of slave builders that had status None.
+      self_destructed: Boolean indicating whether the master build destructed
+                       itself and stopped waiting completion of its slaves.
     """
     # Print out the status about what builds failed or not.
     MasterSlaveSyncCompletionStage.HandleFailure(
-        self, failing, inflight, no_stat)
+        self, failing, inflight, no_stat, self_destructed)
 
     if self._run.config.master:
       slave_buildbucket_ids = self.GetScheduledSlaveBuildbucketIds()
       self.CQMasterHandleFailure(
-          failing, inflight, no_stat, slave_buildbucket_ids)
+          failing, inflight, no_stat, self_destructed, slave_buildbucket_ids)
 
     self._RecordSubmissionMetrics(False)
 
@@ -698,7 +733,7 @@ class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
 
     return should_submit
 
-  def CQMasterHandleFailure(self, failing, inflight, no_stat,
+  def CQMasterHandleFailure(self, failing, inflight, no_stat, self_destructed,
                             slave_buildbucket_ids):
     """Handle changes in the validation pool upon build failure or timeout.
 
@@ -710,6 +745,8 @@ class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
       failing: Names of the builders that failed.
       inflight: Names of the builders that timed out.
       no_stat: Set of builder names of slave builders that had status None.
+      self_destructed: Boolean indicating whether the master build destructed
+                       itself and stopped waiting completion of its slaves.
       slave_buildbucket_ids: A list of buildbucket_ids (strings) of slave builds
                              scheduled by Buildbucket.
     """
@@ -761,9 +798,10 @@ class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
                    'changes.')
       tot_sanity = False
 
-    if inflight:
-      # Some slave(s) timed out due to unknown causes, so only reject infra
-      # changes (probably just chromite changes).
+    if not self_destructed and inflight:
+      # The master didn't destruct itself and some slave(s) timed out due to
+      # unknown causes, so only reject infra changes (probably just chromite
+      # changes).
       self.sync_stage.pool.HandleValidationTimeout(sanity=tot_sanity,
                                                    changes=changes)
       return

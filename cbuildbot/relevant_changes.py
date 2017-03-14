@@ -414,20 +414,21 @@ class TriageRelevantChanges(object):
           bb_info.status == constants.BUILDBUCKET_BUILDER_STATUS_COMPLETED and
           bb_info.result != constants.BUILDBUCKET_BUILDER_RESULT_SUCCESS):
         # This build didn't succeed and cannot be retired.
-        logging.info('Process completed build %s status %s result %s',
+        logging.info('Process relevant changes of build %s status %s result %s',
                      build_config, bb_info.status, bb_info.result)
 
         stages = self.slave_stages_dict[build_config]
         if not self.PassedAnyOfStages(stages, self.STAGE_SYNC):
-          # The build didn't pass sync stage. Will not submit all changes
-          # as the build failed to pick relevant changes in a passed sync stage.
+          # The build didn't pass any of the sync stages. Will not submit all
+          # changes as the build failed to pick relevant changes in a passed
+          # sync stage.
           self._UpdateWillNotSubmitChanges(set(self.changes))
-          logging.info('Build %s didn\'t pass %s, will not submit changes.',
-                       build_config, ' or '.join(self.STAGE_SYNC))
+          logging.info('Build %s didn\'t pass any stage in %s, will not submit '
+                       'any changes.', build_config, list(self.STAGE_SYNC))
         else:
-          # The build passed sync stage. Get builder_status and calculate
-          # ignorable changes based on the builder_status. Move not ignorable
-          # changes and their dependencies to will_not_submit set.
+          # The build passed the required sync stage. Get builder_status and
+          # calculate ignorable changes based on the builder_status. Move not
+          # ignorable changes and their dependencies to will_not_submit set.
           relevant_changes = self.slave_changes_dict[build_config]
           builder_status = (
               builder_status_lib.BuilderStatusManager.GetBuilderStatus(
@@ -514,7 +515,6 @@ class TriageRelevantChanges(object):
     if not self.might_submit:
       return
 
-    logging.info('Processing changes which might be submitted.')
     change_slaves_dict = self._GetChangeToSlavesDict(self.slave_changes_dict)
     changes_to_submit = set()
     for change in self.might_submit:
@@ -527,10 +527,8 @@ class TriageRelevantChanges(object):
       self.will_submit.update(changes_to_submit)
       self.might_submit.difference_update(changes_to_submit)
       logging.info('Moving %s to will_submit set, because their relevant builds'
-                   ' completed successfully or all failures are ignorable. '
-                   'will_submit now contains %d changes,',
-                   cros_patch.GetChangesAsString(changes_to_submit),
-                   len(self.will_submit))
+                   ' completed successfully or all failures are ignorable. ',
+                   cros_patch.GetChangesAsString(changes_to_submit))
 
   def ShouldWait(self):
     """Process builds and relevant changes, decide whether to wait on slaves.
@@ -543,8 +541,17 @@ class TriageRelevantChanges(object):
     self._ProcessCompletedBuilds()
     self._ProcessMightSubmitChanges()
 
+    logging.info('will_submit set contains %d changes: [%s]\n'
+                 'might_submit set contains %d changes: [%s]\n'
+                 'will_not_submit set contains %d changes: [%s]\n',
+                 len(self.will_submit),
+                 cros_patch.GetChangesAsString(self.will_submit),
+                 len(self.might_submit),
+                 cros_patch.GetChangesAsString(self.might_submit),
+                 len(self.will_not_submit),
+                 cros_patch.GetChangesAsString(self.will_not_submit))
+
     if not self.might_submit:
-      logging.warning('Might submit change set is empty.')
       return False
 
     return True

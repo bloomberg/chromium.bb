@@ -1071,3 +1071,6 @@ BUILDBUCKET_BUILD_RETRY_LIMIT = 2
 # Builder_run metadata keys
 METADATA_SCHEDULED_SLAVES = 'scheduled_slaves'
 METADATA_UNSCHEDULED_SLAVES = 'unscheduled_slaves'
+
+# Metadata key to indicate whether a build is self-destructed.
+SELF_DESTRUCTED_BUILD = 'self_destructed_build'

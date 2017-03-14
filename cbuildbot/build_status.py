@@ -507,7 +507,8 @@ class SlaveStatus(object):
       if not triage_relevant_changes.ShouldWait():
         logging.warning('No need to wait for the remaining running slaves given'
                         ' the results of relevant change triages.')
-        # TODO(nxia): return False here after confirmation.
+        self.metadata.UpdateWithDict({constants.SELF_DESTRUCTED_BUILD: True})
+        return False
 
     # We got here which means no problems, we should still wait.
     logging.info('Still waiting for the following builds to complete: %r',

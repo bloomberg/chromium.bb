@@ -978,14 +978,35 @@ class SlaveStatusTest(patch_unittest.MockPatchBase):
     slave_status.ShouldWait()
     self.assertEqual(slave_status.builds_to_retry, set([]))
 
-  def testShouldWaitWithTriageRelevantChanges(self):
-    """Test ShouldWait with TriageRelevantChanges."""
+  def testShouldWaitWithTriageRelevantChangesShouldWaitFalse(self):
+    """Test ShouldWait with TriageRelevantChanges.ShouldWait is False."""
+    relevant_changes.TriageRelevantChanges.__init__ = mock.Mock(
+        return_value=None)
     self.PatchObject(relevant_changes.TriageRelevantChanges,
-                     '_UpdateSlaveInfo')
+                     'ShouldWait', return_value=False)
+    self.PatchObject(build_status.SlaveStatus,
+                     '_Completed',
+                     return_value=False)
+    self.PatchObject(build_status.SlaveStatus,
+                     '_ShouldFailForBuilderStartTimeout',
+                     return_value=False)
+    pool = validation_pool_unittest.MakePool(applied=[])
+    slave_status = self._GetSlaveStatus(
+        builders_array=['slave1', 'slave2'],
+        config=self.master_cq_config,
+        version='9289.0.0-rc2',
+        pool=pool)
+
+    self.assertFalse(slave_status.ShouldWait())
+    self.assertTrue(slave_status.metadata.GetValueWithDefault(
+        constants.SELF_DESTRUCTED_BUILD, False))
+
+  def testShouldWaitWithTriageRelevantChangesShouldWaitTrue(self):
+    """Test ShouldWait with TriageRelevantChanges.ShouldWait is True."""
+    relevant_changes.TriageRelevantChanges.__init__ = mock.Mock(
+        return_value=None)
     self.PatchObject(relevant_changes.TriageRelevantChanges,
-                     '_ProcessCompletedBuilds')
-    self.PatchObject(relevant_changes.TriageRelevantChanges,
-                     '_ProcessMightSubmitChanges')
+                     'ShouldWait', return_value=True)
     self.PatchObject(build_status.SlaveStatus,
                      '_Completed',
                      return_value=False)
@@ -1000,6 +1021,8 @@ class SlaveStatusTest(patch_unittest.MockPatchBase):
         pool=pool)
 
     self.assertTrue(slave_status.ShouldWait())
+    self.assertFalse(slave_status.metadata.GetValueWithDefault(
+        constants.SELF_DESTRUCTED_BUILD, False))
 
   def testRetryBuilds(self):
     """Test RetryBuilds."""
