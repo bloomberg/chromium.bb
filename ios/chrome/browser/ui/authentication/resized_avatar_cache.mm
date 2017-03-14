@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/settings/utils/resized_avatar_cache.h"
+#import "ios/chrome/browser/ui/authentication/resized_avatar_cache.h"
 
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/public/provider/chrome/browser/chrome_browser_provider.h"

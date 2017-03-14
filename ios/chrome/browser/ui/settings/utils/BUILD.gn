@@ -10,8 +10,6 @@ source_set("utils") {
     "observable_boolean.h",
     "pref_backed_boolean.h",
     "pref_backed_boolean.mm",
-    "resized_avatar_cache.h",
-    "resized_avatar_cache.mm",
   ]
   deps = [
     "//base",

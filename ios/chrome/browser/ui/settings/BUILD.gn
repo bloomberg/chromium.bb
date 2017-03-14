@@ -157,6 +157,7 @@ source_set("settings") {
     "//ios/chrome/browser/ui",
     "//ios/chrome/browser/ui/alert_coordinator",
     "//ios/chrome/browser/ui/authentication",
+    "//ios/chrome/browser/ui/authentication:authentication_arc",
     "//ios/chrome/browser/ui/autofill/cells",
     "//ios/chrome/browser/ui/collection_view",
     "//ios/chrome/browser/ui/colors",

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_UI_SETTINGS_UTILS_RESIZED_AVATAR_CACHE_H_
-#define IOS_CHROME_BROWSER_UI_SETTINGS_UTILS_RESIZED_AVATAR_CACHE_H_
+#ifndef IOS_CHROME_BROWSER_UI_AUTHENTICATION_RESIZED_AVATAR_CACHE_H_
+#define IOS_CHROME_BROWSER_UI_AUTHENTICATION_RESIZED_AVATAR_CACHE_H_
 
 #import <Foundation/Foundation.h>
 
@@ -20,4 +20,4 @@
 - (UIImage*)resizedAvatarForIdentity:(ChromeIdentity*)identity;
 @end
 
-#endif  // IOS_CHROME_BROWSER_UI_SETTINGS_UTILS_RESIZED_AVATAR_CACHE_H_
+#endif  // IOS_CHROME_BROWSER_UI_AUTHENTICATION_RESIZED_AVATAR_CACHE_H_

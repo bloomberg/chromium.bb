@@ -36,6 +36,7 @@ source_set("authentication") {
     "signin_interaction_controller.mm",
   ]
   deps = [
+    ":authentication_arc",
     ":resources",
     "//base",
     "//components/google/core/browser",
@@ -61,8 +62,6 @@ source_set("authentication") {
     "//ios/chrome/browser/ui/collection_view/cells",
     "//ios/chrome/browser/ui/colors",
     "//ios/chrome/browser/ui/commands",
-    "//ios/chrome/browser/ui/settings/cells",
-    "//ios/chrome/browser/ui/settings/utils",
     "//ios/chrome/browser/ui/util",
     "//ios/chrome/common",
     "//ios/public/provider/chrome/browser",
@@ -81,16 +80,40 @@ source_set("authentication") {
   ]
 }
 
+source_set("authentication_arc") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "account_control_item.h",
+    "account_control_item.mm",
+    "resized_avatar_cache.h",
+    "resized_avatar_cache.mm",
+  ]
+  deps = [
+    "//ios/chrome/browser/ui",
+    "//ios/chrome/browser/ui/collection_view/cells",
+    "//ios/chrome/browser/ui/colors",
+    "//ios/public/provider/chrome/browser",
+    "//ios/public/provider/chrome/browser/signin",
+  ]
+  libs = [
+    "CoreGraphics.framework",
+    "QuartzCore.framework",
+    "UIKit.framework",
+  ]
+}
+
 source_set("unit_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
+    "account_control_item_unittest.mm",
     "authentication_flow_unittest.mm",
     "re_signin_infobar_delegate_unittest.mm",
     "signed_in_accounts_view_controller_unittest.mm",
   ]
   deps = [
     ":authentication",
+    ":authentication_arc",
     "//base",
     "//base/test:test_support",
     "//components/pref_registry",
@@ -101,9 +124,11 @@ source_set("unit_tests") {
     "//ios/chrome/browser/prefs:browser_prefs",
     "//ios/chrome/browser/signin",
     "//ios/chrome/browser/signin:test_support",
+    "//ios/chrome/browser/ui/colors",
     "//ios/chrome/browser/ui/commands",
     "//ios/chrome/test:test_support",
     "//ios/public/provider/chrome/browser/signin:test_support",
+    "//ios/third_party/material_components_ios",
     "//ios/web:test_support",
     "//testing/gtest",
     "//third_party/ocmock",
