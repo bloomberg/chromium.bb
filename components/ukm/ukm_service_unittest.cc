@@ -470,4 +470,24 @@ TEST_F(UkmServiceTest, SourceSize) {
   EXPECT_EQ(2, proto_report.sources_size());
 }
 
+TEST_F(UkmServiceTest, PurgeMidUpload) {
+  UkmService service(&prefs_, &client_);
+  EXPECT_EQ(GetPersistedLogCount(), 0);
+  service.Initialize();
+  task_runner_->RunUntilIdle();
+  service.EnableRecording();
+  service.EnableReporting();
+  auto id = UkmService::GetNewSourceID();
+  service.UpdateSourceURL(id, GURL("https://google.com/foobar1"));
+  // Should init, generate a log, and start an upload.
+  task_runner_->RunPendingTasks();
+  EXPECT_TRUE(client_.uploader()->is_uploading());
+  // Purge should delete all logs, including the one being sent.
+  service.Purge();
+  // Upload succeeds after logs was deleted.
+  client_.uploader()->CompleteUpload(200);
+  EXPECT_EQ(GetPersistedLogCount(), 0);
+  EXPECT_FALSE(client_.uploader()->is_uploading());
+}
+
 }  // namespace ukm

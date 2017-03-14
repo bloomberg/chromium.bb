@@ -397,23 +397,25 @@ void UkmService::OnLogUploadComplete(int response_code) {
 
   bool upload_succeeded = response_code == 200;
 
-  // Provide boolean for error recovery (allow us to ignore response_code).
-  bool discard_log = false;
-  const size_t log_size_bytes = persisted_logs_.staged_log().length();
-  if (upload_succeeded) {
-    UMA_HISTOGRAM_COUNTS_10000("UKM.LogSize.OnSuccess", log_size_bytes / 1024);
-  } else if (response_code == 400) {
-    // Bad syntax.  Retransmission won't work.
-    discard_log = true;
-  }
+  // Staged log may have been deleted by Purge already, otherwise we may
+  // remove it from the log store here.
+  if (persisted_logs_.has_staged_log()) {
+    // Provide boolean for error recovery (allow us to ignore response_code).
+    bool discard_log = false;
+    const size_t log_size_bytes = persisted_logs_.staged_log().length();
+    if (upload_succeeded) {
+      UMA_HISTOGRAM_COUNTS_10000("UKM.LogSize.OnSuccess",
+                                 log_size_bytes / 1024);
+    } else if (response_code == 400) {
+      // Bad syntax.  Retransmission won't work.
+      discard_log = true;
+    }
 
-  if (upload_succeeded || discard_log) {
-    // TODO(holte): The if below is a temporary fix for a crash bug. We should
-    // revisit the logic and update it with a more correct fix. crbug.com/698819
-    if (persisted_logs_.has_staged_log())
+    if (upload_succeeded || discard_log) {
       persisted_logs_.DiscardStagedLog();
-    // Store the updated list to disk now that the removed log is uploaded.
-    persisted_logs_.PersistUnsentLogs();
+      // Store the updated list to disk now that the removed log is uploaded.
+      persisted_logs_.PersistUnsentLogs();
+    }
   }
 
   // Error 400 indicates a problem with the log, not with the server, so
