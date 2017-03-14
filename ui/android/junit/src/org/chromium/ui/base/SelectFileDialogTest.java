@@ -56,6 +56,30 @@ public class SelectFileDialogTest {
         assertEquals(SelectFileDialog.SELECT_FILE_DIALOG_SCOPE_GENERIC,
                 scopeForFileTypes("image/x-png", "image/gif", "image/jpeg", "text/plain"));
 
+        // Test image extensions only.
+        assertEquals(SelectFileDialog.SELECT_FILE_DIALOG_SCOPE_IMAGES,
+                scopeForFileTypes(".jpg", ".jpeg", ".png", ".gif", ".apng", ".tiff", ".tif", ".bmp",
+                        ".pdf", ".xcf", ".webp"));
+        // Test image extensions mixed with image MIME types.
+        assertEquals(SelectFileDialog.SELECT_FILE_DIALOG_SCOPE_IMAGES,
+                scopeForFileTypes(".JPG", ".jpeg", "image/gif", "image/jpeg"));
+        // Image extensions mixed with image MIME types and other.
+        assertEquals(SelectFileDialog.SELECT_FILE_DIALOG_SCOPE_GENERIC,
+                scopeForFileTypes(".jpg", "image/gif", "text/plain"));
+        // Video extensions only.
+        assertEquals(SelectFileDialog.SELECT_FILE_DIALOG_SCOPE_VIDEOS,
+                scopeForFileTypes(".asf", ".avhcd", ".avi", ".flv", ".mov", ".mp4", ".mpeg", ".mpg",
+                        ".swf", ".wmv", ".webm", ".mkv", ".divx"));
+        // Video extensions and video MIME types.
+        assertEquals(SelectFileDialog.SELECT_FILE_DIALOG_SCOPE_VIDEOS,
+                scopeForFileTypes(".avi", ".mp4", "video/ogg"));
+        // Video extensions and video MIME types and other.
+        assertEquals(SelectFileDialog.SELECT_FILE_DIALOG_SCOPE_GENERIC,
+                scopeForFileTypes(".avi", ".mp4", "video/ogg", "text/plain"));
+
+        // Non-image, non-video extension only.
+        assertEquals(SelectFileDialog.SELECT_FILE_DIALOG_SCOPE_GENERIC, scopeForFileTypes(".doc"));
+
         assertEquals(SelectFileDialog.SELECT_FILE_DIALOG_SCOPE_IMAGES_AND_VIDEOS,
                 scopeForFileTypes("video/*", "image/*"));
         assertEquals(SelectFileDialog.SELECT_FILE_DIALOG_SCOPE_IMAGES_AND_VIDEOS,

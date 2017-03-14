@@ -54,6 +54,16 @@ public class SelectFileDialog
     private static final String ALL_AUDIO_TYPES = AUDIO_TYPE + "*";
     private static final String ANY_TYPES = "*/*";
 
+    // A list of some of the more popular image extensions. Not meant to be
+    // exhaustive, but should cover the vast majority of image types.
+    private static final String[] POPULAR_IMAGE_EXTENSIONS = new String[] {".apng", ".bmp", ".gif",
+            ".jpeg", ".jpg", ".pdf", ".png", ".tif", ".tiff", ".xcf", ".webp"};
+
+    // A list of some of the more popular video extensions. Not meant to be
+    // exhaustive, but should cover the vast majority of video types.
+    private static final String[] POPULAR_VIDEO_EXTENSIONS = new String[] {".asf", ".avhcd", ".avi",
+            ".divx", ".flv", ".mov", ".mp4", ".mpeg", ".mpg", ".swf", ".wmv", ".webm", ".mkv"};
+
     /**
      * The SELECT_FILE_DIALOG_SCOPE_* enumerations are used to measure the sort of content that
      * developers are requesting to be shown in the select file dialog. Values must be kept in sync
@@ -388,8 +398,33 @@ public class SelectFileDialog
     int determineSelectFileDialogScope() {
         if (mFileTypes.size() == 0) return SELECT_FILE_DIALOG_SCOPE_GENERIC;
 
+        // Capture the MIME types:
         int acceptsImages = countAcceptTypesFor(IMAGE_TYPE);
         int acceptsVideos = countAcceptTypesFor(VIDEO_TYPE);
+
+        // Capture the most common image and video extensions:
+        if (mFileTypes.size() > acceptsImages + acceptsVideos) {
+            for (String left : mFileTypes) {
+                boolean found = false;
+                for (String right : POPULAR_IMAGE_EXTENSIONS) {
+                    if (left.equalsIgnoreCase(right)) {
+                        found = true;
+                        acceptsImages++;
+                        break;
+                    }
+                }
+
+                if (found) continue;
+
+                for (String right : POPULAR_VIDEO_EXTENSIONS) {
+                    if (left.equalsIgnoreCase(right)) {
+                        acceptsVideos++;
+                        break;
+                    }
+                }
+            }
+        }
+
         int acceptsOthers = mFileTypes.size() - acceptsImages - acceptsVideos;
 
         if (acceptsOthers > 0) return SELECT_FILE_DIALOG_SCOPE_GENERIC;
