@@ -17,6 +17,8 @@
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_data_sink.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_image_fetcher.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_section_information.h"
+#include "ios/chrome/grit/ios_strings.h"
+#include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/gfx/image/image.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -97,6 +99,10 @@ ContentSuggestionsSectionInformation* SectionInformationFromCategoryInfo(
     if (categoryInfo->show_if_empty()) {
       // TODO(crbug.com/686728): Creates an item to display information when the
       // section is empty.
+    }
+    if (categoryInfo->has_fetch_action()) {
+      sectionInfo.footerTitle =
+          l10n_util::GetNSString(IDS_IOS_CONTENT_SUGGESTIONS_FOOTER_TITLE);
     }
     sectionInfo.title = base::SysUTF16ToNSString(categoryInfo->title());
   }

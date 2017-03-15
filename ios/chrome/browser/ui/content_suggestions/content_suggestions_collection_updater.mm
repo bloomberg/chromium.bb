@@ -16,6 +16,7 @@
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_data_source.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_expandable_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_favicon_item.h"
+#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_footer_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_image_fetcher.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_section_information.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_stack_item.h"
@@ -37,6 +38,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeExpand,
   ItemTypeStack,
   ItemTypeFavicon,
+  ItemTypeFooter,
 };
 
 typedef NS_ENUM(NSInteger, SectionIdentifier) {
@@ -244,6 +246,8 @@ SectionIdentifier SectionIdentifierForInfo(
       [model addSectionWithIdentifier:sectionIdentifier];
       self.sectionInfoBySectionIdentifier[@(sectionIdentifier)] = sectionInfo;
       [indexSet addIndex:[model sectionForSectionIdentifier:sectionIdentifier]];
+
+      [self addFooterIfNeeded:suggestion.suggestionIdentifier.sectionInfo];
     }
   }
   return indexSet;
@@ -281,11 +285,64 @@ SectionIdentifier SectionIdentifierForInfo(
 
 #pragma mark - Private methods
 
+// Adds a footer to the section identified by |sectionInfo| if there is none
+// present and the section info contains a title for it.
+- (void)addFooterIfNeeded:(ContentSuggestionsSectionInformation*)sectionInfo {
+  NSInteger sectionIdentifier = SectionIdentifierForInfo(sectionInfo);
+
+  __weak ContentSuggestionsCollectionUpdater* weakSelf = self;
+  if (sectionInfo.footerTitle &&
+      ![self.collectionViewController.collectionViewModel
+          footerForSectionWithIdentifier:sectionIdentifier]) {
+    ContentSuggestionsFooterItem* footer = [[ContentSuggestionsFooterItem alloc]
+        initWithType:ItemTypeFooter
+               title:sectionInfo.footerTitle
+               block:^{
+                 [weakSelf runAdditionalActionForSection:sectionInfo];
+               }];
+
+    [self.collectionViewController.collectionViewModel
+                       setFooter:footer
+        forSectionWithIdentifier:sectionIdentifier];
+  }
+}
+
 // Resets the models, removing the current CollectionViewItem and the
 // SectionInfo.
 - (void)resetModels {
   [self.collectionViewController loadModel];
   self.sectionInfoBySectionIdentifier = [[NSMutableDictionary alloc] init];
+}
+
+// Runs the additional action for the section identified by |sectionInfo|.
+- (void)runAdditionalActionForSection:
+    (ContentSuggestionsSectionInformation*)sectionInfo {
+  SectionIdentifier sectionIdentifier = SectionIdentifierForInfo(sectionInfo);
+
+  NSMutableArray<ContentSuggestionIdentifier*>* knownSuggestionIdentifiers =
+      [NSMutableArray array];
+
+  NSArray<CollectionViewItem<ContentSuggestionIdentification>*>*
+      knownSuggestions = [self.collectionViewController.collectionViewModel
+          itemsInSectionWithIdentifier:sectionIdentifier];
+  for (CollectionViewItem<ContentSuggestionIdentification>* suggestion in
+           knownSuggestions) {
+    [knownSuggestionIdentifiers addObject:suggestion.suggestionIdentifier];
+  }
+
+  __weak ContentSuggestionsCollectionUpdater* weakSelf = self;
+  [self.dataSource
+      fetchMoreSuggestionsKnowing:knownSuggestionIdentifiers
+                  fromSectionInfo:sectionInfo
+                         callback:^(NSArray<ContentSuggestion*>* suggestions) {
+                           [weakSelf moreSuggestionsFetched:suggestions];
+                         }];
+}
+
+// Adds the |suggestions| to the collection view. All the suggestions must have
+// the same sectionInfo.
+- (void)moreSuggestionsFetched:(NSArray<ContentSuggestion*>*)suggestions {
+  [self.collectionViewController addSuggestions:suggestions];
 }
 
 @end

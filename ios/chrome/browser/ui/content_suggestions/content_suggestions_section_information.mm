@@ -16,6 +16,7 @@
 @synthesize layout = _layout;
 @synthesize sectionID = _sectionID;
 @synthesize title = _title;
+@synthesize footerTitle = _footerTitle;
 
 - (instancetype)initWithSectionID:(ContentSuggestionsSectionID)sectionID {
   self = [super init];

@@ -46,6 +46,8 @@ typedef NS_ENUM(NSInteger, ContentSuggestionsSectionID) {
 @property(nonatomic, assign, readonly) ContentSuggestionsSectionID sectionID;
 // Title for the section.
 @property(nonatomic, copy) NSString* title;
+// Title of the section's footer. If it is nil, no footer is created.
+@property(nonatomic, copy) NSString* footerTitle;
 
 @end
 
