@@ -502,6 +502,9 @@ typedef enum {
   RESTORE_SWITCHABLE_TYPES = RESTORE_SWITCHABLE,
   RESTORE_TYPES,
 } RestorationType;
+#if CONFIG_FRAME_SUPERRES
+#define SUPERRES_SCALE_DENOMINATOR 16
+#endif  // CONFIG_FRAME_SUPERRES
 #endif  // CONFIG_LOOP_RESTORATION
 #ifdef __cplusplus
 }  // extern "C"
