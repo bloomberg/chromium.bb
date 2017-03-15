@@ -46,6 +46,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/display/display.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/font_render_params.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/image/image.h"
@@ -948,6 +949,8 @@ void GtkUi::UpdateCursorTheme() {
 }
 
 void GtkUi::UpdateDefaultFont() {
+  gfx::SetFontRenderParamsDeviceScaleFactor(device_scale_factor_);
+
   GtkWidget* fake_label = gtk_label_new(nullptr);
   g_object_ref_sink(fake_label);  // Remove the floating reference.
   PangoContext* pc = gtk_widget_get_pango_context(fake_label);
