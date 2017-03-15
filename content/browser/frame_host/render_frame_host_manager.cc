@@ -2134,19 +2134,22 @@ void RenderFrameHostManager::CommitPending() {
                "FrameTreeNode id", frame_tree_node_->frame_tree_node_id());
   DCHECK(pending_render_frame_host_ || speculative_render_frame_host_);
 
+  bool is_main_frame = frame_tree_node_->IsMainFrame();
+
   // First check whether we're going to want to focus the location bar after
   // this commit.  We do this now because the navigation hasn't formally
   // committed yet, so if we've already cleared the pending WebUI the call chain
-  // this triggers won't be able to figure out what's going on.
-  bool will_focus_location_bar = delegate_->FocusLocationBarByDefault();
+  // this triggers won't be able to figure out what's going on.  Note that
+  // subframe commits should not be allowed to steal focus from the main frame
+  // by focusing the location bar (see https://crbug.com/700124).
+  bool will_focus_location_bar =
+      is_main_frame && delegate_->FocusLocationBarByDefault();
 
   // Remember if the page was focused so we can focus the new renderer in
   // that case.
   bool focus_render_view = !will_focus_location_bar &&
                            render_frame_host_->GetView() &&
                            render_frame_host_->GetView()->HasFocus();
-
-  bool is_main_frame = frame_tree_node_->IsMainFrame();
 
   // While the old frame is still current, remove its children from the tree.
   frame_tree_node_->ResetForNewProcess();

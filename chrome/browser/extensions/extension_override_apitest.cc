@@ -17,10 +17,14 @@
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/browser_test_utils.h"
 #include "extensions/common/constants.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "extensions/test/result_catcher.h"
+#include "net/dns/mock_host_resolver.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 
 using content::WebContents;
 
@@ -189,6 +193,43 @@ IN_PROC_BROWSER_TEST_F(ExtensionOverrideTest, MAYBE_OverrideNewTabIncognito) {
   ASSERT_TRUE(tab->GetController().GetVisibleEntry());
   EXPECT_FALSE(tab->GetController().GetVisibleEntry()->GetURL().
                SchemeIs(kExtensionScheme));
+}
+
+// Check that when an overridden new tab page has focus, a subframe navigation
+// on that page does not steal the focus away by focusing the omnibox.
+// See https://crbug.com/700124.
+IN_PROC_BROWSER_TEST_F(ExtensionOverrideTest,
+                       SubframeNavigationInOverridenNTPDoesNotAffectFocus) {
+  host_resolver()->AddRule("*", "127.0.0.1");
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  // Load an extension that overrides the new tab page.
+  const Extension* extension = LoadExtension(data_dir().AppendASCII("newtab"));
+
+  // Navigate to the new tab page.  The overridden new tab page
+  // will call chrome.test.sendMessage('controlled by first').
+  ExtensionTestMessageListener listener("controlled by first", false);
+  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
+  WebContents* contents = browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_TRUE(ExtensionControlsPage(contents, extension->id()));
+  EXPECT_TRUE(listener.WaitUntilSatisfied());
+
+  // Start off with the main page focused.
+  contents->Focus();
+  EXPECT_TRUE(contents->GetRenderWidgetHostView()->HasFocus());
+
+  // Inject an iframe and navigate it to a cross-site URL.  With
+  // --site-per-process, this will go into a separate process.
+  GURL cross_site_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  std::string script = "var f = document.createElement('iframe');\n"
+                       "f.src = '" + cross_site_url.spec() + "';\n"
+                       "document.body.appendChild(f);\n";
+  EXPECT_TRUE(ExecuteScript(contents, script));
+  WaitForLoadStop(contents);
+
+  // The page should still have focus.  The cross-process subframe navigation
+  // above should not try to focus the omnibox, which would make this false.
+  EXPECT_TRUE(contents->GetRenderWidgetHostView()->HasFocus());
 }
 
 // Times out consistently on Win, http://crbug.com/45173.
