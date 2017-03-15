@@ -162,7 +162,7 @@ bool SMILTimeContainer::isTimelineRunning() const {
 }
 
 void SMILTimeContainer::start() {
-  RELEASE_ASSERT(!isStarted());
+  CHECK(!isStarted());
 
   if (!document().isActive())
     return;

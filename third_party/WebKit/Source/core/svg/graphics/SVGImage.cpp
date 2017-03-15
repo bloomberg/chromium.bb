@@ -98,7 +98,7 @@ bool SVGImage::currentFrameHasSingleSecurityOrigin() const {
 
   LocalFrame* frame = toLocalFrame(m_page->mainFrame());
 
-  RELEASE_ASSERT(frame->document()->loadEventFinished());
+  CHECK(frame->document()->loadEventFinished());
 
   SVGSVGElement* rootElement =
       frame->document()->accessSVGExtensions().rootElement();
