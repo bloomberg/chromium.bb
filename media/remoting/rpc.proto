@@ -19,7 +19,7 @@ message DecoderBuffer {
   optional DecryptConfig decrypt_config = 4;
   optional int64 front_discard_usec = 5;
   optional int64 back_discard_usec = 6;
-  optional int64 splice_timestamp_usec = 7;
+  optional int64 splice_timestamp_usec = 7 [deprecated=true];
   optional bytes side_data = 8;
   // To distinguish from valid 0-length buffers
   optional bool is_eos = 9;

@@ -74,7 +74,6 @@ TEST(MojoDecoderBufferConverterTest, ConvertDecoderBuffer_Normal) {
       reinterpret_cast<const uint8_t*>(&kSideData), kSideDataSize));
   buffer->set_timestamp(base::TimeDelta::FromMilliseconds(123));
   buffer->set_duration(base::TimeDelta::FromMilliseconds(456));
-  buffer->set_splice_timestamp(base::TimeDelta::FromMilliseconds(200));
   buffer->set_discard_padding(
       DecoderBuffer::DiscardPadding(base::TimeDelta::FromMilliseconds(5),
                                     base::TimeDelta::FromMilliseconds(6)));

@@ -50,7 +50,6 @@ void DecoderBuffer::Initialize() {
   data_.reset(AllocateFFmpegSafeBlock(size_));
   if (side_data_size_ > 0)
     side_data_.reset(AllocateFFmpegSafeBlock(side_data_size_));
-  splice_timestamp_ = kNoTimestamp;
 }
 
 // static
@@ -88,7 +87,6 @@ bool DecoderBuffer::MatchesForTesting(const DecoderBuffer& buffer) const {
 
   if (timestamp() != buffer.timestamp() || duration() != buffer.duration() ||
       is_key_frame() != buffer.is_key_frame() ||
-      splice_timestamp() != buffer.splice_timestamp() ||
       discard_padding() != buffer.discard_padding() ||
       data_size() != buffer.data_size() ||
       side_data_size() != buffer.side_data_size()) {

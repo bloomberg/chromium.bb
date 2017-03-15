@@ -148,20 +148,6 @@ class MEDIA_EXPORT DecoderBuffer
     return data_ == NULL;
   }
 
-  // Indicates this buffer is part of a splice around |splice_timestamp_|.
-  // Returns kNoTimestamp if the buffer is not part of a splice.
-  base::TimeDelta splice_timestamp() const {
-    DCHECK(!end_of_stream());
-    return splice_timestamp_;
-  }
-
-  // When set to anything but kNoTimestamp indicates this buffer is part of a
-  // splice around |splice_timestamp|.
-  void set_splice_timestamp(base::TimeDelta splice_timestamp) {
-    DCHECK(!end_of_stream());
-    splice_timestamp_ = splice_timestamp;
-  }
-
   bool is_key_frame() const {
     DCHECK(!end_of_stream());
     return is_key_frame_;
@@ -205,7 +191,6 @@ class MEDIA_EXPORT DecoderBuffer
   std::unique_ptr<uint8_t, base::AlignedFreeDeleter> side_data_;
   std::unique_ptr<DecryptConfig> decrypt_config_;
   DiscardPadding discard_padding_;
-  base::TimeDelta splice_timestamp_;
   bool is_key_frame_;
 
   // Constructor helper method for memory allocations.

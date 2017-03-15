@@ -184,7 +184,6 @@ TEST(MediaTypeConvertersTest, ConvertDecoderBuffer_Normal) {
       reinterpret_cast<const uint8_t*>(&kSideData), kSideDataSize));
   buffer->set_timestamp(base::TimeDelta::FromMilliseconds(123));
   buffer->set_duration(base::TimeDelta::FromMilliseconds(456));
-  buffer->set_splice_timestamp(base::TimeDelta::FromMilliseconds(200));
   buffer->set_discard_padding(
       DecoderBuffer::DiscardPadding(base::TimeDelta::FromMilliseconds(5),
                                     base::TimeDelta::FromMilliseconds(6)));
@@ -202,7 +201,6 @@ TEST(MediaTypeConvertersTest, ConvertDecoderBuffer_Normal) {
   EXPECT_EQ(buffer->timestamp(), result->timestamp());
   EXPECT_EQ(buffer->duration(), result->duration());
   EXPECT_EQ(buffer->is_key_frame(), result->is_key_frame());
-  EXPECT_EQ(buffer->splice_timestamp(), result->splice_timestamp());
   EXPECT_EQ(buffer->discard_padding(), result->discard_padding());
 
   // Both |buffer| and |result| are not encrypted.

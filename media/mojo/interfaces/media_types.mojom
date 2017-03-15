@@ -130,9 +130,6 @@ struct DecoderBuffer {
   // These fields indicate the amount of data to discard after decoding.
   mojo.common.mojom.TimeDelta front_discard;
   mojo.common.mojom.TimeDelta back_discard;
-
-  // Indicates this buffer is part of a splice around |splice_timestamp|.
-  mojo.common.mojom.TimeDelta splice_timestamp;
 };
 
 // This defines a mojo transport format for media::AudioBuffer.

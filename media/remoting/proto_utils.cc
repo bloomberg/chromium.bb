@@ -88,11 +88,6 @@ scoped_refptr<DecoderBuffer> ConvertProtoToDecoderBuffer(
         DecoderBuffer::DiscardPadding(front_discard, back_discard));
   }
 
-  if (buffer_message.has_splice_timestamp_usec()) {
-    buffer->set_splice_timestamp(base::TimeDelta::FromMicroseconds(
-        buffer_message.splice_timestamp_usec()));
-  }
-
   if (buffer_message.has_side_data()) {
     buffer->CopySideDataFrom(
         reinterpret_cast<const uint8_t*>(buffer_message.side_data().data()),
@@ -140,8 +135,6 @@ void ConvertDecoderBufferToProto(const DecoderBuffer& decoder_buffer,
       decoder_buffer.discard_padding().first.InMicroseconds());
   buffer_message->set_back_discard_usec(
       decoder_buffer.discard_padding().second.InMicroseconds());
-  buffer_message->set_splice_timestamp_usec(
-      decoder_buffer.splice_timestamp().InMicroseconds());
 
   if (decoder_buffer.side_data_size()) {
     buffer_message->set_side_data(decoder_buffer.side_data(),

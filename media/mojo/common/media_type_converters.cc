@@ -118,7 +118,6 @@ TypeConverter<media::mojom::DecoderBufferPtr,
   mojo_buffer->data_size = base::checked_cast<uint32_t>(input->data_size());
   mojo_buffer->front_discard = input->discard_padding().first;
   mojo_buffer->back_discard = input->discard_padding().second;
-  mojo_buffer->splice_timestamp = input->splice_timestamp();
 
   // Note: The side data is always small, so this copy is okay.
   if (input->side_data()) {
@@ -165,7 +164,6 @@ TypeConverter<scoped_refptr<media::DecoderBuffer>,
   media::DecoderBuffer::DiscardPadding discard_padding(input->front_discard,
                                                        input->back_discard);
   buffer->set_discard_padding(discard_padding);
-  buffer->set_splice_timestamp(input->splice_timestamp);
 
   // TODO(dalecurtis): We intentionally do not deserialize the data section of
   // the DecoderBuffer here; this must instead be done by clients via their
