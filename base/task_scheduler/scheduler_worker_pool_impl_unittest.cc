@@ -598,7 +598,6 @@ TEST_F(TaskSchedulerWorkerPoolHistogramTest, NumTasksBetweenWaitsWithDetach) {
   worker_pool_->DisallowWorkerDetachmentForTesting();
 }
 
-// TODO(crbug.com/698046): disabled due to flakyness.
 TEST_F(TaskSchedulerWorkerPoolHistogramTest, NumTasksBeforeDetach) {
   InitializeWorkerPool(kReclaimTimeForDetachTests, kNumWorkersInWorkerPool);
 
