@@ -173,6 +173,19 @@ static const char* SerializeRtcpMuxPolicy(
   return policy_str;
 }
 
+static std::string SerializeConfiguration(
+    const webrtc::PeerConnectionInterface::RTCConfiguration& config) {
+  std::ostringstream oss;
+  // TODO(hbos): Add serialization of certificate.
+  oss << "{ iceServers: " << SerializeServers(config.servers) << ", "
+      << "iceTransportPolicy: " << SerializeIceTransportType(config.type)
+      << ", "
+      << "bundlePolicy: " << SerializeBundlePolicy(config.bundle_policy) << ", "
+      << "rtcpMuxPolicy: " << SerializeRtcpMuxPolicy(config.rtcp_mux_policy)
+      << "iceCandidatePoolSize: " << config.ice_candidate_pool_size << " }";
+  return oss.str();
+}
+
 #define GET_STRING_OF_STATE(state)                \
   case WebRTCPeerConnectionHandlerClient::state:  \
     result = #state;                              \
@@ -428,11 +441,7 @@ void PeerConnectionTracker::RegisterPeerConnection(
   PeerConnectionInfo info;
 
   info.lid = GetNextLocalID();
-  info.rtc_configuration =
-      "{ iceServers: " +  SerializeServers(config.servers) + ", " +
-      "iceTransportPolicy: " + SerializeIceTransportType(config.type) + ", " +
-      "bundlePolicy: " + SerializeBundlePolicy(config.bundle_policy) + ", " +
-      "rtcpMuxPolicy: " + SerializeRtcpMuxPolicy(config.rtcp_mux_policy) + " }";
+  info.rtc_configuration = SerializeConfiguration(config);
 
   info.constraints = SerializeMediaConstraints(constraints);
   if (frame)
@@ -532,14 +541,8 @@ void PeerConnectionTracker::TrackSetConfiguration(
   if (id == -1)
     return;
 
-  std::ostringstream result;
-  result << "servers: " << SerializeServers(config.servers)
-         << "iceTransportType: " << SerializeIceTransportType(config.type)
-         << "bundlePolicy: " << SerializeBundlePolicy(config.bundle_policy)
-         << "rtcpMuxPolicy: " << SerializeRtcpMuxPolicy(config.rtcp_mux_policy)
-         << "}";
-
-  SendPeerConnectionUpdate(id, "setConfiguration", result.str());
+  SendPeerConnectionUpdate(id, "setConfiguration",
+                           SerializeConfiguration(config));
 }
 
 void PeerConnectionTracker::TrackAddIceCandidate(

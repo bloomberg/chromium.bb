@@ -41,5 +41,5 @@ dictionary RTCConfiguration {
     RTCRtcpMuxPolicy rtcpMuxPolicy = "require";
     // TODO(foolip): DOMString peerIdentity;
     sequence<RTCCertificate> certificates;
-    // TODO(foolip): unsigned short iceCandidatePoolSize = 0;
+    [EnforceRange] octet iceCandidatePoolSize = 0;
 };

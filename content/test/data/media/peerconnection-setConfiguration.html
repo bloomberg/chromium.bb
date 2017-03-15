@@ -22,7 +22,12 @@
   function testSetConfiguration() {
     gPeerConnection = new RTCPeerConnection(
         {iceServers:[], iceTransportPolicy:'all', bundlePolicy:'balanced',
-         rtcpMuxPolicy:'require', certificates:[]});
+         rtcpMuxPolicy:'require', certificates:[], iceCandidatePoolSize:0});
+    // Change ICE candidate pool size, which will succeed before
+    // setLocalDescription is called.
+    gPeerConnection.setConfiguration(
+        {iceServers:[], iceTransportPolicy:'all', bundlePolicy:'balanced',
+         rtcpMuxPolicy:'require', certificates:[], iceCandidatePoolSize:1});
     // Now test successful cases of setConfiguration. Changes should trigger an
     // ICE restart in the next offer. To do this, first we need to trigger an
     // initial ICE gathering phase and wait until it completes.
@@ -38,7 +43,7 @@
       // Policy changed.
       gPeerConnection.setConfiguration(
           {iceServers:[], iceTransportPolicy:'relay', bundlePolicy:'balanced',
-           rtcpMuxPolicy:'require', certificates:[]});
+           rtcpMuxPolicy:'require', certificates:[], iceCandidatePoolSize:1});
       createOfferAndSetLocalDescription();
     }
   }
@@ -49,7 +54,8 @@
       // Servers changed.
       gPeerConnection.setConfiguration(
           {iceServers:[{urls:'stun:foo.invalid'}], iceTransportPolicy:'all',
-           bundlePolicy:'balanced', rtcpMuxPolicy:'require', certificates:[]});
+           bundlePolicy:'balanced', rtcpMuxPolicy:'require', certificates:[],
+           iceCandidatePoolSize:1});
       createOfferAndSetLocalDescription();
     }
   }
@@ -80,13 +86,13 @@
   function continueTestSetConfigurationErrors() {
     gPeerConnection = new RTCPeerConnection(
         {iceServers:[], iceTransportPolicy:'all', bundlePolicy:'balanced',
-         rtcpMuxPolicy:'require', certificates:[]});
+         rtcpMuxPolicy:'require', certificates:[], iceCandidatePoolSize:1});
     // If bundlePolicy, rtcpMuxPolicy or certificates are changed, an
     // InvalidModificationError should be thrown.
     assertThrows(gPeerConnection.setConfiguration,
                  {iceServers:[], iceTransportPolicy:'all',
                   bundlePolicy:'max-bundle', rtcpMuxPolicy:'require',
-                  certificates:[]});
+                  certificates:[], iceCandidatePoolSize:1});
     assertThrows(gPeerConnection.setConfiguration,
                  {iceServers:[], iceTransportPolicy:'all',
                   bundlePolicy:'balanced', rtcpMuxPolicy:'negotiate',
@@ -94,23 +100,46 @@
     assertThrows(gPeerConnection.setConfiguration,
                  {iceServers:[], iceTransportPolicy:'all',
                   bundlePolicy:'balanced', rtcpMuxPolicy:'require',
-                  certificates:[gCertificate]});
+                  certificates:[gCertificate], iceCandidatePoolSize:1});
     // Failure to parse URL should result in SyntaxError.
     assertThrows(gPeerConnection.setConfiguration,
                  {iceServers:[{url:'stunnnn:foo.invalid'}],
                   iceTransportPolicy:'all', bundlePolicy:'max-bundle',
-                  rtcpMuxPolicy:'require', certificates:[]});
+                  rtcpMuxPolicy:'require', certificates:[],
+                  iceCandidatePoolSize:1});
     // TURN server with missing username should result in InvalidAccessError.
     assertThrows(gPeerConnection.setConfiguration,
                  {iceServers:[{url:'turn:foo.invalid'}],
                   iceTransportPolicy:'all', bundlePolicy:'max-bundle',
-                  rtcpMuxPolicy:'require', certificates:[]});
+                  rtcpMuxPolicy:'require', certificates:[],
+                  iceCandidatePoolSize:1});
     // Sanity check that a configuration can be successfully set, and thus
     // there's not something unexpected causing the above exceptions.
     gPeerConnection.setConfiguration(
         {iceServers:[], iceTransportPolicy:'all', bundlePolicy:'balanced',
-         rtcpMuxPolicy:'require', certificates:[]});
-    reportTestSuccess();
+         rtcpMuxPolicy:'require', certificates:[], iceCandidatePoolSize:1});
+    // Lastly: only after applying a local description, changing the candidate
+    // pool size is not allowed.
+    gPeerConnection.createOffer({offerToReceiveAudio:1})
+      .then(function(offer) {
+        console.log("Setting offer:\n" + offer.sdp);
+        gPeerConnection.setLocalDescription(offer).then(
+          function() {
+            // Pool size absent, which means it should default to 0, which is
+            // different than its current value of 1.
+            assertThrows(gPeerConnection.setConfiguration,
+                         {iceServers:[], iceTransportPolicy:'all',
+                          bundlePolicy:'balanced', rtcpMuxPolicy:'require',
+                          certificates:[]});
+            reportTestSuccess();
+          },
+          function() { failTest('Failed to set local description.') }
+        );
+        },
+        function() {
+          failTest('Failed to generate offer.')
+        }
+      );
   }
 
   function assertThrows(func) {

@@ -38,6 +38,13 @@ PASS new RTCPeerConnection({iceServers:[], bundlePolicy:'foo'}); threw exception
 PASS new RTCPeerConnection({iceServers:[], rtcpMuxPolicy:'negotiate'}); did not throw exception.
 PASS new RTCPeerConnection({iceServers:[], rtcpMuxPolicy:'require'}); did not throw exception.
 PASS new RTCPeerConnection({iceServers:[], rtcpMuxPolicy:'foo'}); threw exception TypeError: Failed to construct 'RTCPeerConnection': The provided value 'foo' is not a valid enum value of type RTCRtcpMuxPolicy..
+PASS new RTCPeerConnection({iceCandidatePoolSize:0}); did not throw exception.
+PASS new RTCPeerConnection({iceCandidatePoolSize:1}); did not throw exception.
+PASS new RTCPeerConnection({iceCandidatePoolSize:255}); did not throw exception.
+PASS new RTCPeerConnection({iceCandidatePoolSize:-1}); threw exception TypeError: Failed to construct 'RTCPeerConnection': Value is outside the 'octet' value range..
+PASS new RTCPeerConnection({iceCandidatePoolSize:99999999}); threw exception TypeError: Failed to construct 'RTCPeerConnection': Value is outside the 'octet' value range..
+PASS new RTCPeerConnection({iceCandidatePoolSize:256}); threw exception TypeError: Failed to construct 'RTCPeerConnection': Value is outside the 'octet' value range..
+PASS new RTCPeerConnection({iceCandidatePoolSize:'foo'}); threw exception TypeError: Failed to construct 'RTCPeerConnection': Value is not of type 'octet'..
 PASS new RTCPeerConnection(null, {mandatory:{valid_and_supported_1:1}}); did not throw exception.
 PASS new RTCPeerConnection(null, {mandatory:{valid_and_supported_1:1, valid_and_supported_2:1}}); did not throw exception.
 PASS new RTCPeerConnection(null, {optional:[{valid_and_supported_1:0}]}); did not throw exception.

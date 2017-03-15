@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 73 tests; 61 PASS, 12 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 73 tests; 62 PASS, 11 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS RTCPeerConnection.length 
 PASS new RTCPeerConnection() 
 PASS new RTCPeerConnection(null) 
@@ -67,9 +67,7 @@ PASS new RTCPeerConnection({ certificates: undefined })
 PASS new RTCPeerConnection({ certificates: [] }) 
 PASS new RTCPeerConnection({ certificates: [null] }) 
 PASS new RTCPeerConnection({ certificates: [undefined] }) 
-FAIL new RTCPeerConnection({ iceCandidatePoolSize: toNumberThrows }) assert_throws: function "function () {
-        eval(expr);
-      }" did not throw
+PASS new RTCPeerConnection({ iceCandidatePoolSize: toNumberThrows }) 
 PASS new RTCPeerConnection({ certificates: [certificate] }) 
 PASS new RTCPeerConnection({ certificates: [expiredCertificate] }) 
 PASS localDescription initial value 

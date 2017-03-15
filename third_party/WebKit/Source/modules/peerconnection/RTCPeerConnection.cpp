@@ -337,6 +337,7 @@ WebRTCConfiguration parseConfiguration(ExecutionContext* context,
     webConfiguration.certificates = std::move(certificatesCopy);
   }
 
+  webConfiguration.iceCandidatePoolSize = configuration.iceCandidatePoolSize();
   return webConfiguration;
 }
 

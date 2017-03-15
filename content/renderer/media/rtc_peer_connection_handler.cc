@@ -298,6 +298,8 @@ void GetNativeRtcConfiguration(
         static_cast<RTCCertificate*>(blink_certificate.get())
             ->rtcCertificate());
   }
+
+  webrtc_config->ice_candidate_pool_size = blink_config.iceCandidatePoolSize;
 }
 
 void CopyConstraintsIntoRtcConfiguration(

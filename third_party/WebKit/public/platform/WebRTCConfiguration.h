@@ -60,6 +60,7 @@ struct WebRTCConfiguration {
   WebRTCBundlePolicy bundlePolicy = WebRTCBundlePolicy::kBalanced;
   WebRTCRtcpMuxPolicy rtcpMuxPolicy = WebRTCRtcpMuxPolicy::kRequire;
   WebVector<std::unique_ptr<WebRTCCertificate>> certificates;
+  int iceCandidatePoolSize = 0;
 };
 
 }  // namespace blink

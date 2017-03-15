@@ -45,6 +45,14 @@ shouldNotThrow("new RTCPeerConnection({iceServers:[], rtcpMuxPolicy:'negotiate'}
 shouldNotThrow("new RTCPeerConnection({iceServers:[], rtcpMuxPolicy:'require'});");
 shouldThrow("new RTCPeerConnection({iceServers:[], rtcpMuxPolicy:'foo'});");
 
+shouldNotThrow("new RTCPeerConnection({iceCandidatePoolSize:0});");
+shouldNotThrow("new RTCPeerConnection({iceCandidatePoolSize:1});");
+shouldNotThrow("new RTCPeerConnection({iceCandidatePoolSize:255});");
+shouldThrow("new RTCPeerConnection({iceCandidatePoolSize:-1});");
+shouldThrow("new RTCPeerConnection({iceCandidatePoolSize:99999999});");
+shouldThrow("new RTCPeerConnection({iceCandidatePoolSize:256});");
+shouldThrow("new RTCPeerConnection({iceCandidatePoolSize:'foo'});");
+
 // Deprecated.
 shouldNotThrow("new RTCPeerConnection(null, {mandatory:{valid_and_supported_1:1}});");
 shouldNotThrow("new RTCPeerConnection(null, {mandatory:{valid_and_supported_1:1, valid_and_supported_2:1}});");
