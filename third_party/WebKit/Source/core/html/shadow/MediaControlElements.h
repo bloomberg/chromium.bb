@@ -323,7 +323,6 @@ class MediaControlCastButtonElement final : public MediaControlInputElement {
  private:
   explicit MediaControlCastButtonElement(MediaControls&, bool isOverlayButton);
 
-  const AtomicString& shadowPseudoId() const override;
   void defaultEventHandler(Event*) override;
   bool keepEventInNode(Event*) override;
 

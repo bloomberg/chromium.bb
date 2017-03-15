@@ -991,6 +991,9 @@ MediaControlCastButtonElement* MediaControlCastButtonElement::create(
   MediaControlCastButtonElement* button =
       new MediaControlCastButtonElement(mediaControls, isOverlayButton);
   button->ensureUserAgentShadowRoot();
+  button->setShadowPseudoId(isOverlayButton
+                                ? "-internal-media-controls-overlay-cast-button"
+                                : "-internal-media-controls-cast-button");
   button->setType(InputTypeNames::button);
   return button;
 }
@@ -1015,14 +1018,6 @@ void MediaControlCastButtonElement::defaultEventHandler(Event* event) {
     }
   }
   MediaControlInputElement::defaultEventHandler(event);
-}
-
-const AtomicString& MediaControlCastButtonElement::shadowPseudoId() const {
-  DEFINE_STATIC_LOCAL(AtomicString, id_nonOverlay,
-                      ("-internal-media-controls-cast-button"));
-  DEFINE_STATIC_LOCAL(AtomicString, id_overlay,
-                      ("-internal-media-controls-overlay-cast-button"));
-  return m_isOverlayButton ? id_overlay : id_nonOverlay;
 }
 
 void MediaControlCastButtonElement::setIsPlayingRemotely(
