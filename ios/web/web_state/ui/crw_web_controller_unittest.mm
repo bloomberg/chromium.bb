@@ -239,6 +239,9 @@ TEST_F(CRWWebControllerTest, UrlForHistoryNavigation) {
 // Tests that AllowCertificateError is called with correct arguments if
 // WKWebView fails to load a page with bad SSL cert.
 TEST_F(CRWWebControllerTest, SslCertError) {
+  web::TestWebStateObserver observer(web_state());
+  ASSERT_FALSE(observer.did_change_visible_security_state_info());
+
   // Last arguments passed to AllowCertificateError must be in default state.
   ASSERT_FALSE(GetWebClient()->last_cert_error_code());
   ASSERT_FALSE(GetWebClient()->last_cert_error_ssl_info().is_valid());
@@ -274,6 +277,11 @@ TEST_F(CRWWebControllerTest, SslCertError) {
             GetWebClient()->last_cert_error_ssl_info().cert_status);
   EXPECT_EQ(url, GetWebClient()->last_cert_error_request_url());
   EXPECT_FALSE(GetWebClient()->last_cert_error_overridable());
+
+  // Verify that |DidChangeVisibleSecurityState| was called.
+  ASSERT_TRUE(observer.did_change_visible_security_state_info());
+  EXPECT_EQ(web_state(),
+            observer.did_change_visible_security_state_info()->web_state);
 }
 
 // Test fixture to test |setPageDialogOpenPolicy:|.
@@ -572,30 +580,54 @@ TEST_F(CRWWebControllerNavigationTest, GoToItemWithoutDocumentChange) {
             session_controller.currentItem);
 }
 
-// Tests that didShowPasswordInputOnHTTP updates the SSLStatus to indicate that
+// Test fixture for testing visible security state.
+typedef web::WebTestWithWebState CRWWebStateSecurityStateTest;
+
+// Tests that OnPasswordInputShownOnHttp updates the SSLStatus to indicate that
 // a password field has been displayed on an HTTP page.
-TEST_F(CRWWebControllerNavigationTest, HTTPPassword) {
+TEST_F(CRWWebStateSecurityStateTest, HttpPassword) {
   LoadHtml(@"<html><body></body></html>", GURL("http://chromium.test"));
-  NavigationManagerImpl& nav_manager =
-      web_controller().webStateImpl->GetNavigationManagerImpl();
-  EXPECT_FALSE(nav_manager.GetLastCommittedItem()->GetSSL().content_status &
+  web::NavigationManager* nav_manager = web_state()->GetNavigationManager();
+  EXPECT_FALSE(nav_manager->GetLastCommittedItem()->GetSSL().content_status &
                web::SSLStatus::DISPLAYED_PASSWORD_FIELD_ON_HTTP);
-  [web_controller() didShowPasswordInputOnHTTP];
-  EXPECT_TRUE(nav_manager.GetLastCommittedItem()->GetSSL().content_status &
+  web::TestWebStateObserver observer(web_state());
+  ASSERT_FALSE(observer.did_change_visible_security_state_info());
+  web_state()->OnPasswordInputShownOnHttp();
+  EXPECT_TRUE(nav_manager->GetLastCommittedItem()->GetSSL().content_status &
               web::SSLStatus::DISPLAYED_PASSWORD_FIELD_ON_HTTP);
+  ASSERT_TRUE(observer.did_change_visible_security_state_info());
+  EXPECT_EQ(web_state(),
+            observer.did_change_visible_security_state_info()->web_state);
 }
 
-// Tests that didShowCreditCardInputOnHTTP updates the SSLStatus to indicate
+// Tests that OnCreditCardInputShownOnHttp updates the SSLStatus to indicate
 // that a credit card field has been displayed on an HTTP page.
-TEST_F(CRWWebControllerNavigationTest, HTTPCreditCard) {
+TEST_F(CRWWebStateSecurityStateTest, HttpCreditCard) {
   LoadHtml(@"<html><body></body></html>", GURL("http://chromium.test"));
-  NavigationManagerImpl& nav_manager =
-      web_controller().webStateImpl->GetNavigationManagerImpl();
-  EXPECT_FALSE(nav_manager.GetLastCommittedItem()->GetSSL().content_status &
+  web::NavigationManager* nav_manager = web_state()->GetNavigationManager();
+  EXPECT_FALSE(nav_manager->GetLastCommittedItem()->GetSSL().content_status &
                web::SSLStatus::DISPLAYED_CREDIT_CARD_FIELD_ON_HTTP);
-  [web_controller() didShowCreditCardInputOnHTTP];
-  EXPECT_TRUE(nav_manager.GetLastCommittedItem()->GetSSL().content_status &
+  web::TestWebStateObserver observer(web_state());
+  ASSERT_FALSE(observer.did_change_visible_security_state_info());
+  web_state()->OnCreditCardInputShownOnHttp();
+  EXPECT_TRUE(nav_manager->GetLastCommittedItem()->GetSSL().content_status &
               web::SSLStatus::DISPLAYED_CREDIT_CARD_FIELD_ON_HTTP);
+  ASSERT_TRUE(observer.did_change_visible_security_state_info());
+  EXPECT_EQ(web_state(),
+            observer.did_change_visible_security_state_info()->web_state);
+}
+
+// Tests that loading HTTP page updates the SSLStatus.
+TEST_F(CRWWebStateSecurityStateTest, LoadHttpPage) {
+  web::TestWebStateObserver observer(web_state());
+  ASSERT_FALSE(observer.did_change_visible_security_state_info());
+  LoadHtml(@"<html><body></body></html>", GURL("http://chromium.test"));
+  web::NavigationManager* nav_manager = web_state()->GetNavigationManager();
+  web::NavigationItem* item = nav_manager->GetLastCommittedItem();
+  EXPECT_EQ(web::SECURITY_STYLE_UNAUTHENTICATED, item->GetSSL().security_style);
+  ASSERT_TRUE(observer.did_change_visible_security_state_info());
+  EXPECT_EQ(web_state(),
+            observer.did_change_visible_security_state_info()->web_state);
 }
 
 // Real WKWebView is required for CRWWebControllerInvalidUrlTest.

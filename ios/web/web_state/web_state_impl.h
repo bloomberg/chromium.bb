@@ -91,6 +91,9 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
   // Called when page title was changed.
   void OnTitleChanged();
 
+  // Called when the visible security state of the page changes.
+  void OnVisibleSecurityStateChange();
+
   // Notifies the observers that the render process was terminated.
   void OnRenderProcessGone();
 

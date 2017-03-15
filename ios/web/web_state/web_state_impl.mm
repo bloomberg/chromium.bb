@@ -206,6 +206,11 @@ void WebStateImpl::OnTitleChanged() {
     observer.TitleWasSet();
 }
 
+void WebStateImpl::OnVisibleSecurityStateChange() {
+  for (auto& observer : observers_)
+    observer.DidChangeVisibleSecurityState();
+}
+
 void WebStateImpl::OnRenderProcessGone() {
   for (auto& observer : observers_)
     observer.RenderProcessGone();

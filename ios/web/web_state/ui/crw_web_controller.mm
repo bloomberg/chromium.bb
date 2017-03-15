@@ -747,8 +747,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 // Updates SSL status for the current navigation item based on the information
 // provided by web view.
 - (void)updateSSLStatusForCurrentNavigationItem;
-// Called when SSL status has been updated for the current navigation item.
-- (void)didUpdateSSLStatusForCurrentNavigationItem;
 // Called when a load ends in an SSL error and certificate chain.
 - (void)handleSSLCertError:(NSError*)error;
 
@@ -4026,30 +4024,22 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
                                  hasOnlySecureContent:hasOnlySecureContent];
 }
 
-- (void)didUpdateSSLStatusForCurrentNavigationItem {
-  if ([_delegate respondsToSelector:
-          @selector(
-              webControllerDidUpdateSSLStatusForCurrentNavigationItem:)]) {
-    [_delegate webControllerDidUpdateSSLStatusForCurrentNavigationItem:self];
-  }
-}
-
 - (void)didShowPasswordInputOnHTTP {
   DCHECK(!web::IsOriginSecure(self.webState->GetLastCommittedURL()));
   web::NavigationItem* item =
-      self.webState->GetNavigationManager()->GetLastCommittedItem();
+      _webStateImpl->GetNavigationManager()->GetLastCommittedItem();
   item->GetSSL().content_status |=
       web::SSLStatus::DISPLAYED_PASSWORD_FIELD_ON_HTTP;
-  [self didUpdateSSLStatusForCurrentNavigationItem];
+  _webStateImpl->OnVisibleSecurityStateChange();
 }
 
 - (void)didShowCreditCardInputOnHTTP {
   DCHECK(!web::IsOriginSecure(self.webState->GetLastCommittedURL()));
   web::NavigationItem* item =
-      self.webState->GetNavigationManager()->GetLastCommittedItem();
+      _webStateImpl->GetNavigationManager()->GetLastCommittedItem();
   item->GetSSL().content_status |=
       web::SSLStatus::DISPLAYED_CREDIT_CARD_FIELD_ON_HTTP;
-  [self didUpdateSSLStatusForCurrentNavigationItem];
+  _webStateImpl->OnVisibleSecurityStateChange();
 }
 
 - (void)handleSSLCertError:(NSError*)error {
@@ -4095,7 +4085,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 
   // Ask web client if this cert error should be allowed.
   web::GetWebClient()->AllowCertificateError(
-      self.webState, net::MapCertStatusToNetError(info.cert_status), info,
+      _webStateImpl, net::MapCertStatusToNetError(info.cert_status), info,
       net::GURLWithNSURL(requestURL), recoverable,
       base::BindBlock(^(bool proceed) {
         if (proceed) {
@@ -4111,7 +4101,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
         }
       }));
 
-  [self didUpdateSSLStatusForCurrentNavigationItem];
+  _webStateImpl->OnVisibleSecurityStateChange();
   [self loadCancelled];
 }
 
@@ -4778,9 +4768,9 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 - (void)SSLStatusUpdater:(CRWSSLStatusUpdater*)SSLStatusUpdater
     didChangeSSLStatusForNavigationItem:(web::NavigationItem*)navigationItem {
   web::NavigationItem* lastCommittedNavigationItem =
-      self.webState->GetNavigationManager()->GetLastCommittedItem();
+      _webStateImpl->GetNavigationManager()->GetLastCommittedItem();
   if (navigationItem == lastCommittedNavigationItem) {
-    [self didUpdateSSLStatusForCurrentNavigationItem];
+    _webStateImpl->OnVisibleSecurityStateChange();
   }
 }
 

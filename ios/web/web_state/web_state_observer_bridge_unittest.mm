@@ -132,6 +132,16 @@ TEST_F(WebStateObserverBridgeTest, TitleWasSet) {
   EXPECT_EQ(&test_web_state_, [observer_ titleWasSetInfo]->web_state);
 }
 
+// Tests |webStateDidChangeVisibleSecurityState:| forwarding.
+TEST_F(WebStateObserverBridgeTest, DidChangeVisibleSecurityState) {
+  ASSERT_FALSE([observer_ didChangeVisibleSecurityStateInfo]);
+
+  bridge_->DidChangeVisibleSecurityState();
+  ASSERT_TRUE([observer_ didChangeVisibleSecurityStateInfo]);
+  EXPECT_EQ(&test_web_state_,
+            [observer_ didChangeVisibleSecurityStateInfo]->web_state);
+}
+
 // Tests |webState:didSubmitDocumentWithFormNamed:userInitiated:| forwarding.
 TEST_F(WebStateObserverBridgeTest, DocumentSubmitted) {
   ASSERT_FALSE([observer_ submitDocumentInfo]);

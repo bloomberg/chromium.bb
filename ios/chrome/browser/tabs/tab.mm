@@ -1909,14 +1909,14 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
   return [self.tabHeadersDelegate headerHeightForTab:self];
 }
 
-- (void)webControllerDidUpdateSSLStatusForCurrentNavigationItem:
-    (CRWWebController*)webController {
+- (void)webStateDidChangeVisibleSecurityState:(web::WebState*)webState {
   // Disable fullscreen if SSL cert is invalid.
   web::NavigationItem* item = [self navigationManager]->GetTransientItem();
-  web::SecurityStyle securityStyle =
-      item ? item->GetSSL().security_style : web::SECURITY_STYLE_UNKNOWN;
-  if (securityStyle == web::SECURITY_STYLE_AUTHENTICATION_BROKEN) {
-    [fullScreenController_ disableFullScreen];
+  if (item) {
+    web::SecurityStyle securityStyle = item->GetSSL().security_style;
+    if (securityStyle == web::SECURITY_STYLE_AUTHENTICATION_BROKEN) {
+      [fullScreenController_ disableFullScreen];
+    }
   }
 
   [parentTabModel_ notifyTabChanged:self];

@@ -90,6 +90,12 @@ void TestWebStateObserver::TitleWasSet() {
   title_was_set_info_->web_state = web_state();
 }
 
+void TestWebStateObserver::DidChangeVisibleSecurityState() {
+  did_change_visible_security_state_info_ =
+      base::MakeUnique<web::TestDidChangeVisibleSecurityStateInfo>();
+  did_change_visible_security_state_info_->web_state = web_state();
+}
+
 void TestWebStateObserver::DocumentSubmitted(const std::string& form_name,
                                              bool user_initiated) {
   submit_document_info_ = base::MakeUnique<web::TestSubmitDocumentInfo>();

@@ -34,6 +34,9 @@ TestUpdateFaviconUrlCandidatesInfo::~TestUpdateFaviconUrlCandidatesInfo() =
       _changeLoadingProgressInfo;
   // Arguments passed to |webStateDidChangeTitle:|.
   std::unique_ptr<web::TestTitleWasSetInfo> _titleWasSetInfo;
+  // Arguments passed to |webStateDidChangeVisibleSecurityState:|.
+  std::unique_ptr<web::TestDidChangeVisibleSecurityStateInfo>
+      _didChangeVisibleSecurityStateInfo;
   // Arguments passed to
   // |webState:didSubmitDocumentWithFormNamed:userInitiated:|.
   std::unique_ptr<web::TestSubmitDocumentInfo> _submitDocumentInfo;
@@ -79,6 +82,11 @@ TestUpdateFaviconUrlCandidatesInfo::~TestUpdateFaviconUrlCandidatesInfo() =
 
 - (web::TestTitleWasSetInfo*)titleWasSetInfo {
   return _titleWasSetInfo.get();
+}
+
+- (web::TestDidChangeVisibleSecurityStateInfo*)
+    didChangeVisibleSecurityStateInfo {
+  return _didChangeVisibleSecurityStateInfo.get();
 }
 
 - (web::TestSubmitDocumentInfo*)submitDocumentInfo {
@@ -172,6 +180,12 @@ TestUpdateFaviconUrlCandidatesInfo::~TestUpdateFaviconUrlCandidatesInfo() =
 - (void)webStateDidChangeTitle:(web::WebState*)webState {
   _titleWasSetInfo = base::MakeUnique<web::TestTitleWasSetInfo>();
   _titleWasSetInfo->web_state = webState;
+}
+
+- (void)webStateDidChangeVisibleSecurityState:(web::WebState*)webState {
+  _didChangeVisibleSecurityStateInfo =
+      base::MakeUnique<web::TestDidChangeVisibleSecurityStateInfo>();
+  _didChangeVisibleSecurityStateInfo->web_state = webState;
 }
 
 - (void)webState:(web::WebState*)webState

@@ -88,6 +88,9 @@ class WebStateObserver {
   // Called when the title of the WebState is set.
   virtual void TitleWasSet() {}
 
+  // Called when the visible security state of the page changes.
+  virtual void DidChangeVisibleSecurityState() {}
+
   // Called on form submission. |user_initiated| is true if the user
   // interacted with the page.
   virtual void DocumentSubmitted(const std::string& form_name,

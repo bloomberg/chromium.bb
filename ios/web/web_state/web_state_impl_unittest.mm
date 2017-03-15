@@ -276,6 +276,13 @@ TEST_F(WebStateImplTest, ObserverTest) {
   ASSERT_TRUE(observer->title_was_set_info());
   EXPECT_EQ(web_state_.get(), observer->title_was_set_info()->web_state);
 
+  // Test that DidChangeVisibleSecurityState() is called.
+  ASSERT_FALSE(observer->did_change_visible_security_state_info());
+  web_state_->OnVisibleSecurityStateChange();
+  ASSERT_TRUE(observer->did_change_visible_security_state_info());
+  EXPECT_EQ(web_state_.get(),
+            observer->did_change_visible_security_state_info()->web_state);
+
   // Test that DocumentSubmitted() is called.
   ASSERT_FALSE(observer->submit_document_info());
   std::string kTestFormName("form-name");

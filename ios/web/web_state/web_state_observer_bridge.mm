@@ -85,6 +85,12 @@ void WebStateObserverBridge::TitleWasSet() {
     [observer_ webStateDidChangeTitle:web_state()];
 }
 
+void WebStateObserverBridge::DidChangeVisibleSecurityState() {
+  SEL selector = @selector(webStateDidChangeVisibleSecurityState:);
+  if ([observer_ respondsToSelector:selector])
+    [observer_ webStateDidChangeVisibleSecurityState:web_state()];
+}
+
 void WebStateObserverBridge::DocumentSubmitted(const std::string& form_name,
                                                bool user_initiated) {
   SEL selector =
