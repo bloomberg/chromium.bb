@@ -55,6 +55,9 @@ class Predicates(object):
   def DEFAULT_PLUS_V8(x):
     return Predicates.DEFAULT(x) or Types.V8_FYI in x
 
+  @staticmethod
+  def DEFAULT_AND_OPTIONAL(x):
+    return Predicates.DEFAULT(x) or Types.OPTIONAL in x
 
 WATERFALL = {
   'name': 'chromium.gpu',
@@ -1602,6 +1605,21 @@ TELEMETRY_GPU_INTEGRATION_TESTS = {
       },
     ],
   },
+  'info_collection_tests': {
+    'target_name': 'info_collection',
+    'args': [
+      '--expected-vendor-id',
+      '${gpu_vendor_id}',
+      '--expected-device-id',
+      '${gpu_device_id}',
+    ],
+    'tester_configs': [
+      {
+        'predicate': Predicates.DEFAULT_AND_OPTIONAL,
+        'disabled_instrumentation_types': ['tsan'],
+      }
+    ],
+  },
   'maps_pixel_test': {
     'target_name': 'maps',
     'args': [
@@ -2012,12 +2030,18 @@ NON_TELEMETRY_ISOLATED_SCRIPT_TESTS = {
 }
 
 def substitute_args(tester_config, args):
-  """Substitutes the ${os_type} variable in |args| from the
-     tester_config's "os_type" property.
-  """
+  """Substitutes the variables in |args| from tester_config properties."""
   substitutions = {
-    'os_type': tester_config['os_type']
+    'os_type': tester_config['os_type'],
+    'gpu_vendor_id': '0',
+    'gpu_device_id': '0',
   }
+
+  if 'gpu' in tester_config['swarming_dimensions'][0]:
+    gpu = tester_config['swarming_dimensions'][0]['gpu'].split(':')
+    substitutions['gpu_vendor_id'] = gpu[0]
+    substitutions['gpu_device_id'] = gpu[1]
+
   return [string.Template(arg).safe_substitute(substitutions) for arg in args]
 
 def matches_swarming_dimensions(tester_config, dimension_sets):
