@@ -426,7 +426,7 @@ bool sendBeaconCommon(LocalFrame* frame,
     return false;
 
   unsigned long long entitySize = beacon.size();
-  if (allowance > 0 && static_cast<unsigned long long>(allowance) < entitySize)
+  if (allowance < 0 || static_cast<unsigned long long>(allowance) < entitySize)
     return false;
 
   payloadLength = entitySize;
