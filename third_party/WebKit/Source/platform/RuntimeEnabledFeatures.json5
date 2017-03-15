@@ -539,7 +539,7 @@
     },
     {
       name: "MediaGetSettings",
-      status: "experimental",
+      status: "stable",
     },
     // MediaSession is enabled by default on Android only.
     // TODO(rbyers): Add parameter to specify platform.
