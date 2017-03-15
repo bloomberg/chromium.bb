@@ -1815,16 +1815,16 @@ class TestGitCl(TestCase):
   def _common_patch_successful(self, new_branch=False):
     self._patch_common(new_branch=new_branch)
     self.calls += [
-      ((['git', 'commit', '-m',
-         'Description\n\n' +
-         'patch from issue 123456 at patchset 60001 ' +
-         '(http://crrev.com/123456#ps60001)'],), ''),
       ((['git', 'config', 'branch.master.rietveldissue', '123456'],),
        ''),
       ((['git', 'config', 'branch.master.rietveldserver',
          'https://codereview.example.com'],), ''),
       ((['git', 'config', 'branch.master.rietveldpatchset', '60001'],),
        ''),
+      ((['git', 'commit', '-m',
+         'Description\n\n' +
+         'patch from issue 123456 at patchset 60001 ' +
+         '(http://crrev.com/123456#ps60001)'],), ''),
     ]
 
   def test_patch_successful(self):
@@ -1846,12 +1846,12 @@ class TestGitCl(TestCase):
     self.calls += [
       ((['git', 'fetch', 'https://chromium.googlesource.com/my/repo',
          'refs/changes/56/123456/7'],), ''),
-      ((['git', 'cherry-pick', 'FETCH_HEAD'],), ''),
       ((['git', 'config', 'branch.master.gerritissue', '123456'],),
        ''),
       ((['git', 'config', 'branch.master.gerritserver',
         'https://chromium-review.googlesource.com'],), ''),
       ((['git', 'config', 'branch.master.gerritpatchset', '7'],), ''),
+      ((['git', 'cherry-pick', 'FETCH_HEAD'],), ''),
     ]
     self.assertEqual(git_cl.main(['patch', '123456']), 0)
 
@@ -1861,12 +1861,12 @@ class TestGitCl(TestCase):
     self.calls += [
       ((['git', 'fetch', 'https://host.googlesource.com/my/repo',
          'refs/changes/56/123456/7'],), ''),
-      ((['git', 'cherry-pick', 'FETCH_HEAD'],), ''),
       ((['git', 'config', 'branch.master.gerritissue', '123456'],),
        ''),
       ((['git', 'config', 'branch.master.gerritserver',
         'https://host-review.googlesource.com'],), ''),
       ((['git', 'config', 'branch.master.gerritpatchset', '7'],), ''),
+      ((['git', 'cherry-pick', 'FETCH_HEAD'],), ''),
     ]
     self.assertEqual(git_cl.main(['patch', '--gerrit', '123456']), 0)
 
@@ -1876,12 +1876,12 @@ class TestGitCl(TestCase):
     self.calls += [
       ((['git', 'fetch', 'https://else.googlesource.com/my/repo',
          'refs/changes/56/123456/1'],), ''),
-      ((['git', 'cherry-pick', 'FETCH_HEAD'],), ''),
       ((['git', 'config', 'branch.master.gerritissue', '123456'],),
        ''),
       ((['git', 'config', 'branch.master.gerritserver',
         'https://else-review.googlesource.com'],), ''),
       ((['git', 'config', 'branch.master.gerritpatchset', '1'],), ''),
+      ((['git', 'cherry-pick', 'FETCH_HEAD'],), ''),
     ]
     self.assertEqual(git_cl.main(
       ['patch', 'https://else-review.googlesource.com/#/c/123456/1']), 0)
@@ -1892,6 +1892,11 @@ class TestGitCl(TestCase):
     self.calls += [
       ((['git', 'fetch', 'https://chromium.googlesource.com/my/repo',
          'refs/changes/56/123456/1'],), ''),
+      ((['git', 'config', 'branch.master.gerritissue', '123456'],),
+       ''),
+      ((['git', 'config', 'branch.master.gerritserver',
+        'https://chromium-review.googlesource.com'],), ''),
+      ((['git', 'config', 'branch.master.gerritpatchset', '1'],), ''),
       ((['git', 'cherry-pick', 'FETCH_HEAD'],), CERR1),
       ((['DieWithError', 'Command "git cherry-pick FETCH_HEAD" failed.\n'],),
        SystemExitMock()),

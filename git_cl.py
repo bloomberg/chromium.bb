@@ -2070,12 +2070,12 @@ class _RietveldChangelistImpl(_ChangelistCodereviewBase):
 
     # If we had an issue, commit the current state and register the issue.
     if not nocommit:
+      self.SetIssue(self.GetIssue())
+      self.SetPatchset(patchset)
       RunGit(['commit', '-m', (self.GetDescription() + '\n\n' +
                                'patch from issue %(i)s at patchset '
                                '%(p)s (http://crrev.com/%(i)s#ps%(p)s)'
                                % {'i': self.GetIssue(), 'p': patchset})])
-      self.SetIssue(self.GetIssue())
-      self.SetPatchset(patchset)
       print('Committed patch locally.')
     else:
       print('Patch applied to index.')
@@ -2635,9 +2635,9 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
 
     fetch_info = revision_info['fetch']['http']
     RunGit(['fetch', fetch_info['url'], fetch_info['ref']])
-    RunGit(['cherry-pick', 'FETCH_HEAD'])
     self.SetIssue(self.GetIssue())
     self.SetPatchset(patchset)
+    RunGit(['cherry-pick', 'FETCH_HEAD'])
     print('Committed patch for change %i patchset %i locally' %
           (self.GetIssue(), self.GetPatchset()))
     return 0
