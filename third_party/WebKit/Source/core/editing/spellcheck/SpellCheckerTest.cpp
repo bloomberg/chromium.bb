@@ -40,6 +40,22 @@ TEST_F(SpellCheckerTest, AdvanceToNextMisspellingWithEmptyInputNoCrash) {
       document().frame()->editor().executeCommand("AdvanceToNextMisspelling"));
 }
 
+// Regression test for crbug.com/701309
+TEST_F(SpellCheckerTest, AdvanceToNextMisspellingWithImageInTableNoCrash) {
+  setBodyContent(
+      "<div contenteditable>"
+      "<table><tr><td>"
+      "<img src=foo.jpg>"
+      "</td></tr></table>"
+      "zz zz zz"
+      "</div>");
+  document().querySelector("div")->focus();
+  updateAllLifecyclePhases();
+
+  // Do not crash in advanceToNextMisspelling.
+  document().frame()->spellChecker().advanceToNextMisspelling(false);
+}
+
 TEST_F(SpellCheckerTest, SpellCheckDoesNotCauseUpdateLayout) {
   setBodyContent("<input>");
   HTMLInputElement* input =
