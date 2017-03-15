@@ -150,7 +150,7 @@ void SoftwareRenderer::SetClipRect(const gfx::Rect& rect) {
   current_canvas_->resetMatrix();
   // TODO(fmalita) stop using kReplace (see crbug.com/673851)
   current_canvas_->clipRect(gfx::RectToSkRect(rect),
-                            SkClipOp::kReplace_private_internal_do_not_use);
+                            SkClipOp::kReplace_deprecated);
   current_canvas_->setMatrix(current_matrix);
 }
 

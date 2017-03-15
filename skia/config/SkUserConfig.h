@@ -220,10 +220,6 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 #   define SK_USE_LEGACY_DISTANCE_FIELDS
 #endif
 
-#ifndef    SK_SUPPORT_LEGACY_CLIPOP_EXOTIC_NAMES
-#   define SK_SUPPORT_LEGACY_CLIPOP_EXOTIC_NAMES
-#endif
-
 #ifndef SK_SUPPORT_LEGACY_PATHEFFECT_SUBCLASSES
 #define SK_SUPPORT_LEGACY_PATHEFFECT_SUBCLASSES
 #endif
