@@ -1014,7 +1014,7 @@ TEST_P(FrameThrottlingTest, UpdatePaintPropertiesOnUnthrottling) {
                              "transform: translateY(1000px)");
   compositeFrame();
   EXPECT_TRUE(frameDocument->view()->canThrottleRendering());
-  EXPECT_FALSE(innerDivObject->paintProperties()->transform());
+  EXPECT_FALSE(innerDivObject->paintProperties());
 
   // Mutating the throttled frame should not cause paint property update.
   innerDiv->setAttribute(HTMLNames::styleAttr, "transform: translateY(20px)");
@@ -1025,7 +1025,7 @@ TEST_P(FrameThrottlingTest, UpdatePaintPropertiesOnUnthrottling) {
         document().lifecycle());
     document().view()->updateAllLifecyclePhases();
   }
-  EXPECT_FALSE(innerDivObject->paintProperties()->transform());
+  EXPECT_FALSE(innerDivObject->paintProperties());
 
   // Move the frame back on screen to unthrottle it.
   frameElement->setAttribute(HTMLNames::styleAttr, "");

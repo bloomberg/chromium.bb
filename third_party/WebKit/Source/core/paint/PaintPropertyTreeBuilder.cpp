@@ -683,9 +683,8 @@ void PaintPropertyTreeBuilder::updateLocalBorderBoxContext(
   if (!object.needsPaintPropertyUpdate() && !context.forceSubtreeUpdate)
     return;
 
-  // Avoid adding an ObjectPaintProperties for non-boxes to save memory, since
-  // we don't need them at the moment.
-  if (!object.isBox() && !object.hasLayer()) {
+  // We need localBorderBoxProperties for layered objects only.
+  if (!object.hasLayer()) {
     if (auto* properties = object.getMutableForPainting().paintProperties())
       properties->clearLocalBorderBoxProperties();
   } else {

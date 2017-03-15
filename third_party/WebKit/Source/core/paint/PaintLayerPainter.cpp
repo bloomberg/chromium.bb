@@ -980,10 +980,6 @@ void PaintLayerPainter::paintFragmentWithPhase(
   Optional<ScrollRecorder> scrollRecorder;
   LayoutPoint paintOffset = -m_paintLayer.layoutBoxLocation();
   if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
-    const auto* objectPaintProperties =
-        m_paintLayer.layoutObject().paintProperties();
-    DCHECK(objectPaintProperties &&
-           objectPaintProperties->localBorderBoxProperties());
     paintOffset += m_paintLayer.layoutObject().paintOffset();
     newCullRect.move(paintingInfo.scrollOffsetAccumulation);
   } else {
