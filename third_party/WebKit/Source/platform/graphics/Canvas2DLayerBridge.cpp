@@ -369,7 +369,7 @@ void Canvas2DLayerBridge::clearCHROMIUMImageCache() {
 void Canvas2DLayerBridge::createMailboxInfo() {
   MailboxInfo tmp;
   tmp.m_parentLayerBridge = this;
-  m_mailboxes.prepend(tmp);
+  m_mailboxes.push_front(tmp);
 }
 
 bool Canvas2DLayerBridge::prepareMailboxFromImage(

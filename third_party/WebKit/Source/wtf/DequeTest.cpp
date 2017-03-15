@@ -221,7 +221,7 @@ void ownPtrTest() {
   size_t count = 1025;
   destructNumber = 0;
   for (size_t i = 0; i < count; ++i)
-    deque.prepend(WTF::wrapUnique(new DestructCounter(i, &destructNumber)));
+    deque.push_front(WTF::wrapUnique(new DestructCounter(i, &destructNumber)));
 
   // Deque relocation must not destruct std::unique_ptr element.
   EXPECT_EQ(0, destructNumber);
@@ -512,8 +512,8 @@ TEST(DequeTest, UniquePtr) {
   Deque<Pointer> deque;
   deque.push_back(Pointer(new int(1)));
   deque.push_back(Pointer(new int(2)));
-  deque.prepend(Pointer(new int(-1)));
-  deque.prepend(Pointer(new int(-2)));
+  deque.push_front(Pointer(new int(-1)));
+  deque.push_front(Pointer(new int(-2)));
   ASSERT_EQ(4u, deque.size());
   EXPECT_EQ(-2, *deque[0]);
   EXPECT_EQ(-1, *deque[1]);

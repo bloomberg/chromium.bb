@@ -433,7 +433,7 @@ void Fullscreen::requestFullscreen(Element& element,
     // the IPC that dispatches fullscreenchange.
     HeapDeque<Member<Document>> docs;
     for (Document* doc = &document; doc; doc = nextLocalAncestor(*doc))
-      docs.prepend(doc);
+      docs.push_front(doc);
 
     // 4. For each document in docs, run these substeps:
     HeapDeque<Member<Document>>::iterator current = docs.begin(),
@@ -546,7 +546,7 @@ void Fullscreen::exitFullscreen(Document& document) {
       continue;
     DCHECK(toLocalFrame(descendant)->document());
     if (fullscreenElementFrom(*toLocalFrame(descendant)->document()))
-      descendants.prepend(toLocalFrame(descendant)->document());
+      descendants.push_front(toLocalFrame(descendant)->document());
   }
 
   // 4. For each descendant in descendants, empty descendant's fullscreen

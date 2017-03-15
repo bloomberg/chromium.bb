@@ -201,7 +201,7 @@ void StyleResolver::addToStyleSharingList(Element& element) {
   StyleSharingList& list = styleSharingList();
   if (list.size() >= styleSharingListSize)
     list.pop_back();
-  list.prepend(&element);
+  list.push_front(&element);
 }
 
 StyleSharingList& StyleResolver::styleSharingList() {

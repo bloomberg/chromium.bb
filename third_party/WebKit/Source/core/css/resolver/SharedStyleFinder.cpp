@@ -356,7 +356,7 @@ inline Element* SharedStyleFinder::findElementForStyleSharing() const {
     if (it != styleSharingList.begin()) {
       // Move the element to the front of the LRU
       styleSharingList.erase(it);
-      styleSharingList.prepend(&candidate);
+      styleSharingList.push_front(&candidate);
     }
     return &candidate;
   }

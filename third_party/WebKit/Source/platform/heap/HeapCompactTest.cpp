@@ -318,7 +318,7 @@ TEST(HeapCompactTest, CompactHashPartVector) {
 TEST(HeapCompactTest, CompactDeques) {
   Persistent<IntDeque> deque = new IntDeque;
   for (int i = 0; i < 8; ++i) {
-    deque->prepend(IntWrapper::create(i));
+    deque->push_front(IntWrapper::create(i));
   }
   EXPECT_EQ(8u, deque->size());
 
@@ -336,7 +336,7 @@ TEST(HeapCompactTest, CompactDequeVectors) {
   for (int i = 0; i < 8; ++i) {
     IntWrapper* value = IntWrapper::create(i);
     IntVector vector = IntVector(8, value);
-    deque->prepend(vector);
+    deque->push_front(vector);
   }
   EXPECT_EQ(8u, deque->size());
 

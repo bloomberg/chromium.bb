@@ -433,7 +433,7 @@ void DrawingBuffer::mailboxReleasedGpu(RefPtr<ColorBuffer> colorBuffer,
   while (m_recycledColorBufferQueue.size() >= cacheLimit)
     m_recycledColorBufferQueue.takeLast();
 
-  m_recycledColorBufferQueue.prepend(colorBuffer);
+  m_recycledColorBufferQueue.push_front(colorBuffer);
 }
 
 void DrawingBuffer::mailboxReleasedSoftware(

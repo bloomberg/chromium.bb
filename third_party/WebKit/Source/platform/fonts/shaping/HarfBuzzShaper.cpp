@@ -338,7 +338,7 @@ void splitUntilNextCaseChange(
   smallCapsIterator.consume(&numCharactersUntilCaseChange, &smallCapsBehavior);
   if (numCharactersUntilCaseChange > 0 &&
       numCharactersUntilCaseChange < currentQueueItem.m_numCharacters) {
-    queue->prepend(blink::HolesQueueItem(
+    queue->push_front(blink::HolesQueueItem(
         blink::HolesQueueItemAction::HolesQueueRange,
         currentQueueItem.m_startIndex + numCharactersUntilCaseChange,
         currentQueueItem.m_numCharacters - numCharactersUntilCaseChange));
