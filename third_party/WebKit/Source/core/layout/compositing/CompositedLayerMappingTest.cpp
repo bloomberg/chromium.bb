@@ -83,7 +83,8 @@ TEST_P(CompositedLayerMappingTest, SimpleInterestRect) {
   Element* element = document().getElementById("target");
   PaintLayer* paintLayer =
       toLayoutBoxModelObject(element->layoutObject())->layer();
-  ASSERT_TRUE(!!paintLayer->graphicsLayerBacking());
+  ASSERT_TRUE(paintLayer->graphicsLayerBacking());
+  ASSERT_TRUE(paintLayer->compositedLayerMapping());
   EXPECT_RECT_EQ(IntRect(0, 0, 200, 200),
                  recomputeInterestRect(paintLayer->graphicsLayerBacking()));
 }

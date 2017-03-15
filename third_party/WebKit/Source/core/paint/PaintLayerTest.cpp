@@ -34,6 +34,19 @@ SlimmingPaintAndRootLayerScrolling foo[] = {
 
 INSTANTIATE_TEST_CASE_P(All, PaintLayerTest, ::testing::ValuesIn(foo));
 
+TEST_P(PaintLayerTest, ChildWithoutPaintLayer) {
+  setBodyInnerHTML(
+      "<div id='target' style='width: 200px; height: 200px;'></div>");
+
+  Element* element = document().getElementById("target");
+  PaintLayer* paintLayer =
+      toLayoutBoxModelObject(element->layoutObject())->layer();
+  PaintLayer* rootLayer = layoutView().layer();
+
+  EXPECT_EQ(nullptr, paintLayer);
+  EXPECT_NE(nullptr, rootLayer);
+}
+
 TEST_P(PaintLayerTest, CompositedBoundsAbsPosGrandchild) {
   setBodyInnerHTML(
       " <div id='parent'><div id='absposparent'><div id='absposchild'>"
