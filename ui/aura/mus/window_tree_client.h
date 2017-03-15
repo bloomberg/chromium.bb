@@ -428,7 +428,7 @@ class AURA_EXPORT WindowTreeClient
   void SetFrameDecorationValues(
       ui::mojom::FrameDecorationValuesPtr values) override;
   void SetNonClientCursor(Window* window, ui::mojom::Cursor cursor_id) override;
-  void AddAccelerators(std::vector<ui::mojom::AcceleratorPtr> accelerators,
+  void AddAccelerators(std::vector<ui::mojom::WmAcceleratorPtr> accelerators,
                        const base::Callback<void(bool)>& callback) override;
   void RemoveAccelerator(uint32_t id) override;
   void AddActivationParent(Window* window) override;

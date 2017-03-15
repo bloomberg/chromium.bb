@@ -18,12 +18,12 @@ mojom::EventMatcherPtr CreateKeyMatcher(ui::mojom::KeyboardCode code,
                                         int flags);
 
 // Construct accelerator vector from the provided |id| and |event_matcher|
-std::vector<ui::mojom::AcceleratorPtr> CreateAcceleratorVector(
+std::vector<ui::mojom::WmAcceleratorPtr> CreateAcceleratorVector(
     uint32_t id,
     ui::mojom::EventMatcherPtr event_matcher);
 
 // Construct accelerator from the provided |id| and |event_matcher|
-ui::mojom::AcceleratorPtr CreateAccelerator(
+ui::mojom::WmAcceleratorPtr CreateAccelerator(
     uint32_t id,
     ui::mojom::EventMatcherPtr event_matcher);
 

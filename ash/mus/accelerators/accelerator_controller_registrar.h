@@ -52,7 +52,7 @@ class AcceleratorControllerRegistrar : public AcceleratorHandler,
   // |accelerator| and adds them to the provided |accelerator_vector|.
   void AddAcceleratorToVector(
       const ui::Accelerator& accelerator,
-      std::vector<ui::mojom::AcceleratorPtr>& accelerator_vector);
+      std::vector<ui::mojom::WmAcceleratorPtr>& accelerator_vector);
 
   // The flow of accelerators in ash is:
   // . wm::AcceleratorFilter() sees events first as it's a pre-target handler.

@@ -212,7 +212,7 @@ interface WindowManager {
   OnAccelerator(uint32 ack_id, uint32 accelerator_id, ui.mojom.Event event);
 };
 
-struct Accelerator {
+struct WmAccelerator {
   uint32 id;
   EventMatcher event_matcher;
 };
@@ -240,7 +240,7 @@ interface WindowManagerClient {
   // See WindowTree for details on event dispatch.
   // This ignores any accelerators already defined with the same id or matcher.
   // Returns true if all accelerators were added successfully.
-  AddAccelerators(array<Accelerator> accelerators) => (bool success);
+  AddAccelerators(array<WmAccelerator> accelerators) => (bool success);
   RemoveAccelerator(uint32 id);
 
   // The window manager has completed a request with the specific change id.

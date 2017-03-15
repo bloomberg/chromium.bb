@@ -48,7 +48,7 @@ class AURA_EXPORT WindowManagerClient {
                                   ui::mojom::Cursor non_client_cursor) = 0;
 
   virtual void AddAccelerators(
-      std::vector<ui::mojom::AcceleratorPtr> accelerators,
+      std::vector<ui::mojom::WmAcceleratorPtr> accelerators,
       const base::Callback<void(bool)>& callback) = 0;
   virtual void RemoveAccelerator(uint32_t id) = 0;
   virtual void AddActivationParent(Window* window) = 0;

@@ -1902,7 +1902,7 @@ void WindowTree::CancelWindowMove(Id window_id) {
 }
 
 void WindowTree::AddAccelerators(
-    std::vector<mojom::AcceleratorPtr> accelerators,
+    std::vector<mojom::WmAcceleratorPtr> accelerators,
     const AddAcceleratorsCallback& callback) {
   DCHECK(window_manager_state_);
 

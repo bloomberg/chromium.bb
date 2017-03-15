@@ -24,18 +24,18 @@ mojom::EventMatcherPtr CreateKeyMatcher(ui::mojom::KeyboardCode code,
   return matcher;
 }
 
-std::vector<ui::mojom::AcceleratorPtr> CreateAcceleratorVector(
+std::vector<ui::mojom::WmAcceleratorPtr> CreateAcceleratorVector(
     uint32_t id,
     ui::mojom::EventMatcherPtr event_matcher) {
-  std::vector<ui::mojom::AcceleratorPtr> accelerators;
+  std::vector<ui::mojom::WmAcceleratorPtr> accelerators;
   accelerators.push_back(CreateAccelerator(id, std::move(event_matcher)));
   return accelerators;
 }
 
-ui::mojom::AcceleratorPtr CreateAccelerator(
+ui::mojom::WmAcceleratorPtr CreateAccelerator(
     uint32_t id,
     ui::mojom::EventMatcherPtr event_matcher) {
-  ui::mojom::AcceleratorPtr accelerator_ptr = ui::mojom::Accelerator::New();
+  ui::mojom::WmAcceleratorPtr accelerator_ptr = ui::mojom::WmAccelerator::New();
   accelerator_ptr->id = id;
   accelerator_ptr->event_matcher = std::move(event_matcher);
   return accelerator_ptr;

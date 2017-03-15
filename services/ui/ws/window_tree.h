@@ -470,7 +470,7 @@ class WindowTree : public mojom::WindowTree,
   void CancelWindowMove(Id window_id) override;
 
   // mojom::WindowManagerClient:
-  void AddAccelerators(std::vector<mojom::AcceleratorPtr> accelerators,
+  void AddAccelerators(std::vector<mojom::WmAcceleratorPtr> accelerators,
                        const AddAcceleratorsCallback& callback) override;
   void RemoveAccelerator(uint32_t id) override;
   void AddActivationParent(Id transport_window_id) override;

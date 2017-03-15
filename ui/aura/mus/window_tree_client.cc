@@ -1597,7 +1597,7 @@ void WindowTreeClient::SetNonClientCursor(Window* window,
 }
 
 void WindowTreeClient::AddAccelerators(
-    std::vector<ui::mojom::AcceleratorPtr> accelerators,
+    std::vector<ui::mojom::WmAcceleratorPtr> accelerators,
     const base::Callback<void(bool)>& callback) {
   if (window_manager_internal_client_) {
     window_manager_internal_client_->AddAccelerators(std::move(accelerators),

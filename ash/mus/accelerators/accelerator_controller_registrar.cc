@@ -100,7 +100,7 @@ ui::mojom::EventResult AcceleratorControllerRegistrar::OnAccelerator(
 
 void AcceleratorControllerRegistrar::OnAcceleratorsRegistered(
     const std::vector<ui::Accelerator>& accelerators) {
-  std::vector<ui::mojom::AcceleratorPtr> accelerator_vector;
+  std::vector<ui::mojom::WmAcceleratorPtr> accelerator_vector;
 
   for (const ui::Accelerator& accelerator : accelerators)
     AddAcceleratorToVector(accelerator, accelerator_vector);
@@ -127,7 +127,7 @@ void AcceleratorControllerRegistrar::OnAcceleratorUnregistered(
 
 void AcceleratorControllerRegistrar::AddAcceleratorToVector(
     const ui::Accelerator& accelerator,
-    std::vector<ui::mojom::AcceleratorPtr>& accelerator_vector) {
+    std::vector<ui::mojom::WmAcceleratorPtr>& accelerator_vector) {
   Ids ids;
   if (!GenerateIds(&ids)) {
     LOG(ERROR) << "max number of accelerators registered, dropping request";
