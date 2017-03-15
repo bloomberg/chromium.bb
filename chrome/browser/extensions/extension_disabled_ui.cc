@@ -163,17 +163,7 @@ ExtensionDisabledGlobalError::ExtensionDisabledGlobalError(
                  content::Source<Profile>(service->profile()));
 }
 
-ExtensionDisabledGlobalError::~ExtensionDisabledGlobalError() {
-  if (is_remote_install_) {
-    UMA_HISTOGRAM_ENUMERATION("Extensions.DisabledUIUserResponseRemoteInstall",
-                              user_response_,
-                              EXTENSION_DISABLED_UI_BUCKET_BOUNDARY);
-  } else {
-    UMA_HISTOGRAM_ENUMERATION("Extensions.DisabledUIUserResponse",
-                              user_response_,
-                              EXTENSION_DISABLED_UI_BUCKET_BOUNDARY);
-  }
-}
+ExtensionDisabledGlobalError::~ExtensionDisabledGlobalError() {}
 
 GlobalError::Severity ExtensionDisabledGlobalError::GetSeverity() {
   return SEVERITY_LOW;
@@ -276,6 +266,19 @@ base::string16 ExtensionDisabledGlobalError::GetBubbleViewCancelButtonLabel() {
 }
 
 void ExtensionDisabledGlobalError::OnBubbleViewDidClose(Browser* browser) {
+  // If the user takes an action, |user_response_| is set in
+  // BubbleView[Cancel|Accept]Pressed(). Otherwise, the IGNORE value set in the
+  // constructor is correct.
+  UMA_HISTOGRAM_ENUMERATION("Extensions.DisabledUIUserResponseRemoteInstall2",
+                            user_response_,
+                            EXTENSION_DISABLED_UI_BUCKET_BOUNDARY);
+  UMA_HISTOGRAM_ENUMERATION("Extensions.DisabledUIUserResponse2",
+                            user_response_,
+                            EXTENSION_DISABLED_UI_BUCKET_BOUNDARY);
+  // Reset in case the user does not follow through on subsequent dialogs to
+  // confirm removal decision, in which case the bubble can be shown again
+  // when the user clicks on the global error in the menu.
+  user_response_ = IGNORED;
 }
 
 void ExtensionDisabledGlobalError::BubbleViewAcceptButtonPressed(
@@ -284,6 +287,7 @@ void ExtensionDisabledGlobalError::BubbleViewAcceptButtonPressed(
                                               service_->profile())) {
     return;
   }
+  user_response_ = REENABLE;
   // Delay extension reenabling so this bubble closes properly.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
@@ -298,9 +302,9 @@ void ExtensionDisabledGlobalError::BubbleViewCancelButtonPressed(
   // Supervised users may never remove custodian-installed extensions.
   DCHECK(!extensions::util::IsExtensionSupervised(extension_,
                                                   service_->profile()));
-
   uninstall_dialog_.reset(extensions::ExtensionUninstallDialog::Create(
       service_->profile(), browser->window()->GetNativeWindow(), this));
+  user_response_ = UNINSTALL;
   // Delay showing the uninstall dialog, so that this function returns
   // immediately, to close the bubble properly. See crbug.com/121544.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -341,7 +345,6 @@ void ExtensionDisabledGlobalError::Observe(
   const Extension* extension = content::Details<const Extension>(details).ptr();
   if (extension != extension_)
     return;
-  user_response_ = UNINSTALL;
   RemoveGlobalError();
 }
 
@@ -350,7 +353,6 @@ void ExtensionDisabledGlobalError::OnExtensionLoaded(
     const Extension* extension) {
   if (extension != extension_)
     return;
-  user_response_ = REENABLE;
   RemoveGlobalError();
 }
 
