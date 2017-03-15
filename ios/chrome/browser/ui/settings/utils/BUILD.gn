@@ -16,9 +16,6 @@ source_set("utils") {
     "//components/content_settings/core/browser",
     "//components/content_settings/core/common",
     "//components/prefs",
-    "//ios/chrome/browser/ui",
-    "//ios/public/provider/chrome/browser",
-    "//ios/public/provider/chrome/browser/signin",
   ]
 }
 
