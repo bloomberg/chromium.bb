@@ -82,6 +82,7 @@ var SourceEntry = (function() {
         case EventSourceType.SOCKET_STREAM:
         case EventSourceType.HTTP_STREAM_JOB:
         case EventSourceType.HTTP_STREAM_JOB_CONTROLLER:
+        case EventSourceType.BIDIRECTIONAL_STREAM:
           this.description_ = e.params.url;
           break;
         // TODO(davidben): Remove CONNECT_JOB after M57 is released.
