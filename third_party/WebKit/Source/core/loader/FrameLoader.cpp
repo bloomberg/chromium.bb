@@ -94,6 +94,7 @@
 #include "platform/loader/fetch/ResourceRequest.h"
 #include "platform/network/HTTPParsers.h"
 #include "platform/scroll/ScrollAnimatorBase.h"
+#include "platform/weborigin/SchemeRegistry.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "platform/weborigin/SecurityPolicy.h"
 #include "platform/weborigin/Suborigin.h"
@@ -125,6 +126,23 @@ bool isReloadLoadType(FrameLoadType type) {
 static bool needsHistoryItemRestore(FrameLoadType type) {
   // FrameLoadtypeInitialHistoryLoad is intentionally excluded.
   return type == FrameLoadTypeBackForward || isReloadLoadType(type);
+}
+
+static void checkForLegacyProtocolInSubresource(
+    const ResourceRequest& resourceRequest,
+    Document* document) {
+  if (resourceRequest.frameType() == WebURLRequest::FrameTypeTopLevel)
+    return;
+  if (!SchemeRegistry::shouldTreatURLSchemeAsLegacy(
+          resourceRequest.url().protocol())) {
+    return;
+  }
+  if (SchemeRegistry::shouldTreatURLSchemeAsLegacy(
+          document->getSecurityOrigin()->protocol())) {
+    return;
+  }
+  Deprecation::countDeprecation(
+      document, UseCounter::LegacyProtocolEmbeddedAsSubresource);
 }
 
 // static
@@ -1779,6 +1797,12 @@ void FrameLoader::startLoad(FrameLoadRequest& frameLoadRequest,
     // is available while sending the request.
     probe::frameClearedScheduledClientNavigation(m_frame);
   } else {
+    // PlzNavigate
+    // Check for usage of legacy schemes now. Unsupported schemes will be
+    // rewritten by the client, so the FrameFetchContext will not be able to
+    // check for those when the navigation commits.
+    if (navigationPolicy == NavigationPolicyHandledByClient)
+      checkForLegacyProtocolInSubresource(resourceRequest, m_frame->document());
     probe::frameScheduledClientNavigation(m_frame);
   }
 

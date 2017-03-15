@@ -12,12 +12,6 @@ crbug.com/555418 http/tests/security/isolatedWorld/bypass-main-world-csp-iframes
 crbug.com/555418 virtual/mojo-loading/http/tests/security/contentSecurityPolicy/1.1/form-action-src-redirect-blocked.html [ Failure ]
 crbug.com/555418 virtual/mojo-loading/http/tests/security/isolatedWorld/bypass-main-world-csp-iframes.html [ Failure ]
 
-# Missing console warning about usage of legacy protocol.
-Bug(none) external/wpt/html/browsers/history/the-location-interface/location-protocol-setter-non-broken-weird.html [ Failure ]
-
-# Missing error messages.
-Bug(none) external/wpt/html/browsers/history/the-location-interface/location-protocol-setter-non-broken.html [ Failure ]
-
 # https://crbug.com/695072: Preserve SourceLocation information.
 # This results in a missing line number in console error messages.
 # The following tests need teh SourceLocation forwarded to the renderer when adding MixedContents error messages to the console.
