@@ -138,7 +138,7 @@ def ParseGTestOutput(output):
   def handle_possibly_unknown_test():
     if test_name is not None:
       results.append(base_test_result.BaseTestResult(
-          test_name,
+          TestNameWithoutDisabledPrefix(test_name),
           fallback_result_type or base_test_result.ResultType.UNKNOWN,
           duration, log=('\n'.join(log) if log else '')))
 
@@ -175,7 +175,7 @@ def ParseGTestOutput(output):
 
     if result_type and test_name:
       results.append(base_test_result.BaseTestResult(
-          test_name, result_type, duration,
+          TestNameWithoutDisabledPrefix(test_name), result_type, duration,
           log=('\n'.join(log) if log else '')))
       test_name = None
 
@@ -203,7 +203,7 @@ def ParseGTestXML(xml_content):
         log.append(html.unescape(failure.attrib['message']))
 
       results.append(base_test_result.BaseTestResult(
-          '%s.%s' % (suite_name, case_name),
+          '%s.%s' % (suite_name, TestNameWithoutDisabledPrefix(case_name)),
           result_type,
           int(float(testcase.attrib['time']) * 1000),
           log=('\n'.join(log) if log else '')))

@@ -442,7 +442,12 @@ class LocalDeviceGtestRun(local_device_test_run.LocalDeviceTestRun):
                 stream_name, resolved_tombstones)
           result.SetLink('tombstones', tombstones_url)
 
-    not_run_tests = set(test).difference(set(r.GetName() for r in results))
+    tests_stripped_disabled_prefix = set()
+    for t in test:
+      tests_stripped_disabled_prefix.add(
+          gtest_test_instance.TestNameWithoutDisabledPrefix(t))
+    not_run_tests = tests_stripped_disabled_prefix.difference(
+        set(r.GetName() for r in results))
     return results, list(not_run_tests) if results else None
 
   #override
