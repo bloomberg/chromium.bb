@@ -107,7 +107,8 @@
 
       <iron-collapse opened="{{opened}}" id="collapse">
         <div id="tab-item-list">
-          <template is="dom-repeat" items="[[tabs]]" as="tab" id="tab-list">
+          <template is="dom-repeat" items="[[tabs]]" as="tab" id="tab-list"
+              notify-dom-change>
             <div class="item-container">
               <div class="website-icon"></div>
               <a href="[[tab.url]]" class="website-title" title="[[tab.title]]"

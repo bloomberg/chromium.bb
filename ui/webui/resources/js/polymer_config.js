@@ -7,6 +7,8 @@ if (typeof Polymer == 'undefined') {
     dom: 'shadow',
     lazyRegister: true,
     preserveStyleIncludes: true,  // Only matters when using polymer-css-build.
+    suppressBindingNotifications: true,
+    suppressTemplateNotifications: true,
     useNativeCSSProperties: true,
   };
 } else {

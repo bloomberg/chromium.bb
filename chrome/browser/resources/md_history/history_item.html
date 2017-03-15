@@ -231,7 +231,7 @@
           <span id="domain">[[item.domain]]</span>
         </div>
         <div id="star-container">
-          <template is="dom-if" if="[[item.starred]]">
+          <template is="dom-if" if="[[item.starred]]" notify-dom-change>
             <button is="paper-icon-button-light" id="bookmark-star"
                 title="$i18n{removeBookmark}" on-click="onRemoveBookmarkTap_">
               <iron-icon icon="cr:star"></iron-icon>
