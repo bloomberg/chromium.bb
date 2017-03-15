@@ -2514,7 +2514,6 @@ crbug.com/697971 [ Mac10.12 ] fast/table/backgr_simple-table-column-group.html [
 crbug.com/697971 [ Mac10.12 ] fast/table/backgr_simple-table-column.html [ Failure ]
 crbug.com/697971 [ Mac10.12 ] fast/table/backgr_simple-table-row-collapsed-border.html [ Failure ]
 crbug.com/697971 [ Mac10.12 ] fast/table/backgr_simple-table-row-group-collapsed-border.html [ Failure ]
-crbug.com/697971 [ Mac10.12 ] fast/table/backgr_simple-table-row-group.html [ Failure ]
 crbug.com/697971 [ Mac10.12 ] fast/table/backgr_simple-table-row.html [ Failure ]
 crbug.com/697971 [ Mac10.12 ] fast/table/remove-td-display-none.html [ Failure ]
 crbug.com/697971 [ Mac10.12 ] fast/table/spanOverlapRepaint.html [ Failure ]
