@@ -134,6 +134,7 @@ uint32_t GpuChannelHost::OrderingBarrier(
     int32_t put_offset,
     uint32_t flush_count,
     const std::vector<ui::LatencyInfo>& latency_info,
+    const std::vector<SyncToken>& sync_token_fences,
     bool put_offset_changed,
     bool do_flush,
     uint32_t* highest_verified_flush_id) {
@@ -153,6 +154,9 @@ uint32_t GpuChannelHost::OrderingBarrier(
     flush_info.flush_id = flush_id;
     flush_info.latency_info.insert(flush_info.latency_info.end(),
                                    latency_info.begin(), latency_info.end());
+    flush_info.sync_token_fences.insert(flush_info.sync_token_fences.end(),
+                                        sync_token_fences.begin(),
+                                        sync_token_fences.end());
 
     if (do_flush)
       InternalFlush(&flush_info);
@@ -180,8 +184,9 @@ void GpuChannelHost::InternalFlush(StreamFlushInfo* flush_info) {
   DCHECK_LT(flush_info->flushed_stream_flush_id, flush_info->flush_id);
   Send(new GpuCommandBufferMsg_AsyncFlush(
       flush_info->route_id, flush_info->put_offset, flush_info->flush_count,
-      flush_info->latency_info));
+      flush_info->latency_info, flush_info->sync_token_fences));
   flush_info->latency_info.clear();
+  flush_info->sync_token_fences.clear();
   flush_info->flush_pending = false;
 
   flush_info->flushed_stream_flush_id = flush_info->flush_id;

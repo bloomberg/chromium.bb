@@ -175,10 +175,11 @@ IPC_SYNC_MESSAGE_ROUTED2_1(GpuCommandBufferMsg_WaitForGetOffsetInRange,
 // Caller passes its current put offset. Current state (including get offset)
 // is returned in shared memory. The input latency info for the current
 // frame is also sent to the GPU process.
-IPC_MESSAGE_ROUTED3(GpuCommandBufferMsg_AsyncFlush,
+IPC_MESSAGE_ROUTED4(GpuCommandBufferMsg_AsyncFlush,
                     int32_t /* put_offset */,
                     uint32_t /* flush_count */,
-                    std::vector<ui::LatencyInfo> /* latency_info */)
+                    std::vector<ui::LatencyInfo> /* latency_info */,
+                    std::vector<gpu::SyncToken> /* sync_token_fences */)
 
 // Sent by the GPU process to display messages in the console.
 IPC_MESSAGE_ROUTED1(GpuCommandBufferMsg_ConsoleMsg,

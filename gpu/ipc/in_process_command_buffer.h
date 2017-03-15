@@ -128,7 +128,8 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
   bool IsFenceSyncReleased(uint64_t release) override;
   void SignalSyncToken(const SyncToken& sync_token,
                        const base::Closure& callback) override;
-  bool CanWaitUnverifiedSyncToken(const SyncToken* sync_token) override;
+  void WaitSyncTokenHint(const SyncToken& sync_token) override;
+  bool CanWaitUnverifiedSyncToken(const SyncToken& sync_token) override;
 
 // ImageTransportSurfaceDelegate implementation:
 #if defined(OS_WIN)

@@ -251,9 +251,13 @@ class GLES2_IMPL_EXPORT GLES2Implementation
   // ContextSupport implementation.
   void SignalSyncToken(const gpu::SyncToken& sync_token,
                        const base::Closure& callback) override;
-  bool IsSyncTokenSignalled(const gpu::SyncToken& sync_token) override;
+  bool IsSyncTokenSignaled(const gpu::SyncToken& sync_token) override;
   void SignalQuery(uint32_t query, const base::Closure& callback) override;
   void SetAggressivelyFreeResources(bool aggressively_free_resources) override;
+
+  // Helper to set verified bit on sync token if allowed by gpu control.
+  bool GetVerifiedSyncTokenForIPC(const gpu::SyncToken& sync_token,
+                                  gpu::SyncToken* verified_sync_token);
 
   // base::trace_event::MemoryDumpProvider implementation.
   bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,

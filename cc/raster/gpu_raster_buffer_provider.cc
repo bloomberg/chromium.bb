@@ -200,8 +200,8 @@ bool GpuRasterBufferProvider::IsResourceReadyToDraw(
   if (!sync_token.HasData())
     return true;
 
-  // IsSyncTokenSignalled is threadsafe, no need for worker context lock.
-  return worker_context_provider_->ContextSupport()->IsSyncTokenSignalled(
+  // IsSyncTokenSignaled is thread-safe, no need for worker context lock.
+  return worker_context_provider_->ContextSupport()->IsSyncTokenSignaled(
       sync_token);
 }
 

@@ -44,6 +44,10 @@ gpu::CommandBufferId CommandBufferProxyID(int channel_id, int32_t route_id) {
       (static_cast<uint64_t>(channel_id) << 32) | route_id);
 }
 
+int GetChannelID(gpu::CommandBufferId command_buffer_id) {
+  return static_cast<int>(command_buffer_id.GetUnsafeValue() >> 32);
+}
+
 }  // namespace
 
 CommandBufferProxyImpl::CommandBufferProxyImpl(int channel_id,
@@ -54,13 +58,6 @@ CommandBufferProxyImpl::CommandBufferProxyImpl(int channel_id,
       command_buffer_id_(CommandBufferProxyID(channel_id, route_id)),
       route_id_(route_id),
       stream_id_(stream_id),
-      flush_count_(0),
-      last_put_offset_(-1),
-      last_barrier_put_offset_(-1),
-      next_fence_sync_release_(1),
-      flushed_fence_sync_release_(0),
-      verified_fence_sync_release_(0),
-      next_signal_id_(0),
       weak_this_(AsWeakPtr()) {
   DCHECK(route_id);
   DCHECK_NE(stream_id, GPU_STREAM_INVALID);
@@ -265,7 +262,8 @@ void CommandBufferProxyImpl::Flush(int32_t put_offset) {
     uint32_t highest_verified_flush_id;
     const uint32_t flush_id = channel_->OrderingBarrier(
         route_id_, stream_id_, put_offset, ++flush_count_, latency_info_,
-        put_offset_changed, true, &highest_verified_flush_id);
+        pending_sync_token_fences_, put_offset_changed, true,
+        &highest_verified_flush_id);
     if (put_offset_changed) {
       DCHECK(flush_id);
       const uint64_t fence_sync_release = next_fence_sync_release_ - 1;
@@ -278,8 +276,10 @@ void CommandBufferProxyImpl::Flush(int32_t put_offset) {
     CleanupFlushedReleases(highest_verified_flush_id);
   }
 
-  if (put_offset_changed)
+  if (put_offset_changed) {
     latency_info_.clear();
+    pending_sync_token_fences_.clear();
+  }
 }
 
 void CommandBufferProxyImpl::OrderingBarrier(int32_t put_offset) {
@@ -298,7 +298,8 @@ void CommandBufferProxyImpl::OrderingBarrier(int32_t put_offset) {
     uint32_t highest_verified_flush_id;
     const uint32_t flush_id = channel_->OrderingBarrier(
         route_id_, stream_id_, put_offset, ++flush_count_, latency_info_,
-        put_offset_changed, false, &highest_verified_flush_id);
+        pending_sync_token_fences_, put_offset_changed, false,
+        &highest_verified_flush_id);
 
     if (put_offset_changed) {
       DCHECK(flush_id);
@@ -311,9 +312,10 @@ void CommandBufferProxyImpl::OrderingBarrier(int32_t put_offset) {
     }
     CleanupFlushedReleases(highest_verified_flush_id);
   }
-
-  if (put_offset_changed)
+  if (put_offset_changed) {
     latency_info_.clear();
+    pending_sync_token_fences_.clear();
+  }
 }
 
 void CommandBufferProxyImpl::SetLatencyInfo(
@@ -654,19 +656,28 @@ void CommandBufferProxyImpl::SignalSyncToken(const gpu::SyncToken& sync_token,
   signal_tasks_.insert(std::make_pair(signal_id, callback));
 }
 
+void CommandBufferProxyImpl::WaitSyncTokenHint(
+    const gpu::SyncToken& sync_token) {
+  CheckLock();
+  base::AutoLock lock(last_state_lock_);
+  if (last_state_.error != gpu::error::kNoError)
+    return;
+
+  pending_sync_token_fences_.push_back(sync_token);
+}
+
 bool CommandBufferProxyImpl::CanWaitUnverifiedSyncToken(
-    const gpu::SyncToken* sync_token) {
+    const gpu::SyncToken& sync_token) {
   // Can only wait on an unverified sync token if it is from the same channel.
-  const uint64_t token_channel =
-      sync_token->command_buffer_id().GetUnsafeValue() >> 32;
-  const uint64_t channel = command_buffer_id_.GetUnsafeValue() >> 32;
-  if (sync_token->namespace_id() != gpu::CommandBufferNamespace::GPU_IO ||
-      token_channel != channel) {
+  int sync_token_channel_id = GetChannelID(sync_token.command_buffer_id());
+  int channel_id = GetChannelID(command_buffer_id_);
+  if (sync_token.namespace_id() != gpu::CommandBufferNamespace::GPU_IO ||
+      sync_token_channel_id != channel_id) {
     return false;
   }
 
   // If waiting on a different stream, flush pending commands on that stream.
-  const int32_t release_stream_id = sync_token->extra_data_field();
+  int32_t release_stream_id = sync_token.extra_data_field();
   if (release_stream_id == gpu::GPU_STREAM_INVALID)
     return false;
 

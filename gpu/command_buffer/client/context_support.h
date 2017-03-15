@@ -27,9 +27,9 @@ class ContextSupport {
   virtual void SignalSyncToken(const SyncToken& sync_token,
                                const base::Closure& callback) = 0;
 
-  // Returns true if the given sync token has been signalled. The sync token
-  // must belong to this context. This may be called from any thread.
-  virtual bool IsSyncTokenSignalled(const SyncToken& sync_token) = 0;
+  // Returns true if the given sync token has been signaled. The sync token must
+  // belong to this context. This may be called from any thread.
+  virtual bool IsSyncTokenSignaled(const SyncToken& sync_token) = 0;
 
   // Runs |callback| when a query created via glCreateQueryEXT() has cleared
   // passed the glEndQueryEXT() point.

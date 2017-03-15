@@ -41,7 +41,7 @@ class GpuMemoryBufferManager;
 }
 
 namespace gpu {
-
+struct SyncToken;
 class GpuChannelHost;
 using GpuChannelEstablishedCallback =
     base::Callback<void(scoped_refptr<GpuChannelHost>)>;
@@ -106,6 +106,7 @@ class GPU_EXPORT GpuChannelHost
                            int32_t put_offset,
                            uint32_t flush_count,
                            const std::vector<ui::LatencyInfo>& latency_info,
+                           const std::vector<SyncToken>& sync_token_fences,
                            bool put_offset_changed,
                            bool do_flush,
                            uint32_t* highest_verified_flush_id);
@@ -232,6 +233,7 @@ class GPU_EXPORT GpuChannelHost
     uint32_t flush_count;
     uint32_t flush_id;
     std::vector<ui::LatencyInfo> latency_info;
+    std::vector<SyncToken> sync_token_fences;
   };
 
   GpuChannelHost(GpuChannelHostFactory* factory,

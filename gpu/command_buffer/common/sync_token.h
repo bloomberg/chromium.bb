@@ -8,6 +8,8 @@
 #include <stdint.h>
 #include <string.h>
 
+#include <tuple>
+
 #include "gpu/command_buffer/common/command_buffer_id.h"
 #include "gpu/command_buffer/common/constants.h"
 #include "gpu/gpu_export.h"
@@ -77,13 +79,9 @@ struct GPU_EXPORT SyncToken {
   int32_t extra_data_field() const { return extra_data_field_; }
 
   bool operator<(const SyncToken& other) const {
-    // TODO(dyen): Once all our compilers support c++11, we can replace this
-    // long list of comparisons with std::tie().
-    return (namespace_id_ < other.namespace_id()) ||
-           ((namespace_id_ == other.namespace_id()) &&
-            ((command_buffer_id_ < other.command_buffer_id()) ||
-             ((command_buffer_id_ == other.command_buffer_id()) &&
-              (release_count_ < other.release_count()))));
+    return std::tie(namespace_id_, command_buffer_id_, release_count_) <
+           std::tie(other.namespace_id_, other.command_buffer_id_,
+                    other.release_count_);
   }
 
   bool operator==(const SyncToken& other) const {

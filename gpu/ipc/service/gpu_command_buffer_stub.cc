@@ -935,7 +935,8 @@ void GpuCommandBufferStub::CheckCompleteWaits() {
 void GpuCommandBufferStub::OnAsyncFlush(
     int32_t put_offset,
     uint32_t flush_count,
-    const std::vector<ui::LatencyInfo>& latency_info) {
+    const std::vector<ui::LatencyInfo>& latency_info,
+    const std::vector<SyncToken>& sync_token_fences) {
   TRACE_EVENT1(
       "gpu", "GpuCommandBufferStub::OnAsyncFlush", "put_offset", put_offset);
   DCHECK(command_buffer_);

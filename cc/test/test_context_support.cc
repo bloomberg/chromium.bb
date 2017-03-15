@@ -27,8 +27,7 @@ void TestContextSupport::SignalSyncToken(const gpu::SyncToken& sync_token,
                             weak_ptr_factory_.GetWeakPtr()));
 }
 
-bool TestContextSupport::IsSyncTokenSignalled(
-    const gpu::SyncToken& sync_token) {
+bool TestContextSupport::IsSyncTokenSignaled(const gpu::SyncToken& sync_token) {
   return true;
 }
 

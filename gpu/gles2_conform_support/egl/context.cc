@@ -223,7 +223,9 @@ void Context::SignalSyncToken(const gpu::SyncToken& sync_token,
   NOTIMPLEMENTED();
 }
 
-bool Context::CanWaitUnverifiedSyncToken(const gpu::SyncToken* sync_token) {
+void Context::WaitSyncTokenHint(const gpu::SyncToken& sync_token) {}
+
+bool Context::CanWaitUnverifiedSyncToken(const gpu::SyncToken& sync_token) {
   return false;
 }
 

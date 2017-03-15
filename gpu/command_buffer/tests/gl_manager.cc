@@ -621,7 +621,9 @@ void GLManager::SignalSyncToken(const gpu::SyncToken& sync_token,
   }
 }
 
-bool GLManager::CanWaitUnverifiedSyncToken(const gpu::SyncToken* sync_token) {
+void GLManager::WaitSyncTokenHint(const gpu::SyncToken& sync_token) {}
+
+bool GLManager::CanWaitUnverifiedSyncToken(const gpu::SyncToken& sync_token) {
   return false;
 }
 

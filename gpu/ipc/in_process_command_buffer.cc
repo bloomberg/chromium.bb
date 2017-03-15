@@ -981,9 +981,11 @@ void InProcessCommandBuffer::SignalSyncToken(const SyncToken& sync_token,
                  base::Unretained(this), sync_token, WrapCallback(callback)));
 }
 
+void InProcessCommandBuffer::WaitSyncTokenHint(const SyncToken& sync_token) {}
+
 bool InProcessCommandBuffer::CanWaitUnverifiedSyncToken(
-    const SyncToken* sync_token) {
-  return sync_token->namespace_id() == GetNamespaceID();
+    const SyncToken& sync_token) {
+  return sync_token.namespace_id() == GetNamespaceID();
 }
 
 #if defined(OS_WIN)

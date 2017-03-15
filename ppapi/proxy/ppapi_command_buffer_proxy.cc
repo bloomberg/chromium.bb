@@ -214,8 +214,13 @@ void PpapiCommandBufferProxy::SignalSyncToken(const gpu::SyncToken& sync_token,
   NOTIMPLEMENTED();
 }
 
+void PpapiCommandBufferProxy::WaitSyncTokenHint(
+    const gpu::SyncToken& sync_token) {
+  // TODO(sunnyps): Forward sync token dependency hints to the renderer.
+}
+
 bool PpapiCommandBufferProxy::CanWaitUnverifiedSyncToken(
-    const gpu::SyncToken* sync_token) {
+    const gpu::SyncToken& sync_token) {
   return false;
 }
 

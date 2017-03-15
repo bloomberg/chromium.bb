@@ -161,7 +161,8 @@ class GPU_EXPORT GpuCommandBufferStub
                                  IPC::Message* reply_message);
   void OnAsyncFlush(int32_t put_offset,
                     uint32_t flush_count,
-                    const std::vector<ui::LatencyInfo>& latency_info);
+                    const std::vector<ui::LatencyInfo>& latency_info,
+                    const std::vector<SyncToken>& sync_token_fences);
   void OnRegisterTransferBuffer(int32_t id,
                                 base::SharedMemoryHandle transfer_buffer,
                                 uint32_t size);

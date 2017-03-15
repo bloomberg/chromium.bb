@@ -76,7 +76,8 @@ class Context : public base::RefCountedThreadSafe<Context>,
   bool IsFenceSyncReleased(uint64_t release) override;
   void SignalSyncToken(const gpu::SyncToken& sync_token,
                        const base::Closure& callback) override;
-  bool CanWaitUnverifiedSyncToken(const gpu::SyncToken* sync_token) override;
+  void WaitSyncTokenHint(const gpu::SyncToken& sync_token) override;
+  bool CanWaitUnverifiedSyncToken(const gpu::SyncToken& sync_token) override;
 
   // Called by ThreadState to set the needed global variables when this context
   // is current.
