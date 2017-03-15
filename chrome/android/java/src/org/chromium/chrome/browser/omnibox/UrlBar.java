@@ -139,6 +139,9 @@ public class UrlBar extends VerticallyFixedEditText {
     private boolean mIgnoreAutocomplete = true;
     private boolean mLastUrlEditWasDelete;
 
+    /** This tracks whether or not the last ACTION_DOWN event was when the url bar had focus. */
+    boolean mDownEventHadFocus;
+
     /**
      * Implement this to get updates when the direction of the text in the URL bar changes.
      * E.g. If the user is typing a URL, then erases it and starts typing a query in Arabic,
@@ -555,6 +558,8 @@ public class UrlBar extends VerticallyFixedEditText {
             return true;
         }
 
+        if (event.getActionMasked() == MotionEvent.ACTION_DOWN) mDownEventHadFocus = mFocused;
+
         Tab currentTab = mUrlBarDelegate.getCurrentTab();
         if (event.getAction() == MotionEvent.ACTION_DOWN && currentTab != null) {
             // Make sure to hide the current ContentView ActionBar.
@@ -563,6 +568,15 @@ public class UrlBar extends VerticallyFixedEditText {
         }
 
         return super.onTouchEvent(event);
+    }
+
+    @Override
+    public boolean performLongClick(float x, float y) {
+        // If the touch event that triggered this was when the url bar was in a different focus
+        // state, ignore the event.
+        if (mDownEventHadFocus != mFocused) return true;
+
+        return super.performLongClick(x, y);
     }
 
     @Override
