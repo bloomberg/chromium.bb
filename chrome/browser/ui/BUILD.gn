@@ -1526,6 +1526,8 @@ split_static_library("ui") {
       "views/payments/preselected_combobox_model.h",
       "views/payments/profile_list_view_controller.cc",
       "views/payments/profile_list_view_controller.h",
+      "views/payments/shipping_option_view_controller.cc",
+      "views/payments/shipping_option_view_controller.h",
       "views/payments/validating_combobox.cc",
       "views/payments/validating_combobox.h",
       "views/payments/validating_textfield.cc",

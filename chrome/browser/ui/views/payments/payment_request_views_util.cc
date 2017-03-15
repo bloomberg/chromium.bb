@@ -277,4 +277,24 @@ base::string16 GetShippingOptionSectionString(
   return l10n_util::GetStringUTF16(IDS_PAYMENTS_SHIPPING_OPTION_LABEL);
 }
 
+std::unique_ptr<views::View> CreateShippingOptionLabel(
+    payments::mojom::PaymentShippingOption* shipping_option,
+    const base::string16& formatted_amount) {
+  std::unique_ptr<views::View> container = base::MakeUnique<views::View>();
+
+  std::unique_ptr<views::BoxLayout> layout =
+      base::MakeUnique<views::BoxLayout>(views::BoxLayout::kVertical, 0, 0, 0);
+  layout->set_cross_axis_alignment(
+      views::BoxLayout::CROSS_AXIS_ALIGNMENT_START);
+  container->SetLayoutManager(layout.release());
+
+  if (shipping_option) {
+    container->AddChildView(
+        new views::Label(base::ASCIIToUTF16(shipping_option->label)));
+    container->AddChildView(new views::Label(formatted_amount));
+  }
+
+  return container;
+}
+
 }  // namespace payments

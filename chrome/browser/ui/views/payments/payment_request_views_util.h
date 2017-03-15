@@ -94,6 +94,10 @@ base::string16 GetShippingAddressSectionString(
 base::string16 GetShippingOptionSectionString(
     payments::mojom::PaymentShippingType shipping_type);
 
+std::unique_ptr<views::View> CreateShippingOptionLabel(
+    payments::mojom::PaymentShippingOption* shipping_option,
+    const base::string16& formatted_amount);
+
 }  // namespace payments
 
 #endif  // CHROME_BROWSER_UI_VIEWS_PAYMENTS_PAYMENT_REQUEST_VIEWS_UTIL_H_

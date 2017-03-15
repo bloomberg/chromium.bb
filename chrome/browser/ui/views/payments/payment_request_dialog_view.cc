@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/views/payments/payment_method_view_controller.h"
 #include "chrome/browser/ui/views/payments/payment_sheet_view_controller.h"
 #include "chrome/browser/ui/views/payments/profile_list_view_controller.h"
+#include "chrome/browser/ui/views/payments/shipping_option_view_controller.h"
 #include "components/constrained_window/constrained_window_views.h"
 #include "components/payments/content/payment_request.h"
 #include "content/public/browser/browser_thread.h"
@@ -136,6 +137,14 @@ void PaymentRequestDialogView::ShowShippingProfileSheet() {
       CreateViewAndInstallController(
           ProfileListViewController::GetShippingProfileViewController(request_,
                                                                       this),
+          &controller_map_),
+      /* animate = */ true);
+}
+
+void PaymentRequestDialogView::ShowShippingOptionSheet() {
+  view_stack_.Push(
+      CreateViewAndInstallController(
+          base::MakeUnique<ShippingOptionViewController>(request_, this),
           &controller_map_),
       /* animate = */ true);
 }

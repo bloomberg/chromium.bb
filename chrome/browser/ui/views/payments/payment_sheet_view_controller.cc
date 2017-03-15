@@ -301,6 +301,11 @@ void PaymentSheetViewController::ButtonPressed(
       dialog()->ShowContactProfileSheet();
       break;
 
+    case static_cast<int>(
+        PaymentSheetViewControllerTags::SHOW_SHIPPING_OPTION_BUTTON):
+      dialog()->ShowShippingOptionSheet();
+      break;
+
     default:
       PaymentRequestSheetController::ButtonPressed(sender, event);
       break;
@@ -503,34 +508,17 @@ PaymentSheetViewController::CreateContactInfoRow() {
   return section;
 }
 
-std::unique_ptr<views::View>
-PaymentSheetViewController::CreateShippingOptionContent() {
-  std::unique_ptr<views::View> container = base::MakeUnique<views::View>();
-
-  std::unique_ptr<views::BoxLayout> layout =
-      base::MakeUnique<views::BoxLayout>(views::BoxLayout::kVertical, 0, 0, 0);
-  layout->set_cross_axis_alignment(
-      views::BoxLayout::CROSS_AXIS_ALIGNMENT_START);
-  container->SetLayoutManager(layout.release());
-
-  payments::mojom::PaymentShippingOption* selected_shipping_option =
-      request()->selected_shipping_option();
-  if (selected_shipping_option) {
-    container->AddChildView(
-        new views::Label(base::ASCIIToUTF16(selected_shipping_option->label)));
-    container->AddChildView(
-        new views::Label(request()->GetFormattedCurrencyAmount(
-            selected_shipping_option->amount->value)));
-  }
-
-  return container;
-}
-
 std::unique_ptr<views::Button>
 PaymentSheetViewController::CreateShippingOptionRow() {
+  payments::mojom::PaymentShippingOption* selected_option =
+      request()->selected_shipping_option();
+  std::unique_ptr<views::View> option_label = CreateShippingOptionLabel(
+      selected_option, selected_option ? request()->GetFormattedCurrencyAmount(
+                                             selected_option->amount->value)
+                                       : base::ASCIIToUTF16(""));
   std::unique_ptr<views::Button> section = CreatePaymentSheetRow(
       this, GetShippingOptionSectionString(request()->options()->shipping_type),
-      CreateShippingOptionContent(), std::unique_ptr<views::View>(nullptr),
+      std::move(option_label), std::unique_ptr<views::View>(nullptr),
       widest_name_column_view_width_);
   section->set_tag(static_cast<int>(
       PaymentSheetViewControllerTags::SHOW_SHIPPING_OPTION_BUTTON));

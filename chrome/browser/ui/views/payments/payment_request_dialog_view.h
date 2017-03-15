@@ -69,6 +69,7 @@ class PaymentRequestDialogView : public views::DialogDelegateView,
   void ShowOrderSummary();
   void ShowShippingProfileSheet();
   void ShowPaymentMethodSheet();
+  void ShowShippingOptionSheet();
   void ShowCreditCardEditor();
 
   ViewStack* view_stack_for_testing() { return &view_stack_; }
