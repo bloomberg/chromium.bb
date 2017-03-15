@@ -26,6 +26,7 @@ class CompositorTimingHistory::UMAReporter {
   virtual void AddDrawInterval(base::TimeDelta interval) = 0;
 
   // Latency measurements
+  virtual void AddBeginMainFrameLatency(base::TimeDelta delta) = 0;
   virtual void AddBeginMainFrameQueueDurationCriticalDuration(
       base::TimeDelta duration) = 0;
   virtual void AddBeginMainFrameQueueDurationNotCriticalDuration(
@@ -197,6 +198,11 @@ class RendererUMAReporter : public CompositorTimingHistory::UMAReporter {
     UMA_HISTOGRAM_CUSTOM_TIMES_VSYNC_ALIGNED(
         "Scheduling.Renderer.MainAndImplFrameTimeDelta", delta);
   }
+
+  void AddBeginMainFrameLatency(base::TimeDelta delta) override {
+    UMA_HISTOGRAM_CUSTOM_TIMES_DURATION(
+        "Scheduling.Renderer.VsyncToBeginMainFrameLatency", delta);
+  }
 };
 
 class BrowserUMAReporter : public CompositorTimingHistory::UMAReporter {
@@ -274,6 +280,11 @@ class BrowserUMAReporter : public CompositorTimingHistory::UMAReporter {
     UMA_HISTOGRAM_CUSTOM_TIMES_VSYNC_ALIGNED(
         "Scheduling.Browser.MainAndImplFrameTimeDelta", delta);
   }
+
+  void AddBeginMainFrameLatency(base::TimeDelta delta) override {
+    UMA_HISTOGRAM_CUSTOM_TIMES_DURATION(
+        "Scheduling.Browser.VsyncToBeginMainFrameLatency", delta);
+  }
 };
 
 class NullUMAReporter : public CompositorTimingHistory::UMAReporter {
@@ -297,6 +308,7 @@ class NullUMAReporter : public CompositorTimingHistory::UMAReporter {
   void AddSubmitToAckLatency(base::TimeDelta duration) override {}
   void AddSubmitAckWasFast(bool was_fast) override {}
   void AddMainAndImplFrameTimeDelta(base::TimeDelta delta) override {}
+  void AddBeginMainFrameLatency(base::TimeDelta delta) override {}
 };
 
 }  // namespace
@@ -492,13 +504,19 @@ void CompositorTimingHistory::BeginImplFrameNotExpectedSoon() {
 
 void CompositorTimingHistory::WillBeginMainFrame(
     bool on_critical_path,
-    base::TimeTicks main_frame_time) {
+    base::TimeTicks main_frame_time,
+    BeginFrameArgs::BeginFrameArgsType frame_type) {
   DCHECK_EQ(base::TimeTicks(), begin_main_frame_sent_time_);
   DCHECK_EQ(base::TimeTicks(), begin_main_frame_frame_time_);
 
   begin_main_frame_on_critical_path_ = on_critical_path;
   begin_main_frame_sent_time_ = Now();
   begin_main_frame_frame_time_ = main_frame_time;
+
+  if (frame_type == BeginFrameArgs::NORMAL) {
+    uma_reporter_->AddBeginMainFrameLatency(begin_main_frame_sent_time_ -
+                                            begin_main_frame_frame_time_);
+  }
 
   did_send_begin_main_frame_ = true;
   SetBeginMainFrameNeededContinuously(true);

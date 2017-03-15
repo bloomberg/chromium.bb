@@ -624,7 +624,8 @@ void Scheduler::ProcessScheduledActions() {
       case SchedulerStateMachine::ACTION_SEND_BEGIN_MAIN_FRAME:
         compositor_timing_history_->WillBeginMainFrame(
             begin_main_frame_args_.on_critical_path,
-            begin_main_frame_args_.frame_time);
+            begin_main_frame_args_.frame_time,
+            begin_main_frame_args_.type);
         state_machine_.WillSendBeginMainFrame();
         // TODO(brianderson): Pass begin_main_frame_args_ directly to client.
         client_->ScheduledActionSendBeginMainFrame(begin_main_frame_args_);

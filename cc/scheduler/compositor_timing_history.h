@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "cc/base/rolling_time_delta_history.h"
+#include "cc/output/begin_frame_args.h"
 
 namespace base {
 namespace trace_event {
@@ -57,7 +58,8 @@ class CC_EXPORT CompositorTimingHistory {
   void WillFinishImplFrame(bool needs_redraw);
   void BeginImplFrameNotExpectedSoon();
   void WillBeginMainFrame(bool on_critical_path,
-                          base::TimeTicks main_frame_time);
+                          base::TimeTicks main_frame_time,
+                          BeginFrameArgs::BeginFrameArgsType frame_type);
   void BeginMainFrameStarted(base::TimeTicks main_thread_start_time);
   void BeginMainFrameAborted();
   void DidCommit();
