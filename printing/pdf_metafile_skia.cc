@@ -207,7 +207,7 @@ bool PdfMetafileSkia::FinishDocument() {
   }
   doc->close();
 
-  data_->pdf_data_.reset(stream.detachAsStream());
+  data_->pdf_data_ = std::unique_ptr<SkStreamAsset>(stream.detachAsStream());
   return true;
 }
 
