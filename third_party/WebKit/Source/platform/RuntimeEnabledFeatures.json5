@@ -877,10 +877,6 @@
       name: "TouchpadAndWheelScrollLatching",
     },
     {
-      name: "TrueColorRendering",
-      status: "experimental",
-    },
-    {
       name: "TrustedEventsDefaultAction",
       status: "stable",
     },

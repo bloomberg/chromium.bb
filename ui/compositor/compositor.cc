@@ -165,8 +165,7 @@ Compositor::Compositor(const cc::FrameSinkId& frame_sink_id,
       command_line->HasSwitch(cc::switches::kUIEnableLayerLists);
 
   settings.enable_color_correct_rasterization =
-      command_line->HasSwitch(cc::switches::kEnableColorCorrectRendering) ||
-      command_line->HasSwitch(cc::switches::kEnableTrueColorRendering);
+      command_line->HasSwitch(cc::switches::kEnableColorCorrectRendering);
   settings.renderer_settings.enable_color_correct_rendering =
       settings.enable_color_correct_rasterization ||
       command_line->HasSwitch(switches::kEnableHDROutput);

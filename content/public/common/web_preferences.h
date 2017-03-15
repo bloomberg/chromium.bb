@@ -171,7 +171,6 @@ struct CONTENT_EXPORT WebPreferences {
   bool sync_xhr_in_documents_enabled;
   bool color_correct_rendering_enabled = false;
   bool color_correct_rendering_default_mode_enabled = false;
-  bool true_color_rendering_enabled = false;
   bool should_respect_image_orientation;
   int number_of_cpu_cores;
   EditingBehavior editing_behavior;

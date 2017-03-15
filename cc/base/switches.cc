@@ -50,10 +50,6 @@ const char kEnableColorCorrectRendering[] = "enable-color-correct-rendering";
 // Enables the GPU benchmarking extension
 const char kEnableGpuBenchmarking[] = "enable-gpu-benchmarking";
 
-// Force all rasterization and compositing to be done in linear color space,
-// with physically correct blending and interpolation.
-const char kEnableTrueColorRendering[] = "enable-true-color-rendering";
-
 // Enables multi-client Surface synchronization. In practice, this indicates
 // that LayerTreeHost expects to be given a valid LocalSurfaceId provided by
 // the parent compositor.

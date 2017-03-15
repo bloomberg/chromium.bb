@@ -47,7 +47,7 @@ namespace blink {
 namespace {
 
 ColorBehavior defaultColorBehavior() {
-  if (RuntimeEnabledFeatures::trueColorRenderingEnabled())
+  if (RuntimeEnabledFeatures::colorCorrectRenderingEnabled())
     return ColorBehavior::tag();
   return ColorBehavior::transformToGlobalTarget();
 }
