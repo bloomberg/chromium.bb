@@ -1,0 +1,135 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+/**
+ * Test fixture for switch_access.js.
+ * @constructor
+ * @extends {testing.Test}
+ */
+function SwitchAccessUnitTest () {
+  testing.Test.call(this);
+};
+
+SwitchAccessUnitTest.prototype = {
+  __proto__: testing.Test.prototype,
+
+  /** @override */
+  extraLibraries: [
+    'test_support.js',
+    'switch_access.js',
+    'testable_switch_access.js',
+  ],
+
+  getSampleTree: function() {
+    // root
+    //   middle1
+    //     leaf1
+    //     leaf2
+    //     leaf3
+    //   middle2
+    //     leaf4
+    //     leaf5
+    let root = {};
+    let middle1 = {};
+    let middle2 = {};
+    let leaf1 = {};
+    let leaf2 = {};
+    let leaf3 = {};
+    let leaf4 = {};
+    let leaf5 = {};
+
+    root.firstChild = middle1;
+    root.lastChild = middle2;
+
+    middle1.parent = root;
+    middle2.parent = root;
+    middle1.nextSibling = middle2;
+    middle2.previousSibling = middle1;
+    middle1.firstChild = leaf1;
+    middle1.lastChild = leaf3;
+    middle2.firstChild = leaf4;
+    middle2.lastChild = leaf5;
+
+    leaf1.parent = middle1;
+    leaf2.parent = middle1;
+    leaf3.parent = middle1;
+    leaf1.nextSibling = leaf2;
+    leaf2.previousSibling = leaf1;
+    leaf2.nextSibling = leaf3;
+    leaf3.previousSibling = leaf2;
+
+    leaf4.parent = middle2;
+    leaf5.parent = middle2;
+    leaf4.nextSibling = leaf5;
+    leaf5.previousSibling = leaf4;
+
+    return {
+      root: root,
+      middle1: middle1,
+      middle2: middle2,
+      leaf1: leaf1,
+      leaf2: leaf2,
+      leaf3: leaf3,
+      leaf4: leaf4,
+      leaf5: leaf5
+    };
+  }
+};
+
+TEST_F('SwitchAccessUnitTest', 'GetNextNode', function() {
+  let tree = this.getSampleTree();
+  let tsa = new TestableSwitchAccess();
+
+  let order =
+      [tree.root, tree.middle1, tree.leaf1, tree.leaf2, tree.leaf3,
+      tree.middle2, tree.leaf4, tree.leaf5];
+  let node = tree.root;
+  for (let i = 0; i < order.length; i++) {
+    assertEquals(order[i], node);
+    node = tsa.getNextNode(node);
+  }
+  assertEquals(null, node);
+});
+
+TEST_F('SwitchAccessUnitTest', 'GetPreviousNode', function() {
+  let tree = this.getSampleTree();
+  let tsa = new TestableSwitchAccess();
+
+  let order =
+      [tree.leaf5, tree.leaf4, tree.middle2, tree.leaf3, tree.leaf2,
+      tree.leaf1, tree.middle1, tree.root];
+  let node = tree.leaf5;
+  for (let i = 0; i < order.length; i++) {
+    assertEquals(order[i], node);
+    node = tsa.getPreviousNode(node);
+  }
+  assertEquals(null, node);
+});
+
+TEST_F('SwitchAccessUnitTest', 'GetYoungestDescendant', function() {
+  let tree = this.getSampleTree();
+  let tsa = new TestableSwitchAccess();
+
+  assertEquals(tree.leaf5, tsa.getYoungestDescendant(tree.root));
+  assertEquals(tree.leaf3, tsa.getYoungestDescendant(tree.middle1));
+  assertEquals(tree.leaf5, tsa.getYoungestDescendant(tree.middle2));
+  assertEquals(null, tsa.getYoungestDescendant(tree.leaf1));
+  assertEquals(null, tsa.getYoungestDescendant(tree.leaf2));
+  assertEquals(null, tsa.getYoungestDescendant(tree.leaf3));
+  assertEquals(null, tsa.getYoungestDescendant(tree.leaf4));
+  assertEquals(null, tsa.getYoungestDescendant(tree.leaf5));
+});
+
+TEST_F('SwitchAccessUnitTest', 'IsInteresting', function() {
+  let node1 = {};
+  let node2 = {state: {}};
+  let node3 = {state: {focusable: false}};
+  let node4 = {state: {focusable: true}};
+  let tsa = new TestableSwitchAccess();
+
+  assertTrue(tsa.isInteresting(node1) === undefined);
+  assertTrue(tsa.isInteresting(node2) === undefined);
+  assertFalse(tsa.isInteresting(node3));
+  assertTrue(tsa.isInteresting(node4));
+});
