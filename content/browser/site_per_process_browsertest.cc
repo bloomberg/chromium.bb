@@ -4023,7 +4023,10 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, DynamicWindowName) {
                                   "window.domAutomationController.send("
                                   "    frames['updated-name'] === undefined);",
                                   &success));
-  EXPECT_TRUE(success);
+  // TODO(yukishiino): The following expectation should be TRUE, but we're
+  // intentionally disabling the name and origin check of the named access on
+  // window.  See also crbug.com/538562 and crbug.com/701489.
+  EXPECT_FALSE(success);
   // Change iframe's name to match the content window's name so that it can
   // reference the child frame by its new name in case of cross origin.
   EXPECT_TRUE(
