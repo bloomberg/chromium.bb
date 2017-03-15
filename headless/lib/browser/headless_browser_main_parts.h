@@ -22,6 +22,9 @@ class HeadlessBrowserMainParts : public content::BrowserMainParts {
   // content::BrowserMainParts implementation:
   void PreMainMessageLoopRun() override;
   void PostMainMessageLoopRun() override;
+#if defined(OS_MACOSX)
+  void PreMainMessageLoopStart() override;
+#endif
 
  private:
   HeadlessBrowserImpl* browser_;  // Not owned.
