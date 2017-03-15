@@ -162,4 +162,14 @@ TEST_F(HTMLInputElementTest, DateTimeChooserSizeParamRespectsScale) {
   EXPECT_EQ(IntRect(16, 16, 400, 100), params.anchorRectInScreen);
 }
 
+TEST_F(HTMLInputElementTest, StepDownOverflow) {
+  HTMLInputElement* input = HTMLInputElement::create(document(), false);
+  input->setAttribute(HTMLNames::typeAttr, "date");
+  input->setAttribute(HTMLNames::minAttr, "2010-02-10");
+  input->setAttribute(HTMLNames::stepAttr, "9223372036854775556");
+  // InputType::applyStep() should not pass an out-of-range value to
+  // setValueAsDecimal, and WTF::msToYear() should not cause a DCHECK failure.
+  input->stepDown(1, ASSERT_NO_EXCEPTION);
+}
+
 }  // namespace blink

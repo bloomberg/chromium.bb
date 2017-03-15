@@ -738,18 +738,19 @@ void InputType::applyStep(const Decimal& current,
   // then set value to the smallest value that, when subtracted from the step
   // base, is an integral multiple of the allowed value step, and that is more
   // than or equal to minimum.
-  // 8. If the element has a maximum, and value is greater than that maximum,
-  // then set value to the largest value that, when subtracted from the step
-  // base, is an integral multiple of the allowed value step, and that is less
-  // than or equal to maximum.
-  if (newValue > stepRange.maximum()) {
-    newValue = alignedMaximum;
-  } else if (newValue < stepRange.minimum()) {
+  if (newValue < stepRange.minimum()) {
     const Decimal alignedMinimum =
         base + ((stepRange.minimum() - base) / step).ceil() * step;
     DCHECK_GE(alignedMinimum, stepRange.minimum());
     newValue = alignedMinimum;
   }
+
+  // 8. If the element has a maximum, and value is greater than that maximum,
+  // then set value to the largest value that, when subtracted from the step
+  // base, is an integral multiple of the allowed value step, and that is less
+  // than or equal to maximum.
+  if (newValue > stepRange.maximum())
+    newValue = alignedMaximum;
 
   // 9. Let value as string be the result of running the algorithm to convert
   // a number to a string, as defined for the input element's type attribute's
