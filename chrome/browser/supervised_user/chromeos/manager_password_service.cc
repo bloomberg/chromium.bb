@@ -156,9 +156,8 @@ void ManagerPasswordService::GetSupervisedUsersCallback(
   }
 
   cryptohome::KeyDefinition new_key_definition(
-      new_key,
-      kCryptohomeSupervisedUserKeyLabel,
-      cryptohome::PRIV_AUTHORIZED_UPDATE || cryptohome::PRIV_MOUNT);
+      new_key, kCryptohomeSupervisedUserKeyLabel,
+      kCryptohomeSupervisedUserKeyPrivileges);
   new_key_definition.revision = revision;
   new_key_definition.authorization_data.push_back(
       cryptohome::KeyDefinition::AuthorizationData(true /* encrypt */,
