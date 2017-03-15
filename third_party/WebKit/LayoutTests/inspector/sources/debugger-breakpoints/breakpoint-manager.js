@@ -1,74 +1,28 @@
 var initialize_BreakpointManagerTest = function() {
 
-InspectorTest.createWorkspace = function(ignoreEvents)
+InspectorTest.createWorkspace = function()
 {
-    if (InspectorTest.testFileSystemWorkspaceBinding)
-        InspectorTest.testFileSystemWorkspaceBinding.dispose();
-    Workspace.fileSystemMapping.resetForTesting();
-
     InspectorTest.testTargetManager = new SDK.TargetManager();
     InspectorTest.testWorkspace = new Workspace.Workspace();
-    InspectorTest.testFileSystemWorkspaceBinding = new Persistence.FileSystemWorkspaceBinding(Workspace.isolatedFileSystemManager, InspectorTest.testWorkspace);
     InspectorTest.testNetworkProjectManager = new Bindings.NetworkProjectManager(InspectorTest.testTargetManager, InspectorTest.testWorkspace);
     InspectorTest.testDebuggerWorkspaceBinding = new Bindings.DebuggerWorkspaceBinding(InspectorTest.testTargetManager, InspectorTest.testWorkspace);
-    InspectorTest.testCSSWorkspaceBinding = new Bindings.CSSWorkspaceBinding(InspectorTest.testTargetManager, InspectorTest.testWorkspace);
-
-    InspectorTest.testTargetManager.observeTargets({
-        targetAdded: function(target)
-        {
-            InspectorTest.testNetworkProject = Bindings.NetworkProject.forTarget(target);
-        },
-
-        targetRemoved: function(target)
-        {
-        }
-    });
-
-    if (ignoreEvents)
-        return;
-    InspectorTest.testWorkspace.addEventListener(Workspace.Workspace.Events.UISourceCodeAdded, InspectorTest._defaultWorkspaceEventHandler);
-    InspectorTest.testWorkspace.addEventListener(Workspace.Workspace.Events.UISourceCodeRemoved, InspectorTest._defaultWorkspaceEventHandler);
 }
 
-InspectorTest._mockTargetId = 1;
-InspectorTest._pageCapabilities =
-    SDK.Target.Capability.Browser | SDK.Target.Capability.DOM |
-    SDK.Target.Capability.JS | SDK.Target.Capability.Log |
-    SDK.Target.Capability.Network | SDK.Target.Capability.Worker;
-
-InspectorTest.createMockTarget = function(id, debuggerModelConstructor, capabilities)
+InspectorTest.createMockTarget = function(id)
 {
-    capabilities = capabilities || InspectorTest._pageCapabilities;
-    var target = InspectorTest.testTargetManager.createTarget("mock-target-" + id, "mock-target-" + id, capabilities & (~SDK.Target.Capability.JS), (params) => new SDK.StubConnection(params), null);
+    var capabilities = SDK.Target.Capability.AllForTests;
+    var target = InspectorTest.testTargetManager.createTarget("mock-target-id-" + id, "mock-target-" + id, capabilities & (~SDK.Target.Capability.JS), (params) => new SDK.StubConnection(params), null);
+    InspectorTest.testNetworkProject = Bindings.NetworkProject.forTarget(target);
     target._capabilitiesMask = capabilities;
     target._inspectedURL = InspectorTest.mainTarget.inspectedURL();
     target.resourceTreeModel = target.model(SDK.ResourceTreeModel);
     target.resourceTreeModel._cachedResourcesProcessed = true;
     target.resourceTreeModel._frameAttached("42", 0);
     target.runtimeModel = /** @type {!SDK.RuntimeModel} */ (target.model(SDK.RuntimeModel));
-    if (debuggerModelConstructor) {
-        target.debuggerModel = new debuggerModelConstructor(target);
-        target._modelByConstructor.set(SDK.DebuggerModel, target.debuggerModel);
-        InspectorTest.testTargetManager.modelAdded(target, SDK.DebuggerModel, target.debuggerModel);
-    } else {
-        target.debuggerModel = target.model(SDK.DebuggerModel);
-    }
+    target.debuggerModel = new InspectorTest.DebuggerModelMock(target);
+    target._modelByConstructor.set(SDK.DebuggerModel, target.debuggerModel);
+    InspectorTest.testTargetManager.modelAdded(target, SDK.DebuggerModel, target.debuggerModel);
     return target;
-}
-
-InspectorTest.createWorkspaceWithTarget = function(ignoreEvents)
-{
-    InspectorTest.createWorkspace(ignoreEvents);
-    var target = InspectorTest.createMockTarget(InspectorTest._mockTargetId++);
-    return target;
-}
-
-InspectorTest._defaultWorkspaceEventHandler = function(event)
-{
-    var uiSourceCode = event.data;
-    if (uiSourceCode.project().type() === Workspace.projectTypes.Service)
-        return;
-    InspectorTest.addResult(`Workspace event: ${event.type.toString()}: ${uiSourceCode.url()}.`);
 }
 
 InspectorTest.uiSourceCodes = {};
@@ -114,8 +68,6 @@ InspectorTest.DebuggerModelMock = class extends SDK.SDKModel {
 
     setBeforePausedCallback(callback) { }
 
-    _targetDisposed() { }
-
     debuggerEnabled()
     {
         return true;
@@ -131,12 +83,6 @@ InspectorTest.DebuggerModelMock = class extends SDK.SDKModel {
     {
         var script = new SDK.Script(this, scriptId, url);
         this._scripts[scriptId] = script;
-        this._debuggerWorkspaceBinding._debuggerModelToData.get(this)._parsedScriptSource({data: script});
-    }
-
-    _registerScript(script)
-    {
-        this._scripts[script.scriptId] = script;
         this._debuggerWorkspaceBinding._debuggerModelToData.get(this)._parsedScriptSource({data: script});
     }
 
@@ -285,7 +231,6 @@ InspectorTest.addUISourceCode = function(target, breakpointManager, url, doNotSe
         InspectorTest.addScript(target, breakpointManager, url);
     InspectorTest.addResult("  Adding UISourceCode: " + url);
     var contentProvider = Common.StaticContentProvider.fromString(url, Common.resourceTypes.Script, "");
-    var binding = breakpointManager._debuggerWorkspaceBinding;
     var uiSourceCode = InspectorTest.testNetworkProject.addFile(contentProvider, null);
     InspectorTest.uiSourceCodes[url] = uiSourceCode;
     if (!doNotSetSourceMapping) {
