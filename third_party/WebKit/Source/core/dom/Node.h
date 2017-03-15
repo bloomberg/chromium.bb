@@ -164,7 +164,7 @@ class CORE_EXPORT Node : public EventTarget {
   static void* allocateObject(size_t size, bool isEager) {
     ThreadState* state =
         ThreadStateFor<ThreadingTrait<Node>::Affinity>::state();
-    const char typeName[] = "blink::Node";
+    const char* typeName = "blink::Node";
     return ThreadHeap::allocateOnArenaIndex(
         state, size,
         isEager ? BlinkGC::EagerSweepArenaIndex : BlinkGC::NodeArenaIndex,
