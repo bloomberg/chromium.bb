@@ -152,6 +152,11 @@ initiationType:(web::NavigationInitiationType)initiationType;
   DCHECK(_pendingItemIndex == -1 || self.pendingItem);
 }
 
+- (BOOL)canPruneAllButLastCommittedItem {
+  return self.currentNavigationIndex != -1 && self.pendingItemIndex == -1 &&
+         !self.transientItem;
+}
+
 - (const web::ScopedNavigationItemImplList&)items {
   return _items;
 }
@@ -486,35 +491,44 @@ initiationType:(web::NavigationInitiationType)initiationType;
   _transientItem.reset();
 }
 
-- (void)insertStateFromSessionController:(CRWSessionController*)sourceSession {
-  DCHECK(sourceSession);
+- (void)copyStateFromSessionControllerAndPrune:(CRWSessionController*)source {
+  DCHECK(source);
+  if (!self.canPruneAllButLastCommittedItem)
+    return;
 
   // The other session may not have any items, in which case there is nothing
-  // to insert.  The other session's currentItem will be bogus in such cases, so
-  // ignore it and return early.
-  web::ScopedNavigationItemImplList& sourceItems = sourceSession->_items;
+  // to insert.
+  const web::ScopedNavigationItemImplList& sourceItems = source->_items;
   if (sourceItems.empty())
     return;
 
-  // Cycle through the items from the other session and insert them before any
-  // items from this session.  Do not copy anything that comes after the other
-  // session's current item.
-  NSInteger lastIndexToCopy = sourceSession.currentNavigationIndex;
-  for (NSInteger i = 0; i <= lastIndexToCopy; ++i) {
-    std::unique_ptr<web::NavigationItemImpl> sourceItemCopy =
-        base::MakeUnique<web::NavigationItemImpl>(*sourceItems[i]);
-    _items.insert(_items.begin() + i, std::move(sourceItemCopy));
+  // Early return if there's no committed source item.
+  if (!source.lastCommittedItem)
+    return;
+
+  // Copy |sourceItems| into a new NavigationItemList.  |mergedItems| is needs
+  // to be large enough for all items in |source| preceding
+  // |sourceCurrentIndex|, the |source|'s current item, and |self|'s current
+  // item, which comes out to |sourceCurrentIndex| + 2.
+  DCHECK_GT(source.currentNavigationIndex, -1);
+  size_t sourceCurrentIndex =
+      static_cast<size_t>(source.currentNavigationIndex);
+  web::ScopedNavigationItemImplList mergedItems(sourceCurrentIndex + 2);
+  for (size_t index = 0; index <= sourceCurrentIndex; ++index) {
+    mergedItems[index] =
+        base::MakeUnique<web::NavigationItemImpl>(*sourceItems[index]);
   }
+  mergedItems.back() = std::move(_items[self.currentNavigationIndex]);
+
+  // Use |mergedItems| as the session history.
+  std::swap(mergedItems, _items);
 
   // Update state to reflect inserted NavigationItems.
   _previousNavigationIndex = -1;
-  _currentNavigationIndex += lastIndexToCopy + 1;
-  if (self.pendingItemIndex != -1)
-    self.pendingItemIndex += lastIndexToCopy + 1;
+  _currentNavigationIndex = self.items.size() - 1;
 
   DCHECK_LT(static_cast<NSUInteger>(_currentNavigationIndex),
             self.items.size());
-  DCHECK(self.pendingItemIndex == -1 || self.pendingItem);
 }
 
 - (void)goToItemAtIndex:(NSInteger)index {

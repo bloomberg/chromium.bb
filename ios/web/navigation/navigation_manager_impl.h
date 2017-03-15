@@ -144,6 +144,8 @@ class NavigationManagerImpl : public NavigationManager {
   void Reload(ReloadType reload_type, bool check_for_reposts) override;
   NavigationItemList GetBackwardItems() const override;
   NavigationItemList GetForwardItems() const override;
+  void CopyStateFromAndPrune(const NavigationManager* source) override;
+  bool CanPruneAllButLastCommittedItem() const override;
   void OverrideDesktopUserAgentForNextPendingItem() override;
 
   // Returns the current list of transient url rewriters, passing ownership to

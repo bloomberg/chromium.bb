@@ -44,6 +44,8 @@ class TestNavigationManager : public NavigationManager {
   void Reload(ReloadType reload_type, bool check_for_reposts) override;
   NavigationItemList GetBackwardItems() const override;
   NavigationItemList GetForwardItems() const override;
+  void CopyStateFromAndPrune(const NavigationManager* source) override;
+  bool CanPruneAllButLastCommittedItem() const override;
   void OverrideDesktopUserAgentForNextPendingItem() override;
 
   // Setters for test data.

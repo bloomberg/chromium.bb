@@ -150,6 +150,16 @@ NavigationItemList TestNavigationManager::GetForwardItems() const {
   return NavigationItemList();
 }
 
+void TestNavigationManager::CopyStateFromAndPrune(
+    const NavigationManager* source) {
+  NOTREACHED();
+}
+
+bool TestNavigationManager::CanPruneAllButLastCommittedItem() const {
+  NOTREACHED();
+  return false;
+}
+
 void TestNavigationManager::OverrideDesktopUserAgentForNextPendingItem() {
   NOTREACHED();
 }

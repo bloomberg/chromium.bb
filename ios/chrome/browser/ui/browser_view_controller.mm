@@ -3678,15 +3678,12 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
     Tab* newTab = [_preloadController releasePrerenderContents];
     DCHECK(oldTab);
     DCHECK(newTab);
-    if (oldTab && newTab) {
+    bool canPruneItems =
+        [newTab navigationManager]->CanPruneAllButLastCommittedItem();
+    if (oldTab && newTab && canPruneItems) {
       [oldTab recordStateInHistory];
-      DCHECK([newTab navigationManager]);
-      CRWSessionController* newHistory =
-          [newTab navigationManagerImpl]->GetSessionController();
-      DCHECK([oldTab navigationManager]);
-      CRWSessionController* oldHistory =
-          [oldTab navigationManagerImpl]->GetSessionController();
-      [newHistory insertStateFromSessionController:oldHistory];
+      [newTab navigationManager]->CopyStateFromAndPrune(
+          [oldTab navigationManager]);
       [[newTab nativeAppNavigationController]
           copyStateFrom:[oldTab nativeAppNavigationController]];
       [_model replaceTab:oldTab withTab:newTab];

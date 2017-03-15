@@ -360,6 +360,18 @@ void NavigationManagerImpl::Reload(ReloadType reload_type,
   delegate_->GetWebState()->OpenURL(params);
 }
 
+void NavigationManagerImpl::CopyStateFromAndPrune(
+    const NavigationManager* manager) {
+  DCHECK(manager);
+  CRWSessionController* other_session =
+      static_cast<const NavigationManagerImpl*>(manager)->session_controller_;
+  [session_controller_ copyStateFromSessionControllerAndPrune:other_session];
+}
+
+bool NavigationManagerImpl::CanPruneAllButLastCommittedItem() const {
+  return [session_controller_ canPruneAllButLastCommittedItem];
+}
+
 std::unique_ptr<std::vector<BrowserURLRewriter::URLRewriter>>
 NavigationManagerImpl::GetTransientURLRewriters() {
   return std::move(transient_url_rewriters_);

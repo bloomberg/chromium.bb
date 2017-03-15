@@ -473,7 +473,7 @@ TEST_F(CRWSessionControllerTest,
 }
 
 // Tests inserting session controller state.
-TEST_F(CRWSessionControllerTest, InsertState) {
+TEST_F(CRWSessionControllerTest, CopyState) {
   // Add 1 committed and 1 pending item to target controller.
   [session_controller_
       addPendingItem:GURL("http://www.url.com/2")
@@ -504,8 +504,9 @@ TEST_F(CRWSessionControllerTest, InsertState) {
       initiationType:web::NavigationInitiationType::USER_INITIATED];
 
   // Insert and verify the state of target session controller.
+  EXPECT_TRUE([session_controller_ canPruneAllButLastCommittedItem]);
   [session_controller_
-      insertStateFromSessionController:other_session_controller.get()];
+      copyStateFromSessionControllerAndPrune:other_session_controller.get()];
 
   EXPECT_EQ(2U, [session_controller_ items].size());
   EXPECT_EQ(1, [session_controller_ currentNavigationIndex]);
@@ -521,7 +522,7 @@ TEST_F(CRWSessionControllerTest, InsertState) {
 }
 
 // Tests inserting session controller state from empty session controller.
-TEST_F(CRWSessionControllerTest, InsertStateFromEmptySessionController) {
+TEST_F(CRWSessionControllerTest, CopyStateFromEmptySessionController) {
   // Add 2 committed items to target controller.
   [session_controller_
       addPendingItem:GURL("http://www.url.com/0")
@@ -542,8 +543,9 @@ TEST_F(CRWSessionControllerTest, InsertStateFromEmptySessionController) {
                                              openedByDOM:NO]);
 
   // Insert and verify the state of target session controller.
+  EXPECT_TRUE([session_controller_ canPruneAllButLastCommittedItem]);
   [session_controller_
-      insertStateFromSessionController:other_session_controller.get()];
+      copyStateFromSessionControllerAndPrune:other_session_controller.get()];
   EXPECT_EQ(2U, [session_controller_ items].size());
   EXPECT_EQ(1, [session_controller_ currentNavigationIndex]);
   EXPECT_EQ(0, [session_controller_ previousNavigationIndex]);
@@ -555,10 +557,12 @@ TEST_F(CRWSessionControllerTest, InsertStateFromEmptySessionController) {
             [session_controller_ URLForItemAtIndex:1]);
 }
 
-// Tests inserting session controller state to empty session controller.
-TEST_F(CRWSessionControllerTest, InsertStateToEmptySessionController) {
-  // Create source session controller with 2 committed items and one
-  // pending item.
+// Tests that |-copyStateFromSessionControllerAndPrune:| is a no-op when the
+// receiver has no last committed item.
+TEST_F(CRWSessionControllerTest, CopyStateToEmptySessionController) {
+  EXPECT_FALSE([session_controller_ canPruneAllButLastCommittedItem]);
+
+  // Create source session controller with 1 committed item.
   base::scoped_nsobject<CRWSessionController> other_session_controller(
       [[CRWSessionController alloc] initWithBrowserState:&browser_state_
                                              openedByDOM:NO]);
@@ -573,46 +577,35 @@ TEST_F(CRWSessionControllerTest, InsertStateToEmptySessionController) {
             referrer:web::Referrer()
           transition:ui::PAGE_TRANSITION_TYPED
       initiationType:web::NavigationInitiationType::USER_INITIATED];
-  [other_session_controller commitPendingItem];
-  [other_session_controller
-      addPendingItem:GURL("http://www.url.com/2")
-            referrer:web::Referrer()
-          transition:ui::PAGE_TRANSITION_TYPED
-      initiationType:web::NavigationInitiationType::USER_INITIATED];
 
-  // Insert and verify the state of target session controller.
+  // Attempt to copy |other_session_controller|'s state and verify that
+  // |session_controller_| is unchanged.
   [session_controller_
-      insertStateFromSessionController:other_session_controller.get()];
-
-  EXPECT_EQ(2U, [session_controller_ items].size());
-  EXPECT_EQ(1, [session_controller_ currentNavigationIndex]);
+      copyStateFromSessionControllerAndPrune:other_session_controller];
+  EXPECT_TRUE([session_controller_ items].empty());
+  EXPECT_EQ(-1, [session_controller_ currentNavigationIndex]);
   EXPECT_EQ(-1, [session_controller_ previousNavigationIndex]);
-  EXPECT_EQ(-1, [session_controller_ pendingItemIndex]);
+  EXPECT_FALSE([session_controller_ currentItem]);
   EXPECT_FALSE([session_controller_ pendingItem]);
-  EXPECT_EQ(GURL("http://www.url.com/0"),
-            [session_controller_ URLForItemAtIndex:0]);
-  EXPECT_EQ(GURL("http://www.url.com/1"),
-            [session_controller_ URLForItemAtIndex:1]);
+  EXPECT_EQ(-1, [session_controller_ pendingItemIndex]);
 }
 
-// Tests inserting session controller state. Verifies that pending item index
-// remains valid.
-TEST_F(CRWSessionControllerTest,
-       InsertStateWithPendingItemIndexInTargetController) {
-  // Add 2 committed items and make the first item pending.
+// Tests that |-copyStateFromSessionControllerAndPrune:| is a no-op during a
+// pending history navigation.
+TEST_F(CRWSessionControllerTest, CopyStateDuringPendingHistoryNavigation) {
+  // Add 1 committed and 1 pending item to target controller.
+  [session_controller_
+      addPendingItem:GURL("http://www.url.com/1")
+            referrer:web::Referrer()
+          transition:ui::PAGE_TRANSITION_TYPED
+      initiationType:web::NavigationInitiationType::USER_INITIATED];
+  [session_controller_ commitPendingItem];
   [session_controller_
       addPendingItem:GURL("http://www.url.com/2")
             referrer:web::Referrer()
           transition:ui::PAGE_TRANSITION_TYPED
       initiationType:web::NavigationInitiationType::USER_INITIATED];
   [session_controller_ commitPendingItem];
-  [session_controller_
-      addPendingItem:GURL("http://www.url.com/3")
-            referrer:web::Referrer()
-          transition:ui::PAGE_TRANSITION_TYPED
-      initiationType:web::NavigationInitiationType::USER_INITIATED];
-  [session_controller_ commitPendingItem];
-  [session_controller_ setPendingItemIndex:0];
 
   // Create source session controller with 1 committed item.
   base::scoped_nsobject<CRWSessionController> other_session_controller(
@@ -624,21 +617,76 @@ TEST_F(CRWSessionControllerTest,
           transition:ui::PAGE_TRANSITION_TYPED
       initiationType:web::NavigationInitiationType::USER_INITIATED];
   [other_session_controller commitPendingItem];
+  [other_session_controller
+      addPendingItem:GURL("http://www.url.com/1")
+            referrer:web::Referrer()
+          transition:ui::PAGE_TRANSITION_TYPED
+      initiationType:web::NavigationInitiationType::USER_INITIATED];
 
-  // Insert and verify the state of target session controller.
+  // Set the pending item index to the first item.
+  [session_controller_ setPendingItemIndex:0];
+  EXPECT_FALSE([session_controller_ canPruneAllButLastCommittedItem]);
+
+  // Attempt to copy |other_session_controller|'s state and verify that
+  // |session_controller_| is unchanged.
   [session_controller_
-      insertStateFromSessionController:other_session_controller.get()];
+      copyStateFromSessionControllerAndPrune:other_session_controller];
+  EXPECT_EQ(2U, [session_controller_ items].size());
+  EXPECT_EQ(1, [session_controller_ currentNavigationIndex]);
+  EXPECT_EQ(0, [session_controller_ previousNavigationIndex]);
+  EXPECT_EQ(0, [session_controller_ pendingItemIndex]);
+  EXPECT_TRUE([session_controller_ pendingItem]);
+  EXPECT_EQ([session_controller_ previousItem],
+            [session_controller_ pendingItem]);
+}
 
-  EXPECT_EQ(3U, [session_controller_ items].size());
-  EXPECT_EQ(2, [session_controller_ currentNavigationIndex]);
+// Tests that |-copyStateFromSessionControllerAndPrune:| is a when a transient
+// NavigationItem exists.
+TEST_F(CRWSessionControllerTest, CopyStateWithTransientItem) {
+  // Add 1 committed and 1 pending item to target controller.
+  [session_controller_
+      addPendingItem:GURL("http://www.url.com/1")
+            referrer:web::Referrer()
+          transition:ui::PAGE_TRANSITION_TYPED
+      initiationType:web::NavigationInitiationType::USER_INITIATED];
+  [session_controller_ commitPendingItem];
+  GURL second_url = GURL("http://www.url.com/2");
+  [session_controller_
+      addPendingItem:second_url
+            referrer:web::Referrer()
+          transition:ui::PAGE_TRANSITION_TYPED
+      initiationType:web::NavigationInitiationType::USER_INITIATED];
+  [session_controller_ addTransientItemWithURL:second_url];
+
+  // Create source session controller with 1 committed item.
+  base::scoped_nsobject<CRWSessionController> other_session_controller(
+      [[CRWSessionController alloc] initWithBrowserState:&browser_state_
+                                             openedByDOM:NO]);
+  [other_session_controller
+      addPendingItem:GURL("http://www.url.com/0")
+            referrer:web::Referrer()
+          transition:ui::PAGE_TRANSITION_TYPED
+      initiationType:web::NavigationInitiationType::USER_INITIATED];
+  [other_session_controller commitPendingItem];
+  [other_session_controller
+      addPendingItem:GURL("http://www.url.com/1")
+            referrer:web::Referrer()
+          transition:ui::PAGE_TRANSITION_TYPED
+      initiationType:web::NavigationInitiationType::USER_INITIATED];
+
+  // Attempt to copy |other_session_controller|'s state and verify that
+  // |session_controller_| is unchanged.
+  EXPECT_FALSE([session_controller_ canPruneAllButLastCommittedItem]);
+  [session_controller_
+      copyStateFromSessionControllerAndPrune:other_session_controller];
+  EXPECT_EQ(1U, [session_controller_ items].size());
+  EXPECT_EQ(0, [session_controller_ currentNavigationIndex]);
   EXPECT_EQ(-1, [session_controller_ previousNavigationIndex]);
-  EXPECT_EQ(1, [session_controller_ pendingItemIndex]);
-  EXPECT_EQ(GURL("http://www.url.com/0"),
-            [session_controller_ URLForItemAtIndex:0]);
-  EXPECT_EQ(GURL("http://www.url.com/2"),
-            [session_controller_ URLForItemAtIndex:1]);
-  EXPECT_EQ(GURL("http://www.url.com/2"),
-            [session_controller_ pendingItem]->GetURL());
+  EXPECT_EQ(-1, [session_controller_ pendingItemIndex]);
+  EXPECT_TRUE([session_controller_ pendingItem]);
+  EXPECT_TRUE([session_controller_ transientItem]);
+  EXPECT_EQ([session_controller_ transientItem],
+            [session_controller_ currentItem]);
 }
 
 // Tests state of an empty session controller.

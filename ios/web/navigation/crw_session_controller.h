@@ -41,6 +41,13 @@ struct Referrer;
 @property(nonatomic, readonly, strong)
     CRWSessionCertificatePolicyManager* sessionCertificatePolicyManager;
 
+// Whether the CRWSessionController can prune all but the last committed item.
+// This is true when all the following conditions are met:
+// - There is a last committed NavigationItem
+// - There is not currently a pending history navigation
+// - There is no transient NavigationItem.
+@property(nonatomic, readonly) BOOL canPruneAllButLastCommittedItem;
+
 // The ScopedNavigationItemImplList used to store the NavigationItemImpls for
 // this session.
 @property(nonatomic, readonly) const web::ScopedNavigationItemImplList& items;
@@ -119,9 +126,18 @@ struct Referrer;
 // Removes the pending and transient NavigationItems.
 - (void)discardNonCommittedItems;
 
-// Inserts history state from |otherController| to the front of |items|.  This
-// function will create copies of |otherController|'s NavigationItems.
-- (void)insertStateFromSessionController:(CRWSessionController*)otherController;
+// Removes all items from this except the last committed item, and inserts
+// copies of all items from |source| at the beginning of the session history.
+//
+// For example:
+// source: A B *C* D
+// this:   E F *G*
+// result: A B C *G*
+//
+// If there is a pending item after *G* in |this|, it is also preserved.
+// This ignores any pending or transient entries in |source|.  No-op if
+// |canPruneAllButLastCommittedItem| is false.
+- (void)copyStateFromSessionControllerAndPrune:(CRWSessionController*)source;
 
 // Sets |currentNavigationIndex_| to the |index| if it's in the entries bounds.
 - (void)goToItemAtIndex:(NSInteger)index;

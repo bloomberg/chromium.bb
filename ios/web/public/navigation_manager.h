@@ -166,6 +166,26 @@ class NavigationManager {
   virtual NavigationItemList GetBackwardItems() const = 0;
   virtual NavigationItemList GetForwardItems() const = 0;
 
+  // Removes all items from this except the last committed item, and inserts
+  // copies of all items from |source| at the beginning of the session history.
+  //
+  // For example:
+  // source: A B *C* D
+  // this:   E F *G*
+  // result: A B C *G*
+  //
+  // If there is a pending item after *G* in |this|, it is also preserved.
+  // This ignores any pending or transient entries in |source|.  This will be a
+  // no-op if called while CanPruneAllButLastCommittedItem() is false.
+  virtual void CopyStateFromAndPrune(const NavigationManager* source) = 0;
+
+  // Whether the NavigationManager can prune all but the last committed item.
+  // This is true when all the following conditions are met:
+  // - There is a last committed NavigationItem.
+  // - There is no pending history navigation.
+  // - There is no transient NavigationItem.
+  virtual bool CanPruneAllButLastCommittedItem() const = 0;
+
   // Forces the pending item to be loaded using desktop user agent. Note that
   // the pending item may or may not already exist.
   // TODO(crbug.com/692303): Remove this when overriding the user agent doesn't
