@@ -452,6 +452,8 @@ class VEAEncoder final : public VideoTrackRecorder::Encoder,
 
   void ConfigureEncoderOnEncodingTaskRunner(const gfx::Size& size);
 
+  void DestroyOnEncodingTaskRunner(base::WaitableEvent* async_waiter);
+
   media::GpuVideoAcceleratorFactories* const gpu_factories_;
 
   const media::VideoCodecProfile codec_;
@@ -615,9 +617,20 @@ VEAEncoder::VEAEncoder(
 }
 
 VEAEncoder::~VEAEncoder() {
+  base::WaitableEvent release_waiter(
+      base::WaitableEvent::ResetPolicy::MANUAL,
+      base::WaitableEvent::InitialState::NOT_SIGNALED);
+  // base::Unretained is safe because the class will be alive until
+  // |release_waiter| is signaled.
+  // TODO(emircan): Consider refactoring media::VideoEncodeAccelerator to avoid
+  // using naked pointers and using DeleteSoon() here, see
+  // http://crbug.com/701627.
+  // It is currently unsafe because |video_encoder_| might be in use on another
+  // function on |encoding_task_runner_|, see http://crbug.com/701030.
   encoding_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&media::VideoEncodeAccelerator::Destroy,
-                            base::Unretained(video_encoder_.release())));
+      FROM_HERE, base::Bind(&VEAEncoder::DestroyOnEncodingTaskRunner,
+                            base::Unretained(this), &release_waiter));
+  release_waiter.Wait();
 }
 
 void VEAEncoder::RequireBitstreamBuffers(unsigned int /*input_count*/,
@@ -772,10 +785,7 @@ void VEAEncoder::EncodeOnEncodingTaskRunner(
   frames_in_encode_.push(std::make_pair(
       media::WebmMuxer::VideoParameters(frame), capture_timestamp));
 
-  encoding_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&media::VideoEncodeAccelerator::Encode,
-                 base::Unretained(video_encoder_.get()), video_frame, false));
+  video_encoder_->Encode(video_frame, false);
 }
 
 void VEAEncoder::ConfigureEncoderOnEncodingTaskRunner(const gfx::Size& size) {
@@ -791,6 +801,13 @@ void VEAEncoder::ConfigureEncoderOnEncodingTaskRunner(const gfx::Size& size) {
                                   bits_per_second_, this)) {
     NotifyError(media::VideoEncodeAccelerator::kPlatformFailureError);
   }
+}
+
+void VEAEncoder::DestroyOnEncodingTaskRunner(
+    base::WaitableEvent* async_waiter) {
+  DCHECK(encoding_task_runner_->BelongsToCurrentThread());
+  video_encoder_.reset();
+  async_waiter->Signal();
 }
 
 // static
