@@ -501,8 +501,6 @@ void MetricsService::InitializeMetricsState() {
     version_changed = true;
   }
 
-  reporting_service_.Initialize();
-
   session_id_ = local_state_->GetInteger(prefs::kMetricsSessionID);
 
   StabilityMetricsProvider provider(local_state_);

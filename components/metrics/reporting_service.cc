@@ -43,6 +43,7 @@ ReportingService::~ReportingService() {
 
 void ReportingService::Initialize() {
   DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(!upload_scheduler_);
   log_store()->LoadPersistedUnsentLogs();
   base::Closure send_next_log_callback = base::Bind(
       &ReportingService::SendNextLog, self_ptr_factory_.GetWeakPtr());
