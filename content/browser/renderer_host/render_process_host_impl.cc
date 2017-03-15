@@ -1755,7 +1755,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kEnableDistanceFieldText,
     switches::kEnableExperimentalCanvasFeatures,
     switches::kEnableExperimentalWebPlatformFeatures,
-    switches::kEnableHDROutput,
+    switches::kEnableHDR,
     switches::kEnableHeapProfiling,
     switches::kEnableGPUClientLogging,
     switches::kEnableGpuClientTracing,

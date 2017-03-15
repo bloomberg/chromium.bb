@@ -35,10 +35,10 @@ ChildWindowSurfaceWin::ChildWindowSurfaceWin(
 EGLConfig ChildWindowSurfaceWin::GetConfig() {
   if (!config_) {
     int alpha_size = alpha_ ? 8 : EGL_DONT_CARE;
-    int bits_per_channel = base::CommandLine::ForCurrentProcess()->HasSwitch(
-                               switches::kEnableHDROutput)
-                               ? 16
-                               : 8;
+    int bits_per_channel =
+        base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableHDR)
+            ? 16
+            : 8;
 
     EGLint config_attribs[] = {EGL_ALPHA_SIZE,
                                alpha_size,

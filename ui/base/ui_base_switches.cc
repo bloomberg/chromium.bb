@@ -80,6 +80,6 @@ const char kUseNewVirtualKeyboardBehavior[] =
 const char kExtendMdToSecondaryUi[] = "secondary-ui-md";
 
 // Use an fp16 scRGB swap chain compatible with HDR output.
-const char kEnableHDROutput[] = "enable-hdr-output";
+const char kEnableHDR[] = "enable-hdr";
 
 }  // namespace switches

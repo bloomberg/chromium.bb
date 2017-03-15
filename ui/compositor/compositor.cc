@@ -168,7 +168,7 @@ Compositor::Compositor(const cc::FrameSinkId& frame_sink_id,
       command_line->HasSwitch(cc::switches::kEnableColorCorrectRendering);
   settings.renderer_settings.enable_color_correct_rendering =
       settings.enable_color_correct_rasterization ||
-      command_line->HasSwitch(switches::kEnableHDROutput);
+      command_line->HasSwitch(switches::kEnableHDR);
 
   // UI compositor always uses partial raster if not using zero-copy. Zero copy
   // doesn't currently support partial raster.
@@ -364,8 +364,7 @@ void Compositor::SetScaleAndSize(float scale, const gfx::Size& size_in_pixel) {
 void Compositor::SetDisplayColorProfile(const gfx::ICCProfile& icc_profile) {
   blending_color_space_ = icc_profile.GetColorSpace();
   output_color_space_ = blending_color_space_;
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableHDROutput)) {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableHDR)) {
     blending_color_space_ = gfx::ColorSpace::CreateExtendedSRGB();
     output_color_space_ = gfx::ColorSpace::CreateSCRGBLinear();
   }

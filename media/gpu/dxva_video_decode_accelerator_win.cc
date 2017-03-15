@@ -567,8 +567,7 @@ bool DXVAVideoDecodeAccelerator::Initialize(const Config& config,
 
   // Unfortunately, the profile is currently unreliable for
   // VP9 (crbug.com/592074) so also try to use fp16 if HDR is on.
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableHDROutput)) {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableHDR)) {
     use_fp16_ = true;
   }
 
@@ -2831,7 +2830,7 @@ bool DXVAVideoDecodeAccelerator::InitializeID3D11VideoProcessor(
       HRESULT hr = video_context_.QueryInterface(video_context1.Receive());
       if (SUCCEEDED(hr)) {
         if (use_fp16_ && base::CommandLine::ForCurrentProcess()->HasSwitch(
-                             switches::kEnableHDROutput)) {
+                             switches::kEnableHDR)) {
           dx11_converter_output_color_space_ =
               gfx::ColorSpace::CreateSCRGBLinear();
         }

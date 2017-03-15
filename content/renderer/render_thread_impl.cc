@@ -815,8 +815,7 @@ void RenderThreadImpl::Init(
   }
 #endif
 
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableHDROutput) ||
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableHDR) ||
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableNewVp9CodecString)) {
     media::EnableNewVp9CodecStringSupport();

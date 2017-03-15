@@ -1571,9 +1571,9 @@ const CanPlayTypeNewVp9Params kNewVp9ParamVariants[] = {
     {switches::kEnableVp9InMp4, "video/webm", kNot, kNot},
     // Expect CanPlay(...) = kProbably/kMaybe for WebM, but not for MP4 for
     // these command line flags.
-    {switches::kEnableHDROutput, "video/mp4", kNot, kNot},
+    {switches::kEnableHDR, "video/mp4", kNot, kNot},
     {switches::kEnableNewVp9CodecString, "video/mp4", kNot, kNot},
-    {switches::kEnableHDROutput, "video/webm", kProbably, kMaybe},
+    {switches::kEnableHDR, "video/webm", kProbably, kMaybe},
     {switches::kEnableNewVp9CodecString, "video/webm", kProbably, kMaybe},
 };
 
