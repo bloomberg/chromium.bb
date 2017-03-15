@@ -77,6 +77,7 @@ void PendingScript::dispose() {
   DCHECK(!m_client);
   DCHECK(!m_watchingForLoad);
 
+  MemoryCoordinator::instance().unregisterClient(this);
   setResource(nullptr);
   m_startingPosition = TextPosition::belowRangePosition();
   m_integrityFailure = false;
