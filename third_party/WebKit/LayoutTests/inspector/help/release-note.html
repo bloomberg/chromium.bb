@@ -40,7 +40,8 @@ function test() {
 
     InspectorTest.addSniffer(UI.viewManager, "showView", onShowView);
 
-    InspectorTest.addResult(`Browser version: ${Help.browserVersion()}\n`);
+    InspectorTest.addResult("Last release note version seen:");
+    InspectorTest.addResult(Help.releaseNoteVersionSetting().get() + "\n");
     Help.showReleaseNoteIfNeeded();
 
     function onShowView(viewId, isUserGesture, viewPromise) {
