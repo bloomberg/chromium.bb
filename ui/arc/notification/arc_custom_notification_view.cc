@@ -169,6 +169,8 @@ class ArcCustomNotificationView::ContentViewDelegate
   }
 
   bool IsPinned() const override {
+    if (!owner_->item_)
+      return false;
     return owner_->item_->pinned();
   }
 

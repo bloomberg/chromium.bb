@@ -656,8 +656,8 @@ void MessageCenterImpl::RemoveAllNotifications(bool by_user, RemoveType type) {
   bool remove_pinned = (type == RemoveType::ALL);
 
   const NotificationBlockers& blockers =
-      (type == RemoveType::ALL ? NotificationBlockers() /* empty blockers */
-                               : blockers_ /* use default blockers */);
+      remove_pinned ? NotificationBlockers() /* empty blockers */
+                    : blockers_;             /* use default blockers */
 
   const NotificationList::Notifications notifications =
       notification_list_->GetVisibleNotifications(blockers);
