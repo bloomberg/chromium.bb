@@ -276,7 +276,7 @@ void RenderWidgetHostViewBase::UpdateScreenInfo(gfx::NativeView view) {
 
 bool RenderWidgetHostViewBase::HasDisplayPropertyChanged(gfx::NativeView view) {
   display::Display display =
-      display::Screen::GetScreen()->GetDisplayNearestView(view);
+      display::Screen::GetScreen()->GetDisplayNearestWindow(view);
   if (current_display_area_ == display.work_area() &&
       current_device_scale_factor_ == display.device_scale_factor() &&
       current_display_rotation_ == display.rotation()) {

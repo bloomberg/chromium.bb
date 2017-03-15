@@ -106,7 +106,7 @@ void ChromeViewsDelegate::SaveWindowPlacement(const views::Widget* window,
   window_preferences->SetBoolean("docked", show_state == ui::SHOW_STATE_DOCKED);
 
   gfx::Rect work_area(display::Screen::GetScreen()
-                          ->GetDisplayNearestView(window->GetNativeView())
+                          ->GetDisplayNearestWindow(window->GetNativeView())
                           .work_area());
   window_preferences->SetInteger("work_area_left", work_area.x());
   window_preferences->SetInteger("work_area_top", work_area.y());

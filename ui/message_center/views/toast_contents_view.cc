@@ -262,7 +262,7 @@ void ToastContentsView::OnDisplayChanged() {
     return;
 
   collection_->OnDisplayMetricsChanged(
-      Screen::GetScreen()->GetDisplayNearestView(native_view));
+      Screen::GetScreen()->GetDisplayNearestWindow(native_view));
 }
 
 void ToastContentsView::OnWorkAreaChanged() {
@@ -275,7 +275,7 @@ void ToastContentsView::OnWorkAreaChanged() {
     return;
 
   collection_->OnDisplayMetricsChanged(
-      Screen::GetScreen()->GetDisplayNearestView(native_view));
+      Screen::GetScreen()->GetDisplayNearestWindow(native_view));
 }
 
 // views::View

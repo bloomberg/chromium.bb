@@ -39,11 +39,7 @@ class DummyScreenAndroid : public display::Screen {
     return displays_;
   }
 
-  Display GetDisplayNearestWindow(gfx::NativeWindow window) const override {
-    return GetPrimaryDisplay();
-  }
-
-  Display GetDisplayNearestView(gfx::NativeView view) const override {
+  Display GetDisplayNearestWindow(gfx::NativeView view) const override {
     return GetPrimaryDisplay();
   }
 

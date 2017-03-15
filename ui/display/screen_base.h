@@ -28,7 +28,7 @@ class DISPLAY_EXPORT ScreenBase : public Screen {
   bool IsWindowUnderCursor(gfx::NativeWindow window) override;
   gfx::NativeWindow GetWindowAtScreenPoint(const gfx::Point& point) override;
   Display GetPrimaryDisplay() const override;
-  Display GetDisplayNearestWindow(gfx::NativeWindow window) const override;
+  Display GetDisplayNearestWindow(gfx::NativeView view) const override;
   Display GetDisplayNearestPoint(const gfx::Point& point) const override;
   int GetNumDisplays() const override;
   const std::vector<Display>& GetAllDisplays() const override;

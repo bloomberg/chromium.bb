@@ -184,7 +184,7 @@ void ToolbarButton::ShowDropDownMenu(ui::MenuSourceType source_type) {
   // the menu button exists.
   gfx::NativeView view = GetWidget()->GetNativeView();
   display::Display display =
-      display::Screen::GetScreen()->GetDisplayNearestView(view);
+      display::Screen::GetScreen()->GetDisplayNearestWindow(view);
   int left_bound = display.bounds().x();
 #else
   // The window might be positioned over the edge between two screens. We'll

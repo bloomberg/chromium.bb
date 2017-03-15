@@ -7,8 +7,9 @@
 #include "chrome/grit/theme_resources.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/web_contents.h"
-#include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/widget/widget.h"
@@ -86,7 +87,9 @@ gfx::Rect ValidationMessageBubbleView::RootViewToScreenRect(
     const gfx::Rect& rect_in_root_view,
     const content::RenderWidgetHostView* render_widget_host_view) const {
   gfx::NativeView view = render_widget_host_view->GetNativeView();
-  const float scale = ui::GetScaleFactorForNativeView(view);
+  display::Display display =
+      display::Screen::GetScreen()->GetDisplayNearestWindow(view);
+  const float scale = display.device_scale_factor();
   return gfx::ScaleToEnclosingRect(rect_in_root_view, 1 / scale) +
          render_widget_host_view->GetViewBounds().origin().OffsetFromOrigin();
 }

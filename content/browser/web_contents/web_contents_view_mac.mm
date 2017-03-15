@@ -85,7 +85,7 @@ WebContentsViewMac::RenderWidgetHostViewCreateFunction
 
 content::ScreenInfo GetNSViewScreenInfo(NSView* view) {
   display::Display display =
-      display::Screen::GetScreen()->GetDisplayNearestView(view);
+      display::Screen::GetScreen()->GetDisplayNearestWindow(view);
 
   content::ScreenInfo results;
   results.device_scale_factor = static_cast<int>(display.device_scale_factor());

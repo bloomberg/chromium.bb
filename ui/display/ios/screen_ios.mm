@@ -51,11 +51,6 @@ class ScreenIos : public ScreenBase {
 
 }  // namespace
 
-// static
-gfx::NativeWindow Screen::GetWindowForView(gfx::NativeView view) {
-  return [view window];
-}
-
 Screen* CreateNativeScreen() {
   return new ScreenIos;
 }

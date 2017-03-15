@@ -58,12 +58,7 @@ class DISPLAY_EXPORT Screen {
   // Returns the display nearest the specified window.
   // If the window is NULL or the window is not rooted to a display this will
   // return the primary display.
-  virtual Display GetDisplayNearestWindow(gfx::NativeWindow window) const = 0;
-
-  // Returns the display nearest the specified view. It may still use the window
-  // that contains the view (i.e. if a window is spread over two displays,
-  // the location of the view within that window won't influence the result).
-  virtual Display GetDisplayNearestView(gfx::NativeView view) const;
+  virtual Display GetDisplayNearestWindow(gfx::NativeView view) const = 0;
 
   // Returns the display nearest the specified point. |point| should be in DIPs.
   virtual Display GetDisplayNearestPoint(const gfx::Point& point) const = 0;
@@ -96,8 +91,6 @@ class DISPLAY_EXPORT Screen {
   bool GetDisplayWithDisplayId(int64_t display_id, Display* display) const;
 
  private:
-  static gfx::NativeWindow GetWindowForView(gfx::NativeView view);
-
   DISALLOW_COPY_AND_ASSIGN(Screen);
 };
 

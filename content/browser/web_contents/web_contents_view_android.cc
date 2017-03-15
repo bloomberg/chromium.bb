@@ -159,7 +159,7 @@ void WebContentsViewAndroid::GetScreenInfo(ScreenInfo* result) const {
   gfx::NativeView native_view = GetNativeView();
   display::Display display =
       native_view
-          ? display::Screen::GetScreen()->GetDisplayNearestView(native_view)
+          ? display::Screen::GetScreen()->GetDisplayNearestWindow(native_view)
           : display::Screen::GetScreen()->GetPrimaryDisplay();
   DisplayToScreenInfo(display, result);
 }

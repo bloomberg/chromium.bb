@@ -536,7 +536,7 @@ void VrShell::RenderViewHostChanged(content::RenderViewHost* old_host,
 
 void VrShell::MainFrameWasResized(bool width_changed) {
   display::Display display =
-      display::Screen::GetScreen()->GetDisplayNearestView(
+      display::Screen::GetScreen()->GetDisplayNearestWindow(
           ui_contents_->GetNativeView());
   PostToGlThreadWhenReady(
       base::Bind(&VrShellGl::UIBoundsChanged, gl_thread_->GetVrShellGl(),

@@ -42,7 +42,8 @@ DisplayAndroidManager::~DisplayAndroidManager() {}
 // Screen interface.
 
 Display DisplayAndroidManager::GetDisplayNearestWindow(
-    gfx::NativeWindow window) const {
+    gfx::NativeView view) const {
+  ui::WindowAndroid* window = view ? view->GetWindowAndroid() : nullptr;
   if (window) {
     DisplayList::Displays::const_iterator it =
         display_list().FindDisplayById(window->display_id());
@@ -51,11 +52,6 @@ Display DisplayAndroidManager::GetDisplayNearestWindow(
     }
   }
   return GetPrimaryDisplay();
-}
-
-Display DisplayAndroidManager::GetDisplayNearestView(
-    gfx::NativeView view) const {
-  return GetDisplayNearestWindow(view ? view->GetWindowAndroid() : nullptr);
 }
 
 // There is no notion of relative display positions on Android.
