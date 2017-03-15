@@ -55,7 +55,7 @@ SVGPropertyBase* SVGStaticStringList::currentValueBase() {
 }
 
 const SVGPropertyBase& SVGStaticStringList::baseValueBase() const {
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return *m_value;
 }
 
@@ -64,16 +64,16 @@ bool SVGStaticStringList::isAnimating() const {
 }
 
 SVGPropertyBase* SVGStaticStringList::createAnimatedValue() {
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return nullptr;
 }
 
 void SVGStaticStringList::setAnimatedValue(SVGPropertyBase*) {
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
 }
 
 void SVGStaticStringList::animationEnded() {
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
 }
 
 bool SVGStaticStringList::needsSynchronizeAttribute() {

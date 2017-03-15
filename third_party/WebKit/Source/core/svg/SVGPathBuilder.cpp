@@ -172,7 +172,7 @@ void SVGPathBuilder::emitSegment(const PathSegmentData& segment) {
                 segment.largeArcFlag(), segment.sweepFlag());
       break;
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
   }
 
   m_lastCommand = segment.command;

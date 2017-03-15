@@ -68,7 +68,7 @@ PathSegmentData SVGPathByteStreamSource::parseSegment() {
       break;
     }
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
   }
   return segment;
 }

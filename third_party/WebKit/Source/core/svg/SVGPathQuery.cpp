@@ -79,7 +79,7 @@ void SVGPathTraversalState::emitSegment(const PathSegmentData& segment) {
           segment.point1, segment.point2, segment.targetPoint);
       break;
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
   }
 }
 

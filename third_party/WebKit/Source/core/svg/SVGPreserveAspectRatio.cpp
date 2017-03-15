@@ -430,7 +430,7 @@ String SVGPreserveAspectRatio::valueAsString() const {
 }
 
 void SVGPreserveAspectRatio::add(SVGPropertyBase* other, SVGElement*) {
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
 }
 
 void SVGPreserveAspectRatio::calculateAnimatedValue(

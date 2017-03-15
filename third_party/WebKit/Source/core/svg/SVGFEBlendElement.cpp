@@ -49,7 +49,7 @@ static WebBlendMode toWebBlendMode(SVGFEBlendElement::Mode mode) {
     MAP_BLEND_MODE(Color);
     MAP_BLEND_MODE(Luminosity);
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       return WebBlendModeNormal;
   }
 #undef MAP_BLEND_MODE

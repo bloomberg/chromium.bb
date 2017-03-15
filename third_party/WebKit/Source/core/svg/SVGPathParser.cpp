@@ -152,7 +152,7 @@ void SVGPathNormalizer::emitSegment(const PathSegmentData& segment) {
       }
       break;
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
   }
 
   if (normSeg.command != PathSegArcAbs)

@@ -77,7 +77,7 @@ SVGParsingError SVGEnumerationBase::setValueAsString(const String& string) {
 }
 
 void SVGEnumerationBase::add(SVGPropertyBase*, SVGElement*) {
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
 }
 
 void SVGEnumerationBase::calculateAnimatedValue(

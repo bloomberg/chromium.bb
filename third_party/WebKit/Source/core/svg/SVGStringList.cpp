@@ -147,7 +147,7 @@ bool SVGStringList::checkIndexBound(size_t index,
 
 void SVGStringList::add(SVGPropertyBase* other, SVGElement* contextElement) {
   // SVGStringList is never animated.
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
 }
 
 void SVGStringList::calculateAnimatedValue(SVGAnimationElement*,
@@ -158,12 +158,12 @@ void SVGStringList::calculateAnimatedValue(SVGAnimationElement*,
                                            SVGPropertyBase*,
                                            SVGElement*) {
   // SVGStringList is never animated.
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
 }
 
 float SVGStringList::calculateDistance(SVGPropertyBase*, SVGElement*) {
   // SVGStringList is never animated.
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
 
   return -1.0f;
 }

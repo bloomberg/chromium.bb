@@ -51,7 +51,7 @@ SVGParsingError SVGBoolean::setValueAsString(const String& value) {
 }
 
 void SVGBoolean::add(SVGPropertyBase*, SVGElement*) {
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
 }
 
 void SVGBoolean::calculateAnimatedValue(SVGAnimationElement* animationElement,

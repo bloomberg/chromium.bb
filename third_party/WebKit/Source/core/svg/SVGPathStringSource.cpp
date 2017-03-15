@@ -243,7 +243,7 @@ PathSegmentData SVGPathStringSource::parseSegment() {
       segment.targetPoint.setY(parseNumberWithError());
       break;
     case PathSegUnknown:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
   }
 
   if (UNLIKELY(m_error.status() != SVGParseStatus::NoError))

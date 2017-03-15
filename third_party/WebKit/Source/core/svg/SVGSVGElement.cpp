@@ -344,7 +344,7 @@ bool SVGSVGElement::checkIntersectionOrEnclosure(
       result = rect.contains(mappedRepaintRect);
       break;
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       break;
   }
 

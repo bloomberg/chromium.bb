@@ -288,7 +288,7 @@ SVGTransform* createTransformFromValues(SVGTransformType type,
                                            arguments[4], arguments[5]));
       break;
     case kSvgTransformUnknown:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       break;
   }
   return transform;

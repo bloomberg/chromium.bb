@@ -56,7 +56,7 @@ SVGTransform* SVGTransform::clone() const {
 
 SVGPropertyBase* SVGTransform::cloneForAnimation(const String&) const {
   // SVGTransform is never animated.
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return nullptr;
 }
 
@@ -142,7 +142,7 @@ const char* transformTypePrefixForParsing(SVGTransformType type) {
     case kSvgTransformSkewy:
       return "skewY(";
   }
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return "";
 }
 
@@ -217,7 +217,7 @@ String SVGTransform::valueAsString() const {
 
 void SVGTransform::add(SVGPropertyBase*, SVGElement*) {
   // SVGTransform is not animated by itself.
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
 }
 
 void SVGTransform::calculateAnimatedValue(SVGAnimationElement*,
@@ -228,12 +228,12 @@ void SVGTransform::calculateAnimatedValue(SVGAnimationElement*,
                                           SVGPropertyBase*,
                                           SVGElement*) {
   // SVGTransform is not animated by itself.
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
 }
 
 float SVGTransform::calculateDistance(SVGPropertyBase*, SVGElement*) {
   // SVGTransform is not animated by itself.
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
 
   return -1;
 }

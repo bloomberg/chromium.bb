@@ -205,7 +205,7 @@ static void updateCurrentPoint(FloatPoint& subPathPoint,
       currentPoint = subPathPoint;
       break;
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
   }
 }
 
@@ -277,7 +277,7 @@ bool SVGPathBlender::BlendState::blendSegments(
       }
       break;
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
   }
 
   updateCurrentPoint(m_fromSubPathPoint, m_fromCurrentPoint, fromSeg);

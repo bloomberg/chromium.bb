@@ -46,7 +46,7 @@ static inline float dimensionForLengthMode(SVGLengthMode mode,
     case SVGLengthMode::Other:
       return sqrtf(viewportSize.diagonalLengthSquared() / 2);
   }
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return 0;
 }
 
@@ -152,7 +152,7 @@ static inline float dimensionForViewportUnit(const SVGElement* context,
       break;
   }
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return 0;
 }
 
@@ -308,7 +308,7 @@ float SVGLengthContext::convertValueToUserUnits(
       userUnits = value * dimensionForViewportUnit(m_context, fromUnit);
       break;
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       break;
   }
 
@@ -367,7 +367,7 @@ float SVGLengthContext::convertValueFromUserUnits(
       break;
   }
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return 0;
 }
 

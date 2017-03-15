@@ -112,7 +112,7 @@ void SVGPathByteStreamBuilder::emitSegment(const PathSegmentData& segment) {
       buffer.writeFloatPoint(segment.targetPoint);
       break;
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
   }
 }
 

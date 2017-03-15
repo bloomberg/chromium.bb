@@ -122,7 +122,7 @@ void SVGPathStringBuilder::emitSegment(const PathSegmentData& segment) {
       appendPoint(m_stringBuilder, segment.targetPoint);
       break;
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
   }
   m_stringBuilder.append(' ');
 }

@@ -61,7 +61,7 @@ std::pair<const char*, const char*> messageForStatus(SVGParseStatus status) {
     case SVGParseStatus::ParsingFailed:
       return std::make_pair("Invalid value, ", ".");
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       break;
   }
   return std::make_pair("", "");
