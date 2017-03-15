@@ -188,9 +188,10 @@ Compositor::Compositor(const cc::FrameSinkId& frame_sink_id,
     }
   }
 
-  // Note: Only enable image decode tasks if we have more than one worker
-  // thread.
-  settings.image_decode_tasks_enabled = false;
+  // Note: Although there is only one image decode thread, we should still get a
+  // benefit from locking images across several raster tasks. At worst, this
+  // should do as much work as it would anyway.
+  settings.image_decode_tasks_enabled = true;
 
   settings.gpu_memory_policy.bytes_limit_when_visible = 512 * 1024 * 1024;
   settings.gpu_memory_policy.priority_cutoff_when_visible =
