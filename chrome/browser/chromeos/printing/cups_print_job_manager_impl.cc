@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/printing/cups_print_job_manager_impl.h"
 
 #include <cups/cups.h>
+#include <algorithm>
 #include <set>
 #include <string>
 #include <utility>
@@ -33,35 +34,41 @@ namespace {
 // The rate in milliseconds at which we will poll CUPS for print job updates.
 const int kPollRate = 1000;
 
+// How long we'll wait to connect to a printer before declaring an error.
+const int kConnectingTimeout = 20;
+
 // Threshold for giving up on communicating with CUPS.
 const int kRetryMax = 6;
 
+using State = chromeos::CupsPrintJob::State;
+using ErrorCode = chromeos::CupsPrintJob::ErrorCode;
+
+using PrinterReason = printing::PrinterStatus::PrinterReason;
+
 // Returns the equivalient CupsPrintJob#State from a CupsJob#JobState.
 chromeos::CupsPrintJob::State ConvertState(printing::CupsJob::JobState state) {
-  using cpj = chromeos::CupsPrintJob::State;
-
   switch (state) {
     case printing::CupsJob::PENDING:
-      return cpj::STATE_WAITING;
+      return State::STATE_WAITING;
     case printing::CupsJob::HELD:
-      return cpj::STATE_SUSPENDED;
+      return State::STATE_SUSPENDED;
     case printing::CupsJob::PROCESSING:
-      return cpj::STATE_STARTED;
+      return State::STATE_STARTED;
     case printing::CupsJob::CANCELED:
-      return cpj::STATE_CANCELLED;
+      return State::STATE_CANCELLED;
     case printing::CupsJob::COMPLETED:
-      return cpj::STATE_DOCUMENT_DONE;
+      return State::STATE_DOCUMENT_DONE;
     case printing::CupsJob::STOPPED:
-      return cpj::STATE_SUSPENDED;
+      return State::STATE_SUSPENDED;
     case printing::CupsJob::ABORTED:
-      return cpj::STATE_ERROR;
+      return State::STATE_ERROR;
     case printing::CupsJob::UNKNOWN:
       break;
   }
 
   NOTREACHED();
 
-  return cpj::STATE_NONE;
+  return State::STATE_NONE;
 }
 
 chromeos::QueryResult QueryCups(::printing::CupsConnection* connection,
@@ -69,6 +76,106 @@ chromeos::QueryResult QueryCups(::printing::CupsConnection* connection,
   chromeos::QueryResult result;
   result.success = connection->GetJobs(printer_ids, &result.queues);
   return result;
+}
+
+// Returns true if |printer_status|.reasons contains |reason|.
+bool ContainsReason(const printing::PrinterStatus printer_status,
+                    PrinterReason::Reason reason) {
+  return std::find_if(printer_status.reasons.begin(),
+                      printer_status.reasons.end(),
+                      [&reason](const PrinterReason& r) {
+                        return r.reason == reason;
+                      }) != printer_status.reasons.end();
+}
+
+// Extracts an ErrorCode from PrinterStatus#reasons.  Returns NO_ERROR if there
+// are no reasons which indicate an error.
+chromeos::CupsPrintJob::ErrorCode ErrorCodeFromReasons(
+    const printing::PrinterStatus& printer_status) {
+  for (const auto& reason : printer_status.reasons) {
+    switch (reason.reason) {
+      case PrinterReason::MEDIA_JAM:
+      case PrinterReason::MEDIA_EMPTY:
+      case PrinterReason::MEDIA_NEEDED:
+      case PrinterReason::MEDIA_LOW:
+        return chromeos::CupsPrintJob::ErrorCode::PAPER_JAM;
+      case PrinterReason::TONER_EMPTY:
+      case PrinterReason::TONER_LOW:
+        return chromeos::CupsPrintJob::ErrorCode::OUT_OF_INK;
+      default:
+        break;
+    }
+  }
+  return chromeos::CupsPrintJob::ErrorCode::NO_ERROR;
+}
+
+// Check if the job should timeout.  Returns true if the job has timed out.
+bool EnforceTimeout(const printing::CupsJob& job,
+                    chromeos::CupsPrintJob* print_job) {
+  // Check to see if we should time out.
+  base::TimeDelta time_waiting =
+      base::Time::Now() - base::Time::FromTimeT(job.processing_started);
+  if (time_waiting > base::TimeDelta::FromSeconds(kConnectingTimeout)) {
+    print_job->set_state(chromeos::CupsPrintJob::State::STATE_ERROR);
+    print_job->set_error_code(
+        chromeos::CupsPrintJob::ErrorCode::PRINTER_UNREACHABLE);
+    return true;
+  }
+
+  return false;
+}
+
+// Update the current printed page.  Returns true of the page has been updated.
+bool UpdateCurrentPage(const printing::CupsJob& job,
+                       chromeos::CupsPrintJob* print_job) {
+  bool pages_updated = false;
+  if (job.current_pages <= 0) {
+    print_job->set_printed_page_number(0);
+    print_job->set_state(State::STATE_STARTED);
+  } else {
+    pages_updated = job.current_pages != print_job->printed_page_number();
+    print_job->set_printed_page_number(job.current_pages);
+    print_job->set_state(State::STATE_PAGE_DONE);
+  }
+
+  return pages_updated;
+}
+
+// Updates the state of a print job based on |printer_status| and |job|. Returns
+// true if observers need to be notified of an update.
+bool UpdatePrintJob(const printing::PrinterStatus& printer_status,
+                    const printing::CupsJob& job,
+                    chromeos::CupsPrintJob* print_job) {
+  DCHECK_EQ(job.id, print_job->job_id());
+
+  State old_state = print_job->state();
+
+  bool pages_updated = false;
+  switch (job.state) {
+    case printing::CupsJob::PROCESSING:
+      if (ContainsReason(printer_status, PrinterReason::CONNECTING_TO_DEVICE)) {
+        if (EnforceTimeout(job, print_job)) {
+          LOG(WARNING) << "Connecting to printer timed out";
+          // TODO(skau): Purge job from queue.
+        }
+        break;
+      }
+      pages_updated = UpdateCurrentPage(job, print_job);
+      break;
+    case printing::CupsJob::COMPLETED:
+      DCHECK_GE(job.current_pages, print_job->total_page_number());
+      print_job->set_state(State::STATE_DOCUMENT_DONE);
+      break;
+    case printing::CupsJob::ABORTED:
+    case printing::CupsJob::CANCELED:
+      print_job->set_error_code(ErrorCodeFromReasons(printer_status));
+    // fall through
+    default:
+      print_job->set_state(ConvertState(job.state));
+      break;
+  }
+
+  return print_job->state() != old_state || pages_updated;
 }
 
 }  // namespace
@@ -227,8 +334,10 @@ void CupsPrintJobManagerImpl::UpdateJobs(const QueryResult& result) {
 
       CupsPrintJob* print_job = entry->second.get();
 
-      // Update a job we're tracking.
-      JobStateUpdated(print_job, ConvertState(job.state));
+      if (UpdatePrintJob(queue.printer_status, job, print_job)) {
+        // The state of the job changed, notify observers.
+        NotifyJobStateUpdate(print_job);
+      }
 
       // Cleanup completed jobs.
       if (print_job->IsJobFinished()) {
@@ -254,46 +363,41 @@ void CupsPrintJobManagerImpl::UpdateJobs(const QueryResult& result) {
 void CupsPrintJobManagerImpl::PurgeJobs() {
   for (const auto& entry : jobs_) {
     // Declare all lost jobs errors.
-    JobStateUpdated(entry.second.get(), CupsPrintJob::State::STATE_ERROR);
+    CupsPrintJob* job = entry.second.get();
+    job->set_state(CupsPrintJob::State::STATE_ERROR);
+    NotifyJobStateUpdate(job);
   }
 
   jobs_.clear();
 }
 
-void CupsPrintJobManagerImpl::JobStateUpdated(CupsPrintJob* job,
-                                              CupsPrintJob::State new_state) {
-  if (job->state() == new_state)
-    return;
-
-  // We don't track state transitions because some of them might be missed due
-  // to how we query jobs.
-  job->set_state(new_state);
-  switch (new_state) {
-    case CupsPrintJob::State::STATE_NONE:
+void CupsPrintJobManagerImpl::NotifyJobStateUpdate(CupsPrintJob* job) {
+  switch (job->state()) {
+    case State::STATE_NONE:
       // State does not require notification.
       break;
-    case CupsPrintJob::State::STATE_WAITING:
+    case State::STATE_WAITING:
       NotifyJobUpdated(job);
       break;
-    case CupsPrintJob::State::STATE_STARTED:
+    case State::STATE_STARTED:
       NotifyJobStarted(job);
       break;
-    case CupsPrintJob::State::STATE_RESUMED:
+    case State::STATE_PAGE_DONE:
+      NotifyJobUpdated(job);
+      break;
+    case State::STATE_RESUMED:
       NotifyJobResumed(job);
       break;
-    case CupsPrintJob::State::STATE_SUSPENDED:
+    case State::STATE_SUSPENDED:
       NotifyJobSuspended(job);
       break;
-    case CupsPrintJob::State::STATE_CANCELLED:
+    case State::STATE_CANCELLED:
       NotifyJobCanceled(job);
       break;
-    case CupsPrintJob::State::STATE_ERROR:
+    case State::STATE_ERROR:
       NotifyJobError(job);
       break;
-    case CupsPrintJob::State::STATE_PAGE_DONE:
-      NOTREACHED() << "CUPS does not surface this state so it's not expected";
-      break;
-    case CupsPrintJob::State::STATE_DOCUMENT_DONE:
+    case State::STATE_DOCUMENT_DONE:
       NotifyJobDone(job);
       break;
   }

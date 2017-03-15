@@ -67,8 +67,8 @@ class CupsPrintJobManagerImpl : public CupsPrintJobManager,
   // Mark remaining jobs as errors and remove active jobs.
   void PurgeJobs();
 
-  // Updates the state and performs the appropriate notifications.
-  void JobStateUpdated(CupsPrintJob* job, CupsPrintJob::State new_state);
+  // Notify observers that a state update has occured for |job|.
+  void NotifyJobStateUpdate(CupsPrintJob* job);
 
   // Ongoing print jobs.
   std::map<std::string, std::unique_ptr<CupsPrintJob>> jobs_;
