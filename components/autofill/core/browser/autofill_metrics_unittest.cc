@@ -4385,7 +4385,8 @@ TEST_F(AutofillMetricsTest, RecordCardUploadDecisionMetric) {
       ukm_service_test_harness.test_ukm_service();
 
   ASSERT_EQ(1U, ukm_service->sources_count());
-  const ukm::UkmSource* source = ukm_service->GetSource(0);
+  const ukm::UkmSource* source =
+      ukm_service->GetSourceForUrl(url.spec().c_str());
   EXPECT_EQ(url.spec(), source->url().spec());
 
   EXPECT_EQ(1U, ukm_service->entries_count());

@@ -792,6 +792,15 @@ const ukm::Entry_Metric* FindMetric(
   return nullptr;
 }
 
+// Get Ukm sources from the Ukm service.
+std::vector<const ukm::UkmSource*> GetUkmSources(ukm::TestUkmService* service) {
+  std::vector<const ukm::UkmSource*> sources;
+  for (const auto& kv : service->GetSources())
+    sources.push_back(kv.second.get());
+
+  return sources;
+}
+
 }  // namespace
 
 class AutofillManagerTest : public testing::Test {
@@ -1026,7 +1035,7 @@ class AutofillManagerTest : public testing::Test {
 
     // Check that one source is logged.
     ASSERT_EQ(1U, ukm_service->sources_count());
-    const ukm::UkmSource* source = ukm_service->GetSource(0);
+    const ukm::UkmSource* source = GetUkmSources(ukm_service)[0];
 
     // Check that one entry is logged.
     EXPECT_EQ(1U, ukm_service->entries_count());

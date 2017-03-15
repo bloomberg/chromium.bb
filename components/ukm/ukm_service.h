@@ -99,7 +99,8 @@ class UkmService : public base::SupportsWeakPtr<UkmService> {
   using AddEntryCallback = base::Callback<void(std::unique_ptr<UkmEntry>)>;
 
  protected:
-  const std::vector<std::unique_ptr<UkmSource>>& sources_for_testing() const {
+  const std::map<int32_t, std::unique_ptr<UkmSource>>& sources_for_testing()
+      const {
     return sources_;
   }
 
@@ -125,11 +126,6 @@ class UkmService : public base::SupportsWeakPtr<UkmService> {
   // process.
   std::unique_ptr<UkmEntryBuilder> GetEntryBuilder(int32_t source_id,
                                                    const char* event_name);
-
-  // Adds a new source of UKM metrics, which will be stored until periodically
-  // serialized for upload, and then deleted. This method is deprecated. Please
-  // use GetEntryBuilder and UpdateSourceURL above.
-  void RecordSource(std::unique_ptr<UkmSource> source);
 
   // Starts metrics client initialization.
   void StartInitTask();
@@ -190,8 +186,7 @@ class UkmService : public base::SupportsWeakPtr<UkmService> {
 
   // Contains newly added sources and entries of UKM metrics which periodically
   // get serialized and cleared by BuildAndStoreLog().
-  // TODO(zhenw): update sources to a map keyed by source ID.
-  std::vector<std::unique_ptr<UkmSource>> sources_;
+  std::map<int32_t, std::unique_ptr<UkmSource>> sources_;
   std::vector<std::unique_ptr<UkmEntry>> entries_;
 
   // Weak pointers factory used to post task on different threads. All weak

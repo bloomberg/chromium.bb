@@ -75,9 +75,8 @@ class UkmPageLoadMetricsObserverTest
     return mock_network_quality_provider_;
   }
 
-  const ukm::UkmSource* GetUkmSource(size_t source_index) {
-    return ukm_service_test_harness_.test_ukm_service()->GetSource(
-        source_index);
+  const ukm::UkmSource* GetUkmSourceForUrl(const char* url) {
+    return ukm_service_test_harness_.test_ukm_service()->GetSourceForUrl(url);
   }
 
   const ukm::UkmEntry* GetUkmEntry(size_t entry_index) {
@@ -181,7 +180,7 @@ TEST_F(UkmPageLoadMetricsObserverTest, Basic) {
   DeleteContents();
 
   EXPECT_EQ(1ul, ukm_source_count());
-  const ukm::UkmSource* source = GetUkmSource(0);
+  const ukm::UkmSource* source = GetUkmSourceForUrl(kTestUrl1);
   EXPECT_EQ(GURL(kTestUrl1), source->url());
 
   EXPECT_GE(ukm_entry_count(), 1ul);
@@ -218,7 +217,7 @@ TEST_F(UkmPageLoadMetricsObserverTest, FailedProvisionalLoad) {
   DeleteContents();
 
   EXPECT_EQ(1ul, ukm_source_count());
-  const ukm::UkmSource* source = GetUkmSource(0);
+  const ukm::UkmSource* source = GetUkmSourceForUrl(kTestUrl1);
   EXPECT_EQ(GURL(kTestUrl1), source->url());
 
   EXPECT_GE(ukm_entry_count(), 1ul);
@@ -257,7 +256,7 @@ TEST_F(UkmPageLoadMetricsObserverTest, FirstMeaningfulPaint) {
   DeleteContents();
 
   EXPECT_EQ(1ul, ukm_source_count());
-  const ukm::UkmSource* source = GetUkmSource(0);
+  const ukm::UkmSource* source = GetUkmSourceForUrl(kTestUrl1);
   EXPECT_EQ(GURL(kTestUrl1), source->url());
 
   EXPECT_GE(ukm_entry_count(), 1ul);
@@ -293,8 +292,8 @@ TEST_F(UkmPageLoadMetricsObserverTest, MultiplePageLoads) {
   DeleteContents();
 
   EXPECT_EQ(2ul, ukm_source_count());
-  const ukm::UkmSource* source1 = GetUkmSource(0);
-  const ukm::UkmSource* source2 = GetUkmSource(1);
+  const ukm::UkmSource* source1 = GetUkmSourceForUrl(kTestUrl1);
+  const ukm::UkmSource* source2 = GetUkmSourceForUrl(kTestUrl2);
   EXPECT_EQ(GURL(kTestUrl1), source1->url());
   EXPECT_EQ(GURL(kTestUrl2), source2->url());
   EXPECT_NE(source1->id(), source2->id());
@@ -338,7 +337,7 @@ TEST_F(UkmPageLoadMetricsObserverTest, EffectiveConnectionType) {
   DeleteContents();
 
   EXPECT_EQ(1ul, ukm_source_count());
-  const ukm::UkmSource* source = GetUkmSource(0);
+  const ukm::UkmSource* source = GetUkmSourceForUrl(kTestUrl1);
   EXPECT_EQ(GURL(kTestUrl1), source->url());
 
   EXPECT_GE(ukm_entry_count(), 1ul);
@@ -360,7 +359,7 @@ TEST_F(UkmPageLoadMetricsObserverTest, PageTransitionReload) {
   DeleteContents();
 
   EXPECT_EQ(1ul, ukm_source_count());
-  const ukm::UkmSource* source = GetUkmSource(0);
+  const ukm::UkmSource* source = GetUkmSourceForUrl(kTestUrl1);
   EXPECT_EQ(GURL(kTestUrl1), source->url());
 
   EXPECT_GE(ukm_entry_count(), 1ul);

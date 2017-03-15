@@ -334,9 +334,9 @@ void UkmService::BuildAndStoreLog() {
   if (ShouldRecordSessionId())
     report.set_session_id(session_id_);
 
-  for (const auto& source : sources_) {
+  for (const auto& kv : sources_) {
     Source* proto_source = report.add_sources();
-    source->PopulateProto(proto_source);
+    kv.second->PopulateProto(proto_source);
     if (!ShouldRecordInitialUrl())
       proto_source->clear_initial_url();
   }
@@ -425,21 +425,6 @@ void UkmService::OnLogUploadComplete(int response_code) {
                              persisted_logs_.has_unsent_logs());
 }
 
-void UkmService::RecordSource(std::unique_ptr<UkmSource> source) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-  if (!recording_enabled_) {
-    RecordDroppedSource(DroppedDataReason::RECORDING_DISABLED);
-    return;
-  }
-  if (sources_.size() >= GetMaxSources()) {
-    RecordDroppedSource(DroppedDataReason::MAX_HIT);
-    return;
-  }
-
-  sources_.push_back(std::move(source));
-}
-
 // static
 int32_t UkmService::GetNewSourceID() {
   static int32_t next_source_id = 0;
@@ -465,11 +450,8 @@ void UkmService::UpdateSourceURL(int32_t source_id, const GURL& url) {
   // Update the pre-existing source if there is any. This happens when the
   // initial URL is different from the committed URL for the same source, e.g.,
   // when there is redirection.
-  for (auto& source : sources_) {
-    if (source_id != source->id())
-      continue;
-
-    source->UpdateUrl(url);
+  if (base::ContainsKey(sources_, source_id)) {
+    sources_[source_id]->UpdateUrl(url);
     return;
   }
 
@@ -480,7 +462,7 @@ void UkmService::UpdateSourceURL(int32_t source_id, const GURL& url) {
   std::unique_ptr<UkmSource> source = base::MakeUnique<UkmSource>();
   source->set_id(source_id);
   source->set_url(url);
-  sources_.push_back(std::move(source));
+  sources_.insert(std::make_pair(source_id, std::move(source)));
 }
 
 void UkmService::AddEntry(std::unique_ptr<UkmEntry> entry) {
