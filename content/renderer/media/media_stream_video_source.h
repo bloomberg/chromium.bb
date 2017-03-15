@@ -57,6 +57,9 @@ class CONTENT_EXPORT MediaStreamVideoSource
     kUnknownFrameRate = 0,
   };
 
+  static constexpr double kDefaultAspectRatio =
+      static_cast<double>(kDefaultWidth) / static_cast<double>(kDefaultHeight);
+
   MediaStreamVideoSource();
   ~MediaStreamVideoSource() override;
 
