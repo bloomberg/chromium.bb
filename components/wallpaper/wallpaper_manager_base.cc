@@ -372,6 +372,22 @@ bool WallpaperManagerBase::GetLoggedInUserWallpaperInfo(WallpaperInfo* info) {
       user_manager::UserManager::Get()->GetActiveUser()->GetAccountId(), info);
 }
 
+void WallpaperManagerBase::SetDefaultWallpaper(const AccountId& account_id,
+                                               bool update_wallpaper) {
+  RemoveUserWallpaperInfo(account_id);
+
+  const wallpaper::WallpaperInfo info = {
+      std::string(), wallpaper::WALLPAPER_LAYOUT_CENTER,
+      user_manager::User::DEFAULT, base::Time::Now().LocalMidnight()};
+  const bool is_persistent =
+      !user_manager::UserManager::Get()->IsUserNonCryptohomeDataEphemeral(
+          account_id);
+  SetUserWallpaperInfo(account_id, info, is_persistent);
+
+  if (update_wallpaper)
+    SetDefaultWallpaperNow(account_id);
+}
+
 // static
 bool WallpaperManagerBase::ResizeImage(
     const gfx::ImageSkia& image,

@@ -276,6 +276,11 @@ class WALLPAPER_EXPORT WallpaperManagerBase {
                                   const gfx::ImageSkia& image,
                                   bool update_wallpaper) = 0;
 
+  // Updates wallpaper info for |account_id| to default. If |update_wallpaper|
+  // is false, don't change wallpaper but only update cache.
+  virtual void SetDefaultWallpaper(const AccountId& account_id,
+                                   bool update_wallpaper);
+
   // Use given files as new default wallpaper.
   // Reloads current wallpaper, if old default was loaded.
   // Current value of default_wallpaper_image_ is destroyed.

@@ -98,6 +98,12 @@ gfx::ImageSkia WallpaperController::GetWallpaper() const {
   return gfx::ImageSkia();
 }
 
+uint32_t WallpaperController::GetWallpaperOriginalImageId() const {
+  if (current_wallpaper_)
+    return current_wallpaper_->original_image_id();
+  return 0;
+}
+
 void WallpaperController::AddObserver(WallpaperControllerObserver* observer) {
   observers_.AddObserver(observer);
 }

@@ -596,22 +596,10 @@ WallpaperPrivateResetWallpaperFunction::
     ~WallpaperPrivateResetWallpaperFunction() {}
 
 bool WallpaperPrivateResetWallpaperFunction::RunAsync() {
-  chromeos::WallpaperManager* wallpaper_manager =
-      chromeos::WallpaperManager::Get();
-  user_manager::UserManager* user_manager = user_manager::UserManager::Get();
+  const AccountId& account_id =
+      user_manager::UserManager::Get()->GetActiveUser()->GetAccountId();
+  chromeos::WallpaperManager::Get()->SetDefaultWallpaper(account_id, true);
 
-  const AccountId& account_id = user_manager->GetActiveUser()->GetAccountId();
-  wallpaper_manager->RemoveUserWallpaperInfo(account_id);
-
-  wallpaper::WallpaperInfo info = {std::string(),
-                                   wallpaper::WALLPAPER_LAYOUT_CENTER,
-                                   user_manager::User::DEFAULT,
-                                   base::Time::Now().LocalMidnight()};
-  bool is_persistent =
-      !user_manager->IsCurrentUserNonCryptohomeDataEphemeral();
-  wallpaper_manager->SetUserWallpaperInfo(account_id, info, is_persistent);
-
-  wallpaper_manager->SetDefaultWallpaperNow(account_id);
   Profile* profile = Profile::FromBrowserContext(browser_context());
   // This API is only available to the component wallpaper picker. We do not
   // need to show the app's name if it is the component wallpaper picker. So set

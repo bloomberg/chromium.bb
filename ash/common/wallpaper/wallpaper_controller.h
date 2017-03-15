@@ -61,6 +61,7 @@ class ASH_EXPORT WallpaperController
   // Provides current image on the wallpaper, or empty gfx::ImageSkia if there
   // is no image, e.g. wallpaper is none.
   gfx::ImageSkia GetWallpaper() const;
+  uint32_t GetWallpaperOriginalImageId() const;
 
   wallpaper::WallpaperLayout GetWallpaperLayout() const;
 
