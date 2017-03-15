@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/threading/thread.h"
-#include "components/discardable_memory/client/client_discardable_shared_memory_manager.h"
 #include "services/service_manager/public/cpp/connection.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/ui/public/cpp/gpu/gpu.h"
@@ -86,15 +85,6 @@ MusClient::MusClient(service_manager::Connector* connector,
   if (create_wm_state)
     wm_state_ = base::MakeUnique<wm::WMState>();
 
-  discardable_memory::mojom::DiscardableSharedMemoryManagerPtr manager_ptr;
-  connector->BindInterface(ui::mojom::kServiceName, &manager_ptr);
-
-  discardable_shared_memory_manager_ = base::MakeUnique<
-      discardable_memory::ClientDiscardableSharedMemoryManager>(
-      std::move(manager_ptr), io_task_runner);
-  base::DiscardableMemoryAllocator::SetInstance(
-      discardable_shared_memory_manager_.get());
-
   window_tree_client_ = base::MakeUnique<aura::WindowTreeClient>(
       connector, this, nullptr /* window_manager_delegate */,
       nullptr /* window_tree_client_request */, std::move(io_task_runner));
@@ -131,7 +121,6 @@ MusClient::~MusClient() {
         ViewsDelegate::DesktopWindowTreeHostFactory());
   }
 
-  base::DiscardableMemoryAllocator::SetInstance(nullptr);
   DCHECK_EQ(instance_, this);
   instance_ = nullptr;
   DCHECK(aura::Env::GetInstance());

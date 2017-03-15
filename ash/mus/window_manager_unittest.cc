@@ -91,7 +91,8 @@ TEST_F(MusWindowManagerTest, OpenWindow) {
 
   // Connect to mus and create a new top level window. The request goes to
   // |ash|, but is async.
-  aura::WindowTreeClient client(connector(), &window_tree_delegate);
+  aura::WindowTreeClient client(connector(), &window_tree_delegate, nullptr,
+                                nullptr, nullptr, false);
   client.ConnectViaWindowTreeFactory();
   aura::test::EnvTestHelper().SetWindowTreeClient(&client);
   std::map<std::string, std::vector<uint8_t>> properties;
@@ -110,7 +111,8 @@ TEST_F(MusWindowManagerTest, OpenWindow) {
   auto tree_client_request = MakeRequest(&tree_client);
   client.Embed(child_window, std::move(tree_client), 0u, base::Bind(&OnEmbed));
   aura::WindowTreeClient child_client(connector(), &window_tree_delegate,
-                                      nullptr, std::move(tree_client_request));
+                                      nullptr, std::move(tree_client_request),
+                                      nullptr, false);
   window_tree_delegate.WaitForEmbed();
   ASSERT_TRUE(!child_client.GetRoots().empty());
   window_tree_delegate.DestroyWindowTreeHost();

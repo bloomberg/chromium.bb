@@ -147,6 +147,8 @@ component("aura") {
     "//base/third_party/dynamic_annotations",
     "//cc",
     "//cc/surfaces",
+    "//components/discardable_memory/client",
+    "//components/discardable_memory/public/interfaces",
     "//gpu/ipc/client",
     "//mojo/public/cpp/system",
     "//net",

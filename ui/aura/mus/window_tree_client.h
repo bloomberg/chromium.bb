@@ -30,6 +30,14 @@
 #include "ui/aura/mus/window_manager_delegate.h"
 #include "ui/aura/mus/window_tree_host_mus_delegate.h"
 
+namespace base {
+class Thread;
+}
+
+namespace discardable_memory {
+class ClientDiscardableSharedMemoryManager;
+}
+
 namespace display {
 class Display;
 }
@@ -86,12 +94,17 @@ class AURA_EXPORT WindowTreeClient
       public WindowTreeHostMusDelegate,
       public client::TransientWindowClientObserver {
  public:
-  explicit WindowTreeClient(
+  // |create_discardable_memory| If it is true, WindowTreeClient will setup the
+  // dicardable shared memory manager for this process. In some test, more than
+  // one WindowTreeClient will be created, so we need pass false to avoid
+  // setup the discardable shared memory manager more than once.
+  WindowTreeClient(
       service_manager::Connector* connector,
       WindowTreeClientDelegate* delegate,
       WindowManagerDelegate* window_manager_delegate = nullptr,
       ui::mojom::WindowTreeClientRequest request = nullptr,
-      scoped_refptr<base::SingleThreadTaskRunner> io_task_runner = nullptr);
+      scoped_refptr<base::SingleThreadTaskRunner> io_task_runner = nullptr,
+      bool create_discardable_memory = true);
   ~WindowTreeClient() override;
 
   // Establishes the connection by way of the WindowTreeFactory.
@@ -543,8 +556,14 @@ class AURA_EXPORT WindowTreeClient
 
   base::ObserverList<WindowTreeClientTestObserver> test_observers_;
 
+  // IO thread for GPU and discardable shared memory IPC.
+  std::unique_ptr<base::Thread> io_thread_;
+
   std::unique_ptr<ui::Gpu> gpu_;
   std::unique_ptr<MusContextFactory> compositor_context_factory_;
+
+  std::unique_ptr<discardable_memory::ClientDiscardableSharedMemoryManager>
+      discardable_shared_memory_manager_;
 
   // If |compositor_context_factory_| is installed on Env, then this is the
   // ContextFactory that was set on Env originally.

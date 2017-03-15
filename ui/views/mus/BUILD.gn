@@ -48,8 +48,6 @@ component("mus") {
     "//base/third_party/dynamic_annotations",
     "//cc",
     "//cc/surfaces",
-    "//components/discardable_memory/client",
-    "//components/discardable_memory/public/interfaces",
     "//mojo/common",
     "//mojo/public/cpp/bindings",
     "//net",

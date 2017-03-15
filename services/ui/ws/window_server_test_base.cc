@@ -271,8 +271,10 @@ void WindowServerTestBase::OnWmDeactivateWindow(aura::Window* window) {
 void WindowServerTestBase::Create(
     const service_manager::Identity& remote_identity,
     mojom::WindowTreeClientRequest request) {
+  const bool create_discardable_memory = false;
   window_tree_clients_.push_back(base::MakeUnique<aura::WindowTreeClient>(
-      connector(), this, nullptr, std::move(request)));
+      connector(), this, nullptr, std::move(request), nullptr,
+      create_discardable_memory));
 }
 
 bool WindowServerTestBase::DeleteWindowTreeHost(

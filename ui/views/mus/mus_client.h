@@ -30,10 +30,6 @@ class SingleThreadTaskRunner;
 class Thread;
 }
 
-namespace discardable_memory {
-class ClientDiscardableSharedMemoryManager;
-}
-
 namespace service_manager {
 class Connector;
 }
@@ -160,9 +156,6 @@ class VIEWS_MUS_EXPORT MusClient : public aura::WindowTreeClientDelegate,
   std::unique_ptr<aura::WindowTreeClient> window_tree_client_;
 
   std::unique_ptr<PointerWatcherEventRouter> pointer_watcher_event_router_;
-
-  std::unique_ptr<discardable_memory::ClientDiscardableSharedMemoryManager>
-      discardable_shared_memory_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(MusClient);
 };

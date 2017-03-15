@@ -711,7 +711,8 @@ class EstablishConnectionViaFactoryDelegate : public TestWindowManagerDelegate {
 TEST_F(WindowServerTest, EstablishConnectionViaFactory) {
   EstablishConnectionViaFactoryDelegate delegate(window_manager());
   set_window_manager_delegate(&delegate);
-  aura::WindowTreeClient second_client(connector(), this);
+  aura::WindowTreeClient second_client(connector(), this, nullptr, nullptr,
+                                       nullptr, false);
   second_client.ConnectViaWindowTreeFactory();
   aura::WindowTreeHostMus window_tree_host_in_second_client(&second_client);
   window_tree_host_in_second_client.InitHost();
@@ -739,7 +740,8 @@ TEST_F(WindowServerTest, OnWindowHierarchyChangedIncludesTransientParent) {
   // of the first window and then add it.
   EstablishConnectionViaFactoryDelegate delegate(window_manager());
   set_window_manager_delegate(&delegate);
-  aura::WindowTreeClient second_client(connector(), this);
+  aura::WindowTreeClient second_client(connector(), this, nullptr, nullptr,
+                                       nullptr, false);
   second_client.ConnectViaWindowTreeFactory();
   aura::WindowTreeHostMus window_tree_host_in_second_client(&second_client);
   window_tree_host_in_second_client.InitHost();
