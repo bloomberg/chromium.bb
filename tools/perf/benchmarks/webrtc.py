@@ -94,3 +94,34 @@ class WebrtcRendering(perf_benchmark.PerfBenchmark):
   @classmethod
   def Name(cls):
     return 'webrtc.webrtc_smoothness'
+
+
+# WebrtcRenderingTBMv2 must be a PerfBenchmark, and not a _Webrtc, because it is
+# a timeline-based metric.
+print dir(benchmark)
+@benchmark.Owner(emails=['ehmaldonado@chromium.org',
+                         'phoglund@chromium.org',
+                         'qiangchen@chromium.org'])
+class WebrtcRenderingTBMv2(perf_benchmark.PerfBenchmark):
+  """Specific time measurements (e.g. fps, smoothness) for WebRtc rendering."""
+
+  page_set = page_sets.WebrtcRenderingPageSet
+
+  def CreateTimelineBasedMeasurementOptions(self):
+    category_filter = chrome_trace_category_filter.ChromeTraceCategoryFilter(
+        filter_string='webrtc,toplevel')
+    options = timeline_based_measurement.Options(category_filter)
+    options.SetTimelineBasedMetrics([
+        'cpuTimeMetric',
+        'expectedQueueingTimeMetric',
+        'webrtcRenderingMetric',
+    ])
+    return options
+
+  def SetExtraBrowserOptions(self, options):
+    options.AppendExtraBrowserArgs('--use-fake-device-for-media-stream')
+    options.AppendExtraBrowserArgs('--use-fake-ui-for-media-stream')
+
+  @classmethod
+  def Name(cls):
+    return 'webrtc.webrtc_smoothness_tbmv2'
