@@ -2082,30 +2082,11 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 
 - (void)loadCancelled {
   [_passKitDownloader cancelPendingDownload];
-
-  // Current load will not complete; this should be communicated upstream to the
-  // delegate.
-  switch (_loadPhase) {
-    case web::LOAD_REQUESTED:
-      // Load phase after abort is always PAGE_LOADED.
-      _loadPhase = web::PAGE_LOADED;
-      if (!_isHalted) {
-        _webStateImpl->SetIsLoading(false);
-      }
-      [_delegate webCancelStartLoadingRequest];
-      break;
-    case web::PAGE_LOADING:
-      // The previous load never fully completed before this page change. The
-      // loadPhase is changed to PAGE_LOADED to indicate the cycle is complete,
-      // and the delegate is called.
-      _loadPhase = web::PAGE_LOADED;
-      if (!_isHalted) {
-        _webStateImpl->SetIsLoading(false);
-      }
-      [_delegate webLoadCancelled:_URLOnStartLoading];
-      break;
-    case web::PAGE_LOADED:
-      break;
+  if (_loadPhase != web::PAGE_LOADED) {
+    _loadPhase = web::PAGE_LOADED;
+    if (!_isHalted) {
+      _webStateImpl->SetIsLoading(false);
+    }
   }
 }
 

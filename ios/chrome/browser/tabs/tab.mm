@@ -1590,11 +1590,6 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
                     object:self];
 }
 
-- (void)webCancelStartLoadingRequest {
-  DCHECK(self.webController.loadPhase == web::PAGE_LOADED);
-  [parentTabModel_ notifyTabChanged:self];
-}
-
 - (void)webState:(web::WebState*)webState
     didCommitNavigationWithDetails:(const web::LoadCommittedDetails&)details {
   DCHECK([self navigationManager]);
@@ -1725,8 +1720,9 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
   [parentTabModel_ notifyTabChanged:self];
 }
 
-- (void)webLoadCancelled:(const GURL&)url {
-  // When a load is cancelled, this is the maximum that a page will ever load.
+- (void)webStateDidStopLoading:(web::WebState*)webState {
+  // This is the maximum that a page will ever load and it is safe to allow
+  // fullscreen mode.
   [fullScreenController_ enableFullScreen];
   [parentTabModel_ notifyTabChanged:self];
 }

@@ -37,11 +37,6 @@ class GURL;
 // Phase will be LOAD_REQUESTED.
 - (void)webWillAddPendingURL:(const GURL&)url
                   transition:(ui::PageTransition)transition;
-// Called when webWillStartLoadingURL was called, but something went wrong.
-- (void)webCancelStartLoadingRequest;
-// Called when the page load was cancelled by page activity (before a success /
-// failure state is known). Phase will be PAGE_LOADED.
-- (void)webLoadCancelled:(const GURL&)url;
 // Called when a placeholder image should be displayed instead of the WebView.
 - (void)webController:(CRWWebController*)webController
     retrievePlaceholderOverlayImage:(void (^)(UIImage*))block;
