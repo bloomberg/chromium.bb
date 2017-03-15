@@ -437,7 +437,8 @@ bool KeyboardEventManager::currentCapsLockState() {
 #elif OS(MACOSX)
       return GetCurrentKeyModifiers() & alphaLock;
 #else
-      NOTIMPLEMENTED();
+      // Caps lock state use is limited to Mac password input
+      // fields, so just return false. See http://crbug.com/618739.
       return false;
 #endif
     case OverrideCapsLockState::On:
