@@ -580,7 +580,7 @@ static const char kSPKIHash_YahooBackup2[] =
 static const char* const kExpectCTReportURIs[] = {
     "https://clients3.google.com/ct_upload",
     "https://log.getdropbox.com/log/expectct",
-    NULL,
+    nullptr,
 };
 
 static const char* const kExpectStapleReportURIs[] = {
@@ -589,12 +589,12 @@ static const char* const kExpectStapleReportURIs[] = {
     "https://reporting.caddyserver.com/expect-staple",
     "https://asac.casa/expectstaple.jsp",
     "https://scotthelme.report-uri.io/r/default/staple/reportOnly",
-    NULL,
+    nullptr,
 };
 
 // kNoRejectedPublicKeys is a placeholder for when no public keys are rejected.
 static const char* const kNoRejectedPublicKeys[] = {
-    NULL,
+    nullptr,
 };
 
 // kNoReportURI is a placeholder for when a pinset does not have a report URI.
@@ -619,7 +619,7 @@ static const char* const kDropboxAcceptableCerts[] = {
     kSPKIHash_ThawtePrimaryRootCA_G2,
     kSPKIHash_ThawtePrimaryRootCA_G3,
     kSPKIHash_ThawtePrimaryRootCA,
-    NULL,
+    nullptr,
 };
 static const char kDropboxReportURI[] = "https://log.getdropbox.com/hpkp";
 
@@ -628,7 +628,7 @@ static const char* const kFacebookAcceptableCerts[] = {
     kSPKIHash_DigiCertECCSecureServerCA,
     kSPKIHash_DigiCertEVRoot,
     kSPKIHash_FacebookBackup,
-    NULL,
+    nullptr,
 };
 
 static const char* const kGoogleAcceptableCerts[] = {
@@ -636,7 +636,7 @@ static const char* const kGoogleAcceptableCerts[] = {
     kSPKIHash_GoogleG2,
     kSPKIHash_GeoTrustGlobal,
     kSPKIHash_GlobalSignRootCA_R2,
-    NULL,
+    nullptr,
 };
 static const char kGoogleReportURI[] = "http://clients3.google.com/cert_upload_json";
 
@@ -651,7 +651,7 @@ static const char* const kNightxAcceptableCerts[] = {
     kSPKIHash_DigiCertAssuredIDRoot,
     kSPKIHash_COMODOCertificationAuthority,
     kSPKIHash_AddTrustExternalCARoot,
-    NULL,
+    nullptr,
 };
 static const char kNightxReportURI[] = "http://l.nightx.uk/report/hpkp";
 
@@ -660,7 +660,7 @@ static const char* const kSpideroakAcceptableCerts[] = {
     kSPKIHash_DigiCertEVRoot,
     kSPKIHash_SpiderOak2,
     kSPKIHash_SpiderOak3,
-    NULL,
+    nullptr,
 };
 
 static const char* const kSwehackComAcceptableCerts[] = {
@@ -670,12 +670,12 @@ static const char* const kSwehackComAcceptableCerts[] = {
     kSPKIHash_DSTRootCAX3,
     kSPKIHash_SwehackBackup,
     kSPKIHash_COMODORSADomainValidationSecureServerCA,
-    NULL,
+    nullptr,
 };
 
 static const char* const kTestAcceptableCerts[] = {
     kSPKIHash_TestSPKI,
-    NULL,
+    nullptr,
 };
 
 static const char* const kTorAcceptableCerts[] = {
@@ -686,7 +686,7 @@ static const char* const kTorAcceptableCerts[] = {
     kSPKIHash_Tor3,
     kSPKIHash_LetsEncryptAuthorityPrimary_X1_X3,
     kSPKIHash_LetsEncryptAuthorityBackup_X2_X4,
-    NULL,
+    nullptr,
 };
 
 static const char* const kTwitterCDNAcceptableCerts[] = {
@@ -732,7 +732,7 @@ static const char* const kTwitterCDNAcceptableCerts[] = {
     kSPKIHash_GlobalSignRootCA,
     kSPKIHash_GlobalSignRootCA_R2,
     kSPKIHash_GlobalSignRootCA_R3,
-    NULL,
+    nullptr,
 };
 static const char kTwitterCDNReportURI[] = "http://l.twimg.com/i/hpkp_report";
 
@@ -758,7 +758,7 @@ static const char* const kTwitterComAcceptableCerts[] = {
     kSPKIHash_DigiCertEVRoot,
     kSPKIHash_DigiCertAssuredIDRoot,
     kSPKIHash_Twitter1,
-    NULL,
+    nullptr,
 };
 static const char kTwitterComReportURI[] = "http://l.twimg.com/i/hpkp_report";
 
@@ -778,7 +778,7 @@ static const char* const kYahooAcceptableCerts[] = {
     kSPKIHash_DigiCertEVRoot,
     kSPKIHash_YahooBackup1,
     kSPKIHash_YahooBackup2,
-    NULL,
+    nullptr,
 };
 
 struct Pinset {
