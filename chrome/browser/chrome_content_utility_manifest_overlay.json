@@ -14,6 +14,7 @@
           "extensions::mojom::RemovableStorageWriter",
           "extensions::mojom::WiFiCredentialsGetter",
           "net::interfaces::ProxyResolverFactory",
+          "payments::mojom::PaymentManifestParser",
           "safe_json::mojom::SafeJsonParser"
         ]
       }

@@ -248,4 +248,10 @@
   <message name="IDS_PAYMENTS_ANDROID_APP_ERROR" desc="Error message that is shown when an Android payment application fails to start." formatter_data="android_java">
     Unable to launch payment app.
   </message>
+
+  <if expr="is_android">
+    <message name="IDS_UTILITY_PROCESS_MANIFEST_PARSER_NAME" desc="The name of the utility process used for parsing manifest files.">
+      Manifest Parser
+    </message>
+  </if>
 </grit-part>

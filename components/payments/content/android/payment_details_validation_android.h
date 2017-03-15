@@ -7,6 +7,10 @@
 
 #include <jni.h>
 
+namespace payments {
+
 bool RegisterPaymentValidator(JNIEnv* env);
+
+}  // namespace payments
 
 #endif  // COMPONENTS_PAYMENTS_CONTENT_ANDROID_PAYMENT_DETAILS_VALIDATION_ANDROID_H_

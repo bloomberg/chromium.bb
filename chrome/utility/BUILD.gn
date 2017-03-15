@@ -99,6 +99,10 @@ static_library("utility") {
     ]
   }
 
+  if (is_android) {
+    deps += [ "//components/payments/content/android/utility" ]
+  }
+
   if (enable_extensions) {
     sources += [
       "extensions/extensions_handler.cc",

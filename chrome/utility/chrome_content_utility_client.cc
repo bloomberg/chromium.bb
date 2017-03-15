@@ -36,6 +36,8 @@
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "net/proxy/mojo_proxy_resolver_factory_impl.h"
 #include "net/proxy/proxy_resolver_v8.h"
+#else
+#include "components/payments/content/android/utility/payment_manifest_parser.h"
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -275,6 +277,8 @@ void ChromeContentUtilityClient::ExposeInterfacesToBrowser(
       base::Bind(CreateProxyResolverFactory));
   registry->AddInterface(base::Bind(CreateResourceUsageReporter));
   registry->AddInterface(base::Bind(&ProfileImportHandler::Create));
+#else
+  registry->AddInterface(base::Bind(&payments::PaymentManifestParser::Create));
 #endif
   registry->AddInterface(
       base::Bind(&safe_json::SafeJsonParserMojoImpl::Create));

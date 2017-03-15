@@ -64,6 +64,7 @@ class DataUseUserData : public base::SupportsUserData::Data {
     NTP_SNIPPETS_THUMBNAILS,
     DOODLE,
     UKM,
+    PAYMENTS,
   };
 
   // Data use broken by content type. This enum must remain synchronized

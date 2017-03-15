@@ -1,6 +1,7 @@
 include_rules = [
   "+chrome/grit",
   "+chrome/installer/util",
+  "+components/payments/content/android/utility",
   "+components/safe_json",
   "+components/wifi",
   "+content/public/child",

@@ -4,6 +4,7 @@
 
 import("//build/config/android/config.gni")
 import("//build/config/android/rules.gni")
+import("//mojo/public/tools/bindings/mojom.gni")
 
 static_library("android") {
   sources = [
@@ -11,20 +12,81 @@ static_library("android") {
     "currency_formatter_android.h",
     "payment_details_validation_android.cc",
     "payment_details_validation_android.h",
+    "payment_manifest_downloader_android.cc",
+    "payment_manifest_downloader_android.h",
+    "payment_manifest_parser_android.cc",
+    "payment_manifest_parser_android.h",
   ]
   deps = [
+    ":downloader",
     ":jni_headers",
+    ":mojom",
     "//base",
     "//components/payments/content:payment_request",
     "//components/payments/content:payment_validation",
     "//components/payments/core",
+    "//components/strings",
+    "//content/public/browser",
+    "//net",
+    "//ui/base",
+  ]
+}
+
+static_library("downloader") {
+  sources = [
+    "payment_manifest_downloader.cc",
+    "payment_manifest_downloader.h",
+  ]
+  deps = [
+    "//base",
+    "//components/data_use_measurement/core",
+    "//components/link_header_util",
+    "//net",
   ]
 }
 
 generate_jni("jni_headers") {
   sources = [
-    "//chrome/android/java/src/org/chromium/chrome/browser/payments/CurrencyFormatter.java",
-    "//chrome/android/java/src/org/chromium/chrome/browser/payments/PaymentValidator.java",
+    "java/src/org/chromium/components/payments/CurrencyFormatter.java",
+    "java/src/org/chromium/components/payments/PaymentManifestDownloader.java",
+    "java/src/org/chromium/components/payments/PaymentManifestParser.java",
+    "java/src/org/chromium/components/payments/PaymentValidator.java",
   ]
   jni_package = "payments"
+}
+
+android_library("java") {
+  java_files = [
+    "java/src/org/chromium/components/payments/CurrencyFormatter.java",
+    "java/src/org/chromium/components/payments/PaymentManifestDownloader.java",
+    "java/src/org/chromium/components/payments/PaymentManifestParser.java",
+    "java/src/org/chromium/components/payments/PaymentValidator.java",
+  ]
+  deps = [
+    ":mojom_java",
+    "//base:base_java",
+    "//components/payments/content:payment_request_java",
+    "//content/public/android:content_java",
+    "//mojo/public/java:bindings_java",
+  ]
+}
+
+mojom("mojom") {
+  sources = [
+    "payment_manifest_parser.mojom",
+  ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "payment_manifest_downloader_unittest.cc",
+  ]
+  deps = [
+    ":downloader",
+    "//base",
+    "//content/test:test_support",
+    "//net:test_support",
+    "//testing/gtest",
+  ]
 }

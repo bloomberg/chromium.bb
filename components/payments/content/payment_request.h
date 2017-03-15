@@ -15,6 +15,7 @@
 #include "components/payments/content/payment_request_delegate.h"
 #include "components/payments/core/payment_instrument.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/interface_request.h"
 
 namespace autofill {
 class AutofillProfile;
@@ -44,22 +45,21 @@ class PaymentRequest : public mojom::PaymentRequest,
     virtual ~Observer() {}
   };
 
-  PaymentRequest(
-      content::WebContents* web_contents,
-      std::unique_ptr<PaymentRequestDelegate> delegate,
-      PaymentRequestWebContentsManager* manager,
-      mojo::InterfaceRequest<payments::mojom::PaymentRequest> request);
+  PaymentRequest(content::WebContents* web_contents,
+                 std::unique_ptr<PaymentRequestDelegate> delegate,
+                 PaymentRequestWebContentsManager* manager,
+                 mojo::InterfaceRequest<mojom::PaymentRequest> request);
   ~PaymentRequest() override;
 
-  // payments::mojom::PaymentRequest "stub"
-  void Init(payments::mojom::PaymentRequestClientPtr client,
-            std::vector<payments::mojom::PaymentMethodDataPtr> method_data,
-            payments::mojom::PaymentDetailsPtr details,
-            payments::mojom::PaymentOptionsPtr options) override;
+  // mojom::PaymentRequest
+  void Init(mojom::PaymentRequestClientPtr client,
+            std::vector<mojom::PaymentMethodDataPtr> method_data,
+            mojom::PaymentDetailsPtr details,
+            mojom::PaymentOptionsPtr options) override;
   void Show() override;
-  void UpdateWith(payments::mojom::PaymentDetailsPtr details) override {}
+  void UpdateWith(mojom::PaymentDetailsPtr details) override {}
   void Abort() override;
-  void Complete(payments::mojom::PaymentComplete result) override;
+  void Complete(mojom::PaymentComplete result) override;
   void CanMakePayment() override;
 
   // PaymentInstrument::Delegate:
@@ -145,8 +145,8 @@ class PaymentRequest : public mojom::PaymentRequest,
   }
   const std::string& locale() { return delegate_->GetApplicationLocale(); }
 
-  payments::mojom::PaymentDetails* details() { return details_.get(); }
-  payments::mojom::PaymentOptions* options() { return options_.get(); }
+  mojom::PaymentDetails* details() { return details_.get(); }
+  mojom::PaymentOptions* options() { return options_.get(); }
   const std::vector<std::string>& supported_card_networks() {
     return supported_card_networks_;
   }
@@ -170,7 +170,7 @@ class PaymentRequest : public mojom::PaymentRequest,
 
   // Validates the |method_data| and fills |supported_card_networks_|.
   void PopulateValidatedMethodData(
-      const std::vector<payments::mojom::PaymentMethodDataPtr>& method_data);
+      const std::vector<mojom::PaymentMethodDataPtr>& method_data);
 
   // Updates |is_ready_to_pay_| with the current state, by validating that all
   // the required information is available and notify observers.
@@ -195,10 +195,10 @@ class PaymentRequest : public mojom::PaymentRequest,
   std::unique_ptr<PaymentRequestDelegate> delegate_;
   // |manager_| owns this PaymentRequest.
   PaymentRequestWebContentsManager* manager_;
-  mojo::Binding<payments::mojom::PaymentRequest> binding_;
-  payments::mojom::PaymentRequestClientPtr client_;
-  payments::mojom::PaymentDetailsPtr details_;
-  payments::mojom::PaymentOptionsPtr options_;
+  mojo::Binding<mojom::PaymentRequest> binding_;
+  mojom::PaymentRequestClientPtr client_;
+  mojom::PaymentDetailsPtr details_;
+  mojom::PaymentOptionsPtr options_;
   std::unique_ptr<CurrencyFormatter> currency_formatter_;
   // A set of supported basic card networks.
   std::vector<std::string> supported_card_networks_;

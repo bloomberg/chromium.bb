@@ -1,0 +1,19 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+[JavaPackage="org.chromium.payments.mojom"]
+module payments.mojom;
+
+struct PaymentManifestSection {
+  string package_name;
+  // Optional version number. 0 if not defined.
+  int64 version;
+  // The result of SHA256(signing certificate bytes) for each certificate in the
+  // package.
+  array<array<uint8, 32>> sha256_cert_fingerprints;
+};
+
+interface PaymentManifestParser {
+  Parse(string content) => (array<PaymentManifestSection> manifest);
+};

@@ -1,4 +1,5 @@
 include_rules = [
+  "-components/payments/content",
   "-content",
   "+components/autofill/core",
   "+third_party/libaddressinput",

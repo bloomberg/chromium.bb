@@ -1,3 +1,9 @@
 include_rules = [
+  "-components/payments/content/android/utility",
+  "+components/data_use_measurement",
+  "+components/link_header_util",
+  "+components/strings",
   "+jni",
+  "+net",
+  "+ui/base",
 ]

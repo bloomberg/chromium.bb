@@ -246,6 +246,8 @@ test("components_unittests") {
       "//components/gcm_driver/instance_id/android:instance_id_driver_test_support_java",
       "//components/invalidation/impl",
       "//components/invalidation/impl:java",
+      "//components/payments/content/android:unit_tests",
+      "//components/payments/content/android/utility:unit_tests",
       "//components/policy/android:policy_java",
       "//components/safe_json",
       "//components/safe_json/android:safe_json_java",

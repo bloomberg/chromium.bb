@@ -173,6 +173,8 @@
 #include "components/invalidation/impl/android/component_jni_registrar.h"
 #include "components/payments/content/android/currency_formatter_android.h"
 #include "components/payments/content/android/payment_details_validation_android.h"
+#include "components/payments/content/android/payment_manifest_downloader_android.h"
+#include "components/payments/content/android/payment_manifest_parser_android.h"
 #include "components/policy/core/browser/android/component_jni_registrar.h"
 #include "components/safe_browsing_db/android/jni_registrar.h"
 #include "components/safe_json/android/component_jni_registrar.h"
@@ -349,7 +351,9 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
      autofill::PasswordGenerationPopupViewAndroid::Register},
     {"PasswordUIViewAndroid",
      PasswordUIViewAndroid::RegisterPasswordUIViewAndroid},
-    {"PaymentValidator", RegisterPaymentValidator},
+    {"PaymentManifestDownloader", payments::RegisterPaymentManifestDownloader},
+    {"PaymentManifestParser", payments::RegisterPaymentManifestParser},
+    {"PaymentValidator", payments::RegisterPaymentValidator},
     {"PermissionDialogDelegate",
      PermissionDialogDelegate::RegisterPermissionDialogDelegate},
     {"PermissionUpdateInfoBarDelegate",

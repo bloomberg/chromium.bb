@@ -9,6 +9,7 @@ import android.support.test.filters.MediumTest;
 import junit.framework.Assert;
 
 import org.chromium.base.LocaleUtils;
+import org.chromium.components.payments.CurrencyFormatter;
 import org.chromium.content.browser.test.NativeLibraryTestBase;
 
 import java.util.Arrays;

@@ -44,6 +44,8 @@ import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
 import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
+import org.chromium.components.payments.CurrencyFormatter;
+import org.chromium.components.payments.PaymentValidator;
 import org.chromium.components.url_formatter.UrlFormatter;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.mojo.system.MojoException;
@@ -403,8 +405,8 @@ public class PaymentRequestImpl
 
         if (!parseAndValidateDetailsOrDisconnectFromClient(details)) return;
 
-        PaymentAppFactory.getInstance().create(
-                mWebContents, Collections.unmodifiableSet(mMethodData.keySet()), this);
+        PaymentAppFactory.getInstance().create(mWebContents,
+                Collections.unmodifiableSet(mMethodData.keySet()), this /* callback */);
 
         mRequestShipping = options != null && options.requestShipping;
         mRequestPayerName = options != null && options.requestPayerName;
@@ -631,6 +633,15 @@ public class PaymentRequestImpl
                 queryApps.put(app, appMethods);
             }
         }
+
+        if (queryApps.isEmpty()) {
+            CanMakePaymentQuery query = sCanMakePaymentQueries.get(mSchemelessOriginForPaymentApp);
+            if (query != null && query.matchesPaymentMethods(mMethodData)) {
+                query.notifyObserversOfResponse(false);
+            }
+        }
+
+        if (disconnectIfNoPaymentMethodsSupported()) return;
 
         // Query instruments after mMerchantSupportsAutofillPaymentInstruments has been initialized,
         // so a fast response from a non-autofill payment app at the front of the app list does not
@@ -1386,7 +1397,9 @@ public class PaymentRequestImpl
         }
 
         CanMakePaymentQuery query = sCanMakePaymentQueries.get(mSchemelessOriginForPaymentApp);
-        if (query != null) query.notifyObserversOfResponse(mCanMakePayment);
+        if (query != null && query.matchesPaymentMethods(mMethodData)) {
+            query.notifyObserversOfResponse(mCanMakePayment);
+        }
 
         // The list of payment instruments is ready to display.
         List<PaymentInstrument> sortedInstruments = new ArrayList<>();
@@ -1412,15 +1425,14 @@ public class PaymentRequestImpl
      * @return True if no payment methods are supported
      */
     private boolean disconnectIfNoPaymentMethodsSupported() {
-        if (!isFinishedQueryingPaymentApps()) return false;
+        if (!isFinishedQueryingPaymentApps() || !mIsCurrentPaymentRequestShowing) return false;
 
         boolean foundPaymentMethods = mPaymentMethodsSection != null
                 && !mPaymentMethodsSection.isEmpty();
         boolean userCanAddCreditCard = mMerchantSupportsAutofillPaymentInstruments
                 && !ChromeFeatureList.isEnabled(ChromeFeatureList.NO_CREDIT_CARD_ABORT);
 
-        if (!mArePaymentMethodsSupported || (mIsCurrentPaymentRequestShowing && !foundPaymentMethods
-                                                    && !userCanAddCreditCard)) {
+        if (!mArePaymentMethodsSupported || (!foundPaymentMethods && !userCanAddCreditCard)) {
             // All payment apps have responded, but none of them have instruments. It's possible to
             // add credit cards, but the merchant does not support them either. The payment request
             // must be rejected.

@@ -8,10 +8,6 @@ mojom("payment_request") {
   sources = [
     "payment_request.mojom",
   ]
-
-  public_deps = [
-    "//mojo/common:common_custom_types",
-  ]
 }
 
 mojom("payment_app") {
@@ -21,7 +17,6 @@ mojom("payment_app") {
 
   public_deps = [
     ":payment_request",
-    "//mojo/common:common_custom_types",
     "//url/mojo:url_mojom_gurl",
   ]
 }
@@ -72,7 +67,7 @@ static_library("payment_validation") {
 source_set("unit_tests") {
   testonly = true
   sources = [
-    "payments_validators_test.cc",
+    "payments_validators_unittest.cc",
   ]
 
   deps = [
