@@ -667,6 +667,9 @@ typedef struct AV1_COMP {
 #if CONFIG_REFERENCE_BUFFER
   SequenceHeader seq_params;
 #endif
+#if CONFIG_LV_MAP
+  tran_low_t *tcoeff_buf[MAX_MB_PLANE];
+#endif
 } AV1_COMP;
 
 void av1_initialize_enc(void);

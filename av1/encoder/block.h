@@ -67,6 +67,9 @@ typedef unsigned int av1_coeff_cost[PLANE_TYPES][REF_TYPES][COEF_BANDS][2]
 typedef struct {
   int_mv ref_mvs[MODE_CTX_REF_FRAMES][MAX_MV_REF_CANDIDATES];
   int16_t mode_context[MODE_CTX_REF_FRAMES];
+#if CONFIG_LV_MAP
+  tran_low_t *tcoeff[MAX_MB_PLANE];
+#endif
 #if CONFIG_REF_MV
   uint8_t ref_mv_count[MODE_CTX_REF_FRAMES];
   CANDIDATE_MV ref_mv_stack[MODE_CTX_REF_FRAMES][MAX_REF_MV_STACK_SIZE];

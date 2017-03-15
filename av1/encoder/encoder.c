@@ -39,6 +39,9 @@
 #include "av1/encoder/encodeframe.h"
 #include "av1/encoder/encodemv.h"
 #include "av1/encoder/encoder.h"
+#if CONFIG_LV_MAP
+#include "av1/encoder/encodetxb.h"
+#endif
 #include "av1/encoder/ethread.h"
 #include "av1/encoder/firstpass.h"
 #include "av1/encoder/mbgraph.h"
@@ -451,6 +454,9 @@ static void dealloc_compressor_data(AV1_COMP *cpi) {
     aom_free_frame_buffer(&cpi->upsampled_ref_bufs[i].buf);
 
   av1_free_ref_frame_buffers(cm->buffer_pool);
+#if CONFIG_LV_MAP
+  av1_free_txb_buf(cpi);
+#endif
   av1_free_context_buffers(cm);
 
   aom_free_frame_buffer(&cpi->last_frame_uf);
@@ -789,6 +795,10 @@ void av1_alloc_compressor_data(AV1_COMP *cpi) {
 
   av1_alloc_context_buffers(cm, cm->width, cm->height);
 
+#if CONFIG_LV_MAP
+  av1_alloc_txb_buf(cpi);
+#endif
+
   alloc_context_buffers_ext(cpi);
 
   aom_free(cpi->tile_tok[0][0]);
@@ -922,6 +932,9 @@ static void update_frame_size(AV1_COMP *cpi) {
                        NULL);
   memset(cpi->mbmi_ext_base, 0,
          cm->mi_rows * cm->mi_cols * sizeof(*cpi->mbmi_ext_base));
+#if CONFIG_LV_MAP
+  av1_reset_txb_buf(cpi);
+#endif
 
   set_tile_info(cpi);
 }
