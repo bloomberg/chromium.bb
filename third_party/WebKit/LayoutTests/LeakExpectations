@@ -65,6 +65,9 @@ crbug.com/480769 virtual/mojo-loading/http/tests/inspector/service-workers/user-
 crbug.com/662477 external/wpt/html/webappapis/idle-callbacks/cancel-invoked.html [ Leak ]
 crbug.com/662477 external/wpt/html/webappapis/scripting/events/onerroreventhandler.html [ Leak ]
 
+# Likely caused by http://crbug.com/501866.
+crbug.com/701695 external/wpt/html/webappapis/scripting/events/event-handler-processing-algorithm-error/window-synthetic-errorevent.html [ Leak ]
+
 # -----------------------------------------------------------------
 # Untriaged but known leaks of ActiveDOMObject (fast).
 # -----------------------------------------------------------------
