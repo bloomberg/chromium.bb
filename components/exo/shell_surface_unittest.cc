@@ -43,7 +43,7 @@ uint32_t ConfigureFullscreen(uint32_t serial,
                              ash::wm::WindowStateType state_type,
                              bool resizing,
                              bool activated,
-                             const gfx::Point& origin) {
+                             const gfx::Vector2d& origin_offset) {
   EXPECT_EQ(ash::wm::WINDOW_STATE_TYPE_FULLSCREEN, state_type);
   return serial;
 }
@@ -370,7 +370,7 @@ uint32_t Configure(gfx::Size* suggested_size,
                    ash::wm::WindowStateType state_type,
                    bool resizing,
                    bool activated,
-                   const gfx::Point& origin) {
+                   const gfx::Vector2d& origin_offset) {
   *suggested_size = size;
   *has_state_type = state_type;
   *is_resizing = resizing;

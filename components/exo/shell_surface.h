@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_EXO_SHELL_SURFACE_H_
 #define COMPONENTS_EXO_SHELL_SURFACE_H_
 
+#include <cstdint>
 #include <deque>
 #include <memory>
 #include <string>
@@ -45,7 +46,8 @@ class ShellSurface : public SurfaceDelegate,
                      public ash::wm::WindowStateObserver,
                      public aura::WindowObserver,
                      public WMHelper::ActivationObserver,
-                     public WMHelper::AccessibilityObserver {
+                     public WMHelper::AccessibilityObserver,
+                     public WMHelper::DisplayConfigurationObserver {
  public:
   enum class BoundsMode { SHELL, CLIENT, FIXED };
 
@@ -98,7 +100,7 @@ class ShellSurface : public SurfaceDelegate,
                               ash::wm::WindowStateType state_type,
                               bool resizing,
                               bool activated,
-                              const gfx::Point& origin)>;
+                              const gfx::Vector2d& origin_offset)>;
   void set_configure_callback(const ConfigureCallback& configure_callback) {
     configure_callback_ = configure_callback;
   }
@@ -250,6 +252,9 @@ class ShellSurface : public SurfaceDelegate,
   // Overridden from WMHelper::AccessibilityObserver:
   void OnAccessibilityModeChanged() override;
 
+  // Overridden from WMHelper::DisplayConfigurationObserver:
+  void OnDisplayConfigurationChanged() override;
+
   // Overridden from ui::EventHandler:
   void OnKeyEvent(ui::KeyEvent* event) override;
   void OnMouseEvent(ui::MouseEvent* event) override;
@@ -279,6 +284,9 @@ class ShellSurface : public SurfaceDelegate,
 
   // Asks the client to configure its surface.
   void Configure();
+
+  // Returns the window that has capture during dragging.
+  aura::Window* GetDragWindow() const;
 
   // Attempt to start a drag operation. The type of drag operation to start is
   // determined by |component|.
@@ -310,10 +318,14 @@ class ShellSurface : public SurfaceDelegate,
   // Applies |system_modal_| to |widget_|.
   void UpdateSystemModal();
 
+  // In the coordinate system of the parent root window.
+  gfx::Point GetMouseLocation() const;
+
   views::Widget* widget_ = nullptr;
   Surface* surface_;
   aura::Window* parent_;
   const BoundsMode bounds_mode_;
+  int64_t primary_display_id_;
   gfx::Point origin_;
   bool activatable_ = true;
   const bool can_minimize_;

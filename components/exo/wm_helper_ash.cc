@@ -23,6 +23,7 @@ namespace exo {
 WMHelperAsh::WMHelperAsh() {
   ash::Shell::GetInstance()->AddShellObserver(this);
   ash::Shell::GetInstance()->activation_client()->AddObserver(this);
+  ash::Shell::GetInstance()->window_tree_host_manager()->AddObserver(this);
   aura::client::FocusClient* focus_client =
       aura::client::GetFocusClient(ash::Shell::GetPrimaryRootWindow());
   focus_client->AddObserver(this);
@@ -36,6 +37,7 @@ WMHelperAsh::~WMHelperAsh() {
   aura::client::FocusClient* focus_client =
       aura::client::GetFocusClient(ash::Shell::GetPrimaryRootWindow());
   focus_client->RemoveObserver(this);
+  ash::Shell::GetInstance()->window_tree_host_manager()->RemoveObserver(this);
   ash::Shell::GetInstance()->activation_client()->RemoveObserver(this);
   ash::Shell::GetInstance()->RemoveShellObserver(this);
   ui::DeviceDataManager::GetInstance()->RemoveObserver(this);
@@ -143,6 +145,10 @@ void WMHelperAsh::OnMaximizeModeEnding() {
 
 void WMHelperAsh::OnMaximizeModeEnded() {
   NotifyMaximizeModeEnded();
+}
+
+void WMHelperAsh::OnDisplayConfigurationChanged() {
+  NotifyDisplayConfigurationChanged();
 }
 
 void WMHelperAsh::OnKeyboardDeviceConfigurationChanged() {

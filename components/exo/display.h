@@ -76,7 +76,6 @@ class Display {
   // Creates a remote shell surface for an existing surface using |container|.
   std::unique_ptr<ShellSurface> CreateRemoteShellSurface(
       Surface* surface,
-      const gfx::Point& origin,
       int container);
 
   // Creates a sub-surface for an existing surface. The sub-surface will be

@@ -1008,7 +1008,7 @@ uint32_t HandleShellSurfaceConfigureCallback(
     ash::wm::WindowStateType state_type,
     bool resizing,
     bool activated,
-    const gfx::Point& origin) {
+    const gfx::Vector2d& origin_offset) {
   wl_shell_surface_send_configure(resource, WL_SHELL_SURFACE_RESIZE_NONE,
                                   size.width(), size.height());
   wl_client_flush(wl_resource_get_client(resource));
@@ -1534,7 +1534,7 @@ uint32_t HandleXdgToplevelV6ConfigureCallback(
     ash::wm::WindowStateType state_type,
     bool resizing,
     bool activated,
-    const gfx::Point& origin) {
+    const gfx::Vector2d& origin_offset) {
   wl_array states;
   wl_array_init(&states);
   if (state_type == ash::wm::WINDOW_STATE_TYPE_MAXIMIZED)
@@ -1672,7 +1672,7 @@ uint32_t HandleXdgSurfaceV5ConfigureCallback(
     ash::wm::WindowStateType state_type,
     bool resizing,
     bool activated,
-    const gfx::Point& origin) {
+    const gfx::Vector2d& origin_offset) {
   wl_array states;
   wl_array_init(&states);
   if (state_type == ash::wm::WINDOW_STATE_TYPE_MAXIMIZED)
@@ -1985,7 +1985,7 @@ void remote_surface_ack_configure(wl_client* client,
 }
 
 void remote_surface_move(wl_client* client, wl_resource* resource) {
-  NOTIMPLEMENTED();
+  GetUserDataAs<ShellSurface>(resource)->Move();
 }
 
 const struct zcr_remote_surface_v1_interface remote_surface_implementation = {
@@ -2059,7 +2059,7 @@ class WaylandRemoteShell : public WMHelper::MaximizeModeObserver,
 
   std::unique_ptr<ShellSurface> CreateShellSurface(Surface* surface,
                                                    int container) {
-    return display_->CreateRemoteShellSurface(surface, gfx::Point(), container);
+    return display_->CreateRemoteShellSurface(surface, container);
   }
 
   std::unique_ptr<NotificationSurface> CreateNotificationSurface(
@@ -2069,9 +2069,20 @@ class WaylandRemoteShell : public WMHelper::MaximizeModeObserver,
   }
 
   // Overridden from display::DisplayObserver:
+  void OnDisplayAdded(const display::Display& new_display) override {
+    if (IsMultiDisplaySupported())
+      ScheduleSendDisplayMetrics(0);
+  }
+
+  void OnDisplayRemoved(const display::Display& old_display) override {
+    if (IsMultiDisplaySupported())
+      ScheduleSendDisplayMetrics(0);
+  }
+
   void OnDisplayMetricsChanged(const display::Display& display,
                                uint32_t changed_metrics) override {
-    if (display::Screen::GetScreen()->GetPrimaryDisplay().id() != display.id())
+    if (!IsMultiDisplaySupported() &&
+        display::Screen::GetScreen()->GetPrimaryDisplay().id() != display.id())
       return;
 
     // No need to update when a primary display has changed without bounds
@@ -2116,9 +2127,31 @@ class WaylandRemoteShell : public WMHelper::MaximizeModeObserver,
     needs_send_display_metrics_ = false;
 
     const display::Screen* screen = display::Screen::GetScreen();
-    const display::Display primary_display = screen->GetPrimaryDisplay();
+    display::Display primary_display = screen->GetPrimaryDisplay();
 
-    const gfx::Insets& work_area_insets = primary_display.GetWorkAreaInsets();
+    if (IsMultiDisplaySupported()) {
+      for (const auto& display : screen->GetAllDisplays()) {
+        const gfx::Rect& bounds = display.bounds();
+        const gfx::Insets& insets = display.GetWorkAreaInsets();
+
+        zcr_remote_shell_v1_send_workspace(
+            remote_shell_resource_,
+            static_cast<uint32_t>(display.id() >> 32),
+            static_cast<uint32_t>(display.id()),
+            bounds.x(), bounds.y(), bounds.width(), bounds.height(),
+            insets.left(), insets.top(), insets.right(), insets.bottom());
+      }
+
+      zcr_remote_shell_v1_send_configure(
+          remote_shell_resource_,
+          static_cast<uint32_t>(primary_display.id() >> 32),
+          static_cast<uint32_t>(primary_display.id()),
+          OutputTransform(primary_display.rotation()),
+          wl_fixed_from_double(primary_display.device_scale_factor()),
+          layout_mode_);
+    }
+
+    const gfx::Insets& insets = primary_display.GetWorkAreaInsets();
 
     zcr_remote_shell_v1_send_configuration_changed(
         remote_shell_resource_,
@@ -2126,8 +2159,8 @@ class WaylandRemoteShell : public WMHelper::MaximizeModeObserver,
         primary_display.size().height(),
         OutputTransform(primary_display.rotation()),
         wl_fixed_from_double(primary_display.device_scale_factor()),
-        work_area_insets.left(), work_area_insets.top(),
-        work_area_insets.right(), work_area_insets.bottom(), layout_mode_);
+        insets.left(), insets.top(), insets.right(), insets.bottom(),
+        layout_mode_);
     wl_client_flush(wl_resource_get_client(remote_shell_resource_));
   }
 
@@ -2237,12 +2270,14 @@ uint32_t HandleRemoteSurfaceConfigureCallback(
     ash::wm::WindowStateType state_type,
     bool resizing,
     bool activated,
-    const gfx::Point& origin) {
+    const gfx::Vector2d& origin_offset) {
   wl_array states;
   wl_array_init(&states);
   uint32_t serial = wl_display_next_serial(
       wl_client_get_display(wl_resource_get_client(resource)));
-  zcr_remote_surface_v1_send_configure(resource, origin.x(), origin.y(),
+  zcr_remote_surface_v1_send_configure(resource,
+                                       origin_offset.x(),
+                                       origin_offset.y(),
                                        &states, serial);
   wl_client_flush(wl_resource_get_client(resource));
   wl_array_release(&states);
@@ -2316,7 +2351,7 @@ const struct zcr_remote_shell_v1_interface remote_shell_implementation = {
     remote_shell_destroy, remote_shell_get_remote_surface,
     remote_shell_get_notification_surface};
 
-const uint32_t remote_shell_version = 2;
+const uint32_t remote_shell_version = 3;
 
 void bind_remote_shell(wl_client* client,
                        void* data,

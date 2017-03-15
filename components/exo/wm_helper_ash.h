@@ -7,6 +7,7 @@
 
 #include "ash/common/shell_observer.h"
 #include "ash/common/system/accessibility_observer.h"
+#include "ash/display/window_tree_host_manager.h"
 #include "base/macros.h"
 #include "components/exo/wm_helper.h"
 #include "ui/aura/client/cursor_client_observer.h"
@@ -23,6 +24,7 @@ class WMHelperAsh : public WMHelper,
                     public aura::client::CursorClientObserver,
                     public ash::AccessibilityObserver,
                     public ash::ShellObserver,
+                    public ash::WindowTreeHostManager::Observer,
                     public ui::InputDeviceEventObserver {
  public:
   WMHelperAsh();
@@ -66,6 +68,9 @@ class WMHelperAsh : public WMHelper,
   void OnMaximizeModeStarted() override;
   void OnMaximizeModeEnding() override;
   void OnMaximizeModeEnded() override;
+
+  // Overriden from ash::WindowTreeHostManager::Observer:
+  void OnDisplayConfigurationChanged() override;
 
   // Overriden from ui::InputDeviceEventObserver:
   void OnKeyboardDeviceConfigurationChanged() override;

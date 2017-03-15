@@ -79,6 +79,16 @@ void WMHelper::RemoveInputDeviceEventObserver(
   input_device_event_observers_.RemoveObserver(observer);
 }
 
+void WMHelper::AddDisplayConfigurationObserver(
+    DisplayConfigurationObserver* observer) {
+  display_config_observers_.AddObserver(observer);
+}
+
+void WMHelper::RemoveDisplayConfigurationObserver(
+    DisplayConfigurationObserver* observer) {
+  display_config_observers_.RemoveObserver(observer);
+}
+
 void WMHelper::NotifyWindowActivated(aura::Window* gained_active,
                                      aura::Window* lost_active) {
   for (ActivationObserver& observer : activation_observers_)
@@ -124,6 +134,11 @@ void WMHelper::NotifyAccessibilityModeChanged() {
 void WMHelper::NotifyKeyboardDeviceConfigurationChanged() {
   for (InputDeviceEventObserver& observer : input_device_event_observers_)
     observer.OnKeyboardDeviceConfigurationChanged();
+}
+
+void WMHelper::NotifyDisplayConfigurationChanged() {
+  for (DisplayConfigurationObserver& observer : display_config_observers_)
+    observer.OnDisplayConfigurationChanged();
 }
 
 }  // namespace exo
