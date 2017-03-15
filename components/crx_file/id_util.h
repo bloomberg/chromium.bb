@@ -23,6 +23,10 @@ extern const size_t kIdSize;
 // always generate the same output ID.
 std::string GenerateId(const std::string& input);
 
+// Generates an ID from a HEX string. The same input string will always generate
+// the same output ID.
+std::string GenerateIdFromHex(const std::string& input);
+
 // Generates an ID for an extension in the given path.
 // Used while developing extensions, before they have a key.
 std::string GenerateIdForPath(const base::FilePath& path);

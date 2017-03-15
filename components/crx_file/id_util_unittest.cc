@@ -37,6 +37,13 @@ TEST(IDUtilTest, GenerateID) {
 
   EXPECT_EQ("ncocknphbhhlhkikpnnlmbcnbgdempcd", GenerateId("_"));
 
+  EXPECT_EQ("a", GenerateIdFromHex("_"));
+
+  EXPECT_EQ(
+      "bjbdkfoakgmkndalgpadobhgbhhoanhongcmfnghaakjmggnkffgnhmdpfngkeho",
+      GenerateIdFromHex(
+          "1913a5e0a6cad30b6f03e176177e0d7ed62c5d6700a9c66da556d7c3f5d6a47e"));
+
   EXPECT_EQ(
       "jimneklojkjdibfkgiiophfhjhbdgcfi",
       GenerateId("this_string_is_longer_than_a_single_sha256_hash_digest"));

@@ -42,10 +42,12 @@ const size_t kIdSize = 16;
 std::string GenerateId(const std::string& input) {
   uint8_t hash[kIdSize];
   crypto::SHA256HashString(input, hash, sizeof(hash));
-  std::string output =
-      base::ToLowerASCII(base::HexEncode(hash, sizeof(hash)));
-  ConvertHexadecimalToIDAlphabet(&output);
+  return GenerateIdFromHex(base::HexEncode(hash, sizeof(hash)));
+}
 
+std::string GenerateIdFromHex(const std::string& input) {
+  std::string output = base::ToLowerASCII(input);
+  ConvertHexadecimalToIDAlphabet(&output);
   return output;
 }
 
