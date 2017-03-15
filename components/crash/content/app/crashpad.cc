@@ -204,6 +204,12 @@ void InitializeCrashpadWithEmbeddedHandler(bool initial_client,
 }
 #endif  // OS_WIN
 
+crashpad::CrashpadClient& GetCrashpadClient() {
+  static crashpad::CrashpadClient* const client =
+      new crashpad::CrashpadClient();
+  return *client;
+}
+
 void SetUploadConsent(bool consent) {
   if (!g_database)
     return;

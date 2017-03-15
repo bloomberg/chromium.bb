@@ -90,15 +90,9 @@ base::FilePath PlatformCrashpadInitialization(bool initial_client,
             "--reset-own-crash-exception-port-to-system-default");
       }
 
-      crashpad::CrashpadClient crashpad_client;
-      bool result = crashpad_client.StartHandler(handler_path,
-                                                 database_path,
-                                                 metrics_path,
-                                                 url,
-                                                 process_annotations,
-                                                 arguments,
-                                                 true,
-                                                 false);
+      bool result = GetCrashpadClient().StartHandler(
+          handler_path, database_path, metrics_path, url, process_annotations,
+          arguments, true, false);
 
       // If this is an initial client that's not the browser process, it's
       // important to sever the connection to any existing handler. If

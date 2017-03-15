@@ -11,6 +11,7 @@
 #include "base/mac/bundle_locations.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/mac_util.h"
+#include "base/mac/scoped_mach_port.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/strings/nullable_string16.h"
 #include "base/strings/string_number_conversions.h"
@@ -25,13 +26,15 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/cocoa/notifications/notification_builder_mac.h"
-#import "chrome/browser/ui/cocoa/notifications/notification_delivery.h"
 #include "chrome/browser/ui/cocoa/notifications/notification_constants_mac.h"
+#import "chrome/browser/ui/cocoa/notifications/notification_delivery.h"
 #import "chrome/browser/ui/cocoa/notifications/notification_response_builder_mac.h"
 #include "chrome/common/features.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/crash/content/app/crashpad.h"
 #include "components/url_formatter/elide_url.h"
 #include "third_party/WebKit/public/platform/modules/notifications/WebNotificationConstants.h"
+#include "third_party/crashpad/crashpad/client/crashpad_client.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -428,6 +431,11 @@ bool NotificationPlatformBridgeMac::VerifyNotificationData(
 @implementation AlertDispatcherImpl {
   // The connection to the XPC server in charge of delivering alerts.
   base::scoped_nsobject<NSXPCConnection> xpcConnection_;
+
+  // YES if the remote object has had |-setMachExceptionPort:| called
+  // since the service was last started, interrupted, or invalidated.
+  // If NO, then -serviceProxy will set the exception port.
+  BOOL setExceptionPort_;
 }
 
 - (instancetype)init {
@@ -443,12 +451,14 @@ bool NotificationPlatformBridgeMac::VerifyNotificationData(
 
     xpcConnection_.get().interruptionHandler = ^{
       LOG(WARNING) << "connection interrupted: interruptionHandler: ";
+      setExceptionPort_ = NO;
       // TODO(miguelg): perhaps add some UMA here.
       // We will be getting this handler both when the XPC server crashes or
       // when it decides to close the connection.
     };
     xpcConnection_.get().invalidationHandler = ^{
       LOG(WARNING) << "connection invalidationHandler received";
+      setExceptionPort_ = NO;
       // This means that the connection should be recreated if it needs
       // to be used again. It should not really happen.
       DCHECK(false) << "XPC Connection invalidated";
@@ -464,23 +474,44 @@ bool NotificationPlatformBridgeMac::VerifyNotificationData(
 }
 
 - (void)dispatchNotification:(NSDictionary*)data {
-  [[xpcConnection_ remoteObjectProxy] deliverNotification:data];
+  [[self serviceProxy] deliverNotification:data];
 }
 
 - (void)closeNotificationWithId:(NSString*)notificationId
                   withProfileId:(NSString*)profileId {
-  [[xpcConnection_ remoteObjectProxy] closeNotificationWithId:notificationId
-                                                withProfileId:profileId];
+  [[self serviceProxy] closeNotificationWithId:notificationId
+                                 withProfileId:profileId];
 }
 
 - (void)closeAllNotifications {
-  [[xpcConnection_ remoteObjectProxy] closeAllNotifications];
+  [[self serviceProxy] closeAllNotifications];
 }
 
-// NotificationReply implementation
+// NotificationReply:
+
 - (void)notificationClick:(NSDictionary*)notificationResponseData {
   NotificationPlatformBridgeMac::ProcessNotificationResponse(
       notificationResponseData);
+}
+
+// Private methods:
+
+// Retrieves the connection's remoteObjectProxy. Always use this as opposed
+// to going directly through the connection, since this will ensure that the
+// service has its exception port configured for crash reporting.
+- (id<NotificationDelivery>)serviceProxy {
+  id<NotificationDelivery> proxy = [xpcConnection_ remoteObjectProxy];
+
+  if (!setExceptionPort_) {
+    base::mac::ScopedMachSendRight exceptionPort(
+        crash_reporter::GetCrashpadClient().GetHandlerMachPort());
+    base::scoped_nsobject<CrXPCMachPort> xpcPort(
+        [[CrXPCMachPort alloc] initWithMachSendRight:std::move(exceptionPort)]);
+    [proxy setMachExceptionPort:xpcPort];
+    setExceptionPort_ = YES;
+  }
+
+  return proxy;
 }
 
 @end

@@ -25,6 +25,7 @@ mac_app_bundle("alert_notification_xpc_service") {
   deps = [
     ":common",
     "//base:base",
+    "//third_party/crashpad/crashpad/client",
   ]
 
   libs = [
@@ -53,6 +54,8 @@ static_library("common") {
     "notification_delivery.h",
     "notification_response_builder_mac.h",
     "notification_response_builder_mac.mm",
+    "xpc_mach_port.h",
+    "xpc_mach_port.mm",
   ]
 
   deps = [

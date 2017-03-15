@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import <AppKit/AppKit.h>
-
 #import "chrome/browser/ui/cocoa/notifications/notification_service_delegate.h"
+
+#import <AppKit/AppKit.h>
 
 #include "base/mac/scoped_nsobject.h"
 #import "chrome/browser/ui/cocoa/notifications/alert_notification_service.h"
@@ -57,7 +57,7 @@
   return YES;
 }
 
-// NSUserNotification center delegate
+// NSUserNotificationCenterDelegate:
 - (void)userNotificationCenter:(NSUserNotificationCenter*)center
        didActivateNotification:(NSUserNotification*)notification {
   NSDictionary* response =
@@ -65,7 +65,7 @@
   [[connection_ remoteObjectProxy] notificationClick:response];
 }
 
-// _NSUserNotificationCenterDelegatePrivate
+// _NSUserNotificationCenterDelegatePrivate:
 - (void)userNotificationCenter:(NSUserNotificationCenter*)center
                didDismissAlert:(NSUserNotification*)notification {
   NSDictionary* response =
