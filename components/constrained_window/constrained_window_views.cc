@@ -117,7 +117,7 @@ void UpdateModalDialogPosition(views::Widget* widget,
     // with any display clamp its position to be fully on the nearest display.
     gfx::Rect display_rect = gfx::Rect(position, size);
     const display::Display display =
-        display::Screen::GetScreen()->GetDisplayNearestWindow(
+        display::Screen::GetScreen()->GetDisplayNearestView(
             dialog_host->GetHostView());
     const gfx::Rect work_area = display.work_area();
     if (!work_area.Contains(display_rect))

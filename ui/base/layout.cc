@@ -107,7 +107,7 @@ ScopedSetSupportedScaleFactors::~ScopedSetSupportedScaleFactors() {
 #if !defined(OS_MACOSX)
 float GetScaleFactorForNativeView(gfx::NativeView view) {
   display::Display display =
-      display::Screen::GetScreen()->GetDisplayNearestWindow(view);
+      display::Screen::GetScreen()->GetDisplayNearestView(view);
   DCHECK(display.is_valid());
   return display.device_scale_factor();
 }

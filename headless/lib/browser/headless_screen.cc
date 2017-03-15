@@ -37,7 +37,7 @@ gfx::NativeWindow HeadlessScreen::GetWindowAtScreenPoint(
 }
 
 display::Display HeadlessScreen::GetDisplayNearestWindow(
-    gfx::NativeView window) const {
+    gfx::NativeWindow window) const {
   return GetPrimaryDisplay();
 }
 

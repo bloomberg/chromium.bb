@@ -1716,7 +1716,7 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
     const display::Display& display,
     uint32_t changed_metrics) {
   display::Screen* screen = display::Screen::GetScreen();
-  if (display.id() != screen->GetDisplayNearestWindow(cocoa_view_).id())
+  if (display.id() != screen->GetDisplayNearestView(cocoa_view_).id())
     return;
 
   if (changed_metrics & DisplayObserver::DISPLAY_METRIC_DEVICE_SCALE_FACTOR) {

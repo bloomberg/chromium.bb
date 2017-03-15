@@ -38,7 +38,7 @@ Display ScreenBase::GetPrimaryDisplay() const {
   return *iter;
 }
 
-Display ScreenBase::GetDisplayNearestWindow(gfx::NativeView view) const {
+Display ScreenBase::GetDisplayNearestWindow(gfx::NativeWindow window) const {
   // TODO(riajiang): Implement this for multi-displays either here or in
   // ScreenMus.
   NOTIMPLEMENTED();

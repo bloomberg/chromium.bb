@@ -34,15 +34,19 @@ void Screen::SetScreenInstance(Screen* instance) {
   g_screen = instance;
 }
 
+Display Screen::GetDisplayNearestView(gfx::NativeView view) const {
+  return GetDisplayNearestWindow(GetWindowForView(view));
+}
+
 gfx::Rect Screen::ScreenToDIPRectInWindow(gfx::NativeView view,
                                           const gfx::Rect& screen_rect) const {
-  float scale = GetDisplayNearestWindow(view).device_scale_factor();
+  float scale = GetDisplayNearestView(view).device_scale_factor();
   return ScaleToEnclosingRect(screen_rect, 1.0f / scale);
 }
 
 gfx::Rect Screen::DIPToScreenRectInWindow(gfx::NativeView view,
                                           const gfx::Rect& dip_rect) const {
-  float scale = GetDisplayNearestWindow(view).device_scale_factor();
+  float scale = GetDisplayNearestView(view).device_scale_factor();
   return ScaleToEnclosingRect(dip_rect, scale);
 }
 

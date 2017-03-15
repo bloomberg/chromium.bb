@@ -189,7 +189,7 @@ int64_t AppListPresenterImpl::GetDisplayId() {
   if (!widget)
     return display::kInvalidDisplayId;
   return display::Screen::GetScreen()
-      ->GetDisplayNearestWindow(widget->GetNativeView())
+      ->GetDisplayNearestView(widget->GetNativeView())
       .id();
 }
 
