@@ -7,6 +7,9 @@ package org.chromium.chrome.browser.payments;
 import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.DialogInterface.OnCancelListener;
+import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.graphics.drawable.Drawable;
@@ -15,12 +18,14 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Parcelable;
 import android.os.RemoteException;
+import android.support.v7.app.AlertDialog;
 import android.util.JsonWriter;
 
 import org.chromium.IsReadyToPayService;
 import org.chromium.IsReadyToPayServiceCallback;
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.payments.mojom.PaymentDetailsModifier;
 import org.chromium.payments.mojom.PaymentItem;
@@ -55,6 +60,7 @@ public class AndroidPaymentApp extends PaymentInstrument implements PaymentApp,
     private final Intent mIsReadyToPayIntent;
     private final Intent mPayIntent;
     private final Set<String> mMethodNames;
+    private final boolean mIsIncognito;
     private IsReadyToPayService mIsReadyToPayService;
     private InstrumentsCallback mInstrumentsCallback;
     private InstrumentDetailsCallback mInstrumentDetailsCallback;
@@ -84,9 +90,10 @@ public class AndroidPaymentApp extends PaymentInstrument implements PaymentApp,
      * @param activity    The name of the payment activity in the payment app.
      * @param label       The UI label to use for the payment app.
      * @param icon        The icon to use in UI for the payment app.
+     * @param isIncognito Whether the user is in incognito mode.
      */
     public AndroidPaymentApp(WebContents webContents, String packageName, String activity,
-            String label, Drawable icon) {
+            String label, Drawable icon, boolean isIncognito) {
         super(packageName, label, null, icon);
         ThreadUtils.assertOnUiThread();
         mHandler = new Handler();
@@ -97,6 +104,7 @@ public class AndroidPaymentApp extends PaymentInstrument implements PaymentApp,
         mPayIntent.setClassName(packageName, activity);
         mPayIntent.setAction(ACTION_PAY);
         mMethodNames = new HashSet<>();
+        mIsIncognito = isIncognito;
     }
 
     /** @param methodName A payment method that this app supports, e.g., "https://bobpay.com". */
@@ -127,10 +135,12 @@ public class AndroidPaymentApp extends PaymentInstrument implements PaymentApp,
         assert mInstrumentsCallback == null
                 : "Have not responded to previous request for instruments yet";
         mInstrumentsCallback = callback;
-        if (mIsReadyToPayIntent.getPackage() == null) {
+        if (mIsReadyToPayIntent.getComponent() == null) {
             respondToGetInstrumentsQuery(AndroidPaymentApp.this);
             return;
         }
+
+        assert !mIsIncognito;
         Bundle extras = new Bundle();
         extras.putString(EXTRA_METHOD_NAME, mMethodNames.iterator().next());
         extras.putString(EXTRA_ORIGIN, origin);
@@ -219,10 +229,56 @@ public class AndroidPaymentApp extends PaymentInstrument implements PaymentApp,
     }
 
     @Override
-    public void invokePaymentApp(String merchantName, String origin, byte[][] certificateChain,
-            Map<String, PaymentMethodData> methodDataMap, PaymentItem total,
-            List<PaymentItem> displayItems, Map<String, PaymentDetailsModifier> modifiers,
+    public void invokePaymentApp(final String merchantName, final String origin,
+            final byte[][] certificateChain, final Map<String, PaymentMethodData> methodDataMap,
+            final PaymentItem total, final List<PaymentItem> displayItems,
+            final Map<String, PaymentDetailsModifier> modifiers,
             InstrumentDetailsCallback callback) {
+        mInstrumentDetailsCallback = callback;
+
+        if (!mIsIncognito) {
+            launchPaymentApp(merchantName, origin, certificateChain, methodDataMap, total,
+                    displayItems, modifiers);
+            return;
+        }
+
+        ChromeActivity activity = ChromeActivity.fromWebContents(mWebContents);
+        if (activity == null) {
+            notifyErrorInvokingPaymentApp();
+            return;
+        }
+
+        new AlertDialog.Builder(activity, R.style.AlertDialogTheme)
+                .setTitle(R.string.external_app_leave_incognito_warning_title)
+                .setMessage(R.string.external_payment_app_leave_incognito_warning)
+                .setPositiveButton(R.string.ok,
+                        new OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                launchPaymentApp(merchantName, origin, certificateChain,
+                                        methodDataMap, total, displayItems, modifiers);
+                            }
+                        })
+                .setNegativeButton(R.string.cancel,
+                        new OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                notifyErrorInvokingPaymentApp();
+                            }
+                        })
+                .setOnCancelListener(new OnCancelListener() {
+                    @Override
+                    public void onCancel(DialogInterface dialog) {
+                        notifyErrorInvokingPaymentApp();
+                    }
+                })
+                .show();
+    }
+
+    private void launchPaymentApp(String merchantName, String origin, byte[][] certificateChain,
+            Map<String, PaymentMethodData> methodDataMap, PaymentItem total,
+            List<PaymentItem> displayItems, Map<String, PaymentDetailsModifier> modifiers) {
+        assert mInstrumentDetailsCallback != null;
         assert !mMethodNames.isEmpty();
         Bundle extras = new Bundle();
         extras.putString(EXTRA_ORIGIN, origin);
@@ -239,20 +295,18 @@ public class AndroidPaymentApp extends PaymentInstrument implements PaymentApp,
         extras.putString(EXTRA_DETAILS, details == null ? EMPTY_JSON_DATA : details);
         mPayIntent.putExtras(extras);
 
-        mInstrumentDetailsCallback = callback;
-
         WindowAndroid window = mWebContents.getTopLevelNativeWindow();
         if (window == null) {
-            notifyError();
+            notifyErrorInvokingPaymentApp();
             return;
         }
 
         if (!window.showIntent(mPayIntent, this, R.string.payments_android_app_error)) {
-            notifyError();
+            notifyErrorInvokingPaymentApp();
         }
     }
 
-    private void notifyError() {
+    private void notifyErrorInvokingPaymentApp() {
         mHandler.post(new Runnable() {
             @Override
             public void run() {

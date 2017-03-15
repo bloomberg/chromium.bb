@@ -252,6 +252,9 @@
   <if expr="is_android">
     <message name="IDS_UTILITY_PROCESS_MANIFEST_PARSER_NAME" desc="The name of the utility process used for parsing manifest files.">
       Manifest Parser
+  </message>
+    <message name="IDS_EXTERNAL_PAYMENT_APP_LEAVE_INCOGNITO_WARNING" desc="Alert dialog text warning the user that incognito mode does not conitnue into external payment apps." formatter_data="android_java">
+      Leaving incognito mode to pay via an external application. Continue?
     </message>
   </if>
 </grit-part>

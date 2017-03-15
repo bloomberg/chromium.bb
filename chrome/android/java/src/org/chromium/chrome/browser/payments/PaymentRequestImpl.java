@@ -254,6 +254,7 @@ public class PaymentRequestImpl
     private final AddressEditor mAddressEditor;
     private final CardEditor mCardEditor;
     private final PaymentRequestJourneyLogger mJourneyLogger = new PaymentRequestJourneyLogger();
+    private final boolean mIsIncognito;
 
     private PaymentRequestClient mClient;
     private boolean mIsCurrentPaymentRequestShowing;
@@ -365,6 +366,10 @@ public class PaymentRequestImpl
 
         mAddressEditor = new AddressEditor();
         mCardEditor = new CardEditor(mWebContents, mAddressEditor, sObserverForTest);
+
+        ChromeActivity activity = ChromeActivity.fromWebContents(mWebContents);
+        mIsIncognito = activity != null && activity.getCurrentTabModel() != null
+                && activity.getCurrentTabModel().isIncognito();
 
         if (sCanMakePaymentQueries == null) sCanMakePaymentQueries = new ArrayMap<>();
 
@@ -637,7 +642,7 @@ public class PaymentRequestImpl
         if (queryApps.isEmpty()) {
             CanMakePaymentQuery query = sCanMakePaymentQueries.get(mSchemelessOriginForPaymentApp);
             if (query != null && query.matchesPaymentMethods(mMethodData)) {
-                query.notifyObserversOfResponse(false);
+                query.notifyObserversOfResponse(mCanMakePayment);
             }
         }
 
@@ -1281,9 +1286,10 @@ public class PaymentRequestImpl
 
     private void respondCanMakePaymentQuery(boolean response) {
         if (mClient == null) return;
-        mClient.onCanMakePayment(response ? CanMakePaymentQueryResult.CAN_MAKE_PAYMENT
-                : CanMakePaymentQueryResult.CANNOT_MAKE_PAYMENT);
-        mJourneyLogger.setCanMakePaymentValue(response);
+        mClient.onCanMakePayment(response || mIsIncognito
+                        ? CanMakePaymentQueryResult.CAN_MAKE_PAYMENT
+                        : CanMakePaymentQueryResult.CANNOT_MAKE_PAYMENT);
+        mJourneyLogger.setCanMakePaymentValue(response || mIsIncognito);
         if (sObserverForTest != null) {
             sObserverForTest.onPaymentRequestServiceCanMakePaymentQueryResponded();
         }
@@ -1437,7 +1443,8 @@ public class PaymentRequestImpl
             // add credit cards, but the merchant does not support them either. The payment request
             // must be rejected.
             disconnectFromClientWithDebugMessage("Requested payment methods have no instruments",
-                    PaymentErrorReason.NOT_SUPPORTED);
+                    mIsIncognito ? PaymentErrorReason.USER_CANCEL
+                                 : PaymentErrorReason.NOT_SUPPORTED);
             recordNoShowReasonHistogram(mArePaymentMethodsSupported
                             ? PaymentRequestMetrics.NO_SHOW_NO_MATCHING_PAYMENT_METHOD
                             : PaymentRequestMetrics.NO_SHOW_NO_SUPPORTED_PAYMENT_METHOD);

@@ -405,7 +405,7 @@ TEST(PaymentRequestTest, RejectShowPromiseOnErrorCancelled) {
       payments::mojom::blink::PaymentErrorReason::USER_CANCEL);
 
   v8::MicrotasksScope::PerformCheckpoint(scope.getScriptState()->isolate());
-  EXPECT_EQ("Request cancelled", errorMessage);
+  EXPECT_EQ("AbortError: Request cancelled", errorMessage);
 }
 
 TEST(PaymentRequestTest, RejectShowPromiseOnUpdateDetailsFailure) {

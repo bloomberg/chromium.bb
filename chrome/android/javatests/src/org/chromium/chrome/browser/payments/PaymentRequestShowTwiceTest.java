@@ -40,7 +40,7 @@ public class PaymentRequestShowTwiceTest extends PaymentRequestTestBase {
     public void testSecondShowRequestCancelled()
             throws InterruptedException, ExecutionException, TimeoutException {
         triggerUIAndWait(mReadyToPay);
-        expectResultContains(new String[] {"Second request: Request cancelled"});
+        expectResultContains(new String[] {"Second request: AbortError: Request cancelled"});
         clickAndWait(R.id.close_button, mDismissed);
     }
 }

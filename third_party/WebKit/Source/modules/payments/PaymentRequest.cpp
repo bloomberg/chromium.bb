@@ -744,8 +744,7 @@ ScriptPromise PaymentRequest::complete(ScriptState* scriptState,
   // User has cancelled the transaction while the website was processing it.
   if (!m_paymentProvider) {
     return ScriptPromise::rejectWithDOMException(
-        scriptState,
-        DOMException::create(InvalidStateError, "Request cancelled"));
+        scriptState, DOMException::create(AbortError, "Request cancelled"));
   }
 
   m_completeTimer.stop();
@@ -961,21 +960,19 @@ void PaymentRequest::OnPaymentResponse(PaymentResponsePtr response) {
 }
 
 void PaymentRequest::OnError(PaymentErrorReason error) {
-  bool isError = false;
   ExceptionCode ec = UnknownError;
   String message;
 
   switch (error) {
     case PaymentErrorReason::USER_CANCEL:
+      ec = AbortError;
       message = "Request cancelled";
       break;
     case PaymentErrorReason::NOT_SUPPORTED:
-      isError = true;
       ec = NotSupportedError;
       message = "The payment method is not supported";
       break;
     case PaymentErrorReason::UNKNOWN:
-      isError = true;
       ec = UnknownError;
       message = "Request failed";
       break;
@@ -983,31 +980,17 @@ void PaymentRequest::OnError(PaymentErrorReason error) {
 
   DCHECK(!message.isEmpty());
 
-  if (isError) {
-    if (m_completeResolver)
-      m_completeResolver->reject(DOMException::create(ec, message));
+  if (m_completeResolver)
+    m_completeResolver->reject(DOMException::create(ec, message));
 
-    if (m_showResolver)
-      m_showResolver->reject(DOMException::create(ec, message));
+  if (m_showResolver)
+    m_showResolver->reject(DOMException::create(ec, message));
 
-    if (m_abortResolver)
-      m_abortResolver->reject(DOMException::create(ec, message));
+  if (m_abortResolver)
+    m_abortResolver->reject(DOMException::create(ec, message));
 
-    if (m_canMakePaymentResolver)
-      m_canMakePaymentResolver->reject(DOMException::create(ec, message));
-  } else {
-    if (m_completeResolver)
-      m_completeResolver->reject(message);
-
-    if (m_showResolver)
-      m_showResolver->reject(message);
-
-    if (m_abortResolver)
-      m_abortResolver->reject(message);
-
-    if (m_canMakePaymentResolver)
-      m_canMakePaymentResolver->reject(message);
-  }
+  if (m_canMakePaymentResolver)
+    m_canMakePaymentResolver->reject(DOMException::create(ec, message));
 
   clearResolversAndCloseMojoConnection();
 }

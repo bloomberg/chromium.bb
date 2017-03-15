@@ -10,6 +10,7 @@ import android.net.Uri;
 import android.text.TextUtils;
 
 import org.chromium.base.Log;
+import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.payments.PaymentAppFactory.PaymentAppCreatedCallback;
 import org.chromium.chrome.browser.payments.PaymentManifestVerifier.ManifestVerifyCallback;
@@ -60,6 +61,7 @@ public class AndroidPaymentAppFinder implements ManifestVerifyCallback {
     private final PaymentManifestParser mParser;
     private final PackageManagerDelegate mPackageManagerDelegate;
     private final PaymentAppCreatedCallback mCallback;
+    private final boolean mIsIncognito;
 
     /**
      * A map of payment method names to the list of (yet) unverified Android apps that claim to
@@ -141,6 +143,9 @@ public class AndroidPaymentAppFinder implements ManifestVerifyCallback {
         mCallback = callback;
         mPendingApps = new HashMap<>();
         mResult = new HashMap<>();
+        ChromeActivity activity = ChromeActivity.fromWebContents(mWebContents);
+        mIsIncognito = activity != null && activity.getCurrentTabModel() != null
+                && activity.getCurrentTabModel().isIncognito();
         mRequireShowInSettings = requireShowInSettings;
         mSettingsLookup = new Intent(AndroidPaymentApp.ACTION_PAY);
     }
@@ -212,7 +217,8 @@ public class AndroidPaymentAppFinder implements ManifestVerifyCallback {
                 return;
             }
             app = new AndroidPaymentApp(mWebContents, packageName, resolveInfo.activityInfo.name,
-                    label.toString(), mPackageManagerDelegate.getAppIcon(resolveInfo));
+                    label.toString(), mPackageManagerDelegate.getAppIcon(resolveInfo),
+                    mIsIncognito);
             mResult.put(packageName, app);
         }
         app.addMethodName(methodName);
@@ -246,12 +252,15 @@ public class AndroidPaymentAppFinder implements ManifestVerifyCallback {
 
         if (mParser.isUtilityProcessRunning()) mParser.stopUtilityProcess();
 
-        List<ResolveInfo> resolveInfos = mPackageManagerDelegate.getServicesThatCanRespondToIntent(
-                new Intent(ACTION_IS_READY_TO_PAY));
-        for (int i = 0; i < resolveInfos.size(); i++) {
-            ResolveInfo resolveInfo = resolveInfos.get(i);
-            AndroidPaymentApp app = mResult.get(resolveInfo.serviceInfo.packageName);
-            if (app != null) app.setIsReadyToPayAction(resolveInfo.serviceInfo.name);
+        if (!mIsIncognito) {
+            List<ResolveInfo> resolveInfos =
+                    mPackageManagerDelegate.getServicesThatCanRespondToIntent(
+                            new Intent(ACTION_IS_READY_TO_PAY));
+            for (int i = 0; i < resolveInfos.size(); i++) {
+                ResolveInfo resolveInfo = resolveInfos.get(i);
+                AndroidPaymentApp app = mResult.get(resolveInfo.serviceInfo.packageName);
+                if (app != null) app.setIsReadyToPayAction(resolveInfo.serviceInfo.name);
+            }
         }
 
         for (Map.Entry<String, AndroidPaymentApp> entry : mResult.entrySet()) {
