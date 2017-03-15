@@ -32,7 +32,7 @@ class ScreenOrientationObserver
  private:
   device::mojom::ScreenOrientationListener* GetScreenOrientationListener();
 
-  device::mojom::ScreenOrientationListenerAssociatedPtr listener_;
+  device::mojom::ScreenOrientationListenerPtr listener_;
 };
 
 }; // namespace content

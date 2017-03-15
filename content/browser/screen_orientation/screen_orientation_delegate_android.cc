@@ -20,18 +20,6 @@ ScreenOrientationDelegateAndroid::~ScreenOrientationDelegateAndroid() {
   ScreenOrientationProvider::SetDelegate(nullptr);
 }
 
-// static
-void ScreenOrientationDelegateAndroid::StartAccurateListening() {
-  Java_ScreenOrientationProvider_startAccurateListening(
-      base::android::AttachCurrentThread());
-}
-
-// static
-void ScreenOrientationDelegateAndroid::StopAccurateListening() {
-  Java_ScreenOrientationProvider_stopAccurateListening(
-      base::android::AttachCurrentThread());
-}
-
 bool ScreenOrientationDelegateAndroid::FullScreenRequired(
     WebContents* web_contents) {
   ContentViewCoreImpl* cvc =

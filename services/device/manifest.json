@@ -5,6 +5,7 @@
     "service_manager:connector": {
       "provides": {
         "device:power_monitor": [ "device::mojom::PowerMonitor" ],
+        "device:screen_orientation": [ "device::mojom::ScreenOrientationListener" ],
         "device:time_zone_monitor": [ "device::mojom::TimeZoneMonitor" ],
 	"device:fingerprint": [ "device::mojom::Fingerprint" ]
       },

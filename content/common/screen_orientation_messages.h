@@ -13,8 +13,6 @@
 #undef IPC_MESSAGE_EXPORT
 #define IPC_MESSAGE_EXPORT CONTENT_EXPORT
 
-#define IPC_MESSAGE_START ScreenOrientationMsgStart
-
 // Only used by content/common/manifest_manager_messages.h.
 IPC_ENUM_TRAITS_MIN_MAX_VALUE(blink::WebScreenOrientationLockType,
                               blink::WebScreenOrientationLockDefault,

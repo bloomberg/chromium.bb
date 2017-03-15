@@ -4,7 +4,10 @@
 
 #include "content/renderer/screen_orientation/screen_orientation_observer.h"
 
+#include "content/public/common/service_manager_connection.h"
 #include "content/renderer/render_thread_impl.h"
+#include "services/device/public/interfaces/constants.mojom.h"
+#include "services/service_manager/public/cpp/connector.h"
 
 namespace content {
 
@@ -33,8 +36,10 @@ void ScreenOrientationObserver::SendStopMessage() {
 device::mojom::ScreenOrientationListener*
 ScreenOrientationObserver::GetScreenOrientationListener() {
   if (!listener_) {
-    RenderThreadImpl::current()->GetChannel()->GetRemoteAssociatedInterface(
-        &listener_);
+    RenderThreadImpl::current()
+        ->GetServiceManagerConnection()
+        ->GetConnector()
+        ->BindInterface(device::mojom::kServiceName, &listener_);
   }
   return listener_.get();
 }

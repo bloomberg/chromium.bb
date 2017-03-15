@@ -1816,8 +1816,6 @@ source_set("browser") {
       "renderer_host/render_widget_host_view_android.h",
       "screen_orientation/screen_orientation_delegate_android.cc",
       "screen_orientation/screen_orientation_delegate_android.h",
-      "screen_orientation/screen_orientation_listener_android.cc",
-      "screen_orientation/screen_orientation_listener_android.h",
       "web_contents/web_contents_android.cc",
       "web_contents/web_contents_android.h",
       "web_contents/web_contents_view_android.cc",

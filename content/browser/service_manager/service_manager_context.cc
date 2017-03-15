@@ -285,7 +285,8 @@ ServiceManagerContext::ServiceManagerContext() {
   ServiceInfo device_info;
   device_info.factory =
       base::Bind(&device::CreateDeviceService,
-                 BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE));
+                 BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE),
+                 BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
   device_info.task_runner = base::ThreadTaskRunnerHandle::Get();
   packaged_services_connection_->AddEmbeddedService(device::mojom::kServiceName,
                                                     device_info);

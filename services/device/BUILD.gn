@@ -19,6 +19,7 @@ source_set("lib") {
     "//base",
     "//services/device/fingerprint",
     "//services/device/power_monitor",
+    "//services/device/screen_orientation",
     "//services/device/time_zone_monitor",
     "//services/service_manager/public/cpp",
   ]
@@ -61,9 +62,13 @@ service_manifest("manifest") {
 
 if (is_android) {
   android_library("java") {
-    java_files = [ "time_zone_monitor/android/java/src/org/chromium/device/time_zone_monitor/TimeZoneMonitor.java" ]
+    java_files = [
+      "screen_orientation/android/java/src/org/chromium/device/screen_orientation/ScreenOrientationListener.java",
+      "time_zone_monitor/android/java/src/org/chromium/device/time_zone_monitor/TimeZoneMonitor.java",
+    ]
     deps = [
       "//base:base_java",
+      "//ui/android:ui_java",
     ]
   }
 }

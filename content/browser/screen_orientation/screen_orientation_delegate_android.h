@@ -22,16 +22,6 @@ class ScreenOrientationDelegateAndroid : public ScreenOrientationDelegate {
   ScreenOrientationDelegateAndroid();
   ~ScreenOrientationDelegateAndroid() override;
 
-  // Ask the ScreenOrientationListener (Java) to start accurately listening to
-  // the screen orientation. It keep track of the number of start request if it
-  // is already running an accurate listening.
-  static void StartAccurateListening();
-
-  // Ask the ScreenOrientationListener (Java) to stop accurately listening to
-  // the screen orientation. It will actually stop only if the number of stop
-  // requests matches the number of start requests.
-  static void StopAccurateListening();
-
   // ScreenOrientationDelegate:
   bool FullScreenRequired(WebContents* web_contents) override;
   void Lock(WebContents* web_contents,

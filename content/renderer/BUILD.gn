@@ -463,6 +463,7 @@ target(link_target_type, "renderer") {
     "//ppapi/features",
     "//printing/features",
     "//sandbox",
+    "//services/device/public/interfaces",
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/interfaces",
     "//services/ui/public/cpp/gpu",
