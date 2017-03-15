@@ -1587,6 +1587,7 @@ test("content_unittests") {
       "../renderer/media/media_stream_audio_unittest.cc",
       "../renderer/media/media_stream_constraints_util_sets_unittest.cc",
       "../renderer/media/media_stream_constraints_util_unittest.cc",
+      "../renderer/media/media_stream_constraints_util_video_content_unittest.cc",
       "../renderer/media/media_stream_constraints_util_video_device_unittest.cc",
       "../renderer/media/media_stream_dispatcher_unittest.cc",
       "../renderer/media/media_stream_video_capturer_source_unittest.cc",
