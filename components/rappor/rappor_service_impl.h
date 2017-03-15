@@ -56,12 +56,10 @@ class RapporServiceImpl : public RapporService {
 
   // Updates the settings for metric recording and uploading.
   // The RapporServiceImpl must be initialized before this method is called.
-  // |recording_groups| should be set of flags, e.g.
-  //    UMA_RECORDING_GROUP | SAFEBROWSING_RECORDING_GROUP
-  // If it contains any enabled groups, periodic reports will be
-  // generated and queued for upload.
+  // If |may_record| is true, data will be recorded and periodic reports will
+  // be generated and queued for upload.
   // If |may_upload| is true, reports will be uploaded from the queue.
-  void Update(int recording_groups, bool may_upload);
+  void Update(bool may_record, bool may_upload);
 
   // Constructs a Sample object for the caller to record fields in.
   std::unique_ptr<Sample> CreateSample(RapporType) override;
@@ -154,9 +152,8 @@ class RapporServiceImpl : public RapporService {
   // A private LogUploader instance for sending reports to the server.
   std::unique_ptr<LogUploaderInterface> uploader_;
 
-  // The set of recording groups that metrics are being recorded, e.g.
-  //     UMA_RECORDING_GROUP | SAFEBROWSING_RECORDING_GROUP
-  int recording_groups_;
+  // Whether new data can be recorded.
+  bool recording_enabled_;
 
   // We keep all registered metrics in a map, from name to metric.
   std::map<std::string, std::unique_ptr<RapporMetric>> metrics_map_;

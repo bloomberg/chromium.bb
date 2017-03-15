@@ -230,25 +230,6 @@ ChromeMetricsServicesManagerClient::GetURLRequestContext() {
   return g_browser_process->system_request_context();
 }
 
-bool ChromeMetricsServicesManagerClient::IsSafeBrowsingEnabled(
-    const base::Closure& on_update_callback) {
-  // Start listening for updates to SB service state. This is done here instead
-  // of in the constructor to avoid errors from trying to instantiate SB
-  // service before the IO thread exists.
-  safe_browsing::SafeBrowsingService* sb_service =
-      g_browser_process->safe_browsing_service();
-  if (!sb_state_subscription_ && sb_service) {
-    // It is safe to pass the callback received from the
-    // MetricsServicesManager here since the MetricsServicesManager owns
-    // this object, which owns the sb_state_subscription_, which owns the
-    // pointer to the MetricsServicesManager.
-    sb_state_subscription_ =
-        sb_service->RegisterStateCallback(on_update_callback);
-  }
-
-  return sb_service && sb_service->enabled_by_prefs();
-}
-
 bool ChromeMetricsServicesManagerClient::IsMetricsReportingEnabled() {
   return enabled_state_provider_->IsReportingEnabled();
 }

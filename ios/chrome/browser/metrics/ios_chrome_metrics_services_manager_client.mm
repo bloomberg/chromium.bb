@@ -94,11 +94,6 @@ IOSChromeMetricsServicesManagerClient::GetURLRequestContext() {
   return GetApplicationContext()->GetSystemURLRequestContext();
 }
 
-bool IOSChromeMetricsServicesManagerClient::IsSafeBrowsingEnabled(
-    const base::Closure& on_update_callback) {
-  return false;
-}
-
 bool IOSChromeMetricsServicesManagerClient::IsMetricsReportingEnabled() {
   return enabled_state_provider_->IsReportingEnabled();
 }

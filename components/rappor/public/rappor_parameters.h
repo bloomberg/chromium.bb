@@ -23,20 +23,14 @@ enum NoiseLevel {
 enum RapporType {
   // Generic metrics from UMA opt-in users.
   UMA_RAPPOR_TYPE = 0,
-  // Generic metrics for SafeBrowsing users. Deprecated, replaced by
-  // LOW_FREQUENCY_SAFEBROWSING_RAPPOR_TYPE.
-  SAFEBROWSING_RAPPOR_TYPE,
   // Deprecated: Use UMA_RAPPOR_TYPE for new metrics
   ETLD_PLUS_ONE_RAPPOR_TYPE,
   // Type for low-frequency metrics from UMA opt-in users.
   LOW_FREQUENCY_UMA_RAPPOR_TYPE,
-  // Type for low-frequency metrics from SafeBrowsing users.
-  LOW_FREQUENCY_SAFEBROWSING_RAPPOR_TYPE,
   // Type for low-frequency metrics from UMA opt-in users. Do not use for new
   // metrics.
   LOW_FREQUENCY_ETLD_PLUS_ONE_RAPPOR_TYPE,
   NUM_RAPPOR_TYPES,
-  COARSE_RAPPOR_TYPE = SAFEBROWSING_RAPPOR_TYPE,
 };
 
 enum Probability {
@@ -52,8 +46,6 @@ enum Probability {
 enum RecordingGroup {
   // Metrics for UMA users.
   UMA_RAPPOR_GROUP = 1 << 0,
-  // Metrics related to SafeBrowsing, for SafeBrowsing users.
-  SAFEBROWSING_RAPPOR_GROUP = 1 << 1,
 };
 
 // An object describing noise probabilities for a noise level
@@ -134,14 +126,6 @@ const RapporParameters kRapporParametersForType[NUM_RAPPOR_TYPES] = {
         rappor::NORMAL_NOISE /* Noise level */,
         UMA_RAPPOR_GROUP /* Recording group */
     },
-    // SAFEBROWSING_RAPPOR_TYPE
-    {
-        128 /* Num cohorts */,
-        1 /* Bloom filter size bytes */,
-        2 /* Bloom filter hash count */,
-        rappor::NORMAL_NOISE /* Noise level */,
-        SAFEBROWSING_RAPPOR_GROUP /* Recording group */
-    },
     // ETLD_PLUS_ONE_RAPPOR_TYPE
     {
         128 /* Num cohorts */,
@@ -157,14 +141,6 @@ const RapporParameters kRapporParametersForType[NUM_RAPPOR_TYPES] = {
         2 /* Bloom filter hash count */,
         rappor::SPARSE_NOISE /* Noise level */,
         UMA_RAPPOR_GROUP /* Recording group */
-    },
-    // LOW_FREQUENCY_SAFEBROWSING_RAPPOR_TYPE
-    {
-        128 /* Num cohorts */,
-        1 /* Bloom filter size bytes */,
-        2 /* Bloom filter hash count */,
-        rappor::SPARSE_NOISE /* Noise level */,
-        SAFEBROWSING_RAPPOR_GROUP /* Recording group */
     },
     // LOW_FREQUENCY_ETLD_PLUS_ONE_RAPPOR_TYPE
     {

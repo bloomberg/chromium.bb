@@ -59,7 +59,7 @@ RapporServiceImpl::RapporServiceImpl(
       daily_event_(pref_service,
                    prefs::kRapporLastDailySample,
                    kRapporDailyEventHistogram),
-      recording_groups_(0) {}
+      recording_enabled_(false) {}
 
 RapporServiceImpl::~RapporServiceImpl() {}
 
@@ -84,27 +84,22 @@ void RapporServiceImpl::Initialize(
       internal::LoadCohort(pref_service_), internal::LoadSecret(pref_service_));
 }
 
-void RapporServiceImpl::Update(int recording_groups, bool may_upload) {
+void RapporServiceImpl::Update(bool may_record, bool may_upload) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(IsInitialized());
-  if (recording_groups_ != recording_groups) {
-    if (recording_groups == 0) {
+  if (recording_enabled_ != may_record) {
+    recording_enabled_ = may_record;
+    if (!may_record) {
       DVLOG(1) << "Rappor service stopped because all groups were disabled.";
-      recording_groups_ = 0;
       CancelNextLogRotation();
-    } else if (recording_groups_ == 0) {
-      DVLOG(1) << "RapporServiceImpl started for groups: " << recording_groups;
-      recording_groups_ = recording_groups;
+    } else {
+      DVLOG(1) << "RapporServiceImpl started.";
       ScheduleNextLogRotation(
           base::TimeDelta::FromSeconds(kInitialLogIntervalSeconds));
-    } else {
-      DVLOG(1) << "RapporServiceImpl recording_groups changed:"
-               << recording_groups;
-      recording_groups_ = recording_groups;
     }
   }
 
-  DVLOG(1) << "RapporServiceImpl recording_groups=" << recording_groups_
+  DVLOG(1) << "RapporServiceImpl recording_groups=" << recording_enabled_
            << " may_upload=" << may_upload;
   if (may_upload) {
     uploader_->Start();
@@ -191,9 +186,8 @@ bool RapporServiceImpl::RecordingAllowed(const RapporParameters& parameters) {
     return false;
   }
   // Skip this metric if its recording_group is not enabled.
-  if (!(recording_groups_ & parameters.recording_group)) {
-    DVLOG(2) << "Metric not logged due to recording_group " << recording_groups_
-             << " < " << parameters.recording_group;
+  if (!recording_enabled_) {
+    DVLOG(2) << "Metric not logged due to recording_enabled_ = false.";
     return false;
   }
   return true;

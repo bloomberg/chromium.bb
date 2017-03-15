@@ -43,7 +43,6 @@ class IOSChromeMetricsServicesManagerClient
   CreateEntropyProvider() override;
 
   net::URLRequestContextGetter* GetURLRequestContext() override;
-  bool IsSafeBrowsingEnabled(const base::Closure& on_update_callback) override;
   bool IsMetricsReportingEnabled() override;
   bool OnlyDoMetricsRecording() override;
 

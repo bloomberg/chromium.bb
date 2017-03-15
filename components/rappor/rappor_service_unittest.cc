@@ -30,18 +30,18 @@ TEST(RapporServiceImplTest, Update) {
   EXPECT_TRUE(rappor_service.test_uploader()->is_running());
 
   // Disabling both should stop both uploads and reports.
-  rappor_service.Update(0, false);
+  rappor_service.Update(false, false);
   EXPECT_EQ(base::TimeDelta(), rappor_service.next_rotation());
   EXPECT_FALSE(rappor_service.test_uploader()->is_running());
 
-  // Some recording, but no reporting.
-  rappor_service.Update(UMA_RAPPOR_GROUP, false);
+  // Recording, but no reporting.
+  rappor_service.Update(true, false);
   // Reports generation should still be scheduled.
   EXPECT_LT(base::TimeDelta(), rappor_service.next_rotation());
   EXPECT_FALSE(rappor_service.test_uploader()->is_running());
 
-  // Some recording and reporting enabled.
-  rappor_service.Update(SAFEBROWSING_RAPPOR_GROUP, true);
+  // Recording and reporting enabled.
+  rappor_service.Update(true, true);
   EXPECT_LT(base::TimeDelta(), rappor_service.next_rotation());
   EXPECT_TRUE(rappor_service.test_uploader()->is_running());
 }
@@ -66,27 +66,13 @@ TEST(RapporServiceImplTest, RecordAndExportMetrics) {
   EXPECT_EQ(16u, report.bits().size());
 }
 
-// Check that the reporting groups are respected.
+// Check that reporting_enabled_ is respected.
 TEST(RapporServiceImplTest, UmaRecordingGroup) {
   TestRapporServiceImpl rappor_service;
-  rappor_service.Update(SAFEBROWSING_RAPPOR_GROUP, false);
+  rappor_service.Update(false, false);
 
-  // Wrong recording group.
+  // Reporting disabled.
   rappor_service.RecordSampleString("UmaMetric", UMA_RAPPOR_TYPE, "foo");
-
-  RapporReports reports;
-  rappor_service.GetReports(&reports);
-  EXPECT_EQ(0, reports.report_size());
-}
-
-// Check that the reporting groups are respected.
-TEST(RapporServiceImplTest, SafeBrowsingRecordingGroup) {
-  TestRapporServiceImpl rappor_service;
-  rappor_service.Update(UMA_RAPPOR_GROUP, false);
-
-  // Wrong recording group.
-  rappor_service.RecordSampleString("SbMetric", SAFEBROWSING_RAPPOR_TYPE,
-                                    "foo");
 
   RapporReports reports;
   rappor_service.GetReports(&reports);
@@ -118,8 +104,7 @@ TEST(RapporServiceImplTest, Incognito) {
   TestRapporServiceImpl rappor_service;
   rappor_service.set_is_incognito(true);
 
-  rappor_service.RecordSampleString("MyMetric", SAFEBROWSING_RAPPOR_TYPE,
-                                    "foo");
+  rappor_service.RecordSampleString("MyMetric", UMA_RAPPOR_TYPE, "foo");
 
   RapporReports reports;
   rappor_service.GetReports(&reports);
@@ -129,8 +114,7 @@ TEST(RapporServiceImplTest, Incognito) {
 // Check that Sample objects record correctly.
 TEST(RapporServiceImplTest, RecordSample) {
   TestRapporServiceImpl rappor_service;
-  std::unique_ptr<Sample> sample =
-      rappor_service.CreateSample(SAFEBROWSING_RAPPOR_TYPE);
+  std::unique_ptr<Sample> sample = rappor_service.CreateSample(UMA_RAPPOR_TYPE);
   sample->SetStringField("Url", "example.com");
   sample->SetFlagsField("Flags1", 0xbcd, 12);
   rappor_service.RecordSample("ObjMetric", std::move(sample));
@@ -142,7 +126,7 @@ TEST(RapporServiceImplTest, RecordSample) {
   size_t url_index = reports.report(0).name_hash() == url_hash ? 0 : 1;
   size_t flags_index = url_index == 0 ? 1 : 0;
   EXPECT_EQ(url_hash, reports.report(url_index).name_hash());
-  EXPECT_EQ(1u, reports.report(url_index).bits().size());
+  EXPECT_EQ(4u, reports.report(url_index).bits().size());
   EXPECT_EQ(flags_hash, reports.report(flags_index).name_hash());
   EXPECT_EQ(2u, reports.report(flags_index).bits().size());
 }

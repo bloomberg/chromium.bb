@@ -70,7 +70,7 @@ TestRapporServiceImpl::TestRapporServiceImpl()
   test_uploader_ = new TestLogUploader();
   InitializeInternal(base::WrapUnique(test_uploader_), 0,
                      HmacByteVectorGenerator::GenerateEntropyInput());
-  Update(UMA_RAPPOR_GROUP | SAFEBROWSING_RAPPOR_GROUP, true);
+  Update(true, true);
 }
 
 TestRapporServiceImpl::~TestRapporServiceImpl() {}
