@@ -225,10 +225,13 @@ class Mirror(object):
 
   @property
   def bootstrap_bucket(self):
-    if 'chrome-internal' in self.url:
-      return 'chrome-git-cache'
-    else:
+    u = urlparse.urlparse(self.url)
+    if u.netloc == 'chromium.googlesource.com':
       return 'chromium-git-cache'
+    elif u.netloc == 'chrome-internal.googlesource.com':
+      return 'chrome-git-cache'
+    # Not recognized.
+    return None
 
   @classmethod
   def FromPath(cls, path):
@@ -304,7 +307,8 @@ class Mirror(object):
     # Don't combine pack files into one big pack file.  It's really slow for
     # repositories, and there's no way to track progress and make sure it's
     # not stuck.
-    self.RunGit(['config', 'gc.autopacklimit', '0'], cwd=cwd)
+    if self.supported_project():
+      self.RunGit(['config', 'gc.autopacklimit', '0'], cwd=cwd)
 
     # Allocate more RAM for cache-ing delta chains, for better performance
     # of "Resolving deltas".
@@ -325,6 +329,8 @@ class Mirror(object):
     More apt-ly named bootstrap_repo_from_cloud_if_possible_else_do_nothing().
     """
 
+    if not self.bootstrap_bucket:
+      return False
     python_fallback = False
     if (sys.platform.startswith('win') and
         not gclient_utils.FindExecutable('7z')):
@@ -393,6 +399,13 @@ class Mirror(object):
   def exists(self):
     return os.path.isfile(os.path.join(self.mirror_path, 'config'))
 
+  def supported_project(self):
+    """Returns true if this repo is known to have a bootstrap zip file."""
+    u = urlparse.urlparse(self.url)
+    return u.netloc in [
+        'chromium.googlesource.com',
+        'chrome-internal.googlesource.com']
+
   def _preserve_fetchspec(self):
     """Read and preserve remote.origin.fetch from an existing mirror.
 
@@ -433,8 +446,11 @@ class Mirror(object):
       if bootstrapped:
         # Bootstrap succeeded; delete previous cache, if any.
         gclient_utils.rmtree(self.mirror_path)
-      elif not self.exists():
-        # Bootstrap failed, no previous cache; start with a bare git dir.
+      elif not self.exists() or not self.supported_project():
+        # Bootstrap failed due to either
+        # 1. No previous cache
+        # 2. Project doesn't have a bootstrap zip file
+        # Start with a bare git dir.
         self.RunGit(['init', '--bare'], cwd=tempdir)
       else:
         # Bootstrap failed, previous cache exists; warn and continue.
