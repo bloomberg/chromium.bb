@@ -1654,8 +1654,9 @@ NavigationPolicy FrameLoader::shouldContinueForNavigationPolicy(
                           type == NavigationTypeFormResubmitted;
   if (isFormSubmission &&
       !m_frame->document()->contentSecurityPolicy()->allowFormAction(
-          request.url()))
+          request.url(), request.redirectStatus())) {
     return NavigationPolicyIgnore;
+  }
 
   bool replacesCurrentHistoryItem =
       frameLoadType == FrameLoadTypeReplaceCurrentItem;
