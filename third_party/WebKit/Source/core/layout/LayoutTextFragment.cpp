@@ -26,6 +26,7 @@
 #include "core/dom/PseudoElement.h"
 #include "core/dom/StyleChangeReason.h"
 #include "core/dom/Text.h"
+#include "core/frame/FrameView.h"
 #include "core/layout/HitTestResult.h"
 
 namespace blink {
@@ -48,6 +49,23 @@ LayoutTextFragment::LayoutTextFragment(Node* node, StringImpl* str)
 
 LayoutTextFragment::~LayoutTextFragment() {
   ASSERT(!m_firstLetterPseudoElement);
+}
+
+LayoutTextFragment* LayoutTextFragment::createAnonymous(PseudoElement& pseudo,
+                                                        StringImpl* text,
+                                                        unsigned start,
+                                                        unsigned length) {
+  LayoutTextFragment* fragment =
+      new LayoutTextFragment(nullptr, text, start, length);
+  fragment->setDocumentForAnonymous(&pseudo.document());
+  if (length)
+    pseudo.document().view()->incrementVisuallyNonEmptyCharacterCount(length);
+  return fragment;
+}
+
+LayoutTextFragment* LayoutTextFragment::createAnonymous(PseudoElement& pseudo,
+                                                        StringImpl* text) {
+  return createAnonymous(pseudo, text, 0, text ? text->length() : 0);
 }
 
 void LayoutTextFragment::willBeDestroyed() {

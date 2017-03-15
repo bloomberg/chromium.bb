@@ -21,9 +21,11 @@
 
 #include "core/layout/LayoutCounter.h"
 
+#include <memory>
 #include "core/HTMLNames.h"
 #include "core/dom/Element.h"
 #include "core/dom/ElementTraversal.h"
+#include "core/dom/PseudoElement.h"
 #include "core/html/HTMLOListElement.h"
 #include "core/layout/CounterNode.h"
 #include "core/layout/LayoutListItem.h"
@@ -32,7 +34,6 @@
 #include "core/style/ComputedStyle.h"
 #include "wtf/PtrUtil.h"
 #include "wtf/StdLibExtras.h"
-#include <memory>
 
 #ifndef NDEBUG
 #include <stdio.h>
@@ -424,11 +425,13 @@ static CounterNode* makeCounterNodeIfNeeded(LayoutObject& object,
   return newNode.get();
 }
 
-LayoutCounter::LayoutCounter(Document* node, const CounterContent& counter)
-    : LayoutText(node, StringImpl::empty),
+LayoutCounter::LayoutCounter(PseudoElement& pseudo,
+                             const CounterContent& counter)
+    : LayoutText(nullptr, StringImpl::empty),
       m_counter(counter),
       m_counterNode(nullptr),
       m_nextForSameCounter(nullptr) {
+  setDocumentForAnonymous(&pseudo.document());
   view()->addLayoutCounter();
 }
 

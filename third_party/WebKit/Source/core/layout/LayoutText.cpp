@@ -150,7 +150,7 @@ static void makeCapitalized(String* string, UChar previous) {
 }
 
 LayoutText::LayoutText(Node* node, PassRefPtr<StringImpl> str)
-    : LayoutObject(!node || node->isDocumentNode() ? 0 : node),
+    : LayoutObject(node),
       m_hasTab(false),
       m_linesDirty(false),
       m_containsReversedText(false),
@@ -163,15 +163,12 @@ LayoutText::LayoutText(Node* node, PassRefPtr<StringImpl> str)
       m_firstTextBox(nullptr),
       m_lastTextBox(nullptr) {
   ASSERT(m_text);
-  // FIXME: Some clients of LayoutText (and subclasses) pass Document as node to
-  // create anonymous layoutObject.
-  // They should be switched to passing null and using setDocumentForAnonymous.
-  if (node && node->isDocumentNode())
-    setDocumentForAnonymous(toDocument(node));
+  DCHECK(!node || !node->isDocumentNode());
 
   setIsText();
 
-  view()->frameView()->incrementVisuallyNonEmptyCharacterCount(m_text.length());
+  if (node)
+    frameView()->incrementVisuallyNonEmptyCharacterCount(m_text.length());
 }
 
 #if DCHECK_IS_ON()
@@ -182,6 +179,12 @@ LayoutText::~LayoutText() {
 }
 
 #endif
+
+LayoutText* LayoutText::createEmptyAnonymous(Document& doc) {
+  LayoutText* text = new LayoutText(nullptr, StringImpl::empty);
+  text->setDocumentForAnonymous(&doc);
+  return text;
+}
 
 bool LayoutText::isTextFragment() const {
   return false;

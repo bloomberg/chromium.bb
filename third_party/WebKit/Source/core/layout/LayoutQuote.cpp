@@ -21,6 +21,7 @@
 
 #include "core/layout/LayoutQuote.h"
 
+#include "core/dom/PseudoElement.h"
 #include "core/layout/LayoutTextFragment.h"
 #include "core/layout/LayoutView.h"
 #include "wtf/StdLibExtras.h"
@@ -30,14 +31,15 @@
 
 namespace blink {
 
-LayoutQuote::LayoutQuote(Document* node, QuoteType quote)
+LayoutQuote::LayoutQuote(PseudoElement& pseudo, QuoteType quote)
     : LayoutInline(nullptr),
       m_type(quote),
       m_depth(0),
       m_next(nullptr),
       m_previous(nullptr),
+      m_owningPseudo(&pseudo),
       m_attached(false) {
-  setDocumentForAnonymous(node);
+  setDocumentForAnonymous(&pseudo.document());
 }
 
 LayoutQuote::~LayoutQuote() {
@@ -264,7 +266,8 @@ void LayoutQuote::updateText() {
     fragment->setStyle(mutableStyle());
     fragment->setContentString(m_text.impl());
   } else {
-    fragment = new LayoutTextFragment(&document(), m_text.impl());
+    fragment =
+        LayoutTextFragment::createAnonymous(*m_owningPseudo, m_text.impl());
     fragment->setStyle(mutableStyle());
     addChild(fragment);
   }

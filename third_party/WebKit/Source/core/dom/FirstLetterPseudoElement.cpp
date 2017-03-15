@@ -290,13 +290,20 @@ void FirstLetterPseudoElement::attachFirstLetterTextLayoutObjects() {
   // FIXME: This would already have been calculated in firstLetterLayoutObject.
   // Can we pass the length through?
   unsigned length = FirstLetterPseudoElement::firstLetterLength(oldText);
+  unsigned remainingLength = oldText.length() - length;
 
   // Construct a text fragment for the text after the first letter.
   // This text fragment might be empty.
-  LayoutTextFragment* remainingText = new LayoutTextFragment(
-      nextLayoutObject->node() ? nextLayoutObject->node()
-                               : &nextLayoutObject->document(),
-      oldText.impl(), length, oldText.length() - length);
+  LayoutTextFragment* remainingText;
+
+  if (nextLayoutObject->node()) {
+    remainingText = new LayoutTextFragment(
+        nextLayoutObject->node(), oldText.impl(), length, remainingLength);
+  } else {
+    remainingText = LayoutTextFragment::createAnonymous(
+        *this, oldText.impl(), length, remainingLength);
+  }
+
   remainingText->setFirstLetterPseudoElement(this);
   remainingText->setIsRemainingTextLayoutObject(true);
   remainingText->setStyle(nextLayoutObject->mutableStyle());
@@ -310,8 +317,8 @@ void FirstLetterPseudoElement::attachFirstLetterTextLayoutObjects() {
   layoutObject()->parent()->addChild(remainingText, nextSibling);
 
   // Construct text fragment for the first letter.
-  LayoutTextFragment* letter = new LayoutTextFragment(
-      &nextLayoutObject->document(), oldText.impl(), 0, length);
+  LayoutTextFragment* letter =
+      LayoutTextFragment::createAnonymous(*this, oldText.impl(), 0, length);
   letter->setFirstLetterPseudoElement(this);
   letter->setStyle(pseudoStyle);
   layoutObject()->addChild(letter);

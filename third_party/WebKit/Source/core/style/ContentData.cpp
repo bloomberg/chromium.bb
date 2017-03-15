@@ -22,6 +22,8 @@
 
 #include "core/style/ContentData.h"
 
+#include <memory>
+#include "core/dom/PseudoElement.h"
 #include "core/layout/LayoutCounter.h"
 #include "core/layout/LayoutImage.h"
 #include "core/layout/LayoutImageResource.h"
@@ -29,7 +31,6 @@
 #include "core/layout/LayoutQuote.h"
 #include "core/layout/LayoutTextFragment.h"
 #include "core/style/ComputedStyle.h"
-#include <memory>
 
 namespace blink {
 
@@ -68,9 +69,9 @@ DEFINE_TRACE(ContentData) {
 }
 
 LayoutObject* ImageContentData::createLayoutObject(
-    Document& doc,
+    PseudoElement& pseudo,
     ComputedStyle& pseudoStyle) const {
-  LayoutImage* image = LayoutImage::createAnonymous(&doc);
+  LayoutImage* image = LayoutImage::createAnonymous(pseudo);
   image->setPseudoStyle(&pseudoStyle);
   if (m_image)
     image->setImageResource(
@@ -86,25 +87,26 @@ DEFINE_TRACE(ImageContentData) {
 }
 
 LayoutObject* TextContentData::createLayoutObject(
-    Document& doc,
+    PseudoElement& pseudo,
     ComputedStyle& pseudoStyle) const {
-  LayoutObject* layoutObject = new LayoutTextFragment(&doc, m_text.impl());
+  LayoutObject* layoutObject =
+      LayoutTextFragment::createAnonymous(pseudo, m_text.impl());
   layoutObject->setPseudoStyle(&pseudoStyle);
   return layoutObject;
 }
 
 LayoutObject* CounterContentData::createLayoutObject(
-    Document& doc,
+    PseudoElement& pseudo,
     ComputedStyle& pseudoStyle) const {
-  LayoutObject* layoutObject = new LayoutCounter(&doc, *m_counter);
+  LayoutObject* layoutObject = new LayoutCounter(pseudo, *m_counter);
   layoutObject->setPseudoStyle(&pseudoStyle);
   return layoutObject;
 }
 
 LayoutObject* QuoteContentData::createLayoutObject(
-    Document& doc,
+    PseudoElement& pseudo,
     ComputedStyle& pseudoStyle) const {
-  LayoutObject* layoutObject = new LayoutQuote(&doc, m_quote);
+  LayoutObject* layoutObject = new LayoutQuote(pseudo, m_quote);
   layoutObject->setPseudoStyle(&pseudoStyle);
   return layoutObject;
 }

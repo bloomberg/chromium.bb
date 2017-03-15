@@ -132,7 +132,7 @@ void PseudoElement::attachLayoutTree(const AttachContext& context) {
 
   for (const ContentData* content = style.contentData(); content;
        content = content->next()) {
-    LayoutObject* child = content->createLayoutObject(document(), style);
+    LayoutObject* child = content->createLayoutObject(*this, style);
     if (layoutObject->isChildAllowed(child, style)) {
       layoutObject->addChild(child);
       if (child->isQuote())

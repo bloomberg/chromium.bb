@@ -43,6 +43,12 @@ class LayoutTextFragment final : public LayoutText {
   LayoutTextFragment(Node*, StringImpl*);
   ~LayoutTextFragment() override;
 
+  static LayoutTextFragment* createAnonymous(PseudoElement&, StringImpl*);
+  static LayoutTextFragment* createAnonymous(PseudoElement&,
+                                             StringImpl*,
+                                             unsigned start,
+                                             unsigned length);
+
   bool isTextFragment() const override { return true; }
 
   bool canBeSelectionLeaf() const override {

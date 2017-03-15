@@ -27,8 +27,8 @@
 
 namespace blink {
 
-class Document;
 class LayoutTextFragment;
+class PseudoElement;
 
 // LayoutQuote is the layout object associated with generated quotes
 // ("content: open-quote | close-quote | no-open-quote | no-close-quote").
@@ -40,7 +40,7 @@ class LayoutTextFragment;
 // and |m_previous| below.
 class LayoutQuote final : public LayoutInline {
  public:
-  LayoutQuote(Document*, const QuoteType);
+  LayoutQuote(PseudoElement&, const QuoteType);
   ~LayoutQuote() override;
   void attachQuote();
 
@@ -80,6 +80,11 @@ class LayoutQuote final : public LayoutInline {
   // Those are used to compute |m_depth| in an efficient manner.
   LayoutQuote* m_next;
   LayoutQuote* m_previous;
+
+  // The pseudo-element that owns us.
+  //
+  // Lifetime is the same as LayoutObject::m_node, so this is safe.
+  UntracedMember<PseudoElement> m_owningPseudo;
 
   // This tracks whether this LayoutQuote was inserted into the layout tree
   // and its position in the linked list is correct (m_next and m_previous).

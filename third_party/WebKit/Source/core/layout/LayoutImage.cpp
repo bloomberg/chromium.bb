@@ -29,6 +29,7 @@
 #include "core/layout/LayoutImage.h"
 
 #include "core/HTMLNames.h"
+#include "core/dom/PseudoElement.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/UseCounter.h"
@@ -50,9 +51,9 @@ LayoutImage::LayoutImage(Element* element)
       m_isGeneratedContent(false),
       m_imageDevicePixelRatio(1.0f) {}
 
-LayoutImage* LayoutImage::createAnonymous(Document* document) {
+LayoutImage* LayoutImage::createAnonymous(PseudoElement& pseudo) {
   LayoutImage* image = new LayoutImage(nullptr);
-  image->setDocumentForAnonymous(document);
+  image->setDocumentForAnonymous(&pseudo.document());
   return image;
 }
 

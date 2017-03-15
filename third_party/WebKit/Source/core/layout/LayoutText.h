@@ -76,6 +76,8 @@ class CORE_EXPORT LayoutText : public LayoutObject {
   ~LayoutText() override;
 #endif
 
+  static LayoutText* createEmptyAnonymous(Document&);
+
   const char* name() const override { return "LayoutText"; }
 
   virtual bool isTextFragment() const;

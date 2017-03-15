@@ -28,6 +28,7 @@
 namespace blink {
 
 class CounterNode;
+class PseudoElement;
 
 // LayoutCounter is used to represent the text of a counter.
 // See http://www.w3.org/TR/CSS21/generate.html#counters
@@ -49,7 +50,7 @@ class CounterNode;
 // LayoutCounter during their lifetime (see the static functions below).
 class LayoutCounter final : public LayoutText {
  public:
-  LayoutCounter(Document*, const CounterContent&);
+  LayoutCounter(PseudoElement&, const CounterContent&);
   ~LayoutCounter() override;
 
   // These functions are static so that any LayoutObject can call them.
