@@ -11,6 +11,7 @@
 #include "base/debug/leak_annotations.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/string_piece.h"
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
@@ -34,6 +35,54 @@ namespace {
 // Idiomatic SQLite would take the wrapped VFS szOsFile and increase it to store
 // additional data as a prefix.
 
+// This enum must match the numbering from Sqlite.VfsEvents in histograms.xml.
+// Do not reorder or remove items, only add new items before VFS_EVENT_MAX.
+enum VfsEventType {
+  // VFS method xOpen() call.
+  VFS_OPEN = 0,
+
+  // VFS method xDelete() call.
+  VFS_DELETE,
+
+  // VFS method xAccess() call.
+  VFS_ACCESS,
+
+  // VFS method xFullPathname() call.
+  VFS_FULLPATHNAME,
+
+  // I/O method xClose() call, should balance VFS_OPEN.
+  VFS_IO_CLOSE,
+
+  // I/O method xRead() call.
+  VFS_IO_READ,
+
+  // I/O method xWrite() call.
+  VFS_IO_WRITE,
+
+  // I/O method xTruncate() call.
+  VFS_IO_TRUNCATE,
+
+  // I/O method xSync() call.
+  VFS_IO_SYNC,
+
+  // I/O method xFileSize() call.
+  VFS_IO_FILESIZE,
+
+  // I/O method xFetch() call.  This is like xRead(), but when using
+  // memory-mapping.
+  VFS_IO_FETCH,
+
+  // Add new items before this one, always keep this one at the end.
+  VFS_EVENT_MAX
+};
+
+// TODO(shess): If the VFS was parameterized, then results could be binned by
+// database.  It would require a separate VFS per database, though the variants
+// could all use the same VFS functions.
+void RecordVfsEvent(VfsEventType vfs_event) {
+  UMA_HISTOGRAM_ENUMERATION("Sqlite.Vfs_Events", vfs_event, VFS_EVENT_MAX);
+}
+
 sqlite3_vfs* GetWrappedVfs(sqlite3_vfs* wrapped_vfs) {
   return static_cast<sqlite3_vfs*>(wrapped_vfs->pAppData);
 }
@@ -56,6 +105,8 @@ sqlite3_file* GetWrappedFile(sqlite3_file* wrapper_file) {
 
 int Close(sqlite3_file* sqlite_file)
 {
+  RecordVfsEvent(VFS_IO_CLOSE);
+
   VfsFile* file = AsVfsFile(sqlite_file);
 
   int r = file->wrapped_file->pMethods->xClose(file->wrapped_file);
@@ -66,6 +117,9 @@ int Close(sqlite3_file* sqlite_file)
 
 int Read(sqlite3_file* sqlite_file, void* buf, int amt, sqlite3_int64 ofs)
 {
+  RecordVfsEvent(VFS_IO_READ);
+  UMA_HISTOGRAM_COUNTS("Sqlite.Vfs_Read", amt);
+
   sqlite3_file* wrapped_file = GetWrappedFile(sqlite_file);
   return wrapped_file->pMethods->xRead(wrapped_file, buf, amt, ofs);
 }
@@ -73,24 +127,33 @@ int Read(sqlite3_file* sqlite_file, void* buf, int amt, sqlite3_int64 ofs)
 int Write(sqlite3_file* sqlite_file, const void* buf, int amt,
           sqlite3_int64 ofs)
 {
+  RecordVfsEvent(VFS_IO_WRITE);
+  UMA_HISTOGRAM_COUNTS("Sqlite.Vfs_Write", amt);
+
   sqlite3_file* wrapped_file = GetWrappedFile(sqlite_file);
   return wrapped_file->pMethods->xWrite(wrapped_file, buf, amt, ofs);
 }
 
 int Truncate(sqlite3_file* sqlite_file, sqlite3_int64 size)
 {
+  RecordVfsEvent(VFS_IO_TRUNCATE);
+
   sqlite3_file* wrapped_file = GetWrappedFile(sqlite_file);
   return wrapped_file->pMethods->xTruncate(wrapped_file, size);
 }
 
 int Sync(sqlite3_file* sqlite_file, int flags)
 {
+  RecordVfsEvent(VFS_IO_SYNC);
+
   sqlite3_file* wrapped_file = GetWrappedFile(sqlite_file);
   return wrapped_file->pMethods->xSync(wrapped_file, flags);
 }
 
 int FileSize(sqlite3_file* sqlite_file, sqlite3_int64* size)
 {
+  RecordVfsEvent(VFS_IO_FILESIZE);
+
   sqlite3_file* wrapped_file = GetWrappedFile(sqlite_file);
   return wrapped_file->pMethods->xFileSize(wrapped_file, size);
 }
@@ -154,6 +217,9 @@ int ShmUnmap(sqlite3_file *sqlite_file, int del) {
 }
 
 int Fetch(sqlite3_file *sqlite_file, sqlite3_int64 off, int amt, void **pp) {
+  RecordVfsEvent(VFS_IO_FETCH);
+  UMA_HISTOGRAM_COUNTS("Sqlite.Vfs_Fetch", amt);
+
   sqlite3_file* wrapped_file = GetWrappedFile(sqlite_file);
   return wrapped_file->pMethods->xFetch(wrapped_file, off, amt, pp);
 }
@@ -177,6 +243,8 @@ base::ScopedCFTypeRef<CFURLRef> CFURLRefForPath(const char* path){
 
 int Open(sqlite3_vfs* vfs, const char* file_name, sqlite3_file* wrapper_file,
          int desired_flags, int* used_flags) {
+  RecordVfsEvent(VFS_OPEN);
+
   sqlite3_vfs* wrapped_vfs = GetWrappedVfs(vfs);
 
   sqlite3_file* wrapped_file = static_cast<sqlite3_file*>(
@@ -298,17 +366,23 @@ int Open(sqlite3_vfs* vfs, const char* file_name, sqlite3_file* wrapper_file,
 }
 
 int Delete(sqlite3_vfs* vfs, const char* file_name, int sync_dir) {
+  RecordVfsEvent(VFS_DELETE);
+
   sqlite3_vfs* wrapped_vfs = GetWrappedVfs(vfs);
   return wrapped_vfs->xDelete(wrapped_vfs, file_name, sync_dir);
 }
 
 int Access(sqlite3_vfs* vfs, const char* file_name, int flag, int* res) {
+  RecordVfsEvent(VFS_ACCESS);
+
   sqlite3_vfs* wrapped_vfs = GetWrappedVfs(vfs);
   return wrapped_vfs->xAccess(wrapped_vfs, file_name, flag, res);
 }
 
 int FullPathname(sqlite3_vfs* vfs, const char* relative_path,
                  int buf_size, char* absolute_path) {
+  RecordVfsEvent(VFS_FULLPATHNAME);
+
   sqlite3_vfs* wrapped_vfs = GetWrappedVfs(vfs);
   return wrapped_vfs->xFullPathname(
       wrapped_vfs, relative_path, buf_size, absolute_path);
