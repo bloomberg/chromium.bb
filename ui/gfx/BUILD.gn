@@ -21,6 +21,26 @@ source_set("gfx_export") {
   ]
 }
 
+component("geometry_skia") {
+  sources = [
+    "skia_util.cc",
+    "skia_util.h",
+    "transform.cc",
+    "transform.h",
+    "transform_util.cc",
+    "transform_util.h",
+  ]
+  public_deps = [
+    ":gfx_export",
+  ]
+  deps = [
+    "//base",
+    "//skia",
+    "//ui/gfx/geometry",
+  ]
+  defines = [ "GFX_IMPLEMENTATION" ]
+}
+
 component("gfx") {
   sources = [
     "android/gfx_jni_registrar.cc",
@@ -172,8 +192,6 @@ component("gfx") {
     "skbitmap_operations.h",
     "skia_color_space_util.cc",
     "skia_color_space_util.h",
-    "skia_util.cc",
-    "skia_util.h",
     "switches.cc",
     "switches.h",
     "sys_color_change_listener.cc",
@@ -185,10 +203,6 @@ component("gfx") {
     "text_utils.h",
     "text_utils_android.cc",
     "text_utils_ios.mm",
-    "transform.cc",
-    "transform.h",
-    "transform_util.cc",
-    "transform_util.h",
     "ui_gfx_exports.cc",
     "utf16_indexing.cc",
     "utf16_indexing.h",
@@ -252,6 +266,7 @@ component("gfx") {
 
   public_deps = [
     ":color_space",
+    ":geometry_skia",
     ":memory_buffer_sources",
     ":native_widget_types",
     ":selection_bound_sources",

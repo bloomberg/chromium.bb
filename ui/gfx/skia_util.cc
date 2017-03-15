@@ -18,8 +18,6 @@
 #include "ui/gfx/geometry/quad_f.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
-#include "ui/gfx/image/image_skia_rep.h"
-#include "ui/gfx/shadow_value.h"
 #include "ui/gfx/transform.h"
 
 namespace gfx {
