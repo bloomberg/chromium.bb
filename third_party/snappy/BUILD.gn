@@ -55,10 +55,4 @@ static_library("snappy") {
   # Chromium doesn't use automake, but we generated config.h offline for all the
   # platforms that we build for.
   defines = [ "HAVE_CONFIG_H" ]
-
-  if (is_clang) {
-    # snappy-stubs-internal.h unapologetically has: using namespace std
-    # https://code.google.com/p/snappy/issues/detail?id=70
-    configs -= [ "//build/config/clang:extra_warnings" ]
-  }
 }
