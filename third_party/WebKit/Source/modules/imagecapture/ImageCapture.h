@@ -5,6 +5,7 @@
 #ifndef ImageCapture_h
 #define ImageCapture_h
 
+#include <memory>
 #include "bindings/core/v8/ActiveScriptWrappable.h"
 #include "bindings/core/v8/ScriptPromise.h"
 #include "core/dom/ContextLifecycleObserver.h"
@@ -12,8 +13,8 @@
 #include "media/capture/mojo/image_capture.mojom-blink.h"
 #include "modules/EventTargetModules.h"
 #include "modules/ModulesExport.h"
+#include "modules/mediastream/MediaTrackCapabilities.h"
 #include "platform/AsyncMethodRunner.h"
-#include <memory>
 
 namespace blink {
 
@@ -58,6 +59,8 @@ class MODULES_EXPORT ImageCapture final
 
   ScriptPromise grabFrame(ScriptState*, ExceptionState&);
 
+  MediaTrackCapabilities& getMediaTrackCapabilities();
+
   DECLARE_VIRTUAL_TRACE();
 
  private:
@@ -67,11 +70,13 @@ class MODULES_EXPORT ImageCapture final
                       media::mojom::blink::PhotoCapabilitiesPtr);
   void onSetOptions(ScriptPromiseResolver*, bool);
   void onTakePhoto(ScriptPromiseResolver*, media::mojom::blink::BlobPtr);
+  void onCapabilitiesBootstrap(media::mojom::blink::PhotoCapabilitiesPtr);
   void onServiceConnectionError();
 
   Member<MediaStreamTrack> m_streamTrack;
   std::unique_ptr<WebImageCaptureFrameGrabber> m_frameGrabber;
   media::mojom::blink::ImageCapturePtr m_service;
+  MediaTrackCapabilities m_capabilities;
 
   HeapHashSet<Member<ScriptPromiseResolver>> m_serviceRequests;
 };

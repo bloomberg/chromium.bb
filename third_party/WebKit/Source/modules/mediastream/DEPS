@@ -5,6 +5,7 @@ include_rules = [
     "+modules/EventModules.h",
     "+modules/EventTargetModules.h",
     "+modules/ModulesExport.h",
+    "+modules/imagecapture",
     "+modules/mediastream",
     "+platform",
     "+public/platform",

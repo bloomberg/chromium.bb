@@ -15,6 +15,8 @@
 #include "modules/imagecapture/PhotoCapabilities.h"
 #include "modules/imagecapture/PhotoSettings.h"
 #include "modules/mediastream/MediaStreamTrack.h"
+#include "modules/mediastream/MediaTrackCapabilities.h"
+#include "platform/WaitableEvent.h"
 #include "platform/mojo/MojoHelper.h"
 #include "public/platform/InterfaceProvider.h"
 #include "public/platform/Platform.h"
@@ -54,6 +56,22 @@ media::mojom::blink::FillLightMode parseFillLightMode(const String& blinkMode) {
   if (blinkMode == "torch")
     return media::mojom::blink::FillLightMode::TORCH;
   return media::mojom::blink::FillLightMode::NONE;
+}
+
+WebString toString(media::mojom::blink::MeteringMode value) {
+  switch (value) {
+    case media::mojom::blink::MeteringMode::NONE:
+      return WebString::fromUTF8("none");
+    case media::mojom::blink::MeteringMode::MANUAL:
+      return WebString::fromUTF8("manual");
+    case media::mojom::blink::MeteringMode::SINGLE_SHOT:
+      return WebString::fromUTF8("single-shot");
+    case media::mojom::blink::MeteringMode::CONTINUOUS:
+      return WebString::fromUTF8("continuous");
+    default:
+      NOTREACHED() << "Unknown MeteringMode";
+  }
+  return WebString();
 }
 
 }  // anonymous namespace
@@ -267,6 +285,10 @@ ScriptPromise ImageCapture::grabFrame(ScriptState* scriptState,
   return promise;
 }
 
+MediaTrackCapabilities& ImageCapture::getMediaTrackCapabilities() {
+  return m_capabilities;
+}
+
 ImageCapture::ImageCapture(ExecutionContext* context, MediaStreamTrack* track)
     : ContextLifecycleObserver(context), m_streamTrack(track) {
   DCHECK(m_streamTrack);
@@ -277,6 +299,13 @@ ImageCapture::ImageCapture(ExecutionContext* context, MediaStreamTrack* track)
 
   m_service.set_connection_error_handler(convertToBaseCallback(WTF::bind(
       &ImageCapture::onServiceConnectionError, wrapWeakPersistent(this))));
+
+  // Launch a retrieval of the current capabilities, which arrive asynchronously
+  // to avoid blocking the main UI thread.
+  m_service->GetCapabilities(
+      m_streamTrack->component()->source()->id(),
+      convertToBaseCallback(WTF::bind(&ImageCapture::onCapabilitiesBootstrap,
+                                      wrapPersistent(this))));
 }
 
 void ImageCapture::onCapabilities(
@@ -288,57 +317,35 @@ void ImageCapture::onCapabilities(
   if (capabilities.is_null()) {
     resolver->reject(DOMException::create(UnknownError, "platform error"));
   } else {
-    // TODO(mcasas): Should be using a mojo::StructTraits.
-    MediaSettingsRange* iso = MediaSettingsRange::create(
-        capabilities->iso->max, capabilities->iso->min,
-        capabilities->iso->current, capabilities->iso->step);
-    MediaSettingsRange* height = MediaSettingsRange::create(
-        capabilities->height->max, capabilities->height->min,
-        capabilities->height->current, capabilities->height->step);
-    MediaSettingsRange* width = MediaSettingsRange::create(
-        capabilities->width->max, capabilities->width->min,
-        capabilities->width->current, capabilities->width->step);
-    MediaSettingsRange* zoom = MediaSettingsRange::create(
-        capabilities->zoom->max, capabilities->zoom->min,
-        capabilities->zoom->current, capabilities->zoom->step);
-    MediaSettingsRange* exposureCompensation =
-        MediaSettingsRange::create(capabilities->exposure_compensation->max,
-                                   capabilities->exposure_compensation->min,
-                                   capabilities->exposure_compensation->current,
-                                   capabilities->exposure_compensation->step);
-    MediaSettingsRange* colorTemperature =
-        MediaSettingsRange::create(capabilities->color_temperature->max,
-                                   capabilities->color_temperature->min,
-                                   capabilities->color_temperature->current,
-                                   capabilities->color_temperature->step);
-    MediaSettingsRange* brightness = MediaSettingsRange::create(
-        capabilities->brightness->max, capabilities->brightness->min,
-        capabilities->brightness->current, capabilities->brightness->step);
-    MediaSettingsRange* contrast = MediaSettingsRange::create(
-        capabilities->contrast->max, capabilities->contrast->min,
-        capabilities->contrast->current, capabilities->contrast->step);
-    MediaSettingsRange* saturation = MediaSettingsRange::create(
-        capabilities->saturation->max, capabilities->saturation->min,
-        capabilities->saturation->current, capabilities->saturation->step);
-    MediaSettingsRange* sharpness = MediaSettingsRange::create(
-        capabilities->sharpness->max, capabilities->sharpness->min,
-        capabilities->sharpness->current, capabilities->sharpness->step);
     PhotoCapabilities* caps = PhotoCapabilities::create();
-    caps->setIso(iso);
-    caps->setImageHeight(height);
-    caps->setImageWidth(width);
-    caps->setZoom(zoom);
+    // TODO(mcasas): Remove the explicit MediaSettingsRange::create() when
+    // mojo::StructTraits supports garbage-collected mappings,
+    // https://crbug.com/700180.
+    caps->setIso(MediaSettingsRange::create(std::move(capabilities->iso)));
+    caps->setImageHeight(
+        MediaSettingsRange::create(std::move(capabilities->height)));
+    caps->setImageWidth(
+        MediaSettingsRange::create(std::move(capabilities->width)));
+    caps->setZoom(MediaSettingsRange::create(std::move(capabilities->zoom)));
+    caps->setExposureCompensation(MediaSettingsRange::create(
+        std::move(capabilities->exposure_compensation)));
+    caps->setColorTemperature(
+        MediaSettingsRange::create(std::move(capabilities->color_temperature)));
+    caps->setBrightness(
+        MediaSettingsRange::create(std::move(capabilities->brightness)));
+    caps->setContrast(
+        MediaSettingsRange::create(std::move(capabilities->contrast)));
+    caps->setSaturation(
+        MediaSettingsRange::create(std::move(capabilities->saturation)));
+    caps->setSharpness(
+        MediaSettingsRange::create(std::move(capabilities->sharpness)));
+
     caps->setFocusMode(capabilities->focus_mode);
     caps->setExposureMode(capabilities->exposure_mode);
-    caps->setExposureCompensation(exposureCompensation);
     caps->setWhiteBalanceMode(capabilities->white_balance_mode);
     caps->setFillLightMode(capabilities->fill_light_mode);
+
     caps->setRedEyeReduction(capabilities->red_eye_reduction);
-    caps->setColorTemperature(colorTemperature);
-    caps->setBrightness(brightness);
-    caps->setContrast(contrast);
-    caps->setSaturation(saturation);
-    caps->setSharpness(sharpness);
     resolver->resolve(caps);
   }
   m_serviceRequests.erase(resolver);
@@ -369,6 +376,65 @@ void ImageCapture::onTakePhoto(ScriptPromiseResolver* resolver,
   m_serviceRequests.erase(resolver);
 }
 
+void ImageCapture::onCapabilitiesBootstrap(
+    media::mojom::blink::PhotoCapabilitiesPtr capabilities) {
+  DVLOG(1) << __func__;
+  if (capabilities.is_null())
+    return;
+
+  // TODO(mcasas): adapt the mojo interface to return a list of supported Modes
+  // when moving these out of PhotoCapabilities, https://crbug.com/700607.
+  m_capabilities.setWhiteBalanceMode(
+      WTF::Vector<WTF::String>({toString(capabilities->white_balance_mode)}));
+  m_capabilities.setExposureMode(
+      WTF::Vector<WTF::String>({toString(capabilities->exposure_mode)}));
+  m_capabilities.setFocusMode(
+      WTF::Vector<WTF::String>({toString(capabilities->focus_mode)}));
+
+  // TODO(mcasas): Remove the explicit MediaSettingsRange::create() when
+  // mojo::StructTraits supports garbage-collected mappings,
+  // https://crbug.com/700180.
+  if (capabilities->exposure_compensation->max !=
+      capabilities->exposure_compensation->min) {
+    m_capabilities.setExposureCompensation(MediaSettingsRange::create(
+        std::move(capabilities->exposure_compensation)));
+  }
+  if (capabilities->color_temperature->max !=
+      capabilities->color_temperature->min) {
+    m_capabilities.setColorTemperature(
+        MediaSettingsRange::create(std::move(capabilities->color_temperature)));
+  }
+  if (capabilities->iso->max != capabilities->iso->min) {
+    m_capabilities.setIso(
+        MediaSettingsRange::create(std::move(capabilities->iso)));
+  }
+
+  if (capabilities->brightness->max != capabilities->brightness->min) {
+    m_capabilities.setBrightness(
+        MediaSettingsRange::create(std::move(capabilities->brightness)));
+  }
+  if (capabilities->contrast->max != capabilities->contrast->min) {
+    m_capabilities.setContrast(
+        MediaSettingsRange::create(std::move(capabilities->contrast)));
+  }
+  if (capabilities->saturation->max != capabilities->saturation->min) {
+    m_capabilities.setSaturation(
+        MediaSettingsRange::create(std::move(capabilities->saturation)));
+  }
+  if (capabilities->sharpness->max != capabilities->sharpness->min) {
+    m_capabilities.setSharpness(
+        MediaSettingsRange::create(std::move(capabilities->sharpness)));
+  }
+
+  if (capabilities->zoom->max != capabilities->zoom->min) {
+    m_capabilities.setZoom(
+        MediaSettingsRange::create(std::move(capabilities->zoom)));
+  }
+
+  // TODO(mcasas): do |torch| when the mojom interface is updated,
+  // https://crbug.com/700607.
+}
+
 void ImageCapture::onServiceConnectionError() {
   m_service.reset();
   for (ScriptPromiseResolver* resolver : m_serviceRequests)
@@ -378,6 +444,7 @@ void ImageCapture::onServiceConnectionError() {
 
 DEFINE_TRACE(ImageCapture) {
   visitor->trace(m_streamTrack);
+  visitor->trace(m_capabilities);
   visitor->trace(m_serviceRequests);
   EventTargetWithInlineData::trace(visitor);
   ContextLifecycleObserver::trace(visitor);

@@ -40,6 +40,8 @@ namespace blink {
 
 class AudioSourceProvider;
 class ExceptionState;
+class ImageCapture;
+class MediaTrackCapabilities;
 class MediaTrackConstraints;
 class MediaStream;
 class MediaTrackSettings;
@@ -80,6 +82,7 @@ class MODULES_EXPORT MediaStreamTrack
   // Called from UserMediaRequest when it succeeds. It is not IDL-exposed.
   void setConstraints(const WebMediaConstraints&);
 
+  void getCapabilities(MediaTrackCapabilities&);
   void getSettings(MediaTrackSettings&);
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(mute);
@@ -122,6 +125,7 @@ class MODULES_EXPORT MediaStreamTrack
   bool m_stopped;
   Member<MediaStreamComponent> m_component;
   WebMediaConstraints m_constraints;
+  Member<ImageCapture> m_imageCapture;
 };
 
 typedef HeapVector<Member<MediaStreamTrack>> MediaStreamTrackVector;

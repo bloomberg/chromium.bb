@@ -25,21 +25,23 @@
 
 #include "modules/mediastream/MediaStreamTrack.h"
 
+#include <memory>
 #include "bindings/core/v8/ExceptionMessages.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/events/Event.h"
 #include "core/frame/Deprecation.h"
+#include "modules/imagecapture/ImageCapture.h"
 #include "modules/mediastream/MediaConstraintsImpl.h"
 #include "modules/mediastream/MediaStream.h"
+#include "modules/mediastream/MediaTrackCapabilities.h"
 #include "modules/mediastream/MediaTrackSettings.h"
 #include "modules/mediastream/UserMediaController.h"
 #include "platform/mediastream/MediaStreamCenter.h"
 #include "platform/mediastream/MediaStreamComponent.h"
 #include "public/platform/WebMediaStreamTrack.h"
 #include "wtf/Assertions.h"
-#include <memory>
 
 namespace blink {
 
@@ -66,6 +68,13 @@ MediaStreamTrack::MediaStreamTrack(ExecutionContext* context,
       // The source's constraints aren't yet initialized at creation time.
       m_constraints() {
   m_component->source()->addObserver(this);
+
+  if (m_component->source() &&
+      m_component->source()->type() == MediaStreamSource::TypeVideo) {
+    // ImageCapture::create() only throws if |this| track is not of video type.
+    NonThrowableExceptionState exceptionState;
+    m_imageCapture = ImageCapture::create(context, this, exceptionState);
+  }
 }
 
 MediaStreamTrack::~MediaStreamTrack() {}
@@ -212,6 +221,11 @@ void MediaStreamTrack::setConstraints(const WebMediaConstraints& constraints) {
   m_constraints = constraints;
 }
 
+void MediaStreamTrack::getCapabilities(MediaTrackCapabilities& capabilities) {
+  if (m_imageCapture)
+    capabilities = m_imageCapture->getMediaTrackCapabilities();
+}
+
 void MediaStreamTrack::getSettings(MediaTrackSettings& settings) {
   WebMediaStreamTrack::Settings platformSettings;
   m_component->getSettings(platformSettings);
@@ -344,6 +358,7 @@ ExecutionContext* MediaStreamTrack::getExecutionContext() const {
 DEFINE_TRACE(MediaStreamTrack) {
   visitor->trace(m_registeredMediaStreams);
   visitor->trace(m_component);
+  visitor->trace(m_imageCapture);
   EventTargetWithInlineData::trace(visitor);
   ContextLifecycleObserver::trace(visitor);
 }

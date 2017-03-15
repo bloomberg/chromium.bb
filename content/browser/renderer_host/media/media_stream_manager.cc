@@ -626,8 +626,8 @@ int MediaStreamManager::VideoDeviceIdToSessionId(
 
   for (const LabeledDeviceRequest& device_request : requests_) {
     for (const StreamDeviceInfo& info : device_request.second->devices) {
-      if (info.device.id == device_id) {
-        DCHECK_EQ(MEDIA_DEVICE_VIDEO_CAPTURE, info.device.type);
+      if (info.device.id == device_id &&
+          info.device.type == MEDIA_DEVICE_VIDEO_CAPTURE) {
         return info.session_id;
       }
     }

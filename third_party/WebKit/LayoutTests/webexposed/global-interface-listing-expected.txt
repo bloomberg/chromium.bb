@@ -4118,6 +4118,7 @@ interface MediaStreamTrack : EventTarget
     getter readyState
     method clone
     method constructor
+    method getCapabilities
     method getConstraints
     method getSettings
     method stop
