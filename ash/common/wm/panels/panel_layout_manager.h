@@ -13,12 +13,12 @@
 #include "ash/common/shell_observer.h"
 #include "ash/common/wm/window_state_observer.h"
 #include "ash/common/wm_display_observer.h"
-#include "ash/common/wm_layout_manager.h"
 #include "ash/root_window_controller.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
+#include "ui/aura/layout_manager.h"
 #include "ui/aura/window_observer.h"
 #include "ui/aura/window_tracker.h"
 #include "ui/keyboard/keyboard_controller.h"
@@ -51,7 +51,7 @@ class RootWindowController;
 // panel_container->SetLayoutManager(new PanelLayoutManager(panel_container));
 
 class ASH_EXPORT PanelLayoutManager
-    : public WmLayoutManager,
+    : public aura::LayoutManager,
       public wm::WindowStateObserver,
       public aura::client::ActivationChangeObserver,
       public WmDisplayObserver,
@@ -84,39 +84,40 @@ class ASH_EXPORT PanelLayoutManager
   WmShelf* shelf() { return shelf_; }
   void SetShelf(WmShelf* shelf);
 
-  // Overridden from WmLayoutManager
+  // WmLayoutManager:
   void OnWindowResized() override;
-  void OnWindowAddedToLayout(WmWindow* child) override;
-  void OnWillRemoveWindowFromLayout(WmWindow* child) override;
-  void OnWindowRemovedFromLayout(WmWindow* child) override;
-  void OnChildWindowVisibilityChanged(WmWindow* child, bool visibile) override;
-  void SetChildBounds(WmWindow* child,
+  void OnWindowAddedToLayout(aura::Window* child) override;
+  void OnWillRemoveWindowFromLayout(aura::Window* child) override;
+  void OnWindowRemovedFromLayout(aura::Window* child) override;
+  void OnChildWindowVisibilityChanged(aura::Window* child,
+                                      bool visibile) override;
+  void SetChildBounds(aura::Window* child,
                       const gfx::Rect& requested_bounds) override;
 
-  // Overridden from ShellObserver:
+  // ShellObserver:
   void OnOverviewModeEnded() override;
   void OnShelfAlignmentChanged(WmWindow* root_window) override;
   void OnVirtualKeyboardStateChanged(bool activated,
                                      WmWindow* root_window) override;
 
-  // Overridden from aura::WindowObserver
+  // aura::WindowObserver
   void OnWindowPropertyChanged(aura::Window* window,
                                const void* key,
                                intptr_t old) override;
 
-  // Overridden from wm::WindowStateObserver
+  // wm::WindowStateObserver:
   void OnPostWindowStateTypeChange(wm::WindowState* window_state,
                                    wm::WindowStateType old_type) override;
 
-  // Overridden from aura::client::ActivationChangeObserver
+  // aura::client::ActivationChangeObserver:
   void OnWindowActivated(ActivationReason reason,
                          aura::Window* gained_active,
                          aura::Window* lost_active) override;
 
-  // Overridden from WindowTreeHostManager::Observer
+  // WindowTreeHostManager::Observer:
   void OnDisplayConfigurationChanged() override;
 
-  // Overridden from WmShelfObserver
+  // WmShelfObserver:
   void WillChangeVisibilityState(ShelfVisibilityState new_state) override;
   void OnShelfIconPositionsChanged() override;
 

@@ -27,17 +27,11 @@ class WmWindowTestApi {
     DISALLOW_COPY_AND_ASSIGN(GlobalMinimumSizeLock);
   };
 
-  explicit WmWindowTestApi(WmWindow* window) : window_(window) {}
+  WmWindowTestApi() {}
   ~WmWindowTestApi() {}
-
-  void set_use_empty_minimum_size(bool value) {
-    window_->use_empty_minimum_size_for_testing_ = true;
-  }
 
  private:
   static void SetDefaultUseEmptyMinimumSizeForTesting(bool value);
-
-  WmWindow* window_;
 
   DISALLOW_COPY_AND_ASSIGN(WmWindowTestApi);
 };

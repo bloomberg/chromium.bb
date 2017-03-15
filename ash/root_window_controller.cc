@@ -865,7 +865,7 @@ void RootWindowController::InitLayoutManagers() {
   // Create Panel layout manager
   WmWindow* wm_panel_container = GetWmContainer(kShellWindowId_PanelContainer);
   panel_layout_manager_ = new PanelLayoutManager(wm_panel_container);
-  wm_panel_container->SetLayoutManager(base::WrapUnique(panel_layout_manager_));
+  wm_panel_container->aura_window()->SetLayoutManager(panel_layout_manager_);
 
   wm::WmSnapToPixelLayoutManager::InstallOnContainers(root);
 

@@ -24,7 +24,7 @@ void WmSnapToPixelLayoutManager::InstallOnContainers(WmWindow* window) {
         child->GetShellWindowId() > kShellWindowId_Max)  // not a container
       continue;
     if (child->aura_window()->GetProperty(kSnapChildrenToPixelBoundary)) {
-      if (!child->GetLayoutManager())
+      if (!child->GetLayoutManager() && !child->aura_window()->layout_manager())
         child->SetLayoutManager(base::MakeUnique<WmSnapToPixelLayoutManager>());
     } else {
       InstallOnContainers(child);

@@ -22,9 +22,13 @@
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/wm/window_properties.h"
+#include "ash/wm/window_state_aura.h"
+#include "ash/wm/window_util.h"
 #include "base/auto_reset.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkPath.h"
+#include "ui/aura/client/window_parenting_client.h"
+#include "ui/aura/window_delegate.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/rect.h"
@@ -32,6 +36,8 @@
 #include "ui/views/background.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/public/activation_client.h"
+
+using aura::Window;
 
 namespace ash {
 namespace {
@@ -270,7 +276,8 @@ PanelLayoutManager* PanelLayoutManager::Get(WmWindow* window) {
   return static_cast<PanelLayoutManager*>(
       window->GetRootWindow()
           ->GetChildByShellWindowId(kShellWindowId_PanelContainer)
-          ->GetLayoutManager());
+          ->aura_window()
+          ->layout_manager());
 }
 
 void PanelLayoutManager::Shutdown() {
@@ -337,72 +344,70 @@ void PanelLayoutManager::OnWindowResized() {
   Relayout();
 }
 
-void PanelLayoutManager::OnWindowAddedToLayout(WmWindow* child) {
-  if (child->GetType() == ui::wm::WINDOW_TYPE_POPUP)
+void PanelLayoutManager::OnWindowAddedToLayout(Window* child) {
+  if (child->type() == ui::wm::WINDOW_TYPE_POPUP)
     return;
   if (in_add_window_)
     return;
   base::AutoReset<bool> auto_reset_in_add_window(&in_add_window_, true);
-  if (!child->aura_window()->GetProperty(kPanelAttachedKey)) {
+  if (!child->GetProperty(kPanelAttachedKey)) {
     // This should only happen when a window is added to panel container as a
     // result of bounds change from within the application during a drag.
     // If so we have already stopped the drag and should reparent the panel
     // back to appropriate container and ignore it.
     // TODO(varkha): Updating bounds during a drag can cause problems and a more
     // general solution is needed. See http://crbug.com/251813 .
-    aura::Window* old_parent = child->aura_window()->parent();
-    child->SetParentUsingContext(child,
-                                 child->GetRootWindow()->GetBoundsInScreen());
-    wm::ReparentTransientChildrenOfChild(child->aura_window(), old_parent,
-                                         child->aura_window()->parent());
-    DCHECK(child->GetParent()->GetShellWindowId() !=
-           kShellWindowId_PanelContainer);
+    Window* old_parent = child->parent();
+    aura::client::ParentWindowWithContext(
+        child, child, child->GetRootWindow()->GetBoundsInScreen());
+    wm::ReparentTransientChildrenOfChild(child, old_parent, child->parent());
+    DCHECK(child->parent()->id() != kShellWindowId_PanelContainer);
     return;
   }
   PanelInfo panel_info;
-  panel_info.window = child;
+  panel_info.window = WmWindow::Get(child);
   panel_info.callout_widget = new PanelCalloutWidget(panel_container_);
-  panel_info.slide_in = child != dragged_panel_;
+  panel_info.slide_in = WmWindow::Get(child) != dragged_panel_;
   panel_windows_.push_back(panel_info);
-  child->aura_window()->AddObserver(this);
-  child->GetWindowState()->AddObserver(this);
+  child->AddObserver(this);
+  wm::GetWindowState(child)->AddObserver(this);
   Relayout();
 }
 
-void PanelLayoutManager::OnWillRemoveWindowFromLayout(WmWindow* child) {}
+void PanelLayoutManager::OnWillRemoveWindowFromLayout(Window* child) {}
 
-void PanelLayoutManager::OnWindowRemovedFromLayout(WmWindow* child) {
-  if (child->GetType() == ui::wm::WINDOW_TYPE_POPUP)
+void PanelLayoutManager::OnWindowRemovedFromLayout(Window* child) {
+  if (child->type() == ui::wm::WINDOW_TYPE_POPUP)
     return;
 
-  PanelList::iterator found =
-      std::find(panel_windows_.begin(), panel_windows_.end(), child);
+  PanelList::iterator found = std::find(
+      panel_windows_.begin(), panel_windows_.end(), WmWindow::Get(child));
   if (found != panel_windows_.end()) {
     delete found->callout_widget;
     panel_windows_.erase(found);
   }
   if (restore_windows_on_shelf_visible_)
-    restore_windows_on_shelf_visible_->Remove(child->aura_window());
-  child->aura_window()->RemoveObserver(this);
-  child->GetWindowState()->RemoveObserver(this);
+    restore_windows_on_shelf_visible_->Remove(child);
+  child->RemoveObserver(this);
+  wm::GetWindowState(child)->RemoveObserver(this);
 
-  if (dragged_panel_ == child)
+  if (dragged_panel_ == WmWindow::Get(child))
     dragged_panel_ = nullptr;
 
-  if (last_active_panel_ == child)
+  if (last_active_panel_ == WmWindow::Get(child))
     last_active_panel_ = nullptr;
 
   Relayout();
 }
 
-void PanelLayoutManager::OnChildWindowVisibilityChanged(WmWindow* child,
+void PanelLayoutManager::OnChildWindowVisibilityChanged(Window* child,
                                                         bool visible) {
   if (visible)
-    child->GetWindowState()->Restore();
+    wm::GetWindowState(child)->Restore();
   Relayout();
 }
 
-void PanelLayoutManager::SetChildBounds(WmWindow* child,
+void PanelLayoutManager::SetChildBounds(Window* child,
                                         const gfx::Rect& requested_bounds) {
   gfx::Rect bounds(requested_bounds);
   const gfx::Rect& max_bounds = panel_container_->GetRootWindow()->GetBounds();
@@ -414,7 +419,7 @@ void PanelLayoutManager::SetChildBounds(WmWindow* child,
     bounds.set_height(max_height);
 
   // Reposition dragged panel in the panel order.
-  if (dragged_panel_ == child) {
+  if (dragged_panel_ == WmWindow::Get(child)) {
     PanelList::iterator dragged_panel_iter =
         std::find(panel_windows_.begin(), panel_windows_.end(), dragged_panel_);
     DCHECK(dragged_panel_iter != panel_windows_.end());
@@ -432,13 +437,14 @@ void PanelLayoutManager::SetChildBounds(WmWindow* child,
     }
   }
   // Respect the minimum size of the window.
-  if (child->HasNonClientArea()) {
-    const gfx::Size min_size = child->GetMinimumSize();
+  if (child->delegate()) {
+    const gfx::Size min_size = child->delegate()->GetMinimumSize();
     bounds.set_width(std::max(min_size.width(), bounds.width()));
     bounds.set_height(std::max(min_size.height(), bounds.height()));
   }
 
-  child->SetBoundsDirect(bounds);
+  SetChildBoundsDirect(child, bounds);
+  wm::SnapWindowToPixelBoundary(child);
   Relayout();
 }
 
