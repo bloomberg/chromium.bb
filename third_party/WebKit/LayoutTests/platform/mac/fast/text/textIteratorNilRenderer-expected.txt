@@ -15,8 +15,8 @@ layer at (0,0) size 800x600
                   LayoutTextControl {INPUT} at (0,0) size 251x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
                   LayoutText {#text} at (0,0) size 0x0
                 LayoutTableCell {TD} at (401,0) size 95x18 [r=0 c=2 rs=1 cs=1]
-                  LayoutButton {INPUT} at (0,0) size 94.27x18 [bgcolor=#C0C0C0]
-                    LayoutBlockFlow (anonymous) at (8,2) size 78.27x13
+                  LayoutButton {INPUT} at (0,0) size 94.59x18 [bgcolor=#C0C0C0]
+                    LayoutBlockFlow (anonymous) at (8,2) size 78.59x13
                       LayoutText {#text} at (0,0) size 79x13
                         text run at (0,0) width 79: "Search Froogle"
                   LayoutText {#text} at (0,0) size 0x0

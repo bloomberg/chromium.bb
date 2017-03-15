@@ -10,6 +10,6 @@ layer at (8,8) size 100x18
       LayoutText {#text} at (19,0) size 46x13
         text run at (19,0) width 46: "Click Me"
 layer at (88,23) size 23x13
-  LayoutBlockFlow (positioned) {DIV} at (80.03,15) size 22.97x13
-    LayoutText {#text} at (0,0) size 23x13
-      text run at (0,0) width 23: "Now"
+  LayoutBlockFlow (positioned) {DIV} at (79.81,15) size 23.19x13
+    LayoutText {#text} at (0,0) size 24x13
+      text run at (0,0) width 24: "Now"

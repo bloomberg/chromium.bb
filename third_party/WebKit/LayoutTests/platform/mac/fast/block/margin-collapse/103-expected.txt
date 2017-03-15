@@ -46,15 +46,15 @@ layer at (0,0) size 785x1707 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                 text run at (0,2) width 115: "Your year of study*"
             LayoutMenuList {SELECT} at (325,82) size 180x18 [bgcolor=#F8F8F8]
               LayoutBlockFlow (anonymous) at (0,0) size 180x18
-                LayoutText (anonymous) at (8,2) size 121x13
-                  text run at (8,2) width 121: "Years you've been here"
+                LayoutText (anonymous) at (8,2) size 122x13
+                  text run at (8,2) width 122: "Years you've been here"
             LayoutBlockFlow (floating) {SPAN} at (0,106) size 325x20 [color=#333333]
               LayoutText {#text} at (0,2) size 157x16
                 text run at (0,2) width 157: "Shakespeare classes taken"
             LayoutMenuList {SELECT} at (325,100) size 180x18 [bgcolor=#F8F8F8]
               LayoutBlockFlow (anonymous) at (0,0) size 180x18
-                LayoutText (anonymous) at (8,2) size 73x13
-                  text run at (8,2) width 73: "Number taken"
+                LayoutText (anonymous) at (8,2) size 74x13
+                  text run at (8,2) width 74: "Number taken"
             LayoutBlockFlow {P} at (0,131.33) size 560x20 [color=#333333]
               LayoutText {#text} at (0,2) size 161x16
                 text run at (0,2) width 161: "* indicates a required field"
@@ -115,8 +115,8 @@ layer at (0,0) size 785x1707 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                 text run at (0,2) width 282: "Which area of the ISE did you find most useful?"
             LayoutMenuList {SELECT} at (325,415.98) size 180x18 [bgcolor=#F8F8F8]
               LayoutBlockFlow (anonymous) at (0,0) size 180x18
-                LayoutText (anonymous) at (8,2) size 99x13
-                  text run at (8,2) width 99: "Sections of the ISE"
+                LayoutText (anonymous) at (8,2) size 98x13
+                  text run at (8,2) width 98: "Sections of the ISE"
             LayoutBlockFlow (floating) {SPAN} at (0,435.98) size 325x20 [color=#333333]
               LayoutText {#text} at (0,2) size 257x16
                 text run at (0,2) width 257: "How did you find the navigation of the ISE?"

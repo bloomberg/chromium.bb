@@ -1,8 +1,8 @@
 layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
-layer at (0,0) size 800x217
-  LayoutBlockFlow {HTML} at (0,0) size 800x217
-    LayoutBlockFlow {BODY} at (8,8) size 784x201
+layer at (0,0) size 800x213
+  LayoutBlockFlow {HTML} at (0,0) size 800x213
+    LayoutBlockFlow {BODY} at (8,8) size 784x197
       LayoutBlockFlow {DIV} at (0,0) size 784x21
         LayoutBlockFlow {SPAN} at (0,1) size 160x18
           LayoutText {#text} at (0,0) size 48x18
@@ -53,9 +53,9 @@ layer at (0,0) size 800x217
             text run at (0,0) width 75: "Mongolian:"
         LayoutText {#text} at (160,3) size 87x18
           text run at (160,3) width 87: " \x{182E}\x{1823}\x{1829}\x{182D}\x{1823}\x{182F}\x{182A}\x{1822}\x{1834}\x{1822}\x{182D}"
-      LayoutBlockFlow {DIV} at (0,179) size 784x22
-        LayoutBlockFlow {SPAN} at (0,3) size 160x18
+      LayoutBlockFlow {DIV} at (0,179) size 784x18
+        LayoutBlockFlow {SPAN} at (0,0) size 160x18
           LayoutText {#text} at (0,0) size 69x18
             text run at (0,0) width 69: "Glagolitic:"
-        LayoutText {#text} at (160,3) size 68x18
-          text run at (160,3) width 68: " \x{2C09}\x{2C0A}\x{2C1F}\x{2C09}"
+        LayoutText {#text} at (160,0) size 51x18
+          text run at (160,0) width 51: " \x{2C09}\x{2C0A}\x{2C1F}\x{2C09}"
