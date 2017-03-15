@@ -46,6 +46,38 @@ promise_test(function() {
 }, 'A video track returns the expected variables');
 
 promise_test(function() {
+  track1 = null;
+  track2 = null;
+  return navigator.mediaDevices.getUserMedia({video: true})
+      .then(function(s1) {
+    track1 = s1.getVideoTracks()[0];
+    settings1 = track1.getSettings();
+    // We ask for the second track to have half the width of the first one,
+    // but the same source.
+    // This should cause a scaling factor to be applied.
+    constraints2 = {deviceId: settings1.deviceId,
+                    width: { max: settings1.width / 2 }};
+        console.log(JSON.stringify(constraints2));
+    return navigator.mediaDevices.getUserMedia({video: constraints2});
+  })
+      .then(function(s) {
+        track2 = s.getVideoTracks()[0];
+        console.log(JSON.stringify(track2.getConstraints()));
+    settings = track2.getSettings();
+    settings1 = track1.getSettings();
+    // This test does not work in blink_tests due to limitations in mocking.
+    // The Web-Platform-Test that does the same thing passes when run
+    // in a browser.
+    // TODO(hta): Add constraints to the mock media stream registry.
+    // crbug.com/617152
+    // assert_equals(settings.deviceId, settings1.deviceId);
+    // assert_equals(settings.width, settings1.width / 2,
+    //              'widths are not 2x different: ' +
+    //              JSON.stringify(settings) + ' ' + JSON.stringify(settings1));
+  });
+}, 'Two video tracks with the same source but different scaling are different');
+
+promise_test(function() {
   return navigator.mediaDevices.getUserMedia({audio: true, video: true})
     .then(function(s) {
       videoSettings = s.getVideoTracks()[0].getSettings();

@@ -61,6 +61,13 @@ class CONTENT_EXPORT MediaStreamVideoTrack : public MediaStreamTrack {
 
   const blink::WebMediaConstraints& constraints() const { return constraints_; }
 
+  // Setting information about the track size.
+  // Called from MediaStreamVideoSource at track initialization.
+  void SetTargetSize(int width, int height) {
+    width_ = width;
+    height_ = height;
+  }
+
  private:
   // MediaStreamVideoSink is a friend to allow it to call AddSink() and
   // RemoveSink().
@@ -94,6 +101,10 @@ class CONTENT_EXPORT MediaStreamVideoTrack : public MediaStreamTrack {
 
   // This is used for tracking if all connected video sinks are secure.
   SecureDisplayLinkTracker<MediaStreamVideoSink> secure_tracker_;
+
+  // Remembering our desired video size.
+  int width_ = 0;
+  int height_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(MediaStreamVideoTrack);
 };

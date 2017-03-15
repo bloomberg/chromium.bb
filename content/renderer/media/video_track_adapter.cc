@@ -223,42 +223,11 @@ void VideoTrackAdapter::VideoFrameResolutionAdapter::DeliverFrame(
     return;
   }
   scoped_refptr<media::VideoFrame> video_frame(frame);
-  const double input_ratio =
-      static_cast<double>(frame->natural_size().width()) /
-      frame->natural_size().height();
 
-  // If |frame| has larger width or height than requested, or the aspect ratio
-  // does not match the requested, we want to create a wrapped version of this
-  // frame with a size that fulfills the constraints.
-  if (frame->natural_size().width() > max_frame_size_.width() ||
-      frame->natural_size().height() > max_frame_size_.height() ||
-      input_ratio > max_aspect_ratio_ ||
-      input_ratio < min_aspect_ratio_) {
-    int desired_width = std::min(max_frame_size_.width(),
-                                 frame->natural_size().width());
-    int desired_height = std::min(max_frame_size_.height(),
-                                  frame->natural_size().height());
-
-    const double resulting_ratio =
-        static_cast<double>(desired_width) / desired_height;
-    // Make sure |min_aspect_ratio_| < |requested_ratio| < |max_aspect_ratio_|.
-    const double requested_ratio = std::max(
-        std::min(resulting_ratio, max_aspect_ratio_), min_aspect_ratio_);
-
-    if (resulting_ratio < requested_ratio) {
-      desired_height = static_cast<int>((desired_height * resulting_ratio) /
-                                        requested_ratio);
-      // Make sure we scale to an even height to avoid rounding errors
-      desired_height = (desired_height + 1) & ~1;
-    } else if (resulting_ratio > requested_ratio) {
-      desired_width = static_cast<int>((desired_width * requested_ratio) /
-                                       resulting_ratio);
-      // Make sure we scale to an even width to avoid rounding errors.
-      desired_width = (desired_width + 1) & ~1;
-    }
-
-    const gfx::Size desired_size(desired_width, desired_height);
-
+  gfx::Size desired_size;
+  CalculateTargetSize(frame->natural_size(), max_frame_size_, min_aspect_ratio_,
+                      max_aspect_ratio_, &desired_size);
+  if (desired_size != frame->natural_size()) {
     // Get the largest centered rectangle with the same aspect ratio of
     // |desired_size| that fits entirely inside of |frame->visible_rect()|.
     // This will be the rect we need to crop the original frame to.
@@ -446,6 +415,48 @@ void VideoTrackAdapter::StopFrameMonitoring() {
   DCHECK(thread_checker_.CalledOnValidThread());
   io_task_runner_->PostTask(
       FROM_HERE, base::Bind(&VideoTrackAdapter::StopFrameMonitoringOnIO, this));
+}
+
+// static
+void VideoTrackAdapter::CalculateTargetSize(const gfx::Size& input_size,
+                                            const gfx::Size& max_frame_size,
+                                            double min_aspect_ratio,
+                                            double max_aspect_ratio,
+                                            gfx::Size* desired_size) {
+  // If |frame| has larger width or height than requested, or the aspect ratio
+  // does not match the requested, we want to create a wrapped version of this
+  // frame with a size that fulfills the constraints.
+  const double input_ratio =
+      static_cast<double>(input_size.width()) / input_size.height();
+
+  if (input_size.width() > max_frame_size.width() ||
+      input_size.height() > max_frame_size.height() ||
+      input_ratio > max_aspect_ratio || input_ratio < min_aspect_ratio) {
+    int desired_width = std::min(max_frame_size.width(), input_size.width());
+    int desired_height = std::min(max_frame_size.height(), input_size.height());
+
+    const double resulting_ratio =
+        static_cast<double>(desired_width) / desired_height;
+    // Make sure |min_aspect_ratio| < |requested_ratio| < |max_aspect_ratio|.
+    const double requested_ratio =
+        std::max(std::min(resulting_ratio, max_aspect_ratio), min_aspect_ratio);
+
+    if (resulting_ratio < requested_ratio) {
+      desired_height = static_cast<int>((desired_height * resulting_ratio) /
+                                        requested_ratio);
+      // Make sure we scale to an even height to avoid rounding errors
+      desired_height = (desired_height + 1) & ~1;
+    } else if (resulting_ratio > requested_ratio) {
+      desired_width =
+          static_cast<int>((desired_width * requested_ratio) / resulting_ratio);
+      // Make sure we scale to an even width to avoid rounding errors.
+      desired_width = (desired_width + 1) & ~1;
+    }
+
+    *desired_size = gfx::Size(desired_width, desired_height);
+  } else {
+    *desired_size = input_size;
+  }
 }
 
 void VideoTrackAdapter::StartFrameMonitoringOnIO(

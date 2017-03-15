@@ -65,6 +65,12 @@ class VideoTrackAdapter
                             const OnMutedCallback& on_muted_callback);
   void StopFrameMonitoring();
 
+  static void CalculateTargetSize(const gfx::Size& input_size,
+                                  const gfx::Size& max_frame_size,
+                                  double min_aspect_ratio,
+                                  double max_aspect_ratio,
+                                  gfx::Size* desired_size);
+
  private:
   virtual ~VideoTrackAdapter();
   friend class base::RefCountedThreadSafe<VideoTrackAdapter>;

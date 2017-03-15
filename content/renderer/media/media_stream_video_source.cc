@@ -582,6 +582,13 @@ void MediaStreamVideoSource::FinalizeAddTrack() {
       track_adapter_->AddTrack(track.track, track.frame_callback, max_width,
                                max_height, min_aspect_ratio, max_aspect_ratio,
                                max_frame_rate);
+      // Calculate resulting frame size if the source delivers frames
+      // according to the current format. Note: Format may change later.
+      gfx::Size desired_size;
+      VideoTrackAdapter::CalculateTargetSize(
+          current_format_.frame_size, gfx::Size(max_width, max_height),
+          min_aspect_ratio, max_aspect_ratio, &desired_size);
+      track.track->SetTargetSize(desired_size.width(), desired_size.height());
     }
 
     DVLOG(3) << "FinalizeAddTrack() result " << result;
