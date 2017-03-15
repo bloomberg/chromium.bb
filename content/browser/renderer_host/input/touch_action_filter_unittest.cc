@@ -55,7 +55,7 @@ static void PanTest(TouchAction action,
   }
 
   {
-    // Scrolls hinted mostly in the larger axis are permitted in that axis.
+    // Scrolls biased towards the touch-action axis are permitted.
     filter.ResetTouchAction();
     filter.OnSetTouchAction(action);
     WebGestureEvent scroll_begin =
@@ -89,7 +89,8 @@ static void PanTest(TouchAction action,
   }
 
   {
-    // Scrolls hinted mostly in the opposite direction are suppressed entirely.
+    // Scrolls biased towards the perpendicular of the touch-action axis are
+    // suppressed entirely.
     filter.ResetTouchAction();
     filter.OnSetTouchAction(action);
     WebGestureEvent scroll_begin =
@@ -104,6 +105,64 @@ static void PanTest(TouchAction action,
     EXPECT_EQ(dx, scroll_update.data.scrollUpdate.deltaX);
     EXPECT_EQ(dy, scroll_update.data.scrollUpdate.deltaY);
 
+    EXPECT_TRUE(filter.FilterGestureEvent(&scroll_end));
+  }
+}
+
+static void PanTestForUnidirectionalTouchAction(TouchAction action,
+                                                float scroll_x,
+                                                float scroll_y) {
+  TouchActionFilter filter;
+  WebGestureEvent scroll_end = SyntheticWebGestureEventBuilder::Build(
+      WebInputEvent::GestureScrollEnd, kSourceDevice);
+
+  {
+    // Scrolls towards the touch-action direction are permitted.
+    filter.ResetTouchAction();
+    filter.OnSetTouchAction(action);
+    WebGestureEvent scroll_begin =
+        SyntheticWebGestureEventBuilder::BuildScrollBegin(scroll_x, scroll_y,
+                                                          kSourceDevice);
+    EXPECT_FALSE(filter.FilterGestureEvent(&scroll_begin));
+
+    WebGestureEvent scroll_update =
+        SyntheticWebGestureEventBuilder::BuildScrollUpdate(scroll_x, scroll_y,
+                                                           0, kSourceDevice);
+    EXPECT_FALSE(filter.FilterGestureEvent(&scroll_update));
+    EXPECT_FALSE(filter.FilterGestureEvent(&scroll_end));
+  }
+
+  {
+    // Scrolls towards the exact opposite of the touch-action direction are
+    // suppressed entirely.
+    filter.ResetTouchAction();
+    filter.OnSetTouchAction(action);
+    WebGestureEvent scroll_begin =
+        SyntheticWebGestureEventBuilder::BuildScrollBegin(-scroll_x, -scroll_y,
+                                                          kSourceDevice);
+    EXPECT_TRUE(filter.FilterGestureEvent(&scroll_begin));
+
+    WebGestureEvent scroll_update =
+        SyntheticWebGestureEventBuilder::BuildScrollUpdate(-scroll_x, -scroll_y,
+                                                           0, kSourceDevice);
+    EXPECT_TRUE(filter.FilterGestureEvent(&scroll_update));
+    EXPECT_TRUE(filter.FilterGestureEvent(&scroll_end));
+  }
+
+  {
+    // Scrolls towards the diagonal opposite of the touch-action direction are
+    // suppressed entirely.
+    filter.ResetTouchAction();
+    filter.OnSetTouchAction(action);
+    WebGestureEvent scroll_begin =
+        SyntheticWebGestureEventBuilder::BuildScrollBegin(
+            -scroll_x - scroll_y, -scroll_x - scroll_y, kSourceDevice);
+    EXPECT_TRUE(filter.FilterGestureEvent(&scroll_begin));
+
+    WebGestureEvent scroll_update =
+        SyntheticWebGestureEventBuilder::BuildScrollUpdate(
+            -scroll_x - scroll_y, -scroll_x - scroll_y, 0, kSourceDevice);
+    EXPECT_TRUE(filter.FilterGestureEvent(&scroll_update));
     EXPECT_TRUE(filter.FilterGestureEvent(&scroll_end));
   }
 }
@@ -226,6 +285,7 @@ TEST(TouchActionFilterTest, PanLeft) {
 
   PanTest(TOUCH_ACTION_PAN_LEFT, kScrollX, kScrollY, kDX, kDY, kFlingX, kFlingY,
           kDX, 0, kFlingX, 0);
+  PanTestForUnidirectionalTouchAction(TOUCH_ACTION_PAN_LEFT, kScrollX, 0);
 }
 
 TEST(TouchActionFilterTest, PanRight) {
@@ -238,6 +298,7 @@ TEST(TouchActionFilterTest, PanRight) {
 
   PanTest(TOUCH_ACTION_PAN_RIGHT, kScrollX, kScrollY, kDX, kDY, kFlingX,
           kFlingY, kDX, 0, kFlingX, 0);
+  PanTestForUnidirectionalTouchAction(TOUCH_ACTION_PAN_RIGHT, kScrollX, 0);
 }
 
 TEST(TouchActionFilterTest, PanX) {
@@ -262,6 +323,7 @@ TEST(TouchActionFilterTest, PanUp) {
 
   PanTest(TOUCH_ACTION_PAN_UP, kScrollX, kScrollY, kDX, kDY, kFlingX, kFlingY,
           0, kDY, 0, kFlingY);
+  PanTestForUnidirectionalTouchAction(TOUCH_ACTION_PAN_UP, 0, kScrollY);
 }
 
 TEST(TouchActionFilterTest, PanDown) {
@@ -274,6 +336,7 @@ TEST(TouchActionFilterTest, PanDown) {
 
   PanTest(TOUCH_ACTION_PAN_DOWN, kScrollX, kScrollY, kDX, kDY, kFlingX, kFlingY,
           0, kDY, 0, kFlingY);
+  PanTestForUnidirectionalTouchAction(TOUCH_ACTION_PAN_DOWN, 0, kScrollY);
 }
 
 TEST(TouchActionFilterTest, PanY) {

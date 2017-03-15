@@ -180,48 +180,31 @@ bool TouchActionFilter::ShouldSuppressManipulation(
     return (allowed_touch_action_ & TOUCH_ACTION_PINCH_ZOOM) == 0;
   }
 
-  if ((allowed_touch_action_ & TOUCH_ACTION_PAN) == TOUCH_ACTION_PAN)
-    // All possible panning is enabled.
+  const float& deltaXHint = gesture_event.data.scrollBegin.deltaXHint;
+  const float& deltaYHint = gesture_event.data.scrollBegin.deltaYHint;
+
+  if (deltaXHint == 0.0 && deltaYHint == 0.0)
     return false;
 
-  if (!(allowed_touch_action_ & TOUCH_ACTION_PAN))
-    // No panning is enabled.
-    return true;
+  const float absDeltaXHint = fabs(deltaXHint);
+  const float absDeltaYHint = fabs(deltaYHint);
 
-  // If there's no hint or it's perfectly diagonal, then allow the scroll.
-  // Note, however, that the panning direction of the following GSU/GPB events
-  // is updated if needed to make them touch-action compliant.
-  //
-  // TODO(mustaq): With unidirectional touch-action, this can
-  // allow wrong panning with diagonal swipes. Investigate. crbug.com/697102
-  if (fabs(gesture_event.data.scrollBegin.deltaXHint) ==
-      fabs(gesture_event.data.scrollBegin.deltaYHint))
-    return false;
-
-  // Determine the primary initial axis of the scroll, and check whether
-  // panning along that axis is permitted.
-  if (fabs(gesture_event.data.scrollBegin.deltaXHint) >
-      fabs(gesture_event.data.scrollBegin.deltaYHint)) {
-    if (gesture_event.data.scrollBegin.deltaXHint > 0 &&
-        allowed_touch_action_ & TOUCH_ACTION_PAN_LEFT) {
-      return false;
-    } else if (gesture_event.data.scrollBegin.deltaXHint < 0 &&
-               allowed_touch_action_ & TOUCH_ACTION_PAN_RIGHT) {
-      return false;
-    } else {
-      return true;
-    }
-  } else {
-    if (gesture_event.data.scrollBegin.deltaYHint > 0 &&
-        allowed_touch_action_ & TOUCH_ACTION_PAN_UP) {
-      return false;
-    } else if (gesture_event.data.scrollBegin.deltaYHint < 0 &&
-               allowed_touch_action_ & TOUCH_ACTION_PAN_DOWN) {
-      return false;
-    } else {
-      return true;
-    }
+  TouchAction minimal_conforming_touch_action = TOUCH_ACTION_NONE;
+  if (absDeltaXHint >= absDeltaYHint) {
+    if (deltaXHint > 0)
+      minimal_conforming_touch_action |= TOUCH_ACTION_PAN_LEFT;
+    else if (deltaXHint < 0)
+      minimal_conforming_touch_action |= TOUCH_ACTION_PAN_RIGHT;
   }
+  if (absDeltaYHint >= absDeltaXHint) {
+    if (deltaYHint > 0)
+      minimal_conforming_touch_action |= TOUCH_ACTION_PAN_UP;
+    else if (deltaYHint < 0)
+      minimal_conforming_touch_action |= TOUCH_ACTION_PAN_DOWN;
+  }
+  DCHECK(minimal_conforming_touch_action != TOUCH_ACTION_NONE);
+
+  return (allowed_touch_action_ & minimal_conforming_touch_action) == 0;
 }
 
 }  // namespace content

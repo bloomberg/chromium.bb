@@ -232,12 +232,19 @@ class InputRouterImplTest : public testing::Test {
   }
 
   void SimulateGestureEvent(WebGestureEvent gesture) {
-    // Ensure non-zero touchscreen fling velocities, as the router will
-    // validate aganst such.
-    if (gesture.type() == WebInputEvent::GestureFlingStart &&
+    if (gesture.type() == WebInputEvent::GestureScrollBegin &&
         gesture.sourceDevice == blink::WebGestureDeviceTouchscreen &&
-        !gesture.data.flingStart.velocityX &&
-        !gesture.data.flingStart.velocityY) {
+        !gesture.data.scrollBegin.deltaXHint &&
+        !gesture.data.scrollBegin.deltaYHint) {
+      // Ensure non-zero scroll-begin offset-hint to make the event sane,
+      // prevents unexpected filtering at TouchActionFilter.
+      gesture.data.scrollBegin.deltaYHint = 2.f;
+    } else if (gesture.type() == WebInputEvent::GestureFlingStart &&
+               gesture.sourceDevice == blink::WebGestureDeviceTouchscreen &&
+               !gesture.data.flingStart.velocityX &&
+               !gesture.data.flingStart.velocityY) {
+      // Ensure non-zero touchscreen fling velocities, as the router will
+      // validate against such.
       gesture.data.flingStart.velocityX = 5.f;
     }
 
