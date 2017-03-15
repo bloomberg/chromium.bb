@@ -2800,8 +2800,6 @@ split_static_library("ui") {
         "cocoa/location_bar/location_icon_decoration.mm",
         "cocoa/location_bar/manage_passwords_decoration.h",
         "cocoa/location_bar/manage_passwords_decoration.mm",
-        "cocoa/location_bar/page_action_decoration.h",
-        "cocoa/location_bar/page_action_decoration.mm",
         "cocoa/location_bar/save_credit_card_decoration.h",
         "cocoa/location_bar/save_credit_card_decoration.mm",
         "cocoa/location_bar/security_state_bubble_decoration.h",
