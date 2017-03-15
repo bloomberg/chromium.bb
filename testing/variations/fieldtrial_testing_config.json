@@ -2871,7 +2871,10 @@
             ],
             "experiments": [
                 {
-                    "name": "Future"
+                    "name": "Future",
+                    "enable_features": [
+                        "V8Future"
+                    ]
                 }
             ]
         }
