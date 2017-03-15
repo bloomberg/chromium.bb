@@ -103,11 +103,11 @@ ColorLUTCache::LUT ColorLUTCache::GetLUT(const gfx::ColorTransform* transform) {
   }
 
   LUT lut;
-  // If input is HDR, and the output is scRGB, we're going to need
+  // If input is HDR, and the output is full range, we're going to need
   // to produce values outside of 0-1, so we'll need to make a half-float
   // LUT. Also, we'll need to build a larger lut to maintain accuracy.
-  // All LUT sizes should be odd a some transforms hav a knee at 0.5.
-  if (transform->GetDstColorSpace() == gfx::ColorSpace::CreateSCRGBLinear() &&
+  // All LUT sizes should be odd as some transforms have a knee at 0.5.
+  if (transform->GetDstColorSpace().FullRangeEncodedValues() &&
       transform->GetSrcColorSpace().IsHDR() && texture_half_float_linear_) {
     lut.size = 37;
     lut.texture = MakeLUT<uint16_t>(transform, lut.size);

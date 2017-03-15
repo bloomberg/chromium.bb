@@ -283,6 +283,13 @@ bool ColorSpace::IsHDR() const {
          transfer_ == TransferID::IEC61966_2_1_HDR;
 }
 
+bool ColorSpace::FullRangeEncodedValues() const {
+  return transfer_ == TransferID::LINEAR_HDR ||
+         transfer_ == TransferID::IEC61966_2_1_HDR ||
+         transfer_ == TransferID::BT1361_ECG ||
+         transfer_ == TransferID::IEC61966_2_4;
+}
+
 bool ColorSpace::operator!=(const ColorSpace& other) const {
   return !(*this == other);
 }

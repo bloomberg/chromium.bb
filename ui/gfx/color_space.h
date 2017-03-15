@@ -155,7 +155,10 @@ class GFX_EXPORT ColorSpace {
   bool operator<(const ColorSpace& other) const;
   std::string ToString() const;
 
+  // Returns true if the decoded values can be outside of the 0.0-1.0 range.
   bool IsHDR() const;
+  // Returns true if the encoded values can be outside of the 0.0-1.0 range.
+  bool FullRangeEncodedValues() const;
 
   // Return this color space with any range adjust or YUV to RGB conversion
   // stripped off.
