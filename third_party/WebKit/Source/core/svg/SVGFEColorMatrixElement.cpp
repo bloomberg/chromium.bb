@@ -96,7 +96,7 @@ FilterEffect* SVGFEColorMatrixElement::build(SVGFilterBuilder* filterBuilder,
                                              Filter* filter) {
   FilterEffect* input1 = filterBuilder->getEffectById(
       AtomicString(m_in1->currentValue()->value()));
-  ASSERT(input1);
+  DCHECK(input1);
 
   ColorMatrixType filterType = m_type->currentValue()->enumValue();
   Vector<float> filterValues = m_values->currentValue()->toFloatVector();

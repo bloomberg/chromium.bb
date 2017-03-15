@@ -29,7 +29,7 @@ SVGPathStringSource::SVGPathStringSource(const String& string)
     : m_is8BitSource(string.is8Bit()),
       m_previousCommand(PathSegUnknown),
       m_string(string) {
-  ASSERT(!string.isNull());
+  DCHECK(!string.isNull());
 
   if (m_is8BitSource) {
     m_current.m_character8 = string.characters8();
@@ -159,7 +159,7 @@ bool SVGPathStringSource::parseArcFlagWithError() {
 }
 
 PathSegmentData SVGPathStringSource::parseSegment() {
-  ASSERT(hasMoreData());
+  DCHECK(hasMoreData());
   PathSegmentData segment;
   unsigned lookahead =
       m_is8BitSource ? *m_current.m_character8 : *m_current.m_character16;
@@ -177,7 +177,7 @@ PathSegmentData SVGPathStringSource::parseSegment() {
       m_current.m_character16++;
   } else if (command == PathSegUnknown) {
     // Possibly an implicit command.
-    ASSERT(m_previousCommand != PathSegUnknown);
+    DCHECK_NE(m_previousCommand, PathSegUnknown);
     if (!maybeImplicitCommand(lookahead, m_previousCommand, command)) {
       setErrorMark(SVGParseStatus::ExpectedPathCommand);
       return segment;
@@ -192,7 +192,7 @@ PathSegmentData SVGPathStringSource::parseSegment() {
 
   segment.command = m_previousCommand = command;
 
-  ASSERT(m_error.status() == SVGParseStatus::NoError);
+  DCHECK_EQ(m_error.status(), SVGParseStatus::NoError);
 
   switch (segment.command) {
     case PathSegCurveToCubicRel:

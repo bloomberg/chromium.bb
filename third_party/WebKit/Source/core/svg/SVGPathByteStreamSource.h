@@ -45,7 +45,7 @@ class SVGPathByteStreamSource {
   DataType readType() {
     ByteType<DataType> data;
     size_t typeSize = sizeof(ByteType<DataType>);
-    ASSERT(m_streamCurrent + typeSize <= m_streamEnd);
+    DCHECK_LE(m_streamCurrent + typeSize, m_streamEnd);
     memcpy(data.bytes, m_streamCurrent, typeSize);
     m_streamCurrent += typeSize;
     return data.value;

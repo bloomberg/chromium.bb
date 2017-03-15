@@ -34,7 +34,7 @@ void SVGString::calculateAnimatedValue(SVGAnimationElement* animationElement,
                                        SVGPropertyBase* to,
                                        SVGPropertyBase*,
                                        SVGElement*) {
-  ASSERT(animationElement);
+  DCHECK(animationElement);
 
   String fromString = toSVGString(from)->m_value;
   String toString = toSVGString(to)->m_value;

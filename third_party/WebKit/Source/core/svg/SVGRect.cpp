@@ -100,7 +100,7 @@ void SVGRect::calculateAnimatedValue(SVGAnimationElement* animationElement,
                                      SVGPropertyBase* toValue,
                                      SVGPropertyBase* toAtEndOfDurationValue,
                                      SVGElement*) {
-  ASSERT(animationElement);
+  DCHECK(animationElement);
   SVGRect* fromRect = animationElement->getAnimationMode() == ToAnimation
                           ? this
                           : toSVGRect(fromValue);

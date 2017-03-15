@@ -133,7 +133,7 @@ class SVGAnimatedPropertyCommon : public SVGAnimatedPropertyBase {
   }
 
   void setAnimatedValue(SVGPropertyBase* value) override {
-    ASSERT(value->type() == Property::classType());
+    DCHECK_EQ(value->type(), Property::classType());
     m_currentValue = static_cast<Property*>(value);
   }
 
@@ -195,7 +195,7 @@ class SVGAnimatedProperty : public SVGAnimatedPropertyCommon<Property> {
     this->baseValue()->setValue(value);
     m_baseValueUpdated = true;
 
-    ASSERT(this->attributeName() != QualifiedName::null());
+    DCHECK(this->attributeName() != QualifiedName::null());
     this->contextElement()->invalidateSVGAttributes();
     this->contextElement()->svgAttributeBaseValChanged(this->attributeName());
   }

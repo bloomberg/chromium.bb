@@ -39,7 +39,7 @@ SVGStaticStringList::SVGStaticStringList(SVGElement* contextElement,
                                          const QualifiedName& attributeName)
     : SVGAnimatedPropertyBase(AnimatedUnknown, contextElement, attributeName),
       m_value(SVGStringList::create()) {
-  ASSERT(contextElement);
+  DCHECK(contextElement);
 }
 
 SVGStaticStringList::~SVGStaticStringList() {}

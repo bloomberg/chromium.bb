@@ -53,7 +53,7 @@ FilterEffect* SVGFETileElement::build(SVGFilterBuilder* filterBuilder,
                                       Filter* filter) {
   FilterEffect* input1 = filterBuilder->getEffectById(
       AtomicString(m_in1->currentValue()->value()));
-  ASSERT(input1);
+  DCHECK(input1);
 
   FilterEffect* effect = FETile::create(filter);
   effect->inputEffects().push_back(input1);

@@ -58,7 +58,7 @@ DEFINE_TRACE(SVGMarkerOrientEnumeration) {
 }
 
 void SVGMarkerOrientEnumeration::notifyChange() {
-  ASSERT(m_angle);
+  DCHECK(m_angle);
   m_angle->orientTypeChanged();
 }
 
@@ -391,7 +391,7 @@ void SVGAngle::calculateAnimatedValue(SVGAnimationElement* animationElement,
                                       SVGPropertyBase* to,
                                       SVGPropertyBase* toAtEndOfDuration,
                                       SVGElement*) {
-  ASSERT(animationElement);
+  DCHECK(animationElement);
   bool isToAnimation = animationElement->getAnimationMode() == ToAnimation;
 
   SVGAngle* fromAngle = isToAnimation ? this : toSVGAngle(from);

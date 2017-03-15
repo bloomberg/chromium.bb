@@ -48,7 +48,7 @@ Path SVGPolyElement::asPathFromPoints() const {
 
   SVGPointList::ConstIterator it = pointsValue->begin();
   SVGPointList::ConstIterator itEnd = pointsValue->end();
-  ASSERT(it != itEnd);
+  DCHECK(it != itEnd);
   path.moveTo(it->value());
   ++it;
 

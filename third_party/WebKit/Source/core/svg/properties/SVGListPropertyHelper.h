@@ -55,8 +55,8 @@ class SVGListPropertyHelper : public SVGPropertyHelper<Derived> {
   // used from Blink C++ code:
 
   ItemPropertyType* at(size_t index) {
-    ASSERT(index < m_values.size());
-    ASSERT(m_values.at(index)->ownerList() == this);
+    DCHECK_LT(index, m_values.size());
+    DCHECK_EQ(m_values.at(index)->ownerList(), this);
     return m_values.at(index).get();
   }
 
@@ -99,7 +99,7 @@ class SVGListPropertyHelper : public SVGPropertyHelper<Derived> {
   ConstIterator end() const { return ConstIterator(m_values.end()); }
 
   void append(ItemPropertyType* newItem) {
-    ASSERT(newItem);
+    DCHECK(newItem);
     m_values.push_back(newItem);
     newItem->setOwnerList(this);
   }
@@ -175,7 +175,7 @@ void SVGListPropertyHelper<Derived, ItemProperty>::clear() {
   typename HeapVector<Member<ItemPropertyType>>::const_iterator itEnd =
       m_values.end();
   for (; it != itEnd; ++it) {
-    ASSERT((*it)->ownerList() == this);
+    DCHECK_EQ((*it)->ownerList(), this);
     (*it)->setOwnerList(nullptr);
   }
 
@@ -199,8 +199,8 @@ ItemProperty* SVGListPropertyHelper<Derived, ItemProperty>::getItem(
   if (!checkIndexBound(index, exceptionState))
     return nullptr;
 
-  ASSERT(index < m_values.size());
-  ASSERT(m_values.at(index)->ownerList() == this);
+  DCHECK_LT(index, m_values.size());
+  DCHECK_EQ(m_values.at(index)->ownerList(), this);
   return m_values.at(index);
 }
 
@@ -233,7 +233,7 @@ ItemProperty* SVGListPropertyHelper<Derived, ItemProperty>::removeItem(
                             "index", index, m_values.size()));
     return nullptr;
   }
-  ASSERT(m_values.at(index)->ownerList() == this);
+  DCHECK_EQ(m_values.at(index)->ownerList(), this);
   ItemPropertyType* oldItem = m_values.at(index);
   m_values.remove(index);
   oldItem->setOwnerList(0);
@@ -269,7 +269,7 @@ ItemProperty* SVGListPropertyHelper<Derived, ItemProperty>::replaceItem(
 
   // Update the value at the desired position 'index'.
   Member<ItemPropertyType>& position = m_values[index];
-  ASSERT(position->ownerList() == this);
+  DCHECK_EQ(position->ownerList(), this);
   position->setOwnerList(0);
   position = newItem;
   newItem->setOwnerList(this);
@@ -334,7 +334,7 @@ bool SVGListPropertyHelper<Derived, ItemProperty>::adjustFromToListValues(
     return false;
   }
 
-  ASSERT(!fromListSize || fromListSize == toListSize);
+  DCHECK(!fromListSize || fromListSize == toListSize);
   if (length() < toListSize) {
     size_t paddingCount = toListSize - length();
     for (size_t i = 0; i < paddingCount; ++i)

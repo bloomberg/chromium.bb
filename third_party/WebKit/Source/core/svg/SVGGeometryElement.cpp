@@ -111,8 +111,8 @@ void SVGGeometryElement::toClipPath(Path& path) const {
   path = asPath();
   path.transform(calculateTransform(SVGElement::IncludeMotionTransform));
 
-  ASSERT(layoutObject());
-  ASSERT(layoutObject()->style());
+  DCHECK(layoutObject());
+  DCHECK(layoutObject()->style());
   path.setWindRule(layoutObject()->style()->svgStyle().clipRule());
 }
 

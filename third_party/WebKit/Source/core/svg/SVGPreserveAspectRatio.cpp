@@ -291,10 +291,10 @@ AffineTransform SVGPreserveAspectRatio::getCTM(float logicalX,
                                                float logicalHeight,
                                                float physicalWidth,
                                                float physicalHeight) const {
-  ASSERT(logicalWidth);
-  ASSERT(logicalHeight);
-  ASSERT(physicalWidth);
-  ASSERT(physicalHeight);
+  DCHECK(logicalWidth);
+  DCHECK(logicalHeight);
+  DCHECK(physicalWidth);
+  DCHECK(physicalHeight);
 
   AffineTransform transform;
   if (m_align == kSvgPreserveaspectratioUnknown)
@@ -441,7 +441,7 @@ void SVGPreserveAspectRatio::calculateAnimatedValue(
     SVGPropertyBase* toValue,
     SVGPropertyBase*,
     SVGElement*) {
-  ASSERT(animationElement);
+  DCHECK(animationElement);
 
   bool useToValue;
   animationElement->animateDiscreteType(percentage, false, true, useToValue);

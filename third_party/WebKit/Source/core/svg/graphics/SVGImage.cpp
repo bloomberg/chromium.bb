@@ -79,11 +79,11 @@ SVGImage::~SVGImage() {
   }
 
   // Verify that page teardown destroyed the Chrome
-  ASSERT(!m_chromeClient || !m_chromeClient->image());
+  DCHECK(!m_chromeClient || !m_chromeClient->image());
 }
 
 bool SVGImage::isInSVGImage(const Node* node) {
-  ASSERT(node);
+  DCHECK(node);
 
   Page* page = node->document().page();
   if (!page)
@@ -146,7 +146,7 @@ IntSize SVGImage::containerSize() const {
     return containerSize;
 
   // Assure that a container size is always given for a non-identity zoom level.
-  ASSERT(layoutObject->style()->effectiveZoom() == 1);
+  DCHECK_EQ(layoutObject->style()->effectiveZoom(), 1);
 
   // No set container size; use concrete object size.
   return m_intrinsicSize;
@@ -421,7 +421,7 @@ void SVGImage::drawInternal(PaintCanvas* canvas,
 
     view->updateAllLifecyclePhasesExceptPaint();
     view->paint(builder.context(), CullRect(enclosingIntRect(srcRect)));
-    ASSERT(!view->needsLayout());
+    DCHECK(!view->needsLayout());
   }
 
   {

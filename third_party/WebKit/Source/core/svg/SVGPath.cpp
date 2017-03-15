@@ -77,7 +77,7 @@ std::unique_ptr<SVGPathByteStream> conditionallyAddPathByteStreams(
 SVGPath::SVGPath() : m_pathValue(CSSPathValue::emptyPathValue()) {}
 
 SVGPath::SVGPath(CSSPathValue* pathValue) : m_pathValue(pathValue) {
-  ASSERT(m_pathValue);
+  DCHECK(m_pathValue);
 }
 
 SVGPath::~SVGPath() {}
@@ -120,7 +120,7 @@ void SVGPath::calculateAnimatedValue(SVGAnimationElement* animationElement,
                                      SVGPropertyBase* toValue,
                                      SVGPropertyBase* toAtEndOfDurationValue,
                                      SVGElement*) {
-  ASSERT(animationElement);
+  DCHECK(animationElement);
   bool isToAnimation = animationElement->getAnimationMode() == ToAnimation;
 
   const SVGPath& to = toSVGPath(*toValue);

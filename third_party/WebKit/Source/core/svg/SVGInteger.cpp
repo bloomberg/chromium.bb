@@ -68,7 +68,7 @@ void SVGInteger::calculateAnimatedValue(SVGAnimationElement* animationElement,
                                         SVGPropertyBase* to,
                                         SVGPropertyBase* toAtEndOfDuration,
                                         SVGElement*) {
-  ASSERT(animationElement);
+  DCHECK(animationElement);
 
   SVGInteger* fromInteger = toSVGInteger(from);
   SVGInteger* toInteger = toSVGInteger(to);

@@ -39,7 +39,7 @@ SVGAnimationElement::SVGAnimationElement(const QualifiedName& tagName,
       m_animationValid(false),
       m_calcMode(CalcModeLinear),
       m_animationMode(NoAnimation) {
-  ASSERT(RuntimeEnabledFeatures::smilEnabled());
+  DCHECK(RuntimeEnabledFeatures::smilEnabled());
   UseCounter::count(document, UseCounter::SVGAnimationElement);
 }
 
@@ -326,11 +326,11 @@ bool SVGAnimationElement::isAccumulated() const {
 }
 
 void SVGAnimationElement::calculateKeyTimesForCalcModePaced() {
-  ASSERT(getCalcMode() == CalcModePaced);
-  ASSERT(getAnimationMode() == ValuesAnimation);
+  DCHECK_EQ(getCalcMode(), CalcModePaced);
+  DCHECK_EQ(getAnimationMode(), ValuesAnimation);
 
   unsigned valuesCount = m_values.size();
-  ASSERT(valuesCount >= 1);
+  DCHECK_GE(valuesCount, 1u);
   if (valuesCount == 1)
     return;
 
@@ -384,7 +384,7 @@ unsigned SVGAnimationElement::calculateKeyTimesIndex(float percent) const {
 float SVGAnimationElement::calculatePercentForSpline(
     float percent,
     unsigned splineIndex) const {
-  ASSERT(getCalcMode() == CalcModeSpline);
+  DCHECK_EQ(getCalcMode(), CalcModeSpline);
   SECURITY_DCHECK(splineIndex < m_keySplines.size());
   gfx::CubicBezier bezier = m_keySplines[splineIndex];
   SMILTime duration = simpleDuration();
@@ -395,10 +395,10 @@ float SVGAnimationElement::calculatePercentForSpline(
 }
 
 float SVGAnimationElement::calculatePercentFromKeyPoints(float percent) const {
-  ASSERT(!m_keyPoints.isEmpty());
-  ASSERT(getCalcMode() != CalcModePaced);
-  ASSERT(m_keyTimes.size() > 1);
-  ASSERT(m_keyPoints.size() == m_keyTimes.size());
+  DCHECK(!m_keyPoints.isEmpty());
+  DCHECK_NE(getCalcMode(), CalcModePaced);
+  DCHECK_GT(m_keyTimes.size(), 1u);
+  DCHECK_EQ(m_keyPoints.size(), m_keyTimes.size());
 
   if (percent == 1)
     return m_keyPoints[m_keyPoints.size() - 1];
@@ -409,14 +409,14 @@ float SVGAnimationElement::calculatePercentFromKeyPoints(float percent) const {
   if (getCalcMode() == CalcModeDiscrete)
     return fromKeyPoint;
 
-  ASSERT(index + 1 < m_keyTimes.size());
+  DCHECK_LT(index + 1, m_keyTimes.size());
   float fromPercent = m_keyTimes[index];
   float toPercent = m_keyTimes[index + 1];
   float toKeyPoint = m_keyPoints[index + 1];
   float keyPointPercent = (percent - fromPercent) / (toPercent - fromPercent);
 
   if (getCalcMode() == CalcModeSpline) {
-    ASSERT(m_keySplines.size() == m_keyPoints.size() - 1);
+    DCHECK_EQ(m_keySplines.size(), m_keyPoints.size() - 1);
     keyPointPercent = calculatePercentForSpline(keyPointPercent, index);
   }
   return (toKeyPoint - fromKeyPoint) * keyPointPercent + fromKeyPoint;
@@ -433,9 +433,9 @@ void SVGAnimationElement::currentValuesFromKeyPoints(float percent,
                                                      float& effectivePercent,
                                                      String& from,
                                                      String& to) const {
-  ASSERT(!m_keyPoints.isEmpty());
-  ASSERT(m_keyPoints.size() == m_keyTimes.size());
-  ASSERT(getCalcMode() != CalcModePaced);
+  DCHECK(!m_keyPoints.isEmpty());
+  DCHECK_EQ(m_keyPoints.size(), m_keyTimes.size());
+  DCHECK_NE(getCalcMode(), CalcModePaced);
   effectivePercent = calculatePercentFromKeyPoints(percent);
   unsigned index =
       effectivePercent == 1
@@ -451,8 +451,8 @@ void SVGAnimationElement::currentValuesForValuesAnimation(
     String& from,
     String& to) {
   unsigned valuesCount = m_values.size();
-  ASSERT(m_animationValid);
-  ASSERT(valuesCount >= 1);
+  DCHECK(m_animationValid);
+  DCHECK_GE(valuesCount, 1u);
 
   if (percent == 1 || valuesCount == 1) {
     from = m_values[valuesCount - 1];
@@ -471,8 +471,8 @@ void SVGAnimationElement::currentValuesForValuesAnimation(
     return currentValuesFromKeyPoints(percent, effectivePercent, from, to);
 
   unsigned keyTimesCount = m_keyTimes.size();
-  ASSERT(!keyTimesCount || valuesCount == keyTimesCount);
-  ASSERT(!keyTimesCount || (keyTimesCount > 1 && !m_keyTimes[0]));
+  DCHECK(!keyTimesCount || valuesCount == keyTimesCount);
+  DCHECK(!keyTimesCount || (keyTimesCount > 1 && !m_keyTimes[0]));
 
   unsigned index = calculateKeyTimesIndex(percent);
   if (calcMode == CalcModeDiscrete) {
@@ -499,11 +499,11 @@ void SVGAnimationElement::currentValuesForValuesAnimation(
     --index;
   from = m_values[index];
   to = m_values[index + 1];
-  ASSERT(toPercent > fromPercent);
+  DCHECK_GT(toPercent, fromPercent);
   effectivePercent = (percent - fromPercent) / (toPercent - fromPercent);
 
   if (calcMode == CalcModeSpline) {
-    ASSERT(m_keySplines.size() == m_values.size() - 1);
+    DCHECK_EQ(m_keySplines.size(), m_values.size() - 1);
     effectivePercent = calculatePercentForSpline(effectivePercent, index);
   }
 }

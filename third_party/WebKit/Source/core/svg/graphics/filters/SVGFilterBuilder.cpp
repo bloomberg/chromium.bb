@@ -70,8 +70,8 @@ void SVGFilterGraphNodeMap::addBuiltinEffect(FilterEffect* effect) {
 void SVGFilterGraphNodeMap::addPrimitive(LayoutObject* object,
                                          FilterEffect* effect) {
   // The effect must be a newly created filter effect.
-  ASSERT(!m_effectReferences.contains(effect));
-  ASSERT(!object || !m_effectRenderer.contains(object));
+  DCHECK(!m_effectReferences.contains(effect));
+  DCHECK(!object || !m_effectRenderer.contains(object));
   m_effectReferences.insert(effect, FilterEffectSet());
 
   unsigned numberOfInputEffects = effect->inputEffects().size();

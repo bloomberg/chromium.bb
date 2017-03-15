@@ -37,7 +37,7 @@ class CoalescingBuffer {
     ByteType<DataType> data;
     data.value = value;
     size_t typeSize = sizeof(ByteType<DataType>);
-    ASSERT(m_currentOffset + typeSize <= sizeof(m_bytes));
+    DCHECK_LE(m_currentOffset + typeSize, sizeof(m_bytes));
     memcpy(m_bytes + m_currentOffset, data.bytes, typeSize);
     m_currentOffset += typeSize;
   }

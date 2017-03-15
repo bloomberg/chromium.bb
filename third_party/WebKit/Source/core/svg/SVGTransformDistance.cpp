@@ -43,7 +43,7 @@ SVGTransformDistance::SVGTransformDistance(SVGTransform* fromSVGTransform,
                                            SVGTransform* toSVGTransform)
     : m_angle(0), m_cx(0), m_cy(0) {
   m_transformType = fromSVGTransform->transformType();
-  ASSERT(m_transformType == toSVGTransform->transformType());
+  DCHECK_EQ(m_transformType, toSVGTransform->transformType());
 
   switch (m_transformType) {
     case kSvgTransformMatrix:
@@ -115,7 +115,7 @@ SVGTransformDistance SVGTransformDistance::scaledDistance(
 SVGTransform* SVGTransformDistance::addSVGTransforms(SVGTransform* first,
                                                      SVGTransform* second,
                                                      unsigned repeatCount) {
-  ASSERT(first->transformType() == second->transformType());
+  DCHECK_EQ(first->transformType(), second->transformType());
 
   SVGTransform* transform = SVGTransform::create();
 

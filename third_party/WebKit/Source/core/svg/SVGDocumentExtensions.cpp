@@ -45,7 +45,7 @@ void SVGDocumentExtensions::removeTimeContainer(SVGSVGElement* element) {
 
 void SVGDocumentExtensions::addWebAnimationsPendingSVGElement(
     SVGElement& element) {
-  ASSERT(RuntimeEnabledFeatures::webAnimationsSVGEnabled());
+  DCHECK(RuntimeEnabledFeatures::webAnimationsSVGEnabled());
   m_webAnimationsPendingSVGElements.insert(&element);
 }
 
@@ -72,7 +72,7 @@ void SVGDocumentExtensions::serviceAnimations() {
   for (auto& svgElement : webAnimationsPendingSVGElements)
     svgElement->applyActiveWebAnimations();
 
-  ASSERT(m_webAnimationsPendingSVGElements.isEmpty());
+  DCHECK(m_webAnimationsPendingSVGElements.isEmpty());
 }
 
 void SVGDocumentExtensions::startAnimations() {
@@ -114,13 +114,17 @@ void SVGDocumentExtensions::dispatchSVGLoadEventToOutermostSVGElements() {
 
 void SVGDocumentExtensions::addSVGRootWithRelativeLengthDescendents(
     SVGSVGElement* svgRoot) {
-  ASSERT(!m_inRelativeLengthSVGRootsInvalidation);
+#if DCHECK_IS_ON()
+  DCHECK(!m_inRelativeLengthSVGRootsInvalidation);
+#endif
   m_relativeLengthSVGRoots.insert(svgRoot);
 }
 
 void SVGDocumentExtensions::removeSVGRootWithRelativeLengthDescendents(
     SVGSVGElement* svgRoot) {
-  ASSERT(!m_inRelativeLengthSVGRootsInvalidation);
+#if DCHECK_IS_ON()
+  DCHECK(!m_inRelativeLengthSVGRootsInvalidation);
+#endif
   m_relativeLengthSVGRoots.erase(svgRoot);
 }
 
@@ -131,8 +135,8 @@ bool SVGDocumentExtensions::isSVGRootWithRelativeLengthDescendents(
 
 void SVGDocumentExtensions::invalidateSVGRootsWithRelativeLengthDescendents(
     SubtreeLayoutScope* scope) {
-  ASSERT(!m_inRelativeLengthSVGRootsInvalidation);
 #if DCHECK_IS_ON()
+  DCHECK(!m_inRelativeLengthSVGRootsInvalidation);
   AutoReset<bool> inRelativeLengthSVGRootsChange(
       &m_inRelativeLengthSVGRootsInvalidation, true);
 #endif
@@ -165,7 +169,7 @@ SVGSVGElement* SVGDocumentExtensions::rootElement(const Document& document) {
 }
 
 SVGSVGElement* SVGDocumentExtensions::rootElement() const {
-  ASSERT(m_document);
+  DCHECK(m_document);
   return rootElement(*m_document);
 }
 

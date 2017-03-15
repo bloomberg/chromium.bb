@@ -83,15 +83,15 @@ void appendValue(StringBuilder& builder,
   } else {
     // Emit a string on the form: '"[...]<before><after>[...]"'
     unsigned locus = error.locus();
-    ASSERT(locus <= value.length());
+    DCHECK_LE(locus, value.length());
 
     // Amount of context to show before/after the error.
     const unsigned kContext = 16;
 
     unsigned contextStart = std::max(locus, kContext) - kContext;
     unsigned contextEnd = std::min(locus + kContext, value.length());
-    ASSERT(contextStart <= contextEnd);
-    ASSERT(contextEnd <= value.length());
+    DCHECK_LE(contextStart, contextEnd);
+    DCHECK_LE(contextEnd, value.length());
     if (contextStart != 0)
       builder.append(horizontalEllipsisCharacter);
     escapeStringForJSON(

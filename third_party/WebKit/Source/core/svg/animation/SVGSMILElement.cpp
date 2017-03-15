@@ -313,7 +313,7 @@ Node::InsertionNotificationRequest SVGSMILElement::insertedInto(
     return InsertionDone;
 
   m_timeContainer = owner->timeContainer();
-  ASSERT(m_timeContainer);
+  DCHECK(m_timeContainer);
   m_timeContainer->setDocumentOrderIndexesDirty();
 
   // "If no attribute is present, the default begin value (an offset-value of 0)
@@ -755,7 +755,7 @@ SMILTime SVGSMILElement::findInstanceTime(BeginOrEnd beginOrEnd,
   if (currentTime > minimumTime)
     return currentTime;
 
-  ASSERT(currentTime == minimumTime);
+  DCHECK(currentTime == minimumTime);
   if (equalsMinimumOK)
     return currentTime;
 
@@ -850,7 +850,7 @@ SMILInterval SVGSMILElement::resolveInterval(
 
 void SVGSMILElement::resolveFirstInterval() {
   SMILInterval firstInterval = resolveInterval(FirstInterval);
-  ASSERT(!firstInterval.begin.isIndefinite());
+  DCHECK(!firstInterval.begin.isIndefinite());
 
   if (!firstInterval.begin.isUnresolved() && firstInterval != m_interval) {
     m_interval = firstInterval;
@@ -866,7 +866,7 @@ void SVGSMILElement::resolveFirstInterval() {
 
 bool SVGSMILElement::resolveNextInterval() {
   SMILInterval nextInterval = resolveInterval(NextInterval);
-  ASSERT(!nextInterval.begin.isIndefinite());
+  DCHECK(!nextInterval.begin.isIndefinite());
 
   if (!nextInterval.begin.isUnresolved() &&
       nextInterval.begin != m_interval.begin) {
@@ -896,7 +896,7 @@ void SVGSMILElement::beginListChanged(SMILTime eventTime) {
       SMILTime oldBegin = m_interval.begin;
       m_interval.end = eventTime;
       m_interval = resolveInterval(NextInterval);
-      ASSERT(!m_interval.begin.isUnresolved());
+      DCHECK(!m_interval.begin.isUnresolved());
       if (m_interval.begin != oldBegin) {
         if (m_activeState == Active && m_interval.begin > eventTime) {
           m_activeState = determineActiveState(eventTime);
@@ -1075,20 +1075,20 @@ bool SVGSMILElement::isContributing(double elapsed) const {
 }
 
 bool SVGSMILElement::progress(double elapsed, bool seekToTime) {
-  ASSERT(m_timeContainer);
-  ASSERT(m_isWaitingForFirstInterval || m_interval.begin.isFinite());
+  DCHECK(m_timeContainer);
+  DCHECK(m_isWaitingForFirstInterval || m_interval.begin.isFinite());
 
   if (!m_syncBaseConditionsConnected)
     connectSyncBaseConditions();
 
   if (!m_interval.begin.isFinite()) {
-    ASSERT(m_activeState == Inactive);
+    DCHECK_EQ(m_activeState, Inactive);
     m_nextProgressTime = SMILTime::unresolved();
     return false;
   }
 
   if (elapsed < m_interval.begin) {
-    ASSERT(m_activeState != Active);
+    DCHECK_NE(m_activeState, Active);
     m_nextProgressTime = m_interval.begin;
     // If the animation is frozen, it's still contributing.
     return m_activeState == Frozen;
@@ -1161,7 +1161,7 @@ bool SVGSMILElement::progress(double elapsed, bool seekToTime) {
 }
 
 void SVGSMILElement::notifyDependentsIntervalChanged() {
-  ASSERT(m_interval.begin.isFinite());
+  DCHECK(m_interval.begin.isFinite());
   // |loopBreaker| is used to avoid infinite recursions which may be caused by:
   // |notifyDependentsIntervalChanged| -> |createInstanceTimesFromSyncbase| ->
   // |add{Begin,End}Time| -> |{begin,end}TimeChanged| ->
@@ -1186,7 +1186,7 @@ void SVGSMILElement::createInstanceTimesFromSyncbase(SVGSMILElement& syncBase) {
   for (Condition* condition : m_conditions) {
     if (condition->getType() == Condition::Syncbase &&
         condition->syncBaseEquals(syncBase)) {
-      ASSERT(condition->name() == "begin" || condition->name() == "end");
+      DCHECK(condition->name() == "begin" || condition->name() == "end");
       // No nested time containers in SVG, no need for crazy time space
       // conversions. Phew!
       SMILTime time = 0;

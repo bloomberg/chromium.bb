@@ -62,7 +62,7 @@ FilterEffect* SVGFEComponentTransferElement::build(
     Filter* filter) {
   FilterEffect* input1 = filterBuilder->getEffectById(
       AtomicString(m_in1->currentValue()->value()));
-  ASSERT(input1);
+  DCHECK(input1);
 
   ComponentTransferFunction red;
   ComponentTransferFunction green;

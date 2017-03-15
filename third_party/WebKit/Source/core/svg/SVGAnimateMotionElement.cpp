@@ -227,7 +227,7 @@ void SVGAnimateMotionElement::calculateAnimatedValue(float percentage,
     return;
   }
 
-  ASSERT(!m_animationPath.isEmpty());
+  DCHECK(!m_animationPath.isEmpty());
 
   float positionOnPath = m_animationPath.length() * percentage;
   FloatPoint position;
@@ -266,7 +266,7 @@ void SVGAnimateMotionElement::applyResultsToTarget() {
   const HeapHashSet<WeakMember<SVGElement>>& instances =
       targetElement->instancesForElement();
   for (SVGElement* shadowTreeElement : instances) {
-    ASSERT(shadowTreeElement);
+    DCHECK(shadowTreeElement);
     AffineTransform* transform = shadowTreeElement->animateMotionTransform();
     if (!transform)
       continue;

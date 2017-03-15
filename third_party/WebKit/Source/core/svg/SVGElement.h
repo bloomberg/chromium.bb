@@ -240,7 +240,7 @@ class CORE_EXPORT SVGElement : public Element {
   SVGElementRareData* ensureSVGRareData();
   inline bool hasSVGRareData() const { return m_SVGRareData; }
   inline SVGElementRareData* svgRareData() const {
-    ASSERT(m_SVGRareData);
+    DCHECK(m_SVGRareData);
     return m_SVGRareData.get();
   }
 

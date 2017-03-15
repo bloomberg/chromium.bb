@@ -74,8 +74,8 @@ bool SVGFESpecularLightingElement::setFilterEffectAttribute(
 
   if (attrName == SVGNames::lighting_colorAttr) {
     LayoutObject* layoutObject = this->layoutObject();
-    ASSERT(layoutObject);
-    ASSERT(layoutObject->style());
+    DCHECK(layoutObject);
+    DCHECK(layoutObject->style());
     return specularLighting->setLightingColor(
         layoutObject->style()->svgStyle().lightingColor());
   }
@@ -92,9 +92,9 @@ bool SVGFESpecularLightingElement::setFilterEffectAttribute(
   LightSource* lightSource =
       const_cast<LightSource*>(specularLighting->lightSource());
   SVGFELightElement* lightElement = SVGFELightElement::findLightElement(*this);
-  ASSERT(lightSource);
-  ASSERT(lightElement);
-  ASSERT(effect->getFilter());
+  DCHECK(lightSource);
+  DCHECK(lightElement);
+  DCHECK(effect->getFilter());
 
   if (attrName == SVGNames::azimuthAttr)
     return lightSource->setAzimuth(
@@ -157,13 +157,13 @@ FilterEffect* SVGFESpecularLightingElement::build(
     Filter* filter) {
   FilterEffect* input1 = filterBuilder->getEffectById(
       AtomicString(m_in1->currentValue()->value()));
-  ASSERT(input1);
+  DCHECK(input1);
 
   LayoutObject* layoutObject = this->layoutObject();
   if (!layoutObject)
     return nullptr;
 
-  ASSERT(layoutObject->style());
+  DCHECK(layoutObject->style());
   Color color = layoutObject->style()->svgStyle().lightingColor();
 
   const SVGFELightElement* lightNode =

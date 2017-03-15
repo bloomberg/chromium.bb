@@ -47,7 +47,7 @@ class SVGElementReferenceObserver : public IdTargetObserver {
 
 SVGURIReference::SVGURIReference(SVGElement* element)
     : m_href(SVGAnimatedHref::create(element)) {
-  ASSERT(element);
+  DCHECK(element);
   m_href->addToPropertyMap(element);
 }
 

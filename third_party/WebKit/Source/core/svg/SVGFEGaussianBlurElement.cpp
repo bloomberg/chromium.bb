@@ -68,7 +68,7 @@ FilterEffect* SVGFEGaussianBlurElement::build(SVGFilterBuilder* filterBuilder,
                                               Filter* filter) {
   FilterEffect* input1 = filterBuilder->getEffectById(
       AtomicString(m_in1->currentValue()->value()));
-  ASSERT(input1);
+  DCHECK(input1);
 
   // "A negative value or a value of zero disables the effect of the given
   // filter primitive (i.e., the result is the filter input image)."

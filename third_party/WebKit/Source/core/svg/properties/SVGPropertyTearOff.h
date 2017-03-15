@@ -62,9 +62,9 @@ class SVGPropertyTearOffBase
 
   void attachToSVGElementAttribute(SVGElement* contextElement,
                                    const QualifiedName& attributeName) {
-    ASSERT(!isImmutable());
-    ASSERT(contextElement);
-    ASSERT(attributeName != QualifiedName::null());
+    DCHECK(!isImmutable());
+    DCHECK(contextElement);
+    DCHECK(attributeName != QualifiedName::null());
     m_contextElement = contextElement;
     m_attributeName = attributeName;
   }
@@ -122,7 +122,7 @@ class SVGPropertyTearOff : public SVGPropertyTearOffBase {
                                propertyIsAnimVal,
                                attributeName),
         m_target(target) {
-    ASSERT(m_target);
+    DCHECK(m_target);
   }
 
  private:

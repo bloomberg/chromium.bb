@@ -51,7 +51,7 @@ class SVGFilterGraphNodeMap final
 
   inline FilterEffectSet& effectReferences(FilterEffect* effect) {
     // Only allowed for effects belongs to this builder.
-    ASSERT(m_effectReferences.contains(effect));
+    DCHECK(m_effectReferences.contains(effect));
     return m_effectReferences.find(effect)->value;
   }
 

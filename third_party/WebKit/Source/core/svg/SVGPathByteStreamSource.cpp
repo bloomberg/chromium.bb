@@ -22,7 +22,7 @@
 namespace blink {
 
 PathSegmentData SVGPathByteStreamSource::parseSegment() {
-  ASSERT(hasMoreData());
+  DCHECK(hasMoreData());
   PathSegmentData segment;
   segment.command = static_cast<SVGPathSegType>(readSVGSegmentType());
 

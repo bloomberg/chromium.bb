@@ -132,8 +132,8 @@ void SVGLengthList::calculateAnimatedValue(
       toSVGLengthList(toAtEndOfDurationValue);
 
   SVGLengthContext lengthContext(contextElement);
-  ASSERT(m_mode == SVGLength::lengthModeForAnimatedLengthAttribute(
-                       animationElement->attributeName()));
+  DCHECK_EQ(m_mode, SVGLength::lengthModeForAnimatedLengthAttribute(
+                        animationElement->attributeName()));
 
   size_t fromLengthListSize = fromList->length();
   size_t toLengthListSize = toList->length();

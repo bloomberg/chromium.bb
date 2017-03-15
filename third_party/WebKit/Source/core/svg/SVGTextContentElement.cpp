@@ -212,7 +212,7 @@ void SVGTextContentElement::selectSubString(unsigned charnum,
   if (nchars > numberOfChars - charnum)
     nchars = numberOfChars - charnum;
 
-  ASSERT(document().frame());
+  DCHECK(document().frame());
 
   // Find selection start
   VisiblePosition start = VisiblePosition::firstPositionInNode(
@@ -296,7 +296,7 @@ SVGTextContentElement* SVGTextContentElement::elementFromLineLayoutItem(
     return nullptr;
 
   SVGElement* element = toSVGElement(lineLayoutItem.node());
-  ASSERT(element);
+  DCHECK(element);
   return isSVGTextContentElement(*element) ? toSVGTextContentElement(element)
                                            : 0;
 }

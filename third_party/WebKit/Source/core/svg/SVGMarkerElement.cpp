@@ -142,7 +142,7 @@ void SVGMarkerElement::setOrientToAuto() {
 }
 
 void SVGMarkerElement::setOrientToAngle(SVGAngleTearOff* angle) {
-  ASSERT(angle);
+  DCHECK(angle);
   SVGAngle* target = angle->target();
   setAttribute(SVGNames::orientAttr, AtomicString(target->valueAsString()));
 }

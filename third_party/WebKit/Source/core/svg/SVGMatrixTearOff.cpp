@@ -42,7 +42,7 @@ SVGMatrixTearOff::SVGMatrixTearOff(const AffineTransform& staticValue)
 
 SVGMatrixTearOff::SVGMatrixTearOff(SVGTransformTearOff* transform)
     : m_contextTransform(this, transform) {
-  ASSERT(transform);
+  DCHECK(transform);
 }
 
 DEFINE_TRACE(SVGMatrixTearOff) {

@@ -37,7 +37,7 @@ bool SVGFEFloodElement::setFilterEffectAttribute(
     FilterEffect* effect,
     const QualifiedName& attrName) {
   LayoutObject* layoutObject = this->layoutObject();
-  ASSERT(layoutObject);
+  DCHECK(layoutObject);
   const ComputedStyle& style = layoutObject->styleRef();
   FEFlood* flood = static_cast<FEFlood*>(effect);
 
@@ -55,7 +55,7 @@ FilterEffect* SVGFEFloodElement::build(SVGFilterBuilder*, Filter* filter) {
   if (!layoutObject)
     return nullptr;
 
-  ASSERT(layoutObject->style());
+  DCHECK(layoutObject->style());
   const SVGComputedStyle& svgStyle = layoutObject->style()->svgStyle();
 
   Color color = svgStyle.floodColor();

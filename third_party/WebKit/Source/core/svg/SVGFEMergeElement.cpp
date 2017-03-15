@@ -41,7 +41,7 @@ FilterEffect* SVGFEMergeElement::build(SVGFilterBuilder* filterBuilder,
        Traversal<SVGFEMergeNodeElement>::childrenOf(*this)) {
     FilterEffect* mergeEffect = filterBuilder->getEffectById(
         AtomicString(mergeNode.in1()->currentValue()->value()));
-    ASSERT(mergeEffect);
+    DCHECK(mergeEffect);
     mergeInputs.push_back(mergeEffect);
   }
   return effect;

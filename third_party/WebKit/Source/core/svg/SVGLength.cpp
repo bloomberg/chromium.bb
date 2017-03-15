@@ -35,7 +35,7 @@ SVGLength::SVGLength(SVGLengthMode mode)
     : m_value(
           CSSPrimitiveValue::create(0, CSSPrimitiveValue::UnitType::UserUnits)),
       m_unitMode(static_cast<unsigned>(mode)) {
-  ASSERT(unitMode() == mode);
+  DCHECK_EQ(unitMode(), mode);
 }
 
 SVGLength::SVGLength(const SVGLength& o)
@@ -99,7 +99,7 @@ static bool isSupportedCSSUnitType(CSSPrimitiveValue::UnitType type) {
 }
 
 void SVGLength::setUnitType(CSSPrimitiveValue::UnitType type) {
-  ASSERT(isSupportedCSSUnitType(type));
+  DCHECK(isSupportedCSSUnitType(type));
   m_value = CSSPrimitiveValue::create(m_value->getFloatValue(), type);
 }
 
@@ -166,7 +166,7 @@ void SVGLength::newValueSpecifiedUnits(CSSPrimitiveValue::UnitType type,
 
 void SVGLength::convertToSpecifiedUnits(CSSPrimitiveValue::UnitType type,
                                         const SVGLengthContext& context) {
-  ASSERT(isSupportedCSSUnitType(type));
+  DCHECK(isSupportedCSSUnitType(type));
 
   float valueInUserUnits = value(context);
   m_value = CSSPrimitiveValue::create(
@@ -248,8 +248,8 @@ void SVGLength::calculateAnimatedValue(SVGAnimationElement* animationElement,
       toLength->value(lengthContext),
       toAtEndOfDurationLength->value(lengthContext), animatedNumber);
 
-  ASSERT(unitMode() == lengthModeForAnimatedLengthAttribute(
-                           animationElement->attributeName()));
+  DCHECK_EQ(unitMode(), lengthModeForAnimatedLengthAttribute(
+                            animationElement->attributeName()));
 
   // TODO(shanmuga.m): Construct a calc() expression if the units fall in
   // different categories.

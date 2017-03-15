@@ -46,14 +46,14 @@ SVGPropertyBase* SVGColorProperty::cloneForAnimation(const String&) const {
 }
 
 static inline Color fallbackColorForCurrentColor(SVGElement* targetElement) {
-  ASSERT(targetElement);
+  DCHECK(targetElement);
   if (LayoutObject* targetLayoutObject = targetElement->layoutObject())
     return targetLayoutObject->resolveColor(CSSPropertyColor);
   return Color::transparent;
 }
 
 void SVGColorProperty::add(SVGPropertyBase* other, SVGElement* contextElement) {
-  ASSERT(contextElement);
+  DCHECK(contextElement);
 
   Color fallbackColor = fallbackColorForCurrentColor(contextElement);
   Color fromColor =
@@ -76,7 +76,7 @@ void SVGColorProperty::calculateAnimatedValue(
       toSVGColorProperty(toAtEndOfDurationValue)->m_styleColor;
 
   // Apply currentColor rules.
-  ASSERT(contextElement);
+  DCHECK(contextElement);
   Color fallbackColor = fallbackColorForCurrentColor(contextElement);
   Color fromColor = fromStyleColor.resolve(fallbackColor);
   Color toColor = toStyleColor.resolve(fallbackColor);
@@ -84,7 +84,7 @@ void SVGColorProperty::calculateAnimatedValue(
       toAtEndOfDurationStyleColor.resolve(fallbackColor);
   Color animatedColor = m_styleColor.resolve(fallbackColor);
 
-  ASSERT(animationElement);
+  DCHECK(animationElement);
   float animatedRed = animatedColor.red();
   animationElement->animateAdditiveNumber(
       percentage, repeatCount, fromColor.red(), toColor.red(),
@@ -112,7 +112,7 @@ void SVGColorProperty::calculateAnimatedValue(
 
 float SVGColorProperty::calculateDistance(SVGPropertyBase* toValue,
                                           SVGElement* contextElement) {
-  ASSERT(contextElement);
+  DCHECK(contextElement);
   Color fallbackColor = fallbackColorForCurrentColor(contextElement);
 
   Color fromColor = m_styleColor.resolve(fallbackColor);

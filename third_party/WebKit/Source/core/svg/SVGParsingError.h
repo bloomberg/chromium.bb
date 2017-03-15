@@ -68,7 +68,7 @@ class SVGParsingError {
   SVGParsingError(SVGParseStatus status = SVGParseStatus::NoError,
                   size_t locus = 0)
       : m_status(static_cast<unsigned>(status)), m_locus(checkLocus(locus)) {
-    ASSERT(this->status() == status);
+    DCHECK_EQ(this->status(), status);
   }
 
   SVGParseStatus status() const {

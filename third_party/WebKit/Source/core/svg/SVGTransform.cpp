@@ -201,7 +201,7 @@ String SVGTransform::valueAsString() const {
       arguments[argumentCount++] = m_angle;
       break;
   }
-  ASSERT(argumentCount <= WTF_ARRAY_LENGTH(arguments));
+  DCHECK_LE(argumentCount, WTF_ARRAY_LENGTH(arguments));
 
   StringBuilder builder;
   builder.append(transformTypePrefixForParsing(m_transformType));

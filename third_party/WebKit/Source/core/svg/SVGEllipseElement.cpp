@@ -64,7 +64,7 @@ Path SVGEllipseElement::asPath() const {
   Path path;
 
   SVGLengthContext lengthContext(this);
-  ASSERT(layoutObject());
+  DCHECK(layoutObject());
   const ComputedStyle& style = layoutObject()->styleRef();
   const SVGComputedStyle& svgStyle = style.svgStyle();
 

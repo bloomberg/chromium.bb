@@ -71,7 +71,7 @@ SVGElement::SVGElement(const QualifiedName& tagName,
 }
 
 SVGElement::~SVGElement() {
-  ASSERT(isConnected() || !hasRelativeLengths());
+  DCHECK(isConnected() || !hasRelativeLengths());
 }
 
 void SVGElement::detachLayoutTree(const AttachContext& context) {
@@ -394,7 +394,7 @@ void SVGElement::removedFrom(ContainerNode* rootParent) {
     // need to do anything: they will get their own removedFrom() notification
     // and just clear their sets.
     if (rootParent->isSVGElement() && !parentNode()) {
-      ASSERT(toSVGElement(rootParent)
+      DCHECK(toSVGElement(rootParent)
                  ->m_elementsWithRelativeLengths.contains(this));
       toSVGElement(rootParent)->updateRelativeLengthsInformation(false, this);
     }
@@ -496,7 +496,7 @@ CSSPropertyID SVGElement::cssPropertyIdForSVGAttributeName(
     };
     for (size_t i = 0; i < WTF_ARRAY_LENGTH(attrNames); i++) {
       CSSPropertyID propertyId = cssPropertyID(attrNames[i]->localName());
-      ASSERT(propertyId > 0);
+      DCHECK_GT(propertyId, 0);
       propertyNameToIdMap->set(attrNames[i]->localName().impl(), propertyId);
     }
   }
@@ -506,7 +506,7 @@ CSSPropertyID SVGElement::cssPropertyIdForSVGAttributeName(
 
 void SVGElement::updateRelativeLengthsInformation(bool clientHasRelativeLengths,
                                                   SVGElement* clientElement) {
-  ASSERT(clientElement);
+  DCHECK(clientElement);
 
   // If we're not yet in a document, this function will be called again from
   // insertedInto(). Do nothing now.
@@ -521,7 +521,9 @@ void SVGElement::updateRelativeLengthsInformation(bool clientHasRelativeLengths,
     if (!currentNode.isSVGElement())
       break;
     SVGElement& currentElement = toSVGElement(currentNode);
-    ASSERT(!currentElement.m_inRelativeLengthClientsInvalidation);
+#if DCHECK_IS_ON()
+    DCHECK(!currentElement.m_inRelativeLengthClientsInvalidation);
+#endif
 
     bool hadRelativeLengths = currentElement.hasRelativeLengths();
     if (clientHasRelativeLengths)
@@ -555,8 +557,8 @@ void SVGElement::invalidateRelativeLengthClients(
   if (!isConnected())
     return;
 
-  ASSERT(!m_inRelativeLengthClientsInvalidation);
 #if DCHECK_IS_ON()
+  DCHECK(!m_inRelativeLengthClientsInvalidation);
   AutoReset<bool> inRelativeLengthClientsInvalidationChange(
       &m_inRelativeLengthClientsInvalidation, true);
 #endif
@@ -604,19 +606,19 @@ SVGElement* SVGElement::viewportElement() const {
 }
 
 void SVGElement::mapInstanceToElement(SVGElement* instance) {
-  ASSERT(instance);
-  ASSERT(instance->inUseShadowTree());
+  DCHECK(instance);
+  DCHECK(instance->inUseShadowTree());
 
   HeapHashSet<WeakMember<SVGElement>>& instances =
       ensureSVGRareData()->elementInstances();
-  ASSERT(!instances.contains(instance));
+  DCHECK(!instances.contains(instance));
 
   instances.insert(instance);
 }
 
 void SVGElement::removeInstanceMapping(SVGElement* instance) {
-  ASSERT(instance);
-  ASSERT(instance->inUseShadowTree());
+  DCHECK(instance);
+  DCHECK(instance->inUseShadowTree());
 
   if (!hasSVGRareData())
     return;
@@ -641,7 +643,7 @@ const HeapHashSet<WeakMember<SVGElement>>& SVGElement::instancesForElement()
 }
 
 SVGElement* SVGElement::correspondingElement() const {
-  ASSERT(!hasSVGRareData() || !svgRareData()->correspondingElement() ||
+  DCHECK(!hasSVGRareData() || !svgRareData()->correspondingElement() ||
          containingShadowRoot());
   return hasSVGRareData() ? svgRareData()->correspondingElement() : 0;
 }
@@ -822,11 +824,11 @@ bool SVGElement::haveLoadedRequiredResources() {
 static inline void collectInstancesForSVGElement(
     SVGElement* element,
     HeapHashSet<WeakMember<SVGElement>>& instances) {
-  ASSERT(element);
+  DCHECK(element);
   if (element->containingShadowRoot())
     return;
 
-  ASSERT(!element->instanceUpdatesBlocked());
+  DCHECK(!element->instanceUpdatesBlocked());
 
   instances = element->instancesForElement();
 }
@@ -860,7 +862,7 @@ void SVGElement::removedEventListener(
   EventListenerOptions options = registeredListener.options();
   const EventListener* listener = registeredListener.listener();
   for (SVGElement* shadowTreeElement : instances) {
-    ASSERT(shadowTreeElement);
+    DCHECK(shadowTreeElement);
 
     shadowTreeElement->Node::removeEventListenerInternal(eventType, listener,
                                                          options);
@@ -1074,7 +1076,7 @@ bool SVGElement::hasFocusEventListeners() const {
 
 void SVGElement::markForLayoutAndParentResourceInvalidation(
     LayoutObject* layoutObject) {
-  ASSERT(layoutObject);
+  DCHECK(layoutObject);
   LayoutSVGResourceContainer::markForLayoutAndParentResourceInvalidation(
       layoutObject, true);
 }
@@ -1243,7 +1245,7 @@ SVGElementSet* SVGElement::setOfIncomingReferences() const {
 }
 
 void SVGElement::addReferenceTo(SVGElement* targetElement) {
-  ASSERT(targetElement);
+  DCHECK(targetElement);
 
   ensureSVGRareData()->outgoingReferences().insert(targetElement);
   targetElement->ensureSVGRareData()->incomingReferences().insert(this);
@@ -1274,7 +1276,7 @@ void SVGElement::removeAllIncomingReferences() {
 
   SVGElementSet& incomingReferences = svgRareData()->incomingReferences();
   for (SVGElement* sourceElement : incomingReferences) {
-    ASSERT(sourceElement->hasSVGRareData());
+    DCHECK(sourceElement->hasSVGRareData());
     sourceElement->ensureSVGRareData()->outgoingReferences().erase(this);
   }
   incomingReferences.clear();
@@ -1286,7 +1288,7 @@ void SVGElement::removeAllOutgoingReferences() {
 
   SVGElementSet& outgoingReferences = svgRareData()->outgoingReferences();
   for (SVGElement* targetElement : outgoingReferences) {
-    ASSERT(targetElement->hasSVGRareData());
+    DCHECK(targetElement->hasSVGRareData());
     targetElement->ensureSVGRareData()->incomingReferences().erase(this);
   }
   outgoingReferences.clear();

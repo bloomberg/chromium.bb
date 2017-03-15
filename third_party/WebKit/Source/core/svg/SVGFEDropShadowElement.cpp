@@ -101,7 +101,7 @@ FilterEffect* SVGFEDropShadowElement::build(SVGFilterBuilder* filterBuilder,
   if (!layoutObject)
     return nullptr;
 
-  ASSERT(layoutObject->style());
+  DCHECK(layoutObject->style());
   const SVGComputedStyle& svgStyle = layoutObject->style()->svgStyle();
 
   Color color = svgStyle.floodColor();
@@ -109,7 +109,7 @@ FilterEffect* SVGFEDropShadowElement::build(SVGFilterBuilder* filterBuilder,
 
   FilterEffect* input1 = filterBuilder->getEffectById(
       AtomicString(m_in1->currentValue()->value()));
-  ASSERT(input1);
+  DCHECK(input1);
 
   // Clamp std.dev. to non-negative. (See SVGFEGaussianBlurElement::build)
   float stdDevX = std::max(0.0f, stdDeviationX()->currentValue()->value());

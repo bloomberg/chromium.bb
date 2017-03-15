@@ -75,7 +75,7 @@ class SVGPropertyBase : public GarbageCollectedFinalized<SVGPropertyBase> {
 
   void setOwnerList(SVGPropertyBase* ownerList) {
     // Previous owner list must be cleared before setting new owner list.
-    ASSERT((!ownerList && m_ownerList) || (ownerList && !m_ownerList));
+    DCHECK((!ownerList && m_ownerList) || (ownerList && !m_ownerList));
 
     m_ownerList = ownerList;
   }

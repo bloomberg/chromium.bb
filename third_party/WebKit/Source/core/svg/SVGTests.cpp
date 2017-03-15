@@ -37,7 +37,7 @@ SVGTests::SVGTests(SVGElement* contextElement)
       m_systemLanguage(
           SVGStaticStringList::create(contextElement,
                                       SVGNames::systemLanguageAttr)) {
-  ASSERT(contextElement);
+  DCHECK(contextElement);
 
   contextElement->addToPropertyMap(m_requiredFeatures);
   contextElement->addToPropertyMap(m_requiredExtensions);

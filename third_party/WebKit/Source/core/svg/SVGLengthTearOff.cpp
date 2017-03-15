@@ -60,7 +60,7 @@ inline bool canResolveRelativeUnits(const SVGElement* contextElement) {
 }
 
 inline CSSPrimitiveValue::UnitType toCSSUnitType(unsigned short type) {
-  ASSERT(isValidLengthUnit(type));
+  DCHECK(isValidLengthUnit(type));
   if (type == SVGLengthTearOff::kSvgLengthtypeNumber)
     return CSSPrimitiveValue::UnitType::UserUnits;
   return static_cast<CSSPrimitiveValue::UnitType>(type);

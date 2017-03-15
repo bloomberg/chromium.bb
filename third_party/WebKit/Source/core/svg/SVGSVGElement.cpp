@@ -107,7 +107,7 @@ float SVGSVGElement::currentScale() const {
 }
 
 void SVGSVGElement::setCurrentScale(float scale) {
-  ASSERT(std::isfinite(scale));
+  DCHECK(std::isfinite(scale));
   if (!isConnected() || !isOutermostSVGSVGElement())
     return;
 
@@ -122,7 +122,7 @@ class SVGCurrentTranslateTearOff : public SVGPointTearOff {
   }
 
   void commitChange() override {
-    ASSERT(contextElement());
+    DCHECK(contextElement());
     toSVGSVGElement(contextElement())->updateUserTransform();
   }
 
@@ -322,7 +322,7 @@ bool SVGSVGElement::checkIntersectionOrEnclosure(
     const FloatRect& rect,
     GeometryMatchingMode mode) const {
   LayoutObject* layoutObject = element.layoutObject();
-  ASSERT(!layoutObject || layoutObject->style());
+  DCHECK(!layoutObject || layoutObject->style());
   if (!layoutObject ||
       layoutObject->style()->pointerEvents() == EPointerEvents::kNone)
     return false;
@@ -397,7 +397,7 @@ StaticNodeList* SVGSVGElement::getEnclosureList(
 
 bool SVGSVGElement::checkIntersection(SVGElement* element,
                                       SVGRectTearOff* rect) const {
-  ASSERT(element);
+  DCHECK(element);
   document().updateStyleAndLayoutIgnorePendingStylesheets();
 
   return checkIntersectionOrEnclosure(*element, rect->target()->value(),
@@ -406,7 +406,7 @@ bool SVGSVGElement::checkIntersection(SVGElement* element,
 
 bool SVGSVGElement::checkEnclosure(SVGElement* element,
                                    SVGRectTearOff* rect) const {
-  ASSERT(element);
+  DCHECK(element);
   document().updateStyleAndLayoutIgnorePendingStylesheets();
 
   return checkIntersectionOrEnclosure(*element, rect->target()->value(),
@@ -538,7 +538,7 @@ float SVGSVGElement::getCurrentTime() const {
 }
 
 void SVGSVGElement::setCurrentTime(float seconds) {
-  ASSERT(std::isfinite(seconds));
+  DCHECK(std::isfinite(seconds));
   seconds = max(seconds, 0.0f);
   m_timeContainer->setElapsed(seconds);
 }

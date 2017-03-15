@@ -120,7 +120,7 @@ class SVGEnumeration : public SVGEnumerationBase {
   SVGEnumerationBase* clone() const override { return create(enumValue()); }
 
   Enum enumValue() const {
-    ASSERT(m_value <= maxInternalEnumValue());
+    DCHECK_LE(m_value, maxInternalEnumValue());
     return static_cast<Enum>(m_value);
   }
 

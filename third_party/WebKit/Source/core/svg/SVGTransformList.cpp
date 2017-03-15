@@ -222,8 +222,8 @@ SVGParseStatus parseTransformArgumentsForType(SVGTransformType type,
   const size_t required = requiredValuesForType[type];
   const size_t optional = optionalValuesForType[type];
   const size_t requiredWithOptional = required + optional;
-  ASSERT(requiredWithOptional <= kMaxTransformArguments);
-  ASSERT(arguments.isEmpty());
+  DCHECK_LE(requiredWithOptional, kMaxTransformArguments);
+  DCHECK(arguments.isEmpty());
 
   bool trailingDelimiter = false;
 
@@ -321,7 +321,7 @@ SVGParsingError SVGTransformList::parseInternal(const CharType*& ptr,
         parseTransformArgumentsForType(transformType, ptr, end, arguments);
     if (status != SVGParseStatus::NoError)
       return SVGParsingError(status, ptr - start);
-    ASSERT(arguments.size() >= requiredValuesForType[transformType]);
+    DCHECK_GE(arguments.size(), requiredValuesForType[transformType]);
 
     if (!skipOptionalSVGSpaces(ptr, end) || *ptr != ')')
       return SVGParsingError(SVGParseStatus::ExpectedEndOfArguments,
@@ -401,7 +401,7 @@ SVGParsingError SVGTransformList::setValueAsString(const String& value) {
 
 SVGPropertyBase* SVGTransformList::cloneForAnimation(
     const String& value) const {
-  ASSERT(RuntimeEnabledFeatures::webAnimationsSVGEnabled());
+  DCHECK(RuntimeEnabledFeatures::webAnimationsSVGEnabled());
   return SVGListPropertyHelper::cloneForAnimation(value);
 }
 
@@ -438,11 +438,11 @@ void SVGTransformList::add(SVGPropertyBase* other, SVGElement* contextElement) {
   if (length() != otherList->length())
     return;
 
-  ASSERT(length() == 1);
+  DCHECK_EQ(length(), 1u);
   SVGTransform* fromTransform = at(0);
   SVGTransform* toTransform = otherList->at(0);
 
-  ASSERT(fromTransform->transformType() == toTransform->transformType());
+  DCHECK_EQ(fromTransform->transformType(), toTransform->transformType());
   initialize(
       SVGTransformDistance::addSVGTransforms(fromTransform, toTransform));
 }
@@ -455,7 +455,7 @@ void SVGTransformList::calculateAnimatedValue(
     SVGPropertyBase* toValue,
     SVGPropertyBase* toAtEndOfDurationValue,
     SVGElement* contextElement) {
-  ASSERT(animationElement);
+  DCHECK(animationElement);
   bool isToAnimation = animationElement->getAnimationMode() == ToAnimation;
 
   // Spec: To animations provide specific functionality to get a smooth change
@@ -519,7 +519,7 @@ float SVGTransformList::calculateDistance(SVGPropertyBase* toValue,
   if (isEmpty() || length() != toList->length())
     return -1;
 
-  ASSERT(length() == 1);
+  DCHECK_EQ(length(), 1u);
   if (at(0)->transformType() == toList->at(0)->transformType())
     return -1;
 

@@ -245,7 +245,7 @@ float SVGLengthContext::valueForLength(const Length& length,
 float SVGLengthContext::valueForLength(const Length& length,
                                        float zoom,
                                        float dimension) {
-  ASSERT(zoom != 0);
+  DCHECK_NE(zoom, 0);
   // isIntrinsic can occur for 'width' and 'height', but has no
   // real meaning for svg.
   if (length.isIntrinsic())

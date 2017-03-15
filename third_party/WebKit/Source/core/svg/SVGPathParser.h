@@ -54,7 +54,7 @@ class SVGPathNormalizer {
  public:
   SVGPathNormalizer(SVGPathConsumer* consumer)
       : m_consumer(consumer), m_lastCommand(PathSegUnknown) {
-    ASSERT(m_consumer);
+    DCHECK(m_consumer);
   }
 
   void emitSegment(const PathSegmentData&);

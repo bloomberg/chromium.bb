@@ -29,7 +29,7 @@ namespace blink {
 
 inline SVGMPathElement::SVGMPathElement(Document& document)
     : SVGElement(SVGNames::mpathTag, document), SVGURIReference(this) {
-  ASSERT(RuntimeEnabledFeatures::smilEnabled());
+  DCHECK(RuntimeEnabledFeatures::smilEnabled());
 }
 
 DEFINE_TRACE(SVGMPathElement) {

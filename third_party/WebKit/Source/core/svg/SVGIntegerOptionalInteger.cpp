@@ -101,7 +101,7 @@ void SVGIntegerOptionalInteger::calculateAnimatedValue(
     SVGPropertyBase* to,
     SVGPropertyBase* toAtEndOfDuration,
     SVGElement*) {
-  ASSERT(animationElement);
+  DCHECK(animationElement);
 
   SVGIntegerOptionalInteger* fromInteger = toSVGIntegerOptionalInteger(from);
   SVGIntegerOptionalInteger* toInteger = toSVGIntegerOptionalInteger(to);

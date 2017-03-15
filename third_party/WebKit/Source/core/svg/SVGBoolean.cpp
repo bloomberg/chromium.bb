@@ -61,7 +61,7 @@ void SVGBoolean::calculateAnimatedValue(SVGAnimationElement* animationElement,
                                         SVGPropertyBase* to,
                                         SVGPropertyBase*,
                                         SVGElement*) {
-  ASSERT(animationElement);
+  DCHECK(animationElement);
   bool fromBoolean = animationElement->getAnimationMode() == ToAnimation
                          ? m_value
                          : toSVGBoolean(from)->value();

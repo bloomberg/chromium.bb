@@ -51,7 +51,7 @@ String SVGEnumerationBase::valueAsString() const {
       return entry.second;
   }
 
-  ASSERT(m_value < maxInternalEnumValue());
+  DCHECK_LT(m_value, maxInternalEnumValue());
   return emptyString;
 }
 
@@ -65,7 +65,7 @@ SVGParsingError SVGEnumerationBase::setValueAsString(const String& string) {
     if (string == entry.second) {
       // 0 corresponds to _UNKNOWN enumeration values, and should not be
       // settable.
-      ASSERT(entry.first);
+      DCHECK(entry.first);
       m_value = entry.first;
       notifyChange();
       return SVGParseStatus::NoError;
@@ -88,7 +88,7 @@ void SVGEnumerationBase::calculateAnimatedValue(
     SVGPropertyBase* to,
     SVGPropertyBase*,
     SVGElement*) {
-  ASSERT(animationElement);
+  DCHECK(animationElement);
   unsigned short fromEnumeration =
       animationElement->getAnimationMode() == ToAnimation
           ? m_value
