@@ -85,6 +85,12 @@
   } else {
     strokeColor =
         themeProvider->GetNSColor(ThemeProperties::COLOR_TOOLBAR_STROKE);
+
+    // If the current theme is the system theme, and the system is in "increase
+    // contrast" mode, and this is an incognito window, force the toolbar stroke
+    // to be drawn in white instead of black, to make it show up better.
+    if ([[self window] hasDarkTheme] && themeProvider->ShouldIncreaseContrast())
+      strokeColor = [NSColor whiteColor];
   }
 
   if (themeProvider->ShouldIncreaseContrast())
