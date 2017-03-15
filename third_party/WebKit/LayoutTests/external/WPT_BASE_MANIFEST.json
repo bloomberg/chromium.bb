@@ -19055,36 +19055,6 @@
      {}
     ]
    ],
-   "longtask-timing/longtask-attributes-expected.txt": [
-    [
-     {}
-    ]
-   ],
-   "longtask-timing/longtask-in-childiframe-expected.txt": [
-    [
-     {}
-    ]
-   ],
-   "longtask-timing/longtask-in-externalscript-expected.txt": [
-    [
-     {}
-    ]
-   ],
-   "longtask-timing/longtask-in-parentiframe-expected.txt": [
-    [
-     {}
-    ]
-   ],
-   "longtask-timing/longtask-in-raf-expected.txt": [
-    [
-     {}
-    ]
-   ],
-   "longtask-timing/longtask-in-sibling-iframe-expected.txt": [
-    [
-     {}
-    ]
-   ],
    "longtask-timing/resources/makelongtask.js": [
     [
      {}
@@ -35853,6 +35823,12 @@
    "html/browsers/windows/browsing-context-names/002.html": [
     [
      "/html/browsers/windows/browsing-context-names/002.html",
+     {}
+    ]
+   ],
+   "html/browsers/windows/browsing-context-names/browsing-context-_blank.html": [
+    [
+     "/html/browsers/windows/browsing-context-names/browsing-context-_blank.html",
      {}
     ]
    ],
@@ -67106,7 +67082,7 @@
    "testharness"
   ],
   "html/browsers/the-window-object/window-named-properties-expected.txt": [
-   "c3ddb934740e5b85737f08b2320003491d12a276",
+   "69d7277e89d99a74a6ed29c627733280c1470185",
    "support"
   ],
   "html/browsers/the-window-object/window-named-properties.html": [
@@ -67157,6 +67133,10 @@
    "ed586ee147452ba6cb8d90782b266807f8b7975e",
    "testharness"
   ],
+  "html/browsers/windows/browsing-context-names/browsing-context-_blank.html": [
+   "4a1a9ff6c913291edce2339faa443b6da2e5fe74",
+   "testharness"
+  ],
   "html/browsers/windows/browsing-context-names/browsing-context-choose-existing.html": [
    "381a1a09c09e8c43849a7b8f4d120507b2196aeb",
    "testharness"
@@ -67170,7 +67150,7 @@
    "testharness"
   ],
   "html/browsers/windows/browsing-context-names/browsing-context-default-name.html": [
-   "44c5f5088cd4631a7fb6f2422dd601e2b22bee77",
+   "12ab8a79c7239a712cebfa171c4271fae4a49b0e",
    "testharness"
   ],
   "html/browsers/windows/browsing-context-names/existing.html": [
@@ -77653,10 +77633,6 @@
    "cd25518dd402033694667ccd1982fd3b85faa412",
    "testharness"
   ],
-  "longtask-timing/longtask-attributes-expected.txt": [
-   "dae6a99683bdbae412208af8848a5c70a8e29bb2",
-   "support"
-  ],
   "longtask-timing/longtask-attributes.html": [
    "a88bd658adcb9ef3dcbfa803397910e531bc864b",
    "testharness"
@@ -77665,33 +77641,17 @@
    "646324580798ab727e31db4c47b919bb9df6e6a9",
    "testharness"
   ],
-  "longtask-timing/longtask-in-childiframe-expected.txt": [
-   "c52c650677cbc916cf8b6c045fd80a7737943a74",
-   "support"
-  ],
   "longtask-timing/longtask-in-childiframe.html": [
    "74f235096580d329eb0cc2d2c682857c2b6f2c6d",
    "testharness"
-  ],
-  "longtask-timing/longtask-in-externalscript-expected.txt": [
-   "dae6a99683bdbae412208af8848a5c70a8e29bb2",
-   "support"
   ],
   "longtask-timing/longtask-in-externalscript.html": [
    "74329829a0248b8e81443f78b998bf97ac60e965",
    "testharness"
   ],
-  "longtask-timing/longtask-in-parentiframe-expected.txt": [
-   "b3c1614ad49351b564649391c06fbaa933b28164",
-   "support"
-  ],
   "longtask-timing/longtask-in-parentiframe.html": [
    "4732540c350dcfed013f07af0590c5de04aacc2a",
    "testharness"
-  ],
-  "longtask-timing/longtask-in-raf-expected.txt": [
-   "dae6a99683bdbae412208af8848a5c70a8e29bb2",
-   "support"
   ],
   "longtask-timing/longtask-in-raf.html": [
    "e5a058a841e039e1d8f7b5f8b24d48937aad038b",
@@ -77700,10 +77660,6 @@
   "longtask-timing/longtask-in-sibling-iframe-crossorigin.html": [
    "64085903b907b37077013d42747e3aaa8cf2b86e",
    "testharness"
-  ],
-  "longtask-timing/longtask-in-sibling-iframe-expected.txt": [
-   "5f0c8a77a42abe159b591583ecee1e04af7454b1",
-   "support"
   ],
   "longtask-timing/longtask-in-sibling-iframe.html": [
    "d08d6f2ddf39615cc3dad7c65a01a29c9411a2a9",

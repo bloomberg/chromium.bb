@@ -1,0 +1,5 @@
+This is a testharness.js-based test.
+PASS window.open into `_blank` should create a new browsing context each time 
+FAIL `_blank` should be ASCII case-insensitive assert_not_equals: got disallowed value object "[object Window]"
+Harness: the test ran to completion.
+
