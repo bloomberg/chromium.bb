@@ -39,7 +39,7 @@ class PeerConnectionDependencyFactory;
 class MediaStreamAudioSource;
 class MediaStreamDispatcher;
 class MediaStreamVideoSource;
-struct VideoDeviceCaptureSourceSelectionResult;
+class VideoDeviceCaptureSourceSelectionResult;
 
 // UserMediaClientImpl is a delegate for the Media Stream GetUserMedia API.
 // It ties together WebKit and MediaStreamManager

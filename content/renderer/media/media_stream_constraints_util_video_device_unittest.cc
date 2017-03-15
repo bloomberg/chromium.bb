@@ -140,13 +140,13 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, Unconstrained) {
   auto result = SelectSettings();
   EXPECT_TRUE(result.HasValue());
   // Should select the default device with closest-to-default settings.
-  EXPECT_EQ(default_device_->device_id, result.device_id);
-  EXPECT_EQ(default_device_->facing_mode, result.facing_mode);
+  EXPECT_EQ(default_device_->device_id, result.device_id());
+  EXPECT_EQ(default_device_->facing_mode, result.facing_mode());
   EXPECT_EQ(*default_closest_format_, result.Format());
   // Should select default settings for other constraints.
   EXPECT_EQ(media::PowerLineFrequency::FREQUENCY_DEFAULT,
             result.PowerLineFrequency());
-  EXPECT_EQ(rtc::Optional<bool>(), result.noise_reduction);
+  EXPECT_EQ(rtc::Optional<bool>(), result.noise_reduction());
 }
 
 // The "Overconstrained" tests verify that failure of any single required
@@ -158,7 +158,7 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, OverconstrainedOnDeviceID) {
   auto result = SelectSettings();
   EXPECT_FALSE(result.HasValue());
   EXPECT_EQ(constraint_factory_.basic().deviceId.name(),
-            result.failed_constraint_name);
+            result.failed_constraint_name());
 }
 
 TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, OverconstrainedOnFacingMode) {
@@ -169,7 +169,7 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, OverconstrainedOnFacingMode) {
   auto result = SelectSettings();
   EXPECT_FALSE(result.HasValue());
   EXPECT_EQ(constraint_factory_.basic().facingMode.name(),
-            result.failed_constraint_name);
+            result.failed_constraint_name());
 }
 
 TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, OverconstrainedOnVideoKind) {
@@ -180,7 +180,7 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, OverconstrainedOnVideoKind) {
   auto result = SelectSettings();
   EXPECT_FALSE(result.HasValue());
   EXPECT_EQ(constraint_factory_.basic().videoKind.name(),
-            result.failed_constraint_name);
+            result.failed_constraint_name());
 }
 
 TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, OverconstrainedOnHeight) {
@@ -189,21 +189,21 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, OverconstrainedOnHeight) {
   auto result = SelectSettings();
   EXPECT_FALSE(result.HasValue());
   EXPECT_EQ(constraint_factory_.basic().height.name(),
-            result.failed_constraint_name);
+            result.failed_constraint_name());
 
   constraint_factory_.Reset();
   constraint_factory_.basic().height.setMin(123467890);
   result = SelectSettings();
   EXPECT_FALSE(result.HasValue());
   EXPECT_EQ(constraint_factory_.basic().height.name(),
-            result.failed_constraint_name);
+            result.failed_constraint_name());
 
   constraint_factory_.Reset();
   constraint_factory_.basic().height.setMax(0);
   result = SelectSettings();
   EXPECT_FALSE(result.HasValue());
   EXPECT_EQ(constraint_factory_.basic().height.name(),
-            result.failed_constraint_name);
+            result.failed_constraint_name());
 }
 
 TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, OverconstrainedOnWidth) {
@@ -212,21 +212,21 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, OverconstrainedOnWidth) {
   auto result = SelectSettings();
   EXPECT_FALSE(result.HasValue());
   EXPECT_EQ(constraint_factory_.basic().width.name(),
-            result.failed_constraint_name);
+            result.failed_constraint_name());
 
   constraint_factory_.Reset();
   constraint_factory_.basic().width.setMin(123467890);
   result = SelectSettings();
   EXPECT_FALSE(result.HasValue());
   EXPECT_EQ(constraint_factory_.basic().width.name(),
-            result.failed_constraint_name);
+            result.failed_constraint_name());
 
   constraint_factory_.Reset();
   constraint_factory_.basic().width.setMax(0);
   result = SelectSettings();
   EXPECT_FALSE(result.HasValue());
   EXPECT_EQ(constraint_factory_.basic().width.name(),
-            result.failed_constraint_name);
+            result.failed_constraint_name());
 }
 
 TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
@@ -236,14 +236,14 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
   auto result = SelectSettings();
   EXPECT_FALSE(result.HasValue());
   EXPECT_EQ(constraint_factory_.basic().aspectRatio.name(),
-            result.failed_constraint_name);
+            result.failed_constraint_name());
 
   constraint_factory_.Reset();
   constraint_factory_.basic().aspectRatio.setMin(123467890.0);
   result = SelectSettings();
   EXPECT_FALSE(result.HasValue());
   EXPECT_EQ(constraint_factory_.basic().aspectRatio.name(),
-            result.failed_constraint_name);
+            result.failed_constraint_name());
 
   constraint_factory_.Reset();
   // This value is lower than the minimum supported by sources.
@@ -252,7 +252,7 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
   result = SelectSettings();
   EXPECT_FALSE(result.HasValue());
   EXPECT_EQ(constraint_factory_.basic().aspectRatio.name(),
-            result.failed_constraint_name);
+            result.failed_constraint_name());
 }
 
 TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, OverconstrainedOnFrameRate) {
@@ -261,21 +261,21 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, OverconstrainedOnFrameRate) {
   auto result = SelectSettings();
   EXPECT_FALSE(result.HasValue());
   EXPECT_EQ(constraint_factory_.basic().frameRate.name(),
-            result.failed_constraint_name);
+            result.failed_constraint_name());
 
   constraint_factory_.Reset();
   constraint_factory_.basic().frameRate.setMin(123467890.0);
   result = SelectSettings();
   EXPECT_FALSE(result.HasValue());
   EXPECT_EQ(constraint_factory_.basic().frameRate.name(),
-            result.failed_constraint_name);
+            result.failed_constraint_name());
 
   constraint_factory_.Reset();
   constraint_factory_.basic().frameRate.setMax(0.0);
   result = SelectSettings();
   EXPECT_FALSE(result.HasValue());
   EXPECT_EQ(constraint_factory_.basic().frameRate.name(),
-            result.failed_constraint_name);
+            result.failed_constraint_name());
 }
 
 TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
@@ -285,21 +285,21 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
   auto result = SelectSettings();
   EXPECT_FALSE(result.HasValue());
   EXPECT_EQ(constraint_factory_.basic().googPowerLineFrequency.name(),
-            result.failed_constraint_name);
+            result.failed_constraint_name());
 
   constraint_factory_.Reset();
   constraint_factory_.basic().googPowerLineFrequency.setMin(123467890);
   result = SelectSettings();
   EXPECT_FALSE(result.HasValue());
   EXPECT_EQ(constraint_factory_.basic().googPowerLineFrequency.name(),
-            result.failed_constraint_name);
+            result.failed_constraint_name());
 
   constraint_factory_.Reset();
   constraint_factory_.basic().googPowerLineFrequency.setMax(-1);
   result = SelectSettings();
   EXPECT_FALSE(result.HasValue());
   EXPECT_EQ(constraint_factory_.basic().googPowerLineFrequency.name(),
-            result.failed_constraint_name);
+            result.failed_constraint_name());
 }
 
 TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
@@ -327,7 +327,7 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
       SelectVideoDeviceCaptureSourceSettings(capabilities, constraints);
   EXPECT_FALSE(result.HasValue());
   EXPECT_EQ(constraint_factory_.basic().googNoiseReduction.name(),
-            result.failed_constraint_name);
+            result.failed_constraint_name());
 }
 
 // The "Mandatory" and "Ideal" tests check that various selection criteria work
@@ -338,7 +338,7 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, MandatoryDeviceID) {
       blink::WebString::fromASCII(default_device_->device_id));
   auto result = SelectSettings();
   EXPECT_TRUE(result.HasValue());
-  EXPECT_EQ(default_device_->device_id, result.device_id);
+  EXPECT_EQ(default_device_->device_id, result.device_id());
   EXPECT_EQ(*default_closest_format_, result.Format());
   EXPECT_EQ(media::PowerLineFrequency::FREQUENCY_DEFAULT,
             result.PowerLineFrequency());
@@ -346,7 +346,7 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, MandatoryDeviceID) {
   constraint_factory_.basic().deviceId.setExact(
       blink::WebString::fromASCII(low_res_device_->device_id));
   result = SelectSettings();
-  EXPECT_EQ(low_res_device_->device_id, result.device_id);
+  EXPECT_EQ(low_res_device_->device_id, result.device_id());
   EXPECT_EQ(*low_res_closest_format_, result.Format());
   EXPECT_EQ(media::PowerLineFrequency::FREQUENCY_DEFAULT,
             result.PowerLineFrequency());
@@ -354,7 +354,7 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, MandatoryDeviceID) {
   constraint_factory_.basic().deviceId.setExact(
       blink::WebString::fromASCII(high_res_device_->device_id));
   result = SelectSettings();
-  EXPECT_EQ(high_res_device_->device_id, result.device_id);
+  EXPECT_EQ(high_res_device_->device_id, result.device_id());
   EXPECT_EQ(*high_res_closest_format_, result.Format());
   EXPECT_EQ(media::PowerLineFrequency::FREQUENCY_DEFAULT,
             result.PowerLineFrequency());
@@ -366,10 +366,10 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, MandatoryFacingMode) {
       blink::WebString::fromASCII("environment"));
   auto result = SelectSettings();
   EXPECT_TRUE(result.HasValue());
-  EXPECT_EQ(::mojom::FacingMode::ENVIRONMENT, result.facing_mode);
+  EXPECT_EQ(::mojom::FacingMode::ENVIRONMENT, result.facing_mode());
   // Only the low-res device supports environment facing mode. Should select
   // default settings for everything else.
-  EXPECT_EQ(low_res_device_->device_id, result.device_id);
+  EXPECT_EQ(low_res_device_->device_id, result.device_id());
   EXPECT_EQ(*low_res_closest_format_, result.Format());
   EXPECT_EQ(media::PowerLineFrequency::FREQUENCY_DEFAULT,
             result.PowerLineFrequency());
@@ -378,10 +378,10 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, MandatoryFacingMode) {
       blink::WebString::fromASCII("user"));
   result = SelectSettings();
   EXPECT_TRUE(result.HasValue());
-  EXPECT_EQ(::mojom::FacingMode::USER, result.facing_mode);
+  EXPECT_EQ(::mojom::FacingMode::USER, result.facing_mode());
   // Only the high-res device supports user facing mode. Should select default
   // settings for everything else.
-  EXPECT_EQ(high_res_device_->device_id, result.device_id);
+  EXPECT_EQ(high_res_device_->device_id, result.device_id());
   EXPECT_EQ(*high_res_closest_format_, result.Format());
   EXPECT_EQ(media::PowerLineFrequency::FREQUENCY_DEFAULT,
             result.PowerLineFrequency());
@@ -393,14 +393,14 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, MandatoryVideoKind) {
       blink::WebString::fromASCII("depth"));
   auto result = SelectSettings();
   EXPECT_TRUE(result.HasValue());
-  EXPECT_EQ(kDeviceID4, result.device_id);
+  EXPECT_EQ(kDeviceID4, result.device_id());
   EXPECT_EQ(media::PIXEL_FORMAT_Y16, result.Format().pixel_format);
 
   constraint_factory_.basic().videoKind.setExact(
       blink::WebString::fromASCII("color"));
   result = SelectSettings();
   EXPECT_TRUE(result.HasValue());
-  EXPECT_EQ(default_device_->device_id, result.device_id);
+  EXPECT_EQ(default_device_->device_id, result.device_id());
 }
 
 TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, MandatoryPowerLineFrequency) {
@@ -416,8 +416,8 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, MandatoryPowerLineFrequency) {
     EXPECT_EQ(power_line_frequency, result.PowerLineFrequency());
     // The default device and settings closest to the default should be
     // selected.
-    EXPECT_EQ(default_device_->device_id, result.device_id);
-    EXPECT_EQ(default_device_->facing_mode, result.facing_mode);
+    EXPECT_EQ(default_device_->device_id, result.device_id());
+    EXPECT_EQ(default_device_->facing_mode, result.facing_mode());
     EXPECT_EQ(*default_closest_format_, result.Format());
   }
 }
@@ -429,11 +429,11 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, MandatoryNoiseReduction) {
     constraint_factory_.basic().googNoiseReduction.setExact(noise_reduction);
     auto result = SelectSettings();
     EXPECT_TRUE(result.HasValue());
-    EXPECT_EQ(noise_reduction, result.noise_reduction);
+    EXPECT_EQ(noise_reduction, result.noise_reduction());
     // The default device and settings closest to the default should be
     // selected.
-    EXPECT_EQ(default_device_->device_id, result.device_id);
-    EXPECT_EQ(default_device_->facing_mode, result.facing_mode);
+    EXPECT_EQ(default_device_->device_id, result.device_id());
+    EXPECT_EQ(default_device_->facing_mode, result.facing_mode());
     EXPECT_EQ(*default_closest_format_, result.Format());
   }
 }
@@ -447,7 +447,7 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, MandatoryExactHeight) {
   // All devices in |capabilities_| support the requested height. The algorithm
   // should prefer the first device that supports the requested height natively,
   // which is the low-res device.
-  EXPECT_EQ(low_res_device_->device_id, result.device_id);
+  EXPECT_EQ(low_res_device_->device_id, result.device_id());
   EXPECT_EQ(kHeight, result.Height());
 
   const int kLargeHeight = 1500;
@@ -456,7 +456,7 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, MandatoryExactHeight) {
   EXPECT_TRUE(result.HasValue());
   // Only the high-res device at the highest resolution supports the requested
   // height, even if not natively.
-  EXPECT_EQ(high_res_device_->device_id, result.device_id);
+  EXPECT_EQ(high_res_device_->device_id, result.device_id());
   EXPECT_EQ(*high_res_highest_format_, result.Format());
 }
 
@@ -468,7 +468,7 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, MandatoryMinHeight) {
   EXPECT_TRUE(result.HasValue());
   // All devices in |capabilities_| support the requested height range. The
   // algorithm should prefer the default device.
-  EXPECT_EQ(default_device_->device_id, result.device_id);
+  EXPECT_EQ(default_device_->device_id, result.device_id());
   EXPECT_LE(kHeight, result.Height());
 
   const int kLargeHeight = 1500;
@@ -477,7 +477,7 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, MandatoryMinHeight) {
   EXPECT_TRUE(result.HasValue());
   // Only the high-res device at the highest resolution supports the requested
   // height range.
-  EXPECT_EQ(high_res_device_->device_id, result.device_id);
+  EXPECT_EQ(high_res_device_->device_id, result.device_id());
   EXPECT_EQ(*high_res_highest_format_, result.Format());
 }
 
@@ -490,7 +490,7 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, MandatoryMaxHeight) {
   // All devices in |capabilities_| support the requested height range. The
   // algorithm should prefer the settings that natively exceed the requested
   // maximum by the lowest amount. In this case it is the low-res device.
-  EXPECT_EQ(low_res_device_->device_id, result.device_id);
+  EXPECT_EQ(low_res_device_->device_id, result.device_id());
   EXPECT_EQ(low_res_device_->formats[0], result.Format());
 }
 
@@ -509,7 +509,7 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, MandatoryHeightRange) {
     // algorithm should prefer the default device since it has at least one
     // native format (the closest-to-default format) included in the requested
     // range.
-    EXPECT_EQ(default_device_->device_id, result.device_id);
+    EXPECT_EQ(default_device_->device_id, result.device_id());
     EXPECT_EQ(*default_closest_format_, result.Format());
   }
 
@@ -525,7 +525,7 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, MandatoryHeightRange) {
     // In this case, the algorithm should prefer the low-res device since it is
     // the first device with a native format (800x600) included in the requested
     // range.
-    EXPECT_EQ(low_res_device_->device_id, result.device_id);
+    EXPECT_EQ(low_res_device_->device_id, result.device_id());
     EXPECT_EQ(800, result.Width());
     EXPECT_EQ(600, result.Height());
   }
@@ -542,7 +542,7 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, MandatoryHeightRange) {
     // In this case, the algorithm should prefer the high-res device since it is
     // the only device with a native format (1280x720) included in the requested
     // range.
-    EXPECT_EQ(high_res_device_->device_id, result.device_id);
+    EXPECT_EQ(high_res_device_->device_id, result.device_id());
     EXPECT_EQ(1280, result.Width());
     EXPECT_EQ(720, result.Height());
   }
@@ -557,7 +557,7 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, IdealHeight) {
     EXPECT_TRUE(result.HasValue());
     // The algorithm should select the first device that supports the ideal
     // height natively.
-    EXPECT_EQ(low_res_device_->device_id, result.device_id);
+    EXPECT_EQ(low_res_device_->device_id, result.device_id());
     EXPECT_EQ(kIdealHeight, result.Height());
   }
 
@@ -570,7 +570,7 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, IdealHeight) {
     // ideal at a lower cost than the other devices (500 vs 600 or 720).
     // Note that a native resolution of 480 is further from the ideal than
     // 500 cropped to 480.
-    EXPECT_EQ(default_device_->device_id, result.device_id);
+    EXPECT_EQ(default_device_->device_id, result.device_id());
     EXPECT_EQ(*default_closest_format_, result.Format());
   }
 
@@ -582,7 +582,7 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, IdealHeight) {
     // In this case, the high-res device has two configurations that satisfy
     // the ideal value (1920x1080 and 2304x1536). Select the one with shortest
     // native distance to the ideal value (1920x1080).
-    EXPECT_EQ(high_res_device_->device_id, result.device_id);
+    EXPECT_EQ(high_res_device_->device_id, result.device_id());
     EXPECT_EQ(1920, result.Width());
     EXPECT_EQ(1080, result.Height());
   }
@@ -594,7 +594,7 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, IdealHeight) {
     EXPECT_TRUE(result.HasValue());
     // The algorithm must the select the only device that can satisfy the ideal,
     // which is the high-res device at the highest resolution.
-    EXPECT_EQ(high_res_device_->device_id, result.device_id);
+    EXPECT_EQ(high_res_device_->device_id, result.device_id());
     EXPECT_EQ(*high_res_highest_format_, result.Format());
   }
 }
@@ -608,7 +608,7 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, MandatoryExactWidth) {
   // All devices in |capabilities_| support the requested width. The algorithm
   // should prefer the first device that supports the requested width natively,
   // which is the low-res device.
-  EXPECT_EQ(low_res_device_->device_id, result.device_id);
+  EXPECT_EQ(low_res_device_->device_id, result.device_id());
   EXPECT_EQ(kWidth, result.Width());
 
   const int kLargeWidth = 2000;
@@ -618,7 +618,7 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, MandatoryExactWidth) {
   EXPECT_LE(kLargeWidth, result.Width());
   // Only the high-res device at the highest resolution supports the requested
   // width, even if not natively.
-  EXPECT_EQ(high_res_device_->device_id, result.device_id);
+  EXPECT_EQ(high_res_device_->device_id, result.device_id());
   EXPECT_EQ(*high_res_highest_format_, result.Format());
 }
 
@@ -631,7 +631,7 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, MandatoryMinWidth) {
   // All devices in |capabilities_| support the requested width range. The
   // algorithm should prefer the default device at 1000x1000, which is the
   // first configuration that satisfies the minimum width.
-  EXPECT_EQ(default_device_->device_id, result.device_id);
+  EXPECT_EQ(default_device_->device_id, result.device_id());
   EXPECT_LE(kWidth, result.Width());
   EXPECT_EQ(1000, result.Width());
   EXPECT_EQ(1000, result.Height());
@@ -642,7 +642,7 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, MandatoryMinWidth) {
   EXPECT_TRUE(result.HasValue());
   // Only the high-res device at the highest resolution supports the requested
   // minimum width.
-  EXPECT_EQ(high_res_device_->device_id, result.device_id);
+  EXPECT_EQ(high_res_device_->device_id, result.device_id());
   EXPECT_LE(kLargeWidth, result.Width());
   EXPECT_EQ(*high_res_highest_format_, result.Format());
 }
@@ -657,7 +657,7 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, MandatoryMaxWidth) {
   // algorithm should prefer the settings that natively exceed the requested
   // maximum by the lowest amount. In this case it is the low-res device at its
   // lowest resolution.
-  EXPECT_EQ(low_res_device_->device_id, result.device_id);
+  EXPECT_EQ(low_res_device_->device_id, result.device_id());
   EXPECT_EQ(low_res_device_->formats[0], result.Format());
 }
 
@@ -675,7 +675,7 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, MandatoryWidthRange) {
     // All devices in |capabilities_| support the constraint range. The
     // algorithm should prefer the default device since it has at least one
     // native format (1000x1000) included in the requested range.
-    EXPECT_EQ(default_device_->device_id, result.device_id);
+    EXPECT_EQ(default_device_->device_id, result.device_id());
     EXPECT_EQ(1000, result.Width());
     EXPECT_EQ(1000, result.Height());
   }
@@ -692,7 +692,7 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, MandatoryWidthRange) {
     // In this case, the algorithm should prefer the low-res device since it is
     // the first device with a native format (800x600) included in the requested
     // range.
-    EXPECT_EQ(low_res_device_->device_id, result.device_id);
+    EXPECT_EQ(low_res_device_->device_id, result.device_id());
     EXPECT_EQ(800, result.Width());
     EXPECT_EQ(600, result.Height());
   }
@@ -709,7 +709,7 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, MandatoryWidthRange) {
     // In this case, the algorithm should prefer the high-res device since it is
     // the only device with a native format (1920x1080) included in the
     // requested range.
-    EXPECT_EQ(high_res_device_->device_id, result.device_id);
+    EXPECT_EQ(high_res_device_->device_id, result.device_id());
     EXPECT_EQ(1920, result.Width());
     EXPECT_EQ(1080, result.Height());
   }
@@ -724,7 +724,7 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, IdealWidth) {
     EXPECT_TRUE(result.HasValue());
     // The algorithm should select the first device that supports the ideal
     // width natively, which is the low-res device at 320x240.
-    EXPECT_EQ(low_res_device_->device_id, result.device_id);
+    EXPECT_EQ(low_res_device_->device_id, result.device_id());
     EXPECT_EQ(kIdealWidth, result.Width());
   }
 
@@ -737,7 +737,7 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, IdealWidth) {
     // ideal at a lower cost than the other devices (500 vs 640).
     // Note that a native resolution of 320 is further from the ideal value of
     // 321 than 500 cropped to 321.
-    EXPECT_EQ(default_device_->device_id, result.device_id);
+    EXPECT_EQ(default_device_->device_id, result.device_id());
     EXPECT_EQ(*default_closest_format_, result.Format());
   }
 
@@ -747,7 +747,7 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, IdealWidth) {
     auto result = SelectSettings();
     EXPECT_TRUE(result.HasValue());
     // The algorithm must the select the only device that can satisfy the ideal.
-    EXPECT_EQ(high_res_device_->device_id, result.device_id);
+    EXPECT_EQ(high_res_device_->device_id, result.device_id());
     EXPECT_EQ(*high_res_highest_format_, result.Format());
   }
 
@@ -758,7 +758,7 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, IdealWidth) {
     EXPECT_TRUE(result.HasValue());
     // The algorithm must the select the device and setting with less distance
     // to the ideal.
-    EXPECT_EQ(high_res_device_->device_id, result.device_id);
+    EXPECT_EQ(high_res_device_->device_id, result.device_id());
     EXPECT_EQ(*high_res_highest_format_, result.Format());
   }
 }
@@ -772,7 +772,7 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, MandatoryExactFrameRate) {
   // All devices in |capabilities_| support the requested frame rate. The
   // algorithm should prefer the first device that supports the requested frame
   // rate natively, which is the low-res device at 640x480x30Hz.
-  EXPECT_EQ(low_res_device_->device_id, result.device_id);
+  EXPECT_EQ(low_res_device_->device_id, result.device_id());
   EXPECT_EQ(kFrameRate, result.FrameRate());
   EXPECT_EQ(640, result.Width());
   EXPECT_EQ(480, result.Height());
@@ -784,7 +784,7 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, MandatoryExactFrameRate) {
   // Only the high-res device supports the requested frame rate, even if not
   // natively. The least expensive configuration that supports the requested
   // frame rate is 1280x720x60Hz.
-  EXPECT_EQ(high_res_device_->device_id, result.device_id);
+  EXPECT_EQ(high_res_device_->device_id, result.device_id());
   EXPECT_EQ(60.0, result.FrameRate());
   EXPECT_EQ(1280, result.Width());
   EXPECT_EQ(720, result.Height());
@@ -798,7 +798,7 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, MandatoryMinFrameRate) {
   EXPECT_TRUE(result.HasValue());
   // All devices in |capabilities_| support the requested frame-rate range. The
   // algorithm should prefer the default device.
-  EXPECT_EQ(default_device_->device_id, result.device_id);
+  EXPECT_EQ(default_device_->device_id, result.device_id());
   // The format closest to the default satisfies the constraint.
   EXPECT_EQ(*default_closest_format_, result.Format());
 
@@ -808,7 +808,7 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, MandatoryMinFrameRate) {
   EXPECT_TRUE(result.HasValue());
   // Only the high-res device supports the requested frame-rate range.
   // The least expensive configuration is 1280x720x60Hz.
-  EXPECT_EQ(high_res_device_->device_id, result.device_id);
+  EXPECT_EQ(high_res_device_->device_id, result.device_id());
   EXPECT_LE(kLargeFrameRate, result.FrameRate());
   EXPECT_EQ(1280, result.Width());
   EXPECT_EQ(720, result.Height());
@@ -824,7 +824,7 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, MandatoryMaxFrameRate) {
   // algorithm should prefer the settings that natively exceed the requested
   // maximum by the lowest amount. In this case it is the high-res device with
   // default resolution .
-  EXPECT_EQ(high_res_device_->device_id, result.device_id);
+  EXPECT_EQ(high_res_device_->device_id, result.device_id());
   EXPECT_EQ(kLowFrameRate, result.FrameRate());
   EXPECT_EQ(MediaStreamVideoSource::kDefaultHeight, result.Height());
   EXPECT_EQ(MediaStreamVideoSource::kDefaultWidth, result.Width());
@@ -844,7 +844,7 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, MandatoryFrameRateRange) {
     // All devices in |capabilities_| support the constraint range. The
     // algorithm should prefer the default device since its closest-to-default
     // format has a frame rate included in the requested range.
-    EXPECT_EQ(default_device_->device_id, result.device_id);
+    EXPECT_EQ(default_device_->device_id, result.device_id());
     EXPECT_EQ(*default_closest_format_, result.Format());
   }
 
@@ -860,7 +860,7 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, MandatoryFrameRateRange) {
     // In this case, the algorithm should prefer the low-res device since it is
     // the first device with a native frame rate included in the requested
     // range. The default resolution should be preferred as secondary criterion.
-    EXPECT_EQ(low_res_device_->device_id, result.device_id);
+    EXPECT_EQ(low_res_device_->device_id, result.device_id());
     EXPECT_EQ(*low_res_closest_format_, result.Format());
   }
 
@@ -877,7 +877,7 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, MandatoryFrameRateRange) {
     // the only device with a native format included in the requested range.
     // The 1280x720 resolution should be selected due to closeness to default
     // settings, which is the second tie-breaker criterion that applies.
-    EXPECT_EQ(high_res_device_->device_id, result.device_id);
+    EXPECT_EQ(high_res_device_->device_id, result.device_id());
     EXPECT_EQ(1280, result.Width());
     EXPECT_EQ(720, result.Height());
   }
@@ -893,7 +893,7 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, IdealFrameRate) {
     // The algorithm should select the first configuration that supports the
     // ideal frame rate natively, which is the low-res device. Default
     // resolution should be selected as secondary criterion.
-    EXPECT_EQ(low_res_device_->device_id, result.device_id);
+    EXPECT_EQ(low_res_device_->device_id, result.device_id());
     EXPECT_EQ(*low_res_closest_format_, result.Format());
   }
 
@@ -906,7 +906,7 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, IdealFrameRate) {
     // ideal at a lower cost than the other devices (40 vs 60).
     // Note that a native frame rate of 30 is further from the ideal than
     // 31 adjusted to 30.
-    EXPECT_EQ(default_device_->device_id, result.device_id);
+    EXPECT_EQ(default_device_->device_id, result.device_id());
     EXPECT_EQ(*default_closest_format_, result.Format());
   }
 
@@ -918,7 +918,7 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, IdealFrameRate) {
     // The high-res device format 1280x720x60.0 must be selected because its
     // frame rate can satisfy the ideal frame rate and has resolution closest
     // to the default.
-    EXPECT_EQ(high_res_device_->device_id, result.device_id);
+    EXPECT_EQ(high_res_device_->device_id, result.device_id());
     EXPECT_EQ(1280, result.Width());
     EXPECT_EQ(720, result.Height());
     EXPECT_EQ(60, result.FrameRate());
@@ -933,7 +933,7 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, IdealFrameRate) {
     // The high-res device format 1280x720x60.0 must be selected because its
     // frame rate it closest to the ideal value and it has resolution closest to
     // the default.
-    EXPECT_EQ(high_res_device_->device_id, result.device_id);
+    EXPECT_EQ(high_res_device_->device_id, result.device_id());
     EXPECT_EQ(1280, result.Width());
     EXPECT_EQ(720, result.Height());
     EXPECT_EQ(60, result.FrameRate());
@@ -958,7 +958,7 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, MandatoryExactAspectRatio) {
   // All devices in |capabilities_| support the requested aspect ratio.
   // The algorithm should prefer the first device that supports the requested
   // aspect ratio.
-  EXPECT_EQ(default_device_->device_id, result.device_id);
+  EXPECT_EQ(default_device_->device_id, result.device_id());
   EXPECT_EQ(*default_closest_format_, result.Format());
 
   const int kMinWidth = 500;
@@ -981,7 +981,7 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, MandatoryExactAspectRatio) {
   EXPECT_LE(kAspectRatio, max_aspect_ratio);
   // The default device can support the requested aspect ratio with the default
   // settings (500x500) using cropping.
-  EXPECT_EQ(default_device_->device_id, result.device_id);
+  EXPECT_EQ(default_device_->device_id, result.device_id());
   EXPECT_EQ(*default_closest_format_, result.Format());
 
   const int kMinHeight = 480;
@@ -1007,7 +1007,7 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, MandatoryExactAspectRatio) {
   // resolution of 640x480. Higher resolutions for the default device are more
   // penalized by the constraints than the default native resolution of the
   // low-res device.
-  EXPECT_EQ(low_res_device_->device_id, result.device_id);
+  EXPECT_EQ(low_res_device_->device_id, result.device_id());
   EXPECT_EQ(*low_res_closest_format_, result.Format());
 }
 
@@ -1026,7 +1026,7 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, MandatoryMinAspectRatio) {
   // All devices in |capabilities_| support the requested aspect-ratio range.
   // The algorithm should prefer the first device that supports the requested
   // aspect-ratio range, which in this case is the default device.
-  EXPECT_EQ(default_device_->device_id, result.device_id);
+  EXPECT_EQ(default_device_->device_id, result.device_id());
   EXPECT_EQ(*default_closest_format_, result.Format());
 
   const int kMinWidth = 500;
@@ -1052,7 +1052,7 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, MandatoryMinAspectRatio) {
   // resolution of 640x480.
   // Higher resolutions for the default device are more penalized by the
   // constraints than the default native resolution of the low-res device.
-  EXPECT_EQ(low_res_device_->device_id, result.device_id);
+  EXPECT_EQ(low_res_device_->device_id, result.device_id());
   EXPECT_EQ(*low_res_closest_format_, result.Format());
 }
 
@@ -1071,7 +1071,7 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, MandatoryMaxAspectRatio) {
   // All devices in |capabilities_| support the requested aspect-ratio range.
   // The algorithm should prefer the first device that supports the requested
   // aspect-ratio range, which in this case is the default device.
-  EXPECT_EQ(default_device_->device_id, result.device_id);
+  EXPECT_EQ(default_device_->device_id, result.device_id());
   EXPECT_EQ(*default_closest_format_, result.Format());
 
   const int kExactWidth = 360;
@@ -1095,7 +1095,7 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, MandatoryMaxAspectRatio) {
   // The high-res device with a native resolution of 1280x720 can support
   // 360x720 with cropping with less penalty than the default device at
   // 1000x1000.
-  EXPECT_EQ(high_res_device_->device_id, result.device_id);
+  EXPECT_EQ(high_res_device_->device_id, result.device_id());
   EXPECT_EQ(1280, result.Width());
   EXPECT_EQ(720, result.Height());
 }
@@ -1123,7 +1123,7 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, MandatoryAspectRatioRange) {
     // All devices in |capabilities_| support the requested aspect-ratio range.
     // The algorithm should prefer the first device that supports the requested
     // aspect-ratio range, which in this case is the default device.
-    EXPECT_EQ(default_device_->device_id, result.device_id);
+    EXPECT_EQ(default_device_->device_id, result.device_id());
     EXPECT_EQ(*default_closest_format_, result.Format());
   }
 
@@ -1150,7 +1150,7 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, MandatoryAspectRatioRange) {
     EXPECT_GE(kMaxAspectRatio, min_aspect_ratio);
     // The only device that supports the resolution and aspect ratio constraint
     // is the high-res device. The 1920x1080 is the least expensive format.
-    EXPECT_EQ(high_res_device_->device_id, result.device_id);
+    EXPECT_EQ(high_res_device_->device_id, result.device_id());
     EXPECT_EQ(1920, result.Width());
     EXPECT_EQ(1080, result.Height());
   }
@@ -1174,7 +1174,7 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, IdealAspectRatio) {
     // settings.
     EXPECT_LE(kIdealAspectRatio, max_aspect_ratio);
     EXPECT_GE(kIdealAspectRatio, min_aspect_ratio);
-    EXPECT_EQ(default_device_->device_id, result.device_id);
+    EXPECT_EQ(default_device_->device_id, result.device_id());
     EXPECT_EQ(*default_closest_format_, result.Format());
   }
 
@@ -1186,7 +1186,7 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, IdealAspectRatio) {
     // The only device that supports the ideal aspect ratio is the high-res
     // device. The least expensive way to support it with the 1920x1080 format
     // cropped to 1500x1.
-    EXPECT_EQ(high_res_device_->device_id, result.device_id);
+    EXPECT_EQ(high_res_device_->device_id, result.device_id());
     EXPECT_EQ(1920, result.Width());
     EXPECT_EQ(1080, result.Height());
   }
@@ -1198,7 +1198,7 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, IdealAspectRatio) {
     EXPECT_TRUE(result.HasValue());
     // The only device that supports the ideal aspect ratio is the high-res
     // device with its highest resolution, cropped to 2000x1.
-    EXPECT_EQ(high_res_device_->device_id, result.device_id);
+    EXPECT_EQ(high_res_device_->device_id, result.device_id());
     EXPECT_EQ(*high_res_highest_format_, result.Format());
   }
 
@@ -1209,7 +1209,7 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, IdealAspectRatio) {
     EXPECT_TRUE(result.HasValue());
     // The configuration closest to the ideal aspect ratio is is the high-res
     // device with its highest resolution, cropped to 2304x1.
-    EXPECT_EQ(high_res_device_->device_id, result.device_id);
+    EXPECT_EQ(high_res_device_->device_id, result.device_id());
     EXPECT_EQ(*high_res_highest_format_, result.Format());
   }
 
@@ -1222,7 +1222,7 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, IdealAspectRatio) {
     // The first device to support the ideal aspect ratio and the resolution
     // constraint is the low-res device. The 800x600 format cropped to 800x400
     // is the lest expensive way to achieve it.
-    EXPECT_EQ(low_res_device_->device_id, result.device_id);
+    EXPECT_EQ(low_res_device_->device_id, result.device_id());
     EXPECT_EQ(800, result.Width());
     EXPECT_EQ(600, result.Height());
   }
@@ -1236,7 +1236,7 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, IdealAspectRatio) {
     // The only device that supports the ideal aspect ratio and the resolution
     // constraint is the high-res device. The 1280x720 cropped to 1200x400 is
     // the lest expensive way to achieve it.
-    EXPECT_EQ(high_res_device_->device_id, result.device_id);
+    EXPECT_EQ(high_res_device_->device_id, result.device_id());
     EXPECT_EQ(1280, result.Width());
     EXPECT_EQ(720, result.Height());
   }
@@ -1255,7 +1255,7 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
   // set is therefore ignored in all calls to SelectSettings().
   // Tie-breaker rule that applies is closeness to default settings.
   auto result = SelectSettings();
-  EXPECT_EQ(default_device_->device_id, result.device_id);
+  EXPECT_EQ(default_device_->device_id, result.device_id());
   EXPECT_EQ(*default_closest_format_, result.Format());
 
   blink::WebMediaTrackConstraintSet& advanced2 =
@@ -1267,7 +1267,7 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
   result = SelectSettings();
   // The device that best supports this advanced set is the low-res device,
   // which natively supports the maximum resolution.
-  EXPECT_EQ(low_res_device_->device_id, result.device_id);
+  EXPECT_EQ(low_res_device_->device_id, result.device_id());
   EXPECT_EQ(640, result.Width());
   EXPECT_EQ(480, result.Height());
 
@@ -1278,7 +1278,7 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
   EXPECT_TRUE(result.HasValue());
   // The high-res device natively supports the third advanced set in addition
   // to the previous set and should be selected.
-  EXPECT_EQ(high_res_device_->device_id, result.device_id);
+  EXPECT_EQ(high_res_device_->device_id, result.device_id());
   EXPECT_EQ(640, result.Width());
   EXPECT_EQ(480, result.Height());
 
@@ -1291,7 +1291,7 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
   // advanced natively, having better support for the previous sets has
   // precedence, so the high-res device is selected.
   EXPECT_TRUE(result.HasValue());
-  EXPECT_EQ(high_res_device_->device_id, result.device_id);
+  EXPECT_EQ(high_res_device_->device_id, result.device_id());
   EXPECT_EQ(640, result.Width());
   EXPECT_EQ(480, result.Height());
 
@@ -1305,7 +1305,7 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
   // precedence over the native fitness distance.
   // Both support standard fitness distance equally, since 600x400 can be
   // cropped to 320x240.
-  EXPECT_EQ(high_res_device_->device_id, result.device_id);
+  EXPECT_EQ(high_res_device_->device_id, result.device_id());
   EXPECT_EQ(600, result.Width());
   EXPECT_EQ(400, result.Height());
 
@@ -1315,7 +1315,7 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
   EXPECT_TRUE(result.HasValue());
   // The high-res device at 640x480@10Hz is closer to the large ideal
   // resolution.
-  EXPECT_EQ(high_res_device_->device_id, result.device_id);
+  EXPECT_EQ(high_res_device_->device_id, result.device_id());
   EXPECT_EQ(640, result.Width());
   EXPECT_EQ(480, result.Height());
 }
@@ -1340,7 +1340,7 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
   // set. 2304x1536x10.0 satisfies sets 1 and 3, while 1920x1080x60.0
   // satisfies sets 1, and 2. The latter must be selected, regardless of
   // any other criteria.
-  EXPECT_EQ(high_res_device_->device_id, result.device_id);
+  EXPECT_EQ(high_res_device_->device_id, result.device_id());
   EXPECT_EQ(1920, result.Width());
   EXPECT_EQ(1080, result.Height());
   EXPECT_EQ(60.0, result.FrameRate());
@@ -1359,10 +1359,10 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, AdvancedNoiseReduction) {
   advanced2.googNoiseReduction.setExact(false);
   auto result = SelectSettings();
   EXPECT_TRUE(result.HasValue());
-  EXPECT_EQ(high_res_device_->device_id, result.device_id);
+  EXPECT_EQ(high_res_device_->device_id, result.device_id());
   EXPECT_LE(1920, result.Width());
   EXPECT_LE(1080, result.Height());
-  EXPECT_TRUE(result.noise_reduction && !*result.noise_reduction);
+  EXPECT_TRUE(result.noise_reduction() && !*result.noise_reduction());
 }
 
 TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
@@ -1384,10 +1384,10 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
     // The second advanced set cannot be satisfied because it contradicts the
     // first set. The default device supports the first set and should be
     // selected.
-    EXPECT_EQ(default_device_->device_id, result.device_id);
+    EXPECT_EQ(default_device_->device_id, result.device_id());
     EXPECT_LE(640, result.Width());
     EXPECT_LE(480, result.Height());
-    EXPECT_TRUE(result.noise_reduction && *result.noise_reduction);
+    EXPECT_TRUE(result.noise_reduction() && *result.noise_reduction());
   }
 
   // Same test without noise reduction
@@ -1404,11 +1404,11 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
     auto result = SelectSettings();
     EXPECT_TRUE(result.HasValue());
     // Only the high-res device can satisfy the second advanced set.
-    EXPECT_EQ(high_res_device_->device_id, result.device_id);
+    EXPECT_EQ(high_res_device_->device_id, result.device_id());
     EXPECT_LE(1920, result.Width());
     EXPECT_LE(1080, result.Height());
     // Should select default noise reduction setting.
-    EXPECT_TRUE(!result.noise_reduction);
+    EXPECT_TRUE(!result.noise_reduction());
   }
 }
 
@@ -1428,7 +1428,7 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
   // The second advanced set must be ignored because it contradicts the first
   // set. The low-res device is the one that best supports the requested
   // resolution.
-  EXPECT_EQ(low_res_device_->device_id, result.device_id);
+  EXPECT_EQ(low_res_device_->device_id, result.device_id());
   EXPECT_EQ(640, result.Width());
   EXPECT_EQ(480, result.Height());
 }
@@ -1451,7 +1451,7 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
   // set. The default device with the 200x200@40Hz format should be selected.
   // That format satisfies the first advanced set as well as any other, so the
   // tie breaker rule that applies is default device ID.
-  EXPECT_EQ(default_device_->device_id, result.device_id);
+  EXPECT_EQ(default_device_->device_id, result.device_id());
   EXPECT_EQ(200, result.Width());
   EXPECT_EQ(200, result.Height());
   EXPECT_EQ(40, result.FrameRate());
@@ -1475,7 +1475,7 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
   // set. The default device with the 1000x1000@20Hz format should be selected.
   // That format satisfies the first advanced set as well as any other, so the
   // tie breaker rule that applies is default device ID.
-  EXPECT_EQ(default_device_->device_id, result.device_id);
+  EXPECT_EQ(default_device_->device_id, result.device_id());
   EXPECT_EQ(1000, result.Width());
   EXPECT_EQ(1000, result.Height());
   EXPECT_EQ(20, result.FrameRate());
@@ -1495,7 +1495,7 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
   // The second advanced set must be ignored because it contradicts the first
   // set. Only the high-res device in the highest-resolution format supports the
   // requested aspect ratio.
-  EXPECT_EQ(high_res_device_->device_id, result.device_id);
+  EXPECT_EQ(high_res_device_->device_id, result.device_id());
   EXPECT_EQ(*high_res_highest_format_, result.Format());
 }
 
@@ -1513,7 +1513,7 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
   // The second advanced set must be ignored because it contradicts the first
   // set. Only the high-res device in the highest-resolution format supports the
   // requested aspect ratio.
-  EXPECT_EQ(high_res_device_->device_id, result.device_id);
+  EXPECT_EQ(high_res_device_->device_id, result.device_id());
   EXPECT_EQ(*high_res_highest_format_, result.Format());
 }
 
@@ -1567,7 +1567,7 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
   // The low-res device at 320x240@30Hz satisfies advanced sets 1 and 3.
   // The high-res device at 2304x1536@10.0f can satisfy sets 1 and 2, but not
   // both at the same time. Thus, low-res device must be preferred.
-  EXPECT_EQ(low_res_device_->device_id, result.device_id);
+  EXPECT_EQ(low_res_device_->device_id, result.device_id());
   EXPECT_EQ(30.0, result.FrameRate());
   EXPECT_GE(1920, result.Width());
 }
@@ -1591,7 +1591,7 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
   // sets 1 and 3. The same device at 2304x1536@10.0f can satisfy sets 1 and 2,
   // but not both at the same time. Thus, the format closest to default that
   // satisfies sets 1 and 3 must be chosen.
-  EXPECT_EQ(high_res_device_->device_id, result.device_id);
+  EXPECT_EQ(high_res_device_->device_id, result.device_id());
   EXPECT_EQ(60.0, result.FrameRate());
   EXPECT_GE(1080, result.Height());
 }
@@ -1614,7 +1614,7 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, AdvancedDeviceID) {
   EXPECT_TRUE(result.HasValue());
   // kDeviceID2 must be selected because it is the only one that satisfies both
   // advanced sets.
-  EXPECT_EQ(std::string(kDeviceID2), result.device_id);
+  EXPECT_EQ(std::string(kDeviceID2), result.device_id());
 }
 
 TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
@@ -1636,7 +1636,7 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
   EXPECT_TRUE(result.HasValue());
   // The second advanced set must be ignored because it contradicts the first
   // set.
-  EXPECT_EQ(std::string(kDeviceID1), result.device_id);
+  EXPECT_EQ(std::string(kDeviceID1), result.device_id());
 }
 
 TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
@@ -1658,7 +1658,7 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
     // The second advanced set cannot be satisfied because it contradicts the
     // first set. The default device supports the first set and should be
     // selected.
-    EXPECT_EQ(default_device_->device_id, result.device_id);
+    EXPECT_EQ(default_device_->device_id, result.device_id());
     EXPECT_LE(640, result.Width());
     EXPECT_LE(480, result.Height());
     EXPECT_EQ(50, static_cast<int>(result.PowerLineFrequency()));
@@ -1673,7 +1673,7 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, NoDevicesNoConstraints) {
   auto result = SelectVideoDeviceCaptureSourceSettings(
       capabilities, constraint_factory_.CreateWebMediaConstraints());
   EXPECT_FALSE(result.HasValue());
-  EXPECT_TRUE(std::string(result.failed_constraint_name).empty());
+  EXPECT_TRUE(std::string(result.failed_constraint_name()).empty());
 }
 
 TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, NoDevicesWithConstraints) {
@@ -1683,7 +1683,7 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, NoDevicesWithConstraints) {
   auto result = SelectVideoDeviceCaptureSourceSettings(
       capabilities, constraint_factory_.CreateWebMediaConstraints());
   EXPECT_FALSE(result.HasValue());
-  EXPECT_TRUE(std::string(result.failed_constraint_name).empty());
+  EXPECT_TRUE(std::string(result.failed_constraint_name()).empty());
 }
 
 }  // namespace content

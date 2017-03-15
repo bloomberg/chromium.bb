@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/logging.h"
 #include "content/common/content_export.h"
 #include "content/common/media/media_devices.mojom.h"
 #include "media/capture/video_capture_types.h"
@@ -38,40 +39,86 @@ struct CONTENT_EXPORT VideoDeviceCaptureCapabilities {
   std::vector<rtc::Optional<bool>> noise_reduction_capabilities;
 };
 
-struct CONTENT_EXPORT VideoDeviceCaptureSourceSelectionResult {
+class CONTENT_EXPORT VideoDeviceCaptureSourceSelectionResult {
+ public:
+  // Creates a result without value and with an empty failed constraint name.
   VideoDeviceCaptureSourceSelectionResult();
+
+  // Creates a result without value and with the given |failed_constraint_name|.
+  // Does not take ownership of |failed_constraint_name|, so it must be null or
+  // point to a string that remains accessible.
+  explicit VideoDeviceCaptureSourceSelectionResult(
+      const char* failed_constraint_name);
+
+  // Creates a result with the given values.
+  VideoDeviceCaptureSourceSelectionResult(
+      const std::string& device_id,
+      ::mojom::FacingMode facing_mode_,
+      media::VideoCaptureParams capture_params_,
+      rtc::Optional<bool> noise_reduction_);
+
   VideoDeviceCaptureSourceSelectionResult(
       const VideoDeviceCaptureSourceSelectionResult& other);
+  VideoDeviceCaptureSourceSelectionResult& operator=(
+      const VideoDeviceCaptureSourceSelectionResult& other);
   VideoDeviceCaptureSourceSelectionResult(
+      VideoDeviceCaptureSourceSelectionResult&& other);
+  VideoDeviceCaptureSourceSelectionResult& operator=(
       VideoDeviceCaptureSourceSelectionResult&& other);
   ~VideoDeviceCaptureSourceSelectionResult();
-  VideoDeviceCaptureSourceSelectionResult& operator=(
-      const VideoDeviceCaptureSourceSelectionResult& other);
-  VideoDeviceCaptureSourceSelectionResult& operator=(
-      VideoDeviceCaptureSourceSelectionResult&& other);
 
-  bool HasValue() const { return failed_constraint_name == nullptr; }
+  bool HasValue() const { return failed_constraint_name_ == nullptr; }
 
   // Convenience accessors for fields embedded in |capture_params|.
   const media::VideoCaptureFormat& Format() const {
-    return capture_params.requested_format;
+    return capture_params_.requested_format;
   }
   int Width() const {
-    return capture_params.requested_format.frame_size.width();
+    DCHECK(HasValue());
+    return capture_params_.requested_format.frame_size.width();
   }
   int Height() const {
-    return capture_params.requested_format.frame_size.height();
+    DCHECK(HasValue());
+    return capture_params_.requested_format.frame_size.height();
   }
-  float FrameRate() const { return capture_params.requested_format.frame_rate; }
+  float FrameRate() const {
+    DCHECK(HasValue());
+    return capture_params_.requested_format.frame_rate;
+  }
   media::PowerLineFrequency PowerLineFrequency() const {
-    return capture_params.power_line_frequency;
+    DCHECK(HasValue());
+    return capture_params_.power_line_frequency;
   }
 
-  const char* failed_constraint_name;
-  std::string device_id;
-  ::mojom::FacingMode facing_mode;
-  media::VideoCaptureParams capture_params;
-  rtc::Optional<bool> noise_reduction;
+  // Other accessors.
+  const char* failed_constraint_name() const { return failed_constraint_name_; }
+
+  const std::string& device_id() const {
+    DCHECK(HasValue());
+    return device_id_;
+  }
+
+  ::mojom::FacingMode facing_mode() const {
+    DCHECK(HasValue());
+    return facing_mode_;
+  }
+
+  const media::VideoCaptureParams& capture_params() const {
+    DCHECK(HasValue());
+    return capture_params_;
+  }
+
+  const rtc::Optional<bool>& noise_reduction() const {
+    DCHECK(HasValue());
+    return noise_reduction_;
+  }
+
+ private:
+  const char* failed_constraint_name_;
+  std::string device_id_;
+  ::mojom::FacingMode facing_mode_;
+  media::VideoCaptureParams capture_params_;
+  rtc::Optional<bool> noise_reduction_;
 };
 
 // This function performs source and source-settings selection based on

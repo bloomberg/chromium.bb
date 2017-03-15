@@ -174,15 +174,13 @@ class ConstrainedFormat {
 
 VideoDeviceCaptureSourceSelectionResult ResultFromSettings(
     const VideoDeviceCaptureSourceSettings& settings) {
-  VideoDeviceCaptureSourceSelectionResult result;
-  result.capture_params.power_line_frequency = settings.power_line_frequency();
-  result.capture_params.requested_format = settings.format();
-  result.device_id = settings.device_id();
-  result.facing_mode = settings.facing_mode();
-  result.noise_reduction = settings.noise_reduction();
-  result.failed_constraint_name = nullptr;
+  media::VideoCaptureParams capture_params;
+  capture_params.requested_format = settings.format();
+  capture_params.power_line_frequency = settings.power_line_frequency();
 
-  return result;
+  return VideoDeviceCaptureSourceSelectionResult(
+      settings.device_id(), settings.facing_mode(), capture_params,
+      settings.noise_reduction());
 }
 
 // Generic distance function between two numeric values. Based on the fitness
@@ -748,12 +746,26 @@ VideoDeviceCaptureCapabilities::~VideoDeviceCaptureCapabilities() = default;
 VideoDeviceCaptureCapabilities& VideoDeviceCaptureCapabilities::operator=(
     VideoDeviceCaptureCapabilities&& other) = default;
 
-const char kDefaultFailedConstraintName[] = "";
-
 VideoDeviceCaptureSourceSelectionResult::
     VideoDeviceCaptureSourceSelectionResult()
-    : failed_constraint_name(kDefaultFailedConstraintName),
-      facing_mode(::mojom::FacingMode::NONE) {}
+    : VideoDeviceCaptureSourceSelectionResult("") {}
+
+VideoDeviceCaptureSourceSelectionResult::
+    VideoDeviceCaptureSourceSelectionResult(const char* failed_constraint_name)
+    : failed_constraint_name_(failed_constraint_name) {}
+
+VideoDeviceCaptureSourceSelectionResult::
+    VideoDeviceCaptureSourceSelectionResult(
+        const std::string& device_id,
+        ::mojom::FacingMode facing_mode,
+        media::VideoCaptureParams capture_params,
+        rtc::Optional<bool> noise_reduction)
+    : failed_constraint_name_(nullptr),
+      device_id_(device_id),
+      facing_mode_(facing_mode),
+      capture_params_(capture_params),
+      noise_reduction_(noise_reduction) {}
+
 VideoDeviceCaptureSourceSelectionResult::
     VideoDeviceCaptureSourceSelectionResult(
         const VideoDeviceCaptureSourceSelectionResult& other) = default;
@@ -793,7 +805,7 @@ VideoDeviceCaptureSourceSelectionResult SelectVideoDeviceCaptureSourceSettings(
                                kNumDefaultDistanceEntries);
   std::fill(best_distance.begin(), best_distance.end(), HUGE_VAL);
   VideoDeviceCaptureSourceSelectionResult result;
-  const char* failed_constraint_name = result.failed_constraint_name;
+  const char* failed_constraint_name = result.failed_constraint_name();
 
   for (auto& device : capabilities.device_capabilities) {
     double basic_device_distance =
@@ -884,7 +896,7 @@ VideoDeviceCaptureSourceSelectionResult SelectVideoDeviceCaptureSourceSettings(
   }
 
   if (!result.HasValue())
-    result.failed_constraint_name = failed_constraint_name;
+    return VideoDeviceCaptureSourceSelectionResult(failed_constraint_name);
 
   return result;
 }

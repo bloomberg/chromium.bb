@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/logging.h"
 #include "content/common/content_export.h"
 #include "media/capture/video_capture_types.h"
 #include "third_party/webrtc/base/optional.h"
@@ -46,11 +47,18 @@ class CONTENT_EXPORT VideoContentCaptureSourceSelectionResult {
 
   // Accessors.
   const char* failed_constraint_name() const { return failed_constraint_name_; }
-  const std::string& device_id() const { return device_id_; }
+  const std::string& device_id() const {
+    DCHECK(HasValue());
+    return device_id_;
+  }
   const rtc::Optional<bool>& noise_reduction() const {
+    DCHECK(HasValue());
     return noise_reduction_;
   }
-  media::VideoCaptureParams capture_params() const { return capture_params_; }
+  media::VideoCaptureParams capture_params() const {
+    DCHECK(HasValue());
+    return capture_params_;
+  }
 
   // Convenience accessors for fields embedded in the |capture_params_| field.
   int Height() const;

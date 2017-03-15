@@ -394,7 +394,7 @@ void UserMediaClientImpl::FinalizeSelectVideoDeviceSourceSettings(
     const VideoDeviceCaptureSourceSelectionResult& selection_result) {
   DCHECK(CalledOnValidThread());
   if (selection_result.HasValue()) {
-    controls->video.device_id = selection_result.device_id;
+    controls->video.device_id = selection_result.device_id();
   } else {
     // TODO(guidou): Abort the request in all cases where |selection_result|
     // has no value, as the spec mandates.
@@ -403,7 +403,7 @@ void UserMediaClientImpl::FinalizeSelectVideoDeviceSourceSettings(
     // devices. Fix once the standard behavior ceases to be disruptive.
     // See http://crbug.com/690491.
     blink::WebString failed_constraint_name =
-        blink::WebString::fromASCII(selection_result.failed_constraint_name);
+        blink::WebString::fromASCII(selection_result.failed_constraint_name());
     blink::WebString device_id_constraint_name = blink::WebString::fromASCII(
         user_media_request.videoConstraints().basic().deviceId.name());
     if (failed_constraint_name.equals(device_id_constraint_name)) {
