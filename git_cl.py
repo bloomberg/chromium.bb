@@ -1654,6 +1654,9 @@ class Changelist(object):
 
   # Forward methods to codereview specific implementation.
 
+  def AddComment(self, message):
+    return self._codereview_impl.AddComment(message)
+
   def CloseIssue(self):
     return self._codereview_impl.CloseIssue()
 
@@ -1750,6 +1753,10 @@ class _ChangelistCodereviewBase(object):
 
   def UpdateDescriptionRemote(self, description, force=False):
     """Update the description on codereview site."""
+    raise NotImplementedError()
+
+  def AddComment(self, message):
+    """Posts a comment to the codereview site."""
     raise NotImplementedError()
 
   def CloseIssue(self):
@@ -2487,6 +2494,10 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
                                           self.GetIssue())
     gerrit_util.SetCommitMessage(self._GetGerritHost(), self.GetIssue(),
                                  description, notify='NONE')
+
+  def AddComment(self, message):
+    gerrit_util.SetReview(self._GetGerritHost(), self.GetIssue(),
+                          msg=message)
 
   def CloseIssue(self):
     gerrit_util.AbandonChange(self._GetGerritHost(), self.GetIssue(), msg='')
@@ -4198,11 +4209,13 @@ def CMDcomments(parser, args):
   parser.add_option('-a', '--add-comment', dest='comment',
                     help='comment to add to an issue')
   parser.add_option('-i', dest='issue',
-                    help="review issue id (defaults to current issue)")
+                    help='review issue id (defaults to current issue)')
   parser.add_option('-j', '--json-file',
                     help='File to write JSON summary to')
   auth.add_auth_options(parser)
+  _add_codereview_select_options(parser)
   options, args = parser.parse_args(args)
+  _process_codereview_select_options(parser, options)
   auth_config = auth.extract_auth_config_from_options(options)
 
   issue = None
@@ -4212,7 +4225,10 @@ def CMDcomments(parser, args):
     except ValueError:
       DieWithError('A review issue id is expected to be a number')
 
-  cl = Changelist(issue=issue, codereview='rietveld', auth_config=auth_config)
+  cl = Changelist(issue=issue,
+                  # TODO(tandrii): remove 'rietveld' default.
+                  codereview=options.forced_codereview or 'rietveld',
+                  auth_config=auth_config)
 
   if options.comment:
     cl.AddComment(options.comment)

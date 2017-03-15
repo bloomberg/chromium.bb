@@ -3089,6 +3089,34 @@ class TestGitCl(TestCase):
         sys.stdout.getvalue(),
         'However, your configured .gitcookies file is missing.')
 
+  def test_git_cl_comment_add_default(self):
+    self.mock(git_cl._RietveldChangelistImpl, 'AddComment',
+              lambda _, message: self._mocked_call('AddComment', message))
+    self.calls = [
+      ((['git', 'config', 'rietveld.autoupdate'],), CERR1),
+      ((['git', 'config', 'rietveld.server'],), 'codereview.chromium.org'),
+      (('AddComment', 'msg'), ''),
+    ]
+    # TODO(tandrii): --rietveld should be specified here.
+    self.assertEqual(0, git_cl.main(['comment', '-i', '10', '-a', 'msg']))
+
+  def test_git_cl_comment_add_gerrit(self):
+    self.mock(git_cl.gerrit_util, 'SetReview',
+              lambda host, change, msg:
+              self._mocked_call('SetReview', host, change, msg))
+    self.calls = [
+      ((['git', 'symbolic-ref', 'HEAD'],), CERR1),
+      ((['git', 'symbolic-ref', 'HEAD'],), CERR1),
+      ((['git', 'config', 'rietveld.upstream-branch'],), CERR1),
+      ((['git', 'branch', '-r'],), 'origin/HEAD -> origin/master\n'
+                                   'origin/master'),
+      ((['git', 'config', 'remote.origin.url'],),
+       'https://chromium.googlesource.com/infra/infra'),
+      (('SetReview', 'chromium-review.googlesource.com', 10, 'msg'), None),
+    ]
+    self.assertEqual(0, git_cl.main(['comment', '--gerrit', '-i', '10',
+                                     '-a', 'msg']))
+
 
 if __name__ == '__main__':
   logging.basicConfig(
