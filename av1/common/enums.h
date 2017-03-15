@@ -504,6 +504,8 @@ typedef enum {
 } RestorationType;
 #if CONFIG_FRAME_SUPERRES
 #define SUPERRES_SCALE_DENOMINATOR 16
+#define SUPERRES_SCALE_BITS 3
+#define SUPERRES_SCALE_NUMERATOR_MIN 8
 #endif  // CONFIG_FRAME_SUPERRES
 #endif  // CONFIG_LOOP_RESTORATION
 #ifdef __cplusplus
