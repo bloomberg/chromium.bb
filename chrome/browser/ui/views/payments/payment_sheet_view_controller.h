@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "chrome/browser/ui/views/payments/payment_request_sheet_controller.h"
 #include "components/payments/content/payment_request.h"
+#include "components/payments/content/payment_request_state.h"
 
 namespace payments {
 
@@ -19,7 +20,7 @@ class PaymentRequestDialogView;
 // The PaymentRequestSheetController subtype for the Payment Sheet screen of the
 // Payment Request dialog.
 class PaymentSheetViewController : public PaymentRequestSheetController,
-                                   public PaymentRequest::Observer {
+                                   public PaymentRequestState::Observer {
  public:
   // Does not take ownership of the arguments, which should outlive this object.
   PaymentSheetViewController(PaymentRequest* request,
@@ -29,7 +30,7 @@ class PaymentSheetViewController : public PaymentRequestSheetController,
   // PaymentRequestSheetController:
   std::unique_ptr<views::View> CreateView() override;
 
-  // PaymentRequest::Observer:
+  // PaymentRequestState::Observer:
   void OnSelectedInformationChanged() override;
 
  private:
@@ -46,7 +47,6 @@ class PaymentSheetViewController : public PaymentRequestSheetController,
   std::unique_ptr<views::Button> CreatePaymentMethodRow();
   std::unique_ptr<views::View> CreateContactInfoSectionContent();
   std::unique_ptr<views::Button> CreateContactInfoRow();
-  std::unique_ptr<views::View> CreateShippingOptionContent();
   std::unique_ptr<views::Button> CreateShippingOptionRow();
 
   views::Button* pay_button_;

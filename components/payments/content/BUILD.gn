@@ -27,6 +27,10 @@ static_library("payment_request_impl") {
     "payment_request.h",
     "payment_request_delegate.h",
     "payment_request_dialog.h",
+    "payment_request_spec.cc",
+    "payment_request_spec.h",
+    "payment_request_state.cc",
+    "payment_request_state.h",
     "payment_request_web_contents_manager.cc",
     "payment_request_web_contents_manager.h",
   ]
@@ -67,14 +71,19 @@ static_library("payment_validation") {
 source_set("unit_tests") {
   testonly = true
   sources = [
+    "payment_request_spec_unittest.cc",
+    "payment_request_state_unittest.cc",
     "payments_validators_unittest.cc",
   ]
 
   deps = [
+    ":payment_request",
+    ":payment_request_impl",
     ":payment_validation",
     "//base",
     "//base/test:test_support",
     "//components/autofill/core/browser",
+    "//components/autofill/core/browser:test_support",
     "//testing/gtest",
     "//third_party/icu",
     "//third_party/libaddressinput:test_support",

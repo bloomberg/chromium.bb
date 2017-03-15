@@ -16,6 +16,8 @@
 #include "chrome/browser/ui/views/payments/payment_request_dialog_view_ids.h"
 #include "chrome/browser/ui/views/payments/payment_request_views_util.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/payments/content/payment_request_spec.h"
+#include "components/payments/content/payment_request_state.h"
 #include "components/payments/core/currency_formatter.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -86,11 +88,11 @@ OrderSummaryViewController::OrderSummaryViewController(
     PaymentRequest* request,
     PaymentRequestDialogView* dialog)
     : PaymentRequestSheetController(request, dialog), pay_button_(nullptr) {
-  request->AddObserver(this);
+  request->state()->AddObserver(this);
 }
 
 OrderSummaryViewController::~OrderSummaryViewController() {
-  request()->RemoveObserver(this);
+  request()->state()->RemoveObserver(this);
 }
 
 std::unique_ptr<views::View> OrderSummaryViewController::CreateView() {
@@ -108,28 +110,31 @@ std::unique_ptr<views::View> OrderSummaryViewController::CreateView() {
       DialogViewID::ORDER_SUMMARY_LINE_ITEM_1,
       DialogViewID::ORDER_SUMMARY_LINE_ITEM_2,
       DialogViewID::ORDER_SUMMARY_LINE_ITEM_3};
-  for (size_t i = 0; i < request()->details()->display_items.size(); i++) {
+  for (size_t i = 0; i < request()->spec()->details().display_items.size();
+       i++) {
     DialogViewID view_id =
         i < line_items.size() ? line_items[i] : DialogViewID::VIEW_ID_NONE;
     content_view->AddChildView(
         CreateLineItemView(
-            base::UTF8ToUTF16(request()->details()->display_items[i]->label),
+            base::UTF8ToUTF16(
+                request()->spec()->details().display_items[i]->label),
             request()->GetFormattedCurrencyAmount(
-                request()->details()->display_items[i]->amount->value),
+                request()->spec()->details().display_items[i]->amount->value),
             false, view_id)
             .release());
   }
 
   base::string16 total_label_value = l10n_util::GetStringFUTF16(
       IDS_PAYMENT_REQUEST_ORDER_SUMMARY_SHEET_TOTAL_FORMAT,
-      base::UTF8ToUTF16(request()->details()->total->amount->currency),
+      base::UTF8ToUTF16(request()->spec()->details().total->amount->currency),
       request()->GetFormattedCurrencyAmount(
-          request()->details()->total->amount->value));
+          request()->spec()->details().total->amount->value));
 
   content_view->AddChildView(
-      CreateLineItemView(base::UTF8ToUTF16(request()->details()->total->label),
-                         total_label_value, true,
-                         DialogViewID::ORDER_SUMMARY_TOTAL_AMOUNT_LABEL)
+      CreateLineItemView(
+          base::UTF8ToUTF16(request()->spec()->details().total->label),
+          total_label_value, true,
+          DialogViewID::ORDER_SUMMARY_TOTAL_AMOUNT_LABEL)
           .release());
 
   return CreatePaymentView(
@@ -148,12 +153,12 @@ OrderSummaryViewController::CreatePrimaryButton() {
   button->set_tag(static_cast<int>(PaymentRequestCommonTags::PAY_BUTTON_TAG));
   button->set_id(static_cast<int>(DialogViewID::PAY_BUTTON));
   pay_button_ = button.get();
-  UpdatePayButtonState(request()->is_ready_to_pay());
+  UpdatePayButtonState(request()->state()->is_ready_to_pay());
   return button;
 }
 
 void OrderSummaryViewController::OnSelectedInformationChanged() {
-  UpdatePayButtonState(request()->is_ready_to_pay());
+  UpdatePayButtonState(request()->state()->is_ready_to_pay());
 }
 
 void OrderSummaryViewController::UpdatePayButtonState(bool enabled) {

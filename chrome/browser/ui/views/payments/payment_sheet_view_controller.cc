@@ -27,6 +27,8 @@
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
+#include "components/payments/content/payment_request_spec.h"
+#include "components/payments/content/payment_request_state.h"
 #include "components/payments/core/currency_formatter.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_contents.h"
@@ -193,11 +195,11 @@ PaymentSheetViewController::PaymentSheetViewController(
     : PaymentRequestSheetController(request, dialog),
       pay_button_(nullptr),
       widest_name_column_view_width_(ComputeWidestNameColumnViewWidth()) {
-  request->AddObserver(this);
+  request->state()->AddObserver(this);
 }
 
 PaymentSheetViewController::~PaymentSheetViewController() {
-  request()->RemoveObserver(this);
+  request()->state()->RemoveObserver(this);
 }
 
 std::unique_ptr<views::View> PaymentSheetViewController::CreateView() {
@@ -213,7 +215,7 @@ std::unique_ptr<views::View> PaymentSheetViewController::CreateView() {
   layout->StartRow(0, 0);
   layout->AddView(CreatePaymentSheetSummaryRow().release());
 
-  if (request()->request_shipping()) {
+  if (request()->spec()->request_shipping()) {
     layout->StartRow(0, 0);
     layout->AddView(CreateShippingRow().release());
     layout->StartRow(0, 0);
@@ -221,8 +223,9 @@ std::unique_ptr<views::View> PaymentSheetViewController::CreateView() {
   }
   layout->StartRow(0, 0);
   layout->AddView(CreatePaymentMethodRow().release());
-  if (request()->request_payer_name() || request()->request_payer_email() ||
-      request()->request_payer_phone()) {
+  if (request()->spec()->request_payer_name() ||
+      request()->spec()->request_payer_email() ||
+      request()->spec()->request_payer_phone()) {
     layout->StartRow(0, 0);
     layout->AddView(CreateContactInfoRow().release());
   }
@@ -236,7 +239,7 @@ std::unique_ptr<views::View> PaymentSheetViewController::CreateView() {
 }
 
 void PaymentSheetViewController::OnSelectedInformationChanged() {
-  UpdatePayButtonState(request()->is_ready_to_pay());
+  UpdatePayButtonState(request()->state()->is_ready_to_pay());
 }
 
 std::unique_ptr<views::Button>
@@ -247,7 +250,7 @@ PaymentSheetViewController::CreatePrimaryButton() {
   button->set_tag(static_cast<int>(PaymentRequestCommonTags::PAY_BUTTON_TAG));
   button->set_id(static_cast<int>(DialogViewID::PAY_BUTTON));
   pay_button_ = button.get();
-  UpdatePayButtonState(request()->is_ready_to_pay());
+  UpdatePayButtonState(request()->state()->is_ready_to_pay());
   return button;
 }
 
@@ -337,7 +340,7 @@ PaymentSheetViewController::CreatePaymentSheetSummaryRow() {
                                                /* trailing =*/true);
 
   const std::vector<mojom::PaymentItemPtr>& items =
-      request()->details()->display_items;
+      request()->spec()->details().display_items;
   // The inline items section contains the first 2 display items of the
   // request's details, followed by a label indicating "N more items..." if
   // there are more than 2 items in the details. The total label and amount
@@ -370,7 +373,8 @@ PaymentSheetViewController::CreatePaymentSheetSummaryRow() {
 
   item_summaries_layout->StartRow(0, 0);
   item_summaries_layout->AddView(
-      CreateBoldLabel(base::ASCIIToUTF16(request()->details()->total->label))
+      CreateBoldLabel(
+          base::ASCIIToUTF16(request()->spec()->details().total->label))
           .release());
 
   item_amounts_layout->StartRow(0, 0);
@@ -380,7 +384,7 @@ PaymentSheetViewController::CreatePaymentSheetSummaryRow() {
               IDS_PAYMENT_REQUEST_ORDER_SUMMARY_SHEET_TOTAL_FORMAT,
               base::UTF8ToUTF16(request()->GetFormattedCurrencyCode()),
               request()->GetFormattedCurrencyAmount(
-                  request()->details()->total->amount->value)))
+                  request()->spec()->details().total->amount->value)))
           .release());
 
   item_summaries->SetLayoutManager(item_summaries_layout.release());
@@ -400,10 +404,11 @@ PaymentSheetViewController::CreatePaymentSheetSummaryRow() {
 
 std::unique_ptr<views::View>
 PaymentSheetViewController::CreateShippingSectionContent() {
-  auto* profile = request()->selected_shipping_profile();
+  auto* profile = request()->state()->selected_shipping_profile();
 
   return profile ? payments::GetShippingAddressLabel(
-                       AddressStyleType::SUMMARY, request()->locale(), *profile)
+                       AddressStyleType::SUMMARY,
+                       request()->GetApplicationLocale(), *profile)
                  : base::MakeUnique<views::Label>(base::string16());
 }
 
@@ -417,7 +422,8 @@ PaymentSheetViewController::CreateShippingSectionContent() {
 std::unique_ptr<views::Button> PaymentSheetViewController::CreateShippingRow() {
   std::unique_ptr<views::Button> section = CreatePaymentSheetRow(
       this,
-      GetShippingAddressSectionString(request()->options()->shipping_type),
+      GetShippingAddressSectionString(
+          request()->spec()->options().shipping_type),
       CreateShippingSectionContent(), std::unique_ptr<views::View>(nullptr),
       widest_name_column_view_width_);
   section->set_tag(
@@ -436,7 +442,8 @@ std::unique_ptr<views::Button> PaymentSheetViewController::CreateShippingRow() {
 // +----------------------------------------------+
 std::unique_ptr<views::Button>
 PaymentSheetViewController::CreatePaymentMethodRow() {
-  autofill::CreditCard* selected_card = request()->selected_credit_card();
+  autofill::CreditCard* selected_card =
+      request()->state()->selected_credit_card();
 
   std::unique_ptr<views::View> content_view;
   std::unique_ptr<views::ImageView> card_icon_view;
@@ -477,14 +484,15 @@ PaymentSheetViewController::CreatePaymentMethodRow() {
 
 std::unique_ptr<views::View>
 PaymentSheetViewController::CreateContactInfoSectionContent() {
-  auto* profile = request()->selected_contact_profile();
+  auto* profile = request()->state()->selected_contact_profile();
 
-  return profile ? payments::GetContactInfoLabel(
-                       AddressStyleType::SUMMARY, request()->locale(), *profile,
-                       request()->request_payer_name(),
-                       request()->request_payer_phone(),
-                       request()->request_payer_email())
-                 : base::MakeUnique<views::Label>(base::string16());
+  return profile
+             ? payments::GetContactInfoLabel(
+                   AddressStyleType::SUMMARY, request()->GetApplicationLocale(),
+                   *profile, request()->spec()->request_payer_name(),
+                   request()->spec()->request_payer_phone(),
+                   request()->spec()->request_payer_email())
+             : base::MakeUnique<views::Label>(base::string16());
 }
 
 // Creates the Contact Info row, which contains a "Contact info" label; the
@@ -511,13 +519,15 @@ PaymentSheetViewController::CreateContactInfoRow() {
 std::unique_ptr<views::Button>
 PaymentSheetViewController::CreateShippingOptionRow() {
   payments::mojom::PaymentShippingOption* selected_option =
-      request()->selected_shipping_option();
+      request()->state()->selected_shipping_option();
   std::unique_ptr<views::View> option_label = CreateShippingOptionLabel(
       selected_option, selected_option ? request()->GetFormattedCurrencyAmount(
                                              selected_option->amount->value)
                                        : base::ASCIIToUTF16(""));
   std::unique_ptr<views::Button> section = CreatePaymentSheetRow(
-      this, GetShippingOptionSectionString(request()->options()->shipping_type),
+      this,
+      GetShippingOptionSectionString(
+          request()->spec()->options().shipping_type),
       std::move(option_label), std::unique_ptr<views::View>(nullptr),
       widest_name_column_view_width_);
   section->set_tag(static_cast<int>(

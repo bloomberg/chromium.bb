@@ -64,9 +64,6 @@ class ProfileListViewController : public PaymentRequestSheetController {
   // Returns the string displayed at the top of the view.
   virtual base::string16 GetHeaderString() = 0;
 
-  // Not owned. Never null. Outlives this object.
-  PaymentRequest* request_;
-
  private:
   std::unique_ptr<views::Button> CreateRow(autofill::AutofillProfile* profile);
   PaymentRequestItemList list_;

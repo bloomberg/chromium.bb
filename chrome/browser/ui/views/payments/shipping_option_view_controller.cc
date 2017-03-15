@@ -42,10 +42,10 @@ ShippingOptionViewController::ShippingOptionViewController(
     PaymentRequest* request,
     PaymentRequestDialogView* dialog)
     : PaymentRequestSheetController(request, dialog) {
-  for (const auto& option : request->details()->shipping_options) {
+  for (const auto& option : request->spec()->details().shipping_options) {
     shipping_option_list_.AddItem(base::MakeUnique<ShippingOptionItem>(
         option.get(), request, &shipping_option_list_,
-        option.get() == request->selected_shipping_option()));
+        option.get() == request->state()->selected_shipping_option()));
   }
 }
 
@@ -55,10 +55,10 @@ std::unique_ptr<views::View> ShippingOptionViewController::CreateView() {
   std::unique_ptr<views::View> list_view =
       shipping_option_list_.CreateListView();
   return CreatePaymentView(
-      CreateSheetHeaderView(
-          true,
-          GetShippingOptionSectionString(request()->options()->shipping_type),
-          this),
+      CreateSheetHeaderView(true,
+                            GetShippingOptionSectionString(
+                                request()->spec()->options().shipping_type),
+                            this),
       std::move(list_view));
 }
 

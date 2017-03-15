@@ -29,6 +29,7 @@
 #include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/autofill_constants.h"
 #include "components/payments/content/payment_request.h"
+#include "components/payments/content/payment_request_spec.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/native_theme/native_theme.h"
@@ -123,7 +124,7 @@ CreditCardEditorViewController::CreateHeaderView() {
 
   constexpr gfx::Size kCardIconSize = gfx::Size(30, 18);
   for (const std::string& supported_network :
-       request()->supported_card_networks()) {
+       request()->spec()->supported_card_networks()) {
     const std::string autofill_card_type =
         autofill::data_util::GetCardTypeForBasicCardPaymentType(
             supported_network);
@@ -189,7 +190,7 @@ bool CreditCardEditorViewController::ValidateModelAndSave() {
     return false;
 
   // Add the card (will not add a duplicate).
-  request()->personal_data_manager()->AddCreditCard(credit_card);
+  request()->GetPersonalDataManager()->AddCreditCard(credit_card);
 
   return true;
 }
@@ -203,7 +204,7 @@ CreditCardEditorViewController::CreateValidationDelegate(
       CreditCardEditorViewController::CreditCardValidationDelegate>(
       field, this,
       field.type == autofill::CREDIT_CARD_NUMBER
-          ? request()->supported_card_networks()
+          ? request()->spec()->supported_card_networks()
           : std::vector<std::string>());
 }
 

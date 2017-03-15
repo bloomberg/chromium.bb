@@ -14,6 +14,7 @@
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/test_autofill_clock.h"
 #include "components/payments/content/payment_request.h"
+#include "components/payments/content/payment_request_spec.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/test/browser_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -324,7 +325,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardBasicCardTest,
       GetPaymentRequests(GetActiveWebContents());
   EXPECT_EQ(1u, requests.size());
   std::vector<std::string> supported_card_networks =
-      requests[0]->supported_card_networks();
+      requests[0]->spec()->supported_card_networks();
   EXPECT_EQ(2u, supported_card_networks.size());
   // The networks appear in the order in which they were specified by the
   // merchant.
@@ -342,7 +343,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardBasicCardTest,
       GetPaymentRequests(GetActiveWebContents());
   EXPECT_EQ(1u, requests.size());
   std::vector<std::string> supported_card_networks =
-      requests[0]->supported_card_networks();
+      requests[0]->spec()->supported_card_networks();
   // The default ordering is alphabetical.
   EXPECT_EQ(8u, supported_card_networks.size());
   EXPECT_EQ("amex", supported_card_networks[0]);
@@ -370,7 +371,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardBasicCardTest,
       GetPaymentRequests(GetActiveWebContents());
   EXPECT_EQ(1u, requests.size());
   std::vector<std::string> supported_card_networks =
-      requests[0]->supported_card_networks();
+      requests[0]->spec()->supported_card_networks();
   // 'mastercard' is first because it was explicitely specified first. The rest
   // is alphabetical.
   EXPECT_EQ(8u, supported_card_networks.size());
@@ -397,7 +398,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardBasicCardTest,
       GetPaymentRequests(GetActiveWebContents());
   EXPECT_EQ(1u, requests.size());
   std::vector<std::string> supported_card_networks =
-      requests[0]->supported_card_networks();
+      requests[0]->spec()->supported_card_networks();
   // 'visa' is first because it was explicitely specified first. The rest
   // is alphabetical.
   EXPECT_EQ(8u, supported_card_networks.size());
@@ -429,7 +430,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardBasicCardTest,
       GetPaymentRequests(GetActiveWebContents());
   EXPECT_EQ(1u, requests.size());
   std::vector<std::string> supported_card_networks =
-      requests[0]->supported_card_networks();
+      requests[0]->spec()->supported_card_networks();
   EXPECT_EQ(3u, supported_card_networks.size());
   EXPECT_EQ("mastercard", supported_card_networks[0]);
   EXPECT_EQ("visa", supported_card_networks[1]);

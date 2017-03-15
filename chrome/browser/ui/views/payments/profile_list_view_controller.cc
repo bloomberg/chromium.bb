@@ -94,15 +94,16 @@ class ShippingProfileViewController : public ProfileListViewController {
   std::unique_ptr<views::View> GetLabel(
       autofill::AutofillProfile* profile) override {
     return GetShippingAddressLabel(AddressStyleType::DETAILED,
-                                   request_->locale(), *profile);
+                                   request()->GetApplicationLocale(), *profile);
   }
 
   std::vector<autofill::AutofillProfile*> GetProfiles() override {
-    return request_->shipping_profiles();
+    return request()->state()->shipping_profiles();
   }
 
   base::string16 GetHeaderString() override {
-    return GetShippingAddressSectionString(request_->options()->shipping_type);
+    return GetShippingAddressSectionString(
+        request()->spec()->options().shipping_type);
   }
 
  private:
@@ -120,14 +121,15 @@ class ContactProfileViewController : public ProfileListViewController {
   // ProfileListViewController:
   std::unique_ptr<views::View> GetLabel(
       autofill::AutofillProfile* profile) override {
-    return GetContactInfoLabel(AddressStyleType::DETAILED, request_->locale(),
-                               *profile, request_->request_payer_name(),
-                               request_->request_payer_phone(),
-                               request_->request_payer_email());
+    return GetContactInfoLabel(AddressStyleType::DETAILED,
+                               request()->GetApplicationLocale(), *profile,
+                               request()->spec()->request_payer_name(),
+                               request()->spec()->request_payer_phone(),
+                               request()->spec()->request_payer_email());
   }
 
   std::vector<autofill::AutofillProfile*> GetProfiles() override {
-    return request_->contact_profiles();
+    return request()->state()->contact_profiles();
   }
 
   base::string16 GetHeaderString() override {
@@ -160,13 +162,13 @@ ProfileListViewController::GetContactProfileViewController(
 ProfileListViewController::ProfileListViewController(
     PaymentRequest* request,
     PaymentRequestDialogView* dialog)
-    : PaymentRequestSheetController(request, dialog), request_(request) {}
+    : PaymentRequestSheetController(request, dialog) {}
 
 ProfileListViewController::~ProfileListViewController() {}
 
 std::unique_ptr<views::View> ProfileListViewController::CreateView() {
   autofill::AutofillProfile* selected_profile =
-      request()->selected_shipping_profile();
+      request()->state()->selected_shipping_profile();
 
   // This must be done at Create-time, rather than construct-time, because
   // the subclass method GetProfiles can't be called in the ctor.

@@ -7,6 +7,7 @@
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/payments/content/payment_request.h"
+#include "components/payments/content/payment_request_state.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace payments {
@@ -39,14 +40,14 @@ IN_PROC_BROWSER_TEST_F(PaymentMethodViewControllerTest, OneCardSelected) {
   OpenPaymentMethodScreen();
 
   PaymentRequest* request = GetPaymentRequests(GetActiveWebContents())[0];
-  EXPECT_EQ(1U, request->credit_cards().size());
+  EXPECT_EQ(1U, request->state()->credit_cards().size());
 
   views::View* list_view = dialog_view()->GetViewByID(
       static_cast<int>(DialogViewID::PAYMENT_METHOD_SHEET_LIST_VIEW));
   EXPECT_TRUE(list_view);
   EXPECT_EQ(1, list_view->child_count());
 
-  EXPECT_EQ(card, *request->selected_credit_card());
+  EXPECT_EQ(card, *request->state()->selected_credit_card());
   views::View* checkmark_view = list_view->child_at(0)->GetViewByID(
       static_cast<int>(DialogViewID::CHECKMARK_VIEW));
   EXPECT_TRUE(checkmark_view->visible());
@@ -67,15 +68,15 @@ IN_PROC_BROWSER_TEST_F(PaymentMethodViewControllerTest,
   OpenPaymentMethodScreen();
 
   PaymentRequest* request = GetPaymentRequests(GetActiveWebContents())[0];
-  EXPECT_EQ(2U, request->credit_cards().size());
-  EXPECT_EQ(card1, *request->selected_credit_card());
+  EXPECT_EQ(2U, request->state()->credit_cards().size());
+  EXPECT_EQ(card1, *request->state()->selected_credit_card());
 
   views::View* list_view = dialog_view()->GetViewByID(
       static_cast<int>(DialogViewID::PAYMENT_METHOD_SHEET_LIST_VIEW));
   EXPECT_TRUE(list_view);
   EXPECT_EQ(2, list_view->child_count());
 
-  EXPECT_EQ(card1, *request->selected_credit_card());
+  EXPECT_EQ(card1, *request->state()->selected_credit_card());
   views::View* checkmark_view = list_view->child_at(0)->GetViewByID(
       static_cast<int>(DialogViewID::CHECKMARK_VIEW));
   EXPECT_TRUE(checkmark_view->visible());
@@ -87,14 +88,14 @@ IN_PROC_BROWSER_TEST_F(PaymentMethodViewControllerTest,
   // Simulate selecting the second card.
   ClickOnDialogViewAndWait(list_view->child_at(1));
 
-  EXPECT_EQ(card2, *request->selected_credit_card());
+  EXPECT_EQ(card2, *request->state()->selected_credit_card());
   EXPECT_FALSE(checkmark_view->visible());
   EXPECT_TRUE(checkmark_view2->visible());
 
   // Clicking on the second card again should not modify any state.
   ClickOnDialogViewAndWait(list_view->child_at(1));
 
-  EXPECT_EQ(card2, *request->selected_credit_card());
+  EXPECT_EQ(card2, *request->state()->selected_credit_card());
   EXPECT_FALSE(checkmark_view->visible());
   EXPECT_TRUE(checkmark_view2->visible());
 }

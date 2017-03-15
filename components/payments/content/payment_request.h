@@ -10,16 +10,14 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/observer_list.h"
 #include "components/payments/content/payment_request.mojom.h"
 #include "components/payments/content/payment_request_delegate.h"
-#include "components/payments/core/payment_instrument.h"
+#include "components/payments/content/payment_request_spec.h"
+#include "components/payments/content/payment_request_state.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 
 namespace autofill {
-class AutofillProfile;
-class CreditCard;
 class PersonalDataManager;
 }
 
@@ -32,19 +30,16 @@ namespace payments {
 class CurrencyFormatter;
 class PaymentRequestWebContentsManager;
 
+// This class manages the interaction between the renderer (through the
+// PaymentRequestClient and Mojo stub implementation) and the UI (through the
+// PaymentRequestDelegate). The API user (merchant) specification (supported
+// payment methods, required information, order details) is stored in
+// PaymentRequestSpec, and the current user selection state (and related data)
+// is stored in PaymentRequestSpec.
 class PaymentRequest : public mojom::PaymentRequest,
-                       public PaymentInstrument::Delegate {
+                       public PaymentRequestSpec::Observer,
+                       public PaymentRequestState::Delegate {
  public:
-  class Observer {
-   public:
-    // Called when the information (payment method, address/contact info,
-    // shipping option) changes.
-    virtual void OnSelectedInformationChanged() = 0;
-
-   protected:
-    virtual ~Observer() {}
-  };
-
   PaymentRequest(content::WebContents* web_contents,
                  std::unique_ptr<PaymentRequestDelegate> delegate,
                  PaymentRequestWebContentsManager* manager,
@@ -62,11 +57,13 @@ class PaymentRequest : public mojom::PaymentRequest,
   void Complete(mojom::PaymentComplete result) override;
   void CanMakePayment() override;
 
-  // PaymentInstrument::Delegate:
-  void OnInstrumentDetailsReady(
-      const std::string& method_name,
-      const std::string& stringified_details) override;
-  void OnInstrumentDetailsError() override {}
+  // PaymentRequestSpec::Observer:
+  void OnInvalidSpecProvided() override;
+
+  // PaymentRequestState::Delegate:
+  const std::string& GetApplicationLocale() override;
+  autofill::PersonalDataManager* GetPersonalDataManager() override;
+  void OnPaymentResponseAvailable(mojom::PaymentResponsePtr response) override;
 
   // Called when the user explicitely cancelled the flow. Will send a message
   // to the renderer which will indirectly destroy this object (through
@@ -81,9 +78,6 @@ class PaymentRequest : public mojom::PaymentRequest,
 
   // Called when the user clicks on the "Pay" button.
   void Pay();
-
-  void AddObserver(Observer* observer);
-  void RemoveObserver(Observer* observer);
 
   // Returns the CurrencyFormatter instance for this PaymentRequest.
   // |locale_name| should be the result of the browser's GetApplicationLocale().
@@ -102,126 +96,22 @@ class PaymentRequest : public mojom::PaymentRequest,
   // request's currency.
   std::string GetFormattedCurrencyCode();
 
-  // Returns the appropriate Autofill Profiles for this user. On the first
-  // invocation of either getter, the profiles are fetched from the
-  // PersonalDataManager; on subsequent invocations, a cached version is
-  // returned. The profiles returned are owned by the request object.
-  const std::vector<autofill::AutofillProfile*>& shipping_profiles() {
-    return shipping_profiles_;
-  }
-  const std::vector<autofill::AutofillProfile*>& contact_profiles() {
-    return contact_profiles_;
-  }
-  const std::vector<autofill::CreditCard*>& credit_cards() {
-    return credit_cards_;
-  }
-
-  // Gets the Autofill Profile representing the shipping address or contact
-  // information currently selected for this PaymentRequest flow. Can return
-  // null.
-  autofill::AutofillProfile* selected_shipping_profile() const {
-    return selected_shipping_profile_;
-  }
-  autofill::AutofillProfile* selected_contact_profile() const {
-    return selected_contact_profile_;
-  }
-  // Returns the currently selected credit card for this PaymentRequest flow.
-  // It's not guaranteed to be complete. Returns nullptr if there is no selected
-  // card.
-  autofill::CreditCard* selected_credit_card() { return selected_credit_card_; }
-
-  payments::mojom::PaymentShippingOption* selected_shipping_option() {
-    return selected_shipping_option_;
-  }
-
-  // Sets the |profile| to be the selected one and will update state and notify
-  // observers.
-  void SetSelectedShippingProfile(autofill::AutofillProfile* profile);
-  void SetSelectedContactProfile(autofill::AutofillProfile* profile);
-  void SetSelectedCreditCard(autofill::CreditCard* card);
-
-  autofill::PersonalDataManager* personal_data_manager() {
-    return delegate_->GetPersonalDataManager();
-  }
-  const std::string& locale() { return delegate_->GetApplicationLocale(); }
-
-  mojom::PaymentDetails* details() { return details_.get(); }
-  mojom::PaymentOptions* options() { return options_.get(); }
-  const std::vector<std::string>& supported_card_networks() {
-    return supported_card_networks_;
-  }
   content::WebContents* web_contents() { return web_contents_; }
 
-  bool request_shipping() const { return options_->request_shipping; }
-  bool request_payer_name() const { return options_->request_payer_name; }
-  bool request_payer_phone() const { return options_->request_payer_phone; }
-  bool request_payer_email() const { return options_->request_payer_email; }
-
-  bool is_ready_to_pay() { return is_ready_to_pay_; }
+  PaymentRequestSpec* spec() { return spec_.get(); }
+  PaymentRequestState* state() { return state_.get(); }
 
  private:
-  // Fetches the Autofill Profiles for this user from the PersonalDataManager,
-  // and stores copies of them, owned by this Request, in profile_cache_.
-  void PopulateProfileCache();
-
-  // Sets the default values for the selected Shipping and Contact profiles, as
-  // well as the selected Credit Card.
-  void SetDefaultProfileSelections();
-
-  // Validates the |method_data| and fills |supported_card_networks_|.
-  void PopulateValidatedMethodData(
-      const std::vector<mojom::PaymentMethodDataPtr>& method_data);
-
-  // Updates |is_ready_to_pay_| with the current state, by validating that all
-  // the required information is available and notify observers.
-  void UpdateIsReadyToPayAndNotifyObservers();
-
-  // Notifies all observers that selected information has changed.
-  void NotifyOnSelectedInformationChanged();
-
-  // Returns whether the selected data satisfies the PaymentDetails requirements
-  // (payment methods).
-  bool ArePaymentDetailsSatisfied();
-  // Returns whether the selected data satisfies the PaymentOptions requirements
-  // (contact info, shipping address).
-  bool ArePaymentOptionsSatisfied();
-
-  // Updates the selected_shipping_option based on the data passed to this
-  // payment request by the website. This will set selected_shipping_option_ to
-  // the last option marked selected in the options array.
-  void UpdateSelectedShippingOptionFromDetails();
-
   content::WebContents* web_contents_;
   std::unique_ptr<PaymentRequestDelegate> delegate_;
   // |manager_| owns this PaymentRequest.
   PaymentRequestWebContentsManager* manager_;
   mojo::Binding<mojom::PaymentRequest> binding_;
   mojom::PaymentRequestClientPtr client_;
-  mojom::PaymentDetailsPtr details_;
-  mojom::PaymentOptionsPtr options_;
   std::unique_ptr<CurrencyFormatter> currency_formatter_;
-  // A set of supported basic card networks.
-  std::vector<std::string> supported_card_networks_;
-  bool is_ready_to_pay_;
-  std::unique_ptr<PaymentInstrument> selected_payment_instrument_;
-  mojom::PaymentResponsePtr payment_response_;
 
-  base::ObserverList<Observer> observers_;
-
-  // Profiles may change due to (e.g.) sync events, so profiles are cached after
-  // loading and owned here. They are populated once only, and ordered by
-  // frecency.
-  std::vector<std::unique_ptr<autofill::AutofillProfile>> profile_cache_;
-  std::vector<autofill::AutofillProfile*> shipping_profiles_;
-  std::vector<autofill::AutofillProfile*> contact_profiles_;
-  autofill::AutofillProfile* selected_shipping_profile_;
-  autofill::AutofillProfile* selected_contact_profile_;
-  std::vector<std::unique_ptr<autofill::CreditCard>> card_cache_;
-  std::vector<autofill::CreditCard*> credit_cards_;
-  autofill::CreditCard* selected_credit_card_;
-  // This is owned by |details_|, which is owned by this object and lives until
-  // |this| is destructed so it's safe to keep this raw pointer.
-  payments::mojom::PaymentShippingOption* selected_shipping_option_;
+  std::unique_ptr<PaymentRequestSpec> spec_;
+  std::unique_ptr<PaymentRequestState> state_;
 
   DISALLOW_COPY_AND_ASSIGN(PaymentRequest);
 };

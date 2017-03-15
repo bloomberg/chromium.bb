@@ -17,6 +17,7 @@
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/payments/content/payment_request.h"
+#include "components/payments/content/payment_request_state.h"
 #include "components/strings/grit/components_strings.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -125,7 +126,7 @@ class PaymentMethodListItem : public payments::PaymentRequestItemList::Item {
     if (checkmark_)
       checkmark_->SetVisible(selected());
 
-    request()->SetSelectedCreditCard(card_);
+    request()->state()->SetSelectedCreditCard(card_);
   }
 
   // views::ButtonListener:
@@ -157,13 +158,13 @@ PaymentMethodViewController::PaymentMethodViewController(
     PaymentRequestDialogView* dialog)
     : PaymentRequestSheetController(request, dialog) {
   const std::vector<autofill::CreditCard*>& available_cards =
-      request->credit_cards();
+      request->state()->credit_cards();
 
   for (autofill::CreditCard* card : available_cards) {
     std::unique_ptr<PaymentMethodListItem> item =
         base::MakeUnique<PaymentMethodListItem>(
             card, request, &payment_method_list_,
-            card == request->selected_credit_card());
+            card == request->state()->selected_credit_card());
     payment_method_list_.AddItem(std::move(item));
   }
 }
