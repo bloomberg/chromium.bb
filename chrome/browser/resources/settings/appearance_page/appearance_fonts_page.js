@@ -156,15 +156,13 @@
     },
 
     /**
-     * Creates an html style value.
-     * @param {number} fontSize The font size to use.
-     * @param {string} fontFamily The name of the font family use.
-     * @return {string}
+     * Get the minimum font size, accounting for unset prefs.
+     * @return {?}
      * @private
      */
-    computeStyle_: function(fontSize, fontFamily) {
-      return 'font-size: ' + fontSize + "px; font-family: '" + fontFamily +
-          "';";
+    computeMinimumFontSize_: function() {
+      return this.get('prefs.webkit.webprefs.minimum_font_size.value') ||
+          MINIMUM_FONT_SIZE_RANGE_[0];
     },
   });
 })();
