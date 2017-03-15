@@ -343,6 +343,12 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
   DCHECK(((remove_mask & ~FILTERABLE_DATA_TYPES) == 0) ||
          filter_builder.IsEmptyBlacklist());
 
+  // Embedder-defined DOM-accessible storage currently contains only
+  // one datatype, which is the durable storage permission.
+  if (remove_mask & BrowsingDataRemover::DATA_TYPE_EMBEDDER_DOM_STORAGE) {
+    remove_mask |= DATA_TYPE_DURABLE_PERMISSION;
+  }
+
   if (origin_type_mask & BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB) {
     content::RecordAction(
         UserMetricsAction("ClearBrowsingData_MaskContainsUnprotectedWeb"));

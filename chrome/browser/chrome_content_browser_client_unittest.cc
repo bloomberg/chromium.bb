@@ -392,27 +392,26 @@ TEST_F(ChromeContentBrowserClientClearSiteDataTest, Parameters) {
        BrowsingDataRemover::DATA_TYPE_COOKIES |
            BrowsingDataRemover::DATA_TYPE_CHANNEL_IDS |
            ChromeBrowsingDataRemoverDelegate::DATA_TYPE_PLUGIN_DATA},
-      {false, true, false,
-       ChromeBrowsingDataRemoverDelegate::DATA_TYPE_SITE_DATA &
-           ~BrowsingDataRemover::DATA_TYPE_COOKIES &
-           ~BrowsingDataRemover::DATA_TYPE_CHANNEL_IDS &
-           ~ChromeBrowsingDataRemoverDelegate::DATA_TYPE_PLUGIN_DATA},
+      {false, true, false, BrowsingDataRemover::DATA_TYPE_DOM_STORAGE},
       {false, false, true, BrowsingDataRemover::DATA_TYPE_CACHE},
       {true, true, false,
-       ChromeBrowsingDataRemoverDelegate::DATA_TYPE_SITE_DATA},
+       BrowsingDataRemover::DATA_TYPE_COOKIES |
+           BrowsingDataRemover::DATA_TYPE_CHANNEL_IDS |
+           ChromeBrowsingDataRemoverDelegate::DATA_TYPE_PLUGIN_DATA |
+           BrowsingDataRemover::DATA_TYPE_DOM_STORAGE},
       {true, false, true,
        BrowsingDataRemover::DATA_TYPE_COOKIES |
            BrowsingDataRemover::DATA_TYPE_CHANNEL_IDS |
            ChromeBrowsingDataRemoverDelegate::DATA_TYPE_PLUGIN_DATA |
            BrowsingDataRemover::DATA_TYPE_CACHE},
       {false, true, true,
-       BrowsingDataRemover::DATA_TYPE_CACHE |
-           (ChromeBrowsingDataRemoverDelegate::DATA_TYPE_SITE_DATA &
-            ~BrowsingDataRemover::DATA_TYPE_COOKIES &
-            ~BrowsingDataRemover::DATA_TYPE_CHANNEL_IDS &
-            ~ChromeBrowsingDataRemoverDelegate::DATA_TYPE_PLUGIN_DATA)},
+       BrowsingDataRemover::DATA_TYPE_DOM_STORAGE |
+           BrowsingDataRemover::DATA_TYPE_CACHE},
       {true, true, true,
-       ChromeBrowsingDataRemoverDelegate::DATA_TYPE_SITE_DATA |
+       BrowsingDataRemover::DATA_TYPE_COOKIES |
+           BrowsingDataRemover::DATA_TYPE_CHANNEL_IDS |
+           ChromeBrowsingDataRemoverDelegate::DATA_TYPE_PLUGIN_DATA |
+           BrowsingDataRemover::DATA_TYPE_DOM_STORAGE |
            BrowsingDataRemover::DATA_TYPE_CACHE},
   };
 

@@ -2787,12 +2787,8 @@ void ChromeContentBrowserClient::ClearSiteData(
 
   // Delete origin-scoped data.
   int remove_mask = 0;
-  if (remove_storage) {
-    remove_mask |= ChromeBrowsingDataRemoverDelegate::DATA_TYPE_SITE_DATA &
-                   ~BrowsingDataRemover::DATA_TYPE_COOKIES &
-                   ~BrowsingDataRemover::DATA_TYPE_CHANNEL_IDS &
-                   ~ChromeBrowsingDataRemoverDelegate::DATA_TYPE_PLUGIN_DATA;
-  }
+  if (remove_storage)
+    remove_mask |= BrowsingDataRemover::DATA_TYPE_DOM_STORAGE;
   if (remove_cache)
     remove_mask |= BrowsingDataRemover::DATA_TYPE_CACHE;
 

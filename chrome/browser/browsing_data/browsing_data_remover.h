@@ -64,16 +64,30 @@ class BrowsingDataRemover : public KeyedService {
     DATA_TYPE_SERVICE_WORKERS = 1 << 5,
     DATA_TYPE_CACHE_STORAGE = 1 << 6,
 
+    // Used to request the deletion of embedder-specific storage datatypes.
+    DATA_TYPE_EMBEDDER_DOM_STORAGE = 1 << 7,
+
+    // DOM-accessible storage (https://www.w3.org/TR/clear-site-data/#storage).
+    // Has the same effect as selecting all storage datatypes listed above
+    // and ones defined by the embedder.
+    DATA_TYPE_DOM_STORAGE = DATA_TYPE_APP_CACHE | DATA_TYPE_FILE_SYSTEMS |
+                            DATA_TYPE_INDEXED_DB |
+                            DATA_TYPE_LOCAL_STORAGE |
+                            DATA_TYPE_WEB_SQL |
+                            DATA_TYPE_SERVICE_WORKERS |
+                            DATA_TYPE_CACHE_STORAGE |
+                            DATA_TYPE_EMBEDDER_DOM_STORAGE,
+
     // Other datatypes.
-    DATA_TYPE_COOKIES = 1 << 7,
-    DATA_TYPE_CHANNEL_IDS = 1 << 8,
-    DATA_TYPE_CACHE = 1 << 9,
-    DATA_TYPE_DOWNLOADS = 1 << 10,
-    DATA_TYPE_MEDIA_LICENSES = 1 << 11,
+    DATA_TYPE_COOKIES = 1 << 8,
+    DATA_TYPE_CHANNEL_IDS = 1 << 9,
+    DATA_TYPE_CACHE = 1 << 10,
+    DATA_TYPE_DOWNLOADS = 1 << 11,
+    DATA_TYPE_MEDIA_LICENSES = 1 << 12,
 
     // REMOVE_NOCHECKS intentionally does not check if the browser context is
     // prohibited from deleting history or downloads.
-    DATA_TYPE_NO_CHECKS = 1 << 12,
+    DATA_TYPE_NO_CHECKS = 1 << 13,
 
     // Embedders can add more datatypes beyond this point.
     DATA_TYPE_CONTENT_END = DATA_TYPE_NO_CHECKS,

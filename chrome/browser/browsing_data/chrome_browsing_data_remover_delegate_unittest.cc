@@ -1610,6 +1610,31 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, RemoveDurablePermission) {
   EXPECT_EQ(CONTENT_SETTING_ASK, host_settings[1].setting);
 }
 
+TEST_F(ChromeBrowsingDataRemoverDelegateTest,
+       DurablePermissionIsPartOfEmbedderDOMStorage) {
+  HostContentSettingsMap* host_content_settings_map =
+      HostContentSettingsMapFactory::GetForProfile(GetProfile());
+  DurableStoragePermissionContext durable_permission(GetProfile());
+  durable_permission.UpdateContentSetting(kOrigin1, GURL(),
+                                          CONTENT_SETTING_ALLOW);
+  ContentSettingsForOneType host_settings;
+  host_content_settings_map->GetSettingsForOneType(
+      CONTENT_SETTINGS_TYPE_DURABLE_STORAGE, std::string(), &host_settings);
+  EXPECT_EQ(2u, host_settings.size());
+
+  BlockUntilBrowsingDataRemoved(
+      base::Time(), base::Time::Max(),
+      BrowsingDataRemover::DATA_TYPE_EMBEDDER_DOM_STORAGE, false);
+
+  // After the deletion, only the wildcard should remain.
+  host_content_settings_map->GetSettingsForOneType(
+      CONTENT_SETTINGS_TYPE_DURABLE_STORAGE, std::string(), &host_settings);
+  EXPECT_EQ(1u, host_settings.size());
+  EXPECT_EQ(ContentSettingsPattern::Wildcard(),
+            host_settings[0].primary_pattern)
+      << host_settings[0].primary_pattern.ToString();
+}
+
 // Test that removing passwords clears HTTP auth data.
 TEST_F(ChromeBrowsingDataRemoverDelegateTest,
        ClearHttpAuthCache_RemovePasswords) {
