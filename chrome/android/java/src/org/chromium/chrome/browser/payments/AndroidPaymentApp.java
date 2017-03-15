@@ -47,6 +47,9 @@ public class AndroidPaymentApp extends PaymentInstrument implements PaymentApp,
     /** The action name for the Pay Intent. */
     public static final String ACTION_PAY = "org.chromium.intent.action.PAY";
 
+    /** The maximum number of milliseconds to wait for a response from a READY_TO_PAY service. */
+    private static final long READY_TO_PAY_TIMEOUT_MS = 400;
+
     private static final String EXTRA_METHOD_NAME = "methodName";
     private static final String EXTRA_DATA = "data";
     private static final String EXTRA_ORIGIN = "origin";
@@ -168,6 +171,7 @@ public class AndroidPaymentApp extends PaymentInstrument implements PaymentApp,
     }
 
     private void respondToGetInstrumentsQuery(final PaymentInstrument instrument) {
+        if (mInstrumentsCallback == null) return;
         mHandler.post(new Runnable() {
             @Override
             public void run() {
@@ -199,10 +203,17 @@ public class AndroidPaymentApp extends PaymentInstrument implements PaymentApp,
         try {
             mIsReadyToPayService.isReadyToPay(callback);
         } catch (Throwable e) {
-            /** Many undocument exceptions are not caught in the remote Service but passed on to
-                the Service caller, see writeException in Parcel.java. */
+            // Many undocumented exceptions are not caught in the remote Service but passed on to
+            // the Service caller, see writeException in Parcel.java.
             respondToGetInstrumentsQuery(null);
+            return;
         }
+        mHandler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                respondToGetInstrumentsQuery(null);
+            }
+        }, READY_TO_PAY_TIMEOUT_MS);
     }
 
     @Override
