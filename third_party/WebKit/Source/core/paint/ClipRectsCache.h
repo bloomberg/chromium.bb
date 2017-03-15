@@ -41,7 +41,7 @@ class ClipRectsCache {
         : root(nullptr)
 #if DCHECK_IS_ON()
           ,
-          overlayScrollbarClipBehavior(IgnoreOverlayScrollbarSize)
+          overlayScrollbarClipBehavior(IgnorePlatformOverlayScrollbarSize)
 #endif
     {
     }

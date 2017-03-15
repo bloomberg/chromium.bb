@@ -49,7 +49,7 @@ class LayoutBoxItem : public LayoutBoxModel {
 
   LayoutRect overflowClipRect(const LayoutPoint& location,
                               OverlayScrollbarClipBehavior behavior =
-                                  IgnoreOverlayScrollbarSize) const {
+                                  IgnorePlatformOverlayScrollbarSize) const {
     return toBox()->overflowClipRect(location, behavior);
   }
 
