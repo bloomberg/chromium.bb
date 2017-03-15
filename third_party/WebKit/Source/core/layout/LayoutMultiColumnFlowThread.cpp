@@ -598,17 +598,17 @@ bool LayoutMultiColumnFlowThread::removeSpannerPlaceholderIfNoLongerValid(
   return true;
 }
 
-LayoutMultiColumnFlowThread* LayoutMultiColumnFlowThread::enclosingFlowThread()
-    const {
+LayoutMultiColumnFlowThread* LayoutMultiColumnFlowThread::enclosingFlowThread(
+    AncestorSearchConstraint constraint) const {
   if (isLayoutPagedFlowThread()) {
     // Paged overflow containers should never be fragmented by enclosing
     // fragmentation contexts. They are to be treated as unbreakable content.
     return nullptr;
   }
-  if (multiColumnBlockFlow()->isInsideFlowThread())
-    return toLayoutMultiColumnFlowThread(
-        locateFlowThreadContainingBlockOf(*multiColumnBlockFlow()));
-  return nullptr;
+  if (!multiColumnBlockFlow()->isInsideFlowThread())
+    return nullptr;
+  return toLayoutMultiColumnFlowThread(
+      locateFlowThreadContainingBlockOf(*multiColumnBlockFlow(), constraint));
 }
 
 FragmentationContext*
@@ -621,7 +621,7 @@ LayoutMultiColumnFlowThread::enclosingFragmentationContext(
   if (constraint == IsolateUnbreakableContainers &&
       multiColumnBlockFlow()->getPaginationBreakability() == ForbidBreaks)
     return nullptr;
-  if (auto* enclosingFlowThread = this->enclosingFlowThread())
+  if (auto* enclosingFlowThread = this->enclosingFlowThread(constraint))
     return enclosingFlowThread;
   return view()->fragmentationContext();
 }

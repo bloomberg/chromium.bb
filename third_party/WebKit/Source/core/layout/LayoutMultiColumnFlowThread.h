@@ -260,21 +260,8 @@ class CORE_EXPORT LayoutMultiColumnFlowThread : public LayoutFlowThread,
   bool removeSpannerPlaceholderIfNoLongerValid(
       LayoutBox* spannerObjectInFlowThread);
 
-  // Search mode when looking for an enclosing fragmentation context.
-  enum AncestorSearchConstraint {
-    // No constraints. Sometimes we just want to find all enclosing
-    // fragmentation contexts, e.g. to calculate the accumulated visual
-    // translation.
-    AnyAncestor,
-
-    // Consider fragmentation contexts that are strictly unbreakable (seen from
-    // the outside) to be isolated from the rest, so that such fragmentation
-    // contexts don't participate in fragmentation of enclosing fragmentation
-    // contexts, apart from taking up space and otherwise being completely
-    // unbreakable. This is typically what we want to do during layout.
-    IsolateUnbreakableContainers,
-  };
-  LayoutMultiColumnFlowThread* enclosingFlowThread() const;
+  LayoutMultiColumnFlowThread* enclosingFlowThread(
+      AncestorSearchConstraint = IsolateUnbreakableContainers) const;
   FragmentationContext* enclosingFragmentationContext(
       AncestorSearchConstraint = IsolateUnbreakableContainers) const;
   LayoutUnit blockOffsetInEnclosingFragmentationContext() const {

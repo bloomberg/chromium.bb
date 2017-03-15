@@ -40,7 +40,8 @@ LayoutFlowThread::LayoutFlowThread()
       m_pageLogicalSizeChanged(false) {}
 
 LayoutFlowThread* LayoutFlowThread::locateFlowThreadContainingBlockOf(
-    const LayoutObject& descendant) {
+    const LayoutObject& descendant,
+    AncestorSearchConstraint constraint) {
   ASSERT(descendant.isInsideFlowThread());
   LayoutObject* curr = const_cast<LayoutObject*>(&descendant);
   while (curr) {
@@ -49,6 +50,15 @@ LayoutFlowThread* LayoutFlowThread::locateFlowThreadContainingBlockOf(
     if (curr->isLayoutFlowThread())
       return toLayoutFlowThread(curr);
     LayoutObject* container = curr->container();
+    // If we're inside something strictly unbreakable (due to having scrollbars
+    // or being writing mode roots, for instance), it's also strictly
+    // unbreakable in any outer fragmentation context. As such, what goes on
+    // inside any fragmentation context on the inside of this is completely
+    // opaque to ancestor fragmentation contexts.
+    if (constraint == IsolateUnbreakableContainers && container &&
+        container->isBox() &&
+        toLayoutBox(container)->getPaginationBreakability() == ForbidBreaks)
+      return nullptr;
     curr = curr->parent();
     while (curr != container) {
       if (curr->isLayoutFlowThread()) {
