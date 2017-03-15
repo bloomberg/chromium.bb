@@ -308,8 +308,7 @@ TEST_F(TrialTokenValidatorTest, ValidatorRespectsDisabledTokens) {
   EXPECT_EQ(kAppropriateFeatureName, feature);
   // Disable the token; it should no longer be valid
   DisableToken(valid_token_signature_);
-  // TODO(chasej): Add a new status for disabled tokens
-  EXPECT_EQ(blink::WebOriginTrialTokenStatus::FeatureDisabled,
+  EXPECT_EQ(blink::WebOriginTrialTokenStatus::TokenDisabled,
             TrialTokenValidator::ValidateToken(kSampleToken,
                                                appropriate_origin_, &feature));
 }
