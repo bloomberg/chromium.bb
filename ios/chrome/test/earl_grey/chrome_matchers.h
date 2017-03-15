@@ -11,20 +11,24 @@
 
 namespace chrome_test_util {
 
-// Matcher for element with accessbitility label corresponding to |message_id|
-// and acessibility trait UIAccessibilityTraitButton.
+// Matcher for element with accessibility label corresponding to |message_id|
+// and accessibility trait UIAccessibilityTraitButton.
 id<GREYMatcher> ButtonWithAccessibilityLabelId(int message_id);
 
-// Matcher for element with accessbitility label corresponding to |label| and
-// acessibility trait UIAccessibilityTraitButton.
+// Matcher for element with accessibility label corresponding to |label| and
+// accessibility trait UIAccessibilityTraitButton.
 id<GREYMatcher> ButtonWithAccessibilityLabel(NSString* label);
 
-// Matcher for element with accessbitility label corresponding to |message_id|
-// and acessibility trait UIAccessibilityTraitStaticText.
+// Matcher for element with an image corresponding to |image_id| and
+// accessibility trait UIAccessibilityTraitButton.
+id<GREYMatcher> ButtonWithImage(int image_id);
+
+// Matcher for element with accessibility label corresponding to |message_id|
+// and accessibility trait UIAccessibilityTraitStaticText.
 id<GREYMatcher> StaticTextWithAccessibilityLabelId(int message_id);
 
-// Matcher for element with accessbitility label corresponding to |label| and
-// acessibility trait UIAccessibilityTraitStaticText.
+// Matcher for element with accessibility label corresponding to |label| and
+// accessibility trait UIAccessibilityTraitStaticText.
 id<GREYMatcher> StaticTextWithAccessibilityLabel(NSString* label);
 
 // Returns matcher for webview containing |text|.

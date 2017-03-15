@@ -16,12 +16,14 @@
 #import "ios/chrome/browser/ui/omnibox/omnibox_text_field_ios.h"
 #import "ios/chrome/browser/ui/static_content/static_html_view_controller.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_controller.h"
+#import "ios/chrome/browser/ui/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/testing/wait_util.h"
 #import "ios/web/public/block_types.h"
 #import "ios/web/public/test/earl_grey/web_view_matchers.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/test/ios/ui_image_test_utils.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -76,17 +78,17 @@ id<GREYMatcher> WebViewWithNavDelegateOfClass(Class cls) {
                                               descriptionBlock:describe];
 }
 
-id<GREYMatcher> CollectionViewSwitchIsOn(BOOL isOn) {
+id<GREYMatcher> CollectionViewSwitchIsOn(BOOL is_on) {
   MatchesBlock matches = ^BOOL(id element) {
-    CollectionViewSwitchCell* switchCell =
+    CollectionViewSwitchCell* switch_cell =
         base::mac::ObjCCastStrict<CollectionViewSwitchCell>(element);
-    UISwitch* switchView = switchCell.switchView;
-    return (switchView.on && isOn) || (!switchView.on && !isOn);
+    UISwitch* switch_view = switch_cell.switchView;
+    return (switch_view.on && is_on) || (!switch_view.on && !is_on);
   };
   DescribeToBlock describe = ^void(id<GREYDescription> description) {
     NSString* name =
         [NSString stringWithFormat:@"collectionViewSwitchInState(%@)",
-                                   isOn ? @"ON" : @"OFF"];
+                                   is_on ? @"ON" : @"OFF"];
     [description appendText:name];
   };
   return [[GREYElementMatcherBlock alloc] initWithMatchesBlock:matches
@@ -105,6 +107,24 @@ id<GREYMatcher> ButtonWithAccessibilityLabel(NSString* label) {
 id<GREYMatcher> ButtonWithAccessibilityLabelId(int message_id) {
   return ButtonWithAccessibilityLabel(
       l10n_util::GetNSStringWithFixup(message_id));
+}
+
+id<GREYMatcher> ButtonWithImage(int image_id) {
+  UIImage* expected_image = NativeImage(image_id);
+  MatchesBlock matches = ^BOOL(UIButton* button) {
+    return ui::test::uiimage_utils::UIImagesAreEqual(expected_image,
+                                                     [button currentImage]);
+  };
+  NSString* description_string =
+      [NSString stringWithFormat:@"Images matching %i", image_id];
+  DescribeToBlock describe = ^(id<GREYDescription> description) {
+    [description appendText:description_string];
+  };
+  id<GREYMatcher> image_matcher =
+      [[GREYElementMatcherBlock alloc] initWithMatchesBlock:matches
+                                           descriptionBlock:describe];
+  return grey_allOf(grey_accessibilityTrait(UIAccessibilityTraitButton),
+                    image_matcher, nil);
 }
 
 id<GREYMatcher> StaticTextWithAccessibilityLabel(NSString* label) {
@@ -221,9 +241,9 @@ id<GREYMatcher> ShowTabsButton() {
 }
 
 id<GREYMatcher> CollectionViewSwitchCell(NSString* accessibilityIdentifier,
-                                         BOOL isOn) {
+                                         BOOL is_on) {
   return grey_allOf(grey_accessibilityID(accessibilityIdentifier),
-                    CollectionViewSwitchIsOn(isOn), grey_sufficientlyVisible(),
+                    CollectionViewSwitchIsOn(is_on), grey_sufficientlyVisible(),
                     nil);
 }
 

@@ -134,6 +134,7 @@ source_set("eg_tests") {
     "//base",
     "//components/reading_list/ios",
     "//ios/chrome/app/strings",
+    "//ios/chrome/app/theme:theme_grit",
     "//ios/chrome/browser/reading_list",
     "//ios/chrome/browser/ui:ui",
     "//ios/chrome/browser/ui/commands",

@@ -7,6 +7,7 @@
 #import <XCTest/XCTest.h>
 
 #include "base/strings/sys_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "components/reading_list/ios/reading_list_model.h"
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
 #import "ios/chrome/browser/ui/commands/generic_chrome_command.h"
@@ -14,6 +15,7 @@
 #import "ios/chrome/browser/ui/reading_list/reading_list_collection_view_item.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
+#include "ios/chrome/grit/ios_theme_resources.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/earl_grey/accessibility_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
@@ -226,15 +228,15 @@ size_t ModelReadSize(ReadingListModel* model) {
   std::map<GURL, std::string> responses;
   const GURL distillablePageURL =
       web::test::HttpServer::MakeUrl("http://potato");
+  std::string pageTitle = "tomato";
 
   std::string contentToRemove = "Text that distillation should remove.";
   std::string contentToKeep = "Text that distillation should keep.";
   // Distillation only occurs on pages that are not too small.
-  responses[distillablePageURL] = "<html><head><title>tomato</title></head>" +
-                                  contentToRemove * 20 + "<article>" +
-                                  contentToKeep * 20 + "</article>" +
-                                  contentToRemove * 20 + "</html>";
-
+  responses[distillablePageURL] =
+      "<html><head><title>" + pageTitle + "</title></head>" +
+      contentToRemove * 20 + "<article>" + contentToKeep * 20 + "</article>" +
+      contentToRemove * 20 + "</html>";
   const GURL nonDistillablePageURL =
       web::test::HttpServer::MakeUrl("http://beans");
   responses[nonDistillablePageURL] =
@@ -280,15 +282,31 @@ size_t ModelReadSize(ReadingListModel* model) {
   [ChromeEarlGrey loadURL:nonDistillablePageURL];
   [ChromeEarlGrey waitForPageToFinishLoading];
 
-  // Verify that a page with the title "tomato" is present in the reading list.
+  // Verify that an entry with the correct title is present in the reading list.
   OpenReadingList();
-  AssertEntryVisible("tomato");
+  AssertEntryVisible(pageTitle);
 
-  // Long press the "tomato" entry, and open it offline.
-  LongPressEntry("tomato");
+  // Long press the entry, and open it offline.
+  LongPressEntry(pageTitle);
   TapButtonWithID(IDS_IOS_READING_LIST_CONTENT_CONTEXT_OFFLINE);
 
-  // TODO(crbug.com/699110): Verify that distilled content is shown.
+  // Verify that the correct distilled content is shown.
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::StaticHtmlViewContainingText(
+                                   base::SysUTF8ToNSString(
+                                       contentToKeep.c_str()))]
+      assertWithMatcher:grey_notNil()];
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::StaticHtmlViewContainingText(
+                                   base::SysUTF8ToNSString(
+                                       contentToRemove.c_str()))]
+      assertWithMatcher:grey_nil()];
+
+  // Verify that the Omnibox' Info Bubble uses the offline icon.
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::PageSecurityInfoButton()]
+      assertWithMatcher:chrome_test_util::ButtonWithImage(
+                            IDR_IOS_OMNIBOX_OFFLINE)];
 
   // Tap the Omnibox' Info Bubble to open the Page Info.
   [[EarlGrey
@@ -301,6 +319,10 @@ size_t ModelReadSize(ReadingListModel* model) {
           IDS_IOS_PAGE_INFO_OFFLINE_TITLE);
   [[EarlGrey selectElementWithMatcher:pageInfoTitleMatcher]
       assertWithMatcher:grey_notNil()];
+
+  // Verify that the webState's title is correct.
+  XCTAssertTrue(chrome_test_util::GetCurrentWebState()->GetTitle() ==
+                base::ASCIIToUTF16(pageTitle.c_str()));
 }
 
 // Tests that only the "Edit" button is showing when not editing.
