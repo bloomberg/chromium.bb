@@ -2157,6 +2157,10 @@ def GuessVCSName(options):
     except OSError as e:
       if e.errno != errno.ENOENT:  # command not found code
         raise
+    except ValueError as e:
+      # Workaround for https://bugs.python.org/issue26083
+      if e.message != "insecure string pickle":
+        raise
 
   # Mercurial has a command to get the base directory of a repository
   # Try running it, but don't die if we don't have hg installed.
