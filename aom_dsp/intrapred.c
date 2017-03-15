@@ -277,6 +277,70 @@ static INLINE void smooth_predictor(uint8_t *dst, ptrdiff_t stride, int bs,
   }
 }
 
+#if CONFIG_SMOOTH_HV
+static INLINE void smooth_v_predictor(uint8_t *dst, ptrdiff_t stride, int bs,
+                                      const uint8_t *above,
+                                      const uint8_t *left) {
+  const uint8_t below_pred = left[bs - 1];  // estimated by bottom-left pixel
+  const int arr_index = get_msb(bs) - 1;
+  assert(arr_index >= 0);
+  assert(arr_index < NUM_BLOCK_DIMS);
+  const uint8_t *const sm_weights = sm_weight_arrays[arr_index];
+  // scale = 2^sm_weight_log2_scale
+  const int log2_scale = sm_weight_log2_scale;
+  const uint16_t scale = (1 << sm_weight_log2_scale);
+  sm_weights_sanity_checks(sm_weights, scale, log2_scale + sizeof(*dst));
+
+  int r;
+  for (r = 0; r < bs; r++) {
+    int c;
+    for (c = 0; c < bs; ++c) {
+      const uint8_t pixels[] = { above[c], below_pred };
+      const uint8_t weights[] = { sm_weights[r], scale - sm_weights[r] };
+      uint32_t this_pred = 0;
+      assert(scale >= sm_weights[r]);
+      int i;
+      for (i = 0; i < 2; ++i) {
+        this_pred += weights[i] * pixels[i];
+      }
+      dst[c] = clip_pixel(divide_round(this_pred, log2_scale));
+    }
+    dst += stride;
+  }
+}
+
+static INLINE void smooth_h_predictor(uint8_t *dst, ptrdiff_t stride, int bs,
+                                      const uint8_t *above,
+                                      const uint8_t *left) {
+  const uint8_t right_pred = above[bs - 1];  // estimated by top-right pixel
+  const int arr_index = get_msb(bs) - 1;
+  assert(arr_index >= 0);
+  assert(arr_index < NUM_BLOCK_DIMS);
+  const uint8_t *const sm_weights = sm_weight_arrays[arr_index];
+  // scale = 2^sm_weight_log2_scale
+  const int log2_scale = sm_weight_log2_scale;
+  const uint16_t scale = (1 << sm_weight_log2_scale);
+  sm_weights_sanity_checks(sm_weights, scale, log2_scale + sizeof(*dst));
+
+  int r;
+  for (r = 0; r < bs; r++) {
+    int c;
+    for (c = 0; c < bs; ++c) {
+      const uint8_t pixels[] = { left[r], right_pred };
+      const uint8_t weights[] = { sm_weights[c], scale - sm_weights[c] };
+      uint32_t this_pred = 0;
+      assert(scale >= sm_weights[c]);
+      int i;
+      for (i = 0; i < 2; ++i) {
+        this_pred += weights[i] * pixels[i];
+      }
+      dst[c] = clip_pixel(divide_round(this_pred, log2_scale));
+    }
+    dst += stride;
+  }
+}
+#endif  // CONFIG_SMOOTH_HV
+
 #else
 
 static INLINE void tm_predictor(uint8_t *dst, ptrdiff_t stride, int bs,
@@ -770,6 +834,68 @@ static INLINE void highbd_smooth_predictor(uint16_t *dst, ptrdiff_t stride,
   }
 }
 
+static INLINE void highbd_smooth_v_predictor(uint16_t *dst, ptrdiff_t stride,
+                                             int bs, const uint16_t *above,
+                                             const uint16_t *left, int bd) {
+  const uint16_t below_pred = left[bs - 1];  // estimated by bottom-left pixel
+  const int arr_index = get_msb(bs) - 1;
+  assert(arr_index >= 0);
+  assert(arr_index < NUM_BLOCK_DIMS);
+  const uint8_t *const sm_weights = sm_weight_arrays[arr_index];
+  // scale = 2^sm_weight_log2_scale
+  const int log2_scale = sm_weight_log2_scale;
+  const uint16_t scale = (1 << sm_weight_log2_scale);
+  sm_weights_sanity_checks(sm_weights, scale, log2_scale + sizeof(*dst));
+
+  int r;
+  for (r = 0; r < bs; r++) {
+    int c;
+    for (c = 0; c < bs; ++c) {
+      const uint16_t pixels[] = { above[c], below_pred };
+      const uint8_t weights[] = { sm_weights[r], scale - sm_weights[r] };
+      uint32_t this_pred = 0;
+      assert(scale >= sm_weights[r]);
+      int i;
+      for (i = 0; i < 2; ++i) {
+        this_pred += weights[i] * pixels[i];
+      }
+      dst[c] = clip_pixel_highbd(divide_round(this_pred, log2_scale), bd);
+    }
+    dst += stride;
+  }
+}
+
+static INLINE void highbd_smooth_h_predictor(uint16_t *dst, ptrdiff_t stride,
+                                             int bs, const uint16_t *above,
+                                             const uint16_t *left, int bd) {
+  const uint16_t right_pred = above[bs - 1];  // estimated by top-right pixel
+  const int arr_index = get_msb(bs) - 1;
+  assert(arr_index >= 0);
+  assert(arr_index < NUM_BLOCK_DIMS);
+  const uint8_t *const sm_weights = sm_weight_arrays[arr_index];
+  // scale = 2^sm_weight_log2_scale
+  const int log2_scale = sm_weight_log2_scale;
+  const uint16_t scale = (1 << sm_weight_log2_scale);
+  sm_weights_sanity_checks(sm_weights, scale, log2_scale + sizeof(*dst));
+
+  int r;
+  for (r = 0; r < bs; r++) {
+    int c;
+    for (c = 0; c < bs; ++c) {
+      const uint16_t pixels[] = { left[r], right_pred };
+      const uint8_t weights[] = { sm_weights[c], scale - sm_weights[c] };
+      uint32_t this_pred = 0;
+      assert(scale >= sm_weights[c]);
+      int i;
+      for (i = 0; i < 2; ++i) {
+        this_pred += weights[i] * pixels[i];
+      }
+      dst[c] = clip_pixel_highbd(divide_round(this_pred, log2_scale), bd);
+    }
+    dst += stride;
+  }
+}
+
 #else
 static INLINE void highbd_tm_predictor(uint16_t *dst, ptrdiff_t stride, int bs,
                                        const uint16_t *above,
@@ -958,8 +1084,12 @@ intra_pred_above_4x4(d153)
 intra_pred_allsizes(v)
 intra_pred_allsizes(h)
 #if CONFIG_ALT_INTRA
-intra_pred_allsizes(paeth)
 intra_pred_allsizes(smooth)
+#if CONFIG_SMOOTH_HV
+intra_pred_allsizes(smooth_v)
+intra_pred_allsizes(smooth_h)
+#endif  // CONFIG_SMOOTH_HV
+intra_pred_allsizes(paeth)
 #else
 intra_pred_allsizes(tm)
 #endif  // CONFIG_ALT_INTRA

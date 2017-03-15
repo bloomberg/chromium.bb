@@ -63,6 +63,9 @@ static INLINE int av1_is_directional_mode(PREDICTION_MODE mode,
   return mode != DC_PRED && mode != TM_PRED &&
 #if CONFIG_ALT_INTRA
          mode != SMOOTH_PRED &&
+#if CONFIG_SMOOTH_HV
+         mode != SMOOTH_V_PRED && mode != SMOOTH_H_PRED &&
+#endif  // CONFIG_SMOOTH_HV
 #endif  // CONFIG_ALT_INTRA
          bsize >= BLOCK_8X8;
 }

@@ -24,6 +24,9 @@ enum {
               (1 << D207_PRED) | (1 << D63_PRED) |
 #if CONFIG_ALT_INTRA
               (1 << SMOOTH_PRED) |
+#if CONFIG_SMOOTH_HV
+              (1 << SMOOTH_V_PRED) | (1 << SMOOTH_H_PRED) |
+#endif  // CONFIG_SMOOTH_HV
 #endif  // CONFIG_ALT_INTRA
               (1 << TM_PRED),
   INTRA_DC = (1 << DC_PRED),

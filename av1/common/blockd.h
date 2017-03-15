@@ -703,6 +703,10 @@ static const TX_TYPE intra_mode_to_tx_type_context[INTRA_MODES] = {
   ADST_DCT,   // D63
 #if CONFIG_ALT_INTRA
   ADST_ADST,  // SMOOTH
+#if CONFIG_SMOOTH_HV
+  ADST_DCT,   // SMOOTH_V
+  DCT_ADST,   // SMOOTH_H
+#endif        // CONFIG_SMOOTH_HV
 #endif        // CONFIG_ALT_INTRA
   ADST_ADST,  // TM
 };
