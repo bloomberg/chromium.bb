@@ -65,39 +65,54 @@ void NGLineBuilder::SetStart(unsigned index, unsigned offset) {
   FindNextLayoutOpportunity();
 }
 
-void NGLineBuilder::SetEnd(unsigned end_offset) {
+void NGLineBuilder::SetEnd(unsigned new_end_offset) {
+  DCHECK_GT(new_end_offset, end_offset_);
   const Vector<NGLayoutInlineItem>& items = inline_box_->Items();
-  DCHECK(end_offset > end_offset_ && end_offset <= items.back().EndOffset());
+  DCHECK_LE(new_end_offset, items.back().EndOffset());
 
-  // Find the item index for |end_offset|, while accumulating inline-size.
+  // SetEnd() while |new_end_offset| is beyond the current last item.
   unsigned last_index = last_index_;
   const NGLayoutInlineItem* item = &items[last_index];
-  LayoutUnit inline_size_since_current_end;
-  if (end_offset <= item->EndOffset()) {
-    inline_size_since_current_end = item->InlineSize(end_offset_, end_offset);
-  } else {
-    inline_size_since_current_end =
-        item->InlineSize(end_offset_, item->EndOffset());
+  if (new_end_offset > item->EndOffset()) {
+    if (end_offset_ < item->EndOffset()) {
+      SetEnd(item->EndOffset(),
+             item->InlineSize(end_offset_, item->EndOffset()));
+    }
     item = &items[++last_index];
-    for (; end_offset > item->EndOffset(); item = &items[++last_index])
-      inline_size_since_current_end += item->InlineSize();
-    inline_size_since_current_end +=
-        item->InlineSize(item->StartOffset(), end_offset);
+
+    while (new_end_offset > item->EndOffset()) {
+      SetEnd(item->EndOffset(), item->InlineSize());
+      item = &items[++last_index];
+    }
   }
 
-  SetEnd(last_index, end_offset, inline_size_since_current_end);
+  SetEnd(new_end_offset, item->InlineSize(end_offset_, new_end_offset));
 }
 
-void NGLineBuilder::SetEnd(unsigned last_index,
-                           unsigned end_offset,
+void NGLineBuilder::SetEnd(unsigned new_end_offset,
                            LayoutUnit inline_size_since_current_end) {
-  inline_box_->AssertEndOffset(last_index, end_offset);
-  DCHECK_GE(last_index, last_index_);
-  DCHECK_GT(end_offset, end_offset_);
+  DCHECK_GT(new_end_offset, end_offset_);
+  const Vector<NGLayoutInlineItem>& items = inline_box_->Items();
+  DCHECK_LE(new_end_offset, items.back().EndOffset());
+
+  // |new_end_offset| should be in the current item or next.
+  // TODO(kojii): Reconsider this restriction if needed.
+  const NGLayoutInlineItem* item = &items[last_index_];
+  if (end_offset_ == item->EndOffset()) {
+    item = &items[++last_index_];
+    DCHECK_EQ(end_offset_, item->StartOffset());
+  }
+  item->AssertEndOffset(new_end_offset);
+
+  LayoutObject* layout_object = item->GetLayoutObject();
+  if (layout_object && layout_object->isFloating()) {
+    // Floats can affect the position and available width of the current line
+    // if it fits.
+    // TODO(kojii): Implement.
+  }
 
   end_position_ += inline_size_since_current_end;
-  last_index_ = last_index;
-  end_offset_ = end_offset;
+  end_offset_ = new_end_offset;
 }
 
 void NGLineBuilder::SetBreakOpportunity() {
