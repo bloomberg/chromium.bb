@@ -49,7 +49,7 @@ void TaskSchedulerImpl::PostDelayedTaskWithTraits(
   // Post |task| as part of a one-off single-task Sequence.
   GetWorkerPoolForTraits(traits)->PostTaskWithSequence(
       MakeUnique<Task>(from_here, task, traits, delay),
-      make_scoped_refptr(new Sequence), nullptr);
+      make_scoped_refptr(new Sequence));
 }
 
 scoped_refptr<TaskRunner> TaskSchedulerImpl::CreateTaskRunnerWithTraits(
