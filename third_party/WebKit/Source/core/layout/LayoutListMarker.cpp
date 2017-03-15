@@ -295,7 +295,6 @@ void LayoutListMarker::updateMargins() {
         case ListStyleCategory::Symbol:
           marginStart = LayoutUnit(-1);
           marginEnd =
-              fontMetrics.ascent() - minPreferredLogicalWidth() + 1 +
               LayoutUnit(cUAMarkerMarginEm * style()->computedFontSize());
           break;
         default:

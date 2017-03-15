@@ -9,13 +9,13 @@ layer at (0,0) size 800x600
         LayoutBR {BR} at (488,15) size 0x0
       LayoutListItem {LI} at (0,20) size 784x20
         LayoutListMarker (anonymous) at (-1,0) size 7x19: bullet
-        LayoutText {#text} at (31,0) size 260x19
-          text run at (31,0) width 260: "Absolute units work correctly (eg. 50px)."
+        LayoutText {#text} at (22,0) size 260x19
+          text run at (22,0) width 260: "Absolute units work correctly (eg. 50px)."
       LayoutListItem {LI} at (0,40) size 784x492
         LayoutBlockFlow (anonymous) at (0,0) size 784x20
           LayoutListMarker (anonymous) at (-1,0) size 7x19: bullet
-          LayoutText {#text} at (31,0) size 180x19
-            text run at (31,0) width 180: "\"width:x%\" works correctly."
+          LayoutText {#text} at (22,0) size 180x19
+            text run at (22,0) width 180: "\"width:x%\" works correctly."
         LayoutBlockFlow {HR} at (0,28) size 784x2 [border: (1px inset #EEEEEE)]
         LayoutTable {TABLE} at (0,38) size 784x100
           LayoutTableSection {TBODY} at (0,0) size 784x100
