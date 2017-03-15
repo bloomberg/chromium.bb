@@ -63,10 +63,10 @@ opt_1 == 1; // true
 opt_1 == base::nullopt_t; // false
 ```
 
-`base::Optional<T>` has a helper function `make_optional<T&&>`:
+`base::Optional<T>` has a helper function `base::make_optional<T&&>`:
 
 ```C++
-base::Optional<int> opt = make_optional<int>(GetMagicNumber());
+base::Optional<int> opt = base::make_optional<int>(GetMagicNumber());
 ```
 
 Finally, `base::Optional<T>` is integrated with `std::hash`, using
