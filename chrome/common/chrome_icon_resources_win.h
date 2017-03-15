@@ -23,6 +23,9 @@ extern const int kSxSApplicationIndex;
 // The Chrome/Chromium App Launcher icon.
 extern const int kAppLauncherIndex;
 
+// The Chrome/Chromium Incognito icon.
+extern const int kIncognitoIndex;
+
 // The Chrome App Launcher Canary icon.
 extern const int kSxSAppLauncherIndex;
 

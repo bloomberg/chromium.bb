@@ -28,6 +28,7 @@
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
 #include "chrome/browser/shell_integration_win.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/chrome_icon_resources_win.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -154,8 +155,7 @@ bool UpdateTaskCategory(
   }
 
   // Create an IShellLink object which launches Chrome in incognito mode, and
-  // add it to the collection. We use our application icon as the icon for
-  // this item.
+  // add it to the collection.
   if (incognito_availability != IncognitoModePrefs::DISABLED) {
     scoped_refptr<ShellLinkItem> incognito = CreateShellLink();
     incognito->GetCommandLine()->AppendSwitch(switches::kIncognito);
@@ -164,7 +164,7 @@ bool UpdateTaskCategory(
     base::ReplaceSubstringsAfterOffset(
         &incognito_title, 0, L"&", base::StringPiece16());
     incognito->set_title(incognito_title);
-    incognito->set_icon(chrome_path.value(), icon_index);
+    incognito->set_icon(chrome_path.value(), icon_resources::kIncognitoIndex);
     items.push_back(incognito);
   }
 
