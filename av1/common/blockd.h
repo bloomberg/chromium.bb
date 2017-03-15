@@ -600,6 +600,11 @@ static INLINE int supertx_enabled(const MB_MODE_INFO *mbmi) {
 
 #define USE_TXTYPE_SEARCH_FOR_SUB8X8_IN_CB4X4 1
 
+#if CONFIG_RECT_TX
+
+static INLINE int is_rect_tx(TX_SIZE tx_size) { return tx_size >= TX_SIZES; }
+#endif  // CONFIG_RECT_TX
+
 #if CONFIG_EXT_TX
 #define ALLOW_INTRA_EXT_TX 1
 
@@ -764,8 +769,6 @@ static INLINE int is_rect_tx_allowed(const MACROBLOCKD *xd,
   return is_rect_tx_allowed_bsize(mbmi->sb_type) &&
          !xd->lossless[mbmi->segment_id];
 }
-
-static INLINE int is_rect_tx(TX_SIZE tx_size) { return tx_size >= TX_SIZES; }
 #endif  // CONFIG_RECT_TX
 #endif  // CONFIG_EXT_TX
 
