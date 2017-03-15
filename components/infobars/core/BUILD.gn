@@ -34,6 +34,7 @@ static_library("core") {
     "//base",
     "//ui/base",
     "//ui/gfx",
+    "//ui/gfx/animation",
     "//ui/strings",
     "//url",
   ]

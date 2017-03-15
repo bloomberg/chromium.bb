@@ -26,7 +26,7 @@ class AnimationDelegate;
 //
 // To subclass override Step, which is invoked as the animation progresses and
 // GetCurrentValue() to return the value appropriate to the animation.
-class GFX_EXPORT Animation : public AnimationContainerElement {
+class ANIMATION_EXPORT Animation : public AnimationContainerElement {
  public:
   explicit Animation(base::TimeDelta timer_interval);
   ~Animation() override;

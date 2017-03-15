@@ -15,7 +15,7 @@ class AnimationDelegate;
 
 // Linear time bounded animation. As the animation progresses AnimateToState is
 // invoked.
-class GFX_EXPORT LinearAnimation : public Animation {
+class ANIMATION_EXPORT LinearAnimation : public Animation {
  public:
   // Default frame rate (hz).
   static const int kDefaultFrameRate = 60;

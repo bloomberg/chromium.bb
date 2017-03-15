@@ -17,7 +17,7 @@ namespace gfx {
 //
 // A ThrobAnimation has two durations: the duration used when behavior like
 // a SlideAnimation, and the duration used when throbbing.
-class GFX_EXPORT ThrobAnimation : public SlideAnimation {
+class ANIMATION_EXPORT ThrobAnimation : public SlideAnimation {
  public:
   explicit ThrobAnimation(AnimationDelegate* target);
   ~ThrobAnimation() override {}

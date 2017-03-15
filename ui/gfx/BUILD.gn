@@ -49,25 +49,6 @@ component("gfx") {
     "android/java_bitmap.h",
     "android/view_configuration.cc",
     "android/view_configuration.h",
-    "animation/animation.cc",
-    "animation/animation.h",
-    "animation/animation_container.cc",
-    "animation/animation_container.h",
-    "animation/animation_container_element.h",
-    "animation/animation_container_observer.h",
-    "animation/animation_delegate.h",
-    "animation/animation_mac.mm",
-    "animation/animation_win.cc",
-    "animation/linear_animation.cc",
-    "animation/linear_animation.h",
-    "animation/multi_animation.cc",
-    "animation/multi_animation.h",
-    "animation/slide_animation.cc",
-    "animation/slide_animation.h",
-    "animation/throb_animation.cc",
-    "animation/throb_animation.h",
-    "animation/tween.cc",
-    "animation/tween.h",
     "break_list.h",
     "codec/jpeg_codec.cc",
     "codec/jpeg_codec.h",
@@ -273,6 +254,7 @@ component("gfx") {
     "//base",
     "//skia",
     "//third_party/icu",
+    "//ui/gfx/animation",
     "//ui/gfx/geometry",
     "//ui/gfx/range",
   ]
@@ -345,7 +327,6 @@ component("gfx") {
       sources += [ "font_fallback_android.cc" ]
     } else {
       sources -= [
-        "animation/throb_animation.cc",
         "canvas_skia.cc",
         "path.cc",
         "selection_model.cc",
@@ -597,6 +578,7 @@ static_library("test_support") {
     "//base/test:test_support",
     "//skia",
     "//testing/gtest",
+    "//ui/gfx/animation",
     "//ui/gfx/geometry",
   ]
 
@@ -710,6 +692,7 @@ test("gfx_unittests") {
     "//third_party/libpng",
     "//third_party/zlib",
     "//ui/base",
+    "//ui/gfx/animation",
     "//ui/gfx/geometry",
     "//ui/gfx/range",
     "//ui/resources:ui_test_pak",

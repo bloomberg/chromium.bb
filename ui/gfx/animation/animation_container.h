@@ -11,7 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "ui/gfx/gfx_export.h"
+#include "ui/gfx/animation/animation_export.h"
 
 namespace gfx {
 
@@ -26,7 +26,7 @@ class AnimationContainerObserver;
 //
 // AnimationContainer is ref counted. Each Animation contained within the
 // AnimationContainer own it.
-class GFX_EXPORT AnimationContainer
+class ANIMATION_EXPORT AnimationContainer
     : public base::RefCounted<AnimationContainer> {
  public:
   AnimationContainer();

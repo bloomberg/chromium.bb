@@ -7,8 +7,8 @@
 
 #include "base/macros.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/gfx/animation/animation_export.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/gfx/gfx_export.h"
 #include "ui/gfx/transform.h"
 
 namespace base {
@@ -17,7 +17,7 @@ class TimeTicks;
 
 namespace gfx {
 
-class GFX_EXPORT Tween {
+class ANIMATION_EXPORT Tween {
  public:
   enum Type {
     LINEAR,             // Linear.

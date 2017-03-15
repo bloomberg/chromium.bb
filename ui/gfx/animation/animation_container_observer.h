@@ -5,7 +5,7 @@
 #ifndef UI_GFX_ANIMATION_ANIMATION_CONTAINER_OBSERVER_H_
 #define UI_GFX_ANIMATION_ANIMATION_CONTAINER_OBSERVER_H_
 
-#include "ui/gfx/gfx_export.h"
+#include "ui/gfx/animation/animation_export.h"
 
 namespace gfx {
 
@@ -13,7 +13,7 @@ class AnimationContainer;
 
 // The observer is notified after every update of the animations managed by
 // the container.
-class GFX_EXPORT AnimationContainerObserver {
+class ANIMATION_EXPORT AnimationContainerObserver {
  public:
   // Invoked on every tick of the timer managed by the container and after
   // all the animations have updated.

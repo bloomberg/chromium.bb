@@ -79,6 +79,7 @@ component("wm") {
     "//ui/events/devices",
     "//ui/events/platform",
     "//ui/gfx",
+    "//ui/gfx/animation",
     "//ui/gfx/geometry",
     "//ui/resources",
   ]
@@ -142,6 +143,7 @@ test("wm_unittests") {
     "//ui/events:test_support",
     "//ui/events/platform",
     "//ui/gfx",
+    "//ui/gfx/animation",
     "//ui/gfx/geometry",
     "//ui/gl:test_support",
     "//ui/resources",

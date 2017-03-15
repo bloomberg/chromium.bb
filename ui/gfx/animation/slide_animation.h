@@ -45,7 +45,7 @@ namespace gfx {
 //  private:
 //   std::unique_ptr<SlideAnimation> animation_;
 // }
-class GFX_EXPORT SlideAnimation : public LinearAnimation {
+class ANIMATION_EXPORT SlideAnimation : public LinearAnimation {
  public:
   explicit SlideAnimation(AnimationDelegate* target);
   ~SlideAnimation() override;

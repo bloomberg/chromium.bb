@@ -146,6 +146,7 @@ source_set("browser") {
     "//ui/events:gesture_detection",
     "//ui/events/blink",
     "//ui/gfx",
+    "//ui/gfx/animation",
     "//ui/gfx/geometry",
     "//ui/gfx/geometry/mojo",
     "//ui/gl",

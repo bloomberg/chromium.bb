@@ -19,7 +19,7 @@ namespace gfx {
 // To create a MultiAnimation pass in the parts, invoke Start() and the delegate
 // is notified as the animation progresses. By default MultiAnimation runs until
 // Stop is invoked, see |set_continuous()| for details.
-class GFX_EXPORT MultiAnimation : public Animation {
+class ANIMATION_EXPORT MultiAnimation : public Animation {
  public:
   // Defines part of the animation. Each part consists of the following:
   //

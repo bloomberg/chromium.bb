@@ -87,6 +87,7 @@ component("compositor") {
     "//skia",
     "//ui/base",
     "//ui/gfx",
+    "//ui/gfx/animation",
     "//ui/gfx/geometry",
     "//ui/gl",
   ]
