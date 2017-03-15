@@ -65,6 +65,14 @@ def AddTestLauncherArgs(parser):
       dest='json_results_file', type=os.path.realpath,
       help='If set, will dump results in JSON form '
            'to specified file.')
+  parser.add_argument(
+      '--test-launcher-shard-index',
+      type=int, default=os.environ.get('GTEST_SHARD_INDEX', 0),
+      help='Index of the external shard to run.')
+  parser.add_argument(
+      '--test-launcher-total-shards',
+      type=int, default=os.environ.get('GTEST_TOTAL_SHARDS', 1),
+      help='Total number of external shards.')
 
   return parser
 

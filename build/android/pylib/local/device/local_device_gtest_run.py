@@ -359,7 +359,6 @@ class LocalDeviceGtestRun(local_device_test_run.LocalDeviceTestRun):
         logging.info('No tests found. Output:')
         for l in raw_test_list:
           logging.info('  %s', l)
-      tests = self._test_instance.FilterTests(tests)
       return tests
 
     # Query all devices in case one fails.
@@ -370,7 +369,12 @@ class LocalDeviceGtestRun(local_device_test_run.LocalDeviceTestRun):
     if all(not tl for tl in test_lists):
       raise device_errors.CommandFailedError(
           'Failed to list tests on any device')
-    return list(sorted(set().union(*[set(tl) for tl in test_lists if tl])))
+    tests = list(sorted(set().union(*[set(tl) for tl in test_lists if tl])))
+    tests = self._test_instance.FilterTests(tests)
+    tests = self._ApplyExternalSharding(
+        tests, self._test_instance.external_shard_index,
+        self._test_instance.total_external_shards)
+    return tests
 
   #override
   def _RunTest(self, device, test):

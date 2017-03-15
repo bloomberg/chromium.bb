@@ -262,11 +262,13 @@ class GtestTestInstance(test_instance.TestInstance):
     if len(args.suite_name) > 1:
       raise ValueError('Platform mode currently supports only 1 gtest suite')
     self._exe_dist_dir = None
+    self._external_shard_index = args.test_launcher_shard_index
     self._extract_test_list_from_filter = args.extract_test_list_from_filter
+    self._filter_tests_lock = threading.Lock()
     self._shard_timeout = args.shard_timeout
     self._store_tombstones = args.store_tombstones
+    self._total_external_shards = args.test_launcher_total_shards
     self._suite = args.suite_name[0]
-    self._filter_tests_lock = threading.Lock()
 
     # GYP:
     if args.executable_dist_dir:
@@ -366,6 +368,14 @@ class GtestTestInstance(test_instance.TestInstance):
     return self._exe_dist_dir
 
   @property
+  def external_shard_index(self):
+    return self._external_shard_index
+
+  @property
+  def extract_test_list_from_filter(self):
+    return self._extract_test_list_from_filter
+
+  @property
   def extras(self):
     return self._extras
 
@@ -410,8 +420,8 @@ class GtestTestInstance(test_instance.TestInstance):
     return self._test_arguments
 
   @property
-  def extract_test_list_from_filter(self):
-    return self._extract_test_list_from_filter
+  def total_external_shards(self):
+    return self._total_external_shards
 
   #override
   def TestType(self):
