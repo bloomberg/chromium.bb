@@ -3,10 +3,6 @@
 // found in the LICENSE file.
 #include "content/browser/tracing/tracing_controller_impl.h"
 
-#include <algorithm>
-#include <memory>
-#include <utility>
-
 #include "base/bind.h"
 #include "base/cpu.h"
 #include "base/files/file_util.h"
@@ -49,7 +45,6 @@
 #if defined(OS_CHROMEOS)
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/debug_daemon_client.h"
-#include "content/browser/tracing/arc_tracing_agent.h"
 #endif
 
 #if defined(OS_WIN)
@@ -68,7 +63,6 @@ base::LazyInstance<TracingControllerImpl>::Leaky g_controller =
 
 const char kChromeTracingAgentName[] = "chrome";
 const char kETWTracingAgentName[] = "etw";
-const char kArcTracingAgentName[] = "arc";
 const char kChromeTraceLabel[] = "traceEvents";
 
 const int kStartTracingTimeoutSeconds = 30;
@@ -295,12 +289,6 @@ bool TracingControllerImpl::StartTracing(
                      base::Unretained(this)));
       ++pending_start_tracing_ack_count_;
     }
-
-    ArcTracingAgent::GetInstance()->StartAgentTracing(
-        trace_config,
-        base::Bind(&TracingControllerImpl::OnStartAgentTracingAcked,
-                   base::Unretained(this)));
-    ++pending_start_tracing_ack_count_;
 #elif defined(OS_WIN)
     EtwTracingAgent::GetInstance()->StartAgentTracing(
         trace_config,
@@ -575,11 +563,6 @@ void TracingControllerImpl::AddTracingAgent(const std::string& agent_name) {
         BrowserThread::GetBlockingPool());
     return;
   }
-
-  if (agent_name == kArcTracingAgentName) {
-    additional_tracing_agents_.push_back(ArcTracingAgent::GetInstance());
-    return;
-  }
 #elif defined(OS_WIN)
   auto* etw_agent = EtwTracingAgent::GetInstance();
   if (agent_name == etw_agent->GetTracingAgentName()) {
@@ -684,17 +667,15 @@ void TracingControllerImpl::OnEndAgentTracingAcked(
 
   if (trace_data_sink_.get() && events_str_ptr &&
       !events_str_ptr->data().empty()) {
+    std::string json_string;
     if (agent_name == kETWTracingAgentName) {
       // The Windows kernel events are kept into a JSON format stored as string
       // and must not be escaped.
-      trace_data_sink_->AddAgentTrace(events_label, events_str_ptr->data());
-    } else if (agent_name != kArcTracingAgentName) {
-      // ARC trace data is obtained via systrace. Ignore the empty data.
-      // Quote other trace data as JSON strings and merge them into
-      // |trace_data_sink_|.
-      trace_data_sink_->AddAgentTrace(
-          events_label, base::GetQuotedJSONString(events_str_ptr->data()));
+      json_string = events_str_ptr->data();
+    } else {
+      json_string = base::GetQuotedJSONString(events_str_ptr->data());
     }
+    trace_data_sink_->AddAgentTrace(events_label, json_string);
   }
   std::vector<std::string> category_groups;
   OnStopTracingAcked(NULL, category_groups);
@@ -849,7 +830,7 @@ void TracingControllerImpl::RecordClockSyncMarker(
 
 void TracingControllerImpl::IssueClockSyncMarker() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK_EQ(0, pending_clock_sync_ack_count_);
+  DCHECK(pending_clock_sync_ack_count_ == 0);
 
   for (auto* it : additional_tracing_agents_) {
     if (it->SupportsExplicitClockSync()) {
@@ -889,7 +870,7 @@ void TracingControllerImpl::OnClockSyncMarkerRecordedByAgent(
     return;
 
   // Stop tracing only if all agents report back.
-  if (--pending_clock_sync_ack_count_ == 0) {
+  if(--pending_clock_sync_ack_count_ == 0) {
     clock_sync_timer_.Stop();
     StopTracingAfterClockSync();
   }

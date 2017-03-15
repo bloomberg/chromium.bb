@@ -1,3 +1,0 @@
-include_rules = [
-  "+content/browser/tracing/arc_tracing_agent.h"
-]

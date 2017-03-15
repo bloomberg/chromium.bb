@@ -154,7 +154,6 @@ mojom("arc_bindings") {
     "common/scale_factor.mojom",
     "common/screen_rect.mojom",
     "common/storage_manager.mojom",
-    "common/tracing.mojom",
     "common/tts.mojom",
     "common/video.mojom",
     "common/video_accelerator.mojom",

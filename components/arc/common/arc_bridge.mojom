@@ -26,14 +26,13 @@ import "power.mojom";
 import "print.mojom";
 import "process.mojom";
 import "storage_manager.mojom";
-import "tracing.mojom";
 import "tts.mojom";
 import "video.mojom";
 import "wallpaper.mojom";
 
-// Next MinVersion: 23
+// Next MinVersion: 22
 // Deprecated method IDs: 101, 105
-// Next method ID: 129
+// Next method ID: 128
 interface ArcBridgeHost {
   // Keep the entries alphabetical. In order to do so without breaking
   // compatibility with the ARC instance, explicitly assign each interface a
@@ -110,9 +109,6 @@ interface ArcBridgeHost {
 
   // Notifies Chrome that the StorageManagerInstance interface is ready.
   [MinVersion=12] OnStorageManagerInstanceReady@118(StorageManagerInstance instance_ptr);
-
-  // Notifies Chrome that the TracingInstance interface is ready.
-  [MinVersion=22] OnTracingInstanceReady@128(TracingInstance instance_ptr);
 
   // Notifies Chrome that the TtsInstance interface is ready.
   [MinVersion=17] OnTtsInstanceReady@123(TtsInstance instance_ptr);
