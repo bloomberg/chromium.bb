@@ -72,7 +72,7 @@ void ImageWriterUtilityClient::Write(const ProgressCallback& progress_callback,
   success_callback_ = success_callback;
   error_callback_ = error_callback;
 
-  StartUtilityProcess();
+  StartUtilityProcessIfNeeded();
 
   extensions::mojom::RemovableStorageWriterClientPtr client;
   removable_storage_writer_client_ =
@@ -94,7 +94,7 @@ void ImageWriterUtilityClient::Verify(const ProgressCallback& progress_callback,
   success_callback_ = success_callback;
   error_callback_ = error_callback;
 
-  StartUtilityProcess();
+  StartUtilityProcessIfNeeded();
 
   extensions::mojom::RemovableStorageWriterClientPtr client;
   removable_storage_writer_client_ =
@@ -118,18 +118,16 @@ void ImageWriterUtilityClient::Shutdown() {
   utility_process_mojo_client_.reset();
 }
 
-void ImageWriterUtilityClient::StartUtilityProcess() {
+void ImageWriterUtilityClient::StartUtilityProcessIfNeeded() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
   if (utility_process_mojo_client_)
     return;
 
-  const base::string16 utility_process_name =
-      l10n_util::GetStringUTF16(IDS_UTILITY_PROCESS_IMAGE_WRITER_NAME);
-
-  utility_process_mojo_client_.reset(
-      new content::UtilityProcessMojoClient<
-          extensions::mojom::RemovableStorageWriter>(utility_process_name));
+  utility_process_mojo_client_ =
+      base::MakeUnique<content::UtilityProcessMojoClient<
+          extensions::mojom::RemovableStorageWriter>>(
+          l10n_util::GetStringUTF16(IDS_UTILITY_PROCESS_IMAGE_WRITER_NAME));
   utility_process_mojo_client_->set_error_callback(
       base::Bind(&ImageWriterUtilityClient::UtilityProcessError, this));
 

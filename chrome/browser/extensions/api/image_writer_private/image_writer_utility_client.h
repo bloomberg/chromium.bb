@@ -65,9 +65,7 @@ class ImageWriterUtilityClient
  private:
   class RemovableStorageWriterClientImpl;
 
-  // Ensures the utility process has been created.
-  void StartUtilityProcess();
-
+  void StartUtilityProcessIfNeeded();
   void UtilityProcessError();
 
   void OperationProgress(int64_t progress);
