@@ -144,6 +144,10 @@ public class WebApkServiceConnectionManager {
      * @param webApkPackage WebAPK package for the service to disconnect from.
      */
     public void disconnect(final Context appContext, String webApkPackage) {
+        if (webApkPackage == null) {
+            return;
+        }
+
         final Connection connection = mConnections.remove(webApkPackage);
         if (connection == null) {
             return;

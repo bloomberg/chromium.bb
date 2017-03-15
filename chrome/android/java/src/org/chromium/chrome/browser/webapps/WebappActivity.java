@@ -102,7 +102,7 @@ public class WebappActivity extends FullScreenActivity {
         WebappInfo newWebappInfo = createWebappInfo(intent);
         if (newWebappInfo == null) {
             Log.e(TAG, "Failed to parse new Intent: " + intent);
-            finish();
+            ApiCompatibilityUtils.finishAndRemoveTask(this);
         } else if (!TextUtils.equals(mWebappInfo.id(), newWebappInfo.id())) {
             mWebappInfo = newWebappInfo;
             resetSavedInstanceState();
@@ -165,7 +165,10 @@ public class WebappActivity extends FullScreenActivity {
 
     @Override
     public void finishNativeInitialization() {
-        if (!mWebappInfo.isInitialized()) finish();
+        if (!mWebappInfo.isInitialized()) {
+            ApiCompatibilityUtils.finishAndRemoveTask(this);
+            return;
+        }
         super.finishNativeInitialization();
         initializeUI(getSavedInstanceState());
         mIsInitialized = true;
