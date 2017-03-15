@@ -18,7 +18,7 @@ namespace gl {
 namespace init {
 
 std::vector<GLImplementation> GetAllowedGLImplementations() {
-  ui::OzonePlatform::InitializeForGPU();
+  DCHECK(GetSurfaceFactoryOzone());
   return GetSurfaceFactoryOzone()->GetAllowedGLImplementations();
 }
 

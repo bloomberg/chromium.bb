@@ -18,6 +18,10 @@
 #include "base/android/jni_android.h"
 #endif
 
+#if defined(USE_OZONE)
+#include "ui/ozone/public/ozone_platform.h"
+#endif
+
 namespace content {
 
 InProcessGpuThread::InProcessGpuThread(
@@ -50,6 +54,12 @@ void InProcessGpuThread::Init() {
 #endif
 
   gpu_process_ = new GpuProcess(io_thread_priority);
+
+#if defined(USE_OZONE)
+  ui::OzonePlatform::InitParams params;
+  params.single_process = true;
+  ui::OzonePlatform::InitializeForGPU(params);
+#endif
 
   gpu::GPUInfo gpu_info;
   if (!gl::init::InitializeGLOneOff())

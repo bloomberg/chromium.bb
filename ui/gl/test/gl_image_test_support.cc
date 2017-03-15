@@ -12,12 +12,19 @@
 
 #if defined(USE_OZONE)
 #include "base/run_loop.h"
+#include "ui/ozone/public/ozone_platform.h"
 #endif
 
 namespace gl {
 
 // static
 void GLImageTestSupport::InitializeGL() {
+#if defined(USE_OZONE)
+  ui::OzonePlatform::InitParams params;
+  params.single_process = true;
+  ui::OzonePlatform::InitializeForGPU(params);
+#endif
+
   std::vector<GLImplementation> allowed_impls =
       init::GetAllowedGLImplementations();
   DCHECK(!allowed_impls.empty());

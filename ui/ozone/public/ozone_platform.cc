@@ -51,12 +51,6 @@ void OzonePlatform::InitializeForUI(const InitParams& args) {
 }
 
 // static
-void OzonePlatform::InitializeForGPU() {
-  const InitParams params;
-  OzonePlatform::InitializeForGPU(params);
-}
-
-// static
 void OzonePlatform::InitializeForGPU(const InitParams& args) {
   EnsureInstance();
   if (g_platform_initialized_gpu)

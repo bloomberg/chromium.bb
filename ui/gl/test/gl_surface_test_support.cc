@@ -32,6 +32,13 @@ void GLSurfaceTestSupport::InitializeOneOff() {
 #if defined(USE_X11)
   XInitThreads();
 #endif
+
+#if defined(USE_OZONE)
+  ui::OzonePlatform::InitParams params;
+  params.single_process = true;
+  ui::OzonePlatform::InitializeForGPU(params);
+#endif
+
   ui::test::EnableTestConfigForPlatformWindows();
 
   bool use_software_gl = true;
@@ -88,17 +95,21 @@ void GLSurfaceTestSupport::InitializeOneOffImplementation(
 // static
 void GLSurfaceTestSupport::InitializeOneOffWithMockBindings() {
 #if defined(USE_OZONE)
-  // This function skips where Ozone is otherwise initialized.
-  ui::OzonePlatform::InitializeForGPU();
+  ui::OzonePlatform::InitParams params;
+  params.single_process = true;
+  ui::OzonePlatform::InitializeForGPU(params);
 #endif
+
   InitializeOneOffImplementation(kGLImplementationMockGL, false);
 }
 
 void GLSurfaceTestSupport::InitializeOneOffWithStubBindings() {
 #if defined(USE_OZONE)
-  // This function skips where Ozone is otherwise initialized.
-  ui::OzonePlatform::InitializeForGPU();
+  ui::OzonePlatform::InitParams params;
+  params.single_process = true;
+  ui::OzonePlatform::InitializeForGPU(params);
 #endif
+
   InitializeOneOffImplementation(kGLImplementationStubGL, false);
 }
 

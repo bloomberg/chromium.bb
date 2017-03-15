@@ -22,6 +22,10 @@
 #include "ui/gl/gl_switches.h"
 #include "ui/gl/init/gl_factory.h"
 
+#if defined(USE_OZONE)
+#include "ui/ozone/public/ozone_platform.h"
+#endif
+
 namespace gpu {
 
 namespace {
@@ -174,6 +178,14 @@ bool GpuInit::InitializeAndStartSandbox(const base::CommandLine& command_line) {
 #endif  // defined(OS_LINUX)
 
   base::TimeTicks before_initialize_one_off = base::TimeTicks::Now();
+
+#if defined(USE_OZONE)
+  // Initialize Ozone GPU after the watchdog in case it hangs. The sandbox
+  // may also have started at this point.
+  ui::OzonePlatform::InitParams params;
+  params.single_process = false;
+  ui::OzonePlatform::InitializeForGPU(params);
+#endif
 
   // Load and initialize the GL implementation and locate the GL entry points if
   // needed. This initialization may have already happened if running in the

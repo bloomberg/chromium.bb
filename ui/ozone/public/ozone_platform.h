@@ -89,10 +89,6 @@ class OZONE_EXPORT OzonePlatform {
   // InitalizeForUI.
   static void InitializeForUI(const InitParams& args);
 
-  // Initializes the subsystems/resources necessary for rendering (i.e. GPU).
-  // TODO(rjkroege): Remove deprecated entry point (http://crbug.com/620934)
-  static void InitializeForGPU();
-
   // Initializes the subsystems for rendering but with additional properties
   // provided by |args| as with InitalizeForUI.
   static void InitializeForGPU(const InitParams& args);
