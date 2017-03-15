@@ -545,6 +545,7 @@ public class ReaderModeManager extends TabModelSelectorTabObserver
      * Open a link from the panel in a new tab.
      * @param url The URL to load.
      */
+    @Override
     public void createNewTab(String url) {
         if (mChromeActivity == null) return;
 

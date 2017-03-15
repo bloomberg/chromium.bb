@@ -61,12 +61,14 @@ public class ShareServiceImpl implements ShareService {
         }
 
         ShareHelper.TargetChosenCallback innerCallback = new ShareHelper.TargetChosenCallback() {
+            @Override
             public void onTargetChosen(ComponentName chosenComponent) {
                 RecordHistogram.recordEnumeratedHistogram("WebShare.ShareOutcome",
                         WEBSHARE_OUTCOME_SUCCESS, WEBSHARE_OUTCOME_COUNT);
                 callback.call(ShareError.OK);
             }
 
+            @Override
             public void onCancel() {
                 RecordHistogram.recordEnumeratedHistogram("WebShare.ShareOutcome",
                         WEBSHARE_OUTCOME_CANCELED, WEBSHARE_OUTCOME_COUNT);

@@ -1668,6 +1668,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
      * and visa-versa.
      * @param isInMultiWindowMode True if the activity is in multi-window mode.
      */
+    @Override
     public void onMultiWindowModeChanged(boolean isInMultiWindowMode) {
         recordMultiWindowModeChangedUserAction(isInMultiWindowMode);
 

@@ -311,6 +311,7 @@ import java.util.UUID;
                 mNativeWebContentsAndroid, enableHiding, enableShowing, animate);
     }
 
+    @Override
     public void scrollFocusedEditableNodeIntoView() {
         // The native side keeps track of whether the zoom and scroll actually occurred. It is
         // more efficient to do it this way and sometimes fire an unnecessary message rather

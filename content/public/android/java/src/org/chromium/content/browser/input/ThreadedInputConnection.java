@@ -409,6 +409,7 @@ class ThreadedInputConnection extends BaseInputConnection implements ChromiumBas
     /**
      * @see InputConnection#deleteSurroundingTextInCodePoints(int, int)
      */
+    @Override
     public boolean deleteSurroundingTextInCodePoints(
             final int beforeLength, final int afterLength) {
         if (DEBUG_LOGS) {
@@ -647,6 +648,7 @@ class ThreadedInputConnection extends BaseInputConnection implements ChromiumBas
      * @see InputConnection#closeConnection()
      */
     // TODO(crbug.com/635567): Fix this properly.
+    @Override
     @SuppressLint("MissingSuperCall")
     public void closeConnection() {
         if (DEBUG_LOGS) Log.w(TAG, "closeConnection");

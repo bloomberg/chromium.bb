@@ -77,6 +77,7 @@ public class SyncController implements ProfileSyncService.SyncStateChangedListen
         mProfileSyncService.addSyncStateChangedListener(this);
         mProfileSyncService.setMasterSyncEnabledProvider(
                 new ProfileSyncService.MasterSyncEnabledProvider() {
+                    @Override
                     public boolean isMasterSyncEnabled() {
                         return AndroidSyncSettings.isMasterSyncEnabled(mContext);
                     }

@@ -376,6 +376,7 @@ public class PaymentRequestImpl
         recordSuccessFunnelHistograms("Initiated");
     }
 
+    @Override
     protected void finalize() throws Throwable {
         super.finalize();
         if (mCurrencyFormatter != null) {
