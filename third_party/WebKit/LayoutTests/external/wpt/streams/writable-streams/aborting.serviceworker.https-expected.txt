@@ -34,5 +34,7 @@ FAIL writer.abort(), controller.error() while there is an in-flight write, and t
 PASS controller.error(), writer.abort() while there is an in-flight write, and then finish the write 
 PASS releaseLock() while aborting should reject the original closed promise 
 PASS releaseLock() during delayed async abort() should create a new rejected closed promise 
+FAIL abort() should be rejected with the error passed to controller.error() during pending write() promise_test: Unhandled rejection with value: object "TypeError: Cannot error a errored writable stream"
+FAIL abort() should be rejected with the error passed to controller.error() during pending close() promise_test: Unhandled rejection with value: object "TypeError: Cannot error a errored writable stream"
 Harness: the test ran to completion.
 

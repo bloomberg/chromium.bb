@@ -2247,7 +2247,6 @@ crbug.com/626703 external/wpt/streams/readable-streams/bad-underlying-sources.ht
 crbug.com/626703 external/wpt/streams/readable-streams/cancel.html [ Failure Timeout ]
 crbug.com/626703 external/wpt/streams/readable-streams/garbage-collection.html [ Failure Timeout ]
 crbug.com/626703 external/wpt/streams/readable-streams/general.html [ Failure Timeout ]
-crbug.com/626703 external/wpt/streams/readable-streams/tee.html [ Failure Timeout ]
 crbug.com/626703 external/wpt/streams/readable-streams/templated.html [ Failure Timeout ]
 crbug.com/626703 external/wpt/html/webappapis/idle-callbacks/callback-exception.html [ Timeout ]
 crbug.com/626703 external/wpt/html/webappapis/idle-callbacks/callback-iframe.html [ Timeout ]
