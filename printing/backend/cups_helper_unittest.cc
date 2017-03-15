@@ -216,8 +216,8 @@ TEST(PrintBackendCupsHelperTest, TestPpdParsingBrotherPrinters) {
     EXPECT_TRUE(printing::ParsePpdCapabilities("test", kTestPpdData, &caps));
     EXPECT_TRUE(caps.color_changeable);
     EXPECT_TRUE(caps.color_default);
-    EXPECT_EQ(printing::BROTHER_COLOR_COLOR, caps.color_model);
-    EXPECT_EQ(printing::BROTHER_COLOR_BLACK, caps.bw_model);
+    EXPECT_EQ(printing::BROTHER_BRSCRIPT3_COLOR, caps.color_model);
+    EXPECT_EQ(printing::BROTHER_BRSCRIPT3_BLACK, caps.bw_model);
   }
   {
     const char kTestPpdData[] =
@@ -234,8 +234,8 @@ TEST(PrintBackendCupsHelperTest, TestPpdParsingBrotherPrinters) {
     EXPECT_TRUE(printing::ParsePpdCapabilities("test", kTestPpdData, &caps));
     EXPECT_TRUE(caps.color_changeable);
     EXPECT_TRUE(caps.color_default);
-    EXPECT_EQ(printing::BROTHER_COLOR_COLOR, caps.color_model);
-    EXPECT_EQ(printing::BROTHER_COLOR_BLACK, caps.bw_model);
+    EXPECT_EQ(printing::BROTHER_CUPS_COLOR, caps.color_model);
+    EXPECT_EQ(printing::BROTHER_CUPS_MONO, caps.bw_model);
   }
   {
     const char kTestPpdData[] =

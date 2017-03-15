@@ -86,9 +86,11 @@ PRINTING_EXPORT extern const char kKCMY[];
 PRINTING_EXPORT extern const char kCMY_K[];
 PRINTING_EXPORT extern const char kCMY[];
 PRINTING_EXPORT extern const char kColor[];
+PRINTING_EXPORT extern const char kFullColor[];
 PRINTING_EXPORT extern const char kGray[];
 PRINTING_EXPORT extern const char kGrayscale[];
 PRINTING_EXPORT extern const char kGreyscale[];
+PRINTING_EXPORT extern const char kMono[];
 PRINTING_EXPORT extern const char kMonochrome[];
 PRINTING_EXPORT extern const char kNormal[];
 PRINTING_EXPORT extern const char kNormalGray[];
@@ -141,8 +143,10 @@ enum ColorModel {
   PROCESSCOLORMODEL_CMYK,       // Used in Canon printer PPDs.
   PROCESSCOLORMODEL_GREYSCALE,  // Used in Canon printer PPDs.
   PROCESSCOLORMODEL_RGB,        // Used in Canon printer PPDs
-  BROTHER_COLOR_COLOR,          // Used in Brother color printer PPDs.
-  BROTHER_COLOR_BLACK,          // Used in Brother color printer PPDs.
+  BROTHER_CUPS_COLOR,           // Used in Brother color laser printer PPDs.
+  BROTHER_CUPS_MONO,            // Used in Brother color laser printer PPDs.
+  BROTHER_BRSCRIPT3_COLOR,      // Used in Brother BRScript3 color printer PPDs.
+  BROTHER_BRSCRIPT3_BLACK,      // Used in Brother BRScript3 color printer PPDs.
 };
 
 // What kind of margins to use.

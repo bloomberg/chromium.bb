@@ -45,8 +45,6 @@ constexpr char kPageSize[] = "PageSize";
 constexpr char kBrotherDuplex[] = "BRDuplex";
 constexpr char kBrotherMonoColor[] = "BRMonoColor";
 constexpr char kBrotherPrintQuality[] = "BRPrintQuality";
-constexpr char kFullColor[] = "FullColor";
-constexpr char kMono[] = "Mono";
 
 const double kMicronsPerPoint = 10.0f * kHundrethsMMPerInch / kPointsPerInch;
 
@@ -281,14 +279,15 @@ bool GetBrotherColorSettings(ppd_file_t* ppd,
   if (!color_mode_option)
     return false;
 
-  if (ppdFindChoice(color_mode_option, kFullColor) ||
-      ppdFindChoice(color_mode_option, kColor)) {
-    *color_model_for_color = BROTHER_COLOR_COLOR;
-  }
-  if (ppdFindChoice(color_mode_option, kBlack) ||
-      ppdFindChoice(color_mode_option, kMono)) {
-    *color_model_for_black = BROTHER_COLOR_BLACK;
-  }
+  if (ppdFindChoice(color_mode_option, kFullColor))
+    *color_model_for_color = BROTHER_CUPS_COLOR;
+  else if (ppdFindChoice(color_mode_option, kColor))
+    *color_model_for_color = BROTHER_BRSCRIPT3_COLOR;
+
+  if (ppdFindChoice(color_mode_option, kMono))
+    *color_model_for_black = BROTHER_CUPS_MONO;
+  else if (ppdFindChoice(color_mode_option, kBlack))
+    *color_model_for_black = BROTHER_BRSCRIPT3_BLACK;
 
   ppd_choice_t* marked_choice = ppdFindMarkedChoice(ppd, kColorMode);
   if (!marked_choice) {
