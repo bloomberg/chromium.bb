@@ -8,7 +8,12 @@
   try {
     function initialize() {
       // This include will be processed at build time by grit.
+      // Note: this <include> is not behind a single-line comment because the
+      // first line of the file is source code (so the first line would be
+      // skipped) instead of a licence header.
+      // clang-format off
       <include src="../../../../third_party/dom_distiller_js/dist/js/domdistiller.js"/>
+      // clang-format on
     }
     window.setTimeout = function() {};
     window.clearTimeout = function() {};
