@@ -1960,11 +1960,11 @@ void AddLocalizedStrings(content::WebUIDataSource* html_source,
   AddAccountUITweaksStrings(html_source, profile);
   AddAndroidAppStrings(html_source);
   AddBluetoothStrings(html_source);
+  AddChromeOSUserStrings(html_source, profile);
   AddDateTimeStrings(html_source);
   AddDeviceStrings(html_source);
   AddEasyUnlockStrings(html_source);
   AddInternetStrings(html_source);
-  AddChromeOSUserStrings(html_source, profile);
   AddOncStrings(html_source);
 #else
   AddDefaultBrowserStrings(html_source);
