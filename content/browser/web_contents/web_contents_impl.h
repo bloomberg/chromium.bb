@@ -843,6 +843,8 @@ class CONTENT_EXPORT WebContentsImpl
                            CrossSiteIframeAccessibility);
   FRIEND_TEST_ALL_PREFIXES(WebContentsImplBrowserTest,
                            JavaScriptDialogsInMainAndSubframes);
+  FRIEND_TEST_ALL_PREFIXES(RenderFrameHostImplBrowserTest,
+                           IframeBeforeUnloadParentHang);
 
   // So |find_request_manager_| can be accessed for testing.
   friend class FindRequestManagerTest;

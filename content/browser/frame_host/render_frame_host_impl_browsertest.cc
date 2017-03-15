@@ -6,9 +6,12 @@
 
 #include "base/macros.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/common/frame_messages.h"
+#include "content/public/browser/javascript_dialog_manager.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_client.h"
+#include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/test_utils.h"
@@ -154,6 +157,128 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
             web_contents->GetMainFrame()->GetVisibilityState());
 
   SetBrowserClientForTesting(old_client);
+}
+
+namespace {
+
+class TestJavaScriptDialogManager : public JavaScriptDialogManager,
+                                    public WebContentsDelegate {
+ public:
+  TestJavaScriptDialogManager() : message_loop_runner_(new MessageLoopRunner) {}
+  ~TestJavaScriptDialogManager() override {}
+
+  void Wait() {
+    message_loop_runner_->Run();
+    message_loop_runner_ = new MessageLoopRunner;
+  }
+
+  DialogClosedCallback& callback() { return callback_; }
+
+  // WebContentsDelegate
+
+  JavaScriptDialogManager* GetJavaScriptDialogManager(
+      WebContents* source) override {
+    return this;
+  }
+
+  // JavaScriptDialogManager
+
+  void RunJavaScriptDialog(WebContents* web_contents,
+                           const GURL& origin_url,
+                           JavaScriptDialogType dialog_type,
+                           const base::string16& message_text,
+                           const base::string16& default_prompt_text,
+                           const DialogClosedCallback& callback,
+                           bool* did_suppress_message) override {}
+
+  void RunBeforeUnloadDialog(WebContents* web_contents,
+                             bool is_reload,
+                             const DialogClosedCallback& callback) override {
+    callback_ = callback;
+    message_loop_runner_->Quit();
+  }
+
+  bool HandleJavaScriptDialog(WebContents* web_contents,
+                              bool accept,
+                              const base::string16* prompt_override) override {
+    return true;
+  }
+
+  void CancelDialogs(WebContents* web_contents, bool reset_state) override {}
+
+ private:
+  DialogClosedCallback callback_;
+
+  // The MessageLoopRunner used to spin the message loop.
+  scoped_refptr<MessageLoopRunner> message_loop_runner_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestJavaScriptDialogManager);
+};
+
+class DropBeforeUnloadACKFilter : public BrowserMessageFilter {
+ public:
+  DropBeforeUnloadACKFilter() : BrowserMessageFilter(FrameMsgStart) {}
+
+ protected:
+  ~DropBeforeUnloadACKFilter() override {}
+
+ private:
+  // BrowserMessageFilter:
+  bool OnMessageReceived(const IPC::Message& message) override {
+    return message.type() == FrameHostMsg_BeforeUnload_ACK::ID;
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(DropBeforeUnloadACKFilter);
+};
+
+}  // namespace
+
+// Tests that a beforeunload dialog in an iframe doesn't stop the beforeunload
+// timer of a parent frame.
+IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
+                       IframeBeforeUnloadParentHang) {
+  WebContentsImpl* wc = static_cast<WebContentsImpl*>(shell()->web_contents());
+  TestJavaScriptDialogManager dialog_manager;
+  wc->SetDelegate(&dialog_manager);
+
+  EXPECT_TRUE(NavigateToURL(shell(), GURL("about:blank")));
+  // Make an iframe with a beforeunload handler.
+  std::string script =
+      "var iframe = document.createElement('iframe');"
+      "document.body.appendChild(iframe);"
+      "iframe.contentWindow.onbeforeunload=function(e){return 'x'};";
+  EXPECT_TRUE(content::ExecuteScript(wc, script));
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+
+  // Force a process switch by going to a privileged page. The beforeunload
+  // timer will be started on the top-level frame but will be paused while the
+  // beforeunload dialog is shown by the subframe.
+  GURL web_ui_page(std::string(kChromeUIScheme) + "://" +
+                   std::string(kChromeUIGpuHost));
+  shell()->LoadURL(web_ui_page);
+  dialog_manager.Wait();
+
+  RenderFrameHostImpl* main_frame =
+      static_cast<RenderFrameHostImpl*>(wc->GetMainFrame());
+  EXPECT_TRUE(main_frame->is_waiting_for_beforeunload_ack());
+
+  // Set up a filter to make sure that when the dialog is answered below and the
+  // renderer sends the beforeunload ACK, it gets... ahem... lost.
+  scoped_refptr<DropBeforeUnloadACKFilter> filter =
+      new DropBeforeUnloadACKFilter();
+  main_frame->GetProcess()->AddFilter(filter.get());
+
+  // Answer the dialog.
+  dialog_manager.callback().Run(true, base::string16());
+
+  // There will be no beforeunload ACK, so if the beforeunload ACK timer isn't
+  // functioning then the navigation will hang forever and this test will time
+  // out. If this waiting for the load stop works, this test won't time out.
+  EXPECT_TRUE(WaitForLoadStop(wc));
+  EXPECT_EQ(web_ui_page, wc->GetLastCommittedURL());
+
+  wc->SetDelegate(nullptr);
+  wc->SetJavaScriptDialogManagerForTesting(nullptr);
 }
 
 }  // namespace content

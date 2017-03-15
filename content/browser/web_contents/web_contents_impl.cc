@@ -4226,9 +4226,7 @@ void WebContentsImpl::RunBeforeUnloadConfirm(
       delegate_->ShouldSuppressDialogs(this) ||
       !delegate_->GetJavaScriptDialogManager(this);
   if (suppress_this_message) {
-    rfhi->JavaScriptDialogClosed(reply_msg, true, base::string16(),
-                                 /*is_before_unload_dialog=*/true,
-                                 /*dialog_was_suppressed=*/true);
+    rfhi->JavaScriptDialogClosed(reply_msg, true, base::string16(), true);
     return;
   }
 
@@ -4846,16 +4844,6 @@ void WebContentsImpl::RendererUnresponsive(
   if (ShouldIgnoreUnresponsiveRenderer())
     return;
 
-  RenderFrameHostImpl* rfhi =
-      static_cast<RenderFrameHostImpl*>(GetRenderViewHost()->GetMainFrame());
-  if (rfhi->is_waiting_for_beforeunload_ack()) {
-    // If the hang is in the beforeunload handler, pretend the beforeunload
-    // listeners have all fired and allow the delegate to continue closing;
-    // the user will not have the option of cancelling the close.
-    rfhi->SimulateBeforeUnloadAck();
-    return;
-  }
-
   if (!GetRenderViewHost() || !GetRenderViewHost()->IsRenderViewLive())
     return;
 
@@ -5117,7 +5105,6 @@ void WebContentsImpl::OnDialogClosed(int render_process_id,
 
   if (rfh) {
     rfh->JavaScriptDialogClosed(reply_msg, success, user_input,
-                                is_showing_before_unload_dialog_,
                                 dialog_was_suppressed);
   } else {
     // Don't leak the sync IPC reply if the RFH or process is gone.

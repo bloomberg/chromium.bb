@@ -553,14 +553,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
                         uint32_t offset,
                         const gfx::Range& range);
 
-  // Expose increment/decrement of the in-flight event count, so
-  // RenderViewHostImpl can account for in-flight beforeunload/unload events.
-  int increment_in_flight_event_count() { return ++in_flight_event_count_; }
-  int decrement_in_flight_event_count() {
-    DCHECK_GT(in_flight_event_count_, 0);
-    return --in_flight_event_count_;
-  }
-
   size_t in_flight_event_count() const { return in_flight_event_count_; }
   blink::WebInputEvent::Type hang_monitor_event_type() const {
     return hang_monitor_event_type_;

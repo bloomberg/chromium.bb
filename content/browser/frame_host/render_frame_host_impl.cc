@@ -376,6 +376,9 @@ RenderFrameHostImpl::RenderFrameHostImpl(SiteInstance* site_instance,
   SetUpMojoIfNeeded();
   swapout_event_monitor_timeout_.reset(new TimeoutMonitor(base::Bind(
       &RenderFrameHostImpl::OnSwappedOut, weak_ptr_factory_.GetWeakPtr())));
+  beforeunload_timeout_.reset(
+      new TimeoutMonitor(base::Bind(&RenderFrameHostImpl::BeforeUnloadTimeout,
+                                    weak_ptr_factory_.GetWeakPtr())));
 
   if (widget_routing_id != MSG_ROUTING_NONE) {
     // TODO(avi): Once RenderViewHostImpl has-a RenderWidgetHostImpl, the main
@@ -1481,8 +1484,7 @@ void RenderFrameHostImpl::OnBeforeUnloadACK(
   }
   // Resets beforeunload waiting state.
   is_waiting_for_beforeunload_ack_ = false;
-  render_view_host_->GetWidget()->decrement_in_flight_event_count();
-  render_view_host_->GetWidget()->StopHangMonitorTimeout();
+  beforeunload_timeout_->Stop();
   send_before_unload_start_time_ = base::TimeTicks();
 
   // PlzNavigate: if the ACK is for a navigation, send it to the Navigator to
@@ -1704,6 +1706,13 @@ void RenderFrameHostImpl::OnRunBeforeUnloadConfirm(
   // shouldn't process input events.
   GetProcess()->SetIgnoreInputEvents(true);
   render_view_host_->GetWidget()->StopHangMonitorTimeout();
+
+  // The beforeunload dialog for this frame may have been triggered by a
+  // browser-side request to this frame or a frame up in the frame hierarchy.
+  // Stop any timers that are waiting.
+  for (RenderFrameHostImpl* frame = this; frame; frame = frame->GetParent())
+    frame->beforeunload_timeout_->Stop();
+
   delegate_->RunBeforeUnloadConfirm(this, is_reload, reply_msg);
 }
 
@@ -2420,8 +2429,7 @@ void RenderFrameHostImpl::ResetWaitingState() {
   // navigations to be ignored in OnDidCommitProvisionalLoad.
   if (is_waiting_for_beforeunload_ack_) {
     is_waiting_for_beforeunload_ack_ = false;
-    render_view_host_->GetWidget()->decrement_in_flight_event_count();
-    render_view_host_->GetWidget()->StopHangMonitorTimeout();
+    beforeunload_timeout_->Stop();
   }
   send_before_unload_start_time_ = base::TimeTicks();
   render_view_host_->is_waiting_for_close_ack_ = false;
@@ -2567,12 +2575,8 @@ void RenderFrameHostImpl::DispatchBeforeUnload(bool for_navigation,
       // reply from the dialog.
       SimulateBeforeUnloadAck();
     } else {
-      // Increment the in-flight event count, to ensure that input events won't
-      // cancel the timeout timer.
-      render_view_host_->GetWidget()->increment_in_flight_event_count();
-      render_view_host_->GetWidget()->StartHangMonitorTimeout(
-          TimeDelta::FromMilliseconds(RenderViewHostImpl::kUnloadTimeoutMS),
-          blink::WebInputEvent::Undefined);
+      beforeunload_timeout_->Start(
+          TimeDelta::FromMilliseconds(RenderViewHostImpl::kUnloadTimeoutMS));
       send_before_unload_start_time_ = base::TimeTicks::Now();
       Send(new FrameMsg_BeforeUnload(routing_id_, is_reload));
     }
@@ -2637,33 +2641,27 @@ void RenderFrameHostImpl::JavaScriptDialogClosed(
     IPC::Message* reply_msg,
     bool success,
     const base::string16& user_input,
-    bool is_before_unload_dialog,
     bool dialog_was_suppressed) {
   GetProcess()->SetIgnoreInputEvents(false);
 
-  // If we are executing as part of beforeunload event handling, we don't
-  // want to use the regular hung_renderer_delay_ms_ if the user has agreed to
-  // leave the current page. In this case, use the regular timeout value used
-  // during the beforeunload handling.
-  if (is_before_unload_dialog) {
-    render_view_host_->GetWidget()->StartHangMonitorTimeout(
-        success
-            ? TimeDelta::FromMilliseconds(RenderViewHostImpl::kUnloadTimeoutMS)
-            : render_view_host_->GetWidget()->hung_renderer_delay(),
-        blink::WebInputEvent::Undefined);
-  }
-
   SendJavaScriptDialogReply(reply_msg, success, user_input);
 
-  // If we are waiting for a beforeunload ack and the user has suppressed
-  // messages, kill the tab immediately; a page that's spamming alerts in
-  // onbeforeunload is presumably malicious, so there's no point in continuing
-  // to run its script and dragging out the process. This must be done after
-  // sending the reply since RenderView can't close correctly while waiting for
-  // a response.
-  if (is_before_unload_dialog && dialog_was_suppressed) {
-    render_view_host_->GetWidget()->delegate()->RendererUnresponsive(
-        render_view_host_->GetWidget());
+  // If executing as part of beforeunload event handling, there may have been
+  // timers stopped in this frame or a frame up in the frame hierarchy. Restart
+  // any timers that were stopped in OnRunBeforeUnloadConfirm().
+  for (RenderFrameHostImpl* frame = this; frame; frame = frame->GetParent()) {
+    if (frame->is_waiting_for_beforeunload_ack_) {
+      // If we are waiting for a beforeunload ack and the user has suppressed
+      // messages, kill the tab immediately. A page that's spamming is
+      // presumably malicious, so there's no point in continuing to run its
+      // script and dragging out the process.
+      if (dialog_was_suppressed) {
+        frame->SimulateBeforeUnloadAck();
+      } else {
+        frame->beforeunload_timeout_->Start(
+            TimeDelta::FromMilliseconds(RenderViewHostImpl::kUnloadTimeoutMS));
+      }
+    }
   }
 }
 
@@ -3488,6 +3486,13 @@ RenderFrameHostImpl::TakeNavigationHandleForCommit(
       params.url, params.redirects, frame_tree_node_, is_renderer_initiated,
       params.was_within_same_page, base::TimeTicks::Now(),
       entry_id_for_data_nav, false);  // started_from_context_menu
+}
+
+void RenderFrameHostImpl::BeforeUnloadTimeout() {
+  if (render_view_host_->GetDelegate()->ShouldIgnoreUnresponsiveRenderer())
+    return;
+
+  SimulateBeforeUnloadAck();
 }
 
 #if defined(OS_ANDROID)

@@ -459,7 +459,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void JavaScriptDialogClosed(IPC::Message* reply_msg,
                               bool success,
                               const base::string16& user_input,
-                              bool is_before_unload_dialog,
                               bool dialog_was_suppressed);
 
   // Get the accessibility mode from the delegate and Send a message to the
@@ -889,6 +888,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   std::unique_ptr<NavigationHandleImpl> TakeNavigationHandleForCommit(
       const FrameHostMsg_DidCommitProvisionalLoad_Params& params);
 
+  // Called by |beforeunload_timeout_| when the beforeunload timeout fires.
+  void BeforeUnloadTimeout();
+
   // For now, RenderFrameHosts indirectly keep RenderViewHosts alive via a
   // refcount that calls Shutdown when it reaches zero.  This allows each
   // RenderFrameHostManager to just care about RenderFrameHosts, while ensuring
@@ -992,6 +994,11 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // require a beforeUnload/unload ACK.
   // PlzNavigate: all navigations require a beforeUnload ACK.
   bool unload_ack_is_for_navigation_;
+
+  // The timeout monitor that runs from when the beforeunload is started in
+  // DispatchBeforeUnload() until either the render process ACKs it with an IPC
+  // to OnBeforeUnloadACK(), or until the timeout triggers.
+  std::unique_ptr<TimeoutMonitor> beforeunload_timeout_;
 
   // Indicates whether this RenderFrameHost is in the process of loading a
   // document or not.
