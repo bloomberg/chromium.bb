@@ -132,7 +132,6 @@ inline bool SelectorDataList::selectorMatches(
     const ContainerNode& rootNode) const {
   SelectorChecker::Init init;
   init.mode = SelectorChecker::QueryingRules;
-  init.isQuerySelector = true;
   SelectorChecker checker(init);
   SelectorChecker::SelectorCheckingContext context(
       &element, SelectorChecker::VisitedMatchDisabled);

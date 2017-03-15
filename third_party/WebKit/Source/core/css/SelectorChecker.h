@@ -48,11 +48,36 @@ class SelectorChecker {
 
  public:
   enum VisitedMatchType { VisitedMatchDisabled, VisitedMatchEnabled };
+
   enum Mode {
+    // Used when matching selectors inside style recalc. This mode will set
+    // restyle flags across the tree during matching which impact how style
+    // sharing and invalidation work later.
     ResolvingStyle,
+
+    // Used when collecting which rules match into a StyleRuleList, the engine
+    // internal represention.
+    //
+    // TODO(esprehn): This doesn't change the behavior of the SelectorChecker
+    // we should merge it with a generic CollectingRules mode.
     CollectingStyleRules,
+
+    // Used when collecting which rules match into a CSSRuleList, the CSSOM api
+    // represention.
+    //
+    // TODO(esprehn): This doesn't change the behavior of the SelectorChecker
+    // we should merge it with a generic CollectingRules mode.
     CollectingCSSRules,
+
+    // Used when matching rules for querySelector and <content select>. This
+    // disables the special handling for positional selectors during parsing
+    // and also enables static profile only selectors like >>>.
     QueryingRules,
+
+    // Used when matching selectors for style sharing inside SharedStyleFinder.
+    // During style sharing we match selectors from a global list without having
+    // the correct owning scope for the rules. In this mode we'll consider
+    // selectors which require scope matching (ex. :host) as always matching.
     SharingRules
   };
 
@@ -62,7 +87,6 @@ class SelectorChecker {
    public:
     Mode mode = ResolvingStyle;
     bool isUARule = false;
-    bool isQuerySelector = false;
     ComputedStyle* elementStyle = nullptr;
     Member<LayoutScrollbar> scrollbar = nullptr;
     ScrollbarPart scrollbarPart = NoPart;
@@ -71,7 +95,6 @@ class SelectorChecker {
   explicit SelectorChecker(const Init& init)
       : m_mode(init.mode),
         m_isUARule(init.isUARule),
-        m_isQuerySelector(init.isQuerySelector),
         m_elementStyle(init.elementStyle),
         m_scrollbar(init.scrollbar),
         m_scrollbarPart(init.scrollbarPart) {}
@@ -158,7 +181,6 @@ class SelectorChecker {
 
   Mode m_mode;
   bool m_isUARule;
-  bool m_isQuerySelector;
   ComputedStyle* m_elementStyle;
   Member<LayoutScrollbar> m_scrollbar;
   ScrollbarPart m_scrollbarPart;

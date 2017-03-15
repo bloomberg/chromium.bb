@@ -388,7 +388,7 @@ SelectorChecker::MatchStatus SelectorChecker::matchForRelation(
       return SelectorFailsAllSiblings;
 
     case CSSSelector::ShadowPseudo: {
-      if (!m_isUARule && !m_isQuerySelector &&
+      if (!m_isUARule && m_mode != QueryingRules &&
           context.selector->getPseudoType() == CSSSelector::PseudoShadow)
         Deprecation::countDeprecation(context.element->document(),
                                       UseCounter::CSSSelectorPseudoShadow);
@@ -407,7 +407,7 @@ SelectorChecker::MatchStatus SelectorChecker::matchForRelation(
     }
 
     case CSSSelector::ShadowDeep: {
-      if (!m_isUARule && !m_isQuerySelector)
+      if (!m_isUARule && m_mode != QueryingRules)
         Deprecation::countDeprecation(context.element->document(),
                                       UseCounter::CSSDeepCombinator);
       if (ShadowRoot* root = context.element->containingShadowRoot()) {
@@ -448,7 +448,7 @@ SelectorChecker::MatchStatus SelectorChecker::matchForRelation(
     }
 
     case CSSSelector::ShadowPiercingDescendant: {
-      DCHECK(m_isQuerySelector);
+      DCHECK_EQ(m_mode, QueryingRules);
       UseCounter::count(context.element->document(),
                         UseCounter::CSSShadowPiercingDescendantCombinator);
       // TODO(kochi): parentOrOpenShadowHostElement() is necessary because
@@ -783,7 +783,8 @@ bool SelectorChecker::checkPseudoClass(const SelectorCheckingContext& context,
           parent->setChildrenAffectedByLastChildRules();
         element.setAffectedByLastChildRules();
       }
-      if (!m_isQuerySelector && parent && !parent->isFinishedParsingChildren())
+      if (m_mode != QueryingRules && parent &&
+          !parent->isFinishedParsingChildren())
         return false;
       return isLastChild(element);
     }
@@ -793,7 +794,8 @@ bool SelectorChecker::checkPseudoClass(const SelectorCheckingContext& context,
         if (parent)
           parent->setChildrenAffectedByBackwardPositionalRules();
       }
-      if (!m_isQuerySelector && parent && !parent->isFinishedParsingChildren())
+      if (m_mode != QueryingRules && parent &&
+          !parent->isFinishedParsingChildren())
         return false;
       return isLastOfType(element, element.tagQName());
     }
@@ -807,7 +809,8 @@ bool SelectorChecker::checkPseudoClass(const SelectorCheckingContext& context,
         element.setAffectedByFirstChildRules();
         element.setAffectedByLastChildRules();
       }
-      if (!m_isQuerySelector && parent && !parent->isFinishedParsingChildren())
+      if (m_mode != QueryingRules && parent &&
+          !parent->isFinishedParsingChildren())
         return false;
       return isFirstChild(element) && isLastChild(element);
     }
@@ -818,7 +821,8 @@ bool SelectorChecker::checkPseudoClass(const SelectorCheckingContext& context,
         parent->setChildrenAffectedByForwardPositionalRules();
         parent->setChildrenAffectedByBackwardPositionalRules();
       }
-      if (!m_isQuerySelector && parent && !parent->isFinishedParsingChildren())
+      if (m_mode != QueryingRules && parent &&
+          !parent->isFinishedParsingChildren())
         return false;
       return isFirstOfType(element, element.tagQName()) &&
              isLastOfType(element, element.tagQName());
@@ -843,7 +847,8 @@ bool SelectorChecker::checkPseudoClass(const SelectorCheckingContext& context,
       ContainerNode* parent = element.parentElementOrDocumentFragment();
       if (m_mode == ResolvingStyle && parent)
         parent->setChildrenAffectedByBackwardPositionalRules();
-      if (!m_isQuerySelector && parent && !parent->isFinishedParsingChildren())
+      if (m_mode != QueryingRules && parent &&
+          !parent->isFinishedParsingChildren())
         return false;
       return selector.matchNth(NthIndexCache::nthLastChildIndex(element));
     }
@@ -851,7 +856,8 @@ bool SelectorChecker::checkPseudoClass(const SelectorCheckingContext& context,
       ContainerNode* parent = element.parentElementOrDocumentFragment();
       if (m_mode == ResolvingStyle && parent)
         parent->setChildrenAffectedByBackwardPositionalRules();
-      if (!m_isQuerySelector && parent && !parent->isFinishedParsingChildren())
+      if (m_mode != QueryingRules && parent &&
+          !parent->isFinishedParsingChildren())
         return false;
       return selector.matchNth(NthIndexCache::nthLastOfTypeIndex(element));
     }
