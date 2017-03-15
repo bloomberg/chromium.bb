@@ -2093,13 +2093,13 @@ To obtain new licenses, connect to the internet and play your downloaded content
         <ph name="BEGIN_LINK">&lt;link&gt;</ph>Learn more<ph name="END_LINK">&lt;/link&gt;</ph> about suggested content
       </message>
       <message name="IDS_NTP_ALL_DISMISSED_BODY_TEXT_MORNING" desc="Body text shown in the morning on the New Tab Page when all suggested content has been dismissed.">
-        More articles will appear soon. Enjoy your morning.
+        More articles will appear soon. Enjoy your morning!
       </message>
       <message name="IDS_NTP_ALL_DISMISSED_BODY_TEXT_AFTERNOON" desc="Body text shown in the afternoon on the New Tab Page when all suggested content has been dismissed.">
-        More articles will appear soon. Enjoy your afternoon.
+        More articles will appear soon. Enjoy your afternoon!
       </message>
       <message name="IDS_NTP_ALL_DISMISSED_BODY_TEXT_EVENING" desc="Body text shown in the evening on the New Tab Page when all suggested content has been dismissed.">
-        More articles will appear soon. Enjoy your evening.
+        More articles will appear soon. Enjoy your evening!
       </message>
       <message name="IDS_NTP_ALL_DISMISSED_REFRESH" desc="Text label for button to refresh the New Tab Page when all suggested content has been dismissed. [CHAR-LIMIT=20]">
         Refresh
