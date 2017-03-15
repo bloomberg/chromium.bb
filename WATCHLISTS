@@ -806,6 +806,12 @@
         'ui/gl/gl_.*egl.*|'\
         'ui/gl/gl_.*ozone.*'
     },
+    'page_info' : {
+      'filepath': 'chrome/browser/ui/page_info/'\
+                  '|chrome/browser/ui/.*/page_info/'\
+                  '|chrome/android/java/src/org/chromium/chrome/browser/pageinfo/'\
+                  '|ios/chrome/browser/ui/omnibox/page_info_'
+  },
     'page_load_metrics' : {
       'filepath': 'chrome/browser/page_load_metrics/'\
                   '|chrome/common/page_load_metrics/'\
@@ -2050,6 +2056,8 @@
                       'iclelland+watch@chromuim.org'],
     'ozone': ['kalyan.kondapally@intel.com',
               'ozone-reviews@chromium.org'],
+    'page_info' : ['lgarron+watch@chromium.org',
+                   'raymes+watch@chromium.org'],
     'page_load_metrics' : ['csharrison+watch@chromium.org',
                            'loading-reviews+metrics@chromium.org',
                            'speed-metrics-reviews@chromium.org'],

@@ -1,4 +1,8 @@
-palmer@chromium.org
+# Please use the following reviewer(s) for Mac code LGTM
 rsesek@chromium.org
+
+# Other owners
+lgarron@chromium.org
+palmer@chromium.org
 
 # COMPONENT: UI>Browser>Bubbles>PageInfo
