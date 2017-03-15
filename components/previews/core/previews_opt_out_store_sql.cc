@@ -262,11 +262,11 @@ void DeleteEnabledPreviewInDataBase(sql::Connection* db, PreviewsType type) {
 // Checks the current set of enabled previews (with their current version)
 // and where a preview is now disabled or has a different version, cleans up
 // any associated blacklist entries.
-void CheckAndReconcileEnabledPreviewsWithDataBase(sql::Connection* db) {
+void CheckAndReconcileEnabledPreviewsWithDataBase(
+    sql::Connection* db,
+    PreviewsTypeList* enabled_previews) {
   std::unique_ptr<std::map<PreviewsType, int>> stored_previews(
       GetStoredPreviews(db));
-
-  std::unique_ptr<PreviewsTypeList> enabled_previews(GetEnabledPreviews());
 
   for (auto enabled_it = enabled_previews->begin();
        enabled_it != enabled_previews->end(); ++enabled_it) {
@@ -297,10 +297,11 @@ void CheckAndReconcileEnabledPreviewsWithDataBase(sql::Connection* db) {
 
 void LoadBlackListFromDataBase(
     sql::Connection* db,
+    PreviewsTypeList* enabled_previews,
     scoped_refptr<base::SingleThreadTaskRunner> runner,
     LoadBlackListCallback callback) {
   // First handle any update needed wrt enabled previews and their versions.
-  CheckAndReconcileEnabledPreviewsWithDataBase(db);
+  CheckAndReconcileEnabledPreviewsWithDataBase(db, enabled_previews);
 
   // Gets the table sorted by host and time. Limits the number of hosts using
   // most recent opt_out time as the limiting function. Sorting is free due to
@@ -365,12 +366,13 @@ void LoadBlackListFromDataBase(
 // and actually do the work to access the SQL data base.
 void LoadBlackListSync(sql::Connection* db,
                        const base::FilePath& path,
+                       std::unique_ptr<PreviewsTypeList> enabled_previews,
                        scoped_refptr<base::SingleThreadTaskRunner> runner,
                        LoadBlackListCallback callback) {
   if (!db->is_open())
     InitDatabase(db, path);
 
-  LoadBlackListFromDataBase(db, runner, callback);
+  LoadBlackListFromDataBase(db, enabled_previews.get(), runner, callback);
 }
 
 // Deletes every row in the table that has entry time between |begin_time| and
@@ -405,10 +407,14 @@ void AddPreviewNavigationSync(bool opt_out,
 PreviewsOptOutStoreSQL::PreviewsOptOutStoreSQL(
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
     scoped_refptr<base::SequencedTaskRunner> background_task_runner,
-    const base::FilePath& path)
+    const base::FilePath& path,
+    std::unique_ptr<PreviewsTypeList> enabled_previews)
     : io_task_runner_(io_task_runner),
       background_task_runner_(background_task_runner),
-      db_file_path_(path) {}
+      db_file_path_(path),
+      enabled_previews_(std::move(enabled_previews)) {
+  DCHECK(enabled_previews_);
+}
 
 PreviewsOptOutStoreSQL::~PreviewsOptOutStoreSQL() {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
@@ -441,8 +447,11 @@ void PreviewsOptOutStoreSQL::LoadBlackList(LoadBlackListCallback callback) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   if (!db_)
     db_ = base::MakeUnique<sql::Connection>();
+  std::unique_ptr<PreviewsTypeList> enabled_previews =
+      base::MakeUnique<PreviewsTypeList>(*enabled_previews_);
   background_task_runner_->PostTask(
       FROM_HERE, base::Bind(&LoadBlackListSync, db_.get(), db_file_path_,
+                            base::Passed(std::move(enabled_previews)),
                             base::ThreadTaskRunnerHandle::Get(), callback));
 }
 

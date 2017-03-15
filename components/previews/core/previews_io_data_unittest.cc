@@ -37,6 +37,10 @@ namespace previews {
 
 namespace {
 
+bool CheckOfflineFieldTrial(PreviewsType type) {
+  return previews::params::IsOfflinePreviewsEnabled();
+}
+
 class TestPreviewsIOData : public PreviewsIOData {
  public:
   TestPreviewsIOData(
@@ -125,7 +129,7 @@ TEST_F(PreviewsIODataTest, TestInitialization) {
   set_io_data(base::MakeUnique<TestPreviewsIOData>(loop_.task_runner(),
                                                    loop_.task_runner()));
   set_ui_service(base::MakeUnique<PreviewsUIService>(
-      io_data(), loop_.task_runner(), nullptr));
+      io_data(), loop_.task_runner(), nullptr, PreviewsIsEnabledCallback()));
   base::RunLoop().RunUntilIdle();
   // After the outstanding posted tasks have run, |io_data_| should be fully
   // initialized.
@@ -144,28 +148,37 @@ TEST_F(PreviewsIODataTest, TestShouldAllowPreview) {
                                                    loop_.task_runner()));
   base::HistogramTester histogram_tester;
 
-  // If not in the field trial, don't log anything, and return false.
-  EXPECT_FALSE(io_data()->ShouldAllowPreview(*request, PreviewsType::OFFLINE));
-  histogram_tester.ExpectTotalCount("Previews.EligibilityReason.Offline", 0);
-
-  // Enable Offline previews field trial.
-  base::FieldTrialList field_trial_list(nullptr);
-  std::map<std::string, std::string> params;
-  params["show_offline_pages"] = "true";
-  variations::AssociateVariationParams("ClientSidePreviews", "Enabled", params);
-  base::FieldTrialList::CreateFieldTrial("ClientSidePreviews", "Enabled");
-
   // The blacklist is not created yet.
   EXPECT_FALSE(io_data()->ShouldAllowPreview(*request, PreviewsType::OFFLINE));
   histogram_tester.ExpectUniqueSample(
       "Previews.EligibilityReason.Offline",
       static_cast<int>(PreviewsEligibilityReason::BLACKLIST_UNAVAILABLE), 1);
 
-  set_ui_service(base::WrapUnique(
-      new PreviewsUIService(io_data(), loop_.task_runner(),
-                            base::MakeUnique<TestPreviewsOptOutStore>())));
+  set_ui_service(base::MakeUnique<PreviewsUIService>(
+      io_data(), loop_.task_runner(),
+      base::MakeUnique<TestPreviewsOptOutStore>(),
+      base::Bind(&CheckOfflineFieldTrial)));
+
+  // The blacklist is not created yet.
+  EXPECT_FALSE(io_data()->ShouldAllowPreview(*request, PreviewsType::OFFLINE));
+  histogram_tester.ExpectBucketCount(
+      "Previews.EligibilityReason.Offline",
+      static_cast<int>(PreviewsEligibilityReason::BLACKLIST_UNAVAILABLE), 2);
 
   base::RunLoop().RunUntilIdle();
+
+  histogram_tester.ExpectTotalCount("Previews.EligibilityReason.Offline", 2);
+  // If not in the field trial, don't log anything, and return false.
+  EXPECT_FALSE(io_data()->ShouldAllowPreview(*request, PreviewsType::OFFLINE));
+  histogram_tester.ExpectTotalCount("Previews.EligibilityReason.Offline", 2);
+
+  // Enable Offline previews field trial.
+  base::FieldTrialList field_trial_list(nullptr);
+  std::map<std::string, std::string> params;
+  params["show_offline_pages"] = "true";
+
+  variations::AssociateVariationParams("ClientSidePreviews", "Enabled", params);
+  base::FieldTrialList::CreateFieldTrial("ClientSidePreviews", "Enabled");
 
   // Return one of the failing statuses from the blacklist; cause the blacklist
   // to not be loaded by clearing the blacklist.
@@ -227,7 +240,7 @@ TEST_F(PreviewsIODataTest, TestShouldAllowPreview) {
       "Previews.EligibilityReason.Offline",
       static_cast<int>(PreviewsEligibilityReason::ALLOWED), 1);
 
-  histogram_tester.ExpectTotalCount("Previews.EligibilityReason.Offline", 7);
+  histogram_tester.ExpectTotalCount("Previews.EligibilityReason.Offline", 8);
 
   variations::testing::ClearAllVariationParams();
 }
