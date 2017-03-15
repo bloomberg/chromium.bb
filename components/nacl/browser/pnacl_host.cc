@@ -13,7 +13,6 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/numerics/safe_math.h"
-#include "base/task_runner_util.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "components/nacl/browser/nacl_browser.h"
@@ -382,15 +381,13 @@ void PnaclHost::CheckCacheQueryReady(
   pt->got_nexe_fd = false;
   FileProxy* proxy(new FileProxy(std::move(file), this));
 
-  if (!base::PostTaskAndReplyWithResult(
-           BrowserThread::GetBlockingPool(),
-           FROM_HERE,
-           base::Bind(&FileProxy::Write, base::Unretained(proxy),
-                      pt->nexe_read_buffer),
-           base::Bind(&FileProxy::WriteDone, base::Owned(proxy),
-                      entry->first))) {
-    pt->callback.Run(base::File(), false);
-  }
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE,
+      base::TaskTraits().MayBlock().WithPriority(
+          base::TaskPriority::BACKGROUND),
+      base::Bind(&FileProxy::Write, base::Unretained(proxy),
+                 pt->nexe_read_buffer),
+      base::Bind(&FileProxy::WriteDone, base::Owned(proxy), entry->first));
 }
 
 //////////////////// GetNexeFd miss path
@@ -459,13 +456,13 @@ void PnaclHost::TranslationFinished(int render_process_id,
     entry->second.nexe_fd = NULL;
     entry->second.got_nexe_fd = false;
 
-    if (!base::PostTaskAndReplyWithResult(
-            BrowserThread::GetBlockingPool(), FROM_HERE,
-            base::Bind(&PnaclHost::CopyFileToBuffer, Passed(&file)),
-            base::Bind(&PnaclHost::StoreTranslatedNexe, base::Unretained(this),
-                       id))) {
-      store_nexe = false;
-    }
+    base::PostTaskWithTraitsAndReplyWithResult(
+        FROM_HERE,
+        base::TaskTraits().MayBlock().WithPriority(
+            base::TaskPriority::BACKGROUND),
+        base::Bind(&PnaclHost::CopyFileToBuffer, Passed(&file)),
+        base::Bind(&PnaclHost::StoreTranslatedNexe, base::Unretained(this),
+                   id));
   }
 
   if (!store_nexe) {
