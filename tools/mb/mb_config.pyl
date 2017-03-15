@@ -564,6 +564,7 @@
       'linux_chromium_gn_upload': 'gn_linux_upload',
       'linux_chromium_headless_rel': 'headless_linux_release_trybot',
       'linux_chromium_ozone_compile_only_ng': 'ozone_linux_release_trybot',
+      'linux_chromium_ozone_ng': 'ozone_linux_release_trybot',
 
       # This is intentionally a release_bot and not a release_trybot;
       # enabling DCHECKs seems to cause flaky failures that don't show up
@@ -1830,6 +1831,7 @@
 
     'ozone_linux': {
       'gn_args': ('ozone_auto_platforms=false ozone_platform_wayland=true '
+                  'ozone_platform="x11" '
                   'ozone_platform_x11=true ozone_platform_gbm=true '
                   'enable_package_mash_services=true use_ash=false '
                   'use_jessie_sysroot=true use_xkbcommon=true'),
