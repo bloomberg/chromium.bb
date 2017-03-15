@@ -25,6 +25,20 @@
 
 namespace {
 
+// TODO(crbug.com/701275): Once base::BindBlock supports the move semantics,
+// remove this wrapper.
+// Wraps a callback taking a const ref to a callback taking an object.
+void BindWrapper(
+    base::Callback<void(ntp_snippets::Status status_code,
+                        const std::vector<ntp_snippets::ContentSuggestion>&
+                            suggestions)> callback,
+    ntp_snippets::Status status_code,
+    std::vector<ntp_snippets::ContentSuggestion> suggestions) {
+  if (callback) {
+    callback.Run(status_code, suggestions);
+  }
+}
+
 // Returns the Type for this |category|.
 ContentSuggestionType TypeForCategory(ntp_snippets::Category category) {
   // For now, only Article is a relevant type.
@@ -112,10 +126,12 @@ ntp_snippets::ContentSuggestion::ID SuggestionIDForSectionID(
                         ContentSuggestionsSectionInformation*>*
         sectionInformationByCategory;
 
-// Converts the data in |category| to ContentSuggestion and adds them to the
-// |contentArray| if the category is available.
-- (void)addContentInCategory:(ntp_snippets::Category&)category
-                     toArray:(NSMutableArray<ContentSuggestion*>*)contentArray;
+// Converts the |suggestions| from |category| to ContentSuggestion and adds them
+// to the |contentArray|  if the category is available.
+- (void)addSuggestions:
+            (const std::vector<ntp_snippets::ContentSuggestion>&)suggestions
+          fromCategory:(ntp_snippets::Category&)category
+               toArray:(NSMutableArray<ContentSuggestion*>*)contentArray;
 
 // Adds the section information for |category| in
 // self.sectionInformationByCategory.
@@ -164,7 +180,9 @@ ntp_snippets::ContentSuggestion::ID SuggestionIDForSectionID(
       self.contentService->GetCategories();
   NSMutableArray<ContentSuggestion*>* dataHolders = [NSMutableArray array];
   for (auto& category : categories) {
-    [self addContentInCategory:category toArray:dataHolders];
+    const std::vector<ntp_snippets::ContentSuggestion>& suggestions =
+        self.contentService->GetSuggestionsForCategory(category);
+    [self addSuggestions:suggestions fromCategory:category toArray:dataHolders];
   }
   return dataHolders;
 }
@@ -174,13 +192,47 @@ ntp_snippets::ContentSuggestion::ID SuggestionIDForSectionID(
   ntp_snippets::Category category =
       [[self categoryWrapperForSectionInfo:sectionInfo] category];
 
-  NSMutableArray* suggestions = [NSMutableArray array];
-  [self addContentInCategory:category toArray:suggestions];
-  return suggestions;
+  NSMutableArray* convertedSuggestions = [NSMutableArray array];
+  const std::vector<ntp_snippets::ContentSuggestion>& suggestions =
+      self.contentService->GetSuggestionsForCategory(category);
+  [self addSuggestions:suggestions
+          fromCategory:category
+               toArray:convertedSuggestions];
+  return convertedSuggestions;
 }
 
 - (id<ContentSuggestionsImageFetcher>)imageFetcher {
   return self;
+}
+
+- (void)fetchMoreSuggestionsKnowing:
+            (NSArray<ContentSuggestionIdentifier*>*)knownSuggestions
+                    fromSectionInfo:
+                        (ContentSuggestionsSectionInformation*)sectionInfo
+                           callback:(MoreSuggestionsFetched)callback {
+  std::set<std::string> known_suggestion_ids;
+  for (ContentSuggestionIdentifier* identifier in knownSuggestions) {
+    if (identifier.sectionInfo != sectionInfo)
+      continue;
+    known_suggestion_ids.insert(identifier.IDInSection);
+  }
+
+  ContentSuggestionsCategoryWrapper* wrapper =
+      [self categoryWrapperForSectionInfo:sectionInfo];
+
+  __weak ContentSuggestionsMediator* weakSelf = self;
+  ntp_snippets::FetchDoneCallback serviceCallback = base::Bind(
+      &BindWrapper,
+      base::BindBlockArc(^void(
+          ntp_snippets::Status status,
+          const std::vector<ntp_snippets::ContentSuggestion>& suggestions) {
+        [weakSelf didFetchMoreSuggestions:suggestions
+                           withStatusCode:status
+                                 callback:callback];
+      }));
+
+  self.contentService->Fetch([wrapper category], known_suggestion_ids,
+                             serviceCallback);
 }
 
 #pragma mark - ContentSuggestionsServiceObserver
@@ -252,25 +304,26 @@ ntp_snippets::ContentSuggestion::ID SuggestionIDForSectionID(
 
 #pragma mark - Private
 
-- (void)addContentInCategory:(ntp_snippets::Category&)category
-                     toArray:(NSMutableArray<ContentSuggestion*>*)contentArray {
+- (void)addSuggestions:
+            (const std::vector<ntp_snippets::ContentSuggestion>&)suggestions
+          fromCategory:(ntp_snippets::Category&)category
+               toArray:(NSMutableArray<ContentSuggestion*>*)contentArray {
   if (self.contentService->GetCategoryStatus(category) !=
       ntp_snippets::CategoryStatus::AVAILABLE) {
     return;
   }
+
   ContentSuggestionsCategoryWrapper* categoryWrapper =
       [ContentSuggestionsCategoryWrapper wrapperWithCategory:category];
   if (!self.sectionInformationByCategory[categoryWrapper]) {
     [self addSectionInformationForCategory:category];
   }
 
-  const std::vector<ntp_snippets::ContentSuggestion>& suggestions =
-      self.contentService->GetSuggestionsForCategory(category);
-
   for (auto& contentSuggestion : suggestions) {
     ContentSuggestion* suggestion = ConvertContentSuggestion(contentSuggestion);
 
     suggestion.type = TypeForCategory(category);
+
     suggestion.suggestionIdentifier.sectionInfo =
         self.sectionInformationByCategory[categoryWrapper];
 
@@ -293,6 +346,23 @@ ntp_snippets::ContentSuggestion::ID SuggestionIDForSectionID(
     (ContentSuggestionsSectionInformation*)sectionInfo {
   return [[self.sectionInformationByCategory allKeysForObject:sectionInfo]
       firstObject];
+}
+
+// If the |statusCode| is a success and |suggestions| is not empty, runs the
+// |callback| with the |suggestions| converted to Objective-C.
+- (void)didFetchMoreSuggestions:
+            (const std::vector<ntp_snippets::ContentSuggestion>&)suggestions
+                 withStatusCode:(ntp_snippets::Status)statusCode
+                       callback:(MoreSuggestionsFetched)callback {
+  if (statusCode.IsSuccess() && !suggestions.empty() && callback) {
+    NSMutableArray<ContentSuggestion*>* contentSuggestions =
+        [NSMutableArray array];
+    ntp_snippets::Category category = suggestions[0].id().category();
+    [self addSuggestions:suggestions
+            fromCategory:category
+                 toArray:contentSuggestions];
+    callback(contentSuggestions);
+  }
 }
 
 @end
