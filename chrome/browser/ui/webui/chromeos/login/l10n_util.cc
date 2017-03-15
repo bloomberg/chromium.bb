@@ -322,6 +322,13 @@ void GetKeyboardLayoutsForResolvedLocale(
        it != layouts.end(); ++it) {
     const input_method::InputMethodDescriptor* ime =
         util->GetInputMethodDescriptorFromId(*it);
+    // TODO(tbarzic): This is added to avoid crash loop on starting public
+    //     session. The problem should be properly fixed, and this workaround
+    //     removed.
+    if (!ime) {
+      LOG(WARNING) << *it << " layout not found.";
+      continue;
+    }
     if (!InsertString(ime->id(), &input_methods_added))
       continue;
     input_methods_list->Append(CreateInputMethodsEntry(*ime, selected));
