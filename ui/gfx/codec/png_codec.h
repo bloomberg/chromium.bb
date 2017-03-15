@@ -11,7 +11,7 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "ui/gfx/gfx_export.h"
+#include "ui/gfx/codec/codec_export.h"
 
 class SkBitmap;
 
@@ -25,7 +25,7 @@ class Size;
 // isn't as robust as would be required for a browser (see Decode() for more).
 // WebKit has its own more complicated PNG decoder which handles, among other
 // things, partially downloaded data.
-class GFX_EXPORT PNGCodec {
+class CODEC_EXPORT PNGCodec {
  public:
   enum ColorFormat {
     // 3 bytes per pixel (packed), in RGB order regardless of endianness.
@@ -47,7 +47,7 @@ class GFX_EXPORT PNGCodec {
   };
 
   // Represents a comment in the tEXt ancillary chunk of the png.
-  struct GFX_EXPORT Comment {
+  struct CODEC_EXPORT Comment {
     Comment(const std::string& k, const std::string& t);
     ~Comment();
 

@@ -15,7 +15,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 
 #if defined(OS_CHROMEOS)
-#include "ui/gfx/chromeos/codec/jpeg_codec_robust_slow.h"
+#include "ui/gfx/codec/chromeos/jpeg_codec_robust_slow.h"
 #include "ui/gfx/codec/png_codec.h"
 #endif
 

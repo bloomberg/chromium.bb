@@ -50,12 +50,6 @@ component("gfx") {
     "android/view_configuration.cc",
     "android/view_configuration.h",
     "break_list.h",
-    "codec/jpeg_codec.cc",
-    "codec/jpeg_codec.h",
-    "codec/png_codec.cc",
-    "codec/png_codec.h",
-    "codec/skia_image_encoder_adapter.cc",
-    "codec/skia_image_encoder_adapter.h",
     "color_analysis.cc",
     "color_analysis.h",
     "color_palette.h",
@@ -255,6 +249,7 @@ component("gfx") {
     "//skia",
     "//third_party/icu",
     "//ui/gfx/animation",
+    "//ui/gfx/codec",
     "//ui/gfx/geometry",
     "//ui/gfx/range",
   ]
@@ -265,7 +260,6 @@ component("gfx") {
     "//base:i18n",
     "//base/third_party/dynamic_annotations",
     "//skia",
-    "//third_party/libpng",
     "//third_party/qcms",
     "//third_party/zlib",
   ]
@@ -305,17 +299,12 @@ component("gfx") {
 
   # iOS.
   if (is_ios) {
-    sources -= [
-      "codec/jpeg_codec.cc",
-      "codec/jpeg_codec.h",
-    ]
     set_sources_assignment_filter([])
     sources += [ "scoped_cg_context_save_gstate_mac.h" ]
     set_sources_assignment_filter(sources_assignment_filter)
   } else {
     deps += [
       "//cc/paint",
-      "//third_party:jpeg",
       "//third_party/harfbuzz-ng",
     ]
   }
@@ -358,9 +347,6 @@ component("gfx") {
 
   # Windows.
   if (is_win) {
-    cflags = [ "/wd4324" ]  # Structure was padded due to __declspec(align()), which is
-                            # uninteresting.
-
     libs = [
       "setupapi.lib",
       "dwrite.lib",
@@ -379,16 +365,6 @@ component("gfx") {
   # Linux.
   if (is_linux) {
     deps += [ "//build/linux:fontconfig" ]
-  }
-
-  # Chrome OS
-  if (is_chromeos) {
-    # Robust JPEG decoding for the login screen.
-    sources += [
-      "chromeos/codec/jpeg_codec_robust_slow.cc",
-      "chromeos/codec/jpeg_codec_robust_slow.h",
-    ]
-    deps += [ "//third_party/libjpeg" ]
   }
 
   if (is_mac) {
@@ -718,7 +694,7 @@ test("gfx_unittests") {
   }
 
   if (is_chromeos) {
-    sources += [ "chromeos/codec/jpeg_codec_robust_slow_unittest.cc" ]
+    sources += [ "codec/chromeos/jpeg_codec_robust_slow_unittest.cc" ]
   }
 
   if (is_win) {
