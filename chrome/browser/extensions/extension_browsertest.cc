@@ -56,6 +56,7 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/notification_types.h"
+#include "extensions/browser/test_extension_registry_observer.h"
 #include "extensions/browser/uninstall_reason.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension_set.h"
@@ -484,14 +485,21 @@ const Extension* ExtensionBrowserTest::InstallOrUpdateExtension(
 }
 
 void ExtensionBrowserTest::ReloadExtension(const std::string& extension_id) {
-  observer_->Watch(extensions::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
-                   content::NotificationService::AllSources());
+  extensions::ExtensionRegistry* registry =
+      extensions::ExtensionRegistry::Get(profile());
+  const Extension* extension = registry->GetInstalledExtension(extension_id);
+  ASSERT_TRUE(extension);
+  extensions::TestExtensionRegistryObserver observer(registry, extension_id);
+  extensions::ExtensionSystem::Get(profile())
+      ->extension_service()
+      ->ReloadExtension(extension_id);
+  observer.WaitForExtensionLoaded();
 
-  ExtensionService* service =
-      extensions::ExtensionSystem::Get(profile())->extension_service();
-  service->ReloadExtension(extension_id);
-
-  observer_->Wait();
+  // We need to let other ExtensionRegistryObservers handle the extension load
+  // in order to finish initialization. This has to be done before waiting for
+  // extension views to load, since we only register views after observing
+  // extension load.
+  base::RunLoop().RunUntilIdle();
   observer_->WaitForExtensionViewsToLoad();
 }
 
