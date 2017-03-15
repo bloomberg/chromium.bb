@@ -846,7 +846,7 @@ public class DownloadNotificationService extends Service {
 
         Intent resumeIntent = buildActionIntent(mContext, ACTION_DOWNLOAD_RESUME,
                 entry.downloadGuid, entry.isOffTheRecord, entry.isOfflinePage());
-        builder.addAction(R.drawable.ic_get_app_white_24dp,
+        builder.addAction(R.drawable.ic_file_download_white_24dp,
                 mContext.getResources().getString(R.string.download_notification_resume_button),
                 buildPendingIntent(resumeIntent, entry.notificationId));
 

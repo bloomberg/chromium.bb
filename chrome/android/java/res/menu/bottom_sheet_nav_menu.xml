@@ -7,11 +7,9 @@
     <item android:id="@+id/action_home"
          android:title="@string/accessibility_toolbar_btn_home"
          android:icon="@drawable/ic_home_grey600_24dp" />
-    <!-- TODO(twellington): The padding on the downloads icon is slightly off.
-                            Replace with a new asset when available. -->
     <item android:id="@+id/action_downloads"
          android:title="@string/menu_downloads"
-         android:icon="@drawable/ic_file_download_grey600_24dp" />
+         android:icon="@drawable/ic_file_download_white_24dp" />
     <item android:id="@+id/action_bookmarks"
          android:title="@string/menu_bookmarks"
          android:icon="@drawable/btn_star_filled" />
