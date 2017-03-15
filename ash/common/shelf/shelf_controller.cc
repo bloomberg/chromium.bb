@@ -93,9 +93,6 @@ void ShelfController::AddObserver(
 
 void ShelfController::SetAlignment(ShelfAlignment alignment,
                                    int64_t display_id) {
-  if (!ash::WmShelf::CanChangeShelfAlignment())
-    return;
-
   WmShelf* shelf = GetShelfForDisplay(display_id);
   // TODO(jamescook): The initialization check should not be necessary, but
   // otherwise this wrongly tries to set the alignment on a secondary display
