@@ -150,6 +150,8 @@ VideoDecodeAcceleratorTestEnvironment* g_env;
 // Magic constants for differentiating the reasons for NotifyResetDone being
 // called.
 enum ResetPoint {
+  // Reset() right after calling Flush() (before getting NotifyFlushDone()).
+  RESET_BEFORE_NOTIFY_FLUSH_DONE = -5,
   // Reset() just after calling Decode() with a fragment containing config info.
   RESET_AFTER_FIRST_CONFIG_INFO = -4,
   START_OF_STREAM_RESET = -3,
@@ -476,6 +478,8 @@ class GLRenderingVDAClient
 
   // Delete the associated decoder helper.
   void DeleteDecoder();
+  // Reset the associated decoder after flushing.
+  void ResetDecoderAfterFlush();
 
   // Compute & return the first encoded bytes (including a start frame) to send
   // to the decoder, starting at |start_pos| and returning one fragment. Skips
@@ -807,6 +811,20 @@ void GLRenderingVDAClient::ReturnPicture(int32_t picture_buffer_id) {
   }
 }
 
+void GLRenderingVDAClient::ResetDecoderAfterFlush() {
+  --remaining_play_throughs_;
+  DCHECK_GE(remaining_play_throughs_, 0);
+  // SetState(CS_RESETTING) should be called before decoder_->Reset(), because
+  // VDA can call NotifyFlushDone() from Reset().
+  // TODO(johnylin): call SetState() before all decoder Flush() and Reset().
+  SetState(CS_RESETTING);
+  // It is necessary to check decoder deleted here because it is possible to
+  // delete decoder in SetState() in some cases.
+  if (decoder_deleted())
+    return;
+  decoder_->Reset();
+}
+
 void GLRenderingVDAClient::NotifyEndOfBitstreamBuffer(
     int32_t bitstream_buffer_id) {
   if (decoder_deleted())
@@ -824,6 +842,10 @@ void GLRenderingVDAClient::NotifyEndOfBitstreamBuffer(
     if (state_ != CS_FLUSHING) {
       decoder_->Flush();
       SetState(CS_FLUSHING);
+      if (reset_after_frame_num_ == RESET_BEFORE_NOTIFY_FLUSH_DONE) {
+        SetState(CS_FLUSHED);
+        ResetDecoderAfterFlush();
+      }
     }
   } else if (decode_calls_per_second_ == 0) {
     DecodeNextFragment();
@@ -834,13 +856,16 @@ void GLRenderingVDAClient::NotifyFlushDone() {
   if (decoder_deleted())
     return;
 
-  SetState(CS_FLUSHED);
-  --remaining_play_throughs_;
-  DCHECK_GE(remaining_play_throughs_, 0);
-  if (decoder_deleted())
+  if (reset_after_frame_num_ == RESET_BEFORE_NOTIFY_FLUSH_DONE) {
+    // In ResetBeforeNotifyFlushDone case client is not necessary to wait for
+    // NotifyFlushDone(). But if client gets here, it should be always before
+    // NotifyResetDone().
+    ASSERT_EQ(state_, CS_RESETTING);
     return;
-  decoder_->Reset();
-  SetState(CS_RESETTING);
+  }
+
+  SetState(CS_FLUSHED);
+  ResetDecoderAfterFlush();
 }
 
 void GLRenderingVDAClient::NotifyResetDone() {
@@ -1463,7 +1488,10 @@ TEST_P(VideoDecodeAcceleratorParamTest, TestSimpleDecode) {
       // could still be returned until resetting done.
       if (video_file->reset_after_frame_num > 0)
         EXPECT_GE(client->num_decoded_frames(), video_file->num_frames);
-      else
+      // In ResetBeforeNotifyFlushDone case the decoded frames may be less than
+      // the video frames because decoder is reset before flush done.
+      else if (video_file->reset_after_frame_num !=
+               RESET_BEFORE_NOTIFY_FLUSH_DONE)
         EXPECT_EQ(client->num_decoded_frames(), video_file->num_frames);
     }
     if (reset_point == END_OF_STREAM_RESET) {
@@ -1562,6 +1590,18 @@ INSTANTIATE_TEST_CASE_P(
                                       1,
                                       1,
                                       RESET_AFTER_FIRST_CONFIG_INFO,
+                                      CS_RESET,
+                                      false,
+                                      false)));
+
+// Test Reset() immediately after Flush() and before NotifyFlushDone().
+INSTANTIATE_TEST_CASE_P(
+    ResetBeforeNotifyFlushDone,
+    VideoDecodeAcceleratorParamTest,
+    ::testing::Values(std::make_tuple(1,
+                                      1,
+                                      1,
+                                      RESET_BEFORE_NOTIFY_FLUSH_DONE,
                                       CS_RESET,
                                       false,
                                       false)));
