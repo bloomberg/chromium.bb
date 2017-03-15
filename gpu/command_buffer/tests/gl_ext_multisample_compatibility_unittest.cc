@@ -13,6 +13,7 @@
 #include "gpu/command_buffer/tests/gl_test_utils.h"
 #include "gpu/config/gpu_test_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gl/gl_context.h"
 
 #define SHADER0(Src) #Src
 
@@ -197,8 +198,8 @@ TEST_F(EXTMultisampleCompatibilityTest, DrawAlphaOneAndResolve) {
 
 #if defined(OS_ANDROID)
   // TODO: Figure out why this fails on NVIDIA Shield. crbug.com/700060.
-  std::string renderer(reinterpret_cast<const char*>(glGetString(GL_RENDERER)));
-  std::string version(reinterpret_cast<const char*>(glGetString(GL_VERSION)));
+  std::string renderer(gl_.context()->GetGLRenderer());
+  std::string version(gl_.context()->GetGLVersion());
   if (renderer.find("NVIDIA Tegra") != std::string::npos &&
       version.find("OpenGL ES 3.2 NVIDIA 361.00") != std::string::npos)
     return;
