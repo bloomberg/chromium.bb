@@ -43,7 +43,7 @@ void ExtensionLauncherContextMenu::Init() {
   extension_items_.reset(new extensions::ContextMenuMatcher(
       controller()->profile(), this, this,
       base::Bind(MenuItemHasLauncherContext)));
-  if (item().type == ash::TYPE_APP_SHORTCUT || item().type == ash::TYPE_APP) {
+  if (item().type == ash::TYPE_PINNED_APP || item().type == ash::TYPE_APP) {
     // V1 apps can be started from the menu - but V2 apps should not.
     if (!controller()->IsPlatformApp(item().id)) {
       AddItem(MENU_OPEN_NEW, base::string16());
@@ -56,7 +56,7 @@ void ExtensionLauncherContextMenu::Init() {
       AddItemWithStringId(MENU_CLOSE, IDS_LAUNCHER_CONTEXT_MENU_CLOSE);
 
     if (!controller()->IsPlatformApp(item().id) &&
-        item().type == ash::TYPE_APP_SHORTCUT) {
+        item().type == ash::TYPE_PINNED_APP) {
       AddSeparator(ui::NORMAL_SEPARATOR);
       if (extensions::util::IsNewBookmarkAppsEnabled()) {
         // With bookmark apps enabled, hosted apps launch in a window by
@@ -95,7 +95,7 @@ void ExtensionLauncherContextMenu::Init() {
     AddItemWithStringId(MENU_CLOSE, IDS_LAUNCHER_CONTEXT_MENU_CLOSE);
   }
   AddSeparator(ui::NORMAL_SEPARATOR);
-  if (item().type == ash::TYPE_APP_SHORTCUT || item().type == ash::TYPE_APP) {
+  if (item().type == ash::TYPE_PINNED_APP || item().type == ash::TYPE_APP) {
     const extensions::MenuItem::ExtensionKey app_key(
         controller()->GetAppIDForShelfID(item().id));
     if (!app_key.empty()) {

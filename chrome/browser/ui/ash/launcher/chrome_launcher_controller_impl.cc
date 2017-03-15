@@ -355,8 +355,8 @@ void ChromeLauncherControllerImpl::Pin(ash::ShelfID id) {
   DCHECK(HasShelfIDToAppIDMapping(id));
   const ash::ShelfItem* item = GetItem(id);
   if (item && item->type == ash::TYPE_APP)
-    SetItemType(id, ash::TYPE_APP_SHORTCUT);
-  else if (!item || item->type != ash::TYPE_APP_SHORTCUT)
+    SetItemType(id, ash::TYPE_PINNED_APP);
+  else if (!item || item->type != ash::TYPE_PINNED_APP)
     return;
 
   SyncPinPosition(id);
@@ -386,7 +386,7 @@ void ChromeLauncherControllerImpl::UnpinAndUpdatePrefs(ash::ShelfID id,
 
 bool ChromeLauncherControllerImpl::IsPinned(ash::ShelfID id) {
   const ash::ShelfItem* item = GetItem(id);
-  return item && (item->type == ash::TYPE_APP_SHORTCUT ||
+  return item && (item->type == ash::TYPE_PINNED_APP ||
                   item->type == ash::TYPE_BROWSER_SHORTCUT);
 }
 
@@ -549,7 +549,7 @@ void ChromeLauncherControllerImpl::SetRefocusURLPatternForTest(
     const GURL& url) {
   const ash::ShelfItem* item = GetItem(id);
   if (item && !IsPlatformApp(id) &&
-      (item->type == ash::TYPE_APP_SHORTCUT || item->type == ash::TYPE_APP)) {
+      (item->type == ash::TYPE_PINNED_APP || item->type == ash::TYPE_APP)) {
     LauncherItemController* controller = GetLauncherItemController(id);
     DCHECK(controller);
     AppShortcutLauncherItemController* app_controller =
@@ -639,7 +639,7 @@ ChromeLauncherControllerImpl::GetV1ApplicationsFromAppId(
     const std::string& app_id) {
   const ash::ShelfItem* item = GetItem(GetShelfIDForAppID(app_id));
   // If there is no such item pinned to the launcher, no menu gets created.
-  if (!item || item->type != ash::TYPE_APP_SHORTCUT)
+  if (!item || item->type != ash::TYPE_PINNED_APP)
     return std::vector<content::WebContents*>();
   LauncherItemController* controller = GetLauncherItemController(item->id);
   AppShortcutLauncherItemController* app_controller =
@@ -651,7 +651,7 @@ void ChromeLauncherControllerImpl::ActivateShellApp(const std::string& app_id,
                                                     int window_index) {
   const ash::ShelfItem* item = GetItem(GetShelfIDForAppID(app_id));
   if (item &&
-      (item->type == ash::TYPE_APP || item->type == ash::TYPE_APP_SHORTCUT)) {
+      (item->type == ash::TYPE_APP || item->type == ash::TYPE_PINNED_APP)) {
     LauncherItemController* controller = GetLauncherItemController(item->id);
     AppWindowLauncherItemController* app_window_controller =
         controller->AsAppWindowLauncherItemController();
@@ -966,7 +966,7 @@ ash::ShelfID ChromeLauncherControllerImpl::CreateAppShortcutLauncherItem(
     const ash::AppLauncherId& app_launcher_id,
     int index) {
   return CreateAppShortcutLauncherItemWithType(app_launcher_id, index,
-                                               ash::TYPE_APP_SHORTCUT);
+                                               ash::TYPE_PINNED_APP);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1062,7 +1062,7 @@ void ChromeLauncherControllerImpl::PinRunningAppInternal(
     int index,
     ash::ShelfID shelf_id) {
   DCHECK_EQ(GetItem(shelf_id)->type, ash::TYPE_APP);
-  SetItemType(shelf_id, ash::TYPE_APP_SHORTCUT);
+  SetItemType(shelf_id, ash::TYPE_PINNED_APP);
   int running_index = model_->ItemIndexByID(shelf_id);
   if (running_index < index)
     --index;
@@ -1073,7 +1073,7 @@ void ChromeLauncherControllerImpl::PinRunningAppInternal(
 void ChromeLauncherControllerImpl::UnpinRunningAppInternal(int index) {
   DCHECK(index >= 0 && index < model_->item_count());
   ash::ShelfItem item = model_->items()[index];
-  DCHECK_EQ(item.type, ash::TYPE_APP_SHORTCUT);
+  DCHECK_EQ(item.type, ash::TYPE_PINNED_APP);
   SetItemType(item.id, ash::TYPE_APP);
 }
 
@@ -1188,7 +1188,7 @@ void ChromeLauncherControllerImpl::UpdateAppLaunchersFromPref() {
     if (app_index < model_->item_count()) {
       // Found existing pin or running app.
       const ash::ShelfItem item = model_->items()[app_index];
-      if (item.type == ash::TYPE_APP_SHORTCUT ||
+      if (item.type == ash::TYPE_PINNED_APP ||
           item.type == ash::TYPE_BROWSER_SHORTCUT) {
         // Just move to required position or keep it inplace.
         model_->Move(app_index, index);
@@ -1207,7 +1207,7 @@ void ChromeLauncherControllerImpl::UpdateAppLaunchersFromPref() {
   // At second step remove any pin to the right from the current index.
   while (index < model_->item_count()) {
     const ash::ShelfItem item = model_->items()[index];
-    if (item.type != ash::TYPE_APP_SHORTCUT) {
+    if (item.type != ash::TYPE_PINNED_APP) {
       ++index;
       continue;
     }
@@ -1350,10 +1350,8 @@ int ChromeLauncherControllerImpl::FindInsertionPoint() {
   for (int i = model_->item_count() - 1; i > 0; --i) {
     ash::ShelfItemType type = model_->items()[i].type;
     DCHECK_NE(ash::TYPE_APP_LIST, type);
-    if (type == ash::TYPE_APP_SHORTCUT ||
-        type == ash::TYPE_BROWSER_SHORTCUT) {
+    if (type == ash::TYPE_PINNED_APP || type == ash::TYPE_BROWSER_SHORTCUT)
       return i;
-    }
   }
   return 0;
 }

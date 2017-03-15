@@ -343,7 +343,7 @@ class ShelfViewTest : public AshTestBase {
 
   ShelfID AddAppShortcut() {
     ShelfItem item;
-    item.type = TYPE_APP_SHORTCUT;
+    item.type = TYPE_PINNED_APP;
     item.status = STATUS_CLOSED;
 
     ShelfID id = model_->next_id();
@@ -394,7 +394,7 @@ class ShelfViewTest : public AshTestBase {
     ShelfItem item = model_->items()[index];
 
     if (item.type == TYPE_APP) {
-      item.type = TYPE_APP_SHORTCUT;
+      item.type = TYPE_PINNED_APP;
       model_->Set(index, item);
     }
     test_api_->RunMessageLoopUntilAnimationsDone();
@@ -788,16 +788,15 @@ TEST_F(ShelfViewTest, OverflowButtonBounds) {
 // Checks that shelf view contents are considered in the correct drag group.
 TEST_F(ShelfViewTest, EnforceDragType) {
   EXPECT_TRUE(test_api_->SameDragType(TYPE_APP, TYPE_APP));
-  EXPECT_FALSE(test_api_->SameDragType(TYPE_APP, TYPE_APP_SHORTCUT));
+  EXPECT_FALSE(test_api_->SameDragType(TYPE_APP, TYPE_PINNED_APP));
   EXPECT_FALSE(test_api_->SameDragType(TYPE_APP, TYPE_BROWSER_SHORTCUT));
   EXPECT_FALSE(test_api_->SameDragType(TYPE_APP, TYPE_APP_LIST));
   EXPECT_FALSE(test_api_->SameDragType(TYPE_APP, TYPE_APP_PANEL));
 
-  EXPECT_TRUE(test_api_->SameDragType(TYPE_APP_SHORTCUT, TYPE_APP_SHORTCUT));
-  EXPECT_TRUE(
-      test_api_->SameDragType(TYPE_APP_SHORTCUT, TYPE_BROWSER_SHORTCUT));
-  EXPECT_FALSE(test_api_->SameDragType(TYPE_APP_SHORTCUT, TYPE_APP_LIST));
-  EXPECT_FALSE(test_api_->SameDragType(TYPE_APP_SHORTCUT, TYPE_APP_PANEL));
+  EXPECT_TRUE(test_api_->SameDragType(TYPE_PINNED_APP, TYPE_PINNED_APP));
+  EXPECT_TRUE(test_api_->SameDragType(TYPE_PINNED_APP, TYPE_BROWSER_SHORTCUT));
+  EXPECT_FALSE(test_api_->SameDragType(TYPE_PINNED_APP, TYPE_APP_LIST));
+  EXPECT_FALSE(test_api_->SameDragType(TYPE_PINNED_APP, TYPE_APP_PANEL));
 
   EXPECT_TRUE(
       test_api_->SameDragType(TYPE_BROWSER_SHORTCUT, TYPE_BROWSER_SHORTCUT));

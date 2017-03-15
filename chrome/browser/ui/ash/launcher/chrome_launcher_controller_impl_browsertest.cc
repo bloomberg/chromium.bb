@@ -335,7 +335,7 @@ class ShelfAppBrowserTest : public ExtensionBrowserTest {
     controller_->SyncPinPosition(shortcut_id);
     EXPECT_EQ(++item_count, model_->item_count());
     const ash::ShelfItem& item = *model_->ItemByID(shortcut_id);
-    EXPECT_EQ(ash::TYPE_APP_SHORTCUT, item.type);
+    EXPECT_EQ(ash::TYPE_PINNED_APP, item.type);
     return item.id;
   }
 
@@ -456,7 +456,7 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, LaunchPinned) {
   ++item_count;
   ASSERT_EQ(item_count, shelf_model()->item_count());
   ash::ShelfItem item = *shelf_model()->ItemByID(shortcut_id);
-  EXPECT_EQ(ash::TYPE_APP_SHORTCUT, item.type);
+  EXPECT_EQ(ash::TYPE_PINNED_APP, item.type);
   EXPECT_EQ(ash::STATUS_CLOSED, item.status);
 
   // Open a window. Confirm the item is now running.
@@ -464,14 +464,14 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, LaunchPinned) {
   ash::wm::ActivateWindow(window->GetNativeWindow());
   ASSERT_EQ(item_count, shelf_model()->item_count());
   item = *shelf_model()->ItemByID(shortcut_id);
-  EXPECT_EQ(ash::TYPE_APP_SHORTCUT, item.type);
+  EXPECT_EQ(ash::TYPE_PINNED_APP, item.type);
   EXPECT_EQ(ash::STATUS_ACTIVE, item.status);
 
   // Then close it, make sure there's still an item.
   CloseAppWindow(window);
   ASSERT_EQ(item_count, shelf_model()->item_count());
   item = *shelf_model()->ItemByID(shortcut_id);
-  EXPECT_EQ(ash::TYPE_APP_SHORTCUT, item.type);
+  EXPECT_EQ(ash::TYPE_PINNED_APP, item.type);
   EXPECT_EQ(ash::STATUS_CLOSED, item.status);
 }
 
@@ -499,7 +499,7 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, PinRunning) {
   controller_->Pin(id);
   ASSERT_EQ(item_count, shelf_model()->item_count());
   const ash::ShelfItem& item2 = *shelf_model()->ItemByID(id);
-  EXPECT_EQ(ash::TYPE_APP_SHORTCUT, item2.type);
+  EXPECT_EQ(ash::TYPE_PINNED_APP, item2.type);
   EXPECT_EQ(ash::STATUS_ACTIVE, item2.status);
 
   // New shortcuts should come after the item.
@@ -528,7 +528,7 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, UnpinRunning) {
   ++item_count;
   ASSERT_EQ(item_count, shelf_model()->item_count());
   ash::ShelfItem item = *shelf_model()->ItemByID(shortcut_id);
-  EXPECT_EQ(ash::TYPE_APP_SHORTCUT, item.type);
+  EXPECT_EQ(ash::TYPE_PINNED_APP, item.type);
   EXPECT_EQ(ash::STATUS_CLOSED, item.status);
 
   // Create a second shortcut. This will be needed to force the first one to
@@ -545,7 +545,7 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, UnpinRunning) {
   ash::wm::ActivateWindow(window->GetNativeWindow());
   ASSERT_EQ(item_count, shelf_model()->item_count());
   item = *shelf_model()->ItemByID(shortcut_id);
-  EXPECT_EQ(ash::TYPE_APP_SHORTCUT, item.type);
+  EXPECT_EQ(ash::TYPE_PINNED_APP, item.type);
   EXPECT_EQ(ash::STATUS_ACTIVE, item.status);
 
   // Unpin the app. The item should remain.
@@ -2024,12 +2024,12 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, DISABLED_DragOffShelf) {
 
   // Test #2: Ripping out the application and canceling the operation should
   // not change anything.
-  int app_index = GetIndexOfShelfItemType(ash::TYPE_APP_SHORTCUT);
+  int app_index = GetIndexOfShelfItemType(ash::TYPE_PINNED_APP);
   EXPECT_LE(0, app_index);
   RipOffItemIndex(app_index, &generator, &test, RIP_OFF_ITEM_AND_CANCEL);
   // => It should not have been removed and the location should be unchanged.
   ASSERT_EQ(3, model_->item_count());
-  EXPECT_EQ(app_index, GetIndexOfShelfItemType(ash::TYPE_APP_SHORTCUT));
+  EXPECT_EQ(app_index, GetIndexOfShelfItemType(ash::TYPE_PINNED_APP));
 
   // Test #3: Ripping out the application and moving it back in should not
   // change anything.
@@ -2037,19 +2037,19 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, DISABLED_DragOffShelf) {
   // => It should not have been removed and the location should be unchanged.
   ASSERT_EQ(3, model_->item_count());
   // Through the operation the index might have changed.
-  app_index = GetIndexOfShelfItemType(ash::TYPE_APP_SHORTCUT);
+  app_index = GetIndexOfShelfItemType(ash::TYPE_PINNED_APP);
 
   // Test #4: Ripping out the application should remove the item.
   RipOffItemIndex(app_index, &generator, &test, RIP_OFF_ITEM);
   // => It should not have been removed and the location should be unchanged.
   EXPECT_EQ(2, model_->item_count());
-  EXPECT_EQ(-1, GetIndexOfShelfItemType(ash::TYPE_APP_SHORTCUT));
+  EXPECT_EQ(-1, GetIndexOfShelfItemType(ash::TYPE_PINNED_APP));
 
   // Test #5: Uninstalling an application while it is being ripped off should
   // not crash.
   ash::ShelfID app_id = CreateShortcut("app2");
   test.RunMessageLoopUntilAnimationsDone();
-  int app2_index = GetIndexOfShelfItemType(ash::TYPE_APP_SHORTCUT);
+  int app2_index = GetIndexOfShelfItemType(ash::TYPE_PINNED_APP);
   EXPECT_EQ(3, model_->item_count());  // And it remains that way.
   RipOffItemIndex(app2_index,
                   &generator,
@@ -2061,7 +2061,7 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, DISABLED_DragOffShelf) {
   generator.ReleaseLeftButton();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(2, model_->item_count());  // And it remains that way.
-  EXPECT_EQ(-1, GetIndexOfShelfItemType(ash::TYPE_APP_SHORTCUT));
+  EXPECT_EQ(-1, GetIndexOfShelfItemType(ash::TYPE_PINNED_APP));
 
   // Test #6: Ripping out the application when the overflow button exists.
   // After ripping out, overflow button should be removed.
@@ -2083,7 +2083,7 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, DISABLED_DragOffShelf) {
   test.RunMessageLoopUntilAnimationsDone();
 
   int total_count = model_->item_count();
-  app_index = GetIndexOfShelfItemType(ash::TYPE_APP_SHORTCUT);
+  app_index = GetIndexOfShelfItemType(ash::TYPE_PINNED_APP);
   RipOffItemIndex(app_index, &generator, &test, RIP_OFF_ITEM);
   // When an item is ripped off from the shelf that has overflow button
   // (see crbug.com/3050787), it was hidden accidentally and was then

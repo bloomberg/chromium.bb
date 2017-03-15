@@ -19,7 +19,7 @@ int ShelfItemTypeToWeight(ShelfItemType type) {
       // to be a fallthrough.
       return 0;
     case TYPE_BROWSER_SHORTCUT:
-    case TYPE_APP_SHORTCUT:
+    case TYPE_PINNED_APP:
       return 1;
     case TYPE_APP:
       return 2;

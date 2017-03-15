@@ -464,7 +464,7 @@ void ShelfView::ButtonPressed(views::Button* sender,
 
   // Collect usage statistics before we decide what to do with the click.
   switch (model_->items()[last_pressed_index_].type) {
-    case TYPE_APP_SHORTCUT:
+    case TYPE_PINNED_APP:
     case TYPE_BROWSER_SHORTCUT:
     case TYPE_APP:
       WmShell::Get()->RecordUserMetricsAction(UMA_LAUNCHER_CLICK_ON_APP);
@@ -936,7 +936,7 @@ views::View* ShelfView::CreateViewForItem(const ShelfItem& item) {
   views::View* view = nullptr;
   switch (item.type) {
     case TYPE_APP_PANEL:
-    case TYPE_APP_SHORTCUT:
+    case TYPE_PINNED_APP:
     case TYPE_BROWSER_SHORTCUT:
     case TYPE_APP:
     case TYPE_DIALOG: {
@@ -1234,16 +1234,16 @@ ShelfView::RemovableState ShelfView::RemovableByRipOff(int index) const {
 
   // Note: Only pinned app shortcuts can be removed!
   std::string app_id = delegate_->GetAppIDForShelfID(model_->items()[index].id);
-  return (type == TYPE_APP_SHORTCUT && delegate_->IsAppPinned(app_id))
+  return (type == TYPE_PINNED_APP && delegate_->IsAppPinned(app_id))
              ? REMOVABLE
              : DRAGGABLE;
 }
 
 bool ShelfView::SameDragType(ShelfItemType typea, ShelfItemType typeb) const {
   switch (typea) {
-    case TYPE_APP_SHORTCUT:
+    case TYPE_PINNED_APP:
     case TYPE_BROWSER_SHORTCUT:
-      return (typeb == TYPE_APP_SHORTCUT || typeb == TYPE_BROWSER_SHORTCUT);
+      return (typeb == TYPE_PINNED_APP || typeb == TYPE_BROWSER_SHORTCUT);
     case TYPE_APP_PANEL:
     case TYPE_APP_LIST:
     case TYPE_APP:
@@ -1567,7 +1567,7 @@ void ShelfView::ShelfItemChanged(int model_index, const ShelfItem& old_item) {
   views::View* view = view_model_->view_at(model_index);
   switch (item.type) {
     case TYPE_APP_PANEL:
-    case TYPE_APP_SHORTCUT:
+    case TYPE_PINNED_APP:
     case TYPE_BROWSER_SHORTCUT:
     case TYPE_APP:
     case TYPE_DIALOG: {

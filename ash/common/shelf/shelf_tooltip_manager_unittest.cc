@@ -85,7 +85,7 @@ TEST_F(ShelfTooltipManagerTest, DoNotShowForInvalidView) {
   // The manager should start the timer for a view on the shelf.
   ShelfModel* model = shelf_view_->model();
   ShelfItem item;
-  item.type = TYPE_APP_SHORTCUT;
+  item.type = TYPE_PINNED_APP;
   const int index = model->Add(item);
   const ShelfID id = model->items()[index].id;
   model->SetShelfItemDelegate(id,

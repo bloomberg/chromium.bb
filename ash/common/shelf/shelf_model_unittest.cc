@@ -101,7 +101,7 @@ class ShelfModelTest : public testing::Test {
 TEST_F(ShelfModelTest, BasicAssertions) {
   // Add an item.
   ShelfItem item;
-  item.type = TYPE_APP_SHORTCUT;
+  item.type = TYPE_PINNED_APP;
   int index = model_->Add(item);
   EXPECT_EQ(2, model_->item_count());
   EXPECT_EQ("added=1", observer_->StateStringAndClear());
@@ -120,17 +120,17 @@ TEST_F(ShelfModelTest, BasicAssertions) {
   EXPECT_EQ("removed=1", observer_->StateStringAndClear());
 
   // Add an app item.
-  item.type = TYPE_APP_SHORTCUT;
+  item.type = TYPE_PINNED_APP;
   index = model_->Add(item);
   observer_->StateStringAndClear();
 
   // Change everything.
   model_->Set(index, item);
   EXPECT_EQ("changed=1", observer_->StateStringAndClear());
-  EXPECT_EQ(TYPE_APP_SHORTCUT, model_->items()[index].type);
+  EXPECT_EQ(TYPE_PINNED_APP, model_->items()[index].type);
 
   // Add another item.
-  item.type = TYPE_APP_SHORTCUT;
+  item.type = TYPE_PINNED_APP;
   model_->Add(item);
   observer_->StateStringAndClear();
 
@@ -167,29 +167,30 @@ TEST_F(ShelfModelTest, AddIndices) {
   int platform_app_index2 = model_->Add(item);
   EXPECT_EQ(3, platform_app_index2);
 
-  // APP_SHORTCUT priority is higher than PLATFORM_APP but same as
-  // BROWSER_SHORTCUT. So APP_SHORTCUT is located after BROWSER_SHORCUT.
-  item.type = TYPE_APP_SHORTCUT;
+  // TYPE_PINNED_APP priority is higher than TYPE_APP but same as
+  // TYPE_BROWSER_SHORTCUT. So TYPE_PINNED_APP is located after
+  // TYPE_BROWSER_SHORTCUT.
+  item.type = TYPE_PINNED_APP;
   int app_shortcut_index1 = model_->Add(item);
   EXPECT_EQ(2, app_shortcut_index1);
 
-  item.type = TYPE_APP_SHORTCUT;
+  item.type = TYPE_PINNED_APP;
   int app_shortcut_index2 = model_->Add(item);
   EXPECT_EQ(3, app_shortcut_index2);
 
   // Check that AddAt() figures out the correct indexes for app shortcuts.
-  // APP_SHORTCUT and BROWSER_SHORTCUT has the same weight.
-  // So APP_SHORTCUT is located at index 0. And, BROWSER_SHORTCUT is located at
-  // index 1.
-  item.type = TYPE_APP_SHORTCUT;
+  // TYPE_PINNED_APP and TYPE_BROWSER_SHORTCUT has the same weight.
+  // So TYPE_PINNED_APP is located at index 0. And, TYPE_BROWSER_SHORTCUT is
+  // located at index 1.
+  item.type = TYPE_PINNED_APP;
   int app_shortcut_index3 = model_->AddAt(1, item);
   EXPECT_EQ(1, app_shortcut_index3);
 
-  item.type = TYPE_APP_SHORTCUT;
+  item.type = TYPE_PINNED_APP;
   int app_shortcut_index4 = model_->AddAt(6, item);
   EXPECT_EQ(5, app_shortcut_index4);
 
-  item.type = TYPE_APP_SHORTCUT;
+  item.type = TYPE_PINNED_APP;
   int app_shortcut_index5 = model_->AddAt(3, item);
   EXPECT_EQ(3, app_shortcut_index5);
 
@@ -245,7 +246,7 @@ TEST_F(ShelfModelTest, FirstRunningAppIndex) {
 
   // Insert an application shortcut and make sure that the running application
   // index would be behind it.
-  item.type = TYPE_APP_SHORTCUT;
+  item.type = TYPE_PINNED_APP;
   EXPECT_EQ(2, model_->Add(item));
   EXPECT_EQ(3, model_->FirstRunningAppIndex());
 
@@ -293,7 +294,7 @@ TEST_F(ShelfModelTest, CorrectMoveItemsWhenStateChange) {
 
   // Add three shortcuts. They should all be moved between the two.
   ShelfItem item;
-  item.type = TYPE_APP_SHORTCUT;
+  item.type = TYPE_PINNED_APP;
   int app1_index = model_->Add(item);
   EXPECT_EQ(2, app1_index);
   int app2_index = model_->Add(item);

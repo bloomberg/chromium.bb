@@ -96,7 +96,7 @@ bool LauncherContextMenu::IsCommandIdEnabled(int command_id) const {
   switch (command_id) {
     case MENU_PIN:
       // Users cannot modify the pinned state of apps pinned by policy.
-      return !item_.pinned_by_policy && (item_.type == ash::TYPE_APP_SHORTCUT ||
+      return !item_.pinned_by_policy && (item_.type == ash::TYPE_PINNED_APP ||
                                          item_.type == ash::TYPE_APP);
     case MENU_CHANGE_WALLPAPER:
       return ash::Shell::Get()->wallpaper_delegate()->CanOpenSetWallpaperPage();
