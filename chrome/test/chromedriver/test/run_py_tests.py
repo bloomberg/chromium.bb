@@ -74,6 +74,10 @@ _VERSION_SPECIFIC_FILTER['HEAD'] = [
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=992
     'ChromeDownloadDirTest.testDownloadDirectoryOverridesExistingPreferences',
 ]
+_VERSION_SPECIFIC_FILTER['58'] = [
+    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1673
+    'ChromeDriverPageLoadTimeoutTest.testPageLoadTimeoutCrossDomain',
+]
 _VERSION_SPECIFIC_FILTER['57'] = [
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=992
     'ChromeDownloadDirTest.testDownloadDirectoryOverridesExistingPreferences',
