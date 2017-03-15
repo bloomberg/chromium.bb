@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "9.35",
+  "version": "9.36",
   "entries": [
     {
       "id": 1,
@@ -1758,19 +1758,6 @@ LONG_STRING_CONST(
       ]
     },
     {
-      "id": 171,
-      "description": "NV12 DXGI video hangs or displays incorrect colors on AMD drivers",
-      "cr_bugs": [623029, 644293],
-      "os": {
-        "type": "win"
-      },
-      "vendor_id": "0x1002",
-      "features": [
-        "disable_dxgi_zero_copy_video",
-        "disable_nv12_dxgi_video"
-      ]
-    },
-    {
       "id": 172,
       "description": "Limited enabling of Chromium GL_INTEL_framebuffer_CMAA",
       "cr_bugs": [535198],
@@ -2382,6 +2369,34 @@ LONG_STRING_CONST(
       "gl_renderer": "Adreno \\(TM\\) [45].*",
       "features": [
         "disable_program_disk_cache"
+      ]
+    },
+    {
+      "id": 219,
+      "description": "Zero-copy DXGI video hangs or displays incorrect colors on AMD drivers",
+      "cr_bugs": [623029],
+      "os": {
+        "type": "win"
+      },
+      "vendor_id": "0x1002",
+      "features": [
+        "disable_dxgi_zero_copy_video"
+      ]
+    },
+    {
+      "id": 220,
+      "description": "NV12 DXGI video displays incorrect colors on older AMD drivers",
+      "cr_bugs": [644293],
+      "os": {
+        "type": "win"
+      },
+      "vendor_id": "0x1002",
+      "driver_version": {
+        "op": "<",
+        "value": "21.19.519.2"
+      },
+      "features": [
+        "disable_nv12_dxgi_video"
       ]
     }
   ]
