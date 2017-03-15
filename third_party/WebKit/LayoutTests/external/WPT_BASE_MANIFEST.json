@@ -11550,6 +11550,11 @@
      {}
     ]
    ],
+   "html/browsers/windows/browsing-context-names/browsing-context-_blank-expected.txt": [
+    [
+     {}
+    ]
+   ],
    "html/browsers/windows/browsing-context-names/existing.html": [
     [
      {}
@@ -41454,6 +41459,18 @@
      {}
     ]
    ],
+   "html/webappapis/scripting/events/event-handler-processing-algorithm-error/synthetic-errorevent-click.html": [
+    [
+     "/html/webappapis/scripting/events/event-handler-processing-algorithm-error/synthetic-errorevent-click.html",
+     {}
+    ]
+   ],
+   "html/webappapis/scripting/events/event-handler-processing-algorithm-error/synthetic-errorevent-click.worker.js": [
+    [
+     "/html/webappapis/scripting/events/event-handler-processing-algorithm-error/synthetic-errorevent-click.worker.html",
+     {}
+    ]
+   ],
    "html/webappapis/scripting/events/event-handler-processing-algorithm-error/window-runtime-error.html": [
     [
      "/html/webappapis/scripting/events/event-handler-processing-algorithm-error/window-runtime-error.html",
@@ -65786,7 +65803,7 @@
    "support"
   ],
   "html/browsers/browsing-the-web/unloading-documents/beforeunload-canceling.html": [
-   "3164df75ba277feef3b5c9a1ff6021f3e51d48de",
+   "4d0e0901dd42a40d86c7263ac7ac432059b6e84e",
    "testharness"
   ],
   "html/browsers/browsing-the-web/unloading-documents/beforeunload-on-history-back-1.html": [
@@ -67132,6 +67149,10 @@
   "html/browsers/windows/browsing-context-names/002.html": [
    "ed586ee147452ba6cb8d90782b266807f8b7975e",
    "testharness"
+  ],
+  "html/browsers/windows/browsing-context-names/browsing-context-_blank-expected.txt": [
+   "c07a576dcc76bb8d6271442116909f0be5098a77",
+   "support"
   ],
   "html/browsers/windows/browsing-context-names/browsing-context-_blank.html": [
    "4a1a9ff6c913291edce2339faa443b6da2e5fe74",
@@ -76913,6 +76934,14 @@
    "ef22b322a16f835c562a0aa4575361f0fb53754a",
    "testharness"
   ],
+  "html/webappapis/scripting/events/event-handler-processing-algorithm-error/synthetic-errorevent-click.html": [
+   "378f086b3f8e2ea3443be95ee352d9d96604ccd0",
+   "testharness"
+  ],
+  "html/webappapis/scripting/events/event-handler-processing-algorithm-error/synthetic-errorevent-click.worker.js": [
+   "3e8715be8b85623793e9bc18b1202616a5353e10",
+   "testharness"
+  ],
   "html/webappapis/scripting/events/event-handler-processing-algorithm-error/window-runtime-error.html": [
    "e69a2ad6b52db467bab6baee7485809fec35893c",
    "testharness"
@@ -77898,7 +77927,7 @@
    "testharness"
   ],
   "mediacapture-streams/MediaStreamTrack-init.https-expected.txt": [
-   "e06d937ccc5c05632bc1ce90cb8302d416be5480",
+   "4e890a8c710bbc3100a3c3fc68a2292cff4afa58",
    "support"
   ],
   "mediacapture-streams/MediaStreamTrack-init.https.html": [

@@ -1,6 +1,8 @@
 This is a testharness.js-based test.
 PASS Returning a string must not cancel the event: CustomEvent, non-cancelable 
 PASS Returning a string must not cancel the event: CustomEvent, cancelable 
+FAIL Returning false must cancel the event, because it's coerced to the DOMString "false" which does not cancel CustomEvents: CustomEvent, cancelable assert_false: The event must not have been canceled expected false got true
+PASS Returning a string must not cancel the event: BeforeUnloadEvent with type "click", cancelable 
 PASS Returning null with a real iframe unloading 
 PASS Returning undefined with a real iframe unloading 
 FAIL Returning  with a real iframe unloading assert_equals: canceled expected true but got false
