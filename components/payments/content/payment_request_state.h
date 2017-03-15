@@ -7,13 +7,13 @@
 
 #include "base/macros.h"
 #include "base/observer_list.h"
-#include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/payments/content/payment_request.mojom.h"
 #include "components/payments/core/payment_instrument.h"
 
 namespace autofill {
 class AutofillProfile;
 class CreditCard;
+class PersonalDataManager;
 }  // namespace autofill
 
 namespace payments {
@@ -40,9 +40,6 @@ class PaymentRequestState : public PaymentInstrument::Delegate {
 
   class Delegate {
    public:
-    virtual const std::string& GetApplicationLocale() = 0;
-    // Used to get the user's data.
-    virtual autofill::PersonalDataManager* GetPersonalDataManager() = 0;
     // Called when the PaymentResponse is available.
     virtual void OnPaymentResponseAvailable(
         mojom::PaymentResponsePtr response) = 0;
@@ -51,7 +48,10 @@ class PaymentRequestState : public PaymentInstrument::Delegate {
     virtual ~Delegate() {}
   };
 
-  PaymentRequestState(PaymentRequestSpec* spec, Delegate* delegate);
+  PaymentRequestState(PaymentRequestSpec* spec,
+                      Delegate* delegate,
+                      const std::string& app_locale,
+                      autofill::PersonalDataManager* personal_data_manager);
   ~PaymentRequestState() override;
 
   void AddObserver(Observer* observer);
@@ -106,6 +106,9 @@ class PaymentRequestState : public PaymentInstrument::Delegate {
 
   bool is_ready_to_pay() { return is_ready_to_pay_; }
 
+  const std::string& GetApplicationLocale();
+  autofill::PersonalDataManager* GetPersonalDataManager();
+
  private:
   // Fetches the Autofill Profiles for this user from the PersonalDataManager,
   // and stores copies of them, owned by this PaymentRequestState, in
@@ -138,9 +141,12 @@ class PaymentRequestState : public PaymentInstrument::Delegate {
 
   bool is_ready_to_pay_;
 
+  const std::string app_locale_;
+
   // Not owned. Never null. Both outlive this object.
   PaymentRequestSpec* spec_;
   Delegate* delegate_;
+  autofill::PersonalDataManager* personal_data_manager_;
 
   autofill::AutofillProfile* selected_shipping_profile_;
   autofill::AutofillProfile* selected_contact_profile_;

@@ -7,6 +7,7 @@
 #include "components/autofill/core/browser/autofill_data_util.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/credit_card.h"
+#include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/payments/content/payment_request_spec.h"
 #include "components/payments/core/autofill_payment_instrument.h"
 
@@ -17,11 +18,16 @@ namespace {
 static const char* const kBasicCardMethodName = "basic-card";
 }  // namespace
 
-PaymentRequestState::PaymentRequestState(PaymentRequestSpec* spec,
-                                         Delegate* delegate)
+PaymentRequestState::PaymentRequestState(
+    PaymentRequestSpec* spec,
+    Delegate* delegate,
+    const std::string& app_locale,
+    autofill::PersonalDataManager* personal_data_manager)
     : is_ready_to_pay_(false),
+      app_locale_(app_locale),
       spec_(spec),
       delegate_(delegate),
+      personal_data_manager_(personal_data_manager),
       selected_shipping_profile_(nullptr),
       selected_contact_profile_(nullptr),
       selected_credit_card_(nullptr),
@@ -59,7 +65,7 @@ void PaymentRequestState::GeneratePaymentResponse() {
   // not necessarily basic-card.
   selected_payment_instrument_.reset(new AutofillPaymentInstrument(
       kBasicCardMethodName, *selected_credit_card_, shipping_profiles_,
-      delegate_->GetApplicationLocale()));
+      app_locale_));
   // Fetch the instrument details, will call back into
   // PaymentRequest::OnInstrumentsDetailsReady.
   selected_payment_instrument_->InvokePaymentApp(this);
@@ -82,12 +88,17 @@ void PaymentRequestState::SetSelectedCreditCard(autofill::CreditCard* card) {
   UpdateIsReadyToPayAndNotifyObservers();
 }
 
+const std::string& PaymentRequestState::GetApplicationLocale() {
+  return app_locale_;
+}
+
+autofill::PersonalDataManager* PaymentRequestState::GetPersonalDataManager() {
+  return personal_data_manager_;
+}
+
 void PaymentRequestState::PopulateProfileCache() {
-  autofill::PersonalDataManager* personal_data_manager =
-      delegate_->GetPersonalDataManager();
-  DCHECK(personal_data_manager);
   std::vector<autofill::AutofillProfile*> profiles =
-      personal_data_manager->GetProfilesToSuggest();
+      personal_data_manager_->GetProfilesToSuggest();
 
   // PaymentRequest may outlive the Profiles returned by the Data Manager.
   // Thus, we store copies, and return a vector of pointers to these copies
@@ -103,7 +114,7 @@ void PaymentRequestState::PopulateProfileCache() {
   }
 
   const std::vector<autofill::CreditCard*>& cards =
-      personal_data_manager->GetCreditCardsToSuggest();
+      personal_data_manager_->GetCreditCardsToSuggest();
   for (autofill::CreditCard* card : cards) {
     card_cache_.push_back(base::MakeUnique<autofill::CreditCard>(*card));
     credit_cards_.push_back(card_cache_.back().get());
@@ -162,11 +173,10 @@ bool PaymentRequestState::ArePaymentOptionsSatisfied() {
     return false;
 
   // TODO(mathp): Make an encompassing class to validate contact info.
-  const std::string& app_locale = delegate_->GetApplicationLocale();
   if (spec_->request_payer_name() &&
       (selected_contact_profile_ == nullptr ||
        selected_contact_profile_
-           ->GetInfo(autofill::AutofillType(autofill::NAME_FULL), app_locale)
+           ->GetInfo(autofill::AutofillType(autofill::NAME_FULL), app_locale_)
            .empty())) {
     return false;
   }
@@ -174,7 +184,7 @@ bool PaymentRequestState::ArePaymentOptionsSatisfied() {
       (selected_contact_profile_ == nullptr ||
        selected_contact_profile_
            ->GetInfo(autofill::AutofillType(autofill::EMAIL_ADDRESS),
-                     app_locale)
+                     app_locale_)
            .empty())) {
     return false;
   }
@@ -182,7 +192,7 @@ bool PaymentRequestState::ArePaymentOptionsSatisfied() {
       (selected_contact_profile_ == nullptr ||
        selected_contact_profile_
            ->GetInfo(autofill::AutofillType(autofill::PHONE_HOME_WHOLE_NUMBER),
-                     app_locale)
+                     app_locale_)
            .empty())) {
     return false;
   }

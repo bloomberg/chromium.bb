@@ -7,10 +7,8 @@
 #include <utility>
 
 #include "base/memory/ptr_util.h"
-#include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/payments/content/payment_details_validation.h"
 #include "components/payments/content/payment_request_web_contents_manager.h"
-#include "components/payments/core/currency_formatter.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 
@@ -50,8 +48,11 @@ void PaymentRequest::Init(
   }
   client_ = std::move(client);
   spec_ = base::MakeUnique<PaymentRequestSpec>(
-      std::move(options), std::move(details), std::move(method_data), this);
-  state_ = base::MakeUnique<PaymentRequestState>(spec_.get(), this);
+      std::move(options), std::move(details), std::move(method_data), this,
+      delegate_->GetApplicationLocale());
+  state_ = base::MakeUnique<PaymentRequestState>(
+      spec_.get(), this, delegate_->GetApplicationLocale(),
+      delegate_->GetPersonalDataManager());
 }
 
 void PaymentRequest::Show() {
@@ -91,14 +92,6 @@ void PaymentRequest::OnInvalidSpecProvided() {
   OnConnectionTerminated();
 }
 
-const std::string& PaymentRequest::GetApplicationLocale() {
-  return delegate_->GetApplicationLocale();
-}
-
-autofill::PersonalDataManager* PaymentRequest::GetPersonalDataManager() {
-  return delegate_->GetPersonalDataManager();
-}
-
 void PaymentRequest::OnPaymentResponseAvailable(
     mojom::PaymentResponsePtr response) {
   client_->OnPaymentResponse(std::move(response));
@@ -135,33 +128,6 @@ void PaymentRequest::Pay() {
   DCHECK(state_->is_ready_to_pay());
 
   state_->GeneratePaymentResponse();
-}
-
-CurrencyFormatter* PaymentRequest::GetOrCreateCurrencyFormatter(
-    const std::string& currency_code,
-    const std::string& currency_system,
-    const std::string& locale_name) {
-  if (!currency_formatter_) {
-    currency_formatter_.reset(
-        new CurrencyFormatter(currency_code, currency_system, locale_name));
-  }
-  return currency_formatter_.get();
-}
-
-base::string16 PaymentRequest::GetFormattedCurrencyAmount(
-    const std::string& amount) {
-  CurrencyFormatter* formatter = GetOrCreateCurrencyFormatter(
-      spec_->details().total->amount->currency,
-      spec_->details().total->amount->currency_system, GetApplicationLocale());
-  return formatter->Format(amount);
-}
-
-std::string PaymentRequest::GetFormattedCurrencyCode() {
-  CurrencyFormatter* formatter = GetOrCreateCurrencyFormatter(
-      spec_->details().total->amount->currency,
-      spec_->details().total->amount->currency_system, GetApplicationLocale());
-
-  return formatter->formatted_currency_code();
 }
 
 }  // namespace payments

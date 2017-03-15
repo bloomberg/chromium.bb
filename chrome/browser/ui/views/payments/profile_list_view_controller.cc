@@ -94,7 +94,8 @@ class ShippingProfileViewController : public ProfileListViewController {
   std::unique_ptr<views::View> GetLabel(
       autofill::AutofillProfile* profile) override {
     return GetShippingAddressLabel(AddressStyleType::DETAILED,
-                                   request()->GetApplicationLocale(), *profile);
+                                   request()->state()->GetApplicationLocale(),
+                                   *profile);
   }
 
   std::vector<autofill::AutofillProfile*> GetProfiles() override {
@@ -121,11 +122,11 @@ class ContactProfileViewController : public ProfileListViewController {
   // ProfileListViewController:
   std::unique_ptr<views::View> GetLabel(
       autofill::AutofillProfile* profile) override {
-    return GetContactInfoLabel(AddressStyleType::DETAILED,
-                               request()->GetApplicationLocale(), *profile,
-                               request()->spec()->request_payer_name(),
-                               request()->spec()->request_payer_phone(),
-                               request()->spec()->request_payer_email());
+    return GetContactInfoLabel(
+        AddressStyleType::DETAILED, request()->state()->GetApplicationLocale(),
+        *profile, request()->spec()->request_payer_name(),
+        request()->spec()->request_payer_phone(),
+        request()->spec()->request_payer_email());
   }
 
   std::vector<autofill::AutofillProfile*> GetProfiles() override {

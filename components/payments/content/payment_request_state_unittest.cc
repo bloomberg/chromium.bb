@@ -23,7 +23,6 @@ class PaymentRequestStateTest : public testing::Test,
  protected:
   PaymentRequestStateTest()
       : num_on_selected_information_changed_called_(0),
-        locale_("en-US"),
         address_(autofill::test::GetFullProfile()),
         credit_card_(autofill::test::GetCreditCard()) {
     test_personal_data_manager_.AddTestingProfile(&address_);
@@ -38,10 +37,6 @@ class PaymentRequestStateTest : public testing::Test,
   }
 
   // PaymentRequestState::Delegate:
-  const std::string& GetApplicationLocale() override { return locale_; };
-  autofill::PersonalDataManager* GetPersonalDataManager() override {
-    return &test_personal_data_manager_;
-  }
   void OnPaymentResponseAvailable(mojom::PaymentResponsePtr response) override {
     payment_response_ = std::move(response);
   };
@@ -52,9 +47,10 @@ class PaymentRequestStateTest : public testing::Test,
       std::vector<mojom::PaymentMethodDataPtr> method_data) {
     // The spec will be based on the |options| and |details| passed in.
     spec_ = base::MakeUnique<PaymentRequestSpec>(
-        std::move(options), std::move(details), std::move(method_data),
-        nullptr);
-    state_ = base::MakeUnique<PaymentRequestState>(spec_.get(), this);
+        std::move(options), std::move(details), std::move(method_data), nullptr,
+        "en-US");
+    state_ = base::MakeUnique<PaymentRequestState>(
+        spec_.get(), this, "en-US", &test_personal_data_manager_);
     state_->AddObserver(this);
   }
 
@@ -96,7 +92,6 @@ class PaymentRequestStateTest : public testing::Test,
   std::unique_ptr<PaymentRequestState> state_;
   std::unique_ptr<PaymentRequestSpec> spec_;
   int num_on_selected_information_changed_called_;
-  std::string locale_;
   mojom::PaymentResponsePtr payment_response_;
   autofill::TestPersonalDataManager test_personal_data_manager_;
 

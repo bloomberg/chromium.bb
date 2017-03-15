@@ -23,8 +23,8 @@ class PaymentRequestSpecTest : public testing::Test,
 
   void RecreateSpecWithMethodData(
       std::vector<payments::mojom::PaymentMethodDataPtr> method_data) {
-    spec_ = base::MakeUnique<PaymentRequestSpec>(nullptr, nullptr,
-                                                 std::move(method_data), this);
+    spec_ = base::MakeUnique<PaymentRequestSpec>(
+        nullptr, nullptr, std::move(method_data), this, "en-US");
   }
 
   PaymentRequestSpec* spec() { return spec_.get(); }

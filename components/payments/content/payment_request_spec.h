@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "components/payments/content/payment_request.mojom.h"
+#include "components/payments/core/currency_formatter.h"
 
 namespace payments {
 
@@ -33,7 +34,8 @@ class PaymentRequestSpec {
   PaymentRequestSpec(mojom::PaymentOptionsPtr options,
                      mojom::PaymentDetailsPtr details,
                      std::vector<mojom::PaymentMethodDataPtr> method_data,
-                     PaymentRequestSpec::Observer* observer);
+                     PaymentRequestSpec::Observer* observer,
+                     const std::string& app_locale);
   ~PaymentRequestSpec();
 
   void AddObserver(Observer* observer);
@@ -48,6 +50,16 @@ class PaymentRequestSpec {
     return supported_card_networks_;
   }
 
+  // Uses CurrencyFormatter to format |amount| with the currency symbol for this
+  // request's currency. Will use currency of the "total" display item, because
+  // all items are supposed to have the same currency in a given request.
+  base::string16 GetFormattedCurrencyAmount(const std::string& amount);
+
+  // Uses CurrencyFormatter to get the formatted currency code for this
+  // request's currency. Will use currency of the "total" display item, because
+  // all items are supposed to have the same currency in a given request.
+  std::string GetFormattedCurrencyCode();
+
   const mojom::PaymentDetails& details() const { return *details_.get(); }
   const mojom::PaymentOptions& options() const { return *options_.get(); }
 
@@ -59,8 +71,19 @@ class PaymentRequestSpec {
   // Will notify all observers that the spec is invalid.
   void NotifyOnInvalidSpecProvided();
 
+  // Returns the CurrencyFormatter instance for this PaymentRequest.
+  // |locale_name| should be the result of the browser's GetApplicationLocale().
+  // Note: Having multiple currencies per PaymentRequest is not supported; hence
+  // the CurrencyFormatter is cached here.
+  CurrencyFormatter* GetOrCreateCurrencyFormatter(
+      const std::string& currency_code,
+      const std::string& currency_system,
+      const std::string& locale_name);
+
   mojom::PaymentOptionsPtr options_;
   mojom::PaymentDetailsPtr details_;
+  const std::string app_locale_;
+  std::unique_ptr<CurrencyFormatter> currency_formatter_;
 
   // A list of supported basic card networks, in order that they were specified
   // by the merchant.

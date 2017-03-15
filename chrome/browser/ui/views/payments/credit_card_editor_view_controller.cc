@@ -190,7 +190,7 @@ bool CreditCardEditorViewController::ValidateModelAndSave() {
     return false;
 
   // Add the card (will not add a duplicate).
-  request()->GetPersonalDataManager()->AddCreditCard(credit_card);
+  request()->state()->GetPersonalDataManager()->AddCreditCard(credit_card);
 
   return true;
 }

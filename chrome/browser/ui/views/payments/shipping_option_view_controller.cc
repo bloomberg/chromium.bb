@@ -6,6 +6,7 @@
 
 #include "chrome/browser/ui/views/payments/payment_request_views_util.h"
 #include "components/payments/content/payment_request.h"
+#include "components/payments/content/payment_request_spec.h"
 
 namespace payments {
 
@@ -25,8 +26,8 @@ class ShippingOptionItem : public PaymentRequestItemList::Item {
   // payments::PaymentRequestItemList::Item:
   std::unique_ptr<views::View> CreateItemView() override {
     return CreateShippingOptionLabel(
-        shipping_option_,
-        request()->GetFormattedCurrencyAmount(shipping_option_->amount->value));
+        shipping_option_, request()->spec()->GetFormattedCurrencyAmount(
+                              shipping_option_->amount->value));
   }
 
   void SelectedStateChanged() override {}

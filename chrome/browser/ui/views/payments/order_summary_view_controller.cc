@@ -118,7 +118,7 @@ std::unique_ptr<views::View> OrderSummaryViewController::CreateView() {
         CreateLineItemView(
             base::UTF8ToUTF16(
                 request()->spec()->details().display_items[i]->label),
-            request()->GetFormattedCurrencyAmount(
+            request()->spec()->GetFormattedCurrencyAmount(
                 request()->spec()->details().display_items[i]->amount->value),
             false, view_id)
             .release());
@@ -127,7 +127,7 @@ std::unique_ptr<views::View> OrderSummaryViewController::CreateView() {
   base::string16 total_label_value = l10n_util::GetStringFUTF16(
       IDS_PAYMENT_REQUEST_ORDER_SUMMARY_SHEET_TOTAL_FORMAT,
       base::UTF8ToUTF16(request()->spec()->details().total->amount->currency),
-      request()->GetFormattedCurrencyAmount(
+      request()->spec()->GetFormattedCurrencyAmount(
           request()->spec()->details().total->amount->value));
 
   content_view->AddChildView(

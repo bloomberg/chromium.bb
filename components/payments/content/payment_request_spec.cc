@@ -19,8 +19,11 @@ PaymentRequestSpec::PaymentRequestSpec(
     mojom::PaymentOptionsPtr options,
     mojom::PaymentDetailsPtr details,
     std::vector<mojom::PaymentMethodDataPtr> method_data,
-    Observer* observer)
-    : options_(std::move(options)), details_(std::move(details)) {
+    Observer* observer,
+    const std::string& app_locale)
+    : options_(std::move(options)),
+      details_(std::move(details)),
+      app_locale_(app_locale) {
   if (observer)
     AddObserver(observer);
   PopulateValidatedMethodData(method_data);
@@ -34,6 +37,22 @@ void PaymentRequestSpec::AddObserver(Observer* observer) {
 
 void PaymentRequestSpec::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
+}
+
+base::string16 PaymentRequestSpec::GetFormattedCurrencyAmount(
+    const std::string& amount) {
+  CurrencyFormatter* formatter = GetOrCreateCurrencyFormatter(
+      details_->total->amount->currency,
+      details_->total->amount->currency_system, app_locale_);
+  return formatter->Format(amount);
+}
+
+std::string PaymentRequestSpec::GetFormattedCurrencyCode() {
+  CurrencyFormatter* formatter = GetOrCreateCurrencyFormatter(
+      details_->total->amount->currency,
+      details_->total->amount->currency_system, app_locale_);
+
+  return formatter->formatted_currency_code();
 }
 
 void PaymentRequestSpec::PopulateValidatedMethodData(
@@ -110,6 +129,17 @@ void PaymentRequestSpec::PopulateValidatedMethodData(
 void PaymentRequestSpec::NotifyOnInvalidSpecProvided() {
   for (auto& observer : observers_)
     observer.OnInvalidSpecProvided();
+}
+
+CurrencyFormatter* PaymentRequestSpec::GetOrCreateCurrencyFormatter(
+    const std::string& currency_code,
+    const std::string& currency_system,
+    const std::string& locale_name) {
+  if (!currency_formatter_) {
+    currency_formatter_.reset(
+        new CurrencyFormatter(currency_code, currency_system, locale_name));
+  }
+  return currency_formatter_.get();
 }
 
 }  // namespace payments

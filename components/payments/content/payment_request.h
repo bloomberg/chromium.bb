@@ -6,7 +6,6 @@
 #define COMPONENTS_PAYMENTS_CONTENT_PAYMENT_REQUEST_H_
 
 #include <memory>
-#include <string>
 #include <vector>
 
 #include "base/macros.h"
@@ -17,17 +16,12 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 
-namespace autofill {
-class PersonalDataManager;
-}
-
 namespace content {
 class WebContents;
 }
 
 namespace payments {
 
-class CurrencyFormatter;
 class PaymentRequestWebContentsManager;
 
 // This class manages the interaction between the renderer (through the
@@ -61,8 +55,6 @@ class PaymentRequest : public mojom::PaymentRequest,
   void OnInvalidSpecProvided() override;
 
   // PaymentRequestState::Delegate:
-  const std::string& GetApplicationLocale() override;
-  autofill::PersonalDataManager* GetPersonalDataManager() override;
   void OnPaymentResponseAvailable(mojom::PaymentResponsePtr response) override;
 
   // Called when the user explicitely cancelled the flow. Will send a message
@@ -79,23 +71,6 @@ class PaymentRequest : public mojom::PaymentRequest,
   // Called when the user clicks on the "Pay" button.
   void Pay();
 
-  // Returns the CurrencyFormatter instance for this PaymentRequest.
-  // |locale_name| should be the result of the browser's GetApplicationLocale().
-  // Note: Having multiple currencies per PaymentRequest is not supported; hence
-  // the CurrencyFormatter is cached here.
-  CurrencyFormatter* GetOrCreateCurrencyFormatter(
-      const std::string& currency_code,
-      const std::string& currency_system,
-      const std::string& locale_name);
-
-  // Uses CurrencyFormatter to format |amount| with the currency symbol for this
-  // request's currency.
-  base::string16 GetFormattedCurrencyAmount(const std::string& amount);
-
-  // Uses CurrencyFormatter to get the formatted currency code for this
-  // request's currency.
-  std::string GetFormattedCurrencyCode();
-
   content::WebContents* web_contents() { return web_contents_; }
 
   PaymentRequestSpec* spec() { return spec_.get(); }
@@ -108,7 +83,6 @@ class PaymentRequest : public mojom::PaymentRequest,
   PaymentRequestWebContentsManager* manager_;
   mojo::Binding<mojom::PaymentRequest> binding_;
   mojom::PaymentRequestClientPtr client_;
-  std::unique_ptr<CurrencyFormatter> currency_formatter_;
 
   std::unique_ptr<PaymentRequestSpec> spec_;
   std::unique_ptr<PaymentRequestState> state_;
