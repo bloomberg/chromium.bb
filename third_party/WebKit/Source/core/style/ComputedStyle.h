@@ -270,8 +270,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
 
     // 64 bits
 
-    unsigned m_isLink : 1;
-
     mutable unsigned m_hasRemUnits : 1;
 
     // If you add more style bits here, you will also need to update
@@ -297,7 +295,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     m_nonInheritedData.m_pseudoBits = 0;
     m_nonInheritedData.m_emptyState = false;
     m_nonInheritedData.m_hasViewportUnits = false;
-    m_nonInheritedData.m_isLink = false;
     m_nonInheritedData.m_hasRemUnits = false;
   }
 
@@ -2450,9 +2447,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   void setHasCompositorProxy(bool b) {
     SET_VAR(m_rareNonInheritedData, m_hasCompositorProxy, b);
   }
-
-  bool isLink() const { return m_nonInheritedData.m_isLink; }
-  void setIsLink() { m_nonInheritedData.m_isLink = true; }
 
   EInsideLink insideLink() const {
     return static_cast<EInsideLink>(m_inheritedData.m_insideLink);

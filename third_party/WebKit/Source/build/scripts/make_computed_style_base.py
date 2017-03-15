@@ -16,6 +16,7 @@ from name_utilities import camel_case, lower_first, upper_first_letter, enum_for
 # Temporary hard-coded list of fields that are not CSS properties.
 # Ideally these would be specified in a .in or .json5 file.
 NONPROPERTY_FIELDS = set([
+    'isLink',
     # Style can not be shared.
     'unique',
     # Whether this style is affected by these pseudo-classes.
