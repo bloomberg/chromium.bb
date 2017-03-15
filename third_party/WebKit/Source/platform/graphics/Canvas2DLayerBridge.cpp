@@ -950,7 +950,7 @@ void Canvas2DLayerBridge::mailboxReleased(const gpu::Mailbox& mailbox,
       (!m_surface ||
        m_contextProvider->contextGL()->GetGraphicsResetStatusKHR() !=
            GL_NO_ERROR);
-  DCHECK(m_mailboxes.last().m_parentLayerBridge.get() == this);
+  DCHECK(m_mailboxes.back().m_parentLayerBridge.get() == this);
 
   // Mailboxes are typically released in FIFO order, so we iterate
   // from the end of m_mailboxes.

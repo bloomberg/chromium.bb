@@ -47,9 +47,9 @@ void SharedContextRateLimiter::tick() {
 
   m_queries.push_back(0);
   if (m_canUseSyncQueries)
-    gl->GenQueriesEXT(1, &m_queries.last());
+    gl->GenQueriesEXT(1, &m_queries.back());
   if (m_canUseSyncQueries) {
-    gl->BeginQueryEXT(GL_COMMANDS_COMPLETED_CHROMIUM, m_queries.last());
+    gl->BeginQueryEXT(GL_COMMANDS_COMPLETED_CHROMIUM, m_queries.back());
     gl->EndQueryEXT(GL_COMMANDS_COMPLETED_CHROMIUM);
   }
   if (m_queries.size() > m_maxPendingTicks) {

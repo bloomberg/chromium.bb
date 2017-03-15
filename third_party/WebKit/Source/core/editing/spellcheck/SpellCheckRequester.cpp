@@ -207,7 +207,7 @@ void SpellCheckRequester::enqueueRequest(SpellCheckRequest* request) {
   DCHECK(request);
   bool continuation = false;
   if (!m_requestQueue.isEmpty()) {
-    SpellCheckRequest* lastRequest = m_requestQueue.last();
+    SpellCheckRequest* lastRequest = m_requestQueue.back();
     // It's a continuation if the number of the last request got incremented in
     // the new one and both apply to the same editable.
     continuation =

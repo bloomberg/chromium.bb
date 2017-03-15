@@ -181,7 +181,7 @@ void ownPtrTest() {
 
   std::unique_ptr<DestructCounter>& counter0 = deque.front();
   EXPECT_EQ(0, counter0->get());
-  int counter1 = deque.last()->get();
+  int counter1 = deque.back()->get();
   EXPECT_EQ(1, counter1);
   EXPECT_EQ(0, destructNumber);
 
@@ -270,7 +270,7 @@ TEST(DequeTest, MoveOnlyType) {
   EXPECT_EQ(2u, deque.size());
 
   ASSERT_EQ(1, deque.front().value());
-  ASSERT_EQ(2, deque.last().value());
+  ASSERT_EQ(2, deque.back().value());
 
   MoveOnly oldFirst = deque.takeFirst();
   ASSERT_EQ(1, oldFirst.value());

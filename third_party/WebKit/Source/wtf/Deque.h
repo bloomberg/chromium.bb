@@ -99,11 +99,11 @@ class Deque : public ConditionalDestructor<Deque<T, INLINE_CAPACITY, Allocator>,
   }
   T takeFirst();
 
-  T& last() {
+  T& back() {
     DCHECK_NE(m_start, m_end);
     return *(--end());
   }
-  const T& last() const {
+  const T& back() const {
     DCHECK_NE(m_start, m_end);
     return *(--end());
   }
@@ -140,8 +140,6 @@ class Deque : public ConditionalDestructor<Deque<T, INLINE_CAPACITY, Allocator>,
   void pop_back();
   void pop_front();
   bool empty() const { return isEmpty(); }
-  T& back() { return last(); }
-  const T& back() const { return last(); }
   template <typename... Args>
   void emplace_back(Args&&...);
   template <typename... Args>
@@ -489,7 +487,7 @@ inline T Deque<T, inlineCapacity, Allocator>::takeFirst() {
 
 template <typename T, size_t inlineCapacity, typename Allocator>
 inline T Deque<T, inlineCapacity, Allocator>::takeLast() {
-  T oldLast = std::move(last());
+  T oldLast = std::move(back());
   pop_back();
   return oldLast;
 }
