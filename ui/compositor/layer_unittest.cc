@@ -790,6 +790,19 @@ TEST_F(LayerWithDelegateTest, Cloning) {
   EXPECT_FALSE(clone->layer_inverted());
   EXPECT_FALSE(clone->fills_bounds_opaquely());
 
+  // A solid color layer with transparent color can be marked as opaque. The
+  // clone should retain this state.
+  layer.reset(CreateLayer(LAYER_SOLID_COLOR));
+  layer->SetColor(kTransparent);
+  layer->SetFillsBoundsOpaquely(true);
+
+  clone = layer->Clone();
+  EXPECT_TRUE(clone->GetTargetTransform().IsIdentity());
+  EXPECT_EQ(kTransparent, clone->background_color());
+  EXPECT_EQ(kTransparent, clone->GetTargetColor());
+  EXPECT_FALSE(clone->layer_inverted());
+  EXPECT_TRUE(clone->fills_bounds_opaquely());
+
   layer.reset(CreateLayer(LAYER_SOLID_COLOR));
   layer->SetVisible(true);
   layer->SetOpacity(1.0f);
