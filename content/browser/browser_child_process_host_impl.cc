@@ -311,10 +311,6 @@ void BrowserChildProcessHostImpl::ForceShutdown() {
   child_process_host_->ForceShutdown();
 }
 
-void BrowserChildProcessHostImpl::SetBackgrounded(bool backgrounded) {
-  child_process_->SetProcessBackgrounded(backgrounded);
-}
-
 void BrowserChildProcessHostImpl::AddFilter(BrowserMessageFilter* filter) {
   child_process_host_->AddFilter(filter->GetFilter());
 }

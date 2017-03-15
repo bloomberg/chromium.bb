@@ -101,9 +101,6 @@ class CONTENT_EXPORT BrowserChildProcessHostImpl
   // Removes this host from the host list. Calls ChildProcessHost::ForceShutdown
   void ForceShutdown();
 
-  // Callers can reduce the BrowserChildProcess' priority.
-  void SetBackgrounded(bool backgrounded);
-
   // Adds an IPC message filter.
   void AddFilter(BrowserMessageFilter* filter);
 
