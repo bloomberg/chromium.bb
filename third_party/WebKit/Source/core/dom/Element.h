@@ -939,10 +939,6 @@ class CORE_EXPORT Element : public ContainerNode {
   void detachAttrNodeFromElementWithValue(Attr*, const AtomicString& value);
   void detachAttrNodeAtIndex(Attr*, size_t index);
 
-  v8::Local<v8::Object> wrapCustomElement(
-      v8::Isolate*,
-      v8::Local<v8::Object> creationContext);
-
   Member<ElementData> m_elementData;
 };
 
