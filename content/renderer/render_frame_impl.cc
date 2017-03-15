@@ -2248,7 +2248,8 @@ void RenderFrameImpl::OnPostMessageEvent(
 
   WebSerializedScriptValue serialized_script_value;
   if (params.is_data_raw_string) {
-    v8::HandleScope handle_scope(blink::mainThreadIsolate());
+    v8::Isolate* isolate = blink::mainThreadIsolate();
+    v8::HandleScope handle_scope(isolate);
     v8::Local<v8::Context> context = frame_->mainWorldScriptContext();
     v8::Context::Scope context_scope(context);
     V8ValueConverterImpl converter;
@@ -2257,7 +2258,8 @@ void RenderFrameImpl::OnPostMessageEvent(
     std::unique_ptr<base::Value> value(new base::Value(params.data));
     v8::Local<v8::Value> result_value = converter.ToV8Value(value.get(),
                                                              context);
-    serialized_script_value = WebSerializedScriptValue::serialize(result_value);
+    serialized_script_value =
+        WebSerializedScriptValue::serialize(isolate, result_value);
   } else {
     serialized_script_value =
         WebSerializedScriptValue::fromString(WebString::fromUTF16(params.data));

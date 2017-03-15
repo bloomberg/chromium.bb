@@ -65,7 +65,7 @@ v8::Local<v8::Value> ScriptValue::v8ValueFor(
   v8::Local<v8::Value> value = m_value->newLocal(isolate);
   RefPtr<SerializedScriptValue> serialized =
       SerializedScriptValue::serializeAndSwallowExceptions(isolate, value);
-  return serialized->deserialize();
+  return serialized->deserialize(isolate);
 }
 
 bool ScriptValue::toString(String& result) const {

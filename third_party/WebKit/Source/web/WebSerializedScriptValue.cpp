@@ -43,10 +43,11 @@ WebSerializedScriptValue WebSerializedScriptValue::fromString(
 }
 
 WebSerializedScriptValue WebSerializedScriptValue::serialize(
+    v8::Isolate* isolate,
     v8::Local<v8::Value> value) {
   DummyExceptionStateForTesting exceptionState;
   WebSerializedScriptValue serializedValue = SerializedScriptValue::serialize(
-      v8::Isolate::GetCurrent(), value, nullptr, nullptr, exceptionState);
+      isolate, value, nullptr, nullptr, exceptionState);
   if (exceptionState.hadException())
     return createInvalid();
   return serializedValue;
@@ -68,8 +69,9 @@ WebString WebSerializedScriptValue::toString() const {
   return m_private->toWireString();
 }
 
-v8::Local<v8::Value> WebSerializedScriptValue::deserialize() {
-  return m_private->deserialize();
+v8::Local<v8::Value> WebSerializedScriptValue::deserialize(
+    v8::Isolate* isolate) {
+  return m_private->deserialize(isolate);
 }
 
 WebSerializedScriptValue::WebSerializedScriptValue(

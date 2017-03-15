@@ -99,7 +99,6 @@ class CORE_EXPORT SerializedScriptValue
 
   // Deserializes the value (in the current context). Returns a null value in
   // case of failure.
-  v8::Local<v8::Value> deserialize(MessagePortArray* = 0);
   v8::Local<v8::Value> deserialize(v8::Isolate*,
                                    MessagePortArray* = 0,
                                    const WebBlobInfoArray* = 0);

@@ -25,7 +25,7 @@ void v8ConstructorAttributeGetter(
 v8::Local<v8::Value> v8Deserialize(v8::Isolate* isolate,
                                    PassRefPtr<SerializedScriptValue> value) {
   if (value)
-    return value->deserialize();
+    return value->deserialize(isolate);
   return v8::Null(isolate);
 }
 

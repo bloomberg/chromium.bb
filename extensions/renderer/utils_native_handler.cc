@@ -21,9 +21,11 @@ UtilsNativeHandler::~UtilsNativeHandler() {}
 
 void UtilsNativeHandler::DeepCopy(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
+  v8::Isolate* isolate = args.GetIsolate();
   CHECK_EQ(1, args.Length());
   args.GetReturnValue().Set(
-      blink::WebSerializedScriptValue::serialize(args[0]).deserialize());
+      blink::WebSerializedScriptValue::serialize(isolate, args[0])
+          .deserialize(isolate));
 }
 
 }  // namespace extensions

@@ -52,9 +52,10 @@ static v8::Local<v8::Value> cacheState(ScriptState* scriptState,
 
 void V8PopStateEvent::stateAttributeGetterCustom(
     const v8::FunctionCallbackInfo<v8::Value>& info) {
-  ScriptState* scriptState = ScriptState::current(info.GetIsolate());
+  v8::Isolate* isolate = info.GetIsolate();
+  ScriptState* scriptState = ScriptState::current(isolate);
   v8::Local<v8::Value> result = V8HiddenValue::getHiddenValue(
-      scriptState, info.Holder(), V8HiddenValue::state(info.GetIsolate()));
+      scriptState, info.Holder(), V8HiddenValue::state(isolate));
 
   if (!result.IsEmpty()) {
     v8SetReturnValue(info, result);
@@ -68,11 +69,11 @@ void V8PopStateEvent::stateAttributeGetterCustom(
     // event was initialized with PopStateEventInit. In such case, we need
     // to get a v8 value for the current world from state().
     if (event->serializedState())
-      result = event->serializedState()->deserialize();
+      result = event->serializedState()->deserialize(isolate);
     else
       result = event->state().v8ValueFor(scriptState);
     if (result.IsEmpty())
-      result = v8::Null(info.GetIsolate());
+      result = v8::Null(isolate);
     v8SetReturnValue(info, cacheState(scriptState, info.Holder(), result));
     return;
   }
@@ -88,25 +89,23 @@ void V8PopStateEvent::stateAttributeGetterCustom(
   bool isSameState = history->isSameAsCurrentState(event->serializedState());
 
   if (isSameState) {
-    v8::Local<v8::Value> v8HistoryValue =
-        ToV8(history, info.Holder(), info.GetIsolate());
+    v8::Local<v8::Value> v8HistoryValue = ToV8(history, info.Holder(), isolate);
     if (v8HistoryValue.IsEmpty())
       return;
     v8::Local<v8::Object> v8History = v8HistoryValue.As<v8::Object>();
     if (!history->stateChanged()) {
-      result = V8HiddenValue::getHiddenValue(
-          scriptState, v8History, V8HiddenValue::state(info.GetIsolate()));
+      result = V8HiddenValue::getHiddenValue(scriptState, v8History,
+                                             V8HiddenValue::state(isolate));
       if (!result.IsEmpty()) {
         v8SetReturnValue(info, cacheState(scriptState, info.Holder(), result));
         return;
       }
     }
-    result = event->serializedState()->deserialize(info.GetIsolate());
+    result = event->serializedState()->deserialize(isolate);
     V8HiddenValue::setHiddenValue(scriptState, v8History,
-                                  V8HiddenValue::state(info.GetIsolate()),
-                                  result);
+                                  V8HiddenValue::state(isolate), result);
   } else {
-    result = event->serializedState()->deserialize(info.GetIsolate());
+    result = event->serializedState()->deserialize(isolate);
   }
 
   v8SetReturnValue(info, cacheState(scriptState, info.Holder(), result));

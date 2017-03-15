@@ -35,6 +35,7 @@
 #include "public/platform/WebPrivatePtr.h"
 
 namespace v8 {
+class Isolate;
 class Value;
 template <class T>
 class Local;
@@ -60,7 +61,8 @@ class WebSerializedScriptValue {
   // Creates a serialized script value from its wire format data.
   BLINK_EXPORT static WebSerializedScriptValue fromString(const WebString&);
 
-  BLINK_EXPORT static WebSerializedScriptValue serialize(v8::Local<v8::Value>);
+  BLINK_EXPORT static WebSerializedScriptValue serialize(v8::Isolate*,
+                                                         v8::Local<v8::Value>);
 
   // Create a WebSerializedScriptValue that represents a serialization error.
   BLINK_EXPORT static WebSerializedScriptValue createInvalid();
@@ -74,7 +76,7 @@ class WebSerializedScriptValue {
   BLINK_EXPORT WebString toString() const;
 
   // Convert the serialized value to a parsed v8 value.
-  BLINK_EXPORT v8::Local<v8::Value> deserialize();
+  BLINK_EXPORT v8::Local<v8::Value> deserialize(v8::Isolate*);
 
 #if BLINK_IMPLEMENTATION
   WebSerializedScriptValue(WTF::PassRefPtr<SerializedScriptValue>);

@@ -117,11 +117,11 @@ void V8CustomEvent::initCustomEventMethodEpilogueCustom(
 
 void V8CustomEvent::detailAttributeGetterCustom(
     const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Isolate* isolate = info.GetIsolate();
   CustomEvent* event = V8CustomEvent::toImpl(info.Holder());
-  ScriptState* scriptState = ScriptState::current(info.GetIsolate());
+  ScriptState* scriptState = ScriptState::current(isolate);
 
-  auto privateDetail =
-      V8PrivateProperty::getCustomEventDetail(info.GetIsolate());
+  auto privateDetail = V8PrivateProperty::getCustomEventDetail(isolate);
   v8::Local<v8::Value> detail =
       privateDetail.get(scriptState->context(), info.Holder());
   if (!detail.IsEmpty()) {
@@ -131,22 +131,22 @@ void V8CustomEvent::detailAttributeGetterCustom(
 
   // Be careful not to return a V8 value which is created in different world.
   if (SerializedScriptValue* serializedValue = event->serializedDetail()) {
-    detail = serializedValue->deserialize();
+    detail = serializedValue->deserialize(isolate);
   } else if (scriptState->world().isIsolatedWorld()) {
     v8::Local<v8::Value> mainWorldDetail =
         privateDetail.getFromMainWorld(scriptState, event);
     if (!mainWorldDetail.IsEmpty()) {
       event->setSerializedDetail(
           SerializedScriptValue::serializeAndSwallowExceptions(
-              info.GetIsolate(), mainWorldDetail));
-      detail = event->serializedDetail()->deserialize();
+              isolate, mainWorldDetail));
+      detail = event->serializedDetail()->deserialize(isolate);
     }
   }
 
   // |detail| should be null when it is an empty handle because its default
   // value is null.
   if (detail.IsEmpty())
-    detail = v8::Null(info.GetIsolate());
+    detail = v8::Null(isolate);
   privateDetail.set(scriptState->context(), info.Holder(), detail);
   v8SetReturnValue(info, detail);
 }

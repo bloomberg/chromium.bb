@@ -102,7 +102,8 @@ void MessageChannel::InstanceDeleted() {
 }
 
 void MessageChannel::PostMessageToJavaScript(PP_Var message_data) {
-  v8::HandleScope scope(v8::Isolate::GetCurrent());
+  v8::Isolate* isolate = instance_->GetIsolate();
+  v8::HandleScope scope(isolate);
 
   // Because V8 is probably not on the stack for Native->JS calls, we need to
   // enter the appropriate context for the plugin.
@@ -122,7 +123,7 @@ void MessageChannel::PostMessageToJavaScript(PP_Var message_data) {
   }
 
   WebSerializedScriptValue serialized_val =
-      WebSerializedScriptValue::serialize(v8_val);
+      WebSerializedScriptValue::serialize(isolate, v8_val);
 
   if (js_message_queue_state_ != SEND_DIRECTLY) {
     // We can't just PostTask here; the messages would arrive out of

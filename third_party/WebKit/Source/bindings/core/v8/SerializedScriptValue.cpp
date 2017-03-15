@@ -267,11 +267,6 @@ void SerializedScriptValue::transferArrayBuffers(
 }
 
 v8::Local<v8::Value> SerializedScriptValue::deserialize(
-    MessagePortArray* messagePorts) {
-  return deserialize(v8::Isolate::GetCurrent(), messagePorts, 0);
-}
-
-v8::Local<v8::Value> SerializedScriptValue::deserialize(
     v8::Isolate* isolate,
     MessagePortArray* messagePorts,
     const WebBlobInfoArray* blobInfo) {

@@ -97,7 +97,7 @@ void V8ServiceWorkerMessageEventInternal::dataAttributeGetterCustom(
       event->setSerializedData(
           SerializedScriptValue::serializeAndSwallowExceptions(
               info.GetIsolate(), mainWorldData));
-      data = event->serializedData()->deserialize();
+      data = event->serializedData()->deserialize(isolate);
     }
   }
   if (data.IsEmpty())
