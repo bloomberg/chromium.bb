@@ -87,7 +87,6 @@ public class NewTabPage
     private final TileGroup.Delegate mTileGroupDelegate;
 
     private TabObserver mTabObserver;
-    private LogoBridge mLogoBridge;
     private boolean mSearchProviderHasLogo;
     private FakeboxDelegate mFakeboxDelegate;
     private SnippetsBridge mSnippetsBridge;
@@ -378,7 +377,6 @@ public class NewTabPage
             }
         };
         mTab.addObserver(mTabObserver);
-        mLogoBridge = new LogoBridge(profile);
         updateSearchProviderHasLogo();
 
         LayoutInflater inflater = LayoutInflater.from(activity);
@@ -561,10 +559,6 @@ public class NewTabPage
                 .isAttachedToWindow(getView()) : "Destroy called before removed from window";
         if (mIsLoaded && !mTab.isHidden()) recordNTPInteractionTime();
 
-        if (mLogoBridge != null) {
-            mLogoBridge.destroy();
-            mLogoBridge = null;
-        }
         if (mSnippetsBridge != null) {
             mSnippetsBridge.onDestroy();
             mSnippetsBridge = null;
