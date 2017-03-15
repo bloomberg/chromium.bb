@@ -255,7 +255,7 @@ void View::AddChildViewAt(View* view, int index) {
     layout_manager_->ViewAdded(this, view);
 
   for (ViewObserver& observer : observers_)
-    observer.OnChildViewAdded(view);
+    observer.OnChildViewAdded(this, view);
 }
 
 void View::ReorderChildView(View* view, int index) {
@@ -287,7 +287,7 @@ void View::ReorderChildView(View* view, int index) {
   children_.insert(children_.begin() + index, view);
 
   for (ViewObserver& observer : observers_)
-    observer.OnChildViewReordered(view);
+    observer.OnChildViewReordered(this, view);
 
   ReorderLayers();
 }
@@ -1967,7 +1967,7 @@ void View::DoRemoveChildView(View* view,
     layout_manager_->ViewRemoved(this, view);
 
   for (ViewObserver& observer : observers_)
-    observer.OnChildViewRemoved(view, this);
+    observer.OnChildViewRemoved(this, view);
 }
 
 void View::PropagateRemoveNotifications(View* old_parent,

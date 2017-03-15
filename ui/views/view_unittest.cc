@@ -4867,6 +4867,7 @@ class ViewObserverTest : public ViewTest, public ViewObserver {
   ViewObserverTest()
       : child_view_added_times_(0),
         child_view_removed_times_(0),
+        child_view_added_parent_(nullptr),
         child_view_added_(nullptr),
         child_view_removed_(nullptr),
         child_view_removed_parent_(nullptr),
@@ -4878,11 +4879,12 @@ class ViewObserverTest : public ViewTest, public ViewObserver {
   ~ViewObserverTest() override {}
 
   // ViewObserver:
-  void OnChildViewAdded(View* child) override {
+  void OnChildViewAdded(View* parent, View* child) override {
     child_view_added_times_++;
     child_view_added_ = child;
+    child_view_added_parent_ = parent;
   }
-  void OnChildViewRemoved(View* child, View* parent) override {
+  void OnChildViewRemoved(View* parent, View* child) override {
     child_view_removed_times_++;
     child_view_removed_ = child;
     child_view_removed_parent_ = parent;
@@ -4898,12 +4900,15 @@ class ViewObserverTest : public ViewTest, public ViewObserver {
 
   void OnViewBoundsChanged(View* view) override { view_bounds_changed_ = view; }
 
-  void OnChildViewReordered(View* view) override { view_reordered_ = view; }
+  void OnChildViewReordered(View* parent, View* view) override {
+    view_reordered_ = view;
+  }
 
   void reset() {
     child_view_added_times_ = 0;
     child_view_removed_times_ = 0;
     child_view_added_ = nullptr;
+    child_view_added_parent_ = nullptr;
     child_view_removed_ = nullptr;
     child_view_removed_parent_ = nullptr;
     view_visibility_changed_ = nullptr;
@@ -4921,6 +4926,9 @@ class ViewObserverTest : public ViewTest, public ViewObserver {
   int child_view_added_times() { return child_view_added_times_; }
   int child_view_removed_times() { return child_view_removed_times_; }
   const View* child_view_added() const { return child_view_added_; }
+  const View* child_view_added_parent() const {
+    return child_view_added_parent_;
+  }
   const View* child_view_removed() const { return child_view_removed_; }
   const View* child_view_removed_parent() const {
     return child_view_removed_parent_;
@@ -4936,6 +4944,7 @@ class ViewObserverTest : public ViewTest, public ViewObserver {
   int child_view_added_times_;
   int child_view_removed_times_;
 
+  View* child_view_added_parent_;
   View* child_view_added_;
   View* child_view_removed_;
   View* child_view_removed_parent_;
@@ -4956,7 +4965,8 @@ TEST_F(ViewObserverTest, ViewParentChanged) {
   EXPECT_EQ(0, child_view_removed_times());
   EXPECT_EQ(1, child_view_added_times());
   EXPECT_EQ(child_view.get(), child_view_added());
-  EXPECT_EQ(child_view.get()->parent(), parent1.get());
+  EXPECT_EQ(child_view->parent(), child_view_added_parent());
+  EXPECT_EQ(child_view->parent(), parent1.get());
   reset();
 
   // Removed from parent1, added to parent2
@@ -4966,7 +4976,7 @@ TEST_F(ViewObserverTest, ViewParentChanged) {
   EXPECT_EQ(child_view.get(), child_view_removed());
   EXPECT_EQ(parent1.get(), child_view_removed_parent());
   EXPECT_EQ(child_view.get(), child_view_added());
-  EXPECT_EQ(child_view.get()->parent(), parent2.get());
+  EXPECT_EQ(child_view->parent(), parent2.get());
 
   reset();
 

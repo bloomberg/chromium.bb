@@ -185,17 +185,19 @@ void AshDevToolsDOMAgent::OnWidgetBoundsChanged(views::Widget* widget,
     observer.OnWidgetBoundsChanged(widget);
 }
 
-void AshDevToolsDOMAgent::OnChildViewRemoved(views::View* view,
-                                             views::View* parent) {
+void AshDevToolsDOMAgent::OnChildViewRemoved(views::View* parent,
+                                             views::View* view) {
   RemoveViewTree(view, parent, true);
 }
 
-void AshDevToolsDOMAgent::OnChildViewAdded(views::View* view) {
+void AshDevToolsDOMAgent::OnChildViewAdded(views::View* parent,
+                                           views::View* view) {
   AddViewTree(view);
 }
 
-void AshDevToolsDOMAgent::OnChildViewReordered(views::View* view) {
-  RemoveViewTree(view, view->parent(), false);
+void AshDevToolsDOMAgent::OnChildViewReordered(views::View* parent,
+                                               views::View* view) {
+  RemoveViewTree(view, parent, false);
   AddViewTree(view);
 }
 

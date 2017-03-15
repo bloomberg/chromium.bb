@@ -11,27 +11,29 @@ namespace views {
 
 class View;
 
-// Observer can listen to various events on the Views.
+// ViewObserver is used to observe changes to a View. The first argument to all
+// ViewObserver functions is the View the observer was added to.
 class VIEWS_EXPORT ViewObserver {
  public:
-  // Called when |child| is added to its parent. Invoked on the parent which has
-  // the |child| added to it.
-  virtual void OnChildViewAdded(View* child) {}
+  // Called when |child| is added as a child to |observed_view|.
+  virtual void OnChildViewAdded(View* observed_view, View* child) {}
 
-  // Called when |child| is removed from its |parent|.
-  virtual void OnChildViewRemoved(View* child, View* parent) {}
+  // Called when |child| is removed as a child of |observed_view|.
+  virtual void OnChildViewRemoved(View* observed_view, View* child) {}
 
-  // Called when View::SetVisible() is called with a new value.
-  // The |view| may still be hidden at this point.
-  virtual void OnViewVisibilityChanged(View* view) {}
+  // Called when View::SetVisible() is called with a new value. See
+  // View::IsDrawn() for details on how visibility and drawn differ.
+  virtual void OnViewVisibilityChanged(View* observed_view) {}
 
-  virtual void OnViewEnabledChanged(View* view) {}
+  // Called when View::SetEnabled() is called with a new value.
+  virtual void OnViewEnabledChanged(View* observed_view) {}
 
-  virtual void OnViewBoundsChanged(View* view) {}
+  // Called when the bounds of |observed_view| change.
+  virtual void OnViewBoundsChanged(View* observed_view) {}
 
-  // Invoked whenever a child is moved to another index. This is called on the
-  // parent view. |view| is the child view being moved.
-  virtual void OnChildViewReordered(View* view) {}
+  // Called when a child is reordered among its siblings, specifically
+  // View::ReorderChildView() is called on |observed_view|.
+  virtual void OnChildViewReordered(View* observed_view, View* child) {}
 
   // Called from ~View.
   virtual void OnViewIsDeleting(View* observed_view) {}

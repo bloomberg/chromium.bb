@@ -67,9 +67,9 @@ class ASH_EXPORT AshDevToolsDOMAgent
                              const gfx::Rect& new_bounds) override;
 
   // views::ViewObserver
-  void OnChildViewRemoved(views::View* view, views::View* parent) override;
-  void OnChildViewAdded(views::View* view) override;
-  void OnChildViewReordered(views::View*) override;
+  void OnChildViewRemoved(views::View* parent, views::View* view) override;
+  void OnChildViewAdded(views::View* parent, views::View* view) override;
+  void OnChildViewReordered(views::View* parent, views::View*) override;
   void OnViewBoundsChanged(views::View* view) override;
 
   WmWindow* GetWindowFromNodeId(int nodeId);
