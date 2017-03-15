@@ -77,8 +77,6 @@ public abstract class ToolbarLayout extends FrameLayout implements Toolbar {
 
     private long mFirstDrawTimeMs;
 
-    protected final int mToolbarHeightWithoutShadow;
-
     private boolean mFindInPageToolbarShowing;
 
     protected boolean mShowMenuBadge;
@@ -90,12 +88,24 @@ public abstract class ToolbarLayout extends FrameLayout implements Toolbar {
      */
     public ToolbarLayout(Context context, AttributeSet attrs) {
         super(context, attrs);
-        mToolbarHeightWithoutShadow = getResources().getDimensionPixelOffset(
-                getToolbarHeightWithoutShadowResId());
         mDarkModeTint =
                 ApiCompatibilityUtils.getColorStateList(getResources(), R.color.dark_mode_tint);
         mLightModeTint =
                 ApiCompatibilityUtils.getColorStateList(getResources(), R.color.light_mode_tint);
+
+        addOnLayoutChangeListener(new OnLayoutChangeListener() {
+            @Override
+            public void onLayoutChange(View view, int left, int top, int right, int bottom,
+                    int oldLeft, int oldTop, int oldRight, int oldBottom) {
+                // Creation of the progress bar is done here so the toolbar height is available.
+                mProgressBar = new ToolbarProgressBar(getContext(), getProgressBarTopMargin());
+                if (isNativeLibraryReady()) mProgressBar.initializeAnimation();
+                addProgressBarToHierarchy();
+
+                // Since this only needs to happen once, remove this listener from the view.
+                removeOnLayoutChangeListener(this);
+            }
+        });
     }
 
     /**
@@ -104,17 +114,13 @@ public abstract class ToolbarLayout extends FrameLayout implements Toolbar {
      * @return The top margin of the progress bar.
      */
     protected int getProgressBarTopMargin() {
-        return mToolbarHeightWithoutShadow
+        return getHeight()
                 - getResources().getDimensionPixelSize(R.dimen.toolbar_progress_bar_height);
     }
 
     @Override
     protected void onFinishInflate() {
         super.onFinishInflate();
-
-        mProgressBar = new ToolbarProgressBar(getContext(), getProgressBarTopMargin());
-
-        if (isNativeLibraryReady()) mProgressBar.initializeAnimation();
 
         mMenuButton = (TintedImageButton) findViewById(R.id.menu_button);
         mMenuBadge = (ImageView) findViewById(R.id.menu_badge);
@@ -166,13 +172,6 @@ public abstract class ToolbarLayout extends FrameLayout implements Toolbar {
      */
     protected FrameLayout.LayoutParams getFrameLayoutParams(View view) {
         return ((FrameLayout.LayoutParams) view.getLayoutParams());
-    }
-
-    /**
-     * @return The resource id to be used while getting the toolbar height with no shadow.
-     */
-    protected int getToolbarHeightWithoutShadowResId() {
-        return R.dimen.toolbar_height_no_shadow;
     }
 
     /**
@@ -261,12 +260,6 @@ public abstract class ToolbarLayout extends FrameLayout implements Toolbar {
                 controlContainer, mProgressBar, (View) getParent());
         assert progressBarPosition >= 0;
         mProgressBar.setProgressBarContainer(controlContainer);
-    }
-
-    @Override
-    protected void onAttachedToWindow() {
-        super.onAttachedToWindow();
-        addProgressBarToHierarchy();
     }
 
     /**

@@ -1237,7 +1237,7 @@ public class ToolbarPhone extends ToolbarLayout
 
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
-        mBackgroundOverlayBounds.set(0, 0, w, mToolbarHeightWithoutShadow);
+        mBackgroundOverlayBounds.set(0, 0, w, h);
         super.onSizeChanged(w, h, oldw, oldh);
     }
 
@@ -1539,7 +1539,8 @@ public class ToolbarPhone extends ToolbarLayout
                     ApiCompatibilityUtils.getColor(getResources(), android.R.color.transparent));
         } else {
             TypedValue outValue = new TypedValue();
-            // the linked style here will have to be changed if it is updated in the XML.
+
+            // The linked style here will have to be changed if it is updated in the XML.
             getContext().getTheme().resolveAttribute(R.style.ToolbarButton, outValue, true);
             mToggleTabStackButton.setBackgroundResource(outValue.resourceId);
         }

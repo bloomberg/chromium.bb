@@ -36,6 +36,12 @@ public interface Toolbar {
     void getPositionRelativeToContainer(View containerView, int[] position);
 
     /**
+     * Get the height of the toolbar in px.
+     * @return The height of the toolbar.
+     */
+    int getHeight();
+
+    /**
      * Sets whether or not the toolbar should draw as if it's being captured for a snapshot
      * texture.  In this mode it will only draw the toolbar in it's normal state (no TabSwitcher
      * or animations).
