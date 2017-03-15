@@ -28,8 +28,12 @@ void SynchronizeTreesInternal(LayerTreeType* source_tree,
   std::unique_ptr<OwnedLayerImplList> old_layers(tree_impl->DetachLayers());
 
   OwnedLayerImplMap old_layer_map;
-  for (auto& it : *old_layers)
+  for (auto& it : *old_layers) {
+    // TODO(ajuma): Remove this once we've figured out what's causing
+    // crbug.com/701279.
+    CHECK(it);
     old_layer_map[it->id()] = std::move(it);
+  }
 
   PushLayerList(&old_layer_map, source_tree, tree_impl);
 

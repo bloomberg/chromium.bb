@@ -1281,6 +1281,10 @@ void LayerTreeImpl::UnregisterLayer(LayerImpl* layer) {
 // These manage ownership of the LayerImpl.
 void LayerTreeImpl::AddLayer(std::unique_ptr<LayerImpl> layer) {
   DCHECK(std::find(layers_->begin(), layers_->end(), layer) == layers_->end());
+
+  // TODO(ajuma): Change this to a DCHECK once we've figured out what's causing
+  // crbug.com/701279.
+  CHECK(layer);
   layers_->push_back(std::move(layer));
   set_needs_update_draw_properties();
 }
