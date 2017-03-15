@@ -43,7 +43,7 @@ class CORE_EXPORT PaintTiming final
   void markFirstTextPaint();
   void markFirstImagePaint();
 
-  void markFirstMeaningfulPaintCandidate();
+  void setFirstMeaningfulPaintCandidate(double timestamp);
   void setFirstMeaningfulPaint(double stamp);
   void notifyPaint(bool isFirstPaint, bool textPainted, bool imagePainted);
 

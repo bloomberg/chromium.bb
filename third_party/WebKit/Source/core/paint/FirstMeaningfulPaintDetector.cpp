@@ -113,7 +113,8 @@ void FirstMeaningfulPaintDetector::notifyPaint() {
     m_seenFirstMeaningfulPaintCandidate = true;
     return;
   }
-  m_paintTiming->markFirstMeaningfulPaintCandidate();
+  m_paintTiming->setFirstMeaningfulPaintCandidate(
+      m_provisionalFirstMeaningfulPaint);
 }
 
 int FirstMeaningfulPaintDetector::activeConnections() {
@@ -170,6 +171,11 @@ void FirstMeaningfulPaintDetector::network2QuietTimerFired(TimerBase*) {
   m_network2QuietReached = true;
 
   if (m_provisionalFirstMeaningfulPaint) {
+    // If there's only been one contentful paint, then there won't have been
+    // a meaningful paint signalled to the Scheduler, so mark one now.
+    // This is a no-op if a FMPC has already been marked.
+    m_paintTiming->setFirstMeaningfulPaintCandidate(
+        m_provisionalFirstMeaningfulPaint);
     // Enforce FirstContentfulPaint <= FirstMeaningfulPaint.
     m_firstMeaningfulPaint2Quiet =
         std::max(m_provisionalFirstMeaningfulPaint,

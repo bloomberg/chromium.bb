@@ -83,10 +83,10 @@ void PaintTiming::markFirstImagePaint() {
   notifyPaintTimingChanged();
 }
 
-void PaintTiming::markFirstMeaningfulPaintCandidate() {
+void PaintTiming::setFirstMeaningfulPaintCandidate(double timestamp) {
   if (m_firstMeaningfulPaintCandidate)
     return;
-  m_firstMeaningfulPaintCandidate = monotonicallyIncreasingTime();
+  m_firstMeaningfulPaintCandidate = timestamp;
   if (frame() && frame()->view() && !frame()->view()->parent()) {
     frame()->frameScheduler()->onFirstMeaningfulPaint();
   }

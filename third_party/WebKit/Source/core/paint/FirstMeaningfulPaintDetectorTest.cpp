@@ -158,6 +158,23 @@ TEST_F(FirstMeaningfulPaintDetectorTest, FirstMeaningfulPaintCandidate) {
 }
 
 TEST_F(FirstMeaningfulPaintDetectorTest,
+       OnlyOneFirstMeaningfulPaintCandidateBeforeNetworkStable) {
+  paintTiming().markFirstContentfulPaint();
+  EXPECT_EQ(paintTiming().firstMeaningfulPaintCandidate(), 0.0);
+  double beforePaint = monotonicallyIncreasingTime();
+  simulateLayoutAndPaint(1);
+  // The first candidate is initially ignored.
+  EXPECT_EQ(paintTiming().firstMeaningfulPaintCandidate(), 0.0);
+  simulateNetworkStable();
+  // The networkStable then promotes the first candidate.
+  EXPECT_GT(paintTiming().firstMeaningfulPaintCandidate(), beforePaint);
+  double candidate = paintTiming().firstMeaningfulPaintCandidate();
+  // The second candidate is then ignored.
+  simulateLayoutAndPaint(10);
+  EXPECT_EQ(paintTiming().firstMeaningfulPaintCandidate(), candidate);
+}
+
+TEST_F(FirstMeaningfulPaintDetectorTest,
        NetworkStableBeforeFirstContentfulPaint) {
   paintTiming().markFirstPaint();
   simulateLayoutAndPaint(1);
