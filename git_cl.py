@@ -4322,7 +4322,7 @@ def CMDdescription(parser, args):
   else:
     description.prompt()
 
-  if cl.GetDescription() != description.description:
+  if cl.GetDescription().strip() != description.description:
     cl.UpdateDescription(description.description, force=options.force)
   return 0
 
