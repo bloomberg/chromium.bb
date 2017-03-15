@@ -44,8 +44,3 @@ void ChromeExtensionBluetoothChooser::AddOrUpdateDevice(
       device_id, should_update_name, device_name, is_gatt_connected, is_paired,
       signal_strength_level);
 }
-
-void ChromeExtensionBluetoothChooser::RemoveDevice(
-    const std::string& device_id) {
-  bluetooth_chooser_controller_->RemoveDevice(device_id);
-}

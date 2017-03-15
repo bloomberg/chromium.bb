@@ -75,14 +75,6 @@ class LayoutTestBluetoothChooserFactory::Chooser : public BluetoothChooser {
     factory_->events_.push_back(event);
   }
 
-  void RemoveDevice(const std::string& device_id) override {
-    CheckFactory();
-    std::string event = "remove-device(";
-    event += device_id;
-    event += ")";
-    factory_->events_.push_back(event);
-  }
-
   EventHandler event_handler;
 
  private:

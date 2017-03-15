@@ -32,7 +32,6 @@ class LayoutTestFirstDeviceBluetoothChooser : public BluetoothChooser {
                          bool is_gatt_connected,
                          bool is_paired,
                          int signal_strength_level) override;
-  void RemoveDevice(const std::string& device_id) override {}
 
  private:
   EventHandler event_handler_;

@@ -83,10 +83,6 @@ class CONTENT_EXPORT BluetoothChooser {
                                  bool is_gatt_connected,
                                  bool is_paired,
                                  int signal_strength_level) {}
-
-  // Tells the chooser that a device is no longer available. The chooser should
-  // not call DeviceSelected() for a device that's been removed.
-  virtual void RemoveDevice(const std::string& device_id) {}
 };
 
 }  // namespace content

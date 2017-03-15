@@ -368,12 +368,6 @@ public class BluetoothChooserDialog
 
     @VisibleForTesting
     @CalledByNative
-    void removeDevice(String deviceId) {
-        mItemChooserDialog.setEnabled(deviceId, false);
-    }
-
-    @VisibleForTesting
-    @CalledByNative
     void notifyAdapterTurnedOff() {
         SpannableString adapterOffMessage = SpanApplier.applySpans(
                 mActivity.getString(R.string.bluetooth_adapter_off),
