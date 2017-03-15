@@ -21,7 +21,6 @@
 namespace media {
 
 class DecoderBuffer;
-class ContentDecryptionModule;
 class MojoDecoderBufferReader;
 class MojoDecoderBufferWriter;
 
@@ -33,14 +32,10 @@ class MEDIA_MOJO_EXPORT MojoDecryptorService
   using StreamType = media::Decryptor::StreamType;
   using Status = media::Decryptor::Status;
 
-  // Constructs a MojoDecryptorService and binds it to the |request|. Keeps a
-  // copy of |cdm| to prevent it from being deleted as long as it is needed.
+  // Constructs a MojoDecryptorService and binds it to the |request|.
   // |error_handler| will be called if a connection error occurs.
-  // TODO(jrummell): Ideally this should take a Decryptor instead of |cdm|.
-  // The owner of the MojoDecryptorService should control the lifetime of the
-  // CDM. Both this and the CDM are owned by MojoCdmService, so it seems
-  // possible. http://crbug.com/701107.
-  MojoDecryptorService(const scoped_refptr<ContentDecryptionModule>& cdm,
+  // Caller must ensure that |decryptor| outlives |this|.
+  MojoDecryptorService(media::Decryptor* decryptor,
                        mojo::InterfaceRequest<mojom::Decryptor> request,
                        const base::Closure& error_handler);
 
@@ -106,9 +101,6 @@ class MEDIA_MOJO_EXPORT MojoDecryptorService
   // Helper class to receive encrypted DecoderBuffer from the client.
   std::unique_ptr<MojoDecoderBufferReader> mojo_decoder_buffer_reader_;
 
-  // Keep ownership of |cdm_| while it is being used. |decryptor_| is the actual
-  // Decryptor referenced by |cdm_|.
-  scoped_refptr<ContentDecryptionModule> cdm_;
   media::Decryptor* decryptor_;
 
   base::WeakPtr<MojoDecryptorService> weak_this_;

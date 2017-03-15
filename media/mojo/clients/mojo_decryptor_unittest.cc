@@ -11,8 +11,6 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/test/test_message_loop.h"
-#include "media/base/cdm_context.h"
-#include "media/base/content_decryption_module.h"
 #include "media/base/decryptor.h"
 #include "media/base/mock_filters.h"
 #include "media/base/video_frame.h"
@@ -38,24 +36,9 @@ class MojoDecryptorTest : public ::testing::Test {
   MojoDecryptorTest() {
     decryptor_.reset(new StrictMock<MockDecryptor>());
 
-    cdm_context_.reset(new StrictMock<MockCdmContext>());
-    EXPECT_CALL(*cdm_context_, GetDecryptor())
-        .WillRepeatedly(Return(decryptor_.get()));
-
-    cdm_ = new StrictMock<MockCdm>(
-        base::Bind(&MojoDecryptorTest::OnSessionMessage,
-                   base::Unretained(this)),
-        base::Bind(&MojoDecryptorTest::OnSessionClosed, base::Unretained(this)),
-        base::Bind(&MojoDecryptorTest::OnSessionKeysChange,
-                   base::Unretained(this)),
-        base::Bind(&MojoDecryptorTest::OnSessionExpirationUpdate,
-                   base::Unretained(this)));
-    EXPECT_CALL(*cdm_.get(), GetCdmContext())
-        .WillRepeatedly(Return(cdm_context_.get()));
-
     mojom::DecryptorPtr remote_decryptor;
     mojo_decryptor_service_.reset(new MojoDecryptorService(
-        cdm_, mojo::MakeRequest(&remote_decryptor),
+        decryptor_.get(), mojo::MakeRequest(&remote_decryptor),
         base::Bind(&MojoDecryptorTest::OnConnectionClosed,
                    base::Unretained(this))));
 
@@ -100,25 +83,7 @@ class MojoDecryptorTest : public ::testing::Test {
                void(Decryptor::Status status,
                     const scoped_refptr<VideoFrame>& frame));
   MOCK_METHOD0(OnConnectionClosed, void());
-  MOCK_METHOD3(OnSessionMessage,
-               void(const std::string& session_id,
-                    ContentDecryptionModule::MessageType message_type,
-                    const std::vector<uint8_t>& message));
-  MOCK_METHOD1(OnSessionClosed, void(const std::string& session_id));
-  MOCK_METHOD2(OnSessionExpirationUpdate,
-               void(const std::string& session_id, base::Time new_expiry_time));
   MOCK_METHOD0(OnFrameDestroyed, void());
-
-  // MOCK methods don't work with move-only types like CdmKeysInfo. Add an extra
-  // OnSessionKeysChangeCalled() function to work around this.
-  MOCK_METHOD2(OnSessionKeysChangeCalled,
-               void(const std::string& session_id,
-                    bool has_additional_usable_key));
-  void OnSessionKeysChange(const std::string& session_id,
-                           bool has_additional_usable_key,
-                           CdmKeysInfo keys_info) {
-    OnSessionKeysChangeCalled(session_id, has_additional_usable_key);
-  }
 
  protected:
   // Fixture members.
@@ -130,10 +95,8 @@ class MojoDecryptorTest : public ::testing::Test {
   // The matching MojoDecryptorService for |mojo_decryptor_|.
   std::unique_ptr<MojoDecryptorService> mojo_decryptor_service_;
 
-  // Helpers needed by |mojo_decryptor_service_|.
+  // The actual Decryptor object used by |mojo_decryptor_service_|.
   std::unique_ptr<StrictMock<MockDecryptor>> decryptor_;
-  std::unique_ptr<StrictMock<MockCdmContext>> cdm_context_;
-  scoped_refptr<StrictMock<MockCdm>> cdm_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MojoDecryptorTest);

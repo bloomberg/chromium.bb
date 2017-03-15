@@ -106,6 +106,8 @@ class MEDIA_MOJO_EXPORT MojoCdmService
   CdmFactory* cdm_factory_;
   scoped_refptr<::media::ContentDecryptionModule> cdm_;
 
+  // MojoDecryptorService is passed the Decryptor from |cdm_|, so
+  // |decryptor_| must not outlive |cdm_|.
   std::unique_ptr<MojoDecryptorService> decryptor_;
 
   // Set to a valid CDM ID if the |cdm_| is successfully created.

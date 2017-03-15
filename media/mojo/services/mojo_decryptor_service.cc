@@ -9,8 +9,6 @@
 #include "base/bind.h"
 #include "base/numerics/safe_conversions.h"
 #include "media/base/audio_decoder_config.h"
-#include "media/base/cdm_context.h"
-#include "media/base/content_decryption_module.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/decryptor.h"
 #include "media/base/video_decoder_config.h"
@@ -48,12 +46,13 @@ class FrameResourceReleaserImpl final : public mojom::FrameResourceReleaser {
 }  // namespace
 
 MojoDecryptorService::MojoDecryptorService(
-    const scoped_refptr<ContentDecryptionModule>& cdm,
+    media::Decryptor* decryptor,
     mojo::InterfaceRequest<mojom::Decryptor> request,
     const base::Closure& error_handler)
-    : binding_(this, std::move(request)), cdm_(cdm), weak_factory_(this) {
+    : binding_(this, std::move(request)),
+      decryptor_(decryptor),
+      weak_factory_(this) {
   DVLOG(1) << __func__;
-  decryptor_ = cdm->GetCdmContext()->GetDecryptor();
   DCHECK(decryptor_);
   weak_this_ = weak_factory_.GetWeakPtr();
   binding_.set_connection_error_handler(error_handler);

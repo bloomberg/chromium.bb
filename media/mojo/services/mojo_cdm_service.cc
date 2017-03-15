@@ -203,10 +203,8 @@ void MojoCdmService::OnCdmCreated(
   mojom::DecryptorPtr decryptor_service;
   CdmContext* const cdm_context = cdm_->GetCdmContext();
   if (cdm_context && cdm_context->GetDecryptor()) {
-    // MojoDecryptorService takes a reference to the CDM, but it is still owned
-    // by |this|.
     decryptor_.reset(new MojoDecryptorService(
-        cdm_, MakeRequest(&decryptor_service),
+        cdm_context->GetDecryptor(), MakeRequest(&decryptor_service),
         base::Bind(&MojoCdmService::OnDecryptorConnectionError, weak_this_)));
   }
 
