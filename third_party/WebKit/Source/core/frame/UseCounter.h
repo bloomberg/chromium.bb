@@ -1487,6 +1487,7 @@ class CORE_EXPORT UseCounter {
     VRPoseLinearAcceleration = 1864,
     VRPoseAngularVelocity = 1865,
     VRPoseAngularAcceleration = 1866,
+    CSSOverflowPaged = 1867,
 
     // Add new features immediately above this line. Don't change assigned
     // numbers of any item, and don't reuse removed slots.

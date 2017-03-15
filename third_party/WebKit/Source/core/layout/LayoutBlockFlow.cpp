@@ -30,9 +30,11 @@
 
 #include "core/layout/LayoutBlockFlow.h"
 
+#include <memory>
 #include "core/editing/Editor.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/UseCounter.h"
 #include "core/html/HTMLDialogElement.h"
 #include "core/layout/HitTestLocation.h"
 #include "core/layout/LayoutAnalyzer.h"
@@ -52,7 +54,6 @@
 #include "core/paint/PaintLayer.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "wtf/PtrUtil.h"
-#include <memory>
 
 namespace blink {
 
@@ -4218,6 +4219,7 @@ LayoutMultiColumnFlowThread* LayoutBlockFlow::createMultiColumnFlowThread(
                                                           styleRef());
     case PagedFlowThread:
       // Paged overflow is currently done using the multicol implementation.
+      UseCounter::count(document(), UseCounter::CSSOverflowPaged);
       return LayoutPagedFlowThread::createAnonymous(document(), styleRef());
     default:
       ASSERT_NOT_REACHED();
