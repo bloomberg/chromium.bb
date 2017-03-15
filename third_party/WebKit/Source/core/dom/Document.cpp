@@ -368,7 +368,7 @@ static inline bool isValidNamePart(UChar32 c) {
   return true;
 }
 
-static FrameViewBase* widgetForElement(const Element& focusedElement) {
+static FrameViewBase* frameViewBaseForElement(const Element& focusedElement) {
   LayoutObject* layoutObject = focusedElement.layoutObject();
   if (!layoutObject || !layoutObject->isLayoutPart())
     return 0;
@@ -4040,7 +4040,8 @@ bool Document::setFocusedElement(Element* prpNewFocusedElement,
     }
 
     if (view()) {
-      FrameViewBase* oldFrameViewBase = widgetForElement(*oldFocusedElement);
+      FrameViewBase* oldFrameViewBase =
+          frameViewBaseForElement(*oldFocusedElement);
       if (oldFrameViewBase)
         oldFrameViewBase->setFocused(false, params.type);
       else
@@ -4114,14 +4115,15 @@ bool Document::setFocusedElement(Element* prpNewFocusedElement,
     // eww, I suck. set the qt focus correctly
     // ### find a better place in the code for this
     if (view()) {
-      FrameViewBase* focusFrameViewBase = widgetForElement(*m_focusedElement);
+      FrameViewBase* focusFrameViewBase =
+          frameViewBaseForElement(*m_focusedElement);
       if (focusFrameViewBase) {
         // Make sure a FrameViewBase has the right size before giving it focus.
         // Otherwise, we are testing edge cases of the FrameViewBase code.
         // Specifically, in WebCore this does not work well for text fields.
         updateStyleAndLayout();
         // Re-get the FrameViewBase in case updating the layout changed things.
-        focusFrameViewBase = widgetForElement(*m_focusedElement);
+        focusFrameViewBase = frameViewBaseForElement(*m_focusedElement);
       }
       if (focusFrameViewBase)
         focusFrameViewBase->setFocused(true, params.type);
