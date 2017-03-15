@@ -1319,11 +1319,13 @@ void PartitionDumpStatsGeneric(PartitionRootGeneric* partition,
 
   static const size_t kMaxReportableDirectMaps = 4096;
 
-  // A heap allocation rather than on the stack to avoid stack overflows
-  // skirmishes (on Windows, in particular.)
-  uint32_t* direct_map_lengths = nullptr;
-  if (!is_light_dump)
-    direct_map_lengths = new uint32_t[kMaxReportableDirectMaps];
+  // Allocate on the heap rather than on the stack to avoid stack overflow
+  // skirmishes (on Windows, in particular).
+  std::unique_ptr<uint32_t[]> direct_map_lengths = nullptr;
+  if (!is_light_dump) {
+    direct_map_lengths =
+        std::unique_ptr<uint32_t[]>(new uint32_t[kMaxReportableDirectMaps]);
+  }
 
   PartitionBucketMemoryStats bucket_stats[kGenericNumBuckets];
   size_t num_direct_mapped_allocations = 0;
@@ -1383,7 +1385,6 @@ void PartitionDumpStatsGeneric(PartitionRootGeneric* partition,
       stats.resident_bytes = size;
       dumper->PartitionsDumpBucketStats(partition_name, &stats);
     }
-    delete[] direct_map_lengths;
   }
 
   stats.total_resident_bytes += direct_mapped_allocations_total_size;
