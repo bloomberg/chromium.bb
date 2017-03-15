@@ -64,6 +64,8 @@ class ASH_EXPORT CustomFrameViewAsh : public views::NonClientFrameView {
   // preferred height is used.
   void SetHeaderHeight(base::Optional<int> height);
 
+  views::View* header_view();
+
   // views::NonClientFrameView:
   gfx::Rect GetBoundsForClientView() const override;
   gfx::Rect GetWindowBoundsForClientBounds(

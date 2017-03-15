@@ -128,6 +128,7 @@ class CustomFrameViewAsh::OverlayView : public views::View,
 
   // views::View:
   void Layout() override;
+  const char* GetClassName() const override { return "OverlayView"; }
 
  private:
   // views::ViewTargeterDelegate:
@@ -244,6 +245,10 @@ void CustomFrameViewAsh::SetFrameColors(SkColor active_frame_color,
 
 void CustomFrameViewAsh::SetHeaderHeight(base::Optional<int> height) {
   overlay_view_->SetHeaderHeight(height);
+}
+
+views::View* CustomFrameViewAsh::header_view() {
+  return header_view_;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

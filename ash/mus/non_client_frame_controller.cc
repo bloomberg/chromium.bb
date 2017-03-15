@@ -15,7 +15,6 @@
 #include "ash/common/frame/custom_frame_view_ash.h"
 #include "ash/common/wm/panels/panel_frame_view.h"
 #include "ash/common/wm_window.h"
-#include "ash/mus/frame/custom_frame_view_mus.h"
 #include "ash/mus/frame/detached_title_area_renderer.h"
 #include "ash/mus/move_event_handler.h"
 #include "ash/mus/property_util.h"
@@ -205,11 +204,18 @@ class WmNativeWidgetAura : public views::NativeWidgetAura {
     immersive_delegate_ =
         base::MakeUnique<ImmersiveFullscreenControllerDelegateMus>(GetWidget(),
                                                                    window);
-
     // See description for details on ownership.
     custom_frame_view_ =
-        new CustomFrameViewMus(GetWidget(), immersive_delegate_.get(),
+        new CustomFrameViewAsh(GetWidget(), immersive_delegate_.get(),
                                enable_immersive_, window_style_);
+    // Only the header actually paints any content. So the rest of the region is
+    // marked as transparent content (see below in NonClientFrameController()
+    // ctor). So, it is necessary to provide a texture-layer for the header
+    // view.
+    views::View* header_view = custom_frame_view_->header_view();
+    header_view->SetPaintToLayer(ui::LAYER_TEXTURED);
+    header_view->layer()->SetFillsBoundsOpaquely(false);
+
     return custom_frame_view_;
   }
 
@@ -226,7 +232,7 @@ class WmNativeWidgetAura : public views::NativeWidgetAura {
 
   // Not used for panels or if |remove_standard_frame_| is true. This is owned
   // by the Widget's view hierarchy (e.g. it's a child of Widget's root View).
-  CustomFrameViewMus* custom_frame_view_ = nullptr;
+  CustomFrameViewAsh* custom_frame_view_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(WmNativeWidgetAura);
 };
@@ -291,8 +297,8 @@ NonClientFrameController::NonClientFrameController(
   // (mus) window can have focus.
   params.delegate = this;
   params.bounds = bounds;
-  // The title area leaves notches in the corners, requring translucent windows.
-  params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
+  params.opacity = views::Widget::InitParams::OPAQUE_WINDOW;
+  params.layer_type = ui::LAYER_SOLID_COLOR;
   WmNativeWidgetAura* native_widget = new WmNativeWidgetAura(
       widget_, window_manager_client_, ShouldRemoveStandardFrame(*properties),
       ShouldEnableImmersive(*properties), GetWindowStyle(*properties));
@@ -316,6 +322,15 @@ NonClientFrameController::NonClientFrameController(
   params.show_state = window_->GetProperty(aura::client::kShowStateKey);
   widget_->Init(params);
   did_init_native_widget_ = true;
+
+  // Only the caption draws any content. So the caption has its own layer (see
+  // above in WmNativeWidgetAura::CreateNonClientFrameView()). The rest of the
+  // region needs to take part in occlusion in the compositor, but not generate
+  // any content to draw. So the layer is marked as opaque and to draw
+  // solid-color (but the color is transparent, so nothing is actually drawn).
+  ui::Layer* layer = widget_->GetNativeWindow()->layer();
+  layer->SetColor(SK_ColorTRANSPARENT);
+  layer->SetFillsBoundsOpaquely(true);
 
   WmWindow* wm_window = WmWindow::Get(window_);
   const gfx::Insets extended_hit_region =
