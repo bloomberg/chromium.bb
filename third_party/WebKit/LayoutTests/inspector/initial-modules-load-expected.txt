@@ -80,6 +80,7 @@ Loaded modules:
     text_editor
     ui
     workspace
+    workspace_diff
 
 Running: testShowSourcesPanel
 Loaded modules:
@@ -117,6 +118,7 @@ Loaded modules:
     text_editor
     ui
     workspace
+    workspace_diff
 
 Running: testOpenUISourceCode
 Loaded modules:
@@ -154,4 +156,5 @@ Loaded modules:
     text_editor
     ui
     workspace
+    workspace_diff
 

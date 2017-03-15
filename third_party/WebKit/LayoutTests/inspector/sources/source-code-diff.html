@@ -8,22 +8,23 @@
 <script src="../../http/tests/inspector/debugger-test.js"></script>
 <script src="../../http/tests/inspector/sources-test.js"></script>
 <script>
+
 function test()
 {
     Runtime.experiments.enableForTest("sourceDiff");
     var textAfter;
-    InspectorTest.showScriptSource("diff-after.css", onAfter);
+    InspectorTest.waitForScriptSource("diff-after.css", uiSourceCode => uiSourceCode.requestContent().then(onAfterContent));
 
-    function onAfter(afterFrame)
+    function onAfterContent(content)
     {
-        textAfter = afterFrame.textEditor.text();
-        InspectorTest.showScriptSource("diff-before.css", onBefore);
+        textAfter = content;
+        InspectorTest.waitForScriptSource("diff-before.css", onBeforeUISourceCode);
     }
 
-    function onBefore(beforeFrame)
-    {
+    function onBeforeUISourceCode(uiSourceCode){
+        uiSourceCode.setWorkingCopy(textAfter);
         InspectorTest.addSniffer(SourceFrame.SourceCodeDiff.prototype, "_decorationsSetForTest", decorationsSet);
-        beforeFrame.setContent(textAfter);
+        InspectorTest.showUISourceCodePromise(uiSourceCode);
     }
 
     function decorationsSet(decorations)
