@@ -91,6 +91,7 @@ class MEDIA_EXPORT MediaDrmBridge : public ContentDecryptionModule,
   // if |security_level| is SECURITY_LEVEL_DEFAULT.
   static scoped_refptr<MediaDrmBridge> Create(
       const std::string& key_system,
+      const GURL& security_origin,
       SecurityLevel security_level,
       const CreateFetcherCB& create_fetcher_cb,
       const SessionMessageCB& session_message_cb,
@@ -100,6 +101,8 @@ class MEDIA_EXPORT MediaDrmBridge : public ContentDecryptionModule,
 
   // Same as Create() except that no session callbacks are provided. This is
   // used when we need to use MediaDrmBridge without creating any sessions.
+  // TODO(yucliu): Pass |security_origin| here to clear per-origin certs and
+  // licenses.
   static scoped_refptr<MediaDrmBridge> CreateWithoutSessionSupport(
       const std::string& key_system,
       SecurityLevel security_level,
@@ -235,6 +238,7 @@ class MEDIA_EXPORT MediaDrmBridge : public ContentDecryptionModule,
 
   static scoped_refptr<MediaDrmBridge> CreateInternal(
       const std::string& key_system,
+      const GURL& security_origin,
       SecurityLevel security_level,
       const CreateFetcherCB& create_fetcher_cb,
       const SessionMessageCB& session_message_cb,
@@ -247,6 +251,7 @@ class MEDIA_EXPORT MediaDrmBridge : public ContentDecryptionModule,
   // SECURITY_LEVEL_DEFAULT. Sessions should not be created if session callbacks
   // are null.
   MediaDrmBridge(const std::vector<uint8_t>& scheme_uuid,
+                 const GURL& security_origin,
                  SecurityLevel security_level,
                  const CreateFetcherCB& create_fetcher_cb,
                  const SessionMessageCB& session_message_cb,

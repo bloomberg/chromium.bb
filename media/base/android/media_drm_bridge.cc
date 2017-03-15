@@ -298,6 +298,7 @@ std::vector<std::string> MediaDrmBridge::GetPlatformKeySystemNames() {
 // static
 scoped_refptr<MediaDrmBridge> MediaDrmBridge::CreateInternal(
     const std::string& key_system,
+    const GURL& security_origin,
     SecurityLevel security_level,
     const CreateFetcherCB& create_fetcher_cb,
     const SessionMessageCB& session_message_cb,
@@ -312,8 +313,9 @@ scoped_refptr<MediaDrmBridge> MediaDrmBridge::CreateInternal(
     return nullptr;
 
   scoped_refptr<MediaDrmBridge> media_drm_bridge(new MediaDrmBridge(
-      scheme_uuid, security_level, create_fetcher_cb, session_message_cb,
-      session_closed_cb, session_keys_change_cb, session_expiration_update_cb));
+      scheme_uuid, security_origin, security_level, create_fetcher_cb,
+      session_message_cb, session_closed_cb, session_keys_change_cb,
+      session_expiration_update_cb));
 
   if (media_drm_bridge->j_media_drm_.is_null())
     media_drm_bridge = nullptr;
@@ -324,6 +326,7 @@ scoped_refptr<MediaDrmBridge> MediaDrmBridge::CreateInternal(
 // static
 scoped_refptr<MediaDrmBridge> MediaDrmBridge::Create(
     const std::string& key_system,
+    const GURL& security_origin,
     SecurityLevel security_level,
     const CreateFetcherCB& create_fetcher_cb,
     const SessionMessageCB& session_message_cb,
@@ -335,9 +338,10 @@ scoped_refptr<MediaDrmBridge> MediaDrmBridge::Create(
   if (!IsAvailable())
     return nullptr;
 
-  return CreateInternal(key_system, security_level, create_fetcher_cb,
-                        session_message_cb, session_closed_cb,
-                        session_keys_change_cb, session_expiration_update_cb);
+  return CreateInternal(key_system, security_origin, security_level,
+                        create_fetcher_cb, session_message_cb,
+                        session_closed_cb, session_keys_change_cb,
+                        session_expiration_update_cb);
 }
 
 // static
@@ -351,9 +355,10 @@ scoped_refptr<MediaDrmBridge> MediaDrmBridge::CreateWithoutSessionSupport(
   if (!AreMediaDrmApisAvailable())
     return nullptr;
 
-  return MediaDrmBridge::Create(
-      key_system, security_level, create_fetcher_cb, SessionMessageCB(),
-      SessionClosedCB(), SessionKeysChangeCB(), SessionExpirationUpdateCB());
+  return MediaDrmBridge::Create(key_system, GURL::EmptyGURL(), security_level,
+                                create_fetcher_cb, SessionMessageCB(),
+                                SessionClosedCB(), SessionKeysChangeCB(),
+                                SessionExpirationUpdateCB());
 }
 
 void MediaDrmBridge::SetServerCertificate(
@@ -758,6 +763,7 @@ void MediaDrmBridge::OnResetDeviceCredentialsCompleted(
 
 MediaDrmBridge::MediaDrmBridge(
     const std::vector<uint8_t>& scheme_uuid,
+    const GURL& security_origin,
     SecurityLevel security_level,
     const CreateFetcherCB& create_fetcher_cb,
     const SessionMessageCB& session_message_cb,
@@ -787,9 +793,23 @@ MediaDrmBridge::MediaDrmBridge(
   ScopedJavaLocalRef<jstring> j_security_level =
       ConvertUTF8ToJavaString(env, security_level_str);
 
+  bool use_origin_isolated_storage =
+      // TODO(yucliu): Remove the check once persistent storage is fully
+      // supported and check if origin is valid.
+      base::FeatureList::IsEnabled(kMediaDrmPersistentLicense) &&
+      // MediaDrm implements origin isolated storage on M.
+      base::android::BuildInfo::GetInstance()->sdk_int() >= 23;
+
+  // TODO(yucliu): Per EME spec on individualization, implementation should not
+  // expose application-specific information. Considering encode origin before
+  // passing to MediaDrm.
+  ScopedJavaLocalRef<jstring> j_security_origin = ConvertUTF8ToJavaString(
+      env, use_origin_isolated_storage ? security_origin.spec() : "");
+
   // Note: OnMediaCryptoReady() could be called in this call.
   j_media_drm_.Reset(Java_MediaDrmBridge_create(
-      env, j_scheme_uuid, j_security_level, reinterpret_cast<intptr_t>(this)));
+      env, j_scheme_uuid, j_security_origin, j_security_level,
+      reinterpret_cast<intptr_t>(this)));
 }
 
 MediaDrmBridge::~MediaDrmBridge() {

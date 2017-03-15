@@ -54,6 +54,7 @@ public class MediaDrmBridge {
     private static final String TAG = "cr_media";
     private static final String SECURITY_LEVEL = "securityLevel";
     private static final String SERVER_CERTIFICATE = "serviceCertificate";
+    private static final String ORIGIN = "origin";
     private static final String PRIVACY_MODE = "privacyMode";
     private static final String SESSION_SHARING = "sessionSharing";
     private static final String ENABLE = "enable";
@@ -328,12 +329,13 @@ public class MediaDrmBridge {
      * Create a new MediaDrmBridge from the crypto scheme UUID.
      *
      * @param schemeUUID Crypto scheme UUID.
+     * @param securityOrigin Security origin. Empty value means no need for origin isolated storage.
      * @param securityLevel Security level. If empty, the default one should be used.
      * @param nativeMediaDrmBridge Native object of this class.
      */
     @CalledByNative
-    private static MediaDrmBridge create(
-            byte[] schemeUUID, String securityLevel, long nativeMediaDrmBridge) {
+    private static MediaDrmBridge create(byte[] schemeUUID, String securityOrigin,
+            String securityLevel, long nativeMediaDrmBridge) {
         UUID cryptoScheme = getUUIDFromBytes(schemeUUID);
         if (cryptoScheme == null || !MediaDrm.isCryptoSchemeSupported(cryptoScheme)) {
             return null;
@@ -358,11 +360,43 @@ public class MediaDrmBridge {
             return null;
         }
 
+        if (!securityOrigin.isEmpty() && !mediaDrmBridge.setOrigin(securityOrigin)) {
+            return null;
+        }
+
         if (!mediaDrmBridge.createMediaCrypto()) {
             return null;
         }
 
         return mediaDrmBridge;
+    }
+
+    /**
+     * Set the security origin for the MediaDrm. All information should be isolated for different
+     * origins, e.g. certificates, licenses.
+     */
+    private boolean setOrigin(String origin) {
+        assert Build.VERSION.SDK_INT >= Build.VERSION_CODES.M;
+
+        if (!isWidevine()) {
+            Log.d(TAG, "Property " + ORIGIN + " isn't supported");
+            return true;
+        }
+
+        assert mMediaDrm != null;
+        assert !origin.isEmpty();
+
+        try {
+            mMediaDrm.setPropertyString(ORIGIN, origin);
+            return true;
+        } catch (java.lang.IllegalArgumentException e) {
+            Log.e(TAG, "Failed to set security origin %s", origin, e);
+        } catch (java.lang.IllegalStateException e) {
+            Log.e(TAG, "Failed to set security origin %s", origin, e);
+        }
+
+        Log.e(TAG, "Security origin %s not supported!", origin);
+        return false;
     }
 
     /**
