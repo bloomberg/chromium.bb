@@ -2,10 +2,10 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-iron-icon.oobe-icon {
+hd-iron-icon.oobe-icon {
   --iron-icon-height: 32px;
   --iron-icon-width: 32px;
-  color: var(--google-blue-500);
+  --iron-icon-fill-color: var(--google-blue-500);
 }
 
 oobe-dialog .header {

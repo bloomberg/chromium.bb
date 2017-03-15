@@ -8,16 +8,31 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-checkbox/paper-checkbox.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/color.html">
 
-<iron-iconset-svg name="oobe-eula" size="24">
+<iron-iconset-svg name="oobe-eula-32" size="32">
   <svg>
     <defs>
-      <!-- The Google "G" icon (copied from md-settings). -->
-      <g id="googleg">
-        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"></path>
-        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"></path>
-        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"></path>
-        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"></path>
-        <path fill="none" d="M1 1h22v22H1z"></path>
+      <!-- The Google "G" icon. -->
+      <g id="googleg" fill="none" fill-rule="evenodd">
+        <path d="M30.42 16.83c0-1.03-.092-2.017-.264-2.966H16.5v5.61h7.804c-.336 1.81-1.358 3.347-2.894 4.375v3.637h4.686c2.742-2.524 4.324-6.242 4.324-10.657z" fill="#4285F4"></path>
+        <path d="M16.5 31c3.915 0 7.197-1.298 9.596-3.513L21.41 23.85c-1.298.87-2.96 1.383-4.91 1.383-3.777 0-6.973-2.55-8.113-5.978H3.542v3.757C5.928 27.752 10.832 31 16.5 31z" fill="#34A853"></path>
+        <path d="M8.387 19.255c-.29-.87-.455-1.8-.455-2.755 0-.956.165-1.885.455-2.755V9.988H3.542C2.56 11.946 2 14.16 2 16.5s.56 4.554 1.542 6.512l4.845-3.757z" fill="#FBBC05"></path>
+        <path d="M16.5 7.767c2.13 0 4.04.732 5.543 2.168l4.16-4.158C23.69 3.437 20.407 2 16.5 2 10.832 2 5.928 5.25 3.542 9.988l4.845 3.757c1.14-3.427 4.336-5.978 8.113-5.978z" fill="#EA4335"></path>
+        <path d="M2 2h29v29H2"></path>
+      </g>
+    </defs>
+  </svg>
+</iron-iconset-svg>
+
+<iron-iconset-svg name="oobe-eula-64" size="64">
+  <svg>
+    <defs>
+      <!-- The Google "G" icon. -->
+      <g id="googleg" fill="none" fill-rule="evenodd">
+        <path d="M59.84 32.66c0-2.057-.185-4.035-.527-5.933H32v11.218h15.607c-.672 3.625-2.715 6.696-5.787 8.753v7.276h9.373c5.483-5.05 8.647-12.483 8.647-21.315z" fill="#4285F4"></path>
+        <path d="M32 61c7.83 0 14.395-2.597 19.193-7.026l-9.373-7.276c-2.596 1.74-5.918 2.768-9.82 2.768-7.553 0-13.946-5.1-16.227-11.956H6.085v7.514C10.855 54.5 20.665 61 32 61z" fill="#34A853"></path>
+        <path d="M15.773 37.51c-.58-1.74-.91-3.6-.91-5.51 0-1.91.33-3.77.91-5.51v-7.514H6.085C4.12 22.89 3 27.32 3 32s1.12 9.11 3.085 13.024l9.688-7.514z" fill="#FBBC05"></path>
+        <path d="M32 14.534c4.258 0 8.08 1.463 11.086 4.337l8.318-8.317C46.38 5.873 39.817 3 32 3 20.664 3 10.856 9.5 6.085 18.976l9.688 7.514c2.28-6.855 8.674-11.956 16.227-11.956z" fill="#EA4335"></path>
+        <path d="M3 3h58v58H3"></path>
       </g>
     </defs>
   </svg>
@@ -38,7 +53,9 @@
     <oobe-dialog id="eulaDialog" hidden="[[eulaLoadingScreenShown]]"
         role="dialog" aria-label$="$i18n{oobeEulaSectionTitle}"
         has-buttons>
-      <iron-icon icon="oobe-eula:googleg" class="oobe-icon"></iron-icon>
+      <hd-iron-icon class="oobe-icon"
+          icon1x="oobe-eula-32:googleg" icon2x="oobe-eula-64:googleg">
+      </hd-iron-icon>
       <div class="header">
         <h1 class="title" i18n-content="oobeEulaSectionTitle"></h1>
       </div>

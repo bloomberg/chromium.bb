@@ -34,8 +34,16 @@
     </oobe-dialog>
 
   Add class |header| to all which you want to go inside the header.  Similar
-  with clases |footer|, |bottom-buttons| and |oobe-icon|. |bottom-buttons| block
-  is shown only if |has-buttons| attribute is set.
+  with clases |footer|, |bottom-buttons|.
+
+  For single-DPI image |oobe-icon| class should be used. To select between two
+  images of different DPI, |oobe-icon-1x| and |oobe-icon-2x| should be used
+  instead. For example:
+
+      <iron-icon icon="icon1" ... class="oobe-icon oobe-icon-1x">
+      <iron-icon icon-"icon2" ... class="oobe-icon oobe-icon-2x">
+
+  |bottom-buttons| block is shown only if |has-buttons| attribute is set.
 -->
 <dom-module id="oobe-dialog">
   <template>

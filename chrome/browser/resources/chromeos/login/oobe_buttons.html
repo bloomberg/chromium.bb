@@ -108,7 +108,9 @@
     </oobe-welcome-secondary-button>
 
   Attributes:
-    'icon' - a name of icon from material design set to show on button.
+    1x and 2x icons:
+      'icon1x' - a name of icon from material design set to show on button.
+      'icon2x' - a name of icon from material design set to show on button.
     'label-for-aria' - accessibility label.
 -->
 <dom-module id="oobe-welcome-secondary-button">
@@ -118,7 +120,9 @@
       <div id="container" class="flex layout vertical center self-stretch">
         <div id="subcontainer"
             class="flex layout horizontal center self-stretch">
-          <iron-icon icon="[[icon]]" class="oobe-icon"></iron-icon>
+          <hd-iron-icon icon1x="[[icon1x]]" icon2x="[[icon2x]]"
+              class="oobe-icon">
+          </hd-iron-icon>
           <content></content>
         </div>
       </div>

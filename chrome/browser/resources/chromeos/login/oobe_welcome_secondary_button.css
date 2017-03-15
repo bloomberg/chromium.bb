@@ -45,7 +45,7 @@
   text-transform: none;
 }
 
-iron-icon {
+hd-iron-icon {
   --iron-icon-height: 16px;
   --iron-icon-width: 16px;
   color: #5a5a5a;

@@ -71,7 +71,8 @@ Polymer({
   is: 'oobe-welcome-secondary-button',
 
   properties: {
-    icon: String,
+    icon1x: String,
+    icon2x: String,
 
     /* Note that we are not using "aria-label" property here, because
      * we want to pass the label value but not actually declare it as an

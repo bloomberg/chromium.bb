@@ -26,17 +26,23 @@
         <div class="flex"></div>
         <div id="buttons" class="layout horizontal center">
           <oobe-welcome-secondary-button id="languageSelectionButton"
-              icon="icons:language" on-tap="onLanguageClicked_"
+              icon1x="oobe-welcome-32:language"
+              icon2x="oobe-welcome-64:language"
+              on-tap="onLanguageClicked_"
               label-for-aria$="[[formatMessage_('languageButtonLabel',
                   currentLanguage)]]">
             <div>[[currentLanguage]]</div>
           </oobe-welcome-secondary-button>
           <oobe-welcome-secondary-button id="accessibilitySettingsButton"
-              icon="icons:accessibility" on-tap="onAccessibilityClicked_">
+              icon1x="oobe-welcome-32:accessibility"
+              icon2x="oobe-welcome-64:accessibility"
+              on-tap="onAccessibilityClicked_">
             <div i18n-content="accessibilityLink"></div>
           </oobe-welcome-secondary-button>
           <oobe-welcome-secondary-button id="timezoneSettingsButton"
-              icon="oobe-welcome-64:timezone" on-tap="onTimezoneClicked_"
+              icon1x="oobe-welcome-32:timezone"
+              icon2x="oobe-welcome-64:timezone"
+              on-tap="onTimezoneClicked_"
               hidden="[[!timezoneButtonVisible]]">
             <div i18n-content="timezoneButtonText"></div>
           </oobe-welcome-secondary-button>
