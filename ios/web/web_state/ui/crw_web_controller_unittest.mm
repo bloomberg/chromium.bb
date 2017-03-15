@@ -54,27 +54,6 @@ using web::NavigationManagerImpl;
                           previousURL:(const GURL&)previousURL;
 @end
 
-// Used to mock CRWWebDelegate methods with C++ params.
-@interface MockInteractionLoader : OCMockComplexTypeHelper
-@end
-
-@implementation MockInteractionLoader
-
-typedef BOOL (^openExternalURLBlockType)(const GURL&);
-
-- (BOOL)openExternalURL:(const GURL&)url {
-  return static_cast<openExternalURLBlockType>([self blockForSelector:_cmd])(
-      url);
-}
-
-- (BOOL)webController:(CRWWebController*)webController
-        shouldOpenURL:(const GURL&)URL
-      mainDocumentURL:(const GURL&)mainDocumentURL
-          linkClicked:(BOOL)linkClicked {
-  return YES;
-}
-@end
-
 @interface CountingObserver : NSObject<CRWWebControllerObserver>
 
 @property(nonatomic, readonly) int pageLoadedCount;
@@ -134,55 +113,38 @@ void WaitForZoomRendering(CRWWebController* webController,
   });
 }
 
-// Test fixture for testing CRWWebController. Stubs out web view and
-// child CRWWebController.
+// Test fixture for testing CRWWebController. Stubs out web view.
 class CRWWebControllerTest : public web::WebTestWithWebController {
  protected:
   void SetUp() override {
     web::WebTestWithWebController::SetUp();
-    mockWebView_.reset(CreateMockWebView());
-    mockScrollView_.reset([[UIScrollView alloc] init]);
-    [[[mockWebView_ stub] andReturn:mockScrollView_.get()] scrollView];
+    mock_web_view_.reset([CreateMockWebView() retain]);
+    scroll_view_.reset([[UIScrollView alloc] init]);
+    [[[mock_web_view_ stub] andReturn:scroll_view_.get()] scrollView];
 
-    id originalMockDelegate =
-        [OCMockObject niceMockForProtocol:@protocol(CRWWebDelegate)];
-    mockDelegate_.reset([[MockInteractionLoader alloc]
-        initWithRepresentedObject:originalMockDelegate]);
-    [web_controller() setDelegate:mockDelegate_];
     base::scoped_nsobject<TestWebViewContentView> webViewContentView(
-        [[TestWebViewContentView alloc] initWithMockWebView:mockWebView_
-                                                 scrollView:mockScrollView_]);
+        [[TestWebViewContentView alloc] initWithMockWebView:mock_web_view_
+                                                 scrollView:scroll_view_]);
     [web_controller() injectWebViewContentView:webViewContentView];
-
-    NavigationManagerImpl& navigationManager =
-        [web_controller() webStateImpl]->GetNavigationManagerImpl();
-    navigationManager.InitializeSession(NO);
-    navigationManager.AddPendingItem(
-        GURL("http://www.google.com/?q=foo#bar"), web::Referrer(),
-        ui::PAGE_TRANSITION_TYPED,
-        web::NavigationInitiationType::USER_INITIATED);
   }
 
   void TearDown() override {
-    EXPECT_OCMOCK_VERIFY(mockDelegate_);
-    EXPECT_OCMOCK_VERIFY(mockChildWebController_);
-    EXPECT_OCMOCK_VERIFY(mockWebView_);
+    EXPECT_OCMOCK_VERIFY(mock_web_view_);
     [web_controller() resetInjectedWebViewContentView];
-    [web_controller() setDelegate:nil];
     web::WebTestWithWebController::TearDown();
   }
 
   // The value for web view OCMock objects to expect for |-setFrame:|.
-  CGRect ExpectedWebViewFrame() const {
-    CGSize containerViewSize = [UIScreen mainScreen].bounds.size;
-    containerViewSize.height -=
+  CGRect GetExpectedWebViewFrame() const {
+    CGSize container_view_size = [UIScreen mainScreen].bounds.size;
+    container_view_size.height -=
         CGRectGetHeight([UIApplication sharedApplication].statusBarFrame);
-    return {CGPointZero, containerViewSize};
+    return {CGPointZero, container_view_size};
   }
 
   // Creates WebView mock.
   UIView* CreateMockWebView() {
-    id result = [[OCMockObject mockForClass:[WKWebView class]] retain];
+    id result = [OCMockObject mockForClass:[WKWebView class]];
 
     if (base::ios::IsRunningOnIOS10OrLater()) {
       [[result stub] serverTrust];
@@ -194,95 +156,80 @@ class CRWWebControllerTest : public web::WebTestWithWebController {
     [[[result stub] andReturn:[NSURL URLWithString:@(kTestURLString)]] URL];
     [[result stub] setNavigationDelegate:OCMOCK_ANY];
     [[result stub] setUIDelegate:OCMOCK_ANY];
-    [[result stub] setFrame:ExpectedWebViewFrame()];
+    [[result stub] setFrame:GetExpectedWebViewFrame()];
     [[result stub] addObserver:web_controller()
                     forKeyPath:OCMOCK_ANY
                        options:0
                        context:nullptr];
-    [[result stub] addObserver:OCMOCK_ANY
-                    forKeyPath:@"scrollView.backgroundColor"
-                       options:0
-                       context:nullptr];
-
     [[result stub] removeObserver:web_controller() forKeyPath:OCMOCK_ANY];
-    [[result stub] removeObserver:OCMOCK_ANY
-                       forKeyPath:@"scrollView.backgroundColor"];
 
     return result;
   }
 
-  base::scoped_nsobject<UIScrollView> mockScrollView_;
-  base::scoped_nsobject<id> mockWebView_;
-  base::scoped_nsobject<id> mockDelegate_;
-  base::scoped_nsobject<id> mockChildWebController_;
+  base::scoped_nsobject<UIScrollView> scroll_view_;
+  base::scoped_nsobject<id> mock_web_view_;
 };
 
 #define MAKE_URL(url_string) GURL([url_string UTF8String])
 
 TEST_F(CRWWebControllerTest, UrlForHistoryNavigation) {
-  NSArray* urlsNoFragments = @[
-    @"http://one.com",
-    @"http://two.com/",
-    @"http://three.com/bar",
-    @"http://four.com/bar/",
-    @"five",
-    @"/six",
-    @"/seven/",
-    @""
+  NSArray* urls_without_fragments = @[
+    @"http://one.com", @"http://two.com/", @"http://three.com/bar",
+    @"http://four.com/bar/", @"five", @"/six", @"/seven/", @""
   ];
 
   NSArray* fragments = @[ @"#", @"#bar" ];
-  NSMutableArray* urlsWithFragments = [NSMutableArray array];
-  for (NSString* url in urlsNoFragments) {
+  NSMutableArray* urls_with_fragments = [NSMutableArray array];
+  for (NSString* url in urls_without_fragments) {
     for (NSString* fragment in fragments) {
-      [urlsWithFragments addObject:[url stringByAppendingString:fragment]];
+      [urls_with_fragments addObject:[url stringByAppendingString:fragment]];
     }
   }
 
   GURL previous_url;
-  web::NavigationItemImpl toItem;
+  web::NavigationItemImpl to_item;
 
   // No start fragment: the end url is never changed.
-  for (NSString* start in urlsNoFragments) {
-    for (NSString* end in urlsWithFragments) {
+  for (NSString* start in urls_without_fragments) {
+    for (NSString* end in urls_with_fragments) {
       previous_url = MAKE_URL(start);
-      toItem.SetURL(MAKE_URL(end));
+      to_item.SetURL(MAKE_URL(end));
       EXPECT_EQ(MAKE_URL(end),
-                [web_controller() URLForHistoryNavigationToItem:&toItem
+                [web_controller() URLForHistoryNavigationToItem:&to_item
                                                     previousURL:previous_url]);
     }
   }
   // Both contain fragments: the end url is never changed.
-  for (NSString* start in urlsWithFragments) {
-    for (NSString* end in urlsWithFragments) {
+  for (NSString* start in urls_with_fragments) {
+    for (NSString* end in urls_with_fragments) {
       previous_url = MAKE_URL(start);
-      toItem.SetURL(MAKE_URL(end));
+      to_item.SetURL(MAKE_URL(end));
       EXPECT_EQ(MAKE_URL(end),
-                [web_controller() URLForHistoryNavigationToItem:&toItem
+                [web_controller() URLForHistoryNavigationToItem:&to_item
                                                     previousURL:previous_url]);
     }
   }
-  for (unsigned start_index = 0; start_index < [urlsWithFragments count];
+  for (unsigned start_index = 0; start_index < urls_with_fragments.count;
        ++start_index) {
-    NSString* start = urlsWithFragments[start_index];
-    for (unsigned end_index = 0; end_index < [urlsNoFragments count];
+    NSString* start = urls_with_fragments[start_index];
+    for (unsigned end_index = 0; end_index < urls_without_fragments.count;
          ++end_index) {
-      NSString* end = urlsNoFragments[end_index];
+      NSString* end = urls_without_fragments[end_index];
       previous_url = MAKE_URL(start);
       if (start_index / 2 != end_index) {
         // The URLs have nothing in common, they are left untouched.
-        toItem.SetURL(MAKE_URL(end));
+        to_item.SetURL(MAKE_URL(end));
         EXPECT_EQ(
             MAKE_URL(end),
-            [web_controller() URLForHistoryNavigationToItem:&toItem
+            [web_controller() URLForHistoryNavigationToItem:&to_item
                                                 previousURL:previous_url]);
       } else {
         // Start contains a fragment and matches end: An empty fragment is
         // added.
-        toItem.SetURL(MAKE_URL(end));
+        to_item.SetURL(MAKE_URL(end));
         EXPECT_EQ(
             MAKE_URL([end stringByAppendingString:@"#"]),
-            [web_controller() URLForHistoryNavigationToItem:&toItem
+            [web_controller() URLForHistoryNavigationToItem:&to_item
                                                 previousURL:previous_url]);
       }
     }
@@ -311,16 +258,12 @@ TEST_F(CRWWebControllerTest, SslCertError) {
                         web::kNSErrorPeerCertificateChainKey : chain,
                         web::kNSErrorFailingURLKey : net::NSURLWithGURL(url),
                       }];
-  CRWWebControllerContainerView* containerView =
-      static_cast<CRWWebControllerContainerView*>([web_controller() view]);
-  WKWebView* webView =
-      static_cast<WKWebView*>(containerView.webViewContentView.webView);
   base::scoped_nsobject<NSObject> navigation([[NSObject alloc] init]);
   [static_cast<id<WKNavigationDelegate>>(web_controller())
-                            webView:webView
+                            webView:mock_web_view_
       didStartProvisionalNavigation:static_cast<WKNavigation*>(navigation)];
   [static_cast<id<WKNavigationDelegate>>(web_controller())
-                           webView:webView
+                           webView:mock_web_view_
       didFailProvisionalNavigation:static_cast<WKNavigation*>(navigation)
                          withError:error];
 
@@ -718,24 +661,28 @@ TEST_F(CRWWebControllerJSExecutionTest, WindowIdMissmatch) {
 }
 
 TEST_F(CRWWebControllerTest, WebUrlWithTrustLevel) {
-  [[[mockWebView_ stub] andReturn:[NSURL URLWithString:@(kTestURLString)]] URL];
-  [[[mockWebView_ stub] andReturnBool:NO] hasOnlySecureContent];
-  [[[mockWebView_ stub] andReturn:@""] title];
+  [web_controller() webStateImpl]->GetNavigationManagerImpl().AddPendingItem(
+      GURL("http://chromium.test"), web::Referrer(), ui::PAGE_TRANSITION_TYPED,
+      web::NavigationInitiationType::USER_INITIATED);
+
+  [[[mock_web_view_ stub] andReturnBool:NO] hasOnlySecureContent];
+  [[[mock_web_view_ stub] andReturn:@""] title];
 
   // Stub out the injection process.
-  [[mockWebView_ stub] evaluateJavaScript:OCMOCK_ANY
-                        completionHandler:OCMOCK_ANY];
+  [[mock_web_view_ stub] evaluateJavaScript:OCMOCK_ANY
+                          completionHandler:OCMOCK_ANY];
 
   // Simulate registering load request to avoid failing page load simulation.
   [web_controller() simulateLoadRequestWithURL:GURL(kTestURLString)];
   // Simulate a page load to trigger a URL update.
-  [static_cast<id<WKNavigationDelegate>>(web_controller()) webView:mockWebView_
-                                               didCommitNavigation:nil];
+  [static_cast<id<WKNavigationDelegate>>(web_controller())
+                  webView:mock_web_view_
+      didCommitNavigation:nil];
 
   web::URLVerificationTrustLevel trust_level = web::kNone;
-  GURL gurl = [web_controller() currentURLWithTrustLevel:&trust_level];
+  GURL url = [web_controller() currentURLWithTrustLevel:&trust_level];
 
-  EXPECT_EQ(gurl, GURL(kTestURLString));
+  EXPECT_EQ(GURL(kTestURLString), url);
   EXPECT_EQ(web::kAbsolute, trust_level);
 }
 
