@@ -120,10 +120,6 @@ class UI_BASE_EXPORT Clipboard : NON_EXPORTED_BASE(public base::ThreadChecker) {
     return false;
   }
 
-  static ClipboardType FromInt(int32_t type) {
-    return static_cast<ClipboardType>(type);
-  }
-
   // Sets the list of threads that are allowed to access the clipboard.
   static void SetAllowedThreads(
       const std::vector<base::PlatformThreadId>& allowed_threads);
