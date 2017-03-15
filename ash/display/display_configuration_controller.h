@@ -42,12 +42,11 @@ class ASH_EXPORT DisplayConfigurationController
   // Sets the layout for the current displays with a fade in/out
   // animation. Currently |display_id| is assumed to be the secondary
   // display.  TODO(oshima/stevenjb): Support 3+ displays.
-  void SetDisplayLayout(std::unique_ptr<display::DisplayLayout> layout,
-                        bool user_action);
+  void SetDisplayLayout(std::unique_ptr<display::DisplayLayout> layout);
 
   // Sets the mirror mode with a fade-in/fade-out animation. Affects all
   // displays.
-  void SetMirrorMode(bool mirror, bool user_action);
+  void SetMirrorMode(bool mirror);
 
   // Sets the display's rotation with animation if available.
   void SetDisplayRotation(int64_t display_id,
@@ -55,7 +54,7 @@ class ASH_EXPORT DisplayConfigurationController
                           display::Display::RotationSource source);
 
   // Sets the primary display id.
-  void SetPrimaryDisplayId(int64_t display_id, bool user_action);
+  void SetPrimaryDisplayId(int64_t display_id);
 
   // WindowTreeHostManager::Observer
   void OnDisplayConfigurationChanged() override;

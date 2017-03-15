@@ -156,15 +156,14 @@ void HandleSwapPrimaryDisplay() {
   // two screens. Behave the same as mirroring: fail and notify if there are
   // three or more screens.
   Shell::GetInstance()->display_configuration_controller()->SetPrimaryDisplayId(
-      Shell::GetInstance()->display_manager()->GetSecondaryDisplay().id(),
-      true /* user_action */);
+      Shell::GetInstance()->display_manager()->GetSecondaryDisplay().id());
 }
 
 void HandleToggleMirrorMode() {
   base::RecordAction(UserMetricsAction("Accel_Toggle_Mirror_Mode"));
   bool mirror = !Shell::GetInstance()->display_manager()->IsInMirrorMode();
   Shell::GetInstance()->display_configuration_controller()->SetMirrorMode(
-      mirror, true /* user_action */);
+      mirror);
 }
 
 bool CanHandleTouchHud() {

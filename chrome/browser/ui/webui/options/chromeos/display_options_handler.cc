@@ -409,8 +409,7 @@ void DisplayOptionsHandler::HandleMirroring(const base::ListValue* args) {
     NOTREACHED();
   content::RecordAction(
       base::UserMetricsAction("Options_DisplayToggleMirroring"));
-  GetDisplayConfigurationController()->SetMirrorMode(is_mirroring,
-                                                     true /* user_action */);
+  GetDisplayConfigurationController()->SetMirrorMode(is_mirroring);
 }
 
 void DisplayOptionsHandler::HandleSetPrimary(const base::ListValue* args) {
@@ -420,8 +419,7 @@ void DisplayOptionsHandler::HandleSetPrimary(const base::ListValue* args) {
     return;
 
   content::RecordAction(base::UserMetricsAction("Options_DisplaySetPrimary"));
-  GetDisplayConfigurationController()->SetPrimaryDisplayId(
-      display_id, true /* user_action */);
+  GetDisplayConfigurationController()->SetPrimaryDisplayId(display_id);
 }
 
 void DisplayOptionsHandler::HandleSetDisplayLayout(
@@ -469,8 +467,7 @@ void DisplayOptionsHandler::HandleSetDisplayLayout(
   }
 
   VLOG(1) << "Updating display layout: " << layout->ToString();
-  GetDisplayConfigurationController()->SetDisplayLayout(std::move(layout),
-                                                        true /* user_action */);
+  GetDisplayConfigurationController()->SetDisplayLayout(std::move(layout));
 }
 
 void DisplayOptionsHandler::HandleSetDisplayMode(const base::ListValue* args) {

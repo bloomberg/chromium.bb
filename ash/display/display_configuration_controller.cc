@@ -65,9 +65,8 @@ DisplayConfigurationController::~DisplayConfigurationController() {
 }
 
 void DisplayConfigurationController::SetDisplayLayout(
-    std::unique_ptr<display::DisplayLayout> layout,
-    bool user_action) {
-  if (user_action && display_animator_) {
+    std::unique_ptr<display::DisplayLayout> layout) {
+  if (display_animator_) {
     display_animator_->StartFadeOutAnimation(
         base::Bind(&DisplayConfigurationController::SetDisplayLayoutImpl,
                    weak_ptr_factory_.GetWeakPtr(), base::Passed(&layout)));
@@ -76,14 +75,11 @@ void DisplayConfigurationController::SetDisplayLayout(
   }
 }
 
-void DisplayConfigurationController::SetMirrorMode(bool mirror,
-                                                   bool user_action) {
+void DisplayConfigurationController::SetMirrorMode(bool mirror) {
   if (display_manager_->num_connected_displays() > 2) {
-    if (user_action) {
-      ShowDisplayErrorNotification(
-          l10n_util::GetStringUTF16(IDS_ASH_DISPLAY_MIRRORING_NOT_SUPPORTED),
-          false);
-    }
+    ShowDisplayErrorNotification(
+        l10n_util::GetStringUTF16(IDS_ASH_DISPLAY_MIRRORING_NOT_SUPPORTED),
+        false);
     return;
   }
   if (display_manager_->num_connected_displays() <= 1 ||
@@ -91,7 +87,7 @@ void DisplayConfigurationController::SetMirrorMode(bool mirror,
     return;
   }
   SetThrottleTimeout(kCycleDisplayThrottleTimeoutMs);
-  if (user_action && display_animator_) {
+  if (display_animator_) {
     display_animator_->StartFadeOutAnimation(
         base::Bind(&DisplayConfigurationController::SetMirrorModeImpl,
                    weak_ptr_factory_.GetWeakPtr(), mirror));
@@ -111,13 +107,12 @@ void DisplayConfigurationController::SetDisplayRotation(
     display_manager_->SetDisplayRotation(display_id, rotation, source);
 }
 
-void DisplayConfigurationController::SetPrimaryDisplayId(int64_t display_id,
-                                                         bool user_action) {
+void DisplayConfigurationController::SetPrimaryDisplayId(int64_t display_id) {
   if (display_manager_->GetNumDisplays() <= 1 || IsLimited())
     return;
 
   SetThrottleTimeout(kSetPrimaryDisplayThrottleTimeoutMs);
-  if (user_action && display_animator_) {
+  if (display_animator_) {
     display_animator_->StartFadeOutAnimation(
         base::Bind(&DisplayConfigurationController::SetPrimaryDisplayIdImpl,
                    weak_ptr_factory_.GetWeakPtr(), display_id));
