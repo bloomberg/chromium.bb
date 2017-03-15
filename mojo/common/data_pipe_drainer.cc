@@ -17,10 +17,10 @@ DataPipeDrainer::DataPipeDrainer(Client* client,
                                  mojo::ScopedDataPipeConsumerHandle source)
     : client_(client),
       source_(std::move(source)),
-      handle_watcher_(FROM_HERE),
+      handle_watcher_(FROM_HERE, SimpleWatcher::ArmingPolicy::AUTOMATIC),
       weak_factory_(this) {
   DCHECK(client_);
-  handle_watcher_.Start(
+  handle_watcher_.Watch(
       source_.get(), MOJO_HANDLE_SIGNAL_READABLE,
       base::Bind(&DataPipeDrainer::WaitComplete, weak_factory_.GetWeakPtr()));
 }

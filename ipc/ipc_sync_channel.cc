@@ -41,9 +41,9 @@ void OnSyncHandleReady(bool* signal, bool* error, MojoResult result) {
   *error = result != MOJO_RESULT_OK;
 }
 
-// A ReadyCallback for use with mojo::Watcher. Ignores the result (DCHECKs, but
-// is only used in cases where failure should be impossible) and runs
-// |callback|.
+// A ReadyCallback for use with mojo::SimpleWatcher. Ignores the result
+// (DCHECKs, but is only used in cases where failure should be impossible) and
+// runs |callback|.
 void RunOnHandleReady(const base::Closure& callback, MojoResult result) {
   DCHECK_EQ(result, MOJO_RESULT_OK);
   callback.Run();
@@ -230,11 +230,11 @@ class SyncChannel::ReceivedSyncMsgQueue :
     }
   }
 
-  mojo::Watcher* top_send_done_watcher() {
+  mojo::SimpleWatcher* top_send_done_watcher() {
     return top_send_done_watcher_;
   }
 
-  void set_top_send_done_watcher(mojo::Watcher* watcher) {
+  void set_top_send_done_watcher(mojo::SimpleWatcher* watcher) {
     top_send_done_watcher_ = watcher;
   }
 
@@ -300,7 +300,7 @@ class SyncChannel::ReceivedSyncMsgQueue :
   // The current send done handle watcher for this thread. Used to maintain
   // a thread-local stack of send done watchers to ensure that nested sync
   // message loops complete correctly.
-  mojo::Watcher* top_send_done_watcher_;
+  mojo::SimpleWatcher* top_send_done_watcher_;
 
   // If not null, the address of a flag to set when the dispatch event signals,
   // in lieu of actually dispatching messages. This is used by
@@ -527,7 +527,8 @@ SyncChannel::SyncChannel(
     WaitableEvent* shutdown_event)
     : ChannelProxy(new SyncContext(listener, ipc_task_runner, shutdown_event)),
       sync_handle_registry_(mojo::SyncHandleRegistry::current()),
-      dispatch_watcher_(FROM_HERE) {
+      dispatch_watcher_(FROM_HERE,
+                        mojo::SimpleWatcher::ArmingPolicy::AUTOMATIC) {
   // The current (listener) thread must be distinct from the IPC thread, or else
   // sending synchronous messages will deadlock.
   DCHECK_NE(ipc_task_runner.get(), base::ThreadTaskRunnerHandle::Get().get());
@@ -622,7 +623,6 @@ void SyncChannel::WaitForReply(mojo::SyncHandleRegistry* registry,
     context->received_sync_msgs()->UnblockDispatch();
     DCHECK(!error);
 
-
     registry->UnregisterHandle(context->GetSendDoneEvent()->GetHandle());
     if (pump_messages_event)
       registry->UnregisterHandle(pump_messages_event->GetHandle());
@@ -643,14 +643,15 @@ void SyncChannel::WaitForReply(mojo::SyncHandleRegistry* registry,
 }
 
 void SyncChannel::WaitForReplyWithNestedMessageLoop(SyncContext* context) {
-  mojo::Watcher send_done_watcher(FROM_HERE);
+  mojo::SimpleWatcher send_done_watcher(
+      FROM_HERE, mojo::SimpleWatcher::ArmingPolicy::AUTOMATIC);
 
   ReceivedSyncMsgQueue* sync_msg_queue = context->received_sync_msgs();
   DCHECK_NE(sync_msg_queue, nullptr);
 
-  mojo::Watcher* old_watcher = sync_msg_queue->top_send_done_watcher();
+  mojo::SimpleWatcher* old_watcher = sync_msg_queue->top_send_done_watcher();
   mojo::Handle old_handle(mojo::kInvalidHandleValue);
-  mojo::Watcher::ReadyCallback old_callback;
+  mojo::SimpleWatcher::ReadyCallback old_callback;
 
   // Maintain a thread-local stack of watchers to ensure nested calls complete
   // in the correct sequence, i.e. the outermost call completes first, etc.
@@ -664,7 +665,7 @@ void SyncChannel::WaitForReplyWithNestedMessageLoop(SyncContext* context) {
 
   {
     base::RunLoop nested_loop;
-    send_done_watcher.Start(
+    send_done_watcher.Watch(
         context->GetSendDoneEvent()->GetHandle(), MOJO_HANDLE_SIGNAL_READABLE,
         base::Bind(&RunOnHandleReady, nested_loop.QuitClosure()));
 
@@ -676,7 +677,7 @@ void SyncChannel::WaitForReplyWithNestedMessageLoop(SyncContext* context) {
 
   sync_msg_queue->set_top_send_done_watcher(old_watcher);
   if (old_watcher)
-    old_watcher->Start(old_handle, MOJO_HANDLE_SIGNAL_READABLE, old_callback);
+    old_watcher->Watch(old_handle, MOJO_HANDLE_SIGNAL_READABLE, old_callback);
 }
 
 void SyncChannel::OnDispatchHandleReady(MojoResult result) {
@@ -690,10 +691,10 @@ void SyncChannel::StartWatching() {
   // messages once the listener thread is unblocked and pumping its task queue.
   // The ReceivedSyncMsgQueue also watches this event and may dispatch
   // immediately if woken up by a message which it's allowed to dispatch.
-  dispatch_watcher_.Start(sync_context()->GetDispatchEvent()->GetHandle(),
-                          MOJO_HANDLE_SIGNAL_READABLE,
-                          base::Bind(&SyncChannel::OnDispatchHandleReady,
-                                     base::Unretained(this)));
+  dispatch_watcher_.Watch(
+      sync_context()->GetDispatchEvent()->GetHandle(),
+      MOJO_HANDLE_SIGNAL_READABLE,
+      base::Bind(&SyncChannel::OnDispatchHandleReady, base::Unretained(this)));
 }
 
 void SyncChannel::OnChannelInit() {

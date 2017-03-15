@@ -32,7 +32,7 @@ gin::Handle<WaitingCallback> WaitingCallback::Create(
     bool one_shot) {
   gin::Handle<WaitingCallback> waiting_callback = gin::CreateHandle(
       isolate, new WaitingCallback(isolate, callback, one_shot));
-  MojoResult result = waiting_callback->watcher_.Start(
+  MojoResult result = waiting_callback->watcher_.Watch(
       handle_wrapper->get(), signals,
       base::Bind(&WaitingCallback::OnHandleReady,
                  base::Unretained(waiting_callback.get())));
@@ -53,7 +53,7 @@ WaitingCallback::WaitingCallback(v8::Isolate* isolate,
                                  v8::Handle<v8::Function> callback,
                                  bool one_shot)
     : one_shot_(one_shot),
-      watcher_(FROM_HERE),
+      watcher_(FROM_HERE, SimpleWatcher::ArmingPolicy::AUTOMATIC),
       weak_factory_(this) {
   v8::Handle<v8::Context> context = isolate->GetCurrentContext();
   runner_ = gin::PerContextData::From(context)->runner()->GetWeakPtr();

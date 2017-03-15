@@ -21,7 +21,7 @@
 #include "mojo/public/c/system/data_pipe.h"
 #include "mojo/public/c/system/functions.h"
 #include "mojo/public/c/system/message_pipe.h"
-#include "mojo/public/cpp/system/watcher.h"
+#include "mojo/public/cpp/system/simple_watcher.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {
@@ -2029,7 +2029,7 @@ DEFINE_TEST_CLIENT_TEST_WITH_PIPE(DataPipeStatusChangeInTransitClient,
 
   base::MessageLoop message_loop;
 
-  // Wait on producer 1 and consumer 1 using Watchers.
+  // Wait on producer 1 and consumer 1 using SimpleWatchers.
   {
     base::RunLoop run_loop;
     int count = 0;
@@ -2040,12 +2040,16 @@ DEFINE_TEST_CLIENT_TEST_WITH_PIPE(DataPipeStatusChangeInTransitClient,
             loop->Quit();
         },
         &run_loop, &count);
-    Watcher producer_watcher(FROM_HERE), consumer_watcher(FROM_HERE);
-    producer_watcher.Start(
-        Handle(producers[1]), MOJO_HANDLE_SIGNAL_PEER_CLOSED, callback);
-    consumer_watcher.Start(
-        Handle(consumers[1]), MOJO_HANDLE_SIGNAL_PEER_CLOSED, callback);
+    SimpleWatcher producer_watcher(FROM_HERE,
+                                   SimpleWatcher::ArmingPolicy::AUTOMATIC);
+    SimpleWatcher consumer_watcher(FROM_HERE,
+                                   SimpleWatcher::ArmingPolicy::AUTOMATIC);
+    producer_watcher.Watch(Handle(producers[1]), MOJO_HANDLE_SIGNAL_PEER_CLOSED,
+                           callback);
+    consumer_watcher.Watch(Handle(consumers[1]), MOJO_HANDLE_SIGNAL_PEER_CLOSED,
+                           callback);
     run_loop.Run();
+    EXPECT_EQ(2, count);
   }
 
   // Wait on producer 2 by polling with MojoWriteData.

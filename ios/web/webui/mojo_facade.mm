@@ -252,16 +252,17 @@ std::unique_ptr<base::Value> MojoFacade::HandleSupportWatch(
   int callback_id;
   CHECK(args->GetInteger("callbackId", &callback_id));
 
-  mojo::Watcher::ReadyCallback callback = base::BindBlockArc(^(
+  mojo::SimpleWatcher::ReadyCallback callback = base::BindBlockArc(^(
       MojoResult result) {
     NSString* script =
         [NSString stringWithFormat:@"__crWeb.mojo.signalWatch(%d, %d)",
                                    callback_id, result];
     [script_evaluator_ executeJavaScript:script completionHandler:nil];
   });
-  mojo::Watcher* watcher = new mojo::Watcher(FROM_HERE);
+  mojo::SimpleWatcher* watcher = new mojo::SimpleWatcher(
+      FROM_HERE, mojo::SimpleWatcher::ArmingPolicy::AUTOMATIC);
   watchers_.insert(std::make_pair(++last_watch_id_, base::WrapUnique(watcher)));
-  watcher->Start(static_cast<mojo::Handle>(handle), signals, callback);
+  watcher->Watch(static_cast<mojo::Handle>(handle), signals, callback);
   return ValueFromInteger(last_watch_id_);
 }
 

@@ -12,7 +12,7 @@
 #include "media/base/demuxer_stream.h"
 #include "media/mojo/interfaces/media_types.mojom.h"
 #include "mojo/public/cpp/system/data_pipe.h"
-#include "mojo/public/cpp/system/watcher.h"
+#include "mojo/public/cpp/system/simple_watcher.h"
 
 namespace media {
 
@@ -47,7 +47,7 @@ class MojoDecoderBufferReader {
 
   // For reading the data section of a DecoderBuffer.
   mojo::ScopedDataPipeConsumerHandle consumer_handle_;
-  mojo::Watcher pipe_watcher_;
+  mojo::SimpleWatcher pipe_watcher_;
 
   // Only valid during pending read.
   ReadCB read_cb_;
@@ -85,7 +85,7 @@ class MojoDecoderBufferWriter {
 
   // For writing the data section of DecoderBuffer into DataPipe.
   mojo::ScopedDataPipeProducerHandle producer_handle_;
-  mojo::Watcher pipe_watcher_;
+  mojo::SimpleWatcher pipe_watcher_;
 
   // Only valid when data is being written to the pipe.
   scoped_refptr<DecoderBuffer> media_buffer_;

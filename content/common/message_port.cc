@@ -4,7 +4,9 @@
 
 #include "content/common/message_port.h"
 
+#include "base/bind.h"
 #include "base/logging.h"
+#include "base/threading/thread_task_runner_handle.h"
 
 namespace content {
 
@@ -147,40 +149,86 @@ void MessagePort::State::AddWatch() {
   if (!callback_)
     return;
 
+  DCHECK(!watcher_handle_.is_valid());
+  MojoResult rv = CreateWatcher(&State::CallOnHandleReady, &watcher_handle_);
+  DCHECK_EQ(MOJO_RESULT_OK, rv);
+
+  // We use a scoped_refptr<State> instance as the watch context. This is owned
+  // by the watch and deleted upon receiving a cancellation notification.
+  scoped_refptr<State>* state_ref = new scoped_refptr<State>(this);
+  context_ = reinterpret_cast<uintptr_t>(state_ref);
+
   // NOTE: An HTML MessagePort does not receive an event to tell it when the
   // peer has gone away, so we only watch for readability here.
-  MojoResult rv = MojoWatch(handle_.get().value(),
-                            MOJO_HANDLE_SIGNAL_READABLE,
-                            &MessagePort::State::OnHandleReady,
-                            reinterpret_cast<uintptr_t>(this));
-  if (rv != MOJO_RESULT_OK)
-    DVLOG(1) << this << " MojoWatch failed: " << rv;
+  rv = MojoWatch(watcher_handle_.get().value(), handle_.get().value(),
+                 MOJO_HANDLE_SIGNAL_READABLE, context_);
+  DCHECK_EQ(MOJO_RESULT_OK, rv);
+
+  ArmWatcher();
 }
 
 void MessagePort::State::CancelWatch() {
-  if (!callback_)
-    return;
-
-  // NOTE: This synchronizes with the thread where OnHandleReady runs so we are
-  // sure to not be racing with it.
-  MojoCancelWatch(handle_.get().value(), reinterpret_cast<uintptr_t>(this));
+  watcher_handle_.reset();
+  context_ = 0;
 }
 
-// static
-void MessagePort::State::OnHandleReady(
-    uintptr_t context,
-    MojoResult result,
-    MojoHandleSignalsState signals_state,
-    MojoWatchNotificationFlags flags) {
-  if (result == MOJO_RESULT_OK) {
-    reinterpret_cast<MessagePort::State*>(context)->callback_.Run();
+MessagePort::State::~State() = default;
+
+void MessagePort::State::ArmWatcher() {
+  if (!watcher_handle_.is_valid())
+    return;
+
+  uint32_t num_ready_contexts = 1;
+  uintptr_t ready_context;
+  MojoResult ready_result;
+  MojoHandleSignalsState ready_state;
+  MojoResult rv =
+      MojoArmWatcher(watcher_handle_.get().value(), &num_ready_contexts,
+                     &ready_context, &ready_result, &ready_state);
+  if (rv == MOJO_RESULT_OK)
+    return;
+
+  // The watcher could not be armed because it would notify immediately.
+  DCHECK_EQ(MOJO_RESULT_FAILED_PRECONDITION, rv);
+  DCHECK_EQ(1u, num_ready_contexts);
+  DCHECK_EQ(context_, ready_context);
+
+  if (ready_result == MOJO_RESULT_OK) {
+    // The handle is already signaled, so we trigger a callback now.
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(&State::OnHandleReady, this, MOJO_RESULT_OK));
+    return;
+  }
+
+  if (ready_result == MOJO_RESULT_FAILED_PRECONDITION) {
+    DVLOG(1) << this << " MojoArmWatcher failed because of a broken pipe.";
+    return;
+  }
+
+  NOTREACHED();
+}
+
+void MessagePort::State::OnHandleReady(MojoResult result) {
+  if (result == MOJO_RESULT_OK && callback_) {
+    callback_.Run();
+    ArmWatcher();
   } else {
     // And now his watch is ended.
   }
 }
 
-MessagePort::State::~State() {
-  CancelWatch();
+// static
+void MessagePort::State::CallOnHandleReady(uintptr_t context,
+                                           MojoResult result,
+                                           MojoHandleSignalsState signals_state,
+                                           MojoWatcherNotificationFlags flags) {
+  auto* state_ref = reinterpret_cast<scoped_refptr<State>*>(context);
+  if (result == MOJO_RESULT_CANCELLED) {
+    // Last notification. Delete the watch's owned State ref.
+    delete state_ref;
+  } else {
+    (*state_ref)->OnHandleReady(result);
+  }
 }
 
 }  // namespace content

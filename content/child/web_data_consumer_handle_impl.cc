@@ -37,7 +37,9 @@ class WebDataConsumerHandleImpl::Context
 WebDataConsumerHandleImpl::ReaderImpl::ReaderImpl(
     scoped_refptr<Context> context,
     Client* client)
-    : context_(context), handle_watcher_(FROM_HERE), client_(client) {
+    : context_(context),
+      handle_watcher_(FROM_HERE, mojo::SimpleWatcher::ArmingPolicy::AUTOMATIC),
+      client_(client) {
   if (client_)
     StartWatching();
 }
@@ -130,7 +132,7 @@ Result WebDataConsumerHandleImpl::ReaderImpl::HandleReadResult(
 }
 
 void WebDataConsumerHandleImpl::ReaderImpl::StartWatching() {
-  handle_watcher_.Start(
+  handle_watcher_.Watch(
       context_->handle().get(), MOJO_HANDLE_SIGNAL_READABLE,
       base::Bind(&ReaderImpl::OnHandleGotReadable, base::Unretained(this)));
 }

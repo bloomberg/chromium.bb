@@ -15,10 +15,10 @@
 #include "base/atomic_sequence_num.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/run_loop.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"
-#include "base/synchronization/waitable_event.h"
 #include "content/browser/shared_worker/shared_worker_message_filter.h"
 #include "content/browser/shared_worker/worker_storage_partition.h"
 #include "content/common/view_messages.h"
@@ -112,11 +112,9 @@ static const unsigned long long kDocumentIDs[] = {200, 201, 202};
 static const int kRenderFrameRouteIDs[] = {300, 301, 302};
 
 void BlockingReadFromMessagePort(MessagePort port, base::string16* message) {
-  base::WaitableEvent event(base::WaitableEvent::ResetPolicy::MANUAL,
-                            base::WaitableEvent::InitialState::NOT_SIGNALED);
-  port.SetCallback(
-      base::Bind(&base::WaitableEvent::Signal, base::Unretained(&event)));
-  event.Wait();
+  base::RunLoop run_loop;
+  port.SetCallback(run_loop.QuitClosure());
+  run_loop.Run();
 
   std::vector<MessagePort> should_be_empty;
   EXPECT_TRUE(port.GetMessage(message, &should_be_empty));

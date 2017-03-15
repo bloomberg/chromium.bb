@@ -19,14 +19,6 @@
 extern "C" {
 #endif
 
-// A callback used to notify watchers registered via |MojoWatch()|. Called when
-// some watched signals are satisfied or become unsatisfiable. See the
-// documentation for |MojoWatch()| for more details.
-typedef void (*MojoWatchCallback)(uintptr_t context,
-                                  MojoResult result,
-                                  struct MojoHandleSignalsState signals_state,
-                                  MojoWatchNotificationFlags flags);
-
 // Note: Pointer parameters that are labelled "optional" may be null (at least
 // under some circumstances). Non-const pointer parameters are also labeled
 // "in", "out", or "in/out", to indicate how they are used. (Note that how/if
@@ -137,74 +129,6 @@ MojoWaitMany(const MojoHandle* handles,
              MojoDeadline deadline,
              uint32_t* result_index,                          // Optional out
              struct MojoHandleSignalsState* signals_states);  // Optional out
-
-// Watches the given handle for one of the following events to happen:
-//   - A signal indicated by |signals| is satisfied.
-//   - It becomes known that no signal indicated by |signals| will ever be
-//     satisfied. (See the description of the |MOJO_RESULT_CANCELLED| and
-//     |MOJO_RESULT_FAILED_PRECONDITION| return values below.)
-//   - The handle is closed.
-//
-// |handle|: The handle to watch. Must be an open message pipe or data pipe
-//     handle.
-// |signals|: The signals to watch for.
-// |callback|: A function to be called any time one of the above events happens.
-//     The function must be safe to call from any thread at any time.
-// |context|: User-provided context passed to |callback| when called. |context|
-//     is used to uniquely identify a registered watch and can be used to cancel
-//     the watch later using |MojoCancelWatch()|.
-//
-// Returns:
-//   |MOJO_RESULT_OK| if the watch has been successfully registered. Note that
-//       if the signals are already satisfied this may synchronously invoke
-//       |callback| before returning.
-//   |MOJO_RESULT_CANCELLED| if the watch was cancelled. In this case it is not
-//       necessary to explicitly call |MojoCancelWatch()|, and in fact it may be
-//       an error to do so as the handle may have been closed.
-//   |MOJO_RESULT_INVALID_ARGUMENT| if |handle| is not an open message pipe
-//       handle.
-//   |MOJO_RESULT_FAILED_PRECONDITION| if it is already known that |signals| can
-//       never be satisfied.
-//   |MOJO_RESULT_ALREADY_EXISTS| if there is already a watch registered for
-//       the same combination of |handle| and |context|.
-//
-// Callback result codes:
-//   The callback may be called at any time on any thread with one of the
-//   following result codes to indicate various events:
-//
-//   |MOJO_RESULT_OK| indicates that some signal in |signals| has been
-//       satisfied.
-//   |MOJO_RESULT_FAILED_PRECONDITION| indicates that no signals in |signals|
-//       can ever be satisfied again.
-//   |MOJO_RESULT_CANCELLED| indicates that the handle has been closed. In this
-//       case the watch is implicitly cancelled and there is no need to call
-//       |MojoCancelWatch()|.
-MOJO_SYSTEM_EXPORT MojoResult
-MojoWatch(MojoHandle handle,
-          MojoHandleSignals signals,
-          MojoWatchCallback callback,
-          uintptr_t context);
-
-// Cancels a handle watch corresponding to some prior call to |MojoWatch()|.
-//
-// NOTE: If the watch callback corresponding to |context| is currently running
-// this will block until the callback completes execution. It is therefore
-// illegal to call |MojoCancelWatch()| on a given |handle| and |context| from
-// within the associated callback itself, as this will always deadlock.
-//
-// After |MojoCancelWatch()| function returns, the watch's associated callback
-// will NEVER be called again by Mojo.
-//
-// |context|: The same user-provided context given to some prior call to
-//     |MojoWatch()|. Only the watch corresponding to this context will be
-//     cancelled.
-//
-// Returns:
-//     |MOJO_RESULT_OK| if the watch corresponding to |context| was cancelled.
-//     |MOJO_RESULT_INVALID_ARGUMENT| if no watch was registered with |context|
-//         for the given |handle|, or if |handle| is invalid.
-MOJO_SYSTEM_EXPORT MojoResult
-MojoCancelWatch(MojoHandle handle, uintptr_t context);
 
 // Retrieves system properties. See the documentation for |MojoPropertyType| for
 // supported property types and their corresponding output value type.

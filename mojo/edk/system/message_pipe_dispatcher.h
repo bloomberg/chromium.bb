@@ -16,6 +16,7 @@
 #include "mojo/edk/system/dispatcher.h"
 #include "mojo/edk/system/message_for_transit.h"
 #include "mojo/edk/system/ports/port_ref.h"
+#include "mojo/edk/system/watcher_set.h"
 
 namespace mojo {
 namespace edk {
@@ -48,10 +49,6 @@ class MessagePipeDispatcher : public Dispatcher {
   // Dispatcher:
   Type GetType() const override;
   MojoResult Close() override;
-  MojoResult Watch(MojoHandleSignals signals,
-                   const Watcher::WatchCallback& callback,
-                   uintptr_t context) override;
-  MojoResult CancelWatch(uintptr_t context) override;
   MojoResult WriteMessage(std::unique_ptr<MessageForTransit> message,
                           MojoWriteMessageFlags flags) override;
   MojoResult ReadMessage(std::unique_ptr<MessageForTransit>* message,
@@ -61,6 +58,10 @@ class MessagePipeDispatcher : public Dispatcher {
                          MojoReadMessageFlags flags,
                          bool read_any_size) override;
   HandleSignalsState GetHandleSignalsState() const override;
+  MojoResult AddWatcherRef(const scoped_refptr<WatcherDispatcher>& watcher,
+                           uintptr_t context) override;
+  MojoResult RemoveWatcherRef(WatcherDispatcher* watcher,
+                              uintptr_t context) override;
   MojoResult AddAwakable(Awakable* awakable,
                          MojoHandleSignals signals,
                          uintptr_t context,
@@ -111,6 +112,7 @@ class MessagePipeDispatcher : public Dispatcher {
   bool port_transferred_ = false;
   AtomicFlag port_closed_;
   AwakableList awakables_;
+  WatcherSet watchers_;
 
   DISALLOW_COPY_AND_ASSIGN(MessagePipeDispatcher);
 };

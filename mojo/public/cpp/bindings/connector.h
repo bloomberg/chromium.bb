@@ -18,7 +18,7 @@
 #include "mojo/public/cpp/bindings/message.h"
 #include "mojo/public/cpp/bindings/sync_handle_watcher.h"
 #include "mojo/public/cpp/system/core.h"
-#include "mojo/public/cpp/system/watcher.h"
+#include "mojo/public/cpp/system/simple_watcher.h"
 
 namespace base {
 class Lock;
@@ -155,8 +155,14 @@ class MOJO_CPP_BINDINGS_EXPORT Connector
   // |tag| must be a const string literal.
   void SetWatcherHeapProfilerTag(const char* tag);
 
+  // Enables support for nested message dispatch so that the Connector can
+  // continue dispatching inbound messages even if one of them spins a nested
+  // message loop. This should be enabled only when needed, as dispatch in this
+  // mode is generally less efficient.
+  void EnableNestedDispatch(bool enabled);
+
  private:
-  // Callback of mojo::Watcher.
+  // Callback of mojo::SimpleWatcher.
   void OnWatcherHandleReady(MojoResult result);
   // Callback of SyncHandleWatcher.
   void OnSyncHandleWatcherHandleReady(MojoResult result);
@@ -188,13 +194,15 @@ class MOJO_CPP_BINDINGS_EXPORT Connector
   MessageReceiver* incoming_receiver_ = nullptr;
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-  std::unique_ptr<Watcher> handle_watcher_;
+  std::unique_ptr<SimpleWatcher> handle_watcher_;
 
   bool error_ = false;
   bool drop_writes_ = false;
   bool enforce_errors_from_incoming_receiver_ = true;
 
   bool paused_ = false;
+
+  bool nested_dispatch_enabled_ = false;
 
   // If sending messages is allowed from multiple threads, |lock_| is used to
   // protect modifications to |message_pipe_| and |drop_writes_|.

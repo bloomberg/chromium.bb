@@ -605,6 +605,11 @@ bool MultiplexRouter::HasAssociatedEndpoints() const {
   return !base::ContainsKey(endpoints_, kMasterInterfaceId);
 }
 
+void MultiplexRouter::EnableNestedDispatch(bool enabled) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  connector_.EnableNestedDispatch(enabled);
+}
+
 void MultiplexRouter::EnableTestingMode() {
   DCHECK(thread_checker_.CalledOnValidThread());
   MayAutoLock locker(&lock_);

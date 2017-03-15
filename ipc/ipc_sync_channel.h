@@ -19,7 +19,7 @@
 #include "ipc/ipc_sync_message.h"
 #include "ipc/ipc_sync_message_filter.h"
 #include "mojo/public/c/system/types.h"
-#include "mojo/public/cpp/system/watcher.h"
+#include "mojo/public/cpp/system/simple_watcher.h"
 
 namespace base {
 class WaitableEvent;
@@ -27,7 +27,6 @@ class WaitableEvent;
 
 namespace mojo {
 class SyncHandleRegistry;
-class Watcher;
 }
 
 namespace IPC {
@@ -241,7 +240,7 @@ class IPC_EXPORT SyncChannel : public ChannelProxy {
   scoped_refptr<mojo::SyncHandleRegistry> sync_handle_registry_;
 
   // Used to signal events between the IPC and listener threads.
-  mojo::Watcher dispatch_watcher_;
+  mojo::SimpleWatcher dispatch_watcher_;
 
   // Tracks SyncMessageFilters created before complete channel initialization.
   std::vector<scoped_refptr<SyncMessageFilter>> pre_init_sync_message_filters_;

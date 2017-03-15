@@ -66,8 +66,10 @@ component("system") {
     "wait_set_dispatcher.h",
     "waiter.cc",
     "waiter.h",
-    "watcher.cc",
-    "watcher.h",
+    "watch.cc",
+    "watch.h",
+    "watcher_dispatcher.cc",
+    "watcher_dispatcher.h",
     "watcher_set.cc",
     "watcher_set.h",
   ]
@@ -167,7 +169,7 @@ test("mojo_system_unittests") {
     "waiter_test_utils.cc",
     "waiter_test_utils.h",
     "waiter_unittest.cc",
-    "watch_unittest.cc",
+    "watcher_unittest.cc",
   ]
 
   if (!is_ios) {

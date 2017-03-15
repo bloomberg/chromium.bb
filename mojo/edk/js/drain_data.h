@@ -10,7 +10,7 @@
 
 #include "gin/runner.h"
 #include "mojo/public/cpp/system/core.h"
-#include "mojo/public/cpp/system/watcher.h"
+#include "mojo/public/cpp/system/simple_watcher.h"
 #include "v8/include/v8.h"
 
 namespace mojo {
@@ -52,7 +52,7 @@ class DrainData {
 
   v8::Isolate* isolate_;
   ScopedDataPipeConsumerHandle handle_;
-  Watcher handle_watcher_;
+  SimpleWatcher handle_watcher_;
   base::WeakPtr<gin::Runner> runner_;
   v8::UniquePersistent<v8::Promise::Resolver> resolver_;
   std::vector<std::unique_ptr<DataBuffer>> data_buffers_;

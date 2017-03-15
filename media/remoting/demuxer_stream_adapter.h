@@ -21,6 +21,7 @@
 #include "media/remoting/rpc_broker.h"
 #include "media/remoting/triggers.h"
 #include "mojo/public/cpp/system/data_pipe.h"
+#include "mojo/public/cpp/system/simple_watcher.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -167,7 +168,7 @@ class DemuxerStreamAdapter {
   bool pending_frame_is_eos_;
 
   // Monitor if data pipe is available to write data.
-  mojo::Watcher write_watcher_;
+  mojo::SimpleWatcher write_watcher_;
 
   // Keeps latest demuxer stream status and audio/video decoder config.
   DemuxerStream::Status media_status_;

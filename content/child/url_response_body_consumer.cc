@@ -48,15 +48,15 @@ URLResponseBodyConsumer::URLResponseBodyConsumer(
     : request_id_(request_id),
       resource_dispatcher_(resource_dispatcher),
       handle_(std::move(handle)),
-      handle_watcher_(FROM_HERE, task_runner),
+      handle_watcher_(FROM_HERE,
+                      mojo::SimpleWatcher::ArmingPolicy::MANUAL,
+                      task_runner),
       task_runner_(task_runner),
       has_seen_end_of_data_(!handle_.is_valid()) {
-  handle_watcher_.Start(
+  handle_watcher_.Watch(
       handle_.get(), MOJO_HANDLE_SIGNAL_READABLE,
       base::Bind(&URLResponseBodyConsumer::OnReadable, base::Unretained(this)));
-  task_runner_->PostTask(
-      FROM_HERE, base::Bind(&URLResponseBodyConsumer::OnReadable, AsWeakPtr(),
-                            MOJO_RESULT_OK));
+  handle_watcher_.ArmOrNotify();
 }
 
 URLResponseBodyConsumer::~URLResponseBodyConsumer() {}
@@ -91,9 +91,7 @@ void URLResponseBodyConsumer::Reclaim(uint32_t size) {
   if (is_in_on_readable_)
     return;
 
-  task_runner_->PostTask(
-      FROM_HERE, base::Bind(&URLResponseBodyConsumer::OnReadable, AsWeakPtr(),
-                            MOJO_RESULT_OK));
+  handle_watcher_.ArmOrNotify();
 }
 
 void URLResponseBodyConsumer::OnReadable(MojoResult unused) {
@@ -112,7 +110,11 @@ void URLResponseBodyConsumer::OnReadable(MojoResult unused) {
     uint32_t available = 0;
     MojoResult result = mojo::BeginReadDataRaw(
         handle_.get(), &buffer, &available, MOJO_READ_DATA_FLAG_NONE);
-    if (result == MOJO_RESULT_SHOULD_WAIT || result == MOJO_RESULT_BUSY)
+    if (result == MOJO_RESULT_SHOULD_WAIT) {
+      handle_watcher_.ArmOrNotify();
+      return;
+    }
+    if (result == MOJO_RESULT_BUSY)
       return;
     if (result == MOJO_RESULT_FAILED_PRECONDITION) {
       has_seen_end_of_data_ = true;
@@ -134,9 +136,7 @@ void URLResponseBodyConsumer::OnReadable(MojoResult unused) {
       // to the next task.
       result = mojo::EndReadDataRaw(handle_.get(), 0);
       DCHECK_EQ(result, MOJO_RESULT_OK);
-      task_runner_->PostTask(FROM_HERE,
-                             base::Bind(&URLResponseBodyConsumer::OnReadable,
-                                        AsWeakPtr(), MOJO_RESULT_OK));
+      handle_watcher_.ArmOrNotify();
       return;
     }
     num_bytes_consumed += available;

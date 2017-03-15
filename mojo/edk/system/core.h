@@ -27,6 +27,7 @@
 #include "mojo/public/c/system/message_pipe.h"
 #include "mojo/public/c/system/platform_handle.h"
 #include "mojo/public/c/system/types.h"
+#include "mojo/public/c/system/watcher.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 
 namespace base {
@@ -145,11 +146,18 @@ class MOJO_SYSTEM_IMPL_EXPORT Core {
                       MojoDeadline deadline,
                       uint32_t* result_index,
                       MojoHandleSignalsState* signals_states);
-  MojoResult Watch(MojoHandle handle,
+  MojoResult CreateWatcher(MojoWatcherCallback callback,
+                           MojoHandle* watcher_handle);
+  MojoResult Watch(MojoHandle watcher_handle,
+                   MojoHandle handle,
                    MojoHandleSignals signals,
-                   MojoWatchCallback callback,
                    uintptr_t context);
-  MojoResult CancelWatch(MojoHandle handle, uintptr_t context);
+  MojoResult CancelWatch(MojoHandle watcher_handle, uintptr_t context);
+  MojoResult ArmWatcher(MojoHandle watcher_handle,
+                        uint32_t* num_ready_contexts,
+                        uintptr_t* ready_contexts,
+                        MojoResult* ready_results,
+                        MojoHandleSignalsState* ready_signals_states);
   MojoResult AllocMessage(uint32_t num_bytes,
                           const MojoHandle* handles,
                           uint32_t num_handles,

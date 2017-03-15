@@ -57,7 +57,7 @@ DemuxerStreamAdapter::DemuxerStreamAdapter(
       pending_flush_(false),
       current_pending_frame_offset_(0),
       pending_frame_is_eos_(false),
-      write_watcher_(FROM_HERE),
+      write_watcher_(FROM_HERE, mojo::SimpleWatcher::ArmingPolicy::MANUAL),
       media_status_(DemuxerStream::kOk),
       producer_handle_(std::move(producer_handle)),
       bytes_written_to_pipe_(0),
@@ -202,9 +202,10 @@ void DemuxerStreamAdapter::Initialize(int remote_callback_handle) {
   // Starts Mojo watcher.
   if (!write_watcher_.IsWatching()) {
     DEMUXER_VLOG(2) << "Start Mojo data pipe watcher";
-    write_watcher_.Start(producer_handle_.get(), MOJO_HANDLE_SIGNAL_WRITABLE,
+    write_watcher_.Watch(producer_handle_.get(), MOJO_HANDLE_SIGNAL_WRITABLE,
                          base::Bind(&DemuxerStreamAdapter::TryWriteData,
                                     weak_factory_.GetWeakPtr()));
+    write_watcher_.ArmOrNotify();
   }
 }
 
@@ -326,14 +327,16 @@ void DemuxerStreamAdapter::TryWriteData(MojoResult result) {
       WriteDataRaw(producer_handle_.get(),
                    pending_frame_.data() + current_pending_frame_offset_,
                    &num_bytes, MOJO_WRITE_DATA_FLAG_NONE);
-  if (mojo_result != MOJO_RESULT_OK) {
-    if (mojo_result != MOJO_RESULT_SHOULD_WAIT) {
-      DEMUXER_VLOG(1) << "Pipe was closed unexpectedly (or a bug). result:"
-                      << mojo_result;
-      OnFatalError(MOJO_PIPE_ERROR);
-    }
+  if (mojo_result != MOJO_RESULT_OK && mojo_result != MOJO_RESULT_SHOULD_WAIT) {
+    DEMUXER_VLOG(1) << "Pipe was closed unexpectedly (or a bug). result:"
+                    << mojo_result;
+    OnFatalError(MOJO_PIPE_ERROR);
     return;
   }
+
+  write_watcher_.ArmOrNotify();
+  if (mojo_result != MOJO_RESULT_OK)
+    return;
 
   stream_sender_->ConsumeDataChunk(current_pending_frame_offset_, num_bytes,
                                    pending_frame_.size());

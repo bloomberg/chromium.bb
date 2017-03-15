@@ -20,7 +20,7 @@
 #include "content/public/common/resource_type.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/system/data_pipe.h"
-#include "mojo/public/cpp/system/watcher.h"
+#include "mojo/public/cpp/system/simple_watcher.h"
 #include "net/base/io_buffer.h"
 #include "net/base/request_priority.h"
 
@@ -137,7 +137,7 @@ class CONTENT_EXPORT MojoAsyncResourceHandler
   base::TimeTicks response_started_ticks_;
   int64_t reported_total_received_bytes_ = 0;
 
-  mojo::Watcher handle_watcher_;
+  mojo::SimpleWatcher handle_watcher_;
   std::unique_ptr<mojom::URLLoader> url_loader_;
   mojom::URLLoaderClientPtr url_loader_client_;
   scoped_refptr<net::IOBufferWithSize> buffer_;

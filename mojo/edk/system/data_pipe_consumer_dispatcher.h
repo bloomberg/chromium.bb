@@ -20,6 +20,7 @@
 #include "mojo/edk/system/dispatcher.h"
 #include "mojo/edk/system/ports/port_ref.h"
 #include "mojo/edk/system/system_impl_export.h"
+#include "mojo/edk/system/watcher_set.h"
 
 namespace mojo {
 namespace edk {
@@ -43,10 +44,6 @@ class MOJO_SYSTEM_IMPL_EXPORT DataPipeConsumerDispatcher final
   // Dispatcher:
   Type GetType() const override;
   MojoResult Close() override;
-  MojoResult Watch(MojoHandleSignals signals,
-                   const Watcher::WatchCallback& callback,
-                   uintptr_t context) override;
-  MojoResult CancelWatch(uintptr_t context) override;
   MojoResult ReadData(void* elements,
                       uint32_t* num_bytes,
                       MojoReadDataFlags flags) override;
@@ -55,6 +52,10 @@ class MOJO_SYSTEM_IMPL_EXPORT DataPipeConsumerDispatcher final
                            MojoReadDataFlags flags) override;
   MojoResult EndReadData(uint32_t num_bytes_read) override;
   HandleSignalsState GetHandleSignalsState() const override;
+  MojoResult AddWatcherRef(const scoped_refptr<WatcherDispatcher>& watcher,
+                           uintptr_t context) override;
+  MojoResult RemoveWatcherRef(WatcherDispatcher* watcher,
+                              uintptr_t context) override;
   MojoResult AddAwakable(Awakable* awakable,
                          MojoHandleSignals signals,
                          uintptr_t context,
@@ -101,6 +102,7 @@ class MOJO_SYSTEM_IMPL_EXPORT DataPipeConsumerDispatcher final
   mutable base::Lock lock_;
 
   AwakableList awakable_list_;
+  WatcherSet watchers_;
 
   scoped_refptr<PlatformSharedBuffer> shared_ring_buffer_;
   std::unique_ptr<PlatformSharedBufferMapping> ring_buffer_mapping_;

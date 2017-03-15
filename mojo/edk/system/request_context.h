@@ -9,7 +9,7 @@
 #include "base/macros.h"
 #include "mojo/edk/system/handle_signals_state.h"
 #include "mojo/edk/system/system_impl_export.h"
-#include "mojo/edk/system/watcher.h"
+#include "mojo/edk/system/watch.h"
 
 namespace base {
 template<typename T> class ThreadLocalPointer;
@@ -49,43 +49,44 @@ class MOJO_SYSTEM_IMPL_EXPORT RequestContext {
 
   // Adds a finalizer to this RequestContext corresponding to a watch callback
   // which should be triggered in response to some handle state change. If
-  // the Watcher hasn't been cancelled by the time this RequestContext is
+  // the WatcherDispatcher hasn't been closed by the time this RequestContext is
   // destroyed, its WatchCallback will be invoked with |result| and |state|
   // arguments.
-  void AddWatchNotifyFinalizer(scoped_refptr<Watcher> watcher,
+  void AddWatchNotifyFinalizer(scoped_refptr<Watch> watch,
                                MojoResult result,
                                const HandleSignalsState& state);
 
-  // Adds a finalizer to this RequestContext which cancels a watch.
-  void AddWatchCancelFinalizer(scoped_refptr<Watcher> watcher);
+  // Adds a finalizer to this RequestContext corresponding to a watch callback
+  // which should be triggered to notify of watch cancellation. This appends to
+  // a separate finalizer list from AddWatchNotifyFinalizer, as pending
+  // cancellations must always preempt other pending notifications.
+  void AddWatchCancelFinalizer(scoped_refptr<Watch> watch);
 
  private:
   // Is this request context the current one?
   bool IsCurrent() const;
 
   struct WatchNotifyFinalizer {
-    WatchNotifyFinalizer(scoped_refptr<Watcher> watcher,
+    WatchNotifyFinalizer(scoped_refptr<Watch> watch,
                          MojoResult result,
                          const HandleSignalsState& state);
     WatchNotifyFinalizer(const WatchNotifyFinalizer& other);
     ~WatchNotifyFinalizer();
 
-    scoped_refptr<Watcher> watcher;
+    scoped_refptr<Watch> watch;
     MojoResult result;
     HandleSignalsState state;
   };
 
-  // Chosen by fair dice roll.
-  //
-  // TODO: We should measure the distribution of # of finalizers typical to
-  // any RequestContext and adjust this number accordingly. It's probably
-  // almost always 1, but 4 seems like a harmless upper bound for now.
-  static const size_t kStaticWatchFinalizersCapacity = 4;
+  // NOTE: This upper bound was chosen somewhat arbitrarily after observing some
+  // rare worst-case behavior in Chrome. A vast majority of RequestContexts only
+  // ever accumulate 0 or 1 finalizers.
+  static const size_t kStaticWatchFinalizersCapacity = 8;
 
   using WatchNotifyFinalizerList =
       base::StackVector<WatchNotifyFinalizer, kStaticWatchFinalizersCapacity>;
   using WatchCancelFinalizerList =
-      base::StackVector<scoped_refptr<Watcher>, kStaticWatchFinalizersCapacity>;
+      base::StackVector<scoped_refptr<Watch>, kStaticWatchFinalizersCapacity>;
 
   const Source source_;
 

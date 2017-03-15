@@ -31,7 +31,7 @@
 #include "mojo/public/c/system/buffer.h"
 #include "mojo/public/c/system/functions.h"
 #include "mojo/public/c/system/types.h"
-#include "mojo/public/cpp/system/watcher.h"
+#include "mojo/public/cpp/system/simple_watcher.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 
@@ -1271,15 +1271,17 @@ DEFINE_TEST_CLIENT_TEST_WITH_PIPE(MessagePipeStatusChangeInTransitClient,
 
   base::MessageLoop message_loop;
 
-  // Wait on handle 1 using a Watcher.
+  // Wait on handle 1 using a SimpleWatcher.
   {
     base::RunLoop run_loop;
-    Watcher watcher(FROM_HERE);
-    watcher.Start(Handle(handles[1]), MOJO_HANDLE_SIGNAL_PEER_CLOSED,
-                  base::Bind([] (base::RunLoop* loop, MojoResult result) {
-                    EXPECT_EQ(MOJO_RESULT_OK, result);
-                    loop->Quit();
-                  }, &run_loop));
+    SimpleWatcher watcher(FROM_HERE, SimpleWatcher::ArmingPolicy::AUTOMATIC);
+    watcher.Watch(Handle(handles[1]), MOJO_HANDLE_SIGNAL_PEER_CLOSED,
+                  base::Bind(
+                      [](base::RunLoop* loop, MojoResult result) {
+                        EXPECT_EQ(MOJO_RESULT_OK, result);
+                        loop->Quit();
+                      },
+                      &run_loop));
     run_loop.Run();
   }
 

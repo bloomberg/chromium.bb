@@ -13,6 +13,7 @@
 #include "base/strings/string16.h"
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/system/message_pipe.h"
+#include "mojo/public/cpp/system/watcher.h"
 
 namespace content {
 
@@ -82,17 +83,25 @@ class CONTENT_EXPORT MessagePort {
 
     void AddWatch();
     void CancelWatch();
-    static void OnHandleReady(uintptr_t context,
-                              MojoResult result,
-                              MojoHandleSignalsState signals_state,
-                              MojoWatchNotificationFlags flags);
 
+    mojo::ScopedWatcherHandle watcher_handle_;
     mojo::ScopedMessagePipeHandle handle_;
     base::Closure callback_;
 
    private:
     friend class base::RefCountedThreadSafe<State>;
+
     ~State();
+
+    void ArmWatcher();
+    void OnHandleReady(MojoResult result);
+
+    static void CallOnHandleReady(uintptr_t context,
+                                  MojoResult result,
+                                  MojoHandleSignalsState signals_state,
+                                  MojoWatcherNotificationFlags flags);
+
+    uintptr_t context_;
   };
   mutable scoped_refptr<State> state_;
 };

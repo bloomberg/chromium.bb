@@ -15,7 +15,7 @@
 #include "media/cast/net/rtcp/rtcp_defines.h"
 #include "media/mojo/interfaces/remoting.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "mojo/public/cpp/system/watcher.h"
+#include "mojo/public/cpp/system/simple_watcher.h"
 
 namespace cast {
 
@@ -196,7 +196,7 @@ class CastRemotingSender : public media::mojom::RemotingDataStreamSender {
 
   // Watches |pipe_| for more data to become available, and then calls
   // ProcessInputQueue().
-  mojo::Watcher pipe_watcher_;
+  mojo::SimpleWatcher pipe_watcher_;
 
   // Set to true if the first frame has not yet been sent, or if a
   // CancelInFlightData() operation just completed. This causes TrySendFrame()

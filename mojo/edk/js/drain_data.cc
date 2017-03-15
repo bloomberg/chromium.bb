@@ -23,7 +23,7 @@ namespace js {
 DrainData::DrainData(v8::Isolate* isolate, mojo::Handle handle)
     : isolate_(isolate),
       handle_(DataPipeConsumerHandle(handle.value())),
-      handle_watcher_(FROM_HERE) {
+      handle_watcher_(FROM_HERE, SimpleWatcher::ArmingPolicy::AUTOMATIC) {
   v8::Handle<v8::Context> context(isolate_->GetCurrentContext());
   runner_ = gin::PerContextData::From(context)->runner()->GetWeakPtr();
 
@@ -43,7 +43,7 @@ DrainData::~DrainData() {
 }
 
 void DrainData::WaitForData() {
-  handle_watcher_.Start(
+  handle_watcher_.Watch(
       handle_.get(), MOJO_HANDLE_SIGNAL_READABLE,
       base::Bind(&DrainData::DataReady, base::Unretained(this)));
 }

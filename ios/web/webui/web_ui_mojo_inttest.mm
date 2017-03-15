@@ -7,6 +7,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #import "base/test/ios/wait_util.h"
+#include "base/threading/thread_task_runner_handle.h"
 #import "ios/web/public/navigation_manager.h"
 #include "ios/web/public/web_ui_ios_data_source.h"
 #include "ios/web/public/webui/web_ui_ios_controller.h"
@@ -161,7 +162,16 @@ TEST_F(WebUIMojoTest, MessageExchange) {
 
   // Wait until |TestUIHandler| receives "ack" message from WebUI page.
   base::test::ios::WaitUntilCondition(^{
-    base::RunLoop().RunUntilIdle();
+    // Flush any pending tasks. Don't RunUntilIdle() because
+    // RunUntilIdle() is incompatible with mojo::SimpleWatcher's
+    // automatic arming behavior, which Mojo JS still depends upon.
+    //
+    // TODO(crbug.com/701875): Introduce the full watcher API to JS and get rid
+    // of this hack.
+    base::RunLoop loop;
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                  loop.QuitClosure());
+    loop.Run();
     return test_ui_handler()->IsFinReceived();
   });
 }

@@ -33,6 +33,8 @@ component("system") {
     "message_pipe.h",
     "platform_handle.cc",
     "platform_handle.h",
+    "simple_watcher.cc",
+    "simple_watcher.h",
     "system_export.h",
     "watcher.cc",
     "watcher.h",

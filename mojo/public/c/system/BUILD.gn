@@ -18,6 +18,7 @@ component("system") {
     "thunks.h",
     "types.h",
     "wait_set.h",
+    "watcher.h",
   ]
 
   defines = [ "MOJO_SYSTEM_IMPLEMENTATION" ]

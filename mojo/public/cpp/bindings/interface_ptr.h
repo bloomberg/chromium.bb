@@ -193,6 +193,10 @@ class InterfacePtr {
     return !(*this) && !other;
   }
 
+  void EnableNestedDispatch(bool enabled) {
+    internal_state_.EnableNestedDispatch(enabled);
+  }
+
   // DO NOT USE. Exposed only for internal use and for testing.
   internal::InterfacePtrState<Interface>* internal_state() {
     return &internal_state_;

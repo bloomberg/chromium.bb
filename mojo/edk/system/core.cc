@@ -35,6 +35,7 @@
 #include "mojo/edk/system/shared_buffer_dispatcher.h"
 #include "mojo/edk/system/wait_set_dispatcher.h"
 #include "mojo/edk/system/waiter.h"
+#include "mojo/edk/system/watcher_dispatcher.h"
 
 namespace mojo {
 namespace edk {
@@ -47,15 +48,6 @@ const uint32_t kMaxHandlesPerMessage = 1024 * 1024;
 // TODO(rockot): Maybe we could negotiate a debugging pipe ID for cross-process
 // pipes too; for now we just use a constant. This only affects bootstrap pipes.
 const uint64_t kUnknownPipeIdForDebug = 0x7f7f7f7f7f7f7f7fUL;
-
-void CallWatchCallback(MojoWatchCallback callback,
-                       uintptr_t context,
-                       MojoResult result,
-                       const HandleSignalsState& signals_state,
-                       MojoWatchNotificationFlags flags) {
-  callback(context, result, static_cast<MojoHandleSignalsState>(signals_state),
-      flags);
-}
 
 MojoResult MojoPlatformHandleToScopedPlatformHandle(
     const MojoPlatformHandle* platform_handle,
@@ -428,24 +420,50 @@ MojoResult Core::WaitMany(const MojoHandle* handles,
   return rv;
 }
 
-MojoResult Core::Watch(MojoHandle handle,
-                       MojoHandleSignals signals,
-                       MojoWatchCallback callback,
-                       uintptr_t context) {
+MojoResult Core::CreateWatcher(MojoWatcherCallback callback,
+                               MojoHandle* watcher_handle) {
   RequestContext request_context;
-  scoped_refptr<Dispatcher> dispatcher = GetDispatcher(handle);
-  if (!dispatcher)
+  if (!watcher_handle)
     return MOJO_RESULT_INVALID_ARGUMENT;
-  return dispatcher->Watch(
-      signals, base::Bind(&CallWatchCallback, callback, context), context);
+  *watcher_handle = AddDispatcher(new WatcherDispatcher(callback));
+  if (*watcher_handle == MOJO_HANDLE_INVALID)
+    return MOJO_RESULT_RESOURCE_EXHAUSTED;
+  return MOJO_RESULT_OK;
 }
 
-MojoResult Core::CancelWatch(MojoHandle handle, uintptr_t context) {
+MojoResult Core::Watch(MojoHandle watcher_handle,
+                       MojoHandle handle,
+                       MojoHandleSignals signals,
+                       uintptr_t context) {
   RequestContext request_context;
+  scoped_refptr<Dispatcher> watcher = GetDispatcher(watcher_handle);
+  if (!watcher || watcher->GetType() != Dispatcher::Type::WATCHER)
+    return MOJO_RESULT_INVALID_ARGUMENT;
   scoped_refptr<Dispatcher> dispatcher = GetDispatcher(handle);
   if (!dispatcher)
     return MOJO_RESULT_INVALID_ARGUMENT;
-  return dispatcher->CancelWatch(context);
+  return watcher->WatchDispatcher(dispatcher, signals, context);
+}
+
+MojoResult Core::CancelWatch(MojoHandle watcher_handle, uintptr_t context) {
+  RequestContext request_context;
+  scoped_refptr<Dispatcher> watcher = GetDispatcher(watcher_handle);
+  if (!watcher || watcher->GetType() != Dispatcher::Type::WATCHER)
+    return MOJO_RESULT_INVALID_ARGUMENT;
+  return watcher->CancelWatch(context);
+}
+
+MojoResult Core::ArmWatcher(MojoHandle watcher_handle,
+                            uint32_t* num_ready_contexts,
+                            uintptr_t* ready_contexts,
+                            MojoResult* ready_results,
+                            MojoHandleSignalsState* ready_signals_states) {
+  RequestContext request_context;
+  scoped_refptr<Dispatcher> watcher = GetDispatcher(watcher_handle);
+  if (!watcher || watcher->GetType() != Dispatcher::Type::WATCHER)
+    return MOJO_RESULT_INVALID_ARGUMENT;
+  return watcher->Arm(num_ready_contexts, ready_contexts, ready_results,
+                      ready_signals_states);
 }
 
 MojoResult Core::AllocMessage(uint32_t num_bytes,

@@ -11,7 +11,7 @@
 
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/system/data_pipe.h"
-#include "mojo/public/cpp/system/watcher.h"
+#include "mojo/public/cpp/system/simple_watcher.h"
 #include "third_party/WebKit/public/platform/WebDataConsumerHandle.h"
 
 namespace content {
@@ -41,7 +41,7 @@ class CONTENT_EXPORT WebDataConsumerHandleImpl final
     void OnHandleGotReadable(MojoResult);
 
     scoped_refptr<Context> context_;
-    mojo::Watcher handle_watcher_;
+    mojo::SimpleWatcher handle_watcher_;
     Client* client_;
 
     DISALLOW_COPY_AND_ASSIGN(ReaderImpl);

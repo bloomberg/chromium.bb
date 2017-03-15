@@ -10,7 +10,7 @@
 #include <string>
 
 #import "base/ios/weak_nsobject.h"
-#include "mojo/public/cpp/system/watcher.h"
+#include "mojo/public/cpp/system/simple_watcher.h"
 
 @protocol CRWJSInjectionEvaluator;
 
@@ -133,7 +133,7 @@ class MojoFacade {
   // Id of the last created watch.
   int last_watch_id_;
   // Currently active watches created through this facade.
-  std::map<int, std::unique_ptr<mojo::Watcher>> watchers_;
+  std::map<int, std::unique_ptr<mojo::SimpleWatcher>> watchers_;
 };
 
 }  // web

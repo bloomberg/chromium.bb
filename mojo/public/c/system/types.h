@@ -189,24 +189,25 @@ struct MOJO_ALIGNAS(4) MojoHandleSignalsState {
 MOJO_STATIC_ASSERT(sizeof(MojoHandleSignalsState) == 8,
                    "MojoHandleSignalsState has wrong size");
 
-// |MojoWatchNotificationFlags|: Passed to a callback invoked as a result of
-// signals being raised on a handle watched by |MojoWatch()|. May take the
-// following values:
-//   |MOJO_WATCH_NOTIFICATION_FLAG_FROM_SYSTEM| - The callback is being invoked
-//       as a result of a system-level event rather than a direct API call from
-//       user code. This may be used as an indication that user code is safe to
-//       call without fear of reentry.
+// |MojoWatcherNotificationFlags|: Passed to a callback invoked by a watcher
+// when some observed signals are raised or a watched handle is closed. May take
+// on any combination of the following values:
+//
+//   |MOJO_WATCHER_NOTIFICATION_FLAG_FROM_SYSTEM| - The callback is being
+//       invoked as a result of a system-level event rather than a direct API
+//       call from user code. This may be used as an indication that user code
+//       is safe to call without fear of reentry.
 
-typedef uint32_t MojoWatchNotificationFlags;
+typedef uint32_t MojoWatcherNotificationFlags;
 
 #ifdef __cplusplus
-const MojoWatchNotificationFlags MOJO_WATCH_NOTIFICATION_FLAG_NONE = 0;
-const MojoWatchNotificationFlags MOJO_WATCH_NOTIFICATION_FLAG_FROM_SYSTEM =
+const MojoWatcherNotificationFlags MOJO_WATCHER_NOTIFICATION_FLAG_NONE = 0;
+const MojoWatcherNotificationFlags MOJO_WATCHER_NOTIFICATION_FLAG_FROM_SYSTEM =
     1 << 0;
 #else
-#define MOJO_WATCH_NOTIFICATION_FLAG_NONE ((MojoWatchNotificationFlags)0)
-#define MOJO_WATCH_NOTIFICATION_FLAG_FROM_SYSTEM \
-    ((MojoWatchNotificationFlags)1 << 0);
+#define MOJO_WATCHER_NOTIFICATION_FLAG_NONE ((MojoWatcherNotificationFlags)0)
+#define MOJO_WATCHER_NOTIFICATION_FLAG_FROM_SYSTEM \
+  ((MojoWatcherNotificationFlags)1 << 0);
 #endif
 
 // |MojoPropertyType|: Property types that can be passed to |MojoGetProperty()|

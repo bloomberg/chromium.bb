@@ -121,7 +121,7 @@ MojoAsyncResourceHandler::MojoAsyncResourceHandler(
     : ResourceHandler(request),
       rdh_(rdh),
       binding_(this, std::move(mojo_request)),
-      handle_watcher_(FROM_HERE),
+      handle_watcher_(FROM_HERE, mojo::SimpleWatcher::ArmingPolicy::MANUAL),
       url_loader_client_(std::move(url_loader_client)),
       weak_factory_(this) {
   DCHECK(url_loader_client_);
@@ -245,9 +245,10 @@ void MojoAsyncResourceHandler::OnWillRead(
 
     response_body_consumer_handle_ = std::move(data_pipe.consumer_handle);
     shared_writer_ = new SharedWriter(std::move(data_pipe.producer_handle));
-    handle_watcher_.Start(shared_writer_->writer(), MOJO_HANDLE_SIGNAL_WRITABLE,
+    handle_watcher_.Watch(shared_writer_->writer(), MOJO_HANDLE_SIGNAL_WRITABLE,
                           base::Bind(&MojoAsyncResourceHandler::OnWritable,
                                      base::Unretained(this)));
+    handle_watcher_.ArmOrNotify();
 
     bool defer = false;
     scoped_refptr<net::IOBufferWithSize> buffer;
@@ -388,11 +389,16 @@ MojoResult MojoAsyncResourceHandler::BeginWrite(void** data,
       shared_writer_->writer(), data, available, MOJO_WRITE_DATA_FLAG_NONE);
   if (result == MOJO_RESULT_OK)
     *available = std::min(*available, static_cast<uint32_t>(kMaxChunkSize));
+  else if (result == MOJO_RESULT_SHOULD_WAIT)
+    handle_watcher_.ArmOrNotify();
   return result;
 }
 
 MojoResult MojoAsyncResourceHandler::EndWrite(uint32_t written) {
-  return mojo::EndWriteDataRaw(shared_writer_->writer(), written);
+  MojoResult result = mojo::EndWriteDataRaw(shared_writer_->writer(), written);
+  if (result == MOJO_RESULT_OK)
+    handle_watcher_.ArmOrNotify();
+  return result;
 }
 
 net::IOBufferWithSize* MojoAsyncResourceHandler::GetResponseMetadata(

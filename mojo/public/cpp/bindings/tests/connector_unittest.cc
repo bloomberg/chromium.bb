@@ -568,6 +568,7 @@ TEST_F(ConnectorTest, ProcessWhenNested) {
                                      run_loop.QuitClosure()));
   connector1.set_incoming_receiver(&accumulator);
 
+  connector1.EnableNestedDispatch(true);
   run_loop.Run();
 
   ASSERT_EQ(2u, accumulator.size());

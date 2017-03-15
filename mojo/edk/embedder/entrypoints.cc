@@ -45,15 +45,29 @@ MojoResult MojoWaitManyImpl(const MojoHandle* handles,
                           signals_states);
 }
 
-MojoResult MojoWatchImpl(MojoHandle handle,
-                         MojoHandleSignals signals,
-                         MojoWatchCallback callback,
-                         uintptr_t context) {
-  return g_core->Watch(handle, signals, callback, context);
+MojoResult MojoCreateWatcherImpl(MojoWatcherCallback callback,
+                                 MojoHandle* watcher_handle) {
+  return g_core->CreateWatcher(callback, watcher_handle);
 }
 
-MojoResult MojoCancelWatchImpl(MojoHandle handle, uintptr_t context) {
-  return g_core->CancelWatch(handle, context);
+MojoResult MojoArmWatcherImpl(MojoHandle watcher_handle,
+                              uint32_t* num_ready_contexts,
+                              uintptr_t* ready_contexts,
+                              MojoResult* ready_results,
+                              MojoHandleSignalsState* ready_signals_states) {
+  return g_core->ArmWatcher(watcher_handle, num_ready_contexts, ready_contexts,
+                            ready_results, ready_signals_states);
+}
+
+MojoResult MojoWatchImpl(MojoHandle watcher_handle,
+                         MojoHandle handle,
+                         MojoHandleSignals signals,
+                         uintptr_t context) {
+  return g_core->Watch(watcher_handle, handle, signals, context);
+}
+
+MojoResult MojoCancelWatchImpl(MojoHandle watcher_handle, uintptr_t context) {
+  return g_core->CancelWatch(watcher_handle, context);
 }
 
 MojoResult MojoAllocMessageImpl(uint32_t num_bytes,
@@ -287,8 +301,10 @@ MojoSystemThunks MakeSystemThunks() {
                                     MojoAddHandleImpl,
                                     MojoRemoveHandleImpl,
                                     MojoGetReadyHandlesImpl,
+                                    MojoCreateWatcherImpl,
                                     MojoWatchImpl,
                                     MojoCancelWatchImpl,
+                                    MojoArmWatcherImpl,
                                     MojoFuseMessagePipesImpl,
                                     MojoWriteMessageNewImpl,
                                     MojoReadMessageNewImpl,

@@ -199,6 +199,18 @@ TEST_F(MojoFacadeTest, Watch) {
                                  callback_id, MOJO_RESULT_OK];
   [[[evaluator() expect] andDo:^(NSInvocation*) {
     callback_received = true;
+
+    // Cancel the watch immediately to ensure there are no additional
+    // notifications.
+    NSDictionary* cancel_watch = @{
+      @"name" : @"support.cancelWatch",
+      @"args" : @{
+        @"watchId" : @(watch_id),
+      },
+    };
+    std::string result_as_string =
+        facade()->HandleMojoMessage(GetJson(cancel_watch));
+    EXPECT_TRUE(result_as_string.empty());
   }] executeJavaScript:expected_script completionHandler:nil];
 
   // Write to the other end of the pipe.

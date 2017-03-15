@@ -13,28 +13,10 @@
 #include "mojo/public/c/system/core.h"
 #include "mojo/public/c/system/system_export.h"
 
-// The embedder needs to bind the basic Mojo Core functions of a DSO to those of
-// the embedder when loading a DSO that is dependent on mojo_system.
-// The typical usage would look like:
-// base::ScopedNativeLibrary app_library(
-//     base::LoadNativeLibrary(app_path_, &error));
-// typedef MojoResult (*MojoSetSystemThunksFn)(MojoSystemThunks*);
-// MojoSetSystemThunksFn mojo_set_system_thunks_fn =
-//     reinterpret_cast<MojoSetSystemThunksFn>(app_library.GetFunctionPointer(
-//         "MojoSetSystemThunks"));
-// MojoSystemThunks system_thunks = MojoMakeSystemThunks();
-// size_t expected_size = mojo_set_system_thunks_fn(&system_thunks);
-// if (expected_size > sizeof(MojoSystemThunks)) {
-//   LOG(ERROR)
-//       << "Invalid DSO. Expected MojoSystemThunks size: "
-//       << expected_size;
-//   break;
-// }
-
-// Structure used to bind the basic Mojo Core functions of a DSO to those of
-// the embedder.
-// This is the ABI between the embedder and the DSO. It can only have new
-// functions added to the end. No other changes are supported.
+// Structure used to bind the basic Mojo Core functions to an embedder
+// implementation. This is intended to eventually be used as a stable ABI
+// between a Mojo embedder and some loaded application code, but for now it is
+// still effectively safe to rearrange entries as needed.
 #pragma pack(push, 8)
 struct MojoSystemThunks {
   size_t size;  // Should be set to sizeof(MojoSystemThunks).
@@ -115,11 +97,18 @@ struct MojoSystemThunks {
                                 MojoHandle* handles,
                                 MojoResult* results,
                                 struct MojoHandleSignalsState* signals_states);
-  MojoResult (*Watch)(MojoHandle handle,
+  MojoResult (*CreateWatcher)(MojoWatcherCallback callback,
+                              MojoHandle* watcher_handle);
+  MojoResult (*Watch)(MojoHandle watcher_handle,
+                      MojoHandle handle,
                       MojoHandleSignals signals,
-                      MojoWatchCallback callback,
                       uintptr_t context);
-  MojoResult (*CancelWatch)(MojoHandle handle, uintptr_t context);
+  MojoResult (*CancelWatch)(MojoHandle watcher_handle, uintptr_t context);
+  MojoResult (*ArmWatcher)(MojoHandle watcher_handle,
+                           uint32_t* num_ready_contexts,
+                           uintptr_t* ready_contexts,
+                           MojoResult* ready_results,
+                           MojoHandleSignalsState* ready_signals_states);
   MojoResult (*FuseMessagePipes)(MojoHandle handle0, MojoHandle handle1);
   MojoResult (*WriteMessageNew)(MojoHandle message_pipe_handle,
                                 MojoMessageHandle message,

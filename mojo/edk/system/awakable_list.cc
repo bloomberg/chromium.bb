@@ -39,7 +39,6 @@ void AwakableList::AwakeForStateChange(const HandleSignalsState& state) {
     }
   }
   awakables_.erase(last, awakables_.end());
-  watchers_.NotifyForStateChange(state);
 }
 
 void AwakableList::CancelAll() {
@@ -48,7 +47,6 @@ void AwakableList::CancelAll() {
     it->awakable->Awake(MOJO_RESULT_CANCELLED, it->context);
   }
   awakables_.clear();
-  watchers_.NotifyClosed();
 }
 
 void AwakableList::Add(Awakable* awakable,
@@ -70,17 +68,6 @@ void AwakableList::Remove(Awakable* awakable) {
     }
   }
   awakables_.erase(last, awakables_.end());
-}
-
-MojoResult AwakableList::AddWatcher(MojoHandleSignals signals,
-                                    const Watcher::WatchCallback& callback,
-                                    uintptr_t context,
-                                    const HandleSignalsState& current_state) {
-  return watchers_.Add(signals, callback, context, current_state);
-}
-
-MojoResult AwakableList::RemoveWatcher(uintptr_t context) {
-  return watchers_.Remove(context);
 }
 
 }  // namespace edk

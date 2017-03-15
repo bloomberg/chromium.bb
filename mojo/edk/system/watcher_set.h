@@ -5,45 +5,62 @@
 #ifndef MOJO_EDK_SYSTEM_WATCHER_SET_H_
 #define MOJO_EDK_SYSTEM_WATCHER_SET_H_
 
-#include <unordered_map>
+#include <map>
 
-#include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/optional.h"
 #include "mojo/edk/system/handle_signals_state.h"
-#include "mojo/edk/system/watcher.h"
-#include "mojo/public/c/system/types.h"
+#include "mojo/edk/system/watcher_dispatcher.h"
 
 namespace mojo {
 namespace edk {
 
-// A WatcherSet maintains a set of Watchers attached to a single handle and
-// keyed on an arbitrary user context.
+// A WatcherSet maintains a set of references to WatcherDispatchers to be
+// notified when a handle changes state.
+//
+// Dispatchers which may be watched by a watcher should own a WatcherSet and
+// notify it of all relevant state changes.
 class WatcherSet {
  public:
-  WatcherSet();
+  // |owner| is the Dispatcher who owns this WatcherSet.
+  explicit WatcherSet(Dispatcher* owner);
   ~WatcherSet();
 
-  // Notifies all Watchers of a state change.
-  void NotifyForStateChange(const HandleSignalsState& state);
+  // Notifies all watchers of the handle's current signals state.
+  void NotifyState(const HandleSignalsState& state);
 
-  // Notifies all Watchers that their watched handle has been closed.
+  // Notifies all watchers that this handle has been closed.
   void NotifyClosed();
 
-  // Adds a new watcher to watch for signals in |signals| to be satisfied or
-  // unsatisfiable. |current_state| is the current signals state of the
-  // handle being watched.
-  MojoResult Add(MojoHandleSignals signals,
-                 const Watcher::WatchCallback& callback,
+  // Adds a new watcher+context.
+  MojoResult Add(const scoped_refptr<WatcherDispatcher>& watcher,
                  uintptr_t context,
                  const HandleSignalsState& current_state);
 
-  // Removes a watcher from the set.
-  MojoResult Remove(uintptr_t context);
+  // Removes a watcher+context.
+  MojoResult Remove(WatcherDispatcher* watcher, uintptr_t context);
 
  private:
-  // A map of watchers keyed on context value.
-  std::unordered_map<uintptr_t, scoped_refptr<Watcher>> watchers_;
+  using ContextSet = std::set<uintptr_t>;
+
+  struct Entry {
+    Entry(const scoped_refptr<WatcherDispatcher>& dispatcher);
+    Entry(Entry&& other);
+    ~Entry();
+
+    Entry& operator=(Entry&& other);
+
+    scoped_refptr<WatcherDispatcher> dispatcher;
+    ContextSet contexts;
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(Entry);
+  };
+
+  Dispatcher* const owner_;
+  std::map<WatcherDispatcher*, Entry> watchers_;
+  base::Optional<HandleSignalsState> last_known_state_;
 
   DISALLOW_COPY_AND_ASSIGN(WatcherSet);
 };

@@ -10,6 +10,7 @@
 #include "bindings/core/v8/TraceWrapperMember.h"
 #include "core/dom/ContextLifecycleObserver.h"
 #include "mojo/public/cpp/system/handle.h"
+#include "mojo/public/cpp/system/watcher.h"
 
 namespace blink {
 
@@ -47,15 +48,17 @@ class MojoWatcher final : public GarbageCollectedFinalized<MojoWatcher>,
 
   MojoWatcher(ExecutionContext*, MojoWatchCallback*);
   MojoResult watch(mojo::Handle, const MojoHandleSignals&);
+  MojoResult arm(MojoResult* readyResult);
 
   static void onHandleReady(uintptr_t context,
                             MojoResult,
                             MojoHandleSignalsState,
-                            MojoWatchNotificationFlags);
+                            MojoWatcherNotificationFlags);
   void runReadyCallback(MojoResult);
 
   RefPtr<WebTaskRunner> m_taskRunner;
   TraceWrapperMember<MojoWatchCallback> m_callback;
+  mojo::ScopedWatcherHandle m_watcherHandle;
   mojo::Handle m_handle;
 };
 

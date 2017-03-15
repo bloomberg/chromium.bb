@@ -18,7 +18,7 @@
 #include "content/common/content_export.h"
 #include "content/common/url_loader.mojom.h"
 #include "mojo/public/cpp/system/data_pipe.h"
-#include "mojo/public/cpp/system/watcher.h"
+#include "mojo/public/cpp/system/simple_watcher.h"
 
 namespace content {
 
@@ -71,7 +71,7 @@ class CONTENT_EXPORT URLResponseBodyConsumer final
   const int request_id_;
   ResourceDispatcher* resource_dispatcher_;
   mojo::ScopedDataPipeConsumerHandle handle_;
-  mojo::Watcher handle_watcher_;
+  mojo::SimpleWatcher handle_watcher_;
   ResourceRequestCompletionStatus completion_status_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
