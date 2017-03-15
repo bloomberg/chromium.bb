@@ -114,7 +114,7 @@
   "Default expressions to highlight in liblouis mode.")
 
 ;;###autoload
-(define-derived-mode liblouis-mode text-mode "liblouis"
+(define-derived-mode liblouis-mode prog-mode "liblouis"
   "Major mode for editing liblouis translation tables.
 Turning on liblouis mode runs the normal hook `liblouis-mode-hook'.
 "
@@ -133,6 +133,9 @@ Turning on liblouis mode runs the normal hook `liblouis-mode-hook'.
          nil				; CASE-FOLD: no
          ((?_ . "w"))			; SYNTAX-ALIST
 	 ))
+
+  (set (make-local-variable 'comment-start) "#")
+
   (run-hooks 'liblouis-mode-hook))
 
 (provide 'liblouis-mode)

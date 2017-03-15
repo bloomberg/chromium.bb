@@ -1,4 +1,4 @@
-tables:
+table:
 - tables/en-ueb-g2.ctb
 tests:
 
@@ -138,7 +138,6 @@ tests:
   - un,,self,'i%
 - - XXIInd
   - ',,xxii,''nd'
-  - xfail: true
 - - VIIb
   - ',,vii,''b'
 

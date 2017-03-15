@@ -1,4 +1,4 @@
-tables: [tables/unicode.dis, tables/en-ueb-g2.ctb]
+table: [tables/unicode.dis, tables/en-ueb-g2.ctb]
 flags: {testmode: backward}
 tests:
   # Patterns used for both punctuation and contractions.

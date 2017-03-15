@@ -24,6 +24,9 @@ these tools installed to (re)build. Optionally (if you want to
 generate man pages) you'll also need help2man. All of these programs
 are available from ftp://ftp.gnu.org/gnu.
 
+If you want to run the YAML based test suite you will have to install
+~libyaml~.
+
 On Mac OS, the programs can be optained with Homebrew (http://brew.sh):
 
   brew install automake libtool pkg-config texinfo
@@ -268,7 +271,7 @@ name in the NEWS entry. This is usefull for projects like NVDA.
 
 ** Set the version number
 Update the version number in NEWS (with version, date, and release
-type), ChangeLog and configure.ac.
+type), ChangeLog, configure.ac and windows/include/config.h.
 
 Don't forget to update the libtool versioning info in configure.ac,
 i.e. LIBLOUIS_REVISION and possibly LIBLOUIS_CURRENT and LIBLOUIS_AGE.
@@ -312,8 +315,10 @@ need to know a few things about Jekyll (http://jekyllrb.com/) and
 markdown, the markup that is used to edit the content. In order to
 update the site simply edit, commit and push.
 
-For the new release update the project web site. Add a post containing
-the current NEWS to the _posts directory.
+For the new release update the project web site.
+
+- Add a post containing the current NEWS to the _posts directory and
+- add the download artifacts to the download page
 
 ** Announce
 Send an announcement to the liblouis list

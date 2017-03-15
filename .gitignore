@@ -55,6 +55,7 @@ TAGS
 
 # /contrib/
 /contrib/liblouis.elc
+/contrib/braille-input.elc
 
 # /doc/
 /doc/Makefile
@@ -161,6 +162,8 @@ TAGS
 /tests/Makefile
 /tests/Makefile.in
 /tests/backtranslate
+/tests/backtranslate_noUndefinedDots
+/tests/backtranslate_partialTrans
 /tests/backtranslate_with_letsign
 /tests/capitalization
 /tests/capitalized_with_sentance
@@ -177,6 +180,7 @@ TAGS
 /tests/hyphenate_alderen
 /tests/hyphenate_straightforward
 /tests/hyphenate_xxx
+/tests/infiniteTranslationLoop
 /tests/inpos
 /tests/inpos_compbrl
 /tests/inpos_match_replace
