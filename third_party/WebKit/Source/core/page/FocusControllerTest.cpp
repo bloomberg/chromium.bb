@@ -18,6 +18,7 @@ class FocusControllerTest : public testing::Test {
   FocusController& focusController() const {
     return document().page()->focusController();
   }
+  DummyPageHolder* pageHolder() const { return m_pageHolder.get(); }
 
  private:
   void SetUp() override { m_pageHolder = DummyPageHolder::create(); }
@@ -81,6 +82,15 @@ TEST_F(FocusControllerTest, DoNotCrash2) {
   focusController().advanceFocus(WebFocusTypeBackward);
   EXPECT_EQ(target, document().focusedElement())
       << "This should not hit assertion and finish properly.";
+}
+
+TEST_F(FocusControllerTest, SetActiveOnInactiveDocument) {
+  // Test for crbug.com/700334
+  document().shutdown();
+  // Document::shutdown() detaches document from its frame, and thus
+  // document().page() becomes nullptr.
+  // Use DummyPageHolder's page to retrieve FocusController.
+  pageHolder()->page().focusController().setActive(true);
 }
 
 }  // namespace blink
