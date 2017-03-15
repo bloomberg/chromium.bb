@@ -94,8 +94,9 @@ ProcessMemoryInformation::ProcessMemoryInformation()
     : pid(0),
       num_processes(0),
       process_type(content::PROCESS_TYPE_UNKNOWN),
-      renderer_type(RENDERER_UNKNOWN) {
-}
+      num_open_fds(-1),
+      open_fds_soft_limit(-1),
+      renderer_type(RENDERER_UNKNOWN) {}
 
 ProcessMemoryInformation::ProcessMemoryInformation(
     const ProcessMemoryInformation& other) = default;
@@ -181,6 +182,10 @@ std::string MemoryDetails::ToLogString() {
     log += StringPrintf(", %d MB swapped",
                         static_cast<int>(iter1->working_set.swapped) / 1024);
 #endif
+    if (iter1->num_open_fds != -1 || iter1->open_fds_soft_limit != -1) {
+      log += StringPrintf(", %d FDs open of %d", iter1->num_open_fds,
+                          iter1->open_fds_soft_limit);
+    }
     log += "\n";
   }
   return log;

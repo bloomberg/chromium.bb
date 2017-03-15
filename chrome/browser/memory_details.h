@@ -61,6 +61,10 @@ struct ProcessMemoryInformation {
   int num_processes;
   // If this is a child process of Chrome, what type (i.e. plugin) it is.
   int process_type;
+  // Number of open file descriptors in this process.
+  int num_open_fds;
+  // Maximum number of file descriptors that can be opened in this process.
+  int open_fds_soft_limit;
   // If this is a renderer process, what type it is.
   RendererProcessType renderer_type;
   // A collection of titles used, i.e. for a tab it'll show all the page titles.

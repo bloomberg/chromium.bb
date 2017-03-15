@@ -71,6 +71,8 @@ ProcessData GetProcessDataMemoryInformation(
     std::unique_ptr<base::ProcessMetrics> metrics(
         base::ProcessMetrics::CreateProcessMetrics(pid));
     metrics->GetWorkingSetKBytes(&pmi.working_set);
+    pmi.num_open_fds = metrics->GetOpenFdCount();
+    pmi.open_fds_soft_limit = metrics->GetOpenFdSoftLimit();
 
     process_data.processes.push_back(pmi);
   }

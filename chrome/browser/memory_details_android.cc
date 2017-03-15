@@ -63,6 +63,8 @@ void GetProcessDataMemoryInformation(
     std::unique_ptr<base::ProcessMetrics> metrics(
         base::ProcessMetrics::CreateProcessMetrics(*i));
     metrics->GetWorkingSetKBytes(&pmi.working_set);
+    // TODO(dcastagna): Compute number of open fds (pmi.num_open_fds) and soft
+    // limits (pmi.open_fds_soft_limit) on android.
 
     out->processes.push_back(pmi);
   }
