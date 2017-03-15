@@ -1114,9 +1114,9 @@ bool LayoutObject::compositedScrollsWithRespectTo(
 
 IntSize LayoutObject::scrollAdjustmentForPaintInvalidation(
     const LayoutBoxModelObject& paintInvalidationContainer) const {
-  // Non-composited scrolling should be included in the bounds of scrolleditems.
-  // Since mapToVisualRectInAncestorSpace does not include scrolling of the
-  // ancestor, we need to add it back in after.
+  // Non-composited scrolling should be included in the bounds of scrolled
+  // items. Since mapToVisualRectInAncestorSpace does not include scrolling of
+  // the ancestor, we need to add it back in after.
   if (paintInvalidationContainer.isBox() &&
       !paintInvalidationContainer.usesCompositedScrolling() &&
       this != &paintInvalidationContainer) {
@@ -1204,13 +1204,6 @@ PaintInvalidationReason LayoutObject::invalidatePaintIfNeeded(
       paintInvalidationState.computeVisualRectInBacking();
   context.newLocation =
       paintInvalidationState.computeLocationInBacking(newVisualRect.location());
-
-  IntSize adjustment =
-      scrollAdjustmentForPaintInvalidation(paintInvalidationContainer);
-  context.newLocation.move(adjustment);
-  newVisualRect.move(adjustment);
-
-  adjustVisualRectForRasterEffects(newVisualRect);
 
   setVisualRect(newVisualRect);
   paintInvalidator.setLocationInBacking(context.newLocation);

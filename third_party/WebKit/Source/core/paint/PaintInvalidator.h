@@ -36,8 +36,8 @@ struct PaintInvalidatorContext {
 
   // This method is temporary to adapt PaintInvalidatorContext and the legacy
   // PaintInvalidationState for code shared by old code and new code.
-  virtual void mapLocalRectToPaintInvalidationBacking(const LayoutObject&,
-                                                      LayoutRect&) const;
+  virtual void mapLocalRectToVisualRectInBacking(const LayoutObject&,
+                                                 LayoutRect&) const;
 
   const PaintPropertyTreeBuilderContext& treeBuilderContext;
   const PaintInvalidatorContext* parentContext;

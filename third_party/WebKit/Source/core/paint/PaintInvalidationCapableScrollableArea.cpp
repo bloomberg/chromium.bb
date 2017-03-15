@@ -45,11 +45,7 @@ static LayoutRect scrollControlVisualRect(
     // the rect as in flipped block direction, but scrollbar controls don't
     // flip for block direction, so flip here to undo the flip in the function.
     box.flipForWritingMode(visualRect);
-    context.mapLocalRectToPaintInvalidationBacking(box, visualRect);
-
-    IntSize adjustment = box.scrollAdjustmentForPaintInvalidation(
-        *context.paintInvalidationContainer);
-    visualRect.move(adjustment);
+    context.mapLocalRectToVisualRectInBacking(box, visualRect);
   }
   return visualRect;
 }

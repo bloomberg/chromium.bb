@@ -96,7 +96,7 @@ class CORE_EXPORT PaintInvalidationState {
   // in the space of paint invalidation backing.
   LayoutRect computeVisualRectInBacking() const;
 
-  void mapLocalRectToPaintInvalidationBacking(LayoutRect&) const;
+  void mapLocalRectToVisualRectInBacking(LayoutRect&) const;
 
   PaintLayer& paintingLayer() const;
 
@@ -189,8 +189,8 @@ class CORE_EXPORT PaintInvalidationState {
 class PaintInvalidatorContextAdapter : public PaintInvalidatorContext {
  public:
   PaintInvalidatorContextAdapter(const PaintInvalidationState&);
-  void mapLocalRectToPaintInvalidationBacking(const LayoutObject&,
-                                              LayoutRect&) const override;
+  void mapLocalRectToVisualRectInBacking(const LayoutObject&,
+                                         LayoutRect&) const override;
 
  private:
   const PaintInvalidationState& m_paintInvalidationState;

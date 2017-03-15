@@ -49,7 +49,7 @@ static LayoutRect slowMapToVisualRectInAncestorSpace(
 // This function is templatized to avoid FloatRect<->LayoutRect conversions
 // which affect performance.
 template <typename Rect, typename Point>
-static LayoutRect mapLocalRectToPaintInvalidationBacking(
+static LayoutRect mapLocalRectToVisualRectInBacking(
     const LayoutObject& object,
     const Rect& localRect,
     const PaintInvalidatorContext& context,
@@ -144,14 +144,17 @@ static LayoutRect mapLocalRectToPaintInvalidationBacking(
   PaintLayer::mapRectInPaintInvalidationContainerToBacking(
       *context.paintInvalidationContainer, result);
 
+  result.move(object.scrollAdjustmentForPaintInvalidation(
+      *context.paintInvalidationContainer));
+
   return result;
 }
 
-void PaintInvalidatorContext::mapLocalRectToPaintInvalidationBacking(
+void PaintInvalidatorContext::mapLocalRectToVisualRectInBacking(
     const LayoutObject& object,
     LayoutRect& rect) const {
   std::unique_ptr<GeometryMapper> geometryMapper = GeometryMapper::create();
-  rect = blink::mapLocalRectToPaintInvalidationBacking<LayoutRect, LayoutPoint>(
+  rect = blink::mapLocalRectToVisualRectInBacking<LayoutRect, LayoutPoint>(
       object, rect, *this, *geometryMapper);
 }
 
@@ -160,10 +163,10 @@ LayoutRect PaintInvalidator::computeVisualRectInBacking(
     const PaintInvalidatorContext& context) {
   if (object.isSVGChild()) {
     FloatRect localRect = SVGLayoutSupport::localVisualRect(object);
-    return mapLocalRectToPaintInvalidationBacking<FloatRect, FloatPoint>(
+    return mapLocalRectToVisualRectInBacking<FloatRect, FloatPoint>(
         object, localRect, context, m_geometryMapper);
   }
-  return mapLocalRectToPaintInvalidationBacking<LayoutRect, LayoutPoint>(
+  return mapLocalRectToVisualRectInBacking<LayoutRect, LayoutPoint>(
       object, object.localVisualRect(), context, m_geometryMapper);
 }
 
@@ -200,6 +203,9 @@ LayoutPoint PaintInvalidator::computeLocationInBacking(
         *context.paintInvalidationContainer, floatPoint);
     point = LayoutPoint(floatPoint);
   }
+
+  point.move(object.scrollAdjustmentForPaintInvalidation(
+      *context.paintInvalidationContainer));
 
   return point;
 }
@@ -365,18 +371,13 @@ void PaintInvalidator::updateVisualRect(const LayoutObject& object,
   context.oldVisualRect = object.visualRect();
   context.oldLocation = objectPaintInvalidator.locationInBacking();
 
-  IntSize adjustment = object.scrollAdjustmentForPaintInvalidation(
-      *context.paintInvalidationContainer);
   LayoutRect newVisualRect = computeVisualRectInBacking(object, context);
-  newVisualRect.move(adjustment);
-
   if (object.isText()) {
     // Use visual rect location for LayoutTexts because it suffices to check
     // whether a visual rect changes for layout caused invalidation.
     context.newLocation = newVisualRect.location();
   } else {
     context.newLocation = computeLocationInBacking(object, context);
-    context.newLocation.move(adjustment);
 
     // Location of empty visual rect doesn't affect paint invalidation. Set it
     // to newLocation to avoid saving the previous location separately in

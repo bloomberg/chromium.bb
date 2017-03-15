@@ -447,6 +447,9 @@ LayoutPoint PaintInvalidationState::computeLocationInBacking(
   PaintLayer::mapPointInPaintInvalidationContainerToBacking(
       *m_paintInvalidationContainer, point);
 
+  point.move(m_currentObject.scrollAdjustmentForPaintInvalidation(
+      *m_paintInvalidationContainer));
+
   return LayoutPoint(point);
 }
 
@@ -459,7 +462,7 @@ LayoutRect PaintInvalidationState::computeVisualRectInBacking() const {
     return computeVisualRectInBackingForSVG();
 
   LayoutRect rect = m_currentObject.localVisualRect();
-  mapLocalRectToPaintInvalidationBacking(rect);
+  mapLocalRectToVisualRectInBacking(rect);
   return rect;
 }
 
@@ -487,6 +490,11 @@ LayoutRect PaintInvalidationState::computeVisualRectInBackingForSVG() const {
 
   PaintLayer::mapRectInPaintInvalidationContainerToBacking(
       *m_paintInvalidationContainer, rect);
+
+  m_currentObject.adjustVisualRectForRasterEffects(rect);
+
+  rect.move(m_currentObject.scrollAdjustmentForPaintInvalidation(
+      *m_paintInvalidationContainer));
 
   return rect;
 }
@@ -534,12 +542,17 @@ void PaintInvalidationState::mapLocalRectToPaintInvalidationContainer(
   }
 }
 
-void PaintInvalidationState::mapLocalRectToPaintInvalidationBacking(
+void PaintInvalidationState::mapLocalRectToVisualRectInBacking(
     LayoutRect& rect) const {
   mapLocalRectToPaintInvalidationContainer(rect);
 
   PaintLayer::mapRectInPaintInvalidationContainerToBacking(
       *m_paintInvalidationContainer, rect);
+
+  m_currentObject.adjustVisualRectForRasterEffects(rect);
+
+  rect.move(m_currentObject.scrollAdjustmentForPaintInvalidation(
+      *m_paintInvalidationContainer));
 }
 
 void PaintInvalidationState::addClipRectRelativeToPaintOffset(
@@ -632,11 +645,11 @@ PaintInvalidatorContextAdapter::PaintInvalidatorContextAdapter(
   paintingLayer = &paintInvalidationState.paintingLayer();
 }
 
-void PaintInvalidatorContextAdapter::mapLocalRectToPaintInvalidationBacking(
+void PaintInvalidatorContextAdapter::mapLocalRectToVisualRectInBacking(
     const LayoutObject& object,
     LayoutRect& rect) const {
   DCHECK(&object == &m_paintInvalidationState.currentObject());
-  m_paintInvalidationState.mapLocalRectToPaintInvalidationBacking(rect);
+  m_paintInvalidationState.mapLocalRectToVisualRectInBacking(rect);
 }
 
 }  // namespace blink

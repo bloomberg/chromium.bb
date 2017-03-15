@@ -208,10 +208,7 @@ void CaretDisplayItemClient::invalidatePaintInCurrentLayoutBlock(
   LayoutRect newVisualRect;
   if (!m_localRect.isEmpty()) {
     newVisualRect = m_localRect;
-    context.mapLocalRectToPaintInvalidationBacking(*m_layoutBlock,
-                                                   newVisualRect);
-    newVisualRect.move(m_layoutBlock->scrollAdjustmentForPaintInvalidation(
-        *context.paintInvalidationContainer));
+    context.mapLocalRectToVisualRectInBacking(*m_layoutBlock, newVisualRect);
 
     if (m_layoutBlock->usesCompositedScrolling()) {
       // The caret should use scrolling coordinate space.
