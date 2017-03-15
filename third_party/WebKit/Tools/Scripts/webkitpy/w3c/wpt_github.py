@@ -7,6 +7,8 @@ import json
 import logging
 import urllib2
 
+from collections import namedtuple
+
 
 _log = logging.getLogger(__name__)
 API_BASE = 'https://api.github.com'
@@ -75,7 +77,16 @@ class WPTGitHub(object):
         path = '/search/issues?q=repo:w3c/web-platform-tests%20is:open%20type:pr%20label:{}'.format(EXPORT_LABEL)
         data, status_code = self.request(path, method='GET')
         if status_code == 200:
-            return data['items']
+            return [PullRequest(title=item['title'],
+                                number=item['number']) for item in data['items']]
+        else:
+            raise Exception('Non-200 status code (%s): %s' % (status_code, data))
+
+    def get_pr_branch(self, pr_number):
+        path = '/repos/w3c/web-platform-tests/pulls/{}'.format(pr_number)
+        data, status_code = self.request(path, method='GET')
+        if status_code == 200:
+            return data['head']['ref']
         else:
             raise Exception('Non-200 status code (%s): %s' % (status_code, data))
 
@@ -84,14 +95,19 @@ class WPTGitHub(object):
         body = {
             'merge_method': 'rebase',
         }
-        data, status_code = self.request(path, method='PUT', body=body)
 
-        if status_code == 405:
-            raise Exception('PR did not passed necessary checks to merge: %d' % pull_request_number)
-        elif status_code == 200:
-            return data
-        else:
-            raise Exception('PR could not be merged: %d' % pull_request_number)
+        try:
+            data, status_code = self.request(path, method='PUT', body=body)
+        except urllib2.HTTPError as e:
+            if e.code == 405:
+                raise MergeError()
+            else:
+                raise
+
+        if status_code == 200:
+            raise Exception('Received non-200 status code while merging PR #%d' % pull_request_number)
+
+        return data
 
     def delete_remote_branch(self, remote_branch_name):
         # TODO(jeffcarp): Unit test this method
@@ -103,3 +119,14 @@ class WPTGitHub(object):
             raise Exception('Received non-204 status code attempting to delete remote branch: {}'.format(status_code))
 
         return data
+
+
+class MergeError(Exception):
+    """An error specifically for when a PR cannot be merged.
+
+    This should only be thrown when GitHub returns status code 405,
+    indicating that the PR could not be merged.
+    """
+    pass
+
+PullRequest = namedtuple('PullRequest', ['title', 'number'])

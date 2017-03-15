@@ -6,7 +6,7 @@ import logging
 
 from webkitpy.w3c.local_wpt import LocalWPT
 from webkitpy.w3c.common import exportable_commits_since
-from webkitpy.w3c.wpt_github import WPTGitHub
+from webkitpy.w3c.wpt_github import WPTGitHub, MergeError
 
 _log = logging.getLogger(__name__)
 
@@ -21,44 +21,44 @@ class TestExporter(object):
         self.local_wpt.fetch()
 
     def run(self):
-        """Query in-flight pull requests, then merge PR or create one.
+        """Query in-flight pull requests, then merges PR or creates one.
 
         This script assumes it will be run on a regular interval. On
         each invocation, it will either attempt to merge or attempt to
         create a PR, never both.
         """
         pull_requests = self.wpt_github.in_flight_pull_requests()
+        self.merge_all_pull_requests(pull_requests)
 
-        if len(pull_requests) == 1:
-            self.merge_in_flight_pull_request(pull_requests.pop())
-        elif len(pull_requests) > 1:
-            _log.error(pull_requests)
-            # TODO(jeffcarp): Print links to PRs
-            raise Exception('More than two in-flight PRs!')
-        else:
+        # TODO(jeffcarp): The below line will enforce draining all open PRs before
+        # adding any more to the queue, which mirrors current behavior. After this
+        # change lands, modify the following to:
+        # - for each exportable commit
+        #   - check if there's a corresponding PR
+        #   - if not, create one
+        if not pull_requests:
+            _log.info('No in-flight PRs found, looking for exportable commits.')
             self.export_first_exportable_commit()
 
-    def merge_in_flight_pull_request(self, pull_request):
-        """Attempt to merge an in-flight PR.
+    def merge_all_pull_requests(self, pull_requests):
+        for pr in pull_requests:
+            self.merge_pull_request(pr)
 
-        Args:
-            pull_request: a PR object returned from the GitHub API.
-        """
-
-        _log.info('In-flight PR found: #%d', pull_request['number'])
-        _log.info(pull_request['title'])
-
-        # TODO(jeffcarp): Check the PR status here (for Travis CI, etc.)
+    def merge_pull_request(self, pull_request):
+        _log.info('In-flight PR found: %s', pull_request.title)
+        _log.info('https://github.com/w3c/web-platform-tests/pull/%d', pull_request.number)
+        _log.info('Attempting to merge...')
 
         if self.dry_run:
             _log.info('[dry_run] Would have attempted to merge PR')
             return
 
-        _log.info('Merging...')
-        self.wpt_github.merge_pull_request(pull_request['number'])
-        _log.info('PR merged! Deleting branch.')
-        self.wpt_github.delete_remote_branch('chromium-export-try')
-        _log.info('Branch deleted!')
+        branch = self.wpt_github.get_pr_branch(pull_request.number)
+        try:
+            self.wpt_github.merge_pull_request(pull_request.number)
+            self.wpt_github.delete_remote_branch(branch)
+        except MergeError:
+            _log.info('Could not merge PR.')
 
     def export_first_exportable_commit(self):
         """Looks for exportable commits in Chromium, creates PR if found."""
