@@ -209,7 +209,6 @@ const char kChromeUIHangHost[] = "hang";
 const char kChromeUIHangUIHost[] = "uithreadhang";
 const char kChromeUIHelpFrameHost[] = "help-frame";
 const char kChromeUIHelpHost[] = "help";
-const char kChromeUIHistoryHost[] = "history";
 const char kChromeUIHistoryFrameHost[] = "history-frame";
 const char kChromeUIIdentityInternalsHost[] = "identity-internals";
 const char kChromeUIInspectHost[] = "inspect";
@@ -644,7 +643,6 @@ const char* const kChromeHostURLs[] = {
     kChromeUIDeviceLogHost,
     kChromeUIFlagsHost,
     kChromeUIGCMInternalsHost,
-    kChromeUIHistoryHost,
     kChromeUIInvalidationsHost,
     kChromeUILocalStateHost,
     kChromeUINetExportHost,
@@ -675,6 +673,7 @@ const char* const kChromeHostURLs[] = {
     content::kChromeUIDinoHost,
     content::kChromeUIGpuHost,
     content::kChromeUIHistogramHost,
+    content::kChromeUIHistoryHost,
     content::kChromeUIIndexedDBInternalsHost,
     content::kChromeUIMediaInternalsHost,
     content::kChromeUINetworkErrorHost,

@@ -30,6 +30,7 @@
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/common/browser_side_navigation_policy.h"
+#include "content/public/common/url_constants.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension_set.h"
 
@@ -58,7 +59,7 @@ content::WebUIDataSource* CreateUberHTMLSource() {
   source->AddString("helpFrameURL", chrome::kChromeUIHelpFrameURL);
   source->AddString("helpHost", chrome::kChromeUIHelpHost);
   source->AddString("historyFrameURL", chrome::kChromeUIHistoryFrameURL);
-  source->AddString("historyHost", chrome::kChromeUIHistoryHost);
+  source->AddString("historyHost", content::kChromeUIHistoryHost);
   source->AddString("settingsFrameURL", chrome::kChromeUISettingsFrameURL);
   source->AddString("settingsHost", chrome::kChromeUISettingsHost);
 
@@ -108,12 +109,12 @@ content::WebUIDataSource* CreateUberFrameHTMLSource(
                              IDS_MANAGE_EXTENSIONS_SETTING_WINDOWS_TITLE);
   source->AddString("helpHost", chrome::kChromeUIHelpHost);
   source->AddLocalizedString("helpDisplayName", IDS_ABOUT_TITLE);
-  source->AddString("historyHost", chrome::kChromeUIHistoryHost);
+  source->AddString("historyHost", content::kChromeUIHistoryHost);
   source->AddLocalizedString("historyDisplayName", IDS_HISTORY_TITLE);
   source->AddString("settingsHost", chrome::kChromeUISettingsHost);
   source->AddLocalizedString("settingsDisplayName", IDS_SETTINGS_TITLE);
   bool overrides_history =
-      HasExtensionType(browser_context, chrome::kChromeUIHistoryHost);
+      HasExtensionType(browser_context, content::kChromeUIHistoryHost);
   source->AddString("overridesHistory", overrides_history ? "yes" : "no");
   source->AddBoolean("hideHistory", base::FeatureList::IsEnabled(
                                         features::kMaterialDesignHistory) &&
@@ -130,10 +131,10 @@ content::WebUIDataSource* CreateUberFrameHTMLSource(
 void UpdateHistoryNavigation(content::WebUI* web_ui) {
   bool overrides_history =
       HasExtensionType(web_ui->GetWebContents()->GetBrowserContext(),
-                       chrome::kChromeUIHistoryHost);
+                       content::kChromeUIHistoryHost);
   web_ui->CallJavascriptFunctionUnsafe(
       "uber_frame.setNavigationOverride",
-      base::Value(chrome::kChromeUIHistoryHost),
+      base::Value(content::kChromeUIHistoryHost),
       base::Value(overrides_history ? "yes" : "no"));
 }
 
@@ -175,7 +176,7 @@ UberUI::UberUI(content::WebUI* web_ui) : WebUIController(web_ui) {
   RegisterSubpage(chrome::kChromeUIHelpFrameURL,
                   chrome::kChromeUIHelpHost);
   RegisterSubpage(chrome::kChromeUIHistoryFrameURL,
-                  chrome::kChromeUIHistoryHost);
+                  content::kChromeUIHistoryHost);
   RegisterSubpage(chrome::kChromeUISettingsFrameURL,
                   chrome::kChromeUISettingsHost);
   RegisterSubpage(chrome::kChromeUIUberFrameURL,

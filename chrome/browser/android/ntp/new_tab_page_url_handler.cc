@@ -36,8 +36,8 @@ bool HandleAndroidNativePageURL(GURL* url,
     // chrome-native://history when M57 is a distant memory.
     // See http://crbug.com/654071.
     if (base::FeatureList::IsEnabled(features::kNativeAndroidHistoryManager) &&
-        (url->host() == kChromeUIHistoryHost ||
-            url->host() == kChromeUIHistoryFrameHost)) {
+        (url->host() == content::kChromeUIHistoryHost ||
+         url->host() == kChromeUIHistoryFrameHost)) {
       *url = GURL(content::kChromeUINativeHistoryURL);
       return true;
     }

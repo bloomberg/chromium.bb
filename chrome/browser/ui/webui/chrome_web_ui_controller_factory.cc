@@ -80,6 +80,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/common/content_client.h"
+#include "content/public/common/url_constants.h"
 #include "content/public/common/url_utils.h"
 #include "device/vr/features.h"
 #include "extensions/features/features.h"
@@ -437,7 +438,7 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
   }
   // Material Design history is on its own host, rather than on an Uber page.
   if (base::FeatureList::IsEnabled(features::kMaterialDesignHistory) &&
-      url.host_piece() == chrome::kChromeUIHistoryHost) {
+      url.host_piece() == content::kChromeUIHistoryHost) {
     return &NewWebUI<MdHistoryUI>;
   }
   // Material Design Settings gets its own host, if enabled.
@@ -796,7 +797,7 @@ base::RefCountedMemory* ChromeWebUIControllerFactory::GetFaviconResourceBytes(
   if (page_url.host_piece() == chrome::kChromeUIFlagsHost)
     return FlagsUI::GetFaviconResourceBytes(scale_factor);
 
-  if (page_url.host_piece() == chrome::kChromeUIHistoryHost)
+  if (page_url.host_piece() == content::kChromeUIHistoryHost)
     return HistoryUI::GetFaviconResourceBytes(scale_factor);
 
 #if !defined(OS_ANDROID)
