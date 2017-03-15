@@ -105,7 +105,12 @@
   },
   {
     "prefix": "disable-spinvalidation",
-    "base": "paint/invalidation",
+    "base": "compositing",
+    "args": ["--disable-slimming-paint-invalidation"]
+  },
+  {
+    "prefix": "disable-spinvalidation",
+    "base": "paint",
     "args": ["--disable-slimming-paint-invalidation"]
   },
   {
