@@ -57,10 +57,8 @@ IDR_MAINFRAME           ICON                    "theme\\chromium\\win\\chromium.
 #if defined(GOOGLE_CHROME_BUILD)
 IDR_X001_APP_LIST       ICON                    "theme\\google_chrome\\win\\app_list.ico"
 IDR_X002_APP_LIST_SXS   ICON                    "theme\\google_chrome\\win\\app_list_sxs.ico"
-IDR_X003_INCOGNITO      ICON                    "theme\\google_chrome\\win\\incognito.ico"
 #else
 IDR_X001_APP_LIST       ICON                    "theme\\chromium\\win\\app_list.ico"
-IDR_X003_INCOGNITO      ICON                    "theme\\chromium\\win\\incognito.ico"
 #endif
 
 
