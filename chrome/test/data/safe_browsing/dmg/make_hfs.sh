@@ -33,6 +33,10 @@ fi
 
 RAMDISK_VOLUME=$(hdiutil attach -nomount ram://$RAMDISK_SIZE)
 diskutil erasevolume "${FILESYSTEM_TYPE}" "${VOLUME_NAME}" ${RAMDISK_VOLUME}
+>&2 echo "Temporary debugging for crbug.com/696529."
+>&2 diskutil list
+>&2 hdiutil pmap -complete -debug ${RAMDISK_VOLUME}
+>&2 echo "RAMDISK_VOLUME: " + ${RAMDISK_VOLUME}
 diskutil mount ${RAMDISK_VOLUME}
 
 pushd "/Volumes/${VOLUME_NAME}"
